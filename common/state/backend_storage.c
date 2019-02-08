@@ -111,11 +111,11 @@ refresh:
 	ret = bucket->write(bucket, buf, len);
 
 	if (ret) {
-		dev_warn(storage->dev, "Failed to restore bucket %d@0x%08lx\n",
-			 bucket->num, bucket->offset);
+		dev_warn(storage->dev, "Failed to restore bucket %d@0x%08llx\n",
+			 bucket->num, (long long) bucket->offset);
 	} else {
-		dev_info(storage->dev, "restored bucket %d@0x%08lx\n",
-			 bucket->num, bucket->offset);
+		dev_info(storage->dev, "restored bucket %d@0x%08llx\n",
+			 bucket->num, (long long) bucket->offset);
 		bucket->needs_refresh = 0;
 	}
 
@@ -166,7 +166,7 @@ int state_storage_read(struct state_backend_storage *storage,
 		if (!ret && !bucket_used)
 			bucket_used = bucket;
 		if (ret)
-			dev_info(storage->dev, "Ignoring broken bucket %d@0x%08lx...\n", bucket->num, bucket->offset);
+			dev_info(storage->dev, "Ignoring broken bucket %d@0x%08llx...\n", bucket->num, (long long) bucket->offset);
 	}
 
 	dev_dbg(storage->dev, "Checking redundant buckets finished.\n");
@@ -177,7 +177,7 @@ int state_storage_read(struct state_backend_storage *storage,
 		return -ENOENT;
 	}
 
-	dev_info(storage->dev, "Using bucket %d@0x%08lx\n", bucket_used->num, bucket_used->offset);
+	dev_info(storage->dev, "Using bucket %d@0x%08llx\n", bucket_used->num, (long long) bucket_used->offset);
 
 	/*
 	 * Restore/refresh all buckets except the one we currently use (in case
@@ -252,8 +252,8 @@ static int state_storage_mtd_buckets_init(struct state_backend_storage *storage,
 		end = meminfo->size;
 
 	if (!IS_ALIGNED(storage->offset, meminfo->erasesize)) {
-		dev_err(storage->dev, "Offset within the device is not aligned to eraseblocks. Offset is %ld, erasesize %u\n",
-			storage->offset, meminfo->erasesize);
+		dev_err(storage->dev, "Offset within the device is not aligned to eraseblocks. Offset is %lld, erasesize %u\n",
+			(long long) storage->offset, meminfo->erasesize);
 		return -EINVAL;
 	}
 
@@ -326,8 +326,8 @@ static int state_storage_file_buckets_init(struct state_backend_storage *storage
 							 &bucket, offset,
 							 stridesize);
 		if (ret) {
-			dev_warn(storage->dev, "Failed to create direct bucket at '%s' offset %ld\n",
-				 storage->path, offset);
+			dev_warn(storage->dev, "Failed to create direct bucket at '%s' offset %lld\n",
+				 storage->path, (long long) offset);
 			continue;
 		}
 

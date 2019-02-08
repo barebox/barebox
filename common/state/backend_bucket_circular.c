@@ -23,6 +23,10 @@
 #include <mtd/mtd-peb.h>
 #include <string.h>
 
+#ifndef __BAREBOX__
+#include <sys/param.h>
+#endif
+
 #include "state.h"
 
 /*

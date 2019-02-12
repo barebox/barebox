@@ -339,7 +339,7 @@ static int eeprom_93xx46_probe_dt(struct spi_device *spi)
 	if (of_property_read_bool(np, "read-only"))
 		pd->flags |= EE_READONLY;
 
-	pd->select =of_get_named_gpio_flags(np, "select", 0, &of_flags);
+	pd->select = of_get_named_gpio_flags(np, "select", 0, &of_flags);
 	if (gpio_is_valid(pd->select)) {
 		char *name;
 
@@ -441,6 +441,3 @@ static struct driver_d eeprom_93xx46_driver = {
 	.of_compatible = DRV_OF_COMPAT(eeprom_93xx46_of_table),
 };
 device_spi_driver(eeprom_93xx46_driver);
-
-
-

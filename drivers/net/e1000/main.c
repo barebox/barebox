@@ -3713,9 +3713,4 @@ static struct pci_driver e1000_eth_driver = {
 	.probe = e1000_probe,
 	.remove = e1000_remove,
 };
-
-static int e1000_driver_init(void)
-{
-	return pci_register_driver(&e1000_eth_driver);
-}
-device_initcall(e1000_driver_init);
+device_pci_driver(e1000_eth_driver);

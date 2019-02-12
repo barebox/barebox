@@ -544,9 +544,4 @@ static struct pci_driver rtl8169_eth_driver = {
 	.id_table = rtl8169_pci_tbl,
 	.probe = rtl8169_probe,
 };
-
-static int rtl8169_init(void)
-{
-	return pci_register_driver(&rtl8169_eth_driver);
-}
-device_initcall(rtl8169_init);
+device_pci_driver(rtl8169_eth_driver);

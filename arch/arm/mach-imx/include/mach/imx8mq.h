@@ -30,9 +30,9 @@ static inline int imx8mq_cpu_revision(void)
 	 * For B0 chip, the DIGPROG is not updated, still TO1.0.
 	 * we have to check ROM version further
 	 */
-	rom_version = readl(IOMEM(IMX8MQ_ROM_VERSION_A0));
+	rom_version = readb(IOMEM(IMX8MQ_ROM_VERSION_A0));
 	if (rom_version != IMX_CHIP_REV_1_0) {
-		rom_version = readl(IOMEM(IMX8MQ_ROM_VERSION_B0));
+		rom_version = readb(IOMEM(IMX8MQ_ROM_VERSION_B0));
 		if (rom_version >= IMX_CHIP_REV_2_0)
 			revision = IMX_CHIP_REV_2_0;
 	}

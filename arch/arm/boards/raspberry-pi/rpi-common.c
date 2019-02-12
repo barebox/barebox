@@ -180,7 +180,7 @@ const struct rpi_model rpi_models_new_scheme[] = {
 };
 
 static int rpi_board_rev = 0;
-const struct rpi_model *model;
+const struct rpi_model *model = NULL;
 
 static void rpi_get_board_rev(void)
 {
@@ -251,6 +251,9 @@ unknown_rev:
 
 static void rpi_model_init(void)
 {
+	if (!model)
+		return;
+
 	if (!model->init)
 		return;
 

@@ -39,3 +39,4 @@ obj-$(CONFIG_CRYPTO_HW) += crypto/
 obj-$(CONFIG_AIODEV) += aiodev/
 obj-y	+= memory/
 obj-y	+= soc/imx/
+obj-y	+= nvme/

@@ -113,7 +113,7 @@ struct pci_dev {
 	 */
 	unsigned long	base_address[6];
 };
-#define	to_pci_dev(dev) container_of(dev, struct pci_dev, dev)
+#define	to_pci_dev(d) container_of(d, struct pci_dev, dev)
 
 enum {
 	PCI_BUS_RESOURCE_IO = 0,

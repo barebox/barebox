@@ -242,6 +242,11 @@ struct pci_driver {
 int pci_register_driver(struct pci_driver *pdrv);
 int pci_register_device(struct pci_dev *pdev);
 
+#define pci_driver_register	pci_register_driver
+
+#define device_pci_driver(drv)			\
+	register_driver_macro(device,pci,drv)
+
 extern struct list_head pci_root_buses; /* list of all known PCI buses */
 
 extern void register_pci_controller(struct pci_controller *hose);

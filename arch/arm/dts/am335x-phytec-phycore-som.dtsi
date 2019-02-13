@@ -244,6 +244,10 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&davinci_mdio_default>;
 	status = "okay";
+
+	phy0: ethernet-phy@0 {
+		reg = <0>;
+	};
 };
 
 &phy_sel {
@@ -251,8 +255,9 @@
 };
 
 &cpsw_emac0 {
-	phy_id = <&davinci_mdio>, <0>;
+	phy-handle = <&phy0>;
 	phy-mode = "rmii";
+	dual_emac_res_vlan = <1>;
 };
 
 &mac {

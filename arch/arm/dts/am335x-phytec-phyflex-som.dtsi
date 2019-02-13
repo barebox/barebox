@@ -197,6 +197,14 @@
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&davinci_mdio_default>;
 	status = "okay";
+
+	phy0: ethernet-phy@0 {
+		reg = <1>;
+	};
+
+	phy1: ethernet-phy@1 {
+		reg = <2>;
+	};
 };
 
 &phy_sel {
@@ -204,7 +212,7 @@
 };
 
 &cpsw_emac0 {
-	phy_id = <&davinci_mdio>, <1>;
+	phy-handle = <&phy0>;
 	phy-mode = "rgmii";
 	dual_emac_res_vlan = <1>;
 
@@ -221,7 +229,7 @@
 };
 
 &cpsw_emac1 {
-	phy_id = <&davinci_mdio>, <2>;
+	phy-handle = <&phy1>;
 	phy-mode = "rmii";
 	dual_emac_res_vlan = <2>;
 	status = "disabled";

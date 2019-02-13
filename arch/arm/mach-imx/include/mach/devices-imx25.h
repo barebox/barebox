@@ -74,10 +74,10 @@ static inline struct device_d *imx25_add_fec(struct fec_platform_data *pdata)
 
 static inline struct device_d *imx25_add_mmc0(struct esdhc_platform_data *pdata)
 {
-	return imx_add_esdhc((void *)MX25_ESDHC1_BASE_ADDR, 0, pdata);
+	return imx_add_esdhc_imx25((void *)MX25_ESDHC1_BASE_ADDR, 0, pdata);
 }
 
 static inline struct device_d *imx25_add_mmc1(struct esdhc_platform_data *pdata)
 {
-	return imx_add_esdhc((void *)MX25_ESDHC2_BASE_ADDR, 1, pdata);
+	return imx_add_esdhc_imx25((void *)MX25_ESDHC2_BASE_ADDR, 1, pdata);
 }

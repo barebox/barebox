@@ -68,9 +68,14 @@ struct device_d *imx_add_mmc(void *base, int id, void *pdata)
 	return imx_add_device("imx-mmc", id, base, 0x1000, pdata);
 }
 
-struct device_d *imx_add_esdhc(void *base, int id, struct esdhc_platform_data *pdata)
+struct device_d *imx_add_esdhc_imx25(void *base, int id, struct esdhc_platform_data *pdata)
 {
-	return imx_add_device("imx-esdhc", id, base, 0x1000, pdata);
+	return imx_add_device("imx25-esdhc", id, base, 0x1000, pdata);
+}
+
+struct device_d *imx_add_esdhc_imx5(void *base, int id, struct esdhc_platform_data *pdata)
+{
+	return imx_add_device("imx5-esdhc", id, base, 0x1000, pdata);
 }
 
 struct device_d *imx_add_kpp(void *base, struct matrix_keymap_data *pdata)

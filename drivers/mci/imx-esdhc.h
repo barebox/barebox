@@ -63,10 +63,4 @@ struct fsl_esdhc_cfg {
 	u32	no_snoop;
 };
 
-#define esdhc_read32(a)			readl(a)
-#define esdhc_write32(a, v)		writel(v,a)
-#define esdhc_clrsetbits32(a, c, s)	writel((readl(a) & ~(c)) | (s), (a))
-#define esdhc_clrbits32(a, c)		writel(readl(a) & ~(c), (a))
-#define esdhc_setbits32(a, s)		writel(readl(a) | (s), (a))
-
 #endif  /* __FSL_ESDHC_H__ */

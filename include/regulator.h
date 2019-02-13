@@ -4,8 +4,28 @@
 /* struct regulator is an opaque object for consumers */
 struct regulator;
 
+struct regulator_desc {
+	unsigned n_voltages;
+	const struct regulator_ops *ops;
+
+	unsigned int min_uV;
+	unsigned int uV_step;
+	unsigned int linear_min_sel;
+
+	unsigned int vsel_reg;
+	unsigned int vsel_mask;
+	unsigned int apply_reg;
+	unsigned int apply_bit;
+	unsigned int enable_reg;
+	unsigned int enable_mask;
+	unsigned int enable_val;
+	unsigned int disable_val;
+	bool enable_is_inverted;
+};
+
 struct regulator_dev {
-	struct regulator_ops *ops;
+	const struct regulator_desc *desc;
+	struct regmap *regmap;
 	int boot_on;
 };
 
@@ -14,6 +34,9 @@ struct regulator_ops {
 	int (*enable) (struct regulator_dev *);
 	int (*disable) (struct regulator_dev *);
 	int (*is_enabled) (struct regulator_dev *);
+
+	int (*list_voltage) (struct regulator_dev *, unsigned int);
+	int (*set_voltage_sel) (struct regulator_dev *, unsigned int);
 };
 
 #ifdef CONFIG_OFDEVICE
@@ -35,7 +58,15 @@ void regulators_print(void);
 struct regulator *regulator_get(struct device_d *, const char *);
 int regulator_enable(struct regulator *);
 int regulator_disable(struct regulator *);
-
+int regulator_is_enabled_regmap(struct regulator_dev *);
+int regulator_enable_regmap(struct regulator_dev *);
+int regulator_disable_regmap(struct regulator_dev *);
+int regulator_set_voltage_sel_regmap(struct regulator_dev *, unsigned);
+int regulator_set_voltage(struct regulator *regulator, int min_uV, int max_uV);
+int regulator_map_voltage_linear(struct regulator_dev *rdev,
+				 int min_uV, int max_uV);
+int regulator_list_voltage_linear(struct regulator_dev *rdev,
+				  unsigned int selector);
 #else
 
 static inline struct regulator *regulator_get(struct device_d *dev, const char *id)
@@ -49,6 +80,12 @@ static inline int regulator_enable(struct regulator *r)
 }
 
 static inline int regulator_disable(struct regulator *r)
+{
+	return 0;
+}
+
+static inline int regulator_set_voltage(struct regulator *regulator,
+					int min_uV, int max_uV)
 {
 	return 0;
 }

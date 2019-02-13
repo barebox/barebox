@@ -9,6 +9,8 @@
 
 #define IMX8MQ_ROM_VERSION_A0	0x800
 #define IMX8MQ_ROM_VERSION_B0	0x83C
+#define IMX8MQ_OCOTP_VERSION_B1 0x40
+#define IMX8MQ_OCOTP_VERSION_B1_MAGIC	0xff0055aa
 
 #define MX8MQ_ANATOP_DIGPROG	0x6c
 
@@ -20,21 +22,28 @@
 static inline int imx8mq_cpu_revision(void)
 {
 	void __iomem *anatop = IOMEM(MX8MQ_ANATOP_BASE_ADDR);
+	void __iomem *ocotp = IOMEM(MX8MQ_OCOTP_BASE_ADDR);
 	uint32_t revision = FIELD_GET(DIGPROG_MINOR,
 				      readl(anatop + MX8MQ_ANATOP_DIGPROG));
+	uint32_t rom_version;
 
-	if (revision == IMX_CHIP_REV_1_0) {
-		uint32_t rom_version;
-		/*
-		 * For B0 chip, the DIGPROG is not updated, still TO1.0.
-		 * we have to check ROM version further
-		 */
-		rom_version = readl(IOMEM(IMX8MQ_ROM_VERSION_A0));
-		if (rom_version != IMX_CHIP_REV_1_0) {
-			rom_version = readl(IOMEM(IMX8MQ_ROM_VERSION_B0));
-			if (rom_version >= IMX_CHIP_REV_2_0)
-				revision = IMX_CHIP_REV_2_0;
-		}
+	if (revision != IMX_CHIP_REV_1_0)
+		return revision;
+	/*
+	 * For B1 chip we need to check OCOTP
+	 */
+	if (readl(ocotp + IMX8MQ_OCOTP_VERSION_B1) ==
+	    IMX8MQ_OCOTP_VERSION_B1_MAGIC)
+		return IMX_CHIP_REV_2_1;
+	/*
+	 * For B0 chip, the DIGPROG is not updated, still TO1.0.
+	 * we have to check ROM version further
+	 */
+	rom_version = readb(IOMEM(IMX8MQ_ROM_VERSION_A0));
+	if (rom_version != IMX_CHIP_REV_1_0) {
+		rom_version = readb(IOMEM(IMX8MQ_ROM_VERSION_B0));
+		if (rom_version >= IMX_CHIP_REV_2_0)
+			revision = IMX_CHIP_REV_2_0;
 	}
 
 	return revision;

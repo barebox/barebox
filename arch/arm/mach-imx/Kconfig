@@ -173,6 +173,7 @@ config ARCH_IMX7
 	select COMMON_CLK_OF_PROVIDER
 	select ARCH_HAS_FEC_IMX
 	select ARCH_HAS_IMX_GPT
+	select HW_HAS_PCI
 
 config ARCH_IMX8MQ
 	bool
@@ -182,6 +183,7 @@ config ARCH_IMX8MQ
 	select SYS_SUPPORTS_64BIT_KERNEL
 	select COMMON_CLK_OF_PROVIDER
 	select ARCH_HAS_FEC_IMX
+	select HW_HAS_PCI
 
 config ARCH_VF610
 	bool
@@ -395,6 +397,10 @@ config MACH_UDOO
 	bool "Freescale i.MX6 UDOO Board"
 	select ARCH_IMX6
 
+config MACH_UDOO_NEO
+	bool "i.MX6 UDOO Neo Board (full variant)"
+	select ARCH_IMX6SX
+
 config MACH_VARISCITE_MX6
 	bool "Variscite i.MX6 Quad SOM"
 	select ARCH_IMX6
@@ -433,6 +439,13 @@ config MACH_ZII_RDU1
 config MACH_ZII_RDU2
 	bool "ZII i.MX6Q(+) RDU2"
 	select ARCH_IMX6
+
+config MACH_ZII_IMX8MQ_DEV
+	bool "ZII i.MX8MQ based devices"
+	select ARCH_IMX8MQ
+	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
+	select FIRMWARE_IMX8MQ_ATF
+	select ARM_SMCCC
 
 config MACH_ZII_VF610_DEV
 	bool "ZII VF610 Dev Family"

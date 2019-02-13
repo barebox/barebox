@@ -263,6 +263,11 @@ CFG_start_imx6q_sabresd.pblb.imximg = $(board)/freescale-mx6-sabresd/flash-heade
 FILE_barebox-freescale-imx6q-sabresd.img = start_imx6q_sabresd.pblb.imximg
 image-$(CONFIG_MACH_SABRESD) += barebox-freescale-imx6q-sabresd.img
 
+pblb-$(CONFIG_MACH_UDOO_NEO) += start_imx6sx_udoo_neo
+CFG_start_imx6sx_udoo_neo.pblb.imximg = $(board)/udoo-neo/flash-header-mx6sx-udoo-neo_full.imxcfg
+FILE_barebox-udoo-neo.img = start_imx6sx_udoo_neo.pblb.imximg
+image-$(CONFIG_MACH_UDOO_NEO) += barebox-udoo-neo.img
+
 pblb-$(CONFIG_MACH_FREESCALE_IMX6SX_SABRESDB) += start_imx6sx_sabresdb
 CFG_start_imx6sx_sabresdb.pblb.imximg = $(board)/freescale-mx6sx-sabresdb/flash-header-mx6sx-sabresdb.imxcfg
 FILE_barebox-freescale-imx6sx-sabresdb.img = start_imx6sx_sabresdb.pblb.imximg
@@ -549,3 +554,8 @@ pblb-$(CONFIG_MACH_NXP_IMX8MQ_EVK) += start_nxp_imx8mq_evk
 CFG_start_nxp_imx8mq_evk.pblb.imximg = $(board)/nxp-imx8mq-evk/flash-header-imx8mq-evk.imxcfg
 FILE_barebox-nxp-imx8mq-evk.img = start_nxp_imx8mq_evk.pblb.imximg
 image-$(CONFIG_MACH_NXP_IMX8MQ_EVK) += barebox-nxp-imx8mq-evk.img
+
+pblb-$(CONFIG_MACH_ZII_IMX8MQ_DEV) += start_zii_imx8mq_dev
+CFG_start_zii_imx8mq_dev.pblb.imximg = $(board)/zii-imx8mq-dev/flash-header-zii-imx8mq-dev.imxcfg
+FILE_barebox-zii-imx8mq-dev.img = start_zii_imx8mq_dev.pblb.imximg
+image-$(CONFIG_MACH_ZII_IMX8MQ_DEV) += barebox-zii-imx8mq-dev.img

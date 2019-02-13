@@ -43,6 +43,15 @@ struct regulator {
 	struct device_d *dev;
 };
 
+static int regulator_map_voltage(struct regulator_dev *rdev, int min_uV,
+				 int max_uV)
+{
+	if (rdev->desc->ops->list_voltage == regulator_list_voltage_linear)
+		return regulator_map_voltage_linear(rdev, min_uV, max_uV);
+
+	return -ENOSYS;
+}
+
 static int regulator_enable_internal(struct regulator_internal *ri)
 {
 	int ret;
@@ -52,10 +61,10 @@ static int regulator_enable_internal(struct regulator_internal *ri)
 		return 0;
 	}
 
-	if (!ri->rdev->ops->enable)
+	if (!ri->rdev->desc->ops->enable)
 		return -ENOSYS;
 
-	ret = ri->rdev->ops->enable(ri->rdev);
+	ret = ri->rdev->desc->ops->enable(ri->rdev);
 	if (ret)
 		return ret;
 
@@ -74,16 +83,43 @@ static int regulator_disable_internal(struct regulator_internal *ri)
 	if (!ri->enable_count)
 		return -EINVAL;
 
-	if (!ri->rdev->ops->disable)
+	if (!ri->rdev->desc->ops->disable)
 		return -ENOSYS;
 
-	ret = ri->rdev->ops->disable(ri->rdev);
+	ret = ri->rdev->desc->ops->disable(ri->rdev);
 	if (ret)
 		return ret;
 
 	ri->enable_count--;
 
 	return 0;
+}
+
+static int regulator_set_voltage_internal(struct regulator_internal *ri,
+					  int min_uV, int max_uV)
+{
+	struct regulator_dev *rdev = ri->rdev;
+	const struct regulator_ops *ops = rdev->desc->ops;
+	unsigned int selector;
+	int best_val = 0;
+	int ret;
+
+	if (ops->set_voltage_sel) {
+		ret = regulator_map_voltage(rdev, min_uV, max_uV);
+		if (ret >= 0) {
+			best_val = ops->list_voltage(rdev, ret);
+			if (min_uV <= best_val && max_uV >= best_val) {
+				selector = ret;
+				ret = ops->set_voltage_sel(rdev, selector);
+			} else {
+				ret = -EINVAL;
+			}
+		}
+
+		return ret;
+	}
+
+	return -ENOSYS;
 }
 
 static struct regulator_internal * __regulator_register(struct regulator_dev *rd, const char *name)
@@ -191,7 +227,12 @@ static struct regulator_internal *of_regulator_get(struct device_d *dev, const c
 		}
 	}
 
-	ri = ERR_PTR(-ENODEV);
+	/*
+	 * It is possible that regulator we are looking for will be
+	 * added in future initcalls, so, instead of reporting a
+	 * complete failure report probe deferral
+	 */
+	ri = ERR_PTR(-EPROBE_DEFER);
 out:
 	free(propname);
 
@@ -318,6 +359,14 @@ int regulator_disable(struct regulator *r)
 		return 0;
 
 	return regulator_disable_internal(r->ri);
+}
+
+int regulator_set_voltage(struct regulator *r, int min_uV, int max_uV)
+{
+	if (!r)
+		return 0;
+
+	return regulator_set_voltage_internal(r->ri, min_uV, max_uV);
 }
 
 static void regulator_print_one(struct regulator_internal *ri)

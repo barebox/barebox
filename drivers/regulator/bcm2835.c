@@ -24,6 +24,7 @@ static struct regulator_bcm2835 {
 
 	struct device_d *dev;
 	struct regulator_dev rdev;
+	struct regulator_desc rdesc;
 } regs[] = {
 	REG_DEV(BCM2835_MBOX_POWER_DEVID_SDHCI, "bcm2835_mci0"),
 	REG_DEV(BCM2835_MBOX_POWER_DEVID_UART0, "uart0-pl0110"),
@@ -108,7 +109,7 @@ static int regulator_bcm2835_is_enabled(struct regulator_dev *rdev)
 	return msg_pwr->get_power_state.body.resp.state;
 }
 
-static struct regulator_ops bcm2835_ops = {
+const static struct regulator_ops bcm2835_ops = {
 	.enable = regulator_bcm2835_enable,
 	.disable = regulator_bcm2835_disable,
 	.is_enabled = regulator_bcm2835_is_enabled,
@@ -122,7 +123,8 @@ static int regulator_bcm2835_probe(struct device_d *dev)
 	for (i = 0; i < ARRAY_SIZE(regs); i++) {
 		rb = &regs[i];
 
-		rb->rdev.ops = &bcm2835_ops;
+		rb->rdesc.ops = &bcm2835_ops;
+		rb->rdev.desc = &rb->rdesc;
 		rb->dev = dev;
 
 		ret = dev_regulator_register(&rb->rdev, rb->devname, NULL);

@@ -21,9 +21,9 @@
 void nxp_imx8mq_evk_ddr_init(void);
 void nxp_imx8mq_evk_ddr_cfg_phy(void);
 
-#define FW_1D_IMAGE	imx_lpddr4_pmu_train_1d_imem_bin, \
-			imx_lpddr4_pmu_train_1d_dmem_bin
-#define FW_2D_IMAGE	imx_lpddr4_pmu_train_2d_imem_bin, \
-			imx_lpddr4_pmu_train_2d_dmem_bin
+#define FW_1D_IMAGE	lpddr4_pmu_train_1d_imem_bin, \
+			lpddr4_pmu_train_1d_dmem_bin
+#define FW_2D_IMAGE	lpddr4_pmu_train_2d_imem_bin, \
+			lpddr4_pmu_train_2d_dmem_bin
 
 

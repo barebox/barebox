@@ -395,6 +395,13 @@ static void fec_halt(struct eth_device *dev)
 	struct fec_priv *fec = (struct fec_priv *)dev->priv;
 	uint32_t reg;
 
+	/*
+	 * Only halt if fec has been started. Otherwise we would have to wait
+	 * for the timeout below.
+	 */
+	if (!(readl(fec->regs + FEC_ECNTRL) & FEC_ECNTRL_ETHER_EN))
+		return;
+
 	/* issue graceful stop command to the FEC transmitter if necessary */
 	writel(readl(fec->regs + FEC_X_CNTRL) | FEC_ECNTRL_RESET,
 			fec->regs + FEC_X_CNTRL);

@@ -4,12 +4,12 @@
 #
 
 firmware-$(CONFIG_FIRMWARE_IMX_LPDDR4_PMU_TRAIN) += \
-	imx/lpddr4_pmu_train_1d_dmem.bin \
-	imx/lpddr4_pmu_train_1d_imem.bin \
-	imx/lpddr4_pmu_train_2d_dmem.bin \
-	imx/lpddr4_pmu_train_2d_imem.bin
+	lpddr4_pmu_train_1d_dmem.bin \
+	lpddr4_pmu_train_1d_imem.bin \
+	lpddr4_pmu_train_2d_dmem.bin \
+	lpddr4_pmu_train_2d_imem.bin
 
-firmware-$(CONFIG_FIRMWARE_IMX8MQ_ATF) += imx/imx8m-bl31.bin
+firmware-$(CONFIG_FIRMWARE_IMX8MQ_ATF) += imx8mq-bl31.bin
 
 # Create $(fwabs) from $(CONFIG_EXTRA_FIRMWARE_DIR) -- if it doesn't have a
 # leading /, it's relative to $(srctree).

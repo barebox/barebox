@@ -33,13 +33,10 @@ tested on both gig copper and gig fiber boards
 #include <init.h>
 #include <malloc.h>
 #include <linux/pci.h>
+#include <linux/iopoll.h>
 #include <dma.h>
 #include "e1000.h"
-
-static u32 inline virt_to_bus(struct pci_dev *pdev, void *adr)
-{
-	return (u32)adr;
-}
+#include <io-64-nonatomic-lo-hi.h>
 
 #define PCI_VENDOR_ID_INTEL	0x8086
 
@@ -3201,21 +3198,24 @@ static int e1000_sw_init(struct eth_device *edev)
 	return E1000_SUCCESS;
 }
 
-static void fill_rx(struct e1000_hw *hw)
+static int e1000_bd_next_index(int index)
 {
-	volatile struct e1000_rx_desc *rd;
-	volatile u32 *bla;
-	int i;
+	return (index + 1) % 8;
+}
+
+static void e1000_fill_rx(struct e1000_hw *hw)
+{
+	struct e1000_rx_desc *rd = &hw->rx_base[hw->rx_tail];
 
 	hw->rx_last = hw->rx_tail;
-	rd = hw->rx_base + hw->rx_tail;
-	hw->rx_tail = (hw->rx_tail + 1) % 8;
+	hw->rx_tail = e1000_bd_next_index(hw->rx_tail);
 
-	bla = (void *)rd;
-	for (i = 0; i < 4; i++)
-		*bla++ = 0;
-
-	rd->buffer_addr = cpu_to_le64((unsigned long)hw->packet);
+	writeq(hw->packet_dma, &rd->buffer_addr);
+	writew(0, &rd->length);
+	writew(0, &rd->csum);
+	writeb(0, &rd->status);
+	writeb(0, &rd->errors);
+	writew(0, &rd->special);
 
 	e1000_write_reg(hw, E1000_RDT, hw->rx_tail);
 }
@@ -3232,9 +3232,10 @@ static void e1000_configure_tx(struct e1000_hw *hw)
 	unsigned long tctl;
 	unsigned long tipg, tarc;
 	uint32_t ipgr1, ipgr2;
+	const unsigned long tx_base = (unsigned long)hw->tx_base;
 
-	e1000_write_reg(hw, E1000_TDBAL, (unsigned long)hw->tx_base);
-	e1000_write_reg(hw, E1000_TDBAH, 0);
+	e1000_write_reg(hw, E1000_TDBAL, lower_32_bits(tx_base));
+	e1000_write_reg(hw, E1000_TDBAH, upper_32_bits(tx_base));
 
 	e1000_write_reg(hw, E1000_TDLEN, 128);
 
@@ -3350,6 +3351,7 @@ static void e1000_setup_rctl(struct e1000_hw *hw)
 static void e1000_configure_rx(struct e1000_hw *hw)
 {
 	unsigned long rctl, ctrl_ext;
+	const unsigned long rx_base = (unsigned long)hw->rx_base;
 
 	hw->rx_tail = 0;
 	/* make sure receives are disabled while setting up the descriptors */
@@ -3371,8 +3373,8 @@ static void e1000_configure_rx(struct e1000_hw *hw)
 		e1000_write_flush(hw);
 	}
 	/* Setup the Base and Length of the Rx Descriptor Ring */
-	e1000_write_reg(hw, E1000_RDBAL, (unsigned long)hw->rx_base);
-	e1000_write_reg(hw, E1000_RDBAH, 0);
+	e1000_write_reg(hw, E1000_RDBAL, lower_32_bits(rx_base));
+	e1000_write_reg(hw, E1000_RDBAH, upper_32_bits(rx_base));
 
 	e1000_write_reg(hw, E1000_RDLEN, 128);
 
@@ -3390,59 +3392,62 @@ static void e1000_configure_rx(struct e1000_hw *hw)
 
 	e1000_write_reg(hw, E1000_RCTL, rctl);
 
-	fill_rx(hw);
+	e1000_fill_rx(hw);
 }
 
 static int e1000_poll(struct eth_device *edev)
 {
 	struct e1000_hw *hw = edev->priv;
-	volatile struct e1000_rx_desc *rd;
-	uint32_t len;
+	struct e1000_rx_desc *rd = &hw->rx_base[hw->rx_last];
 
-	rd = hw->rx_base + hw->rx_last;
+	if (readb(&rd->status) & E1000_RXD_STAT_DD) {
+		const uint16_t len = readw(&rd->length);
 
-	if (!(le32_to_cpu(rd->status)) & E1000_RXD_STAT_DD)
-		return 0;
+		dma_sync_single_for_cpu(hw->packet_dma, len,
+					DMA_FROM_DEVICE);
 
-	len = le32_to_cpu(rd->length);
+		net_receive(edev, hw->packet, len);
 
-	dma_sync_single_for_cpu((unsigned long)hw->packet, len, DMA_FROM_DEVICE);
+		dma_sync_single_for_device(hw->packet_dma, len,
+					   DMA_FROM_DEVICE);
+		e1000_fill_rx(hw);
+		return 1;
+	}
 
-	net_receive(edev, (uchar *)hw->packet, len);
-	fill_rx(hw);
-	return 1;
+	return 0;
 }
 
 static int e1000_transmit(struct eth_device *edev, void *txpacket, int length)
 {
 	struct e1000_hw *hw = edev->priv;
-	volatile struct e1000_tx_desc *txp;
-	uint64_t to;
+	struct e1000_tx_desc *txp = &hw->tx_base[hw->tx_tail];
+	dma_addr_t dma;
+	uint32_t stat;
+	int ret;
 
-	txp = hw->tx_base + hw->tx_tail;
-	hw->tx_tail = (hw->tx_tail + 1) % 8;
+	hw->tx_tail = e1000_bd_next_index(hw->tx_tail);
 
-	txp->buffer_addr = cpu_to_le64(virt_to_bus(hw->pdev, txpacket));
-	txp->lower.data = cpu_to_le32(hw->txd_cmd | length);
-	txp->upper.data = 0;
+	writel(hw->txd_cmd | length, &txp->lower.data);
+	writel(0, &txp->upper.data);
 
-	dma_sync_single_for_device((unsigned long)txpacket, length, DMA_TO_DEVICE);
+	dma = dma_map_single(hw->dev, txpacket, length, DMA_TO_DEVICE);
+	if (dma_mapping_error(hw->dev, dma))
+		return -EFAULT;
 
+	writeq(dma, &txp->buffer_addr);
 	e1000_write_reg(hw, E1000_TDT, hw->tx_tail);
 
 	e1000_write_flush(hw);
 
-	to = get_time_ns();
-	while (1) {
-		if (le32_to_cpu(txp->upper.data) & E1000_TXD_STAT_DD)
-			break;
-		if (is_timeout(to, MSECOND)) {
-			dev_dbg(hw->dev, "e1000: tx timeout\n");
-			return -ETIMEDOUT;
-		}
-	}
+	ret = readl_poll_timeout(&txp->upper.data,
+				 stat, stat & E1000_TXD_STAT_DD,
+				 MSECOND / USECOND);
+	if (ret)
+		dev_dbg(hw->dev, "e1000: tx timeout\n");
 
-	return 0;
+	dma_unmap_single(hw->dev, dma, length, DMA_TO_DEVICE);
+
+	return ret;
 }
 
 static void e1000_disable(struct eth_device *edev)
@@ -3561,7 +3566,6 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 
 	hw->tx_base = dma_alloc_coherent(16 * sizeof(*hw->tx_base), DMA_ADDRESS_BROKEN);
 	hw->rx_base = dma_alloc_coherent(16 * sizeof(*hw->rx_base), DMA_ADDRESS_BROKEN);
-	hw->packet = dma_alloc_coherent(4096, DMA_ADDRESS_BROKEN);
 
 	edev = &hw->edev;
 
@@ -3569,6 +3573,15 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 	hw->dev = &pdev->dev;
 	pdev->dev.priv = hw;
 	edev->priv = hw;
+
+	hw->packet = dma_alloc(PAGE_SIZE);
+	if (!hw->packet)
+		return -ENOMEM;
+
+	hw->packet_dma = dma_map_single(hw->dev, hw->packet, PAGE_SIZE,
+					DMA_FROM_DEVICE);
+	if (dma_mapping_error(hw->dev, hw->packet_dma))
+		return -EFAULT;
 
 	hw->hw_addr = pci_iomap(pdev, 0);
 

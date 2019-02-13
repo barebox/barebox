@@ -2182,6 +2182,7 @@ struct e1000_hw {
 	struct e1000_tx_desc *tx_base;
 	struct e1000_rx_desc *rx_base;
 	unsigned char *packet;
+	dma_addr_t packet_dma;
 
 	int tx_tail;
 	int rx_tail, rx_last;

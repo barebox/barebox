@@ -1000,7 +1000,8 @@ int32_t e1000_read_eeprom(struct e1000_hw *hw, uint16_t offset,
 		(words > eeprom->word_size - offset) ||
 		(words == 0)) {
 		dev_dbg(hw->dev, "\"words\" parameter out of bounds."
-			"Words = %d, size = %d\n", offset, eeprom->word_size);
+			"Words = %d, size = %d\n", offset,
+			(int)eeprom->word_size);
 		return -E1000_ERR_EEPROM;
 	}
 

@@ -255,6 +255,8 @@ extern int of_platform_populate(struct device_node *root,
 extern struct device_d *of_find_device_by_node(struct device_node *np);
 extern struct device_d *of_device_enable_and_register(struct device_node *np);
 extern struct device_d *of_device_enable_and_register_by_name(const char *name);
+extern struct device_d *of_device_enable_and_register_by_alias(
+							const char *alias);
 
 struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node);
 int of_parse_partitions(struct cdev *cdev, struct device_node *node);
@@ -666,6 +668,12 @@ static inline struct device_d *of_device_enable_and_register(
 
 static inline struct device_d *of_device_enable_and_register_by_name(
 				const char *name)
+{
+	return NULL;
+}
+
+static inline struct device_d *of_device_enable_and_register_by_alias(
+				const char *alias)
 {
 	return NULL;
 }

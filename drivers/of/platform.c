@@ -207,6 +207,25 @@ struct device_d *of_device_enable_and_register_by_name(const char *name)
 }
 EXPORT_SYMBOL(of_device_enable_and_register_by_name);
 
+/**
+ * of_device_enable_and_register_by_alias - Enable and register device by alias
+ * @name: alias of the device node
+ *
+ * Returns pointer to created platform device, or NULL if a device was not
+ * registered. Unavailable devices will not get registered.
+ */
+struct device_d *of_device_enable_and_register_by_alias(const char *alias)
+{
+	struct device_node *node;
+
+	node = of_find_node_by_alias(NULL, alias);
+	if (!node)
+		return NULL;
+
+	return of_device_enable_and_register(node);
+}
+EXPORT_SYMBOL(of_device_enable_and_register_by_alias);
+
 #ifdef CONFIG_ARM_AMBA
 static struct device_d *of_amba_device_create(struct device_node *np)
 {

@@ -75,17 +75,6 @@ static uint32_t pgd_flags_wc;
 
 #define PTE_MASK ((1 << 12) - 1)
 
-static void arm_mmu_not_initialized_error(void)
-{
-	/*
-	 * This means:
-	 * - one of the MMU functions like dma_alloc_coherent
-	 *   or remap_range is called too early, before the MMU is initialized
-	 * - Or the MMU initialization has failed earlier
-	 */
-	panic("MMU not initialized\n");
-}
-
 static bool pgd_type_table(u32 pgd)
 {
 	return (pgd & PMD_TYPE_MASK) == PMD_TYPE_TABLE;
@@ -108,7 +97,7 @@ static u32 *find_pte(unsigned long adr)
 	return &table[(adr >> PAGE_SHIFT) & 0xff];
 }
 
-static void dma_flush_range(void *ptr, size_t size)
+void dma_flush_range(void *ptr, size_t size)
 {
 	unsigned long start = (unsigned long)ptr;
 	unsigned long end = start + size;
@@ -118,8 +107,11 @@ static void dma_flush_range(void *ptr, size_t size)
 		outer_cache.flush_range(start, end);
 }
 
-static void dma_inv_range(unsigned long start, unsigned long end)
+void dma_inv_range(void *ptr, size_t size)
 {
+	unsigned long start = (unsigned long)ptr;
+	unsigned long end = start + size;
+
 	if (outer_cache.inv_range)
 		outer_cache.inv_range(start, end);
 	__dma_inv_range(start, end);
@@ -409,18 +401,9 @@ static void vectors_init(void)
 /*
  * Prepare MMU for usage enable it.
  */
-static int mmu_init(void)
+void __mmu_init(bool mmu_on)
 {
 	struct memory_bank *bank;
-
-	if (list_empty(&memory_banks))
-		/*
-		 * If you see this it means you have no memory registered.
-		 * This can be done either with arm_add_mem_device() in an
-		 * initcall prior to mmu_initcall or via devicetree in the
-		 * memory node.
-		 */
-		panic("MMU: No memory bank found! Cannot continue\n");
 
 	arm_set_cache_functions();
 
@@ -436,7 +419,7 @@ static int mmu_init(void)
 		pte_flags_uncached = PTE_FLAGS_UNCACHED_V4;
 	}
 
-	if (get_cr() & CR_M) {
+	if (mmu_on) {
 		/*
 		 * Early MMU code has already enabled the MMU. We assume a
 		 * flat 1:1 section mapping in this case.
@@ -480,10 +463,7 @@ static int mmu_init(void)
 	}
 
 	__mmu_cache_on();
-
-	return 0;
 }
-mmu_initcall(mmu_init);
 
 /*
  * Clean and invalide caches, disable MMU
@@ -498,55 +478,9 @@ void mmu_disable(void)
 	__mmu_cache_off();
 }
 
-static void *dma_alloc_map(size_t size, dma_addr_t *dma_handle, unsigned flags)
-{
-	void *ret;
-
-	size = PAGE_ALIGN(size);
-	ret = xmemalign(PAGE_SIZE, size);
-	if (dma_handle)
-		*dma_handle = (dma_addr_t)ret;
-
-	dma_inv_range((unsigned long)ret, (unsigned long)ret + size);
-
-	arch_remap_range(ret, size, flags);
-
-	return ret;
-}
-
-void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
-{
-	return dma_alloc_map(size, dma_handle, MAP_UNCACHED);
-}
-
 void *dma_alloc_writecombine(size_t size, dma_addr_t *dma_handle)
 {
 	return dma_alloc_map(size, dma_handle, ARCH_MAP_WRITECOMBINE);
-}
-
-unsigned long virt_to_phys(volatile void *virt)
-{
-	return (unsigned long)virt;
-}
-
-void *phys_to_virt(unsigned long phys)
-{
-	return (void *)phys;
-}
-
-void dma_free_coherent(void *mem, dma_addr_t dma_handle, size_t size)
-{
-	size = PAGE_ALIGN(size);
-	arch_remap_range(mem, size, MAP_CACHED);
-
-	free(mem);
-}
-
-void dma_sync_single_for_cpu(dma_addr_t address, size_t size,
-			     enum dma_data_direction dir)
-{
-	if (dir != DMA_TO_DEVICE)
-		dma_inv_range(address, address + size);
 }
 
 void dma_sync_single_for_device(dma_addr_t address, size_t size,
@@ -561,20 +495,4 @@ void dma_sync_single_for_device(dma_addr_t address, size_t size,
 		if (outer_cache.clean_range)
 			outer_cache.clean_range(address, address + size);
 	}
-}
-
-dma_addr_t dma_map_single(struct device_d *dev, void *ptr, size_t size,
-			  enum dma_data_direction dir)
-{
-	unsigned long addr = (unsigned long)ptr;
-
-	dma_sync_single_for_device(addr, size, dir);
-
-	return addr;
-}
-
-void dma_unmap_single(struct device_d *dev, dma_addr_t addr, size_t size,
-		      enum dma_data_direction dir)
-{
-	dma_sync_single_for_cpu(addr, size, dir);
 }

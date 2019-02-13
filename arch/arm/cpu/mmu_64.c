@@ -37,17 +37,6 @@
 
 static uint64_t *ttb;
 
-static void arm_mmu_not_initialized_error(void)
-{
-	/*
-	 * This means:
-	 * - one of the MMU functions like dma_alloc_coherent
-	 *   or remap_range is called too early, before the MMU is initialized
-	 * - Or the MMU initialization has failed earlier
-	 */
-	panic("MMU not initialized\n");
-}
-
 static void set_table(uint64_t *pt, uint64_t *table_addr)
 {
 	uint64_t val;
@@ -119,7 +108,8 @@ static void split_block(uint64_t *pte, int level)
 	set_table(pte, new_table);
 }
 
-static void map_region(uint64_t virt, uint64_t phys, uint64_t size, uint64_t attr)
+static void create_sections(uint64_t virt, uint64_t phys, uint64_t size,
+			    uint64_t attr)
 {
 	uint64_t block_size;
 	uint64_t block_shift;
@@ -162,11 +152,7 @@ static void map_region(uint64_t virt, uint64_t phys, uint64_t size, uint64_t att
 		}
 
 	}
-}
 
-static void create_sections(uint64_t virt, uint64_t phys, uint64_t size, uint64_t flags)
-{
-	map_region(virt, phys, size, flags);
 	tlb_invalidate();
 }
 
@@ -183,9 +169,8 @@ int arch_remap_range(void *_start, size_t size, unsigned flags)
 		return -EINVAL;
 	}
 
-	map_region((uint64_t)_start, (uint64_t)_start, (uint64_t)size, flags);
-	tlb_invalidate();
-
+	create_sections((uint64_t)_start, (uint64_t)_start, (uint64_t)size,
+			flags);
 	return 0;
 }
 
@@ -198,21 +183,12 @@ static void mmu_enable(void)
 /*
  * Prepare MMU for usage enable it.
  */
-static int mmu_init(void)
+void __mmu_init(bool mmu_on)
 {
 	struct memory_bank *bank;
 	unsigned int el;
 
-	if (list_empty(&memory_banks))
-		/*
-		 * If you see this it means you have no memory registered.
-		 * This can be done either with arm_add_mem_device() in an
-		 * initcall prior to mmu_initcall or via devicetree in the
-		 * memory node.
-		 */
-		panic("MMU: No memory bank found! Cannot continue\n");
-
-	if (get_cr() & CR_M)
+	if (mmu_on)
 		mmu_disable();
 
 	ttb = create_table();
@@ -232,10 +208,7 @@ static int mmu_init(void)
 	create_sections(0x0, 0x0, 0x1000, 0x0);
 
 	mmu_enable();
-
-	return 0;
 }
-mmu_initcall(mmu_init);
 
 void mmu_disable(void)
 {
@@ -252,45 +225,20 @@ void mmu_disable(void)
 	isb();
 }
 
-unsigned long virt_to_phys(volatile void *virt)
+void dma_inv_range(void *ptr, size_t size)
 {
-	return (unsigned long)virt;
+	unsigned long start = (unsigned long)ptr;
+	unsigned long end = start + size - 1;
+
+	v8_inv_dcache_range(start, end);
 }
 
-void *phys_to_virt(unsigned long phys)
+void dma_flush_range(void *ptr, size_t size)
 {
-	return (void *)phys;
-}
+	unsigned long start = (unsigned long)ptr;
+	unsigned long end = start + size - 1;
 
-void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
-{
-	void *ret;
-
-	size = PAGE_ALIGN(size);
-	ret = xmemalign(PAGE_SIZE, size);
-	if (dma_handle)
-		*dma_handle = (dma_addr_t)ret;
-
-	map_region((unsigned long)ret, (unsigned long)ret, size, UNCACHED_MEM);
-	tlb_invalidate();
-
-	return ret;
-}
-
-void dma_free_coherent(void *mem, dma_addr_t dma_handle, size_t size)
-{
-	size = PAGE_ALIGN(size);
-
-	map_region((unsigned long)mem, (unsigned long)mem, size, CACHED_MEM);
-
-	free(mem);
-}
-
-void dma_sync_single_for_cpu(dma_addr_t address, size_t size,
-                             enum dma_data_direction dir)
-{
-	if (dir != DMA_TO_DEVICE)
-		v8_inv_dcache_range(address, address + size - 1);
+	v8_flush_dcache_range(start, end);
 }
 
 void dma_sync_single_for_device(dma_addr_t address, size_t size,
@@ -300,20 +248,4 @@ void dma_sync_single_for_device(dma_addr_t address, size_t size,
 		v8_inv_dcache_range(address, address + size - 1);
 	else
 		v8_flush_dcache_range(address, address + size - 1);
-}
-
-dma_addr_t dma_map_single(struct device_d *dev, void *ptr, size_t size,
-			  enum dma_data_direction dir)
-{
-	unsigned long addr = (unsigned long)ptr;
-
-	dma_sync_single_for_device(addr, size, dir);
-
-	return addr;
-}
-
-void dma_unmap_single(struct device_d *dev, dma_addr_t addr, size_t size,
-		      enum dma_data_direction dir)
-{
-	dma_sync_single_for_cpu(addr, size, dir);
 }

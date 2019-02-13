@@ -29,7 +29,7 @@
 
 #include <abort.h>
 
-static struct pci_ops dw_pcie_ops;
+static const struct pci_ops dw_pcie_ops;
 static unsigned long global_io_offset;
 
 static int dw_pcie_rd_own_conf(struct pcie_port *pp, int where, int size,
@@ -335,15 +335,9 @@ static int dw_pcie_wr_conf(struct pci_bus *bus, u32 devfn,
 	return ret;
 }
 
-static int dw_pcie_res_start(struct pci_bus *bus, resource_size_t res_addr)
-{
-	return res_addr;
-}
-
-static struct pci_ops dw_pcie_ops = {
+static const struct pci_ops dw_pcie_ops = {
 	.read = dw_pcie_rd_conf,
 	.write = dw_pcie_wr_conf,
-	.res_start = dw_pcie_res_start,
 };
 
 static u8 dw_pcie_iatu_unroll_enabled(struct dw_pcie *pci)

@@ -366,15 +366,9 @@ static int tegra_pcie_write_conf(struct pci_bus *bus, unsigned int devfn,
 	return PCIBIOS_SUCCESSFUL;
 }
 
-static int tegra_pcie_res_start(struct pci_bus *bus, resource_size_t res_addr)
-{
-	return res_addr;
-}
-
-static struct pci_ops tegra_pcie_ops = {
+static const struct pci_ops tegra_pcie_ops = {
 	.read = tegra_pcie_read_conf,
 	.write = tegra_pcie_write_conf,
-	.res_start = tegra_pcie_res_start,
 };
 
 static unsigned long tegra_pcie_port_get_pex_ctrl(struct tegra_pcie_port *port)

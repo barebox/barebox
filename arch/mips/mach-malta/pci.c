@@ -131,7 +131,8 @@ static int gt64xxx_pci0_pcibios_write(struct pci_bus *bus, unsigned int devfn,
 }
 
 /* function returns memory address for begin of pci resource */
-static int gt64xxx_res_start(struct pci_bus *bus, resource_size_t res_addr)
+static resource_size_t gt64xxx_res_start(struct pci_bus *bus,
+					 resource_size_t res_addr)
 {
 	return KSEG0ADDR(res_addr);
 }

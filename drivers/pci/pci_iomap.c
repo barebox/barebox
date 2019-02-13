@@ -3,6 +3,7 @@
  *
  * (C) Copyright 2004 Linus Torvalds
  */
+#include <common.h>
 #include <linux/pci.h>
 #include <io.h>
 
@@ -24,6 +25,9 @@ void __iomem *pci_iomap(struct pci_dev *dev, int bar)
 	struct pci_bus *bus = dev->bus;
 	resource_size_t start = pci_resource_start(dev, bar);
 
-	return (void *)bus->ops->res_start(bus, start);
+	if (bus->host->pci_ops->res_start)
+		start = bus->host->pci_ops->res_start(bus, start);
+
+	return IOMEM(start);
 }
 EXPORT_SYMBOL(pci_iomap);

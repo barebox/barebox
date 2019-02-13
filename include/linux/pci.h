@@ -112,7 +112,6 @@ struct pci_dev {
 	 * pcibios_fixup() as necessary.
 	 */
 	unsigned long	base_address[6];
-	unsigned long	rom_address;
 };
 #define	to_pci_dev(dev) container_of(dev, struct pci_dev, dev)
 
@@ -129,18 +128,12 @@ struct pci_bus {
 	struct list_head node;		/* node in list of buses */
 	struct list_head children;	/* list of child buses */
 	struct list_head devices;	/* list of devices on this bus */
-	struct list_head slots;		/* list of slots on this bus */
 	struct resource *resource[PCI_BRIDGE_RESOURCE_NUM];
-	struct list_head resources;	/* address space routed to this bus */
-
-	struct pci_ops	*ops;		/* configuration access functions */
 
 	unsigned char	number;		/* bus number */
 	unsigned char	primary;	/* number of primary bridge */
 	unsigned char	secondary;	/* number of secondary bridge */
 	unsigned char	subordinate;	/* max number of subordinate buses */
-
-	char		name[48];
 };
 
 /* Low-level architecture-dependent routines */
@@ -150,7 +143,7 @@ struct pci_ops {
 	int (*write)(struct pci_bus *bus, unsigned int devfn, int where, int size, u32 val);
 
 	/* return memory address for pci resource */
-	int (*res_start)(struct pci_bus *bus, resource_size_t res_addr);
+	resource_size_t (*res_start)(struct pci_bus *bus, resource_size_t res_addr);
 };
 
 extern struct pci_ops *pci_ops;
@@ -165,7 +158,7 @@ struct pci_controller {
 	struct device_d *parent;
 	struct pci_bus *bus;
 
-	struct pci_ops *pci_ops;
+	const struct pci_ops *pci_ops;
 	struct resource *mem_resource;
 	struct resource *mem_pref_resource;
 	unsigned long mem_offset;
@@ -251,7 +244,6 @@ int pci_register_device(struct pci_dev *pdev);
 
 extern struct list_head pci_root_buses; /* list of all known PCI buses */
 
-extern unsigned int pci_scan_bus(struct pci_bus *bus);
 extern void register_pci_controller(struct pci_controller *hose);
 
 int pci_bus_read_config_byte(struct pci_bus *bus, unsigned int devfn,

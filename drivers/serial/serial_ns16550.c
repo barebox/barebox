@@ -253,6 +253,23 @@ static void ns16550_jz_init_port(struct console_device *cdev)
 	ns16550_serial_init_port(cdev);
 }
 
+#define BCM2836_AUX_CLOCK_ENB 0x3f215004 /* BCM2835 AUX Clock enable register */
+#define BCM2836_AUX_CLOCK_EN_UART BIT(0) /* Bit 0 enables the Miniuart */
+
+static void rpi_init_port(struct console_device *cdev)
+{
+	struct ns16550_priv *priv = to_ns16550_priv(cdev);
+
+	writeb(BCM2836_AUX_CLOCK_EN_UART, BCM2836_AUX_CLOCK_ENB);
+	priv->plat.shift = 2;
+	/*
+	 * We double the clock rate since the 16550 will divide by 16
+	 * (instead of 8 required by the BCM2835 peripheral manual)
+	 */
+	priv->plat.clock = priv->plat.clock*2;
+	ns16550_serial_init_port(cdev);
+}
+
 /*********** Exposed Functions **********************************/
 
 /**
@@ -297,36 +314,36 @@ static int ns16550_tstc(struct console_device *cdev)
 static void ns16550_probe_dt(struct device_d *dev, struct ns16550_priv *priv)
 {
 	struct device_node *np = dev->device_node;
-	u32 width;
+	u32 width = 1;
 
 	if (!IS_ENABLED(CONFIG_OFDEVICE))
 		return;
 
 	of_property_read_u32(np, "clock-frequency", &priv->plat.clock);
 	of_property_read_u32(np, "reg-shift", &priv->plat.shift);
-	if (!of_property_read_u32(np, "reg-io-width", &width))
-		switch (width) {
-		case 1:
-			priv->read_reg = ns16550_read_reg_mmio_8;
-			priv->write_reg = ns16550_write_reg_mmio_8;
-			break;
-		case 2:
-			priv->read_reg = ns16550_read_reg_mmio_16;
-			priv->write_reg = ns16550_write_reg_mmio_16;
-			break;
-		case 4:
-			if (of_device_is_big_endian(np)) {
-				priv->read_reg = ns16550_read_reg_mmio_32be;
-				priv->write_reg = ns16550_write_reg_mmio_32be;
-			} else {
-				priv->read_reg = ns16550_read_reg_mmio_32;
-				priv->write_reg = ns16550_write_reg_mmio_32;
-			}
-			break;
-		default:
-			dev_err(dev, "unsupported reg-io-width (%d)\n",
-				width);
+	of_property_read_u32(np, "reg-io-width", &width);
+	switch (width) {
+	case 1:
+		priv->read_reg = ns16550_read_reg_mmio_8;
+		priv->write_reg = ns16550_write_reg_mmio_8;
+		break;
+	case 2:
+		priv->read_reg = ns16550_read_reg_mmio_16;
+		priv->write_reg = ns16550_write_reg_mmio_16;
+		break;
+	case 4:
+		if (of_device_is_big_endian(np)) {
+			priv->read_reg = ns16550_read_reg_mmio_32be;
+			priv->write_reg = ns16550_write_reg_mmio_32be;
+		} else {
+			priv->read_reg = ns16550_read_reg_mmio_32;
+			priv->write_reg = ns16550_write_reg_mmio_32;
 		}
+		break;
+	default:
+		dev_err(dev, "unsupported reg-io-width (%d)\n",
+			width);
+	}
 }
 
 static struct ns16550_drvdata ns16450_drvdata = {
@@ -350,6 +367,11 @@ static __maybe_unused struct ns16550_drvdata jz_drvdata = {
 
 static __maybe_unused struct ns16550_drvdata tegra_drvdata = {
 	.init_port = ns16550_serial_init_port,
+	.linux_console_name = "ttyS",
+};
+
+static __maybe_unused struct ns16550_drvdata rpi_drvdata = {
+	.init_port = rpi_init_port,
 	.linux_console_name = "ttyS",
 };
 
@@ -526,6 +548,12 @@ static struct of_device_id ns16550_serial_dt_ids[] = {
 	{
 		.compatible = "ingenic,jz4740-uart",
 		.data = &jz_drvdata,
+	},
+#endif
+#if IS_ENABLED(CONFIG_MACH_RPI_COMMON)
+	{
+		.compatible = "brcm,bcm2835-aux-uart",
+		.data = &rpi_drvdata,
 	},
 #endif
 	{

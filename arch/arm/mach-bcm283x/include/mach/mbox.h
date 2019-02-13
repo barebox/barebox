@@ -127,20 +127,12 @@ struct bcm2835_mbox_tag_hdr {
 
 #define BCM2835_MBOX_TAG_GET_BOARD_REV	0x00010002
 
-/* RPi 2 */
-#define BCM2836_BOARD_REV_2_B		0x4
-/* RPi 3 */
-#define BCM2837_BOARD_REV_3_B		0x8
-/* Zero */
-#define BCM2835_BOARD_REV_ZERO		0x9
-/* Zero W */
-#define BCM2835_BOARD_REV_ZERO_W	0xc
-
 /*
- * 0x2..0xf from:
- * http://raspberryalphaomega.org.uk/2013/02/06/automatic-raspberry-pi-board-revision-detection-model-a-b1-and-b2/
- * http://www.raspberrypi.org/forums/viewtopic.php?f=63&t=32733
- * 0x10, 0x11 from swarren's testing
+ * ids
+ * 	https://www.raspberrypi.org/documentation/hardware/raspberrypi/revision-codes/README.md
+ * cpu info
+ * 	https://en.wikipedia.org/wiki/Raspberry_Pi#Processor
+ *
  */
 #define BCM2835_BOARD_REV_B_I2C0_2	0x2
 #define BCM2835_BOARD_REV_B_I2C0_3	0x3
@@ -153,9 +145,27 @@ struct bcm2835_mbox_tag_hdr {
 #define BCM2835_BOARD_REV_B_REV2_d	0xd
 #define BCM2835_BOARD_REV_B_REV2_e	0xe
 #define BCM2835_BOARD_REV_B_REV2_f	0xf
-#define BCM2835_BOARD_REV_B_PLUS	0x10
-#define BCM2835_BOARD_REV_CM		0x11
-#define BCM2835_BOARD_REV_A_PLUS	0x12
+#define BCM2835_BOARD_REV_B_PLUS_10	0x10
+#define BCM2835_BOARD_REV_CM_11		0x11
+#define BCM2835_BOARD_REV_A_PLUS_12	0x12
+#define BCM2835_BOARD_REV_B_PLUS_13	0x13
+#define BCM2835_BOARD_REV_CM_14		0x14
+#define BCM2835_BOARD_REV_A_PLUS_15	0x15
+
+
+#define BCM2835_BOARD_REV_A   		0x00
+#define BCM2835_BOARD_REV_B   		0x01
+#define BCM2835_BOARD_REV_A_PLUS   	0x02
+#define BCM2835_BOARD_REV_B_PLUS   	0x03
+#define BCM2836_BOARD_REV_2_B   	0x04
+#define BCM283x_BOARD_REV_Alpha   	0x05
+#define BCM2835_BOARD_REV_CM1   	0x06
+#define BCM2837_BOARD_REV_3_B   	0x08
+#define BCM2835_BOARD_REV_ZERO   	0x09
+#define BCM2837_BOARD_REV_CM3   	0x0a
+#define BCM2835_BOARD_REV_ZERO_W   	0x0c
+#define BCM2837B0_BOARD_REV_3B_PLUS   	0x0d
+#define BCM2837B0_BOARD_REV_3A_PLUS   	0x0e
 
 struct bcm2835_mbox_tag_get_board_rev {
 	struct bcm2835_mbox_tag_hdr tag_hdr;

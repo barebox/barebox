@@ -23,15 +23,11 @@
 #include <mach/reset-reason.h>
 #include <mach/imx6-anadig.h>
 #include <mach/imx6-regs.h>
-#include <mach/generic.h>
 #include <mach/usb.h>
 #include <asm/mmu.h>
 #include <asm/cache-l2x0.h>
 
 #include <poweroff.h>
-#include <mach/imx6-regs.h>
-#include <mach/clock-imx6.h>
-#include <io.h>
 
 #define CLPCR				0x54
 #define BP_CLPCR_LPM(mode)		((mode) & 0x3)

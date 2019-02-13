@@ -36,8 +36,6 @@
 
 #include <globalvar.h>
 
-#include <linux/micrel_phy.h>
-
 #include <mach/iomux-mx6.h>
 #include <mach/imx6.h>
 

@@ -1,4 +1,0 @@
-#!/bin/sh
-
-global.bootm.oftree=vf610-zii-${global.hostname}.dtb
-

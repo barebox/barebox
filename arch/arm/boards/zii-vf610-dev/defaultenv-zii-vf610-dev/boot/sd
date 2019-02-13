@@ -1,4 +1,13 @@
 #!/bin/sh
 
-global.bootm.image=/mnt/sd/zImage
-global.bootm.oftree=/mnt/sd/${global.bootm.oftree}
+detect mmc1
+
+path="/mnt/mmc1.0"
+
+global.bootm.image="${path}/zImage"
+global.bootm.oftree="${path}/vf610-zii-${global.hostname}.dtb"
+
+initramfs="${path}/initramfs"
+if [ -f "${initramfs}" ]; then
+	global.bootm.initrd="$initramfs"
+fi

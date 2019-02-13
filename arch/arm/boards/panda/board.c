@@ -18,7 +18,6 @@
 #include <asm/mmu.h>
 #include <envfs.h>
 #include <i2c/i2c.h>
-#include <gpio.h>
 #include <led.h>
 
 static int board_revision;

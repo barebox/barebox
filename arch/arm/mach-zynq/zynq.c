@@ -14,7 +14,7 @@
  */
 
 #include <asm/system.h>
-#include <asm-generic/io.h>
+#include <io.h>
 #include <common.h>
 #include <init.h>
 #include <restart.h>

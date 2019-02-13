@@ -474,18 +474,18 @@ int am33xx_of_register_bootdevice(void)
 	switch (bootsource_get()) {
 	case BOOTSOURCE_MMC:
 		if (bootsource_get_instance() == 0)
-			dev = of_device_enable_and_register_by_name("mmc@48060000");
+			dev = of_device_enable_and_register_by_alias("mmc0");
 		else
-			dev = of_device_enable_and_register_by_name("mmc@481d8000");
+			dev = of_device_enable_and_register_by_alias("mmc1");
 		break;
 	case BOOTSOURCE_NAND:
 		dev = of_device_enable_and_register_by_name("gpmc@50000000");
 		break;
 	case BOOTSOURCE_SPI:
-		dev = of_device_enable_and_register_by_name("spi@48030000");
+		dev = of_device_enable_and_register_by_alias("spi0");
 		break;
 	case BOOTSOURCE_NET:
-		dev = of_device_enable_and_register_by_name("ethernet@4a100000");
+		dev = of_device_enable_and_register_by_alias("ethernet0");
 		break;
 	default:
 		/* Use nand fallback */

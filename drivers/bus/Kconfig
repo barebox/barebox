@@ -6,6 +6,14 @@ config BUS_OMAP_GPMC
 	depends on OMAP_GPMC
 	bool "TI OMAP/AM33xx GPMC support"
 
+config TI_SYSC
+	depends on ARCH_OMAP
+	bool "TI sysc interconnect target module driver"
+	default y
+	help
+	  Generic driver for Texas Instruments interconnect target module
+	  found on many TI SoCs.
+
 config IMX_WEIM
 	depends on ARCH_IMX
 	bool "i.MX WEIM driver"

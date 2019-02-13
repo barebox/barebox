@@ -76,7 +76,7 @@ static int do_ratp_mem_md(const char *filename,
 		return -errno;
 
 	map = memmap(fd, PROT_READ);
-	if (map != (void *)-1) {
+	if (map != MAP_FAILED) {
 		memcpy(output, (uint8_t *)(map + start), size);
 		goto out;
 	}

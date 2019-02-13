@@ -1053,6 +1053,7 @@ static int cpsw_probe_dt(struct cpsw_priv *priv)
 {
 	struct device_d *dev = priv->dev;
 	struct device_node *np = dev->device_node, *child;
+	struct device_node *physel;
 	int ret, i = 0;
 
 	ret = of_property_read_u32(np, "slaves", &priv->num_slaves);
@@ -1061,13 +1062,17 @@ static int cpsw_probe_dt(struct cpsw_priv *priv)
 
 	priv->slaves = xzalloc(sizeof(struct cpsw_slave) * priv->num_slaves);
 
-	for_each_child_of_node(np, child) {
-		if (of_device_is_compatible(child, "ti,am3352-cpsw-phy-sel")) {
-			ret = cpsw_phy_sel_init(priv, child);
-			if (ret)
-				return ret;
-		}
+	physel = of_parse_phandle(dev->device_node, "cpsw-phy-sel", 0);
+	if (!physel) {
+		physel = of_get_child_by_name(dev->device_node, "cpsw-phy-sel");
+		if (!physel)
+			dev_err(dev, "Phy mode node not found\n");
+	}
+	ret = cpsw_phy_sel_init(priv, physel);
+	if (ret)
+		return ret;
 
+	for_each_child_of_node(np, child) {
 		if (of_device_is_compatible(child, "ti,davinci_mdio")) {
 			ret = of_pinctrl_select_state_default(child);
 			if (ret)

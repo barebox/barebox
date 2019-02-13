@@ -23,6 +23,10 @@
 #include <mtd/mtd-peb.h>
 #include <string.h>
 
+#ifndef __BAREBOX__
+#include <sys/param.h>
+#endif
+
 #include "state.h"
 
 /*
@@ -161,17 +165,17 @@ static int state_mtd_peb_read(struct state_backend_storage_bucket_circular *circ
 	ret = lseek(circ->fd, offset, SEEK_SET);
 	if (ret < 0) {
 		dev_err(circ->dev, "Failed to set circular read position to %lld, %d\n",
-			offset, ret);
+			(long long) offset, ret);
 		return ret;
 	}
 
-	dev_dbg(circ->dev, "Read state from %ld length %zd\n", offset,
+	dev_dbg(circ->dev, "Read state from %lld length %d\n", (long long) offset,
 		len);
 
 
 	ret = read_full(circ->fd, buf, len);
 	if (ret < 0) {
-		dev_err(circ->dev, "Failed to read circular storage len %zd, %d\n",
+		dev_err(circ->dev, "Failed to read circular storage len %d, %d\n",
 			len, ret);
 		free(buf);
 	}
@@ -189,15 +193,15 @@ static int state_mtd_peb_write(struct state_backend_storage_bucket_circular *cir
 
 	ret = lseek(circ->fd, offset, SEEK_SET);
 	if (ret < 0) {
-		dev_err(circ->dev, "Failed to set position for circular write %ld, %d\n",
-			offset, ret);
+		dev_err(circ->dev, "Failed to set position for circular write %lld, %d\n",
+			(long long) offset, ret);
 		return ret;
 	}
 
 	ret = write_full(circ->fd, buf, len);
 	if (ret < 0) {
-		dev_err(circ->dev, "Failed to write circular to %ld length %zd, %d\n",
-			offset, len, ret);
+		dev_err(circ->dev, "Failed to write circular to %lld length %d, %d\n",
+			(long long) offset, len, ret);
 		return ret;
 	}
 
@@ -207,8 +211,8 @@ static int state_mtd_peb_write(struct state_backend_storage_bucket_circular *cir
 	 */
 	flush(circ->fd);
 
-	dev_dbg(circ->dev, "Written state to offset %ld length %zd data length %zd\n",
-		offset, len, len);
+	dev_dbg(circ->dev, "Written state to offset %lld length %d data length %d\n",
+		(long long) offset, len, len);
 
 	return 0;
 }
@@ -265,8 +269,8 @@ static int state_backend_bucket_circular_read(struct state_backend_storage_bucke
 	if (!buf)
 		return -ENOMEM;
 
-	dev_dbg(circ->dev, "Read state from PEB %u global offset %ld length %zd\n",
-		circ->eraseblock, offset, read_len);
+	dev_dbg(circ->dev, "Read state from PEB %u global offset %lld length %zd\n",
+		circ->eraseblock, (long long) offset, read_len);
 
 	ret = state_mtd_peb_read(circ, buf, offset, read_len);
 	if (ret < 0 && ret != -EUCLEAN) {
@@ -298,7 +302,7 @@ static int state_backend_bucket_circular_write(struct state_backend_storage_buck
 	void *write_buf;
 
 	if (written_length > circ->max_size) {
-		dev_err(circ->dev, "Error, state data too big to be written, to write: %zd, writesize: %zd, length: %zd, available: %zd\n",
+		dev_err(circ->dev, "Error, state data too big to be written, to write: %u, writesize: %zd, length: %zd, available: %zd\n",
 			written_length, circ->writesize, len, circ->max_size);
 		return -E2BIG;
 	}
@@ -345,13 +349,13 @@ static int state_backend_bucket_circular_write(struct state_backend_storage_buck
 
 	ret = state_mtd_peb_write(circ, write_buf, offset, written_length);
 	if (ret < 0 && ret != -EUCLEAN) {
-		dev_err(circ->dev, "Failed to write circular to %ld length %zd, %d\n",
-			offset, written_length, ret);
+		dev_err(circ->dev, "Failed to write circular to %lld length %u, %d\n",
+			(long long) offset, written_length, ret);
 		goto out_free;
 	}
 
-	dev_dbg(circ->dev, "Written state to PEB %u offset %ld length %zd data length %zd\n",
-		circ->eraseblock, offset, written_length, len);
+	dev_dbg(circ->dev, "Written state to PEB %u offset %lld length %u data length %zd\n",
+		circ->eraseblock, (long long) offset, written_length, len);
 
 out_free:
 	free(write_buf);
@@ -445,8 +449,8 @@ static int bucket_circular_is_block_bad(struct state_backend_storage_bucket_circ
 
 	ret = ioctl(circ->fd, MEMGETBADBLOCK, &offs);
 	if (ret < 0)
-		dev_err(circ->dev, "Failed to use ioctl to check for bad block at offset %ld, %d\n",
-			offs, ret);
+		dev_err(circ->dev, "Failed to use ioctl to check for bad block at offset %lld, %d\n",
+			(long long) offs, ret);
 
 	return ret;
 }

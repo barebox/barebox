@@ -290,6 +290,7 @@ int readline(const char *prompt, char *buf, int len)
 			insert = !insert;
 			break;
 		case BB_KEY_ERASE_LINE:
+		case CTL_CH('u'):
 			BEGINNING_OF_LINE();
 			ERASE_TO_EOL();
 			break;

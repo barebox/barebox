@@ -224,39 +224,78 @@ int memory_bank_first_find_space(resource_size_t *retstart,
 
 #ifdef CONFIG_OFTREE
 
-static int of_memory_fixup(struct device_node *node, void *unused)
+static int of_memory_fixup(struct device_node *root, void *unused)
 {
 	struct memory_bank *bank;
 	int err;
-	int addr_cell_len, size_cell_len, len = 0;
-	struct device_node *memnode;
-	u8 tmp[16 * 16]; /* Up to 64-bit address + 64-bit size */
+	int addr_cell_len, size_cell_len;
+	struct device_node *memnode, *tmp, *np;
+	char *memnode_name;
 
-	memnode = of_create_node(node, "/memory");
-	if (!memnode)
-		return -ENOMEM;
+	/*
+	 * Since kernel 4.16 the memory node got a @<reg> suffix. To support
+	 * the old and the new style delete any found memory node and add it
+	 * again to be sure that the memory node exists only once. It shouldn't
+	 * bother older kernels if the memory node has this suffix so adding it
+	 * following the new style.
+	 */
 
-	err = of_property_write_string(memnode, "device_type", "memory");
-	if (err)
-		return err;
+	for_each_child_of_node_safe(root, tmp, np) {
+		const char *device_type;
 
-	addr_cell_len = of_n_addr_cells(memnode);
-	size_cell_len = of_n_size_cells(memnode);
+		err = of_property_read_string(np, "device_type", &device_type);
+		if (err || of_node_cmp("memory", device_type))
+			continue;
+
+		/* delete every found memory node */
+		of_delete_node(np);
+	}
+
+	addr_cell_len = of_n_addr_cells(root);
+	size_cell_len = of_n_size_cells(root);
 
 	for_each_memory_bank(bank) {
-		of_write_number(tmp + len, bank->start, addr_cell_len);
+		u8 tmp[16]; /* Up to 64-bit address + 64-bit size */
+		int len = 0;
+
+		/* Create a /memory node for each bank */
+		memnode_name = basprintf("/memory@%lx", bank->start);
+		if (!memnode_name) {
+			err = -ENOMEM;
+			goto err_out;
+		}
+
+		memnode = of_create_node(root, memnode_name);
+		if (!memnode) {
+			err = -ENOMEM;
+			goto err_free;
+		}
+
+		err = of_property_write_string(memnode, "device_type",
+					       "memory");
+		if (err)
+			goto err_free;
+
+		of_write_number(tmp, bank->start, addr_cell_len);
 		len += addr_cell_len * 4;
 		of_write_number(tmp + len, bank->size, size_cell_len);
 		len += size_cell_len * 4;
-	}
 
-	err = of_set_property(memnode, "reg", tmp, len, 1);
-	if (err) {
-		pr_err("could not set reg %s.\n", strerror(-err));
-		return err;
+		err = of_set_property(memnode, "reg", tmp, len, 1);
+		if (err) {
+			pr_err("could not set reg %s.\n", strerror(-err));
+			goto err_free;
+		}
+
+		free(memnode_name);
 	}
 
 	return 0;
+
+err_free:
+	free(memnode_name);
+err_out:
+	return err;
 }
 
 static int of_register_memory_fixup(void)

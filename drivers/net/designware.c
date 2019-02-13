@@ -328,24 +328,48 @@ static int dwc_ether_rx(struct eth_device *dev)
 
 	u32 status = desc_p->txrx_status;
 	int length = 0;
+	int ret = 0;
 
 	/* Check  if the owner is the CPU */
 	if (status & DESC_RXSTS_OWNBYDMA)
 		return 0;
 
-	length = (status & DESC_RXSTS_FRMLENMSK) >>
-		 DESC_RXSTS_FRMLENSHFT;
+	if ((status & (DESC_RXSTS_ERROR | DESC_RXSTS_DAFILTERFAIL |
+		       DESC_RXSTS_SAFILTERFAIL)) ||
+	    (status & (DESC_RXSTS_RXIPC_GIANTFRAME |
+		       DESC_RXSTS_RXFRAMEETHER)) ==
+	    DESC_RXSTS_RXIPC_GIANTFRAME) {
+		/* Error in packet - discard it */
+		dev_warn(&dev->dev, "Rx error status (%x)\n",
+			 status & (DESC_RXSTS_DAFILTERFAIL |
+				   DESC_RXSTS_ERROR |
+				   DESC_RXSTS_RXTRUNCATED |
+				   DESC_RXSTS_SAFILTERFAIL |
+				   DESC_RXSTS_RXIPC_GIANTFRAME |
+				   DESC_RXSTS_RXDAMAGED |
+				   DESC_RXSTS_RXIPC_GIANT |
+				   DESC_RXSTS_RXCOLLISION |
+				   DESC_RXSTS_RXFRAMEETHER |
+				   DESC_RXSTS_RXWATCHDOG |
+				   DESC_RXSTS_RXMIIERROR |
+				   DESC_RXSTS_RXCRC));
+		ret = -EIO;
+	} else {
+		length = (status & DESC_RXSTS_FRMLENMSK) >>
+			 DESC_RXSTS_FRMLENSHFT;
+
+		dma_sync_single_for_cpu((unsigned long)desc_p->dmamac_addr,
+					length, DMA_FROM_DEVICE);
+		net_receive(dev, desc_p->dmamac_addr, length);
+		dma_sync_single_for_device((unsigned long)desc_p->dmamac_addr,
+					   length, DMA_FROM_DEVICE);
+		ret = length;
+	}
 
 	/*
 	 * Make the current descriptor valid again and go to
 	 * the next one
 	 */
-	dma_sync_single_for_cpu((unsigned long)desc_p->dmamac_addr, length,
-				DMA_FROM_DEVICE);
-	net_receive(dev, desc_p->dmamac_addr, length);
-	dma_sync_single_for_device((unsigned long)desc_p->dmamac_addr, length,
-				   DMA_FROM_DEVICE);
-
 	desc_p->txrx_status |= DESC_RXSTS_OWNBYDMA;
 
 	/* Test the wrap-around condition. */
@@ -354,7 +378,7 @@ static int dwc_ether_rx(struct eth_device *dev)
 
 	priv->rx_currdescnum = desc_num;
 
-	return length;
+	return ret;
 }
 
 static void dwc_ether_halt (struct eth_device *dev)

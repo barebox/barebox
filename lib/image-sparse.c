@@ -60,7 +60,7 @@ struct sparse_image_ctx {
 	uint32_t fill_val;
 };
 
-int sparse_seek(struct sparse_image_ctx *si)
+static int sparse_seek(struct sparse_image_ctx *si)
 {
 	unsigned int chunk_data_sz, payload;
 	loff_t offs;

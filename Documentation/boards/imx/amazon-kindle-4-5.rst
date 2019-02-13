@@ -36,13 +36,15 @@ USB bootloader mode by the SoC microcode:
 1. Connect the Kindle to your host computer with a USB cable.
 2. Power down the device by holding the power button until the power LED goes
    dark (about 10 seconds).
-4. Hold the power button, and hold down a device-specific special key:
+3. Hold the power button, and hold down a device-specific special key:
+
    * the fiveway down button on the model D01100
    * the home button on model D01200
+
 4. Then release the power button, but still hold the special key.
 5. A new USB device named ``NS Blank CODEX`` should appear on your host computer.
    You can now release the special button.
-7. Finally, upload barebox to the Kindle by using:
+6. Finally, upload barebox to the Kindle by using:
 
    .. code-block:: console
 

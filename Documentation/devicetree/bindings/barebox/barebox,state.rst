@@ -52,7 +52,7 @@ Optional Properties
   ``circular`` or ``noncircular``. If the backend memory needs to be erased
   prior a write it defaults to the ``circular`` storage backend type, for backend
   memories like RAMs or EEPROMs it defaults to the ``direct`` storage backend type.
-* ``algo``: A HMAC algorithm used to detect manipulation of the data
+* ``algo``: An HMAC algorithm used to detect manipulation of the data
   or header, sensible values follow this pattern ``hmac(<HASH>)``,
   e.g. ``hmac(sha256)``. Only available for the ``backend-type`` ``raw``.
 * ``keep-previous-content``: Check if a the bucket meta magic field contains

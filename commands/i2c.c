@@ -24,19 +24,19 @@
 
 static void i2c_probe_range(struct i2c_adapter *adapter, int startaddr, int stopaddr)
 {
-	struct i2c_client client = {};
 	int addr;
-	int ret;
-	u8 reg;
-
-	client.adapter = adapter;
 
 	printf("probing i2c%d range 0x%02x-0x%02x: ", adapter->nr, startaddr, stopaddr);
 	for (addr = startaddr; addr <= stopaddr && !ctrlc(); addr++) {
-		client.addr = addr;
-		ret = i2c_write_reg(&client, 0x00, &reg, 0);
-		if (ret == 0)
+		struct i2c_msg msg = {
+			.addr = addr,
+			.buf = NULL,
+			.len = 0,
+		};
+		int ret = i2c_transfer(adapter, &msg, 1);
+		if (ret == 1)
 			printf("0x%02x ", addr);
+
 	}
 	printf("\n");
 }
@@ -44,7 +44,7 @@ static void i2c_probe_range(struct i2c_adapter *adapter, int startaddr, int stop
 static int do_i2c_probe(int argc, char *argv[])
 {
 	struct i2c_adapter *adapter = NULL;
-	int startaddr = 0, stopaddr = 0x7f;
+	int startaddr = 4, stopaddr = 0x77;
 
 	if (argc > 1) {
 		adapter = i2c_get_adapter(simple_strtoul(argv[1], NULL, 0));
@@ -57,12 +57,14 @@ static int do_i2c_probe(int argc, char *argv[])
 	if (argc > 3)
 		stopaddr = simple_strtol(argv[3], NULL, 0);
 
+	if (stopaddr > 0x7f)
+		stopaddr = 0x7f;
+
+	if (startaddr < 0)
+		startaddr = 0;
 
 	if (startaddr > stopaddr)
 		return COMMAND_ERROR_USAGE;
-
-	if (stopaddr > 0x7F)
-		stopaddr = 0x7F;
 
 	if (adapter) {
 		i2c_probe_range(adapter, startaddr, stopaddr);

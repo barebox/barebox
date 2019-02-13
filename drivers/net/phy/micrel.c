@@ -220,6 +220,7 @@ static int ksz9031_config_init(struct phy_device *phydev)
 		"txd2-skew-ps", "txd3-skew-ps"
 	};
 	static const char *control_skews[2] = {"txen-skew-ps", "rxdv-skew-ps"};
+	int ret;
 
 	if (!of_node && dev->parent->device_node)
 		of_node = dev->parent->device_node;
@@ -240,9 +241,40 @@ static int ksz9031_config_init(struct phy_device *phydev)
 		ksz9031_of_load_skew_values(phydev, of_node,
 				MII_KSZ9031RN_TX_DATA_PAD_SKEW, 4,
 				tx_data_skews, 4);
+
+		/* Silicon Errata Sheet (DS80000691D or DS80000692D):
+		 * When the device links in the 1000BASE-T slave mode only,
+		 * the optional 125MHz reference output clock (CLK125_NDO)
+		 * has wide duty cycle variation.
+		 *
+		 * The optional CLK125_NDO clock does not meet the RGMII
+		 * 45/55 percent (min/max) duty cycle requirement and therefore
+		 * cannot be used directly by the MAC side for clocking
+		 * applications that have setup/hold time requirements on
+		 * rising and falling clock edges.
+		 *
+		 * Workaround:
+		 * Force the phy to be the master to receive a stable clock
+		 * which meets the duty cycle requirement.
+		 */
+		if (of_property_read_bool(of_node, "micrel,force-master")) {
+			ret = phy_read(phydev, MII_CTRL1000);
+			if (ret < 0)
+				goto err_force_master;
+
+			/* enable master mode, config & prefer master */
+			ret |= CTL1000_ENABLE_MASTER | CTL1000_AS_MASTER;
+			ret = phy_write(phydev, MII_CTRL1000, ret);
+			if (ret < 0)
+				goto err_force_master;
+		}
 	}
 
 	return ksz9031_center_flp_timing(phydev);
+
+err_force_master:
+	dev_err(dev, "failed to force the phy to master mode\n");
+	return ret;
 }
 
 #define KSZ8873MLL_GLOBAL_CONTROL_4	0x06

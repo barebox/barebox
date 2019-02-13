@@ -6,7 +6,7 @@ struct state;
 struct mtd_info_user;
 
 enum state_flags {
-	STATE_FLAG_NO_AUTHENTIFICATION = (1 << 0),
+	STATE_FLAG_NO_AUTHENTICATION = (1 << 0),
 };
 
 enum state_variable_type {

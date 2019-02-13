@@ -2,6 +2,9 @@
 
 path="/mnt/tftp"
 
+# global.net.server and global.hostname may be set by DHCP, so trigger it first
+ifup -a
+
 global.bootm.image="${path}/${global.user}-linux-${global.hostname}"
 
 oftree="${path}/${global.user}-oftree-${global.hostname}"
@@ -15,13 +18,11 @@ if [ $? != 0 ]; then
 	exit 1
 fi
 
-nfsroot="${nfsserver}:/home/${global.user}/nfsroot/${global.hostname}"
-
-ip_route_get -b ${global.net.server} global.linux.bootargs.dyn.ip
-
 initramfs="${path}/${global.user}-initramfs-${global.hostname}"
 if [ -f "${initramfs}" ]; then
 	global.bootm.initrd="$initramfs"
 else
+	nfsroot="${nfsserver}:/home/${global.user}/nfsroot/${global.hostname}"
+	ip_route_get -b ${global.net.server} global.linux.bootargs.dyn.ip
 	global.linux.bootargs.dyn.root="root=/dev/nfs nfsroot=$nfsroot,v3,tcp"
 fi

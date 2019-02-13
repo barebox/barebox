@@ -157,7 +157,7 @@ uint32_t crc32(uint32_t crc, void *_buf, int length)
 	return crc;
 }
 
-/* Create an ARM relative branch instuction 
+/* Create an ARM relative branch instuction
  * branch is where the instruction will be placed and dest points to where
  * it should branch too. */
 static void branch(uint8_t *branch, uint8_t *dest)

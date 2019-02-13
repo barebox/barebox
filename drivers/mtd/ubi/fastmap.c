@@ -1051,7 +1051,8 @@ int ubi_fastmap_init_checkmap(struct ubi_volume *vol, int leb_count)
 
 void ubi_fastmap_destroy_checkmap(struct ubi_volume *vol)
 {
-	kfree(vol->checkmap);
+	if (vol)
+		kfree(vol->checkmap);
 }
 
 /**

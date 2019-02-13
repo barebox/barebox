@@ -128,7 +128,7 @@ int state_load(struct state *state)
 
 int state_load_no_auth(struct state *state)
 {
-	return state_do_load(state, STATE_FLAG_NO_AUTHENTIFICATION);
+	return state_do_load(state, STATE_FLAG_NO_AUTHENTICATION);
 }
 
 static int state_format_init(struct state *state, const char *backend_format,
@@ -596,6 +596,8 @@ struct state *state_new_from_node(struct device_node *node, bool readonly)
 	const char *alias;
 	uint32_t stridesize;
 	struct device_node *partition_node;
+	off_t offset = 0;
+	size_t size = 0;
 
 	alias = of_alias_get(node);
 	if (!alias) {
@@ -614,7 +616,11 @@ struct state *state_new_from_node(struct device_node *node, bool readonly)
 		goto out_release_state;
 	}
 
+#ifdef __BAREBOX__
 	ret = of_find_path_by_node(partition_node, &state->backend_path, 0);
+#else
+	ret = of_get_devicepath(partition_node, &state->backend_path, &offset, &size);
+#endif
 	if (ret) {
 		if (ret != -EPROBE_DEFER)
 			dev_err(&state->dev, "state failed to parse path to backend: %s\n",
@@ -645,8 +651,8 @@ struct state *state_new_from_node(struct device_node *node, bool readonly)
 	if (ret)
 		goto out_release_state;
 
-	ret = state_storage_init(state, state->backend_path, 0,
-				 0, stridesize, storage_type);
+	ret = state_storage_init(state, state->backend_path, offset,
+				 size, stridesize, storage_type);
 	if (ret)
 		goto out_release_state;
 

@@ -647,7 +647,6 @@ within the EEPROM.
 			};
 		};
 	};
-};
 
 With this 'backend' definition it's possible to define the *state* variable set
 content, its backend-type and *state* variable layout.

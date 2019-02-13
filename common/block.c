@@ -38,6 +38,11 @@ struct chunk {
 
 #define BUFSIZE (PAGE_SIZE * 4)
 
+static int writebuffer_io_len(struct block_device *blk, struct chunk *chunk)
+{
+	return min(blk->rdbufsize, blk->num_blocks - chunk->block_start);
+}
+
 /*
  * Write all dirty chunks back to the device
  */
@@ -51,7 +56,9 @@ static int writebuffer_flush(struct block_device *blk)
 
 	list_for_each_entry(chunk, &blk->buffered_blocks, list) {
 		if (chunk->dirty) {
-			ret = blk->ops->write(blk, chunk->data, chunk->block_start, blk->rdbufsize);
+			ret = blk->ops->write(blk, chunk->data,
+					      chunk->block_start,
+					      writebuffer_io_len(blk, chunk));
 			if (ret < 0)
 				return ret;
 
@@ -76,7 +83,8 @@ static struct chunk *chunk_get_cached(struct block_device *blk, int block)
 	list_for_each_entry(chunk, &blk->buffered_blocks, list) {
 		if (block >= chunk->block_start &&
 				block < chunk->block_start + blk->rdbufsize) {
-			debug("%s: found %d in %d\n", __func__, block, chunk->num);
+			dev_dbg(blk->dev, "%s: found %d in %d\n", __func__,
+				block, chunk->num);
 			/*
 			 * move most recently used entry to the head of the list
 			 */
@@ -117,21 +125,19 @@ static struct chunk *get_chunk(struct block_device *blk)
 		/* use last entry which is the most unused */
 		chunk = list_last_entry(&blk->buffered_blocks, struct chunk, list);
 		if (chunk->dirty) {
-			size_t num_blocks = min(blk->rdbufsize,
-					blk->num_blocks - chunk->block_start);
-			ret = blk->ops->write(blk, chunk->data, chunk->block_start,
-					      num_blocks);
+			ret = blk->ops->write(blk, chunk->data,
+					      chunk->block_start,
+					      writebuffer_io_len(blk, chunk));
 			if (ret < 0)
 				return ERR_PTR(ret);
 
 			chunk->dirty = 0;
 		}
-
-		list_del(&chunk->list);
 	} else {
 		chunk = list_first_entry(&blk->idle_blocks, struct chunk, list);
-		list_del(&chunk->list);
 	}
+
+	list_del(&chunk->list);
 
 	return chunk;
 }
@@ -144,7 +150,6 @@ static struct chunk *get_chunk(struct block_device *blk)
 static int block_cache(struct block_device *blk, int block)
 {
 	struct chunk *chunk;
-	size_t num_blocks;
 	int ret;
 
 	chunk = get_chunk(blk);
@@ -153,12 +158,11 @@ static int block_cache(struct block_device *blk, int block)
 
 	chunk->block_start = block & ~blk->blkmask;
 
-	debug("%s: %d to %d\n", __func__, chunk->block_start,
-			chunk->num);
+	dev_dbg(blk->dev, "%s: %d to %d\n", __func__, chunk->block_start,
+		chunk->num);
 
-	num_blocks = min(blk->rdbufsize, blk->num_blocks - chunk->block_start);
-
-	ret = blk->ops->read(blk, chunk->data, chunk->block_start, num_blocks);
+	ret = blk->ops->read(blk, chunk->data, chunk->block_start,
+			     writebuffer_io_len(blk, chunk));
 	if (ret) {
 		list_add_tail(&chunk->list, &blk->idle_blocks);
 		return ret;
@@ -329,19 +333,14 @@ static ssize_t block_op_write(struct cdev *cdev, const void *buf, size_t count,
 }
 #endif
 
-static int block_op_close(struct cdev *cdev)
-{
-	struct block_device *blk = cdev->priv;
-
-	return writebuffer_flush(blk);
-}
-
 static int block_op_flush(struct cdev *cdev)
 {
 	struct block_device *blk = cdev->priv;
 
 	return writebuffer_flush(blk);
 }
+
+static int block_op_close(struct cdev *cdev) __alias(block_op_flush);
 
 static struct cdev_operations block_ops = {
 	.read	= block_op_read,
@@ -368,8 +367,8 @@ int blockdevice_register(struct block_device *blk)
 	INIT_LIST_HEAD(&blk->idle_blocks);
 	blk->blkmask = blk->rdbufsize - 1;
 
-	debug("%s: rdbufsize: %d blockbits: %d blkmask: 0x%08x\n", __func__, blk->rdbufsize, blk->blockbits,
-			blk->blkmask);
+	dev_dbg(blk->dev, "rdbufsize: %d blockbits: %d blkmask: 0x%08x\n",
+		blk->rdbufsize, blk->blockbits, blk->blkmask);
 
 	for (i = 0; i < 32; i++) {
 		struct chunk *chunk = xzalloc(sizeof(*chunk));

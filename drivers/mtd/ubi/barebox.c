@@ -151,7 +151,7 @@ static int ubi_volume_cdev_close(struct cdev *cdev)
 	return 0;
 }
 
-static loff_t ubi_volume_cdev_lseek(struct cdev *cdev, loff_t ofs)
+static int ubi_volume_cdev_lseek(struct cdev *cdev, loff_t ofs)
 {
 	struct ubi_volume_cdev_priv *priv = cdev->priv;
 
@@ -159,7 +159,7 @@ static loff_t ubi_volume_cdev_lseek(struct cdev *cdev, loff_t ofs)
 	if (priv->written)
 		return -EINVAL;
 
-	return ofs;
+	return 0;
 }
 
 static int ubi_volume_cdev_truncate(struct cdev *cdev, size_t size)

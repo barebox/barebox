@@ -231,13 +231,6 @@ static int squashfs_read(struct device_d *_dev, FILE *f, void *buf,
 	return insize;
 }
 
-static loff_t squashfs_lseek(struct device_d *dev, FILE *f, loff_t pos)
-{
-	f->pos = pos;
-
-	return pos;
-}
-
 struct squashfs_dir {
 	struct file file;
 	struct dentry dentry;
@@ -253,7 +246,6 @@ static struct fs_driver_d squashfs_driver = {
 	.open		= squashfs_open,
 	.close		= squashfs_close,
 	.read		= squashfs_read,
-	.lseek		= squashfs_lseek,
 	.type		= filetype_squashfs,
 	.drv = {
 		.probe = squashfs_probe,

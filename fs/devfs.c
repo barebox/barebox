@@ -57,18 +57,18 @@ static int devfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t s
 	return cdev_write(cdev, buf, size, f->pos, f->flags);
 }
 
-static loff_t devfs_lseek(struct device_d *_dev, FILE *f, loff_t pos)
+static int devfs_lseek(struct device_d *_dev, FILE *f, loff_t pos)
 {
 	struct cdev *cdev = f->priv;
-	loff_t ret = -1;
+	int ret;
 
-	if (cdev->ops->lseek)
+	if (cdev->ops->lseek) {
 		ret = cdev->ops->lseek(cdev, pos + cdev->offset);
+		if (ret < 0)
+			return ret;
+	}
 
-	if (ret != -1)
-		f->pos = pos;
-
-	return ret - cdev->offset;
+	return 0;
 }
 
 static int devfs_erase(struct device_d *_dev, FILE *f, loff_t count, loff_t offset)
@@ -168,18 +168,14 @@ static int devfs_ioctl(struct device_d *_dev, FILE *f, int request, void *buf)
 	return cdev_ioctl(cdev, request, buf);
 }
 
-static int devfs_truncate(struct device_d *dev, FILE *f, ulong size)
+static int devfs_truncate(struct device_d *dev, FILE *f, loff_t size)
 {
 	struct cdev *cdev = f->priv;
 
 	if (cdev->ops->truncate)
 		return cdev->ops->truncate(cdev, size);
 
-	if (f->fsdev->dev.num_resources < 1)
-		return -ENOSPC;
-	if (size > resource_size(&f->fsdev->dev.resource[0]))
-		return -ENOSPC;
-	return 0;
+	return -EPERM;
 }
 
 static struct inode *devfs_alloc_inode(struct super_block *sb)

@@ -100,7 +100,6 @@ static ssize_t mc34704_write(struct cdev *cdev, const void *_buf, size_t count,
 }
 
 static struct cdev_operations mc34704_fops = {
-	.lseek	= dev_lseek_default,
 	.read	= mc34704_read,
 	.write	= mc34704_write,
 };

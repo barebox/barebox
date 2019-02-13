@@ -77,7 +77,7 @@ static int ratpfs_rm(struct device_d __always_unused *dev,
 }
 
 static int ratpfs_truncate(struct device_d __always_unused *dev,
-			  FILE *f, ulong size)
+			  FILE *f, loff_t size)
 {
 	int len_tx = 1 /* type */
 		+ 4 /* handle */
@@ -284,14 +284,6 @@ out:
 	return ret;
 }
 
-static loff_t ratpfs_lseek(struct device_d __always_unused *dev,
-			  FILE *f, loff_t pos)
-{
-	pr_debug("%s\n", __func__);
-	f->pos = pos;
-	return f->pos;
-}
-
 static DIR* ratpfs_opendir(struct device_d __always_unused *dev,
 			  const char *pathname)
 {
@@ -450,7 +442,6 @@ static struct fs_driver_d ratpfs_driver = {
 	.open      = ratpfs_open,
 	.close     = ratpfs_close,
 	.read      = ratpfs_read,
-	.lseek     = ratpfs_lseek,
 	.opendir   = ratpfs_opendir,
 	.readdir   = ratpfs_readdir,
 	.closedir  = ratpfs_closedir,

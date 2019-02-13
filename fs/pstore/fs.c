@@ -172,13 +172,13 @@ static int pstore_read(struct device_d *dev, FILE *file, void *buf,
 	return insize;
 }
 
-static loff_t pstore_lseek(struct device_d *dev, FILE *file, loff_t pos)
+static int pstore_lseek(struct device_d *dev, FILE *file, loff_t pos)
 {
 	struct pstore_private *d = file->priv;
 
 	d->pos = pos;
 
-	return pos;
+	return 0;
 }
 
 static DIR *pstore_opendir(struct device_d *dev, const char *pathname)

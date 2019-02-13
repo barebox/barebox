@@ -63,7 +63,6 @@ static ssize_t rng_dev_read(struct cdev *cdev, void *buf, size_t size,
 
 static struct cdev_operations rng_chrdev_ops = {
 	.read  = rng_dev_read,
-	.lseek = dev_lseek_default,
 };
 
 static int hwrng_register_cdev(struct hwrng *rng)

@@ -260,7 +260,6 @@ out_up:
 static struct cdev_operations ds2431_ops = {
 	.read	= ds2431_cdev_read,
 	.write	= ds2431_cdev_write,
-	.lseek	= dev_lseek_default,
 };
 
 static int ds2431_probe(struct w1_device *dev)

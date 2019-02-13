@@ -166,12 +166,6 @@ static int cramfs_read(struct device_d *_dev, FILE *f, void *buf, size_t size)
 	return cramfs_read_file(f->f_inode, f->pos, buf, size);
 }
 
-static loff_t cramfs_lseek(struct device_d *dev, FILE *f, loff_t pos)
-{
-	f->pos = pos;
-	return f->pos;
-}
-
 #if 0
 static int cramfs_info (struct device_d *dev)
 {
@@ -491,7 +485,6 @@ static void cramfs_remove(struct device_d *dev)
 
 static struct fs_driver_d cramfs_driver = {
 	.read		= cramfs_read,
-	.lseek		= cramfs_lseek,
 	.drv = {
 		.probe = cramfs_probe,
 		.remove = cramfs_remove,

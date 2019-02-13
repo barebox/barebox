@@ -85,7 +85,6 @@ static ssize_t nvmem_cdev_write(struct cdev *cdev, const void *buf, size_t count
 static struct cdev_operations nvmem_chrdev_ops = {
 	.read  = nvmem_cdev_read,
 	.write  = nvmem_cdev_write,
-	.lseek = dev_lseek_default,
 };
 
 static int nvmem_register_cdev(struct nvmem_device *nvmem, const char *name)
@@ -96,7 +95,6 @@ static int nvmem_register_cdev(struct nvmem_device *nvmem, const char *name)
 	alias = of_alias_get(dev->device_node);
 
 	nvmem->cdev.name = xstrdup(alias ?: name);
-	nvmem->cdev.flags = DEVFS_IS_CHARACTER_DEV;
 	nvmem->cdev.ops = &nvmem_chrdev_ops;
 	nvmem->cdev.dev = &nvmem->dev;
 	nvmem->cdev.size = nvmem->size;

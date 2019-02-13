@@ -150,7 +150,6 @@ static ssize_t twl_write(struct cdev *cdev, const void *_buf, size_t count,
 }
 
 struct cdev_operations twl_fops = {
-	.lseek	= dev_lseek_default,
 	.read	= twl_read,
 	.write	= twl_write,
 };

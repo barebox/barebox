@@ -34,8 +34,6 @@
 #include <linux/stat.h>
 #include <xfuncs.h>
 
-extern char *mem_rw_buf;
-
 static char *devmem = "/dev/mem";
 
 static int do_memcpy(int argc, char *argv[])
@@ -47,6 +45,7 @@ static int do_memcpy(int argc, char *argv[])
 	int mode = 0;
 	struct stat statbuf;
 	int ret = 0;
+	char *buf;
 
 	if (mem_parse_options(argc, argv, "bwlqs:d:", &mode, &sourcefile,
 			&destfile, NULL) < 0)
@@ -82,12 +81,14 @@ static int do_memcpy(int argc, char *argv[])
 		return 1;
 	}
 
+	buf = xmalloc(RW_BUF_SIZE);
+
 	while (count > 0) {
 		int now, r, w, tmp;
 
 		now = min((loff_t)RW_BUF_SIZE, count);
 
-		r = read(sourcefd, mem_rw_buf, now);
+		r = read(sourcefd, buf, now);
 		if (r < 0) {
 			perror("read");
 			goto out;
@@ -99,7 +100,7 @@ static int do_memcpy(int argc, char *argv[])
 		tmp = 0;
 		now = r;
 		while (now) {
-			w = write(destfd, mem_rw_buf + tmp, now);
+			w = write(destfd, buf + tmp, now);
 			if (w < 0) {
 				perror("write");
 				goto out;
@@ -123,6 +124,7 @@ static int do_memcpy(int argc, char *argv[])
 	}
 
 out:
+	free(buf);
 	close(sourcefd);
 	close(destfd);
 

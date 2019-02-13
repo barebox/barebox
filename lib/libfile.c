@@ -556,8 +556,7 @@ int open_and_lseek(const char *filename, int mode, loff_t pos)
 		}
 	}
 
-	ret = lseek(fd, pos, SEEK_SET);
-	if (ret == -1) {
+	if (lseek(fd, pos, SEEK_SET) != pos) {
 		perror("lseek");
 		close(fd);
 		return -errno;

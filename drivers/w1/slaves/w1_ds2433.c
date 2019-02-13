@@ -159,7 +159,6 @@ out_up:
 static struct cdev_operations ds2433_ops = {
 	.read	= ds2433_cdev_read,
 	.write	= ds2433_cdev_write,
-	.lseek	= dev_lseek_default,
 };
 
 static int ds2433_cdev_create(struct w1_device *dev, int size, int id)

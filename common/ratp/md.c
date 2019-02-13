@@ -59,8 +59,6 @@ struct ratp_bb_md_response {
 	uint8_t  buffer[];
 } __packed;
 
-extern char *mem_rw_buf;
-
 static int do_ratp_mem_md(const char *filename,
 			  loff_t start,
 			  loff_t size,
@@ -70,6 +68,7 @@ static int do_ratp_mem_md(const char *filename,
 	int ret = 0;
 	int fd;
 	void *map;
+	char *buf = NULL;
 
 	fd = open_and_lseek(filename, O_RWSIZE_1 | O_RDONLY, start);
 	if (fd < 0)
@@ -81,10 +80,11 @@ static int do_ratp_mem_md(const char *filename,
 		goto out;
 	}
 
+	buf = xmalloc(RW_BUF_SIZE);
 	t = 0;
 	do {
 		now = min(size, (loff_t)RW_BUF_SIZE);
-		r = read(fd, mem_rw_buf, now);
+		r = read(fd, buf, now);
 		if (r < 0) {
 			ret = -errno;
 			perror("read");
@@ -93,13 +93,14 @@ static int do_ratp_mem_md(const char *filename,
 		if (!r)
 			goto out;
 
-		memcpy(output + t, (uint8_t *)(mem_rw_buf), r);
+		memcpy(output + t, buf, r);
 
 		size  -= r;
 		t     += r;
 	} while (size);
 
 out:
+	free(buf);
 	close(fd);
 
 	return ret;

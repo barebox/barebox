@@ -29,7 +29,6 @@ static struct cdev_operations memops = {
 	.read  = mem_read,
 	.write = mem_write,
 	.memmap = generic_memmap_rw,
-	.lseek = dev_lseek_default,
 };
 
 static int sram_probe(struct device_d *dev)

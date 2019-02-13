@@ -291,7 +291,6 @@ static const struct cdev_operations mtd_raw_fops = {
 	.read		= mtdraw_read,
 	.write		= mtdraw_write,
 	.erase		= mtdraw_erase,
-	.lseek		= dev_lseek_default,
 };
 
 static int add_mtdraw_device(struct mtd_info *mtd, const char *devname, void **priv)

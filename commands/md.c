@@ -34,8 +34,6 @@
 #include <linux/stat.h>
 #include <xfuncs.h>
 
-extern char *mem_rw_buf;
-
 static int do_mem_md(int argc, char *argv[])
 {
 	loff_t	start = 0, size = 0x100;
@@ -46,6 +44,7 @@ static int do_mem_md(int argc, char *argv[])
 	int mode = O_RWSIZE_4;
 	int swab = 0;
 	void *map;
+	void *buf = NULL;
 
 	if (argc < 2)
 		return COMMAND_ERROR_USAGE;
@@ -74,9 +73,11 @@ static int do_mem_md(int argc, char *argv[])
 		goto out;
 	}
 
+	buf = xmalloc(RW_BUF_SIZE);
+
 	do {
 		now = min(size, (loff_t)RW_BUF_SIZE);
-		r = read(fd, mem_rw_buf, now);
+		r = read(fd, buf, now);
 		if (r < 0) {
 			perror("read");
 			goto out;
@@ -84,8 +85,8 @@ static int do_mem_md(int argc, char *argv[])
 		if (!r)
 			goto out;
 
-		if ((ret = memory_display(mem_rw_buf, start, r,
-				mode >> O_RWSIZE_SHIFT, swab)))
+		if ((ret = memory_display(buf, start, r,
+					  mode >> O_RWSIZE_SHIFT, swab)))
 			goto out;
 
 		start += r;
@@ -93,6 +94,7 @@ static int do_mem_md(int argc, char *argv[])
 	} while (size);
 
 out:
+	free(buf);
 	close(fd);
 
 	return ret ? 1 : 0;

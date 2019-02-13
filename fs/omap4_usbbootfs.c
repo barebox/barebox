@@ -57,7 +57,7 @@ static int omap4_usbbootfs_write(
 	return -ENOSYS;
 }
 
-static int omap4_usbbootfs_truncate(struct device_d *dev, FILE *f, ulong size)
+static int omap4_usbbootfs_truncate(struct device_d *dev, FILE *f, loff_t size)
 {
 	return -ENOSYS;
 }
@@ -149,12 +149,6 @@ static int omap4_usbbootfs_read(
 	return size;
 }
 
-static loff_t omap4_usbbootfs_lseek(struct device_d *dev, FILE *f, loff_t pos)
-{
-	f->pos = pos;
-	return pos;
-}
-
 static DIR *omap4_usbbootfs_opendir(struct device_d *dev, const char *pathname)
 {
 	return NULL;
@@ -191,7 +185,6 @@ static struct fs_driver_d omap4_usbbootfs_driver = {
 	.open    = omap4_usbbootfs_open,
 	.close   = omap4_usbbootfs_close,
 	.read    = omap4_usbbootfs_read,
-	.lseek   = omap4_usbbootfs_lseek,
 	.opendir = omap4_usbbootfs_opendir,
 	.stat    = omap4_usbbootfs_stat,
 /*

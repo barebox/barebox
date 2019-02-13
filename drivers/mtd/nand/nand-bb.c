@@ -236,17 +236,16 @@ static int nand_bb_calc_size(struct nand_bb *bb)
 	return 0;
 }
 
-static loff_t nand_bb_lseek(struct cdev *cdev, loff_t __offset)
+static int nand_bb_lseek(struct cdev *cdev, loff_t offset)
 {
 	struct nand_bb *bb = cdev->priv;
 	loff_t raw_pos = 0;
-	uint32_t offset = __offset;
 
 	/* lseek only in readonly mode */
 	if (bb->flags & O_ACCMODE)
 		return -ENOSYS;
 	while (raw_pos < bb->mtd->size) {
-		off_t now = min(offset, bb->mtd->erasesize);
+		off_t now = min_t(loff_t, offset, bb->mtd->erasesize);
 
 		if (mtd_block_isbad(bb->mtd, raw_pos)) {
 			raw_pos += bb->mtd->erasesize;
@@ -257,7 +256,7 @@ static loff_t nand_bb_lseek(struct cdev *cdev, loff_t __offset)
 
 		if (!offset) {
 			bb->offset = raw_pos;
-			return __offset;
+			return 0;
 		}
 	}
 

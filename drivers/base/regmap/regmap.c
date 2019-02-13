@@ -353,7 +353,6 @@ static ssize_t regmap_cdev_write(struct cdev *cdev, const void *buf, size_t coun
 }
 
 static struct cdev_operations regmap_fops = {
-	.lseek	= dev_lseek_default,
 	.read	= regmap_cdev_read,
 	.write	= regmap_cdev_write,
 };

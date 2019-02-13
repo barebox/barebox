@@ -177,7 +177,7 @@ int firmwaremgr_register(struct firmware_handler *fh)
 	cdev = &mgr->cdev;
 
 	cdev->name = xstrdup(fh->id);
-	cdev->size = FILE_SIZE_STREAM;
+	cdev->flags = DEVFS_IS_CHARACTER_DEV;
 	cdev->ops = &firmware_ops;
 	cdev->priv = mgr;
 	cdev->dev = fh->dev;

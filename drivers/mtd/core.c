@@ -462,7 +462,6 @@ static struct cdev_operations mtd_ops = {
 	.protect = mtd_op_protect,
 #endif
 	.ioctl  = mtd_ioctl,
-	.lseek  = dev_lseek_default,
 };
 
 static int mtd_partition_set(struct param_d *p, void *priv)

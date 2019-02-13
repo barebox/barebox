@@ -59,13 +59,6 @@ static int ext_read(struct device_d *_dev, FILE *f, void *buf, size_t insize)
 	return ext4fs_read_file(node, f->pos, insize, buf);
 }
 
-static loff_t ext_lseek(struct device_d *dev, FILE *f, loff_t pos)
-{
-	f->pos = pos;
-
-	return f->pos;
-}
-
 static struct inode *ext_alloc_inode(struct super_block *sb)
 {
 	struct fs_device_d *fsdev = container_of(sb, struct fs_device_d, sb);
@@ -304,7 +297,6 @@ static void ext_remove(struct device_d *dev)
 
 static struct fs_driver_d ext_driver = {
 	.read      = ext_read,
-	.lseek     = ext_lseek,
 	.type      = filetype_ext,
 	.flags     = 0,
 	.drv = {

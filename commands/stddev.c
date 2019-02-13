@@ -27,7 +27,6 @@ static ssize_t zero_read(struct cdev *cdev, void *buf, size_t count, loff_t offs
 
 static struct cdev_operations zeroops = {
 	.read  = zero_read,
-	.lseek = dev_lseek_default,
 };
 
 static int zero_init(void)
@@ -55,7 +54,6 @@ static ssize_t full_read(struct cdev *cdev, void *buf, size_t count, loff_t offs
 
 static struct cdev_operations fullops = {
 	.read  = full_read,
-	.lseek = dev_lseek_default,
 };
 
 static int full_init(void)
@@ -82,7 +80,6 @@ static ssize_t null_write(struct cdev *cdev, const void *buf, size_t count, loff
 
 static struct cdev_operations nullops = {
 	.write = null_write,
-	.lseek = dev_lseek_default,
 };
 
 static int null_init(void)
@@ -110,7 +107,6 @@ static ssize_t prng_read(struct cdev *cdev, void *buf, size_t count, loff_t offs
 
 static struct cdev_operations prngops = {
 	.read  = prng_read,
-	.lseek = dev_lseek_default,
 };
 
 static int prng_init(void)

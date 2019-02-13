@@ -34,8 +34,6 @@
 #include <linux/stat.h>
 #include <xfuncs.h>
 
-extern char *mem_rw_buf;
-
 static char *devmem = "/dev/mem";
 
 static int do_memcmp(int argc, char *argv[])
@@ -45,7 +43,7 @@ static int do_memcmp(int argc, char *argv[])
 	char   *sourcefile = devmem;
 	char   *destfile = devmem;
 	int     sourcefd, destfd;
-	char   *rw_buf1;
+	char   *buf, *source_data, *dest_data;
 	int     ret = 1;
 	int     offset = 0;
 	struct  stat statbuf;
@@ -84,20 +82,22 @@ static int do_memcmp(int argc, char *argv[])
 		return 1;
 	}
 
-	rw_buf1 = xmalloc(RW_BUF_SIZE);
+	buf = xmalloc(RW_BUF_SIZE + RW_BUF_SIZE);
+	source_data = buf;
+	dest_data   = buf + RW_BUF_SIZE;
 
 	while (count > 0) {
 		int now, r1, r2, i;
 
 		now = min((loff_t)RW_BUF_SIZE, count);
 
-		r1 = read_full(sourcefd, mem_rw_buf, now);
+		r1 = read_full(sourcefd, source_data, now);
 		if (r1 < 0) {
 			perror("read");
 			goto out;
 		}
 
-		r2 = read_full(destfd, rw_buf1, now);
+		r2 = read_full(destfd, dest_data, now);
 		if (r2 < 0) {
 			perror("read");
 			goto out;
@@ -109,7 +109,7 @@ static int do_memcmp(int argc, char *argv[])
 		}
 
 		for (i = 0; i < now; i++) {
-			if (mem_rw_buf[i] != rw_buf1[i]) {
+			if (source_data[i] != dest_data[i]) {
 				printf("files differ at offset %d\n", offset);
 				goto out;
 			}
@@ -124,7 +124,7 @@ static int do_memcmp(int argc, char *argv[])
 out:
 	close(sourcefd);
 	close(destfd);
-	free(rw_buf1);
+	free(buf);
 
 	return ret;
 }

@@ -213,11 +213,16 @@ int ftruncate(int fd, loff_t length)
 
 	f = &files[fd];
 
+	if (f->size == FILE_SIZE_STREAM)
+		return 0;
+
 	fsdrv = f->fsdev->driver;
 
 	ret = fsdrv->truncate(&f->fsdev->dev, f, length);
-	if (ret)
+	if (ret) {
+		errno = -ret;
 		return ret;
+	}
 
 	f->size = length;
 
@@ -413,40 +418,35 @@ loff_t lseek(int fildes, loff_t offset, int whence)
 
 	f = &files[fildes];
 	fsdrv = f->fsdev->driver;
-	if (!fsdrv->lseek) {
-		ret = -ENOSYS;
-		goto out;
-	}
 
 	ret = -EINVAL;
 
 	switch (whence) {
 	case SEEK_SET:
-		if (f->size != FILE_SIZE_STREAM && offset > f->size)
-			goto out;
-		if (IS_ERR_VALUE(offset))
-			goto out;
-		pos = offset;
+		pos = 0;
 		break;
 	case SEEK_CUR:
-		if (f->size != FILE_SIZE_STREAM && offset + f->pos > f->size)
-			goto out;
-		pos = f->pos + offset;
+		pos = f->pos;
 		break;
 	case SEEK_END:
-		if (offset > 0)
-			goto out;
-		pos = f->size + offset;
+		pos = f->size;
 		break;
 	default:
 		goto out;
 	}
 
-	pos = fsdrv->lseek(&f->fsdev->dev, f, pos);
-	if (IS_ERR_VALUE(pos)) {
-		errno = -pos;
-		return -1;
+	pos += offset;
+
+	if (f->size != FILE_SIZE_STREAM && (pos < 0 || pos > f->size))
+		goto out;
+
+	if (fsdrv->lseek) {
+		ret = fsdrv->lseek(&f->fsdev->dev, f, pos);
+		if (ret < 0)
+			goto out;
 	}
+
+	f->pos = pos;
 
 	return pos;
 

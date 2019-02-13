@@ -228,7 +228,6 @@ static struct cdev_operations fb_ops = {
 	.read	= mem_read,
 	.write	= mem_write,
 	.memmap	= generic_memmap_rw,
-	.lseek	= dev_lseek_default,
 	.ioctl	= fb_ioctl,
 	.close  = fb_close,
 	.flush  = fb_op_flush,

@@ -350,7 +350,6 @@ static struct cdev_operations block_ops = {
 #endif
 	.close	= block_op_close,
 	.flush	= block_op_flush,
-	.lseek	= dev_lseek_default,
 };
 
 int blockdevice_register(struct block_device *blk)

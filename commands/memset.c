@@ -34,8 +34,6 @@
 #include <linux/stat.h>
 #include <xfuncs.h>
 
-extern char *mem_rw_buf;
-
 static int do_memset(int argc, char *argv[])
 {
 	loff_t	s, c, n;

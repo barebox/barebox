@@ -29,6 +29,9 @@
 
 static int imx8mq_init_syscnt_frequency(void)
 {
+	if (!cpu_is_mx8mq())
+		return 0;
+
 	if (current_el() == 3) {
 		void __iomem *syscnt = IOMEM(MX8MQ_SYSCNT_CTRL_BASE_ADDR);
 		/*

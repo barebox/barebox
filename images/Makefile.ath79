@@ -1,3 +1,11 @@
+pblb-$(CONFIG_SOC_QCA_AR9331) += start_ar9331_spi_trap
+FILE_barebox-ar9331-spi-trap.img = start_ar9331_spi_trap.pblb
+image-$(CONFIG_SOC_QCA_AR9331) += barebox-ar9331-spi-trap.img
+
+pblb-$(CONFIG_SOC_QCA_AR9331) += start_ar9331_sram
+FILE_barebox-ar9331-sram.img = start_ar9331_sram.pblb
+image-$(CONFIG_SOC_QCA_AR9331) += barebox-ar9331-sram.img
+
 pblb-$(CONFIG_BOARD_8DEVICES_LIMA) += start_8devices_lima
 FILE_barebox-8devices-lima.img = start_8devices_lima.pblb
 image-$(CONFIG_BOARD_8DEVICES_LIMA) += barebox-8devices-lima.img

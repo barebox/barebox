@@ -106,6 +106,26 @@ __error:						\
 	 nop;
 
 /*
+ * STOP_WITH_DEBUG_EVENT - Stop code execution by triggering
+ * Software Debug Breakpoint. It is needed stop CPU and
+ * notify debugger (for example OpenOCD) about break point event.
+ * It should allow to simplify bootstrapping a system over JTAG.
+ */
+#define STOP_WITH_DEBUG_EVENT				\
+	/* trigger a soft breakpoint for OpenOCD */	\
+	SDBBP;						\
+	/* position independent variant of dead loop */	\
+	__error:					\
+	b	__error;				\
+	 nop;						\
+	/* Call some code from .text section.		\
+	 * It is needed to keep same linker script for	\
+	 * all images. */				\
+	la	v0, mips_dead_end;			\
+	jal	v0;					\
+	 nop;
+
+/*
  * FEXPORT - export definition of a function symbol
  */
 #define FEXPORT(symbol)					\

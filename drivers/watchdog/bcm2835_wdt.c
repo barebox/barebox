@@ -45,6 +45,10 @@
 
 #define SECS_TO_WDOG_TICKS(x) ((x) << 16)
 
+/* Largest value where SECS_TO_WDOG_TICKS doesn't overflow 20 bits
+ * (PM_WDOG_TIME_SET) */
+#define WDOG_SECS_MAX 15
+
 struct bcm2835_wd {
 	struct watchdog wd;
 	void __iomem *base;
@@ -101,6 +105,7 @@ static int bcm2835_wd_probe(struct device_d *dev)
 	}
 	priv->base = IOMEM(iores->start);
 	priv->wd.set_timeout = bcm2835_wd_set_timeout;
+	priv->wd.timeout_max = WDOG_SECS_MAX;
 	priv->wd.hwdev = dev;
 	priv->dev = dev;
 

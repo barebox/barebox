@@ -88,11 +88,13 @@ controlled by the ``global.bootchooser.reset_attempts`` variable. It holds a
 list of space-separated flags. Possible values are:
 
 - empty: counters will never be reset
-- ``power-on``: The ``remaining_attempts`` counters of all enabled boot targets are reset
-  after a ``power-on`` reset (``$global.system.reset="POR"``). This means after a power
-  cycle all boot targets will be tried again for the configured number of retries.
-- ``all-zero``: The ``remaining_attempts`` counters of all enabled boot targets are
-  reset when none of them has any ``remaining_attempts`` left.
+- ``power-on``: When the bootchooser starts and a power-on reset
+  (``$global.system.reset="POR"``) is detected, the ``remaining_attempts``
+  counters of all enabled targets are reset to their defaults.
+  This means after a power cycle all boot targets will be tried again for the configured number of retries.
+- ``all-zero``: When the bootchooser starts and the ``remaining_attempts``
+  counters of all enabled targets are zero, the ``remaining_attempts``
+  counters of all enabled targets are reset to their defaults.
 
 Marking a Boot as Successful
 ############################

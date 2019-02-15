@@ -96,6 +96,11 @@ list of space-separated flags. Possible values are:
   counters of all enabled targets are zero, the ``remaining_attempts``
   counters of all enabled targets are reset to their defaults.
 
+If ``global.bootchooser.retry`` is enabled (set to ``1``), the bootchooser
+algorithm will iterate through all valid boot targets (and decrease their
+counters) until one succeeds or none is left.
+If it is disabled only one attempt will be made for each bootchooser call.
+
 Marking a Boot as Successful
 ############################
 

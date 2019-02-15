@@ -113,8 +113,9 @@ options not specific to any boot target.
   Otherwise the ``boot`` command will return with an error after the first failed
   boot target.
 ``global.bootchooser.state_prefix``
-  Variable prefix when *bootchooser* is used with the *state* framework as backend
-  for storing run-time data, see below.
+  If set, this makes *bootchooser* use the *state* framework as backend for
+  storing run-time data and defines the name of the state instance to use, see
+  :ref:`below <bootchooser,state_framework>`.
 ``global.bootchooser.targets``
   Space-separated list of boot targets that are used. For each entry in the list
   a corresponding

@@ -367,8 +367,15 @@ efi_status_t efi_main(efi_handle_t image, efi_system_table_t *sys_table)
 
 static int efi_core_init(void)
 {
-	struct device_d *dev = device_alloc("efi-cs", DEVICE_ID_SINGLE);
+	struct device_d *dev;
+	int ret;
 
+	dev = device_alloc("efi-cs", DEVICE_ID_SINGLE);
+	ret = platform_device_register(dev);
+	if (ret)
+		return ret;
+
+	dev = device_alloc("efi-wdt", DEVICE_ID_SINGLE);
 	return platform_device_register(dev);
 }
 core_initcall(efi_core_init);

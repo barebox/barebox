@@ -10,7 +10,7 @@ menuconfig WATCHDOG
 
 if WATCHDOG
 
-menuconfig WATCHDOG_POLLER
+config WATCHDOG_POLLER
 	bool "Watchdog periodic feeder support"
 	select POLLER
 	help

@@ -3,7 +3,7 @@
 Barebox Bootchooser
 ===================
 
-In many cases embedded systems are layed out redundantly with multiple
+In many cases embedded systems are laid out redundantly with multiple
 kernels and multiple root file systems. The *bootchooser* framework provides
 the building blocks to model different use cases without the need to start
 from scratch over and over again.
@@ -60,7 +60,7 @@ the boot target won't be booted anymore. To prevent that, the ``remaining_attemp
 counter must be reset to its default. There are different flags in the
 *bootchooser* which control resetting the ``remaining_attempts`` counter,
 controlled by the ``global.bootchooser.reset_attempts`` variable. It holds a
-list of space separated flags. Possible values are:
+list of space-separated flags. Possible values are:
 
 - empty: counters will never be reset
 - ``power-on``: The ``remaining_attempts`` counters of all enabled boot targets are reset
@@ -97,7 +97,7 @@ options not specific to any boot target.
 ``global.bootchooser.reset_attempts``
   Already described in :ref:`Bootchooser Algorithm <bootchooser,algorithm>`
 ``global.bootchooser.reset_priorities``
-  A space separated list of events that cause *bootchooser* to reset the priorities of
+  A space-separated list of events that cause *bootchooser* to reset the priorities of
   all boot targets. Possible values:
 
   * empty: priorities will never be reset
@@ -111,7 +111,7 @@ options not specific to any boot target.
   Variable prefix when *bootchooser* is used with the *state* framework as backend
   for storing run-time data, see below.
 ``global.bootchooser.targets``
-  Space separated list of boot targets that are used. For each entry in the list
+  Space-separated list of boot targets that are used. For each entry in the list
   a corresponding
   set of ``global.bootchooser.<targetname>.<variablename>`` variables must exist.
 ``global.bootchooser.last_chosen``
@@ -125,7 +125,7 @@ Setup Example
 We want to set up a redundant machine with two bootable systems within one shared
 memory, here a NAND type flash memory with a UBI partition. We have a 512 MiB NAND
 type flash, to be used only for the root filesystem. The devicetree doesn't
-define any partition, because we want to run one UBI partition with two volumens
+define any partition, because we want to run one UBI partition with two volumes
 for the redundant root filesystems on this flash memory.
 
 .. code-block:: text

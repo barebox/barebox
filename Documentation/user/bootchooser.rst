@@ -16,6 +16,17 @@ and a storage backend for saving status information.
 Currently supported storage backends are either nv variables or the
 barebox *state* framework.
 
+The *Bootchooser* itself is executed as a normal barebox boot target, i.e. one
+can start it via::
+
+  boot bootchooser
+
+or by e.g. setting ``boot.default`` to ``bootchooser``.
+
+.. note:: As ``boot.default`` accepts multiple values, it can also be used to
+  specify a fallback boot target in case the bootchooser fails booting, e.g.
+  ``bootchooser recovery``.
+
 Bootchooser Targets
 -------------------
 

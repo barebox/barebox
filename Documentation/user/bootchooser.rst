@@ -11,6 +11,11 @@ from scratch over and over again.
 The *bootchooser* works on abstract boot targets, each with a set of properties
 and implements an algorithm which selects the highest priority target to boot.
 
+To make the *bootchooser* work requires a fixed set of configuration parameters
+and a storage backend for saving status information.
+Currently supported storage backends are either nv variables or the
+barebox *state* framework.
+
 Bootchooser Targets
 -------------------
 

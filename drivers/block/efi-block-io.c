@@ -142,7 +142,7 @@ static int is_bio_usbdev(struct efi_device *efidev)
 	return 0;
 }
 
-int efi_bio_probe(struct efi_device *efidev)
+static int efi_bio_probe(struct efi_device *efidev)
 {
 	int ret;
 	struct efi_bio_priv *priv;

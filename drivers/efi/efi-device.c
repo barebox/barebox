@@ -32,7 +32,7 @@
 #include <efi/efi-device.h>
 #include <linux/err.h>
 
-int efi_locate_handle(enum efi_locate_search_type search_type,
+static int efi_locate_handle(enum efi_locate_search_type search_type,
 		efi_guid_t *protocol,
 		void *search_key,
 		unsigned long *no_handles,

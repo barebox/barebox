@@ -231,7 +231,7 @@ static int efi_snp_set_ethaddr(struct eth_device *edev, const unsigned char *adr
 	return 0;
 }
 
-int efi_snp_probe(struct efi_device *efidev)
+static int efi_snp_probe(struct efi_device *efidev)
 {
 	struct eth_device *edev;
 	struct efi_snp_priv *priv;

@@ -561,4 +561,4 @@ static int bcm2835_mci_add(void)
 {
 	return platform_driver_register(&bcm2835_mci_driver);
 }
-coredevice_initcall(bcm2835_mci_add);
+device_initcall(bcm2835_mci_add);

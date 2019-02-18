@@ -17,6 +17,12 @@ config PINCTRL_AT91
 	help
 	    The pinmux controller found on AT91 SoCs.
 
+config PINCTRL_BCM283X
+	bool "GPIO and pinmux support for BCM283X"
+	depends on ARCH_BCM283X
+	help
+	    The pinmux controller on BCM2835
+
 config PINCTRL_IMX_IOMUX_V1
 	bool
 	help

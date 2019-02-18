@@ -33,3 +33,13 @@ ENTRY_FUNCTION(start_raspberry_pi3, r0, r1, r2)
 
 	barebox_arm_entry(BCM2835_SDRAM_BASE, SZ_512M, fdt);
 }
+
+extern char __dtb_bcm2837_rpi_cm3_start[];
+ENTRY_FUNCTION(start_raspberry_pi_cm3, r0, r1, r2)
+{
+	void *fdt = __dtb_bcm2837_rpi_cm3_start + get_runtime_offset();
+
+	arm_cpu_lowlevel_init();
+
+	barebox_arm_entry(BCM2835_SDRAM_BASE, SZ_512M, fdt);
+}

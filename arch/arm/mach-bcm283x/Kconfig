@@ -25,6 +25,12 @@ config MACH_RPI3
 	select MACH_RPI_COMMON
 	select ARM_SECURE_MONITOR
 
+config MACH_RPI_CM3
+	bool "RaspberryPi Compute Module 3 (BCM2837/CORTEX-A53)"
+	select CPU_V7
+	select MACH_RPI_COMMON
+	select ARM_SECURE_MONITOR
+
 endmenu
 
 config MACH_RPI_DEBUG_UART_BASE

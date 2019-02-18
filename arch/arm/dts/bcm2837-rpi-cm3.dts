@@ -1,0 +1,18 @@
+#include <arm/bcm2837-rpi-cm3-io3.dts>
+
+/ {
+	chosen {
+		stdout-path = &uart0;
+	};
+
+	memory {
+		reg = <0x0 0x0>;
+	};
+};
+
+&sdhci {
+	pinctrl-0 = <&emmc_gpio48>;
+	no-sd;
+	non-removable;
+	status = "okay";
+};

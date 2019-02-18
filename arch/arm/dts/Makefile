@@ -75,6 +75,7 @@ pbl-dtb-$(CONFIG_MACH_REALQ7) += imx6q-dmo-edmqmx6.dtb.o
 pbl-dtb-$(CONFIG_MACH_RPI) += bcm2835-rpi.dtb.o
 pbl-dtb-$(CONFIG_MACH_RPI2) += bcm2836-rpi-2.dtb.o
 pbl-dtb-$(CONFIG_MACH_RPI3) += bcm2837-rpi-3.dtb.o
+pbl-dtb-$(CONFIG_MACH_RPI_CM3) += bcm2837-rpi-cm3.dtb.o
 pbl-dtb-$(CONFIG_MACH_SABRELITE) += imx6q-sabrelite.dtb.o imx6dl-sabrelite.dtb.o
 pbl-dtb-$(CONFIG_MACH_SABRESD) += imx6q-sabresd.dtb.o
 pbl-dtb-$(CONFIG_MACH_FREESCALE_IMX6SX_SABRESDB) += imx6sx-sdb.dtb.o

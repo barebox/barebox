@@ -1,7 +1,9 @@
 /*
  * Author: Carlo Caione <carlo@carlocaione.org>
  *
- * Based on linux/arch/arm/mach-bcm2708/bcm2708_gpio.c
+ * GPIO code based on linux/arch/arm/mach-bcm2708/bcm2708_gpio.c
+ *
+ * pinctrl part added by Tomaz Solc <tomaz.solc@tablix.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -21,6 +23,7 @@
 #include <io.h>
 #include <gpio.h>
 #include <init.h>
+#include <pinctrl.h>
 
 #define GPIOFSEL(x)  (0x00+(x)*4)
 #define GPIOSET(x)   (0x1c+(x)*4)
@@ -46,6 +49,7 @@ enum {
 struct bcm2835_gpio_chip {
 	void __iomem *base;
 	struct gpio_chip chip;
+	struct pinctrl_device pctl;
 };
 
 static int bcm2835_set_function(struct gpio_chip *chip, unsigned gpio, int function)
@@ -110,6 +114,39 @@ static struct gpio_ops bcm2835_gpio_ops = {
 	.set = bcm2835_gpio_set_value,
 };
 
+static int bcm2835_pinctrl_set_state(struct pinctrl_device *pdev, struct device_node *np)
+{
+	const __be32 *list;
+	u32 function;
+	int i, size;
+
+	list = of_get_property(np, "brcm,pins", &size);
+	if (!list) {
+		return -EINVAL;
+	}
+
+	size /= sizeof(*list);
+
+	if (of_property_read_u32(np, "brcm,function", &function)) {
+		return -EINVAL;
+	}
+
+	for (i = 0; i < size; i++) {
+		int pin = be32_to_cpu(list[i]);
+		struct bcm2835_gpio_chip *bcmgpio = container_of(pdev, struct bcm2835_gpio_chip, pctl);
+
+		dev_dbg(pdev->dev, "set_state pin %d to function %d\n", pin, function);
+
+		bcm2835_set_function(&bcmgpio->chip, pin, function);
+	}
+
+	return 0;
+}
+
+static struct pinctrl_ops bcm2835_pinctrl_ops = {
+	.set_state = bcm2835_pinctrl_set_state,
+};
+
 static int bcm2835_gpio_probe(struct device_d *dev)
 {
 	struct resource *iores;
@@ -125,13 +162,26 @@ static int bcm2835_gpio_probe(struct device_d *dev)
 	bcmgpio->chip.base = 0;
 	bcmgpio->chip.ngpio = 54;
 	bcmgpio->chip.dev = dev;
+	bcmgpio->pctl.ops = &bcm2835_pinctrl_ops;
+	bcmgpio->pctl.dev = dev;
 
 	ret = gpiochip_add(&bcmgpio->chip);
 	if (ret) {
 		dev_err(dev, "couldn't add gpiochip, ret = %d\n", ret);
 		goto err;
 	}
+
 	dev_info(dev, "probed gpiochip%d with base %d\n", dev->id, bcmgpio->chip.base);
+
+	if (IS_ENABLED(CONFIG_PINCTRL)) {
+		ret = pinctrl_register(&bcmgpio->pctl);
+		if (ret) {
+			dev_err(dev, "couldn't add pinctrl, ret = %d\n", ret);
+			// don't free bcmgpio, since it's already used by gpiochip.
+		} else {
+			dev_dbg(dev, "bcm283x pinctrl registered\n");
+		}
+	}
 
 	return 0;
 

@@ -131,22 +131,26 @@
 	pinctrl-0 = <&pinctrl_gpmi_nand>;
 	nand-on-flash-bbt;
 	status = "okay";
-	#address-cells = <1>;
-	#size-cells = <1>;
 
-	partition@0 {
-		label = "barebox";
-		reg = <0x0 0x400000>;
-	};
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
 
-	environment_nand: partition@400000 {
-		label = "barebox-environment";
-		reg = <0x400000 0x20000>;
-	};
+		partition@0 {
+			label = "barebox";
+			reg = <0x0 0x400000>;
+		};
 
-	partition@420000 {
-		label = "root";
-		reg = <0x420000 0x0>;
+		environment_nand: partition@400000 {
+			label = "barebox-environment";
+			reg = <0x400000 0x20000>;
+		};
+
+		partition@420000 {
+			label = "root";
+			reg = <0x420000 0x0>;
+		};
 	};
 };
 

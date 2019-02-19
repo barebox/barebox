@@ -58,27 +58,30 @@
 
 &ecspi3 {
 	flash: flash@0 {
-		#address-cells = <1>;
-		#size-cells = <1>;
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
 
-		partition@0 {
-			label = "barebox";
-			reg = <0x0 0x100000>;
-		};
+			partition@0 {
+				label = "barebox";
+				reg = <0x0 0x100000>;
+			};
 
-		partition@100000 {
-			label = "barebox-environment";
-			reg = <0x100000 0x20000>;
-		};
+			partition@100000 {
+				label = "barebox-environment";
+				reg = <0x100000 0x20000>;
+			};
 
-		partition@120000 {
-			label = "oftree";
-			reg = <0x120000 0x20000>;
-		};
+			partition@120000 {
+				label = "oftree";
+				reg = <0x120000 0x20000>;
+			};
 
-		partition@140000 {
-			label = "kernel";
-			reg = <0x140000 0x0>;
+			partition@140000 {
+				label = "kernel";
+				reg = <0x140000 0x0>;
+			};
 		};
 	};
 };
@@ -101,22 +104,25 @@
 };
 
 &gpmi {
-	#address-cells = <1>;
-	#size-cells = <1>;
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
 
-	partition@0 {
-		label = "barebox";
-		reg = <0x0 0x400000>;
-	};
+		partition@0 {
+			label = "barebox";
+			reg = <0x0 0x400000>;
+		};
 
-	partition@400000 {
-		label = "barebox-environment";
-		reg = <0x400000 0x100000>;
-	};
+		partition@400000 {
+			label = "barebox-environment";
+			reg = <0x400000 0x100000>;
+		};
 
-	partition@500000 {
-		label = "root";
-		reg = <0x500000 0x0>;
+		partition@500000 {
+			label = "root";
+			reg = <0x500000 0x0>;
+		};
 	};
 };
 

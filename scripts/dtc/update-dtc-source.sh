@@ -4,15 +4,14 @@
 #
 # This script assumes that the dtc and the linux git trees are in the
 # same directory. After building dtc in the dtc directory, it copies the
-# source files and generated source file(s) into the scripts/dtc directory
-# in the kernel and creates a git commit updating them to the new
-# version.
+# source files into the scripts/dtc directory in barebox and creates a git
+# commit updating them to the new version.
 #
-# Usage: from the top level Linux source tree, run:
+# Usage: from the top level barebox source tree, run:
 # $ ./scripts/dtc/update-dtc-source.sh
 #
 # The script will change into the dtc tree, build and test dtc, copy the
-# relevant files into the kernel tree and create a git commit. The commit
+# relevant files into the barebox tree and create a git commit. The commit
 # message will need to be modified to reflect the version of DTC being
 # imported
 #
@@ -33,8 +32,8 @@ DTC_LINUX_PATH=`pwd`/scripts/dtc
 
 DTC_SOURCE="checks.c data.c dtc.c dtc.h flattree.c fstree.c livetree.c srcpos.c \
 		srcpos.h treesource.c util.c util.h version_gen.h Makefile.dtc \
-		dtc-lexer.l dtc-parser.y"
-LIBFDT_SOURCE="Makefile.libfdt fdt.c fdt.h fdt_addresses.c fdt_empty_tree.c \
+		dtc-lexer.l dtc-parser.y fdtget.c"
+LIBFDT_SOURCE="fdt.c fdt.h fdt_addresses.c fdt_empty_tree.c \
 		fdt_overlay.c fdt_ro.c fdt_rw.c fdt_strerror.c fdt_sw.c \
 		fdt_wip.c libfdt.h libfdt_env.h libfdt_internal.h"
 
@@ -59,13 +58,13 @@ for f in $DTC_SOURCE; do
 	git add ${f}
 done
 for f in $LIBFDT_SOURCE; do
-       cp ${DTC_UPSTREAM_PATH}/libfdt/${f} libfdt/${f}
-       git add libfdt/${f}
+       cp ${DTC_UPSTREAM_PATH}/libfdt/${f} ${f}
+       git add ${f}
 done
 
-sed -i -- 's/#include <libfdt_env.h>/#include "libfdt_env.h"/g' ./libfdt/libfdt.h
-sed -i -- 's/#include <fdt.h>/#include "fdt.h"/g' ./libfdt/libfdt.h
-git add ./libfdt/libfdt.h
+sed -i -- 's/#include <libfdt_env.h>/#include "libfdt_env.h"/g' ./libfdt.h
+sed -i -- 's/#include <fdt.h>/#include "fdt.h"/g' ./libfdt.h
+git add ./libfdt.h
 
 commit_msg=$(cat << EOF
 scripts/dtc: Update to upstream version ${dtc_version}

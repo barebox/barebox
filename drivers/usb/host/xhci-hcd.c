@@ -1200,10 +1200,12 @@ static int xhci_submit_control(struct usb_device *udev, unsigned long pipe,
 			return ret;
 	}
 
-	/* Pass ownership of data buffer to device */
-	dma_sync_single_for_device((unsigned long)buffer, length,
-				   (req->requesttype & USB_DIR_IN) ?
-				   DMA_FROM_DEVICE : DMA_TO_DEVICE);
+	if (length > 0) {
+		/* Pass ownership of data buffer to device */
+		dma_sync_single_for_device((unsigned long)buffer, length,
+					   (req->requesttype & USB_DIR_IN) ?
+					   DMA_FROM_DEVICE : DMA_TO_DEVICE);
+	}
 
 	/* Setup TRB */
 	memset(&trb, 0, sizeof(union xhci_trb));
@@ -1259,10 +1261,13 @@ static int xhci_submit_control(struct usb_device *udev, unsigned long pipe,
 	xhci_print_trb(xhci, &trb, "Response Status");
 
 dma_regain:
-	/* Regain ownership of data buffer from device */
-	dma_sync_single_for_cpu((unsigned long)buffer, length,
-				(req->requesttype & USB_DIR_IN) ?
-				DMA_FROM_DEVICE : DMA_TO_DEVICE);
+	if (length > 0) {
+		/* Regain ownership of data buffer from device */
+		dma_sync_single_for_cpu((unsigned long)buffer, length,
+					(req->requesttype & USB_DIR_IN) ?
+					DMA_FROM_DEVICE : DMA_TO_DEVICE);
+	}
+
 	if (ret < 0)
 		return ret;
 

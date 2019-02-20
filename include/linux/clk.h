@@ -75,19 +75,6 @@ void clk_disable(struct clk *clk);
  */
 unsigned long clk_get_rate(struct clk *clk);
 
-/**
- * clk_put	- "free" the clock source
- * @clk: clock source
- *
- * Note: drivers must ensure that all clk_enable calls made on this
- * clock source are balanced by clk_disable calls prior to calling
- * this function.
- *
- * clk_put should not be called from within interrupt context.
- */
-void clk_put(struct clk *clk);
-
-
 /*
  * The remaining APIs are optional for machine class support.
  */
@@ -180,10 +167,6 @@ static inline unsigned long clk_get_rate(struct clk *clk)
 	return 0;
 }
 
-static inline void clk_put(struct clk *clk)
-{
-}
-
 static inline long clk_round_rate(struct clk *clk, unsigned long rate)
 {
 	return 0;
@@ -194,6 +177,10 @@ static inline int clk_set_rate(struct clk *clk, unsigned long rate)
 	return 0;
 }
 #endif
+
+static inline void clk_put(struct clk *clk)
+{
+}
 
 #ifdef CONFIG_COMMON_CLK
 

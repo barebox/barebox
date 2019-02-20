@@ -1242,7 +1242,6 @@ struct xhci_hcd {
 	int num_sp;
 	int page_size;
 	int page_shift;
-	void *dma;
 	size_t dma_size;
 	__le64 *dcbaa;
 	void *sp;

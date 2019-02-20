@@ -1359,7 +1359,7 @@ static void xhci_dma_alloc(struct xhci_hcd *xhci)
 	num_ep = max(MAX_EP_RINGS, MIN_EP_RINGS + num_ep);
 	xhci->dma_size += num_ep * sz_ep;
 
-	p = xhci->dma = dma_alloc_coherent(xhci->dma_size, DMA_ADDRESS_BROKEN);
+	p = dma_alloc_coherent(xhci->dma_size, DMA_ADDRESS_BROKEN);
 
 	xhci->sp = p; p += sz_sp;
 	xhci->dcbaa = p; p += sz_dca;

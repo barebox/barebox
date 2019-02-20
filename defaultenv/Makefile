@@ -13,8 +13,10 @@ $(obj)/defaultenv.o: $(obj)/barebox_default_env.h
 quiet_cmd_env_default = ENV     $@
 cmd_env_default = ($(srctree)/scripts/genenv $(srctree) $(objtree) $@ $(CONFIG_DEFAULT_ENVIRONMENT_PATH))
 
+# genenv is always called, but only generates output when the file actually
+# changes, so that the dependent targets are not unnecessarily rebuilt
 $(obj)/barebox_default_env: FORCE
-	$(call if_changed,env_default)
+	$(call cmd,env_default)
 
 quiet_cmd_env_h = ENVH    $@
 cmd_env_h = cat $< | (cd $(obj) && $(objtree)/scripts/bin2c "__aligned(4) default_environment") > $@; \

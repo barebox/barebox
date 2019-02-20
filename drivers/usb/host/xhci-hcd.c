@@ -849,7 +849,7 @@ static int xhci_virtdev_init(struct xhci_virtual_device *vdev)
 		if (top_dev->parent->descriptor->bDeviceClass == USB_CLASS_HUB &&
 		    top_dev->parent->speed != USB_SPEED_LOW &&
 		    top_dev->parent->speed != USB_SPEED_FULL) {
-			on_hs_hub |= true;
+			on_hs_hub = true;
 			if (!hs_slot_id) {
 				struct xhci_virtual_device *vhub =
 					xhci_find_virtdev(xhci, top_dev->parent);

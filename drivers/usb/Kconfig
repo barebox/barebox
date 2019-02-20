@@ -17,6 +17,8 @@ source drivers/usb/otg/Kconfig
 
 source drivers/usb/storage/Kconfig
 
+source "drivers/usb/misc/Kconfig"
+
 endif
 
 source drivers/usb/gadget/Kconfig

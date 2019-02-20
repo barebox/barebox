@@ -1246,7 +1246,7 @@ static int xhci_submit_control(struct usb_device *udev, unsigned long pipe,
 	xhci_print_trb(xhci, &trb, "Request  Status");
 	xhci_virtdev_issue_transfer(vdev, 0, &trb, true);
 
-	if (length > 0 && req->requesttype & USB_DIR_IN) {
+	if (length > 0) {
 		ret = xhci_wait_for_event(xhci, TRB_TRANSFER, &trb);
 		xhci_print_trb(xhci, &trb, "Response Data  ");
 		if (ret == -COMP_SHORT_TX)

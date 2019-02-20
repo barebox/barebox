@@ -445,7 +445,6 @@ static struct xhci_virtual_device *xhci_alloc_virtdev(struct xhci_hcd *xhci,
 
 	vdev->dma_size = sz_ictx + sz_dctx;
 	p = vdev->dma = dma_alloc_coherent(vdev->dma_size, DMA_ADDRESS_BROKEN);
-	memset(vdev->dma, 0, vdev->dma_size);
 
 	vdev->out_ctx = p; p += sz_dctx;
 	vdev->in_ctx = p; p += sz_ictx;
@@ -1225,7 +1224,6 @@ static void xhci_dma_alloc(struct xhci_hcd *xhci)
 	xhci->dma_size += num_ep * sz_ep;
 
 	p = xhci->dma = dma_alloc_coherent(xhci->dma_size, DMA_ADDRESS_BROKEN);
-	memset(xhci->dma, 0, xhci->dma_size);
 
 	xhci->sp = p; p += sz_sp;
 	xhci->dcbaa = p; p += sz_dca;

@@ -1470,6 +1470,7 @@ int xhci_register(struct device_d *dev, struct xhci_data *data)
 	xhci = xzalloc(sizeof(*xhci));
 	host = &xhci->host;
 	INIT_LIST_HEAD(&xhci->vdev_list);
+	INIT_LIST_HEAD(&xhci->rings_list);
 	xhci->dev = dev;
 	xhci->cap_regs = data->regs;
 	xhci->op_regs = (void __iomem *)xhci->cap_regs +

@@ -24,6 +24,8 @@
 #ifndef __XHCI_H
 #define __XHCI_H
 
+#include <io-64-nonatomic-lo-hi.h>
+
 #define NUM_COMMAND_TRBS	8
 #define NUM_TRANSFER_TRBS	8
 #define NUM_EVENT_SEGM		1	/* only one supported */
@@ -1165,19 +1167,11 @@ struct xhci_erst_entry {
  */
 static inline u64 xhci_read_64(__le64 __iomem *regs)
 {
-	__u32 __iomem *ptr = (__u32 __iomem *)regs;
-	u64 val_lo = readl(ptr);
-	u64 val_hi = readl(ptr + 1);
-	return val_lo + (val_hi << 32);
+	return lo_hi_readq(regs);
 }
 static inline void xhci_write_64(const u64 val, __le64 __iomem *regs)
 {
-	__u32 __iomem *ptr = (__u32 __iomem *)regs;
-	u32 val_lo = lower_32_bits(val);
-	u32 val_hi = upper_32_bits(val);
-
-	writel(val_lo, ptr);
-	writel(val_hi, ptr + 1);
+	lo_hi_writeq(val, regs);
 }
 
 /*

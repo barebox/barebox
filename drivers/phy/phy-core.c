@@ -227,7 +227,7 @@ static struct phy_provider *of_phy_provider_lookup(struct device_node *node)
 				return phy_provider;
 	}
 
-	return ERR_PTR(-ENODEV);
+	return ERR_PTR(-EPROBE_DEFER);
 }
 
 /**
@@ -254,7 +254,7 @@ static struct phy *_of_phy_get(struct device_node *np, int index)
 
 	phy_provider = of_phy_provider_lookup(args.np);
 	if (IS_ERR(phy_provider)) {
-		return ERR_PTR(-ENODEV);
+		return ERR_CAST(phy_provider);
 	}
 
 	return phy_provider->of_xlate(phy_provider->dev, &args);

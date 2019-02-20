@@ -1100,6 +1100,7 @@ static int xhci_submit_normal(struct usb_device *udev, unsigned long pipe,
 	struct xhci_hcd *xhci = to_xhci_hcd(host);
 	struct xhci_virtual_device *vdev;
 	struct xhci_slot_ctx *out_slot;
+	dma_addr_t buffer_dma;
 	union xhci_trb trb;
 	u8 epaddr = (usb_pipein(pipe) ? USB_DIR_IN : USB_DIR_OUT) |
 		usb_pipeendpoint(pipe);
@@ -1118,13 +1119,15 @@ static int xhci_submit_normal(struct usb_device *udev, unsigned long pipe,
 		vdev->in_ctx->bytes, vdev->out_ctx->bytes);
 
 	/* pass ownership of data buffer to device */
-	dma_sync_single_for_device((unsigned long)buffer, length,
-				   usb_pipein(pipe) ?
-				   DMA_FROM_DEVICE : DMA_TO_DEVICE);
+	buffer_dma = dma_map_single(xhci->dev, buffer, length,
+				    usb_pipein(pipe) ?
+				    DMA_FROM_DEVICE : DMA_TO_DEVICE);
+	if (dma_mapping_error(xhci->dev, buffer_dma))
+		return -EFAULT;
 
 	/* Normal TRB */
 	memset(&trb, 0, sizeof(union xhci_trb));
-	trb.event_cmd.cmd_trb = cpu_to_le64((dma_addr_t)buffer);
+	trb.event_cmd.cmd_trb = cpu_to_le64(buffer_dma);
 	/* FIXME: TD remainder */
 	trb.event_cmd.status = TRB_LEN(length) | TRB_INTR_TARGET(0);
 	trb.event_cmd.flags = TRB_TYPE(TRB_NORMAL) | TRB_IOC;
@@ -1136,9 +1139,9 @@ static int xhci_submit_normal(struct usb_device *udev, unsigned long pipe,
 	xhci_print_trb(xhci, &trb, "Response Normal");
 
 	/* Regain ownership of data buffer from device */
-	dma_sync_single_for_cpu((unsigned long)buffer, length,
-				usb_pipein(pipe) ?
-				DMA_FROM_DEVICE : DMA_TO_DEVICE);
+	dma_unmap_single(xhci->dev, buffer_dma, length,
+			 usb_pipein(pipe) ?
+			 DMA_FROM_DEVICE : DMA_TO_DEVICE);
 
 	switch (ret) {
 	case -COMP_SHORT_TX:

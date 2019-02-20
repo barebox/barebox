@@ -1,0 +1,22 @@
+config USB_DWC3
+	tristate "DesignWare USB3 DRD Core Support"
+	depends on USB && HAS_DMA
+	select USB_XHCI
+	select USB_DWC3_HOST	# Remove this once we support more
+				# than USB host
+	help
+	  Say Y or M here if your system has a Dual Role SuperSpeed
+	  USB controller based on the DesignWare USB3 IP Core.
+
+	  If you choose to build this driver is a dynamically linked
+	  module, the module will be called dwc3.ko.
+
+if USB_DWC3
+
+config USB_DWC3_HOST
+	bool "Host only mode"
+	help
+	  Select this when you want to use DWC3 in host mode only,
+	  thereby the gadget feature will be regressed.
+
+endif

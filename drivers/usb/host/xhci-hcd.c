@@ -1120,16 +1120,26 @@ static int xhci_submit_normal(struct usb_device *udev, unsigned long pipe,
 {
 	struct usb_host *host = udev->host;
 	struct xhci_hcd *xhci = to_xhci_hcd(host);
+	enum dma_data_direction dma_direction;
 	struct xhci_virtual_device *vdev;
 	struct xhci_slot_ctx *out_slot;
 	dma_addr_t buffer_dma;
 	union xhci_trb trb;
-	u8 epaddr = (usb_pipein(pipe) ? USB_DIR_IN : USB_DIR_OUT) |
-		usb_pipeendpoint(pipe);
-	u8 epi = xhci_get_endpoint_index(epaddr, usb_pipetype(pipe));
-	u32 flags;
+	u8 epaddr = usb_pipeendpoint(pipe);
+	u8 epi;
+	u32 flags = TRB_TYPE(TRB_NORMAL) | TRB_IOC;
 	int ret;
 
+	if (usb_pipein(pipe)) {
+		epaddr |= USB_DIR_IN;
+		flags |= TRB_ISP;
+		dma_direction = DMA_FROM_DEVICE;
+	} else {
+		epaddr |= USB_DIR_OUT;
+		dma_direction = DMA_TO_DEVICE;
+	}
+
+	epi = xhci_get_endpoint_index(epaddr, usb_pipetype(pipe));
 	vdev = xhci_find_virtdev(xhci, udev);
 	if (!vdev)
 		return -ENODEV;
@@ -1143,16 +1153,12 @@ static int xhci_submit_normal(struct usb_device *udev, unsigned long pipe,
 
 	/* pass ownership of data buffer to device */
 	buffer_dma = dma_map_single(xhci->dev, buffer, length,
-				    usb_pipein(pipe) ?
-				    DMA_FROM_DEVICE : DMA_TO_DEVICE);
+				    dma_direction);
 	if (dma_mapping_error(xhci->dev, buffer_dma))
 		return -EFAULT;
 
 	/* Normal TRB */
 	/* FIXME: TD remainder */
-	flags = TRB_TYPE(TRB_NORMAL) | TRB_IOC;
-	if (usb_pipein(pipe))
-		flags |= TRB_ISP;
 	xhci_init_event_cmd_trb(&trb,
 				buffer_dma,
 				TRB_LEN(length) | TRB_INTR_TARGET(0),
@@ -1164,9 +1170,7 @@ static int xhci_submit_normal(struct usb_device *udev, unsigned long pipe,
 
 	/* Regain ownership of data buffer from device */
 	dma_unmap_single(xhci->dev, buffer_dma, length,
-			 usb_pipein(pipe) ?
-			 DMA_FROM_DEVICE : DMA_TO_DEVICE);
-
+			 dma_direction);
 	switch (ret) {
 	case -COMP_SHORT_TX:
 		udev->status = 0;

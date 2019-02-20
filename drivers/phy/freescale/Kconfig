@@ -1,0 +1,4 @@
+config PHY_FSL_IMX8MQ_USB
+	bool "Freescale i.MX8M USB3 PHY"
+	default SOC_IMX8MQ
+

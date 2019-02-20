@@ -1167,6 +1167,7 @@ static int xhci_submit_control(struct usb_device *udev, unsigned long pipe,
 	struct xhci_hcd *xhci = to_xhci_hcd(host);
 	struct xhci_virtual_device *vdev;
 	struct xhci_slot_ctx *out_slot;
+	dma_addr_t buffer_dma = 0;
 	union xhci_trb trb;
 	u16 typeReq = (req->requesttype << 8) | req->request;
 	int ret;
@@ -1205,9 +1206,11 @@ static int xhci_submit_control(struct usb_device *udev, unsigned long pipe,
 
 	if (length > 0) {
 		/* Pass ownership of data buffer to device */
-		dma_sync_single_for_device((unsigned long)buffer, length,
-					   (req->requesttype & USB_DIR_IN) ?
-					   DMA_FROM_DEVICE : DMA_TO_DEVICE);
+		buffer_dma = dma_map_single(xhci->dev, buffer, length,
+					    (req->requesttype & USB_DIR_IN) ?
+					    DMA_FROM_DEVICE : DMA_TO_DEVICE);
+		if (dma_mapping_error(xhci->dev, buffer_dma))
+			return -EFAULT;
 	}
 
 	/* Setup TRB */
@@ -1230,7 +1233,7 @@ static int xhci_submit_control(struct usb_device *udev, unsigned long pipe,
 	/* Data TRB */
 	if (length > 0) {
 		memset(&trb, 0, sizeof(union xhci_trb));
-		trb.event_cmd.cmd_trb = cpu_to_le64((dma_addr_t)buffer);
+		trb.event_cmd.cmd_trb = cpu_to_le64(buffer_dma);
 		/* FIXME: TD remainder */
 		trb.event_cmd.status = TRB_LEN(length) | TRB_INTR_TARGET(0);
 		trb.event_cmd.flags = TRB_TYPE(TRB_DATA) | TRB_IOC;
@@ -1266,9 +1269,9 @@ static int xhci_submit_control(struct usb_device *udev, unsigned long pipe,
 dma_regain:
 	if (length > 0) {
 		/* Regain ownership of data buffer from device */
-		dma_sync_single_for_cpu((unsigned long)buffer, length,
-					(req->requesttype & USB_DIR_IN) ?
-					DMA_FROM_DEVICE : DMA_TO_DEVICE);
+		dma_unmap_single(xhci->dev, buffer_dma, length,
+				 (req->requesttype & USB_DIR_IN) ?
+				 DMA_FROM_DEVICE : DMA_TO_DEVICE);
 	}
 
 	if (ret < 0)

@@ -1248,7 +1248,7 @@ static int xhci_submit_control(struct usb_device *udev, unsigned long pipe,
 	field[1] = le16_to_cpu(req->length) << 16 |
 		le16_to_cpu(req->index);
 	flags = TRB_TYPE(TRB_SETUP) | TRB_IDT;
-	if (xhci->hci_version == 0x100 && length > 0) {
+	if (xhci->hci_version >= 0x100 && length > 0) {
 		if (req->requesttype & USB_DIR_IN)
 			flags |= TRB_TX_TYPE(TRB_DATA_IN);
 		else

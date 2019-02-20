@@ -947,10 +947,12 @@ static int xhci_virtdev_init(struct xhci_virtual_device *vdev)
 	 */
 	for (top_dev = vdev->udev; top_dev->parent && top_dev->parent->parent;
 	     top_dev = top_dev->parent) {
-		if (top_dev->parent->descriptor->bDeviceClass == USB_CLASS_HUB)
-			route = (route << 4) | (top_dev->portnr & 0xf);
-		if (top_dev->parent->descriptor->bDeviceClass == USB_CLASS_HUB &&
-		    top_dev->parent->speed != USB_SPEED_LOW &&
+		if (top_dev->parent->descriptor->bDeviceClass != USB_CLASS_HUB)
+			continue;
+
+		route = (route << 4) | (top_dev->portnr & 0xf);
+
+		if (top_dev->parent->speed != USB_SPEED_LOW &&
 		    top_dev->parent->speed != USB_SPEED_FULL) {
 			on_hs_hub = true;
 			if (!hs_slot_id) {

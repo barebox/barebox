@@ -148,4 +148,7 @@ config GENERIC_LIB_LSHRDI3
 config GENERIC_LIB_MULDI3
 	bool
 
+config NLS
+        bool "Native language support"
+
 endmenu

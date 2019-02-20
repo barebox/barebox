@@ -1259,7 +1259,7 @@ static void xhci_dma_alloc(struct xhci_hcd *xhci)
 static int xhci_halt(struct xhci_hcd *xhci)
 {
 	u32 reg = readl(&xhci->op_regs->status);
-	u32 mask = ~XHCI_IRQS;
+	u32 mask = (u32)~XHCI_IRQS;
 
 	if (!(reg & STS_HALT))
 		mask &= ~CMD_RUN;

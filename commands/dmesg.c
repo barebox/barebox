@@ -24,13 +24,49 @@
 #include <getopt.h>
 #include <clock.h>
 
+static unsigned dmesg_get_levels(const char *__args)
+{
+	char *args = xstrdup(__args);
+	char *str, *levels = args;
+	unsigned flags = 0;
+
+	while (1) {
+		str = strsep(&levels, ",");
+		if (!str)
+			break;
+
+		if(!strcmp(str, "vdebug"))
+			flags |= BAREBOX_LOG_PRINT_VDEBUG;
+		else if(!strcmp(str, "debug"))
+			flags |= BAREBOX_LOG_PRINT_DEBUG;
+		else if(!strcmp(str, "info"))
+			flags |= BAREBOX_LOG_PRINT_INFO;
+		else if(!strcmp(str, "notice"))
+			flags |= BAREBOX_LOG_PRINT_NOTICE;
+		else if(!strcmp(str, "warn"))
+			flags |= BAREBOX_LOG_PRINT_WARNING;
+		else if(!strcmp(str, "err"))
+			flags |= BAREBOX_LOG_PRINT_ERR;
+		else if(!strcmp(str, "crit"))
+			flags |= BAREBOX_LOG_PRINT_CRIT;
+		else if(!strcmp(str, "alert"))
+			flags |= BAREBOX_LOG_PRINT_ALERT;
+		else if(!strcmp(str, "emerg"))
+			flags |= BAREBOX_LOG_PRINT_EMERG;
+	}
+
+	free(args);
+
+	return flags;
+}
+
 static int do_dmesg(int argc, char *argv[])
 {
 	int opt, i;
 	int delete_buf = 0, emit = 0;
-	unsigned flags = 0;
+	unsigned flags = 0, levels = 0;
 
-	while ((opt = getopt(argc, argv, "ctder")) > 0) {
+	while ((opt = getopt(argc, argv, "ctderl:")) > 0) {
 		switch (opt) {
 		case 'c':
 			delete_buf = 1;
@@ -43,6 +79,11 @@ static int do_dmesg(int argc, char *argv[])
 			break;
 		case 'e':
 			emit = 1;
+			break;
+		case 'l':
+			levels = dmesg_get_levels(optarg);
+			if (!levels)
+				return COMMAND_ERROR_USAGE;
 			break;
 		case 'r':
 			flags |= BAREBOX_LOG_PRINT_RAW | BAREBOX_LOG_PRINT_TIME;
@@ -78,7 +119,7 @@ static int do_dmesg(int argc, char *argv[])
 		return 0;
 	}
 
-	log_print(flags);
+	log_print(flags, levels);
 
 	if (delete_buf)
 		log_clean(10);
@@ -91,6 +132,7 @@ BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-c",		"Delete messages after printing them")
 BAREBOX_CMD_HELP_OPT ("-d",		"Show a time delta to the last message")
 BAREBOX_CMD_HELP_OPT ("-e <msg>",	"Emit a log message")
+BAREBOX_CMD_HELP_OPT ("-l <vdebug|debug|info|notice|warn|err|crit|alert|emerg>", "Restrict output to the given (comma-separated) list of levels")
 BAREBOX_CMD_HELP_OPT ("-r",		"Print timestamp and log-level prefixes.")
 BAREBOX_CMD_HELP_OPT ("-t",		"Show timestamp informations")
 BAREBOX_CMD_HELP_END

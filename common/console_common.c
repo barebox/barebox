@@ -193,7 +193,7 @@ static int console_common_init(void)
 }
 device_initcall(console_common_init);
 
-void log_print(unsigned flags)
+void log_print(unsigned flags, unsigned levels)
 {
 	struct log_entry *log;
 	unsigned long last = 0;
@@ -201,6 +201,9 @@ void log_print(unsigned flags)
 	list_for_each_entry(log, &barebox_logbuf, list) {
 		uint64_t diff = log->timestamp - time_beginning;
 		unsigned long difful;
+
+		if (levels && !(levels & (1 << log->level)))
+			continue;
 
 		if (flags & (BAREBOX_LOG_PRINT_RAW))
 			printf("<%i>", log->level);

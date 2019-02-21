@@ -202,6 +202,9 @@ void log_print(unsigned flags)
 		uint64_t diff = log->timestamp - time_beginning;
 		unsigned long difful;
 
+		if (flags & (BAREBOX_LOG_PRINT_RAW))
+			printf("<%i>", log->level);
+
 		do_div(diff, 1000);
 		difful = diff;
 

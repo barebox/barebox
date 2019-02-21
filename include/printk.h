@@ -136,6 +136,7 @@ extern void log_clean(unsigned int limit);
 
 #define BAREBOX_LOG_PRINT_TIME	(1 << 0)
 #define BAREBOX_LOG_DIFF_TIME	(1 << 1)
+#define BAREBOX_LOG_PRINT_RAW	(1 << 2)
 
 void log_print(unsigned flags);
 

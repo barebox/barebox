@@ -483,6 +483,13 @@ config MACH_NXP_IMX8MQ_EVK
 	select FIRMWARE_IMX8MQ_ATF
 	select ARM_SMCCC
 
+config MACH_PHYTEC_SOM_IMX8MQ
+	bool "Phytec i.MX8M SOM"
+	select ARCH_IMX8MQ
+	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
+	select FIRMWARE_IMX8MQ_ATF
+	select ARM_SMCCC
+
 config MACH_GRINN_LITEBOARD
 	bool "Grinn liteboard"
 	select ARCH_IMX6UL

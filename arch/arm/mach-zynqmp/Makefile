@@ -1,2 +1,2 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
-obj- := __dummy__.o
+obj-y += firmware-zynqmp.o

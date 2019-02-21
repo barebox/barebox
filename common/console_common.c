@@ -79,6 +79,18 @@ void log_clean(unsigned int limit)
 	}
 }
 
+static void print_colored_log_level(const int level)
+{
+	if (!console_allow_color())
+		return;
+	if (level >= ARRAY_SIZE(colored_log_level))
+		return;
+	if (!colored_log_level[level])
+		return;
+
+	puts(colored_log_level[level]);
+}
+
 static void pr_puts(int level, const char *str)
 {
 	struct log_entry *log;
@@ -108,19 +120,8 @@ nolog:
 	if (level > barebox_loglevel)
 		return;
 
+	print_colored_log_level(level);
 	puts(str);
-}
-
-static void print_colored_log_level(const int level)
-{
-	if (!console_allow_color())
-		return;
-	if (level >= ARRAY_SIZE(colored_log_level))
-		return;
-	if (!colored_log_level[level])
-		return;
-
-	pr_puts(level, colored_log_level[level]);
 }
 
 int pr_print(int level, const char *fmt, ...)
@@ -131,8 +132,6 @@ int pr_print(int level, const char *fmt, ...)
 
 	if (!IS_ENABLED(CONFIG_LOGBUF) && level > barebox_loglevel)
 		return 0;
-
-	print_colored_log_level(level);
 
 	va_start(args, fmt);
 	i = vsprintf(printbuffer, fmt, args);
@@ -151,8 +150,6 @@ int dev_printf(int level, const struct device_d *dev, const char *format, ...)
 
 	if (!IS_ENABLED(CONFIG_LOGBUF) && level > barebox_loglevel)
 		return 0;
-
-	print_colored_log_level(level);
 
 	if (dev->driver && dev->driver->name)
 		ret += sprintf(printbuffer, "%s ", dev->driver->name);
@@ -205,7 +202,11 @@ void log_print(unsigned flags, unsigned levels)
 		if (levels && !(levels & (1 << log->level)))
 			continue;
 
-		if (flags & (BAREBOX_LOG_PRINT_RAW))
+		if (!(flags & (BAREBOX_LOG_PRINT_RAW | BAREBOX_LOG_PRINT_TIME
+			       | BAREBOX_LOG_DIFF_TIME)))
+			print_colored_log_level(log->level);
+
+		if (flags & BAREBOX_LOG_PRINT_RAW)
 			printf("<%i>", log->level);
 
 		do_div(diff, 1000);

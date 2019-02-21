@@ -84,6 +84,7 @@ static void __noreturn start_imx6_phytec_common(uint32_t size,
 		extern char __dtb_##fdt_name##_start[];			\
 									\
 		IMD_USED(physom_mx6_memsize_##memory_size);		\
+		IMD_USED_OF(fdt_name);					\
 									\
 		start_imx6_phytec_common(memory_size, do_early_uart_config, \
 					 __dtb_##fdt_name##_start);	\

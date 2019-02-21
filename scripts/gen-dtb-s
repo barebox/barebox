@@ -18,8 +18,8 @@ FDTGET=scripts/dtc/fdtget
 
 if [ "$imd" = "y" ]; then
 	echo ".section .barebox_imd_0.${name},\"a\""
-	echo ".global __imd_${name}_start"
-	echo "__imd_${name}_start:"
+	echo ".global __barebox_imd_OF_${name}"
+	echo "__barebox_imd_OF_${name}:"
 
 	compat=$($FDTGET -d notfound -t bi "$dtb" / compatible | sed "s^ ^,^g")
 	if [ "$compat" != "notfound" ]; then
@@ -69,7 +69,3 @@ echo ".incbin \"$dtb.lzo\""
 echo "__dtb_z_${name}_end:"
 echo ".global __dtb_z_${name}_end"
 echo ".balign STRUCT_ALIGNMENT"
-
-if [ "$imd" = "y" ]; then
-	echo ".word __imd_${name}_start"
-fi

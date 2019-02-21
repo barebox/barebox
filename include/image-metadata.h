@@ -118,6 +118,10 @@ static inline void imd_used(const void *unused)
 
 #define IMD_USED(_name) \
 	imd_used(&__barebox_imd_##_name)
+#define IMD_USED_OF(_name) ({ \
+	extern char __barebox_imd_OF_ ## _name[]; \
+	imd_used(&__barebox_imd_OF_ ## _name); \
+	})
 
 #endif /* __BAREBOX__ */
 

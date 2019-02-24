@@ -53,6 +53,9 @@ config SOC_AT91SAM9
 	select AT91SAM9_SMC
 	select CLOCKSOURCE_ATMEL_PIT
 	select PINCTRL
+	select HAVE_AT91_SMD
+	select HAVE_AT91_USB_CLK
+	select HAVE_AT91_UTMI
 
 config SOC_SAMA5
 	bool
@@ -69,12 +72,19 @@ config SOC_SAMA5D3
 	select SOC_SAMA5
 	select AT91SAM9_SMC
 	select CLOCKSOURCE_ATMEL_PIT
+	select HAVE_AT91_SMD
+	select HAVE_AT91_USB_CLK
+	select HAVE_AT91_UTMI
 
 config SOC_SAMA5D4
 	bool
 	select SOC_SAMA5
 	select AT91SAM9_SMC
 	select CLOCKSOURCE_ATMEL_PIT
+	select HAVE_AT91_H32MX
+	select HAVE_AT91_SMD
+	select HAVE_AT91_USB_CLK
+	select HAVE_AT91_UTMI
 
 config ARCH_TEXT_BASE
 	hex
@@ -98,8 +108,9 @@ comment "Atmel AT91 System-on-Chip"
 config SOC_AT91RM9200
 	bool
 	select CPU_ARM920T
-	select HAVE_AT91_DBGU0
 	select HAS_AT91_ETHER
+	select HAVE_AT91_DBGU0
+	select HAVE_AT91_USB_CLK
 
 config SOC_AT91SAM9260
 	bool
@@ -138,9 +149,6 @@ config SOC_AT91SAM9X5
 	select SOC_AT91SAM9
 	select HAVE_AT91_DBGU0
 	select HAS_MACB
-	select HAVE_AT91_SMD
-	select HAVE_AT91_USB_CLK
-	select HAVE_AT91_UTMI
 	select COMMON_CLK_OF_PROVIDER
 	help
 	  Select this if you are using one of Atmel's AT91SAM9x5 family SoC.
@@ -538,7 +546,6 @@ config MACH_AT91SAM9263EK
 	depends on ARCH_AT91SAM9263
 	select OFDEVICE
 	select COMMON_CLK_OF_PROVIDER
-	select HAVE_AT91_USB_CLK
 	select HAVE_NAND_ATMEL_BUSWIDTH_16
 	select HAVE_AT91_BOOTSTRAP
 	select AT91SAM926X_BOARD_INIT

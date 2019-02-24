@@ -10,21 +10,27 @@
 
 #include <common.h>
 #include <clock.h>
-#include <of.h>
 #include <linux/list.h>
 #include <linux/clk.h>
 #include <linux/clk/at91_pmc.h>
 #include <mfd/syscon.h>
 #include <regmap.h>
 
+#include <soc/at91/atmel-sfr.h>
+
 #include "pmc.h"
 
-#define UTMI_FIXED_MUL		40
+/*
+ * The purpose of this clock is to generate a 480 MHz signal. A different
+ * rate can't be configured.
+ */
+#define UTMI_RATE      480000000
 
 struct clk_utmi {
 	struct clk clk;
-	struct regmap *regmap;
 	const char *parent;
+	struct regmap *regmap_pmc;
+	struct regmap *regmap_sfr;
 };
 
 #define to_clk_utmi(clk) container_of(clk, struct clk_utmi, clk)
@@ -40,13 +46,55 @@ static inline bool clk_utmi_ready(struct regmap *regmap)
 
 static int clk_utmi_enable(struct clk *clk)
 {
+	struct clk *hw_parent;
 	struct clk_utmi *utmi = to_clk_utmi(clk);
 	unsigned int uckr = AT91_PMC_UPLLEN | AT91_PMC_UPLLCOUNT |
 			    AT91_PMC_BIASEN;
+	unsigned int utmi_ref_clk_freq;
+	unsigned long parent_rate;
 
-	regmap_write_bits(utmi->regmap, AT91_CKGR_UCKR, uckr, uckr);
+	/*
+	 * If mainck rate is different from 12 MHz, we have to configure the
+	 * FREQ field of the SFR_UTMICKTRIM register to generate properly
+	 * the utmi clock.
+	 */
+	hw_parent = clk_get_parent(clk);
+	parent_rate = clk_get_rate(hw_parent);
 
-	while (!clk_utmi_ready(utmi->regmap))
+	switch (parent_rate) {
+	case 12000000:
+		utmi_ref_clk_freq = 0;
+		break;
+	case 16000000:
+		utmi_ref_clk_freq = 1;
+		break;
+	case 24000000:
+		utmi_ref_clk_freq = 2;
+		break;
+	/*
+	 * Not supported on SAMA5D2 but it's not an issue since MAINCK
+	 * maximum value is 24 MHz.
+	 */
+	case 48000000:
+		utmi_ref_clk_freq = 3;
+		break;
+	default:
+		pr_err("UTMICK: unsupported mainck rate\n");
+		return -EINVAL;
+	}
+
+
+	if (utmi->regmap_sfr) {
+		regmap_write_bits(utmi->regmap_sfr, AT91_SFR_UTMICKTRIM,
+				  AT91_UTMICKTRIM_FREQ, utmi_ref_clk_freq);
+	} else if (utmi_ref_clk_freq) {
+		pr_err("UTMICK: sfr node required\n");
+		return -EINVAL;
+	}
+	regmap_write_bits(utmi->regmap_pmc, AT91_CKGR_UCKR, uckr, uckr);
+
+
+	while (!clk_utmi_ready(utmi->regmap_pmc))
 		barrier();
 
 	return 0;
@@ -56,21 +104,22 @@ static int clk_utmi_is_enabled(struct clk *clk)
 {
 	struct clk_utmi *utmi = to_clk_utmi(clk);
 
-	return clk_utmi_ready(utmi->regmap);
+	return clk_utmi_ready(utmi->regmap_pmc);
 }
 
 static void clk_utmi_disable(struct clk *clk)
 {
 	struct clk_utmi *utmi = to_clk_utmi(clk);
 
-	regmap_write_bits(utmi->regmap, AT91_CKGR_UCKR, AT91_PMC_UPLLEN, 0);
+	regmap_write_bits(utmi->regmap_pmc, AT91_CKGR_UCKR,
+			  AT91_PMC_UPLLEN, 0);
 }
 
 static unsigned long clk_utmi_recalc_rate(struct clk *clk,
 					  unsigned long parent_rate)
 {
-	/* UTMI clk is a fixed clk multiplier */
-	return parent_rate * UTMI_FIXED_MUL;
+	/* UTMI clk rate is fixed */
+	return UTMI_RATE;
 }
 
 static const struct clk_ops utmi_ops = {
@@ -80,8 +129,8 @@ static const struct clk_ops utmi_ops = {
 	.recalc_rate = clk_utmi_recalc_rate,
 };
 
-static struct clk * __init
-at91_clk_register_utmi(struct regmap *regmap,
+struct clk * __init
+at91_clk_register_utmi(struct regmap *regmap_pmc, struct regmap *regmap_sfr,
 		       const char *name, const char *parent_name)
 {
 	int ret;
@@ -100,7 +149,8 @@ at91_clk_register_utmi(struct regmap *regmap,
 
 	/* utmi->clk.flags = CLK_SET_RATE_GATE; */
 
-	utmi->regmap = regmap;
+	utmi->regmap_pmc = regmap_pmc;
+	utmi->regmap_sfr = regmap_sfr;
 
 	ret = clk_register(&utmi->clk);
 	if (ret) {
@@ -110,29 +160,3 @@ at91_clk_register_utmi(struct regmap *regmap,
 
 	return &utmi->clk;
 }
-#if defined(CONFIG_OFTREE) && defined(CONFIG_COMMON_CLK_OF_PROVIDER)
-static void __init of_at91sam9x5_clk_utmi_setup(struct device_node *np)
-{
-	struct clk *clk;
-	const char *parent_name;
-	const char *name = np->name;
-	struct regmap *regmap;
-
-	parent_name = of_clk_get_parent_name(np, 0);
-
-	of_property_read_string(np, "clock-output-names", &name);
-
-	regmap = syscon_node_to_regmap(of_get_parent(np));
-	if (IS_ERR(regmap))
-		return;
-
-	clk = at91_clk_register_utmi(regmap, name, parent_name);
-	if (IS_ERR(clk))
-		return;
-
-	of_clk_add_provider(np, of_clk_src_simple_get, clk);
-	return;
-}
-CLK_OF_DECLARE(at91sam9x5_clk_utmi, "atmel,at91sam9x5-clk-utmi",
-	       of_at91sam9x5_clk_utmi_setup);
-#endif

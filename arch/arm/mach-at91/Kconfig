@@ -57,6 +57,22 @@ config SOC_AT91SAM9
 config SOC_SAMA5
 	bool
 	select CPU_V7
+
+config SOC_SAMA5D2
+	bool
+	select SOC_SAMA5
+	select AT91SAM9_SMC
+	select CLOCKSOURCE_ATMEL_PIT
+
+config SOC_SAMA5D3
+	bool
+	select SOC_SAMA5
+	select AT91SAM9_SMC
+	select CLOCKSOURCE_ATMEL_PIT
+
+config SOC_SAMA5D4
+	bool
+	select SOC_SAMA5
 	select AT91SAM9_SMC
 	select CLOCKSOURCE_ATMEL_PIT
 
@@ -188,14 +204,14 @@ config ARCH_AT91SAM9N12
 
 config ARCH_SAMA5D3
 	bool "SAMA5D3x"
-	select SOC_SAMA5
+	select SOC_SAMA5D3
 	select HAVE_AT91_DBGU1
 	select HAS_MACB
 	select HAVE_MACH_ARM_HEAD
 
 config ARCH_SAMA5D4
 	bool "SAMA5D4"
-	select SOC_SAMA5
+	select SOC_SAMA5D4
 	select HAVE_AT91_DBGU2
 	select HAS_MACB
 	select HAVE_MACH_ARM_HEAD

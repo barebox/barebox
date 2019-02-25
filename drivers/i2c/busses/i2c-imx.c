@@ -455,41 +455,39 @@ static void i2c_fsl_set_clk(struct fsl_i2c_struct *i2c_fsl,
 }
 #endif
 
-static int i2c_fsl_write(struct i2c_adapter *adapter, struct i2c_msg *msgs)
+static int i2c_fsl_send(struct i2c_adapter *adapter, uint8_t data)
 {
 	struct fsl_i2c_struct *i2c_fsl = to_fsl_i2c_struct(adapter);
+	int result;
+
+	dev_dbg(&adapter->dev, "<%s> send 0x%02x\n", __func__, data);
+
+	fsl_i2c_write_reg(data, i2c_fsl, FSL_I2C_I2DR);
+
+	result = i2c_fsl_trx_complete(adapter);
+	if (result)
+		return result;
+
+	return i2c_fsl_acked(adapter);
+}
+
+static int i2c_fsl_write(struct i2c_adapter *adapter, struct i2c_msg *msgs)
+{
 	int i, result;
 
-	if ( !(msgs->flags & I2C_M_DATA_ONLY) ) {
-		dev_dbg(&adapter->dev,
-			"<%s> write slave address: addr=0x%02x\n",
-			__func__, msgs->addr << 1);
-
-		/* write slave address */
-		fsl_i2c_write_reg(msgs->addr << 1, i2c_fsl, FSL_I2C_I2DR);
-
-		result = i2c_fsl_trx_complete(adapter);
-		if (result)
-			return result;
-		result = i2c_fsl_acked(adapter);
+	if (!(msgs->flags & I2C_M_DATA_ONLY)) {
+		result = i2c_fsl_send(adapter, msgs->addr << 1);
 		if (result)
 			return result;
 	}
 
 	/* write data */
 	for (i = 0; i < msgs->len; i++) {
-		dev_dbg(&adapter->dev,
-			"<%s> write byte: B%d=0x%02X\n",
-			__func__, i, msgs->buf[i]);
-		fsl_i2c_write_reg(msgs->buf[i], i2c_fsl, FSL_I2C_I2DR);
-
-		result = i2c_fsl_trx_complete(adapter);
-		if (result)
-			return result;
-		result = i2c_fsl_acked(adapter);
+		result = i2c_fsl_send(adapter, msgs->buf[i]);
 		if (result)
 			return result;
 	}
+
 	return 0;
 }
 
@@ -503,18 +501,8 @@ static int i2c_fsl_read(struct i2c_adapter *adapter, struct i2c_msg *msgs)
 	fsl_i2c_write_reg(i2c_fsl->hwdata->i2sr_clr_opcode,
 			  i2c_fsl, FSL_I2C_I2SR);
 
-	if ( !(msgs->flags & I2C_M_DATA_ONLY) ) {
-		dev_dbg(&adapter->dev,
-			"<%s> write slave address: addr=0x%02x\n",
-			__func__, (msgs->addr << 1) | 0x01);
-
-		/* write slave address */
-		fsl_i2c_write_reg((msgs->addr << 1) | 0x01, i2c_fsl, FSL_I2C_I2DR);
-
-		result = i2c_fsl_trx_complete(adapter);
-		if (result)
-			return result;
-		result = i2c_fsl_acked(adapter);
+	if (!(msgs->flags & I2C_M_DATA_ONLY)) {
+		result = i2c_fsl_send(adapter, (msgs->addr << 1) | 1);
 		if (result)
 			return result;
 	}

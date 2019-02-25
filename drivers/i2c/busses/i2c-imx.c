@@ -168,7 +168,6 @@ struct fsl_i2c_struct {
 	struct clk		*clk;
 	struct i2c_adapter	adapter;
 	unsigned int 		disable_delay;
-	int			stopped;
 	unsigned int		ifdr;	/* FSL_I2C_IFDR */
 	unsigned int		dfsrr;  /* FSL_I2C_DFSRR */
 	struct i2c_bus_recovery_info rinfo;
@@ -322,8 +321,6 @@ static int i2c_fsl_start(struct i2c_adapter *adapter)
 		return -EAGAIN;
 	}
 
-	i2c_fsl->stopped = 0;
-
 	temp |= I2CR_MTX | I2CR_TXAK;
 	fsl_i2c_write_reg(temp, i2c_fsl, FSL_I2C_I2CR);
 
@@ -335,16 +332,20 @@ static void i2c_fsl_stop(struct i2c_adapter *adapter)
 	struct fsl_i2c_struct *i2c_fsl = to_fsl_i2c_struct(adapter);
 	unsigned int temp = 0;
 
-	if (!i2c_fsl->stopped) {
-		/* Stop I2C transaction */
-		temp = fsl_i2c_read_reg(i2c_fsl, FSL_I2C_I2CR);
-		temp &= ~(I2CR_MSTA | I2CR_MTX);
-		fsl_i2c_write_reg(temp, i2c_fsl, FSL_I2C_I2CR);
-		/* wait for the stop condition to be send, otherwise the i2c
-		 * controller is disabled before the STOP is sent completely */
-		i2c_fsl_bus_busy(adapter, 0);
-		i2c_fsl->stopped = 1;
-	}
+	/* Stop I2C transaction */
+	temp = fsl_i2c_read_reg(i2c_fsl, FSL_I2C_I2CR);
+	if (!(temp & I2CR_MSTA))
+		return;
+
+	temp &= ~(I2CR_MSTA | I2CR_MTX);
+	fsl_i2c_write_reg(temp, i2c_fsl, FSL_I2C_I2CR);
+	/* wait for the stop condition to be send, otherwise the i2c
+	 * controller is disabled before the STOP is sent completely */
+
+	/* adding this delay helps on low bitrates */
+	udelay(i2c_fsl->disable_delay);
+
+	i2c_fsl_bus_busy(adapter, 0);
 }
 
 #ifdef CONFIG_PPC
@@ -534,21 +535,7 @@ static int i2c_fsl_read(struct i2c_adapter *adapter, struct i2c_msg *msgs)
 			return result;
 
 		if (i == (msgs->len - 1)) {
-			/*
-			 * It must generate STOP before read I2DR to prevent
-			 * controller from generating another clock cycle
-			 */
-			temp = fsl_i2c_read_reg(i2c_fsl, FSL_I2C_I2CR);
-			temp &= ~(I2CR_MSTA | I2CR_MTX);
-			fsl_i2c_write_reg(temp, i2c_fsl, FSL_I2C_I2CR);
-
-			/*
-			 * adding this delay helps on low bitrates
-			 */
-			udelay(i2c_fsl->disable_delay);
-
-			i2c_fsl_bus_busy(adapter, 0);
-			i2c_fsl->stopped = 1;
+			i2c_fsl_stop(adapter);
 		} else if (i == (msgs->len - 2)) {
 			temp = fsl_i2c_read_reg(i2c_fsl, FSL_I2C_I2CR);
 			temp |= I2CR_TXAK;

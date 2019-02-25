@@ -60,6 +60,8 @@ if [ "$autoboot" = 0 ]; then
 	autoboot="$?"
 fi
 
+global.console.ctrlc_allowed=true
+
 if [ "${key}" = "q" ]; then
 	exit
 fi

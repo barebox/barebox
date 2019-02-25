@@ -575,6 +575,7 @@ void console_flush(void)
 EXPORT_SYMBOL(console_flush);
 
 static int ctrlc_abort;
+static int ctrlc_allowed;
 
 void ctrlc_handled(void)
 {
@@ -585,6 +586,9 @@ void ctrlc_handled(void)
 int ctrlc(void)
 {
 	int ret = 0;
+
+	if (!ctrlc_allowed)
+		return 0;
 
 	if (ctrlc_abort)
 		return 1;
@@ -604,6 +608,26 @@ int ctrlc(void)
 	return ret;
 }
 EXPORT_SYMBOL(ctrlc);
+
+static int console_ctrlc_init(void)
+{
+	globalvar_add_simple_bool("console.ctrlc_allowed", &ctrlc_allowed);
+	return 0;
+}
+device_initcall(console_ctrlc_init);
+
+void console_ctrlc_allow(void)
+{
+	ctrlc_allowed = 1;
+}
+
+void console_ctrlc_forbid(void)
+{
+	ctrlc_allowed = 0;
+}
+
+BAREBOX_MAGICVAR_NAMED(global_console_ctrlc_allowed, global.console.ctrlc_allowed,
+		"If true, scripts can be aborted with ctrl-c");
 
 BAREBOX_MAGICVAR_NAMED(global_linux_bootargs_console, global.linux.bootargs.console,
 		"console= argument for Linux from the stdout-path property in /chosen node");

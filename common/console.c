@@ -574,18 +574,36 @@ void console_flush(void)
 }
 EXPORT_SYMBOL(console_flush);
 
-#ifndef ARCH_HAS_CTRLC
-/* test if ctrl-c was pressed */
-int ctrlc (void)
+static int ctrlc_abort;
+
+void ctrlc_handled(void)
 {
+	ctrlc_abort = 0;
+}
+
+/* test if ctrl-c was pressed */
+int ctrlc(void)
+{
+	int ret = 0;
+
+	if (ctrlc_abort)
+		return 1;
+
 	poller_call();
 
+#ifdef ARCH_HAS_CTRLC
+	ret = arch_ctrlc();
+#else
 	if (tstc() && getchar() == 3)
-		return 1;
-	return 0;
+		ret = 1;
+#endif
+
+	if (ret)
+		ctrlc_abort = 1;
+
+	return ret;
 }
 EXPORT_SYMBOL(ctrlc);
-#endif /* ARCH_HAS_CTRC */
 
 BAREBOX_MAGICVAR_NAMED(global_linux_bootargs_console, global.linux.bootargs.console,
 		"console= argument for Linux from the stdout-path property in /chosen node");

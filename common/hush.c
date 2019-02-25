@@ -1734,7 +1734,7 @@ static int parse_stream_outer(struct p_context *ctx, struct in_str *inp, int fla
 			return 1;
 		}
 		b_free(&temp);
-	} while (rcode != -1 && !(flag & FLAG_EXIT_FROM_LOOP));   /* loop on syntax errors, return on EOF */
+	} while (!ctrlc() && rcode != -1 && !(flag & FLAG_EXIT_FROM_LOOP));   /* loop on syntax errors, return on EOF */
 
 	return code;
 }
@@ -1932,6 +1932,7 @@ int run_shell(void)
 	login();
 
 	do {
+		ctrlc_handled();
 		setup_file_in_str(&input);
 		rcode = parse_stream_outer(&ctx, &input, FLAG_PARSE_SEMICOLON);
 		if (rcode < -1) {

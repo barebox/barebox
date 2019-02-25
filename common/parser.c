@@ -283,6 +283,7 @@ int run_shell(void)
 				/* invalid command or not repeatable, forget it */
 				lastcommand[0] = 0;
 			}
+			ctrlc_handled();
 		}
 	}
 	return 0;

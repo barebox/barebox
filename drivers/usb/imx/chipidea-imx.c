@@ -201,14 +201,14 @@ static int ci_register_role(struct imx_chipidea *ci)
 				return ret;
 
 			ehci = ehci_register(ci->dev, &ci->data);
-			if (IS_ERR(ehci))
+			if (IS_ERR(ehci)) {
+				regulator_disable(ci->vbus);
 				return PTR_ERR(ehci);
+			}
 
 			ci->ehci = ehci;
 
 			ci->dev->detect = ci_ehci_detect;
-
-			regulator_disable(ci->vbus);
 		} else {
 			dev_err(ci->dev, "Host support not available\n");
 			return -ENODEV;

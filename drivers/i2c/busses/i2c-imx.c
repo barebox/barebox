@@ -345,10 +345,6 @@ static void i2c_fsl_stop(struct i2c_adapter *adapter)
 		i2c_fsl_bus_busy(adapter, 0);
 		i2c_fsl->stopped = 1;
 	}
-
-	/* Disable I2C controller, and force our state to stopped */
-	temp = i2c_fsl->hwdata->i2cr_ien_opcode ^ I2CR_IEN,
-	fsl_i2c_write_reg(temp, i2c_fsl, FSL_I2C_I2CR);
 }
 
 #ifdef CONFIG_PPC
@@ -608,6 +604,10 @@ static int i2c_fsl_xfer(struct i2c_adapter *adapter,
 fail0:
 	/* Stop I2C transfer */
 	i2c_fsl_stop(adapter);
+
+	/* Disable I2C controller, and force our state to stopped */
+	temp = i2c_fsl->hwdata->i2cr_ien_opcode ^ I2CR_IEN,
+	fsl_i2c_write_reg(temp, i2c_fsl, FSL_I2C_I2CR);
 
 	return (result < 0) ? result : num;
 }

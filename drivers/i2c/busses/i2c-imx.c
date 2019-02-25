@@ -342,10 +342,6 @@ static void i2c_fsl_stop(struct i2c_adapter *adapter)
 		fsl_i2c_write_reg(temp, i2c_fsl, FSL_I2C_I2CR);
 		/* wait for the stop condition to be send, otherwise the i2c
 		 * controller is disabled before the STOP is sent completely */
-		i2c_fsl->stopped = i2c_fsl_bus_busy(adapter, 0) ? 0 : 1;
-	}
-
-	if (!i2c_fsl->stopped) {
 		i2c_fsl_bus_busy(adapter, 0);
 		i2c_fsl->stopped = 1;
 	}

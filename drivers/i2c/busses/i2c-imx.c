@@ -471,19 +471,19 @@ static int i2c_fsl_send(struct i2c_adapter *adapter, uint8_t data)
 	return i2c_fsl_acked(adapter);
 }
 
-static int i2c_fsl_write(struct i2c_adapter *adapter, struct i2c_msg *msgs)
+static int i2c_fsl_write(struct i2c_adapter *adapter, struct i2c_msg *msg)
 {
 	int i, result;
 
-	if (!(msgs->flags & I2C_M_DATA_ONLY)) {
-		result = i2c_fsl_send(adapter, msgs->addr << 1);
+	if (!(msg->flags & I2C_M_DATA_ONLY)) {
+		result = i2c_fsl_send(adapter, msg->addr << 1);
 		if (result)
 			return result;
 	}
 
 	/* write data */
-	for (i = 0; i < msgs->len; i++) {
-		result = i2c_fsl_send(adapter, msgs->buf[i]);
+	for (i = 0; i < msg->len; i++) {
+		result = i2c_fsl_send(adapter, msg->buf[i]);
 		if (result)
 			return result;
 	}
@@ -491,7 +491,7 @@ static int i2c_fsl_write(struct i2c_adapter *adapter, struct i2c_msg *msgs)
 	return 0;
 }
 
-static int i2c_fsl_read(struct i2c_adapter *adapter, struct i2c_msg *msgs)
+static int i2c_fsl_read(struct i2c_adapter *adapter, struct i2c_msg *msg)
 {
 	struct fsl_i2c_struct *i2c_fsl = to_fsl_i2c_struct(adapter);
 	int i, result;
@@ -501,8 +501,8 @@ static int i2c_fsl_read(struct i2c_adapter *adapter, struct i2c_msg *msgs)
 	fsl_i2c_write_reg(i2c_fsl->hwdata->i2sr_clr_opcode,
 			  i2c_fsl, FSL_I2C_I2SR);
 
-	if (!(msgs->flags & I2C_M_DATA_ONLY)) {
-		result = i2c_fsl_send(adapter, (msgs->addr << 1) | 1);
+	if (!(msg->flags & I2C_M_DATA_ONLY)) {
+		result = i2c_fsl_send(adapter, (msg->addr << 1) | 1);
 		if (result)
 			return result;
 	}
@@ -510,29 +510,29 @@ static int i2c_fsl_read(struct i2c_adapter *adapter, struct i2c_msg *msgs)
 	/* setup bus to read data */
 	temp = fsl_i2c_read_reg(i2c_fsl, FSL_I2C_I2CR);
 	temp &= ~I2CR_MTX;
-	if (msgs->len - 1)
+	if (msg->len - 1)
 		temp &= ~I2CR_TXAK;
 	fsl_i2c_write_reg(temp, i2c_fsl, FSL_I2C_I2CR);
 
 	fsl_i2c_read_reg(i2c_fsl, FSL_I2C_I2DR); /* dummy read */
 
 	/* read data */
-	for (i = 0; i < msgs->len; i++) {
+	for (i = 0; i < msg->len; i++) {
 		result = i2c_fsl_trx_complete(adapter);
 		if (result)
 			return result;
 
-		if (i == (msgs->len - 1)) {
+		if (i == (msg->len - 1)) {
 			i2c_fsl_stop(adapter);
-		} else if (i == (msgs->len - 2)) {
+		} else if (i == (msg->len - 2)) {
 			temp = fsl_i2c_read_reg(i2c_fsl, FSL_I2C_I2CR);
 			temp |= I2CR_TXAK;
 			fsl_i2c_write_reg(temp, i2c_fsl, FSL_I2C_I2CR);
 		}
-		msgs->buf[i] = fsl_i2c_read_reg(i2c_fsl, FSL_I2C_I2DR);
+		msg->buf[i] = fsl_i2c_read_reg(i2c_fsl, FSL_I2C_I2DR);
 
 		dev_dbg(&adapter->dev, "<%s> read byte: B%d=0x%02X\n",
-			__func__, i, msgs->buf[i]);
+			__func__, i, msg->buf[i]);
 	}
 	return 0;
 }

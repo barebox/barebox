@@ -61,7 +61,7 @@ static int do_timeout(int argc, char *argv[])
 		return COMMAND_ERROR_USAGE;
 
 	timeout = simple_strtoul(argv[optind], NULL, 0);
-	ret = console_countdown(timeout, flags, str);
+	ret = console_countdown(timeout, flags, NULL, str);
 
 	if (varname && str[0])
 		setenv(varname, str);

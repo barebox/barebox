@@ -809,9 +809,6 @@ static int fillonedir(struct dir_context *ctx, const char *name, int namlen,
 	struct readdir_entry *entry;
 
 	entry = xzalloc(sizeof(*entry));
-	if (!entry)
-		return -ENOMEM;
-
 	memcpy(entry->d.d_name, name, namlen);
 	list_add_tail(&entry->list, &rd->dir->entries);
 

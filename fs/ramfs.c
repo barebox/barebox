@@ -403,8 +403,6 @@ static struct inode *ramfs_alloc_inode(struct super_block *sb)
 	struct ramfs_inode *node;
 
 	node = xzalloc(sizeof(*node));
-	if (!node)
-		return NULL;
 
 	return &node->inode;
 }

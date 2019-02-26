@@ -152,10 +152,7 @@ static int devfs_flush(struct device_d *_dev, FILE *f)
 {
 	struct cdev *cdev = f->priv;
 
-	if (cdev->ops->flush)
-		return cdev->ops->flush(cdev);
-
-	return 0;
+	return cdev_flush(cdev);
 }
 
 static int devfs_ioctl(struct device_d *_dev, FILE *f, int request, void *buf)

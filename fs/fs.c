@@ -848,14 +848,11 @@ static void stat_inode(struct inode *inode, struct stat *s)
 int fstat(int fd, struct stat *s)
 {
 	FILE *f;
-	struct fs_device_d *fsdev;
 
 	if (check_fd(fd))
 		return -errno;
 
 	f = &files[fd];
-
-	fsdev = f->fsdev;
 
 	stat_inode(f->f_inode, s);
 

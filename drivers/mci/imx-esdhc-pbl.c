@@ -29,17 +29,24 @@
 
 struct esdhc {
 	void __iomem *regs;
-	int is_mx6;
+	bool is_mx6;
+	bool is_be;
 };
 
 static uint32_t esdhc_read32(struct esdhc *esdhc, int reg)
 {
-	return readl(esdhc->regs + reg);
+	if (esdhc->is_be)
+		return in_be32(esdhc->regs + reg);
+	else
+		return readl(esdhc->regs + reg);
 }
 
 static void esdhc_write32(struct esdhc *esdhc, int reg, uint32_t val)
 {
-	writel(val, esdhc->regs + reg);
+	if (esdhc->is_be)
+		out_be32(esdhc->regs + reg, val);
+	else
+		writel(val, esdhc->regs + reg);
 }
 
 static void __udelay(int us)

@@ -29,7 +29,7 @@ result in the following files:
 - lpddr4_pmu_train_2d_imem.bin
 
 As a last step of this process those files need to be placed in
-"firmware/imx/"::
+"firmware/"::
 
   for f in lpddr4_pmu_train_1d_dmem.bin  \
            lpddr4_pmu_train_1d_imem.bin  \

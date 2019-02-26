@@ -14,14 +14,16 @@
 #include <common.h>
 #include <io.h>
 #include <mci.h>
+#include <linux/sizes.h>
+#ifdef CONFIG_ARCH_IMX
 #include <mach/atf.h>
 #include <mach/imx6-regs.h>
 #include <mach/imx8mq-regs.h>
 #include <mach/xload.h>
-#include <linux/sizes.h>
 #include <mach/imx-header.h>
-#include "../../../drivers/mci/sdhci.h"
-#include "../../../drivers/mci/imx-esdhc.h"
+#endif
+#include "sdhci.h"
+#include "imx-esdhc.h"
 
 #define SECTOR_SIZE 512
 
@@ -219,6 +221,7 @@ static int esdhc_read_blocks(struct esdhc *esdhc, void *dst, size_t len)
 	return 0;
 }
 
+#ifdef CONFIG_ARCH_IMX
 static int
 esdhc_start_image(struct esdhc *esdhc, ptrdiff_t address, ptrdiff_t entry, u32 offset)
 {
@@ -381,3 +384,4 @@ int imx8_esdhc_start_image(int instance)
 	return esdhc_start_image(&esdhc, MX8MQ_DDR_CSD1_BASE_ADDR,
 				 MX8MQ_ATF_BL33_BASE_ADDR, SZ_32K);
 }
+#endif

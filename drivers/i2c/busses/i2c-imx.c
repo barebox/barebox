@@ -49,9 +49,6 @@
 #include <i2c/i2c.h>
 #include <mach/clock.h>
 
-/* This will be the driver name */
-#define DRIVER_NAME "i2c-fsl"
-
 /* Default value */
 #define FSL_I2C_BIT_RATE	100000	/* 100kHz */
 
@@ -724,7 +721,7 @@ static __maybe_unused struct of_device_id imx_i2c_dt_ids[] = {
 
 static struct driver_d i2c_fsl_driver = {
 	.probe	= i2c_fsl_probe,
-	.name	= DRIVER_NAME,
+	.name	= "i2c-fsl",
 #ifndef CONFIG_PPC
 	.of_compatible = DRV_OF_COMPAT(imx_i2c_dt_ids),
 #endif

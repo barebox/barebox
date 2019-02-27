@@ -30,6 +30,7 @@
 #include <asm/barebox-arm.h>
 #include <generated/mach-types.h>
 #include <linux/sizes.h>
+#include <globalvar.h>
 
 #include <mach/core.h>
 #include <mach/mbox.h>
@@ -375,11 +376,50 @@ static int rpi_env_init(void)
 	return 0;
 }
 
+/* Extract /chosen/bootargs from the VideoCore FDT into vc.bootargs
+ * global variable. */
+static int rpi_vc_fdt_bootargs(void *fdt)
+{
+	int ret = 0;
+	struct device_node *root = NULL, *node;
+	const char *cmdline;
+
+	root = of_unflatten_dtb(fdt);
+	if (IS_ERR(root)) {
+		ret = PTR_ERR(root);
+		root = NULL;
+		goto out;
+	}
+
+	node = of_find_node_by_path_from(root, "/chosen");
+	if (!node) {
+		pr_err("no /chosen node\n");
+		ret = -ENOENT;
+		goto out;
+	}
+
+	cmdline = of_get_property(node, "bootargs", NULL);
+	if (!cmdline) {
+		pr_err("no bootargs property in the /chosen node\n");
+		ret = -ENOENT;
+		goto out;
+	}
+
+	globalvar_add_simple("vc.bootargs", cmdline);
+
+out:
+	if (root)
+		of_delete_node(root);
+
+	return ret;
+}
+
 static void rpi_vc_fdt(void)
 {
 	void *saved_vc_fdt;
 	struct fdt_header *oftree;
 	unsigned long magic, size;
+	int ret;
 
 	/* VideoCore FDT was copied in PBL just above Barebox memory */
 	saved_vc_fdt = (void *)(arm_mem_endmem_get());
@@ -399,6 +439,13 @@ static void rpi_vc_fdt(void)
 	size = be32_to_cpu(oftree->totalsize);
 	if (write_file("/vc.dtb", saved_vc_fdt, size)) {
 		pr_err("failed to save videocore fdt to a file\n");
+		return;
+	}
+
+	ret = rpi_vc_fdt_bootargs(saved_vc_fdt);
+	if (ret) {
+		pr_err("failed to extract bootargs from videocore fdt: %d\n",
+									ret);
 		return;
 	}
 }

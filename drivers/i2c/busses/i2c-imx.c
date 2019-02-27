@@ -187,7 +187,6 @@ static inline unsigned char fsl_i2c_read_reg(struct fsl_i2c_struct *i2c_fsl,
 	return readb(i2c_fsl->base + reg);
 }
 
-#ifdef CONFIG_I2C_DEBUG
 static void i2c_fsl_dump_reg(struct i2c_adapter *adapter)
 {
 	struct fsl_i2c_struct *i2c_fsl = to_fsl_i2c_struct(adapter);
@@ -209,13 +208,6 @@ static void i2c_fsl_dump_reg(struct i2c_adapter *adapter)
 		(reg_sr & I2SR_SRW  ? 1 : 0), (reg_sr & I2SR_IIF  ? 1 : 0),
 		(reg_sr & I2SR_RXAK ? 1 : 0));
 }
-#else
-static inline void i2c_fsl_dump_reg(struct i2c_adapter *adapter)
-{
-	return;
-}
-#endif
-
 
 static int i2c_fsl_bus_busy(struct i2c_adapter *adapter, int for_busy)
 {

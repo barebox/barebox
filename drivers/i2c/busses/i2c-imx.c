@@ -65,7 +65,7 @@
 #define FSL_I2C_I2CR	0x02	/* i2c control */
 #define FSL_I2C_I2SR	0x03	/* i2c status */
 #define FSL_I2C_I2DR	0x04	/* i2c transfer data */
-#define FSL_I2C_DFSRR	0x14	/* i2c digital filter sampling rate */
+#define FSL_I2C_DFSRR	0x05	/* i2c digital filter sampling rate */
 
 #define IMX_I2C_REGSHIFT	2
 #define VF610_I2C_REGSHIFT	0

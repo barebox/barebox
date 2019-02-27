@@ -112,6 +112,22 @@
 				reg = <0x30390000 0x10000>;
 				#reset-cells = <1>;
 			};
+
+			gpc: gpc@303a0000 {
+				compatible = "fsl,imx8mq-gpc", "fsl,imx7d-gpc";
+				reg = <0x303a0000 0x10000>;
+				#power-domain-cells = <1>;
+
+				interrupt-controller;
+				interrupts = <GIC_SPI 87 IRQ_TYPE_LEVEL_HIGH>;
+				#interrupt-cells = <3>;
+				interrupt-parent = <&gic>;
+
+				pgc {
+					#address-cells = <1>;
+					#size-cells = <0>;
+				};
+			};
 		};
 
 		bus@30800000 {

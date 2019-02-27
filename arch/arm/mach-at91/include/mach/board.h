@@ -102,6 +102,7 @@ resource_size_t __init at91_configure_usart2(unsigned pins);
 resource_size_t __init at91_configure_usart3(unsigned pins);
 resource_size_t __init at91_configure_usart4(unsigned pins);
 resource_size_t __init at91_configure_usart5(unsigned pins);
+resource_size_t __init at91_configure_usart6(unsigned pins);
 
 #if defined(CONFIG_DRIVER_SERIAL_ATMEL)
 static inline struct device_d * at91_register_uart(unsigned id, unsigned pins)

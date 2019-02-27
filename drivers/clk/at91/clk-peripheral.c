@@ -10,7 +10,6 @@
 
 #include <common.h>
 #include <clock.h>
-#include <of.h>
 #include <linux/list.h>
 #include <linux/clk.h>
 #include <linux/clk/at91_pmc.h>
@@ -18,11 +17,6 @@
 #include <regmap.h>
 
 #include "pmc.h"
-
-#define PERIPHERAL_MAX		64
-
-#define PERIPHERAL_AT91RM9200	0
-#define PERIPHERAL_AT91SAM9X5	1
 
 #define PERIPHERAL_ID_MIN	2
 #define PERIPHERAL_ID_MAX	31
@@ -105,7 +99,7 @@ static const struct clk_ops peripheral_ops = {
 	.is_enabled = clk_peripheral_is_enabled,
 };
 
-static struct clk *
+struct clk *
 at91_clk_register_peripheral(struct regmap *regmap, const char *name,
 			     const char *parent_name, u32 id)
 {
@@ -317,7 +311,7 @@ static const struct clk_ops sam9x5_peripheral_ops = {
 	.set_rate = clk_sam9x5_peripheral_set_rate,
 };
 
-static struct clk *
+struct clk *
 at91_clk_register_sam9x5_peripheral(struct regmap *regmap,
 				    const char *name, const char *parent_name,
 				    u32 id, const struct clk_range *range)
@@ -355,75 +349,3 @@ at91_clk_register_sam9x5_peripheral(struct regmap *regmap,
 
 	return &periph->clk;
 }
-
-static int
-of_at91_clk_periph_setup(struct device_node *np, u8 type)
-{
-	int num;
-	u32 id;
-	struct clk *clk;
-	const char *parent_name;
-	const char *name;
-	struct device_node *periphclknp;
-	struct regmap *regmap;
-
-	parent_name = of_clk_get_parent_name(np, 0);
-	if (!parent_name)
-		return -ENOENT;
-
-	num = of_get_child_count(np);
-	if (!num || num > PERIPHERAL_MAX)
-		return -EINVAL;
-
-	regmap = syscon_node_to_regmap(of_get_parent(np));
-	if (IS_ERR(regmap))
-		return PTR_ERR(regmap);
-
-	for_each_child_of_node(np, periphclknp) {
-		if (of_property_read_u32(periphclknp, "reg", &id))
-			continue;
-
-		if (id >= PERIPHERAL_MAX)
-			continue;
-
-		if (of_property_read_string(np, "clock-output-names", &name))
-			name = periphclknp->name;
-
-		if (type == PERIPHERAL_AT91RM9200) {
-			clk = at91_clk_register_peripheral(regmap, name,
-							   parent_name, id);
-		} else {
-			struct clk_range range = CLK_RANGE(0, 0);
-
-			of_at91_get_clk_range(periphclknp,
-					      "atmel,clk-output-range",
-					      &range);
-
-			clk = at91_clk_register_sam9x5_peripheral(regmap,
-								  name,
-								  parent_name,
-								  id, &range);
-		}
-
-		if (IS_ERR(clk))
-			continue;
-
-		of_clk_add_provider(periphclknp, of_clk_src_simple_get, clk);
-	}
-
-	return 0;
-}
-
-static int of_at91rm9200_clk_periph_setup(struct device_node *np)
-{
-	return of_at91_clk_periph_setup(np, PERIPHERAL_AT91RM9200);
-}
-CLK_OF_DECLARE(at91rm9200_clk_periph, "atmel,at91rm9200-clk-peripheral",
-	       of_at91rm9200_clk_periph_setup);
-
-static int of_at91sam9x5_clk_periph_setup(struct device_node *np)
-{
-	return of_at91_clk_periph_setup(np, PERIPHERAL_AT91SAM9X5);
-}
-CLK_OF_DECLARE(at91sam9x5_clk_periph, "atmel,at91sam9x5-clk-peripheral",
-	       of_at91sam9x5_clk_periph_setup);

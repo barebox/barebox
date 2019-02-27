@@ -10,7 +10,6 @@
 
 #include <common.h>
 #include <clock.h>
-#include <of.h>
 #include <io.h>
 #include <linux/list.h>
 #include <linux/clk.h>
@@ -144,7 +143,7 @@ static const struct clk_ops at91sam9n12_usb_ops = {
 	.set_rate = at91sam9x5_clk_usb_set_rate,
 };
 
-static struct clk *
+struct clk *
 at91sam9x5_clk_register_usb(struct regmap *regmap, const char *name,
 			    const char **parent_names, u8 num_parents)
 {
@@ -172,7 +171,7 @@ at91sam9x5_clk_register_usb(struct regmap *regmap, const char *name,
 	return &usb->clk;
 }
 
-static struct clk *
+struct clk *
 at91sam9n12_clk_register_usb(struct regmap *regmap, const char *name,
 			     const char *parent_name)
 {
@@ -282,7 +281,7 @@ static const struct clk_ops at91rm9200_usb_ops = {
 	.set_rate = at91rm9200_clk_usb_set_rate,
 };
 
-static struct clk *
+struct clk *
 at91rm9200_clk_register_usb(struct regmap *regmap, const char *name,
 			    const char *parent_name, const u32 *divisors)
 {
@@ -308,90 +307,3 @@ at91rm9200_clk_register_usb(struct regmap *regmap, const char *name,
 
 	return &usb->clk;
 }
-
-static int of_at91sam9x5_clk_usb_setup(struct device_node *np)
-{
-	struct clk *clk;
-	unsigned int num_parents;
-	const char *parent_names[USB_SOURCE_MAX];
-	const char *name = np->name;
-	struct regmap *regmap;
-
-	num_parents = of_clk_get_parent_count(np);
-	if (num_parents == 0 || num_parents > USB_SOURCE_MAX)
-		return -EINVAL;
-
-	of_clk_parent_fill(np, parent_names, num_parents);
-
-	of_property_read_string(np, "clock-output-names", &name);
-
-	regmap = syscon_node_to_regmap(of_get_parent(np));
-	if (IS_ERR(regmap))
-		return PTR_ERR(regmap);
-
-	clk = at91sam9x5_clk_register_usb(regmap, name, parent_names,
-					 num_parents);
-	if (IS_ERR(clk))
-		return PTR_ERR(clk);
-
-	return of_clk_add_provider(np, of_clk_src_simple_get, clk);
-}
-CLK_OF_DECLARE(at91sam9x5_clk_usb, "atmel,at91sam9x5-clk-usb",
-	       of_at91sam9x5_clk_usb_setup);
-
-static int of_at91sam9n12_clk_usb_setup(struct device_node *np)
-{
-	struct clk *clk;
-	const char *parent_name;
-	const char *name = np->name;
-	struct regmap *regmap;
-
-	parent_name = of_clk_get_parent_name(np, 0);
-	if (!parent_name)
-		return -EINVAL;
-
-	of_property_read_string(np, "clock-output-names", &name);
-
-	regmap = syscon_node_to_regmap(of_get_parent(np));
-	if (IS_ERR(regmap))
-		return PTR_ERR(regmap);
-
-	clk = at91sam9n12_clk_register_usb(regmap, name, parent_name);
-	if (IS_ERR(clk))
-		return PTR_ERR(clk);
-
-	return of_clk_add_provider(np, of_clk_src_simple_get, clk);
-}
-CLK_OF_DECLARE(at91sam9n12_clk_usb, "atmel,at91sam9n12-clk-usb",
-	       of_at91sam9n12_clk_usb_setup);
-
-static int of_at91rm9200_clk_usb_setup(struct device_node *np)
-{
-	struct clk *clk;
-	const char *parent_name;
-	const char *name = np->name;
-	u32 divisors[4] = {0, 0, 0, 0};
-	struct regmap *regmap;
-
-	parent_name = of_clk_get_parent_name(np, 0);
-	if (!parent_name)
-		return -EINVAL;
-
-	of_property_read_u32_array(np, "atmel,clk-divisors", divisors, 4);
-	if (!divisors[0])
-		return -EINVAL;
-
-	of_property_read_string(np, "clock-output-names", &name);
-
-	regmap = syscon_node_to_regmap(of_get_parent(np));
-	if (IS_ERR(regmap))
-		return PTR_ERR(regmap);
-
-	clk = at91rm9200_clk_register_usb(regmap, name, parent_name, divisors);
-	if (IS_ERR(clk))
-		return PTR_ERR(clk);
-
-	return of_clk_add_provider(np, of_clk_src_simple_get, clk);
-}
-CLK_OF_DECLARE(at91rm9200_clk_usb, "atmel,at91rm9200-clk-usb",
-	       of_at91rm9200_clk_usb_setup);

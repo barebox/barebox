@@ -385,6 +385,11 @@ int of_clk_add_provider(struct device_node *np,
 			struct clk *(*clk_src_get)(struct of_phandle_args *args,
 						   void *data),
 			void *data);
+
+static inline unsigned int clk_get_num_parents(const struct clk *hw)
+{
+	return hw->num_parents;
+}
 #else
 
 
@@ -429,6 +434,8 @@ static inline int of_clk_add_provider(struct device_node *np,
 	return 0;
 }
 #endif
+
+#define CLK_OF_DECLARE_DRIVER(name, compat, fn) CLK_OF_DECLARE(name, compat, fn)
 
 struct string_list;
 

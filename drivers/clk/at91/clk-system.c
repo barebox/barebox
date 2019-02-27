@@ -9,7 +9,6 @@
  */
 #include <common.h>
 #include <clock.h>
-#include <of.h>
 #include <io.h>
 #include <linux/list.h>
 #include <linux/clk.h>
@@ -91,7 +90,7 @@ static const struct clk_ops system_ops = {
 	.is_enabled = clk_system_is_enabled,
 };
 
-static struct clk *
+struct clk *
 at91_clk_register_system(struct regmap *regmap, const char *name,
 			 const char *parent_name, u8 id)
 {
@@ -119,42 +118,3 @@ at91_clk_register_system(struct regmap *regmap, const char *name,
 
 	return &sys->clk;
 }
-
-static int of_at91rm9200_clk_sys_setup(struct device_node *np)
-{
-	int num;
-	u32 id;
-	struct clk *clk;
-	const char *name;
-	struct device_node *sysclknp;
-	const char *parent_name;
-	struct regmap *regmap;
-
-	num = of_get_child_count(np);
-	if (num > (SYSTEM_MAX_ID + 1))
-		return -EINVAL;
-
-	regmap = syscon_node_to_regmap(of_get_parent(np));
-	if (IS_ERR(regmap))
-		return PTR_ERR(regmap);
-
-	for_each_child_of_node(np, sysclknp) {
-		if (of_property_read_u32(sysclknp, "reg", &id))
-			continue;
-
-		if (of_property_read_string(np, "clock-output-names", &name))
-			name = sysclknp->name;
-
-		parent_name = of_clk_get_parent_name(sysclknp, 0);
-
-		clk = at91_clk_register_system(regmap, name, parent_name, id);
-		if (IS_ERR(clk))
-			continue;
-
-		of_clk_add_provider(sysclknp, of_clk_src_simple_get, clk);
-	}
-
-	return 0;
-}
-CLK_OF_DECLARE(at91rm9200_clk_sys, "atmel,at91rm9200-clk-system",
-	       of_at91rm9200_clk_sys_setup);

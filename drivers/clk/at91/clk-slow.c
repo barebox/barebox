@@ -12,7 +12,6 @@
 
 #include <common.h>
 #include <clock.h>
-#include <of.h>
 #include <io.h>
 #include <linux/list.h>
 #include <linux/clk.h>
@@ -44,7 +43,7 @@ static const struct clk_ops sam9260_slow_ops = {
 	.get_parent = clk_sam9260_slow_get_parent,
 };
 
-static struct clk * __init
+struct clk * __init
 at91_clk_register_sam9260_slow(struct regmap *regmap,
 			       const char *name,
 			       const char **parent_names,
@@ -76,33 +75,3 @@ at91_clk_register_sam9260_slow(struct regmap *regmap,
 
 	return &slowck->clk;
 }
-
-static int of_at91sam9260_clk_slow_setup(struct device_node *np)
-{
-	struct clk *clk;
-	const char *parent_names[2];
-	unsigned int num_parents;
-	const char *name = np->name;
-	struct regmap *regmap;
-
-	num_parents = of_clk_get_parent_count(np);
-	if (num_parents != 2)
-		return -EINVAL;
-
-	of_clk_parent_fill(np, parent_names, num_parents);
-	regmap = syscon_node_to_regmap(of_get_parent(np));
-	if (IS_ERR(regmap))
-		return PTR_ERR(regmap);
-
-	of_property_read_string(np, "clock-output-names", &name);
-
-	clk = at91_clk_register_sam9260_slow(regmap, name, parent_names,
-					     num_parents);
-	if (IS_ERR(clk))
-		return PTR_ERR(clk);
-
-	return of_clk_add_provider(np, of_clk_src_simple_get, clk);
-}
-
-CLK_OF_DECLARE(at91sam9260_clk_slow, "atmel,at91sam9260-clk-slow",
-	       of_at91sam9260_clk_slow_setup);

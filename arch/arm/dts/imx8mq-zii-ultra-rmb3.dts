@@ -37,3 +37,7 @@
 		>;
 	};
 };
+
+&usb_hub {
+	swap-dx-lanes = <0>;
+};

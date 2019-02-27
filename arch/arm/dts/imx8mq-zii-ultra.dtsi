@@ -226,6 +226,14 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_i2c3>;
 	status = "okay";
+
+	usb_hub: usb2513b@2c {
+		compatible = "microchip,usb2513b";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_usb2513b>;
+		reg = <0x2c>;
+		reset-gpios = <&gpio3 25 GPIO_ACTIVE_LOW>;
+	};
 };
 
 &i2c4 {
@@ -309,6 +317,24 @@
 			zii,eeprom-name = "dds-eeprom";
 		};
 	};
+};
+
+&usb_dwc3_0 {
+	status = "okay";
+	dr_mode = "host";
+};
+
+&usb3_phy0 {
+	status = "okay";
+};
+
+&usb_dwc3_1 {
+	status = "okay";
+	dr_mode = "host";
+};
+
+&usb3_phy1 {
+	status = "okay";
 };
 
 &usdhc1 {
@@ -422,6 +448,12 @@
 		fsl,pins = <
 			MX8MQ_IOMUXC_UART2_RXD_UART2_DCE_RX		0x49
 			MX8MQ_IOMUXC_UART2_TXD_UART2_DCE_TX		0x49
+		>;
+	};
+
+	pinctrl_usb2513b: usb2513bgrp {
+		fsl,pins = <
+			MX8MQ_IOMUXC_SAI5_MCLK_GPIO3_IO25    0x41
 		>;
 	};
 

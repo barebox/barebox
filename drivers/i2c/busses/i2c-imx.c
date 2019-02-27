@@ -49,9 +49,6 @@
 #include <i2c/i2c.h>
 #include <mach/clock.h>
 
-/* Default value */
-#define FSL_I2C_BIT_RATE	100000	/* 100kHz */
-
 /* IMX I2C registers:
  * the I2C register offset is different between SoCs,
  * to provid support for all these chips, split the
@@ -611,6 +608,7 @@ static int __init i2c_fsl_probe(struct device_d *pdev)
 	struct fsl_i2c_struct *i2c_fsl;
 	struct i2c_platform_data *pdata;
 	int ret;
+	int bitrate;
 
 	pdata = pdev->platform_data;
 
@@ -652,10 +650,12 @@ static int __init i2c_fsl_probe(struct device_d *pdev)
 	i2c_fsl->dfsrr = -1;
 
 	/* Set up clock divider */
+	bitrate = 100000;
+	of_property_read_u32(pdev->device_node, "clock-frequency", &bitrate);
 	if (pdata && pdata->bitrate)
-		i2c_fsl_set_clk(i2c_fsl, pdata->bitrate);
-	else
-		i2c_fsl_set_clk(i2c_fsl, FSL_I2C_BIT_RATE);
+		bitrate = pdata->bitrate;
+
+	i2c_fsl_set_clk(i2c_fsl, bitrate);
 
 	/* Set up chip registers to defaults */
 	fsl_i2c_write_reg(i2c_fsl->hwdata->i2cr_ien_opcode ^ I2CR_IEN,

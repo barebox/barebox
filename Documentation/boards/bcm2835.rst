@@ -30,5 +30,9 @@ Raspberry Pi
 
   6. Turn board's power on.
 
+VideoCore firmware creates a device tree based on the entries in ``config.txt``. This file is available to the Barebox environment in the file ``/vc.dtb``. For example, to boot a kernel shipped with Raspbian::
+
+    bootm -o /vc.dtb /boot/kernel7.img
+
 .. _Raspberry Pi firmware: https://codeload.github.com/raspberrypi/firmware/zip/80e1fbeb78f9df06701d28c0ed3a3060a3f557ef
 .. _documentation for config.txt: https://www.raspberrypi.org/documentation/configuration/config-txt/

@@ -722,8 +722,6 @@ static __maybe_unused struct of_device_id imx_i2c_dt_ids[] = {
 static struct driver_d i2c_fsl_driver = {
 	.probe	= i2c_fsl_probe,
 	.name	= "i2c-fsl",
-#ifndef CONFIG_PPC
 	.of_compatible = DRV_OF_COMPAT(imx_i2c_dt_ids),
-#endif
 };
 coredevice_platform_driver(i2c_fsl_driver);

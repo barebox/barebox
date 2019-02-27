@@ -469,7 +469,8 @@ static int i2c_fsl_write(struct i2c_adapter *adapter, struct i2c_msg *msg)
 	return 0;
 }
 
-static int i2c_fsl_read(struct i2c_adapter *adapter, struct i2c_msg *msg)
+static int i2c_fsl_read(struct i2c_adapter *adapter, struct i2c_msg *msg,
+			bool is_last)
 {
 	struct fsl_i2c_struct *i2c_fsl = to_fsl_i2c_struct(adapter);
 	int i, result;
@@ -500,7 +501,7 @@ static int i2c_fsl_read(struct i2c_adapter *adapter, struct i2c_msg *msg)
 		if (result)
 			return result;
 
-		if (i == (msg->len - 1)) {
+		if (is_last && i == msg->len - 1) {
 			i2c_fsl_stop(adapter);
 		} else if (i == (msg->len - 2)) {
 			temp = fsl_i2c_read_reg(i2c_fsl, FSL_I2C_I2CR);
@@ -547,7 +548,7 @@ static int i2c_fsl_xfer(struct i2c_adapter *adapter,
 
 		/* write/read data */
 		if (msgs[i].flags & I2C_M_RD)
-			result = i2c_fsl_read(adapter, &msgs[i]);
+			result = i2c_fsl_read(adapter, &msgs[i], i == num - 1);
 		else
 			result = i2c_fsl_write(adapter, &msgs[i]);
 		if (result)

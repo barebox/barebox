@@ -429,3 +429,85 @@ void ddr_spd_print(uint8_t *record)
 		printf("%02X", record[i]);
 	printf("\n");
 }
+
+#define SPD_SPA0_ADDRESS        0x36
+#define SPD_SPA1_ADDRESS        0x37
+
+static int select_page(void *ctx,
+		       int (*xfer)(void *ctx, struct i2c_msg *msgs, int num),
+		       uint8_t addr)
+{
+	struct i2c_msg msg = {
+		.addr = addr,
+		.len = 0,
+	};
+	int ret;
+
+	ret = xfer(ctx, &msg, 1);
+	if (ret < 0)
+		return ret;
+
+	return 0;
+}
+
+static int read_buf(void *ctx,
+		    int (*xfer)(void *ctx, struct i2c_msg *msgs, int num),
+		    uint8_t addr, int page, void *buf)
+{
+	uint8_t pos = 0;
+	int ret;
+	struct i2c_msg msg[2] = {
+		{
+			.addr = addr,
+			.len = 1,
+			.buf = &pos,
+		}, {
+			.addr = addr,
+			.len = 256,
+			.flags = I2C_M_RD,
+			.buf = buf,
+		}
+	};
+
+	ret = select_page(ctx, xfer, page);
+	if (ret < 0)
+		return ret;
+
+	ret = xfer(ctx, msg, 2);
+	if (ret < 0)
+		return ret;
+
+	return 0;
+}
+
+/**
+ * spd_read_eeprom - Read contents of a SPD EEPROM
+ * @ctx: Context pointer for the xfer function
+ * @xfer: I2C message transfer function
+ * @addr: I2C bus address for the EEPROM
+ * @buf: buffer to read the SPD data to
+ *
+ * This function takes a I2C message transfer function and reads the contents
+ * from a SPD EEPROM to the buffer provided at @buf. The buffer should at least
+ * have a size of 512 bytes. Returns 0 for success or a negative error code
+ * otherwise.
+ */
+int spd_read_eeprom(void *ctx,
+		    int (*xfer)(void *ctx, struct i2c_msg *msgs, int num),
+		    uint8_t addr, void *buf)
+{
+	unsigned char *buf8 = buf;
+	int ret;
+
+	ret = read_buf(ctx, xfer, addr, SPD_SPA0_ADDRESS, buf);
+	if (ret < 0)
+		return ret;
+
+	if (buf8[2] == SPD_MEMTYPE_DDR4) {
+		ret = read_buf(ctx, xfer, addr, SPD_SPA1_ADDRESS, buf + 256);
+		if (ret < 0)
+			return ret;
+	}
+
+	return 0;
+}

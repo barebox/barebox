@@ -10,9 +10,11 @@
  */
 #define pr_fmt(fmt) "HABv3: " fmt
 
+#include <init.h>
 #include <common.h>
 #include <hab.h>
 #include <io.h>
+#include <mach/generic.h>
 
 struct hab_status {
 	u8 value;
@@ -55,7 +57,7 @@ static struct hab_status hab_status[] = {
 	{ 0x8e, "algorithm type is either invalid or ortherwise unsupported" },
 };
 
-int imx_habv3_get_status(uint32_t status)
+static int imx_habv3_get_status(uint32_t status)
 {
 	int i;
 

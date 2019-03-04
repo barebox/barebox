@@ -1,0 +1,8 @@
+if ARCH_LAYERSCAPE
+
+config ARCH_LS1046
+	select CPU_V8
+	select SYS_SUPPORTS_64BIT_KERNEL
+	bool
+
+endif

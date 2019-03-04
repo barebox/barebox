@@ -1,0 +1,18 @@
+#
+# barebox image generation Makefile for NXP Layerscape images
+#
+
+lspbl_cfg_cpp_flags  = -Wp,-MD,$(depfile) -nostdinc -x assembler-with-cpp \
+      -I $(srctree)/include -include include/generated/autoconf.h
+
+lspbl-rcw-tmp = $(subst $(comma),_,$(dot-target).lspbl_rcw.tmp)
+lspbl-pbi-tmp = $(subst $(comma),_,$(dot-target).lspbl_pbi.tmp)
+
+quiet_cmd_lspbl_image = LSPBL-IMG $@
+      cmd_lspbl_image = $(CPP) $(lspbl_cfg_cpp_flags) -o $(lspbl-rcw-tmp) $(word 2,$^) ; \
+			$(CPP) $(lspbl_cfg_cpp_flags) -o $(lspbl-pbi-tmp) $(word 3,$^) ; \
+			$(objtree)/scripts/pblimage -o $@ -r $(lspbl-rcw-tmp) \
+			-m $($(patsubst $(obj)/%.pblb,PBL_CODE_SIZE_%,$<)) -p $(lspbl-pbi-tmp) -i $<
+
+$(obj)/%.lspblimg: $(obj)/% FORCE
+	$(call if_changed,lspbl_image,$(RCW_$(@F)),$(PBI_$(@F)),)

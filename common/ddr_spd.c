@@ -10,39 +10,65 @@
 #include <crc.h>
 #include <ddr_spd.h>
 
-uint32_t ddr2_spd_checksum_pass(const struct ddr2_spd_eeprom_s *spd)
+/* used for ddr1 and ddr2 spd */
+static int spd_check(const u8 *buf, u8 spd_rev, u8 spd_cksum)
 {
-	uint32_t i, cksum = 0;
-	const uint8_t *buf = (const uint8_t *)spd;
-	uint8_t rev, spd_cksum;
-
-	rev = spd->spd_rev;
-	spd_cksum = spd->cksum;
-
-	/* Rev 1.X or less supported by this code */
-	if (rev >= 0x20)
-		goto error;
+	unsigned int cksum = 0;
+	unsigned int i;
 
 	/*
-	 * The checksum is calculated on the first 64 bytes
-	 * of the SPD as per JEDEC specification.
+	 * Check SPD revision supported
+	 * Rev 1.X or less supported by this code
+	 */
+	if (spd_rev >= 0x20) {
+		printf("SPD revision %02X not supported by this code\n",
+		       spd_rev);
+		return 1;
+	}
+	if (spd_rev > 0x13) {
+		printf("SPD revision %02X not verified by this code\n",
+		       spd_rev);
+	}
+
+	/*
+	 * Calculate checksum
 	 */
 	for (i = 0; i < 63; i++)
 		cksum += *buf++;
+
 	cksum &= 0xFF;
 
-	if (cksum != spd_cksum)
-		goto error;
+	if (cksum != spd_cksum) {
+		printf("SPD checksum unexpected. "
+			"Checksum in SPD = %02X, computed SPD = %02X\n",
+			spd_cksum, cksum);
+		return -EBADMSG;
+	}
 
 	return 0;
-error:
-	return 1;
 }
 
-uint32_t ddr3_spd_checksum_pass(const struct ddr3_spd_eeprom_s *spd)
+int ddr1_spd_check(const struct ddr1_spd_eeprom *spd)
 {
-	char crc_lsb, crc_msb;
-	int csum16, len;
+	const u8 *p = (const u8 *)spd;
+
+	return spd_check(p, spd->spd_rev, spd->cksum);
+}
+
+int ddr2_spd_check(const struct ddr2_spd_eeprom *spd)
+{
+	const u8 *p = (const u8 *)spd;
+
+	return spd_check(p, spd->spd_rev, spd->cksum);
+}
+
+int ddr3_spd_check(const struct ddr3_spd_eeprom *spd)
+{
+	char *p = (char *)spd;
+	int csum16;
+	int len;
+	char crc_lsb;	/* byte 126 */
+	char crc_msb;	/* byte 127 */
 
 	/*
 	 * SPD byte0[7] - CRC coverage
@@ -51,13 +77,61 @@ uint32_t ddr3_spd_checksum_pass(const struct ddr3_spd_eeprom_s *spd)
 	 */
 
 	len = !(spd->info_size_crc & 0x80) ? 126 : 117;
-	csum16 = crc_itu_t(0, (char *)spd, len);
+	csum16 = crc_itu_t(0, p, len);
 
 	crc_lsb = (char) (csum16 & 0xff);
 	crc_msb = (char) (csum16 >> 8);
 
-	if (spd->crc[0] != crc_lsb || spd->crc[1] != crc_msb)
-		return 1;
+	if (spd->crc[0] == crc_lsb && spd->crc[1] == crc_msb) {
+		return 0;
+	} else {
+		printf("SPD checksum unexpected.\n"
+			"Checksum lsb in SPD = %02X, computed SPD = %02X\n"
+			"Checksum msb in SPD = %02X, computed SPD = %02X\n",
+			spd->crc[0], crc_lsb, spd->crc[1], crc_msb);
+		return -EBADMSG;
+	}
+}
+
+int ddr4_spd_check(const struct ddr4_spd_eeprom *spd)
+{
+	char *p = (char *)spd;
+	int csum16;
+	int len;
+	char crc_lsb;	/* byte 126 */
+	char crc_msb;	/* byte 127 */
+
+	len = 126;
+	csum16 = crc_itu_t(0, p, len);
+
+	crc_lsb = (char) (csum16 & 0xff);
+	crc_msb = (char) (csum16 >> 8);
+
+	if (spd->crc[0] != crc_lsb || spd->crc[1] != crc_msb) {
+		printf("SPD checksum unexpected.\n"
+			"Checksum lsb in SPD = %02X, computed SPD = %02X\n"
+			"Checksum msb in SPD = %02X, computed SPD = %02X\n",
+			spd->crc[0], crc_lsb, spd->crc[1], crc_msb);
+		return -EBADMSG;
+	}
+
+	p = (char *)((ulong)spd + 128);
+	len = 126;
+	csum16 = crc_itu_t(0, p, len);
+
+	crc_lsb = (char) (csum16 & 0xff);
+	crc_msb = (char) (csum16 >> 8);
+
+	if (spd->mod_section.uc[126] != crc_lsb ||
+	    spd->mod_section.uc[127] != crc_msb) {
+		printf("SPD checksum unexpected.\n"
+			"Checksum lsb in SPD = %02X, computed SPD = %02X\n"
+			"Checksum msb in SPD = %02X, computed SPD = %02X\n",
+			spd->mod_section.uc[126],
+			crc_lsb, spd->mod_section.uc[127],
+			crc_msb);
+		return -EBADMSG;
+	}
 
 	return 0;
 }
@@ -172,7 +246,7 @@ void ddr_spd_print(uint8_t *record)
 	int ctime;
 	uint8_t parity;
 	char *ref, *sum;
-	struct ddr2_spd_eeprom_s *s = (struct ddr2_spd_eeprom_s *)record;
+	struct ddr2_spd_eeprom *s = (struct ddr2_spd_eeprom *)record;
 
 	if (s->mem_type != SPD_MEMTYPE_DDR2) {
 		printf("Can't dump information for non-DDR2 memory\n");
@@ -201,7 +275,7 @@ void ddr_spd_print(uint8_t *record)
 		}
 	}
 
-	if (ddr2_spd_checksum_pass(s))
+	if (ddr2_spd_check(s))
 		sum = "ERR";
 	else
 		sum = "OK";

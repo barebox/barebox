@@ -50,7 +50,7 @@
  *	010		16bits
  *	011		32bits
  */
-static uint64_t compute_ranksize(const struct ddr3_spd_eeprom_s *spd)
+static uint64_t compute_ranksize(const struct ddr3_spd_eeprom *spd)
 {
 	uint64_t bsize;
 	int sdram_cap_bsize = 0, prim_bus_width = 0, sdram_width = 0;
@@ -78,14 +78,14 @@ uint32_t
 compute_dimm_parameters(const generic_spd_eeprom_t *spdin,
 		struct dimm_params_s *pdimm)
 {
-	const struct ddr3_spd_eeprom_s *spd = spdin;
-	uint32_t retval, mtb_ps;
-	int ftb_tmp;
+	const struct ddr3_spd_eeprom *spd = spdin;
+	uint32_t mtb_ps;
+	int retval, ftb_tmp;
 
 	if (spd->mem_type != SPD_MEMTYPE_DDR3)
 		goto error;
 
-	retval = ddr3_spd_checksum_pass(spd);
+	retval = ddr3_spd_check(spd);
 	if (retval)
 		goto error;
 

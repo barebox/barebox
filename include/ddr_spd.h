@@ -499,6 +499,16 @@ struct ddr4_spd_eeprom {
 	uint8_t user[512-384];		/* 384~511 End User Programmable */
 };
 
+struct spd_eeprom {
+	union {
+		struct ddr1_spd_eeprom ddr1;
+		struct ddr2_spd_eeprom ddr2;
+		struct ddr3_spd_eeprom ddr3;
+		struct ddr4_spd_eeprom ddr4;
+		uint8_t data[512];
+	};
+};
+
 /*
  * Byte 2 Fundamental Memory Types.
  */

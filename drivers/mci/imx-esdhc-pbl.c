@@ -29,7 +29,6 @@
 
 #define esdhc_read32(a)                    readl(a)
 #define esdhc_write32(a, v)                writel(v,a)
-#define IMX_SDHCI_MIXCTRL  0x48
 
 struct esdhc {
 	void __iomem *regs;

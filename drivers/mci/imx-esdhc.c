@@ -83,15 +83,6 @@
 /* The IP supports HS400 mode */
 #define ESDHC_FLAG_HS400		BIT(9)
 
-
-#define IMX_SDHCI_WML		0x44
-#define IMX_SDHCI_MIXCTRL	0x48
-#define IMX_SDHCI_DLL_CTRL	0x60
-#define IMX_SDHCI_MIX_CTRL_FBCLK_SEL	(BIT(25))
-
-#define ESDHC_DMA_SYSCTL	0x40c /* Layerscape specific */
-#define ESDHC_SYSCTL_DMA_SNOOP  BIT(6)
-
 struct esdhc_soc_data {
 	u32 flags;
 	const char *clkidx;

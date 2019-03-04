@@ -3,8 +3,7 @@ menu "Crypto support"
 config CRC32
 	bool
 
-config CRC16
-	default y
+config CRC_ITU_T
 	bool
 
 config CRC7

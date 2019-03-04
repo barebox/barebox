@@ -51,7 +51,7 @@ uint32_t ddr3_spd_checksum_pass(const struct ddr3_spd_eeprom_s *spd)
 	 */
 
 	len = !(spd->info_size_crc & 0x80) ? 126 : 117;
-	csum16 = cyg_crc16((char *)spd, len);
+	csum16 = crc_itu_t(0, (char *)spd, len);
 
 	crc_lsb = (char) (csum16 & 0xff);
 	crc_msb = (char) (csum16 >> 8);

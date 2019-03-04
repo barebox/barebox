@@ -210,7 +210,7 @@ static int check_crc(unsigned char *buf, int len, int crc, int crc_mode)
 			crc8 += buf[i];
 		return crc8 == crc ? 0 : -EBADMSG;
 	case CRC_CRC16:
-		crc16 = cyg_crc16(buf, len);
+		crc16 = crc_itu_t(0, buf, len);
 		xy_dbg("crc16: received = %x, calculated=%x\n", crc, crc16);
 		return crc16 == crc ? 0 : -EBADMSG;
 	case CRC_NONE:

@@ -79,7 +79,7 @@ config QSORT
 
 config XYMODEM
 	bool
-	select CRC16
+	select CRC_ITU_T
 
 config LIBSCAN
 	bool
@@ -94,7 +94,7 @@ config STMP_DEVICE
 	bool
 
 config RATP
-	select CRC16
+	select CRC_ITU_T
 	bool "RATP protocol support"
 	help
 	  Reliable Asynchronous Transfer Protocol (RATP) is a protocol for reliably

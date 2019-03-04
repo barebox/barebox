@@ -14,5 +14,24 @@ quiet_cmd_lspbl_image = LSPBL-IMG $@
 			$(objtree)/scripts/pblimage -o $@ -r $(lspbl-rcw-tmp) \
 			-m $($(patsubst $(obj)/%.pblb,PBL_CODE_SIZE_%,$<)) -p $(lspbl-pbi-tmp) -i $<
 
-$(obj)/%.lspblimg: $(obj)/% FORCE
-	$(call if_changed,lspbl_image,$(RCW_$(@F)),$(PBI_$(@F)),)
+pbl-$(CONFIG_MACH_LS1046ARDB) += start_ls1046ardb.pbl
+$(obj)/barebox-ls1046ardb-2nd.image: $(obj)/start_ls1046ardb.pblb
+	$(call if_changed,shipped)
+
+$(obj)/barebox-ls1046ardb-sd.image: $(obj)/start_ls1046ardb.pblb \
+		$(board)/ls1046ardb/ls1046ardb_rcw_sd.cfg \
+		$(board)/ls1046ardb/ls1046ardb_pbi.cfg
+	$(call if_changed,lspbl_image)
+
+$(obj)/barebox-ls1046ardb-emmc.image: $(obj)/start_ls1046ardb.pblb \
+		$(board)/ls1046ardb/ls1046ardb_rcw_emmc.cfg \
+		$(board)/ls1046ardb/ls1046ardb_pbi.cfg
+	$(call if_changed,lspbl_image)
+
+$(obj)/barebox-ls1046ardb-qspi.image: $(obj)/start_ls1046ardb.pblb \
+		$(board)/ls1046ardb/ls1046ardb_rcw_qspi.cfg \
+		$(board)/ls1046ardb/ls1046ardb_pbi.cfg
+	$(call if_changed,lspbl_image)
+
+image-$(CONFIG_MACH_LS1046ARDB) += barebox-ls1046ardb-sd.image barebox-ls1046ardb-qspi.image \
+	barebox-ls1046ardb-emmc.image barebox-ls1046ardb-2nd.image

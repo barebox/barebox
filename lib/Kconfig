@@ -93,6 +93,10 @@ config IMAGE_SPARSE
 config STMP_DEVICE
 	bool
 
+config FSL_QE_FIRMWARE
+	select CRC32
+	bool
+
 config RATP
 	select CRC_ITU_T
 	bool "RATP protocol support"

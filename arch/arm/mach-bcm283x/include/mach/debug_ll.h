@@ -20,12 +20,16 @@
 
 #include <mach/platform.h>
 
-#ifndef CONFIG_MACH_RPI_DEBUG_UART_BASE
-#define CONFIG_MACH_RPI_DEBUG_UART_BASE 0
-#endif
+#ifdef CONFIG_DEBUG_RPI1_UART
 
-#define DEBUG_LL_UART_ADDR CONFIG_MACH_RPI_DEBUG_UART_BASE
-
+#define DEBUG_LL_UART_ADDR BCM2835_PL011_BASE
 #include <debug_ll/pl011.h>
+
+#elif defined CONFIG_DEBUG_RPI2_3_UART
+
+#define DEBUG_LL_UART_ADDR BCM2836_PL011_BASE
+#include <debug_ll/pl011.h>
+
+#endif
 
 #endif /* __MACH_BCM2835_DEBUG_LL_H__ */

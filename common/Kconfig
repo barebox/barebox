@@ -1159,6 +1159,19 @@ config DEBUG_SOCFPGA_UART1
 	  Say Y here if you want kernel low-level debugging support
 	  on SOCFPGA(Arria 10) based platforms.
 
+config DEBUG_RPI1_UART
+	bool "RaspberryPi 1 debug UART"
+	depends on ARCH_BCM283X
+	help
+	  Say Y here if you want low-level debugging support on
+	  RaspberryPi 1 boards.
+
+config DEBUG_RPI2_UART
+	bool "RaspberryPi 2/3 debug UART"
+	depends on ARCH_BCM283X
+	help
+	  Say Y here if you want low-level debugging support on
+	  RaspberryPi 2 and 3 boards.
 
 endchoice
 

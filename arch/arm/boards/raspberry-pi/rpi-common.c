@@ -34,6 +34,7 @@
 
 #include <mach/core.h>
 #include <mach/mbox.h>
+#include <mach/platform.h>
 
 #include "rpi.h"
 #include "lowlevel.h"
@@ -319,10 +320,6 @@ static int rpi_clock_init(void)
 	return 0;
 }
 postconsole_initcall(rpi_clock_init);
-
-#define BCM2835_PL011_BASE 0x20201000
-#define BCM2836_PL011_BASE 0x3f201000
-#define BCM2836_MINIUART_BASE 0x3f215040
 
 static int rpi_console_clock_init(void)
 {

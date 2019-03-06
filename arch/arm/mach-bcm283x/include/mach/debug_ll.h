@@ -26,6 +26,6 @@
 
 #define DEBUG_LL_UART_ADDR CONFIG_MACH_RPI_DEBUG_UART_BASE
 
-#include <asm/debug_ll_pl011.h>
+#include <debug_ll/pl011.h>
 
 #endif /* __MACH_BCM2835_DEBUG_LL_H__ */

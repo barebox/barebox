@@ -171,14 +171,14 @@ static void put_file(FILE *f)
 	dput(f->dentry);
 }
 
-static int check_fd(int fd)
+static FILE *fd_to_file(int fd)
 {
 	if (fd < 0 || fd >= MAX_FILES || !files[fd].in_use) {
 		errno = EBADF;
-		return -errno;
+		return ERR_PTR(-errno);
 	}
 
-	return 0;
+	return &files[fd];
 }
 
 static int create(struct dentry *dir, struct dentry *dentry)
@@ -205,13 +205,11 @@ EXPORT_SYMBOL(creat);
 int ftruncate(int fd, loff_t length)
 {
 	struct fs_driver_d *fsdrv;
-	FILE *f;
+	FILE *f = fd_to_file(fd);
 	int ret;
 
-	if (check_fd(fd))
+	if (IS_ERR(f))
 		return -errno;
-
-	f = &files[fd];
 
 	if (f->size == FILE_SIZE_STREAM)
 		return 0;
@@ -232,13 +230,11 @@ int ftruncate(int fd, loff_t length)
 int ioctl(int fd, int request, void *buf)
 {
 	struct fs_driver_d *fsdrv;
-	FILE *f;
+	FILE *f = fd_to_file(fd);
 	int ret;
 
-	if (check_fd(fd))
+	if (IS_ERR(f))
 		return -errno;
-
-	f = &files[fd];
 
 	fsdrv = f->fsdev->driver;
 
@@ -279,13 +275,11 @@ out:
 ssize_t pread(int fd, void *buf, size_t count, loff_t offset)
 {
 	loff_t pos;
-	FILE *f;
+	FILE *f = fd_to_file(fd);
 	int ret;
 
-	if (check_fd(fd))
+	if (IS_ERR(f))
 		return -errno;
-
-	f = &files[fd];
 
 	pos = f->pos;
 	f->pos = offset;
@@ -298,13 +292,11 @@ EXPORT_SYMBOL(pread);
 
 ssize_t read(int fd, void *buf, size_t count)
 {
-	FILE *f;
+	FILE *f = fd_to_file(fd);
 	int ret;
 
-	if (check_fd(fd))
+	if (IS_ERR(f))
 		return -errno;
-
-	f = &files[fd];
 
 	ret = __read(f, buf, count);
 
@@ -348,13 +340,11 @@ out:
 ssize_t pwrite(int fd, const void *buf, size_t count, loff_t offset)
 {
 	loff_t pos;
-	FILE *f;
+	FILE *f = fd_to_file(fd);
 	int ret;
 
-	if (check_fd(fd))
+	if (IS_ERR(f))
 		return -errno;
-
-	f = &files[fd];
 
 	pos = f->pos;
 	f->pos = offset;
@@ -367,13 +357,11 @@ EXPORT_SYMBOL(pwrite);
 
 ssize_t write(int fd, const void *buf, size_t count)
 {
-	FILE *f;
+	FILE *f = fd_to_file(fd);
 	int ret;
 
-	if (check_fd(fd))
+	if (IS_ERR(f))
 		return -errno;
-
-	f = &files[fd];
 
 	ret = __write(f, buf, count);
 
@@ -386,13 +374,11 @@ EXPORT_SYMBOL(write);
 int flush(int fd)
 {
 	struct fs_driver_d *fsdrv;
-	FILE *f;
+	FILE *f = fd_to_file(fd);
 	int ret;
 
-	if (check_fd(fd))
+	if (IS_ERR(f))
 		return -errno;
-
-	f = &files[fd];
 
 	fsdrv = f->fsdev->driver;
 	if (fsdrv->flush)
@@ -406,17 +392,16 @@ int flush(int fd)
 	return ret;
 }
 
-loff_t lseek(int fildes, loff_t offset, int whence)
+loff_t lseek(int fd, loff_t offset, int whence)
 {
 	struct fs_driver_d *fsdrv;
-	FILE *f;
+	FILE *f = fd_to_file(fd);
 	loff_t pos;
 	int ret;
 
-	if (check_fd(fildes))
+	if (IS_ERR(f))
 		return -1;
 
-	f = &files[fildes];
 	fsdrv = f->fsdev->driver;
 
 	ret = -EINVAL;
@@ -461,12 +446,11 @@ EXPORT_SYMBOL(lseek);
 int erase(int fd, loff_t count, loff_t offset)
 {
 	struct fs_driver_d *fsdrv;
-	FILE *f;
+	FILE *f = fd_to_file(fd);
 	int ret;
 
-	if (check_fd(fd))
+	if (IS_ERR(f))
 		return -errno;
-	f = &files[fd];
 	if (offset >= f->size)
 		return 0;
 	if (count == ERASE_SIZE_ALL || count > f->size - offset)
@@ -490,12 +474,11 @@ EXPORT_SYMBOL(erase);
 int protect(int fd, size_t count, loff_t offset, int prot)
 {
 	struct fs_driver_d *fsdrv;
-	FILE *f;
+	FILE *f = fd_to_file(fd);
 	int ret;
 
-	if (check_fd(fd))
+	if (IS_ERR(f))
 		return -errno;
-	f = &files[fd];
 	if (offset >= f->size)
 		return 0;
 	if (count > f->size - offset)
@@ -532,14 +515,12 @@ int protect_file(const char *file, int prot)
 void *memmap(int fd, int flags)
 {
 	struct fs_driver_d *fsdrv;
-	FILE *f;
+	FILE *f = fd_to_file(fd);
 	void *retp = MAP_FAILED;
 	int ret;
 
-	if (check_fd(fd))
+	if (IS_ERR(f))
 		return retp;
-
-	f = &files[fd];
 
 	fsdrv = f->fsdev->driver;
 
@@ -558,13 +539,11 @@ EXPORT_SYMBOL(memmap);
 int close(int fd)
 {
 	struct fs_driver_d *fsdrv;
-	FILE *f;
+	FILE *f = fd_to_file(fd);
 	int ret = 0;
 
-	if (check_fd(fd))
+	if (IS_ERR(f))
 		return -errno;
-
-	f = &files[fd];
 
 	fsdrv = f->fsdev->driver;
 
@@ -809,9 +788,6 @@ static int fillonedir(struct dir_context *ctx, const char *name, int namlen,
 	struct readdir_entry *entry;
 
 	entry = xzalloc(sizeof(*entry));
-	if (!entry)
-		return -ENOMEM;
-
 	memcpy(entry->d.d_name, name, namlen);
 	list_add_tail(&entry->list, &rd->dir->entries);
 
@@ -850,15 +826,10 @@ static void stat_inode(struct inode *inode, struct stat *s)
 
 int fstat(int fd, struct stat *s)
 {
-	FILE *f;
-	struct fs_device_d *fsdev;
+	FILE *f = fd_to_file(fd);
 
-	if (check_fd(fd))
+	if (IS_ERR(f))
 		return -errno;
-
-	f = &files[fd];
-
-	fsdev = f->fsdev;
 
 	stat_inode(f->f_inode, s);
 

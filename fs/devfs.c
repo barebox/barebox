@@ -78,13 +78,10 @@ static int devfs_erase(struct device_d *_dev, FILE *f, loff_t count, loff_t offs
 	if (cdev->flags & DEVFS_PARTITION_READONLY)
 		return -EPERM;
 
-	if (!cdev->ops->erase)
-		return -ENOSYS;
-
 	if (count + offset > cdev->size)
 		count = cdev->size - offset;
 
-	return cdev->ops->erase(cdev, count, offset + cdev->offset);
+	return cdev_erase(cdev, count, offset);
 }
 
 static int devfs_protect(struct device_d *_dev, FILE *f, size_t count, loff_t offset, int prot)
@@ -155,10 +152,7 @@ static int devfs_flush(struct device_d *_dev, FILE *f)
 {
 	struct cdev *cdev = f->priv;
 
-	if (cdev->ops->flush)
-		return cdev->ops->flush(cdev);
-
-	return 0;
+	return cdev_flush(cdev);
 }
 
 static int devfs_ioctl(struct device_d *_dev, FILE *f, int request, void *buf)

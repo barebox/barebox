@@ -308,6 +308,7 @@ int uimage_load(struct uimage_handle *handle, unsigned int image_no,
 	image_header_t *hdr = &handle->header;
 	struct uimage_handle_data *iha;
 	int ret;
+	loff_t off;
 	int (*uncompress_fn)(unsigned char *inbuf, int len,
 		    int(*fill)(void*, unsigned int),
 	            int(*flush)(void*, unsigned int),
@@ -320,10 +321,9 @@ int uimage_load(struct uimage_handle *handle, unsigned int image_no,
 
 	iha = &handle->ihd[image_no];
 
-	ret = lseek(handle->fd, iha->offset + handle->data_offset,
-			SEEK_SET);
-	if (ret < 0)
-		return ret;
+	off = iha->offset + handle->data_offset;
+	if (lseek(handle->fd, off, SEEK_SET) != off)
+		return -errno;
 
 	/* if ramdisk U-Boot expect to ignore the compression type */
 	if (hdr->ih_comp == IH_COMP_NONE || hdr->ih_type == IH_TYPE_RAMDISK)

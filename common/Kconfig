@@ -1166,7 +1166,7 @@ config DEBUG_RPI1_UART
 	  Say Y here if you want low-level debugging support on
 	  RaspberryPi 1 boards.
 
-config DEBUG_RPI2_UART
+config DEBUG_RPI2_3_UART
 	bool "RaspberryPi 2/3 debug UART"
 	depends on ARCH_BCM283X
 	help

@@ -203,11 +203,10 @@ static int usb_stor_io_10(struct us_blk_dev *usb_blkdev, u8 opcode,
 
 #define US_MAX_IO_BLK 32
 
-enum { io_rd, io_wr };
-
 /* Read / write a chunk of sectors on media */
-static int usb_stor_blk_io(int io_op, struct block_device *disk_dev,
-			int sector_start, int sector_count, void *buffer)
+static int usb_stor_blk_io(struct block_device *disk_dev,
+			   int sector_start, int sector_count, void *buffer,
+			   bool read)
 {
 	struct us_blk_dev *pblk_dev = container_of(disk_dev,
 						   struct us_blk_dev,
@@ -225,8 +224,8 @@ static int usb_stor_blk_io(int io_op, struct block_device *disk_dev,
 
 	/* read / write the requested data */
 	dev_dbg(dev, "%s %u block(s), starting from %d\n",
-		 (io_op == io_rd) ? "Read" : "Write",
-		 sector_count, sector_start);
+		read ? "Read" : "Write",
+		sector_count, sector_start);
 	sectors_done = 0;
 	while (sector_count > 0) {
 		int result;
@@ -234,8 +233,7 @@ static int usb_stor_blk_io(int io_op, struct block_device *disk_dev,
 		u8 *data = buffer + (sectors_done * SECTOR_SIZE);
 
 		result = usb_stor_io_10(pblk_dev,
-					(io_op == io_rd) ?
-					SCSI_READ10 : SCSI_WRITE10,
+					read ? SCSI_READ10 : SCSI_WRITE10,
 					(ulong)sector_start,
 					data, n);
 		if (result != 0) {
@@ -256,14 +254,14 @@ static int usb_stor_blk_io(int io_op, struct block_device *disk_dev,
 static int __maybe_unused usb_stor_blk_write(struct block_device *blk,
 				const void *buffer, int block, int num_blocks)
 {
-	return usb_stor_blk_io(io_wr, blk, block, num_blocks, (void *)buffer);
+	return usb_stor_blk_io(blk, block, num_blocks, (void *)buffer, false);
 }
 
 /* Read a chunk of sectors from media */
 static int usb_stor_blk_read(struct block_device *blk, void *buffer, int block,
 				int num_blocks)
 {
-	return usb_stor_blk_io(io_rd, blk, block, num_blocks, buffer);
+	return usb_stor_blk_io(blk, block, num_blocks, buffer, true);
 }
 
 static struct block_device_ops usb_mass_storage_ops = {

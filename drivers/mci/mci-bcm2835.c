@@ -506,6 +506,9 @@ static int bcm2835_mci_probe(struct device_d *hw_dev)
 	host->mci.hw_dev = hw_dev;
 	host->hw_dev = hw_dev;
 	host->max_clock = clk_get_rate(clk);
+
+	mci_of_parse(&host->mci);
+
 	iores = dev_request_mem_resource(hw_dev, 0);
 	if (IS_ERR(iores)) {
 		dev_err(host->hw_dev, "Failed request mem region, aborting...\n");
@@ -561,4 +564,4 @@ static int bcm2835_mci_add(void)
 {
 	return platform_driver_register(&bcm2835_mci_driver);
 }
-coredevice_initcall(bcm2835_mci_add);
+device_initcall(bcm2835_mci_add);

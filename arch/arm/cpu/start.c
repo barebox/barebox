@@ -38,6 +38,7 @@
 
 unsigned long arm_stack_top;
 static unsigned long arm_barebox_size;
+static unsigned long arm_endmem;
 static void *barebox_boarddata;
 static unsigned long barebox_boarddata_size;
 
@@ -131,6 +132,12 @@ unsigned long arm_mem_ramoops_get(void)
 }
 EXPORT_SYMBOL_GPL(arm_mem_ramoops_get);
 
+unsigned long arm_mem_endmem_get(void)
+{
+	return arm_endmem;
+}
+EXPORT_SYMBOL_GPL(arm_mem_endmem_get);
+
 static int barebox_memory_areas_init(void)
 {
 	if(barebox_boarddata)
@@ -163,6 +170,7 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 
 	pr_debug("memory at 0x%08lx, size 0x%08lx\n", membase, memsize);
 
+	arm_endmem = endmem;
 	arm_stack_top = arm_mem_stack_top(membase, endmem);
 	arm_barebox_size = barebox_size;
 	malloc_end = barebox_base;

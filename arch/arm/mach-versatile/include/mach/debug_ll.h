@@ -18,6 +18,6 @@
 
 #define DEBUG_LL_UART_ADDR 0x101F1000
 
-#include <asm/debug_ll_pl011.h>
+#include <debug_ll/pl011.h>
 
 #endif

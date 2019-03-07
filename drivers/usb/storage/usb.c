@@ -37,30 +37,43 @@ static LIST_HEAD(us_blkdev_list);
  * USB Storage routines
  ***********************************************************************/
 
-static int usb_stor_inquiry(ccb *srb, struct us_data *us)
+static int usb_stor_inquiry(struct us_blk_dev *usb_blkdev)
 {
+	struct us_data *us = usb_blkdev->us;
 	struct device_d *dev = &us->pusb_dev->dev;
 	int retries, result;
+	ccb srb;
+	u8 *data = xzalloc(36);
 
-	srb->datalen = min(128UL, srb->datalen);
-	if (srb->datalen < 5) {
-		dev_dbg(dev, "SCSI_INQUIRY: invalid data buffer size\n");
-		return -EINVAL;
-	}
+	srb.lun = usb_blkdev->lun;
+	srb.pdata = data;
+	srb.datalen = 36;
 
 	retries = 3;
 	do {
 		dev_dbg(dev, "SCSI_INQUIRY\n");
-		memset(&srb->cmd[0], 0, 6);
-		srb->cmdlen = 6;
-		srb->cmd[0] = SCSI_INQUIRY;
-		srb->cmd[3] = (u8)(srb->datalen >> 8);
-		srb->cmd[4] = (u8)(srb->datalen >> 0);
-		result = us->transport(srb, us);
+		memset(&srb.cmd[0], 0, 6);
+		srb.cmdlen = 6;
+		srb.cmd[0] = SCSI_INQUIRY;
+		srb.cmd[3] = (u8)(srb.datalen >> 8);
+		srb.cmd[4] = (u8)(srb.datalen >> 0);
+		result = us->transport(&srb, us);
 		dev_dbg(dev, "SCSI_INQUIRY returns %d\n", result);
-	} while ((result != USB_STOR_TRANSPORT_GOOD) && retries--);
+		if (result == USB_STOR_TRANSPORT_GOOD) {
+			dev_dbg(dev, "Peripheral type: %x, removable: %x\n",
+				data[0], (data[1] >> 7));
+			dev_dbg(dev, "ISO ver: %x, resp format: %x\n",
+				data[2], data[3]);
+			dev_dbg(dev, "Vendor/product/rev: %28s\n",
+				&data[8]);
+			// TODO:  process and store device info
+			break;
+		}
+	} while (retries--);
 
-	return (result != USB_STOR_TRANSPORT_GOOD) ? -EIO : 0;
+	free(data);
+
+	return result ? -ENODEV : 0;
 }
 
 static int usb_stor_request_sense(ccb *srb, struct us_data *us)
@@ -344,17 +357,12 @@ static int usb_stor_init_blkdev(struct us_blk_dev *pblk_dev)
 
 	/* get device info */
 	dev_dbg(dev, "Reading device info\n");
-	us_ccb.datalen = 36;
-	if (usb_stor_inquiry(&us_ccb, us)) {
+
+	result = usb_stor_inquiry(pblk_dev);
+	if (result) {
 		dev_dbg(dev, "Cannot read device info\n");
-		result = -ENODEV;
 		goto Exit;
 	}
-	dev_dbg(dev, "Peripheral type: %x, removable: %x\n",
-	          us_io_buf[0], (us_io_buf[1] >> 7));
-	dev_dbg(dev, "ISO ver: %x, resp format: %x\n", us_io_buf[2], us_io_buf[3]);
-	dev_dbg(dev, "Vendor/product/rev: %28s\n", &us_io_buf[8]);
-	// TODO:  process and store device info
 
 	/* ensure unit ready */
 	dev_dbg(dev, "Testing for unit ready\n");

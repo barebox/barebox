@@ -203,15 +203,15 @@ static int usb_stor_io_10(struct us_blk_dev *usb_blkdev, u8 opcode,
 
 #define US_MAX_IO_BLK 32
 
-#define to_usb_mass_storage(x) container_of((x), struct us_blk_dev, blk)
-
 enum { io_rd, io_wr };
 
 /* Read / write a chunk of sectors on media */
 static int usb_stor_blk_io(int io_op, struct block_device *disk_dev,
 			int sector_start, int sector_count, void *buffer)
 {
-	struct us_blk_dev *pblk_dev = to_usb_mass_storage(disk_dev);
+	struct us_blk_dev *pblk_dev = container_of(disk_dev,
+						   struct us_blk_dev,
+						   blk);
 	struct us_data *us = pblk_dev->us;
 	struct device_d *dev = &us->pusb_dev->dev;
 	unsigned sectors_done;

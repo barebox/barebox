@@ -216,38 +216,11 @@ static int usb_stor_blk_io(int io_op, struct block_device *disk_dev,
 	struct device_d *dev = &us->pusb_dev->dev;
 	unsigned sectors_done;
 
-	if (sector_count == 0)
-		return 0;
-
-	/* check for unsupported block size */
-	if (pblk_dev->blk.blockbits != SECTOR_SHIFT) {
-		dev_dbg(dev, "%s: unsupported block shift %d\n",
-			 __func__, pblk_dev->blk.blockbits);
-		return -EINVAL;
-	}
-
-	/* check for invalid sector_start */
-	if (sector_start >= pblk_dev->blk.num_blocks || sector_start > (ulong)-1) {
-		dev_dbg(dev, "%s: start sector %d too large\n",
-			 __func__, sector_start);
-		return -EINVAL;
-	}
-
 	/* ensure unit ready */
 	dev_dbg(dev, "Testing for unit ready\n");
 	if (usb_stor_test_unit_ready(pblk_dev)) {
 		dev_dbg(dev, "Device NOT ready\n");
 		return -EIO;
-	}
-
-	/* possibly limit the amount of I/O data */
-	if (sector_count > INT_MAX) {
-		sector_count = INT_MAX;
-		dev_dbg(dev, "Restricting I/O to %u blocks\n", sector_count);
-	}
-	if (sector_start + sector_count > pblk_dev->blk.num_blocks) {
-		sector_count = pblk_dev->blk.num_blocks - sector_start;
-		dev_dbg(dev, "Restricting I/O to %u blocks\n", sector_count);
 	}
 
 	/* read / write the requested data */

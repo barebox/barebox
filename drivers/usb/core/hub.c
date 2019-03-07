@@ -21,7 +21,6 @@
 #include <init.h>
 #include <malloc.h>
 #include <errno.h>
-#include <scsi.h>
 #include <usb/phy.h>
 #include <usb/usb.h>
 #include <usb/usb_defs.h>

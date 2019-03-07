@@ -285,9 +285,7 @@ static int usb_stor_init_blkdev(struct us_blk_dev *pblk_dev)
 	struct us_data *us = pblk_dev->us;
 	struct device_d *dev = &us->pusb_dev->dev;
 	u32 last_lba = 0, block_length = 0;
-	int result = 0;
-
-	pblk_dev->blk.num_blocks = 0;
+	int result;
 
 	/* get device info */
 	dev_dbg(dev, "Reading device info\n");

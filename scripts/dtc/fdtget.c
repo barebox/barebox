@@ -76,7 +76,7 @@ static int show_cell_list(struct display_info *disp, const char *data, int len,
 	for (i = 0; i < len; i += size, p += size) {
 		if (i)
 			printf(" ");
-		value = size == 4 ? fdt32_to_cpu(*(const fdt32_t *)p) :
+		value = size == 4 ? fdt32_ld((const fdt32_t *)p) :
 			size == 2 ? (*p << 8) | p[1] : *p;
 		printf(fmt, value);
 	}
@@ -140,7 +140,6 @@ static int show_data(struct display_info *disp, const char *data, int len)
  */
 static int list_properties(const void *blob, int node)
 {
-	const struct fdt_property *data;
 	const char *name;
 	int prop;
 
@@ -149,8 +148,7 @@ static int list_properties(const void *blob, int node)
 		/* Stop silently when there are no more properties */
 		if (prop < 0)
 			return prop == -FDT_ERR_NOTFOUND ? 0 : prop;
-		data = fdt_get_property_by_offset(blob, prop, NULL);
-		name = fdt_string(blob, fdt32_to_cpu(data->nameoff));
+		fdt_getprop_by_offset(blob, prop, &name, NULL);
 		if (name)
 			puts(name);
 		prop = fdt_next_property_offset(blob, prop);
@@ -273,7 +271,7 @@ static int do_fdtget(struct display_info *disp, const char *filename,
 	const char *prop;
 	int i, node;
 
-	blob = utilfdt_read(filename);
+	blob = utilfdt_read(filename, NULL);
 	if (!blob)
 		return -1;
 

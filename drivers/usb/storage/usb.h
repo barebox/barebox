@@ -28,13 +28,6 @@
 #include <linux/list.h>
 
 
-#ifdef  USB_STOR_DEBUG
-#define US_DEBUGP(fmt, args...)    printf(fmt , ##args)
-#else
-#define US_DEBUGP(fmt, args...)
-#endif
-
-
 /* some defines, similar to ch9.h */
 #define USB_EP_NUM(epd) \
 	((epd)->bEndpointAddress & USB_ENDPOINT_NUMBER_MASK)

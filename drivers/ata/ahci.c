@@ -27,7 +27,6 @@
 #include <io.h>
 #include <of.h>
 #include <malloc.h>
-#include <scsi.h>
 #include <linux/ctype.h>
 #include <linux/err.h>
 #include <disks.h>

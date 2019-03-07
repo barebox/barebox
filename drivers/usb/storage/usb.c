@@ -42,22 +42,19 @@ static int usb_stor_inquiry(struct us_blk_dev *usb_blkdev)
 	struct us_data *us = usb_blkdev->us;
 	struct device_d *dev = &us->pusb_dev->dev;
 	int retries, result;
-	ccb srb;
-	u8 *data = xzalloc(36);
-
-	srb.lun = usb_blkdev->lun;
-	srb.pdata = data;
-	srb.datalen = 36;
+	u8 cmd[6];
+	const u32 datalen = 36;
+	u8 *data = xzalloc(datalen);
 
 	retries = 3;
 	do {
 		dev_dbg(dev, "SCSI_INQUIRY\n");
-		memset(&srb.cmd[0], 0, 6);
-		srb.cmdlen = 6;
-		srb.cmd[0] = SCSI_INQUIRY;
-		srb.cmd[3] = (u8)(srb.datalen >> 8);
-		srb.cmd[4] = (u8)(srb.datalen >> 0);
-		result = us->transport(&srb, us);
+		memset(cmd, 0, sizeof(cmd));
+		cmd[0] = SCSI_INQUIRY;
+		cmd[3] = (u8)(datalen >> 8);
+		cmd[4] = (u8)(datalen >> 0);
+		result = us->transport(usb_blkdev, cmd, sizeof(cmd),
+				       data, datalen);
 		dev_dbg(dev, "SCSI_INQUIRY returns %d\n", result);
 		if (result == USB_STOR_TRANSPORT_GOOD) {
 			dev_dbg(dev, "Peripheral type: %x, removable: %x\n",
@@ -80,19 +77,16 @@ static int usb_stor_request_sense(struct us_blk_dev *usb_blkdev)
 {
 	struct us_data *us = usb_blkdev->us;
 	struct device_d *dev = &us->pusb_dev->dev;
-	ccb srb;
-	u8 *data = xzalloc(18);
-
-	srb.lun = usb_blkdev->lun;
+	u8 cmd[6];
+	const u8 datalen = 18;
+	u8 *data = xzalloc(datalen);
 
 	dev_dbg(dev, "SCSI_REQ_SENSE\n");
-	srb.pdata = data;
-	srb.datalen = 18;
-	memset(&srb.cmd[0], 0, 6);
-	srb.cmdlen = 6;
-	srb.cmd[0] = SCSI_REQ_SENSE;
-	srb.cmd[4] = (u8)(srb.datalen >> 0);
-	us->transport(&srb, us);
+
+	memset(cmd, 0, sizeof(cmd));
+	cmd[0] = SCSI_REQ_SENSE;
+	cmd[4] = datalen;
+	us->transport(usb_blkdev, cmd, sizeof(cmd), data, datalen);
 	dev_dbg(dev, "Request Sense returned %02X %02X %02X\n",
 		data[2], data[12], data[13]);
 
@@ -105,19 +99,16 @@ static int usb_stor_test_unit_ready(struct us_blk_dev *usb_blkdev)
 {
 	struct us_data *us = usb_blkdev->us;
 	struct device_d *dev = &us->pusb_dev->dev;
+	u8 cmd[12];
 	int retries, result;
-	ccb srb;
-
-	srb.lun = usb_blkdev->lun;
 
 	retries = 10;
 	do {
 		dev_dbg(dev, "SCSI_TST_U_RDY\n");
-		memset(&srb.cmd[0], 0, 12);
-		srb.cmdlen = 12;
-		srb.cmd[0] = SCSI_TST_U_RDY;
-		srb.datalen = 0;
-		result = us->transport(&srb, us);
+		memset(cmd, 0, sizeof(cmd));
+		cmd[0] = SCSI_TST_U_RDY;
+		result = us->transport(usb_blkdev, cmd, sizeof(cmd),
+				       NULL, 0);
 		dev_dbg(dev, "SCSI_TST_U_RDY returns %d\n", result);
 		if (result == USB_STOR_TRANSPORT_GOOD)
 			return 0;
@@ -134,19 +125,18 @@ static int usb_stor_read_capacity(struct us_blk_dev *usb_blkdev,
 	struct us_data *us = usb_blkdev->us;
 	struct device_d *dev = &us->pusb_dev->dev;
 	int retries, result;
-	ccb srb;
-	u32 *data = xzalloc(8);
+	const u32 datalen = 8;
+	u32 *data = xzalloc(datalen);
+	u8 cmd[10];
 
 	retries = 3;
 	do {
 		dev_dbg(dev, "SCSI_RD_CAPAC\n");
-		memset(&srb.cmd[0], 0, 10);
-		srb.cmdlen = 10;
-		srb.lun = usb_blkdev->lun;
-		srb.cmd[0] = SCSI_RD_CAPAC;
-		srb.pdata = (void *)data;
-		srb.datalen = 8;
-		result = us->transport(&srb, us);
+		memset(cmd, 0, sizeof(cmd));
+		cmd[0] = SCSI_RD_CAPAC;
+
+		result = us->transport(usb_blkdev, cmd, sizeof(cmd), data,
+				       datalen);
 		dev_dbg(dev, "SCSI_RD_CAPAC returns %d\n", result);
 
 		if (result == USB_STOR_TRANSPORT_GOOD) {
@@ -163,30 +153,28 @@ static int usb_stor_read_capacity(struct us_blk_dev *usb_blkdev,
 	return result ? -EIO : 0;
 }
 
-static int usb_stor_io_10(struct us_blk_dev *usb_blkdev, u8 cmd,
+static int usb_stor_io_10(struct us_blk_dev *usb_blkdev, u8 opcode,
 			  unsigned long start, u8 *data,
 			  unsigned short blocks)
 {
 	struct us_data *us = usb_blkdev->us;
 	int retries, result;
-	ccb srb;
-
-	srb.lun = usb_blkdev->lun;
-	srb.pdata = data;
-	srb.datalen = blocks * SECTOR_SIZE;
+	const u32 datalen = blocks * SECTOR_SIZE;
+	u8 cmd[10];
 
 	retries = 2;
 	do {
-		memset(&srb.cmd[0], 0, 10);
-		srb.cmdlen = 10;
-		srb.cmd[0] = cmd;
-		srb.cmd[2] = (u8)(start >> 24);
-		srb.cmd[3] = (u8)(start >> 16);
-		srb.cmd[4] = (u8)(start >> 8);
-		srb.cmd[5] = (u8)(start >> 0);
-		srb.cmd[7] = (u8)(blocks >> 8);
-		srb.cmd[8] = (u8)(blocks >> 0);
-		result = us->transport(&srb, us);
+		memset(cmd, 0, sizeof(cmd));
+
+		cmd[0] = opcode;
+		cmd[2] = (u8)(start >> 24);
+		cmd[3] = (u8)(start >> 16);
+		cmd[4] = (u8)(start >> 8);
+		cmd[5] = (u8)(start >> 0);
+		cmd[7] = (u8)(blocks >> 8);
+		cmd[8] = (u8)(blocks >> 0);
+		result = us->transport(usb_blkdev, cmd, sizeof(cmd),
+				       data, datalen);
 		if (result == USB_STOR_TRANSPORT_GOOD)
 			return 0;
 		usb_stor_request_sense(usb_blkdev);

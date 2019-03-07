@@ -44,8 +44,11 @@
 
 
 struct us_data;
+struct us_blk_dev;
 
-typedef int (*trans_cmnd)(ccb *cb, struct us_data *data);
+typedef int (trans_cmnd)(struct us_blk_dev *usb_blkdev,
+			 const u8 *cmd, u8 cmdlen,
+			 void *data, u32 datalen);
 typedef int (*trans_reset)(struct us_data *data);
 
 /* one us_data object allocated per usb storage device */
@@ -65,11 +68,10 @@ struct us_data {
 
 	char			*transport_name;
 
-	trans_cmnd		transport;	/* transport function */
+	trans_cmnd		*transport;	/* transport function */
 	trans_reset		transport_reset;/* transport device reset */
 
 	/* SCSI interfaces */
-	ccb			*srb;		/* current srb */
 	struct list_head	blk_dev_list;
 };
 

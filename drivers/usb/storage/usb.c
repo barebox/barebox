@@ -98,27 +98,31 @@ static int usb_stor_request_sense(ccb *srb, struct us_data *us)
 	return 0;
 }
 
-static int usb_stor_test_unit_ready(ccb *srb, struct us_data *us)
+static int usb_stor_test_unit_ready(struct us_blk_dev *usb_blkdev)
 {
+	struct us_data *us = usb_blkdev->us;
 	struct device_d *dev = &us->pusb_dev->dev;
 	int retries, result;
+	ccb srb;
+
+	srb.lun = usb_blkdev->lun;
 
 	retries = 10;
 	do {
 		dev_dbg(dev, "SCSI_TST_U_RDY\n");
-		memset(&srb->cmd[0], 0, 12);
-		srb->cmdlen = 12;
-		srb->cmd[0] = SCSI_TST_U_RDY;
-		srb->datalen = 0;
-		result = us->transport(srb, us);
+		memset(&srb.cmd[0], 0, 12);
+		srb.cmdlen = 12;
+		srb.cmd[0] = SCSI_TST_U_RDY;
+		srb.datalen = 0;
+		result = us->transport(&srb, us);
 		dev_dbg(dev, "SCSI_TST_U_RDY returns %d\n", result);
 		if (result == USB_STOR_TRANSPORT_GOOD)
 			return 0;
-		usb_stor_request_sense(srb, us);
+		usb_stor_request_sense(&srb, us);
 		mdelay(100);
 	} while (retries--);
 
-	return -1;
+	return -ENODEV;
 }
 
 static int usb_stor_read_capacity(struct us_blk_dev *usb_blkdev,
@@ -255,7 +259,7 @@ static int usb_stor_blk_io(int io_op, struct block_device *disk_dev,
 
 	/* ensure unit ready */
 	dev_dbg(dev, "Testing for unit ready\n");
-	if (usb_stor_test_unit_ready(&us_ccb, us)) {
+	if (usb_stor_test_unit_ready(pblk_dev)) {
 		dev_dbg(dev, "Device NOT ready\n");
 		usb_disable_asynch(0);
 		return -EIO;
@@ -366,10 +370,10 @@ static int usb_stor_init_blkdev(struct us_blk_dev *pblk_dev)
 
 	/* ensure unit ready */
 	dev_dbg(dev, "Testing for unit ready\n");
-	us_ccb.datalen = 0;
-	if (usb_stor_test_unit_ready(&us_ccb, us)) {
+
+	result = usb_stor_test_unit_ready(pblk_dev);
+	if (result) {
 		dev_dbg(dev, "Device NOT ready\n");
-		result = -ENODEV;
 		goto Exit;
 	}
 

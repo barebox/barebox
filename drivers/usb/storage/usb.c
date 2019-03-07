@@ -212,7 +212,6 @@ static int usb_stor_blk_io(int io_op, struct block_device *disk_dev,
 	struct us_blk_dev *pblk_dev = to_usb_mass_storage(disk_dev);
 	struct us_data *us = pblk_dev->us;
 	struct device_d *dev = &us->pusb_dev->dev;
-	ccb us_ccb;
 	unsigned sectors_done;
 
 	if (sector_count == 0)
@@ -232,7 +231,6 @@ static int usb_stor_blk_io(int io_op, struct block_device *disk_dev,
 		return -EINVAL;
 	}
 
-	us_ccb.lun = pblk_dev->lun;
 	usb_disable_asynch(1);
 
 	/* ensure unit ready */
@@ -309,8 +307,6 @@ static struct block_device_ops usb_mass_storage_ops = {
  * Block device routines
  ***********************************************************************/
 
-static unsigned char us_io_buf[512];
-
 static int usb_limit_blk_cnt(unsigned cnt)
 {
 	if (cnt > 0x7fffffff) {
@@ -326,12 +322,8 @@ static int usb_stor_init_blkdev(struct us_blk_dev *pblk_dev)
 {
 	struct us_data *us = pblk_dev->us;
 	struct device_d *dev = &us->pusb_dev->dev;
-	ccb us_ccb;
 	u32 last_lba = 0, block_length = 0;
 	int result = 0;
-
-	us_ccb.pdata = us_io_buf;
-	us_ccb.lun = pblk_dev->lun;
 
 	pblk_dev->blk.num_blocks = 0;
 	usb_disable_asynch(1);

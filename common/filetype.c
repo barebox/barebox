@@ -383,7 +383,7 @@ enum filetype file_name_detect_type_offset(const char *filename, loff_t pos)
 
 	fd = open_and_lseek(filename, O_RDONLY, pos);
 	if (fd < 0)
-		return fd;
+		goto out;
 
 	buf = xzalloc(FILE_TYPE_SAFE_BUFSIZE);
 
@@ -396,7 +396,7 @@ enum filetype file_name_detect_type_offset(const char *filename, loff_t pos)
 err_out:
 	close(fd);
 	free(buf);
-
+out:
 	return type;
 }
 

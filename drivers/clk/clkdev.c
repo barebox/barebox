@@ -189,11 +189,6 @@ struct clk *clk_get(struct device_d *dev, const char *con_id)
 }
 EXPORT_SYMBOL(clk_get);
 
-void clk_put(struct clk *clk)
-{
-}
-EXPORT_SYMBOL(clk_put);
-
 void clkdev_add(struct clk_lookup *cl)
 {
 	if (cl->dev_id)

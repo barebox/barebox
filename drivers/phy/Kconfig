@@ -22,4 +22,6 @@ config USB_NOP_XCEIV
 	  built-in with usb ip or which are autonomous and doesn't require any
 	  phy programming such as ISP1x04 etc.
 
+source "drivers/phy/freescale/Kconfig"
+
 endif

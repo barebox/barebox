@@ -1,0 +1,14 @@
+#
+# USB Miscellaneous driver configuration
+#
+comment "USB Miscellaneous drivers"
+
+config USB_HUB_USB251XB
+	bool "USB251XB Hub Controller Configuration Driver"
+	depends on I2C
+	select NLS
+	help
+	  This option enables support for configuration via SMBus of the
+	  Microchip USB251x/xBi USB 2.0 Hub Controller series. Configuration
+	  parameters may be set in devicetree or platform data.
+	  Say Y or M here if you need to configure such a device via SMBus.

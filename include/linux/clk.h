@@ -25,6 +25,22 @@ struct device_d;
  */
 struct clk;
 
+/**
+ * struct clk_bulk_data - Data used for bulk clk operations.
+ *
+ * @id: clock consumer ID
+ * @clk: struct clk * to store the associated clock
+ *
+ * The CLK APIs provide a series of clk_bulk_() API calls as
+ * a convenience to consumers which require multiple clks.  This
+ * structure is used to manage data for these calls.
+ */
+struct clk_bulk_data {
+	const char		*id;
+	struct clk		*clk;
+};
+
+
 #ifdef CONFIG_HAVE_CLK
 
 /**
@@ -45,6 +61,29 @@ struct clk;
 struct clk *clk_get(struct device_d *dev, const char *id);
 
 /**
+ * clk_bulk_get - lookup and obtain a number of references to clock producer.
+ * @dev: device for clock "consumer"
+ * @num_clks: the number of clk_bulk_data
+ * @clks: the clk_bulk_data table of consumer
+ *
+ * This helper function allows drivers to get several clk consumers in one
+ * operation. If any of the clk cannot be acquired then any clks
+ * that were obtained will be freed before returning to the caller.
+ *
+ * Returns 0 if all clocks specified in clk_bulk_data table are obtained
+ * successfully, or valid IS_ERR() condition containing errno.
+ * The implementation uses @dev and @clk_bulk_data.id to determine the
+ * clock consumer, and thereby the clock producer.
+ * The clock returned is stored in each @clk_bulk_data.clk field.
+ *
+ * Drivers must assume that the clock source is not enabled.
+ *
+ * clk_bulk_get should not be called from within interrupt context.
+ */
+int __must_check clk_bulk_get(struct device_d *dev, int num_clks,
+			      struct clk_bulk_data *clks);
+
+/**
  * clk_enable - inform the system when the clock source should be running.
  * @clk: clock source
  *
@@ -53,6 +92,18 @@ struct clk *clk_get(struct device_d *dev, const char *id);
  * Returns success (0) or negative errno.
  */
 int clk_enable(struct clk *clk);
+
+/**
+ * clk_bulk_enable - inform the system when the set of clks should be running.
+ * @num_clks: the number of clk_bulk_data
+ * @clks: the clk_bulk_data table of consumer
+ *
+ * May be called from atomic contexts.
+ *
+ * Returns success (0) or negative errno.
+ */
+int __must_check clk_bulk_enable(int num_clks,
+				 const struct clk_bulk_data *clks);
 
 /**
  * clk_disable - inform the system when the clock source is no longer required.
@@ -69,6 +120,24 @@ int clk_enable(struct clk *clk);
 void clk_disable(struct clk *clk);
 
 /**
+ * clk_bulk_disable - inform the system when the set of clks is no
+ *		      longer required.
+ * @num_clks: the number of clk_bulk_data
+ * @clks: the clk_bulk_data table of consumer
+ *
+ * Inform the system that a set of clks is no longer required by
+ * a driver and may be shut down.
+ *
+ * May be called from atomic contexts.
+ *
+ * Implementation detail: if the set of clks is shared between
+ * multiple drivers, clk_bulk_enable() calls must be balanced by the
+ * same number of clk_bulk_disable() calls for the clock source to be
+ * disabled.
+ */
+void clk_bulk_disable(int num_clks, const struct clk_bulk_data *clks);
+
+/**
  * clk_get_rate - obtain the current clock rate (in Hz) for a clock source.
  *		  This is only valid once the clock source has been enabled.
  * @clk: clock source
@@ -76,17 +145,17 @@ void clk_disable(struct clk *clk);
 unsigned long clk_get_rate(struct clk *clk);
 
 /**
- * clk_put	- "free" the clock source
- * @clk: clock source
+ * clk_bulk_put	- "free" the clock source
+ * @num_clks: the number of clk_bulk_data
+ * @clks: the clk_bulk_data table of consumer
  *
- * Note: drivers must ensure that all clk_enable calls made on this
- * clock source are balanced by clk_disable calls prior to calling
+ * Note: drivers must ensure that all clk_bulk_enable calls made on this
+ * clock source are balanced by clk_bulk_disable calls prior to calling
  * this function.
  *
- * clk_put should not be called from within interrupt context.
+ * clk_bulk_put should not be called from within interrupt context.
  */
-void clk_put(struct clk *clk);
-
+void clk_bulk_put(int num_clks, struct clk_bulk_data *clks);
 
 /*
  * The remaining APIs are optional for machine class support.
@@ -166,7 +235,20 @@ static inline struct clk *clk_get(struct device_d *dev, const char *id)
 	return NULL;
 }
 
+static inline int __must_check clk_bulk_get(struct device_d *dev, int num_clks,
+					    struct clk_bulk_data *clks)
+{
+	return 0;
+}
+
+static inline void clk_bulk_put(int num_clks, struct clk_bulk_data *clks) {}
+
 static inline int clk_enable(struct clk *clk)
+{
+	return 0;
+}
+
+static inline int __must_check clk_bulk_enable(int num_clks, struct clk_bulk_data *clks)
 {
 	return 0;
 }
@@ -175,13 +257,12 @@ static inline void clk_disable(struct clk *clk)
 {
 }
 
+static inline void clk_bulk_disable(int num_clks,
+				    struct clk_bulk_data *clks) {}
+
 static inline unsigned long clk_get_rate(struct clk *clk)
 {
 	return 0;
-}
-
-static inline void clk_put(struct clk *clk)
-{
 }
 
 static inline long clk_round_rate(struct clk *clk, unsigned long rate)
@@ -194,6 +275,10 @@ static inline int clk_set_rate(struct clk *clk, unsigned long rate)
 	return 0;
 }
 #endif
+
+static inline void clk_put(struct clk *clk)
+{
+}
 
 #ifdef CONFIG_COMMON_CLK
 

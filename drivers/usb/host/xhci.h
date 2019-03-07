@@ -24,6 +24,8 @@
 #ifndef __XHCI_H
 #define __XHCI_H
 
+#include <io-64-nonatomic-lo-hi.h>
+
 #define NUM_COMMAND_TRBS	8
 #define NUM_TRANSFER_TRBS	8
 #define NUM_EVENT_SEGM		1	/* only one supported */
@@ -502,6 +504,27 @@ struct xhci_doorbell_array {
 
 #define DB_VALUE(ep, stream)	((((ep) + 1) & 0xff) | ((stream) << 16))
 #define DB_VALUE_HOST		0x00000000
+
+/**
+ * struct xhci_container_ctx
+ * @type: Type of context.  Used to calculated offsets to contained contexts.
+ * @size: Size of the context data
+ * @bytes: The raw context data given to HW
+ * @dma: dma address of the bytes
+ *
+ * Represents either a Device or Input context.  Holds a pointer to the raw
+ * memory used for the context (bytes) and dma address of it (dma).
+ */
+struct xhci_container_ctx {
+	unsigned type;
+#define XHCI_CTX_TYPE_DEVICE  0x1
+#define XHCI_CTX_TYPE_INPUT   0x2
+
+	int size;
+
+	u8 *bytes;
+	dma_addr_t dma;
+};
 
 /**
  * struct xhci_slot_ctx
@@ -1144,19 +1167,11 @@ struct xhci_erst_entry {
  */
 static inline u64 xhci_read_64(__le64 __iomem *regs)
 {
-	__u32 __iomem *ptr = (__u32 __iomem *)regs;
-	u64 val_lo = readl(ptr);
-	u64 val_hi = readl(ptr + 1);
-	return val_lo + (val_hi << 32);
+	return lo_hi_readq(regs);
 }
 static inline void xhci_write_64(const u64 val, __le64 __iomem *regs)
 {
-	__u32 __iomem *ptr = (__u32 __iomem *)regs;
-	u32 val_lo = lower_32_bits(val);
-	u32 val_hi = upper_32_bits(val);
-
-	writel(val_lo, ptr);
-	writel(val_hi, ptr + 1);
+	lo_hi_writeq(val, regs);
 }
 
 /*
@@ -1183,17 +1198,6 @@ struct xhci_ring {
 	int cycle_state;
 };
 
-struct xhci_device_context {
-	struct xhci_slot_ctx slot;
-	struct xhci_ep_ctx ep[31];
-};
-
-struct xhci_input_context {
-	struct xhci_input_control_ctx icc;
-	struct xhci_slot_ctx slot;
-	struct xhci_ep_ctx ep[31];
-};
-
 struct xhci_virtual_device {
 	struct list_head list;
 	struct usb_device *udev;
@@ -1201,8 +1205,8 @@ struct xhci_virtual_device {
 	size_t dma_size;
 	int slot_id;
 	struct xhci_ring *ep[USB_MAXENDPOINTS];
-	struct xhci_input_context *in_ctx;
-	struct xhci_device_context *out_ctx;
+	struct xhci_container_ctx *in_ctx;
+	struct xhci_container_ctx *out_ctx;
 };
 
 struct usb_root_hub_info {
@@ -1232,7 +1236,6 @@ struct xhci_hcd {
 	int num_sp;
 	int page_size;
 	int page_shift;
-	void *dma;
 	size_t dma_size;
 	__le64 *dcbaa;
 	void *sp;

@@ -9,11 +9,15 @@ if USB_HOST
 
 source drivers/usb/imx/Kconfig
 
+source "drivers/usb/dwc3/Kconfig"
+
 source drivers/usb/host/Kconfig
 
 source drivers/usb/otg/Kconfig
 
 source drivers/usb/storage/Kconfig
+
+source "drivers/usb/misc/Kconfig"
 
 endif
 

@@ -227,7 +227,7 @@ static int usb_stor_write_10(struct us_blk_dev *usb_blkdev,
 		usb_stor_request_sense(&srb, us);
 	} while (retries--);
 
-	return us->transport(&srb, us);
+	return -EIO;
 }
 
 

@@ -76,24 +76,27 @@ static int usb_stor_inquiry(struct us_blk_dev *usb_blkdev)
 	return result ? -ENODEV : 0;
 }
 
-static int usb_stor_request_sense(ccb *srb, struct us_data *us)
+static int usb_stor_request_sense(struct us_blk_dev *usb_blkdev)
 {
+	struct us_data *us = usb_blkdev->us;
 	struct device_d *dev = &us->pusb_dev->dev;
-	unsigned char *pdata = srb->pdata;
-	unsigned long datalen = srb->datalen;
+	ccb srb;
+	u8 *data = xzalloc(18);
+
+	srb.lun = usb_blkdev->lun;
 
 	dev_dbg(dev, "SCSI_REQ_SENSE\n");
-	srb->pdata = &srb->sense_buf[0];
-	srb->datalen = 18;
-	memset(&srb->cmd[0], 0, 6);
-	srb->cmdlen = 6;
-	srb->cmd[0] = SCSI_REQ_SENSE;
-	srb->cmd[4] = (u8)(srb->datalen >> 0);
-	us->transport(srb, us);
+	srb.pdata = data;
+	srb.datalen = 18;
+	memset(&srb.cmd[0], 0, 6);
+	srb.cmdlen = 6;
+	srb.cmd[0] = SCSI_REQ_SENSE;
+	srb.cmd[4] = (u8)(srb.datalen >> 0);
+	us->transport(&srb, us);
 	dev_dbg(dev, "Request Sense returned %02X %02X %02X\n",
-		 srb->sense_buf[2], srb->sense_buf[12], srb->sense_buf[13]);
-	srb->pdata = pdata;
-	srb->datalen = datalen;
+		data[2], data[12], data[13]);
+
+	free(data);
 
 	return 0;
 }
@@ -118,7 +121,7 @@ static int usb_stor_test_unit_ready(struct us_blk_dev *usb_blkdev)
 		dev_dbg(dev, "SCSI_TST_U_RDY returns %d\n", result);
 		if (result == USB_STOR_TRANSPORT_GOOD)
 			return 0;
-		usb_stor_request_sense(&srb, us);
+		usb_stor_request_sense(usb_blkdev);
 		mdelay(100);
 	} while (retries--);
 
@@ -186,7 +189,7 @@ static int usb_stor_io_10(struct us_blk_dev *usb_blkdev, u8 cmd,
 		result = us->transport(&srb, us);
 		if (result == USB_STOR_TRANSPORT_GOOD)
 			return 0;
-		usb_stor_request_sense(&srb, us);
+		usb_stor_request_sense(usb_blkdev);
 	} while (retries--);
 
 	return -EIO;

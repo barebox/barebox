@@ -213,7 +213,6 @@ static int usb_stor_blk_io(struct block_device *disk_dev,
 						   blk);
 	struct us_data *us = pblk_dev->us;
 	struct device_d *dev = &us->pusb_dev->dev;
-	unsigned sectors_done;
 
 	/* ensure unit ready */
 	dev_dbg(dev, "Testing for unit ready\n");
@@ -226,28 +225,23 @@ static int usb_stor_blk_io(struct block_device *disk_dev,
 	dev_dbg(dev, "%s %u block(s), starting from %d\n",
 		read ? "Read" : "Write",
 		sector_count, sector_start);
-	sectors_done = 0;
-	while (sector_count > 0) {
-		int result;
-		unsigned n = min(sector_count, US_MAX_IO_BLK);
-		u8 *data = buffer + (sectors_done * SECTOR_SIZE);
 
-		result = usb_stor_io_10(pblk_dev,
-					read ? SCSI_READ10 : SCSI_WRITE10,
-					(ulong)sector_start,
-					data, n);
-		if (result != 0) {
+	while (sector_count > 0) {
+		unsigned n = min(sector_count, US_MAX_IO_BLK);
+
+		if (usb_stor_io_10(pblk_dev,
+				   read ? SCSI_READ10 : SCSI_WRITE10,
+				   sector_start,
+				   buffer, n)) {
 			dev_dbg(dev, "I/O error at sector %d\n", sector_start);
 			break;
 		}
 		sector_start += n;
 		sector_count -= n;
-		sectors_done += n;
+		buffer += n * SECTOR_SIZE;
 	}
 
-	dev_dbg(dev, "Successful I/O of %d blocks\n", sectors_done);
-
-	return (sector_count != 0) ? -EIO : 0;
+	return sector_count ? -EIO : 0;
 }
 
 /* Write a chunk of sectors to media */

@@ -330,10 +330,12 @@ static int imx_bbu_internal_v2_write_nand_dbbt(struct imx_internal_bbu_handler *
 			goto out;
 
 		if (ret) {
-			ret = lseek(fd, offset + blocksize, SEEK_SET);
-			if (ret < 0)
-				goto out;
 			offset += blocksize;
+			if (lseek(fd, offset, SEEK_SET) != offset) {
+				ret = -errno;
+				goto out;
+			}
+
 			continue;
 		}
 

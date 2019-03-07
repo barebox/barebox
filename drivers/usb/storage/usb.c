@@ -433,7 +433,6 @@ static int get_pipes(struct us_data *us, struct usb_interface *intf)
 	struct usb_endpoint_descriptor *ep;
 	struct usb_endpoint_descriptor *ep_in = NULL;
 	struct usb_endpoint_descriptor *ep_out = NULL;
-	struct usb_endpoint_descriptor *ep_int = NULL;
 
 	/*
 	 * Find the first endpoint of each type we need.
@@ -454,12 +453,8 @@ static int get_pipes(struct us_data *us, struct usb_interface *intf)
 					ep_out = ep;
 			}
 		}
-		else if (USB_EP_IS_INT_IN(ep)) {
-			if (!ep_int)
-				ep_int = ep;
-		}
 	}
-	if (!ep_in || !ep_out || (us->protocol == US_PR_CBI && !ep_int)) {
+	if (!ep_in || !ep_out || us->protocol == US_PR_CBI) {
 		dev_dbg(dev, "Endpoint sanity check failed! Rejecting dev.\n");
 		return -EIO;
 	}
@@ -467,10 +462,7 @@ static int get_pipes(struct us_data *us, struct usb_interface *intf)
 	/* Store the pipe values */
 	us->send_bulk_ep = USB_EP_NUM(ep_out);
 	us->recv_bulk_ep = USB_EP_NUM(ep_in);
-	if (ep_int) {
-		us->recv_intr_ep = USB_EP_NUM(ep_int);
-		us->ep_bInterval = ep_int->bInterval;
-	}
+
 	return 0;
 }
 
@@ -533,9 +525,7 @@ static int usb_stor_probe(struct usb_device *usbdev,
 
 	/* initialize the us_data structure */
 	us->pusb_dev = usbdev;
-	us->flags = 0;
 	us->ifnum = intf->desc.bInterfaceNumber;
-	us->subclass = intf->desc.bInterfaceSubClass;
 	us->protocol = intf->desc.bInterfaceProtocol;
 	INIT_LIST_HEAD(&us->blk_dev_list);
 

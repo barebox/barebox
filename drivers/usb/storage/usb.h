@@ -54,17 +54,13 @@ typedef int (*trans_reset)(struct us_data *data);
 /* one us_data object allocated per usb storage device */
 struct us_data {
 	struct usb_device	*pusb_dev;	/* this usb_device */
-	unsigned int		flags;		/* from filter */
 	unsigned char		send_bulk_ep;	/* used endpoints */
 	unsigned char		recv_bulk_ep;
-	unsigned char		recv_intr_ep;
 	unsigned char		ifnum;		/* interface number */
 
-	unsigned char		subclass;
 	unsigned char		protocol;
 
 	unsigned char		max_lun;
-	unsigned char		ep_bInterval;
 
 	char			*transport_name;
 

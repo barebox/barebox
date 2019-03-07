@@ -31,7 +31,7 @@ $(obj)/zbarebox.S: $(obj)/zbarebox FORCE
 	$(call if_changed,disasm)
 
 PBL_CPPFLAGS		+= -fdata-sections -ffunction-sections
-LDFLAGS_zbarebox	:= -Map $(obj)/zbarebox.map --gc-sections
+LDFLAGS_zbarebox	:= -Map $(obj)/zbarebox.map --gc-sections --no-dynamic-linker
 ifdef CONFIG_PBL_RELOCATABLE
 LDFLAGS_zbarebox += -pie
 else

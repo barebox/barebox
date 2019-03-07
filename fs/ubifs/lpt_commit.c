@@ -26,7 +26,6 @@
  */
 
 #include <linux/err.h>
-#include "crc16.h"
 #include "ubifs.h"
 
 /*

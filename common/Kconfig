@@ -245,16 +245,6 @@ config BAREBOX_MAX_BARE_INIT_SIZE
 	  this will allow your bare_init to fit in SRAM as example
 	  ARCH can overwrite it via ARCH_BAREBOX_MAX_BARE_INIT_SIZE
 
-config BAREBOX_MAX_PBLX_SIZE
-	depends on PBL_MULTI_IMAGES
-	depends on IMAGE_COMPRESSION
-	prompt "Maximum PBLX size"
-	hex
-	default 0xffffffff
-	help
-	  Define the maximum size of the PBLX image.
-	  The pblx is a self extracting barebox binary.
-
 config HAVE_CONFIGURABLE_MEMORY_LAYOUT
 	bool
 
@@ -1016,11 +1006,21 @@ config DEBUG_INFO
 config DEBUG_LL
 	bool
 	depends on HAS_DEBUG_LL
-	prompt "low level debug messages"
+	prompt "Low level debug messages (read help)"
 	help
-	  Enable this to get low level debug messages during barebox initialization.
-	  This requires SoC specific support. Most SoCs require the debug UART to be
-	  initialized by a debugger or first stage bootloader.
+	  Enable this to get low level debug messages during barebox
+	  initialization. This is helpful if you are debugging code that
+	  executes before the console is initialized.
+
+	  This requires SoC specific support. Most SoCs require the
+	  debug UART to be initialized by a debugger or first stage
+	  bootloader.
+
+	  Note that selecting this option will limit barebox to a single
+	  UART definition, as specified below under "low-level debugging
+	  port". Attempting to boot the resulting image on a different
+	  platform *will not work*, so this option should not be enabled
+	  for builds that are intended to be portable.
 
 choice
 	prompt "Kernel low-level debugging port"

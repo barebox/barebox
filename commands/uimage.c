@@ -13,11 +13,7 @@ static int uimage_fd;
 
 static int uimage_flush(void *buf, unsigned int len)
 {
-	int ret;
-
-	ret = write_full(uimage_fd, buf, len);
-
-	return ret;
+	return write_full(uimage_fd, buf, len);
 }
 
 static int do_uimage(int argc, char *argv[])

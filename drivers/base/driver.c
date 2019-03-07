@@ -439,12 +439,6 @@ int generic_memmap_ro(struct cdev *cdev, void **map, int flags)
 	return generic_memmap_rw(cdev, map, flags);
 }
 
-int dummy_probe(struct device_d *dev)
-{
-	return 0;
-}
-EXPORT_SYMBOL(dummy_probe);
-
 /**
  * dev_set_name - set a device name
  * @dev: device

@@ -19,6 +19,7 @@
 #include <common.h>
 #include <command.h>
 #include <complete.h>
+#include <asm/system.h>
 
 #define CPU_ARCH_UNKNOWN	0
 #define CPU_ARCH_ARMv3		1
@@ -76,11 +77,7 @@ static int do_cpuinfo(int argc, char *argv[])
 		:
 		: "memory");
 
-	__asm__ __volatile__(
-		"mrs	%0, sctlr_el1\n"
-		: "=r" (cr)
-		:
-		: "memory");
+	cr = get_cr();
 #else
 	__asm__ __volatile__(
 		"mrc    p15, 0, %0, c0, c0, 0   @ read control reg\n"

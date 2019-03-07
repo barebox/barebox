@@ -162,11 +162,10 @@ static int state_mtd_peb_read(struct state_backend_storage_bucket_circular *circ
 
 	offset += (off_t)circ->eraseblock * circ->mtd->erasesize;
 
-	ret = lseek(circ->fd, offset, SEEK_SET);
-	if (ret < 0) {
+	if (lseek(circ->fd, offset, SEEK_SET) != offset) {
 		dev_err(circ->dev, "Failed to set circular read position to %lld, %d\n",
-			(long long) offset, ret);
-		return ret;
+			(long long) offset, -errno);
+		return -errno;
 	}
 
 	dev_dbg(circ->dev, "Read state from %lld length %d\n", (long long) offset,

@@ -269,16 +269,6 @@ static struct block_device_ops usb_mass_storage_ops = {
  * Block device routines
  ***********************************************************************/
 
-static int usb_limit_blk_cnt(unsigned cnt)
-{
-	if (cnt > 0x7fffffff) {
-		pr_warn("Limiting device size due to 31 bit contraints\n");
-		return 0x7fffffff;
-	}
-
-	return (int)cnt;
-}
-
 /* Prepare a disk device */
 static int usb_stor_init_blkdev(struct us_blk_dev *pblk_dev)
 {
@@ -314,7 +304,13 @@ static int usb_stor_init_blkdev(struct us_blk_dev *pblk_dev)
 		return result;
 	}
 
-	pblk_dev->blk.num_blocks = usb_limit_blk_cnt(last_lba + 1);
+	if (last_lba > INT_MAX - 1) {
+		last_lba = INT_MAX - 1;
+		dev_warn(dev,
+			 "Limiting device size due to 31 bit contraints\n");
+	}
+
+	pblk_dev->blk.num_blocks = last_lba + 1;
 	if (block_length != SECTOR_SIZE)
 		pr_warn("Support only %d bytes sectors\n", SECTOR_SIZE);
 	pblk_dev->blk.blockbits = SECTOR_SHIFT;

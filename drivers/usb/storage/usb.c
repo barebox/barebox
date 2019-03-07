@@ -541,10 +541,7 @@ static int usb_stor_probe(struct usb_device *usbdev,
 	US_DEBUGP("Selected interface %d\n", (int)intf->desc.bInterfaceNumber);
 
 	/* allocate us_data structure */
-	us = (struct us_data *)malloc(sizeof(struct us_data));
-	if (!us)
-		return -ENOMEM;
-	memset(us, 0, sizeof(struct us_data));
+	us = xzalloc(sizeof(*us));
 
 	/* initialize the us_data structure */
 	us->pusb_dev = usbdev;

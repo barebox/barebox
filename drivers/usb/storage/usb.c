@@ -322,7 +322,7 @@ static int usb_stor_init_blkdev(struct us_blk_dev *pblk_dev)
 	struct us_data *us = pblk_dev->us;
 	struct device_d *dev = &us->pusb_dev->dev;
 	ccb us_ccb;
-	unsigned long *pcap;
+	u32 *pcap;
 	int result = 0;
 
 	us_ccb.pdata = us_io_buf;
@@ -363,8 +363,8 @@ static int usb_stor_init_blkdev(struct us_blk_dev *pblk_dev)
 		result = -EIO;
 		goto Exit;
 	}
-	pcap = (unsigned long *)us_ccb.pdata;
-	dev_dbg(dev, "Read Capacity returns: 0x%lx, 0x%lx\n", pcap[0], pcap[1]);
+	pcap = (u32 *)us_ccb.pdata;
+	dev_dbg(dev, "Read Capacity returns: 0x%x, 0x%x\n", pcap[0], pcap[1]);
 	pblk_dev->blk.num_blocks = usb_limit_blk_cnt(be32_to_cpu(pcap[0]) + 1);
 	if (be32_to_cpu(pcap[1]) != SECTOR_SIZE)
 		pr_warn("Support only %d bytes sectors\n", SECTOR_SIZE);

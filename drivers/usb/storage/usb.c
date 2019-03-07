@@ -233,13 +233,10 @@ static int usb_stor_blk_io(int io_op, struct block_device *disk_dev,
 		return -EINVAL;
 	}
 
-	usb_disable_asynch(1);
-
 	/* ensure unit ready */
 	dev_dbg(dev, "Testing for unit ready\n");
 	if (usb_stor_test_unit_ready(pblk_dev)) {
 		dev_dbg(dev, "Device NOT ready\n");
-		usb_disable_asynch(0);
 		return -EIO;
 	}
 
@@ -276,8 +273,6 @@ static int usb_stor_blk_io(int io_op, struct block_device *disk_dev,
 		sector_count -= n;
 		sectors_done += n;
 	}
-
-	usb_disable_asynch(0);
 
 	dev_dbg(dev, "Successful I/O of %d blocks\n", sectors_done);
 
@@ -328,7 +323,6 @@ static int usb_stor_init_blkdev(struct us_blk_dev *pblk_dev)
 	int result = 0;
 
 	pblk_dev->blk.num_blocks = 0;
-	usb_disable_asynch(1);
 
 	/* get device info */
 	dev_dbg(dev, "Reading device info\n");
@@ -336,7 +330,7 @@ static int usb_stor_init_blkdev(struct us_blk_dev *pblk_dev)
 	result = usb_stor_inquiry(pblk_dev);
 	if (result) {
 		dev_dbg(dev, "Cannot read device info\n");
-		goto Exit;
+		return result;
 	}
 
 	/* ensure unit ready */
@@ -345,7 +339,7 @@ static int usb_stor_init_blkdev(struct us_blk_dev *pblk_dev)
 	result = usb_stor_test_unit_ready(pblk_dev);
 	if (result) {
 		dev_dbg(dev, "Device NOT ready\n");
-		goto Exit;
+		return result;
 	}
 
 	/* read capacity */
@@ -354,7 +348,7 @@ static int usb_stor_init_blkdev(struct us_blk_dev *pblk_dev)
 	result = usb_stor_read_capacity(pblk_dev, &last_lba, &block_length);
 	if (result < 0) {
 		dev_dbg(dev, "Cannot read device capacity\n");
-		goto Exit;
+		return result;
 	}
 
 	pblk_dev->blk.num_blocks = usb_limit_blk_cnt(last_lba + 1);
@@ -364,9 +358,7 @@ static int usb_stor_init_blkdev(struct us_blk_dev *pblk_dev)
 	dev_dbg(dev, "Capacity = 0x%x, blockshift = 0x%x\n",
 		 pblk_dev->blk.num_blocks, pblk_dev->blk.blockbits);
 
-Exit:
-	usb_disable_asynch(0);
-	return result;
+	return 0;
 }
 
 /* Create and register a disk device for the specified LUN */

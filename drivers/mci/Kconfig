@@ -144,7 +144,7 @@ config MCI_SPI
 
 config MMC_SPI_CRC_ON
 	bool "Enable CRC protection for transfers"
-	select CRC16
+	select CRC_ITU_T
 	depends on MCI_SPI
 	help
 	  Enable CRC protection for transfers

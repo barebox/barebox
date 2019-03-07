@@ -315,7 +315,7 @@ static int ratp_recv_pkt_data(struct ratp_internal *ri, void *data, uint8_t len,
 			return ret;
 	}
 
-	crc_expect = cyg_crc16(data, len);
+	crc_expect = crc_itu_t(0, data, len);
 
 	crc_read = get_unaligned_be16(data + len);
 
@@ -419,7 +419,7 @@ static int ratp_send_next_data(struct ratp_internal *ri)
 	pktlen = sizeof(struct ratp_header);
 	if (len > 1) {
 		pktlen += len + 2;
-		crc = cyg_crc16(data, len);
+		crc = crc_itu_t(0, data, len);
 		put_unaligned_be16(crc, data + len);
 	} else if (len == 1) {
 		control |= RATP_CONTROL_SO;

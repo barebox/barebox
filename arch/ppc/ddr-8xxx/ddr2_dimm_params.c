@@ -190,13 +190,13 @@ uint32_t
 compute_dimm_parameters(const generic_spd_eeprom_t *spdin,
 		struct dimm_params_s *pdimm)
 {
-	const struct ddr2_spd_eeprom_s *spd = spdin;
-	uint32_t retval;
+	const struct ddr2_spd_eeprom *spd = spdin;
+	int retval;
 
 	if (spd->mem_type != SPD_MEMTYPE_DDR2)
 		goto error;
 
-	retval = ddr2_spd_checksum_pass(spd);
+	retval = ddr2_spd_check(spd);
 	if (retval)
 		goto error;
 

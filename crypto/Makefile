@@ -1,5 +1,5 @@
 obj-$(CONFIG_CRC32)	+= crc32.o
-obj-$(CONFIG_CRC16)	+= crc16.o
+obj-pbl-$(CONFIG_CRC_ITU_T)	+= crc-itu-t.o
 obj-$(CONFIG_CRC7)	+= crc7.o
 obj-$(CONFIG_DIGEST)	+= digest.o
 obj-$(CONFIG_DIGEST_CRC32_GENERIC)	+= crc32_digest.o

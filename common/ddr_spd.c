@@ -10,39 +10,65 @@
 #include <crc.h>
 #include <ddr_spd.h>
 
-uint32_t ddr2_spd_checksum_pass(const struct ddr2_spd_eeprom_s *spd)
+/* used for ddr1 and ddr2 spd */
+static int spd_check(const u8 *buf, u8 spd_rev, u8 spd_cksum)
 {
-	uint32_t i, cksum = 0;
-	const uint8_t *buf = (const uint8_t *)spd;
-	uint8_t rev, spd_cksum;
-
-	rev = spd->spd_rev;
-	spd_cksum = spd->cksum;
-
-	/* Rev 1.X or less supported by this code */
-	if (rev >= 0x20)
-		goto error;
+	unsigned int cksum = 0;
+	unsigned int i;
 
 	/*
-	 * The checksum is calculated on the first 64 bytes
-	 * of the SPD as per JEDEC specification.
+	 * Check SPD revision supported
+	 * Rev 1.X or less supported by this code
+	 */
+	if (spd_rev >= 0x20) {
+		printf("SPD revision %02X not supported by this code\n",
+		       spd_rev);
+		return 1;
+	}
+	if (spd_rev > 0x13) {
+		printf("SPD revision %02X not verified by this code\n",
+		       spd_rev);
+	}
+
+	/*
+	 * Calculate checksum
 	 */
 	for (i = 0; i < 63; i++)
 		cksum += *buf++;
+
 	cksum &= 0xFF;
 
-	if (cksum != spd_cksum)
-		goto error;
+	if (cksum != spd_cksum) {
+		printf("SPD checksum unexpected. "
+			"Checksum in SPD = %02X, computed SPD = %02X\n",
+			spd_cksum, cksum);
+		return -EBADMSG;
+	}
 
 	return 0;
-error:
-	return 1;
 }
 
-uint32_t ddr3_spd_checksum_pass(const struct ddr3_spd_eeprom_s *spd)
+int ddr1_spd_check(const struct ddr1_spd_eeprom *spd)
 {
-	char crc_lsb, crc_msb;
-	int csum16, len;
+	const u8 *p = (const u8 *)spd;
+
+	return spd_check(p, spd->spd_rev, spd->cksum);
+}
+
+int ddr2_spd_check(const struct ddr2_spd_eeprom *spd)
+{
+	const u8 *p = (const u8 *)spd;
+
+	return spd_check(p, spd->spd_rev, spd->cksum);
+}
+
+int ddr3_spd_check(const struct ddr3_spd_eeprom *spd)
+{
+	char *p = (char *)spd;
+	int csum16;
+	int len;
+	char crc_lsb;	/* byte 126 */
+	char crc_msb;	/* byte 127 */
 
 	/*
 	 * SPD byte0[7] - CRC coverage
@@ -51,13 +77,61 @@ uint32_t ddr3_spd_checksum_pass(const struct ddr3_spd_eeprom_s *spd)
 	 */
 
 	len = !(spd->info_size_crc & 0x80) ? 126 : 117;
-	csum16 = cyg_crc16((char *)spd, len);
+	csum16 = crc_itu_t(0, p, len);
 
 	crc_lsb = (char) (csum16 & 0xff);
 	crc_msb = (char) (csum16 >> 8);
 
-	if (spd->crc[0] != crc_lsb || spd->crc[1] != crc_msb)
-		return 1;
+	if (spd->crc[0] == crc_lsb && spd->crc[1] == crc_msb) {
+		return 0;
+	} else {
+		printf("SPD checksum unexpected.\n"
+			"Checksum lsb in SPD = %02X, computed SPD = %02X\n"
+			"Checksum msb in SPD = %02X, computed SPD = %02X\n",
+			spd->crc[0], crc_lsb, spd->crc[1], crc_msb);
+		return -EBADMSG;
+	}
+}
+
+int ddr4_spd_check(const struct ddr4_spd_eeprom *spd)
+{
+	char *p = (char *)spd;
+	int csum16;
+	int len;
+	char crc_lsb;	/* byte 126 */
+	char crc_msb;	/* byte 127 */
+
+	len = 126;
+	csum16 = crc_itu_t(0, p, len);
+
+	crc_lsb = (char) (csum16 & 0xff);
+	crc_msb = (char) (csum16 >> 8);
+
+	if (spd->crc[0] != crc_lsb || spd->crc[1] != crc_msb) {
+		printf("SPD checksum unexpected.\n"
+			"Checksum lsb in SPD = %02X, computed SPD = %02X\n"
+			"Checksum msb in SPD = %02X, computed SPD = %02X\n",
+			spd->crc[0], crc_lsb, spd->crc[1], crc_msb);
+		return -EBADMSG;
+	}
+
+	p = (char *)((ulong)spd + 128);
+	len = 126;
+	csum16 = crc_itu_t(0, p, len);
+
+	crc_lsb = (char) (csum16 & 0xff);
+	crc_msb = (char) (csum16 >> 8);
+
+	if (spd->mod_section.uc[126] != crc_lsb ||
+	    spd->mod_section.uc[127] != crc_msb) {
+		printf("SPD checksum unexpected.\n"
+			"Checksum lsb in SPD = %02X, computed SPD = %02X\n"
+			"Checksum msb in SPD = %02X, computed SPD = %02X\n",
+			spd->mod_section.uc[126],
+			crc_lsb, spd->mod_section.uc[127],
+			crc_msb);
+		return -EBADMSG;
+	}
 
 	return 0;
 }
@@ -172,7 +246,7 @@ void ddr_spd_print(uint8_t *record)
 	int ctime;
 	uint8_t parity;
 	char *ref, *sum;
-	struct ddr2_spd_eeprom_s *s = (struct ddr2_spd_eeprom_s *)record;
+	struct ddr2_spd_eeprom *s = (struct ddr2_spd_eeprom *)record;
 
 	if (s->mem_type != SPD_MEMTYPE_DDR2) {
 		printf("Can't dump information for non-DDR2 memory\n");
@@ -201,7 +275,7 @@ void ddr_spd_print(uint8_t *record)
 		}
 	}
 
-	if (ddr2_spd_checksum_pass(s))
+	if (ddr2_spd_check(s))
 		sum = "ERR";
 	else
 		sum = "OK";
@@ -354,4 +428,86 @@ void ddr_spd_print(uint8_t *record)
 	for (i = 95; i < 99; i++)
 		printf("%02X", record[i]);
 	printf("\n");
+}
+
+#define SPD_SPA0_ADDRESS        0x36
+#define SPD_SPA1_ADDRESS        0x37
+
+static int select_page(void *ctx,
+		       int (*xfer)(void *ctx, struct i2c_msg *msgs, int num),
+		       uint8_t addr)
+{
+	struct i2c_msg msg = {
+		.addr = addr,
+		.len = 0,
+	};
+	int ret;
+
+	ret = xfer(ctx, &msg, 1);
+	if (ret < 0)
+		return ret;
+
+	return 0;
+}
+
+static int read_buf(void *ctx,
+		    int (*xfer)(void *ctx, struct i2c_msg *msgs, int num),
+		    uint8_t addr, int page, void *buf)
+{
+	uint8_t pos = 0;
+	int ret;
+	struct i2c_msg msg[2] = {
+		{
+			.addr = addr,
+			.len = 1,
+			.buf = &pos,
+		}, {
+			.addr = addr,
+			.len = 256,
+			.flags = I2C_M_RD,
+			.buf = buf,
+		}
+	};
+
+	ret = select_page(ctx, xfer, page);
+	if (ret < 0)
+		return ret;
+
+	ret = xfer(ctx, msg, 2);
+	if (ret < 0)
+		return ret;
+
+	return 0;
+}
+
+/**
+ * spd_read_eeprom - Read contents of a SPD EEPROM
+ * @ctx: Context pointer for the xfer function
+ * @xfer: I2C message transfer function
+ * @addr: I2C bus address for the EEPROM
+ * @buf: buffer to read the SPD data to
+ *
+ * This function takes a I2C message transfer function and reads the contents
+ * from a SPD EEPROM to the buffer provided at @buf. The buffer should at least
+ * have a size of 512 bytes. Returns 0 for success or a negative error code
+ * otherwise.
+ */
+int spd_read_eeprom(void *ctx,
+		    int (*xfer)(void *ctx, struct i2c_msg *msgs, int num),
+		    uint8_t addr, void *buf)
+{
+	unsigned char *buf8 = buf;
+	int ret;
+
+	ret = read_buf(ctx, xfer, addr, SPD_SPA0_ADDRESS, buf);
+	if (ret < 0)
+		return ret;
+
+	if (buf8[2] == SPD_MEMTYPE_DDR4) {
+		ret = read_buf(ctx, xfer, addr, SPD_SPA1_ADDRESS, buf + 256);
+		if (ret < 0)
+			return ret;
+	}
+
+	return 0;
 }

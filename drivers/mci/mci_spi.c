@@ -166,7 +166,7 @@ static uint mmc_spi_readdata(struct mmc_spi_host *host, void *xbuf,
 			mmc_spi_readbytes(host, bsize, buf);
 			mmc_spi_readbytes(host, 2, &crc);
 #ifdef CONFIG_MMC_SPI_CRC_ON
-			if (be16_to_cpu(cyg_crc16(buf, bsize)) != crc) {
+			if (be16_to_cpu(crc_itu_t(0, buf, bsize)) != crc) {
 				dev_dbg(host->dev, "%s: CRC error\n", __func__);
 				r1 = R1_SPI_COM_CRC;
 				break;
@@ -197,7 +197,7 @@ static uint mmc_spi_writedata(struct mmc_spi_host *host, const void *xbuf,
 
 	while (bcnt--) {
 #ifdef CONFIG_MMC_SPI_CRC_ON
-		crc = be16_to_cpu(cyg_crc16((u8 *)buf, bsize));
+		crc = be16_to_cpu(crc_itu_t(0, (u8 *)buf, bsize));
 #endif
 		mmc_spi_writebytes(host, 2, tok);
 		mmc_spi_writebytes(host, bsize, (void *)buf);

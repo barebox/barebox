@@ -32,10 +32,10 @@
 
 #define FSL_DDR_MIN_TCKE_PULSE_WIDTH_DDR	(3)
 #if defined(CONFIG_FSL_DDR2)
-typedef struct ddr2_spd_eeprom_s generic_spd_eeprom_t;
+typedef struct ddr2_spd_eeprom generic_spd_eeprom_t;
 #define FSL_SDRAM_TYPE	SDRAM_TYPE_DDR2
 #elif defined(CONFIG_FSL_DDR3)
-typedef struct ddr3_spd_eeprom_s generic_spd_eeprom_t;
+typedef struct ddr3_spd_eeprom generic_spd_eeprom_t;
 #define FSL_SDRAM_TYPE	SDRAM_TYPE_DDR3
 #endif
 

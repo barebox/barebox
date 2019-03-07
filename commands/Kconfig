@@ -394,7 +394,7 @@ config CMD_GO
 
 config CMD_LOADB
 	depends on CONSOLE_FULL
-	select CRC16
+	select CRC_ITU_T
 	tristate
 	prompt "loadb"
 	help

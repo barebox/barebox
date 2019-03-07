@@ -234,7 +234,10 @@ typedef struct {
 	efi_status_t (EFIAPI *exit_boot_services)(efi_handle_t, unsigned long);
 	void *get_next_monotonic_count;
 	efi_status_t (EFIAPI *stall)(unsigned long usecs);
-	void *set_watchdog_timer;
+	efi_status_t (EFIAPI *set_watchdog_timer)(unsigned long timeout,
+						  uint64_t watchdog_code,
+						  unsigned long data_size,
+						  s16 *watchdog_data);
 	efi_status_t(EFIAPI *connect_controller)(efi_handle_t controller_handle,
 			efi_handle_t *driver_image_handle,
 			struct efi_device_path *remaining_device_path,

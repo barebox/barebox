@@ -22,6 +22,12 @@ config WATCHDOG_AR9344
 	help
 	  Add support for watchdog on the QCA AR9344 SoC.
 
+config WATCHDOG_EFI
+	bool "Generic EFI Watchdog Driver"
+	depends on EFI_BOOTUP
+	help
+	  Add support for the EFI watchdog.
+
 config WATCHDOG_DAVINCI
 	bool "TI Davinci"
 	depends on ARCH_DAVINCI

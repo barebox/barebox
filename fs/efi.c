@@ -513,7 +513,7 @@ coredevice_initcall(efifs_init);
 
 static int index;
 
-int efi_fs_probe(struct efi_device *efidev)
+static int efi_fs_probe(struct efi_device *efidev)
 {
 	char *path, *device;
 	int ret;

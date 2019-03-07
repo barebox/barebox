@@ -67,7 +67,7 @@ static int read_byte_str(const char *str, u8 *out)
 	return 0;
 }
 
-int efi_guid_parse(const char *str, efi_guid_t *guid)
+static int efi_guid_parse(const char *str, efi_guid_t *guid)
 {
 	int i, ret;
 	u8 idx[] = { 3, 2, 1, 0, 5, 4, 7, 6, 8, 9, 10, 11, 12, 13, 14, 15 };

@@ -88,7 +88,7 @@ struct linux_kernel_header {
 	uint32_t handover_offset;	/** */
 } __attribute__ ((packed));
 
-int efi_load_image(const char *file, efi_loaded_image_t **loaded_image,
+static int efi_load_image(const char *file, efi_loaded_image_t **loaded_image,
 		efi_handle_t *h)
 {
 	void *exe;

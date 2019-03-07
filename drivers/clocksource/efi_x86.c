@@ -6,7 +6,7 @@
 #include <clock.h>
 
 #ifdef __x86_64__
-uint64_t ticks_read(void)
+static uint64_t ticks_read(void)
 {
 	uint64_t a, d;
 
@@ -15,7 +15,7 @@ uint64_t ticks_read(void)
 	return (d << 32) | a;
 }
 #else
-uint64_t ticks_read(void)
+static uint64_t ticks_read(void)
 {
 	uint64_t val;
 

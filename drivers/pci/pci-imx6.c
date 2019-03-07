@@ -65,6 +65,7 @@ struct imx6_pcie {
 	struct clk		*pcie_bus;
 	struct clk		*pcie_phy;
 	struct clk		*pcie;
+	struct clk              *pcie_aux;
 	void __iomem		*iomuxc_gpr;
 	u32			controller_id;
 	struct reset_control	*pciephy_reset;
@@ -299,8 +300,10 @@ static unsigned int imx6_pcie_grp_offset(const struct imx6_pcie *imx6_pcie)
 
 static int imx6_pcie_enable_ref_clk(struct imx6_pcie *imx6_pcie)
 {
+	struct device_d *dev = imx6_pcie->pci->dev;
 	u32 gpr1, gpr1x;
 	unsigned int offset;
+	int ret;
 
 	switch (imx6_pcie->drvdata->variant) {
 	case IMX6QP:
@@ -323,6 +326,12 @@ static int imx6_pcie_enable_ref_clk(struct imx6_pcie *imx6_pcie)
 	case IMX7D:
 		break;
 	case IMX8MQ:
+		ret = clk_enable(imx6_pcie->pcie_aux);
+		if (ret) {
+			dev_err(dev, "unable to enable pcie_aux clock\n");
+			return ret;
+		}
+
 		offset = imx6_pcie_grp_offset(imx6_pcie);
 		/*
 		 * Set the over ride low and enabled
@@ -741,6 +750,13 @@ static int imx6_pcie_probe(struct device_d *dev)
 		imx6_pcie->iomuxc_gpr = IOMEM(MX8MQ_IOMUXC_GPR_BASE_ADDR);
 		if (iores->start == IMX8MQ_PCIE2_BASE_ADDR)
 			imx6_pcie->controller_id = 1;
+
+		imx6_pcie->pcie_aux = clk_get(dev, "pcie_aux");
+		if (IS_ERR(imx6_pcie->pcie_aux)) {
+			dev_err(dev,
+				"pcie_aux clock source missing or invalid\n");
+			return PTR_ERR(imx6_pcie->pcie_aux);
+		}
 
 		goto imx7d_init;
 	case IMX7D:

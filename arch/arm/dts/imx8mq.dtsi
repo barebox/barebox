@@ -4,6 +4,7 @@
  * Copyright (C) 2017 Pengutronix, Lucas Stach <kernel@pengutronix.de>
  */
 
+#include <dt-bindings/reset/imx8mq-reset.h>
 #include <dt-bindings/thermal/thermal.h>
 
 / {
@@ -106,6 +107,67 @@
 				reg = <0x30350000 0x10000>;
 				clocks = <&clk IMX8MQ_CLK_OCOTP_ROOT>;
 			};
+
+			src: src@30390000 {
+				compatible = "fsl,imx8mq-src", "syscon";
+				reg = <0x30390000 0x10000>;
+				#reset-cells = <1>;
+			};
+
+			gpc: gpc@303a0000 {
+				compatible = "fsl,imx8mq-gpc", "fsl,imx7d-gpc";
+				reg = <0x303a0000 0x10000>;
+				#power-domain-cells = <1>;
+
+				interrupt-controller;
+				interrupts = <GIC_SPI 87 IRQ_TYPE_LEVEL_HIGH>;
+				#interrupt-cells = <3>;
+				interrupt-parent = <&gic>;
+
+				pgc {
+					#address-cells = <1>;
+					#size-cells = <0>;
+
+					/*
+					 * As per comment in ATF source code:
+					 *
+					 * PCIE1 and PCIE2 share the
+					 * same reset signal, if we power
+					 * down PCIE2, PCIE1 will be held
+					 * in reset too.
+					 *
+					 * So instead of creating two
+                                         * separate power domains for
+                                         * PCIE1 and PCIE2. We create
+                                         * a link between 1 and 10 and
+                                         * use what was supposed to be
+                                         * domain 1 as a shared PCIE
+                                         * power domain powering both
+                                         * PCIE1 and PCIE2 at the same
+                                         * time
+					 */
+					pgc_pcie_phy: gpc_power_domain@1 {
+						#power-domain-cells = <0>;
+						reg = <1>;
+						power-domains = <&pgc_pcie2_phy>;
+					};
+
+					pgc_otg1: power-domain@2 {
+						#power-domain-cells = <0>;
+						reg = <2>;
+					};
+
+					pgc_otg2: power-domain@3 {
+						#power-domain-cells = <0>;
+						reg = <3>;
+					};
+
+					pgc_pcie2_phy: gpc_power_domain@10 {
+						#power-domain-cells = <0>;
+						reg = <10>;
+					};
+				};
+			};
 		};
 
 		bus@30800000 {
@@ -118,6 +180,128 @@
 				clock-names = "ipg", "per";
 				status = "disabled";
 			};
+		};
+
+
+		usb_dwc3_0: usb@38100000 {
+			compatible = "fsl,imx8mq-dwc3", "snps,dwc3";
+			reg = <0x38100000 0x10000>;
+			clocks = <&clk IMX8MQ_CLK_USB_BUS>,
+			         <&clk IMX8MQ_CLK_USB_CORE_REF>,
+			         <&clk IMX8MQ_CLK_USB1_CTRL_ROOT>;
+			clock-names = "bus_early", "ref", "suspend";
+			assigned-clocks = <&clk IMX8MQ_CLK_USB_BUS>,
+			                  <&clk IMX8MQ_CLK_USB_CORE_REF>;
+			assigned-clock-parents = <&clk IMX8MQ_SYS2_PLL_500M>,
+			                         <&clk IMX8MQ_SYS1_PLL_100M>;
+			assigned-clock-rates = <500000000>, <100000000>;
+			interrupts = <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>;
+			phys = <&usb3_phy0>, <&usb3_phy0>;
+			phy-names = "usb2-phy", "usb3-phy";
+			power-domains = <&pgc_otg1>;
+			status = "disabled";
+		};
+
+		usb3_phy0: phy@381f0040 {
+			compatible = "fsl,imx8mq-usb-phy";
+			reg = <0x381f0040 0x40>;
+			clocks = <&clk IMX8MQ_CLK_USB1_PHY_ROOT>;
+			clock-names = "phy";
+			assigned-clocks = <&clk IMX8MQ_CLK_USB_PHY_REF>;
+			assigned-clock-parents = <&clk IMX8MQ_SYS1_PLL_100M>;
+			assigned-clock-rates = <100000000>;
+			#phy-cells = <0>;
+			status = "disabled";
+		};
+
+		usb_dwc3_1: usb@38200000 {
+			compatible = "fsl,imx8mq-dwc3", "snps,dwc3";
+			reg = <0x38200000 0x10000>;
+			clocks = <&clk IMX8MQ_CLK_USB_BUS>,
+			         <&clk IMX8MQ_CLK_USB_CORE_REF>,
+			         <&clk IMX8MQ_CLK_USB2_CTRL_ROOT>;
+			clock-names = "bus_early", "ref", "suspend";
+			assigned-clocks = <&clk IMX8MQ_CLK_USB_BUS>,
+			                  <&clk IMX8MQ_CLK_USB_CORE_REF>;
+			assigned-clock-parents = <&clk IMX8MQ_SYS2_PLL_500M>,
+			                         <&clk IMX8MQ_SYS1_PLL_100M>;
+			assigned-clock-rates = <500000000>, <100000000>;
+			interrupts = <GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>;
+			phys = <&usb3_phy1>, <&usb3_phy1>;
+			phy-names = "usb2-phy", "usb3-phy";
+			power-domains = <&pgc_otg2>;
+			status = "disabled";
+		};
+
+		usb3_phy1: phy@382f0040 {
+			compatible = "fsl,imx8mq-usb-phy";
+			reg = <0x382f0040 0x40>;
+			clocks = <&clk IMX8MQ_CLK_USB2_PHY_ROOT>;
+			clock-names = "phy";
+			assigned-clocks = <&clk IMX8MQ_CLK_USB_PHY_REF>;
+			assigned-clock-parents = <&clk IMX8MQ_SYS1_PLL_100M>;
+			assigned-clock-rates = <100000000>;
+			#phy-cells = <0>;
+			status = "disabled";
+		};
+
+		pcie0: pcie@33800000 {
+			compatible = "fsl,imx8mq-pcie";
+			reg = <0x33800000 0x400000>,
+			      <0x1ff00000 0x80000>;
+			reg-names = "dbi", "config";
+			#address-cells = <3>;
+			#size-cells = <2>;
+			device_type = "pci";
+			bus-range = <0x00 0xff>;
+			ranges = <0x81000000 0 0x00000000 0x1ff80000 0 0x00010000 /* downstream I/O 64KB */
+				  0x82000000 0 0x18000000 0x18000000 0 0x07f00000>; /* non-prefetchable memory */
+			num-lanes = <1>;
+			interrupts = <GIC_SPI 122 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-names = "msi";
+			#interrupt-cells = <1>;
+			interrupt-map-mask = <0 0 0 0x7>;
+			interrupt-map = <0 0 0 1 &gic GIC_SPI 125 IRQ_TYPE_LEVEL_HIGH>,
+					<0 0 0 2 &gic GIC_SPI 124 IRQ_TYPE_LEVEL_HIGH>,
+					<0 0 0 3 &gic GIC_SPI 123 IRQ_TYPE_LEVEL_HIGH>,
+					<0 0 0 4 &gic GIC_SPI 122 IRQ_TYPE_LEVEL_HIGH>;
+			fsl,max-link-speed = <2>;
+			power-domains = <&pgc_pcie_phy>;
+			resets = <&src IMX8MQ_RESET_PCIEPHY>,
+				 <&src IMX8MQ_RESET_PCIE_CTRL_APPS_EN>,
+				 <&src IMX8MQ_RESET_PCIE_CTRL_APPS_TURNOFF>;
+			reset-names = "pciephy", "apps", "turnoff";
+			fsl,controller-id = <0>;
+			status = "disabled";
+		};
+
+		pcie1: pcie@33c00000 {
+			compatible = "fsl,imx8mq-pcie";
+			reg = <0x33c00000 0x400000>,
+			      <0x27f00000 0x80000>;
+			reg-names = "dbi", "config";
+			#address-cells = <3>;
+			#size-cells = <2>;
+			device_type = "pci";
+			ranges =  <0x81000000 0 0x00000000 0x27f80000 0 0x00010000 /* downstream I/O 64KB */
+				  0x82000000 0 0x20000000 0x20000000 0 0x07f00000>; /* non-prefetchable memory */
+			num-lanes = <1>;
+			interrupts = <GIC_SPI 74 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-names = "msi";
+			#interrupt-cells = <1>;
+			interrupt-map-mask = <0 0 0 0x7>;
+			interrupt-map = <0 0 0 1 &gic GIC_SPI 77 IRQ_TYPE_LEVEL_HIGH>,
+					<0 0 0 2 &gic GIC_SPI 76 IRQ_TYPE_LEVEL_HIGH>,
+					<0 0 0 3 &gic GIC_SPI 75 IRQ_TYPE_LEVEL_HIGH>,
+					<0 0 0 4 &gic GIC_SPI 74 IRQ_TYPE_LEVEL_HIGH>;
+			fsl,max-link-speed = <2>;
+			power-domains = <&pgc_pcie_phy>;
+			resets = <&src IMX8MQ_RESET_PCIEPHY2>,
+				 <&src IMX8MQ_RESET_PCIE2_CTRL_APPS_EN>,
+				 <&src IMX8MQ_RESET_PCIE2_CTRL_APPS_TURNOFF>;
+			reset-names = "pciephy", "apps", "turnoff";
+			fsl,controller-id = <1>;
+			status = "disabled";
 		};
 	};
 };

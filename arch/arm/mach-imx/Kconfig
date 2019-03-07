@@ -388,6 +388,7 @@ config MACH_TECHNEXION_WANDBOARD
 	bool "Technexion Wandboard"
 	select ARCH_IMX6
 	select ARM_USE_COMPRESSED_DTB
+	select MCI_IMX_ESDHC_PBL
 
 config MACH_EMBEST_RIOTBOARD
 	bool "Embest RIoTboard"
@@ -439,6 +440,7 @@ config MACH_ZII_RDU1
 config MACH_ZII_RDU2
 	bool "ZII i.MX6Q(+) RDU2"
 	select ARCH_IMX6
+	select MCI_IMX_ESDHC_PBL
 
 config MACH_ZII_IMX8MQ_DEV
 	bool "ZII i.MX8MQ based devices"
@@ -446,6 +448,7 @@ config MACH_ZII_IMX8MQ_DEV
 	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
 	select FIRMWARE_IMX8MQ_ATF
 	select ARM_SMCCC
+	select MCI_IMX_ESDHC_PBL
 
 config MACH_ZII_VF610_DEV
 	bool "ZII VF610 Dev Family"
@@ -482,6 +485,15 @@ config MACH_NXP_IMX8MQ_EVK
 	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
 	select FIRMWARE_IMX8MQ_ATF
 	select ARM_SMCCC
+	select MCI_IMX_ESDHC_PBL
+
+config MACH_PHYTEC_SOM_IMX8MQ
+	bool "Phytec i.MX8M SOM"
+	select ARCH_IMX8MQ
+	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
+	select FIRMWARE_IMX8MQ_ATF
+	select ARM_SMCCC
+	select MCI_IMX_ESDHC_PBL
 
 config MACH_GRINN_LITEBOARD
 	bool "Grinn liteboard"

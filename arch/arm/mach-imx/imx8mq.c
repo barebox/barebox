@@ -21,6 +21,7 @@
 #include <mach/imx8mq.h>
 #include <mach/reset-reason.h>
 
+#include <linux/iopoll.h>
 #include <linux/arm-smccc.h>
 
 #define FSL_SIP_BUILDINFO			0xC2000003
@@ -28,6 +29,9 @@
 
 static int imx8mq_init_syscnt_frequency(void)
 {
+	if (!cpu_is_mx8mq())
+		return 0;
+
 	if (current_el() == 3) {
 		void __iomem *syscnt = IOMEM(MX8MQ_SYSCNT_CTRL_BASE_ADDR);
 		/*
@@ -81,3 +85,42 @@ int imx8mq_init(void)
 
 	return 0;
 }
+
+#define KEEP_ALIVE			0x18
+#define VER_L				0x1c
+#define VER_H				0x20
+#define VER_LIB_L_ADDR			0x24
+#define VER_LIB_H_ADDR			0x28
+#define FW_ALIVE_TIMEOUT_US		100000
+
+static int imx8mq_report_hdmi_firmware(void)
+{
+	void __iomem *hdmi = IOMEM(MX8MQ_HDMI_CTRL_BASE_ADDR);
+	u16 ver_lib, ver;
+	u32 reg;
+	int ret;
+
+	if (!cpu_is_mx8mq())
+		return 0;
+
+	/* check the keep alive register to make sure fw working */
+	ret = readl_poll_timeout(hdmi + KEEP_ALIVE,
+				 reg, reg, FW_ALIVE_TIMEOUT_US);
+	if (ret < 0) {
+		pr_info("HDP firmware is not running\n");
+		return 0;
+	}
+
+	ver = readl(hdmi + VER_H) & 0xff;
+	ver <<= 8;
+	ver |= readl(hdmi + VER_L) & 0xff;
+
+	ver_lib = readl(hdmi + VER_LIB_H_ADDR) & 0xff;
+	ver_lib <<= 8;
+	ver_lib |= readl(hdmi + VER_LIB_L_ADDR) & 0xff;
+
+	pr_info("HDP firmware ver: %d ver_lib: %d\n", ver, ver_lib);
+
+	return 0;
+}
+console_initcall(imx8mq_report_hdmi_firmware);

@@ -559,3 +559,8 @@ pblb-$(CONFIG_MACH_ZII_IMX8MQ_DEV) += start_zii_imx8mq_dev
 CFG_start_zii_imx8mq_dev.pblb.imximg = $(board)/zii-imx8mq-dev/flash-header-zii-imx8mq-dev.imxcfg
 FILE_barebox-zii-imx8mq-dev.img = start_zii_imx8mq_dev.pblb.imximg
 image-$(CONFIG_MACH_ZII_IMX8MQ_DEV) += barebox-zii-imx8mq-dev.img
+
+pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX8MQ) += start_phytec_phycore_imx8mq
+CFG_start_phytec_phycore_imx8mq.pblb.imximg = $(board)/phytec-som-imx8mq/flash-header-phycore-imx8mq.imxcfg
+FILE_barebox-phytec-phycore-imx8mq.img = start_phytec_phycore_imx8mq.pblb.imximg
+image-$(CONFIG_MACH_PHYTEC_SOM_IMX8MQ) += barebox-phytec-phycore-imx8mq.img

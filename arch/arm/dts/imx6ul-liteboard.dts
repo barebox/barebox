@@ -42,6 +42,7 @@
  */
 
 #include <arm/imx6ul-liteboard.dts>
+#include "imx6ul-litesom.dtsi"
 
 / {
 	chosen {

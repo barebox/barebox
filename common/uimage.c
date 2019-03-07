@@ -265,11 +265,12 @@ int uimage_verify(struct uimage_handle *handle)
 {
 	u32 crc = 0;
 	int len, ret;
+	loff_t off;
 	void *buf;
 
-	ret = lseek(handle->fd, sizeof(struct image_header), SEEK_SET);
-	if (ret < 0)
-		return ret;
+	off = sizeof(struct image_header);
+	if (lseek(handle->fd, off, SEEK_SET) != off)
+		return -errno;
 
 	buf = xmalloc(PAGE_SIZE);
 

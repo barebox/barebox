@@ -1,0 +1,11 @@
+config NVME_CORE
+	bool
+
+config BLK_DEV_NVME
+	bool "NVM Express block device"
+	depends on PCI && BLOCK
+	select NVME_CORE
+	---help---
+	  The NVM Express driver is for solid state drives directly
+	  connected to the PCI or PCI Express bus.  If you know you
+	  don't have one of these, it is safe to answer N.

@@ -113,7 +113,7 @@ struct pci_dev {
 	 */
 	unsigned long	base_address[6];
 };
-#define	to_pci_dev(dev) container_of(dev, struct pci_dev, dev)
+#define	to_pci_dev(d) container_of(d, struct pci_dev, dev)
 
 enum {
 	PCI_BUS_RESOURCE_IO = 0,
@@ -241,6 +241,11 @@ struct pci_driver {
 
 int pci_register_driver(struct pci_driver *pdrv);
 int pci_register_device(struct pci_dev *pdev);
+
+#define pci_driver_register	pci_register_driver
+
+#define device_pci_driver(drv)			\
+	register_driver_macro(device,pci,drv)
 
 extern struct list_head pci_root_buses; /* list of all known PCI buses */
 

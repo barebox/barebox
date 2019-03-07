@@ -39,5 +39,6 @@ source "drivers/phy/Kconfig"
 source "drivers/crypto/Kconfig"
 source "drivers/memory/Kconfig"
 source "drivers/soc/imx/Kconfig"
+source "drivers/nvme/Kconfig"
 
 endmenu

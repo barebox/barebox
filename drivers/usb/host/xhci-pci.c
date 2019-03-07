@@ -37,9 +37,4 @@ static struct pci_driver xhci_pci_driver = {
 	.id_table = xhci_pci_tbl,
 	.probe = xhci_pci_probe,
 };
-
-static int xhci_pci_init(void)
-{
-	return pci_register_driver(&xhci_pci_driver);
-}
-device_initcall(xhci_pci_init);
+device_pci_driver(xhci_pci_driver);

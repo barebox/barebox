@@ -195,32 +195,39 @@ static int usb_stor_read_10(struct us_blk_dev *usb_blkdev,
 	return -EIO;
 }
 
-static int usb_stor_write_10(ccb *srb, struct us_data *us,
-                             unsigned long start, unsigned short blocks)
+static int usb_stor_write_10(struct us_blk_dev *usb_blkdev,
+                             unsigned long start, u8 *data,
+			     unsigned short blocks)
 {
+	struct us_data *us = usb_blkdev->us;
 	struct device_d *dev = &us->pusb_dev->dev;
 	int retries, result;
+	ccb srb;
+
+	srb.lun = usb_blkdev->lun;
+	srb.pdata = data;
+	srb.datalen = blocks * SECTOR_SIZE;
 
 	retries = 2;
 	do {
 		dev_dbg(dev, "SCSI_WRITE10: start %lx blocks %x\n", start, blocks);
-		memset(&srb->cmd[0], 0, 10);
-		srb->cmdlen = 10;
-		srb->cmd[0] = SCSI_WRITE10;
-		srb->cmd[2] = (u8)(start >> 24);
-		srb->cmd[3] = (u8)(start >> 16);
-		srb->cmd[4] = (u8)(start >> 8);
-		srb->cmd[5] = (u8)(start >> 0);
-		srb->cmd[7] = (u8)(blocks >> 8);
-		srb->cmd[8] = (u8)(blocks >> 0);
-		result = us->transport(srb, us);
+		memset(&srb.cmd[0], 0, 10);
+		srb.cmdlen = 10;
+		srb.cmd[0] = SCSI_WRITE10;
+		srb.cmd[2] = (u8)(start >> 24);
+		srb.cmd[3] = (u8)(start >> 16);
+		srb.cmd[4] = (u8)(start >> 8);
+		srb.cmd[5] = (u8)(start >> 0);
+		srb.cmd[7] = (u8)(blocks >> 8);
+		srb.cmd[8] = (u8)(blocks >> 0);
+		result = us->transport(&srb, us);
 		dev_dbg(dev, "SCSI_WRITE10 returns %d\n", result);
 		if (result == USB_STOR_TRANSPORT_GOOD)
 			return 0;
-		usb_stor_request_sense(srb, us);
+		usb_stor_request_sense(&srb, us);
 	} while (retries--);
 
-	return us->transport(srb, us);
+	return us->transport(&srb, us);
 }
 
 
@@ -291,15 +298,15 @@ static int usb_stor_blk_io(int io_op, struct block_device *disk_dev,
 		int result;
 		unsigned n = min(sector_count, US_MAX_IO_BLK);
 		u8 *data = buffer + (sectors_done * SECTOR_SIZE);
-		us_ccb.pdata = data;
-		us_ccb.datalen = n * SECTOR_SIZE;
+
 		if (io_op == io_rd)
 			result = usb_stor_read_10(pblk_dev,
 			                          (ulong)sector_start,
 						  data, n);
 		else
-			result = usb_stor_write_10(&us_ccb, us,
-			                           (ulong)sector_start, n);
+			result = usb_stor_write_10(pblk_dev,
+			                           (ulong)sector_start,
+						   data, n);
 		if (result != 0) {
 			dev_dbg(dev, "I/O error at sector %d\n", sector_start);
 			break;

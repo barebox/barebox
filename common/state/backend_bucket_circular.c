@@ -190,11 +190,10 @@ static int state_mtd_peb_write(struct state_backend_storage_bucket_circular *cir
 
 	offset += circ->eraseblock * circ->mtd->erasesize;
 
-	ret = lseek(circ->fd, offset, SEEK_SET);
-	if (ret < 0) {
+	if (lseek(circ->fd, offset, SEEK_SET) != offset) {
 		dev_err(circ->dev, "Failed to set position for circular write %lld, %d\n",
-			(long long) offset, ret);
-		return ret;
+			(long long) offset, -errno);
+		return -errno;
 	}
 
 	ret = write_full(circ->fd, buf, len);

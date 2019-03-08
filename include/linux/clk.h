@@ -399,6 +399,8 @@ struct clk_gate {
 	unsigned flags;
 };
 
+int clk_gate_is_enabled(struct clk *clk);
+
 #define to_clk_gate(_clk) container_of(_clk, struct clk_gate, clk)
 
 extern struct clk_ops clk_gate_ops;

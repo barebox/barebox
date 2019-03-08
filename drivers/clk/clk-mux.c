@@ -52,7 +52,7 @@ struct clk_ops clk_mux_ops = {
 };
 
 struct clk *clk_mux_alloc(const char *name, void __iomem *reg,
-		u8 shift, u8 width, const char **parents, u8 num_parents,
+		u8 shift, u8 width, const char * const *parents, u8 num_parents,
 		unsigned flags)
 {
 	struct clk_mux *m = xzalloc(sizeof(*m));
@@ -77,7 +77,7 @@ void clk_mux_free(struct clk *clk_mux)
 }
 
 struct clk *clk_mux(const char *name, void __iomem *reg,
-		u8 shift, u8 width, const char **parents, u8 num_parents, unsigned flags)
+		u8 shift, u8 width, const char * const *parents, u8 num_parents, unsigned flags)
 {
 	struct clk *m;
 	int ret;

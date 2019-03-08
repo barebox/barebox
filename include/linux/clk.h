@@ -310,7 +310,7 @@ struct clk {
 	int enable_count;
 	struct list_head list;
 	const char *name;
-	const char **parent_names;
+	const char * const *parent_names;
 	int num_parents;
 
 	struct clk **parents;
@@ -384,11 +384,11 @@ struct clk_mux {
 extern struct clk_ops clk_mux_ops;
 
 struct clk *clk_mux_alloc(const char *name, void __iomem *reg,
-		u8 shift, u8 width, const char **parents, u8 num_parents,
+		u8 shift, u8 width, const char * const *parents, u8 num_parents,
 		unsigned flags);
 void clk_mux_free(struct clk *clk_mux);
 struct clk *clk_mux(const char *name, void __iomem *reg,
-		u8 shift, u8 width, const char **parents, u8 num_parents,
+		u8 shift, u8 width, const char * const *parents, u8 num_parents,
 		unsigned flags);
 
 struct clk_gate {
@@ -429,7 +429,7 @@ struct clk *clk_lookup(const char *name);
 void clk_dump(int verbose);
 
 struct clk *clk_register_composite(const char *name,
-			const char **parent_names, int num_parents,
+			const char * const *parent_names, int num_parents,
 			struct clk *mux_clk,
 			struct clk *rate_clk,
 			struct clk *gate_clk,

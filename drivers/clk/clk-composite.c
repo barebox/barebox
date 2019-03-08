@@ -116,7 +116,7 @@ static struct clk_ops clk_composite_ops = {
 };
 
 struct clk *clk_register_composite(const char *name,
-			const char **parent_names, int num_parents,
+			const char * const *parent_names, int num_parents,
 			struct clk *mux_clk,
 			struct clk *rate_clk,
 			struct clk *gate_clk,

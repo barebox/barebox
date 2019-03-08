@@ -198,6 +198,16 @@ config ARCH_S3C64xx
 	select CPU_V6
 	select GENERIC_GPIO
 
+config ARCH_STM32MP1
+	bool "ST stm32mp1xx"
+	select CPU_V7
+	select HAVE_PBL_MULTI_IMAGES
+	select CLKDEV_LOOKUP
+	select COMMON_CLK
+	select COMMON_CLK_OF_PROVIDER
+	select HAS_DEBUG_LL
+	select HAVE_CLK
+
 config ARCH_VERSATILE
 	bool "ARM Versatile boards (ARM926EJ-S)"
 	select GPIOLIB
@@ -284,6 +294,7 @@ source arch/arm/mach-pxa/Kconfig
 source arch/arm/mach-rockchip/Kconfig
 source arch/arm/mach-samsung/Kconfig
 source arch/arm/mach-socfpga/Kconfig
+source arch/arm/mach-stm32mp1/Kconfig
 source arch/arm/mach-versatile/Kconfig
 source arch/arm/mach-vexpress/Kconfig
 source arch/arm/mach-tegra/Kconfig

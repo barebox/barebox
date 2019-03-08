@@ -1,0 +1,7 @@
+
+/ {
+	clocks {
+		/* Needed to let barebox find the clock nodes */
+		compatible = "simple-bus";
+	};
+};

@@ -39,6 +39,7 @@ static int armv8_timer_probe(struct device_d *dev)
 }
 
 static struct of_device_id armv8_timer_dt_ids[] = {
+	{ .compatible = "arm,armv7-timer", },
 	{ .compatible = "arm,armv8-timer", },
 	{ }
 };

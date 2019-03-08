@@ -126,6 +126,25 @@ static inline unsigned long get_cntpct(void)
 
 	return cntpct;
 }
+#else
+static inline unsigned int get_cntfrq(void)
+{
+	unsigned int val;
+
+	asm volatile("mrc p15, 0, %0, c14, c0, 0" : "=r" (val));
+
+	return val;
+}
+
+static inline unsigned long long get_cntpct(void)
+{
+	unsigned long long cval;
+
+	isb();
+	asm volatile("mrrc p15, 0, %Q0, %R0, c14" : "=r" (cval));
+
+	return cval;
+}
 
 #endif
 static inline unsigned int get_cr(void)

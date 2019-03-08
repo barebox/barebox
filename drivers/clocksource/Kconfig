@@ -73,7 +73,7 @@ config CLOCKSOURCE_ATMEL_PIT
 config CLOCKSOURCE_ARMV8_TIMER
 	bool
 	default y
-	depends on ARM && CPU_64v8
+	depends on ARM && (CPU_64v8 || CPU_V7)
 
 config CLOCKSOURCE_ARM_GLOBAL_TIMER
 	bool

@@ -54,7 +54,10 @@ static unsigned long clk_composite_recalc_rate(struct clk *clk,
 	struct clk_composite *composite = to_clk_composite(clk);
 	struct clk *rate_clk = composite->rate_clk;
 
-	return rate_clk ? rate_clk->ops->recalc_rate(rate_clk, parent_rate) : 0;
+	if (rate_clk)
+		return rate_clk->ops->recalc_rate(rate_clk, parent_rate);
+
+	return parent_rate;
 }
 
 static long clk_composite_round_rate(struct clk *clk, unsigned long rate,

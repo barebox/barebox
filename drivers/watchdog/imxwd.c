@@ -38,6 +38,7 @@ struct imx_wd {
 	const struct imx_wd_ops *ops;
 	struct restart_handler restart;
 	bool ext_reset;
+	bool bigendian;
 };
 
 #define to_imx_wd(h) container_of(h, struct imx_wd, wd)
@@ -68,12 +69,18 @@ struct imx_wd {
 
 static void imxwd_write(struct imx_wd *priv, int reg, uint16_t val)
 {
-	writew(val, priv->base + reg);
+	if (priv->bigendian)
+		out_be16(priv->base + reg, val);
+	else
+		writew(val, priv->base + reg);
 }
 
 static uint16_t imxwd_read(struct imx_wd *priv, int reg)
 {
-	return readw(priv->base + reg);
+	if (priv->bigendian)
+		return in_be16(priv->base + reg);
+	else
+		return readw(priv->base + reg);
 }
 
 static int imx1_watchdog_set_timeout(struct imx_wd *priv, unsigned timeout)
@@ -230,6 +237,7 @@ static int imx_wd_probe(struct device_d *dev)
 	priv->wd.timeout_max = priv->ops->timeout_max;
 	priv->wd.hwdev = dev;
 	priv->dev = dev;
+	priv->bigendian = of_device_is_big_endian(dev->device_node);
 
 	priv->ext_reset = of_property_read_bool(dev->device_node,
 						"fsl,ext-reset-output");

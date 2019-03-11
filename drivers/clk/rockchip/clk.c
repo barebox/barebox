@@ -64,7 +64,7 @@ static struct clk *rockchip_clk_register_branch(const char *name,
 	}
 
 	if (div_width > 0) {
-		div = clk_divider_alloc(name, *parent_names,
+		div = clk_divider_alloc(name, *parent_names, 0,
 		    base + muxdiv_offset, div_shift, div_width, div_flags);
 		if (!div)
 			return ERR_PTR(-ENOMEM);
@@ -188,13 +188,13 @@ void __init rockchip_clk_register_branches(
 		case branch_divider:
 			if (list->div_table)
 				clk = clk_divider_table(list->name,
-				    list->parent_names[0],
+				    list->parent_names[0], flags,
 				    reg_base + list->muxdiv_offset,
 				    list->div_shift, list->div_width,
 				    list->div_table, list->div_flags);
 			else
 				clk = clk_divider(list->name,
-				    list->parent_names[0],
+				    list->parent_names[0], flags,
 				    reg_base + list->muxdiv_offset,
 				    list->div_shift, list->div_width,
 				    list->div_flags);

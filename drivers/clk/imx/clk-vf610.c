@@ -252,7 +252,7 @@ static void __init vf610_clocks_init(struct device_node *ccm_node)
 	clk[VF610_CLK_IPG_BUS] = imx_clk_divider("ipg_bus", "platform_bus", CCM_CACRR, 11, 2);
 
 	clk[VF610_CLK_PLL3_MAIN_DIV] = imx_clk_divider("pll3_usb_otg_div", "pll3_usb_otg", CCM_CACRR, 20, 1);
-	clk[VF610_CLK_PLL4_MAIN_DIV] = clk_divider_table("pll4_audio_div", "pll4_audio", CCM_CACRR, 6, 3, pll4_audio_div_table, 0);
+	clk[VF610_CLK_PLL4_MAIN_DIV] = clk_divider_table("pll4_audio_div", "pll4_audio", 0, CCM_CACRR, 6, 3, pll4_audio_div_table, 0);
 	clk[VF610_CLK_PLL6_MAIN_DIV] = imx_clk_divider("pll6_video_div", "pll6_video", CCM_CACRR, 21, 1);
 
 	clk[VF610_CLK_DDRMC] = imx_clk_gate2_cgr("ddrmc", "ddr_sel", CCM_CCGR6, CCM_CCGRx_CGn(14), 0x2);

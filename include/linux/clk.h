@@ -352,15 +352,19 @@ unsigned long divider_recalc_rate(struct clk *clk, unsigned long parent_rate,
 		unsigned long flags, unsigned long width);
 
 struct clk *clk_divider_alloc(const char *name, const char *parent,
-		void __iomem *reg, u8 shift, u8 width, unsigned flags);
+			      unsigned clk_flags, void __iomem *reg,
+			      u8 shift, u8 width, unsigned div_flags);
 void clk_divider_free(struct clk *clk_divider);
 struct clk *clk_divider(const char *name, const char *parent,
-		void __iomem *reg, u8 shift, u8 width, unsigned flags);
+			unsigned clk_flags, void __iomem *reg, u8 shift,
+			u8 width, unsigned div_flags);
 struct clk *clk_divider_one_based(const char *name, const char *parent,
-		void __iomem *reg, u8 shift, u8 width, unsigned flags);
-struct clk *clk_divider_table(const char *name,
-		const char *parent, void __iomem *reg, u8 shift, u8 width,
-		const struct clk_div_table *table, unsigned flags);
+				  unsigned clk_flags, void __iomem *reg,
+				  u8 shift, u8 width, unsigned div_flags);
+struct clk *clk_divider_table(const char *name, const char *parent,
+			      unsigned clk_flags, void __iomem *reg, u8 shift,
+			      u8 width, const struct clk_div_table *table,
+			      unsigned div_flags);
 struct clk *clk_fixed_factor(const char *name,
 		const char *parent, unsigned int mult, unsigned int div,
 		unsigned flags);

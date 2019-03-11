@@ -249,7 +249,8 @@ struct clk_ops clk_divider_ops = {
 };
 
 struct clk *clk_divider_alloc(const char *name, const char *parent,
-		void __iomem *reg, u8 shift, u8 width, unsigned flags)
+			      unsigned clk_flags, void __iomem *reg, u8 shift,
+			      u8 width, unsigned div_flags)
 {
 	struct clk_divider *div = xzalloc(sizeof(*div));
 
@@ -257,9 +258,10 @@ struct clk *clk_divider_alloc(const char *name, const char *parent,
 	div->reg = reg;
 	div->width = width;
 	div->parent = parent;
+	div->flags = div_flags;
 	div->clk.ops = &clk_divider_ops;
 	div->clk.name = name;
-	div->clk.flags = flags;
+	div->clk.flags = clk_flags;
 	div->clk.parent_names = &div->parent;
 	div->clk.num_parents = 1;
 
@@ -273,13 +275,14 @@ void clk_divider_free(struct clk *clk)
 	free(d);
 }
 
-struct clk *clk_divider(const char *name, const char *parent,
-		void __iomem *reg, u8 shift, u8 width, unsigned flags)
+struct clk *clk_divider(const char *name, const char *parent, unsigned clk_flags,
+			void __iomem *reg, u8 shift, u8 width, unsigned div_flags)
 {
 	struct clk *d;
 	int ret;
 
-	d = clk_divider_alloc(name , parent, reg, shift, width, flags);
+	d = clk_divider_alloc(name , parent, clk_flags, reg, shift, width,
+			      div_flags);
 
 	ret = clk_register(d);
 	if (ret) {
@@ -291,12 +294,13 @@ struct clk *clk_divider(const char *name, const char *parent,
 }
 
 struct clk *clk_divider_one_based(const char *name, const char *parent,
-		void __iomem *reg, u8 shift, u8 width, unsigned flags)
+				  unsigned clk_flags, void __iomem *reg, u8 shift,
+				  u8 width, unsigned div_flags)
 {
 	struct clk_divider *div;
 	struct clk *clk;
 
-	clk = clk_divider(name, parent, reg, shift, width, flags);
+	clk = clk_divider(name, parent, clk_flags, reg, shift, width, div_flags);
 	if (IS_ERR(clk))
 		return clk;
 
@@ -306,9 +310,10 @@ struct clk *clk_divider_one_based(const char *name, const char *parent,
 	return clk;
 }
 
-struct clk *clk_divider_table(const char *name,
-		const char *parent, void __iomem *reg, u8 shift, u8 width,
-		const struct clk_div_table *table, unsigned flags)
+struct clk *clk_divider_table(const char *name, const char *parent,
+			      unsigned clk_flags, void __iomem *reg, u8 shift,
+			      u8 width, const struct clk_div_table *table,
+			      unsigned div_flags)
 {
 	struct clk_divider *div = xzalloc(sizeof(*div));
 	const struct clk_div_table *clkt;
@@ -318,9 +323,10 @@ struct clk *clk_divider_table(const char *name,
 	div->reg = reg;
 	div->width = width;
 	div->parent = parent;
+	div->flags = div_flags;
 	div->clk.ops = &clk_divider_ops;
 	div->clk.name = name;
-	div->clk.flags = flags;
+	div->clk.flags = clk_flags;
 	div->clk.parent_names = &div->parent;
 	div->clk.num_parents = 1;
 	div->table = table;

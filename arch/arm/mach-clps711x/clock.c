@@ -71,9 +71,9 @@ static __init int clps711x_clk_init(void)
 	clks[CLPS711X_CLK_BUS] = clk_fixed("bus", f_bus);
 	clks[CLPS711X_CLK_UART] = clk_fixed("uart", f_uart);
 	clks[CLPS711X_CLK_TIMERREF] = clk_fixed("timer_ref", f_timer_ref);
-	clks[CLPS711X_CLK_TIMER1] = clk_divider_table("timer1", "timer_ref",
+	clks[CLPS711X_CLK_TIMER1] = clk_divider_table("timer1", "timer_ref", 0,
 		IOMEM(SYSCON1), 5, 1, tdiv_tbl, ARRAY_SIZE(tdiv_tbl));
-	clks[CLPS711X_CLK_TIMER2] = clk_divider_table("timer2", "timer_ref",
+	clks[CLPS711X_CLK_TIMER2] = clk_divider_table("timer2", "timer_ref", 0,
 		IOMEM(SYSCON1), 7, 1, tdiv_tbl, ARRAY_SIZE(tdiv_tbl));
 
 	clkdev_add_physbase(clks[CLPS711X_CLK_UART], UARTDR1, NULL);

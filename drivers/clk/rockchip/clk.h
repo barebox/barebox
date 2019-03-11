@@ -27,7 +27,6 @@
 #include <linux/clk.h>
 
 /* To keep changes from kernel smaller */
-#define CLK_IGNORE_UNUSED 0
 #define CLK_GATE_SET_TO_DISABLE	CLK_GATE_INVERTED
 #define CLK_GET_RATE_NOCACHE 0
 

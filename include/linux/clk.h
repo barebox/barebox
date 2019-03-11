@@ -285,6 +285,7 @@ static inline void clk_put(struct clk *clk)
 #include <linux/list.h>
 
 #define CLK_SET_RATE_PARENT     (1 << 0) /* propagate rate change up one level */
+#define CLK_IGNORE_UNUSED       (1 << 3) /* do not gate even if unused */
 /* parents need enable during gate/ungate, set rate and re-parent */
 #define CLK_OPS_PARENT_ENABLE   (1 << 12)
 

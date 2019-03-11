@@ -50,7 +50,7 @@ static struct clk *rockchip_clk_register_branch(const char *name,
 	struct clk *div = NULL;
 
 	if (num_parents > 1) {
-		mux = clk_mux_alloc(name, base + muxdiv_offset, mux_shift,
+		mux = clk_mux_alloc(name, 0, base + muxdiv_offset, mux_shift,
 		    mux_width, parent_names, num_parents, mux_flags);
 		if (!mux)
 			return ERR_PTR(-ENOMEM);
@@ -176,14 +176,10 @@ void __init rockchip_clk_register_branches(
 		/* catch simple muxes */
 		switch (list->branch_type) {
 		case branch_mux:
-			/*
-			 * mux_flags and flags are ored, this is safe,
-			 * since there is no value clash, but isn't that elegant
-			 */
-			clk = clk_mux(list->name,
+			clk = clk_mux(list->name, flags,
 			    reg_base + list->muxdiv_offset, list->mux_shift,
 			    list->mux_width, list->parent_names,
-			    list->num_parents, list->mux_flags | flags);
+			    list->num_parents, list->mux_flags);
 			break;
 		case branch_divider:
 			if (list->div_table)

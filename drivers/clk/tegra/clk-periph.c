@@ -123,7 +123,7 @@ static struct clk *_tegra_clk_register_periph(const char *name,
 		goto out_periph;
 	}
 
-	periph->mux = clk_mux_alloc(NULL, clk_base + reg_offset, 32 - mux_size,
+	periph->mux = clk_mux_alloc(NULL, 0, clk_base + reg_offset, 32 - mux_size,
 				    mux_size, parent_names, num_parents, 0);
 	if (!periph->mux)
 		goto out_mux;

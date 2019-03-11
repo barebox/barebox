@@ -66,6 +66,16 @@ struct imx_wd {
 /* valid for i.MX27, i.MX31, always '0' on i.MX25, i.MX35, i.MX51 */
 #define WSTR_COLDSTART	(1 << 4)
 
+static void imxwd_write(struct imx_wd *priv, int reg, uint16_t val)
+{
+	writew(val, priv->base + reg);
+}
+
+static uint16_t imxwd_read(struct imx_wd *priv, int reg)
+{
+	return readw(priv->base + reg);
+}
+
 static int imx1_watchdog_set_timeout(struct imx_wd *priv, unsigned timeout)
 {
 	u16 val;
@@ -73,18 +83,18 @@ static int imx1_watchdog_set_timeout(struct imx_wd *priv, unsigned timeout)
 	dev_dbg(priv->dev, "%s: %d\n", __func__, timeout);
 
 	if (!timeout) {
-		writew(IMX1_WDOG_WCR_WHALT, priv->base + IMX1_WDOG_WCR);
+		imxwd_write(priv, IMX1_WDOG_WCR, IMX1_WDOG_WCR_WHALT);
 		return 0;
 	}
 
 	val = (timeout * 2 - 1) << 8;
 
-	writew(val, priv->base + IMX1_WDOG_WCR);
-	writew(IMX1_WDOG_WCR_WDE | val, priv->base + IMX1_WDOG_WCR);
+	imxwd_write(priv, IMX1_WDOG_WCR, val);
+	imxwd_write(priv, IMX1_WDOG_WCR, IMX1_WDOG_WCR_WDE | val);
 
 	/* Write Service Sequence */
-	writew(0x5555, priv->base + IMX1_WDOG_WSR);
-	writew(0xaaaa, priv->base + IMX1_WDOG_WSR);
+	imxwd_write(priv, IMX1_WDOG_WSR, 0x5555);
+	imxwd_write(priv, IMX1_WDOG_WSR, 0xaaaa);
 
 	return 0;
 }
@@ -113,13 +123,13 @@ static int imx21_watchdog_set_timeout(struct imx_wd *priv, unsigned timeout)
 	 * set time and some write once bits first prior enabling the
 	 * watchdog according to the datasheet
 	 */
-	writew(val, priv->base + IMX21_WDOG_WCR);
+	imxwd_write(priv, IMX21_WDOG_WCR, val);
 
-	writew(IMX21_WDOG_WCR_WDE | val, priv->base + IMX21_WDOG_WCR);
+	imxwd_write(priv, IMX21_WDOG_WCR, IMX21_WDOG_WCR_WDE | val);
 
 	/* Write Service Sequence */
-	writew(0x5555, priv->base + IMX21_WDOG_WSR);
-	writew(0xaaaa, priv->base + IMX21_WDOG_WSR);
+	imxwd_write(priv, IMX21_WDOG_WSR, 0x5555);
+	imxwd_write(priv, IMX21_WDOG_WSR, 0xaaaa);
 
 	return 0;
 }
@@ -134,11 +144,11 @@ static void imx21_soc_reset(struct imx_wd *priv)
 	else
 		val |= IMX21_WDOG_WCR_WDA; /* do not assert ext-reset */
 
-	writew(val, priv->base + IMX21_WDOG_WCR);
+	imxwd_write(priv, IMX21_WDOG_WCR, val);
 
 	/* Two additional writes due to errata ERR004346 */
-	writew(val, priv->base + IMX21_WDOG_WCR);
-	writew(val, priv->base + IMX21_WDOG_WCR);
+	imxwd_write(priv, IMX21_WDOG_WCR, val);
+	imxwd_write(priv, IMX21_WDOG_WCR, val);
 }
 
 static int imx_watchdog_set_timeout(struct watchdog *wd, unsigned timeout)
@@ -161,7 +171,7 @@ static void __noreturn imxwd_force_soc_reset(struct restart_handler *rst)
 
 static void imx_watchdog_detect_reset_source(struct imx_wd *priv)
 {
-	u16 val = readw(priv->base + IMX21_WDOG_WSTR);
+	u16 val = imxwd_read(priv, IMX21_WDOG_WSTR);
 	int priority = RESET_SOURCE_DEFAULT_PRIORITY;
 
 	if (reset_source_get() == RESET_WDG)
@@ -192,7 +202,7 @@ static int imx21_wd_init(struct imx_wd *priv)
 	/*
 	 * Disable watchdog powerdown counter
 	 */
-	writew(0x0, priv->base + IMX21_WDOG_WMCR);
+	imxwd_write(priv, IMX21_WDOG_WMCR, 0x0);
 
 	return 0;
 }

@@ -33,6 +33,13 @@ static int clk_mux_set_parent(struct clk *clk, u8 idx)
 	struct clk_mux *m = container_of(clk, struct clk_mux, clk);
 	u32 val;
 
+	if (m->flags & CLK_MUX_READ_ONLY) {
+		if (clk_mux_get_parent(clk) != idx)
+			return -EPERM;
+		else
+			return 0;
+	}
+
 	val = readl(m->reg);
 	val &= ~(((1 << m->width) - 1) << m->shift);
 	val |= idx << m->shift;

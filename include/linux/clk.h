@@ -344,6 +344,7 @@ struct clk_divider {
 #define CLK_DIVIDER_READ_ONLY		(1 << 5)
 
 #define CLK_MUX_HIWORD_MASK		(1 << 2)
+#define CLK_MUX_READ_ONLY		(1 << 3) /* mux can't be changed */
 
 extern struct clk_ops clk_divider_ops;
 

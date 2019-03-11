@@ -48,6 +48,11 @@ config NATIONAL_PHY
 	---help---
 	  Currently supports the DP83865 PHY.
 
+config REALTEK_PHY
+	bool "Driver for Realtek PHYs"
+	---help---
+	  Supports the Realtek 821x PHY.
+
 config SMSC_PHY
 	bool "Drivers for SMSC PHYs"
 	---help---

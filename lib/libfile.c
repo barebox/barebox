@@ -323,10 +323,9 @@ int copy_file(const char *src, const char *dst, int verbose)
 {
 	char *rw_buf = NULL;
 	int srcfd = 0, dstfd = 0;
-	int r, w;
+	int r;
 	int ret = 1, err1 = 0;
 	int mode;
-	void *buf;
 	int total = 0;
 	struct stat srcstat, dststat;
 
@@ -370,17 +369,12 @@ int copy_file(const char *src, const char *dst, int verbose)
 		if (!r)
 			break;
 
-		buf = rw_buf;
-		while (r) {
-			w = write(dstfd, buf, r);
-			if (w < 0) {
-				perror("write");
-				goto out;
-			}
-			buf += w;
-			r -= w;
-			total += w;
+		if (write_full(dstfd, rw_buf, r) < 0) {
+			perror("write");
+			goto out;
 		}
+
+		total += r;
 
 		if (verbose) {
 			if (srcstat.st_size && srcstat.st_size != FILESIZE_MAX)

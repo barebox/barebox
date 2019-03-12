@@ -43,8 +43,6 @@ struct ramfs_inode {
 	char *symlink;
 	ulong mode;
 
-	struct handle_d *handle;
-
 	ulong size;
 	struct ramfs_chunk *data;
 

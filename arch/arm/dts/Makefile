@@ -123,7 +123,7 @@ pbl-dtb-$(CONFIG_MACH_ZII_VF610_DEV) += \
 	vf610-zii-dev-rev-c.dtb.o 	\
 	vf610-zii-cfu1.dtb.o		\
 	vf610-zii-ssmb-spu3.dtb.o	\
-	vf610-zii-scu4-aib-rev-c.dtb.o  \
+	vf610-zii-scu4-aib.dtb.o	\
 	vf610-zii-spb4.dtb.o
 pbl-dtb-$(CONFIG_MACH_AT91SAM9263EK_DT) += at91sam9263ek.dtb.o
 pbl-dtb-$(CONFIG_MACH_MICROCHIP_KSZ9477_EVB) += at91-microchip-ksz9477-evb.dtb.o

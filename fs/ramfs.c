@@ -99,8 +99,6 @@ static struct inode *ramfs_get_inode(struct super_block *sb, const struct inode 
 	return inode;
 }
 
-static int chunks = 0;
-
 static struct ramfs_chunk *ramfs_get_chunk(void)
 {
 	struct ramfs_chunk *data = malloc(sizeof(struct ramfs_chunk));
@@ -113,7 +111,6 @@ static struct ramfs_chunk *ramfs_get_chunk(void)
 		return NULL;
 	}
 	data->next = NULL;
-	chunks++;
 
 	return data;
 }
@@ -122,7 +119,6 @@ static void ramfs_put_chunk(struct ramfs_chunk *data)
 {
 	free(data->data);
 	free(data);
-	chunks--;
 }
 
 /* ---------------------------------------------------------------*/

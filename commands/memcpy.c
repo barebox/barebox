@@ -86,7 +86,7 @@ static int do_memcpy(int argc, char *argv[])
 	while (count > 0) {
 		int now, r;
 
-		now = min((loff_t)RW_BUF_SIZE, count);
+		now = min_t(loff_t, RW_BUF_SIZE, count);
 
 		r = read(sourcefd, buf, now);
 		if (r < 0) {

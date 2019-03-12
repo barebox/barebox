@@ -68,6 +68,38 @@ $(obj)/%.pblb: $(obj)/%.pbl FORCE
 	$(call if_changed,objcopy_bin,$(*F))
 	$(call cmd,check_file_size,$@,$(CONFIG_BAREBOX_MAX_IMAGE_SIZE))
 
+#
+# For each start symbol create three variables containing the
+# relevant sizes in the image:
+# PBL_CODE_SIZE_$(symbol)   - contains the pure code size of the image
+# PBL_MEMORY_SIZE_$(symbol) - contains the code size + bss size of the
+#                             image
+# PBL_IMAGE_SIZE_$(symbol)  - contains the full image size including the
+#                             compressed payload
+#
+	$(eval PBL_CODE_SIZE_$* = \
+		$(shell $(srctree)/scripts/extract_symbol_offset pbl_code_size $^))
+	$(eval PBL_MEMORY_SIZE_$*= \
+		$(shell $(srctree)/scripts/extract_symbol_offset pbl_memory_size $^))
+	$(eval PBL_IMAGE_SIZE_$*= \
+		$(shell $(srctree)/scripts/extract_symbol_offset pbl_image_size $^))
+
+#
+# if MAX_PBL_xxx_SIZE_$(symbol) is defined it contains the maximum size the
+# code/memory/image for this PBL may get. Check these values.
+#
+	$(if $(MAX_PBL_CODE_SIZE_$*), \
+		$(call cmd,check_size, $(PBL_CODE_SIZE_$*), $(MAX_PBL_CODE_SIZE_$*)) \
+	)
+
+	$(if $(MAX_PBL_MEMORY_SIZE_$*), \
+		$(call cmd,check_size, $(PBL_MEMORY_SIZE_$*), $(MAX_PBL_MEMORY_SIZE_$*)) \
+	)
+
+	$(if $(MAX_PBL_IMAGE_SIZE_$*), \
+		$(call cmd,check_size, $(PBL_IMAGE_SIZE_$*), $(MAX_PBL_IMAGE_SIZE_$*)) \
+	)
+
 $(obj)/%.s: $(obj)/% FORCE
 	$(call if_changed,disasm)
 

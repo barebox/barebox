@@ -131,10 +131,8 @@ ramfs_mknod(struct inode *dir, struct dentry *dentry, umode_t mode)
 	if (!inode)
 		return -ENOSPC;
 
-	if (inode) {
-		d_instantiate(dentry, inode);
-		dget(dentry);   /* Extra count - pin the dentry in core */
-	}
+	d_instantiate(dentry, inode);
+	dget(dentry);   /* Extra count - pin the dentry in core */
 
 	return 0;
 }

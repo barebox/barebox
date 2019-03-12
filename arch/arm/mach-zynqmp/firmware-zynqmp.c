@@ -30,8 +30,6 @@
 #define ZYNQMP_TZ_VERSION	((ZYNQMP_TZ_VERSION_MAJOR << 16) | \
 				ZYNQMP_TZ_VERSION_MINOR)
 
-#define PAYLOAD_ARG_CNT         4
-
 /* SMC SIP service Call Function Identifier Prefix */
 #define PM_SIP_SVC		0xC2000000
 

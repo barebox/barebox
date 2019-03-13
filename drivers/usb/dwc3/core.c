@@ -663,6 +663,25 @@ static void dwc3_check_params(struct dwc3 *dwc)
 	}
 }
 
+static void dwc3_coresoft_reset(struct dwc3 *dwc)
+{
+	u32 reg;
+
+	reg = dwc3_readl(dwc->regs, DWC3_GCTL);
+	reg |= DWC3_GCTL_CORESOFTRESET;
+	dwc3_writel(dwc->regs, DWC3_GCTL, reg);
+
+	/*
+	 * Similar reset sequence in U-Boot has a 100ms delay here. In
+	 * practice reset sequence seem to work as expected even
+	 * without a delay.
+	 */
+
+	reg = dwc3_readl(dwc->regs, DWC3_GCTL);
+	reg &= ~DWC3_GCTL_CORESOFTRESET;
+	dwc3_writel(dwc->regs, DWC3_GCTL, reg);
+}
+
 static int dwc3_probe(struct device_d *dev)
 {
 	struct dwc3		*dwc;
@@ -694,6 +713,8 @@ static int dwc3_probe(struct device_d *dev)
 	ret = clk_bulk_enable(dwc->num_clks, dwc->clks);
 	if (ret)
 		return ret;
+
+	dwc3_coresoft_reset(dwc);
 
 	dwc3_cache_hwparams(dwc);
 

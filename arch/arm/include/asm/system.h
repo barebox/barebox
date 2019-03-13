@@ -127,6 +127,11 @@ static inline unsigned long get_cntpct(void)
 	return cntpct;
 }
 #else
+static inline void set_cntfrq(unsigned long cntfrq)
+{
+	asm("mcr p15, 0, %0, c14, c0, 0" : : "r" (cntfrq));
+}
+
 static inline unsigned int get_cntfrq(void)
 {
 	unsigned int val;

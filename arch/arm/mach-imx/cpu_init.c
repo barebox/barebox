@@ -15,7 +15,19 @@
 #include <asm/barebox-arm-head.h>
 #include <asm/errata.h>
 #include <linux/types.h>
+#include <linux/bitops.h>
 #include <mach/generic.h>
+#include <mach/imx7-regs.h>
+#include <common.h>
+#include <io.h>
+#include <asm/syscounter.h>
+#include <asm/system.h>
+
+static inline void imx_cpu_timer_init(void __iomem *syscnt)
+{
+	set_cntfrq(syscnt_get_cntfrq(syscnt));
+	syscnt_enable(syscnt);
+}
 
 #ifdef CONFIG_CPU_32
 void imx5_cpu_lowlevel_init(void)
@@ -47,6 +59,7 @@ void imx6ul_cpu_lowlevel_init(void)
 void imx7_cpu_lowlevel_init(void)
 {
 	arm_cpu_lowlevel_init();
+	imx_cpu_timer_init(IOMEM(MX7_SYSCNT_CTRL_BASE_ADDR));
 }
 
 void vf610_cpu_lowlevel_init(void)

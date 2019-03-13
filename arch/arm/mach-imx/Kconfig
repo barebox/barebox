@@ -439,6 +439,7 @@ config MACH_ZII_RDU1
 	select ARCH_IMX51
 	select MACH_FREESCALE_MX51_PDK_POWER
 	select CRC8
+	select MACH_ZII_COMMON
 
 config MACH_ZII_RDU2
 	bool "ZII i.MX6Q(+) RDU2"

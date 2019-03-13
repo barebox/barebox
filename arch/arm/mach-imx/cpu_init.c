@@ -18,6 +18,7 @@
 #include <linux/bitops.h>
 #include <mach/generic.h>
 #include <mach/imx7-regs.h>
+#include <mach/imx8mq-regs.h>
 #include <common.h>
 #include <io.h>
 #include <asm/syscounter.h>
@@ -65,5 +66,13 @@ void imx7_cpu_lowlevel_init(void)
 void vf610_cpu_lowlevel_init(void)
 {
 	arm_cpu_lowlevel_init();
+}
+#else
+void imx8mq_cpu_lowlevel_init(void)
+{
+	arm_cpu_lowlevel_init();
+
+	if (current_el() == 3)
+		imx_cpu_timer_init(IOMEM(MX8MQ_SYSCNT_CTRL_BASE_ADDR));
 }
 #endif

@@ -83,7 +83,7 @@ static void phytec_imx8mq_som_sram_setup(void)
  */
 ENTRY_FUNCTION(start_phytec_phycore_imx8mq, r0, r1, r2)
 {
-	arm_cpu_lowlevel_init();
+	imx8mq_cpu_lowlevel_init();
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();

@@ -27,28 +27,6 @@
 #define FSL_SIP_BUILDINFO			0xC2000003
 #define FSL_SIP_BUILDINFO_GET_COMMITHASH	0x00
 
-static int imx8mq_init_syscnt_frequency(void)
-{
-	if (!cpu_is_mx8mq())
-		return 0;
-
-	if (current_el() == 3) {
-		void __iomem *syscnt = IOMEM(MX8MQ_SYSCNT_CTRL_BASE_ADDR);
-		/*
-		 * Update with accurate clock frequency
-		 */
-		set_cntfrq(syscnt_get_cntfrq(syscnt));
-		syscnt_enable(syscnt);
-	}
-
-	return 0;
-}
-/*
- * This call needs to happen before timer driver gets probed and
- * requests its update frequency via cntfrq_el0
- */
-core_initcall(imx8mq_init_syscnt_frequency);
-
 int imx8mq_init(void)
 {
 	void __iomem *anatop = IOMEM(MX8MQ_ANATOP_BASE_ADDR);

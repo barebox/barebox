@@ -1,1 +1,1 @@
-obj-y += switch-cmd.o
+obj-y += switch-cmd.o pn-fixup.o

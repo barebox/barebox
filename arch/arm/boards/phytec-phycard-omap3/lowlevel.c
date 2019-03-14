@@ -252,9 +252,9 @@ static int pcaal1_board_init(void)
 	return 0;
 }
 
-void __bare_init __naked barebox_arm_reset_vector(uint32_t *data)
+void __bare_init __naked barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2)
 {
-	omap3_save_bootinfo(data);
+	omap3_save_bootinfo((void *)r0);
 
 	arm_cpu_lowlevel_init();
 

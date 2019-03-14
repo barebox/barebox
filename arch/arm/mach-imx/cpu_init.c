@@ -12,6 +12,7 @@
  * GNU General Public License for more details.
  */
 
+#include <common.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/errata.h>
 #include <linux/types.h>

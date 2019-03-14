@@ -26,7 +26,7 @@
 #define VIRT2REAL_SRAM_BASE 0x82000000
 #define VIRT2REAL_SRAM_SIZE SZ_16M
 
-void __naked __bare_init barebox_arm_reset_vector(void)
+void __naked __bare_init barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2)
 {
 	arm_cpu_lowlevel_init();
 

@@ -79,7 +79,7 @@ static __bare_init bool load_stage2(void *dest, size_t size)
 	return s5p_irom_load_mmc(dest, 1, (size+ 511) / 512);
 }
 
-void __bare_init barebox_arm_reset_vector(void)
+void __bare_init barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2)
 {
 	arm_cpu_lowlevel_init();
 

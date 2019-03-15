@@ -1,17 +1,17 @@
 .. index:: pstore (filesystem)
 
-pstore filesystem with RAM backend (RAMOOPS)
-============================================
+*pstore* filesystem with RAM backend (RAMOOPS)
+==============================================
 
-Barebox supports the pstore filesystem known from the kernel. The main backend
+Barebox supports the *pstore* filesystem known from the kernel. The main backend
 implementation is RAM. All other backends are currently not implemented by
 Barebox.
 
-pstore is a filesystem to store kernel log or kernel panic messages. These
+*pstore* is a filesystem to store kernel log or kernel panic messages. These
 messages are stored by the kernel in a specified RAM area which is never
 overwritten by any user. This data can be accessed after a reboot through
-/pstore in Barebox or the kernel. The pstore filesystem is automatically mounted
-at boot:
+``/pstore`` in Barebox or the kernel. The *pstore* filesystem is automatically
+mounted at boot:
 
 .. code-block:: none
 
@@ -19,7 +19,7 @@ at boot:
 	none on /dev type devfs
 	none on /pstore type pstore
 
-pstore may add additional warnings during boot due to wrong ECCs (no data
+*pstore* may add additional warnings during boot due to wrong ECCs (no data
 written):
 
 .. code-block:: none
@@ -40,7 +40,7 @@ written):
   pstore: Registered ramoops as persistent store backend
   ramoops: attached 0x200000@0x1fdf4000, ecc: 16/0
 
-To use pstore/RAMOOPS both Barebox and Kernel have to be compiled with pstore
+To use *pstore/RAMOOPS* both Barebox and Kernel have to be compiled with *pstore*
 and RAM backend support. The kernel receives the parameters describing the
 layout via devicetree or - as a fallback - over the kernel command line.
 To ensure both worlds are using the same memory layout, the required

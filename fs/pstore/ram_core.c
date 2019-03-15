@@ -346,7 +346,7 @@ void persistent_ram_zap(struct persistent_ram_zone *prz)
 static int persistent_ram_buffer_map(phys_addr_t start, phys_addr_t size,
 		struct persistent_ram_zone *prz, int memtype)
 {
-	prz->res = request_sdram_region("persistent ram", start, size);
+	prz->res = request_sdram_region(prz->label ?: "ramoops", start, size);
 	if (!prz->res)
 		return -ENOMEM;
 
@@ -409,12 +409,13 @@ void persistent_ram_free(struct persistent_ram_zone *prz)
 	prz->ecc_info.par = NULL;
 
 	persistent_ram_free_old(prz);
+	kfree(prz->label);
 	kfree(prz);
 }
 
 struct persistent_ram_zone *persistent_ram_new(phys_addr_t start, size_t size,
 			u32 sig, struct persistent_ram_ecc_info *ecc_info,
-			unsigned int memtype)
+			unsigned int memtype, char *label)
 {
 	struct persistent_ram_zone *prz;
 	int ret = -ENOMEM;
@@ -424,6 +425,9 @@ struct persistent_ram_zone *persistent_ram_new(phys_addr_t start, size_t size,
 		pr_err("failed to allocate persistent ram zone\n");
 		goto err;
 	}
+
+	/* Initialize general buffer state. */
+	prz->label = label;
 
 	ret = persistent_ram_buffer_map(start, size, prz, memtype);
 	if (ret)

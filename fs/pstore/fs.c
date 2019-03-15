@@ -52,68 +52,71 @@ struct pstore_private {
  * Load it up with "size" bytes of data from "buf".
  * Set the mtime & ctime to the date that this record was originally stored.
  */
-int pstore_mkfile(enum pstore_type_id type, char *psname, u64 id, int count,
-		  char *data, bool compressed, size_t size,
-		  struct pstore_info *psi)
+int pstore_mkfile(struct pstore_record *record)
 {
 	struct pstore_private	*private, *pos;
+	size_t			size = record->size;
 
 	list_for_each_entry(pos, &allpstore, list) {
-		if (pos->type == type && pos->id == id && pos->psi == psi)
+		if (pos->type == record->type &&
+		    pos->id == record->id &&
+		    pos->psi == record->psi)
 			return -EEXIST;
 	}
 
 	private = xzalloc(sizeof(*private) + size);
-	private->type = type;
-	private->id = id;
-	private->count = count;
-	private->psi = psi;
+	private->type = record->type;
+	private->id = record->id;
+	private->count = record->count;
+	private->psi = record->psi;
 
-	switch (type) {
+	switch (record->type) {
 	case PSTORE_TYPE_DMESG:
 		scnprintf(private->name, sizeof(private->name),
-			  "dmesg-%s-%lld%s", psname, id,
-			  compressed ? ".enc.z" : "");
+			  "dmesg-%s-%lld%s", record->psi->name, record->id,
+			  record->compressed ? ".enc.z" : "");
 		break;
 	case PSTORE_TYPE_CONSOLE:
 		scnprintf(private->name, sizeof(private->name),
-			  "console-%s-%lld", psname, id);
+			  "console-%s-%lld", record->psi->name, record->id);
 		break;
 	case PSTORE_TYPE_FTRACE:
 		scnprintf(private->name, sizeof(private->name),
-			  "ftrace-%s-%lld", psname, id);
+			  "ftrace-%s-%lld", record->psi->name, record->id);
 		break;
 	case PSTORE_TYPE_MCE:
 		scnprintf(private->name, sizeof(private->name),
-			  "mce-%s-%lld", psname, id);
+			  "mce-%s-%lld", record->psi->name, record->id);
 		break;
 	case PSTORE_TYPE_PPC_RTAS:
 		scnprintf(private->name, sizeof(private->name),
-			  "rtas-%s-%lld", psname, id);
+			  "rtas-%s-%lld", record->psi->name, record->id);
 		break;
 	case PSTORE_TYPE_PPC_OF:
 		scnprintf(private->name, sizeof(private->name),
-			  "powerpc-ofw-%s-%lld", psname, id);
+			  "powerpc-ofw-%s-%lld", record->psi->name, record->id);
 		break;
 	case PSTORE_TYPE_PPC_COMMON:
 		scnprintf(private->name, sizeof(private->name),
-			  "powerpc-common-%s-%lld", psname, id);
+			  "powerpc-common-%s-%lld", record->psi->name,
+			  record->id);
 		break;
 	case PSTORE_TYPE_PMSG:
 		scnprintf(private->name, sizeof(private->name),
-			  "pmsg-%s-%lld", psname, id);
+			  "pmsg-%s-%lld", record->psi->name, record->id);
 		break;
 	case PSTORE_TYPE_UNKNOWN:
 		scnprintf(private->name, sizeof(private->name),
-			  "unknown-%s-%lld", psname, id);
+			  "unknown-%s-%lld", record->psi->name, record->id);
 		break;
 	default:
 		scnprintf(private->name, sizeof(private->name),
-			  "type%d-%s-%lld", type, psname, id);
+			  "type%d-%s-%lld", record->type, record->psi->name,
+			  record->id);
 		break;
 	}
 
-	memcpy(private->data, data, size);
+	memcpy(private->data, record->buf, size);
 	private->size = size;
 
 	list_add(&private->list, &allpstore);

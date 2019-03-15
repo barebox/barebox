@@ -190,11 +190,7 @@ void pstore_get_records(int quiet)
 			pr_err("barebox does not have ramoops compression support\n");
 			continue;
 		}
-		rc = pstore_mkfile(record.type, psi->name, record.id,
-				   record.count, record.buf,
-				   record.compressed,
-				   record.size,
-				   record.psi);
+		rc = pstore_mkfile(&record);
 		if (unzipped_len < 0) {
 			/* Free buffer other than big oops */
 			kfree(record.buf);

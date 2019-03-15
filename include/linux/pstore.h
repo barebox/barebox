@@ -25,6 +25,8 @@
 #include <linux/types.h>
 #include <asm-generic/errno.h>
 
+struct module;
+
 /* types */
 enum pstore_type_id {
 	PSTORE_TYPE_DMESG	= 0,
@@ -43,7 +45,18 @@ enum kmsg_dump_reason {
 	KMSG_DUMP_UNDEF,
 };
 
-struct module;
+struct pstore_info;
+
+struct pstore_record {
+	struct pstore_info	*psi;
+	enum pstore_type_id	type;
+	u64			id;
+	char			*buf;
+	int			count;
+	bool			compressed;
+	ssize_t			size;
+	ssize_t			ecc_notice_size;
+};
 
 struct pstore_info {
 	struct module	*owner;

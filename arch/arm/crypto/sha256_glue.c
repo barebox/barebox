@@ -150,24 +150,6 @@ static int sha224_final(struct digest *desc, u8 *out)
 	return 0;
 }
 
-int sha256_export(struct digest *desc, void *out)
-{
-	struct sha256_state *sctx = digest_ctx(desc);
-
-	memcpy(out, sctx, sizeof(*sctx));
-
-	return 0;
-}
-
-int sha256_import(struct digest *desc, const void *in)
-{
-	struct sha256_state *sctx = digest_ctx(desc);
-
-	memcpy(sctx, in, sizeof(*sctx));
-
-	return 0;
-}
-
 static struct digest_algo sha224 = {
 	.base = {
 		.name		=	"sha224",

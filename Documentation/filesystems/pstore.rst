@@ -75,3 +75,7 @@ All pstore files that could be found are added to the /pstore directory. This is
 a read-only filesystem. If you disable the Kconfig option FS_PSTORE_RAMOOPS_RO,
 the RAMOOPS area is reset and its ECC recalculated. But that does not allow any
 writes from Barebox into that area.
+
+If the menu entry ``FS_PSTORE_CONSOLE`` is enabled, Barebox itself will add all
+its own console output to the *ramoops:console* part, which enables the regular
+userland later on to have access to the bootloaders output.

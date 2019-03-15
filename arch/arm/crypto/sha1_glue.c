@@ -63,7 +63,7 @@ static int __sha1_update(struct sha1_state *sctx, const u8 *data,
 }
 
 
-int sha1_update_arm(struct digest *desc, const void *data,
+static int sha1_update_arm(struct digest *desc, const void *data,
 			     unsigned long len)
 {
 	struct sha1_state *sctx = digest_ctx(desc);
@@ -79,8 +79,6 @@ int sha1_update_arm(struct digest *desc, const void *data,
 	res = __sha1_update(sctx, data, len, partial);
 	return res;
 }
-EXPORT_SYMBOL_GPL(sha1_update_arm);
-
 
 /* Add padding and return the message digest. */
 static int sha1_final(struct digest *desc, u8 *out)

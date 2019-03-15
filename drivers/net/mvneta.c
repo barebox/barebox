@@ -580,7 +580,7 @@ static void mvneta_init_rx_ring(struct mvneta_port *priv)
 	priv->curr_rxdesc = 0;
 }
 
-void mvneta_setup_tx_rx(struct mvneta_port *priv)
+static void mvneta_setup_tx_rx(struct mvneta_port *priv)
 {
 	u32 val;
 

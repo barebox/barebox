@@ -21,7 +21,7 @@ static void __noreturn highbank_restart_soc(struct restart_handler *rst)
 	hang();
 }
 
-void __noreturn highbank_poweroff(struct poweroff_handler *handler)
+static void __noreturn highbank_poweroff(struct poweroff_handler *handler)
 {
 	shutdown_barebox();
 

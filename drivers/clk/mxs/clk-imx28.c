@@ -74,7 +74,7 @@ enum imx28_clk {
 
 static struct clk *clks[clk_max];
 
-int __init mx28_clocks_init(void __iomem *regs)
+static int __init mx28_clocks_init(void __iomem *regs)
 {
 	clks[ref_xtal] = clk_fixed("ref_xtal", 24000000);
 	clks[pll0] = mxs_clk_pll("pll0", "ref_xtal", PLL0CTRL0, 17, 480000000);

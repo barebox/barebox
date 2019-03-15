@@ -22,7 +22,7 @@
 
 #define OSCR	0x40A00010
 
-uint64_t pxa_clocksource_read(void)
+static uint64_t pxa_clocksource_read(void)
 {
 	return readl(OSCR);
 }

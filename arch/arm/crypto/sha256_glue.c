@@ -26,7 +26,7 @@ void sha256_block_data_order(u32 *digest, const void *data,
 				      unsigned int num_blks);
 
 
-int sha256_init(struct digest *desc)
+static int sha256_init(struct digest *desc)
 {
 	struct sha256_state *sctx = digest_ctx(desc);
 
@@ -43,7 +43,7 @@ int sha256_init(struct digest *desc)
 	return 0;
 }
 
-int sha224_init(struct digest *desc)
+static int sha224_init(struct digest *desc)
 {
 	struct sha256_state *sctx = digest_ctx(desc);
 
@@ -60,7 +60,7 @@ int sha224_init(struct digest *desc)
 	return 0;
 }
 
-int __sha256_update(struct digest *desc, const u8 *data, unsigned int len,
+static int __sha256_update(struct digest *desc, const u8 *data, unsigned int len,
 		    unsigned int partial)
 {
 	struct sha256_state *sctx = digest_ctx(desc);
@@ -86,7 +86,7 @@ int __sha256_update(struct digest *desc, const u8 *data, unsigned int len,
 	return 0;
 }
 
-int sha256_update(struct digest *desc, const void *data,
+static int sha256_update(struct digest *desc, const void *data,
 			     unsigned long len)
 {
 	struct sha256_state *sctx = digest_ctx(desc);

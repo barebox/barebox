@@ -38,7 +38,7 @@ uint32_t s3c_get_mpllclk(void)
 	return m * ((S5PCXX_CLOCK_REFERENCE) / (p << s));
 }
 
-uint32_t s3c_get_apllclk(void)
+static uint32_t s3c_get_apllclk(void)
 {
 	uint32_t m, p, s;
 	uint32_t reg = readl(S5P_xPLL_CON + S5P_APLL);
@@ -84,7 +84,7 @@ unsigned s3c_get_uart_clk(unsigned src) {
 	return (src & 1) ? s3c_get_uart_clk_uclk1() : s3c_get_pclk();
 }
 
-int s5pcxx_dump_clocks(void)
+static int s5pcxx_dump_clocks(void)
 {
 	printf("refclk:  %7d kHz\n", S5PCXX_CLOCK_REFERENCE / 1000);
 	printf("apll:    %7d kHz\n", s3c_get_apllclk() / 1000);

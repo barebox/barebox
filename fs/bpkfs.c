@@ -25,7 +25,7 @@ static bool bpkfs_is_crc_file(struct bpkfs_handle_data *d)
 	return d->type & (1 << 31);
 }
 
-const char* bpkfs_type_to_str(uint32_t type)
+static const char* bpkfs_type_to_str(uint32_t type)
 {
 	switch (type) {
 	case BPKFS_TYPE_BL:

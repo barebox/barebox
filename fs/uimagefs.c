@@ -25,7 +25,7 @@ static bool uimagefs_is_data_file(struct uimagefs_handle_data *d)
 	return d->type == UIMAGEFS_DATA;
 }
 
-const char* uimagefs_type_to_str(enum uimagefs_type type)
+static const char* uimagefs_type_to_str(enum uimagefs_type type)
 {
 	switch (type) {
 	case UIMAGEFS_DATA:

@@ -77,7 +77,7 @@ static void sdram_init(int sdram)
 			MX27_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 }
 
-void __bare_init __naked phytec_phycard_imx27_common_init(void *fdt, int sdram)
+static void __bare_init __naked phytec_phycard_imx27_common_init(void *fdt, int sdram)
 {
 	unsigned long r;
 

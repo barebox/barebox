@@ -322,7 +322,7 @@ void s3c_set_hsmmc_clk(int id, int src, unsigned div)
 	writel(readl(S3C_SCLK_GATE) | S3C_SCLK_GATE_MMC(id), S3C_SCLK_GATE);
 }
 
-int s3c64xx_dump_clocks(void)
+static int s3c64xx_dump_clocks(void)
 {
 	printf("refclk:  %7d kHz\n", S3C64XX_CLOCK_REFERENCE / 1000);
 	printf("apll:    %7d kHz\n", s3c_get_apllclk() / 1000);

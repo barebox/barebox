@@ -153,7 +153,7 @@ int semihosting_isatty(int fd)
 }
 EXPORT_SYMBOL(semihosting_isatty);
 
-int semihosting_seek(int fd, off_t pos)
+int semihosting_seek(int fd, loff_t pos)
 {
 	struct __packed {
 		uint32_t fd;

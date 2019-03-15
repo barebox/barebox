@@ -36,6 +36,8 @@
 #include <globalvar.h>
 #include <init.h>
 #include <common.h>
+#include <of.h>
+#include <of_address.h>
 
 #define RAMOOPS_KERNMSG_HDR "===="
 #define MIN_MEM_SIZE 4096UL
@@ -349,6 +351,74 @@ static int ramoops_init_prz(struct ramoops_context *cxt,
 	return 0;
 }
 
+static int ramoops_parse_dt_size(struct device_d *dev,
+				 const char *propname, u32 *value)
+{
+	u32 val32 = 0;
+	int ret;
+
+	ret = of_property_read_u32(dev->device_node, propname, &val32);
+	if (ret < 0 && ret != -EINVAL) {
+		dev_err(dev, "failed to parse property %s: %d\n",
+			propname, ret);
+		return ret;
+	}
+
+	if (val32 > INT_MAX) {
+		dev_err(dev, "%s %u > INT_MAX\n", propname, val32);
+		return -EOVERFLOW;
+	}
+
+	*value = val32;
+	return 0;
+}
+
+static int ramoops_parse_dt(struct device_d *dev,
+			    struct ramoops_platform_data *pdata)
+{
+	struct device_node *of_node = dev->device_node;
+	struct device_node *mem_region;
+	struct resource res;
+	u32 value;
+	int ret;
+
+	mem_region = of_parse_phandle(of_node, "memory-region", 0);
+	if (!mem_region) {
+		dev_err(dev, "no memory-region phandle\n");
+		return -ENODEV;
+	}
+
+	ret = of_address_to_resource(mem_region, 0, &res);
+	if (ret) {
+		dev_err(dev,
+			"failed to translate memory-region to resource: %d\n",
+			ret);
+		return ret;
+	}
+
+	pdata->mem_size = resource_size(&res);
+	pdata->mem_address = res.start;
+	pdata->mem_type = of_property_read_bool(of_node, "unbuffered");
+	pdata->dump_oops = !of_property_read_bool(of_node, "no-dump-oops");
+
+#define parse_size(name, field) {					\
+		ret = ramoops_parse_dt_size(dev, name, &value);		\
+		if (ret < 0)						\
+		return ret;						\
+		field = value;						\
+	}
+
+       parse_size("record-size", pdata->record_size);
+       parse_size("console-size", pdata->console_size);
+       parse_size("ftrace-size", pdata->ftrace_size);
+       parse_size("pmsg-size", pdata->pmsg_size);
+       parse_size("ecc-size", pdata->ecc_info.ecc_size);
+
+#undef parse_size
+
+       return 0;
+}
+
 static int ramoops_probe(struct device_d *dev)
 {
 	struct ramoops_platform_data *pdata = dummy_data;
@@ -357,6 +427,18 @@ static int ramoops_probe(struct device_d *dev)
 	phys_addr_t paddr;
 	int err = -EINVAL;
 	char kernelargs[512];
+
+	if (IS_ENABLED(CONFIG_OFTREE) && !pdata) {
+		pdata = kzalloc(sizeof(*pdata), GFP_KERNEL);
+		if (!pdata) {
+			err = -ENOMEM;
+			goto fail_out;
+		}
+
+		err = ramoops_parse_dt(dev, pdata);
+		if (err < 0)
+			goto fail_out;
+	}
 
 	/* Only a single ramoops area allowed at a time, so fail extra
 	 * probes.
@@ -473,6 +555,7 @@ fail_init_fprz:
 fail_init_cprz:
 	ramoops_free_przs(cxt);
 fail_out:
+	kfree(pdata);
 	return err;
 }
 unsigned long arm_mem_ramoops_get(void);

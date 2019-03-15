@@ -128,27 +128,32 @@ static bool prz_ok(struct persistent_ram_zone *prz)
 			   persistent_ram_ecc_string(prz, NULL, 0));
 }
 
-static ssize_t ramoops_pstore_read(u64 *id, enum pstore_type_id *type,
-				   int *count, char **buf, bool *compressed,
-				   struct pstore_info *psi)
+static ssize_t ramoops_pstore_read(struct pstore_record *record)
 {
 	ssize_t size;
 	ssize_t ecc_notice_size;
-	struct ramoops_context *cxt = psi->data;
+	struct ramoops_context *cxt = record->psi->data;
 	struct persistent_ram_zone *prz;
 
+	record->compressed = false;
+
 	prz = ramoops_get_next_prz(cxt->przs, &cxt->dump_read_cnt,
-				   cxt->max_dump_cnt, id, type,
+				   cxt->max_dump_cnt, &record->id,
+				   &record->type,
 				   PSTORE_TYPE_DMESG, 0);
 	if (!prz_ok(prz))
 		prz = ramoops_get_next_prz(&cxt->cprz, &cxt->console_read_cnt,
-					   1, id, type, PSTORE_TYPE_CONSOLE, 0);
+					   1, &record->id, &record->type,
+					   PSTORE_TYPE_CONSOLE, 0);
+
 	if (!prz_ok(prz))
 		prz = ramoops_get_next_prz(&cxt->fprz, &cxt->ftrace_read_cnt,
-					   1, id, type, PSTORE_TYPE_FTRACE, 0);
+					   1, &record->id, &record->type,
+					   PSTORE_TYPE_FTRACE, 0);
 	if (!prz_ok(prz))
 		prz = ramoops_get_next_prz(&cxt->mprz, &cxt->pmsg_read_cnt,
-					   1, id, type, PSTORE_TYPE_PMSG, 0);
+					   1, &record->id, &record->type,
+					   PSTORE_TYPE_PMSG, 0);
 	if (!prz_ok(prz))
 		return 0;
 
@@ -160,12 +165,12 @@ static ssize_t ramoops_pstore_read(u64 *id, enum pstore_type_id *type,
 	/* ECC correction notice */
 	ecc_notice_size = persistent_ram_ecc_string(prz, NULL, 0);
 
-	*buf = kmalloc(size + ecc_notice_size + 1, GFP_KERNEL);
-	if (*buf == NULL)
+	record->buf = kmalloc(size + ecc_notice_size + 1, GFP_KERNEL);
+	if (record->buf == NULL)
 		return -ENOMEM;
 
-	memcpy(*buf, (char *)persistent_ram_old(prz), size);
-	persistent_ram_ecc_string(prz, *buf + size, ecc_notice_size + 1);
+	memcpy(record->buf, (char *)persistent_ram_old(prz), size);
+	persistent_ram_ecc_string(prz, record->buf + size, ecc_notice_size + 1);
 
 	return size + ecc_notice_size;
 }

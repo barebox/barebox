@@ -66,9 +66,7 @@ struct pstore_info {
 	int		flags;
 	int		(*open)(struct pstore_info *psi);
 	int		(*close)(struct pstore_info *psi);
-	ssize_t		(*read)(u64 *id, enum pstore_type_id *type,
-			int *count, char **buf, bool *compressed,
-			struct pstore_info *psi);
+	ssize_t		(*read)(struct pstore_record *record);
 	int		(*write)(enum pstore_type_id type,
 			enum kmsg_dump_reason reason, u64 *id,
 			unsigned int part, int count, bool compressed,

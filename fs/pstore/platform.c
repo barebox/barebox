@@ -181,10 +181,7 @@ void pstore_get_records(int quiet)
 	if (psi->open && psi->open(psi))
 		goto out;
 
-	while ((record.size = psi->read(&record.id, &record.type,
-					&record.count,
-					&record.buf, &record.compressed,
-					record.psi)) > 0) {
+	while ((record.size = psi->read(&record)) > 0) {
 		if (record.compressed &&
 		    record.type == PSTORE_TYPE_DMESG) {
 			pr_err("barebox does not have ramoops compression support\n");

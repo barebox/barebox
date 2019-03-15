@@ -52,10 +52,13 @@ struct pstore_record {
 	enum pstore_type_id	type;
 	u64			id;
 	char			*buf;
-	int			count;
-	bool			compressed;
 	ssize_t			size;
 	ssize_t			ecc_notice_size;
+
+	int			count;
+	enum kmsg_dump_reason	reason;
+	unsigned int		part;
+	bool			compressed;
 };
 
 struct pstore_info {
@@ -67,10 +70,7 @@ struct pstore_info {
 	int		(*open)(struct pstore_info *psi);
 	int		(*close)(struct pstore_info *psi);
 	ssize_t		(*read)(struct pstore_record *record);
-	int		(*write)(enum pstore_type_id type,
-			enum kmsg_dump_reason reason, u64 *id,
-			unsigned int part, int count, bool compressed,
-			size_t size, struct pstore_info *psi);
+	int		(*write)(struct pstore_record *record);
 	int		(*write_buf)(enum pstore_type_id type,
 			enum kmsg_dump_reason reason, u64 *id,
 			unsigned int part, const char *buf, bool compressed,

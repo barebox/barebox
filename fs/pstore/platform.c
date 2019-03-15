@@ -115,14 +115,12 @@ static void pstore_register_console(void)
 static void pstore_register_console(void) {}
 #endif
 
-static int pstore_write_compat(enum pstore_type_id type,
-			       enum kmsg_dump_reason reason,
-			       u64 *id, unsigned int part, int count,
-			       bool compressed, size_t size,
-			       struct pstore_info *psi)
+static int pstore_write_compat(struct pstore_record *record)
 {
-	return psi->write_buf(type, reason, id, part, psinfo->buf, compressed,
-			     size, psi);
+	return record->psi->write_buf(record->type, record->reason,
+				      &record->id, record->part,
+				      psinfo->buf, record->compressed,
+				      record->size, record->psi);
 }
 
 /*

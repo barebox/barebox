@@ -67,10 +67,6 @@
 #define ESDHC_FLAG_STD_TUNING		BIT(5)
 /* The IP has SDHCI_CAPABILITIES_1 register */
 #define ESDHC_FLAG_HAVE_CAP1		BIT(6)
-/* Need to access registers in bigendian mode */
-#define ESDHC_FLAG_BIGENDIAN		BIT(7)
-/* Enable cache snooping */
-#define ESDHC_FLAG_CACHE_SNOOPING	BIT(8)
 
 /*
  * The IP has errata ERR004536
@@ -82,6 +78,11 @@
 #define ESDHC_FLAG_HS200		BIT(8)
 /* The IP supports HS400 mode */
 #define ESDHC_FLAG_HS400		BIT(9)
+
+/* Need to access registers in bigendian mode */
+#define ESDHC_FLAG_BIGENDIAN		BIT(10)
+/* Enable cache snooping */
+#define ESDHC_FLAG_CACHE_SNOOPING	BIT(11)
 
 struct esdhc_soc_data {
 	u32 flags;

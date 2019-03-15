@@ -401,7 +401,9 @@ static int ramoops_init_prz(const char *name,
 		return err;
 	}
 
+#ifndef CONFIG_FS_PSTORE_RAMOOPS_RO
 	persistent_ram_zap(*prz);
+#endif /* CONFIG_FS_PSTORE_RAMOOPS_RO */
 
 	*paddr += sz;
 

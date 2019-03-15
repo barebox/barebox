@@ -330,18 +330,12 @@ void persistent_ram_free_old(struct persistent_ram_zone *prz)
 	prz->old_log_size = 0;
 }
 
-#ifdef CONFIG_FS_PSTORE_RAMOOPS_RO
-void persistent_ram_zap(struct persistent_ram_zone *prz)
-{
-}
-#else
 void persistent_ram_zap(struct persistent_ram_zone *prz)
 {
 	prz->buffer->start = 0;
 	prz->buffer->size = 0;
 	persistent_ram_update_header_ecc(prz);
 }
-#endif /* CONFIG_PSTORE_RAMOOPS_RO */
 
 static int persistent_ram_buffer_map(phys_addr_t start, phys_addr_t size,
 		struct persistent_ram_zone *prz, int memtype)

@@ -349,8 +349,9 @@ static int ramoops_init_prz(struct ramoops_context *cxt,
 	return 0;
 }
 
-static int ramoops_probe(struct ramoops_platform_data *pdata)
+static int ramoops_probe(struct device_d *dev)
 {
+	struct ramoops_platform_data *pdata = dummy_data;
 	struct ramoops_context *cxt = &oops_cxt;
 	size_t dump_mem_sz;
 	phys_addr_t paddr;
@@ -498,12 +499,39 @@ static void ramoops_register_dummy(void)
 	 */
 	dummy_data->ecc_info.ecc_size = ramoops_ecc == 1 ? 16 : ramoops_ecc;
 
-	ramoops_probe(dummy_data);
+	if (!IS_ENABLED(CONFIG_OFTREE))
+		ramoops_probe(NULL);
 }
+
+static const struct of_device_id ramoops_dt_ids[] = {
+	{ .compatible = "ramoops" },
+	{ },
+};
+
+static struct driver_d ramoops_driver = {
+	.name = "ramoops",
+	.probe = ramoops_probe,
+	.of_compatible = DRV_OF_COMPAT(ramoops_dt_ids),
+};
 
 static int __init ramoops_init(void)
 {
+	if (IS_ENABLED(CONFIG_OFTREE)) {
+		struct device_node *node;
+
+		node = of_get_root_node();
+		if (!node)
+			return 0;
+
+		node = of_get_child_by_name(node, "reserved-memory");
+		if (!node)
+			return 0;
+
+		for_each_matching_node(node, ramoops_dt_ids)
+			of_platform_device_create(node, NULL);
+	}
+
 	ramoops_register_dummy();
-	return 0;
+	return platform_driver_register(&ramoops_driver);
 }
-postcore_initcall(ramoops_init);
+device_initcall(ramoops_init);

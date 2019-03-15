@@ -377,27 +377,19 @@ static int ramoops_parse_dt(struct device_d *dev,
 			    struct ramoops_platform_data *pdata)
 {
 	struct device_node *of_node = dev->device_node;
-	struct device_node *mem_region;
-	struct resource res;
+	struct resource *res;
 	u32 value;
 	int ret;
 
-	mem_region = of_parse_phandle(of_node, "memory-region", 0);
-	if (!mem_region) {
-		dev_err(dev, "no memory-region phandle\n");
-		return -ENODEV;
-	}
-
-	ret = of_address_to_resource(mem_region, 0, &res);
-	if (ret) {
+	res = dev_get_resource(dev, IORESOURCE_MEM, 0);
+	if (!res) {
 		dev_err(dev,
-			"failed to translate memory-region to resource: %d\n",
-			ret);
-		return ret;
+			"failed to locate DT /reserved-memory resource\n");
+		return -EINVAL;
 	}
 
-	pdata->mem_size = resource_size(&res);
-	pdata->mem_address = res.start;
+	pdata->mem_size = resource_size(res);
+	pdata->mem_address = res->start;
 	pdata->mem_type = of_property_read_bool(of_node, "unbuffered");
 	pdata->dump_oops = !of_property_read_bool(of_node, "no-dump-oops");
 

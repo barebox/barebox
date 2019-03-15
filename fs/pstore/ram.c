@@ -468,6 +468,66 @@ static int ramoops_parse_dt(struct device_d *dev,
        return 0;
 }
 
+static int ramoops_of_fixup(struct device_node *root, void *data)
+{
+	struct ramoops_platform_data *pdata = data;
+	struct device_node *node;
+	u32 reg[2];
+	int ret;
+
+	node = of_get_child_by_name(root, "reserved-memory");
+	if (!node) {
+		pr_info("Adding reserved-memory node\n");
+		node = of_create_node(root, "/reserved-memory");
+		if (!node)
+			return -ENOMEM;
+
+		of_property_write_u32(node, "#address-cells", 1);
+		of_property_write_u32(node, "#size-cells", 1);
+		of_new_property(node, "ranges", NULL, 0);
+	}
+
+	node = of_get_child_by_name(node, "ramoops");
+	if (!node) {
+		pr_info("Adding ramoops node\n");
+		node = of_create_node(root, "/reserved-memory/ramoops");
+		if (!node)
+			return -ENOMEM;
+	}
+
+	ret = of_property_write_string(node, "compatible", "ramoops");
+	if (ret)
+		return ret;
+	reg[0] = pdata->mem_address;
+	reg[1] = pdata->mem_size;
+	ret = of_property_write_u32_array(node, "reg", reg, 2);
+	if (ret)
+		return ret;
+
+	ret = of_property_write_bool(node, "unbuffered", pdata->mem_type);
+	if (ret)
+		return ret;
+	ret = of_property_write_bool(node, "no-dump-oops", !pdata->dump_oops);
+	if (ret)
+		return ret;
+
+#define store_size(name, field) {					\
+		ret = of_property_write_u32(node, name, field);		\
+		if (ret < 0)						\
+			return ret;					\
+	}
+
+	store_size("record-size", pdata->record_size);
+	store_size("console-size", pdata->console_size);
+	store_size("ftrace-size", pdata->ftrace_size);
+	store_size("pmsg-size", pdata->pmsg_size);
+	store_size("ecc-size", pdata->ecc_info.ecc_size);
+
+#undef store_size
+
+	return 0;
+}
+
 static int ramoops_probe(struct device_d *dev)
 {
 	struct ramoops_platform_data *pdata = dummy_data;
@@ -574,25 +634,27 @@ static int ramoops_probe(struct device_d *dev)
 		cxt->size, (unsigned long long)cxt->phys_addr,
 		cxt->ecc_info.ecc_size, cxt->ecc_info.block_size);
 
-	scnprintf(kernelargs, sizeof(kernelargs),
-		  "ramoops.record_size=0x%x "
-		  "ramoops.console_size=0x%x "
-		  "ramoops.ftrace_size=0x%x "
-		  "ramoops.pmsg_size=0x%x "
-		  "ramoops.mem_address=0x%llx "
-		  "ramoops.mem_size=0x%lx "
-		  "ramoops.ecc=%d",
-		  cxt->record_size,
-		  cxt->console_size,
-		  cxt->ftrace_size,
-		  cxt->pmsg_size,
-		  (unsigned long long)cxt->phys_addr,
-		  mem_size,
-		  ramoops_ecc);
-	globalvar_add_simple("linux.bootargs.ramoops", kernelargs);
-
-	if (IS_ENABLED(CONFIG_OFTREE))
+	if (!IS_ENABLED(CONFIG_OFTREE)) {
+		scnprintf(kernelargs, sizeof(kernelargs),
+			  "ramoops.record_size=0x%x "
+			  "ramoops.console_size=0x%x "
+			  "ramoops.ftrace_size=0x%x "
+			  "ramoops.pmsg_size=0x%x "
+			  "ramoops.mem_address=0x%llx "
+			  "ramoops.mem_size=0x%lx "
+			  "ramoops.ecc=%d",
+			  cxt->record_size,
+			  cxt->console_size,
+			  cxt->ftrace_size,
+			  cxt->pmsg_size,
+			  (unsigned long long)cxt->phys_addr,
+			  mem_size,
+			  ramoops_ecc);
+		globalvar_add_simple("linux.bootargs.ramoops", kernelargs);
+	} else {
 		of_add_reserve_entry(cxt->phys_addr, cxt->phys_addr + mem_size);
+		of_register_fixup(ramoops_of_fixup, pdata);
+	}
 
 	return 0;
 

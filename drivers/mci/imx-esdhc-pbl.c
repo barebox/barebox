@@ -366,6 +366,7 @@ int imx6_esdhc_start_image(int instance)
 		return -EINVAL;
 	}
 
+	esdhc.is_be = 0;
 	esdhc.is_mx6 = 1;
 
 	return esdhc_start_image(&esdhc, 0x10000000, 0x10000000, 0);
@@ -398,6 +399,7 @@ int imx8_esdhc_start_image(int instance)
 		return -EINVAL;
 	}
 
+	esdhc.is_be = 0;
 	esdhc.is_mx6 = 1;
 
 	return esdhc_start_image(&esdhc, MX8MQ_DDR_CSD1_BASE_ADDR,

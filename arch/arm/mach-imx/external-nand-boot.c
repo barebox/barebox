@@ -375,9 +375,6 @@ void __noreturn BARE_INIT_FUNCTION(imx##soc##_barebox_boot_nand_external) \
 	fn((void *)boarddata);						\
 }
 
-#ifdef BROKEN
-DEFINE_EXTERNAL_NAND_ENTRY(21)
-#endif
 DEFINE_EXTERNAL_NAND_ENTRY(25)
 DEFINE_EXTERNAL_NAND_ENTRY(27)
 DEFINE_EXTERNAL_NAND_ENTRY(31)

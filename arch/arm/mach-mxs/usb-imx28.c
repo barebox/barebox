@@ -18,6 +18,7 @@
 #include <io.h>
 #include <errno.h>
 #include <mach/imx28-regs.h>
+#include <mach/usb.h>
 
 #define POWER_CTRL			(IMX_POWER_BASE + 0x0)
 #define POWER_CTRL_CLKGATE		0x40000000

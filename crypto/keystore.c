@@ -9,6 +9,7 @@
 #include <common.h>
 #include <linux/kernel.h>
 #include <linux/list.h>
+#include <crypto/keystore.h>
 
 static LIST_HEAD(keystore_list);
 

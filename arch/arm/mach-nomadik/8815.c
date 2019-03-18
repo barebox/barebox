@@ -18,6 +18,7 @@
 #include <init.h>
 #include <linux/clkdev.h>
 #include <mach/hardware.h>
+#include <mach/board.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 #include <linux/amba/bus.h>

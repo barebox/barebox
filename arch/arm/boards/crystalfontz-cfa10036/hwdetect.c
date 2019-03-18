@@ -26,6 +26,8 @@
 
 #include <asm/armlinux.h>
 
+#include "hwdetect.h"
+
 enum board_type {
 	BOARD_ID_CFA10036 = 0,
 	BOARD_ID_CFA10037 = 1,

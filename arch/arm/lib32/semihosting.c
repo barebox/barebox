@@ -21,6 +21,7 @@
 #include <common.h>
 #include <command.h>
 #include <fcntl.h>
+#include <asm/semihosting.h>
 
 #ifndef O_BINARY
 #define O_BINARY	0

@@ -20,6 +20,8 @@
 #include <io.h>
 #include <mach/ep93xx-regs.h>
 
+#include "led.h"
+
 #define GREEN_LED_POS		0x01
 #define RED_LED_POS		0x02
 

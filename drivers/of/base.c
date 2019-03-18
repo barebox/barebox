@@ -2274,6 +2274,8 @@ char *of_get_reproducible_name(struct device_node *node)
 		return basprintf("[0x%llx]", addr);
 	}
 
+	na = of_n_addr_cells(node);
+
 	/*
 	 * Special workaround for the of partition binding. In the old binding
 	 * the partitions are directly under the hardware devicenode whereas in
@@ -2285,8 +2287,6 @@ char *of_get_reproducible_name(struct device_node *node)
 	    of_device_is_compatible(node->parent, "fixed-partitions")) {
 		node = node->parent;
 	}
-
-	na = of_n_addr_cells(node);
 
 	offset = of_read_number(reg, na);
 

@@ -214,35 +214,6 @@ static int rdu2_ethernet_init(void)
 }
 late_initcall(rdu2_ethernet_init);
 
-#define I210_CFGWORD_PCIID_157B	0x157b1a11
-static int rdu2_i210_invm(void)
-{
-	int fd;
-	u32 val;
-
-	if (!of_machine_is_compatible("zii,imx6q-zii-rdu2") &&
-	    !of_machine_is_compatible("zii,imx6qp-zii-rdu2"))
-		return 0;
-
-	fd = open("/dev/e1000-invm0", O_RDWR);
-	if (fd < 0) {
-		pr_err("could not open e1000 iNVM device!\n");
-		return fd;
-	}
-
-	pread(fd, &val, sizeof(val), 0);
-	if (val == I210_CFGWORD_PCIID_157B) {
-		pr_debug("i210 already programmed correctly\n");
-		return 0;
-	}
-
-	val = I210_CFGWORD_PCIID_157B;
-	pwrite(fd, &val, sizeof(val), 0);
-
-	return 0;
-}
-late_initcall(rdu2_i210_invm);
-
 static int rdu2_fixup_egalax_ts(struct device_node *root, void *context)
 {
 	struct device_node *np;

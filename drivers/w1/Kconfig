@@ -8,8 +8,8 @@ menuconfig W1
 
 if W1
 
-source drivers/w1/masters/Kconfig
-source drivers/w1/slaves/Kconfig
+source "drivers/w1/masters/Kconfig"
+source "drivers/w1/slaves/Kconfig"
 
 config W1_DUAL_SEARCH
 	bool "dual search"

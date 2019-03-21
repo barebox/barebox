@@ -73,7 +73,7 @@ config MACH_A9M2410DEV
 
 endchoice
 
-source arch/arm/boards/friendlyarm-mini2440/Kconfig
+source "arch/arm/boards/friendlyarm-mini2440/Kconfig"
 
 endmenu
 
@@ -106,7 +106,7 @@ endchoice
 
 menu "Board specific settings"
 
-source arch/arm/boards/friendlyarm-tiny6410/Kconfig
+source "arch/arm/boards/friendlyarm-tiny6410/Kconfig"
 
 endmenu
 

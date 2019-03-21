@@ -3,8 +3,8 @@ menuconfig I2C
 
 if I2C
 
-source drivers/i2c/algos/Kconfig
-source drivers/i2c/busses/Kconfig
+source "drivers/i2c/algos/Kconfig"
+source "drivers/i2c/busses/Kconfig"
 
 config I2C_MUX
 	tristate "I2C bus multiplexing support"
@@ -13,7 +13,7 @@ config I2C_MUX
 	  handle multiplexed I2C bus topologies, by presenting each
 	  multiplexed segment as a I2C adapter.
 
-source drivers/i2c/muxes/Kconfig
+source "drivers/i2c/muxes/Kconfig"
 
 endif
 

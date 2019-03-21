@@ -10,7 +10,7 @@ config COMPILE_HOST_TOOLS
 	  This is usefull for compile coverage testing and for packaging the
 	  host tools.
 
-source scripts/imx/Kconfig
+source "scripts/imx/Kconfig"
 
 config MVEBU_HOSTTOOLS
 	bool "mvebu hosttools" if COMPILE_HOST_TOOLS

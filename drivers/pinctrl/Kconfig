@@ -83,7 +83,7 @@ config PINCTRL_TEGRA_XUSB
 	  The pinmux controller found on the Tegra 124 line of SoCs used for
 	  the SerDes lanes.
 
-source drivers/pinctrl/mvebu/Kconfig
+source "drivers/pinctrl/mvebu/Kconfig"
 
 config PINCTRL_VF610
 	bool

@@ -25,7 +25,7 @@ config FS_CRAMFS
 	select ZLIB
 	prompt "cramfs support"
 
-source fs/ext4/Kconfig
+source "fs/ext4/Kconfig"
 
 config FS_RAMFS
 	bool
@@ -70,8 +70,8 @@ config FS_EFIVARFS
 	help
 	  This filesystem driver provides access to EFI variables.
 
-source fs/fat/Kconfig
-source fs/ubifs/Kconfig
+source "fs/fat/Kconfig"
+source "fs/ubifs/Kconfig"
 
 config FS_BPKFS
 	bool
@@ -106,8 +106,8 @@ config FS_SMHFS
 	  located on a debugging host connected to the target running
 	  Barebox
 
-source fs/pstore/Kconfig
-source fs/squashfs/Kconfig
+source "fs/pstore/Kconfig"
+source "fs/squashfs/Kconfig"
 
 config FS_RATP
 	bool

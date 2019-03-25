@@ -164,6 +164,7 @@ struct dw_pcie {
 	u8                      iatu_unroll_enabled;
 	struct pcie_port        pp;
 	const struct dw_pcie_ops *ops;
+	unsigned int		version;
 };
 
 #define to_dw_pcie_from_pp(port) container_of((port), struct dw_pcie, pp)

@@ -148,10 +148,10 @@ static int do_of_display_timings(int argc, char *argv[])
 
 BAREBOX_CMD_HELP_START(of_display_timings)
 BAREBOX_CMD_HELP_TEXT("Options:")
-BAREBOX_CMD_HELP_OPT("-l",  "list path of all available display-timings\n")
-BAREBOX_CMD_HELP_OPT("-s",  "list path of all selected display-timings\n")
-BAREBOX_CMD_HELP_OPT("-S path",  "select display-timings and register oftree fixup\n")
-BAREBOX_CMD_HELP_OPT("-f dtb",  "work on dtb. Has no effect on -s option\n")
+BAREBOX_CMD_HELP_OPT("-l",  "list path of all available display-timings")
+BAREBOX_CMD_HELP_OPT("-s",  "list path of all selected display-timings")
+BAREBOX_CMD_HELP_OPT("-S path",  "select display-timings and register oftree fixup")
+BAREBOX_CMD_HELP_OPT("-f dtb",  "work on dtb. Has no effect on -s option")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(of_display_timings)

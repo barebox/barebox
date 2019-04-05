@@ -367,10 +367,6 @@
 	status = "okay";
 };
 
-&phy_sel {
-	rmii-clock-ext;
-};
-
 &am33xx_pinmux {
 	dcan0_pins: pinmux_dcan0_pins {
 		pinctrl-single,pins = <

@@ -86,23 +86,6 @@
 	};
 };
 
-&fec {
-	phy-handle = <&ethphy>;
-	phy-reset-duration = <10>; /* in msecs */
-
-	mdio {
-		#address-cells = <1>;
-		#size-cells = <0>;
-
-		ethphy: ethernet-phy@3 {
-			reg = <3>;
-
-			txc-skew-ps = <1680>;
-			rxc-skew-ps = <1860>;
-		};
-	};
-};
-
 &gpmi {
 	partitions {
 		compatible = "fixed-partitions";

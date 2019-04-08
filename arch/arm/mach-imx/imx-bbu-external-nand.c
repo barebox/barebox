@@ -40,7 +40,7 @@ static int imx_bbu_external_nand_update(struct bbu_handler *handler, struct bbu_
 	int size_available, size_need;
 	int ret;
 	uint32_t num_bb = 0, bbt = 0;
-	uint64_t offset = 0;
+	loff_t offset = 0;
 	int block = 0, len, now, blocksize;
 	void *image = data->image;
 
@@ -147,10 +147,12 @@ static int imx_bbu_external_nand_update(struct bbu_handler *handler, struct bbu_
 			goto out;
 
 		if (ret) {
-			ret = lseek(fd, offset + blocksize, SEEK_SET);
-			if (ret < 0)
-				goto out;
 			offset += blocksize;
+			if (lseek(fd, offset, SEEK_SET) != offset) {
+				ret = -errno;
+				goto out;
+			}
+
 			continue;
 		}
 

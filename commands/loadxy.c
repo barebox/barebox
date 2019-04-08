@@ -37,6 +37,7 @@
 #include <fcntl.h>
 #include <fs.h>
 #include <malloc.h>
+#include <libfile.h>
 
 #define DEF_FILE	"image.bin"
 
@@ -176,20 +177,10 @@ static int do_loadx(int argc, char *argv[])
 		output_file = DEF_FILE;
 
 	/* File should exist */
-	ofd = open(output_file, O_WRONLY | O_CREAT);
+	ofd = open_and_lseek(output_file, O_WRONLY | O_CREAT, offset);
 	if (ofd < 0) {
 		perror(argv[0]);
 		return 3;
-	}
-	/* Seek to the right offset */
-	if (offset) {
-		int seek = lseek(ofd, offset, SEEK_SET);
-		if (seek != offset) {
-			close(ofd);
-			ofd = 0;
-			perror(argv[0]);
-			return 4;
-		}
 	}
 
 	current_baudrate = console_get_baudrate(cdev);

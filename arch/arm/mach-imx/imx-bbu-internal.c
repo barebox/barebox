@@ -207,7 +207,7 @@ static int imx_bbu_internal_v2_write_nand_dbbt(struct imx_internal_bbu_handler *
 	int size_available, size_need;
 	int ret;
 	uint32_t *ptr, *num_bb, *bb;
-	uint64_t offset;
+	loff_t offset;
 	int block = 0, len, now, blocksize;
 	int dbbt_start_page = 4;
 	int firmware_start_page = 12;
@@ -330,10 +330,12 @@ static int imx_bbu_internal_v2_write_nand_dbbt(struct imx_internal_bbu_handler *
 			goto out;
 
 		if (ret) {
-			ret = lseek(fd, offset + blocksize, SEEK_SET);
-			if (ret < 0)
-				goto out;
 			offset += blocksize;
+			if (lseek(fd, offset, SEEK_SET) != offset) {
+				ret = -errno;
+				goto out;
+			}
+
 			continue;
 		}
 

@@ -265,11 +265,12 @@ int uimage_verify(struct uimage_handle *handle)
 {
 	u32 crc = 0;
 	int len, ret;
+	loff_t off;
 	void *buf;
 
-	ret = lseek(handle->fd, sizeof(struct image_header), SEEK_SET);
-	if (ret < 0)
-		return ret;
+	off = sizeof(struct image_header);
+	if (lseek(handle->fd, off, SEEK_SET) != off)
+		return -errno;
 
 	buf = xmalloc(PAGE_SIZE);
 
@@ -307,6 +308,7 @@ int uimage_load(struct uimage_handle *handle, unsigned int image_no,
 	image_header_t *hdr = &handle->header;
 	struct uimage_handle_data *iha;
 	int ret;
+	loff_t off;
 	int (*uncompress_fn)(unsigned char *inbuf, int len,
 		    int(*fill)(void*, unsigned int),
 	            int(*flush)(void*, unsigned int),
@@ -319,10 +321,9 @@ int uimage_load(struct uimage_handle *handle, unsigned int image_no,
 
 	iha = &handle->ihd[image_no];
 
-	ret = lseek(handle->fd, iha->offset + handle->data_offset,
-			SEEK_SET);
-	if (ret < 0)
-		return ret;
+	off = iha->offset + handle->data_offset;
+	if (lseek(handle->fd, off, SEEK_SET) != off)
+		return -errno;
 
 	/* if ramdisk U-Boot expect to ignore the compression type */
 	if (hdr->ih_comp == IH_COMP_NONE || hdr->ih_type == IH_TYPE_RAMDISK)
@@ -456,6 +457,7 @@ void *uimage_load_to_buf(struct uimage_handle *handle, int image_no,
 {
 	u32 size;
 	int ret;
+	loff_t off;
 	struct uimage_handle_data *ihd;
 	char ftbuf[128];
 	enum filetype ft;
@@ -466,9 +468,8 @@ void *uimage_load_to_buf(struct uimage_handle *handle, int image_no,
 
 	ihd = &handle->ihd[image_no];
 
-	ret = lseek(handle->fd, ihd->offset + handle->data_offset,
-			SEEK_SET);
-	if (ret < 0)
+	off = ihd->offset + handle->data_offset;
+	if (lseek(handle->fd, off, SEEK_SET) != off)
 		return NULL;
 
 	if (handle->header.ih_comp == IH_COMP_NONE) {
@@ -496,10 +497,8 @@ void *uimage_load_to_buf(struct uimage_handle *handle, int image_no,
 	if (ft != filetype_gzip)
 		return NULL;
 
-	ret = lseek(handle->fd, ihd->offset + handle->data_offset +
-			ihd->len - 4,
-			SEEK_SET);
-	if (ret < 0)
+	off = ihd->offset + handle->data_offset + ihd->len - 4;
+	if (lseek(handle->fd, off, SEEK_SET) != off)
 		return NULL;
 
 	ret = read(handle->fd, &size, 4);
@@ -508,9 +507,8 @@ void *uimage_load_to_buf(struct uimage_handle *handle, int image_no,
 
 	size = le32_to_cpu(size);
 
-	ret = lseek(handle->fd, ihd->offset + handle->data_offset,
-			SEEK_SET);
-	if (ret < 0)
+	off = ihd->offset + handle->data_offset;
+	if (lseek(handle->fd, off, SEEK_SET) != off)
 		return NULL;
 
 	buf = malloc(size);

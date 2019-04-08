@@ -44,8 +44,8 @@ static int art_read_mac(struct device_d *dev, const char *file)
 	fd = open_and_lseek(file, O_RDONLY, AR93000_EPPROM_OFFSET);
 	if (fd < 0) {
 		dev_err(dev, "Failed to open eeprom path %s %d\n",
-		       file, fd);
-		return fd;
+		       file, -errno);
+		return -errno;
 	}
 
 	rbytes = read_full(fd, &eeprom, sizeof(eeprom));

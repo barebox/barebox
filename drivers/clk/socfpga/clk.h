@@ -41,15 +41,15 @@ struct clk *socfpga_a10_pll_init(struct device_node *node);
 struct clk *socfpga_a10_periph_init(struct device_node *node);
 struct clk *socfpga_a10_gate_init(struct device_node *node);
 #else
-struct clk *socfpga_a10_pll_init(struct device_node *node)
+static inline struct clk *socfpga_a10_pll_init(struct device_node *node)
 {
 	return ERR_PTR(-ENOSYS);
 }
-struct clk *socfpga_a10_periph_init(struct device_node *node)
+static inline struct clk *socfpga_a10_periph_init(struct device_node *node)
 {
 	return ERR_PTR(-ENOSYS);
 }
-struct clk *socfpga_a10_gate_init(struct device_node *node)
+static inline struct clk *socfpga_a10_gate_init(struct device_node *node)
 {
 	return ERR_PTR(-ENOSYS);
 }

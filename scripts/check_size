@@ -1,0 +1,20 @@
+#!/bin/bash
+
+symbol="$1"
+file="$2"
+max="$3"
+
+# extract symbol offset from file, remove leading zeros
+ofs=$(nm -t d $file | grep "$symbol" | cut -d ' ' -f1 | sed "s/^[0]*//")
+
+if [ -z "${ofs}" ]; then
+	echo "symbol $symbol not found in $file"
+	exit 1
+fi
+
+if [[ $ofs -gt $max ]]; then
+	echo "symbol $symbol (offset $ofs) in $file exceeds maximum offset $max"
+	exit 1
+fi
+
+exit 0

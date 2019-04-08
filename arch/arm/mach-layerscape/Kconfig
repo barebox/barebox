@@ -1,0 +1,21 @@
+if ARCH_LAYERSCAPE
+
+config ARCH_LS1046
+	select CPU_V8
+	select SYS_SUPPORTS_64BIT_KERNEL
+	bool
+
+config MACH_LS1046ARDB
+	bool "QorIQ LS1046A Reference Design Board"
+	select ARCH_LS1046
+	select DDR_SPD
+	select MCI_IMX_ESDHC_PBL
+	select I2C_IMX_EARLY
+	select DDR_FSL
+	select DDR_FSL_DDR4
+
+config MACH_TQMLS1046A
+	bool "TQ TQMLS1046A Board"
+	select ARCH_LS1046
+
+endif

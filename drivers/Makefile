@@ -40,3 +40,4 @@ obj-$(CONFIG_AIODEV) += aiodev/
 obj-y	+= memory/
 obj-y	+= soc/imx/
 obj-y	+= nvme/
+obj-y	+= ddr/

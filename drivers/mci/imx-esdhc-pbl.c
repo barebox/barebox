@@ -15,11 +15,12 @@
 #include <io.h>
 #include <mci.h>
 #include <linux/sizes.h>
+#include <asm-generic/sections.h>
+#include <mach/xload.h>
 #ifdef CONFIG_ARCH_IMX
 #include <mach/atf.h>
 #include <mach/imx6-regs.h>
 #include <mach/imx8mq-regs.h>
-#include <mach/xload.h>
 #include <mach/imx-header.h>
 #endif
 #include "sdhci.h"
@@ -404,5 +405,62 @@ int imx8_esdhc_start_image(int instance)
 
 	return esdhc_start_image(&esdhc, MX8MQ_DDR_CSD1_BASE_ADDR,
 				 MX8MQ_ATF_BL33_BASE_ADDR, SZ_32K);
+}
+#endif
+
+#ifdef CONFIG_ARCH_LS1046
+
+/*
+ * The image on the SD card starts at 0x1000. We reserved 128KiB for the PBL,
+ * so the 2nd stage image starts here:
+ */
+#define LS1046A_SD_IMAGE_OFFSET (SZ_4K + SZ_128K)
+
+/**
+ * ls1046a_esdhc_start_image - Load and start a 2nd stage from the ESDHC controller
+ *
+ * This loads and starts a 2nd stage barebox from an SD card and starts it. We
+ * assume the image has been generated with scripts/pblimage.c which puts the
+ * second stage to an offset of 128KiB in the image.
+ *
+ * Return: If successful, this function does not return. A negative error
+ * code is returned when this function fails.
+ */
+int ls1046a_esdhc_start_image(unsigned long r0, unsigned long r1, unsigned long r2)
+{
+	int ret;
+	uint32_t val;
+	struct esdhc esdhc = {
+		.regs = IOMEM(0x01560000),
+		.is_be = true,
+	};
+	unsigned long sdram = 0x80000000;
+	void (*barebox)(unsigned long, unsigned long, unsigned long) =
+		(void *)(sdram + LS1046A_SD_IMAGE_OFFSET);
+
+	/*
+	 * The ROM leaves us here with a clock frequency of around 400kHz. Speed
+	 * this up a bit. FIXME: The resulting frequency has not yet been verified
+	 * to work on all cards.
+	 */
+	val = esdhc_read32(&esdhc, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET);
+	val &= ~0x0000fff0;
+	val |= (2 << 8) | (6 << 4);
+	esdhc_write32(&esdhc, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET, val);
+
+	esdhc_write32(&esdhc, ESDHC_DMA_SYSCTL, ESDHC_SYSCTL_DMA_SNOOP);
+
+	ret = esdhc_read_blocks(&esdhc, (void *)sdram,
+			ALIGN(barebox_image_size + LS1046A_SD_IMAGE_OFFSET, 512));
+	if (ret) {
+		pr_err("%s: reading blocks failed with: %d\n", __func__, ret);
+		return ret;
+	}
+
+	printf("Starting barebox\n");
+
+	barebox(r0, r1, r2);
+
+	return -EINVAL;
 }
 #endif

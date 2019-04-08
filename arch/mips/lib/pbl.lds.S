@@ -38,6 +38,8 @@ SECTIONS
 	. = ALIGN(4);
 	.data : { *(.data*) }
 
+	pbl_code_size =  . - HEAD_TEXT_BASE;
+
 	. = ALIGN(4);
 	__piggydata_start = .;
 	.piggydata : {
@@ -45,9 +47,12 @@ SECTIONS
 	}
 	__piggydata_end = .;
 
+	pbl_image_size =  . - HEAD_TEXT_BASE;
+
 	. = ALIGN(4);
 	__bss_start = .;
 	.bss : { *(.bss*) }
 	__bss_stop = .;
+	pbl_memory_size =  . - HEAD_TEXT_BASE;
 	_end = .;
 }

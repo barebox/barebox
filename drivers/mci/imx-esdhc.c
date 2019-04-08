@@ -741,7 +741,8 @@ static struct esdhc_soc_data usdhc_imx6sx_data = {
 };
 
 static struct esdhc_soc_data esdhc_ls_data = {
-	.flags = ESDHC_FLAG_MULTIBLK_NO_INT | ESDHC_FLAG_BIGENDIAN,
+	.flags = ESDHC_FLAG_MULTIBLK_NO_INT | ESDHC_FLAG_BIGENDIAN |
+		 ESDHC_FLAG_CACHE_SNOOPING,
 };
 
 static __maybe_unused struct of_device_id fsl_esdhc_compatible[] = {

@@ -1238,6 +1238,14 @@ config DEBUG_SOCFPGA_UART_CLOCK
 	help
 	  Choose UART root clock.
 
+config DEBUG_LAYERSCAPE_UART_PORT
+	int "Layerscape UART port selection"
+	depends on ARCH_LAYERSCAPE
+	default 1
+	help
+	  Select the UART port number used for early debugging here. Port
+	  numbers start counting from 1.
+
 config DEBUG_INITCALLS
 	bool "Trace initcalls"
 	help

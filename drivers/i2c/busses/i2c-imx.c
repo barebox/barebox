@@ -47,7 +47,6 @@
 
 #include <io.h>
 #include <i2c/i2c.h>
-#include <mach/clock.h>
 
 #include "i2c-imx.h"
 
@@ -276,6 +275,9 @@ static void i2c_fsl_stop(struct i2c_adapter *adapter)
 }
 
 #ifdef CONFIG_PPC
+
+#include <mach/clock.h>
+
 static void i2c_fsl_set_clk(struct fsl_i2c_struct *i2c_fsl,
 				    unsigned int rate)
 {

@@ -1,0 +1,240 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Device Tree Include file for TQMLS1046A SoM on MBLS10xxA from TQ
+ *
+ * Copyright 2018 TQ-Systems GmbH
+ */
+
+/dts-v1/;
+
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/gpio/gpio.h>
+
+#include "fsl-tqmls1046a.dtsi"
+
+/ {
+	model = "TQ TQMLS1046A SoM on MBLS10xxA board";
+	compatible = "tqc,tqmls1046a", "fsl,ls1046a";
+
+	aliases {
+		serial0 = &duart0;
+		serial1 = &duart1;
+		mmc0 = &esdhc;
+	};
+
+	chosen {
+		stdout-path = "serial1:115200n8";
+	};
+
+	gpio-keys-polled {
+		compatible = "gpio-keys-polled";
+		gpio-keys,name = "gpio-keys";
+		poll-interval = <100>;
+		autorepeat;
+
+		button0 {
+			label = "button0";
+			gpios = <&gpioexp3 5 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_F1>;
+		};
+
+		button1 {
+			label = "button1";
+			gpios = <&gpioexp3 6 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_F2>;
+		};
+	};
+
+	leds {
+		compatible = "gpio-leds";
+
+		user {
+			gpios = <&gpioexp3 13 GPIO_ACTIVE_LOW>;
+			label = "led:user";
+			linux,default-trigger = "heartbeat";
+		};
+	};
+
+};
+
+
+&duart0 {
+	status = "okay";
+};
+
+&duart1 {
+	status = "okay";
+};
+
+&i2c3 {
+	status = "okay";
+
+	i2c-mux@70 {
+		compatible = "nxp,pca9544";
+		reg = <0x70>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		i2c@0 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x0>;
+
+			gpioexp1: pca9555@20 {
+				compatible = "nxp,pca9555";
+				reg = <0x20>;
+				gpio-controller;
+				#gpio-cells = <2>;
+			};
+
+			gpioexp2: pca9555@21 {
+				compatible = "nxp,pca9555";
+				reg = <0x21>;
+				gpio-controller;
+				#gpio-cells = <2>;
+			};
+
+			gpioexp3: pca9555@22 {
+				compatible = "nxp,pca9555";
+				reg = <0x22>;
+				gpio-controller;
+				#gpio-cells = <2>;
+			};
+		};
+
+		i2c@1 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x1>;
+		};
+
+		i2c@2 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x2>;
+		};
+
+		i2c@3 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x3>;
+		};
+	};
+};
+
+&usb1 {
+	dr_mode = "otg";
+};
+
+#include <arm64/freescale/fsl-ls1046-post.dtsi>
+#include <dt-bindings/net/ti-dp83867.h>
+
+&fman0 {
+	status = "okay";
+
+	ethernet@e0000 {
+		status = "disabled";
+	};
+
+	ethernet@e2000 {
+		phy-handle = <&qsgmii1_phy2>;
+		phy-connection-type = "sgmii";
+	};
+
+	ethernet@e4000 {
+		phy-handle = <&rgmii_phy1>;
+		phy-connection-type = "rgmii";
+		phy-mode = "rgmii-id";
+	};
+
+	ethernet@e6000 {
+		phy-handle = <&rgmii_phy2>;
+		phy-connection-type = "rgmii";
+		phy-mode = "rgmii-id";
+	};
+
+	ethernet@e8000 {
+		status = "disabled";
+	};
+
+	ethernet@ea000 {
+		phy-handle = <&qsgmii2_phy2>;
+		phy-connection-type = "sgmii";
+	};
+
+	ethernet@f0000 {
+		phy-handle = <&qsgmii1_phy1>;
+		phy-connection-type = "sgmii";
+	};
+
+	ethernet@f2000 {
+		phy-handle = <&qsgmii2_phy1>;
+		phy-connection-type = "sgmii";
+	};
+
+	mdio@e1000 {
+		status = "disabled";
+	};
+
+	mdio@e3000 {
+		status = "disabled";
+	};
+
+	mdio@e5000 {
+		status = "disabled";
+	};
+
+	mdio@e7000 {
+		status = "disabled";
+	};
+
+	mdio@e9000 {
+		status = "disabled";
+	};
+
+	mdio@eb000 {
+		status = "disabled";
+	};
+
+	mdio@f1000 {
+		status = "disabled";
+	};
+
+	mdio@f3000 {
+		status = "disabled";
+	};
+
+	mdio@fc000 {
+		rgmii_phy1: ethernet-phy@0e {
+			reg = <0x0e>;
+			ti,rx-internal-delay = <DP83867_RGMIIDCTL_1_50_NS>;
+			ti,tx-internal-delay = <DP83867_RGMIIDCTL_1_50_NS>;
+			ti,fifo-depth = <DP83867_PHYCR_FIFO_DEPTH_8_B_NIB>;
+		};
+
+		qsgmii1_phy1: ethernet-phy@1c {
+			reg = <0x1c>;
+		};
+
+		qsgmii1_phy2: ethernet-phy@1d {
+			reg = <0x1d>;
+		};
+	};
+
+	mdio@fd000 {
+		rgmii_phy2: ethernet-phy@0c {
+			reg = <0x0c>;
+			ti,rx-internal-delay = <DP83867_RGMIIDCTL_1_50_NS>;
+			ti,tx-internal-delay = <DP83867_RGMIIDCTL_1_50_NS>;
+			ti,fifo-depth = <DP83867_PHYCR_FIFO_DEPTH_8_B_NIB>;
+		};
+
+		qsgmii2_phy1: ethernet-phy@00 {
+			reg = <0x00>;
+		};
+
+		qsgmii2_phy2: ethernet-phy@01 {
+			reg = <0x01>;
+		};
+	};
+};

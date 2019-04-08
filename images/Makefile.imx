@@ -554,15 +554,18 @@ image-$(CONFIG_MACH_ZII_IMX7D_RPU2) += barebox-zii-imx7d-rpu2.img
 # ----------------------- i.MX8mq based boards --------------------------
 pblb-$(CONFIG_MACH_NXP_IMX8MQ_EVK) += start_nxp_imx8mq_evk
 CFG_start_nxp_imx8mq_evk.pblb.imximg = $(board)/nxp-imx8mq-evk/flash-header-imx8mq-evk.imxcfg
+MAX_PBL_MEMORY_SIZE_start_nxp_imx8mq_evk = 0x3f000
 FILE_barebox-nxp-imx8mq-evk.img = start_nxp_imx8mq_evk.pblb.imximg
 image-$(CONFIG_MACH_NXP_IMX8MQ_EVK) += barebox-nxp-imx8mq-evk.img
 
 pblb-$(CONFIG_MACH_ZII_IMX8MQ_DEV) += start_zii_imx8mq_dev
 CFG_start_zii_imx8mq_dev.pblb.imximg = $(board)/zii-imx8mq-dev/flash-header-zii-imx8mq-dev.imxcfg
+MAX_PBL_MEMORY_SIZE_start_zii_imx8mq_dev.pbl = 0x3f000
 FILE_barebox-zii-imx8mq-dev.img = start_zii_imx8mq_dev.pblb.imximg
 image-$(CONFIG_MACH_ZII_IMX8MQ_DEV) += barebox-zii-imx8mq-dev.img
 
 pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX8MQ) += start_phytec_phycore_imx8mq
 CFG_start_phytec_phycore_imx8mq.pblb.imximg = $(board)/phytec-som-imx8mq/flash-header-phycore-imx8mq.imxcfg
+MAX_PBL_MEMORY_SIZE_start_phytec_phycore_imx8mq.pbl = 0x3f000
 FILE_barebox-phytec-phycore-imx8mq.img = start_phytec_phycore_imx8mq.pblb.imximg
 image-$(CONFIG_MACH_PHYTEC_SOM_IMX8MQ) += barebox-phytec-phycore-imx8mq.img

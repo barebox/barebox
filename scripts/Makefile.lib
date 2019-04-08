@@ -433,14 +433,24 @@ cmd_disasm = $(OBJDUMP) -d $< > $@
 quiet_cmd_ln = LN      $@
 cmd_ln = ln -sf $< $@
 
+quiet_cmd_check_size = CHKSIZE $2
+      cmd_check_size = set -e;						\
+	size=`printf "%d" $2`;						\
+	max_size=`printf "%d" $3`;					\
+	if [ $$size -gt $$max_size ] ;					\
+	then								\
+		echo "$@ size $$size > maximum size $$max_size" >&2;	\
+		exit 1 ;						\
+	fi;
+
 # Check size of a file
-quiet_cmd_check_file_size = CHKSIZE $2
+quiet_cmd_check_file_size = CHKFILESIZE $2
       cmd_check_file_size = set -e;					\
 	size=`stat -c%s $2`;						\
 	max_size=`printf "%d" $3`;					\
 	if [ $$size -gt $$max_size ] ;					\
 	then								\
-		echo "$@ size $$size > of the maximum size $$max_size" >&2;	\
+		echo "$@ size $$size > maximum size $$max_size" >&2;	\
 		exit 1 ;						\
 	fi;
 

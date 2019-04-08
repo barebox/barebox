@@ -1,0 +1,98 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+
+/dts-v1/;
+
+#include <arm64/freescale/fsl-ls1046a-rdb.dts>
+
+/ {
+	chosen {
+		stdout-path = &duart0;
+
+		environment {
+			compatible = "barebox,environment";
+			device-path = &environment_sd;
+		};
+	};
+
+	aliases {
+		mmc0 = &esdhc;
+	};
+};
+
+&esdhc {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	environment_sd: partition@200000 {
+		label = "barebox-environment";
+		reg = <0x200000 0x20000>;
+	};
+};
+
+&fman0 {
+	ethernet@e0000 {
+		status = "disabled";
+	};
+
+	ethernet@e2000 {
+		status = "disabled";
+	};
+
+	ethernet@e4000 {
+		phy-mode = "rgmii-id";
+	};
+
+	ethernet@e6000 {
+		phy-mode = "rgmii-id";
+	};
+
+	ethernet@e8000 {
+	};
+
+	ethernet@ea000 {
+	};
+
+	ethernet@f0000 {
+	};
+
+	ethernet@f2000 {
+	};
+
+	mdio@fc000 {
+	};
+
+	mdio@fd000 {
+	};
+
+	mdio@e1000 {
+		status = "disabled";
+	};
+
+	mdio@e3000 {
+		status = "disabled";
+	};
+
+	mdio@e5000 {
+		status = "disabled";
+	};
+
+	mdio@e7000 {
+		status = "disabled";
+	};
+
+	mdio@e9000 {
+		status = "disabled";
+	};
+
+	mdio@eb000 {
+		status = "disabled";
+	};
+
+	mdio@f1000 {
+		status = "disabled";
+	};
+
+	mdio@f3000 {
+		status = "disabled";
+	};
+};

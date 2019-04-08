@@ -80,11 +80,15 @@ SECTIONS
 	.dynsym : { *(.dynsym) }
 	.__dynsym_end : { *(.__dynsym_end) }
 
+	pbl_code_size =  . - BASE;
+
 	. = ALIGN(4);
 	.__bss_start :  { *(.__bss_start) }
 	.bss : { *(.bss*) }
 	.__bss_stop :  { *(.__bss_stop) }
 	_end = .;
+
+	pbl_memory_size =  . - BASE;
 
 	. = ALIGN(4);
 	__piggydata_start = .;
@@ -94,6 +98,8 @@ SECTIONS
 	__piggydata_end = .;
 
 	.image_end : { *(.__image_end) }
+
+	pbl_image_size =  . - BASE;
 
 	_barebox_image_size = __image_end - BASE;
 	_barebox_pbl_size = __bss_start - BASE;

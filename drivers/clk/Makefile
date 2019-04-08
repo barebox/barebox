@@ -15,3 +15,4 @@ obj-$(CONFIG_SOC_QCA_AR9344)	+= clk-ar9344.o
 obj-$(CONFIG_ARCH_IMX)		+= imx/
 obj-$(CONFIG_COMMON_CLK_AT91)	+= at91/
 obj-$(CONFIG_MACH_VEXPRESS)	+= vexpress/
+obj-$(CONFIG_ARCH_LAYERSCAPE)	+= clk-qoric.o

@@ -48,7 +48,7 @@ config WATCHDOG_MXS28
 
 config WATCHDOG_IMX
 	bool "i.MX watchdog"
-	depends on ARCH_IMX
+	depends on ARCH_IMX || ARCH_LAYERSCAPE
 	help
 	  Add support for watchdog found on Freescale i.MX SoCs.
 

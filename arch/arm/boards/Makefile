@@ -163,3 +163,5 @@ obj-$(CONFIG_MACH_ZII_IMX8MQ_DEV)		+= zii-imx8mq-dev/
 obj-$(CONFIG_MACH_ZII_VF610_DEV)		+= zii-vf610-dev/
 obj-$(CONFIG_MACH_ZII_IMX7D_RPU2)		+= zii-imx7d-rpu2/
 obj-$(CONFIG_MACH_WAGO_PFC_AM35XX)		+= wago-pfc-am35xx/
+obj-$(CONFIG_MACH_LS1046ARDB)			+= ls1046ardb/
+obj-$(CONFIG_MACH_TQMLS1046A)			+= tqmls1046a/

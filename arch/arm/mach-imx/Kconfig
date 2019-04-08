@@ -431,16 +431,21 @@ config MACH_VF610_TWR
 	bool "Freescale VF610 Tower Board"
 	select ARCH_VF610
 
+config MACH_ZII_COMMON
+	bool
+
 config MACH_ZII_RDU1
 	bool "ZII i.MX51 RDU1"
 	select ARCH_IMX51
 	select MACH_FREESCALE_MX51_PDK_POWER
 	select CRC8
+	select MACH_ZII_COMMON
 
 config MACH_ZII_RDU2
 	bool "ZII i.MX6Q(+) RDU2"
 	select ARCH_IMX6
 	select MCI_IMX_ESDHC_PBL
+	select MACH_ZII_COMMON
 
 config MACH_ZII_IMX8MQ_DEV
 	bool "ZII i.MX8MQ based devices"

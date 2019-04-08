@@ -49,6 +49,11 @@
 		};
 	};
 
+	device-info {
+		nvmem-cells = <&lru_part_number>;
+		nvmem-cell-names = "lru-part-number";
+	};
+
 	aliases {
 		ethernet0 = &fec;
 		ethernet1 = &i210;
@@ -59,8 +64,96 @@
 		 */
 		switch-eeprom = &switch;
 	};
-};
 
+	panel {
+		compatible = "simple-panel";
+		/* Timings for all supported panels, the correct one is enabled
+		 * after the board data has been retrieved from the environment
+		 * controller
+		*/
+
+		display-timings {
+			innolux-g121i1-l01 {
+				compatible = "innolux,g121i1-l01";
+
+				hback-porch = <79>;
+				hfront-porch = <80>;
+				hactive = <1280>;
+				hsync-len = <1>;
+				vback-porch = <11>;
+				vfront-porch = <11>;
+				vactive = <800>;
+				vsync-len = <1>;
+				clock-frequency = <71000000>;
+			};
+			nec-nl12880bc20-05 {
+				compatible = "nec,nl12880bc20-05";
+
+				hback-porch = <100>;
+				hfront-porch = <30>;
+				hactive = <1280>;
+				hsync-len = <30>;
+				vback-porch = <11>;
+				vfront-porch = <5>;
+				vactive = <800>;
+				vsync-len = <7>;
+				clock-frequency = <71000000>;
+			};
+			auo-g133han01 {
+				compatible = "auo,g133han01";
+
+				hback-porch = <88>;
+				hfront-porch = <58>;
+				hactive = <1920>;
+				hsync-len = <42>;
+				vback-porch = <14>;
+				vfront-porch = <8>;
+				vactive = <1080>;
+				vsync-len = <14>;
+				clock-frequency = <141200000>;
+			};
+			auo-g185han01 {
+				compatible = "auo,g185han01";
+
+				hback-porch = <44>;
+				hfront-porch = <60>;
+				hactive = <1920>;
+				hsync-len = <24>;
+				vback-porch = <5>;
+				vfront-porch = <10>;
+				vactive = <1080>;
+				vsync-len = <5>;
+				clock-frequency = <144000000>;
+			};
+			nlt-nl192108ac18-02d {
+				compatible = "nlt,nl192108ac18-02d";
+
+				hback-porch = <120>;
+				hfront-porch = <100>;
+				hactive = <1920>;
+				hsync-len = <60>;
+				vback-porch = <10>;
+				vfront-porch = <30>;
+				vactive = <1080>;
+				vsync-len = <5>;
+				clock-frequency = <148350000>;
+			};
+			auo-p320hvn03 {
+				compatible = "auo,p320hvn03";
+
+				hback-porch = <50>;
+				hfront-porch = <50>;
+				hactive = <1920>;
+				hsync-len = <40>;
+				vback-porch = <17>;
+				vfront-porch = <17>;
+				vactive = <1080>;
+				vsync-len = <11>;
+				clock-frequency = <148500000>;
+			};
+		};
+	};
+};
 
 &uart4 {
 	rave-sp {
@@ -73,6 +166,11 @@
 		};
 
 		eeprom@a4 {
+			lru_part_number: lru-part-number@21 {
+				reg = <0x21 15>;
+				read-only;
+			};
+
 			boot_source: boot-source@83 {
 				reg = <0x83 1>;
 			};
@@ -110,9 +208,35 @@
 	nvmem-cell-names = "mac-address";
 };
 
+&i2c1 {
+	edp-bridge@68 {
+		pinctrl-0 = <&pinctrl_tc358767>, <&pinctrl_disp0>;
+
+		ports {
+			port@1 {
+				reg = <1>;
+
+				tc358767_in: endpoint {
+					remote-endpoint = <&disp0_out>;
+				};
+			};
+		};
+	};
+};
+
 &i2c2 {
 	temp-sense@48 {
 		barebox,sensor-name = "Temp Sensor 1";
+	};
+};
+
+&ipu1_di0_disp0 {
+	remote-endpoint = <&tc358767_in>;
+};
+
+&ldb {
+	lvds-channel@0 {
+		fsl,data-width = <24>;
 	};
 };
 

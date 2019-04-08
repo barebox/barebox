@@ -152,6 +152,7 @@ static int kindle3_devices_init(void)
 }
 device_initcall(kindle3_devices_init);
 
+#define FIVEWAY_PAD_CTL (PAD_CTL_PUS_100K_UP | PAD_CTL_HYS | PAD_CTL_DVS)
 static iomux_v3_cfg_t kindle3_pads[] = {
 	/* UART1 */
 	MX35_PAD_RXD1__UART1_RXD_MUX,
@@ -183,12 +184,11 @@ static iomux_v3_cfg_t kindle3_pads[] = {
 	MX35_PAD_CSPI1_SPI_RDY__CSPI1_RDY,
 
 	/* fiveway device: up, down, left, right, select */
-	MX35_PAD_ATA_DATA14__GPIO2_27,
-	MX35_PAD_ATA_DATA15__GPIO2_28,
-	MX35_PAD_TX5_RX0__GPIO1_10,
-	MX35_PAD_ATA_BUFF_EN__GPIO2_30,
-	IOMUX_PAD(0x728, 0x2c4, 5, 0x8c8, 1,
-		  PAD_CTL_PUS_100K_UP | PAD_CTL_HYS | PAD_CTL_DVS),
+	IOMUX_PAD(0x718, 0x2b4, 5, 0x8b4, 1, FIVEWAY_PAD_CTL),
+	IOMUX_PAD(0x71c, 0x2b8, 5, 0x8b8, 1, FIVEWAY_PAD_CTL),
+	IOMUX_PAD(0x59c, 0x158, 5, 0x830, 0, FIVEWAY_PAD_CTL),
+	IOMUX_PAD(0x724, 0x2c0, 5, 0x8c4, 1, FIVEWAY_PAD_CTL),
+	IOMUX_PAD(0x728, 0x2c4, 5, 0x8c8, 1, FIVEWAY_PAD_CTL),
 
 	/* Volume keys: up, down */
 	MX35_PAD_SCKR__GPIO1_4,

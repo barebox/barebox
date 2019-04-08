@@ -1,0 +1,21 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+//
+// Copyright (C) 2016-2018 Zodiac Inflight Innovations
+
+#include <arm/vf610-zii-scu4-aib.dts>
+
+#include "vf610-zii-dev.dtsi"
+
+/ {
+	aliases {
+		/*
+		 * NVMEM device corresponding to EEPROM attached to
+                 * the switch shares DT node with it, so we use that
+                 * fact to create a desirable naming
+		 */
+		switch0-eeprom = &switch0;
+		switch1-eeprom = &switch1;
+		switch2-eeprom = &switch2;
+		switch3-eeprom = &switch3;
+	};
+};

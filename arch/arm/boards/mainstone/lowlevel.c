@@ -241,7 +241,7 @@ static inline void pxa2xx_dram_init(void)
 	}
 }
 
-void __bare_init __naked barebox_arm_reset_vector(void)
+void __bare_init __naked barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2)
 {
 	unsigned long pssr = PSPR;
 	unsigned long pc = get_pc();

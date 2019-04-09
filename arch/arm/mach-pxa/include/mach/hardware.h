@@ -46,6 +46,10 @@
 
 #ifdef __ASSEMBLY__
 #define __REG(x) (x)
+#else
+
+void pxa_clear_reset_source(void);
+
 #endif
 
 #endif	/* !__MACH_HARDWARE_H */

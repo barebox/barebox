@@ -17,6 +17,7 @@
 #include <io.h>
 
 #include <mfd/twl6030.h>
+#include <mach/omap4_twl6030_mmc.h>
 
 /* MMC voltage */
 #define OMAP4_CONTROL_PBIASLITE			0x4A100600

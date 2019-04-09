@@ -436,7 +436,7 @@ orion5x_4win_mbus_data __maybe_unused = {
 };
 
 static const struct mvebu_mbus_soc_data
-orion5x_2win_mbus_data__maybe_unused = {
+orion5x_2win_mbus_data __maybe_unused = {
 	.num_wins            = 8,
 	.num_remappable_wins = 2,
 	.win_cfg_offset      = orion5x_mbus_win_offset,

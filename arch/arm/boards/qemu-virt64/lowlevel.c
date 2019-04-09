@@ -10,7 +10,7 @@
 #include <asm/barebox-arm.h>
 #include <asm/system_info.h>
 
-void barebox_arm_reset_vector(void)
+void barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2)
 {
 	arm_cpu_lowlevel_init();
 	arm_setup_stack(0x40000000 + SZ_2G - SZ_16K);

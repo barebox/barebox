@@ -21,6 +21,8 @@
 #include <mach/s3c-generic.h>
 #include <mach/iomux.h>
 
+#include "tiny6410.h"
+
 static const unsigned tiny6410_pin_usage[] = {
 	/* UART0 */
 	GPA2_GPIO | GPIO_IN | ENABLE_PU, /* CTS not connected */

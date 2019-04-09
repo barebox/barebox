@@ -111,7 +111,7 @@ static void __bare_init pm9261_init(void)
 	                  NULL);
 }
 
-void __naked __bare_init barebox_arm_reset_vector(void)
+void __naked __bare_init barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2)
 {
 	arm_cpu_lowlevel_init();
 

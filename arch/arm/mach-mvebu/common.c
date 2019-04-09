@@ -25,6 +25,7 @@
 #include <mach/socid.h>
 #include <asm/barebox-arm.h>
 #include <asm/memory.h>
+#include <mach/lowlevel.h>
 
 /*
  * The different SoC headers containing register definitions (mach/dove-regs.h,

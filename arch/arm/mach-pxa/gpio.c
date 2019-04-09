@@ -12,6 +12,7 @@
 
 #include <common.h>
 #include <errno.h>
+#include <gpio.h>
 
 #include <mach/gpio.h>
 #include <asm/io.h>

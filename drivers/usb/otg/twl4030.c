@@ -64,7 +64,7 @@ static int twl4030_usb_read(u8 address)
 	return ret;
 }
 
-void twl4030_power_init(void)
+static void twl4030_power_init(void)
 {
 	unsigned char byte;
 	struct twl4030 *twl4030 = twl4030_get();

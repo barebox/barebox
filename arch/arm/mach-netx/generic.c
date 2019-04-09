@@ -20,6 +20,7 @@
 #include <io.h>
 #include <restart.h>
 #include <mach/netx-regs.h>
+#include <mach/netx-xc.h>
 #include "eth_firmware.h"
 
 struct fw_header {
@@ -115,7 +116,7 @@ int loadxc(int xcno)
 	return 0;
 }
 
-int do_loadxc(int argc, char *argv[])
+static int do_loadxc(int argc, char *argv[])
 {
 	int xcno;
 

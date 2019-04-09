@@ -53,7 +53,8 @@ static inline void __bare_init debug_led(int led, bool state)
 #define ADDR_V210_SDMMC_BASE	0xD0037488
 #define ADDR_CopySDMMCtoMem	0xD0037F98
 
-int __bare_init s5p_irom_load_mmc(void *dest, uint32_t start_block, uint16_t block_count)
+static int __bare_init s5p_irom_load_mmc(void *dest, uint32_t start_block,
+					 uint16_t block_count)
 {
 	typedef uint32_t (*func_t) (int32_t, uint32_t, uint16_t, uint32_t*, int8_t);
 	uint32_t chbase = readl(ADDR_V210_SDMMC_BASE);
@@ -78,7 +79,7 @@ static __bare_init bool load_stage2(void *dest, size_t size)
 	return s5p_irom_load_mmc(dest, 1, (size+ 511) / 512);
 }
 
-void __bare_init barebox_arm_reset_vector(void)
+void __bare_init barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2)
 {
 	arm_cpu_lowlevel_init();
 

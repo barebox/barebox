@@ -630,7 +630,7 @@ void bootchooser_info(struct bootchooser *bc)
  *
  * Return: The next target
  */
-struct bootchooser_target *bootchooser_get_target(struct bootchooser *bc)
+static struct bootchooser_target *bootchooser_get_target(struct bootchooser *bc)
 {
 	struct bootchooser_target *target;
 

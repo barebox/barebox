@@ -18,6 +18,7 @@
 #include <errno.h>
 #include <init.h>
 #include <io.h>
+#include <gpio.h>
 #include <mach/ep93xx-regs.h>
 
 #define EP93XX_GPIO_NUM_PORTS	8

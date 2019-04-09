@@ -23,8 +23,9 @@ struct twlcore {
 
 extern struct cdev_operations twl_fops;
 
-extern int twlcore_reg_read(struct twlcore *twlcore, u16 reg, u8 *val);
-extern int twlcore_reg_write(struct twlcore *twlcore, u16 reg, u8 val);
-extern int twlcore_set_bits(struct twlcore *twlcore, u16 reg, u8 mask, u8 val);
+int twlcore_reg_read(struct twlcore *twlcore, u16 reg, u8 *val);
+int twlcore_reg_write(struct twlcore *twlcore, u16 reg, u8 val);
+int twlcore_set_bits(struct twlcore *twlcore, u16 reg, u8 mask, u8 val);
+struct twlcore *twlcore_get(void);
 
 #endif /* __MFD_TWLCORE_H__ */

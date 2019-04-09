@@ -48,7 +48,7 @@ struct sdrc_config {
 /*********************************************************************
  * init_sdram_ddr() - Init DDR controller.
  *********************************************************************/
-void init_sdram_ddr(void)
+static void init_sdram_ddr(void)
 {
 	/* reset sdrc controller */
 	writel(SOFTRESET, OMAP3_SDRC_REG(SYSCONFIG));
@@ -67,7 +67,7 @@ void init_sdram_ddr(void)
 /*********************************************************************
  * config_sdram_ddr() - Init DDR on dev board.
  *********************************************************************/
-void config_sdram_ddr(u8 cs, u8 cfg)
+static void config_sdram_ddr(u8 cs, u8 cfg)
 {
 
 	writel(sdrc_config[cfg].mcfg, OMAP3_SDRC_REG(MCFG_0) + (0x30 * cs));
@@ -252,9 +252,9 @@ static int pcaal1_board_init(void)
 	return 0;
 }
 
-void __bare_init __naked barebox_arm_reset_vector(uint32_t *data)
+void __bare_init __naked barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2)
 {
-	omap3_save_bootinfo(data);
+	omap3_save_bootinfo((void *)r0);
 
 	arm_cpu_lowlevel_init();
 

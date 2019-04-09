@@ -30,7 +30,7 @@
 #include <asm-generic/memory_layout.h>
 #include <asm/system.h>
 
-void __bare_init __naked barebox_arm_reset_vector(void)
+void __bare_init __naked barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2)
 {
 	uint32_t r, s;
 	unsigned long ccm_base = MX35_CCM_BASE_ADDR;

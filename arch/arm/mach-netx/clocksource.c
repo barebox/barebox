@@ -23,7 +23,7 @@
 #include <clock.h>
 #include <mach/netx-regs.h>
 
-uint64_t netx_clocksource_read(void)
+static uint64_t netx_clocksource_read(void)
 {
 	return GPIO_REG(GPIO_COUNTER_CURRENT(0));
 }

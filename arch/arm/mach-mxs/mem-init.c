@@ -30,8 +30,8 @@
 #define	MXS_BLOCK_SFTRST	(1 << 31)
 #define	MXS_BLOCK_CLKGATE	(1 << 30)
 
-int mxs_early_wait_mask_set(struct mxs_register_32 *reg, uint32_t mask, unsigned
-								int timeout)
+static int mxs_early_wait_mask_set(struct mxs_register_32 *reg, uint32_t mask,
+				   unsigned int timeout)
 {
 	while (--timeout) {
 		if ((readl(&reg->reg) & mask) == mask)
@@ -42,8 +42,8 @@ int mxs_early_wait_mask_set(struct mxs_register_32 *reg, uint32_t mask, unsigned
 	return !timeout;
 }
 
-int mxs_early_wait_mask_clr(struct mxs_register_32 *reg, uint32_t mask, unsigned
-								int timeout)
+static int mxs_early_wait_mask_clr(struct mxs_register_32 *reg, uint32_t mask,
+				   unsigned int timeout)
 {
 	while (--timeout) {
 		if ((readl(&reg->reg) & mask) == 0)
@@ -54,7 +54,7 @@ int mxs_early_wait_mask_clr(struct mxs_register_32 *reg, uint32_t mask, unsigned
 	return !timeout;
 }
 
-int mxs_early_reset_block(struct mxs_register_32 *reg)
+static int mxs_early_reset_block(struct mxs_register_32 *reg)
 {
 	/* Clear SFTRST */
 	writel(MXS_BLOCK_SFTRST, &reg->reg_clr);

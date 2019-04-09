@@ -35,7 +35,7 @@
 #define CCM_PDR0_399	0x00011000
 #define CCM_PDR0_532	0x00001000
 
-void __bare_init __naked barebox_arm_reset_vector(void)
+void __bare_init __naked barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2)
 {
 	uint32_t r, s;
 	unsigned long ccm_base = MX35_CCM_BASE_ADDR;

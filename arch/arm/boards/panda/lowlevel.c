@@ -79,9 +79,9 @@ static void noinline panda_init_lowlevel(void)
 		omap4460_scale_vcores(TPS62361_VSEL0_GPIO, 1210);
 }
 
-void __bare_init __naked barebox_arm_reset_vector(uint32_t *data)
+void __bare_init __naked barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2)
 {
-	omap4_save_bootinfo(data);
+	omap4_save_bootinfo((void *)r0);
 
 	arm_cpu_lowlevel_init();
 

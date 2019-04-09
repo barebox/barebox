@@ -134,8 +134,8 @@ static noinline void __bare_init imx_nandboot_get_page(void *regs, int v1,
 	imx_nandboot_send_page(regs, v1, NFC_OUTPUT, pagesize_2k);
 }
 
-void __bare_init imx_nand_load_image(void *dest, int v1, int size, void __iomem *base,
-		int pagesize_2k)
+static void __bare_init imx_nand_load_image(void *dest, int v1, int size,
+					    void __iomem *base, int pagesize_2k)
 {
 	u32 tmp, page, block, blocksize, pagesize, badblocks;
 	int bbt = 0;
@@ -239,42 +239,28 @@ void __bare_init imx_nand_load_image(void *dest, int v1, int size, void __iomem 
 	}
 }
 
-void BARE_INIT_FUNCTION(imx21_nand_load_image)(void *dest, int size,
-                void __iomem *base, int pagesize_2k)
-{
-        imx_nand_load_image(dest, 1, size, base, pagesize_2k);
-}
-
-void BARE_INIT_FUNCTION(imx25_nand_load_image)(void *dest, int size,
+static void BARE_INIT_FUNCTION(imx25_nand_load_image)(void *dest, int size,
                 void __iomem *base, int pagesize_2k)
 {
         imx_nand_load_image(dest, 0, size, base, pagesize_2k);
 }
 
-void BARE_INIT_FUNCTION(imx27_nand_load_image)(void *dest, int size,
+static void BARE_INIT_FUNCTION(imx27_nand_load_image)(void *dest, int size,
                 void __iomem *base, int pagesize_2k)
 {
         imx_nand_load_image(dest, 1, size, base, pagesize_2k);
 }
 
-void BARE_INIT_FUNCTION(imx31_nand_load_image)(void *dest, int size,
+static void BARE_INIT_FUNCTION(imx31_nand_load_image)(void *dest, int size,
                 void __iomem *base, int pagesize_2k)
 {
         imx_nand_load_image(dest, 1, size, base, pagesize_2k);
 }
 
-void BARE_INIT_FUNCTION(imx35_nand_load_image)(void *dest, int size,
+static void BARE_INIT_FUNCTION(imx35_nand_load_image)(void *dest, int size,
                 void __iomem *base, int pagesize_2k)
 {
         imx_nand_load_image(dest, 0, size, base, pagesize_2k);
-}
-
-static inline int imx21_pagesize_2k(void)
-{
-	if (readl(MX21_SYSCTRL_BASE_ADDR + 0x14) & (1 << 5))
-		return 1;
-	else
-		return 0;
 }
 
 static inline int imx25_pagesize_2k(void)
@@ -318,7 +304,7 @@ static inline int imx35_pagesize_2k(void)
 
 #define DEFINE_EXTERNAL_NAND_ENTRY(soc)					\
 									\
-void __noreturn BARE_INIT_FUNCTION(imx##soc##_boot_nand_external_cont)  \
+static void __noreturn BARE_INIT_FUNCTION(imx##soc##_boot_nand_external_cont)  \
 			(void *boarddata)				\
 {									\
 	unsigned long nfc_base = MX##soc##_NFC_BASE_ADDR;		\
@@ -389,9 +375,6 @@ void __noreturn BARE_INIT_FUNCTION(imx##soc##_barebox_boot_nand_external) \
 	fn((void *)boarddata);						\
 }
 
-#ifdef BROKEN
-DEFINE_EXTERNAL_NAND_ENTRY(21)
-#endif
 DEFINE_EXTERNAL_NAND_ENTRY(25)
 DEFINE_EXTERNAL_NAND_ENTRY(27)
 DEFINE_EXTERNAL_NAND_ENTRY(31)

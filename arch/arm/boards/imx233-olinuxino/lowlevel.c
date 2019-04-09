@@ -115,7 +115,7 @@ static const uint32_t pad_setup[] = {
 
 
 /* Fine-tune the DRAM configuration. */
-void imx23_olinuxino_adjust_memory_params(uint32_t *dram_vals)
+static void imx23_olinuxino_adjust_memory_params(uint32_t *dram_vals)
 {
 	/* Enable Auto Precharge. */
 	dram_vals[3] |= 1 << 8;

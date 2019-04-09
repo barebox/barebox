@@ -89,9 +89,9 @@ static noinline void pcaaxl2_init_lowlevel(void)
 	sr32(0x4A30a110, 2, 2, 0x3);  /* enable clocks */
 }
 
-void __bare_init __naked barebox_arm_reset_vector(uint32_t *data)
+void __bare_init __naked barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2)
 {
-	omap4_save_bootinfo(data);
+	omap4_save_bootinfo((void *)r0);
 
 	arm_cpu_lowlevel_init();
 

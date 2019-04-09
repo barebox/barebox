@@ -102,7 +102,7 @@ static noinline __noreturn void mx31moboard_startup(void)
 
 }
 
-void __bare_init __naked barebox_arm_reset_vector(void)
+void __bare_init __naked barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2)
 {
 	arm_cpu_lowlevel_init();
 

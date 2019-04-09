@@ -20,6 +20,7 @@
 #include <driver.h>
 #include <xfuncs.h>
 #include <errno.h>
+#include <mfd/lp3972.h>
 
 #include <i2c/i2c.h>
 

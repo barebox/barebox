@@ -61,7 +61,7 @@ enum imx23_clk {
 
 static struct clk *clks[clk_max];
 
-int __init mx23_clocks_init(void __iomem *regs)
+static int __init mx23_clocks_init(void __iomem *regs)
 {
 	clks[ref_xtal] = mxs_clk_fixed("ref_xtal", 24000000);
 	clks[pll] = mxs_clk_pll("pll", "ref_xtal", PLLCTRL0, 16, 480000000);

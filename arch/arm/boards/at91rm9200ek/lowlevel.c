@@ -21,7 +21,7 @@ void static inline access_sdram(void)
 	writel(0x00000000, AT91_CHIPSELECT_1);
 }
 
-void __naked __bare_init barebox_arm_reset_vector(void)
+void __naked __bare_init barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2)
 {
 	u32 r;
 	int i;

@@ -62,7 +62,7 @@ config BUILTIN_DTB_NAME
 	string "DTB to build into the barebox image"
 	depends on BUILTIN_DTB
 
-source arch/riscv/mach-erizo/Kconfig
+source "arch/riscv/mach-erizo/Kconfig"
 
 endmenu
 

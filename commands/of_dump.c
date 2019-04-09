@@ -139,9 +139,9 @@ out:
 
 BAREBOX_CMD_HELP_START(of_dump)
 BAREBOX_CMD_HELP_TEXT("Options:")
-BAREBOX_CMD_HELP_OPT  ("-f dtb",  "work on dtb instead of internal devicetree\n")
-BAREBOX_CMD_HELP_OPT  ("-F",  "return fixed devicetree\n")
-BAREBOX_CMD_HELP_OPT  ("-n",  "Print node names only, no properties\n")
+BAREBOX_CMD_HELP_OPT  ("-f dtb",  "work on dtb instead of internal devicetree")
+BAREBOX_CMD_HELP_OPT  ("-F",  "return fixed devicetree")
+BAREBOX_CMD_HELP_OPT  ("-n",  "Print node names only, no properties")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(of_dump)

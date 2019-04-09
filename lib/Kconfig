@@ -63,7 +63,7 @@ config GENERIC_FIND_NEXT_BIT
 config PROCESS_ESCAPE_SEQUENCE
 	def_bool n
 
-source lib/lzo/Kconfig
+source "lib/lzo/Kconfig"
 
 config BCH
 	bool
@@ -129,13 +129,13 @@ config CRC8
 	  when they need to do cyclic redundancy check according CRC8
 	  algorithm. Module will be called crc8.
 
-source lib/gui/Kconfig
+source "lib/gui/Kconfig"
 
-source lib/fonts/Kconfig
+source "lib/fonts/Kconfig"
 
-source lib/logo/Kconfig
+source "lib/logo/Kconfig"
 
-source lib/bootstrap/Kconfig
+source "lib/bootstrap/Kconfig"
 
 config PRINTF_UUID
 	bool

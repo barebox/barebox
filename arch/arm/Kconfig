@@ -275,32 +275,32 @@ config ARCH_QEMU
 
 endchoice
 
-source arch/arm/cpu/Kconfig
-source arch/arm/mach-at91/Kconfig
-source arch/arm/mach-bcm283x/Kconfig
-source arch/arm/mach-clps711x/Kconfig
-source arch/arm/mach-davinci/Kconfig
-source arch/arm/mach-digic/Kconfig
-source arch/arm/mach-ep93xx/Kconfig
-source arch/arm/mach-highbank/Kconfig
-source arch/arm/mach-imx/Kconfig
-source arch/arm/mach-layerscape/Kconfig
-source arch/arm/mach-mxs/Kconfig
-source arch/arm/mach-mvebu/Kconfig
-source arch/arm/mach-netx/Kconfig
-source arch/arm/mach-nomadik/Kconfig
-source arch/arm/mach-omap/Kconfig
-source arch/arm/mach-pxa/Kconfig
-source arch/arm/mach-rockchip/Kconfig
-source arch/arm/mach-samsung/Kconfig
-source arch/arm/mach-socfpga/Kconfig
-source arch/arm/mach-versatile/Kconfig
-source arch/arm/mach-vexpress/Kconfig
-source arch/arm/mach-tegra/Kconfig
-source arch/arm/mach-uemd/Kconfig
-source arch/arm/mach-zynq/Kconfig
-source arch/arm/mach-qemu/Kconfig
-source arch/arm/mach-zynqmp/Kconfig
+source "arch/arm/cpu/Kconfig"
+source "arch/arm/mach-at91/Kconfig"
+source "arch/arm/mach-bcm283x/Kconfig"
+source "arch/arm/mach-clps711x/Kconfig"
+source "arch/arm/mach-davinci/Kconfig"
+source "arch/arm/mach-digic/Kconfig"
+source "arch/arm/mach-ep93xx/Kconfig"
+source "arch/arm/mach-highbank/Kconfig"
+source "arch/arm/mach-imx/Kconfig"
+source "arch/arm/mach-layerscape/Kconfig"
+source "arch/arm/mach-mxs/Kconfig"
+source "arch/arm/mach-mvebu/Kconfig"
+source "arch/arm/mach-netx/Kconfig"
+source "arch/arm/mach-nomadik/Kconfig"
+source "arch/arm/mach-omap/Kconfig"
+source "arch/arm/mach-pxa/Kconfig"
+source "arch/arm/mach-rockchip/Kconfig"
+source "arch/arm/mach-samsung/Kconfig"
+source "arch/arm/mach-socfpga/Kconfig"
+source "arch/arm/mach-versatile/Kconfig"
+source "arch/arm/mach-vexpress/Kconfig"
+source "arch/arm/mach-tegra/Kconfig"
+source "arch/arm/mach-uemd/Kconfig"
+source "arch/arm/mach-zynq/Kconfig"
+source "arch/arm/mach-qemu/Kconfig"
+source "arch/arm/mach-zynqmp/Kconfig"
 
 config ARM_ASM_UNIFIED
 	bool

@@ -138,8 +138,8 @@ BAREBOX_CMD_HELP_OPT ("-F FILE", "Use file to compare.")
 #endif
 BAREBOX_CMD_HELP_OPT ("-v CRC",  "Verify")
 BAREBOX_CMD_HELP_OPT ("-V FILE", "Verify with CRC read from FILE")
-BAREBOX_CMD_HELP_OPT  ("-r <var>",  "Set <var> to the checksum result\n")
-BAREBOX_CMD_HELP_OPT  ("-s <var>",  "Set <var> to the data size\n")
+BAREBOX_CMD_HELP_OPT  ("-r <var>",  "Set <var> to the checksum result")
+BAREBOX_CMD_HELP_OPT  ("-s <var>",  "Set <var> to the data size")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(crc32)

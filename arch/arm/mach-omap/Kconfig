@@ -193,7 +193,7 @@ config MACH_WAGO_PFC_AM35XX
 
 endif
 
-source arch/arm/boards/phytec-som-am335x/Kconfig
+source "arch/arm/boards/phytec-som-am335x/Kconfig"
 
 choice
 	prompt "Select OMAP board"

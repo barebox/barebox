@@ -84,9 +84,9 @@ static int do_memcpy(int argc, char *argv[])
 	buf = xmalloc(RW_BUF_SIZE);
 
 	while (count > 0) {
-		int now, r, w, tmp;
+		int now, r;
 
-		now = min((loff_t)RW_BUF_SIZE, count);
+		now = min_t(loff_t, RW_BUF_SIZE, count);
 
 		r = read(sourcefd, buf, now);
 		if (r < 0) {
@@ -97,19 +97,9 @@ static int do_memcpy(int argc, char *argv[])
 		if (!r)
 			break;
 
-		tmp = 0;
-		now = r;
-		while (now) {
-			w = write(destfd, buf + tmp, now);
-			if (w < 0) {
-				perror("write");
-				goto out;
-			}
-	                if (!w)
-			        break;
-
-			now -= w;
-			tmp += w;
+		if (write_full(destfd, buf, r) < 0) {
+			perror("write");
+			goto out;
 		}
 
 		count -= r;

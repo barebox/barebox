@@ -95,5 +95,5 @@ choice
 
 endchoice
 
-source arch/x86/boot/Kconfig
-source arch/x86/mach-i386/Kconfig
+source "arch/x86/boot/Kconfig"
+source "arch/x86/mach-i386/Kconfig"

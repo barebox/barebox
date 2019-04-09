@@ -43,8 +43,6 @@ struct ramfs_inode {
 	char *symlink;
 	ulong mode;
 
-	struct handle_d *handle;
-
 	ulong size;
 	struct ramfs_chunk *data;
 
@@ -101,8 +99,6 @@ static struct inode *ramfs_get_inode(struct super_block *sb, const struct inode 
 	return inode;
 }
 
-static int chunks = 0;
-
 static struct ramfs_chunk *ramfs_get_chunk(void)
 {
 	struct ramfs_chunk *data = malloc(sizeof(struct ramfs_chunk));
@@ -115,7 +111,6 @@ static struct ramfs_chunk *ramfs_get_chunk(void)
 		return NULL;
 	}
 	data->next = NULL;
-	chunks++;
 
 	return data;
 }
@@ -124,7 +119,6 @@ static void ramfs_put_chunk(struct ramfs_chunk *data)
 {
 	free(data->data);
 	free(data);
-	chunks--;
 }
 
 /* ---------------------------------------------------------------*/
@@ -137,10 +131,8 @@ ramfs_mknod(struct inode *dir, struct dentry *dentry, umode_t mode)
 	if (!inode)
 		return -ENOSPC;
 
-	if (inode) {
-		d_instantiate(dentry, inode);
-		dget(dentry);   /* Extra count - pin the dentry in core */
-	}
+	d_instantiate(dentry, inode);
+	dget(dentry);   /* Extra count - pin the dentry in core */
 
 	return 0;
 }

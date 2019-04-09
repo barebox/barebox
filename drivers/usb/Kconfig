@@ -7,21 +7,20 @@ menuconfig USB_HOST
 
 if USB_HOST
 
-source drivers/usb/imx/Kconfig
+source "drivers/usb/imx/Kconfig"
 
 source "drivers/usb/dwc3/Kconfig"
 
-source drivers/usb/host/Kconfig
+source "drivers/usb/host/Kconfig"
 
-source drivers/usb/otg/Kconfig
+source "drivers/usb/otg/Kconfig"
 
-source drivers/usb/storage/Kconfig
+source "drivers/usb/storage/Kconfig"
 
 source "drivers/usb/misc/Kconfig"
 
 endif
 
-source drivers/usb/gadget/Kconfig
+source "drivers/usb/gadget/Kconfig"
 
-source drivers/usb/musb/Kconfig
-
+source "drivers/usb/musb/Kconfig"

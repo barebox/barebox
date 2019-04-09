@@ -55,8 +55,8 @@ static int do_firmwareload(int argc, char *argv[])
 
 BAREBOX_CMD_HELP_START(firmwareload)
 BAREBOX_CMD_HELP_TEXT("Options:")
-BAREBOX_CMD_HELP_OPT("-t <target>", "define the firmware handler by name\n")
-BAREBOX_CMD_HELP_OPT("-l\t", "list devices capable of firmware loading\n")
+BAREBOX_CMD_HELP_OPT("-t <target>", "define the firmware handler by name")
+BAREBOX_CMD_HELP_OPT("-l\t", "list devices capable of firmware loading")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(firmwareload)

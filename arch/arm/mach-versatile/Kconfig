@@ -23,6 +23,6 @@ config MACH_VERSATILEPB_ARM1176
 
 endchoice
 
-source arch/arm/boards/versatile/Kconfig
+source "arch/arm/boards/versatile/Kconfig"
 
 endif

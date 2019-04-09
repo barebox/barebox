@@ -4,6 +4,6 @@ menuconfig CRYPTO_HW
 
 if CRYPTO_HW
 
-source drivers/crypto/caam/Kconfig
+source "drivers/crypto/caam/Kconfig"
 
 endif

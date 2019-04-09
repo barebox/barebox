@@ -764,13 +764,13 @@ config PBL_CONSOLE
 	  must be running at the address it's linked at and bss must
 	  be cleared. On ARM that would be after setup_c().
 
-source common/ratp/Kconfig
+source "common/ratp/Kconfig"
 
 config PARTITION
 	bool
 	prompt "Enable Partitions"
 
-source common/partitions/Kconfig
+source "common/partitions/Kconfig"
 
 config ENV_HANDLING
 	select CRC32

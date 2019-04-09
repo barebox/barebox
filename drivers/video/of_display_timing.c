@@ -14,7 +14,8 @@
 
 void display_timings_release(struct display_timings *disp)
 {
-	free(disp->modes);
+	if (disp->modes)
+		free(disp->modes);
 	free(disp);
 }
 EXPORT_SYMBOL_GPL(display_timings_release);
@@ -43,7 +44,7 @@ static int parse_timing_property(const struct device_node *np, const char *name,
 	}
 
 	cells = length / sizeof(u32);
-	if (cells == 1) {
+	if ((cells == 1) || (cells == 3)) {
 		ret = of_property_read_u32(np, name, res);
 	} else {
 		pr_err("%s: illegal timing specification in %s\n",
@@ -129,7 +130,7 @@ struct display_timings *of_get_display_timings(struct device_node *np)
 	if (!entry) {
 		pr_err("%s: no timing specifications given\n",
 			np->full_name);
-		goto entryfail;
+		goto fail;
 	}
 
 	pr_debug("%s: using %s as default timing\n",
@@ -141,7 +142,7 @@ struct display_timings *of_get_display_timings(struct device_node *np)
 	if (disp->num_modes == 0) {
 		/* should never happen, as entry was already found above */
 		pr_err("%s: no timings specified\n", np->full_name);
-		goto entryfail;
+		goto fail;
 	}
 
 	disp->modes = xzalloc(sizeof(struct fb_videomode) * disp->num_modes);
@@ -163,7 +164,7 @@ struct display_timings *of_get_display_timings(struct device_node *np)
 			 */
 			pr_err("%s: error in timing %d\n",
 				np->full_name, disp->num_modes + 1);
-			goto timingfail;
+			goto fail;
 		}
 
 		mode->name = xstrdup(entry->name);
@@ -180,10 +181,8 @@ struct display_timings *of_get_display_timings(struct device_node *np)
 
 	return disp;
 
-timingfail:
+fail:
 	display_timings_release(disp);
-entryfail:
-	free(disp);
 
 	return NULL;
 }

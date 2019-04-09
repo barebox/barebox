@@ -24,8 +24,6 @@
 #include <errno.h>
 #include <dma.h>
 
-#undef USB_STOR_DEBUG
-
 #include "usb.h"
 #include "transport.h"
 
@@ -62,6 +60,7 @@ static int usb_stor_Bulk_clear_endpt_stall(struct us_data *us, unsigned int pipe
 /* Determine what the maximum LUN supported is */
 int usb_stor_Bulk_max_lun(struct us_data *us)
 {
+	struct device_d *dev = &us->pusb_dev->dev;
 	int len, ret = 0;
 	unsigned char *iobuf = dma_alloc(1);
 
@@ -73,8 +72,8 @@ int usb_stor_Bulk_max_lun(struct us_data *us)
 	                      USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_INTERFACE,
 	                      0, us->ifnum, iobuf, 1, USB_CNTL_TIMEOUT);
 
-	US_DEBUGP("GetMaxLUN command result is %d, data is %d\n",
-	          len, (int)iobuf[0]);
+	dev_dbg(dev, "GetMaxLUN command result is %d, data is %d\n",
+		len, (int)iobuf[0]);
 
 	/* if we have a successful request, return the result */
 	if (len > 0)
@@ -92,8 +91,12 @@ int usb_stor_Bulk_max_lun(struct us_data *us)
 	return ret;
 }
 
-int usb_stor_Bulk_transport(ccb *srb, struct us_data *us)
+int usb_stor_Bulk_transport(struct us_blk_dev *usb_blkdev,
+			    const u8 *cmd, u8 cmdlen,
+			    void *data, u32 datalen)
 {
+	struct us_data *us = usb_blkdev->us;
+	struct device_d *dev = &us->pusb_dev->dev;
 	struct bulk_cb_wrap cbw;
 	struct bulk_cs_wrap csw;
 	int actlen, data_actlen;
@@ -101,30 +104,28 @@ int usb_stor_Bulk_transport(ccb *srb, struct us_data *us)
 	unsigned int residue;
 	unsigned int pipein = usb_rcvbulkpipe(us->pusb_dev, us->recv_bulk_ep);
 	unsigned int pipeout = usb_sndbulkpipe(us->pusb_dev, us->send_bulk_ep);
-	int dir_in = US_DIRECTION(srb->cmd[0]);
-
-	srb->trans_bytes = 0;
+	int dir_in = US_DIRECTION(cmd[0]);
 
 	/* set up the command wrapper */
 	cbw.Signature = cpu_to_le32(US_BULK_CB_SIGN);
-	cbw.DataTransferLength = cpu_to_le32(srb->datalen);
+	cbw.DataTransferLength = cpu_to_le32(datalen);
 	cbw.Flags = (dir_in ? US_BULK_FLAG_IN : US_BULK_FLAG_OUT);
 	cbw.Tag = ++cbw_tag;
-	cbw.Lun = srb->lun;
-	cbw.Length = srb->cmdlen;
+	cbw.Lun = usb_blkdev->lun;
+	cbw.Length = cmdlen;
 
 	/* copy the command payload */
-	memcpy(cbw.CDB, srb->cmd, cbw.Length);
+	memcpy(cbw.CDB, cmd, cbw.Length);
 
 	/* send it to out endpoint */
-	US_DEBUGP("Bulk Command S 0x%x T 0x%x L %d F %d Trg %d LUN %d CL %d\n",
-	                le32_to_cpu(cbw.Signature), cbw.Tag,
-	                le32_to_cpu(cbw.DataTransferLength), cbw.Flags,
-	                (cbw.Lun >> 4), (cbw.Lun & 0x0F),
-	                cbw.Length);
+	dev_dbg(dev, "Bulk Command S 0x%x T 0x%x L %d F %d Trg %d LUN %d CL %d\n",
+		le32_to_cpu(cbw.Signature), cbw.Tag,
+		le32_to_cpu(cbw.DataTransferLength), cbw.Flags,
+		(cbw.Lun >> 4), (cbw.Lun & 0x0F),
+		cbw.Length);
 	result = usb_bulk_msg(us->pusb_dev, pipeout, &cbw, US_BULK_CB_WRAP_LEN,
 			      &actlen, USB_BULK_TO);
-	US_DEBUGP("Bulk command transfer result=%d\n", result);
+	dev_dbg(dev, "Bulk command transfer result=%d\n", result);
 	if (result < 0) {
 		usb_stor_Bulk_reset(us);
 		return USB_STOR_TRANSPORT_FAILED;
@@ -136,36 +137,36 @@ int usb_stor_Bulk_transport(ccb *srb, struct us_data *us)
 	mdelay(1);
 
 	data_actlen = 0;
-	if (srb->datalen) {
+	if (datalen) {
 		unsigned int pipe = dir_in ? pipein : pipeout;
-		result = usb_bulk_msg(us->pusb_dev, pipe, srb->pdata,
-		                      srb->datalen, &data_actlen, USB_BULK_TO);
-		US_DEBUGP("Bulk data transfer result 0x%x\n", result);
+		result = usb_bulk_msg(us->pusb_dev, pipe, data,
+		                      datalen, &data_actlen, USB_BULK_TO);
+		dev_dbg(dev, "Bulk data transfer result 0x%x\n", result);
 		/* special handling of STALL in DATA phase */
 		if ((result < 0) && (us->pusb_dev->status & USB_ST_STALLED)) {
-			US_DEBUGP("DATA: stall\n");
+			dev_dbg(dev, "DATA: stall\n");
 			/* clear the STALL on the endpoint */
 			result = usb_stor_Bulk_clear_endpt_stall(us, pipe);
 		}
 		if (result < 0) {
-			US_DEBUGP("Device status: %lx\n", us->pusb_dev->status);
+			dev_dbg(dev, "Device status: %lx\n", us->pusb_dev->status);
 			usb_stor_Bulk_reset(us);
 			return USB_STOR_TRANSPORT_FAILED;
 		}
 	}
 
 	/* STATUS phase + error handling */
-	US_DEBUGP("Attempting to get CSW...\n");
+	dev_dbg(dev, "Attempting to get CSW...\n");
 	result = usb_bulk_msg(us->pusb_dev, pipein, &csw, US_BULK_CS_WRAP_LEN,
 	                      &actlen, USB_BULK_TO);
 
 	/* did the endpoint stall? */
 	if ((result < 0) && (us->pusb_dev->status & USB_ST_STALLED)) {
-		US_DEBUGP("STATUS: stall\n");
+		dev_dbg(dev, "STATUS: stall\n");
 		/* clear the STALL on the endpoint */
 		result = usb_stor_Bulk_clear_endpt_stall(us, pipein);
 		if (result >= 0) {
-			US_DEBUGP("Attempting to get CSW...\n");
+			dev_dbg(dev, "Attempting to get CSW...\n");
 			result = usb_bulk_msg(us->pusb_dev, pipein,
 			                      &csw, US_BULK_CS_WRAP_LEN,
 			                      &actlen, USB_BULK_TO);
@@ -173,36 +174,35 @@ int usb_stor_Bulk_transport(ccb *srb, struct us_data *us)
 	}
 
 	if (result < 0) {
-		US_DEBUGP("Device status: %lx\n", us->pusb_dev->status);
+		dev_dbg(dev, "Device status: %lx\n", us->pusb_dev->status);
 		usb_stor_Bulk_reset(us);
 		return USB_STOR_TRANSPORT_FAILED;
 	}
 
 	/* check bulk status */
 	residue = le32_to_cpu(csw.Residue);
-	US_DEBUGP("Bulk Status S 0x%x T 0x%x R %u Stat 0x%x\n",
-	          le32_to_cpu(csw.Signature), csw.Tag, residue, csw.Status);
+	dev_dbg(dev, "Bulk Status S 0x%x T 0x%x R %u Stat 0x%x\n",
+		le32_to_cpu(csw.Signature), csw.Tag, residue, csw.Status);
 	if (csw.Signature != cpu_to_le32(US_BULK_CS_SIGN)) {
-		US_DEBUGP("Bad CSW signature\n");
+		dev_dbg(dev, "Bad CSW signature\n");
 		usb_stor_Bulk_reset(us);
 		return USB_STOR_TRANSPORT_FAILED;
 	} else if (csw.Tag != cbw_tag) {
-		US_DEBUGP("Mismatching tag\n");
+		dev_dbg(dev, "Mismatching tag\n");
 		usb_stor_Bulk_reset(us);
 		return USB_STOR_TRANSPORT_FAILED;
 	} else if (csw.Status >= US_BULK_STAT_PHASE) {
-		US_DEBUGP("Status >= phase\n");
+		dev_dbg(dev, "Status >= phase\n");
 		usb_stor_Bulk_reset(us);
 		return USB_STOR_TRANSPORT_ERROR;
-	} else if (residue > srb->datalen) {
-		US_DEBUGP("residue (%uB) > req data (%luB)\n",
-		          residue, srb->datalen);
+	} else if (residue > datalen) {
+		dev_dbg(dev, "residue (%uB) > req data (%uB)\n",
+		          residue, datalen);
 		return USB_STOR_TRANSPORT_FAILED;
 	} else if (csw.Status == US_BULK_STAT_FAIL) {
-		US_DEBUGP("FAILED\n");
+		dev_dbg(dev, "FAILED\n");
 		return USB_STOR_TRANSPORT_FAILED;
 	}
-	srb->trans_bytes = min(srb->datalen - residue, (ulong)data_actlen);
 
 	return 0;
 }
@@ -213,11 +213,12 @@ int usb_stor_Bulk_transport(ccb *srb, struct us_data *us)
  */
 int usb_stor_Bulk_reset(struct us_data *us)
 {
+	struct device_d *dev = &us->pusb_dev->dev;
 	int result;
 	int result2;
 	unsigned int pipe;
 
-	US_DEBUGP("%s called\n", __func__);
+	dev_dbg(dev, "%s called\n", __func__);
 
 	/* issue the command */
 	result = usb_control_msg(us->pusb_dev,
@@ -226,24 +227,24 @@ int usb_stor_Bulk_reset(struct us_data *us)
 	                         USB_TYPE_CLASS | USB_RECIP_INTERFACE,
 	                         0, us->ifnum, 0, 0, USB_CNTL_TIMEOUT);
 	if ((result < 0) && (us->pusb_dev->status & USB_ST_STALLED)) {
-		US_DEBUGP("Soft reset stalled: %d\n", result);
+		dev_dbg(dev, "Soft reset stalled: %d\n", result);
 		return result;
 	}
 	mdelay(150);
 
 	/* clear the bulk endpoints halt */
-	US_DEBUGP("Soft reset: clearing %s endpoint halt\n", "bulk-in");
+	dev_dbg(dev, "Soft reset: clearing %s endpoint halt\n", "bulk-in");
 	pipe = usb_rcvbulkpipe(us->pusb_dev, us->recv_bulk_ep);
 	result = usb_clear_halt(us->pusb_dev, pipe);
 	mdelay(150);
-	US_DEBUGP("Soft reset: clearing %s endpoint halt\n", "bulk-out");
+	dev_dbg(dev, "Soft reset: clearing %s endpoint halt\n", "bulk-out");
 	pipe = usb_sndbulkpipe(us->pusb_dev, us->send_bulk_ep);
 	result2 = usb_clear_halt(us->pusb_dev, pipe);
 	mdelay(150);
 
 	if (result >= 0)
 		result = result2;
-	US_DEBUGP("Soft reset %s\n", ((result < 0) ? "failed" : "done"));
+	dev_dbg(dev, "Soft reset %s\n", ((result < 0) ? "failed" : "done"));
 
 	return result;
 }

@@ -84,7 +84,7 @@ struct bulk_cs_wrap {
 
 struct us_data;
 
-extern int usb_stor_Bulk_transport(ccb *, struct us_data *);
+extern trans_cmnd usb_stor_Bulk_transport;
 extern int usb_stor_Bulk_max_lun(struct us_data *);
 extern int usb_stor_Bulk_reset(struct us_data *);
 

@@ -26,164 +26,176 @@
 #include <usb/usb.h>
 #include <usb/usb_defs.h>
 
-#undef USB_STOR_DEBUG
+#include <asm/unaligned.h>
 
 #include "usb.h"
 #include "transport.h"
-
-
-static LIST_HEAD(us_blkdev_list);
 
 
 /***********************************************************************
  * USB Storage routines
  ***********************************************************************/
 
-static int usb_stor_inquiry(ccb *srb, struct us_data *us)
+#define USB_STOR_NO_REQUEST_SENSE	-1
+
+static int usb_stor_request_sense(struct us_blk_dev *usb_blkdev)
 {
-	int retries, result;
+	struct us_data *us = usb_blkdev->us;
+	struct device_d *dev = &us->pusb_dev->dev;
+	u8 cmd[6];
+	const u8 datalen = 18;
+	u8 *data = xzalloc(datalen);
 
-	srb->datalen = min(128UL, srb->datalen);
-	if (srb->datalen < 5) {
-		US_DEBUGP("SCSI_INQUIRY: invalid data buffer size\n");
-		return -EINVAL;
-	}
+	dev_dbg(dev, "SCSI_REQ_SENSE\n");
 
-	retries = 3;
-	do {
-		US_DEBUGP("SCSI_INQUIRY\n");
-		memset(&srb->cmd[0], 0, 6);
-		srb->cmdlen = 6;
-		srb->cmd[0] = SCSI_INQUIRY;
-		srb->cmd[3] = (u8)(srb->datalen >> 8);
-		srb->cmd[4] = (u8)(srb->datalen >> 0);
-		result = us->transport(srb, us);
-		US_DEBUGP("SCSI_INQUIRY returns %d\n", result);
-	} while ((result != USB_STOR_TRANSPORT_GOOD) && retries--);
+	memset(cmd, 0, sizeof(cmd));
+	cmd[0] = SCSI_REQ_SENSE;
+	cmd[4] = datalen;
+	us->transport(usb_blkdev, cmd, sizeof(cmd), data, datalen);
+	dev_dbg(dev, "Request Sense returned %02X %02X %02X\n",
+		data[2], data[12], data[13]);
 
-	return (result != USB_STOR_TRANSPORT_GOOD) ? -EIO : 0;
-}
-
-static int usb_stor_request_sense(ccb *srb, struct us_data *us)
-{
-	unsigned char *pdata = srb->pdata;
-	unsigned long datalen = srb->datalen;
-
-	US_DEBUGP("SCSI_REQ_SENSE\n");
-	srb->pdata = &srb->sense_buf[0];
-	srb->datalen = 18;
-	memset(&srb->cmd[0], 0, 6);
-	srb->cmdlen = 6;
-	srb->cmd[0] = SCSI_REQ_SENSE;
-	srb->cmd[4] = (u8)(srb->datalen >> 0);
-	us->transport(srb, us);
-	US_DEBUGP("Request Sense returned %02X %02X %02X\n",
-	          srb->sense_buf[2], srb->sense_buf[12], srb->sense_buf[13]);
-	srb->pdata = pdata;
-	srb->datalen = datalen;
+	free(data);
 
 	return 0;
 }
 
-static int usb_stor_test_unit_ready(ccb *srb, struct us_data *us)
+static const char *usb_stor_opcode_name(u8 opcode)
 {
-	int retries, result;
+	switch (opcode) {
+	case SCSI_INQUIRY:
+		return "SCSI_INQUIRY";
+	case SCSI_TST_U_RDY:
+		return "SCSI_TST_U_RDY";
+	case SCSI_RD_CAPAC:
+		return "SCSI_RD_CAPAC";
+	case SCSI_READ10:
+		return "SCSI_READ10";
+	case SCSI_WRITE10:
+		return "SCSI_WRITE10";
+	};
 
-	retries = 10;
-	do {
-		US_DEBUGP("SCSI_TST_U_RDY\n");
-		memset(&srb->cmd[0], 0, 12);
-		srb->cmdlen = 12;
-		srb->cmd[0] = SCSI_TST_U_RDY;
-		srb->datalen = 0;
-		result = us->transport(srb, us);
-		US_DEBUGP("SCSI_TST_U_RDY returns %d\n", result);
-		if (result == USB_STOR_TRANSPORT_GOOD)
-			return 0;
-		usb_stor_request_sense(srb, us);
-		mdelay(100);
-	} while (retries--);
-
-	return -1;
+	return "UNKNOWN";
 }
 
-static int usb_stor_read_capacity(ccb *srb, struct us_data *us)
+static int usb_stor_transport(struct us_blk_dev *usb_blkdev,
+			      const u8 *cmd, u8 cmdlen,
+			      void *data, u32 datalen,
+			      int retries, int request_sense_delay_ms)
 {
-	int retries, result;
+	struct us_data *us = usb_blkdev->us;
+	struct device_d *dev = &us->pusb_dev->dev;
+	int i, ret;
 
-	if (srb->datalen < 8) {
-		US_DEBUGP("SCSI_RD_CAPAC: invalid data buffer size\n");
-		return -EINVAL;
+
+	for (i = 0; i < retries; i++) {
+		dev_dbg(dev, "%s\n", usb_stor_opcode_name(cmd[0]));
+		ret = us->transport(usb_blkdev, cmd, cmdlen, data, datalen);
+		dev_dbg(dev, "%s returns %d\n", usb_stor_opcode_name(cmd[0]),
+			ret);
+		if (ret == USB_STOR_TRANSPORT_GOOD)
+			return 0;
+
+		if (request_sense_delay_ms == USB_STOR_NO_REQUEST_SENSE)
+			continue;
+
+		usb_stor_request_sense(usb_blkdev);
+
+		if (request_sense_delay_ms)
+			mdelay(request_sense_delay_ms);
 	}
-
-	retries = 3;
-	do {
-		US_DEBUGP("SCSI_RD_CAPAC\n");
-		memset(&srb->cmd[0], 0, 10);
-		srb->cmdlen = 10;
-		srb->cmd[0] = SCSI_RD_CAPAC;
-		srb->datalen = 8;
-		result = us->transport(srb, us);
-		US_DEBUGP("SCSI_RD_CAPAC returns %d\n", result);
-	} while ((result != USB_STOR_TRANSPORT_GOOD) && retries--);
-
-	return (result != USB_STOR_TRANSPORT_GOOD) ? -EIO : 0;
-}
-
-static int usb_stor_read_10(ccb *srb, struct us_data *us,
-                            unsigned long start, unsigned short blocks)
-{
-	int retries, result;
-
-	retries = 2;
-	do {
-		US_DEBUGP("SCSI_READ10: start %lx blocks %x\n", start, blocks);
-		memset(&srb->cmd[0], 0, 10);
-		srb->cmdlen = 10;
-		srb->cmd[0] = SCSI_READ10;
-		srb->cmd[2] = (u8)(start >> 24);
-		srb->cmd[3] = (u8)(start >> 16);
-		srb->cmd[4] = (u8)(start >> 8);
-		srb->cmd[5] = (u8)(start >> 0);
-		srb->cmd[7] = (u8)(blocks >> 8);
-		srb->cmd[8] = (u8)(blocks >> 0);
-		result = us->transport(srb, us);
-		US_DEBUGP("SCSI_READ10 returns %d\n", result);
-		if (result == USB_STOR_TRANSPORT_GOOD)
-			return 0;
-		usb_stor_request_sense(srb, us);
-	} while (retries--);
 
 	return -EIO;
 }
 
-static int usb_stor_write_10(ccb *srb, struct us_data *us,
-                             unsigned long start, unsigned short blocks)
+static int usb_stor_inquiry(struct us_blk_dev *usb_blkdev)
 {
-	int retries, result;
+	struct device_d *dev = &usb_blkdev->us->pusb_dev->dev;
+	int ret;
+	u8 cmd[6];
+	const u16 datalen = 36;
+	u8 *data = xzalloc(datalen);
 
-	retries = 2;
-	do {
-		US_DEBUGP("SCSI_WRITE10: start %lx blocks %x\n", start, blocks);
-		memset(&srb->cmd[0], 0, 10);
-		srb->cmdlen = 10;
-		srb->cmd[0] = SCSI_WRITE10;
-		srb->cmd[2] = (u8)(start >> 24);
-		srb->cmd[3] = (u8)(start >> 16);
-		srb->cmd[4] = (u8)(start >> 8);
-		srb->cmd[5] = (u8)(start >> 0);
-		srb->cmd[7] = (u8)(blocks >> 8);
-		srb->cmd[8] = (u8)(blocks >> 0);
-		result = us->transport(srb, us);
-		US_DEBUGP("SCSI_WRITE10 returns %d\n", result);
-		if (result == USB_STOR_TRANSPORT_GOOD)
-			return 0;
-		usb_stor_request_sense(srb, us);
-	} while (retries--);
+	memset(cmd, 0, sizeof(cmd));
+	cmd[0] = SCSI_INQUIRY;
+	put_unaligned_be16(datalen, &cmd[3]);
 
-	return us->transport(srb, us);
+	ret = usb_stor_transport(usb_blkdev, cmd, sizeof(cmd), data, datalen,
+				 3, USB_STOR_NO_REQUEST_SENSE);
+	if (ret < 0) {
+		ret = -ENODEV;
+		goto exit;
+	}
+
+	dev_dbg(dev, "Peripheral type: %x, removable: %x\n",
+		data[0], (data[1] >> 7));
+	dev_dbg(dev, "ISO ver: %x, resp format: %x\n",
+		data[2], data[3]);
+	dev_dbg(dev, "Vendor/product/rev: %28s\n",
+		&data[8]);
+	// TODO:  process and store device info
+
+exit:
+	free(data);
+	return ret;
 }
 
+static int usb_stor_test_unit_ready(struct us_blk_dev *usb_blkdev)
+{
+	u8 cmd[12];
+	int ret;
+
+	memset(cmd, 0, sizeof(cmd));
+	cmd[0] = SCSI_TST_U_RDY;
+
+	ret = usb_stor_transport(usb_blkdev, cmd, sizeof(cmd), NULL, 0,
+				 10, 100);
+	if (ret < 0)
+		return -ENODEV;
+
+	return 0;
+}
+
+static int usb_stor_read_capacity(struct us_blk_dev *usb_blkdev,
+				  u32 *last_lba, u32 *block_length)
+{
+	struct device_d *dev = &usb_blkdev->us->pusb_dev->dev;
+	const u32 datalen = 8;
+	u32 *data = xzalloc(datalen);
+	u8 cmd[10];
+	int ret;
+
+	memset(cmd, 0, sizeof(cmd));
+	cmd[0] = SCSI_RD_CAPAC;
+
+	ret = usb_stor_transport(usb_blkdev, cmd, sizeof(cmd), data, datalen,
+				 3, USB_STOR_NO_REQUEST_SENSE);
+	if (ret < 0)
+		goto exit;
+
+	dev_dbg(dev, "Read Capacity returns: 0x%x, 0x%x\n",
+		data[0], data[1]);
+	*last_lba = be32_to_cpu(data[0]);
+	*block_length = be32_to_cpu(data[1]);
+
+exit:
+	free(data);
+	return ret;
+}
+
+static int usb_stor_io_10(struct us_blk_dev *usb_blkdev, u8 opcode,
+			  u32 start, u8 *data, u16 blocks)
+{
+	u8 cmd[10];
+
+	memset(cmd, 0, sizeof(cmd));
+	cmd[0] = opcode;
+	put_unaligned_be32(start, &cmd[2]);
+	put_unaligned_be16(blocks, &cmd[7]);
+
+	return usb_stor_transport(usb_blkdev, cmd, sizeof(cmd), data,
+				  blocks * SECTOR_SIZE, 2, 0);
+}
 
 /***********************************************************************
  * Disk driver interface
@@ -191,101 +203,59 @@ static int usb_stor_write_10(ccb *srb, struct us_data *us,
 
 #define US_MAX_IO_BLK 32
 
-#define to_usb_mass_storage(x) container_of((x), struct us_blk_dev, blk)
-
-enum { io_rd, io_wr };
-
 /* Read / write a chunk of sectors on media */
-static int usb_stor_blk_io(int io_op, struct block_device *disk_dev,
-			int sector_start, int sector_count, void *buffer)
+static int usb_stor_blk_io(struct block_device *disk_dev,
+			   int sector_start, int sector_count, void *buffer,
+			   bool read)
 {
-	struct us_blk_dev *pblk_dev = to_usb_mass_storage(disk_dev);
+	struct us_blk_dev *pblk_dev = container_of(disk_dev,
+						   struct us_blk_dev,
+						   blk);
 	struct us_data *us = pblk_dev->us;
-	ccb us_ccb;
-	unsigned sectors_done;
-
-	if (sector_count == 0)
-		return 0;
-
-	/* check for unsupported block size */
-	if (pblk_dev->blk.blockbits != SECTOR_SHIFT) {
-		US_DEBUGP("%s: unsupported block shift %d\n",
-		          __func__, pblk_dev->blk.blockbits);
-		return -EINVAL;
-	}
-
-	/* check for invalid sector_start */
-	if (sector_start >= pblk_dev->blk.num_blocks || sector_start > (ulong)-1) {
-		US_DEBUGP("%s: start sector %d too large\n",
-		          __func__, sector_start);
-		return -EINVAL;
-	}
-
-	us_ccb.lun = pblk_dev->lun;
-	usb_disable_asynch(1);
+	struct device_d *dev = &us->pusb_dev->dev;
 
 	/* ensure unit ready */
-	US_DEBUGP("Testing for unit ready\n");
-	if (usb_stor_test_unit_ready(&us_ccb, us)) {
-		US_DEBUGP("Device NOT ready\n");
-		usb_disable_asynch(0);
+	dev_dbg(dev, "Testing for unit ready\n");
+	if (usb_stor_test_unit_ready(pblk_dev)) {
+		dev_dbg(dev, "Device NOT ready\n");
 		return -EIO;
 	}
 
-	/* possibly limit the amount of I/O data */
-	if (sector_count > INT_MAX) {
-		sector_count = INT_MAX;
-		US_DEBUGP("Restricting I/O to %u blocks\n", sector_count);
-	}
-	if (sector_start + sector_count > pblk_dev->blk.num_blocks) {
-		sector_count = pblk_dev->blk.num_blocks - sector_start;
-		US_DEBUGP("Restricting I/O to %u blocks\n", sector_count);
-	}
-
 	/* read / write the requested data */
-	US_DEBUGP("%s %u block(s), starting from %d\n",
-	          ((io_op == io_rd) ? "Read" : "Write"),
-	          sector_count, sector_start);
-	sectors_done = 0;
+	dev_dbg(dev, "%s %u block(s), starting from %d\n",
+		read ? "Read" : "Write",
+		sector_count, sector_start);
+
 	while (sector_count > 0) {
-		int result;
 		unsigned n = min(sector_count, US_MAX_IO_BLK);
-		us_ccb.pdata = buffer + (sectors_done * SECTOR_SIZE);
-		us_ccb.datalen = n * SECTOR_SIZE;
-		if (io_op == io_rd)
-			result = usb_stor_read_10(&us_ccb, us,
-			                          (ulong)sector_start, n);
-		else
-			result = usb_stor_write_10(&us_ccb, us,
-			                           (ulong)sector_start, n);
-		if (result != 0) {
-			US_DEBUGP("I/O error at sector %d\n", sector_start);
+
+		if (usb_stor_io_10(pblk_dev,
+				   read ? SCSI_READ10 : SCSI_WRITE10,
+				   sector_start,
+				   buffer, n)) {
+			dev_dbg(dev, "I/O error at sector %d\n", sector_start);
 			break;
 		}
 		sector_start += n;
 		sector_count -= n;
-		sectors_done += n;
+		buffer += n * SECTOR_SIZE;
 	}
 
-	usb_disable_asynch(0);
-
-	US_DEBUGP("Successful I/O of %d blocks\n", sectors_done);
-
-	return (sector_count != 0) ? -EIO : 0;
+	return sector_count ? -EIO : 0;
 }
 
 /* Write a chunk of sectors to media */
 static int __maybe_unused usb_stor_blk_write(struct block_device *blk,
 				const void *buffer, int block, int num_blocks)
 {
-	return usb_stor_blk_io(io_wr, blk, block, num_blocks, (void *)buffer);
+	return usb_stor_blk_io(blk, block, num_blocks, (void *)buffer, false);
 }
 
 /* Read a chunk of sectors from media */
 static int usb_stor_blk_read(struct block_device *blk, void *buffer, int block,
 				int num_blocks)
 {
-	return usb_stor_blk_io(io_rd, blk, block, num_blocks, buffer);
+	return usb_stor_blk_io(blk, block, num_blocks, buffer, true);
 }
 
 static struct block_device_ops usb_mass_storage_ops = {
@@ -299,82 +269,61 @@ static struct block_device_ops usb_mass_storage_ops = {
  * Block device routines
  ***********************************************************************/
 
-static unsigned char us_io_buf[512];
-
-static int usb_limit_blk_cnt(unsigned cnt)
-{
-	if (cnt > 0x7fffffff) {
-		pr_warn("Limiting device size due to 31 bit contraints\n");
-		return 0x7fffffff;
-	}
-
-	return (int)cnt;
-}
-
 /* Prepare a disk device */
 static int usb_stor_init_blkdev(struct us_blk_dev *pblk_dev)
 {
 	struct us_data *us = pblk_dev->us;
-	ccb us_ccb;
-	unsigned long *pcap;
-	int result = 0;
-
-	us_ccb.pdata = us_io_buf;
-	us_ccb.lun = pblk_dev->lun;
-
-	pblk_dev->blk.num_blocks = 0;
-	usb_disable_asynch(1);
+	struct device_d *dev = &us->pusb_dev->dev;
+	u32 last_lba = 0, block_length = 0;
+	int result;
 
 	/* get device info */
-	US_DEBUGP("Reading device info\n");
-	us_ccb.datalen = 36;
-	if (usb_stor_inquiry(&us_ccb, us)) {
-		US_DEBUGP("Cannot read device info\n");
-		result = -ENODEV;
-		goto Exit;
+	dev_dbg(dev, "Reading device info\n");
+
+	result = usb_stor_inquiry(pblk_dev);
+	if (result) {
+		dev_dbg(dev, "Cannot read device info\n");
+		return result;
 	}
-	US_DEBUGP("Peripheral type: %x, removable: %x\n",
-	          us_io_buf[0], (us_io_buf[1] >> 7));
-	US_DEBUGP("ISO ver: %x, resp format: %x\n", us_io_buf[2], us_io_buf[3]);
-	US_DEBUGP("Vendor/product/rev: %28s\n", &us_io_buf[8]);
-	// TODO:  process and store device info
 
 	/* ensure unit ready */
-	US_DEBUGP("Testing for unit ready\n");
-	us_ccb.datalen = 0;
-	if (usb_stor_test_unit_ready(&us_ccb, us)) {
-		US_DEBUGP("Device NOT ready\n");
-		result = -ENODEV;
-		goto Exit;
+	dev_dbg(dev, "Testing for unit ready\n");
+
+	result = usb_stor_test_unit_ready(pblk_dev);
+	if (result) {
+		dev_dbg(dev, "Device NOT ready\n");
+		return result;
 	}
 
 	/* read capacity */
-	US_DEBUGP("Reading capacity\n");
-	memset(us_ccb.pdata, 0, 8);
-	us_ccb.datalen = sizeof(us_io_buf);
-	if (usb_stor_read_capacity(&us_ccb, us) != 0) {
-		US_DEBUGP("Cannot read device capacity\n");
-		result = -EIO;
-		goto Exit;
+	dev_dbg(dev, "Reading capacity\n");
+
+	result = usb_stor_read_capacity(pblk_dev, &last_lba, &block_length);
+	if (result < 0) {
+		dev_dbg(dev, "Cannot read device capacity\n");
+		return result;
 	}
-	pcap = (unsigned long *)us_ccb.pdata;
-	US_DEBUGP("Read Capacity returns: 0x%lx, 0x%lx\n", pcap[0], pcap[1]);
-	pblk_dev->blk.num_blocks = usb_limit_blk_cnt(be32_to_cpu(pcap[0]) + 1);
-	if (be32_to_cpu(pcap[1]) != SECTOR_SIZE)
+
+	if (last_lba > INT_MAX - 1) {
+		last_lba = INT_MAX - 1;
+		dev_warn(dev,
+			 "Limiting device size due to 31 bit contraints\n");
+	}
+
+	pblk_dev->blk.num_blocks = last_lba + 1;
+	if (block_length != SECTOR_SIZE)
 		pr_warn("Support only %d bytes sectors\n", SECTOR_SIZE);
 	pblk_dev->blk.blockbits = SECTOR_SHIFT;
-	US_DEBUGP("Capacity = 0x%x, blockshift = 0x%x\n",
-	          pblk_dev->blk.num_blocks, pblk_dev->blk.blockbits);
+	dev_dbg(dev, "Capacity = 0x%x, blockshift = 0x%x\n",
+		 pblk_dev->blk.num_blocks, pblk_dev->blk.blockbits);
 
-Exit:
-	usb_disable_asynch(0);
-	return result;
+	return 0;
 }
 
 /* Create and register a disk device for the specified LUN */
-static int usb_stor_add_blkdev(struct us_data *us, struct device_d *dev,
-							unsigned char lun)
+static int usb_stor_add_blkdev(struct us_data *us, unsigned char lun)
 {
+	struct device_d *dev = &us->pusb_dev->dev;
 	struct us_blk_dev *pblk_dev;
 	int result;
 
@@ -412,12 +361,12 @@ static int usb_stor_add_blkdev(struct us_data *us, struct device_d *dev,
 		dev_warn(dev, "No partition table found\n");
 
 	list_add_tail(&pblk_dev->list, &us->blk_dev_list);
-	US_DEBUGP("USB disk device successfully added\n");
+	dev_dbg(dev, "USB disk device successfully added\n");
 
 	return 0;
 
 BadDevice:
-	US_DEBUGP("%s failed with %d\n", __func__, result);
+	dev_dbg(dev, "%s failed with %d\n", __func__, result);
 	free(pblk_dev);
 	return result;
 }
@@ -429,6 +378,7 @@ BadDevice:
 /* Get the transport settings */
 static void get_transport(struct us_data *us)
 {
+	struct device_d *dev = &us->pusb_dev->dev;
 	switch (us->protocol) {
 	case US_PR_BULK:
 		us->transport_name = "Bulk";
@@ -437,17 +387,17 @@ static void get_transport(struct us_data *us)
 		break;
 	}
 
-	US_DEBUGP("Transport: %s\n", us->transport_name);
+	dev_dbg(dev, "Transport: %s\n", us->transport_name);
 }
 
 /* Get the endpoint settings */
 static int get_pipes(struct us_data *us, struct usb_interface *intf)
 {
+	struct device_d *dev = &us->pusb_dev->dev;
 	unsigned int i;
 	struct usb_endpoint_descriptor *ep;
 	struct usb_endpoint_descriptor *ep_in = NULL;
 	struct usb_endpoint_descriptor *ep_out = NULL;
-	struct usb_endpoint_descriptor *ep_int = NULL;
 
 	/*
 	 * Find the first endpoint of each type we need.
@@ -468,44 +418,38 @@ static int get_pipes(struct us_data *us, struct usb_interface *intf)
 					ep_out = ep;
 			}
 		}
-		else if (USB_EP_IS_INT_IN(ep)) {
-			if (!ep_int)
-				ep_int = ep;
-		}
 	}
-	if (!ep_in || !ep_out || (us->protocol == US_PR_CBI && !ep_int)) {
-		US_DEBUGP("Endpoint sanity check failed! Rejecting dev.\n");
+	if (!ep_in || !ep_out || us->protocol == US_PR_CBI) {
+		dev_dbg(dev, "Endpoint sanity check failed! Rejecting dev.\n");
 		return -EIO;
 	}
 
 	/* Store the pipe values */
 	us->send_bulk_ep = USB_EP_NUM(ep_out);
 	us->recv_bulk_ep = USB_EP_NUM(ep_in);
-	if (ep_int) {
-		us->recv_intr_ep = USB_EP_NUM(ep_int);
-		us->ep_bInterval = ep_int->bInterval;
-	}
+
 	return 0;
 }
 
 /* Scan device's LUNs, registering a disk device for each LUN */
 static int usb_stor_scan(struct usb_device *usbdev, struct us_data *us)
 {
+	struct device_d *dev = &usbdev->dev;
 	unsigned char lun;
 	int num_devs = 0;
 
 	/* obtain the max LUN */
-	us->max_lun = 0;
+	us->max_lun = 1;
 	if (us->protocol == US_PR_BULK)
 		us->max_lun = usb_stor_Bulk_max_lun(us);
 
 	/* register a disk device for each active LUN */
 	for (lun=0; lun<=us->max_lun; lun++) {
-		if (usb_stor_add_blkdev(us, &usbdev->dev, lun) == 0)
+		if (usb_stor_add_blkdev(us, lun) == 0)
 			num_devs++;
 	}
 
-	US_DEBUGP("Found %d block devices on %s\n", num_devs, usbdev->dev.name);
+	dev_dbg(dev, "Found %d block devices on %s\n", num_devs, usbdev->dev.name);
 
 	return  num_devs ? 0 : -ENODEV;
 }
@@ -514,12 +458,13 @@ static int usb_stor_scan(struct usb_device *usbdev, struct us_data *us)
 static int usb_stor_probe(struct usb_device *usbdev,
 			 const struct usb_device_id *id)
 {
+	struct device_d *dev = &usbdev->dev;
 	struct us_data *us;
 	int result;
 	int ifno;
 	struct usb_interface *intf;
 
-	US_DEBUGP("Supported USB Mass Storage device detected\n");
+	dev_dbg(dev, "Supported USB Mass Storage device detected\n");
 
 	/* scan usbdev interfaces again to find one that we can handle */
 	for (ifno=0; ifno<usbdev->config.no_of_if; ifno++) {
@@ -538,19 +483,14 @@ static int usb_stor_probe(struct usb_device *usbdev,
 	if (result)
 		return result;
 
-	US_DEBUGP("Selected interface %d\n", (int)intf->desc.bInterfaceNumber);
+	dev_dbg(dev, "Selected interface %d\n", (int)intf->desc.bInterfaceNumber);
 
 	/* allocate us_data structure */
-	us = (struct us_data *)malloc(sizeof(struct us_data));
-	if (!us)
-		return -ENOMEM;
-	memset(us, 0, sizeof(struct us_data));
+	us = xzalloc(sizeof(*us));
 
 	/* initialize the us_data structure */
 	us->pusb_dev = usbdev;
-	us->flags = 0;
 	us->ifnum = intf->desc.bInterfaceNumber;
-	us->subclass = intf->desc.bInterfaceSubClass;
 	us->protocol = intf->desc.bInterfaceProtocol;
 	INIT_LIST_HEAD(&us->blk_dev_list);
 
@@ -571,7 +511,7 @@ static int usb_stor_probe(struct usb_device *usbdev,
 	return 0;
 
 BadDevice:
-	US_DEBUGP("%s failed with %d\n", __func__, result);
+	dev_dbg(dev, "%s failed with %d\n", __func__, result);
 	free(us);
 	return result;
 }

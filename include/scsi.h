@@ -20,26 +20,6 @@
  #ifndef _SCSI_H
  #define _SCSI_H
 
-typedef struct SCSI_cmd_block {
-	unsigned char		cmd[16];		/* command */
-	unsigned char		sense_buf[64];		/* for request sense */
-	unsigned char		status;			/* SCSI Status */
-	unsigned char		target;			/* Target ID */
-	unsigned char		lun;			/* Target LUN */
-	unsigned char		cmdlen;			/* command len */
-	unsigned long		datalen;		/* Total data length */
-	unsigned char	*	pdata;			/* pointer to data */
-	unsigned char		msgout[12];		/* Messge out buffer (NOT USED) */
-	unsigned char		msgin[12];		/* Message in buffer */
-	unsigned char		sensecmdlen;		/* Sense command len */
-	unsigned long		sensedatalen;		/* Sense data len */
-	unsigned char		sensecmd[6];		/* Sense command */
-	unsigned long		contr_stat;		/* Controller Status */
-	unsigned long		trans_bytes;		/* tranfered bytes */
-
-	unsigned int		priv;
-} ccb;
-
 /*-----------------------------------------------------------
 **
 **	SCSI  constants.
@@ -171,8 +151,6 @@ typedef struct SCSI_cmd_block {
  * decleration of functions which have to reside in the LowLevel Part Driver
  */
 
-void scsi_print_error(ccb *pccb);
-int scsi_exec(ccb *pccb);
 void scsi_bus_reset(void);
 void scsi_low_level_init(int busdevfunc);
 

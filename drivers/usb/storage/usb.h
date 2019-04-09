@@ -28,13 +28,6 @@
 #include <linux/list.h>
 
 
-#ifdef  USB_STOR_DEBUG
-#define US_DEBUGP(fmt, args...)    printf(fmt , ##args)
-#else
-#define US_DEBUGP(fmt, args...)
-#endif
-
-
 /* some defines, similar to ch9.h */
 #define USB_EP_NUM(epd) \
 	((epd)->bEndpointAddress & USB_ENDPOINT_NUMBER_MASK)
@@ -51,32 +44,30 @@
 
 
 struct us_data;
+struct us_blk_dev;
 
-typedef int (*trans_cmnd)(ccb *cb, struct us_data *data);
+typedef int (trans_cmnd)(struct us_blk_dev *usb_blkdev,
+			 const u8 *cmd, u8 cmdlen,
+			 void *data, u32 datalen);
 typedef int (*trans_reset)(struct us_data *data);
 
 /* one us_data object allocated per usb storage device */
 struct us_data {
 	struct usb_device	*pusb_dev;	/* this usb_device */
-	unsigned int		flags;		/* from filter */
 	unsigned char		send_bulk_ep;	/* used endpoints */
 	unsigned char		recv_bulk_ep;
-	unsigned char		recv_intr_ep;
 	unsigned char		ifnum;		/* interface number */
 
-	unsigned char		subclass;
 	unsigned char		protocol;
 
 	unsigned char		max_lun;
-	unsigned char		ep_bInterval;
 
 	char			*transport_name;
 
-	trans_cmnd		transport;	/* transport function */
+	trans_cmnd		*transport;	/* transport function */
 	trans_reset		transport_reset;/* transport device reset */
 
 	/* SCSI interfaces */
-	ccb			*srb;		/* current srb */
 	struct list_head	blk_dev_list;
 };
 

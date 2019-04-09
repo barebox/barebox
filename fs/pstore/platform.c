@@ -25,6 +25,7 @@
 #include <linux/kernel.h>
 #include <linux/spinlock.h>
 #include <linux/mutex.h>
+#include <console.h>
 #include <malloc.h>
 #include <printk.h>
 #include <module.h>
@@ -43,14 +44,83 @@ void pstore_set_kmsg_bytes(int bytes)
 	kmsg_bytes = bytes;
 }
 
-static int pstore_write_compat(enum pstore_type_id type,
-			       enum kmsg_dump_reason reason,
-			       u64 *id, unsigned int part, int count,
-			       bool compressed, size_t size,
-			       struct pstore_info *psi)
+#ifdef CONFIG_FS_PSTORE_CONSOLE
+static void pstore_console_write(const char *s, unsigned c)
 {
-	return psi->write_buf(type, reason, id, part, psinfo->buf, compressed,
-			     size, psi);
+	const char *e = s + c;
+
+	while (s < e) {
+		struct pstore_record record = {
+			.type = PSTORE_TYPE_CONSOLE,
+			.psi = psinfo,
+		};
+
+		if (c > psinfo->bufsize)
+			c = psinfo->bufsize;
+
+		record.buf = (char *)s;
+		record.size = c;
+		psinfo->write_buf(PSTORE_TYPE_CONSOLE, 0, &record.id, 0,
+				  record.buf, 0, record.size, psinfo);
+		s += c;
+		c = e - s;
+	}
+}
+
+static int pstore_console_puts(struct console_device *cdev, const char *s)
+{
+	pstore_console_write(s, strlen(s));
+	return strlen(s);
+}
+
+static void pstore_console_putc(struct console_device *cdev, char c)
+{
+	const char s[1] = { c };
+
+	pstore_console_write(s, 1);
+}
+
+static void pstore_console_capture_log(void)
+{
+	struct log_entry *log;
+
+	list_for_each_entry(log, &barebox_logbuf, list)
+		pstore_console_write(log->msg, strlen(log->msg));
+}
+
+static struct console_device *pstore_cdev;
+
+static void pstore_register_console(void)
+{
+	struct console_device *cdev;
+	int ret;
+
+	cdev = xzalloc(sizeof(struct console_device));
+	pstore_cdev = cdev;
+
+	cdev->puts = pstore_console_puts;
+	cdev->putc = pstore_console_putc;
+	cdev->devname = "pstore";
+	cdev->devid = DEVICE_ID_SINGLE;
+
+        ret = console_register(cdev);
+        if (ret)
+                pr_err("registering failed with %s\n", strerror(-ret));
+
+	pstore_console_capture_log();
+
+	console_set_active(pstore_cdev, CONSOLE_STDOUT);
+}
+#else
+static void pstore_register_console(void) {}
+#endif
+
+static int pstore_write_compat(struct pstore_record *record)
+{
+	return record->psi->write_buf(record->type, record->reason,
+				      &record->id, record->part,
+				      psinfo->buf, record->compressed,
+				      record->size, record->psi);
 }
 
 /*
@@ -81,6 +151,8 @@ int pstore_register(struct pstore_info *psi)
 
 	pstore_get_records(0);
 
+	pstore_register_console();
+
 	pr_info("Registered %s as persistent store backend\n", psi->name);
 
 	return 0;
@@ -96,13 +168,8 @@ EXPORT_SYMBOL_GPL(pstore_register);
 void pstore_get_records(int quiet)
 {
 	struct pstore_info *psi = psinfo;
-	char			*buf = NULL;
-	ssize_t			size;
-	u64			id;
-	int			count;
-	enum pstore_type_id	type;
+	struct pstore_record	record = { .psi = psi, };
 	int			failed = 0, rc;
-	bool			compressed;
 	int			unzipped_len = -1;
 
 	if (!psi)
@@ -112,22 +179,24 @@ void pstore_get_records(int quiet)
 	if (psi->open && psi->open(psi))
 		goto out;
 
-	while ((size = psi->read(&id, &type, &count, &buf, &compressed,
-				psi)) > 0) {
-		if (compressed && (type == PSTORE_TYPE_DMESG)) {
+	while ((record.size = psi->read(&record)) > 0) {
+		if (record.compressed &&
+		    record.type == PSTORE_TYPE_DMESG) {
 			pr_err("barebox does not have ramoops compression support\n");
 			continue;
 		}
-		rc = pstore_mkfile(type, psi->name, id, count, buf,
-				  compressed, (size_t)size, psi);
+		rc = pstore_mkfile(&record);
 		if (unzipped_len < 0) {
 			/* Free buffer other than big oops */
-			kfree(buf);
-			buf = NULL;
+			kfree(record.buf);
+			record.buf = NULL;
 		} else
 			unzipped_len = -1;
 		if (rc && (rc != -EEXIST || !quiet))
 			failed++;
+
+		memset(&record, 0, sizeof(record));
+		record.psi = psi;
 	}
 	if (psi->close)
 		psi->close(psi);

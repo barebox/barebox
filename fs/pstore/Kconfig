@@ -8,6 +8,12 @@ menuconfig FS_PSTORE
 
 if FS_PSTORE
 
+config FS_PSTORE_CONSOLE
+	bool
+	prompt "Log console messages"
+	help
+	  When the option is enabled, pstore will log console messages.
+
 config FS_PSTORE_RAMOOPS
 	bool
 	depends on RELOCATABLE

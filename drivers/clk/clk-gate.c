@@ -56,7 +56,7 @@ static void clk_gate_disable(struct clk *clk)
 	clk_gate_endisable(clk, 0);
 }
 
-static int clk_gate_is_enabled(struct clk *clk)
+int clk_gate_is_enabled(struct clk *clk)
 {
 	struct clk_gate *g = container_of(clk, struct clk_gate, clk);
 	u32 val;

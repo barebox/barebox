@@ -89,7 +89,7 @@ static void nxp_imx8mq_evk_sram_setup(void)
  */
 ENTRY_FUNCTION(start_nxp_imx8mq_evk, r0, r1, r2)
 {
-	arm_cpu_lowlevel_init();
+	imx8mq_cpu_lowlevel_init();
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();

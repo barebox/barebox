@@ -87,6 +87,9 @@ void clk_disable(struct clk *clk)
 	clk->enable_count--;
 
 	if (!clk->enable_count) {
+		if (clk->flags & CLK_IS_CRITICAL)
+			return;
+
 		if (clk->ops->disable)
 			clk->ops->disable(clk);
 

@@ -25,9 +25,6 @@
 #define RK3066_GRF_SOC_STATUS	0x15c
 #define RK3188_GRF_SOC_STATUS	0xac
 
-#define CLK_SET_RATE_NO_REPARENT 0
-#define CLK_DIVIDER_READ_ONLY 0
-
 enum rk3188_plls {
 	apll, cpll, dpll, gpll,
 };

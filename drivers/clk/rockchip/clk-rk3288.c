@@ -25,9 +25,6 @@
 #define RK3288_GRF_SOC_CON(x)	(0x244 + x * 4)
 #define RK3288_GRF_SOC_STATUS1	0x284
 
-#define CLK_SET_RATE_NO_REPARENT 0
-#define CLK_DIVIDER_READ_ONLY 0
-
 enum rk3288_plls {
 	apll, dpll, cpll, gpll, npll,
 };

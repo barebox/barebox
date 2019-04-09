@@ -145,7 +145,7 @@ ENTRY_FUNCTION(start_zii_imx8mq_dev, r0, r1, r2)
 	unsigned int system_type;
 	void *fdt;
 
-	arm_cpu_lowlevel_init();
+	imx8mq_cpu_lowlevel_init();
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();

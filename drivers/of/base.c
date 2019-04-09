@@ -1979,7 +1979,7 @@ const struct of_device_id of_default_bus_match_table[] = {
 
 int of_probe(void)
 {
-	struct device_node *memory;
+	struct device_node *memory, *firmware;
 
 	if(!root_node)
 		return -ENODEV;
@@ -1995,6 +1995,10 @@ int of_probe(void)
 		memory = of_find_node_by_type(root_node, "memory");
 	if (memory)
 		of_add_memory(memory, false);
+
+	firmware = of_find_node_by_path("/firmware");
+	if (firmware)
+		of_platform_populate(firmware, NULL, NULL);
 
 	of_clk_init(root_node, NULL);
 	of_platform_populate(root_node, of_default_bus_match_table, NULL);

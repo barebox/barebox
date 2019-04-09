@@ -30,8 +30,6 @@
 #define ZYNQMP_TZ_VERSION	((ZYNQMP_TZ_VERSION_MAJOR << 16) | \
 				ZYNQMP_TZ_VERSION_MINOR)
 
-#define PAYLOAD_ARG_CNT         4
-
 /* SMC SIP service Call Function Identifier Prefix */
 #define PM_SIP_SVC		0xC2000000
 
@@ -577,6 +575,7 @@ static int zynqmp_firmware_probe(struct device_d *dev)
 	dev_dbg(dev, "Trustzone version v%d.%d\n",
 			pm_tz_version >> 16, pm_tz_version & 0xFFFF);
 
+	of_platform_populate(dev->device_node, NULL, dev);
 out:
 	if (ret)
 		do_fw_call = do_fw_call_fail;

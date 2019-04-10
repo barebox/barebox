@@ -29,10 +29,6 @@ void of_add_memory_bank(struct device_node *node, bool dump, int r,
 
 	if (dump)
 		pr_info("%s: %s: 0x%llx@0x%llx\n", node->name, str, size, base);
-
-	if (glob_fdt && glob_fdt_size)
-		request_sdram_region("fdt", (resource_size_t)glob_fdt,
-				     glob_fdt_size);
 }
 
 extern char __dtb_start[];

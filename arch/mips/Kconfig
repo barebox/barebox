@@ -32,6 +32,24 @@ config PHYS_ADDR_T_64BIT
 
 menu "Machine selection"
 
+config MIPS_RELOCATION_TABLE_SIZE
+	hex "Relocation table size"
+	range 0x100 0x10000
+	default "0x8000"
+	---help---
+	  A table of relocation data will be appended to the Barebox binary
+	  and parsed in relocate_code() to fix up all offsets in the relocated
+	  Barebox.
+
+	  This option allows the amount of space reserved for the table to be
+	  adjusted in a range from 256 up to 64k. The default is 32k and should
+	  be ok in most cases. Reduce this value to shrink the size of U-Boot
+	  binary.
+
+	  The build will fail and a valid size suggested if this is too small.
+
+	  If unsure, leave at the default value.
+
 config BUILTIN_DTB
 	bool "link a DTB into the barebox image"
 	depends on OFTREE

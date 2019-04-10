@@ -12,6 +12,7 @@ hostprogs-y                      += bareboxcrc32
 hostprogs-y                      += kernel-install
 hostprogs-$(CONFIG_IMD)          += bareboximd
 hostprogs-$(CONFIG_KALLSYMS)     += kallsyms
+hostprogs-$(CONFIG_MIPS)         += mips-relocs
 hostprogs-$(CONFIG_MVEBU_HOSTTOOLS) += kwbimage kwboot
 hostprogs-$(CONFIG_ARCH_NETX)    += gen_netx_image
 hostprogs-$(CONFIG_ARCH_OMAP)    += omap_signGP mk-omap-image

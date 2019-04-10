@@ -18,7 +18,7 @@ extern void *input_data_end;
 unsigned long free_mem_ptr;
 unsigned long free_mem_end_ptr;
 
-void pbl_main_entry(void *fdt, void *fdt_end);
+void pbl_main_entry(void *fdt, void *fdt_end, u32 ram_size);
 
 static unsigned long *ttb;
 
@@ -33,7 +33,8 @@ static void barebox_uncompress(void *compressed_start, unsigned int len)
 	pbl_barebox_uncompress((void*)TEXT_BASE, compressed_start, len);
 }
 
-void __section(.text_entry) pbl_main_entry(void *fdt, void *fdt_end)
+void __section(.text_entry) pbl_main_entry(void *fdt, void *fdt_end,
+					   u32 ram_size)
 {
 	u32 pg_start, pg_end, pg_len, fdt_len;
 	void *fdt_new;

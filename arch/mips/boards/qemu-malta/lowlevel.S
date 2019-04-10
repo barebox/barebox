@@ -10,6 +10,7 @@
 #include <asm/asm.h>
 #include <asm/pbl_macros.h>
 #include <asm/pbl_nmon.h>
+#include <linux/sizes.h>
 
 #include <asm/addrspace.h>
 #include <asm/gt64120.h>
@@ -82,4 +83,4 @@ __start:
 	li	t0, GT_LD(0x1bdfffff)
 	sw	t0, GT_PCI0M1HD_OFS(t1)
 
-ENTRY_FUNCTION_END(BOARD_PBL_START, qemu_malta)
+ENTRY_FUNCTION_END(BOARD_PBL_START, qemu_malta, SZ_256M)

@@ -11,9 +11,10 @@
 #include <asm/asm.h>
 #include <mach/pbl_macros.h>
 #include <asm/pbl_nmon.h>
+#include <linux/sizes.h>
 
 ENTRY_FUNCTION(BOARD_PBL_START)
 
 	ar9331_pbl_generic_start
 
-ENTRY_FUNCTION_END(BOARD_PBL_START, tplink_mr3020)
+ENTRY_FUNCTION_END(BOARD_PBL_START, tplink_mr3020, SZ_32M)

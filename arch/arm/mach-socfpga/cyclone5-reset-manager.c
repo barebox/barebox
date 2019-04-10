@@ -22,23 +22,6 @@
 #include <mach/cyclone5-regs.h>
 #include <mach/cyclone5-reset-manager.h>
 
-/* Disable the watchdog (toggle reset to watchdog) */
-void watchdog_disable(void)
-{
-	void __iomem *rm = (void *)CYCLONE5_RSTMGR_ADDRESS;
-	uint32_t val;
-
-	/* assert reset for watchdog */
-	val = readl(rm + RESET_MGR_PER_MOD_RESET_OFS);
-	val |= 1 << RSTMGR_PERMODRST_L4WD0_LSB;
-	writel(val, rm + RESET_MGR_PER_MOD_RESET_OFS);
-
-	/* deassert watchdog from reset (watchdog in not running state) */
-	val = readl(rm + RESET_MGR_PER_MOD_RESET_OFS);
-	val &= ~(1 << RSTMGR_PERMODRST_L4WD0_LSB);
-	writel(val, rm + RESET_MGR_PER_MOD_RESET_OFS);
-}
-
 /* Write the reset manager register to cause reset */
 static void __noreturn socfpga_restart_soc(struct restart_handler *rst)
 {

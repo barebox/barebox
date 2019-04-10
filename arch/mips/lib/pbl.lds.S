@@ -6,11 +6,14 @@
 
 #include <asm-generic/barebox.lds.h>
 #include <asm-generic/memory_layout.h>
+#include <linux/sizes.h>
+
+#define BASE    (TEXT_BASE - SZ_2M)
 
 OUTPUT_ARCH("mips")
 SECTIONS
 {
-	. = HEAD_TEXT_BASE;
+	. = BASE;
 
 	PRE_IMAGE
 
@@ -38,21 +41,21 @@ SECTIONS
 	. = ALIGN(4);
 	.data : { *(.data*) }
 
-	pbl_code_size =  . - HEAD_TEXT_BASE;
+	pbl_code_size =  . - BASE;
 
 	. = ALIGN(4);
 	__piggydata_start = .;
 	.piggydata : {
 		*(.piggydata)
 	}
-	__piggydata_end = .;
+	__piggydata_end = . - BASE;
 
-	pbl_image_size =  . - HEAD_TEXT_BASE;
+	pbl_image_size =  .;
 
 	. = ALIGN(4);
 	__bss_start = .;
 	.bss : { *(.bss*) }
 	__bss_stop = .;
-	pbl_memory_size =  . - HEAD_TEXT_BASE;
+	pbl_memory_size =  . - BASE;
 	_end = .;
 }

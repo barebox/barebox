@@ -11,6 +11,9 @@
 #include <asm/mipsregs.h>
 #include <asm/cpu-info.h>
 #include <asm/cpu.h>
+#include <memory.h>
+#include <asm-generic/memory_layout.h>
+#include <init.h>
 
 const char *__cpu_name;
 struct cpuinfo_mips cpu_data[1];
@@ -161,3 +164,14 @@ void cpu_probe(void)
 		break;
 	}
 }
+
+unsigned long mips_stack_top;
+
+static int mips_request_stack(void)
+{
+	if (!request_sdram_region("stack", mips_stack_top - STACK_SIZE, STACK_SIZE))
+		pr_err("Error: Cannot request SDRAM region for stack\n");
+
+	return 0;
+}
+coredevice_initcall(mips_request_stack);

@@ -187,7 +187,7 @@ copy_loop_exit:
 	 *
 	 */
 
-#if (STACK_BASE + STACK_SIZE) % 16 != 0
+#if (TEXT_BASE - MALLOC_SIZE) % 16 != 0
 #error stack pointer must be 16-byte-aligned
 #endif
 
@@ -196,7 +196,7 @@ copy_loop_exit:
 	.set	noreorder
 
 	/* set stack pointer; reserve four 32-bit argument slots */
-	la	sp, STACK_BASE + STACK_SIZE - 16
+	la	sp, (TEXT_BASE - MALLOC_SIZE - 16)
 
 	.set	pop
 	.endm

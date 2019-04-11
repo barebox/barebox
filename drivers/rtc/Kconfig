@@ -38,6 +38,12 @@ config RTC_DRV_ABRACON
 
 endif # I2C
 
+config RTC_DRV_IMXDI
+	tristate "Freescale IMX DryIce Real Time Clock"
+	depends on ARCH_IMX
+	help
+	   Support for Freescale IMX DryIce RTC
+
 config RTC_DRV_JZ4740
 	tristate "Ingenic JZ4740 RTC"
 	depends on MACH_MIPS_XBURST

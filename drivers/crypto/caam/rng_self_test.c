@@ -51,6 +51,7 @@
 #include "error.h"
 #include "regs.h"
 #include "jr.h"
+#include "rng_self_test.h"
 
 static const u32 rng_dsc1[] = {
 	0xb0800036, 0x04800010, 0x3c85a15b, 0x50a9d0b1,

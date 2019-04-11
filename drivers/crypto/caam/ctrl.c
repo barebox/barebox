@@ -573,8 +573,7 @@ static int caam_probe(struct device_d *dev)
 	cha_vid_ls = rd_reg32(&ctrl->perfmon.cha_id_ls);
 
 	/* habv4_need_rng_software_self_test is determined by habv4_get_status() */
-	if (IS_ENABLED(CONFIG_CRYPTO_DEV_FSL_CAAM_RNG_SELF_TEST) &&
-	    habv4_need_rng_software_self_test) {
+	if (caam_need_rng_software_selftest()) {
 		u8 caam_era;
 		u8 rngvid;
 		u8 rngrev;

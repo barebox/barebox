@@ -392,8 +392,13 @@ static void habv4_display_event(uint8_t *data, uint32_t len)
  * self-test in ROM code. In this case, an HAB event is generated, and a
  * software self-test should be run. This variable is set to @c true by
  * habv4_get_status() when this occurs. */
-bool habv4_need_rng_software_self_test = false;
-EXPORT_SYMBOL(habv4_need_rng_software_self_test);
+static bool habv4_need_rng_software_self_test;
+
+bool caam_need_rng_software_selftest(void)
+{
+	return IS_ENABLED(CONFIG_CRYPTO_DEV_FSL_CAAM_RNG_SELF_TEST) &&
+		habv4_need_rng_software_self_test;
+}
 
 #define RNG_FAIL_EVENT_SIZE 36
 static uint8_t habv4_known_rng_fail_events[][RNG_FAIL_EVENT_SIZE] = {

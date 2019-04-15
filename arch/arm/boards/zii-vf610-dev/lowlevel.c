@@ -93,23 +93,6 @@ ENTRY_FUNCTION(start_zii_vf610_dev, r0, r1, r2)
 
 	switch (system_type) {
 	default:
-		/*
-		 * GCC can be smart enough to, when DEBUG_LL is
-		 * disabled, reduce this switch statement to a LUT
-		 * fetch. Unfortunately here, this early in the boot
-		 * process before any relocation/address fixups could
-		 * happen, the address of that LUT used by the code is
-		 * incorrect and any access to it would result in
-		 * bogus values.
-		 *
-		 * Adding the following barrier() statement seem to
-		 * force the compiler to always translate this block
-		 * to a sequence of consecutive checks and jumps with
-		 * relative fetches, which should work with or without
-		 * relocation/fixups.
-		 */
-		barrier();
-
 		if (IS_ENABLED(CONFIG_DEBUG_LL)) {
 			relocate_to_current_adr();
 			setup_c();

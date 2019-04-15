@@ -1,5 +1,6 @@
 /*
  * Copyright 2013 GE Intelligent Platforms, Inc.
+ * Copyright 2019 Abaco Systems, Inc.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -11,7 +12,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * GEIP DA923RC/GBX460 board support.
+ * Abaco Systems DA923RC/GBX460 board support.
  */
 
 #include <common.h>
@@ -61,7 +62,7 @@ static struct board_info binfo;
 static int board_eth_init(void)
 {
 	void __iomem *gur = IOMEM(MPC85xx_GUTS_ADDR);
-	struct ge_product_data product;
+	struct owc_product_data product;
 	int st;
 
 	/* Toggle eth0 reset pin */
@@ -74,7 +75,7 @@ static int board_eth_init(void)
 		 in_be32(gur + MPC85xx_DEVDISR_OFFSET) &
 		 ~MPC85xx_DEVDISR_TSEC3);
 
-	st = ge_get_product_data(&product);
+	st = owc_get_product_data(&product);
 	if (((product.v2.mac.count > 0) && (product.v2.mac.count <= MAX_MAC))
 	    && (st == 0))
 		eth_register_ethaddr(0, (const char *)&product.v2.mac.mac[0]);
@@ -98,7 +99,7 @@ static int da923rc_devices_init(void)
 	board_eth_init();
 
 	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
-		defaultenv_append_directory(defaultenv_geip_da923rc);
+		defaultenv_append_directory(defaultenv_owc_da923rc);
 
 	return 0;
 }

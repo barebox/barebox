@@ -1,5 +1,6 @@
 /*
  * Copyright 2013 GE Intelligent Platforms Inc.
+ * Copyright 2019 Abaco Systems Inc.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -21,7 +22,7 @@
 #include <mach/fsl_i2c.h>
 #include "product_data.h"
 
-static int ge_pd_header_check(unsigned short header)
+static int owc_pd_header_check(unsigned short header)
 {
 	if (header != 0xa5a5)
 		return -1;
@@ -29,12 +30,12 @@ static int ge_pd_header_check(unsigned short header)
 		return 0;
 }
 
-static int ge_is_data_valid(struct ge_product_data *v)
+static int owc_is_data_valid(struct owc_product_data *v)
 {
 	int crc, ret = 0;
 	const unsigned char *p = (const unsigned char *)v;
 
-	if (ge_pd_header_check(v->v1.pdh.tag))
+	if (owc_pd_header_check(v->v1.pdh.tag))
 		return -1;
 
 	switch (v->v1.pdh.version) {
@@ -56,7 +57,7 @@ static int ge_is_data_valid(struct ge_product_data *v)
 	return ret;
 }
 
-int ge_get_product_data(struct ge_product_data *productp)
+int owc_get_product_data(struct owc_product_data *productp)
 {
 	struct i2c_adapter *adapter;
 	struct i2c_client client;
@@ -70,14 +71,14 @@ int ge_get_product_data(struct ge_product_data *productp)
 			   sizeof(unsigned short));
 
 	/* If there is no valid header, it may be a 16-bit eeprom. */
-	if (ge_pd_header_check(productp->v1.pdh.tag))
+	if (owc_pd_header_check(productp->v1.pdh.tag))
 		width = I2C_ADDR_16_BIT;
 
 	ret = i2c_read_reg(&client, width, (uint8_t *) productp,
-			   sizeof(struct ge_product_data));
+			   sizeof(struct owc_product_data));
 
-	if (ret == sizeof(struct ge_product_data))
-		ret = ge_is_data_valid(productp);
+	if (ret == sizeof(struct owc_product_data))
+		ret = owc_is_data_valid(productp);
 
 	return ret;
 }

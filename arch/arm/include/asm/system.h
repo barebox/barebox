@@ -1,6 +1,26 @@
 #ifndef __ASM_ARM_SYSTEM_H
 #define __ASM_ARM_SYSTEM_H
 
+#include <linux/const.h>
+
+/* Common SCTLR_ELx flags. */
+#define SCTLR_ELx_DSSBS	(_BITUL(44))
+#define SCTLR_ELx_ENIA	(_BITUL(31))
+#define SCTLR_ELx_ENIB	(_BITUL(30))
+#define SCTLR_ELx_ENDA	(_BITUL(27))
+#define SCTLR_ELx_EE    (_BITUL(25))
+#define SCTLR_ELx_IESB	(_BITUL(21))
+#define SCTLR_ELx_WXN	(_BITUL(19))
+#define SCTLR_ELx_ENDB	(_BITUL(13))
+#define SCTLR_ELx_I	(_BITUL(12))
+#define SCTLR_ELx_SA	(_BITUL(3))
+#define SCTLR_ELx_C	(_BITUL(2))
+#define SCTLR_ELx_A	(_BITUL(1))
+#define SCTLR_ELx_M	(_BITUL(0))
+
+#define SCTLR_ELx_FLAGS	(SCTLR_ELx_M  | SCTLR_ELx_A | SCTLR_ELx_C | \
+			 SCTLR_ELx_SA | SCTLR_ELx_I | SCTLR_ELx_IESB)
+
 #if __LINUX_ARM_ARCH__ >= 7
 #define isb() __asm__ __volatile__ ("isb" : : : "memory")
 #ifdef CONFIG_CPU_64v8

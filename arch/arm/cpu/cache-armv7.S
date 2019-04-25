@@ -120,6 +120,7 @@ THUMB(		ite	eq			)
 skip:
 		add	r12, r12, #2		@ increment cache number
 		cmp	r3, r12
+		dsb				@ work-around Cortex-A7 erratum 814220
 		bgt	loop1
 finished:
 		ldmfd	sp!, {r4-r11}

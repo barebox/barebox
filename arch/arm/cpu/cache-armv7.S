@@ -83,7 +83,10 @@ hierarchical:
 		ands	r3, r0, #0x7000000	@ extract loc from clidr
 		mov	r3, r3, lsr #23		@ left align loc bit field
 		beq	finished		@ if loc is 0, then no need to clean
-		mov	r12, #0			@ start clean at cache level 0
+		cmp	r8, #0
+THUMB(		ite	eq			)
+		moveq	r12, #0
+		subne	r12, r3, #2		@ start invalidate at outmost cache level
 loop1:
 		add	r2, r12, r12, lsr #1	@ work out 3x current cache level
 		mov	r1, r0, lsr r2		@ extract cache type bits from clidr
@@ -118,8 +121,15 @@ THUMB(		ite	eq			)
 		subs	r7, r7, #1		@ decrement the index
 		bge	loop2
 skip:
+		cmp	r8, #0
+		bne	inval_check
 		add	r12, r12, #2		@ increment cache number
 		cmp	r3, r12
+		b	loop_end_check
+inval_check:
+		cmp	r12, #0
+		sub	r12, r12, #2		@ decrement cache number
+loop_end_check:
 		dsb				@ work-around Cortex-A7 erratum 814220
 		bgt	loop1
 finished:

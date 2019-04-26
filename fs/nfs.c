@@ -436,9 +436,20 @@ static struct packet *rpc_req(struct nfs_priv *npriv, int rpc_prog,
 
 	npriv->con->udp->uh_dport = hton16(dport);
 
+	nfs_timer_start = get_time_ns();
+
 again:
 	ret = net_udp_send(npriv->con,
 			sizeof(pkt) + datalen * sizeof(uint32_t));
+	if (ret) {
+		if (is_timeout(nfs_timer_start, NFS_TIMEOUT)) {
+			tries++;
+			if (tries == NFS_MAX_RESEND)
+				return ERR_PTR(-ETIMEDOUT);
+		}
+
+		goto again;
+	}
 
 	nfs_timer_start = get_time_ns();
 

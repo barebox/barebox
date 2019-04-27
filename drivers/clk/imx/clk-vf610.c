@@ -459,26 +459,30 @@ enum {
 	DDRMC_CR117_AXI0_FITYPEREG_SYNC = 0b01 << 16,
 };
 
+static bool vf610_cpu_clk_changeable(void)
+{
+	/*
+	 * When switching A5 CPU to 500Mhz we expect DDRC to be
+	 * clocked by PLL2_PFD2 and the system to be configured in
+	 * asynchronous mode.
+	 */
+	if (clk_get_parent(clk[VF610_CLK_DDR_SEL]) != clk[VF610_CLK_PLL2_PFD2]) {
+		pr_warn("DDRC is clocked by PLL1, can't switch CPU clock\n");
+		return false;
+	}
+
+	return true;
+}
+
 static int vf610_switch_cpu_clock_to_500mhz(void)
 {
 	int ret;
 
 	/*
-	 * When switching A5 CPU to 500Mhz we expect DDRC to be
-	 * clocked by PLL2_PFD2 and the system to be configured in
-	 * asynchronous mode.
-	 *
-	 * We also can't just use default PFD1 output of PLL1 due to
+	 * We can't just use default PFD1 output of PLL1 due to
 	 * Errata e6235, so we have to re-clock the PLL itself and use
 	 * its output to clock the CPU directly.
-	 */
-
-	if (clk_get_parent(clk[VF610_CLK_DDR_SEL]) != clk[VF610_CLK_PLL2_PFD2]) {
-		pr_warn("DDRC is clocked by PLL1, can't switch CPU clock");
-		return -EINVAL;
-	}
-
-	/*
+	 *
 	 * Code below alters the frequency of PLL1, and doing so would
 	 * require us to wait for PLL1 lock before proceeding to
 	 * select it as a clock source again.
@@ -532,11 +536,6 @@ static int vf610_switch_cpu_clock_to_400mhz(void)
 	int ret;
 	uint32_t cr117;
 	void * __iomem ddrmc = IOMEM(VF610_DDR_BASE_ADDR);
-
-	if (clk_get_parent(clk[VF610_CLK_DDR_SEL]) != clk[VF610_CLK_PLL2_PFD2]) {
-		pr_warn("DDRC is clocked by PLL1, can't switch CPU clock");
-		return -EINVAL;
-	}
 
 	ret = clk_set_parent(clk[VF610_CLK_PLL2_PFD_SEL], clk[VF610_CLK_PLL2_PFD2]);
 	if (ret < 0) {
@@ -595,10 +594,14 @@ static int vf610_switch_cpu_clock(void)
 		return 0;
 
 	case VF610_SPEED_500:
+		if (!vf610_cpu_clk_changeable())
+			return 0;
 		ret = vf610_switch_cpu_clock_to_500mhz();
 		break;
 
 	case VF610_SPEED_400:
+		if (!vf610_cpu_clk_changeable())
+			return 0;
 		ret = vf610_switch_cpu_clock_to_400mhz();
 		break;
 	}

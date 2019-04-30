@@ -30,7 +30,6 @@
 #define crc32(seed, data, length)  crc32_no_comp(seed, (unsigned char * const)data, length)
 
 /* configurable */
-#define CONFIG_MTD_UBI_WL_THRESHOLD	4096
 #define UBI_IO_DEBUG			0
 
 /* upd.c */

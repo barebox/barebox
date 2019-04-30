@@ -117,7 +117,7 @@ static void imx6_setup_ipu_qos(void)
 	uint32_t val;
 
 	if (!cpu_mx6_is_mx6q() && !cpu_mx6_is_mx6d() &&
-	    !cpu_mx6_is_mx6dl() && cpu_mx6_is_mx6s())
+	    !cpu_mx6_is_mx6dl() && !cpu_mx6_is_mx6s())
 		return;
 
 	val = readl(iomux + IOMUXC_GPR4);

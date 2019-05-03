@@ -82,33 +82,6 @@ enum read_mode {
 	SPI_NOR_QUAD,
 };
 
-/**
- * struct spi_nor_xfer_cfg - Structure for defining a Serial Flash transfer
- * @wren:		command for "Write Enable", or 0x00 for not required
- * @cmd:		command for operation
- * @cmd_pins:		number of pins to send @cmd (1, 2, 4)
- * @addr:		address for operation
- * @addr_pins:		number of pins to send @addr (1, 2, 4)
- * @addr_width:		number of address bytes
- *			(3,4, or 0 for address not required)
- * @mode:		mode data
- * @mode_pins:		number of pins to send @mode (1, 2, 4)
- * @mode_cycles:	number of mode cycles (0 for mode not required)
- * @dummy_cycles:	number of dummy cycles (0 for dummy not required)
- */
-struct spi_nor_xfer_cfg {
-	u8		wren;
-	u8		cmd;
-	u8		cmd_pins;
-	u32		addr;
-	u8		addr_pins;
-	u8		addr_width;
-	u8		mode;
-	u8		mode_pins;
-	u8		mode_cycles;
-	u8		dummy_cycles;
-};
-
 #define SPI_NOR_MAX_CMD_SIZE	8
 enum spi_nor_ops {
 	SPI_NOR_OPS_READ = 0,
@@ -165,15 +138,10 @@ struct spi_nor {
 	enum read_mode		flash_read;
 	bool			sst_write_second;
 	u32			flags;
-	struct spi_nor_xfer_cfg	cfg;
 	u8			cmd_buf[SPI_NOR_MAX_CMD_SIZE];
 
 	int (*prepare)(struct spi_nor *nor, enum spi_nor_ops ops);
 	void (*unprepare)(struct spi_nor *nor, enum spi_nor_ops ops);
-	int (*read_xfer)(struct spi_nor *nor, struct spi_nor_xfer_cfg *cfg,
-			 u8 *buf, size_t len);
-	int (*write_xfer)(struct spi_nor *nor, struct spi_nor_xfer_cfg *cfg,
-			  u8 *buf, size_t len);
 	int (*read_reg)(struct spi_nor *nor, u8 opcode, u8 *buf, int len);
 	int (*write_reg)(struct spi_nor *nor, u8 opcode, u8 *buf, int len);
 

@@ -214,7 +214,8 @@ enum spi_nor_option_flags {
  * @read:		[DRIVER-SPECIFIC] read data from the SPI NOR
  * @write:		[DRIVER-SPECIFIC] write data to the SPI NOR
  * @erase:		[DRIVER-SPECIFIC] erase a sector of the SPI NOR
- *			at the offset @offs
+ *			at the offset @offs; if not provided by the driver,
+ *			spi-nor will send the erase opcode via write_reg()
  * @priv:		the private data
  */
 struct spi_nor {

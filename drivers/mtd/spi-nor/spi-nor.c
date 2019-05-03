@@ -25,6 +25,7 @@
 #include <spi/flash.h>
 
 #define SPI_NOR_MAX_ID_LEN	6
+#define SPI_NOR_MAX_ADDR_WIDTH	4
 
 /*
  * For everything but full-chip erase; probably could be much smaller, but kept
@@ -435,6 +436,29 @@ static void spi_nor_unlock_and_unprep(struct spi_nor *nor, enum spi_nor_ops ops)
 }
 
 /*
+ * Initiate the erasure of a single sector
+ */
+static int spi_nor_erase_sector(struct spi_nor *nor, u32 addr)
+{
+	u8 buf[SPI_NOR_MAX_ADDR_WIDTH];
+	int i;
+
+	if (nor->erase)
+		return nor->erase(nor, addr);
+
+	/*
+	 * Default implementation, if driver doesn't have a specialized HW
+	 * control
+	 */
+	for (i = nor->addr_width - 1; i >= 0; i--) {
+		buf[i] = addr & 0xff;
+		addr >>= 8;
+	}
+
+	return nor->write_reg(nor, nor->erase_opcode, buf, nor->addr_width);
+}
+
+/*
  * Erase an address range on the nor chip.  The address range may extend
  * one or more erase sectors.  Return an error is there is a problem erasing.
  */
@@ -498,10 +522,9 @@ static int spi_nor_erase(struct mtd_info *mtd, struct erase_info *instr)
 		while (len) {
 			write_enable(nor);
 
-			if (nor->erase(nor, addr)) {
-				ret = -EIO;
+			ret = spi_nor_erase_sector(nor, addr);
+			if (ret)
 				goto erase_err;
-			}
 
 			addr += mtd->erasesize;
 			len -= mtd->erasesize;
@@ -988,7 +1011,7 @@ static int spansion_quad_enable(struct spi_nor *nor)
 static int spi_nor_check(struct spi_nor *nor)
 {
 	if (!nor->dev || !nor->read || !nor->write ||
-		!nor->read_reg || !nor->write_reg || !nor->erase) {
+		!nor->read_reg || !nor->write_reg) {
 		pr_err("spi-nor: please fill all the necessary fields!\n");
 		return -EINVAL;
 	}
@@ -1392,6 +1415,12 @@ int spi_nor_scan(struct spi_nor *nor, const char *name,
 			set_4byte(nor, info, 1);
 	} else {
 		nor->addr_width = 3;
+	}
+
+	if (nor->addr_width > SPI_NOR_MAX_ADDR_WIDTH) {
+		dev_err(dev, "address width is too large: %u\n",
+			nor->addr_width);
+		return -EINVAL;
 	}
 
 	dev_info(dev, "%s (%lld Kbytes)\n", id->name,

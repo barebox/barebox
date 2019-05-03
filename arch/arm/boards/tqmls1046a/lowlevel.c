@@ -116,7 +116,7 @@ found:
 			  DDR_CDR2_VREF_TRAIN_EN | DDR_CDR2_VREF_RANGE_2;
 
 	/* optimize cpo for erratum A-009942 */
-	popts->cpo_sample = 0x61;
+	popts->cpo_sample = 0x48;
 }
 
 static struct dimm_params dimm_params[] = {

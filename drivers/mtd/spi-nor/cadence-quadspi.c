@@ -679,6 +679,55 @@ failwr:
 	return ret;
 }
 
+static void cqspi_controller_enable(struct cqspi_st *cqspi)
+{
+	void __iomem *reg_base = cqspi->iobase;
+	unsigned int reg;
+
+	reg = readl(reg_base + CQSPI_REG_CONFIG);
+	reg |= CQSPI_REG_CONFIG_ENABLE_MASK;
+	writel(reg, reg_base + CQSPI_REG_CONFIG);
+}
+
+static void cqspi_controller_disable(struct cqspi_st *cqspi)
+{
+	void __iomem *reg_base = cqspi->iobase;
+	unsigned int reg;
+
+	reg = readl(reg_base + CQSPI_REG_CONFIG);
+	reg &= ~CQSPI_REG_CONFIG_ENABLE_MASK;
+	writel(reg, reg_base + CQSPI_REG_CONFIG);
+}
+
+static void cqspi_chipselect(struct cqspi_st *cqspi,
+			     unsigned int chip_select,
+			     unsigned int decoder_enable)
+{
+	void __iomem *reg_base = cqspi->iobase;
+	unsigned int reg;
+
+	reg = readl(reg_base + CQSPI_REG_CONFIG);
+	if (decoder_enable) {
+		reg |= CQSPI_REG_CONFIG_DECODE_MASK;
+	} else {
+		reg &= ~CQSPI_REG_CONFIG_DECODE_MASK;
+
+		/* Convert CS if without decoder.
+		 * CS0 to 4b'1110
+		 * CS1 to 4b'1101
+		 * CS2 to 4b'1011
+		 * CS3 to 4b'0111
+		 */
+		chip_select = 0xF & ~(1 << chip_select);
+	}
+
+	reg &= ~(CQSPI_REG_CONFIG_CHIPSELECT_MASK
+		 << CQSPI_REG_CONFIG_CHIPSELECT_LSB);
+	reg |= (chip_select & CQSPI_REG_CONFIG_CHIPSELECT_MASK)
+		<< CQSPI_REG_CONFIG_CHIPSELECT_LSB;
+	writel(reg, reg_base + CQSPI_REG_CONFIG);
+}
+
 static unsigned int calculate_ticks_for_ns(unsigned int ref_clk_hz,
 					   unsigned int ns_val)
 {
@@ -790,55 +839,6 @@ static void cqspi_readdata_capture(struct cqspi_st *cqspi,
 	writel(reg, reg_base + CQSPI_REG_READCAPTURE);
 }
 
-static void cqspi_chipselect(struct cqspi_st *cqspi,
-			     unsigned int chip_select,
-			     unsigned int decoder_enable)
-{
-	void __iomem *reg_base = cqspi->iobase;
-	unsigned int reg;
-
-	reg = readl(reg_base + CQSPI_REG_CONFIG);
-	if (decoder_enable) {
-		reg |= CQSPI_REG_CONFIG_DECODE_MASK;
-	} else {
-		reg &= ~CQSPI_REG_CONFIG_DECODE_MASK;
-
-		/* Convert CS if without decoder.
-		 * CS0 to 4b'1110
-		 * CS1 to 4b'1101
-		 * CS2 to 4b'1011
-		 * CS3 to 4b'0111
-		 */
-		chip_select = 0xF & ~(1 << chip_select);
-	}
-
-	reg &= ~(CQSPI_REG_CONFIG_CHIPSELECT_MASK
-		 << CQSPI_REG_CONFIG_CHIPSELECT_LSB);
-	reg |= (chip_select & CQSPI_REG_CONFIG_CHIPSELECT_MASK)
-	    << CQSPI_REG_CONFIG_CHIPSELECT_LSB;
-	writel(reg, reg_base + CQSPI_REG_CONFIG);
-}
-
-static void cqspi_controller_enable(struct cqspi_st *cqspi)
-{
-	void __iomem *reg_base = cqspi->iobase;
-	unsigned int reg;
-
-	reg = readl(reg_base + CQSPI_REG_CONFIG);
-	reg |= CQSPI_REG_CONFIG_ENABLE_MASK;
-	writel(reg, reg_base + CQSPI_REG_CONFIG);
-}
-
-static void cqspi_controller_disable(struct cqspi_st *cqspi)
-{
-	void __iomem *reg_base = cqspi->iobase;
-	unsigned int reg;
-
-	reg = readl(reg_base + CQSPI_REG_CONFIG);
-	reg &= ~CQSPI_REG_CONFIG_ENABLE_MASK;
-	writel(reg, reg_base + CQSPI_REG_CONFIG);
-}
-
 static void cqspi_switch_cs(struct cqspi_st *cqspi, unsigned int cs)
 {
 	unsigned int reg;
@@ -904,15 +904,14 @@ static int cqspi_set_protocol(struct spi_nor *nor, const int read)
 	f_pdata->data_width = CQSPI_INST_TYPE_SINGLE;
 
 	if (read) {
-		switch (nor->flash_read) {
-		case SPI_NOR_NORMAL:
-		case SPI_NOR_FAST:
+		switch (nor->read_proto) {
+		case SNOR_PROTO_1_1_1:
 			f_pdata->data_width = CQSPI_INST_TYPE_SINGLE;
 			break;
-		case SPI_NOR_DUAL:
+		case SNOR_PROTO_1_1_2:
 			f_pdata->data_width = CQSPI_INST_TYPE_DUAL;
 			break;
-		case SPI_NOR_QUAD:
+		case SNOR_PROTO_1_1_4:
 			f_pdata->data_width = CQSPI_INST_TYPE_QUAD;
 			break;
 		default:
@@ -967,7 +966,7 @@ static int cqspi_erase(struct spi_nor *nor, loff_t offs)
 {
 	int ret;
 
-	ret = cqspi_set_protocol(nor, 1);
+	ret = cqspi_set_protocol(nor, 0);
 	if (ret)
 		return ret;
 
@@ -1083,6 +1082,13 @@ static int cqspi_setup_flash(struct device_d *dev,
 			     struct cqspi_flash_pdata *f_pdata,
 			     struct device_node *np)
 {
+	const struct spi_nor_hwcaps hwcaps = {
+		.mask = SNOR_HWCAPS_READ |
+			SNOR_HWCAPS_READ_FAST |
+			SNOR_HWCAPS_READ_1_1_2 |
+			SNOR_HWCAPS_READ_1_1_4 |
+			SNOR_HWCAPS_PP,
+	};
 	struct cqspi_st *cqspi = dev->priv;
 	struct mtd_info *mtd;
 	struct spi_nor *nor;
@@ -1124,7 +1130,7 @@ static int cqspi_setup_flash(struct device_d *dev,
 	nor->write = cqspi_write;
 	nor->erase = cqspi_erase;
 
-	ret = spi_nor_scan(nor, NULL, SPI_NOR_QUAD, false);
+	ret = spi_nor_scan(nor, NULL, &hwcaps, false);
 	if (ret)
 		goto probe_failed;
 

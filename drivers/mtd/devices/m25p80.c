@@ -231,7 +231,11 @@ static int m25p_probe(struct device_d *dev)
 	struct flash_platform_data	*data;
 	struct m25p			*flash;
 	struct spi_nor			*nor;
-	enum read_mode mode =		SPI_NOR_NORMAL;
+	struct spi_nor_hwcaps hwcaps = {
+		.mask = SNOR_HWCAPS_READ |
+			SNOR_HWCAPS_READ_FAST |
+			SNOR_HWCAPS_PP,
+	};
 	const char			*flash_name = NULL;
 	int				device_id;
 	bool				use_large_blocks;
@@ -258,6 +262,11 @@ static int m25p_probe(struct device_d *dev)
 	flash->mtd.parent = &spi->dev;
 	flash->spi = spi;
 
+	if (spi->mode & SPI_RX_QUAD)
+		hwcaps.mask |= SNOR_HWCAPS_READ_1_1_4;
+	else if (spi->mode & SPI_RX_DUAL)
+		hwcaps.mask |= SNOR_HWCAPS_READ_1_1_2;
+
 	dev->priv = (void *)flash;
 
 	if (data && data->name)
@@ -275,7 +284,7 @@ static int m25p_probe(struct device_d *dev)
 	use_large_blocks = of_property_read_bool(dev->device_node,
 			"use-large-blocks");
 
-	ret = spi_nor_scan(nor, flash_name, mode, use_large_blocks);
+	ret = spi_nor_scan(nor, flash_name, &hwcaps, use_large_blocks);
 	if (ret)
 		return ret;
 

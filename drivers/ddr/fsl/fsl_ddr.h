@@ -227,8 +227,6 @@ unsigned int mclk_to_picos(struct fsl_ddr_controller *c, unsigned int mclk);
 unsigned int get_memory_clk_period_ps(struct fsl_ddr_controller *c);
 unsigned int picos_to_mclk(struct fsl_ddr_controller *c, unsigned int picos);
 
-void fsl_ddr_set_memctl_regs(struct fsl_ddr_controller *c, int step);
-
 void erratum_a009942_check_cpo(void);
 
 #endif

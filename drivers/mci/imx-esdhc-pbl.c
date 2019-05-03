@@ -445,7 +445,7 @@ int ls1046a_esdhc_start_image(unsigned long r0, unsigned long r1, unsigned long 
 	 */
 	val = esdhc_read32(&esdhc, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET);
 	val &= ~0x0000fff0;
-	val |= (2 << 8) | (6 << 4);
+	val |= (8 << 8) | (3 << 4);
 	esdhc_write32(&esdhc, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET, val);
 
 	esdhc_write32(&esdhc, ESDHC_DMA_SYSCTL, ESDHC_SYSCTL_DMA_SNOOP);

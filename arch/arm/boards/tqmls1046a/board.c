@@ -32,6 +32,9 @@ static int tqmls1046a_postcore_init(void)
 	/* Configure iomux for i2c4 */
 	out_be32(&scfg->rcwpmuxcr0, 0x3300);
 
+	/* divide CGA1/CGA2 PLL by 24 to get QSPI interface clock */
+	out_be32(&scfg->qspi_cfg, 0x30100000);
+
 	return 0;
 }
 

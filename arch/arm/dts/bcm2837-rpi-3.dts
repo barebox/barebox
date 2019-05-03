@@ -11,10 +11,5 @@
 };
 
 &sdhci {
-	pinctrl-0 = <&emmc_gpio48>;
-	/delete-node/ wifi@1;
-};
-
-&sdhost {
 	status = "disabled";
 };

@@ -75,6 +75,8 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_elf] = { "ELF", "elf" },
 	[filetype_imx_image_v1] = { "i.MX image (v1)", "imx-image-v1" },
 	[filetype_imx_image_v2] = { "i.MX image (v2)", "imx-image-v2" },
+	[filetype_layerscape_image] = { "Layerscape image", "layerscape-PBL" },
+	[filetype_layerscape_qspi_image] = { "Layerscape QSPI image", "layerscape-qspi-PBL" },
 };
 
 const char *file_type_to_string(enum filetype f)
@@ -328,6 +330,11 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 
 	if (is_sparse_image(_buf))
 		return filetype_android_sparse;
+
+	if (buf[0] == 0x55aa55aa && buf[1] == 0x0001ee01)
+		return filetype_layerscape_image;
+	if (buf[0] == 0x01ee0100 && buf[1] == 0xaa55aa55)
+		return filetype_layerscape_qspi_image;
 
 	if (bufsize < 64)
 		return filetype_unknown;

@@ -19,6 +19,7 @@
  */
 
 #include <common.h>
+#include <linux/spi/spi-mem.h>
 #include <spi/spi.h>
 #include <xfuncs.h>
 #include <malloc.h>
@@ -58,6 +59,7 @@ struct spi_device *spi_new_device(struct spi_controller *ctrl,
 				  struct spi_board_info *chip)
 {
 	struct spi_device	*proxy;
+	struct spi_mem		*mem;
 	int			status;
 
 	/* Chipselects are numbered 0..max; validate. */
@@ -83,6 +85,15 @@ struct spi_device *spi_new_device(struct spi_controller *ctrl,
 	proxy->dev.device_node = chip->device_node;
 	proxy->dev.parent = ctrl->dev;
 	proxy->master = proxy->controller = ctrl;
+
+	mem = xzalloc(sizeof *mem);
+	mem->spi = proxy;
+
+	if (ctrl->mem_ops && ctrl->mem_ops->get_name)
+		mem->name = ctrl->mem_ops->get_name(mem);
+	else
+		mem->name = dev_name(&proxy->dev);
+	proxy->mem = mem;
 
 	/* drivers may modify this initial i/o setup */
 	status = ctrl->setup(proxy);
@@ -194,6 +205,26 @@ static void scan_boardinfo(struct spi_controller *ctrl)
 
 static LIST_HEAD(spi_controller_list);
 
+static int spi_controller_check_ops(struct spi_controller *ctlr)
+{
+	/*
+	 * The controller may implement only the high-level SPI-memory like
+	 * operations if it does not support regular SPI transfers, and this is
+	 * valid use case.
+	 * If ->mem_ops is NULL, we request that at least one of the
+	 * ->transfer_xxx() method be implemented.
+	 */
+	if (ctlr->mem_ops) {
+		if (!ctlr->mem_ops->exec_op)
+			return -EINVAL;
+	} else if (!ctlr->transfer) {
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
+
 /**
  * spi_register_ctrl - register SPI ctrl controller
  * @ctrl: initialized ctrl, originally from spi_alloc_ctrl()
@@ -220,6 +251,14 @@ int spi_register_controller(struct spi_controller *ctrl)
 	int			status = -ENODEV;
 
 	debug("%s: %s:%d\n", __func__, ctrl->dev->name, ctrl->dev->id);
+
+	/*
+	 * Make sure all necessary hooks are implemented before registering
+	 * the SPI controller.
+	 */
+	status = spi_controller_check_ops(ctrl);
+	if (status)
+		return status;
 
 	/* even if it's just one always-selected device, there must
 	 * be at least one chipselect

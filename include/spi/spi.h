@@ -2,7 +2,11 @@
 #define __INCLUDE_SPI_H
 
 #include <driver.h>
+#include <linux/err.h>
+#include <linux/kernel.h>
 #include <linux/string.h>
+
+struct spi_controller_mem_ops;
 
 struct spi_board_info {
 	char	*name;
@@ -62,6 +66,7 @@ struct spi_device {
 	struct device_d		dev;
 	struct spi_controller	*controller;
 	struct spi_controller	*master;	/* compatibility layer */
+	struct spi_mem		*mem;
 	u32			max_speed_hz;
 	u8			chip_select;
 	u8			mode;
@@ -109,6 +114,13 @@ struct spi_message;
  * @dev: device interface to this driver
  * @bus_num: board-specific (and often SOC-specific) identifier for a
  *	given SPI controller.
+ * @mem_ops: optimized/dedicated operations for interactions with SPI
+ *      memory. This field is optional and should only be implemented
+ *      if the controller has native support for memory like operations.
+ * @max_transfer_size: function that returns the max transfer size for
+ *	a &spi_device; may be %NULL, so the default %SIZE_MAX will be used.
+ * @max_message_size: function that returns the max message size for
+ *	a &spi_device; may be %NULL, so the default %SIZE_MAX will be used.
  * @num_chipselect: chipselects are used to distinguish individual
  *	SPI slaves, and are numbered from zero to num_chipselects.
  *	each slave has a chipselect signal, but it's common that not
@@ -143,6 +155,15 @@ struct spi_controller {
 	 * would normally use bus_num=2 for that controller.
 	 */
 	s16			bus_num;
+
+	/* Optimized handlers for SPI memory-like operations */
+	const struct spi_controller_mem_ops *mem_ops;
+	/*
+	 * on some hardware transfer size may be constrained
+	 * the limit may depend on device transfer settings
+	 */
+	size_t (*max_transfer_size)(struct spi_device *spi);
+	size_t (*max_message_size)(struct spi_device *spi);
 
 	/* chipselects will be integral to many controllers; some others
 	 * might use board-specific GPIOs.
@@ -179,6 +200,40 @@ struct spi_controller {
 
 	struct list_head list;
 };
+
+static inline void *spi_controller_get_devdata(struct spi_controller *ctlr)
+{
+	if (ctlr->dev->platform_data)
+		return ctlr->dev->platform_data;
+	else
+		return ERR_PTR(-EINVAL);
+}
+
+static inline void spi_controller_set_devdata(struct spi_controller *ctlr,
+					      void *data)
+{
+	ctlr->dev->platform_data = data;
+}
+
+static inline size_t spi_max_message_size(struct spi_device *spi)
+{
+	struct spi_controller *ctrl = spi->controller;
+	if (!ctrl->max_transfer_size)
+		return SIZE_MAX;
+	return ctrl->max_transfer_size(spi);
+}
+
+static inline size_t spi_max_transfer_size(struct spi_device *spi)
+{
+	struct spi_controller *ctrl = spi->controller;
+	size_t tr_max = SIZE_MAX;
+	size_t msg_max = spi_max_message_size(spi);
+
+	if (ctrl->max_transfer_size)
+		tr_max = ctrl->max_transfer_size(spi);
+
+	return min(tr_max, msg_max);
+}
 
 #define spi_master  			spi_controller
 #define spi_register_master(_ctrl)	spi_register_controller(_ctrl)

@@ -86,6 +86,7 @@ config CPU_V8
 	select CPU_64v8
 	select CPU_SUPPORTS_64BIT_KERNEL
 	select ARM_EXCEPTIONS
+	select GENERIC_FIND_NEXT_BIT
 
 config CPU_XSC3
         bool

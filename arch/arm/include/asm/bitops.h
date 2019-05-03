@@ -82,6 +82,12 @@ static inline int test_bit(int nr, const void * addr)
 #define test_and_clear_bit(x, y)	__test_and_clear_bit(x, y)
 #define test_and_change_bit(x, y)	__test_and_change_bit(x, y)
 
+#ifdef CONFIG_CPU_V8
+
+#include <asm-generic/bitops/find.h>
+
+#else /* CONFIG_CPU_V8 */
+
 #ifndef __ARMEB__
 /*
  * These are the little endian definitions.
@@ -114,6 +120,8 @@ extern int _find_next_bit_be(const unsigned long *p, int size, int offset);
 #define WORD_BITOFF_TO_LE(x)		((x) ^ 0x18)
 
 #endif		/* __ARMEB__ */
+
+#endif /* CONFIG_CPU_V8 */
 
 #if defined (CONFIG_CPU_32) && defined(__LINUX_ARM_ARCH__) && (__LINUX_ARM_ARCH__ >= 5)
 static inline int constant_fls(int x)

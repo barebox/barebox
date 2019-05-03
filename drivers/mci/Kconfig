@@ -66,6 +66,10 @@ config MCI_BCM283X
 	bool "MCI support for BCM283X"
 	depends on ARCH_BCM283X
 
+config MCI_BCM283X_SDHOST
+	bool "BCM283X sdhost"
+	depends on ARCH_BCM283X
+
 config MCI_DOVE
 	bool "Marvell Dove SDHCI"
 	depends on ARCH_DOVE

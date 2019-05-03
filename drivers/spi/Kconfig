@@ -25,6 +25,17 @@ config DRIVER_SPI_ATMEL
 	bool "Atmel (AT91) SPI Master driver"
 	depends on ARCH_AT91
 
+config DRIVER_SPI_FSL_QUADSPI
+	bool "Freescale QSPI controller"
+	depends on ARCH_IMX25 || ARCH_IMX31 || ARCH_IMX35 || ARCH_IMX50 || ARCH_IMX53 || ARCH_LAYERSCAPE
+	depends on SPI_MEM
+	help
+	  This enables support for the Quad SPI controller in master mode.
+          Up to four flash chips can be connected on two buses with two
+          chipselects each.
+          This controller does not support generic SPI messages. It only
+          supports the high-level SPI memory interface.
+
 config DRIVER_SPI_GPIO
 	bool "GPIO SPI Master driver"
 	depends on GPIOLIB

@@ -62,21 +62,21 @@ static int do_spi(int argc, char *argv[])
 		return COMMAND_ERROR_USAGE;
 
 
-	spi.master = spi_get_master(bus);
-	if (!spi.master) {
+	spi.controller = spi_get_controller(bus);
+	if (!spi.controller) {
 		printf("spi bus %d not found\n", bus);
 		return -ENODEV;
 	}
 
-	if (spi.chip_select >= spi.master->num_chipselect) {
-		printf("spi chip select (%d) >= master num chipselect (%d)\n",
-			spi.chip_select, spi.master->num_chipselect);
+	if (spi.chip_select >= spi.controller->num_chipselect) {
+		printf("spi chip select (%d) >= controller num chipselect (%d)\n",
+			spi.chip_select, spi.controller->num_chipselect);
 		return -EINVAL;
 	}
 
-	ret = spi.master->setup(&spi);
+	ret = spi.controller->setup(&spi);
 	if (ret) {
-		printf("can not setup the master (%d)\n", ret);
+		printf("can not setup the controller (%d)\n", ret);
 		return ret;
 	}
 
@@ -93,7 +93,7 @@ static int do_spi(int argc, char *argv[])
 	byte_per_word = max(spi.bits_per_word / 8, 1);
 	if (verbose) {
 		printf("device config\n");
-		printf("    bus_num       = %d\n", spi.master->bus_num);
+		printf("    bus_num       = %d\n", spi.controller->bus_num);
 		printf("    max_speed_hz  = %d\n", spi.max_speed_hz);
 		printf("    chip_select   = %d\n", spi.chip_select);
 		printf("    mode          = 0x%x\n", spi.mode);

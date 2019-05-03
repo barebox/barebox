@@ -20,13 +20,14 @@ struct spi_board_info {
 };
 
 /**
- * struct spi_device - Master side proxy for an SPI slave device
+ * struct spi_device - Controller side proxy for an SPI slave device
  * @dev: Driver model representation of the device.
- * @master: SPI controller used with the device.
+ * @controller: SPI controller used with the device.
+ * @master: Copy of controller, for backwards compatibility
  * @max_speed_hz: Maximum clock rate to be used with this chip
  *	(on this board); may be changed by the device's driver.
  *	The spi_transfer.speed_hz can override this for each transfer.
- * @chip_select: Chipselect, distinguishing chips handled by @master.
+ * @chip_select: Chipselect, distinguishing chips handled by @controller.
  * @mode: The spi mode defines how data is clocked out and in.
  *	This may be changed by the device's driver.
  *	The "active low" default for chipselect mode can be overridden
@@ -59,7 +60,8 @@ struct spi_board_info {
  */
 struct spi_device {
 	struct device_d		dev;
-	struct spi_master	*master;
+	struct spi_controller	*controller;
+	struct spi_controller	*master;	/* compatibility layer */
 	u32			max_speed_hz;
 	u8			chip_select;
 	u8			mode;
@@ -93,7 +95,7 @@ struct spi_device {
 struct spi_message;
 
 /**
- * struct spi_master - interface to SPI master controller
+ * struct spi_controller - interface to SPI master or slave controller
  * @dev: device interface to this driver
  * @bus_num: board-specific (and often SOC-specific) identifier for a
  *	given SPI controller.
@@ -108,8 +110,9 @@ struct spi_message;
  *	the device whose settings are being modified.
  * @transfer: adds a message to the controller's transfer queue.
  * @cleanup: frees controller-specific state
+ * @list: link with the global spi_controller list
  *
- * Each SPI master controller can communicate with one or more @spi_device
+ * Each SPI controller can communicate with one or more @spi_device
  * children.  These make a small bus, sharing MOSI, MISO and SCK signals
  * but not chip select signals.  Each device may be configured to use a
  * different clock rate, since those shared signals are ignored unless
@@ -120,7 +123,7 @@ struct spi_message;
  * an SPI slave device.  For each such message it queues, it calls the
  * message's completion function when the transaction completes.
  */
-struct spi_master {
+struct spi_controller {
 	struct device_d *dev;
 
 	/* other than negative (== assign one dynamically), bus_num is fully
@@ -147,7 +150,7 @@ struct spi_master {
 	 *   any other request management
 	 * + To a given spi_device, message queueing is pure fifo
 	 *
-	 * + The master's main job is to process its message queue,
+	 * + The controller's main job is to process its message queue,
 	 *   selecting a chip then transferring data
 	 * + If there are multiple spi_device children, the i/o queue
 	 *   arbitration algorithm is unspecified (round robin, fifo,
@@ -161,11 +164,14 @@ struct spi_master {
 	int			(*transfer)(struct spi_device *spi,
 						struct spi_message *mesg);
 
-	/* called on release() to free memory provided by spi_master */
+	/* called on release() to free memory provided by spi_controller */
 	void			(*cleanup)(struct spi_device *spi);
 
 	struct list_head list;
 };
+
+#define spi_master  			spi_controller
+#define spi_register_master(_ctrl)	spi_register_controller(_ctrl)
 
 /*---------------------------------------------------------------------------*/
 
@@ -341,9 +347,9 @@ spi_transfer_del(struct spi_transfer *t)
 
 int spi_sync(struct spi_device *spi, struct spi_message *message);
 
-struct spi_device *spi_new_device(struct spi_master *master,
+struct spi_device *spi_new_device(struct spi_controller *ctrl,
 				  struct spi_board_info *chip);
-int spi_register_master(struct spi_master *master);
+int spi_register_controller(struct spi_controller *ctrl);
 
 #ifdef CONFIG_SPI
 int spi_register_board_info(struct spi_board_info const *info, int num);
@@ -431,7 +437,7 @@ static inline ssize_t spi_w8r8(struct spi_device *spi, u8 cmd)
 
 extern struct bus_type spi_bus;
 
-struct spi_master *spi_get_master(int bus);
+struct spi_controller *spi_get_controller(int bus);
 
 static inline int spi_driver_register(struct driver_d *drv)
 {

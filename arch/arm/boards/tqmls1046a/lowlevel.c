@@ -246,8 +246,12 @@ static noinline __noreturn void tqmls1046a_r_entry(void)
 				  __dtb_fsl_tqmls1046a_mbls10xxa_start);
 
 	arm_cpu_lowlevel_init();
-	debug_ll_init();
 	ls1046a_init_lowlevel();
+
+	debug_ll_init();
+
+	udelay(500);
+	putc_ll('>');
 
 	fsl_ddr_set_memctl_regs(&ddrc[0], 0);
 

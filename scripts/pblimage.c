@@ -53,7 +53,6 @@ static int in_fd;
 static uint32_t pbl_cmd_initaddr;
 static uint32_t pbi_crc_cmd1;
 static uint32_t pbi_crc_cmd2;
-static uint32_t pbl_end_cmd[4];
 
 enum arch {
 	ARCH_ARM,
@@ -210,16 +209,6 @@ static void pbl_parser(char *name)
 static void add_end_cmd(void)
 {
 	uint32_t crc32_pbl;
-	int i;
-	unsigned char *p = (unsigned char *)&pbl_end_cmd;
-
-	for (i = 0; i < 4; i++)
-		pbl_end_cmd[i] = htobe32(pbl_end_cmd[i]);
-
-	for (i = 0; i < 16; i++) {
-		*pmem_buf++ = *p++;
-		pbl_size++;
-	}
 
 	/* Add PBI CRC command. */
 	*pmem_buf++ = 0x08;
@@ -297,18 +286,10 @@ static int pblimage_check_params(void)
 		pbl_cmd_initaddr = loadaddr & PBL_ADDR_24BIT_MASK;
 		pbl_cmd_initaddr |= PBL_ACS_CONT_CMD;
 		pbl_cmd_initaddr += image_size;
-		pbl_end_cmd[0] = 0x09610000;
-		pbl_end_cmd[1] = 0x00000000;
-		pbl_end_cmd[2] = 0x096100c0;
-		pbl_end_cmd[3] = 0x00000000;
 	} else {
 		pbi_crc_cmd1 = 0x13;
 		pbi_crc_cmd2 = 0x80;
 		pbl_cmd_initaddr = 0x82000000;
-		pbl_end_cmd[0] = 0x091380c0;
-		pbl_end_cmd[1] = 0x00000000;
-		pbl_end_cmd[2] = 0x091380c0;
-		pbl_end_cmd[3] = 0x00000000;
 	}
 
 	next_pbl_cmd = pbl_cmd_initaddr;

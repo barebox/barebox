@@ -361,7 +361,7 @@ err_close:
  * Return: 0 if successful, negative error code otherwise
  */
 int bbu_register_std_file_update(const char *name, unsigned long flags,
-		char *devicefile, enum filetype imagetype)
+		const char *devicefile, enum filetype imagetype)
 {
 	struct bbu_std *std;
 	struct bbu_handler *handler;

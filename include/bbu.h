@@ -54,7 +54,7 @@ int bbu_handlers_iterate(int (*fn)(struct bbu_handler *, void *), void *);
 int bbu_register_handler(struct bbu_handler *);
 
 int bbu_register_std_file_update(const char *name, unsigned long flags,
-		char *devicefile, enum filetype imagetype);
+		const char *devicefile, enum filetype imagetype);
 
 #else
 
@@ -64,7 +64,7 @@ static inline int bbu_register_handler(struct bbu_handler *unused)
 }
 
 static inline int bbu_register_std_file_update(const char *name, unsigned long flags,
-		char *devicefile, enum filetype imagetype)
+		const char *devicefile, enum filetype imagetype)
 {
 	return -ENOSYS;
 }

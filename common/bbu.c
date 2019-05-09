@@ -299,6 +299,8 @@ static int bbu_std_file_handler(struct bbu_handler *handler,
 			return -EINVAL;
 	}
 
+	device_detect_by_name(devpath_to_name(data->devicefile));
+
 	ret = stat(data->devicefile, &s);
 	if (ret) {
 		oflags |= O_CREAT;

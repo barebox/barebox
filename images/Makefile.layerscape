@@ -14,6 +14,12 @@ quiet_cmd_lspbl_image = LSPBL-IMG $@
 			$(objtree)/scripts/pblimage -o $@ -r $(lspbl-rcw-tmp) \
 			-m $($(patsubst $(obj)/%.pblb,PBL_CODE_SIZE_%,$<)) -p $(lspbl-pbi-tmp) -i $<
 
+quiet_cmd_lspbl_spi_image = LSPBL-SPI-IMG $@
+      cmd_lspbl_spi_image = $(CPP) $(lspbl_cfg_cpp_flags) -o $(lspbl-rcw-tmp) $(word 2,$^) ; \
+			    $(CPP) $(lspbl_cfg_cpp_flags) -o $(lspbl-pbi-tmp) $(word 3,$^) ; \
+			    $(objtree)/scripts/pblimage -o $@ -r $(lspbl-rcw-tmp) -s \
+			    -m $($(patsubst $(obj)/%.pblb,PBL_CODE_SIZE_%,$<)) -p $(lspbl-pbi-tmp) -i $<
+
 pbl-$(CONFIG_MACH_LS1046ARDB) += start_ls1046ardb.pbl
 $(obj)/barebox-ls1046ardb-2nd.image: $(obj)/start_ls1046ardb.pblb
 	$(call if_changed,shipped)

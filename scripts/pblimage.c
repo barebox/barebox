@@ -13,6 +13,7 @@
 #include <stdint.h>
 #include <getopt.h>
 #include <endian.h>
+#include <byteswap.h>
 
 #define roundup(x, y)		((((x) + ((y) - 1)) / (y)) * (y))
 #define PBL_ACS_CONT_CMD	0x81000000
@@ -49,6 +50,7 @@ static int pbl_end;
 static int image_size;
 static int out_fd;
 static int in_fd;
+static int spiimage;
 
 static uint32_t pbl_cmd_initaddr;
 static uint32_t pbi_crc_cmd1;
@@ -229,6 +231,7 @@ static void add_end_cmd(void)
 static void pbl_load_image(void)
 {
 	int size;
+	uint64_t *buf64 = (void *)mem_buf;
 
 	/* parse the rcw.cfg file. */
 	pbl_parser(rcwfile);
@@ -244,6 +247,15 @@ static void pbl_load_image(void)
 	}
 
 	add_end_cmd();
+
+	if (spiimage) {
+		int i;
+
+		pbl_size = roundup(pbl_size, 8);
+
+		for (i = 0; i < pbl_size / 8; i++)
+			buf64[i] = bswap_64(buf64[i]);
+	}
 
 	size = pbl_size;
 
@@ -338,7 +350,7 @@ int main(int argc, char *argv[])
 	int opt, ret;
 	off_t pos;
 
-	while ((opt = getopt(argc, argv, "i:r:p:o:m:")) != -1) {
+	while ((opt = getopt(argc, argv, "i:r:p:o:m:s")) != -1) {
 		switch (opt) {
 		case 'i':
 			infile = optarg;
@@ -354,6 +366,9 @@ int main(int argc, char *argv[])
 			break;
 		case 'm':
 			pbl_end = atoi(optarg);
+			break;
+		case 's':
+			spiimage = 1;
 			break;
 		default:
 			exit(EXIT_FAILURE);

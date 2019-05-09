@@ -257,7 +257,7 @@ static noinline __noreturn void tqmls1046a_r_entry(void)
 
 	ls1046a_errata_post_ddr();
 
-	ls1046a_esdhc_start_image(0, 0, 0);
+	ls1046a_xload_start_image(0, 0, 0);
 
 	pr_err("Booting failed\n");
 

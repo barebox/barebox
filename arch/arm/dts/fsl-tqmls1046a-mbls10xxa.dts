@@ -20,6 +20,8 @@
 		serial0 = &duart0;
 		serial1 = &duart1;
 		mmc0 = &esdhc;
+		qspiflash0 = &qflash0;
+		qspiflash1 = &qflash1;
 		qsgmii_s1_p1 = &qsgmii1_phy1;
 		qsgmii_s1_p2 = &qsgmii1_phy2;
 		qsgmii_s2_p1 = &qsgmii2_phy1;
@@ -30,6 +32,18 @@
 
 	chosen {
 		stdout-path = "serial1:115200n8";
+
+		environment-sd {
+			compatible = "barebox,environment";
+			device-path = &environment_sd;
+			status = "disabled";
+		};
+
+		environment-qspi {
+			compatible = "barebox,environment";
+			device-path = &environment_qspi;
+			status = "disabled";
+		};
 	};
 
 	gpio-keys-polled {
@@ -63,6 +77,24 @@
 
 };
 
+&esdhc {
+	partitions {
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		compatible = "fixed-partitions";
+
+		partition@0 {
+			label = "barebox";
+			reg = <0x1000 0xdf000>;
+		};
+
+		environment_sd: partition@e0000 {
+			label = "barebox-environment";
+			reg = <0xe0000 0x20000>;
+		};
+	};
+};
 
 &duart0 {
 	status = "okay";
@@ -257,5 +289,29 @@
 
 	mdio@fd000 {
 		status = "disabled";
+	};
+};
+
+&qflash0 {
+	partitions {
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		compatible = "fixed-partitions";
+
+		partition@0 {
+			label = "barebox";
+			reg = <0x0 0x200000>;
+		};
+
+		environment_qspi: partition@200000 {
+			label = "barebox-environment";
+			reg = <0x200000 0x80000>;
+		};
+
+		partition@280000 {
+			label = "data";
+			reg = <0x280000 0x0>;
+		};
 	};
 };

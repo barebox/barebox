@@ -16,6 +16,7 @@
 #include <mci.h>
 #include <linux/sizes.h>
 #include <asm-generic/sections.h>
+#include <asm/cache.h>
 #include <mach/xload.h>
 #ifdef CONFIG_ARCH_IMX
 #include <mach/atf.h>
@@ -456,6 +457,8 @@ int ls1046a_esdhc_start_image(unsigned long r0, unsigned long r1, unsigned long 
 		pr_err("%s: reading blocks failed with: %d\n", __func__, ret);
 		return ret;
 	}
+
+	icache_invalidate();
 
 	printf("Starting barebox\n");
 

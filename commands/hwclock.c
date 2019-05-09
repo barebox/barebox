@@ -175,7 +175,7 @@ BAREBOX_CMD_HELP_START(hwclock)
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-f NAME\t\t\t", "RTC device name (default rtc0)")
 BAREBOX_CMD_HELP_OPT ("-e VARNAME\t\t", "store RTC readout into variable VARNAME")
-BAREBOX_CMD_HELP_OPT ("-n NTPSERVER\t", "set RTC from NTP server")
+BAREBOX_CMD_HELP_OPT ("-n NTPSERVER\t\t", "set RTC from NTP server")
 BAREBOX_CMD_HELP_OPT ("-s ccyymmddHHMM[.SS]\t", "set time")
 BAREBOX_CMD_HELP_END
 

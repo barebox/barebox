@@ -9,6 +9,7 @@
 #include <asm/pbl_macros.h>
 #include <mach/debug_ll.h>
 #include <asm/pbl_nmon.h>
+#include <linux/sizes.h>
 
 ENTRY_FUNCTION(BOARD_PBL_START)
 
@@ -19,4 +20,4 @@ ENTRY_FUNCTION(BOARD_PBL_START)
 	/* CPU/SoC specific setup ... */
 	/* ... absent */
 
-ENTRY_FUNCTION_END(BOARD_PBL_START, dlink_dir_320)
+ENTRY_FUNCTION_END(BOARD_PBL_START, dlink_dir_320, SZ_32M)

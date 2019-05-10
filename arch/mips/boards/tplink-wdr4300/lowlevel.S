@@ -11,6 +11,7 @@
 #include <mach/pbl_macros.h>
 #include <mach/pbl_ll_init_ar9344_1.1.h>
 #include <asm/pbl_nmon.h>
+#include <linux/sizes.h>
 
 ENTRY_FUNCTION(BOARD_PBL_START)
 
@@ -35,4 +36,4 @@ skip_flash_test:
 
 skip_pll_ram_config:
 
-ENTRY_FUNCTION_END(BOARD_PBL_START, ar9344_tl_wdr4300_v1.7)
+ENTRY_FUNCTION_END(BOARD_PBL_START, ar9344_tl_wdr4300_v1.7, SZ_128M)

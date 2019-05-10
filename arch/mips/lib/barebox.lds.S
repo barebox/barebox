@@ -13,6 +13,8 @@ SECTIONS
 	. = TEXT_BASE;
 
 	. = ALIGN(4);
+
+	.image_start : { *(.__image_start) }
 	.text      :
 	{
 		_stext = .;
@@ -79,9 +81,28 @@ SECTIONS
 	.dtb : { BAREBOX_DTB() }
 
 	_edata = .;
+	.image_end : { *(.__image_end) }
+
 	. = ALIGN(4);
-	__bss_start = .;
-	.bss : { *(.bss*) }
-	__bss_stop = .;
+	/*
+	 * .rel must come last so that the mips-relocs tool can shrink
+	 * the section size & the PT_LOAD program header filesz.
+	 */
+	.data.reloc : {
+		__rel_start = .;
+		BYTE(0x0)
+		. += (32 * 1024) - 1;
+	}
+
 	_end = .;
+
+	.bss __rel_start (OVERLAY) : {
+		__bss_start = .;
+		*(.sbss.*)
+		*(.bss.*)
+		*(COMMON)
+		. = ALIGN(4);
+		__bss_stop = .;
+	}
+
 }

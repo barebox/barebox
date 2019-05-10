@@ -10,6 +10,7 @@
 #include <asm/pbl_macros.h>
 #include <mach/debug_ll.h>
 #include <asm/pbl_nmon.h>
+#include <linux/sizes.h>
 
 ENTRY_FUNCTION(BOARD_PBL_START)
 
@@ -23,4 +24,4 @@ ENTRY_FUNCTION(BOARD_PBL_START)
 	debug_ll_outc '.'
 	debug_ll_ns16550_outnl
 
-ENTRY_FUNCTION_END(BOARD_PBL_START, img_ci20)
+ENTRY_FUNCTION_END(BOARD_PBL_START, img_ci20, SZ_1G)

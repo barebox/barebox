@@ -18,14 +18,14 @@ extern void *input_data_end;
 unsigned long free_mem_ptr;
 unsigned long free_mem_end_ptr;
 
-void pbl_main_entry(void *fdt, void *fdt_end);
+void pbl_main_entry(void *fdt, void *fdt_end, u32 ram_size);
 
 static unsigned long *ttb;
 
 static void barebox_uncompress(void *compressed_start, unsigned int len)
 {
 	/* set 128 KiB at the end of the MALLOC_BASE for early malloc */
-	free_mem_ptr = MALLOC_BASE + MALLOC_SIZE - SZ_128K;
+	free_mem_ptr = TEXT_BASE - SZ_128K;
 	free_mem_end_ptr = free_mem_ptr + SZ_128K;
 
 	ttb = (void *)((free_mem_ptr - 0x4000) & ~0x3fff);
@@ -33,11 +33,12 @@ static void barebox_uncompress(void *compressed_start, unsigned int len)
 	pbl_barebox_uncompress((void*)TEXT_BASE, compressed_start, len);
 }
 
-void __section(.text_entry) pbl_main_entry(void *fdt, void *fdt_end)
+void __section(.text_entry) pbl_main_entry(void *fdt, void *fdt_end,
+					   u32 ram_size)
 {
 	u32 pg_start, pg_end, pg_len, fdt_len;
 	void *fdt_new;
-	void (*barebox)(void *fdt, u32 fdt_len);
+	void (*barebox)(void *fdt, u32 fdt_len, u32 ram_size);
 
 	puts_ll("pbl_main_entry()\n");
 
@@ -51,9 +52,9 @@ void __section(.text_entry) pbl_main_entry(void *fdt, void *fdt_end)
 	barebox_uncompress(&input_data, pg_len);
 
 	fdt_len = (u32)fdt_end - (u32)fdt;
-	fdt_new = (void *)PAGE_ALIGN_DOWN(STACK_BASE - fdt_len);
+	fdt_new = (void *)PAGE_ALIGN_DOWN(TEXT_BASE - MALLOC_SIZE - STACK_SIZE - fdt_len);
 	memcpy(fdt_new, fdt, fdt_len);
 
 	barebox = (void *)TEXT_BASE;
-	barebox(fdt_new, fdt_len);
+	barebox(fdt_new, fdt_len, ram_size);
 }

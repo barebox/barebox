@@ -89,13 +89,14 @@ EXPORT(symbol)
 /*
  * ENTRY_FUNCTION_END - mark end of entry function
  */
-#define ENTRY_FUNCTION_END(symbol, dtb)			\
+#define ENTRY_FUNCTION_END(symbol, dtb, ram_size)	\
 	mips_nmon;					\
 	copy_to_link_location	symbol;			\
 	stack_setup;					\
 							\
 	la	a0, __dtb_ ## dtb##_start;		\
 	la	a1, __dtb_ ## dtb##_end;		\
+	li	a2, ram_size;				\
 	la	v0, pbl_main_entry;			\
 	jal	v0;					\
 	 nop;						\

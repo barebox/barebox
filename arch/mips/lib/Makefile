@@ -4,6 +4,8 @@ obj-y += cpu-probe.o
 lwl-y += end.o
 obj-y += traps.o
 obj-y += genex.o
+obj-y  += reloc.o
+obj-y += sections.o 
 obj-y += shutdown.o
 obj-y += dma-default.o
 

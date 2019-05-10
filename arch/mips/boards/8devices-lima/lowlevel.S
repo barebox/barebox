@@ -11,6 +11,7 @@
 #include <mach/pbl_macros.h>
 #include <mach/pbl_ll_init_qca4531.h>
 #include <asm/pbl_nmon.h>
+#include <linux/sizes.h>
 
 ENTRY_FUNCTION(BOARD_PBL_START)
 
@@ -38,4 +39,4 @@ skip_flash_test:
 	dcache_enable
 skip_pll_ram_config:
 
-ENTRY_FUNCTION_END(BOARD_PBL_START, qca4531_8devices_lima)
+ENTRY_FUNCTION_END(BOARD_PBL_START, qca4531_8devices_lima, SZ_64M)

@@ -12,6 +12,7 @@
 #include <asm/cpu-features.h>
 #include <asm/mipsregs.h>
 #include <asm/addrspace.h>
+#include <linux/sizes.h>
 
 extern void handle_reserved(void);
 
@@ -61,6 +62,7 @@ static void trap_init(void)
 
 extern void *glob_fdt;
 extern u32 glob_fdt_size;
+extern unsigned long mips_stack_top;
 
 /**
  * Called plainly from assembler code
@@ -69,6 +71,7 @@ extern u32 glob_fdt_size;
  */
 void __bare_init main_entry(void *fdt, u32 fdt_size)
 {
+	unsigned long malloc_start, malloc_end;
 	/* clear the BSS first */
 	memset(__bss_start, 0x00, __bss_stop - __bss_start);
 
@@ -82,8 +85,18 @@ void __bare_init main_entry(void *fdt, u32 fdt_size)
 
 	trap_init();
 
-	mem_malloc_init((void *)MALLOC_BASE,
-			(void *)(MALLOC_BASE + MALLOC_SIZE - 1));
+	malloc_end = _stext;
+
+	if (MALLOC_SIZE > 0)
+		malloc_start = malloc_end - MALLOC_SIZE;
+	else
+		malloc_start = malloc_end - SZ_8M;
+
+	pr_debug("initializing malloc pool at 0x%08lx (size 0x%08lx)\n",
+			malloc_start, malloc_end - malloc_start);
+
+	mem_malloc_init((void *)malloc_start, (void *)_stext - 1);
+	mips_stack_top = malloc_start;
 
 	glob_fdt = fdt;
 	glob_fdt_size = fdt_size;

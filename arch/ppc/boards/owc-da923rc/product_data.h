@@ -1,5 +1,6 @@
 /*
  * Copyright 2013 GE Intelligent Platforms, Inc.
+ * Copyright 2019 Abaco Systems, Inc.
  *
  * The product data structure and function prototypes.
  *
@@ -51,12 +52,12 @@ struct __attribute__ ((__packed__)) product_data_v2 {
 	int crc32;
 };
 
-struct __attribute__ ((__packed__)) ge_product_data {
+struct __attribute__ ((__packed__)) owc_product_data {
 	union {
 		struct product_data_v1 v1;
 		struct product_data_v2 v2;
 	};
 };
 
-extern int ge_get_product_data(struct ge_product_data *productp);
+extern int owc_get_product_data(struct owc_product_data *productp);
 extern void da923rc_boardinfo_get(struct board_info *bi);

@@ -12,6 +12,13 @@ ENTRY(arm_cpu_lowlevel_init)
 	orr	x0, x0, #(1 << 10)	/* 64-bit EL2 */
 	msr	scr_el3, x0
 	msr	cptr_el3, xzr
+
+	mrs	x0, sctlr_el3
+	ldr	x1, =SCTLR_ELx_FLAGS
+	bic	x0, x0, x1
+	msr	sctlr_el3, x0
+	isb
+
 	b	done
 
 2:

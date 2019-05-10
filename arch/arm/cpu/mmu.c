@@ -34,7 +34,6 @@
 
 #include "mmu.h"
 
-#define PMD_SECT_DEF_CACHED (PMD_SECT_WB | PMD_SECT_DEF_UNCACHED)
 #define PTRS_PER_PTE		(PGDIR_SIZE / PAGE_SIZE)
 #define ARCH_MAP_WRITECOMBINE	((unsigned)-1)
 
@@ -58,11 +57,13 @@ static inline void tlb_invalidate(void)
 }
 
 #define PTE_FLAGS_CACHED_V7 (PTE_EXT_TEX(1) | PTE_BUFFERABLE | PTE_CACHEABLE)
-#define PTE_FLAGS_WC_V7 PTE_EXT_TEX(1)
-#define PTE_FLAGS_UNCACHED_V7 (0)
+#define PTE_FLAGS_WC_V7 (PTE_EXT_TEX(1) | PTE_EXT_XN)
+#define PTE_FLAGS_UNCACHED_V7 PTE_EXT_XN
 #define PTE_FLAGS_CACHED_V4 (PTE_SMALL_AP_UNO_SRW | PTE_BUFFERABLE | PTE_CACHEABLE)
 #define PTE_FLAGS_UNCACHED_V4 PTE_SMALL_AP_UNO_SRW
-#define PGD_FLAGS_WC_V7 (PMD_SECT_TEX(1) | PMD_TYPE_SECT | PMD_SECT_BUFFERABLE)
+#define PGD_FLAGS_WC_V7 (PMD_SECT_TEX(1) | PMD_TYPE_SECT | PMD_SECT_BUFFERABLE | \
+			 PMD_SECT_XN)
+#define PGD_FLAGS_UNCACHED_V7 (PMD_SECT_DEF_UNCACHED | PMD_SECT_XN)
 
 /*
  * PTE flags to set cached and uncached areas.
@@ -72,6 +73,7 @@ static uint32_t pte_flags_cached;
 static uint32_t pte_flags_wc;
 static uint32_t pte_flags_uncached;
 static uint32_t pgd_flags_wc;
+static uint32_t pgd_flags_uncached;
 
 #define PTE_MASK ((1 << 12) - 1)
 
@@ -164,7 +166,7 @@ int arch_remap_range(void *start, size_t size, unsigned flags)
 		break;
 	case MAP_UNCACHED:
 		pte_flags = pte_flags_uncached;
-		pgd_flags = PMD_SECT_DEF_UNCACHED;
+		pgd_flags = pgd_flags_uncached;
 		break;
 	case ARCH_MAP_WRITECOMBINE:
 		pte_flags = pte_flags_wc;
@@ -247,7 +249,7 @@ void *map_io_sections(unsigned long phys, void *_start, size_t size)
 	unsigned long start = (unsigned long)_start, sec;
 
 	for (sec = start; sec < start + size; sec += PGDIR_SIZE, phys += PGDIR_SIZE)
-		ttb[pgd_index(sec)] = phys | PMD_SECT_DEF_UNCACHED;
+		ttb[pgd_index(sec)] = phys | pgd_flags_uncached;
 
 	dma_flush_range(ttb, 0x4000);
 	tlb_invalidate();
@@ -411,11 +413,13 @@ void __mmu_init(bool mmu_on)
 		pte_flags_cached = PTE_FLAGS_CACHED_V7;
 		pte_flags_wc = PTE_FLAGS_WC_V7;
 		pgd_flags_wc = PGD_FLAGS_WC_V7;
+		pgd_flags_uncached = PGD_FLAGS_UNCACHED_V7;
 		pte_flags_uncached = PTE_FLAGS_UNCACHED_V7;
 	} else {
 		pte_flags_cached = PTE_FLAGS_CACHED_V4;
 		pte_flags_wc = PTE_FLAGS_UNCACHED_V4;
 		pgd_flags_wc = PMD_SECT_DEF_UNCACHED;
+		pgd_flags_uncached = PMD_SECT_DEF_UNCACHED;
 		pte_flags_uncached = PTE_FLAGS_UNCACHED_V4;
 	}
 

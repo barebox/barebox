@@ -56,6 +56,10 @@ config MACH_LENOVO_IX4_300D
 	bool "Lenovo Iomega ix4-300d"
 	select ARCH_ARMADA_XP
 
+config MACH_MARVELL_ARMADA_XP_DB
+	bool "Marvell Armada XP DB"
+	select ARCH_ARMADA_XP
+
 config MACH_MARVELL_ARMADA_XP_GP
 	bool "Marvell Armada XP GP"
 	select ARCH_ARMADA_XP

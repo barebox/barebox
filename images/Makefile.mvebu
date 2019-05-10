@@ -43,6 +43,14 @@ pblb-$(CONFIG_MACH_MARVELL_ARMADA_XP_GP) += start_marvell_armada_xp_gp
 image-$(CONFIG_MACH_MARVELL_ARMADA_XP_GP) += barebox-marvell-armada-xp-gp.img
 image-$(CONFIG_MACH_MARVELL_ARMADA_XP_GP) += barebox-marvell-armada-xp-gp-2nd.img
 
+MARVELL_ARMADA_XP_DB_KWBOPTS = ${KWBOPTS} -i $(board)/marvell-armada-xp-db/kwbimage.cfg
+OPTS_start_marvell_armada_xp_db.pblb.kwbimg = $(MARVELL_ARMADA_XP_DB_KWBOPTS)
+FILE_barebox-marvell-armada-xp-db.img   = start_marvell_armada_xp_db.pblb.kwbimg
+FILE_barebox-marvell-armada-xp-db-2nd.img = start_marvell_armada_xp_db.pblb
+pblb-$(CONFIG_MACH_MARVELL_ARMADA_XP_DB) += start_marvell_armada_xp_db
+image-$(CONFIG_MACH_MARVELL_ARMADA_XP_DB) += barebox-marvell-armada-xp-db.img
+image-$(CONFIG_MACH_MARVELL_ARMADA_XP_DB) += barebox-marvell-armada-xp-db-2nd.img
+
 NETGEAR_RN2120_KWBOPTS = ${KWBOPTS} -i $(board)/netgear-rn2120/kwbimage.cfg
 OPTS_start_netgear_rn2120.pblb.kwbimg = $(NETGEAR_RN2120_KWBOPTS)
 FILE_barebox-netgear-rn2120.img	= start_netgear_rn2120.pblb.kwbimg

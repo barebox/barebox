@@ -46,9 +46,11 @@ currently running barebox, while changing a nv variable changes the
 behaviour persistently over reboots.
 
 nv variables can be created or removed with the :ref:`command_nv`
-command. The nv variables are made persistent using the environment
-facilities of barebox, so a :ref:`command_saveenv` must be issued to store the
-actual values.
+command.
+
+The nv variables are made persistent using the environment facilities of
+barebox. They are saved automatically to the storage medium whenever barebox
+shuts down (that is, a :ref:`command_reset` is issued or a kernel is started).
 
 examples:
 

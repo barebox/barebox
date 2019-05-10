@@ -325,7 +325,7 @@ void ddr_spd_print(uint8_t *record)
 		printf("Error module type\n");
 
 	printf("%-48s ", "DRAM Package ");
-	if ((s->mod_ranks & 0x10) == 1)
+	if ((s->mod_ranks & 0x10) != 0)
 		printf("Stack\n");
 	else
 		printf("Planar\n");

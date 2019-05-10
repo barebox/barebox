@@ -233,17 +233,18 @@ static int digest_update_from_fd(struct digest *d, int fd,
 	}
 
 	while (size) {
-		const ssize_t now = read(fd, buf, PAGE_SIZE);
-		if (now < 0) {
-			ret = now;
+		unsigned long now = min_t(typeof(size), PAGE_SIZE, size);
+
+		ret = read(fd, buf, now);
+		if (ret < 0) {
 			perror("read");
 			goto out_free;
 		}
 
-		if (!now)
+		if (!ret)
 			break;
 
-		ret = digest_update_interruptible(d, buf, now);
+		ret = digest_update_interruptible(d, buf, ret);
 		if (ret)
 			goto out_free;
 

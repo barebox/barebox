@@ -21,7 +21,13 @@ RAUC_.
 .. _RAUC: https://rauc.readthedocs.io/en/latest/
 
 barebox itself uses a *state* driver to access the variables in the
-persistent memory. For the Linux run-time there is a userspace tool_ to do
+persistent memory.
+
+Currently there is only one implementation, enabled by
+``CONFIG_STATE_DRV=y``. Without driver, the state framework will silently 
+fail and be non-functional.
+
+For the Linux run-time there is a userspace tool_ to do
 the same.
 
 .. _tool: https://git.pengutronix.de/cgit/tools/dt-utils/

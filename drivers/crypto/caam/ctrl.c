@@ -654,6 +654,15 @@ static int caam_probe(struct device_d *dev)
 		}
 	}
 
+	if (IS_ENABLED(CONFIG_BLOBGEN)) {
+		ret = caam_blob_gen_probe(dev, ctrlpriv->jrpdev[0]);
+		if (ret) {
+			dev_err(dev, "failed to instantiate blobgen device");
+			caam_remove(dev);
+			return ret;
+		}
+	}
+
 	/* NOTE: RTIC detection ought to go here, around Si time */
 	caam_id = (u64)rd_reg32(&ctrl->perfmon.caam_id_ms) << 32 |
 		  (u64)rd_reg32(&ctrl->perfmon.caam_id_ls);

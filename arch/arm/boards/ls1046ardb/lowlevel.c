@@ -3,6 +3,7 @@
 #include <common.h>
 #include <debug_ll.h>
 #include <ddr_spd.h>
+#include <image-metadata.h>
 #include <platform_data/mmc-esdhc-imx.h>
 #include <i2c/i2c-early.h>
 #include <soc/fsl/fsl_ddr_sdram.h>
@@ -200,6 +201,8 @@ static noinline __noreturn void ls1046ardb_r_entry(unsigned long memsize)
 	arm_cpu_lowlevel_init();
 	debug_ll_init();
 	ls1046a_init_lowlevel();
+
+	IMD_USED_OF(fsl_ls1046a_rdb);
 
 	i2c = ls1046_i2c_init(IOMEM(LSCH2_I2C1_BASE_ADDR));
 	ret = spd_read_eeprom(i2c, i2c_fsl_xfer, 0x51, &spd_eeprom);

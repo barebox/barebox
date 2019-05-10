@@ -20,10 +20,30 @@
 		serial0 = &duart0;
 		serial1 = &duart1;
 		mmc0 = &esdhc;
+		qspiflash0 = &qflash0;
+		qspiflash1 = &qflash1;
+		qsgmii_s1_p1 = &qsgmii1_phy1;
+		qsgmii_s1_p2 = &qsgmii1_phy2;
+		qsgmii_s2_p1 = &qsgmii2_phy1;
+		qsgmii_s2_p2 = &qsgmii2_phy2;
+		qsgmii_s2_p3 = &qsgmii2_phy3;
+		qsgmii_s2_p4 = &qsgmii2_phy4;
 	};
 
 	chosen {
 		stdout-path = "serial1:115200n8";
+
+		environment-sd {
+			compatible = "barebox,environment";
+			device-path = &environment_sd;
+			status = "disabled";
+		};
+
+		environment-qspi {
+			compatible = "barebox,environment";
+			device-path = &environment_qspi;
+			status = "disabled";
+		};
 	};
 
 	gpio-keys-polled {
@@ -57,6 +77,24 @@
 
 };
 
+&esdhc {
+	partitions {
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		compatible = "fixed-partitions";
+
+		partition@0 {
+			label = "barebox";
+			reg = <0x1000 0xdf000>;
+		};
+
+		environment_sd: partition@e0000 {
+			label = "barebox-environment";
+			reg = <0xe0000 0x20000>;
+		};
+	};
+};
 
 &duart0 {
 	status = "okay";
@@ -64,6 +102,14 @@
 
 &duart1 {
 	status = "okay";
+};
+
+&esdhc {
+	mmc-hs200-1_8v;
+	sd-uhs-sdr104;
+	sd-uhs-sdr50;
+	sd-uhs-sdr25;
+	sd-uhs-sdr12;
 };
 
 &i2c3 {
@@ -132,43 +178,40 @@
 &fman0 {
 	status = "okay";
 
-	ethernet@e0000 {
-		status = "disabled";
+	ethernet@e0000 { /* EMAC.1 */
+		phy-connection-type = "sgmii";
+
 	};
 
-	ethernet@e2000 {
-		phy-handle = <&qsgmii1_phy2>;
+	ethernet@e2000 { /* EMAC.2 */
 		phy-connection-type = "sgmii";
 	};
 
-	ethernet@e4000 {
+	ethernet@e4000 { /* EMAC.3 */
 		phy-handle = <&rgmii_phy1>;
 		phy-connection-type = "rgmii";
 		phy-mode = "rgmii-id";
 	};
 
-	ethernet@e6000 {
+	ethernet@e6000 { /* EMAC.4 */
 		phy-handle = <&rgmii_phy2>;
 		phy-connection-type = "rgmii";
 		phy-mode = "rgmii-id";
 	};
 
-	ethernet@e8000 {
-		status = "disabled";
-	};
-
-	ethernet@ea000 {
-		phy-handle = <&qsgmii2_phy2>;
+	ethernet@e8000 { /* EMAC.5 */
 		phy-connection-type = "sgmii";
 	};
 
-	ethernet@f0000 {
-		phy-handle = <&qsgmii1_phy1>;
+	ethernet@ea000 { /* EMAC.6 */
 		phy-connection-type = "sgmii";
 	};
 
-	ethernet@f2000 {
-		phy-handle = <&qsgmii2_phy1>;
+	ethernet@f0000 { /* EMAC.9 */
+		phy-connection-type = "sgmii";
+	};
+
+	ethernet@f2000 { /* EMAC.10 */
 		phy-connection-type = "sgmii";
 	};
 
@@ -212,21 +255,19 @@
 			ti,fifo-depth = <DP83867_PHYCR_FIFO_DEPTH_8_B_NIB>;
 		};
 
+		rgmii_phy2: ethernet-phy@0c {
+			reg = <0x0c>;
+			ti,rx-internal-delay = <DP83867_RGMIIDCTL_1_50_NS>;
+			ti,tx-internal-delay = <DP83867_RGMIIDCTL_1_50_NS>;
+			ti,fifo-depth = <DP83867_PHYCR_FIFO_DEPTH_8_B_NIB>;
+		};
+
 		qsgmii1_phy1: ethernet-phy@1c {
 			reg = <0x1c>;
 		};
 
 		qsgmii1_phy2: ethernet-phy@1d {
 			reg = <0x1d>;
-		};
-	};
-
-	mdio@fd000 {
-		rgmii_phy2: ethernet-phy@0c {
-			reg = <0x0c>;
-			ti,rx-internal-delay = <DP83867_RGMIIDCTL_1_50_NS>;
-			ti,tx-internal-delay = <DP83867_RGMIIDCTL_1_50_NS>;
-			ti,fifo-depth = <DP83867_PHYCR_FIFO_DEPTH_8_B_NIB>;
 		};
 
 		qsgmii2_phy1: ethernet-phy@00 {
@@ -235,6 +276,42 @@
 
 		qsgmii2_phy2: ethernet-phy@01 {
 			reg = <0x01>;
+		};
+
+		qsgmii2_phy3: ethernet-phy@02 {
+			reg = <0x02>;
+		};
+
+		qsgmii2_phy4: ethernet-phy@03 {
+			reg = <0x03>;
+		};
+	};
+
+	mdio@fd000 {
+		status = "disabled";
+	};
+};
+
+&qflash0 {
+	partitions {
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		compatible = "fixed-partitions";
+
+		partition@0 {
+			label = "barebox";
+			reg = <0x0 0x200000>;
+		};
+
+		environment_qspi: partition@200000 {
+			label = "barebox-environment";
+			reg = <0x200000 0x80000>;
+		};
+
+		partition@280000 {
+			label = "data";
+			reg = <0x280000 0x0>;
 		};
 	};
 };

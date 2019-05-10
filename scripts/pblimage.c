@@ -13,6 +13,7 @@
 #include <stdint.h>
 #include <getopt.h>
 #include <endian.h>
+#include <byteswap.h>
 
 #define roundup(x, y)		((((x) + ((y) - 1)) / (y)) * (y))
 #define PBL_ACS_CONT_CMD	0x81000000
@@ -49,11 +50,11 @@ static int pbl_end;
 static int image_size;
 static int out_fd;
 static int in_fd;
+static int spiimage;
 
 static uint32_t pbl_cmd_initaddr;
 static uint32_t pbi_crc_cmd1;
 static uint32_t pbi_crc_cmd2;
-static uint32_t pbl_end_cmd[4];
 
 enum arch {
 	ARCH_ARM,
@@ -210,16 +211,6 @@ static void pbl_parser(char *name)
 static void add_end_cmd(void)
 {
 	uint32_t crc32_pbl;
-	int i;
-	unsigned char *p = (unsigned char *)&pbl_end_cmd;
-
-	for (i = 0; i < 4; i++)
-		pbl_end_cmd[i] = htobe32(pbl_end_cmd[i]);
-
-	for (i = 0; i < 16; i++) {
-		*pmem_buf++ = *p++;
-		pbl_size++;
-	}
 
 	/* Add PBI CRC command. */
 	*pmem_buf++ = 0x08;
@@ -240,6 +231,7 @@ static void add_end_cmd(void)
 static void pbl_load_image(void)
 {
 	int size;
+	uint64_t *buf64 = (void *)mem_buf;
 
 	/* parse the rcw.cfg file. */
 	pbl_parser(rcwfile);
@@ -255,6 +247,15 @@ static void pbl_load_image(void)
 	}
 
 	add_end_cmd();
+
+	if (spiimage) {
+		int i;
+
+		pbl_size = roundup(pbl_size, 8);
+
+		for (i = 0; i < pbl_size / 8; i++)
+			buf64[i] = bswap_64(buf64[i]);
+	}
 
 	size = pbl_size;
 
@@ -297,18 +298,10 @@ static int pblimage_check_params(void)
 		pbl_cmd_initaddr = loadaddr & PBL_ADDR_24BIT_MASK;
 		pbl_cmd_initaddr |= PBL_ACS_CONT_CMD;
 		pbl_cmd_initaddr += image_size;
-		pbl_end_cmd[0] = 0x09610000;
-		pbl_end_cmd[1] = 0x00000000;
-		pbl_end_cmd[2] = 0x096100c0;
-		pbl_end_cmd[3] = 0x00000000;
 	} else {
 		pbi_crc_cmd1 = 0x13;
 		pbi_crc_cmd2 = 0x80;
 		pbl_cmd_initaddr = 0x82000000;
-		pbl_end_cmd[0] = 0x091380c0;
-		pbl_end_cmd[1] = 0x00000000;
-		pbl_end_cmd[2] = 0x091380c0;
-		pbl_end_cmd[3] = 0x00000000;
 	}
 
 	next_pbl_cmd = pbl_cmd_initaddr;
@@ -357,7 +350,7 @@ int main(int argc, char *argv[])
 	int opt, ret;
 	off_t pos;
 
-	while ((opt = getopt(argc, argv, "i:r:p:o:m:")) != -1) {
+	while ((opt = getopt(argc, argv, "i:r:p:o:m:s")) != -1) {
 		switch (opt) {
 		case 'i':
 			infile = optarg;
@@ -373,6 +366,9 @@ int main(int argc, char *argv[])
 			break;
 		case 'm':
 			pbl_end = atoi(optarg);
+			break;
+		case 's':
+			spiimage = 1;
 			break;
 		default:
 			exit(EXIT_FAILURE);

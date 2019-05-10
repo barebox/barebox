@@ -40,15 +40,15 @@
 		#address-cells = <1>;
 		#size-cells = <1>;
 		compatible = "jedec,spi-nor";
-		spi-max-frequency = <108000000>;
+		spi-max-frequency = <62500000>;
 		reg = <0>;
 	};
 
 	qflash1: mx66u51235f@1 {
 		#address-cells = <1>;
 		#size-cells = <1>;
-		spi-max-frequency = <108000000>;
 		compatible = "jedec,spi-nor";
+		spi-max-frequency = <62500000>;
 		reg = <1>;
 	};
 };

@@ -540,6 +540,7 @@ struct fsl_ddr_info {
 };
 
 phys_size_t fsl_ddr_sdram(struct fsl_ddr_info *pinfo);
+void fsl_ddr_set_memctl_regs(struct fsl_ddr_controller *c, int step);
 
 #ifdef CONFIG_SYS_FSL_DDR_LE
 #define ddr_in32(a)	in_le32(a)

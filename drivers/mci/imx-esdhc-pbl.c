@@ -16,6 +16,7 @@
 #include <mci.h>
 #include <linux/sizes.h>
 #include <asm-generic/sections.h>
+#include <asm/cache.h>
 #include <mach/xload.h>
 #ifdef CONFIG_ARCH_IMX
 #include <mach/atf.h>
@@ -445,7 +446,7 @@ int ls1046a_esdhc_start_image(unsigned long r0, unsigned long r1, unsigned long 
 	 */
 	val = esdhc_read32(&esdhc, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET);
 	val &= ~0x0000fff0;
-	val |= (2 << 8) | (6 << 4);
+	val |= (8 << 8) | (3 << 4);
 	esdhc_write32(&esdhc, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET, val);
 
 	esdhc_write32(&esdhc, ESDHC_DMA_SYSCTL, ESDHC_SYSCTL_DMA_SNOOP);
@@ -456,6 +457,8 @@ int ls1046a_esdhc_start_image(unsigned long r0, unsigned long r1, unsigned long 
 		pr_err("%s: reading blocks failed with: %d\n", __func__, ret);
 		return ret;
 	}
+
+	icache_invalidate();
 
 	printf("Starting barebox\n");
 

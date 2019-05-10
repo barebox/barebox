@@ -299,6 +299,8 @@ static int bbu_std_file_handler(struct bbu_handler *handler,
 			return -EINVAL;
 	}
 
+	device_detect_by_name(devpath_to_name(data->devicefile));
+
 	ret = stat(data->devicefile, &s);
 	if (ret) {
 		oflags |= O_CREAT;
@@ -361,7 +363,7 @@ err_close:
  * Return: 0 if successful, negative error code otherwise
  */
 int bbu_register_std_file_update(const char *name, unsigned long flags,
-		char *devicefile, enum filetype imagetype)
+		const char *devicefile, enum filetype imagetype)
 {
 	struct bbu_std *std;
 	struct bbu_handler *handler;

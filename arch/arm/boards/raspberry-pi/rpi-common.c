@@ -319,6 +319,14 @@ static int rpi_clock_init(void)
 	clkdev_add_physbase(clk, 0x20300000, NULL);
 	clkdev_add_physbase(clk, 0x3f300000, NULL);
 
+	clk = rpi_register_firmware_clock(BCM2835_MBOX_CLOCK_ID_CORE,
+					  "bcm2835_sdhost");
+	if (IS_ERR(clk))
+		return PTR_ERR(clk);
+
+	clkdev_add_physbase(clk, 0x20202000, NULL);
+	clkdev_add_physbase(clk, 0x3f202000, NULL);
+
 	return 0;
 }
 postconsole_initcall(rpi_clock_init);

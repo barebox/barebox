@@ -42,6 +42,7 @@ enum zii_platform_vf610_type {
 	ZII_PLATFORM_VF610_CFU1		= 0x04,
 	ZII_PLATFORM_VF610_DEV_REV_C	= 0x05,
 	ZII_PLATFORM_VF610_SPB4		= 0x06,
+	ZII_PLATFORM_VF610_SSMB_DTU	= 0x07,
 };
 
 static unsigned int get_system_type(void)
@@ -79,6 +80,7 @@ extern char __dtb_vf610_zii_dev_rev_c_start[];
 extern char __dtb_vf610_zii_cfu1_start[];
 extern char __dtb_vf610_zii_ssmb_spu3_start[];
 extern char __dtb_vf610_zii_scu4_aib_start[];
+extern char __dtb_vf610_zii_ssmb_dtu_start[];
 extern char __dtb_vf610_zii_spb4_start[];
 
 ENTRY_FUNCTION(start_zii_vf610_dev, r0, r1, r2)
@@ -93,23 +95,6 @@ ENTRY_FUNCTION(start_zii_vf610_dev, r0, r1, r2)
 
 	switch (system_type) {
 	default:
-		/*
-		 * GCC can be smart enough to, when DEBUG_LL is
-		 * disabled, reduce this switch statement to a LUT
-		 * fetch. Unfortunately here, this early in the boot
-		 * process before any relocation/address fixups could
-		 * happen, the address of that LUT used by the code is
-		 * incorrect and any access to it would result in
-		 * bogus values.
-		 *
-		 * Adding the following barrier() statement seem to
-		 * force the compiler to always translate this block
-		 * to a sequence of consecutive checks and jumps with
-		 * relative fetches, which should work with or without
-		 * relocation/fixups.
-		 */
-		barrier();
-
 		if (IS_ENABLED(CONFIG_DEBUG_LL)) {
 			relocate_to_current_adr();
 			setup_c();
@@ -136,6 +121,9 @@ ENTRY_FUNCTION(start_zii_vf610_dev, r0, r1, r2)
 		break;
 	case ZII_PLATFORM_VF610_SPB4:
 		fdt = __dtb_vf610_zii_spb4_start;
+		break;
+	case ZII_PLATFORM_VF610_SSMB_DTU:
+		fdt = __dtb_vf610_zii_ssmb_dtu_start;
 		break;
 	}
 

@@ -84,13 +84,6 @@ ENTRY_FUNCTION(start_imx51_zii_rdu1, r0, r1, r2)
 
 	switch (system_type) {
 	default:
-		/*
-		 * see similar code in
-		 * arch/arm/boards/zii-vf610-dev/lowlevel.c for
-		 * reasoning for placing barrier() below.
-		 */
-		barrier();
-
 		if (IS_ENABLED(CONFIG_DEBUG_LL)) {
 			relocate_to_current_adr();
 			setup_c();

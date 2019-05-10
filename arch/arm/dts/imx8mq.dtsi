@@ -198,3 +198,7 @@
 			       <25000000>,
 			       <125000000>;
 };
+
+&pgc_pcie1 {
+	power-domains = <&pgc_pcie2>;
+};

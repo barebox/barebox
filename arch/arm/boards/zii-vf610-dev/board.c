@@ -122,6 +122,7 @@ static int zii_vf610_dev_set_hostname(void)
 		const char *compatible;
 		const char *hostname;
 	} boards[] = {
+		{ "zii,vf610dtu", "dtu" },
 		{ "zii,vf610spu3", "spu3" },
 		{ "zii,vf610spb4", "spb4" },
 		{ "zii,vf610cfu1", "cfu1" },
@@ -170,7 +171,8 @@ static int zii_vf610_register_emmc_bbu(void)
 
 	if (!of_machine_is_compatible("zii,vf610spu3") &&
 	    !of_machine_is_compatible("zii,vf610cfu1") &&
-	    !of_machine_is_compatible("zii,vf610spb4"))
+	    !of_machine_is_compatible("zii,vf610spb4") &&
+	    !of_machine_is_compatible("zii,vf610dtu"))
 		return 0;
 
 	ret = vf610_bbu_internal_mmcboot_register_handler("eMMC",

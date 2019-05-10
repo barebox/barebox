@@ -42,6 +42,9 @@
 #include <asm/sections.h>
 #include <uncompress.h>
 #include <globalvar.h>
+#include <console_countdown.h>
+#include <environment.h>
+#include <linux/ctype.h>
 
 extern initcall_t __barebox_initcalls_start[], __barebox_early_initcalls_end[],
 		  __barebox_initcalls_end[];
@@ -143,16 +146,172 @@ static int load_environment(void)
 environment_initcall(load_environment);
 #endif
 
+static int global_autoboot_abort_key;
+static const char * const global_autoboot_abort_keys[] = {
+	"any",
+	"ctrl-c",
+};
+static int global_autoboot_timeout = 3;
+static char *global_boot_default;
+static char *global_editcmd;
+static char *global_linux_bootargs_base;
+static char *global_linux_bootargs_console;
+static char *global_linux_bootargs_dyn_ip;
+static char *global_linux_bootargs_dyn_root;
+static char *global_user;
+
+static bool test_abort(void)
+{
+	bool do_abort = false;
+	int c, ret;
+	char key;
+
+	while (tstc()) {
+		c = getchar();
+		if (tolower(c) == 'q' || c == 3)
+			do_abort = true;
+	}
+
+	if (!do_abort)
+		return false;
+
+	printf("Abort init sequence? (y/n)\n"
+	       "Will continue with init sequence in:");
+
+	ret = console_countdown(5, CONSOLE_COUNTDOWN_EXTERN, "yYnN", &key);
+	if (!ret)
+		return false;
+
+	if (tolower(key) == 'y')
+		return true;
+
+	return false;
+}
+
+static int run_init(void)
+{
+	DIR *dir;
+	struct dirent *d;
+	const char *initfile = "/env/bin/init";
+	const char *initdir = "/env/init";
+	const char *menufile = "/env/menu/mainmenu";
+	struct stat s;
+	unsigned flags = CONSOLE_COUNTDOWN_EXTERN;
+	unsigned char outkey;
+	int ret;
+	bool menu_exists;
+	bool env_bin_init_exists;
+	char *abortkeys = NULL;
+
+	setenv("PATH", "/env/bin");
+
+	/* Run legacy /env/bin/init if it exists */
+	env_bin_init_exists = stat(initfile, &s) == 0;
+	if (env_bin_init_exists) {
+		pr_info("running %s...\n", initfile);
+		run_command(initfile);
+		return 0;
+	}
+
+	global_editcmd = xstrdup("sedit");
+	global_user = xstrdup("none");
+	globalvar_add_simple_string("user", &global_user);
+	global_boot_default = xstrdup("net");
+
+	globalvar_add_simple_enum("autoboot_abort_key",
+				  &global_autoboot_abort_key,
+                                  global_autoboot_abort_keys,
+				  ARRAY_SIZE(global_autoboot_abort_keys));
+	globalvar_add_simple_int("autoboot_timeout",
+				 &global_autoboot_timeout, "%u");
+	globalvar_add_simple_string("boot.default", &global_boot_default);
+	globalvar_add_simple_string("editcmd", &global_editcmd);
+	globalvar_add_simple_string("linux.bootargs.base",
+				    &global_linux_bootargs_base);
+	globalvar_add_simple_string("linux.bootargs.console",
+				    &global_linux_bootargs_console);
+	globalvar_add_simple_string("linux.bootargs.dyn.ip",
+				    &global_linux_bootargs_dyn_ip);
+	globalvar_add_simple_string("linux.bootargs.dyn.root",
+				    &global_linux_bootargs_dyn_root);
+
+	/* Unblank console cursor */
+	printf("\e[?25h");
+
+	if (test_abort()) {
+		pr_info("Init sequence aborted\n");
+		return -EINTR;
+	}
+
+	/* Run scripts in /env/init/ */
+	dir = opendir(initdir);
+	if (dir) {
+		char *scr;
+
+		while ((d = readdir(dir))) {
+			if (*d->d_name == '.')
+				continue;
+
+			pr_debug("Executing '%s/%s'...\n", initdir, d->d_name);
+			scr = basprintf("source %s/%s", initdir, d->d_name);
+			run_command(scr);
+			free(scr);
+		}
+
+		closedir(dir);
+	}
+
+	menu_exists = stat(menufile, &s) == 0;
+
+	if (menu_exists) {
+		printf("\nHit m for menu or %s to stop autoboot: ",
+		       global_autoboot_abort_keys[global_autoboot_abort_key]);
+		abortkeys = "m";
+	} else {
+		printf("\nHit %s to stop autoboot: ",
+		       global_autoboot_abort_keys[global_autoboot_abort_key]);
+	}
+
+	switch (global_autoboot_abort_key) {
+	case 0:
+		flags |= CONSOLE_COUNTDOWN_ANYKEY;
+		break;
+	case 1:
+		flags |= CONSOLE_COUNTDOWN_CTRLC;
+		break;
+	default:
+		break;
+	}
+
+	ret = console_countdown(global_autoboot_timeout, flags, abortkeys,
+				&outkey);
+
+	if (ret == 0)
+		run_command("boot");
+
+	console_ctrlc_allow();
+
+	if (menu_exists) {
+		if (outkey == 'm')
+			run_command(menufile);
+
+		printf("Enter 'exit' to get back to the menu\n");
+		run_shell();
+		run_command(menufile);
+	}
+
+	return 0;
+}
+
 int (*barebox_main)(void);
 
 void __noreturn start_barebox(void)
 {
 	initcall_t *initcall;
 	int result;
-	struct stat s;
 
-	if (!IS_ENABLED(CONFIG_SHELL_NONE))
-		barebox_main = run_shell;
+	if (!IS_ENABLED(CONFIG_SHELL_NONE) && IS_ENABLED(CONFIG_COMMAND_SUPPORT))
+		barebox_main = run_init;
 
 	for (initcall = __barebox_initcalls_start;
 			initcall < __barebox_initcalls_end; initcall++) {
@@ -165,25 +324,16 @@ void __noreturn start_barebox(void)
 
 	pr_debug("initcalls done\n");
 
-	if (IS_ENABLED(CONFIG_COMMAND_SUPPORT)) {
-		pr_info("running /env/bin/init...\n");
-
-		if (!stat("/env/bin/init", &s))
-			run_command("source /env/bin/init");
-		else
-			pr_err("/env/bin/init not found\n");
-	}
-
-	if (!barebox_main) {
-		pr_err("No main function! aborting.\n");
-		hang();
-	}
-
-	/* main_loop() can return to retry autoboot, if so just run it again. */
-	for (;;)
+	if (barebox_main)
 		barebox_main();
 
-	/* NOTREACHED - no way out of command loop except booting */
+	if (IS_ENABLED(CONFIG_SHELL_NONE)) {
+		pr_err("Nothing left to do\n");
+		hang();
+	} else {
+		while (1)
+			run_shell();
+	}
 }
 
 void __noreturn hang (void)

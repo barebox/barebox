@@ -94,7 +94,7 @@ int linux_tstc(int fd)
 	return 0;
 }
 
-int ctrlc(void)
+int arch_ctrlc(void)
 {
 	char chr;
 

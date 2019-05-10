@@ -30,7 +30,22 @@ void console_countdown_abort(void)
 	console_countdown_timeout_abort = true;
 }
 
-int console_countdown(int timeout_s, unsigned flags, char *out_key)
+static int key_in_list(char key, const char *keys)
+{
+	if (!keys)
+		return false;
+
+	while (*keys) {
+		if (key == *keys)
+			return true;
+		keys++;
+	}
+
+	return false;
+}
+
+int console_countdown(int timeout_s, unsigned flags, const char *keys,
+		      char *out_key)
 {
 	uint64_t start, second;
 	int countdown, ret = -EINTR;
@@ -48,6 +63,8 @@ int console_countdown(int timeout_s, unsigned flags, char *out_key)
 		if (tstc()) {
 			key = getchar();
 			if (key >= 0) {
+				if (key_in_list(key, keys))
+					goto out;
 				if (flags & CONSOLE_COUNTDOWN_ANYKEY)
 					goto out;
 				if (flags & CONSOLE_COUNTDOWN_RETURN && key == '\n')

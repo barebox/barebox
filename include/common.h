@@ -68,7 +68,9 @@ int	readline	(const char *prompt, char *buf, int len);
 long	get_ram_size  (volatile long *, long);
 
 /* common/console.c */
-int	ctrlc (void);
+int ctrlc(void);
+int arch_ctrlc(void);
+void ctrlc_handled(void);
 
 #ifdef ARCH_HAS_STACK_DUMP
 void dump_stack(void);

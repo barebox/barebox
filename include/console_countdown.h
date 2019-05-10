@@ -7,7 +7,7 @@
 #define CONSOLE_COUNTDOWN_CTRLC (1 << 4)
 #define CONSOLE_COUNTDOWN_EXTERN (1 << 5)
 
-int console_countdown(int timeout_s, unsigned flags, char *out_key);
+int console_countdown(int timeout_s, unsigned flags, const char *keys, char *out_key);
 void console_countdown_abort(void);
 
 #endif /* __CONSOLE_COUNTDOWN_H */

@@ -207,4 +207,7 @@ static inline void pbl_set_putc(void (*putcf)(void *ctx, int c), void *ctx) {}
 
 bool console_allow_color(void);
 
+void console_ctrlc_allow(void);
+void console_ctrlc_forbid(void);
+
 #endif

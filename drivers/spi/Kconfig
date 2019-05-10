@@ -6,6 +6,13 @@ config SPI
 
 if SPI
 
+config SPI_MEM
+	bool "SPI memory extension"
+	help
+	  Enable this option if you want to enable the SPI memory extension.
+	  This extension is meant to simplify interaction with SPI memories
+	  by providing a high-level interface to send memory-like commands.
+
 config DRIVER_SPI_ALTERA
 	bool "Altera SPI Master driver"
 	depends on NIOS2
@@ -17,6 +24,17 @@ config DRIVER_SPI_ATH79
 config DRIVER_SPI_ATMEL
 	bool "Atmel (AT91) SPI Master driver"
 	depends on ARCH_AT91
+
+config DRIVER_SPI_FSL_QUADSPI
+	bool "Freescale QSPI controller"
+	depends on ARCH_IMX25 || ARCH_IMX31 || ARCH_IMX35 || ARCH_IMX50 || ARCH_IMX53 || ARCH_LAYERSCAPE
+	depends on SPI_MEM
+	help
+	  This enables support for the Quad SPI controller in master mode.
+          Up to four flash chips can be connected on two buses with two
+          chipselects each.
+          This controller does not support generic SPI messages. It only
+          supports the high-level SPI memory interface.
 
 config DRIVER_SPI_GPIO
 	bool "GPIO SPI Master driver"

@@ -2,7 +2,11 @@
 #define __INCLUDE_SPI_H
 
 #include <driver.h>
+#include <linux/err.h>
+#include <linux/kernel.h>
 #include <linux/string.h>
+
+struct spi_controller_mem_ops;
 
 struct spi_board_info {
 	char	*name;
@@ -20,13 +24,14 @@ struct spi_board_info {
 };
 
 /**
- * struct spi_device - Master side proxy for an SPI slave device
+ * struct spi_device - Controller side proxy for an SPI slave device
  * @dev: Driver model representation of the device.
- * @master: SPI controller used with the device.
+ * @controller: SPI controller used with the device.
+ * @master: Copy of controller, for backwards compatibility
  * @max_speed_hz: Maximum clock rate to be used with this chip
  *	(on this board); may be changed by the device's driver.
  *	The spi_transfer.speed_hz can override this for each transfer.
- * @chip_select: Chipselect, distinguishing chips handled by @master.
+ * @chip_select: Chipselect, distinguishing chips handled by @controller.
  * @mode: The spi mode defines how data is clocked out and in.
  *	This may be changed by the device's driver.
  *	The "active low" default for chipselect mode can be overridden
@@ -59,7 +64,9 @@ struct spi_board_info {
  */
 struct spi_device {
 	struct device_d		dev;
-	struct spi_master	*master;
+	struct spi_controller	*controller;
+	struct spi_controller	*master;	/* compatibility layer */
+	struct spi_mem		*mem;
 	u32			max_speed_hz;
 	u8			chip_select;
 	u8			mode;
@@ -73,6 +80,16 @@ struct spi_device {
 #define	SPI_LSB_FIRST	0x08			/* per-word bits-on-wire */
 #define	SPI_3WIRE	0x10			/* SI/SO signals shared */
 #define	SPI_LOOP	0x20			/* loopback mode */
+#define	SPI_NO_CS	0x40			/* 1 dev/bus, no chipselect */
+#define	SPI_READY	0x80			/* slave pulls low to pause */
+#define	SPI_TX_DUAL	0x100			/* transmit with 2 wires */
+#define	SPI_TX_QUAD	0x200			/* transmit with 4 wires */
+#define	SPI_RX_DUAL	0x400			/* receive with 2 wires */
+#define	SPI_RX_QUAD	0x800			/* receive with 4 wires */
+#define	SPI_CS_WORD	0x1000			/* toggle cs after each word */
+#define	SPI_TX_OCTAL	0x2000			/* transmit with 8 wires */
+#define	SPI_RX_OCTAL	0x4000			/* receive with 8 wires */
+#define	SPI_3WIRE_HIZ	0x8000			/* high impedance turnaround */
 	u8			bits_per_word;
 	int			irq;
 	void			*controller_state;
@@ -93,10 +110,17 @@ struct spi_device {
 struct spi_message;
 
 /**
- * struct spi_master - interface to SPI master controller
+ * struct spi_controller - interface to SPI master or slave controller
  * @dev: device interface to this driver
  * @bus_num: board-specific (and often SOC-specific) identifier for a
  *	given SPI controller.
+ * @mem_ops: optimized/dedicated operations for interactions with SPI
+ *      memory. This field is optional and should only be implemented
+ *      if the controller has native support for memory like operations.
+ * @max_transfer_size: function that returns the max transfer size for
+ *	a &spi_device; may be %NULL, so the default %SIZE_MAX will be used.
+ * @max_message_size: function that returns the max message size for
+ *	a &spi_device; may be %NULL, so the default %SIZE_MAX will be used.
  * @num_chipselect: chipselects are used to distinguish individual
  *	SPI slaves, and are numbered from zero to num_chipselects.
  *	each slave has a chipselect signal, but it's common that not
@@ -108,8 +132,9 @@ struct spi_message;
  *	the device whose settings are being modified.
  * @transfer: adds a message to the controller's transfer queue.
  * @cleanup: frees controller-specific state
+ * @list: link with the global spi_controller list
  *
- * Each SPI master controller can communicate with one or more @spi_device
+ * Each SPI controller can communicate with one or more @spi_device
  * children.  These make a small bus, sharing MOSI, MISO and SCK signals
  * but not chip select signals.  Each device may be configured to use a
  * different clock rate, since those shared signals are ignored unless
@@ -120,7 +145,7 @@ struct spi_message;
  * an SPI slave device.  For each such message it queues, it calls the
  * message's completion function when the transaction completes.
  */
-struct spi_master {
+struct spi_controller {
 	struct device_d *dev;
 
 	/* other than negative (== assign one dynamically), bus_num is fully
@@ -130,6 +155,15 @@ struct spi_master {
 	 * would normally use bus_num=2 for that controller.
 	 */
 	s16			bus_num;
+
+	/* Optimized handlers for SPI memory-like operations */
+	const struct spi_controller_mem_ops *mem_ops;
+	/*
+	 * on some hardware transfer size may be constrained
+	 * the limit may depend on device transfer settings
+	 */
+	size_t (*max_transfer_size)(struct spi_device *spi);
+	size_t (*max_message_size)(struct spi_device *spi);
 
 	/* chipselects will be integral to many controllers; some others
 	 * might use board-specific GPIOs.
@@ -147,7 +181,7 @@ struct spi_master {
 	 *   any other request management
 	 * + To a given spi_device, message queueing is pure fifo
 	 *
-	 * + The master's main job is to process its message queue,
+	 * + The controller's main job is to process its message queue,
 	 *   selecting a chip then transferring data
 	 * + If there are multiple spi_device children, the i/o queue
 	 *   arbitration algorithm is unspecified (round robin, fifo,
@@ -161,11 +195,48 @@ struct spi_master {
 	int			(*transfer)(struct spi_device *spi,
 						struct spi_message *mesg);
 
-	/* called on release() to free memory provided by spi_master */
+	/* called on release() to free memory provided by spi_controller */
 	void			(*cleanup)(struct spi_device *spi);
 
 	struct list_head list;
 };
+
+static inline void *spi_controller_get_devdata(struct spi_controller *ctlr)
+{
+	if (ctlr->dev->platform_data)
+		return ctlr->dev->platform_data;
+	else
+		return ERR_PTR(-EINVAL);
+}
+
+static inline void spi_controller_set_devdata(struct spi_controller *ctlr,
+					      void *data)
+{
+	ctlr->dev->platform_data = data;
+}
+
+static inline size_t spi_max_message_size(struct spi_device *spi)
+{
+	struct spi_controller *ctrl = spi->controller;
+	if (!ctrl->max_transfer_size)
+		return SIZE_MAX;
+	return ctrl->max_transfer_size(spi);
+}
+
+static inline size_t spi_max_transfer_size(struct spi_device *spi)
+{
+	struct spi_controller *ctrl = spi->controller;
+	size_t tr_max = SIZE_MAX;
+	size_t msg_max = spi_max_message_size(spi);
+
+	if (ctrl->max_transfer_size)
+		tr_max = ctrl->max_transfer_size(spi);
+
+	return min(tr_max, msg_max);
+}
+
+#define spi_master  			spi_controller
+#define spi_register_master(_ctrl)	spi_register_controller(_ctrl)
 
 /*---------------------------------------------------------------------------*/
 
@@ -341,9 +412,9 @@ spi_transfer_del(struct spi_transfer *t)
 
 int spi_sync(struct spi_device *spi, struct spi_message *message);
 
-struct spi_device *spi_new_device(struct spi_master *master,
+struct spi_device *spi_new_device(struct spi_controller *ctrl,
 				  struct spi_board_info *chip);
-int spi_register_master(struct spi_master *master);
+int spi_register_controller(struct spi_controller *ctrl);
 
 #ifdef CONFIG_SPI
 int spi_register_board_info(struct spi_board_info const *info, int num);
@@ -431,7 +502,7 @@ static inline ssize_t spi_w8r8(struct spi_device *spi, u8 cmd)
 
 extern struct bus_type spi_bus;
 
-struct spi_master *spi_get_master(int bus);
+struct spi_controller *spi_get_controller(int bus);
 
 static inline int spi_driver_register(struct driver_d *drv)
 {

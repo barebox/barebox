@@ -19,6 +19,7 @@
  */
 
 #include <common.h>
+#include <linux/spi/spi-mem.h>
 #include <spi/spi.h>
 #include <xfuncs.h>
 #include <malloc.h>
@@ -54,22 +55,23 @@ static LIST_HEAD(board_list);
  *
  * Returns the new device, or NULL.
  */
-struct spi_device *spi_new_device(struct spi_master *master,
+struct spi_device *spi_new_device(struct spi_controller *ctrl,
 				  struct spi_board_info *chip)
 {
 	struct spi_device	*proxy;
+	struct spi_mem		*mem;
 	int			status;
 
 	/* Chipselects are numbered 0..max; validate. */
-	if (chip->chip_select >= master->num_chipselect) {
+	if (chip->chip_select >= ctrl->num_chipselect) {
 		debug("cs%d > max %d\n",
 			chip->chip_select,
-			master->num_chipselect);
+			ctrl->num_chipselect);
 		return NULL;
 	}
 
 	proxy = xzalloc(sizeof *proxy);
-	proxy->master = master;
+	proxy->master = ctrl;
 	proxy->chip_select = chip->chip_select;
 	proxy->max_speed_hz = chip->max_speed_hz;
 	proxy->mode = chip->mode;
@@ -81,10 +83,20 @@ struct spi_device *spi_new_device(struct spi_master *master,
 	proxy->dev.id = DEVICE_ID_DYNAMIC;
 	proxy->dev.type_data = proxy;
 	proxy->dev.device_node = chip->device_node;
-	proxy->dev.parent = master->dev;
+	proxy->dev.parent = ctrl->dev;
+	proxy->master = proxy->controller = ctrl;
+
+	mem = xzalloc(sizeof *mem);
+	mem->spi = proxy;
+
+	if (ctrl->mem_ops && ctrl->mem_ops->get_name)
+		mem->name = ctrl->mem_ops->get_name(mem);
+	else
+		mem->name = dev_name(&proxy->dev);
+	proxy->mem = mem;
 
 	/* drivers may modify this initial i/o setup */
-	status = master->setup(proxy);
+	status = ctrl->setup(proxy);
 	if (status < 0) {
 		printf("can't setup %s, status %d\n",
 				proxy->dev.name, status);
@@ -100,12 +112,12 @@ fail:
 }
 EXPORT_SYMBOL(spi_new_device);
 
-static void spi_of_register_slaves(struct spi_master *master)
+static void spi_of_register_slaves(struct spi_controller *ctrl)
 {
 	struct device_node *n;
 	struct spi_board_info chip;
 	struct property *reg;
-	struct device_node *node = master->dev->device_node;
+	struct device_node *node = ctrl->dev->device_node;
 
 	if (!IS_ENABLED(CONFIG_OFDEVICE))
 		return;
@@ -116,7 +128,7 @@ static void spi_of_register_slaves(struct spi_master *master)
 	for_each_available_child_of_node(node, n) {
 		memset(&chip, 0, sizeof(chip));
 		chip.name = xstrdup(n->name);
-		chip.bus_num = master->bus_num;
+		chip.bus_num = ctrl->bus_num;
 		/* Mode (clock phase/polarity/etc.) */
 		if (of_property_read_bool(n, "spi-cpha"))
 			chip.mode |= SPI_CPHA;
@@ -171,7 +183,7 @@ spi_register_board_info(struct spi_board_info const *info, int n)
 	return 0;
 }
 
-static void scan_boardinfo(struct spi_master *master)
+static void scan_boardinfo(struct spi_controller *ctrl)
 {
 	struct boardinfo	*bi;
 
@@ -180,27 +192,47 @@ static void scan_boardinfo(struct spi_master *master)
 		unsigned		n;
 
 		for (n = bi->n_board_info; n > 0; n--, chip++) {
-			debug("%s %d %d\n", __FUNCTION__, chip->bus_num, master->bus_num);
-			if (chip->bus_num != master->bus_num)
+			debug("%s %d %d\n", __FUNCTION__, chip->bus_num, ctrl->bus_num);
+			if (chip->bus_num != ctrl->bus_num)
 				continue;
 			/* NOTE: this relies on spi_new_device to
 			 * issue diagnostics when given bogus inputs
 			 */
-			(void) spi_new_device(master, chip);
+			(void) spi_new_device(ctrl, chip);
 		}
 	}
 }
 
-static LIST_HEAD(spi_master_list);
+static LIST_HEAD(spi_controller_list);
+
+static int spi_controller_check_ops(struct spi_controller *ctlr)
+{
+	/*
+	 * The controller may implement only the high-level SPI-memory like
+	 * operations if it does not support regular SPI transfers, and this is
+	 * valid use case.
+	 * If ->mem_ops is NULL, we request that at least one of the
+	 * ->transfer_xxx() method be implemented.
+	 */
+	if (ctlr->mem_ops) {
+		if (!ctlr->mem_ops->exec_op)
+			return -EINVAL;
+	} else if (!ctlr->transfer) {
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
 
 /**
- * spi_register_master - register SPI master controller
- * @master: initialized master, originally from spi_alloc_master()
+ * spi_register_ctrl - register SPI ctrl controller
+ * @ctrl: initialized ctrl, originally from spi_alloc_ctrl()
  * Context: can sleep
  *
- * SPI master controllers connect to their drivers using some non-SPI bus,
+ * SPI controllers connect to their drivers using some non-SPI bus,
  * such as the platform bus.  The final stage of probe() in that code
- * includes calling spi_register_master() to hook up to this SPI bus glue.
+ * includes calling spi_register_ctrl() to hook up to this SPI bus glue.
  *
  * SPI controllers use board specific (often SOC specific) bus numbers,
  * and board-specific addressing for SPI devices combines those numbers
@@ -209,47 +241,55 @@ static LIST_HEAD(spi_master_list);
  * chip is at which address.
  *
  * This must be called from context that can sleep.  It returns zero on
- * success, else a negative error code (dropping the master's refcount).
+ * success, else a negative error code (dropping the ctrl's refcount).
  * After a successful return, the caller is responsible for calling
- * spi_unregister_master().
+ * spi_unregister_ctrl().
  */
-int spi_register_master(struct spi_master *master)
+int spi_register_controller(struct spi_controller *ctrl)
 {
 	static int dyn_bus_id = (1 << 15) - 1;
 	int			status = -ENODEV;
 
-	debug("%s: %s:%d\n", __func__, master->dev->name, master->dev->id);
+	debug("%s: %s:%d\n", __func__, ctrl->dev->name, ctrl->dev->id);
+
+	/*
+	 * Make sure all necessary hooks are implemented before registering
+	 * the SPI controller.
+	 */
+	status = spi_controller_check_ops(ctrl);
+	if (status)
+		return status;
 
 	/* even if it's just one always-selected device, there must
 	 * be at least one chipselect
 	 */
-	if (master->num_chipselect == 0)
+	if (ctrl->num_chipselect == 0)
 		return -EINVAL;
 
-	if ((master->bus_num < 0) && master->dev->device_node)
-		master->bus_num = of_alias_get_id(master->dev->device_node, "spi");
+	if ((ctrl->bus_num < 0) && ctrl->dev->device_node)
+		ctrl->bus_num = of_alias_get_id(ctrl->dev->device_node, "spi");
 
 	/* convention:  dynamically assigned bus IDs count down from the max */
-	if (master->bus_num < 0)
-		master->bus_num = dyn_bus_id--;
+	if (ctrl->bus_num < 0)
+		ctrl->bus_num = dyn_bus_id--;
 
-	list_add_tail(&master->list, &spi_master_list);
+	list_add_tail(&ctrl->list, &spi_controller_list);
 
-	spi_of_register_slaves(master);
+	spi_of_register_slaves(ctrl);
 
 	/* populate children from any spi device tables */
-	scan_boardinfo(master);
+	scan_boardinfo(ctrl);
 	status = 0;
 
 	return status;
 }
-EXPORT_SYMBOL(spi_register_master);
+EXPORT_SYMBOL(spi_register_ctrl);
 
-struct spi_master *spi_get_master(int bus)
+struct spi_controller *spi_get_controller(int bus)
 {
-	struct spi_master* m;
+	struct spi_controller* m;
 
-	list_for_each_entry(m, &spi_master_list, list) {
+	list_for_each_entry(m, &spi_controller_list, list) {
 		if (m->bus_num == bus)
 			return m;
 	}
@@ -259,7 +299,7 @@ struct spi_master *spi_get_master(int bus)
 
 int spi_sync(struct spi_device *spi, struct spi_message *message)
 {
-	return spi->master->transfer(spi, message);
+	return spi->controller->transfer(spi, message);
 }
 
 /**

@@ -45,6 +45,9 @@ struct cqspi_flash_pdata {
 	unsigned int tsd2d_ns;
 	unsigned int tchsh_ns;
 	unsigned int tslch_ns;
+	u8	     inst_width;
+	u8	     addr_width;
+	u8	     data_width;
 };
 
 struct cqspi_st {
@@ -287,9 +290,10 @@ static unsigned int cqspi_calc_rdreg(struct spi_nor *nor, u8 opcode)
 
 	f_pdata = &cqspi->f_pdata[cqspi->current_cs];
 
-	if (nor->flash_read == SPI_NOR_QUAD)
-		rdreg |= (CQSPI_INST_TYPE_QUAD
-			  << CQSPI_REG_RD_INSTR_TYPE_DATA_LSB);
+	rdreg |= f_pdata->inst_width << CQSPI_REG_RD_INSTR_TYPE_INSTR_LSB;
+	rdreg |= f_pdata->addr_width << CQSPI_REG_RD_INSTR_TYPE_ADDR_LSB;
+	rdreg |= f_pdata->data_width << CQSPI_REG_RD_INSTR_TYPE_DATA_LSB;
+
 	return rdreg;
 }
 
@@ -427,6 +431,7 @@ static int cqspi_command_write_addr(struct spi_nor *nor,
 static int cqspi_indirect_read_setup(struct spi_nor *nor,
 				     unsigned int from_addr)
 {
+	struct cqspi_flash_pdata *f_pdata;
 	struct cqspi_st *cqspi = nor->priv;
 	unsigned int ahb_base = (unsigned int) cqspi->ahb_base;
 	void __iomem *reg_base = cqspi->iobase;
@@ -437,6 +442,7 @@ static int cqspi_indirect_read_setup(struct spi_nor *nor,
 	writel(ahb_base & CQSPI_INDIRECTTRIGGER_ADDR_MASK,
 	       reg_base + CQSPI_REG_INDIRECTTRIGGER);
 	writel(from_addr, reg_base + CQSPI_REG_INDIRECTRDSTARTADDR);
+	f_pdata = &cqspi->f_pdata[cqspi->current_cs];
 
 	reg = nor->read_opcode << CQSPI_REG_RD_INSTR_OPCODE_LSB;
 	reg |= cqspi_calc_rdreg(nor, nor->read_opcode);
@@ -444,14 +450,10 @@ static int cqspi_indirect_read_setup(struct spi_nor *nor,
 	/* Setup dummy clock cycles */
 	dummy_bytes = nor->read_dummy / 8;
 
+	if (dummy_bytes > CQSPI_DUMMY_BYTES_MAX)
+		dummy_bytes = CQSPI_DUMMY_BYTES_MAX;
+
 	if (dummy_bytes) {
-		struct cqspi_flash_pdata *f_pdata;
-
-		f_pdata = &cqspi->f_pdata[cqspi->current_cs];
-
-		if (dummy_bytes > CQSPI_DUMMY_BYTES_MAX)
-			dummy_bytes = CQSPI_DUMMY_BYTES_MAX;
-
 		reg |= (1 << CQSPI_REG_RD_INSTR_MODE_EN_LSB);
 		/* Set mode bits high to ensure chip doesn't enter XIP */
 		writel(0xFF, reg_base + CQSPI_REG_MODE_BIT);
@@ -459,7 +461,8 @@ static int cqspi_indirect_read_setup(struct spi_nor *nor,
 		/* Convert to clock cycles. */
 		dummy_clk = dummy_bytes * CQSPI_DUMMY_CLKS_PER_BYTE;
 		/* Need to subtract the mode byte (8 clocks). */
-		dummy_clk -= CQSPI_DUMMY_CLKS_PER_BYTE;
+		if (f_pdata->inst_width != CQSPI_INST_TYPE_QUAD)
+			dummy_clk -= CQSPI_DUMMY_CLKS_PER_BYTE;
 
 		if (dummy_clk)
 			reg |= (dummy_clk & CQSPI_REG_RD_INSTR_DUMMY_MASK)
@@ -676,51 +679,53 @@ failwr:
 	return ret;
 }
 
-static void cqspi_write(struct spi_nor *nor, loff_t to,
-			size_t len, size_t *retlen, const u_char *buf)
+static void cqspi_controller_enable(struct cqspi_st *cqspi)
 {
-	int ret;
+	void __iomem *reg_base = cqspi->iobase;
+	unsigned int reg;
 
-	if (!IS_ENABLED(CONFIG_MTD_WRITE))
-		return;
-
-	ret = cqspi_indirect_write_setup(nor, to);
-	if (ret == 0) {
-		ret = cqspi_indirect_write_execute(nor, buf, len);
-		if (ret == 0)
-			*retlen += len;
-	}
+	reg = readl(reg_base + CQSPI_REG_CONFIG);
+	reg |= CQSPI_REG_CONFIG_ENABLE_MASK;
+	writel(reg, reg_base + CQSPI_REG_CONFIG);
 }
 
-static int cqspi_read(struct spi_nor *nor, loff_t from,
-		      size_t len, size_t *retlen, u_char *buf)
+static void cqspi_controller_disable(struct cqspi_st *cqspi)
 {
-	int ret;
+	void __iomem *reg_base = cqspi->iobase;
+	unsigned int reg;
 
-	ret = cqspi_indirect_read_setup(nor, from);
-	if (ret == 0) {
-		ret = cqspi_indirect_read_execute(nor, buf, len);
-		if (ret == 0)
-			*retlen += len;
-	}
-	return ret;
+	reg = readl(reg_base + CQSPI_REG_CONFIG);
+	reg &= ~CQSPI_REG_CONFIG_ENABLE_MASK;
+	writel(reg, reg_base + CQSPI_REG_CONFIG);
 }
 
-static int cqspi_erase(struct spi_nor *nor, loff_t offs)
+static void cqspi_chipselect(struct cqspi_st *cqspi,
+			     unsigned int chip_select,
+			     unsigned int decoder_enable)
 {
-	int ret;
+	void __iomem *reg_base = cqspi->iobase;
+	unsigned int reg;
 
-	/* Send write enable, then erase commands. */
-	ret = nor->write_reg(nor, SPINOR_OP_WREN, NULL, 0, 0);
-	if (ret)
-		return ret;
+	reg = readl(reg_base + CQSPI_REG_CONFIG);
+	if (decoder_enable) {
+		reg |= CQSPI_REG_CONFIG_DECODE_MASK;
+	} else {
+		reg &= ~CQSPI_REG_CONFIG_DECODE_MASK;
 
-	/* Set up command buffer. */
-	ret = cqspi_command_write_addr(nor, nor->erase_opcode, offs);
-	if (ret)
-		return ret;
+		/* Convert CS if without decoder.
+		 * CS0 to 4b'1110
+		 * CS1 to 4b'1101
+		 * CS2 to 4b'1011
+		 * CS3 to 4b'0111
+		 */
+		chip_select = 0xF & ~(1 << chip_select);
+	}
 
-	return 0;
+	reg &= ~(CQSPI_REG_CONFIG_CHIPSELECT_MASK
+		 << CQSPI_REG_CONFIG_CHIPSELECT_LSB);
+	reg |= (chip_select & CQSPI_REG_CONFIG_CHIPSELECT_MASK)
+		<< CQSPI_REG_CONFIG_CHIPSELECT_LSB;
+	writel(reg, reg_base + CQSPI_REG_CONFIG);
 }
 
 static unsigned int calculate_ticks_for_ns(unsigned int ref_clk_hz,
@@ -834,55 +839,6 @@ static void cqspi_readdata_capture(struct cqspi_st *cqspi,
 	writel(reg, reg_base + CQSPI_REG_READCAPTURE);
 }
 
-static void cqspi_chipselect(struct cqspi_st *cqspi,
-			     unsigned int chip_select,
-			     unsigned int decoder_enable)
-{
-	void __iomem *reg_base = cqspi->iobase;
-	unsigned int reg;
-
-	reg = readl(reg_base + CQSPI_REG_CONFIG);
-	if (decoder_enable) {
-		reg |= CQSPI_REG_CONFIG_DECODE_MASK;
-	} else {
-		reg &= ~CQSPI_REG_CONFIG_DECODE_MASK;
-
-		/* Convert CS if without decoder.
-		 * CS0 to 4b'1110
-		 * CS1 to 4b'1101
-		 * CS2 to 4b'1011
-		 * CS3 to 4b'0111
-		 */
-		chip_select = 0xF & ~(1 << chip_select);
-	}
-
-	reg &= ~(CQSPI_REG_CONFIG_CHIPSELECT_MASK
-		 << CQSPI_REG_CONFIG_CHIPSELECT_LSB);
-	reg |= (chip_select & CQSPI_REG_CONFIG_CHIPSELECT_MASK)
-	    << CQSPI_REG_CONFIG_CHIPSELECT_LSB;
-	writel(reg, reg_base + CQSPI_REG_CONFIG);
-}
-
-static void cqspi_controller_enable(struct cqspi_st *cqspi)
-{
-	void __iomem *reg_base = cqspi->iobase;
-	unsigned int reg;
-
-	reg = readl(reg_base + CQSPI_REG_CONFIG);
-	reg |= CQSPI_REG_CONFIG_ENABLE_MASK;
-	writel(reg, reg_base + CQSPI_REG_CONFIG);
-}
-
-static void cqspi_controller_disable(struct cqspi_st *cqspi)
-{
-	void __iomem *reg_base = cqspi->iobase;
-	unsigned int reg;
-
-	reg = readl(reg_base + CQSPI_REG_CONFIG);
-	reg &= ~CQSPI_REG_CONFIG_ENABLE_MASK;
-	writel(reg, reg_base + CQSPI_REG_CONFIG);
-}
-
 static void cqspi_switch_cs(struct cqspi_st *cqspi, unsigned int cs)
 {
 	unsigned int reg;
@@ -908,7 +864,7 @@ static void cqspi_switch_cs(struct cqspi_st *cqspi, unsigned int cs)
 	cqspi_controller_enable(cqspi);
 }
 
-static int cqspi_prep(struct spi_nor *nor, enum spi_nor_ops ops)
+static int cqspi_configure(struct spi_nor *nor)
 {
 	struct cqspi_st *cqspi = nor->priv;
 	int cs = cqspi_find_chipselect(nor);
@@ -936,27 +892,119 @@ static int cqspi_prep(struct spi_nor *nor, enum spi_nor_ops ops)
 	return 0;
 }
 
+static int cqspi_set_protocol(struct spi_nor *nor, const int read)
+{
+	struct cqspi_st *cqspi = nor->priv;
+	struct cqspi_flash_pdata *f_pdata;
+
+	f_pdata = &cqspi->f_pdata[cqspi->current_cs];
+
+	f_pdata->inst_width = CQSPI_INST_TYPE_SINGLE;
+	f_pdata->addr_width = CQSPI_INST_TYPE_SINGLE;
+	f_pdata->data_width = CQSPI_INST_TYPE_SINGLE;
+
+	if (read) {
+		switch (nor->read_proto) {
+		case SNOR_PROTO_1_1_1:
+			f_pdata->data_width = CQSPI_INST_TYPE_SINGLE;
+			break;
+		case SNOR_PROTO_1_1_2:
+			f_pdata->data_width = CQSPI_INST_TYPE_DUAL;
+			break;
+		case SNOR_PROTO_1_1_4:
+			f_pdata->data_width = CQSPI_INST_TYPE_QUAD;
+			break;
+		default:
+			return -EINVAL;
+		}
+	}
+
+	cqspi_configure(nor);
+
+	return 0;
+}
+
+static void cqspi_write(struct spi_nor *nor, loff_t to,
+			size_t len, size_t *retlen, const u_char *buf)
+{
+	int ret;
+
+	if (!IS_ENABLED(CONFIG_MTD_WRITE))
+		return;
+
+	ret = cqspi_set_protocol(nor, 0);
+	if (ret)
+		return;
+
+	ret = cqspi_indirect_write_setup(nor, to);
+	if (ret == 0) {
+		ret = cqspi_indirect_write_execute(nor, buf, len);
+		if (ret == 0)
+			*retlen += len;
+	}
+}
+
+static int cqspi_read(struct spi_nor *nor, loff_t from,
+		      size_t len, size_t *retlen, u_char *buf)
+{
+	int ret;
+
+	ret = cqspi_set_protocol(nor, 1);
+	if (ret)
+		return ret;
+
+	ret = cqspi_indirect_read_setup(nor, from);
+	if (ret == 0) {
+		ret = cqspi_indirect_read_execute(nor, buf, len);
+		if (ret == 0)
+			*retlen += len;
+	}
+	return ret;
+}
+
+static int cqspi_erase(struct spi_nor *nor, loff_t offs)
+{
+	int ret;
+
+	ret = cqspi_set_protocol(nor, 0);
+	if (ret)
+		return ret;
+
+	/* Send write enable, then erase commands. */
+	ret = nor->write_reg(nor, SPINOR_OP_WREN, NULL, 0);
+	if (ret)
+		return ret;
+
+	/* Set up command buffer. */
+	ret = cqspi_command_write_addr(nor, nor->erase_opcode, offs);
+	if (ret)
+		return ret;
+
+	return 0;
+}
+
 static int cqspi_read_reg(struct spi_nor *nor, u8 opcode, u8 *buf, int len)
 {
 	int ret;
 
-	cqspi_prep(nor, SPI_NOR_OPS_READ);
+	ret = cqspi_set_protocol(nor, 0);
+	if (!ret)
+		ret = cqspi_command_read(nor, &opcode, 1, buf, len);
 
-	ret = cqspi_command_read(nor, &opcode, 1, buf, len);
 	return ret;
 }
 
-static int cqspi_write_reg(struct spi_nor *nor, u8 opcode, u8 *buf, int len,
-			   int write_enable)
+static int cqspi_write_reg(struct spi_nor *nor, u8 opcode, u8 *buf, int len)
 {
 	int ret = 0;
 
 	if (!IS_ENABLED(CONFIG_MTD_WRITE))
 		return -ENOTSUPP;
 
-	cqspi_prep(nor, SPI_NOR_OPS_WRITE);
+	ret = cqspi_set_protocol(nor, 0);
+	if (!ret)
+		ret = cqspi_command_write(nor, opcode, buf, len);
 
-	ret = cqspi_command_write(nor, opcode, buf, len);
 	return ret;
 }
 
@@ -1034,6 +1082,13 @@ static int cqspi_setup_flash(struct device_d *dev,
 			     struct cqspi_flash_pdata *f_pdata,
 			     struct device_node *np)
 {
+	const struct spi_nor_hwcaps hwcaps = {
+		.mask = SNOR_HWCAPS_READ |
+			SNOR_HWCAPS_READ_FAST |
+			SNOR_HWCAPS_READ_1_1_2 |
+			SNOR_HWCAPS_READ_1_1_4 |
+			SNOR_HWCAPS_PP,
+	};
 	struct cqspi_st *cqspi = dev->priv;
 	struct mtd_info *mtd;
 	struct spi_nor *nor;
@@ -1075,7 +1130,7 @@ static int cqspi_setup_flash(struct device_d *dev,
 	nor->write = cqspi_write;
 	nor->erase = cqspi_erase;
 
-	ret = spi_nor_scan(nor, NULL, SPI_NOR_QUAD, false);
+	ret = spi_nor_scan(nor, NULL, &hwcaps, false);
 	if (ret)
 		goto probe_failed;
 

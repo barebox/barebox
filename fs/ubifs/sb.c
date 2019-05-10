@@ -220,7 +220,7 @@ failed:
  * code. Note, the user of this function is responsible of kfree()'ing the
  * returned superblock buffer.
  */
-struct ubifs_sb_node *ubifs_read_sb_node(struct ubifs_info *c)
+static struct ubifs_sb_node *ubifs_read_sb_node(struct ubifs_info *c)
 {
 	struct ubifs_sb_node *sup;
 	int err;
@@ -237,6 +237,39 @@ struct ubifs_sb_node *ubifs_read_sb_node(struct ubifs_info *c)
 	}
 
 	return sup;
+}
+
+static int authenticate_sb_node(struct ubifs_info *c,
+				const struct ubifs_sb_node *sup)
+{
+	unsigned int sup_flags = le32_to_cpu(sup->flags);
+	int authenticated = !!(sup_flags & UBIFS_FLG_AUTHENTICATION);
+	int hash_algo;
+	struct digest *digest;
+
+	if (!authenticated)
+		return 0;
+
+	if (!ubifs_allow_authenticated_unauthenticated)
+		return -EPERM;
+
+	hash_algo = le16_to_cpu(sup->hash_algo);
+	if (hash_algo >= HASH_ALGO__LAST) {
+		ubifs_err(c, "superblock uses unknown hash algo %d",
+			hash_algo);
+		return -EINVAL;
+	}
+
+	digest = digest_alloc_by_algo(hash_algo);
+	if (!digest) {
+		ubifs_err(c, "Cannot allocate hash algo %d",
+			hash_algo);
+		return -EINVAL;
+	}
+
+	c->hash_len = digest_length(digest);
+
+	return 0;
 }
 
 /*
@@ -265,6 +298,8 @@ int ubifs_read_superblock(struct ubifs_info *c)
 	sup = ubifs_read_sb_node(c);
 	if (IS_ERR(sup))
 		return PTR_ERR(sup);
+
+	c->sup_node = sup;
 
 	c->fmt_version = le32_to_cpu(sup->fmt_version);
 	c->ro_compat_version = le32_to_cpu(sup->ro_compat_version);
@@ -349,6 +384,10 @@ int ubifs_read_superblock(struct ubifs_info *c)
 	c->double_hash = !!(sup_flags & UBIFS_FLG_DOUBLE_HASH);
 	c->encrypted = !!(sup_flags & UBIFS_FLG_ENCRYPTION);
 
+	err = authenticate_sb_node(c, sup);
+	if (err)
+		goto out;
+
 	if ((sup_flags & ~UBIFS_FLG_MASK) != 0) {
 		ubifs_err(c, "Unknown feature flags found: %#x",
 			  sup_flags & ~UBIFS_FLG_MASK);
@@ -389,7 +428,6 @@ int ubifs_read_superblock(struct ubifs_info *c)
 
 	err = validate_sb(c, sup);
 out:
-	kfree(sup);
 	return err;
 }
 

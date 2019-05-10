@@ -113,6 +113,11 @@ static inline struct digest *digest_alloc(const char *name)
 	return NULL;
 }
 
+static inline struct digest *digest_alloc_by_algo(enum hash_algo algo)
+{
+	return NULL;
+}
+
 static inline void digest_free(struct digest *d)
 {
 }

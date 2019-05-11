@@ -1,3 +1,4 @@
+KBUILD_DEFCONFIG := ipe337_defconfig
 
 CPPFLAGS += -fno-strict-aliasing
 

@@ -1,3 +1,4 @@
+KBUILD_DEFCONFIG := qemu_virt64_defconfig
 
 CPPFLAGS	+= -D__ARM__ -fno-strict-aliasing
 # Explicitly specifiy 32-bit ARM ISA since toolchain default can be -mthumb:

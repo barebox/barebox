@@ -14,6 +14,7 @@
 *.bbenv
 *.bbenv.*
 *.bct
+*.bin.gen.S
 *.dcd
 *.dcd.S
 *.elf
@@ -32,7 +33,6 @@
 *.so.dbg
 *.symtypes
 *.tab.[ch]
-*.bin.gen.S
 Module.symvers
 
 #
@@ -52,8 +52,8 @@ Module.symvers
 #
 # Generated include files
 #
-include/config
-include/generated
+/include/config/
+/include/generated/
 
 # Generated files
 Documentation/commands/*.rst
@@ -81,4 +81,9 @@ GTAGS
 \#*\#
 
 # Kconfig presets
-all.config
+/all.config
+/alldef.config
+/allmod.config
+/allno.config
+/allrandom.config
+/allyes.config

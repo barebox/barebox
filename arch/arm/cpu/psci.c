@@ -13,7 +13,7 @@
 
 #include <common.h>
 #include <asm/psci.h>
-#include <asm/arm-smccc.h>
+#include <linux/arm-smccc.h>
 #include <asm/secure.h>
 #include <asm/system.h>
 #include <restart.h>

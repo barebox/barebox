@@ -16,7 +16,7 @@
 #include <asm/system.h>
 #include <init.h>
 #include <globalvar.h>
-#include <asm/arm-smccc.h>
+#include <linux/arm-smccc.h>
 #include <asm-generic/sections.h>
 #include <asm/secure.h>
 

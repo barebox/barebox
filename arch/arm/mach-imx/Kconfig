@@ -505,6 +505,12 @@ config MACH_GRINN_LITEBOARD
 	bool "Grinn liteboard"
 	select ARCH_IMX6UL
 
+config MACH_DIGI_CCIMX6ULSBCPRO
+	bool "Digi Internal CC-IMX6UL SBC Pro"
+	select ARCH_IMX6
+	select ARCH_IMX6UL
+	select ARM_USE_COMPRESSED_DTB
+
 endif
 
 # ----------------------------------------------------------

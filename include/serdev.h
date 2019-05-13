@@ -14,6 +14,7 @@
  * @poller		Async poller used to poll this serdev
  * @polling_interval:	Async poller periodicity
  * @polling_window:	Duration of a single busy loop poll
+ * @locked:		Lock to prevent recursive polling
  * @receive_buf:	Function called with data received from device;
  *			returns number of bytes accepted;
  */
@@ -24,6 +25,7 @@ struct serdev_device {
 	struct poller_async poller;
 	uint64_t polling_interval;
 	uint64_t polling_window;
+	bool locked;
 
 	int (*receive_buf)(struct serdev_device *, const unsigned char *,
 			   size_t);

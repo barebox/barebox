@@ -9,6 +9,10 @@ static void serdev_device_poller(void *context)
 	unsigned char *buf = serdev->buf;
 	int ret, len;
 
+	if (serdev->locked)
+		return;
+
+	serdev->locked = true;
 	/*
 	 * Since this callback is a part of poller infrastructure we
 	 * want to use _non_interruptible version of the function
@@ -37,6 +41,8 @@ static void serdev_device_poller(void *context)
 	} else {
 		poller_async_cancel(&serdev->poller);
 	}
+
+	serdev->locked = false;
 }
 
 static int serdev_device_set_polling_interval(struct param_d *param, void *serdev)

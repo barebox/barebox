@@ -94,8 +94,7 @@ void __noreturn barebox_multi_pbl_start(unsigned long membase,
 
 	pbl_barebox_uncompress((void*)barebox_base, pg_start, pg_len);
 
-	arm_early_mmu_cache_flush();
-	icache_invalidate();
+	sync_caches_for_execution();
 
 	if (IS_ENABLED(CONFIG_THUMB2_BAREBOX))
 		barebox = (void *)(barebox_base + 1);

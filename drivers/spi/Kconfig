@@ -27,7 +27,6 @@ config DRIVER_SPI_ATMEL
 
 config DRIVER_SPI_FSL_QUADSPI
 	bool "Freescale QSPI controller"
-	depends on ARCH_IMX25 || ARCH_IMX31 || ARCH_IMX35 || ARCH_IMX50 || ARCH_IMX53 || ARCH_LAYERSCAPE
 	depends on SPI_MEM
 	help
 	  This enables support for the Quad SPI controller in master mode.

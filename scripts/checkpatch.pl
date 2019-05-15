@@ -457,7 +457,7 @@ our $typeTypedefs = qr{(?x:
 our $zero_initializer = qr{(?:(?:0[xX])?0+$Int_type?|NULL|false)\b};
 
 our $logFunctions = qr{(?x:
-	printk(?:_ratelimited|_once|_deferred_once|_deferred|)|
+	printf|printk(?:_ratelimited|_once|_deferred_once|_deferred|)|
 	(?:[a-z0-9]+_){1,2}(?:printk|emerg|alert|crit|err|warning|warn|notice|info|debug|dbg|vdbg|devel|cont|WARN)(?:_ratelimited|_once|)|
 	TP_printk|
 	WARN(?:_RATELIMIT|_ONCE|)|
@@ -1095,9 +1095,9 @@ sub top_of_kernel_tree {
 	my ($root) = @_;
 
 	my @tree_check = (
-		"COPYING", "CREDITS", "Kbuild", "MAINTAINERS", "Makefile",
-		"README", "Documentation", "arch", "include", "drivers",
-		"fs", "init", "ipc", "kernel", "lib", "scripts",
+		"arch", "commands", "common", "COPYING", "defaultenv",
+		"Documentation", "drivers", "fs", "include", "lib",
+		"MAKEALL", "Makefile", "net", "README", "scripts"
 	);
 
 	foreach my $check (@tree_check) {
@@ -3008,8 +3008,12 @@ sub process {
 
 			my @compats = $rawline =~ /\"([a-zA-Z0-9\-\,\.\+_]+)\"/g;
 
-			my $dt_path = $root . "/Documentation/devicetree/bindings/";
-			my $vp_file = $dt_path . "vendor-prefixes.txt";
+			# linux device tree files
+			my $dt_path = $root . "/dts/Bindings/";
+ 			my $vp_file = $dt_path . "vendor-prefixes.txt";
+
+			# barebox-specific bindings
+			$dt_path = $dt_path . " " . $root . "/Documentation/devicetree/bindings/";
 
 			foreach my $compat (@compats) {
 				my $compat2 = $compat;

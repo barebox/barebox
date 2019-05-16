@@ -67,6 +67,7 @@ static int do_spi(int argc, char *argv[])
 		printf("spi bus %d not found\n", bus);
 		return -ENODEV;
 	}
+	spi.master = spi.controller;
 
 	if (spi.chip_select >= spi.controller->num_chipselect) {
 		printf("spi chip select (%d) >= controller num chipselect (%d)\n",

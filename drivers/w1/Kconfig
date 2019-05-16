@@ -1,6 +1,6 @@
 menuconfig W1
 	bool "Dallas's 1-wire support"
-	---help---
+	help
 	  Dallas' 1-wire bus is useful to connect slow 1-pin devices
 	  such as iButtons and thermal sensors.
 
@@ -13,7 +13,7 @@ source "drivers/w1/slaves/Kconfig"
 
 config W1_DUAL_SEARCH
 	bool "dual search"
-	---help---
+	help
 	  Some device need to be searched twice to be detected
 
 endif # W1

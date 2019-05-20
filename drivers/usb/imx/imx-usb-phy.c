@@ -23,6 +23,7 @@
 #include <linux/phy/phy.h>
 #include <linux/clk.h>
 #include <linux/err.h>
+#include <stmp-device.h>
 
 #define HW_USBPHY_PWD				0x00
 #define HW_USBPHY_TX				0x10
@@ -30,8 +31,6 @@
 #define HW_USBPHY_CTRL_SET			0x34
 #define HW_USBPHY_CTRL_CLR			0x38
 
-#define USBPHY_CTRL_SFTRST		(1 << 31)
-#define USBPHY_CTRL_CLKGATE		(1 << 30)
 #define BM_USBPHY_CTRL_ENUTMILEVEL3		BIT(15)
 #define BM_USBPHY_CTRL_ENUTMILEVEL2		BIT(14)
 #define BM_USBPHY_CTRL_ENHOSTDISCONDETECT	BIT(1)
@@ -47,17 +46,13 @@ struct imx_usbphy {
 static int imx_usbphy_phy_init(struct phy *phy)
 {
 	struct imx_usbphy *imxphy = phy_get_drvdata(phy);
+	int ret;
 
 	clk_enable(imxphy->clk);
 
-	/* reset usbphy */
-	writel(USBPHY_CTRL_SFTRST, imxphy->base + HW_USBPHY_CTRL_SET);
-
-	udelay(10);
-
-	/* clr reset and clkgate */
-	writel(USBPHY_CTRL_SFTRST | USBPHY_CTRL_CLKGATE,
-			imxphy->base + HW_USBPHY_CTRL_CLR);
+	ret = stmp_reset_block(imxphy->base + HW_USBPHY_CTRL, false);
+	if (ret)
+		return ret;
 
 	/* Power up the PHY */
 	writel(0, imxphy->base + HW_USBPHY_PWD);

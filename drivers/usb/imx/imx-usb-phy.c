@@ -24,16 +24,17 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 
-#define SET				0x4
-#define CLR				0x8
-
-#define USBPHY_CTRL			0x30
+#define HW_USBPHY_PWD				0x00
+#define HW_USBPHY_TX				0x10
+#define HW_USBPHY_CTRL				0x30
+#define HW_USBPHY_CTRL_SET			0x34
+#define HW_USBPHY_CTRL_CLR			0x38
 
 #define USBPHY_CTRL_SFTRST		(1 << 31)
 #define USBPHY_CTRL_CLKGATE		(1 << 30)
-#define USBPHY_CTRL_ENUTMILEVEL3	(1 << 15)
-#define USBPHY_CTRL_ENUTMILEVEL2	(1 << 14)
-#define USBPHY_CTRL_ENHOSTDISCONDETECT	(1 << 1)
+#define BM_USBPHY_CTRL_ENUTMILEVEL3		BIT(15)
+#define BM_USBPHY_CTRL_ENUTMILEVEL2		BIT(14)
+#define BM_USBPHY_CTRL_ENHOSTDISCONDETECT	BIT(1)
 
 struct imx_usbphy {
 	struct usb_phy usb_phy;
@@ -50,20 +51,20 @@ static int imx_usbphy_phy_init(struct phy *phy)
 	clk_enable(imxphy->clk);
 
 	/* reset usbphy */
-	writel(USBPHY_CTRL_SFTRST, imxphy->base + USBPHY_CTRL + SET);
+	writel(USBPHY_CTRL_SFTRST, imxphy->base + HW_USBPHY_CTRL_SET);
 
 	udelay(10);
 
 	/* clr reset and clkgate */
 	writel(USBPHY_CTRL_SFTRST | USBPHY_CTRL_CLKGATE,
-			imxphy->base + USBPHY_CTRL + CLR);
+			imxphy->base + HW_USBPHY_CTRL_CLR);
 
-	/* clr all pwd bits => power up phy */
-	writel(0xffffffff, imxphy->base + CLR);
+	/* Power up the PHY */
+	writel(0, imxphy->base + HW_USBPHY_PWD);
 
 	/* set utmilvl2/3 */
-	writel(USBPHY_CTRL_ENUTMILEVEL3 | USBPHY_CTRL_ENUTMILEVEL2,
-	       imxphy->base + USBPHY_CTRL + SET);
+	writel(BM_USBPHY_CTRL_ENUTMILEVEL3 | BM_USBPHY_CTRL_ENUTMILEVEL2,
+	       imxphy->base + HW_USBPHY_CTRL_SET);
 
 	return 0;
 }
@@ -74,8 +75,8 @@ static int imx_usbphy_notify_connect(struct usb_phy *phy,
 	struct imx_usbphy *imxphy = container_of(phy, struct imx_usbphy, usb_phy);
 
 	if (speed == USB_SPEED_HIGH) {
-		writel(USBPHY_CTRL_ENHOSTDISCONDETECT,
-		       imxphy->base + USBPHY_CTRL + SET);
+		writel(BM_USBPHY_CTRL_ENHOSTDISCONDETECT,
+		       imxphy->base + HW_USBPHY_CTRL_SET);
 	}
 
 	return 0;
@@ -86,8 +87,8 @@ static int imx_usbphy_notify_disconnect(struct usb_phy *phy,
 {
 	struct imx_usbphy *imxphy = container_of(phy, struct imx_usbphy, usb_phy);
 
-	writel(USBPHY_CTRL_ENHOSTDISCONDETECT,
-	       imxphy->base + USBPHY_CTRL + CLR);
+	writel(BM_USBPHY_CTRL_ENHOSTDISCONDETECT,
+	       imxphy->base + HW_USBPHY_CTRL_CLR);
 
 	return 0;
 }

@@ -24,6 +24,7 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <stmp-device.h>
+#include <mfd/syscon.h>
 
 #define HW_USBPHY_PWD				0x00
 #define HW_USBPHY_TX				0x10
@@ -35,12 +36,19 @@
 #define BM_USBPHY_CTRL_ENUTMILEVEL2		BIT(14)
 #define BM_USBPHY_CTRL_ENHOSTDISCONDETECT	BIT(1)
 
+#define ANADIG_USB1_CHRG_DETECT_SET		0x1b4
+#define ANADIG_USB2_CHRG_DETECT_SET		0x214
+#define ANADIG_USB1_CHRG_DETECT_EN_B		BIT(20)
+#define ANADIG_USB1_CHRG_DETECT_CHK_CHRG_B	BIT(19)
+
 struct imx_usbphy {
 	struct usb_phy usb_phy;
 	struct phy *phy;
 	void __iomem *base;
+	void __iomem *anatop;
 	struct clk *clk;
 	struct phy_provider *provider;
+	int port_id;
 };
 
 static int imx_usbphy_phy_init(struct phy *phy)
@@ -60,6 +68,19 @@ static int imx_usbphy_phy_init(struct phy *phy)
 	/* set utmilvl2/3 */
 	writel(BM_USBPHY_CTRL_ENUTMILEVEL3 | BM_USBPHY_CTRL_ENUTMILEVEL2,
 	       imxphy->base + HW_USBPHY_CTRL_SET);
+
+	if (imxphy->anatop) {
+		unsigned int reg = imxphy->port_id ?
+			ANADIG_USB1_CHRG_DETECT_SET :
+			ANADIG_USB2_CHRG_DETECT_SET;
+		/*
+		 * The external charger detector needs to be disabled,
+		 * or the signal at DP will be poor
+		 */
+		writel(ANADIG_USB1_CHRG_DETECT_EN_B |
+		       ANADIG_USB1_CHRG_DETECT_CHK_CHRG_B,
+		       imxphy->anatop + reg);
+	}
 
 	return 0;
 }
@@ -113,10 +134,26 @@ static const struct phy_ops imx_phy_ops = {
 static int imx_usbphy_probe(struct device_d *dev)
 {
 	struct resource *iores;
+	struct device_node *np = dev->device_node;
 	int ret;
 	struct imx_usbphy *imxphy;
 
 	imxphy = xzalloc(sizeof(*imxphy));
+
+	ret = of_alias_get_id(np, "usbphy");
+	if (ret < 0) {
+		dev_dbg(dev, "failed to get alias id, errno %d\n", ret);
+		goto err_free;
+	}
+	imxphy->port_id = ret;
+
+	if (of_get_property(np, "fsl,anatop", NULL)) {
+		imxphy->anatop =
+			syscon_base_lookup_by_phandle(np, "fsl,anatop");
+		ret = PTR_ERR_OR_ZERO(imxphy->anatop);
+		if (ret)
+			goto err_free;
+	}
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores)) {

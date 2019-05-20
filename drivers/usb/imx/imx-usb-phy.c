@@ -72,7 +72,8 @@ static int imx_usbphy_phy_init(struct phy *phy)
 static int imx_usbphy_notify_connect(struct usb_phy *phy,
 				     enum usb_device_speed speed)
 {
-	struct imx_usbphy *imxphy = container_of(phy, struct imx_usbphy, usb_phy);
+	struct imx_usbphy *imxphy = container_of(phy, struct imx_usbphy,
+						 usb_phy);
 
 	if (speed == USB_SPEED_HIGH) {
 		writel(BM_USBPHY_CTRL_ENHOSTDISCONDETECT,
@@ -85,7 +86,8 @@ static int imx_usbphy_notify_connect(struct usb_phy *phy,
 static int imx_usbphy_notify_disconnect(struct usb_phy *phy,
 					enum usb_device_speed speed)
 {
-	struct imx_usbphy *imxphy = container_of(phy, struct imx_usbphy, usb_phy);
+	struct imx_usbphy *imxphy = container_of(phy, struct imx_usbphy,
+						 usb_phy);
 
 	writel(BM_USBPHY_CTRL_ENHOSTDISCONDETECT,
 	       imxphy->base + HW_USBPHY_CTRL_CLR);

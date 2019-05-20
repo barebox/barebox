@@ -20,6 +20,8 @@ static inline void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
 	if (dma_handle)
 		*dma_handle = (dma_addr_t)ret;
 
+	memset(ret, 0, size);
+
 	return ret;
 }
 

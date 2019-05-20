@@ -12,4 +12,4 @@ armlinux_system_serial="$global.board.ocotp_serial"
 
 global linux.bootargs.dyn.root="root=/dev/mmcblk0p1 rootwait ro"
 
-bootm -c /dev/disk0.kernel
+bootm -c /dev/mmc2.kernel

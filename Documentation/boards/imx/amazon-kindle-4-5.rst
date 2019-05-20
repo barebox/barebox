@@ -68,5 +68,5 @@ e.g. for the D01100 just write the imx-header and the application section:
 .. code-block:: console
 
         $ loady -t usbserial
-        $ memcpy -b -s barebox-kindle-d01100.img -d /dev/disk0.boot0.imx_header 1024 0 2048
-        $ memcpy -b -s barebox-kindle-d01100.img -d /dev/disk0.boot0.self 4096 0 253952
+        $ memcpy -b -s barebox-kindle-d01100.img -d /dev/mmc2.boot0.imx_header 1024 0 2048
+        $ memcpy -b -s barebox-kindle-d01100.img -d /dev/mmc2.boot0.self 4096 0 253952

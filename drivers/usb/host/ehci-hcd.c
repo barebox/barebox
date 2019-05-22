@@ -213,6 +213,27 @@ static int ehci_td_buffer(struct qTD *td, void *buf, size_t sz)
 	return 0;
 }
 
+static int ehci_prepare_qtd(struct qTD *td, uint32_t token,
+			    void *buffer, size_t length)
+{
+	int ret;
+
+	td->qt_next = cpu_to_hc32(QT_NEXT_TERMINATE);
+	td->qt_altnext = cpu_to_hc32(QT_NEXT_TERMINATE);
+	token |= QT_TOKEN_TOTALBYTES(length) |
+		QT_TOKEN_CPAGE(0) | QT_TOKEN_CERR(3) |
+		QT_TOKEN_STATUS(QT_TOKEN_STATUS_ACTIVE);
+	td->qt_token = cpu_to_hc32(token);
+
+	if (length) {
+		ret = ehci_td_buffer(td, buffer, length);
+		if (ret)
+			return ret;
+	}
+
+	return 0;
+}
+
 static int ehci_enable_async_schedule(struct ehci_host *ehci, bool enable)
 {
 	uint32_t cmd, done;
@@ -299,16 +320,9 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	if (req != NULL) {
 		td = &ehci->td[0];
 
-		td->qt_next = cpu_to_hc32(QT_NEXT_TERMINATE);
-		td->qt_altnext = cpu_to_hc32(QT_NEXT_TERMINATE);
-		token = QT_TOKEN_DT(0) |
-			QT_TOKEN_TOTALBYTES(sizeof(*req)) |
-			QT_TOKEN_IOC(0) |
-			QT_TOKEN_CPAGE(0) | QT_TOKEN_CERR(3) |
-			QT_TOKEN_PID(QT_TOKEN_PID_SETUP) |
-			QT_TOKEN_STATUS(QT_TOKEN_STATUS_ACTIVE);
-		td->qt_token = cpu_to_hc32(token);
-		ret = ehci_td_buffer(td, req, sizeof(*req));
+		ret = ehci_prepare_qtd(td, QT_TOKEN_DT(0) | QT_TOKEN_IOC(0) |
+				       QT_TOKEN_PID(QT_TOKEN_PID_SETUP),
+				       req, sizeof(*req));
 		if (ret) {
 			dev_dbg(ehci->dev, "unable construct SETUP td\n");
 			return ret;
@@ -322,17 +336,12 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	if (length > 0 || req == NULL) {
 		td = &ehci->td[1];
 
-		td->qt_next = cpu_to_hc32(QT_NEXT_TERMINATE);
-		td->qt_altnext = cpu_to_hc32(QT_NEXT_TERMINATE);
-		token = QT_TOKEN_DT(toggle) |
-			QT_TOKEN_TOTALBYTES(length) |
-			QT_TOKEN_IOC(req == NULL) |
-			QT_TOKEN_CPAGE(0) | QT_TOKEN_CERR(3) |
-			QT_TOKEN_PID(usb_pipein(pipe) ?
-				     QT_TOKEN_PID_IN : QT_TOKEN_PID_OUT) |
-			QT_TOKEN_STATUS(QT_TOKEN_STATUS_ACTIVE);
-		td->qt_token = cpu_to_hc32(token);
-		ret = ehci_td_buffer(td, buffer, length);
+		ret = ehci_prepare_qtd(td, QT_TOKEN_DT(toggle) |
+				       QT_TOKEN_IOC(req == NULL) |
+				       QT_TOKEN_PID(usb_pipein(pipe) ?
+						    QT_TOKEN_PID_IN :
+						    QT_TOKEN_PID_OUT),
+				       buffer, length);
 		if (ret) {
 			dev_err(ehci->dev, "unable construct DATA td\n");
 			return ret;
@@ -344,16 +353,11 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	if (req) {
 		td = &ehci->td[2];
 
-		td->qt_next = cpu_to_hc32(QT_NEXT_TERMINATE);
-		td->qt_altnext = cpu_to_hc32(QT_NEXT_TERMINATE);
-		token = QT_TOKEN_DT(1) |
-			QT_TOKEN_TOTALBYTES(0) |
-			QT_TOKEN_IOC(1) |
-			QT_TOKEN_CPAGE(0) | QT_TOKEN_CERR(3) |
-			QT_TOKEN_PID(usb_pipein(pipe) ?
-				     QT_TOKEN_PID_OUT : QT_TOKEN_PID_IN) |
-			QT_TOKEN_STATUS(QT_TOKEN_STATUS_ACTIVE);
-		td->qt_token = cpu_to_hc32(token);
+		ehci_prepare_qtd(td, QT_TOKEN_DT(1) | QT_TOKEN_IOC(1) |
+				 QT_TOKEN_PID(usb_pipein(pipe) ?
+					      QT_TOKEN_PID_OUT :
+					      QT_TOKEN_PID_IN),
+				 NULL, 0);
 		*tdp = cpu_to_hc32((uint32_t)td);
 		tdp = &td->qt_next;
 	}

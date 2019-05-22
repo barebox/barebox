@@ -273,7 +273,8 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	uint32_t *tdp;
 	uint32_t endpt, token, usbsts;
 	uint32_t status;
-	uint32_t c, toggle;
+	uint32_t toggle;
+	bool c;
 	int ret;
 
 
@@ -290,8 +291,7 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 
 	qh = &ehci->qh_list[1];
 	qh->qh_link = cpu_to_hc32((uint32_t)ehci->qh_list | QH_LINK_TYPE_QH);
-	c = (dev->speed != USB_SPEED_HIGH &&
-	     usb_pipeendpoint(pipe) == 0) ? 1 : 0;
+	c = dev->speed != USB_SPEED_HIGH && !usb_pipeendpoint(pipe);
 	endpt = QH_ENDPT1_RL(8) | QH_ENDPT1_C(c) |
 		QH_ENDPT1_MAXPKTLEN(usb_maxpacket(dev, pipe)) |
 		QH_ENDPT1_H(0) |

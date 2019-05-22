@@ -147,8 +147,6 @@ struct qTD {
 #define QT_TOKEN_STATUS_SPLITXSTATE	0x02
 #define QT_TOKEN_STATUS_PERR		0x01
 	uint32_t qt_buffer[5];
-	unsigned long qtd_dma;
-	size_t length;
 } __attribute__ ((aligned (32)));
 
 /* Queue Head (QH). */

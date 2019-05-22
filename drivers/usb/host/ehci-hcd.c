@@ -184,14 +184,10 @@ out:
 	return ret;
 }
 
-static int ehci_td_buffer(struct qTD *td, void *buf, size_t sz)
+static int ehci_td_buffer(struct qTD *td, dma_addr_t addr, size_t sz)
 {
-	uint32_t addr, delta, next;
+	uint32_t delta, next;
 	int idx;
-
-	addr = (uint32_t) buf;
-	td->qtd_dma = addr;
-	td->length = sz;
 
 	idx = 0;
 	while (idx < 5) {
@@ -213,8 +209,11 @@ static int ehci_td_buffer(struct qTD *td, void *buf, size_t sz)
 	return 0;
 }
 
-static int ehci_prepare_qtd(struct qTD *td, uint32_t token,
-			    void *buffer, size_t length)
+static int ehci_prepare_qtd(struct device_d *dev,
+			    struct qTD *td, uint32_t token,
+			    void *buffer, size_t length,
+			    dma_addr_t *buffer_dma,
+			    enum dma_data_direction dma_direction)
 {
 	int ret;
 
@@ -226,7 +225,12 @@ static int ehci_prepare_qtd(struct qTD *td, uint32_t token,
 	td->qt_token = cpu_to_hc32(token);
 
 	if (length) {
-		ret = ehci_td_buffer(td, buffer, length);
+		*buffer_dma = dma_map_single(dev, buffer, length,
+					     dma_direction);
+		if (dma_mapping_error(dev, *buffer_dma))
+			return -EFAULT;
+
+		ret = ehci_td_buffer(td, *buffer_dma, length);
 		if (ret)
 			return ret;
 	}
@@ -257,12 +261,15 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 {
 	struct usb_host *host = dev->host;
 	struct ehci_host *ehci = to_ehci(host);
+	const bool dir_in = usb_pipein(pipe);
+	dma_addr_t buffer_dma, req_dma;
 	struct QH *qh;
 	struct qTD *td;
 	uint32_t *tdp;
 	uint32_t endpt, token, usbsts;
 	uint32_t c, toggle;
-	int ret = 0, i;
+	int ret = 0;
+
 
 	dev_dbg(ehci->dev, "pipe=%lx, buffer=%p, length=%d, req=%p\n", pipe,
 	      buffer, length, req);
@@ -320,9 +327,11 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	if (req != NULL) {
 		td = &ehci->td[0];
 
-		ret = ehci_prepare_qtd(td, QT_TOKEN_DT(0) | QT_TOKEN_IOC(0) |
+		ret = ehci_prepare_qtd(ehci->dev,
+				       td, QT_TOKEN_DT(0) | QT_TOKEN_IOC(0) |
 				       QT_TOKEN_PID(QT_TOKEN_PID_SETUP),
-				       req, sizeof(*req));
+				       req, sizeof(*req),
+				       &req_dma, DMA_TO_DEVICE);
 		if (ret) {
 			dev_dbg(ehci->dev, "unable construct SETUP td\n");
 			return ret;
@@ -334,14 +343,25 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	}
 
 	if (length > 0 || req == NULL) {
+		enum dma_data_direction dir;
+		unsigned int pid;
+
 		td = &ehci->td[1];
 
-		ret = ehci_prepare_qtd(td, QT_TOKEN_DT(toggle) |
+		if (dir_in) {
+			dir = DMA_FROM_DEVICE;
+			pid = QT_TOKEN_PID_IN;
+		} else {
+			dir = DMA_TO_DEVICE;
+			pid = QT_TOKEN_PID_OUT;
+		}
+
+		ret = ehci_prepare_qtd(ehci->dev,
+				       td, QT_TOKEN_DT(toggle) |
 				       QT_TOKEN_IOC(req == NULL) |
-				       QT_TOKEN_PID(usb_pipein(pipe) ?
-						    QT_TOKEN_PID_IN :
-						    QT_TOKEN_PID_OUT),
-				       buffer, length);
+				       QT_TOKEN_PID(pid),
+				       buffer, length,
+				       &buffer_dma, dir);
 		if (ret) {
 			dev_err(ehci->dev, "unable construct DATA td\n");
 			return ret;
@@ -353,28 +373,18 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	if (req) {
 		td = &ehci->td[2];
 
-		ehci_prepare_qtd(td, QT_TOKEN_DT(1) | QT_TOKEN_IOC(1) |
-				 QT_TOKEN_PID(usb_pipein(pipe) ?
+		ehci_prepare_qtd(ehci->dev,
+				 td, QT_TOKEN_DT(1) | QT_TOKEN_IOC(1) |
+				 QT_TOKEN_PID(dir_in ?
 					      QT_TOKEN_PID_OUT :
 					      QT_TOKEN_PID_IN),
-				 NULL, 0);
+				 NULL, 0,
+				 NULL, DMA_NONE);
 		*tdp = cpu_to_hc32((uint32_t)td);
 		tdp = &td->qt_next;
 	}
 
 	ehci->qh_list->qh_link = cpu_to_hc32((uint32_t) qh | QH_LINK_TYPE_QH);
-
-	/* Flush dcache */
-	if (IS_ENABLED(CONFIG_MMU)) {
-		for (i = 0; i < NUM_TD; i ++) {
-			struct qTD *qtd = &ehci->td[i];
-			if (!qtd->qtd_dma)
-				continue;
-			dma_sync_single_for_device((unsigned long)qtd->qtd_dma,
-						   qtd->length,
-						   DMA_BIDIRECTIONAL);
-		}
-	}
 
 	usbsts = ehci_readl(&ehci->hcor->or_usbsts);
 	ehci_writel(&ehci->hcor->or_usbsts, (usbsts & 0x3f));
@@ -394,15 +404,13 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 		return -ETIMEDOUT;
 	}
 
-	if (IS_ENABLED(CONFIG_MMU)) {
-		for (i = 0; i < NUM_TD; i ++) {
-			struct qTD *qtd = &ehci->td[i];
-			if (!qtd->qtd_dma)
-				continue;
-			dma_sync_single_for_cpu((unsigned long)qtd->qtd_dma,
-						qtd->length, DMA_BIDIRECTIONAL);
-		}
-	}
+	if (req)
+		dma_unmap_single(ehci->dev, req_dma, sizeof(*req),
+				 DMA_TO_DEVICE);
+
+	if (length)
+		dma_unmap_single(ehci->dev, buffer_dma, length,
+				 dir_in ? DMA_FROM_DEVICE : DMA_TO_DEVICE);
 
 	ret = ehci_enable_async_schedule(ehci, false);
 	if (ret < 0) {

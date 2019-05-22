@@ -839,13 +839,14 @@ static int ehci_init(struct usb_host *host)
 			return ret;
 	}
 
-	ehci->qh_list->qh_link = cpu_to_hc32((uint32_t)ehci->qh_list | QH_LINK_TYPE_QH);
-	ehci->qh_list->qh_endpt1 = cpu_to_hc32(QH_ENDPT1_H(1) |
-					       QH_ENDPT1_EPS(USB_SPEED_HIGH));
-	ehci->qh_list->qh_curtd = cpu_to_hc32(QT_NEXT_TERMINATE);
-	ehci->qh_list->qt_next = cpu_to_hc32(QT_NEXT_TERMINATE);
-	ehci->qh_list->qt_altnext = cpu_to_hc32(QT_NEXT_TERMINATE);
-	ehci->qh_list->qt_token = cpu_to_hc32(QT_TOKEN_STATUS_HALTED);
+	ehci->qh_list[0].qh_link = cpu_to_hc32((uint32_t)&ehci->qh_list[0] |
+					       QH_LINK_TYPE_QH);
+	ehci->qh_list[0].qh_endpt1 = cpu_to_hc32(QH_ENDPT1_H(1) |
+						 QH_ENDPT1_EPS(USB_SPEED_HIGH));
+	ehci->qh_list[0].qh_curtd = cpu_to_hc32(QT_NEXT_TERMINATE);
+	ehci->qh_list[0].qt_next = cpu_to_hc32(QT_NEXT_TERMINATE);
+	ehci->qh_list[0].qt_altnext = cpu_to_hc32(QT_NEXT_TERMINATE);
+	ehci->qh_list[0].qt_token = cpu_to_hc32(QT_TOKEN_STATUS_HALTED);
 
 	/* Set async. queue head pointer. */
 	ehci_writel(&ehci->hcor->or_asynclistaddr, (uint32_t)ehci->qh_list);

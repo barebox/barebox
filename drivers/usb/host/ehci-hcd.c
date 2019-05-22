@@ -238,12 +238,10 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	struct ehci_host *ehci = to_ehci(host);
 	struct QH *qh;
 	struct qTD *td;
-	volatile struct qTD *vtd;
 	uint32_t *tdp;
 	uint32_t endpt, token, usbsts;
 	uint32_t c, toggle;
 	int ret = 0, i;
-	uint64_t start, timeout_val;
 
 	dev_dbg(ehci->dev, "pipe=%lx, buffer=%p, length=%d, req=%p\n", pipe,
 	      buffer, length, req);
@@ -375,18 +373,13 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 		goto fail;
 	}
 
-	/* Wait for TDs to be processed. */
-	timeout_val = timeout_ms * MSECOND;
-	start = get_time_ns();
-	vtd = td;
-	do {
-		token = hc32_to_cpu(vtd->qt_token);
-		if (is_timeout_non_interruptible(start, timeout_val)) {
-			ehci_enable_async_schedule(ehci, false);
-			ehci_writel(&qh->qt_token, 0);
-			return -ETIMEDOUT;
-		}
-	} while (token & 0x80);
+	ret = handshake(&ehci->hcor->or_usbsts, STS_USBINT, STS_USBINT,
+			timeout_ms * 1000);
+	if (ret < 0) {
+		ehci_enable_async_schedule(ehci, false);
+		ehci_writel(&qh->qt_token, 0);
+		return -ETIMEDOUT;
+	}
 
 	if (IS_ENABLED(CONFIG_MMU)) {
 		for (i = 0; i < NUM_TD; i ++) {

@@ -308,9 +308,10 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 			QT_TOKEN_PID(QT_TOKEN_PID_SETUP) |
 			QT_TOKEN_STATUS(QT_TOKEN_STATUS_ACTIVE);
 		td->qt_token = cpu_to_hc32(token);
-		if (ehci_td_buffer(td, req, sizeof(*req)) != 0) {
+		ret = ehci_td_buffer(td, req, sizeof(*req));
+		if (ret) {
 			dev_dbg(ehci->dev, "unable construct SETUP td\n");
-			goto fail;
+			return ret;
 		}
 		*tdp = cpu_to_hc32((uint32_t) td);
 		tdp = &td->qt_next;
@@ -331,9 +332,10 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 				     QT_TOKEN_PID_IN : QT_TOKEN_PID_OUT) |
 			QT_TOKEN_STATUS(QT_TOKEN_STATUS_ACTIVE);
 		td->qt_token = cpu_to_hc32(token);
-		if (ehci_td_buffer(td, buffer, length) != 0) {
+		ret = ehci_td_buffer(td, buffer, length);
+		if (ret) {
 			dev_err(ehci->dev, "unable construct DATA td\n");
-			goto fail;
+			return ret;
 		}
 		*tdp = cpu_to_hc32((uint32_t) td);
 		tdp = &td->qt_next;
@@ -377,7 +379,7 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	ret = ehci_enable_async_schedule(ehci, true);
 	if (ret < 0) {
 		dev_err(ehci->dev, "fail timeout STD_ASS set\n");
-		goto fail;
+		return ret;
 	}
 
 	ret = handshake(&ehci->hcor->or_usbsts, STS_USBINT, STS_USBINT,
@@ -401,7 +403,7 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	ret = ehci_enable_async_schedule(ehci, false);
 	if (ret < 0) {
 		dev_err(ehci->dev, "fail timeout STD_ASS reset\n");
-		goto fail;
+		return ret;
 	}
 
 	ehci->qh_list->qh_link = cpu_to_hc32((uint32_t)ehci->qh_list | QH_LINK_TYPE_QH);
@@ -451,15 +453,6 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	}
 
 	return (dev->status != USB_ST_NOT_PROC) ? 0 : -1;
-
-fail:
-	dev_err(ehci->dev, "fail1\n");
-	td = (void *)hc32_to_cpu(qh->qt_next);
-	while (td != (void *)QT_NEXT_TERMINATE) {
-		qh->qt_next = td->qt_next;
-		td = (void *)hc32_to_cpu(qh->qt_next);
-	}
-	return -1;
 }
 
 #if defined(CONFIG_MACH_EFIKA_MX_SMARTBOOK) && defined(CONFIG_USB_ULPI)

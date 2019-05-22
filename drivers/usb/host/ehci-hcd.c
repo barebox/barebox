@@ -272,6 +272,7 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	struct qTD *td;
 	uint32_t *tdp;
 	uint32_t endpt, token, usbsts;
+	uint32_t status;
 	uint32_t c, toggle;
 	int ret = 0;
 
@@ -425,50 +426,49 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	ehci->qh_list->qh_link = cpu_to_hc32((uint32_t)ehci->qh_list | QH_LINK_TYPE_QH);
 
 	token = hc32_to_cpu(qh->qt_token);
-	if (!(token & QT_TOKEN_STATUS_ACTIVE)) {
-		uint32_t status;
-
-		dev_dbg(ehci->dev, "TOKEN=0x%08x\n", token);
-
-		status = QT_TOKEN_GET_STATUS(token);
-		status &= ~(QT_TOKEN_STATUS_SPLITXSTATE |
-			    QT_TOKEN_STATUS_PERR);
-
-		switch (status) {
-		case 0:
-			toggle = QT_TOKEN_GET_DT(token);
-			usb_settoggle(dev, usb_pipeendpoint(pipe),
-				       usb_pipeout(pipe), toggle);
-			dev->status = 0;
-			break;
-		case QT_TOKEN_STATUS_HALTED:
-			dev->status = USB_ST_STALLED;
-			break;
-		case QT_TOKEN_STATUS_ACTIVE | QT_TOKEN_STATUS_DATBUFERR:
-		case QT_TOKEN_STATUS_DATBUFERR:
-			dev->status = USB_ST_BUF_ERR;
-			break;
-		case QT_TOKEN_STATUS_HALTED | QT_TOKEN_STATUS_BABBLEDET:
-		case QT_TOKEN_STATUS_BABBLEDET:
-			dev->status = USB_ST_BABBLE_DET;
-			break;
-		default:
-			dev->status = USB_ST_CRC_ERR;
-			if (status & QT_TOKEN_STATUS_HALTED)
-				dev->status |= USB_ST_STALLED;
-
-			break;
-		}
-		dev->act_len = length - QT_TOKEN_GET_TOTALBYTES(token);
-	} else {
+	if (token & QT_TOKEN_STATUS_ACTIVE) {
 		dev->act_len = 0;
 		dev_dbg(ehci->dev, "dev=%u, usbsts=%#x, p[1]=%#x, p[2]=%#x\n",
-		      dev->devnum, ehci_readl(&ehci->hcor->or_usbsts),
-		      ehci_readl(&ehci->hcor->or_portsc[0]),
-		      ehci_readl(&ehci->hcor->or_portsc[1]));
+			dev->devnum, ehci_readl(&ehci->hcor->or_usbsts),
+			ehci_readl(&ehci->hcor->or_portsc[0]),
+			ehci_readl(&ehci->hcor->or_portsc[1]));
+		return -EIO;
 	}
 
-	return (dev->status != USB_ST_NOT_PROC) ? 0 : -1;
+	dev_dbg(ehci->dev, "TOKEN=0x%08x\n", token);
+
+	status = QT_TOKEN_GET_STATUS(token);
+	status &= ~(QT_TOKEN_STATUS_SPLITXSTATE |
+		    QT_TOKEN_STATUS_PERR);
+
+	switch (status) {
+	case 0:
+		toggle = QT_TOKEN_GET_DT(token);
+		usb_settoggle(dev, usb_pipeendpoint(pipe),
+			      usb_pipeout(pipe), toggle);
+		dev->status = 0;
+		break;
+	case QT_TOKEN_STATUS_HALTED:
+		dev->status = USB_ST_STALLED;
+		break;
+	case QT_TOKEN_STATUS_ACTIVE | QT_TOKEN_STATUS_DATBUFERR:
+	case QT_TOKEN_STATUS_DATBUFERR:
+		dev->status = USB_ST_BUF_ERR;
+		break;
+	case QT_TOKEN_STATUS_HALTED | QT_TOKEN_STATUS_BABBLEDET:
+	case QT_TOKEN_STATUS_BABBLEDET:
+		dev->status = USB_ST_BABBLE_DET;
+		break;
+	default:
+		dev->status = USB_ST_CRC_ERR;
+		if (status & QT_TOKEN_STATUS_HALTED)
+			dev->status |= USB_ST_STALLED;
+
+		break;
+	}
+	dev->act_len = length - QT_TOKEN_GET_TOTALBYTES(token);
+
+	return 0;
 }
 
 #if defined(CONFIG_MACH_EFIKA_MX_SMARTBOOK) && defined(CONFIG_USB_ULPI)

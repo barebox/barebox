@@ -97,7 +97,7 @@ Bootsource is the internal eMMC::
   |         |
   | | | O | |
   | | | | | |  <---- eMMC
-  | O O O O |
+  | O O | O |
   |         |
   | 1 2 3 4 |
   +---------+

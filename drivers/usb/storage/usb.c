@@ -142,7 +142,7 @@ exit:
 
 static int usb_stor_test_unit_ready(struct us_blk_dev *usb_blkdev)
 {
-	u8 cmd[12];
+	u8 cmd[6];
 	int ret;
 
 	memset(cmd, 0, sizeof(cmd));

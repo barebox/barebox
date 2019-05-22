@@ -542,7 +542,9 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 	case USB_REQ_SET_FEATURE | ((USB_DIR_OUT | USB_RT_PORT) << 8):
 	case USB_REQ_CLEAR_FEATURE | ((USB_DIR_OUT | USB_RT_PORT) << 8):
 		if (!port || port > CONFIG_SYS_USB_EHCI_MAX_ROOT_PORTS) {
-			printf("The request port(%d) is not configured\n", port - 1);
+			dev_err(ehci->dev,
+				"The request port(%d) is not configured\n",
+				port - 1);
 			return -1;
 		}
 		status_reg = (uint32_t *)&ehci->hcor->or_portsc[port - 1];
@@ -972,7 +974,8 @@ disable_periodic(struct ehci_host *ehci)
 	ret = handshake((uint32_t *)&hcor->or_usbsts,
 			STS_PSS, 0, 100 * 1000);
 	if (ret < 0) {
-		printf("EHCI failed: timeout when disabling periodic list\n");
+		dev_err(ehci->dev,
+			"EHCI failed: timeout when disabling periodic list\n");
 		return -ETIMEDOUT;
 	}
 	return 0;
@@ -993,7 +996,8 @@ enable_periodic(struct ehci_host *ehci)
 	ret = handshake((uint32_t *)&hcor->or_usbsts,
 			STS_PSS, STS_PSS, 100 * 1000);
 	if (ret < 0) {
-		printf("EHCI failed: timeout when enabling periodic list\n");
+		dev_err(ehci->dev,
+			"EHCI failed: timeout when enabling periodic list\n");
 		return -ETIMEDOUT;
 	}
 

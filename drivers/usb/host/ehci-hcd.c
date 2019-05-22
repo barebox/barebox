@@ -1325,7 +1325,7 @@ struct ehci_host *ehci_register(struct device_d *dev, struct ehci_data *data)
 	ehci->init = data->init;
 	ehci->post_init = data->post_init;
 
-	ehci->qh_list = dma_alloc_coherent(sizeof(struct QH) * NUM_TD,
+	ehci->qh_list = dma_alloc_coherent(sizeof(struct QH) * NUM_QH,
 					   DMA_ADDRESS_BROKEN);
 	ehci->periodic_queue = dma_alloc_coherent(sizeof(struct QH),
 						  DMA_ADDRESS_BROKEN);

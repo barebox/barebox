@@ -31,6 +31,7 @@
 #include <of.h>
 #include <usb/ehci.h>
 #include <linux/err.h>
+#include <linux/sizes.h>
 
 #include "ehci.h"
 
@@ -186,24 +187,23 @@ out:
 
 static int ehci_td_buffer(struct qTD *td, dma_addr_t addr, size_t sz)
 {
-	uint32_t delta, next;
+	const size_t buffer_count = ARRAY_SIZE(td->qt_buffer);
+	dma_addr_t delta, next;
 	int idx;
 
-	idx = 0;
-	while (idx < 5) {
+	for (idx = 0; idx < buffer_count; idx++) {
 		td->qt_buffer[idx] = cpu_to_hc32(addr);
-		next = (addr + 4096) & ~4095;
+		next = ALIGN_DOWN(addr + SZ_4K, SZ_4K);
 		delta = next - addr;
 		if (delta >= sz)
 			break;
 		sz -= delta;
 		addr = next;
-		idx++;
 	}
 
-	if (idx == 5) {
+	if (idx == buffer_count) {
 		pr_debug("out of buffer pointers (%u bytes left)\n", sz);
-		return -1;
+		return -ENOMEM;
 	}
 
 	return 0;

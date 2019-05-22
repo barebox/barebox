@@ -362,6 +362,15 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 
 		ret = ehci_prepare_qtd(ehci->dev,
 				       td, QT_TOKEN_DT(toggle) |
+				       /*
+					* We only want this qTD to
+					* generate an interrupt if
+					* this is a BULK
+					* request. Otherwise, we'll
+					* rely on following status
+					* stage qTD's IOC to notify us
+					* that transfer is complete
+					*/
 				       QT_TOKEN_IOC(req == NULL) |
 				       QT_TOKEN_PID(pid),
 				       buffer, length,

@@ -12,6 +12,8 @@ obj-y += start.o entry.o
 
 obj-pbl-y += setupc$(S64).o cache$(S64).o
 
+obj-$(CONFIG_BOOTM_OPTEE) += start-kernel-optee.o
+
 #
 # Any variants can be called as start-armxyz.S
 #

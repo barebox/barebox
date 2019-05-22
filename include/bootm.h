@@ -16,6 +16,7 @@ struct bootm_data {
 	const char *os_file;
 	const char *initrd_file;
 	const char *oftree_file;
+	const char *tee_file;
 	int verbose;
 	enum bootm_verify verify;
 	bool force;
@@ -86,6 +87,8 @@ struct image_data {
 	 * it.
 	 */
 	void *os_header;
+	char *tee_file;
+	struct resource *tee_res;
 
 	enum bootm_verify verify;
 	int verbose;

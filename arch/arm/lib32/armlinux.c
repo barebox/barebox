@@ -258,9 +258,11 @@ static void setup_tags(unsigned long initrd_address,
 
 }
 
+void start_kernel_optee(void *optee, void *kernel, void *oftree);
+
 void start_linux(void *adr, int swap, unsigned long initrd_address,
 		 unsigned long initrd_size, void *oftree,
-		 enum arm_security_state state)
+		 enum arm_security_state state, void *optee)
 {
 	void (*kernel)(int zero, int arch, void *params) = adr;
 	void *params = NULL;
@@ -294,5 +296,9 @@ void start_linux(void *adr, int swap, unsigned long initrd_address,
 		__asm__ __volatile__("mcr p15, 0, %0, c1, c0" :: "r" (reg));
 	}
 
-	kernel(0, architecture, params);
+	if (optee && IS_ENABLED(CONFIG_BOOTM_OPTEE)) {
+		start_kernel_optee(optee, kernel, oftree);
+	} else {
+		kernel(0, architecture, params);
+	}
 }

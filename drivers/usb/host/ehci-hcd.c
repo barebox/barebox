@@ -274,7 +274,7 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	uint32_t endpt, token, usbsts;
 	uint32_t status;
 	uint32_t c, toggle;
-	int ret = 0;
+	int ret;
 
 
 	dev_dbg(ehci->dev, "pipe=%lx, buffer=%p, length=%d, req=%p\n", pipe,
@@ -323,7 +323,6 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	qh->qt_next = cpu_to_hc32(QT_NEXT_TERMINATE);
 	qh->qt_altnext = cpu_to_hc32(QT_NEXT_TERMINATE);
 
-	td = NULL;
 	tdp = &qh->qt_next;
 
 	toggle =

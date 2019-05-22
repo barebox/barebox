@@ -268,7 +268,7 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	struct ehci_host *ehci = to_ehci(host);
 	const bool dir_in = usb_pipein(pipe);
 	dma_addr_t buffer_dma, req_dma;
-	struct QH *qh;
+	struct QH *qh = &ehci->qh_list[1];
 	struct qTD *td;
 	uint32_t *tdp;
 	uint32_t endpt, token, usbsts;
@@ -287,10 +287,6 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 		      le16_to_cpu(req->value), le16_to_cpu(req->value),
 		      le16_to_cpu(req->index));
 
-	memset(&ehci->qh_list[1], 0, sizeof(struct QH));
-
-	qh = &ehci->qh_list[1];
-	qh->qh_link = cpu_to_hc32((uint32_t)ehci->qh_list | QH_LINK_TYPE_QH);
 	c = dev->speed != USB_SPEED_HIGH && !usb_pipeendpoint(pipe);
 	endpt = QH_ENDPT1_RL(8) | QH_ENDPT1_C(c) |
 		QH_ENDPT1_MAXPKTLEN(usb_maxpacket(dev, pipe)) |
@@ -320,8 +316,9 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 		QH_ENDPT2_UFCMASK(0) |
 		QH_ENDPT2_UFSMASK(0);
 	qh->qh_endpt2 = cpu_to_hc32(endpt);
-	qh->qt_next = cpu_to_hc32(QT_NEXT_TERMINATE);
-	qh->qt_altnext = cpu_to_hc32(QT_NEXT_TERMINATE);
+	qh->qh_curtd = 0;
+	qh->qt_token = 0;
+	memset(qh->qt_buffer, 0, sizeof(qh->qt_buffer));
 
 	tdp = &qh->qt_next;
 
@@ -397,8 +394,6 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 		tdp = &td->qt_next;
 	}
 
-	ehci->qh_list->qh_link = cpu_to_hc32((uint32_t) qh | QH_LINK_TYPE_QH);
-
 	usbsts = ehci_readl(&ehci->hcor->or_usbsts);
 	ehci_writel(&ehci->hcor->or_usbsts, (usbsts & 0x3f));
 
@@ -430,8 +425,6 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 		dev_err(ehci->dev, "fail timeout STD_ASS reset\n");
 		return ret;
 	}
-
-	ehci->qh_list->qh_link = cpu_to_hc32((uint32_t)ehci->qh_list | QH_LINK_TYPE_QH);
 
 	token = hc32_to_cpu(qh->qt_token);
 	if (token & QT_TOKEN_STATUS_ACTIVE) {
@@ -839,7 +832,7 @@ static int ehci_init(struct usb_host *host)
 			return ret;
 	}
 
-	ehci->qh_list[0].qh_link = cpu_to_hc32((uint32_t)&ehci->qh_list[0] |
+	ehci->qh_list[0].qh_link = cpu_to_hc32((uint32_t)&ehci->qh_list[1] |
 					       QH_LINK_TYPE_QH);
 	ehci->qh_list[0].qh_endpt1 = cpu_to_hc32(QH_ENDPT1_H(1) |
 						 QH_ENDPT1_EPS(USB_SPEED_HIGH));
@@ -847,6 +840,10 @@ static int ehci_init(struct usb_host *host)
 	ehci->qh_list[0].qt_next = cpu_to_hc32(QT_NEXT_TERMINATE);
 	ehci->qh_list[0].qt_altnext = cpu_to_hc32(QT_NEXT_TERMINATE);
 	ehci->qh_list[0].qt_token = cpu_to_hc32(QT_TOKEN_STATUS_HALTED);
+
+	ehci->qh_list[1].qh_link = cpu_to_hc32((uint32_t)&ehci->qh_list[0] |
+					       QH_LINK_TYPE_QH);
+	ehci->qh_list[1].qt_altnext = cpu_to_hc32(QT_NEXT_TERMINATE);
 
 	/* Set async. queue head pointer. */
 	ehci_writel(&ehci->hcor->or_asynclistaddr, (uint32_t)ehci->qh_list);

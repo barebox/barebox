@@ -259,31 +259,33 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	qh->qh_link = cpu_to_hc32((uint32_t)ehci->qh_list | QH_LINK_TYPE_QH);
 	c = (dev->speed != USB_SPEED_HIGH &&
 	     usb_pipeendpoint(pipe) == 0) ? 1 : 0;
-	endpt = (8 << 28) |
-	    (c << 27) |
-	    (usb_maxpacket(dev, pipe) << 16) |
-	    (0 << 15) |
-	    (1 << 14) |
-	    (usb_pipeendpoint(pipe) << 8) |
-	    (0 << 7) | (usb_pipedevice(pipe) << 0);
+	endpt = QH_ENDPT1_RL(8) | QH_ENDPT1_C(c) |
+		QH_ENDPT1_MAXPKTLEN(usb_maxpacket(dev, pipe)) |
+		QH_ENDPT1_H(0) |
+		QH_ENDPT1_DTC(QH_ENDPT1_DTC_DT_FROM_QTD) |
+		QH_ENDPT1_ENDPT(usb_pipeendpoint(pipe)) | QH_ENDPT1_I(0) |
+		QH_ENDPT1_DEVADDR(usb_pipedevice(pipe));
+
 	switch (dev->speed) {
 	case USB_SPEED_FULL:
-		endpt |= 0 << 12;
+		endpt |= QH_ENDPT1_EPS(0);
 		break;
 	case USB_SPEED_LOW:
-		endpt |= 1 << 12;
+		endpt |= QH_ENDPT1_EPS(1);
 		break;
 	case USB_SPEED_HIGH:
-		endpt |= 2 << 12;
+		endpt |= QH_ENDPT1_EPS(2);
 		break;
 	default:
 		return -EINVAL;
 	}
 
 	qh->qh_endpt1 = cpu_to_hc32(endpt);
-	endpt = (1 << 30) |
-	    (dev->portnr << 23) |
-	    (dev->parent->devnum << 16) | (0 << 8) | (0 << 0);
+	endpt = QH_ENDPT2_MULT(1) |
+		QH_ENDPT2_PORTNUM(dev->portnr) |
+		QH_ENDPT2_HUBADDR(dev->parent->devnum) |
+		QH_ENDPT2_UFCMASK(0) |
+		QH_ENDPT2_UFSMASK(0);
 	qh->qh_endpt2 = cpu_to_hc32(endpt);
 	qh->qt_next = cpu_to_hc32(QT_NEXT_TERMINATE);
 	qh->qt_altnext = cpu_to_hc32(QT_NEXT_TERMINATE);
@@ -299,9 +301,12 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 
 		td->qt_next = cpu_to_hc32(QT_NEXT_TERMINATE);
 		td->qt_altnext = cpu_to_hc32(QT_NEXT_TERMINATE);
-		token = (0 << 31) |
-		    (sizeof(*req) << 16) |
-		    (0 << 15) | (0 << 12) | (3 << 10) | (2 << 8) | (0x80 << 0);
+		token = QT_TOKEN_DT(0) |
+			QT_TOKEN_TOTALBYTES(sizeof(*req)) |
+			QT_TOKEN_IOC(0) |
+			QT_TOKEN_CPAGE(0) | QT_TOKEN_CERR(3) |
+			QT_TOKEN_PID(QT_TOKEN_PID_SETUP) |
+			QT_TOKEN_STATUS(QT_TOKEN_STATUS_ACTIVE);
 		td->qt_token = cpu_to_hc32(token);
 		if (ehci_td_buffer(td, req, sizeof(*req)) != 0) {
 			dev_dbg(ehci->dev, "unable construct SETUP td\n");
@@ -318,12 +323,13 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 
 		td->qt_next = cpu_to_hc32(QT_NEXT_TERMINATE);
 		td->qt_altnext = cpu_to_hc32(QT_NEXT_TERMINATE);
-		token = (toggle << 31) |
-		    (length << 16) |
-		    ((req == NULL ? 1 : 0) << 15) |
-		    (0 << 12) |
-		    (3 << 10) |
-		    ((usb_pipein(pipe) ? 1 : 0) << 8) | (0x80 << 0);
+		token = QT_TOKEN_DT(toggle) |
+			QT_TOKEN_TOTALBYTES(length) |
+			QT_TOKEN_IOC(req == NULL) |
+			QT_TOKEN_CPAGE(0) | QT_TOKEN_CERR(3) |
+			QT_TOKEN_PID(usb_pipein(pipe) ?
+				     QT_TOKEN_PID_IN : QT_TOKEN_PID_OUT) |
+			QT_TOKEN_STATUS(QT_TOKEN_STATUS_ACTIVE);
 		td->qt_token = cpu_to_hc32(token);
 		if (ehci_td_buffer(td, buffer, length) != 0) {
 			dev_err(ehci->dev, "unable construct DATA td\n");
@@ -338,12 +344,13 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 
 		td->qt_next = cpu_to_hc32(QT_NEXT_TERMINATE);
 		td->qt_altnext = cpu_to_hc32(QT_NEXT_TERMINATE);
-		token = (toggle << 31) |
-		    (0 << 16) |
-		    (1 << 15) |
-		    (0 << 12) |
-		    (3 << 10) |
-		    ((usb_pipein(pipe) ? 0 : 1) << 8) | (0x80 << 0);
+		token = QT_TOKEN_DT(1) |
+			QT_TOKEN_TOTALBYTES(0) |
+			QT_TOKEN_IOC(1) |
+			QT_TOKEN_CPAGE(0) | QT_TOKEN_CERR(3) |
+			QT_TOKEN_PID(usb_pipein(pipe) ?
+				     QT_TOKEN_PID_OUT : QT_TOKEN_PID_IN) |
+			QT_TOKEN_STATUS(QT_TOKEN_STATUS_ACTIVE);
 		td->qt_token = cpu_to_hc32(token);
 		*tdp = cpu_to_hc32((uint32_t)td);
 		tdp = &td->qt_next;
@@ -400,33 +407,41 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	ehci->qh_list->qh_link = cpu_to_hc32((uint32_t)ehci->qh_list | QH_LINK_TYPE_QH);
 
 	token = hc32_to_cpu(qh->qt_token);
-	if (!(token & 0x80)) {
+	if (!(token & QT_TOKEN_STATUS_ACTIVE)) {
+		uint32_t status;
+
 		dev_dbg(ehci->dev, "TOKEN=0x%08x\n", token);
-		switch (token & 0xfc) {
+
+		status = QT_TOKEN_GET_STATUS(token);
+		status &= ~(QT_TOKEN_STATUS_SPLITXSTATE |
+			    QT_TOKEN_STATUS_PERR);
+
+		switch (status) {
 		case 0:
-			toggle = token >> 31;
+			toggle = QT_TOKEN_GET_DT(token);
 			usb_settoggle(dev, usb_pipeendpoint(pipe),
 				       usb_pipeout(pipe), toggle);
 			dev->status = 0;
 			break;
-		case 0x40:
+		case QT_TOKEN_STATUS_HALTED:
 			dev->status = USB_ST_STALLED;
 			break;
-		case 0xa0:
-		case 0x20:
+		case QT_TOKEN_STATUS_ACTIVE | QT_TOKEN_STATUS_DATBUFERR:
+		case QT_TOKEN_STATUS_DATBUFERR:
 			dev->status = USB_ST_BUF_ERR;
 			break;
-		case 0x50:
-		case 0x10:
+		case QT_TOKEN_STATUS_HALTED | QT_TOKEN_STATUS_BABBLEDET:
+		case QT_TOKEN_STATUS_BABBLEDET:
 			dev->status = USB_ST_BABBLE_DET;
 			break;
 		default:
 			dev->status = USB_ST_CRC_ERR;
-			if ((token & 0x40) == 0x40)
+			if (status & QT_TOKEN_STATUS_HALTED)
 				dev->status |= USB_ST_STALLED;
+
 			break;
 		}
-		dev->act_len = length - ((token >> 16) & 0x7fff);
+		dev->act_len = length - QT_TOKEN_GET_TOTALBYTES(token);
 	} else {
 		dev->act_len = 0;
 		dev_dbg(ehci->dev, "dev=%u, usbsts=%#x, p[1]=%#x, p[2]=%#x\n",
@@ -808,11 +823,12 @@ static int ehci_init(struct usb_host *host)
 	memset(ehci->qh_list, 0, sizeof(struct QH) * NUM_TD);
 
 	ehci->qh_list->qh_link = cpu_to_hc32((uint32_t)ehci->qh_list | QH_LINK_TYPE_QH);
-	ehci->qh_list->qh_endpt1 = cpu_to_hc32((1 << 15) | (USB_SPEED_HIGH << 12));
+	ehci->qh_list->qh_endpt1 = cpu_to_hc32(QH_ENDPT1_H(1) |
+					       QH_ENDPT1_EPS(USB_SPEED_HIGH));
 	ehci->qh_list->qh_curtd = cpu_to_hc32(QT_NEXT_TERMINATE);
 	ehci->qh_list->qt_next = cpu_to_hc32(QT_NEXT_TERMINATE);
 	ehci->qh_list->qt_altnext = cpu_to_hc32(QT_NEXT_TERMINATE);
-	ehci->qh_list->qt_token = cpu_to_hc32(0x40);
+	ehci->qh_list->qt_token = cpu_to_hc32(QT_TOKEN_STATUS_HALTED);
 
 	/* Set async. queue head pointer. */
 	ehci_writel(&ehci->hcor->or_asynclistaddr, (uint32_t)ehci->qh_list);

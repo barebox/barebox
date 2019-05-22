@@ -839,8 +839,6 @@ static int ehci_init(struct usb_host *host)
 			return ret;
 	}
 
-	memset(ehci->qh_list, 0, sizeof(struct QH) * NUM_TD);
-
 	ehci->qh_list->qh_link = cpu_to_hc32((uint32_t)ehci->qh_list | QH_LINK_TYPE_QH);
 	ehci->qh_list->qh_endpt1 = cpu_to_hc32(QH_ENDPT1_H(1) |
 					       QH_ENDPT1_EPS(USB_SPEED_HIGH));

@@ -1069,8 +1069,6 @@ static struct int_queue *ehci_create_int_queue(struct usb_device *dev,
 	result->last = result->first + queuesize - 1;
 	result->tds = dma_alloc_coherent(sizeof(struct qTD) * queuesize,
 					 DMA_ADDRESS_BROKEN);
-	memset(result->first, 0, sizeof(struct QH) * queuesize);
-	memset(result->tds, 0, sizeof(struct qTD) * queuesize);
 
 	for (i = 0; i < queuesize; i++) {
 		struct QH *qh = result->first + i;

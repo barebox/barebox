@@ -206,6 +206,9 @@ static int ehci_td_buffer(struct qTD *td, dma_addr_t addr, size_t sz)
 		return -ENOMEM;
 	}
 
+	for (idx++; idx < buffer_count; idx++)
+		td->qt_buffer[idx] = 0;
+
 	return 0;
 }
 
@@ -233,6 +236,8 @@ static int ehci_prepare_qtd(struct device_d *dev,
 		ret = ehci_td_buffer(td, *buffer_dma, length);
 		if (ret)
 			return ret;
+	} else {
+		memset(td->qt_buffer, 0, sizeof(td->qt_buffer));
 	}
 
 	return 0;
@@ -281,7 +286,6 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 		      le16_to_cpu(req->index));
 
 	memset(&ehci->qh_list[1], 0, sizeof(struct QH));
-	memset(ehci->td, 0, sizeof(struct qTD) * NUM_TD);
 
 	qh = &ehci->qh_list[1];
 	qh->qh_link = cpu_to_hc32((uint32_t)ehci->qh_list | QH_LINK_TYPE_QH);

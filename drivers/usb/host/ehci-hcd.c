@@ -213,6 +213,23 @@ static int ehci_td_buffer(struct qTD *td, void *buf, size_t sz)
 	return 0;
 }
 
+static int ehci_enable_async_schedule(struct ehci_host *ehci, bool enable)
+{
+	uint32_t cmd, done;
+
+	cmd = ehci_readl(&ehci->hcor->or_usbcmd);
+	if (enable) {
+		cmd |= CMD_ASE;
+		done = STD_ASS;
+	} else {
+		cmd &= ~CMD_ASE;
+		done = 0;
+	}
+	ehci_writel(&ehci->hcor->or_usbcmd, cmd);
+
+	return handshake(&ehci->hcor->or_usbsts, STD_ASS, done, 100 * 1000);
+}
+
 static int
 ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 		   int length, struct devrequest *req, int timeout_ms)
@@ -225,7 +242,6 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	uint32_t *tdp;
 	uint32_t endpt, token, usbsts;
 	uint32_t c, toggle;
-	uint32_t cmd;
 	int ret = 0, i;
 	uint64_t start, timeout_val;
 
@@ -353,11 +369,7 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	ehci_writel(&ehci->hcor->or_usbsts, (usbsts & 0x3f));
 
 	/* Enable async. schedule. */
-	cmd = ehci_readl(&ehci->hcor->or_usbcmd);
-	cmd |= CMD_ASE;
-	ehci_writel(&ehci->hcor->or_usbcmd, cmd);
-
-	ret = handshake(&ehci->hcor->or_usbsts, STD_ASS, STD_ASS, 100 * 1000);
+	ret = ehci_enable_async_schedule(ehci, true);
 	if (ret < 0) {
 		dev_err(ehci->dev, "fail timeout STD_ASS set\n");
 		goto fail;
@@ -370,12 +382,7 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	do {
 		token = hc32_to_cpu(vtd->qt_token);
 		if (is_timeout_non_interruptible(start, timeout_val)) {
-			/* Disable async schedule. */
-			cmd = ehci_readl(&ehci->hcor->or_usbcmd);
-			cmd &= ~CMD_ASE;
-			ehci_writel(&ehci->hcor->or_usbcmd, cmd);
-
-			ret = handshake(&ehci->hcor->or_usbsts, STD_ASS, 0, 100 * 1000);
+			ehci_enable_async_schedule(ehci, false);
 			ehci_writel(&qh->qt_token, 0);
 			return -ETIMEDOUT;
 		}
@@ -391,13 +398,7 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 		}
 	}
 
-	/* Disable async schedule. */
-	cmd = ehci_readl(&ehci->hcor->or_usbcmd);
-	cmd &= ~CMD_ASE;
-	ehci_writel(&ehci->hcor->or_usbcmd, cmd);
-
-	ret = handshake(&ehci->hcor->or_usbsts, STD_ASS, 0,
-			100 * 1000);
+	ret = ehci_enable_async_schedule(ehci, false);
 	if (ret < 0) {
 		dev_err(ehci->dev, "fail timeout STD_ASS reset\n");
 		goto fail;

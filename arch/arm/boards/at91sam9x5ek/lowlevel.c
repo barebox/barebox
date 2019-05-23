@@ -1,6 +1,7 @@
 #include <common.h>
 #include <linux/sizes.h>
 #include <mach/at91sam9_ddrsdr.h>
+#include <mach/hardware.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 #include <io.h>

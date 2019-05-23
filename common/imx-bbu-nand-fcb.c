@@ -1172,6 +1172,8 @@ static void read_firmware_all(struct mtd_info *mtd, struct fcb_block *fcb, void 
 		*used = !first;
 		*data = secondary;
 	} else {
+		*unused_refresh = secondary_refresh;
+
 		if (memcmp(primary, secondary, fcb->PagesInFirmware1 * mtd->writesize))
 			*unused_refresh = 1;
 

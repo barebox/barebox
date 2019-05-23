@@ -84,8 +84,6 @@ static const struct {
 	{ .n = "trng_clk",    .id = 47, .r = { .min = 0, .max = 83000000 }, },
 	{ .n = "pdmic_clk",   .id = 48, .r = { .min = 0, .max = 83000000 }, },
 	{ .n = "securam_clk", .id = 51, },
-	{ .n = "i2s0_clk",    .id = 54, .r = { .min = 0, .max = 83000000 }, },
-	{ .n = "i2s1_clk",    .id = 55, .r = { .min = 0, .max = 83000000 }, },
 	{ .n = "can0_clk",    .id = 56, .r = { .min = 0, .max = 83000000 }, },
 	{ .n = "can1_clk",    .id = 57, .r = { .min = 0, .max = 83000000 }, },
 	{ .n = "classd_clk",  .id = 59, .r = { .min = 0, .max = 83000000 }, },
@@ -123,8 +121,6 @@ static const struct {
 	{ .n = "pwm_gclk",    .id = 38, .r = { .min = 0, .max = 83000000 }, },
 	{ .n = "isc_gclk",    .id = 46, },
 	{ .n = "pdmic_gclk",  .id = 48, },
-	{ .n = "i2s0_gclk",   .id = 54, .pll = true },
-	{ .n = "i2s1_gclk",   .id = 55, .pll = true },
 	{ .n = "can0_gclk",   .id = 56, .r = { .min = 0, .max = 80000000 }, },
 	{ .n = "can1_gclk",   .id = 57, .r = { .min = 0, .max = 80000000 }, },
 	{ .n = "classd_gclk", .id = 59, .r = { .min = 0, .max = 100000000 },
@@ -136,7 +132,7 @@ static void __init sama5d2_pmc_setup(struct device_node *np)
 	struct clk_range range = CLK_RANGE(0, 0);
 	const char *slck_name, *mainxtal_name;
 	struct pmc_data *sama5d2_pmc;
-	const char *parent_names[6];
+	const char *parent_names[5];
 	struct regmap *regmap, *regmap_sfr;
 	struct clk *hw;
 	int i;
@@ -157,7 +153,7 @@ static void __init sama5d2_pmc_setup(struct device_node *np)
 	if (IS_ERR(regmap))
 		return;
 
-	sama5d2_pmc = pmc_data_allocate(PMC_I2S1_MUX + 1,
+	sama5d2_pmc = pmc_data_allocate(PMC_MCK2 + 1,
 					nck(sama5d2_systemck),
 					nck(sama5d2_periph32ck),
 					nck(sama5d2_gck));
@@ -190,21 +186,6 @@ static void __init sama5d2_pmc_setup(struct device_node *np)
 		goto err_free;
 
 	hw = at91_clk_register_plldiv(regmap, "plladivck", "pllack");
-	if (IS_ERR(hw))
-		goto err_free;
-
-	hw = at91_clk_register_audio_pll_frac(regmap, "audiopll_fracck",
-					      "mainck");
-	if (IS_ERR(hw))
-		goto err_free;
-
-	hw = at91_clk_register_audio_pll_pad(regmap, "audiopll_padck",
-					     "audiopll_fracck");
-	if (IS_ERR(hw))
-		goto err_free;
-
-	hw = at91_clk_register_audio_pll_pmc(regmap, "audiopll_pmcck",
-					     "audiopll_fracck");
 	if (IS_ERR(hw))
 		goto err_free;
 
@@ -270,7 +251,7 @@ static void __init sama5d2_pmc_setup(struct device_node *np)
 	}
 
 	for (i = 0; i < ARRAY_SIZE(sama5d2_periphck); i++) {
-		hw = at91_clk_register_sam9x5_peripheral(regmap, &pmc_pcr_lock,
+		hw = at91_clk_register_sam9x5_peripheral(regmap,
 							 sama5d2_periphck[i].n,
 							 "masterck",
 							 sama5d2_periphck[i].id,
@@ -282,7 +263,7 @@ static void __init sama5d2_pmc_setup(struct device_node *np)
 	}
 
 	for (i = 0; i < ARRAY_SIZE(sama5d2_periph32ck); i++) {
-		hw = at91_clk_register_sam9x5_peripheral(regmap, &pmc_pcr_lock,
+		hw = at91_clk_register_sam9x5_peripheral(regmap,
 							 sama5d2_periph32ck[i].n,
 							 "h32mxck",
 							 sama5d2_periph32ck[i].id,
@@ -298,11 +279,10 @@ static void __init sama5d2_pmc_setup(struct device_node *np)
 	parent_names[2] = "plladivck";
 	parent_names[3] = "utmick";
 	parent_names[4] = "mck";
-	parent_names[5] = "audiopll_pmcck";
 	for (i = 0; i < ARRAY_SIZE(sama5d2_gck); i++) {
-		hw = at91_clk_register_generated(regmap, &pmc_pcr_lock,
+		hw = at91_clk_register_generated(regmap,
 						 sama5d2_gck[i].n,
-						 parent_names, 6,
+						 parent_names, 5,
 						 sama5d2_gck[i].id,
 						 sama5d2_gck[i].pll,
 						 &sama5d2_gck[i].r);
@@ -310,26 +290,6 @@ static void __init sama5d2_pmc_setup(struct device_node *np)
 			goto err_free;
 
 		sama5d2_pmc->ghws[sama5d2_gck[i].id] = hw;
-	}
-
-	if (regmap_sfr) {
-		parent_names[0] = "i2s0_clk";
-		parent_names[1] = "i2s0_gclk";
-		hw = at91_clk_i2s_mux_register(regmap_sfr, "i2s0_muxclk",
-					       parent_names, 2, 0);
-		if (IS_ERR(hw))
-			goto err_free;
-
-		sama5d2_pmc->chws[PMC_I2S0_MUX] = hw;
-
-		parent_names[0] = "i2s1_clk";
-		parent_names[1] = "i2s1_gclk";
-		hw = at91_clk_i2s_mux_register(regmap_sfr, "i2s1_muxclk",
-					       parent_names, 2, 1);
-		if (IS_ERR(hw))
-			goto err_free;
-
-		sama5d2_pmc->chws[PMC_I2S1_MUX] = hw;
 	}
 
 	of_clk_add_provider(np, of_clk_hw_pmc_get, sama5d2_pmc);

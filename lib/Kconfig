@@ -159,6 +159,7 @@ config NLS
         bool "Native language support"
 
 config BLOBGEN
+	select BASE64
 	bool "include blob encode/decode support"
 
 endmenu

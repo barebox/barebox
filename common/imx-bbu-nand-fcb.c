@@ -1166,7 +1166,6 @@ static void read_firmware_all(struct mtd_info *mtd, struct fcb_block *fcb, void 
 		*unused_refresh = 1;
 		*used = first;
 		*data = primary;
-		return;
 	} else if (secondary && !primary) {
 		*used_refresh = secondary_refresh;
 		*unused_refresh = 1;

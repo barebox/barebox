@@ -606,9 +606,10 @@ static int imx_bbu_write_firmware(struct mtd_info *mtd, unsigned num, void *buf,
 	int ret, i, newbadblock = 0;
 	int num_blocks = imx_bbu_firmware_max_blocks(mtd);
 	int block = imx_bbu_firmware_start_block(mtd, num);
+	int page = block * mtd->erasesize / mtd->writesize;
 
-	pr_info("writing firmware %d to block %d (ofs 0x%08x)\n",
-			num, block, block * mtd->erasesize);
+	pr_info("writing firmware to slot %d on pages %d-%d\n",
+			num, page, page + len / mtd->writesize);
 
 	for (i = 0; i < num_blocks; i++) {
 		if (mtd_peb_is_bad(mtd, block + i))

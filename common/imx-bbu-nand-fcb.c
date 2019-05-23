@@ -977,6 +977,9 @@ static int imx_bbu_write_fcbs_dbbts(struct mtd_info *mtd, struct fcb_block *fcb)
 	 */
 	memset(fcb_raw_page + mtd->writesize, 0xFF, 2);
 
+	pr_info("Writing FCBs/DBBTs with primary/secondary Firmwares at pages %d/%d\n",
+		fcb->Firmware1_startingPage, fcb->Firmware2_startingPage);
+
 	for (i = 0; i < 4; i++) {
 		if (mtd_peb_is_bad(mtd, i))
 			continue;

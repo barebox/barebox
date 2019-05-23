@@ -1341,6 +1341,12 @@ static int imx_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *dat
 		fw = fw_orig;
 		fw_size = fw_orig_len;
 		pr_info("Refreshing existing firmware\n");
+
+		if (used_refresh) {
+			fcb->Firmware1_startingPage = imx_bbu_firmware_fcb_start_page(mtd, !used);
+			fcb->Firmware2_startingPage = imx_bbu_firmware_fcb_start_page(mtd, used);
+			fcb_create(imx_handler, fcb, mtd);
+		}
 	}
 
 	if (num_blocks_fw * mtd->erasesize < fw_size) {

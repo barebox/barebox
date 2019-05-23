@@ -1112,7 +1112,7 @@ err:
 
 	if (need_cleaning) {
 		pr_warn("Firmware at page %d needs cleanup\n", first_page);
-		return -EUCLEAN;
+		return 1;
 	}
 
 	return 0;

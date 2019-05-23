@@ -145,8 +145,8 @@ static inline u32 at91_get_ddram_size(void * __iomem base, bool is_nb)
 	u32 size;
 	bool is_sdram;
 
-	cr = __raw_readl(base + AT91_DDRSDRC_CR);
-	mdr = __raw_readl(base + AT91_DDRSDRC_MDR);
+	cr = readl(base + AT91_DDRSDRC_CR);
+	mdr = readl(base + AT91_DDRSDRC_MDR);
 
 	is_sdram = (mdr & AT91_DDRSDRC_MD) <= AT91_DDRSDRC_MD_LOW_POWER_SDR;
 
@@ -230,8 +230,8 @@ static inline u32 at91sama5_get_ddram_size(void)
 	u32 size;
 	void * __iomem base = IOMEM(SAMA5D3_BASE_MPDDRC);
 
-	cr = __raw_readl(base + AT91_DDRSDRC_CR);
-	mdr = __raw_readl(base + AT91_DDRSDRC_MDR);
+	cr = readl(base + AT91_DDRSDRC_CR);
+	mdr = readl(base + AT91_DDRSDRC_MDR);
 
 	/* Formula:
 	 * size = bank << (col + row + 1);

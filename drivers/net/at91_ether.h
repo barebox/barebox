@@ -33,7 +33,7 @@ struct rbf_t
  */
 static inline unsigned long at91_emac_read(unsigned int reg)
 {
-	return __raw_readl(AT91_VA_BASE_EMAC + reg);
+	return readl(AT91_VA_BASE_EMAC + reg);
 }
 
 /*
@@ -41,6 +41,6 @@ static inline unsigned long at91_emac_read(unsigned int reg)
  */
 static inline void at91_emac_write(unsigned int reg, unsigned long value)
 {
-	__raw_writel(value, AT91_VA_BASE_EMAC + reg);
+	writel(value, AT91_VA_BASE_EMAC + reg);
 }
 #endif

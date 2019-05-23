@@ -43,8 +43,8 @@ struct atmel_lcdfb_info {
 	void			*dma_desc;
 };
 
-#define lcdc_readl(sinfo, reg)		__raw_readl((sinfo)->mmio+(reg))
-#define lcdc_writel(sinfo, reg, val)	__raw_writel((val), (sinfo)->mmio+(reg))
+#define lcdc_readl(sinfo, reg)		readl((sinfo)->mmio+(reg))
+#define lcdc_writel(sinfo, reg, val)	writel((val), (sinfo)->mmio+(reg))
 
 #define ATMEL_LCDC_STOP_NOWAIT (1 << 0)
 

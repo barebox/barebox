@@ -90,7 +90,7 @@ static inline u32 at91_get_sdram_size(void *base)
 	u32 val;
 	u32 size;
 
-	val = __raw_readl(base + AT91_SDRAMC_CR);
+	val = readl(base + AT91_SDRAMC_CR);
 
 	/* Formula:
 	 * size = bank << (col + row + 1);
@@ -114,7 +114,7 @@ static inline u32 at91_get_sdram_size(void *base)
 
 static inline bool at91_is_low_power_sdram(void *base)
 {
-	return __raw_readl(base + AT91_SDRAMC_MDR) & AT91_SDRAMC_MD_LOW_POWER_SDRAM;
+	return readl(base + AT91_SDRAMC_MDR) & AT91_SDRAMC_MD_LOW_POWER_SDRAM;
 }
 
 #ifdef CONFIG_SOC_AT91SAM9260

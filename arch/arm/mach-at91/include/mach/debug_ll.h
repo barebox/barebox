@@ -31,11 +31,11 @@
  */
 static inline void PUTC_LL(char c)
 {
-	while (!(__raw_readl(UART_BASE + ATMEL_US_CSR) & ATMEL_US_TXRDY))
+	while (!(readl(UART_BASE + ATMEL_US_CSR) & ATMEL_US_TXRDY))
 		barrier();
-	__raw_writel(c, UART_BASE + ATMEL_US_THR);
+	writel(c, UART_BASE + ATMEL_US_THR);
 
-	while (!(__raw_readl(UART_BASE + ATMEL_US_CSR) & ATMEL_US_TXEMPTY))
+	while (!(readl(UART_BASE + ATMEL_US_CSR) & ATMEL_US_TXEMPTY))
 		barrier();
 }
 #endif

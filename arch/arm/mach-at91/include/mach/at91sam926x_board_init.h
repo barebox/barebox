@@ -78,43 +78,43 @@ static void __always_inline at91sam926x_sdramc_init(struct at91sam926x_board_cfg
 	int in_sram = running_in_sram();
 
 	/* SDRAMC Check if Refresh Timer Counter is already initialized */
-	r = __raw_readl(cfg->sdramc + AT91_SDRAMC_TR);
+	r = readl(cfg->sdramc + AT91_SDRAMC_TR);
 	if (r && !in_sram)
 		return;
 
 	/* SDRAMC_MR : Normal Mode */
-	__raw_writel(AT91_SDRAMC_MODE_NORMAL, cfg->sdramc + AT91_SDRAMC_MR);
+	writel(AT91_SDRAMC_MODE_NORMAL, cfg->sdramc + AT91_SDRAMC_MR);
 
 	/* SDRAMC_TR - Refresh Timer register */
-	__raw_writel(cfg->sdrc_tr1, cfg->sdramc + AT91_SDRAMC_TR);
+	writel(cfg->sdrc_tr1, cfg->sdramc + AT91_SDRAMC_TR);
 
 	/* SDRAMC_CR - Configuration register*/
-	__raw_writel(cfg->sdrc_cr, cfg->sdramc + AT91_SDRAMC_CR);
+	writel(cfg->sdrc_cr, cfg->sdramc + AT91_SDRAMC_CR);
 
 	/* Memory Device Type */
-	__raw_writel(cfg->sdrc_mdr, cfg->sdramc + AT91_SDRAMC_MDR);
+	writel(cfg->sdrc_mdr, cfg->sdramc + AT91_SDRAMC_MDR);
 
 	/* SDRAMC_MR : Precharge All */
-	__raw_writel(AT91_SDRAMC_MODE_PRECHARGE, cfg->sdramc + AT91_SDRAMC_MR);
+	writel(AT91_SDRAMC_MODE_PRECHARGE, cfg->sdramc + AT91_SDRAMC_MR);
 	access_sdram();
 
 	/* SDRAMC_MR : refresh */
-	__raw_writel(AT91_SDRAMC_MODE_REFRESH, cfg->sdramc + AT91_SDRAMC_MR);
+	writel(AT91_SDRAMC_MODE_REFRESH, cfg->sdramc + AT91_SDRAMC_MR);
 
 	/* access SDRAM 8 times */
 	for (i = 0; i < 8; i++)
 		access_sdram();
 
 	/* SDRAMC_MR : Load Mode Register */
-	__raw_writel(AT91_SDRAMC_MODE_LMR, cfg->sdramc + AT91_SDRAMC_MR);
+	writel(AT91_SDRAMC_MODE_LMR, cfg->sdramc + AT91_SDRAMC_MR);
 	access_sdram();
 
 	/* SDRAMC_MR : Normal Mode */
-	__raw_writel(AT91_SDRAMC_MODE_NORMAL, cfg->sdramc + AT91_SDRAMC_MR);
+	writel(AT91_SDRAMC_MODE_NORMAL, cfg->sdramc + AT91_SDRAMC_MR);
 	access_sdram();
 
 	/* SDRAMC_TR : Refresh Timer Counter */
-	__raw_writel(cfg->sdrc_tr2, cfg->sdramc + AT91_SDRAMC_TR);
+	writel(cfg->sdrc_tr2, cfg->sdramc + AT91_SDRAMC_TR);
 	access_sdram();
 }
 
@@ -127,7 +127,7 @@ static void __always_inline at91sam926x_board_init(void __iomem *smcbase,
 	if (!IS_ENABLED(CONFIG_AT91SAM926X_BOARD_INIT))
 		return;
 
-	__raw_writel(cfg->wdt_mr, AT91SAM926X_BASE_WDT + AT91_WDT_MR);
+	writel(cfg->wdt_mr, AT91SAM926X_BASE_WDT + AT91_WDT_MR);
 
 	/* configure PIOx as EBI0 D[16-31] */
 	at91_mux_gpio_disable(cfg->pio, cfg->ebi_pio_pdr);

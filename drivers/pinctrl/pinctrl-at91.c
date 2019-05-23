@@ -303,11 +303,11 @@ static enum at91_mux at91_mux_pio3_get_periph(void __iomem *pio, unsigned mask)
 {
 	unsigned select;
 
-	if (__raw_readl(pio + PIO_PSR) & mask)
+	if (readl(pio + PIO_PSR) & mask)
 		return AT91_MUX_GPIO;
 
-	select = !!(__raw_readl(pio + PIO_ABCDSR1) & mask);
-	select |= (!!(__raw_readl(pio + PIO_ABCDSR2) & mask) << 1);
+	select = !!(readl(pio + PIO_ABCDSR1) & mask);
+	select |= (!!(readl(pio + PIO_ABCDSR2) & mask) << 1);
 
 	return select + 1;
 }
@@ -316,34 +316,34 @@ static enum at91_mux at91_mux_get_periph(void __iomem *pio, unsigned mask)
 {
 	unsigned select;
 
-	if (__raw_readl(pio + PIO_PSR) & mask)
+	if (readl(pio + PIO_PSR) & mask)
 		return AT91_MUX_GPIO;
 
-	select = __raw_readl(pio + PIO_ABSR) & mask;
+	select = readl(pio + PIO_ABSR) & mask;
 
 	return select + 1;
 }
 
 static bool at91_mux_get_deglitch(void __iomem *pio, unsigned pin)
 {
-	return (__raw_readl(pio + PIO_IFSR) >> pin) & 0x1;
+	return (readl(pio + PIO_IFSR) >> pin) & 0x1;
 }
 
 static bool at91_mux_pio3_get_debounce(void __iomem *pio, unsigned pin, u32 *div)
 {
-	*div = __raw_readl(pio + PIO_SCDR);
+	*div = readl(pio + PIO_SCDR);
 
-	return (__raw_readl(pio + PIO_IFSCSR) >> pin) & 0x1;
+	return (readl(pio + PIO_IFSCSR) >> pin) & 0x1;
 }
 
 static bool at91_mux_pio3_get_pulldown(void __iomem *pio, unsigned pin)
 {
-	return (__raw_readl(pio + PIO_PPDSR) >> pin) & 0x1;
+	return (readl(pio + PIO_PPDSR) >> pin) & 0x1;
 }
 
 static bool at91_mux_pio3_get_schmitt_trig(void __iomem *pio, unsigned pin)
 {
-	return (__raw_readl(pio + PIO_SCHMITT) >> pin) & 0x1;
+	return (readl(pio + PIO_SCHMITT) >> pin) & 0x1;
 }
 
 static struct at91_pinctrl_mux_ops at91rm9200_ops = {
@@ -559,7 +559,7 @@ static int at91_gpio_direction_output(struct gpio_chip *chip, unsigned offset,
 	unsigned mask = 1 << offset;
 
 	at91_mux_gpio_set(pio, mask, value);
-	__raw_writel(mask, pio + PIO_OER);
+	writel(mask, pio + PIO_OER);
 
 	return 0;
 }
@@ -571,8 +571,8 @@ static int at91_gpio_get_direction(struct gpio_chip *chip, unsigned offset)
 	unsigned mask = 1 << offset;
 	u32 osr;
 
-	if (mask & __raw_readl(pio + PIO_PSR)) {
-		osr = __raw_readl(pio + PIO_OSR);
+	if (mask & readl(pio + PIO_PSR)) {
+		osr = readl(pio + PIO_OSR);
 		return !(osr & mask);
 	} else {
 		return -EBUSY;
@@ -585,7 +585,7 @@ static int at91_gpio_direction_input(struct gpio_chip *chip, unsigned offset)
 	void __iomem *pio = at91_gpio->regbase;
 	unsigned mask = 1 << offset;
 
-	__raw_writel(mask, pio + PIO_ODR);
+	writel(mask, pio + PIO_ODR);
 
 	return 0;
 }

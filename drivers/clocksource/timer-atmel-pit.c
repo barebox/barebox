@@ -35,8 +35,8 @@
 #include <linux/err.h>
 
 #define PIT_CPIV(x)	((x) & AT91_PIT_CPIV)
-#define pit_write(reg, val)	__raw_writel(val, pit_base + reg)
-#define pit_read(reg)		__raw_readl(pit_base + reg)
+#define pit_write(reg, val)	writel(val, pit_base + reg)
+#define pit_read(reg)		readl(pit_base + reg)
 
 static __iomem void *pit_base;
 

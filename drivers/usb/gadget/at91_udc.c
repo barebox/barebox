@@ -65,9 +65,9 @@
 static const char ep0name[] = "ep0";
 
 #define at91_udp_read(udc, reg) \
-	__raw_readl((udc)->udp_baseaddr + (reg))
+	readl((udc)->udp_baseaddr + (reg))
 #define at91_udp_write(udc, reg, val) \
-	__raw_writel((val), (udc)->udp_baseaddr + (reg))
+	writel((val), (udc)->udp_baseaddr + (reg))
 
 /*-------------------------------------------------------------------------*/
 
@@ -136,7 +136,7 @@ static int read_fifo (struct at91_ep *ep, struct at91_request *req)
 	 * or if we already emptied both pingpong buffers
 	 */
 rescan:
-	csr = __raw_readl(creg);
+	csr = readl(creg);
 	if ((csr & RX_DATA_READY) == 0)
 		return 0;
 
@@ -162,7 +162,7 @@ rescan:
 		}
 	} else
 		csr &= ~(SET_FX | AT91_UDP_RX_DATA_BK0);
-	__raw_writel(csr, creg);
+	writel(csr, creg);
 
 	req->req.actual += count;
 	is_done = (count < ep->ep.maxpacket);
@@ -184,7 +184,7 @@ rescan:
 		 * CSR returns bad RXCOUNT when read too soon after updating
 		 * RX_DATA_BK flags.
 		 */
-		csr = __raw_readl(creg);
+		csr = readl(creg);
 
 		bufferspace -= count;
 		buf += count;
@@ -198,7 +198,7 @@ rescan:
 static int write_fifo(struct at91_ep *ep, struct at91_request *req)
 {
 	u32 __iomem	*creg = ep->creg;
-	u32		csr = __raw_readl(creg);
+	u32		csr = readl(creg);
 	u8 __iomem	*dreg = ep->creg + (AT91_UDP_FDR(0) - AT91_UDP_CSR(0));
 	unsigned	total, count, is_last;
 	u8		*buf;
@@ -219,8 +219,8 @@ static int write_fifo(struct at91_ep *ep, struct at91_request *req)
 		if (csr & AT91_UDP_TXCOMP) {
 			csr |= CLR_FX;
 			csr &= ~(SET_FX | AT91_UDP_TXCOMP);
-			__raw_writel(csr, creg);
-			csr = __raw_readl(creg);
+			writel(csr, creg);
+			csr = readl(creg);
 		}
 		if (csr & AT91_UDP_TXPKTRDY)
 			return 0;
@@ -340,7 +340,7 @@ ok:
 		tmp |= 0x04;
 	tmp <<= 8;
 	tmp |= AT91_UDP_EPEDS;
-	__raw_writel(tmp, ep->creg);
+	writel(tmp, ep->creg);
 
 	ep->desc = desc;
 	ep->ep.maxpacket = maxpacket;
@@ -373,7 +373,7 @@ static int at91_ep_disable (struct usb_ep * _ep)
 	if (ep->udc->clocked) {
 		at91_udp_write(udc, AT91_UDP_RST_EP, ep->int_mask);
 		at91_udp_write(udc, AT91_UDP_RST_EP, 0);
-		__raw_writel(0, ep->creg);
+		writel(0, ep->creg);
 	}
 
 	return 0;
@@ -471,10 +471,10 @@ static int at91_ep_queue(struct usb_ep *_ep,
 ep0_in_status:
 				PACKET("ep0 in/status\n");
 				status = 0;
-				tmp = __raw_readl(ep->creg);
+				tmp = readl(ep->creg);
 				tmp &= ~SET_FX;
 				tmp |= CLR_FX | AT91_UDP_TXPKTRDY;
-				__raw_writel(tmp, ep->creg);
+				writel(tmp, ep->creg);
 				udc->req_pending = 0;
 				goto done;
 			}
@@ -534,7 +534,7 @@ static int at91_ep_set_halt(struct usb_ep *_ep, int value)
 
 	creg = ep->creg;
 
-	csr = __raw_readl(creg);
+	csr = readl(creg);
 
 	/*
 	 * fail with still-busy IN endpoints, ensuring correct sequencing
@@ -554,7 +554,7 @@ static int at91_ep_set_halt(struct usb_ep *_ep, int value)
 			at91_udp_write(udc, AT91_UDP_RST_EP, 0);
 			csr &= ~AT91_UDP_FORCESTALL;
 		}
-		__raw_writel(csr, creg);
+		writel(csr, creg);
 	}
 
 	return status;
@@ -760,7 +760,7 @@ static int handle_ep(struct at91_ep *ep)
 {
 	struct at91_request	*req;
 	u32 __iomem		*creg = ep->creg;
-	u32			csr = __raw_readl(creg);
+	u32			csr = readl(creg);
 
 	if (!list_empty(&ep->queue))
 		req = list_entry(ep->queue.next,
@@ -772,7 +772,7 @@ static int handle_ep(struct at91_ep *ep)
 		if (csr & (AT91_UDP_STALLSENT | AT91_UDP_TXCOMP)) {
 			csr |= CLR_FX;
 			csr &= ~(SET_FX | AT91_UDP_STALLSENT | AT91_UDP_TXCOMP);
-			__raw_writel(csr, creg);
+			writel(csr, creg);
 		}
 		if (req)
 			return write_fifo(ep, req);
@@ -784,8 +784,8 @@ static int handle_ep(struct at91_ep *ep)
 				req->req.status = -EILSEQ;
 			csr |= CLR_FX;
 			csr &= ~(SET_FX | AT91_UDP_STALLSENT);
-			__raw_writel(csr, creg);
-			csr = __raw_readl(creg);
+			writel(csr, creg);
+			csr = readl(creg);
 		}
 		if (req && (csr & RX_DATA_READY))
 			return read_fifo(ep, req);
@@ -811,7 +811,7 @@ static void handle_setup(struct at91_udc *udc, struct at91_ep *ep, u32 csr)
 	rxcount = (csr & AT91_UDP_RXBYTECNT) >> 16;
 	if (likely(rxcount == 8)) {
 		while (rxcount--)
-			pkt.raw[i++] = __raw_readb(dreg);
+			pkt.raw[i++] = readb(dreg);
 		if (pkt.r.bRequestType & USB_DIR_IN) {
 			csr |= AT91_UDP_DIR;
 			ep->is_in = 1;
@@ -826,7 +826,7 @@ static void handle_setup(struct at91_udc *udc, struct at91_ep *ep, u32 csr)
 	}
 	csr |= CLR_FX;
 	csr &= ~(SET_FX | AT91_UDP_RXSETUP);
-	__raw_writel(csr, creg);
+	writel(csr, creg);
 	udc->wait_for_addr_ack = 0;
 	udc->wait_for_config_ack = 0;
 	ep->stopped = 0;
@@ -846,14 +846,14 @@ static void handle_setup(struct at91_udc *udc, struct at91_ep *ep, u32 csr)
 	 * hardware ... notably for device and endpoint features.
 	 */
 	udc->req_pending = 1;
-	csr = __raw_readl(creg);
+	csr = readl(creg);
 	csr |= CLR_FX;
 	csr &= ~SET_FX;
 	switch ((pkt.r.bRequestType << 8) | pkt.r.bRequest) {
 
 	case ((USB_TYPE_STANDARD|USB_RECIP_DEVICE) << 8)
 			| USB_REQ_SET_ADDRESS:
-		__raw_writel(csr | AT91_UDP_TXPKTRDY, creg);
+		writel(csr | AT91_UDP_TXPKTRDY, creg);
 		udc->addr = w_value;
 		udc->wait_for_addr_ack = 1;
 		udc->req_pending = 0;
@@ -882,8 +882,8 @@ static void handle_setup(struct at91_udc *udc, struct at91_ep *ep, u32 csr)
 		if (at91_udp_read(udc, AT91_UDP_GLB_STAT) & AT91_UDP_ESR)
 			tmp |= (1 << USB_DEVICE_REMOTE_WAKEUP);
 		PACKET("get device status\n");
-		__raw_writeb(tmp, dreg);
-		__raw_writeb(0, dreg);
+		writeb(tmp, dreg);
+		writeb(0, dreg);
 		goto write_in;
 		/* then STATUS starts later, automatically */
 	case ((USB_TYPE_STANDARD|USB_RECIP_DEVICE) << 8)
@@ -910,8 +910,8 @@ static void handle_setup(struct at91_udc *udc, struct at91_ep *ep, u32 csr)
 	case ((USB_DIR_IN|USB_TYPE_STANDARD|USB_RECIP_INTERFACE) << 8)
 			| USB_REQ_GET_STATUS:
 		PACKET("get interface status\n");
-		__raw_writeb(0, dreg);
-		__raw_writeb(0, dreg);
+		writeb(0, dreg);
+		writeb(0, dreg);
 		goto write_in;
 		/* then STATUS starts later, automatically */
 	case ((USB_TYPE_STANDARD|USB_RECIP_INTERFACE) << 8)
@@ -939,12 +939,12 @@ static void handle_setup(struct at91_udc *udc, struct at91_ep *ep, u32 csr)
 				goto stall;
 		}
 		PACKET("get %s status\n", ep->ep.name);
-		if (__raw_readl(ep->creg) & AT91_UDP_FORCESTALL)
+		if (readl(ep->creg) & AT91_UDP_FORCESTALL)
 			tmp = (1 << USB_ENDPOINT_HALT);
 		else
 			tmp = 0;
-		__raw_writeb(tmp, dreg);
-		__raw_writeb(0, dreg);
+		writeb(tmp, dreg);
+		writeb(0, dreg);
 		goto write_in;
 		/* then STATUS starts later, automatically */
 	case ((USB_TYPE_STANDARD|USB_RECIP_ENDPOINT) << 8)
@@ -961,10 +961,10 @@ static void handle_setup(struct at91_udc *udc, struct at91_ep *ep, u32 csr)
 		} else if (ep->is_in)
 			goto stall;
 
-		tmp = __raw_readl(ep->creg);
+		tmp = readl(ep->creg);
 		tmp &= ~SET_FX;
 		tmp |= CLR_FX | AT91_UDP_FORCESTALL;
-		__raw_writel(tmp, ep->creg);
+		writel(tmp, ep->creg);
 		goto succeed;
 	case ((USB_TYPE_STANDARD|USB_RECIP_ENDPOINT) << 8)
 			| USB_REQ_CLEAR_FEATURE:
@@ -984,10 +984,10 @@ static void handle_setup(struct at91_udc *udc, struct at91_ep *ep, u32 csr)
 
 		at91_udp_write(udc, AT91_UDP_RST_EP, ep->int_mask);
 		at91_udp_write(udc, AT91_UDP_RST_EP, 0);
-		tmp = __raw_readl(ep->creg);
+		tmp = readl(ep->creg);
 		tmp |= CLR_FX;
 		tmp &= ~(SET_FX | AT91_UDP_FORCESTALL);
-		__raw_writel(tmp, ep->creg);
+		writel(tmp, ep->creg);
 		if (!list_empty(&ep->queue))
 			handle_ep(ep);
 		goto succeed;
@@ -1008,7 +1008,7 @@ stall:
 		VDBG(udc, "req %02x.%02x protocol STALL; stat %d\n",
 				pkt.r.bRequestType, pkt.r.bRequest, status);
 		csr |= AT91_UDP_FORCESTALL;
-		__raw_writel(csr, creg);
+		writel(csr, creg);
 		udc->req_pending = 0;
 	}
 	return;
@@ -1018,7 +1018,7 @@ succeed:
 	PACKET("ep0 in/status\n");
 write_in:
 	csr |= AT91_UDP_TXPKTRDY;
-	__raw_writel(csr, creg);
+	writel(csr, creg);
 	udc->req_pending = 0;
 }
 
@@ -1026,7 +1026,7 @@ static void handle_ep0(struct at91_udc *udc)
 {
 	struct at91_ep		*ep0 = &udc->ep[0];
 	u32 __iomem		*creg = ep0->creg;
-	u32			csr = __raw_readl(creg);
+	u32			csr = readl(creg);
 	struct at91_request	*req;
 
 	if (unlikely(csr & AT91_UDP_STALLSENT)) {
@@ -1034,9 +1034,9 @@ static void handle_ep0(struct at91_udc *udc)
 		udc->req_pending = 0;
 		csr |= CLR_FX;
 		csr &= ~(SET_FX | AT91_UDP_STALLSENT | AT91_UDP_FORCESTALL);
-		__raw_writel(csr, creg);
+		writel(csr, creg);
 		VDBG(udc, "ep0 stalled\n");
-		csr = __raw_readl(creg);
+		csr = readl(creg);
 	}
 	if (csr & AT91_UDP_RXSETUP) {
 		nuke(ep0, 0);
@@ -1070,7 +1070,7 @@ static void handle_ep0(struct at91_udc *udc)
 		 */
 		} else {
 			udc->req_pending = 0;
-			__raw_writel(csr, creg);
+			writel(csr, creg);
 
 			/*
 			 * SET_ADDRESS takes effect only after the STATUS
@@ -1104,10 +1104,10 @@ static void handle_ep0(struct at91_udc *udc)
 				if (handle_ep(ep0)) {
 					/* send IN/STATUS */
 					PACKET("ep0 in/status\n");
-					csr = __raw_readl(creg);
+					csr = readl(creg);
 					csr &= ~SET_FX;
 					csr |= CLR_FX | AT91_UDP_TXPKTRDY;
-					__raw_writel(csr, creg);
+					writel(csr, creg);
 					udc->req_pending = 0;
 				}
 			} else if (udc->req_pending) {
@@ -1129,14 +1129,14 @@ static void handle_ep0(struct at91_udc *udc)
 				 * that gadget drivers not use this mode.
 				 */
 				DBG(udc, "no control-OUT deferred responses!\n");
-				__raw_writel(csr | AT91_UDP_FORCESTALL, creg);
+				writel(csr | AT91_UDP_FORCESTALL, creg);
 				udc->req_pending = 0;
 			}
 
 		/* STATUS stage for control-IN; ack.  */
 		} else {
 			PACKET("ep0 out/status ACK\n");
-			__raw_writel(csr, creg);
+			writel(csr, creg);
 
 			/* "early" status stage */
 			if (req)

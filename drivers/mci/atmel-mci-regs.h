@@ -138,9 +138,9 @@
 
 /* Register access macros */
 #define atmci_readl(port,reg)				\
-	__raw_readl((port)->regs + reg)
+	readl((port)->regs + reg)
 #define atmci_writel(port,reg,value)			\
-	__raw_writel((value), (port)->regs + reg)
+	writel((value), (port)->regs + reg)
 
 /* On AVR chips the Peripheral DMA Controller is not connected to MCI. */
 #ifdef CONFIG_AVR32

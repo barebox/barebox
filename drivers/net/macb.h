@@ -334,13 +334,13 @@
 
 /* Register access macros */
 #define macb_readl(port,reg)				\
-	__raw_readl((port)->regs + MACB_##reg)
+	readl((port)->regs + MACB_##reg)
 #define macb_writel(port,reg,value)			\
-	__raw_writel((value), (port)->regs + MACB_##reg)
+	writel((value), (port)->regs + MACB_##reg)
 #define gem_readl(port, reg)				\
-	__raw_readl((port)->regs + GEM_##reg)
+	readl((port)->regs + GEM_##reg)
 #define gem_writel(port, reg, value)			\
-	__raw_writel((value), (port)->regs + GEM_##reg)
+	writel((value), (port)->regs + GEM_##reg)
 
 /*
  * Conditional GEM/MACB macros.  These perform the operation to the correct

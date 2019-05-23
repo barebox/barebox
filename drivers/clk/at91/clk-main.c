@@ -455,8 +455,7 @@ at91_clk_register_sam9x5_main(struct regmap *regmap,
 	clkmain->clk.name = name;
 	clkmain->clk.ops = &sam9x5_main_ops;
 	parents_array_size = num_parents * sizeof (clkmain->clk.parent_names[0]);
-	clkmain->clk.parent_names = xzalloc(parents_array_size);
-	memcpy(clkmain->clk.parent_names, parent_names, parents_array_size);
+	clkmain->clk.parent_names = xmemdup(parent_names, parents_array_size);
 	clkmain->clk.num_parents = num_parents;
 
 	/* init.flags = CLK_SET_PARENT_GATE; */

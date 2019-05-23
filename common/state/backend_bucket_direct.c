@@ -52,7 +52,7 @@ static int state_backend_bucket_direct_read(struct state_backend_storage_bucket
 	struct state_backend_storage_bucket_direct *direct =
 	    get_bucket_direct(bucket);
 	struct state_backend_storage_bucket_direct_meta meta;
-	ssize_t read_len;
+	uint32_t read_len;
 	void *buf;
 	int ret;
 
@@ -67,6 +67,11 @@ static int state_backend_bucket_direct_read(struct state_backend_storage_bucket
 	}
 	if (meta.magic == direct_magic) {
 		read_len = meta.written_length;
+		if (read_len > direct->max_size) {
+			dev_err(direct->dev, "Wrong length in meta data\n");
+			return -EINVAL;
+
+		}
 	} else {
 		if (meta.magic != ~0 && !!meta.magic)
 			bucket->wrong_magic = 1;

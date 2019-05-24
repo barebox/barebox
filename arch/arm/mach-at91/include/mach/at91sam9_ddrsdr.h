@@ -139,7 +139,7 @@ Banks [not SAM9G45] */
 #include <io.h>
 #include <mach/hardware.h>
 
-static inline u32 at91_get_ddram_size(void * __iomem base, bool is_nb)
+static inline u32 at91_get_ddram_size(void __iomem *base, bool is_nb)
 {
 	u32 cr;
 	u32 mdr;

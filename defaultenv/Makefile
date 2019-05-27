@@ -20,7 +20,8 @@ $(obj)/barebox_default_env: FORCE
 
 quiet_cmd_env_h = ENVH    $@
 cmd_env_h = cat $< | (cd $(obj) && $(objtree)/scripts/bin2c "__aligned(4) default_environment") > $@; \
-	echo "static const int default_environment_uncompress_size=`stat -c%s $(obj)/barebox_default_env`;" >> $@
+	echo "static const int default_environment_uncompress_size=`${CONFIG_SHELL} \"${srctree}/scripts/file-size.sh\" $(obj)/barebox_default_env`;" >> $@
+
 
 $(obj)/barebox_default_env.h: $(obj)/barebox_default_env$(DEFAULT_COMPRESSION_SUFFIX) FORCE
 	$(call if_changed,env_h)

@@ -1765,7 +1765,6 @@ static int ohci_init(struct usb_host *host)
 				       DMA_ADDRESS_BROKEN);
 	if (!ohci->ptd)
 		return -ENOMEM;
-	memset(ohci->ptd, 0, sizeof(struct td) * NUM_TD);
 
 	ohci->disabled = 1;
 	ohci->irq = -1;
@@ -1815,7 +1814,6 @@ static int ohci_probe(struct device_d *dev)
 					    DMA_ADDRESS_BROKEN);
 	if (!ohci->ohci_dev)
 		return -ENOMEM;
-	memset(ohci->ohci_dev, 0, sizeof(*ohci->ohci_dev));
 
 	usb_register_host(host);
 

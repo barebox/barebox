@@ -388,7 +388,6 @@ struct mxs_dma_desc *mxs_dma_desc_alloc(void)
 	if (pdesc == NULL)
 		return NULL;
 
-	memset(pdesc, 0, sizeof(*pdesc));
 	pdesc->address = (dma_addr_t)pdesc;
 
 	return pdesc;

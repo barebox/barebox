@@ -56,14 +56,20 @@
 # else /* non apple __MACH__ */
 #  include <machine/endian.h>
 # endif /* __APPLE__ */
-# define __BYTE_ORDER    BYTE_ORDER
-# define __LITTLE_ENDIAN LITTLE_ENDIAN
-# define __BIG_ENDIAN    BIG_ENDIAN
 typedef unsigned long ulong;
 typedef unsigned int  uint;
+#elif defined(__OpenBSD__) || defined(__FreeBSD__) || \
+      defined(__NetBSD__) || defined(__DragonFly__)
+# include <sys/endian.h>
 #else /* assume Linux */
 # include <endian.h>
 # include <byteswap.h>
+#endif
+
+#if defined(__BYTE_ORDER) && !defined(BYTE_ORDER)
+# define __BYTE_ORDER    BYTE_ORDER
+# define __BIG_ENDIAN    BIG_ENDIAN
+# define __LITTLE_ENDIAN LITTLE_ENDIAN
 #endif
 
 typedef uint8_t __u8;

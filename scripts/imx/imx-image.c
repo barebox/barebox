@@ -26,10 +26,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <endian.h>
 #include <linux/kernel.h>
 #include <sys/file.h>
 #include <mach/imx_cpu_types.h>
+#include "../compiler.h"
 
 #include "imx.h"
 

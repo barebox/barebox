@@ -33,10 +33,6 @@
 #define OMAP_IS_BIG_ENDIAN
 #endif
 
-#ifdef OMAP_IS_BIG_ENDIAN
-#include <arpa/inet.h>
-#endif
-
 #include <unistd.h>		/* for usleep and friends */
 #include <getopt.h>
 #include <errno.h>

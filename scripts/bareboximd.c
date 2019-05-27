@@ -23,7 +23,6 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <stdint.h>
-#include <asm-generic/errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>

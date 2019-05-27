@@ -4,7 +4,7 @@
 #include <linux/compiler.h>
 #include <linux/types.h>
 
-#include <asm/errno.h>
+#include <errno.h>
 
 /*
  * Original kernel header comment:

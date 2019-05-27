@@ -378,10 +378,10 @@ kwboot_xm_resync(int fd)
 	 * there is another problem.
 	 */
 	int rc;
-	char buf[sizeof(struct kwboot_block)];
+	uint8_t buf[sizeof(struct kwboot_block)];
 	unsigned interval = 1;
 	unsigned len;
-	char *p = buf;
+	uint8_t *p = buf;
 
 	memset(buf, 0xff, sizeof(buf));
 
@@ -407,7 +407,7 @@ static int
 kwboot_xm_sendblock(int fd, struct kwboot_block *block)
 {
 	int rc, retries;
-	char c;
+	uint8_t c;
 
 	retries = 16;
 	do {

@@ -15,7 +15,7 @@ config USB_EHCI_ATMEL
 
 config USB_OHCI
 	bool "OHCI driver"
-	depends on !MMU
+	depends on !MMU && HAS_DMA
 
 config USB_OHCI_AT91
 	depends on ARCH_AT91

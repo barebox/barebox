@@ -13,8 +13,6 @@
     defined(__sun__)	 || \
     defined(__APPLE__)
 # include <inttypes.h>
-#elif defined(__linux__) || defined(__WIN32__) || defined(__MINGW32__)
-# include <stdint.h>
 #endif
 
 #include <errno.h>

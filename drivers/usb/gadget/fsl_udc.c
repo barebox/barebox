@@ -1143,11 +1143,10 @@ static struct ep_td_struct *fsl_build_dtd(struct fsl_req *req, unsigned *length,
 			(unsigned)EP_MAX_LENGTH_TRANSFER);
 
 	dtd = dma_alloc_coherent(sizeof(struct ep_td_struct),
-				 DMA_ADDRESS_BROKEN);
+				 dma);
 	if (dtd == NULL)
 		return dtd;
 
-	*dma = (dma_addr_t)virt_to_phys(dtd);
 	dtd->td_dma = *dma;
 	/* Clear reserved field */
 	swap_temp = cpu_to_le32(dtd->size_ioc_sts);
@@ -2066,13 +2065,12 @@ static int struct_udc_setup(struct fsl_udc *udc,
 		size &= ~(QH_ALIGNMENT - 1);
 	}
 
-	udc->ep_qh = dma_alloc_coherent(size, DMA_ADDRESS_BROKEN);
+	udc->ep_qh = dma_alloc_coherent(size, &udc->ep_qh_dma);
 	if (!udc->ep_qh) {
 		ERR("malloc QHs for udc failed\n");
 		kfree(udc->eps);
 		return -1;
 	}
-	udc->ep_qh_dma = (dma_addr_t)virt_to_phys(udc->ep_qh);
 
 	udc->ep_qh_size = size;
 

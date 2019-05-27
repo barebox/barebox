@@ -38,10 +38,7 @@
 #define O_BINARY	0
 #endif
 
-#ifdef __linux__
-# include <endian.h>
-# include <byteswap.h>
-#elif defined(__MACH__)
+#if defined(__MACH__)
 # ifdef __APPLE__
 #  include <libkern/OSByteOrder.h>
 #  define htobe16(x) OSSwapHostToBigInt16(x)
@@ -64,6 +61,9 @@
 # define __BIG_ENDIAN    BIG_ENDIAN
 typedef unsigned long ulong;
 typedef unsigned int  uint;
+#else /* assume Linux */
+# include <endian.h>
+# include <byteswap.h>
 #endif
 
 typedef uint8_t __u8;

@@ -38,7 +38,7 @@
 
 int main(int argc, char *argv[])
 {
-	loff_t start = 0, size = ~0;
+	ulong start = 0, size = ~0;
 	ulong crc = 0, total = 0;
 	char *filename = NULL;
 	int i;

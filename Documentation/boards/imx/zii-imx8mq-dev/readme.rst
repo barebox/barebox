@@ -20,5 +20,5 @@ follows:
 
 .. code-block:: sh
 
-        cd barebox
-        openocd -f Documentation/boards/imx/zii-imx8mq-dev/openocd.cfg --command "init; ddr_init; start_barebox"
+  cd barebox
+  Documentation/boards/imx/zii-imx8mq-dev/bootstrap.sh

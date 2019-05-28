@@ -36,7 +36,11 @@ int pwrite_full(int fd, const void *buf, size_t size, loff_t offset)
 
 	while (size) {
 		now = pwrite(fd, buf, size, offset);
-		if (now <= 0)
+		if (now == 0) {
+			errno = ENOSPC;
+			return -1;
+		}
+		if (now < 0)
 			return now;
 		size -= now;
 		buf += now;
@@ -60,7 +64,11 @@ int write_full(int fd, const void *buf, size_t size)
 
 	while (size) {
 		now = write(fd, buf, size);
-		if (now <= 0)
+		if (now == 0) {
+			errno = ENOSPC;
+			return -1;
+		}
+		if (now < 0)
 			return now;
 		size -= now;
 		buf += now;

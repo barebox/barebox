@@ -24,6 +24,7 @@
 #include <string.h>
 #include <linux/ctype.h>
 #include <getopt.h>
+#include <libfile.h>
 
 /*
  * Like simple_strtoull() but handles an optional G, M, K or k
@@ -171,3 +172,51 @@ int mem_parse_options(int argc, char *argv[], char *optstr, int *mode,
 	return 0;
 }
 
+int memcpy_parse_options(int argc, char *argv[], int *sourcefd,
+			 int *destfd, loff_t *count)
+{
+	loff_t dest, src;
+	int mode = 0;
+	char *sourcefile = NULL;
+	char *destfile = NULL;
+	struct  stat statbuf;
+
+	if (mem_parse_options(argc, argv, "bwlqs:d:", &mode, &sourcefile,
+			      &destfile, NULL) < 0)
+		return -EINVAL;
+
+	if (optind + 2 > argc)
+		return -EINVAL;
+
+	src = strtoull_suffix(argv[optind], NULL, 0);
+	dest = strtoull_suffix(argv[optind + 1], NULL, 0);
+
+	if (optind + 2 == argc) {
+		if (!sourcefile) {
+			printf("source and count not given\n");
+			return -EINVAL;
+		}
+		if (stat(sourcefile, &statbuf)) {
+			perror("stat");
+			return -1;
+		}
+		*count = statbuf.st_size - src;
+	} else {
+		*count = strtoull_suffix(argv[optind + 2], NULL, 0);
+	}
+
+	sourcefile = sourcefile ?: "/dev/mem";
+	destfile = destfile ?: "/dev/mem";
+
+	*sourcefd = open_and_lseek(sourcefile, mode | O_RDONLY, src);
+	if (*sourcefd < 0)
+		return -1;
+
+	*destfd = open_and_lseek(destfile, O_WRONLY | O_CREAT | mode, dest);
+	if (*destfd < 0) {
+		close(*sourcefd);
+		return -1;
+	}
+
+	return 0;
+}

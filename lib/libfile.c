@@ -80,20 +80,18 @@ int read_full(int fd, void *buf, size_t size)
 {
 	size_t insize = size;
 	int now;
-	int total = 0;
 
 	while (size) {
 		now = read(fd, buf, size);
 		if (now == 0)
-			return total;
+			break;
 		if (now < 0)
 			return now;
-		total += now;
 		size -= now;
 		buf += now;
 	}
 
-	return insize;
+	return insize - size;
 }
 EXPORT_SYMBOL(read_full);
 

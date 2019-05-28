@@ -402,7 +402,12 @@ static void b_free(o_string *o)
 static int b_adduint(o_string *o, unsigned int i)
 {
 	int r;
-	char *p = simple_itoa(i);
+	/* 21 digits plus null terminator, good for 64-bit or smaller
+	 * ints */
+	char number[22];
+	char *p = number;
+
+	snprintf(number, sizeof(number), "%u", i);
 
 	/* no escape checking necessary */
 	do {

@@ -209,9 +209,11 @@ static int macb_recv(struct eth_device *edev)
 	dev_dbg(macb->dev, "%s\n", __func__);
 
 	for (;;) {
+		barrier();
 		if (!(macb->rx_ring[rx_tail].addr & MACB_BIT(RX_USED)))
 			return -1;
 
+		barrier();
 		status = macb->rx_ring[rx_tail].ctrl;
 		if (status & MACB_BIT(RX_SOF)) {
 			if (rx_tail != macb->rx_tail)
@@ -228,14 +230,26 @@ static int macb_recv(struct eth_device *edev)
 				headlen = macb->rx_buffer_size * (macb->rx_ring_size
 						 - macb->rx_tail);
 				taillen = length - headlen;
-				memcpy((void *)NetRxPackets[0],
-				       buffer, headlen);
+				dma_sync_single_for_cpu((unsigned long)buffer,
+							headlen, DMA_FROM_DEVICE);
+				memcpy((void *)NetRxPackets[0], buffer, headlen);
+				dma_sync_single_for_cpu((unsigned long)macb->rx_buffer,
+							taillen, DMA_FROM_DEVICE);
 				memcpy((void *)NetRxPackets[0] + headlen,
-				       macb->rx_buffer, taillen);
-				buffer = (void *)NetRxPackets[0];
+					macb->rx_buffer, taillen);
+				dma_sync_single_for_device((unsigned long)buffer,
+							headlen, DMA_FROM_DEVICE);
+				dma_sync_single_for_device((unsigned long)macb->rx_buffer,
+							taillen, DMA_FROM_DEVICE);
+				net_receive(edev, NetRxPackets[0], length);
+			} else {
+				dma_sync_single_for_cpu((unsigned long)buffer, length,
+							DMA_FROM_DEVICE);
+				net_receive(edev, buffer, length);
+				dma_sync_single_for_device((unsigned long)buffer, length,
+							DMA_FROM_DEVICE);
 			}
-
-			net_receive(edev, buffer, length);
+			barrier();
 			if (++rx_tail >= macb->rx_ring_size)
 				rx_tail = 0;
 			reclaim_rx_buffers(macb, rx_tail);
@@ -245,7 +259,6 @@ static int macb_recv(struct eth_device *edev)
 				rx_tail = 0;
 			}
 		}
-		barrier();
 	}
 
 	return 0;

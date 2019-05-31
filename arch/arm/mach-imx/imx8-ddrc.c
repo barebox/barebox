@@ -29,7 +29,7 @@ static u32 ddrc_phy_get_message(void __iomem *phy, int type)
 
 	/*
 	 * When BIT0 set to 0, the PMU has a message for the user
-	 * 10ms seems not enough for poll message, so use 1s here.
+	 * Wait for it indefinitely.
 	 */
 	readl_poll_timeout(phy + DDRC_PHY_REG(0xd0004),
 			   r, !(r & BIT(0)), 0);

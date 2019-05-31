@@ -6,6 +6,7 @@
 
 #include <bootsource.h>
 #include <common.h>
+#include <envfs.h>
 #include <init.h>
 #include <asm/memory.h>
 #include <linux/sizes.h>
@@ -24,6 +25,8 @@ static int zii_imx8mq_dev_init(void)
 		of_device_enable_path("/chosen/environment-emmc");
 	else
 		of_device_enable_path("/chosen/environment-sd");
+
+	defaultenv_append_directory(defaultenv_imx8mq_zii_dev);
 
 	return 0;
 }

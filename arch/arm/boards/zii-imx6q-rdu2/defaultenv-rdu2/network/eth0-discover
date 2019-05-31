@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# reset switch to clear DSA config
+rave_reset_switch

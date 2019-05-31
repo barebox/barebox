@@ -1,0 +1,4 @@
+#!/bin/sh
+
+backlight0.brightness=0
+boot mmc1

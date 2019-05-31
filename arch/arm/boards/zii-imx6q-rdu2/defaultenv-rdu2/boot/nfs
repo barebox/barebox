@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# clear seat network config
+global.linux.bootargs.rdu_network=
+
+backlight0.brightness=0
+boot /mnt/nfs

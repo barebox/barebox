@@ -91,6 +91,10 @@
 	};
 };
 
+&fec {
+	status = "disabled";
+};
+
 &iomuxc {
 	pinctrl_usbh1: usbh1grp {
 

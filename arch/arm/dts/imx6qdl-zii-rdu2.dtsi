@@ -65,6 +65,23 @@
 		switch-eeprom = &switch;
 	};
 
+	reserved-memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		/* Address will be determined by the bootloader */
+		ramoops@2fe00000 {
+			compatible = "ramoops";
+			reg = <0x2fe00000 0x200000>;
+			ecc-size = <16>;
+			record-size = <0x20000>;
+			console-size = <0x20000>;
+			ftrace-size = <0x20000>;
+			pmsg-size = <0x20000>;
+		};
+	};
+
 	panel {
 		compatible = "simple-panel";
 		/* Timings for all supported panels, the correct one is enabled

@@ -58,6 +58,7 @@ variable. Currently, ``ARCH`` must be one of:
 * nios2
 * openrisc
 * ppc
+* riscv
 * sandbox
 * x86
 

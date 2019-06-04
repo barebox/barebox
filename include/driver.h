@@ -22,6 +22,7 @@
 #include <linux/list.h>
 #include <linux/ioport.h>
 #include <of.h>
+#include <filetype.h>
 
 #define FORMAT_DRIVER_NAME_ID	"%s%d"
 
@@ -464,6 +465,7 @@ struct cdev {
 	struct list_head link_entry, links;
 	struct list_head partition_entry, partitions;
 	struct cdev *master;
+	enum filetype filetype;
 };
 
 int devfs_create(struct cdev *);

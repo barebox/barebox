@@ -425,6 +425,11 @@ enum filetype cdev_detect_type(const char *name)
 	if (!cdev)
 		return type;
 
+	if (cdev->filetype != filetype_unknown) {
+		type = cdev->filetype;
+		goto cdev_close;
+	}
+
 	buf = xzalloc(FILE_TYPE_SAFE_BUFSIZE);
 	ret = cdev_read(cdev, buf, FILE_TYPE_SAFE_BUFSIZE, 0, 0);
 	if (ret < 0)
@@ -434,6 +439,7 @@ enum filetype cdev_detect_type(const char *name)
 
 err_out:
 	free(buf);
+cdev_close:
 	cdev_close(cdev);
 	return type;
 }

@@ -77,6 +77,8 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_imx_image_v2] = { "i.MX image (v2)", "imx-image-v2" },
 	[filetype_layerscape_image] = { "Layerscape image", "layerscape-PBL" },
 	[filetype_layerscape_qspi_image] = { "Layerscape QSPI image", "layerscape-qspi-PBL" },
+	[filetype_ubootvar] = { "U-Boot environmemnt variable data",
+				"ubootvar" },
 };
 
 const char *file_type_to_string(enum filetype f)

@@ -47,6 +47,12 @@
 			compatible = "barebox,environment";
 			device-path = &nor_flash, "partname:barebox-environment";
 		};
+
+		ubootenv {
+			compatible = "barebox,uboot-environment";
+			device-path-0 = &uboot_env_0;
+			device-path-1 = &uboot_env_1;
+		};
 	};
 
 	device-info {
@@ -247,6 +253,27 @@
 
 &usbotg {
 	dr_mode = "otg";
+};
+
+&usdhc4 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		/*
+		 * Layout info is taken from /etc/fw_env.config
+		 */
+		uboot_env_0: partition@c0000 {
+			label = "uboot-environment-0";
+			reg = <0xc0000 0x4000>;
+		};
+
+		uboot_env_1: partition@cc800 {
+			label = "uboot-environment-1";
+			reg = <0xcc800 0x4000>;
+		};
+	};
 };
 
 &gpio3 {

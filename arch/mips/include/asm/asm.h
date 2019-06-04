@@ -102,8 +102,8 @@ EXPORT(symbol)
 	 nop;						\
 							\
 	/* No return */					\
-__error:						\
-	b	__error;				\
+1:							\
+	b	1b;					\
 	 nop;
 
 /*
@@ -116,8 +116,8 @@ __error:						\
 	/* trigger a soft breakpoint for OpenOCD */	\
 	SDBBP;						\
 	/* position independent variant of dead loop */	\
-	__error:					\
-	b	__error;				\
+1:							\
+	b	1b;					\
 	 nop;						\
 	/* Call some code from .text section.		\
 	 * It is needed to keep same linker script for	\

@@ -188,7 +188,7 @@ mem_initcall(mvebu_meminit);
 #define MVEBU_BRIDGE_REG_BASE		0x20000
 #define DEVICE_INTERNAL_BASE_ADDR	(MVEBU_BRIDGE_REG_BASE + 0x80)
 
-static void mvebu_remap_registers(void)
+static __always_inline void mvebu_remap_registers(void)
 {
 	void __iomem *base = mvebu_get_initial_int_reg_base();
 

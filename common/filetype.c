@@ -37,7 +37,7 @@ struct filetype_str {
 };
 
 static const struct filetype_str filetype_str[] = {
-	[filetype_unknown] = { "unknown", "unkown" },
+	[filetype_unknown] = { "unknown", "unknown" },
 	[filetype_arm_zimage] = { "ARM Linux zImage", "arm-zimage" },
 	[filetype_lzo_compressed] = { "LZO compressed", "lzo" },
 	[filetype_lz4_compressed] = { "LZ4 compressed", "lz4" },

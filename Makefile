@@ -457,9 +457,7 @@ endif # $(dot-config)
 
 include $(srctree)/arch/$(ARCH)/Makefile
 
-ifdef CONFIG_DEBUG_INFO
-CFLAGS		+= -g
-endif
+CFLAGS		+= -ggdb3
 
 # Force gcc to behave correct even for buggy distributions
 CFLAGS          += $(call cc-option, -fno-stack-protector)

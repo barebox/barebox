@@ -20,15 +20,6 @@
 
 #include <io.h>
 
-#define QH_ENDPT1_EPS(x)	(((x) & 0x3) << 12)	/* Endpoint Speed */
-#define QH_ENDPT2_PORTNUM(x)	(((x) & 0x7f) << 23)	/* Port Number */
-#define QH_ENDPT2_HUBADDR(x)	(((x) & 0x7f) << 16)	/* Hub Address */
-
-#define QT_TOKEN_DT(x)		(((x) & 0x1) << 31)	/* Data Toggle */
-#define QT_TOKEN_GET_STATUS(x)	(((x) >> 0) & 0xff)
-#define QT_TOKEN_STATUS_ACTIVE	0x80
-#define QT_TOKEN_GET_DT(x)	(((x) >> 31) & 0x1)
-
 #if !defined(CONFIG_SYS_USB_EHCI_MAX_ROOT_PORTS)
 #define CONFIG_SYS_USB_EHCI_MAX_ROOT_PORTS	16
 #endif
@@ -62,6 +53,7 @@ struct ehci_hcor {
 #define	STD_ASS		(1 << 15)
 #define STS_PSS         (1 << 14)
 #define STS_HALT	(1 << 12)
+#define STS_USBINT	BIT(0)
 	uint32_t or_usbintr;
 	uint32_t or_frindex;
 	uint32_t or_ctrldssegment;
@@ -133,9 +125,28 @@ struct qTD {
 #define	QT_NEXT_TERMINATE	1
 	uint32_t qt_altnext;
 	uint32_t qt_token;
+#define QT_TOKEN_DT(x)		(((x) & 0x1) << 31)	/* Data Toggle */
+#define QT_TOKEN_GET_DT(x)		(((x) >> 31) & 0x1)
+#define QT_TOKEN_TOTALBYTES(x)	(((x) & 0x7fff) << 16)	/* Total Bytes to Transfer */
+#define QT_TOKEN_GET_TOTALBYTES(x)	(((x) >> 16) & 0x7fff)
+#define QT_TOKEN_IOC(x)		(((x) & 0x1) << 15)	/* Interrupt On Complete */
+#define QT_TOKEN_CPAGE(x)	(((x) & 0x7) << 12)	/* Current Page */
+#define QT_TOKEN_CERR(x)	(((x) & 0x3) << 10)	/* Error Counter */
+#define QT_TOKEN_PID(x)		(((x) & 0x3) << 8)	/* PID Code */
+#define QT_TOKEN_PID_OUT		0x0
+#define QT_TOKEN_PID_IN			0x1
+#define QT_TOKEN_PID_SETUP		0x2
+#define QT_TOKEN_STATUS(x)	(((x) & 0xff) << 0)	/* Status */
+#define QT_TOKEN_GET_STATUS(x)		(((x) >> 0) & 0xff)
+#define QT_TOKEN_STATUS_ACTIVE		0x80
+#define QT_TOKEN_STATUS_HALTED		0x40
+#define QT_TOKEN_STATUS_DATBUFERR	0x20
+#define QT_TOKEN_STATUS_BABBLEDET	0x10
+#define QT_TOKEN_STATUS_XACTERR		0x08
+#define QT_TOKEN_STATUS_MISSEDUFRAME	0x04
+#define QT_TOKEN_STATUS_SPLITXSTATE	0x02
+#define QT_TOKEN_STATUS_PERR		0x01
 	uint32_t qt_buffer[5];
-	unsigned long qtd_dma;
-	size_t length;
 } __attribute__ ((aligned (32)));
 
 /* Queue Head (QH). */
@@ -147,7 +158,26 @@ struct QH {
 #define	QH_LINK_TYPE_SITD	4
 #define	QH_LINK_TYPE_FSTN	6
 	uint32_t qh_endpt1;
+#define QH_ENDPT1_RL(x)		(((x) & 0xf) << 28)	/* NAK Count Reload */
+#define QH_ENDPT1_C(x)		(((x) & 0x1) << 27)	/* Control Endpoint Flag */
+#define QH_ENDPT1_MAXPKTLEN(x)	(((x) & 0x7ff) << 16)	/* Maximum Packet Length */
+#define QH_ENDPT1_H(x)		(((x) & 0x1) << 15)	/* Head of Reclamation List Flag */
+#define QH_ENDPT1_DTC(x)	(((x) & 0x1) << 14)	/* Data Toggle Control */
+#define QH_ENDPT1_DTC_IGNORE_QTD_TD	0x0
+#define QH_ENDPT1_DTC_DT_FROM_QTD	0x1
+#define QH_ENDPT1_EPS(x)	(((x) & 0x3) << 12)	/* Endpoint Speed */
+#define QH_ENDPT1_EPS_FS		0x0
+#define QH_ENDPT1_EPS_LS		0x1
+#define QH_ENDPT1_EPS_HS		0x2
+#define QH_ENDPT1_ENDPT(x)	(((x) & 0xf) << 8)	/* Endpoint Number */
+#define QH_ENDPT1_I(x)		(((x) & 0x1) << 7)	/* Inactivate on Next Transaction */
+#define QH_ENDPT1_DEVADDR(x)	(((x) & 0x7f) << 0)	/* Device Address */
 	uint32_t qh_endpt2;
+#define QH_ENDPT2_MULT(x)	(((x) & 0x3) << 30)	/* High-Bandwidth Pipe Multiplier */
+#define QH_ENDPT2_PORTNUM(x)	(((x) & 0x7f) << 23)	/* Port Number */
+#define QH_ENDPT2_HUBADDR(x)	(((x) & 0x7f) << 16)	/* Hub Address */
+#define QH_ENDPT2_UFCMASK(x)	(((x) & 0xff) << 8)	/* Split Completion Mask */
+#define QH_ENDPT2_UFSMASK(x)	(((x) & 0xff) << 0)	/* Interrupt Schedule Mask */
 	uint32_t qh_curtd;
 	 /* qtd overlay (hardware parts of a struct qTD) */
 	uint32_t qt_next;

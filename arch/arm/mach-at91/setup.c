@@ -29,11 +29,11 @@ static void __init soc_detect(u32 dbgu_base)
 {
 	u32 cidr, socid;
 
-	cidr = __raw_readl(dbgu_base + AT91_DBGU_CIDR);
+	cidr = readl(dbgu_base + AT91_DBGU_CIDR);
 	socid = cidr & ~AT91_CIDR_VERSION;
 
 	/* sub version of soc */
-	at91_soc_initdata.exid = __raw_readl(dbgu_base + AT91_DBGU_EXID);
+	at91_soc_initdata.exid = readl(dbgu_base + AT91_DBGU_EXID);
 
 	switch (socid) {
 	case ARCH_ID_AT91RM9200:

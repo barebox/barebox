@@ -33,28 +33,28 @@ void __naked __bare_init barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint
 	/*
 	 * PMC Check if the PLL is already initialized
 	 */
-	r = __raw_readl(pmc + AT91_PMC_MCKR);
+	r = readl(pmc + AT91_PMC_MCKR);
 	if (r & AT91_PMC_CSS)
 		goto end;
 
 	/*
 	 * Enable the Main Oscillator
 	 */
-	__raw_writel(CONFIG_SYS_MOR_VAL, pmc + AT91_CKGR_MOR);
+	writel(CONFIG_SYS_MOR_VAL, pmc + AT91_CKGR_MOR);
 
 	do {
-		r = __raw_readl(pmc + AT91_PMC_SR);
+		r = readl(pmc + AT91_PMC_SR);
 	} while (!(r & AT91_PMC_MOSCS));
 
 	/*
 	 * EBI_CFGR
 	 */
-	__raw_writel(CONFIG_SYS_EBI_CFGR_VAL, mc + AT91RM9200_EBI_CFGR);
+	writel(CONFIG_SYS_EBI_CFGR_VAL, mc + AT91RM9200_EBI_CFGR);
 
 	/*
 	 * SMC2_CSR[0]: 16bit, 2 TDF, 4 WS
 	 */
-	__raw_writel(CONFIG_SYS_SMC_CSR0_VAL, mc + AT91RM9200_SMC_CSR(0));
+	writel(CONFIG_SYS_SMC_CSR0_VAL, mc + AT91RM9200_SMC_CSR(0));
 
 	/*
 	 * Init Clocks
@@ -63,24 +63,24 @@ void __naked __bare_init barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint
 	/*
 	 * PLLAR: x MHz for PCK
 	 */
-	__raw_writel(CONFIG_SYS_PLLAR_VAL, pmc + AT91_CKGR_PLLAR);
+	writel(CONFIG_SYS_PLLAR_VAL, pmc + AT91_CKGR_PLLAR);
 
 	do {
-		r = __raw_readl(pmc + AT91_PMC_SR);
+		r = readl(pmc + AT91_PMC_SR);
 	} while (!(r & AT91_PMC_LOCKA));
 
 	/*
 	 * PCK/x = MCK Master Clock from SLOW
 	 */
-	__raw_writel(CONFIG_SYS_MCKR2_VAL1, pmc + AT91_PMC_MCKR);
+	writel(CONFIG_SYS_MCKR2_VAL1, pmc + AT91_PMC_MCKR);
 
 	/*
 	 * PCK/x = MCK Master Clock from PLLA
 	 */
-	__raw_writel(CONFIG_SYS_MCKR2_VAL2, pmc + AT91_PMC_MCKR);
+	writel(CONFIG_SYS_MCKR2_VAL2, pmc + AT91_PMC_MCKR);
 
 	do {
-		r = __raw_readl(pmc + AT91_PMC_SR);
+		r = readl(pmc + AT91_PMC_SR);
 	} while (!(r & AT91_PMC_MCKRDY));
 
 	/*
@@ -88,38 +88,38 @@ void __naked __bare_init barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint
 	 */
 
 	/* PIOC_ASR: Configure PIOC as peripheral (D16/D31) */
-	__raw_writel(CONFIG_SYS_PIOC_ASR_VAL, AT91RM9200_BASE_PIOC + PIO_ASR);
+	writel(CONFIG_SYS_PIOC_ASR_VAL, AT91RM9200_BASE_PIOC + PIO_ASR);
 	/* PIOC_BSR */
-	__raw_writel(CONFIG_SYS_PIOC_BSR_VAL, AT91RM9200_BASE_PIOC + PIO_BSR);
+	writel(CONFIG_SYS_PIOC_BSR_VAL, AT91RM9200_BASE_PIOC + PIO_BSR);
 	/* PIOC_PDR */
-	__raw_writel(CONFIG_SYS_PIOC_PDR_VAL, AT91RM9200_BASE_PIOC + PIO_PDR);
+	writel(CONFIG_SYS_PIOC_PDR_VAL, AT91RM9200_BASE_PIOC + PIO_PDR);
 
 	/* EBI_CSA : CS1=SDRAM */
-	__raw_writel(CONFIG_SYS_EBI_CSA_VAL, mc + AT91RM9200_EBI_CSA);
+	writel(CONFIG_SYS_EBI_CSA_VAL, mc + AT91RM9200_EBI_CSA);
 
 	/* SDRC_CR */
-	__raw_writel(CONFIG_SYS_SDRC_CR_VAL, mc + AT91RM9200_SDRAMC_CR);
+	writel(CONFIG_SYS_SDRC_CR_VAL, mc + AT91RM9200_SDRAMC_CR);
 	/* SDRC_MR : Precharge All */
-	__raw_writel(AT91RM9200_SDRAMC_MODE_PRECHARGE, mc + AT91RM9200_SDRAMC_MR);
+	writel(AT91RM9200_SDRAMC_MODE_PRECHARGE, mc + AT91RM9200_SDRAMC_MR);
 	/* access SDRAM */
 	access_sdram();
 	/* SDRC_MR : refresh */
-	__raw_writel(AT91RM9200_SDRAMC_MODE_REFRESH, mc + AT91RM9200_SDRAMC_MR);
+	writel(AT91RM9200_SDRAMC_MODE_REFRESH, mc + AT91RM9200_SDRAMC_MR);
 
 	/* access SDRAM 8 times */
 	for (i = 0; i < 8; i++)
 		access_sdram();
 
 	/* SDRC_MR : Load Mode Register */
-	__raw_writel(AT91RM9200_SDRAMC_MODE_LMR, mc + AT91RM9200_SDRAMC_MR);
+	writel(AT91RM9200_SDRAMC_MODE_LMR, mc + AT91RM9200_SDRAMC_MR);
 	/* access SDRAM */
 	access_sdram();
 	/* SDRC_TR : Write refresh rate */
-	__raw_writel(CONFIG_SYS_SDRC_TR_VAL, mc + AT91RM9200_SDRAMC_TR);
+	writel(CONFIG_SYS_SDRC_TR_VAL, mc + AT91RM9200_SDRAMC_TR);
 	/* access SDRAM */
 	access_sdram();
 	/* SDRC_MR : Normal Mode */
-	__raw_writel(AT91RM9200_SDRAMC_MODE_NORMAL, mc + AT91RM9200_SDRAMC_MR);
+	writel(AT91RM9200_SDRAMC_MODE_NORMAL, mc + AT91RM9200_SDRAMC_MR);
 	/* access SDRAM */
 	access_sdram();
 

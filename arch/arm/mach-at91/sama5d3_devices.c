@@ -28,7 +28,7 @@
 void at91_add_device_sdram(u32 size)
 {
 	if (!size)
-		size = at91sama5_get_ddram_size();
+		size = at91sama5d3_get_ddram_size();
 
 	arm_add_mem_device("ram0", SAMA5_DDRCS, size);
 	add_mem_device("sram0", SAMA5D3_SRAM_BASE,

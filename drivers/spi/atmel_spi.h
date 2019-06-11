@@ -161,8 +161,8 @@
 
 /* Register access macros */
 #define spi_readl(port, reg) \
-	__raw_readl((port)->regs + SPI_##reg)
+	readl((port)->regs + SPI_##reg)
 #define spi_writel(port, reg, value) \
-	__raw_writel((value), (port)->regs + SPI_##reg)
+	writel((value), (port)->regs + SPI_##reg)
 
 #endif /* __ATMEL_SPI_H__ */

@@ -140,8 +140,6 @@ static struct
 	u32 imr;
 	u32 pcsr1;
 	u32 pcr[PMC_MAX_IDS];
-	u32 audio_pll0;
-	u32 audio_pll1;
 	u32 pckr[PMC_MAX_PCKS];
 } pmc_cache;
 

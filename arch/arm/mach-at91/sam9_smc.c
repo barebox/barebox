@@ -41,23 +41,23 @@ static void sam9_smc_cs_write_mode(void __iomem *base,
 		break;
 	}
 
-	__raw_writel(config->mode
-		   | AT91_SMC_TDF_(config->tdf_cycles),
-		   mode_reg);
+	writel(config->mode
+	       | AT91_SMC_TDF_(config->tdf_cycles),
+	       mode_reg);
 }
 
 static void sam9_smc_cs_write_timings(void __iomem *base,
 					struct sam9_smc_config *config)
 {
-	__raw_writel(AT91_SMC_TCLR_(config->tclr)
-                   | AT91_SMC_TADL_(config->tadl)
-                   | AT91_SMC_TAR_(config->tar)
-                   | AT91_SMC_OCMS_(config->ocms)
-                   | AT91_SMC_TRR_(config->trr)
-                   | AT91_SMC_TWB_(config->twb)
-                   | AT91_SMC_RBNSEL_(config->rbnsel)
-                   | AT91_SMC_NFSEL_(config->nfsel),
-		   base + AT91_SAMA5_SMC_TIMINGS);
+	writel(AT91_SMC_TCLR_(config->tclr)
+	       | AT91_SMC_TADL_(config->tadl)
+	       | AT91_SMC_TAR_(config->tar)
+	       | AT91_SMC_OCMS_(config->ocms)
+	       | AT91_SMC_TRR_(config->trr)
+	       | AT91_SMC_TWB_(config->twb)
+	       | AT91_SMC_RBNSEL_(config->rbnsel)
+	       | AT91_SMC_NFSEL_(config->nfsel),
+	       base + AT91_SAMA5_SMC_TIMINGS);
 }
 
 void sam9_smc_write_mode(int id, int cs,
@@ -71,23 +71,23 @@ static void sam9_smc_cs_configure(void __iomem *base,
 {
 
 	/* Setup register */
-	__raw_writel(AT91_SMC_NWESETUP_(config->nwe_setup)
-		   | AT91_SMC_NCS_WRSETUP_(config->ncs_write_setup)
-		   | AT91_SMC_NRDSETUP_(config->nrd_setup)
-		   | AT91_SMC_NCS_RDSETUP_(config->ncs_read_setup),
-		   base + AT91_SMC_SETUP);
+	writel(AT91_SMC_NWESETUP_(config->nwe_setup)
+	       | AT91_SMC_NCS_WRSETUP_(config->ncs_write_setup)
+	       | AT91_SMC_NRDSETUP_(config->nrd_setup)
+	       | AT91_SMC_NCS_RDSETUP_(config->ncs_read_setup),
+	       base + AT91_SMC_SETUP);
 
 	/* Pulse register */
-	__raw_writel(AT91_SMC_NWEPULSE_(config->nwe_pulse)
-		   | AT91_SMC_NCS_WRPULSE_(config->ncs_write_pulse)
-		   | AT91_SMC_NRDPULSE_(config->nrd_pulse)
-		   | AT91_SMC_NCS_RDPULSE_(config->ncs_read_pulse),
-		   base + AT91_SMC_PULSE);
+	writel(AT91_SMC_NWEPULSE_(config->nwe_pulse)
+	       | AT91_SMC_NCS_WRPULSE_(config->ncs_write_pulse)
+	       | AT91_SMC_NRDPULSE_(config->nrd_pulse)
+	       | AT91_SMC_NCS_RDPULSE_(config->ncs_read_pulse),
+	       base + AT91_SMC_PULSE);
 
 	/* Cycle register */
-	__raw_writel(AT91_SMC_NWECYCLE_(config->write_cycle)
-		   | AT91_SMC_NRDCYCLE_(config->read_cycle),
-		   base + AT91_SMC_CYCLE);
+	writel(AT91_SMC_NWECYCLE_(config->write_cycle)
+	       | AT91_SMC_NRDCYCLE_(config->read_cycle),
+	       base + AT91_SMC_CYCLE);
 
 	/* Mode register */
 	sam9_smc_cs_write_mode(base, config);
@@ -115,7 +115,7 @@ static void sam9_smc_cs_read_mode(void __iomem *base,
 		break;
 	}
 
-	val = __raw_readl(mode_reg);
+	val = readl(mode_reg);
 
 	config->mode = (val & ~AT91_SMC_NWECYCLE);
 	config->tdf_cycles = (val & AT91_SMC_NWECYCLE) >> 16 ;
@@ -133,7 +133,7 @@ static void sam9_smc_cs_read(void __iomem *base,
 	u32 val;
 
 	/* Setup register */
-	val = __raw_readl(base + AT91_SMC_SETUP);
+	val = readl(base + AT91_SMC_SETUP);
 
 	config->nwe_setup = val & AT91_SMC_NWESETUP;
 	config->ncs_write_setup = (val & AT91_SMC_NCS_WRSETUP) >> 8;
@@ -141,7 +141,7 @@ static void sam9_smc_cs_read(void __iomem *base,
 	config->ncs_read_setup = (val & AT91_SMC_NCS_RDSETUP) >> 24;
 
 	/* Pulse register */
-	val = __raw_readl(base + AT91_SMC_PULSE);
+	val = readl(base + AT91_SMC_PULSE);
 
 	config->nwe_setup = val & AT91_SMC_NWEPULSE;
 	config->ncs_write_pulse = (val & AT91_SMC_NCS_WRPULSE) >> 8;
@@ -149,7 +149,7 @@ static void sam9_smc_cs_read(void __iomem *base,
 	config->ncs_read_pulse = (val & AT91_SMC_NCS_RDPULSE) >> 24;
 
 	/* Cycle register */
-	val = __raw_readl(base + AT91_SMC_CYCLE);
+	val = readl(base + AT91_SMC_CYCLE);
 
 	config->write_cycle = val & AT91_SMC_NWECYCLE;
 	config->read_cycle = (val & AT91_SMC_NRDCYCLE) >> 16;

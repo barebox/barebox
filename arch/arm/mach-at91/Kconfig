@@ -1,14 +1,5 @@
 if ARCH_AT91
 
-config HAVE_AT91_DBGU0
-	bool
-
-config HAVE_AT91_DBGU1
-	bool
-
-config HAVE_AT91_DBGU2
-	bool
-
 config HAVE_AT91_UTMI
 	bool
 
@@ -115,7 +106,6 @@ config SOC_AT91RM9200
 config SOC_AT91SAM9260
 	bool
 	select SOC_AT91SAM9
-	select HAVE_AT91_DBGU0
 	select HAS_MACB
 	help
 	  Select this if you are using one of Atmel's AT91SAM9260, AT91SAM9XE
@@ -124,21 +114,18 @@ config SOC_AT91SAM9260
 config SOC_AT91SAM9261
 	bool
 	select SOC_AT91SAM9
-	select HAVE_AT91_DBGU0
 	help
 	  Select this if you are using one of Atmel's AT91SAM9261 or AT91SAM9G10 SoC.
 
 config SOC_AT91SAM9263
 	bool
 	select SOC_AT91SAM9
-	select HAVE_AT91_DBGU1
 	select HAS_MACB
 	select HAVE_AT91_LOAD_BAREBOX_SRAM
 
 config SOC_AT91SAM9G45
 	bool
 	select SOC_AT91SAM9
-	select HAVE_AT91_DBGU1
 	select HAS_MACB
 	help
 	  Select this if you are using one of Atmel's AT91SAM9G45 family SoC.
@@ -147,7 +134,6 @@ config SOC_AT91SAM9G45
 config SOC_AT91SAM9X5
 	bool
 	select SOC_AT91SAM9
-	select HAVE_AT91_DBGU0
 	select HAS_MACB
 	select COMMON_CLK_OF_PROVIDER
 	help
@@ -160,7 +146,6 @@ config SOC_AT91SAM9X5
 config SOC_AT91SAM9N12
 	bool
 	select SOC_AT91SAM9
-	select HAVE_AT91_DBGU0
 	help
 	  Select this if you are using Atmel's AT91SAM9N12 SoC.
 
@@ -213,14 +198,12 @@ config ARCH_AT91SAM9N12
 config ARCH_SAMA5D3
 	bool "SAMA5D3x"
 	select SOC_SAMA5D3
-	select HAVE_AT91_DBGU1
 	select HAS_MACB
 	select HAVE_MACH_ARM_HEAD
 
 config ARCH_SAMA5D4
 	bool "SAMA5D4"
 	select SOC_SAMA5D4
-	select HAVE_AT91_DBGU2
 	select HAS_MACB
 	select HAVE_MACH_ARM_HEAD
 

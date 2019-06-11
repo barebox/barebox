@@ -181,8 +181,7 @@ at91_clk_register_generated(struct regmap *regmap,
 	gck->hw.ops = &generated_ops;
 
 	parents_array_size = num_parents * sizeof(gck->hw.parent_names[0]);
-	gck->hw.parent_names = xzalloc(parents_array_size);
-	memcpy(gck->hw.parent_names, parent_names, parents_array_size);
+	gck->hw.parent_names = xmemdup(parent_names, parents_array_size);
 	gck->hw.num_parents = num_parents;
 
 	/* gck->hw.flags = CLK_SET_RATE_GATE | CLK_SET_PARENT_GATE; */

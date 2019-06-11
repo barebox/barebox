@@ -23,4 +23,16 @@ config STATE_DRV
 config DEV_MEM
         bool "Generic memory I/O device (/dev/mem)"
 
+config UBOOTVAR
+	bool "U-Boot environment storage"
+	help
+	  This driver exposes U-Boot environment variable storage as a
+	  single mmap-able device, hiding various low-level details
+	  such as:
+	      - Preamble format differences
+	      - Read/write logic in presence of redundant partition
+
+	  While it can be used standalone, it is best when coupled
+	  with corresponding filesystem driver.
+
 endmenu

@@ -22,6 +22,7 @@
 #include <linux/list.h>
 #include <linux/ioport.h>
 #include <of.h>
+#include <filetype.h>
 
 #define FORMAT_DRIVER_NAME_ID	"%s%d"
 
@@ -419,6 +420,8 @@ int platform_driver_register(struct driver_d *drv);
 	register_driver_macro(device,platform,drv)
 #define console_platform_driver(drv)	\
 	register_driver_macro(console,platform,drv)
+#define late_platform_driver(drv)	\
+	register_driver_macro(late,platform,drv)
 
 int platform_device_register(struct device_d *new_device);
 
@@ -464,6 +467,7 @@ struct cdev {
 	struct list_head link_entry, links;
 	struct list_head partition_entry, partitions;
 	struct cdev *master;
+	enum filetype filetype;
 };
 
 int devfs_create(struct cdev *);

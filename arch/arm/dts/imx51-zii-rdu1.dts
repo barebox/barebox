@@ -23,6 +23,11 @@
 			compatible = "barebox,environment";
 			device-path = &spinor, "partname:barebox-environment";
 		};
+
+		ubootenv {
+			compatible = "barebox,uboot-environment";
+			device-path = &uboot_env;
+		};
 	};
 
 	reserved-memory {
@@ -74,6 +79,22 @@
 		partition@e0000 {
 			label = "barebox-environment";
 			reg = <0xe0000 0x20000>;
+		};
+	};
+};
+
+&esdhc1 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		/*
+		 * Layout info is taken from /etc/fw_env.config
+		 */
+		uboot_env: partition@c0000 {
+			label = "uboot-environment";
+			reg = <0xc0000 0x20000>;
 		};
 	};
 };

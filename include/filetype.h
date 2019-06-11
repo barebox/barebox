@@ -47,6 +47,7 @@ enum filetype {
 	filetype_imx_image_v2,
 	filetype_layerscape_image,
 	filetype_layerscape_qspi_image,
+	filetype_ubootvar,
 	filetype_max,
 };
 

@@ -77,6 +77,8 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_imx_image_v2] = { "i.MX image (v2)", "imx-image-v2" },
 	[filetype_layerscape_image] = { "Layerscape image", "layerscape-PBL" },
 	[filetype_layerscape_qspi_image] = { "Layerscape QSPI image", "layerscape-qspi-PBL" },
+	[filetype_ubootvar] = { "U-Boot environmemnt variable data",
+				"ubootvar" },
 };
 
 const char *file_type_to_string(enum filetype f)
@@ -423,6 +425,11 @@ enum filetype cdev_detect_type(const char *name)
 	if (!cdev)
 		return type;
 
+	if (cdev->filetype != filetype_unknown) {
+		type = cdev->filetype;
+		goto cdev_close;
+	}
+
 	buf = xzalloc(FILE_TYPE_SAFE_BUFSIZE);
 	ret = cdev_read(cdev, buf, FILE_TYPE_SAFE_BUFSIZE, 0, 0);
 	if (ret < 0)
@@ -432,6 +439,7 @@ enum filetype cdev_detect_type(const char *name)
 
 err_out:
 	free(buf);
+cdev_close:
 	cdev_close(cdev);
 	return type;
 }

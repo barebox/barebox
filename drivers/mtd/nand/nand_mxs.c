@@ -1271,8 +1271,6 @@ static int mxs_nand_alloc_buffers(struct mxs_nand_info *nand_info)
 		return -ENOMEM;
 	}
 
-	memset(buf, 0, size);
-
 	nand_info->data_buf = buf;
 	nand_info->oob_buf = buf + NAND_MAX_PAGESIZE;
 
@@ -1284,7 +1282,6 @@ static int mxs_nand_alloc_buffers(struct mxs_nand_info *nand_info)
 		printf("MXS NAND: Error allocating command buffers\n");
 		return -ENOMEM;
 	}
-	memset(nand_info->cmd_buf, 0, MXS_NAND_COMMAND_BUFFER_SIZE);
 	nand_info->cmd_queue_len = 0;
 
 	return 0;

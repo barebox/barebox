@@ -381,15 +381,15 @@ static int mxs_dma_release(int channel)
 struct mxs_dma_desc *mxs_dma_desc_alloc(void)
 {
 	struct mxs_dma_desc *pdesc;
+	dma_addr_t dma_address;
 
 	pdesc = dma_alloc_coherent(sizeof(struct mxs_dma_desc),
-				   DMA_ADDRESS_BROKEN);
+				   &dma_address);
 
 	if (pdesc == NULL)
 		return NULL;
 
-	memset(pdesc, 0, sizeof(*pdesc));
-	pdesc->address = (dma_addr_t)pdesc;
+	pdesc->address = dma_address;
 
 	return pdesc;
 };

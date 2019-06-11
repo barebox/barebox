@@ -342,10 +342,6 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 		goto err_alloc2;
 	}
 
-	memset(ahci_port->cmd_slot, 0, AHCI_CMD_SLOT_SZ * 32);
-	memset((void *)ahci_port->rx_fis, 0, AHCI_RX_FIS_SZ);
-	memset(ahci_port->cmd_tbl, 0, AHCI_CMD_TBL_SZ);
-
 	ahci_port_debug(ahci_port, "cmd_tbl_dma = 0x%p\n", ahci_port->cmd_tbl);
 
 	ahci_port->cmd_tbl_sg = ahci_port->cmd_tbl + AHCI_CMD_TBL_HDR_SZ;

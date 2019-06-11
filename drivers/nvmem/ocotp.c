@@ -59,6 +59,7 @@
 #define OCOTP_TIMING_STROBE_READ_MASK	0x003F0000
 #define OCOTP_TIMING_RELAX_MASK		0x0000F000
 #define OCOTP_TIMING_STROBE_PROG_MASK	0x00000FFF
+#define OCOTP_TIMING_WAIT_MASK		0x0FC00000
 
 #define OCOTP_READ_CTRL_READ_FUSE	0x00000001
 
@@ -124,7 +125,8 @@ static int imx6_ocotp_set_timing(struct ocotp_priv *priv)
 	strobe_prog = clk_rate / (1000000000 / 10000) + 2 * (DEF_RELAX + 1) - 1;
 	strobe_read = clk_rate / (1000000000 / 40) + 2 * (DEF_RELAX + 1) - 1;
 
-	timing = BF(relax, OCOTP_TIMING_RELAX);
+	timing = readl(priv->base + OCOTP_TIMING) & OCOTP_TIMING_WAIT_MASK;
+	timing |= BF(relax, OCOTP_TIMING_RELAX);
 	timing |= BF(strobe_read, OCOTP_TIMING_STROBE_READ);
 	timing |= BF(strobe_prog, OCOTP_TIMING_STROBE_PROG);
 

@@ -63,23 +63,31 @@ static int do_mem_mw(int argc, char *argv[])
 		u64 val64;
 		switch (mode) {
 		case O_RWSIZE_1:
-			val8 = simple_strtoul(argv[optind], NULL, 0);
+			ret = kstrtou8(argv[optind], 0, &val8);
+			if (ret)
+				goto illegal_number;
 			ret = write(fd, &val8, 1);
 			break;
 		case O_RWSIZE_2:
-			val16 = simple_strtoul(argv[optind], NULL, 0);
+			ret = kstrtou16(argv[optind], 0, &val16);
+			if (ret)
+				goto illegal_number;
 			if (swab)
 				val16 = __swab16(val16);
 			ret = write(fd, &val16, 2);
 			break;
 		case O_RWSIZE_4:
-			val32 = simple_strtoul(argv[optind], NULL, 0);
+			ret = kstrtou32(argv[optind], 0, &val32);
+			if (ret)
+				goto illegal_number;
 			if (swab)
 				val32 = __swab32(val32);
 			ret = write(fd, &val32, 4);
 			break;
 		case O_RWSIZE_8:
-			val64 = simple_strtoull(argv[optind], NULL, 0);
+			ret = kstrtou64(argv[optind], 0, &val64);
+			if (ret)
+				goto illegal_number;
 			if (swab)
 				val64 = __swab64(val64);
 			ret = write(fd, &val64, 8);
@@ -96,6 +104,14 @@ static int do_mem_mw(int argc, char *argv[])
 	close(fd);
 
 	return ret ? 1 : 0;
+
+illegal_number:
+	printf("\"%s\" is not a valid %d bit number\n", argv[optind],
+	       (mode >> O_RWSIZE_SHIFT) * 8);
+
+	close(fd);
+
+	return 1;
 }
 
 BAREBOX_CMD_HELP_START(mw)

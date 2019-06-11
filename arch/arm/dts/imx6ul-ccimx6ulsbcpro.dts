@@ -1,0 +1,41 @@
+#include <arm/imx6ul-ccimx6ulsbcpro.dts>
+
+/{
+	chosen {
+		stdout-path = &uart5;
+
+		environment-nand {
+			compatible = "barebox,environment";
+			device-path = &gpmi, "partname:barebox-environment";
+			status = "okay";
+		};
+	};
+};
+
+&gpmi {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_gpmi_nand>;
+	nand-on-flash-bbt;
+	status = "okay";
+
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		partition@0 {
+			label = "barebox";
+			reg = <0x0 0x400000>;
+		};
+
+		partition@400000 {
+			label = "barebox-environment";
+			reg = <0x400000 0x100000>;
+		};
+
+		partition@500000 {
+			label = "root";
+			reg = <0x500000 0x0>;
+		};
+	};
+};

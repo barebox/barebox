@@ -1,0 +1,13 @@
+#!/bin/sh
+
+backlight0.brightness=0
+if [ "$bootsource" = "spi-nor" ]; then
+	boot mmc1
+else
+	detect mmc3
+	if [ "$mmc3.boot" = "boot0" ]; then
+		boot mmc3.0
+	else
+		boot mmc3.1
+	fi
+fi

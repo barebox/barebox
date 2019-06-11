@@ -606,9 +606,10 @@ static int imx_bbu_write_firmware(struct mtd_info *mtd, unsigned num, void *buf,
 	int ret, i, newbadblock = 0;
 	int num_blocks = imx_bbu_firmware_max_blocks(mtd);
 	int block = imx_bbu_firmware_start_block(mtd, num);
+	int page = block * mtd->erasesize / mtd->writesize;
 
-	pr_info("writing firmware %d to block %d (ofs 0x%08x)\n",
-			num, block, block * mtd->erasesize);
+	pr_info("writing firmware to slot %d on pages %d-%d\n",
+			num, page, page + len / mtd->writesize);
 
 	for (i = 0; i < num_blocks; i++) {
 		if (mtd_peb_is_bad(mtd, block + i))
@@ -976,6 +977,9 @@ static int imx_bbu_write_fcbs_dbbts(struct mtd_info *mtd, struct fcb_block *fcb)
 	 */
 	memset(fcb_raw_page + mtd->writesize, 0xFF, 2);
 
+	pr_info("Writing FCBs/DBBTs with primary/secondary Firmwares at pages %d/%d\n",
+		fcb->Firmware1_startingPage, fcb->Firmware2_startingPage);
+
 	for (i = 0; i < 4; i++) {
 		if (mtd_peb_is_bad(mtd, i))
 			continue;
@@ -1108,7 +1112,7 @@ err:
 
 	if (need_cleaning) {
 		pr_warn("Firmware at page %d needs cleanup\n", first_page);
-		return -EUCLEAN;
+		return 1;
 	}
 
 	return 0;
@@ -1162,13 +1166,14 @@ static void read_firmware_all(struct mtd_info *mtd, struct fcb_block *fcb, void 
 		*unused_refresh = 1;
 		*used = first;
 		*data = primary;
-		return;
 	} else if (secondary && !primary) {
 		*used_refresh = secondary_refresh;
 		*unused_refresh = 1;
 		*used = !first;
 		*data = secondary;
 	} else {
+		*unused_refresh = secondary_refresh;
+
 		if (memcmp(primary, secondary, fcb->PagesInFirmware1 * mtd->writesize))
 			*unused_refresh = 1;
 
@@ -1178,15 +1183,20 @@ static void read_firmware_all(struct mtd_info *mtd, struct fcb_block *fcb, void 
 		free(secondary);
 	}
 
-	pr_info("Primary firmware is on pages %d-%d, %svalid, %s\n", fcb->Firmware1_startingPage,
+	pr_info("Primary firmware is in slot %d on pages %d-%d, %svalid, %s\n",
+		first,
+		fcb->Firmware1_startingPage,
 		fcb->Firmware1_startingPage + fcb->PagesInFirmware1, primary ? "" : "in",
 		primary_refresh ? "needs cleanup" : "clean");
 
-	pr_info("Secondary firmware is on pages %d-%d, %svalid, %s\n", fcb->Firmware2_startingPage,
+	pr_info("Secondary firmware is in slot %d on pages %d-%d, %svalid, %s\n",
+		!first,
+		fcb->Firmware2_startingPage,
 		fcb->Firmware2_startingPage + fcb->PagesInFirmware2, secondary ? "" : "in",
 		secondary_refresh ? "needs cleanup" : "clean");
 
-	pr_info("ROM uses slot %d\n", *used);
+	pr_info("ROM uses slot %d (%s firmware)\n",
+		*used, primary ? "primary" : secondary ? "secondary" : "no");
 }
 
 static int imx_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *data)
@@ -1331,6 +1341,12 @@ static int imx_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *dat
 		fw = fw_orig;
 		fw_size = fw_orig_len;
 		pr_info("Refreshing existing firmware\n");
+
+		if (used_refresh) {
+			fcb->Firmware1_startingPage = imx_bbu_firmware_fcb_start_page(mtd, !used);
+			fcb->Firmware2_startingPage = imx_bbu_firmware_fcb_start_page(mtd, used);
+			fcb_create(imx_handler, fcb, mtd);
+		}
 	}
 
 	if (num_blocks_fw * mtd->erasesize < fw_size) {

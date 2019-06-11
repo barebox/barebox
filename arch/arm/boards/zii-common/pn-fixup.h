@@ -15,6 +15,8 @@
 #ifndef __ZII_PN_FIXUP__
 #define __ZII_PN_FIXUP__
 
+#include <linux/stddef.h>
+
 struct zii_pn_fixup {
 	const char *pn;
 	void (*callback) (const struct zii_pn_fixup *fixup);

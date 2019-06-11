@@ -1,4 +1,29 @@
 #include <arm/imx6sx-udoo-neo-full.dts>
 
-/{
+/ {
+	chosen {
+		environment {
+			compatible = "barebox,environment";
+			device-path = &environment_usdhc2;
+		};
+	};
+};
+
+&usdhc2 {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	partition@0 {
+		label = "barebox";
+		reg = <0x0 0xe0000>;
+	};
+
+	environment_usdhc2: partition@e0000 {
+		label = "barebox-environment";
+		reg = <0xe0000 0x20000>;
+	};
+};
+
+&ocotp {
+	barebox,provide-mac-address = <&fec1 0x620>;
 };

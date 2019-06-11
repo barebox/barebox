@@ -519,6 +519,11 @@ CFG_start_imx6ul_pico_hobbit_512mb.pblb.imximg = $(board)/technexion-pico-hobbit
 FILE_barebox-imx6ul-pico-hobbit-512mb.img = start_imx6ul_pico_hobbit_512mb.pblb.imximg
 image-$(CONFIG_MACH_TECHNEXION_PICO_HOBBIT) += barebox-imx6ul-pico-hobbit-512mb.img
 
+pblb-$(CONFIG_MACH_DIGI_CCIMX6ULSBCPRO) += start_imx6ul_ccimx6ulsbcpro
+CFG_start_imx6ul_ccimx6ulsbcpro.pblb.imximg = $(board)/digi-ccimx6ulsom/flash-header-imx6ul-ccimx6ulsbcpro.imxcfg
+FILE_barebox-imx6ul-ccimx6ulsbcpro.img = start_imx6ul_ccimx6ulsbcpro.pblb.imximg
+image-$(CONFIG_MACH_DIGI_CCIMX6ULSBCPRO) += barebox-imx6ul-ccimx6ulsbcpro.img
+
 # ----------------------- vf6xx based boards ---------------------------
 pblb-$(CONFIG_MACH_VF610_TWR) += start_vf610_twr
 CFG_start_vf610_twr.pblb.imximg = $(board)/freescale-vf610-twr/flash-header-vf610-twr.imxcfg

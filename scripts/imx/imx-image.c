@@ -363,6 +363,15 @@ static void usage(const char *prgname)
 		"-b           add barebox header to image. If used, barebox recognizes\n"
 		"             the image as regular barebox image which can be used as\n"
 		"             second stage image\n"
+		"-d           write DCD table only\n"
+		"-e           prepare image for encryption and use Freescale's Code Signing\n"
+		"             to encrypt image. Note that the device-specific encapsulated\n"
+		"             DEK as cryptgraphic blob needs to be appended afterwards\n"
+		"-s           use Freescale's Code Signing Tool (CST) to sign the image\n"
+		"             'cst' is expected to be in PATH or given via the environment\n"
+		"             variable 'CST'\n"
+		"-u           create USB image suitable for imx-usb-loader\n"
+		"             necessary for signed images (-s) only\n"
 		"-h           this help\n", prgname);
 	exit(1);
 }

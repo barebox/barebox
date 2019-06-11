@@ -51,7 +51,7 @@
 #define OCOTP_CTRL_WR_UNLOCK_KEY	0x3E77
 #define OCOTP_CTRL_WR_UNLOCK_MASK	0xFFFF0000
 #define OCOTP_CTRL_ADDR			0
-#define OCOTP_CTRL_ADDR_MASK		0x0000007F
+#define OCOTP_CTRL_ADDR_MASK		0x000000FF
 #define OCOTP_CTRL_BUSY			(1 << 8)
 #define OCOTP_CTRL_ERROR		(1 << 9)
 #define OCOTP_CTRL_RELOAD_SHADOWS	(1 << 10)
@@ -59,6 +59,7 @@
 #define OCOTP_TIMING_STROBE_READ_MASK	0x003F0000
 #define OCOTP_TIMING_RELAX_MASK		0x0000F000
 #define OCOTP_TIMING_STROBE_PROG_MASK	0x00000FFF
+#define OCOTP_TIMING_WAIT_MASK		0x0FC00000
 
 #define OCOTP_READ_CTRL_READ_FUSE	0x00000001
 
@@ -68,7 +69,9 @@
 
 /* Other definitions */
 #define IMX6_OTP_DATA_ERROR_VAL		0xBADABADA
-#define DEF_RELAX			20
+#define TIMING_STROBE_PROG_US		10
+#define TIMING_STROBE_READ_NS		37
+#define TIMING_RELAX_NS			17
 #define MAC_OFFSET_0			(0x22 * 4)
 #define IMX6UL_MAC_OFFSET_1		(0x23 * 4)
 #define MAC_OFFSET_1			(0x24 * 4)
@@ -118,13 +121,42 @@ static int imx6_ocotp_set_timing(struct ocotp_priv *priv)
 	u32 relax, strobe_read, strobe_prog;
 	u32 timing;
 
+	/*
+	 * Note: there are minimum timings required to ensure an OTP fuse burns
+	 * correctly that are independent of the ipg_clk. Those values are not
+	 * formally documented anywhere however, working from the minimum
+	 * timings given in u-boot we can say:
+	 *
+	 * - Minimum STROBE_PROG time is 10 microseconds. Intuitively 10
+	 *   microseconds feels about right as representative of a minimum time
+	 *   to physically burn out a fuse.
+	 *
+	 * - Minimum STROBE_READ i.e. the time to wait post OTP fuse burn before
+	 *   performing another read is 37 nanoseconds
+	 *
+	 * - Minimum RELAX timing is 17 nanoseconds. This final RELAX minimum
+	 *   timing is not entirely clear the documentation says "This
+	 *   count value specifies the time to add to all default timing
+	 *   parameters other than the Tpgm and Trd. It is given in number
+	 *   of ipg_clk periods." where Tpgm and Trd refer to STROBE_PROG
+	 *   and STROBE_READ respectively. What the other timing parameters
+	 *   are though, is not specified. Experience shows a zero RELAX
+	 *   value will mess up a re-load of the shadow registers post OTP
+	 *   burn.
+	 */
 	clk_rate = clk_get_rate(priv->clk);
 
-	relax = clk_rate / (1000000000 / DEF_RELAX) - 1;
-	strobe_prog = clk_rate / (1000000000 / 10000) + 2 * (DEF_RELAX + 1) - 1;
-	strobe_read = clk_rate / (1000000000 / 40) + 2 * (DEF_RELAX + 1) - 1;
+	relax = DIV_ROUND_UP(clk_rate * TIMING_RELAX_NS, 1000000000) - 1;
 
-	timing = BF(relax, OCOTP_TIMING_RELAX);
+	strobe_read = DIV_ROUND_UP(clk_rate * TIMING_STROBE_READ_NS,
+				   1000000000);
+	strobe_read += 2 * (relax + 1) - 1;
+	strobe_prog = DIV_ROUND_CLOSEST(clk_rate * TIMING_STROBE_PROG_US,
+					1000000);
+	strobe_prog += 2 * (relax + 1) - 1;
+
+	timing = readl(priv->base + OCOTP_TIMING) & OCOTP_TIMING_WAIT_MASK;
+	timing |= BF(relax, OCOTP_TIMING_RELAX);
 	timing |= BF(strobe_read, OCOTP_TIMING_STROBE_READ);
 	timing |= BF(strobe_prog, OCOTP_TIMING_STROBE_PROG);
 

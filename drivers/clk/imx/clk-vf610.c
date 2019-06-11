@@ -535,7 +535,7 @@ static int vf610_switch_cpu_clock_to_400mhz(void)
 {
 	int ret;
 	uint32_t cr117;
-	void * __iomem ddrmc = IOMEM(VF610_DDR_BASE_ADDR);
+	void __iomem *ddrmc = IOMEM(VF610_DDR_BASE_ADDR);
 
 	ret = clk_set_parent(clk[VF610_CLK_PLL2_PFD_SEL], clk[VF610_CLK_PLL2_PFD2]);
 	if (ret < 0) {

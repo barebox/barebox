@@ -271,11 +271,6 @@ static noinline void rdu2_sram_setup(void)
 	enum bootsource bootsrc;
 	int instance;
 
-	imx6_ungate_all_peripherals();
-
-	if (IS_ENABLED(CONFIG_DEBUG_LL))
-		setup_uart();
-
 	arm_setup_stack(0x00920000 - 8);
 	relocate_to_current_adr();
 	setup_c();
@@ -295,6 +290,11 @@ static noinline void rdu2_sram_setup(void)
 ENTRY_FUNCTION(start_imx6_zii_rdu2, r0, r1, r2)
 {
 	imx6_cpu_lowlevel_init();
+
+	imx6_ungate_all_peripherals();
+
+	if (IS_ENABLED(CONFIG_DEBUG_LL))
+		setup_uart();
 
 	/*
 	 * When still running in SRAM, we need to setup the DRAM now and load

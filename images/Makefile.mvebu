@@ -95,7 +95,7 @@ image-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_AX3) += barebox-plathome-openblocks-ax3-
 # ----------------------- Dove 88AP510 based boards ---------------------------
 SOLIDRUN_CUBOX_KWBOPTS = ${KWBOPTS} -i $(board)/solidrun-cubox/kwbimage.cfg
 OPTS_start_solidrun_cubox.pblb.kwbimg = $(SOLIDRUN_CUBOX_KWBOPTS)
-FILE_barebox-solidrun-cubox.img	= start_solidrun_cubox.pblb.kwbimg
+FILE_barebox-solidrun-cubox.img = start_solidrun_cubox.pblb.kwbimg
 FILE_barebox-solidrun-cubox-2nd.img = start_solidrun_cubox.pblb
 pblb-$(CONFIG_MACH_SOLIDRUN_CUBOX) += start_solidrun_cubox
 image-$(CONFIG_MACH_SOLIDRUN_CUBOX) += barebox-solidrun-cubox.img
@@ -104,7 +104,7 @@ image-$(CONFIG_MACH_SOLIDRUN_CUBOX) += barebox-solidrun-cubox-2nd.img
 # ----------------------- Kirkwood based boards ---------------------------
 GLOBALSCALE_GURUPLUG_KWBOPTS = ${KWBOPTS} -i $(board)/globalscale-guruplug/kwbimage.cfg
 OPTS_start_globalscale_guruplug.pblb.kwbimg = $(GLOBALSCALE_GURUPLUG_KWBOPTS)
-FILE_barebox-globalscale-guruplug.img	= start_globalscale_guruplug.pblb.kwbimg
+FILE_barebox-globalscale-guruplug.img = start_globalscale_guruplug.pblb.kwbimg
 FILE_barebox-globalscale-guruplug-2nd.img = start_globalscale_guruplug.pblb
 pblb-$(CONFIG_MACH_GLOBALSCALE_GURUPLUG) += start_globalscale_guruplug
 image-$(CONFIG_MACH_GLOBALSCALE_GURUPLUG) += barebox-globalscale-guruplug.img
@@ -112,7 +112,7 @@ image-$(CONFIG_MACH_GLOBALSCALE_GURUPLUG) += barebox-globalscale-guruplug-2nd.im
 
 PLATHOME_OPENBLOCKS_A6_KWBOPTS = ${KWBOPTS} -i $(board)/plathome-openblocks-a6/kwbimage.cfg
 OPTS_start_plathome_openblocks_a6.pblb.kwbimg = $(PLATHOME_OPENBLOCKS_A6_KWBOPTS)
-FILE_barebox-plathome-openblocks-a6.img   = start_plathome_openblocks_a6.pblb.kwbimg
+FILE_barebox-plathome-openblocks-a6.img = start_plathome_openblocks_a6.pblb.kwbimg
 FILE_barebox-plathome-openblocks-a6-2nd.img = start_plathome_openblocks_a6.pblb
 pblb-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_A6) += start_plathome_openblocks_a6
 image-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_A6) += barebox-plathome-openblocks-a6.img
@@ -120,7 +120,7 @@ image-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_A6) += barebox-plathome-openblocks-a6-2n
 
 USI_TOPKICK_KWBOPTS = ${KWBOPTS} -i $(board)/usi-topkick/kwbimage.cfg
 OPTS_start_usi_topkick.pblb.kwbimg = $(USI_TOPKICK_KWBOPTS)
-FILE_barebox-usi-topkick.img	= start_usi_topkick.pblb.kwbimg
+FILE_barebox-usi-topkick.img = start_usi_topkick.pblb.kwbimg
 FILE_barebox-usi-topkick-2nd.img = start_usi_topkick.pblb
 pblb-$(CONFIG_MACH_USI_TOPKICK) += start_usi_topkick
 image-$(CONFIG_MACH_USI_TOPKICK) += barebox-usi-topkick.img

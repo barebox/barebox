@@ -7,6 +7,7 @@
 
 #include <common.h>
 #include <pbl.h>
+#include <debug_ll.h>
 
 #define STATIC static
 
@@ -40,6 +41,9 @@ STATIC int decompress(u8 *input, int in_len,
 
 static void noinline errorfn(char *error)
 {
+	puts_ll("ERROR: ");
+	puts_ll(error);
+	puts_ll("\nHANG\n");
 	while (1);
 }
 

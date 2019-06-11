@@ -1020,12 +1020,6 @@ config DEFAULT_LOGLEVEL
 	  7    debug-level messages (debug)
 	  8    verbose debug messages (vdebug)
 
-config DEBUG_INFO
-	bool
-	prompt "enable debug symbols"
-	help
-	  Enable build of barebox with -g.
-
 config DEBUG_LL
 	bool
 	depends on HAS_DEBUG_LL

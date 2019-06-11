@@ -36,7 +36,11 @@ int pwrite_full(int fd, const void *buf, size_t size, loff_t offset)
 
 	while (size) {
 		now = pwrite(fd, buf, size, offset);
-		if (now <= 0)
+		if (now == 0) {
+			errno = ENOSPC;
+			return -1;
+		}
+		if (now < 0)
 			return now;
 		size -= now;
 		buf += now;
@@ -60,7 +64,11 @@ int write_full(int fd, const void *buf, size_t size)
 
 	while (size) {
 		now = write(fd, buf, size);
-		if (now <= 0)
+		if (now == 0) {
+			errno = ENOSPC;
+			return -1;
+		}
+		if (now < 0)
 			return now;
 		size -= now;
 		buf += now;
@@ -80,20 +88,18 @@ int read_full(int fd, void *buf, size_t size)
 {
 	size_t insize = size;
 	int now;
-	int total = 0;
 
 	while (size) {
 		now = read(fd, buf, size);
 		if (now == 0)
-			return total;
+			break;
 		if (now < 0)
 			return now;
-		total += now;
 		size -= now;
 		buf += now;
 	}
 
-	return insize;
+	return insize - size;
 }
 EXPORT_SYMBOL(read_full);
 

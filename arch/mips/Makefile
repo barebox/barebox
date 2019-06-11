@@ -1,3 +1,5 @@
+KBUILD_DEFCONFIG := qemu-malta_defconfig
+
 #
 # Select the object file format to substitute into the linker script.
 #

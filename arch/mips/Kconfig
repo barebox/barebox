@@ -35,7 +35,7 @@ config MIPS_RELOCATION_TABLE_SIZE
 	hex "Relocation table size"
 	range 0x100 0x10000
 	default "0x8000"
-	---help---
+	help
 	  A table of relocation data will be appended to the Barebox binary
 	  and parsed in relocate_code() to fix up all offsets in the relocated
 	  Barebox.

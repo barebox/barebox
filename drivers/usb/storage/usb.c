@@ -142,7 +142,7 @@ exit:
 
 static int usb_stor_test_unit_ready(struct us_blk_dev *usb_blkdev)
 {
-	u8 cmd[12];
+	u8 cmd[6];
 	int ret;
 
 	memset(cmd, 0, sizeof(cmd));
@@ -439,7 +439,7 @@ static int usb_stor_scan(struct usb_device *usbdev, struct us_data *us)
 	int num_devs = 0;
 
 	/* obtain the max LUN */
-	us->max_lun = 1;
+	us->max_lun = 0;
 	if (us->protocol == US_PR_BULK)
 		us->max_lun = usb_stor_Bulk_max_lun(us);
 

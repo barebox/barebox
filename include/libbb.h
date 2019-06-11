@@ -29,6 +29,4 @@ char * safe_strncpy(char *dst, const char *src, size_t size);
 
 int process_escape_sequence(const char *source, char *dest, int destlen);
 
-char *simple_itoa(unsigned int i);
-
 #endif /* __LIBBB_H */

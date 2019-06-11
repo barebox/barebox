@@ -1,3 +1,5 @@
+KBUILD_DEFCONFIG := generic_defconfig
+
 CPPFLAGS += -D__OR1K__ -ffixed-r10 -mhard-mul -mhard-div
 
 board-$(CONFIG_GENERIC) := generic

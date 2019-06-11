@@ -108,13 +108,13 @@ config DRIVER_NET_ENC28J60
 	bool "ENC28J60 support"
 	depends on SPI
 	select PHYLIB
-	---help---
+	help
 	  Support for the Microchip EN28J60 ethernet chip.
 
 config DRIVER_NET_ENC28J60_WRITEVERIFY
 	bool "Enable write verify"
 	depends on DRIVER_NET_ENC28J60
-	---help---
+	help
 	  Enable the verify after the buffer write useful for debugging purpose.
 	  If unsure, say N.
 

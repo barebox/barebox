@@ -457,9 +457,7 @@ endif # $(dot-config)
 
 include $(srctree)/arch/$(ARCH)/Makefile
 
-ifdef CONFIG_DEBUG_INFO
-CFLAGS		+= -g
-endif
+CFLAGS		+= -ggdb3
 
 # Force gcc to behave correct even for buggy distributions
 CFLAGS          += $(call cc-option, -fno-stack-protector)
@@ -1020,9 +1018,8 @@ PHONY += distclean
 distclean: mrproper
 	@find $(srctree) $(RCS_FIND_IGNORE) \
 		\( -name '*.orig' -o -name '*.rej' -o -name '*~' \
-		-o -name '*.bak' -o -name '#*#' -o -name '.*.orig' \
-		-o -name '.*.rej' -o -size 0 \
-		-o -name '*%' -o -name '.*.cmd' -o -name 'core' \) \
+		-o -name '*.bak' -o -name '#*#' -o -name '*%' \
+		-o -name 'core' \) \
 		-type f -print | xargs rm -f
 
 

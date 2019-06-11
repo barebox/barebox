@@ -115,6 +115,7 @@ int usb_stor_Bulk_transport(struct us_blk_dev *usb_blkdev,
 	cbw.Length = cmdlen;
 
 	/* copy the command payload */
+	memset(cbw.CDB, 0, sizeof(cbw.CDB));
 	memcpy(cbw.CDB, cmd, cbw.Length);
 
 	/* send it to out endpoint */

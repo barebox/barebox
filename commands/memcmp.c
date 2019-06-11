@@ -34,53 +34,16 @@
 #include <linux/stat.h>
 #include <xfuncs.h>
 
-static char *devmem = "/dev/mem";
-
 static int do_memcmp(int argc, char *argv[])
 {
-	loff_t	addr1, addr2, count = ~0;
-	int	mode  = O_RWSIZE_1;
-	char   *sourcefile = devmem;
-	char   *destfile = devmem;
+	loff_t	count;
 	int     sourcefd, destfd;
 	char   *buf, *source_data, *dest_data;
 	int     ret = 1;
 	int     offset = 0;
-	struct  stat statbuf;
 
-	if (mem_parse_options(argc, argv, "bwlqs:d:", &mode, &sourcefile,
-			&destfile, NULL) < 0)
+	if (memcpy_parse_options(argc, argv, &sourcefd, &destfd, &count) < 0)
 		return 1;
-
-	if (optind + 2 > argc)
-		return COMMAND_ERROR_USAGE;
-
-	addr1 = strtoull_suffix(argv[optind], NULL, 0);
-	addr2 = strtoull_suffix(argv[optind + 1], NULL, 0);
-
-	if (optind + 2 == argc) {
-		if (sourcefile == devmem) {
-			printf("source and count not given\n");
-			return 1;
-		}
-		if (stat(sourcefile, &statbuf)) {
-			perror("stat");
-			return 1;
-		}
-		count = statbuf.st_size - addr1;
-	} else {
-		count = strtoull_suffix(argv[optind + 2], NULL, 0);
-	}
-
-	sourcefd = open_and_lseek(sourcefile, mode | O_RDONLY, addr1);
-	if (sourcefd < 0)
-		return 1;
-
-	destfd = open_and_lseek(destfile, mode | O_RDONLY, addr2);
-	if (destfd < 0) {
-		close(sourcefd);
-		return 1;
-	}
 
 	buf = xmalloc(RW_BUF_SIZE + RW_BUF_SIZE);
 	source_data = buf;

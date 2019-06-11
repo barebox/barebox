@@ -64,9 +64,9 @@ struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node)
 	offset = of_read_number(reg, na);
 	size = of_read_number(reg + na, ns);
 
-	partname = of_get_property(node, "label", &len);
+	partname = of_get_property(node, "label", NULL);
 	if (!partname)
-		partname = of_get_property(node, "name", &len);
+		partname = of_get_property(node, "name", NULL);
 	if (!partname)
 		return NULL;
 
@@ -74,7 +74,7 @@ struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node)
 
 	debug("add partition: %s.%s 0x%08llx 0x%08llx\n", cdev->name, partname, offset, size);
 
-	if (of_get_property(node, "read-only", &len))
+	if (of_get_property(node, "read-only", NULL))
 		flags = DEVFS_PARTITION_READONLY;
 
 	filename = basprintf("%s.%s", cdev->name, partname);

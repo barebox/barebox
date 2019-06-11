@@ -22,7 +22,7 @@ static inline int of_driver_match_device(struct device_d *dev,
 
 extern const void *of_device_get_match_data(const struct device_d *dev);
 
-#else /* CONFIG_OF */
+#else /* CONFIG_OFTREE */
 
 static inline int of_driver_match_device(struct device_d *dev,
 					 const struct device_d *drv)
@@ -43,6 +43,6 @@ static inline const struct of_device_id *__of_match_device(
 #define of_match_device(matches, dev)	\
 	__of_match_device(matches, (dev))
 
-#endif /* CONFIG_OF */
+#endif /* CONFIG_OFTREE */
 
 #endif /* _LINUX_OF_DEVICE_H */

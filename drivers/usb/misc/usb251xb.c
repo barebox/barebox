@@ -612,13 +612,13 @@ static const struct of_device_id usb251xb_of_match[] = {
 		/* sentinel */
 	}
 };
-#else /* CONFIG_OF */
+#else /* CONFIG_OFDEVICE */
 static int usb251xb_get_ofdata(struct usb251xb *hub,
 			       struct usb251xb_data *data)
 {
 	return 0;
 }
-#endif /* CONFIG_OF */
+#endif /* CONFIG_OFDEVICE */
 
 static int usb251xb_probe(struct usb251xb *hub)
 {

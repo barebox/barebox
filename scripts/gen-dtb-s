@@ -55,8 +55,8 @@ lzop -f -9 $dtb -o $dtb.lzo
 if [ $? != 0 ]; then
 	exit 1
 fi
-compressed=$(stat $dtb.lzo -c "%s")
-uncompressed=$(stat $dtb -c "%s")
+compressed=$(${CONFIG_SHELL} "${srctree}/scripts/file-size.sh" $dtb.lzo)
+uncompressed=$(${CONFIG_SHELL} "${srctree}/scripts/file-size.sh" $dtb)
 
 echo ".section .dtbz.rodata.${name},\"a\""
 echo ".balign STRUCT_ALIGNMENT"

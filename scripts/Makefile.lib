@@ -341,7 +341,7 @@ cmd_env=$(srctree)/scripts/genenv $(srctree) $(objtree) $@ $<
 size_append = printf $(shell						\
 dec_size=0;								\
 for F in $1; do								\
-	fsize=$$(stat -c "%s" $$F);					\
+	fsize=$$(${CONFIG_SHELL} "${srctree}/scripts/file-size.sh" $$F);\
 	dec_size=$$(expr $$dec_size + $$fsize);				\
 done;									\
 printf "%08x\n" $$dec_size |						\
@@ -446,7 +446,7 @@ quiet_cmd_check_size = CHKSIZE $2
 # Check size of a file
 quiet_cmd_check_file_size = CHKFILESIZE $2
       cmd_check_file_size = set -e;					\
-	size=`stat -c%s $2`;						\
+	size=`${CONFIG_SHELL} "${srctree}/scripts/file-size.sh" $2`;	\
 	max_size=`printf "%d" $3`;					\
 	if [ $$size -gt $$max_size ] ;					\
 	then								\

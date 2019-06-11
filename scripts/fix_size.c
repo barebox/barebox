@@ -9,7 +9,8 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <fcntl.h>
-#include <endian.h>
+
+#include "compiler.h"
 
 int main(int argc, char**argv)
 {

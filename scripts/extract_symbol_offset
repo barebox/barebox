@@ -4,7 +4,7 @@ symbol="$1"
 file="$2"
 
 # extract symbol offset from file, remove leading zeros
-ofs=$(nm -t d $file | grep "$symbol" | cut -d ' ' -f1 | sed "s/^[0]*//")
+ofs=$(${CROSS_COMPILE}nm -t d $file | grep "$symbol" | cut -d ' ' -f1 | sed "s/^[0]*//")
 
 if [ -z "${ofs}" ]; then
 	echo "symbol $symbol not found in $file"

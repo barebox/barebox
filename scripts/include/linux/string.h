@@ -8,7 +8,11 @@ void *memdup(const void *src, size_t len);
 
 int strtobool(const char *s, bool *res);
 
-#ifndef __UCLIBC__
+/*
+ * glibc based builds needs the extern while uClibc doesn't.
+ * However uClibc headers also define __GLIBC__ hence the hack below
+ */
+#if defined(__GLIBC) && !defined(__UCLIBC__)
 extern size_t strlcpy(char *dest, const char *src, size_t size);
 #endif
 

@@ -860,12 +860,16 @@ static void *image_create_v1(struct image_cfg_element *image_cfg,
 
 		ret = stat(binarye->binary.file, &s);
 		if (ret < 0) {
-			char *cwd = get_current_dir_name();
+			char *buf, *cwd = NULL;
+			size_t size = (size_t)pathconf(".", _PC_PATH_MAX);
+			buf = malloc(size);
+			if (buf)
+				cwd = getcwd(buf, size);
 			fprintf(stderr,
 				"Didn't find the file '%s' in '%s' which is mandatory to generate the image\n"
 				"This file generally contains the DDR3 training code, and should be extracted from an existing bootable\n"
 				"image for your board. See 'kwbimage -x' to extract it from an existing image.\n",
-				binarye->binary.file, cwd);
+				binarye->binary.file, cwd ? cwd : "current working directory");
 			free(cwd);
 			return NULL;
 		}

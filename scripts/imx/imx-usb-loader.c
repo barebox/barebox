@@ -26,16 +26,15 @@
 
 #include <unistd.h>
 #include <ctype.h>
-#include <sys/io.h>
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
 #include <libusb.h>
 #include <getopt.h>
-#include <endian.h>
 #include <arpa/inet.h>
 #include <linux/kernel.h>
 
+#include "../compiler.h"
 #include "imx.h"
 
 #define get_min(a, b) (((a) < (b)) ? (a) : (b))

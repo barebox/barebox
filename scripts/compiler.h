@@ -13,8 +13,6 @@
     defined(__sun__)	 || \
     defined(__APPLE__)
 # include <inttypes.h>
-#elif defined(__linux__) || defined(__WIN32__) || defined(__MINGW32__)
-# include <stdint.h>
 #endif
 
 #include <errno.h>
@@ -40,16 +38,38 @@
 #define O_BINARY	0
 #endif
 
-#ifdef __linux__
-# include <endian.h>
-# include <byteswap.h>
-#elif defined(__MACH__)
-# include <machine/endian.h>
-# define __BYTE_ORDER    BYTE_ORDER
-# define __LITTLE_ENDIAN LITTLE_ENDIAN
-# define __BIG_ENDIAN    BIG_ENDIAN
+#if defined(__MACH__)
+# ifdef __APPLE__
+#  include <libkern/OSByteOrder.h>
+#  define htobe16(x) OSSwapHostToBigInt16(x)
+#  define htole16(x) OSSwapHostToLittleInt16(x)
+#  define be16toh(x) OSSwapBigToHostInt16(x)
+#  define le16toh(x) OSSwapLittleToHostInt16(x)
+#  define htobe32(x) OSSwapHostToBigInt32(x)
+#  define htole32(x) OSSwapHostToLittleInt32(x)
+#  define be32toh(x) OSSwapBigToHostInt32(x)
+#  define le32toh(x) OSSwapLittleToHostInt32(x)
+#  define htobe64(x) OSSwapHostToBigInt64(x)
+#  define htole64(x) OSSwapHostToLittleInt64(x)
+#  define be64toh(x) OSSwapBigToHostInt64(x)
+#  define le64toh(x) OSSwapLittleToHostInt64(x)
+# else /* non apple __MACH__ */
+#  include <machine/endian.h>
+# endif /* __APPLE__ */
 typedef unsigned long ulong;
 typedef unsigned int  uint;
+#elif defined(__OpenBSD__) || defined(__FreeBSD__) || \
+      defined(__NetBSD__) || defined(__DragonFly__)
+# include <sys/endian.h>
+#else /* assume Linux */
+# include <endian.h>
+# include <byteswap.h>
+#endif
+
+#if defined(__BYTE_ORDER) && !defined(BYTE_ORDER)
+# define __BYTE_ORDER    BYTE_ORDER
+# define __BIG_ENDIAN    BIG_ENDIAN
+# define __LITTLE_ENDIAN LITTLE_ENDIAN
 #endif
 
 typedef uint8_t __u8;

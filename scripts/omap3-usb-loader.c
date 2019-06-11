@@ -33,10 +33,6 @@
 #define OMAP_IS_BIG_ENDIAN
 #endif
 
-#ifdef OMAP_IS_BIG_ENDIAN
-#include <arpa/inet.h>
-#endif
-
 #include <unistd.h>		/* for usleep and friends */
 #include <getopt.h>
 #include <errno.h>
@@ -403,7 +399,7 @@ static int transfer_first_stage(libusb_device_handle * handle, struct arg_state 
 	data = file->data;
 	dbuf = data;
 
-	if (le32toh(dbuf[5]) == 0x45534843) {
+	if (le32_to_cpu(dbuf[5]) == 0x45534843) {
 		int chsettingssize = 512 + 2 * sizeof(uint32_t);
 
 		log_info("CHSETTINGS image detected. Skipping header\n");

@@ -23,7 +23,6 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <stdint.h>
-#include <asm-generic/errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -58,7 +57,7 @@ int imd_command_setenv(const char *variable_name, const char *value)
 	return -EINVAL;
 }
 
-static int read_file_2(const char *filename, size_t *size, void **outbuf, loff_t max_size)
+static int read_file_2(const char *filename, size_t *size, void **outbuf, size_t max_size)
 {
 	off_t fsize;
 	ssize_t rsize;

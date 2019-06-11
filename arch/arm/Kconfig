@@ -428,10 +428,14 @@ config ARM_SECURE_MONITOR
 	select ARM_SMCCC
 	bool
 
+config ARM_PSCI_OF
+	bool
+
 config ARM_PSCI
 	bool "enable Power State Coordination Interface (PSCI) support"
 	depends on CPU_V7
 	select ARM_SECURE_MONITOR
+	select ARM_PSCI_OF
 	help
 	  PSCI is used for controlling secondary CPU cores on some systems. Say
 	  yes here if you have one of these.

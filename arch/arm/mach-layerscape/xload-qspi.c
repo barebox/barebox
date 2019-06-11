@@ -25,7 +25,8 @@ int ls1046a_qspi_start_image(unsigned long r0, unsigned long r1,
 	out_be32(qspi_reg_base, 0x000f400c);
 
 	memcpy(membase, qspi_mem_base + BAREBOX_START, barebox_image_size);
-	icache_invalidate();
+
+	sync_caches_for_execution();
 
 	printf("Starting barebox\n");
 

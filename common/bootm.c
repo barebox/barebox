@@ -58,6 +58,7 @@ void bootm_data_init_defaults(struct bootm_data *data)
 	data->initrd_address = UIMAGE_INVALID_ADDRESS;
 	data->os_address = UIMAGE_SOME_ADDRESS;
 	data->oftree_file = getenv_nonempty("global.bootm.oftree");
+	data->tee_file = getenv_nonempty("global.bootm.tee");
 	data->os_file = getenv_nonempty("global.bootm.image");
 	getenv_ul("global.bootm.image.loadaddr", &data->os_address);
 	getenv_ul("global.bootm.initrd.loadaddr", &data->initrd_address);
@@ -553,6 +554,8 @@ int bootm_boot(struct bootm_data *bootm_data)
 	bootm_image_name_and_part(bootm_data->os_file, &data->os_file, &data->os_part);
 	bootm_image_name_and_part(bootm_data->oftree_file, &data->oftree_file, &data->oftree_part);
 	bootm_image_name_and_part(bootm_data->initrd_file, &data->initrd_file, &data->initrd_part);
+	if (bootm_data->tee_file)
+		data->tee_file = xstrdup(bootm_data->tee_file);
 	data->verbose = bootm_data->verbose;
 	data->verify = bootm_data->verify;
 	data->force = bootm_data->force;
@@ -693,6 +696,7 @@ err_out:
 	free(data->os_file);
 	free(data->oftree_file);
 	free(data->initrd_file);
+	free(data->tee_file);
 	free(data);
 
 	return ret;
@@ -703,6 +707,7 @@ static int bootm_init(void)
 	globalvar_add_simple("bootm.image", NULL);
 	globalvar_add_simple("bootm.image.loadaddr", NULL);
 	globalvar_add_simple("bootm.oftree", NULL);
+	globalvar_add_simple("bootm.tee", NULL);
 	globalvar_add_simple_bool("bootm.appendroot", &bootm_appendroot);
 	if (IS_ENABLED(CONFIG_BOOTM_INITRD)) {
 		globalvar_add_simple("bootm.initrd", NULL);
@@ -727,6 +732,7 @@ BAREBOX_MAGICVAR_NAMED(global_bootm_image_loadaddr, global.bootm.image.loadaddr,
 BAREBOX_MAGICVAR_NAMED(global_bootm_initrd, global.bootm.initrd, "bootm default initrd");
 BAREBOX_MAGICVAR_NAMED(global_bootm_initrd_loadaddr, global.bootm.initrd.loadaddr, "bootm default initrd loadaddr");
 BAREBOX_MAGICVAR_NAMED(global_bootm_oftree, global.bootm.oftree, "bootm default oftree");
+BAREBOX_MAGICVAR_NAMED(global_bootm_tee, global.bootm.tee, "bootm default tee image");
 BAREBOX_MAGICVAR_NAMED(global_bootm_verify, global.bootm.verify, "bootm default verify level");
 BAREBOX_MAGICVAR_NAMED(global_bootm_verbose, global.bootm.verbose, "bootm default verbosity level (0=quiet)");
 BAREBOX_MAGICVAR_NAMED(global_bootm_appendroot, global.bootm.appendroot, "Add root= option to Kernel to mount rootfs from the device the Kernel comes from");

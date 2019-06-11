@@ -332,6 +332,8 @@ esdhc_start_image(struct esdhc *esdhc, ptrdiff_t address, ptrdiff_t entry, u32 o
 
 	bb = buf + ofs;
 
+	sync_caches_for_execution();
+
 	bb();
 }
 
@@ -458,7 +460,7 @@ int ls1046a_esdhc_start_image(unsigned long r0, unsigned long r1, unsigned long 
 		return ret;
 	}
 
-	icache_invalidate();
+	sync_caches_for_execution();
 
 	printf("Starting barebox\n");
 

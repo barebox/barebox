@@ -56,9 +56,8 @@ ENTRY(relocate_to_adr)
 
 	bl	memcpy			/* copy binary */
 
-#ifdef CONFIG_MMU
-	bl	arm_early_mmu_cache_flush
-#endif
+	bl	sync_caches_for_execution
+
 	mov	x0,#0
 	ic	ivau, x0	/* flush icache */
 

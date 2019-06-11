@@ -12,6 +12,8 @@ obj-y += start.o entry.o
 
 obj-pbl-y += setupc$(S64).o cache$(S64).o
 
+obj-$(CONFIG_BOOTM_OPTEE) += start-kernel-optee.o
+
 #
 # Any variants can be called as start-armxyz.S
 #
@@ -24,6 +26,7 @@ obj-$(CONFIG_CPU_32v7) += no-mmu.o
 endif
 
 obj-$(CONFIG_ARM_PSCI) += psci.o
+obj-$(CONFIG_ARM_PSCI_OF) += psci-of.o
 obj-pbl-$(CONFIG_ARM_SMCCC) += smccc-call$(S64).o
 AFLAGS_smccc-call$(S64).o :=-Wa,-march=armv$(if $(S64),8,7)-a
 AFLAGS_pbl-smccc-call$(S64).o :=-Wa,-march=armv$(if $(S64),8,7)-a

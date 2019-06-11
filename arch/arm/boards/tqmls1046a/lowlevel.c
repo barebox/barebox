@@ -243,7 +243,7 @@ static noinline __noreturn void tqmls1046a_r_entry(void)
 	unsigned long membase = LS1046A_DDR_SDRAM_BASE;
 
 	if (get_pc() >= membase)
-		barebox_arm_entry(membase, 0x80000000,
+		barebox_arm_entry(membase, 0x80000000 - SZ_64M,
 				  __dtb_fsl_tqmls1046a_mbls10xxa_start);
 
 	arm_cpu_lowlevel_init();

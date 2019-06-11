@@ -137,4 +137,6 @@ static inline int psci_printf(const char *fmt, ...)
 
 int psci_get_cpu_id(void);
 
+int of_psci_fixup(struct device_node *root, unsigned long psci_version);
+
 #endif /* __ARM_PSCI_H__ */

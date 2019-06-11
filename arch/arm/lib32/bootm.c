@@ -19,6 +19,7 @@
 #include <binfmt.h>
 #include <restart.h>
 #include <globalvar.h>
+#include <tee/optee.h>
 
 #include <asm/byteorder.h>
 #include <asm/setup.h>
@@ -133,11 +134,76 @@ static int get_kernel_addresses(size_t image_size,
 	return 0;
 }
 
+static int optee_verify_header_request_region(struct image_data *data, struct optee_header *hdr)
+{
+	int ret = 0;
+	if (hdr->magic != OPTEE_MAGIC) {
+		pr_err("Invalid header magic 0x%08x, expected 0x%08x\n",
+		       hdr->magic, OPTEE_MAGIC);
+		return -EINVAL;
+	}
+
+	if (hdr->arch != OPTEE_ARCH_ARM32 || hdr->init_load_addr_hi) {
+		pr_err("Only 32bit supported\n");
+		return -EINVAL;
+	}
+
+	data->tee_res = request_sdram_region("TEE", hdr->init_load_addr_lo, hdr->init_size);
+	if (!data->tee_res) {
+		pr_err("Cannot request SDRAM region 0x%08x-0x%08x: %s\n",
+		       hdr->init_load_addr_lo, hdr->init_load_addr_lo + hdr->init_size - 1,
+		       strerror(-EINVAL));
+		return -EINVAL;
+	}
+
+	return ret;
+}
+
+static int bootm_load_tee_from_file(struct image_data *data)
+{
+	int fd, ret;
+	struct optee_header hdr;
+
+	fd = open(data->tee_file, O_RDONLY);
+	if (fd < 0) {
+		pr_err("%s", strerror(errno));
+		return -errno;
+	}
+
+	if (read_full(fd, &hdr, sizeof(hdr)) < 0) {
+		pr_err("%s", strerror(errno));
+		ret = -errno;
+		goto out;
+	}
+
+	if (optee_verify_header_request_region(data, &hdr) < 0) {
+		pr_err("%s", strerror(errno));
+		ret = -errno;
+		goto out;
+	}
+
+	if (read_full(fd, (void *)data->tee_res->start, hdr.init_size) < 0) {
+		pr_err("%s", strerror(errno));
+		ret = -errno;
+		release_region(data->tee_res);
+		goto out;
+	}
+
+	printf("Read optee file to %pa, size 0x%08x\n", (void *)data->tee_res->start, hdr.init_size);
+
+	ret = 0;
+out:
+	close(fd);
+
+	return ret;
+}
+
 static int __do_bootm_linux(struct image_data *data, unsigned long free_mem,
 			    int swap, void *fdt)
 {
 	unsigned long kernel;
 	unsigned long initrd_start = 0, initrd_size = 0, initrd_end = 0;
+	void *tee;
 	enum arm_security_state state = bootm_arm_security_state();
 	void *fdt_load_address = NULL;
 	int ret;
@@ -189,6 +255,13 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem,
 			return ret;
 	}
 
+	if (IS_ENABLED(CONFIG_BOOTM_OPTEE) && data->tee_file) {
+		ret = bootm_load_tee_from_file(data);
+		if (ret)
+			return ret;
+	}
+
+
 	if (bootm_verbose(data)) {
 		printf("\nStarting kernel at 0x%08lx", kernel);
 		if (initrd_size)
@@ -210,8 +283,13 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem,
 	if (data->dryrun)
 		return 0;
 
+	if (data->tee_res)
+		tee = (void *)data->tee_res->start;
+	else
+		tee = NULL;
+
 	start_linux((void *)kernel, swap, initrd_start, initrd_size,
-		    fdt_load_address, state);
+		    fdt_load_address, state, tee);
 
 	restart_machine();
 

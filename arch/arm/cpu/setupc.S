@@ -27,11 +27,7 @@ ENTRY(setup_c)
 	ldr	r2, =__bss_stop
 	sub	r2, r2, r0
 	bl	memset			/* clear bss */
-#ifdef CONFIG_MMU
-	bl	arm_early_mmu_cache_flush
-#endif
-	mov	r0, #0
-	mcr	p15, 0, r0, c7, c5, 0	/* flush icache */
+	bl	sync_caches_for_execution
 	sub	lr, r5, r4		/* adjust return address to new location */
 	pop	{r4, r5}
 	mov	pc, lr
@@ -73,11 +69,7 @@ ENTRY(relocate_to_adr)
 
 	bl	memcpy			/* copy binary */
 
-#ifdef CONFIG_MMU
-	bl	arm_early_mmu_cache_flush
-#endif
-	mov	r0,#0
-	mcr	p15, 0, r0, c7, c5, 0	/* flush icache */
+	bl	sync_caches_for_execution
 
 	ldr	r0,=1f
 	sub	r0, r0, r8

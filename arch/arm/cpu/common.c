@@ -27,6 +27,22 @@
 #include <asm/cache.h>
 #include <debug_ll.h>
 
+/**
+ * sync_caches_for_execution - synchronize caches for code execution
+ *
+ * Code has been modified in memory, call this before executing it.
+ * This function flushes the data cache up to the point of unification
+ * and invalidates the instruction cache.
+ */
+void sync_caches_for_execution(void)
+{
+	/*
+	 * Despite the name arm_early_mmu_cache_flush not only flushes the
+	 * data cache, but also invalidates the instruction cache.
+	 */
+	arm_early_mmu_cache_flush();
+}
+
 #define R_ARM_RELATIVE 23
 #define R_AARCH64_RELATIVE 1027
 
@@ -103,8 +119,7 @@ void relocate_to_current_adr(void)
 #error "Architecture not specified"
 #endif
 
-	arm_early_mmu_cache_flush();
-	icache_invalidate();
+	sync_caches_for_execution();
 }
 
 #ifdef ARM_MULTIARCH

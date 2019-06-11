@@ -54,8 +54,9 @@ static int do_splash(int argc, char *argv[])
 
 	sc = fb_open(fbdev);
 	if (IS_ERR(sc)) {
-		perror("fd_open");
-		return PTR_ERR(sc);
+		int ret = -PTR_ERR(sc);
+		printf("fb_open: %s\n", strerror(ret));
+		return ret;
 	}
 
 	buf = gui_screen_render_buffer(sc);

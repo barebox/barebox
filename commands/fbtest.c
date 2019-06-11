@@ -271,8 +271,9 @@ static int do_fbtest(int argc, char *argv[])
 
 	sc = fb_open(fbdev);
 	if (IS_ERR(sc)) {
-		perror("fd_open");
-		return PTR_ERR(sc);
+		int ret = -PTR_ERR(sc);
+		printf("fb_open: %s\n", strerror(ret));
+		return ret;
 	}
 
 	if (!pattern_name) {

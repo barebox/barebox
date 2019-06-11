@@ -5,7 +5,7 @@
 #include <mach/stm32.h>
 #include <debug_ll.h>
 
-extern char __dtb_stm32mp157c_dk2_start[];
+extern char __dtb_z_stm32mp157c_dk2_start[];
 
 ENTRY_FUNCTION(start_stm32mp157c_dk2, r0, r1, r2)
 {
@@ -13,7 +13,7 @@ ENTRY_FUNCTION(start_stm32mp157c_dk2, r0, r1, r2)
 
 	arm_cpu_lowlevel_init();
 
-	fdt = __dtb_stm32mp157c_dk2_start + get_runtime_offset();
+	fdt = __dtb_z_stm32mp157c_dk2_start + get_runtime_offset();
 
 	barebox_arm_entry(STM32_DDR_BASE, SZ_512M, fdt);
 }

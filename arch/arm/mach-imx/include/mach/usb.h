@@ -11,9 +11,6 @@
 #define MX35_H1_USBTE_BIT	(1 << 4)
 #define MXC_EHCI_INTERFACE_SINGLE_UNI	(2 << 0)
 
-int imx6_usb_phy2_disable_oc(void);
-int imx6_usb_phy2_enable(void);
-
 #define USBCMD	0x140
 #define USB_CMD_RESET	0x00000002
 

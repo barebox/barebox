@@ -23,47 +23,64 @@
 #include <linux/phy/phy.h>
 #include <linux/clk.h>
 #include <linux/err.h>
+#include <stmp-device.h>
+#include <mfd/syscon.h>
 
-#define SET				0x4
-#define CLR				0x8
+#define HW_USBPHY_PWD				0x00
+#define HW_USBPHY_TX				0x10
+#define HW_USBPHY_CTRL				0x30
+#define HW_USBPHY_CTRL_SET			0x34
+#define HW_USBPHY_CTRL_CLR			0x38
 
-#define USBPHY_CTRL			0x30
+#define BM_USBPHY_CTRL_ENUTMILEVEL3		BIT(15)
+#define BM_USBPHY_CTRL_ENUTMILEVEL2		BIT(14)
+#define BM_USBPHY_CTRL_ENHOSTDISCONDETECT	BIT(1)
 
-#define USBPHY_CTRL_SFTRST		(1 << 31)
-#define USBPHY_CTRL_CLKGATE		(1 << 30)
-#define USBPHY_CTRL_ENUTMILEVEL3	(1 << 15)
-#define USBPHY_CTRL_ENUTMILEVEL2	(1 << 14)
-#define USBPHY_CTRL_ENHOSTDISCONDETECT	(1 << 1)
+#define ANADIG_USB1_CHRG_DETECT_SET		0x1b4
+#define ANADIG_USB2_CHRG_DETECT_SET		0x214
+#define ANADIG_USB1_CHRG_DETECT_EN_B		BIT(20)
+#define ANADIG_USB1_CHRG_DETECT_CHK_CHRG_B	BIT(19)
 
 struct imx_usbphy {
 	struct usb_phy usb_phy;
 	struct phy *phy;
 	void __iomem *base;
+	void __iomem *anatop;
 	struct clk *clk;
 	struct phy_provider *provider;
+	int port_id;
 };
 
 static int imx_usbphy_phy_init(struct phy *phy)
 {
 	struct imx_usbphy *imxphy = phy_get_drvdata(phy);
+	int ret;
 
 	clk_enable(imxphy->clk);
 
-	/* reset usbphy */
-	writel(USBPHY_CTRL_SFTRST, imxphy->base + USBPHY_CTRL + SET);
+	ret = stmp_reset_block(imxphy->base + HW_USBPHY_CTRL, false);
+	if (ret)
+		return ret;
 
-	udelay(10);
-
-	/* clr reset and clkgate */
-	writel(USBPHY_CTRL_SFTRST | USBPHY_CTRL_CLKGATE,
-			imxphy->base + USBPHY_CTRL + CLR);
-
-	/* clr all pwd bits => power up phy */
-	writel(0xffffffff, imxphy->base + CLR);
+	/* Power up the PHY */
+	writel(0, imxphy->base + HW_USBPHY_PWD);
 
 	/* set utmilvl2/3 */
-	writel(USBPHY_CTRL_ENUTMILEVEL3 | USBPHY_CTRL_ENUTMILEVEL2,
-	       imxphy->base + USBPHY_CTRL + SET);
+	writel(BM_USBPHY_CTRL_ENUTMILEVEL3 | BM_USBPHY_CTRL_ENUTMILEVEL2,
+	       imxphy->base + HW_USBPHY_CTRL_SET);
+
+	if (imxphy->anatop) {
+		unsigned int reg = imxphy->port_id ?
+			ANADIG_USB1_CHRG_DETECT_SET :
+			ANADIG_USB2_CHRG_DETECT_SET;
+		/*
+		 * The external charger detector needs to be disabled,
+		 * or the signal at DP will be poor
+		 */
+		writel(ANADIG_USB1_CHRG_DETECT_EN_B |
+		       ANADIG_USB1_CHRG_DETECT_CHK_CHRG_B,
+		       imxphy->anatop + reg);
+	}
 
 	return 0;
 }
@@ -71,11 +88,12 @@ static int imx_usbphy_phy_init(struct phy *phy)
 static int imx_usbphy_notify_connect(struct usb_phy *phy,
 				     enum usb_device_speed speed)
 {
-	struct imx_usbphy *imxphy = container_of(phy, struct imx_usbphy, usb_phy);
+	struct imx_usbphy *imxphy = container_of(phy, struct imx_usbphy,
+						 usb_phy);
 
 	if (speed == USB_SPEED_HIGH) {
-		writel(USBPHY_CTRL_ENHOSTDISCONDETECT,
-		       imxphy->base + USBPHY_CTRL + SET);
+		writel(BM_USBPHY_CTRL_ENHOSTDISCONDETECT,
+		       imxphy->base + HW_USBPHY_CTRL_SET);
 	}
 
 	return 0;
@@ -84,10 +102,11 @@ static int imx_usbphy_notify_connect(struct usb_phy *phy,
 static int imx_usbphy_notify_disconnect(struct usb_phy *phy,
 					enum usb_device_speed speed)
 {
-	struct imx_usbphy *imxphy = container_of(phy, struct imx_usbphy, usb_phy);
+	struct imx_usbphy *imxphy = container_of(phy, struct imx_usbphy,
+						 usb_phy);
 
-	writel(USBPHY_CTRL_ENHOSTDISCONDETECT,
-	       imxphy->base + USBPHY_CTRL + CLR);
+	writel(BM_USBPHY_CTRL_ENHOSTDISCONDETECT,
+	       imxphy->base + HW_USBPHY_CTRL_CLR);
 
 	return 0;
 }
@@ -115,10 +134,26 @@ static const struct phy_ops imx_phy_ops = {
 static int imx_usbphy_probe(struct device_d *dev)
 {
 	struct resource *iores;
+	struct device_node *np = dev->device_node;
 	int ret;
 	struct imx_usbphy *imxphy;
 
 	imxphy = xzalloc(sizeof(*imxphy));
+
+	ret = of_alias_get_id(np, "usbphy");
+	if (ret < 0) {
+		dev_dbg(dev, "failed to get alias id, errno %d\n", ret);
+		goto err_free;
+	}
+	imxphy->port_id = ret;
+
+	if (of_get_property(np, "fsl,anatop", NULL)) {
+		imxphy->anatop =
+			syscon_base_lookup_by_phandle(np, "fsl,anatop");
+		ret = PTR_ERR_OR_ZERO(imxphy->anatop);
+		if (ret)
+			goto err_free;
+	}
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores)) {

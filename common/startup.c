@@ -187,11 +187,12 @@ static bool test_abort(void)
 	return false;
 }
 
+#define INITFILE "/env/bin/init"
+
 static int run_init(void)
 {
 	DIR *dir;
 	struct dirent *d;
-	const char *initfile = "/env/bin/init";
 	const char *initdir = "/env/init";
 	const char *menufile = "/env/menu/mainmenu";
 	struct stat s;
@@ -205,10 +206,10 @@ static int run_init(void)
 	setenv("PATH", "/env/bin");
 
 	/* Run legacy /env/bin/init if it exists */
-	env_bin_init_exists = stat(initfile, &s) == 0;
+	env_bin_init_exists = stat(INITFILE, &s) == 0;
 	if (env_bin_init_exists) {
-		pr_info("running %s...\n", initfile);
-		run_command(initfile);
+		pr_info("running %s...\n", INITFILE);
+		run_command("source " INITFILE);
 		return 0;
 	}
 

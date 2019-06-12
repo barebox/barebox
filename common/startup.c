@@ -155,7 +155,6 @@ static int global_autoboot_timeout = 3;
 static char *global_boot_default;
 static char *global_editcmd;
 static char *global_linux_bootargs_base;
-static char *global_linux_bootargs_console;
 static char *global_linux_bootargs_dyn_ip;
 static char *global_linux_bootargs_dyn_root;
 static char *global_user;
@@ -228,8 +227,6 @@ static int run_init(void)
 	globalvar_add_simple_string("editcmd", &global_editcmd);
 	globalvar_add_simple_string("linux.bootargs.base",
 				    &global_linux_bootargs_base);
-	globalvar_add_simple_string("linux.bootargs.console",
-				    &global_linux_bootargs_console);
 	globalvar_add_simple_string("linux.bootargs.dyn.ip",
 				    &global_linux_bootargs_dyn_ip);
 	globalvar_add_simple_string("linux.bootargs.dyn.root",

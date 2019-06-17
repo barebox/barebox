@@ -861,10 +861,10 @@ static int print_field(u8 *reg, int index)
 			str);
 		val = get_field_val(EXT_CSD_BOOT_BUS_CONDITIONS, 2, 0x1);
 		if (val)
-			str = "Reset bus width to x1, SDR and backward compatible timings after boot operation";
-		else
 			str = "Retain BOOT_BUS_WIDTH and BOOT_MODE values after boot operation";
-		printf("\t[2] RESET_BOOT_BUS_CONDITIONS: %s", str);
+		else
+			str = "Reset bus width to x1, SDR and backward compatible timings after boot operation";
+		printf("\t[2] RESET_BOOT_BUS_CONDITIONS: %s\n", str);
 		val = get_field_val(EXT_CSD_BOOT_BUS_CONDITIONS, 3, 0x3);
 		switch (val) {
 		case 0x0:
@@ -877,7 +877,7 @@ static int print_field(u8 *reg, int index)
 			str = "Use DDR in boot operation";
 			break;
 		}
-		printf("\t[3] BOOT_MODE: %s\n", str);
+		printf("\t[4-3] BOOT_MODE: %s\n", str);
 		return 1;
 
 	case EXT_CSD_BOOT_CONFIG_PROT:

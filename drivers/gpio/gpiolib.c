@@ -475,6 +475,13 @@ int gpio_get_num(struct device_d *dev, int gpio)
 	return -EPROBE_DEFER;
 }
 
+struct gpio_chip *gpio_get_chip(int gpio)
+{
+	struct gpio_info *gi = gpio_to_desc(gpio);
+
+	return gi ? gi->chip : NULL;
+}
+
 #ifdef CONFIG_CMD_GPIO
 static int do_gpiolib(int argc, char *argv[])
 {

@@ -206,12 +206,12 @@ board documentation for initial bringup.
 
 barebox binaries are, where possible, designed to be startable second stage from another
 bootloader. For example, if you have U-Boot running on your board, you can start barebox
-with U-Boot's 'go' command:
+with U-Boot's ``bootm`` command:
 
 .. code-block:: console
 
   U-Boot: tftp $load_addr barebox.bin
-  U-Boot: go $load_addr
+  U-Boot: bootm $load_addr
 
 With barebox already running on your board, this can be used to chainload
 another barebox. For instance, if you mounted a TFTP server to ``/mnt/tftp``

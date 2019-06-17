@@ -8,6 +8,19 @@
 #include <dt-bindings/gpio/gpio.h>
 
 / {
+	led {
+		red {
+			label = "error";
+			gpios = <&gpioa 13 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+			status = "okay";
+		};
+
+		blue {
+			default-state = "on";
+		};
+	};
+
 	sram: sram@10050000 {
 		compatible = "mmio-sram";
 		reg = <0x10050000 0x10000>;

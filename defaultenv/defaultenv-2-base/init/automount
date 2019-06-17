@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# automount tftp server based on $eth0.serverip
+# automount tftp server
 
 mkdir -p /mnt/tftp
 automount /mnt/tftp 'ifup -a && mount -t tftp $global.net.server /mnt/tftp'

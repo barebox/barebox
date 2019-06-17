@@ -6,9 +6,9 @@
 
 /dts-v1/;
 
-#include "stm32mp157c.dtsi"
 #include <arm/stm32mp157c.dtsi>
 #include <arm/stm32mp157-pinctrl.dtsi>
+#include "stm32mp157c.dtsi"
 
 / {
 	model = "STMicroelectronics STM32MP157A-DK1 Discovery Board";

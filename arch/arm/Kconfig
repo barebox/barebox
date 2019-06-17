@@ -216,6 +216,7 @@ config ARCH_STM32MP
 	select COMMON_CLK_OF_PROVIDER
 	select HAS_DEBUG_LL
 	select HAVE_CLK
+	select GPIOLIB
 
 config ARCH_VERSATILE
 	bool "ARM Versatile boards (ARM926EJ-S)"

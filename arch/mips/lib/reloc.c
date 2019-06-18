@@ -40,8 +40,6 @@
 #include <linux/sizes.h>
 #include <asm-generic/memory_layout.h>
 
-#define MAX_BSS_SIZE SZ_1M
-
 void main_entry(void *fdt, u32 fdt_size);
 void relocate_code(void *fdt, u32 fdt_size, u32 relocaddr);
 
@@ -127,8 +125,10 @@ void relocate_code(void *fdt, u32 fdt_size, u32 ram_size)
 	unsigned int type;
 	long off;
 
-	length = barebox_image_size + MAX_BSS_SIZE;
-	relocaddr = ALIGN_DOWN(ram_size - barebox_image_size, SZ_64K);
+	bss_len = (unsigned long)&__bss_stop - (unsigned long)__bss_start;
+
+	length = barebox_image_size + bss_len;
+	relocaddr = ALIGN_DOWN(ram_size - length, SZ_64K);
 	relocaddr = KSEG0ADDR(relocaddr);
 	new_stack = relocaddr - MALLOC_SIZE - 16;
 
@@ -143,7 +143,7 @@ void relocate_code(void *fdt, u32 fdt_size, u32 ram_size)
 		panic("Mis-aligned relocation\n");
 
 	/* Copy Barebox to RAM */
-	memcpy((void *)relocaddr, __image_start, length);
+	memcpy((void *)relocaddr, __image_start, barebox_image_size);
 
 	/* Now apply relocations to the copy in RAM */
 	buf = __rel_start;
@@ -162,7 +162,6 @@ void relocate_code(void *fdt, u32 fdt_size, u32 ram_size)
 
 	/* Clear the .bss section */
 	bss_start = (uint8_t *)((unsigned long)__bss_start + off);
-	bss_len = (unsigned long)&__bss_stop - (unsigned long)__bss_start;
 	memset(bss_start, 0, bss_len);
 
 	 __asm__ __volatile__ (

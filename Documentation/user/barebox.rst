@@ -112,11 +112,12 @@ targets, followed by the MIPS-specific ones:
   Architecture specific targets (mips):
     No architecture specific help defined for mips
 
+    ath79_defconfig          - Build for ath79
+    bcm47xx_defconfig        - Build for bcm47xx
+    gxemul-malta_defconfig   - Build for gxemul-malta
     loongson-ls1b_defconfig  - Build for loongson-ls1b
-    ritmix-rzx50_defconfig   - Build for ritmix-rzx50
-    tplink-mr3020_defconfig  - Build for tplink-mr3020
-    dlink-dir-320_defconfig  - Build for dlink-dir-320
     qemu-malta_defconfig     - Build for qemu-malta
+    xburst_defconfig         - Build for xburst
 
 barebox supports building for multiple boards with a single config. If you
 can't find your board in the list, it may be supported by one of the multi-board

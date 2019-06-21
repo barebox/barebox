@@ -11,6 +11,9 @@
 / {
 	spi0 {
 		m25p128@0 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
 			partition@0 {
 				label = "bootloader";
 				reg = <0x0 0x100000>;

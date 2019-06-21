@@ -39,7 +39,7 @@ static inline void setup_uart(void)
 	putc_ll('>');
 }
 
-ENTRY_FUNCTION(start_zii_imx7d_rpu2, r0, r1, r2)
+ENTRY_FUNCTION(start_zii_imx7d_dev, r0, r1, r2)
 {
 	imx7_cpu_lowlevel_init();
 

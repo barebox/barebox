@@ -168,6 +168,8 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 
 	barrier();
 
+	pbl_barebox_break();
+
 	pr_debug("memory at 0x%08lx, size 0x%08lx\n", membase, memsize);
 
 	arm_endmem = endmem;

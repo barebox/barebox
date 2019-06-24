@@ -33,6 +33,7 @@ Contents:
    system-reset
    state
    random
+   debugging
 
 * :ref:`search`
 * :ref:`genindex`

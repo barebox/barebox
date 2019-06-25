@@ -469,6 +469,7 @@ static int habv4_get_status(const struct habv4_rvt *rvt)
 	}
 
 	len = sizeof(data);
+	index = 0;
 	while (rvt->report_event(HAB_STATUS_FAILURE, index, data, &len) == HAB_STATUS_SUCCESS) {
 		pr_err("-------- HAB failure Event %d --------\n", index);
 		pr_err("event data:\n");
@@ -480,6 +481,7 @@ static int habv4_get_status(const struct habv4_rvt *rvt)
 
 	/* Check reason for stopping */
 	len = sizeof(data);
+	index = 0;
 	if (rvt->report_event(HAB_STATUS_ANY, index, NULL, &len) == HAB_STATUS_SUCCESS)
 		pr_err("ERROR: Recompile with larger event data buffer (at least %d bytes)\n\n", len);
 

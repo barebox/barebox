@@ -9,10 +9,3 @@
 		reg = <0x0 0x0>;
 	};
 };
-
-&sdhci {
-	pinctrl-0 = <&emmc_gpio48>;
-	no-sd;
-	non-removable;
-	status = "okay";
-};

@@ -314,12 +314,15 @@ static int ns16550_tstc(struct console_device *cdev)
 static void ns16550_probe_dt(struct device_d *dev, struct ns16550_priv *priv)
 {
 	struct device_node *np = dev->device_node;
+	u32 offset;
 	u32 width = 1;
 
 	if (!IS_ENABLED(CONFIG_OFDEVICE))
 		return;
 
 	of_property_read_u32(np, "clock-frequency", &priv->plat.clock);
+	if (of_property_read_u32(np, "reg-offset", &offset) == 0)
+		priv->mmiobase += offset;
 	of_property_read_u32(np, "reg-shift", &priv->plat.shift);
 	of_property_read_u32(np, "reg-io-width", &width);
 	switch (width) {

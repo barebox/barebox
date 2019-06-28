@@ -106,12 +106,10 @@ static unsigned long clk_divider_recalc_rate(struct clk *clk,
 		unsigned long parent_rate)
 {
 	struct clk_divider *divider = container_of(clk, struct clk_divider, clk);
-	unsigned int div, val;
+	unsigned int val;
 
 	val = readl(divider->reg) >> divider->shift;
 	val &= div_mask(divider);
-
-	div = _get_div(divider->table, val, divider->flags, divider->width);
 
 	return divider_recalc_rate(clk, parent_rate, val, divider->table,
 				   divider->flags, divider->width);

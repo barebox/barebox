@@ -146,7 +146,7 @@ static const unsigned long SECT(iocsr_scan_chain2_table)[((CONFIG_HPS_IOCSR_SCAN
 	0x00000800,
 };
 
-static const unsigned long iocsr_scan_chain3_table[((CONFIG_HPS_IOCSR_SCANCHAIN3_LENGTH / 32) + 1)] = {
+static const unsigned long SECT(iocsr_scan_chain3_table)[((CONFIG_HPS_IOCSR_SCANCHAIN3_LENGTH / 32) + 1)] = {
 	0x0C420D80,
 	0x082000FF,
 	0x0A804001,

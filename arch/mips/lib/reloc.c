@@ -106,17 +106,6 @@ static void apply_reloc(unsigned int type, void *addr, long off)
 	}
 }
 
-/**
- * relocate_code() - Relocate Barebox, generally from flash to DDR
- * @start_addr_sp: new stack pointer
- * @new_gd: pointer to relocated global data
- * @relocaddr: the address to relocate to
- *
- * Relocate Barebox from its current location (generally in flash) to a new one
- * (generally in DDR). This function will copy the Barebox binary & apply
- * relocations as necessary, then jump to board_init_r in the new build of
- * Barebox. As such, this function does not return.
- */
 void relocate_code(void *fdt, u32 fdt_size, u32 ram_size)
 {
 	unsigned long addr, length, bss_len;

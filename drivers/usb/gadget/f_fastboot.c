@@ -767,7 +767,7 @@ static void __maybe_unused cb_boot(struct f_fastboot *f_fb, const char *opt)
 	fastboot_tx_print(f_fb, FASTBOOT_MSG_INFO, "Booting kernel..\n");
 
 	globalvar_set_match("linux.bootargs.dyn.", "");
-	globalvar_set_match("bootm.", "");
+	globalvar_set_match("bootm.image", "");
 
 	data.os_file = xstrdup(FASTBOOT_TMPFILE);
 

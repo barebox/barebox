@@ -6,6 +6,7 @@
 
 #include <common.h>
 #include <driver.h>
+#include <mach/linux.h>
 #include <init.h>
 
 static LIST_HEAD(sandbox_device_list);

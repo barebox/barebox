@@ -40,4 +40,3 @@ int barebox_register_console(int stdinfd, int stdoutfd)
 
 	return sandbox_add_device(dev);
 }
-

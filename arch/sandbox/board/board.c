@@ -58,4 +58,3 @@ static int devices_init(void)
 }
 
 device_initcall(devices_init);
-

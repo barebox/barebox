@@ -116,19 +116,12 @@ To update the handoff files, the following procedure is necessary:
 
 1. Regenerate the project with Qsys
 2. Load up your project in Quartus II and assemble the design
-3. Go to the SoCEDS installation and run
-   ``./embedded_command_shell.sh``
-4. Now run ``bsp-editor``
-5. Create a new BSP
-6. Select the directory `hps_isw_handoff/soc_system_hps_0` under the
-   preloader settings directory
-7. Click ``Ok`` than ``Generate``
 
 Now run the command:
 
 .. code-block:: sh
 
-  scripts/socfpga_import_preloader <SPL_GENERATED_DIR> <ISW_HANDOFF> <BOARD_DIRECTORY>
+  scripts/socfpga_import_preloader <EMBEDDED_SDK> <ISW_HANDOFF> <BOARD_DIRECTORY>
 
 where `<SPL_GENERATED_DIR>` is the directory where the bsp-editor generated the files,
 `<ISW_HANDOFF>` is the directory where Quartus generated the handoff files, and

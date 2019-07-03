@@ -22,8 +22,6 @@
 #include <linux/log2.h>
 #include <asm-generic/div64.h>
 
-#define div_mask(width)	((1 << (width)) - 1)
-
 static unsigned int _get_table_maxdiv(const struct clk_div_table *table)
 {
 	unsigned int maxdiv = 0;
@@ -39,12 +37,12 @@ static unsigned int _get_maxdiv(const struct clk_div_table *table, u8 width,
 				unsigned long flags)
 {
 	if (flags & CLK_DIVIDER_ONE_BASED)
-		return div_mask(width);
+		return clk_div_mask(width);
 	if (flags & CLK_DIVIDER_POWER_OF_TWO)
-		return 1 << div_mask(width);
+		return 1 << clk_div_mask(width);
 	if (table)
 		return _get_table_maxdiv(table);
-	return div_mask(width) + 1;
+	return clk_div_mask(width) + 1;
 }
 
 static unsigned int _get_table_div(const struct clk_div_table *table,
@@ -111,7 +109,7 @@ static unsigned long clk_divider_recalc_rate(struct clk *clk,
 	unsigned int val;
 
 	val = readl(divider->reg) >> divider->shift;
-	val &= div_mask(divider->width);
+	val &= clk_div_mask(divider->width);
 
 	return divider_recalc_rate(clk, parent_rate, val, divider->table,
 				   divider->flags, divider->width);
@@ -270,7 +268,7 @@ int divider_get_val(unsigned long rate, unsigned long parent_rate,
 
 	value = _get_val(table, div, flags);
 
-	return min_t(unsigned int, value, div_mask(width));
+	return min_t(unsigned int, value, clk_div_mask(width));
 }
 
 static int clk_divider_set_rate(struct clk *clk, unsigned long rate,
@@ -296,11 +294,11 @@ static int clk_divider_set_rate(struct clk *clk, unsigned long rate,
 				divider->width, divider->flags);
 
 	val = readl(divider->reg);
-	val &= ~(div_mask(divider->width) << divider->shift);
+	val &= ~(clk_div_mask(divider->width) << divider->shift);
 	val |= value << divider->shift;
 
 	if (clk->flags & CLK_DIVIDER_HIWORD_MASK)
-		val |= div_mask(divider->width) << (divider->shift + 16);
+		val |= clk_div_mask(divider->width) << (divider->shift + 16);
 
 	writel(val, divider->reg);
 

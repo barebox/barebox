@@ -154,8 +154,6 @@ static const char * const global_autoboot_abort_keys[] = {
 static int global_autoboot_timeout = 3;
 static char *global_boot_default;
 static char *global_linux_bootargs_base;
-static char *global_linux_bootargs_dyn_ip;
-static char *global_linux_bootargs_dyn_root;
 static char *global_user;
 
 static bool test_abort(void)
@@ -225,10 +223,6 @@ static int run_init(void)
 	globalvar_add_simple_string("boot.default", &global_boot_default);
 	globalvar_add_simple_string("linux.bootargs.base",
 				    &global_linux_bootargs_base);
-	globalvar_add_simple_string("linux.bootargs.dyn.ip",
-				    &global_linux_bootargs_dyn_ip);
-	globalvar_add_simple_string("linux.bootargs.dyn.root",
-				    &global_linux_bootargs_dyn_root);
 
 	/* Unblank console cursor */
 	printf("\e[?25h");

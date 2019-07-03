@@ -92,6 +92,8 @@ static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 		return 0;
 	}
 
+	globalvar_add_simple("linux.bootargs.dyn.ip", NULL);
+	globalvar_add_simple("linux.bootargs.dyn.root", NULL);
 	globalvar_set_match("linux.bootargs.dyn.", "");
 
 	ret = run_command(bs->scriptpath);

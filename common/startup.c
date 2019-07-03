@@ -152,9 +152,6 @@ static const char * const global_autoboot_abort_keys[] = {
 	"ctrl-c",
 };
 static int global_autoboot_timeout = 3;
-static char *global_boot_default;
-static char *global_linux_bootargs_base;
-static char *global_user;
 
 static bool test_abort(void)
 {
@@ -210,19 +207,12 @@ static int run_init(void)
 		return 0;
 	}
 
-	global_user = xstrdup("none");
-	globalvar_add_simple_string("user", &global_user);
-	global_boot_default = xstrdup("net");
-
 	globalvar_add_simple_enum("autoboot_abort_key",
 				  &global_autoboot_abort_key,
                                   global_autoboot_abort_keys,
 				  ARRAY_SIZE(global_autoboot_abort_keys));
 	globalvar_add_simple_int("autoboot_timeout",
 				 &global_autoboot_timeout, "%u");
-	globalvar_add_simple_string("boot.default", &global_boot_default);
-	globalvar_add_simple_string("linux.bootargs.base",
-				    &global_linux_bootargs_base);
 
 	/* Unblank console cursor */
 	printf("\e[?25h");

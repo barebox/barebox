@@ -182,20 +182,95 @@ static bool test_abort(void)
 }
 
 #define INITFILE "/env/bin/init"
+#define MENUFILE "/env/menu/mainmenu"
+
+static enum autoboot_state autoboot_state = AUTOBOOT_UNKNOWN;
+
+/**
+ * set_autoboot_state - set the autoboot state
+ * @autoboot: the state to set
+ *
+ * This functions sets the autoboot state to the given state. This can be called
+ * by boards which have its own idea when and how the autoboot shall be aborted.
+ */
+void set_autoboot_state(enum autoboot_state autoboot)
+{
+	autoboot_state = autoboot;
+}
+
+/**
+ * do_autoboot_countdown - print autoboot countdown to console
+ *
+ * This prints the autoboot countdown to the console and waits for input. This
+ * evaluates the global.autoboot_about_key to determine which keys are allowed
+ * to interrupt booting and also global.autoboot_timeout to determine the timeout
+ * for the counter. This function can be called multiple times, it is executed
+ * only the first time.
+ *
+ * Returns an enum autoboot_state value containing the user input.
+ */
+enum autoboot_state do_autoboot_countdown(void)
+{
+	unsigned flags = CONSOLE_COUNTDOWN_EXTERN;
+	int ret;
+	struct stat s;
+	bool menu_exists;
+	char *abortkeys = NULL;
+	unsigned char outkey;
+
+	if (autoboot_state != AUTOBOOT_UNKNOWN)
+		return autoboot_state;
+
+	globalvar_add_simple_enum("autoboot_abort_key",
+				  &global_autoboot_abort_key,
+                                  global_autoboot_abort_keys,
+				  ARRAY_SIZE(global_autoboot_abort_keys));
+	globalvar_add_simple_int("autoboot_timeout",
+				 &global_autoboot_timeout, "%u");
+
+	menu_exists = stat(MENUFILE, &s) == 0;
+
+	if (menu_exists) {
+		printf("\nHit m for menu or %s to stop autoboot: ",
+		       global_autoboot_abort_keys[global_autoboot_abort_key]);
+		abortkeys = "m";
+	} else {
+		printf("\nHit %s to stop autoboot: ",
+		       global_autoboot_abort_keys[global_autoboot_abort_key]);
+	}
+
+	switch (global_autoboot_abort_key) {
+	case 0:
+		flags |= CONSOLE_COUNTDOWN_ANYKEY;
+		break;
+	case 1:
+		flags |= CONSOLE_COUNTDOWN_CTRLC;
+		break;
+	default:
+		break;
+	}
+
+	ret = console_countdown(global_autoboot_timeout, flags, abortkeys,
+				&outkey);
+
+	if (ret == 0)
+		autoboot_state = AUTOBOOT_BOOT;
+	else if (menu_exists && outkey == 'm')
+		autoboot_state = AUTOBOOT_MENU;
+	else
+		autoboot_state = AUTOBOOT_ABORT;
+
+	return autoboot_state;
+}
 
 static int run_init(void)
 {
 	DIR *dir;
 	struct dirent *d;
 	const char *initdir = "/env/init";
-	const char *menufile = "/env/menu/mainmenu";
-	struct stat s;
-	unsigned flags = CONSOLE_COUNTDOWN_EXTERN;
-	unsigned char outkey;
-	int ret;
-	bool menu_exists;
 	bool env_bin_init_exists;
-	char *abortkeys = NULL;
+	enum autoboot_state autoboot;
+	struct stat s;
 
 	setenv("PATH", "/env/bin");
 
@@ -206,13 +281,6 @@ static int run_init(void)
 		run_command("source " INITFILE);
 		return 0;
 	}
-
-	globalvar_add_simple_enum("autoboot_abort_key",
-				  &global_autoboot_abort_key,
-                                  global_autoboot_abort_keys,
-				  ARRAY_SIZE(global_autoboot_abort_keys));
-	globalvar_add_simple_int("autoboot_timeout",
-				 &global_autoboot_timeout, "%u");
 
 	/* Unblank console cursor */
 	printf("\e[?25h");
@@ -240,44 +308,18 @@ static int run_init(void)
 		closedir(dir);
 	}
 
-	menu_exists = stat(menufile, &s) == 0;
+	autoboot = do_autoboot_countdown();
 
-	if (menu_exists) {
-		printf("\nHit m for menu or %s to stop autoboot: ",
-		       global_autoboot_abort_keys[global_autoboot_abort_key]);
-		abortkeys = "m";
-	} else {
-		printf("\nHit %s to stop autoboot: ",
-		       global_autoboot_abort_keys[global_autoboot_abort_key]);
-	}
-
-	switch (global_autoboot_abort_key) {
-	case 0:
-		flags |= CONSOLE_COUNTDOWN_ANYKEY;
-		break;
-	case 1:
-		flags |= CONSOLE_COUNTDOWN_CTRLC;
-		break;
-	default:
-		break;
-	}
-
-	ret = console_countdown(global_autoboot_timeout, flags, abortkeys,
-				&outkey);
-
-	if (ret == 0)
+	if (autoboot == AUTOBOOT_BOOT)
 		run_command("boot");
 
 	console_ctrlc_allow();
 
-	if (menu_exists) {
-		if (outkey == 'm')
-			run_command(menufile);
+	if (autoboot == AUTOBOOT_MENU)
+		run_command(MENUFILE);
 
-		printf("Enter 'exit' to get back to the menu\n");
-		run_shell();
-		run_command(menufile);
-	}
+	run_shell();
+	run_command(MENUFILE);
 
 	return 0;
 }

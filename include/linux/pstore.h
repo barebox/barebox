@@ -64,8 +64,6 @@ struct pstore_record {
 struct pstore_info {
 	struct module	*owner;
 	char		*name;
-	char		*buf;
-	size_t		bufsize;
 	int		flags;
 	int		(*open)(struct pstore_info *psi);
 	int		(*close)(struct pstore_info *psi);

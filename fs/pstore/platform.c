@@ -79,14 +79,6 @@ static void pstore_console_capture_log(void)
 	}
 }
 
-static int pstore_write_compat(struct pstore_record *record)
-{
-	return record->psi->write_buf(record->type, record->reason,
-				      &record->id, record->part,
-				      psinfo->buf, record->compressed,
-				      record->size, record->psi);
-}
-
 /*
  * platform specific persistent storage driver registers with
  * us here. If pstore is already mounted, call the platform
@@ -107,8 +99,6 @@ int pstore_register(struct pstore_info *psi)
 		return -EBUSY;
 	}
 
-	if (!psi->write)
-		psi->write = pstore_write_compat;
 	psinfo = psi;
 	mutex_init(&psinfo->read_mutex);
 	spin_unlock(&pstore_lock);

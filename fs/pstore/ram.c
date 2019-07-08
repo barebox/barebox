@@ -609,22 +609,7 @@ static int ramoops_probe(struct device_d *dev)
 		goto fail_init_mprz;
 
 	cxt->pstore.data = cxt;
-	/*
-	 * Console can handle any buffer size, so prefer LOG_LINE_MAX. If we
-	 * have to handle dumps, we must have at least record_size buffer. And
-	 * for ftrace, bufsize is irrelevant (if bufsize is 0, buf will be
-	 * ZERO_SIZE_PTR).
-	 */
-	if (cxt->console_size)
-		cxt->pstore.bufsize = 1024; /* LOG_LINE_MAX */
-	cxt->pstore.bufsize = max(cxt->record_size, cxt->pstore.bufsize);
-	cxt->pstore.buf = kmalloc(cxt->pstore.bufsize, GFP_KERNEL);
 	spin_lock_init(&cxt->pstore.buf_lock);
-	if (!cxt->pstore.buf) {
-		pr_err("cannot allocate pstore buffer\n");
-		err = -ENOMEM;
-		goto fail_clear;
-	}
 
 	err = pstore_register(&cxt->pstore);
 	if (err) {
@@ -661,9 +646,7 @@ static int ramoops_probe(struct device_d *dev)
 	return 0;
 
 fail_buf:
-	kfree(cxt->pstore.buf);
 fail_clear:
-	cxt->pstore.bufsize = 0;
 	kfree(cxt->mprz);
 fail_init_mprz:
 	kfree(cxt->fprz);

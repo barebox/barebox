@@ -29,6 +29,7 @@
 #include <password.h>
 #include <clock.h>
 #include <malloc.h>
+#include <linux/pstore.h>
 #include <asm-generic/div64.h>
 
 #ifndef CONFIG_CONSOLE_NONE
@@ -116,7 +117,10 @@ static void pr_puts(int level, const char *str)
 			barebox_logbuf_num_messages++;
 		}
 	}
+
+	pstore_log(str);
 nolog:
+
 	if (level > barebox_loglevel)
 		return;
 

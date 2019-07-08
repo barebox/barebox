@@ -85,6 +85,7 @@ struct pstore_info {
 #ifdef CONFIG_FS_PSTORE
 extern int pstore_register(struct pstore_info *);
 extern bool pstore_cannot_block_path(enum kmsg_dump_reason reason);
+extern void pstore_log(const char *msg);
 #else
 static inline int
 pstore_register(struct pstore_info *psi)
@@ -95,6 +96,9 @@ static inline bool
 pstore_cannot_block_path(enum kmsg_dump_reason reason)
 {
 	return false;
+}
+static inline void pstore_log(const char *msg)
+{
 }
 #endif
 

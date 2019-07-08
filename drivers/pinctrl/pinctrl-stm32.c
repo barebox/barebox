@@ -51,7 +51,7 @@ static inline int stm32_gpio_pin(int gpio, struct stm32_gpio_bank **bank)
 
 		chip = gpio_get_chip(gpio);
 		if (!chip)
-			return PTR_ERR(chip);
+			return -EINVAL;
 
 		*bank = to_stm32_gpio_bank(chip);
 	}
@@ -144,7 +144,8 @@ static int stm32_pinctrl_set_state(struct pinctrl_device *pdev, struct device_no
 		for (i = 0; i < num_pins; i++) {
 			struct stm32_gpio_bank *bank = NULL;
 			u32 pinfunc, mode, alt;
-			unsigned offset, func;
+			unsigned func;
+			int offset;
 
 			ret = of_property_read_u32_index(pins, "pinmux",
 					i, &pinfunc);

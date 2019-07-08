@@ -138,6 +138,9 @@ static int stm32_pinctrl_set_state(struct pinctrl_device *pdev, struct device_no
 		else if (of_get_property(pins, "output-high", NULL))
 			dir = PIN_OUTPUT_HIGH;
 
+		dev_dbg(pdev->dev, "%s: multiplexing %d pins\n",
+			pins->full_name, num_pins);
+
 		for (i = 0; i < num_pins; i++) {
 			struct stm32_gpio_bank *bank = NULL;
 			u32 pinfunc, mode, alt;

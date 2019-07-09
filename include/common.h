@@ -117,7 +117,8 @@ void shutdown_barebox(void);
 int mem_parse_options(int argc, char *argv[], char *optstr, int *mode,
 		char **sourcefile, char **destfile, int *swab);
 int memcpy_parse_options(int argc, char *argv[], int *sourcefd,
-			 int *destfd, loff_t *count);
+			 int *destfd, loff_t *count,
+			 int rwsize, int destmode);
 #define RW_BUF_SIZE	(unsigned)4096
 
 extern const char version_string[];

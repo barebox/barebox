@@ -42,7 +42,8 @@ static int do_memcmp(int argc, char *argv[])
 	int     ret = 1;
 	int     offset = 0;
 
-	if (memcpy_parse_options(argc, argv, &sourcefd, &destfd, &count) < 0)
+	if (memcpy_parse_options(argc, argv, &sourcefd, &destfd, &count,
+				 O_RWSIZE_1, O_RDONLY) < 0)
 		return 1;
 
 	buf = xmalloc(RW_BUF_SIZE + RW_BUF_SIZE);

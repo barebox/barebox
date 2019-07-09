@@ -41,7 +41,8 @@ static int do_memcpy(int argc, char *argv[])
 	int ret = 0;
 	char *buf;
 
-	if (memcpy_parse_options(argc, argv, &sourcefd, &destfd, &count) < 0)
+	if (memcpy_parse_options(argc, argv, &sourcefd, &destfd, &count,
+				 0, O_WRONLY | O_CREAT) < 0)
 		return 1;
 
 	buf = xmalloc(RW_BUF_SIZE);

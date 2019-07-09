@@ -173,10 +173,11 @@ int mem_parse_options(int argc, char *argv[], char *optstr, int *mode,
 }
 
 int memcpy_parse_options(int argc, char *argv[], int *sourcefd,
-			 int *destfd, loff_t *count)
+			 int *destfd, loff_t *count,
+			 int rwsize, int destmode)
 {
 	loff_t dest, src;
-	int mode = 0;
+	int mode = rwsize;
 	char *sourcefile = NULL;
 	char *destfile = NULL;
 	struct  stat statbuf;
@@ -212,7 +213,7 @@ int memcpy_parse_options(int argc, char *argv[], int *sourcefd,
 	if (*sourcefd < 0)
 		return -1;
 
-	*destfd = open_and_lseek(destfile, O_WRONLY | O_CREAT | mode, dest);
+	*destfd = open_and_lseek(destfile, mode | destmode, dest);
 	if (*destfd < 0) {
 		close(*sourcefd);
 		return -1;

@@ -79,7 +79,7 @@
 	clock-frequency = <100000>;
 	status = "disabled";
 
-	eeprom@52 {
+	eeprom: eeprom@52 {
 		compatible = "cat,24c32";
 		reg = <0x52>;
 	};

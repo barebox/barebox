@@ -30,7 +30,7 @@
 };
 
 &ethphy {
-	max-speed = <100>;
+	max-speed = <1000>;
 };
 
 &fec {

@@ -63,7 +63,9 @@ pbl-dtb-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += imx6q-phytec-pbaa03.dtb.o \
 				imx6q-phytec-phycore-som-emmc.dtb.o \
 				imx6qp-phytec-phycore-som-nand.dtb.o \
 				imx6dl-phytec-phycore-som-nand.dtb.o \
+				imx6dl-phytec-phycore-som-lc-nand.dtb.o \
 				imx6dl-phytec-phycore-som-emmc.dtb.o \
+				imx6dl-phytec-phycore-som-lc-emmc.dtb.o \
 				imx6ul-phytec-phycore-som.dtb.o \
 				imx6ull-phytec-phycore-som-lc.dtb.o \
 				imx6ull-phytec-phycore-som.dtb.o

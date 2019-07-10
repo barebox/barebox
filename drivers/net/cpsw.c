@@ -993,8 +993,13 @@ static int cpsw_phy_sel_init(struct cpsw_priv *priv, struct device_node *np)
 
 	phy_sel_addr = (void *)addr;
 
-	if (of_property_read_bool(np, "rmii-clock-ext"))
-		rmii_clock_external = true;
+	/*
+	 * As of Linux-5.1 this is set to true in am33xx-l4.dtsi and not
+	 * overwritten by any board. This is set to false in am437x-l4.dtsi
+	 * though, so once we support this SoC we have to configure this from
+	 * the device tree.
+	 */
+	rmii_clock_external = true;
 
 	return 0;
 }
@@ -1062,11 +1067,10 @@ static int cpsw_probe_dt(struct cpsw_priv *priv)
 
 	priv->slaves = xzalloc(sizeof(struct cpsw_slave) * priv->num_slaves);
 
-	physel = of_parse_phandle(dev->device_node, "cpsw-phy-sel", 0);
+	physel = of_find_compatible_node(NULL, NULL, "ti,am3352-phy-gmii-sel");
 	if (!physel) {
-		physel = of_get_child_by_name(dev->device_node, "cpsw-phy-sel");
-		if (!physel)
-			dev_err(dev, "Phy mode node not found\n");
+		dev_err(dev, "Cannot find ti,am3352-phy-gmii-sel node\n");
+		return -EINVAL;
 	}
 	ret = cpsw_phy_sel_init(priv, physel);
 	if (ret)

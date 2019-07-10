@@ -14,6 +14,7 @@
 
 #include <arm/imx6ull.dtsi>
 #include "imx6ul-phytec-phycore-som.dtsi"
+#include "imx6ul-phytec-state.dtsi"
 
 / {
 	model = "Phytec phyCORE-i.MX6 ULL SOM";
@@ -29,6 +30,10 @@
 };
 
 &i2c1 {
+	status = "okay";
+};
+
+&state {
 	status = "okay";
 };
 

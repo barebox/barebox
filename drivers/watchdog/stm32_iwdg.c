@@ -170,11 +170,6 @@ static int stm32_set_reset_reason(struct regmap *rcc)
 	int ret;
 	int i, instance = 0;
 
-	/*
-	 * SRSR register captures ALL reset event that occured since
-	 * POR, so we need to clear it to make sure we only caputre
-	 * the latest one.
-	 */
 	ret = regmap_read(rcc, RCC_MP_RSTSCLRR, &reg);
 	if (ret)
 		return ret;

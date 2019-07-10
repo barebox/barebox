@@ -23,6 +23,7 @@
 		compatible = "barebox,state";
 		backend-type = "raw";
 		backend = <&backend_state_mac_eeprom>;
+		backend-storage-type = "direct";
 		backend-stridesize = <40>;
 		keep-previous-content;
 
@@ -44,6 +45,7 @@
 		compatible = "barebox,state";
 		backend-type = "raw";
 		backend = <&backend_state_update_eeprom>;
+		backend-storage-type = "direct";
 		backend-stridesize = <54>;
 		keep-previous-content;
 

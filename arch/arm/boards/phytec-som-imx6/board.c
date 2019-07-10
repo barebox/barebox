@@ -190,7 +190,7 @@ static int physom_imx6_devices_init(void)
 		default_environment_path = "/chosen/environment-spinor";
 		default_envdev = "SPI NOR flash";
 
-	} else if (of_machine_is_compatible("phytec,imx6ul-pcl063")) {
+	} else if (of_machine_is_compatible("phytec,imx6ul-pcl063-nand")) {
 		barebox_set_hostname("phyCORE-i.MX6UL");
 		default_environment_path = "/chosen/environment-nand";
 		default_envdev = "NAND flash";
@@ -249,7 +249,7 @@ static int physom_imx6_devices_init(void)
 		|| of_machine_is_compatible("phytec,imx6dl-pcm058-nand")
 		|| of_machine_is_compatible("phytec,imx6dl-pcm058-emmc")) {
 		defaultenv_append_directory(defaultenv_physom_imx6_phycore);
-	} else if (of_machine_is_compatible("phytec,imx6ul-pcl063")) {
+	} else if (of_machine_is_compatible("phytec,imx6ul-pcl063-nand")) {
 		defaultenv_append_directory(defaultenv_physom_imx6ul_phycore);
 	}
 

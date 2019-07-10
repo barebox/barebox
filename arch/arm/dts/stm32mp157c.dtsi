@@ -17,6 +17,6 @@
 		gpio8 = &gpioi;
 		gpio9 = &gpioj;
 		gpio10 = &gpiok;
-		gpio11 = &gpioz;
+		gpio25 = &gpioz;
 	};
 };

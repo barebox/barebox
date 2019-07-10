@@ -14,6 +14,7 @@
 #include <arm/imx6q.dtsi>
 #include "imx6q.dtsi"
 #include "imx6qdl-phytec-phycore-som.dtsi"
+#include "imx6qdl-phytec-state.dtsi"
 
 / {
 	model = "Phytec phyCORE-i.MX6 Quad with eMMC";

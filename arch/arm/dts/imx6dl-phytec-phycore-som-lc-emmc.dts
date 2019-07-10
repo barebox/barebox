@@ -9,6 +9,7 @@
 #include <arm/imx6dl.dtsi>
 #include "imx6dl.dtsi"
 #include "imx6qdl-phytec-phycore-som.dtsi"
+#include "imx6qdl-phytec-state.dtsi"
 
 / {
 	model = "PHYTEC phyCORE-i.MX6 DualLite/SOLO with eMMC low-cost";

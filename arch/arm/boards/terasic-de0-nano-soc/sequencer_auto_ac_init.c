@@ -1,6 +1,5 @@
 /*
-Copyright (c) 2012, Altera Corporation
-All rights reserved.
+Copyright (C) 2019  Intel Corporation. All rights reserved.
 
 SPDX-License-Identifier:    BSD-3-Clause
 
@@ -11,7 +10,7 @@ modification, are permitted provided that the following conditions are met:
     * Redistributions in binary form must reproduce the above copyright
       notice, this list of conditions and the following disclaimer in the
       documentation and/or other materials provided with the distribution.
-    * Neither the name of Altera Corporation nor the
+    * Neither the name of Intel Corporation nor the
       names of its contributors may be used to endorse or promote products
       derived from this software without specific prior written permission.
 
@@ -32,16 +31,16 @@ static const uint32_t SECT(ac_rom_init)[36] =
 {
 	0x20700000,
 	0x20780000,
-	0x10080471,
-	0x10080570,
-	0x10090006,
-	0x100a0218,
+	0x10080431,
+	0x10080530,
+	0x10090044,
+	0x100a0010,
 	0x100b0000,
 	0x10380400,
-	0x10080469,
-	0x100804e8,
-	0x100a0006,
-	0x10090218,
+	0x10080449,
+	0x100804c8,
+	0x100a0024,
+	0x10090008,
 	0x100b0000,
 	0x30780000,
 	0x38780000,

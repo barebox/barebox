@@ -2,12 +2,13 @@
 
 if [ "$#" -lt "2" ]
 then
-	echo "USAGE: $0 <SPL_GENERATED_DIR> <ISW_HANDOFF> <BOARD_DIRECTORY>"
-	echo "EXAMPLE: $0 ~/cv_soc_devkit_ghrd/software/spl_bsp/generated ~/cv_soc_devkit_ghrd/hps_isw_handoff/soc_system_hps_0/ arch/arm/boards/altera-socdk"
+	echo "USAGE: $0 <EMBEDDED_SDK> <ISW_HANDOFF> <BOARD_DIRECTORY>"
+	echo "EXAMPLE: $0 ~/altera-embedded-sdk/ ~/cv_soc_devkit_ghrd/hps_isw_handoff/soc_system_hps_0/ arch/arm/boards/altera-socdk"
 	exit 1
 fi
 
-splroot=$1
+splroot="$(mktemp -d)"
+embeddedsw=$1
 handoff=$2
 boardroot=$3
 bareboxsrc=.
@@ -56,6 +57,8 @@ copy_source() {
 	sed -i 's/ $//g' $tgt
 }
 
+python2.7 ${embeddedsw}/embedded/ip/altera/preloader/scripts/iswgen.py -i ${handoff} -o ${splroot}/
+
 copy_source ${splroot}/iocsr_config_cyclone5.c ${boardroot}/iocsr_config_cyclone5.c
 copy_source ${splroot}/pinmux_config_cyclone5.c ${boardroot}/pinmux_config.c
 copy_source ${splroot}/pll_config.h ${boardroot}/pll_config.h
@@ -65,5 +68,7 @@ copy_source ${handoff}/sequencer_auto.h ${boardroot}/sequencer_auto.h
 copy_source ${handoff}/sequencer_auto_ac_init.c ${boardroot}/sequencer_auto_ac_init.c
 copy_source ${handoff}/sequencer_auto_inst_init.c ${boardroot}/sequencer_auto_inst_init.c
 copy_source ${handoff}/sequencer_defines.h ${boardroot}/sequencer_defines.h
+
+rm -r ${splroot}
 
 echo "DONE"

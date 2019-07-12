@@ -46,6 +46,19 @@ void sync_caches_for_execution(void)
 #define R_ARM_RELATIVE 23
 #define R_AARCH64_RELATIVE 1027
 
+void pbl_barebox_break(void)
+{
+	__asm__ __volatile__ (
+#ifdef CONFIG_PBL_BREAK
+		"bkpt #17\n"
+		"nop\n"
+#else
+		"nop\n"
+		"nop\n"
+#endif
+	);
+}
+
 /*
  * relocate binary to the currently running address
  */

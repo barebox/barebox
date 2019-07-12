@@ -91,7 +91,7 @@ static int zii_vf610_dev_print_clocks(void)
 
 	ccm_np = of_find_compatible_node(NULL, NULL, "fsl,vf610-ccm");
 	if (!ccm_np) {
-		pr_err("Couln't get CCM node\n");
+		pr_err("Couldn't get CCM node\n");
 		return -ENOENT;
 	}
 

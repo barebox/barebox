@@ -103,6 +103,6 @@ static inline struct nvmem_device *of_nvmem_device_get(struct device_node *np,
 {
 	return ERR_PTR(-ENOSYS);
 }
-#endif /* CONFIG_NVMEM && CONFIG_OF */
+#endif /* CONFIG_NVMEM && CONFIG_OFTREE */
 
 #endif  /* ifndef _LINUX_NVMEM_CONSUMER_H */

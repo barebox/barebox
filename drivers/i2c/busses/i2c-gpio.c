@@ -94,18 +94,25 @@ static int of_i2c_gpio_probe(struct device_node *np,
 	if (!IS_ENABLED(CONFIG_OFDEVICE))
 		return -ENODEV;
 
-	if (of_gpio_count(np) < 2)
+	pdata->sda_pin = of_get_named_gpio_flags(np, "sda-gpios", 0, NULL);
+	pdata->scl_pin = of_get_named_gpio_flags(np, "scl-gpios", 0, NULL);
+
+	if ((!gpio_is_valid(pdata->sda_pin) || !gpio_is_valid(pdata->scl_pin))
+	    && (of_gpio_count(np) >= 2)) {
+		/* Note: The gpios property is marked as deprecated */
+		ret = of_get_gpio(np, 0);
+		if (ret < 0)
+			return ret;
+		pdata->sda_pin = ret;
+
+		ret = of_get_gpio(np, 1);
+		if (ret < 0)
+			return ret;
+		pdata->scl_pin = ret;
+	}
+
+	if (!gpio_is_valid(pdata->sda_pin) || !gpio_is_valid(pdata->scl_pin))
 		return -ENODEV;
-
-	ret = of_get_gpio(np, 0);
-	if (ret < 0)
-		return ret;
-	pdata->sda_pin = ret;
-
-	ret = of_get_gpio(np, 1);
-	if (ret < 0)
-		return ret;
-	pdata->scl_pin = ret;
 
 	of_property_read_u32(np, "i2c-gpio,delay-us", &pdata->udelay);
 

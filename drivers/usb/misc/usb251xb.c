@@ -339,7 +339,7 @@ static int usb251xb_get_ofdata(struct usb251xb *hub,
 {
 	struct device_d *dev = hub->dev;
 	struct device_node *np = dev->device_node;
-	int len, err, i;
+	int len, i;
 	u32 port, property_u32 = 0;
 	const u32 *cproperty_u32;
 	const char *cproperty_char;
@@ -374,10 +374,6 @@ static int usb251xb_get_ofdata(struct usb251xb *hub,
 			return ret;
 	} else if (hub->gpio_reset == -EPROBE_DEFER) {
 		return -EPROBE_DEFER;
-	} else {
-		err = hub->gpio_reset;
-		dev_err(dev, "unable to request GPIO reset pin (%d)\n", err);
-		return err;
 	}
 
 	if (of_property_read_u16_array(np, "vendor-id", &hub->vendor_id, 1))
@@ -612,13 +608,13 @@ static const struct of_device_id usb251xb_of_match[] = {
 		/* sentinel */
 	}
 };
-#else /* CONFIG_OF */
+#else /* CONFIG_OFDEVICE */
 static int usb251xb_get_ofdata(struct usb251xb *hub,
 			       struct usb251xb_data *data)
 {
 	return 0;
 }
-#endif /* CONFIG_OF */
+#endif /* CONFIG_OFDEVICE */
 
 static int usb251xb_probe(struct usb251xb *hub)
 {

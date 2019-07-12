@@ -92,6 +92,8 @@ static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 		return 0;
 	}
 
+	globalvar_add_simple("linux.bootargs.dyn.ip", NULL);
+	globalvar_add_simple("linux.bootargs.dyn.root", NULL);
 	globalvar_set_match("linux.bootargs.dyn.", "");
 
 	ret = run_command(bs->scriptpath);
@@ -117,12 +119,22 @@ void boot_set_watchdog_timeout(unsigned int timeout)
 	boot_watchdog_timeout = timeout;
 }
 
-static int init_boot_watchdog_timeout(void)
+static char *global_boot_default;
+static char *global_user;
+
+static int init_boot(void)
 {
-	return globalvar_add_simple_int("boot.watchdog_timeout",
-			&boot_watchdog_timeout, "%u");
+	global_boot_default = xstrdup("net");
+	globalvar_add_simple_string("boot.default", &global_boot_default);
+	globalvar_add_simple_int("boot.watchdog_timeout",
+				 &boot_watchdog_timeout, "%u");
+	globalvar_add_simple("linux.bootargs.base", NULL);
+	global_user = xstrdup("none");
+	globalvar_add_simple_string("user", &global_user);
+
+	return 0;
 }
-late_initcall(init_boot_watchdog_timeout);
+late_initcall(init_boot);
 
 BAREBOX_MAGICVAR_NAMED(global_watchdog_timeout, global.boot.watchdog_timeout,
 		"Watchdog enable timeout in seconds before booting");

@@ -64,6 +64,13 @@ static inline void __barebox_arm_head(void)
 		".word 0x55555555\n"
 		".endr\n"
 		"2:\n"
+#ifdef CONFIG_PBL_BREAK
+		"bkpt #17\n"
+		"nop\n"
+#else
+		"nop\n"
+		"nop\n"
+#endif
 	);
 }
 static inline void barebox_arm_head(void)

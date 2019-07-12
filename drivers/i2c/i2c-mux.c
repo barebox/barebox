@@ -96,7 +96,7 @@ struct i2c_adapter *i2c_add_mux_adapter(struct i2c_adapter *parent,
 
 	/*
 	 * Try to populate the mux adapter's device_node, expands to
-	 * nothing if !CONFIG_OF.
+	 * nothing if !CONFIG_OFDEVICE.
 	 */
 	if (mux_dev->device_node) {
 		struct device_node *child;

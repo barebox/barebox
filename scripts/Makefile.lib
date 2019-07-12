@@ -503,6 +503,9 @@ quiet_cmd_imx_image = IMX-IMG $@
 quiet_cmd_kwb_image = KWB     $@
       cmd_kwb_image = scripts/kwbimage -p $< $(OPTS_$(@F)) -o $@
 
+quiet_cmd_mvebu1_image = MVIMG   $@
+      cmd_mvebu1_image = scripts/mvebuimg -v 1 create -o $@ $(foreach b,$(BINHDR_$(@F)),-b $b) $(FLAGS_$(@F)) $(BOOTSRC_$(@F)) $<
+
 quiet_cmd_cboot_bct = BCT     $@
       cmd_cboot_bct = $(objtree)/scripts/tegra/cbootimage -gbct -s $(soc) $< $@
 

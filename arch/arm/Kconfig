@@ -208,7 +208,7 @@ config ARCH_S3C64xx
 	select GENERIC_GPIO
 
 config ARCH_STM32MP
-	bool "ST stm32mp1xx"
+	bool "STMicroelectronics STM32MP"
 	select CPU_V7
 	select HAVE_PBL_MULTI_IMAGES
 	select CLKDEV_LOOKUP

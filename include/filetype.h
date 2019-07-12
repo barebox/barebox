@@ -48,6 +48,7 @@ enum filetype {
 	filetype_layerscape_image,
 	filetype_layerscape_qspi_image,
 	filetype_ubootvar,
+	filetype_stm32_image_v1,
 	filetype_max,
 };
 

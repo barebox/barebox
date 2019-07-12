@@ -340,6 +340,8 @@ struct clk_divider {
 	int table_size;
 };
 
+#define clk_div_mask(width)	((1 << (width)) - 1)
+
 #define CLK_DIVIDER_POWER_OF_TWO	(1 << 1)
 #define CLK_DIVIDER_HIWORD_MASK		(1 << 3)
 #define CLK_DIVIDER_READ_ONLY		(1 << 5)
@@ -353,6 +355,14 @@ unsigned long divider_recalc_rate(struct clk *clk, unsigned long parent_rate,
 		unsigned int val,
 		const struct clk_div_table *table,
 		unsigned long flags, unsigned long width);
+
+long divider_round_rate(struct clk *clk, unsigned long rate,
+			unsigned long *prate, const struct clk_div_table *table,
+			u8 width, unsigned long flags);
+
+int divider_get_val(unsigned long rate, unsigned long parent_rate,
+		    const struct clk_div_table *table, u8 width,
+		    unsigned long flags);
 
 struct clk *clk_divider_alloc(const char *name, const char *parent,
 			      unsigned clk_flags, void __iomem *reg,

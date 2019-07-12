@@ -175,6 +175,7 @@ static int ar933x_serial_probe(struct device_d *dev)
 	cdev->putc = ar933x_serial_putc;
 	cdev->getc = ar933x_serial_getc;
 	cdev->setbrg = ar933x_serial_setbaudrate;
+	cdev->linux_console_name = "ttyATH";
 
 	priv->clk = clk_get(dev, NULL);
 	if (IS_ERR(priv->clk)) {

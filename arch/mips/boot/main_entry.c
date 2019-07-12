@@ -85,7 +85,7 @@ void __bare_init main_entry(void *fdt, u32 fdt_size)
 
 	trap_init();
 
-	malloc_end = _stext;
+	malloc_end = (unsigned long)_stext;
 
 	if (MALLOC_SIZE > 0)
 		malloc_start = malloc_end - MALLOC_SIZE;

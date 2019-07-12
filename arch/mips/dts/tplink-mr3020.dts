@@ -7,6 +7,8 @@
 	};
 
 	chosen {
+		stdout-path = &uart;
+
 		environment {
 			compatible = "barebox,environment";
 			device-path = &spiflash, "partname:barebox-environment";

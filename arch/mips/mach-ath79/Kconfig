@@ -1,9 +1,5 @@
 if MACH_MIPS_ATH79
 
-config ARCH_TEXT_BASE
-	hex
-	default 0xa0800000
-
 config SOC_QCA_AR9331
 	bool
 

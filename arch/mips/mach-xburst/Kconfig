@@ -1,9 +1,5 @@
 if MACH_MIPS_XBURST
 
-config ARCH_TEXT_BASE
-	hex
-	default 0xa0800000
-
 config CPU_JZ4755
 	bool
 	select SYS_HAS_CPU_MIPS32_R1

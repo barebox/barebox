@@ -1,9 +1,5 @@
 if MACH_MIPS_MALTA
 
-config ARCH_TEXT_BASE
-	hex
-	default 0xa0800000
-
 config BOARD_QEMU_MALTA
 	bool "qemu malta"
 	select HAVE_PBL_IMAGE

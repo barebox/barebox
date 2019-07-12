@@ -21,14 +21,14 @@ follows:
 .. code-block:: sh
 
   cd barebox
-  Documentation/boards/imx/zii-imx7d-rpu2/bootstrap.sh
+  Documentation/boards/imx/zii-imx7d-dev/bootstrap.sh
 
 A custom OpenOCD binary and options can be specified as follows:
 
 .. code-block:: sh
 
   OPENOCD="../openocd/src/openocd -s ../openocd/tcl " \
-    Documentation/boards/imx/zii-imx7d-rpu2/bootstrap.sh
+    Documentation/boards/imx/zii-imx7d-dev/bootstrap.sh
 
 
 Disabling DSA in Embedeed Switch

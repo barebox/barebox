@@ -566,10 +566,10 @@ CFG_start_imx7s_element14_warp7.pblb.imximg = $(board)/element14-warp7/flash-hea
 FILE_barebox-element14-imx7s-warp7.img = start_imx7s_element14_warp7.pblb.imximg
 image-$(CONFIG_MACH_WARP7) += barebox-element14-imx7s-warp7.img
 
-pblb-$(CONFIG_MACH_ZII_IMX7D_RPU2) += start_zii_imx7d_rpu2
-CFG_start_zii_imx7d_rpu2.pblb.imximg = $(board)/zii-imx7d-rpu2/flash-header-zii-imx7d-rpu2.imxcfg
-FILE_barebox-zii-imx7d-rpu2.img = start_zii_imx7d_rpu2.pblb.imximg
-image-$(CONFIG_MACH_ZII_IMX7D_RPU2) += barebox-zii-imx7d-rpu2.img
+pblb-$(CONFIG_MACH_ZII_IMX7D_DEV) += start_zii_imx7d_dev
+CFG_start_zii_imx7d_dev.pblb.imximg = $(board)/zii-imx7d-dev/flash-header-zii-imx7d-dev.imxcfg
+FILE_barebox-zii-imx7d-dev.img = start_zii_imx7d_dev.pblb.imximg
+image-$(CONFIG_MACH_ZII_IMX7D_DEV) += barebox-zii-imx7d-dev.img
 
 # ----------------------- i.MX8mq based boards --------------------------
 pblb-$(CONFIG_MACH_NXP_IMX8MQ_EVK) += start_nxp_imx8mq_evk

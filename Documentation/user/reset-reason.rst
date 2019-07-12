@@ -41,6 +41,10 @@ The following values can help to detect the reason why the bootloader runs:
 * ``EXT`` (EXTernal): some SoCs have special device pins for external reset
   signals other than the ``RST`` one. Application specific how to handle this
   state.
+* ``BROWNOUT``: some SoCs detect undervoltage conditions and stay in reset
+  till the supply voltage crosses a predefined threshold voltage. This avoids
+  erratic behavior that may occur when running out-of-spec. Application specific
+  how to handle this state.
 
 It depends on your board/SoC and its features if the hardware is able to detect
 these reset reasons. Most of the time only ``POR`` and ``RST`` are supported

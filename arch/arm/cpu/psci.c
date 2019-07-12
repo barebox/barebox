@@ -138,8 +138,8 @@ static unsigned long psci_system_off(void)
 {
 	psci_printf("%s\n", __func__);
 
-	if (psci_ops->system_reset)
-		psci_ops->system_reset();
+	if (psci_ops->system_off)
+		psci_ops->system_off();
 
 	while(1);
 

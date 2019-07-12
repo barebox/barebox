@@ -22,6 +22,7 @@ enum reset_src_type {
 	RESET_JTAG,	/* JTAG reset */
 	RESET_THERM,	/* SoC shut down because of overtemperature */
 	RESET_EXT,	/* External reset through device pin */
+	RESET_BROWNOUT,	/* Brownout Reset */
 };
 
 #ifdef CONFIG_RESET_SOURCE

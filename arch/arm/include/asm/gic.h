@@ -107,4 +107,33 @@
 #define ICC_SGI1R_EL1		S3_0_C12_C11_5
 #define ICC_ASGI1R_EL1		S3_0_C12_C11_6
 
+#ifndef __ASSEMBLY__
+/* valid bits in CBAR register / PERIPHBASE value */
+#define CBAR_MASK			0xFFFF8000
+
+static inline unsigned long get_cbar(void)
+{
+	unsigned periphbase;
+
+	/* get the GIC base address from the CBAR register */
+	asm("mrc p15, 4, %0, c15, c0, 0\n" : "=r" (periphbase));
+
+	/* the PERIPHBASE can be mapped above 4 GB (lower 8 bits used to
+	 * encode this). Bail out here since we cannot access this without
+	 * enabling paging.
+	 */
+	if ((periphbase & 0xff) != 0) {
+		pr_err("PERIPHBASE is above 4 GB, no access.\n");
+		return -1;
+	}
+
+	return periphbase & CBAR_MASK;
+}
+
+static inline unsigned long get_gicd_base_address(void)
+{
+	return get_cbar() + GIC_DIST_OFFSET;
+}
+#endif
+
 #endif /* __GIC_H__ */

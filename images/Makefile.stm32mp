@@ -3,6 +3,6 @@
 # barebox image generation Makefile for STMicroelectronics MP1
 #
 
-pblb-$(CONFIG_MACH_STM32MP157C_DK2) += start_stm32mp157c_dk2.pblb
+pblb-$(CONFIG_MACH_STM32MP157C_DK2) += start_stm32mp157c_dk2
 FILE_barebox-stm32mp157c-dk2.img = start_stm32mp157c_dk2.pblb
 image-$(CONFIG_MACH_STM32MP157C_DK2) += barebox-stm32mp157c-dk2.img

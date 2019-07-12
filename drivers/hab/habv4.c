@@ -419,7 +419,7 @@ static bool is_known_rng_fail_event(const uint8_t *data, size_t len)
 	int i;
 	for (i = 0; i < ARRAY_SIZE(habv4_known_rng_fail_events); i++) {
 		if (memcmp(data, habv4_known_rng_fail_events[i],
-			   min(len, (uint32_t)RNG_FAIL_EVENT_SIZE)) == 0) {
+			   min_t(size_t, len, RNG_FAIL_EVENT_SIZE)) == 0) {
 			return true;
 		}
 	}

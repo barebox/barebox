@@ -109,13 +109,16 @@ PHYTEC_ENTRY(start_phytec_phyboard_subra_512mb_1bank, imx6dl_phytec_phyboard_sub
 PHYTEC_ENTRY(start_phytec_phyboard_subra_1gib_1bank, imx6q_phytec_phyboard_subra, SZ_1G, false);
 
 PHYTEC_ENTRY(start_phytec_phycore_imx6dl_som_nand_256mb, imx6dl_phytec_phycore_som_nand, SZ_256M, true);
+PHYTEC_ENTRY(start_phytec_phycore_imx6dl_som_lc_nand_256mb, imx6dl_phytec_phycore_som_lc_nand, SZ_256M, true);
 PHYTEC_ENTRY(start_phytec_phycore_imx6dl_som_nand_1gib, imx6dl_phytec_phycore_som_nand, SZ_1G, true);
 PHYTEC_ENTRY(start_phytec_phycore_imx6dl_som_emmc_1gib, imx6dl_phytec_phycore_som_emmc, SZ_1G, true);
+PHYTEC_ENTRY(start_phytec_phycore_imx6dl_som_lc_emmc_1gib, imx6dl_phytec_phycore_som_lc_emmc, SZ_1G, true);
 PHYTEC_ENTRY(start_phytec_phycore_imx6q_som_nand_1gib, imx6q_phytec_phycore_som_nand, SZ_1G, true);
 PHYTEC_ENTRY(start_phytec_phycore_imx6qp_som_nand_1gib, imx6qp_phytec_phycore_som_nand, SZ_1G, true);
 PHYTEC_ENTRY(start_phytec_phycore_imx6q_som_emmc_1gib, imx6q_phytec_phycore_som_emmc, SZ_1G, true);
 PHYTEC_ENTRY(start_phytec_phycore_imx6q_som_emmc_2gib, imx6q_phytec_phycore_som_emmc, SZ_2G, true);
 
-PHYTEC_ENTRY(start_phytec_phycore_imx6ul_som_512mb, imx6ul_phytec_phycore_som, SZ_512M, false);
-PHYTEC_ENTRY(start_phytec_phycore_imx6ull_som_lc_256mb, imx6ull_phytec_phycore_som_lc, SZ_256M, false);
-PHYTEC_ENTRY(start_phytec_phycore_imx6ull_som_512mb, imx6ull_phytec_phycore_som, SZ_512M, false);
+PHYTEC_ENTRY(start_phytec_phycore_imx6ul_som_nand_512mb, imx6ul_phytec_phycore_som_nand, SZ_512M, false);
+PHYTEC_ENTRY(start_phytec_phycore_imx6ull_som_lc_nand_256mb, imx6ull_phytec_phycore_som_lc_nand, SZ_256M, false);
+PHYTEC_ENTRY(start_phytec_phycore_imx6ull_som_nand_512mb, imx6ull_phytec_phycore_som_nand, SZ_512M, false);
+PHYTEC_ENTRY(start_phytec_phycore_imx6ull_som_emmc_512mb, imx6ull_phytec_phycore_som_emmc, SZ_512M, false);

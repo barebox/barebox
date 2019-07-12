@@ -1,0 +1,82 @@
+// SPDX-License-Identifier: (GPL-2.0-or-later OR MIT)
+/*
+ * Copyright (C) 2019 PHYTEC Messtechnik GmbH,
+ * Author: Daniel Schultz <d.schultz@phytec.de>
+ */
+
+/ {
+	aliases {
+		state = &state;
+	};
+
+	state: imx6qdl_phytec_boot_state {
+		magic = <0x883b86a6>;
+		compatible = "barebox,state";
+		backend-type = "raw";
+		backend = <&backend_update_eeprom>;
+		backend-storage-type = "direct";
+		backend-stridesize = <54>;
+
+		#address-cells = <1>;
+		#size-cells = <1>;
+		bootstate {
+			#address-cells = <1>;
+			#size-cells = <1>;
+			last_chosen {
+				reg = <0x0 0x4>;
+				type = "uint32";
+			};
+			system0 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+				remaining_attempts {
+					reg = <0x4 0x4>;
+					type = "uint32";
+					default = <3>;
+				};
+				priority {
+					reg = <0x8 0x4>;
+					type = "uint32";
+					default = <21>;
+				};
+				ok {
+					reg = <0xc 0x4>;
+					type = "uint32";
+					default = <0>;
+				};
+			};
+			system1 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+				remaining_attempts {
+					reg = <0x10 0x4>;
+					type = "uint32";
+					default = <3>;
+				};
+				priority {
+					reg = <0x14 0x4>;
+					type = "uint32";
+					default = <20>;
+				};
+				ok {
+					reg = <0x18 0x4>;
+					type = "uint32";
+					default = <0>;
+				};
+			};
+		};
+	};
+};
+
+&eeprom {
+	status = "okay";
+	partitions {
+		compatible = "fixed-partitions";
+		#size-cells = <1>;
+		#address-cells = <1>;
+		backend_update_eeprom: state@0 {
+			reg = <0x0 0x100>;
+			label = "update-eeprom";
+		};
+	};
+};

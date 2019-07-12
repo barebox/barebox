@@ -124,4 +124,6 @@ static inline int __imx6_cpu_revision(void)
 
 int imx6_cpu_revision(void);
 
+u64 imx6_uid(void);
+
 #endif /* __MACH_IMX6_H */

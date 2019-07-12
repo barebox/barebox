@@ -3,6 +3,14 @@
 # barebox image generation Makefile for STMicroelectronics MP
 #
 
+# %.stm32 - convert into STM32MP image
+# --------------------------------------
+
+$(obj)/%.stm32: $(obj)/% FORCE
+	$(call if_changed,stm32_image)
+
+# --------------------------------------
+
 pblb-$(CONFIG_MACH_STM32MP157C_DK2) += start_stm32mp157c_dk2
 FILE_barebox-stm32mp157c-dk2.img = start_stm32mp157c_dk2.pblb
 image-$(CONFIG_MACH_STM32MP157C_DK2) += barebox-stm32mp157c-dk2.img

@@ -28,7 +28,7 @@
 #include <linux/if_tun.h>
 #include <string.h>
 
-int tap_alloc(char *dev)
+int tap_alloc(const char *dev)
 {
 	struct ifreq ifr;
 	int fd, err;
@@ -55,7 +55,6 @@ int tap_alloc(char *dev)
 		return err;
 	}
 
-	strcpy(dev, ifr.ifr_name);
 	return fd;
 }
 

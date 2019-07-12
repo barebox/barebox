@@ -428,31 +428,37 @@ else
 # Carefully list dependencies so we do not try to build scripts twice
 # in parallel
 PHONY += scripts
-scripts: scripts_basic include/config/auto.conf
+scripts: scripts_basic
 	$(Q)$(MAKE) $(build)=$(@)
 
 # Objects we will link into barebox / subdirs we need to visit
 common-y		:= common/ drivers/ commands/ lib/ crypto/ net/ fs/ firmware/
 
 ifeq ($(dot-config),1)
-# Read in config
--include include/config/auto.conf
+include include/config/auto.conf
 
-# Read in dependencies to all Kconfig* files, make sure to run
-# oldconfig if changes are detected.
--include include/config/auto.conf.cmd
+# Read in dependencies to all Kconfig* files, make sure to run syncconfig if
+# changes are detected. This should be included after arch/$(SRCARCH)/Makefile
+# because some architectures define CROSS_COMPILE there.
+include include/config/auto.conf.cmd
 
-# To avoid any implicit rule to kick in, define an empty command
-$(KCONFIG_CONFIG) include/config/auto.conf.cmd: ;
+$(KCONFIG_CONFIG):
+	@echo >&2 '***'
+	@echo >&2 '*** Configuration file "$@" not found!'
+	@echo >&2 '***'
+	@echo >&2 '*** Please run some configurator (e.g. "make oldconfig" or'
+	@echo >&2 '*** "make menuconfig" or "make xconfig").'
+	@echo >&2 '***'
+	@/bin/false
 
 # The actual configuration files used during the build are stored in
 # include/generated/ and include/config/. Update them if .config is newer than
 # include/config/auto.conf (which mirrors .config).
-include/config/%.conf: $(KCONFIG_CONFIG) include/config/auto.conf.cmd
+#
+# This exploits the 'multi-target pattern rule' trick.
+# The syncconfig should be executed only once to make all the targets.
+%/auto.conf %/auto.conf.cmd %/tristate.conf: $(KCONFIG_CONFIG)
 	$(Q)$(MAKE) -f $(srctree)/Makefile syncconfig
-else
-# Dummy target needed, because used as prerequisite
-include/config/auto.conf: ;
 endif # $(dot-config)
 
 include $(srctree)/arch/$(ARCH)/Makefile
@@ -788,7 +794,7 @@ $(barebox-dirs): prepare scripts
 
 # Store (new) KERNELRELASE string in include/config/kernel.release
 localversion = $(shell $(srctree)/scripts/setlocalversion $(srctree))
-include/config/kernel.release: include/config/auto.conf FORCE
+include/config/kernel.release: FORCE
 	$(Q)rm -f $@
 	$(Q)echo $(KERNELVERSION)$(localversion) > $@
 
@@ -821,7 +827,7 @@ endif
 prepare2: prepare3 outputmakefile
 
 prepare1: prepare2 include/generated/version.h include/generated/utsrelease.h \
-                   include/config.h include/config/auto.conf
+                   include/config.h
 
 ifneq ($(KBUILD_MODULES),)
 	$(Q)mkdir -p $(MODVERDIR)
@@ -852,7 +858,8 @@ define symlink-config-h
 	fi
 endef
 
-include/config.h: include/config/auto.conf
+PHONY += include/config.h
+include/config.h:
 	$(Q)$(symlink-config-h)
 
 # Generate some files

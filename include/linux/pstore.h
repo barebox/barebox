@@ -64,8 +64,6 @@ struct pstore_record {
 struct pstore_info {
 	struct module	*owner;
 	char		*name;
-	char		*buf;
-	size_t		bufsize;
 	int		flags;
 	int		(*open)(struct pstore_info *psi);
 	int		(*close)(struct pstore_info *psi);
@@ -85,6 +83,7 @@ struct pstore_info {
 #ifdef CONFIG_FS_PSTORE
 extern int pstore_register(struct pstore_info *);
 extern bool pstore_cannot_block_path(enum kmsg_dump_reason reason);
+extern void pstore_log(const char *msg);
 #else
 static inline int
 pstore_register(struct pstore_info *psi)
@@ -95,6 +94,9 @@ static inline bool
 pstore_cannot_block_path(enum kmsg_dump_reason reason)
 {
 	return false;
+}
+static inline void pstore_log(const char *msg)
+{
 }
 #endif
 

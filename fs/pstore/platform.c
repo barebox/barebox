@@ -44,83 +44,39 @@ void pstore_set_kmsg_bytes(int bytes)
 	kmsg_bytes = bytes;
 }
 
-#ifdef CONFIG_FS_PSTORE_CONSOLE
-static void pstore_console_write(const char *s, unsigned c)
+static int pstore_ready;
+
+void pstore_log(const char *str)
 {
-	const char *e = s + c;
+	uint64_t id;
+	static int in_pstore;
 
-	while (s < e) {
-		struct pstore_record record = {
-			.type = PSTORE_TYPE_CONSOLE,
-			.psi = psinfo,
-		};
+	if (!IS_ENABLED(CONFIG_FS_PSTORE_CONSOLE))
+		return;
 
-		if (c > psinfo->bufsize)
-			c = psinfo->bufsize;
+	if (!pstore_ready)
+		return;
 
-		record.buf = (char *)s;
-		record.size = c;
-		psinfo->write_buf(PSTORE_TYPE_CONSOLE, 0, &record.id, 0,
-				  record.buf, 0, record.size, psinfo);
-		s += c;
-		c = e - s;
-	}
-}
+	if (in_pstore)
+		return;
 
-static int pstore_console_puts(struct console_device *cdev, const char *s)
-{
-	pstore_console_write(s, strlen(s));
-	return strlen(s);
-}
+	in_pstore = 1;
 
-static void pstore_console_putc(struct console_device *cdev, char c)
-{
-	const char s[1] = { c };
+	psinfo->write_buf(PSTORE_TYPE_CONSOLE, 0, &id, 0,
+			  str, 0, strlen(str), psinfo);
 
-	pstore_console_write(s, 1);
+	in_pstore = 0;
 }
 
 static void pstore_console_capture_log(void)
 {
-	struct log_entry *log;
+	uint64_t id;
+	struct log_entry *log, *tmp;
 
-	list_for_each_entry(log, &barebox_logbuf, list)
-		pstore_console_write(log->msg, strlen(log->msg));
-}
-
-static struct console_device *pstore_cdev;
-
-static void pstore_register_console(void)
-{
-	struct console_device *cdev;
-	int ret;
-
-	cdev = xzalloc(sizeof(struct console_device));
-	pstore_cdev = cdev;
-
-	cdev->puts = pstore_console_puts;
-	cdev->putc = pstore_console_putc;
-	cdev->devname = "pstore";
-	cdev->devid = DEVICE_ID_SINGLE;
-
-        ret = console_register(cdev);
-        if (ret)
-                pr_err("registering failed with %s\n", strerror(-ret));
-
-	pstore_console_capture_log();
-
-	console_set_active(pstore_cdev, CONSOLE_STDOUT);
-}
-#else
-static void pstore_register_console(void) {}
-#endif
-
-static int pstore_write_compat(struct pstore_record *record)
-{
-	return record->psi->write_buf(record->type, record->reason,
-				      &record->id, record->part,
-				      psinfo->buf, record->compressed,
-				      record->size, record->psi);
+	list_for_each_entry_safe(log, tmp, &barebox_logbuf, list) {
+		psinfo->write_buf(PSTORE_TYPE_CONSOLE, 0, &id, 0,
+				  log->msg, 0, strlen(log->msg), psinfo);
+	}
 }
 
 /*
@@ -143,15 +99,14 @@ int pstore_register(struct pstore_info *psi)
 		return -EBUSY;
 	}
 
-	if (!psi->write)
-		psi->write = pstore_write_compat;
 	psinfo = psi;
 	mutex_init(&psinfo->read_mutex);
 	spin_unlock(&pstore_lock);
 
 	pstore_get_records(0);
 
-	pstore_register_console();
+	pstore_console_capture_log();
+	pstore_ready = 1;
 
 	pr_info("Registered %s as persistent store backend\n", psi->name);
 

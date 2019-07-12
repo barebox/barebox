@@ -8,8 +8,6 @@
  */
 
 /delete-node/ &adc_tsc_fck;
-/delete-node/ &dcan0_fck;
-/delete-node/ &dcan1_fck;
 /delete-node/ &mcasp0_fck;
 /delete-node/ &mcasp1_fck;
 /delete-node/ &smartreflex0_fck;

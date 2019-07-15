@@ -531,6 +531,9 @@ again:
 
 	if (ret == -EBADMSG) {
 		ret = mtd_peb_torture(mtd, block);
+		if (ret == -EIO)
+			mtd_peb_mark_bad(mtd, block);
+
 		if (!ret && retries++ < 3)
 			goto again;
 	}
@@ -771,6 +774,8 @@ out:
 
 	if (ret == -EBADMSG) {
 		ret = mtd_peb_torture(mtd, block);
+		if (ret == -EIO)
+			mtd_peb_mark_bad(mtd, block);
 
 		if (!ret && retries++ < 3)
 			goto again;

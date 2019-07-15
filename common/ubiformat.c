@@ -310,10 +310,13 @@ static int flash_image(struct ubiformat_args *args, struct mtd_info *mtd,
 				goto out_close;
 
 			err = mtd_peb_torture(mtd, eb);
-			if (err < 0 && err != -EIO)
+			if (err == -EIO) {
+				err = mark_bad(args, mtd, si, eb);
+				if (err)
+					goto out_close;
+			} else if (err) {
 				goto out_close;
-			if (err == -EIO && consecutive_bad_check(args, eb))
-				goto out_close;
+			}
 
 			continue;
 		}
@@ -426,10 +429,13 @@ static int format(struct ubiformat_args *args, struct mtd_info *mtd,
 			}
 
 			err = mtd_peb_torture(mtd, eb);
-			if (err < 0 && err != -EIO)
+			if (err == -EIO) {
+				err = mark_bad(args, mtd, si, eb);
+				if (err)
+					goto out_free;
+			} else if (err) {
 				goto out_free;
-			if (err == -EIO && consecutive_bad_check(args, eb))
-				goto out_free;
+			}
 
 			continue;
 

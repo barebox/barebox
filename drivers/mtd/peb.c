@@ -493,9 +493,8 @@ static uint8_t patterns[] = {0xa5, 0x5a, 0x0};
  * is passed then this function will with the block freshly erased and
  * the positive number returned indicaties how often the block has been
  * erased during this test.
- * If the block does not pass the test the block is marked as bad and
- * -EIO is returned.
- *  Other negative errors are returned in case of other errors.
+ * If the block does not pass the test -EIO is returned.
+ * Other negative errors are returned in case of other errors.
  */
 int mtd_peb_torture(struct mtd_info *mtd, int pnum)
 {
@@ -549,10 +548,8 @@ out:
 		 * has not passed because it happened on a freshly erased
 		 * physical eraseblock which means something is wrong with it.
 		 */
-		dev_err(&mtd->class_dev, "read problems on freshly erased PEB %d, marking it bad\n",
+		dev_err(&mtd->class_dev, "read problems on freshly erased PEB %d, must be bad\n",
 			pnum);
-
-		mtd_peb_mark_bad(mtd, pnum);
 
 		err = -EIO;
 	}

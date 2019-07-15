@@ -58,7 +58,6 @@
 static int parse_opt(int argc, char *argv[], struct ubiformat_args *args,
 		     char **node)
 {
-	srand(get_time_ns());
 	memset(args, 0, sizeof(*args));
 
 	while (1) {

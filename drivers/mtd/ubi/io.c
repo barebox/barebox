@@ -357,6 +357,35 @@ int ubi_io_is_bad(const struct ubi_device *ubi, int pnum)
 }
 
 /**
+ * ubi_io_mark_bad - mark a physical eraseblock as bad.
+ * @ubi: UBI device description object
+ * @pnum: the physical eraseblock number to mark
+ *
+ * This function returns zero in case of success and a negative error code in
+ * case of failure.
+ */
+int ubi_io_mark_bad(const struct ubi_device *ubi, int pnum)
+{
+	int err;
+	struct mtd_info *mtd = ubi->mtd;
+
+	ubi_assert(pnum >= 0 && pnum < ubi->peb_count);
+
+	if (ubi->ro_mode) {
+		ubi_err(ubi, "read-only mode");
+		return -EROFS;
+	}
+
+	if (!ubi->bad_allowed)
+		return 0;
+
+	err = mtd_block_markbad(mtd, (loff_t)pnum * ubi->peb_size);
+	if (err)
+		ubi_err(ubi, "cannot mark PEB %d bad, error %d", pnum, err);
+	return err;
+}
+
+/**
  * validate_ec_hdr - validate an erase counter header.
  * @ubi: UBI device description object
  * @ec_hdr: the erase counter header to check

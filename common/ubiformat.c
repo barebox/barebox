@@ -188,6 +188,7 @@ static int flash_image(struct ubiformat_args *args, struct mtd_info *mtd,
 		       const struct ubigen_info *ui, struct ubi_scan_info *si)
 {
 	int fd = 0, img_ebs, eb, written_ebs = 0, ret = -1, eb_cnt;
+	int skip_data_read = 0;
 	off_t st_size;
 	char *buf = NULL;
 	uint64_t lastprint = 0;
@@ -266,17 +267,20 @@ static int flash_image(struct ubiformat_args *args, struct mtd_info *mtd,
 			continue;
 		}
 
-		if (args->image) {
-			err = read_full(fd, buf, mtd->erasesize);
-			if (err < 0) {
-				sys_errmsg("failed to read eraseblock %d from image",
-					   written_ebs);
-				goto out_close;
+		if (!skip_data_read) {
+			if (args->image) {
+				err = read_full(fd, buf, mtd->erasesize);
+				if (err < 0) {
+					sys_errmsg("failed to read eraseblock %d from image",
+						written_ebs);
+					goto out_close;
+				}
+			} else {
+				memcpy(buf, inbuf, mtd->erasesize);
+				inbuf += mtd->erasesize;
 			}
-		} else {
-			memcpy(buf, inbuf, mtd->erasesize);
-			inbuf += mtd->erasesize;
 		}
+		skip_data_read = 0;
 
 		if (args->override_ec)
 			ec = args->ec;
@@ -317,6 +321,13 @@ static int flash_image(struct ubiformat_args *args, struct mtd_info *mtd,
 			} else if (err) {
 				goto out_close;
 			}
+
+			/*
+			 * We have to make sure that we do not read next block
+			 * of data from the input image or stdin - we have to
+			 * write buf first instead.
+			 */
+                        skip_data_read = 1;
 
 			continue;
 		}

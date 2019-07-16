@@ -19,6 +19,7 @@
 #include <linux/err.h>
 #include <of_net.h>
 #include <of_gpio.h>
+#include <regulator.h>
 #include <gpio.h>
 #include <linux/iopoll.h>
 
@@ -776,6 +777,21 @@ static int fec_probe(struct device_d *dev)
 	}
 	fec->regs = IOMEM(iores->start);
 
+	fec->reg_phy = regulator_get(dev, "phy");
+	if (IS_ERR(fec->reg_phy)) {
+		if (PTR_ERR(fec->reg_phy) == -EPROBE_DEFER) {
+			ret = -EPROBE_DEFER;
+			goto disable_clk;
+		}
+		fec->reg_phy = NULL;
+	}
+
+	ret = regulator_enable(fec->reg_phy);
+	if (ret) {
+		dev_err(dev, "Failed to enable phy regulator: %d\n", ret);
+		goto disable_clk;
+	}
+
 	phy_reset = of_get_named_gpio(dev->device_node, "phy-reset-gpios", 0);
 	if (gpio_is_valid(phy_reset)) {
 		of_property_read_u32(dev->device_node, "phy-reset-duration", &msec);
@@ -868,6 +884,9 @@ free_gpio:
 	if (gpio_is_valid(phy_reset))
 		gpio_free(phy_reset);
 release_res:
+	if (fec->reg_phy)
+		regulator_disable(fec->reg_phy);
+
 	release_region(iores);
 disable_clk:
 	fec_clk_disable(fec);

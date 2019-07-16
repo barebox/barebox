@@ -31,6 +31,7 @@
 #include <linux/types.h>
 #include <linux/compiler.h>
 #include <asm/barebox-arm-head.h>
+#include <asm/sections.h>
 
 /*
  * We have a 4GiB address space split into 1MiB sections, with each
@@ -43,15 +44,22 @@ unsigned long get_runtime_offset(void);
 /* global_variable_offset() - Access global variables when not running at link address
  *
  * Get the offset of global variables when not running at the address we are
- * linked at. ARM uses absolute addresses, so we must add the runtime offset
- * whereas aarch64 uses PC relative addresses, so nothing must be done here.
+ * linked at.
  */
 static inline unsigned long global_variable_offset(void)
 {
-	if (IS_ENABLED(CONFIG_CPU_32))
-		return get_runtime_offset();
-	else
-		return 0;
+#ifdef CONFIG_CPU_V8
+	unsigned long text;
+
+	__asm__ __volatile__(
+		"adr    %0, _text\n"
+		: "=r" (text)
+		:
+		: "memory");
+	return text - (unsigned long)_text;
+#else
+	return get_runtime_offset();
+#endif
 }
 
 void setup_c(void);

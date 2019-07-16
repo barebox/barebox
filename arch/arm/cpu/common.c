@@ -23,6 +23,7 @@
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
 #include <asm-generic/memory_layout.h>
+#include <asm/secure.h>
 #include <asm/sections.h>
 #include <asm/cache.h>
 #include <debug_ll.h>
@@ -147,3 +148,10 @@ int __pure cpu_architecture(void)
 	return __cpu_architecture;
 }
 #endif
+
+extern int __boot_cpu_mode;
+
+int boot_cpu_mode(void)
+{
+	return __boot_cpu_mode;
+}

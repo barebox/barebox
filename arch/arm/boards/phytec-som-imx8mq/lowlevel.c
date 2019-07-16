@@ -61,30 +61,8 @@ static void phytec_imx8mq_som_sram_setup(void)
 	BUG_ON(ret);
 }
 
-/*
- * Power-on execution flow of start_phytec_phycore_imx8mq() might not be
- * obvious for a very first read, so here's, hopefully helpful,
- * summary:
- *
- * 1. MaskROM uploads PBL into OCRAM and that's where this function is
- *    executed for the first time
- *
- * 2. DDR is initialized and full i.MX image is loaded to the
- *    beginning of RAM
- *
- * 3. start_phytec_phycore_imx8mq, now in RAM, is executed again
- *
- * 4. BL31 blob is uploaded to OCRAM and the control is transfer to it
- *
- * 5. BL31 exits EL3 into EL2 at address MX8MQ_ATF_BL33_BASE_ADDR,
- *    executing start_phytec_phycore_imx8mq() the third time
- *
- * 6. Standard barebox boot flow continues
- */
-ENTRY_FUNCTION(start_phytec_phycore_imx8mq, r0, r1, r2)
+static __noreturn noinline void phytec_phycore_imx8mq_start(void)
 {
-	imx8mq_cpu_lowlevel_init();
-
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();
 
@@ -117,4 +95,33 @@ ENTRY_FUNCTION(start_phytec_phycore_imx8mq, r0, r1, r2)
 	 * Standard entry we hit once we initialized both DDR and ATF
 	 */
 	imx8mq_barebox_entry(__dtb_imx8mq_phytec_phycore_som_start);
+}
+
+/*
+ * Power-on execution flow of start_phytec_phycore_imx8mq() might not be
+ * obvious for a very first read, so here's, hopefully helpful,
+ * summary:
+ *
+ * 1. MaskROM uploads PBL into OCRAM and that's where this function is
+ *    executed for the first time
+ *
+ * 2. DDR is initialized and full i.MX image is loaded to the
+ *    beginning of RAM
+ *
+ * 3. start_phytec_phycore_imx8mq, now in RAM, is executed again
+ *
+ * 4. BL31 blob is uploaded to OCRAM and the control is transfer to it
+ *
+ * 5. BL31 exits EL3 into EL2 at address MX8MQ_ATF_BL33_BASE_ADDR,
+ *    executing start_phytec_phycore_imx8mq() the third time
+ *
+ * 6. Standard barebox boot flow continues
+ */
+ENTRY_FUNCTION(start_phytec_phycore_imx8mq, r0, r1, r2)
+{
+	imx8mq_cpu_lowlevel_init();
+	relocate_to_current_adr();
+	setup_c();
+
+	phytec_phycore_imx8mq_start();
 }

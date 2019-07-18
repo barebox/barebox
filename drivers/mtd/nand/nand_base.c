@@ -3967,5 +3967,9 @@ int add_mtd_nand_device(struct mtd_info *mtd, char *devname)
 			   ARRAY_SIZE(bbt_type_strings),
 			   mtd);
 
+	dev_add_param_uint32_ro(&mtd->class_dev, "ecc.bytes", &chip->ecc.bytes, "%u");
+	dev_add_param_uint32_ro(&mtd->class_dev, "ecc.strength", &chip->ecc.strength, "%u");
+	dev_add_param_uint32_ro(&mtd->class_dev, "ecc.size", &chip->ecc.size, "%u");
+
 	return ret;
 }

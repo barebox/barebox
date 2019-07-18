@@ -277,11 +277,6 @@ static uint32_t mxs_nand_ecc_chunk_cnt(uint32_t page_data_size)
 	return page_data_size / MXS_NAND_CHUNK_DATA_CHUNK_SIZE;
 }
 
-static uint32_t mxs_nand_ecc_size_in_bits(uint32_t ecc_strength)
-{
-	return ecc_strength * 13;
-}
-
 static uint32_t mxs_nand_aux_status_offset(void)
 {
 	return (MXS_NAND_METADATA_SIZE + 0x3) & ~0x3;
@@ -298,7 +293,7 @@ static uint32_t mxs_nand_get_mark_offset(struct mtd_info *mtd)
 	uint32_t block_mark_bit_offset;
 
 	chunk_data_size_in_bits = MXS_NAND_CHUNK_DATA_CHUNK_SIZE * 8;
-	chunk_ecc_size_in_bits  = mxs_nand_ecc_size_in_bits(chip->ecc.strength);
+	chunk_ecc_size_in_bits  = chip->ecc.strength * 13;
 
 	chunk_total_size_in_bits =
 			chunk_data_size_in_bits + chunk_ecc_size_in_bits;

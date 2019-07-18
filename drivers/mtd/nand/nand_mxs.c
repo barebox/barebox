@@ -287,9 +287,9 @@ static uint32_t mxs_nand_aux_status_offset(void)
 	return (MXS_NAND_METADATA_SIZE + 0x3) & ~0x3;
 }
 
-static inline uint32_t mxs_nand_get_mark_offset(uint32_t page_data_size,
-						uint32_t ecc_strength)
+static uint32_t mxs_nand_get_mark_offset(struct mtd_info *mtd)
 {
+	struct nand_chip *chip = mtd->priv;
 	uint32_t chunk_data_size_in_bits;
 	uint32_t chunk_ecc_size_in_bits;
 	uint32_t chunk_total_size_in_bits;
@@ -298,13 +298,13 @@ static inline uint32_t mxs_nand_get_mark_offset(uint32_t page_data_size,
 	uint32_t block_mark_bit_offset;
 
 	chunk_data_size_in_bits = MXS_NAND_CHUNK_DATA_CHUNK_SIZE * 8;
-	chunk_ecc_size_in_bits  = mxs_nand_ecc_size_in_bits(ecc_strength);
+	chunk_ecc_size_in_bits  = mxs_nand_ecc_size_in_bits(chip->ecc.strength);
 
 	chunk_total_size_in_bits =
 			chunk_data_size_in_bits + chunk_ecc_size_in_bits;
 
 	/* Compute the bit offset of the block mark within the physical page. */
-	block_mark_bit_offset = page_data_size * 8;
+	block_mark_bit_offset = mtd->writesize * 8;
 
 	/* Subtract the metadata bits. */
 	block_mark_bit_offset -= MXS_NAND_METADATA_SIZE * 8;
@@ -353,8 +353,7 @@ static int mxs_nand_calc_geo(struct mtd_info *mtd)
 	chip->ecc.bytes = DIV_ROUND_UP(13 * chip->ecc.strength, 8);
 	chip->ecc.size = MXS_NAND_CHUNK_DATA_CHUNK_SIZE;
 
-	nand_info->bb_mark_bit_offset = mxs_nand_get_mark_offset(mtd->writesize,
-								 chip->ecc.strength);
+	nand_info->bb_mark_bit_offset = mxs_nand_get_mark_offset(mtd);
 
 	return 0;
 }

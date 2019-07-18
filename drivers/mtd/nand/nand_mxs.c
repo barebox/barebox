@@ -336,14 +336,31 @@ static int mxs_nand_calc_geo(struct mtd_info *mtd)
 	struct nand_chip *chip = mtd->priv;
 	struct mxs_nand_info *nand_info = chip->priv;
 	int ecc_chunk_count = mxs_nand_ecc_chunk_cnt(mtd->writesize);
-	int ecc_strength;
 	int gf_len = 13;  /* length of Galois Field for non-DDR nand */
+	int max_ecc_strength;
 
-	ecc_strength = ((mtd->oobsize - MXS_NAND_METADATA_SIZE) * 8)
-		/ (gf_len * ecc_chunk_count);
+	nand_of_parse_node(mtd, mtd->parent->device_node);
 
+	max_ecc_strength = ((mtd->oobsize - MXS_NAND_METADATA_SIZE) * 8)
+			   / (gf_len * ecc_chunk_count);
 	/* We need the minor even number. */
-	chip->ecc.strength = rounddown(ecc_strength, 2);
+	max_ecc_strength = rounddown(max_ecc_strength, 2);
+
+	if (chip->ecc.strength) {
+		if (chip->ecc.strength > max_ecc_strength) {
+			dev_err(nand_info->dev, "invalid ecc strength %d (maximum %d)\n",
+				chip->ecc.strength, max_ecc_strength);
+			return -EINVAL;
+		}
+	} else {
+		chip->ecc.strength = max_ecc_strength;
+	}
+
+	if (chip->ecc.size && chip->ecc.size != MXS_NAND_CHUNK_DATA_CHUNK_SIZE) {
+		dev_err(nand_info->dev, "invalid ecc size %d, this driver only supports %d\n",
+			chip->ecc.size, MXS_NAND_CHUNK_DATA_CHUNK_SIZE);
+		return -EINVAL;
+	}
 
 	chip->ecc.bytes = DIV_ROUND_UP(13 * chip->ecc.strength, 8);
 	chip->ecc.size = MXS_NAND_CHUNK_DATA_CHUNK_SIZE;

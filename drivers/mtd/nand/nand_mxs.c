@@ -236,7 +236,7 @@ struct mxs_nand_info {
 	int		bb_mark_bit_offset;
 };
 
-struct nand_ecclayout fake_ecc_layout;
+static struct nand_ecclayout fake_ecc_layout;
 
 static inline int mxs_nand_is_imx6(struct mxs_nand_info *info)
 {
@@ -2187,8 +2187,6 @@ static int mxs_nand_probe(struct device_d *dev)
 	err = mxs_nand_hw_init(nand_info);
 	if (err)
 		goto err2;
-
-	memset(&fake_ecc_layout, 0, sizeof(fake_ecc_layout));
 
 	/* structures must be linked */
 	chip = &nand_info->nand_chip;

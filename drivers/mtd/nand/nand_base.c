@@ -43,6 +43,7 @@
 #include <io.h>
 #include <malloc.h>
 #include <module.h>
+#include <of_mtd.h>
 
 /* Define default oob placement schemes for large and small page devices */
 static struct nand_ecclayout nand_oob_8 = {
@@ -3504,6 +3505,32 @@ ident_done:
 		(int)(chip->chipsize >> 20), mtd->writesize, mtd->oobsize);
 
 	return type;
+}
+
+/**
+ * nand_of_parse_node - parse generic NAND properties
+ * @mtd: MTD device structure
+ * @np: Device node to read information from
+ *
+ * This parses device tree properties generic to NAND controllers and fills in
+ * the various fields in struct nand_chip.
+ */
+void nand_of_parse_node(struct mtd_info *mtd, struct device_node *np)
+{
+	struct nand_chip *chip = mtd->priv;
+	int ecc_strength, ecc_size;
+
+	if (!IS_ENABLED(CONFIG_OFDEVICE))
+		return;
+
+	ecc_strength = of_get_nand_ecc_strength(np);
+	ecc_size = of_get_nand_ecc_step_size(np);
+
+	if (ecc_strength >= 0)
+		chip->ecc.strength = ecc_strength;
+
+	if (ecc_size >= 0)
+		chip->ecc.size = ecc_size;
 }
 
 /**

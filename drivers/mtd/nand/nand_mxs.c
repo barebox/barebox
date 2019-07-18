@@ -287,20 +287,6 @@ static uint32_t mxs_nand_aux_status_offset(void)
 	return (MXS_NAND_METADATA_SIZE + 0x3) & ~0x3;
 }
 
-uint32_t mxs_nand_get_ecc_strength(uint32_t page_data_size,
-						uint32_t page_oob_size)
-{
-	int ecc_chunk_count = mxs_nand_ecc_chunk_cnt(page_data_size);
-	int ecc_strength = 0;
-	int gf_len = 13;  /* length of Galois Field for non-DDR nand */
-
-	ecc_strength = ((page_oob_size - MXS_NAND_METADATA_SIZE) * 8)
-		/ (gf_len * ecc_chunk_count);
-
-	/* We need the minor even number. */
-	return rounddown(ecc_strength, 2);
-}
-
 static inline uint32_t mxs_nand_get_mark_offset(uint32_t page_data_size,
 						uint32_t ecc_strength)
 {
@@ -350,20 +336,6 @@ static inline uint32_t mxs_nand_get_mark_offset(uint32_t page_data_size,
 	return block_mark_bit_offset;
 }
 
-uint32_t mxs_nand_mark_byte_offset(struct mtd_info *mtd)
-{
-	uint32_t ecc_strength;
-	ecc_strength = mxs_nand_get_ecc_strength(mtd->writesize, mtd->oobsize);
-	return mxs_nand_get_mark_offset(mtd->writesize, ecc_strength) >> 3;
-}
-
-uint32_t mxs_nand_mark_bit_offset(struct mtd_info *mtd)
-{
-	uint32_t ecc_strength;
-	ecc_strength = mxs_nand_get_ecc_strength(mtd->writesize, mtd->oobsize);
-	return mxs_nand_get_mark_offset(mtd->writesize, ecc_strength) & 0x7;
-}
-
 static int mxs_nand_calc_geo(struct mtd_info *mtd)
 {
 	struct nand_chip *chip = mtd->priv;
@@ -383,6 +355,25 @@ static int mxs_nand_calc_geo(struct mtd_info *mtd)
 
 	nand_info->bb_mark_bit_offset = mxs_nand_get_mark_offset(mtd->writesize,
 								 chip->ecc.strength);
+
+	return 0;
+}
+
+static struct mtd_info *mxs_nand_mtd;
+
+int mxs_nand_get_geo(int *ecc_strength, int *bb_mark_bit_offset)
+{
+	struct nand_chip *chip;
+	struct mxs_nand_info *nand_info;
+
+	if (!mxs_nand_mtd)
+		return -ENODEV;
+
+	chip = mxs_nand_mtd->priv;
+	nand_info = chip->priv;
+
+	*ecc_strength = chip->ecc.strength;
+	*bb_mark_bit_offset = nand_info->bb_mark_bit_offset;
 
 	return 0;
 }
@@ -2140,6 +2131,10 @@ static int mxs_nand_probe(struct device_d *dev)
 	enum gpmi_type type;
 	int err;
 
+	/* We expect only one */
+	if (mxs_nand_mtd)
+		return -EBUSY;
+
 	err = dev_get_drvdata(dev, (const void **)&type);
 	if (err)
 		type = GPMI_MXS;
@@ -2239,12 +2234,21 @@ static int mxs_nand_probe(struct device_d *dev)
 	if (err)
 		goto err2;
 
-	return add_mtd_nand_device(mtd, "nand");
+	err = add_mtd_nand_device(mtd, "nand");
+	if (err)
+		goto err2;
+
+	mxs_nand_mtd = mtd;
+
+	return 0;
 err2:
 	free(nand_info->data_buf);
 	free(nand_info->cmd_buf);
 err1:
 	free(nand_info);
+
+	mxs_nand_mtd = NULL;
+
 	return err;
 }
 

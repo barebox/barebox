@@ -486,15 +486,22 @@ err:
 static int fcb_create(struct imx_nand_fcb_bbu_handler *imx_handler,
 		struct fcb_block *fcb, struct mtd_info *mtd)
 {
+	int ecc_strength;
+	int bb_mark_bit_offset;
+	int ret;
+
 	fcb->FingerPrint = 0x20424346;
 	fcb->Version = 0x01000000;
 	fcb->PageDataSize = mtd->writesize;
 	fcb->TotalPageSize = mtd->writesize + mtd->oobsize;
 	fcb->SectorsPerBlock = mtd->erasesize / mtd->writesize;
 
+	ret = mxs_nand_get_geo(&ecc_strength, &bb_mark_bit_offset);
+	if (ret)
+		return ret;
+
 	/* Divide ECC strength by two and save the value into FCB structure. */
-	fcb->EccBlock0EccType =
-		mxs_nand_get_ecc_strength(mtd->writesize, mtd->oobsize) >> 1;
+	fcb->EccBlock0EccType = ecc_strength >> 1;
 	fcb->EccBlockNEccType = fcb->EccBlock0EccType;
 
 	fcb->EccBlock0Size = 0x00000200;
@@ -505,8 +512,8 @@ static int fcb_create(struct imx_nand_fcb_bbu_handler *imx_handler,
 	/* DBBT search area starts at second page on first block */
 	fcb->DBBTSearchAreaStartAddress = 1;
 
-	fcb->BadBlockMarkerByte = mxs_nand_mark_byte_offset(mtd);
-	fcb->BadBlockMarkerStartBit = mxs_nand_mark_bit_offset(mtd);
+	fcb->BadBlockMarkerByte = bb_mark_bit_offset >> 3;
+	fcb->BadBlockMarkerStartBit = bb_mark_bit_offset & 0x7;
 
 	fcb->BBMarkerPhysicalOffset = mtd->writesize;
 

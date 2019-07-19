@@ -10,6 +10,9 @@ AFLAGS_pbl-hyp.o :=-Wa,-march=armv7-a -Wa,-mcpu=all
 
 obj-y += start.o entry.o
 
+pbl-$(CONFIG_BOARD_ARM_GENERIC_DT) += board-dt-2nd.o
+pbl-$(CONFIG_BOARD_ARM_GENERIC_DT_AARCH64) += board-dt-2nd-aarch64.o
+
 obj-pbl-y += setupc$(S64).o cache$(S64).o
 
 obj-$(CONFIG_BOOTM_OPTEE) += start-kernel-optee.o

@@ -972,6 +972,7 @@ static int spi_nor_write(struct mtd_info *mtd, loff_t to, size_t len,
 
 	for (i = 0; i < len; ) {
 		ssize_t written;
+		retval = 0;
 
 		page_offset = (to + i) & (nor->page_size - 1);
 		page_remain = min_t(size_t, nor->page_size - page_offset,

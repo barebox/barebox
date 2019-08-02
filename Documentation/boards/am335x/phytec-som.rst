@@ -32,4 +32,4 @@ Building phycore-som-am335x
 ---------------------------
 
 The phycore-som-am335x boards are covered by the ``am335x_mlo_defconfig``
-for the MLO and ``am335x_defconfig`` for the regular barebox image.
+for the MLO and ``omap_defconfig`` for the regular barebox image.

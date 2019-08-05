@@ -300,7 +300,7 @@ static ssize_t fops_write(struct cdev* dev, const void* buf, size_t count,
 
 	priv->puts(priv, buf);
 
-	return 0;
+	return count;
 }
 
 int console_register(struct console_device *newcdev)

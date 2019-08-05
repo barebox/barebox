@@ -23,7 +23,6 @@
 #ifdef CONFIG_HABV4
 int imx28_hab_get_status(void);
 int imx6_hab_get_status(void);
-bool caam_need_rng_software_selftest(void);
 #else
 static inline int imx28_hab_get_status(void)
 {
@@ -32,10 +31,6 @@ static inline int imx28_hab_get_status(void)
 static inline int imx6_hab_get_status(void)
 {
 	return -EPERM;
-}
-static inline bool caam_need_rng_software_selftest(void)
-{
-	return false;
 }
 #endif
 

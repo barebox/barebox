@@ -572,8 +572,12 @@ static int caam_probe(struct device_d *dev)
 
 	cha_vid_ls = rd_reg32(&ctrl->perfmon.cha_id_ls);
 
-	/* habv4_need_rng_software_self_test is determined by habv4_get_status() */
-	if (caam_need_rng_software_selftest()) {
+	/*
+	 * Only do the rng self test when the state handles are not yet
+	 * instantiated as indicated by the RDSTA_IF1 and RDSTA_IF2 flags.
+	 * Otherwise the self test fails.
+	 */
+	if (!(rd_reg32(&ctrl->r4tst[0].rdsta) & RDSTA_IFMASK)) {
 		u8 caam_era;
 		u8 rngvid;
 		u8 rngrev;

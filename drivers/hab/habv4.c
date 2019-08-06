@@ -511,21 +511,17 @@ int imx6_hab_get_status(void)
 
 static int init_imx6_hab_get_status(void)
 {
-	int ret = 0;
-
 	if (!cpu_is_mx6())
 		/* can happen in multi-image builds and is not an error */
 		return 0;
-
-	ret = imx6_hab_get_status();
 
 	/*
 	 * Nobody will check the return value if there were HAB errors, but the
 	 * initcall will fail spectaculously with a strange error message.
 	 */
-	if (ret == -EPERM)
-		return 0;
-	return ret;
+	imx6_hab_get_status();
+
+	return 0;
 }
 
 /*
@@ -544,19 +540,15 @@ int imx28_hab_get_status(void)
 
 static int init_imx28_hab_get_status(void)
 {
-	int ret = 0;
-
 	if (!cpu_is_mx28())
 		/* can happen in multi-image builds and is not an error */
 		return 0;
 
-	ret = imx28_hab_get_status();
 
 	/* nobody will check the return value if there were HAB errors, but the
 	 * initcall will fail spectaculously with a strange error message. */
-	if (ret == -EPERM)
-		return 0;
-	return ret;
+	imx28_hab_get_status();
+	return 0;
 }
 /* i.MX28 ROM code can be run after MMU setup to make use of caching */
 postmmu_initcall(init_imx28_hab_get_status);

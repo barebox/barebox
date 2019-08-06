@@ -425,6 +425,52 @@ int imx8_esdhc_start_image(int instance)
 	return esdhc_start_image(&esdhc, MX8MQ_DDR_CSD1_BASE_ADDR,
 				 MX8MQ_ATF_BL33_BASE_ADDR, SZ_32K);
 }
+
+int imx8_esdhc_load_piggy(int instance)
+{
+	void *buf = (void *)MX8MQ_ATF_BL33_BASE_ADDR;
+	struct imx_flash_header_v2 *hdr = NULL;
+	void *bb = 0;
+	struct esdhc esdhc;
+	int ret, len;
+	int offset = SZ_32K;
+
+
+	switch (instance) {
+	case 0:
+		esdhc.regs = IOMEM(MX8MQ_USDHC1_BASE_ADDR);
+		break;
+	case 1:
+		esdhc.regs = IOMEM(MX8MQ_USDHC2_BASE_ADDR);
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	esdhc.is_be = 0;
+	esdhc.is_mx6 = 1;
+
+	ret = esdhc_search_header(&esdhc, &hdr, buf, &offset);
+	if (ret)
+		return ret;
+
+	len = offset + hdr->boot_data.size + piggydata_size();
+	len = ALIGN(len, SECTOR_SIZE);
+
+	ret = esdhc_read_blocks(&esdhc, buf, len);
+
+	/*
+	 * Calculate location of the piggydata at the offset loaded into RAM
+	 */
+	buf = buf + offset + hdr->boot_data.size;
+	/*
+	 * Barebox expects the piggydata right behind the PBL in the beginning
+	 * of RAM.
+	 */
+	bb = (void *) MX8MQ_DDR_CSD1_BASE_ADDR + barebox_pbl_size;
+	memcpy(bb, buf, piggydata_size());
+	return ret;
+}
 #endif
 
 #ifdef CONFIG_ARCH_LS1046

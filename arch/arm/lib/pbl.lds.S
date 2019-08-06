@@ -90,6 +90,16 @@ SECTIONS
 
 	pbl_memory_size =  . - BASE;
 
+#if defined(CONFIG_CPU_64) && defined(CONFIG_HABV4)
+	. = ALIGN(0x1000);
+	__csf_start = .;
+	.hab_csf : {
+		BYTE(0x5a);
+		. += + 0x1fff;
+	} = 0x5a
+	__csf_end = .;
+#endif /* CONFIG_CPU_64 && CONFIG_HABV4 */
+
 	. = ALIGN(4);
 	__piggydata_start = .;
 	.piggydata : {

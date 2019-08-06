@@ -11,5 +11,10 @@ void __noreturn hang(void)
 
 void __noreturn panic(const char *fmt, ...)
 {
+	va_list args;
+
+	va_start(args, fmt);
+	printf(fmt, args);
+	va_end(args);
 	while(1);
 }

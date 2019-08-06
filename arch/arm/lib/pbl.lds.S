@@ -68,6 +68,13 @@ SECTIONS
 	. = ALIGN(4);
 	.data : { *(.data*) }
 
+	. = ALIGN(4);
+	__shasum_start = .;
+	.shasum : {
+		KEEP(*(.shasum))
+	}
+	__shasum_end = .;
+
 	.rel_dyn_start : { *(.__rel_dyn_start) }
 #ifdef CONFIG_CPU_32
 	.rel.dyn : { *(.rel*) }

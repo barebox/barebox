@@ -57,11 +57,12 @@ quiet_cmd_elf__ ?= LD      $@
       cmd_elf__ ?= $(LD) $(LDFLAGS_barebox) --gc-sections		\
 		-e $(2) -Map $@.map $(LDFLAGS_$(@F)) -o $@		\
 		-T $(pbl-lds)						\
-		--start-group $(barebox-pbl-common) $(obj)/piggy.o --end-group
+		--start-group $(barebox-pbl-common) $(obj)/piggy.o	\
+		$(obj)/sha_sum.o --end-group
 
 PBL_CPPFLAGS	+= -fdata-sections -ffunction-sections
 
-$(obj)/%.pbl: $(pbl-lds) $(barebox-pbl-common) $(obj)/piggy.o FORCE
+$(obj)/%.pbl: $(pbl-lds) $(barebox-pbl-common) $(obj)/piggy.o $(obj)/sha_sum.o FORCE
 	$(call if_changed,elf__,$(*F))
 
 $(obj)/%.pblb: $(obj)/%.pbl FORCE
@@ -111,6 +112,21 @@ suffix_$(CONFIG_IMAGE_COMPRESSION_NONE) = comp_copy
 
 $(obj)/piggy.o: $(obj)/barebox.z FORCE
 
+$(obj)/sha_sum.o: $(obj)/barebox.sha.bin FORCE
+
+quiet_cmd_sha256bin ?= SHA-BIN $@
+      cmd_sha256bin ?= printf "$(shell awk '{printf $$1}' < $(obj)/barebox.sum | sed -e 's/../\\x&/g' )" > $@
+
+quiet_cmd_sha256sum ?= SHA     $@
+      cmd_sha256sum ?= sha256sum $(obj)/barebox.z > $@
+
+$(obj)/barebox.sha.bin: $(obj)/barebox.sum FORCE
+	$(call if_changed,sha256bin)
+
+$(obj)/barebox.sum: $(obj)/barebox.z FORCE
+	$(call if_changed,sha256sum)
+
+
 # barebox.z - compressed barebox binary
 # ----------------------------------------------------------------
 $(obj)/barebox.z: $(obj)/../barebox.bin FORCE
@@ -152,7 +168,7 @@ ifneq ($(pblx-y)$(pblx-),)
   $(error pblx- has been removed. Please use pblb- instead.)
 endif
 
-targets += $(image-y) pbl.lds barebox.x barebox.z piggy.o
+targets += $(image-y) pbl.lds barebox.x barebox.z piggy.o sha_sum.o barebox.sha.bin barebox.sum
 targets += $(patsubst %,%.pblb,$(pblb-y))
 targets += $(patsubst %,%.pbl,$(pblb-y))
 targets += $(patsubst %,%.s,$(pblb-y))

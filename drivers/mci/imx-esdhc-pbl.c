@@ -243,27 +243,22 @@ static int esdhc_read_blocks(struct esdhc *esdhc, void *dst, size_t len)
 }
 
 #ifdef CONFIG_ARCH_IMX
-static int
-esdhc_start_image(struct esdhc *esdhc, ptrdiff_t address, ptrdiff_t entry, u32 offset)
+static int esdhc_search_header(struct esdhc *esdhc,
+			       struct imx_flash_header_v2 **header_pointer,
+			       void *buffer, u32 *offset)
 {
-
-	void *buf = (void *)address;
-	struct imx_flash_header_v2 *hdr;
-	int ret, len;
-	void __noreturn (*bb)(void);
-	unsigned int ofs;
+	int ret;
 	int i, header_count = 1;
-
-	len = imx_image_size();
-	len = ALIGN(len, SECTOR_SIZE);
+	void *buf = buffer;
+	struct imx_flash_header_v2 *hdr;
 
 	for (i = 0; i < header_count; i++) {
 		ret = esdhc_read_blocks(esdhc, buf,
-					offset + SZ_1K + SECTOR_SIZE);
+					*offset + SZ_1K + SECTOR_SIZE);
 		if (ret)
 			return ret;
 
-		hdr = buf + offset + SZ_1K;
+		hdr = buf + *offset + SZ_1K;
 
 		if (!is_imx_flash_header_v2(hdr)) {
 			pr_debug("IVT header not found on SD card. "
@@ -286,10 +281,31 @@ esdhc_start_image(struct esdhc *esdhc, ptrdiff_t address, ptrdiff_t entry, u32 o
 			 * this time skipping anything HDMI firmware
 			 * related.
 			 */
-			offset += hdr->boot_data.size + hdr->header.length;
+			*offset += hdr->boot_data.size + hdr->header.length;
 			header_count++;
 		}
 	}
+	*header_pointer = hdr;
+	return 0;
+}
+
+static int
+esdhc_start_image(struct esdhc *esdhc, ptrdiff_t address, ptrdiff_t entry,
+		  u32 offset)
+{
+
+	void *buf = (void *)address;
+	struct imx_flash_header_v2 *hdr = NULL;
+	int ret, len;
+	void __noreturn (*bb)(void);
+	unsigned int ofs;
+
+	len = imx_image_size();
+	len = ALIGN(len, SECTOR_SIZE);
+
+	ret = esdhc_search_header(esdhc, &hdr, buf, &offset);
+	if (ret)
+		return ret;
 
 	pr_debug("Check ok, loading image\n");
 

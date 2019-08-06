@@ -184,6 +184,7 @@ config ARCH_IMX8MQ
 	select COMMON_CLK_OF_PROVIDER
 	select ARCH_HAS_FEC_IMX
 	select HW_HAS_PCI
+	select PBL_VERIFY_PIGGY if HABV4
 
 config ARCH_VF610
 	bool

@@ -74,7 +74,7 @@ Build Barebox
 Boot Configuration
 ==================
 
-The NXM i.MX8MQ EVK Evaluation Board has two switches responsible for
+The NXP i.MX8MQ EVK Evaluation Board has two switches responsible for
 configuring bootsource/boot mode:
 
  * SW802 for selecting appropriate BMOD

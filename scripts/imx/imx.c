@@ -310,7 +310,7 @@ static int do_hab(struct config_data *data, int argc, char *argv[])
 	if (!data->csf) {
 		data->csf_space = 0x10000;
 
-		data->csf = malloc(data->csf_space + 1);
+		data->csf = calloc(data->csf_space + 1, 1);
 		if (!data->csf)
 			return -ENOMEM;
 	}

@@ -90,16 +90,17 @@ static struct cdev_operations nvmem_chrdev_ops = {
 static int nvmem_register_cdev(struct nvmem_device *nvmem, const char *name)
 {
 	struct device_d *dev = &nvmem->dev;
+	struct cdev *cdev = &nvmem->cdev;
 	const char *alias;
 
 	alias = of_alias_get(dev->device_node);
 
-	nvmem->cdev.name = xstrdup(alias ?: name);
-	nvmem->cdev.ops = &nvmem_chrdev_ops;
-	nvmem->cdev.dev = &nvmem->dev;
-	nvmem->cdev.size = nvmem->size;
+	cdev->name = xstrdup(alias ?: name);
+	cdev->ops = &nvmem_chrdev_ops;
+	cdev->dev = &nvmem->dev;
+	cdev->size = nvmem->size;
 
-	return devfs_create(&nvmem->cdev);
+	return devfs_create(cdev);
 }
 
 static struct nvmem_device *of_nvmem_find(struct device_node *nvmem_np)

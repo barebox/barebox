@@ -97,7 +97,7 @@ static int nvmem_register_cdev(struct nvmem_device *nvmem, const char *name)
 
 	cdev->name = xstrdup(alias ?: name);
 	cdev->ops = &nvmem_chrdev_ops;
-	cdev->dev = &nvmem->dev;
+	cdev->dev = dev;
 	cdev->size = nvmem->size;
 
 	return devfs_create(cdev);

@@ -92,6 +92,7 @@ static int nvmem_register_cdev(struct nvmem_device *nvmem, const char *name)
 	struct device_d *dev = &nvmem->dev;
 	struct cdev *cdev = &nvmem->cdev;
 	const char *alias;
+	int ret;
 
 	alias = of_alias_get(dev->device_node);
 
@@ -100,7 +101,14 @@ static int nvmem_register_cdev(struct nvmem_device *nvmem, const char *name)
 	cdev->dev = dev;
 	cdev->size = nvmem->size;
 
-	return devfs_create(cdev);
+	ret = devfs_create(cdev);
+	if (ret)
+		return ret;
+
+	of_parse_partitions(cdev, dev->device_node);
+	of_partitions_register_fixup(cdev);
+
+	return 0;
 }
 
 static struct nvmem_device *of_nvmem_find(struct device_node *nvmem_np)

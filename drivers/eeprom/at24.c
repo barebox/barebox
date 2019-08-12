@@ -317,6 +317,19 @@ static ssize_t at24_eeprom_write(struct at24_data *at24, const char *buf,
 	return -ETIMEDOUT;
 }
 
+static void at24_protect(struct at24_data *at24, bool prot)
+{
+	if (gpio_is_valid(at24->wp_gpio)) {
+
+		if (at24->wp_active_low)
+			prot = !prot;
+
+		gpio_set_value(at24->wp_gpio, prot);
+
+		udelay(50);
+	}
+}
+
 static ssize_t at24_write(struct at24_data *at24, const char *buf, loff_t off,
 			  size_t count)
 {
@@ -324,6 +337,8 @@ static ssize_t at24_write(struct at24_data *at24, const char *buf, loff_t off,
 
 	if (unlikely(!count))
 		return count;
+
+	at24_protect(at24, false);
 
 	while (count) {
 		ssize_t	status;
@@ -340,6 +355,8 @@ static ssize_t at24_write(struct at24_data *at24, const char *buf, loff_t off,
 		retval += status;
 	}
 
+	at24_protect(at24, true);
+
 	return retval;
 }
 
@@ -349,25 +366,6 @@ static ssize_t at24_cdev_write(struct cdev *cdev, const void *buf, size_t count,
 	struct at24_data *at24 = cdev->priv;
 
 	return at24_write(at24, buf, off, count);
-}
-
-static int at24_cdev_protect(struct cdev *cdev, size_t count, loff_t offset,
-		int prot)
-{
-	struct at24_data *at24 = cdev->priv;
-
-	if (!gpio_is_valid(at24->wp_gpio))
-		return -EOPNOTSUPP;
-
-	prot = !!prot;
-	if (at24->wp_active_low)
-		prot = !prot;
-
-	gpio_set_value(at24->wp_gpio, prot);
-
-	udelay(50);
-
-	return 0;
 }
 
 static int at24_probe(struct device_d *dev)
@@ -448,7 +446,6 @@ static int at24_probe(struct device_d *dev)
 	at24->cdev.dev = dev;
 	at24->cdev.ops = &at24->fops;
 	at24->fops.read	= at24_cdev_read,
-	at24->fops.protect = at24_cdev_protect,
 	at24->cdev.size = chip.byte_len;
 
 	writable = !(chip.flags & AT24_FLAG_READONLY);

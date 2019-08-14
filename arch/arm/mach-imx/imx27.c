@@ -108,8 +108,6 @@ int imx27_init(void)
 
 int imx27_devices_init(void)
 {
-	imx_iomuxv1_init((void *)MX27_GPIO1_BASE_ADDR);
-
 	add_generic_device("imx_iim", DEVICE_ID_SINGLE, NULL,
 			   MX27_IIM_BASE_ADDR, SZ_4K, IORESOURCE_MEM, NULL);
 

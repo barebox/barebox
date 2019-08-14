@@ -112,12 +112,12 @@ static int pcm038_init(void)
 		return 0;
 
 	/* Apply delay for STP line to stop ULPI */
-	imx_gpio_mode(PCM038_GPIO_OTG_STP | GPIO_GPIO);
+	imx27_gpio_mode(PCM038_GPIO_OTG_STP | GPIO_GPIO);
 	gpio_direction_output(PCM038_GPIO_OTG_STP, 1);
 	mdelay(1);
 
 	for (i = 0; i < ARRAY_SIZE(pcm038_pins); i++)
-		imx_gpio_mode(pcm038_pins[i]);
+		imx27_gpio_mode(pcm038_pins[i]);
 
 	imx27_add_fb(&pcm038_fb_data);
 

@@ -84,9 +84,9 @@ static void pca100_usb_init(void)
 	writel(reg, MX27_USB_OTG_BASE_ADDR + 0x184);
 
 	/* disable the usb phys */
-	imx_gpio_mode((GPIO_PORTB | 23) | GPIO_GPIO | GPIO_IN);
+	imx27_gpio_mode((GPIO_PORTB | 23) | GPIO_GPIO | GPIO_IN);
 	gpio_direction_output(GPIO_PORTB + 23, 1);
-	imx_gpio_mode((GPIO_PORTB | 24) | GPIO_GPIO | GPIO_IN);
+	imx27_gpio_mode((GPIO_PORTB | 24) | GPIO_GPIO | GPIO_IN);
 	gpio_direction_output(GPIO_PORTB + 24, 1);
 }
 
@@ -131,7 +131,7 @@ static int pca100_devices_init(void)
 
 	/* initizalize gpios */
 	for (i = 0; i < ARRAY_SIZE(mode); i++)
-		imx_gpio_mode(mode[i]);
+		imx27_gpio_mode(mode[i]);
 
 	pca100_usb_register();
 

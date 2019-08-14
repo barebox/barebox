@@ -52,11 +52,11 @@ static int scb9328_devices_init(void)
 {
 	int i;
 
-	imx_gpio_mode(PA23_PF_CS5);
-	imx_gpio_mode(GPIO_PORTB | GPIO_GPIO | GPIO_OUT | 21);
-	imx_gpio_mode(GPIO_PORTB | GPIO_GPIO | GPIO_OUT | 22);
-	imx_gpio_mode(GPIO_PORTB | GPIO_GPIO | GPIO_OUT | 23);
-	imx_gpio_mode(GPIO_PORTB | GPIO_GPIO | GPIO_OUT | 24);
+	imx1_gpio_mode(PA23_PF_CS5);
+	imx1_gpio_mode(GPIO_PORTB | GPIO_GPIO | GPIO_OUT | 21);
+	imx1_gpio_mode(GPIO_PORTB | GPIO_GPIO | GPIO_OUT | 22);
+	imx1_gpio_mode(GPIO_PORTB | GPIO_GPIO | GPIO_OUT | 23);
+	imx1_gpio_mode(GPIO_PORTB | GPIO_GPIO | GPIO_OUT | 24);
 
 	for (i = 0; i < ARRAY_SIZE(leds); i++)
 		led_gpio_register(&leds[i]);
@@ -91,8 +91,8 @@ device_initcall(scb9328_devices_init);
 static int scb9328_console_init(void)
 {
 	/* init gpios for serial port */
-	imx_gpio_mode(PC11_PF_UART1_TXD);
-	imx_gpio_mode(PC12_PF_UART1_RXD);
+	imx1_gpio_mode(PC11_PF_UART1_TXD);
+	imx1_gpio_mode(PC12_PF_UART1_RXD);
 
 	barebox_set_model("Synertronixx scb9328");
 	barebox_set_hostname("scb9328");

@@ -73,7 +73,7 @@ static int pcm970_init(void)
 		uint32_t i;
 
 		for (i = 0; i < ARRAY_SIZE(pcmcia_pins); i++)
-			imx_gpio_mode(pcmcia_pins[i] | GPIO_PUEN);
+			imx27_gpio_mode(pcmcia_pins[i] | GPIO_PUEN);
 
 		/* Always set PCOE signal to low */
 		gpio_set_value(GPIO_IDE_PCOE, 0);

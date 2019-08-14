@@ -266,7 +266,7 @@ static int neso_devices_init(void)
 
 	/* initialize gpios */
 	for (i = 0; i < ARRAY_SIZE(mode); i++)
-		imx_gpio_mode(mode[i]);
+		imx27_gpio_mode(mode[i]);
 
 	imx27_add_nand(&nand_info);
 	imx27_add_fb(&neso_fb_data);

@@ -155,6 +155,27 @@ static inline void imx_uart_set_dte(void __iomem *uartbase)
 	writel(ufcr, uartbase + UFCR);
 }
 
+static inline void imx1_uart_setup(void __iomem *uartbase)
+{
+	unsigned int refclock = 16000000;
+
+	writel(UCR1_UARTCLKEN, uartbase + UCR1);
+
+	writel(UCR2_IRTS | UCR2_WS | UCR2_TXEN | UCR2_RXEN | UCR2_SRST,
+	       uartbase + UCR2);
+	writel(0, uartbase + UCR3);
+
+	writel((0b10 << UFCR_TXTL_SHF) | UFCR_RFDIV1 | (1 << UFCR_RXTL_SHF),
+	       uartbase + UFCR);
+
+	writel(baudrate_to_ubir(CONFIG_BAUDRATE),
+	       uartbase + UBIR);
+	writel(refclock_to_ubmr(refclock),
+	       uartbase + UBMR);
+
+	writel(UCR1_UARTCLKEN | UCR1_UARTEN, uartbase + UCR1);
+}
+
 static inline void imx50_uart_setup(void __iomem *uartbase)
 {
 	imx_uart_setup(uartbase, 66666666);

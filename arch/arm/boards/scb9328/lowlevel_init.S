@@ -25,8 +25,10 @@
 	ldr		r1,	=val;	\
 	str		r1,   [r0];
 
-.globl barebox_arm_reset_vector
-barebox_arm_reset_vector:
+.section .text_head_entry_start_scb9328
+
+.globl start_scb9328
+start_scb9328:
 
 	bl arm_cpu_lowlevel_init
 
@@ -132,4 +134,4 @@ barebox_arm_reset_vector:
 2:
 	ldr     sp, =0x08100000 - 4;
 
-	b imx1_barebox_entry
+	b scb9328_start

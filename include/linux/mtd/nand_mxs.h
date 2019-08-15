@@ -27,11 +27,6 @@
  * update handler code, the generic calculation from the driver code is used.
  */
 
-uint32_t mxs_nand_get_ecc_strength(uint32_t page_data_size,
-						uint32_t page_oob_size);
-
-uint32_t mxs_nand_mark_byte_offset(struct mtd_info *mtd);
-
-uint32_t mxs_nand_mark_bit_offset(struct mtd_info *mtd);
+int mxs_nand_get_geo(int *ecc_strength, int *bb_mark_bit_offset);
 
 #endif /* __NAND_MXS_H */

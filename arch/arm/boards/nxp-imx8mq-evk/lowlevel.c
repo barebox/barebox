@@ -67,30 +67,8 @@ static void nxp_imx8mq_evk_sram_setup(void)
 	BUG_ON(ret);
 }
 
-/*
- * Power-on execution flow of start_nxp_imx8mq_evk() might not be
- * obvious for a very first read, so here's, hopefully helpful,
- * summary:
- *
- * 1. MaskROM uploads PBL into OCRAM and that's where this function is
- *    executed for the first time
- *
- * 2. DDR is initialized and full i.MX image is loaded to the
- *    beginning of RAM
- *
- * 3. start_nxp_imx8mq_evk, now in RAM, is executed again
- *
- * 4. BL31 blob is uploaded to OCRAM and the control is transfer to it
- *
- * 5. BL31 exits EL3 into EL2 at address MX8MQ_ATF_BL33_BASE_ADDR,
- *    executing start_nxp_imx8mq_evk() the third time
- *
- * 6. Standard barebox boot flow continues
- */
-ENTRY_FUNCTION(start_nxp_imx8mq_evk, r0, r1, r2)
+static __noreturn noinline void nxp_imx8mq_evk_start(void)
 {
-	imx8mq_cpu_lowlevel_init();
-
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();
 
@@ -123,5 +101,35 @@ ENTRY_FUNCTION(start_nxp_imx8mq_evk, r0, r1, r2)
 	 * Standard entry we hit once we initialized both DDR and ATF
 	 */
 	imx8mq_barebox_entry(__dtb_imx8mq_evk_start);
+}
+
+/*
+ * Power-on execution flow of start_nxp_imx8mq_evk() might not be
+ * obvious for a very first read, so here's, hopefully helpful,
+ * summary:
+ *
+ * 1. MaskROM uploads PBL into OCRAM and that's where this function is
+ *    executed for the first time
+ *
+ * 2. DDR is initialized and full i.MX image is loaded to the
+ *    beginning of RAM
+ *
+ * 3. start_nxp_imx8mq_evk, now in RAM, is executed again
+ *
+ * 4. BL31 blob is uploaded to OCRAM and the control is transfer to it
+ *
+ * 5. BL31 exits EL3 into EL2 at address MX8MQ_ATF_BL33_BASE_ADDR,
+ *    executing start_nxp_imx8mq_evk() the third time
+ *
+ * 6. Standard barebox boot flow continues
+ */
+ENTRY_FUNCTION(start_nxp_imx8mq_evk, r0, r1, r2)
+{
+	imx8mq_cpu_lowlevel_init();
+
+	relocate_to_current_adr();
+	setup_c();
+
+	nxp_imx8mq_evk_start();
 }
 

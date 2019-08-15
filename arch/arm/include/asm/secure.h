@@ -10,7 +10,8 @@ void armv7_switch_to_hyp(void);
 void armv7_hyp_install(void);
 
 extern unsigned char secure_monitor_init_vectors[];
-extern int __boot_cpu_mode;
+
+int boot_cpu_mode(void);
 
 enum arm_security_state {
 	ARM_STATE_SECURE,

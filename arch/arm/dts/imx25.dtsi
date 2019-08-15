@@ -17,13 +17,6 @@
 		mmc0 = &esdhc1;
 		mmc2 = &esdhc2;
 	};
-
-	soc {
-		iram: sram@78000000 {
-			compatible = "mmio-sram";
-			reg = <0x78000000 0x20000>;
-		};
-	};
 };
 
 &usbmisc {

@@ -1,6 +1,1 @@
-#ifndef __ASM_MIPS_BITSPERLONG_H
-#define __ASM_MIPS_BITSPERLONG_H
-
-#define BITS_PER_LONG _MIPS_SZLONG
-
-#endif /* __ASM_MIPS_BITSPERLONG_H */
+#include <asm-generic/bitsperlong.h>

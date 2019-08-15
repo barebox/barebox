@@ -6,6 +6,10 @@
  */
 
 #include <common.h>
+#include <crypto/sha.h>
+#include <crypto/pbl-sha.h>
+#include <digest.h>
+#include <asm/sections.h>
 #include <pbl.h>
 #include <debug_ll.h>
 
@@ -53,4 +57,39 @@ void pbl_barebox_uncompress(void *dest, void *compressed_start, unsigned int len
 			len,
 			NULL, NULL,
 			dest, NULL, errorfn);
+}
+
+int pbl_barebox_verify(void *compressed_start, unsigned int len, void *hash,
+		       unsigned int hash_len)
+{
+	struct sha256_state sha_state = { 0 };
+	struct digest d = { .ctx = &sha_state };
+	char computed_hash[SHA256_DIGEST_SIZE];
+	int i;
+	char *char_hash = hash;
+
+	if (hash_len != SHA256_DIGEST_SIZE)
+		return -1;
+
+	sha256_init(&d);
+	sha256_update(&d, compressed_start, len);
+	sha256_final(&d, computed_hash);
+	if (IS_ENABLED(CONFIG_DEBUG_LL)) {
+		putc_ll('C');
+		putc_ll('H');
+		putc_ll('\n');
+		for (i = 0; i < SHA256_DIGEST_SIZE; i++) {
+			puthex_ll(computed_hash[i]);
+			putc_ll('\n');
+		}
+		putc_ll('I');
+		putc_ll('H');
+		putc_ll('\n');
+		for (i = 0; i < SHA256_DIGEST_SIZE; i++) {
+			puthex_ll(char_hash[i]);
+			putc_ll('\n');
+		}
+	}
+
+	return memcmp(hash, computed_hash, SHA256_DIGEST_SIZE);
 }

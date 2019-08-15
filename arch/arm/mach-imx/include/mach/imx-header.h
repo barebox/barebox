@@ -98,6 +98,7 @@ struct config_data {
 	uint32_t image_size;
 	uint32_t max_load_size;
 	uint32_t load_size;
+	uint32_t pbl_code_size;
 	char *outfile;
 	char *srkfile;
 	int header_version;
@@ -111,6 +112,7 @@ struct config_data {
 	int (*nop)(const struct config_data *data);
 	int csf_space;
 	char *csf;
+	int sign_image;
 	char *signed_hdmi_firmware_file;
 	int encrypt_image;
 	size_t dek_size;

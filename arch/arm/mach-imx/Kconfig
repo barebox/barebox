@@ -183,6 +183,7 @@ config ARCH_IMX8MQ
 	select COMMON_CLK_OF_PROVIDER
 	select ARCH_HAS_FEC_IMX
 	select HW_HAS_PCI
+	select PBL_VERIFY_PIGGY if HABV4
 
 config ARCH_VF610
 	bool
@@ -787,10 +788,10 @@ config HABV4
 	select HAB
 	select NVMEM
 	select IMX_OCOTP
-	depends on ARCH_IMX6
+	depends on ARCH_IMX6 || ARCH_IMX8MQ
 	depends on OFDEVICE
 	help
-	  High Assurance Boot, as found on i.MX28/i.MX6.
+	  High Assurance Boot, as found on i.MX28/i.MX6/i.MX8MQ.
 
 config HAB_CERTS_ENV
 	depends on HAB

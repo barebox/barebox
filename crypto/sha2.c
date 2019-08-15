@@ -27,6 +27,7 @@
 
 #include <crypto/sha.h>
 #include <crypto/internal.h>
+#include <crypto/pbl-sha.h>
 
 static inline u32 Ch(u32 x, u32 y, u32 z)
 {
@@ -232,7 +233,7 @@ static int sha224_init(struct digest *desc)
 	return 0;
 }
 
-static int sha256_init(struct digest *desc)
+int sha256_init(struct digest *desc)
 {
 	struct sha256_state *sctx = digest_ctx(desc);
 	sctx->state[0] = SHA256_H0;
@@ -248,7 +249,7 @@ static int sha256_init(struct digest *desc)
 	return 0;
 }
 
-static int sha256_update(struct digest *desc, const void *data,
+int sha256_update(struct digest *desc, const void *data,
 				unsigned long len)
 {
 	struct sha256_state *sctx = digest_ctx(desc);
@@ -280,7 +281,7 @@ static int sha256_update(struct digest *desc, const void *data,
 	return 0;
 }
 
-static int sha256_final(struct digest *desc, u8 *out)
+int sha256_final(struct digest *desc, u8 *out)
 {
 	struct sha256_state *sctx = digest_ctx(desc);
 	__be32 *dst = (__be32 *)out;
@@ -348,7 +349,7 @@ static int sha224_digest_register(void)
 }
 device_initcall(sha224_digest_register);
 
-static struct digest_algo m256 = {
+struct digest_algo m256 = {
 	.base = {
 		.name		=	"sha256",
 		.driver_name	=	"sha256-generic",
@@ -365,6 +366,7 @@ static struct digest_algo m256 = {
 	.ctx_length	= sizeof(struct sha256_state),
 };
 
+#ifndef __PBL__
 static int sha256_digest_register(void)
 {
 	if (!IS_ENABLED(CONFIG_SHA256))
@@ -373,3 +375,4 @@ static int sha256_digest_register(void)
 	return digest_algo_register(&m256);
 }
 coredevice_initcall(sha256_digest_register);
+#endif /* __PBL__ */

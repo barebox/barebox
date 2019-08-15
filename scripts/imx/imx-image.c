@@ -315,6 +315,16 @@ static size_t add_header_v2(const struct config_data *data, void *buf)
 	uint32_t loadaddr = data->image_load_addr;
 	uint32_t imagesize = data->load_size;
 
+	if (data->pbl_code_size) {
+		/*
+		 * Restrict the imagesize to the PBL if given.
+		 * Also take the alignment for CSF into account.
+		 */
+		imagesize = roundup(data->pbl_code_size + HEADER_LEN, 0x4);
+		if (data->csf)
+			imagesize = roundup(imagesize, 0x1000);
+	}
+
 	buf += offset;
 	hdr = buf;
 
@@ -333,13 +343,21 @@ static size_t add_header_v2(const struct config_data *data, void *buf)
 	hdr->self		= loadaddr + offset;
 
 	hdr->boot_data.start	= loadaddr;
-	if (data->max_load_size && imagesize > data->max_load_size)
+	if (!data->csf && data->max_load_size
+	    && imagesize > data->max_load_size)
 		hdr->boot_data.size	= data->max_load_size;
 	else
 		hdr->boot_data.size	= imagesize;
 
-	if (data->csf) {
+	if (data->sign_image) {
 		hdr->csf = loadaddr + imagesize;
+		hdr->boot_data.size += CSF_LEN;
+	} else if (data->pbl_code_size && data->csf) {
+		/*
+		 * For i.MX8 the CSF space is added via the linker script, so
+		 * the CSF length needs to be added if HABV4 is enabled but
+		 * signing is not.
+		 */
 		hdr->boot_data.size += CSF_LEN;
 	}
 
@@ -555,6 +573,7 @@ static int hab_sign(struct config_data *data)
 	char *cst;
 	void *buf;
 	size_t csf_space = CSF_LEN;
+	unsigned int offset = 0;
 
 	cst = getenv("CST");
 	if (!cst)
@@ -681,11 +700,34 @@ static int hab_sign(struct config_data *data)
 		return -errno;
 	}
 
-	outfd = open(data->outfile, O_WRONLY | O_APPEND);
+	/*
+	 * For i.MX8, write into the reserved CSF section
+	 */
+	if (data->cpu_type == IMX_CPU_IMX8MQ)
+		outfd = open(data->outfile, O_WRONLY);
+	else
+		outfd = open(data->outfile, O_WRONLY | O_APPEND);
+
 	if (outfd < 0) {
 		fprintf(stderr, "Cannot open %s for writing: %s\n", data->outfile,
 			strerror(errno));
 		exit(1);
+	}
+
+	if (data->cpu_type == IMX_CPU_IMX8MQ) {
+		/*
+		 * For i.MX8 insert the CSF data into the reserved CSF area
+		 * right behind the PBL
+		 */
+		offset = roundup(data->header_gap + data->pbl_code_size +
+				 HEADER_LEN, 0x1000);
+		if (data->signed_hdmi_firmware_file)
+			offset += PLUGIN_HDMI_SIZE;
+
+		if (lseek(outfd, offset, SEEK_SET) < 0) {
+			perror("lseek");
+			exit(1);
+		}
 	}
 
 	ret = xwrite(outfd, buf, csf_space);
@@ -752,7 +794,6 @@ int main(int argc, char *argv[])
 	int outfd;
 	int dcd_only = 0;
 	int now = 0;
-	int sign_image = 0;
 	int i, header_copies;
 	int add_barebox_header;
 	uint32_t barebox_image_size = 0;
@@ -769,7 +810,7 @@ int main(int argc, char *argv[])
 
 	prgname = argv[0];
 
-	while ((opt = getopt(argc, argv, "c:hf:o:bduse")) != -1) {
+	while ((opt = getopt(argc, argv, "c:hf:o:p:bduse")) != -1) {
 		switch (opt) {
 		case 'c':
 			configfile = optarg;
@@ -780,6 +821,9 @@ int main(int argc, char *argv[])
 		case 'o':
 			data.outfile = optarg;
 			break;
+		case 'p':
+			data.pbl_code_size = strtoul(optarg, NULL, 0);
+			break;
 		case 'b':
 			add_barebox_header = 1;
 			break;
@@ -787,7 +831,7 @@ int main(int argc, char *argv[])
 			dcd_only = 1;
 			break;
 		case 's':
-			sign_image = 1;
+			data.sign_image = 1;
 			break;
 		case 'u':
 			create_usb_image = 1;
@@ -841,13 +885,11 @@ int main(int argc, char *argv[])
 	if (ret)
 		exit(1);
 
-	if (data.max_load_size && (sign_image || data.encrypt_image)) {
+	if (data.max_load_size && (data.encrypt_image || data.csf)
+	    && data.cpu_type != IMX_CPU_IMX8MQ) {
 		fprintf(stderr, "Specifying max_load_size is incompatible with HAB signing/encrypting\n");
 		exit(1);
 	}
-
-	if (!sign_image)
-		data.csf = NULL;
 
 	if (create_usb_image && !data.csf) {
 		fprintf(stderr, "Warning: the -u option only has effect with signed images\n");
@@ -996,7 +1038,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	if (data.csf) {
+	if (data.csf && data.sign_image) {
 		ret = hab_sign(&data);
 		if (ret)
 			exit(1);

@@ -71,13 +71,6 @@ static inline int ctrlc (void)
 #if (!defined(__PBL__) && !defined(CONFIG_CONSOLE_NONE)) || \
 	(defined(__PBL__) && defined(CONFIG_PBL_CONSOLE))
 int printf(const char *fmt, ...) __attribute__ ((format(__printf__, 1, 2)));
-#else
-static int printf(const char *fmt, ...) __attribute__ ((format(__printf__, 1, 2)));
-static inline int printf(const char *fmt, ...)
-{
-	return 0;
-}
-#endif
 
 static inline int puts(const char *s)
 {
@@ -88,6 +81,22 @@ static inline void putchar(char c)
 {
 	console_putc(CONSOLE_STDOUT, c);
 }
+#else
+static int printf(const char *fmt, ...) __attribute__ ((format(__printf__, 1, 2)));
+static inline int printf(const char *fmt, ...)
+{
+	return 0;
+}
+static inline int puts(const char *s)
+{
+	return 0;
+}
+
+static inline void putchar(char c)
+{
+	return;
+}
+#endif
 
 /*
  * FILE based functions

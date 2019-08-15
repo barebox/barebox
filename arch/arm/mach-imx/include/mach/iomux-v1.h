@@ -46,6 +46,25 @@
 #define GPIO_GIUS      (1 << 16)
 
 void imx_iomuxv1_init(void __iomem *base);
-void imx_gpio_mode(int gpio_mode);
+void imx_gpio_mode(void __iomem *base, int gpio_mode);
+
+#include <mach/imx1-regs.h>
+#include <mach/imx21-regs.h>
+#include <mach/imx27-regs.h>
+
+static inline void imx1_gpio_mode(int gpio_mode)
+{
+	imx_gpio_mode(IOMEM(MX1_GPIO1_BASE_ADDR), gpio_mode);
+}
+
+static inline void imx21_gpio_mode(int gpio_mode)
+{
+	imx_gpio_mode(IOMEM(MX21_GPIO1_BASE_ADDR), gpio_mode);
+}
+
+static inline void imx27_gpio_mode(int gpio_mode)
+{
+	imx_gpio_mode(IOMEM(MX27_GPIO1_BASE_ADDR), gpio_mode);
+}
 
 #endif /* __MACH_IOMUX_V1_H__ */

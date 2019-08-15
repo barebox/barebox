@@ -22,6 +22,11 @@ $(obj)/%.img.dek: $(obj)/$$(FILE_$$(@F))
 	$(Q)if [ -z $(FILE_$(@F)) ]; then echo "FILE_$(@F) empty!"; false; fi
 	$(call if_changed,shipped)
 
+# ----------------------- i.MX1 based boards ---------------------------
+pblb-$(CONFIG_MACH_SCB9328) += start_scb9328
+FILE_barebox-synertronix-scb9328.img = start_scb9328.pblb
+image-$(CONFIG_MACH_SCB9328) += barebox-synertronix-scb9328.img
+
 # ----------------------- i.MX25 based boards ---------------------------
 pblb-$(CONFIG_MACH_TX25) += start_imx25_karo_tx25
 FILE_barebox-karo-tx25.img = start_imx25_karo_tx25.pblb

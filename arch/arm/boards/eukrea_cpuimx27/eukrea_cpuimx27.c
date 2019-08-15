@@ -171,7 +171,7 @@ static int eukrea_cpuimx27_devices_init(void)
 
 	/* initialize gpios */
 	for (i = 0; i < ARRAY_SIZE(mode); i++)
-		imx_gpio_mode(mode[i]);
+		imx27_gpio_mode(mode[i]);
 
 	add_cfi_flash_device(DEVICE_ID_DYNAMIC, 0xC0000000, 32 * 1024 * 1024, 0);
 #ifdef CONFIG_EUKREA_CPUIMX27_NOR_64MB

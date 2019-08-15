@@ -1,2 +1,2 @@
-obj-y += mx28-evk.o
+obj-y += board.o
 lwl-y += lowlevel.o

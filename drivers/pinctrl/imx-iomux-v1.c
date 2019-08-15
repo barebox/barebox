@@ -31,25 +31,20 @@
 #define SWR     0x3c
 #define PUEN    0x40
 
-static void __iomem *iomuxv1_base;
-
 struct imx_iomux_v1 {
 	void __iomem *base;
 	struct pinctrl_device pinctrl;
 };
 
-void imx_gpio_mode(int gpio_mode)
+void imx_gpio_mode(void __iomem *base, int gpio_mode)
 {
 	unsigned int pin = gpio_mode & GPIO_PIN_MASK;
 	unsigned int port = (gpio_mode & GPIO_PORT_MASK) >> GPIO_PORT_SHIFT;
 	unsigned int ocr = (gpio_mode & GPIO_OCR_MASK) >> GPIO_OCR_SHIFT;
 	unsigned int aout = (gpio_mode & GPIO_AOUT_MASK) >> GPIO_AOUT_SHIFT;
 	unsigned int bout = (gpio_mode & GPIO_BOUT_MASK) >> GPIO_BOUT_SHIFT;
-	void __iomem *portbase = iomuxv1_base + port * 0x100;
+	void __iomem *portbase = base + port * 0x100;
 	uint32_t val;
-
-	if (!iomuxv1_base)
-		return;
 
 	/* Pullup enable */
 	val = readl(portbase + PUEN);
@@ -119,10 +114,7 @@ void imx_gpio_mode(int gpio_mode)
 	}
 }
 
-void imx_iomuxv1_init(void __iomem *base)
-{
-	iomuxv1_base = base;
-}
+#ifndef __PBL__
 
 /*
  * MUX_ID format defines
@@ -280,18 +272,16 @@ static int imx_pinctrl_dt(struct device_d *dev, void __iomem *base)
 static int imx_iomux_v1_probe(struct device_d *dev)
 {
 	int ret = 0;
+	void __iomem *base;
 
-	if (iomuxv1_base)
-		return -EBUSY;
-
-	iomuxv1_base = dev_get_mem_region(dev, 0);
-	if (IS_ERR(iomuxv1_base))
-		return PTR_ERR(iomuxv1_base);
+	base = dev_get_mem_region(dev, 0);
+	if (IS_ERR(base))
+		return PTR_ERR(base);
 
 	ret = of_platform_populate(dev->device_node, NULL, NULL);
 
 	if (IS_ENABLED(CONFIG_PINCTRL) && dev->device_node)
-		ret = imx_pinctrl_dt(dev, iomuxv1_base);
+		ret = imx_pinctrl_dt(dev, base);
 
 	return ret;
 }
@@ -299,6 +289,8 @@ static int imx_iomux_v1_probe(struct device_d *dev)
 static __maybe_unused struct of_device_id imx_iomux_v1_dt_ids[] = {
 	{
 		.compatible = "fsl,imx27-iomuxc",
+	}, {
+		.compatible = "fsl,imx1-iomuxc",
 	}, {
 		/* sentinel */
 	}
@@ -315,3 +307,5 @@ static int imx_iomux_v1_init(void)
 	return platform_driver_register(&imx_iomux_v1_driver);
 }
 core_initcall(imx_iomux_v1_init);
+
+#endif

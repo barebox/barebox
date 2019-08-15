@@ -152,6 +152,7 @@ struct fec_priv {
 	struct clk *clk[FEC_CLK_NUM];
 	struct clk *opt_clk[FEC_OPT_CLK_NUM];
 	enum fec_type type;
+	struct regulator *reg_phy;
 };
 
 static inline int fec_is_imx27(struct fec_priv *priv)

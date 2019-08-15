@@ -16,7 +16,6 @@ config ARCH_TEXT_BASE
 	default 0x87f00000 if MACH_PCM037
 	default 0x87f00000 if MACH_MX31MOBOARD
 	default 0x87f00000 if MACH_PCM043
-	default 0x08f80000 if MACH_SCB9328
 	default 0xa7e00000 if MACH_NESO
 	default 0x97f00000 if MACH_FREESCALE_MX51_PDK
 	default 0x7ff00000 if MACH_FREESCALE_MX53_LOCO
@@ -204,6 +203,13 @@ config IMX_MULTI_BOARDS
 	select HAVE_PBL_MULTI_IMAGES
 
 if IMX_MULTI_BOARDS
+
+config MACH_SCB9328
+	bool "Synertronixx scb9328"
+	select ARCH_IMX1
+	select HAS_DM9000
+	help
+	  Say Y here if you are using the Synertronixx scb9328 board
 
 config MACH_TX25
 	bool "Ka-Ro TX25"
@@ -518,15 +524,6 @@ endif
 choice
 	prompt "Select Board"
 	depends on !IMX_MULTI_BOARDS
-
-comment "i.MX1 Boards"
-
-config MACH_SCB9328
-	bool "Synertronixx scb9328"
-	select ARCH_IMX1
-	select HAS_DM9000
-	help
-	  Say Y here if you are using the Synertronixx scb9328 board
 
 # ----------------------------------------------------------
 

@@ -129,6 +129,21 @@ static void rng_self_test_done(struct device_d *dev, u32 *desc, u32 err, void *a
 /*
  * caam_rng_self_test() - Perform RNG self test
  * Returns zero on success, and negative on error.
+ *
+ * Some chips with HAB >= 4.2.3 have an incorrect implementation of the
+ * RNG self-test in ROM code. In this case, a software self-test should
+ * be run to ensure correctness of the RNG. By enabling this config
+ * option, the software self-test is run automatically when this case
+ * is detected.
+ *
+ * Currently known impacted chips:
+ * * i.MX6DQ+ silicon revision 1.1
+ * * i.MX6DQ silicon revision 1.6
+ * * i.MX6DLS silicon revision 1.4
+ * * i.MX6SX silicon revision 1.4
+ * * i.MX6UL silicon revision 1.2
+ * * i.MX67SD silicon revision 1.3
+ *
  */
 int caam_rng_self_test(struct device_d *dev, const u8 caam_era, const u8 rngvid, const u8 rngrev)
 {

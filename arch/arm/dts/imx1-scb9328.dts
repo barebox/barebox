@@ -1,0 +1,117 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+/*
+ * Copyright (C) 2014 Alexander Shiyan <shc_work@mail.ru>
+ */
+
+/dts-v1/;
+#include <arm/imx1.dtsi>
+
+/ {
+	model = "Synertronix scb9328";
+	compatible = "stx,scb9328", "fsl,imx1";
+
+	chosen {
+		stdout-path = &uart1;
+
+		environment {
+			compatible = "barebox,environment";
+			device-path = &environment_nor;
+		};
+	};
+
+	memory@8000000 {
+		device_type = "memory";
+		reg = <0x08000000 0x01000000>;
+	};
+};
+
+&uart1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart1>;
+	uart-has-rtscts;
+	status = "okay";
+};
+
+&weim {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_weim>;
+	status = "okay";
+
+	nor: nor@0,0 {
+		compatible = "cfi-flash";
+		reg = <0 0x00000000 0x01000000>;
+		bank-width = <2>;
+		fsl,weim-cs-timing = <0x000F2000 0x11110d01>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			partition@0 {
+				label = "boot";
+				reg = <0x00000000 0x00080000>;
+			};
+
+			environment_nor: partition@80000 {
+				label = "env";
+				reg = <0x00080000 0x00020000>;
+			};
+		};
+	};
+
+	eth: eth@5,600000 {
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_eth>;
+		compatible = "davicom,dm9000";
+		reg = <
+			5 0x0 0x2
+			5 0x4 0x2
+		>;
+		interrupt-parent = <&gpio3>;
+		interrupts = <3 IRQ_TYPE_LEVEL_LOW>;
+		fsl,weim-cs-timing = <0x00008400 0x00000d03>;
+		reg-io-width = <2>;
+	};
+};
+
+&iomuxc {
+	scb9328 {
+		pinctrl_uart1: uart1grp {
+			fsl,pins = <
+				MX1_PAD_UART1_TXD__UART1_TXD	0x0
+				MX1_PAD_UART1_RXD__UART1_RXD	0x0
+				MX1_PAD_UART1_CTS__UART1_CTS	0x0
+				MX1_PAD_UART1_RTS__UART1_RTS	0x0
+			>;
+		};
+
+		pinctrl_eth: ethgrp {
+			fsl,pins = <
+				MX1_PAD_SSI_RXFS__GPIO3_3	0x0
+			>;
+		};
+
+		pinctrl_weim: weimgrp {
+			fsl,pins = <
+				MX1_PAD_A0__A0			0x0
+				MX1_PAD_A16__A16		0x0
+				MX1_PAD_A17__A17		0x0
+				MX1_PAD_A18__A18		0x0
+				MX1_PAD_A19__A19		0x0
+				MX1_PAD_A20__A20		0x0
+				MX1_PAD_A21__A21		0x0
+				MX1_PAD_A22__A22		0x0
+				MX1_PAD_A23__A23		0x0
+				MX1_PAD_A24__A24		0x0
+				MX1_PAD_BCLK__BCLK		0x0
+				MX1_PAD_CS4__CS4		0x0
+				MX1_PAD_DTACK__DTACK		0x0
+				MX1_PAD_ECB__ECB		0x0
+				MX1_PAD_LBA__LBA		0x0
+			>;
+		};
+	};
+};

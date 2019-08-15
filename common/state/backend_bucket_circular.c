@@ -95,6 +95,7 @@ static int state_mtd_peb_read(struct state_backend_storage_bucket_circular *circ
 	if (ret == -EBADMSG) {
 		ret = mtd_peb_torture(circ->mtd, circ->eraseblock);
 		if (ret == -EIO) {
+			mtd_peb_mark_bad(circ->mtd, circ->eraseblock);
 			dev_err(circ->dev, "Tortured eraseblock failed and is marked bad now, PEB %u\n",
 				circ->eraseblock);
 			return -EIO;
@@ -132,6 +133,7 @@ static int state_mtd_peb_write(struct state_backend_storage_bucket_circular *cir
 	if (ret == -EBADMSG) {
 		ret = mtd_peb_torture(circ->mtd, circ->eraseblock);
 		if (ret == -EIO) {
+			mtd_peb_mark_bad(circ->mtd, circ->eraseblock);
 			dev_err(circ->dev, "Tortured eraseblock failed and is marked bad now, PEB %u\n",
 				circ->eraseblock);
 			return -EIO;

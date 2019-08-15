@@ -79,6 +79,7 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_layerscape_qspi_image] = { "Layerscape QSPI image", "layerscape-qspi-PBL" },
 	[filetype_ubootvar] = { "U-Boot environmemnt variable data",
 				"ubootvar" },
+	[filetype_stm32_image_v1] = { "STM32 image (v1)", "stm32-image-v1" },
 };
 
 const char *file_type_to_string(enum filetype f)
@@ -354,6 +355,14 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 
 	if (buf8[0] == 'M' && buf8[1] == 'Z')
 		return filetype_exe;
+
+	if (bufsize < 256)
+		return filetype_unknown;
+
+	if (strncmp(buf8, "STM\x32", 4) == 0) {
+		if (buf8[74] == 0x01)
+			return filetype_stm32_image_v1;
+	}
 
 	if (bufsize < 512)
 		return filetype_unknown;

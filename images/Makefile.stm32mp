@@ -1,8 +1,19 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
-# barebox image generation Makefile for STMicroelectronics MP1
+# barebox image generation Makefile for STMicroelectronics MP
 #
 
+# %.stm32 - convert into STM32MP image
+# --------------------------------------
+
+$(obj)/%.stm32: $(obj)/% FORCE
+	$(call if_changed,stm32_image)
+
+STM32MP1_OPTS = -a 0xc0100000 -e 0xc0100000 -v1
+
+# --------------------------------------
+
 pblb-$(CONFIG_MACH_STM32MP157C_DK2) += start_stm32mp157c_dk2
-FILE_barebox-stm32mp157c-dk2.img = start_stm32mp157c_dk2.pblb
+FILE_barebox-stm32mp157c-dk2.img = start_stm32mp157c_dk2.pblb.stm32
+OPTS_start_stm32mp157c_dk2.pblb.stm32 = $(STM32MP1_OPTS)
 image-$(CONFIG_MACH_STM32MP157C_DK2) += barebox-stm32mp157c-dk2.img

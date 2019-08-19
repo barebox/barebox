@@ -226,12 +226,12 @@
 		compatible = "fixed-partitions";
 		#size-cells = <1>;
 		#address-cells = <1>;
-		environment_mmc: partition@178000 {
+		environment_mmc: partition@300000 {
 			label = "environment";
 			reg = <0x300000 0x8000>;
 		};
 
-		state_mmc: partition@180000 {
+		state_mmc: partition@400000 {
 			label = "state";
 			reg = <0x400000 0x8000>;
 		};

@@ -386,70 +386,31 @@ int arria10_load_fpga(int offset, int bitstream_size)
 	return 0;
 }
 
-static int image_size(void)
-{
-	uint32_t *image_end = (void *)__image_end;
-	uint32_t payload_len;
-	uint32_t pbl_len;
-	uint32_t arria10_header_len;
-	uint32_t sizep;
-	uint32_t arria10_crc;
-
-	/* arria10 header is 512 byte */
-	arria10_header_len = 512;
-	/* pbl is appended with 4 byte CRC for boot rom */
-	arria10_crc = 4;
-
-	/* The length of the PBL image */
-	pbl_len = __image_end - _text;
-
-	sizep = 4;
-
-	/* The length of the payload is appended directly behind the PBL */
-	payload_len = *(image_end);
-
-	return pbl_len + arria10_header_len + sizep + arria10_crc + payload_len;
-}
-
 void arria10_start_image(int offset)
 {
 	void *buf = (void *)0x0;
-	void *in_buf = (void *)SZ_1M;
 	uint32_t start;
-	int size = 0;
+	unsigned int size;
 	int ret;
 	void __noreturn (*bb)(void);
-	uint32_t pbl_len = __image_end - _text;
-	uint32_t *image_end = (void *)__image_end;
-	uint32_t arria10_header_len;
-	uint32_t sizep;
-	uint32_t arria10_crc;
-
-	size = image_size();
 
 	start = bootloader.first_sec + offset / SECTOR_SIZE;
 
-	ret = arria10_read_blocks(buf, start, ALIGN(size, SECTOR_SIZE));
-	if (ret) {
-		puts_ll("Loading image failed\n");
+	ret = arria10_read_blocks(buf, start, ALIGN(ARM_HEAD_SIZE, SECTOR_SIZE));
+	if (ret)
 		hang();
-	}
 
-	/* arria10 header is 512 byte */
-	arria10_header_len = 512;
-	sizep = 4;
+	if (is_barebox_arm_head(buf))
+		size = *((unsigned int *)buf + ARM_HEAD_SIZE_OFFSET /
+			 sizeof(unsigned int));
+	else
+		hang();
 
-	/* copy PBL */
-	memcpy(in_buf, buf, pbl_len + sizep + arria10_header_len);
+	ret = arria10_read_blocks(buf, start, ALIGN(size, SECTOR_SIZE));
+	if (ret)
+		hang();
 
-	/* pbl is appended with 4 byte CRC for boot rom */
-	arria10_crc = 4;
-
-	/* copy payload, skip the Arria10 CRC */
-	memcpy(in_buf + pbl_len + sizep + arria10_header_len,
-	       buf + pbl_len + sizep + arria10_header_len + arria10_crc, *(image_end));
-
-	bb = in_buf;
+	bb = buf;
 
 	bb();
 

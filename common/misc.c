@@ -150,7 +150,10 @@ EXPORT_SYMBOL(barebox_set_model);
 
 const char *barebox_get_model(void)
 {
-	return model;
+	if (model)
+		return model;
+	else
+		return "none";
 }
 EXPORT_SYMBOL(barebox_get_model);
 

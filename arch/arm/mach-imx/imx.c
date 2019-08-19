@@ -95,7 +95,7 @@ static int imx_init(void)
 	if (root) {
 		__imx_cpu_type = imx_soc_from_dt();
 		if (!__imx_cpu_type)
-			hang();
+			return 0;
 	}
 
 	if (cpu_is_mx1())

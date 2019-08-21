@@ -859,6 +859,28 @@ config HABV4_IMG_CRT_PEM
 
 endif
 
+if HABV4
+
+config HABV4_IMAGE_SIGNED
+	bool "build signed images"
+	help
+	  enable the creation of a signed image, if the habv4-imx6-gencsf.h
+	  included in the flash-header and the NXP cst Tool is available
+
+config HABV4_IMAGE_SIGNED_USB
+	bool "build signed USB images"
+	help
+	  enable the creation of a usb signed image, if the habv4-imx6-gencsf.h
+	  included in the flash-header and the NXP cst Tool is available
+
+config HABV4_IMAGE_SIGNED_ENCRYPTED
+	bool "build signed encrypted images"
+	help
+	  enable the creation of the encrypted image, if the habv4-imx6-gencsf.h
+	  included in the flash-header and the NXP cst Tool is available
+
+endif
+
 config HABV3
 	tristate "HABv3 support"
 	select HAB

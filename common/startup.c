@@ -221,13 +221,6 @@ enum autoboot_state do_autoboot_countdown(void)
 	if (autoboot_state != AUTOBOOT_UNKNOWN)
 		return autoboot_state;
 
-	globalvar_add_simple_enum("autoboot_abort_key",
-				  &global_autoboot_abort_key,
-                                  global_autoboot_abort_keys,
-				  ARRAY_SIZE(global_autoboot_abort_keys));
-	globalvar_add_simple_int("autoboot_timeout",
-				 &global_autoboot_timeout, "%u");
-
 	menu_exists = stat(MENUFILE, &s) == 0;
 
 	if (menu_exists) {
@@ -271,6 +264,17 @@ static int run_init(void)
 	bool env_bin_init_exists;
 	enum autoboot_state autoboot;
 	struct stat s;
+
+	/*
+	 * Register autoboot variables here as they might be altered by
+	 * init scripts.
+	 */
+	globalvar_add_simple_enum("autoboot_abort_key",
+				  &global_autoboot_abort_key,
+                                  global_autoboot_abort_keys,
+				  ARRAY_SIZE(global_autoboot_abort_keys));
+	globalvar_add_simple_int("autoboot_timeout",
+				 &global_autoboot_timeout, "%u");
 
 	setenv("PATH", "/env/bin");
 

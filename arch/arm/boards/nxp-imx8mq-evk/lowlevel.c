@@ -105,8 +105,6 @@ static __noreturn noinline void nxp_imx8mq_evk_start(void)
 	const u8 *bl31;
 	size_t bl31_size;
 
-	imx8mq_cpu_lowlevel_init();
-
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();
 

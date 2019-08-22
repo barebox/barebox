@@ -222,8 +222,8 @@ static struct extcsd_reg extcsd[] = {
                 .access = ACC_R,
                 .width = 2,
         },
-        [EXT_CSD_EXCEPTION_EVENTS_STATUS] = {
-                .name = "EXT_CSD_EXCEPTION_EVENTS_STATUS",
+        [EXT_CSD_EXCEPTION_DYNCAP_NEEDED] = {
+                .name = "EXT_CSD_EXCEPTION_DYNCAP_NEEDED",
                 .access = ACC_R,
                 .width = 1,
         },
@@ -1832,6 +1832,13 @@ static int print_field(u8 *reg, int index)
 		val = get_field_val(EXT_CSD_EXCEPTION_EVENTS_STATUS, 4, 0x1);
 		printf("\t[4] EXTENDED_SECURITY_FAILURE: %i\n", val);
 		return 1;
+
+	case EXT_CSD_EXCEPTION_DYNCAP_NEEDED:
+		if  (get_field_val(EXT_CSD_EXCEPTION_EVENTS_STATUS, 2, 0x1)) {
+			val = get_field_val(EXT_CSD_EXCEPTION_DYNCAP_NEEDED, 0, 0x1);
+			printf("\t[0] DYNCAP_NEEDED: %i\n", val);
+		}
+                return 1;
 
 	case EXT_CSD_EXCEPTION_EVENTS_CTRL:
 		val = get_field_val(EXT_CSD_EXCEPTION_EVENTS_CTRL, 1, 0x1);

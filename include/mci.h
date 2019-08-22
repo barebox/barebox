@@ -164,6 +164,7 @@
 #define EXT_CSD_EXT_PARTITIONS_ATTRIBUTE	52	/* R/W, 2 bytes */
 #define EXT_CSD_EXCEPTION_EVENTS_STATUS		54	/* RO, 2 bytes */
 #define EXT_CSD_EXCEPTION_EVENTS_CTRL		56	/* R/W, 2 bytes */
+#define EXT_CSD_EXCEPTION_DYNCAP_NEEDED		58	/* RO, 1 byte */
 #define EXT_CSD_CLASS_6_CTRL			59	/* R/W */
 #define EXT_CSD_INI_TIMEOUT_EMU			60	/* RO */
 #define EXT_CSD_DATA_SECTOR_SIZE		61	/* RO */

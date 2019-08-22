@@ -69,15 +69,8 @@ static void ddrc_phy_fetch_streaming_message(void __iomem *phy)
 	const u16 index = ddrc_phy_get_message(phy, PMC_MESSAGE_STREAM);
 	u16 i;
 
-	putc_ll('|');
-	puthex_ll(index);
-
-	for (i = 0; i < index; i++) {
-		const u32 arg = ddrc_phy_get_message(phy, PMC_MESSAGE_STREAM);
-
-		putc_ll('|');
-		puthex_ll(arg);
-	}
+	for (i = 0; i < index; i++)
+		ddrc_phy_get_message(phy, PMC_MESSAGE_STREAM);
 }
 
 void ddrc_phy_wait_training_complete(void __iomem *phy)
@@ -85,23 +78,14 @@ void ddrc_phy_wait_training_complete(void __iomem *phy)
 	for (;;) {
 		const u32 m = ddrc_phy_get_message(phy, PMC_MESSAGE_ID);
 
-		puthex_ll(m);
-
 		switch (m) {
 		case PMC_TRAIN_STREAM_START:
 			ddrc_phy_fetch_streaming_message(phy);
 			break;
 		case PMC_TRAIN_SUCCESS:
-			putc_ll('P');
-			putc_ll('\r');
-			putc_ll('\n');
 			return;
 		case PMC_TRAIN_FAIL:
-			putc_ll('F');
 			hang();
 		}
-
-		putc_ll('\r');
-		putc_ll('\n');
 	}
 }

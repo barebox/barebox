@@ -56,27 +56,6 @@ static void nxp_imx8mq_evk_sram_setup(void)
 	ddr_init();
 }
 
-extern unsigned char trampoline_start[];
-extern unsigned char trampoline_end[];
-
-static void nxp_imx8mq_evk_install_tfa_trampoline(void)
-{
-	unsigned int tramp_len;
-	unsigned int offset;
-	/*
-	 * Create a trampoline which is places in DRAM and calls back into the
-	 * PBL entry function found in the TCRAM. Register x0 is set to 1 to
-	 * indicate that DRAM setup was already run.
-	 */
-	tramp_len = (void *)trampoline_end - (void *)trampoline_start;
-	memcpy((void *)MX8MQ_ATF_BL33_BASE_ADDR, (void *)trampoline_start,
-	       tramp_len);
-
-	offset = get_runtime_offset();
-	memcpy((void *)MX8MQ_ATF_BL33_BASE_ADDR + tramp_len, &offset,
-	       sizeof(offset));
-}
-
 /*
  * Power-on execution flow of start_nxp_imx8mq_evk() might not be
  * obvious for a very first read, so here's, hopefully helpful,
@@ -117,8 +96,12 @@ static __noreturn noinline void nxp_imx8mq_evk_start(void)
 	 */
 	if (current_el() == 3) {
 		nxp_imx8mq_evk_sram_setup();
-		nxp_imx8mq_evk_install_tfa_trampoline();
 		get_builtin_firmware(imx8mq_bl31_bin, &bl31, &bl31_size);
+		/*
+		 * On completion the TF-A will jump to MX8MQ_ATF_BL33_BASE_ADDR in
+		 * EL2. Copy ourselves there.
+		 */
+		memcpy((void *)MX8MQ_ATF_BL33_BASE_ADDR, _text, __bss_start - _text);
 		imx8mq_atf_load_bl31(bl31, bl31_size);
 	}
 

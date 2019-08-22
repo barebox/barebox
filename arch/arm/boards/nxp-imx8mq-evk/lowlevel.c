@@ -88,11 +88,9 @@ static __noreturn noinline void nxp_imx8mq_evk_start(void)
 		setup_uart();
 
 	/*
-	 * if register r0 does not contain 1, we are running for the first time
-	 * and need to initialize the DRAM, install the trampoline and run TF-A
-	 * (BL31).
-	 * Otherwise the 1 indicates that the DRAM setup and trampoline are
-	 * already installed and TF-A has been run. In this case we can skip
+	 * If we are in EL3 we are running for the first time and need to
+	 * initialize the DRAM and run TF-A (BL31). The TF-A will then jump
+	 * to DRAM in EL2.
 	 */
 	if (current_el() == 3) {
 		nxp_imx8mq_evk_sram_setup();
@@ -103,6 +101,7 @@ static __noreturn noinline void nxp_imx8mq_evk_start(void)
 		 */
 		memcpy((void *)MX8MQ_ATF_BL33_BASE_ADDR, _text, __bss_start - _text);
 		imx8mq_atf_load_bl31(bl31, bl31_size);
+		/* not reached */
 	}
 
 	imx8_get_boot_source(&src, &instance);

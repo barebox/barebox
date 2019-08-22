@@ -11,8 +11,6 @@ extern unsigned long free_mem_ptr;
 extern unsigned long free_mem_end_ptr;
 
 void pbl_barebox_uncompress(void *dest, void *compressed_start, unsigned int len);
-int pbl_barebox_verify(void *compressed_start, unsigned int len, void *hash,
-		       unsigned int hash_len);
 
 #ifdef __PBL__
 #define IN_PBL	1

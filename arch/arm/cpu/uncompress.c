@@ -42,18 +42,14 @@ unsigned long free_mem_end_ptr;
 extern unsigned char input_data[];
 extern unsigned char input_data_end[];
 
-extern unsigned char sha_sum[];
-extern unsigned char sha_sum_end[];
-
 void __noreturn barebox_multi_pbl_start(unsigned long membase,
 		unsigned long memsize, void *boarddata)
 {
-	uint32_t pg_len, uncompressed_len, pbl_hash_len;
+	uint32_t pg_len, uncompressed_len;
 	void __noreturn (*barebox)(unsigned long, unsigned long, void *);
 	unsigned long endmem = membase + memsize;
 	unsigned long barebox_base;
 	void *pg_start, *pg_end;
-	void *pbl_hash_start, *pbl_hash_end;
 	unsigned long pc = get_pc();
 
 	pg_start = input_data + global_variable_offset();
@@ -95,17 +91,6 @@ void __noreturn barebox_multi_pbl_start(unsigned long membase,
 
 	pr_debug("uncompressing barebox binary at 0x%p (size 0x%08x) to 0x%08lx (uncompressed size: 0x%08x)\n",
 			pg_start, pg_len, barebox_base, uncompressed_len);
-
-	if (IS_ENABLED(CONFIG_PBL_VERIFY_PIGGY)) {
-		pbl_hash_start = sha_sum;
-		pbl_hash_end = sha_sum_end;
-		pbl_hash_len = pbl_hash_end - pbl_hash_start;
-		if (pbl_barebox_verify(pg_start, pg_len, pbl_hash_start,
-				       pbl_hash_len) != 0) {
-			putc_ll('!');
-			panic("hash mismatch, refusing to decompress");
-		}
-	}
 
 	pbl_barebox_uncompress((void*)barebox_base, pg_start, pg_len);
 

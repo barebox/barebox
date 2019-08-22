@@ -51,16 +51,11 @@ static void noinline errorfn(char *error)
 	while (1);
 }
 
-void pbl_barebox_uncompress(void *dest, void *compressed_start, unsigned int len)
-{
-	decompress((void *)compressed_start,
-			len,
-			NULL, NULL,
-			dest, NULL, errorfn);
-}
+extern unsigned char sha_sum[];
+extern unsigned char sha_sum_end[];
 
-int pbl_barebox_verify(void *compressed_start, unsigned int len, void *hash,
-		       unsigned int hash_len)
+static int pbl_barebox_verify(void *compressed_start, unsigned int len, void *hash,
+			      unsigned int hash_len)
 {
 	struct sha256_state sha_state = { 0 };
 	struct digest d = { .ctx = &sha_state };
@@ -92,4 +87,26 @@ int pbl_barebox_verify(void *compressed_start, unsigned int len, void *hash,
 	}
 
 	return memcmp(hash, computed_hash, SHA256_DIGEST_SIZE);
+}
+
+void pbl_barebox_uncompress(void *dest, void *compressed_start, unsigned int len)
+{
+	uint32_t pbl_hash_len;
+	void *pbl_hash_start, *pbl_hash_end;
+
+	if (IS_ENABLED(CONFIG_PBL_VERIFY_PIGGY)) {
+		pbl_hash_start = sha_sum;
+		pbl_hash_end = sha_sum_end;
+		pbl_hash_len = pbl_hash_end - pbl_hash_start;
+		if (pbl_barebox_verify(compressed_start, len, pbl_hash_start,
+				       pbl_hash_len) != 0) {
+			putc_ll('!');
+			panic("hash mismatch, refusing to decompress");
+		}
+	}
+
+	decompress((void *)compressed_start,
+			len,
+			NULL, NULL,
+			dest, NULL, errorfn);
 }

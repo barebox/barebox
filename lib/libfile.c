@@ -38,7 +38,7 @@ int pwrite_full(int fd, const void *buf, size_t size, loff_t offset)
 		now = pwrite(fd, buf, size, offset);
 		if (now == 0) {
 			errno = ENOSPC;
-			return -1;
+			return -errno;
 		}
 		if (now < 0)
 			return now;
@@ -66,7 +66,7 @@ int write_full(int fd, const void *buf, size_t size)
 		now = write(fd, buf, size);
 		if (now == 0) {
 			errno = ENOSPC;
-			return -1;
+			return -errno;
 		}
 		if (now < 0)
 			return now;
@@ -194,6 +194,7 @@ again:
 	buf = calloc(read_size + 1, 1);
 	if (!buf) {
 		ret = -ENOMEM;
+		errno = ENOMEM;
 		goto err_out;
 	}
 

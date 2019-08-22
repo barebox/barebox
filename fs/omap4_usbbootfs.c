@@ -29,39 +29,6 @@ struct file_priv {
 	s32 id;
 	u32 size;
 };
-/*
-static int omap4_usbbootfs_create(
-	struct device_d *dev, const char *pathname, mode_t mode)
-{
-	return -ENOSYS;
-}
-
-static int omap4_usbbootfs_unlink(struct device_d *dev, const char *pathname)
-{
-	return -ENOSYS;
-}
-
-static int omap4_usbbootfs_mkdir(struct device_d *dev, const char *pathname)
-{
-	return -ENOSYS;
-}
-
-static int omap4_usbbootfs_rmdir(struct device_d *dev, const char *pathname)
-{
-	return -ENOSYS;
-}
-
-static int omap4_usbbootfs_write(
-	struct device_d *_dev, FILE *f, const void *inbuf, size_t size)
-{
-	return -ENOSYS;
-}
-
-static int omap4_usbbootfs_truncate(struct device_d *dev, FILE *f, loff_t size)
-{
-	return -ENOSYS;
-}
-*/
 
 static struct file_priv *omap4_usbbootfs_do_open(
 	struct device_d *dev, int accmode, const char *filename)
@@ -187,14 +154,6 @@ static struct fs_driver_d omap4_usbbootfs_driver = {
 	.read    = omap4_usbbootfs_read,
 	.opendir = omap4_usbbootfs_opendir,
 	.stat    = omap4_usbbootfs_stat,
-/*
-	.create	= omap4_usbbootfs_create,
-	.unlink	= omap4_usbbootfs_unlink,
-	.mkdir	= omap4_usbbootfs_mkdir,
-	.rmdir	= omap4_usbbootfs_rmdir,
-	.write	= omap4_usbbootfs_write,
-	.truncate= omap4_usbbootfs_truncate,
-*/
 	.flags	 = 0,
 	.drv = {
 		.probe	= omap4_usbbootfs_probe,

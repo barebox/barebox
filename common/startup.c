@@ -314,10 +314,10 @@ static int run_init(void)
 
 	autoboot = do_autoboot_countdown();
 
+	console_ctrlc_allow();
+
 	if (autoboot == AUTOBOOT_BOOT)
 		run_command("boot");
-
-	console_ctrlc_allow();
 
 	if (autoboot == AUTOBOOT_MENU)
 		run_command(MENUFILE);

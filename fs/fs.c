@@ -1262,6 +1262,15 @@ static void d_invalidate(struct dentry *dentry)
 {
 }
 
+static int d_no_revalidate(struct dentry *dir, unsigned int flags)
+{
+	return 0;
+}
+
+const struct dentry_operations no_revalidate_d_ops = {
+	.d_revalidate = d_no_revalidate,
+};
+
 static inline int d_revalidate(struct dentry *dentry, unsigned int flags)
 {
 	if (unlikely(dentry->d_flags & DCACHE_OP_REVALIDATE))

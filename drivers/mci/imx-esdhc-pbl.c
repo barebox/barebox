@@ -428,13 +428,11 @@ int imx8_esdhc_start_image(int instance)
 
 int imx8_esdhc_load_piggy(int instance)
 {
-	void *buf = (void *)MX8MQ_ATF_BL33_BASE_ADDR;
+	void *buf, *piggy;
 	struct imx_flash_header_v2 *hdr = NULL;
-	void *bb = 0;
 	struct esdhc esdhc;
 	int ret, len;
 	int offset = SZ_32K;
-
 
 	switch (instance) {
 	case 0:
@@ -450,6 +448,13 @@ int imx8_esdhc_load_piggy(int instance)
 	esdhc.is_be = 0;
 	esdhc.is_mx6 = 1;
 
+	/*
+	 * We expect to be running at MX8MQ_ATF_BL33_BASE_ADDR where the atf
+	 * has jumped to. Use a temporary buffer where we won't overwrite
+	 * ourselves.
+	 */
+	buf = (void *)MX8MQ_ATF_BL33_BASE_ADDR + SZ_32M;
+
 	ret = esdhc_search_header(&esdhc, &hdr, buf, &offset);
 	if (ret)
 		return ret;
@@ -462,13 +467,13 @@ int imx8_esdhc_load_piggy(int instance)
 	/*
 	 * Calculate location of the piggydata at the offset loaded into RAM
 	 */
-	buf = buf + offset + hdr->boot_data.size;
+	piggy = buf + offset + hdr->boot_data.size;
+
 	/*
-	 * Barebox expects the piggydata right behind the PBL in the beginning
-	 * of RAM.
+	 * Copy the piggydata where the uncompressing code expects it
 	 */
-	bb = (void *) MX8MQ_DDR_CSD1_BASE_ADDR + barebox_pbl_size;
-	memcpy(bb, buf, piggydata_size());
+	memcpy(input_data, piggy, piggydata_size());
+
 	return ret;
 }
 #endif

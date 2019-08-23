@@ -243,12 +243,13 @@ static int efi_process_key(struct efi_console_priv *priv, const char *inp)
 	return 1;
 }
 
-static int efi_console_puts(struct console_device *cdev, const char *s)
+static int efi_console_puts(struct console_device *cdev, const char *s,
+			    size_t nbytes)
 {
 	struct efi_console_priv *priv = to_efi(cdev);
 	int n = 0;
 
-	while (*s) {
+	while (nbytes--) {
 		if (*s == 27) {
 			priv->efi_console_buffer[n] = 0;
 			priv->out->output_string(priv->out,

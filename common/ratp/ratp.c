@@ -259,19 +259,17 @@ static int ratp_console_tstc(struct console_device *cdev)
 	return kfifo_len(ctx->console_recv_fifo) ? 1 : 0;
 }
 
-static int ratp_console_puts(struct console_device *cdev, const char *s)
+static int ratp_console_puts(struct console_device *cdev, const char *s,
+			     size_t nbytes)
 {
 	struct ratp_ctx *ctx = container_of(cdev, struct ratp_ctx, ratp_console);
-	int len = 0;
-
-	len = strlen(s);
 
 	if (ratp_busy(&ctx->ratp))
-		return len;
+		return nbytes;
 
-	kfifo_put(ctx->console_transmit_fifo, s, len);
+	kfifo_put(ctx->console_transmit_fifo, s, nbytes);
 
-	return len;
+	return nbytes;
 }
 
 static void ratp_console_putc(struct console_device *cdev, char c)

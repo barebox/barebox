@@ -253,20 +253,19 @@ static void console_set_stdoutpath(struct console_device *cdev)
 	free(str);
 }
 
-static int __console_puts(struct console_device *cdev, const char *s)
+static int __console_puts(struct console_device *cdev, const char *s,
+			  size_t nbytes)
 {
-	int n = 0;
+	size_t i;
 
-	while (*s) {
-		if (*s == '\n') {
+	for (i = 0; i < nbytes; i++) {
+		if (*s == '\n')
 			cdev->putc(cdev, '\r');
-			n++;
-		}
+
 		cdev->putc(cdev, *s);
-		n++;
 		s++;
 	}
-	return n;
+	return i;
 }
 
 static int fops_open(struct cdev *cdev, unsigned long flags)
@@ -298,7 +297,7 @@ static ssize_t fops_write(struct cdev* dev, const void* buf, size_t count,
 {
 	struct console_device *priv = dev->priv;
 
-	priv->puts(priv, buf);
+	priv->puts(priv, buf, count);
 
 	return count;
 }
@@ -545,7 +544,7 @@ int console_puts(unsigned int ch, const char *str)
 	if (initialized == CONSOLE_INIT_FULL) {
 		for_each_console(cdev) {
 			if (cdev->f_active & ch) {
-				n = cdev->puts(cdev, str);
+				n = cdev->puts(cdev, str, strlen(str));
 			}
 		}
 		return n;

@@ -30,7 +30,9 @@ enum reset_src_type {
 enum reset_src_type reset_source_get(void);
 const char *reset_source_name(void);
 int reset_source_get_instance(void);
+struct device_d *reset_source_get_device(void);
 
+void reset_source_set_device(struct device_d *dev, enum reset_src_type st);
 void reset_source_set_prinst(enum reset_src_type,
 			     unsigned int priority, int instance);
 

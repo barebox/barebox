@@ -54,7 +54,7 @@ void reset_source_set_priority(enum reset_src_type st, unsigned int priority)
 
 	reset_source = st;
 	reset_source_priority = priority;
-	reset_source_instance = 0;
+	reset_source_instance = -1;
 
 	pr_debug("Setting reset source to %s with priority %d\n",
 			reset_src_names[reset_source], priority);

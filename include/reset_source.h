@@ -49,7 +49,7 @@ static inline enum reset_src_type reset_source_get(void)
 
 static inline int reset_source_get_instance(void)
 {
-	return 0;
+	return -1;
 }
 
 static inline unsigned int of_get_reset_source_priority(struct device_node *node)

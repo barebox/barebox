@@ -214,7 +214,6 @@ static int da9053_set_timeout(struct watchdog *wd, unsigned timeout)
 
 static void da9053_detect_reset_source(struct da9053_priv *da9053)
 {
-	unsigned int priority;
 	enum reset_src_type type;
 	int ret;
 	u8 val;
@@ -236,9 +235,7 @@ static void da9053_detect_reset_source(struct da9053_priv *da9053)
 	else
 		return;
 
-	priority = of_get_reset_source_priority(da9053->dev->device_node);
-
-	reset_source_set_priority(type, priority);
+	reset_source_set_device(da9053->dev, ltype);
 
 	ret = da9053_reg_write(da9053, DA9053_FAULTLOG_REG, val);
 	if (ret < 0)

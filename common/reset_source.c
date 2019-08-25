@@ -41,6 +41,12 @@ enum reset_src_type reset_source_get(void)
 }
 EXPORT_SYMBOL(reset_source_get);
 
+const char *reset_source_name(void)
+{
+	return reset_src_names[reset_source];
+}
+EXPORT_SYMBOL(reset_source_name);
+
 int reset_source_get_instance(void)
 {
 	return reset_source_instance;
@@ -60,12 +66,6 @@ void reset_source_set_priority(enum reset_src_type st, unsigned int priority)
 			reset_src_names[reset_source], priority);
 }
 EXPORT_SYMBOL(reset_source_set_priority);
-
-const char *reset_source_name(void)
-{
-	return reset_src_names[reset_source];
-}
-EXPORT_SYMBOL(reset_source_name);
 
 void reset_source_set_instance(enum reset_src_type type, int instance)
 {

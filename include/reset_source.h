@@ -26,13 +26,33 @@ enum reset_src_type {
 };
 
 #ifdef CONFIG_RESET_SOURCE
-void reset_source_set_priority(enum reset_src_type, unsigned int priority);
+
 enum reset_src_type reset_source_get(void);
-void reset_source_set_instance(enum reset_src_type type, int instance);
-int reset_source_get_instance(void);
-unsigned int of_get_reset_source_priority(struct device_node *node);
 const char *reset_source_name(void);
+int reset_source_get_instance(void);
+
+void reset_source_set_priority(enum reset_src_type, unsigned int priority);
+void reset_source_set_instance(enum reset_src_type type, int instance);
+
+unsigned int of_get_reset_source_priority(struct device_node *node);
+
 #else
+
+static inline enum reset_src_type reset_source_get(void)
+{
+	return RESET_UKWN;
+}
+
+static inline const char *reset_source_name(void)
+{
+	return "unknown";
+}
+
+static inline int reset_source_get_instance(void)
+{
+	return -1;
+}
+
 static inline void reset_source_set_priority(enum reset_src_type type,
 		unsigned int priority)
 {
@@ -42,24 +62,9 @@ static inline void reset_source_set_instance(enum reset_src_type type, int insta
 {
 }
 
-static inline enum reset_src_type reset_source_get(void)
-{
-	return RESET_UKWN;
-}
-
-static inline int reset_source_get_instance(void)
-{
-	return -1;
-}
-
 static inline unsigned int of_get_reset_source_priority(struct device_node *node)
 {
 	return 0;
-}
-
-static inline const char *reset_source_name(void)
-{
-	return "unknown";
 }
 #endif
 

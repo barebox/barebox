@@ -55,6 +55,11 @@ static inline int reset_source_get_instance(void)
 	return -1;
 }
 
+static inline struct device_d *reset_source_get_device(void)
+{
+	return NULL;
+}
+
 static inline void reset_source_set_prinst(enum reset_src_type type,
 					   unsigned int priority, int instance)
 {

@@ -53,26 +53,20 @@ int reset_source_get_instance(void)
 }
 EXPORT_SYMBOL(reset_source_get_instance);
 
-void reset_source_set_priority(enum reset_src_type st, unsigned int priority)
+void reset_source_set_prinst(enum reset_src_type st,
+			     unsigned int priority, int instance)
 {
 	if (priority <= reset_source_priority)
 		return;
 
 	reset_source = st;
 	reset_source_priority = priority;
-	reset_source_instance = -1;
+	reset_source_instance = instance;
 
 	pr_debug("Setting reset source to %s with priority %d\n",
 			reset_src_names[reset_source], priority);
 }
-EXPORT_SYMBOL(reset_source_set_priority);
-
-void reset_source_set_instance(enum reset_src_type type, int instance)
-{
-	if (reset_source == type)
-		reset_source_instance = instance;
-}
-EXPORT_SYMBOL(reset_source_set_instance);
+EXPORT_SYMBOL(reset_source_set_prinst);
 
 static int reset_source_init(void)
 {
@@ -83,7 +77,6 @@ static int reset_source_init(void)
 				 "%d");
 	return 0;
 }
-
 coredevice_initcall(reset_source_init);
 
 /**

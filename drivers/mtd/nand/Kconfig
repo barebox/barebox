@@ -90,6 +90,16 @@ config NAND_OMAP_GPMC
 	  Support for NAND flash using GPMC. GPMC is a common memory
 	  interface found on Texas Instrument's OMAP platforms
 
+config MTD_NAND_OMAP_ELM
+	bool "Support for ELM (Error Location Module) on OMAP platforms"
+	depends on NAND_OMAP_GPMC
+	help
+	  This config enables the ELM hardware engine, which can be used to
+	  locate and correct errors when using BCH ECC scheme. This offloads
+	  the cpu from doing ECC error searching and correction. However some
+	  legacy OMAP families like OMAP2xxx, OMAP3xxx do not have ELM engine
+	  so this is optional for them.
+
 config NAND_ORION
 	bool
 	prompt "Marvell Orion NAND driver"

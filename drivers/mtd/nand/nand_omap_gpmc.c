@@ -139,7 +139,7 @@ static struct nand_bbt_descr bb_descrip_flashbased = {
  */
 static int omap_dev_ready(struct mtd_info *mtd)
 {
-	struct nand_chip *nand = (struct nand_chip *)(mtd->priv);
+	struct nand_chip *nand = mtd_to_nand(mtd);
 	struct gpmc_nand_info *oinfo = (struct gpmc_nand_info *)(nand->priv);
 
 	if (readl(oinfo->gpmc_base + GPMC_STATUS) & oinfo->wait_mon_mask)
@@ -185,7 +185,7 @@ static void gpmc_nand_wp(struct gpmc_nand_info *oinfo, int mode)
  */
 static void omap_hwcontrol(struct mtd_info *mtd, int cmd, unsigned int ctrl)
 {
-	struct nand_chip *nand = (struct nand_chip *)(mtd->priv);
+	struct nand_chip *nand = mtd_to_nand(mtd);
 	struct gpmc_nand_info *oinfo = (struct gpmc_nand_info *)(nand->priv);
 
 	switch (ctrl) {
@@ -230,7 +230,7 @@ static unsigned int gen_true_ecc(u8 *ecc_buf)
 static int __omap_calculate_ecc(struct mtd_info *mtd, uint8_t *ecc_code,
 				int sblock)
 {
-	struct nand_chip *nand = (struct nand_chip *)(mtd->priv);
+	struct nand_chip *nand = mtd_to_nand(mtd);
 	struct gpmc_nand_info *oinfo = (struct gpmc_nand_info *)(nand->priv);
 	unsigned int reg;
 	unsigned int val1 = 0x0, val2 = 0x0;
@@ -290,7 +290,7 @@ static int omap_calculate_ecc(struct mtd_info *mtd, const uint8_t *dat,
 static int omap_correct_bch(struct mtd_info *mtd, uint8_t *dat,
 			     uint8_t *read_ecc, uint8_t *calc_ecc)
 {
-	struct nand_chip *nand = (struct nand_chip *)(mtd->priv);
+	struct nand_chip *nand = mtd_to_nand(mtd);
 	struct gpmc_nand_info *oinfo = (struct gpmc_nand_info *)(nand->priv);
 	int j, actual_eccsize;
 	const uint8_t *erased_ecc_vec;
@@ -362,7 +362,7 @@ static int omap_correct_hamming(struct mtd_info *mtd, uint8_t *dat,
 	unsigned int orig_ecc, new_ecc, res, hm;
 	unsigned short parity_bits, byte;
 	unsigned char bit;
-	struct nand_chip *nand = (struct nand_chip *)(mtd->priv);
+	struct nand_chip *nand = mtd_to_nand(mtd);
 	struct gpmc_nand_info *oinfo = (struct gpmc_nand_info *)(nand->priv);
 
 	if (read_ecc[0] == 0xff && read_ecc[1] == 0xff &&
@@ -416,7 +416,7 @@ static int omap_correct_hamming(struct mtd_info *mtd, uint8_t *dat,
 static int omap_correct_data(struct mtd_info *mtd, uint8_t *dat,
 			     uint8_t *read_ecc, uint8_t *calc_ecc)
 {
-	struct nand_chip *nand = (struct nand_chip *)(mtd->priv);
+	struct nand_chip *nand = mtd_to_nand(mtd);
 	struct gpmc_nand_info *oinfo = (struct gpmc_nand_info *)(nand->priv);
 
 	if (oinfo->ecc_mode != OMAP_ECC_HAMMING_CODE_HW_ROMCODE)
@@ -429,7 +429,7 @@ static int omap_correct_data(struct mtd_info *mtd, uint8_t *dat,
 
 static void omap_enable_hwecc(struct mtd_info *mtd, int mode)
 {
-	struct nand_chip *nand = (struct nand_chip *)(mtd->priv);
+	struct nand_chip *nand = mtd_to_nand(mtd);
 	struct gpmc_nand_info *oinfo = (struct gpmc_nand_info *)(nand->priv);
 	unsigned int bch_mod = 0, bch_wrapmode = 0, eccsize1 = 0, eccsize0 = 0;
 	unsigned int ecc_conf_val = 0, ecc_size_conf_val = 0;

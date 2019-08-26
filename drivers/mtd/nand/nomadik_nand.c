@@ -105,7 +105,7 @@ static int nomadik_ecc512_calc(struct mtd_info *mtd, const u_char *data,
 static int nomadik_ecc512_correct(struct mtd_info *mtd, uint8_t *dat,
 				uint8_t *r_ecc, uint8_t *c_ecc)
 {
-	struct nand_chip *chip = mtd->priv;
+	struct nand_chip *chip = mtd_to_nand(mtd);
 	uint32_t r, c, d, diff; /*read, calculated, xor of them */
 
 	if (!memcmp(r_ecc, c_ecc, chip->ecc.bytes))
@@ -157,7 +157,7 @@ static void nomadik_ecc_control(struct mtd_info *mtd, int mode)
 
 static void nomadik_cmd_ctrl(struct mtd_info *mtd, int cmd, unsigned int ctrl)
 {
-	struct nand_chip *nand = mtd->priv;
+	struct nand_chip *nand = mtd_to_nand(mtd);
 	struct nomadik_nand_host *host = nand->priv;
 
 	if (cmd == NAND_CMD_NONE)

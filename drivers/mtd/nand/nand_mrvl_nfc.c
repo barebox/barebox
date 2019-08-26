@@ -1036,7 +1036,7 @@ static int pxa_ecc_init(struct mrvl_nand_host *host,
 
 static int mrvl_nand_scan(struct mtd_info *mtd)
 {
-	struct nand_chip *chip = mtd->priv;
+	struct nand_chip *chip = mtd_to_nand(mtd);
 	struct mrvl_nand_host *host = chip->priv;
 	int ret;
 	unsigned int ndcr;

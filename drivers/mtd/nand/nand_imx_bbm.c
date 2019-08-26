@@ -77,7 +77,7 @@ static int checkbad(struct mtd_info *mtd, loff_t ofs)
 
 static void *create_bbt(struct mtd_info *mtd)
 {
-	struct nand_chip *chip = mtd->priv;
+	struct nand_chip *chip = mtd_to_nand(mtd);
 	int len, i, numblocks, ret;
 	loff_t from = 0;
 	uint8_t *bbt;
@@ -122,7 +122,7 @@ out:
 
 static int attach_bbt(struct mtd_info *mtd, void *bbt)
 {
-	struct nand_chip *chip = mtd->priv;
+	struct nand_chip *chip = mtd_to_nand(mtd);
 
 	chip->bbt_td->options |= NAND_BBT_WRITE | NAND_BBT_CREATE;
 	chip->bbt_md->options |= NAND_BBT_WRITE | NAND_BBT_CREATE;

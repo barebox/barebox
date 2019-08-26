@@ -203,7 +203,7 @@ static void __nand_boot_init disable_nand_controller(void __iomem *host)
  */
 static void s3c2440_nand_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
 {
-	struct nand_chip *nand_chip = mtd->priv;
+	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct s3c24x0_nand_host *host = nand_chip->priv;
 
 	readsl(host->base + NFDATA, buf, len >> 2);
@@ -228,7 +228,7 @@ static void s3c2440_nand_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
 static void s3c2440_nand_write_buf(struct mtd_info *mtd, const uint8_t *buf,
 					int len)
 {
-	struct nand_chip *nand_chip = mtd->priv;
+	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct s3c24x0_nand_host *host = nand_chip->priv;
 
 	writesl(host->base + NFDATA, buf, len >> 2);
@@ -316,7 +316,7 @@ static int s3c2410_nand_correct_data(struct mtd_info *mtd, uint8_t *dat,
 
 static void s3c2410_nand_enable_hwecc(struct mtd_info *mtd, int mode)
 {
-	struct nand_chip *nand_chip = mtd->priv;
+	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct s3c24x0_nand_host *host = nand_chip->priv;
 
 #ifdef CONFIG_CPU_S3C2410
@@ -329,7 +329,7 @@ static void s3c2410_nand_enable_hwecc(struct mtd_info *mtd, int mode)
 
 static int s3c2410_nand_calculate_ecc(struct mtd_info *mtd, const uint8_t *dat, uint8_t *ecc_code)
 {
-	struct nand_chip *nand_chip = mtd->priv;
+	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct s3c24x0_nand_host *host = nand_chip->priv;
 
 #ifdef CONFIG_CPU_S3C2410
@@ -349,7 +349,7 @@ static int s3c2410_nand_calculate_ecc(struct mtd_info *mtd, const uint8_t *dat, 
 
 static void s3c24x0_nand_select_chip(struct mtd_info *mtd, int chip)
 {
-	struct nand_chip *nand_chip = mtd->priv;
+	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct s3c24x0_nand_host *host = nand_chip->priv;
 
 	if (chip == -1)
@@ -360,7 +360,7 @@ static void s3c24x0_nand_select_chip(struct mtd_info *mtd, int chip)
 
 static int s3c24x0_nand_devready(struct mtd_info *mtd)
 {
-	struct nand_chip *nand_chip = mtd->priv;
+	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct s3c24x0_nand_host *host = nand_chip->priv;
 
 	return readw(host->base + NFSTAT) & NFSTAT_BUSY;
@@ -369,7 +369,7 @@ static int s3c24x0_nand_devready(struct mtd_info *mtd)
 static void s3c24x0_nand_hwcontrol(struct mtd_info *mtd, int cmd,
 					unsigned int ctrl)
 {
-	struct nand_chip *nand_chip = mtd->priv;
+	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct s3c24x0_nand_host *host = nand_chip->priv;
 
 	if (cmd == NAND_CMD_NONE)

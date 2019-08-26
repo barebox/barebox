@@ -137,7 +137,7 @@ struct nand_oobfree {
 };
 
 #define MTD_MAX_OOBFREE_ENTRIES_LARGE  32
-#define MTD_MAX_ECCPOS_ENTRIES_LARGE   128 /* FIXME : understand why 448 is not working */
+#define MTD_MAX_ECCPOS_ENTRIES_LARGE   640
 /*
  * ECC layout control structure. Exported to userspace for
  * diagnosis and to allow creation of raw images

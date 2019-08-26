@@ -23,3 +23,7 @@
 pbl.lds
 barebox.x
 barebox.z
+barebox.sha.bin
+barebox.sum
+*.pimximg
+*.psimximg

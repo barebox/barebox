@@ -32,7 +32,6 @@
 #include <errno.h>
 
 struct imx_nand_host {
-	struct mtd_info		mtd;
 	struct nand_chip	nand;
 	struct mtd_partition	*parts;
 	struct device_d		*dev;
@@ -1237,8 +1236,7 @@ static int __init imxnd_probe(struct device_d *dev)
 
 	/* structures must be linked */
 	this = &host->nand;
-	mtd = &host->mtd;
-	mtd->priv = this;
+	mtd = &this->mtd;
 	mtd->parent = dev;
 	mtd->name = "imx_nand";
 

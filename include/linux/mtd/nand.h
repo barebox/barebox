@@ -543,6 +543,8 @@ struct nand_chip {
 
 	void *priv;
 	unsigned int bbt_type;
+
+	struct mtd_info mtd;
 };
 
 /*

@@ -21,7 +21,6 @@
 #include <linux/clk.h>
 
 struct orion_nand {
-	struct mtd_info mtd;
 	struct nand_chip chip;
 
 	u8 ale;         /* address line number connected to ALE */
@@ -91,7 +90,7 @@ static int orion_nand_probe(struct device_d *dev)
 	u32 val = 0;
 
 	priv = xzalloc(sizeof(struct orion_nand));
-	mtd = &priv->mtd;
+	mtd = &priv->chip.mtd;
 	chip = &priv->chip;
 
 	iores = dev_request_mem_resource(dev, 0);
@@ -118,7 +117,6 @@ static int orion_nand_probe(struct device_d *dev)
 		chip->chip_delay = (u8)val;
 
 	mtd->parent = dev;
-	mtd->priv = chip;
 	chip->priv = priv;
 	chip->IO_ADDR_R = chip->IO_ADDR_W = io_base;
 	chip->cmd_ctrl = orion_nand_cmd_ctrl;

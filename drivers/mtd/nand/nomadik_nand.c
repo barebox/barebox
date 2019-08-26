@@ -38,7 +38,6 @@
 #include <errno.h>
 
 struct nomadik_nand_host {
-	struct mtd_info		mtd;
 	struct nand_chip	nand;
 	void __iomem *cmd_va;
 	void __iomem *addr_va;
@@ -198,9 +197,8 @@ static int nomadik_nand_probe(struct device_d *dev)
 		return PTR_ERR(host->addr_va);
 
 	/* Link all private pointers */
-	mtd = &host->mtd;
 	nand = &host->nand;
-	mtd->priv = nand;
+	mtd = &nand->mtd;
 	nand->priv = host;
 	mtd->parent = dev;
 
@@ -223,7 +221,7 @@ static int nomadik_nand_probe(struct device_d *dev)
 	/*
 	 * Scan to find existance of the device
 	 */
-	if (nand_scan(&host->mtd, 1)) {
+	if (nand_scan(mtd, 1)) {
 		ret = -ENXIO;
 		goto err;
 	}

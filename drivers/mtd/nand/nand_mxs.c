@@ -200,7 +200,6 @@ struct mxs_nand_info {
 	void __iomem		*io_base;
 	void __iomem		*bch_base;
 	struct clk		*clk;
-	struct mtd_info		mtd;
 	enum gpmi_type		type;
 	int			dma_channel_base;
 	u32		version;
@@ -2030,7 +2029,7 @@ static void mxs_nand_compute_edo_timing(struct mxs_nand_info *info,
 static int mxs_nand_enable_edo_mode(struct mxs_nand_info *info)
 {
 	struct nand_chip *chip = &info->nand_chip;
-	struct mtd_info	 *mtd = &info->mtd;
+	struct mtd_info	 *mtd = &chip->mtd;
 	uint8_t feature[ONFI_SUBFEATURE_PARAM_LEN] = {};
 	int ret, mode;
 
@@ -2196,8 +2195,7 @@ static int mxs_nand_probe(struct device_d *dev)
 
 	/* structures must be linked */
 	chip = &nand_info->nand_chip;
-	mtd = &nand_info->mtd;
-	mtd->priv = chip;
+	mtd = &nand_info->nand_chip.mtd;
 	mtd->parent = dev;
 
 	chip->priv = nand_info;

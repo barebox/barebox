@@ -77,7 +77,6 @@ static struct nand_ecclayout atmel_oobinfo_small = {
 
 struct atmel_nand_host {
 	struct nand_chip	nand_chip;
-	struct mtd_info		mtd;
 	void __iomem		*io_base;
 	struct atmel_nand_data	*board;
 	struct device_d		*dev;
@@ -862,8 +861,8 @@ static int __init atmel_pmecc_nand_init_params(struct device_d *dev,
 					 struct atmel_nand_host *host)
 {
 	struct resource *iores;
-	struct mtd_info *mtd = &host->mtd;
 	struct nand_chip *nand_chip = &host->nand_chip;
+	struct mtd_info *mtd = &nand_chip->mtd;
 	int cap, sector_size, err_no;
 	int ret;
 
@@ -1251,8 +1250,8 @@ static int atmel_hw_nand_init_params(struct device_d *dev,
 					 struct atmel_nand_host *host)
 {
 	struct resource *iores;
-	struct mtd_info *mtd = &host->mtd;
 	struct nand_chip *nand_chip = &host->nand_chip;
+	struct mtd_info *mtd = &nand_chip->mtd;
 
 	iores = dev_request_mem_resource(dev, 1);
 	if (IS_ERR(iores))
@@ -1328,8 +1327,8 @@ static int __init atmel_nand_probe(struct device_d *dev)
 		return PTR_ERR(iores);
 	host->io_base = IOMEM(iores->start);
 
-	mtd = &host->mtd;
 	nand_chip = &host->nand_chip;
+	mtd = &nand_chip->mtd;
 	host->board = pdata;
 	host->dev = dev;
 
@@ -1342,7 +1341,6 @@ static int __init atmel_nand_probe(struct device_d *dev)
 	}
 
 	nand_chip->priv = host;		/* link the private data structures */
-	mtd->priv = nand_chip;
 	mtd->parent = dev;
 
 	/* Set address of NAND IO lines */

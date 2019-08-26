@@ -76,7 +76,12 @@ static uint32_t denali_irq_mask = DENALI_IRQ_ALL;
  * this macro allows us to convert from an MTD structure to our own
  * device context (denali) structure.
  */
-#define mtd_to_denali(m) container_of(m, struct denali_nand_info, mtd)
+static inline struct denali_nand_info *mtd_to_denali(struct mtd_info *mtd)
+{
+	struct nand_chip *nand = mtd_to_nand(mtd);
+
+	return container_of(nand, struct denali_nand_info, nand);
+}
 
 /*
  * These constants are defined by the driver to enable common driver
@@ -929,7 +934,7 @@ static bool handle_ecc(struct denali_nand_info *denali, uint8_t *buf,
 							err_device;
 					/* correct the ECC error */
 					buf[offset] ^= err_correction_value;
-					denali->mtd.ecc_stats.corrected++;
+					denali->nand.mtd.ecc_stats.corrected++;
 					bitflips++;
 				}
 			} else {
@@ -997,7 +1002,7 @@ static int write_page(struct mtd_info *mtd, struct nand_chip *chip,
 {
 	struct denali_nand_info *denali = mtd_to_denali(mtd);
 	dma_addr_t addr = (unsigned long)denali->buf.buf;
-	size_t size = denali->mtd.writesize + denali->mtd.oobsize;
+	size_t size = mtd->writesize + mtd->oobsize;
 	uint32_t irq_status;
 	uint32_t irq_mask = INTR_STATUS__DMA_CMD_COMP |
 						INTR_STATUS__PROGRAM_FAIL;
@@ -1094,7 +1099,7 @@ static int denali_read_page(struct mtd_info *mtd, struct nand_chip *chip,
 	struct denali_nand_info *denali = mtd_to_denali(mtd);
 
 	dma_addr_t addr = (unsigned long)denali->buf.buf;
-	size_t size = denali->mtd.writesize + denali->mtd.oobsize;
+	size_t size = mtd->writesize + mtd->oobsize;
 
 	uint32_t irq_status;
 	uint32_t irq_mask = denali->have_hw_ecc_fixup ?
@@ -1132,19 +1137,19 @@ static int denali_read_page(struct mtd_info *mtd, struct nand_chip *chip,
 			/* When we have hw ecc fixup, don't check oob.
 			 * That code below looks jacked up anyway.  I mean,
 			 * look at it, wtf? */
-			if (!is_erased(buf, denali->mtd.writesize))
-				denali->mtd.ecc_stats.failed++;
+			if (!is_erased(buf, mtd->writesize))
+				mtd->ecc_stats.failed++;
 		} else {
-			read_oob_data(&denali->mtd, chip->oob_poi,
+			read_oob_data(&denali->nand.mtd, chip->oob_poi,
 				denali->page);
 
 			/* check ECC failures that may have occurred on
 			 * erased pages */
 			if (check_erased_page) {
-				if (!is_erased(buf, denali->mtd.writesize))
-					denali->mtd.ecc_stats.failed++;
-				if (!is_erased(buf, denali->mtd.oobsize))
-					denali->mtd.ecc_stats.failed++;
+				if (!is_erased(buf, mtd->writesize))
+					mtd->ecc_stats.failed++;
+				if (!is_erased(buf, mtd->oobsize))
+					mtd->ecc_stats.failed++;
 			}
 		}
 	}
@@ -1156,7 +1161,7 @@ static int denali_read_page_raw(struct mtd_info *mtd, struct nand_chip *chip,
 {
 	struct denali_nand_info *denali = mtd_to_denali(mtd);
 	dma_addr_t addr = (unsigned long)denali->buf.buf;
-	size_t size = denali->mtd.writesize + denali->mtd.oobsize;
+	size_t size = mtd->writesize + mtd->oobsize;
 	uint32_t irq_mask = INTR_STATUS__DMA_CMD_COMP;
 
 	if (page != denali->page) {
@@ -1373,7 +1378,7 @@ static void denali_drv_init(struct denali_nand_info *denali)
 int denali_init(struct denali_nand_info *denali)
 {
 	struct nand_chip *nand = &denali->nand;
-	struct mtd_info *mtd = &denali->mtd;
+	struct mtd_info *mtd = &nand->mtd;
 	int ret = 0;
 	uint32_t val;
 
@@ -1393,13 +1398,12 @@ int denali_init(struct denali_nand_info *denali)
 	if (!denali->buf.buf)
 		return -ENOMEM;
 
-	denali->mtd.parent = denali->dev;
+	mtd->parent = denali->dev;
 	denali_hw_init(denali);
 	denali_drv_init(denali);
 
 	denali_set_intr_modes(denali, true);
 	mtd->name = "denali-nand";
-	mtd->priv = &denali->nand;
 
 	/* register the driver with the NAND core subsystem */
 	nand->read_buf = denali_read_buf;
@@ -1413,7 +1417,7 @@ int denali_init(struct denali_nand_info *denali)
 	 * this is the first stage in a two step process to register
 	 * with the nand subsystem
 	 */
-	if (nand_scan_ident(&denali->mtd, denali->max_banks, NULL)) {
+	if (nand_scan_ident(mtd, denali->max_banks, NULL)) {
 		ret = -ENXIO;
 		goto failed_req_irq;
 	}
@@ -1535,12 +1539,12 @@ int denali_init(struct denali_nand_info *denali)
 				MAIN_ACCESS);
 	}
 
-	if (nand_scan_tail(&denali->mtd)) {
+	if (nand_scan_tail(mtd)) {
 		ret = -ENXIO;
 		goto failed_req_irq;
 	}
 
-	return add_mtd_nand_device(&denali->mtd, "nand");
+	return add_mtd_nand_device(mtd, "nand");
 
 failed_req_irq:
 	denali_irq_cleanup(denali->irq, denali);

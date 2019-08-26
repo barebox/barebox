@@ -883,7 +883,6 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	nand->priv = (void *)oinfo;
 
 	minfo = &oinfo->minfo;
-	minfo->priv = (void *)nand;
 	minfo->parent = pdev;
 
 	if (pdata->cs >= GPMC_NUM_CS) {

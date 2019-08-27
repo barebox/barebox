@@ -1,6 +1,7 @@
 KBUILD_DEFCONFIG := sandbox_defconfig
 
-CPPFLAGS += -D__SANDBOX__ -fno-strict-aliasing
+CPPFLAGS += -D__SANDBOX__ -fno-strict-aliasing -fvisibility=hidden
+
 
 machine-y := sandbox
 

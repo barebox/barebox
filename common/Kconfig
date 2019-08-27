@@ -1295,6 +1295,8 @@ config PBL_BREAK
 	  If this enabled, barebox will be compiled with BKPT instruction
 	  on early pbl init. This option should be used only with JTAG debugger!
 
+source "lib/Kconfig.ubsan"
+
 endmenu
 
 config HAS_DEBUG_LL

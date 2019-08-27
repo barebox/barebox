@@ -2,6 +2,8 @@ config SANDBOX
 	bool
 	select OFTREE
 	select GPIOLIB
+	select ARCH_HAS_UBSAN_SANITIZE_ALL
+	select HAVE_ARCH_KASAN
 	default y
 
 config ARCH_TEXT_BASE

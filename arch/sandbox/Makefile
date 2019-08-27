@@ -45,9 +45,19 @@ ifeq ($(CONFIG_GPIO_LIBFTDI1),y)
 FTDI1_LIBS := $(shell pkg-config libftdi1 --libs)
 endif
 
+ifeq ($(CONFIG_KASAN),y)
+CPPFLAGS += -fsanitize=address
+SANITIZER_LIBS += -fsanitize=address
+endif
+
+ifeq ($(CONFIG_UBSAN),y)
+SANITIZER_LIBS += -fsanitize=undefined
+endif
+
 cmd_barebox__ = $(CC) -o $@ -Wl,-T,$(barebox-lds) \
 	-Wl,--start-group $(barebox-common) -Wl,--end-group \
-	-lrt -lpthread $(SDL_LIBS) $(FTDI1_LIBS)
+	-lrt -lpthread $(SDL_LIBS) $(FTDI1_LIBS) \
+	$(SANITIZER_LIBS)
 
 common-y += $(BOARD) arch/sandbox/os/ arch/sandbox/lib/
 

@@ -1297,6 +1297,13 @@ config PBL_BREAK
 
 source "lib/Kconfig.ubsan"
 
+config KASAN
+	bool "KASAN: runtime memory debugger"
+	depends on HAVE_ARCH_KASAN
+	help
+	  Enables KASAN (KernelAddressSANitizer) - runtime memory debugger,
+	  designed to find out-of-bounds accesses and use-after-free bugs.
+
 endmenu
 
 config HAS_DEBUG_LL
@@ -1305,3 +1312,6 @@ config HAS_DEBUG_LL
 config DDR_SPD
 	bool
 	select CRC_ITU_T
+
+config HAVE_ARCH_KASAN
+	bool

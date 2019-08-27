@@ -51,8 +51,6 @@
 #error "None of __LITTLE_ENDIAN and __BIG_ENDIAN are defined"
 #endif
 
-#include <asm/barebox.h> /* boot information for Linux kernel */
-
 /*
  * Function Prototypes
  */

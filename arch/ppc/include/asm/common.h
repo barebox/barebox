@@ -1,8 +1,6 @@
 #ifndef __ASM_COMMON_H
 #define __ASM_COMMON_H
 
-#include <asm/barebox.h>
-
 extern unsigned long _text_base;
 
 unsigned long long get_ticks(void);

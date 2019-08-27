@@ -1,8 +1,6 @@
 #ifndef __ABORT_H
 #define __ABORT_H
 
-#include <asm/barebox.h>
-
 #if defined CONFIG_ARCH_HAS_DATA_ABORT_MASK && !defined __PBL__
 
 /*

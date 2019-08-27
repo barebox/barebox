@@ -49,7 +49,7 @@ cmd_barebox__ = $(CC) -o $@ -Wl,-T,$(barebox-lds) \
 	-Wl,--start-group $(barebox-common) -Wl,--end-group \
 	-lrt -lpthread $(SDL_LIBS) $(FTDI1_LIBS)
 
-common-y += $(BOARD) arch/sandbox/os/
+common-y += $(BOARD) arch/sandbox/os/ arch/sandbox/lib/
 
 common-$(CONFIG_OFTREE) += arch/sandbox/dts/
 

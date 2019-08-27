@@ -72,7 +72,7 @@ int ctrlc(void);
 int arch_ctrlc(void);
 void ctrlc_handled(void);
 
-#ifdef ARCH_HAS_STACK_DUMP
+#ifdef CONFIG_ARCH_HAS_STACK_DUMP
 void dump_stack(void);
 #else
 static inline void dump_stack(void)

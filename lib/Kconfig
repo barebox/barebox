@@ -162,4 +162,7 @@ config BLOBGEN
 	select BASE64
 	bool "include blob encode/decode support"
 
+config ARCH_HAS_STACK_DUMP
+	bool
+
 endmenu

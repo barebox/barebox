@@ -10,6 +10,7 @@ config MIPS
 	select HAVE_CONFIGURABLE_TEXT_BASE
 	select HAVE_PBL_MULTI_IMAGES
 	select HAS_DMA
+	select ARCH_HAS_DATA_ABORT_MASK
 	select ELF
 	default y
 

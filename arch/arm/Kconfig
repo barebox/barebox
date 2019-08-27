@@ -399,6 +399,7 @@ config ARM_OPTIMZED_STRING_FUNCTIONS
 	  increase your binary size.
 
 config ARM_EXCEPTIONS
+	select ARCH_HAS_DATA_ABORT_MASK
 	bool "enable arm exception handling support"
 	default y
 

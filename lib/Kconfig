@@ -165,4 +165,7 @@ config BLOBGEN
 config ARCH_HAS_STACK_DUMP
 	bool
 
+config ARCH_HAS_DATA_ABORT_MASK
+	bool
+
 endmenu

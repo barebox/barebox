@@ -3,7 +3,7 @@
 
 #include <asm/barebox.h>
 
-#if defined ARCH_HAS_DATA_ABORT_MASK && !defined __PBL__
+#if defined CONFIG_ARCH_HAS_DATA_ABORT_MASK && !defined __PBL__
 
 /*
  * data_abort_mask - ignore data aborts

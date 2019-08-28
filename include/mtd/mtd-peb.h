@@ -21,5 +21,7 @@ int mtd_num_pebs(struct mtd_info *mtd);
 int mtd_peb_create_bitflips(struct mtd_info *mtd, int pnum, int offset,
 				   int len, int num_bitflips, int random,
 				   int info);
+int mtd_peb_write_file(struct mtd_info *mtd, int peb_start, int max_pebs,
+		       const void *buf, size_t len);
 
 #endif /* __LINUX_MTD_MTDPEB_H */

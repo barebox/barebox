@@ -551,9 +551,9 @@ static int stmfb_probe(struct device_d *hw_dev)
 		}
 
 		modes = of_get_display_timings(display);
-		if (IS_ERR(modes)) {
+		if (!modes) {
 			dev_err(hw_dev, "unable to parse display timings\n");
-			return PTR_ERR(modes);
+			return -EINVAL;
 		}
 
 		fbi.info.modes.modes = modes->modes;

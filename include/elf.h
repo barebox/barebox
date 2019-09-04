@@ -400,11 +400,38 @@ static inline void arch_write_notes(struct file *file) { }
 
 struct elf_image {
 	struct list_head list;
-	unsigned long entry;
+	u8 class;
+	u64 entry;
 	void *buf;
 };
 
 struct elf_image *elf_load_image(void *buf);
 void elf_release_image(struct elf_image *elf);
+
+#define ELF_GET_FIELD(__s, __field, __type) \
+static inline __type elf_##__s##_##__field(struct elf_image *elf, void *arg) { \
+	if (elf->class == ELFCLASS32) \
+		return (__type) ((struct elf32_##__s *) arg)->__field; \
+	else \
+		return (__type) ((struct elf64_##__s *) arg)->__field; \
+}
+
+ELF_GET_FIELD(hdr, e_entry, u64)
+ELF_GET_FIELD(hdr, e_phnum, u16)
+ELF_GET_FIELD(hdr, e_phoff, u64)
+ELF_GET_FIELD(hdr, e_type, u16)
+ELF_GET_FIELD(phdr, p_paddr, u64)
+ELF_GET_FIELD(phdr, p_filesz, u64)
+ELF_GET_FIELD(phdr, p_memsz, u64)
+ELF_GET_FIELD(phdr, p_type, u32)
+ELF_GET_FIELD(phdr, p_offset, u64)
+
+static inline unsigned long elf_size_of_phdr(struct elf_image *elf)
+{
+	if (elf->class == ELFCLASS32)
+		return sizeof(Elf32_Phdr);
+	else
+		return sizeof(Elf64_Phdr);
+}
 
 #endif /* _LINUX_ELF_H */

@@ -45,29 +45,31 @@ static void elf_release_regions(struct elf_image *elf)
 
 
 static int load_elf_phdr_segment(struct elf_image *elf, void *src,
-				 Elf32_Phdr *phdr)
+				 void *phdr)
 {
-	void *dst = (void *)phdr->p_paddr;
+	void *dst = (void *) elf_phdr_p_paddr(elf, phdr);
 	int ret;
+	u64 p_filesz = elf_phdr_p_filesz(elf, phdr);
+	u64 p_memsz = elf_phdr_p_memsz(elf, phdr);
 
 	/* we care only about PT_LOAD segments */
-	if (phdr->p_type != PT_LOAD)
+	if (elf_phdr_p_type(elf, phdr) != PT_LOAD)
 		return 0;
 
-	if (!phdr->p_filesz)
+	if (!p_filesz)
 		return 0;
 
-	pr_debug("Loading phdr to 0x%p (%i bytes)\n", dst, phdr->p_filesz);
+	pr_debug("Loading phdr to 0x%p (%llu bytes)\n", dst, p_filesz);
 
-	ret = elf_request_region(elf, (resource_size_t)dst, phdr->p_filesz);
+	ret = elf_request_region(elf, (resource_size_t)dst, p_filesz);
 	if (ret)
 		return ret;
 
-	memcpy(dst, src, phdr->p_filesz);
+	memcpy(dst, src, p_filesz);
 
-	if (phdr->p_filesz < phdr->p_memsz)
-		memset(dst + phdr->p_filesz, 0x00,
-		       phdr->p_memsz - phdr->p_filesz);
+	if (p_filesz < p_memsz)
+		memset(dst + p_filesz, 0x00,
+		       p_memsz - p_filesz);
 
 	return 0;
 }
@@ -75,14 +77,13 @@ static int load_elf_phdr_segment(struct elf_image *elf, void *src,
 static int load_elf_image_phdr(struct elf_image *elf)
 {
 	void *buf = elf->buf;
-	Elf32_Ehdr *ehdr = buf;
-	Elf32_Phdr *phdr = (Elf32_Phdr *)(buf + ehdr->e_phoff);
+	void *phdr = (void *) (buf + elf_hdr_e_phoff(elf, buf));
 	int i, ret;
 
-	elf->entry = ehdr->e_entry;
+	elf->entry = elf_hdr_e_entry(elf, buf);
 
-	for (i = 0; i < ehdr->e_phnum; ++i) {
-		void *src = buf + phdr->p_offset;
+	for (i = 0; i < elf_hdr_e_phnum(elf, buf) ; ++i) {
+		void *src = buf + elf_phdr_p_offset(elf, phdr);
 
 		ret = load_elf_phdr_segment(elf, src, phdr);
 		/* in case of error elf_load_image() caller should clean up and
@@ -90,22 +91,22 @@ static int load_elf_image_phdr(struct elf_image *elf)
 		if (ret)
 			return ret;
 
-		++phdr;
+		phdr += elf_size_of_phdr(elf);
 	}
 
 	return 0;
 }
 
-static int elf_check_image(void *buf)
+static int elf_check_image(struct elf_image *elf)
 {
-	Elf32_Ehdr *ehdr = (Elf32_Ehdr *)buf;
-
-	if (strncmp(buf, ELFMAG, SELFMAG)) {
+	if (strncmp(elf->buf, ELFMAG, SELFMAG)) {
 		pr_err("ELF magic not found.\n");
 		return -EINVAL;
 	}
 
-	if (ehdr->e_type != ET_EXEC) {
+	elf->class = ((char *) elf->buf)[EI_CLASS];
+
+	if (elf_hdr_e_type(elf, elf->buf) != ET_EXEC) {
 		pr_err("Non EXEC ELF image.\n");
 		return -ENOEXEC;
 	}
@@ -124,7 +125,7 @@ struct elf_image *elf_load_image(void *buf)
 
 	elf->buf = buf;
 
-	ret = elf_check_image(buf);
+	ret = elf_check_image(elf);
 	if (ret)
 		return ERR_PTR(ret);
 

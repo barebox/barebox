@@ -72,7 +72,7 @@ static int do_bootm_elf(struct image_data *data)
 
 	shutdown_barebox();
 
-	entry = (void *)elf->entry;
+	entry = (void *) (unsigned long) elf->entry;
 
 	entry(-2, phys_to_virt((unsigned long)fdt));
 

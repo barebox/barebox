@@ -9,6 +9,7 @@ config EEPROM_AT25
 	  on your target board.
 
 config EEPROM_AT24
+	select NVMEM
 	bool "at24 based eeprom"
 	depends on I2C
 	help

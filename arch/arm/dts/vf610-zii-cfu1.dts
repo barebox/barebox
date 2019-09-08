@@ -17,4 +17,10 @@
 		*/
 		switch-eeprom = &switch0;
 	};
+
+	gpio-leds {
+		led-status {
+			linux,default-trigger = "heartbeat";
+		};
+	};
 };

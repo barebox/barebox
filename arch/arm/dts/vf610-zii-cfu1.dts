@@ -16,11 +16,20 @@
 		* fact to create a desirable naming
 		*/
 		switch-eeprom = &switch0;
+		fiber-eeprom0 = &fiber_eeprom0;
 	};
 
 	gpio-leds {
 		led-status {
 			linux,default-trigger = "heartbeat";
 		};
+	};
+};
+
+&i2c0 {
+	fiber_eeprom0: eeprom@50 {
+		compatible = "atmel,24c04";
+		reg = <0x50>;
+		label = "fiber0";
 	};
 };

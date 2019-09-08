@@ -323,6 +323,9 @@ int console_register(struct console_device *newcdev)
 		dev->parent = newcdev->dev;
 	platform_device_register(dev);
 
+	if (!newcdev->devname)
+		newcdev->devname = xstrdup(dev_name(dev));
+
 	newcdev->open_count = 0;
 
 	/*

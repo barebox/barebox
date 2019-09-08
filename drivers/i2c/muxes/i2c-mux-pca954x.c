@@ -195,10 +195,11 @@ static int pca954x_probe(struct device_d *dev)
 	if (gpio_is_valid(gpio))
 		gpio_direction_output(gpio, 1);
 
-	/* Read the mux register at addr to verify
-	 * that the mux is in fact present.
+	/* Write the mux register at addr to verify
+	 * that the mux is in fact present. This also
+	 * initializes the mux to disconnected state.
 	 */
-	if (i2c_smbus_read_byte(client) < 0) {
+	if (i2c_smbus_write_byte(client, 0) < 0) {
 		dev_warn(&client->dev, "probe failed\n");
 		goto exit_free;
 	}

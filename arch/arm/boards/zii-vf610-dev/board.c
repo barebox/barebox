@@ -128,7 +128,7 @@ static int zii_vf610_dev_set_hostname(void)
 		{ "zii,vf610cfu1", "cfu1" },
 		{ "zii,vf610dev-b", "dev-rev-b" },
 		{ "zii,vf610dev-c", "dev-rev-c" },
-		{ "zii,vf610scu4-aib-c", "scu4-aib-rev-c" },
+		{ "zii,vf610scu4-aib", "scu4-aib" },
 	};
 
 	if (!of_machine_is_compatible("zii,vf610dev"))

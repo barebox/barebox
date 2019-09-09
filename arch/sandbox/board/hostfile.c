@@ -84,14 +84,15 @@ static int hf_probe(struct device_d *dev)
 	if (!dev->device_node)
 		return -ENODEV;
 
-	err = of_property_read_u32(dev->device_node, "barebox,fd", &priv->fd);
-	if (err)
-		return err;
+	of_property_read_u32(dev->device_node, "barebox,fd", &priv->fd);
 
 	err = of_property_read_string(dev->device_node, "barebox,filename",
 				      &priv->filename);
 	if (err)
 		return err;
+
+	if (!priv->fd)
+		priv->fd = linux_open(priv->filename, true);
 
 	priv->cdev.name = dev->device_node->name;
 	priv->cdev.dev = dev;
@@ -101,7 +102,14 @@ static int hf_probe(struct device_d *dev)
 	dev->info = hf_info;
 	dev->priv = priv;
 
-	return devfs_create(&priv->cdev);
+	err = devfs_create(&priv->cdev);
+	if (err)
+		return err;
+
+	of_parse_partitions(&priv->cdev, dev->device_node);
+	of_partitions_register_fixup(&priv->cdev);
+
+	return 0;
 }
 
 static __maybe_unused struct of_device_id hostfile_dt_ids[] = {

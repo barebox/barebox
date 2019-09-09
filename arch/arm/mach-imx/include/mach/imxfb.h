@@ -52,17 +52,11 @@
 #define DMACR_HM(x)	(((x) & 0xf) << 16)
 #define DMACR_TM(x)	((x) & 0xf)
 
-struct imx_fb_videomode {
-	struct fb_videomode mode;
-	u32 pcr;
-	unsigned char	bpp;
-};
-
 /**
  * Define relevant framebuffer information
  */
 struct imx_fb_platform_data {
-	struct imx_fb_videomode *mode;
+	struct fb_videomode *mode;
 	u_int			num_modes;
 
 	u_int		cmap_greyscale:1,
@@ -73,6 +67,8 @@ struct imx_fb_platform_data {
 	u_int		pwmr;
 	u_int		lscr1;
 	u_int		dmacr;
+	u32 pcr;
+	unsigned char	bpp;
 
 	/** force a memory area to be used, else NULL for dynamic allocation */
 	void		*framebuffer;

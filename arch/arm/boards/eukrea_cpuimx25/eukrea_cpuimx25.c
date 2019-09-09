@@ -56,22 +56,18 @@ struct imx_nand_platform_data nand_info = {
 	.hw_ecc	= 1,
 };
 
-static struct imx_fb_videomode imxfb_mode = {
-	.mode = {
-		.name		= "CMO-QVGA",
-		.refresh	= 60,
-		.xres		= 320,
-		.yres		= 240,
-		.pixclock	= KHZ2PICOS(6500),
-		.hsync_len	= 30,
-		.left_margin	= 38,
-		.right_margin	= 20,
-		.vsync_len	= 3,
-		.upper_margin	= 15,
-		.lower_margin	= 4,
-	},
-	.pcr		= 0xCAD08B80,
-	.bpp		= 16,
+static struct fb_videomode imxfb_mode = {
+	.name		= "CMO-QVGA",
+	.refresh	= 60,
+	.xres		= 320,
+	.yres		= 240,
+	.pixclock	= KHZ2PICOS(6500),
+	.hsync_len	= 30,
+	.left_margin	= 38,
+	.right_margin	= 20,
+	.vsync_len	= 3,
+	.upper_margin	= 15,
+	.lower_margin	= 4,
 };
 
 static struct imx_fb_platform_data eukrea_cpuimx25_fb_data = {
@@ -80,6 +76,8 @@ static struct imx_fb_platform_data eukrea_cpuimx25_fb_data = {
 	.pwmr		= 0x00A903FF,
 	.lscr1		= 0x00120300,
 	.dmacr		= 0x80040060,
+	.pcr		= 0xCAD08B80,
+	.bpp		= 16,
 };
 
 struct gpio_led led0 = {

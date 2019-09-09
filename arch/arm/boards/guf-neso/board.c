@@ -62,36 +62,18 @@ static struct imx_nand_platform_data nand_info = {
 	.flash_bbt	= 1,
 };
 
-static struct imx_fb_videomode imxfb_mode = {
-	.mode = {
-		.name		= "CPT CLAA070LC0JCT",
-		.refresh	= 60,
-		.xres		= 800,
-		.yres		= 480,
-		.pixclock	= KHZ2PICOS(27000),
-		.hsync_len	= 1,	/* DE only sync */
-		.left_margin	= 50,
-		.right_margin	= 50,
-		.vsync_len	= 1,	/* DE only sync */
-		.upper_margin	= 10,
-		.lower_margin	= 10,
-	},
-	/*
-	 * - TFT style panel
-	 * - clk enabled while idle
-	 * - clock inverted
-	 * - data not inverted
-	 * - data enable high active
-	 */
-	.pcr = PCR_TFT |
-		PCR_COLOR |
-		PCR_PBSIZ_8 |
-		PCR_BPIX_16 |
-		PCR_CLKPOL |
-		PCR_SCLK_SEL |
-		PCR_LPPOL |
-		PCR_FLMPOL,
-	.bpp = 16,	/* TODO 32 bit does not work: The 'green' component is lacking in this mode */
+static struct fb_videomode imxfb_mode = {
+	.name		= "CPT CLAA070LC0JCT",
+	.refresh	= 60,
+	.xres		= 800,
+	.yres		= 480,
+	.pixclock	= KHZ2PICOS(27000),
+	.hsync_len	= 1,	/* DE only sync */
+	.left_margin	= 50,
+	.right_margin	= 50,
+	.vsync_len	= 1,	/* DE only sync */
+	.upper_margin	= 10,
+	.lower_margin	= 10,
 };
 
 static void neso_fb_enable(int enable)
@@ -109,6 +91,22 @@ static struct imx_fb_platform_data neso_fb_data = {
 	.dmacr	= (0 << 31) | (4 << 16) | 96,
 	.enable	= neso_fb_enable,
 	.framebuffer_ovl = (void *)0xa7f00000,
+	/*
+	 * - TFT style panel
+	 * - clk enabled while idle
+	 * - clock inverted
+	 * - data not inverted
+	 * - data enable high active
+	 */
+	.pcr = PCR_TFT |
+		PCR_COLOR |
+		PCR_PBSIZ_8 |
+		PCR_BPIX_16 |
+		PCR_CLKPOL |
+		PCR_SCLK_SEL |
+		PCR_LPPOL |
+		PCR_FLMPOL,
+	.bpp = 16,	/* TODO 32 bit does not work: The 'green' component is lacking in this mode */
 };
 
 #if defined(CONFIG_USB) && defined(CONFIG_USB_ULPI)

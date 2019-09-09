@@ -80,22 +80,19 @@ static struct i2c_board_info i2c_devices[] = {
 };
 
 #ifdef CONFIG_DRIVER_VIDEO_IMX
-static struct imx_fb_videomode imxfb_mode = {
-	.mode = {
-		.name		= "CMO-QVGA",
-		.refresh	= 60,
-		.xres		= 320,
-		.yres		= 240,
-		.pixclock	= 156000,
-		.hsync_len	= 30,
-		.left_margin	= 38,
-		.right_margin	= 20,
-		.vsync_len	= 3,
-		.upper_margin	= 15,
-		.lower_margin	= 4,
-	},
-	.pcr		= 0xFAD08B80,
-	.bpp		= 16,};
+static struct fb_videomode imxfb_mode = {
+	.name		= "CMO-QVGA",
+	.refresh	= 60,
+	.xres		= 320,
+	.yres		= 240,
+	.pixclock	= 156000,
+	.hsync_len	= 30,
+	.left_margin	= 38,
+	.right_margin	= 20,
+	.vsync_len	= 3,
+	.upper_margin	= 15,
+	.lower_margin	= 4,
+};
 
 static struct imx_fb_platform_data eukrea_cpuimx27_fb_data = {
 	.mode	= &imxfb_mode,
@@ -103,6 +100,8 @@ static struct imx_fb_platform_data eukrea_cpuimx27_fb_data = {
 	.pwmr	= 0x00A903FF,
 	.lscr1	= 0x00120300,
 	.dmacr	= 0x00020010,
+	.pcr	= 0xFAD08B80,
+	.bpp	= 16,
 };
 #endif
 

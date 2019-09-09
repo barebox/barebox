@@ -147,11 +147,7 @@ else
 LDFLAGS_barebox += -static
 endif
 
-ifdef CONFIG_IMAGE_COMPRESSION
-KBUILD_BINARY := arch/arm/pbl/zbarebox.bin
-else
 KBUILD_BINARY := barebox.bin
-endif
 
 barebox.s5p: $(KBUILD_BINARY)
 	$(Q)scripts/s5p_cksum $< barebox.s5p
@@ -253,10 +249,6 @@ ifneq ($(imxcfg-y),)
 CFG_barebox.imximg := $(imxcfg-y)
 KBUILD_IMAGE  := barebox.imximg
 endif
-
-pbl := arch/arm/pbl
-$(pbl)/zbarebox.S $(pbl)/zbarebox.bin $(pbl)/zbarebox: barebox.bin FORCE
-	$(Q)$(MAKE) $(build)=$(pbl) $@
 
 archclean:
 	$(MAKE) $(clean)=$(pbl)

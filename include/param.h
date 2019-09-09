@@ -272,7 +272,7 @@ static inline struct param_d *dev_add_param_string_ro(struct device_d *dev, cons
 }
 
 static inline struct param_d *dev_add_param_string_fixed(struct device_d *dev, const char *name,
-		char *value)
+		const char *value)
 {
 	return dev_add_param_fixed(dev, name, value);
 }

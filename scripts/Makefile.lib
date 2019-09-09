@@ -18,6 +18,8 @@ extra-y		+= $(patsubst %.dtb.o,%.dtb.S,$(obj-dtb-y))
 extra-y		+= $(patsubst %.dtb.o,%.dtb,$(obj-dtb-y))
 extra-y		+= $(patsubst %.dtb.o,%.dtb.S,$(pbl-dtb-y))
 extra-y		+= $(patsubst %.dtb.o,%.dtb,$(pbl-dtb-y))
+extra-y		+= $(patsubst %.dtb.o,%.dtb.S,$(lwl-dtb-y))
+extra-y		+= $(patsubst %.dtb.o,%.dtb,$(lwl-dtb-y))
 
 # Handle objects in subdirs
 # ---------------------------------------------------------------------------
@@ -29,9 +31,9 @@ extra-y		+= $(patsubst %.dtb.o,%.dtb,$(pbl-dtb-y))
 # lowlevel is present in the PBL if enabled
 # otherwise in barebox
 ifeq ($(CONFIG_PBL_IMAGE), y)
-pbl-y		+= $(lwl-y)
+pbl-y		+= $(lwl-y) $(lwl-dtb-y)
 else
-obj-y		+= $(lwl-y)
+obj-y		+= $(lwl-y) $(lwl-dtb-y)
 endif
 
 obj-y		+= $(obj-pbl-y)

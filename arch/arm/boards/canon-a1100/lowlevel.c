@@ -3,9 +3,15 @@
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 
+extern char __dtb_canon_a1100_start[];
+
 void __naked barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2)
 {
+	void *fdt;
+
 	arm_cpu_lowlevel_init();
+
+	fdt = __dtb_canon_a1100_start + get_runtime_offset();
 
 	/* FIXME: can we determine RAM size using CP15 register?
 	 *
@@ -19,5 +25,6 @@ void __naked barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2)
 	 * The Control Register value (mrc    p15, 0, %0, c0, c1, 4)
 	 * is 0x00051078.
 	 */
-	barebox_arm_entry(0x0, SZ_64M, 0);
+
+	barebox_arm_entry(0x0, SZ_64M, fdt);
 }

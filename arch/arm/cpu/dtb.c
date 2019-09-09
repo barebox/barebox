@@ -36,12 +36,6 @@ static int of_arm_init(void)
 	if (fdt)
 		pr_debug("using boarddata provided DTB\n");
 
-	/* Next see if we have a builtin dtb */
-	if (!fdt && IS_ENABLED(CONFIG_BUILTIN_DTB)) {
-		fdt = __dtb_start;
-		pr_debug("using internal DTB\n");
-	}
-
 	if (!fdt) {
 		pr_debug("No DTB found\n");
 		return 0;

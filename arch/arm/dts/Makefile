@@ -1,8 +1,3 @@
-BUILTIN_DTB := $(patsubst "%",%,$(CONFIG_BUILTIN_DTB_NAME))
-ifneq ($(BUILTIN_DTB),)
-obj-dtb-$(CONFIG_BUILTIN_DTB) += $(BUILTIN_DTB).dtb.o
-endif
-
 # just to build a built-in.o. Otherwise compilation fails when no devicetree is
 # created.
 obj- += dummy.o
@@ -10,6 +5,7 @@ obj- += dummy.o
 lwl-dtb-$(CONFIG_MACH_ADVANTECH_ROM_742X) += imx6dl-advantech-rom-7421.dtb.o
 lwl-dtb-$(CONFIG_MACH_AFI_GF) += am335x-afi-gf.dtb.o
 lwl-dtb-$(CONFIG_MACH_BEAGLEBONE) += am335x-bone.dtb.o am335x-boneblack.dtb.o am335x-bone-common.dtb.o
+lwl-dtb-$(CONFIG_MACH_CANON_A1100) += canon-a1100.dtb.o
 lwl-dtb-$(CONFIG_MACH_CM_FX6) += imx6dl-cm-fx6.dtb.o imx6q-cm-fx6.dtb.o imx6q-utilite.dtb.o
 lwl-dtb-$(CONFIG_MACH_DFI_FS700_M60) += imx6q-dfi-fs700-m60-6q.dtb.o imx6dl-dfi-fs700-m60-6s.dtb.o
 lwl-dtb-$(CONFIG_MACH_DUCKBILL) += imx28-duckbill.dtb.o
@@ -37,6 +33,7 @@ lwl-dtb-$(CONFIG_MACH_KONTRON_SAMX6I) += imx6q-samx6i.dtb.o \
 					imx6dl-samx6i.dtb.o
 lwl-dtb-$(CONFIG_MACH_LENOVO_IX4_300D) += armada-xp-lenovo-ix4-300d-bb.dtb.o
 lwl-dtb-$(CONFIG_MACH_MARVELL_ARMADA_XP_GP) += armada-xp-gp-bb.dtb.o armada-xp-db-bb.dtb.o
+lwl-dtb-$(CONFIG_MACH_MB7707) += module-mb7707.dtb.o
 lwl-dtb-$(CONFIG_MACH_MX28EVK) += imx28-evk.dtb.o
 lwl-dtb-$(CONFIG_MACH_NETGEAR_RN104) += armada-370-rn104-bb.dtb.o
 lwl-dtb-$(CONFIG_MACH_NETGEAR_RN2120) += armada-xp-rn2120-bb.dtb.o
@@ -112,8 +109,10 @@ lwl-dtb-$(CONFIG_MACH_UDOO) += imx6q-udoo.dtb.o
 lwl-dtb-$(CONFIG_MACH_UDOO_NEO) += imx6sx-udoo-neo-full.dtb.o
 lwl-dtb-$(CONFIG_MACH_USI_TOPKICK) += kirkwood-topkick-bb.dtb.o
 lwl-dtb-$(CONFIG_MACH_VARISCITE_MX6) += imx6q-var-custom.dtb.o
+lwl-dtb-$(CONFIG_MACH_VERSATILEPB) += versatile-pb.dtb.o
 lwl-dtb-$(CONFIG_MACH_VEXPRESS) += vexpress-v2p-ca9.dtb.o
 lwl-dtb-$(CONFIG_MACH_VEXPRESS) += vexpress-v2p-ca15.dtb.o
+lwl-dtb-$(CONFIG_MACH_VIRT2REAL) += virt2real.dtb.o
 lwl-dtb-$(CONFIG_MACH_VSCOM_BALTOS) += am335x-baltos-minimal.dtb.o
 lwl-dtb-$(CONFIG_MACH_WARP7) += imx7s-warp.dtb.o
 lwl-dtb-$(CONFIG_MACH_VF610_TWR) += vf610-twr.dtb.o

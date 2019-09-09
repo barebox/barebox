@@ -52,7 +52,6 @@ extern void *input_data_end;
 __noreturn void barebox_single_pbl_start(unsigned long membase,
 		unsigned long memsize, void *boarddata)
 {
-	unsigned long offset;
 	unsigned long pg_start, pg_end, pg_len, uncompressed_len;
 	void __noreturn (*barebox)(unsigned long, unsigned long, void *);
 	unsigned long endmem = membase + memsize;
@@ -60,9 +59,6 @@ __noreturn void barebox_single_pbl_start(unsigned long membase,
 
 	if (IS_ENABLED(CONFIG_PBL_RELOCATABLE))
 		relocate_to_current_adr();
-
-	/* Get offset between linked address and runtime address */
-	offset = get_runtime_offset();
 
 	pg_start = (unsigned long)&input_data + global_variable_offset();
 	pg_end = (unsigned long)&input_data_end + global_variable_offset();
@@ -73,15 +69,6 @@ __noreturn void barebox_single_pbl_start(unsigned long membase,
 		barebox_base = arm_mem_barebox_image(membase, endmem, uncompressed_len + MAX_BSS_SIZE);
 	else
 		barebox_base = TEXT_BASE;
-
-	if (offset && (IS_ENABLED(CONFIG_PBL_FORCE_PIGGYDATA_COPY) ||
-				region_overlap(pg_start, pg_len, barebox_base, pg_len * 4))) {
-		/*
-		 * copy piggydata binary to its link address
-		 */
-		memcpy(&input_data, (void *)pg_start, pg_len);
-		pg_start = (uint32_t)&input_data;
-	}
 
 	setup_c();
 

@@ -30,10 +30,8 @@ void NAKED __noreturn barebox_arm_entry(unsigned long membase,
 	arm_setup_stack(arm_mem_stack_top(membase, membase + memsize));
 	arm_early_mmu_cache_invalidate();
 
-	if (IS_ENABLED(CONFIG_PBL_MULTI_IMAGES))
-		barebox_multi_pbl_start(membase, memsize, boarddata);
-	else if (IS_ENABLED(CONFIG_PBL_SINGLE_IMAGE))
-		barebox_single_pbl_start(membase, memsize, boarddata);
+	if (IS_ENABLED(CONFIG_PBL_IMAGE))
+		barebox_pbl_start(membase, memsize, boarddata);
 	else
 		barebox_non_pbl_start(membase, memsize, boarddata);
 }

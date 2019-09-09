@@ -39,7 +39,7 @@ void __bare_init __naked barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint
 
 	arm_cpu_lowlevel_init();
 
-	arm_setup_stack(MX27_IRAM_BASE_ADDR + MX27_IRAM_SIZE - 8);
+	arm_setup_stack(MX27_IRAM_BASE_ADDR + MX27_IRAM_SIZE);
 
 	/* ahb lite ip interface */
 	writel(0x20040304, MX27_AIPI_BASE_ADDR + MX27_AIPI1_PSR0);

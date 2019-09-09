@@ -106,7 +106,7 @@ ENTRY_FUNCTION(start_phytec_phycore_imx27, r0, r1, r2)
 {
 	void *fdt;
 
-	arm_setup_stack(MX27_IRAM_BASE_ADDR + MX27_IRAM_SIZE - 12);
+	arm_setup_stack(MX27_IRAM_BASE_ADDR + MX27_IRAM_SIZE);
 
 	fdt = __dtb_imx27_phytec_phycore_rdk_start + get_runtime_offset();
 

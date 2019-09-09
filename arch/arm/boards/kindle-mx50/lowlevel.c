@@ -18,7 +18,7 @@ ENTRY_FUNCTION(start_imx50_kindle_d01100, r0, r1, r2)
 	void *fdt;
 
 	imx5_cpu_lowlevel_init();
-	arm_setup_stack(MX50_IRAM_BASE_ADDR + MX50_IRAM_SIZE - 8);
+	arm_setup_stack(MX50_IRAM_BASE_ADDR + MX50_IRAM_SIZE);
 
 	fdt = __dtb_imx50_kindle_d01100_start + get_runtime_offset();
 
@@ -30,7 +30,7 @@ ENTRY_FUNCTION(start_imx50_kindle_d01200, r0, r1, r2)
 	void *fdt;
 
 	imx5_cpu_lowlevel_init();
-	arm_setup_stack(MX50_IRAM_BASE_ADDR + MX50_IRAM_SIZE - 8);
+	arm_setup_stack(MX50_IRAM_BASE_ADDR + MX50_IRAM_SIZE);
 
 	fdt = __dtb_imx50_kindle_d01200_start + get_runtime_offset();
 
@@ -42,7 +42,7 @@ ENTRY_FUNCTION(start_imx50_kindle_ey21, r0, r1, r2)
 	void *fdt;
 
 	imx5_cpu_lowlevel_init();
-	arm_setup_stack(MX50_IRAM_BASE_ADDR + MX50_IRAM_SIZE - 8);
+	arm_setup_stack(MX50_IRAM_BASE_ADDR + MX50_IRAM_SIZE);
 
 	fdt = __dtb_imx50_kindle_ey21_start + get_runtime_offset();
 

@@ -42,7 +42,7 @@ static void __noreturn start_imx6_samx6i_common(void *fdt_blob_fixed_offset)
 	size = samx6i_get_size();
 
 	imx6_cpu_lowlevel_init();
-	arm_setup_stack(0x00920000 - 8);
+	arm_setup_stack(0x00920000);
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();

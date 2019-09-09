@@ -35,7 +35,7 @@ ENTRY_FUNCTION(start_imx6q_guf_santaro, r0, r1, r2)
 {
 	imx6_cpu_lowlevel_init();
 
-	arm_setup_stack(0x00920000 - 8);
+	arm_setup_stack(0x00920000);
 
 	arm_early_mmu_cache_invalidate();
 

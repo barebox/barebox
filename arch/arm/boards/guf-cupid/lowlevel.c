@@ -165,7 +165,7 @@ void __bare_init __naked barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint
 
 	arm_cpu_lowlevel_init();
 
-	arm_setup_stack(0x10000000 + 128 * 1024 - 16);
+	arm_setup_stack(0x10000000 + 128 * 1024);
 
 	/*
 	 *       ARM1136 init

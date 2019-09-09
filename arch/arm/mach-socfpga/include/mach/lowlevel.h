@@ -72,7 +72,7 @@ static noinline void SECT(start_socfpga_c5_xload_common)(uint32_t size)
 	{								\
 		arm_cpu_lowlevel_init();				\
 									\
-		arm_setup_stack(0xffff0000 + SZ_64K - SZ_4K - 16);	\
+		arm_setup_stack(0xffff0000 + SZ_64K - SZ_4K);		\
 									\
 		start_socfpga_c5_xload_common(memory_size);		\
 	}

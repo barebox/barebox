@@ -15,7 +15,7 @@ ENTRY_FUNCTION(start_ccxmx51, r0, r1, r2)
 
 	imx5_cpu_lowlevel_init();
 
-	arm_setup_stack(0x20000000 - 16);
+	arm_setup_stack(0x20000000);
 
 	fdt = __dtb_imx51_ccxmx51_start + get_runtime_offset();
 

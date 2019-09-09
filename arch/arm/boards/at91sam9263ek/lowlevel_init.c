@@ -123,7 +123,7 @@ ENTRY_FUNCTION(start_at91sam9263ek, r0, r1, r2)
 
 	arm_cpu_lowlevel_init();
 
-	arm_setup_stack(AT91SAM9263_SRAM0_BASE + AT91SAM9263_SRAM0_SIZE - 16);
+	arm_setup_stack(AT91SAM9263_SRAM0_BASE + AT91SAM9263_SRAM0_SIZE);
 
 	if (IS_ENABLED(CONFIG_MACH_AT91SAM9263EK_DT))
 		fdt = __dtb_at91sam9263ek_start + get_runtime_offset();

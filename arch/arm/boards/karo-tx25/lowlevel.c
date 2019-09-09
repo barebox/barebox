@@ -168,7 +168,7 @@ ENTRY_FUNCTION(start_imx25_karo_tx25, r0, r1, r2)
 {
 	void *fdt;
 
-	arm_setup_stack(MX25_IRAM_BASE_ADDR + MX25_IRAM_SIZE - 8);
+	arm_setup_stack(MX25_IRAM_BASE_ADDR + MX25_IRAM_SIZE);
 
 	fdt = __dtb_imx25_karo_tx25_start + get_runtime_offset();
 

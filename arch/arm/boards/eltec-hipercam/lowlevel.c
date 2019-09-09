@@ -39,7 +39,7 @@ ENTRY_FUNCTION(start_imx6dl_eltec_hipercam, r0, r1, r2)
 
 	imx6_cpu_lowlevel_init();
 
-	arm_setup_stack(0x00940000 - 8);
+	arm_setup_stack(0x00940000);
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();

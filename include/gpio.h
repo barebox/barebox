@@ -3,6 +3,7 @@
 
 #include <linux/types.h>
 #include <linux/list.h>
+#include <linux/iopoll.h>
 
 #ifdef CONFIG_GENERIC_GPIO
 void gpio_set_value(unsigned gpio, int value);
@@ -31,6 +32,21 @@ static inline int gpio_direction_input(unsigned gpio)
 void gpio_set_active(unsigned gpio, bool state);
 int gpio_is_active(unsigned gpio);
 int gpio_direction_active(unsigned gpio, bool state);
+
+/**
+ * gpio_poll_timeout_us - Poll till GPIO reaches requested active state
+ * @gpio: gpio to poll
+ * @active: wait till GPIO is active if true, wait till it's inactive if false
+ * @timeout_us: timeout in microseconds
+ *
+ * During the wait barebox pollers are called, if any.
+ */
+#define gpio_poll_timeout_us(gpio, active, timeout_us)			\
+	({								\
+		int __state;						\
+		readx_poll_timeout(gpio_is_active, gpio, __state,	\
+				   __state == (active), timeout_us);	\
+	})
 #else
 static inline void gpio_set_active(unsigned gpio, int value)
 {
@@ -43,6 +59,8 @@ static inline int gpio_direction_active(unsigned gpio, int value)
 {
 	return -EINVAL;
 }
+
+#define gpio_poll_timeout_us(gpio, val, timeout_us) (-ENOSYS)
 #endif
 
 #if defined(CONFIG_ARCH_NR_GPIO) && CONFIG_ARCH_NR_GPIO > 0

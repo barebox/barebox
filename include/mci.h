@@ -28,6 +28,7 @@
 
 #include <linux/list.h>
 #include <block.h>
+#include <fs.h>
 #include <regulator.h>
 
 /* These codes should be sorted numerically in order of newness.  If the last
@@ -490,5 +491,10 @@ static inline int mmc_host_is_spi(struct mci_host *host)
 }
 
 struct mci *mci_get_device_by_name(const char *name);
+
+static inline struct mci *mci_get_device_by_devpath(const char *devpath)
+{
+	return mci_get_device_by_name(devpath_to_name(devpath));
+}
 
 #endif /* _MCI_H_ */

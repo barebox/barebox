@@ -524,12 +524,12 @@ static int do_edit(int argc, char *argv[])
 			} else
 				delete_char(textx);
 			break;
-		case 13:
-		case 10:
+		case '\r':
+		case '\n':
 			split_line();
 			break;
 		case 127:
-		case 8:
+		case '\b':
 			if (textx > 0) {
 				textx--;
 				delete_char(textx);
@@ -542,10 +542,10 @@ static int do_edit(int argc, char *argv[])
 				merge_line(curline);
 			}
 			break;
-		case 4:
+		case CTL_CH('d'):
 			ret = save_file(argv[1]);
 			goto out;
-		case 3:
+		case CTL_CH('c'):
 			goto out;
 		default:
 			if ((signed char)c != -1)

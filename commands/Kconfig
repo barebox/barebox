@@ -233,6 +233,17 @@ config CMD_VERSION
 
 	  barebox 2014.05.0-00142-gb289373 #177 Mon May 12 20:35:55 CEST 2014
 
+config CMD_MMC
+	tristate
+	prompt "mmc command allowing to set enhanced area"
+	depends on MCI
+	help
+	  Configure mmc cards similar to the userspace mmc utility. Compared to
+	  mmc_extcsd it works on a higher abstraction level.
+
+	  Currently only the enh_area subcommand is implemented to configure
+	  the "Enhanced Area" of an mmc device.
+
 config CMD_MMC_EXTCSD
 	tristate
 	prompt "read/write eMMC ext. CSD register"

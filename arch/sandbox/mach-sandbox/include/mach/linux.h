@@ -51,4 +51,11 @@ void barebox_libftdi1_gpio_set_value(struct ft2232_bitbang *ftbb,
 int barebox_libftdi1_update(struct ft2232_bitbang *ftbb);
 void barebox_libftdi1_close(void);
 
+typedef struct {
+	int randomfd;
+	int urandomfd;
+} devrandom_t;
+devrandom_t *devrandom_init(void);
+int devrandom_read(devrandom_t *devrandom, void *buf, size_t len, int wait);
+
 #endif /* __ASM_ARCH_LINUX_H */

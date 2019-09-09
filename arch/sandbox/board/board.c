@@ -42,6 +42,11 @@ static struct device_d sdl_device = {
 	.platform_data = &mode,
 };
 
+static struct device_d devrandom_device = {
+	.id	  = DEVICE_ID_DYNAMIC,
+	.name     = "devrandom",
+};
+
 static int devices_init(void)
 {
 	platform_device_register(&tap_device);
@@ -53,6 +58,8 @@ static int devices_init(void)
 		mode.yres = sdl_yres;
 
 	platform_device_register(&sdl_device);
+
+	platform_device_register(&devrandom_device);
 
 	return 0;
 }

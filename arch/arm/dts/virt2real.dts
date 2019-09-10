@@ -6,6 +6,7 @@
 	model = "virt2real";
 
 	memory {
+		device_type = "memory";
 		reg = <0x82000000 0x01000000>;
 	};
 

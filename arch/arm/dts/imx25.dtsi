@@ -9,8 +9,6 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-#include <arm/imx25.dtsi>
-
 / {
 	#address-cells = <1>;
 	#size-cells = <1>;

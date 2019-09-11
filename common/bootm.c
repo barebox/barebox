@@ -682,6 +682,8 @@ err_out:
 		release_sdram_region(data->initrd_res);
 	if (data->oftree_res)
 		release_sdram_region(data->oftree_res);
+	if (data->tee_res)
+		release_sdram_region(data->tee_res);
 	if (data->initrd && data->initrd != data->os)
 		uimage_close(data->initrd);
 	if (data->os)

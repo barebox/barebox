@@ -1819,6 +1819,10 @@ int mci_register(struct mci_host *host)
 
 	host->supply = regulator_get(host->hw_dev, "vmmc");
 	if (IS_ERR(host->supply)) {
+		if (host->supply == ERR_PTR(-EPROBE_DEFER)) {
+			ret = -EPROBE_DEFER;
+			goto err_free;
+		}
 		dev_err(&mci->dev, "Failed to get 'vmmc' regulator.\n");
 		host->supply = NULL;
 	}

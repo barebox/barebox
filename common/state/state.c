@@ -714,13 +714,6 @@ struct state *state_by_node(const struct device_node *node)
 	return NULL;
 }
 
-int state_get_name(const struct state *state, char const **name)
-{
-	*name = xstrdup(state->name);
-
-	return 0;
-}
-
 int state_read_mac(struct state *state, const char *name, u8 *buf)
 {
 	struct state_variable *svar;

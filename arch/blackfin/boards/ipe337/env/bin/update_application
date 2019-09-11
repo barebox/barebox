@@ -1,8 +1,0 @@
-#!/bin/sh
-
-. /env/config
-
-image=$appimage
-part=/dev/nor0.application
-
-. /env/bin/_update $1

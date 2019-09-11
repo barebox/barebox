@@ -653,20 +653,24 @@ static int fsl_esdhc_probe(struct device_d *dev)
 	dma_set_mask(dev, DMA_BIT_MASK(32));
 
 	host->clk = clk_get(dev, socdata->clkidx);
-	if (IS_ERR(host->clk))
-		return PTR_ERR(host->clk);
+	if (IS_ERR(host->clk)) {
+		ret = PTR_ERR(host->clk);
+		goto err_free;
+	}
 
 	ret = clk_enable(host->clk);
 	if (ret) {
 		dev_err(dev, "Failed to enable clock: %s\n",
 			strerror(ret));
-		return ret;
+		goto err_clk_put;
 	}
 
 	host->dev = dev;
 	iores = dev_request_mem_resource(dev, 0);
-	if (IS_ERR(iores))
-		return PTR_ERR(iores);
+	if (IS_ERR(iores)) {
+		ret = PTR_ERR(iores);
+		goto err_clk_disable;
+	}
 	host->regs = IOMEM(iores->start);
 
 	caps = esdhc_read32(host, SDHCI_CAPABILITIES);
@@ -709,7 +713,21 @@ static int fsl_esdhc_probe(struct device_d *dev)
 
 	dev->priv = host;
 
-	return mci_register(&host->mci);
+	ret = mci_register(&host->mci);
+	if (ret)
+		goto err_release_res;
+
+	return 0;
+
+err_release_res:
+	release_region(iores);
+err_clk_disable:
+	clk_disable(host->clk);
+err_clk_put:
+	clk_put(host->clk);
+err_free:
+	free(host);
+	return ret;
 }
 
 static struct esdhc_soc_data esdhc_imx25_data = {

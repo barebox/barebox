@@ -262,6 +262,9 @@ static int da9063_probe(struct device_d *dev)
 
 	restart_handler_register(&priv->restart);
 
+	if (IS_ENABLED(CONFIG_OFDEVICE) && dev->device_node)
+		return of_platform_populate(dev->device_node, NULL, dev);
+
 	return 0;
 
 on_error:

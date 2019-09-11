@@ -145,10 +145,6 @@ config ARCH_MXS
 	select CLKDEV_LOOKUP
 	select HAS_DEBUG_LL
 
-config ARCH_NETX
-	bool "Hilscher NetX based"
-	select CPU_ARM926T
-
 config ARCH_NOMADIK
 	bool "STMicroelectronics Nomadik"
 	select CPU_ARM926T
@@ -298,7 +294,6 @@ source "arch/arm/mach-imx/Kconfig"
 source "arch/arm/mach-layerscape/Kconfig"
 source "arch/arm/mach-mxs/Kconfig"
 source "arch/arm/mach-mvebu/Kconfig"
-source "arch/arm/mach-netx/Kconfig"
 source "arch/arm/mach-nomadik/Kconfig"
 source "arch/arm/mach-omap/Kconfig"
 source "arch/arm/mach-pxa/Kconfig"

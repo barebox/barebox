@@ -16,9 +16,6 @@ config HAS_DM9000
 config HAS_MACB
 	bool
 
-config HAS_NETX_ETHER
-	bool
-
 config PHYLIB
 	bool
 
@@ -179,11 +176,6 @@ config DRIVER_NET_MVNETA
 	depends on ARCH_MVEBU
 	select PHYLIB
 	select MDIO_MVEBU
-
-config DRIVER_NET_NETX
-	bool "Hilscher Netx ethernet driver"
-	depends on HAS_NETX_ETHER
-	select PHYLIB
 
 config DRIVER_NET_ORION
 	bool "Marvell Orion SoC Ethernet"

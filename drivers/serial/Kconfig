@@ -50,11 +50,6 @@ config DRIVER_SERIAL_AUART
 	depends on ARCH_MXS
 	bool "i.MX23/i.MX28 application UART serial driver"
 
-config DRIVER_SERIAL_NETX
-	depends on ARCH_NETX
-	default y
-	bool "Netx serial driver"
-
 config DRIVER_SERIAL_LINUX_CONSOLE
 	depends on LINUX
 	default y

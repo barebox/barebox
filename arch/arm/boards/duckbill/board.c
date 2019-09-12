@@ -62,6 +62,9 @@ static struct fsl_usb2_platform_data usb_pdata = {
 
 static int duckbill_devices_init(void)
 {
+	if (!of_machine_is_compatible("i2se,duckbill"))
+		return 0;
+
 	duckbill_get_ethaddr(); /* must be after registering ocotp */
 
 	imx28_usb_phy0_enable();
@@ -74,6 +77,9 @@ fs_initcall(duckbill_devices_init);
 
 static int duckbill_console_init(void)
 {
+	if (!of_machine_is_compatible("i2se,duckbill"))
+		return 0;
+
 	barebox_set_model("I2SE Duckbill");
 	barebox_set_hostname("duckbill");
 

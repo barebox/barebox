@@ -397,6 +397,11 @@ config MACH_TECHNEXION_WANDBOARD
 	select ARM_USE_COMPRESSED_DTB
 	select MCI_IMX_ESDHC_PBL
 
+config MACH_EMBEST_MARSBOARD
+	bool "Embest MarSboard"
+	select ARCH_IMX6
+	select ARM_USE_COMPRESSED_DTB
+
 config MACH_EMBEST_RIOTBOARD
 	bool "Embest RIoTboard"
 	select ARCH_IMX6

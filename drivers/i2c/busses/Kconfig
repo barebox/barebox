@@ -55,4 +55,9 @@ config I2C_VERSATILE
 	  Say yes if you want to support the I2C serial bus on ARMs Versatile
 	  range of platforms.
 
+config I2C_STM32
+	bool "STM32 I2C master driver"
+	select RESET_CONTROLLER
+	depends on HAVE_CLK
+
 endmenu

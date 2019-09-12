@@ -89,4 +89,11 @@ config STM32_IWDG_WATCHDOG
 	help
 	  Enable to support configuration of the STM32's on-SoC IWDG watchdog.
 	  Once started by the user, the IWDG can't be disabled.
+
+config STPMIC1_WATCHDOG
+	bool "STPMIC1 Watchdog"
+	depends on MFD_STPMIC1
+	help
+	  Enable to support configuration of the stpmic1's built-in watchdog.
+
 endif

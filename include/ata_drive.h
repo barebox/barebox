@@ -14,7 +14,7 @@
  */
 
 #ifndef ATA_DISK_H
-# define ATA_DISK
+#define ATA_DISK_H
 
 #include <block.h>
 
@@ -197,4 +197,4 @@ struct device_d;
  *       0x400         data      data       16 bit area with 1 kiB in size
  */
 
-#endif /* ATA_DISK */
+#endif /* ATA_DISK_H */

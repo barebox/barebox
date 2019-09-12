@@ -1422,8 +1422,7 @@ static void udc_reset_ep_queue(struct fsl_udc *udc, u8 pipe)
 {
 	struct fsl_ep *ep = get_ep_by_pipe(udc, pipe);
 
-	if (ep->name)
-		nuke(ep, -ESHUTDOWN);
+	nuke(ep, -ESHUTDOWN);
 }
 
 /* Clear up all ep queues */
@@ -1913,12 +1912,6 @@ static void dtd_complete_irq(struct fsl_udc *udc)
 			continue;
 
 		curr_ep = get_ep_by_pipe(udc, i);
-
-		/* If the ep is configured */
-		if (curr_ep->name == NULL) {
-			WARNING("Invalid EP?");
-			continue;
-		}
 
 		/* process the req queue until an uncomplete request */
 		list_for_each_entry_safe(curr_req, temp_req, &curr_ep->queue,

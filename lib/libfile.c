@@ -38,7 +38,7 @@ int pwrite_full(int fd, const void *buf, size_t size, loff_t offset)
 		now = pwrite(fd, buf, size, offset);
 		if (now == 0) {
 			errno = ENOSPC;
-			return -1;
+			return -errno;
 		}
 		if (now < 0)
 			return now;
@@ -66,7 +66,7 @@ int write_full(int fd, const void *buf, size_t size)
 		now = write(fd, buf, size);
 		if (now == 0) {
 			errno = ENOSPC;
-			return -1;
+			return -errno;
 		}
 		if (now < 0)
 			return now;
@@ -194,6 +194,7 @@ again:
 	buf = calloc(read_size + 1, 1);
 	if (!buf) {
 		ret = -ENOMEM;
+		errno = ENOMEM;
 		goto err_out;
 	}
 
@@ -241,9 +242,9 @@ EXPORT_SYMBOL(read_file_2);
  *
  * This function reads a file to an allocated buffer.
  * Some TFTP servers do not transfer the size of a file. In this case
- * a the file is first read to a temporary file.
+ * the file is first read to a temporary file.
  *
- * Return: The buffer conataining the file or NULL on failure
+ * Return: The buffer containing the file or NULL on failure
  */
 void *read_file(const char *filename, size_t *size)
 {

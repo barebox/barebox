@@ -46,15 +46,16 @@ struct image *png_open(char *inbuf, int insize)
 	LodePNGState state;
 	int ret;
 	unsigned error;
-	struct image *img = calloc(1, sizeof(struct image));
-	unsigned char *png;
-
-	if (!img)
-		return ERR_PTR(-ENOMEM);
+	struct image *img;
+	unsigned char *png = NULL;
 
 	ret = png_uncompress_init();
 	if (ret)
-		goto err;
+		return ERR_PTR(ret);
+
+	img = calloc(1, sizeof(struct image));
+	if (!img)
+		return ERR_PTR(-ENOMEM);
 
 	lodepng_state_init(&state);
 

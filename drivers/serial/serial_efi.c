@@ -130,13 +130,14 @@ static void efi_serial_putc(struct console_device *cdev, char c)
 	serial->write(serial, &buffersize, &c);
 }
 
-static int efi_serial_puts(struct console_device *cdev, const char *s)
+static int efi_serial_puts(struct console_device *cdev, const char *s,
+			   size_t nbytes)
 {
 	struct efi_serial_port *uart = to_efi_serial_port(cdev);
 	struct efi_serial_io_protocol *serial = uart->serial;
 	uint32_t control;
 	efi_status_t efiret;
-	unsigned long buffersize = strlen(s) * sizeof(char);
+	unsigned long buffersize = nbytes;
 
 	do {
 		efiret = serial->getcontrol(serial, &control);

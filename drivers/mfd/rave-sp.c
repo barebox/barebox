@@ -640,6 +640,7 @@ static int rave_sp_emulated_get_status(struct rave_sp *sp,
 		[0] = RAVE_SP_CMD_GET_FIRMWARE_VERSION,
 		[1] = 0,
 	};
+	u8 firmware_mode;
 	int ret;
 
 	ret = rave_sp_exec(sp, cmd, sizeof(cmd), &status->firmware_version,
@@ -648,8 +649,21 @@ static int rave_sp_emulated_get_status(struct rave_sp *sp,
 		return ret;
 
 	cmd[0] = RAVE_SP_CMD_GET_BOOTLOADER_VERSION;
-	return rave_sp_exec(sp, cmd, sizeof(cmd), &status->bootloader_version,
-			    sizeof(status->bootloader_version));
+	ret = rave_sp_exec(sp, cmd, sizeof(cmd), &status->bootloader_version,
+			   sizeof(status->bootloader_version));
+	if (ret)
+		return ret;
+
+	cmd[0] = RAVE_SP_CMD_GET_OPERATIONAL_MODE;
+	ret = rave_sp_exec(sp, cmd, sizeof(cmd), &firmware_mode,
+			   sizeof(firmware_mode));
+	if (ret)
+		return ret;
+
+	status->general_status =
+		firmware_mode ? RAVE_SP_STATUS_GS_FIRMWARE_MODE : 0;
+
+	return 0;
 }
 
 static int rave_sp_get_status(struct rave_sp *sp)

@@ -177,7 +177,7 @@ static int pca954x_probe(struct device_d *dev)
 {
 	struct i2c_client *client = to_i2c_client(dev);
 	struct i2c_adapter *adap = to_i2c_adapter(client->dev.parent);
-	int num, force;
+	int num;
 	struct pca954x *data;
 	uintptr_t tmp;
 	int ret = -ENODEV;
@@ -195,10 +195,11 @@ static int pca954x_probe(struct device_d *dev)
 	if (gpio_is_valid(gpio))
 		gpio_direction_output(gpio, 1);
 
-	/* Read the mux register at addr to verify
-	 * that the mux is in fact present.
+	/* Write the mux register at addr to verify
+	 * that the mux is in fact present. This also
+	 * initializes the mux to disconnected state.
 	 */
-	if (i2c_smbus_read_byte(client) < 0) {
+	if (i2c_smbus_write_byte(client, 0) < 0) {
 		dev_warn(&client->dev, "probe failed\n");
 		goto exit_free;
 	}
@@ -220,8 +221,8 @@ static int pca954x_probe(struct device_d *dev)
 		if (data->virt_adaps[num] == NULL) {
 			ret = -ENODEV;
 			dev_err(&client->dev,
-				"failed to register multiplexed adapter"
-				" %d as bus %d\n", num, force);
+				"failed to register multiplexed adapter%d\n",
+				num);
 			goto virt_reg_failed;
 		}
 	}

@@ -1538,7 +1538,7 @@ static enum filetype check_fs (	/* 0:The FAT BR, 1:Valid BR but not an FAT, 2:No
 	DWORD *bootsec
 )
 {
-	enum filetype ret;
+	DRESULT ret;
 
 	/* Load boot record */
 	ret = disk_read(fs, fs->win, sect, 1);

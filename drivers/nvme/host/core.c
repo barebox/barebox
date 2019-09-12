@@ -94,7 +94,7 @@ EXPORT_SYMBOL_GPL(nvme_set_queue_count);
 static int nvme_wait_ready(struct nvme_ctrl *ctrl, u64 cap, bool enabled)
 {
 	uint64_t start = get_time_ns();
-	unsigned long timeout =
+	uint64_t timeout =
 		((NVME_CAP_TIMEOUT(cap) + 1) * HZ / 2);
 	u32 csts, bit = enabled ? NVME_CSTS_RDY : 0;
 	int ret;
@@ -496,7 +496,7 @@ EXPORT_SYMBOL_GPL(nvme_enable_ctrl);
 int nvme_shutdown_ctrl(struct nvme_ctrl *ctrl)
 {
 	uint64_t start = get_time_ns();
-	unsigned long timeout = SHUTDOWN_TIMEOUT;
+	uint64_t timeout = SHUTDOWN_TIMEOUT;
 	u32 csts;
 	int ret;
 

@@ -64,4 +64,10 @@ config KEYBOARD_USB
 	help
 	  This driver implements support for usb keyboard.
 
+config INPUT_SPECIALKEYS
+	bool "Special keys handler"
+	select INPUT
+	help
+	  Say Y here to handle key events like KEY_RESTART and KEY_POWER.
+
 endmenu

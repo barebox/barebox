@@ -43,7 +43,7 @@ name it ``BOOTx64.EFI`` on 64bit architectures and ``BOOTIA32.EFI`` on 32bit
 architectures. Switching to USB boot in the BIOS should then be enough to
 start barebox via USB. Some BIOSes allow to specify a path to a binary to
 be executed, others have a "start UEFI shell" entry which executes
-EFI/Shellx64.efi on the :term:`ESP`. This can be a barebox binary aswell.
+EFI/Shellx64.efi on the :term:`ESP`. This can be a barebox binary as well.
 To use the :ref:`state_framework`, the describing devicetree file ``state.dtb``
 has to be put into the ``EFI/barebox/`` directory.
 Supported backends for EFI are raw partitions that can be discovered via a
@@ -200,7 +200,7 @@ EFI device paths
 
 In EFI each device can be pointed to using a device path. Device paths have multiple
 components. The toplevel component on X86 systems will be the PCI root complex, on
-other systems this can be the physical memory space. Each component will now descrive
+other systems this can be the physical memory space. Each component will now describe
 how to find the child component on the parent bus. Additional device path nodes can
 describe network addresses or filenames on partitions. Device paths have a binary
 representation and a clearly defined string representation. These characteristics make
@@ -274,7 +274,7 @@ Network Protocol GUID:
     EFI_GUID( 0xA19832B9, 0xAC25, 0x11D3, 0x9A, 0x2D, 0x00, 0x90, 0x27, 0x3F, 0xC1, 0x4D )
 
 Matching between EFI devices and drivers is done based on the Protocol GUIDs, so
-whenever a driver GUID matches one of the GUIDs a device imeplements the drivers
+whenever a driver GUID matches one of the GUIDs a device implements the drivers
 probe function is called.
 
 .. _efi_building_edk2:

@@ -277,7 +277,6 @@ static int env_param_complete(struct string_list *sl, char *instr, int eval)
 	struct device_d *dev;
 	struct variable_d *var;
 	struct env_context *c;
-	char *instr_param;
 	int len;
 	char end = '=', *pos, *dot;
 	char *begin = "";
@@ -317,7 +316,6 @@ static int env_param_complete(struct string_list *sl, char *instr, int eval)
 
 		devname = xstrndup(instr, dot - instr);
 
-		instr_param++;
 
 		dev = get_device_by_name(devname);
 		free(devname);

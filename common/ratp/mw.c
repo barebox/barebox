@@ -125,7 +125,7 @@ static int ratp_cmd_mw(const struct ratp_bb *req, int req_len,
 
 	/* Validate buffer size */
 	if (buffer_size < (path_size + data_size)) {
-		pr_err("ignored: size mismatch (%d < %hu): path or data not be fully given\n",
+		pr_err("ignored: size mismatch (%d < %u): path or data not be fully given\n",
 		       req_len, path_size + data_size);
 		ret = -EINVAL;
 		goto out;

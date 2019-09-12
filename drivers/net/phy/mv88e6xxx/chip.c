@@ -572,7 +572,6 @@ static const struct mv88e6xxx_info mv88e6xxx_table[] = {
 		.name = "Marvell 88E6352",
 		.num_ports = 7,
 		.port_base_addr = 0x10,
-		.ops = &mv88e6352_ops,
 		.global2_addr = 0x1c,
 		.ops = &mv88e6352_ops,
 	},

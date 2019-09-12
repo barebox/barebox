@@ -202,7 +202,7 @@ void set_autoboot_state(enum autoboot_state autoboot)
  * do_autoboot_countdown - print autoboot countdown to console
  *
  * This prints the autoboot countdown to the console and waits for input. This
- * evaluates the global.autoboot_about_key to determine which keys are allowed
+ * evaluates the global.autoboot_abort_key to determine which keys are allowed
  * to interrupt booting and also global.autoboot_timeout to determine the timeout
  * for the counter. This function can be called multiple times, it is executed
  * only the first time.
@@ -314,10 +314,10 @@ static int run_init(void)
 
 	autoboot = do_autoboot_countdown();
 
+	console_ctrlc_allow();
+
 	if (autoboot == AUTOBOOT_BOOT)
 		run_command("boot");
-
-	console_ctrlc_allow();
 
 	if (autoboot == AUTOBOOT_MENU)
 		run_command(MENUFILE);

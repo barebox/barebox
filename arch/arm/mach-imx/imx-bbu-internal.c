@@ -87,6 +87,7 @@ static int imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
 		const void *buf, int image_len)
 {
 	int fd, ret, offset = 0;
+	struct stat st;
 
 	fd = open(devicefile, O_RDWR | O_CREAT);
 	if (fd < 0)
@@ -100,6 +101,15 @@ static int imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
 
 	if (imx_handler->handler.flags & IMX_BBU_FLAG_KEEP_HEAD)
 		offset += imx_handler->flash_header_offset;
+
+	ret = fstat(fd, &st);
+	if (ret)
+		goto err_close;
+
+	if (image_len > st.st_size) {
+		ret = -ENOSPC;
+		goto err_close;
+	}
 
 	ret = imx_bbu_protect(fd, imx_handler, devicefile, offset,
 			      image_len, 0);

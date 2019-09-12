@@ -185,4 +185,6 @@ static inline struct inode *d_inode(const struct dentry *dentry)
 
 char *dpath(struct dentry *dentry, struct dentry *root);
 
+extern const struct dentry_operations no_revalidate_d_ops;
+
 #endif	/* __LINUX_DCACHE_H */

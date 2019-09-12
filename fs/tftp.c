@@ -29,7 +29,6 @@
 #include <libgen.h>
 #include <fcntl.h>
 #include <getopt.h>
-#include <fs.h>
 #include <init.h>
 #include <linux/stat.h>
 #include <linux/err.h>
@@ -716,6 +715,7 @@ static int tftp_probe(struct device_d *dev)
 	}
 
 	sb->s_op = &tftp_ops;
+	sb->s_d_op = &no_revalidate_d_ops;
 
 	inode = tftp_get_inode(sb, NULL, S_IFDIR);
 	sb->s_root = d_make_root(inode);

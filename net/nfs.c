@@ -502,7 +502,7 @@ static int nfs_readlink_reply(unsigned char *pkt, unsigned len)
 {
 	uint32_t *data;
 	char *path;
-	int rlen;
+	unsigned int rlen;
 	int ret;
 
 	ret = rpc_check_reply(pkt, 1);
@@ -514,6 +514,9 @@ static int nfs_readlink_reply(unsigned char *pkt, unsigned len)
 	data++;
 
 	rlen = ntohl(net_read_uint32(data)); /* new path length */
+
+	rlen = max_t(unsigned int, rlen,
+		     len - sizeof(struct rpc_reply) - sizeof(uint32_t));
 
 	data++;
 	path = (char *)data;

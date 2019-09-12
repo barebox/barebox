@@ -478,6 +478,8 @@ CFLAGS += $(call cc-disable-warning, trampolines)
 
 CFLAGS += $(call cc-option, -fno-delete-null-pointer-checks,)
 
+CFLAGS   += $(call cc-disable-warning, address-of-packed-member)
+
 # arch Makefile may override CC so keep this after arch Makefile is included
 NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
 CHECKFLAGS     += $(NOSTDINC_FLAGS)

@@ -2306,9 +2306,17 @@ struct device_node *of_find_node_by_reproducible_name(struct device_node *from,
 {
 	struct device_node *np;
 
-	of_tree_for_each_node_from(np, from)
-		if (!of_node_cmp(of_get_reproducible_name(np), name))
+	of_tree_for_each_node_from(np, from) {
+		char *rep = of_get_reproducible_name(np);
+		int res;
+
+		res = of_node_cmp(rep, name);
+
+		free(rep);
+
+		if (!res)
 			return np;
+	}
 	return NULL;
 }
 

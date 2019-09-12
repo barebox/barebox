@@ -161,7 +161,6 @@ static void da9063_detect_reset_source(struct da9063 *priv)
 {
 	int ret;
 	u8 val;
-	unsigned int priority;
 	enum reset_src_type type;
 
 	ret = i2c_read_reg(priv->client, DA9063_REG_FAULT_LOG, &val, 1);
@@ -180,9 +179,7 @@ static void da9063_detect_reset_source(struct da9063 *priv)
 	else
 		return;
 
-	priority = of_get_reset_source_priority(priv->dev->device_node);
-
-	reset_source_set_priority(type, priority);
+	reset_source_set_device(priv->dev, type);
 }
 
 static void da9063_restart(struct restart_handler *rst)

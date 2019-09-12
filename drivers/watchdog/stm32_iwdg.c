@@ -182,8 +182,7 @@ static int stm32_set_reset_reason(struct regmap *rcc)
 		}
 	}
 
-	reset_source_set_priority(type, RESET_SOURCE_DEFAULT_PRIORITY);
-	reset_source_set_instance(type, instance);
+	reset_source_set_prinst(type, RESET_SOURCE_DEFAULT_PRIORITY, instance);
 
 	pr_info("STM32 RCC reset reason %s (MP_RSTSR: 0x%08x)\n",
 		reset_source_name(), reg);

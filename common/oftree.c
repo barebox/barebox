@@ -144,6 +144,8 @@ static int of_fixup_bootargs(struct device_node *root, void *unused)
 	struct device_node *node;
 	const char *str;
 	int err;
+	int instance = reset_source_get_instance();
+	struct device_d *dev;
 
 	str = linux_bootargs_get();
 	if (!str)
@@ -160,8 +162,21 @@ static int of_fixup_bootargs(struct device_node *root, void *unused)
 		return err;
 
 	of_property_write_string(node, "reset-source", reset_source_name());
-	of_property_write_u32(node, "reset-source-instance",
-			      reset_source_get_instance());
+	if (instance >= 0)
+		of_property_write_u32(node, "reset-source-instance", instance);
+
+
+	dev = reset_source_get_device();
+	if (dev && dev->device_node) {
+		phandle phandle;
+
+		phandle = of_node_create_phandle(dev->device_node);
+
+		err = of_property_write_u32(node,
+					    "reset-source-device", phandle);
+		if (err)
+			return err;
+	}
 
 	return of_fixup_bootargs_bootsource(root, node);
 }

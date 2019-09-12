@@ -34,6 +34,7 @@ static const char * const reset_src_names[] = {
 static enum reset_src_type reset_source;
 static unsigned int reset_source_priority;
 static int reset_source_instance;
+static struct device_d *reset_source_device;
 
 enum reset_src_type reset_source_get(void)
 {
@@ -41,38 +42,54 @@ enum reset_src_type reset_source_get(void)
 }
 EXPORT_SYMBOL(reset_source_get);
 
-int reset_source_get_instance(void)
-{
-	return reset_source_instance;
-}
-EXPORT_SYMBOL(reset_source_get_instance);
-
-void reset_source_set_priority(enum reset_src_type st, unsigned int priority)
-{
-	if (priority <= reset_source_priority)
-		return;
-
-	reset_source = st;
-	reset_source_priority = priority;
-	reset_source_instance = 0;
-
-	pr_debug("Setting reset source to %s with priority %d\n",
-			reset_src_names[reset_source], priority);
-}
-EXPORT_SYMBOL(reset_source_set_priority);
-
 const char *reset_source_name(void)
 {
 	return reset_src_names[reset_source];
 }
 EXPORT_SYMBOL(reset_source_name);
 
-void reset_source_set_instance(enum reset_src_type type, int instance)
+int reset_source_get_instance(void)
 {
-	if (reset_source == type)
-		reset_source_instance = instance;
+	return reset_source_instance;
 }
-EXPORT_SYMBOL(reset_source_set_instance);
+EXPORT_SYMBOL(reset_source_get_instance);
+
+struct device_d *reset_source_get_device(void)
+{
+	return reset_source_device;
+}
+EXPORT_SYMBOL(reset_source_get_device);
+
+static void __reset_source_set(struct device_d *dev,
+			       enum reset_src_type st,
+			       unsigned int priority, int instance)
+{
+	if (priority <= reset_source_priority)
+		return;
+
+	reset_source = st;
+	reset_source_priority = priority;
+	reset_source_instance = instance;
+	reset_source_device = NULL;
+
+	pr_debug("Setting reset source to %s with priority %d\n",
+			reset_src_names[reset_source], priority);
+}
+
+void reset_source_set_prinst(enum reset_src_type st,
+			     unsigned int priority, int instance)
+{
+	__reset_source_set(NULL, st, priority, instance);
+}
+EXPORT_SYMBOL(reset_source_set_prinst);
+
+void reset_source_set_device(struct device_d *dev, enum reset_src_type st)
+{
+	int priority = of_get_reset_source_priority(dev->device_node);
+
+	__reset_source_set(dev, st, priority, -1);
+}
+EXPORT_SYMBOL(reset_source_set_device);
 
 static int reset_source_init(void)
 {
@@ -83,7 +100,6 @@ static int reset_source_init(void)
 				 "%d");
 	return 0;
 }
-
 coredevice_initcall(reset_source_init);
 
 /**

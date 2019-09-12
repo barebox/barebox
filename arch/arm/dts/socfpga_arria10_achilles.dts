@@ -226,15 +226,47 @@
 		compatible = "fixed-partitions";
 		#size-cells = <1>;
 		#address-cells = <1>;
-		environment_mmc: partition@178000 {
+
+		barebox1_xload: partition@100000 {
+			label = "barebox1-xload";
+			reg = <0x100000 0x40000>;
+		};
+
+		barebox2_xload: partition@140000 {
+			label = "barebox2-xload";
+			reg = <0x140000 0x40000>;
+		};
+
+		barebox1: partition@200000 {
+			label = "barebox1";
+			reg = <0x200000 0x80000>;
+		};
+
+		barebox2: partition@280000 {
+			label = "barebox2";
+			reg = <0x280000 0x80000>;
+		};
+
+		environment_mmc: partition@300000 {
 			label = "environment";
 			reg = <0x300000 0x8000>;
 		};
 
-		state_mmc: partition@180000 {
+		state_mmc: partition@400000 {
 			label = "state";
 			reg = <0x400000 0x8000>;
 		};
+
+		bitstream1: partition@700000 {
+			label = "bitstream1";
+			reg = <0x700000 0x2000000>;
+		};
+
+		bitstream2: partition@2700000 {
+			label = "bitstream2";
+			reg = <0x2700000 0x2000000>;
+		};
+
 	};
 };
 

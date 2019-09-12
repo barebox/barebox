@@ -4,7 +4,7 @@
 
 # %.socfpgaimg - convert into socfpga image
 # ----------------------------------------------------------------
-SOCFPGA_IMAGE_ARGS-$(CONFIG_ARCH_SOCFPGA_ARRIA10) += -v1
+SOCFPGA_IMAGE_ARGS-$(CONFIG_ARCH_SOCFPGA_ARRIA10) += -v1 -b
 SOCFPGA_IMAGE_ARGS-$(CONFIG_ARCH_SOCFPGA_CYCLONE5) += -v0
 
 quiet_cmd_socfpga_image = SOCFPGA-IMG $@

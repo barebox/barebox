@@ -15,7 +15,7 @@
 
 #include "clk-zynqmp.h"
 
-#define CLK_MUX_READ_ONLY		BIT(3)
+#define ZYNQMP_CLK_MUX_READ_ONLY		BIT(3)
 
 struct zynqmp_clk_mux {
 	struct clk clk;
@@ -83,7 +83,7 @@ struct clk *zynqmp_clk_register_mux(const char *name,
 	mux->ops = zynqmp_pm_get_eemi_ops();
 
 	mux->clk.name = strdup(name);
-	if (nodes->type_flag & CLK_MUX_READ_ONLY)
+	if (nodes->type_flag & ZYNQMP_CLK_MUX_READ_ONLY)
 		mux->clk.ops = &zynqmp_clk_mux_ro_ops;
 	else
 		mux->clk.ops = &zynqmp_clk_mux_ops;

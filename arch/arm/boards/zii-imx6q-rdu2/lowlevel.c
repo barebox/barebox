@@ -271,7 +271,7 @@ static noinline void rdu2_sram_setup(void)
 	enum bootsource bootsrc;
 	int instance;
 
-	arm_setup_stack(0x00920000 - 8);
+	arm_setup_stack(0x00920000);
 	relocate_to_current_adr();
 	setup_c();
 

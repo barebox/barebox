@@ -261,7 +261,7 @@ void tegra_cpu_lowlevel_setup(char *fdt)
 	r |= 0xd3;
 	__asm__ __volatile__("msr cpsr, %0" : : "r"(r));
 
-	arm_setup_stack(TEGRA_IRAM_BASE + SZ_256K - 8);
+	arm_setup_stack(TEGRA_IRAM_BASE + SZ_256K);
 
 	if (tegra_cpu_is_maincomplex())
 		tegra_maincomplex_entry(fdt + get_runtime_offset());

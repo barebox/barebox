@@ -46,7 +46,7 @@ ENTRY_FUNCTION(start_imx6dl_tx6x_512m, r0, r1, r2)
 
 	imx6_cpu_lowlevel_init();
 
-	arm_setup_stack(0x00920000 - 8);
+	arm_setup_stack(0x00920000);
 
 	IMD_USED(tx6x_mx6_memsize_512M);
 
@@ -66,7 +66,7 @@ ENTRY_FUNCTION(start_imx6dl_tx6x_1g, r0, r1, r2)
 
 	imx6_cpu_lowlevel_init();
 
-	arm_setup_stack(0x00920000 - 8);
+	arm_setup_stack(0x00920000);
 
 	IMD_USED(tx6x_mx6_memsize_1G);
 
@@ -86,7 +86,7 @@ ENTRY_FUNCTION(start_imx6q_tx6x_1g, r0, r1, r2)
 
 	imx6_cpu_lowlevel_init();
 
-	arm_setup_stack(0x00920000 - 8);
+	arm_setup_stack(0x00920000);
 
 	IMD_USED(tx6x_mx6_memsize_1G);
 
@@ -106,7 +106,7 @@ ENTRY_FUNCTION(start_imx6q_tx6x_2g, r0, r1, r2)
 
 	imx6_cpu_lowlevel_init();
 
-	arm_setup_stack(0x00920000 - 8);
+	arm_setup_stack(0x00920000);
 
 	IMD_USED(tx6x_mx6_memsize_2G);
 

@@ -39,7 +39,7 @@ static void __noreturn start_imx6_pico_hobbit_common(uint32_t size,
 
 	imx6ul_cpu_lowlevel_init();
 
-	arm_setup_stack(0x00910000 - 8);
+	arm_setup_stack(0x00910000);
 
 	arm_early_mmu_cache_invalidate();
 

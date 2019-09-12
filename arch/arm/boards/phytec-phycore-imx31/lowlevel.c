@@ -38,7 +38,7 @@ void __bare_init __naked barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint
 
 	arm_cpu_lowlevel_init();
 
-	arm_setup_stack(MX31_IRAM_BASE_ADDR + MX31_IRAM_SIZE - 12);
+	arm_setup_stack(MX31_IRAM_BASE_ADDR + MX31_IRAM_SIZE);
 
 	writel(1 << 6, MX31_IPU_CTRL_BASE_ADDR);
 

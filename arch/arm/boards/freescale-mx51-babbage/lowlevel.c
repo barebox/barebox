@@ -40,7 +40,7 @@ ENTRY_FUNCTION(start_imx51_babbage, r0, r1, r2)
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();
 
-	arm_setup_stack(0x20000000 - 16);
+	arm_setup_stack(0x20000000);
 
 	fdt = __dtb_imx51_babbage_start + get_runtime_offset();
 

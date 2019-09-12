@@ -359,7 +359,7 @@ ENTRY_FUNCTION(start_imx6_wandboard, r0, r1, r2)
 {
 	imx6_cpu_lowlevel_init();
 
-	arm_setup_stack(0x0091ffb0);
+	arm_setup_stack(0x00920000);
 
 	relocate_to_current_adr();
 	setup_c();

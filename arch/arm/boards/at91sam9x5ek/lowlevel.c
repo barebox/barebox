@@ -14,7 +14,7 @@ ENTRY_FUNCTION(start_at91sam9x5ek, r0, r1, r2)
 	void *fdt;
 
 	arm_cpu_lowlevel_init();
-	arm_setup_stack(AT91SAM9X5_SRAM_BASE + AT91SAM9X5_SRAM_SIZE - 16);
+	arm_setup_stack(AT91SAM9X5_SRAM_BASE + AT91SAM9X5_SRAM_SIZE);
 
 	fdt = __dtb_at91sam9x5ek_start + get_runtime_offset();
 

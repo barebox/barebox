@@ -77,7 +77,7 @@ static noinline void achilles_start(void)
 ENTRY_FUNCTION(start_socfpga_achilles_xload, r0, r1, r2)
 {
 	arm_cpu_lowlevel_init();
-	arm_setup_stack(ARRIA10_OCRAM_ADDR + SZ_256K - 32);
+	arm_setup_stack(ARRIA10_OCRAM_ADDR + SZ_256K);
 	achilles_start();
 }
 
@@ -96,7 +96,7 @@ ENTRY_FUNCTION(start_socfpga_achilles_bringup, r0, r1, r2)
 
 	arm_cpu_lowlevel_init();
 
-	arm_setup_stack(ARRIA10_OCRAM_ADDR + SZ_256K - 16);
+	arm_setup_stack(ARRIA10_OCRAM_ADDR + SZ_256K);
 
 	arm_early_mmu_cache_invalidate();
 

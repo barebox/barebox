@@ -145,7 +145,7 @@ ENTRY_FUNCTION(start_imx6_realq7, r0, r1, r2)
 
 	imx6_cpu_lowlevel_init();
 
-	arm_setup_stack(0x00940000 - 8);
+	arm_setup_stack(0x00940000);
 
 	fdt = __dtb_imx6q_dmo_edmqmx6_start + get_runtime_offset();
 

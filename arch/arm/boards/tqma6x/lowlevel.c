@@ -32,7 +32,7 @@ ENTRY_FUNCTION(start_imx6q_mba6x, r0, r1, r2)
 
 	imx6_cpu_lowlevel_init();
 
-	arm_setup_stack(0x00920000 - 8);
+	arm_setup_stack(0x00920000);
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL)) {
 		writel(0x2, 0x020e0338);
@@ -53,7 +53,7 @@ ENTRY_FUNCTION(start_imx6dl_mba6x, r0, r1, r2)
 
 	imx6_cpu_lowlevel_init();
 
-	arm_setup_stack(0x00920000 - 8);
+	arm_setup_stack(0x00920000);
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL)) {
 		writel(0x2, 0x020e035c);

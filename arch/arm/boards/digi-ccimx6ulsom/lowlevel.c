@@ -13,7 +13,7 @@ ENTRY_FUNCTION(start_imx6ul_ccimx6ulsbcpro, r0, r1, r2)
 
 	imx6ul_cpu_lowlevel_init();
 
-	arm_setup_stack(0x00910000 - 8);
+	arm_setup_stack(0x00910000);
 
 	arm_early_mmu_cache_invalidate();
 

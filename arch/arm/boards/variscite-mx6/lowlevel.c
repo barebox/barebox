@@ -45,7 +45,7 @@ ENTRY_FUNCTION(start_variscite_custom, r0, r1, r2)
 
 	imx6_cpu_lowlevel_init();
 
-	arm_setup_stack(0x00920000 - 8);
+	arm_setup_stack(0x00920000);
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 	    setup_uart();

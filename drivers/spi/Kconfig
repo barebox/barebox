@@ -25,6 +25,15 @@ config DRIVER_SPI_ATMEL
 	bool "Atmel (AT91) SPI Master driver"
 	depends on ARCH_AT91
 
+config SPI_ATMEL_QUADSPI
+	tristate "Atmel Quad SPI Controller"
+	depends on ARCH_AT91
+	depends on SPI_MEM
+	help
+	  This enables support for the Quad SPI controller in master mode.
+	  This driver does not support generic SPI. The implementation only
+	  supports spi-mem interface.
+
 config DRIVER_SPI_FSL_QUADSPI
 	bool "Freescale QSPI controller"
 	depends on SPI_MEM

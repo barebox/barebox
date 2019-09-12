@@ -37,7 +37,7 @@ static void __imx53_tx53_init(int is_xx30)
 	setup_c();
 	barrier();
 
-	arm_setup_stack(MX53_IRAM_BASE_ADDR + MX53_IRAM_SIZE - 8);
+	arm_setup_stack(MX53_IRAM_BASE_ADDR + MX53_IRAM_SIZE);
 
 	if (is_xx30) {
 		imx53_init_lowlevel_early(800);

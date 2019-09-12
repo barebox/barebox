@@ -21,7 +21,7 @@ static noinline void imx53_guf_vincell_init(void *fdt)
 	void __iomem *ccm = (void *)MX53_CCM_BASE_ADDR;
 	void __iomem *uart = IOMEM(MX53_UART2_BASE_ADDR);
 
-	arm_setup_stack(MX53_IRAM_BASE_ADDR + MX53_IRAM_SIZE - 8);
+	arm_setup_stack(MX53_IRAM_BASE_ADDR + MX53_IRAM_SIZE);
 
 	writel(0x0088494c, ccm + MX5_CCM_CBCDR);
 	writel(0x02b12f0a, ccm + MX5_CCM_CSCMR2);

@@ -40,7 +40,7 @@ static inline void start_raspberry_pi(unsigned long memsize, void *fdt,
 
 	/* Copied from barebox_arm_entry(). We need stack here early
 	 * for normal function calls to work. */
-	arm_setup_stack(arm_mem_stack_top(membase, membase + memsize) - 16);
+	arm_setup_stack(arm_mem_stack_top(membase, membase + memsize));
 
 	fdt += get_runtime_offset();
 

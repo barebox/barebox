@@ -44,7 +44,7 @@ void __bare_init __naked barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint
 
 	arm_cpu_lowlevel_init();
 
-	arm_setup_stack(MX35_IRAM_BASE_ADDR + MX35_IRAM_SIZE - 8);
+	arm_setup_stack(MX35_IRAM_BASE_ADDR + MX35_IRAM_SIZE);
 
 	r = get_cr();
 	r |= CR_Z; /* Flow prediction (Z) */

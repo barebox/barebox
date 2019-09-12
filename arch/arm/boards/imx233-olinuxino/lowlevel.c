@@ -7,10 +7,11 @@
 #include <io.h>
 #include <debug_ll.h>
 #include <mach/iomux.h>
+#include <generated/mach-types.h>
 
 ENTRY_FUNCTION(start_barebox_olinuxino_imx23, r0, r1, r2)
 {
-	barebox_arm_entry(IMX_MEMORY_BASE, SZ_64M, NULL);
+	barebox_arm_entry(IMX_MEMORY_BASE, SZ_64M, (void *)MACH_TYPE_IMX233_OLINUXINO);
 }
 
 static const uint32_t pad_setup[] = {

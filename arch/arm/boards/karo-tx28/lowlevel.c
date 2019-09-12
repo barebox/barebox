@@ -11,10 +11,11 @@
 #include <debug_ll.h>
 #include <mach/iomux.h>
 #include <stmp-device.h>
+#include <generated/mach-types.h>
 
 ENTRY_FUNCTION(start_barebox_karo_tx28, r0, r1, r2)
 {
-	barebox_arm_entry(IMX_MEMORY_BASE, SZ_128M, NULL);
+	barebox_arm_entry(IMX_MEMORY_BASE, SZ_128M, (void *)MACH_TYPE_TX28);
 }
 
 static const uint32_t iomux_pads[] = {

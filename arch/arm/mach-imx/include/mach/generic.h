@@ -223,6 +223,15 @@ extern unsigned int __imx_cpu_type;
 # define cpu_is_vf610()		(0)
 #endif
 
+#ifdef CONFIG_BOARD_ARM_GENERIC_DT
+# ifdef imx_cpu_type
+#  undef imx_cpu_type
+#  define imx_cpu_type __imx_cpu_type
+# else
+#  define imx_cpu_type 0
+# endif
+#endif
+
 #define cpu_is_mx23()	(0)
 #define cpu_is_mx28()	(0)
 

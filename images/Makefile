@@ -164,6 +164,10 @@ include $(srctree)/images/Makefile.at91
 include $(srctree)/images/Makefile.zynqmp
 include $(srctree)/images/Makefile.layerscape
 
+pblb-$(CONFIG_BOARD_ARM_GENERIC_DT) += start_dt_2nd
+FILE_barebox-dt-2nd.img = start_dt_2nd.pblb
+image-$(CONFIG_BOARD_ARM_GENERIC_DT) += barebox-dt-2nd.img
+
 ifneq ($(pblx-y)$(pblx-),)
   $(error pblx- has been removed. Please use pblb- instead.)
 endif

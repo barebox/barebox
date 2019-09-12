@@ -100,6 +100,9 @@ config FSL_QE_FIRMWARE
 	select CRC32
 	bool
 
+config LIBFDT
+	bool
+
 config RATP
 	select CRC_ITU_T
 	bool "RATP protocol support"

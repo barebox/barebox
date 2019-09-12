@@ -803,7 +803,7 @@ const struct nand_sdr_timings *onfi_async_timing_mode_to_sdr_timings(int mode);
 
 static inline struct nand_chip *mtd_to_nand(struct mtd_info *mtd)
 {
-	return mtd->priv;
+	return container_of(mtd, struct nand_chip, mtd);
 }
 
 #endif /* __LINUX_MTD_NAND_H */

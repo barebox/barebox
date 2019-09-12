@@ -21,7 +21,7 @@
 };
 
 &dspi0 {
-	m25p128@0 {
+	flash@0 {
 		#address-cells = <1>;
 		#size-cells = <0>;
 

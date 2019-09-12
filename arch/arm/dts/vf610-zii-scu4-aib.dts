@@ -17,5 +17,95 @@
 		switch1-eeprom = &switch1;
 		switch2-eeprom = &switch2;
 		switch3-eeprom = &switch3;
+		fiber-eeprom0 = &fiber_eeprom0;
+		fiber-eeprom1 = &fiber_eeprom1;
+		fiber-eeprom2 = &fiber_eeprom2;
+		fiber-eeprom3 = &fiber_eeprom3;
+		fiber-eeprom4 = &fiber_eeprom4;
+		fiber-eeprom5 = &fiber_eeprom5;
+		fiber-eeprom6 = &fiber_eeprom6;
+		fiber-eeprom7 = &fiber_eeprom7;
+		fiber-eeprom8 = &fiber_eeprom8;
+		fiber-eeprom9 = &fiber_eeprom9;
+	};
+};
+
+&sff0_i2c {
+	fiber_eeprom0: eeprom@50 {
+		compatible = "atmel,24c04";
+		reg = <0x50>;
+		label = "fiber0";
+	};
+};
+
+&sff1_i2c {
+	fiber_eeprom1: eeprom@50 {
+		compatible = "atmel,24c04";
+		reg = <0x50>;
+		label = "fiber1";
+	};
+};
+
+&sff2_i2c {
+	fiber_eeprom2: eeprom@50 {
+		compatible = "atmel,24c04";
+		reg = <0x50>;
+		label = "fiber2";
+	};
+};
+
+&sff3_i2c {
+	fiber_eeprom3: eeprom@50 {
+		compatible = "atmel,24c04";
+		reg = <0x50>;
+		label = "fiber3";
+	};
+};
+
+&sff4_i2c {
+	fiber_eeprom4: eeprom@50 {
+		compatible = "atmel,24c04";
+		reg = <0x50>;
+		label = "fiber4";
+	};
+};
+
+&sff5_i2c {
+	fiber_eeprom5: eeprom@50 {
+		compatible = "atmel,24c04";
+		reg = <0x50>;
+		label = "fiber5";
+	};
+};
+
+&sff6_i2c {
+	fiber_eeprom6: eeprom@50 {
+		compatible = "atmel,24c04";
+		reg = <0x50>;
+		label = "fiber6";
+	};
+};
+
+&sff7_i2c {
+	fiber_eeprom7: eeprom@50 {
+		compatible = "atmel,24c04";
+		reg = <0x50>;
+		label = "fiber7";
+	};
+};
+
+&sff8_i2c {
+	fiber_eeprom8: eeprom@50 {
+		compatible = "atmel,24c04";
+		reg = <0x50>;
+		label = "fiber8";
+	};
+};
+
+&sff9_i2c {
+	fiber_eeprom9: eeprom@50 {
+		compatible = "atmel,24c04";
+		reg = <0x50>;
+		label = "fiber9";
 	};
 };

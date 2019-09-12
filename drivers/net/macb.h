@@ -5,6 +5,8 @@
 #ifndef __DRIVERS_MACB_H__
 #define __DRIVERS_MACB_H__
 
+#define MACB_MAX_QUEUES 8
+
 /* MACB register offsets */
 #define MACB_NCR				0x0000
 #define MACB_NCFGR				0x0004
@@ -74,6 +76,8 @@
 #define GEM_DCFG7				0x0298
 #define GEM_TQ1					0x0440
 #define GEM_RQ1					0x0480
+
+#define GEM_TBQP(hw_q)				(0x0440 + ((hw_q) << 2))
 
 /* Bitfields in NCR */
 #define MACB_LB_OFFSET				0
@@ -435,5 +439,8 @@ struct macb_dma_desc {
 #define MACB_TX_WRAP_SIZE			1
 #define MACB_TX_USED_OFFSET			31
 #define MACB_TX_USED_SIZE			1
+
+#define gem_writel_queue_TBQP(port, value, queue_num)	\
+	writel((value), (port)->regs + GEM_TBQP(queue_num))
 
 #endif /* __DRIVERS_MACB_H__ */

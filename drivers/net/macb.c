@@ -322,6 +322,29 @@ static void macb_configure_dma(struct macb_device *bp)
 	}
 }
 
+static int gmac_init_dummy_tx_queues(struct macb_device *macb)
+{
+	int i, num_queues = 1;
+	u32 queue_mask;
+
+	/* bit 0 is never set but queue 0 always exists */
+	queue_mask = gem_readl(macb, DCFG6) & 0xff;
+	queue_mask |= 0x1;
+
+	for (i = 1; i < MACB_MAX_QUEUES; i++)
+		if (queue_mask & (1 << i))
+			num_queues++;
+
+	macb->gem_q1_descs[0].addr = 0;
+	macb->gem_q1_descs[0].ctrl = MACB_BIT(TX_WRAP) |
+		MACB_BIT(TX_LAST) | MACB_BIT(TX_USED);
+
+	for (i = 1; i < num_queues; i++)
+		gem_writel_queue_TBQP(macb, &macb->gem_q1_descs[0], i - 1);
+
+	return 0;
+}
+
 static void macb_init(struct macb_device *macb)
 {
 	unsigned long paddr, val = 0;
@@ -357,16 +380,13 @@ static void macb_init(struct macb_device *macb)
 	macb_writel(macb, TBQP, (ulong)macb->tx_ring);
 
 	if (macb->is_gem && macb->gem_q1_descs) {
-		/* Disable the second priority queue */
-		macb->gem_q1_descs[0].addr = 0;
-		macb->gem_q1_descs[0].ctrl = MACB_BIT(TX_WRAP) |
-				MACB_BIT(TX_LAST) |
-				MACB_BIT(TX_USED);
+		gmac_init_dummy_tx_queues(macb);
+
+		/* Disable the second priority rx queue */
 		macb->gem_q1_descs[1].addr = MACB_BIT(RX_USED) |
 				MACB_BIT(RX_WRAP);
 		macb->gem_q1_descs[1].ctrl = 0;
 
-		gem_writel(macb, TQ1, (ulong)&macb->gem_q1_descs[0]);
 		gem_writel(macb, RQ1, (ulong)&macb->gem_q1_descs[1]);
 	}
 
@@ -750,6 +770,7 @@ static void macb_remove(struct device_d *dev)
 
 static const struct of_device_id macb_dt_ids[] = {
 	{ .compatible = "cdns,at91sam9260-macb",},
+	{ .compatible = "atmel,sama5d2-gem",},
 	{ .compatible = "atmel,sama5d3-gem",},
 	{ .compatible = "cdns,zynqmp-gem",},
 	{ /* sentinel */ }

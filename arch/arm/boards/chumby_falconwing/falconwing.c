@@ -22,6 +22,7 @@
 #include <linux/sizes.h>
 #include <usb/ehci.h>
 #include <asm/armlinux.h>
+#include <asm/barebox-arm.h>
 #include <io.h>
 #include <asm/mmu.h>
 #include <generated/mach-types.h>
@@ -278,6 +279,9 @@ static int falconwing_devices_init(void)
 {
 	int i;
 
+	if (barebox_arm_machine() != MACH_TYPE_CHUMBY)
+		return 0;
+
 	/* initizalize gpios */
 	for (i = 0; i < ARRAY_SIZE(pad_setup); i++)
 		imx_gpio_mode(pad_setup[i]);
@@ -300,6 +304,9 @@ device_initcall(falconwing_devices_init);
 
 static int falconwing_console_init(void)
 {
+	if (barebox_arm_machine() != MACH_TYPE_CHUMBY)
+		return 0;
+
 	barebox_set_model("Chumby Falconwing");
 	barebox_set_hostname("falconwing");
 

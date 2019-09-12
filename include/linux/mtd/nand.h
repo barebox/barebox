@@ -543,6 +543,8 @@ struct nand_chip {
 
 	void *priv;
 	unsigned int bbt_type;
+
+	struct mtd_info mtd;
 };
 
 /*
@@ -798,5 +800,10 @@ struct nand_sdr_timings {
 
 /* get timing characteristics from ONFI timing mode. */
 const struct nand_sdr_timings *onfi_async_timing_mode_to_sdr_timings(int mode);
+
+static inline struct nand_chip *mtd_to_nand(struct mtd_info *mtd)
+{
+	return mtd->priv;
+}
 
 #endif /* __LINUX_MTD_NAND_H */

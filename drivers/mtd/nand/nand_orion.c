@@ -21,7 +21,6 @@
 #include <linux/clk.h>
 
 struct orion_nand {
-	struct mtd_info mtd;
 	struct nand_chip chip;
 
 	u8 ale;         /* address line number connected to ALE */
@@ -30,7 +29,7 @@ struct orion_nand {
 
 static void orion_nand_cmd_ctrl(struct mtd_info *mtd, int cmd, unsigned int ctrl)
 {
-	struct nand_chip *chip = mtd->priv;
+	struct nand_chip *chip = mtd_to_nand(mtd);
 	struct orion_nand *priv = chip->priv;
 	u32 offs;
 
@@ -52,7 +51,7 @@ static void orion_nand_cmd_ctrl(struct mtd_info *mtd, int cmd, unsigned int ctrl
 
 static void orion_nand_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
 {
-	struct nand_chip *chip = mtd->priv;
+	struct nand_chip *chip = mtd_to_nand(mtd);
 	void __iomem *io_base = chip->IO_ADDR_R;
 	uint64_t *buf64;
 	int i = 0;
@@ -91,7 +90,7 @@ static int orion_nand_probe(struct device_d *dev)
 	u32 val = 0;
 
 	priv = xzalloc(sizeof(struct orion_nand));
-	mtd = &priv->mtd;
+	mtd = &priv->chip.mtd;
 	chip = &priv->chip;
 
 	iores = dev_request_mem_resource(dev, 0);
@@ -118,7 +117,6 @@ static int orion_nand_probe(struct device_d *dev)
 		chip->chip_delay = (u8)val;
 
 	mtd->parent = dev;
-	mtd->priv = chip;
 	chip->priv = priv;
 	chip->IO_ADDR_R = chip->IO_ADDR_W = io_base;
 	chip->cmd_ctrl = orion_nand_cmd_ctrl;

@@ -200,7 +200,6 @@ struct mxs_nand_info {
 	void __iomem		*io_base;
 	void __iomem		*bch_base;
 	struct clk		*clk;
-	struct mtd_info		mtd;
 	enum gpmi_type		type;
 	int			dma_channel_base;
 	u32		version;
@@ -284,7 +283,7 @@ static uint32_t mxs_nand_aux_status_offset(void)
 
 static uint32_t mxs_nand_get_mark_offset(struct mtd_info *mtd)
 {
-	struct nand_chip *chip = mtd->priv;
+	struct nand_chip *chip = mtd_to_nand(mtd);
 	uint32_t chunk_data_size_in_bits;
 	uint32_t chunk_ecc_size_in_bits;
 	uint32_t chunk_total_size_in_bits;
@@ -333,7 +332,7 @@ static uint32_t mxs_nand_get_mark_offset(struct mtd_info *mtd)
 
 static int mxs_nand_calc_geo(struct mtd_info *mtd)
 {
-	struct nand_chip *chip = mtd->priv;
+	struct nand_chip *chip = mtd_to_nand(mtd);
 	struct mxs_nand_info *nand_info = chip->priv;
 	int ecc_chunk_count = mxs_nand_ecc_chunk_cnt(mtd->writesize);
 	int gf_len = 13;  /* length of Galois Field for non-DDR nand */
@@ -380,7 +379,7 @@ int mxs_nand_get_geo(int *ecc_strength, int *bb_mark_bit_offset)
 	if (!mxs_nand_mtd)
 		return -ENODEV;
 
-	chip = mxs_nand_mtd->priv;
+	chip = mtd_to_nand(mxs_nand_mtd);
 	nand_info = chip->priv;
 
 	*ecc_strength = chip->ecc.strength;
@@ -423,7 +422,7 @@ static int mxs_nand_wait_for_bch_complete(struct mxs_nand_info *nand_info)
  */
 static void mxs_nand_cmd_ctrl(struct mtd_info *mtd, int data, unsigned int ctrl)
 {
-	struct nand_chip *chip = mtd->priv;
+	struct nand_chip *chip = mtd_to_nand(mtd);
 	struct mxs_nand_info *nand_info = chip->priv;
 	struct mxs_dma_desc *d;
 	uint32_t channel = nand_info->dma_channel_base + nand_info->cur_chip;
@@ -499,7 +498,7 @@ static void mxs_nand_cmd_ctrl(struct mtd_info *mtd, int data, unsigned int ctrl)
  */
 static int mxs_nand_device_ready(struct mtd_info *mtd)
 {
-	struct nand_chip *chip = mtd->priv;
+	struct nand_chip *chip = mtd_to_nand(mtd);
 	struct mxs_nand_info *nand_info = chip->priv;
 	void __iomem *gpmi_regs = nand_info->io_base;
 	uint32_t tmp;
@@ -525,7 +524,7 @@ static int mxs_nand_device_ready(struct mtd_info *mtd)
  */
 static void mxs_nand_select_chip(struct mtd_info *mtd, int chipnum)
 {
-	struct nand_chip *chip = mtd->priv;
+	struct nand_chip *chip = mtd_to_nand(mtd);
 	struct mxs_nand_info *nand_info = chip->priv;
 
 	nand_info->cur_chip = chipnum;
@@ -541,7 +540,7 @@ static void mxs_nand_select_chip(struct mtd_info *mtd, int chipnum)
 static void mxs_nand_swap_block_mark(struct mtd_info *mtd,
 					uint8_t *data_buf, uint8_t *oob_buf)
 {
-	struct nand_chip *chip = mtd->priv;
+	struct nand_chip *chip = mtd_to_nand(mtd);
 	struct mxs_nand_info *nand_info = chip->priv;
 
 	uint32_t bit_offset;
@@ -582,7 +581,7 @@ static void mxs_nand_swap_block_mark(struct mtd_info *mtd,
  */
 static void mxs_nand_read_buf(struct mtd_info *mtd, uint8_t *buf, int length)
 {
-	struct nand_chip *chip = mtd->priv;
+	struct nand_chip *chip = mtd_to_nand(mtd);
 	struct mxs_nand_info *nand_info = chip->priv;
 	struct mxs_dma_desc *d;
 	uint32_t channel = nand_info->dma_channel_base + nand_info->cur_chip;
@@ -660,7 +659,7 @@ rtn:
 static void mxs_nand_write_buf(struct mtd_info *mtd, const uint8_t *buf,
 				int length)
 {
-	struct nand_chip *chip = mtd->priv;
+	struct nand_chip *chip = mtd_to_nand(mtd);
 	struct mxs_nand_info *nand_info = chip->priv;
 	struct mxs_dma_desc *d;
 	uint32_t channel = nand_info->dma_channel_base + nand_info->cur_chip;
@@ -717,7 +716,7 @@ static uint8_t mxs_nand_read_byte(struct mtd_info *mtd)
 
 static void mxs_nand_config_bch(struct mtd_info *mtd, int readlen)
 {
-	struct nand_chip *chip = mtd->priv;
+	struct nand_chip *chip = mtd_to_nand(mtd);
 	struct mxs_nand_info *nand_info = chip->priv;
 	int chunk_size;
 	void __iomem *bch_regs = nand_info->bch_base;
@@ -1031,7 +1030,7 @@ rtn:
 static int mxs_nand_hook_read_oob(struct mtd_info *mtd, loff_t from,
 					struct mtd_oob_ops *ops)
 {
-	struct nand_chip *chip = mtd->priv;
+	struct nand_chip *chip = mtd_to_nand(mtd);
 	struct mxs_nand_info *nand_info = chip->priv;
 	int ret;
 
@@ -1056,7 +1055,7 @@ static int mxs_nand_hook_read_oob(struct mtd_info *mtd, loff_t from,
 static int mxs_nand_hook_write_oob(struct mtd_info *mtd, loff_t to,
 					struct mtd_oob_ops *ops)
 {
-	struct nand_chip *chip = mtd->priv;
+	struct nand_chip *chip = mtd_to_nand(mtd);
 	struct mxs_nand_info *nand_info = chip->priv;
 	int ret;
 
@@ -1080,7 +1079,7 @@ static int mxs_nand_hook_write_oob(struct mtd_info *mtd, loff_t to,
  */
 static int mxs_nand_hook_block_markbad(struct mtd_info *mtd, loff_t ofs)
 {
-	struct nand_chip *chip = mtd->priv;
+	struct nand_chip *chip = mtd_to_nand(mtd);
 	struct mxs_nand_info *nand_info = chip->priv;
 	int ret;
 
@@ -1242,7 +1241,7 @@ static int mxs_nand_block_bad(struct mtd_info *mtd, loff_t ofs, int getchip)
  */
 static int mxs_nand_scan_bbt(struct mtd_info *mtd)
 {
-	struct nand_chip *chip = mtd->priv;
+	struct nand_chip *chip = mtd_to_nand(mtd);
 	struct mxs_nand_info *nand_info = chip->priv;
 	void __iomem *bch_regs = nand_info->bch_base;
 	int ret;
@@ -2030,7 +2029,7 @@ static void mxs_nand_compute_edo_timing(struct mxs_nand_info *info,
 static int mxs_nand_enable_edo_mode(struct mxs_nand_info *info)
 {
 	struct nand_chip *chip = &info->nand_chip;
-	struct mtd_info	 *mtd = &info->mtd;
+	struct mtd_info	 *mtd = &chip->mtd;
 	uint8_t feature[ONFI_SUBFEATURE_PARAM_LEN] = {};
 	int ret, mode;
 
@@ -2196,8 +2195,7 @@ static int mxs_nand_probe(struct device_d *dev)
 
 	/* structures must be linked */
 	chip = &nand_info->nand_chip;
-	mtd = &nand_info->mtd;
-	mtd->priv = chip;
+	mtd = &nand_info->nand_chip.mtd;
 	mtd->parent = dev;
 
 	chip->priv = nand_info;

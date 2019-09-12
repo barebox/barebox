@@ -137,7 +137,6 @@ struct mrvl_nand_variant {
 };
 
 struct mrvl_nand_host {
-	struct mtd_info		mtd;
 	struct nand_chip	chip;
 	struct mtd_partition	*parts;
 	struct device_d		*dev;
@@ -342,7 +341,7 @@ static struct mrvl_nand_timing timings[] = {
 
 static void mrvl_nand_set_timing(struct mrvl_nand_host *host, bool use_default)
 {
-	struct mtd_info *mtd = &host->mtd;
+	struct mtd_info *mtd = &host->chip.mtd;
 	unsigned long nand_clk = clk_get_rate(host->core_clk);
 	struct mrvl_nand_timing *t;
 	uint32_t ndtr0, ndtr1;
@@ -420,7 +419,7 @@ static unsigned int mrvl_datasize(struct mrvl_nand_host *host)
 {
 	unsigned int datasize;
 
-	datasize = host->mtd.writesize;
+	datasize = host->chip.mtd.writesize;
 	if (host->use_spare) {
 		datasize += host->spare_size;
 		if (!host->use_ecc)
@@ -572,7 +571,7 @@ static void prepare_start_command(struct mrvl_nand_host *host, int command)
 	if (command == NAND_CMD_READ0 ||
 	    command == NAND_CMD_READOOB ||
 	    command == NAND_CMD_SEQIN) {
-		host->buf_count = host->mtd.writesize + host->mtd.oobsize;
+		host->buf_count = host->chip.mtd.writesize + host->chip.mtd.oobsize;
 		memset(host->data_buff, 0xFF, host->buf_count);
 	}
 
@@ -592,7 +591,7 @@ static int prepare_set_command(struct mrvl_nand_host *host, int command,
 	int addr_cycle, exec_cmd;
 	struct mtd_info *mtd;
 
-	mtd = &host->mtd;
+	mtd = &host->chip.mtd;
 	exec_cmd = 1;
 
 	if (host->cs != 0)
@@ -878,7 +877,7 @@ static void mrvl_nand_write_buf(struct mtd_info *mtd,
 static void mrvl_nand_config_flash(struct mrvl_nand_host *host)
 {
 	struct nand_chip *chip = &host->chip;
-	struct mtd_info *mtd = &host->mtd;
+	struct mtd_info *mtd = &host->chip.mtd;
 	uint32_t ndcr = host->reg_ndcr;
 
 	/* calculate flash information */
@@ -1036,7 +1035,7 @@ static int pxa_ecc_init(struct mrvl_nand_host *host,
 
 static int mrvl_nand_scan(struct mtd_info *mtd)
 {
-	struct nand_chip *chip = mtd->priv;
+	struct nand_chip *chip = mtd_to_nand(mtd);
 	struct mrvl_nand_host *host = chip->priv;
 	int ret;
 	unsigned int ndcr;
@@ -1115,8 +1114,7 @@ static struct mrvl_nand_host *alloc_nand_resource(struct device_d *dev)
 	host = xzalloc(sizeof(*host));
 	host->num_cs = 1;
 	host->cs = 0;
-	mtd = &host->mtd;
-	mtd->priv = &host->chip;
+	mtd = &host->chip.mtd;
 	mtd->parent = dev;
 	mtd->name = "mrvl_nand";
 
@@ -1216,14 +1214,14 @@ static int mrvl_nand_probe(struct device_d *dev)
 		return ret;
 
 	host->chip.controller = &host->chip.hwcontrol;
-	ret = mrvl_nand_scan(&host->mtd);
+	ret = mrvl_nand_scan(&host->chip.mtd);
 	if (ret) {
 		dev_warn(dev, "failed to scan nand at cs %d\n",
 			 host->cs);
 		return -ENODEV;
 	}
 
-	ret = add_mtd_nand_device(&host->mtd, "nand");
+	ret = add_mtd_nand_device(&host->chip.mtd, "nand");
 	return ret;
 }
 

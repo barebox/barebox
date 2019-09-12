@@ -32,7 +32,6 @@
 #include <errno.h>
 
 struct imx_nand_host {
-	struct mtd_info		mtd;
 	struct nand_chip	nand;
 	struct mtd_partition	*parts;
 	struct device_d		*dev;
@@ -478,7 +477,7 @@ static void imx_nand_enable_hwecc_v3(struct nand_chip *chip, bool enable)
 
 static int imx_nand_correct_data_v1(struct mtd_info *mtd)
 {
-	struct nand_chip *nand_chip = mtd->priv;
+	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct imx_nand_host *host = nand_chip->priv;
 
 	if (host->eccstatus_v1 < 0)
@@ -494,7 +493,7 @@ static int imx_nand_correct_data_v1(struct mtd_info *mtd)
 
 static int imx_nand_correct_data_v2_v3(struct mtd_info *mtd)
 {
-	struct nand_chip *nand_chip = mtd->priv;
+	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct imx_nand_host *host = nand_chip->priv;
 	u32 ecc_stat, err;
 	int no_subpages;
@@ -537,7 +536,7 @@ static int imx_nand_calculate_ecc(struct mtd_info *mtd, const u_char * dat,
  */
 static u_char imx_nand_read_byte(struct mtd_info *mtd)
 {
-	struct nand_chip *nand_chip = mtd->priv;
+	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct imx_nand_host *host = nand_chip->priv;
 	u_char ret;
 
@@ -568,7 +567,7 @@ static u_char imx_nand_read_byte(struct mtd_info *mtd)
   */
 static u16 imx_nand_read_word(struct mtd_info *mtd)
 {
-	struct nand_chip *nand_chip = mtd->priv;
+	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct imx_nand_host *host = nand_chip->priv;
 	uint16_t ret;
 
@@ -590,7 +589,7 @@ static u16 imx_nand_read_word(struct mtd_info *mtd)
 static void imx_nand_write_buf(struct mtd_info *mtd,
 			       const u_char *buf, int len)
 {
-	struct nand_chip *nand_chip = mtd->priv;
+	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct imx_nand_host *host = nand_chip->priv;
 	u16 col = host->buf_start;
 	int n = mtd->oobsize + mtd->writesize - col;
@@ -613,7 +612,7 @@ static void imx_nand_write_buf(struct mtd_info *mtd,
  */
 static void imx_nand_read_buf(struct mtd_info *mtd, u_char * buf, int len)
 {
-	struct nand_chip *nand_chip = mtd->priv;
+	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct imx_nand_host *host = nand_chip->priv;
 	u16 col = host->buf_start;
 	int n = mtd->oobsize + mtd->writesize - col;
@@ -634,7 +633,7 @@ static void imx_nand_read_buf(struct mtd_info *mtd, u_char * buf, int len)
  */
 static void copy_spare(struct mtd_info *mtd, int bfrom, void *buf)
 {
-	struct nand_chip *this = mtd->priv;
+	struct nand_chip *this = mtd_to_nand(mtd);
 	struct imx_nand_host *host = this->priv;
 	u16 i, j;
 	u16 n = mtd->writesize >> 9;
@@ -672,7 +671,7 @@ static void imx_nand_select_chip(struct mtd_info *mtd, int chip)
 
 static void mxc_do_addr_cycle(struct mtd_info *mtd, int column, int page_addr)
 {
-	struct nand_chip *nand_chip = mtd->priv;
+	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct imx_nand_host *host = nand_chip->priv;
 
 	/*
@@ -738,7 +737,7 @@ static int get_eccsize(struct mtd_info *mtd)
 
 static void preset_v1(struct mtd_info *mtd)
 {
-	struct nand_chip *nand_chip = mtd->priv;
+	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct imx_nand_host *host = nand_chip->priv;
 	uint16_t config1 = 0;
 
@@ -760,7 +759,7 @@ static void preset_v1(struct mtd_info *mtd)
 
 static void preset_v2(struct mtd_info *mtd)
 {
-	struct nand_chip *nand_chip = mtd->priv;
+	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct imx_nand_host *host = nand_chip->priv;
 	uint16_t config1 = 0;
 	int mode;
@@ -820,7 +819,7 @@ static void preset_v2(struct mtd_info *mtd)
 
 static void preset_v3(struct mtd_info *mtd)
 {
-	struct nand_chip *chip = mtd->priv;
+	struct nand_chip *chip = mtd_to_nand(mtd);
 	struct imx_nand_host *host = chip->priv;
 	uint32_t config2, config3;
 	int i, addr_phases;
@@ -962,7 +961,7 @@ static int imx_nand_read_page_raw(struct mtd_info *mtd,
 static void imx_nand_command(struct mtd_info *mtd, unsigned command,
 			     int column, int page_addr)
 {
-	struct nand_chip *nand_chip = mtd->priv;
+	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct imx_nand_host *host = nand_chip->priv;
 
 	dev_dbg(host->dev,
@@ -1237,8 +1236,7 @@ static int __init imxnd_probe(struct device_d *dev)
 
 	/* structures must be linked */
 	this = &host->nand;
-	mtd = &host->mtd;
-	mtd->priv = this;
+	mtd = &this->mtd;
 	mtd->parent = dev;
 	mtd->name = "imx_nand";
 

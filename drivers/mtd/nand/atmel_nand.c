@@ -77,7 +77,6 @@ static struct nand_ecclayout atmel_oobinfo_small = {
 
 struct atmel_nand_host {
 	struct nand_chip	nand_chip;
-	struct mtd_info		mtd;
 	void __iomem		*io_base;
 	struct atmel_nand_data	*board;
 	struct device_d		*dev;
@@ -130,7 +129,7 @@ static void atmel_nand_disable(struct atmel_nand_host *host)
  */
 static void atmel_nand_cmd_ctrl(struct mtd_info *mtd, int cmd, unsigned int ctrl)
 {
-	struct nand_chip *nand_chip = mtd->priv;
+	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct atmel_nand_host *host = nand_chip->priv;
 
 	if (ctrl & NAND_CTRL_CHANGE) {
@@ -153,7 +152,7 @@ static void atmel_nand_cmd_ctrl(struct mtd_info *mtd, int cmd, unsigned int ctrl
  */
 static int atmel_nand_device_ready(struct mtd_info *mtd)
 {
-	struct nand_chip *nand_chip = mtd->priv;
+	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct atmel_nand_host *host = nand_chip->priv;
 
 	return gpio_get_value(host->board->rdy_pin);
@@ -164,28 +163,28 @@ static int atmel_nand_device_ready(struct mtd_info *mtd)
  */
 static void atmel_read_buf(struct mtd_info *mtd, u8 *buf, int len)
 {
-	struct nand_chip	*nand_chip = mtd->priv;
+	struct nand_chip	*nand_chip = mtd_to_nand(mtd);
 
 	readsb(nand_chip->IO_ADDR_R, buf, len);
 }
 
 static void atmel_read_buf16(struct mtd_info *mtd, u8 *buf, int len)
 {
-	struct nand_chip	*nand_chip = mtd->priv;
+	struct nand_chip	*nand_chip = mtd_to_nand(mtd);
 
 	readsw(nand_chip->IO_ADDR_R, buf, len / 2);
 }
 
 static void atmel_write_buf(struct mtd_info *mtd, const u8 *buf, int len)
 {
-	struct nand_chip	*nand_chip = mtd->priv;
+	struct nand_chip	*nand_chip = mtd_to_nand(mtd);
 
 	writesb(nand_chip->IO_ADDR_W, buf, len);
 }
 
 static void atmel_write_buf16(struct mtd_info *mtd, const u8 *buf, int len)
 {
-	struct nand_chip	*nand_chip = mtd->priv;
+	struct nand_chip	*nand_chip = mtd_to_nand(mtd);
 
 	writesw(nand_chip->IO_ADDR_W, buf, len / 2);
 }
@@ -277,7 +276,7 @@ static int pmecc_data_alloc(struct atmel_nand_host *host)
 
 static void pmecc_gen_syndrome(struct mtd_info *mtd, int sector)
 {
-	struct nand_chip *nand_chip = mtd->priv;
+	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct atmel_nand_host *host = nand_chip->priv;
 	int i;
 	uint32_t value;
@@ -294,7 +293,7 @@ static void pmecc_gen_syndrome(struct mtd_info *mtd, int sector)
 
 static void pmecc_substitute(struct mtd_info *mtd)
 {
-	struct nand_chip *nand_chip = mtd->priv;
+	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct atmel_nand_host *host = nand_chip->priv;
 	int16_t __iomem *alpha_to = host->pmecc_alpha_to;
 	int16_t __iomem *index_of = host->pmecc_index_of;
@@ -336,7 +335,7 @@ static void pmecc_substitute(struct mtd_info *mtd)
 
 static void pmecc_get_sigma(struct mtd_info *mtd)
 {
-	struct nand_chip *nand_chip = mtd->priv;
+	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct atmel_nand_host *host = nand_chip->priv;
 
 	int16_t *lmu = host->pmecc_lmu;
@@ -494,7 +493,7 @@ static void pmecc_get_sigma(struct mtd_info *mtd)
 
 static int pmecc_err_location(struct mtd_info *mtd)
 {
-	struct nand_chip *nand_chip = mtd->priv;
+	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct atmel_nand_host *host = nand_chip->priv;
 	const int cap = host->board->pmecc_corr_cap;
 	const int num = 2 * cap + 1;
@@ -543,7 +542,7 @@ static int pmecc_err_location(struct mtd_info *mtd)
 static void pmecc_correct_data(struct mtd_info *mtd, uint8_t *buf, uint8_t *ecc,
 		int sector_num, int extra_bytes, int err_nbr)
 {
-	struct nand_chip *nand_chip = mtd->priv;
+	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct atmel_nand_host *host = nand_chip->priv;
 	int i = 0;
 	int byte_pos, bit_pos, sector_size, pos;
@@ -589,7 +588,7 @@ static void pmecc_correct_data(struct mtd_info *mtd, uint8_t *buf, uint8_t *ecc,
 static int pmecc_correction(struct mtd_info *mtd, u32 pmecc_stat, uint8_t *buf,
 	u8 *ecc)
 {
-	struct nand_chip *nand_chip = mtd->priv;
+	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct atmel_nand_host *host = nand_chip->priv;
 	int i, err_nbr, eccbytes;
 	uint8_t *buf_pos;
@@ -706,7 +705,7 @@ static int atmel_nand_pmecc_write_page(struct mtd_info *mtd,
 
 static void atmel_pmecc_core_init(struct mtd_info *mtd)
 {
-	struct nand_chip *nand_chip = mtd->priv;
+	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct atmel_nand_host *host = nand_chip->priv;
 	uint32_t val = 0;
 	struct nand_ecclayout *ecc_layout;
@@ -862,8 +861,8 @@ static int __init atmel_pmecc_nand_init_params(struct device_d *dev,
 					 struct atmel_nand_host *host)
 {
 	struct resource *iores;
-	struct mtd_info *mtd = &host->mtd;
 	struct nand_chip *nand_chip = &host->nand_chip;
+	struct mtd_info *mtd = &nand_chip->mtd;
 	int cap, sector_size, err_no;
 	int ret;
 
@@ -983,7 +982,7 @@ static int __init atmel_pmecc_nand_init_params(struct device_d *dev,
 static int atmel_nand_calculate(struct mtd_info *mtd,
 		const u_char *dat, unsigned char *ecc_code)
 {
-	struct nand_chip *nand_chip = mtd->priv;
+	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct atmel_nand_host *host = nand_chip->priv;
 	unsigned int ecc_value;
 
@@ -1086,7 +1085,7 @@ static int atmel_nand_read_page(struct mtd_info *mtd,
 static int atmel_nand_correct(struct mtd_info *mtd, u_char *dat,
 		u_char *read_ecc, u_char *isnull)
 {
-	struct nand_chip *nand_chip = mtd->priv;
+	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct atmel_nand_host *host = nand_chip->priv;
 	unsigned int ecc_status;
 	unsigned int ecc_word, ecc_bit;
@@ -1154,7 +1153,7 @@ static void atmel_nand_hwctl(struct mtd_info *mtd, int mode)
 {
 #if 0
 	if (cpu_is_at32ap7000()) {
-		struct nand_chip *nand_chip = mtd->priv;
+		struct nand_chip *nand_chip = mtd_to_nand(mtd);
 		struct atmel_nand_host *host = nand_chip->priv;
 		ecc_writel(host->ecc, CR, ATMEL_ECC_RST);
 	}
@@ -1251,8 +1250,8 @@ static int atmel_hw_nand_init_params(struct device_d *dev,
 					 struct atmel_nand_host *host)
 {
 	struct resource *iores;
-	struct mtd_info *mtd = &host->mtd;
 	struct nand_chip *nand_chip = &host->nand_chip;
+	struct mtd_info *mtd = &nand_chip->mtd;
 
 	iores = dev_request_mem_resource(dev, 1);
 	if (IS_ERR(iores))
@@ -1328,8 +1327,8 @@ static int __init atmel_nand_probe(struct device_d *dev)
 		return PTR_ERR(iores);
 	host->io_base = IOMEM(iores->start);
 
-	mtd = &host->mtd;
 	nand_chip = &host->nand_chip;
+	mtd = &nand_chip->mtd;
 	host->board = pdata;
 	host->dev = dev;
 
@@ -1342,7 +1341,6 @@ static int __init atmel_nand_probe(struct device_d *dev)
 	}
 
 	nand_chip->priv = host;		/* link the private data structures */
-	mtd->priv = nand_chip;
 	mtd->parent = dev;
 
 	/* Set address of NAND IO lines */

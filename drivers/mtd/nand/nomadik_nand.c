@@ -38,7 +38,6 @@
 #include <errno.h>
 
 struct nomadik_nand_host {
-	struct mtd_info		mtd;
 	struct nand_chip	nand;
 	void __iomem *cmd_va;
 	void __iomem *addr_va;
@@ -105,7 +104,7 @@ static int nomadik_ecc512_calc(struct mtd_info *mtd, const u_char *data,
 static int nomadik_ecc512_correct(struct mtd_info *mtd, uint8_t *dat,
 				uint8_t *r_ecc, uint8_t *c_ecc)
 {
-	struct nand_chip *chip = mtd->priv;
+	struct nand_chip *chip = mtd_to_nand(mtd);
 	uint32_t r, c, d, diff; /*read, calculated, xor of them */
 
 	if (!memcmp(r_ecc, c_ecc, chip->ecc.bytes))
@@ -157,7 +156,7 @@ static void nomadik_ecc_control(struct mtd_info *mtd, int mode)
 
 static void nomadik_cmd_ctrl(struct mtd_info *mtd, int cmd, unsigned int ctrl)
 {
-	struct nand_chip *nand = mtd->priv;
+	struct nand_chip *nand = mtd_to_nand(mtd);
 	struct nomadik_nand_host *host = nand->priv;
 
 	if (cmd == NAND_CMD_NONE)
@@ -198,9 +197,8 @@ static int nomadik_nand_probe(struct device_d *dev)
 		return PTR_ERR(host->addr_va);
 
 	/* Link all private pointers */
-	mtd = &host->mtd;
 	nand = &host->nand;
-	mtd->priv = nand;
+	mtd = &nand->mtd;
 	nand->priv = host;
 	mtd->parent = dev;
 
@@ -223,7 +221,7 @@ static int nomadik_nand_probe(struct device_d *dev)
 	/*
 	 * Scan to find existance of the device
 	 */
-	if (nand_scan(&host->mtd, 1)) {
+	if (nand_scan(mtd, 1)) {
 		ret = -ENXIO;
 		goto err;
 	}

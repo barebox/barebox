@@ -24,6 +24,12 @@
 			barebox,default-trigger = "heartbeat";
 		};
 	};
+
+	gpio-keys {
+		button@0 {
+			gpios = <&gpio 11 GPIO_ACTIVE_HIGH>;
+		};
+	};
 };
 
 &spiflash {

@@ -23,6 +23,7 @@ int am33xx_bbu_nand_xloadslots_register_handler(const char *name,
 						int num_devicefiles);
 int am33xx_bbu_nand_slots_register_handler(const char *name, char **devicefile,
 						int num_devicefiles);
+int am33xx_bbu_nand_register_handler(const char *device);
 #else
 static inline int am33xx_bbu_nand_xloadslots_register_handler(const char *name,
 							char **devicefile,
@@ -34,6 +35,11 @@ static inline int am33xx_bbu_nand_xloadslots_register_handler(const char *name,
 static inline int am33xx_bbu_nand_slots_register_handler(const char *name,
 							 char **devicefile,
 							int num_devicefiles)
+{
+	return 0;
+}
+
+static inline int am33xx_bbu_nand_register_handler(const char *device)
 {
 	return 0;
 }

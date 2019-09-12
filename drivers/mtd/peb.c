@@ -438,6 +438,90 @@ int mtd_peb_write(struct mtd_info *mtd, const void *buf, int pnum, int offset,
 }
 
 /**
+ * mtd_peb_write_file - write data into a mtd device
+ * @mtd: mtd device
+ * @peb_start: The first PEB where to start writing
+ * @max_pebs: Maximum number of PEBs we have space to write to
+ * @buf: buffer with the data to write
+ * @len: how many bytes to write
+ *
+ * This function writes @len bytes of data from buffer @buf to the mtd device
+ * @mtd starting at @peb_start. At maxmimum @max_pebs are used. We always write
+ * full pebs. If the buffer is not peb size aligned the last peb will be padded
+ * with zeroes. This function skips all bad blocks and returns 0 on success or a
+ * negative error code otherwise.
+ */
+int mtd_peb_write_file(struct mtd_info *mtd, int peb_start, int max_pebs,
+		       const void *buf, size_t len)
+{
+	int ret, pnum;
+	size_t left;
+
+	pnum = peb_start;
+	left = len;
+
+	/* First pass: Check if file will fit into remaining space */
+	while (1) {
+		if ((uint64_t)pnum * mtd->erasesize >= mtd->size)
+			return -ENOSPC;
+
+		if (pnum >= peb_start + max_pebs)
+			return -ENOSPC;
+
+		if (mtd_peb_is_bad(mtd, pnum)) {
+			pnum++;
+			continue;
+		}
+
+		if (left <= mtd->erasesize)
+			break;
+
+		left -= mtd->erasesize;
+		pnum++;
+	}
+
+	pnum = peb_start;
+	left = len;
+
+	/* Second pass: actually write file */
+	while (left) {
+		size_t now = min_t(size_t, mtd->erasesize, left);
+
+		if (mtd_peb_is_bad(mtd, pnum)) {
+			pnum++;
+			continue;
+		}
+
+		ret = mtd_peb_erase(mtd, pnum);
+		if (ret)
+			goto out;
+
+		if (now < mtd->erasesize) {
+			void *wrbuf = xzalloc(mtd->erasesize);
+
+			memcpy(wrbuf, buf, now);
+
+			ret = mtd_peb_write(mtd, wrbuf, pnum, 0, mtd->erasesize);
+
+			free(wrbuf);
+		} else {
+			ret = mtd_peb_write(mtd, buf, pnum, 0, mtd->erasesize);
+		}
+
+		if (ret)
+			goto out;
+
+		left -= now;
+		pnum++;
+		buf += now;
+	}
+
+	ret = 0;
+out:
+	return ret;
+}
+
+/**
  * mtd_peb_erase - erase a physical eraseblock.
  * @mtd: mtd device
  * @pnum: physical eraseblock number to erase

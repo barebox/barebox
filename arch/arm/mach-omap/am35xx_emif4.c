@@ -37,7 +37,7 @@ void am35xx_emif4_init(void)
 	writel(regval, &emif4_base->sdram_iodft_tlgc);
 
 	/* Wait till that bit clears*/
-	while ((readl(&emif4_base->sdram_iodft_tlgc) & (1 << 10)) == 0x1);
+	while (readl(&emif4_base->sdram_iodft_tlgc) & (1 << 10));
 
 	/* Re-verify the DDR PHY status*/
 	while ((readl(&emif4_base->sdram_sts) & (1 << 2)) == 0x0);

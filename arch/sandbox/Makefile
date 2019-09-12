@@ -1,6 +1,7 @@
 KBUILD_DEFCONFIG := sandbox_defconfig
 
-CPPFLAGS += -D__SANDBOX__ -fno-strict-aliasing
+CPPFLAGS += -D__SANDBOX__ -fno-strict-aliasing -fvisibility=hidden
+
 
 machine-y := sandbox
 
@@ -23,7 +24,8 @@ CFLAGS += -Dmalloc=barebox_malloc -Dcalloc=barebox_calloc \
 		-Dglob=barebox_glob -Dglobfree=barebox_globfree \
 		-Dioctl=barebox_ioctl -Dfstat=barebox_fstat \
 		-Dopendir=barebox_opendir -Dreaddir=barebox_readdir \
-		-Dclosedir=barebox_closedir
+		-Dclosedir=barebox_closedir \
+		-Doptarg=barebox_optarg -Doptind=barebox_optind
 
 machdirs := $(patsubst %,arch/sandbox/mach-%/,$(machine-y))
 

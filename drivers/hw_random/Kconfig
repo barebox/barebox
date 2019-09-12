@@ -14,4 +14,12 @@ config HWRNG_MXC_RNGC
 	  This driver provides kernel-side support for the Random Number
 	  Generator hardware found on some Freescale i.MX processors.
 
+config HWRNG_DEV_RANDOM
+	tristate "Linux /dev/random and /dev/urandom RNG"
+	depends on SANDBOX
+	default y
+	help
+	  This driver allows use of the host provided /dev/random
+	  and /dev/urandom as barebox HWRNGs.
+
 endif

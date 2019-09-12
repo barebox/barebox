@@ -15,9 +15,6 @@ config LINUX
 	default y
 	select GENERIC_FIND_NEXT_BIT
 
-config ARCH_LINUX
-	bool
-
 config SANDBOX_UNWIND
 	bool
 	default y

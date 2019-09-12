@@ -10,6 +10,7 @@ struct fb_bitfield;
 int linux_register_device(const char *name, void *start, void *end);
 int tap_alloc(const char *dev);
 uint64_t linux_get_time(void);
+int linux_open(const char *filename, int readwrite);
 int linux_read(int fd, void *buf, size_t count);
 int linux_read_nonblock(int fd, void *buf, size_t count);
 ssize_t linux_write(int fd, const void *buf, size_t count);
@@ -49,5 +50,12 @@ void barebox_libftdi1_gpio_set_value(struct ft2232_bitbang *ftbb,
 						unsigned off, unsigned val);
 int barebox_libftdi1_update(struct ft2232_bitbang *ftbb);
 void barebox_libftdi1_close(void);
+
+typedef struct {
+	int randomfd;
+	int urandomfd;
+} devrandom_t;
+devrandom_t *devrandom_init(void);
+int devrandom_read(devrandom_t *devrandom, void *buf, size_t len, int wait);
 
 #endif /* __ASM_ARCH_LINUX_H */

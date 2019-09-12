@@ -121,6 +121,11 @@ void __attribute__((noreturn)) linux_exit(void)
 	exit(0);
 }
 
+int linux_open(const char *filename, int readwrite)
+{
+	return open(filename, readwrite ? O_RDWR : O_RDONLY);
+}
+
 int linux_read(int fd, void *buf, size_t count)
 {
 	ssize_t ret;

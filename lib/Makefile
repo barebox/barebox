@@ -71,6 +71,7 @@ obj-$(CONFIG_CRC_CCITT) += crc-ccitt.o
 obj-$(CONFIG_CRC8)	+= crc8.o
 obj-$(CONFIG_NLS)	+= nls_base.o
 obj-$(CONFIG_FSL_QE_FIRMWARE) += fsl-qe-firmware.o
+obj-$(CONFIG_UBSAN)	+= ubsan.o
 
 # GCC library routines
 obj-$(CONFIG_GENERIC_LIB_ASHLDI3) += ashldi3.o
@@ -79,3 +80,5 @@ obj-$(CONFIG_GENERIC_LIB_LSHRDI3) += lshrdi3.o
 obj-$(CONFIG_GENERIC_LIB_MULDI3)  += muldi3.o
 
 pbl-$(CONFIG_GENERIC_LIB_ASHLDI3) += ashldi3.o
+
+UBSAN_SANITIZE_ubsan.o := n

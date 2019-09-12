@@ -2,6 +2,8 @@ config SANDBOX
 	bool
 	select OFTREE
 	select GPIOLIB
+	select ARCH_HAS_UBSAN_SANITIZE_ALL
+	select HAVE_ARCH_KASAN
 	default y
 
 config ARCH_TEXT_BASE
@@ -15,3 +17,9 @@ config LINUX
 
 config ARCH_LINUX
 	bool
+
+config SANDBOX_UNWIND
+	bool
+	default y
+	select ARCH_HAS_STACK_DUMP
+	depends on UBSAN || KASAN

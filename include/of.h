@@ -870,4 +870,31 @@ static inline struct device_node *of_find_root_node(struct device_node *node)
 
 	return node;
 }
+
+#ifdef CONFIG_OF_OVERLAY
+struct device_node *of_resolve_phandles(struct device_node *root,
+					const struct device_node *overlay);
+int of_overlay_apply_tree(struct device_node *root,
+			  struct device_node *overlay);
+int of_register_overlay(struct device_node *overlay);
+#else
+static inline struct device_node *of_resolve_phandles(struct device_node *root,
+					const struct device_node *overlay)
+{
+	return NULL;
+}
+
+static inline int of_overlay_apply_tree(struct device_node *root,
+					struct device_node *overlay)
+{
+	return -ENOSYS;
+}
+
+static inline int of_register_overlay(struct device_node *overlay)
+{
+	return -ENOSYS;
+}
+
+#endif
+
 #endif /* __OF_H */

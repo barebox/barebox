@@ -349,7 +349,7 @@ static int register_persistent_environment(void)
 	return 0;
 }
 
-void tx28_get_ethaddr(void)
+static void tx28_get_ethaddr(void)
 {
 	u32 buf[2];	/* to make use of cpu_to_be32 */
 	u32 ethaddr[2];

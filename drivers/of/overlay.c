@@ -195,6 +195,44 @@ static int of_overlay_fixup(struct device_node *root, void *data)
 }
 
 /**
+ * Iterate the overlay and call process for each fragment
+ *
+ * If process() fails for any fragment, the function will stop to process
+ * other fragments and return the error of the failed process() call.
+ */
+int of_process_overlay(struct device_node *root,
+		       struct device_node *overlay,
+		       int (*process)(struct device_node *target,
+				      struct device_node *overlay, void *data),
+		       void *data)
+{
+	struct device_node *fragment;
+	int err = 0;
+
+	for_each_child_of_node(overlay, fragment) {
+		struct device_node *ovl;
+		struct device_node *target;
+
+		ovl = of_get_child_by_name(fragment, "__overlay__");
+		if (!ovl)
+			continue;
+
+		target = find_target(root, fragment);
+		if (!target)
+			continue;
+
+		err = process(target, ovl, data);
+		if (err) {
+			pr_warn("failed to process overlay for %s\n",
+				target->name);
+			break;
+		}
+	}
+
+	return err;
+}
+
+/**
  * Register a devicetree overlay
  *
  * The overlay is not applied to the live device tree, but registered as fixup

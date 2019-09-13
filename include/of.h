@@ -877,6 +877,11 @@ struct device_node *of_resolve_phandles(struct device_node *root,
 int of_overlay_apply_tree(struct device_node *root,
 			  struct device_node *overlay);
 int of_register_overlay(struct device_node *overlay);
+int of_process_overlay(struct device_node *root,
+		    struct device_node *overlay,
+		    int (*process)(struct device_node *target,
+				   struct device_node *overlay, void *data),
+		    void *data);
 #else
 static inline struct device_node *of_resolve_phandles(struct device_node *root,
 					const struct device_node *overlay)
@@ -895,6 +900,14 @@ static inline int of_register_overlay(struct device_node *overlay)
 	return -ENOSYS;
 }
 
+static inline int of_process_overlay(struct device_node *root,
+				     struct device_node *overlay,
+				     int (*process)(struct device_node *target,
+						    struct device_node *overlay, void *data),
+				     void *data)
+{
+	return -ENOSYS;
+}
 #endif
 
 #endif /* __OF_H */

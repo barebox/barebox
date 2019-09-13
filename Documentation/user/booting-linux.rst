@@ -232,6 +232,10 @@ device where the entry is found on. This makes it possible to use the same rootf
 image on different devices without having to specify a different root= option each
 time.
 
+Additionally to the options defined in the original spec, Barebox has the
+``devicetree-overlay`` option. This is a string value that refer to overlays
+that will be applied to the device tree before passing it to Linux.
+
 Network boot
 ------------
 

@@ -14,6 +14,7 @@
 
 #include <environment.h>
 #include <globalvar.h>
+#include <firmware.h>
 #include <readkey.h>
 #include <common.h>
 #include <driver.h>
@@ -49,6 +50,7 @@ static int blspec_apply_oftree_overlay(char *file, const char *abspath,
 	struct fdt_header *fdt;
 	struct device_node *overlay;
 	char *path;
+	char *firmware_path;
 
 	path = basprintf("%s/%s", abspath, file);
 
@@ -68,6 +70,21 @@ static int blspec_apply_oftree_overlay(char *file, const char *abspath,
 
 	if (dryrun) {
 		pr_info("dry run: skip overlay %s\n", path);
+		of_delete_node(overlay);
+		goto out;
+	}
+
+	/*
+	 * Unfortunately the device tree overlay contains only the filename of
+	 * the firmware and relies on the firmware search paths to find the
+	 * actual file. Use /lib/firmware in the Linux root directory and hope
+	 * for the best.
+	 */
+	firmware_path = basprintf("%s/%s", abspath, "/lib/firmware");
+	ret = of_firmware_load_overlay(overlay, firmware_path);
+	free(firmware_path);
+	if (ret) {
+		pr_warn("failed to load firmware: skip overlay \"%s\"\n", path);
 		of_delete_node(overlay);
 		goto out;
 	}

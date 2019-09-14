@@ -458,6 +458,7 @@ config MACH_ZII_RDU2
 	select ARCH_IMX6
 	select MCI_IMX_ESDHC_PBL
 	select MACH_ZII_COMMON
+	select ARM_USE_COMPRESSED_DTB
 
 config MACH_ZII_IMX8MQ_DEV
 	bool "ZII i.MX8MQ based devices"

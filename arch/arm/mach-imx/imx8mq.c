@@ -20,12 +20,18 @@
 #include <mach/revision.h>
 #include <mach/imx8mq.h>
 #include <mach/reset-reason.h>
+#include <mach/ocotp.h>
 
 #include <linux/iopoll.h>
 #include <linux/arm-smccc.h>
 
 #define FSL_SIP_BUILDINFO			0xC2000003
 #define FSL_SIP_BUILDINFO_GET_COMMITHASH	0x00
+
+u64 imx8mq_uid(void)
+{
+	return imx_ocotp_read_uid(IOMEM(MX8MQ_OCOTP_BASE_ADDR));
+}
 
 int imx8mq_init(void)
 {
@@ -52,6 +58,7 @@ int imx8mq_init(void)
 	 * Reset reasons seem to be identical to that of i.MX7
 	 */
 	imx_set_reset_reason(src + IMX7_SRC_SRSR, imx7_reset_reasons);
+	pr_info("%s unique ID: %llx\n", cputypestr, imx8mq_uid());
 
 	if (IS_ENABLED(CONFIG_ARM_SMCCC) &&
 	    IS_ENABLED(CONFIG_FIRMWARE_IMX8MQ_ATF)) {

@@ -23,6 +23,8 @@
 	};
 
 	aliases {
+		ethernet0 = &fec1;
+		ethernet1 = &i210;
 		/*
 		 * NVMEM device corresponding to EEPROM attached to
 		 * the switch shared DT node with it, so we use that
@@ -30,6 +32,11 @@
 		 */
 		switch-eeprom = &switch;
 	};
+};
+
+&fec1 {
+	nvmem-cells = <&mac_address_0>;
+	nvmem-cell-names = "mac-address";
 };
 
 &ocotp {
@@ -45,6 +52,25 @@
 
 		i210: i210@0 {
 			reg = <0 0 0 0 0>;
+		};
+	};
+};
+
+&i210 {
+	nvmem-cells = <&mac_address_1>;
+	nvmem-cell-names = "mac-address";
+};
+
+&uart2 {
+	rave-sp {
+		eeprom@a4 {
+			mac_address_0: mac-address@180 {
+				reg = <0x180 6>;
+			};
+
+			mac_address_1: mac-address@190 {
+				reg = <0x190 6>;
+			};
 		};
 	};
 };

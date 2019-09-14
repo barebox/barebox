@@ -75,13 +75,13 @@ static unsigned int get_system_type(void)
 	return pdir;
 }
 
-extern char __dtb_vf610_zii_dev_rev_b_start[];
-extern char __dtb_vf610_zii_dev_rev_c_start[];
-extern char __dtb_vf610_zii_cfu1_start[];
-extern char __dtb_vf610_zii_ssmb_spu3_start[];
-extern char __dtb_vf610_zii_scu4_aib_start[];
-extern char __dtb_vf610_zii_ssmb_dtu_start[];
-extern char __dtb_vf610_zii_spb4_start[];
+extern char __dtb_z_vf610_zii_dev_rev_b_start[];
+extern char __dtb_z_vf610_zii_dev_rev_c_start[];
+extern char __dtb_z_vf610_zii_cfu1_start[];
+extern char __dtb_z_vf610_zii_ssmb_spu3_start[];
+extern char __dtb_z_vf610_zii_scu4_aib_start[];
+extern char __dtb_z_vf610_zii_ssmb_dtu_start[];
+extern char __dtb_z_vf610_zii_spb4_start[];
 
 ENTRY_FUNCTION(start_zii_vf610_dev, r0, r1, r2)
 {
@@ -105,25 +105,25 @@ ENTRY_FUNCTION(start_zii_vf610_dev, r0, r1, r2)
 			puts_ll("*********************************\n");
 		}
 	case ZII_PLATFORM_VF610_DEV_REV_B: /* FALLTHROUGH */
-		fdt = __dtb_vf610_zii_dev_rev_b_start;
+		fdt = __dtb_z_vf610_zii_dev_rev_b_start;
 		break;
 	case ZII_PLATFORM_VF610_SCU4_AIB:
-		fdt = __dtb_vf610_zii_scu4_aib_start;
+		fdt = __dtb_z_vf610_zii_scu4_aib_start;
 		break;
 	case ZII_PLATFORM_VF610_DEV_REV_C:
-		fdt = __dtb_vf610_zii_dev_rev_c_start;
+		fdt = __dtb_z_vf610_zii_dev_rev_c_start;
 		break;
 	case ZII_PLATFORM_VF610_CFU1:
-		fdt = __dtb_vf610_zii_cfu1_start;
+		fdt = __dtb_z_vf610_zii_cfu1_start;
 		break;
 	case ZII_PLATFORM_VF610_SSMB_SPU3:
-		fdt = __dtb_vf610_zii_ssmb_spu3_start;
+		fdt = __dtb_z_vf610_zii_ssmb_spu3_start;
 		break;
 	case ZII_PLATFORM_VF610_SPB4:
-		fdt = __dtb_vf610_zii_spb4_start;
+		fdt = __dtb_z_vf610_zii_spb4_start;
 		break;
 	case ZII_PLATFORM_VF610_SSMB_DTU:
-		fdt = __dtb_vf610_zii_ssmb_dtu_start;
+		fdt = __dtb_z_vf610_zii_ssmb_dtu_start;
 		break;
 	}
 

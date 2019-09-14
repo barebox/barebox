@@ -68,9 +68,9 @@ static unsigned int get_system_type(void)
 	return FIELD_GET(SYSTEM_TYPE, dr);
 }
 
-extern char __dtb_imx51_zii_rdu1_start[];
-extern char __dtb_imx51_zii_scu2_mezz_start[];
-extern char __dtb_imx51_zii_scu3_esb_start[];
+extern char __dtb_z_imx51_zii_rdu1_start[];
+extern char __dtb_z_imx51_zii_scu2_mezz_start[];
+extern char __dtb_z_imx51_zii_scu3_esb_start[];
 
 ENTRY_FUNCTION(start_imx51_zii_rdu1, r0, r1, r2)
 {
@@ -96,13 +96,13 @@ ENTRY_FUNCTION(start_imx51_zii_rdu1, r0, r1, r2)
 		/* FALLTHROUGH */
 	case ZII_PLATFORM_IMX51_RDU_REV_B:
 	case ZII_PLATFORM_IMX51_RDU_REV_C:
-		fdt = __dtb_imx51_zii_rdu1_start;
+		fdt = __dtb_z_imx51_zii_rdu1_start;
 		break;
 	case ZII_PLATFORM_IMX51_SCU2_MEZZ:
-		fdt = __dtb_imx51_zii_scu2_mezz_start;
+		fdt = __dtb_z_imx51_zii_scu2_mezz_start;
 		break;
 	case ZII_PLATFORM_IMX51_SCU3_ESB:
-		fdt = __dtb_imx51_zii_scu3_esb_start;
+		fdt = __dtb_z_imx51_zii_scu3_esb_start;
 		break;
 	}
 

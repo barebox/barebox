@@ -479,6 +479,7 @@ config MACH_ZII_VF610_DEV
 config MACH_ZII_IMX7D_DEV
 	bool "ZII i.MX7D based devices"
 	select ARCH_IMX7
+	select ARM_USE_COMPRESSED_DTB
 
 config MACH_PHYTEC_PHYCORE_IMX7
 	bool "Phytec phyCORE i.MX7"

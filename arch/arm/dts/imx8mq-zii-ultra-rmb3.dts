@@ -3,41 +3,5 @@
  * Copyright (C) 2019 Zodiac Inflight Innovations
  */
 
-/dts-v1/;
-
+#include <arm64/freescale/imx8mq-zii-ultra-rmb3.dts>
 #include "imx8mq-zii-ultra.dtsi"
-
-/ {
-	model = "ZII i.MX8MQ Ultra RMB3 Board";
-	compatible = "zii,imx8mq-ultra-rmb3", "zii,imx8mq-ultra", "fsl,imx8mq";
-};
-
-&ecspi1 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_ecspi1>;
-	cs-gpios = <&gpio5 9 GPIO_ACTIVE_HIGH>;
-	status = "okay";
-	#address-cells = <1>;
-	#size-cells = <0>;
-
-	nor_flash: flash@0 {
-		compatible = "st,m25p128", "jedec,spi-nor";
-		spi-max-frequency = <20000000>;
-		reg = <0>;
-	};
-};
-
-&iomuxc {
-	pinctrl_ecspi1: ecspi1grp {
-		fsl,pins = <
-			MX8MQ_IOMUXC_ECSPI1_SS0_GPIO5_IO9	0x19
-			MX8MQ_IOMUXC_ECSPI1_SCLK_ECSPI1_SCLK    0x82
-			MX8MQ_IOMUXC_ECSPI1_MISO_ECSPI1_MISO    0x82
-			MX8MQ_IOMUXC_ECSPI1_MOSI_ECSPI1_MOSI    0x82
-		>;
-	};
-};
-
-&usb_hub {
-	swap-dx-lanes = <0>;
-};

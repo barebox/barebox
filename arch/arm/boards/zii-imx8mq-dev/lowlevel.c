@@ -155,8 +155,6 @@ static __noreturn noinline void zii_imx8mq_dev_start(void)
 	switch (system_type) {
 	default:
 		if (IS_ENABLED(CONFIG_DEBUG_LL)) {
-			relocate_to_current_adr();
-			setup_c();
 			puts_ll("\n*********************************\n");
 			puts_ll("* Unknown system type: ");
 			puthex_ll(system_type);

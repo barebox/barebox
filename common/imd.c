@@ -337,8 +337,10 @@ int imd_command(int argc, char *argv[])
 		return -errno;
 
 	imd_start = imd_get(buf, size);
-	if (IS_ERR(imd_start))
-		return PTR_ERR(imd_start);
+	if (IS_ERR(imd_start)) {
+		ret = PTR_ERR(imd_start);
+		goto out;
+	}
 
 	if (type == IMD_TYPE_INVALID) {
 		imd_for_each(imd_start, imd) {
@@ -356,7 +358,8 @@ int imd_command(int argc, char *argv[])
 		imd = imd_find_type(imd_start, type);
 		if (!imd) {
 			debug("No tag of type 0x%08x found\n", type);
-			return -ENODATA;
+			ret = -ENODATA;
+			goto out;
 		}
 
 		if (imd_is_string(type)) {
@@ -370,8 +373,10 @@ int imd_command(int argc, char *argv[])
 				str = imd_concat_strings(imd);
 			}
 
-			if (!str)
-				return -ENODATA;
+			if (!str) {
+				ret = -ENODATA;
+				goto out;
+			}
 
 			if (variable_name)
 				imd_command_setenv(variable_name, str);
@@ -384,5 +389,8 @@ int imd_command(int argc, char *argv[])
 		}
 	}
 
-	return 0;
+	ret = 0;
+out:
+	free(buf);
+	return ret;
 }

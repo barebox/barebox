@@ -108,6 +108,21 @@ void usb_gadget_set_state(struct usb_gadget *gadget,
 }
 EXPORT_SYMBOL_GPL(usb_gadget_set_state);
 
+/**
+ * usb_gadget_udc_reset - notifies the udc core that bus reset occurs
+ * @gadget: The gadget which bus reset occurs
+ * @driver: The gadget driver we want to notify
+ *
+ * If the udc driver has bus reset handler, it needs to call this when the bus
+ * reset occurs, it notifies the gadget driver that the bus reset occurs as
+ * well as updates gadget state.
+ */
+void usb_gadget_udc_reset(struct usb_gadget *gadget,
+		struct usb_gadget_driver *driver)
+{
+	usb_gadget_set_state(gadget, USB_STATE_DEFAULT);
+}
+EXPORT_SYMBOL_GPL(usb_gadget_udc_reset);
 /* ------------------------------------------------------------------------- */
 
 /**

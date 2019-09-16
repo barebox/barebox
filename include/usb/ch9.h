@@ -234,6 +234,8 @@ struct usb_ctrlrequest {
 #define USB_DT_PIPE_USAGE		0x24
 /* From the USB 3.0 spec */
 #define	USB_DT_SS_ENDPOINT_COMP		0x30
+/* From the USB 3.1 spec */
+#define	USB_DT_SSP_ISOC_ENDPOINT_COMP	0x31
 
 /* Conventional codes for class-specific descriptors.  The convention is
  * defined in the USB "Common Class" Spec (3.11).  Individual class specs

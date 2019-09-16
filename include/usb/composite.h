@@ -395,6 +395,9 @@ struct usb_composite_dev {
 	spinlock_t			lock;
 
 	int in_reset_config;
+
+	/* public: */
+	unsigned int			setup_pending:1;
 };
 
 extern int usb_string_id(struct usb_composite_dev *c);

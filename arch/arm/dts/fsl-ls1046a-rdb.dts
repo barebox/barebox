@@ -96,3 +96,17 @@
 		status = "disabled";
 	};
 };
+
+&usb0 {
+	dr_mode = "host";
+};
+
+&usb1 {
+	maximum-speed = "high-speed";
+	dr_mode = "peripheral";
+	status = "okay";
+};
+
+&usb2 {
+	dr_mode = "host";
+};

@@ -11,7 +11,10 @@
 #ifndef __DRIVERS_USB_DWC3_CORE_H
 #define __DRIVERS_USB_DWC3_CORE_H
 
+#include <linux/spinlock.h>
 #include <usb/usb.h>
+#include <usb/phy.h>
+#include <usb/gadget.h>
 
 #define DWC3_MSG_MAX	500
 
@@ -364,6 +367,7 @@
 #define DWC3_DCFG_HIGHSPEED	(0 << 0)
 #define DWC3_DCFG_FULLSPEED	BIT(0)
 #define DWC3_DCFG_LOWSPEED	(2 << 0)
+#define DWC3_DCFG_FULLSPEED1	(3 << 0)
 
 #define DWC3_DCFG_NUMP_SHIFT	17
 #define DWC3_DCFG_NUMP(n)	(((n) >> DWC3_DCFG_NUMP_SHIFT) & 0x1f)
@@ -457,6 +461,7 @@
 #define DWC3_DSTS_HIGHSPEED		(0 << 0)
 #define DWC3_DSTS_FULLSPEED		BIT(0)
 #define DWC3_DSTS_LOWSPEED		(2 << 0)
+#define DWC3_DSTS_FULLSPEED1		(3 << 0)
 
 /* Device Generic Command Register */
 #define DWC3_DGCMD_SET_LMP		0x01
@@ -594,6 +599,22 @@
 
 struct dwc3_trb;
 
+/**
+ * struct dwc3_event_buffer - Software event buffer representation
+ * @buf: _THE_ buffer
+ * @length: size of this buffer
+ * @lpos: event offset
+ * @dma: dma_addr_t
+ * @dwc: pointer to DWC controller
+ */
+struct dwc3_event_buffer {
+	void			*buf;
+	unsigned		length;
+	unsigned int		lpos;
+	dma_addr_t		dma;
+	struct dwc3		*dwc;
+};
+
 #define DWC3_EP_FLAG_STALLED	BIT(0)
 #define DWC3_EP_FLAG_WEDGED	BIT(1)
 
@@ -601,6 +622,84 @@ struct dwc3_trb;
 #define DWC3_EP_DIRECTION_RX	false
 
 #define DWC3_TRB_NUM		256
+#define DWC3_TRB_MASK		(DWC3_TRB_NUM - 1)
+
+/**
+ * struct dwc3_ep - device side endpoint representation
+ * @endpoint: usb endpoint
+ * @pending_list: list of requests for this endpoint
+ * @started_list: list of started requests on this endpoint
+ * @trb_pool: array of transaction buffers
+ * @trb_pool_dma: dma address of @trb_pool
+ * @free_slot: next slot which is going to be used
+ * @busy_slot: first slot which is owned by HW
+ * @desc: usb_endpoint_descriptor pointer
+ * @dwc: pointer to DWC controller
+ * @saved_state: ep state saved during hibernation
+ * @flags: endpoint flags (wedged, stalled, ...)
+ * @current_trb: index of current used trb
+ * @number: endpoint number (1 - 15)
+ * @type: set to bmAttributes & USB_ENDPOINT_XFERTYPE_MASK
+ * @resource_index: Resource transfer index
+ * @interval: the interval on which the ISOC transfer is started
+ * @name: a human readable name e.g. ep1out-bulk
+ * @direction: true for TX, false for RX
+ * @stream_capable: true when streams are enabled
+ */
+struct dwc3_ep {
+	struct usb_ep				endpoint;
+	struct list_head			cancelled_list;
+	struct list_head			pending_list;
+	struct list_head			started_list;
+
+	void __iomem				*regs;
+
+	struct dwc3_trb			*trb_pool;
+	dma_addr_t				trb_pool_dma;
+	u32					free_slot;
+	u32					busy_slot;
+	const struct usb_ss_ep_comp_descriptor	*comp_desc;
+	struct dwc3				*dwc;
+
+	u32					saved_state;
+	unsigned				flags;
+#define DWC3_EP_ENABLED			BIT(0)
+#define DWC3_EP_STALL				BIT(1)
+#define DWC3_EP_WEDGE				BIT(2)
+#define DWC3_EP_TRANSFER_STARTED		BIT(3)
+#define DWC3_EP_PENDING_REQUEST		BIT(4)
+
+	/* This last one is specific to EP0 */
+#define DWC3_EP0_DIR_IN			BIT(31)
+
+	unsigned				current_trb;
+	/*
+	 * IMPORTANT: we *know* we have 256 TRBs in our @trb_pool, so we will
+	 * use a u8 type here. If anybody decides to increase number of TRBs to
+	 * anything larger than 256 - I can't see why people would want to do
+	 * this though - then this type needs to be changed.
+	 *
+	 * By using u8 types we ensure that our % operator when incrementing
+	 * enqueue and dequeue get optimized away by the compiler.
+	 */
+	u8					trb_enqueue;
+	u8					trb_dequeue;
+
+	u8					number;
+	u8					type;
+	u8					resource_index;
+	u32					frame_number;
+	u32					interval;
+
+	char					name[20];
+
+	unsigned				direction:1;
+	unsigned				stream_capable:1;
+
+	/* For isochronous START TRANSFER workaround only */
+	u8					combo_num;
+	int					start_cmd_status;
+};
 
 enum dwc3_phy {
 	DWC3_PHY_UNKNOWN = 0,
@@ -730,6 +829,33 @@ struct dwc3_hwparams {
 /* HWPARAMS7 */
 #define DWC3_RAM1_DEPTH(n)	((n) & 0xffff)
 
+struct dwc3_request {
+	struct usb_request		request;
+	struct list_head		list;
+	struct dwc3_ep			*dep;
+	u32				start_slot;
+
+	unsigned			remaining;
+
+	unsigned int			status;
+#define DWC3_REQUEST_STATUS_QUEUED	0
+#define DWC3_REQUEST_STATUS_STARTED	1
+#define DWC3_REQUEST_STATUS_CANCELLED	2
+#define DWC3_REQUEST_STATUS_COMPLETED	3
+#define DWC3_REQUEST_STATUS_UNKNOWN	-1
+
+	u8				epnum;
+	struct dwc3_trb		*trb;
+	dma_addr_t			trb_dma;
+
+	unsigned			num_trbs;
+
+	unsigned			needs_extra_trb:1;
+	unsigned			direction:1;
+	unsigned			mapped:1;
+	unsigned			queued:1;
+};
+
 /**
  * struct dwc3 - representation of our controller
  * @drd_work: workqueue used for role swapping
@@ -855,8 +981,24 @@ struct dwc3_hwparams {
  *                 increments or 0 to disable.
  */
 struct dwc3 {
+	struct dwc3_trb		*ep0_trb;
+	void				*bounce;
+	void				*scratchbuf;
+	u8				*setup_buf;
+	dma_addr_t			ep0_trb_addr;
+	dma_addr_t			bounce_addr;
+	dma_addr_t			scratch_addr;
+	struct dwc3_request		ep0_usb_req;
+
 	struct device_d		*dev;
+
 	struct device_d		*xhci;
+
+	struct dwc3_event_buffer	*ev_buf;
+	struct dwc3_ep			*eps[DWC3_ENDPOINTS_NUM];
+
+	struct usb_gadget		gadget;
+	struct usb_gadget_driver	*gadget_driver;
 
 	struct clk_bulk_data	*clks;
 	int			num_clks;
@@ -865,12 +1007,14 @@ struct dwc3 {
 	struct phy		*usb3_generic_phy;
 
 	bool			phys_ready;
+	bool			ulpi_ready;
 
 	void __iomem		*regs;
 
 	enum usb_dr_mode	dr_mode;
 	u32			current_dr_role;
 	u32			desired_dr_role;
+	enum usb_phy_interface	hsphy_mode;
 
 	u32			fladj;
 	u32			irq_gadget;
@@ -934,6 +1078,11 @@ struct dwc3 {
 #define DWC31_VERSIONTYPE_EA05		0x65613035
 #define DWC31_VERSIONTYPE_EA06		0x65613036
 
+	enum dwc3_ep0_next	ep0_next_event;
+	enum dwc3_ep0_state	ep0state;
+	enum dwc3_link_state	link_state;
+
+	u16			isoch_delay;
 	u16			u2sel;
 	u16			u2pel;
 	u8			u1sel;
@@ -966,10 +1115,14 @@ struct dwc3 {
 	unsigned		sysdev_is_parent:1;
 	unsigned		has_lpm_erratum:1;
 	unsigned		is_utmi_l1_suspend:1;
+	unsigned		is_selfpowered:1;
 	unsigned		is_fpga:1;
 	unsigned		pending_events:1;
+	unsigned		needs_fifo_resize:1;
 	unsigned		pullups_connected:1;
+	unsigned		resize_fifos:1;
 	unsigned		setup_packet_pending:1;
+	unsigned		start_config_issued:1;
 	unsigned		three_stage_setup:1;
 	unsigned		dis_start_transfer_quirk:1;
 	unsigned		usb3_lpm_capable:1;
@@ -1018,6 +1171,30 @@ struct dwc3_event_type {
 #define DWC3_DEPEVT_RXTXFIFOEVT		0x04
 #define DWC3_DEPEVT_STREAMEVT		0x06
 #define DWC3_DEPEVT_EPCMDCMPLT		0x07
+
+/**
+ * dwc3_ep_event_string - returns event name
+ * @event: then event code
+ */
+static inline const char *dwc3_ep_event_string(u8 event)
+{
+	switch (event) {
+	case DWC3_DEPEVT_XFERCOMPLETE:
+		return "Transfer Complete";
+	case DWC3_DEPEVT_XFERINPROGRESS:
+		return "Transfer In-Progress";
+	case DWC3_DEPEVT_XFERNOTREADY:
+		return "Transfer Not Ready";
+	case DWC3_DEPEVT_RXTXFIFOEVT:
+		return "FIFO";
+	case DWC3_DEPEVT_STREAMEVT:
+		return "Stream";
+	case DWC3_DEPEVT_EPCMDCMPLT:
+		return "Endpoint Command Complete";
+	}
+
+	return "UNKNOWN";
+}
 
 /**
  * struct dwc3_event_depvt - Device Endpoint Events
@@ -1157,6 +1334,7 @@ struct dwc3_gadget_ep_cmd_params {
 #define DWC3_HAS_OTG			BIT(3)
 
 /* prototypes */
+int dwc3_gadget_resize_tx_fifos(struct dwc3 *dwc);
 void dwc3_set_prtcap(struct dwc3 *dwc, u32 mode);
 void dwc3_set_mode(struct dwc3 *dwc, u32 mode);
 
@@ -1173,9 +1351,6 @@ static inline bool dwc3_is_usb31(struct dwc3 *dwc)
 }
 
 bool dwc3_has_imod(struct dwc3 *dwc);
-
-int dwc3_event_buffers_setup(struct dwc3 *dwc);
-void dwc3_event_buffers_cleanup(struct dwc3 *dwc);
 
 #if IS_ENABLED(CONFIG_USB_DWC3_HOST) || IS_ENABLED(CONFIG_USB_DWC3_DUAL_ROLE)
 int dwc3_host_init(struct dwc3 *dwc);

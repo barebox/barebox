@@ -67,6 +67,14 @@ config GPIO_MALTA_FPGA_I2C
 	  additional drivers must be enabled in order to use the
 	  functionality of the device.
 
+config GPIO_MPC8XXX
+	bool "MPC512x/MPC8xxx/QorIQ GPIO support"
+	depends on ARCH_LAYERSCAPE
+	select GPIO_GENERIC
+	help
+	  Say Y here if you're going to use hardware that connects to the
+	  MPC512x/831x/834x/837x/8572/8610/QorIQ GPIOs.
+
 config GPIO_OMAP
 	def_bool ARCH_OMAP
 

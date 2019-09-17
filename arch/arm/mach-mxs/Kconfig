@@ -34,20 +34,17 @@ choice
 
 config MACH_MX23EVK
 	bool "mx23-evk"
-	select HAVE_PBL_MULTI_IMAGES
 	help
 	  Say Y here if you are using the Freescale i.MX23-EVK board
 
 config MACH_CHUMBY
 	bool "Chumby Falconwing"
-	select HAVE_PBL_MULTI_IMAGES
 	help
 	  Say Y here if you are using the "chumby one" aka falconwing from
 	  Chumby Industries
 
 config MACH_IMX233_OLINUXINO
 	bool "Olimex.ltd imx223-olinuxino"
-	select HAVE_PBL_MULTI_IMAGES
 	help
 	  Say Y here if you are using the imx233-olinuxino
 
@@ -62,21 +59,18 @@ choice
 
 config MACH_TX28
 	bool "KARO tx28"
-	select HAVE_PBL_MULTI_IMAGES
 	help
 	  Say Y here if you are using the KARO TX28 CPU module.
 
 config MACH_MX28EVK
 	bool "mx28-evk"
 	select MXS_OCOTP
-	select HAVE_PBL_MULTI_IMAGES
 	help
 	  Say Y here if you are using the Freescale i.MX28-EVK board
 
 config MACH_DUCKBILL
 	bool "Duckbill"
 	select MXS_OCOTP
-	select HAVE_PBL_MULTI_IMAGES
 	help
 	  Say Y here if you are using the I2SE Duckbill board
 
@@ -85,7 +79,6 @@ config MACH_CFA10036
 	select MXS_OCOTP
 	select I2C_GPIO
 	select EEPROM_AT24
-	select HAVE_PBL_MULTI_IMAGES
 	help
 	  Say Y here if you are using the Crystalfontz CFA-10036 module
 

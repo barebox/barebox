@@ -72,3 +72,7 @@ image-$(CONFIG_MACH_CFA10036) += barebox-crystalfonts-cfa10036-2nd.img
 pblb-$(CONFIG_MACH_MX23EVK) += start_imx23_evk
 FILE_barebox-freescale-mx23-evk-2nd.img = start_imx23_evk.pblb
 image-$(CONFIG_MACH_MX23EVK) += barebox-freescale-mx23-evk-2nd.img
+
+pblb-$(CONFIG_MACH_CHUMBY) += start_chumby_falconwing
+FILE_barebox-chumby-falconwing-2nd.img = start_chumby_falconwing.pblb
+image-$(CONFIG_MACH_CHUMBY) += barebox-chumby-falconwing-2nd.img

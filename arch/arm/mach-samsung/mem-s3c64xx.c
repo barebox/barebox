@@ -39,7 +39,7 @@ int s3c6410_setup_chipselect(int no, const struct s3c6410_chipselect *c)
 	tacs = DIV_ROUND_UP(c->adr_setup_t, per_t);
 	/* start of CS to read/write assertion (= access setup) */
 	tcos = DIV_ROUND_UP(c->access_setup_t, per_t);
-	/* length of read/write assertion (= access lenght) */
+	/* length of read/write assertion (= access length) */
 	tacc = DIV_ROUND_UP(c->access_t, per_t) - 1;
 	/* CS hold after access is finished */
 	tcoh = DIV_ROUND_UP(c->cs_hold_t, per_t);

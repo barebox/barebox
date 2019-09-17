@@ -21,8 +21,6 @@ quiet_cmd_lspbl_spi_image = LSPBL-SPI-IMG $@
 			    -m $($(patsubst $(obj)/%.pblb,PBL_CODE_SIZE_%,$<)) -p $(lspbl-pbi-tmp) -i $<
 
 pbl-$(CONFIG_MACH_LS1046ARDB) += start_ls1046ardb.pbl
-$(obj)/barebox-ls1046ardb-2nd.image: $(obj)/start_ls1046ardb.pblb
-	$(call if_changed,shipped)
 
 $(obj)/barebox-ls1046ardb-sd.image: $(obj)/start_ls1046ardb.pblb \
 		$(board)/ls1046ardb/ls1046ardb_rcw_sd.cfg \
@@ -40,11 +38,9 @@ $(obj)/barebox-ls1046ardb-qspi.image: $(obj)/start_ls1046ardb.pblb \
 	$(call if_changed,lspbl_spi_image)
 
 image-$(CONFIG_MACH_LS1046ARDB) += barebox-ls1046ardb-sd.image barebox-ls1046ardb-qspi.image \
-	barebox-ls1046ardb-emmc.image barebox-ls1046ardb-2nd.image
+	barebox-ls1046ardb-emmc.image
 
 pbl-$(CONFIG_MACH_TQMLS1046A) += start_tqmls1046a.pbl
-$(obj)/barebox-tqmls1046a-2nd.image: $(obj)/start_tqmls1046a.pblb
-	$(call if_changed,shipped)
 
 $(obj)/barebox-tqmls1046a-sd.image: $(obj)/start_tqmls1046a.pblb \
 		$(board)/tqmls1046a/tqmls1046a_rcw_sd_3333_5559.cfg \
@@ -57,4 +53,4 @@ $(obj)/barebox-tqmls1046a-qspi.image: $(obj)/start_tqmls1046a.pblb \
 	$(call if_changed,lspbl_spi_image)
 
 image-$(CONFIG_MACH_TQMLS1046A) += barebox-tqmls1046a-sd.image \
-	barebox-tqmls1046a-qspi.image barebox-tqmls1046a-2nd.image
+	barebox-tqmls1046a-qspi.image

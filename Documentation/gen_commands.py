@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+from __future__ import print_function
+
 import errno
 import os
 import re
@@ -28,10 +30,15 @@ CONT = re.compile(r"""\s*"(.*?)"\s*\)?\s*$""")
 
 CMDS = {}
 
+def string_escape(s):
+  # This used to do s.decode("string_escape") which isn't available on Python 3.
+  # Actually we only need to drop '\t' and '\n', so do this here.
+  return s.replace(r'\t', '').replace(r'\n', '')
+
 def parse_c(name):
   cmd = None
   last = None
-  for line in file(name, 'r'):
+  for line in open(name, 'r'):
     x = HELP_START.match(line)
     if x:
       cmd = CMDS.setdefault(x.group(1), defaultdict(list))
@@ -50,14 +57,14 @@ def parse_c(name):
         last = cmd['h_pre']
       else:
         last = cmd['h_post']
-      last.append(x.group(1).decode("string_escape").strip())
+      last.append(string_escape(x.group(1)).strip())
       continue
     x = HELP_OPT.match(line)
     if x:
       last = cmd['h_opts']
       last.append([
-        x.group(1).decode("string_escape"),
-        x.group(2).decode("string_escape")
+        string_escape(x.group(1)),
+        string_escape(x.group(2)),
       ])
       continue
     x = CMD_FUNC.match(line)
@@ -68,12 +75,12 @@ def parse_c(name):
     x = CMD_DESC.match(line)
     if x:
       last = cmd['c_desc']
-      last.append(x.group(1).decode("string_escape"))
+      last.append(string_escape(x.group(1)))
       continue
     x = CMD_OPTS.match(line)
     if x:
       last = cmd['c_opts']
-      last.append(x.group(1).decode("string_escape"))
+      last.append(string_escape(x.group(1)))
       continue
     x = CMD_GROUP.match(line)
     if x:
@@ -85,9 +92,9 @@ def parse_c(name):
       if last is None:
         raise Exception("Parse error in %s: %r" % (name, line))
       if isinstance(last[-1], str):
-        last[-1] += x.group(1).decode("string_escape")
+        last[-1] += string_escape(x.group(1))
       elif isinstance(last[-1], list):
-        last[-1][1] += x.group(1).decode("string_escape")
+        last[-1][1] += string_escape(x.group(1))
       continue
     x = HELP_END.match(line)
     if x:
@@ -163,7 +170,7 @@ for name, cmd in CMDS.items():
   rst = gen_rst(name, cmd)
   group = cmd.get('c_group')
   if group is None:
-    print >> sys.stderr, "gen_commands: warning: using default group 'misc' for command '%s'" % name
+    print("gen_commands: warning: using default group 'misc' for command '%s'" % name, file=sys.stderr)
     group = ['misc']
   subdir = os.path.join(sys.argv[2], group[0])
   try:
@@ -183,9 +190,8 @@ for name, cmd in CMDS.items():
   except:
     pass
   hash_new = hashlib.sha1()
-  hash_new.update(rst)
+  hash_new.update(rst.encode('utf-8'))
   if hash_old.hexdigest() == hash_new.hexdigest():
     continue
 
-  file(target, 'w').write(rst)
-
+  open(target, 'w').write(rst)

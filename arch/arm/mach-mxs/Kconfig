@@ -83,6 +83,7 @@ config MACH_CFA10036
 	select MXS_OCOTP
 	select I2C_GPIO
 	select EEPROM_AT24
+	select HAVE_PBL_MULTI_IMAGES
 	help
 	  Say Y here if you are using the Crystalfontz CFA-10036 module
 

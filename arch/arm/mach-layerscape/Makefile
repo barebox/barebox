@@ -5,3 +5,4 @@ obj-y += icid.o
 obj-pbl-y += boot.o
 pbl-y += xload-qspi.o xload.o
 obj-$(CONFIG_ARCH_LAYERSCAPE_PPA) += ppa.o ppa-entry.o
+obj-$(CONFIG_BOOTM) += pblimage.o

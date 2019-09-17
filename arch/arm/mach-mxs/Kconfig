@@ -29,9 +29,6 @@ endchoice
 
 if ARCH_IMX23
 
-choice
-	prompt "i.MX23 Board Type"
-
 config MACH_MX23EVK
 	bool "mx23-evk"
 	help
@@ -48,14 +45,9 @@ config MACH_IMX233_OLINUXINO
 	help
 	  Say Y here if you are using the imx233-olinuxino
 
-endchoice
-
 endif
 
 if ARCH_IMX28
-
-choice
-	prompt "i.MX28 Board Type"
 
 config MACH_TX28
 	bool "KARO tx28"
@@ -81,8 +73,6 @@ config MACH_CFA10036
 	select EEPROM_AT24
 	help
 	  Say Y here if you are using the Crystalfontz CFA-10036 module
-
-endchoice
 
 endif
 

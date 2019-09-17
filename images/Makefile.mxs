@@ -68,3 +68,7 @@ image-$(CONFIG_MACH_IMX233_OLINUXINO) += barebox-olinuxino-imx23-2nd.img
 pblb-$(CONFIG_MACH_CFA10036) += start_cfa10036
 FILE_barebox-crystalfonts-cfa10036-2nd.img = start_cfa10036.pblb
 image-$(CONFIG_MACH_CFA10036) += barebox-crystalfonts-cfa10036-2nd.img
+
+pblb-$(CONFIG_MACH_MX23EVK) += start_imx23_evk
+FILE_barebox-freescale-mx23-evk-2nd.img = start_imx23_evk.pblb
+image-$(CONFIG_MACH_MX23EVK) += barebox-freescale-mx23-evk-2nd.img

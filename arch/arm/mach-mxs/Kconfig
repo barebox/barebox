@@ -34,6 +34,7 @@ choice
 
 config MACH_MX23EVK
 	bool "mx23-evk"
+	select HAVE_PBL_MULTI_IMAGES
 	help
 	  Say Y here if you are using the Freescale i.MX23-EVK board
 

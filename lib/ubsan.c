@@ -382,6 +382,26 @@ void __ubsan_handle_shift_out_of_bounds(struct shift_out_of_bounds_data *data,
 	if (suppress_report(&data->location))
 		return;
 
+	/* This handler would be called for code shifting a one into the
+	 * sign bit like (1 << 31), which is all too common in barebox.
+	 * It's technically UB, but it's so prevalent that it's highly
+	 * unlikely to be treated by a compiler as anything else than the
+	 * standard-compliant (1U << 31). Thus check for this case here
+	 * and ignore it selectively
+	 */
+	if (type_is_signed(lhs_type)) {
+		s_max lhs_int, rhs_int;
+
+		lhs_int = get_signed_val(lhs_type, lhs);
+		rhs_int = get_signed_val(rhs_type, rhs);
+
+		if (fls(lhs_int) + rhs_int == type_bit_width(lhs_type)) {
+			pr_debug("signed left shift of %lld by %lld ignored.\n",
+				(s64)lhs_int, (s64)rhs_int);
+			return;
+		}
+	}
+
 	ubsan_prologue(&data->location, &flags);
 
 	val_to_string(rhs_str, sizeof(rhs_str), rhs_type, rhs);

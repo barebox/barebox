@@ -229,6 +229,14 @@ static struct blspec_entry *blspec_entry_open(struct bootentries *bootentries,
 }
 
 /*
+ * is_blspec_entry - check if a bootentry is a blspec entry
+ */
+static inline bool is_blspec_entry(struct bootentry *entry)
+{
+	return entry->boot == blspec_boot;
+}
+
+/*
  * blspec_have_entry - check if we already have an entry with
  *                     a certain path
  */
@@ -238,6 +246,8 @@ static int blspec_have_entry(struct bootentries *bootentries, const char *path)
 	struct blspec_entry *e;
 
 	list_for_each_entry(be, &bootentries->entries, list) {
+		if (!is_blspec_entry(be))
+			continue;
 		e = container_of(be, struct blspec_entry, entry);
 		if (e->configpath && !strcmp(e->configpath, path))
 			return 1;

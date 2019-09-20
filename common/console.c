@@ -272,6 +272,9 @@ static int fops_open(struct cdev *cdev, unsigned long flags)
 {
 	struct console_device *priv = cdev->priv;
 
+	if ((flags & (O_WRONLY | O_RDWR)) && !priv->puts )
+		return -EPERM;
+
 	return console_open(priv);
 }
 

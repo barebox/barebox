@@ -101,14 +101,6 @@
 #define WL_RESERVED_PEBS 1
 
 /*
- * Maximum difference between two erase counters. If this threshold is
- * exceeded, the WL sub-system starts moving data from used physical
- * eraseblocks with low erase counter to free physical eraseblocks with high
- * erase counter.
- */
-#define UBI_WL_THRESHOLD CONFIG_MTD_UBI_WL_THRESHOLD
-
-/*
  * When a physical eraseblock is moved, the WL sub-system has to pick the target
  * physical eraseblock to move to. The simplest way would be just to pick the
  * one with the highest erase counter. But in certain workloads this could lead

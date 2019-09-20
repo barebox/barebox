@@ -69,6 +69,17 @@
  */
 #define UBI_PROT_QUEUE_LEN 10
 
+/*
+ * Maximum difference between two erase counters. If this threshold is
+ * exceeded, the WL sub-system starts moving data from used physical
+ * eraseblocks with low erase counter to free physical eraseblocks with high
+ * erase counter.
+ * Extensive wear-leveling in the barebox can lead to stack overflows. Thus
+ * disable it by setting the threshold to the OS's max configurable value and
+ * leave wear-leveling to the OS.
+ */
+#define UBI_WL_THRESHOLD 65536
+
 /* The volume ID/LEB number/erase counter is unknown */
 #define UBI_UNKNOWN -1
 

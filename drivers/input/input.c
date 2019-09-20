@@ -195,6 +195,8 @@ static int input_init(void)
 	ic->console.tstc = input_console_tstc;
 	ic->console.getc = input_console_getc;
 	ic->console.f_active = CONSOLE_STDIN;
+	ic->console.devid = DEVICE_ID_DYNAMIC;
+	ic->console.devname = "input";
 
 	ic->fifo = kfifo_alloc(32);
 	ic->notifier.notify = input_console_notify;

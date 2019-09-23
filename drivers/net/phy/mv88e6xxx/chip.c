@@ -797,7 +797,7 @@ static int mv88e6xxx_probe(struct device_d *dev)
 
 	err = of_property_read_u32(np, "reg", &reg);
 	if (err) {
-		dev_err(dev, "Couldn't determine switch MIDO address\n");
+		dev_err(dev, "Couldn't determine switch MDIO address\n");
 		return err;
 	}
 

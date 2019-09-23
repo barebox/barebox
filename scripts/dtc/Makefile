@@ -1,12 +1,18 @@
 # SPDX-License-Identifier: GPL-2.0
 # scripts/dtc makefile
 
-hostprogs-$(CONFIG_DTC) := dtc
+hostprogs-$(CONFIG_DTC) := dtc fdtget
 always		:= $(hostprogs-y)
 
 dtc-objs	:= dtc.o flattree.o fstree.o data.o livetree.o treesource.o \
 		   srcpos.o checks.o util.o
 dtc-objs	+= dtc-lexer.lex.o dtc-parser.tab.o
+
+libfdt-objs	:= fdt.o fdt_ro.o fdt_strerror.o fdt_wip.o fdt_overlay.o
+libfdt-objs	+= fdt_empty_tree.o fdt_rw.o fdt_sw.o
+libfdt-objs	:= $(libfdt-objs:%.o=libfdt/%.o)
+
+fdtget-objs    += fdtget.o $(libfdt-objs) util.o
 
 # Source files need to get at the userspace version of libfdt_env.h to compile
 HOST_EXTRACFLAGS := -I$(src)/libfdt

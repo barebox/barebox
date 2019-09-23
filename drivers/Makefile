@@ -29,6 +29,7 @@ obj-$(CONFIG_W1) += w1/
 obj-y += pinctrl/
 obj-y += bus/
 obj-$(CONFIG_REGULATOR) += regulator/
+obj-$(CONFIG_REMOTEPROC) += remoteproc/
 obj-$(CONFIG_RESET_CONTROLLER) += reset/
 obj-$(CONFIG_PCI) += pci/
 obj-y += rtc/

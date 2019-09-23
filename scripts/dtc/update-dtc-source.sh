@@ -44,6 +44,9 @@ get_last_dtc_version() {
 last_dtc_ver=$(get_last_dtc_version)
 
 # Build DTC
+cd $DTC_LINUX_PATH
+git ls-files . | grep -vE '^(update-dtc-source\.sh|Makefile|\.gitignore)$' | xargs git rm
+mkdir libfdt
 cd $DTC_UPSTREAM_PATH
 make clean
 make check

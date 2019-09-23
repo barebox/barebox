@@ -72,7 +72,7 @@ git add ./libfdt/libfdt.h
 commit_msg=$(cat << EOF
 scripts/dtc: Update to upstream version ${dtc_version}
 
-This adds the following commits from upstream:
+This adds the following commits from upstream dtc:
 
 ${dtc_log}
 EOF

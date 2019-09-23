@@ -116,7 +116,7 @@
 #define FSR_READY		BIT(7)
 
 /* Configuration Register bits. */
-#define CR_QUAD_EN_SPAN		BIT(2)	/* Spansion Quad I/O */
+#define CR_QUAD_EN_SPAN		BIT(1)	/* Spansion Quad I/O */
 
 /* Supported SPI protocols */
 #define SNOR_PROTO_INST_MASK   GENMASK(23, 16)

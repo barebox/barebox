@@ -626,8 +626,15 @@ static int imx_bbu_write_firmware(struct mtd_info *mtd, unsigned num, void *buf,
 			continue;
 
 		ret = mtd_peb_erase(mtd, block + i);
-		if (ret && ret != -EIO)
+		if (ret == -EIO) {
+			newbadblock = 1;
+
+			ret = mtd_peb_mark_bad(mtd, block + i);
+			if (ret)
+				return ret;
+		} else if (ret) {
 			return ret;
+		}
 	}
 
 	while (len > 0) {

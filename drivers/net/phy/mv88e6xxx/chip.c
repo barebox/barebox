@@ -11,6 +11,7 @@
 #include <of_gpio.h>
 
 #include "chip.h"
+#include "global1.h"
 #include "global2.h"
 #include "port.h"
 
@@ -342,6 +343,7 @@ static const struct mv88e6xxx_info mv88e6xxx_table[] = {
 		.name = "Marvell 88E6085",
 		.num_ports = 10,
 		.port_base_addr = 0x10,
+		.global1_addr = 0x1b,
 		.global2_addr = 0x1c,
 		.ops = &mv88e6085_ops,
 	},
@@ -352,6 +354,7 @@ static const struct mv88e6xxx_info mv88e6xxx_table[] = {
 		.name = "Marvell 88E6095/88E6095F",
 		.num_ports = 11,
 		.port_base_addr = 0x10,
+		.global1_addr = 0x1b,
 		.global2_addr = 0x1c,
 		.ops = &mv88e6095_ops,
 	},
@@ -362,6 +365,7 @@ static const struct mv88e6xxx_info mv88e6xxx_table[] = {
 		.name = "Marvell 88E6097/88E6097F",
 		.num_ports = 11,
 		.port_base_addr = 0x10,
+		.global1_addr = 0x1b,
 		.global2_addr = 0x1c,
 		.ops = &mv88e6097_ops,
 	},
@@ -372,6 +376,7 @@ static const struct mv88e6xxx_info mv88e6xxx_table[] = {
 		.name = "Marvell 88E6123",
 		.num_ports = 3,
 		.port_base_addr = 0x10,
+		.global1_addr = 0x1b,
 		.global2_addr = 0x1c,
 		.ops = &mv88e6123_ops,
 	},
@@ -382,6 +387,7 @@ static const struct mv88e6xxx_info mv88e6xxx_table[] = {
 		.name = "Marvell 88E6131",
 		.num_ports = 8,
 		.port_base_addr = 0x10,
+		.global1_addr = 0x1b,
 		.global2_addr = 0x1c,
 		.ops = &mv88e6131_ops,
 	},
@@ -392,6 +398,7 @@ static const struct mv88e6xxx_info mv88e6xxx_table[] = {
 		.name = "Marvell 88E6341",
 		.num_ports = 6,
 		.port_base_addr = 0x10,
+		.global1_addr = 0x1b,
 		.global2_addr = 0x1c,
 		.ops = &mv88e6141_ops,
 	},
@@ -402,6 +409,7 @@ static const struct mv88e6xxx_info mv88e6xxx_table[] = {
 		.name = "Marvell 88E6161",
 		.num_ports = 6,
 		.port_base_addr = 0x10,
+		.global1_addr = 0x1b,
 		.global2_addr = 0x1c,
 		.ops = &mv88e6161_ops,
 	},
@@ -412,6 +420,7 @@ static const struct mv88e6xxx_info mv88e6xxx_table[] = {
 		.name = "Marvell 88E6165",
 		.num_ports = 6,
 		.port_base_addr = 0x10,
+		.global1_addr = 0x1b,
 		.global2_addr = 0x1c,
 		.ops = &mv88e6165_ops,
 	},
@@ -422,6 +431,7 @@ static const struct mv88e6xxx_info mv88e6xxx_table[] = {
 		.name = "Marvell 88E6171",
 		.num_ports = 7,
 		.port_base_addr = 0x10,
+		.global1_addr = 0x1b,
 		.global2_addr = 0x1c,
 		.ops = &mv88e6171_ops,
 	},
@@ -432,6 +442,7 @@ static const struct mv88e6xxx_info mv88e6xxx_table[] = {
 		.name = "Marvell 88E6172",
 		.num_ports = 7,
 		.port_base_addr = 0x10,
+		.global1_addr = 0x1b,
 		.global2_addr = 0x1c,
 		.ops = &mv88e6172_ops,
 	},
@@ -442,6 +453,7 @@ static const struct mv88e6xxx_info mv88e6xxx_table[] = {
 		.name = "Marvell 88E6175",
 		.num_ports = 7,
 		.port_base_addr = 0x10,
+		.global1_addr = 0x1b,
 		.global2_addr = 0x1c,
 		.ops = &mv88e6175_ops,
 	},
@@ -452,6 +464,7 @@ static const struct mv88e6xxx_info mv88e6xxx_table[] = {
 		.name = "Marvell 88E6176",
 		.num_ports = 7,
 		.port_base_addr = 0x10,
+		.global1_addr = 0x1b,
 		.global2_addr = 0x1c,
 		.ops = &mv88e6176_ops,
 	},
@@ -462,6 +475,7 @@ static const struct mv88e6xxx_info mv88e6xxx_table[] = {
 		.name = "Marvell 88E6185",
 		.num_ports = 10,
 		.port_base_addr = 0x10,
+		.global1_addr = 0x1b,
 		.global2_addr = 0x1c,
 		.ops = &mv88e6185_ops,
 	},
@@ -472,6 +486,7 @@ static const struct mv88e6xxx_info mv88e6xxx_table[] = {
 		.name = "Marvell 88E6190",
 		.num_ports = 11,	/* 10 + Z80 */
 		.port_base_addr = 0x0,
+		.global1_addr = 0x1b,
 		.global2_addr = 0x1c,
 		.ops = &mv88e6190_ops,
 	},
@@ -482,6 +497,7 @@ static const struct mv88e6xxx_info mv88e6xxx_table[] = {
 		.name = "Marvell 88E6190X",
 		.num_ports = 11,	/* 10 + Z80 */
 		.port_base_addr = 0x0,
+		.global1_addr = 0x1b,
 		.global2_addr = 0x1c,
 		.ops = &mv88e6190x_ops,
 	},
@@ -492,6 +508,7 @@ static const struct mv88e6xxx_info mv88e6xxx_table[] = {
 		.name = "Marvell 88E6191",
 		.num_ports = 11,	/* 10 + Z80 */
 		.port_base_addr = 0x0,
+		.global1_addr = 0x1b,
 		.global2_addr = 0x1c,
 		.ops = &mv88e6191_ops,
 	},
@@ -502,6 +519,7 @@ static const struct mv88e6xxx_info mv88e6xxx_table[] = {
 		.name = "Marvell 88E6240",
 		.num_ports = 7,
 		.port_base_addr = 0x10,
+		.global1_addr = 0x1b,
 		.global2_addr = 0x1c,
 		.ops = &mv88e6240_ops,
 	},
@@ -512,6 +530,7 @@ static const struct mv88e6xxx_info mv88e6xxx_table[] = {
 		.name = "Marvell 88E6290",
 		.num_ports = 11,	/* 10 + Z80 */
 		.port_base_addr = 0x0,
+		.global1_addr = 0x1b,
 		.global2_addr = 0x1c,
 		.ops = &mv88e6290_ops,
 	},
@@ -522,6 +541,7 @@ static const struct mv88e6xxx_info mv88e6xxx_table[] = {
 		.name = "Marvell 88E6320",
 		.num_ports = 7,
 		.port_base_addr = 0x10,
+		.global1_addr = 0x1b,
 		.global2_addr = 0x1c,
 		.ops = &mv88e6320_ops,
 	},
@@ -532,6 +552,7 @@ static const struct mv88e6xxx_info mv88e6xxx_table[] = {
 		.name = "Marvell 88E6321",
 		.num_ports = 7,
 		.port_base_addr = 0x10,
+		.global1_addr = 0x1b,
 		.global2_addr = 0x1c,
 		.ops = &mv88e6321_ops,
 	},
@@ -542,6 +563,7 @@ static const struct mv88e6xxx_info mv88e6xxx_table[] = {
 		.name = "Marvell 88E6341",
 		.num_ports = 6,
 		.port_base_addr = 0x10,
+		.global1_addr = 0x1b,
 		.global2_addr = 0x1c,
 		.ops = &mv88e6341_ops,
 	},
@@ -552,6 +574,7 @@ static const struct mv88e6xxx_info mv88e6xxx_table[] = {
 		.name = "Marvell 88E6350",
 		.num_ports = 7,
 		.port_base_addr = 0x10,
+		.global1_addr = 0x1b,
 		.global2_addr = 0x1c,
 		.ops = &mv88e6350_ops,
 	},
@@ -562,6 +585,7 @@ static const struct mv88e6xxx_info mv88e6xxx_table[] = {
 		.name = "Marvell 88E6351",
 		.num_ports = 7,
 		.port_base_addr = 0x10,
+		.global1_addr = 0x1b,
 		.global2_addr = 0x1c,
 		.ops = &mv88e6351_ops,
 	},
@@ -572,6 +596,7 @@ static const struct mv88e6xxx_info mv88e6xxx_table[] = {
 		.name = "Marvell 88E6352",
 		.num_ports = 7,
 		.port_base_addr = 0x10,
+		.global1_addr = 0x1b,
 		.global2_addr = 0x1c,
 		.ops = &mv88e6352_ops,
 	},
@@ -582,6 +607,7 @@ static const struct mv88e6xxx_info mv88e6xxx_table[] = {
 		.name = "Marvell 88E6390",
 		.num_ports = 11,	/* 10 + Z80 */
 		.port_base_addr = 0x0,
+		.global1_addr = 0x1b,
 		.global2_addr = 0x1c,
 		.ops = &mv88e6390_ops,
 	},
@@ -592,6 +618,7 @@ static const struct mv88e6xxx_info mv88e6xxx_table[] = {
 		.name = "Marvell 88E6390X",
 		.num_ports = 11,	/* 10 + Z80 */
 		.port_base_addr = 0x0,
+		.global1_addr = 0x1b,
 		.global2_addr = 0x1c,
 		.ops = &mv88e6390x_ops,
 	},
@@ -741,6 +768,8 @@ static void mv88e6xxx_hardware_reset(struct mv88e6xxx_chip *chip)
 		mv88e6xxx_hardware_reset_delay();
 		gpio_set_active(chip->reset, 0);
 		mv88e6xxx_hardware_reset_delay();
+
+		mv88e6xxx_g1_wait_eeprom_done(chip);
 	}
 }
 
@@ -836,6 +865,11 @@ static int mv88e6xxx_probe(struct device_d *dev)
 		 */
 		mv88e6xxx_hardware_reset_delay();
 	}
+	/*
+	 * Switch will not return valid data over MDIO until EEPROM is
+	 * loaded
+	 */
+	mv88e6xxx_g1_wait_eeprom_done(chip);
 
 	err = mv88e6xxx_detect(chip);
 	if (err)

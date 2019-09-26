@@ -6,6 +6,9 @@ config HAVE_AT91_UTMI
 config HAVE_AT91_USB_CLK
 	bool
 
+config HAVE_AT91_PIO4
+	bool
+
 config COMMON_CLK_AT91
 	bool
 	select COMMON_CLK
@@ -47,6 +50,7 @@ config SOC_AT91SAM9
 	select HAVE_AT91_SMD
 	select HAVE_AT91_USB_CLK
 	select HAVE_AT91_UTMI
+	select PINCTRL_AT91
 
 config SOC_SAMA5
 	bool
@@ -66,6 +70,7 @@ config SOC_SAMA5D3
 	select HAVE_AT91_SMD
 	select HAVE_AT91_USB_CLK
 	select HAVE_AT91_UTMI
+	select PINCTRL_AT91
 
 config SOC_SAMA5D4
 	bool
@@ -76,6 +81,7 @@ config SOC_SAMA5D4
 	select HAVE_AT91_SMD
 	select HAVE_AT91_USB_CLK
 	select HAVE_AT91_UTMI
+	select PINCTRL_AT91
 
 config ARCH_TEXT_BASE
 	hex
@@ -102,11 +108,13 @@ config SOC_AT91RM9200
 	select HAS_AT91_ETHER
 	select HAVE_AT91_DBGU0
 	select HAVE_AT91_USB_CLK
+	select PINCTRL_AT91
 
 config SOC_AT91SAM9260
 	bool
 	select SOC_AT91SAM9
 	select HAS_MACB
+	select PINCTRL_AT91
 	help
 	  Select this if you are using one of Atmel's AT91SAM9260, AT91SAM9XE
 	  or AT91SAM9G20 SoC.
@@ -114,6 +122,7 @@ config SOC_AT91SAM9260
 config SOC_AT91SAM9261
 	bool
 	select SOC_AT91SAM9
+	select PINCTRL_AT91
 	help
 	  Select this if you are using one of Atmel's AT91SAM9261 or AT91SAM9G10 SoC.
 
@@ -122,11 +131,13 @@ config SOC_AT91SAM9263
 	select SOC_AT91SAM9
 	select HAS_MACB
 	select HAVE_AT91_LOAD_BAREBOX_SRAM
+	select PINCTRL_AT91
 
 config SOC_AT91SAM9G45
 	bool
 	select SOC_AT91SAM9
 	select HAS_MACB
+	select PINCTRL_AT91
 	help
 	  Select this if you are using one of Atmel's AT91SAM9G45 family SoC.
 	  This support covers AT91SAM9G45, AT91SAM9G46, AT91SAM9M10 and AT91SAM9M11.
@@ -136,6 +147,7 @@ config SOC_AT91SAM9X5
 	select SOC_AT91SAM9
 	select HAS_MACB
 	select COMMON_CLK_OF_PROVIDER
+	select PINCTRL_AT91
 	help
 	  Select this if you are using one of Atmel's AT91SAM9x5 family SoC.
 	  This means that your SAM9 name finishes with a '5' (except if it is
@@ -146,6 +158,7 @@ config SOC_AT91SAM9X5
 config SOC_AT91SAM9N12
 	bool
 	select SOC_AT91SAM9
+	select PINCTRL_AT91
 	help
 	  Select this if you are using Atmel's AT91SAM9N12 SoC.
 

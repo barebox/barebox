@@ -3,6 +3,8 @@
  *
  * Copyright (C) 2005 Ivan Kokshaysky
  * Copyright (C) SAN People
+ * Copyright (C) 2015 Atmel,
+ *               2015 Ludovic Desroches <ludovic.desroches@atmel.com>
  *
  * Parallel I/O Controller (PIO) - System peripherals registers.
  * Based on AT91RM9200 datasheet revision E.
@@ -15,6 +17,8 @@
 
 #ifndef AT91_PIO_H
 #define AT91_PIO_H
+
+#include <linux/bitops.h>
 
 #define PIO_PER		0x00	/* Enable Register */
 #define PIO_PDR		0x04	/* Disable Register */
@@ -70,5 +74,34 @@
 #define ABCDSR_PERIPH_B	0x1
 #define ABCDSR_PERIPH_C	0x2
 #define ABCDSR_PERIPH_D	0x3
+
+#define PIO4_MSKR	0x0000	/* Mask Register */
+#define PIO4_CFGR	0x0004	/* Configuration Register */
+#define		PIO4_CFGR_FUNC_MASK		GENMASK(2, 0)
+#define		PIO4_DIR_MASK			BIT(8)
+#define		PIO4_PUEN_MASK			BIT(9)
+#define		PIO4_PDEN_MASK			BIT(10)
+#define		PIO4_IFEN_MASK			BIT(12)
+#define		PIO4_IFSCEN_MASK		BIT(13)
+#define		PIO4_OPD_MASK			BIT(14)
+#define		PIO4_SCHMITT_MASK		BIT(15)
+#define		PIO4_DRVSTR_MASK		GENMASK(17, 16)
+#define		PIO4_DRVSTR_OFFSET		16
+#define		PIO4_CFGR_EVTSEL_MASK		GENMASK(26, 24)
+#define		PIO4_CFGR_EVTSEL_FALLING	(0 << 24)
+#define		PIO4_CFGR_EVTSEL_RISING		(1 << 24)
+#define		PIO4_CFGR_EVTSEL_BOTH		(2 << 24)
+#define		PIO4_CFGR_EVTSEL_LOW		(3 << 24)
+#define		PIO4_CFGR_EVTSEL_HIGH		(4 << 24)
+#define	PIO4_PDSR	0x0008	/* Data Status Register */
+#define	PIO4_LOCKSR	0x000C	/* Lock Status Register */
+#define	PIO4_SODR	0x0010	/* Set Output Data Register */
+#define	PIO4_CODR	0x0014	/* Clear Output Data Register */
+#define	PIO4_ODSR	0x0018	/* Output Data Status Register */
+#define	PIO4_IER	0x0020	/* Interrupt Enable Register */
+#define	PIO4_IDR	0x0024	/* Interrupt Disable Register */
+#define	PIO4_IMR	0x0028	/* Interrupt Mask Register */
+#define	PIO4_ISR	0x002C	/* Interrupt Status Register */
+#define	PIO4_IOFR	0x003C	/* I/O Freeze Configuration Register */
 
 #endif

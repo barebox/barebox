@@ -17,6 +17,7 @@
 #include <asm-generic/errno.h>
 #include <mach/at91_pio.h>
 #include <mach/hardware.h>
+#include <mach/gpio.h>
 
 #define	AT91_PIN_PA0	(0x00 + 0)
 #define	AT91_PIN_PA1	(0x00 + 1)
@@ -182,14 +183,6 @@
 #define	AT91_PIN_PE29	(0x80 + 29)
 #define	AT91_PIN_PE30	(0x80 + 30)
 #define	AT91_PIN_PE31	(0x80 + 31)
-
-enum at91_mux {
-	AT91_MUX_GPIO = 0,
-	AT91_MUX_PERIPH_A = 1,
-	AT91_MUX_PERIPH_B = 2,
-	AT91_MUX_PERIPH_C = 3,
-	AT91_MUX_PERIPH_D = 4,
-};
 
 /*
  * mux the pin

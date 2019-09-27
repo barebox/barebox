@@ -2144,7 +2144,7 @@ config CMD_SEED
 
 config CMD_UBSAN
 	tristate "ubsan"
-	depends on UBSAN && COMMAND_SUPPORT
+	depends on UBSAN
 	help
 	  This is a test command for the undefined behavior sanitizer.
 	  It triggers various undefined behavior, and detect it.

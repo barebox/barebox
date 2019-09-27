@@ -982,6 +982,24 @@ config RESET_SOURCE
 	  of the reset and why the bootloader is currently running. It can be
 	  useful for any kind of system recovery or repair.
 
+config MACHINE_ID
+	bool "pass machine-id to kernel"
+	depends on FLEXIBLE_BOOTARGS
+	depends on SHA1
+	help
+	  Sets the linux.bootargs.machine_id global variable with a value of
+	  systemd.machine_id=UID. The UID is a persistent device-specific
+	  id. It is a hash over device-specific information provided by various
+	  sources.
+
+	  Note: if multiple sources provide hashable device-specific information
+	  (via machine_id_set_hashable()) the information provided by the last call
+	  prior to the late initcall set_machine_id() is used to generate the
+	  machine id from. Thus when updating barebox the machine id might change.
+
+	  Note: if no hashable information is available no machine id will be passed
+	  to the kernel.
+
 endmenu
 
 menu "Debugging"

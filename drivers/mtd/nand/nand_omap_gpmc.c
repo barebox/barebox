@@ -110,7 +110,6 @@ struct gpmc_nand_info {
 	struct device_d *pdev;
 	struct gpmc_nand_platform_data *pdata;
 	struct nand_chip nand;
-	struct mtd_info minfo;
 	int gpmc_cs;
 	void *gpmc_command;
 	void *gpmc_address;
@@ -582,8 +581,8 @@ static int omap_gpmc_read_buf_manual(struct mtd_info *mtd, struct nand_chip *chi
  */
 static void omap_read_buf_pref(struct mtd_info *mtd, u_char *buf, int len)
 {
-	struct gpmc_nand_info *info = container_of(mtd,
-						struct gpmc_nand_info, minfo);
+	struct nand_chip *nand_chip = mtd_to_nand(mtd);
+	struct gpmc_nand_info *info = nand_chip->priv;
 	u32 r_count = 0;
 	u32 *p = (u32 *)buf;
 
@@ -623,8 +622,9 @@ static void omap_read_buf_pref(struct mtd_info *mtd, u_char *buf, int len)
 static void omap_write_buf_pref(struct mtd_info *mtd,
 					const u_char *buf, int len)
 {
-	struct gpmc_nand_info *info = container_of(mtd,
-						struct gpmc_nand_info, minfo);
+	struct nand_chip *nand_chip = mtd_to_nand(mtd);
+	struct gpmc_nand_info *info = nand_chip->priv;
+
 	u32 w_count = 0;
 	u_char *buf1 = (u_char *)buf;
 	u32 *p32 = (u32 *)buf;
@@ -1021,8 +1021,8 @@ static int gpmc_read_page_hwecc(struct mtd_info *mtd,
 static int omap_gpmc_eccmode(struct gpmc_nand_info *oinfo,
 		enum gpmc_ecc_mode mode)
 {
-	struct mtd_info *minfo = &oinfo->minfo;
 	struct nand_chip *nand = &oinfo->nand;
+	struct mtd_info *minfo = &nand->mtd;
 	int offset, err;
 	int i, j;
 
@@ -1116,7 +1116,7 @@ static int omap_gpmc_eccmode(struct gpmc_nand_info *oinfo,
 			omap_oobinfo.eccpos[oinfo->nand.ecc.total - 1] + 1;
 
 		err = elm_config(BCH16_ECC,
-				 oinfo->minfo.writesize / nand->ecc.size,
+				 minfo->writesize / nand->ecc.size,
 				 nand->ecc.size, nand->ecc.bytes);
 		if (err < 0)
 			return err;
@@ -1199,7 +1199,7 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	nand = &oinfo->nand;
 	nand->priv = (void *)oinfo;
 
-	minfo = &oinfo->minfo;
+	minfo = &nand->mtd;
 	minfo->parent = pdev;
 
 	if (pdata->cs >= GPMC_NUM_CS) {

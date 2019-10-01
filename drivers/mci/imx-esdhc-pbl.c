@@ -28,11 +28,13 @@
 #include "imx-esdhc.h"
 
 #define SECTOR_SIZE 512
+#define SECTOR_WML  (SECTOR_SIZE / sizeof(u32))
 
 struct esdhc {
 	void __iomem *regs;
 	bool is_mx6;
 	bool is_be;
+	bool wrap_wml;
 };
 
 static uint32_t esdhc_read32(struct esdhc *esdhc, int reg)
@@ -107,7 +109,7 @@ static int esdhc_do_data(struct esdhc *esdhc, struct mci_data *data)
 			}
 		}
 
-		for (i = 0; i < SECTOR_SIZE / sizeof(uint32_t); i++) {
+		for (i = 0; i < SECTOR_WML; i++) {
 			databuf = esdhc_read32(esdhc, SDHCI_BUFFER);
 			*((u32 *)buffer) = databuf;
 			buffer += 4;
@@ -203,7 +205,7 @@ static int esdhc_read_blocks(struct esdhc *esdhc, void *dst, size_t len)
 {
 	struct mci_cmd cmd;
 	struct mci_data data;
-	u32 val;
+	u32 val, wml;
 	int ret;
 
 	esdhc_write32(esdhc, SDHCI_INT_ENABLE,
@@ -212,7 +214,18 @@ static int esdhc_read_blocks(struct esdhc *esdhc, void *dst, size_t len)
 		      IRQSTATEN_DTOE | IRQSTATEN_DCE | IRQSTATEN_DEBE |
 		      IRQSTATEN_DINT);
 
-	esdhc_write32(esdhc, IMX_SDHCI_WML, 0x0);
+	wml = FIELD_PREP(WML_WR_BRST_LEN, 16)         |
+	      FIELD_PREP(WML_WR_WML_MASK, SECTOR_WML) |
+	      FIELD_PREP(WML_RD_BRST_LEN, 16)         |
+	      FIELD_PREP(WML_RD_WML_MASK, SECTOR_WML);
+	/*
+	 * Some SoCs intrpret 0 as MAX value so for those cases the
+	 * above value translates to zero
+	 */
+	if (esdhc->wrap_wml)
+		wml = 0;
+
+	esdhc_write32(esdhc, IMX_SDHCI_WML, wml);
 
 	val = esdhc_read32(esdhc, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET);
 	val |= SYSCTL_HCKEN | SYSCTL_IPGEN;
@@ -388,6 +401,7 @@ int imx6_esdhc_start_image(int instance)
 
 	esdhc.is_be = 0;
 	esdhc.is_mx6 = 1;
+	esdhc.wrap_wml = false;
 
 	return esdhc_start_image(&esdhc, 0x10000000, 0x10000000, 0);
 }
@@ -421,6 +435,7 @@ int imx8_esdhc_start_image(int instance)
 
 	esdhc.is_be = 0;
 	esdhc.is_mx6 = 1;
+	esdhc.wrap_wml = false;
 
 	return esdhc_start_image(&esdhc, MX8MQ_DDR_CSD1_BASE_ADDR,
 				 MX8MQ_ATF_BL33_BASE_ADDR, SZ_32K);
@@ -447,6 +462,7 @@ int imx8_esdhc_load_piggy(int instance)
 
 	esdhc.is_be = 0;
 	esdhc.is_mx6 = 1;
+	esdhc.wrap_wml = false;
 
 	/*
 	 * We expect to be running at MX8MQ_ATF_BL33_BASE_ADDR where the atf
@@ -503,6 +519,7 @@ int ls1046a_esdhc_start_image(unsigned long r0, unsigned long r1, unsigned long 
 	struct esdhc esdhc = {
 		.regs = IOMEM(0x01560000),
 		.is_be = true,
+		.wrap_wml = true,
 	};
 	unsigned long sdram = 0x80000000;
 	void (*barebox)(unsigned long, unsigned long, unsigned long) =

@@ -24,6 +24,7 @@
 
 #include <errno.h>
 #include <asm/byteorder.h>
+#include <linux/bitfield.h>
 
 #define SYSCTL_INITA		0x08000000
 #define SYSCTL_TIMEOUT_MASK	0x000f0000
@@ -43,7 +44,9 @@
 
 #define WML_WRITE	0x00010000
 #define WML_RD_WML_MASK	0xff
+#define WML_WR_BRST_LEN	GENMASK(28, 24)
 #define WML_WR_WML_MASK	0xff0000
+#define WML_RD_BRST_LEN	GENMASK(12, 8)
 
 #define BLKATTR_CNT(x)	((x & 0xffff) << 16)
 #define BLKATTR_SIZE(x)	(x & 0x1fff)

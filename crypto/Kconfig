@@ -94,6 +94,25 @@ config CRYPTO_PBKDF2
 config CRYPTO_RSA
 	bool
 
+config CRYPTO_RSA_BUILTIN_KEYS
+	bool
+	default y if CRYPTO_RSA_KEY != ""
+
+config CRYPTO_RSA_KEY
+	depends on CRYPTO_RSA
+	string "RSA key to compile in"
+	help
+	  This option should be a filename of a PEM-formatted file containing
+	  X.509 certificates to be included into barebox. If the string starts
+	  with "pkcs11:" it is interpreted as a PKCS#11 URI rather than a file.
+
+config CRYPTO_RSA_KEY_NAME_HINT
+	depends on CRYPTO_RSA
+	string "FIT image key name hint"
+	help
+	  In FIT images keys are identified by a key name hint string. Provide
+	  the key name hint here.
+
 config CRYPTO_KEYSTORE
 	bool "Keystore"
 	help

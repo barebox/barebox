@@ -438,3 +438,36 @@ void rsa_key_free(struct rsa_public_key *key)
 	free(key->rr);
 	free(key);
 }
+
+#ifdef CONFIG_CRYPTO_RSA_BUILTIN_KEYS
+#include "rsa-keys.h"
+
+extern const struct rsa_public_key * const __rsa_keys_start;
+extern const struct rsa_public_key * const __rsa_keys_end;
+
+struct rsa_public_key *rsa_get_key(const char *name)
+{
+	const struct rsa_public_key *key;
+	struct rsa_public_key *new;
+	const struct rsa_public_key * const *iter;
+
+	for (iter = &__rsa_keys_start; iter != &__rsa_keys_end; iter++) {
+		key = *iter;
+		if (!strcmp(name, key->key_name_hint))
+			goto found;
+	}
+
+	return ERR_PTR(-ENOENT);
+found:
+	new = xmemdup(key, sizeof(*key));
+	new->modulus = xmemdup(key->modulus, key->len * sizeof(uint32_t));
+	new->rr = xmemdup(key->rr, key->len  * sizeof(uint32_t));
+
+	return new;
+}
+#else
+struct rsa_public_key *rsa_get_key(const char *name)
+{
+	return ERR_PTR(-ENOENT);
+}
+#endif

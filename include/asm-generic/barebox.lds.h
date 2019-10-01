@@ -98,6 +98,11 @@
 #define BAREBOX_PCI_FIXUP
 #endif
 
+#define BAREBOX_RSA_KEYS			\
+	__rsa_keys_start = .;			\
+	KEEP(*(.rsa_keys.rodata.*));		\
+	__rsa_keys_end = .;			\
+
 #define RO_DATA_SECTION				\
 	BAREBOX_INITCALLS			\
 	BAREBOX_EXITCALLS			\
@@ -107,6 +112,7 @@
 	BAREBOX_MAGICVARS			\
 	BAREBOX_CLK_TABLE			\
 	BAREBOX_DTB				\
+	BAREBOX_RSA_KEYS			\
 	BAREBOX_PCI_FIXUP
 
 #if defined(CONFIG_ARCH_BAREBOX_MAX_BARE_INIT_SIZE) && \

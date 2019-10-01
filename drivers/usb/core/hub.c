@@ -211,8 +211,6 @@ static void usb_hub_port_connect_change(struct usb_device *dev, int port)
 	if (dev->children[port] && !(portstatus & USB_PORT_STAT_ENABLE))
 		usb_remove_device(dev->children[port]);
 
-	mdelay(200);
-
 	/* Allocate a new device struct for the port */
 	usb = usb_alloc_new_device();
 	usb->dev.parent = &dev->dev;
@@ -224,8 +222,6 @@ static void usb_hub_port_connect_change(struct usb_device *dev, int port)
 		usb_free_device(usb);
 		return;
 	}
-
-	mdelay(200);
 
 	dev->children[port] = usb;
 	usb->parent = dev;

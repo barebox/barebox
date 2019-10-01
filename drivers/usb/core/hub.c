@@ -30,6 +30,9 @@
 
 #define USB_BUFSIZ  512
 
+#define HUB_SHORT_RESET_TIME	20
+#define HUB_LONG_RESET_TIME	200
+
 static int usb_get_hub_descriptor(struct usb_device *dev, void *data, int size)
 {
 	return usb_control_msg(dev, usb_rcvctrlpipe(dev, 0),
@@ -116,12 +119,13 @@ int hub_port_reset(struct usb_device *hub, int port, struct usb_device *usb)
 	int tries;
 	struct usb_port_status portsts;
 	unsigned short portstatus, portchange;
+	int delay = HUB_SHORT_RESET_TIME; /* start with short reset delay */
 
 	dev_dbg(&hub->dev, "hub_port_reset: resetting port %d...\n", port);
 	for (tries = 0; tries < MAX_TRIES; tries++) {
 
 		usb_set_port_feature(hub, port + 1, USB_PORT_FEAT_RESET);
-		mdelay(200);
+		mdelay(delay);
 
 		if (usb_get_port_status(hub, port + 1, &portsts) < 0) {
 			dev_dbg(&hub->dev, "get_port_status failed status %lX\n",
@@ -148,7 +152,8 @@ int hub_port_reset(struct usb_device *hub, int port, struct usb_device *usb)
 		if (portstatus & USB_PORT_STAT_ENABLE)
 			break;
 
-		mdelay(200);
+		/* Switch to long reset delay for the next round */
+		delay = HUB_LONG_RESET_TIME;
 	}
 
 	if (tries == MAX_TRIES) {

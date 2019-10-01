@@ -313,6 +313,9 @@ void usb_rescan(void);
 struct usb_hub_device {
 	struct usb_device *pusb_dev;
 	struct usb_hub_descriptor desc;
+	uint64_t connect_timeout; /* Device connection timeout in ns */
+	uint64_t query_delay; /* Device query delay in ns */
+	int overcurrent_count[USB_MAXCHILDREN]; /* Over-current counter */
 };
 
 /**

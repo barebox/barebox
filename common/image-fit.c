@@ -287,19 +287,24 @@ static int fit_check_rsa_signature(struct device_node *sig_node,
 		pr_err("key name not found in %s\n", sig_node->full_name);
 		return -EINVAL;
 	}
-	key_path = xasprintf("/signature/key-%s", key_name);
-	key_node = of_find_node_by_path(key_path);
-	if (!key_node) {
-		pr_info("failed to find key node %s\n", key_path);
-		free(key_path);
-		return -ENOENT;
-	}
-	free(key_path);
 
-	key = rsa_of_read_key(key_node);
+	key = rsa_get_key(key_name);
 	if (IS_ERR(key)) {
-		pr_info("failed to read key in %s\n", key_node->full_name);
-		return -ENOENT;
+		key_path = xasprintf("/signature/key-%s", key_name);
+		key_node = of_find_node_by_path(key_path);
+		if (!key_node) {
+			pr_info("failed to find key node %s\n", key_path);
+			free(key_path);
+			return -ENOENT;
+		}
+		free(key_path);
+
+		key = rsa_of_read_key(key_node);
+
+		if (IS_ERR(key)) {
+			pr_info("failed to read key in %s\n", key_node->full_name);
+			return -ENOENT;
+		}
 	}
 
 	ret = rsa_verify(key, sig_value, sig_len, hash, algo);

@@ -269,7 +269,7 @@ static struct digest *fit_alloc_digest(struct device_node *sig_node,
 static int fit_check_rsa_signature(struct device_node *sig_node,
 				   enum hash_algo algo, void *hash)
 {
-	struct rsa_public_key key = {};
+	struct rsa_public_key *key;
 	const char *key_name;
 	char *key_path;
 	struct device_node *key_node;
@@ -296,17 +296,19 @@ static int fit_check_rsa_signature(struct device_node *sig_node,
 	}
 	free(key_path);
 
-	ret = rsa_of_read_key(key_node, &key);
-	if (ret) {
+	key = rsa_of_read_key(key_node);
+	if (IS_ERR(key)) {
 		pr_info("failed to read key in %s\n", key_node->full_name);
 		return -ENOENT;
 	}
 
-	ret = rsa_verify(&key, sig_value, sig_len, hash, algo);
+	ret = rsa_verify(key, sig_value, sig_len, hash, algo);
 	if (ret)
 		pr_err("image signature BAD\n");
 	else
 		pr_info("image signature OK\n");
+
+	rsa_key_free(key);
 
 	return ret;
 }

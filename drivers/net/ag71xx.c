@@ -667,7 +667,7 @@ static void ag71xx_remove(struct device_d *dev)
 }
 
 static __maybe_unused struct of_device_id ag71xx_dt_ids[] = {
-	{ .compatible = "qca,ar9331-ge0", .data = &ag71xx_cfg_ar9331_ge0, },
+	{ .compatible = "qca,ar9330-eth", .data = &ag71xx_cfg_ar9331_ge0, },
 	{ .compatible = "qca,ar9344-gmac0", .data = &ag71xx_cfg_ar9344_gmac0, },
 	{ /* sentinel */ }
 };

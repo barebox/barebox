@@ -31,6 +31,8 @@ SECTIONS
 	. = TEXT_BASE;
 #endif
 
+	.image_start : { *(.__image_start) }
+
 #ifndef CONFIG_PBL_IMAGE
 	PRE_IMAGE
 #endif
@@ -111,6 +113,8 @@ SECTIONS
 	.__dynsym_end : { *(.__dynsym_end) }
 
 	_edata = .;
+
+	.image_end : { *(.__image_end) }
 
 	. = ALIGN(4);
 	.__bss_start :  { *(.__bss_start) }

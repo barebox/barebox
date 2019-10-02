@@ -82,29 +82,12 @@ SECTIONS
 	.barebox_imd : { BAREBOX_IMD }
 
 	. = .;
-	__barebox_cmd_start = .;
 	.barebox_cmd : { BAREBOX_CMDS }
-	__barebox_cmd_end = .;
-
-	__barebox_ratp_cmd_start = .;
 	.barebox_ratp_cmd : { BAREBOX_RATP_CMDS }
-	__barebox_ratp_cmd_end = .;
-
-	__barebox_magicvar_start = .;
 	.barebox_magicvar : { BAREBOX_MAGICVARS }
-	__barebox_magicvar_end = .;
-
-	__barebox_initcalls_start = .;
-	.barebox_initcalls : { INITCALLS }
-	__barebox_initcalls_end = .;
-
-	__barebox_exitcalls_start = .;
-	.barebox_exitcalls : { EXITCALLS }
-	__barebox_exitcalls_end = .;
-
-	__usymtab_start = .;
+	.barebox_initcalls : { BAREBOX_INITCALLS }
+	.barebox_exitcalls : { BAREBOX_EXITCALLS }
 	__usymtab : { BAREBOX_SYMS }
-	__usymtab_end = .;
 
 #ifdef CONFIG_PCI
 	__start_pci_fixups_early = .;

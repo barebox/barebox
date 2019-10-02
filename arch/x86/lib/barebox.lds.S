@@ -165,44 +165,32 @@ SECTIONS
 	} > barebox
 
 	.barebox_cmd : AT ( LOADADDR(.got) + SIZEOF (.got) ) {
-		__barebox_cmd_start = .;
 		BAREBOX_CMDS
-		__barebox_cmd_end = .;
 		. = ALIGN(4);
 	} > barebox
 
 	.barebox_ratp_cmd : AT ( LOADADDR(.got) + SIZEOF (.got) ) {
-		__barebox_ratp_cmd_start = .;
 		BAREBOX_RATP_CMDS
-		__barebox_ratp_cmd_end = .;
 		. = ALIGN(4);
 	} > barebox
 
 	.barebox_magicvars : AT ( LOADADDR(.barebox_cmd) + SIZEOF (.barebox_cmd) ) {
-		__barebox_magicvar_start = .;
 		BAREBOX_MAGICVARS
-		__barebox_magicvar_end = .;
 		. = ALIGN(4);
 	} > barebox
 
 	.barebox_initcalls : AT ( LOADADDR(.barebox_magicvars) + SIZEOF (.barebox_magicvars) ) {
-		__barebox_initcalls_start = .;
-		INITCALLS
-		__barebox_initcalls_end = .;
+		BAREBOX_INITCALLS
 		. = ALIGN(4);
 	} > barebox
 
 	.barebox_exitcalls : AT ( LOADADDR(.barebox_initcalls) + SIZEOF (.barebox_initcalls) ) {
-		__barebox_exitcalls_start = .;
-		EXITCALLS
-		__barebox_exitcalls_end = .;
+		BAREBOX_EXITCALLS
 		. = ALIGN(4);
 	} > barebox
 
 	.__usymtab : AT ( LOADADDR(.barebox_exitcalls) + SIZEOF (.barebox_exitcalls) ) {
-		__usymtab_start = .;
 		BAREBOX_SYMS
-		__usymtab_end = .;
 		. = ALIGN(4);
 	} > barebox
 

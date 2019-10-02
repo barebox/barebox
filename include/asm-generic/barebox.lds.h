@@ -16,7 +16,8 @@
 #define PRE_IMAGE
 #endif
 
-#define INITCALLS			\
+#define BAREBOX_INITCALLS			\
+	__barebox_initcalls_start = .;		\
 	KEEP(*(.initcall.0))			\
 	KEEP(*(.initcall.1))			\
 	KEEP(*(.initcall.2))			\
@@ -31,24 +32,39 @@
 	KEEP(*(.initcall.11))			\
 	KEEP(*(.initcall.12))			\
 	KEEP(*(.initcall.13))			\
-	KEEP(*(.initcall.14))
+	KEEP(*(.initcall.14))			\
+	__barebox_initcalls_end = .;
 
-#define EXITCALLS			\
+#define BAREBOX_EXITCALLS			\
+	__barebox_exitcalls_start = .;		\
 	KEEP(*(.exitcall.0))			\
 	KEEP(*(.exitcall.1))			\
 	KEEP(*(.exitcall.2))			\
 	KEEP(*(.exitcall.3))			\
 	KEEP(*(.exitcall.4))			\
 	KEEP(*(.exitcall.5))			\
-	KEEP(*(.exitcall.6))
+	KEEP(*(.exitcall.6))			\
+	__barebox_exitcalls_end = .;
 
-#define BAREBOX_CMDS	KEEP(*(SORT_BY_NAME(.barebox_cmd*)))
+#define BAREBOX_CMDS				\
+	__barebox_cmd_start = .;		\
+	KEEP(*(SORT_BY_NAME(.barebox_cmd*)))	\
+	__barebox_cmd_end = .;
 
-#define BAREBOX_RATP_CMDS	KEEP(*(SORT_BY_NAME(.barebox_ratp_cmd*)))
+#define BAREBOX_RATP_CMDS			\
+	__barebox_ratp_cmd_start = .;		\
+	KEEP(*(SORT_BY_NAME(.barebox_ratp_cmd*)))	\
+	__barebox_ratp_cmd_end = .;
 
-#define BAREBOX_SYMS	KEEP(*(__usymtab))
+#define BAREBOX_SYMS				\
+	__usymtab_start = .;			\
+	KEEP(*(__usymtab))			\
+	__usymtab_end = .;
 
-#define BAREBOX_MAGICVARS	KEEP(*(SORT_BY_NAME(.barebox_magicvar*)))
+#define BAREBOX_MAGICVARS			\
+	__barebox_magicvar_start = .;		\
+	KEEP(*(SORT_BY_NAME(.barebox_magicvar*)))	\
+	__barebox_magicvar_end = .;
 
 #define BAREBOX_CLK_TABLE			\
 	. = ALIGN(8);				\

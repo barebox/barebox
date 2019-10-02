@@ -50,14 +50,14 @@
 
 #define BAREBOX_MAGICVARS	KEEP(*(SORT_BY_NAME(.barebox_magicvar*)))
 
-#define BAREBOX_CLK_TABLE()			\
+#define BAREBOX_CLK_TABLE			\
 	. = ALIGN(8);				\
 	__clk_of_table_start = .;		\
 	KEEP(*(.__clk_of_table));		\
 	KEEP(*(.__clk_of_table_end));		\
 	__clk_of_table_end = .;
 
-#define BAREBOX_DTB()				\
+#define BAREBOX_DTB				\
 	. = ALIGN(8);				\
 	__dtb_start = .;			\
 	KEEP(*(.dtb.rodata.*));			\

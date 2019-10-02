@@ -118,9 +118,9 @@ SECTIONS
 	__end_pci_fixups_enable = .;
 #endif
 
-	.oftables : { BAREBOX_CLK_TABLE() }
+	.oftables : { BAREBOX_CLK_TABLE }
 
-	.dtb : { BAREBOX_DTB() }
+	.dtb : { BAREBOX_DTB }
 
 	.rel_dyn_start : { *(.__rel_dyn_start) }
 	.rel.dyn : { *(.rel*) }

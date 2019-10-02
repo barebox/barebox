@@ -66,9 +66,9 @@ SECTIONS
 
 	.rela.dyn : { *(.rela*) }
 
-	.oftables : { BAREBOX_CLK_TABLE() }
+	.oftables : { BAREBOX_CLK_TABLE }
 
-	.dtb : { BAREBOX_DTB() }
+	.dtb : { BAREBOX_DTB }
 
 	_edata = .;
 	. = ALIGN(8);

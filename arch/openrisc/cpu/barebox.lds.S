@@ -77,7 +77,7 @@ SECTIONS
 	__usymtab : { BAREBOX_SYMS } > ram
 	___usymtab_end = .;
 
-	.dtb : { BAREBOX_DTB() } > ram
+	.dtb : { BAREBOX_DTB } > ram
 
 	__etext = .; /* End of text and rodata section */
 

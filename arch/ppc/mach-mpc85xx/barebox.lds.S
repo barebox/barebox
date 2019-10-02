@@ -71,6 +71,7 @@ SECTIONS
    .rodata    :
    {
     *(SORT_BY_ALIGNMENT(SORT_BY_NAME(.rodata*)))
+    RO_DATA_SECTION
   } :text
 
   /* Read-write section, merged into data segment: */
@@ -99,13 +100,6 @@ SECTIONS
     *(.dynamic*)
     CONSTRUCTORS
   }
-
-  . = .;
-  .barebox_cmd : { BAREBOX_CMDS }
-  .barebox_ratp_cmd : { BAREBOX_RATP_CMDS }
-  .barebox_initcalls : { BAREBOX_INITCALLS }
-  .barebox_exitcalls : { BAREBOX_EXITCALLS }
-  __usymtab : { BAREBOX_SYMS }
 
   . = .;
   __start___ex_table = .;

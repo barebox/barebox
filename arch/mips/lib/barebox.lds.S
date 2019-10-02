@@ -30,7 +30,10 @@ SECTIONS
 	PRE_IMAGE
 
 	. = ALIGN(4);
-	.rodata : { *(.rodata*) }
+	.rodata : {
+		*(.rodata*)
+		RO_DATA_SECTION
+	}
 
 	_etext = .;			/* End of text and rodata section */
 	_sdata = .;
@@ -39,17 +42,6 @@ SECTIONS
 	.data : { *(.data*) }
 
 	.barebox_imd : { BAREBOX_IMD }
-
-	. = .;
-	.barebox_cmd : { BAREBOX_CMDS }
-	.barebox_ratp_cmd : { BAREBOX_RATP_CMDS }
-	.barebox_magicvar : { BAREBOX_MAGICVARS }
-	.barebox_initcalls : { BAREBOX_INITCALLS }
-	.barebox_exitcalls : { BAREBOX_EXITCALLS }
-	__usymtab : { BAREBOX_SYMS }
-	.pci_fixup : { BAREBOX_PCI_FIXUP }
-	.oftables : { BAREBOX_CLK_TABLE }
-	.dtb : { BAREBOX_DTB }
 
 	_edata = .;
 	.image_end : { *(.__image_end) }

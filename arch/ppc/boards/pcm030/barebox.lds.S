@@ -38,6 +38,7 @@ SECTIONS
     *(.rodata*)
     *(.rodata1*)
     *(.rodata.str1.4)
+    RO_DATA_SECTION
   }
 
   /* Read-only sections, merged into text segment: */
@@ -98,14 +99,6 @@ SECTIONS
   }
   _edata  =  .;
   PROVIDE (edata = .);
-
-  . = .;
-  .barebox_cmd : { BAREBOX_CMDS }
-  .barebox_ratp_cmd : { BAREBOX_RATP_CMDS }
-  .barebox_magicvar : { BAREBOX_MAGICVARS }
-  .barebox_initcalls : { BAREBOX_INITCALLS }
-  .barebox_exitcalls : { BAREBOX_EXITCALLS }
-  __usymtab : { BAREBOX_SYMS }
 
   __start___ex_table = .;
   __ex_table : { *(__ex_table) }

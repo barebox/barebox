@@ -133,6 +133,7 @@ SECTIONS
 		*(.boot.rodata*)
 		*(.boot.data*)
 		. = ALIGN(4);
+		RO_DATA_SECTION
 	} > barebox
 #endif
 
@@ -161,36 +162,6 @@ SECTIONS
 
 	.got : AT ( LOADADDR(.data) + SIZEOF (.data) ) {
 		*(.got*)
-		. = ALIGN(4);
-	} > barebox
-
-	.barebox_cmd : AT ( LOADADDR(.got) + SIZEOF (.got) ) {
-		BAREBOX_CMDS
-		. = ALIGN(4);
-	} > barebox
-
-	.barebox_ratp_cmd : AT ( LOADADDR(.got) + SIZEOF (.got) ) {
-		BAREBOX_RATP_CMDS
-		. = ALIGN(4);
-	} > barebox
-
-	.barebox_magicvars : AT ( LOADADDR(.barebox_cmd) + SIZEOF (.barebox_cmd) ) {
-		BAREBOX_MAGICVARS
-		. = ALIGN(4);
-	} > barebox
-
-	.barebox_initcalls : AT ( LOADADDR(.barebox_magicvars) + SIZEOF (.barebox_magicvars) ) {
-		BAREBOX_INITCALLS
-		. = ALIGN(4);
-	} > barebox
-
-	.barebox_exitcalls : AT ( LOADADDR(.barebox_initcalls) + SIZEOF (.barebox_initcalls) ) {
-		BAREBOX_EXITCALLS
-		. = ALIGN(4);
-	} > barebox
-
-	.__usymtab : AT ( LOADADDR(.barebox_exitcalls) + SIZEOF (.barebox_exitcalls) ) {
-		BAREBOX_SYMS
 		. = ALIGN(4);
 	} > barebox
 

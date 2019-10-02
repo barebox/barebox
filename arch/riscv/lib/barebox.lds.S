@@ -30,7 +30,10 @@ SECTIONS
 	}
 
 	. = ALIGN(8);
-	.rodata : { *(.rodata*) }
+	.rodata : {
+		*(.rodata*)
+		RO_DATA_SECTION
+	}
 
 	_etext = .;			/* End of text and rodata section */
 	_sdata = .;
@@ -42,13 +45,6 @@ SECTIONS
 
 	. = ALIGN(8);
 	.got : { *(.got*) }
-
-	. = .;
-	.barebox_cmd : { BAREBOX_CMDS }
-	.barebox_magicvar : { BAREBOX_MAGICVARS }
-	.barebox_initcalls : { BAREBOX_INITCALLS }
-	.barebox_exitcalls : { BAREBOX_EXITCALLS }
-	__usymtab : { BAREBOX_SYMS }
 
 	.rela.dyn : { *(.rela*) }
 

@@ -49,17 +49,8 @@ SECTIONS
 		*(.rodata);
 		*(.rodata.*)
 		*(.bbenv.rodata.*)
+		RO_DATA_SECTION
 	} > ram
-
-	. = ALIGN(4);
-	. = .;
-	.barebox_cmd : { BAREBOX_CMDS } > ram
-	.barebox_ratp_cmd : { BAREBOX_RATP_CMDS } > ram
-	.barebox_magicvar : { BAREBOX_MAGICVARS } > ram
-	.barebox_initcalls : { BAREBOX_INITCALLS } > ram
-	.barebox_exitcalls : { BAREBOX_EXITCALLS } > ram
-	__usymtab : { BAREBOX_SYMS } > ram
-	.dtb : { BAREBOX_DTB } > ram
 
 	__etext = .; /* End of text and rodata section */
 

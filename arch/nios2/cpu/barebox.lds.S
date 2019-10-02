@@ -48,15 +48,11 @@ SECTIONS
 	BAREBOX_BARE_INIT_SIZE
 
 	. = ALIGN(4);
-	.rodata : { *(.rodata) }
 
-	. = .;
-	.barebox_cmd : { BAREBOX_CMDS }
-	.barebox_ratp_cmd : { BAREBOX_RATP_CMDS }
-	.barebox_magicvar : { BAREBOX_MAGICVARS }
-	.barebox_initcalls : { BAREBOX_INITCALLS }
-	.barebox_exitcalls : { BAREBOX_EXITCALLS }
-	__usymtab : { BAREBOX_SYMS }
+	.rodata : {
+		*(.rodata*)
+		RO_DATA_SECTION
+	}
 
 	_etext = .; /* End of text and rodata section */
 

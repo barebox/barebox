@@ -85,6 +85,21 @@
 	*(.barebox_imd_0*)			\
 	KEEP(*(.barebox_imd_end))
 
+#ifdef CONFIG_PCI
+#define BAREBOX_PCI_FIXUP			\
+	__start_pci_fixups_early = .;		\
+	KEEP(*(.pci_fixup_early))		\
+	__end_pci_fixups_early = .;		\
+	__start_pci_fixups_header = .;		\
+	KEEP(*(.pci_fixup_header))		\
+	__end_pci_fixups_header = .;		\
+	__start_pci_fixups_enable = .;		\
+	KEEP(*(.pci_fixup_enable))		\
+	__end_pci_fixups_enable = .;
+#else
+#define BAREBOX_PCI_FIXUP
+#endif
+
 #if defined(CONFIG_ARCH_BAREBOX_MAX_BARE_INIT_SIZE) && \
 CONFIG_ARCH_BAREBOX_MAX_BARE_INIT_SIZE < CONFIG_BAREBOX_MAX_BARE_INIT_SIZE
 #define MAX_BARE_INIT_SIZE CONFIG_ARCH_BAREBOX_MAX_BARE_INIT_SIZE

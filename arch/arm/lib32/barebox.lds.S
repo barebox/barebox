@@ -88,21 +88,8 @@ SECTIONS
 	.barebox_initcalls : { BAREBOX_INITCALLS }
 	.barebox_exitcalls : { BAREBOX_EXITCALLS }
 	__usymtab : { BAREBOX_SYMS }
-
-#ifdef CONFIG_PCI
-	__start_pci_fixups_early = .;
-	.pci_fixup_early : { KEEP(*(.pci_fixup_early)) }
-	__end_pci_fixups_early = .;
-	__start_pci_fixups_header = .;
-	.pci_fixup_header : { KEEP(*(.pci_fixup_header)) }
-	__end_pci_fixups_header = .;
-	__start_pci_fixups_enable = .;
-	.pci_fixup_enable : { KEEP(*(.pci_fixup_enable)) }
-	__end_pci_fixups_enable = .;
-#endif
-
+	.pci_fixup : { BAREBOX_PCI_FIXUP }
 	.oftables : { BAREBOX_CLK_TABLE }
-
 	.dtb : { BAREBOX_DTB }
 
 	.rel_dyn_start : { *(.__rel_dyn_start) }

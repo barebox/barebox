@@ -115,12 +115,16 @@ static int ksz8081_phy_fixup(struct phy_device *phydev)
 static int phycore_da9062_setup_buck_mode(void)
 {
 	struct i2c_adapter *adapter = NULL;
+	struct device_node *pmic_np = NULL;
 	struct i2c_client client;
 	unsigned char value;
-	int bus = 0;
 	int ret;
 
-	adapter = i2c_get_adapter(bus);
+	pmic_np = of_find_node_by_name(NULL, "pmic@58");
+	if (!pmic_np)
+		return -ENODEV;
+
+	adapter = of_find_i2c_adapter_by_node(pmic_np->parent);
 	if (!adapter)
 		return -ENODEV;
 

@@ -76,8 +76,6 @@ static int do_cpuinfo(int argc, char *argv[])
 		: "=r" (cache)
 		:
 		: "memory");
-
-	cr = get_cr();
 #else
 	__asm__ __volatile__(
 		"mrc    p15, 0, %0, c0, c0, 0   @ read control reg\n"
@@ -90,13 +88,8 @@ static int do_cpuinfo(int argc, char *argv[])
 		: "=r" (cache)
 		:
 		: "memory");
-
-	__asm__ __volatile__(
-		"mrc    p15, 0, %0, c1, c0, 0   @ read control reg\n"
-		: "=r" (cr)
-		:
-		: "memory");
 #endif
+	cr = get_cr();
 
 	switch (mainid >> 24) {
 	case 0x41:

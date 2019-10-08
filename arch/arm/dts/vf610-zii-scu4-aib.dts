@@ -109,3 +109,11 @@
 		label = "fiber9";
 	};
 };
+
+/*
+ * FIXME: Remove once this code appears in kernel DTS
+*/
+&i2c2 {
+	tca9548@70 { i2c-mux-idle-disconnect; };
+	tca9548@71 { i2c-mux-idle-disconnect; };
+};

@@ -781,7 +781,8 @@ static int fec_probe(struct device_d *dev)
 	if (IS_ERR(fec->reg_phy)) {
 		if (PTR_ERR(fec->reg_phy) == -EPROBE_DEFER) {
 			ret = -EPROBE_DEFER;
-			goto disable_clk;
+			fec->reg_phy = NULL;
+			goto release_res;
 		}
 		fec->reg_phy = NULL;
 	}
@@ -789,7 +790,7 @@ static int fec_probe(struct device_d *dev)
 	ret = regulator_enable(fec->reg_phy);
 	if (ret) {
 		dev_err(dev, "Failed to enable phy regulator: %d\n", ret);
-		goto disable_clk;
+		goto release_res;
 	}
 
 	phy_reset = of_get_named_gpio(dev->device_node, "phy-reset-gpios", 0);

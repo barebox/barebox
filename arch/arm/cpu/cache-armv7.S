@@ -7,7 +7,6 @@ ENTRY(v7_mmu_cache_on)
 		mov	r12, lr
 #ifdef CONFIG_MMU
 		mrc	p15, 0, r11, c0, c1, 4	@ read ID_MMFR0
-		tst	r11, #0xf		@ VMSA
 		mov	r0, #0
 		dsb				@ drain write buffer
 		tst	r11, #0xf		@ VMSA

@@ -455,11 +455,6 @@ void __mmu_init(bool mmu_on)
 
 	vectors_init();
 
-	/*
-	 * First remap sdram cached using sections.
-	 * This is to speed up the generation of 2nd level page tables
-	 * below
-	 */
 	for_each_memory_bank(bank) {
 		create_sections(ttb, bank->start, bank->start + bank->size - 1,
 				PMD_SECT_DEF_CACHED);

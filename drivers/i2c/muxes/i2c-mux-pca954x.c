@@ -170,6 +170,16 @@ static int pca954x_select_chan(struct i2c_adapter *adap,
 	return ret;
 }
 
+static int pca954x_deselect_chan(struct i2c_adapter *adap,
+				 void *client, u32 chan)
+{
+	struct pca954x *data = i2c_get_clientdata(client);
+
+	/* Deselect active channel */
+	data->last_chan = 0;
+	return pca954x_reg_write(adap, client, data->last_chan);
+}
+
 /*
  * I2C init/probing/exit functions
  */
@@ -182,6 +192,7 @@ static int pca954x_probe(struct device_d *dev)
 	uintptr_t tmp;
 	int ret = -ENODEV;
 	int gpio;
+	bool idle_disconnect;
 
 	data = kzalloc(sizeof(struct pca954x), GFP_KERNEL);
 	if (!data) {
@@ -209,6 +220,9 @@ static int pca954x_probe(struct device_d *dev)
 	if (ret)
 		goto exit_free;
 
+	idle_disconnect = of_property_read_bool(dev->device_node,
+						"i2c-mux-idle-disconnect");
+
 	data->last_chan = 0;		   /* force the first selection */
 
 	/* Now create an adapter for each channel */
@@ -216,7 +230,10 @@ static int pca954x_probe(struct device_d *dev)
 
 		data->virt_adaps[num] =
 			i2c_add_mux_adapter(adap, &client->dev, client,
-				0, num, pca954x_select_chan, NULL);
+					    0, num, pca954x_select_chan,
+					    idle_disconnect ?
+					    pca954x_deselect_chan :
+					    NULL);
 
 		if (data->virt_adaps[num] == NULL) {
 			ret = -ENODEV;

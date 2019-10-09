@@ -20,8 +20,6 @@ ENTRY(v7_mmu_cache_on)
 		orr	r0, r0, #1 << 25	@ big-endian page tables
 #endif
 		orrne	r0, r0, #1		@ MMU enabled
-		movne	r1, #-1
-		mcrne	p15, 0, r1, c3, c0, 0	@ load domain access control
 #endif
 		isb
 		mcr	p15, 0, r0, c1, c0, 0	@ load control register

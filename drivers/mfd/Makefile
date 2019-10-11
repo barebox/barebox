@@ -13,3 +13,4 @@ obj-$(CONFIG_MFD_TWL6030)	+= twl6030.o
 obj-$(CONFIG_RAVE_SP_CORE)	+= rave-sp.o
 obj-$(CONFIG_MFD_STPMIC1)	+= stpmic1.o
 obj-$(CONFIG_MFD_SUPERIO)	+= superio.o
+obj-$(CONFIG_FINTEK_SUPERIO)	+= fintek-superio.o

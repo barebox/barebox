@@ -96,4 +96,13 @@ config STPMIC1_WATCHDOG
 	help
 	  Enable to support configuration of the stpmic1's built-in watchdog.
 
+config F71808E_WDT
+	bool "Fintek F718xx, F818xx Super I/O Watchdog"
+	depends on X86
+	depends on FINTEK_SUPERIO
+	help
+	  This is the driver for the hardware watchdog on the Fintek F71808E,
+	  F71862FG, F71868, F71869, F71882FG, F71889FG, F81865 and F81866
+	  Super I/O controllers.
+
 endif

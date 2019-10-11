@@ -67,4 +67,7 @@ config MFD_STPMIC1
 	help
 	  Select this to support communication with the STPMIC1.
 
+config MFD_SUPERIO
+	bool
+
 endmenu

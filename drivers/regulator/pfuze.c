@@ -191,6 +191,7 @@ static struct platform_device_id pfuze_ids[] = {
 	{ .name = "pfuze100" },
 	{ .name = "pfuze200" },
 	{ .name = "pfuze3000" },
+	{ .name = "pfuze3001" },
 	{ }
 };
 
@@ -198,6 +199,7 @@ static __maybe_unused struct of_device_id pfuze_dt_ids[] = {
 	{ .compatible = "fsl,pfuze100" },
 	{ .compatible = "fsl,pfuze200" },
 	{ .compatible = "fsl,pfuze3000" },
+	{ .compatible = "fsl,pfuze3001" },
 	{ }
 };
 

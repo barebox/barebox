@@ -149,12 +149,12 @@ EXPORT_SYMBOL(find_cmd);
  */
 static int init_command_list(void)
 {
-	struct command *cmdtp;
+	struct command * const *cmdtp;
 
-	for (cmdtp = &__barebox_cmd_start;
-			cmdtp != &__barebox_cmd_end;
+	for (cmdtp = __barebox_cmd_start;
+			cmdtp != __barebox_cmd_end;
 			cmdtp++)
-		register_command(cmdtp);
+		register_command(*cmdtp);
 
 	return 0;
 }

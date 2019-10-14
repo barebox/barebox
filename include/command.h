@@ -53,15 +53,10 @@ struct command {
 	const char	*help;		/* Help  message	(long)	*/
 	void		(*usage)(void);
 #endif
-}
-#ifdef __x86_64__
-/* This is required because the linker will put symbols on a 64 bit alignment */
-__attribute__((aligned(64)))
-#endif
-;
+};
 
-extern struct command __barebox_cmd_start;
-extern struct command __barebox_cmd_end;
+extern struct command * const __barebox_cmd_start[];
+extern struct command * const __barebox_cmd_end[];
 
 
 /* common/command.c */
@@ -89,10 +84,12 @@ int run_command(const char *cmd);
 
 #endif	/* __ASSEMBLY__ */
 
-#define BAREBOX_CMD_START(_name)							\
-extern const struct command __barebox_cmd_##_name;					\
-const struct command __barebox_cmd_##_name						\
-	__attribute__ ((unused,section (".barebox_cmd_" __stringify(_name)))) = {	\
+#define BAREBOX_CMD_START(_name)						\
+static struct command __barebox_cmd_##_name;					\
+const struct command *barebox_cmd_##_name 					\
+	__attribute__ ((unused,section (".barebox_cmd_" __stringify(_name))))	\
+			= &__barebox_cmd_##_name;				\
+static struct command __barebox_cmd_##_name = {					\
 	.name		= #_name,
 
 #define BAREBOX_CMD_END					\

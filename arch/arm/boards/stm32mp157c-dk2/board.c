@@ -5,7 +5,7 @@
 #include <asm/memory.h>
 #include <mach/stm32.h>
 
-static int dk2_postcore_init(void)
+static int dk2_mem_init(void)
 {
 	if (!of_machine_is_compatible("st,stm32mp157c-dk2"))
 		return 0;
@@ -14,4 +14,4 @@ static int dk2_postcore_init(void)
 
 	return 0;
 }
-mem_initcall(dk2_postcore_init);
+mem_initcall(dk2_mem_init);

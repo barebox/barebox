@@ -222,6 +222,16 @@ config ARCH_SAMA5D4
 
 endchoice
 
+config SUPPORT_CALAO_DAB_MMX
+	bool
+
+config SUPPORT_CALAO_MOB_TNY_MD2
+	bool
+
+if !AT91_MULTI_BOARDS
+
+# ----------------------------------------------------------
+
 config ARCH_BAREBOX_MAX_BARE_INIT_SIZE
 	hex
 	default 0x1000 if ARCH_AT91SAM9260
@@ -234,16 +244,6 @@ config ARCH_BAREBOX_MAX_BARE_INIT_SIZE
 	default 0x6000 if ARCH_AT91SAM9N12
 	default 0x6000 if ARCH_SAMA5D3
 	default 0xffffffff
-
-config SUPPORT_CALAO_DAB_MMX
-	bool
-
-config SUPPORT_CALAO_MOB_TNY_MD2
-	bool
-
-if !AT91_MULTI_BOARDS
-
-# ----------------------------------------------------------
 
 if ARCH_AT91RM9200
 

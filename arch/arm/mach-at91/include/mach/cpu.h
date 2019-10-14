@@ -222,7 +222,7 @@ static inline int at91_soc_is_detected(void)
 #define cpu_is_at91sam9n12()	(0)
 #endif
 
-#ifdef CONFIG_ARCH_SAMA5D3
+#ifdef CONFIG_SOC_SAMA5D3
 #define cpu_is_sama5d3()	(at91_soc_initdata.type == AT91_SOC_SAMA5D3)
 #define cpu_is_sama5d31()	(at91_soc_initdata.subtype == AT91_SOC_SAMA5D31)
 #define cpu_is_sama5d33()	(at91_soc_initdata.subtype == AT91_SOC_SAMA5D33)
@@ -238,7 +238,7 @@ static inline int at91_soc_is_detected(void)
 #define cpu_is_sama5d36()	(0)
 #endif
 
-#ifdef CONFIG_ARCH_SAMA5D4
+#ifdef CONFIG_SOC_SAMA5D4
 #define cpu_is_sama5d4()	(at91_soc_initdata.type == AT91_SOC_SAMA5D4)
 #define cpu_is_sama5d41()	(at91_soc_initdata.subtype == AT91_SOC_SAMA5D41)
 #define cpu_is_sama5d42()	(at91_soc_initdata.subtype == AT91_SOC_SAMA5D42)

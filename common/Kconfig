@@ -1274,8 +1274,8 @@ config DEBUG_AT91_UART_BASE
 	default 0xfffff200 if SOC_AT91RM9200  || SOC_AT91SAM9260 \
 	                   || SOC_AT91SAM9261 || SOC_AT91SAM9X5  \
 			   || SOC_AT91SAM9N12
-	default 0xffffee00 if SOC_AT91SAM9263 || SOC_AT91SAM9G45 || ARCH_SAMA5D3
-	default 0xfc069000 if ARCH_SAMA5D4
+	default 0xffffee00 if SOC_AT91SAM9263 || SOC_AT91SAM9G45 || SOC_SAMA5D3
+	default 0xfc069000 if SOC_SAMA5D4
 	default 0xfffff200
 	depends on ARCH_AT91
 	help

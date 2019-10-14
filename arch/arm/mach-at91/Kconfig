@@ -573,6 +573,14 @@ config MACH_MICROCHIP_KSZ9477_EVB
 	help
 	  Select this if you are using Microchip's EVB-KSZ9477 Evaluation Kit.
 
+config MACH_SAMA5D27_SOM1
+	bool "Microchip SAMA5D27 SoM-1 Evaluation Kit"
+	select SOC_SAMA5D2
+	select OFDEVICE
+	select COMMON_CLK_OF_PROVIDER
+	help
+	  Select this if you are using Microchip's sama5d27 SoM evaluation kit
+
 endif
 
 comment "AT91 Board Options"

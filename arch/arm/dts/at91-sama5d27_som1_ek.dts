@@ -1,0 +1,36 @@
+// SPDX-License-Identifier: GPL-2.0 OR X11
+/*
+ * Copyright (C) 2019 Oleksij Rempel - Pengutronix
+ */
+
+#include <arm/at91-sama5d27_som1_ek.dts>
+
+/ {
+	chosen {
+		environment {
+			compatible = "barebox,environment";
+			device-path = &barebox_env;
+		};
+	};
+
+	memory {
+		reg = <0x20000000 0x8000000>;
+	};
+};
+
+&qspi1 {
+	flash@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		partition@0 {
+			label = "barebox";
+			reg = <0x0 0x80000>;
+		};
+
+		barebox_env: partition@80000 {
+			label = "barebox-environment";
+			reg = <0x80000 0x80000>;
+		};
+	};
+};

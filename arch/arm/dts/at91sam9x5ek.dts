@@ -19,18 +19,6 @@
 		status = "okay";
 	};
 
-	ahb {
-		apb {
-			pinctrl@fffff400 {
-				spi {
-					pinctrl_board_spi: spi-board {
-						atmel,pins = <AT91_PIOA 14 AT91_PERIPH_GPIO AT91_PINCTRL_NONE>;
-					};
-				};
-			};
-		};
-	};
-
 	leds {
 		/*
 		 * PB18 has a resource conflict since it is both used
@@ -68,3 +56,10 @@
 	phy-mode = "rmii";
 };
 
+&{/ahb/apb/pinctrl@fffff400} {
+	spi0 {
+		pinctrl_board_spi: spi-board {
+			atmel,pins = <AT91_PIOA 14 AT91_PERIPH_GPIO AT91_PINCTRL_NONE>;
+		};
+	};
+};

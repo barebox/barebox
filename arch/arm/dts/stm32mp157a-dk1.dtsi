@@ -8,6 +8,13 @@
 #include <dt-bindings/gpio/gpio.h>
 
 / {
+	chosen {
+		environment {
+			compatible = "barebox,environment";
+			device-path = &sdmmc1, "partname:barebox-environment";
+		};
+	};
+
 	led {
 		red {
 			label = "error";

@@ -183,28 +183,22 @@ static void __always_inline at91sam926x_board_init(void __iomem *smcbase,
 	writel(0xffffffff, pmc + AT91_PMC_PCER);
 }
 
-#if defined CONFIG_ARCH_AT91SAM9260
 #include <mach/at91sam9260.h>
 static void __always_inline at91sam9260_board_init(struct at91sam926x_board_cfg *cfg)
 {
 	at91sam926x_board_init(IOMEM(AT91SAM9260_BASE_SMC), cfg);
 }
-#endif
 
-#if defined CONFIG_ARCH_AT91SAM9261 || defined CONFIG_ARCH_AT91SAM9G10
 #include <mach/at91sam9261.h>
 static void __always_inline at91sam9261_board_init(struct at91sam926x_board_cfg *cfg)
 {
 	at91sam926x_board_init(IOMEM(AT91SAM9261_BASE_SMC), cfg);
 }
-#endif
 
-#if defined CONFIG_ARCH_AT91SAM9263
 #include <mach/at91sam9263.h>
 static void __always_inline at91sam9263_board_init(struct at91sam926x_board_cfg *cfg)
 {
 	at91sam926x_board_init(IOMEM(AT91SAM9263_BASE_SMC0), cfg);
 }
-#endif
 
 #endif /* __AT91SAM926X_BOARD_INIT_H__ */

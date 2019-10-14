@@ -1,4 +1,5 @@
 obj-y += setup.o
+lwl-y += at91_pmc_ll.o
 
 ifeq ($(CONFIG_COMMON_CLK_OF_PROVIDER),)
 obj-y += clock.o

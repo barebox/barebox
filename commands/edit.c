@@ -55,7 +55,7 @@ static int scrcol = 0;		/* the first column on screen */
 
 static void pos(int x, int y)
 {
-	printf("%c[%d;%dH", 27, y + 2, x + 1);
+	printf("\x1b[%d;%dH", y + 2, x + 1);
 }
 
 static char *screenline(char *line, int *pos)
@@ -110,7 +110,7 @@ static void refresh_line(struct line *line, int ypos)
 	char *str = screenline(line->data, NULL) + scrcol;
 	pos(0, ypos);
 	str[screenwidth] = 0;
-	printf("%s%c[K", str, 27);
+	printf("%s\x1b[K", str);
 	pos(cursx, cursy);
 }
 
@@ -130,7 +130,7 @@ static void refresh(int full)
 	if (!full) {
 		if (smartscroll) {
 			if (scrline->next == lastscrline) {
-				printf("%c[1T", 27);
+				printf("\x1b[1T");
 				refresh_line(scrline, 0);
 				pos(0, screenheight);
 				printf("%*s", screenwidth, "");
@@ -138,7 +138,7 @@ static void refresh(int full)
 			}
 
 			if (scrline->prev == lastscrline) {
-				printf("%c[1S", 27);
+				printf("\x1b[1S");
 				for (i = 0; i < screenheight - 1; i++) {
 					l = l->next;
 					if (!l)
@@ -420,13 +420,13 @@ static int do_edit(int argc, char *argv[])
 	lastscrline = scrline;
 	lastscrcol = 0;
 
-	printf("%c[2J", 27);
+	printf("\x1b[2J");
 
 	pos(0, -1);
 
-	printf("%c[7m %-25s <ctrl-d>: Save and quit <ctrl-c>: quit %c[0m",
-			27, argv[1], 27);
-	printf("%c[2;%dr", 27, screenheight);
+	printf("\x1b[7m %-25s <ctrl-d>: Save and quit <ctrl-c>: quit \x1b[0m",
+			argv[1]);
+	printf("\x1b[2;%dr", screenheight);
 
 	screenheight--; /* status line */
 
@@ -554,7 +554,7 @@ static int do_edit(int argc, char *argv[])
 	}
 out:
 	free_buffer();
-	printf("%c[2J%c[r", 27, 27);
+	printf("\x1b[2J\x1b[r");
 	printf("\n");
 	return ret;
 }

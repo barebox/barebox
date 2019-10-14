@@ -25,7 +25,7 @@ void __initdata (*at91_boot_soc)(void);
 struct at91_socinfo at91_soc_initdata;
 EXPORT_SYMBOL(at91_soc_initdata);
 
-static void __init soc_detect(u32 dbgu_base)
+static void __init dbgu_soc_detect(u32 dbgu_base)
 {
 	u32 cidr, socid;
 
@@ -188,6 +188,84 @@ static void __init soc_detect(u32 dbgu_base)
 	}
 }
 
+static void __init chipid_soc_detect(u32 chipid_base)
+{
+	u32 cidr, socid;
+
+	cidr = readl(chipid_base);
+	socid = cidr & AT91_CIDR_ARCH;
+
+	if (!(cidr & AT91_CIDR_EXT))
+		return;
+
+	if (socid == (ARCH_ID_SAMA5 & AT91_CIDR_ARCH)) {
+		at91_soc_initdata.exid = readl(chipid_base + 4);
+
+		switch (at91_soc_initdata.exid) {
+			case ARCH_EXID_SAMA5D21CU:
+				at91_soc_initdata.type = AT91_SOC_SAMA5D2;
+				at91_soc_initdata.subtype = AT91_SOC_SAMA5D21CU;
+				break;
+			case ARCH_EXID_SAMA5D225C_D1M:
+				at91_soc_initdata.type = AT91_SOC_SAMA5D2;
+				at91_soc_initdata.subtype = AT91_SOC_SAMA5D225C_D1M;
+				break;
+			case ARCH_EXID_SAMA5D22CU:
+				at91_soc_initdata.type = AT91_SOC_SAMA5D2;
+				at91_soc_initdata.subtype = AT91_SOC_SAMA5D22CU;
+				break;
+			case ARCH_EXID_SAMA5D22CN:
+				at91_soc_initdata.type = AT91_SOC_SAMA5D2;
+				at91_soc_initdata.subtype = AT91_SOC_SAMA5D22CN;
+				break;
+			case ARCH_EXID_SAMA5D23CU:
+				at91_soc_initdata.type = AT91_SOC_SAMA5D2;
+				at91_soc_initdata.subtype = AT91_SOC_SAMA5D23CU;
+				break;
+			case ARCH_EXID_SAMA5D24CX:
+				at91_soc_initdata.type = AT91_SOC_SAMA5D2;
+				at91_soc_initdata.subtype = AT91_SOC_SAMA5D24CX;
+				break;
+			case ARCH_EXID_SAMA5D24CU:
+				at91_soc_initdata.type = AT91_SOC_SAMA5D2;
+				at91_soc_initdata.subtype = AT91_SOC_SAMA5D24CU;
+				break;
+			case ARCH_EXID_SAMA5D26CU:
+				at91_soc_initdata.type = AT91_SOC_SAMA5D2;
+				at91_soc_initdata.subtype = AT91_SOC_SAMA5D26CU;
+				break;
+			case ARCH_EXID_SAMA5D27C_D1G:
+				at91_soc_initdata.type = AT91_SOC_SAMA5D2;
+				at91_soc_initdata.subtype = AT91_SOC_SAMA5D27C_D1G;
+				break;
+			case ARCH_EXID_SAMA5D27C_D5M:
+				at91_soc_initdata.type = AT91_SOC_SAMA5D2;
+				at91_soc_initdata.subtype = AT91_SOC_SAMA5D27C_D5M;
+				break;
+			case ARCH_EXID_SAMA5D27CU:
+				at91_soc_initdata.type = AT91_SOC_SAMA5D2;
+				at91_soc_initdata.subtype = AT91_SOC_SAMA5D27CU;
+				break;
+			case ARCH_EXID_SAMA5D27CN:
+				at91_soc_initdata.type = AT91_SOC_SAMA5D2;
+				at91_soc_initdata.subtype = AT91_SOC_SAMA5D27CN;
+				break;
+			case ARCH_EXID_SAMA5D28C_D1G:
+				at91_soc_initdata.type = AT91_SOC_SAMA5D2;
+				at91_soc_initdata.subtype = AT91_SOC_SAMA5D28C_D1G;
+				break;
+			case ARCH_EXID_SAMA5D28CU:
+				at91_soc_initdata.type = AT91_SOC_SAMA5D2;
+				at91_soc_initdata.subtype = AT91_SOC_SAMA5D28CU;
+				break;
+			case ARCH_EXID_SAMA5D28CN:
+				at91_soc_initdata.type = AT91_SOC_SAMA5D2;
+				at91_soc_initdata.subtype = AT91_SOC_SAMA5D28CN;
+				break;
+		}
+	}
+}
+
 static const char *soc_name[] = {
 	[AT91_SOC_RM9200]	= "at91rm9200",
 	[AT91_SOC_SAM9260]	= "at91sam9260",
@@ -199,6 +277,7 @@ static const char *soc_name[] = {
 	[AT91_SOC_SAM9RL]	= "at91sam9rl",
 	[AT91_SOC_SAM9X5]	= "at91sam9x5",
 	[AT91_SOC_SAM9N12]	= "at91sam9n12",
+	[AT91_SOC_SAMA5D2]	= "sama5d2",
 	[AT91_SOC_SAMA5D3]	= "sama5d3",
 	[AT91_SOC_SAMA5D4]	= "sama5d4",
 	[AT91_SOC_NONE]		= "Unknown"
@@ -226,6 +305,21 @@ static const char *soc_subtype_name[] = {
 	[AT91_SOC_SAM9N12]	= "at91sam9n12",
 	[AT91_SOC_SAM9CN11]	= "at91sam9cn11",
 	[AT91_SOC_SAM9CN12]	= "at91sam9cn12",
+	[AT91_SOC_SAMA5D21CU]	= "sama5d21cu",
+	[AT91_SOC_SAMA5D225C_D1M]	= "sama5d225c_d1m",
+	[AT91_SOC_SAMA5D22CU]	= "sama5d22cu",
+	[AT91_SOC_SAMA5D22CN]	= "sama5d22cn",
+	[AT91_SOC_SAMA5D23CU]	= "sama5d23cu",
+	[AT91_SOC_SAMA5D24CX]	= "sama5d24cx",
+	[AT91_SOC_SAMA5D24CU]	= "sama5d24cu",
+	[AT91_SOC_SAMA5D26CU]	= "sama5d26cu",
+	[AT91_SOC_SAMA5D27C_D1G]	= "sama5d27c_d1g",
+	[AT91_SOC_SAMA5D27C_D5M]	= "sama5d27c_d5m",
+	[AT91_SOC_SAMA5D27CU]	= "sama5d27cu",
+	[AT91_SOC_SAMA5D27CN]	= "sama5d27cn",
+	[AT91_SOC_SAMA5D28C_D1G]	= "sama5d28c_d1g",
+	[AT91_SOC_SAMA5D28CU]	= "sama5d28cu",
+	[AT91_SOC_SAMA5D28CN]	= "sama5d28cn",
 	[AT91_SOC_SAMA5D31]	= "sama5d31",
 	[AT91_SOC_SAMA5D33]	= "sama5d33",
 	[AT91_SOC_SAMA5D34]	= "sama5d34",
@@ -249,11 +343,13 @@ static int at91_detect(void)
 	at91_soc_initdata.type = AT91_SOC_NONE;
 	at91_soc_initdata.subtype = AT91_SOC_SUBTYPE_NONE;
 
-	soc_detect(AT91_BASE_DBGU0);
+	dbgu_soc_detect(AT91_BASE_DBGU0);
 	if (!at91_soc_is_detected())
-		soc_detect(AT91_BASE_DBGU1);
+		dbgu_soc_detect(AT91_BASE_DBGU1);
 	if (!at91_soc_is_detected())
-		soc_detect(AT91_BASE_DBGU2);
+		dbgu_soc_detect(AT91_BASE_DBGU2);
+	if (!at91_soc_is_detected())
+		chipid_soc_detect(0xfc069000);
 
 	if (!at91_soc_is_detected())
 		panic("AT91: Impossible to detect the SOC type");

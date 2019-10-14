@@ -46,6 +46,7 @@
 #define cpu_has_utmi()		(  cpu_is_at91sam9rl() \
 				|| cpu_is_at91sam9g45() \
 				|| cpu_is_at91sam9x5() \
+				|| cpu_is_sama5d2() \
 				|| cpu_is_sama5d3() \
 				|| cpu_is_sama5d4())
 
@@ -69,11 +70,13 @@
 #define cpu_has_pllb()		(!(cpu_is_at91sam9rl() \
 				|| cpu_is_at91sam9g45() \
 				|| cpu_is_at91sam9x5() \
+				|| cpu_is_sama5d2() \
 				|| cpu_is_sama5d3() \
 				|| cpu_is_sama5d4()))
 
 #define cpu_has_upll()		(cpu_is_at91sam9g45() \
 				|| cpu_is_at91sam9x5() \
+				|| cpu_is_sama5d2() \
 				|| cpu_is_sama5d3() \
 				|| cpu_is_sama5d4())
 
@@ -84,30 +87,36 @@
 #define cpu_has_udpfs()		(!(cpu_is_at91sam9rl() \
 				|| cpu_is_at91sam9g45() \
 				|| cpu_is_at91sam9x5() \
+				|| cpu_is_sama5d2() \
 				|| cpu_is_sama5d3() \
 				|| cpu_is_sama5d4()))
 
 #define cpu_has_plladiv2()	(cpu_is_at91sam9g45() \
 				|| cpu_is_at91sam9x5() \
 				|| cpu_is_at91sam9n12() \
+				|| cpu_is_sama5d2() \
 				|| cpu_is_sama5d3() \
 				|| cpu_is_sama5d4())
 
 #define cpu_has_mdiv3()		(cpu_is_at91sam9g45() \
 				|| cpu_is_at91sam9x5() \
 				|| cpu_is_at91sam9n12() \
+				|| cpu_is_sama5d2() \
 				|| cpu_is_sama5d3() \
 				|| cpu_is_sama5d4())
 
 #define cpu_has_alt_prescaler()	(cpu_is_at91sam9x5() \
 				|| cpu_is_at91sam9n12() \
+				|| cpu_is_sama5d2() \
 				|| cpu_is_sama5d3() \
 				|| cpu_is_sama5d4())
 
-#define cpu_has_pcr()		(cpu_is_sama5d3() \
+#define cpu_has_pcr()		(cpu_is_sama5d2() \
+				|| cpu_is_sama5d3() \
 				|| cpu_is_sama5d4())
 
-#define cpu_has_dual_matrix()	(cpu_is_sama5d4())
+#define cpu_has_dual_matrix()	(cpu_is_sama5d2() \
+				|| cpu_is_sama5d4())
 
 static void *pmc;
 
@@ -663,6 +672,8 @@ int at91_clock_init(void)
 
 	if (cpu_is_sama5d4())
 		pmc = IOMEM(0xf0018000);
+	else if (cpu_is_sama5d2())
+		pmc = IOMEM(0xf0014000);
 	else
 		pmc = IOMEM(0xfffffc00); /*
 					  * All other supported SoCs use this

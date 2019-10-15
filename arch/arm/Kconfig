@@ -200,6 +200,7 @@ config ARCH_STM32MP
 	select HAVE_CLK
 	select GPIOLIB
 	select ARCH_HAS_RESET_CONTROLLER
+	select ARM_AMBA
 
 config ARCH_VERSATILE
 	bool "ARM Versatile boards (ARM926EJ-S)"

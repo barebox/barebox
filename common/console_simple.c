@@ -64,16 +64,20 @@ void console_flush(void)
 }
 EXPORT_SYMBOL(console_flush);
 
-#ifndef ARCH_HAS_CTRLC
 void ctrlc_handled(void)
 {
 }
 /* test if ctrl-c was pressed */
 int ctrlc (void)
 {
+	int ret = 0;
+#ifdef ARCH_HAS_CTRLC
+	ret = arch_ctrlc();
+#else
 	if (tstc() && getchar() == 3)
-		return 1;
-	return 0;
+		ret = 1;
+#endif
+	return ret;
 }
 EXPORT_SYMBOL(ctrlc);
 
@@ -84,8 +88,6 @@ void console_ctrlc_allow(void)
 void console_ctrlc_forbid(void)
 {
 }
-
-#endif /* ARCH_HAS_CTRC */
 
 int console_register(struct console_device *newcdev)
 {

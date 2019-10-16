@@ -572,7 +572,7 @@ dev_path_vendor(struct string *str, void *dev_path)
 	}
 
 	cprintf(str, "Ven%s(%pU", type, &Vendor->Guid);
-	if (efi_compare_guid(&Vendor->Guid, &efi_unknown_device_guid) == 0) {
+	if (efi_guidcmp(Vendor->Guid, efi_unknown_device_guid) == 0) {
 		/* GUID used by EFI to enumerate an EDD 1.1 device */
 		unknown_dev_path =
 		    (struct unknown_device_vendor_device_path *) Vendor;

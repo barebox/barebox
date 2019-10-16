@@ -664,11 +664,6 @@ typedef union {
 	efi_ipv6_address v6;
 } efi_ip_address;
 
-static inline int efi_compare_guid(efi_guid_t *a, efi_guid_t *b)
-{
-	return memcmp(a, b, sizeof(efi_guid_t));
-}
-
 struct efi_device_path *device_path_from_handle(efi_handle_t Handle);
 char *device_path_to_str(struct efi_device_path *dev_path);
 u8 device_path_to_type(struct efi_device_path *dev_path);

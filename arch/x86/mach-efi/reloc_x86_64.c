@@ -35,10 +35,13 @@
     SUCH DAMAGE.
 */
 
+#include <linux/linkage.h>
 #include <common.h>
 #include <efi.h>
 
 #include <elf.h>
+
+asmlinkage efi_status_t _relocate (long, Elf64_Dyn *, efi_handle_t, efi_system_table_t *);
 
 efi_status_t _relocate (long ldbase, Elf64_Dyn *dyn, efi_handle_t image, efi_system_table_t *systab)
 {

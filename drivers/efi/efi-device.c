@@ -311,7 +311,7 @@ static int efi_bus_match(struct device_d *dev, struct driver_d *drv)
 	int i;
 
 	for (i = 0; i < efidev->num_guids; i++) {
-		if (!memcmp(&efidrv->guid, &efidev->guids[i], sizeof(efi_guid_t))) {
+		if (!efi_guidcmp(efidrv->guid, efidev->guids[i])) {
 			BS->handle_protocol(efidev->handle, &efidev->guids[i],
 					&efidev->protocol);
 			return 0;

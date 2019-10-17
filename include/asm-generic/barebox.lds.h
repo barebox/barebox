@@ -16,7 +16,8 @@
 #define PRE_IMAGE
 #endif
 
-#define INITCALLS			\
+#define BAREBOX_INITCALLS			\
+	__barebox_initcalls_start = .;		\
 	KEEP(*(.initcall.0))			\
 	KEEP(*(.initcall.1))			\
 	KEEP(*(.initcall.2))			\
@@ -31,34 +32,47 @@
 	KEEP(*(.initcall.11))			\
 	KEEP(*(.initcall.12))			\
 	KEEP(*(.initcall.13))			\
-	KEEP(*(.initcall.14))
+	KEEP(*(.initcall.14))			\
+	__barebox_initcalls_end = .;
 
-#define EXITCALLS			\
+#define BAREBOX_EXITCALLS			\
+	__barebox_exitcalls_start = .;		\
 	KEEP(*(.exitcall.0))			\
 	KEEP(*(.exitcall.1))			\
 	KEEP(*(.exitcall.2))			\
 	KEEP(*(.exitcall.3))			\
 	KEEP(*(.exitcall.4))			\
 	KEEP(*(.exitcall.5))			\
-	KEEP(*(.exitcall.6))
+	KEEP(*(.exitcall.6))			\
+	__barebox_exitcalls_end = .;
 
-#define BAREBOX_CMDS	KEEP(*(SORT_BY_NAME(.barebox_cmd*)))
+#define BAREBOX_CMDS				\
+	__barebox_cmd_start = .;		\
+	KEEP(*(SORT_BY_NAME(.barebox_cmd*)))	\
+	__barebox_cmd_end = .;
 
-#define BAREBOX_RATP_CMDS	KEEP(*(SORT_BY_NAME(.barebox_ratp_cmd*)))
+#define BAREBOX_RATP_CMDS			\
+	__barebox_ratp_cmd_start = .;		\
+	KEEP(*(SORT_BY_NAME(.barebox_ratp_cmd*)))	\
+	__barebox_ratp_cmd_end = .;
 
-#define BAREBOX_SYMS	KEEP(*(__usymtab))
+#define BAREBOX_SYMS				\
+	__usymtab_start = .;			\
+	KEEP(*(__usymtab))			\
+	__usymtab_end = .;
 
-#define BAREBOX_MAGICVARS	KEEP(*(SORT_BY_NAME(.barebox_magicvar*)))
+#define BAREBOX_MAGICVARS			\
+	__barebox_magicvar_start = .;		\
+	KEEP(*(SORT_BY_NAME(.barebox_magicvar*)))	\
+	__barebox_magicvar_end = .;
 
-#define BAREBOX_CLK_TABLE()			\
-	. = ALIGN(8);				\
+#define BAREBOX_CLK_TABLE			\
 	__clk_of_table_start = .;		\
 	KEEP(*(.__clk_of_table));		\
 	KEEP(*(.__clk_of_table_end));		\
 	__clk_of_table_end = .;
 
-#define BAREBOX_DTB()				\
-	. = ALIGN(8);				\
+#define BAREBOX_DTB				\
 	__dtb_start = .;			\
 	KEEP(*(.dtb.rodata.*));			\
 	__dtb_end = .;
@@ -68,6 +82,38 @@
 	KEEP(*(.barebox_imd_1*))		\
 	*(.barebox_imd_0*)			\
 	KEEP(*(.barebox_imd_end))
+
+#ifdef CONFIG_PCI
+#define BAREBOX_PCI_FIXUP			\
+	__start_pci_fixups_early = .;		\
+	KEEP(*(.pci_fixup_early))		\
+	__end_pci_fixups_early = .;		\
+	__start_pci_fixups_header = .;		\
+	KEEP(*(.pci_fixup_header))		\
+	__end_pci_fixups_header = .;		\
+	__start_pci_fixups_enable = .;		\
+	KEEP(*(.pci_fixup_enable))		\
+	__end_pci_fixups_enable = .;
+#else
+#define BAREBOX_PCI_FIXUP
+#endif
+
+#define BAREBOX_RSA_KEYS			\
+	__rsa_keys_start = .;			\
+	KEEP(*(.rsa_keys.rodata.*));		\
+	__rsa_keys_end = .;			\
+
+#define RO_DATA_SECTION				\
+	BAREBOX_INITCALLS			\
+	BAREBOX_EXITCALLS			\
+	BAREBOX_CMDS				\
+	BAREBOX_RATP_CMDS			\
+	BAREBOX_SYMS				\
+	BAREBOX_MAGICVARS			\
+	BAREBOX_CLK_TABLE			\
+	BAREBOX_DTB				\
+	BAREBOX_RSA_KEYS			\
+	BAREBOX_PCI_FIXUP
 
 #if defined(CONFIG_ARCH_BAREBOX_MAX_BARE_INIT_SIZE) && \
 CONFIG_ARCH_BAREBOX_MAX_BARE_INIT_SIZE < CONFIG_BAREBOX_MAX_BARE_INIT_SIZE

@@ -28,6 +28,7 @@ struct rsa_public_key {
 	uint32_t *modulus;	/* modulus as little endian array */
 	uint32_t *rr;		/* R^2 as little endian array */
 	uint64_t exponent;	/* public exponent */
+	char *key_name_hint;
 };
 
 /**
@@ -49,6 +50,8 @@ int rsa_verify(const struct rsa_public_key *key, const uint8_t *sig,
 /* This is the maximum signature length that we support, in bits */
 #define RSA_MAX_SIG_BITS	4096
 
-int rsa_of_read_key(struct device_node *node, struct rsa_public_key *key);
+struct rsa_public_key *rsa_of_read_key(struct device_node *node);
+void rsa_key_free(struct rsa_public_key *key);
+struct rsa_public_key *rsa_get_key(const char *name);
 
 #endif

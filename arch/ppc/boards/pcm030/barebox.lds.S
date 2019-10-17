@@ -38,6 +38,7 @@ SECTIONS
     *(.rodata*)
     *(.rodata1*)
     *(.rodata.str1.4)
+    RO_DATA_SECTION
   }
 
   /* Read-only sections, merged into text segment: */
@@ -98,33 +99,6 @@ SECTIONS
   }
   _edata  =  .;
   PROVIDE (edata = .);
-
-  . = .;
-  __barebox_cmd_start = .;
-  .barebox_cmd : { BAREBOX_CMDS }
-  __barebox_cmd_end = .;
-
-  __barebox_ratp_cmd_start = .;
-  .barebox_ratp_cmd : { BAREBOX_RATP_CMDS }
-  __barebox_ratp_cmd_end = .;
-
-  __barebox_magicvar_start = .;
-  .barebox_magicvar : { BAREBOX_MAGICVARS }
-  __barebox_magicvar_end = .;
-
-  __barebox_initcalls_start = .;
-  .barebox_initcalls : { INITCALLS }
-  __barebox_initcalls_end = .;
-  __initcall_entries = (__barebox_initcalls_end - __barebox_initcalls_start) >> 2;
-
-  __barebox_exitcalls_start = .;
-  .barebox_exitcalls : { EXITCALLS }
-  __barebox_exitcalls_end = .;
-  __exitcall_entries = (__barebox_exitcalls_end - __barebox_exitcalls_start) >> 2;
-
-  __usymtab_start = .;
-  __usymtab : { BAREBOX_SYMS }
-  __usymtab_end = .;
 
   __start___ex_table = .;
   __ex_table : { *(__ex_table) }

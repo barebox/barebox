@@ -30,7 +30,10 @@ SECTIONS
 	}
 
 	. = ALIGN(8);
-	.rodata : { *(.rodata*) }
+	.rodata : {
+		*(.rodata*)
+		RO_DATA_SECTION
+	}
 
 	_etext = .;			/* End of text and rodata section */
 	_sdata = .;
@@ -43,32 +46,11 @@ SECTIONS
 	. = ALIGN(8);
 	.got : { *(.got*) }
 
-	. = .;
-	__barebox_cmd_start = .;
-	.barebox_cmd : { BAREBOX_CMDS }
-	__barebox_cmd_end = .;
-
-	__barebox_magicvar_start = .;
-	.barebox_magicvar : { BAREBOX_MAGICVARS }
-	__barebox_magicvar_end = .;
-
-	__barebox_initcalls_start = .;
-	.barebox_initcalls : { INITCALLS }
-	__barebox_initcalls_end = .;
-
-	__barebox_exitcalls_start = .;
-	.barebox_exitcalls : { EXITCALLS }
-	__barebox_exitcalls_end = .;
-
-	__usymtab_start = .;
-	__usymtab : { BAREBOX_SYMS }
-	__usymtab_end = .;
-
 	.rela.dyn : { *(.rela*) }
 
-	.oftables : { BAREBOX_CLK_TABLE() }
+	.oftables : { BAREBOX_CLK_TABLE }
 
-	.dtb : { BAREBOX_DTB() }
+	.dtb : { BAREBOX_DTB }
 
 	_edata = .;
 	. = ALIGN(8);

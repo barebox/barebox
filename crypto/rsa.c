@@ -380,11 +380,15 @@ static void rsa_convert_big_endian(uint32_t *dst, const uint32_t *src, int len)
 		dst[i] = fdt32_to_cpu(src[len - 1 - i]);
 }
 
-int rsa_of_read_key(struct device_node *node, struct rsa_public_key *key)
+struct rsa_public_key *rsa_of_read_key(struct device_node *node)
 {
 	const void *modulus, *rr;
 	const uint64_t *public_exponent;
 	int length;
+	struct rsa_public_key *key;
+	int err;
+
+	key = xzalloc(sizeof(*key));
 
 	of_property_read_u32(node, "rsa,num-bits", &key->len);
 	of_property_read_u32(node, "rsa,n0-inverse", &key->n0inv);
@@ -400,14 +404,16 @@ int rsa_of_read_key(struct device_node *node, struct rsa_public_key *key)
 
 	if (!key->len || !modulus || !rr) {
 		debug("%s: Missing RSA key info", __func__);
-		return -EFAULT;
+		err = -EFAULT;
+		goto out;
 	}
 
 	/* Sanity check for stack size */
 	if (key->len > RSA_MAX_KEY_BITS || key->len < RSA_MIN_KEY_BITS) {
 		debug("RSA key bits %u outside allowed range %d..%d\n",
 		      key->len, RSA_MIN_KEY_BITS, RSA_MAX_KEY_BITS);
-		return -EFAULT;
+		err = -EFAULT;
+		goto out;
 	}
 
 	key->len /= sizeof(uint32_t) * 8;
@@ -418,5 +424,50 @@ int rsa_of_read_key(struct device_node *node, struct rsa_public_key *key)
 	rsa_convert_big_endian(key->modulus, modulus, key->len);
 	rsa_convert_big_endian(key->rr, rr, key->len);
 
-	return 0;
+	err = 0;
+out:
+	if (err)
+		free(key);
+
+	return err ? ERR_PTR(err) : key;
 }
+
+void rsa_key_free(struct rsa_public_key *key)
+{
+	free(key->modulus);
+	free(key->rr);
+	free(key);
+}
+
+#ifdef CONFIG_CRYPTO_RSA_BUILTIN_KEYS
+#include "rsa-keys.h"
+
+extern const struct rsa_public_key * const __rsa_keys_start;
+extern const struct rsa_public_key * const __rsa_keys_end;
+
+struct rsa_public_key *rsa_get_key(const char *name)
+{
+	const struct rsa_public_key *key;
+	struct rsa_public_key *new;
+	const struct rsa_public_key * const *iter;
+
+	for (iter = &__rsa_keys_start; iter != &__rsa_keys_end; iter++) {
+		key = *iter;
+		if (!strcmp(name, key->key_name_hint))
+			goto found;
+	}
+
+	return ERR_PTR(-ENOENT);
+found:
+	new = xmemdup(key, sizeof(*key));
+	new->modulus = xmemdup(key->modulus, key->len * sizeof(uint32_t));
+	new->rr = xmemdup(key->rr, key->len  * sizeof(uint32_t));
+
+	return new;
+}
+#else
+struct rsa_public_key *rsa_get_key(const char *name)
+{
+	return ERR_PTR(-ENOENT);
+}
+#endif

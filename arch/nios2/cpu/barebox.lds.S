@@ -48,32 +48,11 @@ SECTIONS
 	BAREBOX_BARE_INIT_SIZE
 
 	. = ALIGN(4);
-	.rodata : { *(.rodata) }
 
-	. = .;
-	__barebox_cmd_start = .;
-	.barebox_cmd : { BAREBOX_CMDS }
-	__barebox_cmd_end = .;
-
-	__barebox_ratp_cmd_start = .;
-	.barebox_ratp_cmd : { BAREBOX_RATP_CMDS }
-	__barebox_ratp_cmd_end = .;
-
-	__barebox_magicvar_start = .;
-	.barebox_magicvar : { BAREBOX_MAGICVARS }
-	__barebox_magicvar_end = .;
-
-	__barebox_initcalls_start = .;
-	.barebox_initcalls : { INITCALLS }
-	__barebox_initcalls_end = .;
-
-	__barebox_exitcalls_start = .;
-	.barebox_exitcalls : { EXITCALLS }
-	__barebox_exitcalls_end = .;
-
-	___usymtab_start = .;
-	__usymtab : { BAREBOX_SYMS }
-	___usymtab_end = .;
+	.rodata : {
+		*(.rodata*)
+		RO_DATA_SECTION
+	}
 
 	_etext = .; /* End of text and rodata section */
 

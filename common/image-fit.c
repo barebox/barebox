@@ -269,7 +269,7 @@ static struct digest *fit_alloc_digest(struct device_node *sig_node,
 static int fit_check_rsa_signature(struct device_node *sig_node,
 				   enum hash_algo algo, void *hash)
 {
-	struct rsa_public_key key = {};
+	struct rsa_public_key *key;
 	const char *key_name;
 	char *key_path;
 	struct device_node *key_node;
@@ -287,26 +287,33 @@ static int fit_check_rsa_signature(struct device_node *sig_node,
 		pr_err("key name not found in %s\n", sig_node->full_name);
 		return -EINVAL;
 	}
-	key_path = xasprintf("/signature/key-%s", key_name);
-	key_node = of_find_node_by_path(key_path);
-	if (!key_node) {
-		pr_info("failed to find key node %s\n", key_path);
+
+	key = rsa_get_key(key_name);
+	if (IS_ERR(key)) {
+		key_path = xasprintf("/signature/key-%s", key_name);
+		key_node = of_find_node_by_path(key_path);
+		if (!key_node) {
+			pr_info("failed to find key node %s\n", key_path);
+			free(key_path);
+			return -ENOENT;
+		}
 		free(key_path);
-		return -ENOENT;
-	}
-	free(key_path);
 
-	ret = rsa_of_read_key(key_node, &key);
-	if (ret) {
-		pr_info("failed to read key in %s\n", key_node->full_name);
-		return -ENOENT;
+		key = rsa_of_read_key(key_node);
+
+		if (IS_ERR(key)) {
+			pr_info("failed to read key in %s\n", key_node->full_name);
+			return -ENOENT;
+		}
 	}
 
-	ret = rsa_verify(&key, sig_value, sig_len, hash, algo);
+	ret = rsa_verify(key, sig_value, sig_len, hash, algo);
 	if (ret)
 		pr_err("image signature BAD\n");
 	else
 		pr_info("image signature OK\n");
+
+	rsa_key_free(key);
 
 	return ret;
 }

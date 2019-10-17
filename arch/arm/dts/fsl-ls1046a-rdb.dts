@@ -29,6 +29,18 @@
 	};
 };
 
+&gpio0 {
+	status = "okay";
+};
+
+&gpio1 {
+	status = "okay";
+};
+
+&gpio2 {
+	status = "okay";
+};
+
 &fman0 {
 	ethernet@e0000 {
 		status = "disabled";
@@ -95,4 +107,18 @@
 	mdio@f3000 {
 		status = "disabled";
 	};
+};
+
+&usb0 {
+	dr_mode = "host";
+};
+
+&usb1 {
+	maximum-speed = "high-speed";
+	dr_mode = "peripheral";
+	status = "okay";
+};
+
+&usb2 {
+	dr_mode = "host";
 };

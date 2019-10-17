@@ -61,7 +61,7 @@ enum arch {
 	ARCH_POWERPC,
 };
 
-enum arch architecture;
+enum arch architecture = ARCH_ARM;
 static char *rcwfile;
 static char *pbifile;
 static char *outfile;

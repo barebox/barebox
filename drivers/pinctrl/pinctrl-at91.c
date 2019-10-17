@@ -152,6 +152,8 @@ int at91_mux_pin(unsigned pin, enum at91_mux mux, int use_pullup)
 			return -EINVAL;
 		at91_gpio->ops->mux_D_periph(pio, mask);
 		break;
+	default:
+		return -EINVAL;
 	}
 	if (mux)
 		at91_mux_gpio_disable(pio, mask);

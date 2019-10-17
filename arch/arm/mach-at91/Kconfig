@@ -6,6 +6,9 @@ config HAVE_AT91_UTMI
 config HAVE_AT91_USB_CLK
 	bool
 
+config HAVE_AT91_PIO4
+	bool
+
 config COMMON_CLK_AT91
 	bool
 	select COMMON_CLK
@@ -47,6 +50,7 @@ config SOC_AT91SAM9
 	select HAVE_AT91_SMD
 	select HAVE_AT91_USB_CLK
 	select HAVE_AT91_UTMI
+	select PINCTRL_AT91
 
 config SOC_SAMA5
 	bool
@@ -57,6 +61,13 @@ config SOC_SAMA5D2
 	select SOC_SAMA5
 	select AT91SAM9_SMC
 	select CLOCKSOURCE_ATMEL_PIT
+	select HAVE_AT91_H32MX
+	select HAVE_AT91_UTMI
+	select HAVE_AT91_USB_CLK
+	select HAVE_AT91_GENERATED_CLK
+	select PINCTRL_AT91PIO4
+	select HAS_MACB
+	select HAVE_MACH_ARM_HEAD
 
 config SOC_SAMA5D3
 	bool
@@ -66,6 +77,9 @@ config SOC_SAMA5D3
 	select HAVE_AT91_SMD
 	select HAVE_AT91_USB_CLK
 	select HAVE_AT91_UTMI
+	select PINCTRL_AT91
+	select HAS_MACB
+	select HAVE_MACH_ARM_HEAD
 
 config SOC_SAMA5D4
 	bool
@@ -76,12 +90,15 @@ config SOC_SAMA5D4
 	select HAVE_AT91_SMD
 	select HAVE_AT91_USB_CLK
 	select HAVE_AT91_UTMI
+	select PINCTRL_AT91
+	select HAS_MACB
+	select HAVE_MACH_ARM_HEAD
 
 config ARCH_TEXT_BASE
 	hex
-	default 0x73f00000 if ARCH_AT91SAM9G45
-	default 0x26f00000 if ARCH_AT91SAM9X5
-	default 0x20f00000 if ARCH_AT91RM9200
+	default 0x73f00000 if SOC_AT91SAM9G45
+	default 0x26f00000 if SOC_AT91SAM9X5
+	default 0x20f00000 if SOC_AT91RM9200
 	default 0x21f00000 if MACH_ANIMEO_IP
 	default 0x23f00000
 
@@ -102,11 +119,14 @@ config SOC_AT91RM9200
 	select HAS_AT91_ETHER
 	select HAVE_AT91_DBGU0
 	select HAVE_AT91_USB_CLK
+	select PINCTRL_AT91
 
 config SOC_AT91SAM9260
 	bool
 	select SOC_AT91SAM9
 	select HAS_MACB
+	select PINCTRL_AT91
+	select HAVE_MACH_ARM_HEAD
 	help
 	  Select this if you are using one of Atmel's AT91SAM9260, AT91SAM9XE
 	  or AT91SAM9G20 SoC.
@@ -114,6 +134,9 @@ config SOC_AT91SAM9260
 config SOC_AT91SAM9261
 	bool
 	select SOC_AT91SAM9
+	select PINCTRL_AT91
+	select HAVE_AT91_LOAD_BAREBOX_SRAM
+	select HAVE_MACH_ARM_HEAD
 	help
 	  Select this if you are using one of Atmel's AT91SAM9261 or AT91SAM9G10 SoC.
 
@@ -122,11 +145,15 @@ config SOC_AT91SAM9263
 	select SOC_AT91SAM9
 	select HAS_MACB
 	select HAVE_AT91_LOAD_BAREBOX_SRAM
+	select HAVE_MACH_ARM_HEAD
+	select PINCTRL_AT91
 
 config SOC_AT91SAM9G45
 	bool
 	select SOC_AT91SAM9
 	select HAS_MACB
+	select PINCTRL_AT91
+	select HAVE_MACH_ARM_HEAD
 	help
 	  Select this if you are using one of Atmel's AT91SAM9G45 family SoC.
 	  This support covers AT91SAM9G45, AT91SAM9G46, AT91SAM9M10 and AT91SAM9M11.
@@ -136,6 +163,8 @@ config SOC_AT91SAM9X5
 	select SOC_AT91SAM9
 	select HAS_MACB
 	select COMMON_CLK_OF_PROVIDER
+	select PINCTRL_AT91
+	select OFDEVICE
 	help
 	  Select this if you are using one of Atmel's AT91SAM9x5 family SoC.
 	  This means that your SAM9 name finishes with a '5' (except if it is
@@ -146,11 +175,25 @@ config SOC_AT91SAM9X5
 config SOC_AT91SAM9N12
 	bool
 	select SOC_AT91SAM9
+	select PINCTRL_AT91
+	select HAVE_MACH_ARM_HEAD
 	help
 	  Select this if you are using Atmel's AT91SAM9N12 SoC.
 
+config SUPPORT_CALAO_DAB_MMX
+	bool
+
+config SUPPORT_CALAO_MOB_TNY_MD2
+	bool
+
+if !AT91_MULTI_BOARDS
+
+# ----------------------------------------------------------
+
 choice
 	prompt "Atmel AT91 Processor"
+	help
+	  Select here which SoC to support in non-multi-image configurations
 
 config ARCH_AT91RM9200
 	bool "AT91RM9200"
@@ -163,49 +206,38 @@ config ARCH_AT91SAM9260
 config ARCH_AT91SAM9261
 	bool "AT91SAM9261"
 	select SOC_AT91SAM9261
-	select HAVE_AT91_LOAD_BAREBOX_SRAM
 
 config ARCH_AT91SAM9263
 	bool "AT91SAM9263"
 	select SOC_AT91SAM9263
-	select HAVE_MACH_ARM_HEAD
 
 config ARCH_AT91SAM9G10
 	bool "AT91SAM9G10"
 	select SOC_AT91SAM9261
-	select HAVE_MACH_ARM_HEAD
 
 config ARCH_AT91SAM9G20
 	bool "AT91SAM9G20"
 	select SOC_AT91SAM9260
-	select HAVE_MACH_ARM_HEAD
 
 config ARCH_AT91SAM9G45
 	bool "AT91SAM9G45 or AT91SAM9M10"
 	select SOC_AT91SAM9G45
-	select HAVE_MACH_ARM_HEAD
 
 config ARCH_AT91SAM9X5
 	bool "AT91SAM9X5"
 	select SOC_AT91SAM9X5
-	select OFDEVICE
 
 config ARCH_AT91SAM9N12
 	bool "AT91SAM9N12"
 	select SOC_AT91SAM9N12
-	select HAVE_MACH_ARM_HEAD
 
 config ARCH_SAMA5D3
 	bool "SAMA5D3x"
 	select SOC_SAMA5D3
-	select HAS_MACB
-	select HAVE_MACH_ARM_HEAD
 
 config ARCH_SAMA5D4
 	bool "SAMA5D4"
 	select SOC_SAMA5D4
-	select HAS_MACB
-	select HAVE_MACH_ARM_HEAD
 
 endchoice
 
@@ -213,24 +245,14 @@ config ARCH_BAREBOX_MAX_BARE_INIT_SIZE
 	hex
 	default 0x1000 if ARCH_AT91SAM9260
 	default 0x27000 if ARCH_AT91SAM9261
-	default 0x12000 if ARCH_AT91SAM9263
 	default 0x4000 if ARCH_AT91SAM9G20
 	default 0x3000 if ARCH_AT91SAM9G10
 	default 0xF000 if ARCH_AT91SAM9G45
-	default 0x6000 if ARCH_AT91SAM9X5
 	default 0x6000 if ARCH_AT91SAM9N12
-	default 0x6000 if ARCH_SAMA5D3
+	default 0x12000 if SOC_AT91SAM9263
+	default 0x6000 if SOC_AT91SAM9X5
+	default 0x6000 if SOC_SAMA5D3
 	default 0xffffffff
-
-config SUPPORT_CALAO_DAB_MMX
-	bool
-
-config SUPPORT_CALAO_MOB_TNY_MD2
-	bool
-
-if !AT91_MULTI_BOARDS
-
-# ----------------------------------------------------------
 
 if ARCH_AT91RM9200
 
@@ -521,12 +543,13 @@ endif
 config AT91_MULTI_BOARDS
 	bool "Allow multiple boards to be selected"
 	select HAVE_PBL_MULTI_IMAGES
+	select ARM_USE_COMPRESSED_DTB
 
 if AT91_MULTI_BOARDS
 
 config MACH_AT91SAM9263EK
 	bool "Atmel AT91SAM9263-EK"
-	depends on ARCH_AT91SAM9263
+	select SOC_AT91SAM9263
 	select OFDEVICE
 	select COMMON_CLK_OF_PROVIDER
 	select HAVE_NAND_ATMEL_BUSWIDTH_16
@@ -537,18 +560,26 @@ config MACH_AT91SAM9263EK
 
 config MACH_AT91SAM9X5EK
 	bool "Atmel AT91SAM9x5 Series Evaluation Kit"
-	depends on ARCH_AT91SAM9X5
+	select SOC_AT91SAM9X5
 	help
 	  Select this if you re using Atmel's AT91SAM9x5-EK Evaluation Kit.
 	  Supported chips are sam9g15, sam9g25, sam9x25, sam9g35 and sam9x35.
 
 config MACH_MICROCHIP_KSZ9477_EVB
 	bool "Microchip EVB-KSZ9477 Evaluation Kit"
-	depends on ARCH_SAMA5D3
+	select SOC_SAMA5D3
 	select OFDEVICE
 	select COMMON_CLK_OF_PROVIDER
 	help
 	  Select this if you are using Microchip's EVB-KSZ9477 Evaluation Kit.
+
+config MACH_SAMA5D27_SOM1
+	bool "Microchip SAMA5D27 SoM-1 Evaluation Kit"
+	select SOC_SAMA5D2
+	select OFDEVICE
+	select COMMON_CLK_OF_PROVIDER
+	help
+	  Select this if you are using Microchip's sama5d27 SoM evaluation kit
 
 endif
 

@@ -17,6 +17,16 @@ config PINCTRL_AT91
 	help
 	    The pinmux controller found on AT91 SoCs.
 
+config PINCTRL_AT91PIO4
+        bool "AT91 PIO4 pinctrl driver"
+        depends on OFDEVICE
+        depends on ARCH_AT91
+        select GPIOLIB
+        select OF_GPIO
+        help
+          Say Y here to enable the at91 pinctrl/gpio driver for Atmel PIO4
+          controller available on sama5d2 SoC.
+
 config PINCTRL_BCM283X
 	bool "GPIO and pinmux support for BCM283X"
 	depends on ARCH_BCM283X

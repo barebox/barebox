@@ -34,7 +34,6 @@ config ARCH_AT91
 	select CLKDEV_LOOKUP
 	select HAS_DEBUG_LL
 	select HAVE_CLK
-	select PINCTRL_AT91
 	select COMMON_CLK_AT91 if COMMON_CLK_OF_PROVIDER
 
 

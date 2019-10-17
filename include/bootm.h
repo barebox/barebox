@@ -26,6 +26,11 @@ struct bootm_data {
 	 * mount the rootfs from the same device as the Kernel comes from.
 	 */
 	bool appendroot;
+	/*
+	 * provide_machine_id - if true, try to add systemd.machine_id= with
+	 * value of global.machine_id to Kernel.
+	 */
+	bool provide_machine_id;
 	unsigned long initrd_address;
 	unsigned long os_address;
 	unsigned long os_entry;

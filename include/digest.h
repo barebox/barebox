@@ -20,6 +20,7 @@
 #define __DIGEST_H__
 
 #include <linux/list.h>
+#include <errno.h>
 
 struct digest;
 

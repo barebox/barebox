@@ -51,6 +51,7 @@ static struct image_handler *bootm_find_handler(enum filetype filetype,
 }
 
 static int bootm_appendroot;
+static int bootm_provide_machine_id;
 static int bootm_verbosity;
 
 void bootm_data_init_defaults(struct bootm_data *data)
@@ -65,6 +66,7 @@ void bootm_data_init_defaults(struct bootm_data *data)
 	data->initrd_file = getenv_nonempty("global.bootm.initrd");
 	data->verify = bootm_get_verify_mode();
 	data->appendroot = bootm_appendroot;
+	data->provide_machine_id = bootm_provide_machine_id;
 	data->verbose = bootm_verbosity;
 }
 
@@ -646,6 +648,21 @@ int bootm_boot(struct bootm_data *bootm_data)
 		}
 	}
 
+	if (bootm_data->provide_machine_id) {
+		const char *machine_id = getenv_nonempty("global.machine_id");
+		char *machine_id_bootarg;
+
+		if (!machine_id) {
+			printf("Providing machine id is enabled but no machine id set\n");
+			ret = -EINVAL;
+			goto err_out;
+		}
+
+		machine_id_bootarg = basprintf("systemd.machine_id=%s", machine_id);
+		globalvar_add_simple("linux.bootargs.machine_id", machine_id_bootarg);
+		free(machine_id_bootarg);
+	}
+
 	printf("\nLoading %s '%s'", file_type_to_string(os_type),
 			data->os_file);
 	if (os_type == filetype_uimage &&
@@ -711,6 +728,7 @@ static int bootm_init(void)
 	globalvar_add_simple("bootm.oftree", NULL);
 	globalvar_add_simple("bootm.tee", NULL);
 	globalvar_add_simple_bool("bootm.appendroot", &bootm_appendroot);
+	globalvar_add_simple_bool("bootm.provide_machine_id", &bootm_provide_machine_id);
 	if (IS_ENABLED(CONFIG_BOOTM_INITRD)) {
 		globalvar_add_simple("bootm.initrd", NULL);
 		globalvar_add_simple("bootm.initrd.loadaddr", NULL);
@@ -738,3 +756,4 @@ BAREBOX_MAGICVAR_NAMED(global_bootm_tee, global.bootm.tee, "bootm default tee im
 BAREBOX_MAGICVAR_NAMED(global_bootm_verify, global.bootm.verify, "bootm default verify level");
 BAREBOX_MAGICVAR_NAMED(global_bootm_verbose, global.bootm.verbose, "bootm default verbosity level (0=quiet)");
 BAREBOX_MAGICVAR_NAMED(global_bootm_appendroot, global.bootm.appendroot, "Add root= option to Kernel to mount rootfs from the device the Kernel comes from");
+BAREBOX_MAGICVAR_NAMED(global_bootm_provide_machine_id, global.bootm.provide_machine_id, "If true, add systemd.machine_id= with value of global.machine_id to Kernel");

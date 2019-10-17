@@ -29,6 +29,8 @@
 #include <regmap.h>
 #include <linux/clk.h>
 #include <mach/ocotp.h>
+#include <machine_id.h>
+#include <mach/ocotp-fusemap.h>
 #include <linux/nvmem-provider.h>
 
 /*
@@ -77,6 +79,7 @@
 #define MAC_OFFSET_1			(0x24 * 4)
 #define MAX_MAC_OFFSETS			2
 #define MAC_BYTES			8
+#define UNIQUE_ID_NUM			2
 
 enum imx_ocotp_format_mac_direction {
 	OCOTP_HW_TO_MAC,
@@ -548,6 +551,19 @@ static int imx_ocotp_read(struct device_d *dev, const int offset, void *val,
 	return regmap_bulk_read(priv->map, offset, val, bytes);
 }
 
+static void imx_ocotp_set_unique_machine_id(void)
+{
+	uint32_t unique_id_parts[UNIQUE_ID_NUM];
+	int i;
+
+	for (i = 0; i < UNIQUE_ID_NUM; i++)
+		if (imx_ocotp_read_field(OCOTP_UNIQUE_ID(i),
+					 &unique_id_parts[i]))
+			return;
+
+	machine_id_set_hashable(unique_id_parts, sizeof(unique_id_parts));
+}
+
 static const struct nvmem_bus imx_ocotp_nvmem_bus = {
 	.write = imx_ocotp_write,
 	.read  = imx_ocotp_read,
@@ -632,6 +648,9 @@ static int imx_ocotp_probe(struct device_d *dev)
 				  imx_ocotp_set_mac, imx_ocotp_get_mac,
 				  ethaddr->value, ethaddr);
 	}
+
+	if (IS_ENABLED(CONFIG_MACHINE_ID))
+		imx_ocotp_set_unique_machine_id();
 
 	imx_ocotp_init_dt(priv);
 

@@ -4,15 +4,14 @@
 #
 # This script assumes that the dtc and the linux git trees are in the
 # same directory. After building dtc in the dtc directory, it copies the
-# source files and generated source file(s) into the scripts/dtc directory
-# in the kernel and creates a git commit updating them to the new
-# version.
+# source files into the scripts/dtc directory in barebox and creates a git
+# commit updating them to the new version.
 #
-# Usage: from the top level Linux source tree, run:
+# Usage: from the top level barebox source tree, run:
 # $ ./scripts/dtc/update-dtc-source.sh
 #
 # The script will change into the dtc tree, build and test dtc, copy the
-# relevant files into the kernel tree and create a git commit. The commit
+# relevant files into the barebox tree and create a git commit. The commit
 # message will need to be modified to reflect the version of DTC being
 # imported
 #
@@ -33,7 +32,7 @@ DTC_LINUX_PATH=`pwd`/scripts/dtc
 
 DTC_SOURCE="checks.c data.c dtc.c dtc.h flattree.c fstree.c livetree.c srcpos.c \
 		srcpos.h treesource.c util.c util.h version_gen.h yamltree.c Makefile.dtc \
-		dtc-lexer.l dtc-parser.y"
+		dtc-lexer.l dtc-parser.y fdtget.c"
 LIBFDT_SOURCE="Makefile.libfdt fdt.c fdt.h fdt_addresses.c fdt_empty_tree.c \
 		fdt_overlay.c fdt_ro.c fdt_rw.c fdt_strerror.c fdt_sw.c \
 		fdt_wip.c libfdt.h libfdt_env.h libfdt_internal.h"
@@ -45,6 +44,9 @@ get_last_dtc_version() {
 last_dtc_ver=$(get_last_dtc_version)
 
 # Build DTC
+cd $DTC_LINUX_PATH
+git ls-files . | grep -vE '^(update-dtc-source\.sh|Makefile|\.gitignore)$' | xargs git rm
+mkdir libfdt
 cd $DTC_UPSTREAM_PATH
 make clean
 make check
@@ -70,7 +72,7 @@ git add ./libfdt/libfdt.h
 commit_msg=$(cat << EOF
 scripts/dtc: Update to upstream version ${dtc_version}
 
-This adds the following commits from upstream:
+This adds the following commits from upstream dtc:
 
 ${dtc_log}
 EOF

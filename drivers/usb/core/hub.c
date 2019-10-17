@@ -30,6 +30,20 @@
 
 #define USB_BUFSIZ  512
 
+#define HUB_SHORT_RESET_TIME	20
+#define HUB_LONG_RESET_TIME	200
+
+#define PORT_OVERCURRENT_MAX_SCAN_COUNT         3
+
+struct usb_device_scan {
+	struct usb_device *dev;		/* USB hub device to scan */
+	struct usb_hub_device *hub;	/* USB hub struct */
+	int port;			/* USB port to scan */
+	struct list_head list;
+};
+
+static LIST_HEAD(usb_scan_list);
+
 static int usb_get_hub_descriptor(struct usb_device *dev, void *data, int size)
 {
 	return usb_control_msg(dev, usb_rcvctrlpipe(dev, 0),
@@ -84,9 +98,6 @@ static void usb_hub_power_on(struct usb_hub_device *hub)
 		dev_dbg(&dev->dev, "port %d returns %lX\n", i + 1, dev->status);
 	}
 
-	/* Wait at least 2 * bPwrOn2PwrGood for PP to change */
-	mdelay(pgood_delay);
-
 	/* Enable power to the ports */
 	dev_dbg(&dev->dev, "enabling power on all ports\n");
 
@@ -95,8 +106,24 @@ static void usb_hub_power_on(struct usb_hub_device *hub)
 		dev_dbg(&dev->dev, "port %d returns %lX\n", i + 1, dev->status);
 	}
 
-	/* power on is encoded in 2ms increments -> times 2 for the actual delay */
-	mdelay(pgood_delay + 1000);
+	/*
+	 * Do a minimum delay of the larger value of 100ms or pgood_delay
+	 * so that the power can stabilize before the devices are queried
+	 */
+	hub->query_delay = get_time_ns() +
+		max(100, (int) pgood_delay) * MSECOND;
+
+	/*
+	 * Record the power-on timeout here. The max delay (timeout)
+	 * will be done based on this value in the USB port loop in
+	 * usb_hub_configure_ports() later.
+	 */
+	hub->connect_timeout = hub->query_delay + 1000 * MSECOND;
+
+	dev_dbg(&dev->dev, "devnum=%d poweron: query_delay=%d \
+			connect_timeout=%d\n",
+			dev->devnum, max(100, (int) pgood_delay),
+			max(100, (int) pgood_delay) + 1000);
 }
 
 #define MAX_TRIES 5
@@ -116,12 +143,13 @@ int hub_port_reset(struct usb_device *hub, int port, struct usb_device *usb)
 	int tries;
 	struct usb_port_status portsts;
 	unsigned short portstatus, portchange;
+	int delay = HUB_SHORT_RESET_TIME; /* start with short reset delay */
 
 	dev_dbg(&hub->dev, "hub_port_reset: resetting port %d...\n", port);
 	for (tries = 0; tries < MAX_TRIES; tries++) {
 
 		usb_set_port_feature(hub, port + 1, USB_PORT_FEAT_RESET);
-		mdelay(200);
+		mdelay(delay);
 
 		if (usb_get_port_status(hub, port + 1, &portsts) < 0) {
 			dev_dbg(&hub->dev, "get_port_status failed status %lX\n",
@@ -148,7 +176,8 @@ int hub_port_reset(struct usb_device *hub, int port, struct usb_device *usb)
 		if (portstatus & USB_PORT_STAT_ENABLE)
 			break;
 
-		mdelay(200);
+		/* Switch to long reset delay for the next round */
+		delay = HUB_LONG_RESET_TIME;
 	}
 
 	if (tries == MAX_TRIES) {
@@ -206,8 +235,6 @@ static void usb_hub_port_connect_change(struct usb_device *dev, int port)
 	if (dev->children[port] && !(portstatus & USB_PORT_STAT_ENABLE))
 		usb_remove_device(dev->children[port]);
 
-	mdelay(200);
-
 	/* Allocate a new device struct for the port */
 	usb = usb_alloc_new_device();
 	usb->dev.parent = &dev->dev;
@@ -219,8 +246,6 @@ static void usb_hub_port_connect_change(struct usb_device *dev, int port)
 		usb_free_device(usb);
 		return;
 	}
-
-	mdelay(200);
 
 	dev->children[port] = usb;
 	usb->parent = dev;
@@ -242,15 +267,33 @@ static void usb_hub_port_connect_change(struct usb_device *dev, int port)
 	device_detect(&usb->dev);
 }
 
-static int usb_hub_configure_port(struct usb_device *dev, int port)
+static int usb_scan_port(struct usb_device_scan *usb_scan)
 {
 	struct usb_port_status portsts;
 	unsigned short portstatus, portchange;
-	int connect_change = 0;
+	struct usb_device *dev;
+	struct usb_hub_device *hub;
+	int port;
+
+	dev = usb_scan->dev;
+	hub = usb_scan->hub;
+	port = usb_scan->port;
+
+	/*
+	 * Don't talk to the device before the query delay is expired.
+	 * This is needed for voltages to stabilize.
+	 */
+	if (get_time_ns() < hub->query_delay)
+		return 0;
 
 	if (usb_get_port_status(dev, port + 1, &portsts) < 0) {
 		dev_dbg(&dev->dev, "get_port_status failed\n");
-		return -EIO;
+		if(get_time_ns() >= hub->connect_timeout) {
+			dev_dbg(&dev->dev, "port=%d: timeout\n", port + 1);
+			/* Remove this device from scanning list */
+			goto remove;
+		}
+		return 0;
 	}
 
 	portstatus = le16_to_cpu(portsts.wPortStatus);
@@ -258,10 +301,24 @@ static int usb_hub_configure_port(struct usb_device *dev, int port)
 	dev_dbg(&dev->dev, "Port %d Status %X Change %X\n",
 			port + 1, portstatus, portchange);
 
-	if (portchange & USB_PORT_STAT_C_CONNECTION) {
-		dev_dbg(&dev->dev, "port %d connection change\n", port + 1);
-		connect_change = 1;
+	if (!(portchange & USB_PORT_STAT_C_CONNECTION)) {
+		if(get_time_ns() >= hub->connect_timeout) {
+			dev_dbg(&dev->dev, "port=%d: timeout\n", port + 1);
+			/* Remove this device from scanning list */
+			goto remove;
+		}
+		return 0;
 	}
+
+	/* Test if the connection came up, and if not exit */
+	if(!(portstatus & USB_PORT_STAT_CONNECTION))
+		return 0;
+
+	/* A new USB device is ready at this point */
+	dev_dbg(&dev->dev, "port=%d: USB dev found\n", port + 1);
+
+	usb_hub_port_connect_change(dev, port);
+
 	if (portchange & USB_PORT_STAT_C_ENABLE) {
 		dev_dbg(&dev->dev, "port %d enable change, status %x\n",
 				port + 1, portstatus);
@@ -277,12 +334,9 @@ static int usb_hub_configure_port(struct usb_device *dev, int port)
 			dev_dbg(&dev->dev, "already running port %i "  \
 					"disabled by hub (EMI?), " \
 					"re-enabling...\n", port + 1);
-				connect_change = 1;
+				usb_hub_port_connect_change(dev, port);
 		}
 	}
-
-	if (connect_change)
-		usb_hub_port_connect_change(dev, port);
 
 	if (portstatus & USB_PORT_STAT_SUSPEND) {
 		dev_dbg(&dev->dev, "port %d suspend change\n", port + 1);
@@ -294,7 +348,21 @@ static int usb_hub_configure_port(struct usb_device *dev, int port)
 		dev_dbg(&dev->dev, "port %d over-current change\n", port + 1);
 		usb_clear_port_feature(dev, port + 1,
 					USB_PORT_FEAT_C_OVER_CURRENT);
-		usb_hub_power_on(dev->hub);
+		/* Only power-on this one port */
+		usb_set_port_feature(dev, port + 1, USB_PORT_FEAT_POWER);
+		hub->overcurrent_count[port]++;
+
+		/*
+		 * If the max-scan-count is not reached, return without removing
+		 * the device from scan-list. This will re-issue a new scan.
+		 */
+		if (hub->overcurrent_count[port] <=
+				PORT_OVERCURRENT_MAX_SCAN_COUNT)
+			return 0;
+
+		/* Otherwise the device will get removed */
+		dev_dbg(&dev->dev,"Port %d over-current occurred %d times\n",
+				port + 1, hub->overcurrent_count[port]);
 	}
 
 	if (portchange & USB_PORT_STAT_C_RESET) {
@@ -303,7 +371,52 @@ static int usb_hub_configure_port(struct usb_device *dev, int port)
 					USB_PORT_FEAT_C_RESET);
 	}
 
+remove:
+	/*
+	 * We're done with this device, so let's remove this device from
+	 * scanning list
+	 */
+	list_del(&usb_scan->list);
+	free(usb_scan);
+
 	return 0;
+}
+
+static int usb_device_list_scan(void)
+{
+	struct usb_device_scan *usb_scan;
+	struct usb_device_scan *tmp;
+	static int running;
+	int ret = 0;
+
+	/* Only run this loop once for each controller */
+	if (running)
+		return 0;
+
+	running = 1;
+
+	while (1) {
+		/* We're done, once the list is empty again */
+		if (list_empty(&usb_scan_list))
+			goto out;
+
+		list_for_each_entry_safe(usb_scan, tmp, &usb_scan_list, list) {
+			/* Scan this port */
+			ret = usb_scan_port(usb_scan);
+			if (ret)
+				goto out;
+		}
+	}
+
+out:
+	/*
+	 * This USB controller has finished scanning all its connected
+	 * USB devices. Set "running" back to 0, so that other USB controllers
+	 * will scan their devices too.
+	 */
+	running = 0;
+
+	return ret;
 }
 
 static int usb_hub_configure(struct usb_device *dev)
@@ -430,12 +543,33 @@ static int usb_hub_configure(struct usb_device *dev)
 
 static int usb_hub_configure_ports(struct usb_device *dev)
 {
+	struct usb_device_scan *usb_scan;
 	int i;
 
-	for (i = 0; i < dev->maxchild; i++)
-		usb_hub_configure_port(dev, i);
+	/*
+	 * Only add the connected USB devices, including potential hubs,
+	 * to a scanning list. This list will get scanned and devices that
+	 * are detected (either via port connected or via port timeout)
+	 * will get removed from this list. Scanning of the devices on this
+	 * list will continue until all devices are removed.
+	 */
+	for (i = 0; i < dev->maxchild; i++) {
+		usb_scan = calloc(1, sizeof(*usb_scan));
+		if (!usb_scan) {
+			dev_err(&dev->dev, "Can't allocate memory for \
+					USB device scanning!\n");
+			return -ENOMEM;
+		}
+		usb_scan->dev = dev;
+		usb_scan->hub = dev->hub;
+		usb_scan->port = i;
+		list_add_tail(&usb_scan->list, &usb_scan_list);
+	}
 
-	return 0;
+	/*
+	 * And now call the scanning code which loops over the generated list
+	 */
+	return usb_device_list_scan();
 }
 
 static int usb_hub_detect(struct device_d *dev)

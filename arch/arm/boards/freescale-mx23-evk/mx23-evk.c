@@ -22,6 +22,7 @@
 #include <linux/err.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
+#include <asm/barebox-arm.h>
 #include <mach/imx-regs.h>
 #include <mach/clock.h>
 #include <mach/mci.h>
@@ -99,6 +100,9 @@ static int mx23_evk_devices_init(void)
 {
 	int i, rc;
 
+	if (barebox_arm_machine() != MACH_TYPE_MX23EVK)
+		return 0;
+
 	/* initizalize gpios */
 	for (i = 0; i < ARRAY_SIZE(pad_setup); i++)
 		imx_gpio_mode(pad_setup[i]);
@@ -126,6 +130,9 @@ device_initcall(mx23_evk_devices_init);
 
 static int mx23_evk_console_init(void)
 {
+	if (barebox_arm_machine() != MACH_TYPE_MX23EVK)
+		return 0;
+
 	barebox_set_model("Freescale i.MX23 EVK");
 	barebox_set_hostname("mx23evk");
 

@@ -18,6 +18,7 @@
 #include <environment.h>
 #include <errno.h>
 #include <asm/armlinux.h>
+#include <asm/barebox-arm.h>
 #include <io.h>
 #include <generated/mach-types.h>
 #include <mach/imx-regs.h>
@@ -76,6 +77,9 @@ extern void base_board_init(void);
 static int tx28_devices_init(void)
 {
 	int i;
+
+	if (barebox_arm_machine() != MACH_TYPE_TX28)
+		return 0;
 
 	/* initizalize gpios */
 	for (i = 0; i < ARRAY_SIZE(tx28_pad_setup); i++)

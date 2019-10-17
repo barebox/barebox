@@ -26,6 +26,7 @@
 #include <errno.h>
 #include <mci.h>
 #include <asm/armlinux.h>
+#include <asm/barebox-arm.h>
 #include <usb/ehci.h>
 #include <mach/usb.h>
 #include <generated/mach-types.h>
@@ -33,6 +34,7 @@
 #include <mach/clock.h>
 #include <mach/mci.h>
 #include <mach/iomux.h>
+#include <generated/mach-types.h>
 
 static struct mxs_mci_platform_data mci_pdata = {
 	.caps = MMC_CAP_4_BIT_DATA | MMC_CAP_SD_HIGHSPEED | MMC_CAP_MMC_HIGHSPEED,
@@ -56,6 +58,9 @@ static struct gpio_led led1 = {
 
 static int imx23_olinuxino_devices_init(void)
 {
+	if (barebox_arm_machine() != MACH_TYPE_IMX233_OLINUXINO)
+		return 0;
+
 	armlinux_set_architecture(MACH_TYPE_IMX233_OLINUXINO);
 	defaultenv_append_directory(defaultenv_imx233_olinuxino);
 
@@ -76,6 +81,9 @@ device_initcall(imx23_olinuxino_devices_init);
 
 static int imx23_olinuxino_console_init(void)
 {
+	if (barebox_arm_machine() != MACH_TYPE_IMX233_OLINUXINO)
+		return 0;
+
 	barebox_set_model("Olimex.ltd imx233-olinuxino");
 	barebox_set_hostname("imx233-olinuxino");
 

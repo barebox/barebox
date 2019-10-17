@@ -37,6 +37,7 @@
 
 #include <asm/armlinux.h>
 #include <asm/mmu.h>
+#include <asm/barebox-arm.h>
 
 #include <mach/fb.h>
 
@@ -93,6 +94,9 @@ static int cfa10036_devices_init(void)
 {
 	int i;
 
+	if (barebox_arm_machine() != MACH_TYPE_CFA10036)
+		return 0;
+
 	/* initizalize muxing */
 	for (i = 0; i < ARRAY_SIZE(cfa10036_pads); i++)
 		imx_gpio_mode(cfa10036_pads[i]);
@@ -115,6 +119,9 @@ device_initcall(cfa10036_devices_init);
 
 static int cfa10036_console_init(void)
 {
+	if (barebox_arm_machine() != MACH_TYPE_CFA10036)
+		return 0;
+
 	barebox_set_model("crystalfontz-cfa10036");
 	barebox_set_hostname("cfa10036");
 

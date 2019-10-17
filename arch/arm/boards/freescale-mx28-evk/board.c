@@ -34,6 +34,9 @@ static void mx28_evk_get_ethaddr(void)
 
 static int mx28_evk_devices_init(void)
 {
+	if (!of_machine_is_compatible("fsl,imx28-evk"))
+		return 0;
+
 	mx28_evk_get_ethaddr(); /* must be after registering ocotp */
 
 	return 0;

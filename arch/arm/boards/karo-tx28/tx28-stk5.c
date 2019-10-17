@@ -23,6 +23,7 @@
 #include <io.h>
 #include <net.h>
 #include <asm/sections.h>
+#include <asm/barebox-arm.h>
 #include <linux/err.h>
 #include <mach/imx-regs.h>
 #include <mach/clock.h>
@@ -30,6 +31,7 @@
 #include <mach/fb.h>
 #include <mach/ocotp.h>
 #include <mach/iomux.h>
+#include <generated/mach-types.h>
 
 static struct mxs_mci_platform_data mci_pdata = {
 	.caps = MMC_CAP_4_BIT_DATA,
@@ -347,7 +349,7 @@ static int register_persistent_environment(void)
 	return 0;
 }
 
-void tx28_get_ethaddr(void)
+static void tx28_get_ethaddr(void)
 {
 	u32 buf[2];	/* to make use of cpu_to_be32 */
 	u32 ethaddr[2];
@@ -395,6 +397,9 @@ void base_board_init(void)
 
 static int tx28kit_console_init(void)
 {
+	if (barebox_arm_machine() != MACH_TYPE_TX28)
+		return 0;
+
 	barebox_set_model("Ka-Ro TX28");
 	barebox_set_hostname("tx28");
 

@@ -129,6 +129,7 @@ config ARCH_MXS
 	select COMMON_CLK
 	select CLKDEV_LOOKUP
 	select HAS_DEBUG_LL
+	select HAVE_PBL_MULTI_IMAGES
 
 config ARCH_NOMADIK
 	bool "STMicroelectronics Nomadik"

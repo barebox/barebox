@@ -1,7 +1,10 @@
-/include/ "skeleton.dtsi"
-
 / {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
 	compatible = "canon,digic4";
+
+	chosen { };
 
 	timer0: timer@c0210000 {
 		compatible = "canon,digic-timer";

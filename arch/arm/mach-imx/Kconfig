@@ -397,6 +397,11 @@ config MACH_TECHNEXION_WANDBOARD
 	select ARM_USE_COMPRESSED_DTB
 	select MCI_IMX_ESDHC_PBL
 
+config MACH_EMBEST_MARSBOARD
+	bool "Embest MarSboard"
+	select ARCH_IMX6
+	select ARM_USE_COMPRESSED_DTB
+
 config MACH_EMBEST_RIOTBOARD
 	bool "Embest RIoTboard"
 	select ARCH_IMX6
@@ -447,12 +452,14 @@ config MACH_ZII_RDU1
 	select MACH_FREESCALE_MX51_PDK_POWER
 	select CRC8
 	select MACH_ZII_COMMON
+	select ARM_USE_COMPRESSED_DTB
 
 config MACH_ZII_RDU2
 	bool "ZII i.MX6Q(+) RDU2"
 	select ARCH_IMX6
 	select MCI_IMX_ESDHC_PBL
 	select MACH_ZII_COMMON
+	select ARM_USE_COMPRESSED_DTB
 
 config MACH_ZII_IMX8MQ_DEV
 	bool "ZII i.MX8MQ based devices"
@@ -462,15 +469,18 @@ config MACH_ZII_IMX8MQ_DEV
 	select ARM_SMCCC
 	select MCI_IMX_ESDHC_PBL
 	select MACH_ZII_COMMON
+	select ARM_USE_COMPRESSED_DTB
 
 config MACH_ZII_VF610_DEV
 	bool "ZII VF610 Dev Family"
 	select ARCH_VF610
 	select CLKDEV_LOOKUP
+	select ARM_USE_COMPRESSED_DTB
 
 config MACH_ZII_IMX7D_DEV
 	bool "ZII i.MX7D based devices"
 	select ARCH_IMX7
+	select ARM_USE_COMPRESSED_DTB
 
 config MACH_PHYTEC_PHYCORE_IMX7
 	bool "Phytec phyCORE i.MX7"

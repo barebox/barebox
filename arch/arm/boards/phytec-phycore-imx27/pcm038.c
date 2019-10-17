@@ -34,20 +34,26 @@
 
 #define PCM038_GPIO_OTG_STP	(GPIO_PORTE + 1)
 
-static struct imx_fb_videomode imxfb_mode = {
-	.mode = {
-		.name		= "Sharp-LQ035Q7",
-		.refresh	= 60,
-		.xres		= 240,
-		.yres		= 320,
-		.pixclock	= 188679, /* in ps (5.3MHz) */
-		.hsync_len	= 7,
-		.left_margin	= 5,
-		.right_margin	= 16,
-		.vsync_len	= 1,
-		.upper_margin	= 7,
-		.lower_margin	= 9,
-	},
+static struct fb_videomode imxfb_mode = {
+	.name		= "Sharp-LQ035Q7",
+	.refresh	= 60,
+	.xres		= 240,
+	.yres		= 320,
+	.pixclock	= 188679, /* in ps (5.3MHz) */
+	.hsync_len	= 7,
+	.left_margin	= 5,
+	.right_margin	= 16,
+	.vsync_len	= 1,
+	.upper_margin	= 7,
+	.lower_margin	= 9,
+};
+
+static struct imx_fb_platform_data pcm038_fb_data = {
+	.mode	= &imxfb_mode,
+	.num_modes = 1,
+	.pwmr	= 0x00a903ff,
+	.lscr1	= 0x00120300,
+	.dmacr	= 0x00020010,
 	/*
 	 * - HSYNC active high
 	 * - VSYNC active high
@@ -57,16 +63,8 @@ static struct imx_fb_videomode imxfb_mode = {
 	 * - data enable low active
 	 * - enable sharp mode
 	 */
-	.pcr		= 0xf00080c0,
-	.bpp		= 16,
-};
-
-static struct imx_fb_platform_data pcm038_fb_data = {
-	.mode	= &imxfb_mode,
-	.num_modes = 1,
-	.pwmr	= 0x00a903ff,
-	.lscr1	= 0x00120300,
-	.dmacr	= 0x00020010,
+	.pcr	= 0xf00080c0,
+	.bpp	= 16,
 };
 
 static const unsigned int pcm038_pins[] = {

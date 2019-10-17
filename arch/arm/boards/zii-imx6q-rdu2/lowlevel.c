@@ -263,8 +263,8 @@ static inline void setup_uart(void)
 	putc_ll('>');
 }
 
-extern char __dtb_imx6q_zii_rdu2_start[];
-extern char __dtb_imx6qp_zii_rdu2_start[];
+extern char __dtb_z_imx6q_zii_rdu2_start[];
+extern char __dtb_z_imx6qp_zii_rdu2_start[];
 
 static noinline void rdu2_sram_setup(void)
 {
@@ -304,9 +304,9 @@ ENTRY_FUNCTION(start_imx6_zii_rdu2, r0, r1, r2)
 		rdu2_sram_setup();
 
 	if (__imx6_cpu_type() == IMX6_CPUTYPE_IMX6QP)
-		imx6q_barebox_entry(__dtb_imx6qp_zii_rdu2_start +
+		imx6q_barebox_entry(__dtb_z_imx6qp_zii_rdu2_start +
 				    get_runtime_offset());
 	else
-		imx6q_barebox_entry(__dtb_imx6q_zii_rdu2_start +
+		imx6q_barebox_entry(__dtb_z_imx6q_zii_rdu2_start +
 				    get_runtime_offset());
 }

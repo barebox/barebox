@@ -36,6 +36,7 @@ obj-$(CONFIG_MACH_EDB9315A)			+= edb93xx/
 obj-$(CONFIG_MACH_EDB9315)			+= edb93xx/
 obj-$(CONFIG_MACH_EFIKA_MX_SMARTBOOK)		+= efika-mx-smartbook/
 obj-$(CONFIG_MACH_EMBEDSKY_E9)			+= embedsky-e9/
+obj-$(CONFIG_MACH_EMBEST_MARSBOARD)		+= embest-marsboard/
 obj-$(CONFIG_MACH_EMBEST_RIOTBOARD)		+= embest-riotboard/
 obj-$(CONFIG_MACH_EUKREA_CPUIMX25)		+= eukrea_cpuimx25/
 obj-$(CONFIG_MACH_EUKREA_CPUIMX27)		+= eukrea_cpuimx27/

@@ -1,0 +1,43 @@
+// SPDX-License-Identifier: GPL-2.0 OR X11
+/*
+ * Copyright (C) 2019 Ahmad Fatoum - Pengutronix
+ */
+
+#include <arm/imx6q-marsboard.dts>
+#include "imx6q.dtsi"
+
+/ {
+	chosen {
+		stdout-path = &uart2;
+
+		environment {
+			compatible = "barebox,environment";
+			device-path = &environment_spinor;
+		};
+	};
+};
+
+&ecspi1 {
+	m25p80@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		partition@0 {
+			label = "barebox";
+			reg = <0x000000 0x100000>;
+		};
+
+		environment_spinor: partition@100000 {
+			label = "barebox-environment";
+			reg = <0x100000 0x80000>;
+		};
+	};
+};
+
+&fec {
+	phy-reset-duration = <2>;
+};
+
+&ocotp {
+	barebox,provide-mac-address = <&fec 0x620>;
+};

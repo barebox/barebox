@@ -26,10 +26,24 @@
 #define OCOTP_BIT(n)		FIELD_PREP(OCOTP_BIT_MASK, n)
 #define OCOTP_WIDTH(n)		FIELD_PREP(OCOTP_WIDTH_MASK, (n) - 1)
 
+#define OCOTP_OFFSET_CFG0	0x410
+#define OCOTP_OFFSET_CFG1	0x420
+
 
 int imx_ocotp_read_field(uint32_t field, unsigned *value);
 int imx_ocotp_write_field(uint32_t field, unsigned value);
 int imx_ocotp_permanent_write(int enable);
 bool imx_ocotp_sense_enable(bool enable);
+
+static inline u64 imx_ocotp_read_uid(void __iomem *ocotp)
+{
+	u64 uid;
+
+	uid  = readl(ocotp + OCOTP_OFFSET_CFG0);
+	uid <<= 32;
+	uid |= readl(ocotp + OCOTP_OFFSET_CFG1);
+
+	return uid;
+}
 
 #endif /* __MACH_IMX_OCOTP_H */

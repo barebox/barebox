@@ -406,6 +406,11 @@ CFG_start_imx6q_embedsky_e9.pblb.imximg = $(board)/embedsky-e9/flash-header-e9.i
 FILE_barebox-embedsky-imx6q-e9.img = start_imx6q_embedsky_e9.pblb.imximg
 image-$(CONFIG_MACH_EMBEDSKY_E9) += barebox-embedsky-imx6q-e9.img
 
+pblb-$(CONFIG_MACH_EMBEST_MARSBOARD) += start_imx6q_marsboard
+CFG_start_imx6q_marsboard.pblb.imximg = $(board)/embest-marsboard/flash-header-embest-marsboard.imxcfg
+FILE_barebox-embest-imx6q-marsboard.img = start_imx6q_marsboard.pblb.imximg
+image-$(CONFIG_MACH_EMBEST_MARSBOARD) += barebox-embest-imx6q-marsboard.img
+
 pblb-$(CONFIG_MACH_EMBEST_RIOTBOARD) += start_imx6s_riotboard
 CFG_start_imx6s_riotboard.pblb.imximg = $(board)/embest-riotboard/flash-header-embest-riotboard.imxcfg
 FILE_barebox-embest-imx6s-riotboard.img = start_imx6s_riotboard.pblb.imximg

@@ -9,10 +9,12 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-#include "skeleton.dtsi"
-#include <arm/imx25.dtsi>
-
 / {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	chosen { };
+
 	aliases {
 		mmc0 = &esdhc1;
 		mmc2 = &esdhc2;

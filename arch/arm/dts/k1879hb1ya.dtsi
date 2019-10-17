@@ -1,6 +1,13 @@
-#include "skeleton.dtsi"
-
 / {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	chosen { };
+
+	memory {
+		device_type = "memory";
+	};
+
 	soc {
 		compatible = "simple-bus";
 		model = "RC Module K1879HB1YA";

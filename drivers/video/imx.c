@@ -152,8 +152,6 @@ struct imxfb_info {
 				cmap_static:1,
 				unused:30;
 
-	struct imx_fb_videomode *mode;
-
 	struct fb_info		info;
 	struct device_d		*dev;
 
@@ -293,14 +291,6 @@ static int imxfb_activate_var(struct fb_info *info)
 	unsigned long long tmp;
 	struct imxfb_info *fbi = info->priv;
 	u32 pcr;
-	int i;
-
-	for (i = 0; i < info->modes.num_modes; i++) {
-		if (!strcmp(fbi->mode[i].mode.name, mode->name)) {
-			fbi->pcr = fbi->mode[i].pcr;
-			break;
-		}
-	}
 
 	/* physical screen start address	    */
 	writel(VPW_VPW(mode->xres * info->bits_per_pixel / 8 / 4),
@@ -556,7 +546,7 @@ static int imxfb_probe(struct device_d *dev)
 
 	mode_list = xzalloc(sizeof(*mode_list) * pdata->num_modes);
 	for (i = 0; i < pdata->num_modes; i++)
-		mode_list[i] = pdata->mode[i].mode;
+		mode_list[i] = pdata->mode[i];
 
 	fbi = xzalloc(sizeof(*fbi));
 	info = &fbi->info;
@@ -573,13 +563,12 @@ static int imxfb_probe(struct device_d *dev)
 	if (IS_ERR(fbi->ipg_clk))
 		return PTR_ERR(fbi->ipg_clk);
 
-	fbi->mode = pdata->mode;
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
 	fbi->regs = IOMEM(iores->start);
 
-	fbi->pcr = pdata->mode->pcr;
+	fbi->pcr = pdata->pcr;
 	fbi->pwmr = pdata->pwmr;
 	fbi->lscr1 = pdata->lscr1;
 	fbi->dmacr = pdata->dmacr;
@@ -588,10 +577,10 @@ static int imxfb_probe(struct device_d *dev)
 	info->priv = fbi;
 	info->modes.modes = mode_list;
 	info->modes.num_modes = pdata->num_modes;
-	info->mode = &pdata->mode->mode;
-	info->xres = pdata->mode->mode.xres;
-	info->yres = pdata->mode->mode.yres;
-	info->bits_per_pixel = pdata->mode->bpp;
+	info->mode = pdata->mode;
+	info->xres = pdata->mode->xres;
+	info->yres = pdata->mode->yres;
+	info->bits_per_pixel = pdata->bpp;
 	info->fbops = &imxfb_ops;
 
 	dev_info(dev, "i.MX Framebuffer driver\n");

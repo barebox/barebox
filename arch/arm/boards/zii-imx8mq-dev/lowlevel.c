@@ -117,8 +117,8 @@ static unsigned int get_system_type(void)
 	return FIELD_GET(SYSTEM_TYPE, dr);
 }
 
-extern char __dtb_imx8mq_zii_ultra_rmb3_start[];
-extern char __dtb_imx8mq_zii_ultra_zest_start[];
+extern char __dtb_z_imx8mq_zii_ultra_rmb3_start[];
+extern char __dtb_z_imx8mq_zii_ultra_zest_start[];
 
 static __noreturn noinline void zii_imx8mq_dev_start(void)
 {
@@ -155,8 +155,6 @@ static __noreturn noinline void zii_imx8mq_dev_start(void)
 	switch (system_type) {
 	default:
 		if (IS_ENABLED(CONFIG_DEBUG_LL)) {
-			relocate_to_current_adr();
-			setup_c();
 			puts_ll("\n*********************************\n");
 			puts_ll("* Unknown system type: ");
 			puthex_ll(system_type);
@@ -165,10 +163,10 @@ static __noreturn noinline void zii_imx8mq_dev_start(void)
 		}
 		/* FALLTHROUGH */
 	case ZII_PLATFORM_IMX8MQ_ULTRA_RMB3:
-		fdt = __dtb_imx8mq_zii_ultra_rmb3_start;
+		fdt = __dtb_z_imx8mq_zii_ultra_rmb3_start;
 		break;
 	case ZII_PLATFORM_IMX8MQ_ULTRA_ZEST:
-		fdt = __dtb_imx8mq_zii_ultra_zest_start;
+		fdt = __dtb_z_imx8mq_zii_ultra_zest_start;
 		break;
 	}
 

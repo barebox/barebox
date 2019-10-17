@@ -1,6 +1,9 @@
-#include "skeleton.dtsi"
-
 / {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	chosen { };
+
 	soc {
 		compatible = "simple-bus";
 		model = "TI TMS320DM365";

@@ -18,8 +18,8 @@
 #include <asm/cache.h>
 #include <mach/esdctl.h>
 
-extern char __dtb_imx7d_zii_rpu2_start[];
-extern char __dtb_imx7d_zii_rmu2_start[];
+extern char __dtb_z_imx7d_zii_rpu2_start[];
+extern char __dtb_z_imx7d_zii_rmu2_start[];
 
 static inline void setup_uart(void)
 {
@@ -97,10 +97,10 @@ ENTRY_FUNCTION(start_zii_imx7d_dev, r0, r1, r2)
 		}
 		/* FALLTHROUGH */
 	case ZII_PLATFORM_IMX7D_RPU2:
-		fdt = __dtb_imx7d_zii_rpu2_start;
+		fdt = __dtb_z_imx7d_zii_rpu2_start;
 		break;
 	case ZII_PLATFORM_IMX7D_RMU2:
-		fdt = __dtb_imx7d_zii_rmu2_start;
+		fdt = __dtb_z_imx7d_zii_rmu2_start;
 		break;
 	}
 

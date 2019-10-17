@@ -47,24 +47,20 @@ struct imx_nand_platform_data nand_info = {
 };
 
 /* Sharp LQ035Q7DB02 QVGA display */
-static struct imx_fb_videomode imx_fb_modedata = {
-        .mode = {
-		.name           = "Sharp-LQ035Q7",
-		.refresh        = 60,
-		.xres           = 240,
-		.yres           = 320,
-		.pixclock       = 188679,
-		.left_margin    = 6,
-		.right_margin   = 16,
-		.upper_margin   = 8,
-		.lower_margin   = 10,
-		.hsync_len      = 2,
-		.vsync_len      = 1,
-		.sync           = 0,
-		.vmode          = FB_VMODE_NONINTERLACED,
-	},
-        .pcr            = 0xfb108bc7,
-        .bpp            = 16,
+static struct fb_videomode imx_fb_modedata = {
+	.name           = "Sharp-LQ035Q7",
+	.refresh        = 60,
+	.xres           = 240,
+	.yres           = 320,
+	.pixclock       = 188679,
+	.left_margin    = 6,
+	.right_margin   = 16,
+	.upper_margin   = 8,
+	.lower_margin   = 10,
+	.hsync_len      = 2,
+	.vsync_len      = 1,
+	.sync           = 0,
+	.vmode          = FB_VMODE_NONINTERLACED,
 };
 
 static struct imx_fb_platform_data imx_fb_data = {
@@ -76,6 +72,8 @@ static struct imx_fb_platform_data imx_fb_data = {
 	.pwmr           = 0x00a903ff,
 	.lscr1          = 0x00120300,
 	.dmacr          = 0x00020008,
+	.pcr            = 0xfb108bc7,
+	.bpp            = 16,
 };
 
 static int imx21ads_timing_init(void)

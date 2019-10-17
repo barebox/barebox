@@ -86,6 +86,10 @@
 	};
 };
 
+&fec {
+	/delete-property/ phy-supply;
+};
+
 &gpmi {
 	partitions {
 		compatible = "fixed-partitions";

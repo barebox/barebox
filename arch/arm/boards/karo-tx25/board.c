@@ -125,24 +125,20 @@ static iomux_v3_cfg_t tx25_lcdc_gpios[] = {
 	MX25_PAD_OE_ACD__OE_ACD,
 };
 
-static struct imx_fb_videomode stk5_fb_mode = {
-	.bpp	= 16,
-	.mode = {
-		.name = "G-ETV570G0DMU",
-		.pixclock	= 33333,
+static struct fb_videomode stk5_fb_mode = {
+	.name = "G-ETV570G0DMU",
+	.pixclock	= 33333,
 
-		.xres		= 640,
-		.yres		= 480,
+	.xres		= 640,
+	.yres		= 480,
 
-		.hsync_len	= 64,
-		.left_margin	= 96,
-		.right_margin	= 80,
+	.hsync_len	= 64,
+	.left_margin	= 96,
+	.right_margin	= 80,
 
-		.vsync_len	= 3,
-		.upper_margin	= 46,
-		.lower_margin	= 39,
-	},
-	.pcr	= PCR_TFT | PCR_COLOR | PCR_FLMPOL | PCR_LPPOL | PCR_SCLK_SEL,
+	.vsync_len	= 3,
+	.upper_margin	= 46,
+	.lower_margin	= 39,
 };
 
 #define STK5_LCD_BACKLIGHT_GPIO		IMX_GPIO_NR(1, 26)
@@ -168,6 +164,8 @@ static struct imx_fb_platform_data tx25_fb_data = {
 	.num_modes	= 1,
 	.dmacr		= 0x80040060,
 	.enable		= tx25_fb_enable,
+	.bpp		= 16,
+	.pcr		= PCR_TFT | PCR_COLOR | PCR_FLMPOL | PCR_LPPOL | PCR_SCLK_SEL,
 };
 
 static int tx25_init_fb(void)

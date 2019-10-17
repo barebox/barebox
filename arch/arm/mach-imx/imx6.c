@@ -192,13 +192,7 @@ int imx6_cpu_revision(void)
 
 u64 imx6_uid(void)
 {
-	void __iomem *ocotpbase = IOMEM(MX6_OCOTP_BASE_ADDR);
-	u64 uid;
-
-	uid = ((u64)readl(ocotpbase + MX6_OCOTP_CFG0) << 32);
-	uid |= (u64)readl(ocotpbase + MX6_OCOTP_CFG1);
-
-	return uid;
+	return imx_ocotp_read_uid(IOMEM(MX6_OCOTP_BASE_ADDR));
 }
 
 int imx6_init(void)

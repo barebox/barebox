@@ -121,7 +121,6 @@ MODULE_ALIAS("platform:" MUSB_DRIVER_NAME);
 
 /*-------------------------------------------------------------------------*/
 
-#ifndef CONFIG_BLACKFIN
 static int musb_ulpi_read(struct usb_phy *phy, u32 offset)
 {
 	void __iomem *addr = phy->io_priv;
@@ -195,10 +194,6 @@ static int musb_ulpi_write(struct usb_phy *phy, u32 offset, u32 data)
 out:
 	return ret;
 }
-#else
-#define musb_ulpi_read		NULL
-#define musb_ulpi_write		NULL
-#endif
 
 struct usb_phy_io_ops musb_ulpi_access = {
 	.read = musb_ulpi_read,
@@ -207,7 +202,7 @@ struct usb_phy_io_ops musb_ulpi_access = {
 
 /*-------------------------------------------------------------------------*/
 
-#if !defined(CONFIG_USB_MUSB_TUSB6010) && !defined(CONFIG_USB_MUSB_BLACKFIN)
+#if !defined(CONFIG_USB_MUSB_TUSB6010)
 
 /*
  * Load an endpoint's FIFO
@@ -824,11 +819,9 @@ static int musb_core_init(u16 musb_type, struct musb *musb)
 	} else {
 		musb->is_multipoint = 0;
 		type = "";
-#ifndef	CONFIG_USB_OTG_BLACKLIST_HUB
 		printk(KERN_ERR
 			"%s: kernel must blacklist external hubs\n",
 			musb_driver_name);
-#endif
 	}
 
 	/* log release info */

@@ -64,11 +64,6 @@ config DRIVER_SERIAL_MPC5XXX
 	default y
 	bool "MPC5200 serial driver"
 
-config DRIVER_SERIAL_BLACKFIN
-	depends on BLACKFIN
-	default y
-	bool "Blackfin serial driver"
-
 config DRIVER_SERIAL_CLPS711X
 	depends on ARCH_CLPS711X
 	default y

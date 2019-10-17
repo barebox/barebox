@@ -1,8 +1,0 @@
-#!/bin/sh
-
-. /env/config
-
-image=$envimage
-part=/dev/nor0.bareboxenv
-
-. /env/bin/_update $1

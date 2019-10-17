@@ -1,8 +1,0 @@
-#!/bin/sh
-
-. /env/config
-
-image=$perimage
-part=/dev/nor0.persistent
-
-. /env/bin/_update $1

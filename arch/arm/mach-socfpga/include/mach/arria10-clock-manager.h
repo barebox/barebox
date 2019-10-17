@@ -128,6 +128,7 @@ struct arria10_perpll_cfg {
 
 extern int arria10_cm_basic_init(struct arria10_mainpll_cfg *mainpll_cfg,
 				 struct arria10_perpll_cfg *perpll_cfg);
+unsigned int arria10_cm_get_mmc_controller_clk_hz(void);
 extern unsigned int cm_get_mmc_controller_clk_hz(void);
 extern void arria10_cm_use_intosc(void);
 extern uint32_t cm_l4_main_clk_hz;

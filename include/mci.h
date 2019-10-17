@@ -28,6 +28,7 @@
 
 #include <linux/list.h>
 #include <block.h>
+#include <fs.h>
 #include <regulator.h>
 
 /* These codes should be sorted numerically in order of newness.  If the last
@@ -305,6 +306,13 @@
 #define EXT_CSD_CARD_TYPE_SDR_1_2V	(1<<5)	/* Card can run at 200MHz */
 						/* SDR mode @1.2V I/O */
 
+/* register PARTITIONS_ATTRIBUTE [156] */
+#define EXT_CSD_ENH_USR_MASK		(1 << 0)
+
+/* register PARTITIONING_SUPPORT [160] */
+#define EXT_CSD_ENH_ATTRIBUTE_EN_MASK	(1 << 0)
+
+/* register BUS_WIDTH [183], field Bus Mode Selection [4:0] */
 #define EXT_CSD_BUS_WIDTH_1	0	/* Card is in 1 bit mode */
 #define EXT_CSD_BUS_WIDTH_4	1	/* Card is in 4 bit mode */
 #define EXT_CSD_BUS_WIDTH_8	2	/* Card is in 8 bit mode */
@@ -490,5 +498,10 @@ static inline int mmc_host_is_spi(struct mci_host *host)
 }
 
 struct mci *mci_get_device_by_name(const char *name);
+
+static inline struct mci *mci_get_device_by_devpath(const char *devpath)
+{
+	return mci_get_device_by_name(devpath_to_name(devpath));
+}
 
 #endif /* _MCI_H_ */

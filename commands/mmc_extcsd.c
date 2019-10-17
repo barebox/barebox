@@ -2373,7 +2373,7 @@ static int do_mmc_extcsd(int argc, char *argv[])
 	u8			*dst;
 	int			retval = 0;
 	int			opt;
-	char			*devname;
+	char			*devpath;
 	int			index = 0;
 	int			value = 0;
 	int			write_operation = 0;
@@ -2411,9 +2411,9 @@ static int do_mmc_extcsd(int argc, char *argv[])
 	if (optind == argc)
 		return COMMAND_ERROR_USAGE;
 
-	devname = argv[optind];
+	devpath = argv[optind];
 
-	mci = mci_get_device_by_name(devpath_to_name(devname));
+	mci = mci_get_device_by_devpath(devpath);
 	if (mci == NULL) {
 		retval = -ENOENT;
 		goto error;

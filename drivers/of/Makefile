@@ -6,3 +6,4 @@ obj-y += partition.o
 obj-y += of_net.o
 obj-$(CONFIG_MTD) += of_mtd.o
 obj-$(CONFIG_OF_BAREBOX_DRIVERS) += barebox.o
+obj-$(CONFIG_OF_OVERLAY) += overlay.o resolver.o of_firmware.o

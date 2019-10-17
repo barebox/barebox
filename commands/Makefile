@@ -79,6 +79,7 @@ obj-$(CONFIG_CMD_OF_NODE)	+= of_node.o
 obj-$(CONFIG_CMD_OF_DUMP)	+= of_dump.o
 obj-$(CONFIG_CMD_OF_DISPLAY_TIMINGS)	+= of_display_timings.o
 obj-$(CONFIG_CMD_OF_FIXUP_STATUS)	+= of_fixup_status.o
+obj-$(CONFIG_CMD_OF_OVERLAY)	+= of_overlay.o
 obj-$(CONFIG_CMD_MAGICVAR)	+= magicvar.o
 obj-$(CONFIG_CMD_IOMEM)		+= iomemport.o
 obj-$(CONFIG_CMD_LINUX_EXEC)	+= linux_exec.o

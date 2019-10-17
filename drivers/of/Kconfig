@@ -50,3 +50,28 @@ config OF_BAREBOX_ENV_IN_FS
 	help
 	  Allow the devie tree configuration of the barebox environment path
 	  to specify a file in filesystem, which will be mounted.
+
+config OF_OVERLAY
+	select OFTREE
+	bool "Devicetree overlays"
+	help
+	  Overlays allow to patch the devicetree. Unlike Linux, Barebox does
+	  not patch the live devicetree, but applies the overlays as fixup to
+	  the devicetree. Furthermore, overlays cannot be removed after they
+	  have been applied.
+
+config OF_OVERLAY_LIVE
+	depends on OF_OVERLAY
+	bool "Support devicetree overlays on live devicetree"
+	help
+	  This option allows to use devicetree overlays with the live
+	  devicetree. It is not required to apply overlays to any other
+	  devicetree.
+
+	  This builds the build-in devicetree with __symbols__, which
+	  significantly increases the size of the dtb file.
+
+	  Enable this option only if you actually need the live devicetree
+	  while applying in the devicetree overlay. This is usually the case if
+	  applying the overlay has other side effects than changing the
+	  devicetree.

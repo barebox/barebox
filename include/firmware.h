@@ -34,10 +34,25 @@ struct firmware_mgr;
 int firmwaremgr_register(struct firmware_handler *);
 
 struct firmware_mgr *firmwaremgr_find(const char *);
+#ifdef CONFIG_FIRMWARE
+struct firmware_mgr *firmwaremgr_find_by_node(const struct device_node *np);
+#else
+static inline struct firmware_mgr *firmwaremgr_find_by_node(const struct device_node *np)
+{
+	return NULL;
+}
+#endif
 
 void firmwaremgr_list_handlers(void);
 
+#ifdef CONFIG_FIRMWARE
 int firmwaremgr_load_file(struct firmware_mgr *, const char *path);
+#else
+static inline int firmwaremgr_load_file(struct firmware_mgr *mgr, const char *path)
+{
+	return -ENOSYS;
+}
+#endif
 
 #define get_builtin_firmware(name, start, size) \
 	{							\

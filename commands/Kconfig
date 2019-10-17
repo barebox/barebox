@@ -2106,6 +2106,18 @@ config CMD_OF_FIXUP_STATUS
 	  Register a fixup to enable or disable a device tree node.
 	  Nodes are enabled on default. Disabled with -d.
 
+config CMD_OF_OVERLAY
+	tristate
+	select OF_OVERLAY
+	prompt "of_overlay"
+	help
+	  of_overlay - register device tree overlay as fixup
+
+	  Usage: of_overlay [-S path] FILE
+
+	  Options:
+		  -S path	load firmware using this search path
+
 config CMD_OFTREE
 	tristate
 	select OFTREE

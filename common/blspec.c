@@ -14,6 +14,7 @@
 
 #include <environment.h>
 #include <globalvar.h>
+#include <firmware.h>
 #include <readkey.h>
 #include <common.h>
 #include <driver.h>
@@ -42,6 +43,78 @@ int blspec_entry_var_set(struct blspec_entry *entry, const char *name,
 			val ? strlen(val) + 1 : 0, 1);
 }
 
+static int blspec_apply_oftree_overlay(char *file, const char *abspath,
+				       int dryrun)
+{
+	int ret = 0;
+	struct fdt_header *fdt;
+	struct device_node *overlay;
+	char *path;
+	char *firmware_path;
+
+	path = basprintf("%s/%s", abspath, file);
+
+	fdt = read_file(path, NULL);
+	if (!fdt) {
+		pr_warn("unable to read \"%s\"\n", path);
+		ret = -EINVAL;
+		goto out;
+	}
+
+	overlay = of_unflatten_dtb(fdt);
+	free(fdt);
+	if (IS_ERR(overlay)) {
+		ret = PTR_ERR(overlay);
+		goto out;
+	}
+
+	if (dryrun) {
+		pr_info("dry run: skip overlay %s\n", path);
+		of_delete_node(overlay);
+		goto out;
+	}
+
+	/*
+	 * Unfortunately the device tree overlay contains only the filename of
+	 * the firmware and relies on the firmware search paths to find the
+	 * actual file. Use /lib/firmware in the Linux root directory and hope
+	 * for the best.
+	 */
+	firmware_path = basprintf("%s/%s", abspath, "/lib/firmware");
+	ret = of_firmware_load_overlay(overlay, firmware_path);
+	free(firmware_path);
+	if (ret) {
+		pr_warn("failed to load firmware: skip overlay \"%s\"\n", path);
+		of_delete_node(overlay);
+		goto out;
+	}
+
+	ret = of_register_overlay(overlay);
+	if (ret) {
+		pr_warn("cannot register devicetree overlay \"%s\"\n", path);
+		of_delete_node(overlay);
+	}
+
+out:
+	free(path);
+
+	return ret;
+}
+
+static void blspec_apply_oftree_overlays(const char *overlays,
+					 const char *abspath, int dryrun)
+{
+	char *overlay;
+	char *sep, *freep;
+
+	sep = freep = xstrdup(overlays);
+
+	while ((overlay = strsep(&sep, " ")))
+		blspec_apply_oftree_overlay(overlay, abspath, dryrun);
+
+	free(freep);
+}
+
 /*
  * blspec_boot - boot an entry
  *
@@ -54,6 +127,7 @@ static int blspec_boot(struct bootentry *be, int verbose, int dryrun)
 	struct blspec_entry *entry = container_of(be, struct blspec_entry, entry);
 	int ret;
 	const char *abspath, *devicetree, *options, *initrd, *linuximage;
+	const char *overlays;
 	const char *appendroot;
 	struct bootm_data data = {
 		.initrd_address = UIMAGE_INVALID_ADDRESS,
@@ -73,6 +147,7 @@ static int blspec_boot(struct bootentry *be, int verbose, int dryrun)
 	initrd = blspec_entry_var_get(entry, "initrd");
 	options = blspec_entry_var_get(entry, "options");
 	linuximage = blspec_entry_var_get(entry, "linux");
+	overlays = blspec_entry_var_get(entry, "devicetree-overlay");
 
 	if (entry->rootpath)
 		abspath = entry->rootpath;
@@ -91,6 +166,9 @@ static int blspec_boot(struct bootentry *be, int verbose, int dryrun)
 						       devicetree);
 		}
 	}
+
+	if (overlays)
+		blspec_apply_oftree_overlays(overlays, abspath, dryrun);
 
 	if (initrd)
 		data.initrd_file = basprintf("%s/%s", abspath, initrd);

@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: GPL-2.0-only
+menu "Remoteproc drivers"
+
+config REMOTEPROC
+	tristate "Support for Remote Processor subsystem"
+	select CRC32
+	select FIRMWARE
+	help
+	  Support for remote processors (such as DSP coprocessors). These
+	  are mainly used on embedded systems.
+
+if REMOTEPROC
+
+config IMX_REMOTEPROC
+	tristate "IMX6/7 remoteproc support"
+	depends on ARCH_IMX
+	select MFD_SYSCON
+	help
+	  Say y here to support iMX's remote processors (Cortex M4
+	  on iMX7D) via the remote processor framework.
+
+	  It's safe to say N here.
+
+endif # REMOTEPROC
+
+endmenu

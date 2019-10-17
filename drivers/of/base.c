@@ -1360,7 +1360,8 @@ static int __of_parse_phandle_with_args(const struct device_node *np,
 					 np->full_name);
 				goto err;
 			}
-			if (of_property_read_u32(node, cells_name, &count)) {
+			if (cells_name &&
+			    of_property_read_u32(node, cells_name, &count)) {
 				pr_err("%s: could not get %s for %s\n",
 					 np->full_name, cells_name,
 					 node->full_name);

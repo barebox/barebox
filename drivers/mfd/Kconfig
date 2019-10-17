@@ -67,4 +67,19 @@ config MFD_STPMIC1
 	help
 	  Select this to support communication with the STPMIC1.
 
+config MFD_SUPERIO
+	bool
+
+config FINTEK_SUPERIO
+       bool "Fintek Super I/O chip"
+       select MFD_SUPERIO
+       help
+         Select this to probe for IO-port connected Fintek Super I/O chips.
+
+config SMSC_SUPERIO
+       bool "SMSC Super I/O chip"
+       select MFD_SUPERIO
+       help
+         Select this to probe for IO-port connected SMSC Super I/O chips.
+
 endmenu

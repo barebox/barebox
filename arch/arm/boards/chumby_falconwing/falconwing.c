@@ -65,7 +65,7 @@ static struct fb_videomode falconwing_vmode = {
 	.xres = 320,
 	.yres = 240,
 	.pixclock = KHZ2PICOS(6250),    /* max. 10 MHz */
-	/* line lenght should be 64 µs */
+	/* line length should be 64 Âµs */
 	.left_margin = 28,
 	.hsync_len = 24,
 	.right_margin = 28,

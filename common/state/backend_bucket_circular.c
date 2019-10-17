@@ -178,10 +178,10 @@ static int state_mtd_peb_read(struct state_backend_storage_bucket_circular *circ
 	if (ret < 0) {
 		dev_err(circ->dev, "Failed to read circular storage len %d, %d\n",
 			len, ret);
-		free(buf);
+		return ret;
 	}
 
-	return ret;
+	return 0;
 }
 
 static int state_mtd_peb_write(struct state_backend_storage_bucket_circular *circ,

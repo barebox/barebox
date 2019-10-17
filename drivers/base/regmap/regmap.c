@@ -65,7 +65,7 @@ struct regmap *regmap_init(struct device_d *dev,
 }
 
 /*
- * regmap_init - initialize and register a regmap
+ * dev_get_regmap - get a regmap from a device
  *
  * @dev:         The device the maps is attached to
  * @name:        Optional name for the map. If given it must match.

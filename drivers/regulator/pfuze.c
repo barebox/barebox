@@ -161,15 +161,10 @@ static const struct regmap_config pfuze_regmap_i2c_config = {
 
 static int __init pfuze_probe(struct device_d *dev)
 {
-	struct pfuze_devtype *devtype;
 	int ret;
 
 	if (pfuze_dev)
 		return -EBUSY;
-
-	ret = dev_get_drvdata(dev, (const void **)&devtype);
-	if (ret)
-		return ret;
 
 	pfuze_dev = xzalloc(sizeof(*pfuze_dev));
 	pfuze_dev->dev = dev;
@@ -192,26 +187,19 @@ static int __init pfuze_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct pfuze_devtype pfuze100_devtype = {
-};
-
-static struct pfuze_devtype pfuze200_devtype = {
-};
-
-static struct pfuze_devtype pfuze3000_devtype = {
-};
-
 static struct platform_device_id pfuze_ids[] = {
-	{ .name = "pfuze100", .driver_data = (ulong)&pfuze100_devtype, },
-	{ .name = "pfuze200", .driver_data = (ulong)&pfuze200_devtype, },
-	{ .name = "pfuze3000", .driver_data = (ulong)&pfuze3000_devtype, },
+	{ .name = "pfuze100" },
+	{ .name = "pfuze200" },
+	{ .name = "pfuze3000" },
+	{ .name = "pfuze3001" },
 	{ }
 };
 
 static __maybe_unused struct of_device_id pfuze_dt_ids[] = {
-	{ .compatible = "fsl,pfuze100", .data = &pfuze100_devtype, },
-	{ .compatible = "fsl,pfuze200", .data = &pfuze200_devtype, },
-	{ .compatible = "fsl,pfuze3000", .data = &pfuze3000_devtype, },
+	{ .compatible = "fsl,pfuze100" },
+	{ .compatible = "fsl,pfuze200" },
+	{ .compatible = "fsl,pfuze3000" },
+	{ .compatible = "fsl,pfuze3001" },
 	{ }
 };
 

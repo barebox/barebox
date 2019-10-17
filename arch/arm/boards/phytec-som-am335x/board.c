@@ -124,15 +124,11 @@ static int physom_devices_init(void)
 				ARRAY_SIZE(nandslots));
 	am33xx_bbu_emmc_mlo_register_handler("MLO.emmc", "/dev/mmc1");
 
-	if (IS_ENABLED(CONFIG_STATE)) {
-		state = state_by_name("am335x_phytec_mac_state");
-		if (state)
-			for (state_i = 0; state_i < 2; state_i++) {
-				state_ret = state_read_mac(state,
-						      eth_names[state_i], &mac[0]);
-				if (!state_ret && is_valid_ether_addr(&mac[0]))
-					eth_register_ethaddr(state_i, mac);
-			}
+	state = state_by_name("am335x_phytec_mac_state");
+	for (state_i = 0; state_i < 2; state_i++) {
+		state_ret = state_read_mac(state, eth_names[state_i], &mac[0]);
+		if (!state_ret && is_valid_ether_addr(&mac[0]))
+			eth_register_ethaddr(state_i, mac);
 	}
 
 	if (IS_ENABLED(CONFIG_PHYTEC_SOM_AM335X_OF_AUTOENABLE)) {

@@ -369,7 +369,7 @@ static int find_valid_gpt(void *buf, struct block_device *blk, gpt_header **gpt,
 	lastlba = last_lba(blk);
 	if (force_gpt) {
 		/* This will be added to the EFI Spec. per Intel after v1.02. */
-		if (file_detect_type(buf, SECTOR_SIZE * 2) != filetype_gpt)
+		if (file_detect_partition_table(buf, SECTOR_SIZE * 2) != filetype_gpt)
 			goto fail;
 	}
 

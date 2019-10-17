@@ -5,14 +5,11 @@
 			reg = <0x18060008 0x8>;
 			clocks = <&pll ATH79_CLK_CPU>;
 		};
-
-		mac0: mac@19000000 {
-			compatible = "qca,ar9331-ge0";
-			reg = <0x18070000 0x00000100>,
-			      <0x19000000 0x01000000>;
-			reg-names = "gmac", "ge0";
-			phy-mode = "mii";
-			status = "disabled";
-               };
 	};
+};
+
+&eth0 {
+	reg = <0x19000000 0x200>,
+	      <0x18070000 0x00000100>;
+	reg-names = "ge0", "gmac";
 };

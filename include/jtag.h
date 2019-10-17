@@ -28,7 +28,7 @@
  * (repeat for each chip in the chain)
  * - ioctl JTAG_GET_ID identifies the chip
  * - ioctl JTAG_SET_IR_LENGTH sets the instruction register length
- * Before accessing the data registers, instruction registers' lenghtes
+ * Before accessing the data registers, instruction registers' lengths
  *  MUST be programmed for all chips.
  * After this initialization, you can execute JTAG_IR_WR, JTAG_DR_RD, JTAG_DR_WR
  *  commands in any sequence.

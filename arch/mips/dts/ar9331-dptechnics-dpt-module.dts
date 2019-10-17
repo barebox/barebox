@@ -15,7 +15,7 @@
 		art@0 {
 			compatible = "qca,art-ar9331", "qca,art";
 			device-path = &spiflash_art;
-			barebox,provide-mac-address = <&mac0>;
+			barebox,provide-mac-address = <&eth0>;
 		};
 	};
 
@@ -47,8 +47,4 @@
 		label = "art";
 		reg = <0x7f0000 0x10000>;
 	};
-};
-
-&mac0 {
-	status = "okay";
 };

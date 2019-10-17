@@ -60,6 +60,10 @@ An appropriate image for the boot media can be generated with following
           image = "barebox-@STM32MP_BOARD@.img"
           size = 1M
       }
+      partition barebox-environment {
+          image = "/dev/null"
+          size = 1M
+      }
   }
 
 Image can then be flashed on e.g. a SD-Card.

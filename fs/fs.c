@@ -2699,7 +2699,7 @@ int chdir(const char *pathname)
 	struct path path;
 	int ret;
 
-	ret = filename_lookup(AT_FDCWD, getname(pathname), LOOKUP_FOLLOW, &path);
+	ret = filename_lookup(AT_FDCWD, getname(pathname), LOOKUP_FOLLOW | LOOKUP_DIRECTORY, &path);
 	if (ret)
 		goto out;
 

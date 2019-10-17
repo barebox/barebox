@@ -158,7 +158,9 @@ EXPORT_SYMBOL_GPL(read_file_line);
  * bytes are read. The actual read size is returned in @size. -EFBIG is
  * returned if the file is bigger than @max_size, but the buffer is read
  * anyway up to @max_size in this case. Free the buffer with free() after
- * usage.
+ * usage. The allocated buffer is actually one byte bigger than the file
+ * and the extra byte is initialized to '\0' so that the returned buffer
+ * can safely be interpreted as a string.
  *
  * Return: 0 for success, or negative error code. -EFBIG is returned
  * when the file has been bigger than max_size.

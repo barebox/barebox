@@ -15,8 +15,10 @@
 
 #include <common.h>
 #include <driver.h>
+#include <gpio.h>
 #include <restart.h>
 #include <i2c/i2c.h>
+#include <linux/bitops.h>
 #include <malloc.h>
 #include <notifier.h>
 #include <reset_source.h>
@@ -25,6 +27,7 @@
 struct da9063 {
 	struct restart_handler	restart;
 	struct watchdog		wd;
+	struct gpio_chip	gpio;
 	struct i2c_client	*client;
 	/* dummy client for accessing bank #1 */
 	struct i2c_client	*client1;
@@ -60,6 +63,19 @@ struct da9063 {
 
 /* DA9063_REG_CONTROL_I (addr=0x10e) */
 #define DA9062_WATCHDOG_SD	BIT(3)
+
+#define DA9062AA_STATUS_B       0x002
+#define DA9062AA_GPIO_0_1       0x015
+#define DA9062AA_GPIO_MODE0_4	0x01D
+
+/* DA9062AA_GPIO_0_1 (addr=0x015) */
+#define DA9062AA_GPIO0_PIN_MASK         0x03
+
+#define DA9062_PIN_SHIFT(offset)	(4 * (offset % 2))
+#define DA9062_PIN_ALTERNATE		0x00 /* gpio alternate mode */
+#define DA9062_PIN_GPI			0x01 /* gpio in */
+#define DA9062_PIN_GPO_OD		0x02 /* gpio out open-drain */
+#define DA9062_PIN_GPO_PP		0x03 /* gpio out push-pull */
 
 struct da906x_device_data {
 	int	(*init)(struct da9063 *priv);
@@ -103,6 +119,118 @@ static int da906x_reg_update(struct da9063 *priv, unsigned int reg,
 
 	return 0;
 }
+
+static inline struct da9063 *to_da9063(struct gpio_chip *chip)
+{
+	return container_of(chip, struct da9063, gpio);
+}
+
+static int da9063_gpio_direction_input(struct gpio_chip *chip, unsigned offset)
+{
+	struct da9063 *priv = to_da9063(chip);
+	u8 mask, mode;
+
+	mode = DA9062_PIN_GPI << DA9062_PIN_SHIFT(offset);
+	mask = DA9062AA_GPIO0_PIN_MASK << DA9062_PIN_SHIFT(offset);
+
+	return da906x_reg_update(priv, DA9062AA_GPIO_0_1 + (offset >> 1),
+				 mask, mode);
+}
+
+static int da9063_gpio_direction_output(struct gpio_chip *chip, unsigned offset,
+					int value)
+{
+	struct da9063 *priv = to_da9063(chip);
+
+	return da906x_reg_update(priv, DA9062AA_GPIO_MODE0_4, BIT(offset),
+				 value << offset);
+}
+
+static int da9063_gpio_get_pin_mode(struct da9063 *priv, unsigned offset)
+{
+	int ret;
+	u8 val;
+
+	ret = i2c_read_reg(priv->client, DA9062AA_GPIO_0_1 + (offset >> 1),
+			   &val, 1);
+	if (ret < 0)
+		return ret;
+
+	val >>= DA9062_PIN_SHIFT(offset);
+	val &= DA9062AA_GPIO0_PIN_MASK;
+
+	return val;
+}
+
+static int da9063_gpio_get(struct gpio_chip *chip, unsigned offset)
+{
+	struct da9063 *priv = to_da9063(chip);
+	int gpio_dir;
+	int ret;
+	u8 val;
+
+	gpio_dir = da9063_gpio_get_pin_mode(priv, offset);
+	if (gpio_dir < 0)
+		return gpio_dir;
+
+	switch (gpio_dir) {
+	case DA9062_PIN_ALTERNATE:
+		return -ENOTSUPP;
+	case DA9062_PIN_GPI:
+		ret = i2c_read_reg(priv->client, DA9062AA_STATUS_B, &val, 1);
+		if (ret < 0)
+			return ret;
+		break;
+	case DA9062_PIN_GPO_OD:
+		/* falltrough */
+	case DA9062_PIN_GPO_PP:
+		ret = i2c_read_reg(priv->client, DA9062AA_GPIO_MODE0_4, &val, 1);
+		if (ret < 0)
+			return ret;
+	}
+
+	return val & BIT(offset);
+}
+
+static int da9063_gpio_get_direction(struct gpio_chip *chip, unsigned offset)
+{
+	struct da9063 *priv = to_da9063(chip);
+	int gpio_dir;
+
+	gpio_dir = da9063_gpio_get_pin_mode(priv, offset);
+	if (gpio_dir < 0)
+		return gpio_dir;
+
+	switch (gpio_dir) {
+	case DA9062_PIN_ALTERNATE:
+		return -ENOTSUPP;
+	case DA9062_PIN_GPI:
+		return 1;
+	case DA9062_PIN_GPO_OD:
+		/* falltrough */
+	case DA9062_PIN_GPO_PP:
+		return 0;
+	}
+
+	return -EINVAL;
+}
+
+static void da9063_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
+{
+	struct da9063 *priv = to_da9063(chip);
+
+	da906x_reg_update(priv, DA9062AA_GPIO_MODE0_4, BIT(offset),
+			  value << offset);
+
+}
+
+static struct gpio_ops da9063_gpio_ops = {
+	.direction_input	= da9063_gpio_direction_input,
+	.direction_output	= da9063_gpio_direction_output,
+	.get_direction		= da9063_gpio_get_direction,
+	.get			= da9063_gpio_get,
+	.set			= da9063_gpio_set,
+};
 
 static int da9063_watchdog_ping(struct da9063 *priv)
 {
@@ -261,6 +389,17 @@ static int da9063_probe(struct device_d *dev)
 	priv->restart.restart = &da9063_restart;
 
 	restart_handler_register(&priv->restart);
+
+	priv->gpio.base = -1;
+	priv->gpio.ngpio = 5;
+	priv->gpio.ops  = &da9063_gpio_ops;
+	priv->gpio.dev = dev;
+	ret = gpiochip_add(&priv->gpio);
+	if (ret)
+		goto on_error;
+
+	if (IS_ENABLED(CONFIG_OFDEVICE) && dev->device_node)
+		return of_platform_populate(dev->device_node, NULL, dev);
 
 	return 0;
 

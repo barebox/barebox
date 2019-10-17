@@ -122,10 +122,17 @@ struct cdev *device_find_partition(struct device_d *dev, const char *name)
 	struct device_d *child;
 
 	list_for_each_entry(cdev, &dev->cdevs, devices_list) {
+		struct cdev *cdevl;
+
 		if (!cdev->partname)
 			continue;
 		if (!strcmp(cdev->partname, name))
 			return cdev;
+
+		list_for_each_entry(cdevl, &cdev->links, link_entry) {
+			if (!strcmp(cdevl->partname, name))
+				return cdev_readlink(cdevl);
+		}
 	}
 
 	device_for_each_child(dev, child) {
@@ -252,6 +259,20 @@ int devfs_create_link(struct cdev *cdev, const char *name)
 	new = xzalloc(sizeof(*new));
 	new->name = xstrdup(name);
 	new->link = cdev;
+
+	if (cdev->partname) {
+		size_t partnameoff = 0;
+
+		if (cdev->master) {
+			size_t masterlen = strlen(cdev->master->name);
+
+			if (!strncmp(name, cdev->master->name, masterlen))
+				partnameoff += masterlen + 1;
+		}
+
+		new->partname = xstrdup(name + partnameoff);
+	}
+
 	INIT_LIST_HEAD(&new->links);
 	list_add_tail(&new->list, &cdev_list);
 	list_add_tail(&new->link_entry, &cdev->links);

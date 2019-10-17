@@ -34,6 +34,7 @@ struct mv88e6xxx_info {
 	const char *name;
 	unsigned int num_ports;
 	unsigned int port_base_addr;
+	unsigned int global1_addr;
 	unsigned int global2_addr;
 
 	const struct mv88e6xxx_ops *ops;

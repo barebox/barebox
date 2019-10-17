@@ -57,15 +57,4 @@ void socfpga_sysmgr_pinmux_init(unsigned long *sys_mgr_init_table, int num);
 #define SYSMGR_FPGAINTF_NAND		(1<<4)
 #define SYSMGR_FPGAINTF_SDMMC		(1<<5)
 
-/* Enumeration: sysmgr::emacgrp::ctrl::physel::enum                        */
-#define SYSMGR_EMACGRP_CTRL_PHYSEL_ENUM_GMII_MII 0x0
-#define SYSMGR_EMACGRP_CTRL_PHYSEL_ENUM_RGMII 0x1
-#define SYSMGR_EMACGRP_CTRL_PHYSEL_ENUM_RMII 0x2
-#define SYSMGR_EMACGRP_CTRL_PHYSEL0_LSB 0
-#define SYSMGR_EMACGRP_CTRL_PHYSEL1_LSB 2
-#define SYSMGR_EMACGRP_CTRL_PHYSEL_MASK 0x00000003
-
-#define SYSMGR_FPGAGRP_MODULE  0x00000028
-#define SYSMGR_FPGAGRP_MODULE_EMAC 0x00000004
-
 #endif /* _SYSTEM_MANAGER_H_ */

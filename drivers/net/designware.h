@@ -35,6 +35,7 @@ struct dw_eth_dev {
 
 struct dw_eth_drvdata {
 	bool enh_desc;
+	void *priv;
 };
 
 struct dw_eth_dev *dwc_drv_probe(struct device_d *dev);

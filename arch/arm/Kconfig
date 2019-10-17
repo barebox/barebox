@@ -25,20 +25,6 @@ config TEXT_BASE
 
 menu "System Type"
 
-config BUILTIN_DTB
-	bool "link a DTB into the barebox image"
-	depends on OFTREE
-	depends on !HAVE_PBL_MULTI_IMAGES
-
-config BUILTIN_DTB_NAME
-	string "DTB to build into the barebox image"
-	depends on BUILTIN_DTB
-	default "canon-a1100" if MACH_CANON_A1100
-	default "imx51-genesi-efika-sb" if MACH_EFIKA_MX_SMARTBOOK
-	default "versatile-pb" if ARCH_VERSATILE_PB
-	default "virt2real" if MACH_VIRT2REAL
-	default "module-mb7707" if MACH_MB7707
-
 choice
 	prompt "ARM system type"
 
@@ -144,10 +130,6 @@ config ARCH_MXS
 	select COMMON_CLK
 	select CLKDEV_LOOKUP
 	select HAS_DEBUG_LL
-
-config ARCH_NETX
-	bool "Hilscher NetX based"
-	select CPU_ARM926T
 
 config ARCH_NOMADIK
 	bool "STMicroelectronics Nomadik"
@@ -298,7 +280,6 @@ source "arch/arm/mach-imx/Kconfig"
 source "arch/arm/mach-layerscape/Kconfig"
 source "arch/arm/mach-mxs/Kconfig"
 source "arch/arm/mach-mvebu/Kconfig"
-source "arch/arm/mach-netx/Kconfig"
 source "arch/arm/mach-nomadik/Kconfig"
 source "arch/arm/mach-omap/Kconfig"
 source "arch/arm/mach-pxa/Kconfig"

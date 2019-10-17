@@ -24,16 +24,19 @@
  * be fine.
  */
 
-void NAKED __noreturn barebox_arm_entry(unsigned long membase,
-					  unsigned long memsize, void *boarddata)
-{
-	arm_setup_stack(arm_mem_stack_top(membase, membase + memsize));
-	arm_early_mmu_cache_invalidate();
+/*
+ * It can be hard to convince GCC to not use old stack pointer after
+ * we modify it with arm_setup_stack() on ARM64, so we implement the
+ * low level details in assembly
+ */
+void __noreturn __barebox_arm_entry(unsigned long membase,
+				    unsigned long memsize,
+				    void *boarddata,
+				    unsigned long sp);
 
-	if (IS_ENABLED(CONFIG_PBL_MULTI_IMAGES))
-		barebox_multi_pbl_start(membase, memsize, boarddata);
-	else if (IS_ENABLED(CONFIG_PBL_SINGLE_IMAGE))
-		barebox_single_pbl_start(membase, memsize, boarddata);
-	else
-		barebox_non_pbl_start(membase, memsize, boarddata);
+void NAKED __noreturn barebox_arm_entry(unsigned long membase,
+					unsigned long memsize, void *boarddata)
+{
+	__barebox_arm_entry(membase, memsize, boarddata,
+			    arm_mem_stack_top(membase, membase + memsize));
 }

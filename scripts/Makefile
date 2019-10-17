@@ -14,7 +14,6 @@ hostprogs-$(CONFIG_IMD)          += bareboximd
 hostprogs-$(CONFIG_KALLSYMS)     += kallsyms
 hostprogs-$(CONFIG_MIPS)         += mips-relocs
 hostprogs-$(CONFIG_MVEBU_HOSTTOOLS) += kwbimage kwboot mvebuimg
-hostprogs-$(CONFIG_ARCH_NETX)    += gen_netx_image
 hostprogs-$(CONFIG_ARCH_OMAP)    += omap_signGP mk-omap-image
 hostprogs-$(CONFIG_ARCH_S5PCxx)  += s5p_cksum
 hostprogs-$(CONFIG_ARCH_DAVINCI) += mkublheader

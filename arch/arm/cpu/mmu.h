@@ -36,6 +36,7 @@ static inline void set_ttbr(void *ttb)
 	asm volatile ("mcr  p15,0,%0,c2,c0,0" : : "r"(ttb) /*:*/);
 }
 
+#define DOMAIN_CLIENT	1
 #define DOMAIN_MANAGER	3
 
 static inline void set_domain(unsigned val)

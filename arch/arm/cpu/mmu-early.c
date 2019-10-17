@@ -29,7 +29,12 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize,
 	arm_set_cache_functions();
 
 	set_ttbr(ttb);
-	set_domain(DOMAIN_MANAGER);
+
+	/* For the XN bit to take effect, we can't be using DOMAIN_MANAGER. */
+	if (cpu_architecture() >= CPU_ARCH_ARMv7)
+		set_domain(DOMAIN_CLIENT);
+	else
+		set_domain(DOMAIN_MANAGER);
 
 	/*
 	 * This marks the whole address space as uncachable as well as

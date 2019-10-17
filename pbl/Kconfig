@@ -24,14 +24,6 @@ config PBL_SINGLE_IMAGE
 	depends on !HAVE_PBL_MULTI_IMAGES
 	default y
 
-config PBL_FORCE_PIGGYDATA_COPY
-	bool
-	help
-	  In some case we need to copy the PIGGYDATA as the link address
-	  as example we run from SRAM and shutdown the SDRAM/DDR for
-	  reconfiguration but most of the time we just need to copy the
-	  executable code.
-
 if PBL_IMAGE
 
 config PBL_RELOCATABLE

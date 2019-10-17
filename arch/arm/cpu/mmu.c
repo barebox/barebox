@@ -56,13 +56,14 @@ static inline void tlb_invalidate(void)
 	);
 }
 
-#define PTE_FLAGS_CACHED_V7 (PTE_EXT_TEX(1) | PTE_BUFFERABLE | PTE_CACHEABLE)
-#define PTE_FLAGS_WC_V7 (PTE_EXT_TEX(1) | PTE_EXT_XN)
-#define PTE_FLAGS_UNCACHED_V7 PTE_EXT_XN
+#define PTE_FLAGS_CACHED_V7 (PTE_EXT_TEX(1) | PTE_BUFFERABLE | PTE_CACHEABLE | \
+			     PTE_EXT_AP_URW_SRW)
+#define PTE_FLAGS_WC_V7 (PTE_EXT_TEX(1) | PTE_EXT_AP_URW_SRW | PTE_EXT_XN)
+#define PTE_FLAGS_UNCACHED_V7 (PTE_EXT_AP_URW_SRW | PTE_EXT_XN)
 #define PTE_FLAGS_CACHED_V4 (PTE_SMALL_AP_UNO_SRW | PTE_BUFFERABLE | PTE_CACHEABLE)
 #define PTE_FLAGS_UNCACHED_V4 PTE_SMALL_AP_UNO_SRW
-#define PGD_FLAGS_WC_V7 (PMD_SECT_TEX(1) | PMD_TYPE_SECT | PMD_SECT_BUFFERABLE | \
-			 PMD_SECT_XN)
+#define PGD_FLAGS_WC_V7 (PMD_SECT_TEX(1) | PMD_SECT_DEF_UNCACHED | \
+			 PMD_SECT_BUFFERABLE | PMD_SECT_XN)
 #define PGD_FLAGS_UNCACHED_V7 (PMD_SECT_DEF_UNCACHED | PMD_SECT_XN)
 
 /*
@@ -445,7 +446,12 @@ void __mmu_init(bool mmu_on)
 		ttb = xmemalign(ARM_TTB_SIZE, ARM_TTB_SIZE);
 
 		set_ttbr(ttb);
-		set_domain(DOMAIN_MANAGER);
+
+		/* For the XN bit to take effect, we can't be using DOMAIN_MANAGER. */
+		if (cpu_architecture() >= CPU_ARCH_ARMv7)
+			set_domain(DOMAIN_CLIENT);
+		else
+			set_domain(DOMAIN_MANAGER);
 
 		create_flat_mapping(ttb);
 		__mmu_cache_flush();
@@ -455,11 +461,6 @@ void __mmu_init(bool mmu_on)
 
 	vectors_init();
 
-	/*
-	 * First remap sdram cached using sections.
-	 * This is to speed up the generation of 2nd level page tables
-	 * below
-	 */
 	for_each_memory_bank(bank) {
 		create_sections(ttb, bank->start, bank->start + bank->size - 1,
 				PMD_SECT_DEF_CACHED);

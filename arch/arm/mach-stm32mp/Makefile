@@ -1,1 +1,1 @@
-obj- := __dummy__.o
+obj-$(CONFIG_BOOTM) := stm32image.o

@@ -36,14 +36,27 @@
 
 #include "entry.h"
 
+#ifndef CONFIG_HAVE_PBL_MULTI_IMAGES
+
+void start_pbl(void);
+
+/*
+ * First instructions in the pbl image
+ */
+void __naked __section(.text_head_entry_start_single_pbl) start_pbl(void)
+{
+	barebox_arm_head();
+}
+#endif
+
 unsigned long free_mem_ptr;
 unsigned long free_mem_end_ptr;
 
 extern unsigned char input_data[];
 extern unsigned char input_data_end[];
 
-void __noreturn barebox_multi_pbl_start(unsigned long membase,
-		unsigned long memsize, void *boarddata)
+void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
+				  void *boarddata)
 {
 	uint32_t pg_len, uncompressed_len;
 	void __noreturn (*barebox)(unsigned long, unsigned long, void *);

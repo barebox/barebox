@@ -8,7 +8,7 @@ obj-pbl-$(CONFIG_CPU_32v7) += hyp.o
 AFLAGS_hyp.o :=-Wa,-march=armv7-a -Wa,-mcpu=all
 AFLAGS_pbl-hyp.o :=-Wa,-march=armv7-a -Wa,-mcpu=all
 
-obj-y += start.o entry.o
+obj-y += start.o entry.o entry_ll$(S64).o
 
 pbl-$(CONFIG_BOARD_ARM_GENERIC_DT) += board-dt-2nd.o
 pbl-$(CONFIG_BOARD_ARM_GENERIC_DT_AARCH64) += board-dt-2nd-aarch64.o
@@ -47,8 +47,7 @@ AFLAGS_cache-armv8.o       :=-Wa,-march=armv8-a
 obj-pbl-$(CONFIG_CPU_64v8) += cache-armv8.o
 AFLAGS_pbl-cache-armv8.o       :=-Wa,-march=armv8-a
 
-pbl-y += entry.o
-pbl-$(CONFIG_PBL_SINGLE_IMAGE) += start-pbl.o
-pbl-$(CONFIG_PBL_MULTI_IMAGES) += uncompress.o
+pbl-y += entry.o entry_ll$(S64).o
+pbl-y += uncompress.o
 
 obj-pbl-y += common.o sections.o

@@ -92,7 +92,6 @@ machine-$(CONFIG_ARCH_LAYERSCAPE)	:= layerscape
 machine-$(CONFIG_ARCH_MXS)		:= mxs
 machine-$(CONFIG_ARCH_MVEBU)		:= mvebu
 machine-$(CONFIG_ARCH_NOMADIK)		:= nomadik
-machine-$(CONFIG_ARCH_NETX)		:= netx
 machine-$(CONFIG_ARCH_OMAP)		:= omap
 machine-$(CONFIG_ARCH_PXA)		:= pxa
 machine-$(CONFIG_ARCH_ROCKCHIP)		:= rockchip
@@ -148,23 +147,7 @@ else
 LDFLAGS_barebox += -static
 endif
 
-ifdef CONFIG_IMAGE_COMPRESSION
-KBUILD_BINARY := arch/arm/pbl/zbarebox.bin
-else
 KBUILD_BINARY := barebox.bin
-endif
-
-barebox.netx: $(KBUILD_BINARY)
-	$(Q)scripts/gen_netx_image -i $< -o barebox.netx		\
-		--sdramctrl=$(CONFIG_NETX_SDRAM_CTRL)			\
-		--sdramtimctrl=$(CONFIG_NETX_SDRAM_TIMING_CTRL)		\
-		--memctrl=$(CONFIG_NETX_MEM_CTRL)			\
-		--entrypoint=$(CONFIG_TEXT_BASE)			\
-		--cookie=$(CONFIG_NETX_COOKIE);
-
-ifeq ($(machine-y),netx)
-KBUILD_IMAGE := barebox.netx
-endif
 
 barebox.s5p: $(KBUILD_BINARY)
 	$(Q)scripts/s5p_cksum $< barebox.s5p
@@ -266,10 +249,6 @@ ifneq ($(imxcfg-y),)
 CFG_barebox.imximg := $(imxcfg-y)
 KBUILD_IMAGE  := barebox.imximg
 endif
-
-pbl := arch/arm/pbl
-$(pbl)/zbarebox.S $(pbl)/zbarebox.bin $(pbl)/zbarebox: barebox.bin FORCE
-	$(Q)$(MAKE) $(build)=$(pbl) $@
 
 archclean:
 	$(MAKE) $(clean)=$(pbl)

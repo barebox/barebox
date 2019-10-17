@@ -519,7 +519,7 @@ images: barebox.bin FORCE
 images/%.s: barebox.bin FORCE
 	$(Q)$(MAKE) $(build)=images $@
 
-ifdef CONFIG_PBL_MULTI_IMAGES
+ifdef CONFIG_PBL_IMAGE
 all: barebox.bin images
 else
 all: barebox-flash-image barebox-flash-images

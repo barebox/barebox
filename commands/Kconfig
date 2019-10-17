@@ -2023,6 +2023,13 @@ config CMD_LSMOD
 	help
 	  List loaded barebox modules.
 
+config CMD_OF_DIFF
+	tristate
+	select OFTREE
+	prompt "of_diff"
+	help
+	  Compare two device tree files against each other.
+
 config CMD_OF_DUMP
 	tristate
 	select OFTREE

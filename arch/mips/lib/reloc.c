@@ -110,7 +110,7 @@ void relocate_code(void *fdt, u32 fdt_size, u32 ram_size)
 {
 	unsigned long addr, length, bss_len;
 	u32 relocaddr, new_stack;
-	uint8_t *buf, *bss_start;
+	uint8_t *buf;
 	unsigned int type;
 	long off;
 
@@ -148,10 +148,6 @@ void relocate_code(void *fdt, u32 fdt_size, u32 ram_size)
 
 	/* Ensure the icache is coherent */
 	flush_cache_all();
-
-	/* Clear the .bss section */
-	bss_start = (uint8_t *)((unsigned long)__bss_start + off);
-	memset(bss_start, 0, bss_len);
 
 	 __asm__ __volatile__ (
 			"move	$a0, %0\n"

@@ -115,6 +115,8 @@ void relocate_code(void *fdt, u32 fdt_size, u32 ram_size)
 	long off;
 
 	bss_len = (unsigned long)&__bss_stop - (unsigned long)__bss_start;
+	memset(__bss_start, 0, bss_len);
+	cpu_probe();
 
 	length = barebox_image_size + bss_len;
 	relocaddr = ALIGN_DOWN(ram_size - length, SZ_64K);

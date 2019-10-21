@@ -52,7 +52,6 @@ int barebox_libftdi1_update(struct ft2232_bitbang *ftbb);
 void barebox_libftdi1_close(void);
 
 typedef struct {
-	int randomfd;
 	int urandomfd;
 } devrandom_t;
 devrandom_t *devrandom_init(void);

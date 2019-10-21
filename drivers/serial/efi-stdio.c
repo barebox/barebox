@@ -116,7 +116,7 @@ static int efi_read_key(struct efi_console_priv *priv, bool wait)
 	if (wait)
 		BS->wait_for_event(1, priv->in->wait_for_key, &index);
 
-        efiret = priv->in->read_key_stroke(efi_sys_table->con_in, &k);
+        efiret = priv->in->read_key_stroke(priv->in, &k);
         if (EFI_ERROR(efiret))
 		return -efi_errno(efiret);
 
@@ -133,7 +133,8 @@ static int efi_read_key(struct efi_console_priv *priv, bool wait)
 static void efi_console_putc(struct console_device *cdev, char c)
 {
 	uint16_t str[2] = {};
-	struct efi_simple_text_output_protocol *con_out = efi_sys_table->con_out;
+	struct efi_console_priv *priv = to_efi(cdev);
+	struct efi_simple_text_output_protocol *con_out = priv->out;
 
 	str[0] = c;
 

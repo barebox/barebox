@@ -1389,8 +1389,10 @@ config CMD_PASSWD
 	help
 	  Set password
 
-	  'Interactively asks for a password. The digest of this password will be
-	  stored in /env/etc//passwd. This is then used by the 'login' command.
+	  Interactively asks for a password. The digest of this password will be
+	  stored in /env/etc/passwd. This is then used by the 'login' command.
+
+	  Passwords can be generated on the host machine using barebox sandbox.
 
 	  Entering an empty string will disable the password function.
 

@@ -332,7 +332,7 @@ int copy_file(const char *src, const char *dst, int verbose)
 {
 	char *rw_buf = NULL;
 	int srcfd = 0, dstfd = 0;
-	int r;
+	int r, s;
 	int ret = 1, err1 = 0;
 	int mode;
 	int total = 0;
@@ -343,22 +343,27 @@ int copy_file(const char *src, const char *dst, int verbose)
 	srcfd = open(src, O_RDONLY);
 	if (srcfd < 0) {
 		printf("could not open %s: %s\n", src, errno_str());
+		ret = srcfd;
 		goto out;
 	}
 
 	mode = O_WRONLY | O_CREAT;
 
-	ret = stat(dst, &dststat);
-	if (ret && ret != -ENOENT)
+	s = stat(dst, &dststat);
+	if (s && s != -ENOENT) {
+		printf("could not stat %s: %s\n", dst, errno_str());
+		ret = s;
 		goto out;
+	}
 
 	/* Set O_TRUNC only if file exist and is a regular file */
-	if (!ret && S_ISREG(dststat.st_mode))
+	if (!s && S_ISREG(dststat.st_mode))
 		mode |= O_TRUNC;
 
 	dstfd = open(dst, mode);
 	if (dstfd < 0) {
 		printf("could not open %s: %s\n", dst, errno_str());
+		ret = dstfd;
 		goto out;
 	}
 
@@ -373,12 +378,14 @@ int copy_file(const char *src, const char *dst, int verbose)
 		r = read(srcfd, rw_buf, RW_BUF_SIZE);
 		if (r < 0) {
 			perror("read");
+			ret = r;
 			goto out;
 		}
 		if (!r)
 			break;
 
-		if (write_full(dstfd, rw_buf, r) < 0) {
+		ret = write_full(dstfd, rw_buf, r);
+		if (ret < 0) {
 			perror("write");
 			goto out;
 		}

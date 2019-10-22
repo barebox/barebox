@@ -959,11 +959,11 @@ config STATE_CRYPTO
 	  for more information.
 
 config STATE_BACKWARD_COMPATIBLE
-	bool "backward compatible 'direct storage backend'"
+	bool "backward compatible 'direct' storage backend"
 	depends on STATE
 	help
-	  With this option enabled the 'direct' storage backend keeps backward
-	  compatibility with older revisions of the state framework. Newer
+	  With this option enabled, the 'direct' storage backend keeps backward
+	  compatibility with the state framework of barebox <= v2016.08.0. Newer
 	  revisions expect an additional 'meta header' and fail otherwise.
 
 config BOOTCHOOSER

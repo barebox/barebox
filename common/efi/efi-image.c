@@ -174,7 +174,6 @@ static inline void linux_efi_handover(efi_handle_t handle,
 {
 	handover_fn handover;
 
-	asm volatile ("cli");
 	handover = (handover_fn)((long)header->code32_start + 512 +
 				 header->handover_offset);
 	handover(handle, efi_sys_table, header);

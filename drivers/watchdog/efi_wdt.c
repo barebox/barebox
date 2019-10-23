@@ -41,6 +41,7 @@ static int efi_wdt_probe(struct device_d *dev)
 	priv->wd.set_timeout = efi_wdt_set_timeout;
 	priv->wd.hwdev = dev;
 	priv->dev = dev;
+	priv->wd.priority = WATCHDOG_DEFAULT_PRIORITY - 50;
 
 	dev->priv = priv;
 

@@ -31,8 +31,15 @@ static const char *watchdog_name(struct watchdog *wd)
 	return "unknown";
 }
 
-static int _watchdog_set_timeout(struct watchdog *wd, unsigned timeout)
+/*
+ * start, stop or retrigger the watchdog
+ * timeout in [seconds]. timeout of '0' will disable the watchdog (if possible)
+ */
+int watchdog_set_timeout(struct watchdog *wd, unsigned timeout)
 {
+	if (!wd)
+		return -ENODEV;
+
 	if (timeout > wd->timeout_max)
 		return -EINVAL;
 
@@ -40,13 +47,14 @@ static int _watchdog_set_timeout(struct watchdog *wd, unsigned timeout)
 
 	return wd->set_timeout(wd, timeout);
 }
+EXPORT_SYMBOL(watchdog_set_timeout);
 
 static int watchdog_set_priority(struct param_d *param, void *priv)
 {
 	struct watchdog *wd = priv;
 
 	if (wd->priority == 0)
-		return _watchdog_set_timeout(wd, 0);
+		return watchdog_set_timeout(wd, 0);
 
 	return 0;
 }
@@ -65,7 +73,7 @@ static void watchdog_poller_cb(void *priv);
 
 static void watchdog_poller_start(struct watchdog *wd)
 {
-	_watchdog_set_timeout(wd, wd->timeout_cur);
+	watchdog_set_timeout(wd, wd->timeout_cur);
 	poller_call_async(&wd->poller, 500 * MSECOND,
 			watchdog_poller_cb, wd);
 
@@ -192,7 +200,7 @@ int watchdog_deregister(struct watchdog *wd)
 }
 EXPORT_SYMBOL(watchdog_deregister);
 
-static struct watchdog *watchdog_get_default(void)
+struct watchdog *watchdog_get_default(void)
 {
 	struct watchdog *tmp, *wd = NULL;
 	int priority = 0;
@@ -206,23 +214,23 @@ static struct watchdog *watchdog_get_default(void)
 
 	return wd;
 }
+EXPORT_SYMBOL(watchdog_get_default);
 
-/*
- * start, stop or retrigger the watchdog
- * timeout in [seconds]. timeout of '0' will disable the watchdog (if possible)
- */
-int watchdog_set_timeout(unsigned timeout)
+struct watchdog *watchdog_get_by_name(const char *name)
 {
-	struct watchdog *wd;
+	struct watchdog *tmp;
+	struct device_d *dev = get_device_by_name(name);
+	if (!dev)
+		return NULL;
 
-	wd = watchdog_get_default();
+	list_for_each_entry(tmp, &watchdog_list, list) {
+		if (dev == tmp->hwdev || dev == &tmp->dev)
+			return tmp;
+	}
 
-	if (!wd)
-		return -ENODEV;
-
-	return _watchdog_set_timeout(wd, timeout);
+	return NULL;
 }
-EXPORT_SYMBOL(watchdog_set_timeout);
+EXPORT_SYMBOL(watchdog_get_by_name);
 
 /**
  * of_get_watchdog_priority() - get the desired watchdog priority from device tree

@@ -14,6 +14,7 @@
 # define INCLUDE_WATCHDOG_H
 
 #include <poller.h>
+#include <driver.h>
 
 struct watchdog {
 	int (*set_timeout)(struct watchdog *, unsigned);
@@ -31,7 +32,9 @@ struct watchdog {
 #ifdef CONFIG_WATCHDOG
 int watchdog_register(struct watchdog *);
 int watchdog_deregister(struct watchdog *);
-int watchdog_set_timeout(unsigned);
+struct watchdog *watchdog_get_default(void);
+struct watchdog *watchdog_get_by_name(const char *name);
+int watchdog_set_timeout(struct watchdog*, unsigned);
 unsigned int of_get_watchdog_priority(struct device_node *node);
 #else
 static inline int watchdog_register(struct watchdog *w)
@@ -44,10 +47,21 @@ static inline int watchdog_deregister(struct watchdog *w)
 	return 0;
 }
 
-static inline int watchdog_set_timeout(unsigned t)
+static inline struct watchdog *watchdog_get_default(void)
+{
+	return NULL;
+}
+
+static inline struct watchdog *watchdog_get_by_name(const char *name)
+{
+	return NULL;
+}
+
+static inline int watchdog_set_timeout(struct watchdog*w, unsigned t)
 {
 	return 0;
 }
+
 
 static inline unsigned int of_get_watchdog_priority(struct device_node *node)
 {

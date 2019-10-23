@@ -34,7 +34,7 @@ static int do_wd(int argc, char *argv[])
 		}
 	}
 
-	rc = watchdog_set_timeout(timeout);
+	rc = watchdog_set_timeout(watchdog_get_default(), timeout);
 	if (rc < 0) {
 		switch (rc) {
 		case -EINVAL:

@@ -41,6 +41,16 @@ static int _watchdog_set_timeout(struct watchdog *wd, unsigned timeout)
 	return wd->set_timeout(wd, timeout);
 }
 
+static int watchdog_set_priority(struct param_d *param, void *priv)
+{
+	struct watchdog *wd = priv;
+
+	if (wd->priority == 0)
+		return _watchdog_set_timeout(wd, 0);
+
+	return 0;
+}
+
 static int watchdog_set_cur(struct param_d *param, void *priv)
 {
 	struct watchdog *wd = priv;
@@ -129,6 +139,12 @@ int watchdog_register(struct watchdog *wd)
 
 	if (!wd->priority)
 		wd->priority = WATCHDOG_DEFAULT_PRIORITY;
+
+	p = dev_add_param_uint32(&wd->dev, "priority",
+				 watchdog_set_priority, NULL,
+				 &wd->priority, "%u", wd);
+	if (IS_ERR(p))
+		return PTR_ERR(p);
 
 	/* set some default sane value */
 	if (!wd->timeout_max)

@@ -350,7 +350,7 @@ https://uefi.org/sites/default/files/resources/UEFI_Spec_2_1_D.pdf
 
 Current linux kernel (v5.0) will execute ExitBootServices() during the early
 boot stage and thus will automatically disable the (U)EFI watchdog. Since it is
-a proper behavior according to the (U)EFI specification, it is impossible to
+the proper behavior according to the (U)EFI specification, it is impossible to
 protect full boot chain by using this watchdog only. It is recommended to use
 an alternative hardware watchdog, preferably started before the bootloader. If (U)EFI
 firmware lacks this feature, the bootloader should be able to start an alternative

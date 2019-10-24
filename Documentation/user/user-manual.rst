@@ -34,6 +34,7 @@ Contents:
    state
    random
    debugging
+   watchdog
 
 * :ref:`search`
 * :ref:`genindex`

@@ -29,6 +29,12 @@ enabled by default. To start polling from command line run:
 
   wdog0.autoping=1
 
+**NOTE** Using this feature might have the effect that the watchdog is
+effectively disabled. In case barebox is stuck in a loop that includes feeding
+the watchdog, then the watchdog will never trigger. Only use this feature
+during development or when a bad watchdog design (Short watchdog timeout
+enabled as boot default) doesn't give you another choice.
+
 The poller interval is not configurable, but fixed at 500ms and the watchdog
 timeout is configured by default to the maximum of the supported values by
 hardware. To change the timeout used by the poller, run:

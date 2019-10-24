@@ -63,7 +63,7 @@ static int watchdog_set_cur(struct param_d *param, void *priv)
 {
 	struct watchdog *wd = priv;
 
-	if (wd->timeout_cur > wd->timeout_max)
+	if (wd->poller_timeout_cur > wd->timeout_max)
 		return -EINVAL;
 
 	return 0;
@@ -73,7 +73,7 @@ static void watchdog_poller_cb(void *priv);
 
 static void watchdog_poller_start(struct watchdog *wd)
 {
-	watchdog_set_timeout(wd, wd->timeout_cur);
+	watchdog_set_timeout(wd, wd->poller_timeout_cur);
 	poller_call_async(&wd->poller, 500 * MSECOND,
 			watchdog_poller_cb, wd);
 
@@ -158,8 +158,8 @@ int watchdog_register(struct watchdog *wd)
 	if (!wd->timeout_max)
 		wd->timeout_max = 60 * 60 * 24;
 
-	if (!wd->timeout_cur || wd->timeout_cur > wd->timeout_max)
-		wd->timeout_cur = wd->timeout_max;
+	if (!wd->poller_timeout_cur || wd->poller_timeout_cur > wd->timeout_max)
+		wd->poller_timeout_cur = wd->timeout_max;
 
 	p = dev_add_param_uint32_ro(&wd->dev, "timeout_max",
 			&wd->timeout_max, "%u");
@@ -167,7 +167,7 @@ int watchdog_register(struct watchdog *wd)
 		return PTR_ERR(p);
 
 	p = dev_add_param_uint32(&wd->dev, "timeout_cur", watchdog_set_cur, NULL,
-			&wd->timeout_cur, "%u", wd);
+			&wd->poller_timeout_cur, "%u", wd);
 	if (IS_ERR(p))
 		return PTR_ERR(p);
 

@@ -23,7 +23,7 @@ struct watchdog {
 	struct device_d dev;
 	unsigned int priority;
 	unsigned int timeout_max;
-	unsigned int timeout_cur;
+	unsigned int poller_timeout_cur;
 	unsigned int poller_enable;
 	struct poller_async poller;
 	struct list_head list;

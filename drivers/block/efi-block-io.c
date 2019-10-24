@@ -14,6 +14,7 @@
 #include <disks.h>
 #include <efi/efi.h>
 #include <efi/efi-device.h>
+#include <bootsource.h>
 
 #define EFI_BLOCK_IO_PROTOCOL_REVISION2 0x00020001
 #define EFI_BLOCK_IO_PROTOCOL_REVISION3 ((2<<16) | (31))
@@ -145,6 +146,7 @@ static int is_bio_usbdev(struct efi_device *efidev)
 static int efi_bio_probe(struct efi_device *efidev)
 {
 	int ret;
+	int instance;
 	struct efi_bio_priv *priv;
 	struct efi_block_io_media *media;
 
@@ -159,10 +161,14 @@ static int efi_bio_probe(struct efi_device *efidev)
 	efi_bio_print_info(priv);
 	priv->dev = &efidev->dev;
 
-	if (is_bio_usbdev(efidev))
-		priv->blk.cdev.name = xasprintf("usbdisk%d", cdev_find_free_index("usbdisk"));
-	else
-		priv->blk.cdev.name = xasprintf("disk%d", cdev_find_free_index("disk"));
+	if (is_bio_usbdev(efidev)) {
+		instance = cdev_find_free_index("usbdisk");
+		priv->blk.cdev.name = xasprintf("usbdisk%d", instance);
+	} else {
+		instance = cdev_find_free_index("disk");
+		priv->blk.cdev.name = xasprintf("disk%d", instance);
+	}
+
 	priv->blk.blockbits = ffs(media->block_size) - 1;
 	priv->blk.num_blocks = media->last_block + 1;
 	priv->blk.ops = &efi_bio_ops;
@@ -173,6 +179,9 @@ static int efi_bio_probe(struct efi_device *efidev)
 	ret = blockdevice_register(&priv->blk);
 	if (ret)
 		return ret;
+
+	if (efi_get_bootsource() == efidev)
+		bootsource_set_instance(instance);
 
 	parse_partition_table(&priv->blk);
 

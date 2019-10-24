@@ -398,13 +398,19 @@ static int is_bio_usbdev(struct efi_device *efidev)
 	return 0;
 }
 
+static struct efi_device *bootdev;
+
+struct efi_device *efi_get_bootsource(void)
+{
+	return bootdev;
+}
+
 static void efi_set_bootsource(void)
 {
 	enum bootsource src = BOOTSOURCE_UNKNOWN;
 	int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
 
 	efi_handle_t *efi_parent;
-	struct efi_device *bootdev;
 
 	if (!efi_loaded_image->parent_handle)
 		goto out;

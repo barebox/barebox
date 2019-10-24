@@ -43,5 +43,6 @@ static inline int efi_driver_register(struct efi_driver *efidrv)
 
 int efi_connect_all(void);
 void efi_register_devices(void);
+struct efi_device *efi_get_bootsource(void);
 
 #endif /* __EFI_EFI_DEVICE_H */

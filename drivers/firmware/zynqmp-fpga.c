@@ -45,6 +45,19 @@ struct fpgamgr {
 	u32 features;
 };
 
+struct bs_header {
+	__be16 length;
+	u8 padding[9];
+	__be16 size;
+	char entries[0];
+} __attribute__ ((packed));
+
+struct bs_header_entry {
+	char type;
+	__be16 length;
+	char data[0];
+} __attribute__ ((packed));
+
 /*
  * Xilinx KU040 Bitstream Composition:
  * Bitstream can be provided with an optinal header (`struct bs_header`).
@@ -143,6 +156,42 @@ static int get_header_length(const char *header, size_t size)
 	return -EINVAL;
 }
 
+static void zynqmp_fpga_show_header(const struct device_d *dev,
+			 struct bs_header *header, size_t size)
+{
+	struct bs_header_entry *entry;
+	unsigned int i;
+	unsigned int length;
+
+	for (i = 0; i < size - sizeof(*header); i += sizeof(*entry) + length) {
+		entry = (struct bs_header_entry *)&header->entries[i];
+		length = __be16_to_cpu(entry->length);
+
+		switch (entry->type) {
+		case 'a':
+			printf("Design: %s\n", entry->data);
+			break;
+		case 'b':
+			printf("Part number: %s\n", entry->data);
+			break;
+		case 'c':
+			printf("Date: %s\n", entry->data);
+			break;
+		case 'd':
+			printf("Time: %s\n", entry->data);
+			break;
+		case 'e':
+			/* Size entry does not have a length but is be32 int */
+			printf("Size: %d bytes\n",
+			       (length << 16) + (entry->data[0] << 8) + entry->data[1]);
+			return;
+		default:
+			dev_warn(dev, "Invalid header entry: %c", entry->type);
+			return;
+		}
+	}
+}
+
 static int fpgamgr_program_finish(struct firmware_handler *fh)
 {
 	struct fpgamgr *mgr = container_of(fh, struct fpgamgr, fh);
@@ -167,6 +216,8 @@ static int fpgamgr_program_finish(struct firmware_handler *fh)
 		status = header_length;
 		goto err_free;
 	}
+	zynqmp_fpga_show_header(&mgr->dev,
+			      (struct bs_header *)mgr->buf, header_length);
 
 	body = (u32 *)&mgr->buf[header_length];
 	body_length = mgr->size - header_length;

@@ -15,7 +15,17 @@
 #ifndef FIRMWARE_ZYNQMP_H_
 #define FIRMWARE_ZYNQMP_H_
 
-#define PAYLOAD_ARG_CNT         4
+#define PAYLOAD_ARG_CNT			4
+
+#define ZYNQMP_PM_VERSION(MAJOR, MINOR)	((MAJOR << 16) | MINOR)
+
+#define ZYNQMP_FPGA_BIT_AUTH_DDR	BIT(1)
+#define ZYNQMP_FPGA_BIT_AUTH_OCM	BIT(2)
+#define ZYNQMP_FPGA_BIT_ENC_USR_KEY	BIT(3)
+#define ZYNQMP_FPGA_BIT_ENC_DEV_KEY	BIT(4)
+#define ZYNQMP_FPGA_BIT_ONLY_BIN	BIT(5)
+
+#define ZYNQMP_PCAP_STATUS_FPGA_DONE	BIT(3)
 
 enum pm_ioctl_id {
 	IOCTL_SET_PLL_FRAC_MODE = 8,
@@ -61,6 +71,8 @@ struct zynqmp_eemi_ops {
 	int (*clock_setparent)(u32 clock_id, u32 parent_id);
 	int (*clock_getparent)(u32 clock_id, u32 *parent_id);
 	int (*ioctl)(u32 node_id, u32 ioctl_id, u32 arg1, u32 arg2, u32 *out);
+	int (*fpga_getstatus)(u32 *status);
+	int (*fpga_load)(u64 address, u32 size, u32 flags);
 };
 
 const struct zynqmp_eemi_ops *zynqmp_pm_get_eemi_ops(void);

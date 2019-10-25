@@ -87,8 +87,7 @@ static int usb_stor_transport(struct us_blk_dev *usb_blkdev,
 	struct device_d *dev = &us->pusb_dev->dev;
 	int i, ret;
 
-
-	for (i = 0; i < retries; i++) {
+	for (i = 0; i <= retries; i++) {
 		dev_dbg(dev, "%s\n", usb_stor_opcode_name(cmd[0]));
 		ret = us->transport(usb_blkdev, cmd, cmdlen, data, datalen);
 		dev_dbg(dev, "%s returns %d\n", usb_stor_opcode_name(cmd[0]),
@@ -104,6 +103,8 @@ static int usb_stor_transport(struct us_blk_dev *usb_blkdev,
 		if (request_sense_delay_ms)
 			mdelay(request_sense_delay_ms);
 	}
+
+	dev_dbg(dev, "Retried %s %d times, and failed.\n", usb_stor_opcode_name(cmd[0]), retries);
 
 	return -EIO;
 }
@@ -194,7 +195,7 @@ static int usb_stor_io_10(struct us_blk_dev *usb_blkdev, u8 opcode,
 	put_unaligned_be16(blocks, &cmd[7]);
 
 	return usb_stor_transport(usb_blkdev, cmd, sizeof(cmd), data,
-				  blocks * SECTOR_SIZE, 2, 0);
+				  blocks * SECTOR_SIZE, 10, 0);
 }
 
 /***********************************************************************

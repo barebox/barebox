@@ -18,17 +18,13 @@
 
 #include <mach/firmware-zynqmp.h>
 
-#define ZYNQMP_PM_VERSION_MAJOR	1
-#define ZYNQMP_PM_VERSION_MINOR	0
+#define ZYNQMP_PM_VERSION(MAJOR, MINOR)	((MAJOR << 16) | MINOR)
+#define ZYNQMP_TZ_VERSION(MAJOR, MINOR)	((MAJOR << 16) | MINOR)
 
-#define ZYNQMP_PM_VERSION	((ZYNQMP_PM_VERSION_MAJOR << 16) | \
-					ZYNQMP_PM_VERSION_MINOR)
-
-#define ZYNQMP_TZ_VERSION_MAJOR 1
-#define ZYNQMP_TZ_VERSION_MINOR 0
-
-#define ZYNQMP_TZ_VERSION	((ZYNQMP_TZ_VERSION_MAJOR << 16) | \
-				ZYNQMP_TZ_VERSION_MINOR)
+#define ZYNQMP_PM_VERSION_MAJOR		1
+#define ZYNQMP_PM_VERSION_MINOR		0
+#define ZYNQMP_TZ_VERSION_MAJOR		1
+#define ZYNQMP_TZ_VERSION_MINOR		0
 
 /* SMC SIP service Call Function Identifier Prefix */
 #define PM_SIP_SVC		0xC2000000
@@ -544,7 +540,8 @@ static int zynqmp_firmware_probe(struct device_d *dev)
 		goto out;
 
 	zynqmp_pm_get_api_version(&pm_api_version);
-	if (pm_api_version < ZYNQMP_PM_VERSION) {
+	if (pm_api_version < ZYNQMP_PM_VERSION(ZYNQMP_PM_VERSION_MAJOR,
+					       ZYNQMP_PM_VERSION_MINOR)) {
 		dev_err(dev, "Platform Management API version error."
 				"Expected: v%d.%d - Found: v%d.%d\n",
 				ZYNQMP_PM_VERSION_MAJOR,
@@ -563,7 +560,8 @@ static int zynqmp_firmware_probe(struct device_d *dev)
 		goto out;
 	}
 
-	if (pm_tz_version < ZYNQMP_TZ_VERSION) {
+	if (pm_tz_version < ZYNQMP_TZ_VERSION(ZYNQMP_TZ_VERSION_MAJOR,
+					      ZYNQMP_TZ_VERSION_MINOR)) {
 		dev_err(dev, "Trustzone version error."
 				"Expected: v%d.%d - Found: v%d.%d\n",
 				ZYNQMP_TZ_VERSION_MAJOR,

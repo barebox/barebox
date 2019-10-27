@@ -427,10 +427,14 @@ config ARM_SEMIHOSTING
 
 config ARM_SMCCC
 	bool
+	help
+	  This option enables barebox to invoke ARM secure monitor calls.
 
 config ARM_SECURE_MONITOR
 	select ARM_SMCCC
 	bool
+	help
+	  This option enables barebox to service ARM secure monitor calls.
 
 config ARM_PSCI_OF
 	bool
@@ -442,7 +446,7 @@ config ARM_PSCI
 	select ARM_PSCI_OF
 	help
 	  PSCI is used for controlling secondary CPU cores on some systems. Say
-	  yes here if you have one of these.
+	  yes here if you want barebox to service PSCI calls on such systems.
 
 config ARM_PSCI_DEBUG
 	bool "Enable PSCI debugging"

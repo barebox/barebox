@@ -171,7 +171,7 @@ static int bcm2835_gpio_probe(struct device_d *dev)
 		goto err;
 	}
 
-	dev_info(dev, "probed gpiochip%d with base %d\n", dev->id, bcmgpio->chip.base);
+	dev_dbg(dev, "probed gpiochip%d with base %d\n", dev->id, bcmgpio->chip.base);
 
 	if (IS_ENABLED(CONFIG_PINCTRL)) {
 		ret = pinctrl_register(&bcmgpio->pctl);

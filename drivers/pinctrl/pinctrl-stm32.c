@@ -401,7 +401,7 @@ static int stm32_pinctrl_probe(struct device_d *dev)
 		}
 	}
 
-	dev_info(dev, "pinctrl/gpio driver registered\n");
+	dev_dbg(dev, "pinctrl/gpio driver registered\n");
 
 	return 0;
 }

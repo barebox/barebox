@@ -157,12 +157,12 @@ static int stm32_pinctrl_set_state(struct pinctrl_device *pdev, struct device_no
 			if (offset < 0)
 				return -ENODEV;
 
+			mode = stm32_gpio_get_mode(func);
+			alt = stm32_gpio_get_alt(func);
+
 			dev_dbg(pdev->dev, "configuring port %s pin %u with:\n\t"
 				"fn %u, mode %u, alt %u\n",
 				bank->name, offset, func, mode, alt);
-
-			mode = stm32_gpio_get_mode(func);
-			alt = stm32_gpio_get_alt(func);
 
 			clk_enable(bank->clk);
 

@@ -20,3 +20,7 @@
 		gpio25 = &gpioz;
 	};
 };
+
+&bsec {
+	barebox,provide-mac-address = <&ethernet0 0x39>;
+};

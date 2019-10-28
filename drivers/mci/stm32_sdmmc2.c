@@ -632,6 +632,13 @@ static int stm32_sdmmc2_probe(struct amba_device *adev,
 	mci->f_max = 208000000;
 	mci->voltages = MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_165_195;
 
+	mci_of_parse(&priv->mci);
+
+	if (mci->host_caps & (MMC_CAP_4_BIT_DATA | MMC_CAP_8_BIT_DATA)) {
+		dev_notice(dev, "Fixing bus-width to 1 due to driver limitation\n");
+		mci->host_caps &= ~(MMC_CAP_4_BIT_DATA | MMC_CAP_8_BIT_DATA);
+	}
+
 	return mci_register(&priv->mci);
 
 priv_free:

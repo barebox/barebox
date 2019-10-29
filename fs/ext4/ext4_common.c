@@ -167,10 +167,11 @@ long int read_allocated_block(struct ext2fs_node *node, int fileblock)
 	log2_blksz = LOG2_EXT2_BLOCK_SIZE(node->data);
 
 	if (le32_to_cpu(inode->flags) & EXT4_EXTENTS_FL) {
+		long int startblock, endblock;
 		char *buf = zalloc(blksz);
 		struct ext4_extent_header *ext_block;
 		struct ext4_extent *extent;
-		int i = -1;
+		int i;
 
 		if (!buf)
 			return -ENOMEM;
@@ -186,28 +187,27 @@ long int read_allocated_block(struct ext2fs_node *node, int fileblock)
 
 		extent = (struct ext4_extent *)(ext_block + 1);
 
-		do {
-			i++;
-			if (i >= le16_to_cpu(ext_block->eh_entries))
-				break;
-		} while (fileblock >= le32_to_cpu(extent[i].ee_block));
+		for (i = 0; i < le16_to_cpu(ext_block->eh_entries); i++) {
+			startblock = le32_to_cpu(extent[i].ee_block);
+			endblock = startblock + le16_to_cpu(extent[i].ee_len);
 
-		if (--i >= 0) {
-			fileblock -= le32_to_cpu(extent[i].ee_block);
-			if (fileblock >= le16_to_cpu(extent[i].ee_len)) {
+			if (startblock > fileblock) {
+				/* Sparse file */
 				free(buf);
 				return 0;
 			}
 
-			start = le16_to_cpu(extent[i].ee_start_hi);
-			start = (start << 32) +
+			if (fileblock < endblock) {
+				start = le16_to_cpu(extent[i].ee_start_hi);
+				start = (start << 32) +
 					le32_to_cpu(extent[i].ee_start_lo);
-			free(buf);
-			return fileblock + start;
+				free(buf);
+				return (fileblock - startblock) + start;
+			}
 		}
 
 		free(buf);
-		return -EIO;
+		return 0;
 	}
 
 	if (fileblock < INDIRECT_BLOCKS) {

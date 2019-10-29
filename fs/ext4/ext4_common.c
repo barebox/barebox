@@ -52,7 +52,7 @@ static struct ext4_extent_header *ext4fs_get_extent_block(struct ext2_data *data
 		index = (struct ext4_extent_idx *)(ext_block + 1);
 
 		if (le16_to_cpu(ext_block->eh_magic) != EXT4_EXT_MAGIC)
-			return 0;
+			return NULL;
 
 		if (ext_block->eh_depth == 0)
 			return ext_block;
@@ -64,7 +64,7 @@ static struct ext4_extent_header *ext4fs_get_extent_block(struct ext2_data *data
 		} while (fileblock >= le32_to_cpu(index[i].ei_block));
 
 		if (--i < 0)
-			return 0;
+			return NULL;
 
 		block = le16_to_cpu(index[i].ei_leaf_hi);
 		block = (block << 32) + le32_to_cpu(index[i].ei_leaf_lo);

@@ -135,7 +135,7 @@ int ext4fs_read_file(struct ext2fs_node *node, int pos,
 					return ret;
 				previous_block_number = -1;
 			}
-			memset(buf, 0, blocksize - skipfirst);
+			memset(buf, 0, blockend);
 		}
 		buf += blocksize - skipfirst;
 	}

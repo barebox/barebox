@@ -62,3 +62,22 @@ An appropriate image for the boot media can be generated with following
   }
 
 Image can then be flashed on e.g. a SD-Card.
+
+Boot source selection
+---------------------
+
+The STM32MP BootROM samples three boot pins at reset. Usually BOOT1 is
+pulled down and BOOT0 and BOOT2 are connected to a 2P DIP switch::
+
+       +-------+
+ BOOT2 | O O-- |
+ BOOT0 | N O-- |  <---- SDMMC
+       +-------+
+       +-------+
+ BOOT2 | O O-- |
+ BOOT0 | N --O |  <---- QSPI-NOR Flash
+       +-------+
+       +-------+
+ BOOT2 | O --O |
+ BOOT0 | N --O |  <---- DFU on UART and USB OTG
+       +-------+

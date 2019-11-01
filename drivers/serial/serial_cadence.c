@@ -199,7 +199,7 @@ static void cadence_serial_flush(struct console_device *cdev)
 					struct cadence_serial_priv, cdev);
 
 	while ((readl(priv->regs + CADENCE_UART_CHANNEL_STS) &
-		CADENCE_STS_TEMPTY) != 0)
+		CADENCE_STS_TEMPTY) == 0)
 		;
 }
 

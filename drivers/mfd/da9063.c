@@ -270,7 +270,7 @@ static int da9063_watchdog_set_timeout(struct watchdog *wd, unsigned timeout)
 		while (timeout > (2048 << scale) && scale <= 6)
 			scale++;
 		dev_dbg(dev, "calculated TWDSCALE=%u (req=%ims calc=%ims)\n",
-				scale, timeout, 2048 << scale);
+			scale + 1, timeout, 2048 << scale);
 		scale++; /* scale 0 disables the WD */
 	}
 

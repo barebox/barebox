@@ -69,7 +69,6 @@ static int __init stpmic1_probe(struct device_d *dev)
 	stpmic1->client = to_i2c_client(dev);
 	regmap = regmap_init(dev, &regmap_stpmic1_i2c_bus,
 			     stpmic1, &stpmic1_regmap_i2c_config);
-	dev->priv = regmap;
 
 	ret = regmap_register_cdev(regmap, NULL);
 	if (ret)

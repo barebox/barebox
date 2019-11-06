@@ -4,6 +4,34 @@
 /* struct regulator is an opaque object for consumers */
 struct regulator;
 
+/**
+ * struct regulator_desc - Static regulator descriptor
+ *
+ * Each regulator registered with the core is described with a
+ * structure of this type and a struct regulator_config.  This
+ * structure contains the non-varying parts of the regulator
+ * description.
+ *
+ * @n_voltages: Number of selectors available for ops.list_voltage().
+ * @ops: Regulator operations table.
+ *
+ * @min_uV: Voltage given by the lowest selector (if linear mapping)
+ * @uV_step: Voltage increase with each selector (if linear mapping)
+ * @linear_min_sel: Minimal selector for starting linear mapping
+ *
+ * @vsel_reg: Register for selector when using regulator_regmap_X_voltage_
+ * @vsel_mask: Mask for register bitfield used for selector
+ * @apply_reg: Register for initiate voltage change on the output when
+ *                using regulator_set_voltage_sel_regmap
+ * @apply_bit: Register bitfield used for initiate voltage change on the
+ *                output when using regulator_set_voltage_sel_regmap
+ * @enable_reg: Register for control when using regmap enable/disable ops
+ * @enable_mask: Mask for control when using regmap enable/disable ops
+ * @enable_val: Enabling value for control when using regmap enable/disable ops
+ * @disable_val: Disabling value for control when using regmap enable/disable ops
+ * @enable_is_inverted: A flag to indicate set enable_mask bits to disable
+ *                      when using regulator_enable_regmap and friends APIs.
+ */
 struct regulator_desc {
 	unsigned n_voltages;
 	const struct regulator_ops *ops;

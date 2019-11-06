@@ -228,7 +228,7 @@ static int armv7_psci_init(void)
 }
 device_initcall(armv7_psci_init);
 
-#ifdef DEBUG
+#ifdef CONFIG_ARM_PSCI_DEBUG
 
 #include <command.h>
 #include <getopt.h>

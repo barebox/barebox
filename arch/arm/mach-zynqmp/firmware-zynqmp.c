@@ -18,17 +18,12 @@
 
 #include <mach/firmware-zynqmp.h>
 
-#define ZYNQMP_PM_VERSION_MAJOR	1
-#define ZYNQMP_PM_VERSION_MINOR	0
+#define ZYNQMP_TZ_VERSION(MAJOR, MINOR)	((MAJOR << 16) | MINOR)
 
-#define ZYNQMP_PM_VERSION	((ZYNQMP_PM_VERSION_MAJOR << 16) | \
-					ZYNQMP_PM_VERSION_MINOR)
-
-#define ZYNQMP_TZ_VERSION_MAJOR 1
-#define ZYNQMP_TZ_VERSION_MINOR 0
-
-#define ZYNQMP_TZ_VERSION	((ZYNQMP_TZ_VERSION_MAJOR << 16) | \
-				ZYNQMP_TZ_VERSION_MINOR)
+#define ZYNQMP_PM_VERSION_MAJOR		1
+#define ZYNQMP_PM_VERSION_MINOR		0
+#define ZYNQMP_TZ_VERSION_MAJOR		1
+#define ZYNQMP_TZ_VERSION_MINOR		0
 
 /* SMC SIP service Call Function Identifier Prefix */
 #define PM_SIP_SVC		0xC2000000
@@ -508,6 +503,51 @@ static int zynqmp_pm_ioctl(u32 node_id, u32 ioctl_id, u32 arg1, u32 arg2,
 				   arg1, arg2, out);
 }
 
+/**
+ * zynqmp_pm_fpga_load - Perform the fpga load
+ * @address:	Address to write to
+ * @size:	pl bitstream size
+ * @flags:	Flags are used to specify the type of Bitstream file -
+ * 		defined in ZYNQMP_FPGA_BIT_*-macros
+ *
+ * This function provides access to xilfpga library to transfer
+ * the required bitstream into PL.
+ *
+ * Return:	Returns status, either success or error+reason
+ */
+static int zynqmp_pm_fpga_load(u64 address, u32 size, u32 flags)
+{
+	if (!address || !size)
+		return -EINVAL;
+
+	return zynqmp_pm_invoke_fn(PM_FPGA_LOAD,
+			lower_32_bits(address),	upper_32_bits(address),
+			size, flags, NULL);
+}
+
+/**
+ * zynqmp_pm_fpga_get_status - Read value from PCAP status register
+ * @value:	Value to read
+ *
+ * This function provides access to the xilfpga library to get
+ * the PCAP status
+ *
+ * Return:	Returns status, either success or error+reason
+ */
+static int zynqmp_pm_fpga_get_status(u32 *value)
+{
+	u32 ret_payload[PAYLOAD_ARG_CNT];
+	int ret = 0;
+
+	if (!value)
+		return -EINVAL;
+
+	ret = zynqmp_pm_invoke_fn(PM_FPGA_GET_STATUS, 0, 0, 0, 0, ret_payload);
+	*value = ret_payload[1];
+
+	return ret;
+}
+
 static const struct zynqmp_eemi_ops eemi_ops = {
 	.get_api_version = zynqmp_pm_get_api_version,
 	.query_data = zynqmp_pm_query_data,
@@ -521,6 +561,8 @@ static const struct zynqmp_eemi_ops eemi_ops = {
 	.clock_setparent = zynqmp_pm_clock_setparent,
 	.clock_getparent = zynqmp_pm_clock_getparent,
 	.ioctl = zynqmp_pm_ioctl,
+	.fpga_getstatus = zynqmp_pm_fpga_get_status,
+	.fpga_load = zynqmp_pm_fpga_load,
 };
 
 /**
@@ -544,7 +586,8 @@ static int zynqmp_firmware_probe(struct device_d *dev)
 		goto out;
 
 	zynqmp_pm_get_api_version(&pm_api_version);
-	if (pm_api_version < ZYNQMP_PM_VERSION) {
+	if (pm_api_version < ZYNQMP_PM_VERSION(ZYNQMP_PM_VERSION_MAJOR,
+					       ZYNQMP_PM_VERSION_MINOR)) {
 		dev_err(dev, "Platform Management API version error."
 				"Expected: v%d.%d - Found: v%d.%d\n",
 				ZYNQMP_PM_VERSION_MAJOR,
@@ -563,7 +606,8 @@ static int zynqmp_firmware_probe(struct device_d *dev)
 		goto out;
 	}
 
-	if (pm_tz_version < ZYNQMP_TZ_VERSION) {
+	if (pm_tz_version < ZYNQMP_TZ_VERSION(ZYNQMP_TZ_VERSION_MAJOR,
+					      ZYNQMP_TZ_VERSION_MINOR)) {
 		dev_err(dev, "Trustzone version error."
 				"Expected: v%d.%d - Found: v%d.%d\n",
 				ZYNQMP_TZ_VERSION_MAJOR,

@@ -14,4 +14,11 @@ config FIRMWARE_ALTERA_SOCFPGA
 	bool "Altera SoCFPGA fpga loader"
 	depends on ARCH_SOCFPGA
 	select FIRMWARE
+
+config FIRMWARE_ZYNQMP_FPGA
+	bool "Xilinx ZynqMP FPGA loader"
+	depends on ARCH_ZYNQMP
+	select FIRMWARE
+	help
+	  Load a bitstream to the PL of Zynq Ultrascale+
 endmenu

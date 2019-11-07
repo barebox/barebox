@@ -80,7 +80,8 @@ static int rdu_networkconfig(void)
 	static char *rdu_netconfig;
 	struct device_d *sp_dev;
 
-	if (!of_machine_is_compatible("zii,imx6q-zii-rdu2") &&
+	if (!of_machine_is_compatible("zii,imx8mq-ultra") &&
+	    !of_machine_is_compatible("zii,imx6q-zii-rdu2") &&
 	    !of_machine_is_compatible("zii,imx6qp-zii-rdu2") &&
 	    !of_machine_is_compatible("zii,imx51-rdu1"))
 		return 0;

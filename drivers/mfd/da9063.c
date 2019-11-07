@@ -14,6 +14,7 @@
  */
 
 #include <common.h>
+#include <clock.h>
 #include <driver.h>
 #include <gpio.h>
 #include <restart.h>
@@ -33,6 +34,7 @@ struct da9063 {
 	struct i2c_client	*client1;
 	struct device_d		*dev;
 	unsigned int		timeout;
+	uint64_t		last_ping;
 };
 
 /* forbidden/impossible value; timeout will be set to this value initially to
@@ -237,6 +239,14 @@ static int da9063_watchdog_ping(struct da9063 *priv)
 	int ret;
 	u8 val;
 
+	/*
+	 * The watchdog has a cool down phase of 200ms and if we ping to fast
+	 * the da9062/3 resets the system. Reject those requests has a maximum
+	 * failure of 10% if the watchdog timeout is set to 2.048s.
+	 */
+	if (!is_timeout(priv->last_ping, 200 * MSECOND))
+		return 0;
+
 	dev_dbg(priv->dev, "ping\n");
 
 	/* reset watchdog timer; register is self clearing */
@@ -244,6 +254,8 @@ static int da9063_watchdog_ping(struct da9063 *priv)
 	ret = i2c_write_reg(priv->client, DA9063_REG_CONTROL_F, &val, 1);
 	if (ret < 0)
 		return ret;
+
+	priv->last_ping = get_time_ns();
 
 	return 0;
 }
@@ -270,7 +282,7 @@ static int da9063_watchdog_set_timeout(struct watchdog *wd, unsigned timeout)
 		while (timeout > (2048 << scale) && scale <= 6)
 			scale++;
 		dev_dbg(dev, "calculated TWDSCALE=%u (req=%ims calc=%ims)\n",
-				scale, timeout, 2048 << scale);
+			scale + 1, timeout, 2048 << scale);
 		scale++; /* scale 0 disables the WD */
 	}
 

@@ -52,7 +52,7 @@ static struct ext4_extent_header *ext4fs_get_extent_block(struct ext2_data *data
 		index = (struct ext4_extent_idx *)(ext_block + 1);
 
 		if (le16_to_cpu(ext_block->eh_magic) != EXT4_EXT_MAGIC)
-			return 0;
+			return NULL;
 
 		if (ext_block->eh_depth == 0)
 			return ext_block;
@@ -64,7 +64,7 @@ static struct ext4_extent_header *ext4fs_get_extent_block(struct ext2_data *data
 		} while (fileblock >= le32_to_cpu(index[i].ei_block));
 
 		if (--i < 0)
-			return 0;
+			return NULL;
 
 		block = le16_to_cpu(index[i].ei_leaf_hi);
 		block = (block << 32) + le32_to_cpu(index[i].ei_leaf_lo);
@@ -167,10 +167,11 @@ long int read_allocated_block(struct ext2fs_node *node, int fileblock)
 	log2_blksz = LOG2_EXT2_BLOCK_SIZE(node->data);
 
 	if (le32_to_cpu(inode->flags) & EXT4_EXTENTS_FL) {
+		long int startblock, endblock;
 		char *buf = zalloc(blksz);
 		struct ext4_extent_header *ext_block;
 		struct ext4_extent *extent;
-		int i = -1;
+		int i;
 
 		if (!buf)
 			return -ENOMEM;
@@ -186,28 +187,27 @@ long int read_allocated_block(struct ext2fs_node *node, int fileblock)
 
 		extent = (struct ext4_extent *)(ext_block + 1);
 
-		do {
-			i++;
-			if (i >= le16_to_cpu(ext_block->eh_entries))
-				break;
-		} while (fileblock >= le32_to_cpu(extent[i].ee_block));
+		for (i = 0; i < le16_to_cpu(ext_block->eh_entries); i++) {
+			startblock = le32_to_cpu(extent[i].ee_block);
+			endblock = startblock + le16_to_cpu(extent[i].ee_len);
 
-		if (--i >= 0) {
-			fileblock -= le32_to_cpu(extent[i].ee_block);
-			if (fileblock >= le16_to_cpu(extent[i].ee_len)) {
+			if (startblock > fileblock) {
+				/* Sparse file */
 				free(buf);
 				return 0;
 			}
 
-			start = le16_to_cpu(extent[i].ee_start_hi);
-			start = (start << 32) +
+			if (fileblock < endblock) {
+				start = le16_to_cpu(extent[i].ee_start_hi);
+				start = (start << 32) +
 					le32_to_cpu(extent[i].ee_start_lo);
-			free(buf);
-			return fileblock + start;
+				free(buf);
+				return (fileblock - startblock) + start;
+			}
 		}
 
 		free(buf);
-		return -EIO;
+		return 0;
 	}
 
 	if (fileblock < INDIRECT_BLOCKS) {

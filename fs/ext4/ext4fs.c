@@ -55,12 +55,6 @@ int ext4fs_read_file(struct ext2fs_node *node, int pos,
 	int log2blocksize = LOG2_EXT2_BLOCK_SIZE(node->data);
 	int blocksize = 1 << (log2blocksize + DISK_SECTOR_BITS);
 	unsigned int filesize = le32_to_cpu(node->inode.size);
-	int previous_block_number = -1;
-	int delayed_start = 0;
-	int delayed_extent = 0;
-	int delayed_skipfirst = 0;
-	int delayed_next = 0;
-	char *delayed_buf = NULL;
 	short ret;
 	struct ext_filesystem *fs = node->data->fs;
 
@@ -75,6 +69,7 @@ int ext4fs_read_file(struct ext2fs_node *node, int pos,
 		int blockoff = pos % blocksize;
 		int blockend = blocksize;
 		int skipfirst = 0;
+
 		blknr = read_allocated_block(node, i);
 		if (blknr < 0)
 			return blknr;
@@ -95,58 +90,16 @@ int ext4fs_read_file(struct ext2fs_node *node, int pos,
 			skipfirst = blockoff;
 			blockend -= skipfirst;
 		}
+
 		if (blknr) {
-			if (previous_block_number != -1) {
-				if (delayed_next == blknr) {
-					delayed_extent += blockend;
-					delayed_next += blockend >> SECTOR_BITS;
-				} else {	/* spill */
-					ret = ext4fs_devread(fs, delayed_start,
-							delayed_skipfirst,
-							delayed_extent,
-							delayed_buf);
-					if (ret)
-						return ret;
-					previous_block_number = blknr;
-					delayed_start = blknr;
-					delayed_extent = blockend;
-					delayed_skipfirst = skipfirst;
-					delayed_buf = buf;
-					delayed_next = blknr +
-						(blockend >> SECTOR_BITS);
-				}
-			} else {
-				previous_block_number = blknr;
-				delayed_start = blknr;
-				delayed_extent = blockend;
-				delayed_skipfirst = skipfirst;
-				delayed_buf = buf;
-				delayed_next = blknr +
-					(blockend >> SECTOR_BITS);
-			}
+			ret = ext4fs_devread(fs, blknr, skipfirst, blockend, buf);
+			if (ret)
+				return ret;
 		} else {
-			if (previous_block_number != -1) {
-				/* spill */
-				ret = ext4fs_devread(fs, delayed_start,
-							delayed_skipfirst,
-							delayed_extent,
-							delayed_buf);
-				if (ret)
-					return ret;
-				previous_block_number = -1;
-			}
-			memset(buf, 0, blocksize - skipfirst);
+			memset(buf, 0, blockend);
 		}
+
 		buf += blocksize - skipfirst;
-	}
-	if (previous_block_number != -1) {
-		/* spill */
-		ret = ext4fs_devread(fs, delayed_start,
-					delayed_skipfirst, delayed_extent,
-					delayed_buf);
-		if (ret)
-			return ret;
-		previous_block_number = -1;
 	}
 
 	return len;

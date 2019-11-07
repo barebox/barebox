@@ -14,11 +14,27 @@
 #include <net.h>
 #include <of_net.h>
 #include <linux/reset.h>
-#include <mach/cyclone5-system-manager.h>
 #include <mfd/syscon.h>
 #include "designware.h"
 
-#define SYSMGR_EMACGRP_CTRL_PTP_REF_CLK_MASK 0x00000010
+#define SYSMGR_EMACGRP_CTRL_PHYSEL_ENUM_GMII_MII 	0x0
+#define SYSMGR_EMACGRP_CTRL_PHYSEL_ENUM_RGMII		0x1
+#define SYSMGR_EMACGRP_CTRL_PHYSEL_ENUM_RMII		0x2
+#define SYSMGR_EMACGRP_CTRL_PHYSEL0_LSB			0
+#define SYSMGR_EMACGRP_CTRL_PHYSEL1_LSB			2
+#define SYSMGR_EMACGRP_CTRL_PHYSEL_MASK			0x00000003
+#define SYSMGR_EMACGRP_CTRL_PTP_REF_CLK_MASK		0x00000010
+#define SYSMGR_GEN10_EMACGRP_CTRL_PTP_REF_CLK_MASK	0x00000100
+
+#define SYSMGR_FPGAGRP_MODULE				0x00000028
+#define SYSMGR_FPGAGRP_MODULE_EMAC			0x00000004
+#define SYSMGR_FPGAINTF_EMAC_REG			0x00000070
+#define SYSMGR_FPGAINTF_EMAC_BIT			0x1
+
+struct socfpga_dwc_dev;
+struct socfpga_dwmac_ops {
+	int (*set_phy_mode)(struct socfpga_dwc_dev *dwmac_priv);
+};
 
 struct socfpga_dwc_dev {
 	struct dw_eth_dev *priv;
@@ -26,9 +42,28 @@ struct socfpga_dwc_dev {
 	u32		   reg_shift;
 	void __iomem	  *sys_mgr_base;
 	bool		   f2h_ptp_ref_clk;
+	const struct	   socfpga_dwmac_ops *ops;
 };
 
-static int socfpga_dwc_set_phy_mode(struct socfpga_dwc_dev *dwc_dev)
+static int socfpga_set_phy_mode_common(int phymode, u32 *val)
+{
+	switch (phymode) {
+	case PHY_INTERFACE_MODE_RGMII:
+	case PHY_INTERFACE_MODE_RGMII_ID:
+		*val = SYSMGR_EMACGRP_CTRL_PHYSEL_ENUM_RGMII;
+		break;
+	case PHY_INTERFACE_MODE_MII:
+	case PHY_INTERFACE_MODE_GMII:
+	case PHY_INTERFACE_MODE_SGMII:
+		*val = SYSMGR_EMACGRP_CTRL_PHYSEL_ENUM_GMII_MII;
+		break;
+	default:
+		return -EINVAL;
+	}
+	return 0;
+};
+
+static int socfpga_gen5_set_phy_mode(struct socfpga_dwc_dev *dwc_dev)
 {
 	struct dw_eth_dev *eth_dev = dwc_dev->priv;
 	int phymode = eth_dev->interface;
@@ -36,17 +71,7 @@ static int socfpga_dwc_set_phy_mode(struct socfpga_dwc_dev *dwc_dev)
 	u32 reg_shift = dwc_dev->reg_shift;
 	u32 ctrl, val;
 
-	switch (phymode) {
-	case PHY_INTERFACE_MODE_RGMII:
-	case PHY_INTERFACE_MODE_RGMII_ID:
-		val = SYSMGR_EMACGRP_CTRL_PHYSEL_ENUM_RGMII;
-		break;
-	case PHY_INTERFACE_MODE_MII:
-	case PHY_INTERFACE_MODE_GMII:
-	case PHY_INTERFACE_MODE_SGMII:
-		val = SYSMGR_EMACGRP_CTRL_PHYSEL_ENUM_GMII_MII;
-		break;
-	default:
+	if (socfpga_set_phy_mode_common(phymode, &val)) {
 		dev_err(&eth_dev->netdev.dev, "bad phy mode %d\n", phymode);
 		return -EINVAL;
 	}
@@ -85,6 +110,54 @@ static int socfpga_dwc_set_phy_mode(struct socfpga_dwc_dev *dwc_dev)
 	return 0;
 }
 
+static int socfpga_gen10_set_phy_mode(struct socfpga_dwc_dev *dwc_dev)
+{
+	struct dw_eth_dev *eth_dev = dwc_dev->priv;
+	int phymode = eth_dev->interface;
+	u32 reg_offset = dwc_dev->reg_offset;
+	u32 reg_shift = dwc_dev->reg_shift;
+	u32 ctrl, val;
+
+	if (socfpga_set_phy_mode_common(phymode, &val)) {
+		dev_err(&eth_dev->netdev.dev, "bad phy mode %d\n", phymode);
+		return -EINVAL;
+	}
+
+	/* Assert reset to the enet controller before changing the phy mode */
+	if (eth_dev->rst)
+		reset_control_assert(eth_dev->rst);
+
+	ctrl = readl(dwc_dev->sys_mgr_base + reg_offset);
+	ctrl &= ~(SYSMGR_EMACGRP_CTRL_PHYSEL_MASK << reg_shift);
+	ctrl |= val << reg_shift;
+
+	if (dwc_dev->f2h_ptp_ref_clk ||
+	    phymode == PHY_INTERFACE_MODE_MII ||
+	    phymode == PHY_INTERFACE_MODE_GMII ||
+	    phymode == PHY_INTERFACE_MODE_SGMII) {
+		u32 module;
+
+		ctrl |= SYSMGR_GEN10_EMACGRP_CTRL_PTP_REF_CLK_MASK;
+		module = readl(dwc_dev->sys_mgr_base + SYSMGR_FPGAINTF_EMAC_REG);
+		module |= (SYSMGR_FPGAINTF_EMAC_BIT << reg_shift);
+
+		writel(module, dwc_dev->sys_mgr_base + SYSMGR_FPGAINTF_EMAC_REG);
+	} else {
+		ctrl &= ~SYSMGR_GEN10_EMACGRP_CTRL_PTP_REF_CLK_MASK;
+	}
+
+	writel(ctrl, dwc_dev->sys_mgr_base + reg_offset);
+
+	/* Deassert reset for the phy configuration to be sampled by
+	 * the enet controller, and operation to start in requested mode
+	 */
+	if (eth_dev->rst)
+		reset_control_deassert(eth_dev->rst);
+
+	return 0;
+}
+
+
 static int socfpga_dwc_probe_dt(struct device_d *dev, struct socfpga_dwc_dev *priv)
 {
 	u32 reg_offset, reg_shift;
@@ -120,11 +193,21 @@ static int socfpga_dwc_ether_probe(struct device_d *dev)
 {
 	struct socfpga_dwc_dev *dwc_dev;
 	struct dw_eth_dev *priv;
+	struct dw_eth_drvdata *drvdata;
 	int ret;
 
 	dwc_dev = xzalloc(sizeof(*dwc_dev));
 
-	priv = dwc_drv_probe(dev);
+	ret = dev_get_drvdata(dev, (const void **)&drvdata);
+	if (ret)
+		return ret;
+
+	if (drvdata && drvdata->priv)
+		dwc_dev->ops = (struct socfpga_dwmac_ops *)drvdata->priv;
+	else
+		return -EINVAL;
+
+        priv = dwc_drv_probe(dev);
 	if (IS_ERR(priv))
 		return PTR_ERR(priv);
 
@@ -145,18 +228,36 @@ static int socfpga_dwc_ether_probe(struct device_d *dev)
 	if (ret)
 		return ret;
 
-	return socfpga_dwc_set_phy_mode(dwc_dev);
+	return dwc_dev->ops->set_phy_mode(dwc_dev);
 }
 
-static struct dw_eth_drvdata socfpga_stmmac_drvdata = {
+static struct socfpga_dwmac_ops socfpga_gen5_ops = {
+	.set_phy_mode = socfpga_gen5_set_phy_mode,
+};
+
+static const struct dw_eth_drvdata socfpga_gen5_drvdata = {
 	.enh_desc = 1,
+	.priv = &socfpga_gen5_ops,
+};
+
+static struct socfpga_dwmac_ops socfpga_gen10_ops = {
+	.set_phy_mode = socfpga_gen10_set_phy_mode,
+};
+static const struct dw_eth_drvdata socfpga_gen10_drvdata = {
+	.enh_desc = 1,
+	.priv = &socfpga_gen10_ops,
 };
 
 static __maybe_unused struct of_device_id socfpga_dwc_ether_compatible[] = {
 	{
 		.compatible = "altr,socfpga-stmmac",
-		.data = &socfpga_stmmac_drvdata,
-	}, {
+		.data = &socfpga_gen5_drvdata,
+	},
+	{
+		.compatible = "altr,socfpga-stmmac-a10-s10",
+		.data = &socfpga_gen10_drvdata,
+	},
+	{
 		/* sentinel */
 	}
 };

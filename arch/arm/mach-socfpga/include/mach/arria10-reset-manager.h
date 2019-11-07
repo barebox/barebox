@@ -108,6 +108,10 @@
 void arria10_reset_peripherals(void);
 void arria10_reset_deassert_dedicated_peripherals(void);
 void arria10_reset_deassert_shared_peripherals(void);
+void arria10_reset_deassert_shared_peripherals_q1(uint32_t *mask0, uint32_t *mask1);
+void arria10_reset_deassert_shared_peripherals_q2(uint32_t *mask0, uint32_t *mask1);
+void arria10_reset_deassert_shared_peripherals_q3(uint32_t *mask0, uint32_t *mask1);
+void arria10_reset_deassert_shared_peripherals_q4(uint32_t *mask0, uint32_t *mask1);
 void arria10_reset_deassert_fpga_peripherals(void);
 
 #endif

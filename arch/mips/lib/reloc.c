@@ -110,11 +110,13 @@ void relocate_code(void *fdt, u32 fdt_size, u32 ram_size)
 {
 	unsigned long addr, length, bss_len;
 	u32 relocaddr, new_stack;
-	uint8_t *buf, *bss_start;
+	uint8_t *buf;
 	unsigned int type;
 	long off;
 
 	bss_len = (unsigned long)&__bss_stop - (unsigned long)__bss_start;
+	memset(__bss_start, 0, bss_len);
+	cpu_probe();
 
 	length = barebox_image_size + bss_len;
 	relocaddr = ALIGN_DOWN(ram_size - length, SZ_64K);
@@ -148,10 +150,6 @@ void relocate_code(void *fdt, u32 fdt_size, u32 ram_size)
 
 	/* Ensure the icache is coherent */
 	flush_cache_all();
-
-	/* Clear the .bss section */
-	bss_start = (uint8_t *)((unsigned long)__bss_start + off);
-	memset(bss_start, 0, bss_len);
 
 	 __asm__ __volatile__ (
 			"move	$a0, %0\n"

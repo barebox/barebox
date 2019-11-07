@@ -77,12 +77,6 @@ void __bare_init main_entry(void *fdt, u32 fdt_size)
 
 	cpu_probe();
 
-	if (cpu_has_4k_cache) {
-		extern void r4k_cache_init(void);
-
-		r4k_cache_init();
-	}
-
 	trap_init();
 
 	malloc_end = (unsigned long)_stext;

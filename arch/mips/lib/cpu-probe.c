@@ -9,6 +9,8 @@
  */
 #include <common.h>
 #include <asm/mipsregs.h>
+#include <asm/cache.h>
+#include <asm/cpu-features.h>
 #include <asm/cpu-info.h>
 #include <asm/cpu.h>
 #include <memory.h>
@@ -163,6 +165,9 @@ void cpu_probe(void)
 		cpu_probe_ingenic(c);
 		break;
 	}
+
+	if (cpu_has_4k_cache)
+		r4k_cache_init();
 }
 
 unsigned long mips_stack_top;

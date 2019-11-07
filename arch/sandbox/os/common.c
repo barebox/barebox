@@ -39,6 +39,8 @@
 #include <signal.h>
 #include <sys/select.h>
 #include <sys/wait.h>
+#include <sys/ioctl.h>
+#include <linux/fs.h>
 /*
  * ...except the ones needed to connect with barebox
  */
@@ -260,11 +262,17 @@ static int add_image(char *str, char *devname_template, int *devname_number)
 	hf->size = s.st_size;
 	hf->devname = strdup(devname);
 
+	if (S_ISBLK(s.st_mode)) {
+		if (ioctl(fd, BLKGETSIZE64, &hf->size) == -1) {
+			perror("ioctl");
+			goto err_out;
+		}
+	}
 	hf->base = (unsigned long)mmap(NULL, hf->size,
 			PROT_READ | (readonly ? 0 : PROT_WRITE),
 			MAP_SHARED, fd, 0);
 	if ((void *)hf->base == MAP_FAILED)
-		printf("warning: mmapping %s failed\n", filename);
+		printf("warning: mmapping %s failed: %s\n", filename, strerror(errno));
 
 	ret = barebox_register_filedev(hf);
 	if (ret)

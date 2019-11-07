@@ -15,11 +15,11 @@ config HWRNG_MXC_RNGC
 	  Generator hardware found on some Freescale i.MX processors.
 
 config HWRNG_DEV_RANDOM
-	tristate "Linux /dev/random and /dev/urandom RNG"
+	tristate "Linux /dev/urandom RNG"
 	depends on SANDBOX
 	default y
 	help
-	  This driver allows use of the host provided /dev/random
-	  and /dev/urandom as barebox HWRNGs.
+	  This driver allows use of the host provided /dev/urandom
+	  as barebox HWRNGs.
 
 endif

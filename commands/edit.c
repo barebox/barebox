@@ -55,7 +55,7 @@ static int scrcol = 0;		/* the first column on screen */
 
 static void pos(int x, int y)
 {
-	printf("%c[%d;%dH", 27, y + 2, x + 1);
+	printf("\x1b[%d;%dH", y + 2, x + 1);
 }
 
 static char *screenline(char *line, int *pos)
@@ -110,7 +110,7 @@ static void refresh_line(struct line *line, int ypos)
 	char *str = screenline(line->data, NULL) + scrcol;
 	pos(0, ypos);
 	str[screenwidth] = 0;
-	printf("%s%c[K", str, 27);
+	printf("%s\x1b[K", str);
 	pos(cursx, cursy);
 }
 
@@ -130,7 +130,7 @@ static void refresh(int full)
 	if (!full) {
 		if (smartscroll) {
 			if (scrline->next == lastscrline) {
-				printf("%c[1T", 27);
+				printf("\x1b[1T");
 				refresh_line(scrline, 0);
 				pos(0, screenheight);
 				printf("%*s", screenwidth, "");
@@ -138,7 +138,7 @@ static void refresh(int full)
 			}
 
 			if (scrline->prev == lastscrline) {
-				printf("%c[1S", 27);
+				printf("\x1b[1S");
 				for (i = 0; i < screenheight - 1; i++) {
 					l = l->next;
 					if (!l)
@@ -378,8 +378,128 @@ static void getwinsize(void)
 	pos(0, 0);
 }
 
+static void statusbar(const char *str)
+{
+	pos(0, screenheight+1);
+	printf("%*c\r%s", screenwidth, ' ', str);
+	pos(cursx, cursy);
+}
+
+static int read_modal_key(bool is_modal)
+{
+	static enum { MODE_INSERT, MODE_NORMAL } mode = MODE_NORMAL;
+	static int backlog[2] = { -1, -1 };
+	int c;
+
+	if (backlog[0] >= 0) {
+		/* pop a character */
+		c = backlog[0];
+		backlog[0] = backlog[1];
+		backlog[1] = -1;
+	} else {
+		c = read_key();
+	}
+
+	if (is_modal && mode == MODE_INSERT && (c == -1 || c == CTL_CH('c'))) {
+		mode = MODE_NORMAL;
+		statusbar("");
+		return -EAGAIN;
+	}
+
+	if (!is_modal || mode == MODE_INSERT)
+		return c;
+
+	switch (c) {
+	case -1: /* invalid escape, e.g. two escapes in a row */
+		break;
+	case 'i':
+		statusbar("-- INSERT --");
+		mode = MODE_INSERT;
+		break;
+	case 'h':
+		return BB_KEY_LEFT;
+	case 'j':
+		return BB_KEY_DOWN;
+	case 'k':
+		return BB_KEY_UP;
+	case 'a':
+		statusbar("-- INSERT --");
+		mode = MODE_INSERT;
+		/* fall through */
+	case 'l':
+		return BB_KEY_RIGHT;
+	case 'O':
+		backlog[0] = '\n';
+		backlog[1] = BB_KEY_UP;
+		/* fall through */
+	case 'I':
+		statusbar("-- INSERT --");
+		mode = MODE_INSERT;
+		/* fall through */
+	case '^':
+	case '0':
+		return BB_KEY_HOME;
+	case 'g':
+		c = read_key();
+		if (c != 'g')
+			break;
+		backlog[0] = CTL_CH('u');
+		backlog[1] = CTL_CH('u');
+		/* fall through */
+	case CTL_CH('u'):
+		return BB_KEY_PAGEUP;
+	case 'G':
+		backlog[0] = CTL_CH('d');
+		backlog[1] = CTL_CH('d');
+		/* fall through */
+	case CTL_CH('d'):
+		return BB_KEY_PAGEDOWN;
+	case 'o':
+		backlog[0] = '\n';
+		/* fall through */
+	case 'A':
+		statusbar("-- INSERT --");
+		mode = MODE_INSERT;
+		/* fall through */
+	case '$':
+		return BB_KEY_END;
+	case CTL_CH('c'):
+		statusbar("Type ZQ to abandon all changes and exit vi."
+			  "Type ZZ to exit while saving them.");
+		break;
+	case 'x':
+		return BB_KEY_DEL;
+	case 'X':
+		return '\b';
+	case BB_KEY_PAGEUP:
+	case BB_KEY_PAGEDOWN:
+	case BB_KEY_HOME:
+	case BB_KEY_END:
+	case BB_KEY_UP:
+	case BB_KEY_DOWN:
+	case BB_KEY_RIGHT:
+	case BB_KEY_LEFT:
+		return c;
+	case ':':
+		statusbar("ERROR: command mode not supported");
+		break;
+	case 'Z':
+		c = read_key();
+		if (c == 'Z')
+			return CTL_CH('d');
+		if (c == 'Q')
+			return CTL_CH('c');
+	default:
+		statusbar("ERROR: not implemented");
+		break;
+	}
+
+	return -EAGAIN;
+}
+
 static int do_edit(int argc, char *argv[])
 {
+	bool is_vi = false;
 	int lastscrcol;
 	int i;
 	int linepos;
@@ -401,10 +521,14 @@ static int do_edit(int argc, char *argv[])
 	else
 		screenheight = 25;
 
-	/* check if we are called as "sedit" instead of "edit" */
-	if (*argv[0] == 's') {
+	/* check if we are not called as "edit" */
+	if (*argv[0] != 'e') {
 		smartscroll = 1;
 		getwinsize();
+
+		/* check if we are called as "vi" */
+		if (*argv[0] == 'v')
+			is_vi = true;
 	}
 
 	buffer = NULL;
@@ -420,17 +544,25 @@ static int do_edit(int argc, char *argv[])
 	lastscrline = scrline;
 	lastscrcol = 0;
 
-	printf("%c[2J", 27);
+	printf("\x1b[2J");
 
 	pos(0, -1);
 
-	printf("%c[7m %-25s <ctrl-d>: Save and quit <ctrl-c>: quit %c[0m",
-			27, argv[1], 27);
-	printf("%c[2;%dr", 27, screenheight);
+	if (is_vi) {
+		screenheight -= 2;
+		printf("\x1b[7m%*c\x1b[0m", screenwidth , ' ');
+		pos(0, screenheight-1);
+		printf("\x1b[7m%*c\x1b[0m", screenwidth , ' ');
+		printf("\r\x1b[7m%-25s\x1b[0m", argv[1]);
+	} else {
+		printf("\x1b[7m %-25s <ctrl-d>: Save and quit <ctrl-c>: quit \x1b[0m",
+				argv[1]);
+	}
+
+	printf("\x1b[2;%dr", screenheight);
+	pos(0, 0);
 
 	screenheight--; /* status line */
-
-	pos(0, 0);
 
 	refresh(1);
 
@@ -469,7 +601,11 @@ static int do_edit(int argc, char *argv[])
 		lastscrline = scrline;
 		pos(cursx, cursy);
 
-		c = read_key();
+again:
+		c = read_modal_key(is_vi);
+		if (c == -EAGAIN)
+			goto again;
+
 		switch (c) {
 		case BB_KEY_UP:
 			if (!curline->prev)
@@ -554,12 +690,12 @@ static int do_edit(int argc, char *argv[])
 	}
 out:
 	free_buffer();
-	printf("%c[2J%c[r", 27, 27);
+	printf("\x1b[2J\x1b[r");
 	printf("\n");
 	return ret;
 }
 
-static const char * const edit_aliases[] = { "sedit", NULL};
+static const char * const edit_aliases[] = { "sedit", "vi", NULL};
 
 BAREBOX_CMD_HELP_START(edit)
 BAREBOX_CMD_HELP_TEXT("Use cursor keys, Ctrl-C to exit and Ctrl-D to exit-with-save.")

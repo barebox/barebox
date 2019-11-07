@@ -409,7 +409,7 @@ static void ubootvarfs_parse(struct ubootvarfs_data *data, char *blob,
 
 			list_add_tail(&var->list, &data->var_list);
 		} else {
-			pr_err("No separator in data @ 0x%08x. Skipped.",
+			pr_err("No separator in data @ 0x%08tx. Skipped.",
 			       blob - start);
 			free(var);
 		}

@@ -83,7 +83,7 @@ static int __of_find_path(struct device_node *node, const char *part, char **out
 	}
 
 	if (dev->bus && !dev->driver)
-		return -ENODEV;
+		return -EPROBE_DEFER;
 
 	device_detect(dev);
 

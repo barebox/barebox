@@ -253,11 +253,14 @@ static int param_string_set(struct device_d *dev, struct param_d *p, const char 
 	struct param_string *ps = to_param_string(p);
 	int ret;
 	char *value_save = *ps->value;
+	char *value_new;
 
 	if (!val)
 		val = "";
 
-	*ps->value = xstrdup(val);
+	value_new = xstrdup(val);
+	value_new = strim(value_new);
+	*ps->value = value_new;
 
 	if (!ps->set)
 		return 0;

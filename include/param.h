@@ -264,8 +264,6 @@ static inline struct param_d *dev_add_param_bool_ro(struct device_d *dev, const 
 }
 
 static inline struct param_d *dev_add_param_string_ro(struct device_d *dev, const char *name,
-		int (*set)(struct param_d *p, void *priv),
-		int (*get)(struct param_d *p, void *priv),
 		char **value, void *priv)
 {
 	return dev_add_param_string(dev, name, param_set_readonly, NULL, value, NULL);
@@ -285,9 +283,7 @@ static inline struct param_d *dev_add_param_enum_ro(struct device_d *dev, const 
 }
 
 static inline struct param_d *dev_add_param_bitmask_ro(struct device_d *dev, const char *name,
-		int (*set)(struct param_d *p, void *priv),
-		int (*get)(struct param_d *p, void *priv),
-		unsigned long *value, const char * const *names, int max, void *priv)
+		unsigned long *value, const char * const *names, int max)
 {
 	return dev_add_param_bitmask(dev, name, param_set_readonly, NULL,
 				     value, names, max, NULL);

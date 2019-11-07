@@ -54,8 +54,8 @@ static int register_one_partition(struct block_device *blk,
 	partition_name = basprintf("%s.%d", blk->cdev.name, no);
 	if (!partition_name)
 		return -ENOMEM;
-	dev_dbg(blk->dev, "Registering partition %s on drive %s\n",
-				partition_name, blk->cdev.name);
+	dev_dbg(blk->dev, "Registering partition %s on drive %s (partuuid=%s)\n",
+				partition_name, blk->cdev.name, part->partuuid);
 	cdev = devfs_add_partition(blk->cdev.name,
 				start, size, 0, partition_name);
 	if (IS_ERR(cdev)) {

@@ -1,11 +1,6 @@
 STMicroelectronics STM32MP
 ==========================
 
-.. note::
-
-  Support for the STM32MP architecure in barebox is still in progress.
-  Bootstrapping an OS from mainline barebox is not yet supported.
-
 The STM32MP is a line of 32-bit ARM SoCs. They reuse peripherals of the
 STM32 line of microcontrollers and can have a STM32 MCU embedded as co-processor
 as well.
@@ -68,8 +63,21 @@ An appropriate image for the boot media can be generated with following
 
 Image can then be flashed on e.g. a SD-Card.
 
-TODO
-----
+Boot source selection
+---------------------
 
-* Extend barebox MMCI support to support the SDMMC2
-* Extend barebox DesignWare MAC support to support the stmmac
+The STM32MP BootROM samples three boot pins at reset. Usually BOOT1 is
+pulled down and BOOT0 and BOOT2 are connected to a 2P DIP switch::
+
+       +-------+
+ BOOT2 | O O-- |
+ BOOT0 | N O-- |  <---- SDMMC
+       +-------+
+       +-------+
+ BOOT2 | O O-- |
+ BOOT0 | N --O |  <---- QSPI-NOR Flash
+       +-------+
+       +-------+
+ BOOT2 | O --O |
+ BOOT0 | N --O |  <---- DFU on UART and USB OTG
+       +-------+

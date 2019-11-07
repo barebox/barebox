@@ -8,6 +8,10 @@
 #include <dt-bindings/gpio/gpio.h>
 
 / {
+	aliases {
+		mmc0 = &sdmmc1;
+	};
+
 	chosen {
 		environment {
 			compatible = "barebox,environment";
@@ -25,19 +29,6 @@
 
 		blue {
 			default-state = "on";
-		};
-	};
-
-	sram: sram@10050000 {
-		compatible = "mmio-sram";
-		reg = <0x10050000 0x10000>;
-		#address-cells = <1>;
-		#size-cells = <1>;
-		ranges = <0 0x10050000 0x10000>;
-
-		dma_pool: dma_pool@0 {
-			reg = <0x0 0x10000>;
-			pool;
 		};
 	};
 };

@@ -51,4 +51,12 @@ config EEPROM_93XX46
 	  supports both read and write commands and also the command to
 	  erase the whole EEPROM.
 
+config STM32_BSEC
+	tristate "STM32 Boot and security and OTP control"
+	depends on ARCH_STM32MP
+	depends on OFDEVICE
+	help
+	  This adds support for the STM32 OTP controller. Reads and writes
+	  to will go to the shadow RAM, not the OTP fuses themselvers.
+
 endif

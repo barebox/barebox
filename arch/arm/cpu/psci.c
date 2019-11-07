@@ -228,7 +228,7 @@ static int armv7_psci_init(void)
 }
 device_initcall(armv7_psci_init);
 
-#ifdef DEBUG
+#ifdef CONFIG_ARM_PSCI_DEBUG
 
 #include <command.h>
 #include <getopt.h>
@@ -248,8 +248,41 @@ void second_entry(void)
 	while (1);
 }
 
+static const char *psci_xlate_str(long err)
+{
+       static char errno_string[sizeof "error 0x123456789ABCDEF0"];
+
+       switch(err)
+       {
+       case ARM_PSCI_RET_SUCCESS:
+	       return "Success";
+       case ARM_PSCI_RET_NOT_SUPPORTED:
+	       return "Operation not supported";
+       case ARM_PSCI_RET_INVAL:
+	       return "Invalid argument";
+       case ARM_PSCI_RET_DENIED:
+	       return "Operation not permitted";
+       case ARM_PSCI_RET_ALREADY_ON:
+	       return "CPU already on";
+       case ARM_PSCI_RET_ON_PENDING:
+	       return "CPU_ON in progress";
+       case ARM_PSCI_RET_INTERNAL_FAILURE:
+	       return "Internal failure";
+       case ARM_PSCI_RET_NOT_PRESENT:
+	       return "Trusted OS not present on core";
+       case ARM_PSCI_RET_DISABLED:
+	       return "CPU is disabled";
+       case ARM_PSCI_RET_INVALID_ADDRESS:
+	       return "Bad address";
+       }
+
+       sprintf(errno_string, "error 0x%lx", err);
+       return errno_string;
+}
+
 static int do_smc(int argc, char *argv[])
 {
+	long ret;
 	int opt;
 	struct arm_smccc_res res = {
 		.a0 = 0xdeadbee0,
@@ -258,7 +291,10 @@ static int do_smc(int argc, char *argv[])
 		.a3 = 0xdeadbee3,
 	};
 
-	while ((opt = getopt(argc, argv, "nicz")) > 0) {
+	if (argc < 2)
+		return COMMAND_ERROR_USAGE;
+
+	while ((opt = getopt(argc, argv, "nic")) > 0) {
 		switch (opt) {
 		case 'n':
 			armv7_secure_monitor_install();
@@ -271,7 +307,10 @@ static int do_smc(int argc, char *argv[])
 		case 'c':
 			arm_smccc_smc(ARM_PSCI_0_2_FN_CPU_ON,
 				      1, (unsigned long)second_entry, 0, 0, 0, 0, 0, &res);
-			break;
+			ret = (long)res.a0;
+			printf("CPU_ON returns with: %s\n", psci_xlate_str(ret));
+			if (ret)
+				return COMMAND_ERROR;
 		}
 	}
 
@@ -285,7 +324,6 @@ BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-n",  "Install secure monitor and switch to nonsecure mode")
 BAREBOX_CMD_HELP_OPT ("-i",  "Show information about installed PSCI version")
 BAREBOX_CMD_HELP_OPT ("-c",  "Start secondary CPU core")
-BAREBOX_CMD_HELP_OPT ("-z",  "Turn off secondary CPU core")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(smc)

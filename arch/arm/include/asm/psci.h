@@ -18,8 +18,9 @@
 #ifndef __ARM_PSCI_H__
 #define __ARM_PSCI_H__
 
-#define ARM_PSCI_VER_1_0		(0x00010000)
-#define ARM_PSCI_VER_0_2		(0x00000002)
+#define ARM_PSCI_VER(major, minor)	(((major) << 16) | (minor))
+#define ARM_PSCI_VER_1_0		ARM_PSCI_VER(1,0)
+#define ARM_PSCI_VER_0_2		ARM_PSCI_VER(0,2)
 
 /* PSCI 0.1 interface */
 #define ARM_PSCI_FN_BASE		0x95c1ba5e
@@ -103,6 +104,24 @@ void psci_set_ops(struct psci_ops *ops);
 #else
 static inline void psci_set_ops(struct psci_ops *ops)
 {
+}
+#endif
+
+#ifdef CONFIG_ARM_PSCI_CLIENT
+int psci_invoke(ulong function, ulong arg0, ulong arg1, ulong arg2,
+		ulong *result);
+
+int psci_get_version(void);
+#else
+static inline int psci_invoke(ulong function, ulong arg0, ulong arg1, ulong arg2,
+		ulong *result)
+{
+	return -ENOSYS;
+}
+
+static inline int psci_get_version(void)
+{
+	return -ENOSYS;
 }
 #endif
 

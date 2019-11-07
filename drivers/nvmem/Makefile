@@ -17,3 +17,6 @@ nvmem-rave-sp-eeprom-y		:= rave-sp-eeprom.o
 
 obj-$(CONFIG_EEPROM_93XX46)	+= nvmem_eeprom_93xx46.o
 nvmem_eeprom_93xx46-y		:= eeprom_93xx46.o
+
+obj-$(CONFIG_STM32_BSEC)	+= nvmem_bsec.o
+nvmem_bsec-y			:= bsec.o

@@ -5,11 +5,11 @@ config ARCH_NR_GPIO
 	default 416
 
 config ARCH_STM32MP157
+	select ARM_PSCI_CLIENT
 	bool
 
 config MACH_STM32MP157C_DK2
 	select ARCH_STM32MP157
-	select ARM_USE_COMPRESSED_DTB
 	bool "STM32MP157C-DK2 board"
 
 endif

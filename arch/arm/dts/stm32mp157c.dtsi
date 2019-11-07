@@ -19,4 +19,12 @@
 		gpio10 = &gpiok;
 		gpio25 = &gpioz;
 	};
+
+	psci {
+		compatible = "arm,psci-0.2";
+	};
+};
+
+&bsec {
+	barebox,provide-mac-address = <&ethernet0 0x39>;
 };

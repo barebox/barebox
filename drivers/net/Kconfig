@@ -61,7 +61,7 @@ config DRIVER_NET_DAVINCI_EMAC
 	select PHYLIB
 
 config DRIVER_NET_DESIGNWARE
-	bool "Designware Universal MAC ethernet platform support"
+	bool "Designware Universal MAC1000 ethernet platform support"
 	depends on HAS_DMA
 	select PHYLIB
 	help
@@ -84,6 +84,31 @@ config DRIVER_NET_DESIGNWARE_SOCFPGA
 	help
 	  This option enables support for the Synopsys
 	  Designware Core Univesal MAC 10M/100M/1G ethernet IP on SoCFPGA.
+
+endif
+
+config DRIVER_NET_DESIGNWARE_EQOS
+	bool "Designware Designware Ethernet QoS support"
+	depends on HAS_DMA
+	select PHYLIB
+	select OFTREE
+	help
+	  This option enables support for the Synopsys
+	  Designware Ethernet Quality-of-Service (GMAC4).
+
+if DRIVER_NET_DESIGNWARE_EQOS
+
+config DRIVER_NET_DESIGNWARE_STM32
+	bool "Designware EQOS STM32 driver"
+	select MFD_SYSCON
+	help
+	  This option enables support for the ethernet MAC on the STM32MP platforms.
+
+config DRIVER_NET_DESIGNWARE_TEGRA186
+	bool "Designware Universal MAC ethernet driver for Tegra 186 platforms"
+	select RESET_CONTROLLER
+	help
+	  This option enables support for the ethernet MAC on the Tegra186 & 194.
 
 endif
 

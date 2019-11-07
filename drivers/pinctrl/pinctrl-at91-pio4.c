@@ -260,7 +260,7 @@ static int pinctrl_at91_pio4_gpiochip_add(struct device_d *dev,
 		return ret;
 	}
 
-	dev_info(dev, "gpio driver registered\n");
+	dev_dbg(dev, "gpio driver registered\n");
 
 	return 0;
 }
@@ -290,7 +290,7 @@ static int pinctrl_at91_pio4_probe(struct device_d *dev)
 	if (ret)
 		return ret;
 
-	dev_info(dev, "pinctrl driver registered\n");
+	dev_dbg(dev, "pinctrl driver registered\n");
 
 	if (of_get_property(np, "gpio-controller", NULL))
 		return pinctrl_at91_pio4_gpiochip_add(dev, pinctrl);

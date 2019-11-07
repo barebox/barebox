@@ -16,6 +16,7 @@ pbl-$(CONFIG_BOARD_ARM_GENERIC_DT_AARCH64) += board-dt-2nd-aarch64.o
 obj-pbl-y += setupc$(S64).o cache$(S64).o
 
 obj-$(CONFIG_BOOTM_OPTEE) += start-kernel-optee.o
+obj-$(CONFIG_ARM_PSCI_CLIENT) += psci-client.o
 
 #
 # Any variants can be called as start-armxyz.S

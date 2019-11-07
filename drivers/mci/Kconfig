@@ -153,4 +153,13 @@ config MMC_SPI_CRC_ON
 	help
 	  Enable CRC protection for transfers
 
+config MCI_STM32_SDMMC2
+	bool "STMicroelectronics STM32H7 SD/MMC Host Controller support"
+	depends on ARM_AMBA
+	depends on RESET_CONTROLLER
+	help
+	  This selects support for the SD/MMC controller on STM32H7 SoCs.
+	  If you have a board based on such a SoC and with a SD/MMC slot,
+	  say Y or M here.
+
 endif

@@ -145,7 +145,7 @@ static int efivars_create(struct device_d *dev, const char *pathname, mode_t mod
 	if (ret)
 		return -ENOENT;
 
-	if (memcmp(&vendor, &EFI_BAREBOX_VENDOR_GUID, sizeof(efi_guid_t)))
+	if (efi_guidcmp(vendor, EFI_BAREBOX_VENDOR_GUID))
 		return -EPERM;
 
 	inode = xzalloc(sizeof(*inode));

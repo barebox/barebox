@@ -17,6 +17,7 @@
  *
  */
 
+#include <linux/linkage.h>
 #include <common.h>
 #include <linux/sizes.h>
 #include <memory.h>
@@ -317,6 +318,8 @@ static int efi_init(void)
 	return 0;
 }
 device_initcall(efi_init);
+
+asmlinkage efi_status_t efi_main(efi_handle_t, efi_system_table_t *);
 
 /**
  * efi-main - Entry point for EFI images

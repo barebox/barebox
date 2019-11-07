@@ -26,6 +26,8 @@
 #include <readkey.h>
 #include <linux/ctype.h>
 #include <efi/efi.h>
+#include <efi/efi-device.h>
+#include "efi-stdio.h"
 
 #define EFI_SHIFT_STATE_VALID           0x80000000
 #define EFI_RIGHT_CONTROL_PRESSED       0x00000004
@@ -71,6 +73,7 @@
 struct efi_console_priv {
 	struct efi_simple_text_output_protocol *out;
 	struct efi_simple_input_interface *in;
+	struct efi_simple_text_input_ex_protocol *inex;
 	struct console_device cdev;
 	int lastkey;
 	u16 efi_console_buffer[CONFIG_CBSIZE];
@@ -105,35 +108,72 @@ static struct efi_ctrlkey ctrlkeys[] = {
 	{ 0x17, 27 /* escape key */ },
 };
 
+static int xlate_keypress(struct efi_input_key *k)
+{
+	int i;
+
+	/* 32 bit modifier keys + 16 bit scan code + 16 bit unicode */
+	for (i = 0; i < ARRAY_SIZE(ctrlkeys); i++) {
+		if (ctrlkeys[i].scan_code == k->scan_code)
+			return ctrlkeys[i].bb_key;
+
+	}
+
+	return k->unicode_char & 0xff;
+}
+
 static int efi_read_key(struct efi_console_priv *priv, bool wait)
 {
 	unsigned long index;
 	efi_status_t efiret;
-	struct efi_input_key k;
-	int i;
+	struct efi_key_data kd;
 
 	/* wait until key is pressed */
 	if (wait)
 		BS->wait_for_event(1, priv->in->wait_for_key, &index);
 
-        efiret = priv->in->read_key_stroke(efi_sys_table->con_in, &k);
-        if (EFI_ERROR(efiret))
-		return -efi_errno(efiret);
+	if (priv->inex) {
+		efiret = priv->inex->read_key_stroke_ex(priv->inex, &kd);
 
-	/* 32 bit modifier keys + 16 bit scan code + 16 bit unicode */
-	for (i = 0; i < ARRAY_SIZE(ctrlkeys); i++) {
-		if (ctrlkeys[i].scan_code == k.scan_code)
-			return ctrlkeys[i].bb_key;
+		if (efiret == EFI_NOT_READY)
+			return -EAGAIN;
 
+		if (!EFI_ERROR(efiret)) {
+			if ((kd.state.shift_state & EFI_SHIFT_STATE_VALID) &&
+			    (kd.state.shift_state & EFI_CONTROL_PRESSED)) {
+				int ch = tolower(kd.key.unicode_char & 0xff);
+
+				if (isalpha(ch))
+					return CHAR_CTRL(ch);
+				if (ch == '\0') /* ctrl is pressed on its own */
+					return -EAGAIN;
+			}
+
+			if (kd.key.unicode_char || kd.key.scan_code)
+				return xlate_keypress(&kd.key);
+
+			/* Some broken firmwares offer simple_text_input_ex_protocol,
+			 * but never handle any key. Treat those as if
+			 * read_key_stroke_ex failed and fall through
+			 * to the basic simple_text_input_protocol.
+			 */
+			dev_dbg(priv->cdev.dev, "Falling back to simple_text_input_protocol\n");
+		}
 	}
 
-	return k.unicode_char & 0xff;
+	efiret = priv->in->read_key_stroke(priv->in, &kd.key);
+
+	if (EFI_ERROR(efiret))
+		return -efi_errno(efiret);
+
+	return xlate_keypress(&kd.key);
 }
 
 static void efi_console_putc(struct console_device *cdev, char c)
 {
 	uint16_t str[2] = {};
-	struct efi_simple_text_output_protocol *con_out = efi_sys_table->con_out;
+	struct efi_console_priv *priv = to_efi(cdev);
+	struct efi_simple_text_output_protocol *con_out = priv->out;
 
 	str[0] = c;
 
@@ -331,14 +371,30 @@ static void efi_set_mode(struct efi_console_priv *priv)
 
 static int efi_console_probe(struct device_d *dev)
 {
+	efi_guid_t inex_guid = EFI_SIMPLE_TEXT_INPUT_EX_PROTOCOL_GUID;
+	struct efi_simple_text_input_ex_protocol *inex;
 	struct console_device *cdev;
 	struct efi_console_priv *priv;
+	efi_status_t efiret;
+
 	int i;
 
 	priv = xzalloc(sizeof(*priv));
 
 	priv->out = efi_sys_table->con_out;
 	priv->in = efi_sys_table->con_in;
+
+	efiret = BS->open_protocol((void *)efi_sys_table->con_in_handle,
+			     &inex_guid,
+			     (void **)&inex,
+			     efi_parent_image,
+			     0,
+			     EFI_OPEN_PROTOCOL_GET_PROTOCOL);
+
+	if (!EFI_ERROR(efiret)) {
+		priv->inex = inex;
+		dev_dbg(dev, "Using simple_text_input_ex_protocol\n");
+	}
 
 	priv->current_color = EFI_WHITE;
 

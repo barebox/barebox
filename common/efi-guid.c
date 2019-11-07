@@ -52,7 +52,7 @@ const char *efi_guid_string(efi_guid_t *g)
 	EFI_GUID_STRING(EFI_ISA_IO_PROTOCOL_GUID, "ISA IO Protocol", "ISA IO Protocol");
 	EFI_GUID_STRING(EFI_STANDARD_ERROR_DEVICE_GUID, "Standard Error Device Guid", "EFI Standard Error Device Guid");
 	EFI_GUID_STRING(EFI_CONSOLE_OUT_DEVICE_GUID, "Console Out Device Guid", "EFI Console Out Device Guid");
-	EFI_GUID_STRING(EFI_CONSOLE_IN_DEVICE_GUID, "Console In Device Guid", "EFI Conosle In Device Guid");
+	EFI_GUID_STRING(EFI_CONSOLE_IN_DEVICE_GUID, "Console In Device Guid", "EFI Console In Device Guid");
 	EFI_GUID_STRING(EFI_SIMPLE_TEXT_OUT_PROTOCOL_GUID, "Simple Text Out Protocol", "EFI 1.0 Simple Text Out Protocol");
 	EFI_GUID_STRING(EFI_SIMPLE_TEXT_INPUT_EX_PROTOCOL_GUID, "Simple Text Input Ex Protocol", "UEFI 2.1 Simple Text Input Ex Protocol");
 	EFI_GUID_STRING(EFI_SIMPLE_TEXT_IN_PROTOCOL_GUID, "Simple Text In Protocol", "EFI 1.0 Simple Text In Protocol");

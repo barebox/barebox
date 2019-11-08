@@ -16,6 +16,10 @@
 #include <poller.h>
 #include <driver.h>
 
+enum wdog_hw_runnning {
+	 WDOG_HW_RUNNING_UNSUPPORTED, WDOG_HW_RUNNING, WDOG_HW_NOT_RUNNING
+};
+
 struct watchdog {
 	int (*set_timeout)(struct watchdog *, unsigned);
 	const char *name;
@@ -27,7 +31,20 @@ struct watchdog {
 	unsigned int poller_enable;
 	struct poller_async poller;
 	struct list_head list;
+	int running; /* enum wdog_hw_running */
 };
+
+/*
+ * Use the following function to check whether or not the hardware watchdog
+ * is running
+ */
+static inline int watchdog_hw_running(struct watchdog *w)
+{
+	if (w->running == WDOG_HW_RUNNING_UNSUPPORTED)
+		return -ENOSYS;
+
+	return w->running == WDOG_HW_RUNNING;
+}
 
 #ifdef CONFIG_WATCHDOG
 int watchdog_register(struct watchdog *);

@@ -127,6 +127,23 @@ static int watchdog_register_dev(struct watchdog *wd, const char *name, int id)
 	return register_device(&wd->dev);
 }
 
+/**
+ * dev_get_watchdog_priority() - get a device's desired watchdog priority
+ * @dev:	The device, which device_node to read the property from
+ *
+ * return: The priority
+ */
+static unsigned int dev_get_watchdog_priority(struct device_d *dev)
+{
+	unsigned int priority = WATCHDOG_DEFAULT_PRIORITY;
+
+	if (dev)
+		of_property_read_u32(dev->device_node, "watchdog-priority",
+				     &priority);
+
+	return priority;
+}
+
 int watchdog_register(struct watchdog *wd)
 {
 	struct param_d *p;
@@ -146,7 +163,7 @@ int watchdog_register(struct watchdog *wd)
 		return ret;
 
 	if (!wd->priority)
-		wd->priority = WATCHDOG_DEFAULT_PRIORITY;
+		wd->priority = dev_get_watchdog_priority(wd->hwdev);
 
 	p = dev_add_param_uint32(&wd->dev, "priority",
 				 watchdog_set_priority, NULL,
@@ -232,18 +249,3 @@ struct watchdog *watchdog_get_by_name(const char *name)
 	return NULL;
 }
 EXPORT_SYMBOL(watchdog_get_by_name);
-
-/**
- * of_get_watchdog_priority() - get the desired watchdog priority from device tree
- * @node:	The device_node to read the property from
- *
- * return: The priority
- */
-unsigned int of_get_watchdog_priority(struct device_node *node)
-{
-	unsigned int priority = WATCHDOG_DEFAULT_PRIORITY;
-
-	of_property_read_u32(node, "watchdog-priority", &priority);
-
-	return priority;
-}

@@ -58,5 +58,12 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize,
 	/* maps main memory as cachable */
 	map_region(membase, memsize, PMD_SECT_DEF_CACHED);
 
+	/*
+	 * With HAB enabled we call into the ROM code later in imx6_hab_get_status().
+	 * Map the ROM cached which has the effect that the XN bit is not set.
+	 */
+	if (IS_ENABLED(CONFIG_HABV4) && IS_ENABLED(CONFIG_ARCH_IMX6))
+		map_region(0x0, SZ_1M, PMD_SECT_DEF_CACHED);
+
 	__mmu_cache_on();
 }

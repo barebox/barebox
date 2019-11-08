@@ -222,7 +222,7 @@ static int f71808e_wdt_init(struct f71808e_wdt *wd, struct device_d *dev)
 {
 	struct watchdog *wdd = &wd->wdd;
 	const char * const *names = pulse_width_names;
-	int wdt_conf;
+	unsigned long wdt_conf;
 	int ret;
 
 	superio_enter(wd->sioaddr);
@@ -261,6 +261,11 @@ static int f71808e_wdt_init(struct f71808e_wdt *wd, struct device_d *dev)
 					  RESET_SOURCE_DEFAULT_PRIORITY);
 
 	dev_info(dev, "reset reason: %s\n", reset_source_name());
+
+	if (test_bit(F71808FG_FLAG_WD_EN, &wdt_conf))
+		wdd->running = WDOG_HW_RUNNING;
+	else
+		wdd->running = WDOG_HW_NOT_RUNNING;
 
 	ret = watchdog_register(wdd);
 	if (ret)

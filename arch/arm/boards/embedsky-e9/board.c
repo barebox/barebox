@@ -22,7 +22,6 @@
 #include <init.h>
 #include <environment.h>
 #include <mach/imx6-regs.h>
-#include <gpio.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 #include <partition.h>
@@ -102,8 +101,4 @@ static int e9_coredevices_init(void)
 
 	return 0;
 }
-/*
- * Do this before the fec initializes but after our
- * gpios are available.
- */
 coredevice_initcall(e9_coredevices_init);

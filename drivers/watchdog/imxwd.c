@@ -28,6 +28,7 @@ struct imx_wd_ops {
 	int (*set_timeout)(struct imx_wd *, unsigned);
 	void (*soc_reset)(struct imx_wd *);
 	int (*init)(struct imx_wd *);
+	bool (*is_running)(struct imx_wd *);
 	unsigned int timeout_max;
 };
 
@@ -109,6 +110,11 @@ static int imx1_watchdog_set_timeout(struct imx_wd *priv, unsigned timeout)
 static void imx1_soc_reset(struct imx_wd *priv)
 {
 	writew(IMX1_WDOG_WCR_WDE, priv->base + IMX1_WDOG_WCR);
+}
+
+static inline bool imx21_watchdog_is_running(struct imx_wd *priv)
+{
+	return imxwd_read(priv, IMX21_WDOG_WCR) & IMX21_WDOG_WCR_WDE;
 }
 
 static int imx21_watchdog_set_timeout(struct imx_wd *priv, unsigned timeout)
@@ -243,6 +249,13 @@ static int imx_wd_probe(struct device_d *dev)
 						"fsl,ext-reset-output");
 
 	if (IS_ENABLED(CONFIG_WATCHDOG_IMX)) {
+		if (priv->ops->is_running) {
+			if (priv->ops->is_running(priv))
+				priv->wd.running = WDOG_HW_RUNNING;
+			else
+				priv->wd.running = WDOG_HW_NOT_RUNNING;
+		}
+
 		ret = watchdog_register(&priv->wd);
 		if (ret)
 			goto on_error;
@@ -277,6 +290,7 @@ static const struct imx_wd_ops imx21_wd_ops = {
 	.set_timeout = imx21_watchdog_set_timeout,
 	.soc_reset = imx21_soc_reset,
 	.init = imx21_wd_init,
+	.is_running = imx21_watchdog_is_running,
 	.timeout_max = 128,
 };
 

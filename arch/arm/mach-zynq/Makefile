@@ -1,1 +1,1 @@
-obj-y += zynq.o devices.o
+obj-y += zynq.o

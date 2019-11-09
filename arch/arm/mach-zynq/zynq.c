@@ -48,10 +48,6 @@ static int zynq_init(void)
 	writel(val, 0xf8f00000);
 	dmb();
 
-	add_generic_device("zynq-clock", 0, NULL, ZYNQ_SLCR_BASE + 0x100,
-			   0x4000, IORESOURCE_MEM, NULL);
-	add_generic_device("smp_twd", 0, NULL, CORTEXA9_SCU_TIMER_BASE_ADDR,
-				0x4000, IORESOURCE_MEM, NULL);
 	restart_handler_register_fn(zynq_restart_soc);
 
 	return 0;

@@ -283,6 +283,11 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
+	if (st.st_size > 192 * 1024) {
+		fprintf(stderr, "Image too big, will not fit in OCRAM!\n");
+		exit(EXIT_FAILURE);
+	}
+
 	buf = calloc(st.st_size + IMAGE_OFFSET, sizeof(char));
 	if (!buf) {
 		fprintf(stderr, "Unable to allocate buffer\n");

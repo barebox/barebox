@@ -476,15 +476,6 @@ static int zynq_clock_probe(struct device_d *dev)
 	clks[smc_aper] = clk_gate("smc_aper", "cpu_1x",
 				  clk_base + 0x2C, 24, 0, 0);
 
-	clk_register_clkdev(clks[cpu_3or2x], NULL, "arm_smp_twd");
-	clk_register_clkdev(clks[uart0], NULL, "zynq_serial0");
-	clk_register_clkdev(clks[uart1], NULL, "zynq_serial1");
-	clk_register_clkdev(clks[gem0], NULL, "macb0");
-	clk_register_clkdev(clks[gem1], NULL, "macb1");
-
-	clkdev_add_physbase(clks[cpu_3or2x], CORTEXA9_SCU_TIMER_BASE_ADDR, NULL);
-	clkdev_add_physbase(clks[uart1], ZYNQ_UART1_BASE_ADDR, NULL);
-
 	clk_data.clks = clks;
 	clk_data.clk_num = ARRAY_SIZE(clks);
 	of_clk_add_provider(dev->device_node, of_clk_src_onecell_get,

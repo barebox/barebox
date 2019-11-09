@@ -14,33 +14,58 @@
 
 #include <endian.h>
 #include <errno.h>
+#include <getopt.h>
 #include <malloc.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 
+static char *prgname;
+
 static void usage(char *name)
 {
-	printf("Usage: %s barebox-flash-image <outfile>\n", name);
+	fprintf(stderr, "usage: %s [OPTIONS]\n\n"
+			"-f <input>   input image file\n"
+			"-o <output>  output file\n"
+			"-h           this help\n", prgname);
+		exit(1);
 }
 
 int main(int argc, char *argv[])
 {
 	FILE *ifile, *ofile;
 	unsigned int *buf;
-	const char *infile;
-	const char *outfile;
+	const char *infile = NULL, *outfile = NULL;
 	struct stat st;
-	unsigned int i;
-	unsigned long sum = 0;
+	unsigned int i,sum = 0;
+	int opt;
 
-	if (argc != 3) {
-		usage(argv[0]);
+	prgname = argv[0];
+
+	while ((opt = getopt(argc, argv, "f:ho:")) != -1) {
+		switch (opt) {
+		case 'f':
+			infile = optarg;
+			break;
+		case 'o':
+			outfile = optarg;
+			break;
+		case 'h':
+			usage(argv[0]);
+		default:
+			exit(1);
+		}
+	}
+
+	if (!infile) {
+		fprintf(stderr, "input file not given\n");
 		exit(1);
 	}
 
-	infile = argv[1];
-	outfile = argv[2];
+	if (!outfile) {
+		fprintf(stderr, "output file not given\n");
+		exit(1);
+	}
 
 	if (stat(infile, &st) == -1) {
 		perror("stat");

@@ -1,0 +1,7 @@
+#include <arm/zynq-zed.dts>
+
+/ {
+	chosen {
+		stdout-path = &uart1;
+	};
+};

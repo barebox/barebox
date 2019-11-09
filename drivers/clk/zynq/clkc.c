@@ -373,10 +373,32 @@ static int zynq_clock_probe(struct device_d *dev)
 	struct resource *iores;
 	void __iomem *clk_base;
 	unsigned long ps_clk_rate = 33333330;
+	resource_size_t slcr_offset = 0;
 
-	iores = dev_request_mem_resource(dev, 0);
+	iores = dev_get_resource(dev, IORESOURCE_MEM, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
+
+	/*
+	 * The Zynq 7000 DT describes the SLCR child devices with a reg offset
+	 * in the SCLR region. So we can't directly map the address we get from
+	 * the DT, but need to add the SCLR base offset.
+	 */
+	if (dev->device_node) {
+		struct resource *parent_res;
+
+		parent_res = dev_get_resource(dev->parent, IORESOURCE_MEM, 0);
+		if (IS_ERR(parent_res))
+			return PTR_ERR(parent_res);
+
+		slcr_offset = parent_res->start;
+	}
+
+	iores = request_iomem_region(dev_name(dev), iores->start + slcr_offset,
+				     iores->end + slcr_offset);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+
 	clk_base = IOMEM(iores->start);
 
 	clks[ps_clk]  = clk_fixed("ps_clk", ps_clk_rate);

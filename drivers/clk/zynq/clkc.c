@@ -48,6 +48,8 @@ enum zynq_pll_type {
 #define PLL_STATUS_DDR_PLL_STABLE	(1 << 1)
 #define PLL_STATUS_IO_PLL_STABLE	(1 << 2)
 #define PLL_CTRL_BYPASS_FORCE		(1 << 4)
+#define PLL_CTRL_PWRDOWN		(1 << 1)
+#define PLL_CTRL_RESET			(1 << 0)
 
 static struct clk *clks[clks_max];
 
@@ -75,7 +77,7 @@ static int zynq_pll_enable(struct clk *clk)
 	int timeout = 10000;
 
 	val = readl(pll->pll_ctrl);
-	val &= ~PLL_CTRL_BYPASS_FORCE;
+	val &= ~(PLL_CTRL_BYPASS_FORCE | PLL_CTRL_PWRDOWN | PLL_CTRL_RESET);
 	writel(val, pll->pll_ctrl);
 
 	while (timeout--) {
@@ -89,9 +91,18 @@ static int zynq_pll_enable(struct clk *clk)
 	return 0;
 }
 
+static int zynq_pll_is_enabled(struct clk *clk)
+{
+	struct zynq_pll_clk *pll = to_zynq_pll_clk(clk);
+	u32 val = readl(pll->pll_ctrl);
+
+	return !(val & (PLL_CTRL_PWRDOWN | PLL_CTRL_RESET));
+}
+
 static struct clk_ops zynq_pll_clk_ops = {
 	.recalc_rate = zynq_pll_recalc_rate,
 	.enable = zynq_pll_enable,
+	.is_enabled = zynq_pll_is_enabled,
 };
 
 static inline struct clk *zynq_pll_clk(enum zynq_pll_type type,

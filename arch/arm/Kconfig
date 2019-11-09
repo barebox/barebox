@@ -250,6 +250,7 @@ config ARCH_UEMD
 config ARCH_ZYNQ
 	bool "Xilinx Zynq-based boards"
 	select HAS_DEBUG_LL
+	select PBL_IMAGE
 
 config ARCH_ZYNQMP
 	bool "Xilinx ZynqMP-based boards"

@@ -14,11 +14,12 @@
  */
 
 #include <asm/system.h>
-#include <io.h>
+#include <bootsource.h>
 #include <common.h>
 #include <init.h>
-#include <restart.h>
+#include <io.h>
 #include <mach/zynq7000-regs.h>
+#include <restart.h>
 
 static void __noreturn zynq_restart_soc(struct restart_handler *rst)
 {
@@ -28,6 +29,26 @@ static void __noreturn zynq_restart_soc(struct restart_handler *rst)
 	writel(0x1, ZYNQ_PSS_RST_CTRL);
 
 	hang();
+}
+
+static enum bootsource zynq_bootsource_get(void)
+{
+	u32 boot_mode = readl(ZYNQ_SLCR_BOOT_MODE);
+
+	switch (boot_mode & 0x7) {
+	case 0x0:
+		return BOOTSOURCE_JTAG;
+	case 0x1:
+		return BOOTSOURCE_SPI;
+	case 0x2:
+		return BOOTSOURCE_NOR;
+	case 0x4:
+		return BOOTSOURCE_NAND;
+	case 0x5:
+		return BOOTSOURCE_MMC;
+	default:
+		return BOOTSOURCE_UNKNOWN;
+	}
 }
 
 static int zynq_init(void)
@@ -49,6 +70,8 @@ static int zynq_init(void)
 	dmb();
 
 	restart_handler_register_fn(zynq_restart_soc);
+
+	bootsource_set(zynq_bootsource_get());
 
 	return 0;
 }

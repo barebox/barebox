@@ -360,38 +360,38 @@ static struct clk *zynq_cpu_subclk(const char *name,
 static int zynq_clock_probe(struct device_d *dev)
 {
 	struct resource *iores;
-	void __iomem *slcr_base;
+	void __iomem *clk_base;
 	unsigned long ps_clk_rate = 33333330;
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
-	slcr_base = IOMEM(iores->start);
+	clk_base = IOMEM(iores->start);
 
 	clks[ps_clk]  = clk_fixed("ps_clk", ps_clk_rate);
 
-	clks[arm_pll] = zynq_pll_clk(ZYNQ_PLL_ARM, "arm_pll", slcr_base + 0x100);
-	clks[ddr_pll] = zynq_pll_clk(ZYNQ_PLL_DDR, "ddr_pll", slcr_base + 0x104);
-	clks[io_pll]  = zynq_pll_clk(ZYNQ_PLL_IO,  "io_pll", slcr_base + 0x108);
+	clks[arm_pll] = zynq_pll_clk(ZYNQ_PLL_ARM, "arm_pll", clk_base + 0x0);
+	clks[ddr_pll] = zynq_pll_clk(ZYNQ_PLL_DDR, "ddr_pll", clk_base + 0x4);
+	clks[io_pll]  = zynq_pll_clk(ZYNQ_PLL_IO,  "io_pll", clk_base + 0x8);
 
-	clks[uart_clk] = zynq_periph_clk("uart_clk", slcr_base + 0x154);
+	clks[uart_clk] = zynq_periph_clk("uart_clk", clk_base + 0x54);
 
-	clks[uart0] = clk_gate("uart0", "uart_clk", slcr_base + 0x154, 0, 0, 0);
-	clks[uart1] = clk_gate("uart1", "uart_clk", slcr_base + 0x154, 1, 0, 0);
+	clks[uart0] = clk_gate("uart0", "uart_clk", clk_base + 0x54, 0, 0, 0);
+	clks[uart1] = clk_gate("uart1", "uart_clk", clk_base + 0x54, 1, 0, 0);
 
-	clks[gem0] = clk_gate("gem0", "io_pll", slcr_base + 0x140, 0, 0, 0);
-	clks[gem1] = clk_gate("gem1", "io_pll", slcr_base + 0x144, 1, 0, 0);
+	clks[gem0] = clk_gate("gem0", "io_pll", clk_base + 0x40, 0, 0, 0);
+	clks[gem1] = clk_gate("gem1", "io_pll", clk_base + 0x44, 1, 0, 0);
 
-	clks[cpu_clk] = zynq_cpu_clk("cpu_clk", slcr_base + 0x120);
+	clks[cpu_clk] = zynq_cpu_clk("cpu_clk", clk_base + 0x20);
 
 	clks[cpu_6x4x] = zynq_cpu_subclk("cpu_6x4x", CPU_SUBCLK_6X4X,
-					slcr_base + 0x120, slcr_base + 0x1C4);
+					clk_base + 0x20, clk_base + 0xC4);
 	clks[cpu_3x2x] = zynq_cpu_subclk("cpu_3x2x", CPU_SUBCLK_3X2X,
-					slcr_base + 0x120, slcr_base + 0x1C4);
+					clk_base + 0x20, clk_base + 0xC4);
 	clks[cpu_2x] = zynq_cpu_subclk("cpu_2x", CPU_SUBCLK_2X,
-					slcr_base + 0x120, slcr_base + 0x1C4);
+					clk_base + 0x20, clk_base + 0xC4);
 	clks[cpu_1x] = zynq_cpu_subclk("cpu_1x", CPU_SUBCLK_1X,
-					slcr_base + 0x120, slcr_base + 0x1C4);
+					clk_base + 0x20, clk_base + 0xC4);
 
 	clk_register_clkdev(clks[cpu_3x2x], NULL, "arm_smp_twd");
 	clk_register_clkdev(clks[uart0], NULL, "zynq_serial0");

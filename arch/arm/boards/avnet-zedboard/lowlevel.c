@@ -29,7 +29,7 @@
 
 extern char __dtb_zynq_zed_start[];
 
-void __naked barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2)
+ENTRY_FUNCTION(start_avnet_zedboard, r0, r1, r2)
 {
 
 	void *fdt = __dtb_zynq_zed_start + get_runtime_offset();

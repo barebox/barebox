@@ -282,6 +282,8 @@ static void eqos_stop_tegra186(struct eth_device *edev)
 {
 	struct eqos_tegra186 *priv = to_tegra186(edev->priv);
 
+	eqos_stop(edev);
+
 	eqos_reset_tegra186(priv, true);
 
 	clk_bulk_disable(priv->num_clks, priv->clks);

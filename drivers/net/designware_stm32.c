@@ -199,6 +199,8 @@ static void eqos_stop_stm32(struct eth_device *edev)
 {
 	struct eqos_stm32 *priv = to_stm32(edev->priv);
 
+	eqos_stop(edev);
+
 	clk_bulk_disable(priv->num_clks, priv->clks);
 }
 

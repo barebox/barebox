@@ -142,11 +142,13 @@ void am33xx_enable_per_clocks(void)
 	__raw_writel(PRCM_MOD_EN, CM_PER_CPSW_CLKSTCTRL);
 	while ((__raw_readl(CM_PER_CPGMAC0_CLKCTRL) & 0x30000) != 0x0);
 
-	/* MMC 0 & 1 */
+	/* MMC 0, 1 & 2 */
 	__raw_writel(PRCM_MOD_EN, CM_PER_MMC0_CLKCTRL);
 	while (__raw_readl(CM_PER_MMC0_CLKCTRL) != PRCM_MOD_EN);
 	__raw_writel(PRCM_MOD_EN, CM_PER_MMC1_CLKCTRL);
 	while (__raw_readl(CM_PER_MMC1_CLKCTRL) != PRCM_MOD_EN);
+	__raw_writel(PRCM_MOD_EN, CM_PER_MMC2_CLKCTRL);
+	while (__raw_readl(CM_PER_MMC2_CLKCTRL) != PRCM_MOD_EN);
 
 	/* Enable the control module though RBL would have done it*/
 	__raw_writel(PRCM_MOD_EN, CM_WKUP_CONTROL_CLKCTRL);

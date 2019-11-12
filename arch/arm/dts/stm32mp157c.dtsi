@@ -18,6 +18,7 @@
 		gpio9 = &gpioj;
 		gpio10 = &gpiok;
 		gpio25 = &gpioz;
+		mmc0 = &sdmmc1;
 	};
 
 	psci {

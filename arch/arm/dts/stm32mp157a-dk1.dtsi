@@ -8,10 +8,6 @@
 #include <dt-bindings/gpio/gpio.h>
 
 / {
-	aliases {
-		mmc0 = &sdmmc1;
-	};
-
 	chosen {
 		environment {
 			compatible = "barebox,environment";

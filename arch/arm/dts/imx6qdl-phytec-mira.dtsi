@@ -1,0 +1,44 @@
+// SPDX-License-Identifier: (GPL-2.0-or-later OR MIT)
+/*
+ * Copyright (C) 2019 PHYTEC Messtechnik GmbH
+ * Author: Stefan Riedmueller <s.riedmueller@phytec.de>
+ */
+
+#include <arm/imx6qdl-phytec-mira.dtsi>
+#include <dt-bindings/gpio/gpio.h>
+
+/ {
+	chosen {
+		stdout-path = &uart2;
+	};
+};
+
+&backlight {
+	status = "disabled";
+};
+
+&ldb {
+	status = "disabled";
+};
+
+&pwm1 {
+	status = "disabled";
+};
+
+&usdhc1 {
+	partitions {
+		compatible = "fixed-partitions";
+                #address-cells = <1>;
+                #size-cells = <1>;
+
+                partition@0 {
+                        label = "barebox";
+                        reg = <0x0 0xe0000>;
+                };
+
+                partition@e0000 {
+                        label = "barebox-environment";
+                        reg = <0xe0000 0x20000>;
+                };
+        };
+};

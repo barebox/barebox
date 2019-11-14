@@ -107,8 +107,8 @@ struct fm_eth {
 	void *rx_bd_ring;		/* Rx BD ring base */
 	void *cur_rxbd;			/* current Rx BD */
 	void *rx_buf;			/* Rx buffer base */
-	void *tx_bd_ring;		/* Tx BD ring base */
-	void *cur_txbd;			/* current Tx BD */
+	struct fm_port_bd *tx_bd_ring;	/* Tx BD ring base */
+	int cur_txbd_idx;		/* current Tx BD index */
 	struct memac *regs;
 };
 
@@ -702,16 +702,16 @@ static int fm_eth_tx_port_parameter_init(struct fm_eth *fm_eth)
 			* TX_BD_RING_SIZE);
 	/* save it to fm_eth */
 	fm_eth->tx_bd_ring = tx_bd_ring_base;
-	fm_eth->cur_txbd = tx_bd_ring_base;
+	fm_eth->cur_txbd_idx = 0;
 
 	/* init Tx BDs ring */
-	txbd = tx_bd_ring_base;
 	for (i = 0; i < TX_BD_RING_SIZE; i++) {
+		txbd = &fm_eth->tx_bd_ring[i];
+
 		muram_writew(&txbd->status, TxBD_LAST);
 		muram_writew(&txbd->len, 0);
 		muram_writew(&txbd->buf_ptr_hi, 0);
 		out_be32(&txbd->buf_ptr_lo, 0);
-		txbd++;
 	}
 
 	/* set the Tx queue decriptor */
@@ -834,13 +834,13 @@ static int fm_eth_send(struct eth_device *edev, void *buf, int len)
 {
 	struct fm_eth *fm_eth = to_fm_eth(edev);
 	struct fm_port_global_pram *pram;
-	struct fm_port_bd *txbd, *txbd_base;
+	struct fm_port_bd *txbd;
 	u16 offset_in;
 	int i;
 	dma_addr_t dma;
 
 	pram = fm_eth->tx_pram;
-	txbd = fm_eth->cur_txbd;
+	txbd = &fm_eth->tx_bd_ring[fm_eth->cur_txbd_idx];
 
 	/* find one empty TxBD */
 	for (i = 0; muram_readw(&txbd->status) & TxBD_READY; i++) {
@@ -882,12 +882,7 @@ static int fm_eth_send(struct eth_device *edev, void *buf, int len)
 	dma_unmap_single(fm_eth->dev, dma, len, DMA_TO_DEVICE);
 
 	/* advance the TxBD */
-	txbd++;
-	txbd_base = fm_eth->tx_bd_ring;
-	if (txbd >= (txbd_base + TX_BD_RING_SIZE))
-		txbd = txbd_base;
-	/* update current txbd */
-	fm_eth->cur_txbd = (void *)txbd;
+	fm_eth->cur_txbd_idx = (fm_eth->cur_txbd_idx + 1) % TX_BD_RING_SIZE;
 
 	return 0;
 }

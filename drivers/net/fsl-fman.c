@@ -835,7 +835,7 @@ static int fm_eth_send(struct eth_device *edev, void *buf, int len)
 	struct fm_eth *fm_eth = to_fm_eth(edev);
 	struct fm_port_global_pram *pram;
 	struct fm_port_bd *txbd;
-	int i;
+	int i, ret;
 	dma_addr_t dma;
 
 	pram = fm_eth->tx_pram;
@@ -869,18 +869,20 @@ static int fm_eth_send(struct eth_device *edev, void *buf, int len)
 		     fm_eth->cur_txbd_idx * sizeof(struct fm_port_bd));
 
 	/* wait for buffer to be transmitted */
+	ret = 0;
 	for (i = 0; muram_readw(&txbd->status) & TxBD_READY; i++) {
 		udelay(10);
 		if (i > 0x10000) {
 			dev_err(&edev->dev, "Tx error, txbd->status = 0x%x\n",
 			       muram_readw(&txbd->status));
-			return -EIO;
+			ret = -EIO;
+			break;
 		}
 	}
 
 	dma_unmap_single(fm_eth->dev, dma, len, DMA_TO_DEVICE);
 
-	return 0;
+	return ret;
 }
 
 static int fm_eth_recv(struct eth_device *edev)

@@ -202,7 +202,6 @@ static void eqos_stop_stm32(struct eth_device *edev)
 	clk_bulk_disable(priv->num_clks, priv->clks);
 }
 
-// todo split!
 static struct eqos_ops stm32_ops = {
 	.init = eqos_init_stm32,
 	.get_ethaddr = eqos_get_ethaddr,

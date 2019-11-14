@@ -914,7 +914,6 @@ static int dwc3_core_get_phy(struct dwc3 *dwc)
 	if (IS_ERR(dwc->usb2_generic_phy)) {
 		ret = PTR_ERR(dwc->usb2_generic_phy);
 		if (ret == -ENOSYS || ret == -ENODEV) {
-			dev_err(dev, "no usb2 phy configured\n");
 			dwc->usb2_generic_phy = NULL;
 		} else if (ret == -EPROBE_DEFER) {
 			return ret;
@@ -928,7 +927,6 @@ static int dwc3_core_get_phy(struct dwc3 *dwc)
 	if (IS_ERR(dwc->usb3_generic_phy)) {
 		ret = PTR_ERR(dwc->usb3_generic_phy);
 		if (ret == -ENOSYS || ret == -ENODEV) {
-			dev_err(dev, "no usb2 phy configured\n");
 			dwc->usb3_generic_phy = NULL;
 		} else if (ret == -EPROBE_DEFER) {
 			return ret;

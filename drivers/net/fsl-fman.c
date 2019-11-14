@@ -835,7 +835,6 @@ static int fm_eth_send(struct eth_device *edev, void *buf, int len)
 	struct fm_eth *fm_eth = to_fm_eth(edev);
 	struct fm_port_global_pram *pram;
 	struct fm_port_bd *txbd;
-	u16 offset_in;
 	int i;
 	dma_addr_t dma;
 
@@ -862,12 +861,12 @@ static int fm_eth_send(struct eth_device *edev, void *buf, int len)
 	muram_writew(&txbd->len, len);
 	muram_writew(&txbd->status, TxBD_READY | TxBD_LAST);
 
+	/* advance the TxBD */
+	fm_eth->cur_txbd_idx = (fm_eth->cur_txbd_idx + 1) % TX_BD_RING_SIZE;
+
 	/* update TxQD, let RISC to send the packet */
-	offset_in = muram_readw(&pram->txqd.offset_in);
-	offset_in += sizeof(struct fm_port_bd);
-	if (offset_in >= muram_readw(&pram->txqd.bd_ring_size))
-		offset_in = 0;
-	muram_writew(&pram->txqd.offset_in, offset_in);
+	muram_writew(&pram->txqd.offset_in,
+		     fm_eth->cur_txbd_idx * sizeof(struct fm_port_bd));
 
 	/* wait for buffer to be transmitted */
 	for (i = 0; muram_readw(&txbd->status) & TxBD_READY; i++) {
@@ -880,9 +879,6 @@ static int fm_eth_send(struct eth_device *edev, void *buf, int len)
 	}
 
 	dma_unmap_single(fm_eth->dev, dma, len, DMA_TO_DEVICE);
-
-	/* advance the TxBD */
-	fm_eth->cur_txbd_idx = (fm_eth->cur_txbd_idx + 1) % TX_BD_RING_SIZE;
 
 	return 0;
 }

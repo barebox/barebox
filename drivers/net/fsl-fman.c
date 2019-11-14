@@ -900,9 +900,12 @@ static int fm_eth_recv(struct eth_device *edev)
 
 	pram = fm_eth->rx_pram;
 	rxbd = fm_eth->cur_rxbd;
-	status = muram_readw(&rxbd->status);
 
-	while (!(status & RxBD_EMPTY)) {
+	while (1) {
+		status = muram_readw(&rxbd->status);
+		if (status & RxBD_EMPTY)
+			break;
+
 		if (!(status & RxBD_ERROR)) {
 			buf_hi = muram_readw(&rxbd->buf_ptr_hi);
 			buf_lo = in_be32(&rxbd->buf_ptr_lo);
@@ -932,8 +935,6 @@ static int fm_eth_recv(struct eth_device *edev)
 		rxbd_base = fm_eth->rx_bd_ring;
 		if (rxbd >= (rxbd_base + RX_BD_RING_SIZE))
 			rxbd = rxbd_base;
-		/* read next status */
-		status = muram_readw(&rxbd->status);
 
 		/* update RxQD */
 		offset_out = muram_readw(&pram->rxqd.offset_out);

@@ -1175,6 +1175,8 @@ static int fsl_fman_memac_probe(struct device_d *dev)
 	/* alloc the FMan ethernet private struct */
 	fm_eth = xzalloc(sizeof(*fm_eth));
 
+	dev->priv = fm_eth;
+
 	fm_eth->dev = dev;
 
 	ret = fsl_fman_memac_port_bind(fm_eth, FMAN_PORT_TYPE_TX);
@@ -1214,6 +1216,13 @@ static int fsl_fman_memac_probe(struct device_d *dev)
 		return ret;
 
 	return 0;
+}
+
+static void fsl_fman_memac_remove(struct device_d *dev)
+{
+	struct fm_eth *fm_eth = dev->priv;
+
+	fm_eth_halt(&fm_eth->edev);
 }
 
 static int fsl_fman_muram_probe(struct device_d *dev)
@@ -1274,6 +1283,7 @@ static struct of_device_id fsl_fman_memac_dt_ids[] = {
 static struct driver_d fman_memac_driver = {
 	.name   = "fsl-fman-memac",
 	.probe  = fsl_fman_memac_probe,
+	.remove = fsl_fman_memac_remove,
 	.of_compatible = DRV_OF_COMPAT(fsl_fman_memac_dt_ids),
 };
 
@@ -1303,6 +1313,7 @@ static int fsl_fman_probe(struct device_d *dev)
 		return PTR_ERR(iores);
 
 	reg = IOMEM(iores->start);
+	dev->priv = reg;
 
 	ret = of_platform_populate(dev->device_node, NULL, dev);
 	if (ret)
@@ -1320,6 +1331,13 @@ static int fsl_fman_probe(struct device_d *dev)
 	return 0;
 }
 
+static void fsl_fman_remove(struct device_d *dev)
+{
+	struct ccsr_fman *reg = dev->priv;
+
+	setbits_be32(&reg->fm_fpm.fmrstc, FMFP_RSTC_RFM);
+}
+
 static struct of_device_id fsl_fman_dt_ids[] = {
 	{
 		.compatible = "fsl,fman",
@@ -1330,6 +1348,7 @@ static struct of_device_id fsl_fman_dt_ids[] = {
 static struct driver_d fman_driver = {
 	.name   = "fsl-fman",
 	.probe  = fsl_fman_probe,
+	.remove = fsl_fman_remove,
 	.of_compatible = DRV_OF_COMPAT(fsl_fman_dt_ids),
 };
 device_platform_driver(fman_driver);

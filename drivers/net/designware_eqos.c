@@ -204,7 +204,7 @@ static int eqos_mdio_read(struct mii_bus *bus, int addr, int reg)
 
 	ret = eqos_mdio_wait_idle(eqos);
 	if (ret) {
-		eqos_err(eqos, "MDIO not idle at entry\n");
+		dev_err(&bus->dev, "MDIO not idle at entry\n");
 		return ret;
 	}
 
@@ -222,7 +222,7 @@ static int eqos_mdio_read(struct mii_bus *bus, int addr, int reg)
 
 	ret = eqos_mdio_wait_idle(eqos);
 	if (ret) {
-		eqos_err(eqos, "MDIO read didn't complete\n");
+		dev_err(&bus->dev, "MDIO read didn't complete\n");
 		return ret;
 	}
 
@@ -237,7 +237,7 @@ static int eqos_mdio_write(struct mii_bus *bus, int addr, int reg, u16 val)
 
 	ret = eqos_mdio_wait_idle(eqos);
 	if (ret) {
-		eqos_err(eqos, "MDIO not idle at entry\n");
+		dev_err(&bus->dev, "MDIO not idle at entry\n");
 		return ret;
 	}
 
@@ -256,7 +256,7 @@ static int eqos_mdio_write(struct mii_bus *bus, int addr, int reg, u16 val)
 
 	ret = eqos_mdio_wait_idle(eqos);
 	if (ret) {
-		eqos_err(eqos, "MDIO read didn't complete\n");
+		dev_err(&bus->dev, "MDIO read didn't complete\n");
 		return ret;
 	}
 

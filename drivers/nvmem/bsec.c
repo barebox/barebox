@@ -57,7 +57,7 @@ static int bsec_smc(struct bsec_priv *priv, u8 op, enum bsec_field field,
 	return -ENXIO;
 }
 
-static int st32_bsec_read_shadow(void *ctx, unsigned reg, unsigned *val)
+static int stm32_bsec_read_shadow(void *ctx, unsigned reg, unsigned *val)
 {
 	return bsec_smc(ctx, BSEC_SMC_READ_SHADOW, reg, 0, val);
 }
@@ -69,7 +69,7 @@ static int stm32_bsec_reg_write_shadow(void *ctx, unsigned reg, unsigned val)
 
 static struct regmap_bus stm32_bsec_regmap_bus = {
 	.reg_write = stm32_bsec_reg_write_shadow,
-	.reg_read = st32_bsec_read_shadow,
+	.reg_read = stm32_bsec_read_shadow,
 };
 
 static int stm32_bsec_write(struct device_d *dev, int offset,

@@ -316,19 +316,21 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 	     buf8[0] == 0x8b || buf8[0] == 0x9c) &&
 	    buf8[0x1] == 0 && buf8[0x2] == 0 && buf8[0x3] == 0 &&
 	    buf8[0x18] == 0 && buf8[0x1b] == 0 && buf8[0x1c] == 0) {
-		unsigned char sum = 0;
-		int i;
 
-		for (i = 0; i <= 0x1e; ++i)
-			sum += buf8[i];
+		if (buf8[0x8] == 0) {
+			unsigned char sum = 0;
+			int i;
 
-		if (sum == buf8[0x1f] && buf8[0x8] == 0)
-			return filetype_kwbimage_v0;
+			for (i = 0; i <= 0x1e; ++i)
+				sum += buf8[i];
 
-		if (sum == buf8[0x1f] &&
-		    buf8[0x8] == 1 && buf8[0x1d] == 0 &&
-		    (buf8[0x1e] == 0 || buf8[0x1e] == 1))
-			return filetype_kwbimage_v1;
+			if (sum == buf8[0x1f])
+				return filetype_kwbimage_v0;
+		} else if (buf8[0x8] == 1) {
+			if (buf8[0x1d] == 0 &&
+			    (buf8[0x1e] == 0 || buf8[0x1e] == 1))
+				return filetype_kwbimage_v1;
+		}
 	}
 
 	if (is_sparse_image(_buf))

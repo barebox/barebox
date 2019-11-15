@@ -164,16 +164,6 @@ static int eqos_init_stm32(struct device_d *dev, struct eqos *eqos)
 		dev_dbg(dev, "No phy clock provided. Continuing without.\n");
 	}
 
-	return 0;
-
-}
-
-static int eqos_start_stm32(struct eth_device *edev)
-{
-	struct eqos *eqos = edev->priv;
-	struct eqos_stm32 *priv = to_stm32(eqos);
-	int ret;
-
 	ret = clk_bulk_enable(priv->num_clks, priv->clks);
 	if (ret < 0) {
 		eqos_err(eqos, "clk_bulk_enable() failed: %s\n",
@@ -181,27 +171,7 @@ static int eqos_start_stm32(struct eth_device *edev)
 		return ret;
 	}
 
-	udelay(10);
-
-	ret = eqos_start(edev);
-	if (ret)
-		goto err_stop_clks;
-
 	return 0;
-
-err_stop_clks:
-	clk_bulk_disable(priv->num_clks, priv->clks);
-
-	return ret;
-}
-
-static void eqos_stop_stm32(struct eth_device *edev)
-{
-	struct eqos_stm32 *priv = to_stm32(edev->priv);
-
-	eqos_stop(edev);
-
-	clk_bulk_disable(priv->num_clks, priv->clks);
 }
 
 // todo split!
@@ -209,8 +179,6 @@ static struct eqos_ops stm32_ops = {
 	.init = eqos_init_stm32,
 	.get_ethaddr = eqos_get_ethaddr,
 	.set_ethaddr = eqos_set_ethaddr,
-	.start = eqos_start_stm32,
-	.stop = eqos_stop_stm32,
 	.adjust_link = eqos_adjust_link,
 	.get_csr_clk_rate = eqos_get_csr_clk_rate_stm32,
 
@@ -230,6 +198,7 @@ static void eqos_remove_stm32(struct device_d *dev)
 
 	eqos_remove(dev);
 
+	clk_bulk_disable(priv->num_clks, priv->clks);
 	clk_bulk_put(priv->num_clks, priv->clks);
 }
 

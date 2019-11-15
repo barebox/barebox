@@ -230,29 +230,16 @@ static int eqos_init_tegra186(struct device_d *dev, struct eqos *eqos)
 	priv->clks = xmemdup(tegra186_clks, sizeof(tegra186_clks));
 	priv->num_clks = ARRAY_SIZE(tegra186_clks);
 
-	return 0;
-
-release_res:
-	reset_control_put(priv->rst);
-	return ret;
-}
-
-static int eqos_start_tegra186(struct eth_device *edev)
-{
-	struct eqos *eqos = edev->priv;
-	struct eqos_tegra186 *priv = to_tegra186(eqos);
-	int ret;
-
 	ret = clk_bulk_enable(priv->num_clks, priv->clks);
 	if (ret < 0) {
 		eqos_err(eqos, "clk_bulk_enable() failed: %s\n", strerror(-ret));
-		return ret;
+		goto release_res;
 	}
 
 	ret = eqos_clks_set_rate_tegra186(priv);
 	if (ret < 0) {
 		eqos_err(eqos, "clks_set_rate() failed: %s\n", strerror(-ret));
-		goto err;
+		goto err_stop_clks;
 	}
 
 	eqos_reset_tegra186(priv, false);
@@ -261,32 +248,14 @@ static int eqos_start_tegra186(struct eth_device *edev)
 		goto err_stop_clks;
 	}
 
-	udelay(10);
-
-	ret = eqos_start(edev);
-	if (ret)
-		goto err_stop_resets;
-
 	return 0;
 
-err_stop_resets:
-	eqos_reset_tegra186(priv, true);
 err_stop_clks:
 	clk_bulk_disable(priv->num_clks, priv->clks);
-err:
+release_res:
+	reset_control_put(priv->rst);
+
 	return ret;
-}
-
-
-static void eqos_stop_tegra186(struct eth_device *edev)
-{
-	struct eqos_tegra186 *priv = to_tegra186(edev->priv);
-
-	eqos_stop(edev);
-
-	eqos_reset_tegra186(priv, true);
-
-	clk_bulk_disable(priv->num_clks, priv->clks);
 }
 
 static void eqos_adjust_link_tegra186(struct eth_device *edev)
@@ -308,8 +277,6 @@ static const struct eqos_ops tegra186_ops = {
 	.init = eqos_init_tegra186,
 	.get_ethaddr = eqos_get_ethaddr,
 	.set_ethaddr = eqos_set_ethaddr_tegra186,
-	.start = eqos_start_tegra186,
-	.stop = eqos_stop_tegra186,
 	.adjust_link = eqos_adjust_link_tegra186,
 	.get_csr_clk_rate = eqos_get_csr_clk_rate_tegra186,
 
@@ -328,6 +295,10 @@ static void eqos_remove_tegra186(struct device_d *dev)
 	struct eqos_tegra186 *priv = to_tegra186(dev->priv);
 
 	eqos_remove(dev);
+
+	eqos_reset_tegra186(priv, true);
+
+	clk_bulk_disable(priv->num_clks, priv->clks);
 
 	clk_bulk_put(priv->num_clks, priv->clks);
 

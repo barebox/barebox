@@ -365,7 +365,7 @@ static int phy_resume(struct phy_device *phydev)
 	return 0;
 }
 
-int eqos_start(struct eth_device *edev)
+static int eqos_start(struct eth_device *edev)
 {
 	struct eqos *eqos = edev->priv;
 	u32 val, tx_fifo_sz, rx_fifo_sz, tqs, rqs, pbl;
@@ -611,7 +611,7 @@ int eqos_start(struct eth_device *edev)
 	return 0;
 }
 
-void eqos_stop(struct eth_device *edev)
+static void eqos_stop(struct eth_device *edev)
 {
 	struct eqos *eqos = edev->priv;
 	int i;
@@ -841,10 +841,10 @@ int eqos_probe(struct device_d *dev, const struct eqos_ops *ops, void *priv)
 	dev->priv = edev->priv = eqos;
 
 	edev->parent = dev;
-	edev->open = ops->start;
+	edev->open = eqos_start;
 	edev->send = eqos_send;
 	edev->recv = eqos_recv;
-	edev->halt = ops->stop;
+	edev->halt = eqos_stop;
 	edev->get_ethaddr = ops->get_ethaddr;
 	edev->set_ethaddr = ops->set_ethaddr;
 

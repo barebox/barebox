@@ -11,8 +11,6 @@ struct eth_device;
 
 struct eqos_ops {
 	int (*init)(struct device_d *dev, struct eqos *priv);
-	int (*start)(struct eth_device *edev);
-	void (*stop)(struct eth_device *edev);
 	int (*get_ethaddr)(struct eth_device *dev, unsigned char *mac);
 	int (*set_ethaddr)(struct eth_device *edev, const unsigned char *mac);
 	void (*adjust_link)(struct eth_device *edev);
@@ -73,8 +71,6 @@ int eqos_reset(struct eqos *priv);
 
 int eqos_get_ethaddr(struct eth_device *edev, unsigned char *mac);
 int eqos_set_ethaddr(struct eth_device *edev, const unsigned char *mac);
-int eqos_start(struct eth_device *edev);
-void eqos_stop(struct eth_device *edev);
 void eqos_adjust_link(struct eth_device *edev);
 
 #define eqos_dbg(eqos, ...) dev_dbg(&eqos->netdev.dev, __VA_ARGS__)

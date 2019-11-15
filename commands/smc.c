@@ -103,5 +103,6 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(smc)
 	.cmd = do_smc,
 	BAREBOX_CMD_DESC("secure monitor test command")
+	BAREBOX_CMD_HELP(cmd_smc_help)
 	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 BAREBOX_CMD_END

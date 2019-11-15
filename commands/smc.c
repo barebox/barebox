@@ -97,6 +97,11 @@ static int do_smc(int argc, char *argv[])
 	while ((opt = getopt(argc, argv, "nic")) > 0) {
 		switch (opt) {
 		case 'n':
+			if (!IS_ENABLED(CONFIG_ARM_SECURE_MONITOR)) {
+				printf("secure monitor support not compiled in\n");
+				return COMMAND_ERROR;
+			}
+
 			armv7_secure_monitor_install();
 			break;
 		case 'i':

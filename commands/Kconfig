@@ -1869,7 +1869,7 @@ config CMD_POWEROFF
 
 config CMD_SMC
 	bool
-	depends on ARM_PSCI
+	depends on ARM_SMCCC
 	prompt "PSCI test command"
 	default CONFIG_ARM_PSCI_DEBUG
 	help

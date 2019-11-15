@@ -3,23 +3,47 @@
 #include <common.h>
 #include <command.h>
 #include <getopt.h>
+#include <dma.h>
+#include <linux/iopoll.h>
+#include <asm/barebox-arm-head.h>
 
 #include <asm/psci.h>
 #include <asm/secure.h>
 #include <linux/arm-smccc.h>
 
-static void second_entry(void)
+#define STACK_SIZE 100
+#define HANDSHAKE_MAGIC	0xBA12EB0C
+#define ERROR_MAGIC	0xDEADBEEF
+
+struct cpu_context {
+	unsigned long stack[STACK_SIZE];
+	long handshake;
+};
+
+static void noinline cpu_handshake(long *handshake)
 {
 	struct arm_smccc_res res;
 
-	psci_printf("2nd CPU online, now turn off again\n");
+	writel(HANDSHAKE_MAGIC, handshake);
 
 	arm_smccc_smc(ARM_PSCI_0_2_FN_CPU_OFF,
 		      0, 0, 0, 0, 0, 0, 0, &res);
 
-	psci_printf("2nd CPU still alive?\n");
+	writel(ERROR_MAGIC, handshake);
 
-	while (1);
+	while (1)
+		;
+}
+
+static void __naked second_entry(unsigned long arg0)
+{
+	struct cpu_context *context = (void*)arg0;
+
+	arm_cpu_lowlevel_init();
+	arm_setup_stack((unsigned long)&context->stack[STACK_SIZE]);
+	barrier();
+
+	cpu_handshake(&context->handshake);
 }
 
 static const char *psci_xlate_str(long err)
@@ -54,6 +78,8 @@ static const char *psci_xlate_str(long err)
        return errno_string;
 }
 
+static struct cpu_context *context;
+
 static int do_smc(int argc, char *argv[])
 {
 	long ret;
@@ -79,12 +105,35 @@ static int do_smc(int argc, char *argv[])
 			printf("found psci version %ld.%ld\n", res.a0 >> 16, res.a0 & 0xffff);
 			break;
 		case 'c':
+			if (!context)
+				context = dma_alloc_coherent(sizeof(*context),
+							     DMA_ADDRESS_BROKEN);
+
+			if (!context) {
+				printf("Out of memory\n");
+				return COMMAND_ERROR;
+			}
+
 			arm_smccc_smc(ARM_PSCI_0_2_FN_CPU_ON,
-				      1, (unsigned long)second_entry, 0, 0, 0, 0, 0, &res);
+				      1, (unsigned long)second_entry, (unsigned long)context,
+				      0, 0, 0, 0, &res);
 			ret = (long)res.a0;
 			printf("CPU_ON returns with: %s\n", psci_xlate_str(ret));
-			if (ret)
+			if (ret) {
+				unsigned long magic = readl(&context->handshake);
+				if (magic == ERROR_MAGIC)
+					printf("Turning off CPU had failed\n");
 				return COMMAND_ERROR;
+			}
+
+			readl_poll_timeout(&context->handshake, ret,
+					   ret != HANDSHAKE_MAGIC, USEC_PER_SEC);
+			if (ret == 0) {
+				printf("Second CPU handshake timed out.\n");
+				return COMMAND_ERROR;
+			}
+
+			printf("Second CPU handshake successful.\n");
 		}
 	}
 

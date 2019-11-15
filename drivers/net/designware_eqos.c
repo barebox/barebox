@@ -869,6 +869,8 @@ void eqos_remove(struct device_d *dev)
 {
 	struct eqos *eqos = dev->priv;
 
+	eth_unregister(&eqos->netdev);
+
 	mdiobus_unregister(&eqos->miibus);
 
 	dma_free(phys_to_virt(eqos->rx_descs[0].des0));

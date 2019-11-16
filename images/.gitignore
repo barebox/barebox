@@ -27,3 +27,4 @@ barebox.sha.bin
 barebox.sum
 *.pimximg
 *.psimximg
+*.zynqimg

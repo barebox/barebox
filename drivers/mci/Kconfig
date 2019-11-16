@@ -142,6 +142,12 @@ config MCI_TEGRA
 	  Enable this to support SD and MMC card read/write on a Tegra based
 	  systems.
 
+config MCI_ARASAN
+	bool "Arasan SDHCI Controller"
+	help
+	  Enable this to support SD and MMC card read/write on systems with
+	  the Arasan SD3.0 / SDIO3.0 / eMMC4.51 host controller.
+
 config MCI_SPI
 	bool "MMC/SD over SPI"
 	select CRC7

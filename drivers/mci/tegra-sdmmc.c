@@ -148,12 +148,12 @@ static int tegra_sdmmc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 
 	if (data) {
 		if (data->blocks > 1)
-			val |= TRANSFER_MODE_MSBSEL;
+			val |= SDHCI_MULTIPLE_BLOCKS;
 
 		if (data->flags & MMC_DATA_READ)
-			val |= TRANSFER_MODE_DTDSEL;
+			val |= SDHCI_DATA_TO_HOST;
 
-		val |= TRANSFER_MODE_DMAEN | TRANSFER_MODE_BCEN;
+		val |= SDHCI_DMA_EN | SDHCI_BLOCK_COUNT_EN;
 	}
 
 	if (!(cmd->resp_type & MMC_RSP_PRESENT))

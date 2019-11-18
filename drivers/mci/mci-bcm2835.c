@@ -221,13 +221,13 @@ static int bcm2835_mci_request(struct mci_host *mci, struct mci_cmd *cmd,
 	}
 	if (data != NULL) {
 		command |= SDHCI_DATA_PRESENT;
-		transfer_mode |= TRANSFER_MODE_BCEN;
+		transfer_mode |= SDHCI_BLOCK_COUNT_EN;
 
 		if (data->blocks > 1)
-			transfer_mode |= TRANSFER_MODE_MSBSEL;
+			transfer_mode |= SDHCI_MULTIPLE_BLOCKS;
 
 		if (data->flags & MMC_DATA_READ)
-			transfer_mode |= TRANSFER_MODE_DTDSEL;
+			transfer_mode |= SDHCI_DATA_TO_HOST;
 
 		block_data = (data->blocks << BLOCK_SHIFT);
 		block_data |= data->blocksize;

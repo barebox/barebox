@@ -67,8 +67,8 @@ static u32 esdhc_xfertyp(struct mci_cmd *cmd, struct mci_data *data)
 
 	if (data) {
 		command |= SDHCI_DATA_PRESENT;
-		xfertyp |= TRANSFER_MODE_MSBSEL | TRANSFER_MODE_BCEN |
-			   TRANSFER_MODE_DTDSEL;
+		xfertyp |= SDHCI_MULTIPLE_BLOCKS | SDHCI_BLOCK_COUNT_EN |
+			   SDHCI_DATA_TO_HOST;
 	}
 
 	if (cmd->resp_type & MMC_RSP_CRC)

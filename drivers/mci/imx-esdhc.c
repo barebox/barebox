@@ -172,15 +172,15 @@ static u32 esdhc_xfertyp(struct fsl_esdhc_host *host,
 		command |= SDHCI_DATA_PRESENT;
 
 		if (!IS_ENABLED(CONFIG_MCI_IMX_ESDHC_PIO))
-			xfertyp |= TRANSFER_MODE_DMAEN;
+			xfertyp |= SDHCI_DMA_EN;
 
 		if (data->blocks > 1) {
-			xfertyp |= TRANSFER_MODE_MSBSEL;
-			xfertyp |= TRANSFER_MODE_BCEN;
+			xfertyp |= SDHCI_MULTIPLE_BLOCKS;
+			xfertyp |= SDHCI_BLOCK_COUNT_EN;
 		}
 
 		if (data->flags & MMC_DATA_READ)
-			xfertyp |= TRANSFER_MODE_DTDSEL;
+			xfertyp |= SDHCI_DATA_TO_HOST;
 	}
 
 	if (cmd->resp_type & MMC_RSP_CRC)

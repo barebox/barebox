@@ -24,6 +24,9 @@
 #define  SDHCI_DMA_EN				BIT(0)
 #define SDHCI_COMMAND						0x0e
 #define  SDHCI_CMD_INDEX(c)			(((c) & 0x3f) << 8)
+#define  SDHCI_COMMAND_CMDTYP_SUSPEND		(1 << 6)
+#define  SDHCI_COMMAND_CMDTYP_RESUME		(2 << 6)
+#define  SDHCI_COMMAND_CMDTYP_ABORT		(3 << 6)
 #define  SDHCI_DATA_PRESENT			BIT(5)
 #define  SDHCI_CMD_INDEX_CHECK_EN		BIT(4)
 #define  SDHCI_CMD_CRC_CHECK_EN			BIT(3)

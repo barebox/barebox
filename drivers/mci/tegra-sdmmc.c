@@ -403,7 +403,7 @@ static int tegra_sdmmc_card_present(struct mci_host *mci)
 		return gpio_get_value(host->gpio_cd) ? 0 : 1;
 	}
 
-	return !(sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) & PRSSTAT_WPSPL);
+	return !(sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) & SDHCI_WRITE_PROTECT);
 }
 
 static int tegra_sdmmc_detect(struct device_d *dev)

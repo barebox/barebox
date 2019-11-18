@@ -110,12 +110,12 @@ static int bcm2835_mci_transfer_data(struct bcm2835_mci_host *host,
 	if (data->flags & MMC_DATA_READ) {
 		p = (u32 *) data->dest;
 		data_ready_intr_mask = SDHCI_INT_DATA_AVAIL;
-		data_ready_status_mask = PRSSTAT_BREN;
+		data_ready_status_mask = SDHCI_BUFFER_READ_ENABLE;
 		read_write_func = &sdhci_read32_data;
 	} else {
 		p = (u32 *) data->src;
 		data_ready_intr_mask = SDHCI_INT_SPACE_AVAIL;
-		data_ready_status_mask = PRSSTAT_BWEN;
+		data_ready_status_mask = SDHCI_BUFFER_WRITE_ENABLE;
 		read_write_func = &sdhci_write32_data;
 	}
 	do {
@@ -204,7 +204,7 @@ static void bcm2835_mci_reset_emmc(struct bcm2835_mci_host *host, u32 reset,
 static int bcm2835_mci_request(struct mci_host *mci, struct mci_cmd *cmd,
 		struct mci_data *data) {
 	u32 command, block_data = 0, ret = 0, transfer_mode = 0;
-	u32 wait_inhibit_mask = PRSSTAT_CICHB | PRSSTAT_CIDHB;
+	u32 wait_inhibit_mask = SDHCI_CMD_INHIBIT_CMD | SDHCI_CMD_INHIBIT_DATA;
 	struct bcm2835_mci_host *host = to_bcm2835_host(mci);
 
 	command = SDHCI_CMD_INDEX(cmd->cmdidx);
@@ -236,7 +236,7 @@ static int bcm2835_mci_request(struct mci_host *mci, struct mci_cmd *cmd,
 	/* We shouldn't wait for data inihibit for stop commands, even
 	though they might use busy signaling */
 	if (cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
-		wait_inhibit_mask = PRSSTAT_CICHB;
+		wait_inhibit_mask = SDHCI_CMD_INHIBIT_CMD;
 
 	/*Wait for old command*/
 	while (sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE)

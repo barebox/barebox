@@ -96,18 +96,6 @@
 #define SDHCI_SPEC_200_MAX_CLK_DIVIDER	256
 #define SDHCI_MMC_BOOT						0xC4
 
-#define PRSSTAT_DAT0		0x01000000
-#define PRSSTAT_CLSL		0x00800000
-#define PRSSTAT_WPSPL		0x00080000
-#define PRSSTAT_CDPL		0x00040000
-#define PRSSTAT_CINS		0x00010000
-#define PRSSTAT_BREN		0x00000800
-#define PRSSTAT_BWEN		0x00000400
-#define PRSSTAT_SDSTB		0x00000008
-#define PRSSTAT_DLA		0x00000004
-#define PRSSTAT_CIDHB		0x00000002
-#define PRSSTAT_CICHB		0x00000001
-
 struct sdhci {
 	u32 (*read32)(struct sdhci *host, int reg);
 	u16 (*read16)(struct sdhci *host, int reg);

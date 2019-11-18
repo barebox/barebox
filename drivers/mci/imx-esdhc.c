@@ -84,6 +84,9 @@
 /* Enable cache snooping */
 #define ESDHC_FLAG_CACHE_SNOOPING	BIT(11)
 
+#define PRSSTAT_DAT0  0x01000000
+#define PRSSTAT_SDSTB 0x00000008
+
 struct esdhc_soc_data {
 	u32 flags;
 	const char *clkidx;
@@ -223,7 +226,8 @@ esdhc_pio_read_write(struct mci_host *mci, struct mci_data *data)
 			timeout = PIO_TIMEOUT;
 			size = data->blocksize;
 			irqstat = sdhci_read32(&host->sdhci, SDHCI_INT_STATUS);
-			while (!(sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) & PRSSTAT_BREN)
+			while (!(sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) &
+					SDHCI_BUFFER_READ_ENABLE)
 				&& --timeout);
 			if (timeout <= 0) {
 				dev_err(host->dev, "Data Read Failed\n");
@@ -246,7 +250,8 @@ esdhc_pio_read_write(struct mci_host *mci, struct mci_data *data)
 			timeout = PIO_TIMEOUT;
 			size = data->blocksize;
 			irqstat = sdhci_read32(&host->sdhci, SDHCI_INT_STATUS);
-			while (!(sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) & PRSSTAT_BWEN)
+			while (!(sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) &
+					SDHCI_BUFFER_WRITE_ENABLE)
 				&& --timeout);
 			if (timeout <= 0) {
 				dev_err(host->dev, "Data Write Failed\n");
@@ -313,7 +318,7 @@ static int esdhc_do_data(struct mci_host *mci, struct mci_data *data)
 		if (irqstat & SDHCI_INT_DATA_TIMEOUT)
 			return -ETIMEDOUT;
 	} while (!(irqstat & SDHCI_INT_XFER_COMPLETE) &&
-		(sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) & PRSSTAT_DLA));
+		(sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) & SDHCI_DATA_LINE_ACTIVE));
 
 	return 0;
 }
@@ -429,14 +434,14 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 	/* Wait for the bus to be idle */
 	ret = wait_on_timeout(SECOND,
 			!(sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) &
-				(PRSSTAT_CICHB | PRSSTAT_CIDHB)));
+				(SDHCI_CMD_INHIBIT_CMD | SDHCI_CMD_INHIBIT_DATA)));
 	if (ret) {
 		dev_err(host->dev, "timeout 2\n");
 		return -ETIMEDOUT;
 	}
 
 	ret = wait_on_timeout(100 * MSECOND,
-			!(sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) & PRSSTAT_DLA));
+			!(sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) & SDHCI_DATA_LINE_ACTIVE));
 	if (ret) {
 		dev_err(host->dev, "timeout 3\n");
 		return -ETIMEDOUT;
@@ -545,7 +550,7 @@ static int esdhc_card_present(struct mci_host *mci)
 	case ESDHC_CD_PERMANENT:
 		return 1;
 	case ESDHC_CD_CONTROLLER:
-		return !(sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) & PRSSTAT_WPSPL);
+		return !(sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) & SDHCI_WRITE_PROTECT);
 	case ESDHC_CD_GPIO:
 		ret = gpio_direction_input(pdata->cd_gpio);
 		if (ret)

@@ -105,7 +105,7 @@ static int esdhc_do_data(struct esdhc *esdhc, struct mci_data *data)
 		int timeout = 1000000;
 
 		while (1) {
-			present = esdhc_read32(esdhc, SDHCI_PRESENT_STATE) & PRSSTAT_BREN;
+			present = esdhc_read32(esdhc, SDHCI_PRESENT_STATE) & SDHCI_BUFFER_READ_ENABLE;
 			if (present)
 				break;
 			if (!--timeout) {
@@ -196,8 +196,8 @@ esdhc_send_cmd(struct esdhc *esdhc, struct mci_cmd *cmd, struct mci_data *data)
 
 	/* Wait for the bus to be idle */
 	timeout = 10000;
-	while (esdhc_read32(esdhc, SDHCI_PRESENT_STATE) &
-			(PRSSTAT_CICHB | PRSSTAT_CIDHB | PRSSTAT_DLA)) {
+	while (esdhc_read32(esdhc, SDHCI_PRESENT_STATE) & (SDHCI_CMD_INHIBIT_CMD |
+			SDHCI_CMD_INHIBIT_DATA | SDHCI_DATA_LINE_ACTIVE)) {
 		__udelay(1);
 		if (!timeout--)
 			return -ETIMEDOUT;

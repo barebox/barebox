@@ -180,14 +180,14 @@ static int tegra_sdmmc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 
 	ret = wait_on_timeout(100 * MSECOND,
 			(val = sdhci_read32(&host->sdhci, SDHCI_INT_STATUS))
-			& IRQSTAT_CC);
+			& SDHCI_INT_CMD_COMPLETE);
 
 	if (ret) {
 		sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, val);
 		return ret;
 	}
 
-	if ((val & IRQSTAT_CC) && !data)
+	if ((val & SDHCI_INT_CMD_COMPLETE) && !data)
 		sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, val);
 
 	if (val & TEGRA_SDMMC_INTERRUPT_STATUS_CMD_TIMEOUT) {
@@ -232,7 +232,7 @@ static int tegra_sdmmc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 				dev_err(mci->hw_dev,
 					"error during transfer: 0x%08x\n", val);
 				return -EIO;
-			} else if (val & IRQSTAT_DINT) {
+			} else if (val & SDHCI_INT_DMA) {
 				/*
 				 * DMA Interrupt, restart the transfer where
 				 * it was interrupted.
@@ -240,9 +240,9 @@ static int tegra_sdmmc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 				u32 address = readl(host->regs +
 						    SDHCI_DMA_ADDRESS);
 
-				sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, IRQSTAT_DINT);
+				sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, SDHCI_INT_DMA);
 				sdhci_write32(&host->sdhci, SDHCI_DMA_ADDRESS, address);
-			} else if (val & IRQSTAT_TC) {
+			} else if (val & SDHCI_INT_XFER_COMPLETE) {
 				/* Transfer Complete */;
 				break;
 			} else if (is_timeout(start, 2 * SECOND)) {

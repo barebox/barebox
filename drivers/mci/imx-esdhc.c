@@ -229,7 +229,7 @@ esdhc_pio_read_write(struct mci_host *mci, struct mci_data *data)
 				dev_err(host->dev, "Data Read Failed\n");
 				return -ETIMEDOUT;
 			}
-			while (size && (!(irqstat & IRQSTAT_TC))) {
+			while (size && (!(irqstat & SDHCI_INT_XFER_COMPLETE))) {
 				udelay(100); /* Wait before last byte transfer complete */
 				irqstat = sdhci_read32(&host->sdhci, SDHCI_INT_STATUS);
 				databuf = sdhci_read32(&host->sdhci, SDHCI_BUFFER);
@@ -252,7 +252,7 @@ esdhc_pio_read_write(struct mci_host *mci, struct mci_data *data)
 				dev_err(host->dev, "Data Write Failed\n");
 				return -ETIMEDOUT;
 			}
-			while (size && (!(irqstat & IRQSTAT_TC))) {
+			while (size && (!(irqstat & SDHCI_INT_XFER_COMPLETE))) {
 				udelay(100); /* Wait before last byte transfer complete */
 				databuf = *((u32 *)buffer);
 				buffer += 4;
@@ -310,9 +310,9 @@ static int esdhc_do_data(struct mci_host *mci, struct mci_data *data)
 		if (irqstat & DATA_ERR)
 			return -EIO;
 
-		if (irqstat & IRQSTAT_DTOE)
+		if (irqstat & SDHCI_INT_DATA_TIMEOUT)
 			return -ETIMEDOUT;
-	} while (!(irqstat & IRQSTAT_TC) &&
+	} while (!(irqstat & SDHCI_INT_XFER_COMPLETE) &&
 		(sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) & PRSSTAT_DLA));
 
 	return 0;
@@ -382,7 +382,7 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 
 	/* Wait for the command to complete */
 	ret = wait_on_timeout(100 * MSECOND,
-			sdhci_read32(&host->sdhci, SDHCI_INT_STATUS) & IRQSTAT_CC);
+			sdhci_read32(&host->sdhci, SDHCI_INT_STATUS) & SDHCI_INT_CMD_COMPLETE);
 	if (ret) {
 		dev_dbg(host->dev, "timeout 1\n");
 		return -ETIMEDOUT;
@@ -394,7 +394,7 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 	if (irqstat & CMD_ERR)
 		return -EIO;
 
-	if (irqstat & IRQSTAT_CTOE)
+	if (irqstat & SDHCI_INT_TIMEOUT)
 		return -ETIMEDOUT;
 
 	/* Workaround for ESDHC errata ENGcm03648 / ENGcm12360 */
@@ -613,10 +613,11 @@ static int esdhc_init(struct mci_host *mci, struct device_d *dev)
 	/* Set the initial clock speed */
 	set_sysctl(mci, 400000);
 
-	sdhci_write32(&host->sdhci, SDHCI_INT_ENABLE, IRQSTATEN_CC | IRQSTATEN_TC |
-			IRQSTATEN_CINT | IRQSTATEN_CTOE | IRQSTATEN_CCE |
-			IRQSTATEN_CEBE | IRQSTATEN_CIE | IRQSTATEN_DTOE |
-			IRQSTATEN_DCE | IRQSTATEN_DEBE | IRQSTATEN_DINT);
+	sdhci_write32(&host->sdhci, SDHCI_INT_ENABLE, SDHCI_INT_CMD_COMPLETE |
+			SDHCI_INT_XFER_COMPLETE | SDHCI_INT_CARD_INT |
+			SDHCI_INT_TIMEOUT | SDHCI_INT_CRC | SDHCI_INT_END_BIT |
+			SDHCI_INT_INDEX | SDHCI_INT_DATA_TIMEOUT |
+			SDHCI_INT_DATA_CRC | SDHCI_INT_DATA_END_BIT | SDHCI_INT_DMA);
 
 	/* Put the PROCTL reg back to the default */
 	sdhci_write32(&host->sdhci, SDHCI_HOST_CONTROL__POWER_CONTROL__BLOCK_GAP_CONTROL,

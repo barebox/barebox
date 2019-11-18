@@ -109,18 +109,18 @@ static int bcm2835_mci_transfer_data(struct bcm2835_mci_host *host,
 
 	if (data->flags & MMC_DATA_READ) {
 		p = (u32 *) data->dest;
-		data_ready_intr_mask = IRQSTAT_BRR;
+		data_ready_intr_mask = SDHCI_INT_DATA_AVAIL;
 		data_ready_status_mask = PRSSTAT_BREN;
 		read_write_func = &sdhci_read32_data;
 	} else {
 		p = (u32 *) data->src;
-		data_ready_intr_mask = IRQSTAT_BWR;
+		data_ready_intr_mask = SDHCI_INT_SPACE_AVAIL;
 		data_ready_status_mask = PRSSTAT_BWEN;
 		read_write_func = &sdhci_write32_data;
 	}
 	do {
 		intr_status = sdhci_read32(&host->sdhci, SDHCI_INT_STATUS);
-		if (intr_status & IRQSTAT_CIE) {
+		if (intr_status & SDHCI_INT_INDEX) {
 			dev_err(host->hw_dev,
 					"Error occured while transferring data: 0x%X\n",
 					intr_status);
@@ -139,7 +139,7 @@ static int bcm2835_mci_transfer_data(struct bcm2835_mci_host *host,
 				data_size -= 4;
 			}
 		}
-	} while ((intr_status & IRQSTAT_TC) == 0);
+	} while ((intr_status & SDHCI_INT_XFER_COMPLETE) == 0);
 
 	if (data_size != 0) {
 		if (data->flags & MMC_DATA_READ)
@@ -166,9 +166,9 @@ static u32 bcm2835_mci_wait_command_done(struct bcm2835_mci_host *host)
 
 	while (true) {
 		interrupt = sdhci_read32(&host->sdhci, SDHCI_INT_STATUS);
-		if (interrupt & IRQSTAT_CIE)
+		if (interrupt & SDHCI_INT_INDEX)
 			return -EPERM;
-		if (interrupt & IRQSTAT_CC)
+		if (interrupt & SDHCI_INT_CMD_COMPLETE)
 			break;
 	}
 	return 0;
@@ -262,7 +262,7 @@ static int bcm2835_mci_request(struct mci_host *mci, struct mci_cmd *cmd,
 	if (cmd->resp_type != 0 && ret != -1) {
 		sdhci_read_response(&host->sdhci, cmd);
 
-		sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, IRQSTAT_CC);
+		sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, SDHCI_INT_CMD_COMPLETE);
 	}
 
 	if (!ret && data)

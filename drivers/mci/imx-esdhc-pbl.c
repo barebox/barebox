@@ -167,7 +167,7 @@ esdhc_send_cmd(struct esdhc *esdhc, struct mci_cmd *cmd, struct mci_data *data)
 
 	/* Wait for the command to complete */
 	timeout = 10000;
-	while (!(esdhc_read32(esdhc, SDHCI_INT_STATUS) & IRQSTAT_CC)) {
+	while (!(esdhc_read32(esdhc, SDHCI_INT_STATUS) & SDHCI_INT_CMD_COMPLETE)) {
 		__udelay(1);
 		if (!timeout--)
 			return -ETIMEDOUT;
@@ -179,7 +179,7 @@ esdhc_send_cmd(struct esdhc *esdhc, struct mci_cmd *cmd, struct mci_data *data)
 	if (irqstat & CMD_ERR)
 		return -EIO;
 
-	if (irqstat & IRQSTAT_CTOE)
+	if (irqstat & SDHCI_INT_TIMEOUT)
 		return -ETIMEDOUT;
 
 	/* Copy the response to the response buffer */
@@ -214,10 +214,10 @@ static int esdhc_read_blocks(struct esdhc *esdhc, void *dst, size_t len)
 	int ret;
 
 	esdhc_write32(esdhc, SDHCI_INT_ENABLE,
-		      IRQSTATEN_CC | IRQSTATEN_TC | IRQSTATEN_CINT | IRQSTATEN_CTOE |
-		      IRQSTATEN_CCE | IRQSTATEN_CEBE | IRQSTATEN_CIE |
-		      IRQSTATEN_DTOE | IRQSTATEN_DCE | IRQSTATEN_DEBE |
-		      IRQSTATEN_DINT);
+		      SDHCI_INT_CMD_COMPLETE | SDHCI_INT_XFER_COMPLETE |
+		      SDHCI_INT_CARD_INT | SDHCI_INT_TIMEOUT | SDHCI_INT_CRC |
+		      SDHCI_INT_END_BIT | SDHCI_INT_INDEX | SDHCI_INT_DATA_TIMEOUT |
+		      SDHCI_INT_DATA_CRC | SDHCI_INT_DATA_END_BIT | SDHCI_INT_DMA);
 
 	wml = FIELD_PREP(WML_WR_BRST_LEN, 16)         |
 	      FIELD_PREP(WML_WR_WML_MASK, SECTOR_WML) |

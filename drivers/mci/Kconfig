@@ -136,6 +136,7 @@ config MCI_MMCI
 config MCI_TEGRA
 	bool "Tegra SD/MMC"
 	depends on ARCH_TEGRA
+	select MCI_SDHCI
 	help
 	  Enable this to support SD and MMC card read/write on a Tegra based
 	  systems.

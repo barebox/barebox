@@ -72,6 +72,7 @@ config MCI_BCM283X
 config MCI_BCM283X_SDHOST
 	bool "BCM283X sdhost"
 	depends on ARCH_BCM283X
+	select MCI_SDHCI
 
 config MCI_DOVE
 	bool "Marvell Dove SDHCI"

@@ -149,4 +149,49 @@
 #define PRSSTAT_CIDHB		0x00000002
 #define PRSSTAT_CICHB		0x00000001
 
+struct sdhci {
+	u32 (*read32)(struct sdhci *host, int reg);
+	u16 (*read16)(struct sdhci *host, int reg);
+	u8 (*read8)(struct sdhci *host, int reg);
+	void (*write32)(struct sdhci *host, int reg, u32 val);
+	void (*write16)(struct sdhci *host, int reg, u16 val);
+	void (*write8)(struct sdhci *host, int reg, u8 val);
+};
+
+static inline u32 sdhci_read32(struct sdhci *host, int reg)
+{
+	return host->read32(host, reg);
+}
+
+static inline u32 sdhci_read16(struct sdhci *host, int reg)
+{
+	return host->read16(host, reg);
+}
+
+static inline u32 sdhci_read8(struct sdhci *host, int reg)
+{
+	return host->read8(host, reg);
+}
+
+static inline void sdhci_write32(struct sdhci *host, int reg, u32 val)
+{
+	host->write32(host, reg, val);
+}
+
+static inline void sdhci_write16(struct sdhci *host, int reg, u32 val)
+{
+	host->write16(host, reg, val);
+}
+
+static inline void sdhci_write8(struct sdhci *host, int reg, u32 val)
+{
+	host->write8(host, reg, val);
+}
+
+void sdhci_read_response(struct sdhci *host, struct mci_cmd *cmd);
+void sdhci_set_cmd_xfer_mode(struct sdhci *host, struct mci_cmd *cmd,
+			     struct mci_data *data, bool dma, u32 *command,
+			     u32 *xfer);
+int sdhci_transfer_data(struct sdhci *sdhci, struct mci_data *data);
+
 #endif /* __MCI_SDHCI_H */

@@ -34,6 +34,9 @@ config MCI_MMC_BOOT_PARTITIONS
 
 comment "--- MCI host drivers ---"
 
+config MCI_SDHCI
+	bool
+
 config MCI_DW
 	bool "Synopsys DesignWare Memory Card Interface"
 	depends on HAS_DMA

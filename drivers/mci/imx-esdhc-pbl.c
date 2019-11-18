@@ -63,23 +63,28 @@ static void __udelay(int us)
 static u32 esdhc_xfertyp(struct mci_cmd *cmd, struct mci_data *data)
 {
 	u32 xfertyp = 0;
+	u32 command = 0;
 
-	if (data)
-		xfertyp |= COMMAND_DPSEL | TRANSFER_MODE_MSBSEL |
-			TRANSFER_MODE_BCEN |TRANSFER_MODE_DTDSEL;
+	if (data) {
+		command |= SDHCI_DATA_PRESENT;
+		xfertyp |= TRANSFER_MODE_MSBSEL | TRANSFER_MODE_BCEN |
+			   TRANSFER_MODE_DTDSEL;
+	}
 
 	if (cmd->resp_type & MMC_RSP_CRC)
-		xfertyp |= COMMAND_CCCEN;
+		command |= SDHCI_CMD_CRC_CHECK_EN;
 	if (cmd->resp_type & MMC_RSP_OPCODE)
-		xfertyp |= COMMAND_CICEN;
+		xfertyp |= SDHCI_CMD_INDEX_CHECK_EN;
 	if (cmd->resp_type & MMC_RSP_136)
-		xfertyp |= COMMAND_RSPTYP_136;
+		command |= SDHCI_RESP_TYPE_136;
 	else if (cmd->resp_type & MMC_RSP_BUSY)
-		xfertyp |= COMMAND_RSPTYP_48_BUSY;
+		command |= SDHCI_RESP_TYPE_48_BUSY;
 	else if (cmd->resp_type & MMC_RSP_PRESENT)
-		xfertyp |= COMMAND_RSPTYP_48;
+		command |= SDHCI_RESP_TYPE_48;
 
-	return COMMAND_CMD(cmd->cmdidx) | xfertyp;
+	command |= SDHCI_CMD_INDEX(cmd->cmdidx);
+
+	return command << 16 | xfertyp;
 }
 
 static int esdhc_do_data(struct esdhc *esdhc, struct mci_data *data)

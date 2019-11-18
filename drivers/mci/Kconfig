@@ -77,6 +77,7 @@ config MCI_BCM283X_SDHOST
 config MCI_DOVE
 	bool "Marvell Dove SDHCI"
 	depends on ARCH_DOVE
+	select MCI_SDHCI
 	help
 	  Enable this entry to add support to read and write SD cards on a
 	  Marvell Dove SoC based system.

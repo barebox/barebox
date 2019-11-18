@@ -100,8 +100,6 @@ struct fsl_esdhc_host {
 
 #define to_fsl_esdhc(mci)	container_of(mci, struct fsl_esdhc_host, mci)
 
-#define  SDHCI_CMD_ABORTCMD (0xC0 << 16)
-
 static inline int esdhc_is_usdhc(struct fsl_esdhc_host *data)
 {
 	return !!(data->socdata->flags & ESDHC_FLAG_USDHC);
@@ -168,9 +166,10 @@ static u32 esdhc_xfertyp(struct fsl_esdhc_host *host,
 			 struct mci_cmd *cmd, struct mci_data *data)
 {
 	u32 xfertyp = 0;
+	u32 command = 0;
 
 	if (data) {
-		xfertyp |= COMMAND_DPSEL;
+		command |= SDHCI_DATA_PRESENT;
 
 		if (!IS_ENABLED(CONFIG_MCI_IMX_ESDHC_PIO))
 			xfertyp |= TRANSFER_MODE_DMAEN;
@@ -185,20 +184,22 @@ static u32 esdhc_xfertyp(struct fsl_esdhc_host *host,
 	}
 
 	if (cmd->resp_type & MMC_RSP_CRC)
-		xfertyp |= COMMAND_CCCEN;
+		command |= SDHCI_CMD_CRC_CHECK_EN;
 	if (cmd->resp_type & MMC_RSP_OPCODE)
-		xfertyp |= COMMAND_CICEN;
+		command |= SDHCI_CMD_INDEX_CHECK_EN;
 	if (cmd->resp_type & MMC_RSP_136)
-		xfertyp |= COMMAND_RSPTYP_136;
+		command |= SDHCI_RESP_TYPE_136;
 	else if (cmd->resp_type & MMC_RSP_BUSY)
-		xfertyp |= COMMAND_RSPTYP_48_BUSY;
+		command |= SDHCI_RESP_TYPE_48_BUSY;
 	else if (cmd->resp_type & MMC_RSP_PRESENT)
-		xfertyp |= COMMAND_RSPTYP_48;
+		command |= SDHCI_RESP_TYPE_48;
 	if ((host->socdata->flags & ESDHC_FLAG_MULTIBLK_NO_INT) &&
 	    (cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION))
-		xfertyp |= SDHCI_CMD_ABORTCMD;
+		command |= SDHCI_COMMAND_CMDTYP_ABORT;
 
-	return COMMAND_CMD(cmd->cmdidx) | xfertyp;
+	command |= SDHCI_CMD_INDEX(cmd->cmdidx);
+
+	return command << 16 | xfertyp;
 }
 
 /*

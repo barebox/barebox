@@ -113,6 +113,7 @@ static int dove_sdhci_mci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 				struct mci_data *data)
 {
 	u16 val;
+	u32 command, xfer;
 	u64 start;
 	int ret;
 	unsigned int num_bytes = data->blocks * data->blocksize;
@@ -158,36 +159,11 @@ static int dove_sdhci_mci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 	}
 
 	/* setup transfer mode */
-	val = 0;
-	if (data) {
-		val |= SDHCI_DMA_EN | SDHCI_BLOCK_COUNT_EN;
-		if (data->blocks > 1)
-			val |= SDHCI_MULTIPLE_BLOCKS;
-		if (data->flags & MMC_DATA_READ)
-			val |= SDHCI_DATA_TO_HOST;
-	}
-	sdhci_write16(&host->sdhci, SDHCI_TRANSFER_MODE, val);
+	sdhci_set_cmd_xfer_mode(&host->sdhci, cmd, data, true, &command, &xfer);
 
+	sdhci_write16(&host->sdhci, SDHCI_TRANSFER_MODE, xfer);
 	sdhci_write32(&host->sdhci, SDHCI_ARGUMENT, cmd->cmdarg);
-
-	if (!(cmd->resp_type & MMC_RSP_PRESENT))
-		val = SDHCI_RESP_NONE;
-	else if (cmd->resp_type & MMC_RSP_136)
-		val = SDHCI_RESP_TYPE_136;
-	else if (cmd->resp_type & MMC_RSP_BUSY)
-		val = SDHCI_RESP_TYPE_48_BUSY;
-	else
-		val = SDHCI_RESP_TYPE_48;
-
-	if (cmd->resp_type & MMC_RSP_CRC)
-		val |= SDHCI_CMD_CRC_CHECK_EN;
-	if (cmd->resp_type & MMC_RSP_OPCODE)
-		val |= SDHCI_CMD_INDEX_CHECK_EN;
-	if (data)
-		val |= SDHCI_DATA_PRESENT;
-	val |= SDHCI_CMD_INDEX(cmd->cmdidx);
-
-	sdhci_write16(&host->sdhci, SDHCI_COMMAND, val);
+	sdhci_write16(&host->sdhci, SDHCI_COMMAND, command);
 
 	ret = dove_sdhci_wait_for_done(host, SDHCI_INT_CMD_COMPLETE);
 	if (ret) {

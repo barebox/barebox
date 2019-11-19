@@ -116,7 +116,7 @@ static int tegra_sdmmc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 {
 	struct tegra_sdmmc_host *host = to_tegra_sdmmc_host(mci);
 	unsigned int num_bytes = 0;
-	u32 val = 0, command = 0;
+	u32 val = 0, command, xfer;
 	int ret;
 
 	ret = tegra_sdmmc_wait_inhibit(host, cmd, data, 10);
@@ -146,37 +146,10 @@ static int tegra_sdmmc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 	if ((cmd->resp_type & MMC_RSP_136) && (cmd->resp_type & MMC_RSP_BUSY))
 		return -1;
 
-	if (data) {
-		if (data->blocks > 1)
-			val |= SDHCI_MULTIPLE_BLOCKS;
-
-		if (data->flags & MMC_DATA_READ)
-			val |= SDHCI_DATA_TO_HOST;
-
-		val |= SDHCI_DMA_EN | SDHCI_BLOCK_COUNT_EN;
-	}
-
-	if (!(cmd->resp_type & MMC_RSP_PRESENT))
-		command |= SDHCI_RESP_NONE;
-	else if (cmd->resp_type & MMC_RSP_136)
-		command |= SDHCI_RESP_TYPE_136;
-	else if (cmd->resp_type & MMC_RSP_BUSY)
-		command |= SDHCI_RESP_TYPE_48_BUSY;
-	else
-		command |= SDHCI_RESP_TYPE_48;
-
-	if (cmd->resp_type & MMC_RSP_CRC)
-		command |= SDHCI_CMD_CRC_CHECK_EN;
-	if (cmd->resp_type & MMC_RSP_OPCODE)
-		command |= SDHCI_CMD_INDEX_CHECK_EN;
-
-	if (data)
-		command |= SDHCI_DATA_PRESENT;
-
-	command |= SDHCI_CMD_INDEX(cmd->cmdidx);
+	sdhci_set_cmd_xfer_mode(&host->sdhci, cmd, data, true, &command, &xfer);
 
 	sdhci_write32(&host->sdhci, SDHCI_TRANSFER_MODE__COMMAND,
-		      command << 16 | val);
+		      command << 16 | xfer);
 
 	ret = wait_on_timeout(100 * MSECOND,
 			(val = sdhci_read32(&host->sdhci, SDHCI_INT_STATUS))

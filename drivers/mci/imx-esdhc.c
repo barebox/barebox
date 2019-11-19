@@ -164,73 +164,6 @@ static inline void esdhc_setbits32(struct fsl_esdhc_host *host, unsigned int reg
 	esdhc_clrsetbits32(host, reg, 0, set);
 }
 
-/*
- * PIO Read/Write Mode reduce the performace as DMA is not used in this mode.
- */
-static int
-esdhc_pio_read_write(struct mci_host *mci, struct mci_data *data)
-{
-	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
-	u32 blocks;
-	char *buffer;
-	u32 databuf;
-	u32 size;
-	u32 irqstat;
-	u32 timeout;
-
-	if (data->flags & MMC_DATA_READ) {
-		blocks = data->blocks;
-		buffer = data->dest;
-		while (blocks) {
-			timeout = PIO_TIMEOUT;
-			size = data->blocksize;
-			irqstat = sdhci_read32(&host->sdhci, SDHCI_INT_STATUS);
-			while (!(sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) &
-					SDHCI_BUFFER_READ_ENABLE)
-				&& --timeout);
-			if (timeout <= 0) {
-				dev_err(host->dev, "Data Read Failed\n");
-				return -ETIMEDOUT;
-			}
-			while (size && (!(irqstat & SDHCI_INT_XFER_COMPLETE))) {
-				udelay(100); /* Wait before last byte transfer complete */
-				irqstat = sdhci_read32(&host->sdhci, SDHCI_INT_STATUS);
-				databuf = sdhci_read32(&host->sdhci, SDHCI_BUFFER);
-				*((u32 *)buffer) = databuf;
-				buffer += 4;
-				size -= 4;
-			}
-			blocks--;
-		}
-	} else {
-		blocks = data->blocks;
-		buffer = (char *)data->src;
-		while (blocks) {
-			timeout = PIO_TIMEOUT;
-			size = data->blocksize;
-			irqstat = sdhci_read32(&host->sdhci, SDHCI_INT_STATUS);
-			while (!(sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) &
-					SDHCI_BUFFER_WRITE_ENABLE)
-				&& --timeout);
-			if (timeout <= 0) {
-				dev_err(host->dev, "Data Write Failed\n");
-				return -ETIMEDOUT;
-			}
-			while (size && (!(irqstat & SDHCI_INT_XFER_COMPLETE))) {
-				udelay(100); /* Wait before last byte transfer complete */
-				databuf = *((u32 *)buffer);
-				buffer += 4;
-				size -= 4;
-				irqstat = sdhci_read32(&host->sdhci, SDHCI_INT_STATUS);
-				sdhci_write32(&host->sdhci, SDHCI_BUFFER, databuf);
-			}
-			blocks--;
-		}
-	}
-
-	return 0;
-}
-
 static int esdhc_setup_data(struct mci_host *mci, struct mci_data *data,
 			    dma_addr_t dma)
 {
@@ -266,7 +199,7 @@ static int esdhc_do_data(struct mci_host *mci, struct mci_data *data)
 	u32 irqstat;
 
 	if (IS_ENABLED(CONFIG_MCI_IMX_ESDHC_PIO))
-		return esdhc_pio_read_write(mci, data);
+		return sdhci_transfer_data(&host->sdhci, data);
 
 	do {
 		irqstat = sdhci_read32(&host->sdhci, SDHCI_INT_STATUS);

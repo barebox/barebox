@@ -207,28 +207,10 @@ static int bcm2835_mci_request(struct mci_host *mci, struct mci_cmd *cmd,
 	u32 wait_inhibit_mask = SDHCI_CMD_INHIBIT_CMD | SDHCI_CMD_INHIBIT_DATA;
 	struct bcm2835_mci_host *host = to_bcm2835_host(mci);
 
-	command = SDHCI_CMD_INDEX(cmd->cmdidx);
+	sdhci_set_cmd_xfer_mode(&host->sdhci, cmd, data, false,
+				&command, &transfer_mode);
 
-	if (cmd->resp_type != MMC_RSP_NONE) {
-		if (cmd->resp_type & MMC_RSP_136)
-			command |= SDHCI_RESP_TYPE_136;
-		else if (cmd->resp_type & MMC_RSP_BUSY)
-			command |= SDHCI_RESP_TYPE_48_BUSY;
-		else
-			command |= SDHCI_RESP_TYPE_48;
-		if (cmd->resp_type & MMC_RSP_CRC)
-			command |= SDHCI_CMD_CRC_CHECK_EN;
-	}
 	if (data != NULL) {
-		command |= SDHCI_DATA_PRESENT;
-		transfer_mode |= SDHCI_BLOCK_COUNT_EN;
-
-		if (data->blocks > 1)
-			transfer_mode |= SDHCI_MULTIPLE_BLOCKS;
-
-		if (data->flags & MMC_DATA_READ)
-			transfer_mode |= SDHCI_DATA_TO_HOST;
-
 		block_data = (data->blocks << BLOCK_SHIFT);
 		block_data |= data->blocksize;
 	}

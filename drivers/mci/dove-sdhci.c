@@ -116,7 +116,7 @@ static int dove_sdhci_mci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 	u32 command, xfer;
 	u64 start;
 	int ret;
-	unsigned int num_bytes = data->blocks * data->blocksize;
+	unsigned int num_bytes = 0;
 	struct dove_sdhci *host = priv_from_mci_host(mci);
 
 	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, ~0);
@@ -140,6 +140,7 @@ static int dove_sdhci_mci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 
 	/* setup transfer data */
 	if (data) {
+		num_bytes = data->blocks * data->blocksize;
 		if (data->flags & MMC_DATA_READ)
 			sdhci_write32(&host->sdhci, SDHCI_DMA_ADDRESS, (u32)data->dest);
 		else
@@ -178,14 +179,14 @@ static int dove_sdhci_mci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 
 	sdhci_read_response(&host->sdhci, cmd);
 
-	if (data->flags & MMC_DATA_WRITE)
-		dma_sync_single_for_cpu((unsigned long)data->src,
-					 num_bytes, DMA_TO_DEVICE);
-	else
-		dma_sync_single_for_cpu((unsigned long)data->dest,
+	if (data) {
+		if (data->flags & MMC_DATA_WRITE)
+			dma_sync_single_for_cpu((unsigned long)data->src,
+						num_bytes, DMA_TO_DEVICE);
+		else
+			dma_sync_single_for_cpu((unsigned long)data->dest,
 					 num_bytes, DMA_FROM_DEVICE);
 
-	if (data) {
 		ret = dove_sdhci_wait_for_done(host, SDHCI_INT_XFER_COMPLETE);
 		if (ret) {
 			dev_err(host->mci.hw_dev, "error while transfering data for command %d\n",

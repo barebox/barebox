@@ -94,8 +94,8 @@ static int of_i2c_gpio_probe(struct device_node *np,
 	if (!IS_ENABLED(CONFIG_OFDEVICE))
 		return -ENODEV;
 
-	pdata->sda_pin = of_get_named_gpio_flags(np, "sda-gpios", 0, NULL);
-	pdata->scl_pin = of_get_named_gpio_flags(np, "scl-gpios", 0, NULL);
+	pdata->sda_pin = of_get_named_gpio(np, "sda-gpios", 0);
+	pdata->scl_pin = of_get_named_gpio(np, "scl-gpios", 0);
 
 	if ((!gpio_is_valid(pdata->sda_pin) || !gpio_is_valid(pdata->scl_pin))
 	    && (of_gpio_count(np) >= 2)) {

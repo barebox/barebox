@@ -63,6 +63,16 @@ struct param_d *dev_add_param_enum(struct device_d *dev, const char *name,
 		int (*get)(struct param_d *p, void *priv),
 		int *value, const char * const *names, int max, void *priv);
 
+enum param_tristate { PARAM_TRISTATE_UNKNOWN, PARAM_TRISTATE_TRUE, PARAM_TRISTATE_FALSE };
+
+struct param_d *dev_add_param_tristate(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		int *value, void *priv);
+
+struct param_d *dev_add_param_tristate_ro(struct device_d *dev, const char *name,
+		int *value);
+
 struct param_d *dev_add_param_bitmask(struct device_d *dev, const char *name,
 		int (*set)(struct param_d *p, void *priv),
 		int (*get)(struct param_d *p, void *priv),
@@ -140,6 +150,20 @@ static inline struct param_d *dev_add_param_bitmask(struct device_d *dev, const 
                 int (*set)(struct param_d *p, void *priv),
                 int (*get)(struct param_d *p, void *priv),
                 unsigned long *value, const char * const *names, int max, void *priv)
+{
+	return ERR_PTR(-ENOSYS);
+}
+
+static inline struct param_d *dev_add_param_tristate(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		int *value, void *priv)
+{
+	return ERR_PTR(-ENOSYS);
+}
+
+static inline struct param_d *dev_add_param_tristate_ro(struct device_d *dev, const char *name,
+		int *value)
 {
 	return ERR_PTR(-ENOSYS);
 }

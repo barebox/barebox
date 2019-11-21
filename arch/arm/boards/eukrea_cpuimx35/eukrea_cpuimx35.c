@@ -95,14 +95,14 @@ static struct imx_ipu_fb_platform_data ipu_fb_data = {
 #ifndef CONFIG_USB_GADGET
 struct imxusb_platformdata otg_pdata = {
 	.flags = MXC_EHCI_INTERFACE_DIFF_UNI,
-	.mode = IMX_USB_MODE_HOST,
+	.mode = USB_DR_MODE_HOST,
 	.phymode = USBPHY_INTERFACE_MODE_UTMI,
 };
 #endif
 
 struct imxusb_platformdata hs_pdata = {
 	.flags = MXC_EHCI_INTERFACE_SINGLE_UNI | MXC_EHCI_INTERNAL_PHY | MXC_EHCI_IPPUE_DOWN,
-	.mode = IMX_USB_MODE_HOST,
+	.mode = USB_DR_MODE_HOST,
 };
 #endif
 

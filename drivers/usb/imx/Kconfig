@@ -2,6 +2,7 @@
 config USB_IMX_CHIPIDEA
 	bool "i.MX USB support (read help)"
 	depends on ARCH_IMX
+	select USB_OTGDEV
 	help
 	  The Freescale i.MX SoCs have a variant of the chipidea ci13xxx for
 	  USB support. Traditionally in barebox this is supported through the

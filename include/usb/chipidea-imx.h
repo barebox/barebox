@@ -37,16 +37,10 @@
 
 #define MXC_EHCI_DISABLE_OVERCURRENT	(1 << 14)
 
-enum imx_usb_mode {
-	IMX_USB_MODE_HOST,
-	IMX_USB_MODE_DEVICE,
-	IMX_USB_MODE_OTG,
-};
-
 struct imxusb_platformdata {
 	unsigned long flags;
 	enum usb_phy_interface phymode;
-	enum imx_usb_mode mode;
+	enum usb_dr_mode mode;
 };
 
 int imx_usbmisc_port_init(struct device_d *dev, int port, unsigned flags);

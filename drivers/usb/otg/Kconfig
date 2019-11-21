@@ -6,3 +6,7 @@ config USB_ULPI
 config USB_TWL4030
 	depends on MFD_TWL4030
 	bool "TWL4030 Transceiver support"
+
+config USB_OTGDEV
+	bool
+

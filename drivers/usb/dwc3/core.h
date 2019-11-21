@@ -1336,7 +1336,6 @@ struct dwc3_gadget_ep_cmd_params {
 /* prototypes */
 int dwc3_gadget_resize_tx_fifos(struct dwc3 *dwc);
 void dwc3_set_prtcap(struct dwc3 *dwc, u32 mode);
-void dwc3_set_mode(struct dwc3 *dwc, u32 mode);
 
 /* check whether we are on the DWC_usb3 core */
 static inline bool dwc3_is_usb3(struct dwc3 *dwc)

@@ -15,9 +15,12 @@
 
 #include <poller.h>
 #include <driver.h>
+#include <param.h>
 
 enum wdog_hw_runnning {
-	 WDOG_HW_RUNNING_UNSUPPORTED, WDOG_HW_RUNNING, WDOG_HW_NOT_RUNNING
+	 WDOG_HW_RUNNING_UNSUPPORTED = PARAM_TRISTATE_UNKNOWN,
+	 WDOG_HW_RUNNING = PARAM_TRISTATE_TRUE,
+	 WDOG_HW_NOT_RUNNING = PARAM_TRISTATE_FALSE
 };
 
 struct watchdog {

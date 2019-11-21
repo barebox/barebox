@@ -152,12 +152,6 @@ static unsigned int dev_get_watchdog_priority(struct device_d *dev)
 	return priority;
 }
 
-const char *running_names[] = {
-	[WDOG_HW_RUNNING_UNSUPPORTED] = "unknown",
-	[WDOG_HW_RUNNING] = "1",
-	[WDOG_HW_NOT_RUNNING] = "0",
-};
-
 int watchdog_register(struct watchdog *wd)
 {
 	struct param_d *p;
@@ -176,8 +170,7 @@ int watchdog_register(struct watchdog *wd)
 	if (ret)
 		return ret;
 
-	p = dev_add_param_enum_ro(&wd->dev, "running", &wd->running,
-				  running_names, ARRAY_SIZE(running_names));
+	p = dev_add_param_tristate_ro(&wd->dev, "running", &wd->running);
 	if (IS_ERR(p))
 		return PTR_ERR(p);
 

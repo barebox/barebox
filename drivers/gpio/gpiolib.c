@@ -428,10 +428,24 @@ static int of_hog_gpio(struct device_node *np, struct gpio_chip *chip,
 static int of_gpiochip_scan_hogs(struct gpio_chip *chip)
 {
 	struct device_node *np;
-	int ret, i;
+	int ret, i, count;
 
 	if (!IS_ENABLED(CONFIG_OFDEVICE) || !chip->dev->device_node)
 		return 0;
+
+	count = of_property_count_strings(chip->dev->device_node, "gpio-line-names");
+
+	if (count > 0) {
+		const char **arr = xzalloc(count * sizeof(char *));
+
+		of_property_read_string_array(chip->dev->device_node,
+					      "gpio-line-names", arr, count);
+
+		for (i = 0; i < chip->ngpio && i < count; i++)
+			gpio_desc[chip->base + i].name = xstrdup(arr[i]);
+
+		free(arr);
+	}
 
 	for_each_available_child_of_node(chip->dev->device_node, np) {
 		if (!of_property_read_bool(np, "gpio-hog"))

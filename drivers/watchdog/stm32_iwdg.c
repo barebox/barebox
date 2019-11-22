@@ -256,6 +256,7 @@ static int stm32_iwdg_probe(struct device_d *dev)
 	wdd->set_timeout = stm32_iwdg_set_timeout;
 	wdd->timeout_max = (RLR_MAX + 1) * data->max_prescaler * 1000;
 	wdd->timeout_max /= wd->rate * 1000;
+	wdd->running = WDOG_HW_RUNNING_UNSUPPORTED; /* ONF bit not present in IP */
 
 	ret = watchdog_register(wdd);
 	if (ret) {

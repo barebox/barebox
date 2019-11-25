@@ -64,7 +64,7 @@ static __maybe_unused uint64_t *find_pte(uint64_t addr)
 
 	pte = ttb;
 
-	for (i = 1; i < 4; i++) {
+	for (i = 0; i < 4; i++) {
 		block_shift = level2shift(i);
 		idx = (addr & level2mask(i)) >> block_shift;
 		pte += idx;
@@ -129,7 +129,7 @@ static void create_sections(uint64_t virt, uint64_t phys, uint64_t size,
 
 	while (size) {
 		table = ttb;
-		for (level = 1; level < 4; level++) {
+		for (level = 0; level < 4; level++) {
 			block_shift = level2shift(level);
 			idx = (addr & level2mask(level)) >> block_shift;
 			block_size = (1ULL << block_shift);
@@ -193,7 +193,8 @@ void __mmu_init(bool mmu_on)
 
 	ttb = create_table();
 	el = current_el();
-	set_ttbr_tcr_mair(el, (uint64_t)ttb, calc_tcr(el), MEMORY_ATTRIBUTES);
+	set_ttbr_tcr_mair(el, (uint64_t)ttb, calc_tcr(el, BITS_PER_VA),
+			  MEMORY_ATTRIBUTES);
 
 	pr_debug("ttb: 0x%p\n", ttb);
 

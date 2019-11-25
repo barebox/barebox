@@ -106,6 +106,7 @@ config ARCH_LAYERSCAPE
 	select COMMON_CLK
 	select CLKDEV_LOOKUP
 	select COMMON_CLK_OF_PROVIDER
+	select HW_HAS_PCI
 
 config ARCH_MVEBU
 	bool "Marvell EBU platforms"

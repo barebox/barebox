@@ -47,6 +47,13 @@ config PCI_IMX6
 	select OF_PCI
 	select PCI
 
+config PCI_LAYERSCAPE
+	bool "Freescale Layerscape PCIe controller"
+	depends on ARCH_LAYERSCAPE
+	select PCIE_DW
+	select OF_PCI
+	select PCI
+
 endmenu
 
 endif

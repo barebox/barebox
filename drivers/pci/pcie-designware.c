@@ -70,8 +70,8 @@ u32 dw_pcie_read_dbi(struct dw_pcie *pci, u32 reg, size_t size)
 	int ret;
 	u32 val;
 
-	if (pci->ops->readl_dbi)
-		return pci->ops->readl_dbi(pci, pci->dbi_base, reg, size);
+	if (pci->ops->read_dbi)
+		return pci->ops->read_dbi(pci, pci->dbi_base, reg, size);
 
 	ret = dw_pcie_read(pci->dbi_base + reg, size, &val);
 	if (ret)
@@ -84,8 +84,8 @@ void dw_pcie_write_dbi(struct dw_pcie *pci, u32 reg, size_t size, u32 val)
 {
 	int ret;
 
-	if (pci->ops->writel_dbi) {
-		pci->ops->writel_dbi(pci, pci->dbi_base, reg, size, val);
+	if (pci->ops->write_dbi) {
+		pci->ops->write_dbi(pci, pci->dbi_base, reg, size, val);
 		return;
 	}
 
@@ -99,8 +99,8 @@ u32 dw_pcie_read_atu(struct dw_pcie *pci, u32 reg, size_t size)
 	int ret;
 	u32 val;
 
-	if (pci->ops->readl_dbi)
-		return pci->ops->readl_dbi(pci, pci->atu_base, reg, size);
+	if (pci->ops->read_dbi)
+		return pci->ops->read_dbi(pci, pci->atu_base, reg, size);
 
 	ret = dw_pcie_read(pci->atu_base + reg, size, &val);
 	if (ret)
@@ -113,8 +113,8 @@ void dw_pcie_write_atu(struct dw_pcie *pci, u32 reg, size_t size, u32 val)
 {
 	int ret;
 
-	if (pci->ops->writel_dbi) {
-		pci->ops->writel_dbi(pci, pci->atu_base, reg, size, val);
+	if (pci->ops->write_dbi) {
+		pci->ops->write_dbi(pci, pci->atu_base, reg, size, val);
 		return;
 	}
 

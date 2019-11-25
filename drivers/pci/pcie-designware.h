@@ -155,10 +155,10 @@ struct pcie_port {
 };
 
 struct dw_pcie_ops {
-	u32     (*readl_dbi)(struct dw_pcie *pcie, void __iomem *base, u32 reg,
-			     size_t size);
-	void    (*writel_dbi)(struct dw_pcie *pcie, void __iomem *base, u32 reg,
-			      size_t size, u32 val);
+	u32     (*read_dbi)(struct dw_pcie *pcie, void __iomem *base, u32 reg,
+			    size_t size);
+	void    (*write_dbi)(struct dw_pcie *pcie, void __iomem *base, u32 reg,
+			     size_t size, u32 val);
 	int     (*link_up)(struct dw_pcie *pcie);
 };
 

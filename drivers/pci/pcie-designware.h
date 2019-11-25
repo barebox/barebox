@@ -103,6 +103,12 @@
 struct pcie_port;
 struct dw_pcie;
 
+enum dw_pcie_region_type {
+	DW_PCIE_REGION_UNKNOWN,
+	DW_PCIE_REGION_INBOUND,
+	DW_PCIE_REGION_OUTBOUND,
+};
+
 struct dw_pcie_host_ops {
 	int (*rd_own_conf)(struct pcie_port *pp, int where, int size, u32 *val);
 	int (*wr_own_conf)(struct pcie_port *pp, int where, int size, u32 val);
@@ -176,6 +182,8 @@ int dw_pcie_wait_for_link(struct dw_pcie *pci);
 void dw_pcie_prog_outbound_atu(struct dw_pcie *pci, int index,
 			       int type, u64 cpu_addr, u64 pci_addr,
 			       u32 size);
+void dw_pcie_disable_atu(struct dw_pcie *pci, int index,
+			 enum dw_pcie_region_type type);
 void dw_pcie_setup(struct dw_pcie *pci);
 
 static inline void dw_pcie_writel_dbi(struct dw_pcie *pci, u32 reg, u32 val)

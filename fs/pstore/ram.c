@@ -646,7 +646,6 @@ static int ramoops_probe(struct device_d *dev)
 	return 0;
 
 fail_buf:
-fail_clear:
 	kfree(cxt->mprz);
 fail_init_mprz:
 	kfree(cxt->fprz);

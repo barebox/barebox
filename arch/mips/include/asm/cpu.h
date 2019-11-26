@@ -41,7 +41,7 @@
  * These are valid when 23:16 == PRID_COMP_LEGACY
  */
 
-#define PRID_IMP_LOONGSON1	0x4200
+#define PRID_IMP_GS232	0x4200
 
 #define PRID_IMP_UNKNOWN	0xff00
 
@@ -109,7 +109,7 @@ enum cpu_type_enum {
 	CPU_74K,
 	CPU_BMIPS3300,
 	CPU_JZRISC,
-	CPU_LOONGSON1,
+	CPU_GS232,
 
 	CPU_LAST
 };

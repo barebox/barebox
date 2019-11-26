@@ -83,10 +83,10 @@ static void decode_configs(struct cpuinfo_mips *c)
 static inline void cpu_probe_legacy(struct cpuinfo_mips *c)
 {
 	switch (c->processor_id & PRID_IMP_MASK) {
-	case PRID_IMP_LOONGSON1:
+	case PRID_IMP_GS232:
 		decode_configs(c);
 
-		c->cputype = CPU_LOONGSON1;
+		c->cputype = CPU_GS232;
 
 		switch (c->processor_id & PRID_REV_MASK) {
 		case PRID_REV_LOONGSON1B:

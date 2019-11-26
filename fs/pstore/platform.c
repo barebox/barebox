@@ -46,35 +46,6 @@ void pstore_set_kmsg_bytes(int bytes)
 
 static int pstore_ready;
 
-static void pstore_console_write(const char *s, unsigned c)
-{
-	const char *e = s + c;
-
-	while (s < e) {
-		struct pstore_record record = {
-			.type = PSTORE_TYPE_CONSOLE,
-			.psi = psinfo,
-		};
-
-		if (c > psinfo->bufsize)
-			c = psinfo->bufsize;
-
-		record.buf = (char *)s;
-		record.size = c;
-		psinfo->write_buf(PSTORE_TYPE_CONSOLE, 0, &record.id, 0,
-				  record.buf, 0, record.size, psinfo);
-		s += c;
-		c = e - s;
-	}
-}
-
-static int pstore_console_puts(struct console_device *cdev, const char *s,
-			       size_t nbytes)
-{
-	pstore_console_write(s, nbytes);
-	return nbytes;
-}
-
 void pstore_log(const char *str)
 {
 	uint64_t id;

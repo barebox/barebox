@@ -2,6 +2,7 @@
 
 #include <common.h>
 #include <init.h>
+#include <bbu.h>
 #include <envfs.h>
 #include <asm/memory.h>
 #include <linux/sizes.h>
@@ -9,6 +10,7 @@
 #include <linux/clkdev.h>
 #include <asm/system.h>
 #include <mach/layerscape.h>
+#include <mach/bbu.h>
 
 static int rdb_mem_init(void)
 {
@@ -34,6 +36,9 @@ static int rdb_postcore_init(void)
 		return 0;
 
 	defaultenv_append_directory(defaultenv_ls1046ardb);
+
+	ls1046a_bbu_mmc_register_handler("sd", "/dev/mmc0.barebox",
+					 BBU_HANDLER_FLAG_DEFAULT);
 
 	return 0;
 }

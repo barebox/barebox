@@ -135,3 +135,17 @@
 &usb2 {
 	dr_mode = "host";
 };
+
+&soc {
+	pcie1: pcie@3400000 {
+		status = "okay";
+	};
+
+	pcie2: pcie@3500000 {
+		status = "okay";
+	};
+
+	pcie3: pcie@3600000 {
+		status = "okay";
+	};
+};

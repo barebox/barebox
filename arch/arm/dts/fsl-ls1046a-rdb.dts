@@ -5,6 +5,10 @@
 #include <arm64/freescale/fsl-ls1046a-rdb.dts>
 
 / {
+	aliases {
+		eeprom = &eeprom;
+	};
+
 	chosen {
 		stdout-path = &duart0;
 
@@ -45,6 +49,17 @@
 &gpio2 {
 	status = "okay";
 };
+
+&i2c0 {
+	eeprom: eeprom@52 {
+		compatible = "atmel,24c04";
+	};
+
+	non_existent_eeprom: eeprom@53 {
+	};
+};
+
+/delete-node/ &non_existent_eeprom;
 
 &fman0 {
 	ethernet@e0000 {

@@ -23,9 +23,14 @@
 	#address-cells = <1>;
 	#size-cells = <1>;
 
-	environment_sd: partition@200000 {
+	partition@1000 {
+		label = "barebox";
+		reg = <0x1000 0xdf000>;
+	};
+
+	environment_sd: partition@e0000 {
 		label = "barebox-environment";
-		reg = <0x200000 0x20000>;
+		reg = <0xe0000 0x20000>;
 	};
 };
 

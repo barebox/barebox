@@ -433,6 +433,7 @@ config ARM_SMCCC
 	  This option enables barebox to invoke ARM secure monitor calls.
 
 config ARM_SECURE_MONITOR
+	depends on CPU_32v7 || CPU_64v8
 	select ARM_SMCCC
 	bool
 	help
@@ -452,6 +453,7 @@ config ARM_PSCI
 
 config ARM_PSCI_CLIENT
 	bool "Enable barebox PSCI client support"
+	depends on CPU_32v7 || CPU_64v8
 	select ARM_SMCCC
 	select ARM_PSCI_OF
 	help

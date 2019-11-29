@@ -314,7 +314,7 @@ static int write_fcb(struct mtd_info *mtd, void *buf, int block)
 	return ret;
 }
 
-int update_bcb(int argc, char *argv[])
+static int update_bcb(int argc, char *argv[])
 {
 	int ret;
 	int block;

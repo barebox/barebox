@@ -234,7 +234,7 @@ device_initcall(armv7_psci_init);
 #include <getopt.h>
 #include "mmu.h"
 
-void second_entry(void)
+static void second_entry(void)
 {
 	struct arm_smccc_res res;
 

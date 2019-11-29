@@ -623,10 +623,10 @@ static int ramoops_probe(struct device_d *dev)
 
 	if (!IS_ENABLED(CONFIG_OFTREE)) {
 		scnprintf(kernelargs, sizeof(kernelargs),
-			  "ramoops.record_size=0x%x "
-			  "ramoops.console_size=0x%x "
-			  "ramoops.ftrace_size=0x%x "
-			  "ramoops.pmsg_size=0x%x "
+			  "ramoops.record_size=0x%zx "
+			  "ramoops.console_size=0x%zx "
+			  "ramoops.ftrace_size=0x%zx "
+			  "ramoops.pmsg_size=0x%zx "
 			  "ramoops.mem_address=0x%llx "
 			  "ramoops.mem_size=0x%lx "
 			  "ramoops.ecc=%d",

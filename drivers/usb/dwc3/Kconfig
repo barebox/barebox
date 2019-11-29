@@ -1,6 +1,7 @@
 config USB_DWC3
 	tristate "DesignWare USB3 DRD Core Support"
 	depends on USB && HAS_DMA
+	depends on OFDEVICE
 	select USB_XHCI
 	help
 	  Say Y or M here if your system has a Dual Role SuperSpeed

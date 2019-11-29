@@ -6,6 +6,7 @@ config CONSOLE_RATP
 	select POLLER
 	select CMDLINE_EDITING
 	depends on CONSOLE_FULL
+	depends on !SHELL_NONE
 	prompt "RATP console support"
 	help
 	  This option adds support for remote controlling barebox via serial

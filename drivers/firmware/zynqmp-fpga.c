@@ -136,7 +136,7 @@ static int is_bin_header_valid(const u32 *bin_header, size_t size,
 		return 0;
 
 	for (i = 0; i < ARRAY_SIZE(bin_format); i++)
-		if (bin_header != (byte_order == XILINX_BYTE_ORDER_BIT) ?
+		if (bin_header[i] != (byte_order == XILINX_BYTE_ORDER_BIT) ?
 				  bin_format[i] : __swab32(bin_format[i]))
 			return 0;
 

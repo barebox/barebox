@@ -48,6 +48,7 @@ endif
 config PINCTRL_AT91PIO4
 	bool "AT91 PIO4 pinctrl driver"
 	depends on ARCH_AT91
+	depends on OFDEVICE
 	select GPIOLIB
 	select OF_GPIO
 	help

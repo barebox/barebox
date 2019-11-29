@@ -20,7 +20,7 @@ int nvme_submit_sync_cmd(struct nvme_ctrl *ctrl,
 	return __nvme_submit_sync_cmd(ctrl, cmd, NULL, buffer, bufflen, 0,
 				      NVME_QID_ADMIN);
 }
-EXPORT_SYMBOL_GPL(nvme_sec_submit);
+EXPORT_SYMBOL_GPL(nvme_submit_sync_cmd);
 
 static int nvme_identify_ctrl(struct nvme_ctrl *dev, struct nvme_id_ctrl **id)
 {

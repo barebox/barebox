@@ -24,7 +24,7 @@ struct device_d *superio_func_add(struct superio_chip *siochip, const char *name
 
 	return dev;
 }
-EXPORT_SYMBOL(superio_func_add)
+EXPORT_SYMBOL(superio_func_add);
 
 static int superio_reg_read(void *ctx, unsigned int reg, unsigned int *val)
 {
@@ -95,4 +95,4 @@ void superio_chip_add(struct superio_chip *siochip)
 		pr_warn("registering %s regmap cdev failed: %s\n",
 			chipname, strerror(-ret));
 }
-EXPORT_SYMBOL(superio_chip_add)
+EXPORT_SYMBOL(superio_chip_add);

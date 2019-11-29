@@ -106,6 +106,8 @@ config ARCH_LAYERSCAPE
 	select COMMON_CLK
 	select CLKDEV_LOOKUP
 	select COMMON_CLK_OF_PROVIDER
+	select OFTREE
+	select OFDEVICE
 
 config ARCH_MVEBU
 	bool "Marvell EBU platforms"

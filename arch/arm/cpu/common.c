@@ -51,7 +51,11 @@ void pbl_barebox_break(void)
 {
 	__asm__ __volatile__ (
 #ifdef CONFIG_PBL_BREAK
+#ifdef CONFIG_CPU_V8
+		"brk #17\n"
+#else
 		"bkpt #17\n"
+#endif
 		"nop\n"
 #else
 		"nop\n"

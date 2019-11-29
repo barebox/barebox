@@ -48,7 +48,7 @@ static int pfc200_mem_init(void)
 }
 mem_initcall(pfc200_mem_init);
 
-static struct gpmc_nand_platform_data nand_plat = {
+__maybe_unused static struct gpmc_nand_platform_data nand_plat = {
 	.cs = 0,
 	.device_width = 8,
 	.ecc_mode = OMAP_ECC_BCH8_CODE_HW_ROMCODE,
@@ -62,8 +62,8 @@ static int pfc200_init_devices(void)
 	 * WP is made high and WAIT1 active Low
 	 */
 	gpmc_generic_init(0x10);
-#endif
 	omap_add_gpmc_nand_device(&nand_plat);
+#endif
 	omap_set_barebox_part(&pfc200_mlo_part);
 
 	omap3_add_mmc1(NULL);

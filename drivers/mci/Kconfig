@@ -97,9 +97,6 @@ config MCI_IMX_ESDHC_PIO
 	help
 	  mostly useful for debugging. Normally you should use DMA.
 
-config MCI_IMX_ESDHC_PBL
-	bool
-
 config MCI_OMAP_HSMMC
 	bool "OMAP HSMMC"
 	depends on ARCH_OMAP4 || ARCH_OMAP3 || ARCH_AM33XX
@@ -163,3 +160,6 @@ config MCI_STM32_SDMMC2
 	  say Y or M here.
 
 endif
+
+config MCI_IMX_ESDHC_PBL
+	bool

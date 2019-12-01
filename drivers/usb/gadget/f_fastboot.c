@@ -861,7 +861,7 @@ static int check_ubi(struct f_fastboot *f_fb, struct file_list_entry *fentry,
 
 	if (filetype == filetype_ubi) {
 		fastboot_tx_print(f_fb, FASTBOOT_MSG_INFO,
-				  "This is an UBI image...");
+				  "This is a UBI image...");
 		return 1;
 	} else {
 		fastboot_tx_print(f_fb, FASTBOOT_MSG_FAIL,

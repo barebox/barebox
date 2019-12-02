@@ -164,10 +164,9 @@ static inline void esdhc_setbits32(struct fsl_esdhc_host *host, unsigned int reg
 	esdhc_clrsetbits32(host, reg, 0, set);
 }
 
-static int esdhc_setup_data(struct mci_host *mci, struct mci_data *data,
+static int esdhc_setup_data(struct fsl_esdhc_host *host, struct mci_data *data,
 			    dma_addr_t dma)
 {
-	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
 	u32 wml_value;
 
 	if (!IS_ENABLED(CONFIG_MCI_IMX_ESDHC_PIO)) {
@@ -193,9 +192,8 @@ static int esdhc_setup_data(struct mci_host *mci, struct mci_data *data,
 	return 0;
 }
 
-static int esdhc_do_data(struct mci_host *mci, struct mci_data *data)
+static int esdhc_do_data(struct fsl_esdhc_host *host, struct mci_data *data)
 {
-	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
 	u32 irqstat;
 
 	if (IS_ENABLED(CONFIG_MCI_IMX_ESDHC_PIO))
@@ -256,7 +254,7 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 				return -EFAULT;
 		}
 
-		err = esdhc_setup_data(mci, data, dma);
+		err = esdhc_setup_data(host, data, dma);
 		if(err)
 			return err;
 	}
@@ -319,7 +317,7 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 
 	/* Wait until all of the blocks are transferred */
 	if (data) {
-		ret = esdhc_do_data(mci, data);
+		ret = esdhc_do_data(host, data);
 		if (ret)
 			return ret;
 

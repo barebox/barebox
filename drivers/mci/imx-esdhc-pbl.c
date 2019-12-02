@@ -34,7 +34,6 @@ struct esdhc {
 	void __iomem *regs;
 	bool is_mx6;
 	bool is_be;
-	bool wrap_wml;
 };
 
 static uint32_t esdhc_read32(struct esdhc *esdhc, int reg)
@@ -204,7 +203,7 @@ static int esdhc_read_blocks(struct esdhc *esdhc, void *dst, size_t len)
 {
 	struct mci_cmd cmd;
 	struct mci_data data;
-	u32 val, wml;
+	u32 val;
 	int ret;
 
 	esdhc_write32(esdhc, SDHCI_INT_ENABLE,
@@ -212,19 +211,6 @@ static int esdhc_read_blocks(struct esdhc *esdhc, void *dst, size_t len)
 		      SDHCI_INT_CARD_INT | SDHCI_INT_TIMEOUT | SDHCI_INT_CRC |
 		      SDHCI_INT_END_BIT | SDHCI_INT_INDEX | SDHCI_INT_DATA_TIMEOUT |
 		      SDHCI_INT_DATA_CRC | SDHCI_INT_DATA_END_BIT | SDHCI_INT_DMA);
-
-	wml = FIELD_PREP(WML_WR_BRST_LEN, 16)         |
-	      FIELD_PREP(WML_WR_WML_MASK, SECTOR_WML) |
-	      FIELD_PREP(WML_RD_BRST_LEN, 16)         |
-	      FIELD_PREP(WML_RD_WML_MASK, SECTOR_WML);
-	/*
-	 * Some SoCs intrpret 0 as MAX value so for those cases the
-	 * above value translates to zero
-	 */
-	if (esdhc->wrap_wml)
-		wml = 0;
-
-	esdhc_write32(esdhc, IMX_SDHCI_WML, wml);
 
 	val = esdhc_read32(esdhc, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET);
 	val |= SYSCTL_HCKEN | SYSCTL_IPGEN;
@@ -369,7 +355,12 @@ static void imx_esdhc_init(struct esdhc *esdhc)
 {
 	esdhc->is_be = 0;
 	esdhc->is_mx6 = 1;
-	esdhc->wrap_wml = false;
+
+	esdhc_write32(esdhc, IMX_SDHCI_WML,
+		      FIELD_PREP(WML_WR_BRST_LEN, 16)         |
+		      FIELD_PREP(WML_WR_WML_MASK, SECTOR_WML) |
+		      FIELD_PREP(WML_RD_BRST_LEN, 16)         |
+		      FIELD_PREP(WML_RD_WML_MASK, SECTOR_WML));
 }
 
 static int imx8_esdhc_init(struct esdhc *esdhc, int instance)
@@ -520,11 +511,12 @@ int ls1046a_esdhc_start_image(unsigned long r0, unsigned long r1, unsigned long 
 	struct esdhc esdhc = {
 		.regs = IOMEM(0x01560000),
 		.is_be = true,
-		.wrap_wml = true,
 	};
 	unsigned long sdram = 0x80000000;
 	void (*barebox)(unsigned long, unsigned long, unsigned long) =
 		(void *)(sdram + LS1046A_SD_IMAGE_OFFSET);
+
+	esdhc_write32(&esdhc, IMX_SDHCI_WML, 0);
 
 	/*
 	 * The ROM leaves us here with a clock frequency of around 400kHz. Speed

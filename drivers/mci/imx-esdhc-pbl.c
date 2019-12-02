@@ -365,6 +365,31 @@ esdhc_start_image(struct esdhc *esdhc, ptrdiff_t address, ptrdiff_t entry,
 	bb();
 }
 
+static void imx_esdhc_init(struct esdhc *esdhc)
+{
+	esdhc->is_be = 0;
+	esdhc->is_mx6 = 1;
+	esdhc->wrap_wml = false;
+}
+
+static int imx8_esdhc_init(struct esdhc *esdhc, int instance)
+{
+	switch (instance) {
+	case 0:
+		esdhc->regs = IOMEM(MX8MQ_USDHC1_BASE_ADDR);
+		break;
+	case 1:
+		esdhc->regs = IOMEM(MX8MQ_USDHC2_BASE_ADDR);
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	imx_esdhc_init(esdhc);
+
+	return 0;
+}
+
 /**
  * imx6_esdhc_start_image - Load and start an image from USDHC controller
  * @instance: The USDHC controller instance (0..4)
@@ -398,9 +423,7 @@ int imx6_esdhc_start_image(int instance)
 		return -EINVAL;
 	}
 
-	esdhc.is_be = 0;
-	esdhc.is_mx6 = 1;
-	esdhc.wrap_wml = false;
+	imx_esdhc_init(&esdhc);
 
 	return esdhc_start_image(&esdhc, 0x10000000, 0x10000000, 0);
 }
@@ -420,21 +443,11 @@ int imx6_esdhc_start_image(int instance)
 int imx8_esdhc_start_image(int instance)
 {
 	struct esdhc esdhc;
+	int ret;
 
-	switch (instance) {
-	case 0:
-		esdhc.regs = IOMEM(MX8MQ_USDHC1_BASE_ADDR);
-		break;
-	case 1:
-		esdhc.regs = IOMEM(MX8MQ_USDHC2_BASE_ADDR);
-		break;
-	default:
-		return -EINVAL;
-	}
-
-	esdhc.is_be = 0;
-	esdhc.is_mx6 = 1;
-	esdhc.wrap_wml = false;
+	ret = imx8_esdhc_init(&esdhc, instance);
+	if (ret)
+		return ret;
 
 	return esdhc_start_image(&esdhc, MX8MQ_DDR_CSD1_BASE_ADDR,
 				 MX8MQ_ATF_BL33_BASE_ADDR, SZ_32K);
@@ -448,20 +461,9 @@ int imx8_esdhc_load_piggy(int instance)
 	int ret, len;
 	int offset = SZ_32K;
 
-	switch (instance) {
-	case 0:
-		esdhc.regs = IOMEM(MX8MQ_USDHC1_BASE_ADDR);
-		break;
-	case 1:
-		esdhc.regs = IOMEM(MX8MQ_USDHC2_BASE_ADDR);
-		break;
-	default:
-		return -EINVAL;
-	}
-
-	esdhc.is_be = 0;
-	esdhc.is_mx6 = 1;
-	esdhc.wrap_wml = false;
+	ret = imx8_esdhc_init(&esdhc, instance);
+	if (ret)
+		return ret;
 
 	/*
 	 * We expect to be running at MX8MQ_ATF_BL33_BASE_ADDR where the atf

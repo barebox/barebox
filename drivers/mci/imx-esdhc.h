@@ -177,6 +177,8 @@ int esdhc_setup_data(struct fsl_esdhc_host *host, struct mci_data *data,
 		     struct fsl_esdhc_dma_transfer *tr);
 int esdhc_do_data(struct fsl_esdhc_host *host, struct mci_data *data,
 		  struct fsl_esdhc_dma_transfer *tr);
-
+int esdhc_poll(struct fsl_esdhc_host *host, unsigned int off,
+	       unsigned int mask, unsigned int val,
+	       uint64_t timeout);
 
 #endif  /* __FSL_ESDHC_H__ */

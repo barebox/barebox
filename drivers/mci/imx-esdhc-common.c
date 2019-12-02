@@ -120,3 +120,33 @@ int esdhc_do_data(struct fsl_esdhc_host *host, struct mci_data *data,
 
 	return 0;
 }
+
+static bool esdhc_match32(struct fsl_esdhc_host *host, unsigned int off,
+			  unsigned int mask, unsigned int val)
+{
+	const unsigned int reg = sdhci_read32(&host->sdhci, off) & mask;
+
+	return reg == val;
+}
+
+#ifdef __PBL__
+/*
+ * Stubs to make timeout logic below work in PBL
+ */
+
+#define get_time_ns()		0
+/*
+ * Use time in us (approx) as a busy counter timeout value
+ */
+#define is_timeout(s, t)	((s)++ > ((t) / 1024))
+
+#endif
+
+int esdhc_poll(struct fsl_esdhc_host *host, unsigned int off,
+	       unsigned int mask, unsigned int val,
+	       uint64_t timeout)
+{
+	return wait_on_timeout(timeout,
+			       esdhc_match32(host, off, mask, val));
+}
+

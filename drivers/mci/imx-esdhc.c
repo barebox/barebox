@@ -94,8 +94,9 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 		      command << 16 | xfertyp);
 
 	/* Wait for the command to complete */
-	ret = wait_on_timeout(100 * MSECOND,
-			sdhci_read32(&host->sdhci, SDHCI_INT_STATUS) & SDHCI_INT_CMD_COMPLETE);
+	ret = esdhc_poll(host, SDHCI_INT_STATUS,
+			 SDHCI_INT_CMD_COMPLETE, SDHCI_INT_CMD_COMPLETE,
+			 100 * MSECOND);
 	if (ret) {
 		dev_dbg(host->dev, "timeout 1\n");
 		return -ETIMEDOUT;
@@ -116,9 +117,9 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 		 * Poll on DATA0 line for cmd with busy signal for
 		 * timout / 10 usec since DLA polling can be insecure.
 		 */
-		ret = wait_on_timeout(2500 * MSECOND,
-			(sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) & PRSSTAT_DAT0));
-
+		ret = esdhc_poll(host, SDHCI_PRESENT_STATE,
+				 PRSSTAT_DAT0, PRSSTAT_DAT0,
+				 2500 * MSECOND);
 		if (ret) {
 			dev_err(host->dev, "timeout PRSSTAT_DAT0\n");
 			return -ETIMEDOUT;
@@ -137,16 +138,17 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, -1);
 
 	/* Wait for the bus to be idle */
-	ret = wait_on_timeout(SECOND,
-			!(sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) &
-				(SDHCI_CMD_INHIBIT_CMD | SDHCI_CMD_INHIBIT_DATA)));
+	ret = esdhc_poll(host, SDHCI_PRESENT_STATE,
+			 SDHCI_CMD_INHIBIT_CMD | SDHCI_CMD_INHIBIT_DATA, 0,
+			 SECOND);
 	if (ret) {
 		dev_err(host->dev, "timeout 2\n");
 		return -ETIMEDOUT;
 	}
 
-	ret = wait_on_timeout(100 * MSECOND,
-			!(sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) & SDHCI_DATA_LINE_ACTIVE));
+	ret = esdhc_poll(host, SDHCI_PRESENT_STATE,
+			 SDHCI_DATA_LINE_ACTIVE, 0,
+			 100 * MSECOND);
 	if (ret) {
 		dev_err(host->dev, "timeout 3\n");
 		return -ETIMEDOUT;
@@ -201,16 +203,18 @@ static void set_sysctl(struct mci_host *mci, u32 clock)
 	esdhc_clrsetbits32(host, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET,
 			SYSCTL_CLOCK_MASK, clk);
 
-	wait_on_timeout(10 * MSECOND,
-			sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) & PRSSTAT_SDSTB);
+	esdhc_poll(host, SDHCI_PRESENT_STATE,
+		   PRSSTAT_SDSTB, PRSSTAT_SDSTB,
+		   10 * MSECOND);
 
 	clk = SYSCTL_PEREN | SYSCTL_CKEN | SYSCTL_INITA;
 
 	esdhc_setbits32(host, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET,
 			clk);
 
-	wait_on_timeout(1 * MSECOND,
-			!(sdhci_read32(&host->sdhci, SDHCI_CLOCK_CONTROL) & SYSCTL_INITA));
+	esdhc_poll(host, SDHCI_CLOCK_CONTROL,
+		   SYSCTL_INITA, SYSCTL_INITA,
+		   10 * MSECOND);
 }
 
 static void esdhc_set_ios(struct mci_host *mci, struct mci_ios *ios)
@@ -268,7 +272,6 @@ static int esdhc_card_present(struct mci_host *mci)
 
 static int esdhc_reset(struct fsl_esdhc_host *host)
 {
-	uint64_t start;
 	int val;
 
 	/* reset the controller */
@@ -286,16 +289,12 @@ static int esdhc_reset(struct fsl_esdhc_host *host)
 		sdhci_write32(&host->sdhci, IMX_SDHCI_DLL_CTRL, 0x0);
 	}
 
-	start = get_time_ns();
 	/* hardware clears the bit when it is done */
-	while (1) {
-		if (!(sdhci_read32(&host->sdhci, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET)
-					& SYSCTL_RSTA))
-			break;
-		if (is_timeout(start, 100 * MSECOND)) {
-			dev_err(host->dev, "Reset never completed.\n");
-			return -EIO;
-		}
+	if (esdhc_poll(host,
+		       SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET,
+		       SYSCTL_RSTA, 0, 100 * MSECOND)) {
+		dev_err(host->dev, "Reset never completed.\n");
+		return -EIO;
 	}
 
 	return 0;

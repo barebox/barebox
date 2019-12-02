@@ -44,7 +44,6 @@ esdhc_send_cmd(struct fsl_esdhc_host *host, struct mci_cmd *cmd, struct mci_data
 	u32	xfertyp, mixctrl, command;
 	u32	irqstat;
 	int ret;
-	int timeout;
 
 	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, -1);
 
@@ -81,12 +80,11 @@ esdhc_send_cmd(struct fsl_esdhc_host *host, struct mci_cmd *cmd, struct mci_data
 		      command << 16 | xfertyp);
 
 	/* Wait for the command to complete */
-	timeout = 10000;
-	while (!(sdhci_read32(&host->sdhci, SDHCI_INT_STATUS) & SDHCI_INT_CMD_COMPLETE)) {
-		__udelay(1);
-		if (!timeout--)
-			return -ETIMEDOUT;
-	}
+	ret = esdhc_poll(host, SDHCI_INT_STATUS,
+			 SDHCI_INT_CMD_COMPLETE, SDHCI_INT_CMD_COMPLETE,
+			 100 * MSECOND);
+	if (ret)
+		return ret;
 
 	irqstat = sdhci_read32(&host->sdhci, SDHCI_INT_STATUS);
 	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, irqstat);
@@ -110,13 +108,11 @@ esdhc_send_cmd(struct fsl_esdhc_host *host, struct mci_cmd *cmd, struct mci_data
 	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, -1);
 
 	/* Wait for the bus to be idle */
-	timeout = 10000;
-	while (sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) & (SDHCI_CMD_INHIBIT_CMD |
-			SDHCI_CMD_INHIBIT_DATA | SDHCI_DATA_LINE_ACTIVE)) {
-		__udelay(1);
-		if (!timeout--)
-			return -ETIMEDOUT;
-	}
+	ret = esdhc_poll(host, SDHCI_PRESENT_STATE,
+			 SDHCI_CMD_INHIBIT_CMD  |
+			 SDHCI_CMD_INHIBIT_DATA |
+			 SDHCI_DATA_LINE_ACTIVE, 0,
+			 100 * MSECOND);
 
 	return 0;
 }

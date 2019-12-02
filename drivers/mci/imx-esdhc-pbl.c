@@ -37,14 +37,10 @@ static void __udelay(int us)
 	for (i = 0; i < us * 4; i++);
 }
 
-static int esdhc_do_data(struct fsl_esdhc_host *host, struct mci_data *data)
-{
-	return sdhci_transfer_data(&host->sdhci, data);
-}
-
 static int
 esdhc_send_cmd(struct fsl_esdhc_host *host, struct mci_cmd *cmd, struct mci_data *data)
 {
+	struct fsl_esdhc_dma_transfer tr = { 0 };
 	u32	xfertyp, mixctrl, command;
 	u32	irqstat;
 	int ret;
@@ -57,7 +53,9 @@ esdhc_send_cmd(struct fsl_esdhc_host *host, struct mci_cmd *cmd, struct mci_data
 
 	if (data) {
 		/* Set up for a data transfer if we have one */
-		sdhci_write32(&host->sdhci, SDHCI_BLOCK_SIZE__BLOCK_COUNT, data->blocks << 16 | SECTOR_SIZE);
+		ret = esdhc_setup_data(host, data, &tr);
+		if (ret)
+			return ret;
 	}
 
 	sdhci_set_cmd_xfer_mode(&host->sdhci, cmd, data,
@@ -104,7 +102,7 @@ esdhc_send_cmd(struct fsl_esdhc_host *host, struct mci_cmd *cmd, struct mci_data
 
 	/* Wait until all of the blocks are transferred */
 	if (data) {
-		ret = esdhc_do_data(host, data);
+		ret = esdhc_do_data(host, data, &tr);
 		if (ret)
 			return ret;
 	}

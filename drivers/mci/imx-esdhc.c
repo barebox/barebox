@@ -46,55 +46,6 @@
 
 #define to_fsl_esdhc(mci)	container_of(mci, struct fsl_esdhc_host, mci)
 
-static int esdhc_setup_data(struct fsl_esdhc_host *host, struct mci_data *data,
-			    dma_addr_t dma)
-{
-	u32 wml_value;
-
-	if (!IS_ENABLED(CONFIG_MCI_IMX_ESDHC_PIO)) {
-		wml_value = data->blocksize/4;
-
-		if (data->flags & MMC_DATA_READ) {
-			if (wml_value > 0x10)
-				wml_value = 0x10;
-
-			esdhc_clrsetbits32(host, IMX_SDHCI_WML, WML_RD_WML_MASK, wml_value);
-		} else {
-			if (wml_value > 0x80)
-				wml_value = 0x80;
-
-			esdhc_clrsetbits32(host, IMX_SDHCI_WML, WML_WR_WML_MASK,
-						wml_value << 16);
-		}
-		sdhci_write32(&host->sdhci, SDHCI_DMA_ADDRESS, dma);
-	}
-
-	sdhci_write32(&host->sdhci, SDHCI_BLOCK_SIZE__BLOCK_COUNT, data->blocks << 16 | data->blocksize);
-
-	return 0;
-}
-
-static int esdhc_do_data(struct fsl_esdhc_host *host, struct mci_data *data)
-{
-	u32 irqstat;
-
-	if (IS_ENABLED(CONFIG_MCI_IMX_ESDHC_PIO))
-		return sdhci_transfer_data(&host->sdhci, data);
-
-	do {
-		irqstat = sdhci_read32(&host->sdhci, SDHCI_INT_STATUS);
-
-		if (irqstat & DATA_ERR)
-			return -EIO;
-
-		if (irqstat & SDHCI_INT_DATA_TIMEOUT)
-			return -ETIMEDOUT;
-	} while (!(irqstat & SDHCI_INT_XFER_COMPLETE) &&
-		(sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) & SDHCI_DATA_LINE_ACTIVE));
-
-	return 0;
-}
-
 /*
  * Sends a command out on the bus.  Takes the mci pointer,
  * a command pointer, and an optional data pointer.
@@ -105,11 +56,8 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 	u32	xfertyp, mixctrl, command;
 	u32	irqstat;
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
-	unsigned int num_bytes = 0;
+	struct fsl_esdhc_dma_transfer tr = { 0 };
 	int ret;
-	void *ptr;
-	enum dma_data_direction dir = 0;
-	dma_addr_t dma = 0;
 
 	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, -1);
 
@@ -118,23 +66,7 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 
 	/* Set up for a data transfer if we have one */
 	if (data) {
-		if (!IS_ENABLED(CONFIG_MCI_IMX_ESDHC_PIO)) {
-			num_bytes = data->blocks * data->blocksize;
-
-			if (data->flags & MMC_DATA_WRITE) {
-				ptr = (void *)data->src;
-				dir = DMA_TO_DEVICE;
-			} else {
-				ptr = data->dest;
-				dir = DMA_FROM_DEVICE;
-			}
-
-			dma = dma_map_single(host->dev, ptr, num_bytes, dir);
-			if (dma_mapping_error(host->dev, dma))
-				return -EFAULT;
-		}
-
-		ret = esdhc_setup_data(host, data, dma);
+		ret = esdhc_setup_data(host, data, &tr);
 		if (ret)
 			return ret;
 	}
@@ -197,12 +129,9 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 
 	/* Wait until all of the blocks are transferred */
 	if (data) {
-		ret = esdhc_do_data(host, data);
+		ret = esdhc_do_data(host, data, &tr);
 		if (ret)
 			return ret;
-
-		if (!IS_ENABLED(CONFIG_MCI_IMX_ESDHC_PIO))
-			dma_unmap_single(host->dev, dma, num_bytes, dir);
 	}
 
 	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, -1);

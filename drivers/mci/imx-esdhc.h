@@ -22,6 +22,7 @@
 #ifndef  __FSL_ESDHC_H__
 #define	__FSL_ESDHC_H__
 
+#include <dma.h>
 #include <errno.h>
 #include <asm/byteorder.h>
 #include <linux/bitfield.h>
@@ -128,6 +129,12 @@ struct fsl_esdhc_host {
 	struct sdhci	sdhci;
 };
 
+struct fsl_esdhc_dma_transfer {
+	dma_addr_t dma;
+	unsigned int size;
+	enum dma_data_direction dir;
+};
+
 
 static inline int esdhc_is_usdhc(struct fsl_esdhc_host *data)
 {
@@ -166,5 +173,10 @@ esdhc_setbits32(struct fsl_esdhc_host *host, unsigned int reg,
 }
 
 void esdhc_populate_sdhci(struct fsl_esdhc_host *host);
+int esdhc_setup_data(struct fsl_esdhc_host *host, struct mci_data *data,
+		     struct fsl_esdhc_dma_transfer *tr);
+int esdhc_do_data(struct fsl_esdhc_host *host, struct mci_data *data,
+		  struct fsl_esdhc_dma_transfer *tr);
+
 
 #endif  /* __FSL_ESDHC_H__ */

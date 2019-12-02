@@ -69,9 +69,4 @@
 #define ESDHC_DMA_SYSCTL	0x40c /* Layerscape specific */
 #define ESDHC_SYSCTL_DMA_SNOOP 	BIT(6)
 
-struct fsl_esdhc_cfg {
-	u32	esdhc_base;
-	u32	no_snoop;
-};
-
 #endif  /* __FSL_ESDHC_H__ */

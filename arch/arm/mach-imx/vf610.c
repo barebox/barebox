@@ -19,6 +19,7 @@
 #include <mach/revision.h>
 #include <mach/vf610.h>
 #include <mach/reset-reason.h>
+#include <mach/ocotp.h>
 
 static const struct imx_reset_reason vf610_reset_reasons[] = {
 	{ VF610_SRC_SRSR_POR_RST,       RESET_POR,   0 },
@@ -29,6 +30,11 @@ static const struct imx_reset_reason vf610_reset_reasons[] = {
 	{ VF610_SRC_SRSR_SW_RST,        RESET_RST,   0 },
 	{ /* sentinel */ }
 };
+
+u64 vf610_uid(void)
+{
+	return imx_ocotp_read_uid(IOMEM(VF610_OCOTP_BASE_ADDR));
+}
 
 int vf610_init(void)
 {
@@ -57,5 +63,7 @@ int vf610_init(void)
 
 	imx_set_silicon_revision(cputypestr, vf610_cpu_revision());
 	imx_set_reset_reason(src + IMX_SRC_SRSR, vf610_reset_reasons);
+	pr_info("%s unique ID: %llx\n", cputypestr, vf610_uid());
+
 	return 0;
 }

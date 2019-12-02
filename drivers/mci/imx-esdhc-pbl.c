@@ -30,28 +30,6 @@
 #define SECTOR_SIZE 512
 #define SECTOR_WML  (SECTOR_SIZE / sizeof(u32))
 
-struct esdhc {
-	void __iomem *regs;
-	bool is_mx6;
-	bool is_be;
-};
-
-static uint32_t esdhc_read32(struct esdhc *esdhc, int reg)
-{
-	if (esdhc->is_be)
-		return in_be32(esdhc->regs + reg);
-	else
-		return readl(esdhc->regs + reg);
-}
-
-static void esdhc_write32(struct esdhc *esdhc, int reg, uint32_t val)
-{
-	if (esdhc->is_be)
-		out_be32(esdhc->regs + reg, val);
-	else
-		writel(val, esdhc->regs + reg);
-}
-
 static void __udelay(int us)
 {
 	volatile int i;
@@ -86,7 +64,7 @@ static u32 esdhc_xfertyp(struct mci_cmd *cmd, struct mci_data *data)
 	return command << 16 | xfertyp;
 }
 
-static int esdhc_do_data(struct esdhc *esdhc, struct mci_data *data)
+static int esdhc_do_data(struct fsl_esdhc_host *host, struct mci_data *data)
 {
 	char *buffer;
 	u32 databuf;
@@ -97,14 +75,14 @@ static int esdhc_do_data(struct esdhc *esdhc, struct mci_data *data)
 	buffer = data->dest;
 
 	size = data->blocksize * data->blocks;
-	irqstat = esdhc_read32(esdhc, SDHCI_INT_STATUS);
+	irqstat = sdhci_read32(&host->sdhci, SDHCI_INT_STATUS);
 
 	while (size) {
 		int i;
 		int timeout = 1000000;
 
 		while (1) {
-			present = esdhc_read32(esdhc, SDHCI_PRESENT_STATE) & SDHCI_BUFFER_READ_ENABLE;
+			present = sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) & SDHCI_BUFFER_READ_ENABLE;
 			if (present)
 				break;
 			if (!--timeout) {
@@ -114,7 +92,7 @@ static int esdhc_do_data(struct esdhc *esdhc, struct mci_data *data)
 		}
 
 		for (i = 0; i < SECTOR_WML; i++) {
-			databuf = esdhc_read32(esdhc, SDHCI_BUFFER);
+			databuf = sdhci_read32(&host->sdhci, SDHCI_BUFFER);
 			*((u32 *)buffer) = databuf;
 			buffer += 4;
 			size -= 4;
@@ -125,49 +103,49 @@ static int esdhc_do_data(struct esdhc *esdhc, struct mci_data *data)
 }
 
 static int
-esdhc_send_cmd(struct esdhc *esdhc, struct mci_cmd *cmd, struct mci_data *data)
+esdhc_send_cmd(struct fsl_esdhc_host *host, struct mci_cmd *cmd, struct mci_data *data)
 {
 	u32	xfertyp, mixctrl;
 	u32	irqstat;
 	int ret;
 	int timeout;
 
-	esdhc_write32(esdhc, SDHCI_INT_STATUS, -1);
+	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, -1);
 
 	/* Wait at least 8 SD clock cycles before the next command */
 	__udelay(1);
 
 	if (data) {
 		/* Set up for a data transfer if we have one */
-		esdhc_write32(esdhc, SDHCI_BLOCK_SIZE__BLOCK_COUNT, data->blocks << 16 | SECTOR_SIZE);
+		sdhci_write32(&host->sdhci, SDHCI_BLOCK_SIZE__BLOCK_COUNT, data->blocks << 16 | SECTOR_SIZE);
 	}
 
 	/* Figure out the transfer arguments */
 	xfertyp = esdhc_xfertyp(cmd, data);
 
 	/* Send the command */
-	esdhc_write32(esdhc, SDHCI_ARGUMENT, cmd->cmdarg);
+	sdhci_write32(&host->sdhci, SDHCI_ARGUMENT, cmd->cmdarg);
 
-	if (esdhc->is_mx6) {
+	if (esdhc_is_usdhc(host)) {
 		/* write lower-half of xfertyp to mixctrl */
 		mixctrl = xfertyp & 0xFFFF;
 		/* Keep the bits 22-25 of the register as is */
-		mixctrl |= (esdhc_read32(esdhc, IMX_SDHCI_MIXCTRL) & (0xF << 22));
-		esdhc_write32(esdhc, IMX_SDHCI_MIXCTRL, mixctrl);
+		mixctrl |= (sdhci_read32(&host->sdhci, IMX_SDHCI_MIXCTRL) & (0xF << 22));
+		sdhci_write32(&host->sdhci, IMX_SDHCI_MIXCTRL, mixctrl);
 	}
 
-	esdhc_write32(esdhc, SDHCI_TRANSFER_MODE__COMMAND, xfertyp);
+	sdhci_write32(&host->sdhci, SDHCI_TRANSFER_MODE__COMMAND, xfertyp);
 
 	/* Wait for the command to complete */
 	timeout = 10000;
-	while (!(esdhc_read32(esdhc, SDHCI_INT_STATUS) & SDHCI_INT_CMD_COMPLETE)) {
+	while (!(sdhci_read32(&host->sdhci, SDHCI_INT_STATUS) & SDHCI_INT_CMD_COMPLETE)) {
 		__udelay(1);
 		if (!timeout--)
 			return -ETIMEDOUT;
 	}
 
-	irqstat = esdhc_read32(esdhc, SDHCI_INT_STATUS);
-	esdhc_write32(esdhc, SDHCI_INT_STATUS, irqstat);
+	irqstat = sdhci_read32(&host->sdhci, SDHCI_INT_STATUS);
+	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, irqstat);
 
 	if (irqstat & CMD_ERR)
 		return -EIO;
@@ -176,20 +154,20 @@ esdhc_send_cmd(struct esdhc *esdhc, struct mci_cmd *cmd, struct mci_data *data)
 		return -ETIMEDOUT;
 
 	/* Copy the response to the response buffer */
-	cmd->response[0] = esdhc_read32(esdhc, SDHCI_RESPONSE_0);
+	cmd->response[0] = sdhci_read32(&host->sdhci, SDHCI_RESPONSE_0);
 
 	/* Wait until all of the blocks are transferred */
 	if (data) {
-		ret = esdhc_do_data(esdhc, data);
+		ret = esdhc_do_data(host, data);
 		if (ret)
 			return ret;
 	}
 
-	esdhc_write32(esdhc, SDHCI_INT_STATUS, -1);
+	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, -1);
 
 	/* Wait for the bus to be idle */
 	timeout = 10000;
-	while (esdhc_read32(esdhc, SDHCI_PRESENT_STATE) & (SDHCI_CMD_INHIBIT_CMD |
+	while (sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) & (SDHCI_CMD_INHIBIT_CMD |
 			SDHCI_CMD_INHIBIT_DATA | SDHCI_DATA_LINE_ACTIVE)) {
 		__udelay(1);
 		if (!timeout--)
@@ -199,22 +177,22 @@ esdhc_send_cmd(struct esdhc *esdhc, struct mci_cmd *cmd, struct mci_data *data)
 	return 0;
 }
 
-static int esdhc_read_blocks(struct esdhc *esdhc, void *dst, size_t len)
+static int esdhc_read_blocks(struct fsl_esdhc_host *host, void *dst, size_t len)
 {
 	struct mci_cmd cmd;
 	struct mci_data data;
 	u32 val;
 	int ret;
 
-	esdhc_write32(esdhc, SDHCI_INT_ENABLE,
+	sdhci_write32(&host->sdhci, SDHCI_INT_ENABLE,
 		      SDHCI_INT_CMD_COMPLETE | SDHCI_INT_XFER_COMPLETE |
 		      SDHCI_INT_CARD_INT | SDHCI_INT_TIMEOUT | SDHCI_INT_CRC |
 		      SDHCI_INT_END_BIT | SDHCI_INT_INDEX | SDHCI_INT_DATA_TIMEOUT |
 		      SDHCI_INT_DATA_CRC | SDHCI_INT_DATA_END_BIT | SDHCI_INT_DMA);
 
-	val = esdhc_read32(esdhc, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET);
+	val = sdhci_read32(&host->sdhci, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET);
 	val |= SYSCTL_HCKEN | SYSCTL_IPGEN;
-	esdhc_write32(esdhc, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET, val);
+	sdhci_write32(&host->sdhci, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET, val);
 
 	cmd.cmdidx = MMC_CMD_READ_MULTIPLE_BLOCK;
 	cmd.cmdarg = 0;
@@ -225,7 +203,7 @@ static int esdhc_read_blocks(struct esdhc *esdhc, void *dst, size_t len)
 	data.blocksize = SECTOR_SIZE;
 	data.flags = MMC_DATA_READ;
 
-	ret = esdhc_send_cmd(esdhc, &cmd, &data);
+	ret = esdhc_send_cmd(host, &cmd, &data);
 	if (ret) {
 		pr_debug("send command failed with %d\n", ret);
 		return ret;
@@ -235,13 +213,13 @@ static int esdhc_read_blocks(struct esdhc *esdhc, void *dst, size_t len)
 	cmd.cmdarg = 0;
 	cmd.resp_type = MMC_RSP_R1b;
 
-	esdhc_send_cmd(esdhc, &cmd, NULL);
+	esdhc_send_cmd(host, &cmd, NULL);
 
 	return 0;
 }
 
 #ifdef CONFIG_ARCH_IMX
-static int esdhc_search_header(struct esdhc *esdhc,
+static int esdhc_search_header(struct fsl_esdhc_host *host,
 			       struct imx_flash_header_v2 **header_pointer,
 			       void *buffer, u32 *offset)
 {
@@ -251,7 +229,7 @@ static int esdhc_search_header(struct esdhc *esdhc,
 	struct imx_flash_header_v2 *hdr;
 
 	for (i = 0; i < header_count; i++) {
-		ret = esdhc_read_blocks(esdhc, buf,
+		ret = esdhc_read_blocks(host, buf,
 					*offset + SZ_1K + SECTOR_SIZE);
 		if (ret)
 			return ret;
@@ -288,7 +266,7 @@ static int esdhc_search_header(struct esdhc *esdhc,
 }
 
 static int
-esdhc_start_image(struct esdhc *esdhc, ptrdiff_t address, ptrdiff_t entry,
+esdhc_start_image(struct fsl_esdhc_host *host, ptrdiff_t address, ptrdiff_t entry,
 		  u32 offset)
 {
 
@@ -301,7 +279,7 @@ esdhc_start_image(struct esdhc *esdhc, ptrdiff_t address, ptrdiff_t entry,
 	len = imx_image_size();
 	len = ALIGN(len, SECTOR_SIZE);
 
-	ret = esdhc_search_header(esdhc, &hdr, buf, &offset);
+	ret = esdhc_search_header(host, &hdr, buf, &offset);
 	if (ret)
 		return ret;
 
@@ -336,7 +314,7 @@ esdhc_start_image(struct esdhc *esdhc, ptrdiff_t address, ptrdiff_t entry,
 		buf = (void *)(entry - ofs);
 	}
 
-	ret = esdhc_read_blocks(esdhc, buf, offset + len);
+	ret = esdhc_read_blocks(host, buf, offset + len);
 	if (ret) {
 		pr_err("Loading image failed with %d\n", ret);
 		return ret;
@@ -351,32 +329,36 @@ esdhc_start_image(struct esdhc *esdhc, ptrdiff_t address, ptrdiff_t entry,
 	bb();
 }
 
-static void imx_esdhc_init(struct esdhc *esdhc)
+static void imx_esdhc_init(struct fsl_esdhc_host *host,
+			   struct esdhc_soc_data *data)
 {
-	esdhc->is_be = 0;
-	esdhc->is_mx6 = 1;
+	data->flags = ESDHC_FLAG_USDHC;
+	host->socdata = data;
+	esdhc_populate_sdhci(host);
 
-	esdhc_write32(esdhc, IMX_SDHCI_WML,
+	sdhci_write32(&host->sdhci, IMX_SDHCI_WML,
 		      FIELD_PREP(WML_WR_BRST_LEN, 16)         |
 		      FIELD_PREP(WML_WR_WML_MASK, SECTOR_WML) |
 		      FIELD_PREP(WML_RD_BRST_LEN, 16)         |
 		      FIELD_PREP(WML_RD_WML_MASK, SECTOR_WML));
 }
 
-static int imx8_esdhc_init(struct esdhc *esdhc, int instance)
+static int imx8_esdhc_init(struct fsl_esdhc_host *host,
+			   struct esdhc_soc_data *data,
+			   int instance)
 {
 	switch (instance) {
 	case 0:
-		esdhc->regs = IOMEM(MX8MQ_USDHC1_BASE_ADDR);
+		host->regs = IOMEM(MX8MQ_USDHC1_BASE_ADDR);
 		break;
 	case 1:
-		esdhc->regs = IOMEM(MX8MQ_USDHC2_BASE_ADDR);
+		host->regs = IOMEM(MX8MQ_USDHC2_BASE_ADDR);
 		break;
 	default:
 		return -EINVAL;
 	}
 
-	imx_esdhc_init(esdhc);
+	imx_esdhc_init(host, data);
 
 	return 0;
 }
@@ -395,28 +377,29 @@ static int imx8_esdhc_init(struct esdhc *esdhc, int instance)
  */
 int imx6_esdhc_start_image(int instance)
 {
-	struct esdhc esdhc;
+	struct esdhc_soc_data data;
+	struct fsl_esdhc_host host;
 
 	switch (instance) {
 	case 0:
-		esdhc.regs = IOMEM(MX6_USDHC1_BASE_ADDR);
+		host.regs = IOMEM(MX6_USDHC1_BASE_ADDR);
 		break;
 	case 1:
-		esdhc.regs = IOMEM(MX6_USDHC2_BASE_ADDR);
+		host.regs = IOMEM(MX6_USDHC2_BASE_ADDR);
 		break;
 	case 2:
-		esdhc.regs = IOMEM(MX6_USDHC3_BASE_ADDR);
+		host.regs = IOMEM(MX6_USDHC3_BASE_ADDR);
 		break;
 	case 3:
-		esdhc.regs = IOMEM(MX6_USDHC4_BASE_ADDR);
+		host.regs = IOMEM(MX6_USDHC4_BASE_ADDR);
 		break;
 	default:
 		return -EINVAL;
 	}
 
-	imx_esdhc_init(&esdhc);
+	imx_esdhc_init(&host, &data);
 
-	return esdhc_start_image(&esdhc, 0x10000000, 0x10000000, 0);
+	return esdhc_start_image(&host, 0x10000000, 0x10000000, 0);
 }
 
 /**
@@ -433,14 +416,15 @@ int imx6_esdhc_start_image(int instance)
  */
 int imx8_esdhc_start_image(int instance)
 {
-	struct esdhc esdhc;
+	struct esdhc_soc_data data;
+	struct fsl_esdhc_host host;
 	int ret;
 
-	ret = imx8_esdhc_init(&esdhc, instance);
+	ret = imx8_esdhc_init(&host, &data, instance);
 	if (ret)
 		return ret;
 
-	return esdhc_start_image(&esdhc, MX8MQ_DDR_CSD1_BASE_ADDR,
+	return esdhc_start_image(&host, MX8MQ_DDR_CSD1_BASE_ADDR,
 				 MX8MQ_ATF_BL33_BASE_ADDR, SZ_32K);
 }
 
@@ -448,11 +432,12 @@ int imx8_esdhc_load_piggy(int instance)
 {
 	void *buf, *piggy;
 	struct imx_flash_header_v2 *hdr = NULL;
-	struct esdhc esdhc;
+	struct esdhc_soc_data data;
+	struct fsl_esdhc_host host;
 	int ret, len;
 	int offset = SZ_32K;
 
-	ret = imx8_esdhc_init(&esdhc, instance);
+	ret = imx8_esdhc_init(&host, &data, instance);
 	if (ret)
 		return ret;
 
@@ -463,14 +448,14 @@ int imx8_esdhc_load_piggy(int instance)
 	 */
 	buf = (void *)MX8MQ_ATF_BL33_BASE_ADDR + SZ_32M;
 
-	ret = esdhc_search_header(&esdhc, &hdr, buf, &offset);
+	ret = esdhc_search_header(&host, &hdr, buf, &offset);
 	if (ret)
 		return ret;
 
 	len = offset + hdr->boot_data.size + piggydata_size();
 	len = ALIGN(len, SECTOR_SIZE);
 
-	ret = esdhc_read_blocks(&esdhc, buf, len);
+	ret = esdhc_read_blocks(&host, buf, len);
 
 	/*
 	 * Calculate location of the piggydata at the offset loaded into RAM
@@ -508,29 +493,33 @@ int ls1046a_esdhc_start_image(unsigned long r0, unsigned long r1, unsigned long 
 {
 	int ret;
 	uint32_t val;
-	struct esdhc esdhc = {
+	struct esdhc_soc_data data = {
+		.flags = ESDHC_FLAG_BIGENDIAN,
+	};
+	struct fsl_esdhc_host host = {
 		.regs = IOMEM(0x01560000),
-		.is_be = true,
+		.socdata = &data,
 	};
 	unsigned long sdram = 0x80000000;
 	void (*barebox)(unsigned long, unsigned long, unsigned long) =
 		(void *)(sdram + LS1046A_SD_IMAGE_OFFSET);
 
-	esdhc_write32(&esdhc, IMX_SDHCI_WML, 0);
+	esdhc_populate_sdhci(&host);
+	sdhci_write32(&host.sdhci, IMX_SDHCI_WML, 0);
 
 	/*
 	 * The ROM leaves us here with a clock frequency of around 400kHz. Speed
 	 * this up a bit. FIXME: The resulting frequency has not yet been verified
 	 * to work on all cards.
 	 */
-	val = esdhc_read32(&esdhc, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET);
+	val = sdhci_read32(&host.sdhci, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET);
 	val &= ~0x0000fff0;
 	val |= (8 << 8) | (3 << 4);
-	esdhc_write32(&esdhc, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET, val);
+	sdhci_write32(&host.sdhci, SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET, val);
 
-	esdhc_write32(&esdhc, ESDHC_DMA_SYSCTL, ESDHC_SYSCTL_DMA_SNOOP);
+	sdhci_write32(&host.sdhci, ESDHC_DMA_SYSCTL, ESDHC_SYSCTL_DMA_SNOOP);
 
-	ret = esdhc_read_blocks(&esdhc, (void *)sdram,
+	ret = esdhc_read_blocks(&host, (void *)sdram,
 			ALIGN(barebox_image_size + LS1046A_SD_IMAGE_OFFSET, 512));
 	if (ret) {
 		pr_err("%s: reading blocks failed with: %d\n", __func__, ret);

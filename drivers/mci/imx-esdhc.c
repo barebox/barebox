@@ -39,130 +39,12 @@
 #include "sdhci.h"
 #include "imx-esdhc.h"
 
-/*
- * The CMDTYPE of the CMD register (offset 0xE) should be set to
- * "11" when the STOP CMD12 is issued on imx53 to abort one
- * open ended multi-blk IO. Otherwise the TC INT wouldn't
- * be generated.
- * In exact block transfer, the controller doesn't complete the
- * operations automatically as required at the end of the
- * transfer and remains on hold if the abort command is not sent.
- * As a result, the TC flag is not asserted and SW  received timeout
- * exeception. Bit1 of Vendor Spec registor is used to fix it.
- */
-#define ESDHC_FLAG_MULTIBLK_NO_INT	BIT(1)
-/*
- * The flag enables the workaround for ESDHC errata ENGcm07207 which
- * affects i.MX25 and i.MX35.
- */
-#define ESDHC_FLAG_ENGCM07207		BIT(2)
-/*
- * The flag tells that the ESDHC controller is an USDHC block that is
- * integrated on the i.MX6 series.
- */
-#define ESDHC_FLAG_USDHC		BIT(3)
-/* The IP supports manual tuning process */
-#define ESDHC_FLAG_MAN_TUNING		BIT(4)
-/* The IP supports standard tuning process */
-#define ESDHC_FLAG_STD_TUNING		BIT(5)
-/* The IP has SDHCI_CAPABILITIES_1 register */
-#define ESDHC_FLAG_HAVE_CAP1		BIT(6)
-
-/*
- * The IP has errata ERR004536
- * uSDHC: ADMA Length Mismatch Error occurs if the AHB read access is slow,
- * when reading data from the card
- */
-#define ESDHC_FLAG_ERR004536		BIT(7)
-/* The IP supports HS200 mode */
-#define ESDHC_FLAG_HS200		BIT(8)
-/* The IP supports HS400 mode */
-#define ESDHC_FLAG_HS400		BIT(9)
-
-/* Need to access registers in bigendian mode */
-#define ESDHC_FLAG_BIGENDIAN		BIT(10)
-/* Enable cache snooping */
-#define ESDHC_FLAG_CACHE_SNOOPING	BIT(11)
 
 #define PRSSTAT_DAT0  0x01000000
 #define PRSSTAT_SDSTB 0x00000008
 
-struct esdhc_soc_data {
-	u32 flags;
-	const char *clkidx;
-};
-
-struct fsl_esdhc_host {
-	struct mci_host		mci;
-	void __iomem		*regs;
-	struct device_d		*dev;
-	struct clk		*clk;
-	const struct esdhc_soc_data *socdata;
-	struct sdhci	sdhci;
-};
 
 #define to_fsl_esdhc(mci)	container_of(mci, struct fsl_esdhc_host, mci)
-
-static inline int esdhc_is_usdhc(struct fsl_esdhc_host *data)
-{
-	return !!(data->socdata->flags & ESDHC_FLAG_USDHC);
-}
-
-static inline struct fsl_esdhc_host *sdhci_to_esdhc(struct sdhci *sdhci)
-{
-	return container_of(sdhci, struct fsl_esdhc_host, sdhci);
-}
-
-static u32 esdhc_op_read32_le(struct sdhci *sdhci, int reg)
-{
-	struct fsl_esdhc_host *host = sdhci_to_esdhc(sdhci);
-
-	return readl(host->regs + reg);
-}
-
-static u32 esdhc_op_read32_be(struct sdhci *sdhci, int reg)
-{
-	struct fsl_esdhc_host *host = sdhci_to_esdhc(sdhci);
-
-	return in_be32(host->regs + reg);
-}
-
-static void esdhc_op_write32_le(struct sdhci *sdhci, int reg, u32 val)
-{
-	struct fsl_esdhc_host *host = sdhci_to_esdhc(sdhci);
-
-	writel(val, host->regs + reg);
-}
-
-static void esdhc_op_write32_be(struct sdhci *sdhci, int reg, u32 val)
-{
-	struct fsl_esdhc_host *host = sdhci_to_esdhc(sdhci);
-
-	out_be32(host->regs + reg, val);
-}
-
-static inline void esdhc_clrsetbits32(struct fsl_esdhc_host *host, unsigned int reg,
-				      u32 clear, u32 set)
-{
-	u32 val;
-
-	val = sdhci_read32(&host->sdhci, reg);
-	val &= ~clear;
-	val |= set;
-	sdhci_write32(&host->sdhci, reg, val);
-}
-
-static inline void esdhc_clrbits32(struct fsl_esdhc_host *host, unsigned int reg,
-				      u32 clear)
-{
-	esdhc_clrsetbits32(host, reg, clear, 0);
-}
-
-static inline void esdhc_setbits32(struct fsl_esdhc_host *host, unsigned int reg,
-				   u32 set)
-{
-	esdhc_clrsetbits32(host, reg, 0, set);
-}
 
 static int esdhc_setup_data(struct fsl_esdhc_host *host, struct mci_data *data,
 			    dma_addr_t dma)
@@ -578,13 +460,7 @@ static int fsl_esdhc_probe(struct device_d *dev)
 	}
 	host->regs = IOMEM(iores->start);
 
-	if (host->socdata->flags & ESDHC_FLAG_BIGENDIAN) {
-		host->sdhci.read32 = esdhc_op_read32_be;
-		host->sdhci.write32 = esdhc_op_write32_be;
-	} else {
-		host->sdhci.read32 = esdhc_op_read32_le;
-		host->sdhci.write32 = esdhc_op_write32_le;
-	}
+	esdhc_populate_sdhci(host);
 
 	caps = sdhci_read32(&host->sdhci, SDHCI_CAPABILITIES);
 

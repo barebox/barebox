@@ -129,13 +129,6 @@ struct fsl_esdhc_host {
 	struct sdhci	sdhci;
 };
 
-struct fsl_esdhc_dma_transfer {
-	dma_addr_t dma;
-	unsigned int size;
-	enum dma_data_direction dir;
-};
-
-
 static inline int esdhc_is_usdhc(struct fsl_esdhc_host *data)
 {
 	return !!(data->socdata->flags & ESDHC_FLAG_USDHC);
@@ -173,12 +166,10 @@ esdhc_setbits32(struct fsl_esdhc_host *host, unsigned int reg,
 }
 
 void esdhc_populate_sdhci(struct fsl_esdhc_host *host);
-int esdhc_setup_data(struct fsl_esdhc_host *host, struct mci_data *data,
-		     struct fsl_esdhc_dma_transfer *tr);
-int esdhc_do_data(struct fsl_esdhc_host *host, struct mci_data *data,
-		  struct fsl_esdhc_dma_transfer *tr);
 int esdhc_poll(struct fsl_esdhc_host *host, unsigned int off,
 	       unsigned int mask, unsigned int val,
 	       uint64_t timeout);
+int __esdhc_send_cmd(struct fsl_esdhc_host *host, struct mci_cmd *cmd,
+		     struct mci_data *data);
 
 #endif  /* __FSL_ESDHC_H__ */

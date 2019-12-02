@@ -105,6 +105,7 @@ config MCI_IMX_ESDHC_PIO
 
 config MCI_IMX_ESDHC_PBL
 	bool
+        select MCI_SDHCI
 
 config MCI_OMAP_HSMMC
 	bool "OMAP HSMMC"

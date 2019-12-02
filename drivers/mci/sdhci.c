@@ -88,6 +88,19 @@ static void sdhci_tx_pio(struct sdhci *sdhci, struct mci_data *data,
 		sdhci_write32(sdhci, SDHCI_BUFFER, buf[i]);
 }
 
+#ifdef __PBL__
+/*
+ * Stubs to make timeout logic below work in PBL
+ */
+
+#define get_time_ns()		0
+/*
+ * Use time in us as a busy counter timeout value
+ */
+#define is_timeout(s, t)	((s)++ > ((t) / 1000))
+
+#endif
+
 int sdhci_transfer_data(struct sdhci *sdhci, struct mci_data *data)
 {
 	unsigned int block = 0;

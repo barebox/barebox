@@ -66,40 +66,7 @@ static u32 esdhc_xfertyp(struct mci_cmd *cmd, struct mci_data *data)
 
 static int esdhc_do_data(struct fsl_esdhc_host *host, struct mci_data *data)
 {
-	char *buffer;
-	u32 databuf;
-	u32 size;
-	u32 irqstat;
-	u32 present;
-
-	buffer = data->dest;
-
-	size = data->blocksize * data->blocks;
-	irqstat = sdhci_read32(&host->sdhci, SDHCI_INT_STATUS);
-
-	while (size) {
-		int i;
-		int timeout = 1000000;
-
-		while (1) {
-			present = sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) & SDHCI_BUFFER_READ_ENABLE;
-			if (present)
-				break;
-			if (!--timeout) {
-				pr_err("read time out\n");
-				return -ETIMEDOUT;
-			}
-		}
-
-		for (i = 0; i < SECTOR_WML; i++) {
-			databuf = sdhci_read32(&host->sdhci, SDHCI_BUFFER);
-			*((u32 *)buffer) = databuf;
-			buffer += 4;
-			size -= 4;
-		}
-	}
-
-	return 0;
+	return sdhci_transfer_data(&host->sdhci, data);
 }
 
 static int

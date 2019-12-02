@@ -236,8 +236,6 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 
 	/* Set up for a data transfer if we have one */
 	if (data) {
-		int err;
-
 		if (!IS_ENABLED(CONFIG_MCI_IMX_ESDHC_PIO)) {
 			num_bytes = data->blocks * data->blocksize;
 
@@ -254,9 +252,9 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 				return -EFAULT;
 		}
 
-		err = esdhc_setup_data(host, data, dma);
-		if(err)
-			return err;
+		ret = esdhc_setup_data(host, data, dma);
+		if (ret)
+			return ret;
 	}
 
 	sdhci_set_cmd_xfer_mode(&host->sdhci, cmd, data,

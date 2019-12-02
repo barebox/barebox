@@ -37,33 +37,6 @@ static void __udelay(int us)
 	for (i = 0; i < us * 4; i++);
 }
 
-static u32 esdhc_xfertyp(struct mci_cmd *cmd, struct mci_data *data)
-{
-	u32 xfertyp = 0;
-	u32 command = 0;
-
-	if (data) {
-		command |= SDHCI_DATA_PRESENT;
-		xfertyp |= SDHCI_MULTIPLE_BLOCKS | SDHCI_BLOCK_COUNT_EN |
-			   SDHCI_DATA_TO_HOST;
-	}
-
-	if (cmd->resp_type & MMC_RSP_CRC)
-		command |= SDHCI_CMD_CRC_CHECK_EN;
-	if (cmd->resp_type & MMC_RSP_OPCODE)
-		xfertyp |= SDHCI_CMD_INDEX_CHECK_EN;
-	if (cmd->resp_type & MMC_RSP_136)
-		command |= SDHCI_RESP_TYPE_136;
-	else if (cmd->resp_type & MMC_RSP_BUSY)
-		command |= SDHCI_RESP_TYPE_48_BUSY;
-	else if (cmd->resp_type & MMC_RSP_PRESENT)
-		command |= SDHCI_RESP_TYPE_48;
-
-	command |= SDHCI_CMD_INDEX(cmd->cmdidx);
-
-	return command << 16 | xfertyp;
-}
-
 static int esdhc_do_data(struct fsl_esdhc_host *host, struct mci_data *data)
 {
 	return sdhci_transfer_data(&host->sdhci, data);
@@ -72,7 +45,7 @@ static int esdhc_do_data(struct fsl_esdhc_host *host, struct mci_data *data)
 static int
 esdhc_send_cmd(struct fsl_esdhc_host *host, struct mci_cmd *cmd, struct mci_data *data)
 {
-	u32	xfertyp, mixctrl;
+	u32	xfertyp, mixctrl, command;
 	u32	irqstat;
 	int ret;
 	int timeout;
@@ -87,8 +60,12 @@ esdhc_send_cmd(struct fsl_esdhc_host *host, struct mci_cmd *cmd, struct mci_data
 		sdhci_write32(&host->sdhci, SDHCI_BLOCK_SIZE__BLOCK_COUNT, data->blocks << 16 | SECTOR_SIZE);
 	}
 
-	/* Figure out the transfer arguments */
-	xfertyp = esdhc_xfertyp(cmd, data);
+	sdhci_set_cmd_xfer_mode(&host->sdhci, cmd, data,
+				false, &command, &xfertyp);
+
+	if ((host->socdata->flags & ESDHC_FLAG_MULTIBLK_NO_INT) &&
+	    (cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION))
+		command |= SDHCI_COMMAND_CMDTYP_ABORT;
 
 	/* Send the command */
 	sdhci_write32(&host->sdhci, SDHCI_ARGUMENT, cmd->cmdarg);
@@ -101,7 +78,9 @@ esdhc_send_cmd(struct fsl_esdhc_host *host, struct mci_cmd *cmd, struct mci_data
 		sdhci_write32(&host->sdhci, IMX_SDHCI_MIXCTRL, mixctrl);
 	}
 
-	sdhci_write32(&host->sdhci, SDHCI_TRANSFER_MODE__COMMAND, xfertyp);
+
+	sdhci_write32(&host->sdhci, SDHCI_TRANSFER_MODE__COMMAND,
+		      command << 16 | xfertyp);
 
 	/* Wait for the command to complete */
 	timeout = 10000;

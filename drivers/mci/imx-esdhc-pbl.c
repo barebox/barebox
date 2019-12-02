@@ -139,13 +139,7 @@ esdhc_send_cmd(struct esdhc *esdhc, struct mci_cmd *cmd, struct mci_data *data)
 	__udelay(1);
 
 	if (data) {
-		unsigned long dest = (unsigned long)data->dest;
-
-		if (dest > 0xffffffff)
-			return -EINVAL;
-
 		/* Set up for a data transfer if we have one */
-		esdhc_write32(esdhc, SDHCI_DMA_ADDRESS, (u32)dest);
 		esdhc_write32(esdhc, SDHCI_BLOCK_SIZE__BLOCK_COUNT, data->blocks << 16 | SECTOR_SIZE);
 	}
 

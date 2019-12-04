@@ -115,6 +115,17 @@ struct pci_dev {
 };
 #define	to_pci_dev(d) container_of(d, struct pci_dev, dev)
 
+#define pci_resource_start(dev, bar)	((dev)->resource[(bar)].start)
+#define pci_resource_end(dev, bar)	((dev)->resource[(bar)].end)
+#define pci_resource_flags(dev, bar)	((dev)->resource[(bar)].flags)
+#define pci_resource_len(dev,bar) \
+	((pci_resource_start((dev), (bar)) == 0 &&	\
+	  pci_resource_end((dev), (bar)) ==		\
+	  pci_resource_start((dev), (bar))) ? 0 :	\
+							\
+	 (pci_resource_end((dev), (bar)) -		\
+	  pci_resource_start((dev), (bar)) + 1))
+
 enum {
 	PCI_BUS_RESOURCE_IO = 0,
 	PCI_BUS_RESOURCE_MEM = 1,
@@ -209,6 +220,20 @@ struct pci_driver {
 #define PCI_DEVICE(vend, dev) \
 	.vendor = (vend), .device = (dev), \
 	.subvendor = PCI_ANY_ID, .subdevice = PCI_ANY_ID
+
+/**
+ * PCI_DEVICE_SUB - macro used to describe a specific PCI device with subsystem
+ * @vend: the 16 bit PCI Vendor ID
+ * @dev: the 16 bit PCI Device ID
+ * @subvend: the 16 bit PCI Subvendor ID
+ * @subdev: the 16 bit PCI Subdevice ID
+ *
+ * This macro is used to create a struct pci_device_id that matches a
+ * specific device with subsystem information.
+ */
+#define PCI_DEVICE_SUB(vend, dev, subvend, subdev) \
+	.vendor = (vend), .device = (dev), \
+	.subvendor = (subvend), .subdevice = (subdev)
 
 /**
  * PCI_DEVICE_CLASS - macro used to describe a specific pci device class
@@ -349,5 +374,14 @@ enum pci_fixup_pass {
 		hook, vendor, device, PCI_ANY_ID, 0, hook)
 
 void pci_fixup_device(enum pci_fixup_pass pass, struct pci_dev *dev);
+
+#ifdef CONFIG_PCI
+const struct pci_device_id *pci_match_id(const struct pci_device_id *ids,
+					 struct pci_dev *dev);
+#else
+static inline const struct pci_device_id *pci_match_id(const struct pci_device_id *ids,
+							 struct pci_dev *dev)
+{ return NULL; }
+#endif
 
 #endif /* LINUX_PCI_H */

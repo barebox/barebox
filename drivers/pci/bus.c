@@ -23,6 +23,32 @@ pci_match_one_device(const struct pci_device_id *id, const struct pci_dev *dev)
 	return NULL;
 }
 
+/**
+ * pci_match_id - See if a pci device matches a given pci_id table
+ * @ids: array of PCI device id structures to search in
+ * @dev: the PCI device structure to match against.
+ *
+ * Used by a driver to check whether a PCI device present in the
+ * system is in its list of supported devices.  Returns the matching
+ * pci_device_id structure or %NULL if there is no match.
+ *
+ * Deprecated, don't use this as it will not catch any dynamic ids
+ * that a driver might want to check for.
+ */
+const struct pci_device_id *pci_match_id(const struct pci_device_id *ids,
+					 struct pci_dev *dev)
+{
+	if (ids) {
+		while (ids->vendor || ids->subvendor || ids->class_mask) {
+			if (pci_match_one_device(ids, dev))
+				return ids;
+			ids++;
+		}
+	}
+	return NULL;
+}
+EXPORT_SYMBOL(pci_match_id);
+
 static int pci_match(struct device_d *dev, struct driver_d *drv)
 {
 	struct pci_dev *pdev = to_pci_dev(dev);

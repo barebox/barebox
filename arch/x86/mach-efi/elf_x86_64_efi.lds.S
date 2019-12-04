@@ -58,12 +58,7 @@ SECTIONS
 	. = ALIGN(4096);
 
 	.rela : {
-		*(.rela.data*)
-		*(.rela.barebox*)
-		*(.rela.initcall*)
-		*(.rela.exitcall*)
-		*(.rela.got)
-		*(.rela.stab)
+		*(.rela*)
 	}
 
 	. = ALIGN(4096);

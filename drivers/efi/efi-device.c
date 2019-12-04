@@ -386,16 +386,9 @@ static int efi_is_setup_mode(void)
 	return ret != 1;
 }
 
-static int is_bio_usbdev(struct efi_device *efidev)
+static bool is_bio_usbdev(struct efi_device *efidev)
 {
-	int i;
-
-	for (i = 0; i < efidev->num_guids; i++) {
-		if (!efi_guidcmp(efidev->guids[i], EFI_USB_IO_PROTOCOL_GUID))
-			return 1;
-	}
-
-	return 0;
+	return efi_device_has_guid(efidev, EFI_USB_IO_PROTOCOL_GUID);
 }
 
 static struct efi_device *bootdev;

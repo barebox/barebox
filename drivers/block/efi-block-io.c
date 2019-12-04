@@ -131,16 +131,9 @@ static void efi_bio_print_info(struct efi_bio_priv *priv)
 			media->optimal_transfer_length_granularity);
 }
 
-static int is_bio_usbdev(struct efi_device *efidev)
+static bool is_bio_usbdev(struct efi_device *efidev)
 {
-	int i;
-
-	for (i = 0; i < efidev->num_guids; i++) {
-		if (!efi_guidcmp(efidev->guids[i], EFI_USB_IO_PROTOCOL_GUID))
-			return 1;
-	}
-
-	return 0;
+	return efi_device_has_guid(efidev, EFI_USB_IO_PROTOCOL_GUID);
 }
 
 static int efi_bio_probe(struct efi_device *efidev)

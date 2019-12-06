@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Generate the default environment file from a list of directories
 # usage: genenv <basedir> <objdir> <target> <dir>...

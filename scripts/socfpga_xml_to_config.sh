@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ## TODO:
 ## - read in mpuclk and nocclk, must be calculated by hand at the moment

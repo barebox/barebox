@@ -450,6 +450,9 @@ static int imx6_ccm_probe(struct device_d *dev)
 		clk_set_parent(clks[IMX6ULL_CLK_EPDC_PRE_SEL],
 				clks[IMX6UL_CLK_PLL3_PFD2]);
 
+	/* Disable GPMI_IO clk before reparenting to avoid glitches */
+	clks[IMX6UL_CLK_GPMI_IO]->ops->disable(clks[IMX6UL_CLK_GPMI_IO]);
+
 	clk_set_parent(clks[IMX6UL_CLK_ENFC_SEL], clks[IMX6UL_CLK_PLL2_PFD2]);
 
 	return 0;

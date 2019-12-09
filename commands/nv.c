@@ -50,6 +50,11 @@ static int do_nv(int argc, char *argv[])
 	}
 
 	if (do_save) {
+		if (!IS_ENABLED(CONFIG_ENV_HANDLING)) {
+			printf("Error: Current configuration does not support saving variables\n");
+			return COMMAND_ERROR;
+		}
+
 		return nvvar_save();
 	}
 

@@ -75,12 +75,18 @@ static int nv_save(const char *name, const char *val)
 	if (ret)
 		return ret;
 
-	if (once) {
-		pr_info("nv variable modified, will save nv variables on shutdown\n");
-		once = 0;
+	if (IS_ENABLED(CONFIG_ENV_HANDLING)) {
+		if (once) {
+			pr_info("nv variable modified, will save nv variables on shutdown\n");
+			once = 0;
+		}
+		nv_dirty = 1;
+	} else {
+		if (once) {
+			pr_info("nv variable modified, but won't be saved in this configuration\n");
+			once = 0;
+		}
 	}
-
-	nv_dirty = 1;
 
 	return 0;
 }

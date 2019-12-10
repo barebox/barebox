@@ -155,12 +155,12 @@ int unregister_device(struct device_d *);
 /* Iterate over a devices children
  */
 #define device_for_each_child(dev, child) \
-	list_for_each_entry(child, &dev->children, sibling)
+	list_for_each_entry(child, &(dev)->children, sibling)
 
 /* Iterate over a devices children - Safe against removal version
  */
 #define device_for_each_child_safe(dev, tmpdev, child) \
-	list_for_each_entry_safe(child, tmpdev, &dev->children, sibling)
+	list_for_each_entry_safe(child, tmpdev, &(dev)->children, sibling)
 
 /* Iterate through the devices of a given type. if last is NULL, the
  * first device of this type is returned. Put this pointer in as

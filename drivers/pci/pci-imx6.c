@@ -97,8 +97,6 @@ struct imx6_pcie {
 #define PCIE_PL_PFLR (PL_OFFSET + 0x08)
 #define PCIE_PL_PFLR_LINK_STATE_MASK		(0x3f << 16)
 #define PCIE_PL_PFLR_FORCE_LINK			(1 << 15)
-#define PCIE_PHY_DEBUG_R0 (PL_OFFSET + 0x28)
-#define PCIE_PHY_DEBUG_R1_XMLH_LINK_IN_TRAINING	(1 << 29)
 #define PCIE_PHY_DEBUG_R1_XMLH_LINK_UP		(1 << 4)
 
 #define PCIE_PHY_CTRL (PL_OFFSET + 0x114)
@@ -112,7 +110,6 @@ struct imx6_pcie {
 #define PCIE_PHY_STAT_ACK_LOC 16
 
 #define PCIE_LINK_WIDTH_SPEED_CONTROL	0x80C
-#define PORT_LOGIC_SPEED_CHANGE		(0x1 << 17)
 
 /* PHY registers (not memory-mapped) */
 #define PCIE_PHY_RX_ASIC_OUT 0x100D
@@ -636,8 +633,8 @@ static int imx6_pcie_establish_link(struct imx6_pcie *imx6_pcie)
 
 err_reset_phy:
        dev_dbg(dev, "PHY DEBUG_R0=0x%08x DEBUG_R1=0x%08x\n",
-               dw_pcie_readl_dbi(pci, PCIE_PHY_DEBUG_R0),
-               dw_pcie_readl_dbi(pci, PCIE_PHY_DEBUG_R1));
+               dw_pcie_readl_dbi(pci, PCIE_PORT_DEBUG0),
+               dw_pcie_readl_dbi(pci, PCIE_PORT_DEBUG1));
        imx6_pcie_reset_phy(imx6_pcie);
 
        return ret;
@@ -659,8 +656,8 @@ static int imx6_pcie_host_init(struct pcie_port *pp)
 
 static int imx6_pcie_link_up(struct dw_pcie *pci)
 {
-	return dw_pcie_readl_dbi(pci, PCIE_PHY_DEBUG_R1) &
-		PCIE_PHY_DEBUG_R1_XMLH_LINK_UP;
+	return dw_pcie_readl_dbi(pci, PCIE_PORT_DEBUG1) &
+		PCIE_PORT_DEBUG1_LINK_UP;
 }
 
 static const struct dw_pcie_ops dw_pcie_ops = {

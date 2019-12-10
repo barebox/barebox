@@ -45,4 +45,16 @@ int efi_connect_all(void);
 void efi_register_devices(void);
 struct efi_device *efi_get_bootsource(void);
 
+static inline bool efi_device_has_guid(struct efi_device *efidev, efi_guid_t guid)
+{
+	int i;
+
+	for (i = 0; i < efidev->num_guids; i++) {
+		if (!efi_guidcmp(efidev->guids[i], guid))
+			return true;
+	}
+
+	return false;
+}
+
 #endif /* __EFI_EFI_DEVICE_H */

@@ -361,7 +361,7 @@ efi_status_t efi_main(efi_handle_t image, efi_system_table_t *sys_table)
 	if (EFI_ERROR(efiret))
 		panic("failed to allocate malloc pool: %s\n",
 		      efi_strerror(efiret));
-	mem_malloc_init((void *)mem, (void *)mem + memsize);
+	mem_malloc_init((void *)mem, (void *)mem + memsize - 1);
 
 	start_barebox();
 

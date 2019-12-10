@@ -97,6 +97,14 @@ config DRIVER_SERIAL_NS16550_OMAP_EXTENSIONS
 	help
 	  Say Y here if you are using OMAP extensions to NS16550
 
+config DRIVER_SERIAL_NS16550_PCI
+	depends on DRIVER_SERIAL_NS16550
+	depends on PCI
+	default y
+	bool "NS16550 PCI serial driver"
+	help
+	  Enable this to get support for NS16550 UARTs connected over PCI
+
 config DRIVER_SERIAL_PL010
 	depends on ARCH_EP93XX
 	default y

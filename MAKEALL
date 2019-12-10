@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Print statistics when we exit
 trap exit 1 2 3 15

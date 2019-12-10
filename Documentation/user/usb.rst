@@ -172,7 +172,7 @@ and initrd:
 
 .. code-block:: sh
 
-  #!/bin/bash
+  #!/usr/bin/env bash
 
   set -e
   set -v

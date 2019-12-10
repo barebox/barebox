@@ -6,7 +6,9 @@ Common leds properties
 
     * ``heartbeat`` - LED flashes at a constant rate
     * ``panic`` - LED turns on when barebox panics
-    * ``net`` - LED indicates network activity
+    * ``net`` - LED indicates network activity (tx and rx)
+    * ``net-rx`` - LED indicates network activity (rx only)
+    * ``net-tx`` - LED indicates network activity (tx only)
 
 * ``label``: The label for this LED. If omitted, the label is taken
   from the node name (excluding the unit address).

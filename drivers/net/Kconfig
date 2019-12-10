@@ -90,8 +90,9 @@ endif
 config DRIVER_NET_DESIGNWARE_EQOS
 	bool "Designware Designware Ethernet QoS support"
 	depends on HAS_DMA
+	depends on COMMON_CLK
+	depends on OFTREE
 	select PHYLIB
-	select OFTREE
 	help
 	  This option enables support for the Synopsys
 	  Designware Ethernet Quality-of-Service (GMAC4).

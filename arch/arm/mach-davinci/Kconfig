@@ -9,6 +9,8 @@ choice
 
 config MACH_VIRT2REAL
 	bool "Virt2Real"
+	select OFTREE
+	select OFDEVICE
 
 endchoice
 

@@ -6,6 +6,7 @@ comment "USB Miscellaneous drivers"
 config USB_HUB_USB251XB
 	bool "USB251XB Hub Controller Configuration Driver"
 	depends on I2C
+	depends on OFDEVICE
 	select NLS
 	help
 	  This option enables support for configuration via SMBus of the

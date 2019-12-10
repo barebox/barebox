@@ -68,7 +68,12 @@ long	get_ram_size  (volatile long *, long);
 /* common/console.c */
 int ctrlc(void);
 int arch_ctrlc(void);
+
+#ifdef CONFIG_CONSOLE_FULL
 void ctrlc_handled(void);
+#else
+static inline void ctrlc_handled(void) { }
+#endif
 
 #ifdef CONFIG_ARCH_HAS_STACK_DUMP
 void dump_stack(void);

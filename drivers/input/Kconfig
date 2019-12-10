@@ -66,6 +66,7 @@ config KEYBOARD_USB
 
 config INPUT_SPECIALKEYS
 	bool "Special keys handler"
+	select POLLER
 	select INPUT
 	help
 	  Say Y here to handle key events like KEY_RESTART and KEY_POWER.

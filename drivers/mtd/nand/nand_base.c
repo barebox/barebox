@@ -407,7 +407,7 @@ static int nand_block_markbad_lowlevel(struct mtd_info *mtd, loff_t ofs)
 	}
 
 	/* Mark block bad in BBT */
-	if (chip->bbt) {
+	if (IS_ENABLED(CONFIG_NAND_BBT) && chip->bbt) {
 		res = nand_markbad_bbt(mtd, ofs);
 		if (!ret)
 			ret = res;
@@ -458,7 +458,7 @@ static int nand_block_markgood_lowlevel(struct mtd_info *mtd, loff_t ofs)
 	}
 
 	/* Mark block good in BBT */
-	if (chip->bbt) {
+	if (IS_ENABLED(CONFIG_NAND_BBT) && chip->bbt) {
 		ret = nand_markgood_bbt(mtd, ofs);
 		if (ret)
 			return ret;

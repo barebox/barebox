@@ -30,5 +30,8 @@ config MACH_LS1046ARDB
 config MACH_TQMLS1046A
 	bool "TQ TQMLS1046A Board"
 	select ARCH_LS1046
+	select MCI_IMX_ESDHC_PBL
+	select DDR_FSL
+	select DDR_FSL_DDR4
 
 endif

@@ -105,6 +105,11 @@ config LIBFDT
 
 config RATP
 	select CRC_ITU_T
+	select COMPILE_MEMORY
+	select COMMAND_SUPPORT
+	select POLLER
+	depends on CONSOLE_FULL
+	depends on !SHELL_NONE
 	bool "RATP protocol support"
 	help
 	  Reliable Asynchronous Transfer Protocol (RATP) is a protocol for reliably

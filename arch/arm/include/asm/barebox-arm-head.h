@@ -65,7 +65,11 @@ static inline void __barebox_arm_head(void)
 		".endr\n"
 		"2:\n"
 #ifdef CONFIG_PBL_BREAK
+#ifdef CONFIG_CPU_V8
+		"brk #17\n"
+#else
 		"bkpt #17\n"
+#endif
 		"nop\n"
 #else
 		"nop\n"

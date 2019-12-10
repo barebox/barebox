@@ -283,7 +283,7 @@ int spi_register_controller(struct spi_controller *ctrl)
 
 	return status;
 }
-EXPORT_SYMBOL(spi_register_ctrl);
+EXPORT_SYMBOL(spi_register_controller);
 
 struct spi_controller *spi_get_controller(int bus)
 {

@@ -402,13 +402,15 @@ static int da9063_probe(struct device_d *dev)
 
 	restart_handler_register(&priv->restart);
 
-	priv->gpio.base = -1;
-	priv->gpio.ngpio = 5;
-	priv->gpio.ops  = &da9063_gpio_ops;
-	priv->gpio.dev = dev;
-	ret = gpiochip_add(&priv->gpio);
-	if (ret)
-		goto on_error;
+	if (IS_ENABLED(CONFIG_GPIOLIB)) {
+		priv->gpio.base = -1;
+		priv->gpio.ngpio = 5;
+		priv->gpio.ops  = &da9063_gpio_ops;
+		priv->gpio.dev = dev;
+		ret = gpiochip_add(&priv->gpio);
+		if (ret)
+			goto on_error;
+	}
 
 	if (IS_ENABLED(CONFIG_OFDEVICE) && dev->device_node)
 		return of_platform_populate(dev->device_node, NULL, dev);

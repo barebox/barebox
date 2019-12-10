@@ -73,6 +73,9 @@ static void pstore_console_capture_log(void)
 	uint64_t id;
 	struct log_entry *log, *tmp;
 
+	if (IS_ENABLED(CONFIG_CONSOLE_NONE))
+		return;
+
 	list_for_each_entry_safe(log, tmp, &barebox_logbuf, list) {
 		psinfo->write_buf(PSTORE_TYPE_CONSOLE, 0, &id, 0,
 				  log->msg, 0, strlen(log->msg), psinfo);

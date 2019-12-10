@@ -227,3 +227,4 @@ static int armv7_psci_init(void)
 	return of_register_fixup(of_psci_do_fixup, NULL);
 }
 device_initcall(armv7_psci_init);
+

@@ -64,9 +64,6 @@ void console_flush(void)
 }
 EXPORT_SYMBOL(console_flush);
 
-void ctrlc_handled(void)
-{
-}
 /* test if ctrl-c was pressed */
 int ctrlc (void)
 {
@@ -80,14 +77,6 @@ int ctrlc (void)
 	return ret;
 }
 EXPORT_SYMBOL(ctrlc);
-
-void console_ctrlc_allow(void)
-{
-}
-
-void console_ctrlc_forbid(void)
-{
-}
 
 int console_register(struct console_device *newcdev)
 {

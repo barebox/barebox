@@ -25,6 +25,7 @@ config DEV_MEM
 
 config UBOOTVAR
 	bool "U-Boot environment storage"
+	depends on OFTREE
 	help
 	  This driver exposes U-Boot environment variable storage as a
 	  single mmap-able device, hiding various low-level details

@@ -388,7 +388,7 @@ static const struct tegra_drive_pingroup tegra30_drive_groups[] = {
 	DRV_PG(vi1,   0x8c8, -1, -1, -1,  14,  5,  19,  5,  24,  4,  28,  4),
 };
 
-static const struct pinctrl_tegra30_drvdata tegra30_drvdata = {
+__maybe_unused static const struct pinctrl_tegra30_drvdata tegra30_drvdata = {
 	.pingrps = tegra30_pin_groups,
 	.num_pingrps = ARRAY_SIZE(tegra30_pin_groups),
 	.drvgrps = tegra30_drive_groups,
@@ -632,7 +632,7 @@ static const struct tegra_drive_pingroup tegra124_drive_groups[] = {
 	DRV_PG(ao4,   0x9c8,  2,  3,  4,  12,  7,  20,  7,  28,  2,  30,  2),
 };
 
-static const struct pinctrl_tegra30_drvdata tegra124_drvdata = {
+__maybe_unused static const struct pinctrl_tegra30_drvdata tegra124_drvdata = {
 	.pingrps = tegra124_pin_groups,
 	.num_pingrps = ARRAY_SIZE(tegra124_pin_groups),
 	.drvgrps = tegra124_drive_groups,

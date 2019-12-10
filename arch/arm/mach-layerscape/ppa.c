@@ -14,9 +14,9 @@
 #include <image-fit.h>
 #include <asm/psci.h>
 #include <mach/layerscape.h>
+#include <asm/cache.h>
 
 int ppa_entry(const void *, u32 *, u32 *);
-void dma_flush_range(void *ptr, size_t size);
 
 #define SEC_JR3_OFFSET                     0x40000
 
@@ -92,7 +92,7 @@ static int ppa_init(void *ppa, size_t ppa_size, void *sec_firmware_addr)
 
 	/* Copy the secure firmware to secure memory */
 	memcpy(sec_firmware_addr, buf, firmware_size);
-	dma_flush_range(sec_firmware_addr, ppa_size);
+	sync_caches_for_execution();
 
 	ret = ppa_entry(sec_firmware_addr, boot_loc_ptr_l, boot_loc_ptr_h);
 	if (ret) {

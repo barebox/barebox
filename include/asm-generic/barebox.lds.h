@@ -7,8 +7,7 @@
 #define STRUCT_ALIGN() . = ALIGN(STRUCT_ALIGNMENT)
 
 #if defined CONFIG_X86 || \
-	defined CONFIG_ARCH_EP93XX || \
-	defined CONFIG_ARCH_ZYNQ
+	defined CONFIG_ARCH_EP93XX
 #include <mach/barebox.lds.h>
 #endif
 

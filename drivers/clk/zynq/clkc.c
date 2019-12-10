@@ -29,10 +29,16 @@
 #include <mach/zynq7000-regs.h>
 #include <malloc.h>
 
-enum zynq_clks {
-	dummy, ps_clk, arm_pll, ddr_pll, io_pll, uart_clk, uart0, uart1,
-	cpu_clk, cpu_6x4x, cpu_3x2x, cpu_2x, cpu_1x,
-	gem_clk, gem0, gem1, clks_max
+enum zynq_clk {
+	armpll, ddrpll, iopll,
+	cpu_6or4x, cpu_3or2x, cpu_2x, cpu_1x,
+	ddr2x, ddr3x, dci,
+	lqspi, smc, pcap, gem0, gem1, fclk0, fclk1, fclk2, fclk3, can0, can1,
+	sdio0, sdio1, uart0, uart1, spi0, spi1, dma,
+	usb0_aper, usb1_aper, gem0_aper, gem1_aper,
+	sdio0_aper, sdio1_aper, spi0_aper, spi1_aper, can0_aper, can1_aper,
+	i2c0_aper, i2c1_aper, uart0_aper, uart1_aper, gpio_aper, lqspi_aper,
+	smc_aper, swdt, dbg_trc, dbg_apb, clk_max
 };
 
 enum zynq_pll_type {
@@ -48,8 +54,11 @@ enum zynq_pll_type {
 #define PLL_STATUS_DDR_PLL_STABLE	(1 << 1)
 #define PLL_STATUS_IO_PLL_STABLE	(1 << 2)
 #define PLL_CTRL_BYPASS_FORCE		(1 << 4)
+#define PLL_CTRL_PWRDOWN		(1 << 1)
+#define PLL_CTRL_RESET			(1 << 0)
 
-static struct clk *clks[clks_max];
+static struct clk *clks[clk_max];
+static struct clk_onecell_data clk_data;
 
 struct zynq_pll_clk {
 	struct clk	clk;
@@ -75,7 +84,7 @@ static int zynq_pll_enable(struct clk *clk)
 	int timeout = 10000;
 
 	val = readl(pll->pll_ctrl);
-	val &= ~PLL_CTRL_BYPASS_FORCE;
+	val &= ~(PLL_CTRL_BYPASS_FORCE | PLL_CTRL_PWRDOWN | PLL_CTRL_RESET);
 	writel(val, pll->pll_ctrl);
 
 	while (timeout--) {
@@ -89,9 +98,18 @@ static int zynq_pll_enable(struct clk *clk)
 	return 0;
 }
 
+static int zynq_pll_is_enabled(struct clk *clk)
+{
+	struct zynq_pll_clk *pll = to_zynq_pll_clk(clk);
+	u32 val = readl(pll->pll_ctrl);
+
+	return !(val & (PLL_CTRL_PWRDOWN | PLL_CTRL_RESET));
+}
+
 static struct clk_ops zynq_pll_clk_ops = {
 	.recalc_rate = zynq_pll_recalc_rate,
 	.enable = zynq_pll_enable,
+	.is_enabled = zynq_pll_is_enabled,
 };
 
 static inline struct clk *zynq_pll_clk(enum zynq_pll_type type,
@@ -360,54 +378,115 @@ static struct clk *zynq_cpu_subclk(const char *name,
 static int zynq_clock_probe(struct device_d *dev)
 {
 	struct resource *iores;
-	void __iomem *slcr_base;
+	void __iomem *clk_base;
 	unsigned long ps_clk_rate = 33333330;
+	resource_size_t slcr_offset = 0;
 
-	iores = dev_request_mem_resource(dev, 0);
+	iores = dev_get_resource(dev, IORESOURCE_MEM, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
-	slcr_base = IOMEM(iores->start);
 
-	clks[ps_clk]  = clk_fixed("ps_clk", ps_clk_rate);
+	/*
+	 * The Zynq 7000 DT describes the SLCR child devices with a reg offset
+	 * in the SCLR region. So we can't directly map the address we get from
+	 * the DT, but need to add the SCLR base offset.
+	 */
+	if (dev->device_node) {
+		struct resource *parent_res;
 
-	clks[arm_pll] = zynq_pll_clk(ZYNQ_PLL_ARM, "arm_pll", slcr_base + 0x100);
-	clks[ddr_pll] = zynq_pll_clk(ZYNQ_PLL_DDR, "ddr_pll", slcr_base + 0x104);
-	clks[io_pll]  = zynq_pll_clk(ZYNQ_PLL_IO,  "io_pll", slcr_base + 0x108);
+		parent_res = dev_get_resource(dev->parent, IORESOURCE_MEM, 0);
+		if (IS_ERR(parent_res))
+			return PTR_ERR(parent_res);
 
-	clks[uart_clk] = zynq_periph_clk("uart_clk", slcr_base + 0x154);
+		slcr_offset = parent_res->start;
+	}
 
-	clks[uart0] = clk_gate("uart0", "uart_clk", slcr_base + 0x154, 0, 0, 0);
-	clks[uart1] = clk_gate("uart1", "uart_clk", slcr_base + 0x154, 1, 0, 0);
+	iores = request_iomem_region(dev_name(dev), iores->start + slcr_offset,
+				     iores->end + slcr_offset);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
 
-	clks[gem0] = clk_gate("gem0", "io_pll", slcr_base + 0x140, 0, 0, 0);
-	clks[gem1] = clk_gate("gem1", "io_pll", slcr_base + 0x144, 1, 0, 0);
+	clk_base = IOMEM(iores->start);
 
-	clks[cpu_clk] = zynq_cpu_clk("cpu_clk", slcr_base + 0x120);
+	clk_fixed("ps_clk", ps_clk_rate);
 
-	clks[cpu_6x4x] = zynq_cpu_subclk("cpu_6x4x", CPU_SUBCLK_6X4X,
-					slcr_base + 0x120, slcr_base + 0x1C4);
-	clks[cpu_3x2x] = zynq_cpu_subclk("cpu_3x2x", CPU_SUBCLK_3X2X,
-					slcr_base + 0x120, slcr_base + 0x1C4);
+	clks[armpll] = zynq_pll_clk(ZYNQ_PLL_ARM, "arm_pll", clk_base + 0x0);
+	clks[ddrpll] = zynq_pll_clk(ZYNQ_PLL_DDR, "ddr_pll", clk_base + 0x4);
+	clks[iopll] = zynq_pll_clk(ZYNQ_PLL_IO,  "io_pll", clk_base + 0x8);
+
+	zynq_periph_clk("sdio_clk", clk_base + 0x50);
+	clks[sdio0] = clk_gate("sdio0", "sdio_clk", clk_base + 0x50, 0, 0, 0);
+	clks[sdio1] = clk_gate("sdio1", "sdio_clk", clk_base + 0x50, 1, 0, 0);
+
+	zynq_periph_clk("uart_clk", clk_base + 0x54);
+	clks[uart0] = clk_gate("uart0", "uart_clk", clk_base + 0x54, 0, 0, 0);
+	clks[uart1] = clk_gate("uart1", "uart_clk", clk_base + 0x54, 1, 0, 0);
+
+	zynq_periph_clk("spi_clk", clk_base + 0x58);
+	clks[spi0] = clk_gate("spi0", "spi_clk", clk_base + 0x58, 0, 0, 0);
+	clks[spi1] = clk_gate("spi1", "spi_clk", clk_base + 0x58, 1, 0, 0);
+
+	clks[gem0] = clk_gate("gem0", "io_pll", clk_base + 0x40, 0, 0, 0);
+	clks[gem1] = clk_gate("gem1", "io_pll", clk_base + 0x44, 1, 0, 0);
+
+	zynq_cpu_clk("cpu_clk", clk_base + 0x20);
+
+	clks[cpu_6or4x] = zynq_cpu_subclk("cpu_6x4x", CPU_SUBCLK_6X4X,
+					clk_base + 0x20, clk_base + 0xC4);
+	clks[cpu_3or2x] = zynq_cpu_subclk("cpu_3x2x", CPU_SUBCLK_3X2X,
+					clk_base + 0x20, clk_base + 0xC4);
 	clks[cpu_2x] = zynq_cpu_subclk("cpu_2x", CPU_SUBCLK_2X,
-					slcr_base + 0x120, slcr_base + 0x1C4);
+					clk_base + 0x20, clk_base + 0xC4);
 	clks[cpu_1x] = zynq_cpu_subclk("cpu_1x", CPU_SUBCLK_1X,
-					slcr_base + 0x120, slcr_base + 0x1C4);
+					clk_base + 0x20, clk_base + 0xC4);
 
-	clk_register_clkdev(clks[cpu_3x2x], NULL, "arm_smp_twd");
-	clk_register_clkdev(clks[uart0], NULL, "zynq_serial0");
-	clk_register_clkdev(clks[uart1], NULL, "zynq_serial1");
-	clk_register_clkdev(clks[gem0], NULL, "macb0");
-	clk_register_clkdev(clks[gem1], NULL, "macb1");
+	clks[dma] = clk_gate("dma", "cpu_2x", clk_base + 0x2C, 0, 0, 0);
+	clks[usb0_aper] = clk_gate("usb0_aper", "cpu_1x",
+				   clk_base + 0x2C, 2, 0, 0);
+	clks[usb1_aper] = clk_gate("usb1_aper", "cpu_1x",
+				   clk_base + 0x2C, 3, 0, 0);
+	clks[gem0_aper] = clk_gate("gem0_aper", "cpu_1x",
+				   clk_base + 0x2C, 6, 0, 0);
+	clks[gem1_aper] = clk_gate("gem1_aper", "cpu_1x",
+				   clk_base + 0x2C, 7, 0, 0);
+	clks[sdio0_aper] = clk_gate("sdio0_aper", "cpu_1x",
+				    clk_base + 0x2C, 10, 0, 0);
+	clks[sdio1_aper] = clk_gate("sdio1_aper", "cpu_1x",
+				    clk_base + 0x2C, 11, 0, 0);
+	clks[spi0_aper] = clk_gate("spi0_aper", "cpu_1x",
+				   clk_base + 0x2C, 14, 0, 0);
+	clks[spi1_aper] = clk_gate("spi1_aper", "cpu_1x",
+				   clk_base + 0x2C, 15, 0, 0);
+	clks[can0_aper] = clk_gate("can0_aper", "cpu_1x",
+				   clk_base + 0x2C, 16, 0, 0);
+	clks[can1_aper] = clk_gate("can1_aper", "cpu_1x",
+				   clk_base + 0x2C, 17, 0, 0);
+	clks[i2c0_aper] = clk_gate("i2c0_aper", "cpu_1x",
+				   clk_base + 0x2C, 18, 0, 0);
+	clks[i2c1_aper] = clk_gate("i2c1_aper", "cpu_1x",
+				   clk_base + 0x2C, 19, 0, 0);
+	clks[uart0_aper] = clk_gate("uart0_aper", "cpu_1x",
+				    clk_base + 0x2C, 20, 0, 0);
+	clks[uart1_aper] = clk_gate("uart1_aper", "cpu_1x",
+				    clk_base + 0x2C, 21, 0, 0);
+	clks[gpio_aper] = clk_gate("gpio_aper", "cpu_1x",
+				   clk_base + 0x2C, 22, 0, 0);
+	clks[lqspi_aper] = clk_gate("lqspi_aper", "cpu_1x",
+				    clk_base + 0x2C, 23, 0, 0);
+	clks[smc_aper] = clk_gate("smc_aper", "cpu_1x",
+				  clk_base + 0x2C, 24, 0, 0);
 
-	clkdev_add_physbase(clks[cpu_3x2x], CORTEXA9_SCU_TIMER_BASE_ADDR, NULL);
-	clkdev_add_physbase(clks[uart1], ZYNQ_UART1_BASE_ADDR, NULL);
+	clk_data.clks = clks;
+	clk_data.clk_num = ARRAY_SIZE(clks);
+	of_clk_add_provider(dev->device_node, of_clk_src_onecell_get,
+			    &clk_data);
 
 	return 0;
 }
 
 static __maybe_unused struct of_device_id zynq_clock_dt_ids[] = {
 	{
-		.compatible = "xlnx,zynq-clock",
+		.compatible = "xlnx,ps7-clkc",
 	}, {
 		/* sentinel */
 	}

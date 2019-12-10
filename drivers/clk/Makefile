@@ -9,6 +9,7 @@ obj-$(CONFIG_ARCH_MVEBU)	+= mvebu/
 obj-$(CONFIG_ARCH_MXS)		+= mxs/
 obj-$(CONFIG_ARCH_ROCKCHIP)	+= rockchip/
 obj-$(CONFIG_ARCH_TEGRA)	+= tegra/
+obj-$(CONFIG_ARCH_ZYNQ)		+= zynq/
 obj-$(CONFIG_ARCH_ZYNQMP)	+= zynqmp/
 obj-$(CONFIG_CLK_SOCFPGA)	+= socfpga/
 obj-$(CONFIG_SOC_QCA_AR9331)	+= clk-ar933x.o

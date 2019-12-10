@@ -1,0 +1,23 @@
+#
+# barebox image generation Makefile for Xilinx Zynq images
+#
+
+zynqcfg_cpp_flags  = -Wp,-MD,$(depfile) -nostdinc -x assembler-with-cpp \
+                     -I arch/arm/mach-zynq/include
+
+zynqcfg-tmp = $(subst $(comma),_,$(dot-target).zynqcfg.tmp)
+
+quiet_cmd_zynq_image = ZYNQIMG  $@
+      cmd_zynq_image = \
+         $(CPP) $(zynqcfg_cpp_flags) -o $(zynqcfg-tmp) $(CFG_$(@F)) ; \
+         $(objtree)/scripts/zynq_mkimage -c $(zynqcfg-tmp) \
+           -f $(subst .zynqimg,,$@) -o $@
+
+$(obj)/%.zynqimg: $(obj)/% FORCE
+	$(call if_changed,zynq_image)
+
+#------------------------------------------------------------------------------
+
+CFG_start_avnet_zedboard.pblb.zynqimg = $(board)/avnet-zedboard/zedboard.zynqcfg
+FILE_barebox-avnet-zedboard.img = start_avnet_zedboard.pblb.zynqimg
+image-$(CONFIG_MACH_ZEDBOARD) += barebox-avnet-zedboard.img

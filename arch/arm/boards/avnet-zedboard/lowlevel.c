@@ -27,8 +27,13 @@
 #define PLL_DDR_LOCK	(1 << 1)
 #define PLL_IO_LOCK	(1 << 2)
 
-void __naked barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2)
+extern char __dtb_zynq_zed_start[];
+
+ENTRY_FUNCTION(start_avnet_zedboard, r0, r1, r2)
 {
+
+	void *fdt = __dtb_zynq_zed_start + get_runtime_offset();
+
 	/* open sesame */
 	writel(0x0000DF0D, ZYNQ_SLCR_UNLOCK);
 
@@ -257,5 +262,6 @@ void __naked barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2)
 	writel(0x0000767B, ZYNQ_SLCR_LOCK);
 
 	arm_cpu_lowlevel_init();
-	barebox_arm_entry(0, SZ_512M, NULL);
+
+	barebox_arm_entry(0, SZ_512M, fdt);
 }

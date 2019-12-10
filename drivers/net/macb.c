@@ -69,7 +69,7 @@ struct macb_device {
 
 	int			phy_addr;
 
-	struct clk		*pclk;
+	struct clk		*pclk, *hclk, *txclk, *rxclk;
 	const struct device_d	*dev;
 	struct eth_device	netdev;
 
@@ -653,7 +653,7 @@ static int macb_probe(struct device_d *dev)
 	struct resource *iores;
 	struct eth_device *edev;
 	struct macb_device *macb;
-	const char *pclk_name;
+	const char *pclk_name, *hclk_name;
 	u32 ncfgr;
 
 	macb = xzalloc(sizeof(*macb));
@@ -689,6 +689,7 @@ static int macb_probe(struct device_d *dev)
 		macb->phy_addr = pdata->phy_addr;
 		macb->phy_flags = pdata->phy_flags;
 		pclk_name = "macb_clk";
+		hclk_name = NULL;
 	} else if (IS_ENABLED(CONFIG_OFDEVICE) && dev->device_node) {
 		int ret;
 		struct device_node *mdiobus;
@@ -705,6 +706,7 @@ static int macb_probe(struct device_d *dev)
 
 		macb->phy_addr = -1;
 		pclk_name = "pclk";
+		hclk_name = "hclk";
 	} else {
 		dev_err(dev, "macb: no platform_data\n");
 		return -ENODEV;
@@ -726,6 +728,24 @@ static int macb_probe(struct device_d *dev)
 	}
 
 	clk_enable(macb->pclk);
+
+	if (hclk_name) {
+		macb->hclk = clk_get(dev, pclk_name);
+		if (IS_ERR(macb->pclk)) {
+			dev_err(dev, "no hclk\n");
+			return PTR_ERR(macb->hclk);
+		}
+
+		clk_enable(macb->hclk);
+	}
+
+	macb->txclk = clk_get(dev, "tx_clk");
+	if (!IS_ERR(macb->txclk))
+		clk_enable(macb->txclk);
+
+	macb->rxclk = clk_get(dev, "rx_clk");
+	if (!IS_ERR(macb->rxclk))
+		clk_enable(macb->rxclk);
 
 	macb->is_gem = read_is_gem(macb);
 
@@ -772,6 +792,7 @@ static const struct of_device_id macb_dt_ids[] = {
 	{ .compatible = "cdns,at91sam9260-macb",},
 	{ .compatible = "atmel,sama5d2-gem",},
 	{ .compatible = "atmel,sama5d3-gem",},
+	{ .compatible = "cdns,zynq-gem",},
 	{ .compatible = "cdns,zynqmp-gem",},
 	{ /* sentinel */ }
 };

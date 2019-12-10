@@ -132,7 +132,7 @@ static int stm32_iwdg_set_timeout(struct watchdog *wdd, unsigned int timeout)
 	int ret;
 
 	if (!timeout)
-		return -EINVAL; /* can't disable */
+		return -ENOSYS; /* can't disable */
 
 	if (timeout > wdd->timeout_max)
 		return -EINVAL;

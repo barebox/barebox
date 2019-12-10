@@ -81,3 +81,13 @@ pulled down and BOOT0 and BOOT2 are connected to a 2P DIP switch::
  BOOT2 | O --O |
  BOOT0 | N --O |  <---- DFU on UART and USB OTG
        +-------+
+
+Boot status indicator
+---------------------
+
+The ROM code on the first Cortex-A7 core pulses the PA13 pad.
+An error LED on this pad can be used to indicate boot status:
+
+* **Boot Failure:** LED lights bright
+* **UART/USB Boot:** LED blinks fast
+* **Debug access:** LED lights weak

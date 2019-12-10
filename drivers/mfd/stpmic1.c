@@ -12,8 +12,7 @@
 #include <of.h>
 #include <regmap.h>
 #include <xfuncs.h>
-
-#define VERSION_SR		0x6
+#include <linux/mfd/stpmic1.h>
 
 struct stpmic1 {
 	struct device_d		*dev;

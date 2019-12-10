@@ -14,21 +14,14 @@
 #include <restart.h>
 #include <reset_source.h>
 
-#define RESTART_SR		0x05
-#define MAIN_CR			0x10
-#define WCHDG_CR		0x1B
-#define WCHDG_TIMER_CR		0x1C
+#include <linux/mfd/stpmic1.h>
 
-/* Restart Status Register (RESTART_SR) */
+/* Restart Status Register (RREQ_STATE_SR) */
 #define R_RST			BIT(0)
 #define R_SWOFF			BIT(1)
 #define R_WDG			BIT(2)
 #define R_PKEYLKP		BIT(3)
 #define R_VINOK_FA		BIT(4)
-
-/* Main PMIC Control Register (MAIN_CR) */
-#define SWOFF                   BIT(0)
-#define RREQ_EN                 BIT(1)
 
 /* Watchdog Control Register (WCHDG_CR) */
 #define WDT_START		BIT(0)
@@ -106,8 +99,9 @@ static void __noreturn stpmic1_restart_handler(struct restart_handler *rst)
 {
 	struct stpmic1_wdt *wdt = container_of(rst, struct stpmic1_wdt, restart);
 
-	regmap_write_bits(wdt->regmap, MAIN_CR,
-			  SWOFF | RREQ_EN, SWOFF | RREQ_EN);
+	regmap_write_bits(wdt->regmap, SWOFF_PWRCTRL_CR,
+			  SOFTWARE_SWITCH_OFF_ENABLED | RESTART_REQUEST_ENABLED,
+			  SOFTWARE_SWITCH_OFF_ENABLED | RESTART_REQUEST_ENABLED);
 
 	mdelay(1000);
 	hang();
@@ -119,8 +113,9 @@ static void __noreturn stpmic1_poweroff(struct poweroff_handler *handler)
 
 	shutdown_barebox();
 
-	regmap_write_bits(wdt->regmap, MAIN_CR,
-			  SWOFF | RREQ_EN, SWOFF);
+	regmap_write_bits(wdt->regmap, SWOFF_PWRCTRL_CR,
+			  SOFTWARE_SWITCH_OFF_ENABLED | RESTART_REQUEST_ENABLED,
+			  SOFTWARE_SWITCH_OFF_ENABLED);
 
 	mdelay(1000);
 	hang();
@@ -142,7 +137,7 @@ static int stpmic1_set_reset_reason(struct regmap *map)
 	int ret;
 	int i, instance = 0;
 
-	ret = regmap_read(map, RESTART_SR, &reg);
+	ret = regmap_read(map, RREQ_STATE_SR, &reg);
 	if (ret)
 		return ret;
 
@@ -156,7 +151,7 @@ static int stpmic1_set_reset_reason(struct regmap *map)
 
 	reset_source_set_prinst(type, 400, instance);
 
-	pr_info("STPMIC1 reset reason %s (RESTART_SR: 0x%08x)\n",
+	pr_info("STPMIC1 reset reason %s (RREQ_STATE_SR: 0x%08x)\n",
 		reset_source_name(), reg);
 
 	return 0;
@@ -180,7 +175,8 @@ static int stpmic1_wdt_probe(struct device_d *dev)
 	wdd->timeout_max = PMIC_WDT_MAX_TIMEOUT;
 
 	/* have the watchdog reset, not power-off the system */
-	regmap_write_bits(wdt->regmap, MAIN_CR, RREQ_EN, RREQ_EN);
+	regmap_write_bits(wdt->regmap, SWOFF_PWRCTRL_CR,
+			  RESTART_REQUEST_ENABLED, RESTART_REQUEST_ENABLED);
 
 	ret = watchdog_register(wdd);
 	if (ret) {

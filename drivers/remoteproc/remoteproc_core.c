@@ -107,14 +107,36 @@ static int rproc_firmware_finish(struct firmware_handler *fh)
 	return ret;
 }
 
+static int rproc_register_dev(struct rproc *rproc, const char *alias)
+{
+	if (alias) {
+		rproc->dev.id = DEVICE_ID_SINGLE;
+		dev_set_name(&rproc->dev, alias);
+	} else {
+		rproc->dev.id = DEVICE_ID_DYNAMIC;
+		dev_set_name(&rproc->dev, "remoteproc");
+	}
+
+	return register_device(&rproc->dev);
+}
+
 int rproc_add(struct rproc *rproc)
 {
 	struct device_d *dev = &rproc->dev;
 	struct firmware_handler *fh;
+	const char *alias = NULL;
 	int ret;
 
+	if (dev->device_node)
+		alias = of_alias_get(dev->device_node);
+
+	ret = rproc_register_dev(rproc, alias);
+	if (ret)
+		return ret;
+
 	fh = &rproc->fh;
-	fh->id = xstrdup(rproc->name);
+	fh->id = xstrdup(dev_name(dev));
+	fh->model = xstrdup(rproc->name);
 	fh->open = rproc_firmware_start;
 	fh->write = rproc_firmware_write_buf;
 	fh->close = rproc_firmware_finish;
@@ -152,11 +174,6 @@ struct rproc *rproc_alloc(struct device_d *dev, const char *name,
 
 	rproc->dev.parent = dev;
 	rproc->dev.priv = rproc;
-
-	/* Assign a unique device index and name */
-	rproc->index = 1;
-
-	dev_set_name(&rproc->dev, "remoteproc%d", rproc->index);
 
 	/* Default to ELF loader if no load function is specified */
 	if (!rproc->ops->load)

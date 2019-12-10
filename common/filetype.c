@@ -80,6 +80,7 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_ubootvar] = { "U-Boot environmemnt variable data",
 				"ubootvar" },
 	[filetype_stm32_image_v1] = { "STM32 image (v1)", "stm32-image-v1" },
+	[filetype_zynq_image] = { "Zynq image", "zynq-image" },
 };
 
 const char *file_type_to_string(enum filetype f)
@@ -391,6 +392,9 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 
 	if (is_imx_flash_header_v2(_buf))
 		return filetype_imx_image_v2;
+
+	if (buf[8] == 0xAA995566 && buf[9] == 0x584C4E58)
+		return filetype_zynq_image;
 
 	return filetype_unknown;
 }

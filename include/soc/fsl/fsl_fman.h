@@ -348,6 +348,9 @@ struct fm_fpm {
 /* FPM Flush Control Register */
 #define FMFP_FLC_DISP_LIM_NONE	0x00000000 /* no dispatch limitation */
 
+/* FMan Reset Command Register */
+#define FMFP_RSTC_RFM		0x80000000 /* FMan Soft Reset Command */
+
 /* FMFP_EE - FPM event and enable register */
 #define FMFPEE_DECC		0x80000000 /* double ECC err on FPM ram */
 #define FMFPEE_STL		0x40000000 /* stall of task ... */

@@ -104,11 +104,11 @@ struct fm_eth {
 	struct device_d *dev;
 	struct fm_port_global_pram *rx_pram; /* Rx parameter table */
 	struct fm_port_global_pram *tx_pram; /* Tx parameter table */
-	void *rx_bd_ring;		/* Rx BD ring base */
-	void *cur_rxbd;			/* current Rx BD */
+	struct fm_port_bd *rx_bd_ring;	/* Rx BD ring base */
+	int cur_rxbd_idx;		/* current Rx BD index */
 	void *rx_buf;			/* Rx buffer base */
-	void *tx_bd_ring;		/* Tx BD ring base */
-	void *cur_txbd;			/* current Tx BD */
+	struct fm_port_bd *tx_bd_ring;	/* Tx BD ring base */
+	int cur_txbd_idx;		/* current Tx BD index */
 	struct memac *regs;
 };
 
@@ -628,12 +628,13 @@ static int fm_eth_rx_port_parameter_init(struct fm_eth *fm_eth)
 
 	/* save them to fm_eth */
 	fm_eth->rx_bd_ring = rx_bd_ring_base;
-	fm_eth->cur_rxbd = rx_bd_ring_base;
+	fm_eth->cur_rxbd_idx = 0;
 	fm_eth->rx_buf = rx_buf_pool;
 
 	/* init Rx BDs ring */
-	rxbd = rx_bd_ring_base;
 	for (i = 0; i < RX_BD_RING_SIZE; i++) {
+		rxbd = &fm_eth->rx_bd_ring[i];
+
 		muram_writew(&rxbd->status, RxBD_EMPTY);
 		muram_writew(&rxbd->len, 0);
 		buf_hi = upper_32_bits(virt_to_phys(rx_buf_pool +
@@ -644,7 +645,6 @@ static int fm_eth_rx_port_parameter_init(struct fm_eth *fm_eth)
 					   MAX_RXBUF_LEN, DMA_FROM_DEVICE);
 		muram_writew(&rxbd->buf_ptr_hi, (u16)buf_hi);
 		out_be32(&rxbd->buf_ptr_lo, buf_lo);
-		rxbd++;
 	}
 
 	/* set the Rx queue descriptor */
@@ -702,16 +702,16 @@ static int fm_eth_tx_port_parameter_init(struct fm_eth *fm_eth)
 			* TX_BD_RING_SIZE);
 	/* save it to fm_eth */
 	fm_eth->tx_bd_ring = tx_bd_ring_base;
-	fm_eth->cur_txbd = tx_bd_ring_base;
+	fm_eth->cur_txbd_idx = 0;
 
 	/* init Tx BDs ring */
-	txbd = tx_bd_ring_base;
 	for (i = 0; i < TX_BD_RING_SIZE; i++) {
+		txbd = &fm_eth->tx_bd_ring[i];
+
 		muram_writew(&txbd->status, TxBD_LAST);
 		muram_writew(&txbd->len, 0);
 		muram_writew(&txbd->buf_ptr_hi, 0);
 		out_be32(&txbd->buf_ptr_lo, 0);
-		txbd++;
 	}
 
 	/* set the Tx queue decriptor */
@@ -834,13 +834,12 @@ static int fm_eth_send(struct eth_device *edev, void *buf, int len)
 {
 	struct fm_eth *fm_eth = to_fm_eth(edev);
 	struct fm_port_global_pram *pram;
-	struct fm_port_bd *txbd, *txbd_base;
-	u16 offset_in;
-	int i;
+	struct fm_port_bd *txbd;
+	int i, ret;
 	dma_addr_t dma;
 
 	pram = fm_eth->tx_pram;
-	txbd = fm_eth->cur_txbd;
+	txbd = &fm_eth->tx_bd_ring[fm_eth->cur_txbd_idx];
 
 	/* find one empty TxBD */
 	for (i = 0; muram_readw(&txbd->status) & TxBD_READY; i++) {
@@ -862,41 +861,35 @@ static int fm_eth_send(struct eth_device *edev, void *buf, int len)
 	muram_writew(&txbd->len, len);
 	muram_writew(&txbd->status, TxBD_READY | TxBD_LAST);
 
+	/* advance the TxBD */
+	fm_eth->cur_txbd_idx = (fm_eth->cur_txbd_idx + 1) % TX_BD_RING_SIZE;
+
 	/* update TxQD, let RISC to send the packet */
-	offset_in = muram_readw(&pram->txqd.offset_in);
-	offset_in += sizeof(struct fm_port_bd);
-	if (offset_in >= muram_readw(&pram->txqd.bd_ring_size))
-		offset_in = 0;
-	muram_writew(&pram->txqd.offset_in, offset_in);
+	muram_writew(&pram->txqd.offset_in,
+		     fm_eth->cur_txbd_idx * sizeof(struct fm_port_bd));
 
 	/* wait for buffer to be transmitted */
+	ret = 0;
 	for (i = 0; muram_readw(&txbd->status) & TxBD_READY; i++) {
 		udelay(10);
 		if (i > 0x10000) {
 			dev_err(&edev->dev, "Tx error, txbd->status = 0x%x\n",
 			       muram_readw(&txbd->status));
-			return -EIO;
+			ret = -EIO;
+			break;
 		}
 	}
 
 	dma_unmap_single(fm_eth->dev, dma, len, DMA_TO_DEVICE);
 
-	/* advance the TxBD */
-	txbd++;
-	txbd_base = fm_eth->tx_bd_ring;
-	if (txbd >= (txbd_base + TX_BD_RING_SIZE))
-		txbd = txbd_base;
-	/* update current txbd */
-	fm_eth->cur_txbd = (void *)txbd;
-
-	return 0;
+	return ret;
 }
 
 static int fm_eth_recv(struct eth_device *edev)
 {
 	struct fm_eth *fm_eth = to_fm_eth(edev);
 	struct fm_port_global_pram *pram;
-	struct fm_port_bd *rxbd, *rxbd_base;
+	struct fm_port_bd *rxbd;
 	u16 status, len;
 	u32 buf_lo, buf_hi;
 	u8 *data;
@@ -904,10 +897,14 @@ static int fm_eth_recv(struct eth_device *edev)
 	int ret = 1;
 
 	pram = fm_eth->rx_pram;
-	rxbd = fm_eth->cur_rxbd;
-	status = muram_readw(&rxbd->status);
 
-	while (!(status & RxBD_EMPTY)) {
+	while (1) {
+		rxbd = &fm_eth->rx_bd_ring[fm_eth->cur_rxbd_idx];
+
+		status = muram_readw(&rxbd->status);
+		if (status & RxBD_EMPTY)
+			break;
+
 		if (!(status & RxBD_ERROR)) {
 			buf_hi = muram_readw(&rxbd->buf_ptr_hi);
 			buf_lo = in_be32(&rxbd->buf_ptr_lo);
@@ -933,12 +930,7 @@ static int fm_eth_recv(struct eth_device *edev)
 		muram_writew(&rxbd->len, 0);
 
 		/* advance RxBD */
-		rxbd++;
-		rxbd_base = fm_eth->rx_bd_ring;
-		if (rxbd >= (rxbd_base + RX_BD_RING_SIZE))
-			rxbd = rxbd_base;
-		/* read next status */
-		status = muram_readw(&rxbd->status);
+		fm_eth->cur_rxbd_idx = (fm_eth->cur_rxbd_idx + 1) % RX_BD_RING_SIZE;
 
 		/* update RxQD */
 		offset_out = muram_readw(&pram->rxqd.offset_out);
@@ -947,7 +939,6 @@ static int fm_eth_recv(struct eth_device *edev)
 			offset_out = 0;
 		muram_writew(&pram->rxqd.offset_out, offset_out);
 	}
-	fm_eth->cur_rxbd = rxbd;
 
 	return ret;
 }
@@ -1175,6 +1166,8 @@ static int fsl_fman_memac_probe(struct device_d *dev)
 	/* alloc the FMan ethernet private struct */
 	fm_eth = xzalloc(sizeof(*fm_eth));
 
+	dev->priv = fm_eth;
+
 	fm_eth->dev = dev;
 
 	ret = fsl_fman_memac_port_bind(fm_eth, FMAN_PORT_TYPE_TX);
@@ -1214,6 +1207,13 @@ static int fsl_fman_memac_probe(struct device_d *dev)
 		return ret;
 
 	return 0;
+}
+
+static void fsl_fman_memac_remove(struct device_d *dev)
+{
+	struct fm_eth *fm_eth = dev->priv;
+
+	fm_eth_halt(&fm_eth->edev);
 }
 
 static int fsl_fman_muram_probe(struct device_d *dev)
@@ -1274,6 +1274,7 @@ static struct of_device_id fsl_fman_memac_dt_ids[] = {
 static struct driver_d fman_memac_driver = {
 	.name   = "fsl-fman-memac",
 	.probe  = fsl_fman_memac_probe,
+	.remove = fsl_fman_memac_remove,
 	.of_compatible = DRV_OF_COMPAT(fsl_fman_memac_dt_ids),
 };
 
@@ -1303,6 +1304,7 @@ static int fsl_fman_probe(struct device_d *dev)
 		return PTR_ERR(iores);
 
 	reg = IOMEM(iores->start);
+	dev->priv = reg;
 
 	ret = of_platform_populate(dev->device_node, NULL, dev);
 	if (ret)
@@ -1320,6 +1322,13 @@ static int fsl_fman_probe(struct device_d *dev)
 	return 0;
 }
 
+static void fsl_fman_remove(struct device_d *dev)
+{
+	struct ccsr_fman *reg = dev->priv;
+
+	setbits_be32(&reg->fm_fpm.fmrstc, FMFP_RSTC_RFM);
+}
+
 static struct of_device_id fsl_fman_dt_ids[] = {
 	{
 		.compatible = "fsl,fman",
@@ -1330,6 +1339,7 @@ static struct of_device_id fsl_fman_dt_ids[] = {
 static struct driver_d fman_driver = {
 	.name   = "fsl-fman",
 	.probe  = fsl_fman_probe,
+	.remove = fsl_fman_remove,
 	.of_compatible = DRV_OF_COMPAT(fsl_fman_dt_ids),
 };
 device_platform_driver(fman_driver);

@@ -48,6 +48,8 @@ static void create_sections(void *ttb, uint64_t virt, uint64_t phys,
 	}
 }
 
+#define EARLY_BITS_PER_VA 39
+
 void mmu_early_enable(unsigned long membase, unsigned long memsize,
 		      unsigned long ttb)
 {
@@ -64,8 +66,8 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize,
 	memset((void *)ttb, 0, GRANULE_SIZE);
 
 	el = current_el();
-	set_ttbr_tcr_mair(el, ttb, calc_tcr(el), MEMORY_ATTRIBUTES);
-	create_sections((void *)ttb, 0, 0, 1UL << (BITS_PER_VA - 1), UNCACHED_MEM);
+	set_ttbr_tcr_mair(el, ttb, calc_tcr(el, EARLY_BITS_PER_VA), MEMORY_ATTRIBUTES);
+	create_sections((void *)ttb, 0, 0, 1UL << (EARLY_BITS_PER_VA - 1), UNCACHED_MEM);
 	create_sections((void *)ttb, membase, membase, memsize, CACHED_MEM);
 	tlb_invalidate();
 	isb();

@@ -19,8 +19,6 @@
 #include <of.h>
 #include <asm/barebox-arm.h>
 
-extern char __dtb_start[];
-
 static int of_arm_init(void)
 {
 	struct device_node *root;

@@ -75,7 +75,9 @@ static inline uint64_t level2mask(int level)
 {
 	uint64_t mask = -EINVAL;
 
-	if (level == 1)
+	if (level == 0)
+		mask = L0_ADDR_MASK;
+	else if (level == 1)
 		mask = L1_ADDR_MASK;
 	else if (level == 2)
 		mask = L2_ADDR_MASK;
@@ -85,13 +87,12 @@ static inline uint64_t level2mask(int level)
 	return mask;
 }
 
-static inline uint64_t calc_tcr(int el)
+static inline uint64_t calc_tcr(int el, int va_bits)
 {
-	u64 ips, va_bits;
+	u64 ips;
 	u64 tcr;
 
 	ips = 2;
-	va_bits = BITS_PER_VA;
 
 	if (el == 1)
 		tcr = (ips << 32) | TCR_EPD1_DISABLE;

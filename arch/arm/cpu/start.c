@@ -193,7 +193,17 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 		uint32_t totalsize = 0;
 		const char *name;
 
-		if ((unsigned long)boarddata < 8192) {
+		if (blob_is_fdt(boarddata)) {
+			totalsize = get_unaligned_be32(boarddata + 4);
+			name = "DTB";
+		} else if (blob_is_compressed_fdt(boarddata)) {
+			struct barebox_arm_boarddata_compressed_dtb *bd = boarddata;
+			totalsize = bd->datalen + sizeof(*bd);
+			name = "Compressed DTB";
+		} else if (blob_is_arm_boarddata(boarddata)) {
+			totalsize = sizeof(struct barebox_arm_boarddata);
+			name = "machine type";
+		} else if ((unsigned long)boarddata < 8192) {
 			struct barebox_arm_boarddata *bd;
 			uint32_t machine_type = (unsigned long)boarddata;
 			unsigned long mem = arm_mem_boarddata(membase, endmem,
@@ -205,16 +215,6 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 			bd->magic = BAREBOX_ARM_BOARDDATA_MAGIC;
 			bd->machine = machine_type;
 			malloc_end = mem;
-		} else if (blob_is_fdt(boarddata)) {
-			totalsize = get_unaligned_be32(boarddata + 4);
-			name = "DTB";
-		} else if (blob_is_compressed_fdt(boarddata)) {
-			struct barebox_arm_boarddata_compressed_dtb *bd = boarddata;
-			totalsize = bd->datalen + sizeof(*bd);
-			name = "Compressed DTB";
-		} else if (blob_is_arm_boarddata(boarddata)) {
-			totalsize = sizeof(struct barebox_arm_boarddata);
-			name = "machine type";
 		}
 
 		if (totalsize) {

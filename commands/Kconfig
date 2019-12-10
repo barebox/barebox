@@ -1867,6 +1867,21 @@ config CMD_POWEROFF
 	help
 	  Turn the power off.
 
+config CMD_SMC
+	bool
+	depends on ARM_SMCCC
+	prompt "PSCI test command"
+	default CONFIG_ARM_PSCI_DEBUG
+	help
+	  Secure monitor code test command
+
+	  Usage: smc [-nic]
+
+	  Options:
+	        -n	Install secure monitor and switch to nonsecure mode
+	        -i	Show information about installed PSCI version
+	        -c	Start secondary CPU core
+
 config CMD_SPI
 	bool
 	depends on SPI

@@ -673,13 +673,16 @@ static char *readcmd(struct config_data *data, FILE *f)
 	}
 }
 
-int parse_config(struct config_data *data, const char *filename)
+int parse_config(struct config_data *data, const char *_filename)
 {
 	FILE *f;
 	int lineno = 0;
 	char *line = NULL, *tmp;
 	char *argv[MAXARGS];
 	int nargs, i, ret = 0;
+	char *filename;
+
+	filename = strdup(_filename);
 
 	f = fopen(filename, "r");
 	if (!f) {
@@ -695,8 +698,17 @@ int parse_config(struct config_data *data, const char *filename)
 		lineno++;
 
 		tmp = strchr(line, '#');
-		if (tmp)
-			*tmp = 0;
+		if (tmp) {
+			char *endptr;
+			long linenum = strtol(tmp + 1, &endptr, 10);
+			if (strncmp(endptr, " \"", 2) == 0 && endptr[2]) {
+				free(filename);
+				lineno = linenum - 1;
+				filename = strdup(endptr + 2);
+				filename[strlen(filename) - 1] = '\0';
+			}
+			*tmp = '\0';
+		}
 
 		nargs = parse_line(line, argv);
 		if (!nargs)
@@ -708,8 +720,8 @@ int parse_config(struct config_data *data, const char *filename)
 			if (!strcmp(cmds[i].name, argv[0])) {
 				ret = cmds[i].parse(data, nargs, argv);
 				if (ret) {
-					fprintf(stderr, "error in line %d: %s\n",
-							lineno, strerror(-ret));
+					fprintf(stderr, "%s:%d: %s\n",
+						filename, lineno, strerror(-ret));
 					goto cleanup;
 				}
 				break;
@@ -724,5 +736,6 @@ int parse_config(struct config_data *data, const char *filename)
 
 cleanup:
 	fclose(f);
+	free(filename);
 	return ret;
 }

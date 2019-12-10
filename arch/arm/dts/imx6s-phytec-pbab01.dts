@@ -10,7 +10,9 @@
  */
 
 /dts-v1/;
-
+#ifdef CONFIG_BOOTM_FITIMAGE_PUBKEY
+#include CONFIG_BOOTM_FITIMAGE_PUBKEY
+#endif
 #include "imx6s-phytec-pfla02.dtsi"
 #include "imx6qdl-phytec-pbab01.dtsi"
 

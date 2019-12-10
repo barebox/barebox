@@ -48,4 +48,6 @@ static inline int vf610_cpu_revision(void)
 	return readl(VF610_ROM_VERSION_OFFSET) & 0xff;
 }
 
+u64 vf610_uid(void);
+
 #endif

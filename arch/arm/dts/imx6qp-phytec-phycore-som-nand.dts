@@ -1,26 +1,20 @@
+// SPDX-License-Identifier: (GPL-2.0-or-later)
 /*
- * Copyright (C) 2016 Phytec Messtechnik GmbH
+ * Copyright (C) 2016 PHYTEC Messtechnik GmbH
  * Author: Christian Hemp <c.hemp@phytec.de>
- *
- * The code contained herein is licensed under the GNU General Public
- * License. You may obtain a copy of the GNU General Public License
- * Version 2 or later at the following locations:
- *
- * http://www.opensource.org/licenses/gpl-license.html
- * http://www.gnu.org/copyleft/gpl.html
  */
 
 /dts-v1/;
+#ifdef CONFIG_BOOTM_FITIMAGE_PUBKEY
+#include CONFIG_BOOTM_FITIMAGE_PUBKEY
+#endif
 #include <arm/imx6qp.dtsi>
 #include "imx6qdl-phytec-phycore-som.dtsi"
+#include "imx6qdl-phytec-mira.dtsi"
 
 / {
-	model = "Phytec phyCORE-i.MX6 Quad with NAND";
+	model = "PHYTEC phyCORE-i.MX6 QuadPlus with NAND";
 	compatible = "phytec,imx6qp-pcm058-nand", "fsl,imx6qp";
-};
-
-&ecspi1 {
-	status = "okay";
 };
 
 &eeprom {
@@ -35,7 +29,7 @@
 	status = "okay";
 };
 
-&flash {
+&m25p80 {
 	status = "okay";
 };
 
@@ -53,20 +47,4 @@
 
 &usdhc1 {
 	status = "okay";
-
-	partitions {
-		compatible = "fixed-partitions";
-		#address-cells = <1>;
-		#size-cells = <1>;
-
-		partition@0 {
-			label = "barebox";
-			reg = <0x0 0xe0000>;
-		};
-
-		partition@e0000 {
-			label = "barebox-environment";
-			reg = <0xe0000 0x20000>;
-		};
-	};
 };

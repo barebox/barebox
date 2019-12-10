@@ -377,7 +377,6 @@ static int da9063_probe(struct device_d *dev)
 	dev_data = ret < 0 ? NULL : dev_data_tmp;
 
 	priv = xzalloc(sizeof(struct da9063));
-	priv->wd.priority = of_get_watchdog_priority(dev->device_node);
 	priv->wd.set_timeout = da9063_watchdog_set_timeout;
 	priv->wd.hwdev = dev;
 	priv->timeout = DA9063_INITIAL_TIMEOUT;

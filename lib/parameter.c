@@ -588,6 +588,28 @@ struct param_d *dev_add_param_enum(struct device_d *dev, const char *name,
 	return &pe->param;
 }
 
+static const char *const tristate_names[] = {
+	[PARAM_TRISTATE_UNKNOWN] = "unknown",
+	[PARAM_TRISTATE_TRUE] = "1",
+	[PARAM_TRISTATE_FALSE] = "0",
+};
+
+struct param_d *dev_add_param_tristate(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		int *value, void *priv)
+{
+	return dev_add_param_enum(dev, name, set, get, value, tristate_names,
+				  ARRAY_SIZE(tristate_names), priv);
+}
+
+struct param_d *dev_add_param_tristate_ro(struct device_d *dev, const char *name,
+		int *value)
+{
+	return dev_add_param_enum_ro(dev, name, value, tristate_names,
+				     ARRAY_SIZE(tristate_names));
+}
+
 struct param_bitmask {
 	struct param_d param;
 	unsigned long *value;

@@ -274,6 +274,9 @@ enum led_trigger trigger_by_name(const char *name)
 {
 	int i;
 
+	if (!name)
+		return LED_TRIGGER_MAX;
+
 	for (i = 0; i < LED_TRIGGER_MAX; i++)
 		if (!strcmp(name, trigger_names[i]))
 			return i;
@@ -287,13 +290,13 @@ void led_of_parse_trigger(struct led *led, struct device_node *np)
 	const char *trigger;
 
 	trigger = of_get_property(np, "linux,default-trigger", NULL);
-	if (!trigger)
-		trigger = of_get_property(np, "barebox,default-trigger", NULL);
-
-	if (!trigger)
-		return;
-
 	trg = trigger_by_name(trigger);
+
+	if (trg == LED_TRIGGER_MAX) {
+		trigger = of_get_property(np, "barebox,default-trigger", NULL);
+		trg = trigger_by_name(trigger);
+	}
+
 	if (trg != LED_TRIGGER_MAX) {
 		/* disable LED before installing trigger */
 		led_set(led, 0);

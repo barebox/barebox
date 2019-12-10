@@ -29,11 +29,8 @@
 
 extern char __dtb_zynq_zed_start[];
 
-ENTRY_FUNCTION(start_avnet_zedboard, r0, r1, r2)
+static void avnet_zedboard_ps7_init(void)
 {
-
-	void *fdt = __dtb_zynq_zed_start + get_runtime_offset();
-
 	/* open sesame */
 	writel(0x0000DF0D, ZYNQ_SLCR_UNLOCK);
 
@@ -260,8 +257,16 @@ ENTRY_FUNCTION(start_avnet_zedboard, r0, r1, r2)
 
 	/* lock up. secure, secure */
 	writel(0x0000767B, ZYNQ_SLCR_LOCK);
+}
+
+ENTRY_FUNCTION(start_avnet_zedboard, r0, r1, r2)
+{
+
+	void *fdt = __dtb_zynq_zed_start + get_runtime_offset();
 
 	arm_cpu_lowlevel_init();
+
+	avnet_zedboard_ps7_init();
 
 	barebox_arm_entry(0, SZ_512M, fdt);
 }

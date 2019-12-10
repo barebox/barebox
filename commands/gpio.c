@@ -25,7 +25,9 @@ static int get_gpio_and_value(int argc, char *argv[],
 	if (argc < count)
 		return COMMAND_ERROR_USAGE;
 
-	*gpio = gpio_find_by_label(argv[1]);
+	*gpio = gpio_find_by_name(argv[1]);
+	if (*gpio < 0)
+		*gpio = gpio_find_by_label(argv[1]);
 	if (*gpio < 0) {
 		ret = kstrtoint(argv[1], 0, gpio);
 		if (ret < 0)

@@ -16,6 +16,7 @@ struct gpio_info {
 	bool requested;
 	bool active_low;
 	char *label;
+	char *name;
 };
 
 static struct gpio_info *gpio_desc;
@@ -102,6 +103,23 @@ int gpio_find_by_label(const char *label)
 			continue;
 
 		if (!strcmp(info->label, label))
+			return i;
+	}
+
+	return -ENOENT;
+}
+
+int gpio_find_by_name(const char *name)
+{
+	int i;
+
+	for (i = 0; i < ARCH_NR_GPIOS; i++) {
+		struct gpio_info *info = &gpio_desc[i];
+
+		if (!info->chip || !info->name)
+			continue;
+
+		if (!strcmp(info->name, name))
 			return i;
 	}
 
@@ -410,10 +428,24 @@ static int of_hog_gpio(struct device_node *np, struct gpio_chip *chip,
 static int of_gpiochip_scan_hogs(struct gpio_chip *chip)
 {
 	struct device_node *np;
-	int ret, i;
+	int ret, i, count;
 
 	if (!IS_ENABLED(CONFIG_OFDEVICE) || !chip->dev->device_node)
 		return 0;
+
+	count = of_property_count_strings(chip->dev->device_node, "gpio-line-names");
+
+	if (count > 0) {
+		const char **arr = xzalloc(count * sizeof(char *));
+
+		of_property_read_string_array(chip->dev->device_node,
+					      "gpio-line-names", arr, count);
+
+		for (i = 0; i < chip->ngpio && i < count; i++)
+			gpio_desc[chip->base + i].name = xstrdup(arr[i]);
+
+		free(arr);
+	}
 
 	for_each_available_child_of_node(chip->dev->device_node, np) {
 		if (!of_property_read_bool(np, "gpio-hog"))
@@ -500,7 +532,7 @@ static int do_gpiolib(int argc, char *argv[])
 				gi->chip->base,
 				gi->chip->base + gi->chip->ngpio - 1,
 				gi->chip->dev->name);
-			printf("%*cdir val requested  label\n", 13, ' ');
+			printf("             %-3s %-3s %-9s %-20s %-20s\n", "dir", "val", "requested", "name", "label");
 		}
 
 		if (gi->chip->ops->get_direction)
@@ -510,11 +542,12 @@ static int do_gpiolib(int argc, char *argv[])
 			val = gi->chip->ops->get(gi->chip,
 						i - gi->chip->base);
 
-		printf("  GPIO %*d: %*s %*s %*s  %s\n", 4, i,
-			3, (dir < 0) ? "unk" : ((dir == GPIOF_DIR_IN) ? "in" : "out"),
-			3, (val < 0) ? "unk" : ((val == 0) ? "lo" : "hi"),
-		        12, gi->requested ? (gi->active_low ? "active low" : "true") : "false",
-			(gi->requested && gi->label) ? gi->label : "");
+		printf("  GPIO %4d: %-3s %-3s %-9s %-20s %-20s\n", i,
+			(dir < 0) ? "unk" : ((dir == GPIOF_DIR_IN) ? "in" : "out"),
+			(val < 0) ? "unk" : ((val == 0) ? "lo" : "hi"),
+		        gi->requested ? (gi->active_low ? "active low" : "true") : "false",
+			gi->name ? gi->name : "",
+			gi->label ? gi->label : "");
 	}
 
 	return 0;

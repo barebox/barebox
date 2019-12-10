@@ -444,6 +444,9 @@ enum usb_phy_interface of_usb_get_phy_mode(struct device_node *np,
 enum usb_device_speed of_usb_get_maximum_speed(struct device_node *np,
 		const char *propname);
 
+int usb_register_otg_device(struct device_d *parent,
+			    int (*set_mode)(void *ctx, enum usb_dr_mode mode), void *ctx);
+
 extern struct list_head usb_device_list;
 
 #endif /*_USB_H_ */

@@ -3,6 +3,7 @@ config USB_DWC3
 	depends on USB && HAS_DMA
 	depends on OFDEVICE
 	select USB_XHCI
+	select USB_OTGDEV
 	help
 	  Say Y or M here if your system has a Dual Role SuperSpeed
 	  USB controller based on the DesignWare USB3 IP Core.

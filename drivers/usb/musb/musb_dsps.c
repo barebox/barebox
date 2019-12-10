@@ -303,48 +303,18 @@ static int get_musb_port_mode(struct device_d *dev)
 	}
 }
 
-static int dsps_set_mode(struct param_d *param, void *priv)
+static int dsps_set_mode(void *ctx, enum usb_dr_mode mode)
 {
-	struct dsps_glue *glue = priv;
+	struct dsps_glue *glue = ctx;
 
-	if (glue->pdata.mode != MUSB_PORT_MODE_DUAL_ROLE)
-		return -EBUSY;
-
-	switch (glue->otgmode) {
-	case 0:
-	default:
-		return -EINVAL;
-	case 1:
+	if (mode == USB_DR_MODE_HOST)
 		glue->pdata.mode = MUSB_PORT_MODE_HOST;
-		break;
-	case 2:
+	else if (mode == USB_DR_MODE_PERIPHERAL)
 		glue->pdata.mode = MUSB_PORT_MODE_GADGET;
-		break;
-	}
+	else
+		return -EINVAL;
 
 	return musb_init_controller(&glue->musb, &glue->pdata);
-}
-
-static const char *dsps_mode_names[] = {
-	"otg", "host", "peripheral"
-};
-
-static int dsps_register_otg_device(struct dsps_glue *glue)
-{
-	int ret;
-
-	dev_set_name(&glue->otg_dev, "otg");
-	glue->otg_dev.id = DEVICE_ID_DYNAMIC,
-	glue->otg_dev.parent = glue->dev;
-
-	ret = register_device(&glue->otg_dev);
-	if (ret)
-		return ret;
-
-	dev_add_param_enum(&glue->otg_dev, "mode",
-			dsps_set_mode, NULL, &glue->otgmode,
-			dsps_mode_names, ARRAY_SIZE(dsps_mode_names), glue);
-	return 0;
 }
 
 static int dsps_probe(struct device_d *dev)
@@ -405,7 +375,7 @@ static int dsps_probe(struct device_d *dev)
 	config->multipoint = of_property_read_bool(dn, "mentor,multipoint");
 
 	if (pdata->mode == MUSB_PORT_MODE_DUAL_ROLE) {
-		ret = dsps_register_otg_device(glue);
+		ret = usb_register_otg_device(dev, dsps_set_mode, glue);
 		if (ret)
 			return ret;
 		return 0;

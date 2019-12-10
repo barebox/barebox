@@ -36,12 +36,11 @@ struct imx_chipidea {
 	void __iomem *base;
 	struct ehci_data data;
 	unsigned long flags;
-	uint32_t mode;
+	enum usb_dr_mode mode;
 	int portno;
 	struct device_d *usbmisc;
 	enum usb_phy_interface phymode;
 	struct param_d *param_mode;
-	int role_registered;
 	struct regulator *vbus;
 	struct phy *phy;
 	struct usb_phy *usbphy;
@@ -103,7 +102,6 @@ static int imx_chipidea_port_post_init(void *drvdata)
 static int imx_chipidea_probe_dt(struct imx_chipidea *ci)
 {
 	struct of_phandle_args out_args;
-	enum usb_dr_mode mode;
 
 	if (of_parse_phandle_with_args(ci->dev->device_node, "fsl,usbmisc",
 					"#index-cells", 0, &out_args))
@@ -116,29 +114,17 @@ static int imx_chipidea_probe_dt(struct imx_chipidea *ci)
 	ci->portno = out_args.args[0];
 	ci->flags = MXC_EHCI_MODE_UTMI_8BIT;
 
-	mode = of_usb_get_dr_mode(ci->dev->device_node, NULL);
+	ci->mode = of_usb_get_dr_mode(ci->dev->device_node, NULL);
 
-	switch (mode) {
-	case USB_DR_MODE_HOST:
-	default:
-		ci->mode = IMX_USB_MODE_HOST;
-		break;
-	case USB_DR_MODE_PERIPHERAL:
-		ci->mode = IMX_USB_MODE_DEVICE;
-		break;
-	case USB_DR_MODE_OTG:
-		ci->mode = IMX_USB_MODE_OTG;
-		break;
-	case USB_DR_MODE_UNKNOWN:
+	if (ci->mode == USB_DR_MODE_UNKNOWN) {
 		/*
 		 * No dr_mode specified. This means it can either be OTG
 		 * for port 0 or host mode for the other host-only ports.
 		 */
 		if (ci->portno == 0)
-			ci->mode = IMX_USB_MODE_OTG;
+			ci->mode = USB_DR_MODE_OTG;
 		else
-			ci->mode = IMX_USB_MODE_HOST;
-		break;
+			ci->mode = USB_DR_MODE_HOST;
 	}
 
 	ci->phymode = of_usb_get_phy_mode(ci->dev->device_node, NULL);
@@ -184,18 +170,15 @@ static int ci_ehci_detect(struct device_d *dev)
 	return ehci_detect(ci->ehci);
 }
 
-static int ci_register_role(struct imx_chipidea *ci)
+static int ci_set_mode(void *ctx, enum usb_dr_mode mode)
 {
+	struct imx_chipidea *ci = ctx;
 	int ret;
 
-	if (ci->role_registered != IMX_USB_MODE_OTG)
-		return -EBUSY;
-
-	if (ci->mode == IMX_USB_MODE_HOST) {
+	if (mode == USB_DR_MODE_HOST) {
 		if (IS_ENABLED(CONFIG_USB_EHCI)) {
 			struct ehci_host *ehci;
 
-			ci->role_registered = IMX_USB_MODE_HOST;
 			ret = regulator_enable(ci->vbus);
 			if (ret)
 				return ret;
@@ -215,10 +198,9 @@ static int ci_register_role(struct imx_chipidea *ci)
 		}
 	}
 
-	if (ci->mode == IMX_USB_MODE_DEVICE) {
+	if (mode == USB_DR_MODE_PERIPHERAL) {
 		if (IS_ENABLED(CONFIG_USB_GADGET_DRIVER_ARC)) {
 			struct fsl_udc *udc;
-			ci->role_registered = IMX_USB_MODE_DEVICE;
 
 			udc = ci_udc_register(ci->dev, ci->base);
 			if (IS_ERR(udc))
@@ -234,48 +216,6 @@ static int ci_register_role(struct imx_chipidea *ci)
 	return 0;
 }
 
-static int ci_set_mode(struct param_d *param, void *priv)
-{
-	struct imx_chipidea *ci = priv;
-
-	if (ci->role_registered != IMX_USB_MODE_OTG) {
-		if (ci->role_registered == ci->mode)
-			return 0;
-		else
-			return -EBUSY;
-	}
-
-	return ci_register_role(ci);
-}
-
-static const char *ci_mode_names[] = {
-	"host", "peripheral", "otg"
-};
-
-static struct device_d imx_otg_device = {
-	.name = "otg",
-	.id = DEVICE_ID_SINGLE,
-};
-
-static int ci_register_otg_device(struct imx_chipidea *ci)
-{
-	int ret;
-
-	if (imx_otg_device.parent)
-		return -EBUSY;
-
-	imx_otg_device.parent = ci->dev;
-
-	ret = register_device(&imx_otg_device);
-	if (ret)
-		return ret;
-
-	ci->param_mode = dev_add_param_enum(&imx_otg_device, "mode",
-			ci_set_mode, NULL, &ci->mode,
-			ci_mode_names, ARRAY_SIZE(ci_mode_names), ci);
-	return 0;
-}
-
 static int imx_chipidea_probe(struct device_d *dev)
 {
 	struct resource *iores;
@@ -288,7 +228,6 @@ static int imx_chipidea_probe(struct device_d *dev)
 	ci = xzalloc(sizeof(*ci));
 	ci->dev = dev;
 	dev->priv = ci;
-	ci->role_registered = IMX_USB_MODE_OTG;
 
 	if (IS_ENABLED(CONFIG_OFDEVICE) && dev->device_node) {
 		ret = imx_chipidea_probe_dt(ci);
@@ -361,10 +300,10 @@ static int imx_chipidea_probe(struct device_d *dev)
 	ci->data.hcor = base + 0x140;
 	ci->data.flags = EHCI_HAS_TT;
 
-	if (ci->mode == IMX_USB_MODE_OTG)
-		ret = ci_register_otg_device(ci);
+	if (ci->mode == USB_DR_MODE_OTG)
+		ret = usb_register_otg_device(ci->dev, ci_set_mode, ci);
 	else
-		ret = ci_register_role(ci);
+		ret = ci_set_mode(ci, ci->mode);
 
 	return ret;
 };

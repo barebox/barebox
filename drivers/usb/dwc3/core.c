@@ -348,12 +348,9 @@ static void dwc3_frame_length_adjustment(struct dwc3 *dwc)
 
 	reg = dwc3_readl(dwc->regs, DWC3_GFLADJ);
 	dft = reg & DWC3_GFLADJ_30MHZ_MASK;
-	if (!WARN(dft == dwc->fladj,
-	    "request value same as default, ignoring\n")) {
-		reg &= ~DWC3_GFLADJ_30MHZ_MASK;
-		reg |= DWC3_GFLADJ_30MHZ_SDBND_SEL | dwc->fladj;
-		dwc3_writel(dwc->regs, DWC3_GFLADJ, reg);
-	}
+	reg &= ~DWC3_GFLADJ_30MHZ_MASK;
+	reg |= DWC3_GFLADJ_30MHZ_SDBND_SEL | dwc->fladj;
+	dwc3_writel(dwc->regs, DWC3_GFLADJ, reg);
 }
 
 static void dwc3_core_num_eps(struct dwc3 *dwc)
@@ -939,12 +936,13 @@ static int dwc3_core_get_phy(struct dwc3 *dwc)
 	return 0;
 }
 
-static int dwc3_core_init_mode(struct dwc3 *dwc)
+static int dwc3_set_mode(void *ctx, enum usb_dr_mode mode)
 {
+	struct dwc3 *dwc = ctx;
 	struct device_d *dev = dwc->dev;
 	int ret;
 
-	switch (dwc->dr_mode) {
+	switch (mode) {
 	case USB_DR_MODE_PERIPHERAL:
 		dwc3_set_prtcap(dwc, DWC3_GCTL_PRTCAP_DEVICE);
 
@@ -966,11 +964,18 @@ static int dwc3_core_init_mode(struct dwc3 *dwc)
 		}
 		break;
 	default:
-		dev_err(dev, "Unsupported mode of operation %d\n", dwc->dr_mode);
 		return -EINVAL;
 	}
 
 	return 0;
+}
+
+static int dwc3_core_init_mode(struct dwc3 *dwc)
+{
+	if (dwc->dr_mode == USB_DR_MODE_OTG)
+		return usb_register_otg_device(dwc->dev, dwc3_set_mode, dwc);
+	else
+		return dwc3_set_mode(dwc, dwc->dr_mode);
 }
 
 static void dwc3_get_properties(struct dwc3 *dwc)

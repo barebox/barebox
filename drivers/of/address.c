@@ -74,7 +74,7 @@ static u64 of_bus_default_map(__be32 *addr, const __be32 *range,
 	s  = of_read_number(range + na + pna, ns);
 	da = of_read_number(addr, na);
 
-	pr_debug("OF: default map, cp=%llx, s=%llx, da=%llx\n",
+	pr_vdebug("OF: default map, cp=%llx, s=%llx, da=%llx\n",
 		 (unsigned long long)cp, (unsigned long long)s,
 		 (unsigned long long)da);
 
@@ -164,7 +164,7 @@ static u64 of_bus_pci_map(__be32 *addr, const __be32 *range, int na, int ns,
 	s  = of_read_number(range + na + pna, ns);
 	da = of_read_number(addr + 1, na - 1);
 
-	pr_debug("OF: PCI map, cp=%llx, s=%llx, da=%llx\n",
+	pr_vdebug("OF: PCI map, cp=%llx, s=%llx, da=%llx\n",
 		 (unsigned long long)cp, (unsigned long long)s,
 		 (unsigned long long)da);
 
@@ -314,18 +314,18 @@ static int of_translate_one(struct device_node *parent, struct of_bus *bus,
 	ranges = of_get_property(parent, rprop, &rlen);
 #if !defined(CONFIG_PPC)
 	if (ranges == NULL) {
-		pr_debug("OF: no ranges; cannot translate\n");
+		pr_vdebug("OF: no ranges; cannot translate\n");
 		return 1;
 	}
 #endif /* !defined(CONFIG_PPC) */
 	if (ranges == NULL || rlen == 0) {
 		offset = of_read_number(addr, na);
 		memset(addr, 0, pna * 4);
-		pr_debug("OF: empty ranges; 1:1 translation\n");
+		pr_vdebug("OF: empty ranges; 1:1 translation\n");
 		goto finish;
 	}
 
-	pr_debug("OF: walking ranges...\n");
+	pr_vdebug("OF: walking ranges...\n");
 
 	/* Now walk through the ranges */
 	rlen /= 4;
@@ -336,14 +336,14 @@ static int of_translate_one(struct device_node *parent, struct of_bus *bus,
 			break;
 	}
 	if (offset == OF_BAD_ADDR) {
-		pr_debug("OF: not found !\n");
+		pr_vdebug("OF: not found !\n");
 		return 1;
 	}
 	memcpy(addr, ranges + na, 4 * pna);
 
  finish:
 	of_dump_addr("OF: parent translation for:", addr, pna);
-	pr_debug("OF: with offset: %llx\n", (unsigned long long)offset);
+	pr_vdebug("OF: with offset: %llx\n", (unsigned long long)offset);
 
 	/* Translate it into parent bus space */
 	return pbus->translate(addr, offset, pna);
@@ -368,7 +368,7 @@ static u64 __of_translate_address(struct device_node *dev,
 	int na, ns, pna, pns;
 	u64 result = OF_BAD_ADDR;
 
-	pr_debug("OF: ** translation for device %s **\n", dev->full_name);
+	pr_vdebug("OF: ** translation for device %s **\n", dev->full_name);
 
 	/* Get parent & match bus type */
 	parent = of_get_parent(dev);
@@ -379,13 +379,13 @@ static u64 __of_translate_address(struct device_node *dev,
 	/* Count address cells & copy address locally */
 	bus->count_cells(dev, &na, &ns);
 	if (!OF_CHECK_COUNTS(na, ns)) {
-		pr_debug("prom_parse: Bad cell count for %s\n",
+		pr_vdebug("prom_parse: Bad cell count for %s\n",
 			 dev->full_name);
 		return OF_BAD_ADDR;
 	}
 	memcpy(addr, in_addr, na * 4);
 
-	pr_debug("OF: bus is %s (na=%d, ns=%d) on %s\n",
+	pr_vdebug("OF: bus is %s (na=%d, ns=%d) on %s\n",
 	    bus->name, na, ns, parent->full_name);
 	of_dump_addr("OF: translating address:", addr, na);
 
@@ -397,7 +397,7 @@ static u64 __of_translate_address(struct device_node *dev,
 
 		/* If root, we have finished */
 		if (parent == NULL) {
-			pr_debug("OF: reached root node\n");
+			pr_vdebug("OF: reached root node\n");
 			result = of_read_number(addr, na);
 			break;
 		}
@@ -411,7 +411,7 @@ static u64 __of_translate_address(struct device_node *dev,
 			break;
 		}
 
-		pr_debug("OF: parent bus is %s (na=%d, ns=%d) on %s\n",
+		pr_vdebug("OF: parent bus is %s (na=%d, ns=%d) on %s\n",
 		    pbus->name, pna, pns, parent->full_name);
 
 		/* Apply bus translation */

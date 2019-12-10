@@ -1,1 +1,1 @@
-obj-y += zynq.o
+obj-y += zynq.o bootm-zynqimg.o

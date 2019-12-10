@@ -1,3 +1,6 @@
+config MCI_SDHCI
+	bool
+
 menuconfig MCI
 	bool "MCI drivers"
 	select DISK
@@ -69,10 +72,12 @@ config MCI_BCM283X
 config MCI_BCM283X_SDHOST
 	bool "BCM283X sdhost"
 	depends on ARCH_BCM283X
+	select MCI_SDHCI
 
 config MCI_DOVE
 	bool "Marvell Dove SDHCI"
 	depends on ARCH_DOVE
+	select MCI_SDHCI
 	help
 	  Enable this entry to add support to read and write SD cards on a
 	  Marvell Dove SoC based system.
@@ -87,6 +92,7 @@ config MCI_IMX
 config MCI_IMX_ESDHC
 	bool "i.MX esdhc"
 	depends on ARCH_IMX || ARCH_LAYERSCAPE
+	select MCI_SDHCI
 	help
 	  Enable this entry to add support to read and write SD cards on a
 	  Freescale i.MX25/35/51 based system.
@@ -128,9 +134,16 @@ config MCI_MMCI
 config MCI_TEGRA
 	bool "Tegra SD/MMC"
 	depends on ARCH_TEGRA
+	select MCI_SDHCI
 	help
 	  Enable this to support SD and MMC card read/write on a Tegra based
 	  systems.
+
+config MCI_ARASAN
+	bool "Arasan SDHCI Controller"
+	help
+	  Enable this to support SD and MMC card read/write on systems with
+	  the Arasan SD3.0 / SDIO3.0 / eMMC4.51 host controller.
 
 config MCI_SPI
 	bool "MMC/SD over SPI"
@@ -163,3 +176,4 @@ endif
 
 config MCI_IMX_ESDHC_PBL
 	bool
+	select MCI_SDHCI

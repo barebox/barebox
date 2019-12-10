@@ -24,6 +24,9 @@
 #define  SDHCI_DMA_EN				BIT(0)
 #define SDHCI_COMMAND						0x0e
 #define  SDHCI_CMD_INDEX(c)			(((c) & 0x3f) << 8)
+#define  SDHCI_COMMAND_CMDTYP_SUSPEND		(1 << 6)
+#define  SDHCI_COMMAND_CMDTYP_RESUME		(2 << 6)
+#define  SDHCI_COMMAND_CMDTYP_ABORT		(3 << 6)
 #define  SDHCI_DATA_PRESENT			BIT(5)
 #define  SDHCI_CMD_INDEX_CHECK_EN		BIT(4)
 #define  SDHCI_CMD_CRC_CHECK_EN			BIT(3)
@@ -37,11 +40,18 @@
 #define SDHCI_RESPONSE_3					0x1c
 #define SDHCI_BUFFER						0x20
 #define SDHCI_PRESENT_STATE					0x24
+#define  SDHCI_WRITE_PROTECT			BIT(19)
+#define  SDHCI_CARD_DETECT			BIT(18)
+#define  SDHCI_BUFFER_READ_ENABLE		BIT(11)
+#define  SDHCI_BUFFER_WRITE_ENABLE		BIT(10)
+#define  SDHCI_DATA_LINE_ACTIVE			BIT(2)
 #define  SDHCI_CMD_INHIBIT_DATA			BIT(1)
 #define  SDHCI_CMD_INHIBIT_CMD			BIT(0)
 #define SDHCI_PRESENT_STATE1					0x26
 #define SDHCI_HOST_CONTROL__POWER_CONTROL__BLOCK_GAP_CONTROL	0x28
 #define SDHCI_HOST_CONTROL					0x28
+#define  SDHCI_CARD_DETECT_SIGNAL_SELECTION	BIT(7)
+#define  SDHCI_CARD_DETECT_TEST_LEVEL		BIT(6)
 #define  SDHCI_DATA_WIDTH_8BIT			BIT(5)
 #define  SDHCI_HIGHSPEED_EN			BIT(2)
 #define  SDHCI_DATA_WIDTH_4BIT			BIT(1)
@@ -60,7 +70,17 @@
 #define  SDHCI_RESET_ALL			BIT(0)
 #define SDHCI_INT_STATUS					0x30
 #define SDHCI_INT_NORMAL_STATUS					0x30
+#define  SDHCI_INT_DATA_END_BIT			BIT(22)
+#define  SDHCI_INT_DATA_CRC			BIT(21)
+#define  SDHCI_INT_DATA_TIMEOUT			BIT(20)
+#define  SDHCI_INT_INDEX			BIT(19)
+#define  SDHCI_INT_END_BIT			BIT(18)
+#define  SDHCI_INT_CRC				BIT(17)
+#define  SDHCI_INT_TIMEOUT			BIT(16)
 #define  SDHCI_INT_ERROR			BIT(15)
+#define  SDHCI_INT_CARD_INT			BIT(8)
+#define  SDHCI_INT_DATA_AVAIL			BIT(5)
+#define  SDHCI_INT_SPACE_AVAIL			BIT(4)
 #define  SDHCI_INT_DMA				BIT(3)
 #define  SDHCI_INT_XFER_COMPLETE		BIT(1)
 #define  SDHCI_INT_CMD_COMPLETE			BIT(0)
@@ -79,74 +99,49 @@
 #define SDHCI_SPEC_200_MAX_CLK_DIVIDER	256
 #define SDHCI_MMC_BOOT						0xC4
 
-#define COMMAND_CMD(x)		((x & 0x3f) << 24)
-#define COMMAND_CMDTYP_NORMAL	0x0
-#define COMMAND_CMDTYP_SUSPEND	0x00400000
-#define COMMAND_CMDTYP_RESUME	0x00800000
-#define COMMAND_CMDTYP_ABORT	0x00c00000
-#define COMMAND_DPSEL		0x00200000
-#define COMMAND_CICEN		0x00100000
-#define COMMAND_CCCEN		0x00080000
-#define COMMAND_RSPTYP_NONE	0
-#define COMMAND_RSPTYP_136	0x00010000
-#define COMMAND_RSPTYP_48	0x00020000
-#define COMMAND_RSPTYP_48_BUSY	0x00030000
-#define TRANSFER_MODE_MSBSEL	0x00000020
-#define TRANSFER_MODE_DTDSEL	0x00000010
-#define TRANSFER_MODE_AC12EN	0x00000004
-#define TRANSFER_MODE_BCEN	0x00000002
-#define TRANSFER_MODE_DMAEN	0x00000001
+struct sdhci {
+	u32 (*read32)(struct sdhci *host, int reg);
+	u16 (*read16)(struct sdhci *host, int reg);
+	u8 (*read8)(struct sdhci *host, int reg);
+	void (*write32)(struct sdhci *host, int reg, u32 val);
+	void (*write16)(struct sdhci *host, int reg, u16 val);
+	void (*write8)(struct sdhci *host, int reg, u8 val);
+};
 
-#define IRQSTAT_TE		0x04000000
-#define IRQSTAT_DMAE		0x02000000
-#define IRQSTAT_AC12E		0x01000000
-#define IRQSTAT_CLE		0x00800000
-#define IRQSTAT_DEBE		0x00400000
-#define IRQSTAT_DCE		0x00200000
-#define IRQSTAT_DTOE		0x00100000
-#define IRQSTAT_CIE		0x00080000
-#define IRQSTAT_CEBE		0x00040000
-#define IRQSTAT_CCE		0x00020000
-#define IRQSTAT_CTOE		0x00010000
-#define IRQSTAT_CINT		0x00000100
-#define IRQSTAT_CRM		0x00000080
-#define IRQSTAT_CINS		0x00000040
-#define IRQSTAT_BRR		0x00000020
-#define IRQSTAT_BWR		0x00000010
-#define IRQSTAT_DINT		0x00000008
-#define IRQSTAT_BGE		0x00000004
-#define IRQSTAT_TC		0x00000002
-#define IRQSTAT_CC		0x00000001
+static inline u32 sdhci_read32(struct sdhci *host, int reg)
+{
+	return host->read32(host, reg);
+}
 
-#define IRQSTATEN_DMAE		0x10000000
-#define IRQSTATEN_AC12E		0x01000000
-#define IRQSTATEN_DEBE		0x00400000
-#define IRQSTATEN_DCE		0x00200000
-#define IRQSTATEN_DTOE		0x00100000
-#define IRQSTATEN_CIE		0x00080000
-#define IRQSTATEN_CEBE		0x00040000
-#define IRQSTATEN_CCE		0x00020000
-#define IRQSTATEN_CTOE		0x00010000
-#define IRQSTATEN_CINT		0x00000100
-#define IRQSTATEN_CRM		0x00000080
-#define IRQSTATEN_CINS		0x00000040
-#define IRQSTATEN_BRR		0x00000020
-#define IRQSTATEN_BWR		0x00000010
-#define IRQSTATEN_DINT		0x00000008
-#define IRQSTATEN_BGE		0x00000004
-#define IRQSTATEN_TC		0x00000002
-#define IRQSTATEN_CC		0x00000001
+static inline u32 sdhci_read16(struct sdhci *host, int reg)
+{
+	return host->read16(host, reg);
+}
 
-#define PRSSTAT_DAT0		0x01000000
-#define PRSSTAT_CLSL		0x00800000
-#define PRSSTAT_WPSPL		0x00080000
-#define PRSSTAT_CDPL		0x00040000
-#define PRSSTAT_CINS		0x00010000
-#define PRSSTAT_BREN		0x00000800
-#define PRSSTAT_BWEN		0x00000400
-#define PRSSTAT_SDSTB		0x00000008
-#define PRSSTAT_DLA		0x00000004
-#define PRSSTAT_CIDHB		0x00000002
-#define PRSSTAT_CICHB		0x00000001
+static inline u32 sdhci_read8(struct sdhci *host, int reg)
+{
+	return host->read8(host, reg);
+}
+
+static inline void sdhci_write32(struct sdhci *host, int reg, u32 val)
+{
+	host->write32(host, reg, val);
+}
+
+static inline void sdhci_write16(struct sdhci *host, int reg, u32 val)
+{
+	host->write16(host, reg, val);
+}
+
+static inline void sdhci_write8(struct sdhci *host, int reg, u32 val)
+{
+	host->write8(host, reg, val);
+}
+
+void sdhci_read_response(struct sdhci *host, struct mci_cmd *cmd);
+void sdhci_set_cmd_xfer_mode(struct sdhci *host, struct mci_cmd *cmd,
+			     struct mci_data *data, bool dma, u32 *command,
+			     u32 *xfer);
+int sdhci_transfer_data(struct sdhci *sdhci, struct mci_data *data);
 
 #endif /* __MCI_SDHCI_H */

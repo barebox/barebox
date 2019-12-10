@@ -51,10 +51,13 @@ struct bcm2835_mci_host {
 	u32 max_clock;
 	u32 version;
 	uint64_t last_write;
+	struct sdhci sdhci;
 };
 
-static void bcm2835_mci_write(struct bcm2835_mci_host *host, u32 reg, u32 val)
+static void bcm2835_sdhci_write32(struct sdhci *sdhci, int reg, u32 val)
 {
+	struct bcm2835_mci_host *host = container_of(sdhci, struct bcm2835_mci_host, sdhci);
+
 	/*
 	 * The Arasan has a bugette whereby it may lose the content of
 	 * successive writes to registers that are within two SD-card clock
@@ -64,95 +67,21 @@ static void bcm2835_mci_write(struct bcm2835_mci_host *host, u32 reg, u32 val)
 	 * too)
 	 */
 
-	if (host->last_write != 0)
-		while ((get_time_ns() - host->last_write) < twoticks_delay)
-			;
-	host->last_write = get_time_ns();
+	if (reg != SDHCI_BUFFER) {
+		if (host->last_write != 0)
+			while ((get_time_ns() - host->last_write) < twoticks_delay)
+				;
+		host->last_write = get_time_ns();
+	}
+
 	writel(val, host->regs + reg);
 }
 
-static u32 bcm2835_mci_read(struct bcm2835_mci_host *host, u32 reg)
+static u32 bcm2835_sdhci_read32(struct sdhci *sdhci, int reg)
 {
+	struct bcm2835_mci_host *host = container_of(sdhci, struct bcm2835_mci_host, sdhci);
+
 	return readl(host->regs + reg);
-}
-
-/* Create special write data function since the data
- * register is not affected by the twoticks_delay bug
- * and we can thus get better speed here
- */
-static void bcm2835_mci_write_data(struct bcm2835_mci_host *host, u32 *p)
-{
-	writel(*p, host->regs + SDHCI_BUFFER);
-}
-
-/* Make a read data functions as well just to keep structure */
-static void bcm2835_mci_read_data(struct bcm2835_mci_host *host, u32 *p)
-{
-	*p = readl(host->regs + SDHCI_BUFFER);
-}
-
-static int bcm2835_mci_transfer_data(struct bcm2835_mci_host *host,
-		struct mci_cmd *cmd, struct mci_data *data) {
-	u32 *p;
-	u32 data_size, status, intr_status = 0;
-	u32 data_ready_intr_mask;
-	u32 data_ready_status_mask;
-	int i = 0;
-	void (*read_write_func)(struct bcm2835_mci_host*, u32*);
-
-	data_size = data->blocksize * data->blocks;
-
-	if (data->flags & MMC_DATA_READ) {
-		p = (u32 *) data->dest;
-		data_ready_intr_mask = IRQSTAT_BRR;
-		data_ready_status_mask = PRSSTAT_BREN;
-		read_write_func = &bcm2835_mci_read_data;
-	} else {
-		p = (u32 *) data->src;
-		data_ready_intr_mask = IRQSTAT_BWR;
-		data_ready_status_mask = PRSSTAT_BWEN;
-		read_write_func = &bcm2835_mci_write_data;
-	}
-	do {
-		intr_status = bcm2835_mci_read(host, SDHCI_INT_STATUS);
-		if (intr_status & IRQSTAT_CIE) {
-			dev_err(host->hw_dev,
-					"Error occured while transferring data: 0x%X\n",
-					intr_status);
-			return -EPERM;
-		}
-		if (intr_status & data_ready_intr_mask) {
-			status = bcm2835_mci_read(host, SDHCI_PRESENT_STATE);
-			if ((status & data_ready_status_mask) == 0)
-				continue;
-			/*Clear latest int and transfer one block size of data*/
-			bcm2835_mci_write(host, SDHCI_INT_STATUS,
-					data_ready_intr_mask);
-			for (i = 0; i < data->blocksize; i += 4) {
-				read_write_func(host, p);
-				p++;
-				data_size -= 4;
-			}
-		}
-	} while ((intr_status & IRQSTAT_TC) == 0);
-
-	if (data_size != 0) {
-		if (data->flags & MMC_DATA_READ)
-			dev_err(host->hw_dev, "Error while reading:\n");
-		else
-			dev_err(host->hw_dev, "Error while writing:\n");
-
-		dev_err(host->hw_dev, "Transferred %d bytes of data, wanted %d\n",
-				(data->blocksize * data->blocks) - data_size,
-				data->blocksize * data->blocks);
-
-		dev_err(host->hw_dev, "Status: 0x%X, Interrupt: 0x%X\n",
-				bcm2835_mci_read(host, SDHCI_PRESENT_STATE),
-				bcm2835_mci_read(host, SDHCI_INT_STATUS));
-
-		return -EPERM;
-	}
-	return 0;
 }
 
 static u32 bcm2835_mci_wait_command_done(struct bcm2835_mci_host *host)
@@ -160,11 +89,10 @@ static u32 bcm2835_mci_wait_command_done(struct bcm2835_mci_host *host)
 	u32 interrupt = 0;
 
 	while (true) {
-		interrupt = bcm2835_mci_read(
-				host, SDHCI_INT_STATUS);
-		if (interrupt & IRQSTAT_CIE)
+		interrupt = sdhci_read32(&host->sdhci, SDHCI_INT_STATUS);
+		if (interrupt & SDHCI_INT_INDEX)
 			return -EPERM;
-		if (interrupt & IRQSTAT_CC)
+		if (interrupt & SDHCI_INT_CMD_COMPLETE)
 			break;
 	}
 	return 0;
@@ -174,15 +102,15 @@ static void bcm2835_mci_reset_emmc(struct bcm2835_mci_host *host, u32 reset,
 		u32 wait_for)
 {
 	u32 ret;
-	u32 current = bcm2835_mci_read(host,
+	u32 current = sdhci_read32(&host->sdhci,
 			SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET);
 
-	bcm2835_mci_write(host,
+	sdhci_write32(&host->sdhci,
 			SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET,
 			current | reset);
 
 	while (true) {
-		ret = bcm2835_mci_read(host,
+		ret = sdhci_read32(&host->sdhci,
 				SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET);
 		if (ret & wait_for)
 			continue;
@@ -199,31 +127,14 @@ static void bcm2835_mci_reset_emmc(struct bcm2835_mci_host *host, u32 reset,
  */
 static int bcm2835_mci_request(struct mci_host *mci, struct mci_cmd *cmd,
 		struct mci_data *data) {
-	u32 command, block_data = 0, ret = 0;
-	u32 wait_inhibit_mask = PRSSTAT_CICHB | PRSSTAT_CIDHB;
+	u32 command, block_data = 0, ret = 0, transfer_mode = 0;
+	u32 wait_inhibit_mask = SDHCI_CMD_INHIBIT_CMD | SDHCI_CMD_INHIBIT_DATA;
 	struct bcm2835_mci_host *host = to_bcm2835_host(mci);
 
-	command = COMMAND_CMD(cmd->cmdidx);
+	sdhci_set_cmd_xfer_mode(&host->sdhci, cmd, data, false,
+				&command, &transfer_mode);
 
-	if (cmd->resp_type != MMC_RSP_NONE) {
-		if (cmd->resp_type & MMC_RSP_136)
-			command |= COMMAND_RSPTYP_136;
-		else if (cmd->resp_type & MMC_RSP_BUSY)
-			command |= COMMAND_RSPTYP_48_BUSY;
-		else
-			command |= COMMAND_RSPTYP_48;
-		if (cmd->resp_type & MMC_RSP_CRC)
-			command |= COMMAND_CCCEN;
-	}
 	if (data != NULL) {
-		command |= COMMAND_DPSEL | TRANSFER_MODE_BCEN;
-
-		if (data->blocks > 1)
-			command |= TRANSFER_MODE_MSBSEL;
-
-		if (data->flags & MMC_DATA_READ)
-			command |= TRANSFER_MODE_DTDSEL;
-
 		block_data = (data->blocks << BLOCK_SHIFT);
 		block_data |= data->blocksize;
 	}
@@ -231,55 +142,39 @@ static int bcm2835_mci_request(struct mci_host *mci, struct mci_cmd *cmd,
 	/* We shouldn't wait for data inihibit for stop commands, even
 	though they might use busy signaling */
 	if (cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
-		wait_inhibit_mask = PRSSTAT_CICHB;
+		wait_inhibit_mask = SDHCI_CMD_INHIBIT_CMD;
 
 	/*Wait for old command*/
-	while (bcm2835_mci_read(host, SDHCI_PRESENT_STATE)
+	while (sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE)
 			& wait_inhibit_mask)
 		;
 
-	bcm2835_mci_write(host, SDHCI_INT_ENABLE, 0xFFFFFFFF);
-	bcm2835_mci_write(host, SDHCI_INT_STATUS, 0xFFFFFFFF);
+	sdhci_write32(&host->sdhci, SDHCI_INT_ENABLE, 0xFFFFFFFF);
+	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, 0xFFFFFFFF);
 
-	bcm2835_mci_write(host, SDHCI_BLOCK_SIZE__BLOCK_COUNT, block_data);
-	bcm2835_mci_write(host, SDHCI_ARGUMENT, cmd->cmdarg);
-	bcm2835_mci_write(host, SDHCI_TRANSFER_MODE__COMMAND, command);
+	sdhci_write32(&host->sdhci, SDHCI_BLOCK_SIZE__BLOCK_COUNT, block_data);
+	sdhci_write32(&host->sdhci, SDHCI_ARGUMENT, cmd->cmdarg);
+	sdhci_write32(&host->sdhci, SDHCI_TRANSFER_MODE__COMMAND,
+		      command << 16 | transfer_mode);
 
 	ret = bcm2835_mci_wait_command_done(host);
 	if (ret) {
 		dev_err(host->hw_dev, "Error while executing command %d\n",
 				cmd->cmdidx);
 		dev_err(host->hw_dev, "Status: 0x%X, Interrupt: 0x%X\n",
-				bcm2835_mci_read(host, SDHCI_PRESENT_STATE),
-				bcm2835_mci_read(host, SDHCI_INT_STATUS));
+				sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE),
+				sdhci_read32(&host->sdhci, SDHCI_INT_STATUS));
 	}
 	if (cmd->resp_type != 0 && ret != -1) {
-		int i = 0;
+		sdhci_read_response(&host->sdhci, cmd);
 
-		/* CRC is stripped so we need to do some shifting. */
-		if (cmd->resp_type & MMC_RSP_136) {
-			for (i = 0; i < 4; i++) {
-				cmd->response[i] = bcm2835_mci_read(
-					host,
-					SDHCI_RESPONSE_0 + (3 - i) * 4) << 8;
-				if (i != 3)
-					cmd->response[i] |=
-						readb((u32) (host->regs) +
-						SDHCI_RESPONSE_0 +
-						(3 - i) * 4 - 1);
-			}
-		} else {
-			cmd->response[0] = bcm2835_mci_read(
-					host, SDHCI_RESPONSE_0);
-		}
-		bcm2835_mci_write(host, SDHCI_INT_STATUS,
-				IRQSTAT_CC);
+		sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, SDHCI_INT_CMD_COMPLETE);
 	}
 
 	if (!ret && data)
-		ret = bcm2835_mci_transfer_data(host, cmd, data);
+		ret = sdhci_transfer_data(&host->sdhci, data);
 
-	bcm2835_mci_write(host, SDHCI_INT_STATUS, 0xFFFFFFFF);
+	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, 0xFFFFFFFF);
 	if (ret) {
 		bcm2835_mci_reset_emmc(host, CONTROL1_CMDRST,
 				CONTROL1_CMDRST);
@@ -343,19 +238,19 @@ static void bcm2835_mci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 
 	struct bcm2835_mci_host *host = to_bcm2835_host(mci);
 
-	current_val = bcm2835_mci_read(host,
+	current_val = sdhci_read32(&host->sdhci,
 			SDHCI_HOST_CONTROL__POWER_CONTROL__BLOCK_GAP_CONTROL);
 
 	switch (ios->bus_width) {
 	case MMC_BUS_WIDTH_4:
-		bcm2835_mci_write(host,
+		sdhci_write32(&host->sdhci,
 				SDHCI_HOST_CONTROL__POWER_CONTROL__BLOCK_GAP_CONTROL,
 				current_val | CONTROL0_4DATA);
 		host->bus_width = 1;
 		dev_dbg(host->hw_dev, "Changing bus width to 4\n");
 		break;
 	case MMC_BUS_WIDTH_1:
-		bcm2835_mci_write(host,
+		sdhci_write32(&host->sdhci,
 				SDHCI_HOST_CONTROL__POWER_CONTROL__BLOCK_GAP_CONTROL,
 				current_val & ~CONTROL0_4DATA);
 		host->bus_width = 0;
@@ -367,15 +262,15 @@ static void bcm2835_mci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 		return;
 	}
 	if (ios->clock != host->clock && ios->clock != 0) {
-		bcm2835_mci_write(host,
+		sdhci_write32(&host->sdhci,
 				SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET,
 				0x00);
 
 		if (ios->clock > 26000000) {
-			enable = bcm2835_mci_read(host,
+			enable = sdhci_read32(&host->sdhci,
 					SDHCI_HOST_CONTROL__POWER_CONTROL__BLOCK_GAP_CONTROL);
 			enable |= CONTROL0_HISPEED;
-			bcm2835_mci_write(host,
+			sdhci_write32(&host->sdhci,
 					SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET,
 					enable);
 		}
@@ -388,18 +283,18 @@ static void bcm2835_mci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 		enable |= (divider_msb << CONTROL1_CLKMSB);
 		enable |= CONTROL1_INTCLKENA | CONTROL1_TIMEOUT;
 
-		bcm2835_mci_write(host,
+		sdhci_write32(&host->sdhci,
 				SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET,
 				enable);
 		while (true) {
-			u32 ret = bcm2835_mci_read(host,
+			u32 ret = sdhci_read32(&host->sdhci,
 					SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET);
 			if (ret & CONTROL1_CLK_STABLE)
 				break;
 		}
 
 		enable |= CONTROL1_CLKENA;
-		bcm2835_mci_write(host,
+		sdhci_write32(&host->sdhci,
 				SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET,
 				enable);
 
@@ -437,37 +332,37 @@ static int bcm2835_mci_reset(struct mci_host *mci, struct device_d *mci_dev)
 
 	bcm2835_mci_reset_emmc(host, enable | reset, CONTROL1_HOSTRST);
 
-	bcm2835_mci_write(host,
+	sdhci_write32(&host->sdhci,
 			SDHCI_HOST_CONTROL__POWER_CONTROL__BLOCK_GAP_CONTROL,
 			0x00);
-	bcm2835_mci_write(host, SDHCI_ACMD12_ERR__HOST_CONTROL2,
+	sdhci_write32(&host->sdhci, SDHCI_ACMD12_ERR__HOST_CONTROL2,
 			0x00);
-	bcm2835_mci_write(host,
+	sdhci_write32(&host->sdhci,
 			SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET,
 			enable);
 	while (true) {
-		ret = bcm2835_mci_read(host,
+		ret = sdhci_read32(&host->sdhci,
 				SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET);
 		if (ret & CONTROL1_CLK_STABLE)
 			break;
 	}
 
 	enable |= CONTROL1_CLKENA;
-	bcm2835_mci_write(host,
+	sdhci_write32(&host->sdhci,
 			SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET,
 			enable);
 
 	/*Delay atelast 74 clk cycles for card init*/
 	mdelay(100);
 
-	bcm2835_mci_write(host, SDHCI_INT_ENABLE,
+	sdhci_write32(&host->sdhci, SDHCI_INT_ENABLE,
 			0xFFFFFFFF);
-	bcm2835_mci_write(host, SDHCI_INT_STATUS,
+	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS,
 			0xFFFFFFFF);
 
 	/*Now write command 0 and see if we get response*/
-	bcm2835_mci_write(host, SDHCI_ARGUMENT, 0x0);
-	bcm2835_mci_write(host, SDHCI_TRANSFER_MODE__COMMAND, 0x0);
+	sdhci_write32(&host->sdhci, SDHCI_ARGUMENT, 0x0);
+	sdhci_write32(&host->sdhci, SDHCI_TRANSFER_MODE__COMMAND, 0x0);
 	return bcm2835_mci_wait_command_done(host);
 }
 
@@ -507,6 +402,9 @@ static int bcm2835_mci_probe(struct device_d *hw_dev)
 	host->hw_dev = hw_dev;
 	host->max_clock = clk_get_rate(clk);
 
+	host->sdhci.read32 = bcm2835_sdhci_read32;
+	host->sdhci.write32 = bcm2835_sdhci_write32;
+
 	mci_of_parse(&host->mci);
 
 	iores = dev_request_mem_resource(hw_dev, 0);
@@ -540,8 +438,7 @@ static int bcm2835_mci_probe(struct device_d *hw_dev)
 
 	twoticks_delay = ((2 * 1000000000) / MIN_FREQ) + 1;
 
-	host->version = bcm2835_mci_read(
-			host, BCM2835_MCI_SLOTISR_VER);
+	host->version = sdhci_read32(&host->sdhci, BCM2835_MCI_SLOTISR_VER);
 	host->version = (host->version >> 16) & 0xFF;
 	return mci_register(&host->mci);
 }

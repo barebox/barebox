@@ -33,38 +33,51 @@
 struct dove_sdhci {
 	struct mci_host mci;
 	void __iomem *base;
+	struct sdhci sdhci;
 };
 
 #define priv_from_mci_host(h)	\
 	container_of(h, struct dove_sdhci, mci);
 
-static inline void dove_sdhci_writel(struct dove_sdhci *p, int reg, u32 val)
+static void dove_sdhci_writel(struct sdhci *sdhci, int reg, u32 val)
 {
+	struct dove_sdhci *p = container_of(sdhci, struct dove_sdhci, sdhci);
+
 	writel(val, p->base + reg);
 }
 
-static inline void dove_sdhci_writew(struct dove_sdhci *p, int reg, u16 val)
+static void dove_sdhci_writew(struct sdhci *sdhci, int reg, u16 val)
 {
+	struct dove_sdhci *p = container_of(sdhci, struct dove_sdhci, sdhci);
+
 	writew(val, p->base + reg);
 }
 
-static inline void dove_sdhci_writeb(struct dove_sdhci *p, int reg, u8 val)
+static void dove_sdhci_writeb(struct sdhci *sdhci, int reg, u8 val)
 {
+	struct dove_sdhci *p = container_of(sdhci, struct dove_sdhci, sdhci);
+
 	writeb(val, p->base + reg);
 }
 
-static inline u32 dove_sdhci_readl(struct dove_sdhci *p, int reg)
+static u32 dove_sdhci_readl(struct sdhci *sdhci, int reg)
 {
+	struct dove_sdhci *p = container_of(sdhci, struct dove_sdhci, sdhci);
+
 	return readl(p->base + reg);
 }
 
-static inline u16 dove_sdhci_readw(struct dove_sdhci *p, int reg)
+static u16 dove_sdhci_readw(struct sdhci *sdhci, int reg)
 {
+	struct dove_sdhci *p = container_of(sdhci, struct dove_sdhci, sdhci);
+
 	return readw(p->base + reg);
 }
 
-static inline u8 dove_sdhci_readb(struct dove_sdhci *p, int reg)
+static u8 dove_sdhci_readb(struct sdhci *sdhci, int reg)
 {
+	struct dove_sdhci *p = container_of(sdhci, struct dove_sdhci, sdhci);
+
 	return readb(p->base + reg);
 }
 
@@ -75,7 +88,7 @@ static int dove_sdhci_wait_for_done(struct dove_sdhci *host, u16 mask)
 
 	start = get_time_ns();
 	while (1) {
-		status = dove_sdhci_readw(host, SDHCI_INT_NORMAL_STATUS);
+		status = sdhci_read16(&host->sdhci, SDHCI_INT_NORMAL_STATUS);
 		if (status & SDHCI_INT_ERROR)
 			return -EPERM;
 		/* this special quirk is necessary, as the dma
@@ -83,8 +96,8 @@ static int dove_sdhci_wait_for_done(struct dove_sdhci *host, u16 mask)
 		 * restart after acknowledging it this way.
 		 */
 		if (status & SDHCI_INT_DMA) {
-			u32 addr = dove_sdhci_readl(host, SDHCI_DMA_ADDRESS);
-			dove_sdhci_writel(host, SDHCI_DMA_ADDRESS, addr);
+			u32 addr = sdhci_read32(&host->sdhci, SDHCI_DMA_ADDRESS);
+			sdhci_write32(&host->sdhci, SDHCI_DMA_ADDRESS, addr);
 		}
 		if (status & mask)
 			break;
@@ -100,12 +113,13 @@ static int dove_sdhci_mci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 				struct mci_data *data)
 {
 	u16 val;
+	u32 command, xfer;
 	u64 start;
 	int ret;
-	unsigned int num_bytes = data->blocks * data->blocksize;
+	unsigned int num_bytes = 0;
 	struct dove_sdhci *host = priv_from_mci_host(mci);
 
-	dove_sdhci_writel(host, SDHCI_INT_STATUS, ~0);
+	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, ~0);
 
 	/* Do not wait for CMD_INHIBIT_DAT on stop commands */
 	if (cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
@@ -116,7 +130,7 @@ static int dove_sdhci_mci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 	/* Wait for bus idle */
 	start = get_time_ns();
 	while (1) {
-		if (!(dove_sdhci_readw(host, SDHCI_PRESENT_STATE) & val))
+		if (!(sdhci_read16(&host->sdhci, SDHCI_PRESENT_STATE) & val))
 			break;
 		if (is_timeout(start, 10 * MSECOND)) {
 			dev_err(host->mci.hw_dev, "SDHCI timeout while waiting for idle\n");
@@ -126,14 +140,15 @@ static int dove_sdhci_mci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 
 	/* setup transfer data */
 	if (data) {
+		num_bytes = data->blocks * data->blocksize;
 		if (data->flags & MMC_DATA_READ)
-			dove_sdhci_writel(host, SDHCI_DMA_ADDRESS, (u32)data->dest);
+			sdhci_write32(&host->sdhci, SDHCI_DMA_ADDRESS, (u32)data->dest);
 		else
-			dove_sdhci_writel(host, SDHCI_DMA_ADDRESS, (u32)data->src);
-		dove_sdhci_writew(host, SDHCI_BLOCK_SIZE, SDHCI_DMA_BOUNDARY_512K |
+			sdhci_write32(&host->sdhci, SDHCI_DMA_ADDRESS, (u32)data->src);
+		sdhci_write16(&host->sdhci, SDHCI_BLOCK_SIZE, SDHCI_DMA_BOUNDARY_512K |
 				SDHCI_TRANSFER_BLOCK_SIZE(data->blocksize));
-		dove_sdhci_writew(host, SDHCI_BLOCK_COUNT, data->blocks);
-		dove_sdhci_writeb(host, SDHCI_TIMEOUT_CONTROL, 0xe);
+		sdhci_write16(&host->sdhci, SDHCI_BLOCK_COUNT, data->blocks);
+		sdhci_write8(&host->sdhci, SDHCI_TIMEOUT_CONTROL, 0xe);
 
 
 		if (data->flags & MMC_DATA_WRITE)
@@ -145,84 +160,48 @@ static int dove_sdhci_mci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 	}
 
 	/* setup transfer mode */
-	val = 0;
-	if (data) {
-		val |= SDHCI_DMA_EN | SDHCI_BLOCK_COUNT_EN;
-		if (data->blocks > 1)
-			val |= SDHCI_MULTIPLE_BLOCKS;
-		if (data->flags & MMC_DATA_READ)
-			val |= SDHCI_DATA_TO_HOST;
-	}
-	dove_sdhci_writew(host, SDHCI_TRANSFER_MODE, val);
+	sdhci_set_cmd_xfer_mode(&host->sdhci, cmd, data, true, &command, &xfer);
 
-	dove_sdhci_writel(host, SDHCI_ARGUMENT, cmd->cmdarg);
-
-	if (!(cmd->resp_type & MMC_RSP_PRESENT))
-		val = SDHCI_RESP_NONE;
-	else if (cmd->resp_type & MMC_RSP_136)
-		val = SDHCI_RESP_TYPE_136;
-	else if (cmd->resp_type & MMC_RSP_BUSY)
-		val = SDHCI_RESP_TYPE_48_BUSY;
-	else
-		val = SDHCI_RESP_TYPE_48;
-
-	if (cmd->resp_type & MMC_RSP_CRC)
-		val |= SDHCI_CMD_CRC_CHECK_EN;
-	if (cmd->resp_type & MMC_RSP_OPCODE)
-		val |= SDHCI_CMD_INDEX_CHECK_EN;
-	if (data)
-		val |= SDHCI_DATA_PRESENT;
-	val |= SDHCI_CMD_INDEX(cmd->cmdidx);
-
-	dove_sdhci_writew(host, SDHCI_COMMAND, val);
+	sdhci_write16(&host->sdhci, SDHCI_TRANSFER_MODE, xfer);
+	sdhci_write32(&host->sdhci, SDHCI_ARGUMENT, cmd->cmdarg);
+	sdhci_write16(&host->sdhci, SDHCI_COMMAND, command);
 
 	ret = dove_sdhci_wait_for_done(host, SDHCI_INT_CMD_COMPLETE);
 	if (ret) {
 		dev_err(host->mci.hw_dev, "error on command %d\n", cmd->cmdidx);
 		dev_err(host->mci.hw_dev, "state = %04x %04x, interrupt = %04x %04x\n",
-			dove_sdhci_readw(host, SDHCI_PRESENT_STATE),
-			dove_sdhci_readw(host, SDHCI_PRESENT_STATE1),
-			dove_sdhci_readw(host, SDHCI_INT_NORMAL_STATUS),
-			dove_sdhci_readw(host, SDHCI_INT_ERROR_STATUS));
+			sdhci_read16(&host->sdhci, SDHCI_PRESENT_STATE),
+			sdhci_read16(&host->sdhci, SDHCI_PRESENT_STATE1),
+			sdhci_read16(&host->sdhci, SDHCI_INT_NORMAL_STATUS),
+			sdhci_read16(&host->sdhci, SDHCI_INT_ERROR_STATUS));
 		goto cmd_error;
 	}
 
-	/* CRC is stripped so we need to do some shifting. */
-	if (cmd->resp_type & MMC_RSP_136) {
-		int i;
-		for (i = 0; i < 4; i++) {
-			cmd->response[i] = dove_sdhci_readl(host,
-					SDHCI_RESPONSE_0 + 4*(3-i)) << 8;
-			if (i != 3)
-				cmd->response[i] |= dove_sdhci_readb(host,
-					SDHCI_RESPONSE_0 + 4*(3-i) - 1);
-		}
-	} else
-		cmd->response[0] = dove_sdhci_readl(host, SDHCI_RESPONSE_0);
-
-	if (data->flags & MMC_DATA_WRITE)
-		dma_sync_single_for_cpu((unsigned long)data->src,
-					 num_bytes, DMA_TO_DEVICE);
-	else
-		dma_sync_single_for_cpu((unsigned long)data->dest,
-					 num_bytes, DMA_FROM_DEVICE);
+	sdhci_read_response(&host->sdhci, cmd);
 
 	if (data) {
+		if (data->flags & MMC_DATA_WRITE)
+			dma_sync_single_for_cpu((unsigned long)data->src,
+						num_bytes, DMA_TO_DEVICE);
+		else
+			dma_sync_single_for_cpu((unsigned long)data->dest,
+					 num_bytes, DMA_FROM_DEVICE);
+
 		ret = dove_sdhci_wait_for_done(host, SDHCI_INT_XFER_COMPLETE);
 		if (ret) {
 			dev_err(host->mci.hw_dev, "error while transfering data for command %d\n",
 				cmd->cmdidx);
 			dev_err(host->mci.hw_dev, "state = %04x %04x, interrupt = %04x %04x\n",
-				dove_sdhci_readw(host, SDHCI_PRESENT_STATE),
-				dove_sdhci_readw(host, SDHCI_PRESENT_STATE1),
-				dove_sdhci_readw(host, SDHCI_INT_NORMAL_STATUS),
-				dove_sdhci_readw(host, SDHCI_INT_ERROR_STATUS));
+				sdhci_read16(&host->sdhci, SDHCI_PRESENT_STATE),
+				sdhci_read16(&host->sdhci, SDHCI_PRESENT_STATE1),
+				sdhci_read16(&host->sdhci, SDHCI_INT_NORMAL_STATUS),
+				sdhci_read16(&host->sdhci, SDHCI_INT_ERROR_STATUS));
 			goto cmd_error;
 		}
 	}
 
 cmd_error:
-	dove_sdhci_writel(host, SDHCI_INT_STATUS, ~0);
+	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, ~0);
 	return ret;
 }
 
@@ -252,11 +231,11 @@ static void dove_sdhci_mci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 
 	/* enable bus power */
 	val = SDHCI_BUS_VOLTAGE_330;
-	dove_sdhci_writeb(host, SDHCI_POWER_CONTROL, val | SDHCI_BUS_POWER_EN);
+	sdhci_write8(&host->sdhci, SDHCI_POWER_CONTROL, val | SDHCI_BUS_POWER_EN);
 	udelay(400);
 
 	/* set bus width */
-	val = dove_sdhci_readb(host, SDHCI_HOST_CONTROL) &
+	val = sdhci_read8(&host->sdhci, SDHCI_HOST_CONTROL) &
 		~(SDHCI_DATA_WIDTH_4BIT | SDHCI_DATA_WIDTH_8BIT);
 	switch (ios->bus_width) {
 	case MMC_BUS_WIDTH_8:
@@ -272,17 +251,17 @@ static void dove_sdhci_mci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	else
 		val &= ~SDHCI_HIGHSPEED_EN;
 
-	dove_sdhci_writeb(host, SDHCI_HOST_CONTROL, val);
+	sdhci_write8(&host->sdhci, SDHCI_HOST_CONTROL, val);
 
 	/* set bus clock */
-	dove_sdhci_writew(host, SDHCI_CLOCK_CONTROL, 0);
+	sdhci_write16(&host->sdhci, SDHCI_CLOCK_CONTROL, 0);
 	val = dove_sdhci_get_clock_divider(host, ios->clock);
 	val = SDHCI_INTCLOCK_EN | SDHCI_FREQ_SEL(val);
-	dove_sdhci_writew(host, SDHCI_CLOCK_CONTROL, val);
+	sdhci_write16(&host->sdhci, SDHCI_CLOCK_CONTROL, val);
 
 	/* wait for internal clock stable */
 	start = get_time_ns();
-	while (!(dove_sdhci_readw(host, SDHCI_CLOCK_CONTROL) &
+	while (!(sdhci_read16(&host->sdhci, SDHCI_CLOCK_CONTROL) &
 			SDHCI_INTCLOCK_STABLE)) {
 		if (is_timeout(start, 20 * MSECOND)) {
 			dev_err(host->mci.hw_dev, "SDHCI clock stable timeout\n");
@@ -291,7 +270,7 @@ static void dove_sdhci_mci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	}
 
 	/* enable bus clock */
-	dove_sdhci_writew(host, SDHCI_CLOCK_CONTROL, val | SDHCI_SDCLOCK_EN);
+	sdhci_write16(&host->sdhci, SDHCI_CLOCK_CONTROL, val | SDHCI_SDCLOCK_EN);
 }
 
 static int dove_sdhci_mci_init(struct mci_host *mci, struct device_d *dev)
@@ -300,12 +279,12 @@ static int dove_sdhci_mci_init(struct mci_host *mci, struct device_d *dev)
 	struct dove_sdhci *host = priv_from_mci_host(mci);
 
 	/* reset sdhci controller */
-	dove_sdhci_writeb(host, SDHCI_SOFTWARE_RESET, SDHCI_RESET_ALL);
+	sdhci_write8(&host->sdhci, SDHCI_SOFTWARE_RESET, SDHCI_RESET_ALL);
 
 	/* wait for reset completion */
 	start = get_time_ns();
 	while (1) {
-		if ((dove_sdhci_readb(host, SDHCI_SOFTWARE_RESET) &
+		if ((sdhci_read8(&host->sdhci, SDHCI_SOFTWARE_RESET) &
 				SDHCI_RESET_ALL) == 0)
 			break;
 		if (is_timeout(start, 100 * MSECOND)) {
@@ -314,9 +293,9 @@ static int dove_sdhci_mci_init(struct mci_host *mci, struct device_d *dev)
 		}
 	}
 
-	dove_sdhci_writel(host, SDHCI_INT_STATUS, ~0);
-	dove_sdhci_writel(host, SDHCI_INT_ENABLE, ~0);
-	dove_sdhci_writel(host, SDHCI_SIGNAL_ENABLE, ~0);
+	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, ~0);
+	sdhci_write32(&host->sdhci, SDHCI_INT_ENABLE, ~0);
+	sdhci_write32(&host->sdhci, SDHCI_SIGNAL_ENABLE, ~0);
 
 	return 0;
 }
@@ -325,8 +304,8 @@ static void dove_sdhci_set_mci_caps(struct dove_sdhci *host)
 {
 	u16 caps[2];
 
-	caps[0] = dove_sdhci_readw(host, SDHCI_CAPABILITIES);
-	caps[1] = dove_sdhci_readw(host, SDHCI_CAPABILITIES_1);
+	caps[0] = sdhci_read16(&host->sdhci, SDHCI_CAPABILITIES);
+	caps[1] = sdhci_read16(&host->sdhci, SDHCI_CAPABILITIES_1);
 
 	if (caps[1] & SDHCI_HOSTCAP_VOLTAGE_180)
 		host->mci.voltages |= MMC_VDD_165_195;
@@ -368,6 +347,12 @@ static int dove_sdhci_probe(struct device_d *dev)
 	host->mci.init = dove_sdhci_mci_init;
 	host->mci.f_max = 50000000;
 	host->mci.f_min = host->mci.f_max / 256;
+	host->sdhci.read32 = dove_sdhci_readl;
+	host->sdhci.read16 = dove_sdhci_readw;
+	host->sdhci.read8 = dove_sdhci_readb;
+	host->sdhci.write32 = dove_sdhci_writel;
+	host->sdhci.write16 = dove_sdhci_writew;
+	host->sdhci.write8 = dove_sdhci_writeb;
 	dev->priv = host;
 	dev->detect = dove_sdhci_detect;
 

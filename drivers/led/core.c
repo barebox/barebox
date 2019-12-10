@@ -286,11 +286,16 @@ enum led_trigger trigger_by_name(const char *name)
 
 void led_of_parse_trigger(struct led *led, struct device_node *np)
 {
-	enum led_trigger trg;
+	enum led_trigger trg = LED_TRIGGER_MAX;
 	const char *trigger;
 
-	trigger = of_get_property(np, "linux,default-trigger", NULL);
-	trg = trigger_by_name(trigger);
+	if (of_property_read_bool(np, "panic-indicator"))
+		trg = LED_TRIGGER_PANIC;
+
+	if (trg == LED_TRIGGER_MAX) {
+		trigger = of_get_property(np, "linux,default-trigger", NULL);
+		trg = trigger_by_name(trigger);
+	}
 
 	if (trg == LED_TRIGGER_MAX) {
 		trigger = of_get_property(np, "barebox,default-trigger", NULL);

@@ -12,3 +12,6 @@ Common leds properties
 
 * ``label``: The label for this LED. If omitted, the label is taken
   from the node name (excluding the unit address).
+
+* ``panic-indicator`` - This property specifies that the LED should be used as a
+ panic indicator.

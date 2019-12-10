@@ -225,6 +225,21 @@ are the release rules:
   people.
 
 
+Contributing
+------------
+
+For any questions regarding Barebox, send a mail to the mailing list at
+<barebox@lists.infradead.org>. The archives for this list are available
+publicly at <http://lists.infradead.org/pipermail/barebox/> and
+<https://www.mail-archive.com/barebox@lists.infradead.org/>.
+
+The same list should also be used to send patches. Barebox uses a similar
+process as the Linux kernel, so most of the Linux guide for submitting patches
+<https://www.kernel.org/doc/html/latest/process/submitting-patches.html> also
+applies to Barebox (except the step for selecting your recipient - we don't
+have a MAINTAINERS file, instead all patches go to the list).
+
+
 License
 -------
 

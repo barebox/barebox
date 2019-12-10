@@ -174,7 +174,6 @@ static int eqos_init_stm32(struct device_d *dev, struct eqos *eqos)
 	return 0;
 }
 
-// todo split!
 static struct eqos_ops stm32_ops = {
 	.init = eqos_init_stm32,
 	.get_ethaddr = eqos_get_ethaddr,

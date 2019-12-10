@@ -31,6 +31,16 @@ extern char __dtb_zynq_zed_start[];
 
 static void avnet_zedboard_ps7_init(void)
 {
+	/*
+	 * Read OCM mapping configuration, if only the upper 64 KByte are
+	 * mapped to the high address, it's very likely that we just got control
+	 * from the BootROM. If the mapping is changed something other than the
+	 * BootROM was running before us. Skip PS7 init to avoid cutting the
+	 * branch we are sitting on in that case.
+	 */
+	if ((readl(0xf8000910) & 0xf) != 0x8)
+		return;
+
 	/* open sesame */
 	writel(0x0000DF0D, ZYNQ_SLCR_UNLOCK);
 

@@ -1343,3 +1343,41 @@ static struct driver_d fman_driver = {
 	.of_compatible = DRV_OF_COMPAT(fsl_fman_dt_ids),
 };
 device_platform_driver(fman_driver);
+
+static int fman_of_fixup(struct device_node *root, void *context)
+{
+	struct device_node *fman, *fman_bb;
+	struct device_node *child, *child_bb;
+
+	fman_bb = of_find_compatible_node(NULL, NULL, "fsl,fman");
+	fman = of_find_compatible_node(root, NULL, "fsl,fman");
+
+	/*
+	 * The dts files in the Linux tree have all network interfaces
+	 * enabled. Disable the ones that are disabled under barebox
+	 * as well.
+	 */
+	for_each_child_of_node(fman, child) {
+		if (!of_device_is_compatible(child, "fsl,fman-memac"))
+			continue;
+
+		child_bb = of_get_child_by_name(fman_bb, child->name);
+		if (!child_bb)
+			continue;
+
+		if (of_device_is_available(child_bb))
+			of_device_enable(child);
+		else
+			of_device_disable(child);
+	}
+
+	return 0;
+}
+
+static int fman_register_of_fixup(void)
+{
+	of_register_fixup(fman_of_fixup, NULL);
+
+	return 0;
+}
+late_initcall(fman_register_of_fixup);

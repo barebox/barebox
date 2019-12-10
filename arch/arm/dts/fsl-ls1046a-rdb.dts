@@ -5,6 +5,10 @@
 #include <arm64/freescale/fsl-ls1046a-rdb.dts>
 
 / {
+	aliases {
+		eeprom = &eeprom;
+	};
+
 	chosen {
 		stdout-path = &duart0;
 
@@ -23,9 +27,14 @@
 	#address-cells = <1>;
 	#size-cells = <1>;
 
-	environment_sd: partition@200000 {
+	partition@1000 {
+		label = "barebox";
+		reg = <0x1000 0xdf000>;
+	};
+
+	environment_sd: partition@e0000 {
 		label = "barebox-environment";
-		reg = <0x200000 0x20000>;
+		reg = <0xe0000 0x20000>;
 	};
 };
 
@@ -40,6 +49,17 @@
 &gpio2 {
 	status = "okay";
 };
+
+&i2c0 {
+	eeprom: eeprom@52 {
+		compatible = "atmel,24c04";
+	};
+
+	non_existent_eeprom: eeprom@53 {
+	};
+};
+
+/delete-node/ &non_existent_eeprom;
 
 &fman0 {
 	ethernet@e0000 {
@@ -109,6 +129,14 @@
 	};
 };
 
+&qflash0 {
+	compatible = "jedec,spi-nor";
+};
+
+&qflash1 {
+	compatible = "jedec,spi-nor";
+};
+
 &usb0 {
 	dr_mode = "host";
 };
@@ -121,4 +149,18 @@
 
 &usb2 {
 	dr_mode = "host";
+};
+
+&soc {
+	pcie1: pcie@3400000 {
+		status = "okay";
+	};
+
+	pcie2: pcie@3500000 {
+		status = "okay";
+	};
+
+	pcie3: pcie@3600000 {
+		status = "okay";
+	};
 };

@@ -18,13 +18,32 @@
 int ppa_entry(const void *, u32 *, u32 *);
 void dma_flush_range(void *ptr, size_t size);
 
+#define SEC_JR3_OFFSET                     0x40000
+
 static int of_psci_do_fixup(struct device_node *root, void *unused)
 {
 	unsigned long psci_version;
+	struct device_node *np;
 	struct arm_smccc_res res = {};
 
 	arm_smccc_smc(ARM_PSCI_0_2_FN_PSCI_VERSION, 0, 0, 0, 0, 0, 0, 0, &res);
 	psci_version = res.a0;
+
+	for_each_compatible_node_from(np, root, NULL, "fsl,sec-v4.0-job-ring") {
+		const void *reg;
+		int na = of_n_addr_cells(np);
+		u64 offset;
+
+		reg = of_get_property(np, "reg", NULL);
+		if (!reg)
+			continue;
+
+		offset = of_read_number(reg, na);
+		if (offset != SEC_JR3_OFFSET)
+			continue;
+
+		of_delete_node(np);
+	}
 
 	return of_psci_fixup(root, psci_version);
 }

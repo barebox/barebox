@@ -84,7 +84,7 @@
 
 		compatible = "fixed-partitions";
 
-		partition@0 {
+		partition@1000 {
 			label = "barebox";
 			reg = <0x1000 0xdf000>;
 		};

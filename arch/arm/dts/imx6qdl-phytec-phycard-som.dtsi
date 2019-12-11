@@ -4,13 +4,7 @@
  * Author: Christian Hemp <c.hemp@phytec.de>
  */
 
-#include <arm/imx6q.dtsi>
-#include "imx6q.dtsi"
-
 / {
-	model = "PHYTEC phyCARD-i.MX6 Quad";
-	compatible = "phytec,imx6q-pcaaxl3", "fsl,imx6q";
-
 	chosen {
 		environment-nand {
 			compatible = "barebox,environment";

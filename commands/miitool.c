@@ -140,7 +140,10 @@ static int show_basic_mii(struct mii_bus *mii, struct phy_device *phydev,
 	}
 
 	*buf = '\0';
-	if (bmcr & BMCR_ANENABLE) {
+
+	if (bmcr & BMCR_PDOWN) {
+		sprintf(buf, "powerdown, ");
+	} else if (bmcr & BMCR_ANENABLE) {
 		if (bmsr & BMSR_ANEGCOMPLETE) {
 			if (advert & lkpar) {
 				sprintf(buf, "%s%s, ", (lkpar & LPA_LPACK) ?
@@ -192,6 +195,8 @@ static int show_basic_mii(struct mii_bus *mii, struct phy_device *phydev,
 			printf("loopback, ");
 		if (bmcr & BMCR_ISOLATE)
 			printf("isolate, ");
+		if (bmcr & BMCR_PDOWN)
+			printf("powerdown, ");
 		if (bmcr & BMCR_CTST)
 			printf("collision test, ");
 		if (bmcr & BMCR_ANENABLE) {

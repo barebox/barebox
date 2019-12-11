@@ -63,6 +63,7 @@
 	eeprom: m24c32@50 {
 		compatible = "st,24c32", "at24";
 		reg = <0x50>;
+		status = "disabled";
 	};
 };
 

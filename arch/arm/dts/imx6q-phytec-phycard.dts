@@ -23,6 +23,10 @@
 	};
 };
 
+&eeprom {
+	status = "okay";
+};
+
 &fec {
 	status = "okay";
 };

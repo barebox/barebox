@@ -1,12 +1,7 @@
+// SPDX-License-Identifier: (GPL-2.0-or-later)
 /*
- * Copyright 2014 Christian Hemp, Phytec Messtechnik GmbH
- *
- * The code contained herein is licensed under the GNU General Public
- * License. You may obtain a copy of the GNU General Public License
- * Version 2 or later at the following locations:
- *
- * http://www.opensource.org/licenses/gpl-license.html
- * http://www.gnu.org/copyleft/gpl.html
+ * Copyright (C) 2014 PHYTEC Messtechnik GmbH
+ * Author: Christian Hemp <c.hemp@phytec.de>
  */
 
 /dts-v1/;
@@ -16,7 +11,7 @@
 #include "imx6q-phytec-pcaaxl3.dtsi"
 
 / {
-	model = "Phytec phyCARD-i.MX6 Quad Carrier-Board";
+	model = "PHYTEC phyCARD-i.MX6 Quad";
 	compatible = "phytec,imx6q-pbaa03", "phytec,imx6q-pcaaxl3", "fsl,imx6q";
 
 	chosen {

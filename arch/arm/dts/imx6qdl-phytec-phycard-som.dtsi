@@ -4,6 +4,8 @@
  * Author: Christian Hemp <c.hemp@phytec.de>
  */
 
+#include <dt-bindings/gpio/gpio.h>
+
 / {
 	chosen {
 		environment-nand {
@@ -155,7 +157,7 @@
 &usdhc3 {
         pinctrl-names = "default";
         pinctrl-0 = <&pinctrl_usdhc3>;
-        cd-gpios = <&gpio5 22 0>;
+        cd-gpios = <&gpio5 22 GPIO_ACTIVE_HIGH>;
         status = "disabled";
 
 	partitions {

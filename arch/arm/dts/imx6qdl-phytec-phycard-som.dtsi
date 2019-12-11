@@ -42,17 +42,17 @@
 
 		partition@0 {
 			label = "barebox";
-			reg = <0x0 0x400000>;
+			reg = <0x0 0x1000000>;
 		};
 
 		environment_nand: partition@400000 {
 			label = "barebox-environment";
-			reg = <0x400000 0x20000>;
+			reg = <0x1000000 0x100000>;
 		};
 
 		partition@420000 {
 			label = "root";
-			reg = <0x420000 0x0>;
+			reg = <0x1100000 0x0>;
 		};
 	};
 };

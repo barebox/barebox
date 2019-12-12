@@ -101,8 +101,8 @@ static int do_led(int argc, char *argv[])
 
 	ret = led_set(led, value);
 	if (ret < 0) {
-		perror("led");
-		return 1;
+		printf("led: %s\n", strerror(-ret));
+		return COMMAND_ERROR;
 	}
 
 	return 0;

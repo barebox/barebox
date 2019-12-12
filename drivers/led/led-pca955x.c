@@ -316,7 +316,6 @@ led_pca955x_pdata_of_init(struct device_node *np, struct pca955x *pca955x)
 
 		pca955x_led->led_cdev.name = pca955x_led->name;
 		pca955x_led->led_cdev.set = pca955x_led_set;
-		pca955x_led->led_cdev.num = pca955x_led->led_num;
 		pca955x_led->led_cdev.max_value = 255;
 
 		err = led_register(&pca955x_led->led_cdev);

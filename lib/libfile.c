@@ -367,6 +367,8 @@ int copy_file(const char *src, const char *dst, int verbose)
 		goto out;
 	}
 
+	discard_range(dstfd, srcstat.st_size, 0);
+
 	if (verbose) {
 		if (stat(src, &srcstat) < 0)
 			srcstat.st_size = 0;

@@ -13,11 +13,12 @@
  */
 
 #include <common.h>
+#include <fs.h>
 #include <globalvar.h>
 #include <init.h>
-#include <fs.h>
-#include <net.h>
 #include <linux/nvmem-consumer.h>
+#include <net.h>
+#include <restart.h>
 
 static int rdu_eth_register_ethaddr(struct device_node *np)
 {
@@ -128,6 +129,9 @@ static int rdu_i210_invm(void)
 
 	val = I210_CFGWORD_PCIID_157B;
 	pwrite(fd, &val, sizeof(val), 0);
+
+	shutdown_barebox();
+	restart_machine();
 
 	return 0;
 }

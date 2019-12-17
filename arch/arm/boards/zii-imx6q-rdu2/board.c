@@ -180,8 +180,6 @@ static int rdu2_fixup_egalax_ts(struct device_node *root, void *context)
 		return -ENODEV;
 
 	of_device_enable(np);
-	of_property_write_u32(np->parent, "clock-frequency", 200000);
-
 
 	return 0;
 }

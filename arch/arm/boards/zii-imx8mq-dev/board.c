@@ -19,7 +19,8 @@ static int zii_imx8mq_dev_init(void)
 
 	barebox_set_hostname("imx8mq-zii-rdu3");
 
-	imx8mq_bbu_internal_mmcboot_register_handler("eMMC", "/dev/mmc0", 0);
+	imx8mq_bbu_internal_mmcboot_register_handler("eMMC", "/dev/mmc0",
+						     BBU_HANDLER_FLAG_DEFAULT);
 
 	if (bootsource_get_instance() == 0)
 		of_device_enable_path("/chosen/environment-emmc");

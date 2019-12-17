@@ -44,7 +44,7 @@ device_initcall(zii_imx8mq_dev_init);
 
 static int zii_imx8mq_dev_fixup_egalax_ts(struct device_node *root, void *ctx)
 {
-	struct device_node *np;
+	struct device_node *np, * aliases;
 
 	/*
 	 * The 27" unit has a EETI eGalax touchscreen instead of the
@@ -63,6 +63,12 @@ static int zii_imx8mq_dev_fixup_egalax_ts(struct device_node *root, void *ctx)
 		return -ENODEV;
 
 	of_device_enable(np);
+
+	aliases = of_find_node_by_path_from(root, "/aliases");
+	if (!aliases)
+		return -ENODEV;
+
+	of_property_write_string(aliases, "touchscreen0", np->full_name);
 
 	return 0;
 }
@@ -109,7 +115,8 @@ static int zii_imx8mq_dev_fixup_deb_internal(void)
 
 static int zii_imx8mq_dev_fixup_deb(struct device_node *root, void *ctx)
 {
-	struct device_node *np;
+	struct device_node *np, *aliases;
+	struct property *pp;
 
 	/*
 	 * In the kernel DT remove all devices from the DEB, which isn't
@@ -126,6 +133,16 @@ static int zii_imx8mq_dev_fixup_deb(struct device_node *root, void *ctx)
 		return -ENODEV;
 
 	of_device_disable(np);
+
+	aliases = of_find_node_by_path_from(root, "/aliases");
+	if (!aliases)
+		return -ENODEV;
+
+	pp = of_find_property(aliases, "ethernet-switch0", NULL);
+	if (!pp)
+		return -ENODEV;
+
+	of_delete_property(pp);
 
 	return 0;
 }

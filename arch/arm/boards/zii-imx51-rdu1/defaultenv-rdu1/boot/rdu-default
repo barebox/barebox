@@ -1,0 +1,14 @@
+#!/bin/sh
+
+sp.usb_power=1
+usb
+if [ "$bootsource" = "spi" ]; then
+	boot disk1.0 || boot disk2.0
+else
+	detect mmc0
+	if [ "$mmc0.boot" = "boot0" ]; then
+		boot mmc0.0
+	else
+		boot mmc0.1
+	fi
+fi

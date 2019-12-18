@@ -414,6 +414,9 @@ static int zynq_clock_probe(struct device_d *dev)
 	clks[ddrpll] = zynq_pll_clk(ZYNQ_PLL_DDR, "ddr_pll", clk_base + 0x4);
 	clks[iopll] = zynq_pll_clk(ZYNQ_PLL_IO,  "io_pll", clk_base + 0x8);
 
+	zynq_periph_clk("lqspi_clk", clk_base + 0x4c);
+	clks[lqspi] = clk_gate("qspi0", "lqspi_clk", clk_base + 0x4c, 0, 0, 0);
+
 	zynq_periph_clk("sdio_clk", clk_base + 0x50);
 	clks[sdio0] = clk_gate("sdio0", "sdio_clk", clk_base + 0x50, 0, 0, 0);
 	clks[sdio1] = clk_gate("sdio1", "sdio_clk", clk_base + 0x50, 1, 0, 0);

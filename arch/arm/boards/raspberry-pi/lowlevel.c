@@ -11,8 +11,15 @@ static void copy_vc_fdt(void *dest, void *src, unsigned long max_size)
 {
 	struct fdt_header *oftree_src = src;
 	struct fdt_header *oftree_dest = dest;
+	unsigned long size;
 
-	unsigned long size = be32_to_cpu(oftree_src->totalsize);
+	if (!src) {
+		oftree_dest->magic = cpu_to_be32(VIDEOCORE_FDT_ERROR);
+		oftree_dest->totalsize = cpu_to_be32(0);
+		return;
+	}
+
+	size = be32_to_cpu(oftree_src->totalsize);
 	if (size > max_size) {
 		oftree_dest->magic = cpu_to_be32(VIDEOCORE_FDT_ERROR);
 		/* Save an error code after the magic value for easier

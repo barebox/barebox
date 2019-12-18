@@ -433,13 +433,16 @@ static void rpi_vc_fdt(void)
 
 	oftree = saved_vc_fdt;
 	magic = be32_to_cpu(oftree->magic);
-	if (magic != FDT_MAGIC) {
-		pr_err("videocore fdt saved in pbl has invalid magic\n");
 
-		if (magic == VIDEOCORE_FDT_ERROR) {
+	if (magic == VIDEOCORE_FDT_ERROR) {
+		if (oftree->totalsize)
 			pr_err("there was an error copying fdt in pbl: %d\n",
 					be32_to_cpu(oftree->totalsize));
-		}
+		return;
+	}
+
+	if (magic != FDT_MAGIC) {
+		pr_err("videocore fdt saved in pbl has invalid magic\n");
 		return;
 	}
 

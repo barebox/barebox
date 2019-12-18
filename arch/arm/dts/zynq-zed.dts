@@ -1,7 +1,25 @@
 #include <arm/zynq-zed.dts>
+#include "zynq-7000.dtsi"
 
 / {
 	chosen {
 		stdout-path = &uart1;
+	};
+};
+
+&qspi {
+	status = "okay";
+	num-cs = <1>;
+
+	qspi_flash: flash@0 {
+		compatible = "spansion,s25fl256s1", "jedec,spi-nor";
+		reg = <0>;
+		spi-tx-bus-width = <1>;
+		spi-rx-bus-width = <4>;
+		spi-max-frequency = <50000000>;
+		m25p,fast-read;
+
+		#address-cells = <1>;
+		#size-cells = <1>;
 	};
 };

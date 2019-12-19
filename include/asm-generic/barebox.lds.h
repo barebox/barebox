@@ -16,6 +16,7 @@
 #endif
 
 #define BAREBOX_INITCALLS			\
+	STRUCT_ALIGN();				\
 	__barebox_initcalls_start = .;		\
 	KEEP(*(.initcall.0))			\
 	KEEP(*(.initcall.1))			\
@@ -35,6 +36,7 @@
 	__barebox_initcalls_end = .;
 
 #define BAREBOX_EXITCALLS			\
+	STRUCT_ALIGN();				\
 	__barebox_exitcalls_start = .;		\
 	KEEP(*(.exitcall.0))			\
 	KEEP(*(.exitcall.1))			\
@@ -46,37 +48,44 @@
 	__barebox_exitcalls_end = .;
 
 #define BAREBOX_CMDS				\
+	STRUCT_ALIGN();				\
 	__barebox_cmd_start = .;		\
 	KEEP(*(SORT_BY_NAME(.barebox_cmd*)))	\
 	__barebox_cmd_end = .;
 
 #define BAREBOX_RATP_CMDS			\
+	STRUCT_ALIGN();				\
 	__barebox_ratp_cmd_start = .;		\
 	KEEP(*(SORT_BY_NAME(.barebox_ratp_cmd*)))	\
 	__barebox_ratp_cmd_end = .;
 
 #define BAREBOX_SYMS				\
+	STRUCT_ALIGN();				\
 	__usymtab_start = .;			\
 	KEEP(*(__usymtab))			\
 	__usymtab_end = .;
 
 #define BAREBOX_MAGICVARS			\
+	STRUCT_ALIGN();				\
 	__barebox_magicvar_start = .;		\
 	KEEP(*(SORT_BY_NAME(.barebox_magicvar*)))	\
 	__barebox_magicvar_end = .;
 
 #define BAREBOX_CLK_TABLE			\
+	STRUCT_ALIGN();				\
 	__clk_of_table_start = .;		\
 	KEEP(*(.__clk_of_table));		\
 	KEEP(*(.__clk_of_table_end));		\
 	__clk_of_table_end = .;
 
 #define BAREBOX_DTB				\
+	STRUCT_ALIGN();				\
 	__dtb_start = .;			\
 	KEEP(*(.dtb.rodata.*));			\
 	__dtb_end = .;
 
 #define BAREBOX_IMD				\
+	STRUCT_ALIGN();				\
 	KEEP(*(.barebox_imd_start))		\
 	KEEP(*(.barebox_imd_1*))		\
 	*(.barebox_imd_0*)			\
@@ -84,6 +93,7 @@
 
 #ifdef CONFIG_PCI
 #define BAREBOX_PCI_FIXUP			\
+	STRUCT_ALIGN();				\
 	__start_pci_fixups_early = .;		\
 	KEEP(*(.pci_fixup_early))		\
 	__end_pci_fixups_early = .;		\
@@ -98,6 +108,7 @@
 #endif
 
 #define BAREBOX_RSA_KEYS			\
+	STRUCT_ALIGN();				\
 	__rsa_keys_start = .;			\
 	KEEP(*(.rsa_keys.rodata.*));		\
 	__rsa_keys_end = .;			\

@@ -90,7 +90,8 @@ static __noreturn noinline void nxp_imx8mq_evk_start(void)
 		 * On completion the TF-A will jump to MX8MQ_ATF_BL33_BASE_ADDR in
 		 * EL2. Copy ourselves there.
 		 */
-		memcpy((void *)MX8MQ_ATF_BL33_BASE_ADDR, _text, __bss_start - _text);
+		memcpy((void *)MX8MQ_ATF_BL33_BASE_ADDR,
+		       __image_start, barebox_pbl_size);
 		imx8mq_atf_load_bl31(bl31, bl31_size);
 		/* not reached */
 	}

@@ -42,11 +42,6 @@ static void setup_uart(void)
 	putc_ll('>');
 }
 
-static void nxp_imx8mq_evk_sram_setup(void)
-{
-	ddr_init();
-}
-
 /*
  * Power-on execution flow of start_nxp_imx8mq_evk() might not be
  * obvious for a very first read, so here's, hopefully helpful,
@@ -72,8 +67,6 @@ static __noreturn noinline void nxp_imx8mq_evk_start(void)
 	enum bootsource src = BOOTSOURCE_UNKNOWN;
 	int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
 	int ret = -ENOTSUPP;
-	const u8 *bl31;
-	size_t bl31_size;
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();
@@ -84,14 +77,18 @@ static __noreturn noinline void nxp_imx8mq_evk_start(void)
 	 * to DRAM in EL2.
 	 */
 	if (current_el() == 3) {
-		nxp_imx8mq_evk_sram_setup();
-		get_builtin_firmware(imx8mq_bl31_bin, &bl31, &bl31_size);
+		const u8 *bl31;
+		size_t bl31_size;
+
+		ddr_init();
 		/*
-		 * On completion the TF-A will jump to MX8MQ_ATF_BL33_BASE_ADDR in
-		 * EL2. Copy ourselves there.
+		 * On completion the TF-A will jump to MX8MQ_ATF_BL33_BASE_ADDR
+		 * in EL2. Copy ourselves there.
 		 */
 		memcpy((void *)MX8MQ_ATF_BL33_BASE_ADDR,
 		       __image_start, barebox_pbl_size);
+
+		get_builtin_firmware(imx8mq_bl31_bin, &bl31, &bl31_size);
 		imx8mq_atf_load_bl31(bl31, bl31_size);
 		/* not reached */
 	}
@@ -100,8 +97,9 @@ static __noreturn noinline void nxp_imx8mq_evk_start(void)
 
 	if (src == BOOTSOURCE_MMC)
 		ret = imx8_esdhc_load_piggy(instance);
-	else
-		BUG_ON(ret);
+
+	BUG_ON(ret);
+
 	/*
 	 * Standard entry we hit once we initialized both DDR and ATF
 	 */

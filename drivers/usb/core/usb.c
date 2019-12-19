@@ -124,7 +124,7 @@ static int usb_set_configuration(struct usb_device *dev, int configuration)
 		dev->toggle[1] = 0;
 		return 0;
 	} else
-		return -1;
+		return res;
 }
 
 /* The routine usb_set_maxpacket_ep() is extracted from the loop of routine
@@ -412,9 +412,11 @@ int usb_new_device(struct usb_device *dev)
 	usb_parse_config(dev, buf, 0);
 	usb_set_maxpacket(dev);
 	/* we set the default configuration here */
-	if (usb_set_configuration(dev, dev->config.desc.bConfigurationValue)) {
-		printf("failed to set default configuration " \
-			"len %d, status %lX\n", dev->act_len, dev->status);
+	err = usb_set_configuration(dev, dev->config.desc.bConfigurationValue);
+	if (err) {
+		printf("Setting default configuration failed with: %s\n" \
+			"len %d, status %lX\n", strerror(-err),
+		       dev->act_len, dev->status);
 		goto err_out;
 	}
 	pr_debug("new device: Mfr=%d, Product=%d, SerialNumber=%d\n",

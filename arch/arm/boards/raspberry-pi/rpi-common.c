@@ -21,6 +21,7 @@
 #include <linux/clk.h>
 #include <linux/clkdev.h>
 #include <envfs.h>
+#include <regulator.h>
 #include <malloc.h>
 #include <libfile.h>
 #include <gpio.h>
@@ -462,11 +463,20 @@ static void rpi_vc_fdt(void)
 
 static int rpi_devices_init(void)
 {
+	struct regulator *reg;
+
 	rpi_model_init();
 	bcm2835_register_fb();
 	armlinux_set_architecture(MACH_TYPE_BCM2708);
 	rpi_env_init();
 	rpi_vc_fdt();
+
+	reg = regulator_get_name("bcm2835_usb");
+	if (IS_ERR(reg))
+		return PTR_ERR(reg);
+
+	regulator_enable(reg);
+
 	return 0;
 }
 late_initcall(rpi_devices_init);

@@ -48,14 +48,13 @@ static void setup_uart(void)
  * summary:
  *
  * 1. MaskROM uploads PBL into OCRAM and that's where this function is
- *    executed for the first time
+ *    executed for the first time. At entry the exception level is EL3.
  *
- * 2. DDR is initialized and the TF-A trampoline is installed in the
- *    DRAM.
+ * 2. DDR is initialized and the PBL is copied from OCRAM to the TF-A return
+ *    address in DRAM.
  *
- * 3. TF-A is executed and exits into the trampoline in RAM, which enters the
- *    PBL for the second time. DRAM setup done is indicated by a one in register
- *    x0 by the trampoline
+ * 3. TF-A is executed and exits into the PBL code in DRAM. TF-A has taken us
+ *    from EL3 to EL2.
  *
  * 4. The piggydata is loaded from the SD card and copied to the expected
  *    location in the DRAM.

@@ -593,7 +593,7 @@ int usb_submit_int_msg(struct usb_device *dev, unsigned long pipe,
 int usb_control_msg(struct usb_device *dev, unsigned int pipe,
 			unsigned char request, unsigned char requesttype,
 			unsigned short value, unsigned short index,
-			void *data, unsigned short size, int timeout)
+			void *data, unsigned short size, int timeout_ms)
 {
 	struct usb_host *host = dev->host;
 	int ret;
@@ -615,7 +615,7 @@ int usb_control_msg(struct usb_device *dev, unsigned int pipe,
 	dev->status = USB_ST_NOT_PROC; /*not yet processed */
 
 	ret = host->submit_control_msg(dev, pipe, data, size, setup_packet,
-			timeout);
+			timeout_ms);
 
 	usb_host_release(host);
 
@@ -631,7 +631,7 @@ int usb_control_msg(struct usb_device *dev, unsigned int pipe,
  * synchronous behavior
  */
 int usb_bulk_msg(struct usb_device *dev, unsigned int pipe,
-			void *data, int len, int *actual_length, int timeout)
+			void *data, int len, int *actual_length, int timeout_ms)
 {
 	struct usb_host *host = dev->host;
 	int ret;
@@ -644,7 +644,7 @@ int usb_bulk_msg(struct usb_device *dev, unsigned int pipe,
 		return ret;
 
 	dev->status = USB_ST_NOT_PROC; /* not yet processed */
-	ret = host->submit_bulk_msg(dev, pipe, data, len, timeout);
+	ret = host->submit_bulk_msg(dev, pipe, data, len, timeout_ms);
 
 	usb_host_release(host);
 

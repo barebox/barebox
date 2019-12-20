@@ -78,35 +78,45 @@ static struct device_node *of_aliases;
 #define OF_ROOT_NODE_SIZE_CELLS_DEFAULT 1
 #define OF_ROOT_NODE_ADDR_CELLS_DEFAULT 1
 
-int of_n_addr_cells(struct device_node *np)
+int of_bus_n_addr_cells(struct device_node *np)
 {
-	const __be32 *ip;
+	u32 cells;
 
-	do {
-		if (np->parent)
-			np = np->parent;
-		ip = of_get_property(np, "#address-cells", NULL);
-		if (ip)
-			return be32_to_cpup(ip);
-	} while (np->parent);
+	for (; np; np = np->parent)
+		if (!of_property_read_u32(np, "#address-cells", &cells))
+			return cells;
+
 	/* No #address-cells property for the root node */
 	return OF_ROOT_NODE_ADDR_CELLS_DEFAULT;
 }
+
+int of_n_addr_cells(struct device_node *np)
+{
+	if (np->parent)
+		np = np->parent;
+
+	return of_bus_n_addr_cells(np);
+}
 EXPORT_SYMBOL(of_n_addr_cells);
+
+int of_bus_n_size_cells(struct device_node *np)
+{
+	u32 cells;
+
+	for (; np; np = np->parent)
+		if (!of_property_read_u32(np, "#size-cells", &cells))
+			return cells;
+
+	/* No #size-cells property for the root node */
+	return OF_ROOT_NODE_SIZE_CELLS_DEFAULT;
+}
 
 int of_n_size_cells(struct device_node *np)
 {
-	const __be32 *ip;
+	if (np->parent)
+		np = np->parent;
 
-	do {
-		if (np->parent)
-			np = np->parent;
-		ip = of_get_property(np, "#size-cells", NULL);
-		if (ip)
-			return be32_to_cpup(ip);
-	} while (np->parent);
-	/* No #size-cells property for the root node */
-	return OF_ROOT_NODE_SIZE_CELLS_DEFAULT;
+	return of_bus_n_size_cells(np);
 }
 EXPORT_SYMBOL(of_n_size_cells);
 

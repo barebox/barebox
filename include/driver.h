@@ -93,6 +93,8 @@ struct device_d {
 
 	u64 dma_mask;
 
+	unsigned long dma_offset;
+
 	void    (*info) (struct device_d *);
 	/*
 	 * For devices which take longer to probe this is called

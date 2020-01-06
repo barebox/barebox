@@ -20,6 +20,7 @@
 #include <io.h>
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
+#include <mach/init.h>
 #include <mach/zynq7000-regs.h>
 
 #define DCI_DONE	(1 << 13)
@@ -283,7 +284,7 @@ ENTRY_FUNCTION(start_avnet_zedboard, r0, r1, r2)
 
 	void *fdt = __dtb_zynq_zed_start + get_runtime_offset();
 
-	arm_cpu_lowlevel_init();
+	zynq_cpu_lowlevel_init();
 
 	avnet_zedboard_ps7_init();
 

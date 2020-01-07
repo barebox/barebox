@@ -338,15 +338,10 @@ static int do_hab_blocks(struct config_data *data, int argc, char *argv[])
 	char *str;
 	int ret;
 	uint32_t signed_size = data->load_size;
-	uint32_t offset = 0;
+	uint32_t offset = data->image_dcd_offset;
 
 	if (!data->csf)
 		return -EINVAL;
-
-	if (argc < 2)
-		type = "full";
-	else
-		type = argv[1];
 
 	/*
 	 * In case of encrypted image we reduce signed area to beginning
@@ -359,31 +354,19 @@ static int do_hab_blocks(struct config_data *data, int argc, char *argv[])
 	 * Ensure we only sign the PBL for i.MX8MQ
 	 */
 	if (data->pbl_code_size && data->cpu_type == IMX_CPU_IMX8MQ) {
-		offset = data->header_gap;
+		offset += data->header_gap;
 		signed_size = roundup(data->pbl_code_size + HEADER_LEN, 0x1000);
 		if (data->signed_hdmi_firmware_file)
 			offset += PLUGIN_HDMI_SIZE;
 	}
 
-	if (!strcmp(type, "full")) {
+	if (signed_size > 0) {
 		ret = asprintf(&str, "Blocks = 0x%08x 0x%08x 0x%08x \"%s\"\n",
-			       data->image_load_addr, offset, signed_size,
-			       data->outfile);
-	} else if (!strcmp(type, "from-dcdofs")) {
-		ret = asprintf(&str, "Blocks = 0x%08x 0x%x %d \"%s\"\n",
-			       data->image_load_addr + data->image_dcd_offset,
-			       data->image_dcd_offset,
-			       signed_size - data->image_dcd_offset,
-			       data->outfile);
-	} else if (!strcmp(type, "skip-mbr")) {
-		ret = asprintf(&str,
-			       "Blocks = 0x%08x 0 440 \"%s\", \\\n"
-			       "         0x%08x 512 %d \"%s\"\n",
-			       data->image_load_addr, data->outfile,
-			       data->image_load_addr + 512,
-			       signed_size - 512, data->outfile);
+			data->image_load_addr + data->image_dcd_offset, offset,
+			signed_size - data->image_dcd_offset, data->outfile);
 	} else {
-		fprintf(stderr, "Invalid hab_blocks option: %s\n", type);
+		fprintf(stderr, "Invalid signed size area 0x%08x\n",
+			signed_size);
 		return -EINVAL;
 	}
 

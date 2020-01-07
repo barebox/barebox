@@ -90,12 +90,6 @@ amba_ahb_device_add(struct device_d *parent, const char *name, int id,
 				    periphid);
 }
 
-
-void amba_device_unregister(struct amba_device *);
-struct amba_device *amba_find_device(const char *, struct device_d *, unsigned int, unsigned int);
-int amba_request_regions(struct amba_device *, const char *);
-void amba_release_regions(struct amba_device *);
-
 static inline void __iomem *amba_get_mem_region(struct amba_device *dev)
 {
 	return dev->base;

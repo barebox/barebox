@@ -286,48 +286,6 @@ int imx8_esdhc_load_image(int instance, bool start)
 	return esdhc_load_image(&host, MX8MQ_DDR_CSD1_BASE_ADDR,
 				MX8MQ_ATF_BL33_BASE_ADDR, SZ_32K, start);
 }
-
-int imx8_esdhc_load_piggy(int instance)
-{
-	void *buf, *piggy;
-	struct imx_flash_header_v2 *hdr = NULL;
-	struct esdhc_soc_data data;
-	struct fsl_esdhc_host host;
-	int ret, len;
-	int offset = SZ_32K;
-
-	ret = imx8_esdhc_init(&host, &data, instance);
-	if (ret)
-		return ret;
-
-	/*
-	 * We expect to be running at MX8MQ_ATF_BL33_BASE_ADDR where the atf
-	 * has jumped to. Use a temporary buffer where we won't overwrite
-	 * ourselves.
-	 */
-	buf = (void *)MX8MQ_ATF_BL33_BASE_ADDR + SZ_32M;
-
-	ret = esdhc_search_header(&host, &hdr, buf, &offset);
-	if (ret)
-		return ret;
-
-	len = offset + hdr->boot_data.size + piggydata_size();
-	len = ALIGN(len, SECTOR_SIZE);
-
-	ret = esdhc_read_blocks(&host, buf, len);
-
-	/*
-	 * Calculate location of the piggydata at the offset loaded into RAM
-	 */
-	piggy = buf + offset + hdr->boot_data.size;
-
-	/*
-	 * Copy the piggydata where the uncompressing code expects it
-	 */
-	memcpy(input_data, piggy, piggydata_size());
-
-	return ret;
-}
 #endif
 
 #ifdef CONFIG_ARCH_LS1046

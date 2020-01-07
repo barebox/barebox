@@ -137,11 +137,6 @@ int bcm2835_mbox_call_prop(u32 chan, struct bcm2835_mbox_hdr *buffer)
 	tag = (void *)(buffer + 1);
 	tag_index = 0;
 	while (tag->tag) {
-		if (!(tag->val_len & BCM2835_MBOX_TAG_VAL_LEN_RESPONSE)) {
-			printf("mbox: Tag %d missing val_len response bit\n",
-				tag_index);
-			return -EIO;
-		}
 		/*
 		 * Clear the reponse bit so clients can just look right at the
 		 * length field without extra processing

@@ -37,7 +37,7 @@ static int bcm2835_mbox_call_raw(u32 chan, struct bcm2835_mbox_hdr *buffer,
 		val = readl(mbox_base + MAIL0_STA);
 		if (val & BCM2835_MBOX_STATUS_RD_EMPTY)
 			break;
-		if (is_timeout(starttime, TIMEOUT)) {
+		if (is_timeout_non_interruptible(starttime, TIMEOUT)) {
 			pr_err("mbox: Timeout draining stale responses\n");
 			return -ETIMEDOUT;
 		}
@@ -49,7 +49,7 @@ static int bcm2835_mbox_call_raw(u32 chan, struct bcm2835_mbox_hdr *buffer,
 		val = readl(mbox_base + MAIL0_STA);
 		if (!(val & BCM2835_MBOX_STATUS_WR_FULL))
 			break;
-		if (is_timeout(starttime, TIMEOUT)) {
+		if (is_timeout_non_interruptible(starttime, TIMEOUT)) {
 			pr_err("mbox: Timeout waiting for send space\n");
 			return -ETIMEDOUT;
 		}
@@ -67,7 +67,7 @@ static int bcm2835_mbox_call_raw(u32 chan, struct bcm2835_mbox_hdr *buffer,
 		val = readl(mbox_base + MAIL0_STA);
 		if (!(val & BCM2835_MBOX_STATUS_RD_EMPTY))
 			break;
-		if (is_timeout(starttime, TIMEOUT)) {
+		if (is_timeout_non_interruptible(starttime, TIMEOUT)) {
 			pr_err("mbox: Timeout waiting for response\n");
 			return -ETIMEDOUT;
 		}

@@ -83,7 +83,7 @@ struct icid_id_table icid_tbl_ls1046a[] = {
 		.id = DPAA1_SID_START,
 		.reg = DPAA1_SID_START,
 		.compat_addr = LSCH2_QMAN_ADDR,
-		.reg_addr = offsetof(struct ccsr_qman, liodnr) + LSCH2_QMAN_ADDR,
+		.reg_addr = offsetof(struct ccsr_qman_v3, liodnr) + LSCH2_QMAN_ADDR,
 	}, {
 		.compat = "fsl,bman",
 		.id = DPAA1_SID_START + 1,

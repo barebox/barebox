@@ -1322,13 +1322,6 @@ static int fsl_fman_probe(struct device_d *dev)
 	return 0;
 }
 
-static void fsl_fman_remove(struct device_d *dev)
-{
-	struct ccsr_fman *reg = dev->priv;
-
-	setbits_be32(&reg->fm_fpm.fmrstc, FMFP_RSTC_RFM);
-}
-
 static struct of_device_id fsl_fman_dt_ids[] = {
 	{
 		.compatible = "fsl,fman",
@@ -1339,7 +1332,6 @@ static struct of_device_id fsl_fman_dt_ids[] = {
 static struct driver_d fman_driver = {
 	.name   = "fsl-fman",
 	.probe  = fsl_fman_probe,
-	.remove = fsl_fman_remove,
 	.of_compatible = DRV_OF_COMPAT(fsl_fman_dt_ids),
 };
 device_platform_driver(fman_driver);

@@ -34,4 +34,59 @@
 #define CADENCE_STS_TEMPTY		(1 << 3)
 #define CADENCE_STS_TFUL		(1 << 4)
 
+static inline void cadence_uart_init(void __iomem *uartbase)
+{
+	int baudrate = CONFIG_BAUDRATE;
+	unsigned int clk = 49999995;
+	unsigned int gen, div;
+
+	/* disable transmitter and receiver */
+	writel(0, uartbase + CADENCE_UART_CONTROL);
+
+	/* calculate and set baud clock generator parameters */
+	for (div = 4; div < 256; div++) {
+		int calc_rate, error;
+
+		gen = clk / (baudrate * (div + 1));
+
+		if (gen < 1 || gen > 65535)
+			continue;
+
+		calc_rate = clk / (gen * (div + 1));
+		error = baudrate - calc_rate;
+		if (error < 0)
+			error *= -1;
+		if (((error * 100) / baudrate) < 3)
+			break;
+	}
+
+	writel(gen, uartbase + CADENCE_UART_BAUD_GEN);
+	writel(div, uartbase + CADENCE_UART_BAUD_DIV);
+
+	/* soft-reset tx/rx paths */
+	writel(CADENCE_CTRL_RXRES | CADENCE_CTRL_TXRES,
+	       uartbase + CADENCE_UART_CONTROL);
+
+	while (readl(uartbase + CADENCE_UART_CONTROL) &
+		(CADENCE_CTRL_RXRES | CADENCE_CTRL_TXRES))
+		;
+
+	/* enable UART */
+	writel(CADENCE_MODE_CLK_REF | CADENCE_MODE_CHRL_8 |
+	       CADENCE_MODE_PAR_NONE, uartbase + CADENCE_UART_MODE);
+	writel(CADENCE_CTRL_RXEN | CADENCE_CTRL_TXEN,
+	       uartbase + CADENCE_UART_CONTROL);
+}
+
+static inline void cadence_uart_putc(void *base, int c)
+{
+	if (!(readl(base + CADENCE_UART_CONTROL) & CADENCE_CTRL_TXEN))
+		return;
+
+	while ((readl(base + CADENCE_UART_CHANNEL_STS) & CADENCE_STS_TFUL))
+		;
+
+	writel(c, base + CADENCE_UART_RXTXFIFO);
+}
+
 #endif /* __CADENCE_UART_H__ */

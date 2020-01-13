@@ -22,6 +22,7 @@
 #include <asm/barebox-arm-head.h>
 #include <mach/init.h>
 #include <mach/zynq7000-regs.h>
+#include <serial/cadence.h>
 
 #define DCI_DONE	(1 << 13)
 #define PLL_ARM_LOCK	(1 << 0)
@@ -279,6 +280,18 @@ static void avnet_zedboard_ps7_init(void)
 	writel(0x0000767B, ZYNQ_SLCR_LOCK);
 }
 
+static void avnet_zedboard_pbl_console_init(void)
+{
+	relocate_to_current_adr();
+	setup_c();
+	barrier();
+
+	cadence_uart_init((void *)ZYNQ_UART1_BASE_ADDR);
+	pbl_set_putc(cadence_uart_putc, (void *)ZYNQ_UART1_BASE_ADDR);
+
+	pr_debug("\nAvnet ZedBoard PBL\n");
+}
+
 ENTRY_FUNCTION(start_avnet_zedboard, r0, r1, r2)
 {
 
@@ -288,6 +301,9 @@ ENTRY_FUNCTION(start_avnet_zedboard, r0, r1, r2)
 	zynq_cpu_lowlevel_init();
 
 	avnet_zedboard_ps7_init();
+
+	if (IS_ENABLED(CONFIG_PBL_CONSOLE))
+		avnet_zedboard_pbl_console_init();
 
 	barebox_arm_entry(0, SZ_512M, fdt);
 }

@@ -284,6 +284,7 @@ ENTRY_FUNCTION(start_avnet_zedboard, r0, r1, r2)
 
 	void *fdt = __dtb_zynq_zed_start + get_runtime_offset();
 
+	arm_cpu_lowlevel_init();
 	zynq_cpu_lowlevel_init();
 
 	avnet_zedboard_ps7_init();

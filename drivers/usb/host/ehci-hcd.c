@@ -137,6 +137,15 @@ static struct descriptor {
 
 #define ehci_is_TDI()	(ehci->flags & EHCI_HAS_TT)
 
+static void memzero32(void *ptr, size_t size)
+{
+	uint32_t *ptr32 = ptr;
+	int i;
+
+	for (i = 0; i < size / sizeof(uint32_t); i++)
+		ptr32[i] = 0x0;
+}
+
 static int handshake(uint32_t *ptr, uint32_t mask, uint32_t done, int usec)
 {
 	uint32_t result;
@@ -237,7 +246,7 @@ static int ehci_prepare_qtd(struct device_d *dev,
 		if (ret)
 			return ret;
 	} else {
-		memset(td->qt_buffer, 0, sizeof(td->qt_buffer));
+		memzero32(td->qt_buffer, sizeof(td->qt_buffer));
 	}
 
 	return 0;
@@ -318,7 +327,7 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	qh->qh_endpt2 = cpu_to_hc32(endpt);
 	qh->qh_curtd = 0;
 	qh->qt_token = 0;
-	memset(qh->qt_buffer, 0, sizeof(qh->qt_buffer));
+	memzero32(qh->qt_buffer, sizeof(qh->qt_buffer));
 
 	tdp = &qh->qt_next;
 
@@ -854,7 +863,7 @@ static int ehci_init(struct usb_host *host)
 	 */
 	ehci->periodic_schedules = 0;
 	periodic = ehci->periodic_queue;
-	memset(periodic, 0, sizeof(*periodic));
+	memzero32(periodic, sizeof(*periodic));
 	periodic->qh_link = cpu_to_hc32(QH_LINK_TERMINATE);
 	periodic->qt_next = cpu_to_hc32(QT_NEXT_TERMINATE);
 	periodic->qt_altnext = cpu_to_hc32(QT_NEXT_TERMINATE);

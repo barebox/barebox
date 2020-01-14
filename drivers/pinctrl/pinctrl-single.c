@@ -29,7 +29,13 @@ struct pinctrl_single {
 	struct pinctrl_device pinctrl;
 	unsigned (*read)(void __iomem *reg);
 	void (*write)(unsigned val, void __iomem *reg);
-	unsigned width;
+	unsigned int width;
+	unsigned int  fmask;
+	unsigned int fshift;
+	unsigned int fmax;
+
+	bool bits_per_mux;
+	unsigned int bits_per_pin;
 };
 
 static unsigned __maybe_unused pcs_readb(void __iomem *reg)
@@ -66,27 +72,47 @@ static int pcs_set_state(struct pinctrl_device *pdev, struct device_node *np)
 {
 	struct pinctrl_single *pcs = container_of(pdev, struct pinctrl_single, pinctrl);
 	unsigned size = 0, index = 0;
+	unsigned int offset, val, rows, mask, reg, i;
 	const __be32 *mux;
 
 	dev_dbg(pcs->pinctrl.dev, "set state: %s\n", np->full_name);
+	if (pcs->bits_per_mux) {
+		mux = of_get_property(np, "pinctrl-single,bits", &size);
+		if (size % 3 != 0)
+			dev_err(pcs->pinctrl.dev,
+				"invalid args_count for spec: %u\n", size);
 
-	mux = of_get_property(np, "pinctrl-single,pins", &size);
+		size /= sizeof(*mux);	/* Number of elements in array */
+		rows = size / 3;
 
-	size /= sizeof(*mux);	/* Number of elements in array */
+		for (i = 0; i < rows; i++) {
+			offset = be32_to_cpup(mux + index++);
+			mask = be32_to_cpup(mux + index++);
+			val = be32_to_cpup(mux + index++);
+			reg = pcs->read(pcs->base + offset);
+			reg &= ~mask;
+			reg |= val;
+			pcs->write(reg, pcs->base + offset);
+		}
+	} else {
+		mux = of_get_property(np, "pinctrl-single,pins", &size);
 
-	if (!mux || !size || (size & 1)) {
-		dev_err(pcs->pinctrl.dev, "bad data for mux %s\n",
-			np->full_name);
-		return -EINVAL;
-	}
+		size /= sizeof(*mux);	/* Number of elements in array */
 
-	while (index < size) {
-		unsigned offset, val;
+		if (!mux || !size || (size & 1)) {
+			dev_err(pcs->pinctrl.dev, "bad data for mux %s\n",
+				np->full_name);
+			return -EINVAL;
+		}
 
-		offset = be32_to_cpup(mux + index++);
-		val = be32_to_cpup(mux + index++);
+		while (index < size) {
+			unsigned int offset, val;
 
-		pcs->write(val, pcs->base + offset);
+			offset = be32_to_cpup(mux + index++);
+			val = be32_to_cpup(mux + index++);
+
+			pcs->write(val, pcs->base + offset);
+		}
 	}
 
 	return 0;
@@ -136,6 +162,23 @@ static int pcs_probe(struct device_d *dev)
 		dev_dbg(dev, "invalid register width: %d\n", pcs->width);
 		goto out;
 	}
+
+	ret = of_property_read_u32(np, "pinctrl-single,function-mask",
+				   &pcs->fmask);
+	if (!ret) {
+		pcs->fshift = __ffs(pcs->fmask);
+		pcs->fmax = pcs->fmask >> pcs->fshift;
+	} else {
+		/* If mask property doesn't exist, function mux is invalid. */
+		pcs->fmask = 0;
+		pcs->fshift = 0;
+		pcs->fmax = 0;
+	}
+
+	pcs->bits_per_mux =
+		of_property_read_bool(np, "pinctrl-single,bit-per-mux");
+	if (pcs->bits_per_mux)
+		pcs->bits_per_pin = fls(pcs->fmask);
 
 	ret = pinctrl_register(&pcs->pinctrl);
 	if (ret)

@@ -342,7 +342,7 @@ static int ls_pcie_of_fixup(struct device_node *root, void *ctx)
 	struct device_d *dev = pcie->pci.dev;
 	struct device_node *np;
 	char *name;
-	u32 *arr, phandle;
+	u32 *msi_map, phandle;
 	int nluts;
 	int ret, i;
 	u32 devid, stream_id;
@@ -364,7 +364,7 @@ static int ls_pcie_of_fixup(struct device_node *root, void *ctx)
 		return ret;
 	}
 
-	arr = xmalloc(nluts * sizeof(u32) * 4);
+	msi_map = xmalloc(nluts * sizeof(u32) * 4);
 
 	for (i = 0; i < nluts; i++) {
 		u32 udr = lut_readl(pcie, PCIE_LUT_UDR(i));
@@ -376,10 +376,10 @@ static int ls_pcie_of_fixup(struct device_node *root, void *ctx)
 		devid = udr >> 16;
 		stream_id = ldr & 0x7fff;
 
-		arr[i * 4] = devid;
-		arr[i * 4 + 1] = phandle;
-		arr[i * 4 + 2] = stream_id;
-		arr[i * 4 + 3] = 1;
+		msi_map[i * 4] = devid;
+		msi_map[i * 4 + 1] = phandle;
+		msi_map[i * 4 + 2] = stream_id;
+		msi_map[i * 4 + 3] = 1;
 	}
 
 	/*
@@ -391,7 +391,7 @@ static int ls_pcie_of_fixup(struct device_node *root, void *ctx)
 	 *                 [devid] [phandle-to-msi-ctrl] [stream-id] [count]>;
 	 */
 
-	ret = of_property_write_u32_array(np, "msi-map", arr, nluts * 4);
+	ret = of_property_write_u32_array(np, "msi-map", msi_map, nluts * 4);
 	if (ret)
 		goto out;
 
@@ -400,7 +400,7 @@ static int ls_pcie_of_fixup(struct device_node *root, void *ctx)
 	ret = 0;
 
 out:
-	free(arr);
+	free(msi_map);
 	return ret;
 }
 

@@ -1,6 +1,7 @@
 #include <common.h>
 #include <io.h>
 #include <init.h>
+#include <of_address.h>
 #include <soc/fsl/immap_lsch2.h>
 #include <soc/fsl/fsl_qbman.h>
 #include <soc/fsl/fsl_fman.h>
@@ -36,9 +37,6 @@
  *
  */
 
-
-#define FSL_INVALID_STREAM_ID		0
-
 /* legacy devices */
 #define FSL_USB1_STREAM_ID		1
 #define FSL_USB2_STREAM_ID		2
@@ -56,8 +54,8 @@
 #define FSL_PEX_STREAM_ID_END		26
 
 /* DPAA1 - Stream-ID that can be programmed in DPAA1 h/w */
-#define FSL_DPAA1_STREAM_ID_START	27
-#define FSL_DPAA1_STREAM_ID_END		63
+#define DPAA1_SID_START	27
+#define DPAA1_SID_END	63
 
 struct icid_id_table {
 	const char *compat;
@@ -72,172 +70,489 @@ struct fman_icid_id_table {
 	u32 icid;
 };
 
-#define SET_ICID_ENTRY(name, idA, regA, addr, compataddr) \
-	{					\
-		.compat = name,			\
-		.id = idA,			\
-		.reg = regA,			\
-		.compat_addr = compataddr,	\
-		.reg_addr = addr,		\
-	}
+#define QMAN_CQSIDR_REG        0x20a80
 
-#define SET_SCFG_ICID(compat, streamid, name, compataddr) \
-	SET_ICID_ENTRY(compat, streamid, (((streamid) << 24) | (1 << 23)), \
-		offsetof(struct ccsr_scfg, name) + LSCH2_SCFG_ADDR, \
-		compataddr)
+#define SEC_JRnICID_LS(n)	((0x10 + (n) * 0x8) + 0x4)
+#define SEC_RTICnICID_LS(n)	((0x60 + (n) * 0x8) + 0x4)
+#define SEC_DECOnICID_LS(n)	((0xa0 + (n) * 0x8) + 0x4)
+#define SEC_QIIC_LS	0x70024
+#define	SEC_IRBAR_JRn(n) 	(0x10000 * ((n) + 1))
 
-#define SET_USB_ICID(usb_num, compat, streamid) \
-	SET_SCFG_ICID(compat, streamid, usb##usb_num##_icid,\
-		LSCH2_XHCI_USB##usb_num##_ADDR)
-
-#define SET_SATA_ICID(compat, streamid) \
-	SET_SCFG_ICID(compat, streamid, sata_icid,\
-		LSCH2_HCI_BASE_ADDR)
-
-#define SET_SDHC_ICID(streamid) \
-	SET_SCFG_ICID("fsl,esdhc", streamid, sdhc_icid,\
-		LSCH2_ESDHC_ADDR)
-
-#define QMAN_CQSIDR_REG	0x20a80
-
-#define SET_QDMA_ICID(compat, streamid) \
-	SET_ICID_ENTRY(compat, streamid, (1 << 31) | (streamid), \
-		LSCH2_QDMA_BASE_ADDR + QMAN_CQSIDR_REG, \
-		LSCH2_QDMA_BASE_ADDR), \
-	SET_ICID_ENTRY(NULL, streamid, (1 << 31) | (streamid), \
-		LSCH2_QDMA_BASE_ADDR + QMAN_CQSIDR_REG + 4, \
-		LSCH2_QDMA_BASE_ADDR)
-
-#define SET_EDMA_ICID(streamid) \
-	SET_SCFG_ICID("fsl,vf610-edma", streamid, edma_icid,\
-		LSCH2_EDMA_BASE_ADDR)
-
-#define SET_ETR_ICID(streamid) \
-	SET_SCFG_ICID(NULL, streamid, etr_icid, 0)
-
-#define SET_DEBUG_ICID(streamid) \
-	SET_SCFG_ICID(NULL, streamid, debug_icid, 0)
-
-#define SET_QE_ICID(streamid) \
-	SET_SCFG_ICID("fsl,qe", streamid, qe_icid,\
-		LSCH2_QE_BASE_ADDR)
-
-#define SET_QMAN_ICID(streamid) \
-	SET_ICID_ENTRY("fsl,qman", streamid, streamid, \
-		offsetof(struct ccsr_qman, liodnr) + \
-		LSCH2_QMAN_ADDR, \
-		LSCH2_QMAN_ADDR)
-
-#define SET_BMAN_ICID(streamid) \
-	SET_ICID_ENTRY("fsl,bman", streamid, streamid, \
-		offsetof(struct ccsr_bman, liodnr) + \
-		LSCH2_BMAN_ADDR, \
-		LSCH2_BMAN_ADDR)
-
-#define SET_FMAN_ICID_ENTRY(_port_id, streamid) \
-	{ .port_id = (_port_id), .icid = (streamid) }
-
-#define SET_SEC_QI_ICID(streamid) \
-	SET_ICID_ENTRY("fsl,sec-v4.0", streamid, \
-		0, offsetof(ccsr_sec_t, qilcr_ls) + \
-		LSCH2_SEC_ADDR, \
-		LSCH2_SEC_ADDR)
-
-#define SET_SEC_JR_ICID_ENTRY(jr_num, streamid) \
-	SET_ICID_ENTRY( \
-		(CONFIG_ARMV8_SEC_FIRMWARE_SUPPORT && \
-		(FSL_SEC_JR##jr_num##_OFFSET ==  \
-			SEC_JR3_OFFSET + CONFIG_SYS_FSL_SEC_OFFSET) \
-			? NULL \
-			: "fsl,sec-v4.0-job-ring"), \
-		streamid, \
-		(((streamid) << 16) | (streamid)), \
-		offsetof(ccsr_sec_t, jrliodnr[jr_num].ls) + \
-		LSCH2_SEC_ADDR, \
-		FSL_SEC_JR##jr_num##_BASE_ADDR)
-
-#define SET_SEC_DECO_ICID_ENTRY(deco_num, streamid) \
-	SET_ICID_ENTRY(NULL, streamid, (((streamid) << 16) | (streamid)), \
-		offsetof(ccsr_sec_t, decoliodnr[deco_num].ls) + \
-		LSCH2_SEC_ADDR, 0)
-
-#define SET_SEC_RTIC_ICID_ENTRY(rtic_num, streamid) \
-	SET_ICID_ENTRY(NULL, streamid, (((streamid) << 16) | (streamid)), \
-		offsetof(ccsr_sec_t, rticliodnr[rtic_num].ls) + \
-		LSCH2_SEC_ADDR, 0)
-
-static struct icid_id_table icid_tbl_ls1046a[] = {
-	SET_QMAN_ICID(FSL_DPAA1_STREAM_ID_START),
-	SET_BMAN_ICID(FSL_DPAA1_STREAM_ID_START + 1),
-
-	SET_SDHC_ICID(FSL_SDHC_STREAM_ID),
-
-	SET_USB_ICID(1, "snps,dwc3", FSL_USB1_STREAM_ID),
-	SET_USB_ICID(2, "snps,dwc3", FSL_USB2_STREAM_ID),
-	SET_USB_ICID(3, "snps,dwc3", FSL_USB3_STREAM_ID),
-
-	SET_SATA_ICID("fsl,ls1046a-ahci", FSL_SATA_STREAM_ID),
-	SET_QDMA_ICID("fsl,ls1046a-qdma", FSL_QDMA_STREAM_ID),
-	SET_EDMA_ICID(FSL_EDMA_STREAM_ID),
-	SET_ETR_ICID(FSL_ETR_STREAM_ID),
-	SET_DEBUG_ICID(FSL_DEBUG_STREAM_ID),
+struct icid_id_table icid_tbl_ls1046a[] = {
+	{
+		.compat = "fsl,qman",
+		.id = DPAA1_SID_START,
+		.reg = DPAA1_SID_START,
+		.compat_addr = LSCH2_QMAN_ADDR,
+		.reg_addr = offsetof(struct ccsr_qman_v3, liodnr) + LSCH2_QMAN_ADDR,
+	}, {
+		.compat = "fsl,bman",
+		.id = DPAA1_SID_START + 1,
+		.reg = DPAA1_SID_START + 1,
+		.compat_addr = LSCH2_BMAN_ADDR,
+		.reg_addr = offsetof(struct ccsr_bman, liodnr) + LSCH2_BMAN_ADDR,
+	}, {
+		.compat = "fsl,esdhc",
+		.id = FSL_SDHC_STREAM_ID,
+		.reg = (((FSL_SDHC_STREAM_ID) << 24) | (1 << 23)),
+		.compat_addr = LSCH2_ESDHC_ADDR,
+		.reg_addr = offsetof(struct ccsr_scfg, sdhc_icid) + LSCH2_SCFG_ADDR,
+	}, {
+		.compat = "snps,dwc3",
+		.id = FSL_USB1_STREAM_ID,
+		.reg = (((FSL_USB1_STREAM_ID) << 24) | (1 << 23)),
+		.compat_addr = LSCH2_XHCI_USB1_ADDR,
+		.reg_addr = offsetof(struct ccsr_scfg, usb1_icid) + LSCH2_SCFG_ADDR,
+	}, {
+		.compat = "snps,dwc3",
+		.id = FSL_USB2_STREAM_ID,
+		.reg = (((FSL_USB2_STREAM_ID) << 24) | (1 << 23)),
+		.compat_addr = LSCH2_XHCI_USB2_ADDR,
+		.reg_addr = offsetof(struct ccsr_scfg, usb2_icid) + LSCH2_SCFG_ADDR,
+	}, {
+		.compat = "snps,dwc3",
+		.id = FSL_USB3_STREAM_ID,
+		.reg = (((FSL_USB3_STREAM_ID) << 24) | (1 << 23)),
+		.compat_addr = LSCH2_XHCI_USB3_ADDR,
+		.reg_addr = offsetof(struct ccsr_scfg, usb3_icid) + LSCH2_SCFG_ADDR,
+	}, {
+		.compat = "fsl,ls1046a-ahci",
+		.id = FSL_SATA_STREAM_ID,
+		.reg = (((FSL_SATA_STREAM_ID) << 24) | (1 << 23)),
+		.compat_addr = LSCH2_HCI_BASE_ADDR,
+		.reg_addr = offsetof(struct ccsr_scfg, sata_icid) + LSCH2_SCFG_ADDR,
+	}, {
+		.compat = "fsl,ls1046a-qdma",
+		.id = FSL_QDMA_STREAM_ID,
+		.reg = (1 << 31) | (FSL_QDMA_STREAM_ID),
+		.compat_addr = LSCH2_QDMA_BASE_ADDR,
+		.reg_addr = LSCH2_QDMA_BASE_ADDR + QMAN_CQSIDR_REG,
+	}, {
+		.id = FSL_QDMA_STREAM_ID,
+		.reg = (1 << 31) | (FSL_QDMA_STREAM_ID),
+		.compat_addr = LSCH2_QDMA_BASE_ADDR,
+		.reg_addr = LSCH2_QDMA_BASE_ADDR + QMAN_CQSIDR_REG + 4,
+	}, {
+		.compat = "fsl,vf610-edma",
+		.id = FSL_EDMA_STREAM_ID,
+		.reg = (((FSL_EDMA_STREAM_ID) << 24) | (1 << 23)),
+		.compat_addr = LSCH2_EDMA_BASE_ADDR,
+		.reg_addr = offsetof(struct ccsr_scfg, edma_icid) + LSCH2_SCFG_ADDR,
+	}, {
+		.id = FSL_ETR_STREAM_ID,
+		.reg = (((FSL_ETR_STREAM_ID) << 24) | (1 << 23)),
+		.reg_addr = offsetof(struct ccsr_scfg, etr_icid) + LSCH2_SCFG_ADDR,
+	}, {
+		.id = FSL_DEBUG_STREAM_ID,
+		.reg = (((FSL_DEBUG_STREAM_ID) << 24) | (1 << 23)),
+		.reg_addr = offsetof(struct ccsr_scfg, debug_icid) + LSCH2_SCFG_ADDR,
+	}, {
+		.compat = "fsl,sec-v4.0",
+		.id = DPAA1_SID_END,
+		.compat_addr = LSCH2_SEC_ADDR,
+		.reg_addr = SEC_QIIC_LS + LSCH2_SEC_ADDR,
+	}, {
+		.compat = "fsl,sec-v4.0-job-ring",
+		.id = DPAA1_SID_START + 3,
+		.reg = (((DPAA1_SID_START + 3) << 16) | (DPAA1_SID_START + 3)),
+		.compat_addr = LSCH2_SEC_ADDR + SEC_IRBAR_JRn(0),
+		.reg_addr = SEC_JRnICID_LS(0) + LSCH2_SEC_ADDR,
+	}, {
+		.compat = "fsl,sec-v4.0-job-ring",
+		.id = DPAA1_SID_START + 4,
+		.reg = (((DPAA1_SID_START + 4) << 16) | (DPAA1_SID_START + 4)),
+		.compat_addr = LSCH2_SEC_ADDR + SEC_IRBAR_JRn(1),
+		.reg_addr = SEC_JRnICID_LS(1) + LSCH2_SEC_ADDR,
+	}, {
+		.compat = "fsl,sec-v4.0-job-ring",
+		.id = DPAA1_SID_START + 5,
+		.reg = (((DPAA1_SID_START + 5) << 16) | (DPAA1_SID_START + 5)),
+		.compat_addr = LSCH2_SEC_ADDR + SEC_IRBAR_JRn(2),
+		.reg_addr = SEC_JRnICID_LS(2) + LSCH2_SEC_ADDR,
+	}, {
+		.compat = "fsl,sec-v4.0-job-ring",
+		.id = DPAA1_SID_START + 6,
+		.reg = (((DPAA1_SID_START + 6) << 16) | (DPAA1_SID_START + 6)),
+		.compat_addr = LSCH2_SEC_ADDR + SEC_IRBAR_JRn(3),
+		.reg_addr = SEC_JRnICID_LS(3) + LSCH2_SEC_ADDR,
+	}, {
+		.id = DPAA1_SID_START + 7,
+		.reg = (((DPAA1_SID_START + 7) << 16) | (DPAA1_SID_START + 7)),
+		.reg_addr = SEC_RTICnICID_LS(0) + LSCH2_SEC_ADDR,
+	}, {
+		.id = DPAA1_SID_START + 8,
+		.reg = (((DPAA1_SID_START + 8) << 16) | (DPAA1_SID_START + 8)),
+		.reg_addr = SEC_RTICnICID_LS(1) + LSCH2_SEC_ADDR,
+	},{
+		.id = DPAA1_SID_START + 9,
+		.reg = (((DPAA1_SID_START + 9) << 16) | (DPAA1_SID_START + 9)),
+		.reg_addr = SEC_RTICnICID_LS(2) + LSCH2_SEC_ADDR,
+	}, {
+		.id = DPAA1_SID_START + 10,
+		.reg = (((DPAA1_SID_START + 10) << 16) | (DPAA1_SID_START + 10)),
+		.reg_addr = SEC_RTICnICID_LS(3) + LSCH2_SEC_ADDR,
+	}, {
+		.id = DPAA1_SID_START + 11,
+		.reg = (((DPAA1_SID_START + 11) << 16) | (DPAA1_SID_START + 11)),
+		.reg_addr = SEC_DECOnICID_LS(0) + LSCH2_SEC_ADDR,
+	}, {
+		.id = DPAA1_SID_START + 12,
+		.reg = (((DPAA1_SID_START + 12) << 16) | (DPAA1_SID_START + 12)),
+		.reg_addr = SEC_DECOnICID_LS(1) + LSCH2_SEC_ADDR,
+	}, {
+		.id = DPAA1_SID_START + 13,
+		.reg = (((DPAA1_SID_START + 13) << 16) | (DPAA1_SID_START + 13)),
+		.reg_addr = SEC_DECOnICID_LS(2) + LSCH2_SEC_ADDR,
+	},
 };
 
-static struct fman_icid_id_table fman_icid_tbl_ls1046a[] = {
-	/* port id, icid */
-	SET_FMAN_ICID_ENTRY(0x02, FSL_DPAA1_STREAM_ID_END),
-	SET_FMAN_ICID_ENTRY(0x03, FSL_DPAA1_STREAM_ID_END),
-	SET_FMAN_ICID_ENTRY(0x04, FSL_DPAA1_STREAM_ID_END),
-	SET_FMAN_ICID_ENTRY(0x05, FSL_DPAA1_STREAM_ID_END),
-	SET_FMAN_ICID_ENTRY(0x06, FSL_DPAA1_STREAM_ID_END),
-	SET_FMAN_ICID_ENTRY(0x07, FSL_DPAA1_STREAM_ID_END),
-	SET_FMAN_ICID_ENTRY(0x08, FSL_DPAA1_STREAM_ID_END),
-	SET_FMAN_ICID_ENTRY(0x09, FSL_DPAA1_STREAM_ID_END),
-	SET_FMAN_ICID_ENTRY(0x0a, FSL_DPAA1_STREAM_ID_END),
-	SET_FMAN_ICID_ENTRY(0x0b, FSL_DPAA1_STREAM_ID_END),
-	SET_FMAN_ICID_ENTRY(0x0c, FSL_DPAA1_STREAM_ID_END),
-	SET_FMAN_ICID_ENTRY(0x0d, FSL_DPAA1_STREAM_ID_END),
-	SET_FMAN_ICID_ENTRY(0x28, FSL_DPAA1_STREAM_ID_END),
-	SET_FMAN_ICID_ENTRY(0x29, FSL_DPAA1_STREAM_ID_END),
-	SET_FMAN_ICID_ENTRY(0x2a, FSL_DPAA1_STREAM_ID_END),
-	SET_FMAN_ICID_ENTRY(0x2b, FSL_DPAA1_STREAM_ID_END),
-	SET_FMAN_ICID_ENTRY(0x2c, FSL_DPAA1_STREAM_ID_END),
-	SET_FMAN_ICID_ENTRY(0x2d, FSL_DPAA1_STREAM_ID_END),
-	SET_FMAN_ICID_ENTRY(0x10, FSL_DPAA1_STREAM_ID_END),
-	SET_FMAN_ICID_ENTRY(0x11, FSL_DPAA1_STREAM_ID_END),
-	SET_FMAN_ICID_ENTRY(0x30, FSL_DPAA1_STREAM_ID_END),
-	SET_FMAN_ICID_ENTRY(0x31, FSL_DPAA1_STREAM_ID_END),
+struct fman_icid_id_table fman_icid_tbl_ls1046a[] = {
+	{
+		.port_id = 0x02,
+		.icid = DPAA1_SID_END,
+	}, {
+		.port_id = 0x03,
+		.icid = DPAA1_SID_END,
+	}, {
+		.port_id = 0x04,
+		.icid = DPAA1_SID_END,
+	}, {
+		.port_id = 0x05,
+		.icid = DPAA1_SID_END,
+	}, {
+		.port_id = 0x06,
+		.icid = DPAA1_SID_END,
+	}, {
+		.port_id = 0x07,
+		.icid = DPAA1_SID_END,
+	}, {
+		.port_id = 0x08,
+		.icid = DPAA1_SID_END,
+	}, {
+		.port_id = 0x09,
+		.icid = DPAA1_SID_END,
+	}, {
+		.port_id = 0x0a,
+		.icid = DPAA1_SID_END,
+	}, {
+		.port_id = 0x0b,
+		.icid = DPAA1_SID_END,
+	}, {
+		.port_id = 0x0c,
+		.icid = DPAA1_SID_END,
+	}, {
+		.port_id = 0x0d,
+		.icid = DPAA1_SID_END,
+	}, {
+		.port_id = 0x28,
+		.icid = DPAA1_SID_END,
+	}, {
+		.port_id = 0x29,
+		.icid = DPAA1_SID_END,
+	}, {
+		.port_id = 0x2a,
+		.icid = DPAA1_SID_END,
+	}, {
+		.port_id = 0x2b,
+		.icid = DPAA1_SID_END,
+	}, {
+		.port_id = 0x2c,
+		.icid = DPAA1_SID_END,
+	}, {
+		.port_id = 0x2d,
+		.icid = DPAA1_SID_END,
+	}, {
+		.port_id = 0x10,
+		.icid = DPAA1_SID_END,
+	}, {
+		.port_id = 0x11,
+		.icid = DPAA1_SID_END,
+	}, {
+		.port_id = 0x30,
+		.icid = DPAA1_SID_END,
+	}, {
+		.port_id = 0x31,
+		.icid = DPAA1_SID_END,
+	},
 };
 
-static void set_icid(struct icid_id_table *tbl, int size)
+static int get_fman_port_icid(int port_id, struct fman_icid_id_table *tbl,
+		       const int size)
 {
 	int i;
 
-	for (i = 0; i < size; i++)
-		out_be32((u32 *)(tbl[i].reg_addr), tbl[i].reg);
+	for (i = 0; i < size; i++) {
+		if (tbl[i].port_id == port_id)
+			return tbl[i].icid;
+	}
+
+	return -ENODEV;
 }
 
-static void set_fman_icids(struct fman_icid_id_table *tbl, int size)
+static void fdt_set_iommu_prop(struct device_node *np, phandle iommu_handle,
+			       int stream_id)
+{
+	u32 prop[2];
+
+	prop[0] = cpu_to_fdt32(iommu_handle);
+	prop[1] = cpu_to_fdt32(stream_id);
+
+	of_set_property(np, "iommus", prop, sizeof(prop), 1);
+}
+
+static void fdt_fixup_fman_port_icid_by_compat(struct device_node *root,
+					       phandle iommu_handle,
+					       const char *compat)
+{
+	struct device_node *np;
+	int ret;
+	u32 cell_index, icid;
+
+	for_each_compatible_node_from(np, root, NULL, compat) {
+		ret = of_property_read_u32(np, "cell-index", &cell_index);
+		if (ret)
+			continue;
+
+		icid = get_fman_port_icid(cell_index, fman_icid_tbl_ls1046a,
+					  ARRAY_SIZE(fman_icid_tbl_ls1046a));
+		if (icid < 0) {
+			printf("WARNING unknown ICID for fman port %u\n",
+			       cell_index);
+			continue;
+		}
+
+		fdt_set_iommu_prop(np, iommu_handle, icid);
+	}
+}
+
+static void fdt_fixup_fman_icids(struct device_node *root, phandle iommu_handle)
+{
+	static const char * const compats[] = {
+		"fsl,fman-v3-port-oh",
+		"fsl,fman-v3-port-rx",
+		"fsl,fman-v3-port-tx",
+	};
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(compats); i++)
+		fdt_fixup_fman_port_icid_by_compat(root, iommu_handle, compats[i]);
+}
+
+struct qportal_info {
+	u16 dicid;  /* DQRR ICID */
+	u16 ficid;  /* frame data ICID */
+	u16 icid;
+	u8 sdest;
+};
+
+struct qportal_info qp_info[] = {
+	{
+		.dicid = DPAA1_SID_END,
+		.ficid = DPAA1_SID_END,
+		.icid = DPAA1_SID_END,
+		.sdest = 0,
+	}, {
+		.dicid = DPAA1_SID_END,
+		.ficid = DPAA1_SID_END,
+		.icid = DPAA1_SID_END,
+		.sdest = 0,
+	}, {
+		.dicid = DPAA1_SID_END,
+		.ficid = DPAA1_SID_END,
+		.icid = DPAA1_SID_END,
+		.sdest = 0,
+	}, {
+		.dicid = DPAA1_SID_END,
+		.ficid = DPAA1_SID_END,
+		.icid = DPAA1_SID_END,
+		.sdest = 0,
+	}, {
+		.dicid = DPAA1_SID_END,
+		.ficid = DPAA1_SID_END,
+		.icid = DPAA1_SID_END,
+		.sdest = 0,
+	}, {
+		.dicid = DPAA1_SID_END,
+		.ficid = DPAA1_SID_END,
+		.icid = DPAA1_SID_END,
+		.sdest = 0,
+	}, {
+		.dicid = DPAA1_SID_END,
+		.ficid = DPAA1_SID_END,
+		.icid = DPAA1_SID_END,
+		.sdest = 0,
+	}, {
+		.dicid = DPAA1_SID_END,
+		.ficid = DPAA1_SID_END,
+		.icid = DPAA1_SID_END,
+		.sdest = 0,
+	}, {
+		.dicid = DPAA1_SID_END,
+		.ficid = DPAA1_SID_END,
+		.icid = DPAA1_SID_END,
+		.sdest = 0,
+	}, {
+		.dicid = DPAA1_SID_END,
+		.ficid = DPAA1_SID_END,
+		.icid = DPAA1_SID_END,
+		.sdest = 0,
+	},
+};
+
+#define BMAN_NUM_PORTALS     10
+#define BMAN_MEM_BASE        0x508000000
+#define BMAN_MEM_SIZE        0x08000000
+#define BMAN_SP_CINH_SIZE    0x10000
+#define BMAN_CENA_SIZE       (BMAN_MEM_SIZE >> 1)
+#define BMAN_CINH_BASE       (BMAN_MEM_BASE + BMAN_CENA_SIZE)
+#define BMAN_SWP_ISDR_REG    0x3e80
+#define QMAN_MEM_BASE        0x500000000
+#define QMAN_MEM_PHYS        QMAN_MEM_BASE
+#define QMAN_MEM_SIZE        0x08000000
+#define QMAN_SP_CINH_SIZE    0x10000
+#define QMAN_CENA_SIZE       (QMAN_MEM_SIZE >> 1)
+#define QMAN_CINH_BASE       (QMAN_MEM_BASE + QMAN_CENA_SIZE)
+#define QMAN_SWP_ISDR_REG    0x3680
+
+static void inhibit_portals(void __iomem *addr, int max_portals,
+			    int portal_cinh_size)
+{
+	int i;
+
+	for (i = 0; i < max_portals; i++) {
+		out_be32(addr, -1);
+		addr += portal_cinh_size;
+	}
+}
+
+static void setup_qbman_portals(void)
+{
+	void __iomem *bpaddr = (void *)BMAN_CINH_BASE + BMAN_SWP_ISDR_REG;
+	void __iomem *qpaddr = (void *)QMAN_CINH_BASE + QMAN_SWP_ISDR_REG;
+	struct ccsr_qman_v3 *qman = IOMEM(LSCH2_QMAN_ADDR);
+	int i;
+
+	/* Set the Qman initiator BAR to match the LAW (for DQRR stashing) */
+	out_be32(&qman->qcsp_bare, (u32)(QMAN_MEM_PHYS >> 32));
+	out_be32(&qman->qcsp_bar, (u32)QMAN_MEM_PHYS);
+
+	for (i = 0; i < ARRAY_SIZE(qp_info); i++) {
+		struct qportal_info *qi = &qp_info[i];
+
+		out_be32(&qman->qcsp[i].qcsp_lio_cfg, (qi->icid << 16) | qi->dicid);
+		/* set frame icid */
+		out_be32(&qman->qcsp[i].qcsp_io_cfg, (qi->sdest << 16) | qi->ficid);
+	}
+
+	/* Change default state of BMan ISDR portals to all 1s */
+	inhibit_portals(bpaddr, BMAN_NUM_PORTALS, BMAN_SP_CINH_SIZE);
+	inhibit_portals(qpaddr, ARRAY_SIZE(qp_info), QMAN_SP_CINH_SIZE);
+}
+
+static void fdt_set_qportal_iommu_prop(struct device_node *np, phandle iommu_handle,
+			       struct qportal_info *qp_info)
+{
+	u32 prop[6];
+
+	prop[0] = cpu_to_fdt32(iommu_handle);
+	prop[1] = cpu_to_fdt32(qp_info->icid);
+	prop[2] = cpu_to_fdt32(iommu_handle);
+	prop[3] = cpu_to_fdt32(qp_info->dicid);
+	prop[4] = cpu_to_fdt32(iommu_handle);
+	prop[5] = cpu_to_fdt32(qp_info->ficid);
+
+	of_set_property(np, "iommus", prop, sizeof(prop), 1);
+}
+
+static void fdt_fixup_qportals(struct device_node *root, phandle iommu_handle)
+{
+	struct device_node *np;
+	unsigned int maj, min;
+	unsigned int ip_cfg;
+	struct ccsr_qman_v3 *qman = IOMEM(LSCH2_QMAN_ADDR);
+	u32 rev_1 = in_be32(&qman->ip_rev_1);
+	u32 rev_2 = in_be32(&qman->ip_rev_2);
+	u32 cell_index;
+	int ret;
+
+	maj = (rev_1 >> 8) & 0xff;
+	min = rev_1 & 0xff;
+	ip_cfg = rev_2 & 0xff;
+
+	for_each_compatible_node_from(np, root, NULL, "fsl,qman-portal") {
+		ret = of_property_read_u32(np, "cell-index", &cell_index);
+		if (ret)
+			continue;
+
+		fdt_set_qportal_iommu_prop(np, iommu_handle, &qp_info[cell_index]);
+	}
+}
+
+static int icid_of_fixup(struct device_node *root, void *context)
+{
+	int i;
+	struct device_node *iommu;
+	phandle iommu_handle;
+
+	iommu = of_find_compatible_node(root, NULL, "arm,mmu-500");
+	if (!iommu)
+		return -ENOENT;
+
+	iommu_handle = of_node_create_phandle(iommu);
+
+	for (i = 0; i < ARRAY_SIZE(icid_tbl_ls1046a); i++) {
+		struct icid_id_table *icid = &icid_tbl_ls1046a[i];
+		struct device_node *np;
+
+		if (!icid->compat)
+			continue;
+
+		for_each_compatible_node_from(np, root, NULL, icid->compat) {
+			struct resource res;
+
+			if (of_address_to_resource(np, 0, &res))
+				continue;
+
+			if (res.start == icid->compat_addr) {
+				fdt_set_iommu_prop(np, iommu_handle, icid->id);
+				break;
+			}
+		}
+	}
+
+	fdt_fixup_fman_icids(root, iommu_handle);
+	fdt_fixup_qportals(root, iommu_handle);
+
+	return 0;
+}
+
+static int layerscape_setup_icids(void)
 {
 	int i;
 	struct ccsr_fman *fm = (void *)LSCH2_FM1_ADDR;
 
-	for (i = 0; i < size; i++) {
-		out_be32(&fm->fm_bmi_common.fmbm_ppid[tbl[i].port_id - 1],
-			 tbl[i].icid);
-	}
-}
-
-static int set_icids(void)
-{
 	if (!of_machine_is_compatible("fsl,ls1046a"))
 		return 0;
 
 	/* setup general icid offsets */
-	set_icid(icid_tbl_ls1046a, ARRAY_SIZE(icid_tbl_ls1046a));
+	for (i = 0; i < ARRAY_SIZE(icid_tbl_ls1046a); i++) {
+		struct icid_id_table *icid = &icid_tbl_ls1046a[i];
 
-	set_fman_icids(fman_icid_tbl_ls1046a, ARRAY_SIZE(fman_icid_tbl_ls1046a));
+		out_be32((u32 *)(icid->reg_addr), icid->reg);
+	}
+
+	/* setup fman icids */
+	for (i = 0; i < ARRAY_SIZE(fman_icid_tbl_ls1046a); i++) {
+		struct fman_icid_id_table *icid = &fman_icid_tbl_ls1046a[i];
+
+		out_be32(&fm->fm_bmi_common.fmbm_ppid[icid->port_id - 1],
+			 icid->icid);
+	}
+
+	setup_qbman_portals();
+
+	of_register_fixup(icid_of_fixup, NULL);
 
 	return 0;
 }
-postcore_initcall(set_icids);
+coredevice_initcall(layerscape_setup_icids);

@@ -336,13 +336,32 @@ static int __init ls_add_pcie_port(struct ls_pcie *pcie)
 	return 0;
 }
 
+static phandle ls_pcie_get_iommu_handle(struct device_node *np, phandle *handle)
+{
+	u32 arr[4];
+	int ret;
+
+	/*
+	 * We expect an existing "iommu-map" property with bogus values. All we
+	 * use from it is the phandle to the iommu.
+	 */
+	ret = of_property_read_u32_array(np, "iommu-map", arr, 4);
+	if (ret)
+		return -ENOENT;
+
+	*handle = arr[1];
+
+	return 0;
+}
+
 static int ls_pcie_of_fixup(struct device_node *root, void *ctx)
 {
 	struct ls_pcie *pcie = ctx;
 	struct device_d *dev = pcie->pci.dev;
 	struct device_node *np;
+	phandle iommu_handle = 0;
 	char *name;
-	u32 *arr, phandle;
+	u32 *msi_map, *iommu_map, phandle;
 	int nluts;
 	int ret, i;
 	u32 devid, stream_id;
@@ -364,7 +383,14 @@ static int ls_pcie_of_fixup(struct device_node *root, void *ctx)
 		return ret;
 	}
 
-	arr = xmalloc(nluts * sizeof(u32) * 4);
+	ret = ls_pcie_get_iommu_handle(np, &iommu_handle);
+	if (ret) {
+		dev_err(pcie->pci.dev, "Unable to get iommu phandle\n");
+		return ret;
+	}
+
+	msi_map = xmalloc(nluts * sizeof(u32) * 4);
+	iommu_map = xmalloc(nluts * sizeof(u32) * 4);
 
 	for (i = 0; i < nluts; i++) {
 		u32 udr = lut_readl(pcie, PCIE_LUT_UDR(i));
@@ -376,10 +402,15 @@ static int ls_pcie_of_fixup(struct device_node *root, void *ctx)
 		devid = udr >> 16;
 		stream_id = ldr & 0x7fff;
 
-		arr[i * 4] = devid;
-		arr[i * 4 + 1] = phandle;
-		arr[i * 4 + 2] = stream_id;
-		arr[i * 4 + 3] = 1;
+		msi_map[i * 4] = devid;
+		msi_map[i * 4 + 1] = phandle;
+		msi_map[i * 4 + 2] = stream_id;
+		msi_map[i * 4 + 3] = 1;
+
+		iommu_map[i * 4] = devid;
+		iommu_map[i * 4 + 1] = iommu_handle;
+		iommu_map[i * 4 + 2] = stream_id;
+		iommu_map[i * 4 + 3] = 1;
 	}
 
 	/*
@@ -391,7 +422,11 @@ static int ls_pcie_of_fixup(struct device_node *root, void *ctx)
 	 *                 [devid] [phandle-to-msi-ctrl] [stream-id] [count]>;
 	 */
 
-	ret = of_property_write_u32_array(np, "msi-map", arr, nluts * 4);
+	ret = of_property_write_u32_array(np, "msi-map", msi_map, nluts * 4);
+	if (ret)
+		goto out;
+
+	ret = of_property_write_u32_array(np, "iommu-map", iommu_map, nluts * 4);
 	if (ret)
 		goto out;
 
@@ -400,7 +435,9 @@ static int ls_pcie_of_fixup(struct device_node *root, void *ctx)
 	ret = 0;
 
 out:
-	free(arr);
+	free(msi_map);
+	free(iommu_map);
+
 	return ret;
 }
 

@@ -327,6 +327,34 @@ struct regulator *regulator_get(struct device_d *dev, const char *supply)
 	return r;
 }
 
+static struct regulator_internal *regulator_by_name(const char *name)
+{
+	struct regulator_internal *ri;
+
+	list_for_each_entry(ri, &regulator_list, list)
+		if (ri->name && !strcmp(ri->name, name))
+			return ri;
+
+	return NULL;
+}
+
+struct regulator *regulator_get_name(const char *name)
+{
+	struct regulator_internal *ri;
+	struct regulator *r;
+
+	ri = regulator_by_name(name);
+	if (!ri)
+		return ERR_PTR(-ENODEV);
+
+	r = xzalloc(sizeof(*r));
+	r->ri = ri;
+
+	list_add_tail(&r->list, &ri->consumer_list);
+
+	return r;
+}
+
 /*
  * regulator_enable - enable a regulator.
  * @r:		the regulator to enable
@@ -379,7 +407,7 @@ static void regulator_print_one(struct regulator_internal *ri)
 		printf(" consumers:\n");
 
 		list_for_each_entry(r, &ri->consumer_list, list)
-			printf("   %s\n", dev_name(r->dev));
+			printf("   %s\n", r->dev ? dev_name(r->dev) : "none");
 	}
 }
 

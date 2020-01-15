@@ -491,6 +491,10 @@ void *dma_alloc_writecombine(size_t size, dma_addr_t *dma_handle)
 void dma_sync_single_for_device(dma_addr_t address, size_t size,
 				enum dma_data_direction dir)
 {
+	/*
+	 * FIXME: This function needs a device argument to support non 1:1 mappings
+	 */
+
 	if (dir == DMA_FROM_DEVICE) {
 		__dma_inv_range(address, address + size);
 		if (outer_cache.inv_range)

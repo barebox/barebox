@@ -56,6 +56,9 @@ extern struct device_node *of_find_matching_node_by_address(
 	u64 base_address);
 extern void __iomem *of_iomap(struct device_node *np, int index);
 
+extern int of_dma_get_range(struct device_node *np, u64 *dma_addr, u64 *paddr,
+			    u64 *size);
+
 #else /* CONFIG_OFTREE */
 
 static inline u64 of_translate_address(struct device_node *dev,
@@ -97,6 +100,12 @@ static inline struct device_node *of_find_matching_node_by_address(
 static inline void __iomem *of_iomap(struct device_node *np, int index)
 {
 	return NULL;
+}
+
+static inline int of_dma_get_range(struct device_node *np, u64 *dma_addr,
+				   u64 *paddr, u64 *size)
+{
+	return -ENOSYS;
 }
 
 #endif /* CONFIG_OFTREE */

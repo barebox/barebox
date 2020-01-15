@@ -74,6 +74,22 @@ static void of_device_make_bus_id(struct device_d *dev)
 	}
 }
 
+static void of_dma_configure(struct device_d *dev, struct device_node *np)
+{
+	u64 dma_addr, paddr, size = 0;
+	unsigned long offset;
+	int ret;
+
+	ret = of_dma_get_range(np, &dma_addr, &paddr, &size);
+	if (ret < 0) {
+		dma_addr = offset = 0;
+	} else {
+		offset = paddr - dma_addr;
+	}
+
+	dev->dma_offset = offset;
+}
+
 /**
  * of_platform_device_create - Alloc, initialize and register an of_device
  * @np: pointer to node to create device for
@@ -147,6 +163,8 @@ struct device_d *of_platform_device_create(struct device_node *np,
 	dev->resource = res;
 	dev->num_resources = num_reg;
 	of_device_make_bus_id(dev);
+
+	of_dma_configure(dev, np);
 
 	resinval = (-1);
 

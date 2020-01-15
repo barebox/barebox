@@ -129,6 +129,13 @@ config GPIO_PL061
 	help
 	  Say yes here to support the PrimeCell PL061 GPIO device
 
+config GPIO_RASPBERRYPI_EXP
+	bool "Raspberry Pi 3 GPIO Expander"
+	depends on ARCH_BCM283X
+	help
+	  Turn on GPIO support for the expander on Raspberry Pi 3 boards, using
+	  the firmware mailbox to communicate with VideoCore on BCM283x chips.
+
 config GPIO_STMPE
 	depends on MFD_STMPE
 	bool "STMPE GPIO Expander"

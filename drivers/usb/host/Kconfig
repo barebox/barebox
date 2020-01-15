@@ -21,6 +21,9 @@ config USB_OHCI_AT91
 	depends on ARCH_AT91
 	bool "AT91 OHCI driver"
 
+config USB_DWC2_HOST
+	bool "DWC2 Host driver"
+
 config USB_XHCI
 	bool "xHCI driver"
 	depends on HAS_DMA

@@ -93,8 +93,13 @@ struct envfs_super {
 #endif
 
 #define ENV_FLAG_NO_OVERWRITE	(1 << 0)
+#define PAD4(x) ((x + 3) & ~3)
 int envfs_load(const char *filename, const char *dirname, unsigned flags);
 int envfs_save(const char *filename, const char *dirname, unsigned flags);
+int envfs_check_super(struct envfs_super *super, size_t *size);
+int envfs_check_data(struct envfs_super *super, const void *buf, size_t size);
+int envfs_load_data(struct envfs_super *super, void *buf, size_t size,
+		const char *dir, unsigned flags);
 int envfs_load_from_buf(void *buf, int len, const char *dir, unsigned flags);
 
 /* defaults to /dev/env0 */

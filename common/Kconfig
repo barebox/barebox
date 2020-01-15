@@ -174,19 +174,19 @@ config GLOBALVAR
 
 config NVVAR
 	bool "Non volatile global environment variables support"
-	default y if !SHELL_NONE
+	default y if !SHELL_NONE && ENV_HANDLING
 	depends on GLOBALVAR
-	depends on ENV_HANDLING
 	select FNMATCH
 	help
 	  Non volatile environment variables begin with "nv.". They behave like
-	  global variables above, but their values are saved in the environment
-	  storage with 'saveenv' and thus are persistent over restarts. nv variables
-	  are coupled with global variables of the same name. Setting "nv.foo" results
-	  in "global.foo" changed also (but not the other way round: setting "global.foo"
-	  leaves "nv.foo" untouched). The idea is that nv variables can store defaults
-	  while global variables can be changed during runtime without changing the
-	  default.
+	  global variables above, but when CONFIG_ENV_HANDLING is enabled, they
+	  can be stored in the environment storage with 'saveenv' and thus
+	  persisted over restarts. nv variables are coupled with global
+	  variables of the same name. Setting "nv.foo" results in "global.foo"
+	  changed also (but not the other way round: setting "global.foo" leaves
+	  "nv.foo" untouched). The idea is that nv variables can store defaults
+	  while global variables can be changed during runtime without changing
+	  the default.
 
 menu "memory layout"
 
@@ -805,12 +805,12 @@ config ENV_HANDLING
 
 config DEFAULT_ENVIRONMENT
 	bool
-	default y
-	depends on ENV_HANDLING
+	default y if ENV_HANDLING
 	prompt "Compile in default environment"
 	help
 	  Enabling this option will give you a default environment when
-	  the environment found in the environment sector is invalid
+	  the environment found in the environment sector is invalid or when
+	  CONFIG_ENV_HANDLING is not enabled.
 
 choice
 	prompt "default compression for in-barebox binaries"

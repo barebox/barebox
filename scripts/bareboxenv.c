@@ -104,6 +104,7 @@ static char *concat_subpath_file(const char *path, const char *f)
 #include "../include/envfs.h"
 #include "../crypto/crc32.c"
 #include "../lib/make_directory.c"
+#include "../common/envfs-core.c"
 #include "../common/environment.c"
 
 static void usage(char *prgname)

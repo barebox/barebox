@@ -164,7 +164,7 @@ static int do_digest(int argc, char *argv[])
 
 	if (sig) {
 		digestlen = digest_length(d);
-		if (siglen == 2 * digestlen) {
+		if (siglen >= 2 * digestlen) {
 			if (!tmp_sig)
 				tmp_sig = xmalloc(digestlen);
 

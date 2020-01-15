@@ -314,7 +314,7 @@ static int fsl_esdhc_probe(struct device_d *dev)
 	host->mci.card_present = esdhc_card_present;
 	host->mci.hw_dev = dev;
 
-	dev->detect = fsl_esdhc_detect,
+	dev->detect = fsl_esdhc_detect;
 
 	rate = clk_get_rate(host->clk);
 	host->mci.f_min = rate >> 12;

@@ -122,29 +122,39 @@ conflict:
 
 	return -EINVAL;
 }
+#else
+static int check_overlap(const char *path)
+{
+	return 0;
+}
+#endif
 
 static int load_environment(void)
 {
 	const char *default_environment_path;
-	int ret;
+	int __maybe_unused ret = 0;
 
 	default_environment_path = default_environment_path_get();
 
 	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT))
 		defaultenv_load("/env", 0);
 
-	ret = check_overlap(default_environment_path);
-	if (ret)
-		default_environment_path_set(NULL);
-	else
-		envfs_load(default_environment_path, "/env", 0);
+	if (IS_ENABLED(CONFIG_ENV_HANDLING)) {
+		ret = check_overlap(default_environment_path);
+		if (ret)
+			default_environment_path_set(NULL);
+		else
+			envfs_load(default_environment_path, "/env", 0);
+	} else {
+		if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT))
+			pr_notice("No support for persistent environment. Using default environment");
+	}
 
 	nvvar_load();
 
 	return 0;
 }
 environment_initcall(load_environment);
-#endif
 
 static int global_autoboot_abort_key;
 static const char * const global_autoboot_abort_keys[] = {

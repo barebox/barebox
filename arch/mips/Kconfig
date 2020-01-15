@@ -174,7 +174,7 @@ choice
 config CPU_LOONGSON1B
 	bool "Loongson 1B"
 	depends on SYS_HAS_CPU_LOONGSON1B
-	select CPU_LOONGSON1
+	select CPU_GS232
 	help
 	  The Loongson 1B is a 32-bit SoC, which implements the MIPS32
 	  release 2 instruction set.
@@ -235,7 +235,7 @@ config CPU_MIPS64_R2
 
 endchoice
 
-config CPU_LOONGSON1
+config CPU_GS232
 	bool
 	select CPU_MIPS32
 	select CPU_MIPSR2

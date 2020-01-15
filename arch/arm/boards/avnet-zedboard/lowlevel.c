@@ -20,7 +20,9 @@
 #include <io.h>
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
+#include <mach/init.h>
 #include <mach/zynq7000-regs.h>
+#include <serial/cadence.h>
 
 #define DCI_DONE	(1 << 13)
 #define PLL_ARM_LOCK	(1 << 0)
@@ -29,10 +31,17 @@
 
 extern char __dtb_zynq_zed_start[];
 
-ENTRY_FUNCTION(start_avnet_zedboard, r0, r1, r2)
+static void avnet_zedboard_ps7_init(void)
 {
-
-	void *fdt = __dtb_zynq_zed_start + get_runtime_offset();
+	/*
+	 * Read OCM mapping configuration, if only the upper 64 KByte are
+	 * mapped to the high address, it's very likely that we just got control
+	 * from the BootROM. If the mapping is changed something other than the
+	 * BootROM was running before us. Skip PS7 init to avoid cutting the
+	 * branch we are sitting on in that case.
+	 */
+	if ((readl(0xf8000910) & 0xf) != 0x8)
+		return;
 
 	/* open sesame */
 	writel(0x0000DF0D, ZYNQ_SLCR_UNLOCK);
@@ -234,9 +243,18 @@ ENTRY_FUNCTION(start_avnet_zedboard, r0, r1, r2)
 	/* UART1 pinmux */
 	writel(0x000002E1, ZYNQ_MIO_BASE + 0xC8);
 	writel(0x000002E0, ZYNQ_MIO_BASE + 0xCC);
+	/* QSPI pinmux */
+	writel(0x00001602, ZYNQ_MIO_BASE + 0x04);
+	writel(0x00000702, ZYNQ_MIO_BASE + 0x08);
+	writel(0x00000702, ZYNQ_MIO_BASE + 0x0c);
+	writel(0x00000702, ZYNQ_MIO_BASE + 0x10);
+	writel(0x00000702, ZYNQ_MIO_BASE + 0x14);
+	writel(0x00000702, ZYNQ_MIO_BASE + 0x18);
+	writel(0x00000602, ZYNQ_MIO_BASE + 0x20);
 
 	/* poor mans clkctrl */
 	writel(0x00001403, ZYNQ_CLOCK_CTRL_BASE + ZYNQ_UART_CLK_CTRL);
+	writel(0x00000101, ZYNQ_CLOCK_CTRL_BASE + ZYNQ_LQSPI_CLK_CTRL);
 
 	/* GEM0 */
 	writel(0x00000001, 0xf8000138);
@@ -260,8 +278,32 @@ ENTRY_FUNCTION(start_avnet_zedboard, r0, r1, r2)
 
 	/* lock up. secure, secure */
 	writel(0x0000767B, ZYNQ_SLCR_LOCK);
+}
+
+static void avnet_zedboard_pbl_console_init(void)
+{
+	relocate_to_current_adr();
+	setup_c();
+	barrier();
+
+	cadence_uart_init((void *)ZYNQ_UART1_BASE_ADDR);
+	pbl_set_putc(cadence_uart_putc, (void *)ZYNQ_UART1_BASE_ADDR);
+
+	pr_debug("\nAvnet ZedBoard PBL\n");
+}
+
+ENTRY_FUNCTION(start_avnet_zedboard, r0, r1, r2)
+{
+
+	void *fdt = __dtb_zynq_zed_start + get_runtime_offset();
 
 	arm_cpu_lowlevel_init();
+	zynq_cpu_lowlevel_init();
+
+	avnet_zedboard_ps7_init();
+
+	if (IS_ENABLED(CONFIG_PBL_CONSOLE))
+		avnet_zedboard_pbl_console_init();
 
 	barebox_arm_entry(0, SZ_512M, fdt);
 }

@@ -256,37 +256,55 @@ void led_unregister(struct led *led)
 	list_del(&led->list);
 }
 
-struct led_trg {
-	const char *str;
-	enum led_trigger trg;
+static char *trigger_names[] = {
+	[LED_TRIGGER_PANIC] = "panic",
+	[LED_TRIGGER_HEARTBEAT] = "heartbeat",
+	[LED_TRIGGER_NET_RX] = "net-rx",
+	[LED_TRIGGER_NET_TX] = "net-tx",
+	[LED_TRIGGER_NET_TXRX] = "net",
+	[LED_TRIGGER_DEFAULT_ON] = "default-on",
 };
 
-static struct led_trg triggers[] = {
-	{ .str = "heartbeat", LED_TRIGGER_HEARTBEAT, },
-	{ .str = "panic", LED_TRIGGER_PANIC, },
-	{ .str = "net", LED_TRIGGER_NET_TXRX, },
-	{ .str = "default-on", LED_TRIGGER_DEFAULT_ON, },
-};
+const char *trigger_name(enum led_trigger trigger)
+{
+	return trigger_names[trigger];
+}
+
+enum led_trigger trigger_by_name(const char *name)
+{
+	int i;
+
+	if (!name)
+		return LED_TRIGGER_MAX;
+
+	for (i = 0; i < LED_TRIGGER_MAX; i++)
+		if (!strcmp(name, trigger_names[i]))
+			return i;
+
+	return LED_TRIGGER_MAX;
+}
 
 void led_of_parse_trigger(struct led *led, struct device_node *np)
 {
+	enum led_trigger trg = LED_TRIGGER_MAX;
 	const char *trigger;
-	int i;
 
-	trigger = of_get_property(np, "linux,default-trigger", NULL);
-	if (!trigger)
+	if (of_property_read_bool(np, "panic-indicator"))
+		trg = LED_TRIGGER_PANIC;
+
+	if (trg == LED_TRIGGER_MAX) {
+		trigger = of_get_property(np, "linux,default-trigger", NULL);
+		trg = trigger_by_name(trigger);
+	}
+
+	if (trg == LED_TRIGGER_MAX) {
 		trigger = of_get_property(np, "barebox,default-trigger", NULL);
+		trg = trigger_by_name(trigger);
+	}
 
-	if (!trigger)
-		return;
-
-	for (i = 0; i < ARRAY_SIZE(triggers); i++) {
-		struct led_trg *trg = &triggers[i];
-		if (!strcmp(trg->str, trigger)) {
-			/* disable LED before installing trigger */
-			led_set(led, 0);
-			led_set_trigger(trg->trg, led);
-			return;
-		}
+	if (trg != LED_TRIGGER_MAX) {
+		/* disable LED before installing trigger */
+		led_set(led, 0);
+		led_set_trigger(trg, led);
 	}
 }

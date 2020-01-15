@@ -143,31 +143,6 @@ int led_set_trigger(enum led_trigger trigger, struct led *led)
 	return 0;
 }
 
-static char *trigger_names[] = {
-	[LED_TRIGGER_PANIC] = "panic",
-	[LED_TRIGGER_HEARTBEAT] = "heartbeat",
-	[LED_TRIGGER_NET_RX] = "net-rx",
-	[LED_TRIGGER_NET_TX] = "net-tx",
-	[LED_TRIGGER_NET_TXRX] = "net",
-	[LED_TRIGGER_DEFAULT_ON] = "default-on",
-};
-
-const char *trigger_name(enum led_trigger trigger)
-{
-	return trigger_names[trigger];
-}
-
-enum led_trigger trigger_by_name(const char *name)
-{
-	int i;
-
-	for (i = 0; i < LED_TRIGGER_MAX; i++)
-		if (!strcmp(name, trigger_names[i]))
-			return i;
-
-	return LED_TRIGGER_MAX;
-}
-
 /**
  * led_triggers_show_info - Show information about all registered
  * triggers

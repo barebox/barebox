@@ -37,6 +37,7 @@ static int do_bootm_linux(struct image_data *data)
 		       unsigned long x3);
 	resource_size_t start, end;
 	unsigned long text_offset, image_size, devicetree, kernel;
+	unsigned long image_end;
 	int ret;
 	void *fdt;
 
@@ -53,7 +54,18 @@ static int do_bootm_linux(struct image_data *data)
 	if (ret)
 		goto out;
 
-	devicetree = ALIGN(kernel + image_size, PAGE_SIZE);
+	image_end = PAGE_ALIGN(kernel + image_size);
+
+	if (bootm_has_initrd(data)) {
+		ret = bootm_load_initrd(data, image_end);
+		if (ret)
+			return ret;
+
+		image_end += resource_size(data->initrd_res);
+		image_end = PAGE_ALIGN(image_end);
+	}
+
+	devicetree = image_end;
 
 	fdt = bootm_get_devicetree(data);
 	if (IS_ERR(fdt)) {

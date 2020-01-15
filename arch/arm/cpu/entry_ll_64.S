@@ -10,11 +10,13 @@
 .section .text.__barebox_arm_entry
 ENTRY(__barebox_arm_entry)
 	mov	sp, x3
-	/*
-	 * arm_early_mmu_cache_invalidate is jsut a call to
-	 * v8_invalidate_icache_all() which doesn't clobber x0, x1 or x2
- 	 */
+	mov	x19, x0
+	mov	x20, x1
+	mov	x21, x2
 	bl	arm_early_mmu_cache_invalidate
+	mov	x0, x19
+	mov	x1, x20
+	mov	x2, x21
 #if IS_ENABLED(CONFIG_PBL_IMAGE)
 	b	barebox_pbl_start
 #else

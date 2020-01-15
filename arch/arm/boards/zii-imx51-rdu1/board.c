@@ -16,6 +16,7 @@
  */
 
 #include <common.h>
+#include <envfs.h>
 #include <init.h>
 #include <environment.h>
 #include <mach/bbu.h>
@@ -48,6 +49,8 @@ static int zii_rdu1_init(void)
 		"/dev/dataflash0.barebox",
 		BBU_HANDLER_FLAG_DEFAULT |
 		IMX_BBU_FLAG_PARTITION_STARTS_AT_HEADER);
+
+	defaultenv_append_directory(defaultenv_rdu1);
 
 	return 0;
 }

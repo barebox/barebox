@@ -98,17 +98,17 @@
 
 		partition@0 {
 			label = "barebox";
-			reg = <0x0 0x400000>;
+			reg = <0x0 0x1000000>;
 		};
 
 		partition@400000 {
 			label = "barebox-environment";
-			reg = <0x400000 0x100000>;
+			reg = <0x1000000 0x100000>;
 		};
 
 		partition@500000 {
 			label = "root";
-			reg = <0x500000 0x0>;
+			reg = <0x1100000 0x0>;
 		};
 	};
 };

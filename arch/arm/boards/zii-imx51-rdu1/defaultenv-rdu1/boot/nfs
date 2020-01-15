@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# clear seat network config (not implemented on RDU1 yet)
+#global.linux.bootargs.rdu_network=
+
+boot /mnt/nfs

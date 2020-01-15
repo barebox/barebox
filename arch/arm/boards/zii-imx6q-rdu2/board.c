@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C) 2016 Zodiac Inflight Innovation
  * Author: Andrey Smirnov <andrew.smirnov@gmail.com>
@@ -161,7 +162,7 @@ device_initcall(rdu2_devices_init);
 
 static int rdu2_fixup_egalax_ts(struct device_node *root, void *context)
 {
-	struct device_node *np;
+	struct device_node *np, *aliases;
 
 	/*
 	 * The 32" unit has a EETI eGalax touchscreen instead of the
@@ -180,8 +181,12 @@ static int rdu2_fixup_egalax_ts(struct device_node *root, void *context)
 		return -ENODEV;
 
 	of_device_enable(np);
-	of_property_write_u32(np->parent, "clock-frequency", 200000);
 
+	aliases = of_find_node_by_path_from(root, "/aliases");
+	if (!aliases)
+		return -ENODEV;
+
+	of_property_write_string(aliases, "touchscreen0", np->full_name);
 
 	return 0;
 }

@@ -78,7 +78,7 @@ static void zii_imx8mq_dev_sram_setup(void)
 	imx8_get_boot_source(&src, &instance);
 
 	if (src == BOOTSOURCE_MMC)
-		ret = imx8_esdhc_start_image(instance);
+		ret = imx8_esdhc_load_image(instance, true);
 
 	BUG_ON(ret);
 }

@@ -1,13 +1,4 @@
-/*
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; version 2.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
- */
+// SPDX-License-Identifier: GPL-2.0
 
 #include <common.h>
 #include <linux/sizes.h>
@@ -51,39 +42,24 @@ static void setup_uart(void)
 	putc_ll('>');
 }
 
-static void nxp_imx8mq_evk_sram_setup(void)
-{
-	ddr_init();
-}
-
 /*
  * Power-on execution flow of start_nxp_imx8mq_evk() might not be
  * obvious for a very first read, so here's, hopefully helpful,
  * summary:
  *
  * 1. MaskROM uploads PBL into OCRAM and that's where this function is
- *    executed for the first time
+ *    executed for the first time. At entry the exception level is EL3.
  *
- * 2. DDR is initialized and the TF-A trampoline is installed in the
- *    DRAM.
+ * 2. DDR is initialized and the image is loaded from storage into DRAM. The PBL
+ *    part is copied from OCRAM to the TF-A return address in DRAM.
  *
- * 3. TF-A is executed and exits into the trampoline in RAM, which enters the
- *    PBL for the second time. DRAM setup done is indicated by a one in register
- *    x0 by the trampoline
+ * 3. TF-A is executed and exits into the PBL code in DRAM. TF-A has taken us
+ *    from EL3 to EL2.
  *
- * 4. The piggydata is loaded from the SD card and copied to the expected
- *    location in the DRAM.
- *
- * 5. Standard barebox boot flow continues
+ * 4. Standard barebox boot flow continues
  */
 static __noreturn noinline void nxp_imx8mq_evk_start(void)
 {
-	enum bootsource src = BOOTSOURCE_UNKNOWN;
-	int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
-	int ret = -ENOTSUPP;
-	const u8 *bl31;
-	size_t bl31_size;
-
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();
 
@@ -93,23 +69,35 @@ static __noreturn noinline void nxp_imx8mq_evk_start(void)
 	 * to DRAM in EL2.
 	 */
 	if (current_el() == 3) {
-		nxp_imx8mq_evk_sram_setup();
-		get_builtin_firmware(imx8mq_bl31_bin, &bl31, &bl31_size);
+		enum bootsource src = BOOTSOURCE_UNKNOWN;
+		int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
+		int ret = -ENOTSUPP;
+		size_t bl31_size;
+		const u8 *bl31;
+
+		ddr_init();
+
 		/*
-		 * On completion the TF-A will jump to MX8MQ_ATF_BL33_BASE_ADDR in
-		 * EL2. Copy ourselves there.
+		 * On completion the TF-A will jump to MX8MQ_ATF_BL33_BASE_ADDR
+		 * in EL2. Copy the image there, but replace the PBL part of
+		 * that image with ourselves. On a high assurance boot only the
+		 * currently running code is validated and contains the checksum
+		 * for the piggy data, so we need to ensure that we are running
+		 * the same code in DRAM.
 		 */
-		memcpy((void *)MX8MQ_ATF_BL33_BASE_ADDR, _text, __bss_start - _text);
+		imx8_get_boot_source(&src, &instance);
+		if (src == BOOTSOURCE_MMC)
+			ret = imx8_esdhc_load_image(instance, false);
+		BUG_ON(ret);
+
+		memcpy((void *)MX8MQ_ATF_BL33_BASE_ADDR,
+		       __image_start, barebox_pbl_size);
+
+		get_builtin_firmware(imx8mq_bl31_bin, &bl31, &bl31_size);
 		imx8mq_atf_load_bl31(bl31, bl31_size);
 		/* not reached */
 	}
 
-	imx8_get_boot_source(&src, &instance);
-
-	if (src == BOOTSOURCE_MMC)
-		ret = imx8_esdhc_load_piggy(instance);
-	else
-		BUG_ON(ret);
 	/*
 	 * Standard entry we hit once we initialized both DDR and ATF
 	 */

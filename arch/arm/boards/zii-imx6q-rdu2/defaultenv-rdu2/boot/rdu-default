@@ -2,6 +2,10 @@
 
 backlight0.brightness=0
 if [ "$bootsource" = "spi-nor" ]; then
+	echo Boot source is SPI NOR, booting SD card firmware with rootfs on SD card
+	boot mmc1
+elif [ "$bootsource" = "mmc" ] && [ "$bootsource_instance" = "1" ]; then
+	echo Boot source is SD card, booting SD card firmware with rootfs on SD card
 	boot mmc1
 else
 	detect mmc3

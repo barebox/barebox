@@ -22,6 +22,11 @@
 		};
 	};
 
+	device-info {
+		nvmem-cells = <&lru_part_number>;
+		nvmem-cell-names = "lru-part-number";
+	};
+
 	aliases {
 		ethernet0 = &fec1;
 		ethernet1 = &i210;
@@ -64,6 +69,11 @@
 &uart2 {
 	rave-sp {
 		eeprom@a4 {
+			lru_part_number: lru-part-number@21 {
+				reg = <0x21 15>;
+				read-only;
+			};
+
 			mac_address_0: mac-address@180 {
 				reg = <0x180 6>;
 			};

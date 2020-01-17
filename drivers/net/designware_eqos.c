@@ -229,7 +229,7 @@ static int eqos_mdio_read(struct mii_bus *bus, int addr, int reg)
 	return readl(&eqos->mac_regs->mdio_data) & 0xffff;
 }
 
-static int eqos_mdio_write(struct mii_bus *bus, int addr, int reg, u16 val)
+static int eqos_mdio_write(struct mii_bus *bus, int addr, int reg, u16 data)
 {
 	struct eqos *eqos = bus->priv;
 	u32 miiaddr = 0;
@@ -249,8 +249,8 @@ static int eqos_mdio_write(struct mii_bus *bus, int addr, int reg, u16 val)
 	miiaddr |= EQOS_MDIO_ADDR(addr) | EQOS_MDIO_REG(reg);
 	miiaddr |= MII_BUSY;
 
-	writel(val, &eqos->mac_regs->mdio_data);
-	writel(addr, &eqos->mac_regs->mdio_address);
+	writel(data, &eqos->mac_regs->mdio_data);
+	writel(miiaddr, &eqos->mac_regs->mdio_address);
 
 	udelay(eqos->ops->mdio_wait_us);
 

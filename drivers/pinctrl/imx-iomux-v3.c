@@ -216,10 +216,13 @@ static int imx_iomux_v3_probe(struct device_d *dev)
 	return ret;
 }
 
+static struct imx_iomux_v3_data imx_iomux_imx6_snvs_data = {
+	.flags = ZERO_OFFSET_VALID,
+};
+
 static struct imx_iomux_v3_data imx_iomux_imx7_lpsr_data = {
 	.flags = ZERO_OFFSET_VALID | IMX7_PINMUX_LPSR,
 };
-
 
 static __maybe_unused struct of_device_id imx_iomux_v3_dt_ids[] = {
 	{
@@ -238,6 +241,9 @@ static __maybe_unused struct of_device_id imx_iomux_v3_dt_ids[] = {
 		.compatible = "fsl,imx6sx-iomuxc",
 	}, {
 		.compatible = "fsl,imx6ul-iomuxc",
+	}, {
+		.compatible = "fsl,imx6ull-iomuxc-snvs",
+		.data = &imx_iomux_imx6_snvs_data,
 	}, {
 		.compatible = "fsl,imx6sl-iomuxc",
 	}, {

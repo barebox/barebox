@@ -1798,6 +1798,7 @@ static int mci_detect(struct device_d *dev)
 int mci_register(struct mci_host *host)
 {
 	struct mci *mci;
+	struct param_d *param_probe;
 	int ret;
 
 	mci = xzalloc(sizeof(*mci));
@@ -1829,11 +1830,11 @@ int mci_register(struct mci_host *host)
 
 	dev_info(mci->host->hw_dev, "registered as %s\n", dev_name(&mci->dev));
 
-	mci->param_probe = dev_add_param_bool(&mci->dev, "probe",
+	param_probe = dev_add_param_bool(&mci->dev, "probe",
 			mci_set_probe, NULL, &mci->probe, mci);
 
-	if (IS_ERR(mci->param_probe) && PTR_ERR(mci->param_probe) != -ENOSYS) {
-		ret = PTR_ERR(mci->param_probe);
+	if (IS_ERR(param_probe) && PTR_ERR(param_probe) != -ENOSYS) {
+		ret = PTR_ERR(param_probe);
 		dev_dbg(&mci->dev, "Failed to add 'probe' parameter to the MCI device\n");
 		goto err_unregister;
 	}

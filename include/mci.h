@@ -468,7 +468,6 @@ struct mci {
 	int dsr_imp;		/**< DSR implementation state from CSD */
 	char *ext_csd;
 	int probe;
-	struct param_d *param_probe;
 	struct param_d *param_boot;
 	int bootpart;
 

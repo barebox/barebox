@@ -118,7 +118,7 @@ static inline struct param_d *dev_add_param(struct device_d *dev, const char *na
 		const char *(*get)(struct device_d *, struct param_d *p),
 		unsigned long flags)
 {
-	return ERR_PTR(-ENOSYS);
+	return NULL;
 }
 
 static inline struct param_d *dev_add_param_string(struct device_d *dev, const char *name,
@@ -126,7 +126,7 @@ static inline struct param_d *dev_add_param_string(struct device_d *dev, const c
 		int (*get)(struct param_d *p, void *priv),
 		char **value, void *priv)
 {
-	return ERR_PTR(-ENOSYS);
+	return NULL;
 }
 
 static inline struct param_d *__dev_add_param_int(struct device_d *dev, const char *name,
@@ -134,7 +134,7 @@ static inline struct param_d *__dev_add_param_int(struct device_d *dev, const ch
 		int (*get)(struct param_d *p, void *priv),
 		void *value, enum param_type type, const char *format, void *priv)
 {
-	return ERR_PTR(-ENOSYS);
+	return NULL;
 }
 
 static inline struct param_d *dev_add_param_enum(struct device_d *dev, const char *name,
@@ -143,7 +143,7 @@ static inline struct param_d *dev_add_param_enum(struct device_d *dev, const cha
 		int *value, const char * const *names, int max, void *priv)
 
 {
-	return ERR_PTR(-ENOSYS);
+	return NULL;
 }
 
 static inline struct param_d *dev_add_param_bitmask(struct device_d *dev, const char *name,
@@ -151,7 +151,7 @@ static inline struct param_d *dev_add_param_bitmask(struct device_d *dev, const 
                 int (*get)(struct param_d *p, void *priv),
                 unsigned long *value, const char * const *names, int max, void *priv)
 {
-	return ERR_PTR(-ENOSYS);
+	return NULL;
 }
 
 static inline struct param_d *dev_add_param_tristate(struct device_d *dev, const char *name,
@@ -159,13 +159,13 @@ static inline struct param_d *dev_add_param_tristate(struct device_d *dev, const
 		int (*get)(struct param_d *p, void *priv),
 		int *value, void *priv)
 {
-	return ERR_PTR(-ENOSYS);
+	return NULL;
 }
 
 static inline struct param_d *dev_add_param_tristate_ro(struct device_d *dev, const char *name,
 		int *value)
 {
-	return ERR_PTR(-ENOSYS);
+	return NULL;
 }
 
 static inline struct param_d *dev_add_param_ip(struct device_d *dev, const char *name,
@@ -173,7 +173,7 @@ static inline struct param_d *dev_add_param_ip(struct device_d *dev, const char 
 		int (*get)(struct param_d *p, void *priv),
 		IPaddr_t *ip, void *priv)
 {
-	return ERR_PTR(-ENOSYS);
+	return NULL;
 }
 
 static inline struct param_d *dev_add_param_mac(struct device_d *dev, const char *name,
@@ -181,13 +181,13 @@ static inline struct param_d *dev_add_param_mac(struct device_d *dev, const char
 		int (*get)(struct param_d *p, void *priv),
 		u8 *mac, void *priv)
 {
-	return ERR_PTR(-ENOSYS);
+	return NULL;
 }
 
 static inline struct param_d *dev_add_param_fixed(struct device_d *dev, const char *name,
 						  const char *value)
 {
-	return ERR_PTR(-ENOSYS);
+	return NULL;
 }
 
 static inline void dev_remove_param(struct param_d *p) {}

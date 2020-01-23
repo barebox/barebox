@@ -413,6 +413,7 @@ static struct state_variable *state_string_create(struct state *state,
 {
 	struct state_string *string;
 	uint32_t start_size[2];
+	struct param_d *param;
 	int ret;
 
 	ret = of_property_read_u32_array(node, "reg", start_size,
@@ -432,11 +433,11 @@ static struct state_variable *state_string_create(struct state *state,
 	string->var.raw = &string->raw;
 	string->var.state = state;
 
-	string->param = dev_add_param_string(&state->dev, name,
+	param = dev_add_param_string(&state->dev, name,
 					     state_string_set, state_string_get,
 					     &string->value, &string->var);
-	if (IS_ERR(string->param)) {
-		ret = PTR_ERR(string->param);
+	if (IS_ERR(param)) {
+		ret = PTR_ERR(param);
 		goto out;
 	}
 

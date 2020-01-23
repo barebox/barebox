@@ -191,7 +191,6 @@ struct state_mac {
  */
 struct state_string {
 	struct state_variable var;
-	struct param_d *param;
 	char *value;
 	const char *value_default;
 	char raw[];

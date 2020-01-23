@@ -159,7 +159,6 @@ struct state_variable {
  */
 struct state_uint32 {
 	struct state_variable var;
-	struct param_d *param;
 	uint32_t value;
 	uint32_t value_default;
 };
@@ -169,7 +168,6 @@ struct state_uint32 {
  */
 struct state_enum32 {
 	struct state_variable var;
-	struct param_d *param;
 	uint32_t value;
 	uint32_t value_default;
 	const char **names;
@@ -181,7 +179,6 @@ struct state_enum32 {
  */
 struct state_mac {
 	struct state_variable var;
-	struct param_d *param;
 	uint8_t value[6];
 	uint8_t value_default[6];
 };

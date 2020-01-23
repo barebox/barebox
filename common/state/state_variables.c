@@ -116,7 +116,6 @@ static struct state_variable *state_uint8_create(struct state *state,
 		return ERR_CAST(param);
 	}
 
-	su32->param = param;
 	su32->var.type = vtype;
 	su32->var.size = sizeof(uint8_t);
 #ifdef __LITTLE_ENDIAN
@@ -146,7 +145,6 @@ static struct state_variable *state_uint32_create(struct state *state,
 		return ERR_CAST(param);
 	}
 
-	su32->param = param;
 	su32->var.type = vtype;
 	su32->var.size = sizeof(uint32_t);
 	su32->var.raw = &su32->value;
@@ -226,6 +224,7 @@ static struct state_variable *state_enum32_create(struct state *state,
 						  const struct variable_type *vtype)
 {
 	struct state_enum32 *enum32;
+	struct param_d *param;
 	int ret, i, num_names;
 
 	enum32 = xzalloc(sizeof(*enum32));
@@ -253,11 +252,11 @@ static struct state_variable *state_enum32_create(struct state *state,
 		enum32->names[i] = xstrdup(name);
 	}
 
-	enum32->param = dev_add_param_enum(&state->dev, name, state_set_dirty,
+	param = dev_add_param_enum(&state->dev, name, state_set_dirty,
 					   NULL, &enum32->value, enum32->names,
 					   num_names, &enum32->var);
-	if (IS_ERR(enum32->param)) {
-		ret = PTR_ERR(enum32->param);
+	if (IS_ERR(param)) {
+		ret = PTR_ERR(param);
 		goto out;
 	}
 
@@ -310,6 +309,7 @@ static struct state_variable *state_mac_create(struct state *state,
 					       const struct variable_type *vtype)
 {
 	struct state_mac *mac;
+	struct param_d *param;
 	int ret;
 
 	mac = xzalloc(sizeof(*mac));
@@ -319,10 +319,10 @@ static struct state_variable *state_mac_create(struct state *state,
 	mac->var.raw = mac->value;
 	mac->var.state = state;
 
-	mac->param = dev_add_param_mac(&state->dev, name, state_set_dirty,
+	param = dev_add_param_mac(&state->dev, name, state_set_dirty,
 				       NULL, mac->value, &mac->var);
-	if (IS_ERR(mac->param)) {
-		ret = PTR_ERR(mac->param);
+	if (IS_ERR(param)) {
+		ret = PTR_ERR(param);
 		goto out;
 	}
 

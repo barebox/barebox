@@ -114,14 +114,23 @@ static void imx6_init_lowlevel(void)
 	}
 }
 
+static bool imx6_has_ipu(void)
+{
+	if (cpu_mx6_is_mx6qp() || cpu_mx6_is_mx6dp() ||
+	    cpu_mx6_is_mx6q() || cpu_mx6_is_mx6d() ||
+	    cpu_mx6_is_mx6dl() || cpu_mx6_is_mx6s())
+		return true;
+
+	return false;
+}
+
 static void imx6_setup_ipu_qos(void)
 {
 	void __iomem *iomux = (void *)MX6_IOMUXC_BASE_ADDR;
 	void __iomem *fast2 = (void *)MX6_FAST2_BASE_ADDR;
 	uint32_t val;
 
-	if (!cpu_mx6_is_mx6q() && !cpu_mx6_is_mx6d() &&
-	    !cpu_mx6_is_mx6dl() && !cpu_mx6_is_mx6s())
+	if (!imx6_has_ipu())
 		return;
 
 	val = readl(iomux + IOMUXC_GPR4);

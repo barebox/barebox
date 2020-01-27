@@ -41,7 +41,7 @@ const struct imd_header *imd_next(const struct imd_header *imd)
 
 	length = imd_read_length(imd);
 	length = ALIGN(length, 4);
-	length += 8;
+	length += sizeof(struct imd_header);
 
 	return (const void *)imd + length;
 }
@@ -63,14 +63,14 @@ static int imd_next_validate(const void *buf, int bufsize, int start_ofs)
 
 	size = bufsize - start_ofs;
 
-	if (size < 8) {
+	if (size < sizeof(struct imd_header)) {
 		debug("trunkated tag at offset %dd\n", start_ofs);
 		return -EINVAL;
 	}
 
 	length = imd_read_length(imd);
 	length = ALIGN(length, 4);
-	length += 8;
+	length += sizeof(struct imd_header);
 
 	if (size < length) {
 		debug("tag at offset %d with size %d exceeds bufsize %d\n",

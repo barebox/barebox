@@ -25,8 +25,11 @@
 #define IMD_TYPE_MODEL		0x640c8004 /* The board name this image is for */
 #define IMD_TYPE_OF_COMPATIBLE	0x640c8005 /* the device tree compatible string */
 #define IMD_TYPE_PARAMETER	0x640c8006 /* A generic parameter. Use key=value as data */
+#define IMD_TYPE_CRC32		0x640c1007 /* the checksum of the barebox images */
 #define IMD_TYPE_END		0x640c7fff
 #define IMD_TYPE_INVALID	0xffffffff
+
+#define IMD_CRC32_FLAG_TAG_VALID	(1 << 0)
 
 /*
  * The IMD header. All data is stored in little endian format in the image.
@@ -51,8 +54,26 @@ static inline int imd_is_string(uint32_t type)
 	return (type & 0x8000) ? 1 : 0;
 }
 
-static inline int imd_type_valid(uint32_t type)
+/*
+ * A IMD int.
+ */
+struct imd_entry_crc32 {
+	struct imd_header header;
+	uint32_t data;
+	uint32_t flags;
+};
+
+static inline int imd_is_crc32(uint32_t type)
 {
+	return (type & IMD_TYPE_CRC32) ? 1 : 0;
+}
+
+static inline int imd_crc32_is_valid(uint32_t flags)
+{
+	return (flags & IMD_CRC32_FLAG_TAG_VALID) ? 1 : 0;
+}
+
+static inline int imd_type_valid(uint32_t type) {
 	return (type & 0xffff0000) == 0x640c0000;
 }
 
@@ -78,11 +99,18 @@ static inline uint32_t imd_read_length(const struct imd_header *imd)
 	return imd_read_le32(&imd->datalength);
 }
 
+static inline uint32_t imd_read_flags(const struct imd_entry_crc32 *imd)
+{
+	return imd_read_le32(&imd->flags);
+}
+
 const struct imd_header *imd_find_type(const struct imd_header *imd,
 				       uint32_t type);
 
 const struct imd_header *imd_get(const void *buf, int size);
 const char *imd_string_data(const struct imd_header *imd, int index);
+const uint32_t *imd_uint32_data(const struct imd_header *imd);
+uint32_t *imd_uint32_flags(const struct imd_header *imd);
 const char *imd_type_to_name(uint32_t type);
 char *imd_concat_strings(const struct imd_header *imd);
 const char *imd_get_param(const struct imd_header *imd, const char *name);
@@ -90,6 +118,7 @@ const char *imd_get_param(const struct imd_header *imd, const char *name);
 extern int imd_command_verbose;
 int imd_command_setenv(const char *variable_name, const char *value);
 int imd_command(int argc, char *argv[]);
+int imd_verify_crc32(void *buf, size_t size);
 
 #ifdef __BAREBOX__
 
@@ -107,6 +136,13 @@ int imd_command(int argc, char *argv[]);
 		.data = _string,							\
 	}
 
+#define BAREBOX_IMD_CRC(_name, _crc, _keep_if_unused)					\
+	const struct imd_entry_crc32 __barebox_imd_##__name 				\
+  	__BAREBOX_IMD_SECTION(.barebox_imd_ ## _keep_if_unused ## _ ## _name) = {	\
+		.header.type = cpu_to_le32(IMD_TYPE_CRC32),				\
+		.header.datalength = cpu_to_le32(sizeof(uint32_t) * 2),			\
+		.data = _crc,								\
+  }
 
 #ifdef CONFIG_IMD
 void imd_used(const void *);

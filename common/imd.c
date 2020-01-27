@@ -22,6 +22,7 @@
 #include <getopt.h>
 #include <malloc.h>
 #include <fs.h>
+#include <crc.h>
 
 #ifndef CONFIG_CMD_IMD
 int imd_command_setenv(const char *variable_name, const char *value)
@@ -167,6 +168,9 @@ static struct imd_type_names imd_types[] = {
 	}, {
 		.type = IMD_TYPE_OF_COMPATIBLE,
 		.name = "of_compatible",
+	}, {
+		.type = IMD_TYPE_CRC32,
+		.name = "crc32",
 	},
 };
 
@@ -257,6 +261,23 @@ char *imd_concat_strings(const struct imd_header *imd)
 }
 
 /**
+ * imd_uint32_flags - get uint32 flags
+ * @imd: The IMD entry
+ *
+ * This function returns the flags in @imd.
+ *
+ * Return: A pointer to the flags or NULL if the entry is not uint32.
+ */
+static uint32_t *imd_crc32_flags(const struct imd_header *imd) {
+	char *p = (char *)(imd + 1);
+
+	if (!imd_is_crc32(imd_read_type(imd)))
+		return NULL;
+
+	return (uint32_t *)(p + sizeof(uint32_t));
+}
+
+/**
  * imd_get_param - get a parameter
  * @imd: The IMD entry
  * @name: The name of the parameter.
@@ -287,6 +308,118 @@ const char *imd_get_param(const struct imd_header *imd, const char *name)
 	return NULL;
 }
 
+static int imd_calculate_crc32(void *input, const struct imd_header *imd_start,
+			       struct imd_header **imd_crc, uint32_t *crc,
+			       size_t size)
+{
+	const struct imd_header *imd;
+	int length;
+	int end_ofs = (char *)imd_start - (char *)input + sizeof(char) * 8;
+
+	/* search the checksum imd token */
+	imd_for_each(imd_start, imd) {
+		length = imd_read_length(imd);
+		length = ALIGN(length, 4);
+		length += sizeof(struct imd_header);
+
+		if (imd_read_type(imd) == IMD_TYPE_CRC32) {
+			*imd_crc = (struct imd_header *)imd;
+			debug("Found crc token at %d\n", end_ofs);
+			break;
+		}
+
+		end_ofs += length;
+	}
+
+	/*
+	 * Calculate checksum from start of input up to the checksum.
+	 * The checksum and the flags field in the imd_entry_crc32 entry are
+	 * modified after the checksum is calculated. Therefore skip them here
+	 * or the checksum will become invalid once it is written to the
+	 * checksum tag.
+	 */
+	length = sizeof(struct imd_header);
+	end_ofs += length;
+
+	*crc = crc32(*crc, input, end_ofs);
+	debug("Calculated checksum from %d to %d: 0x%08x\n", 0, end_ofs, *crc);
+
+	/* move past the checksum data and flags field */
+	end_ofs += sizeof(uint32_t) + sizeof(char);
+	input += end_ofs;
+
+	*crc = crc32(*crc, input, size - end_ofs);
+	debug("Calculated checksum from %d to %d: 0x%08x\n", end_ofs,
+	      end_ofs + (size - end_ofs), *crc);
+
+	return 0;
+}
+
+static int imd_write_crc32(void *buf, const struct imd_header *imd_start,
+			   const char *filename, size_t size)
+{
+	struct imd_header *imd_crc;
+	uint32_t crc = 0;
+
+	imd_calculate_crc32(buf, imd_start, &imd_crc, &crc, size);
+	debug("Calculated crc: 0x%08x\n", crc);
+
+	if (!imd_crc) {
+		debug("No tag of type 0x%08x found\n", IMD_TYPE_CRC32);
+
+		return -ENODATA;
+	} else {
+		uint32_t *p = (uint32_t *)(imd_crc + 1);
+
+		if (*p != crc) {
+			uint32_t *flags = imd_crc32_flags(imd_crc);
+			*flags |= IMD_CRC32_FLAG_TAG_VALID;
+			debug("Update crc token from 0x%08x to 0x%08x (flags 0x%08x)\n", *p, crc, *flags);
+			*p = crc;
+
+			write_file(filename, buf, size);
+		}
+	}
+
+	return 0;
+};
+
+int imd_verify_crc32(void *buf, size_t size)
+{
+	const struct imd_header *imd_start;
+	struct imd_header *imd_crc;
+	uint32_t crc = 0;
+
+	imd_start = imd_get(buf, size);
+	if (IS_ERR(imd_start))
+		return PTR_ERR(imd_start);
+
+	imd_calculate_crc32(buf, imd_start, &imd_crc, &crc, size);
+	debug("Calculated crc: 0x%08x\n", crc);
+
+	if (!imd_crc) {
+		debug("No tag of type 0x%08x found\n", IMD_TYPE_CRC32);
+
+		return -ENOENT;
+	} else {
+		uint32_t *p = (uint32_t *)(imd_crc + 1);
+		uint32_t *flags = imd_crc32_flags(imd_crc);
+
+		if (*p != crc && imd_crc32_is_valid(*flags)) {
+			eprintf("CRC: image corrupted. Found checksum 0x%08x instead of 0x%08x\n",
+			       *p, crc);
+			return -EILSEQ;
+		} else if (*p != crc && !imd_crc32_is_valid(*flags)) {
+			printf("CRC: is invalid, but the checksum tag is not enabled\n");
+			return -EINVAL;
+		} else {
+			printf("CRC: valid\n");
+		}
+	}
+
+	return 0;
+};
+
 int imd_command_verbose;
 
 int imd_command(int argc, char *argv[])
@@ -299,10 +432,12 @@ int imd_command(int argc, char *argv[])
 	const char *filename;
 	const char *variable_name = NULL;
 	char *str;
+	uint32_t checksum = 0;
+	uint32_t verify = 0;
 
 	imd_command_verbose = 0;
 
-	while ((opt = getopt(argc, argv, "vt:s:n:")) > 0) {
+	while ((opt = getopt(argc, argv, "vt:s:n:cV")) > 0) {
 		switch(opt) {
 		case 't':
 			type = imd_name_to_type(optarg);
@@ -319,6 +454,12 @@ int imd_command(int argc, char *argv[])
 			break;
 		case 'n':
 			strno = simple_strtoul(optarg, NULL, 0);
+			break;
+		case 'c':
+			checksum = 1;
+			break;
+		case 'V':
+			verify = 1;
 			break;
 		default:
 			return -ENOSYS;
@@ -342,6 +483,11 @@ int imd_command(int argc, char *argv[])
 		goto out;
 	}
 
+	if (checksum)
+		imd_write_crc32(buf, imd_start, filename, size);
+	if (verify)
+		imd_verify_crc32(buf, size);
+
 	if (type == IMD_TYPE_INVALID) {
 		imd_for_each(imd_start, imd) {
 			uint32_t type = imd_read_type(imd);
@@ -350,6 +496,10 @@ int imd_command(int argc, char *argv[])
 				str = imd_concat_strings(imd);
 
 				printf("%s: %s\n", imd_type_to_name(type), str);
+			} else if (imd_is_crc32(type)) {
+				uint32_t *p = (uint32_t *)(imd + 1);
+
+				printf("%s: 0x%08x\n", imd_type_to_name(type), *p);
 			} else {
 				debug("Unknown tag 0x%08x\n", type);
 			}

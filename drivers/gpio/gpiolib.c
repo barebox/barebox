@@ -145,82 +145,6 @@ void gpio_free(unsigned gpio)
 	gi->label = NULL;
 }
 
-/**
- * gpio_request_one - request a single GPIO with initial configuration
- * @gpio:	the GPIO number
- * @flags:	GPIO configuration as specified by GPIOF_*
- * @label:	a literal description string of this GPIO
- */
-int gpio_request_one(unsigned gpio, unsigned long flags, const char *label)
-{
-	int err;
-	struct gpio_info *gi = gpio_to_desc(gpio);
-
-	/*
-	 * Not all of the flags below are mulit-bit, but, for the sake
-	 * of consistency, the code is written as if all of them were.
-	 */
-	const bool active_low  = (flags & GPIOF_ACTIVE_LOW) == GPIOF_ACTIVE_LOW;
-	const bool dir_in      = (flags & GPIOF_DIR_IN) == GPIOF_DIR_IN;
-	const bool logical     = (flags & GPIOF_LOGICAL) == GPIOF_LOGICAL;
-	const bool init_active = (flags & GPIOF_INIT_ACTIVE) == GPIOF_INIT_ACTIVE;
-	const bool init_high   = (flags & GPIOF_INIT_HIGH) == GPIOF_INIT_HIGH;
-
-	err = gpio_request(gpio, label);
-	if (err)
-		return err;
-
-	gi->active_low = active_low;
-
-	if (dir_in)
-		err = gpio_direction_input(gpio);
-	else if (logical)
-		err = gpio_direction_active(gpio, init_active);
-	else
-		err = gpio_direction_output(gpio, init_high);
-
-	if (err)
-		gpio_free(gpio);
-
-	return err;
-}
-EXPORT_SYMBOL_GPL(gpio_request_one);
-
-/**
- * gpio_request_array - request multiple GPIOs in a single call
- * @array:	array of the 'struct gpio'
- * @num:	how many GPIOs in the array
- */
-int gpio_request_array(const struct gpio *array, size_t num)
-{
-	int i, err;
-
-	for (i = 0; i < num; i++, array++) {
-		err = gpio_request_one(array->gpio, array->flags, array->label);
-		if (err)
-			goto err_free;
-	}
-	return 0;
-
-err_free:
-	while (i--)
-		gpio_free((--array)->gpio);
-	return err;
-}
-EXPORT_SYMBOL_GPL(gpio_request_array);
-
-/**
- * gpio_free_array - release multiple GPIOs in a single call
- * @array:	array of the 'struct gpio'
- * @num:	how many GPIOs in the array
- */
-void gpio_free_array(const struct gpio *array, size_t num)
-{
-	while (num--)
-		gpio_free((array++)->gpio);
-}
-EXPORT_SYMBOL_GPL(gpio_free_array);
-
 void gpio_set_value(unsigned gpio, int value)
 {
 	struct gpio_info *gi = gpio_to_desc(gpio);
@@ -323,6 +247,82 @@ int gpio_direction_input(unsigned gpio)
 	return gi->chip->ops->direction_input(gi->chip, gpio - gi->chip->base);
 }
 EXPORT_SYMBOL(gpio_direction_input);
+
+/**
+ * gpio_request_one - request a single GPIO with initial configuration
+ * @gpio:	the GPIO number
+ * @flags:	GPIO configuration as specified by GPIOF_*
+ * @label:	a literal description string of this GPIO
+ */
+int gpio_request_one(unsigned gpio, unsigned long flags, const char *label)
+{
+	int err;
+	struct gpio_info *gi = gpio_to_desc(gpio);
+
+	/*
+	 * Not all of the flags below are mulit-bit, but, for the sake
+	 * of consistency, the code is written as if all of them were.
+	 */
+	const bool active_low  = (flags & GPIOF_ACTIVE_LOW) == GPIOF_ACTIVE_LOW;
+	const bool dir_in      = (flags & GPIOF_DIR_IN) == GPIOF_DIR_IN;
+	const bool logical     = (flags & GPIOF_LOGICAL) == GPIOF_LOGICAL;
+	const bool init_active = (flags & GPIOF_INIT_ACTIVE) == GPIOF_INIT_ACTIVE;
+	const bool init_high   = (flags & GPIOF_INIT_HIGH) == GPIOF_INIT_HIGH;
+
+	err = gpio_request(gpio, label);
+	if (err)
+		return err;
+
+	gi->active_low = active_low;
+
+	if (dir_in)
+		err = gpio_direction_input(gpio);
+	else if (logical)
+		err = gpio_direction_active(gpio, init_active);
+	else
+		err = gpio_direction_output(gpio, init_high);
+
+	if (err)
+		gpio_free(gpio);
+
+	return err;
+}
+EXPORT_SYMBOL_GPL(gpio_request_one);
+
+/**
+ * gpio_request_array - request multiple GPIOs in a single call
+ * @array:	array of the 'struct gpio'
+ * @num:	how many GPIOs in the array
+ */
+int gpio_request_array(const struct gpio *array, size_t num)
+{
+	int i, err;
+
+	for (i = 0; i < num; i++, array++) {
+		err = gpio_request_one(array->gpio, array->flags, array->label);
+		if (err)
+			goto err_free;
+	}
+	return 0;
+
+err_free:
+	while (i--)
+		gpio_free((--array)->gpio);
+	return err;
+}
+EXPORT_SYMBOL_GPL(gpio_request_array);
+
+/**
+ * gpio_free_array - release multiple GPIOs in a single call
+ * @array:	array of the 'struct gpio'
+ * @num:	how many GPIOs in the array
+ */
+void gpio_free_array(const struct gpio *array, size_t num)
+{
+	while (num--)
+		gpio_free((array++)->gpio);
+}
+EXPORT_SYMBOL_GPL(gpio_free_array);
 
 static int gpiochip_find_base(int start, int ngpio)
 {

@@ -69,9 +69,6 @@ config LOGBUF
 config STDDEV
 	bool
 
-config BAREBOX_UPDATE
-	bool
-
 config MENUTREE
 	bool
 	select GLOB
@@ -691,6 +688,9 @@ config FLEXIBLE_BOOTARGS
 	  This allows for more flexible scripting since with it it's possible
 	  to replace parts of the bootargs string without reconstructing it
 	  completely.
+
+config BAREBOX_UPDATE
+	bool "In-system barebox update infrastructure"
 
 config IMD
 	bool "barebox metadata support"

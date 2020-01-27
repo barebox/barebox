@@ -44,6 +44,7 @@ endif
 
 LDFLAGS += $(ldflags-y) -m $(ld-emul)
 LDFLAGS_barebox += $(ldflags-y)
+LDFLAGS_pbl += $(ldflags-y)
 
 #
 # CPU-dependent compiler/assembler options for optimization.

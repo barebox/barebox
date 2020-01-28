@@ -208,6 +208,11 @@ static int do_test(int argc, char *argv[])
 			}
 		}
 
+		if (left < adv) {
+			printf("test: failed to parse arguments\n");
+			return 1;
+		}
+
 		if (last_cmp == 0)
 			expr = last_expr || expr;
 		else if (last_cmp == 1)

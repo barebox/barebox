@@ -67,6 +67,7 @@ obj-$(CONFIG_BAREBOX_UPDATE_IMX_NAND_FCB) += imx-bbu-nand-fcb.o
 obj-$(CONFIG_BOOT)		+= boot.o
 obj-$(CONFIG_SERIAL_DEV_BUS)	+= serdev.o
 obj-$(CONFIG_USBGADGET_START)	+= usbgadget.o
+obj-$(CONFIG_BOOTM_OPTEE)	+= optee.o
 
 ifdef CONFIG_PASSWORD
 

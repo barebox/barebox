@@ -40,6 +40,8 @@ typedef enum {
 	OPT_DIRECTORY,
 	OPT_FILE,
 	OPT_EXISTS,
+	OPT_BLOCK,
+	OPT_CHAR,
 	OPT_SYMBOLIC_LINK,
 	OPT_MAX,
 } test_opts;
@@ -60,6 +62,8 @@ static char *test_options[] = {
 	[OPT_FILE]			= "-f",
 	[OPT_DIRECTORY]			= "-d",
 	[OPT_EXISTS]			= "-e",
+	[OPT_BLOCK]			= "-b",
+	[OPT_CHAR]			= "-c",
 	[OPT_SYMBOLIC_LINK]		= "-L",
 };
 
@@ -142,6 +146,8 @@ static int do_test(int argc, char *argv[])
 		case OPT_FILE:
 		case OPT_DIRECTORY:
 		case OPT_EXISTS:
+		case OPT_BLOCK:
+		case OPT_CHAR:
 		case OPT_SYMBOLIC_LINK:
 			adv = 2;
 			if (left < 2)
@@ -166,6 +172,14 @@ static int do_test(int argc, char *argv[])
 					break;
 				}
 				if (opt == OPT_SYMBOLIC_LINK && S_ISLNK(statbuf.st_mode)) {
+					expr = 1;
+					break;
+				}
+				if (opt == OPT_BLOCK && S_ISBLK(statbuf.st_mode)) {
+					expr = 1;
+					break;
+				}
+				if (opt == OPT_CHAR && S_ISCHR(statbuf.st_mode)) {
 					expr = 1;
 					break;
 				}

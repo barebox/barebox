@@ -28,3 +28,5 @@ extra-y += barebox.lds
 pbl-y	+= lib1funcs.o
 pbl-y	+= ashldi3.o
 pbl-y	+= div0.o
+
+obj-pbl-y	+= setjmp.o

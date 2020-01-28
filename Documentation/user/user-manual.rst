@@ -33,6 +33,7 @@ Contents:
    system-reset
    state
    random
+   optee
    debugging
    watchdog
 

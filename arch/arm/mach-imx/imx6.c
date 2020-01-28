@@ -11,6 +11,7 @@
  *
  */
 
+#include <abort.h>
 #include <init.h>
 #include <common.h>
 #include <io.h>
@@ -282,12 +283,31 @@ int imx6_devices_init(void)
 	return 0;
 }
 
+static bool imx6_cannot_write_l2x0(void)
+{
+	void __iomem *l2x0_base = IOMEM(0x00a02000);
+	u32 val;
+	/*
+	 * Mask data aborts and try to access the PL210. If OP-TEE is running we
+	 * will receive a data-abort and assume barebox is running in the normal
+	 * world.
+	 */
+	val = readl(l2x0_base + L2X0_PREFETCH_CTRL);
+
+	data_abort_mask();
+	writel(val, l2x0_base + L2X0_PREFETCH_CTRL);
+	return data_abort_unmask();
+}
+
 static int imx6_mmu_init(void)
 {
 	void __iomem *l2x0_base = IOMEM(0x00a02000);
 	u32 val, cache_part, cache_rtl;
 
 	if (!cpu_is_mx6())
+		return 0;
+
+	if (imx6_cannot_write_l2x0())
 		return 0;
 
 	val = readl(l2x0_base + L2X0_CACHE_ID);

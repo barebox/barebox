@@ -32,4 +32,10 @@ struct optee_header {
 
 int optee_verify_header (struct optee_header *hdr);
 
+#ifdef __PBL__
+
+int start_optee_early(void* fdt, void* tee);
+
+#endif /* __PBL__ */
+
 #endif /* _OPTEE_H */

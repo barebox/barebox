@@ -643,27 +643,6 @@ config BOOTM_FORCE_SIGNED_IMAGES
 	  are refused to boot. Effectively this means only FIT images can be booted
 	  since they are the only supported image type that support signing.
 
-config BOOTM_OPTEE
-	bool
-	prompt "support booting OP-TEE"
-	depends on BOOTM && ARM
-	help
-	  OP-TEE is a trusted execution environment (TEE). With this option
-	  enabled barebox supports starting optee_os as part of the bootm command.
-	  Instead of the kernel bootm starts the optee_os binary which then starts
-	  the kernel in nonsecure mode. Pass the optee_os binary with the -t option
-	  or in the global.bootm.tee variable.
-
-config BOOTM_OPTEE_SIZE
-	hex
-	default 0x02000000
-	prompt "OP-TEE Memory Size"
-	depends on BOOTM_OPTEE
-	help
-	  Size to reserve in main memory for OP-TEE.
-	  Can be smaller than the actual size used by OP-TEE, this is used to prevent
-	  barebox from allocating memory in this area.
-
 config BLSPEC
 	depends on FLEXIBLE_BOOTARGS
 	depends on !SHELL_NONE
@@ -999,6 +978,39 @@ config MACHINE_ID
 
 	  Note: if no hashable information is available no machine id will be passed
 	  to the kernel.
+
+menu "OP-TEE loading"
+
+config OPTEE_SIZE
+	hex
+	default 0x02000000
+	prompt "OP-TEE Memory Size"
+	depends on BOOTM_OPTEE || PBL_OPTEE
+	help
+	  Size to reserve in main memory for OP-TEE.
+	  Can be smaller than the actual size used by OP-TEE, this is used to prevent
+	  barebox from allocating memory in this area.
+
+config BOOTM_OPTEE
+	bool
+	prompt "support booting OP-TEE"
+	depends on BOOTM && ARM
+	help
+	  OP-TEE is a trusted execution environment (TEE). With this option
+	  enabled barebox supports starting optee_os as part of the bootm command.
+	  Instead of the kernel bootm starts the optee_os binary which then starts
+	  the kernel in nonsecure mode. Pass the optee_os binary with the -t option
+	  or in the global.bootm.tee variable.
+
+config PBL_OPTEE
+	bool "Enable OP-TEE early start"
+	depends on ARM
+	depends on !THUMB2_BAREBOX
+	help
+	  Allows starting OP-TEE during lowlevel initialization of the PBL.
+	  Requires explicit support in the boards lowlevel file.
+
+endmenu
 
 endmenu
 

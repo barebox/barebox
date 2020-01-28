@@ -129,8 +129,11 @@ static int do_test(int argc, char *argv[])
 		case OPT_ZERO:
 		case OPT_NONZERO:
 			adv = 2;
+			if (left < 2)
+				break;
 			zero = 1;
-			if (ap[1] && *ap[1] != ']' && strlen(ap[1]))
+
+			if (strlen(ap[1]))
 				zero = 0;
 
 			expr = (opt == OPT_ZERO) ? zero : !zero;
@@ -141,7 +144,9 @@ static int do_test(int argc, char *argv[])
 		case OPT_EXISTS:
 		case OPT_SYMBOLIC_LINK:
 			adv = 2;
-			if (ap[1] && *ap[1] != ']' && strlen(ap[1])) {
+			if (left < 2)
+				break;
+			if (strlen(ap[1])) {
 				expr = (opt == OPT_SYMBOLIC_LINK ? lstat : stat)(ap[1], &statbuf);
 				if (expr < 0) {
 					expr = 0;
@@ -170,10 +175,8 @@ static int do_test(int argc, char *argv[])
 		/* three argument options */
 		default:
 			adv = 3;
-			if (left < 3) {
-				expr = 1;
+			if (left < 3)
 				break;
-			}
 
 			a = simple_strtol(ap[0], NULL, 0);
 			b = simple_strtol(ap[2], NULL, 0);

@@ -9,9 +9,10 @@ config UBSAN
 	  Compile-time instrumentation is used to detect various undefined
 	  behaviours in runtime.
 
+if UBSAN
+
 config UBSAN_SANITIZE_ALL
 	bool "Enable instrumentation for all of barebox"
-	depends on UBSAN
 	depends on ARCH_HAS_UBSAN_SANITIZE_ALL
 	default y
 	help
@@ -23,7 +24,6 @@ config UBSAN_SANITIZE_ALL
 
 config UBSAN_NO_ALIGNMENT
 	bool "Disable checking of pointers alignment"
-	depends on UBSAN
 	default y if HAVE_EFFICIENT_UNALIGNED_ACCESS
 	help
 	  This option disables the check of unaligned memory accesses.
@@ -33,3 +33,5 @@ config UBSAN_NO_ALIGNMENT
 
 config UBSAN_ALIGNMENT
 	def_bool !UBSAN_NO_ALIGNMENT
+
+endif

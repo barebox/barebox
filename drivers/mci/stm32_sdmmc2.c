@@ -552,7 +552,7 @@ static void stm32_sdmmc2_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	u32 sys_clock = clk_get_rate(priv->clk);
 	u32 clk = 0;
 
-	dev_dbg(priv->dev, "%s: bus_with = %d, clock = %d\n", __func__,
+	dev_dbg(priv->dev, "%s: bus_width = %d, clock = %d\n", __func__,
 		mci->bus_width, mci->clock);
 
 	if (mci->clock)

@@ -1025,6 +1025,9 @@ static int mci_startup_mmc(struct mci *mci)
 
 	mci_set_clock(mci, mci->tran_speed);
 
+	if (!(host->host_caps & (MMC_CAP_4_BIT_DATA | MMC_CAP_8_BIT_DATA)))
+		return 0;
+
 	/*
 	 * Unlike SD, MMC cards dont have a configuration register to notify
 	 * supported bus width. So bus test command should be run to identify

@@ -142,8 +142,6 @@ static void pfuze_power_off_prepare(struct poweroff_handler *handler)
 	regmap_write_bits(pfuze_dev->map, PFUZE100_VGEN6VOL,
 			  PFUZE100_VGENxLPWR | PFUZE100_VGENxSTBY,
 			  PFUZE100_VGENxSTBY);
-
-	imx6_pm_stby_poweroff();
 }
 
 static struct regmap_bus regmap_pfuze_i2c_bus = {

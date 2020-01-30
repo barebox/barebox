@@ -6,7 +6,9 @@
 #include <mach/imx6-regs.h>
 #include <mach/revision.h>
 
-void __noreturn imx6_pm_stby_poweroff(void);
+#include <poweroff.h>
+
+void __noreturn imx6_pm_stby_poweroff(struct poweroff_handler *handler);
 
 #define IMX6_ANATOP_SI_REV 0x260
 #define IMX6SL_ANATOP_SI_REV 0x280

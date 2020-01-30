@@ -27,8 +27,7 @@
 #include <mach/usb.h>
 #include <asm/mmu.h>
 #include <asm/cache-l2x0.h>
-
-#include <poweroff.h>
+#include <mfd/pfuze.h>
 
 #define CLPCR				0x54
 #define BP_CLPCR_LPM(mode)		((mode) & 0x3)
@@ -195,6 +194,11 @@ u64 imx6_uid(void)
 	return imx_ocotp_read_uid(IOMEM(MX6_OCOTP_BASE_ADDR));
 }
 
+static void imx6_register_poweroff_init(struct regmap *map)
+{
+	poweroff_handler_register_fn(imx6_pm_stby_poweroff);
+}
+
 int imx6_init(void)
 {
 	const char *cputypestr;
@@ -251,6 +255,8 @@ int imx6_init(void)
 
 	imx6_setup_ipu_qos();
 	imx6ul_enet_clk_init();
+
+	pfuze_register_init_callback(imx6_register_poweroff_init);
 
 	return 0;
 }
@@ -366,7 +372,7 @@ static int imx6_fixup_cpus_register(void)
 }
 device_initcall(imx6_fixup_cpus_register);
 
-void __noreturn imx6_pm_stby_poweroff(void)
+void __noreturn imx6_pm_stby_poweroff(struct poweroff_handler *handler)
 {
 	void *ccm_base = IOMEM(MX6_CCM_BASE_ADDR);
 	void *gpc_base = IOMEM(MX6_GPC_BASE_ADDR);

@@ -185,31 +185,31 @@ struct stm32_sdmmc2_priv {
 
 #define to_mci_host(mci)	container_of(mci, struct stm32_sdmmc2_priv, mci)
 
-/*
- * Reset the SDMMC with the RCC.SDMMCxRST register bit.
- * This will reset the SDMMC to the reset state and the CPSM and DPSM
- * to the Idle state. SDMMC is disabled, Signals Hiz.
- */
 static int stm32_sdmmc2_reset(struct mci_host *mci, struct device_d *mci_dev)
 {
 	struct stm32_sdmmc2_priv *priv = to_mci_host(mci);
 
+	/*
+	 * Reset the SDMMC with the RCC.SDMMCxRST register bit.
+	 * This will reset the SDMMC to the reset state and the CPSM and DPSM
+	 * to the Idle state. SDMMC is disabled, Signals Hiz.
+	 */
 	reset_control_assert(priv->reset_ctl);
 	udelay(2);
 	reset_control_deassert(priv->reset_ctl);
 
-	/* init the needed SDMMC register after reset */
-	writel(priv->pwr_reg_msk, priv->base + SDMMC_POWER);
+	/*
+	 * Set the SDMMC in power-cycle state.
+	 * This will make that the SDMMC_D[7:0],
+	 * SDMMC_CMD and SDMMC_CK are driven low, to prevent the card from being
+	 * supplied through the signal lines.
+	 */
+	writel(SDMMC_POWER_PWRCTRL_CYCLE | priv->pwr_reg_msk,
+	       priv->base + SDMMC_POWER);
 
 	return 0;
 }
 
-/*
- * Set the SDMMC in power-cycle state.
- * This will make that the SDMMC_D[7:0],
- * SDMMC_CMD and SDMMC_CK are driven low, to prevent the card from being
- * supplied through the signal lines.
- */
 static void stm32_sdmmc2_pwrcycle(struct stm32_sdmmc2_priv *priv)
 {
 	if ((readl(priv->base + SDMMC_POWER) & SDMMC_POWER_PWRCTRL_MASK) ==
@@ -217,8 +217,6 @@ static void stm32_sdmmc2_pwrcycle(struct stm32_sdmmc2_priv *priv)
 		return;
 
 	stm32_sdmmc2_reset(&priv->mci, priv->dev);
-	writel(SDMMC_POWER_PWRCTRL_CYCLE | priv->pwr_reg_msk,
-	       priv->base + SDMMC_POWER);
 }
 
 /*
@@ -256,6 +254,7 @@ static void stm32_sdmmc2_pwron(struct stm32_sdmmc2_priv *priv)
 	       priv->base + SDMMC_POWER);
 
 	/* during the first 74 SDMMC_CK cycles the SDMMC is still disabled. */
+	udelay(DIV_ROUND_UP(74 * USEC_PER_SEC, priv->mci.clock));
 }
 
 static void stm32_sdmmc2_start_data(struct stm32_sdmmc2_priv *priv,

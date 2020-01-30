@@ -118,7 +118,7 @@ void relocate_code(void *fdt, u32 fdt_size, u32 ram_size)
 	memset(__bss_start, 0, bss_len);
 	cpu_probe();
 
-	length = barebox_image_size + bss_len;
+	length = __bss_stop - __image_start;
 	relocaddr = ALIGN_DOWN(ram_size - length, SZ_64K);
 	relocaddr = KSEG0ADDR(relocaddr);
 	new_stack = relocaddr - MALLOC_SIZE - 16;

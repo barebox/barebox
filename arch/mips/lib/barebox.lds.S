@@ -59,7 +59,7 @@ SECTIONS
 
 	_end = .;
 
-	.bss __rel_start (OVERLAY) : {
+	.bss : {
 		__bss_start = .;
 		*(.sbss.*)
 		*(.bss.*)

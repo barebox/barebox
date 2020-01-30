@@ -534,8 +534,6 @@ retry_cmd:
 		dev_warn(priv->dev, "%s: cmd %d failed, retrying ...\n",
 			 __func__, cmd->cmdidx);
 
-		stm32_sdmmc2_pwrcycle(priv);
-		stm32_sdmmc2_pwron(priv);
 		retry--;
 
 		goto retry_cmd;

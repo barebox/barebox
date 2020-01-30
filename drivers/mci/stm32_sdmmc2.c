@@ -574,9 +574,9 @@ static void stm32_sdmmc2_set_ios(struct mci_host *mci, struct mci_ios *ios)
 			clk = SDMMC_CLKCR_CLKDIV_MAX;
 	}
 
-	if (mci->bus_width == 4)
+	if (mci->bus_width == MMC_BUS_WIDTH_4)
 		clk |= SDMMC_CLKCR_WIDBUS_4;
-	if (mci->bus_width == 8)
+	if (mci->bus_width == MMC_BUS_WIDTH_8)
 		clk |= SDMMC_CLKCR_WIDBUS_8;
 
 	writel(clk | priv->clk_reg_msk | SDMMC_CLKCR_HWFC_EN,
@@ -630,11 +630,6 @@ static int stm32_sdmmc2_probe(struct amba_device *adev,
 	mci->voltages = MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_165_195;
 
 	mci_of_parse(&priv->mci);
-
-	if (mci->host_caps & (MMC_CAP_4_BIT_DATA | MMC_CAP_8_BIT_DATA)) {
-		dev_notice(dev, "Fixing bus-width to 1 due to driver limitation\n");
-		mci->host_caps &= ~(MMC_CAP_4_BIT_DATA | MMC_CAP_8_BIT_DATA);
-	}
 
 	return mci_register(&priv->mci);
 

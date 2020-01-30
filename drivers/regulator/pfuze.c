@@ -31,8 +31,6 @@
 
 #define DRIVERNAME		"pfuze"
 
-#define MC13XXX_NUMREGS		0x3f
-
 #define PFUZE100_SW1ABMODE	0x23
 #define PFUZE100_SW1CMODE	0x31
 #define PFUZE100_SW2MODE	0x38

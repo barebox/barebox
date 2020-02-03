@@ -48,10 +48,6 @@ SECTIONS
 
 	.rela.dyn : { *(.rela*) }
 
-	.oftables : { BAREBOX_CLK_TABLE }
-
-	.dtb : { BAREBOX_DTB }
-
 	_edata = .;
 	. = ALIGN(8);
 	__bss_start = .;

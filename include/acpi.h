@@ -6,6 +6,7 @@
 #ifndef __ACPI_H_
 #define __ACPI_H_
 
+#include <linux/string.h>
 #include <linux/types.h>
 #include <driver.h>
 

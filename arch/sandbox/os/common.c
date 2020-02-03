@@ -112,7 +112,7 @@ uint64_t linux_get_time(void)
 
 	clock_gettime(CLOCK_MONOTONIC, &ts);
 
-	now = ts.tv_sec * 1000 * 1000 * 1000 + ts.tv_nsec;
+	now = ts.tv_sec * 1000ULL * 1000 * 1000 + ts.tv_nsec;
 
 	return now;
 }

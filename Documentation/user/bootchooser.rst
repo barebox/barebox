@@ -112,7 +112,9 @@ In case only the booted system itself knows when it is in a good state,
 it can report this to the bootchooser from Linux userspace using the
 *barebox-state* tool from the dt-utils_ package.::
 
-  barebox-state -s bootstate.<target>.remaining_attemps <reset-value>
+  barebox-state [-n <state variable set>] -s [<prefix>.]<target>.remaining_attempts=<reset-value>
+  barebox-state -n system_state -s bootstate.system1.remaining_attempts=3
+  barebox-state -s system1.remaining_attempts=3
 
 If instead the bootchooser can detect a failed boot itself using the
 :ref:`reset reason <reset_reason>` (WDG), one can mark the boot successful

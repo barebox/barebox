@@ -71,12 +71,6 @@ config NAND_IMX
 	prompt "i.MX NAND driver"
 	depends on ARCH_IMX
 
-config NAND_IMX_BBM
-	bool
-	depends on NAND_BBT
-	depends on NAND_IMX
-	prompt "i.MX NAND flash bbt creation command"
-
 config NAND_MXS
 	bool
 	select NAND_BBT

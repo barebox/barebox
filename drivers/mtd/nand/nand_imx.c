@@ -1117,6 +1117,102 @@ static int __init mxcnd_probe_dt(struct imx_nand_host *host)
 }
 
 /*
+ * The i.MX NAND controller has the problem that it handles the
+ * data in chunks of 512 bytes. It doesn't treat 2k NAND chips as
+ * 2048 byte data + 64 OOB, but instead:
+ *
+ * 512b data + 16b OOB +
+ * 512b data + 16b OOB +
+ * 512b data + 16b OOB +
+ * 512b data + 16b OOB
+ *
+ * This means that the factory provided bad block marker ends up
+ * in the page data at offset 2000 instead of in the OOB data.
+ *
+ * To preserve the factory bad block information we take the following
+ * strategy:
+ *
+ * - If the NAND driver detects that no flash BBT is present on 2k NAND
+ *   chips it will not create one because it would do so based on the wrong
+ *   BBM position
+ * - This command is used to create a flash BBT then.
+ *
+ * From this point on we can forget about the BBMs and rely completely
+ * on the flash BBT.
+ *
+ */
+static int checkbad(struct mtd_info *mtd, loff_t ofs)
+{
+	int ret;
+	uint8_t buf[mtd->writesize + mtd->oobsize];
+	struct mtd_oob_ops ops;
+
+	ops.mode = MTD_OPS_RAW;
+	ops.ooboffs = 0;
+	ops.datbuf = buf;
+	ops.len = mtd->writesize;
+	ops.oobbuf = buf + mtd->writesize;
+	ops.ooblen = mtd->oobsize;
+
+	ret = mtd_read_oob(mtd, ofs, &ops);
+	if (ret < 0)
+		return ret;
+
+	if (buf[2000] != 0xff)
+		return 1;
+
+	return 0;
+}
+
+static int imxnd_create_bbt(struct mtd_info *mtd)
+{
+	struct nand_chip *chip = mtd_to_nand(mtd);
+	int len, i, numblocks, ret;
+	loff_t from = 0;
+	uint8_t *bbt;
+
+	len = mtd->size >> (chip->bbt_erase_shift + 2);
+
+	/* Allocate memory (2bit per block) and clear the memory bad block table */
+	bbt = kzalloc(len, GFP_KERNEL);
+	if (!bbt)
+		return -ENOMEM;
+
+	numblocks = mtd->size >> (chip->bbt_erase_shift - 1);
+
+	for (i = 0; i < numblocks;) {
+		ret = checkbad(mtd, from);
+		if (ret < 0)
+			goto out;
+
+		if (ret) {
+			bbt[i >> 3] |= 0x03 << (i & 0x6);
+			dev_info(mtd->parent, "Bad eraseblock %d at 0x%08x\n",
+				 i >> 1, (unsigned int)from);
+		}
+
+		i += 2;
+		from += (1 << chip->bbt_erase_shift);
+	}
+
+	chip->bbt_td->options |= NAND_BBT_CREATE;
+	chip->bbt_md->options |= NAND_BBT_CREATE;
+
+	free(chip->bbt);
+	chip->bbt = bbt;
+
+	ret = nand_update_bbt(mtd, 0);
+	if (ret)
+		return ret;
+
+	ret = 0;
+out:
+	free(bbt);
+
+	return ret;
+}
+
+/*
  * This function is called during the driver binding process.
  *
  * @param   pdev  the device structure used to store device specific
@@ -1329,7 +1425,12 @@ static int __init imxnd_probe(struct device_d *dev)
 	}
 
 	if (host->flash_bbt && this->bbt_td->pages[0] == -1 && this->bbt_md->pages[0] == -1) {
-		dev_warn(dev, "no BBT found. create one using the imx_nand_bbm command\n");
+		dev_info(dev, "no BBT found. creating one\n");
+		err = imxnd_create_bbt(mtd);
+		if (err)
+			dev_warn(dev, "Failed to create bbt: %s\n",
+				 strerror(-err));
+		err = 0;
 	}
 
 	add_mtd_nand_device(mtd, "nand");

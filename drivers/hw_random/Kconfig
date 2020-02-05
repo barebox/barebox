@@ -14,6 +14,13 @@ config HWRNG_MXC_RNGC
 	  This driver provides kernel-side support for the Random Number
 	  Generator hardware found on some Freescale i.MX processors.
 
+config HWRNG_STM32
+	tristate "STM32 Random Number Generator"
+	depends on ARCH_STM32MP
+	help
+	  This driver provides barebox support for the Random Number
+	  Generator hardware found on the STM32 family of MPUs and MCUs.
+
 config HWRNG_DEV_RANDOM
 	tristate "Linux /dev/urandom RNG"
 	depends on SANDBOX

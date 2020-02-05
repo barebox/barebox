@@ -1205,6 +1205,10 @@ static int imxnd_create_bbt(struct mtd_info *mtd)
 	if (ret)
 		return ret;
 
+	ret = nand_default_bbt(mtd);
+	if (ret)
+		return ret;
+
 	ret = 0;
 out:
 	free(bbt);

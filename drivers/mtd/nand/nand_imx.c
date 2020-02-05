@@ -1072,7 +1072,7 @@ static uint8_t bbt_pattern[] = { 'B', 'b', 't', '0' };
 static uint8_t mirror_pattern[] = { '1', 't', 'b', 'B' };
 
 static struct nand_bbt_descr bbt_main_descr = {
-	.options = NAND_BBT_LASTBLOCK
+	.options = NAND_BBT_LASTBLOCK | NAND_BBT_WRITE
 		| NAND_BBT_2BIT | NAND_BBT_VERSION | NAND_BBT_PERCHIP,
 	.offs = 0,
 	.len = 4,
@@ -1082,7 +1082,7 @@ static struct nand_bbt_descr bbt_main_descr = {
 };
 
 static struct nand_bbt_descr bbt_mirror_descr = {
-	.options = NAND_BBT_LASTBLOCK
+	.options = NAND_BBT_LASTBLOCK | NAND_BBT_WRITE
 		| NAND_BBT_2BIT | NAND_BBT_VERSION | NAND_BBT_PERCHIP,
 	.offs = 0,
 	.len = 4,
@@ -1312,8 +1312,8 @@ static int __init imxnd_probe(struct device_d *dev)
 		if (nfc_is_v21())
 			writew(NFC_V2_SPAS_SPARESIZE(64), host->regs + NFC_V2_SPAS);
 	} else {
-		bbt_main_descr.options |= NAND_BBT_WRITE | NAND_BBT_CREATE;
-		bbt_mirror_descr.options |= NAND_BBT_WRITE | NAND_BBT_CREATE;
+		bbt_main_descr.options |= NAND_BBT_CREATE;
+		bbt_mirror_descr.options |= NAND_BBT_CREATE;
 
 		if (nfc_is_v21())
 			writew(NFC_V2_SPAS_SPARESIZE(16), host->regs + NFC_V2_SPAS);
@@ -1330,9 +1330,6 @@ static int __init imxnd_probe(struct device_d *dev)
 
 	if (host->flash_bbt && this->bbt_td->pages[0] == -1 && this->bbt_md->pages[0] == -1) {
 		dev_warn(dev, "no BBT found. create one using the imx_nand_bbm command\n");
-	} else {
-		bbt_main_descr.options |= NAND_BBT_WRITE | NAND_BBT_CREATE;
-		bbt_mirror_descr.options |= NAND_BBT_WRITE | NAND_BBT_CREATE;
 	}
 
 	add_mtd_nand_device(mtd, "nand");

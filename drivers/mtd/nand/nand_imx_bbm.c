@@ -124,8 +124,8 @@ static int attach_bbt(struct mtd_info *mtd, void *bbt)
 {
 	struct nand_chip *chip = mtd_to_nand(mtd);
 
-	chip->bbt_td->options |= NAND_BBT_WRITE | NAND_BBT_CREATE;
-	chip->bbt_md->options |= NAND_BBT_WRITE | NAND_BBT_CREATE;
+	chip->bbt_td->options |= NAND_BBT_CREATE;
+	chip->bbt_md->options |= NAND_BBT_CREATE;
 	free(chip->bbt);
 	chip->bbt = bbt;
 

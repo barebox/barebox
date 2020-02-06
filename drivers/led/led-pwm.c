@@ -54,7 +54,7 @@ static int led_pwm_of_probe(struct device_d *dev)
 		struct pwm_device *pwm;
 
 		pwm = of_pwm_request(child, NULL);
-		if (pwm < 0)
+		if (IS_ERR(pwm))
 			continue;
 
 		pwmled = xzalloc(sizeof(*pwmled));

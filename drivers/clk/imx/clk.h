@@ -270,4 +270,7 @@ struct clk *imx8m_clk_composite_flags(const char *name,
 #define imx8m_clk_composite(name, parent_names, reg) \
 	__imx8m_clk_composite(name, parent_names, reg, 0)
 
+#define imx8m_clk_composite_critical(name, parent_names, reg) \
+	__imx8m_clk_composite(name, parent_names, reg, CLK_IS_CRITICAL)
+
 #endif /* __IMX_CLK_H */

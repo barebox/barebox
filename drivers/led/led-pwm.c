@@ -61,7 +61,9 @@ static int led_pwm_of_probe(struct device_d *dev)
 		pwmled->led.name = xstrdup(child->name);
 		pwmled->pwm = pwm;
 
-		of_property_read_u32(child, "max-brightness", &pwmled->led.max_value);
+		ret = of_property_read_u32(child, "max-brightness", &pwmled->led.max_value);
+		if (ret)
+			return ret;
 
 		pwmled->period = pwm_get_period(pwmled->pwm);
 

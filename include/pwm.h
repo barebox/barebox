@@ -66,7 +66,7 @@ struct pwm_ops {
 struct pwm_chip {
 	int			id;
 	const char		*devname;
-	struct pwm_ops		*ops;
+	const struct pwm_ops	*ops;
 	int			duty_ns;
 	int			period_ns;
 };

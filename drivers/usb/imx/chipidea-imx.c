@@ -323,6 +323,8 @@ static __maybe_unused struct of_device_id imx_chipidea_dt_ids[] = {
 	{
 		.compatible = "fsl,imx27-usb",
 	}, {
+		.compatible = "fsl,imx7d-usb",
+	}, {
 		/* sentinel */
 	},
 };

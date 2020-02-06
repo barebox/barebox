@@ -37,6 +37,9 @@ struct regmap_bus {
 	regmap_hw_reg_read reg_read;
 };
 
+struct device_d;
+struct device_node;
+
 struct regmap *regmap_init(struct device_d *dev,
 			     const struct regmap_bus *bus,
 			     void *bus_context,

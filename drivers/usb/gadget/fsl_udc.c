@@ -762,6 +762,7 @@ static struct ep_td_struct *fsl_build_dtd(struct fsl_req *req,
 	unsigned length;
 	u32 swap_temp;
 	struct ep_td_struct *dtd;
+	unsigned long buf;
 
 	/* how big will this transfer be? */
 	length = min(req->req.length - req->req.actual,
@@ -779,7 +780,13 @@ static struct ep_td_struct *fsl_build_dtd(struct fsl_req *req,
 	dtd->size_ioc_sts = cpu_to_le32(swap_temp);
 
 	/* Init all of buffer page pointers */
-	swap_temp = (u32) (req->req.buf + req->req.actual);
+	buf = (unsigned long)req->req.buf;
+	if (buf > 0xffffffff) {
+		pr_err("Only 32bit supported\n");
+		return NULL;
+	}
+
+	swap_temp = (u32)(buf + req->req.actual);
 	dtd->buff_ptr0 = cpu_to_le32(swap_temp);
 	dtd->buff_ptr1 = cpu_to_le32(swap_temp + 0x1000);
 	dtd->buff_ptr2 = cpu_to_le32(swap_temp + 0x2000);
@@ -945,13 +952,19 @@ static int fsl_ep_dequeue(struct usb_ep *_ep, struct usb_request *_req)
 		if (req->queue.next != &ep->queue) {
 			struct ep_queue_head *qh;
 			struct fsl_req *next_req;
+			unsigned long next_req_head;
 
 			qh = ep->qh;
 			next_req = list_entry(req->queue.next, struct fsl_req,
 					queue);
 
 			/* Point the QH to the first TD of next request */
-			writel((u32) next_req->head, &qh->curr_dtd_ptr);
+			next_req_head = (unsigned long)next_req->head;
+			if (next_req_head > 0xffffffff) {
+				pr_err("Only 32bit supported\n");
+				goto out;
+			}
+			writel((u32)next_req_head, &qh->curr_dtd_ptr);
 		}
 
 		/* The request hasn't been processed, patch up the TD chain */

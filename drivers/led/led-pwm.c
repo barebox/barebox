@@ -41,6 +41,9 @@ static void led_pwm_set(struct led *led, unsigned int brightness)
         duty *= brightness;
         do_div(duty, max);
 
+	if (pwmled->active_low)
+		duty = pwmled->period - duty;
+
 	pwm_config(pwmled->pwm, duty, pwmled->period);
 }
 
@@ -66,6 +69,7 @@ static int led_pwm_of_probe(struct device_d *dev)
 			return ret;
 
 		pwmled->period = pwm_get_period(pwmled->pwm);
+		pwmled->active_low = of_property_read_bool(child, "active-low");
 
 		pwmled->led.set = led_pwm_set;
 

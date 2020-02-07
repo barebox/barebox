@@ -1228,7 +1228,7 @@ static int is_header(const unsigned char *p)
 			return 1;
 		break;
 	case HDR_MX53:
-		if (hdr->header.tag == TAG_IVT_HEADER && hdr->header.version == IVT_VERSION)
+		if (hdr->header.tag == TAG_IVT_HEADER && (hdr->header.version == IVT_VERSION || hdr->header.version == 0x41))
 			return 1;
 	}
 

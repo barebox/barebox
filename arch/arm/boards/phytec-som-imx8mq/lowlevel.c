@@ -9,7 +9,7 @@
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 #include <mach/imx8-ccm-regs.h>
-#include <mach/iomux-mx8.h>
+#include <mach/iomux-mx8mq.h>
 #include <mach/imx8-ddrc.h>
 #include <mach/xload.h>
 #include <io.h>

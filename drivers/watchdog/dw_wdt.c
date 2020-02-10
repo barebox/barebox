@@ -187,6 +187,7 @@ static struct of_device_id dw_wdt_of_match[] = {
 };
 
 static struct driver_d dw_wdt_driver = {
+	.name		= "dw-wdt",
 	.probe		= dw_wdt_drv_probe,
 	.of_compatible	= DRV_OF_COMPAT(dw_wdt_of_match),
 };

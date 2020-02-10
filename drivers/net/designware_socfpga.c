@@ -77,8 +77,7 @@ static int socfpga_gen5_set_phy_mode(struct socfpga_dwc_dev *dwc_dev)
 	}
 
 	/* Assert reset to the enet controller before changing the phy mode */
-	if (eth_dev->rst)
-		reset_control_assert(eth_dev->rst);
+	reset_control_assert(eth_dev->rst);
 
 	ctrl = readl(dwc_dev->sys_mgr_base + reg_offset);
 	ctrl &= ~(SYSMGR_EMACGRP_CTRL_PHYSEL_MASK << reg_shift);
@@ -104,8 +103,7 @@ static int socfpga_gen5_set_phy_mode(struct socfpga_dwc_dev *dwc_dev)
 	/* Deassert reset for the phy configuration to be sampled by
 	 * the enet controller, and operation to start in requested mode
 	 */
-	if (eth_dev->rst)
-		reset_control_deassert(eth_dev->rst);
+	reset_control_deassert(eth_dev->rst);
 
 	return 0;
 }
@@ -124,8 +122,7 @@ static int socfpga_gen10_set_phy_mode(struct socfpga_dwc_dev *dwc_dev)
 	}
 
 	/* Assert reset to the enet controller before changing the phy mode */
-	if (eth_dev->rst)
-		reset_control_assert(eth_dev->rst);
+	reset_control_assert(eth_dev->rst);
 
 	ctrl = readl(dwc_dev->sys_mgr_base + reg_offset);
 	ctrl &= ~(SYSMGR_EMACGRP_CTRL_PHYSEL_MASK << reg_shift);
@@ -151,8 +148,7 @@ static int socfpga_gen10_set_phy_mode(struct socfpga_dwc_dev *dwc_dev)
 	/* Deassert reset for the phy configuration to be sampled by
 	 * the enet controller, and operation to start in requested mode
 	 */
-	if (eth_dev->rst)
-		reset_control_deassert(eth_dev->rst);
+	reset_control_deassert(eth_dev->rst);
 
 	return 0;
 }
@@ -212,8 +208,10 @@ static int socfpga_dwc_ether_probe(struct device_d *dev)
 		return PTR_ERR(priv);
 
 	priv->rst = reset_control_get(dev, NULL);
-	if (IS_ERR(priv->rst))
-		dev_warn(dev, "No reset lines.\n");
+	if (IS_ERR(priv->rst)) {
+		dev_err(dev, "Invalid reset lines.\n");
+		return PTR_ERR(priv->rst);
+	}
 
 	dwc_dev->priv = priv;
 

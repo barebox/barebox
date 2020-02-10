@@ -42,11 +42,11 @@ enum reset_src_type reset_source_get(void)
 }
 EXPORT_SYMBOL(reset_source_get);
 
-const char *reset_source_name(void)
+const char *reset_source_to_string(enum reset_src_type st)
 {
-	return reset_src_names[reset_source];
+	return reset_src_names[st];
 }
-EXPORT_SYMBOL(reset_source_name);
+EXPORT_SYMBOL(reset_source_to_string);
 
 int reset_source_get_instance(void)
 {

@@ -625,7 +625,7 @@ static int stm32_sdmmc2_probe(struct amba_device *adev,
 
 	priv->reset_ctl = reset_control_get(dev, NULL);
 	if (IS_ERR(priv->reset_ctl))
-		priv->reset_ctl = NULL;
+		return PTR_ERR(priv->reset_ctl);
 
 	mci->f_min = 400000;
 	/* f_max is taken from kernel v5.3 variant_stm32_sdmmc */

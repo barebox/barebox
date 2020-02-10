@@ -256,11 +256,11 @@ static int f71808e_wdt_init(struct f71808e_wdt *wd, struct device_d *dev)
 	wdd->set_timeout	= &f71808e_wdt_set_timeout;
 	wdd->timeout_max	= WATCHDOG_MAX_TIMEOUT;
 
-	if (wdt_conf & BIT(F71808FG_FLAG_WDTMOUT_STS))
-		reset_source_set_priority(RESET_WDG,
-					  RESET_SOURCE_DEFAULT_PRIORITY);
+	if (wdt_conf & BIT(F71808FG_FLAG_WDTMOUT_STS)) {
+		reset_source_set_priority(RESET_WDG, RESET_SOURCE_DEFAULT_PRIORITY);
+		dev_info(dev, "reset reason: WDT\n");
+	}
 
-	dev_info(dev, "reset reason: %s\n", reset_source_name());
 
 	if (test_bit(F71808FG_FLAG_WD_EN, &wdt_conf))
 		wdd->running = WDOG_HW_RUNNING;

@@ -14,6 +14,8 @@ static int dk2_postcore_init(void)
 	stm32mp_bbu_mmc_register_handler("sd", "/dev/mmc0.ssbl",
 					 BBU_HANDLER_FLAG_DEFAULT);
 
+	barebox_set_model("STM32MP157C-DK2");
+
 	return 0;
 }
 postcore_initcall(dk2_postcore_init);

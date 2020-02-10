@@ -70,7 +70,7 @@ config CLOCKSOURCE_ROCKCHIP
 config CLOCKSOURCE_ATMEL_PIT
        bool
 
-config CLOCKSOURCE_ARMV8_TIMER
+config CLOCKSOURCE_ARM_ARCHITECTED_TIMER
 	bool
 	default y
 	depends on ARM && (CPU_64v8 || CPU_V7)

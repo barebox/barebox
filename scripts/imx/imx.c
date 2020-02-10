@@ -334,7 +334,6 @@ static int do_hab(struct config_data *data, int argc, char *argv[])
 
 static int do_hab_blocks(struct config_data *data, int argc, char *argv[])
 {
-	const char *type;
 	char *str;
 	int ret;
 	uint32_t signed_size = data->load_size;

@@ -73,7 +73,7 @@ static int dw_wdt_stop(struct watchdog *wdd)
 	struct dw_wdt *dw_wdt = to_dw_wdt(wdd);
 
 	if (!dw_wdt->rst) {
-		dev_warn(dw_wdt->wdd.hwdev, "No reset line. Will not stop.\n");
+		dev_warn(dw_wdt->wdd.hwdev, "No reset line\n");
 		return -ENOSYS;
 	}
 

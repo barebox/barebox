@@ -374,4 +374,10 @@ struct ep_td_struct {
 /* Controller dma boundary */
 #define UDC_DMA_BOUNDARY			0x1000
 
+int imx_barebox_load_usb(void __iomem *dr, void *dest);
+int imx_barebox_start_usb(void __iomem *dr, void *dest);
+
+int imx8mm_barebox_load_usb(void *dest);
+int imx8mm_barebox_start_usb(void *dest);
+
 #endif /* __FSL_UDC_H */

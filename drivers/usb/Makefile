@@ -2,9 +2,9 @@ obj-$(CONFIG_USB)		+= core/
 obj-$(CONFIG_USB_IMX_CHIPIDEA)	+= imx/
 obj-$(CONFIG_USB_DWC3)		+= dwc3/
 obj-$(CONFIG_USB_MUSB)		+= musb/
-obj-$(CONFIG_USB_GADGET)	+= gadget/
 obj-$(CONFIG_USB_STORAGE)	+= storage/
 obj-y += host/
 obj-y += otg/
+obj-y += gadget/
 obj-$(CONFIG_USB)		+= misc/
 

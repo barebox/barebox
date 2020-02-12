@@ -2,13 +2,14 @@
 #include <mach/atf.h>
 
 /**
- * imx8mq_atf_load_bl31 - Load ATF BL31 blob and transfer control to it
+ * imx8m_atf_load_bl31 - Load ATF BL31 blob and transfer control to it
  *
  * @fw:		Pointer to the BL31 blob
  * @fw_size:	Size of the BL31 blob
+ * @atf_dest:	Place where the BL31 is copied to and executed
  *
  * This function:
-
+ *
  *     1. Copies built-in BL31 blob to an address i.MX8M's BL31
  *        expects to be placed
  *
@@ -25,17 +26,28 @@
  * any other implementation may or may not work
  *
  */
-void imx8mq_atf_load_bl31(const void *fw, size_t fw_size)
-{
-	void __noreturn (*bl31)(void) = (void *)MX8MQ_ATF_BL31_BASE_ADDR;
 
-	if (WARN_ON(fw_size > MX8MQ_ATF_BL31_SIZE_LIMIT))
+static void imx8m_atf_load_bl31(const void *fw, size_t fw_size, void *atf_dest)
+{
+	void __noreturn (*bl31)(void) = atf_dest;
+
+	if (WARN_ON(fw_size > MX8M_ATF_BL31_SIZE_LIMIT))
 		return;
 
 	memcpy(bl31, fw, fw_size);
 
 	asm volatile("msr sp_el2, %0" : :
-		     "r" (MX8MQ_ATF_BL33_BASE_ADDR - 16) :
+		     "r" (atf_dest - 16) :
 		     "cc");
 	bl31();
+}
+
+void imx8mm_atf_load_bl31(const void *fw, size_t fw_size)
+{
+	imx8m_atf_load_bl31(fw, fw_size, (void *)MX8MM_ATF_BL31_BASE_ADDR);
+}
+
+void imx8mq_atf_load_bl31(const void *fw, size_t fw_size)
+{
+	imx8m_atf_load_bl31(fw, fw_size, (void *)MX8MQ_ATF_BL31_BASE_ADDR);
 }

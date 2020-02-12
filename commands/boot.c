@@ -21,13 +21,29 @@
 
 #include <linux/stat.h>
 
+static char *next_argv(void *context)
+{
+	char ***argv = context;
+	char *next = **argv;
+	(*argv)++;
+	return next;
+}
+
+static char *next_word(void *context)
+{
+	return strsep(context, " ");
+}
+
 static int do_boot(int argc, char *argv[])
 {
 	char *freep = NULL;
 	int opt, ret = 0, do_list = 0, do_menu = 0;
-	int i, dryrun = 0, verbose = 0, timeout = -1;
+	int dryrun = 0, verbose = 0, timeout = -1;
 	struct bootentries *entries;
 	struct bootentry *entry;
+	void *handle;
+	const char *name;
+	char *(*next)(void *);
 
 	while ((opt = getopt(argc, argv, "vldmt:w:")) > 0) {
 		switch (opt) {
@@ -54,31 +70,26 @@ static int do_boot(int argc, char *argv[])
 		}
 	}
 
-	entries = bootentries_alloc();
-
 	if (optind < argc) {
-		for (i = optind; i < argc; i++) {
-			ret = bootentry_create_from_name(entries, argv[i]);
-			if (ret <= 0)
-				printf("Nothing bootable found on '%s'\n", argv[i]);
-	       }
+		handle = &argv[optind];
+		next = next_argv;
 	} else {
 		const char *def;
-		char *sep, *name;
 
 		def = getenv("global.boot.default");
 		if (!def)
 			return 0;
 
-		sep = freep = xstrdup(def);
+		handle = freep = xstrdup(def);
+		next = next_word;
+	}
 
-		while ((name = strsep(&sep, " ")) != NULL) {
-			ret = bootentry_create_from_name(entries, name);
-			if (ret <= 0)
-				printf("Nothing bootable found on '%s'\n", name);
-		}
+	entries = bootentries_alloc();
 
-		free(freep);
+	while ((name = next(&handle)) != NULL) {
+		ret = bootentry_create_from_name(entries, name);
+		if (ret <= 0)
+			printf("Nothing bootable found on '%s'\n", name);
 	}
 
 	if (list_empty(&entries->entries)) {
@@ -104,6 +115,7 @@ static int do_boot(int argc, char *argv[])
 
 out:
 	bootentries_free(entries);
+	free(freep);
 
 	return ret;
 }

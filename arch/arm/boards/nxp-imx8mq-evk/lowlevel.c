@@ -84,7 +84,7 @@ static __noreturn noinline void nxp_imx8mq_evk_start(void)
 		 * for the piggy data, so we need to ensure that we are running
 		 * the same code in DRAM.
 		 */
-		imx8_get_boot_source(&src, &instance);
+		imx8mq_get_boot_source(&src, &instance);
 		if (src == BOOTSOURCE_MMC)
 			ret = imx8_esdhc_load_image(instance, false);
 		BUG_ON(ret);

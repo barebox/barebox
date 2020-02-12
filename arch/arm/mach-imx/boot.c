@@ -579,7 +579,7 @@ void vf610_boot_save_loc(void)
 	imx_boot_save_loc(vf610_get_boot_source);
 }
 
-void imx8_get_boot_source(enum bootsource *src, int *instance)
+void imx8mq_get_boot_source(enum bootsource *src, int *instance)
 {
 	unsigned long addr;
 
@@ -590,7 +590,7 @@ void imx8_get_boot_source(enum bootsource *src, int *instance)
 	__imx7_get_boot_source(src, instance, addr);
 }
 
-void imx8_boot_save_loc(void)
+void imx8mq_boot_save_loc(void)
 {
-	imx_boot_save_loc(imx8_get_boot_source);
+	imx_boot_save_loc(imx8mq_get_boot_source);
 }

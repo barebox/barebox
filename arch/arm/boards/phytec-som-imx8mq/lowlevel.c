@@ -52,7 +52,7 @@ static void phytec_imx8mq_som_sram_setup(void)
 
 	ddr_init();
 
-	imx8_get_boot_source(&src, &instance);
+	imx8mq_get_boot_source(&src, &instance);
 
 	if (src == BOOTSOURCE_MMC)
 		ret = imx8_esdhc_load_image(instance, true);

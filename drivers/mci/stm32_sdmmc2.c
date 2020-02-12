@@ -631,6 +631,11 @@ static int stm32_sdmmc2_probe(struct amba_device *adev,
 
 	mci_of_parse(&priv->mci);
 
+	if (mci->f_max >= 26000000)
+		mci->host_caps |= MMC_CAP_MMC_HIGHSPEED;
+	if (mci->f_max >= 52000000)
+		mci->host_caps |= MMC_CAP_MMC_HIGHSPEED_52MHZ;
+
 	return mci_register(&priv->mci);
 
 priv_free:

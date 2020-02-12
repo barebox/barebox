@@ -3655,12 +3655,6 @@ pciserial_init_ports(struct pci_dev *dev, const struct pciserial_board *board)
 	uart.pdata = xzalloc(sizeof(*uart.pdata));
 	uart.pdata->clock = board->base_baud * 16;
 
-	if (rc < 0) {
-		kfree(priv);
-		priv = ERR_PTR(rc);
-		goto err_deinit;
-	}
-
 	for (i = 0; i < nr_ports; i++) {
 		struct device_d *ns16550_dev;
 		struct resource *res;

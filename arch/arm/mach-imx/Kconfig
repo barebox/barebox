@@ -174,7 +174,7 @@ config ARCH_IMX7
 	select ARCH_HAS_IMX_GPT
 	select HW_HAS_PCI
 
-config ARCH_IMX8MQ
+config ARCH_IMX8M
 	bool
 	select CPU_V8
 	select PINCTRL_IMX_IOMUX_V3
@@ -184,6 +184,10 @@ config ARCH_IMX8MQ
 	select ARCH_HAS_FEC_IMX
 	select HW_HAS_PCI
 	select PBL_VERIFY_PIGGY if HABV4
+
+config ARCH_IMX8MQ
+	select ARCH_IMX8M
+	bool
 
 config ARCH_VF610
 	bool

@@ -668,10 +668,11 @@ retry_scr:
 static void mci_set_ios(struct mci *mci)
 {
 	struct mci_host *host = mci->host;
-	struct mci_ios ios;
-
-	ios.bus_width = host->bus_width;
-	ios.clock = host->clock;
+	struct mci_ios ios = {
+		.bus_width = host->bus_width,
+		.clock = host->clock,
+		.timing = host->timing,
+	};
 
 	host->set_ios(host, &ios);
 }
@@ -996,6 +997,9 @@ static int mci_startup_sd(struct mci *mci)
 		mci_set_bus_width(mci, MMC_BUS_WIDTH_4);
 	}
 
+	if (mci->tran_speed > 25000000)
+		mci->host->timing = MMC_TIMING_SD_HS;
+
 	mci_set_clock(mci, mci->tran_speed);
 
 	return 0;
@@ -1021,6 +1025,8 @@ static int mci_startup_mmc(struct mci *mci)
 			mci->tran_speed = 52000000;
 		else
 			mci->tran_speed = 26000000;
+
+		host->timing = MMC_TIMING_MMC_HS;
 	}
 
 	mci_set_clock(mci, mci->tran_speed);
@@ -1473,6 +1479,20 @@ static unsigned extract_mtd_year(struct mci *mci)
 	return year;
 }
 
+static const char *mci_timing_tostr(unsigned timing)
+{
+	switch (timing) {
+	case MMC_TIMING_LEGACY:
+		return "legacy";
+	case MMC_TIMING_MMC_HS:
+		return "MMC HS";
+	case MMC_TIMING_SD_HS:
+		return "SD HS";
+	default:
+		return "unknown"; /* shouldn't happen */
+	}
+}
+
 static void mci_print_caps(unsigned caps)
 {
 	printf("  capabilities: %s%s%s%s%s\n",
@@ -1509,6 +1529,7 @@ static void mci_info(struct device_d *dev)
 		bw = 1;
 
 	printf("  current buswidth: %d\n", bw);
+	printf("  current timing: %s\n", mci_timing_tostr(host->timing));
 	mci_print_caps(host->host_caps);
 
 	printf("Card information:\n");

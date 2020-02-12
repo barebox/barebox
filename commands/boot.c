@@ -90,6 +90,18 @@ static int do_boot(int argc, char *argv[])
 		ret = bootentry_create_from_name(entries, name);
 		if (ret <= 0)
 			printf("Nothing bootable found on '%s'\n", name);
+
+		if (do_list || do_menu)
+			continue;
+
+		bootentries_for_each_entry(entries, entry) {
+			ret = boot_entry(entry, verbose, dryrun);
+			if (!ret)
+				break;
+		}
+
+		bootentries_free(entries);
+		entries = bootentries_alloc();
 	}
 
 	if (list_empty(&entries->entries)) {
@@ -105,12 +117,6 @@ static int do_boot(int argc, char *argv[])
 	if (do_menu) {
 		bootsources_menu(entries, timeout);
 		goto out;
-	}
-
-	bootentries_for_each_entry(entries, entry) {
-		ret = boot_entry(entry, verbose, dryrun);
-		if (!ret)
-			break;
 	}
 
 out:

@@ -1401,11 +1401,6 @@ static int do_irom_download(struct usb_work *curr, int verify)
 		dladdr = header_addr;
 	}
 
-	if (file_base > dladdr) {
-		max_length -= (file_base - dladdr);
-		dladdr = file_base;
-	}
-
 	skip = dladdr - file_base;
 
 	image = buf + skip;

@@ -9,6 +9,7 @@
 
 #include <mach/iomux-v3.h>
 #include <mach/iomux-mx8m.h>
+#include <mach/imx8mq-regs.h>
 
 enum {
 	IMX8MQ_PAD_GPIO1_IO00__GPIO1_IO0			= IOMUX_PAD(0x0290, 0x0028, 0, 0x0000, 0, 0),
@@ -621,5 +622,12 @@ enum {
 	IMX8MQ_PAD_UART4_TXD__PCIE2_CLKREQ_B			= IOMUX_PAD(0x04B8, 0x0250, 2, 0x0528, 1, 0),
 	IMX8MQ_PAD_UART4_TXD__GPIO5_IO29			= IOMUX_PAD(0x04B8, 0x0250, 5, 0x0000, 0, 0),
 };
+
+static inline void imx8mq_setup_pad(iomux_v3_cfg_t pad)
+{
+	void __iomem *iomux = IOMEM(MX8MQ_IOMUXC_BASE_ADDR);
+
+	imx8m_setup_pad(iomux, pad);
+}
 
 #endif

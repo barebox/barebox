@@ -25,7 +25,6 @@ extern char __dtb_imx8mq_evk_start[];
 
 static void setup_uart(void)
 {
-	void __iomem *iomux = IOMEM(MX8MQ_IOMUXC_BASE_ADDR);
 	void __iomem *ccm   = IOMEM(MX8MQ_CCM_BASE_ADDR);
 
 	writel(CCM_CCGR_SETTINGn_NEEDED(0),
@@ -35,7 +34,7 @@ static void setup_uart(void)
 	writel(CCM_CCGR_SETTINGn_NEEDED(0),
 	       ccm + CCM_CCGRn_SET(CCM_CCGR_UART1));
 
-	imx_setup_pad(iomux, IMX8MQ_PAD_UART1_TXD__UART1_TX | UART_PAD_CTRL);
+	imx8mq_setup_pad(IMX8MQ_PAD_UART1_TXD__UART1_TX | UART_PAD_CTRL);
 
 	imx8_uart_setup_ll();
 

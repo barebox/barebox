@@ -133,3 +133,29 @@ static int imx8mq_report_hdmi_firmware(void)
 	return 0;
 }
 console_initcall(imx8mq_report_hdmi_firmware);
+
+void imx8m_early_setup_uart_clock(void)
+{
+	imx8m_ccgr_clock_disable(IMX8M_CCM_CCGR_UART1);
+	imx8m_ccgr_clock_disable(IMX8M_CCM_CCGR_UART2);
+	imx8m_ccgr_clock_disable(IMX8M_CCM_CCGR_UART3);
+	imx8m_ccgr_clock_disable(IMX8M_CCM_CCGR_UART4);
+
+        imx8m_clock_set_target_val(IMX8M_UART1_CLK_ROOT,
+				   IMX8M_CCM_TARGET_ROOTn_ENABLE |
+				   IMX8M_UART1_CLK_ROOT__25M_REF_CLK);
+        imx8m_clock_set_target_val(IMX8M_UART2_CLK_ROOT,
+				   IMX8M_CCM_TARGET_ROOTn_ENABLE |
+				   IMX8M_UART1_CLK_ROOT__25M_REF_CLK);
+        imx8m_clock_set_target_val(IMX8M_UART3_CLK_ROOT,
+				   IMX8M_CCM_TARGET_ROOTn_ENABLE |
+				   IMX8M_UART1_CLK_ROOT__25M_REF_CLK);
+        imx8m_clock_set_target_val(IMX8M_UART4_CLK_ROOT,
+				   IMX8M_CCM_TARGET_ROOTn_ENABLE |
+				   IMX8M_UART1_CLK_ROOT__25M_REF_CLK);
+
+	imx8m_ccgr_clock_enable(IMX8M_CCM_CCGR_UART1);
+	imx8m_ccgr_clock_enable(IMX8M_CCM_CCGR_UART2);
+	imx8m_ccgr_clock_enable(IMX8M_CCM_CCGR_UART3);
+	imx8m_ccgr_clock_enable(IMX8M_CCM_CCGR_UART4);
+}

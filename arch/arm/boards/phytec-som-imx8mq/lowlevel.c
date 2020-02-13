@@ -28,14 +28,7 @@ extern char __dtb_imx8mq_phytec_phycore_som_start[];
 
 static void setup_uart(void)
 {
-	void __iomem *ccm   = IOMEM(MX8MQ_CCM_BASE_ADDR);
-
-	writel(IMX8M_CCM_CCGR_SETTINGn_NEEDED(0),
-	       ccm + IMX8M_CCM_CCGRn_CLR(IMX8M_CCM_CCGR_UART1));
-	writel(IMX8M_CCM_TARGET_ROOTn_ENABLE | IMX8M_UART1_CLK_ROOT__25M_REF_CLK,
-	       ccm + IMX8M_CCM_TARGET_ROOTn(IMX8M_UART1_CLK_ROOT));
-	writel(IMX8M_CCM_CCGR_SETTINGn_NEEDED(0),
-	       ccm + IMX8M_CCM_CCGRn_SET(IMX8M_CCM_CCGR_UART1));
+	imx8m_early_setup_uart_clock();
 
 	imx8mq_setup_pad(IMX8MQ_PAD_UART1_TXD__UART1_TX | UART_PAD_CTRL);
 

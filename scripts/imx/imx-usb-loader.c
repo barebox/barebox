@@ -1359,7 +1359,6 @@ static int do_irom_download(struct usb_work *curr, int verify)
 	unsigned char type;
 	unsigned fsize = 0;
 	unsigned header_offset;
-	unsigned file_base;
 	unsigned char *buf = NULL;
 	unsigned char *image;
 	unsigned char *verify_buffer = NULL;
@@ -1367,7 +1366,6 @@ static int do_irom_download(struct usb_work *curr, int verify)
 	unsigned max_length;
 	unsigned plugin = 0;
 	unsigned header_addr = 0;
-	unsigned skip = 0;
 
 	ret = read_file(curr->filename, &buf, &fsize);
 	if (ret < 0)
@@ -1394,20 +1392,10 @@ static int do_irom_download(struct usb_work *curr, int verify)
 		goto cleanup;
 	}
 
-	file_base = header_addr - header_offset;
+	dladdr = header_addr;
 
-	if (usb_id->mach_id->mode == MODE_BULK) {
-		/* No jump command, dladdr should point to header */
-		dladdr = header_addr;
-	}
-
-	skip = dladdr - file_base;
-
-	image = buf + skip;
-	fsize -= skip;
-
-	if (fsize > max_length)
-		fsize = max_length;
+	image = buf + header_offset;
+	fsize -= header_offset;
 
 	type = FT_APP;
 
@@ -1428,8 +1416,8 @@ static int do_irom_download(struct usb_work *curr, int verify)
 		}
 	}
 
-	printf("loading binary file(%s) to 0x%08x, skip=0x%x, fsize=%u type=%d...\n",
-			curr->filename, dladdr, skip, fsize, type);
+	printf("loading binary file(%s) to 0x%08x, fsize=%u type=%d...\n",
+			curr->filename, dladdr, fsize, type);
 
 	ret = load_file(image, fsize, dladdr, type);
 	if (ret < 0)

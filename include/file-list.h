@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef __FILE_LIST
 #define __FILE_LIST
 

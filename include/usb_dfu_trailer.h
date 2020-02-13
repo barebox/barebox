@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef _USB_DFU_TRAILER_H
 #define _USB_DFU_TRAILER_H
 

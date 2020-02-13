@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef __KALLSYMS_H
 #define __KALLSYMS_H
 

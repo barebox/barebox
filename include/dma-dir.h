@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef __DMA_DIR_H
 #define __DMA_DIR_H
 

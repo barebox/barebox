@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef __MAGIC_VARS_H
 #define __MAGIC_VARS_H
 

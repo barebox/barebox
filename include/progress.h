@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef __PROGRSS_H
 #define __PROGRSS_H
 

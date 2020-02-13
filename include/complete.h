@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef __COMPLETE_
 #define __COMPLETE_
 

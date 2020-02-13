@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef __CMD_LINE_PART_H
 #define __CMD_LINE_PART_H
 

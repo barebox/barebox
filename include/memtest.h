@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef __MEMTEST_H
 #define __MEMTEST_H
 

@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef __OF_DEVICE_H
 #define __OF_DEVICE_H
 

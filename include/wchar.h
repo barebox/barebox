@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef __WCHAR_H
 #define __WCHAR_H
 

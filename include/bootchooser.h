@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef __BOOTCHOOSER_H
 #define __BOOTCHOOSER_H
 

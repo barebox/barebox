@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef __PARSEOPT_H__
 #define __PARSEOPT_H__
 void parseopt_llu_suffix(const char *options, const char *opt,

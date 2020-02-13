@@ -1,7 +1,6 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (C) 2012 Jean-Christophe PLAGNIOL-VILLARD <plagnio@jcrosoft.com>
- *
- * Under GPLv2 only
  */
 
 #ifndef __W1_MAC_ADDRESS_H__

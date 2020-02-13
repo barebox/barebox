@@ -1,9 +1,8 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * (C) Copyright 2011 Jean-Christhophe PLAGNIOL-VILLARD <plagniol@jcrosoft.com>
  *
  * Android boot image
- *
- * Under GPLv2 only
  */
 
 #ifndef __AIMAGE_H__

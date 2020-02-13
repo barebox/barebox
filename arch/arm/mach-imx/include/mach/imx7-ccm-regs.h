@@ -33,4 +33,16 @@
 #define IMX7_CCM_CCGR_SETTINGn_NEEDED_RUN_WAIT(n)	IMX7_CCM_CCGR_SETTINGn(n, 0b10)
 #define IMX7_CCM_CCGR_SETTINGn_NEEDED(n)		IMX7_CCM_CCGR_SETTINGn(n, 0b11)
 
+static inline void imx7_early_setup_uart_clock(void)
+{
+	void __iomem *ccm   = IOMEM(MX7_CCM_BASE_ADDR);
+
+	writel(IMX7_CCM_CCGR_SETTINGn_NEEDED(0),
+	       ccm + IMX7_CCM_CCGRn_CLR(IMX7_CCM_CCGR_UART1));
+	writel(IMX7_CCM_TARGET_ROOTn_ENABLE | IMX7_UART1_CLK_ROOT__OSC_24M,
+	       ccm + IMX7_CCM_TARGET_ROOTn(IMX7_UART1_CLK_ROOT));
+	writel(IMX7_CCM_CCGR_SETTINGn_NEEDED(0),
+	       ccm + IMX7_CCM_CCGRn_SET(IMX7_CCM_CCGR_UART1));
+}
+
 #endif

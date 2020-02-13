@@ -23,14 +23,7 @@ extern char __dtb_z_imx7d_zii_rmu2_start[];
 
 static inline void setup_uart(void)
 {
-	void __iomem *ccm   = IOMEM(MX7_CCM_BASE_ADDR);
-
-	writel(IMX7_CCM_CCGR_SETTINGn_NEEDED(0),
-	       ccm + IMX7_CCM_CCGRn_CLR(IMX7_CCM_CCGR_UART2));
-	writel(IMX7_CCM_TARGET_ROOTn_ENABLE | IMX7_UART2_CLK_ROOT__OSC_24M,
-	       ccm + IMX7_CCM_TARGET_ROOTn(IMX7_UART2_CLK_ROOT));
-	writel(IMX7_CCM_CCGR_SETTINGn_NEEDED(0),
-	       ccm + IMX7_CCM_CCGRn_SET(IMX7_CCM_CCGR_UART2));
+	imx7_early_setup_uart_clock();
 
 	imx7_setup_pad(MX7D_PAD_UART2_TX_DATA__UART2_DCE_TX);
 

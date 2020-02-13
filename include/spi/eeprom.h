@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef _SPI_EEPROM_H
 #define _SPI_EEPROM_H
 

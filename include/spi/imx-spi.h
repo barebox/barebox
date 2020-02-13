@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef __SPI_IMX_SPI_H
 #define __SPI_IMX_SPI_H
 

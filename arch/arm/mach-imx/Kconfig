@@ -183,6 +183,7 @@ config ARCH_IMX8M
 	select COMMON_CLK_OF_PROVIDER
 	select ARCH_HAS_FEC_IMX
 	select HW_HAS_PCI
+	select IMX8M_DRAM
 	select PBL_VERIFY_PIGGY if HABV4
 
 config ARCH_IMX8MQ

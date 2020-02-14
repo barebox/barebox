@@ -11,7 +11,7 @@
 #include <asm/barebox-arm.h>
 #include <mach/imx8m-ccm-regs.h>
 #include <mach/iomux-mx8mq.h>
-#include <mach/imx8-ddrc.h>
+#include <soc/imx8m/ddr.h>
 #include <mach/xload.h>
 #include <io.h>
 #include <debug_ll.h>

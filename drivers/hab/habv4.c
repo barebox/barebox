@@ -213,7 +213,7 @@ static enum hab_status hab_sip_report_status(enum hab_config *config,
 	return (enum hab_status)res.a0;
 }
 
-static enum hab_status imx8_read_sram_events(enum hab_status status,
+static enum hab_status imx8m_read_sram_events(enum hab_status status,
 					     uint32_t index, void *event,
 					     uint32_t *bytes)
 {
@@ -262,7 +262,7 @@ static enum hab_status imx8_read_sram_events(enum hab_status status,
 
 struct habv4_rvt hab_smc_ops = {
 	.header = { .tag = 0xdd },
-	.report_event = imx8_read_sram_events,
+	.report_event = imx8m_read_sram_events,
 	.report_status = hab_sip_report_status,
 };
 
@@ -585,12 +585,12 @@ int imx6_hab_get_status(void)
 	return -EINVAL;
 }
 
-static int imx8_hab_get_status(void)
+static int imx8m_hab_get_status(void)
 {
 	return habv4_get_status(&hab_smc_ops);
 }
 
-static int init_imx8_hab_get_status(void)
+static int init_imx8m_hab_get_status(void)
 {
 	if (!cpu_is_mx8mq())
 		/* can happen in multi-image builds and is not an error */
@@ -600,7 +600,7 @@ static int init_imx8_hab_get_status(void)
 	 * Nobody will check the return value if there were HAB errors, but the
 	 * initcall will fail spectaculously with a strange error message.
 	 */
-	imx8_hab_get_status();
+	imx8m_hab_get_status();
 
 	return 0;
 }
@@ -610,7 +610,7 @@ static int init_imx8_hab_get_status(void)
  *
  *
  */
-postmmu_initcall(init_imx8_hab_get_status);
+postmmu_initcall(init_imx8m_hab_get_status);
 
 static int init_imx6_hab_get_status(void)
 {

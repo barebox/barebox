@@ -97,7 +97,7 @@ static int do_boot(int argc, char *argv[])
 		bootentries_for_each_entry(entries, entry) {
 			ret = boot_entry(entry, verbose, dryrun);
 			if (!ret)
-				break;
+				goto out;
 		}
 
 		bootentries_free(entries);

@@ -5,6 +5,7 @@
  */
 
 #include <common.h>
+#include <firmware.h>
 #include <linux/sizes.h>
 #include <mach/generic.h>
 #include <asm/barebox-arm-head.h>

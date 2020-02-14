@@ -129,14 +129,6 @@
 	};
 };
 
-&qflash0 {
-	compatible = "jedec,spi-nor";
-};
-
-&qflash1 {
-	compatible = "jedec,spi-nor";
-};
-
 &usb0 {
 	dr_mode = "host";
 };

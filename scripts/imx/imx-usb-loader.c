@@ -187,7 +187,14 @@ static const struct mach_id imx_ids[] = {
 	}, {
 		.vid = 0x1fc9,
 		.pid = 0x012b,
-		.name = "i.MX8M",
+		.name = "i.MX8MQ",
+		.header_type = HDR_MX53,
+		.mode = MODE_HID,
+		.max_transfer = 1024,
+	}, {
+		.vid = 0x1fc9,
+		.pid = 0x0134,
+		.name = "i.MX8MM",
 		.header_type = HDR_MX53,
 		.mode = MODE_HID,
 		.max_transfer = 1024,

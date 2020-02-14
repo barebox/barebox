@@ -98,7 +98,7 @@ static inline void vf610_uart_setup_ll(void)
 	lpuart_setup(base, 66000000);
 }
 
-static inline void imx8_uart_setup_ll(void)
+static inline void imx8m_uart_setup_ll(void)
 {
 	void *base = IOMEM(IMX_UART_BASE(IMX_DEBUG_SOC,
 					 CONFIG_DEBUG_IMX_UART_PORT));
@@ -127,7 +127,7 @@ static inline void imx53_uart_setup_ll(void) {}
 static inline void imx6_uart_setup_ll(void)  {}
 static inline void imx7_uart_setup_ll(void)  {}
 static inline void vf610_uart_setup_ll(void) {}
-static inline void imx8_uart_setup_ll(void)  {}
+static inline void imx8m_uart_setup_ll(void) {}
 
 #endif /* CONFIG_DEBUG_LL */
 

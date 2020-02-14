@@ -38,7 +38,7 @@ static void setup_uart(void)
 
 	imx8mq_setup_pad(IMX8MQ_PAD_UART1_TXD__UART1_TX | UART_PAD_CTRL);
 
-	imx8_uart_setup_ll();
+	imx8m_uart_setup_ll();
 
 	putc_ll('>');
 }

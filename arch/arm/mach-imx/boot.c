@@ -27,6 +27,7 @@
 #include <mach/imx53-regs.h>
 #include <mach/imx6-regs.h>
 #include <mach/imx7-regs.h>
+#include <mach/imx8mm-regs.h>
 #include <mach/imx8mq-regs.h>
 #include <mach/vf610-regs.h>
 #include <mach/imx8mq.h>
@@ -593,7 +594,7 @@ void vf610_boot_save_loc(void)
 void imx8mq_get_boot_source(enum bootsource *src, int *instance)
 {
 	unsigned long addr;
-	void __iomem *src_base = IOMEM(MX8MQ_SRC_BASE_ADDR);
+	void __iomem *src_base = IOMEM(MX8M_SRC_BASE_ADDR);
 	uint32_t sbmr2 = readl(src_base + 0x70);
 
 	addr = (imx8mq_cpu_revision() == IMX_CHIP_REV_1_0) ?
@@ -606,4 +607,20 @@ void imx8mq_get_boot_source(enum bootsource *src, int *instance)
 void imx8mq_boot_save_loc(void)
 {
 	imx_boot_save_loc(imx8mq_get_boot_source);
+}
+
+void imx8mm_get_boot_source(enum bootsource *src, int *instance)
+{
+	unsigned long addr;
+	void __iomem *src_base = IOMEM(MX8MM_SRC_BASE_ADDR);
+	uint32_t sbmr2 = readl(src_base + 0x70);
+
+	addr = IMX8M_BOOT_SW_INFO_POINTER_ADDR_A0;
+
+	__imx7_get_boot_source(src, instance, addr, sbmr2);
+}
+
+void imx8mm_boot_save_loc(void)
+{
+	imx_boot_save_loc(imx8mm_get_boot_source);
 }

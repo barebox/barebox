@@ -15,7 +15,7 @@ CFLAGS_imx6.o := -march=armv7-a
 lwl-$(CONFIG_ARCH_IMX6) += imx6-mmdc.o
 obj-$(CONFIG_ARCH_IMX7) += imx7.o
 obj-$(CONFIG_ARCH_VF610) += vf610.o
-obj-$(CONFIG_ARCH_IMX8M) += imx8m.o
+obj-pbl-$(CONFIG_ARCH_IMX8M) += imx8m.o
 lwl-$(CONFIG_ARCH_IMX8M) += atf.o
 obj-$(CONFIG_IMX_IIM)	+= iim.o
 obj-$(CONFIG_NAND_IMX) += nand.o

@@ -186,6 +186,10 @@ config ARCH_IMX8M
 	select IMX8M_DRAM
 	select PBL_VERIFY_PIGGY if HABV4
 
+config ARCH_IMX8MM
+	select ARCH_IMX8M
+	bool
+
 config ARCH_IMX8MQ
 	select ARCH_IMX8M
 	bool

@@ -375,7 +375,7 @@ out:
 
 static enum filetype imx_bbu_expected_filetype(void)
 {
-	if (cpu_is_mx8mq() ||
+	if (cpu_is_mx8m() ||
 	    cpu_is_mx7()   ||
 	    cpu_is_mx6()   ||
 	    cpu_is_vf610() ||
@@ -393,7 +393,7 @@ static unsigned long imx_bbu_flash_header_offset_mmc(void)
 	 * i.MX8MQ moved the header by 32K to accomodate for GPT
 	 * partition tables
 	 */
-	if (cpu_is_mx8mq())
+	if (cpu_is_mx8m())
 		offset += SZ_32K;
 
 	return offset;

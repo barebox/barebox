@@ -887,6 +887,11 @@ static void __noreturn imx8m_barebox_entry(void *boarddata)
 	barebox_arm_entry(MX8M_DDR_CSD1_BASE_ADDR, size, boarddata);
 }
 
+void __noreturn imx8mm_barebox_entry(void *boarddata)
+{
+	imx8m_barebox_entry(boarddata);
+}
+
 void __noreturn imx8mq_barebox_entry(void *boarddata)
 {
 	imx8m_barebox_entry(boarddata);

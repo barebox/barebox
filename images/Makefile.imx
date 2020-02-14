@@ -362,6 +362,12 @@ CFG_start_zii_imx7d_dev.pblb.imximg = $(board)/zii-imx7d-dev/flash-header-zii-im
 FILE_barebox-zii-imx7d-dev.img = start_zii_imx7d_dev.pblb.imximg
 image-$(CONFIG_MACH_ZII_IMX7D_DEV) += barebox-zii-imx7d-dev.img
 
+# ----------------------- i.MX8mm based boards --------------------------
+pblb-$(CONFIG_MACH_NXP_IMX8MM_EVK) += start_nxp_imx8mm_evk
+CFG_start_nxp_imx8mm_evk.pblb.imximg = $(board)/nxp-imx8mm-evk/flash-header-imx8mm-evk.imxcfg
+FILE_barebox-nxp-imx8mm-evk.img = start_nxp_imx8mm_evk.pblb.pimximg
+image-$(CONFIG_MACH_NXP_IMX8MM_EVK) += barebox-nxp-imx8mm-evk.img
+
 # ----------------------- i.MX8mq based boards --------------------------
 pblb-$(CONFIG_MACH_NXP_IMX8MQ_EVK) += start_nxp_imx8mq_evk
 CFG_start_nxp_imx8mq_evk.pblb.imximg = $(board)/nxp-imx8mq-evk/flash-header-imx8mq-evk.imxcfg

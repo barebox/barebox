@@ -45,17 +45,37 @@ static int do_i2c_probe(int argc, char *argv[])
 {
 	struct i2c_adapter *adapter = NULL;
 	int startaddr = 4, stopaddr = 0x77;
+	int ret;
 
 	if (argc > 1) {
-		adapter = i2c_get_adapter(simple_strtoul(argv[1], NULL, 0));
+		int busnum;
+
+		ret = kstrtoint(argv[1], 0, &busnum);
+		if (ret) {
+			printf("Cannot parse \"%s\" as a number\n", argv[1]);
+			return ret;
+		}
+
+		adapter = i2c_get_adapter(busnum);
 		if (!adapter)
 			return -ENODEV;
 	}
 
-	if (argc > 2)
-		startaddr = simple_strtol(argv[2], NULL, 0);
-	if (argc > 3)
-		stopaddr = simple_strtol(argv[3], NULL, 0);
+	if (argc > 2) {
+		ret = kstrtoint(argv[2], 0, &startaddr);
+		if (ret) {
+			printf("Cannot parse \"%s\" as a number\n", argv[1]);
+			return ret;
+		}
+	}
+
+	if (argc > 3) {
+		ret = kstrtoint(argv[3], 0, &stopaddr);
+		if (ret) {
+			printf("Cannot parse \"%s\" as a number\n", argv[1]);
+			return ret;
+		}
+	}
 
 	if (stopaddr > 0x7f)
 		stopaddr = 0x7f;

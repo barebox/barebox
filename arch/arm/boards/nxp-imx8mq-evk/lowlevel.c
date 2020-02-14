@@ -86,7 +86,7 @@ static __noreturn noinline void nxp_imx8mq_evk_start(void)
 		 */
 		imx8mq_get_boot_source(&src, &instance);
 		if (src == BOOTSOURCE_MMC)
-			ret = imx8_esdhc_load_image(instance, false);
+			ret = imx8m_esdhc_load_image(instance, false);
 		BUG_ON(ret);
 
 		memcpy((void *)MX8MQ_ATF_BL33_BASE_ADDR,

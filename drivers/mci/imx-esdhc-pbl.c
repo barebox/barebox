@@ -201,9 +201,9 @@ static void imx_esdhc_init(struct fsl_esdhc_host *host,
 		      FIELD_PREP(WML_RD_WML_MASK, SECTOR_WML));
 }
 
-static int imx8_esdhc_init(struct fsl_esdhc_host *host,
-			   struct esdhc_soc_data *data,
-			   int instance)
+static int imx8m_esdhc_init(struct fsl_esdhc_host *host,
+			    struct esdhc_soc_data *data,
+			    int instance)
 {
 	switch (instance) {
 	case 0:
@@ -261,7 +261,7 @@ int imx6_esdhc_start_image(int instance)
 }
 
 /**
- * imx8_esdhc_load_image - Load and optionally start an image from USDHC controller
+ * imx8m_esdhc_load_image - Load and optionally start an image from USDHC controller
  * @instance: The USDHC controller instance (0..2)
  * @start: Whether to directly start the loaded image
  *
@@ -273,13 +273,13 @@ int imx6_esdhc_start_image(int instance)
  * Return: If successful, this function does not return (if directly started)
  * or 0. A negative error code is returned when this function fails.
  */
-int imx8_esdhc_load_image(int instance, bool start)
+int imx8m_esdhc_load_image(int instance, bool start)
 {
 	struct esdhc_soc_data data;
 	struct fsl_esdhc_host host;
 	int ret;
 
-	ret = imx8_esdhc_init(&host, &data, instance);
+	ret = imx8m_esdhc_init(&host, &data, instance);
 	if (ret)
 		return ret;
 

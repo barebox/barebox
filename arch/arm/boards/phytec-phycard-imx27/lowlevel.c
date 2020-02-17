@@ -77,8 +77,11 @@ static void sdram_init(int sdram)
 			MX27_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 }
 
-static void __bare_init __naked phytec_phycard_imx27_common_init(void *fdt, int sdram)
+extern char __dtb_imx27_phytec_phycard_s_rdk_bb_start[];
+
+static void __bare_init __naked phytec_phycard_imx27_common_init(int sdram)
 {
+	void *fdt;
 	unsigned long r;
 
 	arm_cpu_lowlevel_init();
@@ -88,6 +91,8 @@ static void __bare_init __naked phytec_phycard_imx27_common_init(void *fdt, int 
 	writel(0xdffbfcfb, MX27_AIPI_BASE_ADDR + MX27_AIPI1_PSR1);
 	writel(0x00000000, MX27_AIPI_BASE_ADDR + MX27_AIPI2_PSR0);
 	writel(0xffffffff, MX27_AIPI_BASE_ADDR + MX27_AIPI2_PSR1);
+
+	fdt = __dtb_imx27_phytec_phycard_s_rdk_bb_start + get_runtime_offset();
 
 	/* Skip SDRAM initialization if we run from RAM */
         r = get_pc();
@@ -120,26 +125,16 @@ static void __bare_init __naked phytec_phycard_imx27_common_init(void *fdt, int 
 	imx27_barebox_boot_nand_external(fdt);
 }
 
-extern char __dtb_imx27_phytec_phycard_s_rdk_bb_start[];
-
 ENTRY_FUNCTION(start_phytec_phycard_imx27_64mb, r0, r1, r2)
 {
-	void *fdt;
-
 	arm_setup_stack(MX27_IRAM_BASE_ADDR + MX27_IRAM_SIZE);
 
-	fdt = __dtb_imx27_phytec_phycard_s_rdk_bb_start + get_runtime_offset();
-
-	phytec_phycard_imx27_common_init(fdt, PHYCARD_MICRON_64MB);
+	phytec_phycard_imx27_common_init(PHYCARD_MICRON_64MB);
 }
 
 ENTRY_FUNCTION(start_phytec_phycard_imx27_128mb, r0, r1, r2)
 {
-	void *fdt;
-
 	arm_setup_stack(MX27_IRAM_BASE_ADDR + MX27_IRAM_SIZE);
 
-	fdt = __dtb_imx27_phytec_phycard_s_rdk_bb_start + get_runtime_offset();
-
-	phytec_phycard_imx27_common_init(fdt, PHYCARD_MICRON_128MB);
+	phytec_phycard_imx27_common_init(PHYCARD_MICRON_128MB);
 }

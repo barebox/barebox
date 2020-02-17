@@ -349,7 +349,7 @@ static int imd_calculate_crc32(void *input, const struct imd_header *imd_start,
 	input += end_ofs;
 
 	*crc = crc32(*crc, input, size - end_ofs);
-	debug("Calculated checksum from %d to %d: 0x%08x\n", end_ofs,
+	debug("Calculated checksum from %d to %zu: 0x%08x\n", end_ofs,
 	      end_ofs + (size - end_ofs), *crc);
 
 	return 0;

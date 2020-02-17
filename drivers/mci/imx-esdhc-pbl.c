@@ -22,6 +22,7 @@
 #include <mach/atf.h>
 #include <mach/imx6-regs.h>
 #include <mach/imx8mq-regs.h>
+#include <mach/imx8mm-regs.h>
 #include <mach/imx-header.h>
 #endif
 #include "sdhci.h"
@@ -207,10 +208,14 @@ static int imx8m_esdhc_init(struct fsl_esdhc_host *host,
 {
 	switch (instance) {
 	case 0:
-		host->regs = IOMEM(MX8MQ_USDHC1_BASE_ADDR);
+		host->regs = IOMEM(MX8M_USDHC1_BASE_ADDR);
 		break;
 	case 1:
-		host->regs = IOMEM(MX8MQ_USDHC2_BASE_ADDR);
+		host->regs = IOMEM(MX8M_USDHC2_BASE_ADDR);
+		break;
+	case 2:
+		/* Only exists on i.MX8MM, not on i.MX8MQ */
+		host->regs = IOMEM(MX8MM_USDHC3_BASE_ADDR);
 		break;
 	default:
 		return -EINVAL;
@@ -283,7 +288,7 @@ int imx8m_esdhc_load_image(int instance, bool start)
 	if (ret)
 		return ret;
 
-	return esdhc_load_image(&host, MX8MQ_DDR_CSD1_BASE_ADDR,
+	return esdhc_load_image(&host, MX8M_DDR_CSD1_BASE_ADDR,
 				MX8MQ_ATF_BL33_BASE_ADDR, SZ_32K, start);
 }
 #endif

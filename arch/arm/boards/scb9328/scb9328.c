@@ -31,6 +31,9 @@
 
 static int scb9328_devices_init(void)
 {
+	if (!of_machine_is_compatible("stx,scb9328"))
+		return 0;
+
 	/* CS3 becomes CS3 by clearing reset default bit 1 in FMCR */
 	writel(0x1, MX1_SCM_BASE_ADDR + MX1_FMCR);
 

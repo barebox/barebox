@@ -66,7 +66,7 @@ static const struct am33xx_emif_regs ddr3_regs_256mb = {
 
 };
 
-extern char __dtb_am335x_baltos_minimal_start[];
+extern char __dtb_z_am335x_baltos_minimal_start[];
 
 /**
  * @brief The basic entry point for board initialization.
@@ -82,7 +82,7 @@ static noinline void baltos_sram_init(void)
 	uint32_t sdram_size;
 	void *fdt;
 
-	fdt = __dtb_am335x_baltos_minimal_start;
+	fdt = __dtb_z_am335x_baltos_minimal_start;
 
 	/* WDT1 is already running when the bootloader gets control
 	 * Disable it to avoid "random" resets
@@ -132,7 +132,7 @@ ENTRY_FUNCTION(start_am33xx_baltos_sdram, r0, r1, r2)
 	 */
 	__raw_writel(0x000010ff, AM33XX_PRM_RSTTIME);
 
-	fdt = __dtb_am335x_baltos_minimal_start;
+	fdt = __dtb_z_am335x_baltos_minimal_start;
 
 	fdt += get_runtime_offset();
 

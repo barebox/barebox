@@ -1,6 +1,8 @@
 #ifndef __MACH_IMX8MQ_REGS_H
 #define __MACH_IMX8MQ_REGS_H
 
+#include <mach/imx8m-regs.h>
+
 #define MX8MQ_M4_BOOTROM_BASE_ADDR	0x007E0000
 
 #define MX8MQ_SAI1_BASE_ADDR		0x30010000

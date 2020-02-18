@@ -10,6 +10,9 @@
 #ifndef _OPTEE_H
 #define _OPTEE_H
 
+#include <types.h>
+#include <asm-generic/errno.h>
+
 #define OPTEE_MAGIC             0x4554504f
 #define OPTEE_VERSION           1
 #define OPTEE_ARCH_ARM32        0
@@ -26,5 +29,13 @@ struct optee_header {
 	uint32_t init_mem_usage;
 	uint32_t paged_size;
 };
+
+int optee_verify_header (struct optee_header *hdr);
+
+#ifdef __PBL__
+
+int start_optee_early(void* fdt, void* tee);
+
+#endif /* __PBL__ */
 
 #endif /* _OPTEE_H */

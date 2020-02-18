@@ -137,16 +137,10 @@ static int get_kernel_addresses(size_t image_size,
 static int optee_verify_header_request_region(struct image_data *data, struct optee_header *hdr)
 {
 	int ret = 0;
-	if (hdr->magic != OPTEE_MAGIC) {
-		pr_err("Invalid header magic 0x%08x, expected 0x%08x\n",
-		       hdr->magic, OPTEE_MAGIC);
-		return -EINVAL;
-	}
 
-	if (hdr->arch != OPTEE_ARCH_ARM32 || hdr->init_load_addr_hi) {
-		pr_err("Only 32bit supported\n");
-		return -EINVAL;
-	}
+	ret = optee_verify_header(hdr);
+	if (ret < 0)
+		return ret;
 
 	data->tee_res = request_sdram_region("TEE", hdr->init_load_addr_lo, hdr->init_size);
 	if (!data->tee_res) {

@@ -86,7 +86,7 @@ static int gpioinfo_request(struct gpio_info *gi, const char *label)
 
 done:
 	if (ret)
-		pr_err("_gpio_request: gpio-%ld (%s) status %d\n",
+		pr_err("_gpio_request: gpio-%td (%s) status %d\n",
 		       gi - gpio_desc, label ? : "?", ret);
 
 	return ret;

@@ -1,5 +1,10 @@
+#ifndef REGMAP_INTERNAL_H_
+#define REGMAP_INTERNAL_H_
 
 #include <linux/list.h>
+#include <driver.h>
+
+struct regmap_bus;
 
 struct regmap {
 	struct device_d *dev;
@@ -16,3 +21,5 @@ struct regmap {
 
 	struct cdev cdev;
 };
+
+#endif

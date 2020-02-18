@@ -6,12 +6,23 @@
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation.
  */
-
-#if defined(CONFIG_OFTREE) && defined(CONFIG_COMMON_CLK_OF_PROVIDER)
+#ifndef __CLK_CONF_H
+#define __CLK_CONF_H
 
 #include <linux/types.h>
+
+#if defined(CONFIG_OFTREE) && defined(CONFIG_COMMON_CLK_OF_PROVIDER)
 
 struct device_node;
 int of_clk_set_defaults(struct device_node *node, bool clk_supplier);
 
+#else
+
+static inline int of_clk_set_defaults(struct device_node *node,
+				      bool clk_supplier)
+{
+	return 0;
+}
+
 #endif
+#endif /* __CLK_CONF_H */

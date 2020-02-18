@@ -36,6 +36,7 @@
 #include <linux/err.h>
 #include <complete.h>
 #include <pinctrl.h>
+#include <linux/clk/clk-conf.h>
 
 LIST_HEAD(device_list);
 EXPORT_SYMBOL(device_list);
@@ -86,6 +87,7 @@ int device_probe(struct device_d *dev)
 	int ret;
 
 	pinctrl_select_state_default(dev);
+	of_clk_set_defaults(dev->device_node, false);
 
 	list_add(&dev->active, &active);
 

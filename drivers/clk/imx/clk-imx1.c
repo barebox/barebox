@@ -53,7 +53,7 @@ static const char *clko_sel_clks[] = {
 	"fclk",
 };
 
-int __init mx1_clocks_init(void __iomem *regs, unsigned long fref)
+static int __init mx1_clocks_init(void __iomem *regs, unsigned long fref)
 {
 	clks[dummy] = clk_fixed("dummy", 0);
 	clks[clk32] = clk_fixed("clk32", fref);

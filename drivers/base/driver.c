@@ -310,6 +310,9 @@ int register_driver(struct driver_d *drv)
 {
 	struct device_d *dev = NULL;
 
+	if (!drv->name)
+		return -EINVAL;
+
 	debug("register_driver: %s\n", drv->name);
 
 	BUG_ON(!drv->bus);

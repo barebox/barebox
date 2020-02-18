@@ -72,9 +72,9 @@ static int dw_wdt_stop(struct watchdog *wdd)
 {
 	struct dw_wdt *dw_wdt = to_dw_wdt(wdd);
 
-	if (IS_ERR(dw_wdt->rst)) {
-		dev_warn(dw_wdt->wdd.hwdev, "No reset line. Will not stop.\n");
-		return PTR_ERR(dw_wdt->rst);
+	if (!dw_wdt->rst) {
+		dev_warn(dw_wdt->wdd.hwdev, "No reset line\n");
+		return -ENOSYS;
 	}
 
 	reset_control_assert(dw_wdt->rst);
@@ -153,7 +153,7 @@ static int dw_wdt_drv_probe(struct device_d *dev)
 
 	dw_wdt->rst = reset_control_get(dev, NULL);
 	if (IS_ERR(dw_wdt->rst))
-		dev_warn(dev, "No reset lines. Will not be able to stop once started.\n");
+		return PTR_ERR(dw_wdt->rst);
 
 	wdd = &dw_wdt->wdd;
 	wdd->name = "dw_wdt";
@@ -171,8 +171,10 @@ static int dw_wdt_drv_probe(struct device_d *dev)
 	if (ret)
 		dev_warn(dev, "cannot register restart handler\n");
 
-	if (!IS_ERR(dw_wdt->rst))
+	if (dw_wdt->rst)
 		reset_control_deassert(dw_wdt->rst);
+	else
+		dev_warn(dev, "No reset lines. Will not be able to stop once started.\n");
 
 	return 0;
 
@@ -187,6 +189,7 @@ static struct of_device_id dw_wdt_of_match[] = {
 };
 
 static struct driver_d dw_wdt_driver = {
+	.name		= "dw-wdt",
 	.probe		= dw_wdt_drv_probe,
 	.of_compatible	= DRV_OF_COMPAT(dw_wdt_of_match),
 };

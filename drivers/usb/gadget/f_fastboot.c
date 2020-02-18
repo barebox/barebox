@@ -769,7 +769,7 @@ static void __maybe_unused cb_boot(struct f_fastboot *f_fb, const char *opt)
 	globalvar_set_match("linux.bootargs.dyn.", "");
 	globalvar_set_match("bootm.image", "");
 
-	data.os_file = xstrdup(FASTBOOT_TMPFILE);
+	data.os_file = FASTBOOT_TMPFILE;
 
 	ret = bootm_boot(&data);
 

@@ -171,8 +171,10 @@ int watchdog_register(struct watchdog *wd)
 		return ret;
 
 	p = dev_add_param_tristate_ro(&wd->dev, "running", &wd->running);
-	if (IS_ERR(p))
-		return PTR_ERR(p);
+	if (IS_ERR(p)) {
+		ret = PTR_ERR(p);
+		goto error_unregister;
+	}
 
 	if (!wd->priority)
 		wd->priority = dev_get_watchdog_priority(wd->hwdev);
@@ -180,8 +182,10 @@ int watchdog_register(struct watchdog *wd)
 	p = dev_add_param_uint32(&wd->dev, "priority",
 				 watchdog_set_priority, NULL,
 				 &wd->priority, "%u", wd);
-	if (IS_ERR(p))
-		return PTR_ERR(p);
+	if (IS_ERR(p)) {
+		ret = PTR_ERR(p);
+		goto error_unregister;
+	}
 
 	/* set some default sane value */
 	if (!wd->timeout_max)
@@ -189,8 +193,10 @@ int watchdog_register(struct watchdog *wd)
 
 	p = dev_add_param_uint32_ro(&wd->dev, "timeout_max",
 			&wd->timeout_max, "%u");
-	if (IS_ERR(p))
-		return PTR_ERR(p);
+	if (IS_ERR(p)) {
+		ret = PTR_ERR(p);
+		goto error_unregister;
+	}
 
 	if (IS_ENABLED(CONFIG_WATCHDOG_POLLER)) {
 		if (!wd->poller_timeout_cur ||
@@ -199,12 +205,14 @@ int watchdog_register(struct watchdog *wd)
 
 		p = dev_add_param_uint32(&wd->dev, "timeout_cur", watchdog_set_cur,
 				NULL, &wd->poller_timeout_cur, "%u", wd);
-		if (IS_ERR(p))
-			return PTR_ERR(p);
+		if (IS_ERR(p)) {
+			ret = PTR_ERR(p);
+			goto error_unregister;
+		}
 
 		ret = watchdog_register_poller(wd);
 		if (ret)
-			return ret;
+			goto error_unregister;
 	}
 
 	list_add_tail(&wd->list, &watchdog_list);
@@ -213,6 +221,10 @@ int watchdog_register(struct watchdog *wd)
 			wd->priority);
 
 	return 0;
+
+error_unregister:
+	unregister_device(&wd->dev);
+	return ret;
 }
 EXPORT_SYMBOL(watchdog_register);
 

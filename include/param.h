@@ -37,6 +37,8 @@ struct param_d {
 	enum param_type type;
 };
 
+enum param_tristate { PARAM_TRISTATE_UNKNOWN, PARAM_TRISTATE_TRUE, PARAM_TRISTATE_FALSE };
+
 #ifdef CONFIG_PARAMETER
 const char *get_param_type(struct param_d *param);
 const char *dev_get_param(struct device_d *dev, const char *name);
@@ -62,8 +64,6 @@ struct param_d *dev_add_param_enum(struct device_d *dev, const char *name,
 		int (*set)(struct param_d *p, void *priv),
 		int (*get)(struct param_d *p, void *priv),
 		int *value, const char * const *names, int max, void *priv);
-
-enum param_tristate { PARAM_TRISTATE_UNKNOWN, PARAM_TRISTATE_TRUE, PARAM_TRISTATE_FALSE };
 
 struct param_d *dev_add_param_tristate(struct device_d *dev, const char *name,
 		int (*set)(struct param_d *p, void *priv),

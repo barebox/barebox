@@ -259,7 +259,7 @@ static int at25_np_to_chip(struct device_d *dev,
 
 	if (of_property_read_u32(np, "pagesize", &val) == 0 ||
 	    of_property_read_u32(np, "at25,page-size", &val) == 0) {
-		chip->page_size = (u16)val;
+		chip->page_size = val;
 	} else {
 		dev_err(dev, "Error: missing \"pagesize\" property\n");
 		return -ENODEV;

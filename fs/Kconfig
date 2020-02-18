@@ -71,6 +71,7 @@ config FS_EFIVARFS
 	  This filesystem driver provides access to EFI variables.
 
 source "fs/fat/Kconfig"
+source "fs/jffs2/Kconfig"
 source "fs/ubifs/Kconfig"
 
 config FS_BPKFS

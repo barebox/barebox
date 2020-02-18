@@ -57,3 +57,6 @@ Available sandbox invocation options include:
   ``-y``, ``--yres <res>``
 
     Specify SDL height.
+
+To terminate barebox and return to the calling shell, the poweroff command is
+suitable.

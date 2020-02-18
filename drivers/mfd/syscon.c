@@ -31,27 +31,6 @@ struct syscon {
 	struct regmap *regmap;
 };
 
-static int syscon_reg_write(void *context, unsigned int reg,
-			    unsigned int val)
-{
-	struct syscon *syscon = context;
-	writel(val, syscon->base + reg);
-	return 0;
-}
-
-static int syscon_reg_read(void *context, unsigned int reg,
-			   unsigned int *val)
-{
-	struct syscon *syscon = context;
-	*val = readl(syscon->base + reg);
-	return 0;
-}
-
-static const struct regmap_bus syscon_regmap_bus = {
-	.reg_write = syscon_reg_write,
-	.reg_read  = syscon_reg_read,
-};
-
 static const struct regmap_config syscon_regmap_config = {
 	.reg_bits = 32,
 	.val_bits = 32,
@@ -79,10 +58,8 @@ static struct syscon *of_syscon_register(struct device_node *np)
 
 	list_add_tail(&syscon->list, &syscon_list);
 
-	syscon->regmap = regmap_init(NULL,
-				     &syscon_regmap_bus,
-				     syscon,
-				     &syscon_regmap_config);
+	syscon->regmap = of_regmap_init_mmio_clk(np, NULL, syscon->base,
+					     &syscon_regmap_config);
 	return syscon;
 
 err_map:

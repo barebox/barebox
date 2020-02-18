@@ -34,8 +34,6 @@ struct pxa_pwm_chip {
 	struct pwm_chip chip;
 	void __iomem *iobase;
 	int id;
-	int duty_ns;
-	int period_ns;
 };
 
 static struct pxa_pwm_chip *to_pxa_pwm_chip(struct pwm_chip *chip)
@@ -72,15 +70,12 @@ static int pxa_pwm_config(struct pwm_chip *chip, int duty_ns, int period_ns)
 	else
 		dc = (pv + 1) * duty_ns / period_ns;
 
-	pxa_pwm->duty_ns = duty_ns;
-	pxa_pwm->period_ns = period_ns;
-
 	/* NOTE: the clock to PWM has to be enabled first
 	 * before writing to the registers
 	 */
-	__raw_writel(prescale, pxa_pwm->iobase + PWMCR);
-	__raw_writel(dc, pxa_pwm->iobase + PWMDCR);
-	__raw_writel(pv, pxa_pwm->iobase + PWMPCR);
+	writel(prescale, pxa_pwm->iobase + PWMCR);
+	writel(dc, pxa_pwm->iobase + PWMDCR);
+	writel(pv, pxa_pwm->iobase + PWMPCR);
 
 	return 0;
 }

@@ -41,6 +41,9 @@ static void led_pwm_set(struct led *led, unsigned int brightness)
         duty *= brightness;
         do_div(duty, max);
 
+	if (pwmled->active_low)
+		duty = pwmled->period - duty;
+
 	pwm_config(pwmled->pwm, duty, pwmled->period);
 }
 
@@ -54,16 +57,19 @@ static int led_pwm_of_probe(struct device_d *dev)
 		struct pwm_device *pwm;
 
 		pwm = of_pwm_request(child, NULL);
-		if (pwm < 0)
+		if (IS_ERR(pwm))
 			continue;
 
 		pwmled = xzalloc(sizeof(*pwmled));
 		pwmled->led.name = xstrdup(child->name);
 		pwmled->pwm = pwm;
 
-		of_property_read_u32(child, "max-brightness", &pwmled->led.max_value);
+		ret = of_property_read_u32(child, "max-brightness", &pwmled->led.max_value);
+		if (ret)
+			return ret;
 
 		pwmled->period = pwm_get_period(pwmled->pwm);
+		pwmled->active_low = of_property_read_bool(child, "active-low");
 
 		pwmled->led.set = led_pwm_set;
 

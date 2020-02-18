@@ -4,7 +4,7 @@
  * Author: Alexandre Torgue <alexandre.torgue@st.com>.
  */
 
-#include "stm32mp157c.dtsi"
+#include "stm32mp151.dtsi"
 #include <dt-bindings/gpio/gpio.h>
 
 / {

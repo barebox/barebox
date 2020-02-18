@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef __GLOBALVAR_H
 #define __GLOBALVAR_H
 

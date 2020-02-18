@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef PINCTRL_H
 #define PINCTRL_H
 

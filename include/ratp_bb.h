@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef __RATP_BB_H
 #define __RATP_BB_H
 

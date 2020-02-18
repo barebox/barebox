@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef __BYTEORDER_H__
 #define __BYTEORDER_H__
 

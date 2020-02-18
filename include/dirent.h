@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef __DIRENT_H
 #define __DIRENT_H
 

@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef _SERDEV_H_
 #define _SERDEV_H_
 

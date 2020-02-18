@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef __INCLUDE_CRC_H
 #define __INCLUDE_CRC_H
 

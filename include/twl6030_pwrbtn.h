@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef _TWL6030_PWRBTN_H
 #define _TWL6030_PWRBTN_H
 

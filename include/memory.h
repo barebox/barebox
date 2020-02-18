@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef __MEM_MALLOC_H
 #define __MEM_MALLOC_H
 

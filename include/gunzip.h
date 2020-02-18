@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef GUNZIP_H
 #define GUNZIP_H
 

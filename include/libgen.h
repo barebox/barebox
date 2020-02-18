@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef __LIBGEN_H
 #define __LIBGEN_H
 

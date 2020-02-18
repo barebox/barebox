@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef __CONSOLE_COUNTDOWN_H
 #define __CONSOLE_COUNTDOWN_H
 

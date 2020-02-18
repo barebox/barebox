@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef _LINUX_CRC7_H
 #define _LINUX_CRC7_H
 #include <common.h>

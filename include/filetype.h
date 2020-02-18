@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef __FILE_TYPE_H
 #define __FILE_TYPE_H
 

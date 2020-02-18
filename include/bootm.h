@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef __BOOTM_H
 #define __BOOTM_H
 

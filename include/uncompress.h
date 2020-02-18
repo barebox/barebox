@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef __UNCOMPRESS_H
 #define __UNCOMPRESS_H
 

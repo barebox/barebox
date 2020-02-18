@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * List of all Etherenet PHY IDs that is not found in any .h files in
  * include/linux

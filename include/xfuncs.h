@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef __XFUNCS_H
 #define __XFUNCS_H
 

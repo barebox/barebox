@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef __UNISTD_H
 #define __UNISTD_H
 

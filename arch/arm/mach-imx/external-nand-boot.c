@@ -308,12 +308,6 @@ static void BARE_INIT_FUNCTION(imx35_nand_load_image)(void)
 static void __noreturn BARE_INIT_FUNCTION(imx##soc##_boot_nand_external_cont)  \
 			(void *boarddata)				\
 {									\
-	uint32_t r;							\
-									\
-	r = get_cr();							\
-	r |= CR_I;							\
-	set_cr(r);							\
-									\
 	imx##soc##_nand_load_image();					\
 									\
         imx##soc##_barebox_entry(boarddata);				\
@@ -331,9 +325,6 @@ void __noreturn BARE_INIT_FUNCTION(imx##soc##_barebox_boot_nand_external) \
 	int i;								\
 	void __noreturn (*fn)(void *);					\
 									\
-	r = get_cr();							\
-	r &= ~CR_I;							\
-	set_cr(r);							\
 	/* skip NAND boot if not running from NFC space */		\
 	r = get_pc();							\
 	if (r < nfc_base || r > nfc_base + 0x800)			\

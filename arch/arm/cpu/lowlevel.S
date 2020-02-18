@@ -57,8 +57,10 @@ THUMB(	orr	r12, r12, #PSR_T_BIT	)
 	bic	r12, r12, #(CR_M | CR_C | CR_B)
 	bic	r12, r12, #(CR_S | CR_R | CR_V)
 
+#ifndef CONFIG_ARCH_IMX_EXTERNAL_BOOT_NAND
 	/* enable instruction cache */
 	orr	r12, r12, #CR_I
+#endif
 
 #if __LINUX_ARM_ARCH__ >= 6
 	orr	r12, r12, #CR_U

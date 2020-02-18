@@ -16,10 +16,6 @@
  *
  */
 
-#define __ALIGN_MASK(x, mask)	(((x) + (mask)) & ~(mask))
-#define ALIGN(x, a)		__ALIGN_MASK(x, (typeof(x))(a) - 1)
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
-
 #include <stdio.h>
 #include <sys/types.h>
 #include <stdint.h>

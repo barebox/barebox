@@ -57,12 +57,11 @@ static inline struct eqos_stm32 *to_stm32(struct eqos *eqos)
 	return eqos->priv;
 }
 
-enum { CLK_STMMACETH, CLK_MAX_RX, CLK_MAX_TX, CLK_SYSCFG,  };
+enum { CLK_STMMACETH, CLK_MAX_RX, CLK_MAX_TX, };
 static const struct clk_bulk_data stm32_clks[] = {
 	[CLK_STMMACETH] = { .id = "stmmaceth" },
 	[CLK_MAX_RX]    = { .id = "mac-clk-rx" },
 	[CLK_MAX_TX]    = { .id = "mac-clk-tx" },
-	[CLK_SYSCFG]    = { .id = "syscfg-clk" },
 };
 
 static unsigned long eqos_get_csr_clk_rate_stm32(struct eqos *eqos)

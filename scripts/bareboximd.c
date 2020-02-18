@@ -33,6 +33,7 @@
 #include <errno.h>
 #include <stdarg.h>
 #include <linux/err.h>
+#include <linux/kernel.h>
 
 #include "../include/image-metadata.h"
 
@@ -55,6 +56,35 @@ int imd_command_setenv(const char *variable_name, const char *value)
 	fprintf(stderr, "-s option ignored\n");
 
 	return -EINVAL;
+}
+
+static int write_file(const char *filename, const void *buf, size_t size)
+{
+	int fd, ret;
+	int now;
+
+	fd = open(filename, O_WRONLY | O_TRUNC | O_CREAT);
+	if (fd < 0)
+		return fd;
+
+	while (size) {
+		now = write(fd, buf, size);
+		if (now == 0) {
+			errno = ENOSPC;
+			return -1;
+		}
+		if (now < 0)
+			return now;
+		size -= now;
+		buf += now;
+	}
+
+	close(fd);
+
+	if (ret < 0)
+		return ret;
+
+	return 0;
 }
 
 static int read_file_2(const char *filename, size_t *size, void **outbuf, size_t max_size)
@@ -129,6 +159,8 @@ static unsigned long simple_strtoul(const char *cp, char **endp, unsigned int ba
 	return strtoul(cp, endp, base);
 }
 
+#include "../include/xfuncs.h"
+#include "../crypto/crc32.c"
 #include "../common/imd.c"
 
 static void usage(const char *prgname)
@@ -140,6 +172,8 @@ static void usage(const char *prgname)
 "Options:\n"
 "-t <type>    only show information of <type>\n"
 "-n <no>      for tags with multiple strings only show string <no>\n"
+"-V           Verify checksum of FILE\n"
+"-c           Create checksum for FILE and write it to the crc32 tag\n"
 "\n"
 "Without options all information available is printed. Valid types are:\n"
 "release, build, model, of_compatible\n",

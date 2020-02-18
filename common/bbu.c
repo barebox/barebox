@@ -206,6 +206,10 @@ static int bbu_check_metadata(struct bbu_data *data)
 	if (ret)
 		return ret;
 
+	ret = imd_verify_crc32((void *)data->image, data->len);
+	if (ret == -EILSEQ && !(data->flags & BBU_FLAG_FORCE))
+		return ret;
+
 	return 0;
 }
 

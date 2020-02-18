@@ -693,6 +693,7 @@ config FLEXIBLE_BOOTARGS
 	  completely.
 
 config IMD
+	select CRC32
 	bool "barebox metadata support"
 
 config IMD_TARGET

@@ -33,7 +33,7 @@
 
 #define ESDCTL0_VAL (ESDCTL0_SDE | ESDCTL0_ROW13 | ESDCTL0_COL10)
 
-static void __bare_init __naked noinline phytec_phycorce_imx27_common_init(void *fdt)
+static void __bare_init noinline phytec_phycorce_imx27_common_init(void *fdt)
 {
 	uint32_t r;
 	int i;

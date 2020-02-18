@@ -79,7 +79,7 @@ static void sdram_init(int sdram)
 
 extern char __dtb_imx27_phytec_phycard_s_rdk_bb_start[];
 
-static void __bare_init __naked phytec_phycard_imx27_common_init(int sdram)
+static noinline void __bare_init phytec_phycard_imx27_common_init(int sdram)
 {
 	void *fdt;
 	unsigned long r;

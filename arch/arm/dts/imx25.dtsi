@@ -24,11 +24,3 @@
 &usbmisc {
 	status = "okay";
 };
-
-&usbotg {
-	over-current-active-high;
-};
-
-&usbhost1 {
-	over-current-active-high;
-};

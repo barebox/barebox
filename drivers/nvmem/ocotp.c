@@ -712,6 +712,14 @@ static struct imx_ocotp_data imx6ul_ocotp_data = {
 	.format_mac = imx_ocotp_format_mac,
 };
 
+static struct imx_ocotp_data imx6ull_ocotp_data = {
+	.num_regs = 256,
+	.addr_to_offset = imx6q_addr_to_offset,
+	.mac_offsets_num = 2,
+	.mac_offsets = { MAC_OFFSET_0, IMX6UL_MAC_OFFSET_1 },
+	.format_mac = imx_ocotp_format_mac,
+};
+
 static struct imx_ocotp_data vf610_ocotp_data = {
 	.num_regs = 512,
 	.addr_to_offset = vf610_addr_to_offset,
@@ -741,6 +749,9 @@ static __maybe_unused struct of_device_id imx_ocotp_dt_ids[] = {
 	}, {
 		.compatible = "fsl,imx6ul-ocotp",
 		.data = &imx6ul_ocotp_data,
+	}, {
+		.compatible = "fsl,imx6ull-ocotp",
+		.data = &imx6ull_ocotp_data,
 	}, {
 		.compatible = "fsl,imx8mq-ocotp",
 		.data = &imx8mq_ocotp_data,

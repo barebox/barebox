@@ -214,7 +214,7 @@ int __esdhc_send_cmd(struct fsl_esdhc_host *host, struct mci_cmd *cmd,
 			 SDHCI_INT_CMD_COMPLETE, SDHCI_INT_CMD_COMPLETE,
 			 100 * MSECOND);
 	if (ret) {
-		dev_err(host->dev, "timeout 1\n");
+		dev_dbg(host->dev, "timeout 1\n");
 		return -ETIMEDOUT;
 	}
 

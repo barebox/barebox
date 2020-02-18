@@ -240,7 +240,7 @@ static void __bare_init imx_nand_load_image(void *dest, int v1,
 	}
 }
 
-static void BARE_INIT_FUNCTION(imx25_nand_load_image)(void)
+void BARE_INIT_FUNCTION(imx25_nand_load_image)(void)
 {
 	void *sdram = (void *)MX25_CSD0_BASE_ADDR;
 	void __iomem *nfc_base = IOMEM(MX25_NFC_BASE_ADDR);
@@ -254,7 +254,7 @@ static void BARE_INIT_FUNCTION(imx25_nand_load_image)(void)
 	imx_nand_load_image(sdram, 0, nfc_base, pagesize_2k);
 }
 
-static void BARE_INIT_FUNCTION(imx27_nand_load_image)(void)
+void BARE_INIT_FUNCTION(imx27_nand_load_image)(void)
 {
 	void *sdram = (void *)MX27_CSD0_BASE_ADDR;
 	void __iomem *nfc_base = IOMEM(MX27_NFC_BASE_ADDR);
@@ -268,7 +268,7 @@ static void BARE_INIT_FUNCTION(imx27_nand_load_image)(void)
 	imx_nand_load_image(sdram, 1, nfc_base, pagesize_2k);
 }
 
-static void BARE_INIT_FUNCTION(imx31_nand_load_image)(void)
+void BARE_INIT_FUNCTION(imx31_nand_load_image)(void)
 {
 	void *sdram = (void *)MX31_CSD0_BASE_ADDR;
 	void __iomem *nfc_base = IOMEM(MX31_NFC_BASE_ADDR);
@@ -282,7 +282,7 @@ static void BARE_INIT_FUNCTION(imx31_nand_load_image)(void)
 	imx_nand_load_image(sdram, 1, nfc_base, pagesize_2k);
 }
 
-static void BARE_INIT_FUNCTION(imx35_nand_load_image)(void)
+void BARE_INIT_FUNCTION(imx35_nand_load_image)(void)
 {
 	void *sdram = (void *)MX35_CSD0_BASE_ADDR;
 	void __iomem *nfc_base = IOMEM(MX35_NFC_BASE_ADDR);
@@ -297,70 +297,131 @@ static void BARE_INIT_FUNCTION(imx35_nand_load_image)(void)
 }
 
 /*
- * SoC specific entries for booting in external NAND mode. To be called from
- * the board specific entry code. This is safe to call even if not booting from
- * NAND. In this case the booting is continued without loading an image from
- * NAND. This function needs a stack to be set up.
+ * relocate_to_sdram - move ourselves out of NFC SRAM
+ *
+ * @nfc_base: base address of the NFC controller
+ * @sdram: SDRAM base address where we move ourselves to
+ * @fn: Function we continue with when running in SDRAM
+ *
+ * This function moves ourselves out of NFC SRAM to SDRAM. In case we a currently
+ * not running in NFC SRAM this function returns. If running in NFC SRAM, this
+ * function will not return, but call @fn instead.
  */
+static void BARE_INIT_FUNCTION(relocate_to_sdram)(unsigned long nfc_base,
+						  unsigned long sdram,
+						  void __noreturn (*fn)(void))
+{
+	unsigned long __fn;
+	u32 r;
+	u32 *src, *trg;
+	int i;
 
-#define DEFINE_EXTERNAL_NAND_ENTRY(soc)					\
-									\
-static void __noreturn BARE_INIT_FUNCTION(imx##soc##_boot_nand_external_cont)  \
-			(void *boarddata)				\
-{									\
-	imx##soc##_nand_load_image();					\
-									\
-        imx##soc##_barebox_entry(boarddata);				\
-}									\
-									\
-void __noreturn BARE_INIT_FUNCTION(imx##soc##_barebox_boot_nand_external) \
-			(void *bd)				\
-{									\
-	unsigned long nfc_base = MX##soc##_NFC_BASE_ADDR;		\
-	unsigned long sdram = MX##soc##_CSD0_BASE_ADDR;			\
-	unsigned long boarddata = (unsigned long)bd;			\
-	unsigned long __fn;						\
-	u32 r;								\
-	u32 *src, *trg;							\
-	int i;								\
-	void __noreturn (*fn)(void *);					\
-									\
-	/* skip NAND boot if not running from NFC space */		\
-	r = get_pc();							\
-	if (r < nfc_base || r > nfc_base + 0x800)			\
-		imx##soc##_barebox_entry(bd);				\
-									\
-	src = (unsigned int *)nfc_base;					\
-	trg = (unsigned int *)sdram;					\
-									\
-	/*								\
-	 * Copy initial binary portion from NFC SRAM to beginning of	\
-	 * SDRAM							\
-	 */								\
-	for (i = 0; i < 0x800 / sizeof(int); i++)			\
-		*trg++ = *src++;					\
-									\
-	/* The next function we jump to */				\
-	__fn = (unsigned long)imx##soc##_boot_nand_external_cont;	\
-	/* mask out TEXT_BASE */					\
-	__fn &= 0x7ff;							\
-	/*								\
-	 * and add sdram base instead where we copied the initial	\
-	 * binary above							\
-	 */								\
-	__fn += sdram;							\
-									\
-	fn = (void *)__fn;						\
-									\
-	if (boarddata > nfc_base && boarddata < nfc_base + SZ_512K) {	\
-		boarddata &= SZ_512K - 1;				\
-		boarddata += sdram;					\
-	}								\
-									\
-	fn((void *)boarddata);						\
+	/* skip NAND boot if not running from NFC space */
+	r = get_pc();
+	if (r < nfc_base || r > nfc_base + 0x800)
+		return;
+
+	src = (unsigned int *)nfc_base;
+	trg = (unsigned int *)sdram;
+
+	/*
+	 * Copy initial binary portion from NFC SRAM to beginning of
+	 * SDRAM
+	 */
+	for (i = 0; i < 0x800 / sizeof(int); i++)
+		*trg++ = *src++;
+
+	/* The next function we jump to */
+	__fn = (unsigned long)fn;
+	/* mask out TEXT_BASE */
+	__fn &= 0x7ff;
+	/*
+	 * and add sdram base instead where we copied the initial
+	 * binary above
+	 */
+	__fn += sdram;
+
+	fn = (void *)__fn;
+
+	fn();
 }
 
-DEFINE_EXTERNAL_NAND_ENTRY(25)
-DEFINE_EXTERNAL_NAND_ENTRY(27)
-DEFINE_EXTERNAL_NAND_ENTRY(31)
-DEFINE_EXTERNAL_NAND_ENTRY(35)
+void BARE_INIT_FUNCTION(imx25_nand_relocate_to_sdram)(void __noreturn (*fn)(void))
+{
+	unsigned long nfc_base = MX25_NFC_BASE_ADDR;
+	unsigned long sdram = MX25_CSD0_BASE_ADDR;
+
+	relocate_to_sdram(nfc_base, sdram, fn);
+}
+
+static void __noreturn BARE_INIT_FUNCTION(imx25_boot_nand_external_cont)(void)
+{
+	imx25_nand_load_image();
+	imx25_barebox_entry(NULL);
+}
+
+void __noreturn BARE_INIT_FUNCTION(imx25_barebox_boot_nand_external)(void)
+{
+	imx25_nand_relocate_to_sdram(imx25_boot_nand_external_cont);
+	imx25_barebox_entry(NULL);
+}
+
+void BARE_INIT_FUNCTION(imx27_nand_relocate_to_sdram)(void __noreturn (*fn)(void))
+{
+	unsigned long nfc_base = MX27_NFC_BASE_ADDR;
+	unsigned long sdram = MX27_CSD0_BASE_ADDR;
+
+	relocate_to_sdram(nfc_base, sdram, fn);
+}
+
+static void __noreturn BARE_INIT_FUNCTION(imx27_boot_nand_external_cont)(void)
+{
+	imx27_nand_load_image();
+	imx27_barebox_entry(NULL);
+}
+
+void __noreturn BARE_INIT_FUNCTION(imx27_barebox_boot_nand_external)(void)
+{
+	imx27_nand_relocate_to_sdram(imx27_boot_nand_external_cont);
+	imx27_barebox_entry(NULL);
+}
+
+void BARE_INIT_FUNCTION(imx31_nand_relocate_to_sdram)(void __noreturn (*fn)(void))
+{
+	unsigned long nfc_base = MX31_NFC_BASE_ADDR;
+	unsigned long sdram = MX31_CSD0_BASE_ADDR;
+
+	relocate_to_sdram(nfc_base, sdram, fn);
+}
+
+static void __noreturn BARE_INIT_FUNCTION(imx31_boot_nand_external_cont)(void)
+{
+	imx31_nand_load_image();
+	imx31_barebox_entry(NULL);
+}
+
+void __noreturn BARE_INIT_FUNCTION(imx31_barebox_boot_nand_external)(void)
+{
+	imx31_nand_relocate_to_sdram(imx31_boot_nand_external_cont);
+	imx31_barebox_entry(NULL);
+}
+
+void BARE_INIT_FUNCTION(imx35_nand_relocate_to_sdram)(void __noreturn (*fn)(void))
+{
+	unsigned long nfc_base = MX35_NFC_BASE_ADDR;
+	unsigned long sdram = MX35_CSD0_BASE_ADDR;
+
+	relocate_to_sdram(nfc_base, sdram, fn);
+}
+
+static void __noreturn BARE_INIT_FUNCTION(imx35_boot_nand_external_cont)(void)
+{
+	imx35_nand_load_image();
+	imx35_barebox_entry(NULL);
+}
+
+void __noreturn BARE_INIT_FUNCTION(imx35_barebox_boot_nand_external)(void)
+{
+	imx35_nand_relocate_to_sdram(imx35_boot_nand_external_cont);
+	imx35_barebox_entry(NULL);
+}

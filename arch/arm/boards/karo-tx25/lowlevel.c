@@ -74,7 +74,24 @@ static inline void __bare_init  setup_sdram(uint32_t base, uint32_t esdctl,
 	writel(esdctl, esdctlreg);
 }
 
-static void __bare_init karo_tx25_common_init(void *fdt)
+extern char __dtb_imx25_karo_tx25_start[];
+
+static void __noreturn karo_tx25_start(void)
+{
+	void *fdt;
+
+	fdt = __dtb_imx25_karo_tx25_start + get_runtime_offset();
+
+	imx25_barebox_entry(fdt);
+}
+
+static void __noreturn karo_tx25_load_nand(void)
+{
+	imx25_nand_load_image();
+	karo_tx25_start();
+}
+
+static void __bare_init karo_tx25_common_init(void)
 {
 	uint32_t r;
 
@@ -138,7 +155,7 @@ static void __bare_init karo_tx25_common_init(void *fdt)
 	/* Skip SDRAM initialization if we run from RAM */
 	r = get_pc();
 	if (r > 0x80000000 && r < 0xa0000000)
-		goto out;
+		karo_tx25_start();
 
 	/* set to 3.3v SDRAM */
 	writel(0x800, MX25_IOMUXC_BASE_ADDR + 0x454);
@@ -156,21 +173,12 @@ static void __bare_init karo_tx25_common_init(void *fdt)
 	setup_sdram(0x80000000, ESDCTLVAL, ESDCFGVAL);
 	setup_sdram(0x90000000, ESDCTLVAL, ESDCFGVAL);
 
-	imx25_barebox_boot_nand_external(fdt);
-
-out:
-	imx25_barebox_entry(fdt);
+	imx25_nand_relocate_to_sdram(karo_tx25_load_nand);
 }
-
-extern char __dtb_imx25_karo_tx25_start[];
 
 ENTRY_FUNCTION(start_imx25_karo_tx25, r0, r1, r2)
 {
-	void *fdt;
-
 	arm_setup_stack(MX25_IRAM_BASE_ADDR + MX25_IRAM_SIZE);
 
-	fdt = __dtb_imx25_karo_tx25_start + get_runtime_offset();
-
-	karo_tx25_common_init(fdt);
+	karo_tx25_common_init();
 }

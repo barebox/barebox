@@ -79,9 +79,23 @@ static void sdram_init(int sdram)
 
 extern char __dtb_imx27_phytec_phycard_s_rdk_bb_start[];
 
-static noinline void __bare_init phytec_phycard_imx27_common_init(int sdram)
+static void __noreturn phytec_phycard_imx27_start(void)
 {
 	void *fdt;
+
+	fdt = __dtb_imx27_phytec_phycard_s_rdk_bb_start + get_runtime_offset();
+
+	imx27_barebox_entry(fdt);
+}
+
+static void __noreturn phytec_phycard_imx27_load_nand(void)
+{
+	imx27_nand_load_image();
+	phytec_phycard_imx27_start();
+}
+
+static noinline void __bare_init phytec_phycard_imx27_common_init(int sdram)
+{
 	unsigned long r;
 
 	arm_cpu_lowlevel_init();
@@ -92,12 +106,10 @@ static noinline void __bare_init phytec_phycard_imx27_common_init(int sdram)
 	writel(0x00000000, MX27_AIPI_BASE_ADDR + MX27_AIPI2_PSR0);
 	writel(0xffffffff, MX27_AIPI_BASE_ADDR + MX27_AIPI2_PSR1);
 
-	fdt = __dtb_imx27_phytec_phycard_s_rdk_bb_start + get_runtime_offset();
-
 	/* Skip SDRAM initialization if we run from RAM */
         r = get_pc();
         if (r > 0xa0000000 && r < 0xc0000000)
-                imx27_barebox_entry(fdt);
+		phytec_phycard_imx27_start();
 
 	/* 399 MHz */
 	writel(IMX_PLL_PD(0) |
@@ -122,7 +134,8 @@ static noinline void __bare_init phytec_phycard_imx27_common_init(int sdram)
 
 	sdram_init(sdram);
 
-	imx27_barebox_boot_nand_external(fdt);
+	imx27_nand_relocate_to_sdram(phytec_phycard_imx27_load_nand);
+	phytec_phycard_imx27_start();
 }
 
 ENTRY_FUNCTION(start_phytec_phycard_imx27_64mb, r0, r1, r2)

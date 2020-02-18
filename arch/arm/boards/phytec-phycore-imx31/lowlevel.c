@@ -127,7 +127,7 @@ void __bare_init __naked barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint
 #endif
 
 	if (IS_ENABLED(CONFIG_ARCH_IMX_EXTERNAL_BOOT_NAND))
-		imx31_barebox_boot_nand_external(0);
+		imx31_barebox_boot_nand_external();
 	else
 		imx31_barebox_entry(NULL);
 }

@@ -179,7 +179,7 @@ int of_overlay_apply_tree(struct device_node *root,
 	for_each_child_of_node(resolved, fragment) {
 		err = of_overlay_apply_fragment(root, fragment);
 		if (err)
-			pr_warn("failed to apply %s", fragment->name);
+			pr_warn("failed to apply %s\n", fragment->name);
 	}
 
 	of_delete_node(resolved);

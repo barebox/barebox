@@ -25,13 +25,11 @@ static int phy_ida;
  * @dev: device that is creating the new phy
  * @node: device node of the phy
  * @ops: function pointers for performing phy operations
- * @init_data: contains the list of PHY consumers or NULL
  *
  * Called to create a phy using phy framework.
  */
 struct phy *phy_create(struct device_d *dev, struct device_node *node,
-		       const struct phy_ops *ops,
-		       struct phy_init_data *init_data)
+		       const struct phy_ops *ops)
 {
 	int ret;
 	int id;
@@ -52,7 +50,6 @@ struct phy *phy_create(struct device_d *dev, struct device_node *node,
 	phy->dev.device_node = node ?: dev->device_node;
 	phy->id = id;
 	phy->ops = ops;
-	phy->init_data = init_data;
 
 	ret = register_device(&phy->dev);
 	if (ret)

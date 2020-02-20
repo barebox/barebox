@@ -415,7 +415,7 @@ static int pinctrl_tegra_xusb_probe(struct device_d *dev)
 		goto reset;
 	}
 
-	phy = phy_create(dev, NULL, &pcie_phy_ops, NULL);
+	phy = phy_create(dev, NULL, &pcie_phy_ops);
 	if (IS_ERR(phy)) {
 		err = PTR_ERR(phy);
 		goto unregister;
@@ -424,7 +424,7 @@ static int pinctrl_tegra_xusb_probe(struct device_d *dev)
 	padctl->phys[TEGRA_XUSB_PADCTL_PCIE] = phy;
 	phy_set_drvdata(phy, padctl);
 
-	phy = phy_create(dev, NULL, &sata_phy_ops, NULL);
+	phy = phy_create(dev, NULL, &sata_phy_ops);
 	if (IS_ERR(phy)) {
 		err = PTR_ERR(phy);
 		goto unregister;

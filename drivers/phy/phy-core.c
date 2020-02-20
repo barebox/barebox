@@ -51,6 +51,16 @@ struct phy *phy_create(struct device_d *dev, struct device_node *node,
 	phy->id = id;
 	phy->ops = ops;
 
+	/* phy-supply */
+	phy->pwr = regulator_get(&phy->dev, "phy");
+	if (IS_ERR(phy->pwr)) {
+		ret = PTR_ERR(phy->pwr);
+		if (ret == -EPROBE_DEFER)
+			goto free_ida;
+
+		phy->pwr = NULL;
+	}
+
 	ret = register_device(&phy->dev);
 	if (ret)
 		goto free_ida;

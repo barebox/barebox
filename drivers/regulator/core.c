@@ -397,6 +397,145 @@ int regulator_set_voltage(struct regulator *r, int min_uV, int max_uV)
 	return regulator_set_voltage_internal(r->ri, min_uV, max_uV);
 }
 
+/**
+ * regulator_bulk_get - get multiple regulator consumers
+ *
+ * @dev:           Device to supply
+ * @num_consumers: Number of consumers to register
+ * @consumers:     Configuration of consumers; clients are stored here.
+ *
+ * @return 0 on success, an errno on failure.
+ *
+ * This helper function allows drivers to get several regulator
+ * consumers in one operation.  If any of the regulators cannot be
+ * acquired then any regulators that were allocated will be freed
+ * before returning to the caller.
+ */
+int regulator_bulk_get(struct device_d *dev, int num_consumers,
+		       struct regulator_bulk_data *consumers)
+{
+	int i;
+	int ret;
+
+	for (i = 0; i < num_consumers; i++)
+		consumers[i].consumer = NULL;
+
+	for (i = 0; i < num_consumers; i++) {
+		consumers[i].consumer = regulator_get(dev,
+						      consumers[i].supply);
+		if (IS_ERR(consumers[i].consumer)) {
+			ret = PTR_ERR(consumers[i].consumer);
+			consumers[i].consumer = NULL;
+			goto err;
+		}
+	}
+
+	return 0;
+
+err:
+	if (ret != -EPROBE_DEFER)
+		dev_err(dev, "Failed to get supply '%s': %d\n",
+			consumers[i].supply, ret);
+	else
+		dev_dbg(dev, "Failed to get supply '%s', deferring\n",
+			consumers[i].supply);
+
+	return ret;
+}
+EXPORT_SYMBOL_GPL(regulator_bulk_get);
+
+/**
+ * regulator_bulk_enable - enable multiple regulator consumers
+ *
+ * @num_consumers: Number of consumers
+ * @consumers:     Consumer data; clients are stored here.
+ * @return         0 on success, an errno on failure
+ *
+ * This convenience API allows consumers to enable multiple regulator
+ * clients in a single API call.  If any consumers cannot be enabled
+ * then any others that were enabled will be disabled again prior to
+ * return.
+ */
+int regulator_bulk_enable(int num_consumers,
+			  struct regulator_bulk_data *consumers)
+{
+	int ret;
+	int i;
+
+	for (i = 0; i < num_consumers; i++) {
+		ret = regulator_enable(consumers[i].consumer);
+		if (ret)
+			goto err;
+	}
+
+	return 0;
+
+err:
+	while (--i >= 0)
+		regulator_disable(consumers[i].consumer);
+
+	return ret;
+}
+EXPORT_SYMBOL_GPL(regulator_bulk_enable);
+
+/**
+ * regulator_bulk_disable - disable multiple regulator consumers
+ *
+ * @num_consumers: Number of consumers
+ * @consumers:     Consumer data; clients are stored here.
+ * @return         0 on success, an errno on failure
+ *
+ * This convenience API allows consumers to disable multiple regulator
+ * clients in a single API call.  If any consumers cannot be disabled
+ * then any others that were disabled will be enabled again prior to
+ * return.
+ */
+int regulator_bulk_disable(int num_consumers,
+			   struct regulator_bulk_data *consumers)
+{
+	int i;
+	int ret, r;
+
+	for (i = num_consumers - 1; i >= 0; --i) {
+		ret = regulator_disable(consumers[i].consumer);
+		if (ret != 0)
+			goto err;
+	}
+
+	return 0;
+
+err:
+	pr_err("Failed to disable %s: %d\n", consumers[i].supply, ret);
+	for (++i; i < num_consumers; ++i) {
+		r = regulator_enable(consumers[i].consumer);
+		if (r != 0)
+			pr_err("Failed to re-enable %s: %d\n",
+			       consumers[i].supply, r);
+	}
+
+	return ret;
+}
+EXPORT_SYMBOL_GPL(regulator_bulk_disable);
+
+/**
+ * regulator_bulk_free - free multiple regulator consumers
+ *
+ * @num_consumers: Number of consumers
+ * @consumers:     Consumer data; clients are stored here.
+ *
+ * This convenience API allows consumers to free multiple regulator
+ * clients in a single API call.
+ */
+void regulator_bulk_free(int num_consumers,
+			 struct regulator_bulk_data *consumers)
+{
+	int i;
+
+	for (i = 0; i < num_consumers; i++)
+		consumers[i].consumer = NULL;
+}
+EXPORT_SYMBOL_GPL(regulator_bulk_free);
+
 static void regulator_print_one(struct regulator_internal *ri)
 {
 	struct regulator *r;

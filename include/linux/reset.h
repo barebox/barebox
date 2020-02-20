@@ -55,6 +55,12 @@ static inline int device_reset_us(struct device_d *dev, int us)
 	return 0;
 }
 
+static inline int device_reset(struct device_d *dev)
+{
+	WARN_ON(1);
+	return 0;
+}
+
 #endif /* CONFIG_RESET_CONTROLLER */
 
 #endif

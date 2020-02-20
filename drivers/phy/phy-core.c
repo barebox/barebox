@@ -371,3 +371,17 @@ struct phy *phy_optional_get(struct device_d *dev, const char *string)
 	return phy;
 }
 
+/**
+ * phy_get_by_index() - lookup and obtain a reference to a phy by index.
+ * @dev: device with node that references this phy
+ * @index: index of the phy
+ *
+ * Gets the phy using _of_phy_get()
+ */
+struct phy *phy_get_by_index(struct device_d *dev, int index)
+{
+	if (!dev->device_node)
+		return ERR_PTR(-ENODEV);
+
+	return _of_phy_get(dev->device_node, index);
+}

@@ -149,6 +149,7 @@ struct phy_provider *__of_phy_provider_register(struct device_d *dev,
 	struct of_phandle_args *args));
 void of_phy_provider_unregister(struct phy_provider *phy_provider);
 struct usb_phy *phy_to_usbphy(struct phy *phy);
+struct phy *phy_get_by_index(struct device_d *dev, int index);
 #else
 static inline int phy_init(struct phy *phy)
 {
@@ -245,6 +246,11 @@ static inline void of_phy_provider_unregister(struct phy_provider *phy_provider)
 static inline struct usb_phy *phy_to_usbphy(struct phy *phy)
 {
 	return NULL;
+}
+
+static struct phy *phy_get_by_index(struct device_d *dev, int index)
+{
+	return ERR_PTR(-ENODEV);
 }
 
 #endif

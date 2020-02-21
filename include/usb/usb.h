@@ -68,7 +68,7 @@ struct usb_interface {
 	struct usb_endpoint_descriptor ep_desc[USB_MAXENDPOINTS];
 };
 
-struct usb_configuration {
+struct usb_config {
 	struct usb_config_descriptor desc;
 
 	unsigned char	no_of_if;	/* number of interfaces */
@@ -95,7 +95,7 @@ struct usb_device {
 
 	int configno;			/* selected config number */
 	struct usb_device_descriptor *descriptor; /* Device Descriptor */
-	struct usb_configuration config; /* config descriptor */
+	struct usb_config config; /* config descriptor */
 	struct devrequest *setup_packet;
 
 	int have_langid;		/* whether string_langid is valid yet */

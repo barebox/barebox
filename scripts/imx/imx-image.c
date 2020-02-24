@@ -28,7 +28,6 @@
 #include <fcntl.h>
 #include <linux/kernel.h>
 #include <sys/file.h>
-#include <mach/imx_cpu_types.h>
 #include "../compiler.h"
 
 #include "imx.h"
@@ -701,9 +700,9 @@ static int hab_sign(struct config_data *data)
 	}
 
 	/*
-	 * For i.MX8, write into the reserved CSF section
+	 * For i.MX8M, write into the reserved CSF section
 	 */
-	if (data->cpu_type == IMX_CPU_IMX8MQ)
+	if (cpu_is_mx8m(data))
 		outfd = open(data->outfile, O_WRONLY);
 	else
 		outfd = open(data->outfile, O_WRONLY | O_APPEND);
@@ -714,7 +713,7 @@ static int hab_sign(struct config_data *data)
 		exit(1);
 	}
 
-	if (data->cpu_type == IMX_CPU_IMX8MQ) {
+	if (cpu_is_mx8m(data)) {
 		/*
 		 * For i.MX8 insert the CSF data into the reserved CSF area
 		 * right behind the PBL
@@ -779,7 +778,7 @@ static void *xread_file(const char *filename, size_t *size)
 
 static bool cpu_is_aarch64(const struct config_data *data)
 {
-	return data->cpu_type == IMX_CPU_IMX8MQ;
+	return cpu_is_mx8m(data);
 }
 
 int main(int argc, char *argv[])
@@ -886,7 +885,7 @@ int main(int argc, char *argv[])
 		exit(1);
 
 	if (data.max_load_size && (data.encrypt_image || data.csf)
-	    && data.cpu_type != IMX_CPU_IMX8MQ) {
+	    && !cpu_is_mx8m(&data)) {
 		fprintf(stderr, "Specifying max_load_size is incompatible with HAB signing/encrypting\n");
 		exit(1);
 	}

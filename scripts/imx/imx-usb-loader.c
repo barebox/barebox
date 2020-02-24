@@ -1332,7 +1332,7 @@ static int process_header(struct usb_work *curr, unsigned char *buf, int cnt,
 		unsigned *p_header_addr)
 {
 	int ret;
-	unsigned header_max = 0x800;
+	unsigned header_max = 0x10000;
 	unsigned header_inc = 0x400;
 	unsigned header_offset = 0;
 	int header_cnt = 0;

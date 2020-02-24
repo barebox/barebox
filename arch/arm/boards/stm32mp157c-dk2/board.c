@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0+
 #include <common.h>
-#include <linux/sizes.h>
 #include <init.h>
-#include <asm/memory.h>
-#include <mach/stm32.h>
 #include <mach/bbu.h>
 
 static int dk2_postcore_init(void)

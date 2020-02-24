@@ -84,12 +84,14 @@ void clk_disable(struct clk *clk)
 	if (!clk->enable_count)
 		return;
 
+	if (clk->enable_count == 1 && clk->flags & CLK_IS_CRITICAL) {
+		pr_warn("Disabling critical clock %s\n", clk->name);
+		return;
+	}
+
 	clk->enable_count--;
 
 	if (!clk->enable_count) {
-		if (clk->flags & CLK_IS_CRITICAL)
-			return;
-
 		if (clk->ops->disable)
 			clk->ops->disable(clk);
 

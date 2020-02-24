@@ -269,7 +269,7 @@ $(call build_imx_habv4img, CONFIG_MACH_VARISCITE_MX6, start_variscite_custom, va
 
 $(call build_imx_habv4img, CONFIG_MACH_EMBEDSKY_E9, start_imx6q_embedsky_e9, embedsky-e9/flash-header-e9, embedsky-imx6q-e9)
 
-$(call build_imx_habv4img, CONFIG_MACH_EMBEST_MARSBOARD, start_imx6q_marsboard, embest-marsboard/flash-header-embest-marsboard, barebox-embest-imx6q-marsboard)
+$(call build_imx_habv4img, CONFIG_MACH_EMBEST_MARSBOARD, start_imx6q_marsboard, embest-marsboard/flash-header-embest-marsboard, embest-imx6q-marsboard)
 
 $(call build_imx_habv4img, CONFIG_MACH_EMBEST_RIOTBOARD, start_imx6s_riotboard, embest-riotboard/flash-header-embest-riotboard, embest-imx6s-riotboard)
 

@@ -282,6 +282,9 @@ int clk_register(struct clk *clk)
 
 	list_add_tail(&clk->list, &clks);
 
+	if (clk->flags & CLK_IS_CRITICAL)
+		clk_enable(clk);
+
 	return 0;
 }
 

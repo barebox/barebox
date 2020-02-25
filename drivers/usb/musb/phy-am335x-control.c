@@ -109,15 +109,15 @@ struct phy_control *am335x_get_phy_control(struct device_d *dev)
 
 	node = of_parse_phandle(dev->device_node, "ti,ctrl_mod", 0);
 	if (!node)
-		return NULL;
+		return ERR_PTR(-ENOENT);
 
 	dev = of_find_device_by_node(node);
 	if (!dev)
-		return NULL;
+		return ERR_PTR(-EPROBE_DEFER);
 
 	ctrl_usb = dev->priv;
 	if (!ctrl_usb)
-		return NULL;
+		return ERR_PTR(-EPROBE_DEFER);
 
 	return &ctrl_usb->phy_ctrl;
 }
@@ -141,19 +141,30 @@ static int am335x_control_usb_probe(struct device_d *dev)
 	ctrl_usb->dev = dev;
 
 	iores = dev_request_mem_resource(dev, 0);
-	if (IS_ERR(iores))
-		return PTR_ERR(iores);
+	if (IS_ERR(iores)) {
+		ret = PTR_ERR(iores);
+		goto free_ctrl;
+	}
 	ctrl_usb->phy_reg = IOMEM(iores->start);
 
 	iores = dev_request_mem_resource(dev, 1);
-	if (IS_ERR(iores))
-		return PTR_ERR(iores);
+	if (IS_ERR(iores)) {
+		ret = PTR_ERR(iores);
+		goto release_resource;
+	}
 	ctrl_usb->wkup = IOMEM(iores->start);
 
 	spin_lock_init(&ctrl_usb->lock);
 	ctrl_usb->phy_ctrl = *phy_ctrl;
 
 	dev->priv = ctrl_usb;
+	return 0;
+
+release_resource:
+	release_region(iores);
+free_ctrl:
+	free(ctrl_usb);
+
 	return 0;
 };
 

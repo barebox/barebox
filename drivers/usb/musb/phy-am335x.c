@@ -37,13 +37,16 @@ static int am335x_phy_probe(struct device_d *dev)
 	am_usbphy->base = IOMEM(iores->start);
 
 	am_usbphy->phy_ctrl = am335x_get_phy_control(dev);
-	if (!am_usbphy->phy_ctrl)
-		return -ENODEV;
+	if (IS_ERR(am_usbphy->phy_ctrl)) {
+		ret = PTR_ERR(am_usbphy->phy_ctrl);
+		goto err_release;
+	}
 
 	am_usbphy->id = of_alias_get_id(dev->device_node, "phy");
 	if (am_usbphy->id < 0) {
 		dev_err(dev, "Missing PHY id: %d\n", am_usbphy->id);
-		return am_usbphy->id;
+		ret = am_usbphy->id;
+		goto err_release;
 	}
 
 	am_usbphy->phy.init = am335x_init;
@@ -53,6 +56,8 @@ static int am335x_phy_probe(struct device_d *dev)
 
 	return 0;
 
+err_release:
+	release_region(iores);
 err_free:
 	free(am_usbphy);
 

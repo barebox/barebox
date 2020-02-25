@@ -314,7 +314,7 @@ static int dsps_set_mode(void *ctx, enum usb_dr_mode mode)
 
 static int dsps_probe(struct device_d *dev)
 {
-	struct resource *iores;
+	struct resource *iores[2];
 	struct musb_hdrc_platform_data *pdata;
 	struct musb_hdrc_config	*config;
 	struct device_node *dn = dev->device_node;
@@ -354,15 +354,19 @@ static int dsps_probe(struct device_d *dev)
 
 	pdata = &glue->pdata;
 
-	iores = dev_request_mem_resource(dev, 0);
-	if (IS_ERR(iores))
-		return PTR_ERR(iores);
-	glue->musb.mregs = IOMEM(iores->start);
+	iores[0] = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores[0])) {
+		ret = PTR_ERR(iores[0]);
+		goto free_glue;
+	}
+	glue->musb.mregs = IOMEM(iores[0]->start);
 
-	iores = dev_request_mem_resource(dev, 1);
-	if (IS_ERR(iores))
-		return PTR_ERR(iores);
-	glue->musb.ctrl_base = IOMEM(iores->start);
+	iores[1] = dev_request_mem_resource(dev, 1);
+	if (IS_ERR(iores[1])) {
+		ret = PTR_ERR(iores[1]);
+		goto release_iores0;
+	}
+	glue->musb.ctrl_base = IOMEM(iores[1]->start);
 
 	glue->musb.controller = dev;
 	glue->musb.xceiv = phy_dev->priv;
@@ -383,11 +387,24 @@ static int dsps_probe(struct device_d *dev)
 	if (pdata->mode == MUSB_PORT_MODE_DUAL_ROLE) {
 		ret = usb_register_otg_device(dev, dsps_set_mode, glue);
 		if (ret)
-			return ret;
+			goto release_iores1;
 		return 0;
 	}
 
-	return musb_init_controller(&glue->musb, pdata);
+	ret = musb_init_controller(&glue->musb, pdata);
+	if (ret)
+		goto release_iores1;
+
+	return 0;
+
+release_iores1:
+	release_region(iores[1]);
+release_iores0:
+	release_region(iores[0]);
+free_glue:
+	free(glue);
+
+	return ret;
 }
 
 static const struct dsps_musb_wrapper am33xx_driver_data = {

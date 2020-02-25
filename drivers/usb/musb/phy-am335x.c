@@ -5,7 +5,6 @@
 #include <linux/err.h>
 #include "am35x-phy-control.h"
 #include "musb_core.h"
-#include "phy-am335x.h"
 
 struct am335x_usbphy {
 	void __iomem *base;
@@ -13,13 +12,6 @@ struct am335x_usbphy {
 	int id;
 	struct usb_phy phy;
 };
-
-static struct am335x_usbphy *am_usbphy;
-
-struct usb_phy *am335x_get_usb_phy(void)
-{
-	return &am_usbphy->phy;
-}
 
 static int am335x_init(struct usb_phy *phy)
 {
@@ -31,6 +23,7 @@ static int am335x_init(struct usb_phy *phy)
 
 static int am335x_phy_probe(struct device_d *dev)
 {
+	struct am335x_usbphy *am_usbphy;
 	struct resource *iores;
 	int ret;
 
@@ -54,7 +47,7 @@ static int am335x_phy_probe(struct device_d *dev)
 	}
 
 	am_usbphy->phy.init = am335x_init;
-	dev->priv = am_usbphy;
+	dev->priv = &am_usbphy->phy;
 
 	dev_info(dev, "am_usbphy %p enabled\n", &am_usbphy->phy);
 

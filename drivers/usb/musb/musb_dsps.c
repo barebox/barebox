@@ -39,7 +39,6 @@
 #include <linux/barebox-wrapper.h>
 
 #include "musb_core.h"
-#include "phy-am335x.h"
 
 static __maybe_unused struct of_device_id musb_dsps_dt_ids[];
 
@@ -217,10 +216,6 @@ static int dsps_musb_init(struct musb *musb)
 	const struct dsps_musb_wrapper *wrp = glue->wrp;
 	u32 rev, val, mode;
 
-	musb->xceiv = am335x_get_usb_phy();
-	if (IS_ERR(musb->xceiv))
-		return PTR_ERR(musb->xceiv);
-
 	/* Returns zero if e.g. not clocked */
 	rev = dsps_readl(musb->ctrl_base, wrp->revision);
 	if (!rev)
@@ -324,6 +319,8 @@ static int dsps_probe(struct device_d *dev)
 	struct musb_hdrc_config	*config;
 	struct device_node *dn = dev->device_node;
 	const struct dsps_musb_wrapper *wrp;
+	struct device_node *phy_node;
+	struct device_d *phy_dev;
 	struct dsps_glue *glue;
 	int ret;
 
@@ -336,6 +333,14 @@ static int dsps_probe(struct device_d *dev)
 		dev_err(dev, "Both host and device driver disabled.\n");
 		return -ENODEV;
 	}
+
+	phy_node = of_parse_phandle(dn, "phys", 0);
+	if (!phy_node)
+		return -ENODEV;
+
+	phy_dev = of_find_device_by_node(phy_node);
+	if (!phy_dev || !phy_dev->priv)
+		return -EPROBE_DEFER;
 
 	/* allocate glue */
 	glue = kzalloc(sizeof(*glue), GFP_KERNEL);
@@ -360,6 +365,7 @@ static int dsps_probe(struct device_d *dev)
 	glue->musb.ctrl_base = IOMEM(iores->start);
 
 	glue->musb.controller = dev;
+	glue->musb.xceiv = phy_dev->priv;
 
 	config = &glue->config;
 

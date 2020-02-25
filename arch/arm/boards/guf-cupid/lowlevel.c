@@ -308,7 +308,7 @@ void __bare_init __naked barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint
 		r0 |= 0x1 << 28;
 		writel(r0, MX35_CCM_BASE_ADDR + MX35_CCM_PDR4);
 
-		imx35_barebox_boot_nand_external(0);
+		imx35_barebox_boot_nand_external();
 	}
 
 out:

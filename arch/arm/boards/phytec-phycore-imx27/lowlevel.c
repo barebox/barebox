@@ -33,7 +33,24 @@
 
 #define ESDCTL0_VAL (ESDCTL0_SDE | ESDCTL0_ROW13 | ESDCTL0_COL10)
 
-static void __bare_init __naked noinline phytec_phycorce_imx27_common_init(void *fdt)
+extern char __dtb_imx27_phytec_phycore_rdk_start[];
+
+static void __noreturn phytec_phycore_imx27_start(void)
+{
+	void *fdt;
+
+	fdt = __dtb_imx27_phytec_phycore_rdk_start + get_runtime_offset();
+
+	imx27_barebox_entry(fdt);
+}
+
+static void __noreturn phytec_phycore_imx27_load_nand(void)
+{
+	imx27_nand_load_image();
+	phytec_phycore_imx27_start();
+}
+
+static void __bare_init noinline phytec_phycore_imx27_common_init(void)
 {
 	uint32_t r;
 	int i;
@@ -49,7 +66,7 @@ static void __bare_init __naked noinline phytec_phycorce_imx27_common_init(void 
 	/* Skip SDRAM initialization if we run from RAM */
 	r = get_pc();
 	if (r > 0xa0000000 && r < 0xb0000000)
-		goto out;
+		phytec_phycore_imx27_start();
 
 	/* re-program the PLL prior(!) starting the SDRAM controller */
 	writel(MPCTL0_VAL, MX27_CCM_BASE_ADDR + MX27_MPCTL0);
@@ -93,22 +110,13 @@ static void __bare_init __naked noinline phytec_phycorce_imx27_common_init(void 
 			ESDCTL0_BL | ESDCTL0_SMODE_NORMAL,
 			MX27_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 
-	if (IS_ENABLED(CONFIG_ARCH_IMX_EXTERNAL_BOOT_NAND))
-		imx27_barebox_boot_nand_external(fdt);
-
-out:
-	imx27_barebox_entry(fdt);
+	imx27_nand_relocate_to_sdram(phytec_phycore_imx27_load_nand);
+	phytec_phycore_imx27_start();
 }
-
-extern char __dtb_imx27_phytec_phycore_rdk_start[];
 
 ENTRY_FUNCTION(start_phytec_phycore_imx27, r0, r1, r2)
 {
-	void *fdt;
-
 	arm_setup_stack(MX27_IRAM_BASE_ADDR + MX27_IRAM_SIZE);
 
-	fdt = __dtb_imx27_phytec_phycore_rdk_start + get_runtime_offset();
-
-	phytec_phycorce_imx27_common_init(fdt);
+	phytec_phycore_imx27_common_init();
 }

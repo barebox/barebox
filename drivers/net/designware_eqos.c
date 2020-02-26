@@ -255,14 +255,10 @@ static int eqos_mdio_write(struct mii_bus *bus, int addr, int reg, u16 data)
 	udelay(eqos->ops->mdio_wait_us);
 
 	ret = eqos_mdio_wait_idle(eqos);
-	if (ret) {
+	if (ret)
 		dev_err(&bus->dev, "MDIO read didn't complete\n");
-		return ret;
-	}
 
-	/* Needed as a fix for ST-Phy */
-	eqos_mdio_read(bus, addr, reg);
-	return 0;
+	return ret;
 }
 
 

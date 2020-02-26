@@ -180,7 +180,6 @@ static struct eqos_ops stm32_ops = {
 	.adjust_link = eqos_adjust_link,
 	.get_csr_clk_rate = eqos_get_csr_clk_rate_stm32,
 
-	.mdio_wait_us = 10 * USEC_PER_MSEC,
 	.clk_csr = EQOS_MDIO_ADDR_CR_250_300,
 	.config_mac = EQOS_MAC_RXQ_CTRL0_RXQ0EN_ENABLED_AV,
 };

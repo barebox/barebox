@@ -270,7 +270,7 @@ static void usb_hub_port_connect_change(struct usb_device *dev, int port)
 	device_detect(&usb->dev);
 }
 
-static int usb_scan_port(struct usb_device_scan *usb_scan)
+static void usb_scan_port(struct usb_device_scan *usb_scan)
 {
 	struct usb_port_status portsts;
 	unsigned short portstatus, portchange;
@@ -287,7 +287,7 @@ static int usb_scan_port(struct usb_device_scan *usb_scan)
 	 * This is needed for voltages to stabilize.
 	 */
 	if (get_time_ns() < hub->query_delay)
-		return 0;
+		return;
 
 	if (usb_get_port_status(dev, port + 1, &portsts) < 0) {
 		dev_dbg(&dev->dev, "port%d: get_port_status failed\n", port + 1);
@@ -296,7 +296,7 @@ static int usb_scan_port(struct usb_device_scan *usb_scan)
 			/* Remove this device from scanning list */
 			goto remove;
 		}
-		return 0;
+		return;
 	}
 
 	portstatus = le16_to_cpu(portsts.wPortStatus);
@@ -310,12 +310,12 @@ static int usb_scan_port(struct usb_device_scan *usb_scan)
 			/* Remove this device from scanning list */
 			goto remove;
 		}
-		return 0;
+		return;
 	}
 
 	/* Test if the connection came up, and if not exit */
 	if(!(portstatus & USB_PORT_STAT_CONNECTION))
-		return 0;
+		return;
 
 	/* A new USB device is ready at this point */
 	dev_dbg(&dev->dev, "port%d: USB dev found\n", port + 1);
@@ -361,7 +361,7 @@ static int usb_scan_port(struct usb_device_scan *usb_scan)
 		 */
 		if (hub->overcurrent_count[port] <=
 				PORT_OVERCURRENT_MAX_SCAN_COUNT)
-			return 0;
+			return;
 
 		/* Otherwise the device will get removed */
 		dev_dbg(&dev->dev,"port%d: over-current occurred %d times\n",
@@ -381,8 +381,6 @@ remove:
 	 */
 	list_del(&usb_scan->list);
 	free(usb_scan);
-
-	return 0;
 }
 
 static int usb_device_list_scan(void)
@@ -390,7 +388,6 @@ static int usb_device_list_scan(void)
 	struct usb_device_scan *usb_scan;
 	struct usb_device_scan *tmp;
 	static int running;
-	int ret = 0;
 
 	/* Only run this loop once for each controller */
 	if (running)
@@ -403,12 +400,8 @@ static int usb_device_list_scan(void)
 		if (list_empty(&usb_scan_list))
 			goto out;
 
-		list_for_each_entry_safe(usb_scan, tmp, &usb_scan_list, list) {
-			/* Scan this port */
-			ret = usb_scan_port(usb_scan);
-			if (ret)
-				goto out;
-		}
+		list_for_each_entry_safe(usb_scan, tmp, &usb_scan_list, list)
+			usb_scan_port(usb_scan);
 
 		/* Avoid hammering the HUB with port scans */
 		mdelay(25);
@@ -422,7 +415,7 @@ out:
 	 */
 	running = 0;
 
-	return ret;
+	return 0;
 }
 
 static int usb_hub_configure(struct usb_device *dev)

@@ -26,7 +26,6 @@
 #include <usb/usb_defs.h>
 
 #include "usb.h"
-#include "hub.h"
 
 #define USB_BUFSIZ  512
 
@@ -139,7 +138,8 @@ static inline char *portspeed(int portstatus)
 		return "12 Mb/s";
 }
 
-int hub_port_reset(struct usb_device *hub, int port, struct usb_device *usb)
+static int hub_port_reset(struct usb_device *hub, int port,
+			  struct usb_device *usb)
 {
 	int tries;
 	struct usb_port_status portsts;

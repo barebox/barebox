@@ -36,7 +36,7 @@ struct chunk {
 	struct list_head list;
 };
 
-#define BUFSIZE (PAGE_SIZE * 4)
+#define BUFSIZE (PAGE_SIZE * 16)
 
 static int writebuffer_io_len(struct block_device *blk, struct chunk *chunk)
 {
@@ -391,7 +391,7 @@ int blockdevice_register(struct block_device *blk)
 	dev_dbg(blk->dev, "rdbufsize: %d blockbits: %d blkmask: 0x%08x\n",
 		blk->rdbufsize, blk->blockbits, blk->blkmask);
 
-	for (i = 0; i < 32; i++) {
+	for (i = 0; i < 8; i++) {
 		struct chunk *chunk = xzalloc(sizeof(*chunk));
 		chunk->data = dma_alloc(BUFSIZE);
 		chunk->num = i;

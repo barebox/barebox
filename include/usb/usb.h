@@ -382,7 +382,7 @@ struct usb_device_id {
 	__u8		bInterfaceSubClass;
 	__u8		bInterfaceProtocol;
 
-	void *driver_info;
+	const void *driver_info;
 };
 
 #define USB_DEVICE_ID_MATCH_PRODUCT         0x0002

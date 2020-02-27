@@ -33,6 +33,8 @@
 
 static int do_bootm_linux(struct image_data *data)
 {
+	const void *kernel_header =
+			data->os_fit ? data->fit_kernel : data->os_header;
 	void (*fn)(unsigned long dtb, unsigned long x1, unsigned long x2,
 		       unsigned long x3);
 	resource_size_t start, end;
@@ -41,8 +43,8 @@ static int do_bootm_linux(struct image_data *data)
 	int ret;
 	void *fdt;
 
-	text_offset = le64_to_cpup(data->os_header + 8);
-	image_size = le64_to_cpup(data->os_header + 16);
+	text_offset = le64_to_cpup(kernel_header + 8);
+	image_size = le64_to_cpup(kernel_header+ 16);
 
 	ret = memory_bank_first_find_space(&start, &end);
 	if (ret)
@@ -101,6 +103,12 @@ static struct image_handler aarch64_linux_handler = {
         .filetype = filetype_arm64_linux_image,
 };
 
+static struct image_handler aarch64_fit_handler = {
+	.name = "FIT image",
+	.bootm = do_bootm_linux,
+	.filetype = filetype_oftree,
+};
+
 static int do_bootm_barebox(struct image_data *data)
 {
 	void (*fn)(unsigned long x0, unsigned long x1, unsigned long x2,
@@ -143,6 +151,9 @@ static int aarch64_register_image_handler(void)
 {
 	register_image_handler(&aarch64_linux_handler);
 	register_image_handler(&aarch64_barebox_handler);
+
+	if (IS_ENABLED(CONFIG_FITIMAGE))
+		register_image_handler(&aarch64_fit_handler);
 
 	return 0;
 }

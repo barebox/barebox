@@ -87,17 +87,6 @@ static void usb_hub_power_on(struct usb_hub_device *hub)
 
 	dev = hub->pusb_dev;
 
-	/*
-	 * Enable power to the ports:
-	 * Here we Power-cycle the ports: aka,
-	 * turning them off and turning on again.
-	 */
-	for (i = 0; i < dev->maxchild; i++) {
-		usb_clear_port_feature(dev, i + 1, USB_PORT_FEAT_POWER);
-		dev_dbg(&dev->dev, "port%d: usb_clear_port_feature returns 0x%08lx\n",
-			i + 1, dev->status);
-	}
-
 	/* Enable power to the ports */
 	dev_dbg(&dev->dev, "enabling power on all ports\n");
 

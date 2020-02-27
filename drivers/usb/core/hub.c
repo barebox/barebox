@@ -203,22 +203,10 @@ static int hub_port_reset(struct usb_device *hub, int port,
 }
 
 
-static void usb_hub_port_connect_change(struct usb_device *dev, int port)
+static void usb_hub_port_connect_change(struct usb_device *dev, int port,
+					uint16_t portstatus, uint16_t portchange)
 {
 	struct usb_device *usb;
-	struct usb_port_status portsts;
-	unsigned short portstatus, portchange;
-
-	/* Check status */
-	if (usb_get_port_status(dev, port + 1, &portsts) < 0) {
-		dev_dbg(&dev->dev, "port%d: get_port_status failed\n", port + 1);
-		return;
-	}
-
-	portstatus = le16_to_cpu(portsts.wPortStatus);
-	portchange = le16_to_cpu(portsts.wPortChange);
-	dev_dbg(&dev->dev, "port%d: status 0x%04x, change 0x%04x, %s\n",
-			port + 1, portstatus, portchange, portspeed(portstatus));
 
 	/* Clear the connection change status */
 	usb_clear_port_feature(dev, port + 1, USB_PORT_FEAT_C_CONNECTION);
@@ -320,7 +308,7 @@ static void usb_scan_port(struct usb_device_scan *usb_scan)
 	/* A new USB device is ready at this point */
 	dev_dbg(&dev->dev, "port%d: USB dev found\n", port + 1);
 
-	usb_hub_port_connect_change(dev, port);
+	usb_hub_port_connect_change(dev, port, portstatus, portchange);
 
 	if (portchange & USB_PORT_STAT_C_ENABLE) {
 		dev_dbg(&dev->dev, "port%d: enable change, status 0x%04x\n",

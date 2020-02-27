@@ -327,18 +327,6 @@ static void usb_scan_port(struct usb_device_scan *usb_scan)
 				port + 1, portstatus);
 		usb_clear_port_feature(dev, port + 1,
 					USB_PORT_FEAT_C_ENABLE);
-
-		/* EM interference sometimes causes bad shielded USB
-		 * devices to be shutdown by the hub, this hack enables
-		 * them again. Works at least with mouse driver */
-		if (!(portstatus & USB_PORT_STAT_ENABLE) &&
-		     (portstatus & USB_PORT_STAT_CONNECTION) &&
-		     ((dev->children[port]))) {
-			dev_dbg(&dev->dev, "port%d: already running, "
-					"disabled by hub (EMI?), "
-					"re-enabling...\n", port + 1);
-				usb_hub_port_connect_change(dev, port);
-		}
 	}
 
 	if (portstatus & USB_PORT_STAT_SUSPEND) {

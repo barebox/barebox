@@ -35,7 +35,7 @@ The resulting images will be placed under ``images/``:
 Flashing barebox
 ----------------
 
-An appropriate image for the boot media can be generated with following
+An appropriate image for a SD-Card can be generated with following
 ``genimage(1)`` config::
 
   image @STM32MP_BOARD@.img {
@@ -61,7 +61,22 @@ An appropriate image for the boot media can be generated with following
       }
   }
 
-Image can then be flashed on e.g. a SD-Card.
+For eMMC, the boot partitions are used as the FSBL partitions and so the user
+partitions may look like this:
+
+  image @STM32MP_BOARD@.img {
+      partition ssbl {
+          image = "barebox-@STM32MP_BOARD@.img"
+          size = 1M
+      }
+      partition barebox-environment {
+          image = "/dev/null"
+          size = 1M
+      }
+  }
+
+The fsbl1 and fsbl2 can be flashed by writing to barebox ``/dev/mmcX.boot0`` and
+``/dev/mmcX.boot1`` respectively or from a booted operating system.
 
 Boot source selection
 ---------------------

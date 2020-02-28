@@ -511,9 +511,11 @@ int usb_host_detect(struct usb_host *host)
 	int ret;
 
 	if (!host->root_dev) {
-		ret = host->init(host);
-		if (ret)
-			return ret;
+		if (host->init) {
+			ret = host->init(host);
+			if (ret)
+				return ret;
+		}
 
 		host->root_dev = usb_alloc_new_device();
 		host->root_dev->dev.parent = host->hw_dev;

@@ -306,6 +306,16 @@ void usb_rescan(void);
 #define usb_pipecontrol(pipe)	(usb_pipetype((pipe)) == PIPE_CONTROL)
 #define usb_pipebulk(pipe)	(usb_pipetype((pipe)) == PIPE_BULK)
 
+/*
+ * As of USB 2.0, full/low speed devices are segregated into trees.
+ * One type grows from USB 1.1 host controllers (OHCI, UHCI etc).
+ * The other type grows from high speed hubs when they connect to
+ * full/low speed devices using "Transaction Translators" (TTs).
+ */
+struct usb_tt {
+	bool		multi;		/* true means one TT per port */
+	unsigned	think_time;	/* think time in ns */
+};
 
 /*************************************************************************
  * Hub Stuff
@@ -316,6 +326,7 @@ struct usb_hub_device {
 	uint64_t connect_timeout; /* Device connection timeout in ns */
 	uint64_t query_delay; /* Device query delay in ns */
 	int overcurrent_count[USB_MAXCHILDREN]; /* Over-current counter */
+	struct usb_tt tt; /* Transaction Translator */
 };
 
 /**

@@ -388,7 +388,7 @@ static int usb_hub_configure(struct usb_device *dev)
 	unsigned char buffer[USB_BUFSIZ], *bitmap;
 	struct usb_hub_descriptor *descriptor;
 	struct usb_hub_status *hubsts;
-	int i;
+	int i, ret;
 	struct usb_hub_device *hub;
 
 	hub = xzalloc(sizeof (*hub));
@@ -465,6 +465,56 @@ static int usb_hub_configure(struct usb_device *dev)
 	case 0x10:
 	case 0x18:
 		dev_dbg(&dev->dev, "no over-current protection\n");
+		break;
+	}
+
+	switch (dev->descriptor->bDeviceProtocol) {
+	case USB_HUB_PR_FS:
+		break;
+	case USB_HUB_PR_HS_SINGLE_TT:
+		dev_dbg(&dev->dev, "Single TT\n");
+		break;
+	case USB_HUB_PR_HS_MULTI_TT:
+		ret = usb_set_interface(dev, 0, 1);
+		if (ret == 0) {
+			dev_dbg(&dev->dev, "TT per port\n");
+			hub->tt.multi = true;
+		} else {
+			dev_dbg(&dev->dev, "Using single TT (err %d)\n", ret);
+		}
+		break;
+	case USB_HUB_PR_SS:
+		/* USB 3.0 hubs don't have a TT */
+		break;
+	default:
+		dev_dbg(&dev->dev, "Unrecognized hub protocol %d\n",
+		      dev->descriptor->bDeviceProtocol);
+		break;
+	}
+
+	/* Note 8 FS bit times == (8 bits / 12000000 bps) ~= 666ns */
+	switch (hub->desc.wHubCharacteristics & HUB_CHAR_TTTT) {
+	case HUB_TTTT_8_BITS:
+		if (dev->descriptor->bDeviceProtocol != 0) {
+			hub->tt.think_time = 666;
+			dev_dbg(&dev->dev, "TT requires at most %d FS bit times (%d ns)\n",
+			      8, hub->tt.think_time);
+		}
+		break;
+	case HUB_TTTT_16_BITS:
+		hub->tt.think_time = 666 * 2;
+		dev_dbg(&dev->dev, "TT requires at most %d FS bit times (%d ns)\n",
+		      16, hub->tt.think_time);
+		break;
+	case HUB_TTTT_24_BITS:
+		hub->tt.think_time = 666 * 3;
+		dev_dbg(&dev->dev, "TT requires at most %d FS bit times (%d ns)\n",
+		      24, hub->tt.think_time);
+		break;
+	case HUB_TTTT_32_BITS:
+		hub->tt.think_time = 666 * 4;
+		dev_dbg(&dev->dev, "TT requires at most %d FS bit times (%d ns)\n",
+		      32, hub->tt.think_time);
 		break;
 	}
 

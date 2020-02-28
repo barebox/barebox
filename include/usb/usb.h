@@ -66,6 +66,12 @@ struct usb_interface {
 	unsigned char	act_altsetting;
 
 	struct usb_endpoint_descriptor ep_desc[USB_MAXENDPOINTS];
+	/*
+	 * Super Speed Device will have Super Speed Endpoint
+	 * Companion Descriptor  (section 9.6.7 of usb 3.0 spec)
+	 * Revision 1.0 June 6th 2011
+	 */
+	struct usb_ss_ep_comp_descriptor ss_ep_comp_desc[USB_MAXENDPOINTS];
 };
 
 struct usb_configuration {
@@ -119,6 +125,9 @@ struct usb_device {
 	struct list_head list;
 	void *drv_data;
 	struct usb_hub_device *hub;
+
+	/* slot_id - for xHCI enabled devices */
+	unsigned int slot_id;
 };
 
 struct usb_device_id;
@@ -147,6 +156,10 @@ struct usb_host {
 	int (*submit_int_msg)(struct usb_device *dev, unsigned long pipe, void *buffer,
 			int transfer_len, int interval);
 	void (*usb_event_poll)(void);
+	int (*alloc_device)(struct usb_device *dev);
+	int (*update_hub_device)(struct usb_device *dev);
+
+	bool no_desc_before_addr;
 
 	struct list_head list;
 
@@ -306,6 +319,11 @@ void usb_rescan(void);
 #define usb_pipeint(pipe)	(usb_pipetype((pipe)) == PIPE_INTERRUPT)
 #define usb_pipecontrol(pipe)	(usb_pipetype((pipe)) == PIPE_CONTROL)
 #define usb_pipebulk(pipe)	(usb_pipetype((pipe)) == PIPE_BULK)
+
+#define usb_pipe_ep_index(pipe) \
+		usb_pipecontrol(pipe) ? (usb_pipeendpoint(pipe) * 2) : \
+			((usb_pipeendpoint(pipe) * 2) - \
+			(usb_pipein(pipe) ? 0 : 1))
 
 /*
  * As of USB 2.0, full/low speed devices are segregated into trees.

@@ -40,7 +40,6 @@
  *
  * For each transfer (except "Interrupt") we wait for completion.
  */
-
 #define pr_fmt(fmt) "usb: " fmt
 
 #include <common.h>
@@ -192,6 +191,7 @@ static int usb_parse_config(struct usb_device *dev, unsigned char *buffer, int c
 	int index, ifno, epno, curr_if_num;
 	int i;
 	unsigned char *ch;
+	struct usb_interface *if_desc;
 
 	ifno = -1;
 	epno = -1;
@@ -250,6 +250,11 @@ static int usb_parse_config(struct usb_device *dev, unsigned char *buffer, int c
 			le16_to_cpus(&(dev->config.interface[ifno].ep_desc[epno].\
 							       wMaxPacketSize));
 			dev_dbg(&dev->dev, "if %d, ep %d\n", ifno, epno);
+			break;
+		case USB_DT_SS_ENDPOINT_COMP:
+			if_desc = &dev->config.interface[ifno];
+			memcpy(&if_desc->ss_ep_comp_desc[epno],
+				&buffer[index], buffer[index]);
 			break;
 		default:
 			if (head->bLength == 0)
@@ -401,7 +406,7 @@ int usb_new_device(struct usb_device *dev)
 {
 	int err;
 	void *buf;
-	struct usb_device_descriptor *desc;
+	struct usb_host *host = dev->host;
 	struct usb_device *parent = dev->parent;
 	char str[16];
 
@@ -415,12 +420,16 @@ int usb_new_device(struct usb_device *dev)
 
 	buf = dma_alloc(USB_BUFSIZ);
 
-	desc = buf;
-
 	if (parent)
 		dev->level = parent->level + 1;
 
-	usb_setup_descriptor(dev, true);
+	if (host->alloc_device) {
+		err = host->alloc_device(dev);
+		if (err)
+			goto err_out;
+	}
+
+	usb_setup_descriptor(dev, !host->no_desc_before_addr);
 
 	dev->devnum = ++dev_index;
 
@@ -433,6 +442,12 @@ int usb_new_device(struct usb_device *dev)
 	}
 
 	mdelay(10);	/* Let the SET_ADDRESS settle */
+
+	if (host->no_desc_before_addr) {
+		err = usb_setup_descriptor(dev, true);
+		if (err)
+			goto err_out;
+	}
 
 	err = usb_get_descriptor(dev, USB_DT_DEVICE, 0,
 				 dev->descriptor, sizeof(*dev->descriptor));

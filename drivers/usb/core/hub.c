@@ -165,12 +165,16 @@ static void usb_hub_power_on(struct usb_hub_device *hub)
 
 static inline char *portspeed(int portstatus)
 {
-	if (portstatus & (1 << USB_PORT_FEAT_HIGHSPEED))
+	switch (portstatus & USB_PORT_STAT_SPEED_MASK) {
+	case USB_PORT_STAT_SUPER_SPEED:
+		return "5 Gb/s";
+	case USB_PORT_STAT_HIGH_SPEED:
 		return "480 Mb/s";
-	else if (portstatus & (1 << USB_PORT_FEAT_LOWSPEED))
+	case USB_PORT_STAT_LOW_SPEED:
 		return "1.5 Mb/s";
-	else
+	default:
 		return "12 Mb/s";
+	}
 }
 
 static int hub_port_reset(struct usb_device *hub, int port,
@@ -227,12 +231,20 @@ static int hub_port_reset(struct usb_device *hub, int port,
 
 	usb_clear_port_feature(hub, port + 1, USB_PORT_FEAT_C_RESET);
 
-	if (portstatus & USB_PORT_STAT_HIGH_SPEED)
+	switch (portstatus & USB_PORT_STAT_SPEED_MASK) {
+	case USB_PORT_STAT_SUPER_SPEED:
+		usb->speed = USB_SPEED_SUPER;
+		break;
+	case USB_PORT_STAT_HIGH_SPEED:
 		usb->speed = USB_SPEED_HIGH;
-	else if (portstatus & USB_PORT_STAT_LOW_SPEED)
+		break;
+	case USB_PORT_STAT_LOW_SPEED:
 		usb->speed = USB_SPEED_LOW;
-	else
+		break;
+	default:
 		usb->speed = USB_SPEED_FULL;
+		break;
+	}
 
 	return 0;
 }
@@ -340,6 +352,18 @@ static void usb_scan_port(struct usb_device_scan *usb_scan)
 	if(!(portstatus & USB_PORT_STAT_CONNECTION))
 		return;
 
+	if (portchange & USB_PORT_STAT_C_RESET) {
+		dev_dbg(&dev->dev, "port%d: reset change\n", port + 1);
+		usb_clear_port_feature(dev, port + 1,
+					USB_PORT_FEAT_C_RESET);
+	}
+
+	if ((portchange & USB_PORT_STAT_C_BH_RESET) &&
+	    usb_hub_is_superspeed(dev)) {
+		dev_dbg(&dev->dev, "port%d: BH reset change\n", port + 1);
+		usb_clear_port_feature(dev, port + 1, USB_PORT_FEAT_C_BH_PORT_RESET);
+	}
+
 	/* A new USB device is ready at this point */
 	dev_dbg(&dev->dev, "port%d: USB dev found\n", port + 1);
 
@@ -377,12 +401,6 @@ static void usb_scan_port(struct usb_device_scan *usb_scan)
 		/* Otherwise the device will get removed */
 		dev_dbg(&dev->dev,"port%d: over-current occurred %d times\n",
 				port + 1, hub->overcurrent_count[port]);
-	}
-
-	if (portchange & USB_PORT_STAT_C_RESET) {
-		dev_dbg(&dev->dev, "port%d: reset change\n", port + 1);
-		usb_clear_port_feature(dev, port + 1,
-					USB_PORT_FEAT_C_RESET);
 	}
 
 remove:
@@ -596,6 +614,14 @@ static int usb_hub_configure(struct usb_device *dev)
 	dev_dbg(&dev->dev, "%sover-current condition exists\n",
 		(le16_to_cpu(hubsts->wHubStatus) & HUB_STATUS_OVERCURRENT) ? \
 		"" : "no ");
+
+	if (dev->host->update_hub_device) {
+		int ret;
+
+		ret = dev->host->update_hub_device(dev);
+		if (ret)
+			return ret;
+	}
 
 	if (!usb_hub_is_root_hub(dev) && usb_hub_is_superspeed(dev)) {
 		int ret;

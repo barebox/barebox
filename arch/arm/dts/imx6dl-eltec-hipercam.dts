@@ -91,13 +91,13 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <0x20>;
 
-	eeprom@0x52 {
+	eeprom@52 {
 		compatible = "amtel,24c04";
 		reg = <0x52>;
 		pagesize = <0x10>;
 	};
 
-	pfuze100@08 {
+	pfuze100@8 {
 		compatible = "fsl,pfuze100";
 		reg = <0x8>;
 

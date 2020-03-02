@@ -108,7 +108,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_i2c3>;
 
-	pmic: pf0100@08 {
+	pmic: pf0100@8 {
 		compatible = "pf0100-regulator";
 		reg = <0x08>;
 		interrupt-parent = <&gpio6>;

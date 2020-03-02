@@ -108,6 +108,7 @@ struct usb_device {
 	int act_len;			/* transfered bytes */
 	int maxchild;			/* Number of ports if hub */
 	int portnr;
+	int level;
 	struct usb_device *parent;
 	struct usb_device *children[USB_MAXCHILDREN];
 
@@ -459,5 +460,7 @@ int usb_register_otg_device(struct device_d *parent,
 			    int (*set_mode)(void *ctx, enum usb_dr_mode mode), void *ctx);
 
 extern struct list_head usb_device_list;
+
+bool usb_hub_is_root_hub(struct usb_device *hdev);
 
 #endif /*_USB_H_ */

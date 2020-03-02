@@ -43,11 +43,38 @@ struct usb_device_scan {
 
 static LIST_HEAD(usb_scan_list);
 
+static bool usb_hub_is_superspeed(struct usb_device *hdev)
+{
+	return hdev->descriptor->bDeviceProtocol == 3;
+}
+
+bool usb_hub_is_root_hub(struct usb_device *hdev)
+{
+	return hdev->level == 0;
+}
+
+static int usb_set_hub_depth(struct usb_device *dev, int depth)
+{
+	dev_dbg(&dev->dev, "set hub depth to %d\n", dev->level);
+
+	if (depth < 0 || depth > 4)
+		return -EINVAL;
+
+	return usb_control_msg(dev, usb_sndctrlpipe(dev, 0),
+		HUB_SET_DEPTH, USB_DIR_OUT | USB_RT_HUB,
+		depth, 0, NULL, 0, USB_CNTL_TIMEOUT);
+}
+
 static int usb_get_hub_descriptor(struct usb_device *dev, void *data, int size)
 {
+	unsigned short dtype = USB_DT_HUB;
+
+	if (usb_hub_is_superspeed(dev))
+		dtype = USB_DT_SS_HUB;
+
 	return usb_control_msg(dev, usb_rcvctrlpipe(dev, 0),
 		USB_REQ_GET_DESCRIPTOR, USB_DIR_IN | USB_RT_HUB,
-		USB_DT_HUB << 8, 0, data, size, USB_CNTL_TIMEOUT);
+		dtype << 8, 0, data, size, USB_CNTL_TIMEOUT);
 }
 
 static int usb_clear_port_feature(struct usb_device *dev, int port, int feature)
@@ -550,6 +577,23 @@ static int usb_hub_configure(struct usb_device *dev)
 	dev_dbg(&dev->dev, "%sover-current condition exists\n",
 		(le16_to_cpu(hubsts->wHubStatus) & HUB_STATUS_OVERCURRENT) ? \
 		"" : "no ");
+
+	if (!usb_hub_is_root_hub(dev) && usb_hub_is_superspeed(dev)) {
+		int ret;
+
+		/*
+		* This request sets the value that the hub uses to
+		* determine the index into the 'route string index'
+		* for this hub.
+		*/
+		ret = usb_set_hub_depth(dev, dev->level - 1);
+		if (ret < 0) {
+			dev_dbg(&dev->dev, "failed to set hub depth (0x%08lx)\n",
+				dev->status);
+			return ret;
+		}
+	}
+
 	usb_hub_power_on(hub);
 
 	return 0;

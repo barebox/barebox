@@ -350,6 +350,9 @@ int usb_new_device(struct usb_device *dev)
 	dev->epmaxpacketin[0] = 64;
 	dev->epmaxpacketout[0] = 64;
 
+	if (parent)
+		dev->level = parent->level + 1;
+
 	err = usb_get_descriptor(dev, USB_DT_DEVICE, 0, desc, 64);
 	if (err < 0) {
 		dev_dbg(&dev->dev, "%s: usb_get_descriptor() failed with %d\n", __func__, err);

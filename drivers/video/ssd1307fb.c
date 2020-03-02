@@ -405,8 +405,9 @@ static int ssd1307fb_probe(struct device_d *dev)
 	}
 
 	info = xzalloc(sizeof(struct fb_info));
+	par = xzalloc(sizeof(*par));
 
-	par = info->priv;
+	info->priv = par;
 	par->info = info;
 	par->client = client;
 
@@ -574,6 +575,7 @@ reset_oled_error:
 	free(vmem);
 fb_alloc_error:
 	regulator_disable(par->vbat);
+	free(par);
 	free(info);
 	return ret;
 }

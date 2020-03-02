@@ -513,11 +513,9 @@ static int ssd1307fb_probe(struct device_d *dev)
 		goto reset_oled_error;
 	}
 
-	if (par->vbat) {
-		ret = regulator_disable(par->vbat);
-		if (ret < 0)
-			goto reset_oled_error;
-	}
+	ret = regulator_disable(par->vbat);
+	if (ret < 0)
+		goto reset_oled_error;
 
 	i2c_set_clientdata(client, info);
 
@@ -525,11 +523,9 @@ static int ssd1307fb_probe(struct device_d *dev)
 	gpio_set_value(par->reset, 0);
 	udelay(4);
 
-	if (par->vbat) {
-		ret = regulator_enable(par->vbat);
-		if (ret < 0)
-			goto reset_oled_error;
-	}
+	ret = regulator_enable(par->vbat);
+	if (ret < 0)
+		goto reset_oled_error;
 
 	mdelay(100);
 

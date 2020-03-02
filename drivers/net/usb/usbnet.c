@@ -158,13 +158,22 @@ static int usbnet_init(struct eth_device *edev)
 	return 0;
 }
 
+static void usbnet_adjust_link(struct eth_device *edev)
+{
+	struct usbnet		*dev = (struct usbnet*)edev->priv;
+	struct driver_info      *info = dev->driver_info;
+
+	if (info->link_reset)
+		info->link_reset(dev);
+}
+
 static int usbnet_open(struct eth_device *edev)
 {
 	struct usbnet		*dev = (struct usbnet*)edev->priv;
 
 	dev_dbg(&edev->dev, "%s\n",__func__);
 
-	return phy_device_connect(edev, &dev->miibus, dev->phy_addr, NULL,
+	return phy_device_connect(edev, &dev->miibus, dev->phy_addr, usbnet_adjust_link,
 				0, PHY_INTERFACE_MODE_NA);
 }
 

@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <malloc.h>
 #include <linux/phy.h>
+#include <dma.h>
 
 /* handles CDC Ethernet and many other network "bulk data" interfaces */
 int usbnet_get_endpoints(struct usbnet *dev)
@@ -113,8 +114,6 @@ static int usbnet_send(struct eth_device *edev, void *eth_data, int data_length)
 	return ret;
 }
 
-static char rx_buf[4096];
-
 static int usbnet_recv(struct eth_device *edev)
 {
 	struct usbnet		*dev = (struct usbnet*) edev->priv;
@@ -125,15 +124,15 @@ static int usbnet_recv(struct eth_device *edev)
 
 	len = dev->rx_urb_size;
 
-	ret = usb_bulk_msg(dev->udev, dev->in, rx_buf, len, &alen, 100);
+	ret = usb_bulk_msg(dev->udev, dev->in, dev->rx_buf, len, &alen, 100);
 	if (ret)
 		return ret;
 
 	if (alen) {
 		if (info->rx_fixup)
-			return info->rx_fixup(dev, rx_buf, alen);
+			return info->rx_fixup(dev, dev->rx_buf, alen);
 		else
-			net_receive(edev, rx_buf, alen);
+			net_receive(edev, dev->rx_buf, alen);
 	}
 
         return 0;
@@ -211,6 +210,12 @@ int usbnet_probe(struct usb_device *usbdev, const struct usb_device_id *prod)
 		undev->rx_urb_size = 1514; /* FIXME: What to put here? */
 	undev->maxpacket = usb_maxpacket(undev->udev, undev->out);
 
+	undev->rx_buf = dma_alloc(undev->rx_urb_size);
+	if (!undev->rx_buf) {
+		status = -ENOMEM;
+		goto out1;
+	}
+
 	eth_register(edev);
 
 	return 0;
@@ -231,5 +236,6 @@ void usbnet_disconnect(struct usb_device *usbdev)
 
 	eth_unregister(edev);
 
+	free(undev->rx_buf);
 	free(undev);
 }

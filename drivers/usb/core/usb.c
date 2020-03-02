@@ -316,6 +316,14 @@ int usb_new_device(struct usb_device *dev)
 	struct usb_device *parent = dev->parent;
 	char str[16];
 
+	if (parent)
+		dev_set_name(&dev->dev, "%s-%d", parent->dev.name,
+			     dev->portnr - 1);
+	else
+		dev_set_name(&dev->dev, "usb%d", dev->host->busnum);
+
+	dev->dev.id = DEVICE_ID_SINGLE;
+
 	buf = dma_alloc(USB_BUFSIZ);
 
 	/* We still haven't set the Address yet */
@@ -423,15 +431,6 @@ int usb_new_device(struct usb_device *dev)
 	if (dev->descriptor->iSerialNumber)
 		usb_string(dev, dev->descriptor->iSerialNumber,
 			   dev->serial, sizeof(dev->serial));
-
-	if (parent) {
-		dev_set_name(&dev->dev, "%s-%d", parent->dev.name,
-			     dev->portnr - 1);
-	} else {
-		dev_set_name(&dev->dev, "usb%d", dev->host->busnum);
-	}
-
-	dev->dev.id = DEVICE_ID_SINGLE;
 
 	print_usb_device(dev);
 

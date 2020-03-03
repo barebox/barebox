@@ -301,15 +301,14 @@ static int usb_get_descriptor(struct usb_device *dev, unsigned char type,
 }
 
 /*
- * By the time we get here, the device has gotten a new device ID
- * and is in the default state. We need to identify the thing and
- * get the ball rolling..
+ * By the time we get here, the device is in the default state. We need to
+ * identify the thing and get the ball rolling..
  *
  * Returns 0 for success, != 0 for error.
  */
 int usb_new_device(struct usb_device *dev)
 {
-	int addr, err;
+	int err;
 	int tmp;
 	void *buf;
 	struct usb_device_descriptor *desc;
@@ -325,10 +324,6 @@ int usb_new_device(struct usb_device *dev)
 	dev->dev.id = DEVICE_ID_SINGLE;
 
 	buf = dma_alloc(USB_BUFSIZ);
-
-	/* We still haven't set the Address yet */
-	addr = dev->devnum;
-	dev->devnum = 0;
 
 	/* This is a Windows scheme of initialization sequence, with double
 	 * reset of the device (Linux uses the same sequence)
@@ -377,7 +372,7 @@ int usb_new_device(struct usb_device *dev)
 		dev->maxpacketsize = PACKET_SIZE_64;
 		break;
 	}
-	dev->devnum = addr;
+	dev->devnum = ++dev_index;
 
 	err = usb_set_address(dev); /* set address */
 
@@ -500,7 +495,6 @@ struct usb_device *usb_alloc_new_device(void)
 {
 	struct usb_device *usbdev = xzalloc(sizeof (*usbdev));
 
-	usbdev->devnum = ++dev_index;
 	usbdev->maxchild = 0;
 	usbdev->dev.bus = &usb_bus_type;
 	usbdev->setup_packet = dma_alloc(sizeof(*usbdev->setup_packet));

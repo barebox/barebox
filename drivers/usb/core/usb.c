@@ -309,7 +309,6 @@ static int usb_get_descriptor(struct usb_device *dev, unsigned char type,
 int usb_new_device(struct usb_device *dev)
 {
 	int err;
-	int tmp;
 	void *buf;
 	struct usb_device_descriptor *desc;
 	struct usb_device *parent = dev->parent;
@@ -384,17 +383,16 @@ int usb_new_device(struct usb_device *dev)
 
 	mdelay(10);	/* Let the SET_ADDRESS settle */
 
-	tmp = sizeof(*dev->descriptor);
-
 	err = usb_get_descriptor(dev, USB_DT_DEVICE, 0,
 				 dev->descriptor, sizeof(*dev->descriptor));
-	if (err < tmp) {
+	if (err < sizeof(*dev->descriptor)) {
 		if (err < 0)
 			dev_err(&dev->dev, "unable to get device descriptor (error=%d)\n",
 			       err);
 		else
 			dev_err(&dev->dev, "USB device descriptor short read " \
-				"(expected %i, got %i)\n", tmp, err);
+				"(expected %zu, got %i)\n",
+				sizeof(*dev->descriptor), err);
 		goto err_out;
 	}
 	/* correct le values */

@@ -78,8 +78,6 @@ int usbnet_get_endpoints(struct usbnet *dev)
 }
 EXPORT_SYMBOL(usbnet_get_endpoints);
 
-char tx_buffer[4096];
-
 static int usbnet_send(struct eth_device *edev, void *eth_data, int data_length)
 {
 	struct usbnet		*dev = edev->priv;
@@ -92,23 +90,25 @@ static int usbnet_send(struct eth_device *edev, void *eth_data, int data_length)
 	 * win32 driver (usually) and/or hardware quirks
 	 */
         if(info->tx_fixup) {
-                if(info->tx_fixup(dev, eth_data, data_length, tx_buffer, &len)) {
+                if(info->tx_fixup(dev, eth_data, data_length, dev->tx_buf, &len)) {
 			dev_dbg(&edev->dev, "can't tx_fixup packet");
                         return 0;
                 }
         } else {
                 len = data_length;
-                memmove(tx_buffer, (void*) eth_data, len);
+                memmove(dev->tx_buf, (void*) eth_data, len);
         }
 
 	/* don't assume the hardware handles USB_ZERO_PACKET
 	 * NOTE:  strictly conforming cdc-ether devices should expect
 	 * the ZLP here, but ignore the one-byte packet.
 	 */
-	if ((len % dev->maxpacket) == 0)
-		tx_buffer[len++] = 0;
+	if ((len % dev->maxpacket) == 0) {
+		*(unsigned char *)(dev->tx_buf + len) = 0;
+		len++;
+	}
 
-	ret = usb_bulk_msg(dev->udev, dev->out, tx_buffer, len, &alen, 1000);
+	ret = usb_bulk_msg(dev->udev, dev->out, dev->tx_buf, len, &alen, 1000);
 	dev_dbg(&edev->dev, "%s: ret: %d len: %d alen: %d\n", __func__, ret, len, alen);
 
 	return ret;
@@ -216,6 +216,12 @@ int usbnet_probe(struct usb_device *usbdev, const struct usb_device_id *prod)
 		goto out1;
 	}
 
+	undev->tx_buf = dma_alloc(4096);
+	if (!undev->tx_buf) {
+		status = -ENOMEM;
+		goto out1;
+	}
+
 	eth_register(edev);
 
 	return 0;
@@ -237,5 +243,6 @@ void usbnet_disconnect(struct usb_device *usbdev)
 	eth_unregister(edev);
 
 	free(undev->rx_buf);
+	free(undev->tx_buf);
 	free(undev);
 }

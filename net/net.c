@@ -612,11 +612,53 @@ static int net_handle_udp(unsigned char *pkt, int len)
 	return -EINVAL;
 }
 
-static int net_handle_icmp(unsigned char *pkt, int len)
+static int ping_reply(struct eth_device *edev, unsigned char *pkt, int len)
+{
+	struct ethernet *et = (struct ethernet *)pkt;
+	struct icmphdr *icmp;
+	struct iphdr *ip = (struct iphdr *)(pkt + ETHER_HDR_SIZE);
+	unsigned char *packet;
+	int ret;
+
+	memcpy(et->et_dest, et->et_src, 6);
+	memcpy(et->et_src, edev->ethaddr, 6);
+	et->et_protlen = htons(PROT_IP);
+
+	icmp = net_eth_to_icmphdr(pkt);
+
+	icmp->type = ICMP_ECHO_REPLY;
+	icmp->checksum = 0;
+	icmp->checksum = ~net_checksum((unsigned char *)icmp,
+				       len - sizeof(struct iphdr) - ETHER_HDR_SIZE);
+	ip->check = 0;
+	ip->frag_off = 0;
+	net_copy_ip((void *)&ip->daddr, &ip->saddr);
+	net_copy_ip((void *)&ip->saddr, &edev->ipaddr);
+	ip->check = ~net_checksum((unsigned char *)ip, sizeof(struct iphdr));
+
+	packet = net_alloc_packet();
+	if (!packet)
+		return 0;
+
+	memcpy(packet, pkt, ETHER_HDR_SIZE + len);
+
+	ret = eth_send(edev, packet, ETHER_HDR_SIZE + len);
+
+	free(packet);
+
+	return 0;
+}
+
+static int net_handle_icmp(struct eth_device *edev, unsigned char *pkt, int len)
 {
 	struct net_connection *con;
+	struct icmphdr *icmp;
 
 	pr_debug("%s\n", __func__);
+
+	icmp = net_eth_to_icmphdr(pkt);
+	if (icmp->type == ICMP_ECHO_REQUEST)
+		ping_reply(edev, pkt, len);
 
 	list_for_each_entry(con, &connection_list, list) {
 		if (con->proto == IPPROTO_ICMP) {
@@ -654,7 +696,7 @@ static int net_handle_ip(struct eth_device *edev, unsigned char *pkt, int len)
 
 	switch (ip->protocol) {
 	case IPPROTO_ICMP:
-		return net_handle_icmp(pkt, len);
+		return net_handle_icmp(edev, pkt, len);
 	case IPPROTO_UDP:
 		return net_handle_udp(pkt, len);
 	}

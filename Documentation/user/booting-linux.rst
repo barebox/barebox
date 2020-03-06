@@ -158,7 +158,7 @@ Bootloader Spec
 
 barebox supports booting according to the bootloader spec:
 
-http://www.freedesktop.org/wiki/Specifications/BootLoaderSpec/
+https://systemd.io/BOOT_LOADER_SPECIFICATION/
 
 It follows another philosophy than the :ref:`boot_entries`. With Boot Entries
 booting is completely configured in the bootloader. Bootloader Spec Entries

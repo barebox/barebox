@@ -1,5 +1,6 @@
 menuconfig NET
 	bool "Networking Support"
+	select POLLER
 
 if NET
 

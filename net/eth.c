@@ -269,11 +269,16 @@ static void eth_do_work(struct eth_device *edev)
 	struct eth_q *q, *tmp;
 	int ret;
 
-	slice_acquire(eth_device_slice(edev));
+	if (!phy_acquired(edev->phydev)) {
+		ret = eth_carrier_check(edev, 0);
+		if (ret)
+			return;
+	}
 
-	ret = eth_carrier_check(edev, 0);
-	if (ret)
-		goto out;
+	if (slice_acquired(eth_device_slice(edev)))
+		return;
+
+	slice_acquire(eth_device_slice(edev));
 
 	edev->recv(edev);
 
@@ -285,7 +290,6 @@ static void eth_do_work(struct eth_device *edev)
 		free(q);
 	}
 
-out:
 	slice_release(eth_device_slice(edev));
 }
 

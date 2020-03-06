@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <clock.h>
 #include <led.h>
+#include <slice.h>
 #include <xfuncs.h>
 #include <linux/phy.h>
 #include <linux/string.h>	/* memcpy */
@@ -63,6 +64,10 @@ struct eth_device {
 	char *bootarg;
 	char *linuxdevname;
 
+	struct slice slice;
+
+	struct list_head send_queue;
+
 	bool ifup;
 #define ETH_MODE_DHCP 0
 #define ETH_MODE_STATIC 1
@@ -71,6 +76,11 @@ struct eth_device {
 };
 
 #define dev_to_edev(d) container_of(d, struct eth_device, dev)
+
+static inline struct slice *eth_device_slice(struct eth_device *edev)
+{
+	return &edev->slice;
+}
 
 static inline const char *eth_name(struct eth_device *edev)
 {

@@ -22,6 +22,7 @@
 #include <init.h>
 #include <dhcp.h>
 #include <net.h>
+#include <dma.h>
 #include <of.h>
 #include <linux/phy.h>
 #include <errno.h>
@@ -208,6 +209,36 @@ static int eth_carrier_check(struct eth_device *edev, int force)
 	return edev->phydev->link ? 0 : -ENETDOWN;
 }
 
+struct eth_q {
+	struct eth_device *edev;
+	int length;
+	struct list_head list;
+	void *data;
+};
+
+static int eth_queue(struct eth_device *edev, void *packet, int length)
+{
+	struct eth_q *q;
+
+	q = xzalloc(sizeof(*q));
+	if (!q)
+		return -ENOMEM;
+
+	q->data = dma_alloc(length);
+	if (!q->data) {
+		free(q);
+		return -ENOMEM;
+	}
+
+	q->length = length;
+	q->edev = edev;
+
+	memcpy(q->data, packet, length);
+	list_add_tail(&q->list, &edev->send_queue);
+
+	return 0;
+}
+
 int eth_send(struct eth_device *edev, void *packet, int length)
 {
 	int ret;
@@ -215,24 +246,47 @@ int eth_send(struct eth_device *edev, void *packet, int length)
 	if (!edev->active)
 		return -ENETDOWN;
 
+	if (slice_acquired(eth_device_slice(edev)))
+		return eth_queue(edev, packet, length);
+
 	ret = eth_carrier_check(edev, 0);
 	if (ret)
 		return ret;
 
+	slice_acquire(eth_device_slice(edev));
+
 	led_trigger_network(LED_TRIGGER_NET_TX);
 
-	return edev->send(edev, packet, length);
+	ret = edev->send(edev, packet, length);
+
+	slice_release(eth_device_slice(edev));
+
+	return ret;
 }
 
 static void eth_do_work(struct eth_device *edev)
 {
+	struct eth_q *q, *tmp;
 	int ret;
+
+	slice_acquire(eth_device_slice(edev));
 
 	ret = eth_carrier_check(edev, 0);
 	if (ret)
-		return;
+		goto out;
 
 	edev->recv(edev);
+
+	list_for_each_entry_safe(q, tmp, &edev->send_queue, list) {
+		led_trigger_network(LED_TRIGGER_NET_TX);
+		edev->send(edev, q->data, q->length);
+		list_del(&q->list);
+		free(q->data);
+		free(q);
+	}
+
+out:
+	slice_release(eth_device_slice(edev));
 }
 
 int eth_rx(void)
@@ -349,9 +403,13 @@ int eth_register(struct eth_device *edev)
 		edev->dev.id = DEVICE_ID_DYNAMIC;
 	}
 
+	INIT_LIST_HEAD(&edev->send_queue);
+
 	ret = register_device(&edev->dev);
 	if (ret)
 		return ret;
+
+	slice_init(&edev->slice, dev_name(dev));
 
 	edev->devname = xstrdup(dev_name(&edev->dev));
 
@@ -422,8 +480,19 @@ void eth_close(struct eth_device *edev)
 
 void eth_unregister(struct eth_device *edev)
 {
+	struct eth_q *q, *tmp;
+
 	if (edev->active)
 		edev->halt(edev);
+
+	list_for_each_entry_safe(q, tmp, &edev->send_queue, list) {
+		if (q->edev != edev)
+			continue;
+
+		list_del(&q->list);
+		free(q->data);
+		free(q);
+	}
 
 	if (IS_ENABLED(CONFIG_OFDEVICE))
 		free(edev->nodepath);
@@ -431,6 +500,7 @@ void eth_unregister(struct eth_device *edev)
 	free(edev->devname);
 
 	unregister_device(&edev->dev);
+	slice_exit(&edev->slice);
 	list_del(&edev->list);
 }
 

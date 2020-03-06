@@ -20,6 +20,7 @@
 #define _USB_H_
 
 #include <driver.h>
+#include <slice.h>
 #include <usb/ch9.h>
 #include <usb/ch11.h>
 #include <usb/usb_defs.h>
@@ -163,12 +164,17 @@ struct usb_host {
 	struct device_d *hw_dev;
 	int busnum;
 	struct usb_device *root_dev;
-	int sem;
 	struct usb_phy *usbphy;
+	struct slice slice;
 };
 
 int usb_register_host(struct usb_host *);
 void usb_unregister_host(struct usb_host *host);
+
+static inline struct slice *usb_device_slice(struct usb_device *udev)
+{
+	return &udev->host->slice;
+}
 
 int usb_host_detect(struct usb_host *host);
 

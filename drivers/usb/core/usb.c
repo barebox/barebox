@@ -75,28 +75,30 @@ static int host_busnum = 1;
 
 static inline int usb_host_acquire(struct usb_host *host)
 {
-	if (host->sem)
+	if (slice_acquired(&host->slice))
 		return -EAGAIN;
-	host->sem++;
+
+	slice_acquire(&host->slice);
+
 	return 0;
 }
 
 static inline void usb_host_release(struct usb_host *host)
 {
-	if (host->sem > 0)
-		host->sem--;
+	slice_release(&host->slice);
 }
 
 int usb_register_host(struct usb_host *host)
 {
 	list_add_tail(&host->list, &host_list);
 	host->busnum = host_busnum++;
-	host->sem = 0;
+	slice_init(&host->slice, dev_name(host->hw_dev));
 	return 0;
 }
 
 void usb_unregister_host(struct usb_host *host)
 {
+	slice_exit(&host->slice);
 	list_del(&host->list);
 }
 

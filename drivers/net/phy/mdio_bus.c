@@ -239,6 +239,8 @@ int mdiobus_register(struct mii_bus *bus)
 		return -EINVAL;
 	}
 
+	slice_init(&bus->slice, dev_name(&bus->dev));
+
 	if (bus->reset)
 		bus->reset(bus);
 
@@ -271,6 +273,8 @@ void mdiobus_unregister(struct mii_bus *bus)
 			unregister_device(&bus->phy_map[i]->dev);
 		bus->phy_map[i] = NULL;
 	}
+
+	slice_exit(&bus->slice);
 
 	list_del(&bus->list);
 }
@@ -355,6 +359,45 @@ static int mdio_bus_match(struct device_d *dev, struct driver_d *drv)
 		return 0;
 
 	return 1;
+}
+
+/**
+ * mdiobus_read - Convenience function for reading a given MII mgmt register
+ * @bus: the mii_bus struct
+ * @addr: the phy address
+ * @regnum: register number to read
+ */
+int mdiobus_read(struct mii_bus *bus, int addr, u32 regnum)
+{
+	int ret;
+
+	slice_acquire(&bus->slice);
+
+	ret = bus->read(bus, addr, regnum);
+
+	slice_release(&bus->slice);
+
+	return ret;
+}
+
+/**
+ * mdiobus_write - Convenience function for writing a given MII mgmt register
+ * @bus: the mii_bus struct
+ * @addr: the phy address
+ * @regnum: register number to write
+ * @val: value to write to @regnum
+ */
+int mdiobus_write(struct mii_bus *bus, int addr, u32 regnum, u16 val)
+{
+	int ret;
+
+	slice_acquire(&bus->slice);
+
+	ret = bus->write(bus, addr, regnum, val);
+
+	slice_release(&bus->slice);
+
+	return ret;
 }
 
 static ssize_t phydev_read(struct cdev *cdev, void *_buf, size_t count, loff_t offset, ulong flags)

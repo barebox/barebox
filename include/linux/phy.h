@@ -16,6 +16,7 @@
 #define __PHY_H
 
 #include <driver.h>
+#include <slice.h>
 #include <linux/list.h>
 #include <linux/ethtool.h>
 #include <linux/mii.h>
@@ -116,8 +117,15 @@ struct mii_bus {
 	struct list_head list;
 
 	bool is_multiplexed;
+
+	struct slice slice;
 };
 #define to_mii_bus(d) container_of(d, struct mii_bus, dev)
+
+static inline struct slice *mdiobus_slice(struct mii_bus *bus)
+{
+	return &bus->slice;
+}
 
 int mdiobus_register(struct mii_bus *bus);
 void mdiobus_unregister(struct mii_bus *bus);
@@ -134,28 +142,8 @@ struct mii_bus *mdiobus_get_bus(int busnum);
 
 struct mii_bus *of_mdio_find_bus(struct device_node *mdio_bus_np);
 
-/**
- * mdiobus_read - Convenience function for reading a given MII mgmt register
- * @bus: the mii_bus struct
- * @addr: the phy address
- * @regnum: register number to read
- */
-static inline int mdiobus_read(struct mii_bus *bus, int addr, u32 regnum)
-{
-	return bus->read(bus, addr, regnum);
-}
-
-/**
- * mdiobus_write - Convenience function for writing a given MII mgmt register
- * @bus: the mii_bus struct
- * @addr: the phy address
- * @regnum: register number to write
- * @val: value to write to @regnum
- */
-static inline int mdiobus_write(struct mii_bus *bus, int addr, u32 regnum, u16 val)
-{
-	return bus->write(bus, addr, regnum, val);
-}
+int mdiobus_read(struct mii_bus *bus, int addr, u32 regnum);
+int mdiobus_write(struct mii_bus *bus, int addr, u32 regnum, u16 val);
 
 /* phy_device: An instance of a PHY
  *
@@ -397,10 +385,14 @@ int phy_register_fixup(const char *bus_id, u32 phy_uid, u32 phy_uid_mask,
 int phy_register_fixup_for_id(const char *bus_id,
 		int (*run)(struct phy_device *));
 int phy_scan_fixups(struct phy_device *phydev);
-
 int phy_read_mmd_indirect(struct phy_device *phydev, int prtad, int devad);
 void phy_write_mmd_indirect(struct phy_device *phydev, int prtad, int devad,
 				   u16 data);
+
+static inline bool phy_acquired(struct phy_device *phydev)
+{
+	return phydev && phydev->bus && slice_acquired(&phydev->bus->slice);
+}
 
 #ifdef CONFIG_PHYLIB
 int phy_register_fixup_for_uid(u32 phy_uid, u32 phy_uid_mask,

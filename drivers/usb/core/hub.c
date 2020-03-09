@@ -406,6 +406,9 @@ static int usb_device_list_scan(void)
 			if (ret)
 				goto out;
 		}
+
+		/* Avoid hammering the HUB with port scans */
+		mdelay(25);
 	}
 
 out:

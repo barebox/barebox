@@ -59,7 +59,7 @@ static int write_file(const char *filename, const void *buf, size_t size)
 	int fd, ret;
 	int now;
 
-	fd = open(filename, O_WRONLY | O_TRUNC | O_CREAT);
+	fd = open(filename, O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 	if (fd < 0)
 		return fd;
 

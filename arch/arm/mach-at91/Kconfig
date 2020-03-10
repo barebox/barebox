@@ -587,6 +587,14 @@ config MACH_SAMA5D27_SOM1
 	help
 	  Select this if you are using Microchip's sama5d27 SoM evaluation kit
 
+config MACH_SAMA5D27_GIANTBOARD
+	bool "Groboards SAMA5D27 Giant Board"
+	select SOC_SAMA5D2
+	select OFDEVICE
+	select COMMON_CLK_OF_PROVIDER
+	help
+	  Select this if you are using the Groboards sama5d27 Giantboard
+
 endif
 
 comment "AT91 Board Options"

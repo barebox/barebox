@@ -584,8 +584,7 @@ export DEFAULT_COMPRESSION_SUFFIX
 # System.map is generated to document addresses of all kernel symbols
 
 barebox-common := $(common-y)
-barebox-pbl-common := $(pbl-common-y)
-export barebox-pbl-common
+export BAREBOX_PBL_OBJS := $(pbl-common-y)
 barebox-all    := $(barebox-common)
 barebox-lds    := $(lds-y)
 
@@ -777,7 +776,7 @@ barebox.srec: barebox
 
 # The actual objects are generated when descending,
 # make sure no implicit rule kicks in
-$(sort $(barebox-common) ) $(barebox-lds) $(barebox-pbl-common): $(barebox-dirs) ;
+$(sort $(barebox-common) ) $(barebox-lds) $(BAREBOX_PBL_OBJS): $(barebox-dirs) ;
 
 # Handle descending into subdirectories listed in $(barebox-dirs)
 # Preset locale variables to speed up the build process. Limit locale

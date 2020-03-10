@@ -56,8 +56,8 @@ ifeq ($(CONFIG_UBSAN),y)
 SANITIZER_LIBS += -fsanitize=undefined
 endif
 
-cmd_barebox__ = $(CC) -o $@ -Wl,-T,$(barebox-lds) \
-	-Wl,--start-group $(barebox-common) -Wl,--end-group \
+cmd_barebox__ = $(CC) -o $@ -Wl,-T,$(BAREBOX_LDS) \
+	-Wl,--start-group $(BAREBOX_OBJS) -Wl,--end-group \
 	-lrt -lpthread $(SDL_LIBS) $(FTDI1_LIBS) \
 	$(SANITIZER_LIBS)
 

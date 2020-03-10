@@ -716,19 +716,6 @@ debug_kallsyms: .tmp_map$(last_kallsyms)
 
 endif # ifdef CONFIG_KALLSYMS
 
-# Do modpost on a prelinked vmlinux. The finally linked vmlinux has
-# relevant sections renamed as per the linker script.
-quiet_cmd_barebox-modpost = LD      $@
-      cmd_barebox-modpost = $(LD) $(LDFLAGS) -r -o $@                          \
-	 $(vmlinux-init) --start-group $(barebox-main) --end-group             \
-	 $(filter-out $(barebox-init) $(barebox-main) $(barebox-lds) FORCE ,$^)
-define rule_barebox-modpost
-	:
-	+$(call cmd,barebox-modpost)
-	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost $@
-	$(Q)echo 'cmd_$@ := $(cmd_barebox-modpost)' > $(dot-target).cmd
-endef
-
 OBJCOPYFLAGS_barebox.bin = -O binary
 
 barebox.bin: barebox FORCE
@@ -782,7 +769,6 @@ endif
 
 # barebox image
 barebox: $(barebox-lds) $(barebox-common) $(kallsyms.o) FORCE
-	$(call barebox-modpost)
 	$(call if_changed_rule,barebox__)
 	$(Q)rm -f .old_version
 

@@ -13,6 +13,7 @@ obj-y += at91sam9_reset.o
 obj-y += at91sam9g45_reset.o
 
 obj-$(CONFIG_AT91SAM9_SMC) += sam9_smc.o
+obj-$(CONFIG_HAVE_AT91SAM9_RST) += at91sam9_rst.o
 
 # CPU-specific support
 obj-$(CONFIG_SOC_AT91RM9200)	+= at91rm9200.o at91rm9200_time.o at91rm9200_devices.o

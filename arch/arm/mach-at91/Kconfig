@@ -41,12 +41,16 @@ config AT91SAM926X_BOARD_INIT
 config AT91SAM9_SMC
 	bool
 
+config HAVE_AT91SAM9_RST
+	bool
+
 config SOC_AT91SAM9
 	bool
 	select CPU_ARM926T
 	select AT91SAM9_SMC
 	select CLOCKSOURCE_ATMEL_PIT
 	select PINCTRL
+	select HAVE_AT91SAM9_RST
 	select HAVE_AT91_SMD
 	select HAVE_AT91_USB_CLK
 	select HAVE_AT91_UTMI
@@ -54,6 +58,7 @@ config SOC_AT91SAM9
 
 config SOC_SAMA5
 	bool
+	select HAVE_AT91SAM9_RST
 	select CPU_V7
 
 config SOC_SAMA5D2

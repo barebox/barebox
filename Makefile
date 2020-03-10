@@ -585,7 +585,6 @@ export DEFAULT_COMPRESSION_SUFFIX
 
 BAREBOX_OBJS := $(common-y)
 export BAREBOX_PBL_OBJS := $(pbl-common-y)
-barebox-all    := $(BAREBOX_OBJS)
 BAREBOX_LDS    := $(lds-y)
 
 # Rule to link barebox
@@ -691,13 +690,13 @@ quiet_cmd_kallsyms = KSYM    $@
 	$(call cmd,kallsyms)
 
 # .tmp_barebox1 must be complete except kallsyms, so update barebox version
-.tmp_barebox1: $(BAREBOX_LDS) $(barebox-all) FORCE
+.tmp_barebox1: $(BAREBOX_LDS) $(BAREBOX_OBJS) FORCE
 	$(call if_changed_rule,ksym_ld)
 
-.tmp_barebox2: $(BAREBOX_LDS) $(barebox-all) .tmp_kallsyms1.o FORCE
+.tmp_barebox2: $(BAREBOX_LDS) $(BAREBOX_OBJS) .tmp_kallsyms1.o FORCE
 	$(call if_changed,barebox__)
 
-.tmp_barebox3: $(BAREBOX_LDS) $(barebox-all) .tmp_kallsyms2.o FORCE
+.tmp_barebox3: $(BAREBOX_LDS) $(BAREBOX_OBJS) .tmp_kallsyms2.o FORCE
 	$(call if_changed,barebox__)
 
 # Needs to visit scripts/ before $(KALLSYMS) can be used.

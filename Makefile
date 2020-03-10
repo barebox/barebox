@@ -781,7 +781,7 @@ barebox.S barebox.s: barebox FORCE
 endif
 
 # barebox image
-barebox: $(barebox-lds) $(barebox-head) $(barebox-common) $(kallsyms.o) FORCE
+barebox: $(barebox-lds) $(barebox-common) $(kallsyms.o) FORCE
 	$(call barebox-modpost)
 	$(call if_changed_rule,barebox__)
 	$(Q)rm -f .old_version
@@ -791,7 +791,7 @@ barebox.srec: barebox
 
 # The actual objects are generated when descending,
 # make sure no implicit rule kicks in
-$(sort $(barebox-head) $(barebox-common) ) $(barebox-lds) $(barebox-pbl-common): $(barebox-dirs) ;
+$(sort $(barebox-common) ) $(barebox-lds) $(barebox-pbl-common): $(barebox-dirs) ;
 
 # Handle descending into subdirectories listed in $(barebox-dirs)
 # Preset locale variables to speed up the build process. Limit locale

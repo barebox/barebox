@@ -22,8 +22,10 @@
 /* PCK = 492MHz, MCK = 164MHz */
 #define MASTER_CLOCK	164000000
 
-#define sama5d2_pmc_enable_periph_clock(clk) \
-	at91_pmc_sam9x5_enable_periph_clock(IOMEM(SAMA5D2_BASE_PMC), clk)
+static inline void sama5d2_pmc_enable_periph_clock(int clk)
+{
+	at91_pmc_sam9x5_enable_periph_clock(IOMEM(SAMA5D2_BASE_PMC), clk);
+}
 
 static void ek_turn_led(unsigned color)
 {
@@ -69,7 +71,7 @@ ENTRY_FUNCTION(start_sama5d27_som1_ek, r0, r1, r2)
 
 	arm_cpu_lowlevel_init();
 
-	arm_setup_stack(SAMA5D2_SRAM_BASE + SAMA5D2_SRAM_SIZE - 16);
+	arm_setup_stack(SAMA5D2_SRAM_BASE + SAMA5D2_SRAM_SIZE);
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		ek_dbgu_init();

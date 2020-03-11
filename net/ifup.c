@@ -214,6 +214,10 @@ int ifup_edev(struct eth_device *edev, unsigned flags)
 	if (ret)
 		return ret;
 
+	ret = eth_open(edev);
+	if (ret)
+		return ret;
+
 	if (edev->global_mode == ETH_MODE_DHCP) {
 		if (IS_ENABLED(CONFIG_NET_DHCP)) {
 			ret = dhcp(edev, NULL);

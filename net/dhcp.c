@@ -609,6 +609,10 @@ int dhcp(struct eth_device *edev, const struct dhcp_req_param *param)
 	struct dhcp_result *res;
 	int ret;
 
+	ret = eth_open(edev);
+	if (ret)
+		return ret;
+
 	ret = dhcp_request(edev, param, &res);
 	if (ret)
 		return ret;

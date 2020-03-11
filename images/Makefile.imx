@@ -293,6 +293,8 @@ $(call build_imx_habv4img, CONFIG_MACH_PHYTEC_SOM_IMX6, start_phytec_phycore_imx
 
 $(call build_imx_habv4img, CONFIG_MACH_PHYTEC_SOM_IMX6, start_phytec_phycore_imx6dl_som_lc_nand_256mb, phytec-som-imx6/flash-header-phytec-pcm058dl-256mb, phytec-phycore-imx6dl-som-lc-nand-256mb)
 
+$(call build_imx_habv4img, CONFIG_MACH_PHYTEC_SOM_IMX6, start_phytec_phycore_imx6dl_som_emmc_512mb, phytec-som-imx6/flash-header-phytec-pcm058dl-512mb, phytec-phycore-imx6dl-som-emmc-512mb)
+
 $(call build_imx_habv4img, CONFIG_MACH_PHYTEC_SOM_IMX6, start_phytec_phycore_imx6dl_som_emmc_1gib, phytec-som-imx6/flash-header-phytec-pcm058dl-1gib, phytec-phycore-imx6dl-som-emmc-1gib)
 
 $(call build_imx_habv4img, CONFIG_MACH_PHYTEC_SOM_IMX6, start_phytec_phycore_imx6dl_som_lc_emmc_1gib, phytec-som-imx6/flash-header-phytec-pcm058dl-1gib, phytec-phycore-imx6dl-som-lc-emmc-1gib)

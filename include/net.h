@@ -483,6 +483,10 @@ int ifup_edev(struct eth_device *edev, unsigned flags);
 int ifup(const char *name, unsigned flags);
 int ifup_all(unsigned flags);
 
+void ifdown_edev(struct eth_device *edev);
+int ifdown(const char *name);
+void ifdown_all(void);
+
 extern struct list_head netdev_list;
 
 #define for_each_netdev(netdev) list_for_each_entry(netdev, &netdev_list, list)

@@ -21,6 +21,7 @@
 #include <environment.h>
 #include <command.h>
 #include <common.h>
+#include <complete.h>
 #include <getopt.h>
 #include <dhcp.h>
 #include <net.h>
@@ -341,6 +342,7 @@ BAREBOX_CMD_START(ifup)
 	BAREBOX_CMD_DESC("bring a network interface up")
 	BAREBOX_CMD_OPTS("[-af] [INTF]")
 	BAREBOX_CMD_GROUP(CMD_GRP_NET)
+	BAREBOX_CMD_COMPLETE(eth_complete)
 	BAREBOX_CMD_HELP(cmd_ifup_help)
 BAREBOX_CMD_END
 

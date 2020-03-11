@@ -161,7 +161,6 @@ struct phy_device *phy_device_create(struct mii_bus *bus, int addr, int phy_id)
 	phydev->speed = 0;
 	phydev->duplex = -1;
 	phydev->pause = phydev->asym_pause = 0;
-	phydev->link = 1;
 	phydev->autoneg = AUTONEG_ENABLE;
 
 	phydev->addr = addr;

@@ -121,3 +121,74 @@ void poller_call(void)
 
 	poller_active = 0;
 }
+
+#if defined CONFIG_CMD_POLLER
+
+#include <command.h>
+#include <getopt.h>
+
+static void poller_time(void)
+{
+	uint64_t start = get_time_ns();
+	int i = 0;
+
+	/*
+	 * How many times we can run the registered pollers in one second?
+	 *
+	 * A low number here may point to problems with pollers taking too
+	 * much time.
+	 */
+	while (!is_timeout(start, SECOND))
+		i++;
+
+	printf("%d poller calls in 1s\n", i);
+}
+
+static void poller_info(void)
+{
+	struct poller_struct *poller;
+
+	printf("Registered pollers:\n");
+
+	if (list_empty(&poller_list)) {
+		printf("<none>\n");
+		return;
+	}
+
+	list_for_each_entry(poller, &poller_list, list)
+		printf("%s\n", poller->name);
+}
+
+BAREBOX_CMD_HELP_START(poller)
+BAREBOX_CMD_HELP_TEXT("print info about registered pollers")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-i", "Print information about registered pollers")
+BAREBOX_CMD_HELP_OPT ("-t", "measure how many pollers we run in 1s")
+BAREBOX_CMD_HELP_END
+
+static int do_poller(int argc, char *argv[])
+{
+	int opt;
+
+	while ((opt = getopt(argc, argv, "it")) > 0) {
+		switch (opt) {
+		case 'i':
+			poller_info();
+			return 0;
+		case 't':
+			poller_time();
+			return 0;
+		}
+	}
+
+	return COMMAND_ERROR_USAGE;
+}
+
+BAREBOX_CMD_START(poller)
+	.cmd = do_poller,
+	BAREBOX_CMD_DESC("print info about registered pollers")
+	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
+	BAREBOX_CMD_HELP(cmd_poller_help)
+BAREBOX_CMD_END
+#endif

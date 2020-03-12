@@ -244,6 +244,15 @@ config CMD_MMC_EXTCSD
 		  -y      don't request when writing to one time programmable fields
 		  __CAUTION__: this could damage the device!
 
+config CMD_POLLER
+	tristate
+	prompt "poller"
+	depends on POLLER
+	help
+	  Pollers are functions that are running in the background whenever code executes
+	  is_timeout() or one of the various delay functions. The poller command prints
+	  informations about registered pollers.
+
 # end Information commands
 endmenu
 

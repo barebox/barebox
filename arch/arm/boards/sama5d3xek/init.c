@@ -408,7 +408,7 @@ static void ek_add_device_hdmi(void)
 	hdmi_reset_start = get_time_ns();
 	hdmi_poller.func = hdmi_off_poller;
 
-	poller_register(&hdmi_poller);
+	poller_register(&hdmi_poller, "hdmi-reset");
 }
 #else
 static void ek_add_device_hdmi(void)

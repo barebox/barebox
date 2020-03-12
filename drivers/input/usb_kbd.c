@@ -204,7 +204,7 @@ static int usb_kbd_probe(struct usb_device *usbdev,
 		return ret;
 	}
 
-	ret = poller_async_register(&data->poller);
+	ret = poller_async_register(&data->poller, "usb-kbd");
 	if (ret) {
 		dev_err(&usbdev->dev, "can't setup poller\n");
 		return ret;

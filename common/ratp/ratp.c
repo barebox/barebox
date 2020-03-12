@@ -451,7 +451,7 @@ int barebox_ratp(struct console_device *cdev)
 	if (ret < 0)
 		goto out;
 
-	ret = poller_register(&ctx->poller);
+	ret = poller_register(&ctx->poller, "ratp");
 	if (ret)
 		goto out1;
 

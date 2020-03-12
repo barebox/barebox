@@ -16,11 +16,12 @@
 static LIST_HEAD(poller_list);
 static int poller_active;
 
-int poller_register(struct poller_struct *poller)
+int poller_register(struct poller_struct *poller, const char *name)
 {
 	if (poller->registered)
 		return -EBUSY;
 
+	poller->name = xstrdup(name);
 	list_add_tail(&poller->list, &poller_list);
 	poller->registered = 1;
 
@@ -35,6 +36,7 @@ int poller_unregister(struct poller_struct *poller)
 
 	list_del(&poller->list);
 	poller->registered = 0;
+	free(poller->name);
 
 	return 0;
 }
@@ -92,12 +94,12 @@ int poller_call_async(struct poller_async *pa, uint64_t delay_ns,
 	return 0;
 }
 
-int poller_async_register(struct poller_async *pa)
+int poller_async_register(struct poller_async *pa, const char *name)
 {
 	pa->poller.func = poller_async_callback;
 	pa->active = 0;
 
-	return poller_register(&pa->poller);
+	return poller_register(&pa->poller, name);
 }
 
 int poller_async_unregister(struct poller_async *pa)

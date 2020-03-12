@@ -87,8 +87,8 @@ static int pcs_set_state(struct pinctrl_device *pdev, struct device_node *np)
 
 		for (i = 0; i < rows; i++) {
 			offset = be32_to_cpup(mux + index++);
-			mask = be32_to_cpup(mux + index++);
 			val = be32_to_cpup(mux + index++);
+			mask = be32_to_cpup(mux + index++);
 			reg = pcs->read(pcs->base + offset);
 			reg &= ~mask;
 			reg |= val;

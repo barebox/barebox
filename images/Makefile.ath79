@@ -18,6 +18,10 @@ pblb-$(CONFIG_BOARD_DPTECHNICS_DPT_MODULE) += start_dptechnics_dpt_module
 FILE_barebox-dptechnics-dpt-module.img = start_dptechnics_dpt_module.pblb
 image-$(CONFIG_BOARD_DPTECHNICS_DPT_MODULE) += barebox-dptechnics-dpt-module.img
 
+pblb-$(CONFIG_BOARD_OPENEMBEDED_SOM9331) += start_openembed_som9331_board
+FILE_barebox-openembed-som9331-board.img = start_openembed_som9331_board.pblb
+image-$(CONFIG_BOARD_OPENEMBEDED_SOM9331) += barebox-openembed-som9331-board.img
+
 pblb-$(CONFIG_BOARD_TPLINK_MR3020) += start_tplink_mr3020
 FILE_barebox-tplink-mr3020.img = start_tplink_mr3020.pblb
 image-$(CONFIG_BOARD_TPLINK_MR3020) += barebox-tplink-mr3020.img

@@ -8,6 +8,7 @@ pbl-dtb-$(CONFIG_BOARD_BLACK_SWIFT) += black-swift.dtb.o
 pbl-dtb-$(CONFIG_BOARD_CI20) += img-ci20.dtb.o
 pbl-dtb-$(CONFIG_BOARD_DLINK_DIR320) += dlink-dir-320.dtb.o
 pbl-dtb-$(CONFIG_BOARD_DPTECHNICS_DPT_MODULE) += ar9331-dptechnics-dpt-module.dtb.o
+pbl-dtb-$(CONFIG_BOARD_OPENEMBEDED_SOM9331) += ar9331-openembed-som9331-board.dtb.o
 pbl-dtb-$(CONFIG_BOARD_LOONGSON_TECH_LS1B) += loongson-ls1b.dtb.o
 pbl-dtb-$(CONFIG_BOARD_QEMU_MALTA) += qemu-malta.dtb.o
 pbl-dtb-$(CONFIG_BOARD_RZX50) += rzx50.dtb.o

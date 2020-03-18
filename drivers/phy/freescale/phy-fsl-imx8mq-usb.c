@@ -106,7 +106,7 @@ static int imx8mq_usb_phy_probe(struct device_d *dev)
 	if (IS_ERR(imx_phy->base))
 		return PTR_ERR(imx_phy->base);
 
-	imx_phy->phy = phy_create(dev, NULL, &imx8mq_usb_phy_ops, NULL);
+	imx_phy->phy = phy_create(dev, NULL, &imx8mq_usb_phy_ops);
 	if (IS_ERR(imx_phy->phy))
 		return PTR_ERR(imx_phy->phy);
 

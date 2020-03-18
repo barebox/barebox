@@ -6,14 +6,11 @@
 #include <common.h>
 #include <init.h>
 #include <watchdog.h>
-#include <restart.h>
 #include <asm/io.h>
 #include <of_device.h>
 #include <linux/log2.h>
 #include <linux/iopoll.h>
 #include <linux/clk.h>
-#include <mfd/syscon.h>
-#include <reset_source.h>
 
 /* IWDG registers */
 #define IWDG_KR		0x00	/* Key register */
@@ -36,40 +33,12 @@
 #define SR_PVU	BIT(0) /* Watchdog prescaler value update */
 #define SR_RVU	BIT(1) /* Watchdog counter reload value update */
 
-#define RCC_MP_GRSTCSETR		0x404
-#define RCC_MP_RSTSCLRR			0x408
-#define RCC_MP_GRSTCSETR_MPSYSRST	BIT(0)
-
-#define STM32MP_RCC_RSTF_POR		BIT(0)
-#define STM32MP_RCC_RSTF_BOR		BIT(1)
-#define STM32MP_RCC_RSTF_PAD		BIT(2)
-#define STM32MP_RCC_RSTF_HCSS		BIT(3)
-#define STM32MP_RCC_RSTF_VCORE		BIT(4)
-
-#define STM32MP_RCC_RSTF_MPSYS		BIT(6)
-#define STM32MP_RCC_RSTF_MCSYS		BIT(7)
-#define STM32MP_RCC_RSTF_IWDG1		BIT(8)
-#define STM32MP_RCC_RSTF_IWDG2		BIT(9)
-
-#define STM32MP_RCC_RSTF_STDBY		BIT(11)
-#define STM32MP_RCC_RSTF_CSTDBY		BIT(12)
-#define STM32MP_RCC_RSTF_MPUP0		BIT(13)
-#define STM32MP_RCC_RSTF_MPUP1		BIT(14)
-
 /* set timeout to 100 ms */
 #define TIMEOUT_US	100000
 
-struct stm32_reset_reason {
-	uint32_t mask;
-	enum reset_src_type type;
-	int instance;
-};
-
 struct stm32_iwdg {
 	struct watchdog wdd;
-	struct restart_handler restart;
 	void __iomem *iwdg_base;
-	struct regmap *rcc_regmap;
 	unsigned int timeout;
 	unsigned int rate;
 };
@@ -77,17 +46,6 @@ struct stm32_iwdg {
 static inline struct stm32_iwdg *to_stm32_iwdg(struct watchdog *wdd)
 {
 	return container_of(wdd, struct stm32_iwdg, wdd);
-}
-
-static void __noreturn stm32_iwdg_restart_handler(struct restart_handler *rst)
-{
-	struct stm32_iwdg *wd = container_of(rst, struct stm32_iwdg, restart);
-
-	regmap_update_bits(wd->rcc_regmap, RCC_MP_GRSTCSETR,
-			   RCC_MP_GRSTCSETR_MPSYSRST, RCC_MP_GRSTCSETR_MPSYSRST);
-
-	mdelay(1000);
-	hang();
 }
 
 static void stm32_iwdg_ping(struct stm32_iwdg *wd)
@@ -146,47 +104,6 @@ static int stm32_iwdg_set_timeout(struct watchdog *wdd, unsigned int timeout)
 	}
 
 	stm32_iwdg_ping(wd);
-	return 0;
-}
-
-static const struct stm32_reset_reason stm32_reset_reasons[] = {
-	{ STM32MP_RCC_RSTF_POR,		RESET_POR, 0 },
-	{ STM32MP_RCC_RSTF_BOR,		RESET_BROWNOUT, 0 },
-	{ STM32MP_RCC_RSTF_STDBY,	RESET_WKE, 0 },
-	{ STM32MP_RCC_RSTF_CSTDBY,	RESET_WKE, 1 },
-	{ STM32MP_RCC_RSTF_MPSYS,	RESET_RST, 2 },
-	{ STM32MP_RCC_RSTF_MPUP0,	RESET_RST, 0 },
-	{ STM32MP_RCC_RSTF_MPUP1,	RESET_RST, 1 },
-	{ STM32MP_RCC_RSTF_IWDG1,	RESET_WDG, 0 },
-	{ STM32MP_RCC_RSTF_IWDG2,	RESET_WDG, 1 },
-	{ STM32MP_RCC_RSTF_PAD,		RESET_EXT, 1 },
-	{ /* sentinel */ }
-};
-
-static int stm32_set_reset_reason(struct regmap *rcc)
-{
-	enum reset_src_type type = RESET_UKWN;
-	u32 reg;
-	int ret;
-	int i, instance = 0;
-
-	ret = regmap_read(rcc, RCC_MP_RSTSCLRR, &reg);
-	if (ret)
-		return ret;
-
-	for (i = 0; stm32_reset_reasons[i].mask; i++) {
-		if (reg & stm32_reset_reasons[i].mask) {
-			type     = stm32_reset_reasons[i].type;
-			instance = stm32_reset_reasons[i].instance;
-			break;
-		}
-	}
-
-	reset_source_set_prinst(type, RESET_SOURCE_DEFAULT_PRIORITY, instance);
-
-	pr_info("STM32 RCC reset reason %s (MP_RSTSR: 0x%08x)\n",
-		reset_source_name(), reg);
-
 	return 0;
 }
 
@@ -263,22 +180,6 @@ static int stm32_iwdg_probe(struct device_d *dev)
 		dev_err(dev, "Failed to register watchdog device\n");
 		return ret;
 	}
-
-	wd->restart.name = "stm32-iwdg";
-	wd->restart.restart = stm32_iwdg_restart_handler;
-	wd->restart.priority = 200;
-
-	wd->rcc_regmap = syscon_regmap_lookup_by_compatible("st,stm32mp1-rcc");
-	if (IS_ERR(wd->rcc_regmap))
-		dev_warn(dev, "Cannot register restart handler\n");
-
-	ret = restart_handler_register(&wd->restart);
-	if (ret)
-		dev_warn(dev, "Cannot register restart handler\n");
-
-	ret = stm32_set_reset_reason(wd->rcc_regmap);
-	if (ret)
-		dev_warn(dev, "Cannot determine reset reason\n");
 
 	dev_info(dev, "probed\n");
 	return 0;

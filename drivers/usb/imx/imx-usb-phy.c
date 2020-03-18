@@ -174,7 +174,7 @@ static int imx_usbphy_probe(struct device_d *dev)
 	imxphy->usb_phy.dev = dev;
 	imxphy->usb_phy.notify_connect = imx_usbphy_notify_connect;
 	imxphy->usb_phy.notify_disconnect = imx_usbphy_notify_disconnect;
-	imxphy->phy = phy_create(dev, NULL, &imx_phy_ops, NULL);
+	imxphy->phy = phy_create(dev, NULL, &imx_phy_ops);
 	if (IS_ERR(imxphy->phy)) {
 		ret = PTR_ERR(imxphy->phy);
 		goto err_clk;

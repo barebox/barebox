@@ -107,7 +107,7 @@ static int nop_usbphy_probe(struct device_d *dev)
 	/* FIXME: Add vbus-detect-gpio support */
 
 	nopphy->usb_phy.dev = dev;
-	nopphy->phy = phy_create(dev, NULL, &nop_phy_ops, NULL);
+	nopphy->phy = phy_create(dev, NULL, &nop_phy_ops);
 	if (IS_ERR(nopphy->phy)) {
 		ret = PTR_ERR(nopphy->phy);
 		goto release_gpio;

@@ -25,13 +25,11 @@ static int phy_ida;
  * @dev: device that is creating the new phy
  * @node: device node of the phy
  * @ops: function pointers for performing phy operations
- * @init_data: contains the list of PHY consumers or NULL
  *
  * Called to create a phy using phy framework.
  */
 struct phy *phy_create(struct device_d *dev, struct device_node *node,
-		       const struct phy_ops *ops,
-		       struct phy_init_data *init_data)
+		       const struct phy_ops *ops)
 {
 	int ret;
 	int id;
@@ -52,7 +50,16 @@ struct phy *phy_create(struct device_d *dev, struct device_node *node,
 	phy->dev.device_node = node ?: dev->device_node;
 	phy->id = id;
 	phy->ops = ops;
-	phy->init_data = init_data;
+
+	/* phy-supply */
+	phy->pwr = regulator_get(&phy->dev, "phy");
+	if (IS_ERR(phy->pwr)) {
+		ret = PTR_ERR(phy->pwr);
+		if (ret == -EPROBE_DEFER)
+			goto free_ida;
+
+		phy->pwr = NULL;
+	}
 
 	ret = register_device(&phy->dev);
 	if (ret)
@@ -364,3 +371,17 @@ struct phy *phy_optional_get(struct device_d *dev, const char *string)
 	return phy;
 }
 
+/**
+ * phy_get_by_index() - lookup and obtain a reference to a phy by index.
+ * @dev: device with node that references this phy
+ * @index: index of the phy
+ *
+ * Gets the phy using _of_phy_get()
+ */
+struct phy *phy_get_by_index(struct device_d *dev, int index)
+{
+	if (!dev->device_node)
+		return ERR_PTR(-ENODEV);
+
+	return _of_phy_get(dev->device_node, index);
+}

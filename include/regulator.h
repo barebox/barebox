@@ -6,6 +6,23 @@
 struct regulator;
 
 /**
+ * struct regulator_bulk_data - Data used for bulk regulator operations.
+ *
+ * @supply:   The name of the supply.  Initialised by the user before
+ *            using the bulk regulator APIs.
+ * @consumer: The regulator consumer for the supply.  This will be managed
+ *            by the bulk API.
+ *
+ * The regulator APIs provide a series of regulator_bulk_() API calls as
+ * a convenience to consumers which require multiple supplies.  This
+ * structure is used to manage data for these calls.
+ */
+struct regulator_bulk_data {
+	const char *supply;
+	struct regulator *consumer;
+};
+
+/**
  * struct regulator_desc - Static regulator descriptor
  *
  * Each regulator registered with the core is described with a
@@ -136,6 +153,14 @@ int regulator_list_voltage_linear_range(struct regulator_dev *rdev,
 int regulator_get_voltage_sel_regmap(struct regulator_dev *rdev);
 int regulator_map_voltage_iterate(struct regulator_dev *rdev,
 				  int min_uV, int max_uV);
+int regulator_bulk_get(struct device_d *dev, int num_consumers,
+		       struct regulator_bulk_data *consumers);
+int regulator_bulk_enable(int num_consumers,
+			  struct regulator_bulk_data *consumers);
+int regulator_bulk_disable(int num_consumers,
+			   struct regulator_bulk_data *consumers);
+void regulator_bulk_free(int num_consumers,
+			 struct regulator_bulk_data *consumers);
 
 /*
  * Helper functions intended to be used by regulator drivers prior registering
@@ -162,6 +187,30 @@ static inline int regulator_disable(struct regulator *r)
 
 static inline int regulator_set_voltage(struct regulator *regulator,
 					int min_uV, int max_uV)
+{
+	return 0;
+}
+
+static inline int regulator_bulk_get(struct device_d *dev, int num_consumers,
+				     struct regulator_bulk_data *consumers)
+{
+	return 0;
+}
+
+static inline int regulator_bulk_enable(int num_consumers,
+					struct regulator_bulk_data *consumers)
+{
+	return 0;
+}
+
+static inline int regulator_bulk_disable(int num_consumers,
+					 struct regulator_bulk_data *consumers)
+{
+	return 0;
+}
+
+static inline void regulator_bulk_free(int num_consumers,
+				       struct regulator_bulk_data *consumers)
 {
 	return 0;
 }

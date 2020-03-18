@@ -24,7 +24,7 @@ enum reset_src_type {
 #ifdef CONFIG_RESET_SOURCE
 
 enum reset_src_type reset_source_get(void);
-const char *reset_source_name(void);
+const char *reset_source_to_string(enum reset_src_type st);
 int reset_source_get_instance(void);
 struct device_d *reset_source_get_device(void);
 
@@ -41,7 +41,7 @@ static inline enum reset_src_type reset_source_get(void)
 	return RESET_UKWN;
 }
 
-static inline const char *reset_source_name(void)
+static inline const char *reset_source_to_string(enum reset_src_type st)
 {
 	return "unknown";
 }
@@ -87,6 +87,11 @@ static inline void reset_source_set_priority(enum reset_src_type type,
 static inline void reset_source_set(enum reset_src_type type)
 {
 	reset_source_set_priority(type, RESET_SOURCE_DEFAULT_PRIORITY);
+}
+
+static inline const char *reset_source_name(void)
+{
+	return reset_source_to_string(reset_source_get());
 }
 
 #endif /* __INCLUDE_RESET_SOURCE_H */

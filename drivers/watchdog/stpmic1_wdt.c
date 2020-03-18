@@ -152,7 +152,7 @@ static int stpmic1_set_reset_reason(struct regmap *map)
 	reset_source_set_prinst(type, 400, instance);
 
 	pr_info("STPMIC1 reset reason %s (RREQ_STATE_SR: 0x%08x)\n",
-		reset_source_name(), reg);
+		reset_source_to_string(type), reg);
 
 	return 0;
 }

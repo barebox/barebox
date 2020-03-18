@@ -41,12 +41,16 @@ config AT91SAM926X_BOARD_INIT
 config AT91SAM9_SMC
 	bool
 
+config HAVE_AT91SAM9_RST
+	bool
+
 config SOC_AT91SAM9
 	bool
 	select CPU_ARM926T
 	select AT91SAM9_SMC
 	select CLOCKSOURCE_ATMEL_PIT
 	select PINCTRL
+	select HAVE_AT91SAM9_RST
 	select HAVE_AT91_SMD
 	select HAVE_AT91_USB_CLK
 	select HAVE_AT91_UTMI
@@ -54,6 +58,7 @@ config SOC_AT91SAM9
 
 config SOC_SAMA5
 	bool
+	select HAVE_AT91SAM9_RST
 	select CPU_V7
 
 config SOC_SAMA5D2
@@ -581,6 +586,14 @@ config MACH_SAMA5D27_SOM1
 	select COMMON_CLK_OF_PROVIDER
 	help
 	  Select this if you are using Microchip's sama5d27 SoM evaluation kit
+
+config MACH_SAMA5D27_GIANTBOARD
+	bool "Groboards SAMA5D27 Giant Board"
+	select SOC_SAMA5D2
+	select OFDEVICE
+	select COMMON_CLK_OF_PROVIDER
+	help
+	  Select this if you are using the Groboards sama5d27 Giantboard
 
 endif
 

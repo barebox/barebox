@@ -1,0 +1,299 @@
+// SPDX-License-Identifer: GPL-2.0-or-later OR X11
+/*
+ * at91-sama5d27_giantboard.dts - Device Tree file for SAMA5D27 Giant Board
+ *
+ *  Copyright (c) 2017, Microchip Technology Inc.
+ *                2016 Nicolas Ferre <nicolas.ferre@atmel.com>
+ *                2017 Cristian Birsan <cristian.birsan@microchip.com>
+ *                2017 Claudiu Beznea <claudiu.beznea@microchip.com>
+ *                2019 Ahmad Fatoum <a.fatoum@pengutronix.de>
+ */
+
+/dts-v1/;
+
+#include <arm/sama5d2.dtsi>
+#include <arm/sama5d2-pinfunc.h>
+#include <dt-bindings/mfd/atmel-flexcom.h>
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/regulator/active-semi,8945a-regulator.h>
+
+/ {
+	model = "Giant Board";
+	compatible = "groboards,sama5d27-giantboard", "atmel,sama5d27", "atmel,sama5d2", "atmel,sama5";
+
+	chosen {
+		stdout-path = &uart1;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_led_gpio_default>;
+
+		orange {
+			label = "orange";
+			gpios = <&pioA PIN_PA6 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "mmc0";
+		};
+	};
+
+	memory {
+		reg = <0x20000000 0x8000000>;
+	};
+};
+
+&slow_xtal {
+	clock-frequency = <32768>;
+};
+
+&main_xtal {
+	clock-frequency = <24000000>;
+};
+
+&usb0 {
+	status = "okay";
+};
+
+&sdmmc1 {
+	bus-width = <4>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_sdmmc1_default>;
+	status = "okay";
+};
+
+&spi0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_spi0_default>;
+	status = "disabled";
+};
+
+&uart1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart1_default>;
+	atmel,use-dma-rx;
+	atmel,use-dma-tx;
+	status = "okay";
+};
+
+&shutdown_controller {
+	atmel,shdwc-debouncer = <976>;
+	atmel,wakeup-rtc-timer;
+
+	input@0 {
+		reg = <0>;
+		atmel,wakeup-type = "low";
+	};
+};
+
+&watchdog {
+	status = "okay";
+};
+
+&i2c0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c0_default>;
+	dmas = <0>, <0>;
+};
+
+&i2c1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c1_default>;
+	dmas = <0>, <0>;
+	i2c-sda-hold-time-ns = <350>;
+	status = "okay";
+
+	pmic@5b {
+		compatible = "active-semi,act8945a";
+		reg = <0x5b>;
+		active-semi,vsel-low;
+
+		regulators {
+			vdd_1v8_reg: REG_DCDC1 {
+				regulator-name = "VDD_1V8";
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <1800000>;
+				regulator-always-on;
+
+				regulator-allowed-modes = <ACT8945A_REGULATOR_MODE_FIXED>,
+							  <ACT8945A_REGULATOR_MODE_LOWPOWER>;
+				regulator-initial-mode = <ACT8945A_REGULATOR_MODE_FIXED>;
+
+				regulator-state-mem {
+					regulator-on-in-suspend;
+					regulator-suspend-min-microvolt=<1850000>;
+					regulator-suspend-max-microvolt=<1850000>;
+					regulator-changeable-in-suspend;
+					regulator-mode=<ACT8945A_REGULATOR_MODE_LOWPOWER>;
+				};
+			};
+
+			vdd_1v2_reg: REG_DCDC2 {
+				regulator-name = "VDD_1V2";
+				regulator-min-microvolt = <1100000>;
+				regulator-max-microvolt = <1300000>;
+				regulator-allowed-modes = <ACT8945A_REGULATOR_MODE_FIXED>,
+							  <ACT8945A_REGULATOR_MODE_LOWPOWER>;
+				regulator-initial-mode = <ACT8945A_REGULATOR_MODE_FIXED>;
+				regulator-always-on;
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+				};
+			};
+
+			vdd_3v3_reg: REG_DCDC3 {
+				regulator-name = "VDD_3V3";
+				regulator-min-microvolt = <3300000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-allowed-modes = <ACT8945A_REGULATOR_MODE_FIXED>,
+							  <ACT8945A_REGULATOR_MODE_LOWPOWER>;
+				regulator-initial-mode = <ACT8945A_REGULATOR_MODE_FIXED>;
+				regulator-always-on;
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+				};
+			};
+
+			vdd_fuse_reg: REG_LDO1 {
+				regulator-name = "VDD_FUSE";
+				regulator-min-microvolt = <2500000>;
+				regulator-max-microvolt = <2500000>;
+				regulator-allowed-modes = <ACT8945A_REGULATOR_MODE_NORMAL>,
+							  <ACT8945A_REGULATOR_MODE_LOWPOWER>;
+				regulator-initial-mode = <ACT8945A_REGULATOR_MODE_NORMAL>;
+				regulator-always-on;
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+				};
+			};
+
+			vdd_3v3_lp_reg: REG_LDO2 {
+				regulator-name = "VDD_3V3_LP";
+				regulator-min-microvolt = <3300000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-allowed-modes = <ACT8945A_REGULATOR_MODE_NORMAL>,
+							  <ACT8945A_REGULATOR_MODE_LOWPOWER>;
+				regulator-initial-mode = <ACT8945A_REGULATOR_MODE_NORMAL>;
+				regulator-always-on;
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+				};
+			};
+
+			vdd_led_reg: REG_LDO3 {
+				regulator-name = "VDD_LED";
+				regulator-min-microvolt = <3300000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-allowed-modes = <ACT8945A_REGULATOR_MODE_NORMAL>,
+							  <ACT8945A_REGULATOR_MODE_LOWPOWER>;
+				regulator-initial-mode = <ACT8945A_REGULATOR_MODE_NORMAL>;
+				regulator-always-on;
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+				};
+			};
+
+			vdd_sdhc_1v8_reg: REG_LDO4 {
+				regulator-name = "VDD_SDHC_1V8";
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <1800000>;
+				regulator-allowed-modes = <ACT8945A_REGULATOR_MODE_NORMAL>,
+							  <ACT8945A_REGULATOR_MODE_LOWPOWER>;
+				regulator-initial-mode = <ACT8945A_REGULATOR_MODE_NORMAL>;
+				regulator-always-on;
+
+				regulator-state-mem {
+					regulator-off-in-suspend;
+				};
+			};
+		};
+
+		charger {
+			compatible = "active-semi,act8945a-charger";
+			pinctrl-names = "default";
+			pinctrl-0 = <&pinctrl_charger_chglev &pinctrl_charger_lbo &pinctrl_charger_irq>;
+			interrupt-parent = <&pioA>;
+			interrupts = <PIN_PB13 IRQ_TYPE_EDGE_RISING>;
+
+			active-semi,chglev-gpios = <&pioA PIN_PA12 GPIO_ACTIVE_HIGH>;
+			active-semi,lbo-gpios = <&pioA PIN_PC8 GPIO_ACTIVE_LOW>;
+			active-semi,input-voltage-threshold-microvolt = <6600>;
+			active-semi,precondition-timeout = <40>;
+			active-semi,total-timeout = <3>;
+		};
+	};
+};
+
+&adc {
+	vddana-supply = <&vdd_3v3_reg>;
+	vref-supply = <&vdd_3v3_reg>;
+	status = "disabled";
+};
+
+&pioA {
+	pinctrl_i2c0_default: i2c0_default {
+		pinmux = <PIN_PB31__TWD0>,
+			 <PIN_PC0__TWCK0>;
+		bias-disable;
+	};
+
+	pinctrl_i2c1_default: i2c1_default {
+		pinmux = <PIN_PD4__TWD1>,
+			 <PIN_PD5__TWCK1>;
+		bias-disable;
+	};
+
+	pinctrl_led_gpio_default: led_gpio_default {
+		pinmux = <PIN_PA6__GPIO>;
+		bias-pull-down;
+	};
+
+	pinctrl_sdmmc1_default: sdmmc1_default {
+		cmd_data {
+			pinmux = <PIN_PA28__SDMMC1_CMD>,
+				 <PIN_PA18__SDMMC1_DAT0>,
+				 <PIN_PA19__SDMMC1_DAT1>,
+				 <PIN_PA20__SDMMC1_DAT2>,
+				 <PIN_PA21__SDMMC1_DAT3>;
+			bias-pull-up;
+		};
+
+		conf-ck_cd {
+			pinmux = <PIN_PA22__SDMMC1_CK>,
+			<PIN_PA30__SDMMC1_CD>;
+			bias-disable;
+		};
+	};
+
+	pinctrl_spi0_default: spi0_default {
+		pinmux = <PIN_PA14__SPI0_SPCK>,
+			 <PIN_PA15__SPI0_MOSI>,
+			 <PIN_PA16__SPI0_MISO>;
+		bias-disable;
+	};
+
+	pinctrl_uart1_default: uart1_default {
+		pinmux = <PIN_PD2__URXD1>,
+			 <PIN_PD3__UTXD1>;
+		bias-disable;
+	};
+
+	pinctrl_charger_chglev: charger_chglev {
+		pinmux = <PIN_PA12__GPIO>;
+		bias-disable;
+	};
+
+	pinctrl_charger_irq: charger_irq {
+		pinmux = <PIN_PB13__GPIO>;
+		bias-disable;
+	};
+
+	pinctrl_charger_lbo: charger_lbo {
+		pinmux = <PIN_PC8__GPIO>;
+		bias-pull-up;
+	};
+};

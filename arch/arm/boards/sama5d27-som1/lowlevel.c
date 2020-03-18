@@ -22,8 +22,10 @@
 /* PCK = 492MHz, MCK = 164MHz */
 #define MASTER_CLOCK	164000000
 
-#define sama5d2_pmc_enable_periph_clock(clk) \
-	at91_pmc_sam9x5_enable_periph_clock(IOMEM(SAMA5D2_BASE_PMC), clk)
+static inline void sama5d2_pmc_enable_periph_clock(int clk)
+{
+	at91_pmc_sam9x5_enable_periph_clock(IOMEM(SAMA5D2_BASE_PMC), clk);
+}
 
 static void ek_turn_led(unsigned color)
 {
@@ -63,13 +65,9 @@ static void ek_dbgu_init(void)
 
 extern char __dtb_z_at91_sama5d27_som1_ek_start[];
 
-ENTRY_FUNCTION(start_sama5d27_som1_ek, r0, r1, r2)
+static noinline void som1_entry(void)
 {
 	void *fdt;
-
-	arm_cpu_lowlevel_init();
-
-	arm_setup_stack(SAMA5D2_SRAM_BASE + SAMA5D2_SRAM_SIZE - 16);
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		ek_dbgu_init();
@@ -78,4 +76,13 @@ ENTRY_FUNCTION(start_sama5d27_som1_ek, r0, r1, r2)
 
 	ek_turn_led(RGB_LED_GREEN);
 	barebox_arm_entry(SAMA5_DDRCS, SZ_128M, fdt);
+}
+
+ENTRY_FUNCTION(start_sama5d27_som1_ek, r0, r1, r2)
+{
+	arm_cpu_lowlevel_init();
+
+	arm_setup_stack(SAMA5D2_SRAM_BASE + SAMA5D2_SRAM_SIZE);
+
+	som1_entry();
 }

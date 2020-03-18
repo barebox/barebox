@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: GPL-2.0
 
 #include <common.h>
+#include <firmware.h>
 #include <linux/sizes.h>
 #include <mach/generic.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
-#include <mach/imx8-ccm-regs.h>
-#include <mach/iomux-mx8.h>
-#include <mach/imx8-ddrc.h>
+#include <mach/imx8m-ccm-regs.h>
+#include <mach/iomux-mx8mq.h>
+#include <soc/imx8m/ddr.h>
 #include <mach/xload.h>
 #include <io.h>
 #include <debug_ll.h>
@@ -25,19 +26,11 @@ extern char __dtb_imx8mq_evk_start[];
 
 static void setup_uart(void)
 {
-	void __iomem *iomux = IOMEM(MX8MQ_IOMUXC_BASE_ADDR);
-	void __iomem *ccm   = IOMEM(MX8MQ_CCM_BASE_ADDR);
+	imx8m_early_setup_uart_clock();
 
-	writel(CCM_CCGR_SETTINGn_NEEDED(0),
-	       ccm + CCM_CCGRn_CLR(CCM_CCGR_UART1));
-	writel(CCM_TARGET_ROOTn_ENABLE | UART1_CLK_ROOT__25M_REF_CLK,
-	       ccm + CCM_TARGET_ROOTn(UART1_CLK_ROOT));
-	writel(CCM_CCGR_SETTINGn_NEEDED(0),
-	       ccm + CCM_CCGRn_SET(CCM_CCGR_UART1));
+	imx8mq_setup_pad(IMX8MQ_PAD_UART1_TXD__UART1_TX | UART_PAD_CTRL);
 
-	imx_setup_pad(iomux, IMX8MQ_PAD_UART1_TXD__UART1_TX | UART_PAD_CTRL);
-
-	imx8_uart_setup_ll();
+	imx8m_uart_setup_ll();
 
 	putc_ll('>');
 }
@@ -85,9 +78,9 @@ static __noreturn noinline void nxp_imx8mq_evk_start(void)
 		 * for the piggy data, so we need to ensure that we are running
 		 * the same code in DRAM.
 		 */
-		imx8_get_boot_source(&src, &instance);
+		imx8mq_get_boot_source(&src, &instance);
 		if (src == BOOTSOURCE_MMC)
-			ret = imx8_esdhc_load_image(instance, false);
+			ret = imx8m_esdhc_load_image(instance, false);
 		BUG_ON(ret);
 
 		memcpy((void *)MX8MQ_ATF_BL33_BASE_ADDR,

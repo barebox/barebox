@@ -93,7 +93,7 @@
 		reg = <0x50>;
 	};
 
-	pmic: pf0100@08 {
+	pmic: pf0100@8 {
 		status = "disabled";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_pmic>;
@@ -195,7 +195,7 @@
 		};
 	};
 
-	codec: sgtl5000@0a {
+	codec: sgtl5000@a {
 		compatible = "fsl,sgtl5000";
 		reg = <0x0a>;
 		clocks = <&clks 201>;

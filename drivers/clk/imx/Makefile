@@ -3,6 +3,7 @@ obj-$(CONFIG_COMMON_CLK) +=	\
 	clk-pllv1.o		\
 	clk-pllv2.o		\
 	clk-pllv3.o		\
+	clk-pll14xx.o		\
 	clk-pfd.o		\
 	clk-gate2.o		\
 	clk-gate-exclusive.o	\
@@ -25,5 +26,7 @@ obj-$(CONFIG_ARCH_IMX6SX) += clk-imx6sx.o
 obj-$(CONFIG_ARCH_IMX6SL) += clk-imx6sl.o
 obj-$(CONFIG_ARCH_IMX6UL) += clk-imx6ul.o
 obj-$(CONFIG_ARCH_IMX7) += clk-imx7.o
+pbl-$(CONFIG_ARCH_IMX8MM) += clk-pll14xx.o
+obj-$(CONFIG_ARCH_IMX8MM) += clk-imx8mm.o
 obj-$(CONFIG_ARCH_IMX8MQ) += clk-imx8mq.o
 obj-$(CONFIG_ARCH_VF610)  += clk-vf610.o

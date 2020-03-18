@@ -8,8 +8,8 @@
 #define __MACH_IOMUX_IMX8MQ_H__
 
 #include <mach/iomux-v3.h>
-
-#define PAD_CTL_DSE_3P3V_45_OHM	0b110
+#include <mach/iomux-mx8m.h>
+#include <mach/imx8mq-regs.h>
 
 enum {
 	IMX8MQ_PAD_GPIO1_IO00__GPIO1_IO0			= IOMUX_PAD(0x0290, 0x0028, 0, 0x0000, 0, 0),
@@ -623,23 +623,11 @@ enum {
 	IMX8MQ_PAD_UART4_TXD__GPIO5_IO29			= IOMUX_PAD(0x04B8, 0x0250, 5, 0x0000, 0, 0),
 };
 
-static inline void mx8_setup_pad(void __iomem *iomux, iomux_v3_cfg_t pad)
+static inline void imx8mq_setup_pad(iomux_v3_cfg_t pad)
 {
-	unsigned int flags = 0;
-	uint32_t mode = IOMUX_MODE(pad);
+	void __iomem *iomux = IOMEM(MX8MQ_IOMUXC_BASE_ADDR);
 
-	if (mode & IOMUX_CONFIG_LPSR) {
-		mode &= ~IOMUX_CONFIG_LPSR;
-		flags = ZERO_OFFSET_VALID | IMX7_PINMUX_LPSR;
-	}
-
-	iomux_v3_setup_pad(iomux, flags,
-			   IOMUX_CTRL_OFS(pad),
-			   IOMUX_PAD_CTRL_OFS(pad),
-			   IOMUX_SEL_INPUT_OFS(pad),
-			   mode,
-			   IOMUX_PAD_CTRL(pad),
-			   IOMUX_SEL_INPUT(pad));
+	imx8m_setup_pad(iomux, pad);
 }
 
 #endif

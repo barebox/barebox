@@ -363,6 +363,8 @@
 
 /* nand */
 &gpmi {
+	#address-cells = <1>;
+	#size-cells = <1>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_gpmi_nand>;
 	status = "okay";

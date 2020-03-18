@@ -69,11 +69,21 @@ void vf610_cpu_lowlevel_init(void)
 	arm_cpu_lowlevel_init();
 }
 #else
-void imx8mq_cpu_lowlevel_init(void)
+static void imx8m_cpu_lowlevel_init(void)
 {
 	arm_cpu_lowlevel_init();
 
 	if (current_el() == 3)
-		imx_cpu_timer_init(IOMEM(MX8MQ_SYSCNT_CTRL_BASE_ADDR));
+		imx_cpu_timer_init(IOMEM(MX8M_SYSCNT_CTRL_BASE_ADDR));
+}
+
+void imx8mm_cpu_lowlevel_init(void)
+{
+	imx8m_cpu_lowlevel_init();
+}
+
+void imx8mq_cpu_lowlevel_init(void)
+{
+	imx8m_cpu_lowlevel_init();
 }
 #endif

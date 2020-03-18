@@ -29,7 +29,7 @@
 
 		environment-spinor {
 			compatible = "barebox,environment";
-			device-path = &m25p80, "partname:barebox-environment";
+			device-path = &m25p80, "partname:nor.barebox-environment";
 			status = "disabled";
 		};
 	};
@@ -86,22 +86,22 @@
 		#size-cells = <1>;
 
 		partition@0 {
-			label = "barebox";
+			label = "nor.barebox";
 			reg = <0x0 0x100000>;
 		};
 
 		partition@100000 {
-			label = "barebox-environment";
+			label = "nor.barebox-environment";
 			reg = <0x100000 0x20000>;
 		};
 
 		partition@120000 {
-			label = "oftree";
+			label = "nor.oftree";
 			reg = <0x120000 0x20000>;
 		};
 
 		partition@140000 {
-			label = "kernel";
+			label = "nor.kernel";
 			reg = <0x140000 0x0>;
 		};
 	};

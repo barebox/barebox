@@ -9,7 +9,6 @@
 
 #include "ddr.h"
 
-extern void wait_ddrphy_training_complete(void);
 void ddr_cfg_phy(void) {
 	unsigned int tmp, tmp_t;
 

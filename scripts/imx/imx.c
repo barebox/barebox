@@ -24,7 +24,6 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <linux/kernel.h>
-#include <mach/imx_cpu_types.h>
 
 #include "imx.h"
 
@@ -243,6 +242,7 @@ static struct soc_type socs[] = {
 	{ .name = "imx53",  .header_version = 2, .cpu_type = IMX_CPU_IMX53,  .header_gap = 0,      .first_opcode = 0xea0003fe /* b 0x1000 */},
 	{ .name = "imx6",   .header_version = 2, .cpu_type = IMX_CPU_IMX6,   .header_gap = 0,      .first_opcode = 0xea0003fe /* b 0x1000 */},
 	{ .name = "imx7",   .header_version = 2, .cpu_type = IMX_CPU_IMX7,   .header_gap = 0,      .first_opcode = 0xea0003fe /* b 0x1000 */},
+	{ .name = "imx8mm", .header_version = 2, .cpu_type = IMX_CPU_IMX8MM, .header_gap = SZ_32K, .first_opcode = 0x14000000 /* b 0x0000 (offset computed) */},
 	{ .name = "imx8mq", .header_version = 2, .cpu_type = IMX_CPU_IMX8MQ, .header_gap = SZ_32K, .first_opcode = 0x14000000 /* b 0x0000 (offset computed) */},
 	{ .name = "vf610",  .header_version = 2, .cpu_type = IMX_CPU_VF610,  .header_gap = 0,      .first_opcode = 0xea0003fe /* b 0x1000 */},
 };
@@ -352,7 +352,7 @@ static int do_hab_blocks(struct config_data *data, int argc, char *argv[])
 	/*
 	 * Ensure we only sign the PBL for i.MX8MQ
 	 */
-	if (data->pbl_code_size && data->cpu_type == IMX_CPU_IMX8MQ) {
+	if (data->pbl_code_size && cpu_is_mx8m(data)) {
 		offset += data->header_gap;
 		signed_size = roundup(data->pbl_code_size + HEADER_LEN, 0x1000);
 		if (data->signed_hdmi_firmware_file)

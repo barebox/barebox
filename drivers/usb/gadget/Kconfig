@@ -15,6 +15,9 @@ config USB_GADGET_DRIVER_ARC
 	default y
 	select USB_GADGET_DUALSPEED
 
+config USB_GADGET_DRIVER_ARC_PBL
+	bool
+
 config USB_GADGET_DRIVER_AT91
 	bool
 	prompt "at91 gadget driver"

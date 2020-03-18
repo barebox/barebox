@@ -345,7 +345,7 @@
 	clock-frequency = <100000>;
 	status = "okay";
 
-	sgtl5000: codec@0a {
+	sgtl5000: codec@a {
 		compatible = "fsl,sgtl5000";
 		reg = <0x0a>;
 		clock-frequency = <12288000>;
@@ -354,7 +354,7 @@
 		VDDIO-supply = <&vvideo_reg>;
 	};
 
-	battery: battery@0b {
+	battery: battery@b {
 		compatible = "sbs,sbs-battery";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_battery>;
@@ -526,7 +526,7 @@
 		};
 	};
 
-	flash: m25p80 {
+	flash: m25p80@1 {
 		compatible = "sst,sst25vf032b", "m25p80";
 		spi-max-frequency = <15000000>;
 		reg = <1>;

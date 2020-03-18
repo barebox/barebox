@@ -187,7 +187,14 @@ static const struct mach_id imx_ids[] = {
 	}, {
 		.vid = 0x1fc9,
 		.pid = 0x012b,
-		.name = "i.MX8M",
+		.name = "i.MX8MQ",
+		.header_type = HDR_MX53,
+		.mode = MODE_HID,
+		.max_transfer = 1024,
+	}, {
+		.vid = 0x1fc9,
+		.pid = 0x0134,
+		.name = "i.MX8MM",
 		.header_type = HDR_MX53,
 		.mode = MODE_HID,
 		.max_transfer = 1024,
@@ -763,7 +770,8 @@ static int modify_memory(unsigned addr, unsigned val, int width, int set_bits, i
 	return write_memory(addr, val, 4);
 }
 
-static int load_file(void *buf, unsigned len, unsigned dladdr, unsigned char type)
+static int load_file(void *buf, unsigned len, unsigned dladdr,
+		     unsigned char type, bool mode_barebox)
 {
 	static struct sdp_command dl_command = {
 		.cmd = SDP_WRITE_FILE,
@@ -827,6 +835,9 @@ static int load_file(void *buf, unsigned len, unsigned dladdr, unsigned char typ
 		p += now;
 		cnt -= now;
 	}
+
+	if (mode_barebox)
+		return transfer_size;
 
 	if (usb_id->mach_id->mode == MODE_HID) {
 		err = transfer(3, tmp, sizeof(tmp), &last_trans);
@@ -1300,12 +1311,28 @@ static int get_dl_start(const unsigned char *p, const unsigned char *file_start,
 	return 0;
 }
 
+static int get_payload_start(const unsigned char *p, uint32_t *ofs)
+{
+	struct imx_flash_header_v2 *hdr = (struct imx_flash_header_v2 *)p;
+
+	switch (usb_id->mach_id->header_type) {
+	case HDR_MX51:
+		return -EINVAL;
+
+	case HDR_MX53:
+		*ofs = hdr->entry - hdr->self;
+		return 0;
+	}
+
+	return -EINVAL;
+}
+
 static int process_header(struct usb_work *curr, unsigned char *buf, int cnt,
 		unsigned *p_max_length, unsigned *p_plugin,
 		unsigned *p_header_addr)
 {
 	int ret;
-	unsigned header_max = 0x800;
+	unsigned header_max = 0x10000;
 	unsigned header_inc = 0x400;
 	unsigned header_offset = 0;
 	int header_cnt = 0;
@@ -1362,6 +1389,7 @@ static int do_irom_download(struct usb_work *curr, int verify)
 	unsigned max_length;
 	unsigned plugin = 0;
 	unsigned header_addr = 0;
+	unsigned total_size = 0;
 
 	ret = read_file(curr->filename, &buf, &fsize);
 	if (ret < 0)
@@ -1383,6 +1411,11 @@ static int do_irom_download(struct usb_work *curr, int verify)
 
 	image = buf + header_offset;
 	fsize -= header_offset;
+
+	if (fsize > max_length) {
+		total_size = fsize;
+		fsize = max_length;
+	}
 
 	type = FT_APP;
 
@@ -1406,7 +1439,7 @@ static int do_irom_download(struct usb_work *curr, int verify)
 	printf("loading binary file(%s) to 0x%08x, fsize=%u type=%d...\n",
 			curr->filename, header_addr, fsize, type);
 
-	ret = load_file(image, fsize, header_addr, type);
+	ret = load_file(image, fsize, header_addr, type, false);
 	if (ret < 0)
 		goto cleanup;
 
@@ -1429,7 +1462,7 @@ static int do_irom_download(struct usb_work *curr, int verify)
 			 * so we load part of the image again with type FT_APP
 			 * this time.
 			 */
-			ret = load_file(verify_buffer, 64, header_addr, FT_APP);
+			ret = load_file(verify_buffer, 64, header_addr, FT_APP, false);
 			if (ret < 0)
 				goto cleanup;
 
@@ -1442,6 +1475,19 @@ static int do_irom_download(struct usb_work *curr, int verify)
 		ret = sdp_jump_address(header_addr);
 		if (ret < 0)
 			return ret;
+	}
+
+	if (total_size) {
+		uint32_t ofs;
+
+		ret = get_payload_start(image, &ofs);
+		if (ret) {
+			printf("Cannot get offset of payload\n");
+			goto cleanup;
+		}
+		printf("Loading full image\n");
+		printf("Note: This needs board support on the other end\n");
+		load_file(image + ofs, total_size - ofs, 0, 0, true);
 	}
 
 	ret = 0;

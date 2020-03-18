@@ -1,21 +1,48 @@
 #ifndef __MACH_IMX7_CCM_REGS_H__
 #define __MACH_IMX7_CCM_REGS_H__
 
-#include "ccm.h"
+#define IMX7_CCM_CCGR_UART1		148
+#define IMX7_CCM_CCGR_UART2		149
 
-#define CCM_CCGR_UART1		148
-#define CCM_CCGR_UART2		149
-
-#define CLOCK_ROOT_INDEX(x)	(((x) - 0x8000) / 128)
+#define IMX7_CLOCK_ROOT_INDEX(x)	(((x) - 0x8000) / 128)
 
 /*
  * Taken from "Table 5-11. Clock Root Table" from i.MX7 Dual Processor
  * Reference Manual
  */
-#define UART1_CLK_ROOT		CLOCK_ROOT_INDEX(0xaf80)
-#define UART1_CLK_ROOT__OSC_24M CCM_TARGET_ROOTn_MUX(0b000)
+#define IMX7_UART1_CLK_ROOT		IMX7_CLOCK_ROOT_INDEX(0xaf80)
+#define IMX7_UART1_CLK_ROOT__OSC_24M IMX7_CCM_TARGET_ROOTn_MUX(0b000)
 
-#define UART2_CLK_ROOT		CLOCK_ROOT_INDEX(0xb000)
-#define UART2_CLK_ROOT__OSC_24M CCM_TARGET_ROOTn_MUX(0b000)
+#define IMX7_UART2_CLK_ROOT		IMX7_CLOCK_ROOT_INDEX(0xb000)
+#define IMX7_UART2_CLK_ROOT__OSC_24M IMX7_CCM_TARGET_ROOTn_MUX(0b000)
+
+/* 0 <= n <= 190 */
+#define IMX7_CCM_CCGRn_SET(n)	(0x4004 + 16 * (n))
+#define IMX7_CCM_CCGRn_CLR(n)	(0x4008 + 16 * (n))
+
+/* 0 <= n <= 120 */
+#define IMX7_CCM_TARGET_ROOTn(n)	(0x8000 + 128 * (n))
+
+#define IMX7_CCM_TARGET_ROOTn_MUX(x)		((x) << 24)
+#define IMX7_CCM_TARGET_ROOTn_ENABLE		BIT(28)
+
+
+#define IMX7_CCM_CCGR_SETTINGn(n, s)  ((s) << ((n) * 4))
+#define IMX7_CCM_CCGR_SETTINGn_NOT_NEEDED(n)		IMX7_CCM_CCGR_SETTINGn(n, 0b00)
+#define IMX7_CCM_CCGR_SETTINGn_NEEDED_RUN(n)		IMX7_CCM_CCGR_SETTINGn(n, 0b01)
+#define IMX7_CCM_CCGR_SETTINGn_NEEDED_RUN_WAIT(n)	IMX7_CCM_CCGR_SETTINGn(n, 0b10)
+#define IMX7_CCM_CCGR_SETTINGn_NEEDED(n)		IMX7_CCM_CCGR_SETTINGn(n, 0b11)
+
+static inline void imx7_early_setup_uart_clock(void)
+{
+	void __iomem *ccm   = IOMEM(MX7_CCM_BASE_ADDR);
+
+	writel(IMX7_CCM_CCGR_SETTINGn_NEEDED(0),
+	       ccm + IMX7_CCM_CCGRn_CLR(IMX7_CCM_CCGR_UART1));
+	writel(IMX7_CCM_TARGET_ROOTn_ENABLE | IMX7_UART1_CLK_ROOT__OSC_24M,
+	       ccm + IMX7_CCM_TARGET_ROOTn(IMX7_UART1_CLK_ROOT));
+	writel(IMX7_CCM_CCGR_SETTINGn_NEEDED(0),
+	       ccm + IMX7_CCM_CCGRn_SET(IMX7_CCM_CCGR_UART1));
+}
 
 #endif

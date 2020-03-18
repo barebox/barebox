@@ -174,7 +174,7 @@ config ARCH_IMX7
 	select ARCH_HAS_IMX_GPT
 	select HW_HAS_PCI
 
-config ARCH_IMX8MQ
+config ARCH_IMX8M
 	bool
 	select CPU_V8
 	select PINCTRL_IMX_IOMUX_V3
@@ -183,7 +183,16 @@ config ARCH_IMX8MQ
 	select COMMON_CLK_OF_PROVIDER
 	select ARCH_HAS_FEC_IMX
 	select HW_HAS_PCI
+	select IMX8M_DRAM
 	select PBL_VERIFY_PIGGY if HABV4
+
+config ARCH_IMX8MM
+	select ARCH_IMX8M
+	bool
+
+config ARCH_IMX8MQ
+	select ARCH_IMX8M
+	bool
 
 config ARCH_VF610
 	bool
@@ -501,6 +510,16 @@ config MACH_FREESCALE_MX7_SABRESD
 config MACH_NXP_IMX6ULL_EVK
 	bool "NXP i.MX6ull EVK Board"
 	select ARCH_IMX6UL
+
+config MACH_NXP_IMX8MM_EVK
+	bool "NXP i.MX8MM EVK Board"
+	select ARCH_IMX8MM
+	select FIRMWARE_IMX8MM_ATF
+	select ARM_SMCCC
+	select MCI_IMX_ESDHC_PBL
+	select IMX8M_DRAM
+	select I2C_IMX_EARLY
+	select USB_GADGET_DRIVER_ARC_PBL
 
 config MACH_NXP_IMX8MQ_EVK
 	bool "NXP i.MX8MQ EVK Board"

@@ -269,7 +269,7 @@ $(call build_imx_habv4img, CONFIG_MACH_VARISCITE_MX6, start_variscite_custom, va
 
 $(call build_imx_habv4img, CONFIG_MACH_EMBEDSKY_E9, start_imx6q_embedsky_e9, embedsky-e9/flash-header-e9, embedsky-imx6q-e9)
 
-$(call build_imx_habv4img, CONFIG_MACH_EMBEST_MARSBOARD, start_imx6q_marsboard, embest-marsboard/flash-header-embest-marsboard, barebox-embest-imx6q-marsboard)
+$(call build_imx_habv4img, CONFIG_MACH_EMBEST_MARSBOARD, start_imx6q_marsboard, embest-marsboard/flash-header-embest-marsboard, embest-imx6q-marsboard)
 
 $(call build_imx_habv4img, CONFIG_MACH_EMBEST_RIOTBOARD, start_imx6s_riotboard, embest-riotboard/flash-header-embest-riotboard, embest-imx6s-riotboard)
 
@@ -292,6 +292,8 @@ $(call build_imx_habv4img, CONFIG_MACH_PHYTEC_SOM_IMX6, start_phytec_phycore_imx
 $(call build_imx_habv4img, CONFIG_MACH_PHYTEC_SOM_IMX6, start_phytec_phycore_imx6dl_som_nand_1gib, phytec-som-imx6/flash-header-phytec-pcm058dl-1gib-32bit, phytec-phycore-imx6dl-som-nand-1gib)
 
 $(call build_imx_habv4img, CONFIG_MACH_PHYTEC_SOM_IMX6, start_phytec_phycore_imx6dl_som_lc_nand_256mb, phytec-som-imx6/flash-header-phytec-pcm058dl-256mb, phytec-phycore-imx6dl-som-lc-nand-256mb)
+
+$(call build_imx_habv4img, CONFIG_MACH_PHYTEC_SOM_IMX6, start_phytec_phycore_imx6dl_som_emmc_512mb, phytec-som-imx6/flash-header-phytec-pcm058dl-512mb, phytec-phycore-imx6dl-som-emmc-512mb)
 
 $(call build_imx_habv4img, CONFIG_MACH_PHYTEC_SOM_IMX6, start_phytec_phycore_imx6dl_som_emmc_1gib, phytec-som-imx6/flash-header-phytec-pcm058dl-1gib, phytec-phycore-imx6dl-som-emmc-1gib)
 
@@ -361,6 +363,12 @@ pblb-$(CONFIG_MACH_ZII_IMX7D_DEV) += start_zii_imx7d_dev
 CFG_start_zii_imx7d_dev.pblb.imximg = $(board)/zii-imx7d-dev/flash-header-zii-imx7d-dev.imxcfg
 FILE_barebox-zii-imx7d-dev.img = start_zii_imx7d_dev.pblb.imximg
 image-$(CONFIG_MACH_ZII_IMX7D_DEV) += barebox-zii-imx7d-dev.img
+
+# ----------------------- i.MX8mm based boards --------------------------
+pblb-$(CONFIG_MACH_NXP_IMX8MM_EVK) += start_nxp_imx8mm_evk
+CFG_start_nxp_imx8mm_evk.pblb.imximg = $(board)/nxp-imx8mm-evk/flash-header-imx8mm-evk.imxcfg
+FILE_barebox-nxp-imx8mm-evk.img = start_nxp_imx8mm_evk.pblb.pimximg
+image-$(CONFIG_MACH_NXP_IMX8MM_EVK) += barebox-nxp-imx8mm-evk.img
 
 # ----------------------- i.MX8mq based boards --------------------------
 pblb-$(CONFIG_MACH_NXP_IMX8MQ_EVK) += start_nxp_imx8mq_evk

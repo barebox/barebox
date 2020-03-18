@@ -8,6 +8,7 @@
 #define __MACH_IOMUX_IMX7D_H__
 
 #include <mach/iomux-v3.h>
+#include <mach/imx7-regs.h>
 
 enum {
 	MX7D_PAD_GPIO1_IO00__GPIO1_IO0                           = IOMUX_PAD(0x0030, 0x0000, IOMUX_CONFIG_LPSR | 0, 0x0000, 0, 0),
@@ -1306,8 +1307,9 @@ enum {
 	MX7D_PAD_ENET1_COL__CSU_INT_DEB                          = IOMUX_PAD(0x04D8, 0x0268, 7, 0x0000, 0, 0),
 };
 
-static inline void mx7_setup_pad(void __iomem *iomux, iomux_v3_cfg_t pad)
+static inline void imx7_setup_pad(iomux_v3_cfg_t pad)
 {
+	void __iomem *iomux = IOMEM(MX7_IOMUXC_BASE_ADDR);
 	unsigned int flags = 0;
 	uint32_t mode = IOMUX_MODE(pad);
 

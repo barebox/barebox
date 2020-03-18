@@ -308,3 +308,15 @@ void *ls1046_i2c_init(void __iomem *regs)
 
 	return &fsl_i2c;
 }
+
+void *imx8m_i2c_early_init(void __iomem *regs)
+{
+	fsl_i2c.regs = regs;
+	fsl_i2c.regshift = 2;
+	fsl_i2c.i2cr_ien_opcode = I2CR_IEN_OPCODE_1;
+	fsl_i2c.i2sr_clr_opcode = I2SR_CLR_OPCODE_W0C;
+	/* Divider for ~100kHz when coming from the ROM */
+	fsl_i2c.ifdr = 0x0f;
+
+	return &fsl_i2c;
+}

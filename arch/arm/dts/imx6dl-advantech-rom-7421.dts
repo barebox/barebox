@@ -86,6 +86,10 @@
 	status = "okay";
 };
 
+&ocotp {
+	barebox,provide-mac-address = <&fec 0x620>;
+};
+
 &uart1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart1>;
@@ -100,7 +104,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usdhc2>;
 	bus-width = <8>;
-	cd-gpios = <&gpio2 0 0>;
+	cd-gpios = <&gpio2 0 GPIO_ACTIVE_LOW>;
 	status = "okay";
 
 	#address-cells = <1>;
@@ -121,9 +125,9 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usdhc3>;
 	bus-width = <4>;
-	cd-gpios = <&gpio2 1 0>;
-	en-gpios = <&gpio2 2 0>;
-	wp-gpios = <&gpio2 3 0>;
+	cd-gpios = <&gpio2 1 GPIO_ACTIVE_LOW>;
+	en-gpios = <&gpio2 2 GPIO_ACTIVE_HIGH>;
+	wp-gpios = <&gpio2 3 GPIO_ACTIVE_HIGH>;
 	status = "okay";
 };
 

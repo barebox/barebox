@@ -497,6 +497,31 @@ int protect(int fd, size_t count, loff_t offset, int prot)
 }
 EXPORT_SYMBOL(protect);
 
+int discard_range(int fd, loff_t count, loff_t offset)
+{
+	struct fs_driver_d *fsdrv;
+	FILE *f = fd_to_file(fd);
+	int ret;
+
+	if (IS_ERR(f))
+		return -errno;
+	if (offset >= f->size)
+		return 0;
+	if (count > f->size - offset)
+		count = f->size - offset;
+
+	fsdrv = f->fsdev->driver;
+	if (fsdrv->discard_range)
+		ret = fsdrv->discard_range(&f->fsdev->dev, f, count, offset);
+	else
+		ret = -ENOSYS;
+
+	if (ret)
+		errno = -ret;
+
+	return ret;
+}
+
 int protect_file(const char *file, int prot)
 {
 	int fd, ret;

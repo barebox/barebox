@@ -431,6 +431,7 @@ struct cdev_operations {
 	int (*flush)(struct cdev*);
 	int (*erase)(struct cdev*, loff_t count, loff_t offset);
 	int (*protect)(struct cdev*, size_t count, loff_t offset, int prot);
+	int (*discard_range)(struct cdev*, loff_t count, loff_t offset);
 	int (*memmap)(struct cdev*, void **map, int flags);
 	int (*truncate)(struct cdev*, size_t size);
 };

@@ -61,6 +61,8 @@ struct fs_driver_d {
 			loff_t offset);
 	int (*protect)(struct device_d *dev, FILE *f, size_t count,
 			loff_t offset, int prot);
+	int (*discard_range)(struct device_d *dev, FILE *f, loff_t count,
+			loff_t offset);
 
 	int (*memmap)(struct device_d *dev, FILE *f, void **map, int flags);
 
@@ -128,6 +130,7 @@ int umount_by_cdev(struct cdev *cdev);
 #define ERASE_SIZE_ALL	((loff_t) - 1)
 int erase(int fd, loff_t count, loff_t offset);
 int protect(int fd, size_t count, loff_t offset, int prot);
+int discard_range(int fd, loff_t count, loff_t offset);
 int protect_file(const char *file, int prot);
 void *memmap(int fd, int flags);
 

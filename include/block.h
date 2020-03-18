@@ -24,6 +24,9 @@ struct block_device {
 	int rdbufsize;
 	int blkmask;
 
+	loff_t discard_start;
+	loff_t discard_size;
+
 	struct list_head buffered_blocks;
 	struct list_head idle_blocks;
 

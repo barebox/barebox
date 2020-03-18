@@ -36,7 +36,7 @@ struct chunk {
 	struct list_head list;
 };
 
-#define BUFSIZE (PAGE_SIZE * 4)
+#define BUFSIZE (PAGE_SIZE * 16)
 
 static int writebuffer_io_len(struct block_device *blk, struct chunk *chunk)
 {
@@ -160,6 +160,14 @@ static int block_cache(struct block_device *blk, int block)
 
 	dev_dbg(blk->dev, "%s: %d to %d\n", __func__, chunk->block_start,
 		chunk->num);
+
+	if (chunk->block_start * BLOCKSIZE(blk) >= blk->discard_start &&
+	    chunk->block_start * BLOCKSIZE(blk) + writebuffer_io_len(blk, chunk)
+	    <= blk->discard_start + blk->discard_size) {
+		memset(chunk->data, 0, writebuffer_io_len(blk, chunk));
+		list_add(&chunk->list, &blk->buffered_blocks);
+		return 0;
+	}
 
 	ret = blk->ops->read(blk, chunk->data, chunk->block_start,
 			     writebuffer_io_len(blk, chunk));
@@ -337,10 +345,22 @@ static int block_op_flush(struct cdev *cdev)
 {
 	struct block_device *blk = cdev->priv;
 
+	blk->discard_start = blk->discard_size = 0;
+
 	return writebuffer_flush(blk);
 }
 
 static int block_op_close(struct cdev *cdev) __alias(block_op_flush);
+
+static int block_op_discard_range(struct cdev *cdev, loff_t count, loff_t offset)
+{
+	struct block_device *blk = cdev->priv;
+
+	blk->discard_start = offset;
+	blk->discard_size = count;
+
+	return 0;
+}
 
 static struct cdev_operations block_ops = {
 	.read	= block_op_read,
@@ -349,6 +369,7 @@ static struct cdev_operations block_ops = {
 #endif
 	.close	= block_op_close,
 	.flush	= block_op_flush,
+	.discard_range = block_op_discard_range,
 };
 
 int blockdevice_register(struct block_device *blk)
@@ -370,7 +391,7 @@ int blockdevice_register(struct block_device *blk)
 	dev_dbg(blk->dev, "rdbufsize: %d blockbits: %d blkmask: 0x%08x\n",
 		blk->rdbufsize, blk->blockbits, blk->blkmask);
 
-	for (i = 0; i < 32; i++) {
+	for (i = 0; i < 8; i++) {
 		struct chunk *chunk = xzalloc(sizeof(*chunk));
 		chunk->data = dma_alloc(BUFSIZE);
 		chunk->num = i;

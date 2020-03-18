@@ -94,6 +94,26 @@ static int devfs_protect(struct device_d *_dev, FILE *f, size_t count, loff_t of
 	return cdev->ops->protect(cdev, count, offset + cdev->offset, prot);
 }
 
+static int devfs_discard_range(struct device_d *dev, FILE *f, loff_t count,
+			       loff_t offset)
+{
+	struct cdev *cdev = f->priv;
+
+	if (!cdev->ops->discard_range)
+		return -ENOSYS;
+
+	if (cdev->flags & DEVFS_PARTITION_READONLY)
+		return -EPERM;
+
+	if (offset >= cdev->size)
+		return 0;
+
+	if (count + offset > cdev->size)
+		count = cdev->size - offset;
+
+	return cdev->ops->discard_range(cdev, count, offset + cdev->offset);
+}
+
 static int devfs_memmap(struct device_d *_dev, FILE *f, void **map, int flags)
 {
 	struct cdev *cdev = f->priv;
@@ -329,6 +349,7 @@ static struct fs_driver_d devfs_driver = {
 	.truncate  = devfs_truncate,
 	.erase     = devfs_erase,
 	.protect   = devfs_protect,
+	.discard_range = devfs_discard_range,
 	.memmap    = devfs_memmap,
 	.flags     = FS_DRIVER_NO_DEV,
 	.drv = {

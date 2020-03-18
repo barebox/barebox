@@ -84,12 +84,14 @@ void clk_disable(struct clk *clk)
 	if (!clk->enable_count)
 		return;
 
+	if (clk->enable_count == 1 && clk->flags & CLK_IS_CRITICAL) {
+		pr_warn("Disabling critical clock %s\n", clk->name);
+		return;
+	}
+
 	clk->enable_count--;
 
 	if (!clk->enable_count) {
-		if (clk->flags & CLK_IS_CRITICAL)
-			return;
-
 		if (clk->ops->disable)
 			clk->ops->disable(clk);
 
@@ -281,6 +283,9 @@ int clk_register(struct clk *clk)
 	clk->parents = xzalloc(sizeof(struct clk *) * clk->num_parents);
 
 	list_add_tail(&clk->list, &clks);
+
+	if (clk->flags & CLK_IS_CRITICAL)
+		clk_enable(clk);
 
 	return 0;
 }
@@ -627,12 +632,40 @@ int of_clk_init(struct device_node *root, const struct of_device_id *matches)
 }
 #endif
 
+static const char *clk_hw_stat(struct clk *clk)
+{
+	if (clk->ops->is_enabled) {
+		if (clk->ops->is_enabled(clk))
+			return "enabled";
+		else
+			return "disabled";
+	}
+
+	if (!clk->ops->enable)
+		return "always enabled";
+
+	return "unknown";
+}
+
 static void dump_one(struct clk *clk, int verbose, int indent)
 {
 	struct clk *c;
+	int enabled = clk_is_enabled(clk);
+	const char *hwstat, *stat;
 
-	printf("%*s%s (rate %lu, %sabled)\n", indent * 4, "", clk->name, clk_get_rate(clk),
-			clk_is_enabled(clk) ? "en" : "dis");
+	hwstat = clk_hw_stat(clk);
+
+	if (enabled == 0)
+		stat = "disabled";
+	else
+		stat = "enabled";
+
+	printf("%*s%s (rate %lu, enable_count: %d, %s)\n", indent * 4, "",
+	       clk->name,
+	       clk_get_rate(clk),
+	       clk->enable_count,
+	       hwstat);
+
 	if (verbose) {
 
 		if (clk->num_parents > 1) {

@@ -118,9 +118,9 @@ CFLAGS += $(cflags-y)
 lds-$(CONFIG_GENERIC_LINKER_SCRIPT)   := arch/mips/lib/barebox.lds
 
 cmd_barebox__ ?= $(LD) $(LDFLAGS) $(LDFLAGS_barebox) -o $@ \
-      -T $(barebox-lds)                         \
-      --start-group $(barebox-common) --end-group                  \
-      $(filter-out $(barebox-lds) $(barebox-common) FORCE ,$^);	\
+      -T $(BAREBOX_LDS)                         \
+      --start-group $(BAREBOX_OBJS) --end-group                  \
+      $(filter-out $(BAREBOX_LDS) $(BAREBOX_OBJS) FORCE ,$^);	\
 	$(objtree)/scripts/mips-relocs $@
 
 

@@ -51,6 +51,9 @@ $(patsubst %,$(obj)/%.gen.S, $(fw-external-y)): %: $(wordsize_deps) \
 # The .o files depend on the binaries directly; the .S files don't.
 $(patsubst %,$(obj)/%.gen.o, $(fw-external-y)): $(obj)/%.gen.o: $(fwdir)/%
 
+# The same for pbl:
+$(patsubst %,$(obj)/pbl-%.gen.o, $(fw-external-y)): $(obj)/pbl-%.gen.o: $(fwdir)/%
+
 obj-pbl-y			 += $(patsubst %,%.gen.o, $(fw-external-y))
 
 ifeq ($(KBUILD_SRC),)

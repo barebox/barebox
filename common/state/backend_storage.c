@@ -192,6 +192,7 @@ int state_storage_read(struct state_backend_storage *storage,
 		/* Free buffer from the unused buckets */
 		free(bucket->buf);
 		bucket->buf = NULL;
+		bucket->len = 0;
 	}
 
 	/*
@@ -204,6 +205,7 @@ int state_storage_read(struct state_backend_storage *storage,
 
 	/* buffer from the used bucket is passed to the caller, do not free */
 	bucket_used->buf = NULL;
+	bucket_used->len = 0;
 
 	return 0;
 }

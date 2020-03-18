@@ -280,7 +280,6 @@ static const struct eqos_ops tegra186_ops = {
 	.adjust_link = eqos_adjust_link_tegra186,
 	.get_csr_clk_rate = eqos_get_csr_clk_rate_tegra186,
 
-	.mdio_wait_us = 10,
 	.clk_csr = EQOS_MDIO_ADDR_CR_20_35,
 	.config_mac = EQOS_MAC_RXQ_CTRL0_RXQ0EN_ENABLED_DCB,
 };

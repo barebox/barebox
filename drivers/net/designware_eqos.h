@@ -17,7 +17,6 @@ struct eqos_ops {
 	unsigned long (*get_csr_clk_rate)(struct eqos *);
 
 	bool enh_desc;
-	int mdio_wait_us;
 
 #define EQOS_MAC_RXQ_CTRL0_RXQ0EN_SHIFT		0
 #define EQOS_MAC_RXQ_CTRL0_RXQ0EN_MASK		3

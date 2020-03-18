@@ -405,8 +405,9 @@ static int ssd1307fb_probe(struct device_d *dev)
 	}
 
 	info = xzalloc(sizeof(struct fb_info));
+	par = xzalloc(sizeof(*par));
 
-	par = info->priv;
+	info->priv = par;
 	par->info = info;
 	par->client = client;
 
@@ -414,12 +415,8 @@ static int ssd1307fb_probe(struct device_d *dev)
 
 	par->reset = of_get_named_gpio(node,
 					 "reset-gpios", 0);
-	if (!gpio_is_valid(par->reset)) {
-		ret = par->reset;
-		if (ret != -EPROBE_DEFER)
-			dev_err(&client->dev,
-				"Couldn't get named gpio 'reset-gpios': %s.\n",
-				strerror(-ret));
+	if (!gpio_is_valid(par->reset) && par->reset == -EPROBE_DEFER) {
+		ret = -EPROBE_DEFER;
 		goto fb_alloc_error;
 	}
 
@@ -502,38 +499,41 @@ static int ssd1307fb_probe(struct device_d *dev)
 
 	info->screen_base = (u8 __force __iomem *)vmem;
 
-	ret = gpio_request_one(par->reset,
-			       GPIOF_OUT_INIT_HIGH,
-			       "oled-reset");
-	if (ret) {
-		dev_err(&client->dev,
-			"failed to request gpio %d: %d\n",
-			par->reset, ret);
-		goto reset_oled_error;
+	if (par->reset >= 0) {
+		ret = gpio_request_one(par->reset,
+				       GPIOF_OUT_INIT_HIGH,
+				       "oled-reset");
+		if (ret) {
+			dev_err(&client->dev,
+				"failed to request gpio %d: %d\n",
+				par->reset, ret);
+			goto reset_oled_error;
+		}
 	}
 
-	if (par->vbat) {
-		ret = regulator_disable(par->vbat);
-		if (ret < 0)
-			goto reset_oled_error;
-	}
+	ret = regulator_disable(par->vbat);
+	if (ret < 0)
+		goto reset_oled_error;
 
 	i2c_set_clientdata(client, info);
 
-	/* Reset the screen */
-	gpio_set_value(par->reset, 0);
-	udelay(4);
-
-	if (par->vbat) {
-		ret = regulator_enable(par->vbat);
-		if (ret < 0)
-			goto reset_oled_error;
+	if (par->reset > 0) {
+		/* Reset the screen */
+		gpio_set_value(par->reset, 0);
+		udelay(4);
 	}
 
-	mdelay(100);
+	ret = regulator_enable(par->vbat);
+	if (ret < 0)
+		goto reset_oled_error;
 
-	gpio_set_value(par->reset, 1);
-	udelay(4);
+	if (par->vbat)
+		mdelay(100);
+
+	if (par->reset > 0) {
+		gpio_set_value(par->reset, 1);
+		udelay(4);
+	}
 
 	ret = ssd1307fb_init(par);
 	if (ret)
@@ -574,6 +574,7 @@ reset_oled_error:
 	free(vmem);
 fb_alloc_error:
 	regulator_disable(par->vbat);
+	free(par);
 	free(info);
 	return ret;
 }

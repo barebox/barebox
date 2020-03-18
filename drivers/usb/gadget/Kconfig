@@ -61,6 +61,7 @@ config USB_GADGET_FASTBOOT
 
 config USB_GADGET_FASTBOOT_SPARSE
 	bool
+	depends on USB_GADGET_FASTBOOT
 	select IMAGE_SPARSE
 	prompt "Enable Fastboot sparse image support"
 	help
@@ -80,4 +81,14 @@ config USB_GADGET_FASTBOOT_BUF
 	  a buffer, then using a buffer might be better.
 
 	  Say no here unless you know what you are doing.
+
+config USB_GADGET_FASTBOOT_CMD_OEM
+	bool
+	depends on USB_GADGET_FASTBOOT
+	prompt "Enable OEM commands"
+	help
+	  This option enables the fastboot "oem" group of commands. They allow to
+	  executing arbitrary barebox commands and may be disabled in secure
+	  environments.
+
 endif

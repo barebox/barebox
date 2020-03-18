@@ -199,7 +199,7 @@ static int eqos_mdio_wait_idle(struct eqos *eqos)
 static int eqos_mdio_read(struct mii_bus *bus, int addr, int reg)
 {
 	struct eqos *eqos = bus->priv;
-	u32 miiaddr;
+	u32 miiaddr = MII_BUSY;
 	int ret;
 
 	ret = eqos_mdio_wait_idle(eqos);
@@ -208,17 +208,12 @@ static int eqos_mdio_read(struct mii_bus *bus, int addr, int reg)
 		return ret;
 	}
 
-	miiaddr = readl(&eqos->mac_regs->mdio_address);
-	miiaddr &= EQOS_MDIO_ADDR_SKAP | EQOS_MDIO_ADDR_C45E;
+	miiaddr |= EQOS_MDIO_ADDR(addr) | EQOS_MDIO_REG(reg);
+	miiaddr |= EQOS_MDIO_CLK_CSR(eqos->ops->clk_csr);
 	miiaddr |= EQOS_MDIO_ADDR_GOC_READ << EQOS_MDIO_ADDR_GOC_SHIFT;
 
-	miiaddr |= EQOS_MDIO_CLK_CSR(eqos->ops->clk_csr);
-	miiaddr |= EQOS_MDIO_ADDR(addr) | EQOS_MDIO_REG(reg);
-	miiaddr |= MII_BUSY;
-
+	writel(0, &eqos->mac_regs->mdio_data);
 	writel(miiaddr, &eqos->mac_regs->mdio_address);
-
-	udelay(eqos->ops->mdio_wait_us);
 
 	ret = eqos_mdio_wait_idle(eqos);
 	if (ret) {
@@ -232,7 +227,7 @@ static int eqos_mdio_read(struct mii_bus *bus, int addr, int reg)
 static int eqos_mdio_write(struct mii_bus *bus, int addr, int reg, u16 data)
 {
 	struct eqos *eqos = bus->priv;
-	u32 miiaddr = 0;
+	u32 miiaddr = MII_BUSY;
 	int ret;
 
 	ret = eqos_mdio_wait_idle(eqos);
@@ -241,28 +236,18 @@ static int eqos_mdio_write(struct mii_bus *bus, int addr, int reg, u16 data)
 		return ret;
 	}
 
-	miiaddr = readl(&eqos->mac_regs->mdio_address);
-	miiaddr &= EQOS_MDIO_ADDR_SKAP | EQOS_MDIO_ADDR_C45E;
-	miiaddr |= EQOS_MDIO_ADDR_GOC_WRITE << EQOS_MDIO_ADDR_GOC_SHIFT;
-
-	miiaddr |= EQOS_MDIO_CLK_CSR(eqos->ops->clk_csr);
 	miiaddr |= EQOS_MDIO_ADDR(addr) | EQOS_MDIO_REG(reg);
-	miiaddr |= MII_BUSY;
+	miiaddr |= EQOS_MDIO_CLK_CSR(eqos->ops->clk_csr);
+	miiaddr |= EQOS_MDIO_ADDR_GOC_WRITE << EQOS_MDIO_ADDR_GOC_SHIFT;
 
 	writel(data, &eqos->mac_regs->mdio_data);
 	writel(miiaddr, &eqos->mac_regs->mdio_address);
 
-	udelay(eqos->ops->mdio_wait_us);
-
 	ret = eqos_mdio_wait_idle(eqos);
-	if (ret) {
+	if (ret)
 		dev_err(&bus->dev, "MDIO read didn't complete\n");
-		return ret;
-	}
 
-	/* Needed as a fix for ST-Phy */
-	eqos_mdio_read(bus, addr, reg);
-	return 0;
+	return ret;
 }
 
 

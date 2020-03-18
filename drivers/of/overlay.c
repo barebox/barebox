@@ -105,7 +105,7 @@ static char *of_overlay_fix_path(struct device_node *root,
 	return basprintf("%s%s", target->full_name, path_tail);
 }
 
-static int of_overlay_apply_symbols(struct device_node *root,
+static void of_overlay_apply_symbols(struct device_node *root,
 				    struct device_node *overlay)
 {
 	const char *old_path;
@@ -115,12 +115,12 @@ static int of_overlay_apply_symbols(struct device_node *root,
 	struct device_node *overlay_symbols;
 
 	root_symbols = of_get_child_by_name(root, "__symbols__");
-	if (!root_symbols)
-		return -EINVAL;
-
 	overlay_symbols = of_get_child_by_name(overlay, "__symbols__");
-	if (!overlay_symbols)
-		return -EINVAL;
+
+	if (!overlay_symbols || !root_symbols) {
+		pr_info("overlay/root doesn't have a __symbols__ node\n");
+		return;
+	}
 
 	list_for_each_entry(prop, &overlay_symbols->properties, list) {
 		if (of_prop_cmp(prop->name, "name") == 0)
@@ -133,8 +133,6 @@ static int of_overlay_apply_symbols(struct device_node *root,
 			 prop->name, new_path);
 		of_property_write_string(root_symbols, prop->name, new_path);
 	}
-
-	return 0;
 }
 
 static int of_overlay_apply_fragment(struct device_node *root,
@@ -171,15 +169,13 @@ int of_overlay_apply_tree(struct device_node *root,
 		return -EINVAL;
 
 	/* Copy symbols from resolved overlay to base device tree */
-	err = of_overlay_apply_symbols(root, resolved);
-	if (err)
-		pr_warn("failed to copy symbols from overlay");
+	of_overlay_apply_symbols(root, resolved);
 
 	/* Copy nodes and properties from resolved overlay to root */
 	for_each_child_of_node(resolved, fragment) {
 		err = of_overlay_apply_fragment(root, fragment);
 		if (err)
-			pr_warn("failed to apply %s", fragment->name);
+			pr_warn("failed to apply %s\n", fragment->name);
 	}
 
 	of_delete_node(resolved);

@@ -583,19 +583,17 @@ export DEFAULT_COMPRESSION_SUFFIX
 #
 # System.map is generated to document addresses of all kernel symbols
 
-barebox-common := $(common-y)
-barebox-pbl-common := $(pbl-common-y)
-export barebox-pbl-common
-barebox-all    := $(barebox-common)
-barebox-lds    := $(lds-y)
+BAREBOX_OBJS := $(common-y)
+export BAREBOX_PBL_OBJS := $(pbl-common-y)
+BAREBOX_LDS    := $(lds-y)
 
 # Rule to link barebox
 # May be overridden by arch/$(ARCH)/Makefile
 quiet_cmd_barebox__ ?= LD      $@
       cmd_barebox__ ?= $(LD) $(LDFLAGS) $(LDFLAGS_barebox) -o $@ \
-      -T $(barebox-lds)                         \
-      --start-group $(barebox-common) --end-group                  \
-      $(filter-out $(barebox-lds) $(barebox-common) FORCE ,$^)
+      -T $(BAREBOX_LDS)                         \
+      --start-group $(BAREBOX_OBJS) --end-group                  \
+      $(filter-out $(BAREBOX_LDS) $(BAREBOX_OBJS) FORCE ,$^)
 
 # Generate new barebox version
 quiet_cmd_barebox_version = GEN     .version
@@ -692,13 +690,13 @@ quiet_cmd_kallsyms = KSYM    $@
 	$(call cmd,kallsyms)
 
 # .tmp_barebox1 must be complete except kallsyms, so update barebox version
-.tmp_barebox1: $(barebox-lds) $(barebox-all) FORCE
+.tmp_barebox1: $(BAREBOX_LDS) $(BAREBOX_OBJS) FORCE
 	$(call if_changed_rule,ksym_ld)
 
-.tmp_barebox2: $(barebox-lds) $(barebox-all) .tmp_kallsyms1.o FORCE
+.tmp_barebox2: $(BAREBOX_LDS) $(BAREBOX_OBJS) .tmp_kallsyms1.o FORCE
 	$(call if_changed,barebox__)
 
-.tmp_barebox3: $(barebox-lds) $(barebox-all) .tmp_kallsyms2.o FORCE
+.tmp_barebox3: $(BAREBOX_LDS) $(BAREBOX_OBJS) .tmp_kallsyms2.o FORCE
 	$(call if_changed,barebox__)
 
 # Needs to visit scripts/ before $(KALLSYMS) can be used.
@@ -715,19 +713,6 @@ debug_kallsyms: .tmp_map$(last_kallsyms)
 .tmp_map2: .tmp_map1
 
 endif # ifdef CONFIG_KALLSYMS
-
-# Do modpost on a prelinked vmlinux. The finally linked vmlinux has
-# relevant sections renamed as per the linker script.
-quiet_cmd_barebox-modpost = LD      $@
-      cmd_barebox-modpost = $(LD) $(LDFLAGS) -r -o $@                          \
-	 $(vmlinux-init) --start-group $(barebox-main) --end-group             \
-	 $(filter-out $(barebox-init) $(barebox-main) $(barebox-lds) FORCE ,$^)
-define rule_barebox-modpost
-	:
-	+$(call cmd,barebox-modpost)
-	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost $@
-	$(Q)echo 'cmd_$@ := $(cmd_barebox-modpost)' > $(dot-target).cmd
-endef
 
 OBJCOPYFLAGS_barebox.bin = -O binary
 
@@ -781,8 +766,7 @@ barebox.S barebox.s: barebox FORCE
 endif
 
 # barebox image
-barebox: $(barebox-lds) $(barebox-head) $(barebox-common) $(kallsyms.o) FORCE
-	$(call barebox-modpost)
+barebox: $(BAREBOX_LDS) $(BAREBOX_OBJS) $(kallsyms.o) FORCE
 	$(call if_changed_rule,barebox__)
 	$(Q)rm -f .old_version
 
@@ -791,7 +775,7 @@ barebox.srec: barebox
 
 # The actual objects are generated when descending,
 # make sure no implicit rule kicks in
-$(sort $(barebox-head) $(barebox-common) ) $(barebox-lds) $(barebox-pbl-common): $(barebox-dirs) ;
+$(sort $(BAREBOX_OBJS)) $(BAREBOX_LDS) $(BAREBOX_PBL_OBJS): $(barebox-dirs) ;
 
 # Handle descending into subdirectories listed in $(barebox-dirs)
 # Preset locale variables to speed up the build process. Limit locale

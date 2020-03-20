@@ -208,7 +208,7 @@ int mem_test_bus_integrity(resource_size_t _start,
 	 * Data line test: write a pattern to the first
 	 * location, write the 1's complement to a 'parking'
 	 * address (changes the state of the data bus so a
-	 * floating bus doen't give a false OK), and then
+	 * floating bus doesn't give a false OK), and then
 	 * read the value back. Note that we read it back
 	 * into a variable because the next time we read it,
 	 * it might be right (been there, tough to explain to

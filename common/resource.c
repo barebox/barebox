@@ -34,7 +34,7 @@ static int init_resource(struct resource *res, const char *name)
 
 /*
  * request a region.
- * This will succedd when the requested region is completely inside
+ * This will succeed when the requested region is completely inside
  * the parent resource and does not conflict with any of the child
  * resources.
  */

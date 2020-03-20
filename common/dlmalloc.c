@@ -331,7 +331,7 @@
       helps keep the system level memory demands of a long-lived
       program low. Mapped memory can never become `locked' between
       other chunks, as can happen with normally allocated chunks, which
-      menas that even trimming via malloc_trim would not release them.
+      means that even trimming via malloc_trim would not release them.
 
       However, it has the disadvantages that:
 
@@ -529,7 +529,7 @@ nextchunk-> +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     the malloc code, but "mem" is the pointer that is returned to the
     user.  "Nextchunk" is the beginning of the next contiguous chunk.
 
-    Chunks always begin on even word boundries, so the mem portion
+    Chunks always begin on even word boundaries, so the mem portion
     (which is returned to the user) is also on an even word boundary, and
     thus double-word aligned.
 
@@ -1085,7 +1085,7 @@ static void malloc_extend_top(INTERNAL_SIZE_T nb)
 /* Main public routines */
 
 /*
-  Malloc Algorthim:
+  Malloc Algorithm:
 
     The requested size is first converted into a usable form, `nb'.
     This currently means to add 4 bytes overhead plus possibly more to
@@ -1641,7 +1641,7 @@ void *memalign(size_t alignment, size_t bytes)
 	char *brk;		/* alignment point within p */
 	mchunkptr newp;		/* chunk to return */
 	INTERNAL_SIZE_T newsize;	/* its size */
-	INTERNAL_SIZE_T leadsize;	/* leading space befor alignment point */
+	INTERNAL_SIZE_T leadsize;	/* leading space before alignment point */
 	mchunkptr remainder;	/* spare room at end to split off */
 	long remainder_size;	/* its size */
 
@@ -1858,10 +1858,10 @@ History:
 	Wolfram Gloger (Gloger@lrz.uni-muenchen.de).
       * Use last_remainder in more cases.
       * Pack bins using idea from  colin@nyx10.cs.du.edu
-      * Use ordered bins instead of best-fit threshhold
+      * Use ordered bins instead of best-fit threshold
       * Eliminate block-local decls to simplify tracing and debugging.
       * Support another case of realloc via move into top
-      * Fix error occuring when initial sbrk_base not word-aligned.
+      * Fix error occurring when initial sbrk_base not word-aligned.
       * Rely on page size for units instead of SBRK_UNIT to
 	avoid surprises about sbrk alignment conventions.
       * Add mallinfo, mallopt. Thanks to Raymond Nijssen

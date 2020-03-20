@@ -136,7 +136,7 @@ struct uimage_handle *uimage_open(const char *filename)
 		goto err_out;
 	}
 
-	/* convert header to cpu native endianess */
+	/* convert header to cpu native endianness */
 	header->ih_magic = uimage_to_cpu(header->ih_magic);
 	header->ih_hcrc = uimage_to_cpu(header->ih_hcrc);
 	header->ih_time = uimage_to_cpu(header->ih_time);

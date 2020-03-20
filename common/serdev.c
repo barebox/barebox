@@ -141,8 +141,8 @@ static int serdev_device_reader_receive_buf(struct serdev_device *serdev,
 	memcpy(r->buf + r->len, buf, room);
 	r->len += room;
 	/*
-	 * It's important we return 'size' even if we didn't trully
-	 * consume all of the data, since otherwise serdev will keep
+	 * It's important we return 'size' even if we didn't truly
+	 * consume all of the data, since otherwise, serdev will keep
 	 * re-executing us until we do. Given the logic above that
 	 * would mean infinite loop.
 	 */
@@ -155,7 +155,7 @@ static int serdev_device_reader_receive_buf(struct serdev_device *serdev,
  * @serdev:	Underlying serdev device
  * @capacity:	Storage capacity of the reader
  *
- * This function is inteded for creating of reader serdev devices that
+ * This function is intended for creating of reader serdev devices that
  * can be used in conjunction with serdev_device_read() to perform
  * trivial fixed length reads from a serdev device.
  */

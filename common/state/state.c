@@ -699,7 +699,7 @@ struct state *state_by_name(const char *name)
 /*
  * state_by_node - find a state instance by of node
  *
- * @node	The of node of the state intance
+ * @node	The of node of the state instance
  */
 struct state *state_by_node(const struct device_node *node)
 {

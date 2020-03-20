@@ -27,7 +27,7 @@
 
 LIST_HEAD(block_device_list);
 
-/* a chunk of contigous data */
+/* a chunk of contiguous data */
 struct chunk {
 	void *data; /* data buffer */
 	int block_start; /* first block in this chunk */

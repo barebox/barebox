@@ -761,7 +761,7 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 
 	/*
 	 * We do not support pipes in barebox, so pi->num_progs can't
-	 * be bigger than 1. pi->num_progs == 0 is already catched in
+	 * be bigger than 1. pi->num_progs == 0 is already caught in
 	 * the caller, so everything else than 1 is a bug.
 	 */
 	BUG_ON(pi->num_progs != 1);
@@ -1689,7 +1689,7 @@ char *shell_expand(char *str)
 	return res;
 }
 
-/* most recursion does not come through here, the exeception is
+/* most recursion does not come through here, the exception is
  * from builtin_source() */
 static int parse_stream_outer(struct p_context *ctx, struct in_str *inp, int flag)
 {

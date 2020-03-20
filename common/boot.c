@@ -205,7 +205,7 @@ static int bootscript_create_entry(struct bootentries *bootentries, const char *
 /*
  * bootscript_scan_path - create boot entries from a path
  *
- * path can either be a full path to a bootscript or a full path to a diretory
+ * path can either be a full path to a bootscript or a full path to a directory
  * containing bootscripts.
  */
 static int bootscript_scan_path(struct bootentries *bootentries, const char *path)

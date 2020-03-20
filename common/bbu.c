@@ -361,7 +361,7 @@ err_close:
  *
  * This update handler us suitable for a standard file-to-device copy operation.
  * The handler checks for a filetype and unprotects/erases the device if
- * necessary. If devicefile belongs to a device then the device is checkd for
+ * necessary. If devicefile belongs to a device then the device is checked for
  * enough space before touching it.
  *
  * Return: 0 if successful, negative error code otherwise

@@ -339,18 +339,15 @@ static void usb_scan_port(struct usb_device_scan *usb_scan)
 	dev_dbg(&dev->dev, "port%d: Status 0x%04x Change 0x%04x\n",
 			port + 1, portstatus, portchange);
 
-	if (!(portchange & USB_PORT_STAT_C_CONNECTION)) {
-		if(get_time_ns() >= hub->connect_timeout) {
+	if (!(portchange & USB_PORT_STAT_C_CONNECTION) ||
+	    !(portstatus & USB_PORT_STAT_CONNECTION)) {
+		if (get_time_ns() >= hub->connect_timeout) {
 			dev_dbg(&dev->dev, "port%d: timeout\n", port + 1);
 			/* Remove this device from scanning list */
 			goto remove;
 		}
 		return;
 	}
-
-	/* Test if the connection came up, and if not exit */
-	if(!(portstatus & USB_PORT_STAT_CONNECTION))
-		return;
 
 	if (portchange & USB_PORT_STAT_C_RESET) {
 		dev_dbg(&dev->dev, "port%d: reset change\n", port + 1);

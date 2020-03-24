@@ -40,8 +40,10 @@ static const struct regmap_config syscon_regmap_config = {
 
 static struct syscon *of_syscon_register(struct device_node *np, bool check_clk)
 {
-	int ret;
+	struct regmap_config syscon_config = syscon_regmap_config;
 	struct syscon *syscon;
+	u32 reg_io_width;
+	int ret;
 	struct resource res;
 
 	if (!of_device_is_compatible(np, "syscon"))
@@ -55,12 +57,33 @@ static struct syscon *of_syscon_register(struct device_node *np, bool check_clk)
 	}
 
 	syscon->base = IOMEM(res.start);
-	syscon->np   = np;
+
+	/* Parse the device's DT node for an endianness specification */
+	if (of_property_read_bool(np, "big-endian"))
+		syscon_config.val_format_endian = REGMAP_ENDIAN_BIG;
+	else if (of_property_read_bool(np, "little-endian"))
+		syscon_config.val_format_endian = REGMAP_ENDIAN_LITTLE;
+	else if (of_property_read_bool(np, "native-endian"))
+		syscon_config.val_format_endian = REGMAP_ENDIAN_NATIVE;
+
+	/*
+	 * search for reg-io-width property in DT. If it is not provided,
+	 * default to 4 bytes. regmap_init_mmio will return an error if values
+	 * are invalid so there is no need to check them here.
+	 */
+	ret = of_property_read_u32(np, "reg-io-width", &reg_io_width);
+	if (ret)
+		reg_io_width = 4;
+
+	syscon_config.name = np->full_name;
+	syscon_config.reg_stride = reg_io_width;
+	syscon_config.val_bits = reg_io_width * 8;
+	syscon_config.max_register = resource_size(&res) - reg_io_width;
 
 	list_add_tail(&syscon->list, &syscon_list);
 
-	syscon->regmap = of_regmap_init_mmio_clk(np, NULL, syscon->base,
-					     &syscon_regmap_config);
+	syscon->regmap = regmap_init_mmio_clk(NULL, NULL, syscon->base,
+					      &syscon_config);
 
 	if (check_clk) {
 		struct clk *clk = of_clk_get(np, 0);

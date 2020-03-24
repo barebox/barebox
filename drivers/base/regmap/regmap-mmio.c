@@ -86,6 +86,20 @@ static void regmap_mmio_write32le(struct regmap_mmio_context *ctx,
 	writel(val, ctx->regs + reg);
 }
 
+static void regmap_mmio_write16be(struct regmap_mmio_context *ctx,
+				  unsigned int reg,
+				  unsigned int val)
+{
+	iowrite16be(val, ctx->regs + reg);
+}
+
+static void regmap_mmio_write32be(struct regmap_mmio_context *ctx,
+				  unsigned int reg,
+				  unsigned int val)
+{
+	iowrite32be(val, ctx->regs + reg);
+}
+
 #ifdef CONFIG_64BIT
 static void regmap_mmio_write64le(struct regmap_mmio_context *ctx,
 				  unsigned int reg,
@@ -137,6 +151,18 @@ static unsigned int regmap_mmio_read64le(struct regmap_mmio_context *ctx,
 }
 #endif
 
+static unsigned int regmap_mmio_read16be(struct regmap_mmio_context *ctx,
+				         unsigned int reg)
+{
+	return ioread16be(ctx->regs + reg);
+}
+
+static unsigned int regmap_mmio_read32be(struct regmap_mmio_context *ctx,
+				         unsigned int reg)
+{
+	return ioread32be(ctx->regs + reg);
+}
+
 static int regmap_mmio_read(void *context, unsigned int reg, unsigned int *val)
 {
 	struct regmap_mmio_context *ctx = context;
@@ -156,9 +182,11 @@ static int regmap_mmio_read(void *context, unsigned int reg, unsigned int *val)
 static const struct regmap_bus regmap_mmio = {
 	.reg_write = regmap_mmio_write,
 	.reg_read = regmap_mmio_read,
+	.val_format_endian_default = REGMAP_ENDIAN_LITTLE,
 };
 
-static struct regmap_mmio_context *regmap_mmio_gen_context(void __iomem *regs,
+static struct regmap_mmio_context *regmap_mmio_gen_context(struct device_d *dev,
+					void __iomem *regs,
 					const struct regmap_config *config)
 {
 	struct regmap_mmio_context *ctx;
@@ -184,25 +212,58 @@ static struct regmap_mmio_context *regmap_mmio_gen_context(void __iomem *regs,
 	ctx->regs = regs;
 	ctx->val_bytes = config->val_bits / 8;
 
-	switch (config->val_bits) {
-	case 8:
-		ctx->reg_read = regmap_mmio_read8;
-		ctx->reg_write = regmap_mmio_write8;
-		break;
-	case 16:
-		ctx->reg_read = regmap_mmio_read16le;
-		ctx->reg_write = regmap_mmio_write16le;
-		break;
-	case 32:
-		ctx->reg_read = regmap_mmio_read32le;
-		ctx->reg_write = regmap_mmio_write32le;
-		break;
-#ifdef CONFIG_64BIT
-	case 64:
-		ctx->reg_read = regmap_mmio_read64le;
-		ctx->reg_write = regmap_mmio_write64le;
-		break;
+	switch (regmap_get_val_endian(dev, &regmap_mmio, config)) {
+	case REGMAP_ENDIAN_DEFAULT:
+	case REGMAP_ENDIAN_LITTLE:
+#ifdef __LITTLE_ENDIAN
+	case REGMAP_ENDIAN_NATIVE:
 #endif
+		switch (config->val_bits) {
+		case 8:
+			ctx->reg_read = regmap_mmio_read8;
+			ctx->reg_write = regmap_mmio_write8;
+			break;
+		case 16:
+			ctx->reg_read = regmap_mmio_read16le;
+			ctx->reg_write = regmap_mmio_write16le;
+			break;
+		case 32:
+			ctx->reg_read = regmap_mmio_read32le;
+			ctx->reg_write = regmap_mmio_write32le;
+			break;
+#ifdef CONFIG_64BIT
+		case 64:
+			ctx->reg_read = regmap_mmio_read64le;
+			ctx->reg_write = regmap_mmio_write64le;
+			break;
+#endif
+		default:
+			ret = -EINVAL;
+			goto err_free;
+		}
+		break;
+	case REGMAP_ENDIAN_BIG:
+#ifdef __BIG_ENDIAN
+	case REGMAP_ENDIAN_NATIVE:
+#endif
+		switch (config->val_bits) {
+		case 8:
+			ctx->reg_read = regmap_mmio_read8;
+			ctx->reg_write = regmap_mmio_write8;
+			break;
+		case 16:
+			ctx->reg_read = regmap_mmio_read16be;
+			ctx->reg_write = regmap_mmio_write16be;
+			break;
+		case 32:
+			ctx->reg_read = regmap_mmio_read32be;
+			ctx->reg_write = regmap_mmio_write32be;
+			break;
+		default:
+			ret = -EINVAL;
+			goto err_free;
+		}
+		break;
 	default:
 		ret = -EINVAL;
 		goto err_free;
@@ -223,7 +284,7 @@ struct regmap *regmap_init_mmio_clk(struct device_d *dev,
 {
 	struct regmap_mmio_context *ctx;
 
-	ctx = regmap_mmio_gen_context(regs, config);
+	ctx = regmap_mmio_gen_context(dev, regs, config);
 	if (IS_ERR(ctx))
 		return ERR_CAST(ctx);
 
@@ -236,28 +297,6 @@ struct regmap *regmap_init_mmio_clk(struct device_d *dev,
 	}
 
 	return regmap_init(dev, &regmap_mmio, ctx, config);
-}
-
-struct regmap *of_regmap_init_mmio_clk(struct device_node *np,
-				       const char *clk_id,
-				       void __iomem *regs,
-				       const struct regmap_config *config)
-{
-	struct regmap_mmio_context *ctx;
-
-	ctx = regmap_mmio_gen_context(regs, config);
-	if (IS_ERR(ctx))
-		return ERR_CAST(ctx);
-
-	if (clk_id) {
-		ctx->clk = of_clk_get_by_name(np, clk_id);
-		if (IS_ERR(ctx->clk)) {
-			kfree(ctx);
-			return ERR_CAST(ctx->clk);
-		}
-	}
-
-	return regmap_init(NULL, &regmap_mmio, ctx, config);
 }
 
 int regmap_mmio_attach_clk(struct regmap *map, struct clk *clk)

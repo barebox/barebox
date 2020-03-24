@@ -2,6 +2,14 @@
 #ifndef __REGMAP_H
 #define __REGMAP_H
 
+enum regmap_endian {
+	/* Unspecified -> 0 -> Backwards compatible default */
+	REGMAP_ENDIAN_DEFAULT = 0,
+	REGMAP_ENDIAN_BIG,
+	REGMAP_ENDIAN_LITTLE,
+	REGMAP_ENDIAN_NATIVE,
+};
+
 /**
  * Configuration for the register map of a device.
  *
@@ -26,6 +34,9 @@ struct regmap_config {
 	int val_bits;
 
 	unsigned int max_register;
+
+	enum regmap_endian reg_format_endian;
+	enum regmap_endian val_format_endian;
 };
 
 typedef int (*regmap_hw_reg_read)(void *context, unsigned int reg,
@@ -36,6 +47,8 @@ typedef int (*regmap_hw_reg_write)(void *context, unsigned int reg,
 struct regmap_bus {
 	regmap_hw_reg_write reg_write;
 	regmap_hw_reg_read reg_read;
+	enum regmap_endian reg_format_endian_default;
+	enum regmap_endian val_format_endian_default;
 };
 
 struct device_d;
@@ -47,21 +60,6 @@ struct regmap *regmap_init(struct device_d *dev,
 			     const struct regmap_config *config);
 
 struct clk;
-
-/**
- * of_regmap_init_mmio_clk() - Initialise register map with register clock
- *
- * @np: Device node that will be interacted with
- * @clk_id: register clock consumer ID
- * @regs: Pointer to memory-mapped IO region
- * @config: Configuration for register map
- *
- * The return value will be an ERR_PTR() on error or a valid pointer to
- * a struct regmap.
- */
-struct regmap *of_regmap_init_mmio_clk(struct device_node *np, const char *clk_id,
-				       void __iomem *regs,
-				       const struct regmap_config *config);
 
 /**
  * regmap_init_mmio_clk() - Initialise register map with register clock

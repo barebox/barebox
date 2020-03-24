@@ -44,6 +44,13 @@ config DRIVER_SPI_FSL_QUADSPI
           This controller does not support generic SPI messages. It only
           supports the high-level SPI memory interface.
 
+config SPI_FSL_DSPI
+	bool "Freescale DSPI controller"
+	depends on ARCH_LAYERSCAPE
+	help
+	  This enables support for the Freescale DSPI controller in master
+	  mode. LS1021A and ColdFire platforms use the controller.
+
 config DRIVER_SPI_GPIO
 	bool "GPIO SPI Master driver"
 	depends on GPIOLIB

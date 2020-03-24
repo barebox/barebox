@@ -197,6 +197,12 @@ static struct regmap_mmio_context *regmap_mmio_gen_context(void __iomem *regs,
 		ctx->reg_read = regmap_mmio_read32le;
 		ctx->reg_write = regmap_mmio_write32le;
 		break;
+#ifdef CONFIG_64BIT
+	case 64:
+		ctx->reg_read = regmap_mmio_read64le;
+		ctx->reg_write = regmap_mmio_write64le;
+		break;
+#endif
 	default:
 		ret = -EINVAL;
 		goto err_free;

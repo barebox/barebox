@@ -297,8 +297,54 @@ struct spi_controller *spi_get_controller(int bus)
 	return NULL;
 }
 
+static int __spi_validate(struct spi_device *spi, struct spi_message *message)
+{
+	struct spi_controller *ctlr = spi->controller;
+	struct spi_transfer *xfer;
+	int w_size;
+
+	if (list_empty(&message->transfers))
+		return -EINVAL;
+
+	list_for_each_entry(xfer, &message->transfers, transfer_list) {
+		if (!xfer->bits_per_word)
+			xfer->bits_per_word = spi->bits_per_word;
+
+		if (!xfer->speed_hz)
+			xfer->speed_hz = spi->max_speed_hz;
+
+		if (ctlr->max_speed_hz && xfer->speed_hz > ctlr->max_speed_hz)
+			xfer->speed_hz = ctlr->max_speed_hz;
+
+		/*
+		 * SPI transfer length should be multiple of SPI word size
+		 * where SPI word size should be power-of-two multiple
+		 */
+		if (xfer->bits_per_word <= 8)
+			w_size = 1;
+		else if (xfer->bits_per_word <= 16)
+			w_size = 2;
+		else
+			w_size = 4;
+
+		/* No partial transfers accepted */
+		if (xfer->len % w_size)
+			return -EINVAL;
+	}
+
+	message->status = -EINPROGRESS;
+
+	return 0;
+}
+
 int spi_sync(struct spi_device *spi, struct spi_message *message)
 {
+	int status;
+
+	status = __spi_validate(spi, message);
+	if (status != 0)
+		return status;
+
 	return spi->controller->transfer(spi, message);
 }
 

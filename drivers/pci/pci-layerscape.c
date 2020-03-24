@@ -396,8 +396,8 @@ static int ls_pcie_of_fixup(struct device_node *root, void *ctx)
 
 	ret = ls_pcie_get_iommu_handle(np, &iommu_handle);
 	if (ret) {
-		dev_err(pcie->pci.dev, "Unable to get iommu phandle\n");
-		return ret;
+		dev_info(pcie->pci.dev, "No iommu phandle, won't fixup\n");
+		return 0;
 	}
 
 	if (ls_pcie_share_stream_id) {

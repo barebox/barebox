@@ -119,8 +119,13 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
 
 		data->os_res = request_sdram_region("kernel",
 				load_address, kernel_size);
-		if (!data->os_res)
+		if (!data->os_res) {
+			printf("unable to request SDRAM region for kernel at"
+					"0x%08llx-0x%08llx\n",
+				(unsigned long long)load_address,
+				(unsigned long long)load_address + kernel_size - 1);
 			return -ENOMEM;
+		}
 		memcpy((void *)load_address, kernel, kernel_size);
 		return 0;
 	}
@@ -227,8 +232,13 @@ int bootm_load_initrd(struct image_data *data, unsigned long load_address)
 		data->initrd_res = request_sdram_region("initrd",
 				load_address,
 				initrd_size);
-		if (!data->initrd_res)
+		if (!data->initrd_res) {
+			printf("unable to request SDRAM region for initrd at"
+					"0x%08llx-0x%08llx\n",
+				(unsigned long long)load_address,
+				(unsigned long long)load_address + initrd_size - 1);
 			return -ENOMEM;
+		}
 		memcpy((void *)load_address, initrd, initrd_size);
 		printf("Loaded initrd from FIT image\n");
 		goto done1;
@@ -439,8 +449,13 @@ int bootm_load_devicetree(struct image_data *data, void *fdt,
 
 	data->oftree_res = request_sdram_region("oftree", load_address,
 			fdt_size);
-	if (!data->oftree_res)
+	if (!data->oftree_res) {
+		printf("unable to request SDRAM region for device tree at"
+				"0x%08llx-0x%08llx\n",
+			(unsigned long long)load_address,
+			(unsigned long long)load_address + fdt_size - 1);
 		return -ENOMEM;
+	}
 
 	memcpy((void *)data->oftree_res->start, fdt, fdt_size);
 

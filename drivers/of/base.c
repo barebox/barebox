@@ -2062,9 +2062,23 @@ const struct of_device_id of_default_bus_match_table[] = {
 	}
 };
 
+static void of_probe_memory(void)
+{
+	struct device_node *memory = root_node;
+
+	/* Parse all available node with "memory" device_type */
+	while (1) {
+		memory = of_find_node_by_type(memory, "memory");
+		if (!memory)
+			break;
+
+		of_add_memory(memory, false);
+	}
+}
+
 int of_probe(void)
 {
-	struct device_node *memory, *firmware;
+	struct device_node *firmware;
 
 	if(!root_node)
 		return -ENODEV;
@@ -2075,11 +2089,7 @@ int of_probe(void)
 	if (of_model)
 		barebox_set_model(of_model);
 
-	memory = of_find_node_by_path("/memory");
-	if (!memory)
-		memory = of_find_node_by_type(root_node, "memory");
-	if (memory)
-		of_add_memory(memory, false);
+	of_probe_memory();
 
 	firmware = of_find_node_by_path("/firmware");
 	if (firmware)

@@ -271,6 +271,10 @@ dfu_unbind(struct usb_configuration *c, struct usb_function *f)
 {
 	struct f_dfu		*dfu = func_to_dfu(f);
 
+	dfu_files = NULL;
+	dfu_file_entry = NULL;
+	dfudetach = 0;
+
 	usb_free_all_descriptors(f);
 
 	dma_free(dfu->dnreq->buf);

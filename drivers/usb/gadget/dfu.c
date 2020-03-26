@@ -239,7 +239,7 @@ dfu_bind(struct usb_configuration *c, struct usb_function *f)
 		desc[i].bNumEndpoints	=	0;
 		desc[i].bInterfaceClass =	0xfe;
 		desc[i].bInterfaceSubClass =	1;
-		desc[i].bInterfaceProtocol =	1;
+		desc[i].bInterfaceProtocol =	2;
 		desc[i].bAlternateSetting = i;
 		desc[i].iInterface = us[i + 1].id;
 		header[i] = (struct usb_descriptor_header *)&desc[i];

@@ -55,6 +55,8 @@
 #include <libbb.h>
 #include <init.h>
 #include <fs.h>
+#include <ioctl.h>
+#include <linux/mtd/mtd-abi.h>
 
 #define USB_DT_DFU			0x21
 
@@ -132,6 +134,10 @@ struct file_list_entry *dfu_file_entry;
 static int dfufd = -EINVAL;
 static struct file_list *dfu_files;
 static int dfudetach;
+static struct mtd_info_user dfu_mtdinfo;
+static loff_t dfu_written;
+static loff_t dfu_erased;
+static int prog_erase;
 
 /* USB DFU functional descriptor */
 static struct usb_dfu_func_descriptor usb_dfu_func = {
@@ -319,6 +325,11 @@ static void dfu_cleanup(struct f_dfu *dfu)
 {
 	struct stat s;
 
+	memset(&dfu_mtdinfo, 0, sizeof(dfu_mtdinfo));
+	dfu_written = 0;
+	dfu_erased = 0;
+	prog_erase = 0;
+
 	if (dfufd > 0) {
 		close(dfufd);
 		dfufd = -EINVAL;
@@ -331,8 +342,22 @@ static void dfu_cleanup(struct f_dfu *dfu)
 static void dn_complete(struct usb_ep *ep, struct usb_request *req)
 {
 	struct f_dfu		*dfu = req->context;
+	loff_t size;
 	int ret;
 
+	if (prog_erase && (dfu_written + req->length) > dfu_erased) {
+		size = roundup(req->length, dfu_mtdinfo.erasesize);
+		ret = erase(dfufd, size, dfu_erased);
+		dfu_erased += size;
+		if (ret && ret != -ENOSYS) {
+			perror("erase");
+			dfu->dfu_status = DFU_STATUS_errERASE;
+			dfu_cleanup(dfu);
+			return;
+		}
+	}
+
+	dfu_written += req->length;
 	ret = write(dfufd, req->buf, req->length);
 	if (ret < (int)req->length) {
 		perror("write");
@@ -497,12 +522,9 @@ static int dfu_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 			}
 
 			if (!(dfu_file_entry->flags & FILE_LIST_FLAG_SAFE)) {
-				ret = erase(dfufd, ERASE_SIZE_ALL, 0);
-				if (ret && ret != -ENOSYS) {
-					dfu->dfu_status = DFU_STATUS_errERASE;
-					perror("erase");
-					goto out;
-				}
+				ret = ioctl(dfufd, MEMGETINFO, &dfu_mtdinfo);
+				if (!ret) /* file is on a mtd device */
+					prog_erase = 1;
 			}
 
 			value = handle_dnload(f, ctrl);

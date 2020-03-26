@@ -158,19 +158,21 @@ static void create_sections(uint64_t virt, uint64_t phys, uint64_t size,
 
 int arch_remap_range(void *_start, size_t size, unsigned flags)
 {
+	unsigned long attrs;
+
 	switch (flags) {
 	case MAP_CACHED:
-		flags = CACHED_MEM;
+		attrs = CACHED_MEM;
 		break;
 	case MAP_UNCACHED:
-		flags = UNCACHED_MEM;
+		attrs = UNCACHED_MEM;
 		break;
 	default:
 		return -EINVAL;
 	}
 
 	create_sections((uint64_t)_start, (uint64_t)_start, (uint64_t)size,
-			flags);
+			attrs);
 	return 0;
 }
 

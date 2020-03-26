@@ -346,38 +346,14 @@ static int handle_dnload(struct usb_function *f, const struct usb_ctrlrequest *c
 	struct f_dfu		*dfu = func_to_dfu(f);
 	struct usb_composite_dev *cdev = f->config->cdev;
 	u16			w_length = le16_to_cpu(ctrl->wLength);
-	int ret;
 
 	if (w_length == 0) {
-		dfu->dfu_state = DFU_STATE_dfuIDLE;
 		if (dfu_file_entry->flags & FILE_LIST_FLAG_SAFE) {
-			int fd;
-			unsigned flags = O_WRONLY;
-
-			if (dfu_file_entry->flags & FILE_LIST_FLAG_CREATE)
-				flags |= O_CREAT | O_TRUNC;
-
-			fd = open(dfu_file_entry->filename, flags);
-			if (fd < 0) {
-				perror("open");
-				ret = -EINVAL;
-				goto err_out;
-			}
-			ret = erase(fd, ERASE_SIZE_ALL, 0);
-			close(fd);
-			if (ret && ret != -ENOSYS) {
-				perror("erase");
-				ret = -EINVAL;
-				goto err_out;
-			}
-			ret = copy_file(DFU_TEMPFILE, dfu_file_entry->filename, 0);
-			if (ret) {
-				printf("copy file failed\n");
-				ret = -EINVAL;
-				goto err_out;
-			}
+			dfu->dfu_state = DFU_STATE_dfuMANIFEST;
+		} else {
+			dfu->dfu_state = DFU_STATE_dfuIDLE;
+			dfu_cleanup(dfu);
 		}
-		dfu_cleanup(dfu);
 		return 0;
 	}
 
@@ -386,8 +362,51 @@ static int handle_dnload(struct usb_function *f, const struct usb_ctrlrequest *c
 	usb_ep_queue(cdev->gadget->ep0, dfu->dnreq);
 
 	return 0;
+}
 
-err_out:
+static int handle_manifest(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
+{
+	struct f_dfu		*dfu = func_to_dfu(f);
+	int ret;
+
+	dfu->dfu_state = DFU_STATE_dfuIDLE;
+
+	if (dfu_file_entry->flags & FILE_LIST_FLAG_SAFE) {
+		int fd;
+		unsigned flags = O_WRONLY;
+
+		if (dfu_file_entry->flags & FILE_LIST_FLAG_CREATE)
+			flags |= O_CREAT | O_TRUNC;
+
+		fd = open(dfu_file_entry->filename, flags);
+		if (fd < 0) {
+			perror("open");
+			dfu->dfu_status = DFU_STATUS_errERASE;
+			ret = -EINVAL;
+			goto out;
+		}
+
+		ret = erase(fd, ERASE_SIZE_ALL, 0);
+		close(fd);
+		if (ret && ret != -ENOSYS) {
+			dfu->dfu_status = DFU_STATUS_errERASE;
+			perror("erase");
+			goto out;
+		}
+
+		ret = copy_file(DFU_TEMPFILE, dfu_file_entry->filename, 0);
+		if (ret) {
+			printf("copy file failed\n");
+			ret = -EINVAL;
+			goto out;
+		}
+	}
+
+	return 0;
+
+out:
+	dfu->dfu_status = DFU_STATUS_errWRITE;
+	dfu->dfu_state = DFU_STATE_dfuERROR;
 	dfu_cleanup(dfu);
 	return ret;
 }
@@ -442,23 +461,17 @@ static int dfu_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 		goto out;
 	}
 
-	/* Allow GETSTATUS in every state */
-	if (ctrl->bRequest == USB_REQ_DFU_GETSTATUS) {
-		value = dfu_status(f, ctrl);
-		value = min(value, w_length);
-		goto out;
-	}
-
-	/* Allow GETSTATE in every state */
-	if (ctrl->bRequest == USB_REQ_DFU_GETSTATE) {
-		*(u8 *)req->buf = dfu->dfu_state;
-		value = sizeof(u8);
-		goto out;
-	}
-
 	switch (dfu->dfu_state) {
 	case DFU_STATE_dfuIDLE:
 		switch (ctrl->bRequest) {
+		case USB_REQ_DFU_GETSTATUS:
+			value = dfu_status(f, ctrl);
+			value = min(value, w_length);
+			break;
+		case USB_REQ_DFU_GETSTATE:
+			*(u8 *)req->buf = dfu->dfu_state;
+			value = sizeof(u8);
+			break;
 		case USB_REQ_DFU_DNLOAD:
 			if (w_length == 0) {
 				dfu->dfu_state = DFU_STATE_dfuERROR;
@@ -483,11 +496,13 @@ static int dfu_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 				goto out;
 			}
 
-			ret = erase(dfufd, ERASE_SIZE_ALL, 0);
-			if (ret && ret != -ENOSYS) {
-				dfu->dfu_status = DFU_STATUS_errERASE;
-				perror("erase");
-				goto out;
+			if (!(dfu_file_entry->flags & FILE_LIST_FLAG_SAFE)) {
+				ret = erase(dfufd, ERASE_SIZE_ALL, 0);
+				if (ret && ret != -ENOSYS) {
+					dfu->dfu_status = DFU_STATUS_errERASE;
+					perror("erase");
+					goto out;
+				}
 			}
 
 			value = handle_dnload(f, ctrl);
@@ -524,9 +539,17 @@ static int dfu_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 		break;
 	case DFU_STATE_dfuDNLOAD_IDLE:
 		switch (ctrl->bRequest) {
+		case USB_REQ_DFU_GETSTATUS:
+			value = dfu_status(f, ctrl);
+			value = min(value, w_length);
+			break;
+		case USB_REQ_DFU_GETSTATE:
+			*(u8 *)req->buf = dfu->dfu_state;
+			value = sizeof(u8);
+			break;
 		case USB_REQ_DFU_DNLOAD:
 			value = handle_dnload(f, ctrl);
-			if (dfu->dfu_state != DFU_STATE_dfuIDLE) {
+			if (dfu->dfu_state == DFU_STATE_dfuDNLOAD_IDLE) {
 				return 0;
 			}
 			break;
@@ -542,6 +565,14 @@ static int dfu_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 		break;
 	case DFU_STATE_dfuUPLOAD_IDLE:
 		switch (ctrl->bRequest) {
+		case USB_REQ_DFU_GETSTATUS:
+			value = dfu_status(f, ctrl);
+			value = min(value, w_length);
+			break;
+		case USB_REQ_DFU_GETSTATE:
+			*(u8 *)req->buf = dfu->dfu_state;
+			value = sizeof(u8);
+			break;
 		case USB_REQ_DFU_UPLOAD:
 			handle_upload(f, ctrl);
 			return 0;
@@ -557,6 +588,14 @@ static int dfu_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 		break;
 	case DFU_STATE_dfuERROR:
 		switch (ctrl->bRequest) {
+		case USB_REQ_DFU_GETSTATUS:
+			value = dfu_status(f, ctrl);
+			value = min(value, w_length);
+			break;
+		case USB_REQ_DFU_GETSTATE:
+			*(u8 *)req->buf = dfu->dfu_state;
+			value = sizeof(u8);
+			break;
 		case USB_REQ_DFU_CLRSTATUS:
 			dfu_abort(dfu);
 			/* no zlp? */
@@ -568,10 +607,48 @@ static int dfu_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 			break;
 		}
 		break;
+	case DFU_STATE_dfuMANIFEST_SYNC:
+		switch (ctrl->bRequest) {
+		case USB_REQ_DFU_GETSTATUS:
+			value = dfu_status(f, ctrl);
+			if (dfu_file_entry->flags & FILE_LIST_FLAG_SAFE)
+				dfu->dfu_state = DFU_STATE_dfuMANIFEST;
+			else
+				dfu->dfu_state = DFU_STATE_dfuIDLE;
+			value = min(value, w_length);
+			break;
+		case USB_REQ_DFU_GETSTATE:
+			*(u8 *)req->buf = dfu->dfu_state;
+			value = sizeof(u8);
+			break;
+		default:
+			dfu->dfu_state = DFU_STATE_dfuERROR;
+			value = -EINVAL;
+			break;
+		}
+		break;
+	case DFU_STATE_dfuMANIFEST:
+		value = handle_manifest(f, ctrl);
+		if (dfu->dfu_state != DFU_STATE_dfuIDLE) {
+			return 0;
+		}
+		switch (ctrl->bRequest) {
+		case USB_REQ_DFU_GETSTATUS:
+			value = dfu_status(f, ctrl);
+			value = min(value, w_length);
+			break;
+		case USB_REQ_DFU_GETSTATE:
+			*(u8 *)req->buf = dfu->dfu_state;
+			value = sizeof(u8);
+			break;
+		default:
+			dfu->dfu_state = DFU_STATE_dfuERROR;
+			value = -EINVAL;
+			break;
+		}
+		break;
 	case DFU_STATE_dfuDNLOAD_SYNC:
 	case DFU_STATE_dfuDNBUSY:
-	case DFU_STATE_dfuMANIFEST_SYNC:
-	case DFU_STATE_dfuMANIFEST:
 		dfu->dfu_state = DFU_STATE_dfuERROR;
 		value = -EINVAL;
 		break;

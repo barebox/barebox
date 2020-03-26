@@ -67,7 +67,8 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize,
 
 	el = current_el();
 	set_ttbr_tcr_mair(el, ttb, calc_tcr(el, EARLY_BITS_PER_VA), MEMORY_ATTRIBUTES);
-	create_sections((void *)ttb, 0, 0, 1UL << (EARLY_BITS_PER_VA - 1), UNCACHED_MEM);
+	create_sections((void *)ttb, 0, 0, 1UL << (EARLY_BITS_PER_VA - 1),
+			attrs_uncached_mem());
 	create_sections((void *)ttb, membase, membase, memsize, CACHED_MEM);
 	tlb_invalidate();
 	isb();

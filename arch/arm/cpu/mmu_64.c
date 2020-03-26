@@ -165,7 +165,7 @@ int arch_remap_range(void *_start, size_t size, unsigned flags)
 		attrs = CACHED_MEM;
 		break;
 	case MAP_UNCACHED:
-		attrs = UNCACHED_MEM;
+		attrs = attrs_uncached_mem();
 		break;
 	default:
 		return -EINVAL;
@@ -201,7 +201,7 @@ void __mmu_init(bool mmu_on)
 	pr_debug("ttb: 0x%p\n", ttb);
 
 	/* create a flat mapping */
-	create_sections(0, 0, 1UL << (BITS_PER_VA - 1), UNCACHED_MEM);
+	create_sections(0, 0, 1UL << (BITS_PER_VA - 1), attrs_uncached_mem());
 
 	/* Map sdram cached. */
 	for_each_memory_bank(bank)

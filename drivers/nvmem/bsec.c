@@ -33,7 +33,7 @@ struct stm32_bsec_data {
 	int num_regs;
 };
 
-static int bsec_smc(struct bsec_priv *priv, u8 op, enum bsec_field field,
+static int bsec_smc(struct bsec_priv *priv, enum bsec_op op, u32 field,
 		    unsigned data2, unsigned *val)
 {
 	enum bsec_smc ret = stm32mp_smc(priv->svc_id, op, field / 4, data2, val);

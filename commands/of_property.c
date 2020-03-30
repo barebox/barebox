@@ -315,7 +315,7 @@ static int do_of_property(int argc, char *argv[])
 	int delete = 0;
 	int set = 0;
 	int fixup = 0;
-	char *path = NULL, *propname = NULL;
+	char *path, *propname;
 
 	while ((opt = getopt(argc, argv, "dsf")) > 0) {
 		switch (opt) {
@@ -333,14 +333,11 @@ static int do_of_property(int argc, char *argv[])
 		}
 	}
 
-	if (optind == argc)
+	if (argc - optind < 2)
 		return COMMAND_ERROR_USAGE;
 
-	if (optind < argc)
-		path = argv[optind];
-
-	if (optind + 1 < argc)
-		propname = argv[optind + 1];
+	path = argv[optind];
+	propname = argv[optind + 1];
 
 	debug("path: %s propname: %s\n", path, propname);
 

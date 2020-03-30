@@ -156,7 +156,7 @@ static int mci_block_write(struct mci *mci, const void *src, int blocknum,
 		mmccmd = MMC_CMD_WRITE_SINGLE_BLOCK;
 
 	if ((unsigned long)src & 0x3) {
-		memcpy(sector_buf, src, 512);
+		memcpy(sector_buf, src, SECTOR_SIZE);
 		buf = sector_buf;
 	} else {
 		buf = src;
@@ -1360,9 +1360,9 @@ static int mci_sd_read(struct block_device *blk, void *buffer, int block,
 	dev_dbg(&mci->dev, "%s: Read %d block(s), starting at %d\n",
 		__func__, num_blocks, block);
 
-	if (mci->read_bl_len != 512) {
-		dev_dbg(&mci->dev, "MMC/SD block size is not 512 bytes (its %u bytes instead)\n",
-				mci->read_bl_len);
+	if (mci->read_bl_len != SECTOR_SIZE) {
+		dev_dbg(&mci->dev, "MMC/SD block size is not %d bytes (its %u bytes instead)\n",
+				SECTOR_SIZE, mci->read_bl_len);
 		return -EINVAL;
 	}
 
@@ -1789,7 +1789,7 @@ static int mci_set_probe(struct param_d *param, void *priv)
 
 static int mci_init(void)
 {
-	sector_buf = xmemalign(32, 512);
+	sector_buf = xmemalign(32, SECTOR_SIZE);
 
 	return 0;
 }

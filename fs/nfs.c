@@ -1396,6 +1396,7 @@ static int nfs_probe(struct device_d *dev)
 	free(tmp);
 
 	sb->s_op = &nfs_ops;
+	sb->s_d_op = &no_revalidate_d_ops;
 
 	inode = new_inode(sb);
 	nfs_set_fh(inode, &npriv->rootfh);

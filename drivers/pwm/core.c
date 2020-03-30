@@ -213,7 +213,7 @@ struct pwm_device *of_pwm_request(struct device_node *np, const char *con_id)
 	}
 
 	if (args.args_count > 1)
-		pwm_set_period(pwm, args.args[1]);
+		pwm->chip->state.period_ns = args.args[1];
 
 	ret = __pwm_request(pwm);
 	if (ret)
@@ -279,11 +279,6 @@ int pwm_config(struct pwm_device *pwm, int duty_ns, int period_ns)
 	return pwm_apply_state(pwm, &state);
 }
 EXPORT_SYMBOL_GPL(pwm_config);
-
-void pwm_set_period(struct pwm_device *pwm, unsigned int period_ns)
-{
-	pwm->chip->state.period_ns = period_ns;
-}
 
 unsigned int pwm_get_period(struct pwm_device *pwm)
 {

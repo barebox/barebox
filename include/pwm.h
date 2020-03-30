@@ -30,6 +30,12 @@ struct pwm_device *of_pwm_request(struct device_node *np, const char *con_id);
 void pwm_free(struct pwm_device *pwm);
 
 /*
+ * pwm_init_state - prepare a new state from device tree args
+ */
+void pwm_init_state(const struct pwm_device *pwm,
+		    struct pwm_state *state);
+
+/*
  * pwm_config - change a PWM device configuration
  */
 int pwm_apply_state(struct pwm_device *pwm, const struct pwm_state *state);

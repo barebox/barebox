@@ -194,16 +194,28 @@ static int get_cpu_package(u32 *pkg)
 
 static int setup_cpu_type(void)
 {
-	const char *cputypestr;
-	const char *cpupkgstr;
+	const char *cputypestr, *cpupkgstr, *cpurevstr;
+	u32 pkg;
 
 	get_cpu_type(&__stm32mp_cputype);
 	switch (__stm32mp_cputype) {
+	case CPU_STM32MP157Fxx:
+		cputypestr = "157F";
+		break;
+	case CPU_STM32MP157Dxx:
+		cputypestr = "157D";
+		break;
 	case CPU_STM32MP157Cxx:
 		cputypestr = "157C";
 		break;
 	case CPU_STM32MP157Axx:
 		cputypestr = "157A";
+		break;
+	case CPU_STM32MP153Fxx:
+		cputypestr = "153F";
+		break;
+	case CPU_STM32MP153Dxx:
+		cputypestr = "153D";
 		break;
 	case CPU_STM32MP153Cxx:
 		cputypestr = "153C";
@@ -216,6 +228,12 @@ static int setup_cpu_type(void)
 		break;
 	case CPU_STM32MP151Axx:
 		cputypestr = "151A";
+		break;
+	case CPU_STM32MP151Fxx:
+		cputypestr = "151F";
+		break;
+	case CPU_STM32MP151Dxx:
+		cputypestr = "151D";
 		break;
 	default:
 		cputypestr = "????";
@@ -242,11 +260,24 @@ static int setup_cpu_type(void)
 	}
 
 	__stm32mp_silicon_revision = get_cpu_revision();
+	switch (__stm32mp_silicon_revision) {
+	case CPU_REV_A:
+		cpurevstr = "A";
+		break;
+	case CPU_REV_B:
+		cpurevstr = "B";
+		break;
+	case CPU_REV_Z:
+		cpurevstr = "Z";
+		break;
+	default:
+		cpurevstr = "?";
+	}
 
 	pr_debug("cputype = 0x%x, package = 0x%x, revision = 0x%x\n",
-		 __stm32mp_cputype, __stm32mp_package, __stm32mp_silicon_revision);
-	pr_info("detected STM32MP%s%s Rev.%c\n", cputypestr, cpupkgstr,
-		(__stm32mp_silicon_revision >> 12) + 'A' - 1);
+		 __stm32mp_cputype, pkg, __stm32mp_silicon_revision);
+	pr_info("detected STM32MP%s%s Rev.%s\n", cputypestr, cpupkgstr, cpurevstr);
+
 	return 0;
 }
 

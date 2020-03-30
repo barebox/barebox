@@ -366,9 +366,6 @@ static int rpc_check_reply(struct packet *pkt, int rpc_prog,
 
 	*nfserr = 0;
 
-	if (!pkt)
-		return -EAGAIN;
-
 	memcpy(&rpc, pkt->data, sizeof(rpc));
 
 	if (ntoh32(rpc.id) != rpc_id) {

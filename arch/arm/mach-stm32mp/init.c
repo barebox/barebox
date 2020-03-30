@@ -155,7 +155,7 @@ static inline u32 read_idc(void)
 }
 
 /* Get Device Part Number (RPN) from OTP */
-static u32 get_cpu_rpn(u32 *rpn)
+static int get_cpu_rpn(u32 *rpn)
 {
 	int ret = bsec_read_field(BSEC_OTP_RPN, rpn);
 	if (ret)
@@ -170,7 +170,7 @@ static u32 get_cpu_revision(void)
 	return (read_idc() & DBGMCU_IDC_REV_ID_MASK) >> DBGMCU_IDC_REV_ID_SHIFT;
 }
 
-static u32 get_cpu_type(u32 *type)
+static int get_cpu_type(u32 *type)
 {
 	u32 id;
 	int ret = get_cpu_rpn(type);

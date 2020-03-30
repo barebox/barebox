@@ -37,6 +37,18 @@ unsigned int pwm_get_period(struct pwm_device *pwm);
 
 struct pwm_chip;
 
+/*
+ * struct pwm_state - state of a PWM channel
+ * @period_ns: PWM period (in nanoseconds)
+ * @duty_ns: PWM duty cycle (in nanoseconds)
+ * @p_enable: PWM enabled status
+ */
+struct pwm_state {
+	unsigned int period_ns;
+	unsigned int duty_ns;
+	unsigned int p_enable;
+};
+
 /**
  * struct pwm_ops - PWM operations
  * @request: optional hook for requesting a PWM
@@ -59,17 +71,14 @@ struct pwm_ops {
  * @id: The id of this pwm
  * @devname: unique identifier for this pwm
  * @ops: The callbacks for this PWM
- * @duty_ns: The duty cycle of the PWM, in nano-seconds
- * @period_ns: The period of the PWM, in nano-seconds
- * @p_enable: whether the PWM is enabled
+ * @state: current state of the PWM
  */
 struct pwm_chip {
 	int			id;
 	const char		*devname;
 	const struct pwm_ops	*ops;
-	int			duty_ns;
-	int			period_ns;
-	int			p_enable;
+
+	struct pwm_state	state;
 };
 
 int pwmchip_add(struct pwm_chip *chip, struct device_d *dev);

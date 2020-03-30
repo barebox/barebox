@@ -450,9 +450,6 @@ again:
 	nfs_timer_start = get_time_ns();
 
 	while (1) {
-		if (ctrlc())
-			return ERR_PTR(-EINTR);
-
 		net_poll();
 
 		if (is_timeout(nfs_timer_start, NFS_TIMEOUT)) {

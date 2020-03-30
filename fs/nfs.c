@@ -397,6 +397,11 @@ static int rpc_check_reply(struct packet *pkt, int rpc_prog,
 	return 0;
 }
 
+static void nfs_free_packet(struct packet *packet)
+{
+	free(packet);
+}
+
 /*
  * rpc_req - synchronous RPC request
  */
@@ -472,7 +477,7 @@ again:
 				      npriv->rpc_id, &nfserr);
 		if (!ret) {
 			if (rpc_prog == PROG_NFS && nfserr) {
-				free(npriv->nfs_packet);
+				nfs_free_packet(npriv->nfs_packet);
 				return ERR_PTR(nfserr);
 			} else {
 				return npriv->nfs_packet;
@@ -505,7 +510,7 @@ static int rpc_lookup_req(struct nfs_priv *npriv, uint32_t prog, uint32_t ver)
 
 	port = ntoh32(net_read_uint32(nfs_packet->data + sizeof(struct rpc_reply)));
 
-	free(nfs_packet);
+	nfs_free_packet(nfs_packet);
 
 	return port;
 }
@@ -676,12 +681,12 @@ static int nfs_mount_req(struct nfs_priv *npriv)
 	if (npriv->rootfh.size > NFS3_FHSIZE) {
 		printf("%s: file handle too big: %lu\n",
 		       __func__, (unsigned long)npriv->rootfh.size);
-		free(nfs_packet);
+		nfs_free_packet(nfs_packet);
 		return -EIO;
 	}
 	memcpy(npriv->rootfh.data, p, npriv->rootfh.size);
 
-	free(nfs_packet);
+	nfs_free_packet(nfs_packet);
 
 	return 0;
 }
@@ -709,7 +714,7 @@ static void nfs_umount_req(struct nfs_priv *npriv)
 	nfs_packet = rpc_req(npriv, PROG_MOUNT, MOUNT_UMOUNT, data, len);
 
 	if (!IS_ERR(nfs_packet))
-		free(nfs_packet);
+		nfs_free_packet(nfs_packet);
 }
 
 /*
@@ -777,7 +782,7 @@ static int nfs_lookup_req(struct nfs_priv *npriv, struct nfs_fh *fh,
 
 	nfs_read_post_op_attr(p, inode);
 
-	free(nfs_packet);
+	nfs_free_packet(nfs_packet);
 
 	return 0;
 }
@@ -857,7 +862,7 @@ static void *nfs_readdirattr_req(struct nfs_priv *npriv, struct nfs_dir *dir)
 	len = (void *)nfs_packet->data + nfs_packet->len - (void *)p;
 	if (!len) {
 		printf("%s: huh, no payload left\n", __func__);
-		free(nfs_packet);
+		nfs_free_packet(nfs_packet);
 		return NULL;
 	}
 
@@ -865,7 +870,7 @@ static void *nfs_readdirattr_req(struct nfs_priv *npriv, struct nfs_dir *dir)
 
 	memcpy(buf, p, len);
 
-	free(nfs_packet);
+	nfs_free_packet(nfs_packet);
 
 	xdr_init(&dir->stream, buf, len);
 
@@ -942,13 +947,13 @@ static int nfs_read_req(struct file_priv *priv, uint64_t offset,
 	p += 2;
 
 	if (readlen && !rlen && !eof) {
-		free(nfs_packet);
+		nfs_free_packet(nfs_packet);
 		return -EIO;
 	}
 
 	kfifo_put(priv->fifo, (char *)p, rlen);
 
-	free(nfs_packet);
+	nfs_free_packet(nfs_packet);
 
 	return 0;
 }
@@ -1032,7 +1037,7 @@ static int nfs_readlink_req(struct nfs_priv *npriv, struct nfs_fh *fh,
 	*target = xzalloc(len + 1);
 	memcpy(*target, p, len);
 
-	free(nfs_packet);
+	nfs_free_packet(nfs_packet);
 
 	return 0;
 }

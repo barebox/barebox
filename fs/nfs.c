@@ -368,13 +368,8 @@ static int rpc_check_reply(struct packet *pkt, int rpc_prog,
 
 	memcpy(&rpc, pkt->data, sizeof(rpc));
 
-	if (ntoh32(rpc.id) != rpc_id) {
-		if (rpc_id - ntoh32(rpc.id) == 1)
-			/* stale packet, wait a bit longer */
-			return 0;
-
-		return -EINVAL;
-	}
+	if (ntoh32(rpc.id) != rpc_id)
+		return -EAGAIN;
 
 	if (rpc.rstatus  ||
 	    rpc.verifier ||

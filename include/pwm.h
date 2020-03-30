@@ -63,6 +63,7 @@ struct pwm_ops {
  * @ops: The callbacks for this PWM
  * @duty_ns: The duty cycle of the PWM, in nano-seconds
  * @period_ns: The period of the PWM, in nano-seconds
+ * @p_enable: whether the PWM is enabled
  */
 struct pwm_chip {
 	int			id;
@@ -70,6 +71,7 @@ struct pwm_chip {
 	const struct pwm_ops	*ops;
 	int			duty_ns;
 	int			period_ns;
+	int			p_enable;
 };
 
 int pwmchip_add(struct pwm_chip *chip, struct device_d *dev);

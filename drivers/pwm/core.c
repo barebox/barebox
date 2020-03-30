@@ -24,7 +24,6 @@ struct pwm_device {
 	struct			pwm_chip *chip;
 	unsigned long		flags;
 #define FLAG_REQUESTED	0
-#define FLAG_ENABLED	1
 	struct list_head	node;
 	struct device_d		*hwdev;
 	struct device_d		dev;
@@ -283,8 +282,10 @@ int pwm_enable(struct pwm_device *pwm)
 {
 	pwm->p_enable = 1;
 
-	if (!test_and_set_bit(FLAG_ENABLED, &pwm->flags))
+	if (!pwm->chip->p_enable) {
+		pwm->chip->p_enable = 1;
 		return pwm->chip->ops->enable(pwm->chip);
+	}
 
 	return 0;
 }
@@ -297,7 +298,10 @@ void pwm_disable(struct pwm_device *pwm)
 {
 	pwm->p_enable = 0;
 
-	if (test_and_clear_bit(FLAG_ENABLED, &pwm->flags))
-		pwm->chip->ops->disable(pwm->chip);
+	if (!pwm->chip->p_enable)
+		return;
+
+	pwm->chip->p_enable = 0;
+	pwm->chip->ops->disable(pwm->chip);
 }
 EXPORT_SYMBOL_GPL(pwm_disable);

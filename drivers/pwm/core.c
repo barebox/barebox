@@ -49,9 +49,7 @@ static int set_duty_period_ns(struct param_d *p, void *priv)
 {
 	struct pwm_device *pwm = priv;
 
-	pwm_config(pwm, pwm->params.duty_ns, pwm->params.period_ns);
-
-	return 0;
+	return pwm_apply_state(pwm, &pwm->params);
 }
 
 static int set_enable(struct param_d *p, void *priv)
@@ -235,21 +233,50 @@ void pwm_free(struct pwm_device *pwm)
 }
 EXPORT_SYMBOL_GPL(pwm_free);
 
+void pwm_get_state(const struct pwm_device *pwm,
+		   struct pwm_state *state)
+{
+	*state = pwm->chip->state;
+}
+EXPORT_SYMBOL_GPL(pwm_get_state);
+
+int pwm_apply_state(struct pwm_device *pwm, const struct pwm_state *state)
+{
+	struct pwm_chip *chip = pwm->chip;
+	int ret = -EINVAL;
+
+	if (state->period_ns == 0)
+		goto err;
+
+	if (state->duty_ns > state->period_ns)
+		goto err;
+
+	ret = chip->ops->apply(chip, state);
+err:
+	if (ret == 0)
+		chip->state = *state;
+
+	pwm->params = chip->state;
+	return ret;
+}
+
 /*
  * pwm_config - change a PWM device configuration
  */
 int pwm_config(struct pwm_device *pwm, int duty_ns, int period_ns)
 {
-	pwm->chip->state.duty_ns = duty_ns;
-	pwm->chip->state.period_ns = period_ns;
+	struct pwm_state state;
 
-	if (period_ns == 0)
+	if (duty_ns < 0 || period_ns < 0)
 		return -EINVAL;
 
-	if (duty_ns > period_ns)
-		return -EINVAL;
+	pwm_get_state(pwm, &state);
+	if (state.duty_ns == duty_ns && state.period_ns == period_ns)
+		return 0;
 
-	return pwm->chip->ops->config(pwm->chip, duty_ns, period_ns);
+	state.duty_ns = duty_ns;
+	state.period_ns = period_ns;
+	return pwm_apply_state(pwm, &state);
 }
 EXPORT_SYMBOL_GPL(pwm_config);
 
@@ -268,14 +295,14 @@ unsigned int pwm_get_period(struct pwm_device *pwm)
  */
 int pwm_enable(struct pwm_device *pwm)
 {
-	pwm->params.p_enable = 1;
+	struct pwm_state state;
 
-	if (!pwm->chip->state.p_enable) {
-		pwm->chip->state.p_enable = 1;
-		return pwm->chip->ops->enable(pwm->chip);
-	}
+	pwm_get_state(pwm, &state);
+	if (state.p_enable)
+		return 0;
 
-	return 0;
+	state.p_enable = true;
+	return pwm_apply_state(pwm, &state);
 }
 EXPORT_SYMBOL_GPL(pwm_enable);
 
@@ -284,12 +311,13 @@ EXPORT_SYMBOL_GPL(pwm_enable);
  */
 void pwm_disable(struct pwm_device *pwm)
 {
-	pwm->params.p_enable = 0;
+	struct pwm_state state;
 
-	if (!pwm->chip->state.p_enable)
+	pwm_get_state(pwm, &state);
+	if (!state.p_enable)
 		return;
 
-	pwm->chip->state.p_enable = 0;
-	pwm->chip->ops->disable(pwm->chip);
+	state.p_enable = false;
+	pwm_apply_state(pwm, &state);
 }
 EXPORT_SYMBOL_GPL(pwm_disable);

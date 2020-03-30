@@ -52,18 +52,26 @@ struct mxs_pwm {
 
 #define to_mxs_pwm_chip(_chip) container_of(_chip, struct mxs_pwm_chip, chip)
 
-static int mxs_pwm_config(struct pwm_chip *chip, int duty_ns, int period_ns)
+static int mxs_pwm_apply(struct pwm_chip *chip, const struct pwm_state *state)
 {
 	struct mxs_pwm_chip *mxs = to_mxs_pwm_chip(chip);
 	int div = 0;
 	unsigned int period_cycles, duty_cycles;
 	unsigned long rate;
 	unsigned long long c;
+	bool enabled;
+
+	enabled = chip->state.p_enable;
+
+	if (enabled && !state->p_enable) {
+		writel(1 << mxs->chip.id, mxs->mxs->base + PWM_CTRL + CLR);
+		return 0;
+	}
 
 	rate = clk_get_rate(mxs->mxs->clk);
 	while (1) {
 		c = rate / cdiv[div];
-		c = c * period_ns;
+		c = c * state->period_ns;
 		do_div(c, 1000000000);
 		if (c < PERIOD_PERIOD_MAX)
 			break;
@@ -73,8 +81,8 @@ static int mxs_pwm_config(struct pwm_chip *chip, int duty_ns, int period_ns)
 	}
 
 	period_cycles = c;
-	c *= duty_ns;
-	do_div(c, period_ns);
+	c *= state->duty_ns;
+	do_div(c, state->period_ns);
 	duty_cycles = c;
 
 	writel(duty_cycles << 16,
@@ -83,29 +91,14 @@ static int mxs_pwm_config(struct pwm_chip *chip, int duty_ns, int period_ns)
 	       PERIOD_INACTIVE_LOW | PERIOD_CDIV(div),
 			mxs->mxs->base + PWM_PERIOD0 + mxs->chip.id * 0x20);
 
-	return 0;
-}
-
-static int mxs_pwm_enable(struct pwm_chip *chip)
-{
-	struct mxs_pwm_chip *mxs = to_mxs_pwm_chip(chip);
-
-	writel(1 << mxs->chip.id, mxs->mxs->base + PWM_CTRL + SET);
+	if (!enabled && state->p_enable)
+		writel(1 << mxs->chip.id, mxs->mxs->base + PWM_CTRL + SET);
 
 	return 0;
-}
-
-static void mxs_pwm_disable(struct pwm_chip *chip)
-{
-	struct mxs_pwm_chip *mxs = to_mxs_pwm_chip(chip);
-
-	writel(1 << mxs->chip.id, mxs->mxs->base + PWM_CTRL + CLR);
 }
 
 static struct pwm_ops mxs_pwm_ops = {
-	.config = mxs_pwm_config,
-	.enable = mxs_pwm_enable,
-	.disable = mxs_pwm_disable,
+	.apply = mxs_pwm_apply,
 };
 
 static int mxs_pwm_probe(struct device_d *dev)

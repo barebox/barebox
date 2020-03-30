@@ -75,6 +75,9 @@
 #define TAMP_BOOT_FORCED_MASK           GENMASK(7, 0)
 #define TAMP_BOOT_DEBUG_ON              BIT(16)
 
+#define FIXUP_CPU_MASK(num, mhz) (((num) << 16) | (mhz))
+#define FIXUP_CPU_NUM(mask) ((mask) >> 16)
+#define FIXUP_CPU_HZ(mask) (((mask) & GENMASK(15, 0)) * 1000UL * 1000UL)
 
 static enum stm32mp_forced_boot_mode __stm32mp_forced_boot_mode;
 enum stm32mp_forced_boot_mode st32mp_get_forced_boot_mode(void)
@@ -192,48 +195,87 @@ static int get_cpu_package(u32 *pkg)
 	return 0;
 }
 
+static int stm32mp15_fixup_cpus(struct device_node *root, void *_ctx)
+{
+	unsigned long ctx = (unsigned long)_ctx;
+	struct device_node *cpus_node, *np, *tmp;
+
+	cpus_node = of_find_node_by_name(root, "cpus");
+	if (!cpus_node)
+		return 0;
+
+	for_each_child_of_node_safe(cpus_node, tmp, np) {
+		u32 cpu_index;
+
+		if (of_property_read_u32(np, "reg", &cpu_index))
+			continue;
+
+		if (cpu_index >= FIXUP_CPU_NUM(ctx)) {
+			of_delete_node(np);
+			continue;
+		}
+
+		of_property_write_u32(np, "clock-frequency", FIXUP_CPU_HZ(ctx));
+	}
+
+	return 0;
+}
+
 static int setup_cpu_type(void)
 {
 	const char *cputypestr, *cpupkgstr, *cpurevstr;
+	unsigned long fixupctx = 0;
 	u32 pkg;
 
 	get_cpu_type(&__stm32mp_cputype);
 	switch (__stm32mp_cputype) {
 	case CPU_STM32MP157Fxx:
 		cputypestr = "157F";
+		fixupctx = FIXUP_CPU_MASK(2, 800);
 		break;
 	case CPU_STM32MP157Dxx:
 		cputypestr = "157D";
+		fixupctx = FIXUP_CPU_MASK(2, 800);
 		break;
 	case CPU_STM32MP157Cxx:
 		cputypestr = "157C";
+		fixupctx = FIXUP_CPU_MASK(2, 650);
 		break;
 	case CPU_STM32MP157Axx:
 		cputypestr = "157A";
+		fixupctx = FIXUP_CPU_MASK(2, 650);
 		break;
 	case CPU_STM32MP153Fxx:
 		cputypestr = "153F";
+		fixupctx = FIXUP_CPU_MASK(2, 800);
 		break;
 	case CPU_STM32MP153Dxx:
 		cputypestr = "153D";
+		fixupctx = FIXUP_CPU_MASK(2, 800);
 		break;
 	case CPU_STM32MP153Cxx:
 		cputypestr = "153C";
+		fixupctx = FIXUP_CPU_MASK(2, 650);
 		break;
 	case CPU_STM32MP153Axx:
 		cputypestr = "153A";
+		fixupctx = FIXUP_CPU_MASK(2, 650);
 		break;
 	case CPU_STM32MP151Cxx:
 		cputypestr = "151C";
+		fixupctx = FIXUP_CPU_MASK(1, 650);
 		break;
 	case CPU_STM32MP151Axx:
 		cputypestr = "151A";
+		fixupctx = FIXUP_CPU_MASK(1, 650);
 		break;
 	case CPU_STM32MP151Fxx:
 		cputypestr = "151F";
+		fixupctx = FIXUP_CPU_MASK(1, 800);
 		break;
 	case CPU_STM32MP151Dxx:
 		cputypestr = "151D";
+		fixupctx = FIXUP_CPU_MASK(1, 800);
 		break;
 	default:
 		cputypestr = "????";
@@ -277,6 +319,9 @@ static int setup_cpu_type(void)
 	pr_debug("cputype = 0x%x, package = 0x%x, revision = 0x%x\n",
 		 __stm32mp_cputype, pkg, __stm32mp_silicon_revision);
 	pr_info("detected STM32MP%s%s Rev.%s\n", cputypestr, cpupkgstr, cpurevstr);
+
+	if (fixupctx)
+		return of_register_fixup(stm32mp15_fixup_cpus, (void*)fixupctx);
 
 	return 0;
 }

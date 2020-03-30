@@ -28,4 +28,10 @@ config PWM_MXS
 	help
 	  This enables PWM support for Freescale i.MX23/i.MX28 SoCs
 
+config PWM_STM32
+	bool "STM32 PWM Support"
+	depends on ARCH_STM32MP
+	help
+	  This enables PWM support for STM32 MCUs and MPUs.
+
 endif

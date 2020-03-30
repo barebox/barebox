@@ -21,6 +21,18 @@
 		mmc0 = &sdmmc1;
 		mmc1 = &sdmmc2;
 		mmc2 = &sdmmc3;
+		pwm1 = &{/soc/timer@44000000/pwm};
+		pwm2 = &{/soc/timer@40000000/pwm};
+		pwm3 = &{/soc/timer@40001000/pwm};
+		pwm4 = &{/soc/timer@40002000/pwm};
+		pwm5 = &{/soc/timer@40003000/pwm};
+		pwm8 = &{/soc/timer@44001000/pwm};
+		pwm12 = &{/soc/timer@40006000/pwm};
+		pwm13 = &{/soc/timer@40007000/pwm};
+		pwm14 = &{/soc/timer@40008000/pwm};
+		pwm15 = &{/soc/timer@44006000/pwm};
+		pwm16 = &{/soc/timer@44007000/pwm};
+		pwm17 = &{/soc/timer@44008000/pwm};
 	};
 
 	psci {

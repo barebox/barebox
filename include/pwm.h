@@ -34,8 +34,6 @@ void pwm_disable(struct pwm_device *pwm);
 
 void pwm_set_period(struct pwm_device *pwm, unsigned int period);
 unsigned int pwm_get_period(struct pwm_device *pwm);
-void pwm_set_duty_cycle(struct pwm_device *pwm, unsigned int duty);
-unsigned int pwm_get_duty_cycle(struct pwm_device *pwm);
 
 struct pwm_chip;
 

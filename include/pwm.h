@@ -2,18 +2,24 @@
 #ifndef __PWM_H
 #define __PWM_H
 
+#include <dt-bindings/pwm/pwm.h>
+
 struct pwm_device;
 struct device_d;
+
+#define	PWM_POLARITY_NORMAL	0
 
 /*
  * struct pwm_state - state of a PWM channel
  * @period_ns: PWM period (in nanoseconds)
  * @duty_ns: PWM duty cycle (in nanoseconds)
+ * @polarity: PWM polarity
  * @p_enable: PWM enabled status
  */
 struct pwm_state {
 	unsigned int period_ns;
 	unsigned int duty_ns;
+	unsigned int polarity;
 	unsigned int p_enable;
 };
 

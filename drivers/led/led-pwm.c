@@ -73,7 +73,7 @@ static int led_pwm_of_probe(struct device_d *dev)
 
 		pwmled->led.set = led_pwm_set;
 
-		pwm_config(pwmled->pwm, 0, pwmled->period);
+		led_pwm_set(&pwmled->led, 0);
 		pwm_enable(pwmled->pwm);
 
 		ret = led_register(&pwmled->led);

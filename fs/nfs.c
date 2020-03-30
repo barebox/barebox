@@ -773,6 +773,7 @@ static int nfs_lookup_req(struct nfs_priv *npriv, struct nfs_fh *fh,
 
 	ninode->fh.size = ntoh32(net_read_uint32(p++));
 	if (ninode->fh.size > NFS3_FHSIZE) {
+		nfs_free_packet(nfs_packet);
 		debug("%s: file handle too big: %u\n", __func__,
 		      ninode->fh.size);
 		return -EIO;

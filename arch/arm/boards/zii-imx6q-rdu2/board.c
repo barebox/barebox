@@ -128,8 +128,11 @@ static int rdu2_devices_init(void)
 {
 	struct i2c_client client;
 
-	if (!of_machine_is_compatible("zii,imx6q-zii-rdu2") &&
-	    !of_machine_is_compatible("zii,imx6qp-zii-rdu2"))
+	if (of_machine_is_compatible("zii,imx6q-zii-rdu2"))
+		barebox_set_hostname("rdu2");
+	else if (of_machine_is_compatible("zii,imx6qp-zii-rdu2"))
+		barebox_set_hostname("rdu2p");
+	else
 		return 0;
 
 	client.adapter = i2c_get_adapter(1);
@@ -146,8 +149,6 @@ static int rdu2_devices_init(void)
 		i2c_write_reg(&client, 0x20, &reg, 1);
 		i2c_write_reg(&client, 0x2e, &reg, 1);
 	}
-
-	barebox_set_hostname("rdu2");
 
 	imx6_bbu_internal_spi_i2c_register_handler("SPI", "/dev/m25p0.barebox",
 						   BBU_HANDLER_FLAG_DEFAULT);

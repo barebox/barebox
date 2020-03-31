@@ -162,6 +162,14 @@ static int zii_vf610_dev_register_bbu(void)
 		return ret;
 	}
 
+	ret = vf610_bbu_internal_mmc_register_handler("SD",
+						      "/dev/mmc1",
+						      0);
+	if (ret) {
+		pr_err("Failed to register SD BBU handler\n");
+		return ret;
+	}
+
 	return 0;
 }
 late_initcall(zii_vf610_dev_register_bbu);

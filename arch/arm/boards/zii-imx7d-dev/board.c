@@ -33,7 +33,7 @@ static void zii_imx7d_rpu2_init_fec(void)
 
 static int zii_imx7d_rpu2_coredevices_init(void)
 {
-	if (!of_machine_is_compatible("zii,imx7d-zii-rpu2") &&
+	if (!of_machine_is_compatible("zii,imx7d-rpu2") &&
 	    !of_machine_is_compatible("zii,imx7d-rmu2"))
 		return 0;
 

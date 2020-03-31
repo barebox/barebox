@@ -23,3 +23,21 @@
 		};
 	};
 };
+
+&uart4 {
+	rave-sp {
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		watchdog {
+			nvmem-cells = <&boot_source>;
+			nvmem-cell-names = "boot-source";
+		};
+
+		eeprom@a3 {
+			boot_source: boot-source@83 {
+				reg = <0x83 1>;
+			};
+		};
+	};
+};

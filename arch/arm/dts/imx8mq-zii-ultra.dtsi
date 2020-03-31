@@ -8,8 +8,6 @@
 
 / {
 	chosen {
-		stdout-path = &uart1;
-
 		environment-emmc {
 			compatible = "barebox,environment";
 			device-path = &usdhc1, "partname:barebox-environment";

@@ -556,6 +556,19 @@ struct i2c_adapter *of_find_i2c_adapter_by_node(struct device_node *node)
 	return NULL;
 }
 
+struct i2c_client *of_find_i2c_device_by_node(struct device_node *node)
+{
+	struct device_d *dev = of_find_device_by_node(node);
+
+	if (!dev)
+		return NULL;
+
+	if (dev->bus != &i2c_bus)
+		return NULL;
+
+	return to_i2c_client(dev);
+}
+
 /**
  * i2c_parse_fw_timings - get I2C related timing parameters from firmware
  * @dev: The device to scan for I2C timing properties

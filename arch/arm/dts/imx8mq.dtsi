@@ -114,7 +114,7 @@
 			  <&clk IMX8MQ_CLK_ENET_AXI>,
 			  <&clk IMX8MQ_CLK_ENET_TIMER>,
 			  <&clk IMX8MQ_CLK_ENET_REF>;
-			  
+
 	assigned-clock-parents =  <&clk IMX8MQ_SYS1_PLL_400M>,
 				  <&clk IMX8MQ_SYS1_PLL_400M>,
 				  <&clk IMX8MQ_SYS1_PLL_266M>,

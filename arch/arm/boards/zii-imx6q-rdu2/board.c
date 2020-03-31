@@ -154,6 +154,7 @@ static int rdu2_devices_init(void)
 						   BBU_HANDLER_FLAG_DEFAULT);
 
 	imx6_bbu_internal_mmcboot_register_handler("eMMC", "/dev/mmc3", 0);
+	imx6_bbu_internal_mmc_register_handler("SD", "/dev/mmc1", 0);
 
 	defaultenv_append_directory(defaultenv_zii_common);
 	defaultenv_append_directory(defaultenv_rdu2);

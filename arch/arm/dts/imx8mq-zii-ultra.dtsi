@@ -68,10 +68,19 @@
 
 &uart2 {
 	rave-sp {
+		watchdog {
+			nvmem-cells = <&boot_source>;
+			nvmem-cell-names = "boot-source";
+		};
+
 		eeprom@a4 {
 			lru_part_number: lru-part-number@21 {
 				reg = <0x21 15>;
 				read-only;
+			};
+
+			boot_source: boot-source@83 {
+				reg = <0x83 1>;
 			};
 
 			mac_address_0: mac-address@180 {

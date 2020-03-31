@@ -19,6 +19,7 @@
 static int do_rdu2_switch_reset(void)
 {
 	struct i2c_client client;
+	int ret;
 	u8 reg;
 
 	client.adapter = i2c_get_adapter(1);
@@ -29,12 +30,25 @@ static int do_rdu2_switch_reset(void)
 	client.addr = 0x38;
 	reg = 0x78;
 	/* set switch reset time to 100ms */
-	i2c_write_reg(&client, 0x0a, &reg, 1);
+
+	ret = i2c_write_reg(&client, 0x0a, &reg, 1);
+	if (ret < 0) {
+		pr_err("Failed to set switch reset time\n");
+		return ret;
+	}
 	/* reset the switch */
 	reg = 0x01;
-	i2c_write_reg(&client, 0x0d, &reg, 1);
+	ret = i2c_write_reg(&client, 0x0d, &reg, 1);
+	if (ret < 0) {
+		pr_err("Failed to reset the switch\n");
+		return ret;
+	}
 	/* issue dummy command to work around firmware bug */
-	i2c_read_reg(&client, 0x01, &reg, 1);
+	ret = i2c_read_reg(&client, 0x01, &reg, 1);
+	if (ret < 0) {
+		pr_err("Failed to issue a dummy command\n");
+		return ret;
+	}
 
 	return 0;
 }

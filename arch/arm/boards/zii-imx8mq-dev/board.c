@@ -110,6 +110,15 @@ static int zii_imx8mq_dev_fixup_deb_internal(void)
 	/* Refresh the internal aliases list from the patched DT */
 	of_alias_scan();
 
+	/*
+	 * Disable switch watchdog to make rave_reset_switch a no-op
+	 */
+	np = of_find_compatible_node(NULL, NULL, "zii,rave-wdt");
+	if (!np)
+		return -ENODEV;
+
+	of_device_disable(np);
+
 	return 0;
 }
 

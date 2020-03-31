@@ -29,6 +29,15 @@ static int do_rdu2_switch_reset(void)
 		return -ENODEV;
 	}
 
+	if (!of_device_is_available(np)) {
+		/*
+		 * If switch watchdog device is not available assume
+		 * it was removed for a reason and switch reset
+		 * command should be a no-op
+		 */
+		return 0;
+	}
+
 	client = of_find_i2c_device_by_node(np);
 	if (!client) {
 		pr_err("No switch watchdog I2C device found\n");
@@ -78,7 +87,8 @@ static int do_rdu1_switch_reset(void)
 static int do_rave_switch_reset(int argc, char *argv[])
 {
 	if (of_machine_is_compatible("zii,imx6q-zii-rdu2") ||
-	    of_machine_is_compatible("zii,imx6qp-zii-rdu2"))
+	    of_machine_is_compatible("zii,imx6qp-zii-rdu2") ||
+	    of_machine_is_compatible("zii,imx8mq-ultra"))
 		return do_rdu2_switch_reset();
 
 	if (of_machine_is_compatible("zii,imx51-rdu1"))

@@ -55,26 +55,6 @@
 	mov	r0, sp
 	.endm
 
-	.macro	irq_save_user_regs
-	sub	sp, sp, #S_FRAME_SIZE
-	stmia	sp, {r0 - r12}			@ Calling r0-r12
-	add     r8, sp, #S_PC
-	stmdb   r8, {sp, lr}^                   @ Calling SP, LR
-	str     lr, [r8, #0]                    @ Save calling PC
-	mrs     r6, spsr
-	str     r6, [r8, #4]                    @ Save CPSR
-	str     r0, [r8, #8]                    @ Save OLD_R0
-	mov	r0, sp
-	.endm
-
-	.macro	irq_restore_user_regs
-	ldmia	sp, {r0 - lr}^			@ Calling r0 - lr
-	mov	r0, r0
-	ldr	lr, [sp, #S_PC]			@ Get PC
-	add	sp, sp, #S_FRAME_SIZE
-	subs	pc, lr, #4			@ return & move spsr_svc into cpsr
-	.endm
-
 	.macro get_bad_stack
 	ldr	r13, =abort_stack
 	str	lr, [r13]			@ save caller lr / spsr
@@ -101,14 +81,6 @@
 	subne	lr, #6				@ next Thumb instr
 	movs	pc, lr
 do_abort_\@:
-	.endm
-
-	.macro get_irq_stack			@ setup IRQ stack
-	ldr	sp, IRQ_STACK_START
-	.endm
-
-	.macro get_fiq_stack			@ setup FIQ stack
-	ldr	sp, FIQ_STACK_START
 	.endm
 
 /*

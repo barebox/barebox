@@ -661,7 +661,7 @@ static int rave_sp_emulated_get_status(struct rave_sp *sp,
 		return ret;
 
 	status->general_status =
-		firmware_mode ? RAVE_SP_STATUS_GS_FIRMWARE_MODE : 0;
+		firmware_mode ? 0 : RAVE_SP_STATUS_GS_FIRMWARE_MODE;
 
 	return 0;
 }

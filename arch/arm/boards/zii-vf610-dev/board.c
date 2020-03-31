@@ -141,6 +141,7 @@ static int zii_vf610_dev_set_hostname(void)
 		}
 	}
 
+	defaultenv_append_directory(defaultenv_zii_common);
 	defaultenv_append_directory(defaultenv_zii_vf610_dev);
 	return 0;
 }

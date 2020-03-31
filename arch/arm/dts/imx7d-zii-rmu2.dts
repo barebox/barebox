@@ -6,3 +6,20 @@
 
 #include <arm/imx7d-zii-rmu2.dts>
 #include "imx7d-ddrc.dtsi"
+
+&ecspi1 {
+	nor_flash: flash@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		partition@0 {
+			label = "barebox";
+			reg = <0x0 0xc0000>;
+		};
+
+		partition@c0000 {
+			label = "barebox-environment";
+			reg = <0xc0000 0x40000>;
+		};
+	};
+};

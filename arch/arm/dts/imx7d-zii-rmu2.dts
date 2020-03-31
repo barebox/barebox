@@ -4,5 +4,5 @@
  * Copyright (C) 2019 Zodiac Inflight Innovations
  */
 
-#include "imx7d-zii-rmu2.dtsi"
+#include <arm/imx7d-zii-rmu2.dts>
 #include "imx7d-ddrc.dtsi"

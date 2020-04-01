@@ -212,7 +212,6 @@ static inline int regulator_bulk_disable(int num_consumers,
 static inline void regulator_bulk_free(int num_consumers,
 				       struct regulator_bulk_data *consumers)
 {
-	return 0;
 }
 
 #endif

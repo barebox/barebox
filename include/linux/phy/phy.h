@@ -248,7 +248,7 @@ static inline struct usb_phy *phy_to_usbphy(struct phy *phy)
 	return NULL;
 }
 
-static struct phy *phy_get_by_index(struct device_d *dev, int index)
+static inline struct phy *phy_get_by_index(struct device_d *dev, int index)
 {
 	return ERR_PTR(-ENODEV);
 }

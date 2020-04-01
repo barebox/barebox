@@ -5,6 +5,8 @@
 #include <mach/omap4-mux.h>
 #include <mach/omap4-clock.h>
 
+#include "mux.h"
+
 static const struct pad_conf_entry core_padconf_array[] = {
 	{GPMC_AD0, (IEN | PTD | DIS | M0)},				/* gpmc_ad0 */
 	{GPMC_AD1, (IEN | PTD | DIS | M0)},			 	/* gpmc_ad1 */
@@ -236,7 +238,7 @@ static const struct pad_conf_entry wkup_padconf_array[] = {
 	{SYS_BOOT7, (M0)},			/* sys_boot7 */
 };
 
-void set_muxconf_regs(void)
+void phycard_omap4_set_muxconf_regs(void)
 {
 	omap4_do_set_mux(OMAP44XX_CONTROL_PADCONF_CORE, core_padconf_array,
 			ARRAY_SIZE(core_padconf_array));

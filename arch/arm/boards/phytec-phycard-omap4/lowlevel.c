@@ -29,9 +29,9 @@
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
 
-#define TPS62361_VSEL0_GPIO    7
+#include "mux.h"
 
-void set_muxconf_regs(void);
+#define TPS62361_VSEL0_GPIO    7
 
 static const struct ddr_regs ddr_regs_mt42L64M64_25_400_mhz = {
 	.tim1           = 0x0EEB0662,
@@ -57,7 +57,7 @@ static noinline void pcaaxl2_init_lowlevel(void)
 	struct dpll_param usb = OMAP4_USB_DPLL_PARAM_19M2;
 	unsigned int rev = omap4_revision();
 
-	set_muxconf_regs();
+	phycard_omap4_set_muxconf_regs();
 
 	omap4_ddr_init(&ddr_regs_mt42L64M64_25_400_mhz, &core);
 

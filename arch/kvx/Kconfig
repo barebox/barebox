@@ -7,9 +7,11 @@ config KVX
 	select FLEXIBLE_BOOTARGS
 	select GENERIC_FIND_NEXT_BIT
 	select LIBFDT
+	select MFD_SYSCON
 	select OF_BAREBOX_DRIVERS
 	select OFDEVICE
 	select PARTITION
+	select RESET_SOURCE
 	default y
 
 config PHYS_ADDR_T_64BIT

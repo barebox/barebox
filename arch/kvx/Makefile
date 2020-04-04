@@ -26,6 +26,7 @@ PHONY += maketools
 
 common-y += arch/kvx/lib/
 common-y += arch/kvx/cpu/
+common-$(CONFIG_OFTREE) += arch/kvx/dts/
 
 lds-y += arch/kvx/cpu/barebox.lds
 

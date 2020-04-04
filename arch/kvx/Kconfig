@@ -31,3 +31,23 @@ config ARCHINFO
 	string
 	default "coolidge"
 endmenu
+
+menu "Board configuration"
+
+config BUILTIN_DTB
+	bool "link a DTB into the barebox image"
+	depends on OFTREE
+
+config BUILTIN_DTB_NAME
+	string "DTB to build into the barebox image"
+	depends on BUILTIN_DTB
+
+choice
+	prompt "Select your board"
+
+config BOARD_K200
+	bool "K200 Network card"
+
+endchoice
+
+endmenu

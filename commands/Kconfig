@@ -1871,7 +1871,7 @@ config CMD_SMC
 	bool
 	depends on ARM_SMCCC
 	prompt "PSCI test command"
-	default CONFIG_ARM_PSCI_DEBUG
+	default ARM_PSCI_DEBUG
 	help
 	  Secure monitor code test command
 

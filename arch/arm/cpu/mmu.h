@@ -39,6 +39,15 @@ static inline void set_ttbr(void *ttb)
 #define DOMAIN_CLIENT	1
 #define DOMAIN_MANAGER	3
 
+static inline unsigned long get_domain(void)
+{
+	unsigned long dacr;
+
+	asm volatile ("mrc p15, 0, %0, c3, c0, 0" : "=r"(dacr));
+
+	return dacr;
+}
+
 static inline void set_domain(unsigned val)
 {
 	/* Set the Domain Access Control Register */

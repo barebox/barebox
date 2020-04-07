@@ -150,7 +150,7 @@ static bool armv7_have_security_extensions(void)
 int armv7_secure_monitor_install(void)
 {
 	int mmuon;
-	unsigned long ttb, vbar;
+	unsigned long ttb, vbar, dacr;
 
 	if (!armv7_have_security_extensions()) {
 		pr_err("Security extensions not implemented.\n");
@@ -164,12 +164,14 @@ int armv7_secure_monitor_install(void)
 
 	vbar = get_vbar();
 	ttb = get_ttbr();
+	dacr = get_domain();
 
 	armv7_init_nonsec();
 	__armv7_secure_monitor_install();
 
 	set_ttbr((void *)ttb);
 	set_vbar(vbar);
+	set_domain(dacr);
 
 	if (mmuon) {
 		/*

@@ -162,7 +162,7 @@ int of_overlay_apply_tree(struct device_node *root,
 {
 	struct device_node *resolved;
 	struct device_node *fragment;
-	int err;
+	int err = 0;
 
 	resolved = of_resolve_phandles(root, overlay);
 	if (!resolved)

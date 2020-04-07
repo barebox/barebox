@@ -26,7 +26,7 @@ static unsigned int read_id_pfr1(void)
 {
 	unsigned int reg;
 
-	asm("mrc p15, 0, %0, c0, c1, 1\n" : "=r"(reg));
+	asm volatile ("mrc p15, 0, %0, c0, c1, 1\n" : "=r"(reg));
 	return reg;
 }
 
@@ -34,18 +34,18 @@ static u32 read_nsacr(void)
 {
 	unsigned int reg;
 
-	asm("mrc p15, 0, %0, c1, c1, 2\n" : "=r"(reg));
+	asm volatile ("mrc p15, 0, %0, c1, c1, 2\n" : "=r"(reg));
 	return reg;
 }
 
 static void write_nsacr(u32 val)
 {
-	asm("mcr p15, 0, %0, c1, c1, 2" : : "r"(val));
+	asm volatile ("mcr p15, 0, %0, c1, c1, 2" : : "r"(val));
 }
 
 static void write_mvbar(u32 val)
 {
-	asm("mcr p15, 0, %0, c12, c0, 1" : : "r"(val));
+	asm volatile ("mcr p15, 0, %0, c12, c0, 1" : : "r"(val));
 }
 
 static int cpu_is_virt_capable(void)

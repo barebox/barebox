@@ -141,6 +141,7 @@ config MCI_TEGRA
 
 config MCI_ARASAN
 	bool "Arasan SDHCI Controller"
+	select MCI_SDHCI
 	help
 	  Enable this to support SD and MMC card read/write on systems with
 	  the Arasan SD3.0 / SDIO3.0 / eMMC4.51 host controller.

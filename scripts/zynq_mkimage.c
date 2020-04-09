@@ -241,7 +241,7 @@ int main(int argc, char *argv[])
 	char *buf;
 	const char *infile = NULL, *outfile = NULL, *cfgfile = NULL;
 	struct stat st;
-	int opt;
+	int opt, ret;
 
 	prgname = argv[0];
 
@@ -309,7 +309,12 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	fread(buf + IMAGE_OFFSET, sizeof(char), st.st_size, ifile);
+	ret = fread(buf + IMAGE_OFFSET, sizeof(char), st.st_size, ifile);
+
+	if(ret != st.st_size) {
+		fprintf(stderr, "Error while reading %s\n", infile);
+		exit(EXIT_FAILURE);
+	}
 
 	add_header(buf, st.st_size);
 

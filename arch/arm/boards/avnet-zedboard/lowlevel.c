@@ -276,6 +276,15 @@ static void avnet_zedboard_ps7_init(void)
 
 	writel(0x00000001, 0xf8000B00);
 
+	/* FPGA Clock Control */
+	writel(0x00101400, 0xf8000170);
+	writel(0x00101400, 0xf8000180);
+	writel(0x00101400, 0xf8000190);
+	writel(0x00101400, 0xf80001a0);
+
+	/* PCAP Clock Control */
+	writel(0x00000501, 0xf8000168);
+
 	/* lock up. secure, secure */
 	writel(0x0000767B, ZYNQ_SLCR_LOCK);
 }

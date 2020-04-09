@@ -306,6 +306,16 @@ ENTRY_FUNCTION(start_avnet_zedboard, r0, r1, r2)
 
 	void *fdt = __dtb_zynq_zed_start + get_runtime_offset();
 
+	/* MIO_07 in GPIO Mode 3.3V VIO, can be uncomented because it is the default value */
+	writel(0x0000DF0D, ZYNQ_SLCR_UNLOCK);
+	writel(0x00000600, 0xF800071C );
+	writel(0x0000767B, ZYNQ_SLCR_LOCK);
+
+	/* turns on the LED MIO_07 */
+	writel((1<<7), 0xe000a204 );    // Direction
+	writel((1<<7), 0xe000a208 );    // Output enable
+	writel((1<<7), 0xe000a040 );    // DATA Register
+
 	arm_cpu_lowlevel_init();
 	zynq_cpu_lowlevel_init();
 

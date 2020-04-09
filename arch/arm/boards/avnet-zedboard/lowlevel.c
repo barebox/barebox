@@ -258,7 +258,7 @@ static void avnet_zedboard_ps7_init(void)
 
 	/* GEM0 */
 	writel(0x00000001, 0xf8000138);
-	writel(0x00500801, 0xf8000140);
+	writel(0x00100801, 0xf8000140);
 	writel(0x00000302, 0xf8000740);
 	writel(0x00000302, 0xf8000744);
 	writel(0x00000302, 0xf8000748);
@@ -271,8 +271,8 @@ static void avnet_zedboard_ps7_init(void)
 	writel(0x00001303, 0xf8000764);
 	writel(0x00001303, 0xf8000768);
 	writel(0x00001303, 0xf800076C);
-	writel(0x00001280, 0xf80007D0);
-	writel(0x00001280, 0xf80007D4);
+	writel(0x00000280, 0xf80007D0);
+	writel(0x00000280, 0xf80007D4);
 
 	writel(0x00000001, 0xf8000B00);
 

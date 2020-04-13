@@ -52,4 +52,6 @@ typedef int irqreturn_t;
 #define __clk_get_rate			clk_get_rate
 #define __clk_get_parent		clk_get_parent
 
+#define cpu_relax()	barrier()
+
 #endif /* __INCLUDE_LINUX_BAREBOX_WRAPPER_H */

@@ -111,8 +111,7 @@ int omap4_usbboot_wait_read(void)
 {
 	int ret;
 	while (omap4_usbboot_data.dread.status == STATUS_WAITING)
-		/* cpu_relax(); */
-		barrier();
+		cpu_relax();
 	ret = omap4_usbboot_data.dread.status;
 	omap4_usbboot_data.dread.status = -1;
 	return ret;
@@ -153,8 +152,7 @@ int omap4_usbboot_wait_write(void)
 {
 	int ret;
 	while (omap4_usbboot_data.dwrite.status == STATUS_WAITING)
-		/* cpu_relax(); */
-		barrier();
+		cpu_relax();
 	ret = omap4_usbboot_data.dwrite.status;
 	omap4_usbboot_data.dwrite.status = -1;
 	return ret;

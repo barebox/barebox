@@ -171,7 +171,7 @@ static void reset_bank(struct denali_nand_info *denali)
 
 	/* wait for completion */
 	while (ioread32(denali->flash_reg + DEVICE_RESET) & (1 << denali->flash_bank))
-			barrier();
+		cpu_relax();
 }
 
 /* Reset the flash controller */
@@ -187,8 +187,7 @@ static uint16_t denali_nand_reset(struct denali_nand_info *denali)
 		iowrite32(1 << i, denali->flash_reg + DEVICE_RESET);
 		while (!(ioread32(denali->flash_reg + INTR_STATUS(i)) &
 			(INTR_STATUS__RST_COMP | INTR_STATUS__TIME_OUT)))
-			/* cpu_relax(); */
-			barrier();
+			cpu_relax();
 		if (ioread32(denali->flash_reg + INTR_STATUS(i)) &
 			INTR_STATUS__TIME_OUT)
 			dev_dbg(denali->dev,
@@ -953,8 +952,7 @@ static bool handle_ecc(struct denali_nand_info *denali, uint8_t *buf,
 		 */
 		while (!(read_interrupt_status(denali) &
 				INTR_STATUS__ECC_TRANSACTION_DONE))
-			/* cpu_relax(); */
-			barrier();
+			cpu_relax();
 		clear_interrupts(denali);
 		denali_set_intr_modes(denali, true);
 	}

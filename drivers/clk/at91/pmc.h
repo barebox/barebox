@@ -58,7 +58,7 @@ extern const struct clk_pll_layout sama5d3_pll_layout;
 struct clk_pll_characteristics {
 	struct clk_range input;
 	int num_output;
-	struct clk_range *output;
+	const struct clk_range *output;
 	u16 *icpll;
 	u8 *out;
 };

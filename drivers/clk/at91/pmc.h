@@ -9,7 +9,7 @@
 #define __PMC_H_
 
 #include <io.h>
-#include <linux/spinlock.h>
+#include <linux/bitops.h>
 #include <printk.h>
 
 struct pmc_data {
@@ -31,6 +31,7 @@ struct clk_range {
 #define CLK_RANGE(MIN, MAX) {.min = MIN, .max = MAX,}
 
 struct clk_master_layout {
+	u32 offset;
 	u32 mask;
 	u8 pres_shift;
 };
@@ -61,17 +62,31 @@ struct clk_pll_characteristics {
 	const struct clk_range *output;
 	u16 *icpll;
 	u8 *out;
+	u8 upll : 1;
 };
 
 struct clk_programmable_layout {
+	u8 pres_mask;
 	u8 pres_shift;
 	u8 css_mask;
 	u8 have_slck_mck;
+	u8 is_pres_direct;
 };
 
 extern const struct clk_programmable_layout at91rm9200_programmable_layout;
 extern const struct clk_programmable_layout at91sam9g45_programmable_layout;
 extern const struct clk_programmable_layout at91sam9x5_programmable_layout;
+
+struct clk_pcr_layout {
+	u32 offset;
+	u32 cmd;
+	u32 div_mask;
+	u32 gckcss_mask;
+	u32 pid_mask;
+};
+
+#define field_get(_mask, _reg) (((_reg) & (_mask)) >> (ffs(_mask) - 1))
+#define field_prep(_mask, _val) (((_val) << (ffs(_mask) - 1)) & (_mask))
 
 #define ndck(a, s) (a[s - 1].id + 1)
 #define nck(a) (a[ARRAY_SIZE(a) - 1].id + 1)
@@ -98,6 +113,7 @@ at91_clk_register_audio_pll_pmc(struct regmap *regmap, const char *name,
 
 struct clk * __init
 at91_clk_register_generated(struct regmap *regmap,
+			    const struct clk_pcr_layout *layout,
 			    const char *name, const char **parent_names,
 			    u8 num_parents, u8 id, bool pll_audio,
 			    const struct clk_range *range);
@@ -136,6 +152,7 @@ at91_clk_register_peripheral(struct regmap *regmap, const char *name,
 			     const char *parent_name, u32 id);
 struct clk * __init
 at91_clk_register_sam9x5_peripheral(struct regmap *regmap,
+				    const struct clk_pcr_layout *layout,
 				    const char *name, const char *parent_name,
 				    u32 id, const struct clk_range *range);
 
@@ -147,6 +164,11 @@ at91_clk_register_pll(struct regmap *regmap, const char *name,
 struct clk * __init
 at91_clk_register_plldiv(struct regmap *regmap, const char *name,
 			 const char *parent_name);
+
+struct clk * __init
+sam9x60_clk_register_pll(struct regmap *regmap,
+			 const char *name, const char *parent_name, u8 id,
+			 const struct clk_pll_characteristics *characteristics);
 
 struct clk * __init
 at91_clk_register_programmable(struct regmap *regmap, const char *name,
@@ -173,6 +195,10 @@ at91sam9x5_clk_register_usb(struct regmap *regmap, const char *name,
 struct clk * __init
 at91sam9n12_clk_register_usb(struct regmap *regmap, const char *name,
 			     const char *parent_name);
+struct clk * __init
+sam9x60_clk_register_usb(struct regmap *regmap, const char *name,
+			 const char **parent_names, u8 num_parents);
+
 struct clk * __init
 at91rm9200_clk_register_usb(struct regmap *regmap, const char *name,
 			    const char *parent_name, const u32 *divisors);

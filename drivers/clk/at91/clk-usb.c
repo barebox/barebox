@@ -22,10 +22,14 @@
 #define RM9200_USB_DIV_SHIFT	28
 #define RM9200_USB_DIV_TAB_SIZE	4
 
+#define SAM9X5_USBS_MASK	GENMASK(0, 0)
+#define SAM9X60_USBS_MASK	GENMASK(1, 0)
+
 struct at91sam9x5_clk_usb {
 	struct clk clk;
 	struct regmap *regmap;
 	const char *parent_names[USB_SOURCE_MAX];
+	u32 usbs_mask;
 };
 
 #define to_at91sam9x5_clk_usb(clk) \
@@ -61,8 +65,7 @@ static int at91sam9x5_clk_usb_set_parent(struct clk *clk, u8 index)
 	if (index > 1)
 		return -EINVAL;
 
-	regmap_write_bits(usb->regmap, AT91_PMC_USB, AT91_PMC_USBS,
-			  index ? AT91_PMC_USBS : 0);
+	regmap_write_bits(usb->regmap, AT91_PMC_USB, usb->usbs_mask, index);
 
 	return 0;
 }
@@ -74,7 +77,7 @@ static int at91sam9x5_clk_usb_get_parent(struct clk *clk)
 
 	regmap_read(usb->regmap, AT91_PMC_USB, &usbr);
 
-	return usbr & AT91_PMC_USBS;
+	return usbr & usb->usbs_mask;
 }
 
 static int at91sam9x5_clk_usb_set_rate(struct clk *clk, unsigned long rate,
@@ -138,9 +141,10 @@ static const struct clk_ops at91sam9n12_usb_ops = {
 	.set_rate = at91sam9x5_clk_usb_set_rate,
 };
 
-struct clk * __init
-at91sam9x5_clk_register_usb(struct regmap *regmap, const char *name,
-			    const char **parent_names, u8 num_parents)
+static struct clk * __init
+_at91sam9x5_clk_register_usb(struct regmap *regmap, const char *name,
+			     const char **parent_names, u8 num_parents,
+			     u32 usbs_mask)
 {
 	struct at91sam9x5_clk_usb *usb;
 	int ret;
@@ -156,6 +160,7 @@ at91sam9x5_clk_register_usb(struct regmap *regmap, const char *name,
 	/* init.flags = CLK_SET_RATE_GATE | CLK_SET_PARENT_GATE | */
 	/* 	     CLK_SET_RATE_PARENT; */
 	usb->regmap = regmap;
+	usb->usbs_mask = SAM9X5_USBS_MASK;
 
 	ret = clk_register(&usb->clk);
 	if (ret) {
@@ -164,6 +169,22 @@ at91sam9x5_clk_register_usb(struct regmap *regmap, const char *name,
 	}
 
 	return &usb->clk;
+}
+
+struct clk * __init
+at91sam9x5_clk_register_usb(struct regmap *regmap, const char *name,
+			    const char **parent_names, u8 num_parents)
+{
+	return _at91sam9x5_clk_register_usb(regmap, name, parent_names,
+					    num_parents, SAM9X5_USBS_MASK);
+}
+
+struct clk * __init
+sam9x60_clk_register_usb(struct regmap *regmap, const char *name,
+			 const char **parent_names, u8 num_parents)
+{
+	return _at91sam9x5_clk_register_usb(regmap, name, parent_names,
+					    num_parents, SAM9X60_USBS_MASK);
 }
 
 struct clk * __init

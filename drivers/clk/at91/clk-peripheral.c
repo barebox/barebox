@@ -37,6 +37,7 @@ struct clk_sam9x5_peripheral {
 	struct clk_range range;
 	u32 id;
 	u32 div;
+	const struct clk_pcr_layout *layout;
 	bool auto_div;
 	const char *parent;
 };
@@ -159,13 +160,13 @@ static int clk_sam9x5_peripheral_enable(struct clk *clk)
 	if (periph->id < PERIPHERAL_ID_MIN)
 		return 0;
 
-	regmap_write(periph->regmap, AT91_PMC_PCR,
-		     (periph->id & AT91_PMC_PCR_PID_MASK));
-	regmap_write_bits(periph->regmap, AT91_PMC_PCR,
-			  AT91_PMC_PCR_DIV_MASK | AT91_PMC_PCR_CMD |
+	regmap_write(periph->regmap, periph->layout->offset,
+		     (periph->id & periph->layout->pid_mask));
+	regmap_write_bits(periph->regmap, periph->layout->offset,
+			  periph->layout->div_mask | periph->layout->cmd |
 			  AT91_PMC_PCR_EN,
-			  AT91_PMC_PCR_DIV(periph->div) |
-			  AT91_PMC_PCR_CMD |
+			  field_prep(periph->layout->div_mask, periph->div) |
+			  periph->layout->cmd |
 			  AT91_PMC_PCR_EN);
 
 	return 0;
@@ -178,11 +179,11 @@ static void clk_sam9x5_peripheral_disable(struct clk *clk)
 	if (periph->id < PERIPHERAL_ID_MIN)
 		return;
 
-	regmap_write(periph->regmap, AT91_PMC_PCR,
-		     (periph->id & AT91_PMC_PCR_PID_MASK));
-	regmap_write_bits(periph->regmap, AT91_PMC_PCR,
-			  AT91_PMC_PCR_EN | AT91_PMC_PCR_CMD,
-			  AT91_PMC_PCR_CMD);
+	regmap_write(periph->regmap, periph->layout->offset,
+		     (periph->id & periph->layout->pid_mask));
+	regmap_write_bits(periph->regmap, periph->layout->offset,
+			  AT91_PMC_PCR_EN | periph->layout->cmd,
+			  periph->layout->cmd);
 }
 
 static int clk_sam9x5_peripheral_is_enabled(struct clk *clk)
@@ -193,9 +194,9 @@ static int clk_sam9x5_peripheral_is_enabled(struct clk *clk)
 	if (periph->id < PERIPHERAL_ID_MIN)
 		return 1;
 
-	regmap_write(periph->regmap, AT91_PMC_PCR,
-		     (periph->id & AT91_PMC_PCR_PID_MASK));
-	regmap_read(periph->regmap, AT91_PMC_PCR, &status);
+	regmap_write(periph->regmap, periph->layout->offset,
+		     (periph->id & periph->layout->pid_mask));
+	regmap_read(periph->regmap, periph->layout->offset, &status);
 
 	return status & AT91_PMC_PCR_EN ? 1 : 0;
 }
@@ -210,12 +211,12 @@ clk_sam9x5_peripheral_recalc_rate(struct clk *clk,
 	if (periph->id < PERIPHERAL_ID_MIN)
 		return parent_rate;
 
-	regmap_write(periph->regmap, AT91_PMC_PCR,
-		     (periph->id & AT91_PMC_PCR_PID_MASK));
-	regmap_read(periph->regmap, AT91_PMC_PCR, &status);
+	regmap_write(periph->regmap, periph->layout->offset,
+		     (periph->id & periph->layout->pid_mask));
+	regmap_read(periph->regmap, periph->layout->offset, &status);
 
 	if (status & AT91_PMC_PCR_EN) {
-		periph->div = PERIPHERAL_RSHIFT(status);
+		periph->div = field_get(periph->layout->div_mask, status);
 		periph->auto_div = false;
 	} else {
 		clk_sam9x5_peripheral_autodiv(periph);
@@ -308,6 +309,7 @@ static const struct clk_ops sam9x5_peripheral_ops = {
 
 struct clk * __init
 at91_clk_register_sam9x5_peripheral(struct regmap *regmap,
+				    const struct clk_pcr_layout *layout,
 				    const char *name, const char *parent_name,
 				    u32 id, const struct clk_range *range)
 {
@@ -331,7 +333,9 @@ at91_clk_register_sam9x5_peripheral(struct regmap *regmap,
 	periph->id = id;
 	periph->div = 0;
 	periph->regmap = regmap;
-	periph->auto_div = true;
+	if (layout->div_mask)
+		periph->auto_div = true;
+	periph->layout = layout;
 	periph->range = *range;
 
 	ret = clk_register(&periph->clk);
@@ -341,6 +345,7 @@ at91_clk_register_sam9x5_peripheral(struct regmap *regmap,
 	}
 
 	clk_sam9x5_peripheral_autodiv(periph);
+	pmc_register_id(id);
 
 	return &periph->clk;
 }

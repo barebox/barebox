@@ -23,6 +23,14 @@
 
 #define SYSTEM_MAX_ID		31
 
+static const struct clk_pcr_layout dt_pcr_layout = {
+	.offset = 0x10c,
+	.cmd = BIT(12),
+	.pid_mask = GENMASK(5, 0),
+	.div_mask = GENMASK(17, 16),
+	.gckcss_mask = GENMASK(10, 8),
+};
+
 static void __init of_at91rm9200_clk_main_osc_setup(struct device_node *np)
 {
 	struct clk *hw;
@@ -248,6 +256,7 @@ of_at91_clk_periph_setup(struct device_node *np, u8 type)
 					      &range);
 
 			hw = at91_clk_register_sam9x5_peripheral(regmap,
+								 &dt_pcr_layout,
 								 name,
 								 parent_name,
 								 id, &range);

@@ -89,22 +89,22 @@ struct pmc_data *pmc_data_allocate(unsigned int ncore, unsigned int nsystem,
 		return NULL;
 
 	pmc_data->ncore = ncore;
-	pmc_data->chws = kcalloc(ncore, sizeof(struct clk_hw *), GFP_KERNEL);
+	pmc_data->chws = kcalloc(ncore, sizeof(struct clk *), GFP_KERNEL);
 	if (!pmc_data->chws)
 		goto err;
 
 	pmc_data->nsystem = nsystem;
-	pmc_data->shws = kcalloc(nsystem, sizeof(struct clk_hw *), GFP_KERNEL);
+	pmc_data->shws = kcalloc(nsystem, sizeof(struct clk *), GFP_KERNEL);
 	if (!pmc_data->shws)
 		goto err;
 
 	pmc_data->nperiph = nperiph;
-	pmc_data->phws = kcalloc(nperiph, sizeof(struct clk_hw *), GFP_KERNEL);
+	pmc_data->phws = kcalloc(nperiph, sizeof(struct clk *), GFP_KERNEL);
 	if (!pmc_data->phws)
 		goto err;
 
 	pmc_data->ngck = ngck;
-	pmc_data->ghws = kcalloc(ngck, sizeof(struct clk_hw *), GFP_KERNEL);
+	pmc_data->ghws = kcalloc(ngck, sizeof(struct clk *), GFP_KERNEL);
 	if (!pmc_data->ghws)
 		goto err;
 

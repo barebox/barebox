@@ -558,4 +558,8 @@ int clk_name_complete(struct string_list *sl, char *instr);
 
 char *of_clk_get_parent_name(struct device_node *np, unsigned int index);
 
+static inline void clk_unregister(struct clk *clk)
+{
+}
+
 #endif

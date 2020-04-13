@@ -154,18 +154,29 @@ void __iomem *syscon_base_lookup_by_phandle(struct device_node *np,
 	return syscon_node_to_base(syscon_np);
 }
 
-struct regmap *syscon_node_to_regmap(struct device_node *np)
+static struct regmap *__device_node_to_regmap(struct device_node *np,
+					      bool check_clk)
 {
 	struct syscon *syscon;
 
-	if (!of_device_is_compatible(np, "syscon"))
-		return ERR_PTR(-EINVAL);
-
-	syscon = node_to_syscon(np, true);
+	syscon = node_to_syscon(np, check_clk);
 	if (IS_ERR(syscon))
 		return ERR_CAST(syscon);
 
 	return syscon->regmap;
+}
+
+struct regmap *device_node_to_regmap(struct device_node *np)
+{
+	return __device_node_to_regmap(np, false);
+}
+
+struct regmap *syscon_node_to_regmap(struct device_node *np)
+{
+	if (!of_device_is_compatible(np, "syscon"))
+		return ERR_PTR(-EINVAL);
+
+	return __device_node_to_regmap(np, true);
 }
 
 struct regmap *syscon_regmap_lookup_by_compatible(const char *s)

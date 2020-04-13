@@ -19,6 +19,8 @@
 
 #define GENERATED_MAX_DIV	255
 
+#define GCK_INDEX_DT_AUDIO_PLL	5
+
 struct clk_generated {
 	struct clk hw;
 	struct regmap *regmap;
@@ -26,6 +28,7 @@ struct clk_generated {
 	u32 id;
 	u32 gckdiv;
 	u8 parent_id;
+	bool audio_pll_allowed;
 };
 
 #define to_clk_generated(hw) \
@@ -182,7 +185,7 @@ at91_clk_register_generated(struct regmap *regmap,
 	/* gck->hw.flags = CLK_SET_RATE_GATE | CLK_SET_PARENT_GATE; */
 	gck->regmap = regmap;
 	gck->range = *range;
-	/* gck->audio_pll_allowed = pll_audio; */
+	gck->audio_pll_allowed = pll_audio;
 
 	hw = &gck->hw;
 	ret = clk_register(&gck->hw);

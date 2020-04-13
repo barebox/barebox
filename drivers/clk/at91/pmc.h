@@ -85,6 +85,18 @@ int of_at91_get_clk_range(struct device_node *np, const char *propname,
 struct clk *of_clk_hw_pmc_get(struct of_phandle_args *clkspec, void *data);
 
 struct clk * __init
+at91_clk_register_audio_pll_frac(struct regmap *regmap, const char *name,
+				 const char *parent_name);
+
+struct clk * __init
+at91_clk_register_audio_pll_pad(struct regmap *regmap, const char *name,
+				const char *parent_name);
+
+struct clk * __init
+at91_clk_register_audio_pll_pmc(struct regmap *regmap, const char *name,
+				const char *parent_name);
+
+struct clk * __init
 at91_clk_register_generated(struct regmap *regmap,
 			    const char *name, const char **parent_names,
 			    u8 num_parents, u8 id, bool pll_audio,
@@ -93,6 +105,11 @@ at91_clk_register_generated(struct regmap *regmap,
 struct clk * __init
 at91_clk_register_h32mx(struct regmap *regmap, const char *name,
 			const char *parent_name);
+
+struct clk * __init
+at91_clk_i2s_mux_register(struct regmap *regmap, const char *name,
+			  const char * const *parent_names,
+			  unsigned int num_parents, u8 bus_id);
 
 struct clk * __init
 at91_clk_register_main_rc_osc(struct regmap *regmap, const char *name,

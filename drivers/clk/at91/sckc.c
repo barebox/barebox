@@ -113,7 +113,7 @@ static const struct clk_ops slow_osc_ops = {
 	.is_enabled = clk_slow_osc_is_enabled,
 };
 
-static struct clk *
+static struct clk * __init
 at91_clk_register_slow_osc(void __iomem *sckcr,
 			   const char *name,
 			   const char *parent_name,
@@ -214,7 +214,7 @@ static const struct clk_ops slow_rc_osc_ops = {
 	.recalc_rate = clk_slow_rc_osc_recalc_rate,
 };
 
-static struct clk *
+static struct clk * __init
 at91_clk_register_slow_rc_osc(void __iomem *sckcr,
 			      const char *name,
 			      unsigned long frequency,
@@ -304,7 +304,7 @@ static const struct clk_ops sam9x5_slow_ops = {
 	.get_parent = clk_sam9x5_slow_get_parent,
 };
 
-static struct clk *
+static struct clk * __init
 at91_clk_register_sam9x5_slow(void __iomem *sckcr,
 			      const char *name,
 			      const char **parent_names,

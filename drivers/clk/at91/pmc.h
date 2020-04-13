@@ -84,83 +84,83 @@ int of_at91_get_clk_range(struct device_node *np, const char *propname,
 
 struct clk *of_clk_hw_pmc_get(struct of_phandle_args *clkspec, void *data);
 
-struct clk *
+struct clk * __init
 at91_clk_register_generated(struct regmap *regmap,
 			    const char *name, const char **parent_names,
 			    u8 num_parents, u8 id, bool pll_audio,
 			    const struct clk_range *range);
 
-struct clk *
+struct clk * __init
 at91_clk_register_h32mx(struct regmap *regmap, const char *name,
 			const char *parent_name);
 
-struct clk *
+struct clk * __init
 at91_clk_register_main_rc_osc(struct regmap *regmap, const char *name,
 			      u32 frequency, u32 accuracy);
-struct clk *
+struct clk * __init
 at91_clk_register_main_osc(struct regmap *regmap, const char *name,
 			   const char *parent_name, bool bypass);
-struct clk *
+struct clk * __init
 at91_clk_register_rm9200_main(struct regmap *regmap,
 			      const char *name,
 			      const char *parent_name);
-struct clk *
+struct clk * __init
 at91_clk_register_sam9x5_main(struct regmap *regmap, const char *name,
 			      const char **parent_names, int num_parents);
 
-struct clk *
+struct clk * __init
 at91_clk_register_master(struct regmap *regmap, const char *name,
 			 int num_parents, const char **parent_names,
 			 const struct clk_master_layout *layout,
 			 const struct clk_master_characteristics *characteristics);
 
-struct clk *
+struct clk * __init
 at91_clk_register_peripheral(struct regmap *regmap, const char *name,
 			     const char *parent_name, u32 id);
-struct clk *
+struct clk * __init
 at91_clk_register_sam9x5_peripheral(struct regmap *regmap,
 				    const char *name, const char *parent_name,
 				    u32 id, const struct clk_range *range);
 
-struct clk *
+struct clk * __init
 at91_clk_register_pll(struct regmap *regmap, const char *name,
 		      const char *parent_name, u8 id,
 		      const struct clk_pll_layout *layout,
 		      const struct clk_pll_characteristics *characteristics);
-struct clk *
+struct clk * __init
 at91_clk_register_plldiv(struct regmap *regmap, const char *name,
 			 const char *parent_name);
 
-struct clk *
+struct clk * __init
 at91_clk_register_programmable(struct regmap *regmap, const char *name,
 			       const char **parent_names, u8 num_parents, u8 id,
 			       const struct clk_programmable_layout *layout);
 
-struct clk *
+struct clk * __init
 at91_clk_register_sam9260_slow(struct regmap *regmap,
 			       const char *name,
 			       const char **parent_names,
 			       int num_parents);
 
-struct clk *
+struct clk * __init
 at91sam9x5_clk_register_smd(struct regmap *regmap, const char *name,
 			    const char **parent_names, u8 num_parents);
 
-struct clk *
+struct clk * __init
 at91_clk_register_system(struct regmap *regmap, const char *name,
 			 const char *parent_name, u8 id);
 
-struct clk *
+struct clk * __init
 at91sam9x5_clk_register_usb(struct regmap *regmap, const char *name,
 			    const char **parent_names, u8 num_parents);
-struct clk *
+struct clk * __init
 at91sam9n12_clk_register_usb(struct regmap *regmap, const char *name,
 			     const char *parent_name);
-struct clk *
+struct clk * __init
 at91rm9200_clk_register_usb(struct regmap *regmap, const char *name,
 			    const char *parent_name, const u32 *divisors);
 
-struct clk *
+struct clk * __init
 at91_clk_register_utmi(struct regmap *regmap_pmc, struct regmap *regmap_sfr,
 		       const char *name, const char *parent_name);
 

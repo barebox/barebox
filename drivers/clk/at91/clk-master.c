@@ -105,7 +105,7 @@ static const struct clk_ops master_ops = {
 	.get_parent = clk_master_get_parent,
 };
 
-struct clk *
+struct clk * __init
 at91_clk_register_master(struct regmap *regmap,
 			 const char *name, int num_parents,
 			 const char **parent_names,

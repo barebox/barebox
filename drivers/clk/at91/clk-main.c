@@ -123,7 +123,7 @@ static const struct clk_ops main_osc_ops = {
 	.is_enabled = clk_main_osc_is_enabled,
 };
 
-struct clk *
+struct clk * __init
 at91_clk_register_main_osc(struct regmap *regmap,
 			   const char *name,
 			   const char *parent_name,
@@ -229,7 +229,7 @@ static const struct clk_ops main_rc_osc_ops = {
 	.recalc_rate = clk_main_rc_osc_recalc_rate,
 };
 
-struct clk *
+struct clk * __init
 at91_clk_register_main_rc_osc(struct regmap *regmap,
 			      const char *name,
 			      u32 frequency, u32 accuracy)
@@ -320,7 +320,7 @@ static const struct clk_ops rm9200_main_ops = {
 	.recalc_rate = clk_rm9200_main_recalc_rate,
 };
 
-struct clk *
+struct clk * __init
 at91_clk_register_rm9200_main(struct regmap *regmap,
 			      const char *name,
 			      const char *parent_name)
@@ -428,7 +428,7 @@ static const struct clk_ops sam9x5_main_ops = {
 	.get_parent = clk_sam9x5_main_get_parent,
 };
 
-struct clk *
+struct clk * __init
 at91_clk_register_sam9x5_main(struct regmap *regmap,
 			      const char *name,
 			      const char **parent_names,

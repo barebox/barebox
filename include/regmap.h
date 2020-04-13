@@ -98,7 +98,6 @@ void regmap_mmio_detach_clk(struct regmap *map);
 void regmap_exit(struct regmap *map);
 
 struct regmap *dev_get_regmap(struct device_d *dev, const char *name);
-struct regmap *of_node_to_regmap(struct device_node *node);
 
 int regmap_register_cdev(struct regmap *map, const char *name);
 

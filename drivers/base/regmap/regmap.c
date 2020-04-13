@@ -89,26 +89,6 @@ struct regmap *dev_get_regmap(struct device_d *dev, const char *name)
 }
 
 /*
- * of_node_to_regmap - get a regmap from a device node
- *
- * node:         The device node
- *
- * Returns a pointer to the regmap or a ERR_PTR if the node has no
- * regmap attached.
- */
-struct regmap *of_node_to_regmap(struct device_node *node)
-{
-	struct regmap *map;
-
-	list_for_each_entry(map, &regmaps, list) {
-		if (map->dev->device_node == node)
-			return map;
-	}
-
-	return ERR_PTR(-ENOENT);
-}
-
-/*
  * regmap_write - write a register in a map
  *
  * @map:	The map

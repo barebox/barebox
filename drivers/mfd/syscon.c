@@ -44,9 +44,6 @@ static struct syscon *of_syscon_register(struct device_node *np, bool check_clk)
 	struct syscon *syscon;
 	struct resource res;
 
-	if (!of_device_is_compatible(np, "syscon"))
-		return ERR_PTR(-EINVAL);
-
 	syscon = xzalloc(sizeof(*syscon));
 
 	if (of_address_to_resource(np, 0, &res)) {
@@ -83,7 +80,7 @@ err_map:
 	return ERR_PTR(ret);
 }
 
-static struct syscon *node_to_syscon(struct device_node *np)
+static struct syscon *node_to_syscon(struct device_node *np, bool check_clk)
 {
 	struct syscon *entry, *syscon = NULL;
 
@@ -94,7 +91,7 @@ static struct syscon *node_to_syscon(struct device_node *np)
 		}
 
 	if (!syscon)
-		syscon = of_syscon_register(np, true);
+		syscon = of_syscon_register(np, check_clk);
 
 	if (IS_ERR(syscon))
 		return ERR_CAST(syscon);
@@ -104,9 +101,13 @@ static struct syscon *node_to_syscon(struct device_node *np)
 
 static void __iomem *syscon_node_to_base(struct device_node *np)
 {
-	struct syscon *syscon = node_to_syscon(np);
+	struct syscon *syscon;
 	struct clk *clk;
 
+	if (!of_device_is_compatible(np, "syscon"))
+		return ERR_PTR(-EINVAL);
+
+	syscon = node_to_syscon(np, true);
 	if (IS_ERR(syscon))
 		return ERR_CAST(syscon);
 
@@ -155,8 +156,12 @@ void __iomem *syscon_base_lookup_by_phandle(struct device_node *np,
 
 struct regmap *syscon_node_to_regmap(struct device_node *np)
 {
-	struct syscon *syscon = node_to_syscon(np);
+	struct syscon *syscon;
 
+	if (!of_device_is_compatible(np, "syscon"))
+		return ERR_PTR(-EINVAL);
+
+	syscon = node_to_syscon(np, true);
 	if (IS_ERR(syscon))
 		return ERR_CAST(syscon);
 

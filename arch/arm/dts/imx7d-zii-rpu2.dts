@@ -17,3 +17,14 @@
 		switch-eeprom = &switch;
 	};
 };
+
+/* FIXME: barebox serial is broken when barebox applies requested reparenting */
+&uart2 {
+	/delete-property/ assigned-clocks;
+	/delete-property/ assigned-clock-parents;
+};
+
+&uart4 {
+	/delete-property/ assigned-clocks;
+	/delete-property/ assigned-clock-parents;
+};

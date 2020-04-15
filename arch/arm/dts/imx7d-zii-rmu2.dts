@@ -7,6 +7,17 @@
 #include <arm/imx7d-zii-rmu2.dts>
 #include "imx7d-ddrc.dtsi"
 
+/* FIXME: barebox serial is broken when barebox applies requested reparenting */
+&uart2 {
+	/delete-property/ assigned-clocks;
+	/delete-property/ assigned-clock-parents;
+};
+
+&uart4 {
+	/delete-property/ assigned-clocks;
+	/delete-property/ assigned-clock-parents;
+};
+
 &ecspi1 {
 	nor_flash: flash@0 {
 		#address-cells = <1>;

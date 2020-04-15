@@ -17,6 +17,8 @@
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/regulator/active-semi,8945a-regulator.h>
 
+#include "sama5d2.dtsi"
+
 / {
 	model = "Giant Board";
 	compatible = "groboards,sama5d27-giantboard", "atmel,sama5d27", "atmel,sama5d2", "atmel,sama5";

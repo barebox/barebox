@@ -1,6 +1,9 @@
 #ifndef __MCI_SDHCI_H
 #define __MCI_SDHCI_H
 
+#include <pbl.h>
+#include <linux/iopoll.h>
+
 #define SDHCI_DMA_ADDRESS					0x00
 #define SDHCI_BLOCK_SIZE__BLOCK_COUNT				0x04
 #define SDHCI_BLOCK_SIZE					0x04
@@ -143,5 +146,14 @@ void sdhci_set_cmd_xfer_mode(struct sdhci *host, struct mci_cmd *cmd,
 			     struct mci_data *data, bool dma, u32 *command,
 			     u32 *xfer);
 int sdhci_transfer_data(struct sdhci *sdhci, struct mci_data *data);
+
+#define sdhci_read8_poll_timeout(sdhci, reg, val, cond, timeout_us) \
+	read_poll_timeout(sdhci_read8, val, cond, timeout_us, sdhci, reg)
+
+#define sdhci_read16_poll_timeout(sdhci, reg, val, cond, timeout_us) \
+	read_poll_timeout(sdhci_read16, val, cond, timeout_us, sdhci, reg)
+
+#define sdhci_read32_poll_timeout(sdhci, reg, val, cond, timeout_us) \
+	read_poll_timeout(sdhci_read32, val, cond, timeout_us, sdhci, reg)
 
 #endif /* __MCI_SDHCI_H */

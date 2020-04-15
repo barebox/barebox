@@ -105,9 +105,19 @@ static struct syscon *node_to_syscon(struct device_node *np)
 static void __iomem *syscon_node_to_base(struct device_node *np)
 {
 	struct syscon *syscon = node_to_syscon(np);
+	struct clk *clk;
 
 	if (IS_ERR(syscon))
 		return ERR_CAST(syscon);
+
+	/* Returning the direct pointer here side steps the regmap
+	 * and any specified clock wouldn't be enabled on access.
+	 * Deal with this by enabling the clock permanently if any
+	 * syscon_node_to_base users exist.
+	 */
+	clk = of_clk_get(np, 0);
+	if (!IS_ERR(clk))
+		clk_enable(clk);
 
 	return syscon->base;
 }

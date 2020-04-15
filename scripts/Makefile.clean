@@ -36,8 +36,8 @@ subdir-ymn	:= $(addprefix $(obj)/,$(subdir-ymn))
 # directory
 
 __clean-files	:= $(extra-y) $(extra-m) $(extra-)       \
-		   $(always) $(targets) $(clean-files)   \
-		   $(hostprogs-y) $(hostprogs-m) $(hostprogs-)
+		   $(always) $(always-y) $(always-m) $(always-) $(targets) $(clean-files)   \
+		   $(hostprogs) $(hostprogs-y) $(hostprogs-m) $(hostprogs-)
 
 # as clean-files is given relative to the current directory, this adds
 # a $(obj) prefix, except for absolute paths

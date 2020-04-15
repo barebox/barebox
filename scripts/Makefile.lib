@@ -1,3 +1,8 @@
+# SPDX-License-Identifier: GPL-2.0
+# Backward compatibility
+always-y   += $(always)
+hostprogs  += $(hostprogs-y) $(hostprogs-m)
+
 # Figure out what we need to build from the various variables
 # ===========================================================================
 
@@ -85,10 +90,12 @@ obj-dirs := $(dir $(multi-objs) $(obj-y) $(pbl-y))
 real-objs-y := $(foreach m, $(filter-out $(subdir-obj-y), $(obj-y)), $(if $(strip $($(m:.o=-objs)) $($(m:.o=-y))),$($(m:.o=-objs)) $($(m:.o=-y)),$(m))) $(extra-y)
 real-objs-m := $(foreach m, $(obj-m), $(if $(strip $($(m:.o=-objs)) $($(m:.o=-y))),$($(m:.o=-objs)) $($(m:.o=-y)),$(m)))
 
+always-y += $(always-m)
+
 # Add subdir path
 
 extra-y		:= $(addprefix $(obj)/,$(extra-y))
-always		:= $(addprefix $(obj)/,$(always))
+always-y	:= $(addprefix $(obj)/,$(always-y))
 targets		:= $(addprefix $(obj)/,$(targets))
 obj-y		:= $(addprefix $(obj)/,$(obj-y))
 obj-m		:= $(addprefix $(obj)/,$(obj-m))

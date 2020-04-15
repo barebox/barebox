@@ -138,3 +138,14 @@ int sdhci_transfer_data(struct sdhci *sdhci, struct mci_data *data)
 
 	return 0;
 }
+
+int sdhci_reset(struct sdhci *sdhci, u8 mask)
+{
+	u8 val;
+
+	sdhci_write8(sdhci, SDHCI_SOFTWARE_RESET, mask);
+
+	return sdhci_read8_poll_timeout(sdhci, SDHCI_SOFTWARE_RESET,
+					val, !(val & mask),
+					100 * USEC_PER_MSEC);
+}

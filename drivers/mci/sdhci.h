@@ -71,6 +71,8 @@
 #define SDHCI_TIMEOUT_CONTROL					0x2e
 #define SDHCI_SOFTWARE_RESET					0x2f
 #define  SDHCI_RESET_ALL			BIT(0)
+#define  SDHCI_RESET_CMD			BIT(1)
+#define  SDHCI_RESET_DATA			BIT(2)
 #define SDHCI_INT_STATUS					0x30
 #define SDHCI_INT_NORMAL_STATUS					0x30
 #define  SDHCI_INT_DATA_END_BIT			BIT(22)
@@ -146,6 +148,7 @@ void sdhci_set_cmd_xfer_mode(struct sdhci *host, struct mci_cmd *cmd,
 			     struct mci_data *data, bool dma, u32 *command,
 			     u32 *xfer);
 int sdhci_transfer_data(struct sdhci *sdhci, struct mci_data *data);
+int sdhci_reset(struct sdhci *sdhci, u8 mask);
 
 #define sdhci_read8_poll_timeout(sdhci, reg, val, cond, timeout_us) \
 	read_poll_timeout(sdhci_read8, val, cond, timeout_us, sdhci, reg)

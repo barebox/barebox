@@ -495,8 +495,10 @@ static int icid_of_fixup(struct device_node *root, void *context)
 	phandle iommu_handle;
 
 	iommu = of_find_compatible_node(root, NULL, "arm,mmu-500");
-	if (!iommu)
-		return -ENOENT;
+	if (!iommu) {
+		pr_info("No \"arm,mmu-500\" node found, won't fixup\n");
+		return 0;
+	}
 
 	iommu_handle = of_node_create_phandle(iommu);
 

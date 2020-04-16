@@ -473,7 +473,7 @@ unpack_device_path(struct efi_device_path *dev_path)
 	struct efi_device_path *Src, *Dest, *new_path;
 	unsigned long Size;
 
-	/* Walk device path and round sizes to valid boundries */
+	/* Walk device path and round sizes to valid boundaries */
 
 	Src = dev_path;
 	Size = 0;

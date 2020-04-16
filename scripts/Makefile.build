@@ -16,6 +16,8 @@ lib-y :=
 lib-m :=
 pbl-y :=
 always :=
+always-y :=
+always-m :=
 targets :=
 subdir-y :=
 subdir-m :=
@@ -43,7 +45,7 @@ include $(if $(wildcard $(kbuild-dir)/Kbuild), $(kbuild-dir)/Kbuild, $(kbuild-di
 include scripts/Makefile.lib
 
 # Do not include host rules unless needed
-ifneq ($(hostprogs-y)$(hostprogs-m),)
+ifneq ($(hostprogs)$(hostprogs-y)$(hostprogs-m),)
 include scripts/Makefile.host
 endif
 
@@ -80,7 +82,7 @@ endif
 
 __build: $(if $(KBUILD_BUILTIN),$(builtin-target) $(lib-target) $(pbl-target) $(extra-y)) \
 	 $(if $(KBUILD_MODULES),$(obj-m)) \
-	 $(subdir-ym) $(always)
+	 $(subdir-ym) $(always-y)
 	@:
 
 # Linus' kernel sanity checking tool

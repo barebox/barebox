@@ -120,7 +120,7 @@ static void blspec_apply_oftree_overlays(const char *overlays,
  *
  * This boots an entry. On success this function does not return.
  * In case of an error the error code is returned. This function may
- * return 0 in case of a succesful dry run.
+ * return 0 in case of a successful dry run.
  */
 static int blspec_boot(struct bootentry *be, int verbose, int dryrun)
 {
@@ -456,7 +456,7 @@ static bool entry_is_of_compatible(struct blspec_entry *entry)
 	const char *compat;
 	char *filename;
 
-	/* If the entry doesn't specifiy a devicetree we are compatible */
+	/* If the entry doesn't specify a devicetree we are compatible */
 	devicetree = blspec_entry_var_get(entry, "devicetree");
 	if (!devicetree)
 		return true;
@@ -528,7 +528,7 @@ static bool entry_is_match_machine_id(struct blspec_entry *entry)
 	if (env_machineid) {
 		const char *machineid = blspec_entry_var_get(entry, "machine-id");
 		if (!machineid || strcmp(machineid, env_machineid)) {
-			pr_debug("ignoring entry with missmatched machine-id " \
+			pr_debug("ignoring entry with mismatched machine-id " \
 				"\"%s\" != \"%s\"\n", env_machineid, machineid);
 			ret = false;
 		}
@@ -666,7 +666,7 @@ err_out:
  * entries found in the UBI volumes
  *
  * returns the number of entries found or a negative error code if some unexpected
- * error occured.
+ * error occurred.
  */
 static int blspec_scan_ubi(struct bootentries *bootentries, struct cdev *cdev)
 {
@@ -695,7 +695,7 @@ static int blspec_scan_ubi(struct bootentries *bootentries, struct cdev *cdev)
  * entries found under /bootentries/entries/.
  *
  * returns the number of entries found or a negative error code if some unexpected
- * error occured.
+ * error occurred.
  */
 static int blspec_scan_cdev(struct bootentries *bootentries, struct cdev *cdev)
 {
@@ -740,7 +740,7 @@ static int blspec_scan_cdev(struct bootentries *bootentries, struct cdev *cdev)
  *
  * Iterate over all devices and collect child their cdevs.
  * Returns the number of entries found or a negative error code if some unexpected
- * error occured.
+ * error occurred.
  */
 int blspec_scan_devices(struct bootentries *bootentries)
 {
@@ -770,7 +770,7 @@ int blspec_scan_devices(struct bootentries *bootentries)
  * Given a device this functions scans over all child cdevs looking
  * for bootentries entries.
  * Returns the number of entries found or a negative error code if some unexpected
- * error occured.
+ * error occurred.
  */
 int blspec_scan_device(struct bootentries *bootentries, struct device_d *dev)
 {
@@ -832,7 +832,7 @@ int blspec_scan_device(struct bootentries *bootentries, struct device_d *dev)
  * Given a name of a hardware device this functions scans over all child
  * cdevs looking for bootentries entries.
  * Returns the number of entries found or a negative error code if some unexpected
- * error occured.
+ * error occurred.
  */
 int blspec_scan_devicename(struct bootentries *bootentries, const char *devname)
 {

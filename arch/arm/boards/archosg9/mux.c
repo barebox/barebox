@@ -257,7 +257,8 @@ static const struct pad_conf_entry wkup_padconf_array[] = {
 	{ JTAG_TDO            , IEN | PTU | M0 },
 };
 
-void set_muxconf_regs(void){
+void archosg9_set_muxconf_regs(void)
+{
 	omap4_do_set_mux(OMAP44XX_CONTROL_PADCONF_CORE,
 		core_padconf_array, ARRAY_SIZE(core_padconf_array));
 	omap4_do_set_mux(OMAP44XX_CONTROL_PADCONF_WKUP,

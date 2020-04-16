@@ -20,7 +20,7 @@
  */
 
 /*
- * Maximum amount of consequtive eraseblocks which are considered as normal by
+ * Maximum amount of consecutive eraseblocks which are considered as normal by
  * this utility. Otherwise it is assume that something is wrong with the flash
  * or the driver, and eraseblocks are stopped being marked as bad.
  */

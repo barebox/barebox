@@ -892,7 +892,7 @@ config DEFAULT_ENVIRONMENT_PATH
 	help
 	  Space separated list of paths the default environment will be taken from.
 	  Relative paths will be relative to the barebox Toplevel dir, but absolute
-	  paths are fine aswell.
+	  paths are fine as well.
 
 config BAREBOXENV_TARGET
 	bool
@@ -958,7 +958,7 @@ config RESET_SOURCE
 	bool "detect Reset cause"
 	depends on GLOBALVAR
 	help
-	  Provide a global variable at runtine which reflects the possible cause
+	  Provide a global variable at runtime which reflects the possible cause
 	  of the reset and why the bootloader is currently running. It can be
 	  useful for any kind of system recovery or repair.
 

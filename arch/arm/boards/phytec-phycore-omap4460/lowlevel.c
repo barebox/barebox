@@ -29,6 +29,8 @@
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
 
+#include "mux.h"
+
 #define TPS62361_VSEL0_GPIO    182
 #define LPDDR2_2G              0x5
 #define LPDDR2_4G              0x6
@@ -37,8 +39,6 @@
 #define EMIF_SDRAM_CONFIG		0x0008
 #define EMIF_LPDDR2_MODE_REG_CONFIG	0x0050
 #define EMIF_LPDDR2_MODE_REG_DATA	0x0040
-
-void set_muxconf_regs(void);
 
 /* 512MB */
 static const struct ddr_regs ddr_regs_mt42L64M64_25_400_mhz = {
@@ -94,7 +94,7 @@ static void noinline pcm049_init_lowlevel(void)
 	struct dpll_param usb = OMAP4_USB_DPLL_PARAM_19M2;
 	unsigned int rev = omap4_revision();
 
-	set_muxconf_regs();
+	phycore_omap4460_set_muxconf_regs();
 
 	if (IS_ENABLED(CONFIG_1024MB_DDR2RAM)) {
 		omap4_ddr_init(&ddr_regs_mt42L64M64_25_400_mhz, &core);

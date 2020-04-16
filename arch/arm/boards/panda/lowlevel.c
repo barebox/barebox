@@ -29,9 +29,9 @@
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
 
-#define TPS62361_VSEL0_GPIO    7
+#include "mux.h"
 
-void set_muxconf_regs(void);
+#define TPS62361_VSEL0_GPIO    7
 
 static const struct ddr_regs ddr_regs_400_mhz_2cs = {
 	/* tRRD changed from 10ns to 12.5ns because of the tFAW requirement*/
@@ -69,7 +69,7 @@ static void noinline panda_init_lowlevel(void)
 	/* Enable all clocks */
 	omap4_enable_all_clocks();
 
-	set_muxconf_regs();
+	panda_set_muxconf_regs();
 
 	omap4_ddr_init(&ddr_regs_400_mhz_2cs, &core);
 

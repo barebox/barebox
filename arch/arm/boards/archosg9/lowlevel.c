@@ -48,7 +48,7 @@ static noinline void archosg9_init_lowlevel(void)
 	struct dpll_param abe = OMAP4_ABE_DPLL_PARAM_19M2;
 	struct dpll_param usb = OMAP4_USB_DPLL_PARAM_19M2;
 
-	set_muxconf_regs();
+	archosg9_set_muxconf_regs();
 
 	omap4460_scale_vcores(TPS62361_VSEL0_GPIO, 1380);
 

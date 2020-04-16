@@ -2044,6 +2044,8 @@ int of_set_property(struct device_node *np, const char *name, const void *val, i
 	return 0;
 }
 
+static int mem_bank_num;
+
 int of_add_memory(struct device_node *node, bool dump)
 {
 	const char *device_type;
@@ -2055,14 +2057,13 @@ int of_add_memory(struct device_node *node, bool dump)
 		return -ENXIO;
 
 	while (!of_address_to_resource(node, n, &res)) {
-		if (!resource_size(&res)) {
-			n++;
-			continue;
-		}
-
-		of_add_memory_bank(node, dump, n,
-				res.start, resource_size(&res));
 		n++;
+		if (!resource_size(&res))
+			continue;
+
+		of_add_memory_bank(node, dump, mem_bank_num,
+				res.start, resource_size(&res));
+		mem_bank_num++;
 	}
 
 	return 0;
@@ -2086,9 +2087,23 @@ const struct of_device_id of_default_bus_match_table[] = {
 	}
 };
 
+static void of_probe_memory(void)
+{
+	struct device_node *memory = root_node;
+
+	/* Parse all available node with "memory" device_type */
+	while (1) {
+		memory = of_find_node_by_type(memory, "memory");
+		if (!memory)
+			break;
+
+		of_add_memory(memory, false);
+	}
+}
+
 int of_probe(void)
 {
-	struct device_node *memory, *firmware;
+	struct device_node *firmware;
 
 	if(!root_node)
 		return -ENODEV;
@@ -2099,11 +2114,7 @@ int of_probe(void)
 	if (of_model)
 		barebox_set_model(of_model);
 
-	memory = of_find_node_by_path("/memory");
-	if (!memory)
-		memory = of_find_node_by_type(root_node, "memory");
-	if (memory)
-		of_add_memory(memory, false);
+	of_probe_memory();
 
 	firmware = of_find_node_by_path("/firmware");
 	if (firmware)

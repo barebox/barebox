@@ -151,6 +151,10 @@ static int of_fixup_bootargs(struct device_node *root, void *unused)
 	if (!str)
 		return 0;
 
+	str = skip_spaces(str);
+	if (strlen(str) == 0)
+		return 0;
+
 	node = of_create_node(root, "/chosen");
 	if (!node)
 		return -ENOMEM;

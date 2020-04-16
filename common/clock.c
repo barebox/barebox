@@ -109,7 +109,7 @@ EXPORT_SYMBOL(get_time_ns);
  * calculated mult and shift factors. This guarantees that no 64bit
  * overflow happens when the input value of the conversion is
  * multiplied with the calculated mult factor. Larger ranges may
- * reduce the conversion accuracy by chosing smaller mult and shift
+ * reduce the conversion accuracy by choosing smaller mult and shift
  * factors.
  */
 

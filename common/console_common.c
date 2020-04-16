@@ -63,7 +63,7 @@ static void log_del(struct log_entry *log)
  * @limit:	The maximum messages left in the buffer after
  *		calling this function.
  *
- * This function deletes all messages in the logbuf exeeding
+ * This function deletes all messages in the logbuf exceeding
  * the limit.
  */
 void log_clean(unsigned int limit)

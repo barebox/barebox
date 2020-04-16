@@ -5,6 +5,8 @@
 #include <mach/omap4-mux.h>
 #include <mach/omap4-clock.h>
 
+#include "mux.h"
+
 static const struct pad_conf_entry core_padconf_array[] = {
 	{ GPMC_AD0, PTU | IEN | OFF_EN | OFF_PD | OFF_IN | M1  /* sdmmc2_dat0 */ },
 	{ GPMC_AD1, PTU | IEN | OFF_EN | OFF_PD | OFF_IN | M1  /* sdmmc2_dat1 */ },
@@ -239,7 +241,7 @@ static const struct pad_conf_entry wkup_padconf_array[] = {
 	{ FREF_CLK4_OUT, M3 /* gpio_wk8 */ },
 };
 
-void set_muxconf_regs(void)
+void panda_set_muxconf_regs(void)
 {
 	omap4_do_set_mux(OMAP44XX_CONTROL_PADCONF_CORE, core_padconf_array,
 			ARRAY_SIZE(core_padconf_array));

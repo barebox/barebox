@@ -1,3 +1,4 @@
+KBUILD_DEFCONFIG := p2020rdb_defconfig
 
 CPPFLAGS += -ffixed-r14 -m32 	\
 	-meabi -D __PPC__ -D CONFIG_PPC \

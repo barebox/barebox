@@ -160,9 +160,7 @@ static int adjust_local_phandle_references(struct device_node *local_fixups,
 	}
 
 	for_each_child_of_node(local_fixups, child) {
-		for_each_child_of_node(overlay, overlay_child)
-			if (!of_node_cmp(child->name, overlay_child->name))
-				break;
+		overlay_child = of_get_child_by_name(overlay, child->name);
 		if (!overlay_child)
 			return -EINVAL;
 

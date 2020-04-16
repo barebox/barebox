@@ -1,3 +1,5 @@
+KBUILD_DEFCONFIG := erizo_generic_defconfig
+
 CPPFLAGS += -fno-strict-aliasing
 
 ifeq ($(CONFIG_ARCH_RV32I),y)

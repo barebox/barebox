@@ -323,7 +323,7 @@ static struct fcb_block *read_fcb_hamming_13_8(void *rawpage)
 	 * correcting bitflips. This means we cannot allow bitflips in the
 	 * fingerprint and version. We bail out with an error if it's not correct.
 	 * This is currently done in the i.MX6qdl path. It needs to be checked if
-	 * the same happens in the BCH encoded variants (i.MX6ul(l)) aswell.
+	 * the same happens in the BCH encoded variants (i.MX6ul(l)) as well.
 	 */
 	if (((struct fcb_block *)fcb)->FingerPrint != 0x20424346 ||
 	    ((struct fcb_block *)fcb)->Version != 0x01000000)
@@ -1285,7 +1285,7 @@ static int imx_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *dat
 	 *                ----------------------
 	 *
 	 * We want a robust update in which a power failure may occur
-	 * everytime without bricking the board, so here's the strategy:
+	 * every time without bricking the board, so here's the strategy:
 	 *
 	 * The FCBs contain pointers to the firmware slots in the
 	 * Firmware1_startingPage and Firmware2_startingPage fields. Note that

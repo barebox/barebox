@@ -98,8 +98,8 @@ char *bootsource_get_alias_name(void)
 	}
 
 	/*
-	 * We expect SoC specific bootsource detction code to properly
-	 * initalize bootsource_instance, so we bail out if it didn't
+	 * We expect SoC specific bootsource detection code to properly
+	 * initialize bootsource_instance, so we bail out if it didn't
 	 */
 	if (bootsource_instance == BOOTSOURCE_INSTANCE_UNKNOWN)
 		return NULL;

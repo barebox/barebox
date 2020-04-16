@@ -155,37 +155,31 @@ static void imx_pwm_set_enable_v2(struct pwm_chip *chip, bool enable)
 	writel(val, imx->mmio_base + MX3_PWMCR);
 }
 
-static int imx_pwm_config(struct pwm_chip *chip,
-		int duty_ns, int period_ns)
+static int imx_pwm_apply(struct pwm_chip *chip, const struct pwm_state *state)
 {
 	struct imx_chip *imx = to_imx_chip(chip);
+	bool enabled;
 	int ret;
 
-	ret = imx->config(chip, duty_ns, period_ns);
+	enabled = chip->state.p_enable;
 
-	return ret;
-}
+	if (enabled && !state->p_enable) {
+		imx->set_enable(chip, false);
+		return 0;
+	}
 
-static int imx_pwm_enable(struct pwm_chip *chip)
-{
-	struct imx_chip *imx = to_imx_chip(chip);
+	ret = imx->config(chip, state->duty_ns, state->period_ns);
+	if (ret)
+		return ret;
 
-	imx->set_enable(chip, true);
+	if (!enabled && state->p_enable)
+		imx->set_enable(chip, true);
 
 	return 0;
 }
 
-static void imx_pwm_disable(struct pwm_chip *chip)
-{
-	struct imx_chip *imx = to_imx_chip(chip);
-
-	imx->set_enable(chip, false);
-}
-
 static struct pwm_ops imx_pwm_ops = {
-	.enable = imx_pwm_enable,
-	.disable = imx_pwm_disable,
-	.config = imx_pwm_config,
+	.apply = imx_pwm_apply,
 };
 
 struct imx_pwm_data {

@@ -82,4 +82,11 @@ config SMSC_SUPERIO
        help
          Select this to probe for IO-port connected SMSC Super I/O chips.
 
+config MFD_STM32_TIMERS
+	bool "STM32 Timers"
+	depends on ARCH_STM32MP
+	help
+	  Select this to get regmap support for the timer blocks on STM32
+	  MCUs and MPUs.
+
 endmenu

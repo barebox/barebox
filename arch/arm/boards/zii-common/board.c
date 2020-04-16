@@ -104,6 +104,8 @@ static int rdu_networkconfig(void)
 }
 late_initcall(rdu_networkconfig);
 
+#ifdef CONFIG_PCI_IMX6
+
 #define I210_CFGWORD_PCIID_157B		0x157b1a11
 static int rdu_i210_invm(void)
 {
@@ -136,3 +138,5 @@ static int rdu_i210_invm(void)
 	return 0;
 }
 late_initcall(rdu_i210_invm);
+
+#endif

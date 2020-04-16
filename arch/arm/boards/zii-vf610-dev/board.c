@@ -141,6 +141,7 @@ static int zii_vf610_dev_set_hostname(void)
 		}
 	}
 
+	defaultenv_append_directory(defaultenv_zii_common);
 	defaultenv_append_directory(defaultenv_zii_vf610_dev);
 	return 0;
 }
@@ -158,6 +159,14 @@ static int zii_vf610_dev_register_bbu(void)
 							  0);
 	if (ret) {
 		pr_err("Failed to register SPI BBU handler");
+		return ret;
+	}
+
+	ret = vf610_bbu_internal_mmc_register_handler("SD",
+						      "/dev/mmc1",
+						      0);
+	if (ret) {
+		pr_err("Failed to register SD BBU handler\n");
 		return ret;
 	}
 

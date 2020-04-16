@@ -26,16 +26,21 @@ static int zii_imx8mq_dev_init(void)
 	if (!of_machine_is_compatible("zii,imx8mq-ultra"))
 		return 0;
 
-	barebox_set_hostname("imx8mq-zii-rdu3");
+	if (of_machine_is_compatible("zii,imx8mq-ultra-zest"))
+		barebox_set_hostname("zest");
+	if (of_machine_is_compatible("zii,imx8mq-ultra-rmb3"))
+		barebox_set_hostname("rmb3");
 
 	imx8mq_bbu_internal_mmcboot_register_handler("eMMC", "/dev/mmc0",
 						     BBU_HANDLER_FLAG_DEFAULT);
+	imx8mq_bbu_internal_mmc_register_handler("SD", "/dev/mmc1", 0);
 
 	if (bootsource_get_instance() == 0)
 		of_device_enable_path("/chosen/environment-emmc");
 	else
 		of_device_enable_path("/chosen/environment-sd");
 
+	defaultenv_append_directory(defaultenv_zii_common);
 	defaultenv_append_directory(defaultenv_imx8mq_zii_dev);
 
 	return 0;
@@ -109,6 +114,15 @@ static int zii_imx8mq_dev_fixup_deb_internal(void)
 
 	/* Refresh the internal aliases list from the patched DT */
 	of_alias_scan();
+
+	/*
+	 * Disable switch watchdog to make rave_reset_switch a no-op
+	 */
+	np = of_find_compatible_node(NULL, NULL, "zii,rave-wdt");
+	if (!np)
+		return -ENODEV;
+
+	of_device_disable(np);
 
 	return 0;
 }

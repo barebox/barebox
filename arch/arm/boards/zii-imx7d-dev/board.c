@@ -33,7 +33,7 @@ static void zii_imx7d_rpu2_init_fec(void)
 
 static int zii_imx7d_rpu2_coredevices_init(void)
 {
-	if (!of_machine_is_compatible("zii,imx7d-zii-rpu2") &&
+	if (!of_machine_is_compatible("zii,imx7d-rpu2") &&
 	    !of_machine_is_compatible("zii,imx7d-rmu2"))
 		return 0;
 
@@ -48,3 +48,15 @@ static int zii_imx7d_rpu2_coredevices_init(void)
 }
 coredevice_initcall(zii_imx7d_rpu2_coredevices_init);
 
+static int zii_imx7d_dev_init(void)
+{
+	if (of_machine_is_compatible("zii,imx7d-rpu2"))
+		barebox_set_hostname("rpu2");
+	else if (of_machine_is_compatible("zii,imx7d-rmu2"))
+		barebox_set_hostname("rmu2");
+
+	defaultenv_append_directory(defaultenv_zii_common);
+
+	return 0;
+}
+late_initcall(zii_imx7d_dev_init);

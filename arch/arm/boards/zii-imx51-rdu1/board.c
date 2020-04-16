@@ -50,6 +50,7 @@ static int zii_rdu1_init(void)
 		BBU_HANDLER_FLAG_DEFAULT |
 		IMX_BBU_FLAG_PARTITION_STARTS_AT_HEADER);
 
+	defaultenv_append_directory(defaultenv_zii_common);
 	defaultenv_append_directory(defaultenv_rdu1);
 
 	return 0;

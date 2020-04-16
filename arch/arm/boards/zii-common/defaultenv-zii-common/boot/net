@@ -2,8 +2,13 @@
 
 path="/mnt/tftp"
 
-# clear seat network config
-global.linux.bootargs.rdu_network=
+#
+# Clear seat network config. Some boards don't have that config, so
+# check that it is set first
+#
+if [ -n ${global.linux.bootargs.rdu_network} ]; then
+    global.linux.bootargs.rdu_network=
+fi
 
 global.bootm.image="${path}/${global.user}-linux-${global.hostname}"
 

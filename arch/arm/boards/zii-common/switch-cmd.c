@@ -18,23 +18,53 @@
 
 static int do_rdu2_switch_reset(void)
 {
-	struct i2c_client client;
+	struct device_node *np;
+	struct i2c_client *client;
+	int ret;
 	u8 reg;
 
-	client.adapter = i2c_get_adapter(1);
-	if (!client.adapter)
+	np = of_find_compatible_node(NULL, NULL, "zii,rave-wdt");
+	if (!np) {
+		pr_err("No switch watchdog node found\n");
 		return -ENODEV;
+	}
 
-	/* address of the switch watchdog microcontroller */
-	client.addr = 0x38;
+	if (!of_device_is_available(np)) {
+		/*
+		 * If switch watchdog device is not available assume
+		 * it was removed for a reason and switch reset
+		 * command should be a no-op
+		 */
+		return 0;
+	}
+
+	client = of_find_i2c_device_by_node(np);
+	if (!client) {
+		pr_err("No switch watchdog I2C device found\n");
+		return -ENODEV;
+	}
+
 	reg = 0x78;
+
 	/* set switch reset time to 100ms */
-	i2c_write_reg(&client, 0x0a, &reg, 1);
+	ret = i2c_write_reg(client, 0x0a, &reg, 1);
+	if (ret < 0) {
+		pr_err("Failed to set switch reset time\n");
+		return ret;
+	}
 	/* reset the switch */
 	reg = 0x01;
-	i2c_write_reg(&client, 0x0d, &reg, 1);
+	ret = i2c_write_reg(client, 0x0d, &reg, 1);
+	if (ret < 0) {
+		pr_err("Failed to reset the switch\n");
+		return ret;
+	}
 	/* issue dummy command to work around firmware bug */
-	i2c_read_reg(&client, 0x01, &reg, 1);
+	ret = i2c_read_reg(client, 0x01, &reg, 1);
+	if (ret < 0) {
+		pr_err("Failed to issue a dummy command\n");
+		return ret;
+	}
 
 	return 0;
 }
@@ -57,7 +87,8 @@ static int do_rdu1_switch_reset(void)
 static int do_rave_switch_reset(int argc, char *argv[])
 {
 	if (of_machine_is_compatible("zii,imx6q-zii-rdu2") ||
-	    of_machine_is_compatible("zii,imx6qp-zii-rdu2"))
+	    of_machine_is_compatible("zii,imx6qp-zii-rdu2") ||
+	    of_machine_is_compatible("zii,imx8mq-ultra"))
 		return do_rdu2_switch_reset();
 
 	if (of_machine_is_compatible("zii,imx51-rdu1"))

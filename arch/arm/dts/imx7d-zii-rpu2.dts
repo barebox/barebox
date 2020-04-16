@@ -8,15 +8,6 @@
 #include "imx7d-ddrc.dtsi"
 
 / {
-	chosen {
-		/*
-		 * Kernel DTS incorrectly specifies stdout-path as
-                 * &uart1, this can be removed once the fix trickles
-                 * down
-		 */
-		stdout-path = &uart2;
-	};
-
 	aliases {
 		/*
 		 * NVMEM device corresponding to EEPROM attached to

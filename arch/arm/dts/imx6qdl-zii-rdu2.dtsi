@@ -292,39 +292,3 @@
 		};
 	};
 };
-
-&gpio3 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_gpio3_hog>;
-
-	usb-emulation {
-		gpio-hog;
-		gpios = <19 GPIO_ACTIVE_HIGH>;
-		output-low;
-		line-name = "usb-emulation";
-	};
-
-	usb-mode1 {
-		gpio-hog;
-		gpios = <20 GPIO_ACTIVE_HIGH>;
-		output-high;
-		line-name = "usb-mode1";
-	};
-
-	usb-mode2 {
-		gpio-hog;
-		gpios = <23 GPIO_ACTIVE_HIGH>;
-		output-high;
-		line-name = "usb-mode2";
-	};
-};
-
-&iomuxc {
-	pinctrl_gpio3_hog: gpio3hoggrp {
-		fsl,pins = <
-			MX6QDL_PAD_EIM_D19__GPIO3_IO19		0x40000038
-			MX6QDL_PAD_EIM_D20__GPIO3_IO20		0x40000038
-			MX6QDL_PAD_EIM_D23__GPIO3_IO23		0x40000038
-		>;
-	};
-};

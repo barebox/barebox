@@ -8,6 +8,23 @@
 			 PTE_BLOCK_OUTER_SHARE | \
 			 PTE_BLOCK_AF)
 
+static inline unsigned long attrs_uncached_mem(void)
+{
+	unsigned long attrs = UNCACHED_MEM;
+
+	switch (current_el()) {
+	case 3:
+	case 2:
+		attrs |= PTE_BLOCK_UXN;
+		break;
+	default:
+		attrs |= PTE_BLOCK_UXN | PTE_BLOCK_PXN;
+		break;
+	}
+
+	return attrs;
+}
+
 /*
  * Do it the simple way for now and invalidate the entire tlb
  */

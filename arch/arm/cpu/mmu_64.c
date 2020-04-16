@@ -158,19 +158,21 @@ static void create_sections(uint64_t virt, uint64_t phys, uint64_t size,
 
 int arch_remap_range(void *_start, size_t size, unsigned flags)
 {
+	unsigned long attrs;
+
 	switch (flags) {
 	case MAP_CACHED:
-		flags = CACHED_MEM;
+		attrs = CACHED_MEM;
 		break;
 	case MAP_UNCACHED:
-		flags = UNCACHED_MEM;
+		attrs = attrs_uncached_mem();
 		break;
 	default:
 		return -EINVAL;
 	}
 
 	create_sections((uint64_t)_start, (uint64_t)_start, (uint64_t)size,
-			flags);
+			attrs);
 	return 0;
 }
 
@@ -199,7 +201,7 @@ void __mmu_init(bool mmu_on)
 	pr_debug("ttb: 0x%p\n", ttb);
 
 	/* create a flat mapping */
-	create_sections(0, 0, 1UL << (BITS_PER_VA - 1), UNCACHED_MEM);
+	create_sections(0, 0, 1UL << (BITS_PER_VA - 1), attrs_uncached_mem());
 
 	/* Map sdram cached. */
 	for_each_memory_bank(bank)

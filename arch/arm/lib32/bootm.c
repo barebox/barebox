@@ -104,11 +104,24 @@ static int get_kernel_addresses(size_t image_size,
 	spacing = SZ_1M;
 
 	if (*load_address == UIMAGE_INVALID_ADDRESS) {
+		unsigned long mem_end = mem_start + mem_size - 1;
+		unsigned long kaddr;
+
 		/*
 		 * Place the kernel at an address where it does not need to
 		 * relocate itself before decompression.
 		 */
-		*load_address = mem_start + image_decomp_size;
+		kaddr = mem_start + image_decomp_size;
+
+		/*
+		 * Make sure we do not place the image past the end of the
+		 * available memory.
+		 */
+		if (kaddr + image_size + spacing >= mem_end)
+			kaddr = mem_end - image_size - spacing;
+
+		*load_address = PAGE_ALIGN_DOWN(kaddr);
+
 		if (verbose)
 			printf("no OS load address, defaulting to 0x%08lx\n",
 				*load_address);

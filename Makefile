@@ -163,6 +163,10 @@ export srctree objtree VPATH
 # Alternatively CROSS_COMPILE can be set in the environment.
 # Default value for CROSS_COMPILE is not to prefix executables
 
+ifeq ($(ARCH),arm64)
+ARCH = arm
+endif
+
 ARCH            ?= sandbox
 CROSS_COMPILE   ?=
 

@@ -26,7 +26,7 @@ static unsigned int read_id_pfr1(void)
 {
 	unsigned int reg;
 
-	asm("mrc p15, 0, %0, c0, c1, 1\n" : "=r"(reg));
+	asm volatile ("mrc p15, 0, %0, c0, c1, 1\n" : "=r"(reg));
 	return reg;
 }
 
@@ -34,18 +34,18 @@ static u32 read_nsacr(void)
 {
 	unsigned int reg;
 
-	asm("mrc p15, 0, %0, c1, c1, 2\n" : "=r"(reg));
+	asm volatile ("mrc p15, 0, %0, c1, c1, 2\n" : "=r"(reg));
 	return reg;
 }
 
 static void write_nsacr(u32 val)
 {
-	asm("mcr p15, 0, %0, c1, c1, 2" : : "r"(val));
+	asm volatile ("mcr p15, 0, %0, c1, c1, 2" : : "r"(val));
 }
 
 static void write_mvbar(u32 val)
 {
-	asm("mcr p15, 0, %0, c12, c0, 1" : : "r"(val));
+	asm volatile ("mcr p15, 0, %0, c12, c0, 1" : : "r"(val));
 }
 
 static int cpu_is_virt_capable(void)
@@ -150,7 +150,7 @@ static bool armv7_have_security_extensions(void)
 int armv7_secure_monitor_install(void)
 {
 	int mmuon;
-	unsigned long ttb, vbar;
+	unsigned long ttb, vbar, dacr;
 
 	if (!armv7_have_security_extensions()) {
 		pr_err("Security extensions not implemented.\n");
@@ -164,12 +164,14 @@ int armv7_secure_monitor_install(void)
 
 	vbar = get_vbar();
 	ttb = get_ttbr();
+	dacr = get_domain();
 
 	armv7_init_nonsec();
 	__armv7_secure_monitor_install();
 
 	set_ttbr((void *)ttb);
 	set_vbar(vbar);
+	set_domain(dacr);
 
 	if (mmuon) {
 		/*

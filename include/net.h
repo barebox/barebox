@@ -80,7 +80,8 @@ static inline const char *eth_name(struct eth_device *edev)
 int eth_register(struct eth_device* dev);    /* Register network device		*/
 void eth_unregister(struct eth_device* dev); /* Unregister network device	*/
 int eth_set_ethaddr(struct eth_device *edev, const char *ethaddr);
-
+int eth_open(struct eth_device *edev);
+void eth_close(struct eth_device *edev);
 int eth_send(struct eth_device *edev, void *packet, int length);	   /* Send a packet		*/
 int eth_rx(void);			/* Check for received packets	*/
 
@@ -481,6 +482,10 @@ void led_trigger_network(enum led_trigger trigger);
 int ifup_edev(struct eth_device *edev, unsigned flags);
 int ifup(const char *name, unsigned flags);
 int ifup_all(unsigned flags);
+
+void ifdown_edev(struct eth_device *edev);
+int ifdown(const char *name);
+void ifdown_all(void);
 
 extern struct list_head netdev_list;
 

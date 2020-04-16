@@ -514,6 +514,7 @@ static int fec_recv(struct eth_device *dev)
 	 * Check if any critical events have happened
 	 */
 	ievent = readl(fec->regs + FEC_IEVENT);
+	ievent &= ~FEC_IEVENT_MII;
 	writel(ievent, fec->regs + FEC_IEVENT);
 
 	if (ievent & FEC_IEVENT_BABT) {

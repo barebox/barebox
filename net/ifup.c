@@ -21,6 +21,7 @@
 #include <environment.h>
 #include <command.h>
 #include <common.h>
+#include <complete.h>
 #include <getopt.h>
 #include <dhcp.h>
 #include <net.h>
@@ -214,6 +215,10 @@ int ifup_edev(struct eth_device *edev, unsigned flags)
 	if (ret)
 		return ret;
 
+	ret = eth_open(edev);
+	if (ret)
+		return ret;
+
 	if (edev->global_mode == ETH_MODE_DHCP) {
 		if (IS_ENABLED(CONFIG_NET_DHCP)) {
 			ret = dhcp(edev, NULL);
@@ -232,6 +237,12 @@ int ifup_edev(struct eth_device *edev, unsigned flags)
 	return 0;
 }
 
+void ifdown_edev(struct eth_device *edev)
+{
+	eth_close(edev);
+	edev->ifup = false;
+}
+
 int ifup(const char *ethname, unsigned flags)
 {
 	struct eth_device *edev;
@@ -246,6 +257,19 @@ int ifup(const char *ethname, unsigned flags)
 		return -ENODEV;
 
 	return ifup_edev(edev, flags);
+}
+
+int ifdown(const char *ethname)
+{
+	struct eth_device *edev;
+
+	edev = eth_get_byname(ethname);
+	if (!edev)
+		return -ENODEV;
+
+	ifdown_edev(edev);
+
+	return 0;
 }
 
 static int net_ifup_force_detect;
@@ -279,6 +303,14 @@ int ifup_all(unsigned flags)
 		ifup_edev(edev, flags);
 
 	return 0;
+}
+
+void ifdown_all(void)
+{
+	struct eth_device *edev;
+
+	for_each_netdev(edev)
+		ifdown_edev(edev);
 }
 
 static int ifup_all_init(void)
@@ -337,7 +369,50 @@ BAREBOX_CMD_START(ifup)
 	BAREBOX_CMD_DESC("bring a network interface up")
 	BAREBOX_CMD_OPTS("[-af] [INTF]")
 	BAREBOX_CMD_GROUP(CMD_GRP_NET)
+	BAREBOX_CMD_COMPLETE(eth_complete)
 	BAREBOX_CMD_HELP(cmd_ifup_help)
+BAREBOX_CMD_END
+
+static int do_ifdown(int argc, char *argv[])
+{
+	int opt;
+	int all = 0;
+
+	while ((opt = getopt(argc, argv, "a")) > 0) {
+		switch (opt) {
+		case 'a':
+			all = 1;
+			break;
+		}
+	}
+
+	if (all) {
+		ifdown_all();
+		return 0;
+	}
+
+	if (argc == optind)
+		return COMMAND_ERROR_USAGE;
+
+	return ifdown(argv[optind]);
+}
+
+
+
+BAREBOX_CMD_HELP_START(ifdown)
+BAREBOX_CMD_HELP_TEXT("Disable a network interface")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-a",  "disable all interfaces")
+BAREBOX_CMD_HELP_END
+
+BAREBOX_CMD_START(ifdown)
+	.cmd		= do_ifdown,
+	BAREBOX_CMD_DESC("disable a network interface")
+	BAREBOX_CMD_OPTS("[-a] [INTF]")
+	BAREBOX_CMD_GROUP(CMD_GRP_NET)
+	BAREBOX_CMD_COMPLETE(eth_complete)
+	BAREBOX_CMD_HELP(cmd_ifdown_help)
 BAREBOX_CMD_END
 
 #endif

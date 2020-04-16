@@ -110,10 +110,10 @@ static int show_basic_mii(struct mii_bus *mii, struct phy_device *phydev,
 
 	/* Some bits in the BMSR are latched, but we can't rely on being
 	   the only reader, so only the current values are meaningful */
-	mii->read(mii, phydev->addr, MII_BMSR);
+	mdiobus_read(mii, phydev->addr, MII_BMSR);
 
 	for (i = 0; i < 32; i++)
-		mii_val[i] = mii->read(mii, phydev->addr, i);
+		mii_val[i] = mdiobus_read(mii, phydev->addr, i);
 
 	printf((mii->parent->id) < 0 ? "%s: %s: " : "%s: %s%d: ",
 	       phydev->cdev.name, mii->parent->name, mii->parent->id);

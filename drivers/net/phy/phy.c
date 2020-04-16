@@ -46,6 +46,7 @@ int phy_update_status(struct phy_device *phydev)
 	struct eth_device *edev = phydev->attached_dev;
 	int ret;
 	int oldspeed = phydev->speed, oldduplex = phydev->duplex;
+	int oldlink = phydev->link;
 
 	if (drv) {
 		ret = drv->read_status(phydev);
@@ -53,7 +54,8 @@ int phy_update_status(struct phy_device *phydev)
 			return ret;
 	}
 
-	if (phydev->speed == oldspeed && phydev->duplex == oldduplex)
+	if (phydev->speed == oldspeed && phydev->duplex == oldduplex &&
+	    phydev->link == oldlink)
 		return 0;
 
 	if (phydev->adjust_link)
@@ -62,6 +64,8 @@ int phy_update_status(struct phy_device *phydev)
 	if (phydev->link)
 		dev_info(&edev->dev, "%dMbps %s duplex link detected\n",
 				phydev->speed, phydev->duplex ? "full" : "half");
+	else if (oldlink)
+		dev_info(&edev->dev, "link down\n");
 
 	return 0;
 }
@@ -161,7 +165,6 @@ struct phy_device *phy_device_create(struct mii_bus *bus, int addr, int phy_id)
 	phydev->speed = 0;
 	phydev->duplex = -1;
 	phydev->pause = phydev->asym_pause = 0;
-	phydev->link = 1;
 	phydev->autoneg = AUTONEG_ENABLE;
 
 	phydev->addr = addr;

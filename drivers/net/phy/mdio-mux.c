@@ -37,11 +37,10 @@ static int mdio_mux_read_or_write(struct mii_bus *bus, int phy_id,
 	if (!r) {
 		pb->current_child = cb->bus_number;
 		if (val)
-			r = pb->mii_bus->write(pb->mii_bus, phy_id,
+			r = mdiobus_write (pb->mii_bus, phy_id,
 					       regnum, *val);
 		else
-			r = pb->mii_bus->read(pb->mii_bus, phy_id,
-					      regnum);
+			r = mdiobus_read(pb->mii_bus, phy_id, regnum);
 	}
 	return r;
 }

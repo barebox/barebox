@@ -211,33 +211,12 @@ static int eth_carrier_check(struct eth_device *edev, int force)
 	return edev->phydev->link ? 0 : -ENETDOWN;
 }
 
-/*
- * Check if we have a current ethernet device and
- * eventually open it if we have to.
- */
-static int eth_check_open(struct eth_device *edev)
-{
-	int ret;
-
-	if (edev->active)
-		return 0;
-
-	ret = edev->open(edev);
-	if (ret)
-		return ret;
-
-	edev->active = 1;
-
-	return eth_carrier_check(edev, 1);
-}
-
 int eth_send(struct eth_device *edev, void *packet, int length)
 {
 	int ret;
 
-	ret = eth_check_open(edev);
-	if (ret)
-		return ret;
+	if (!edev->active)
+		return -ENETDOWN;
 
 	ret = eth_carrier_check(edev, 0);
 	if (ret)
@@ -251,10 +230,6 @@ int eth_send(struct eth_device *edev, void *packet, int length)
 static int __eth_rx(struct eth_device *edev)
 {
 	int ret;
-
-	ret = eth_check_open(edev);
-	if (ret)
-		return ret;
 
 	ret = eth_carrier_check(edev, 0);
 	if (ret)
@@ -420,6 +395,32 @@ int eth_register(struct eth_device *edev)
 		edev->nodepath = xstrdup(edev->parent->device_node->full_name);
 
 	return 0;
+}
+
+int eth_open(struct eth_device *edev)
+{
+	int ret;
+
+	if (edev->active)
+		return 0;
+
+	ret = edev->open(edev);
+	if (!ret)
+		edev->active = 1;
+
+	eth_carrier_check(edev, 1);
+
+	return ret;
+}
+
+void eth_close(struct eth_device *edev)
+{
+	if (!edev->active)
+		return;
+
+	edev->halt(edev);
+
+	edev->active = 0;
 }
 
 void eth_unregister(struct eth_device *edev)

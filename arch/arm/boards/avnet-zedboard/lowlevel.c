@@ -258,7 +258,7 @@ static void avnet_zedboard_ps7_init(void)
 
 	/* GEM0 */
 	writel(0x00000001, 0xf8000138);
-	writel(0x00500801, 0xf8000140);
+	writel(0x00100801, 0xf8000140);
 	writel(0x00000302, 0xf8000740);
 	writel(0x00000302, 0xf8000744);
 	writel(0x00000302, 0xf8000748);
@@ -271,10 +271,19 @@ static void avnet_zedboard_ps7_init(void)
 	writel(0x00001303, 0xf8000764);
 	writel(0x00001303, 0xf8000768);
 	writel(0x00001303, 0xf800076C);
-	writel(0x00001280, 0xf80007D0);
-	writel(0x00001280, 0xf80007D4);
+	writel(0x00000280, 0xf80007D0);
+	writel(0x00000280, 0xf80007D4);
 
 	writel(0x00000001, 0xf8000B00);
+
+	/* FPGA Clock Control */
+	writel(0x00101400, 0xf8000170);
+	writel(0x00101400, 0xf8000180);
+	writel(0x00101400, 0xf8000190);
+	writel(0x00101400, 0xf80001a0);
+
+	/* PCAP Clock Control */
+	writel(0x00000501, 0xf8000168);
 
 	/* lock up. secure, secure */
 	writel(0x0000767B, ZYNQ_SLCR_LOCK);
@@ -296,6 +305,16 @@ ENTRY_FUNCTION(start_avnet_zedboard, r0, r1, r2)
 {
 
 	void *fdt = __dtb_zynq_zed_start + get_runtime_offset();
+
+	/* MIO_07 in GPIO Mode 3.3V VIO, can be uncomented because it is the default value */
+	writel(0x0000DF0D, ZYNQ_SLCR_UNLOCK);
+	writel(0x00000600, 0xF800071C );
+	writel(0x0000767B, ZYNQ_SLCR_LOCK);
+
+	/* turns on the LED MIO_07 */
+	writel((1<<7), 0xe000a204 );    // Direction
+	writel((1<<7), 0xe000a208 );    // Output enable
+	writel((1<<7), 0xe000a040 );    // DATA Register
 
 	arm_cpu_lowlevel_init();
 	zynq_cpu_lowlevel_init();

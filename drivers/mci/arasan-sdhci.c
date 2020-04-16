@@ -278,7 +278,7 @@ static int arasan_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 
 	mask = SDHCI_INT_CMD_COMPLETE;
 	if (data)
-		mask |= SDHCI_INT_XFER_COMPLETE;
+		mask |= SDHCI_INT_DATA_AVAIL;
 
 	sdhci_set_cmd_xfer_mode(&host->sdhci, cmd, data, false, &command, &xfer);
 

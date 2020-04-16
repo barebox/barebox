@@ -126,6 +126,7 @@ struct spi_message;
  *	SPI slaves, and are numbered from zero to num_chipselects.
  *	each slave has a chipselect signal, but it's common that not
  *	every chipselect is connected to a slave.
+ * @max_speed_hz: Highest supported transfer speed
  * @setup: updates the device mode and clocking records used by a
  *	device's SPI controller; protocol code may call this.  This
  *	must fail if an unrecognized or unsupported mode is requested.
@@ -170,6 +171,9 @@ struct spi_controller {
 	 * might use board-specific GPIOs.
 	 */
 	u16			num_chipselect;
+
+	/* limits on transfer speed */
+	u32			max_speed_hz;
 
 	/* setup mode and clock, etc (spi driver may call many times) */
 	int			(*setup)(struct spi_device *spi);

@@ -22,4 +22,8 @@ struct regmap {
 	struct cdev cdev;
 };
 
+enum regmap_endian regmap_get_val_endian(struct device_d *dev,
+					 const struct regmap_bus *bus,
+					 const struct regmap_config *config);
+
 #endif

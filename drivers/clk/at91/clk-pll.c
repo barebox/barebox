@@ -1,11 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  *  Copyright (C) 2013 Boris BREZILLON <b.brezillon@overkiz.com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
  */
 
 #include <common.h>
@@ -121,19 +116,11 @@ static unsigned long clk_pll_recalc_rate(struct clk *clk,
 					 unsigned long parent_rate)
 {
 	struct clk_pll *pll = to_clk_pll(clk);
-	unsigned int pllr;
-	u16 mul;
-	u8 div;
 
-	regmap_read(pll->regmap, PLL_REG(pll->id), &pllr);
-
-	div = PLL_DIV(pllr);
-	mul = PLL_MUL(pllr, pll->layout);
-
-	if (!div || !mul)
+	if (!pll->div || !pll->mul)
 		return 0;
 
-	return (parent_rate / div) * (mul + 1);
+	return (parent_rate / pll->div) * (pll->mul + 1);
 }
 
 static long clk_pll_get_best_div_mul(struct clk_pll *pll, unsigned long rate,
@@ -285,7 +272,7 @@ static const struct clk_ops pll_ops = {
 	.set_rate = clk_pll_set_rate,
 };
 
-struct clk *
+struct clk * __init
 at91_clk_register_pll(struct regmap *regmap, const char *name,
 		      const char *parent_name, u8 id,
 		      const struct clk_pll_layout *layout,

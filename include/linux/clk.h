@@ -325,7 +325,14 @@ struct clk_div_table {
 	unsigned int	div;
 };
 
-struct clk *clk_fixed(const char *name, int rate);
+struct clk *clk_register_fixed_rate(const char *name,
+				    const char *parent_name, unsigned long flags,
+				    unsigned long fixed_rate);
+
+static inline struct clk *clk_fixed(const char *name, int rate)
+{
+	return clk_register_fixed_rate(name, NULL, 0, rate);
+}
 
 struct clk_divider {
 	struct clk clk;
@@ -550,5 +557,9 @@ struct string_list;
 int clk_name_complete(struct string_list *sl, char *instr);
 
 char *of_clk_get_parent_name(struct device_node *np, unsigned int index);
+
+static inline void clk_unregister(struct clk *clk)
+{
+}
 
 #endif

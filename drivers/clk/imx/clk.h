@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef __IMX_CLK_H
 #define __IMX_CLK_H
 

@@ -1,15 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * clk-h32mx.c
  *
  *  Copyright (C) 2014 Atmel
  *
  * Alexandre Belloni <alexandre.belloni@free-electrons.com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
  */
 
 #include <common.h>
@@ -88,7 +83,7 @@ static const struct clk_ops h32mx_ops = {
 	.set_rate = clk_sama5d4_h32mx_set_rate,
 };
 
-struct clk *
+struct clk * __init
 at91_clk_register_h32mx(struct regmap *regmap, const char *name,
 			const char *parent_name)
 {

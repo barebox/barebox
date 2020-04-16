@@ -1,18 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * clk-fixed.c - generic barebox clock support. Based on Linux clk support
  *
  * Copyright (c) 2012 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
  */
 #include <common.h>
 #include <malloc.h>
@@ -37,17 +27,31 @@ static struct clk_ops clk_fixed_ops = {
 	.is_enabled = clk_is_enabled_always,
 };
 
-struct clk *clk_fixed(const char *name, int rate)
+struct clk *clk_register_fixed_rate(const char *name,
+				    const char *parent_name, unsigned long flags,
+				    unsigned long rate)
 {
 	struct clk_fixed *fix = xzalloc(sizeof *fix);
+	const char **parent_names = NULL;
 	int ret;
 
 	fix->rate = rate;
 	fix->clk.ops = &clk_fixed_ops;
 	fix->clk.name = name;
+	fix->clk.flags = flags;
+
+	if (parent_name) {
+		parent_names = kzalloc(sizeof(const char *), GFP_KERNEL);
+		if (!parent_names)
+			return ERR_PTR(-ENOMEM);
+
+		fix->clk.parent_names = parent_names;
+		fix->clk.num_parents = 1;
+	}
 
 	ret = clk_register(&fix->clk);
 	if (ret) {
+		free(parent_names);
 		free(fix);
 		return ERR_PTR(ret);
 	}

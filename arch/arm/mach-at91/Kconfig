@@ -34,6 +34,15 @@ config HAVE_AT91_GENERATED_CLK
 config HAVE_AT91_BOOTSTRAP
 	bool
 
+config HAVE_AT91_AUDIO_PLL
+	bool
+
+config HAVE_AT91_I2S_MUX_CLK
+	bool
+
+config HAVE_AT91_SAM9X60_PLL
+	bool
+
 # Select if board uses the common at91sam926x_board_init
 config AT91SAM926X_BOARD_INIT
 	bool
@@ -71,6 +80,8 @@ config SOC_SAMA5D2
 	select HAVE_AT91_USB_CLK
 	select HAVE_AT91_GENERATED_CLK
 	select PINCTRL
+	select HAVE_AT91_AUDIO_PLL
+	select HAVE_AT91_I2S_MUX_CLK
 	select PINCTRL_AT91PIO4
 	select HAS_MACB
 	select HAVE_MACH_ARM_HEAD
@@ -99,6 +110,14 @@ config SOC_SAMA5D4
 	select PINCTRL_AT91
 	select HAS_MACB
 	select HAVE_MACH_ARM_HEAD
+
+config SOC_SAM9X60
+	bool
+	select CPU_ARM926T
+	select HAVE_AT91_USB_CLK
+	select HAVE_AT91_GENERATED_CLK
+	select HAVE_AT91_SAM9X60_PLL
+	select PINCTRL_AT91
 
 config ARCH_TEXT_BASE
 	hex

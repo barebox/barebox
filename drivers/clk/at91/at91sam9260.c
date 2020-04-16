@@ -47,7 +47,7 @@ static u8 sam9260_plla_out[] = { 0, 2 };
 
 static u16 sam9260_plla_icpll[] = { 1, 1 };
 
-static struct clk_range sam9260_plla_outputs[] = {
+static const struct clk_range sam9260_plla_outputs[] = {
 	{ .min = 80000000, .max = 160000000 },
 	{ .min = 150000000, .max = 240000000 },
 };
@@ -64,7 +64,7 @@ static u8 sam9260_pllb_out[] = { 1 };
 
 static u16 sam9260_pllb_icpll[] = { 1 };
 
-static struct clk_range sam9260_pllb_outputs[] = {
+static const struct clk_range sam9260_pllb_outputs[] = {
 	{ .min = 70000000, .max = 130000000 },
 };
 
@@ -134,7 +134,7 @@ static u8 sam9g20_plla_out[] = { 0, 1, 2, 3, 0, 1, 2, 3 };
 
 static u16 sam9g20_plla_icpll[] = { 0, 0, 0, 0, 1, 1, 1, 1 };
 
-static struct clk_range sam9g20_plla_outputs[] = {
+static const struct clk_range sam9g20_plla_outputs[] = {
 	{ .min = 745000000, .max = 800000000 },
 	{ .min = 695000000, .max = 750000000 },
 	{ .min = 645000000, .max = 700000000 },
@@ -157,7 +157,7 @@ static u8 sam9g20_pllb_out[] = { 0 };
 
 static u16 sam9g20_pllb_icpll[] = { 0 };
 
-static struct clk_range sam9g20_pllb_outputs[] = {
+static const struct clk_range sam9g20_pllb_outputs[] = {
 	{ .min = 30000000, .max = 100000000 },
 };
 
@@ -188,7 +188,7 @@ static const struct clk_master_characteristics sam9261_mck_characteristics = {
 	.divisors = { 1, 2, 4, 0 },
 };
 
-static struct clk_range sam9261_plla_outputs[] = {
+static const struct clk_range sam9261_plla_outputs[] = {
 	{ .min = 80000000, .max = 200000000 },
 	{ .min = 190000000, .max = 240000000 },
 };
@@ -205,7 +205,7 @@ static u8 sam9261_pllb_out[] = { 1 };
 
 static u16 sam9261_pllb_icpll[] = { 1 };
 
-static struct clk_range sam9261_pllb_outputs[] = {
+static const struct clk_range sam9261_pllb_outputs[] = {
 	{ .min = 70000000, .max = 130000000 },
 };
 
@@ -268,7 +268,7 @@ static const struct clk_master_characteristics sam9263_mck_characteristics = {
 	.divisors = { 1, 2, 4, 0 },
 };
 
-static struct clk_range sam9263_pll_outputs[] = {
+static const struct clk_range sam9263_pll_outputs[] = {
 	{ .min = 80000000, .max = 200000000 },
 	{ .min = 190000000, .max = 240000000 },
 };
@@ -354,7 +354,7 @@ static void __init at91sam926x_pmc_setup(struct device_node *np,
 		return;
 	mainxtal_name = of_clk_get_parent_name(np, i);
 
-	regmap = syscon_node_to_regmap(np);
+	regmap = device_node_to_regmap(np);
 	if (IS_ERR(regmap))
 		return;
 

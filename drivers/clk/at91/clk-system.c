@@ -1,11 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  *  Copyright (C) 2013 Boris BREZILLON <b.brezillon@overkiz.com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
  */
 #include <common.h>
 #include <clock.h>
@@ -90,7 +85,7 @@ static const struct clk_ops system_ops = {
 	.is_enabled = clk_system_is_enabled,
 };
 
-struct clk *
+struct clk * __init
 at91_clk_register_system(struct regmap *regmap, const char *name,
 			 const char *parent_name, u8 id)
 {

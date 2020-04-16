@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0-only
 obj-$(CONFIG_COMMON_CLK) +=	\
 	clk-composite-8m.o	\
 	clk-pllv1.o		\

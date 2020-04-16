@@ -1,11 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  *  Copyright (C) 2013 Boris BREZILLON <b.brezillon@overkiz.com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
  */
 
 #include <module.h>
@@ -94,22 +89,22 @@ struct pmc_data *pmc_data_allocate(unsigned int ncore, unsigned int nsystem,
 		return NULL;
 
 	pmc_data->ncore = ncore;
-	pmc_data->chws = kcalloc(ncore, sizeof(struct clk_hw *), GFP_KERNEL);
+	pmc_data->chws = kcalloc(ncore, sizeof(struct clk *), GFP_KERNEL);
 	if (!pmc_data->chws)
 		goto err;
 
 	pmc_data->nsystem = nsystem;
-	pmc_data->shws = kcalloc(nsystem, sizeof(struct clk_hw *), GFP_KERNEL);
+	pmc_data->shws = kcalloc(nsystem, sizeof(struct clk *), GFP_KERNEL);
 	if (!pmc_data->shws)
 		goto err;
 
 	pmc_data->nperiph = nperiph;
-	pmc_data->phws = kcalloc(nperiph, sizeof(struct clk_hw *), GFP_KERNEL);
+	pmc_data->phws = kcalloc(nperiph, sizeof(struct clk *), GFP_KERNEL);
 	if (!pmc_data->phws)
 		goto err;
 
 	pmc_data->ngck = ngck;
-	pmc_data->ghws = kcalloc(ngck, sizeof(struct clk_hw *), GFP_KERNEL);
+	pmc_data->ghws = kcalloc(ngck, sizeof(struct clk *), GFP_KERNEL);
 	if (!pmc_data->ghws)
 		goto err;
 
@@ -140,6 +135,8 @@ static struct
 	u32 imr;
 	u32 pcsr1;
 	u32 pcr[PMC_MAX_IDS];
+	u32 audio_pll0;
+	u32 audio_pll1;
 	u32 pckr[PMC_MAX_PCKS];
 } pmc_cache;
 
@@ -274,7 +271,7 @@ static int __init pmc_register_ops(void)
 
 	np = of_find_matching_node(NULL, sama5d2_pmc_dt_ids);
 
-	pmcreg = syscon_node_to_regmap(np);
+	pmcreg = device_node_to_regmap(np);
 	if (IS_ERR(pmcreg))
 		return PTR_ERR(pmcreg);
 

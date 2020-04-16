@@ -1,0 +1,55 @@
+config KVX
+	bool
+	select 64BIT
+	select CLKDEV_LOOKUP
+	select COMMON_CLK
+	select COMMON_CLK_OF_PROVIDER
+	select FLEXIBLE_BOOTARGS
+	select GENERIC_FIND_NEXT_BIT
+	select LIBFDT
+	select MFD_SYSCON
+	select OF_BAREBOX_DRIVERS
+	select OFDEVICE
+	select PARTITION
+	select RESET_SOURCE
+	default y
+
+config PHYS_ADDR_T_64BIT
+	bool
+
+config 64BIT
+	bool
+	select ARCH_DMA_ADDR_T_64BIT
+	select PHYS_ADDR_T_64BIT
+	default y
+
+config ARCH_TEXT_BASE
+	hex
+	default 0x110000000
+
+menu "Kalray specific"
+
+config ARCHINFO
+	string
+	default "coolidge"
+endmenu
+
+menu "Board configuration"
+
+config BUILTIN_DTB
+	bool "link a DTB into the barebox image"
+	depends on OFTREE
+
+config BUILTIN_DTB_NAME
+	string "DTB to build into the barebox image"
+	depends on BUILTIN_DTB
+
+choice
+	prompt "Select your board"
+
+config BOARD_K200
+	bool "K200 Network card"
+
+endchoice
+
+endmenu

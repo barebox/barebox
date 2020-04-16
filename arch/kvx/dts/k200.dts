@@ -1,0 +1,110 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright (C) 2019 Kalray, Inc.
+ */
+
+/dts-v1/;
+
+/ {
+	model = "KONIC 200 (K200)";
+	compatible = "kalray,board-k200";
+
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	/* Standard nodes (choosen, cpus, memory, etc) */
+	chosen {
+		bootargs = "earlycon norandmaps console=ttyS0";
+		stdout-path = &serial0;
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "kalray,kvx-pe";
+			reg = <0>;
+			clocks = <&core_clk>;
+			clock-names = "cpu";
+		};
+
+	};
+
+	clocks {
+		ref_clk: ref_clk@0 {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			/* 100 MHz clock */
+			clock-frequency = <100000000>;
+		};
+
+		core_clk: core_clk@0 {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			/* 1 GHz clock */
+			clock-frequency = <1000000000>;
+		};
+	};
+
+	ddr: memory@100000000 {
+		device_type = "memory";
+		/* Declare 4G of DDR starting at 4G */
+		reg = <0x1 0x00000000 0x1 0x00000000>;
+	};
+
+	smem: memory@0 {
+		device_type = "memory";
+		/* 4M of SMEM starting at @0 */
+		reg = <0x0 0x0 0x0 0x400000>;
+	};
+
+	core_timer {
+		compatible = "kalray,kvx-core-timer";
+		clocks = <&core_clk>;
+	};
+
+	core_watchdog {
+		compatible = "kalray,kvx-core-watchdog";
+		clocks = <&core_clk>;
+	};
+
+	axi {
+		compatible = "simple-bus";
+		#address-cells = <2>;
+		#size-cells = <2>;
+
+		ranges;
+
+		ftu: ftu@10181000 {
+			compatible = "kalray,kvx-syscon", "syscon";
+			reg = <0x0 0x10181000 0x0 0x410>;
+		};
+
+		pmx_gpio0: pinmux@20230008 {
+			compatible = "pinctrl-single";
+			reg = <0x0 0x20230008 0x0 0x4>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			#pinctrl-cells = <2>;
+			pinctrl-single,bit-per-mux;
+			pinctrl-single,register-width = <32>;
+			pinctrl-single,function-mask = <0x1>;
+
+			uart0_pins: pinmux_uart0_pins {
+				pinctrl-single,bits = <0x00 0x00000003 0x00000003>;
+			};
+		};
+
+		serial0: uart0@20210000 {
+			compatible = "snps,dw-apb-uart";
+			reg = <0x0 0x20210000 0x0 0x100>;
+			clocks = <&ref_clk>;
+			reg-io-width = <4>;
+			reg-shift = <2>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&uart0_pins>;
+		};
+	};
+};

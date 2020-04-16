@@ -35,11 +35,3 @@ config USB_XHCI
 
 	  This driver currently only supports virtual USB 2.0 ports, if you
 	  plan to use USB 3.0 devices, use a USB 2.0 cable in between.
-
-config USB_XHCI_PCI
-	depends on PCI
-	depends on HAS_DMA
-	select USB_XHCI
-	bool "PCI xHCI driver"
-	help
-	  Enables support for PCI attached xHCI controllers.

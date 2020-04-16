@@ -147,4 +147,7 @@
 #define SetHubFeature		(0x2000 | USB_REQ_SET_FEATURE)
 #define SetPortFeature		(0x2300 | USB_REQ_SET_FEATURE)
 
+#define USB_PORT_STAT_SUPER_SPEED   0x0600       /* faking support to XHCI */
+#define USB_PORT_STAT_SPEED_MASK (USB_PORT_STAT_LOW_SPEED | USB_PORT_STAT_HIGH_SPEED)
+
 #endif /*_USB_DEFS_H_ */

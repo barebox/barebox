@@ -66,6 +66,12 @@ struct usb_interface {
 	unsigned char	act_altsetting;
 
 	struct usb_endpoint_descriptor ep_desc[USB_MAXENDPOINTS];
+	/*
+	 * Super Speed Device will have Super Speed Endpoint
+	 * Companion Descriptor  (section 9.6.7 of usb 3.0 spec)
+	 * Revision 1.0 June 6th 2011
+	 */
+	struct usb_ss_ep_comp_descriptor ss_ep_comp_desc[USB_MAXENDPOINTS];
 };
 
 struct usb_config {
@@ -108,6 +114,7 @@ struct usb_device {
 	int act_len;			/* transfered bytes */
 	int maxchild;			/* Number of ports if hub */
 	int portnr;
+	int level;
 	struct usb_device *parent;
 	struct usb_device *children[USB_MAXCHILDREN];
 
@@ -118,6 +125,9 @@ struct usb_device {
 	struct list_head list;
 	void *drv_data;
 	struct usb_hub_device *hub;
+
+	/* slot_id - for xHCI enabled devices */
+	unsigned int slot_id;
 };
 
 struct usb_device_id;
@@ -146,6 +156,10 @@ struct usb_host {
 	int (*submit_int_msg)(struct usb_device *dev, unsigned long pipe, void *buffer,
 			int transfer_len, int interval);
 	void (*usb_event_poll)(void);
+	int (*alloc_device)(struct usb_device *dev);
+	int (*update_hub_device)(struct usb_device *dev);
+
+	bool no_desc_before_addr;
 
 	struct list_head list;
 
@@ -306,6 +320,21 @@ void usb_rescan(void);
 #define usb_pipecontrol(pipe)	(usb_pipetype((pipe)) == PIPE_CONTROL)
 #define usb_pipebulk(pipe)	(usb_pipetype((pipe)) == PIPE_BULK)
 
+#define usb_pipe_ep_index(pipe) \
+		usb_pipecontrol(pipe) ? (usb_pipeendpoint(pipe) * 2) : \
+			((usb_pipeendpoint(pipe) * 2) - \
+			(usb_pipein(pipe) ? 0 : 1))
+
+/*
+ * As of USB 2.0, full/low speed devices are segregated into trees.
+ * One type grows from USB 1.1 host controllers (OHCI, UHCI etc).
+ * The other type grows from high speed hubs when they connect to
+ * full/low speed devices using "Transaction Translators" (TTs).
+ */
+struct usb_tt {
+	bool		multi;		/* true means one TT per port */
+	unsigned	think_time;	/* think time in ns */
+};
 
 /*************************************************************************
  * Hub Stuff
@@ -316,6 +345,7 @@ struct usb_hub_device {
 	uint64_t connect_timeout; /* Device connection timeout in ns */
 	uint64_t query_delay; /* Device query delay in ns */
 	int overcurrent_count[USB_MAXCHILDREN]; /* Over-current counter */
+	struct usb_tt tt; /* Transaction Translator */
 };
 
 /**
@@ -382,7 +412,7 @@ struct usb_device_id {
 	__u8		bInterfaceSubClass;
 	__u8		bInterfaceProtocol;
 
-	void *driver_info;
+	const void *driver_info;
 };
 
 #define USB_DEVICE_ID_MATCH_PRODUCT         0x0002
@@ -448,5 +478,7 @@ int usb_register_otg_device(struct device_d *parent,
 			    int (*set_mode)(void *ctx, enum usb_dr_mode mode), void *ctx);
 
 extern struct list_head usb_device_list;
+
+bool usb_hub_is_root_hub(struct usb_device *hdev);
 
 #endif /*_USB_H_ */

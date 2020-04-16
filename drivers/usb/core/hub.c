@@ -26,7 +26,6 @@
 #include <usb/usb_defs.h>
 
 #include "usb.h"
-#include "hub.h"
 
 #define USB_BUFSIZ  512
 
@@ -44,11 +43,38 @@ struct usb_device_scan {
 
 static LIST_HEAD(usb_scan_list);
 
+static bool usb_hub_is_superspeed(struct usb_device *hdev)
+{
+	return hdev->descriptor->bDeviceProtocol == 3;
+}
+
+bool usb_hub_is_root_hub(struct usb_device *hdev)
+{
+	return hdev->level == 0;
+}
+
+static int usb_set_hub_depth(struct usb_device *dev, int depth)
+{
+	dev_dbg(&dev->dev, "set hub depth to %d\n", dev->level);
+
+	if (depth < 0 || depth > 4)
+		return -EINVAL;
+
+	return usb_control_msg(dev, usb_sndctrlpipe(dev, 0),
+		HUB_SET_DEPTH, USB_DIR_OUT | USB_RT_HUB,
+		depth, 0, NULL, 0, USB_CNTL_TIMEOUT);
+}
+
 static int usb_get_hub_descriptor(struct usb_device *dev, void *data, int size)
 {
+	unsigned short dtype = USB_DT_HUB;
+
+	if (usb_hub_is_superspeed(dev))
+		dtype = USB_DT_SS_HUB;
+
 	return usb_control_msg(dev, usb_rcvctrlpipe(dev, 0),
 		USB_REQ_GET_DESCRIPTOR, USB_DIR_IN | USB_RT_HUB,
-		USB_DT_HUB << 8, 0, data, size, USB_CNTL_TIMEOUT);
+		dtype << 8, 0, data, size, USB_CNTL_TIMEOUT);
 }
 
 static int usb_clear_port_feature(struct usb_device *dev, int port, int feature)
@@ -74,9 +100,28 @@ static int usb_get_hub_status(struct usb_device *dev, void *data)
 
 static int usb_get_port_status(struct usb_device *dev, int port, void *data)
 {
-	return usb_control_msg(dev, usb_rcvctrlpipe(dev, 0),
+	int ret;
+
+	ret = usb_control_msg(dev, usb_rcvctrlpipe(dev, 0),
 			USB_REQ_GET_STATUS, USB_DIR_IN | USB_RT_PORT, 0, port,
 			data, sizeof(struct usb_hub_status), USB_CNTL_TIMEOUT);
+	if (ret < 0)
+		return ret;
+
+	if (!usb_hub_is_root_hub(dev) && usb_hub_is_superspeed(dev)) {
+		struct usb_port_status *status = data;
+		u16 tmp = status->wPortStatus & USB_SS_PORT_STAT_MASK;
+
+		if (status->wPortStatus & USB_SS_PORT_STAT_POWER)
+			tmp |= USB_PORT_STAT_POWER;
+		if ((status->wPortStatus & USB_SS_PORT_STAT_SPEED) ==
+		    USB_PORT_STAT_SPEED_5GBPS)
+			tmp |= USB_PORT_STAT_SUPER_SPEED;
+
+		status->wPortStatus = tmp;
+	}
+
+	return ret;
 }
 
 
@@ -88,22 +133,13 @@ static void usb_hub_power_on(struct usb_hub_device *hub)
 
 	dev = hub->pusb_dev;
 
-	/*
-	 * Enable power to the ports:
-	 * Here we Power-cycle the ports: aka,
-	 * turning them off and turning on again.
-	 */
-	for (i = 0; i < dev->maxchild; i++) {
-		usb_clear_port_feature(dev, i + 1, USB_PORT_FEAT_POWER);
-		dev_dbg(&dev->dev, "port %d returns %lX\n", i + 1, dev->status);
-	}
-
 	/* Enable power to the ports */
 	dev_dbg(&dev->dev, "enabling power on all ports\n");
 
 	for (i = 0; i < dev->maxchild; i++) {
 		usb_set_port_feature(dev, i + 1, USB_PORT_FEAT_POWER);
-		dev_dbg(&dev->dev, "port %d returns %lX\n", i + 1, dev->status);
+		dev_dbg(&dev->dev, "port%d: usb_set_port_feature returns 0x%08lx\n",
+			i + 1, dev->status);
 	}
 
 	/*
@@ -120,8 +156,7 @@ static void usb_hub_power_on(struct usb_hub_device *hub)
 	 */
 	hub->connect_timeout = hub->query_delay + 1000 * MSECOND;
 
-	dev_dbg(&dev->dev, "devnum=%d poweron: query_delay=%d \
-			connect_timeout=%d\n",
+	dev_dbg(&dev->dev, "devnum=%d poweron: query_delay=%d connect_timeout=%d\n",
 			dev->devnum, max(100, (int) pgood_delay),
 			max(100, (int) pgood_delay) + 1000);
 }
@@ -130,41 +165,48 @@ static void usb_hub_power_on(struct usb_hub_device *hub)
 
 static inline char *portspeed(int portstatus)
 {
-	if (portstatus & (1 << USB_PORT_FEAT_HIGHSPEED))
+	switch (portstatus & USB_PORT_STAT_SPEED_MASK) {
+	case USB_PORT_STAT_SUPER_SPEED:
+		return "5 Gb/s";
+	case USB_PORT_STAT_HIGH_SPEED:
 		return "480 Mb/s";
-	else if (portstatus & (1 << USB_PORT_FEAT_LOWSPEED))
+	case USB_PORT_STAT_LOW_SPEED:
 		return "1.5 Mb/s";
-	else
+	default:
 		return "12 Mb/s";
+	}
 }
 
-int hub_port_reset(struct usb_device *hub, int port, struct usb_device *usb)
+static int hub_port_reset(struct usb_device *hub, int port,
+			  struct usb_device *usb)
 {
 	int tries;
 	struct usb_port_status portsts;
 	unsigned short portstatus, portchange;
 	int delay = HUB_SHORT_RESET_TIME; /* start with short reset delay */
 
-	dev_dbg(&hub->dev, "hub_port_reset: resetting port %d...\n", port);
+	dev_dbg(&hub->dev, "port%d: resetting...\n", port + 1);
 	for (tries = 0; tries < MAX_TRIES; tries++) {
 
 		usb_set_port_feature(hub, port + 1, USB_PORT_FEAT_RESET);
 		mdelay(delay);
 
 		if (usb_get_port_status(hub, port + 1, &portsts) < 0) {
-			dev_dbg(&hub->dev, "get_port_status failed status %lX\n",
-					hub->status);
+			dev_dbg(&hub->dev, "port%d: get_port_status failed status 0x%lX\n",
+					port + 1, hub->status);
 			return -1;
 		}
 		portstatus = le16_to_cpu(portsts.wPortStatus);
 		portchange = le16_to_cpu(portsts.wPortChange);
 
-		dev_dbg(&hub->dev, "portstatus %x, change %x, %s\n",
+		dev_dbg(&hub->dev, "port%d: status 0x%04x, change 0x%04x, %s\n",
+				port + 1,
 				portstatus, portchange,
 				portspeed(portstatus));
 
-		dev_dbg(&hub->dev, "STAT_C_CONNECTION = %d STAT_CONNECTION = %d" \
+		dev_dbg(&hub->dev, "port%d: STAT_C_CONNECTION = %d STAT_CONNECTION = %d"
 			       "  USB_PORT_STAT_ENABLE %d\n",
+			port + 1,
 			(portchange & USB_PORT_STAT_C_CONNECTION) ? 1 : 0,
 			(portstatus & USB_PORT_STAT_CONNECTION) ? 1 : 0,
 			(portstatus & USB_PORT_STAT_ENABLE) ? 1 : 0);
@@ -181,48 +223,44 @@ int hub_port_reset(struct usb_device *hub, int port, struct usb_device *usb)
 	}
 
 	if (tries == MAX_TRIES) {
-		dev_dbg(&hub->dev, "Cannot enable port %i after %i retries, " \
-				"disabling port.\n", port + 1, MAX_TRIES);
+		dev_dbg(&hub->dev, "port%d: Cannot enable after %i retries, disabling port.\n",
+			port + 1, MAX_TRIES);
 		dev_dbg(&hub->dev, "Maybe the USB cable is bad?\n");
 		return -1;
 	}
 
 	usb_clear_port_feature(hub, port + 1, USB_PORT_FEAT_C_RESET);
 
-	if (portstatus & USB_PORT_STAT_HIGH_SPEED)
+	switch (portstatus & USB_PORT_STAT_SPEED_MASK) {
+	case USB_PORT_STAT_SUPER_SPEED:
+		usb->speed = USB_SPEED_SUPER;
+		break;
+	case USB_PORT_STAT_HIGH_SPEED:
 		usb->speed = USB_SPEED_HIGH;
-	else if (portstatus & USB_PORT_STAT_LOW_SPEED)
+		break;
+	case USB_PORT_STAT_LOW_SPEED:
 		usb->speed = USB_SPEED_LOW;
-	else
+		break;
+	default:
 		usb->speed = USB_SPEED_FULL;
+		break;
+	}
 
 	return 0;
 }
 
 
-static void usb_hub_port_connect_change(struct usb_device *dev, int port)
+static void usb_hub_port_connect_change(struct usb_device *dev, int port,
+					uint16_t portstatus, uint16_t portchange)
 {
 	struct usb_device *usb;
-	struct usb_port_status portsts;
-	unsigned short portstatus, portchange;
-
-	/* Check status */
-	if (usb_get_port_status(dev, port + 1, &portsts) < 0) {
-		dev_dbg(&dev->dev, "get_port_status failed\n");
-		return;
-	}
-
-	portstatus = le16_to_cpu(portsts.wPortStatus);
-	portchange = le16_to_cpu(portsts.wPortChange);
-	dev_dbg(&dev->dev, "portstatus %x, change %x, %s\n",
-			portstatus, portchange, portspeed(portstatus));
 
 	/* Clear the connection change status */
 	usb_clear_port_feature(dev, port + 1, USB_PORT_FEAT_C_CONNECTION);
 
 	/* Disconnect any existing devices under this port */
 	if (dev->children[port] && !(portstatus & USB_PORT_STAT_CONNECTION)) {
-		dev_dbg(&dev->dev, "disconnect detected on port %d\n", port + 1);
+		dev_dbg(&dev->dev, "port%d: disconnect detected\n", port + 1);
 		usb_remove_device(dev->children[port]);
 
 		if (!dev->parent && dev->host->usbphy)
@@ -242,7 +280,7 @@ static void usb_hub_port_connect_change(struct usb_device *dev, int port)
 
 	/* Reset it */
 	if (hub_port_reset(dev, port, usb) < 0) {
-		dev_warn(&dev->dev, "cannot reset port %i!?\n", port + 1);
+		dev_warn(&dev->dev, "port%d: cannot reset\n", port + 1);
 		usb_free_device(usb);
 		return;
 	}
@@ -267,7 +305,7 @@ static void usb_hub_port_connect_change(struct usb_device *dev, int port)
 	device_detect(&usb->dev);
 }
 
-static int usb_scan_port(struct usb_device_scan *usb_scan)
+static void usb_scan_port(struct usb_device_scan *usb_scan)
 {
 	struct usb_port_status portsts;
 	unsigned short portstatus, portchange;
@@ -284,68 +322,65 @@ static int usb_scan_port(struct usb_device_scan *usb_scan)
 	 * This is needed for voltages to stabilize.
 	 */
 	if (get_time_ns() < hub->query_delay)
-		return 0;
+		return;
 
 	if (usb_get_port_status(dev, port + 1, &portsts) < 0) {
-		dev_dbg(&dev->dev, "get_port_status failed\n");
+		dev_dbg(&dev->dev, "port%d: get_port_status failed\n", port + 1);
 		if(get_time_ns() >= hub->connect_timeout) {
-			dev_dbg(&dev->dev, "port=%d: timeout\n", port + 1);
+			dev_dbg(&dev->dev, "port%d: timeout\n", port + 1);
 			/* Remove this device from scanning list */
 			goto remove;
 		}
-		return 0;
+		return;
 	}
 
 	portstatus = le16_to_cpu(portsts.wPortStatus);
 	portchange = le16_to_cpu(portsts.wPortChange);
-	dev_dbg(&dev->dev, "Port %d Status %X Change %X\n",
+	dev_dbg(&dev->dev, "port%d: Status 0x%04x Change 0x%04x\n",
 			port + 1, portstatus, portchange);
 
-	if (!(portchange & USB_PORT_STAT_C_CONNECTION)) {
-		if(get_time_ns() >= hub->connect_timeout) {
-			dev_dbg(&dev->dev, "port=%d: timeout\n", port + 1);
+	if (!(portchange & USB_PORT_STAT_C_CONNECTION) ||
+	    !(portstatus & USB_PORT_STAT_CONNECTION)) {
+		if (get_time_ns() >= hub->connect_timeout) {
+			dev_dbg(&dev->dev, "port%d: timeout\n", port + 1);
 			/* Remove this device from scanning list */
 			goto remove;
 		}
-		return 0;
+		return;
 	}
 
-	/* Test if the connection came up, and if not exit */
-	if(!(portstatus & USB_PORT_STAT_CONNECTION))
-		return 0;
+	if (portchange & USB_PORT_STAT_C_RESET) {
+		dev_dbg(&dev->dev, "port%d: reset change\n", port + 1);
+		usb_clear_port_feature(dev, port + 1,
+					USB_PORT_FEAT_C_RESET);
+	}
+
+	if ((portchange & USB_PORT_STAT_C_BH_RESET) &&
+	    usb_hub_is_superspeed(dev)) {
+		dev_dbg(&dev->dev, "port%d: BH reset change\n", port + 1);
+		usb_clear_port_feature(dev, port + 1, USB_PORT_FEAT_C_BH_PORT_RESET);
+	}
 
 	/* A new USB device is ready at this point */
-	dev_dbg(&dev->dev, "port=%d: USB dev found\n", port + 1);
+	dev_dbg(&dev->dev, "port%d: USB dev found\n", port + 1);
 
-	usb_hub_port_connect_change(dev, port);
+	usb_hub_port_connect_change(dev, port, portstatus, portchange);
 
 	if (portchange & USB_PORT_STAT_C_ENABLE) {
-		dev_dbg(&dev->dev, "port %d enable change, status %x\n",
+		dev_dbg(&dev->dev, "port%d: enable change, status 0x%04x\n",
 				port + 1, portstatus);
 		usb_clear_port_feature(dev, port + 1,
 					USB_PORT_FEAT_C_ENABLE);
-
-		/* EM interference sometimes causes bad shielded USB
-		 * devices to be shutdown by the hub, this hack enables
-		 * them again. Works at least with mouse driver */
-		if (!(portstatus & USB_PORT_STAT_ENABLE) &&
-		     (portstatus & USB_PORT_STAT_CONNECTION) &&
-		     ((dev->children[port]))) {
-			dev_dbg(&dev->dev, "already running port %i "  \
-					"disabled by hub (EMI?), " \
-					"re-enabling...\n", port + 1);
-				usb_hub_port_connect_change(dev, port);
-		}
 	}
 
 	if (portstatus & USB_PORT_STAT_SUSPEND) {
-		dev_dbg(&dev->dev, "port %d suspend change\n", port + 1);
+		dev_dbg(&dev->dev, "port%d: suspend change\n", port + 1);
 		usb_clear_port_feature(dev, port + 1,
 					USB_PORT_FEAT_SUSPEND);
 	}
 
 	if (portchange & USB_PORT_STAT_C_OVERCURRENT) {
-		dev_dbg(&dev->dev, "port %d over-current change\n", port + 1);
+		dev_dbg(&dev->dev, "port%d: over-current change\n", port + 1);
 		usb_clear_port_feature(dev, port + 1,
 					USB_PORT_FEAT_C_OVER_CURRENT);
 		/* Only power-on this one port */
@@ -358,17 +393,11 @@ static int usb_scan_port(struct usb_device_scan *usb_scan)
 		 */
 		if (hub->overcurrent_count[port] <=
 				PORT_OVERCURRENT_MAX_SCAN_COUNT)
-			return 0;
+			return;
 
 		/* Otherwise the device will get removed */
-		dev_dbg(&dev->dev,"Port %d over-current occurred %d times\n",
+		dev_dbg(&dev->dev,"port%d: over-current occurred %d times\n",
 				port + 1, hub->overcurrent_count[port]);
-	}
-
-	if (portchange & USB_PORT_STAT_C_RESET) {
-		dev_dbg(&dev->dev, "port %d reset change\n", port + 1);
-		usb_clear_port_feature(dev, port + 1,
-					USB_PORT_FEAT_C_RESET);
 	}
 
 remove:
@@ -378,8 +407,6 @@ remove:
 	 */
 	list_del(&usb_scan->list);
 	free(usb_scan);
-
-	return 0;
 }
 
 static int usb_device_list_scan(void)
@@ -387,7 +414,6 @@ static int usb_device_list_scan(void)
 	struct usb_device_scan *usb_scan;
 	struct usb_device_scan *tmp;
 	static int running;
-	int ret = 0;
 
 	/* Only run this loop once for each controller */
 	if (running)
@@ -400,12 +426,8 @@ static int usb_device_list_scan(void)
 		if (list_empty(&usb_scan_list))
 			goto out;
 
-		list_for_each_entry_safe(usb_scan, tmp, &usb_scan_list, list) {
-			/* Scan this port */
-			ret = usb_scan_port(usb_scan);
-			if (ret)
-				goto out;
-		}
+		list_for_each_entry_safe(usb_scan, tmp, &usb_scan_list, list)
+			usb_scan_port(usb_scan);
 
 		/* Avoid hammering the HUB with port scans */
 		mdelay(25);
@@ -419,7 +441,7 @@ out:
 	 */
 	running = 0;
 
-	return ret;
+	return 0;
 }
 
 static int usb_hub_configure(struct usb_device *dev)
@@ -427,7 +449,7 @@ static int usb_hub_configure(struct usb_device *dev)
 	unsigned char buffer[USB_BUFSIZ], *bitmap;
 	struct usb_hub_descriptor *descriptor;
 	struct usb_hub_status *hubsts;
-	int i;
+	int i, ret;
 	struct usb_hub_device *hub;
 
 	hub = xzalloc(sizeof (*hub));
@@ -507,6 +529,56 @@ static int usb_hub_configure(struct usb_device *dev)
 		break;
 	}
 
+	switch (dev->descriptor->bDeviceProtocol) {
+	case USB_HUB_PR_FS:
+		break;
+	case USB_HUB_PR_HS_SINGLE_TT:
+		dev_dbg(&dev->dev, "Single TT\n");
+		break;
+	case USB_HUB_PR_HS_MULTI_TT:
+		ret = usb_set_interface(dev, 0, 1);
+		if (ret == 0) {
+			dev_dbg(&dev->dev, "TT per port\n");
+			hub->tt.multi = true;
+		} else {
+			dev_dbg(&dev->dev, "Using single TT (err %d)\n", ret);
+		}
+		break;
+	case USB_HUB_PR_SS:
+		/* USB 3.0 hubs don't have a TT */
+		break;
+	default:
+		dev_dbg(&dev->dev, "Unrecognized hub protocol %d\n",
+		      dev->descriptor->bDeviceProtocol);
+		break;
+	}
+
+	/* Note 8 FS bit times == (8 bits / 12000000 bps) ~= 666ns */
+	switch (hub->desc.wHubCharacteristics & HUB_CHAR_TTTT) {
+	case HUB_TTTT_8_BITS:
+		if (dev->descriptor->bDeviceProtocol != 0) {
+			hub->tt.think_time = 666;
+			dev_dbg(&dev->dev, "TT requires at most %d FS bit times (%d ns)\n",
+			      8, hub->tt.think_time);
+		}
+		break;
+	case HUB_TTTT_16_BITS:
+		hub->tt.think_time = 666 * 2;
+		dev_dbg(&dev->dev, "TT requires at most %d FS bit times (%d ns)\n",
+		      16, hub->tt.think_time);
+		break;
+	case HUB_TTTT_24_BITS:
+		hub->tt.think_time = 666 * 3;
+		dev_dbg(&dev->dev, "TT requires at most %d FS bit times (%d ns)\n",
+		      24, hub->tt.think_time);
+		break;
+	case HUB_TTTT_32_BITS:
+		hub->tt.think_time = 666 * 4;
+		dev_dbg(&dev->dev, "TT requires at most %d FS bit times (%d ns)\n",
+		      32, hub->tt.think_time);
+		break;
+	}
+
 	dev_dbg(&dev->dev, "power on to power good time: %dms\n",
 			descriptor->bPwrOn2PwrGood * 2);
 	dev_dbg(&dev->dev, "hub controller current requirement: %dmA\n",
@@ -539,6 +611,31 @@ static int usb_hub_configure(struct usb_device *dev)
 	dev_dbg(&dev->dev, "%sover-current condition exists\n",
 		(le16_to_cpu(hubsts->wHubStatus) & HUB_STATUS_OVERCURRENT) ? \
 		"" : "no ");
+
+	if (dev->host->update_hub_device) {
+		int ret;
+
+		ret = dev->host->update_hub_device(dev);
+		if (ret)
+			return ret;
+	}
+
+	if (!usb_hub_is_root_hub(dev) && usb_hub_is_superspeed(dev)) {
+		int ret;
+
+		/*
+		* This request sets the value that the hub uses to
+		* determine the index into the 'route string index'
+		* for this hub.
+		*/
+		ret = usb_set_hub_depth(dev, dev->level - 1);
+		if (ret < 0) {
+			dev_dbg(&dev->dev, "failed to set hub depth (0x%08lx)\n",
+				dev->status);
+			return ret;
+		}
+	}
+
 	usb_hub_power_on(hub);
 
 	return 0;

@@ -45,6 +45,8 @@ struct usbnet {
 	u32			xid;
 	u32			hard_mtu;	/* count any extra framing */
 	size_t			rx_urb_size;	/* size for rx urbs */
+	void			*rx_buf;
+	void			*tx_buf;
 
 	unsigned long		flags;
 #		define EVENT_TX_HALT	0

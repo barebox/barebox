@@ -24,10 +24,4 @@
 #ifndef __XHCI_HCD_H
 #define __XHCI_HCD_H
 
-struct xhci_data {
-	void __iomem *regs;
-};
-
-int xhci_register(struct device_d *dev, struct xhci_data *data);
-
 #endif

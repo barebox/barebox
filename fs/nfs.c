@@ -131,6 +131,7 @@ struct nfs_fh {
 };
 
 struct packet {
+	struct list_head list;
 	int len;
 	char data[];
 };
@@ -145,7 +146,7 @@ struct nfs_priv {
 	unsigned manual_nfs_port:1;
 	uint32_t rpc_id;
 	struct nfs_fh rootfh;
-	struct packet *nfs_packet;
+	struct list_head packets;
 };
 
 struct file_priv {
@@ -174,10 +175,6 @@ static void nfs_set_fh(struct inode *inode, struct nfs_fh *fh)
 }
 
 static uint64_t nfs_timer_start;
-
-static int nfs_state;
-#define STATE_DONE			1
-#define STATE_START			2
 
 /*
  * common types used in more than one request:
@@ -366,18 +363,10 @@ static int rpc_check_reply(struct packet *pkt, int rpc_prog,
 
 	*nfserr = 0;
 
-	if (!pkt)
-		return -EAGAIN;
-
 	memcpy(&rpc, pkt->data, sizeof(rpc));
 
-	if (ntoh32(rpc.id) != rpc_id) {
-		if (rpc_id - ntoh32(rpc.id) == 1)
-			/* stale packet, wait a bit longer */
-			return 0;
-
-		return -EINVAL;
-	}
+	if (ntoh32(rpc.id) != rpc_id)
+		return -EAGAIN;
 
 	if (rpc.rstatus  ||
 	    rpc.verifier ||
@@ -392,9 +381,15 @@ static int rpc_check_reply(struct packet *pkt, int rpc_prog,
 	*nfserr = ntoh32(net_read_uint32(data));
 	*nfserr = -*nfserr;
 
-	debug("%s: state: %d, err %d\n", __func__, nfs_state, *nfserr);
+	debug("%s: err %d\n", __func__, *nfserr);
 
 	return 0;
+}
+
+static void nfs_free_packet(struct packet *packet)
+{
+	list_del(&packet->list);
+	free(packet);
 }
 
 /*
@@ -409,6 +404,7 @@ static struct packet *rpc_req(struct nfs_priv *npriv, int rpc_prog,
 	unsigned char *payload = net_udp_get_payload(npriv->con);
 	int nfserr;
 	int tries = 0;
+	struct packet *packet;
 
 	npriv->rpc_id++;
 
@@ -453,12 +449,7 @@ again:
 
 	nfs_timer_start = get_time_ns();
 
-	nfs_state = STATE_START;
-
-	while (nfs_state != STATE_DONE) {
-		if (ctrlc())
-			return ERR_PTR(-EINTR);
-
+	while (1) {
 		net_poll();
 
 		if (is_timeout(nfs_timer_start, NFS_TIMEOUT)) {
@@ -468,19 +459,28 @@ again:
 			goto again;
 		}
 
-		ret = rpc_check_reply(npriv->nfs_packet, rpc_prog,
+		if (list_empty(&npriv->packets))
+			continue;
+
+		packet = list_first_entry(&npriv->packets, struct packet, list);
+
+		ret = rpc_check_reply(packet, rpc_prog,
 				      npriv->rpc_id, &nfserr);
-		if (!ret) {
+		if (ret == -EAGAIN) {
+			nfs_free_packet(packet);
+			continue;
+		} else if (ret) {
+			nfs_free_packet(packet);
+			return ERR_PTR(ret);
+		} else {
 			if (rpc_prog == PROG_NFS && nfserr) {
-				free(npriv->nfs_packet);
+				nfs_free_packet(packet);
 				return ERR_PTR(nfserr);
 			} else {
-				return npriv->nfs_packet;
+				return packet;
 			}
 		}
 	}
-
-	return npriv->nfs_packet;
 }
 
 /*
@@ -505,7 +505,7 @@ static int rpc_lookup_req(struct nfs_priv *npriv, uint32_t prog, uint32_t ver)
 
 	port = ntoh32(net_read_uint32(nfs_packet->data + sizeof(struct rpc_reply)));
 
-	free(nfs_packet);
+	nfs_free_packet(nfs_packet);
 
 	return port;
 }
@@ -676,12 +676,12 @@ static int nfs_mount_req(struct nfs_priv *npriv)
 	if (npriv->rootfh.size > NFS3_FHSIZE) {
 		printf("%s: file handle too big: %lu\n",
 		       __func__, (unsigned long)npriv->rootfh.size);
-		free(nfs_packet);
+		nfs_free_packet(nfs_packet);
 		return -EIO;
 	}
 	memcpy(npriv->rootfh.data, p, npriv->rootfh.size);
 
-	free(nfs_packet);
+	nfs_free_packet(nfs_packet);
 
 	return 0;
 }
@@ -709,7 +709,7 @@ static void nfs_umount_req(struct nfs_priv *npriv)
 	nfs_packet = rpc_req(npriv, PROG_MOUNT, MOUNT_UMOUNT, data, len);
 
 	if (!IS_ERR(nfs_packet))
-		free(nfs_packet);
+		nfs_free_packet(nfs_packet);
 }
 
 /*
@@ -768,6 +768,7 @@ static int nfs_lookup_req(struct nfs_priv *npriv, struct nfs_fh *fh,
 
 	ninode->fh.size = ntoh32(net_read_uint32(p++));
 	if (ninode->fh.size > NFS3_FHSIZE) {
+		nfs_free_packet(nfs_packet);
 		debug("%s: file handle too big: %u\n", __func__,
 		      ninode->fh.size);
 		return -EIO;
@@ -777,7 +778,7 @@ static int nfs_lookup_req(struct nfs_priv *npriv, struct nfs_fh *fh,
 
 	nfs_read_post_op_attr(p, inode);
 
-	free(nfs_packet);
+	nfs_free_packet(nfs_packet);
 
 	return 0;
 }
@@ -857,7 +858,7 @@ static void *nfs_readdirattr_req(struct nfs_priv *npriv, struct nfs_dir *dir)
 	len = (void *)nfs_packet->data + nfs_packet->len - (void *)p;
 	if (!len) {
 		printf("%s: huh, no payload left\n", __func__);
-		free(nfs_packet);
+		nfs_free_packet(nfs_packet);
 		return NULL;
 	}
 
@@ -865,7 +866,7 @@ static void *nfs_readdirattr_req(struct nfs_priv *npriv, struct nfs_dir *dir)
 
 	memcpy(buf, p, len);
 
-	free(nfs_packet);
+	nfs_free_packet(nfs_packet);
 
 	xdr_init(&dir->stream, buf, len);
 
@@ -942,27 +943,28 @@ static int nfs_read_req(struct file_priv *priv, uint64_t offset,
 	p += 2;
 
 	if (readlen && !rlen && !eof) {
-		free(nfs_packet);
+		nfs_free_packet(nfs_packet);
 		return -EIO;
 	}
 
 	kfifo_put(priv->fifo, (char *)p, rlen);
 
-	free(nfs_packet);
+	nfs_free_packet(nfs_packet);
 
 	return 0;
 }
 
-static void nfs_handler(void *ctx, char *packet, unsigned len)
+static void nfs_handler(void *ctx, char *p, unsigned len)
 {
-	char *pkt = net_eth_to_udp_payload(packet);
+	char *pkt = net_eth_to_udp_payload(p);
 	struct nfs_priv *npriv = ctx;
+	struct packet *packet;
 
-	nfs_state = STATE_DONE;
+	packet = xmalloc(sizeof(*packet) + len);
+	memcpy(packet->data, pkt, len);
+	packet->len = len;
 
-	npriv->nfs_packet = xmalloc(sizeof(*npriv->nfs_packet) + len);
-	memcpy(npriv->nfs_packet->data, pkt, len);
-	npriv->nfs_packet->len = len;
+	list_add_tail(&packet->list, &npriv->packets);
 }
 
 static int nfs_truncate(struct device_d *dev, FILE *f, loff_t size)
@@ -1032,7 +1034,7 @@ static int nfs_readlink_req(struct nfs_priv *npriv, struct nfs_fh *fh,
 	*target = xzalloc(len + 1);
 	memcpy(*target, p, len);
 
-	free(nfs_packet);
+	nfs_free_packet(nfs_packet);
 
 	return 0;
 }
@@ -1323,6 +1325,8 @@ static int nfs_probe(struct device_d *dev)
 
 	dev->priv = npriv;
 
+	INIT_LIST_HEAD(&npriv->packets);
+
 	debug("nfs: mount: %s\n", fsdev->backingstore);
 
 	path = strchr(tmp, ':');
@@ -1389,6 +1393,7 @@ static int nfs_probe(struct device_d *dev)
 	free(tmp);
 
 	sb->s_op = &nfs_ops;
+	sb->s_d_op = &no_revalidate_d_ops;
 
 	inode = new_inode(sb);
 	nfs_set_fh(inode, &npriv->rootfh);

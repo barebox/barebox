@@ -39,6 +39,7 @@
 #include <errno.h>
 #include <linux/stat.h>
 #include <envfs.h>
+#include <magicvar.h>
 #include <asm/sections.h>
 #include <uncompress.h>
 #include <globalvar.h>
@@ -391,3 +392,10 @@ void shutdown_barebox(void)
 		(*exitcall)();
 	}
 }
+
+BAREBOX_MAGICVAR_NAMED(global_autoboot_abort_key,
+                       global.autoboot_abort_key,
+                       "Which key allows to interrupt autoboot. Possible values: any, ctrl-c");
+BAREBOX_MAGICVAR_NAMED(global_autoboot_timeout,
+                       global.autoboot_timeout,
+                       "Timeout before autoboot starts in seconds");

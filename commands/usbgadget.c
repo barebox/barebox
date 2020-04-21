@@ -1,23 +1,9 @@
-/*
- * usbserial.c - usb serial gadget command
- *
- * Copyright (c) 2011 Eric Bénard <eric@eukrea.com>, Eukréa Electromatique
- * based on dfu.c which is :
- * Copyright (c) 2009 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
- *
- * See file CREDITS for list of people who contributed to this
- * project.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- */
+// SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: © 2009 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
+// SPDX-FileCopyrightText: © 2011 Eric Bénard <eric@eukrea.com>, Eukréa Electromatique
+
+/* usbserial.c - usb serial gadget command */
+
 #include <common.h>
 #include <command.h>
 #include <environment.h>

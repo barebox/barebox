@@ -164,6 +164,14 @@ static const char * const global_autoboot_abort_keys[] = {
 };
 static int global_autoboot_timeout = 3;
 
+static const char * const global_autoboot_states[] = {
+	[AUTOBOOT_COUNTDOWN] = "countdown",
+	[AUTOBOOT_ABORT] = "abort",
+	[AUTOBOOT_MENU] = "menu",
+	[AUTOBOOT_BOOT] = "boot",
+};
+static int global_autoboot_state = AUTOBOOT_COUNTDOWN;
+
 static bool test_abort(void)
 {
 	bool do_abort = false;
@@ -194,8 +202,6 @@ static bool test_abort(void)
 
 #define INITFILE "/env/bin/init"
 #define MENUFILE "/env/menu/mainmenu"
-
-static enum autoboot_state global_autoboot_state = AUTOBOOT_COUNTDOWN;
 
 /**
  * set_autoboot_state - set the autoboot state
@@ -287,6 +293,10 @@ static int run_init(void)
 				  ARRAY_SIZE(global_autoboot_abort_keys));
 	globalvar_add_simple_int("autoboot_timeout",
 				 &global_autoboot_timeout, "%u");
+	globalvar_add_simple_enum("autoboot",
+				  &global_autoboot_state,
+				  global_autoboot_states,
+				  ARRAY_SIZE(global_autoboot_states));
 
 	setenv("PATH", "/env/bin");
 
@@ -394,6 +404,9 @@ void shutdown_barebox(void)
 	}
 }
 
+BAREBOX_MAGICVAR_NAMED(autoboot_state,
+                       global.autoboot,
+                       "Autoboot state. Possible values: countdown (default), abort, menu, boot");
 BAREBOX_MAGICVAR_NAMED(global_autoboot_abort_key,
                        global.autoboot_abort_key,
                        "Which key allows to interrupt autoboot. Possible values: any, ctrl-c");

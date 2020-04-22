@@ -195,7 +195,7 @@ static bool test_abort(void)
 #define INITFILE "/env/bin/init"
 #define MENUFILE "/env/menu/mainmenu"
 
-static enum autoboot_state autoboot_state = AUTOBOOT_COUNTDOWN;
+static enum autoboot_state global_autoboot_state = AUTOBOOT_COUNTDOWN;
 
 /**
  * set_autoboot_state - set the autoboot state
@@ -206,7 +206,7 @@ static enum autoboot_state autoboot_state = AUTOBOOT_COUNTDOWN;
  */
 void set_autoboot_state(enum autoboot_state autoboot)
 {
-	autoboot_state = autoboot;
+	global_autoboot_state = autoboot;
 }
 
 /**
@@ -222,6 +222,7 @@ void set_autoboot_state(enum autoboot_state autoboot)
  */
 enum autoboot_state do_autoboot_countdown(void)
 {
+	enum autoboot_state autoboot_state;
 	unsigned flags = CONSOLE_COUNTDOWN_EXTERN;
 	int ret;
 	struct stat s;
@@ -229,8 +230,8 @@ enum autoboot_state do_autoboot_countdown(void)
 	char *abortkeys = NULL;
 	unsigned char outkey;
 
-	if (autoboot_state != AUTOBOOT_COUNTDOWN)
-		return autoboot_state;
+	if (global_autoboot_state != AUTOBOOT_COUNTDOWN)
+		return global_autoboot_state;
 
 	menu_exists = stat(MENUFILE, &s) == 0;
 

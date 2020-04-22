@@ -195,7 +195,7 @@ static bool test_abort(void)
 #define INITFILE "/env/bin/init"
 #define MENUFILE "/env/menu/mainmenu"
 
-static enum autoboot_state autoboot_state = AUTOBOOT_UNKNOWN;
+static enum autoboot_state autoboot_state = AUTOBOOT_COUNTDOWN;
 
 /**
  * set_autoboot_state - set the autoboot state
@@ -229,7 +229,7 @@ enum autoboot_state do_autoboot_countdown(void)
 	char *abortkeys = NULL;
 	unsigned char outkey;
 
-	if (autoboot_state != AUTOBOOT_UNKNOWN)
+	if (autoboot_state != AUTOBOOT_COUNTDOWN)
 		return autoboot_state;
 
 	menu_exists = stat(MENUFILE, &s) == 0;

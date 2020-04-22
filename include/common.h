@@ -87,7 +87,7 @@ unsigned long long strtoull_suffix(const char *str, char **endp, int base);
 extern int (*barebox_main)(void);
 
 enum autoboot_state {
-	AUTOBOOT_UNKNOWN,
+	AUTOBOOT_COUNTDOWN,
 	AUTOBOOT_ABORT,
 	AUTOBOOT_MENU,
 	AUTOBOOT_BOOT,

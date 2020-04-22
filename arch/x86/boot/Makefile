@@ -1,5 +1,5 @@
 
-CPPFLAGS += -D__I386__ -fno-strict-aliasing -m32 -g -Os -march=i386 \
+KBUILD_CPPFLAGS += -D__I386__ -fno-strict-aliasing -m32 -g -Os -march=i386 \
 	-mregparm=3 -fno-strict-aliasing -fomit-frame-pointer -ffreestanding \
 	-fno-toplevel-reorder -fno-unit-at-a-time -fno-stack-protector \
 	-mpreferred-stack-boundary=2

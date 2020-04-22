@@ -1,6 +1,6 @@
 KBUILD_DEFCONFIG := generic_defconfig
 
-CPPFLAGS += -fno-strict-aliasing
+KBUILD_CPPFLAGS += -fno-strict-aliasing
 
 board-$(CONFIG_GENERIC) := generic
 
@@ -13,12 +13,12 @@ endif
 DEFAULT_CFLAGS := -nostdlib -fno-builtin -fstrict-align -g
 DEFAULT_CFLAGS += -DTEXT_BASE=$(CONFIG_TEXT_BASE)
 
-LIBGCC_PATH = $(dir $(shell $(CC) $(CFLAGS) --print-libgcc-file-name))
+LIBGCC_PATH = $(dir $(shell $(CC) $(KBUILD_CFLAGS) --print-libgcc-file-name))
 
-CFLAGS += $(DEFAULT_CFLAGS)
-AFLAGS += $(DEFAULT_CFLAGS)
+KBUILD_CFLAGS += $(DEFAULT_CFLAGS)
+KBUILD_AFLAGS += $(DEFAULT_CFLAGS)
 
-LDFLAGS += -m elf64kvx
+KBUILD_LDFLAGS += -m elf64kvx
 
 archprepare: maketools
 
@@ -30,7 +30,7 @@ common-$(CONFIG_OFTREE) += arch/kvx/dts/
 
 lds-y += arch/kvx/cpu/barebox.lds
 
-cmd_barebox__ ?= $(LD) $(LDFLAGS) $(LDFLAGS_barebox) -o $@ \
+cmd_barebox__ ?= $(LD) $(KBUILD_LDFLAGS) $(LDFLAGS_barebox) -o $@ \
       -T $(BAREBOX_LDS) \
       --start-group $(BAREBOX_OBJS) --end-group \
       -L$(LIBGCC_PATH) -lgcc \

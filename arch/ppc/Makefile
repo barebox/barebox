@@ -1,18 +1,18 @@
 KBUILD_DEFCONFIG := p2020rdb_defconfig
 
-CPPFLAGS += -ffixed-r14 -m32 	\
+KBUILD_CPPFLAGS += -ffixed-r14 -m32 	\
 	-meabi -D __PPC__ -D CONFIG_PPC \
 	-fno-strict-aliasing
 
-CPPFLAGS += $(call cc-option,-mno-spe)
-CPPFLAGS += $(call cc-option,-mspe=no)
+KBUILD_CPPFLAGS += $(call cc-option,-mno-spe)
+KBUILD_CPPFLAGS += $(call cc-option,-mspe=no)
 
 ifdef CONFIG_RELOCATABLE
-CPPFLAGS += -fPIC -mrelocatable
+KBUILD_CPPFLAGS += -fPIC -mrelocatable
 endif
 
 ifdef CONFIG_MPC85xx
-CPPFLAGS += -Wa,-me500x2 -msoft-float -mno-string
+KBUILD_CPPFLAGS += -Wa,-me500x2 -msoft-float -mno-string
 endif
 
 board-$(CONFIG_MACH_PHYCORE_MPC5200B_TINY)	:= pcm030
@@ -28,20 +28,20 @@ cpu-$(CONFIG_ARCH_MPC85XX)			:= 85xx
 
 TEXT_BASE = $(CONFIG_TEXT_BASE)
 
-CPPFLAGS += -DTEXT_BASE=$(TEXT_BASE)
+KBUILD_CPPFLAGS += -DTEXT_BASE=$(TEXT_BASE)
 
 # Add cleanup flags
 ifndef CONFIG_MODULES
-CPPFLAGS += -fdata-sections -ffunction-sections
+KBUILD_CPPFLAGS += -fdata-sections -ffunction-sections
 LDFLAGS_barebox += --gc-sections
 endif
 
 machdirs := $(patsubst %,arch/ppc/mach-%/,$(machine-y))
 
 ifeq ($(KBUILD_SRC),)
-CPPFLAGS += $(patsubst %,-I%include,$(machdirs))
+KBUILD_CPPFLAGS += $(patsubst %,-I%include,$(machdirs))
 else
-CPPFLAGS += $(patsubst %,-I$(srctree)/%include,$(machdirs))
+KBUILD_CPPFLAGS += $(patsubst %,-I$(srctree)/%include,$(machdirs))
 endif
 
 archprepare: maketools

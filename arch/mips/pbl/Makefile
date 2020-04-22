@@ -29,7 +29,7 @@ zbarebox-common := $(BAREBOX_PBL_OBJS) $(obj)/$(piggy_o)
 zbarebox-lds := $(obj)/zbarebox.lds
 
 quiet_cmd_zbarebox__ ?= LD      $@
-      cmd_zbarebox__ ?= $(LD) $(LDFLAGS) $(LDFLAGS_zbarebox) -o $@ \
+      cmd_zbarebox__ ?= $(LD) $(KBUILD_LDFLAGS) $(LDFLAGS_zbarebox) -o $@ \
       -T $(zbarebox-lds)                                           \
       --start-group $(zbarebox-common) --end-group                 \
       $(filter-out $(zbarebox-lds) $(zbarebox-common) FORCE ,$^)

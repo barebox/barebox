@@ -26,7 +26,7 @@ hostprogs-$(CONFIG_ARCH_SOCFPGA) += socfpga_mkimage
 hostprogs-$(CONFIG_MXS_HOSTTOOLS)+= mxsimage mxsboot
 hostprogs-$(CONFIG_ARCH_LAYERSCAPE) += pblimage
 hostprogs-$(CONFIG_ARCH_STM32MP) += stm32image
-HOSTCFLAGS += -I$(srctree)/scripts/include/
+KBUILD_HOSTCFLAGS += -I$(srctree)/scripts/include/
 HOSTLDLIBS_mxsimage  = `pkg-config --libs openssl`
 HOSTCFLAGS_omap3-usb-loader.o = `pkg-config --cflags libusb-1.0`
 HOSTLDLIBS_omap3-usb-loader  = `pkg-config --libs libusb-1.0`
@@ -50,7 +50,7 @@ targetprogs-$(CONFIG_IMD_TARGET) += bareboximd-target
 subdir-	+= basic kconfig setupmbr
 
 quiet_cmd_csingle	= CC      $@
-      cmd_csingle	= $(CC) -Wp,-MD,$(depfile) $(TARGETCFLAGS) $(CFLAGS) -o $@ $<
+      cmd_csingle	= $(CC) -Wp,-MD,$(depfile) $(TARGETCFLAGS) $(KBUILD_CFLAGS) -o $@ $<
 
 __targetprogs	:= $(sort $(targetprogs-y) $(targetprogs-m))
 target-csingle	:= $(foreach m,$(__targetprogs),$(if $($(m)-objs),,$(m)))

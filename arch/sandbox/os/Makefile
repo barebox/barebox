@@ -3,14 +3,14 @@ machine-y := sandbox
 machdirs := $(patsubst %,arch/sandbox/mach-%/,$(machine-y))
 
 ifeq ($(KBUILD_SRC),)
-CPPFLAGS := $(patsubst %,-I%include,$(machdirs))
+KBUILD_CPPFLAGS := $(patsubst %,-I%include,$(machdirs))
 else
-CPPFLAGS = $(patsubst %,-I$(srctree)/%include,$(machdirs))
+KBUILD_CPPFLAGS = $(patsubst %,-I$(srctree)/%include,$(machdirs))
 endif
 
-CPPFLAGS += -DCONFIG_MALLOC_SIZE=$(CONFIG_MALLOC_SIZE)
+KBUILD_CPPFLAGS += -DCONFIG_MALLOC_SIZE=$(CONFIG_MALLOC_SIZE)
 
-CFLAGS := -Wall
+KBUILD_CFLAGS := -Wall
 NOSTDINC_FLAGS :=
 
 obj-y = common.o tap.o

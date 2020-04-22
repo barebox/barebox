@@ -178,7 +178,7 @@ cmd_modversions =							\
 			      -T $(@D)/$(@F:.o=.symtypes)) -a $(ARCH)	\
 		> $(@D)/.tmp_$(@F:.o=.ver);				\
 									\
-		$(LD) $(LDFLAGS) -r -o $@ $(@D)/.tmp_$(@F) 		\
+		$(LD) $(KBUILD_LDFLAGS) -r -o $@ $(@D)/.tmp_$(@F) 		\
 			-T $(@D)/.tmp_$(@F:.o=.ver);			\
 		rm -f $(@D)/.tmp_$(@F) $(@D)/.tmp_$(@F:.o=.ver);	\
 	else								\

@@ -10,7 +10,6 @@ cflags-y += -fno-pic -pipe
 cflags-y += -Wall -Wstrict-prototypes \
 	-Wno-uninitialized -Wno-format -Wno-main -mcmodel=medany
 
-LDFLAGS += $(ldflags-y)
 LDFLAGS_barebox += -nostdlib
 
 machine-$(CONFIG_MACH_ERIZO)	:= erizo

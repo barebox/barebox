@@ -607,6 +607,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 		 */
 		data->oftree_file = NULL;
 		data->initrd_file = NULL;
+		data->tee_file = NULL;
 		if (os_type != filetype_oftree) {
 			printf("Signed boot and image is no FIT image, aborting\n");
 			ret = -EINVAL;

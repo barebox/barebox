@@ -34,17 +34,17 @@ predef-le += -DMIPSEL -D_MIPSEL -D__MIPSEL -D__MIPSEL__
 
 ifdef CONFIG_CPU_BIG_ENDIAN
 cflags-y += $(shell $(CC) -dumpmachine |grep -q 'mips.*el-.*' && echo -EB $(undef-all) $(predef-be))
-ldflags-y += $(shell $(CC) -dumpmachine |grep -q 'mips.*el-.*' && echo -EB )
+mips-ldflags-y += $(shell $(CC) -dumpmachine |grep -q 'mips.*el-.*' && echo -EB )
 endif
 
 ifdef CONFIG_CPU_LITTLE_ENDIAN
 cflags-y += $(shell $(CC) -dumpmachine |grep -q 'mips.*el-.*' || echo -EL $(undef-all) $(predef-le))
-ldflags-y += $(shell $(CC) -dumpmachine |grep -q 'mips.*el-.*' || echo -EL )
+mips-ldflags-y += $(shell $(CC) -dumpmachine |grep -q 'mips.*el-.*' || echo -EL )
 endif
 
-LDFLAGS += $(ldflags-y) -m $(ld-emul)
-LDFLAGS_barebox += $(ldflags-y)
-LDFLAGS_pbl += $(ldflags-y)
+LDFLAGS += $(mips-ldflags-y) -m $(ld-emul)
+LDFLAGS_barebox += $(mips-ldflags-y)
+LDFLAGS_pbl += $(mips-ldflags-y)
 
 #
 # CPU-dependent compiler/assembler options for optimization.

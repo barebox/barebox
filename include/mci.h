@@ -8,9 +8,6 @@
  * Andy Fleming
  *
  * Based (loosely) on the Linux code
- *
- * See file CREDITS for list of people who contributed to this
- * project.
  */
 
 #ifndef _MCI_H_

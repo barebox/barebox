@@ -2,7 +2,6 @@
  * Copyright (C) 2013, 2014 Antony Pavlov <antonynpavlov@gmail.com>
  *
  * This file is part of barebox.
- * See file CREDITS for list of people who contributed to this project.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2

@@ -2,9 +2,6 @@
 /*
  * (C) Copyright 2001
  * Denis Peter, MPL AG Switzerland
- *
- * See file CREDITS for list of people who contributed to this
- * project.
  */
  #ifndef _SCSI_H
  #define _SCSI_H

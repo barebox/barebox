@@ -1,9 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
  * Copyright (C) 2014, 2015 Marc Kleine-Budde <mkl@pengutronix.de>
- *
- * See file CREDITS for list of people who contributed to this
- * project.
  */
 
 #ifndef __HABV4_H

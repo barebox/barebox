@@ -2,9 +2,6 @@
  * (C) 2009 Pengutronix, Sascha Hauer <s.hauer@pengutronix.de>
  * (c) 2010 Eukrea Electromatique, Eric Bénard <eric@eukrea.com>
  *
- * See file CREDITS for list of people who contributed to this
- * project.
- *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of

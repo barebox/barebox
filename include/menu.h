@@ -1,9 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * (C) Copyright 2009-2010 Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
- *
- * See file CREDITS for list of people who contributed to this
- * project.
  */
 
 #ifndef __MENU_H__

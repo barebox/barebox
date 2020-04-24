@@ -307,8 +307,8 @@ export MODVERDIR := $(if $(KBUILD_EXTMOD),$(firstword $(KBUILD_EXTMOD))/).tmp_ve
 # Needed to be compatible with the O= option
 LINUXINCLUDE    := -Iinclude -I$(srctree)/dts/include \
                    $(if $(KBUILD_SRC), -I$(srctree)/include) \
-		   -I$(srctree)/arch/$(ARCH)/include \
-		   -I$(objtree)/arch/$(ARCH)/include \
+		   -I$(srctree)/arch/$(SRCARCH)/include \
+		   -I$(objtree)/arch/$(SRCARCH)/include \
                    -include $(srctree)/include/linux/kconfig.h
 
 KBUILD_CPPFLAGS        := -D__KERNEL__ -D__BAREBOX__ $(LINUXINCLUDE) -fno-builtin -ffreestanding
@@ -424,7 +424,7 @@ ifeq ($(config-targets),1)
 # Read arch specific Makefile to set KBUILD_DEFCONFIG as needed.
 # KBUILD_DEFCONFIG may point out an alternative default configuration
 # used for 'make defconfig'
-include $(srctree)/arch/$(ARCH)/Makefile
+include $(srctree)/arch/$(SRCARCH)/Makefile
 export KBUILD_DEFCONFIG
 
 config: scripts_basic outputmakefile FORCE
@@ -452,7 +452,7 @@ endif
 # Objects we will link into barebox / subdirs we need to visit
 common-y		:= common/ drivers/ commands/ lib/ crypto/ net/ fs/ firmware/
 
-include $(srctree)/arch/$(ARCH)/Makefile
+include $(srctree)/arch/$(SRCARCH)/Makefile
 
 ifeq ($(dot-config),1)
 # Read in dependencies to all Kconfig* files, make sure to run syncconfig if
@@ -520,7 +520,7 @@ export KBUILD_IMAGE ?= barebox.bin
 export KBUILD_BINARY ?= barebox.bin
 # KBUILD_IMAGE and _BINARY may be overruled on the command line or
 # set in the environment.
-# Also any assignments in arch/$(ARCH)/Makefile take precedence over
+# Also any assignments in arch/$(SRCARCH)/Makefile take precedence over
 # the default value.
 
 barebox-flash-image: $(KBUILD_IMAGE) FORCE
@@ -574,7 +574,7 @@ export DEFAULT_COMPRESSION_SUFFIX
 # ---------------------------------------------------------------------------
 # barebox is built from the objects selected by $(barebox-init) and
 # $(barebox-main). Most are built-in.o files from top-level directories
-# in the kernel tree, others are specified in arch/$(ARCH)Makefile.
+# in the kernel tree, others are specified in arch/$(SRCARCH)/Makefile.
 # Ordering when linking is important, and $(barebox-init) must be first.
 #
 # FIXME: This picture is wrong for barebox. We have no init, driver, mm
@@ -601,7 +601,7 @@ export BAREBOX_PBL_OBJS := $(pbl-common-y)
 BAREBOX_LDS    := $(lds-y)
 
 # Rule to link barebox
-# May be overridden by arch/$(ARCH)/Makefile
+# May be overridden by arch/$(SRCARCH)/Makefile
 quiet_cmd_barebox__ ?= LD      $@
       cmd_barebox__ ?= $(LD) $(KBUILD_LDFLAGS) $(LDFLAGS_barebox) -o $@ \
       -T $(BAREBOX_LDS)                         \
@@ -742,7 +742,7 @@ UIMAGE_BASE ?= $(shell printf "0x%08x" $$(($(CONFIG_TEXT_BASE) - 0x200000)))
 # For development provide a target which makes barebox loadable by an
 # unmodified u-boot
 quiet_cmd_barebox_mkimage = MKIMAGE $@
-      cmd_barebox_mkimage = $(srctree)/scripts/mkimage -A $(ARCH) -T firmware -C none \
+      cmd_barebox_mkimage = $(srctree)/scripts/mkimage -A $(SRCARCH) -T firmware -C none \
        -O barebox -a $(UIMAGE_BASE) -e $(UIMAGE_BASE) \
        -n "barebox $(KERNELRELEASE)" -d $< $@
 
@@ -851,9 +851,9 @@ prepare0: archprepare FORCE
 prepare prepare-all: prepare0
 
 # Leave this as default for preprocessing barebox.lds.S, which is now
-# done in arch/$(ARCH)/kernel/Makefile
+# done in arch/$(SRCARCH)/kernel/Makefile
 
-export CPPFLAGS_barebox.lds += -C -U$(ARCH)
+export CPPFLAGS_barebox.lds += -C -U$(SRCARCH)
 
 define symlink-config-h
 	if [ -f $(srctree)/$(BOARD)/config.h ]; then		\
@@ -1052,7 +1052,7 @@ rpm: include/config/kernel.release FORCE
 # Brief documentation of the typical targets used
 # ---------------------------------------------------------------------------
 
-boards := $(wildcard $(srctree)/arch/$(ARCH)/configs/*_defconfig)
+boards := $(wildcard $(srctree)/arch/$(SRCARCH)/configs/*_defconfig)
 boards := $(sort $(notdir $(boards)))
 
 help:
@@ -1080,9 +1080,9 @@ help:
 	@echo  '  checkstack      - Generate a list of stack hogs'
 	@echo  '  namespacecheck  - Name space analysis on compiled kernel'
 	@echo  ''
-	@echo  'Architecture specific targets ($(ARCH)):'
+	@echo  'Architecture specific targets ($(SRCARCH)):'
 	@$(if $(archhelp),$(archhelp),\
-		echo '  No architecture specific help defined for $(ARCH)')
+		echo '  No architecture specific help defined for $(SRCARCH)')
 	@echo  ''
 	@$(if $(boards), \
 		$(foreach b, $(boards), \

@@ -5,6 +5,28 @@
 #include <asm/memory.h>
 #include <mach/bbu.h>
 #include <bootsource.h>
+#include <of.h>
+
+static int of_fixup_regulator_supply_disable(struct device_node *root, void *path)
+{
+	struct device_node *node;
+	struct property *prop;
+
+	node = of_find_node_by_path_from(root, path);
+	if (!node) {
+		pr_warn("fixup for %s failed: not found\n", (const char *)path);
+		return -ENOENT;
+	}
+
+	if (!of_property_read_bool(node, "regulator-always-on"))
+		return 0;
+
+	prop = of_find_property(node, "vin-supply", NULL);
+	if (prop)
+		of_delete_property(prop);
+
+	return 0;
+}
 
 static int mc1_device_init(void)
 {
@@ -26,6 +48,11 @@ static int mc1_device_init(void)
 
 	barebox_set_hostname("lxa-mc1");
 
-	return 0;
+	/* The regulator is powered by the PMIC, but is always on as far as
+	 * software is concerned. Break the reference to the PMIC, so the OS
+	 * doesn't need to defer SDMMC/Ethernet peripherals till after the PMIC
+	 * is up.
+	 */
+	return of_register_fixup(of_fixup_regulator_supply_disable, "/regulator_3v3");
 }
 device_initcall(mc1_device_init);

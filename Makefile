@@ -445,12 +445,16 @@ PHONY += scripts
 scripts: scripts_basic
 	$(Q)$(MAKE) $(build)=$(@)
 
+ifeq ($(dot-config),1)
+include include/config/auto.conf
+endif
+
 # Objects we will link into barebox / subdirs we need to visit
 common-y		:= common/ drivers/ commands/ lib/ crypto/ net/ fs/ firmware/
 
-ifeq ($(dot-config),1)
-include include/config/auto.conf
+include $(srctree)/arch/$(ARCH)/Makefile
 
+ifeq ($(dot-config),1)
 # Read in dependencies to all Kconfig* files, make sure to run syncconfig if
 # changes are detected. This should be included after arch/$(SRCARCH)/Makefile
 # because some architectures define CROSS_COMPILE there.
@@ -475,8 +479,6 @@ $(KCONFIG_CONFIG):
 %/auto.conf %/auto.conf.cmd: $(KCONFIG_CONFIG)
 	$(Q)$(MAKE) -f $(srctree)/Makefile syncconfig
 endif # $(dot-config)
-
-include $(srctree)/arch/$(ARCH)/Makefile
 
 KBUILD_CFLAGS		+= -ggdb3
 

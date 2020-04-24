@@ -1,8 +1,7 @@
 config DEFCONFIG_LIST
 	string
 	option defconfig_list
-	default ARCH_DEFCONFIG
-	default "arch/$(ARCH)/defconfig"
+	default "arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG)"
 
 config GREGORIAN_CALENDER
 	bool

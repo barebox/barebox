@@ -2,7 +2,10 @@ KBUILD_DEFCONFIG := p2020rdb_defconfig
 
 CPPFLAGS += -ffixed-r14 -m32 	\
 	-meabi -D __PPC__ -D CONFIG_PPC \
-	-fno-strict-aliasing -mno-spe -mspe=no
+	-fno-strict-aliasing
+
+CPPFLAGS += $(call cc-option,-mno-spe)
+CPPFLAGS += $(call cc-option,-mspe=no)
 
 ifdef CONFIG_RELOCATABLE
 CPPFLAGS += -fPIC -mrelocatable

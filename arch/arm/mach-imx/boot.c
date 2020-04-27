@@ -427,6 +427,9 @@ void imx6_get_boot_source(enum bootsource *src, int *instance)
 	}
 
 	switch (bootsrc) {
+	case 1: /* only reachable for i.MX6UL(L) */
+		*src = BOOTSOURCE_SPI; /* Really: qspi */
+		return;
 	case 2: /* unreachable for i.MX6UL(L) */
 		*src = BOOTSOURCE_HD;
 		break;

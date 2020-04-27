@@ -31,6 +31,7 @@
 #include <mach/imx8mq-regs.h>
 #include <mach/vf610-regs.h>
 #include <mach/imx8mq.h>
+#include <mach/imx6.h>
 
 
 static void
@@ -345,6 +346,13 @@ static bool imx6_bootsource_serial(uint32_t sbmr2)
 		!(sbmr2 & BT_FUSE_SEL));
 }
 
+static bool imx6_bootsource_serial_forced(uint32_t bootmode)
+{
+	if (cpu_mx6_is_mx6ul() || cpu_mx6_is_mx6ull())
+		return bootmode == 2;
+	return bootmode == 1;
+}
+
 static int __imx6_bootsource_serial_rom(uint32_t r)
 {
 	return FIELD_GET(BOOT_CFG4(2, 0), r);
@@ -403,20 +411,23 @@ void imx6_get_boot_source(enum bootsource *src, int *instance)
 {
 	void __iomem *src_base = IOMEM(MX6_SRC_BASE_ADDR);
 	uint32_t sbmr2 = readl(src_base + IMX6_SRC_SBMR2);
-	uint32_t bootmode;
+	uint32_t bootmode, bootsrc;
 
 	bootmode = imx6_get_src_boot_mode(src_base);
 
 	if (imx6_bootsource_reserved(sbmr2))
 		return;
 
-	if (imx6_bootsource_serial(sbmr2)) {
+	bootsrc = imx53_bootsource_internal(bootmode);
+
+	if (imx6_bootsource_serial(sbmr2) ||
+	    imx6_bootsource_serial_forced(bootsrc)) {
 		*src = BOOTSOURCE_SERIAL;
 		return;
 	}
 
-	switch (imx53_bootsource_internal(bootmode)) {
-	case 2:
+	switch (bootsrc) {
+	case 2: /* unreachable for i.MX6UL(L) */
 		*src = BOOTSOURCE_HD;
 		break;
 	case 3:

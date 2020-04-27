@@ -28,6 +28,7 @@ void __noreturn imx6_pm_stby_poweroff(struct poweroff_handler *handler);
 
 static inline int scu_get_core_count(void)
 {
+#if __LINUX_ARM_ARCH__ <= 7
 	unsigned long base;
 	unsigned int ncores;
 
@@ -35,6 +36,9 @@ static inline int scu_get_core_count(void)
 
 	ncores = readl(base + SCU_CONFIG);
 	return (ncores & 0x03) + 1;
+#else
+	return 0;
+#endif
 }
 
 #define SI_REV_CPUTYPE(s)	(((s) >> 16) & 0xff)

@@ -121,7 +121,6 @@ enum fec_type {
 enum fec_clock {
 	FEC_CLK_IPG,
 	FEC_CLK_AHB,
-	FEC_CLK_PTP,
 
 	FEC_CLK_NUM
 };
@@ -129,6 +128,7 @@ enum fec_clock {
 enum fec_opt_clock {
 	FEC_OPT_CLK_REF,
 	FEC_OPT_CLK_OUT,
+	FEC_OPT_CLK_PTP,
 
 	FEC_OPT_CLK_NUM
 };

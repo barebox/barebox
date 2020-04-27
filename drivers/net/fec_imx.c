@@ -716,7 +716,7 @@ static int fec_clk_get(struct fec_priv *fec)
 		if (IS_ERR(fec->clk[i])) {
 			err = PTR_ERR(fec->clk[i]);
 			fec_clk_put(fec);
-			break;
+			return err;
 		}
 	}
 

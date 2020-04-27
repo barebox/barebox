@@ -11,6 +11,7 @@ config ARCH_TEXT_BASE
 
 config ARCH_MXS_OF_SUPPORT
 	bool
+	select COMMON_CLK_OF_PROVIDER
 	select OFTREE
 	select OFDEVICE
 

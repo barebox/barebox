@@ -131,7 +131,6 @@ static int __init mx28_clocks_init(void __iomem *regs)
 	clk_set_rate(clks[ssp2], 96000000);
 	clk_set_rate(clks[ssp3], 96000000);
 	clk_set_parent(clks[lcdif_sel], clks[ref_pix]);
-	clk_enable(clks[enet_out]);
 
 	clkdev_add_physbase(clks[ssp0], IMX_SSP0_BASE, NULL);
 	clkdev_add_physbase(clks[ssp1], IMX_SSP1_BASE, NULL);

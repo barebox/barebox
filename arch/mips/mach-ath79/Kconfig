@@ -6,6 +6,9 @@ config SOC_QCA_AR9331
 config SOC_QCA_AR9344
 	bool
 
+config SOC_QCA_QCA4531
+	bool
+
 if DEBUG_LL
 choice
 	prompt "DEBUG_LL driver"

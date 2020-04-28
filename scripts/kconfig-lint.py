@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Copyright (c) 2019 Nordic Semiconductor ASA
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: Apache-2.0 AND ISC
 
 """
 Linter for the Zephyr Kconfig files. Pass --help to see
@@ -35,6 +35,7 @@ def main():
         # Run all checks if no checks were specified
         checks = (check_always_n,
                   check_unused,
+                  check_undefined,
                   check_pointless_menuconfigs,
                   check_missing_config_prefix)
 
@@ -79,6 +80,13 @@ Heuristic:
 C preprocessor magic can trip up this check.""")
 
     parser.add_argument(
+        "-U", "--check-undefined",
+        action="append_const", dest="checks", const=check_undefined,
+        help="""\
+List symbols that are used in a Kconfig file but are undefined
+""")
+
+    parser.add_argument(
         "-m", "--check-pointless-menuconfigs",
         action="append_const", dest="checks", const=check_pointless_menuconfigs,
         help="""\
@@ -120,6 +128,21 @@ def check_unused():
         if not is_selecting_or_implying(sym) and not sym.choice and \
            sym.name not in referenced:
             print(name_and_locs(sym))
+
+def check_undefined():
+    print_header("Symbols that are used, but undefined")
+    for name, sym in kconf.syms.items():
+        if not sym.nodes:
+            # Undefined symbol. We skip some of the uninteresting ones.
+
+            # Due to how Kconfig works, integer literals show up as symbols
+            # (from e.g. 'default 1'). Skip those.
+            try:
+                int(name, 0)
+                continue
+            except ValueError:
+                # Interesting undefined symbol
+                print(name)
 
 
 def check_pointless_menuconfigs():

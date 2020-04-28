@@ -1,8 +1,5 @@
-/*
- * Copyright (c) 2015 Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
- *
- * GPLv2 ONLY
- */
+// SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: © 2015 Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
 
 #include <common.h>
 #include <command.h>

@@ -4,8 +4,6 @@
  * This file is derived from arch/powerpc/cpu/mpc85xx/cpu.c and
  * arch/powerpc/cpu/mpc86xx/cpu.c. Basically this file contains
  * cpu specific common code for 85xx/86xx processors.
- * See file CREDITS for list of people who contributed to this
- * project.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as

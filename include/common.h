@@ -2,9 +2,6 @@
 /*
  * (C) Copyright 2000-2004
  * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
- *
- * See file CREDITS for list of people who contributed to this
- * project.
  */
 
 #ifndef __COMMON_H_
@@ -87,7 +84,7 @@ unsigned long long strtoull_suffix(const char *str, char **endp, int base);
 extern int (*barebox_main)(void);
 
 enum autoboot_state {
-	AUTOBOOT_UNKNOWN,
+	AUTOBOOT_COUNTDOWN,
 	AUTOBOOT_ABORT,
 	AUTOBOOT_MENU,
 	AUTOBOOT_BOOT,

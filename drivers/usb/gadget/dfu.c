@@ -5,9 +5,6 @@
  * based on existing SAM7DFU code from OpenPCD:
  * (C) Copyright 2006 by Harald Welte <hwelte@hmw-consulting.de>
  *
- * See file CREDITS for list of people who contributed to this
- * project.
- *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of

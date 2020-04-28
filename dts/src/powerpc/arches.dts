@@ -9,9 +9,6 @@
  * Based on the glacier.dts file
  *   Stefan Roese <sr@denx.de>
  *   Copyright 2008 DENX Software Engineering
- *
- * See file CREDITS for list of people who contributed to this
- * project.
  */
 
 /dts-v1/;

@@ -13,6 +13,41 @@
 #include <pbl.h>
 
 /**
+ * read_poll_timeout - Periodically poll an address until a condition is met or a timeout occurs
+ * @op: accessor function (takes @addr as its only argument)
+ * @val: Variable to read the value into
+ * @cond: Break condition (usually involving @val)
+ * @timeout_us: Timeout in us, 0 means never timeout
+ * @args: arguments for @op poll
+ *
+ * Returns 0 on success and -ETIMEDOUT upon a timeout. In either
+ * case, the last read value at @addr is stored in @val.
+ *
+ * When available, you'll probably want to use one of the specialized
+ * macros defined below rather than this macro directly.
+ *
+ * We do not have timing functions in the PBL, so ignore the timeout value and
+ * loop infinitely here.
+ */
+#define read_poll_timeout(op, val, cond, timeout_us, args...)	\
+({ \
+	uint64_t start; \
+	if (!IN_PBL && timeout_us) \
+		start = get_time_ns(); \
+	for (;;) { \
+		(val) = op(args); \
+		if (cond) \
+			break; \
+		if (!IN_PBL && timeout_us && \
+		    is_timeout(start, ((timeout_us) * USECOND))) { \
+			(val) = op(args); \
+			break; \
+		} \
+	} \
+	(cond) ? 0 : -ETIMEDOUT; \
+})
+
+/**
  * readx_poll_timeout - Periodically poll an address until a condition is met or a timeout occurs
  * @op: accessor function (takes @addr as its only argument)
  * @addr: Address to poll
@@ -30,23 +65,7 @@
  * loop infinitely here.
  */
 #define readx_poll_timeout(op, addr, val, cond, timeout_us)	\
-({ \
-	uint64_t start; \
-	if (!IN_PBL && timeout_us) \
-		start = get_time_ns(); \
-	for (;;) { \
-		(val) = op(addr); \
-		if (cond) \
-			break; \
-		if (!IN_PBL && timeout_us && \
-		    is_timeout(start, ((timeout_us) * USECOND))) { \
-			(val) = op(addr); \
-			break; \
-		} \
-	} \
-	(cond) ? 0 : -ETIMEDOUT; \
-})
-
+	read_poll_timeout(op, val, cond, timeout_us, addr)
 
 #define readb_poll_timeout(addr, val, cond, timeout_us) \
 	readx_poll_timeout(readb, addr, val, cond, timeout_us)

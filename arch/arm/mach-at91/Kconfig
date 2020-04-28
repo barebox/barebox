@@ -6,9 +6,6 @@ config HAVE_AT91_UTMI
 config HAVE_AT91_USB_CLK
 	bool
 
-config HAVE_AT91_PIO4
-	bool
-
 config COMMON_CLK_AT91
 	bool
 	select COMMON_CLK

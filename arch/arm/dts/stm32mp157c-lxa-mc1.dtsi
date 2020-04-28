@@ -1,0 +1,362 @@
+/* SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-3-Clause) */
+/*
+ * Copyright (C) 2020 STMicroelectronics - All Rights Reserved
+ * Copyright (C) 2020 Ahmad Fatoum, Pengutronix
+ */
+
+/dts-v1/;
+
+#include <arm/stm32mp157.dtsi>
+#include "stm32mp15xx-osd32.dtsi"
+#include <arm/stm32mp15xxac-pinctrl.dtsi>
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/pwm/pwm.h>
+
+/ {
+	model = "Linux Automation MC-1 board";
+	compatible = "lxa,stm32mp157c-mc1", "st,stm32mp157";
+
+	aliases {
+		ethernet0 = &ethernet0;
+		mmc0 = &sdmmc1;
+		mmc1 = &sdmmc2;
+		serial0 = &uart4;
+	};
+
+	backlight: backlight {
+		compatible = "pwm-backlight";
+		pwms = <&backlight_pwm 1 100000 PWM_POLARITY_INVERTED>;
+		brightness-levels = <0 31 63 95 127 159 191 223 255>;
+		default-brightness-level = <7>;
+		power-supply = <&reg_5v2>; /* 3V3_BACKLIGHT */
+	};
+
+	chosen {
+		stdout-path = &uart4;
+	};
+
+	led-act {
+		compatible = "gpio-leds";
+
+		led-green {
+			label = "mc1:green:act";
+			gpios = <&gpioa 13 GPIO_ACTIVE_LOW>;
+			linux,default-trigger = "heartbeat";
+		};
+	};
+
+	led-rgb {
+		compatible = "pwm-leds";
+
+		led-red {
+			label = "mc1:red:rgb";
+			pwms = <&leds_pwm 1 1000000 0>;
+			max-brightness = <255>;
+			active-low;
+		};
+
+		led-green {
+			label = "mc1:green:rgb";
+			pwms = <&leds_pwm 2 1000000 0>;
+			max-brightness = <255>;
+			active-low;
+		};
+
+		led-blue {
+			label = "mc1:blue:rgb";
+			pwms = <&leds_pwm 3 1000000 0>;
+			max-brightness = <255>;
+			active-low;
+		};
+	};
+
+	panel: panel {
+		compatible = "edt,etm0700g0edh6", "simple-panel";
+		backlight = <&backlight>;
+		enable-gpios = <&gpiod 4 GPIO_ACTIVE_HIGH>;
+		power-supply = <&reg_3v3>;
+
+		port {
+			panel_input: endpoint {
+				remote-endpoint = <&ltdc_ep0_out>;
+			};
+		};
+	};
+
+	reg_3v3: regulator_3v3 {
+		compatible = "regulator-fixed";
+		regulator-name = "3V3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+		vin-supply = <&v3v3>;
+	};
+
+	/* supplied by either debug board or PoE */
+	reg_5v2: regulator_5v2 {
+		compatible = "regulator-fixed";
+		regulator-name = "5V2";
+		regulator-min-microvolt = <5200000>;
+		regulator-max-microvolt = <5200000>;
+		regulator-always-on;
+	};
+};
+
+&ethernet0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&ethernet0_rgmii_mc1pins_b>;
+	phy-mode = "rgmii-id";
+	phy-handle = <&ethphy>;
+	status = "okay";
+
+	mdio0 {
+		compatible = "snps,dwmac-mdio";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		ethphy: ethernet-phy@3 { /* KSZ9031RN */
+			reg = <3>;
+			reset-gpios = <&gpiog 0 GPIO_ACTIVE_LOW>; /* ETH_RST# */
+			interrupt-parent = <&gpioa>;
+			interrupts = <6 IRQ_TYPE_EDGE_FALLING>; /* ETH_MDINT# */
+			rxc-skew-ps = <1860>;
+			txc-skew-ps = <1860>;
+			reset-assert-us = <10000>;
+			reset-deassert-us = <300>;
+			micrel,force-master;
+		};
+	};
+};
+
+&gpioz {
+	gpio-line-names = "HWID0", "HWID1", "HWID2", "HWID3", "", "",
+			  "HWID4", "HWID5";
+};
+
+&gpu {
+	status = "okay";
+};
+
+&i2c5 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c5_mc1pins_b>;
+	clock-frequency = <400000>;
+	status = "okay";
+
+	touchscreen@38 {
+		compatible = "edt,edt-ft5x06";
+		interrupt-parent = <&gpiod>;
+		interrupts = <11 IRQ_TYPE_EDGE_FALLING>; /* TOUCH_INT# */
+		vcc-supply = <&reg_3v3>;
+		reg = <0x38>;
+		reset-gpios = <&gpiof 8 GPIO_ACTIVE_LOW>; /* TOUCH_RESET# */
+		touchscreen-size-x = <1792>;
+		touchscreen-size-y = <1024>;
+		wakeup-source;
+	};
+};
+
+&ltdc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&ltdc_mc1pins_c>;
+	status = "okay";
+
+	port {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		ltdc_ep0_out: endpoint@0 {
+			reg = <0>;
+			remote-endpoint = <&panel_input>;
+		};
+	};
+};
+
+&pmic {
+	regulators {
+		buck4-supply = <&reg_5v2>;	/* VIN */
+		ldo2-supply = <&reg_5v2>;	/* PMIC_LDO25IN */
+		ldo5-supply = <&reg_5v2>;	/* PMIC_LDO25IN */
+		boost-supply = <&reg_5v2>;	/* PMIC_BSTIN */
+		pwr_sw2-supply = <&bst_out>;    /* PMIC_SWIN */
+	};
+};
+
+&sdmmc1 {
+	pinctrl-names = "default", "opendrain";
+	pinctrl-0 = <&sdmmc1_b4_pins_a>;
+	pinctrl-1 = <&sdmmc1_b4_od_pins_a>;
+	bus-width = <4>;
+	cd-gpios = <&gpioh 3 GPIO_ACTIVE_LOW>;
+	disable-wp;
+	no-1-8-v;
+	st,neg-edge;
+	vmmc-supply = <&reg_3v3>;
+	status = "okay";
+};
+
+&sdmmc1_b4_pins_a {
+	/*
+	 * board lacks external pull-ups on SDMMC lines. Class 10 SD refuses to
+	 * work, thus enable internal pull-ups.
+	 */
+	pins1 {
+		/delete-property/ bias-disable;
+		bias-pull-up;
+	};
+	pins2 {
+		/delete-property/ bias-disable;
+		bias-pull-up;
+	};
+};
+
+&sdmmc2 {
+	pinctrl-names = "default", "opendrain";
+	pinctrl-0 = <&sdmmc2_b4_pins_a &sdmmc2_d47_mc1pins_b>;
+	pinctrl-1 = <&sdmmc2_b4_od_pins_a &sdmmc2_d47_mc1pins_b>;
+	bus-width = <8>;
+	no-1-8-v;
+	no-sd;
+	no-sdio;
+	non-removable;
+	st,neg-edge;
+	vmmc-supply = <&reg_3v3>;
+	status = "okay";
+};
+
+&timers3 {
+	status = "okay";
+
+	backlight_pwm: pwm {
+		pinctrl-names = "default";
+		pinctrl-0 = <&pwm3_mc1pins_b>;
+		status = "okay";
+	};
+};
+
+&timers5 {
+	status = "okay";
+
+	leds_pwm: pwm {
+		pinctrl-names = "default";
+		pinctrl-0 = <&pwm5_mc1pins_b>;
+		status = "okay";
+	};
+};
+
+&uart4 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart4_pins_a>;
+	status = "okay";
+};
+
+&pinctrl {
+	ethernet0_rgmii_mc1pins_b: mc1-rgmii-1 {
+		pins1 {
+			pinmux = <STM32_PINMUX('G', 5, AF11)>, /* ETH_RGMII_CLK125 */
+				 <STM32_PINMUX('G', 4, AF11)>, /* ETH_RGMII_GTX_CLK */
+				 <STM32_PINMUX('G', 13, AF11)>, /* ETH_RGMII_TXD0 */
+				 <STM32_PINMUX('G', 14, AF11)>, /* ETH_RGMII_TXD1 */
+				 <STM32_PINMUX('C', 2, AF11)>, /* ETH_RGMII_TXD2 */
+				 <STM32_PINMUX('E', 2, AF11)>, /* ETH_RGMII_TXD3 */
+				 <STM32_PINMUX('B', 11, AF11)>, /* ETH_RGMII_TX_CTL */
+				 <STM32_PINMUX('C', 1, AF11)>; /* ETH_MDC */
+			bias-disable;
+			drive-push-pull;
+			slew-rate = <2>;
+		};
+		pins2 {
+			pinmux = <STM32_PINMUX('A', 2, AF11)>; /* ETH_MDIO */
+			bias-disable;
+			drive-push-pull;
+			slew-rate = <0>;
+		};
+		pins3 {
+			pinmux = <STM32_PINMUX('C', 4, AF11)>, /* ETH_RGMII_RXD0 */
+				 <STM32_PINMUX('C', 5, AF11)>, /* ETH_RGMII_RXD1 */
+				 <STM32_PINMUX('H', 6, AF11)>, /* ETH_RGMII_RXD2 */
+				 <STM32_PINMUX('H', 7, AF11)>, /* ETH_RGMII_RXD3 */
+				 <STM32_PINMUX('A', 1, AF11)>, /* ETH_RGMII_RX_CLK */
+				 <STM32_PINMUX('A', 7, AF11)>; /* ETH_RGMII_RX_CTL */
+			bias-disable;
+		};
+	};
+
+	i2c5_mc1pins_b: mc1-i2c5-1 {
+		pins {
+			pinmux = <STM32_PINMUX('D', 0, AF4)>, /* I2C5_SCL */
+			         <STM32_PINMUX('D', 1, AF4)>; /* I2C5_SDA */
+			bias-disable;
+			drive-open-drain;
+			slew-rate = <0>;
+		};
+	};
+
+	ltdc_mc1pins_c: mc1-ltdc-2 {
+		pins1 {
+			pinmux = <STM32_PINMUX('B',  1, AF9)>,  /* LTDC_R6 */
+				 <STM32_PINMUX('B',  9, AF14)>, /* LTDC_B7 */
+				 <STM32_PINMUX('C',  0, AF14)>, /* LTDC_R5 */
+				 <STM32_PINMUX('D',  3, AF14)>, /* LTDC_G7 */
+				 <STM32_PINMUX('D',  6, AF14)>, /* LTDC_B2 */
+				 <STM32_PINMUX('D', 10, AF14)>, /* LTDC_B3 */
+				 <STM32_PINMUX('E', 11, AF14)>, /* LTDC_G3 */
+				 <STM32_PINMUX('E', 12, AF14)>, /* LTDC_B4 */
+				 <STM32_PINMUX('E', 13, AF14)>, /* LTDC_DE */
+				 <STM32_PINMUX('E', 15, AF14)>, /* LTDC_R7 */
+				 <STM32_PINMUX('H',  4, AF9)>,  /* LTDC_G5 */
+				 <STM32_PINMUX('H',  8, AF14)>, /* LTDC_R2 */
+				 <STM32_PINMUX('H',  9, AF14)>, /* LTDC_R3 */
+				 <STM32_PINMUX('H', 10, AF14)>, /* LTDC_R4 */
+				 <STM32_PINMUX('H', 13, AF14)>, /* LTDC_G2 */
+				 <STM32_PINMUX('H', 15, AF14)>, /* LTDC_G4 */
+				 <STM32_PINMUX('I',  1, AF14)>, /* LTDC_G6 */
+				 <STM32_PINMUX('I',  5, AF14)>, /* LTDC_B5 */
+				 <STM32_PINMUX('I',  6, AF14)>, /* LTDC_B6 */
+				 <STM32_PINMUX('I',  9, AF14)>, /* LTDC_VSYNC */
+				 <STM32_PINMUX('I', 10, AF14)>; /* LTDC_HSYNC */
+			bias-disable;
+			drive-push-pull;
+			slew-rate = <0>;
+		};
+		pins2 {
+			pinmux = <STM32_PINMUX('E', 14, AF14)>; /* LTDC_CLK */
+			bias-disable;
+			drive-push-pull;
+			slew-rate = <1>;
+		};
+	};
+
+	pwm3_mc1pins_b: mc1-pwm3-1 {
+		pins {
+			pinmux = <STM32_PINMUX('B', 5, AF2)>; /* TIM3_CH2 */
+			bias-disable;
+			drive-push-pull;
+			slew-rate = <0>;
+		};
+	};
+
+	pwm5_mc1pins_b: mc1-pwm5-1 {
+		pins {
+			pinmux = <STM32_PINMUX('H', 11, AF2)>, /* TIM5_CH2 */
+				 <STM32_PINMUX('H', 12, AF2)>, /* TIM5_CH3 */
+				 <STM32_PINMUX('I', 0, AF2)>; /* TIM5_CH4 */
+			bias-disable;
+			drive-push-pull;
+			slew-rate = <0>;
+		};
+	};
+
+	sdmmc2_d47_mc1pins_b: mc1-sdmmc2-d47-1 {
+		pins {
+			pinmux = <STM32_PINMUX('A', 8, AF9)>,  /* SDMMC2_D4 */
+				 <STM32_PINMUX('A', 9, AF10)>, /* SDMMC2_D5 */
+				 <STM32_PINMUX('C', 6, AF10)>, /* SDMMC2_D6 */
+				 <STM32_PINMUX('C', 7, AF10)>; /* SDMMC2_D7 */
+			slew-rate = <1>;
+			drive-push-pull;
+			bias-disable;
+		};
+	};
+
+};

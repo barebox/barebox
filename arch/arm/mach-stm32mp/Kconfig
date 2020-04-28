@@ -12,4 +12,8 @@ config MACH_STM32MP157C_DK2
 	select ARCH_STM32MP157
 	bool "STM32MP157C-DK2 board"
 
+config MACH_LXA_MC1
+	select ARCH_STM32MP157
+	bool "Linux Automation MC-1 board"
+
 endif

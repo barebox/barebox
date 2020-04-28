@@ -1,0 +1,44 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+/*
+ * Copyright (C) 2020 Ahmad Fatoum, Pengutronix
+ */
+
+#include "stm32mp157c-lxa-mc1.dtsi"
+#include "stm32mp151.dtsi"
+
+/ {
+	chosen {
+		environment-sd {
+			compatible = "barebox,environment";
+			device-path = &sdmmc1, "partname:barebox-environment";
+			status = "disabled";
+		};
+
+		environment-emmc {
+			compatible = "barebox,environment";
+			device-path = &sdmmc2, "partname:barebox-environment";
+			status = "disabled";
+		};
+	};
+
+};
+
+&panel {
+	display-timings {
+		timing { /* edt,etm0700g0dh6 */
+			clock-frequency = <33260000>;
+			hactive = <800>;
+			vactive = <480>;
+			hfront-porch = <40>;
+			hsync-len = <128>;
+			hback-porch = <88>;
+			vfront-porch = <10>;
+			vsync-len = <2>;
+			vback-porch = <33>;
+			hsync-active = <0>;
+			vsync-active = <0>;
+			de-active = <1>;
+			pixelclk-active = <0>;
+		};
+	};
+};

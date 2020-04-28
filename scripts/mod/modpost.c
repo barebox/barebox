@@ -31,6 +31,8 @@ static inline int license_is_gpl_compatible(const char *license)
 }
 #endif
 
+#define MODULE_SYMBOL_PREFIX ""
+
 /* Are we using CONFIG_MODVERSIONS? */
 int modversions = 0;
 /* Warn about undefined symbols? (do so if we have vmlinux) */

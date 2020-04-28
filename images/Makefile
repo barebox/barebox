@@ -50,7 +50,7 @@ quiet_cmd_objcopy_bin = OBJCOPYB $@
 pbl-lds := $(obj)/pbl.lds
 extra-y += $(pbl-lds)
 
-$(pbl-lds): $(obj)/../arch/$(ARCH)/lib/pbl.lds.S FORCE
+$(pbl-lds): $(obj)/../arch/$(SRCARCH)/lib/pbl.lds.S FORCE
 	$(call if_changed_dep,cpp_lds_S)
 
 quiet_cmd_elf__ ?= LD      $@
@@ -139,8 +139,8 @@ $(obj)/%.img: $(obj)/$$(FILE_$$(@F))
 	$(Q)if [ -z $(FILE_$(@F)) ]; then echo "FILE_$(@F) empty!"; false; fi
 	$(call if_changed,shipped)
 
-board = $(srctree)/arch/$(ARCH)/boards
-objboard = $(objtree)/arch/$(ARCH)/boards
+board = $(srctree)/arch/$(SRCARCH)/boards
+objboard = $(objtree)/arch/$(SRCARCH)/boards
 
 include $(srctree)/images/Makefile.am33xx
 include $(srctree)/images/Makefile.am35xx

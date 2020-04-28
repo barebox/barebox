@@ -175,10 +175,10 @@ cmd_modversions =							\
 	if $(OBJDUMP) -h $(@D)/.tmp_$(@F) | grep -q __ksymtab; then	\
 		$(CPP) -D__GENKSYMS__ $(c_flags) $<			\
 		| $(GENKSYMS) $(if $(KBUILD_SYMTYPES),			\
-			      -T $(@D)/$(@F:.o=.symtypes)) -a $(ARCH)	\
+			      -T $(@D)/$(@F:.o=.symtypes)) 		\
 		> $(@D)/.tmp_$(@F:.o=.ver);				\
 									\
-		$(LD) $(LDFLAGS) -r -o $@ $(@D)/.tmp_$(@F) 		\
+		$(LD) $(KBUILD_LDFLAGS) -r -o $@ $(@D)/.tmp_$(@F) 		\
 			-T $(@D)/.tmp_$(@F:.o=.ver);			\
 		rm -f $(@D)/.tmp_$(@F) $(@D)/.tmp_$(@F:.o=.ver);	\
 	else								\

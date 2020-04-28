@@ -163,10 +163,6 @@ export srctree objtree VPATH
 # Alternatively CROSS_COMPILE can be set in the environment.
 # Default value for CROSS_COMPILE is not to prefix executables
 
-ifeq ($(ARCH),arm64)
-ARCH = arm
-endif
-
 ARCH            ?= sandbox
 CROSS_COMPILE   ?=
 
@@ -174,7 +170,14 @@ CROSS_COMPILE   ?=
 UTS_MACHINE := $(ARCH)
 SRCARCH 	:= $(ARCH)
 
+ifeq ($(ARCH),arm64)
+       SRCARCH := arm
+endif
+
 KCONFIG_CONFIG	?= .config
+
+# Default file for 'make defconfig'. This may be overridden by arch-Makefile.
+export KBUILD_DEFCONFIG := defconfig
 
 # SHELL used by kbuild
 CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
@@ -187,10 +190,12 @@ HOST_LFS_LIBS := $(shell getconf LFS_LIBS 2>/dev/null)
 
 HOSTCC       = gcc
 HOSTCXX      = g++
-HOSTCFLAGS   = -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer $(HOST_LFS_CFLAGS)
-HOSTCXXFLAGS = -O2 $(HOST_LFS_CFLAGS)
-HOSTLDFLAGS = $(HOST_LFS_LDFLAGS)
-HOST_LOADLIBES = $(HOST_LFS_LIBS)
+KBUILD_HOSTCFLAGS   := -Wall -Wstrict-prototypes -O2 \
+		-fomit-frame-pointer $(HOST_LFS_CFLAGS) \
+		$(HOSTCFLAGS)
+KBUILD_HOSTCXXFLAGS := -O2 $(HOST_LFS_CFLAGS) $(HOSTCXXFLAGS)
+KBUILD_HOSTLDFLAGS  := $(HOST_LFS_LDFLAGS) $(HOSTLDFLAGS)
+KBUILD_HOSTLDLIBS   := $(HOST_LFS_LIBS) $(HOSTLDLIBS)
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
@@ -302,16 +307,16 @@ export MODVERDIR := $(if $(KBUILD_EXTMOD),$(firstword $(KBUILD_EXTMOD))/).tmp_ve
 # Needed to be compatible with the O= option
 LINUXINCLUDE    := -Iinclude -I$(srctree)/dts/include \
                    $(if $(KBUILD_SRC), -I$(srctree)/include) \
-		   -I$(srctree)/arch/$(ARCH)/include \
-		   -I$(objtree)/arch/$(ARCH)/include \
+		   -I$(srctree)/arch/$(SRCARCH)/include \
+		   -I$(objtree)/arch/$(SRCARCH)/include \
                    -include $(srctree)/include/linux/kconfig.h
 
-CPPFLAGS        := -D__KERNEL__ -D__BAREBOX__ $(LINUXINCLUDE) -fno-builtin -ffreestanding
+KBUILD_CPPFLAGS        := -D__KERNEL__ -D__BAREBOX__ $(LINUXINCLUDE) -fno-builtin -ffreestanding
 
-CFLAGS          := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+KBUILD_CFLAGS          := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
                    -Werror-implicit-function-declaration \
                    -fno-strict-aliasing -fno-common -Os -pipe -Wmissing-prototypes
-AFLAGS          := -D__ASSEMBLY__
+KBUILD_AFLAGS          := -D__ASSEMBLY__
 
 LDFLAGS_barebox	:= -Map barebox.map
 
@@ -324,14 +329,15 @@ KERNELRELEASE = $(shell cat include/config/kernel.release 2> /dev/null)
 KERNELVERSION = $(VERSION).$(PATCHLEVEL).$(SUBLEVEL)$(EXTRAVERSION)
 
 export VERSION PATCHLEVEL SUBLEVEL KERNELRELEASE KERNELVERSION
-export ARCH SRCARCH CONFIG_SHELL HOSTCC HOSTCFLAGS CROSS_COMPILE AS LD CC
+export ARCH SRCARCH CONFIG_SHELL HOSTCC KBUILD_HOSTCFLAGS CROSS_COMPILE AS LD CC
 export CPP AR NM STRIP OBJCOPY OBJDUMP MAKE AWK GENKSYMS PERL PYTHON3 UTS_MACHINE
 export LEX YACC
-export HOSTCXX HOSTCXXFLAGS HOSTLDFLAGS HOST_LOADLIBES LDFLAGS_MODULE CHECK CHECKFLAGS
+export HOSTCXX CHECK CHECKFLAGS
+export KBUILD_HOSTCXXFLAGS KBUILD_HOSTLDFLAGS KBUILD_HOSTLDLIBS LDFLAGS_MODULE
 
-export CPPFLAGS NOSTDINC_FLAGS LINUXINCLUDE OBJCOPYFLAGS LDFLAGS
-export CFLAGS CFLAGS_KERNEL
-export AFLAGS AFLAGS_KERNEL
+export KBUILD_CPPFLAGS NOSTDINC_FLAGS LINUXINCLUDE OBJCOPYFLAGS KBUILD_LDFLAGS
+export KBUILD_CFLAGS CFLAGS_KERNEL
+export KBUILD_AFLAGS AFLAGS_KERNEL
 export LDFLAGS_barebox
 export LDFLAGS_pbl
 
@@ -418,7 +424,7 @@ ifeq ($(config-targets),1)
 # Read arch specific Makefile to set KBUILD_DEFCONFIG as needed.
 # KBUILD_DEFCONFIG may point out an alternative default configuration
 # used for 'make defconfig'
-include $(srctree)/arch/$(ARCH)/Makefile
+include $(srctree)/arch/$(SRCARCH)/Makefile
 export KBUILD_DEFCONFIG
 
 config: scripts_basic outputmakefile FORCE
@@ -439,12 +445,16 @@ PHONY += scripts
 scripts: scripts_basic
 	$(Q)$(MAKE) $(build)=$(@)
 
+ifeq ($(dot-config),1)
+include include/config/auto.conf
+endif
+
 # Objects we will link into barebox / subdirs we need to visit
 common-y		:= common/ drivers/ commands/ lib/ crypto/ net/ fs/ firmware/
 
-ifeq ($(dot-config),1)
-include include/config/auto.conf
+include $(srctree)/arch/$(SRCARCH)/Makefile
 
+ifeq ($(dot-config),1)
 # Read in dependencies to all Kconfig* files, make sure to run syncconfig if
 # changes are detected. This should be included after arch/$(SRCARCH)/Makefile
 # because some architectures define CROSS_COMPILE there.
@@ -465,39 +475,38 @@ $(KCONFIG_CONFIG):
 #
 # This exploits the 'multi-target pattern rule' trick.
 # The syncconfig should be executed only once to make all the targets.
-%/auto.conf %/auto.conf.cmd %/tristate.conf: $(KCONFIG_CONFIG)
+# (Note: use the grouped target '&:' when we bump to GNU Make 4.3)
+%/auto.conf %/auto.conf.cmd: $(KCONFIG_CONFIG)
 	$(Q)$(MAKE) -f $(srctree)/Makefile syncconfig
 endif # $(dot-config)
 
-include $(srctree)/arch/$(ARCH)/Makefile
-
-CFLAGS		+= -ggdb3
+KBUILD_CFLAGS		+= -ggdb3
 
 # Force gcc to behave correct even for buggy distributions
-CFLAGS          += $(call cc-option, -fno-stack-protector)
+KBUILD_CFLAGS          += $(call cc-option, -fno-stack-protector)
 
 # This warning generated too much noise in a regular build.
 # Use make W=1 to enable this warning (see scripts/Makefile.build)
-CFLAGS += $(call cc-disable-warning, unused-but-set-variable)
+KBUILD_CFLAGS += $(call cc-disable-warning, unused-but-set-variable)
 
-CFLAGS += $(call cc-disable-warning, trampolines)
+KBUILD_CFLAGS += $(call cc-disable-warning, trampolines)
 
-CFLAGS += $(call cc-option, -fno-delete-null-pointer-checks,)
+KBUILD_CFLAGS += $(call cc-option, -fno-delete-null-pointer-checks,)
 
-CFLAGS   += $(call cc-disable-warning, address-of-packed-member)
+KBUILD_CFLAGS   += $(call cc-disable-warning, address-of-packed-member)
 
 # arch Makefile may override CC so keep this after arch Makefile is included
 NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
 CHECKFLAGS     += $(NOSTDINC_FLAGS)
 
 # warn about C99 declaration after statement
-CFLAGS += $(call cc-option,-Wdeclaration-after-statement,)
+KBUILD_CFLAGS += $(call cc-option,-Wdeclaration-after-statement,)
 
 # disable pointer signed / unsigned warnings in gcc 4.0
-CFLAGS += $(call cc-option,-Wno-pointer-sign,)
+KBUILD_CFLAGS += $(call cc-option,-Wno-pointer-sign,)
 
 # change __FILE__ to the relative path from the srctree
-CFLAGS += $(call cc-option,-fmacro-prefix-map=$(srctree)/=)
+KBUILD_CFLAGS += $(call cc-option,-fmacro-prefix-map=$(srctree)/=)
 
 include $(srctree)/scripts/Makefile.ubsan
 
@@ -511,7 +520,7 @@ export KBUILD_IMAGE ?= barebox.bin
 export KBUILD_BINARY ?= barebox.bin
 # KBUILD_IMAGE and _BINARY may be overruled on the command line or
 # set in the environment.
-# Also any assignments in arch/$(ARCH)/Makefile take precedence over
+# Also any assignments in arch/$(SRCARCH)/Makefile take precedence over
 # the default value.
 
 barebox-flash-image: $(KBUILD_IMAGE) FORCE
@@ -565,7 +574,7 @@ export DEFAULT_COMPRESSION_SUFFIX
 # ---------------------------------------------------------------------------
 # barebox is built from the objects selected by $(barebox-init) and
 # $(barebox-main). Most are built-in.o files from top-level directories
-# in the kernel tree, others are specified in arch/$(ARCH)Makefile.
+# in the kernel tree, others are specified in arch/$(SRCARCH)/Makefile.
 # Ordering when linking is important, and $(barebox-init) must be first.
 #
 # FIXME: This picture is wrong for barebox. We have no init, driver, mm
@@ -592,9 +601,9 @@ export BAREBOX_PBL_OBJS := $(pbl-common-y)
 BAREBOX_LDS    := $(lds-y)
 
 # Rule to link barebox
-# May be overridden by arch/$(ARCH)/Makefile
+# May be overridden by arch/$(SRCARCH)/Makefile
 quiet_cmd_barebox__ ?= LD      $@
-      cmd_barebox__ ?= $(LD) $(LDFLAGS) $(LDFLAGS_barebox) -o $@ \
+      cmd_barebox__ ?= $(LD) $(KBUILD_LDFLAGS) $(LDFLAGS_barebox) -o $@ \
       -T $(BAREBOX_LDS)                         \
       --start-group $(BAREBOX_OBJS) --end-group                  \
       $(filter-out $(BAREBOX_LDS) $(BAREBOX_OBJS) FORCE ,$^)
@@ -733,7 +742,7 @@ UIMAGE_BASE ?= $(shell printf "0x%08x" $$(($(CONFIG_TEXT_BASE) - 0x200000)))
 # For development provide a target which makes barebox loadable by an
 # unmodified u-boot
 quiet_cmd_barebox_mkimage = MKIMAGE $@
-      cmd_barebox_mkimage = $(srctree)/scripts/mkimage -A $(ARCH) -T firmware -C none \
+      cmd_barebox_mkimage = $(srctree)/scripts/mkimage -A $(SRCARCH) -T firmware -C none \
        -O barebox -a $(UIMAGE_BASE) -e $(UIMAGE_BASE) \
        -n "barebox $(KERNELRELEASE)" -d $< $@
 
@@ -842,9 +851,9 @@ prepare0: archprepare FORCE
 prepare prepare-all: prepare0
 
 # Leave this as default for preprocessing barebox.lds.S, which is now
-# done in arch/$(ARCH)/kernel/Makefile
+# done in arch/$(SRCARCH)/kernel/Makefile
 
-export CPPFLAGS_barebox.lds += -C -U$(ARCH)
+export CPPFLAGS_barebox.lds += -C -U$(SRCARCH)
 
 define symlink-config-h
 	if [ -f $(srctree)/$(BOARD)/config.h ]; then		\
@@ -1043,7 +1052,7 @@ rpm: include/config/kernel.release FORCE
 # Brief documentation of the typical targets used
 # ---------------------------------------------------------------------------
 
-boards := $(wildcard $(srctree)/arch/$(ARCH)/configs/*_defconfig)
+boards := $(wildcard $(srctree)/arch/$(SRCARCH)/configs/*_defconfig)
 boards := $(sort $(notdir $(boards)))
 
 help:
@@ -1070,13 +1079,10 @@ help:
 	@echo  'Static analysers'
 	@echo  '  checkstack      - Generate a list of stack hogs'
 	@echo  '  namespacecheck  - Name space analysis on compiled kernel'
-	@if [ -r include/asm-$(ARCH)/Kbuild ]; then \
-	 echo  '  headers_check   - Sanity check on exported headers'; \
-	 fi
 	@echo  ''
-	@echo  'Architecture specific targets ($(ARCH)):'
+	@echo  'Architecture specific targets ($(SRCARCH)):'
 	@$(if $(archhelp),$(archhelp),\
-		echo '  No architecture specific help defined for $(ARCH)')
+		echo '  No architecture specific help defined for $(SRCARCH)')
 	@echo  ''
 	@$(if $(boards), \
 		$(foreach b, $(boards), \
@@ -1158,8 +1164,8 @@ quiet_cmd_rmfiles = $(if $(wildcard $(rm-files)),CLEAN   $(wildcard $(rm-files))
       cmd_rmfiles = rm -f $(rm-files)
 
 
-a_flags = -Wp,-MD,$(depfile) $(AFLAGS) $(AFLAGS_KERNEL) \
-	  $(NOSTDINC_FLAGS) $(CPPFLAGS) \
+a_flags = -Wp,-MD,$(depfile) $(KBUILD_AFLAGS) $(AFLAGS_KERNEL) \
+	  $(NOSTDINC_FLAGS) $(KBUILD_CPPFLAGS) \
 	  $(modkern_aflags) $(EXTRA_AFLAGS) $(AFLAGS_$(basetarget).o)
 
 quiet_cmd_as_o_S = AS      $@

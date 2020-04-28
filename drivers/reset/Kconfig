@@ -16,7 +16,7 @@ if RESET_CONTROLLER
 
 config RESET_IMX7
 	bool "i.MX7 Reset Driver"
-	default SOC_IMX7D
+	default ARCH_IMX7
 	select MFD_SYSCON
 	help
 	  This enables the reset controller driver for i.MX7 SoCs.

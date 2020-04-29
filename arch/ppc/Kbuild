@@ -1,0 +1,2 @@
+obj-$(CONFIG_ARCH_MPC85XX) += cpu-85xx/
+obj-y += lib/

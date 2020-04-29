@@ -24,8 +24,6 @@ board-$(CONFIG_DA923RC)				:= owc-da923rc
 machine-$(CONFIG_ARCH_MPC5200)			:= mpc5xxx
 machine-$(CONFIG_ARCH_MPC85XX)			:= mpc85xx
 
-cpu-$(CONFIG_ARCH_MPC85XX)			:= 85xx
-
 TEXT_BASE = $(CONFIG_TEXT_BASE)
 
 KBUILD_CPPFLAGS += -DTEXT_BASE=$(TEXT_BASE)
@@ -61,14 +59,7 @@ else
 MACH  :=
 endif
 
-ifneq ($(cpu-y),)
-CPU  := arch/ppc/cpu-$(cpu-y)/
-else
-CPU  :=
-endif
-
-common-y += $(BOARD) $(CPU) $(MACH)
-common-y += arch/ppc/lib/
+common-y += $(BOARD) $(MACH) arch/ppc/
 
 ifdef CONFIG_MPC85xx
 lds-y += $(MACH)/barebox.lds

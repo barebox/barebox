@@ -1,7 +1,7 @@
 KBUILD_DEFCONFIG := p2020rdb_defconfig
 
 KBUILD_CPPFLAGS += -ffixed-r14 -m32 	\
-	-meabi -D __PPC__ -D CONFIG_PPC \
+	-meabi -D __PPC__ \
 	-fno-strict-aliasing
 
 KBUILD_CPPFLAGS += $(call cc-option,-mno-spe)

@@ -7,9 +7,6 @@ config HAS_AT91_ETHER
 config HAS_CS8900
 	bool
 
-config HAS_DESIGNWARE_ETH
-	bool
-
 config HAS_DM9000
 	bool
 

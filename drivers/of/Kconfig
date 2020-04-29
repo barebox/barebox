@@ -18,10 +18,6 @@ config OFDEVICE
 config OF_ADDRESS_PCI
 	bool
 
-config OF_NET
-	depends on NET
-	def_bool y
-
 config OF_GPIO
 	depends on GPIOLIB
 	depends on OFDEVICE

@@ -273,7 +273,7 @@ static void enc28j60_mem_read(struct enc28j60_net *priv,
 {
 	enc28j60_regw_write(priv, ERDPTL, addr);
 
-	if (IS_ENABLED(CONFIG_ENC28J60_WRITEVERIFY)) {
+	if (IS_ENABLED(CONFIG_DRIVER_NET_ENC28J60_WRITEVERIFY)) {
 		u16 reg;
 		reg = enc28j60_regw_read(priv, ERDPTL);
 		if (reg != addr)
@@ -293,7 +293,7 @@ enc28j60_packet_write(struct enc28j60_net *priv, int len, const u8 *data)
 	/* Set the write pointer to start of transmit buffer area */
 	enc28j60_regw_write(priv, EWRPTL, TXSTART_INIT);
 
-	if (IS_ENABLED(CONFIG_ENC28J60_WRITEVERIFY)) {
+	if (IS_ENABLED(CONFIG_DRIVER_NET_ENC28J60_WRITEVERIFY)) {
 		u16 reg;
 		reg = enc28j60_regw_read(priv, EWRPTL);
 		if (reg != TXSTART_INIT)
@@ -710,7 +710,7 @@ static int enc28j60_eth_send(struct eth_device *edev, void *packet,
 	enc28j60_packet_write(priv, packet_length, packet);
 
 	/* readback and verify written data */
-	if (IS_ENABLED(CONFIG_ENC28J60_WRITEVERIFY)) {
+	if (IS_ENABLED(CONFIG_DRIVER_NET_ENC28J60_WRITEVERIFY)) {
 		int test_len, k;
 		u8 test_buf[64]; /* limit the test to the first 64 bytes */
 		int okflag;
@@ -808,7 +808,7 @@ static void enc28j60_hw_rx(struct eth_device *edev)
 
 	enc28j60_regw_write(priv, ERXRDPTL, erxrdpt);
 
-	if (IS_ENABLED(CONFIG_ENC28J60_WRITEVERIFY)) {
+	if (IS_ENABLED(CONFIG_DRIVER_NET_ENC28J60_WRITEVERIFY)) {
 		u16 reg;
 		reg = enc28j60_regw_read(priv, ERXRDPTL);
 		if (reg != erxrdpt)

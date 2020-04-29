@@ -174,6 +174,11 @@ ifeq ($(ARCH),arm64)
        SRCARCH := arm
 endif
 
+# Support ARCH=ppc for backward compatibility
+ifeq ($(ARCH),ppc)
+       SRCARCH := powerpc
+endif
+
 KCONFIG_CONFIG	?= .config
 
 # Default file for 'make defconfig'. This may be overridden by arch-Makefile.

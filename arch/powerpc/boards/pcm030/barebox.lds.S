@@ -31,7 +31,7 @@ SECTIONS
   {
     _text = .;
     _stext = .;
-    arch/ppc/mach-mpc5xxx/start.o	(.text)
+    arch/powerpc/mach-mpc5xxx/start.o	(.text)
     *(.text*)
     *(.got1*)
     . = ALIGN(16);

@@ -34,7 +34,7 @@ KBUILD_CPPFLAGS += -fdata-sections -ffunction-sections
 LDFLAGS_barebox += --gc-sections
 endif
 
-machdirs := $(patsubst %,arch/ppc/mach-%/,$(machine-y))
+machdirs := $(patsubst %,arch/powerpc/mach-%/,$(machine-y))
 
 ifeq ($(KBUILD_SRC),)
 KBUILD_CPPFLAGS += $(patsubst %,-I%include,$(machdirs))
@@ -48,18 +48,18 @@ PHONY += maketools
 
 
 ifneq ($(board-y),)
-BOARD  := arch/ppc/boards/$(board-y)/
+BOARD  := arch/powerpc/boards/$(board-y)/
 else
 BOARD  :=
 endif
 
 ifneq ($(machine-y),)
-MACH  := arch/ppc/mach-$(machine-y)/
+MACH  := arch/powerpc/mach-$(machine-y)/
 else
 MACH  :=
 endif
 
-common-y += $(BOARD) $(MACH) arch/ppc/
+common-y += $(BOARD) $(MACH) arch/powerpc/
 
 ifdef CONFIG_MPC85xx
 lds-y += $(MACH)/barebox.lds

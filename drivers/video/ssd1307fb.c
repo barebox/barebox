@@ -395,7 +395,7 @@ static int ssd1307fb_probe(struct device_d *dev)
 	u32 vmem_size;
 	struct ssd1307fb_par *par;
 	struct ssd1307fb_array *array;
-	u8 *vmem;
+	u8 *vmem = NULL;
 	int ret;
 	int i, j;
 

@@ -12,10 +12,7 @@
 #include <arm/imx6qdl-phytec-pfla02.dtsi>
 
 / {
-	memory {
-		/* let barebox fill the memory node */
-		reg = <0 0>;
-	};
+	/delete-node/ memory@10000000;
 
 	chosen {
 		environment-nand {

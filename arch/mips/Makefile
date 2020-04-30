@@ -88,24 +88,11 @@ else
 KBUILD_CPPFLAGS += $(patsubst %,-I$(srctree)/%include,$(machdirs))
 endif
 
-ifeq ($(incdir-y),)
-incdir-y := $(machine-y)
-endif
-INCDIR   := arch-$(incdir-y)
-
-ifeq ($(KBUILD_SRC),)
-KBUILD_CPPFLAGS += -I$(BOARD)/include
-else
-KBUILD_CPPFLAGS += -I$(srctree)/$(BOARD)/include
-endif
-
 ifneq ($(machine-y),)
 MACH  := arch/mips/mach-$(machine-y)/
 else
 MACH  :=
 endif
-
-common-y += $(BOARD)
 
 common-y += $(MACH)
 common-y += arch/mips/lib/

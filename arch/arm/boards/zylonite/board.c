@@ -38,8 +38,6 @@
 #include <asm/mmu.h>
 #include <generated/mach-types.h>
 
-#include "zylonite.h"
-
 static struct smc91c111_pdata smsc91x_pdata;
 static struct mrvl_nand_platform_data nand_pdata = {
 	.keep_config = 0,

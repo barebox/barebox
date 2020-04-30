@@ -643,11 +643,7 @@ define rule_barebox__
 
 	$(Q)$(if $($(quiet)cmd_sysmap),                                      \
 	  echo '  $($(quiet)cmd_sysmap)  System.map' &&)                     \
-	$(cmd_sysmap) $@ System.map;                                         \
-	if [ $$? -ne 0 ]; then                                               \
-		rm -f $@;                                                    \
-		false;                                                       \
-	fi;
+	$(cmd_sysmap) $@ System.map
 endef
 
 ifdef CONFIG_KALLSYMS

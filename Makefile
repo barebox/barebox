@@ -626,24 +626,18 @@ quiet_cmd_barebox_version = GEN     .version
 	$(MAKE) $(build)=common
 
 # Generate System.map
-quiet_cmd_sysmap = SYSMAP
-      cmd_sysmap = $(CONFIG_SHELL) $(srctree)/scripts/mksysmap
+quiet_cmd_sysmap = SYSMAP  System.map
+      cmd_sysmap = $(CONFIG_SHELL) $(srctree)/scripts/mksysmap $@ System.map
 
 # Link of barebox
 # If CONFIG_KALLSYMS is set .version is already updated
 # Generate System.map and verify that the content is consistent
 # Use + in front of the barebox_version rule to silent warning with make -j2
-# First command is ':' to allow us to use + in front of the rule
 define rule_barebox__
-	:
 	$(if $(CONFIG_KALLSYMS),,+$(call cmd,barebox_version))
 	$(call cmd,barebox__)
-
 	$(Q)echo 'cmd_$@ := $(cmd_barebox__)' > $(@D)/.$(@F).cmd
-
-	$(Q)$(if $($(quiet)cmd_sysmap),                                      \
-	  echo '  $($(quiet)cmd_sysmap)  System.map' &&)                     \
-	$(cmd_sysmap) $@ System.map
+	$(call cmd,sysmap)
 endef
 
 ifdef CONFIG_KALLSYMS
@@ -684,10 +678,8 @@ endef
 
 # Update barebox version before link
 # Use + in front of this rule to silent warning about make -j1
-# First command is ':' to allow us to use + in front of this rule
 cmd_ksym_ld = $(cmd_barebox__)
 define rule_ksym_ld
-	:
 	+$(call cmd,barebox_version)
 	$(call cmd,barebox__)
 	$(Q)echo 'cmd_$@ := $(cmd_barebox__)' > $(@D)/.$(@F).cmd

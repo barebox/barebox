@@ -28,22 +28,6 @@ config CMD_AT91CLK
 	help
 	  List clock configuration.
 
-config CMD_AT91MUX
-	bool "at91mux"
-	default y
-	depends on ARCH_AT91
-	help
-	  List MUX configuration
-
-	  Usage: at91mux [-pb]
-
-	  Dump current MUX configuration. If a BANK or PIN has been
-	  specified dump pin details.
-
-	  Options:
-	  -p PIN   pin number
-	  -b BANK  bank number
-
 config CMD_ARM_CPUINFO
 	bool "cpuinfo command"
 	default y
@@ -809,7 +793,7 @@ config CMD_FILETYPE
 	select FILETYPE
 	prompt "filetype"
 	help
-Detect file type
+	  Detect file type
 
 	  Usage: filetype [-vsl] FILE
 

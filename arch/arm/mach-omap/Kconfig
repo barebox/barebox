@@ -19,9 +19,6 @@
 menu "OMAP Features"
 	depends on ARCH_OMAP
 
-config MACH_OMAP
-	bool
-
 config ARCH_OMAP3
 	bool
 	select CPU_V7

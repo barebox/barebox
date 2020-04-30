@@ -68,6 +68,9 @@ config PROCESS_ESCAPE_SEQUENCE
 
 source "lib/lzo/Kconfig"
 
+config BCH_CONST_PARAMS
+	bool
+
 config BCH
 	bool
 

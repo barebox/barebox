@@ -72,7 +72,6 @@ config MACH_MAINSTONE
 	  Say Y here if you are using a Mainstone board
 config MACH_MIOA701
 	bool "Mitac Mio A701"
-	select BCH_CONST_PARAMS
 	select PWM
 	select POLLER
 	help

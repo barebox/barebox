@@ -34,17 +34,4 @@ config MPC5xxx
 	depends on MACH_PHYCORE_MPC5200B_TINY
 	default y
 
-menu "Board specific settings"
-
-config MACH_PHYCORE_MPC5200B_TINY_REV
-	int "Board Revision"
-	default 1
-	depends on MACH_PHYCORE_MPC5200B_TINY
-	help
-	  Revision 0 and revision 1 of the tiny board have
-	  incompatible flash settings. Unless you have a very
-	  old board you should set this option to 1
-
-endmenu
-
 endif

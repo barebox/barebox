@@ -508,6 +508,14 @@ int ubi_attach_mtd_dev(struct mtd_info *mtd, int ubi_num,
 	struct ubi_device *ubi;
 	int i, err, ref = 0;
 
+	/*
+	 * Do not try to attach an UBI device if this device has partitions
+	 * as it's not a good idea to attach UBI on a raw device when the
+	 * real UBI only spans the first partition.
+	 */
+	if (!list_empty(&mtd->partitions))
+		return -EBUSY;
+
 	if (max_beb_per1024 < 0 || max_beb_per1024 > MAX_MTD_UBI_BEB_LIMIT)
 		return -EINVAL;
 

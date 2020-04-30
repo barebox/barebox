@@ -53,7 +53,7 @@ int imd_command_setenv(const char *variable_name, const char *value)
 
 static int write_file(const char *filename, const void *buf, size_t size)
 {
-	int fd, ret;
+	int fd;
 	int now;
 
 	fd = open(filename, O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
@@ -73,9 +73,6 @@ static int write_file(const char *filename, const void *buf, size_t size)
 	}
 
 	close(fd);
-
-	if (ret < 0)
-		return ret;
 
 	return 0;
 }

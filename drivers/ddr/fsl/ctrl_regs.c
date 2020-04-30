@@ -1111,7 +1111,7 @@ static void set_ddr_sdram_mode_9(struct fsl_ddr_controller *c,
 	unsigned short esdmode5;	/* Extended SDRAM mode 5 */
 	int rtt_park = 0;
 	bool four_cs = false;
-	const unsigned int mclk_ps = get_memory_clk_period_ps(0);
+	const unsigned int mclk_ps = get_memory_clk_period_ps(c);
 
 	if ((ddr->cs[0].config & SDRAM_CS_CONFIG_EN) &&
 	    (ddr->cs[1].config & SDRAM_CS_CONFIG_EN) &&

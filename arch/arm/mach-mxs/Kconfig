@@ -9,6 +9,12 @@ config ARCH_TEXT_BASE
 	default 0x47000000 if MACH_MX28EVK
 	default 0x47000000 if MACH_CFA10036
 
+config ARCH_MXS_OF_SUPPORT
+	bool
+	select COMMON_CLK_OF_PROVIDER
+	select OFTREE
+	select OFDEVICE
+
 comment "Freescale i.MX System-on-Chip"
 
 choice
@@ -57,12 +63,14 @@ config MACH_TX28
 config MACH_MX28EVK
 	bool "mx28-evk"
 	select MXS_OCOTP
+	select ARCH_MXS_OF_SUPPORT
 	help
 	  Say Y here if you are using the Freescale i.MX28-EVK board
 
 config MACH_DUCKBILL
 	bool "Duckbill"
 	select MXS_OCOTP
+	select ARCH_MXS_OF_SUPPORT
 	help
 	  Say Y here if you are using the I2SE Duckbill board
 

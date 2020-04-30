@@ -705,10 +705,10 @@ static int fec_clk_get(struct fec_priv *fec)
 {
 	int i, err = 0;
 	static const char *clk_names[ARRAY_SIZE(fec->clk)] = {
-		"ipg", "ahb", "ptp"
+		"ipg", "ahb",
 	};
 	static const char *opt_clk_names[ARRAY_SIZE(fec->opt_clk)] = {
-		"enet_clk_ref", "enet_out",
+		"enet_clk_ref", "enet_out", "ptp"
 	};
 
 	for (i = 0; i < ARRAY_SIZE(fec->clk); i++) {
@@ -716,7 +716,7 @@ static int fec_clk_get(struct fec_priv *fec)
 		if (IS_ERR(fec->clk[i])) {
 			err = PTR_ERR(fec->clk[i]);
 			fec_clk_put(fec);
-			break;
+			return err;
 		}
 	}
 

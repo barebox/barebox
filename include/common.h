@@ -135,8 +135,4 @@ const char *barebox_get_hostname(void);
 void barebox_set_hostname(const char *);
 void barebox_set_hostname_no_overwrite(const char *);
 
-#ifndef IOMEM
-#define IOMEM(addr)	((void __force __iomem *)(addr))
-#endif
-
 #endif	/* __COMMON_H_ */

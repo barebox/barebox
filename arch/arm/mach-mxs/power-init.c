@@ -1172,7 +1172,7 @@ static void mx23_ungate_power(void)
 	writel(MX23_POWER_CTRL_CLKGATE, &power_regs->hw_power_ctrl_clr);
 }
 
-struct mxs_power_ctrl mxs_vddd_default    = { .target = 1500, .brownout = 1325 };
+struct mxs_power_ctrl mxs_vddd_default    = { .target = 1550, .brownout = 1400 };
 struct mxs_power_ctrl mxs_vdda_default    = { .target = 1800, .brownout = 1650 };
 struct mxs_power_ctrl mxs_vddio_default   = { .target = 3300, .brownout = 3150 };
 struct mxs_power_ctrl mx23_vddmem_default = { .target = 2500, .brownout = 1700 };

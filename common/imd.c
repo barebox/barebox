@@ -367,6 +367,7 @@ static int imd_write_crc32(void *buf, const struct imd_header *imd_start,
 		return -ENODATA;
 	} else {
 		uint32_t *p = (uint32_t *)(imd_crc + 1);
+		int ret;
 
 		if (*p != crc) {
 			uint32_t *flags = imd_crc32_flags(imd_crc);
@@ -374,7 +375,11 @@ static int imd_write_crc32(void *buf, const struct imd_header *imd_start,
 			debug("Update crc token from 0x%08x to 0x%08x (flags 0x%08x)\n", *p, crc, *flags);
 			*p = crc;
 
-			write_file(filename, buf, size);
+			ret = write_file(filename, buf, size);
+			if (ret < 0) {
+				eprintf("CRC: write crc token to %s failed: %d\n", filename, ret);
+				return ret;
+			}
 		}
 	}
 

@@ -52,6 +52,7 @@
 #define CPDMA_DESC_EOP		BIT(30)
 #define CPDMA_DESC_OWNER	BIT(29)
 #define CPDMA_DESC_EOQ		BIT(28)
+#define CPDMA_DESC_TO_PORT_EN	BIT(20)
 #define CPDMA_FROM_TO_PORT_SHIFT	16
 #define CPDMA_RX_SOURCE_PORT(__status__)	\
 	(((__status__) >> CPDMA_FROM_TO_PORT_SHIFT) & 0x7)
@@ -796,7 +797,7 @@ static void cpdma_desc_free(struct cpsw_priv *priv, struct cpdma_desc *desc)
 }
 
 static int cpdma_submit(struct cpsw_priv *priv, struct cpdma_chan *chan,
-			void *buffer, int len)
+			void *buffer, int len, int port)
 {
 	struct cpdma_desc *desc, *prev;
 	u32 mode;
@@ -809,6 +810,10 @@ static int cpdma_submit(struct cpsw_priv *priv, struct cpdma_chan *chan,
 		len = PKT_MIN;
 
 	mode = CPDMA_DESC_OWNER | CPDMA_DESC_SOP | CPDMA_DESC_EOP;
+
+	if (port)
+		mode |= CPDMA_DESC_TO_PORT_EN |
+			(port << CPDMA_FROM_TO_PORT_SHIFT);
 
 	writel(0, &desc->hw_next);
 	writel((u32)buffer, &desc->hw_buffer);
@@ -971,7 +976,7 @@ static int cpsw_setup(struct device_d *dev)
 	/* submit rx descs */
 	for (i = 0; i < PKTBUFSRX - 2; i++) {
 		ret = cpdma_submit(priv, &priv->rx_chan, NetRxPackets[i],
-				   PKTSIZE);
+				   PKTSIZE, 0);
 		if (ret < 0) {
 			dev_err(dev, "error %d submitting rx desc\n", ret);
 			break;
@@ -1013,7 +1018,8 @@ static int cpsw_send(struct eth_device *edev, void *packet, int length)
 	dev_dbg(&slave->dev, "%s: %i bytes @ 0x%p\n", __func__, length, packet);
 
 	dma_sync_single_for_device((unsigned long)packet, length, DMA_TO_DEVICE);
-	ret = cpdma_submit(priv, &priv->tx_chan, packet, length);
+	ret = cpdma_submit(priv, &priv->tx_chan, packet,
+			   length, BIT(slave->slave_num));
 	dma_sync_single_for_cpu((unsigned long)packet, length, DMA_TO_DEVICE);
 
 	return ret;
@@ -1032,7 +1038,7 @@ static int cpsw_recv(struct eth_device *edev)
 		net_receive(edev, buffer, len);
 		dma_sync_single_for_device((unsigned long)buffer, len,
 				DMA_FROM_DEVICE);
-		cpdma_submit(priv, &priv->rx_chan, buffer, PKTSIZE);
+		cpdma_submit(priv, &priv->rx_chan, buffer, PKTSIZE, 0);
 	}
 
 	return 0;

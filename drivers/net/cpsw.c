@@ -801,7 +801,7 @@ static int cpsw_open(struct eth_device *edev)
 {
 	struct cpsw_slave *slave = edev->priv;
 	struct cpsw_priv *priv = slave->cpsw;
-	int i, ret;
+	int ret;
 
 	dev_dbg(&slave->dev, "* %s\n", __func__);
 
@@ -809,6 +809,16 @@ static int cpsw_open(struct eth_device *edev)
 				 cpsw_adjust_link, 0, slave->phy_if);
 	if (ret)
 		return ret;
+
+	cpsw_slave_init(slave, priv);
+
+	return 0;
+}
+
+static int cpsw_setup(struct device_d *dev)
+{
+	struct cpsw_priv *priv = dev->priv;
+	int i, ret;
 
 	/* soft reset the controller and initialize priv */
 	soft_reset(priv, &priv->regs->soft_reset);
@@ -834,9 +844,6 @@ static int cpsw_open(struct eth_device *edev)
 	cpsw_ale_add_ucast(priv, priv->mac_addr, priv->host_port,
 			   ALE_SECURE);
 	cpsw_ale_add_mcast(priv, ethbdaddr, 1 << priv->host_port);
-
-	cpsw_slave_init(slave, priv);
-
 	/* init descriptor pool */
 	for (i = 0; i < NUM_DESCS; i++) {
 		u32 val = (i == (NUM_DESCS - 1)) ? 0 : (u32)&priv->descs[i + 1];
@@ -875,7 +882,7 @@ static int cpsw_open(struct eth_device *edev)
 		ret = cpdma_submit(priv, &priv->rx_chan, NetRxPackets[i],
 				   PKTSIZE);
 		if (ret < 0) {
-			dev_err(&slave->dev, "error %d submitting rx desc\n", ret);
+			dev_err(dev, "error %d submitting rx desc\n", ret);
 			break;
 		}
 	}
@@ -1240,6 +1247,8 @@ static int cpsw_probe(struct device_d *dev)
 	}
 
 	dev->priv = priv;
+
+	cpsw_setup(dev);
 
 	return 0;
 out:

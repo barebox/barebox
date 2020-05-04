@@ -1015,7 +1015,7 @@ static struct cpsw_data cpsw1_data = {
 	.cpdma_reg_ofs		= 0x100,
 	.state_ram_ofs		= 0x200,
 	.ale_reg_ofs		= 0x600,
-	.slave_ofs		= 0x050,
+	.slave_ofs		= 0x058,
 	.slave_size		= 0x040,
 	.sliver_ofs		= 0x700,
 	/* FIXME: mdio_reg_ofs and cppi_ram_ofs missing */
@@ -1026,7 +1026,7 @@ static struct cpsw_data cpsw2_data = {
 	.cpdma_reg_ofs		= 0x800,
 	.state_ram_ofs		= 0xa00,
 	.ale_reg_ofs		= 0xd00,
-	.slave_ofs		= 0x200,
+	.slave_ofs		= 0x208,
 	.slave_size		= 0x100,
 	.sliver_ofs		= 0xd80,
 	.mdio_reg_ofs		= 0x1000,

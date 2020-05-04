@@ -46,4 +46,6 @@
 #define writel(val, addr)\
 	asm volatile("stwio %0, 0(%1)" : : "r" (val), "r" (addr))
 
+#include <asm-generic/io.h>
+
 #endif /* __ASM_NIOS2_IO_H_ */

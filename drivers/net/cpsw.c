@@ -52,6 +52,9 @@
 #define CPDMA_DESC_EOP		BIT(30)
 #define CPDMA_DESC_OWNER	BIT(29)
 #define CPDMA_DESC_EOQ		BIT(28)
+#define CPDMA_FROM_TO_PORT_SHIFT	16
+#define CPDMA_RX_SOURCE_PORT(__status__)	\
+	(((__status__) >> CPDMA_FROM_TO_PORT_SHIFT) & 0x7)
 
 #define SLIVER_SIZE		0x40
 
@@ -758,10 +761,11 @@ done:
 	return 0;
 }
 
-static int cpdma_process(struct cpsw_priv *priv, struct cpdma_chan *chan,
+static int cpdma_process(struct cpsw_slave *slave, struct cpdma_chan *chan,
 			 void **buffer, int *len)
 {
 	struct cpdma_desc *desc = chan->head;
+	struct cpsw_priv *priv = slave->cpsw;
 	u32 status;
 
 	if (!desc)
@@ -781,6 +785,14 @@ static int cpdma_process(struct cpsw_priv *priv, struct cpdma_chan *chan,
 				writel((u32)desc, chan->hdp);
 		}
 		return -EBUSY;
+	}
+
+	/* cpsw_send is cleaning finished descriptors on next send
+	 * so we only have to check for rx channel here
+	 */
+	if (CPDMA_RX_SOURCE_PORT(status) != BIT(slave->slave_num) &&
+	    chan == &priv->rx_chan) {
+		return -ENOMSG;
 	}
 
 	chan->head = (void *)readl(&desc->hw_next);
@@ -917,7 +929,7 @@ static int cpsw_send(struct eth_device *edev, void *packet, int length)
 	dev_dbg(&slave->dev, "* %s slave %d\n", __func__, slave->slave_num);
 
 	/* first reap completed packets */
-	while (cpdma_process(priv, &priv->tx_chan, &buffer, &len) >= 0);
+	while (cpdma_process(slave, &priv->tx_chan, &buffer, &len) >= 0);
 
 	dev_dbg(&slave->dev, "%s: %i bytes @ 0x%p\n", __func__, length, packet);
 
@@ -935,7 +947,7 @@ static int cpsw_recv(struct eth_device *edev)
 	void *buffer;
 	int len;
 
-	while (cpdma_process(priv, &priv->rx_chan, &buffer, &len) >= 0) {
+	while (cpdma_process(slave, &priv->rx_chan, &buffer, &len) >= 0) {
 		dma_sync_single_for_cpu((unsigned long)buffer, len,
 				DMA_FROM_DEVICE);
 		net_receive(edev, buffer, len);

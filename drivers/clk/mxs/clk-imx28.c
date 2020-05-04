@@ -56,8 +56,8 @@ enum imx28_clk {
 	emi_xtal, lcdif_div, etm_div, ptp, saif0_div, saif1_div,
 	clk32k_div, rtc, lradc, spdif_div, clk32k, pwm, uart, ssp0,
 	ssp1, ssp2, ssp3, gpmi, spdif, emi, saif0, saif1, lcdif, etm,
-	fec_sleep, fec, can0, can1, usb0, usb1, usb0_phy, usb1_phy, enet_out,
-	lcdif_comp, clk_max
+	fec, can0, can1, usb0, usb1, usb0_phy, usb1_phy, enet_out,
+	lcdif_comp, fec_sleep, clk_max
 };
 
 static struct clk *clks[clk_max];

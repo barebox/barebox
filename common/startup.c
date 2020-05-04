@@ -74,6 +74,16 @@ fs_initcall(mount_root);
 #endif
 
 #ifdef CONFIG_ENV_HANDLING
+static bool region_overlap(loff_t starta, loff_t lena,
+			   loff_t startb, loff_t lenb)
+{
+	if (starta + lena <= startb)
+		return 0;
+	if (startb + lenb <= starta)
+		return 0;
+	return 1;
+}
+
 static int check_overlap(const char *path)
 {
 	struct cdev *cenv, *cdisk, *cpart;
@@ -104,8 +114,8 @@ static int check_overlap(const char *path)
 		if (cpart == cenv)
 			continue;
 
-		if (lregion_overlap(cpart->offset, cpart->size,
-				    cenv->offset, cenv->size))
+		if (region_overlap(cpart->offset, cpart->size,
+				   cenv->offset, cenv->size))
 			goto conflict;
 	}
 

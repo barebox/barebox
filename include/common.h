@@ -142,15 +142,6 @@ void barebox_set_hostname_no_overwrite(const char *);
 /*
  * Check if two regions overlap. returns true if they do, false otherwise
  */
-static inline bool region_overlap(unsigned long starta, unsigned long lena,
-		unsigned long startb, unsigned long lenb)
-{
-	if (starta + lena <= startb)
-		return 0;
-	if (startb + lenb <= starta)
-		return 0;
-	return 1;
-}
 
 static inline bool lregion_overlap(loff_t starta, loff_t lena,
 				   loff_t startb, loff_t lenb)

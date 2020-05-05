@@ -223,6 +223,7 @@ int ftruncate(int fd, loff_t length)
 	}
 
 	f->size = length;
+	f->f_inode->i_size = f->size;
 
 	return 0;
 }

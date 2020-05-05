@@ -57,6 +57,7 @@ static int imx_usbphy_phy_init(struct phy *phy)
 	int ret;
 
 	clk_enable(imxphy->clk);
+	mdelay(1);
 
 	ret = stmp_reset_block(imxphy->base + HW_USBPHY_CTRL, false);
 	if (ret)

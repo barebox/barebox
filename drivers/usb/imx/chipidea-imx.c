@@ -31,6 +31,10 @@
 
 #define MXC_EHCI_PORTSC_MASK ((0xf << 28) | (1 << 25))
 
+struct imx_chipidea_data {
+	bool have_usb_misc;
+};
+
 struct imx_chipidea {
 	struct device_d *dev;
 	void __iomem *base;
@@ -47,13 +51,14 @@ struct imx_chipidea {
 	struct clk *clk;
 	struct ehci_host *ehci;
 	struct fsl_udc *udc;
+	bool have_usb_misc;
 };
 
 static int imx_chipidea_port_init(void *drvdata)
 {
 	struct imx_chipidea *ci = drvdata;
 	uint32_t portsc;
-	int ret;
+	int ret = 0;
 
 	if ((ci->flags & MXC_EHCI_PORTSC_MASK) == MXC_EHCI_MODE_ULPI) {
 		dev_dbg(ci->dev, "using ULPI phy\n");
@@ -72,9 +77,11 @@ static int imx_chipidea_port_init(void *drvdata)
 			return ret;
 	}
 
-	ret = imx_usbmisc_port_init(ci->usbmisc, ci->portno, ci->flags);
-	if (ret)
-		dev_err(ci->dev, "misc init failed: %s\n", strerror(-ret));
+	if (ci->have_usb_misc) {
+		ret = imx_usbmisc_port_init(ci->usbmisc, ci->portno, ci->flags);
+		if (ret)
+			dev_err(ci->dev, "misc init failed: %s\n", strerror(-ret));
+	}
 
 	/* PFSC bit is reset by ehci_reset(), thus have to set it not in
 	 * probe but here, after ehci_reset() is already called */
@@ -90,11 +97,13 @@ static int imx_chipidea_port_init(void *drvdata)
 static int imx_chipidea_port_post_init(void *drvdata)
 {
 	struct imx_chipidea *ci = drvdata;
-	int ret;
+	int ret = 0;
 
-	ret = imx_usbmisc_port_post_init(ci->usbmisc, ci->portno, ci->flags);
-	if (ret)
-		dev_err(ci->dev, "post misc init failed: %s\n", strerror(-ret));
+	if (ci->have_usb_misc) {
+		ret = imx_usbmisc_port_post_init(ci->usbmisc, ci->portno, ci->flags);
+		if (ret)
+			dev_err(ci->dev, "post misc init failed: %s\n", strerror(-ret));
+	}
 
 	return ret;
 }
@@ -103,15 +112,18 @@ static int imx_chipidea_probe_dt(struct imx_chipidea *ci)
 {
 	struct of_phandle_args out_args;
 
-	if (of_parse_phandle_with_args(ci->dev->device_node, "fsl,usbmisc",
-					"#index-cells", 0, &out_args))
-		return -ENODEV;
+	if (ci->have_usb_misc) {
+		if (of_parse_phandle_with_args(ci->dev->device_node, "fsl,usbmisc",
+						"#index-cells", 0, &out_args))
+			return -ENODEV;
 
-	ci->usbmisc = of_find_device_by_node(out_args.np);
-	if (!ci->usbmisc)
-		return -ENODEV;
+		ci->usbmisc = of_find_device_by_node(out_args.np);
+		if (!ci->usbmisc)
+			return -ENODEV;
 
-	ci->portno = out_args.args[0];
+		ci->portno = out_args.args[0];
+	}
+
 	ci->flags = MXC_EHCI_MODE_UTMI_8BIT;
 
 	ci->mode = of_usb_get_dr_mode(ci->dev->device_node, NULL);
@@ -219,6 +231,7 @@ static int ci_set_mode(void *ctx, enum usb_dr_mode mode)
 static int imx_chipidea_probe(struct device_d *dev)
 {
 	struct resource *iores;
+	struct imx_chipidea_data *imx_data;
 	struct imxusb_platformdata *pdata = dev->platform_data;
 	int ret;
 	void __iomem *base;
@@ -228,6 +241,10 @@ static int imx_chipidea_probe(struct device_d *dev)
 	ci = xzalloc(sizeof(*ci));
 	ci->dev = dev;
 	dev->priv = ci;
+
+	ret = dev_get_drvdata(dev, (const void **)&imx_data);
+	if (!ret)
+		ci->have_usb_misc = imx_data->have_usb_misc;
 
 	if (IS_ENABLED(CONFIG_OFDEVICE) && dev->device_node) {
 		ret = imx_chipidea_probe_dt(ci);
@@ -319,11 +336,24 @@ static void imx_chipidea_remove(struct device_d *dev)
 		ci_udc_unregister(ci->udc);
 }
 
+static const struct imx_chipidea_data imx_data = {
+	.have_usb_misc = 1,
+};
+
+static const struct imx_chipidea_data imx28_data = {
+	.have_usb_misc = 0,
+};
+
 static __maybe_unused struct of_device_id imx_chipidea_dt_ids[] = {
 	{
 		.compatible = "fsl,imx27-usb",
+		.data = &imx_data,
+	}, {
+		.compatible = "fsl,imx28-usb",
+		.data = &imx28_data,
 	}, {
 		.compatible = "fsl,imx7d-usb",
+		.data = &imx_data,
 	}, {
 		/* sentinel */
 	},

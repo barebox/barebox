@@ -48,6 +48,7 @@ config DRIVER_SERIAL_STM378X
 
 config DRIVER_SERIAL_AUART
 	depends on ARCH_MXS
+	select STMP_DEVICE
 	bool "i.MX23/i.MX28 application UART serial driver"
 
 config DRIVER_SERIAL_LINUX_CONSOLE

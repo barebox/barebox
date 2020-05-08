@@ -54,6 +54,7 @@ config MCI_DW_PIO
 config MCI_MXS
 	bool "i.MX23/i.MX28"
 	depends on ARCH_MXS
+	select STMP_DEVICE
 	help
 	  Enable this entry to add support to read and write SD cards on a
 	  i.MX23/i.MX28 based system.

@@ -25,6 +25,7 @@ config PWM_IMX
 config PWM_MXS
 	bool "i.MXs PWM Support"
 	depends on ARCH_MXS
+	select STMP_DEVICE
 	help
 	  This enables PWM support for Freescale i.MX23/i.MX28 SoCs
 

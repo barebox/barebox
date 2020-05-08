@@ -21,9 +21,9 @@
 #include <clock.h>
 #include <gpio.h>
 #include <io.h>
-#include <mach/board.h>
 #include <linux/clk.h>
 #include <linux/err.h>
+#include <platform_data/atmel-mci.h>
 #include <of_gpio.h>
 
 #include "atmel-mci-regs.h"

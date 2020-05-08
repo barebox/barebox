@@ -19,7 +19,7 @@ config PINCTRL_AT91
 
 config PINCTRL_BCM283X
 	bool "GPIO and pinmux support for BCM283X"
-	depends on ARCH_BCM283X
+	depends on ARCH_BCM283X || COMPILE_TEST
 	help
 	    The pinmux controller on BCM2835
 
@@ -57,7 +57,7 @@ config PINCTRL_AT91PIO4
 
 config PINCTRL_MXS
 	bool "MXS pinctrl"
-	depends on ARCH_MXS
+	depends on ARCH_MXS || COMPILE_TEST
 	default ARCH_MXS
 	help
 	  This pinmux controller is found on i.MX23,28

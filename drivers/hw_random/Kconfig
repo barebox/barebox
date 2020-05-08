@@ -9,14 +9,14 @@ if HWRNG
 
 config HWRNG_MXC_RNGC
 	tristate "Freescale i.MX RNGC Random Number Generator"
-	depends on ARCH_IMX25 || ARCH_IMX35 || ARCH_IMX53
+	depends on ARCH_IMX25 || ARCH_IMX35 || ARCH_IMX53 || COMPILE_TEST
 	help
 	  This driver provides kernel-side support for the Random Number
 	  Generator hardware found on some Freescale i.MX processors.
 
 config HWRNG_STM32
 	tristate "STM32 Random Number Generator"
-	depends on ARCH_STM32MP
+	depends on ARCH_STM32MP || COMPILE_TEST
 	help
 	  This driver provides barebox support for the Random Number
 	  Generator hardware found on the STM32 family of MPUs and MCUs.

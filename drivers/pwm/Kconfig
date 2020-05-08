@@ -18,7 +18,7 @@ config PWM_PXA
 
 config PWM_IMX
 	bool "i.MX PWM Support"
-	depends on ARCH_IMX
+	depends on ARCH_IMX || COMPILE_TEST
 	help
 	  This enables PWM support for Freescale i.MX SoCs
 
@@ -31,7 +31,7 @@ config PWM_MXS
 
 config PWM_STM32
 	bool "STM32 PWM Support"
-	depends on ARCH_STM32MP
+	depends on ARCH_STM32MP || COMPILE_TEST
 	help
 	  This enables PWM support for STM32 MCUs and MPUs.
 

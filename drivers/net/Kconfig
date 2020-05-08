@@ -48,7 +48,7 @@ config DRIVER_NET_CALXEDA_XGMAC
 
 config DRIVER_NET_CS8900
 	bool "cs8900 ethernet driver"
-	depends on HAS_CS8900
+	depends on HAS_CS8900 || COMPILE_TEST
 
 config DRIVER_NET_CPSW
 	bool "CPSW ethernet driver"
@@ -78,7 +78,7 @@ config DRIVER_NET_DESIGNWARE_GENERIC
 
 config DRIVER_NET_DESIGNWARE_SOCFPGA
 	bool "Designware Universal MAC ethernet driver for SoCFPGA platforms"
-	depends on ARCH_SOCFPGA
+	depends on ARCH_SOCFPGA || COMPILE_TEST
 	select MFD_SYSCON
 	select RESET_CONTROLLER
 	help
@@ -115,7 +115,7 @@ endif
 
 config DRIVER_NET_DM9K
 	bool "Davicom dm9k[E|A|B] ethernet driver"
-	depends on HAS_DM9000
+	depends on HAS_DM9000 || COMPILE_TEST
 	select PHYLIB
 
 config DRIVER_NET_E1000
@@ -157,7 +157,7 @@ config DRIVER_NET_ETHOC
 
 config DRIVER_NET_FEC_IMX
 	bool "i.MX FEC Ethernet driver"
-	depends on ARCH_HAS_FEC_IMX
+	depends on ARCH_HAS_FEC_IMX || COMPILE_TEST
 	select PHYLIB
 
 config DRIVER_NET_FSL_FMAN
@@ -182,7 +182,7 @@ config DRIVER_NET_KS8851_MLL
 
 config DRIVER_NET_MACB
 	bool "macb Ethernet driver"
-	depends on HAS_MACB
+	depends on HAS_MACB || COMPILE_TEST
 	select PHYLIB
 
 config DRIVER_NET_MICREL

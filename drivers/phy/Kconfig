@@ -26,7 +26,7 @@ source "drivers/phy/freescale/Kconfig"
 
 config PHY_STM32_USBPHYC
 	tristate "STM32 USB HS PHY Controller"
-	depends on ARCH_STM32MP
+	depends on ARCH_STM32MP || COMPILE_TEST
 	help
 	  Enable this to support the High-Speed USB transceivers that are part
 	  of some STMicroelectronics STM32 SoCs.

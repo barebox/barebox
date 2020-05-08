@@ -18,7 +18,7 @@ config WATCHDOG_POLLER
 
 config WATCHDOG_AR9344
 	bool "QCA AR9344"
-	depends on SOC_QCA_AR9344 || SOC_QCA_AR9331
+	depends on SOC_QCA_AR9344 || SOC_QCA_AR9331 || COMPILE_TEST
 	help
 	  Add support for watchdog on the QCA AR9344 SoC.
 
@@ -30,7 +30,7 @@ config WATCHDOG_EFI
 
 config WATCHDOG_DAVINCI
 	bool "TI Davinci"
-	depends on ARCH_DAVINCI
+	depends on ARCH_DAVINCI || COMPILE_TEST
 	help
 	  Add support for watchdog on the TI Davinci SoC.
 
@@ -42,31 +42,31 @@ config WATCHDOG_DW
 
 config WATCHDOG_MXS28
 	bool "i.MX28"
-	depends on ARCH_IMX28
+	depends on ARCH_IMX28 || COMPILE_TEST
 	help
 	  Add support for watchdog management for the i.MX28 SoC.
 
 config WATCHDOG_IMX
 	bool "i.MX watchdog"
-	depends on ARCH_IMX || ARCH_LAYERSCAPE
+	depends on ARCH_IMX || ARCH_LAYERSCAPE || COMPILE_TEST
 	help
 	  Add support for watchdog found on Freescale i.MX SoCs.
 
 config WATCHDOG_JZ4740
 	bool "Ingenic jz4740 SoC hardware watchdog"
-	depends on MACH_MIPS_XBURST
+	depends on MACH_MIPS_XBURST || COMPILE_TEST
 	help
 	  Hardware driver for the built-in watchdog timer on Ingenic jz4740 SoCs.
 
 config WATCHDOG_OMAP
 	bool "TI OMAP"
-	depends on ARCH_OMAP
+	depends on ARCH_OMAP || COMPILE_TEST
 	help
 	  Add support for watchdog on the TI OMAP SoC.
 
 config WATCHDOG_ORION
 	bool "Watchdog for Armada XP"
-	depends on ARCH_ARMADA_XP
+	depends on ARCH_ARMADA_XP || COMPILE_TEST
 	help
 	  Add support for watchdog on the Marvall Armada XP
 
@@ -78,7 +78,7 @@ config WATCHDOG_KVX
 
 config WATCHDOG_BCM2835
 	bool "Watchdog for BCM283x SoCs"
-	depends on ARCH_BCM283X
+	depends on ARCH_BCM283X || COMPILE_TEST
 	help
 	  Add support for watchdog on the Broadcom BCM283X SoCs.
 
@@ -90,7 +90,7 @@ config RAVE_SP_WATCHDOG
 
 config STM32_IWDG_WATCHDOG
 	bool "STM32 IWDG"
-	depends on ARCH_STM32MP
+	depends on ARCH_STM32MP || COMPILE_TEST
 	select MFD_SYSCON
 	help
 	  Enable to support configuration of the STM32's on-SoC IWDG watchdog.

@@ -43,13 +43,16 @@ config GPIO_GENERIC_PLATFORM
 	  GPIO controllers
 
 config GPIO_IMX
-	def_bool ARCH_IMX
+	bool "i.MX GPIO controller" if COMPILE_TEST
+	default y if ARCH_IMX
 
 config GPIO_VF610
-	def_bool ARCH_VF610
+	bool "VF610 GPIO controller" if COMPILE_TEST
+	default y if ARCH_VF610
 
 config GPIO_MXS
-	def_bool ARCH_MXS
+	bool "MXS GPIO controller" if COMPILE_TEST
+	default y if ARCH_MXS
 
 config GPIO_JZ4740
 	bool "GPIO support for Ingenic SoCs"
@@ -76,7 +79,8 @@ config GPIO_MPC8XXX
 	  MPC512x/831x/834x/837x/8572/8610/QorIQ GPIOs.
 
 config GPIO_OMAP
-	def_bool ARCH_OMAP
+	bool "OMAP GPIO controller" if COMPILE_TEST
+	default y if ARCH_OMAP
 
 config GPIO_ORION
 	bool "GPIO support for Marvell Orion/MVEBU SoCs"

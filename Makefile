@@ -318,9 +318,10 @@ LINUXINCLUDE    := -Iinclude -I$(srctree)/dts/include \
 
 KBUILD_CPPFLAGS        := -D__KERNEL__ -D__BAREBOX__ $(LINUXINCLUDE) -fno-builtin -ffreestanding
 
-KBUILD_CFLAGS          := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
-                   -Werror-implicit-function-declaration \
-                   -fno-strict-aliasing -fno-common -Os -pipe -Wmissing-prototypes
+KBUILD_CFLAGS   := -Wall -Wundef -Werror=strict-prototypes -Wno-trigraphs \
+		   -fno-strict-aliasing -fno-common \
+                   -Werror=implicit-function-declaration -Werror=implicit-int \
+                   -Os -pipe -Wmissing-prototypes
 KBUILD_AFLAGS          := -D__ASSEMBLY__
 
 LDFLAGS_barebox	:= -Map barebox.map

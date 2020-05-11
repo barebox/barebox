@@ -2,11 +2,7 @@ machine-y := sandbox
 
 machdirs := $(patsubst %,arch/sandbox/mach-%/,$(machine-y))
 
-ifeq ($(KBUILD_SRC),)
-KBUILD_CPPFLAGS := $(patsubst %,-I%include,$(machdirs))
-else
 KBUILD_CPPFLAGS = $(patsubst %,-I$(srctree)/%include,$(machdirs))
-endif
 
 KBUILD_CPPFLAGS += -DCONFIG_MALLOC_SIZE=$(CONFIG_MALLOC_SIZE)
 

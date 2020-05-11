@@ -46,11 +46,7 @@ endif
 
 machdirs := $(patsubst %,arch/x86/mach-%/,$(machine-y))
 
-ifeq ($(KBUILD_SRC),)
-KBUILD_CPPFLAGS += $(patsubst %,-I%include,$(machdirs))
-else
 KBUILD_CPPFLAGS += $(patsubst %,-I$(srctree)/%include,$(machdirs))
-endif
 
 ifneq ($(board-y),)
 BOARD  := arch/x86/boards/$(board-y)/

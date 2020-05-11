@@ -36,11 +36,7 @@ endif
 
 machdirs := $(patsubst %,arch/powerpc/mach-%/,$(machine-y))
 
-ifeq ($(KBUILD_SRC),)
-KBUILD_CPPFLAGS += $(patsubst %,-I%include,$(machdirs))
-else
 KBUILD_CPPFLAGS += $(patsubst %,-I$(srctree)/%include,$(machdirs))
-endif
 
 archprepare: maketools
 

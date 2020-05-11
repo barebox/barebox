@@ -82,11 +82,7 @@ machine-$(CONFIG_MACH_MIPS_LOONGSON)	:= loongson
 machine-$(CONFIG_MACH_MIPS_XBURST)	:= xburst
 machdirs := $(patsubst %,arch/mips/mach-%/,$(machine-y))
 
-ifeq ($(KBUILD_SRC),)
-KBUILD_CPPFLAGS += $(patsubst %,-I%include,$(machdirs))
-else
 KBUILD_CPPFLAGS += $(patsubst %,-I$(srctree)/%include,$(machdirs))
-endif
 
 ifneq ($(machine-y),)
 MACH  := arch/mips/mach-$(machine-y)/

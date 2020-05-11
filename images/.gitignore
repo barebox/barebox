@@ -30,3 +30,4 @@ barebox.sum
 *.zynqimg
 *.image
 *.mvebu1img
+*.stm32

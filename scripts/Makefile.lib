@@ -147,7 +147,7 @@ endif
 # If building barebox in a separate objtree expand all occurrences
 # of -Idir to -I$(srctree)/dir except for absolute paths (starting with '/').
 
-ifeq ($(KBUILD_SRC),)
+ifndef building_out_of_srctree
 __c_flags	= $(_c_flags)
 __a_flags	= $(_a_flags)
 __cpp_flags     = $(_cpp_flags)

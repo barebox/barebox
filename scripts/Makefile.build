@@ -49,7 +49,7 @@ ifneq ($(hostprogs)$(hostprogs-y)$(hostprogs-m),)
 include scripts/Makefile.host
 endif
 
-ifneq ($(KBUILD_SRC),)
+ifdef building_out_of_srctree
 # Create output directory if not already present
 _dummy := $(shell [ -d $(obj) ] || mkdir -p $(obj))
 

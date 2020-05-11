@@ -56,7 +56,7 @@ $(patsubst %,$(obj)/pbl-%.gen.o, $(fw-external-y)): $(obj)/pbl-%.gen.o: $(fwdir)
 
 obj-pbl-y			 += $(patsubst %,%.gen.o, $(fw-external-y))
 
-ifeq ($(KBUILD_SRC),)
+ifndef building_out_of_srctree
 # Makefile.build only creates subdirectories for O= builds, but external
 # firmware might live outside the kernel source tree
 _dummy := $(foreach d,$(addprefix $(obj)/,$(dir $(fw-external-y))), $(shell [ -d $(d) ] || mkdir -p $(d)))

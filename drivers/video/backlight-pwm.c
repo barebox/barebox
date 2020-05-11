@@ -34,7 +34,6 @@ struct pwm_backlight {
 	unsigned int *levels;
 	int enable_gpio;
 	int enable_active_high;
-	int max_value;
 	int enabled;
 	unsigned int scale;
 };

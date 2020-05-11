@@ -367,7 +367,7 @@ static int stm32_sdmmc2_end_cmd(struct stm32_sdmmc2_priv *priv,
 
 	/* Check status */
 	if (status & SDMMC_STA_CTIMEOUT) {
-		dev_err(priv->dev, "%s: error SDMMC_STA_CTIMEOUT (0x%x) for cmd %d\n",
+		dev_dbg(priv->dev, "%s: error SDMMC_STA_CTIMEOUT (0x%x) for cmd %d\n",
 			__func__, status, cmd->cmdidx);
 		return -ETIMEDOUT;
 	}

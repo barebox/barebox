@@ -94,4 +94,4 @@ static struct driver_d stpmic1_i2c_driver = {
 	.of_compatible	= DRV_OF_COMPAT(stpmic1_dt_ids),
 };
 
-device_i2c_driver(stpmic1_i2c_driver);
+coredevice_i2c_driver(stpmic1_i2c_driver);

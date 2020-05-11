@@ -202,6 +202,7 @@ static int backlight_pwm_of_probe(struct device_d *dev)
 
 	pwm_backlight->backlight.slew_time_ms = 100;
 	pwm_backlight->backlight.brightness_set = backlight_pwm_set;
+	pwm_backlight->backlight.dev.parent = dev;
 	pwm_backlight->backlight.node = dev->device_node;
 
 	ret = backlight_register(&pwm_backlight->backlight);

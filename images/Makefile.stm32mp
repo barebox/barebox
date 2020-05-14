@@ -17,3 +17,8 @@ pblb-$(CONFIG_MACH_STM32MP157C_DK2) += start_stm32mp157c_dk2
 FILE_barebox-stm32mp157c-dk2.img = start_stm32mp157c_dk2.pblb.stm32
 OPTS_start_stm32mp157c_dk2.pblb.stm32 = $(STM32MP1_OPTS)
 image-$(CONFIG_MACH_STM32MP157C_DK2) += barebox-stm32mp157c-dk2.img
+
+pblb-$(CONFIG_MACH_LXA_MC1) += start_stm32mp157c_lxa_mc1
+FILE_barebox-stm32mp157c-lxa-mc1.img = start_stm32mp157c_lxa_mc1.pblb.stm32
+OPTS_start_stm32mp157c_lxa_mc1.pblb.stm32 = $(STM32MP1_OPTS)
+image-$(CONFIG_MACH_LXA_MC1) += barebox-stm32mp157c-lxa-mc1.img

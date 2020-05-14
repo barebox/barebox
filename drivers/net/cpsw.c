@@ -52,6 +52,10 @@
 #define CPDMA_DESC_EOP		BIT(30)
 #define CPDMA_DESC_OWNER	BIT(29)
 #define CPDMA_DESC_EOQ		BIT(28)
+#define CPDMA_DESC_TO_PORT_EN	BIT(20)
+#define CPDMA_FROM_TO_PORT_SHIFT	16
+#define CPDMA_RX_SOURCE_PORT(__status__)	\
+	(((__status__) >> CPDMA_FROM_TO_PORT_SHIFT) & 0x7)
 
 #define SLIVER_SIZE		0x40
 
@@ -161,10 +165,12 @@ enum cpsw_ale_port_state {
 /* ALE unicast entry flags - passed into cpsw_ale_add_ucast() */
 #define ALE_SECURE	1
 #define ALE_BLOCKED	2
+#define ALE_VLAN	4
 
 struct cpsw_slave {
 	struct cpsw_slave_regs		*regs;
 	struct cpsw_sliver_regs		*sliver;
+	int				port_vlan;
 	int				slave_num;
 	int				phy_id;
 	phy_interface_t			phy_if;
@@ -258,6 +264,7 @@ static inline void cpsw_ale_set_##name(u32 *ale_entry, u32 value)	\
 }
 
 DEFINE_ALE_FIELD(entry_type,		60,	2)
+DEFINE_ALE_FIELD(vlan_id,		48,	12)
 DEFINE_ALE_FIELD(mcast_state,		62,	2)
 DEFINE_ALE_FIELD(port_mask,		66,	3)
 DEFINE_ALE_FIELD(ucast_type,		62,	2)
@@ -265,6 +272,10 @@ DEFINE_ALE_FIELD(port_num,		66,	2)
 DEFINE_ALE_FIELD(blocked,		65,	1)
 DEFINE_ALE_FIELD(secure,		64,	1)
 DEFINE_ALE_FIELD(mcast,			40,	1)
+DEFINE_ALE_FIELD(vlan_untag,		24,	3)
+DEFINE_ALE_FIELD(vlan_reg_mcast,	16,	3)
+DEFINE_ALE_FIELD(vlan_unreg_mcast,	8,	3)
+DEFINE_ALE_FIELD(vlan_member_list,	0,	3)
 
 static char ethbdaddr[6] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
 
@@ -307,6 +318,23 @@ static int cpsw_ale_write(struct cpsw_priv *priv, int idx, u32 *ale_entry)
 	writel(idx | ALE_TABLE_WRITE, priv->ale_regs + ALE_TABLE_CONTROL);
 
 	return idx;
+}
+
+static int cpsw_ale_match_vlan(struct cpsw_priv *priv, u16 vid)
+{
+	u32 ale_entry[ALE_ENTRY_WORDS];
+	int type, idx;
+
+	for (idx = 0; idx < priv->ale_entries; idx++) {
+		cpsw_ale_read(priv, idx, ale_entry);
+		type = cpsw_ale_get_entry_type(ale_entry);
+		if (type != ALE_TYPE_VLAN)
+			continue;
+		if (cpsw_ale_get_vlan_id(ale_entry) == vid)
+			return idx;
+	}
+
+	return -ENOENT;
 }
 
 static int cpsw_ale_match_addr(struct cpsw_priv *priv, u8* addr)
@@ -373,13 +401,47 @@ static int cpsw_ale_find_ageable(struct cpsw_priv *priv)
 	return -ENOENT;
 }
 
-static int cpsw_ale_add_ucast(struct cpsw_priv *priv, u8 *addr,
-			      int port, int flags)
+static int cpsw_ale_add_vlan(struct cpsw_priv *priv, u16 vid, int port_mask,
+			     int untag, int reg_mcast, int unreg_mcast)
 {
 	u32 ale_entry[ALE_ENTRY_WORDS] = {0, 0, 0};
 	int idx;
 
-	cpsw_ale_set_entry_type(ale_entry, ALE_TYPE_ADDR);
+	idx = cpsw_ale_match_vlan(priv, vid);
+	if (idx >= 0)
+		cpsw_ale_read(priv, idx, ale_entry);
+
+	cpsw_ale_set_entry_type(ale_entry, ALE_TYPE_VLAN);
+	cpsw_ale_set_vlan_id(ale_entry, vid);
+	cpsw_ale_set_vlan_untag(ale_entry, untag);
+	cpsw_ale_set_vlan_reg_mcast(ale_entry, reg_mcast);
+	cpsw_ale_set_vlan_unreg_mcast(ale_entry, unreg_mcast);
+	cpsw_ale_set_vlan_member_list(ale_entry, port_mask);
+
+	if (idx < 0)
+		idx = cpsw_ale_match_free(priv);
+	if (idx < 0)
+		idx = cpsw_ale_find_ageable(priv);
+	if (idx < 0)
+		return -ENOMEM;
+
+	cpsw_ale_write(priv, idx, ale_entry);
+	return 0;
+}
+
+static int cpsw_ale_add_ucast(struct cpsw_priv *priv, u8 *addr,
+			      int port, int flags, u16 vid)
+{
+	u32 ale_entry[ALE_ENTRY_WORDS] = {0, 0, 0};
+	int idx;
+
+	if (flags & ALE_VLAN) {
+		cpsw_ale_set_entry_type(ale_entry, ALE_TYPE_VLAN_ADDR);
+		cpsw_ale_set_vlan_id(ale_entry, vid);
+	} else {
+		cpsw_ale_set_entry_type(ale_entry, ALE_TYPE_ADDR);
+	}
+
 	cpsw_ale_set_addr(ale_entry, addr);
 	cpsw_ale_set_ucast_type(ale_entry, ALE_UCAST_PERSISTANT);
 	cpsw_ale_set_secure(ale_entry, (flags & ALE_SECURE) ? 1 : 0);
@@ -398,7 +460,8 @@ static int cpsw_ale_add_ucast(struct cpsw_priv *priv, u8 *addr,
 	return 0;
 }
 
-static int cpsw_ale_add_mcast(struct cpsw_priv *priv, u8 *addr, int port_mask)
+static int cpsw_ale_add_mcast(struct cpsw_priv *priv, u8 *addr, int port_mask,
+			      int flags, u16 vid, int mcast_state)
 {
 	u32 ale_entry[ALE_ENTRY_WORDS] = {0, 0, 0};
 	int idx, mask;
@@ -407,9 +470,14 @@ static int cpsw_ale_add_mcast(struct cpsw_priv *priv, u8 *addr, int port_mask)
 	if (idx >= 0)
 		cpsw_ale_read(priv, idx, ale_entry);
 
-	cpsw_ale_set_entry_type(ale_entry, ALE_TYPE_ADDR);
+	if (flags & ALE_VLAN) {
+		cpsw_ale_set_entry_type(ale_entry, ALE_TYPE_VLAN_ADDR);
+		cpsw_ale_set_vlan_id(ale_entry, vid);
+	} else {
+		cpsw_ale_set_entry_type(ale_entry, ALE_TYPE_ADDR);
+	}
 	cpsw_ale_set_addr(ale_entry, addr);
-	cpsw_ale_set_mcast_state(ale_entry, ALE_MCAST_FWD_2);
+	cpsw_ale_set_mcast_state(ale_entry, mcast_state);
 
 	mask = cpsw_ale_get_port_mask(ale_entry);
 	port_mask |= mask;
@@ -673,6 +741,7 @@ static inline u32 cpsw_get_slave_port(struct cpsw_priv *priv, u32 slave_num)
 static void cpsw_slave_init(struct cpsw_slave *slave, struct cpsw_priv *priv)
 {
 	u32	slave_port;
+	u32 port_mask;
 
 	dev_dbg(&slave->dev, "* %s\n", __func__);
 
@@ -689,8 +758,22 @@ static void cpsw_slave_init(struct cpsw_slave *slave, struct cpsw_priv *priv)
 	slave_port = cpsw_get_slave_port(priv, slave->slave_num);
 	cpsw_ale_port_state(priv, slave_port, ALE_PORT_STATE_FORWARD);
 
+	port_mask = BIT(slave_port) | BIT(priv->host_port);
+
+	/* set port_vlan to host_vlan */
+	writel(BIT(slave->slave_num), &slave->regs->port_vlan);
+	slave->port_vlan = readl(&slave->regs->port_vlan);
+	slave->port_vlan &= 0xfff;
+
+	/* add dual emac default entries */
+	cpsw_ale_add_vlan(priv, slave->port_vlan, port_mask,
+			  port_mask, port_mask, 0);
 	/* add broadcast address */
-	cpsw_ale_add_mcast(priv, ethbdaddr, 1 << slave_port);
+	cpsw_ale_add_mcast(priv, ethbdaddr, BIT(priv->host_port), ALE_VLAN,
+			   slave->port_vlan, 0);
+	cpsw_ale_add_ucast(priv, priv->mac_addr, priv->host_port,
+			   ALE_SECURE | ALE_VLAN,
+			   slave->port_vlan);
 }
 
 static struct cpdma_desc *cpdma_desc_alloc(struct cpsw_priv *priv)
@@ -714,7 +797,7 @@ static void cpdma_desc_free(struct cpsw_priv *priv, struct cpdma_desc *desc)
 }
 
 static int cpdma_submit(struct cpsw_priv *priv, struct cpdma_chan *chan,
-			void *buffer, int len)
+			void *buffer, int len, int port)
 {
 	struct cpdma_desc *desc, *prev;
 	u32 mode;
@@ -727,6 +810,10 @@ static int cpdma_submit(struct cpsw_priv *priv, struct cpdma_chan *chan,
 		len = PKT_MIN;
 
 	mode = CPDMA_DESC_OWNER | CPDMA_DESC_SOP | CPDMA_DESC_EOP;
+
+	if (port)
+		mode |= CPDMA_DESC_TO_PORT_EN |
+			(port << CPDMA_FROM_TO_PORT_SHIFT);
 
 	writel(0, &desc->hw_next);
 	writel((u32)buffer, &desc->hw_buffer);
@@ -758,10 +845,11 @@ done:
 	return 0;
 }
 
-static int cpdma_process(struct cpsw_priv *priv, struct cpdma_chan *chan,
+static int cpdma_process(struct cpsw_slave *slave, struct cpdma_chan *chan,
 			 void **buffer, int *len)
 {
 	struct cpdma_desc *desc = chan->head;
+	struct cpsw_priv *priv = slave->cpsw;
 	u32 status;
 
 	if (!desc)
@@ -783,6 +871,14 @@ static int cpdma_process(struct cpsw_priv *priv, struct cpdma_chan *chan,
 		return -EBUSY;
 	}
 
+	/* cpsw_send is cleaning finished descriptors on next send
+	 * so we only have to check for rx channel here
+	 */
+	if (CPDMA_RX_SOURCE_PORT(status) != BIT(slave->slave_num) &&
+	    chan == &priv->rx_chan) {
+		return -ENOMSG;
+	}
+
 	chan->head = (void *)readl(&desc->hw_next);
 
 	writel((u32)desc, chan->cp);
@@ -801,7 +897,7 @@ static int cpsw_open(struct eth_device *edev)
 {
 	struct cpsw_slave *slave = edev->priv;
 	struct cpsw_priv *priv = slave->cpsw;
-	int i, ret;
+	int ret;
 
 	dev_dbg(&slave->dev, "* %s\n", __func__);
 
@@ -810,6 +906,16 @@ static int cpsw_open(struct eth_device *edev)
 	if (ret)
 		return ret;
 
+	cpsw_slave_init(slave, priv);
+
+	return 0;
+}
+
+static int cpsw_setup(struct device_d *dev)
+{
+	struct cpsw_priv *priv = dev->priv;
+	int i, ret;
+
 	/* soft reset the controller and initialize priv */
 	soft_reset(priv, &priv->regs->soft_reset);
 
@@ -817,7 +923,10 @@ static int cpsw_open(struct eth_device *edev)
 	cpsw_ale_enable(priv, 1);
 	cpsw_ale_clear(priv, 1);
 	cpsw_ale_bypass(priv, 0);
-	cpsw_ale_vlan_aware(priv, 0); /* vlan unaware mode */
+	cpsw_ale_vlan_aware(priv, 1); /* vlan aware mode */
+
+	/* dual mac mode in fifo */
+	writel(BIT(16), &priv->host_port_regs->flow_thresh);
 
 	/* setup host port priority mapping */
 	writel(0x76543210, &priv->host_port_regs->cpdma_tx_pri_map);
@@ -830,12 +939,6 @@ static int cpsw_open(struct eth_device *edev)
 	writel(BIT(priv->host_port), &priv->regs->stat_port_en);
 
 	cpsw_ale_port_state(priv, priv->host_port, ALE_PORT_STATE_FORWARD);
-
-	cpsw_ale_add_ucast(priv, priv->mac_addr, priv->host_port,
-			   ALE_SECURE);
-	cpsw_ale_add_mcast(priv, ethbdaddr, 1 << priv->host_port);
-
-	cpsw_slave_init(slave, priv);
 
 	/* init descriptor pool */
 	for (i = 0; i < NUM_DESCS; i++) {
@@ -873,9 +976,9 @@ static int cpsw_open(struct eth_device *edev)
 	/* submit rx descs */
 	for (i = 0; i < PKTBUFSRX - 2; i++) {
 		ret = cpdma_submit(priv, &priv->rx_chan, NetRxPackets[i],
-				   PKTSIZE);
+				   PKTSIZE, 0);
 		if (ret < 0) {
-			dev_err(&slave->dev, "error %d submitting rx desc\n", ret);
+			dev_err(dev, "error %d submitting rx desc\n", ret);
 			break;
 		}
 	}
@@ -910,12 +1013,13 @@ static int cpsw_send(struct eth_device *edev, void *packet, int length)
 	dev_dbg(&slave->dev, "* %s slave %d\n", __func__, slave->slave_num);
 
 	/* first reap completed packets */
-	while (cpdma_process(priv, &priv->tx_chan, &buffer, &len) >= 0);
+	while (cpdma_process(slave, &priv->tx_chan, &buffer, &len) >= 0);
 
 	dev_dbg(&slave->dev, "%s: %i bytes @ 0x%p\n", __func__, length, packet);
 
 	dma_sync_single_for_device((unsigned long)packet, length, DMA_TO_DEVICE);
-	ret = cpdma_submit(priv, &priv->tx_chan, packet, length);
+	ret = cpdma_submit(priv, &priv->tx_chan, packet,
+			   length, BIT(slave->slave_num));
 	dma_sync_single_for_cpu((unsigned long)packet, length, DMA_TO_DEVICE);
 
 	return ret;
@@ -928,13 +1032,13 @@ static int cpsw_recv(struct eth_device *edev)
 	void *buffer;
 	int len;
 
-	while (cpdma_process(priv, &priv->rx_chan, &buffer, &len) >= 0) {
+	while (cpdma_process(slave, &priv->rx_chan, &buffer, &len) >= 0) {
 		dma_sync_single_for_cpu((unsigned long)buffer, len,
 				DMA_FROM_DEVICE);
 		net_receive(edev, buffer, len);
 		dma_sync_single_for_device((unsigned long)buffer, len,
 				DMA_FROM_DEVICE);
-		cpdma_submit(priv, &priv->rx_chan, buffer, PKTSIZE);
+		cpdma_submit(priv, &priv->rx_chan, buffer, PKTSIZE, 0);
 	}
 
 	return 0;
@@ -1015,7 +1119,7 @@ static struct cpsw_data cpsw1_data = {
 	.cpdma_reg_ofs		= 0x100,
 	.state_ram_ofs		= 0x200,
 	.ale_reg_ofs		= 0x600,
-	.slave_ofs		= 0x050,
+	.slave_ofs		= 0x058,
 	.slave_size		= 0x040,
 	.sliver_ofs		= 0x700,
 	/* FIXME: mdio_reg_ofs and cppi_ram_ofs missing */
@@ -1026,7 +1130,7 @@ static struct cpsw_data cpsw2_data = {
 	.cpdma_reg_ofs		= 0x800,
 	.state_ram_ofs		= 0xa00,
 	.ale_reg_ofs		= 0xd00,
-	.slave_ofs		= 0x200,
+	.slave_ofs		= 0x208,
 	.slave_size		= 0x100,
 	.sliver_ofs		= 0xd80,
 	.mdio_reg_ofs		= 0x1000,
@@ -1240,6 +1344,8 @@ static int cpsw_probe(struct device_d *dev)
 	}
 
 	dev->priv = priv;
+
+	cpsw_setup(dev);
 
 	return 0;
 out:

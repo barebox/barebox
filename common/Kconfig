@@ -144,9 +144,6 @@ config LOCALVERSION_AUTO
 
 	  which is done within the script "scripts/setlocalversion".)
 
-config BOARDINFO
-	string
-
 config BANNER
 	bool "display banner"
 	default y

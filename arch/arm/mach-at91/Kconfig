@@ -6,9 +6,6 @@ config HAVE_AT91_UTMI
 config HAVE_AT91_USB_CLK
 	bool
 
-config HAVE_AT91_PIO4
-	bool
-
 config COMMON_CLK_AT91
 	bool
 	select COMMON_CLK
@@ -142,7 +139,6 @@ config SOC_AT91RM9200
 	bool
 	select CPU_ARM920T
 	select HAS_AT91_ETHER
-	select HAVE_AT91_DBGU0
 	select HAVE_AT91_USB_CLK
 	select PINCTRL_AT91
 

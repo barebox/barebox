@@ -245,6 +245,7 @@ static char *fastboot_msg[] = {
 	[FASTBOOT_MSG_FAIL] = "FAIL",
 	[FASTBOOT_MSG_INFO] = "INFO",
 	[FASTBOOT_MSG_DATA] = "DATA",
+	[FASTBOOT_MSG_NONE] = "",
 };
 
 int fastboot_tx_print(struct fastboot *fb, enum fastboot_msg_type type,
@@ -273,6 +274,7 @@ int fastboot_tx_print(struct fastboot *fb, enum fastboot_msg_type type,
 	case FASTBOOT_MSG_INFO:
 		pr_info("%pV\n", &vaf);
 		break;
+	case FASTBOOT_MSG_NONE:
 	case FASTBOOT_MSG_DATA:
 		break;
 	}
@@ -287,6 +289,7 @@ int fastboot_tx_print(struct fastboot *fb, enum fastboot_msg_type type,
 
 static void cb_reboot(struct fastboot *fb, const char *cmd)
 {
+	fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, "");
 	restart_machine();
 }
 

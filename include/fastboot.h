@@ -5,6 +5,8 @@
 #include <file-list.h>
 #include <net.h>
 
+#define FASTBOOT_MAX_CMD_LEN  64
+
 /*
  * Return codes for the exec_cmd callback above:
  *
@@ -51,6 +53,7 @@ enum fastboot_msg_type {
 	FASTBOOT_MSG_FAIL,
 	FASTBOOT_MSG_INFO,
 	FASTBOOT_MSG_DATA,
+	FASTBOOT_MSG_NONE,
 };
 
 #ifdef CONFIG_FASTBOOT_BASE

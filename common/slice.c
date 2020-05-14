@@ -3,6 +3,7 @@
 #define pr_fmt(fmt) "slice: " fmt
 
 #include <common.h>
+#include <init.h>
 #include <slice.h>
 
 /*
@@ -230,6 +231,37 @@ void slice_exit(struct slice *slice)
 
 	free(slice->name);
 }
+
+struct slice command_slice;
+
+/**
+ * command_slice_acquire - acquire the command slice
+ *
+ * The command slice is acquired by default. It is only released
+ * at certain points we know it's safe to execute code in the
+ * background, like when the shell is waiting for input.
+ */
+void command_slice_acquire(void)
+{
+	slice_acquire(&command_slice);
+}
+
+/**
+ * command_slice_release - release the command slice
+ */
+void command_slice_release(void)
+{
+	slice_release(&command_slice);
+}
+
+static int command_slice_init(void)
+{
+	slice_init(&command_slice, "command");
+	slice_acquire(&command_slice);
+	return 0;
+}
+
+pure_initcall(command_slice_init);
 
 #if defined CONFIG_CMD_SLICE
 

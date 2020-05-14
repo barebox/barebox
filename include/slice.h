@@ -28,4 +28,9 @@ void slice_exit(struct slice *slice);
 
 void slice_debug_acquired(struct slice *slice);
 
+extern struct slice command_slice;
+
+void command_slice_acquire(void);
+void command_slice_release(void);
+
 #endif /* __SLICE_H */

@@ -34,6 +34,7 @@
 #include <debug_ll.h>
 #include <fs.h>
 #include <errno.h>
+#include <slice.h>
 #include <linux/stat.h>
 #include <envfs.h>
 #include <magicvar.h>
@@ -272,8 +273,10 @@ enum autoboot_state do_autoboot_countdown(void)
 		break;
 	}
 
+	command_slice_release();
 	ret = console_countdown(global_autoboot_timeout, flags, abortkeys,
 				&outkey);
+	command_slice_acquire();
 
 	if (ret == 0)
 		autoboot_state = AUTOBOOT_BOOT;

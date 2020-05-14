@@ -342,7 +342,8 @@ int fastboot_handle_download_data(struct fastboot *fb, const void *buffer,
 
 void fastboot_download_finished(struct fastboot *fb)
 {
-	close(fb->download_fd);
+	if (!fastboot_download_to_buf(fb))
+		close(fb->download_fd);
 
 	printf("\n");
 

@@ -2,7 +2,7 @@ menu "Memory controller drivers"
 
 config MC_TEGRA124
 	bool "Support for Tegra124 memory controller"
-	depends on ARCH_TEGRA
+	depends on ARCH_TEGRA || COMPILE_TEST
 	help
 	  Say yes here to include the driver for the memory controller found on
 	  the Tegra124 SoC. This driver performs the necessary initialization

@@ -147,16 +147,7 @@ static inline struct device_d * at91_register_uart(unsigned id, unsigned pins)
 }
 #endif
 
-/* Multimedia Card Interface */
-struct atmel_mci_platform_data {
-	unsigned slot_b;
-	unsigned bus_width;
-	int detect_pin;
-	int wp_pin;
-	char *devname;
-};
-
-void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data);
+#include <platform_data/atmel-mci.h>
 
 /* SPI Master platform data */
 struct at91_spi_platform_data {

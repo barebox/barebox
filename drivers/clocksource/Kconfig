@@ -12,16 +12,16 @@ config ARM_SMP_TWD
 	depends on ARM && CPU_V7
 
 config CLOCKSOURCE_BCM283X
-	bool
-	depends on ARCH_BCM283X
+	bool "BCM283x clock source" if COMPILE_TEST
+	depends on ARCH_BCM283X || COMPILE_TEST
 
 config CLOCKSOURCE_CLPS711X
-	bool
-	depends on ARCH_CLPS711X
+	bool "CLPS711x clock source" if COMPILE_TEST
+	depends on ARCH_CLPS711X || COMPILE_TEST
 
 config CLOCKSOURCE_DIGIC
-	bool
-	depends on ARCH_DIGIC
+	bool "DIGIC clock source" if COMPILE_TEST
+	depends on ARCH_DIGIC || COMPILE_TEST
 
 config CLOCKSOURCE_DUMMY_RATE
 	int
@@ -52,20 +52,20 @@ config CLOCKSOURCE_KVX
 	depends on KVX
 
 config CLOCKSOURCE_MVEBU
-	bool
-	depends on ARCH_MVEBU
+	bool "MVEBU clock source" if COMPILE_TEST
+	depends on ARCH_MVEBU || COMPILE_TEST
 
 config CLOCKSOURCE_NOMADIK
-	bool
-	depends on ARM
+	bool "Nomadik clock source" if COMPILE_TEST
+	depends on ARM || COMPILE_TEST
 
 config CLOCKSOURCE_ORION
-	bool
-	depends on ARCH_MVEBU
+	bool "ORION clock source" if COMPILE_TEST
+	depends on ARCH_MVEBU || COMPILE_TEST
 
 config CLOCKSOURCE_UEMD
-	bool
-	depends on ARCH_UEMD
+	bool "UEMD clock source" if COMPILE_TEST
+	depends on ARCH_UEMD || COMPILE_TEST
 
 config CLOCKSOURCE_ROCKCHIP
 	bool
@@ -75,16 +75,18 @@ config CLOCKSOURCE_ATMEL_PIT
        bool
 
 config CLOCKSOURCE_ARM_ARCHITECTED_TIMER
-	bool
+	bool "ARM architected timer clock source" if COMPILE_TEST
 	default y
 	depends on ARM && (CPU_64v8 || CPU_V7)
 
 config CLOCKSOURCE_ARM_GLOBAL_TIMER
-	bool
-	depends on ARM && CPU_V7
+	bool "ARM global timer clock source" if COMPILE_TEST
+	depends on (ARM && CPU_V7) || COMPILE_TEST
+
 config CLOCKSOURCE_IMX_GPT
-	def_bool y
-	depends on ARCH_HAS_IMX_GPT
+	bool "i.MX GPT clock source" if COMPILE_TEST
+	default y if ARCH_HAS_IMX_GPT
+	depends on ARCH_HAS_IMX_GPT || COMPILE_TEST
 
 config CLOCKSOURCE_DW_APB_TIMER
 	bool "DW APB timer driver"

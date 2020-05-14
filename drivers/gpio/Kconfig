@@ -11,7 +11,7 @@ config GPIO_GENERIC
 
 config GPIO_DIGIC
 	bool "GPIO support for Canon DIGIC"
-	depends on ARCH_DIGIC
+	depends on ARCH_DIGIC || COMPILE_TEST
 
 config GPIO_74164
 	bool "Generic SPI attached shift register"
@@ -23,7 +23,7 @@ config GPIO_74164
 
 config GPIO_CLPS711X
 	bool "GPIO support for CLPS711X"
-	depends on ARCH_CLPS711X
+	depends on ARCH_CLPS711X || COMPILE_TEST
 	select GPIO_GENERIC
 	help
 	  Say yes here to enable the GPIO driver for the CLPS711X CPUs
@@ -31,7 +31,7 @@ config GPIO_CLPS711X
 config GPIO_DAVINCI
 	bool "TI Davinci/Keystone GPIO support"
 	default y if ARCH_DAVINCI
-	depends on ARM && ARCH_DAVINCI
+	depends on (ARM && ARCH_DAVINCI) || COMPILE_TEST
 	help
 	  Say yes here to enable GPIO support for TI Davinci/Keystone SoCs.
 
@@ -43,23 +43,26 @@ config GPIO_GENERIC_PLATFORM
 	  GPIO controllers
 
 config GPIO_IMX
-	def_bool ARCH_IMX
+	bool "i.MX GPIO controller" if COMPILE_TEST
+	default y if ARCH_IMX
 
 config GPIO_VF610
-	def_bool ARCH_VF610
+	bool "VF610 GPIO controller" if COMPILE_TEST
+	default y if ARCH_VF610
 
 config GPIO_MXS
-	def_bool ARCH_MXS
+	bool "MXS GPIO controller" if COMPILE_TEST
+	default y if ARCH_MXS
 
 config GPIO_JZ4740
 	bool "GPIO support for Ingenic SoCs"
-	depends on MACH_MIPS_XBURST
+	depends on MACH_MIPS_XBURST || COMPILE_TEST
 	help
 	  Say yes here to enable the GPIO driver for the Ingenic SoCs.
 
 config GPIO_MALTA_FPGA_I2C
 	bool "Malta CBUS FPGA I2C GPIO"
-	depends on MACH_MIPS_MALTA
+	depends on MACH_MIPS_MALTA || COMPILE_TEST
 	help
 	  Support access to the CBUS FPGA I2C lines through the gpio library.
 
@@ -69,18 +72,19 @@ config GPIO_MALTA_FPGA_I2C
 
 config GPIO_MPC8XXX
 	bool "MPC512x/MPC8xxx/QorIQ GPIO support"
-	depends on ARCH_LAYERSCAPE
+	depends on ARCH_LAYERSCAPE || COMPILE_TEST
 	select GPIO_GENERIC
 	help
 	  Say Y here if you're going to use hardware that connects to the
 	  MPC512x/831x/834x/837x/8572/8610/QorIQ GPIOs.
 
 config GPIO_OMAP
-	def_bool ARCH_OMAP
+	bool "OMAP GPIO controller" if COMPILE_TEST
+	default y if ARCH_OMAP
 
 config GPIO_ORION
 	bool "GPIO support for Marvell Orion/MVEBU SoCs"
-	depends on ARCH_MVEBU
+	depends on ARCH_MVEBU || COMPILE_TEST
 	help
 	  Say yes here to add the driver for the GPIO controller
 	  found on Marvell Orion and MVEBU SoCs (Armada 370/XP,
@@ -142,7 +146,7 @@ config GPIO_STMPE
 
 config GPIO_TEGRA
 	bool "GPIO support for the Tegra SoCs"
-	depends on ARCH_TEGRA
+	depends on ARCH_TEGRA || COMPILE_TEST
 	help
 	  Say yes here to include the driver for the GPIO controller found on the
 	  Tegra line of SoCs.

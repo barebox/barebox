@@ -94,7 +94,7 @@ config IMAGE_SPARSE
 	bool
 
 config STMP_DEVICE
-	bool
+	bool "STMP device support" if COMPILE_TEST
 
 config FSL_QE_FIRMWARE
 	select CRC32

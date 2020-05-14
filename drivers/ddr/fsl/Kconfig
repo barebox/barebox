@@ -1,5 +1,5 @@
 config DDR_FSL
-	bool
+	bool "Freescale DDR support" if COMPILE_TEST
 
 if DDR_FSL
 

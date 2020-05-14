@@ -39,8 +39,8 @@ config BLOCK_WRITE
 	bool
 
 config ELF
-	bool
-	depends on MIPS
+	bool "ELF Support" if COMPILE_TEST
+	depends on MIPS || COMPILE_TEST
 
 config FILETYPE
 	bool
@@ -1335,6 +1335,19 @@ config KASAN
 	help
 	  Enables KASAN (KernelAddressSANitizer) - runtime memory debugger,
 	  designed to find out-of-bounds accesses and use-after-free bugs.
+
+config COMPILE_TEST
+	bool "compile-test drivers of other platforms"
+	default n
+	help
+	  Some drivers can be compiled on a different platform than they are
+	  intended to be run on. Despite they cannot be used there due to
+	  missing HW support, developers still, opposing to users, might want
+	  to build such drivers to compile-test them.
+
+	  If you are a developer and want to build as much as currently possible,
+	  say Y here. If you are a user, say N here to avoid being prompted for
+	  inclusion of unrelated drivers.
 
 endmenu
 

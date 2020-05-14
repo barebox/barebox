@@ -27,7 +27,7 @@ config KEYBOARD_GPIO
 
 config KEYBOARD_IMX_KEYPAD
 	bool "IMX Keypad"
-	depends on ARCH_IMX
+	depends on ARCH_IMX || COMPILE_TEST
 	select INPUT_MATRIXKMAP
 	select POLLER
 	select INPUT

@@ -1,5 +1,5 @@
 config HW_HAS_PCI
-	bool
+	bool "Compile in PCI core" if COMPILE_TEST
 
 if HW_HAS_PCI
 
@@ -49,7 +49,7 @@ config PCI_IMX6
 
 config PCI_LAYERSCAPE
 	bool "Freescale Layerscape PCIe controller"
-	depends on ARCH_LAYERSCAPE
+	depends on ARCH_LAYERSCAPE || COMPILE_TEST
 	select PCIE_DW
 	select OF_PCI
 	select PCI

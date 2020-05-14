@@ -18,7 +18,7 @@ config IMX_THERMAL
 
 config QORIQ_THERMAL
 	tristate "QorIQ Thermal Monitoring Unit"
-	depends on ARCH_IMX8MQ
+	depends on ARCH_IMX8MQ || COMPILE_TEST
 	help
 	  Support for Thermal Monitoring Unit (TMU) found on QorIQ and
 	  i.MX8MQ platforms.

@@ -74,6 +74,7 @@ config NAND_IMX
 config NAND_MXS
 	bool
 	select NAND_BBT
+	select STMP_DEVICE
 	prompt "i.MX23/28/6 NAND driver"
 	depends on MXS_APBH_DMA
 
@@ -86,7 +87,7 @@ config NAND_OMAP_GPMC
 
 config MTD_NAND_OMAP_ELM
 	bool "Support for ELM (Error Location Module) on OMAP platforms"
-	depends on NAND_OMAP_GPMC
+	depends on NAND_OMAP_GPMC || COMPILE_TEST
 	help
 	  This config enables the ELM hardware engine, which can be used to
 	  locate and correct errors when using BCH ECC scheme. This offloads
@@ -97,14 +98,14 @@ config MTD_NAND_OMAP_ELM
 config NAND_ORION
 	bool
 	prompt "Marvell Orion NAND driver"
-	depends on ARCH_KIRKWOOD
+	depends on ARCH_KIRKWOOD || COMPILE_TEST
 	help
 	  Support for the Orion NAND controller, present in Kirkwood SoCs.
 
 config NAND_MRVL_NFC
 	bool
 	prompt "Marvell PXA3xx NAND driver"
-	depends on ARCH_ARMADA_370 || ARCH_ARMADA_XP || ARCH_PXA3XX
+	depends on ARCH_ARMADA_370 || ARCH_ARMADA_XP || ARCH_PXA3XX || COMPILE_TEST
 	help
 	  Support for the PXA3xx NAND controller, present in Armada 370/XP and
 	  PXA3xx SoCs.
@@ -117,7 +118,7 @@ config NAND_ATMEL
 config NAND_ATMEL_PMECC
 	bool
 	prompt "PMECC support"
-	depends on NAND_ATMEL
+	depends on NAND_ATMEL || COMPILE_TEST
 	select NAND_ECC_HW
 	help
 	  Support for PMECC present on the SoC sam9x5 and sam9n12

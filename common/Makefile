@@ -69,6 +69,7 @@ obj-$(CONFIG_SERIAL_DEV_BUS)	+= serdev.o
 obj-$(CONFIG_USBGADGET_START)	+= usbgadget.o
 pbl-$(CONFIG_PBL_OPTEE)		+= optee.o
 obj-$(CONFIG_BOOTM_OPTEE)	+= optee.o
+obj-$(CONFIG_FASTBOOT_BASE)	+= fastboot.o
 
 ifdef CONFIG_PASSWORD
 

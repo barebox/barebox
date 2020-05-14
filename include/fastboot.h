@@ -53,6 +53,21 @@ enum fastboot_msg_type {
 	FASTBOOT_MSG_DATA,
 };
 
+#ifdef CONFIG_FASTBOOT_BASE
+bool get_fastboot_bbu(void);
+const char *get_fastboot_partitions(void);
+#else
+static inline int get_fastboot_bbu(void)
+{
+	return false;
+}
+
+static inline const char *get_fastboot_partitions(void)
+{
+	return NULL;
+}
+#endif
+
 int fastboot_generic_init(struct fastboot *fb, bool export_bbu);
 void fastboot_generic_close(struct fastboot *fb);
 void fastboot_generic_free(struct fastboot *fb);

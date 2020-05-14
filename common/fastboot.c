@@ -46,6 +46,8 @@
 #define FASTBOOT_VERSION		"0.4"
 
 static unsigned int fastboot_max_download_size = SZ_8M;
+static int fastboot_bbu;
+static char *fastboot_partitions;
 
 struct fb_variable {
 	char *name;
@@ -903,17 +905,43 @@ void fastboot_exec_cmd(struct fastboot *fb, const char *cmdbuf)
 				ARRAY_SIZE(cmd_dispatch_info));
 }
 
+bool get_fastboot_bbu(void)
+{
+	return fastboot_bbu;
+}
+
+const char *get_fastboot_partitions(void)
+{
+	return fastboot_partitions;
+}
+
 static int fastboot_globalvars_init(void)
 {
 	if (IS_ENABLED(CONFIG_FASTBOOT_SPARSE))
-		globalvar_add_simple_int("usbgadget.fastboot_max_download_size",
+		globalvar_add_simple_int("fastboot.max_download_size",
 				 &fastboot_max_download_size, "%u");
+	globalvar_add_simple_bool("fastboot.bbu", &fastboot_bbu);
+	globalvar_add_simple_string("fastboot.partitions",
+				    &fastboot_partitions);
+
+	globalvar_alias_deprecated("usbgadget.fastboot_function",
+				   "fastboot.partitions");
+	globalvar_alias_deprecated("usbgadget.fastboot_bbu",
+				   "fastboot.bbu");
+	globalvar_alias_deprecated("usbgadget.fastboot_max_download_size",
+				   "fastboot.max_download_size");
 
 	return 0;
 }
 
 device_initcall(fastboot_globalvars_init);
 
-BAREBOX_MAGICVAR_NAMED(global_usbgadget_fastboot_max_download_size,
-		       global.usbgadget.fastboot_max_download_size,
+BAREBOX_MAGICVAR_NAMED(global_fastboot_max_download_size,
+		       global.fastboot.max_download_size,
 		       "Fastboot maximum download size");
+BAREBOX_MAGICVAR_NAMED(global_fastboot_partitions,
+		       global.fastboot.partitions,
+		       "Partitions exported for update via fastboot");
+BAREBOX_MAGICVAR_NAMED(global_fastboot_bbu,
+		       global.fastboot.bbu,
+		       "Export barebox update handlers via fastboot");

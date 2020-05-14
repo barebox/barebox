@@ -30,8 +30,6 @@
 static int autostart;
 static int acm;
 static char *dfu_function;
-static char *fastboot_function;
-static int fastboot_bbu;
 
 static struct file_list *parse(const char *files)
 {
@@ -51,13 +49,14 @@ int usbgadget_register(bool dfu, const char *dfu_opts,
 	int ret;
 	struct device_d *dev;
 	struct f_multi_opts *opts;
+	const char *fastboot_partitions = get_fastboot_partitions();
 
 	if (dfu && !dfu_opts && dfu_function && *dfu_function)
 		dfu_opts = dfu_function;
 
-	if (fastboot && !fastboot_opts &&
-	    fastboot_function && *fastboot_function)
-		fastboot_opts = fastboot_function;
+	if (IS_ENABLED(CONFIG_FASTBOOT_BASE) && fastboot && !fastboot_opts &&
+	    fastboot_partitions && *fastboot_partitions)
+		fastboot_opts = fastboot_partitions;
 
 	if (!dfu_opts && !fastboot_opts && !acm)
 		return COMMAND_ERROR_USAGE;
@@ -104,6 +103,8 @@ int usbgadget_register(bool dfu, const char *dfu_opts,
 
 static int usbgadget_autostart(void)
 {
+	bool fastboot_bbu = get_fastboot_bbu();
+
 	if (!IS_ENABLED(CONFIG_USB_GADGET_AUTOSTART) || !autostart)
 		return 0;
 
@@ -116,12 +117,8 @@ static int usbgadget_globalvars_init(void)
 	if (IS_ENABLED(CONFIG_USB_GADGET_AUTOSTART)) {
 		globalvar_add_simple_bool("usbgadget.autostart", &autostart);
 		globalvar_add_simple_bool("usbgadget.acm", &acm);
-		globalvar_add_simple_bool("usbgadget.fastboot_bbu",
-					  &fastboot_bbu);
 	}
 	globalvar_add_simple_string("usbgadget.dfu_function", &dfu_function);
-	globalvar_add_simple_string("usbgadget.fastboot_function",
-				    &fastboot_function);
 
 	return 0;
 }
@@ -136,9 +133,3 @@ BAREBOX_MAGICVAR_NAMED(global_usbgadget_acm,
 BAREBOX_MAGICVAR_NAMED(global_usbgadget_dfu_function,
 		       global.usbgadget.dfu_function,
 		       "usbgadget: Create DFU function");
-BAREBOX_MAGICVAR_NAMED(global_usbgadget_fastboot_function,
-		       global.usbgadget.fastboot_function,
-		       "usbgadget: Create Android Fastboot function");
-BAREBOX_MAGICVAR_NAMED(global_usbgadget_fastboot_bbu,
-		       global.usbgadget.fastboot_bbu,
-		       "usbgadget: export barebox update handlers via fastboot");

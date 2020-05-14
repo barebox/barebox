@@ -367,7 +367,7 @@ static int stm32_sdmmc2_end_cmd(struct stm32_sdmmc2_priv *priv,
 
 	/* Check status */
 	if (status & SDMMC_STA_CTIMEOUT) {
-		dev_err(priv->dev, "%s: error SDMMC_STA_CTIMEOUT (0x%x) for cmd %d\n",
+		dev_dbg(priv->dev, "%s: error SDMMC_STA_CTIMEOUT (0x%x) for cmd %d\n",
 			__func__, status, cmd->cmdidx);
 		return -ETIMEDOUT;
 	}
@@ -481,11 +481,8 @@ static int stm32_sdmmc2_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 {
 	struct stm32_sdmmc2_priv *priv = to_mci_host(mci);
 	u32 cmdat = data ? SDMMC_CMD_CMDTRANS : 0;
-	u32 data_length;
-	int ret, retry = 3;
-
-retry_cmd:
-	data_length = 0;
+	u32 data_length = 0;
+	int ret;
 
 	if (data) {
 		data_length = data->blocks * data->blocksize;
@@ -528,15 +525,6 @@ retry_cmd:
 		ret = stm32_sdmmc2_end_cmd(priv, &stop_cmd);
 
 		writel(SDMMC_ICR_STATIC_FLAGS, priv->base + SDMMC_ICR);
-	}
-
-	if (ret && retry) {
-		dev_warn(priv->dev, "%s: cmd %d failed, retrying ...\n",
-			 __func__, cmd->cmdidx);
-
-		retry--;
-
-		goto retry_cmd;
 	}
 
 	dev_dbg(priv->dev, "%s: end for CMD %d, ret = %d\n", __func__,

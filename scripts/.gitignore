@@ -30,3 +30,4 @@ omap4_usbboot
 omap3-usb-loader
 mips-relocs
 rsatoc
+stm32image

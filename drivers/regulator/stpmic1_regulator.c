@@ -433,4 +433,4 @@ static struct driver_d stpmic1_regulator_driver = {
 	.probe = stpmic1_regulator_probe,
 	.of_compatible = DRV_OF_COMPAT(stpmic1_regulator_of_match),
 };
-device_platform_driver(stpmic1_regulator_driver);
+coredevice_platform_driver(stpmic1_regulator_driver);

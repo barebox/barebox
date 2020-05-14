@@ -319,6 +319,8 @@ static inline int i2c_driver_register(struct driver_d *drv)
 	return register_driver(drv);
 }
 
+#define coredevice_i2c_driver(drv) \
+	register_driver_macro(coredevice, i2c, drv)
 #define device_i2c_driver(drv) \
 	register_driver_macro(device, i2c, drv)
 

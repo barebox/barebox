@@ -33,7 +33,7 @@ struct stm32_bsec_data {
 	int num_regs;
 };
 
-static int bsec_smc(struct bsec_priv *priv, u8 op, enum bsec_field field,
+static int bsec_smc(struct bsec_priv *priv, enum bsec_op op, u32 field,
 		    unsigned data2, unsigned *val)
 {
 	enum bsec_smc ret = stm32mp_smc(priv->svc_id, op, field / 4, data2, val);
@@ -77,15 +77,49 @@ static int stm32_bsec_write(struct device_d *dev, int offset,
 {
 	struct bsec_priv *priv = dev->parent->priv;
 
+	/* Allow only writing complete 32-bits aligned words */
+	if ((bytes % 4) || (offset % 4))
+		return -EINVAL;
+
 	return regmap_bulk_write(priv->map, offset, val, bytes);
 }
 
 static int stm32_bsec_read(struct device_d *dev, int offset,
-			   void *val, int bytes)
+			   void *buf, int bytes)
 {
 	struct bsec_priv *priv = dev->parent->priv;
+	u32 roffset, rbytes, val;
+	u8 *buf8 = buf, *val8 = (u8 *)&val;
+	int i, j = 0, ret, skip_bytes, size;
 
-	return regmap_bulk_read(priv->map, offset, val, bytes);
+	/* Round unaligned access to 32-bits */
+	roffset = rounddown(offset, 4);
+	skip_bytes = offset & 0x3;
+	rbytes = roundup(bytes + skip_bytes, 4);
+
+	if (roffset + rbytes > priv->config.size)
+		return -EINVAL;
+
+	for (i = roffset; i < roffset + rbytes; i += 4) {
+		ret = regmap_bulk_read(priv->map, i, &val, 4);
+		if (ret) {
+			dev_err(dev, "Can't read data%d (%d)\n", i, ret);
+			return ret;
+		}
+
+		/* skip first bytes in case of unaligned read */
+		if (skip_bytes)
+			size = min(bytes, 4 - skip_bytes);
+		else
+			size = min(bytes, 4);
+
+		memcpy(&buf8[j], &val8[skip_bytes], size);
+		bytes -= size;
+		j += size;
+		skip_bytes = 0;
+	}
+
+	return 0;
 }
 
 static const struct nvmem_bus stm32_bsec_nvmem_bus = {
@@ -185,8 +219,8 @@ static int stm32_bsec_probe(struct device_d *dev)
 
 	priv->config.name = "stm32-bsec";
 	priv->config.dev = dev;
-	priv->config.stride = 4;
-	priv->config.word_size = 4;
+	priv->config.stride = 1;
+	priv->config.word_size = 1;
 	priv->config.size = data->num_regs;
 	priv->config.bus = &stm32_bsec_nvmem_bus;
 	dev->priv = priv;

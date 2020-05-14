@@ -17,7 +17,7 @@ enum bsec_smc {
 };
 
 /* Service for BSEC */
-enum bsec_field {
+enum bsec_op {
 	BSEC_SMC_READ_SHADOW	= 1,
 	BSEC_SMC_PROG_OTP	= 2,
 	BSEC_SMC_WRITE_SHADOW	= 3,
@@ -26,13 +26,13 @@ enum bsec_field {
 	BSEC_SMC_WRITE_ALL	= 6,
 };
 
-static inline enum bsec_smc bsec_read_field(enum bsec_field field, unsigned *val)
+static inline enum bsec_smc bsec_read_field(unsigned field, unsigned *val)
 {
 	return stm32mp_smc(STM32_SMC_BSEC, BSEC_SMC_READ_SHADOW,
 			   field, 0, val);
 }
 
-static inline enum bsec_smc bsec_write_field(enum bsec_field field, unsigned val)
+static inline enum bsec_smc bsec_write_field(unsigned field, unsigned val)
 {
 	return stm32mp_smc(STM32_SMC_BSEC, BSEC_SMC_WRITE_SHADOW,
 			   field, val, NULL);

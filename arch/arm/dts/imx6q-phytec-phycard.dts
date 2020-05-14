@@ -16,7 +16,7 @@
 
 / {
 	model = "PHYTEC phyCARD-i.MX6 Quad";
-	compatible = "phytec,imx6q-pbaa03", "phytec,imx6q-pcaaxl3", "fsl,imx6q";
+	compatible = "phytec,imx6q-pcaaxl3", "fsl,imx6q";
 
 	chosen {
 		stdout-path = &uart3;

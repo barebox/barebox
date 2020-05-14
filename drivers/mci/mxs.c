@@ -542,6 +542,13 @@ static void mxs_mci_info(struct device_d *hw_dev)
 	printf("\n");
 }
 
+static int mxs_mmc_detect(struct device_d *dev)
+{
+	struct mxs_mci_host *mxs_mci = dev->priv;
+
+	return mci_detect_card(&mxs_mci->host);
+}
+
 static int mxs_mci_probe(struct device_d *hw_dev)
 {
 	struct resource *iores;
@@ -576,6 +583,8 @@ static int mxs_mci_probe(struct device_d *hw_dev)
 
 		mci_of_parse(host);
 	}
+
+	hw_dev->detect = mxs_mmc_detect;
 
 	mxs_mci->clk = clk_get(hw_dev, NULL);
 	if (IS_ERR(mxs_mci->clk))

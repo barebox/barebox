@@ -11,6 +11,7 @@
 #include <linux/clkdev.h>
 #include <linux/err.h>
 #include <mach/imx28-regs.h>
+#include <of_address.h>
 
 #include "clk.h"
 
@@ -38,6 +39,9 @@
 #define FRAC1			(regs + 0x01c0)
 #define CLKSEQ			(regs + 0x01d0)
 
+static void __iomem *digctrl;
+#define DIGCTRL digctrl
+
 static const char *sel_cpu[]  = { "ref_cpu", "ref_xtal", };
 static const char *sel_io0[]  = { "ref_io0", "ref_xtal", };
 static const char *sel_io1[]  = { "ref_io1", "ref_xtal", };
@@ -56,14 +60,17 @@ enum imx28_clk {
 	emi_xtal, lcdif_div, etm_div, ptp, saif0_div, saif1_div,
 	clk32k_div, rtc, lradc, spdif_div, clk32k, pwm, uart, ssp0,
 	ssp1, ssp2, ssp3, gpmi, spdif, emi, saif0, saif1, lcdif, etm,
-	fec_sleep, fec, can0, can1, usb0, usb1, usb0_phy, usb1_phy, enet_out,
-	lcdif_comp, clk_max
+	fec, can0, can1, usb0, usb1, usb0_phy, usb1_phy, enet_out,
+	lcdif_comp, fec_sleep, clk_max
 };
 
 static struct clk *clks[clk_max];
+static struct clk_onecell_data clk_data;
 
-static int __init mx28_clocks_init(void __iomem *regs)
+static int __init mx28_clocks_init(struct device_d *dev, void __iomem *regs)
 {
+	struct device_node *dcnp;
+
 	clks[ref_xtal] = clk_fixed("ref_xtal", 24000000);
 	clks[pll0] = mxs_clk_pll("pll0", "ref_xtal", PLL0CTRL0, 17, 480000000);
 	clks[pll1] = mxs_clk_pll("pll1", "ref_xtal", PLL1CTRL0, 17, 480000000);
@@ -120,6 +127,13 @@ static int __init mx28_clocks_init(void __iomem *regs)
 	clks[lcdif_comp] = mxs_clk_lcdif("lcdif_comp", clks[ref_pix],
 			clks[lcdif_div], clks[lcdif]);
 
+	dcnp = of_find_compatible_node(NULL, NULL, "fsl,imx28-digctl");
+	if (dcnp) {
+		digctrl = of_iomap(dcnp, 0);
+		clks[usb0] = mxs_clk_gate("usb0", "usb0_phy", DIGCTRL, 2);
+		clks[usb1] = mxs_clk_gate("usb1", "usb1_phy", DIGCTRL, 16);
+	}
+
 	clk_set_rate(clks[ref_io0], 480000000);
 	clk_set_rate(clks[ref_io1], 480000000);
 	clk_set_parent(clks[ssp0_sel], clks[ref_io0]);
@@ -131,25 +145,30 @@ static int __init mx28_clocks_init(void __iomem *regs)
 	clk_set_rate(clks[ssp2], 96000000);
 	clk_set_rate(clks[ssp3], 96000000);
 	clk_set_parent(clks[lcdif_sel], clks[ref_pix]);
-	clk_enable(clks[enet_out]);
 
-	clkdev_add_physbase(clks[ssp0], IMX_SSP0_BASE, NULL);
-	clkdev_add_physbase(clks[ssp1], IMX_SSP1_BASE, NULL);
-	clkdev_add_physbase(clks[ssp2], IMX_SSP2_BASE, NULL);
-	clkdev_add_physbase(clks[ssp3], IMX_SSP3_BASE, NULL);
-	clkdev_add_physbase(clks[fec], IMX_FEC0_BASE, NULL);
-	clkdev_add_physbase(clks[xbus], IMX_DBGUART_BASE, NULL);
-	clkdev_add_physbase(clks[hbus], IMX_OCOTP_BASE, NULL);
-	clkdev_add_physbase(clks[hbus], MXS_APBH_BASE, NULL);
-	clkdev_add_physbase(clks[uart], IMX_UART0_BASE, NULL);
-	clkdev_add_physbase(clks[uart], IMX_UART1_BASE, NULL);
-	clkdev_add_physbase(clks[uart], IMX_UART2_BASE, NULL);
-	clkdev_add_physbase(clks[uart], IMX_UART3_BASE, NULL);
-	clkdev_add_physbase(clks[uart], IMX_UART4_BASE, NULL);
-	clkdev_add_physbase(clks[gpmi], MXS_GPMI_BASE, NULL);
-	clkdev_add_physbase(clks[pwm], IMX_PWM_BASE, NULL);
-	if (IS_ENABLED(CONFIG_DRIVER_VIDEO_STM))
-		clkdev_add_physbase(clks[lcdif_comp], IMX_FB_BASE, NULL);
+	if (dev->device_node) {
+		clk_data.clks = clks;
+		clk_data.clk_num = clk_max;
+		of_clk_add_provider(dev->device_node, of_clk_src_onecell_get, &clk_data);
+	} else {
+		clkdev_add_physbase(clks[ssp0], IMX_SSP0_BASE, NULL);
+		clkdev_add_physbase(clks[ssp1], IMX_SSP1_BASE, NULL);
+		clkdev_add_physbase(clks[ssp2], IMX_SSP2_BASE, NULL);
+		clkdev_add_physbase(clks[ssp3], IMX_SSP3_BASE, NULL);
+		clkdev_add_physbase(clks[fec], IMX_FEC0_BASE, NULL);
+		clkdev_add_physbase(clks[xbus], IMX_DBGUART_BASE, NULL);
+		clkdev_add_physbase(clks[hbus], IMX_OCOTP_BASE, NULL);
+		clkdev_add_physbase(clks[hbus], MXS_APBH_BASE, NULL);
+		clkdev_add_physbase(clks[uart], IMX_UART0_BASE, NULL);
+		clkdev_add_physbase(clks[uart], IMX_UART1_BASE, NULL);
+		clkdev_add_physbase(clks[uart], IMX_UART2_BASE, NULL);
+		clkdev_add_physbase(clks[uart], IMX_UART3_BASE, NULL);
+		clkdev_add_physbase(clks[uart], IMX_UART4_BASE, NULL);
+		clkdev_add_physbase(clks[gpmi], MXS_GPMI_BASE, NULL);
+		clkdev_add_physbase(clks[pwm], IMX_PWM_BASE, NULL);
+		if (IS_ENABLED(CONFIG_DRIVER_VIDEO_STM))
+			clkdev_add_physbase(clks[lcdif_comp], IMX_FB_BASE, NULL);
+	}
 
 	return 0;
 }
@@ -164,7 +183,7 @@ static int imx28_ccm_probe(struct device_d *dev)
 		return PTR_ERR(iores);
 	regs = IOMEM(iores->start);
 
-	mx28_clocks_init(regs);
+	mx28_clocks_init(dev, regs);
 
 	return 0;
 }

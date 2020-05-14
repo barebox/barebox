@@ -193,6 +193,7 @@ static int auart_serial_probe(struct device_d *dev)
 	cdev->flush = auart_serial_flush;
 	cdev->setbrg = auart_serial_setbaudrate;
 	cdev->dev = dev;
+	cdev->linux_console_name = "ttyAPP";
 
 	dev->priv = priv;
 	iores = dev_request_mem_resource(dev, 0);

@@ -121,13 +121,13 @@ SECTIONS
   .bootpg RESET_VECTOR_ADDRESS - 0xffc :
   {
     _text = .;
-    arch/ppc/cpu-85xx/start.o	(.bootpg)
+    arch/powerpc/cpu-85xx/start.o	(.bootpg)
   } :text = 0xffff
 
   .resetvec RESET_VECTOR_ADDRESS :
   {
     KEEP(*(.resetvec))
-    arch/ppc/cpu-85xx/resetvec.o	(.resetvec)
+    arch/powerpc/cpu-85xx/resetvec.o	(.resetvec)
   } :text = 0xffff
 
   . = RESET_VECTOR_ADDRESS + 0x4;

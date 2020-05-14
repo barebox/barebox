@@ -7,4 +7,4 @@
 include/generated/mach-types.h: $(src)/gen-mach-types $(src)/mach-types
 	$(Q)$(kecho) '  Generating $@'
 	$(Q)mkdir -p $(dir $@)
-	$(Q)$(AWK) -f $^ > $@ || { rm -f $@; /bin/false; }
+	$(Q)$(AWK) -f $^ > $@

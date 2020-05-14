@@ -86,10 +86,8 @@ echo "\";"						\
 endef
 endif
 
-include/generated/passwd.h: $(srctree)/$(src)/Makefile FORCE
+include/generated/passwd.h: FORCE
 	$(call filechk,passwd)
-
-targets += include/generated/passwd.h
 
 $(obj)/password.o: include/generated/passwd.h
 endif # CONFIG_PASSWORD

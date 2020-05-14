@@ -1,19 +1,19 @@
 KBUILD_DEFCONFIG := qemu_virt64_defconfig
 
-CPPFLAGS	+= -D__ARM__ -fno-strict-aliasing
+KBUILD_CPPFLAGS	+= -D__ARM__ -fno-strict-aliasing
 # Explicitly specifiy 32-bit ARM ISA since toolchain default can be -mthumb:
 ifeq ($(CONFIG_CPU_V8),y)
-CPPFLAGS	+=$(call cc-option,-maarch64,)
+KBUILD_CPPFLAGS	+=$(call cc-option,-maarch64,)
 else
-CPPFLAGS	+=$(call cc-option,-marm,)
+KBUILD_CPPFLAGS	+=$(call cc-option,-marm,)
 endif
 
 ifeq ($(CONFIG_CPU_BIG_ENDIAN),y)
-CPPFLAGS	+= -mbig-endian
+KBUILD_CPPFLAGS	+= -mbig-endian
 AS		+= -EB
 LD		+= -EB
 else
-CPPFLAGS	+= -mlittle-endian
+KBUILD_CPPFLAGS	+= -mlittle-endian
 AS		+= -EL
 LD		+= -EL
 endif
@@ -23,14 +23,14 @@ endif
 # conservative and instruct the compiler not to generate any unaligned
 # accesses
 ifneq ($(CONFIG_CPU_V8),y)
-CFLAGS += -mno-unaligned-access
+KBUILD_CFLAGS += -mno-unaligned-access
 else
-CFLAGS += -mstrict-align
+KBUILD_CFLAGS += -mstrict-align
 endif
 
 # Prevent use of floating point and Advanced SIMD registers.
 ifeq ($(CONFIG_CPU_V8),y)
-CFLAGS += -mgeneral-regs-only
+KBUILD_CFLAGS += -mgeneral-regs-only
 endif
 
 # This selects which instruction set is used.
@@ -70,12 +70,12 @@ AFLAGS_THUMB2	:=$(CFLAGS_THUMB2) -Wa$(comma)-mthumb
 endif
 
 ifeq ($(CONFIG_CPU_V8), y)
-CPPFLAGS += $(CFLAGS_ABI) $(arch-y) $(tune-y)
-AFLAGS   += -include asm/unified.h
+KBUILD_CPPFLAGS += $(CFLAGS_ABI) $(arch-y) $(tune-y)
+KBUILD_AFLAGS   += -include asm/unified.h
 export S64 = _64
 else
-CPPFLAGS += $(CFLAGS_ABI) $(arch-y) $(tune-y) -msoft-float $(CFLAGS_THUMB2)
-AFLAGS   += -include asm/unified.h -msoft-float $(AFLAGS_THUMB2)
+KBUILD_CPPFLAGS += $(CFLAGS_ABI) $(arch-y) $(tune-y) -msoft-float $(CFLAGS_THUMB2)
+KBUILD_AFLAGS   += -include asm/unified.h -msoft-float $(AFLAGS_THUMB2)
 endif
 
 # Machine directory name.  This list is sorted alphanumerically
@@ -127,23 +127,19 @@ board-$(CONFIG_MACH_TINY6410)			+= friendlyarm-tiny6410
 
 machdirs := $(patsubst %,arch/arm/mach-%/,$(machine-y))
 
-ifeq ($(KBUILD_SRC),)
-CPPFLAGS += $(patsubst %,-I%include,$(machdirs))
-else
-CPPFLAGS += $(patsubst %,-I$(srctree)/%include,$(machdirs))
-endif
+KBUILD_CPPFLAGS += $(patsubst %,-I$(srctree)/%include,$(machdirs))
 
 TEXT_BASE = $(CONFIG_TEXT_BASE)
 
-CPPFLAGS += -DTEXT_BASE=$(TEXT_BASE)
+KBUILD_CPPFLAGS += -DTEXT_BASE=$(TEXT_BASE)
 
 # Add cleanup flags
-CPPFLAGS += -fdata-sections -ffunction-sections
+KBUILD_CPPFLAGS += -fdata-sections -ffunction-sections
 LDFLAGS_barebox += --gc-sections
 LDFLAGS_pbl += --gc-sections
 
 # early code often runs at addresses we are not linked at
-CPPFLAGS += -fPIE
+KBUILD_CPPFLAGS += -fPIE
 
 ifdef CONFIG_RELOCATABLE
 LDFLAGS_barebox += -pie

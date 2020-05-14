@@ -1,6 +1,6 @@
 KBUILD_DEFCONFIG := sandbox_defconfig
 
-CPPFLAGS += -D__SANDBOX__ -fno-strict-aliasing -fvisibility=hidden
+KBUILD_CPPFLAGS += -D__SANDBOX__ -fno-strict-aliasing -fvisibility=hidden
 
 
 machine-y := sandbox
@@ -11,7 +11,7 @@ lds-y   := $(BOARD)/barebox.lds
 
 
 TEXT_BASE = $(CONFIG_TEXT_BASE)
-CFLAGS += -Dmalloc=barebox_malloc -Dcalloc=barebox_calloc \
+KBUILD_CFLAGS += -Dmalloc=barebox_malloc -Dcalloc=barebox_calloc \
 		-Dfree=barebox_free -Drealloc=barebox_realloc \
 		-Dread=barebox_read -Dwrite=barebox_write \
 		-Dopen=barebox_open -Dclose=barebox_close \
@@ -29,11 +29,7 @@ CFLAGS += -Dmalloc=barebox_malloc -Dcalloc=barebox_calloc \
 
 machdirs := $(patsubst %,arch/sandbox/mach-%/,$(machine-y))
 
-ifeq ($(KBUILD_SRC),)
-CPPFLAGS += $(patsubst %,-I%include,$(machdirs))
-else
-CPPFLAGS += $(patsubst %,-I$(srctree)/%include,$(machdirs))
-endif
+KBUILD_CPPFLAGS += $(patsubst %,-I$(srctree)/%include,$(machdirs))
 
 archprepare: maketools
 
@@ -48,7 +44,7 @@ FTDI1_LIBS := $(shell pkg-config libftdi1 --libs)
 endif
 
 ifeq ($(CONFIG_KASAN),y)
-CPPFLAGS += -fsanitize=address
+KBUILD_CPPFLAGS += -fsanitize=address
 SANITIZER_LIBS += -fsanitize=address
 endif
 

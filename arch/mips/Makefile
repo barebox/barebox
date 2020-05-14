@@ -11,7 +11,7 @@ else
 64bit-emul		= elf64btsmip
 endif
 
-CPPFLAGS += -D__MIPS__ -fno-strict-aliasing -fno-merge-constants
+KBUILD_CPPFLAGS += -D__MIPS__ -fno-strict-aliasing -fno-merge-constants
 
 cflags-y += -G 0 -mno-abicalls -fno-pic -pipe
 cflags-y += -Wall -Wstrict-prototypes \
@@ -34,17 +34,17 @@ predef-le += -DMIPSEL -D_MIPSEL -D__MIPSEL -D__MIPSEL__
 
 ifdef CONFIG_CPU_BIG_ENDIAN
 cflags-y += $(shell $(CC) -dumpmachine |grep -q 'mips.*el-.*' && echo -EB $(undef-all) $(predef-be))
-ldflags-y += $(shell $(CC) -dumpmachine |grep -q 'mips.*el-.*' && echo -EB )
+mips-ldflags-y += $(shell $(CC) -dumpmachine |grep -q 'mips.*el-.*' && echo -EB )
 endif
 
 ifdef CONFIG_CPU_LITTLE_ENDIAN
 cflags-y += $(shell $(CC) -dumpmachine |grep -q 'mips.*el-.*' || echo -EL $(undef-all) $(predef-le))
-ldflags-y += $(shell $(CC) -dumpmachine |grep -q 'mips.*el-.*' || echo -EL )
+mips-ldflags-y += $(shell $(CC) -dumpmachine |grep -q 'mips.*el-.*' || echo -EL )
 endif
 
-LDFLAGS += $(ldflags-y) -m $(ld-emul)
-LDFLAGS_barebox += $(ldflags-y)
-LDFLAGS_pbl += $(ldflags-y)
+KBUILD_LDFLAGS += $(mips-ldflags-y) -m $(ld-emul)
+LDFLAGS_barebox += $(mips-ldflags-y)
+LDFLAGS_pbl += $(mips-ldflags-y)
 
 #
 # CPU-dependent compiler/assembler options for optimization.
@@ -55,11 +55,11 @@ cflags-$(CONFIG_CPU_MIPS64_R1) += $(call cc-option,-march=mips64,-mips64 -U_MIPS
 cflags-$(CONFIG_CPU_MIPS64_R2) += $(call cc-option,-march=mips64r2,-mips64r2 -U_MIPS_ISA -D_MIPS_ISA=_MIPS_ISA_MIPS64) -Wa,-mips64r2 -Wa,--trap
 cflags-$(CONFIG_CPU_GS232)     += $(call cc-option,-march=mips32r2,-mips32r2 -U_MIPS_ISA -D_MIPS_ISA=_MIPS_ISA_MIPS32) -Wa,-mips32r2 -Wa,--trap
 
-CPPFLAGS += -DTEXT_BASE=$(CONFIG_TEXT_BASE)
+KBUILD_CPPFLAGS += -DTEXT_BASE=$(CONFIG_TEXT_BASE)
 
 ifndef CONFIG_MODULES
 # Add cleanup flags
-CPPFLAGS += -fdata-sections -ffunction-sections
+KBUILD_CPPFLAGS += -fdata-sections -ffunction-sections
 LDFLAGS_barebox += -static --gc-sections --emit-relocs
 endif
 
@@ -82,22 +82,7 @@ machine-$(CONFIG_MACH_MIPS_LOONGSON)	:= loongson
 machine-$(CONFIG_MACH_MIPS_XBURST)	:= xburst
 machdirs := $(patsubst %,arch/mips/mach-%/,$(machine-y))
 
-ifeq ($(KBUILD_SRC),)
-CPPFLAGS += $(patsubst %,-I%include,$(machdirs))
-else
-CPPFLAGS += $(patsubst %,-I$(srctree)/%include,$(machdirs))
-endif
-
-ifeq ($(incdir-y),)
-incdir-y := $(machine-y)
-endif
-INCDIR   := arch-$(incdir-y)
-
-ifeq ($(KBUILD_SRC),)
-CPPFLAGS += -I$(BOARD)/include
-else
-CPPFLAGS += -I$(srctree)/$(BOARD)/include
-endif
+KBUILD_CPPFLAGS += $(patsubst %,-I$(srctree)/%include,$(machdirs))
 
 ifneq ($(machine-y),)
 MACH  := arch/mips/mach-$(machine-y)/
@@ -105,19 +90,17 @@ else
 MACH  :=
 endif
 
-common-y += $(BOARD)
-
 common-y += $(MACH)
 common-y += arch/mips/lib/
 common-y += arch/mips/boot/
 common-y += arch/mips/boards/
 
-CPPFLAGS += $(cflags-y)
-CFLAGS += $(cflags-y)
+KBUILD_CPPFLAGS += $(cflags-y)
+KBUILD_CFLAGS += $(cflags-y)
 
 lds-$(CONFIG_GENERIC_LINKER_SCRIPT)   := arch/mips/lib/barebox.lds
 
-cmd_barebox__ ?= $(LD) $(LDFLAGS) $(LDFLAGS_barebox) -o $@ \
+cmd_barebox__ ?= $(LD) $(KBUILD_LDFLAGS) $(LDFLAGS_barebox) -o $@ \
       -T $(BAREBOX_LDS)                         \
       --start-group $(BAREBOX_OBJS) --end-group                  \
       $(filter-out $(BAREBOX_LDS) $(BAREBOX_OBJS) FORCE ,$^);	\

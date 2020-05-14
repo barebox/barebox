@@ -420,4 +420,8 @@ static inline void iowrite64be(u64 value, volatile void __iomem *addr)
 #endif
 #endif /* CONFIG_64BIT */
 
+#ifndef IOMEM
+#define IOMEM(addr)	((void __force __iomem *)(addr))
+#endif
+
 #endif /* __ASM_GENERIC_IO_H */

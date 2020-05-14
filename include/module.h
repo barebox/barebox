@@ -4,6 +4,7 @@
 
 #include <elf.h>
 #include <linux/compiler.h>
+#include <linux/export.h>
 #include <linux/list.h>
 
 #ifndef MODULE_SYMBOL_PREFIX
@@ -11,35 +12,11 @@
 #endif
 
 #define MODULE_NAME_LEN (64 - sizeof(unsigned long))
-#define THIS_MODULE	0
 
 #ifdef CONFIG_MODULES
 #include <asm/module.h>
 
-struct kernel_symbol
-{
-	unsigned long value;
-	const char *name;
-};
-
 struct module * load_module(void *mod_image, unsigned long len);
-
-/* For every exported symbol, place a struct in the __ksymtab section */
-#define __EXPORT_SYMBOL(sym, sec)				\
-	extern typeof(sym) sym;					\
-	static const char __ustrtab_##sym[]			\
-	__attribute__((section("__usymtab_strings")))		\
-	= MODULE_SYMBOL_PREFIX #sym;                    	\
-	static const struct kernel_symbol __usymtab_##sym	\
-	__used \
-	__attribute__((section("__usymtab" sec), unused))	\
-	= { (unsigned long)&sym, __ustrtab_##sym }
-
-#define EXPORT_SYMBOL(sym)					\
-	__EXPORT_SYMBOL(sym, "")
-
-#define EXPORT_SYMBOL_GPL(sym)					\
-	__EXPORT_SYMBOL(sym, "")
 
 struct module {
 	/* Unique handle for this module */
@@ -74,9 +51,6 @@ int apply_relocate_add(Elf_Shdr *sechdrs,
 		       unsigned int symindex,
 		       unsigned int relsec,
 		       struct module *mod);
-#else
-#define EXPORT_SYMBOL(sym)
-#define EXPORT_SYMBOL_GPL(sym)
 #endif /* CONFIG_MODULES */
 
 extern struct list_head module_list;

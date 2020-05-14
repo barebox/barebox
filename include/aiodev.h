@@ -3,9 +3,6 @@
  *
  * Copyright (c) 2015 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  * Copyright (c) 2015 Zodiac Inflight Innovation
- *
- * See file CREDITS for list of people who contributed to this
- * project.
  */
 
 #ifndef __AIODEVICE_H

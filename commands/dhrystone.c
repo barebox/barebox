@@ -1,5 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: © 2014-2015 Phytec Messtechnik GmbH
+
 /*
- * (C) Copyright 2014 - 2015 Phytec Messtechnik GmbH
  * Author: Stefan Müller-Klieser <s.mueller-klieser@phytec.de>
  * Author: Daniel Schultz <d.schultz@phytec.de>
  *
@@ -7,16 +9,6 @@
  * Version:    C, Version 2.1
  * Date:       May 25, 1988
  * Author:     Reinhold P. Weicker
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
  */
 
 #include <common.h>

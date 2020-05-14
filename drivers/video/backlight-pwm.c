@@ -3,9 +3,6 @@
  *
  * (C) Copyright 2014 Sascha Hauer, Pengutronix
  *
- * See file CREDITS for list of people who contributed to this
- * project.
- *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of
@@ -37,7 +34,6 @@ struct pwm_backlight {
 	unsigned int *levels;
 	int enable_gpio;
 	int enable_active_high;
-	int max_value;
 	int enabled;
 	unsigned int scale;
 };
@@ -206,6 +202,7 @@ static int backlight_pwm_of_probe(struct device_d *dev)
 
 	pwm_backlight->backlight.slew_time_ms = 100;
 	pwm_backlight->backlight.brightness_set = backlight_pwm_set;
+	pwm_backlight->backlight.dev.parent = dev;
 	pwm_backlight->backlight.node = dev->device_node;
 
 	ret = backlight_register(&pwm_backlight->backlight);

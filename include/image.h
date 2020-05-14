@@ -3,9 +3,6 @@
  * (C) Copyright 2000-2005
  * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
  *
- * See file CREDITS for list of people who contributed to this
- * project.
- *
  ********************************************************************
  * NOTE: This header file defines an interface to barebox. Including
  * this (unmodified) header file in another file is considered normal

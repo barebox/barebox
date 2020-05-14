@@ -1,8 +1,4 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
-/*
- * See file CREDITS for list of people who contributed to this
- * project.
- */
 
 #ifndef ATA_DISK_H
 #define ATA_DISK_H

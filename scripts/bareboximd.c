@@ -1,9 +1,6 @@
 /*
  * (C) Copyright 2014 Sascha Hauer, Pengutronix
  *
- * See file CREDITS for list of people who contributed to this
- * project.
- *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of
@@ -56,7 +53,7 @@ int imd_command_setenv(const char *variable_name, const char *value)
 
 static int write_file(const char *filename, const void *buf, size_t size)
 {
-	int fd, ret;
+	int fd, ret = 0;
 	int now;
 
 	fd = open(filename, O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
@@ -65,22 +62,18 @@ static int write_file(const char *filename, const void *buf, size_t size)
 
 	while (size) {
 		now = write(fd, buf, size);
-		if (now == 0) {
-			errno = ENOSPC;
-			return -1;
+		if (now < 0) {
+			ret = now;
+			goto out;
 		}
-		if (now < 0)
-			return now;
 		size -= now;
 		buf += now;
 	}
 
+out:
 	close(fd);
 
-	if (ret < 0)
-		return ret;
-
-	return 0;
+	return ret;
 }
 
 static int read_file_2(const char *filename, size_t *size, void **outbuf, size_t max_size)

@@ -2,9 +2,6 @@
  * (C) Copyright 2004, Psyent Corporation <www.psyent.com>
  * Scott McNutt <smcnutt@psyent.com>
  *
- * See file CREDITS for list of people who contributed to this
- * project.
- *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of
@@ -48,5 +45,7 @@
 	asm volatile ("sthio %0, 0(%1)" : : "r" (val), "r" (addr))
 #define writel(val, addr)\
 	asm volatile("stwio %0, 0(%1)" : : "r" (val), "r" (addr))
+
+#include <asm-generic/io.h>
 
 #endif /* __ASM_NIOS2_IO_H_ */

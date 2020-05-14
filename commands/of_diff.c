@@ -1,10 +1,7 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * of_diff.c - compare device tree files
- *
- * Copyright (c) 2019 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
- *
- */
+// SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: © 2019 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
+
+/* of_diff.c - compare device tree files */
 
 #include <common.h>
 #include <fs.h>

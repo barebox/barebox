@@ -1,9 +1,6 @@
 /*
  * (C) 2014 Robert Jarzmik <robert.jarzmik@free.fr>
  *
- * See file CREDITS for list of people who contributed to this
- * project.
- *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of
@@ -40,8 +37,6 @@
 #include <asm/io.h>
 #include <asm/mmu.h>
 #include <generated/mach-types.h>
-
-#include "zylonite.h"
 
 static struct smc91c111_pdata smsc91x_pdata;
 static struct mrvl_nand_platform_data nand_pdata = {

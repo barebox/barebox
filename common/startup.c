@@ -6,9 +6,6 @@
  * Sysgo Real-Time Solutions, GmbH <www.elinos.com>
  * Marius Groeger <mgroeger@sysgo.de>
  *
- * See file CREDITS for list of people who contributed to this
- * project.
- *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of
@@ -39,6 +36,7 @@
 #include <errno.h>
 #include <linux/stat.h>
 #include <envfs.h>
+#include <magicvar.h>
 #include <asm/sections.h>
 #include <uncompress.h>
 #include <globalvar.h>
@@ -76,6 +74,16 @@ fs_initcall(mount_root);
 #endif
 
 #ifdef CONFIG_ENV_HANDLING
+static bool region_overlap(loff_t starta, loff_t lena,
+			   loff_t startb, loff_t lenb)
+{
+	if (starta + lena <= startb)
+		return 0;
+	if (startb + lenb <= starta)
+		return 0;
+	return 1;
+}
+
 static int check_overlap(const char *path)
 {
 	struct cdev *cenv, *cdisk, *cpart;
@@ -106,8 +114,8 @@ static int check_overlap(const char *path)
 		if (cpart == cenv)
 			continue;
 
-		if (lregion_overlap(cpart->offset, cpart->size,
-				    cenv->offset, cenv->size))
+		if (region_overlap(cpart->offset, cpart->size,
+				   cenv->offset, cenv->size))
 			goto conflict;
 	}
 
@@ -163,6 +171,14 @@ static const char * const global_autoboot_abort_keys[] = {
 };
 static int global_autoboot_timeout = 3;
 
+static const char * const global_autoboot_states[] = {
+	[AUTOBOOT_COUNTDOWN] = "countdown",
+	[AUTOBOOT_ABORT] = "abort",
+	[AUTOBOOT_MENU] = "menu",
+	[AUTOBOOT_BOOT] = "boot",
+};
+static int global_autoboot_state = AUTOBOOT_COUNTDOWN;
+
 static bool test_abort(void)
 {
 	bool do_abort = false;
@@ -194,8 +210,6 @@ static bool test_abort(void)
 #define INITFILE "/env/bin/init"
 #define MENUFILE "/env/menu/mainmenu"
 
-static enum autoboot_state autoboot_state = AUTOBOOT_UNKNOWN;
-
 /**
  * set_autoboot_state - set the autoboot state
  * @autoboot: the state to set
@@ -205,7 +219,7 @@ static enum autoboot_state autoboot_state = AUTOBOOT_UNKNOWN;
  */
 void set_autoboot_state(enum autoboot_state autoboot)
 {
-	autoboot_state = autoboot;
+	global_autoboot_state = autoboot;
 }
 
 /**
@@ -221,6 +235,7 @@ void set_autoboot_state(enum autoboot_state autoboot)
  */
 enum autoboot_state do_autoboot_countdown(void)
 {
+	enum autoboot_state autoboot_state;
 	unsigned flags = CONSOLE_COUNTDOWN_EXTERN;
 	int ret;
 	struct stat s;
@@ -228,8 +243,8 @@ enum autoboot_state do_autoboot_countdown(void)
 	char *abortkeys = NULL;
 	unsigned char outkey;
 
-	if (autoboot_state != AUTOBOOT_UNKNOWN)
-		return autoboot_state;
+	if (global_autoboot_state != AUTOBOOT_COUNTDOWN)
+		return global_autoboot_state;
 
 	menu_exists = stat(MENUFILE, &s) == 0;
 
@@ -285,6 +300,10 @@ static int run_init(void)
 				  ARRAY_SIZE(global_autoboot_abort_keys));
 	globalvar_add_simple_int("autoboot_timeout",
 				 &global_autoboot_timeout, "%u");
+	globalvar_add_simple_enum("autoboot",
+				  &global_autoboot_state,
+				  global_autoboot_states,
+				  ARRAY_SIZE(global_autoboot_states));
 
 	setenv("PATH", "/env/bin");
 
@@ -391,3 +410,13 @@ void shutdown_barebox(void)
 		(*exitcall)();
 	}
 }
+
+BAREBOX_MAGICVAR_NAMED(autoboot_state,
+                       global.autoboot,
+                       "Autoboot state. Possible values: countdown (default), abort, menu, boot");
+BAREBOX_MAGICVAR_NAMED(global_autoboot_abort_key,
+                       global.autoboot_abort_key,
+                       "Which key allows to interrupt autoboot. Possible values: any, ctrl-c");
+BAREBOX_MAGICVAR_NAMED(global_autoboot_timeout,
+                       global.autoboot_timeout,
+                       "Timeout before autoboot starts in seconds");

@@ -139,8 +139,6 @@ struct phy *of_phy_get_by_phandle(struct device_d *dev, const char *phandle,
 				  u8 index);
 void phy_put(struct phy *phy);
 struct phy *of_phy_get(struct device_node *np, const char *con_id);
-struct phy *of_phy_simple_xlate(struct device_d *dev,
-	struct of_phandle_args *args);
 struct phy *phy_create(struct device_d *dev, struct device_node *node,
 		       const struct phy_ops *ops);
 void phy_destroy(struct phy *phy);
@@ -211,12 +209,6 @@ static inline void phy_put(struct phy *phy)
 }
 
 static inline struct phy *of_phy_get(struct device_node *np, const char *con_id)
-{
-	return ERR_PTR(-ENOSYS);
-}
-
-static inline struct phy *of_phy_simple_xlate(struct device_d *dev,
-	struct of_phandle_args *args)
 {
 	return ERR_PTR(-ENOSYS);
 }

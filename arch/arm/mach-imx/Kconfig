@@ -845,6 +845,16 @@ config HAB_CERTS_ENV
 	  CONFIG_HABV4_CSF_CRT_PEM
 	  CONFIG_HABV4_IMG_CRT_PEM
 
+config HABV4_SRK_INDEX
+	depends on HABV4
+	int "SRK index"
+	default 0
+	help
+	  Select the Super Root Key used in the Command Sequence File to sign
+	  the CSF binary. This should only be changed if a previous key was
+	  revoked and another key needs to be used. For HABV4 the Index is in
+	  the range from 0 to 3.
+
 if HABV4 && !HAB_CERTS_ENV
 
 config HABV4_TABLE_BIN

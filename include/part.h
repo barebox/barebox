@@ -2,9 +2,6 @@
 /*
  * (C) Copyright 2000-2004
  * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
- *
- * See file CREDITS for list of people who contributed to this
- * project.
  */
 #ifndef _PART_H
 #define _PART_H

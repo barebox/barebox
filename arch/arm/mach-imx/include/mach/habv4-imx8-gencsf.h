@@ -19,7 +19,7 @@ hab Engine = CAAM
 hab [Install SRK]
 hab File = CONFIG_HABV4_TABLE_BIN
 hab # SRK index within SRK-Table 0..3
-hab Source index = 0
+hab Source index = CONFIG_HABV4_SRK_INDEX
 
 hab [Install CSFK]
 /* target key index in keystore 1 */

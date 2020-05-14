@@ -31,6 +31,7 @@
 #include <mach/imx8mq-regs.h>
 #include <mach/vf610-regs.h>
 #include <mach/imx8mq.h>
+#include <mach/imx6.h>
 
 
 static void
@@ -320,10 +321,13 @@ void imx53_boot_save_loc(void)
 
 #define IMX6_SRC_SBMR1	0x04
 #define IMX6_SRC_SBMR2	0x1c
+#define IMX6_SRC_GPR9	0x40
+#define IMX6_SRC_GPR10	0x44
 #define IMX6_BMOD_SERIAL	0b01
 #define IMX6_BMOD_RESERVED	0b11
 #define IMX6_BMOD_FUSES		0b00
 #define BT_FUSE_SEL		BIT(4)
+#define GPR10_BOOT_FROM_GPR9	BIT(28)
 
 static bool imx6_bootsource_reserved(uint32_t sbmr2)
 {
@@ -340,6 +344,13 @@ static bool imx6_bootsource_serial(uint32_t sbmr2)
 		 */
 	       (imx53_get_bmod(sbmr2) == IMX6_BMOD_FUSES &&
 		!(sbmr2 & BT_FUSE_SEL));
+}
+
+static bool imx6_bootsource_serial_forced(uint32_t bootmode)
+{
+	if (cpu_mx6_is_mx6ul() || cpu_mx6_is_mx6ull())
+		return bootmode == 2;
+	return bootmode == 1;
 }
 
 static int __imx6_bootsource_serial_rom(uint32_t r)
@@ -388,37 +399,53 @@ static int imx6_boot_instance_mmc(uint32_t r)
 	return FIELD_GET(BOOT_CFG2(4, 3), r);
 }
 
+static u32 imx6_get_src_boot_mode(void __iomem *src_base)
+{
+	if (readl(src_base + IMX6_SRC_GPR10) & GPR10_BOOT_FROM_GPR9)
+		return readl(src_base + IMX6_SRC_GPR9);
+
+	return readl(src_base + IMX6_SRC_SBMR1);
+}
+
 void imx6_get_boot_source(enum bootsource *src, int *instance)
 {
 	void __iomem *src_base = IOMEM(MX6_SRC_BASE_ADDR);
-	uint32_t sbmr1 = readl(src_base + IMX6_SRC_SBMR1);
 	uint32_t sbmr2 = readl(src_base + IMX6_SRC_SBMR2);
+	uint32_t bootmode, bootsrc;
+
+	bootmode = imx6_get_src_boot_mode(src_base);
 
 	if (imx6_bootsource_reserved(sbmr2))
 		return;
 
-	if (imx6_bootsource_serial(sbmr2)) {
+	bootsrc = imx53_bootsource_internal(bootmode);
+
+	if (imx6_bootsource_serial(sbmr2) ||
+	    imx6_bootsource_serial_forced(bootsrc)) {
 		*src = BOOTSOURCE_SERIAL;
 		return;
 	}
 
-	switch (imx53_bootsource_internal(sbmr1)) {
-	case 2:
+	switch (bootsrc) {
+	case 1: /* only reachable for i.MX6UL(L) */
+		*src = BOOTSOURCE_SPI; /* Really: qspi */
+		return;
+	case 2: /* unreachable for i.MX6UL(L) */
 		*src = BOOTSOURCE_HD;
 		break;
 	case 3:
-		*src = imx6_bootsource_serial_rom(sbmr1);
-		*instance = imx6_boot_instance_serial_rom(sbmr1);
+		*src = imx6_bootsource_serial_rom(bootmode);
+		*instance = imx6_boot_instance_serial_rom(bootmode);
 		break;
 	case 4:
 	case 5:
 	case 6:
 	case 7:
 		*src = BOOTSOURCE_MMC;
-		*instance = imx6_boot_instance_mmc(sbmr1);
+		*instance = imx6_boot_instance_mmc(bootmode);
 		break;
 	default:
-		if (imx53_bootsource_nand(sbmr1))
+		if (imx53_bootsource_nand(bootmode))
 			*src = BOOTSOURCE_NAND;
 		break;
 	}

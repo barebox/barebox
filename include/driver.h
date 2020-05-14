@@ -1,9 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
  * (C) 2007 Pengutronix, Sascha Hauer <s.hauer@pengutronix.de>
- *
- * See file CREDITS for list of people who contributed to this
- * project.
  */
 
 #ifndef DRIVER_H

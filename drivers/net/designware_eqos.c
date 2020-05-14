@@ -360,6 +360,11 @@ static int eqos_start(struct eth_device *edev)
 	int ret;
 	int i;
 
+	ret = phy_device_connect(edev, &eqos->miibus, eqos->phy_addr,
+				 eqos->ops->adjust_link, 0, eqos->interface);
+	if (ret)
+		return ret;
+
 	setbits_le32(&eqos->dma_regs->mode, EQOS_DMA_MODE_SWR);
 
 	ret = readl_poll_timeout(&eqos->dma_regs->mode, mode_set,
@@ -378,11 +383,6 @@ static int eqos_start(struct eth_device *edev)
 
 	val = (rate / USEC_PER_SEC) - 1; /* -1 because the data sheet says so */
 	writel(val, &eqos->mac_regs->us_tic_counter);
-
-	ret = phy_device_connect(edev, &eqos->miibus, eqos->phy_addr,
-				 eqos->ops->adjust_link, 0, eqos->interface);
-	if (ret)
-		return ret;
 
 	/* Before we reset the mac, we must insure the PHY is not powered down
 	 * as the dw controller needs all clock domains to be running, including

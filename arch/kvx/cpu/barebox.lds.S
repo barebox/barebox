@@ -3,7 +3,6 @@
  * Copyright (C) 2019 Kalray Inc.
  */
 
-#include <config.h>
 #include <asm/common.h>
 #include <asm/sys_arch.h>
 #include <asm-generic/barebox.lds.h>

@@ -2,8 +2,6 @@ KBUILD_DEFCONFIG := generic_defconfig
 
 KBUILD_CPPFLAGS += -fno-strict-aliasing
 
-board-$(CONFIG_GENERIC) := generic
-
 KALLSYMS += --symbol-prefix=_
 
 ifeq ($(CROSS_COMPILE),)

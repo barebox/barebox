@@ -27,7 +27,6 @@ static int kvx_timer_probe(struct device_d *dev)
 {
 	struct clk *clk;
 	uint32_t clk_freq;
-	struct device_node *np = dev->device_node;
 
 	/* Get clock frequency */
 	clk = clk_get(dev, NULL);

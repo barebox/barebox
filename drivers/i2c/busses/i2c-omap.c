@@ -1176,7 +1176,7 @@ i2c_omap_probe(struct device_d *pdev)
 
 	omap_i2c_idle(i2c_omap);
 
-	i2c_omap->adapter.master_xfer = omap_i2c_xfer,
+	i2c_omap->adapter.master_xfer = omap_i2c_xfer;
 	i2c_omap->adapter.nr = pdev->id;
 	i2c_omap->adapter.dev.parent = pdev;
 	i2c_omap->adapter.dev.device_node = pdev->device_node;

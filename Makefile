@@ -533,6 +533,10 @@ ifneq ($(filter all _all modules,$(MAKECMDGOALS)),)
   KBUILD_MODULES := 1
 endif
 
+ifeq ($(MAKECMDGOALS),)
+  KBUILD_MODULES := 1
+endif
+
 export KBUILD_MODULES KBUILD_BUILTIN
 
 ifdef need-config

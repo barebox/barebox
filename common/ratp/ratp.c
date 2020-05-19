@@ -97,10 +97,23 @@ static int init_ratp_command_list(void)
 
 late_initcall(init_ratp_command_list);
 
+static bool console_exists(struct console_device *cdev)
+{
+	struct console_device *cs;
+
+	list_for_each_entry(cs, &console_list, list)
+		if (cs == cdev)
+			return true;
+	return false;
+}
+
 static int console_recv(struct ratp *r, uint8_t *data)
 {
 	struct ratp_ctx *ctx = container_of(r, struct ratp_ctx, ratp);
 	struct console_device *cdev = ctx->cdev;
+
+	if (!console_exists(cdev))
+		return -ENODEV;
 
 	if (ctx->have_synch) {
 		ctx->have_synch = 0;
@@ -122,6 +135,9 @@ static int console_send(struct ratp *r, void *pkt, int len)
 	struct console_device *cdev = ctx->cdev;
 	const uint8_t *buf = pkt;
 	int i;
+
+	if (!console_exists(cdev))
+		return -ENODEV;
 
 	for (i = 0; i < len; i++)
 		cdev->putc(cdev, buf[i]);

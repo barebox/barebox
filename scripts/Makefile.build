@@ -88,22 +88,6 @@ endif
 # Compile C sources (.c)
 # ---------------------------------------------------------------------------
 
-# Default is built-in, unless we know otherwise
-modkern_cflags := $(CFLAGS_KERNEL)
-quiet_modtag := $(empty)   $(empty)
-
-$(real-objs-m)        : modkern_cflags := $(CFLAGS_MODULE)
-$(real-objs-m:.o=.i)  : modkern_cflags := $(CFLAGS_MODULE)
-$(real-objs-m:.o=.s)  : modkern_cflags := $(CFLAGS_MODULE)
-$(real-objs-m:.o=.lst): modkern_cflags := $(CFLAGS_MODULE)
-
-$(real-objs-m)        : quiet_modtag := [M]
-$(real-objs-m:.o=.i)  : quiet_modtag := [M]
-$(real-objs-m:.o=.s)  : quiet_modtag := [M]
-$(real-objs-m:.o=.lst): quiet_modtag := [M]
-
-$(obj-m)              : quiet_modtag := [M]
-
 # Default for not multi-part modules
 modname = $(basetarget)
 
@@ -175,11 +159,6 @@ quiet_cmd_cc_lst_c = MKLST   $@
 # Compile assembler sources (.S)
 # ---------------------------------------------------------------------------
 
-modkern_aflags := $(AFLAGS_KERNEL)
-
-$(real-objs-m)      : modkern_aflags := $(AFLAGS_MODULE)
-$(real-objs-m:.o=.s): modkern_aflags := $(AFLAGS_MODULE)
-
 quiet_cmd_as_s_S = CPP $(quiet_modtag) $@
 cmd_as_s_S       = $(CPP) $(a_flags)   -o $@ $<
 
@@ -198,7 +177,8 @@ cmd_pbl_as_o_S       = $(CC) -D__PBL__ $(a_flags) $(PBL_CPPFLAGS) -c -o $@ $<
 %.o: %.S FORCE
 	$(call if_changed_dep,as_o_S)
 
-targets += $(real-objs-y) $(real-objs-m) $(lib-y) $(pbl-y)
+targets += $(filter-out $(subdir-obj-y), $(real-obj-y)) $(real-obj-m) $(lib-y)
+targets += $(pbl-y)
 targets += $(extra-y) $(always-y) $(MAKECMDGOALS)
 
 # Linker scripts preprocessor (.lds.S -> .lds)

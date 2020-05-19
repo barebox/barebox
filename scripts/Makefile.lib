@@ -20,16 +20,6 @@ obj-m := $(filter-out $(obj-y),$(obj-m))
 
 lib-y := $(filter-out $(obj-y), $(sort $(lib-y) $(lib-m)))
 
-
-pbl-y		+= $(pbl-dtb-y)
-obj-y		+= $(obj-dtb-y)
-extra-y		+= $(patsubst %.dtb.o,%.dtb.S,$(obj-dtb-y))
-extra-y		+= $(patsubst %.dtb.o,%.dtb,$(obj-dtb-y))
-extra-y		+= $(patsubst %.dtb.o,%.dtb.S,$(pbl-dtb-y))
-extra-y		+= $(patsubst %.dtb.o,%.dtb,$(pbl-dtb-y))
-extra-y		+= $(patsubst %.dtb.o,%.dtb.S,$(lwl-dtb-y))
-extra-y		+= $(patsubst %.dtb.o,%.dtb,$(lwl-dtb-y))
-
 # Handle objects in subdirs
 # ---------------------------------------------------------------------------
 # o if we encounter foo/ in $(obj-y), replace it by foo/built-in.o
@@ -40,9 +30,9 @@ extra-y		+= $(patsubst %.dtb.o,%.dtb,$(lwl-dtb-y))
 # lowlevel is present in the PBL if enabled
 # otherwise in barebox
 ifeq ($(CONFIG_PBL_IMAGE), y)
-pbl-y		+= $(lwl-y) $(lwl-dtb-y)
+pbl-y		+= $(lwl-y)
 else
-obj-y		+= $(lwl-y) $(lwl-dtb-y)
+obj-y		+= $(lwl-y)
 endif
 
 obj-y		+= $(obj-pbl-y)

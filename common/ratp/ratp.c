@@ -416,7 +416,6 @@ int barebox_ratp_fs_call(struct ratp_bb_pkt *tx, struct ratp_bb_pkt **rx)
 	start = get_time_ns();
 
 	while (!ctx->fs_rx) {
-		poller_call();
 		if (ratp_closed(&ctx->ratp))
 			return -EIO;
 		if (is_timeout(start, 10 * SECOND))

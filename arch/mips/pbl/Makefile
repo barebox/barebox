@@ -31,7 +31,7 @@ zbarebox-lds := $(obj)/zbarebox.lds
 quiet_cmd_zbarebox__ ?= LD      $@
       cmd_zbarebox__ ?= $(LD) $(KBUILD_LDFLAGS) $(LDFLAGS_zbarebox) -o $@ \
       -T $(zbarebox-lds)                                           \
-      --start-group $(zbarebox-common) --end-group                 \
+      --whole-archive $(zbarebox-common) --no-while-archive        \
       $(filter-out $(zbarebox-lds) $(zbarebox-common) FORCE ,$^)
 
 $(obj)/zbarebox: $(zbarebox-lds) $(zbarebox-common) FORCE

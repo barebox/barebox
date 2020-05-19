@@ -60,12 +60,12 @@ lib-target := $(obj)/lib.a
 endif
 
 ifneq ($(strip $(obj-y) $(obj-m) $(obj-) $(lib-target) $(pbl-y)),)
-builtin-target := $(obj)/built-in.o
+builtin-target := $(obj)/built-in.a
 endif
 
 ifeq ($(CONFIG_PBL_IMAGE), y)
 ifneq ($(strip $(pbl-y) $(builtin-target)),)
-pbl-target := $(obj)/built-in-pbl.o
+pbl-target := $(obj)/built-in.pbl.a
 endif
 endif
 
@@ -186,22 +186,18 @@ quiet_cmd_cpp_lds_S = LDS     $@
 $(sort $(subdir-obj-y)): $(subdir-ym) ;
 
 #
-# Rule to compile a set of .o files into one .o file
+# Rule to compile a set of .o files into one .a file (without symbol table)
 #
+quiet_cmd_ar_builtin = AR $(quiet_modtag)  $@
+      cmd_ar_builtin = rm -f $@; $(AR) cDPrST $@ $(real-prereqs)
 
-# If the list of objects to link is empty, just create an empty built-in.o
-quiet_cmd_link_o_target = LD $(quiet_modtag)  $@
-cmd_link_o_target = $(if $(strip $(real-prereqs)),\
-		      $(LD) $(ld_flags) -r -o $@ $(real-prereqs),\
-		      rm -f $@; $(AR) rcs $@)
-
-$(builtin-target): $(obj-y) FORCE
-	$(call if_changed,link_o_target)
+$(builtin-target): $(real-obj-y) FORCE
+	$(call if_changed,ar_builtin)
 
 targets += $(builtin-target)
 
 $(pbl-target): $(pbl-y) FORCE
-	$(call if_changed,link_o_target)
+	$(call if_changed,ar_builtin)
 
 targets += $(pbl-target)
 

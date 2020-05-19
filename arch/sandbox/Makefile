@@ -53,7 +53,7 @@ SANITIZER_LIBS += -fsanitize=undefined
 endif
 
 cmd_barebox__ = $(CC) -o $@ -Wl,-T,$(BAREBOX_LDS) \
-	-Wl,--start-group $(BAREBOX_OBJS) -Wl,--end-group \
+	-Wl,--whole-archive $(BAREBOX_OBJS) -Wl,--no-whole-archive \
 	-lrt -lpthread $(SDL_LIBS) $(FTDI1_LIBS) \
 	$(SANITIZER_LIBS)
 

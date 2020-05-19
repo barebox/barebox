@@ -1,5 +1,3 @@
-#define SECT(name) __attribute__((section("ebv_socrates_" #name))) name
-
 #include "sdram_config.h"
 #include "pinmux_config.c"
 #include "pll_config.h"

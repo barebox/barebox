@@ -158,7 +158,7 @@ endef
 
 # Built-in and composite module parts
 
-pbl-%.o: %.c FORCE
+%.pbl.o: %.c FORCE
 	$(call cmd,force_checksrc)
 	$(call if_changed_rule,pbl_cc_o_c)
 
@@ -201,7 +201,7 @@ cmd_as_o_S       = $(CC) $(a_flags) -c -o $@ $<
 quiet_cmd_pbl_as_o_S = PBLAS   $@
 cmd_pbl_as_o_S       = $(CC) -D__PBL__ $(a_flags) $(PBL_CPPFLAGS) -c -o $@ $<
 
-pbl-%.o: %.S FORCE
+%.pbl.o: %.S FORCE
 	$(call if_changed_dep,pbl_as_o_S)
 
 %.o: %.S FORCE

@@ -48,8 +48,8 @@ endif
 obj-y		+= $(obj-pbl-y)
 pbl-y		+= $(obj-pbl-y)
 
-# add pbl- prefix to the target
-pbl-y		:= $(shell echo $(pbl-y) | sed -e 's%\(\([^ \t]\+/\)*\)\([^ \t]*\.o\)%\2pbl-\3%g')
+# pbl objects are suffixed with .pbl.o
+pbl-y		:= $(patsubst %.o,%.pbl.o,$(pbl-y))
 
 # add subdir from $(obj-y) too so we do not need to have the dir define in
 # both $(obj-y) and $(pbl-y)

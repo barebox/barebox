@@ -25,6 +25,7 @@ struct fastboot {
 			 const char *filename, const void *buf, size_t len);
 	int download_fd;
 	void *buf;
+	char *tempname;
 
 	bool active;
 

@@ -45,8 +45,6 @@
 
 #define FASTBOOT_VERSION		"0.4"
 
-#define FASTBOOT_TMPFILE		"/.fastboot.img"
-
 static unsigned int fastboot_max_download_size = SZ_8M;
 
 struct fb_variable {
@@ -178,6 +176,7 @@ int fastboot_generic_init(struct fastboot *fb, bool export_bbu)
 	int ret;
 	struct file_list_entry *fentry;
 	struct fb_variable *var;
+	static int instance;
 
 	var = fb_addvar(fb, "version");
 	fb_setvar(var, "0.4");
@@ -187,6 +186,8 @@ int fastboot_generic_init(struct fastboot *fb, bool export_bbu)
 		var = fb_addvar(fb, "max-download-size");
 		fb_setvar(var, "%u", fastboot_max_download_size);
 	}
+
+	fb->tempname = basprintf(".fastboot.%d.img", instance++);
 
 	if (IS_ENABLED(CONFIG_BAREBOX_UPDATE) && export_bbu)
 		bbu_handlers_iterate(fastboot_add_bbu_variables, fb);
@@ -210,6 +211,8 @@ void fastboot_generic_free(struct fastboot *fb)
 		list_del(&var->list);
 		free(var);
 	}
+
+	free(fb->tempname);
 
 	fb->active = false;
 }
@@ -372,7 +375,7 @@ static void cb_download(struct fastboot *fb, const char *cmd)
 			return;
 		}
 	} else {
-		fb->download_fd = open(FASTBOOT_TMPFILE, O_WRONLY | O_CREAT | O_TRUNC);
+		fb->download_fd = open(fb->tempname, O_WRONLY | O_CREAT | O_TRUNC);
 		if (fb->download_fd < 0) {
 			fastboot_tx_print(fb, FASTBOOT_MSG_FAIL,
 					  "internal error");
@@ -405,7 +408,7 @@ static void __maybe_unused cb_boot(struct fastboot *fb, const char *opt)
 	globalvar_set_match("linux.bootargs.dyn.", "");
 	globalvar_set_match("bootm.image", "");
 
-	data.os_file = FASTBOOT_TMPFILE;
+	data.os_file = fb->tempname;
 
 	ret = bootm_boot(&data);
 
@@ -534,7 +537,7 @@ static int fastboot_handle_sparse(struct fastboot *fb,
 	if (ret)
 		goto out_close_fd;
 
-	sparse = sparse_image_open(FASTBOOT_TMPFILE);
+	sparse = sparse_image_open(fb->tempname);
 	if (IS_ERR(sparse)) {
 		pr_err("Cannot open sparse image\n");
 		ret = PTR_ERR(sparse);
@@ -629,8 +632,8 @@ static void cb_flash(struct fastboot *fb, const char *cmd)
 		sourcefile = NULL;
 		filetype = file_detect_type(fb->buf, fb->download_bytes);
 	} else {
-		sourcefile = FASTBOOT_TMPFILE;
-		filetype = file_name_detect_type(FASTBOOT_TMPFILE);
+		sourcefile = fb->tempname;
+		filetype = file_name_detect_type(fb->tempname);
 	}
 
 	fastboot_tx_print(fb, FASTBOOT_MSG_INFO, "Copying file to %s...",
@@ -735,7 +738,7 @@ copy:
 	if (fastboot_download_to_buf(fb))
 		ret = write_file(filename, fb->buf, fb->download_size);
 	else
-		ret = copy_file(FASTBOOT_TMPFILE, filename, 1);
+		ret = copy_file(fb->tempname, filename, 1);
 
 	if (ret)
 		fastboot_tx_print(fb, FASTBOOT_MSG_FAIL,
@@ -749,7 +752,7 @@ out:
 	fb->buf = NULL;
 
 	if (!fastboot_download_to_buf(fb))
-		unlink(FASTBOOT_TMPFILE);
+		unlink(fb->tempname);
 }
 
 static void cb_erase(struct fastboot *fb, const char *cmd)

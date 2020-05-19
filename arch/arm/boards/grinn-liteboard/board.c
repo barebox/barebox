@@ -1,17 +1,7 @@
-/*
- * Copyright (C) 2018 Grinn
- *
- * Author: Marcin Niestroj <m.niestroj@grinn-global.com>
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; version 2.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
- */
+// SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: 2018 Grinn
+
+/* Author: Marcin Niestroj <m.niestroj@grinn-global.com> */
 
 #define pr_fmt(fmt) "liteboard: " fmt
 

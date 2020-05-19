@@ -1,18 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// SPDX-FileCopyrightText: 2007 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
+// SPDX-FileCopyrightText: 2014 Philippe Rétornaz <philippe.retornaz@epfl.ch>, EPFL
+
 /*
- * (C) 2007 Pengutronix, Sascha Hauer <s.hauer@pengutronix.de>
- * (C) 2014 EPFL, Philippe Rétornaz <philippe.retornaz@epfl.ch>
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- *
  * Board support for EPFL's, i.MX31 based CPU card
  *
  * Based on:

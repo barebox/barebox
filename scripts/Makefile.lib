@@ -154,7 +154,10 @@ __cpp_flags     =                          $(call flags,_cpp_flags)
 endif
 
 part-of-module = $(if $(filter $(basename $@).o, $(real-obj-m)),y)
-quiet_modtag = $(if $(part-of-module),[M],   )
+part-of-pbl    = $(if $(filter $(basename $@).o, $(pbl-y) $(pbl-target)),y)
+quiet_modtag = $(if $(part-of-pbl),[P],$(if $(part-of-module),[M],   ))
+
+pbl_cppflags = $(if $(part-of-pbl), -D__PBL__ $(PBL_CPPFLAGS))
 
 modkern_cflags =                                          \
 	$(if $(part-of-module),                           \
@@ -166,11 +169,11 @@ modkern_aflags = $(if $(part-of-module),				\
 			$(KBUILD_AFLAGS_KERNEL) $(AFLAGS_KERNEL))
 
 c_flags        = -Wp,-MD,$(depfile) $(NOSTDINC_FLAGS) $(KBUILD_CPPFLAGS) \
-		 $(__c_flags) $(modkern_cflags) \
+		 $(__c_flags) $(modkern_cflags) $(pbl_cppflags) \
 		 -D"KBUILD_STR(s)=\#s" $(basename_flags) $(modname_flags)
 
 a_flags        = -Wp,-MD,$(depfile) $(NOSTDINC_FLAGS) $(KBUILD_CPPFLAGS) \
-		 $(__a_flags) $(modkern_aflags)
+		 $(__a_flags) $(modkern_aflags) $(pbl_cppflags)
 
 cpp_flags      = -Wp,-MD,$(depfile) $(NOSTDINC_FLAGS) $(__cpp_flags)
 

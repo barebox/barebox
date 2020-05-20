@@ -179,7 +179,6 @@ static int read_default_passwd(unsigned char *sum, size_t length)
 
 	return 0;
 }
-EXPORT_SYMBOL(read_default_passwd);
 
 static int read_env_passwd(unsigned char *sum, size_t length)
 {

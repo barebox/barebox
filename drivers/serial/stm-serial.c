@@ -159,6 +159,7 @@ static int stm_serial_probe(struct device_d *dev)
 	cdev->flush = stm_serial_flush;
 	cdev->setbrg = stm_serial_setbaudrate;
 	cdev->dev = dev;
+	cdev->linux_console_name = "ttyAMA";
 
 	dev->priv = priv;
 	iores = dev_request_mem_resource(dev, 0);

@@ -2,7 +2,9 @@
 #ifndef __INCLUDE_RESTART_H
 #define __INCLUDE_RESTART_H
 
+void restart_handlers_print(void);
 void __noreturn restart_machine(void);
+struct restart_handler *restart_handler_get_by_name(const char *name);
 
 struct restart_handler {
 	void (*restart)(struct restart_handler *);

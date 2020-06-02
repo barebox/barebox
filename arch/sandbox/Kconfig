@@ -1,3 +1,5 @@
+source "scripts/Kconfig.include"
+
 config SANDBOX
 	bool
 	select OFTREE
@@ -20,3 +22,10 @@ config SANDBOX_UNWIND
 	default y
 	select ARCH_HAS_STACK_DUMP
 	depends on UBSAN || KASAN
+
+config CC_IS_64BIT
+	def_bool $(success,$(srctree)/scripts/gcc-64bitptr.sh $(CC))
+
+config 64BIT
+	bool
+	default CC_IS_64BIT

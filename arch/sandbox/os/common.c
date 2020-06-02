@@ -236,7 +236,7 @@ static int add_image(char *str, char *devname_template, int *devname_number)
 		filename = devname;
 		snprintf(tmp, sizeof(tmp),
 			 devname_template, (*devname_number)++);
-		devname = strdup(tmp);
+		devname = tmp;
 	}
 
 	printf("add %s backed by file %s%s\n", devname,

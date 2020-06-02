@@ -17,7 +17,6 @@
 #define HOST_XHCI_H_
 
 #include <asm/types.h>
-#include <asm/cache.h>
 #include <io.h>
 #include <linux/list.h>
 

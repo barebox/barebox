@@ -235,7 +235,7 @@ static void at91sam9261_initialize(void)
 	at91_add_pit(AT91SAM9261_BASE_PIT);
 	at91_add_sam9_smc(DEVICE_ID_SINGLE, AT91SAM9261_BASE_SMC, 0x200);
 
-	restart_handler_register_fn(at91sam9261_restart);
+	restart_handler_register_fn("soc", at91sam9261_restart);
 }
 
 static int at91sam9261_setup(void)

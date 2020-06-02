@@ -49,7 +49,7 @@ static int imx23_devices_init(void)
 	add_generic_device("imx23-gpio", 0, NULL, IMX_IOMUXC_BASE, 0x2000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx23-gpio", 1, NULL, IMX_IOMUXC_BASE, 0x2000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx23-gpio", 2, NULL, IMX_IOMUXC_BASE, 0x2000, IORESOURCE_MEM, NULL);
-	restart_handler_register_fn(imx23_restart_soc);
+	restart_handler_register_fn("soc", imx23_restart_soc);
 
 	return 0;
 }

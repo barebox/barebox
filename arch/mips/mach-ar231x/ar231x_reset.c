@@ -68,7 +68,7 @@ static struct driver_d ar231x_reset_driver = {
 
 static int ar231x_reset_init(void)
 {
-	restart_handler_register_fn(ar2312x_restart_soc);
+	restart_handler_register_fn("soc-wdt", ar2312x_restart_soc);
 	return platform_driver_register(&ar231x_reset_driver);
 }
 coredevice_initcall(ar231x_reset_init);

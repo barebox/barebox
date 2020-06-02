@@ -33,7 +33,7 @@ static void __noreturn highbank_poweroff(struct poweroff_handler *handler)
 
 static int highbank_init(void)
 {
-	restart_handler_register_fn(highbank_restart_soc);
+	restart_handler_register_fn("soc", highbank_restart_soc);
 	poweroff_handler_register_fn(highbank_poweroff);
 
 	return 0;

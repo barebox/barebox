@@ -13,7 +13,7 @@ static void at91sam9x5_restart(struct restart_handler *rst)
 
 static int at91sam9x5_initialize(void)
 {
-	restart_handler_register_fn(at91sam9x5_restart);
+	restart_handler_register_fn("soc", at91sam9x5_restart);
 
 	return 0;
 }

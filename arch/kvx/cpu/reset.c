@@ -60,7 +60,7 @@ static int kvx_reset_init(void)
 		break;
 	}
 
-	restart_handler_register_fn(kvx_restart_soc);
+	restart_handler_register_fn("soc", kvx_restart_soc);
 
 	return 0;
 }

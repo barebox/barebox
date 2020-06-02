@@ -36,7 +36,7 @@ static int dove_init_soc(void)
 	if (!of_machine_is_compatible("marvell,dove"))
 		return 0;
 
-	restart_handler_register_fn(dove_restart_soc);
+	restart_handler_register_fn("soc", dove_restart_soc);
 
 	barebox_set_model("Marvell Dove");
 	barebox_set_hostname("dove");

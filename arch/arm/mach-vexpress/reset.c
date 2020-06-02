@@ -24,7 +24,7 @@ static void vexpress_reset_soc(struct restart_handler *rst)
 
 static int restart_register_feature(void)
 {
-	restart_handler_register_fn(vexpress_reset_soc);
+	restart_handler_register_fn("soc-wdt", vexpress_reset_soc);
 
 	return 0;
 }

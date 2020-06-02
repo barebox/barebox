@@ -535,7 +535,7 @@ int omap4_init(void)
 {
 	omap_gpmc_base = (void *)OMAP44XX_GPMC_BASE;
 
-	restart_handler_register_fn(omap4_restart_soc);
+	restart_handler_register_fn("soc", omap4_restart_soc);
 
 	return omap4_bootsource();
 }

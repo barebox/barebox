@@ -12,7 +12,8 @@ struct restart_handler {
 };
 
 int restart_handler_register(struct restart_handler *);
-int restart_handler_register_fn(void (*restart_fn)(struct restart_handler *));
+int restart_handler_register_fn(const char *name,
+				void (*restart_fn)(struct restart_handler *));
 
 #define RESTART_DEFAULT_PRIORITY 100
 

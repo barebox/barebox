@@ -42,7 +42,7 @@ static void __noreturn mpc85xx_restart_soc(struct restart_handler *rst)
 
 static int restart_register_feature(void)
 {
-	restart_handler_register_fn(mpc85xx_restart_soc);
+	restart_handler_register_fn("soc", mpc85xx_restart_soc);
 
 	return 0;
 }

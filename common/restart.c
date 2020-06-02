@@ -47,6 +47,7 @@ int restart_handler_register(struct restart_handler *rst)
 
 /**
  * restart_handler_register_fn() - register a handler function
+ * @name:	restart method name or NULL if name should be auto-generated
  * @restart_fn:	The restart function
  *
  * convenience wrapper for restart_handler_register() to register a handler
@@ -54,13 +55,15 @@ int restart_handler_register(struct restart_handler *rst)
  *
  * return: 0 for success or negative error code
  */
-int restart_handler_register_fn(void (*restart_fn)(struct restart_handler *))
+int restart_handler_register_fn(const char *name,
+				void (*restart_fn)(struct restart_handler *))
 {
 	struct restart_handler *rst;
 	int ret;
 
 	rst = xzalloc(sizeof(*rst));
 
+	rst->name = xstrdup(name);
 	rst->restart = restart_fn;
 
 	ret = restart_handler_register(rst);

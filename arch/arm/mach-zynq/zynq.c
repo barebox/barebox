@@ -69,7 +69,7 @@ static int zynq_init(void)
 	writel(val, 0xf8f00000);
 	dmb();
 
-	restart_handler_register_fn(zynq_restart_soc);
+	restart_handler_register_fn("soc", zynq_restart_soc);
 
 	bootsource_set(zynq_bootsource_get());
 

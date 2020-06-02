@@ -132,7 +132,7 @@ static int armada_370_xp_init_soc(void)
 	if (!of_machine_is_compatible("marvell,armada-370-xp"))
 		return 0;
 
-	restart_handler_register_fn(armada_370_xp_restart_soc);
+	restart_handler_register_fn("soc", armada_370_xp_restart_soc);
 
 	barebox_set_model("Marvell Armada 370/XP");
 	barebox_set_hostname("armada");

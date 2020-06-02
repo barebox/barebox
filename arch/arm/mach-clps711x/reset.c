@@ -22,7 +22,7 @@ static void __noreturn clps711x_restart_soc(struct restart_handler *rst)
 
 static int restart_register_feature(void)
 {
-	restart_handler_register_fn(clps711x_restart_soc);
+	restart_handler_register_fn("vector", clps711x_restart_soc);
 
 	return 0;
 }

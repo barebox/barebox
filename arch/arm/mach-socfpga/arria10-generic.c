@@ -70,7 +70,7 @@ static int arria10_generic_init(void)
 	arria10_init_emac();
 
 	pr_debug("Register restart handler\n");
-	restart_handler_register_fn(arria10_restart_soc);
+	restart_handler_register_fn("soc", arria10_restart_soc);
 
 	return 0;
 }

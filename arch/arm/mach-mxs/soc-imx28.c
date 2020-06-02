@@ -51,7 +51,7 @@ static int imx28_init(void)
 		HW_CLKCTRL_WDOG_POR_DISABLE;
 	writel(reg, IMX_CCM_BASE + HW_CLKCTRL_RESET);
 
-	restart_handler_register_fn(imx28_restart_soc);
+	restart_handler_register_fn("soc", imx28_restart_soc);
 
 	arm_add_mem_device("ram0", IMX_MEMORY_BASE, imx28_get_memsize());
 

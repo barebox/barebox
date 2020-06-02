@@ -553,13 +553,6 @@ static int dwmci_init(struct mci_host *mci, struct device_d *dev)
 	return 0;
 }
 
-static int dw_mmc_detect(struct device_d *dev)
-{
-	struct dwmci_host *host = dev->priv;
-
-	return mci_detect_card(&host->mci);
-}
-
 static int dw_mmc_probe(struct device_d *dev)
 {
 	struct resource *iores;
@@ -615,8 +608,6 @@ static int dw_mmc_probe(struct device_d *dev)
 	else
 		host->pwren_value = 1;
 
-	dev->detect = dw_mmc_detect;
-
 	host->clkrate = clk_get_rate(host->clk_ciu);
 	host->mci.f_min = host->clkrate / 510 / host->ciu_div;
 	if (host->mci.f_min < 200000)
@@ -624,8 +615,6 @@ static int dw_mmc_probe(struct device_d *dev)
 	host->mci.f_max = host->clkrate / host->ciu_div;
 
 	mci_of_parse(&host->mci);
-
-	dev->priv = host;
 
 	return mci_register(&host->mci);
 }

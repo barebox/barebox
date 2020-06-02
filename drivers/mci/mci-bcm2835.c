@@ -366,13 +366,6 @@ static int bcm2835_mci_reset(struct mci_host *mci, struct device_d *mci_dev)
 	return bcm2835_mci_wait_command_done(host);
 }
 
-static int bcm2835_mci_detect(struct device_d *dev)
-{
-	struct bcm2835_mci_host *host = dev->priv;
-
-	return mci_detect_card(&host->mci);
-}
-
 static int bcm2835_mci_probe(struct device_d *hw_dev)
 {
 	struct resource *iores;
@@ -421,9 +414,6 @@ static int bcm2835_mci_probe(struct device_d *hw_dev)
 
 	host->mci.f_min = MIN_FREQ;
 	host->mci.f_max = host->max_clock;
-
-	hw_dev->priv = host;
-	hw_dev->detect = bcm2835_mci_detect,
 
 	/*
 	 * The Arasan has a bugette whereby it may lose the content of

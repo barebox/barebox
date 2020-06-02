@@ -379,13 +379,6 @@ static int tegra_sdmmc_card_present(struct mci_host *mci)
 	return !(sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) & SDHCI_WRITE_PROTECT);
 }
 
-static int tegra_sdmmc_detect(struct device_d *dev)
-{
-	struct tegra_sdmmc_host *host = dev->priv;
-
-	return mci_detect_card(&host->mci);
-}
-
 static void tegra_sdmmc_parse_dt(struct tegra_sdmmc_host *host)
 {
 	struct device_node *np = host->mci.hw_dev->device_node;
@@ -458,9 +451,6 @@ static int tegra_sdmmc_probe(struct device_d *dev)
 	mci->voltages = MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_165_195;
 	mci->host_caps |= MMC_CAP_MMC_HIGHSPEED | MMC_CAP_MMC_HIGHSPEED_52MHZ |
 	                  MMC_CAP_SD_HIGHSPEED;
-
-	dev->priv = host;
-	dev->detect = tegra_sdmmc_detect;
 
 	return mci_register(&host->mci);
 }

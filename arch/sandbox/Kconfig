@@ -6,6 +6,7 @@ config SANDBOX
 	select GPIOLIB
 	select ARCH_HAS_UBSAN_SANITIZE_ALL
 	select HAVE_ARCH_KASAN
+	select HAS_DMA
 	default y
 
 config ARCH_TEXT_BASE

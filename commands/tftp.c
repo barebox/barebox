@@ -20,7 +20,6 @@ static int do_tftpb(int argc, char *argv[])
 {
 	char *source, *dest, *freep;
 	int opt;
-	unsigned long flags;
 	int tftp_push = 0;
 	int ret;
 	IPaddr_t ip;
@@ -46,13 +45,10 @@ static int do_tftpb(int argc, char *argv[])
 	else
 		dest = argv[optind];
 
-	if (tftp_push) {
+	if (tftp_push)
 		dest = freep = basprintf("%s/%s", TFTP_MOUNT_PATH, dest);
-		flags = O_RDONLY;
-	} else {
+	else
 		source = freep = basprintf("%s/%s", TFTP_MOUNT_PATH, source);
-		flags = O_WRONLY | O_CREAT;
-	}
 
 	if (!freep)
 		return -ENOMEM;

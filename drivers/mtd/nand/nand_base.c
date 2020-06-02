@@ -1688,6 +1688,7 @@ static int nand_read(struct mtd_info *mtd, loff_t from, size_t len,
 	nand_get_device(mtd, FL_READING);
 	ops.len = len;
 	ops.datbuf = buf;
+	ops.ooblen = 0;
 	ops.oobbuf = NULL;
 	ops.mode = MTD_OPS_PLACE_OOB;
 	ret = nand_do_read_ops(mtd, from, &ops);

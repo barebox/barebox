@@ -26,6 +26,13 @@ config SANDBOX_UNWIND
 config CC_IS_64BIT
 	def_bool $(success,$(srctree)/scripts/gcc-64bitptr.sh $(CC))
 
+config CC_HAS_LINUX_I386_SUPPORT
+	def_bool $(cc-option,-m32) && $(ld-option,-m elf_i386)
+
 config 64BIT
 	bool
+	default n if SANDBOX_LINUX_I386
 	default CC_IS_64BIT
+
+config SANDBOX_LINUX_I386
+	bool "32-bit x86 barebox" if CC_HAS_LINUX_I386_SUPPORT

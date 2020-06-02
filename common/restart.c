@@ -19,6 +19,7 @@
 #include <of.h>
 
 static LIST_HEAD(restart_handler_list);
+static unsigned resetidx;
 
 /**
  * restart_handler_register() - register a handler for restarting the system
@@ -31,7 +32,7 @@ static LIST_HEAD(restart_handler_list);
 int restart_handler_register(struct restart_handler *rst)
 {
 	if (!rst->name)
-		rst->name = RESTART_DEFAULT_NAME;
+		rst->name = basprintf("reset%u", resetidx);
 	if (!rst->priority)
 		rst->priority = RESTART_DEFAULT_PRIORITY;
 
@@ -40,6 +41,7 @@ int restart_handler_register(struct restart_handler *rst)
 	pr_debug("registering restart handler \"%s\" with priority %d\n",
 			rst->name, rst->priority);
 
+	resetidx++;
 	return 0;
 }
 

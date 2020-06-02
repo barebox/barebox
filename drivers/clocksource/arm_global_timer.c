@@ -20,7 +20,6 @@
 #include <clock.h>
 #include <linux/clk.h>
 #include <io.h>
-#include <asm/system.h>
 
 #define GT_COUNTER0	0x00
 #define GT_COUNTER1	0x04

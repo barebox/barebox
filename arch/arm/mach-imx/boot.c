@@ -28,6 +28,7 @@
 #include <mach/imx6-regs.h>
 #include <mach/imx7-regs.h>
 #include <mach/imx8mm-regs.h>
+#include <mach/imx8mp-regs.h>
 #include <mach/imx8mq-regs.h>
 #include <mach/vf610-regs.h>
 #include <mach/imx8mq.h>
@@ -650,4 +651,20 @@ void imx8mm_get_boot_source(enum bootsource *src, int *instance)
 void imx8mm_boot_save_loc(void)
 {
 	imx_boot_save_loc(imx8mm_get_boot_source);
+}
+
+void imx8mp_get_boot_source(enum bootsource *src, int *instance)
+{
+	unsigned long addr;
+	void __iomem *src_base = IOMEM(MX8MP_SRC_BASE_ADDR);
+	uint32_t sbmr2 = readl(src_base + 0x70);
+
+	addr = IMX8M_BOOT_SW_INFO_POINTER_ADDR_A0;
+
+	__imx7_get_boot_source(src, instance, addr, sbmr2);
+}
+
+void imx8mp_boot_save_loc(void)
+{
+	imx_boot_save_loc(imx8mp_get_boot_source);
 }

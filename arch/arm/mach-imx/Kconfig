@@ -190,6 +190,10 @@ config ARCH_IMX8MM
 	select ARCH_IMX8M
 	bool
 
+config ARCH_IMX8MP
+	select ARCH_IMX8M
+	bool
+
 config ARCH_IMX8MQ
 	select ARCH_IMX8M
 	bool

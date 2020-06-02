@@ -17,6 +17,7 @@ void imx6_boot_save_loc(void);
 void imx7_boot_save_loc(void);
 void vf610_boot_save_loc(void);
 void imx8mm_boot_save_loc(void);
+void imx8mp_boot_save_loc(void);
 void imx8mq_boot_save_loc(void);
 
 void imx25_get_boot_source(enum bootsource *src, int *instance);
@@ -28,6 +29,7 @@ void imx6_get_boot_source(enum bootsource *src, int *instance);
 void imx7_get_boot_source(enum bootsource *src, int *instance);
 void vf610_get_boot_source(enum bootsource *src, int *instance);
 void imx8mm_get_boot_source(enum bootsource *src, int *instance);
+void imx8mp_get_boot_source(enum bootsource *src, int *instance);
 void imx8mq_get_boot_source(enum bootsource *src, int *instance);
 
 int imx1_init(void);
@@ -43,6 +45,7 @@ int imx6_init(void);
 int imx7_init(void);
 int vf610_init(void);
 int imx8mm_init(void);
+int imx8mp_init(void);
 int imx8mq_init(void);
 
 int imx1_devices_init(void);
@@ -63,6 +66,7 @@ void imx7_cpu_lowlevel_init(void);
 void vf610_cpu_lowlevel_init(void);
 void imx8mq_cpu_lowlevel_init(void);
 void imx8mm_cpu_lowlevel_init(void);
+void imx8mp_cpu_lowlevel_init(void);
 
 /* There's a off-by-one betweem the gpio bank number and the gpiochip */
 /* range e.g. GPIO_1_5 is gpio 5 under linux */
@@ -215,6 +219,18 @@ extern unsigned int __imx_cpu_type;
 # define cpu_is_mx8mm()	(0)
 #endif
 
+#ifdef CONFIG_ARCH_IMX8MP
+# ifdef imx_cpu_type
+#  undef imx_cpu_type
+#  define imx_cpu_type __imx_cpu_type
+# else
+#  define imx_cpu_type IMX_CPU_IMX8MP
+# endif
+# define cpu_is_mx8mp()	(imx_cpu_type == IMX_CPU_IMX8MP)
+#else
+# define cpu_is_mx8mp()	(0)
+#endif
+
 #ifdef CONFIG_ARCH_IMX8MQ
 # ifdef imx_cpu_type
 #  undef imx_cpu_type
@@ -251,6 +267,6 @@ extern unsigned int __imx_cpu_type;
 #define cpu_is_mx23()	(0)
 #define cpu_is_mx28()	(0)
 
-#define cpu_is_mx8m()	(cpu_is_mx8mq() || cpu_is_mx8mm())
+#define cpu_is_mx8m()	(cpu_is_mx8mq() || cpu_is_mx8mm() || cpu_is_mx8mp())
 
 #endif /* __MACH_GENERIC_H */

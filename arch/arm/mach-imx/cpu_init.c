@@ -82,6 +82,11 @@ void imx8mm_cpu_lowlevel_init(void)
 	imx8m_cpu_lowlevel_init();
 }
 
+void imx8mp_cpu_lowlevel_init(void)
+{
+	imx8m_cpu_lowlevel_init();
+}
+
 void imx8mq_cpu_lowlevel_init(void)
 {
 	imx8m_cpu_lowlevel_init();

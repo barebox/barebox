@@ -120,7 +120,11 @@ void relocate_code(void *fdt, u32 fdt_size, u32 ram_size)
 
 	length = __bss_stop - __image_start;
 	relocaddr = ALIGN_DOWN(ram_size - length, SZ_64K);
-	relocaddr = KSEG0ADDR(relocaddr);
+	if (IS_ENABLED(CONFIG_MMU)) {
+		relocaddr = KSEG0ADDR(relocaddr);
+	} else {
+		relocaddr = KSEG1ADDR(relocaddr);
+	}
 	new_stack = relocaddr - MALLOC_SIZE - 16;
 
 	/*

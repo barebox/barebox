@@ -39,7 +39,11 @@ static inline unsigned long virt_to_phys(const void *address)
  */
 static inline void *phys_to_virt(unsigned long address)
 {
-	return (void *)CKSEG0ADDR(address);
+	if (IS_ENABLED(CONFIG_MMU)) {
+		return (void *)CKSEG0ADDR(address);
+	}
+
+	return (void *)CKSEG1ADDR(address);
 }
 
 #define	IO_SPACE_LIMIT	0

@@ -358,8 +358,8 @@ int at91_sdhci_init(struct at91_sdhci *host, u32 maxclk,
 	}
 
 	if (cal_always_on) {
-		sdhci_write32(sdhci, AT91_SDHCI_CALCR_ALWYSON | AT91_SDHCI_CALCR_EN,
-			     AT91_SDHCI_CALCR);
+		sdhci_write32(sdhci, AT91_SDHCI_CALCR,
+			     AT91_SDHCI_CALCR_ALWYSON | AT91_SDHCI_CALCR_EN);
 	}
 
 	return 0;

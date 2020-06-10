@@ -367,7 +367,7 @@ static int ramfs_truncate(struct device_d *dev, FILE *f, loff_t size)
 		} else {
 			node->data = ramfs_get_chunk();
 			if (!node->data)
-				return -ENOMEM;
+				return -ENOSPC;
 			data = node->data;
 			oldchunks = 1;
 		}
@@ -378,7 +378,7 @@ static int ramfs_truncate(struct device_d *dev, FILE *f, loff_t size)
 		while (newchunks > oldchunks) {
 			data->next = ramfs_get_chunk();
 			if (!data->next)
-				return -ENOMEM;
+				return -ENOSPC;
 			data = data->next;
 			oldchunks++;
 		}

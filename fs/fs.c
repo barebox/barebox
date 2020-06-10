@@ -1087,6 +1087,9 @@ void iget_failed(struct inode *inode)
 
 void iput(struct inode *inode)
 {
+	if (!inode)
+		return;
+
 	if (!inode->i_count)
 		return;
 

@@ -17,8 +17,8 @@
 #define HOST_XHCI_H_
 
 #include <asm/types.h>
-#include <asm/cache.h>
 #include <io.h>
+#include <io-64-nonatomic-lo-hi.h>
 #include <linux/list.h>
 
 #define MAX_EP_CTX_NUM		31
@@ -1113,10 +1113,7 @@ static inline u64 xhci_readq(__le64 volatile *regs)
 #if BITS_PER_LONG == 64
 	return readq(regs);
 #else
-	__u32 *ptr = (__u32 *)regs;
-	u64 val_lo = readl(ptr);
-	u64 val_hi = readl(ptr + 1);
-	return val_lo + (val_hi << 32);
+	return lo_hi_readq(regs);
 #endif
 }
 
@@ -1125,12 +1122,7 @@ static inline void xhci_writeq(__le64 volatile *regs, const u64 val)
 #if BITS_PER_LONG == 64
 	writeq(val, regs);
 #else
-	__u32 *ptr = (__u32 *)regs;
-	u32 val_lo = lower_32_bits(val);
-	/* FIXME */
-	u32 val_hi = upper_32_bits(val);
-	writel(val_lo, ptr);
-	writel(val_hi, ptr + 1);
+	lo_hi_writeq(val, regs);
 #endif
 }
 

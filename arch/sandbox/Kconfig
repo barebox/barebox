@@ -1,9 +1,12 @@
+source "scripts/Kconfig.include"
+
 config SANDBOX
 	bool
 	select OFTREE
 	select GPIOLIB
 	select ARCH_HAS_UBSAN_SANITIZE_ALL
 	select HAVE_ARCH_KASAN
+	select HAS_DMA
 	default y
 
 config ARCH_TEXT_BASE
@@ -20,3 +23,17 @@ config SANDBOX_UNWIND
 	default y
 	select ARCH_HAS_STACK_DUMP
 	depends on UBSAN || KASAN
+
+config CC_IS_64BIT
+	def_bool $(success,$(srctree)/scripts/gcc-64bitptr.sh $(CC))
+
+config CC_HAS_LINUX_I386_SUPPORT
+	def_bool $(cc-option,-m32) && $(ld-option,-m elf_i386)
+
+config 64BIT
+	bool
+	default n if SANDBOX_LINUX_I386
+	default CC_IS_64BIT
+
+config SANDBOX_LINUX_I386
+	bool "32-bit x86 barebox" if CC_HAS_LINUX_I386_SUPPORT

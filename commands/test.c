@@ -86,7 +86,6 @@ static int do_test(int argc, char *argv[])
 	if (argc < 2)
 		return 1;
 
-	last_expr = 0;
 	left = argc - 1;
 	ap = argv + 1;
 

@@ -52,10 +52,20 @@ ifeq ($(CONFIG_UBSAN),y)
 SANITIZER_LIBS += -fsanitize=undefined
 endif
 
-cmd_barebox__ = $(CC) -o $@ -Wl,-T,$(BAREBOX_LDS) \
+ifeq ($(CONFIG_SANDBOX_LINUX_I386),y)
+KBUILD_CFLAGS += -m32
+KBUILD_LDFLAGS += -m elf_i386
+KBUILD_AFLAGS += -m32
+BAREBOX_LDFLAGS += -m32
+endif
+
+BAREBOX_LDFLAGS += \
+	-Wl,-T,$(BAREBOX_LDS) \
 	-Wl,--whole-archive $(BAREBOX_OBJS) -Wl,--no-whole-archive \
 	-lrt -lpthread $(SDL_LIBS) $(FTDI1_LIBS) \
 	$(SANITIZER_LIBS)
+
+cmd_barebox__ = $(CC) -o $@ $(BAREBOX_LDFLAGS)
 
 common-y += $(BOARD) arch/sandbox/os/ arch/sandbox/lib/
 

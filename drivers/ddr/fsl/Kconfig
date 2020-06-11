@@ -1,5 +1,6 @@
 config DDR_FSL
 	bool "Freescale DDR support" if COMPILE_TEST
+	depends on ARM
 
 if DDR_FSL
 

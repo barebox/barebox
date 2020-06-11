@@ -155,6 +155,7 @@ config DRIVER_NET_ETHOC
 config DRIVER_NET_FEC_IMX
 	bool "i.MX FEC Ethernet driver"
 	depends on ARCH_HAS_FEC_IMX || COMPILE_TEST
+	depends on HAS_DMA
 	select PHYLIB
 
 config DRIVER_NET_FSL_FMAN
@@ -180,6 +181,7 @@ config DRIVER_NET_KS8851_MLL
 config DRIVER_NET_MACB
 	bool "macb Ethernet driver"
 	depends on HAS_MACB || COMPILE_TEST
+	depends on HAS_DMA
 	select PHYLIB
 
 config DRIVER_NET_MICREL

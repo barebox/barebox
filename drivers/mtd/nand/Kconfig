@@ -98,7 +98,7 @@ config MTD_NAND_OMAP_ELM
 config NAND_ORION
 	bool
 	prompt "Marvell Orion NAND driver"
-	depends on ARCH_KIRKWOOD || COMPILE_TEST
+	depends on ARM && (ARCH_KIRKWOOD || COMPILE_TEST)
 	help
 	  Support for the Orion NAND controller, present in Kirkwood SoCs.
 

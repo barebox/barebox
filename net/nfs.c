@@ -533,7 +533,7 @@ static int nfs_readlink_reply(unsigned char *pkt, unsigned len)
 
 static int nfs_read_reply(unsigned char *pkt, unsigned len)
 {
-	int rlen;
+	unsigned int rlen;
 	uint32_t *data;
 	int ret;
 
@@ -551,6 +551,8 @@ static int nfs_read_reply(unsigned char *pkt, unsigned len)
 	}
 
 	rlen = ntohl(net_read_uint32(data + 18));
+
+	rlen = max_t(unsigned int, rlen, len - 19);
 
 	ret = write(net_store_fd, (char *)(data + 19), rlen);
 	if (ret < 0) {

@@ -242,7 +242,7 @@ static int eukrea_cpuimx35_core_init(void)
 	reg = writel(reg, MX35_CCM_BASE_ADDR + MX35_CCM_CGR0);
 	reg = readl(MX35_CCM_BASE_ADDR + MX35_CCM_CGR1);
 	reg |= 0x3 << MX35_CCM_CGR1_FEC_SHIFT;
-	reg |= 0x3 << MX35_CCM_CGR1_I2C1_SHIFT,
+	reg |= 0x3 << MX35_CCM_CGR1_I2C1_SHIFT;
 	reg = writel(reg, MX35_CCM_BASE_ADDR + MX35_CCM_CGR1);
 	reg = readl(MX35_CCM_BASE_ADDR + MX35_CCM_CGR2);
 	reg |= 0x3 << MX35_CCM_CGR2_USB_SHIFT;

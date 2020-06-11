@@ -308,6 +308,17 @@ static int ns16550_tstc(struct console_device *cdev)
 	return ((ns16550_read(cdev, lsr) & LSR_DR) != 0);
 }
 
+/**
+ * @brief Flush remaining characters in serial device
+ *
+ * @param[in] cdev pointer to console device
+ */
+static void ns16550_flush(struct console_device *cdev)
+{
+	/* Loop Doing Nothing */
+	while ((ns16550_read(cdev, lsr) & LSR_TEMT) == 0) ;
+}
+
 static void ns16550_probe_dt(struct device_d *dev, struct ns16550_priv *priv)
 {
 	struct device_node *np = dev->device_node;
@@ -501,6 +512,7 @@ static int ns16550_probe(struct device_d *dev)
 	cdev->putc = ns16550_putc;
 	cdev->getc = ns16550_getc;
 	cdev->setbrg = ns16550_setbaudrate;
+	cdev->flush = ns16550_flush;
 	cdev->linux_console_name = devtype->linux_console_name;
 
 	priv->fcrval = FCRVAL;

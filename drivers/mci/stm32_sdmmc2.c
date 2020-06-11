@@ -586,8 +586,8 @@ static int stm32_sdmmc2_probe(struct amba_device *adev,
 	priv->dev = dev;
 
 	mci = &priv->mci;
-	mci->send_cmd = stm32_sdmmc2_send_cmd,
-	mci->set_ios = stm32_sdmmc2_set_ios,
+	mci->send_cmd = stm32_sdmmc2_send_cmd;
+	mci->set_ios = stm32_sdmmc2_set_ios;
 	mci->init = stm32_sdmmc2_reset;
 	mci->hw_dev = dev;
 

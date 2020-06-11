@@ -198,11 +198,11 @@ int usbnet_probe(struct usb_device *usbdev, const struct usb_device_id *prod)
 	edev = &undev->edev;
 	undev->udev = usbdev;
 
-	edev->open = usbnet_open,
-	edev->init = usbnet_init,
-	edev->send = usbnet_send,
-	edev->recv = usbnet_recv,
-	edev->halt = usbnet_halt,
+	edev->open = usbnet_open;
+	edev->init = usbnet_init;
+	edev->send = usbnet_send;
+	edev->recv = usbnet_recv;
+	edev->halt = usbnet_halt;
 	edev->priv = undev;
 	edev->parent = &usbdev->dev;
 

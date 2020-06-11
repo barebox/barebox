@@ -511,7 +511,7 @@ fail0:
 	i2c_fsl_stop(adapter);
 
 	/* Disable I2C controller, and force our state to stopped */
-	temp = i2c_fsl->hwdata->i2cr_ien_opcode ^ I2CR_IEN,
+	temp = i2c_fsl->hwdata->i2cr_ien_opcode ^ I2CR_IEN;
 	fsl_i2c_write_reg(temp, i2c_fsl, FSL_I2C_I2CR);
 
 	return (result < 0) ? result : num;

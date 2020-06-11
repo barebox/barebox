@@ -1,17 +1,17 @@
 
-OPTS_barebox-logo-w64.bblogo="-w 64"
+OPTS_barebox-logo-w64.bblogo = --export-width=64
 bblogo-$(CONFIG_BAREBOX_LOGO_64) += barebox-logo-w64
 
-OPTS_barebox-logo-w240.bblogo="-w 240"
+OPTS_barebox-logo-w240.bblogo = --export-width=240
 bblogo-$(CONFIG_BAREBOX_LOGO_240) += barebox-logo-w240
 
-OPTS_barebox-logo-w320.bblogo="-w 320"
+OPTS_barebox-logo-w320.bblogo = --export-width=320
 bblogo-$(CONFIG_BAREBOX_LOGO_320) += barebox-logo-w320
 
-OPTS_barebox-logo-w400.bblogo="-w 400"
+OPTS_barebox-logo-w400.bblogo = --export-width=400
 bblogo-$(CONFIG_BAREBOX_LOGO_400) += barebox-logo-w400
 
-OPTS_barebox-logo-w640.bblogo="-w 640"
+OPTS_barebox-logo-w640.bblogo = --export-width=640
 bblogo-$(CONFIG_BAREBOX_LOGO_640) += barebox-logo-w640
 
 obj-y += $(patsubst %,%.bblogo.o,$(bblogo-y))
@@ -38,10 +38,17 @@ cmd_logo_S =							\
 %.bblogo.S: %.bblogo FORCE
 	$(call if_changed,logo_S)
 
+# Inkscape 0.92.4 supports -z but Inkscape 1.0 doesn't
+INKSCAPEOPTS += $(call try-run, inkscape -z,-z,)
+# Inkscape 0.92.4 uses -e but Inkscape 1.0 uses --export-type=png
+INKSCAPEOPTS += $(call try-run, inkscape -e -,-e -,--export-type=png)
+# Inkscape 1.0 supports -o -
+INKSCAPEOPTS += $(call try-run, inkscape -o -,-o -,)
+
 quiet_cmd_logo = LOGO.S   $@
 cmd_logo =							\
 (								\
-	inkscape -z $(OPTS_$(@F)) -e $@ $< > /dev/null;		\
+	DISPLAY="" inkscape $(OPTS_$(@F)) $(INKSCAPEOPTS) $< > $@; \
 )
 
 %.bblogo: $(srctree)/Documentation/barebox.svg FORCE

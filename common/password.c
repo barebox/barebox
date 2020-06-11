@@ -161,6 +161,9 @@ static int read_default_passwd(unsigned char *sum, size_t length)
 	unsigned char *buf = (unsigned char *)default_passwd;
 	unsigned char c;
 
+	if (ARRAY_SIZE(default_passwd) == 1)
+		return -ENOSYS;
+
 	if (!sum || length < 1)
 		return -EINVAL;
 
@@ -179,7 +182,6 @@ static int read_default_passwd(unsigned char *sum, size_t length)
 
 	return 0;
 }
-EXPORT_SYMBOL(read_default_passwd);
 
 static int read_env_passwd(unsigned char *sum, size_t length)
 {

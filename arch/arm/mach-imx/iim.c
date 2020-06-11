@@ -329,10 +329,10 @@ static int imx_iim_add_bank(struct iim_priv *iim, int num, int nregs)
 
 	iim->bank[num] = bank;
 
-	bank->map_config.reg_bits = 8,
-	bank->map_config.val_bits = 8,
-	bank->map_config.reg_stride = 1,
-	bank->map_config.max_register = (nregs - 1),
+	bank->map_config.reg_bits = 8;
+	bank->map_config.val_bits = 8;
+	bank->map_config.reg_stride = 1;
+	bank->map_config.max_register = (nregs - 1);
 	bank->map_config.name = xasprintf("bank%d", num);
 
 	bank->map = regmap_init(&iim->dev, &imx_iim_regmap_bus, bank, &bank->map_config);

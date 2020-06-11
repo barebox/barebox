@@ -319,15 +319,15 @@ DWtype __divdi3(DWtype u, DWtype v)
 	DWunion vv = {.ll = v};
 	DWtype w;
 
-	if (uu.s.high < 0)
-		c = ~c,
+	if (uu.s.high < 0) {
+		c = ~c;
+		uu.ll = -uu.ll;
+	}
 
-	uu.ll = -uu.ll;
-
-	if (vv.s.high < 0)
-		c = ~c,
-
-	vv.ll = -vv.ll;
+	if (vv.s.high < 0) {
+		c = ~c;
+		vv.ll = -vv.ll;
+	}
 
 	w = __udivmoddi4(uu.ll, vv.ll, (UDWtype *) 0);
 
@@ -366,9 +366,10 @@ DWtype __moddi3(DWtype u, DWtype v)
 	DWunion vv = {.ll = v};
 	DWtype w;
 
-	if (uu.s.high < 0)
-		c = ~c,
+	if (uu.s.high < 0) {
+		c = ~c;
 		uu.ll = -uu.ll;
+	}
 
 	if (vv.s.high < 0)
 		vv.ll = -vv.ll;

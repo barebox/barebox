@@ -282,7 +282,7 @@ fail0:
 	i2c_fsl_stop(fsl_i2c);
 
 	/* Disable I2C controller, and force our state to stopped */
-	temp = fsl_i2c->i2cr_ien_opcode ^ I2CR_IEN,
+	temp = fsl_i2c->i2cr_ien_opcode ^ I2CR_IEN;
 	fsl_i2c_write_reg(temp, fsl_i2c, FSL_I2C_I2CR);
 
 	return (ret < 0) ? ret : num;

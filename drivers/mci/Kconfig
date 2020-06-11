@@ -12,12 +12,12 @@ if MCI
 comment "--- Feature list ---"
 
 config MCI_STARTUP
-	bool "Probe on system start"
+	bool "Force probe on system start"
 	help
-	  Say 'y' here if the MCI framework should probe for attached MCI cards
-	  on system start up. This is required if the card carries barebox's
-	  environment (for example on systems where the MCI card is the sole
-	  bootmedia). Otherwise probing run on demand with "mci*.probe=1"
+	  Say 'y' here if the MCI framework should always probe for all attached
+	  MCI cards on system start up. This may required for some legacy boards.
+	  When this is 'n', probing happens on demand either with "mci*.probe=1"
+	  or with driver/board code calling device_detect.
 
 config MCI_INFO
 	bool "MCI Info"

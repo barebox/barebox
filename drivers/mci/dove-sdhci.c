@@ -324,12 +324,6 @@ static void dove_sdhci_set_mci_caps(struct dove_sdhci *host)
 		host->mci.host_caps &= ~MMC_CAP_8_BIT_DATA;
 }
 
-static int dove_sdhci_detect(struct device_d *dev)
-{
-	struct dove_sdhci *host = dev->priv;
-	return mci_detect_card(&host->mci);
-}
-
 static int dove_sdhci_probe(struct device_d *dev)
 {
 	struct dove_sdhci *host;
@@ -350,8 +344,6 @@ static int dove_sdhci_probe(struct device_d *dev)
 	host->sdhci.write32 = dove_sdhci_writel;
 	host->sdhci.write16 = dove_sdhci_writew;
 	host->sdhci.write8 = dove_sdhci_writeb;
-	dev->priv = host;
-	dev->detect = dove_sdhci_detect;
 
 	dove_sdhci_set_mci_caps(host);
 

@@ -236,13 +236,6 @@ static int esdhc_init(struct mci_host *mci, struct device_d *dev)
 	return ret;
 }
 
-static int fsl_esdhc_detect(struct device_d *dev)
-{
-	struct fsl_esdhc_host *host = dev->priv;
-
-	return mci_detect_card(&host->mci);
-}
-
 static int fsl_esdhc_probe(struct device_d *dev)
 {
 	struct resource *iores;
@@ -311,8 +304,6 @@ static int fsl_esdhc_probe(struct device_d *dev)
 	host->mci.card_present = esdhc_card_present;
 	host->mci.hw_dev = dev;
 
-	dev->detect = fsl_esdhc_detect;
-
 	rate = clk_get_rate(host->clk);
 	host->mci.f_min = rate >> 12;
 	if (host->mci.f_min < 200000)
@@ -324,8 +315,6 @@ static int fsl_esdhc_probe(struct device_d *dev)
 	}
 
 	mci_of_parse(&host->mci);
-
-	dev->priv = host;
 
 	ret = mci_register(&host->mci);
 	if (ret)

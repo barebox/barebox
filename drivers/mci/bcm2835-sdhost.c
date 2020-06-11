@@ -579,13 +579,6 @@ static void bcm2835_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	writel(hcfg, host->regs + SDHCFG);
 }
 
-static int bcm2835_sdhost_detect(struct device_d *dev)
-{
-	struct bcm2835_host *host = dev->priv;
-
-	return mci_detect_card(&host->mci);
-}
-
 static int bcm2835_sdhost_probe(struct device_d *dev)
 {
 	struct bcm2835_host *host;
@@ -616,9 +609,6 @@ static int bcm2835_sdhost_probe(struct device_d *dev)
 	mci->init = bcm2835_sdhost_init;
 	mci->set_ios = bcm2835_set_ios;
 	mci->send_cmd = bcm2835_send_cmd;
-
-	dev->priv = host;
-	dev->detect = bcm2835_sdhost_detect,
 
 	mci_of_parse(mci);
 

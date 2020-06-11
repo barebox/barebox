@@ -1811,6 +1811,18 @@ static int mci_detect(struct device_d *dev)
 	return mci_detect_card(mci->host);
 }
 
+static int mci_hw_detect(struct device_d *dev)
+{
+	struct mci *mci;
+
+	list_for_each_entry(mci, &mci_list, list) {
+		if (dev == mci->host->hw_dev)
+			return mci_detect_card(mci->host);
+	}
+
+	return -ENODEV;
+}
+
 /**
  * Create a new mci device (for convenience)
  * @param host mci_host for this MCI device
@@ -1819,6 +1831,7 @@ static int mci_detect(struct device_d *dev)
 int mci_register(struct mci_host *host)
 {
 	struct mci *mci;
+	struct device_d *hw_dev;
 	struct param_d *param_probe;
 	int ret;
 
@@ -1833,13 +1846,16 @@ int mci_register(struct mci_host *host)
 		mci->dev.id = DEVICE_ID_DYNAMIC;
 	}
 
+	hw_dev = host->hw_dev;
 	mci->dev.platform_data = host;
-	mci->dev.parent = host->hw_dev;
+	mci->dev.parent = hw_dev;
 	mci->host = host;
 	host->mci = mci;
 	mci->dev.detect = mci_detect;
+	if (!hw_dev->detect)
+		hw_dev->detect = mci_hw_detect;
 
-	host->supply = regulator_get(host->hw_dev, "vmmc");
+	host->supply = regulator_get(hw_dev, "vmmc");
 	if (IS_ERR(host->supply)) {
 		dev_err(&mci->dev, "Failed to get 'vmmc' regulator.\n");
 		host->supply = NULL;
@@ -1849,7 +1865,7 @@ int mci_register(struct mci_host *host)
 	if (ret)
 		goto err_free;
 
-	dev_info(mci->host->hw_dev, "registered as %s\n", dev_name(&mci->dev));
+	dev_info(hw_dev, "registered as %s\n", dev_name(&mci->dev));
 
 	param_probe = dev_add_param_bool(&mci->dev, "probe",
 			mci_set_probe, NULL, &mci->probe, mci);

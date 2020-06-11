@@ -341,7 +341,6 @@ static int write_packet(struct pxa_ep *ep, struct pxa27x_request *req,
 	u8 *buf_8;
 
 	buf = (u32 *)(req->req.buf + req->req.actual);
-	prefetch(buf);
 
 	length = min(req->req.length - req->req.actual, max);
 	req->req.actual += length;

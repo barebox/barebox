@@ -1714,6 +1714,8 @@ void ratp_close(struct ratp *ratp)
 	list_for_each_entry_safe(msg, tmp, &ri->sendmsg, list)
 		ratp_msg_done(ri, msg, -ECONNRESET);
 
+	free(ri->recvbuf);
+	free(ri->sendbuf);
 	free(ri);
 	ratp->internal = NULL;
 

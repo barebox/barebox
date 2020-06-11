@@ -1,9 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 /*
  * simple driver for PWM (Pulse Width Modulator) controller
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
  *
  * 2008-02-13	initial version eric miao <eric.miao@marvell.com>
  * 2012         Robert Jarzmik <robert.jarzmik@free.fr>

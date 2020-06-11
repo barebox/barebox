@@ -1,17 +1,9 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// SPDX-FileCopyrightText: 2013 Gateworks Corporation
+// SPDX-FileCopyrightText: 2014 Lucas Stach, Pengutronix
+
 /*
- * Copyright (C) 2013 Gateworks Corporation
- * Copyright (C) 2014 Lucas Stach, Pengutronix
  * Author: Tim Harvey <tharvey@gateworks.com>
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
  */
 
 /* i2c slave addresses */

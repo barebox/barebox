@@ -1,24 +1,15 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// SPDX-FileCopyrightText: 2012 Juergen Beisert
+
 /*
- * Copyright (C) 2012 Juergen Beisert
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
  * The FriendlyARM's Tiny6410 evaluation board comes with all connectors and
  * devices to make the Tiny6410 CPU card work. This includes:
  *
  * - the DM9000 network controller
  * - USB/MCI connectors
  * - display connector
- *
  */
+
 #include <common.h>
 #include <driver.h>
 #include <init.h>

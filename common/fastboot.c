@@ -176,7 +176,6 @@ int fastboot_generic_init(struct fastboot *fb, bool export_bbu)
 	int ret;
 	struct file_list_entry *fentry;
 	struct fb_variable *var;
-	static int instance;
 
 	var = fb_addvar(fb, "version");
 	fb_setvar(var, "0.4");
@@ -187,7 +186,9 @@ int fastboot_generic_init(struct fastboot *fb, bool export_bbu)
 		fb_setvar(var, "%u", fastboot_max_download_size);
 	}
 
-	fb->tempname = basprintf(".fastboot.%d.img", instance++);
+	fb->tempname = make_temp("fastboot");
+	if (!fb->tempname)
+		return -ENOMEM;
 
 	if (IS_ENABLED(CONFIG_BAREBOX_UPDATE) && export_bbu)
 		bbu_handlers_iterate(fastboot_add_bbu_variables, fb);

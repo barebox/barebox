@@ -97,7 +97,7 @@ static int __init twl6030_pwrbtn_probe(struct device_d *dev)
 	idata->cdev.getc = twl6030_pwrbtn_getc;
 	console_register(&idata->cdev);
 
-	return poller_register(&idata->poller);
+	return poller_register(&idata->poller, dev_name(dev));
 }
 
 static struct driver_d twl6030_pwrbtn_driver = {

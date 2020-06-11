@@ -410,7 +410,7 @@ static int __init imx_keypad_probe(struct device_d *dev)
 
 	keypad->poller.func = imx_keypad_check_for_events;
 
-	ret = poller_register(&keypad->poller);
+	ret = poller_register(&keypad->poller, dev_name(dev));
 	if (ret)
 		return ret;
 

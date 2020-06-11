@@ -209,7 +209,7 @@ static struct poller_struct led_poller = {
 
 static int led_blink_init(void)
 {
-	return poller_register(&led_poller);
+	return poller_register(&led_poller, "led");
 }
 late_initcall(led_blink_init);
 

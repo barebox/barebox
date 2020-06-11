@@ -116,7 +116,7 @@ static int watchdog_register_poller(struct watchdog *wd)
 	struct param_d *p;
 	int ret;
 
-	ret = poller_async_register(&wd->poller);
+	ret = poller_async_register(&wd->poller, dev_name(&wd->dev));
 	if (ret)
 		return ret;
 

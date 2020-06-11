@@ -113,6 +113,9 @@ config USBGADGET_START
 config BOOT
 	bool
 
+config FASTBOOT_BASE
+	bool
+
 menu "General Settings"
 
 config LOCALVERSION
@@ -1008,6 +1011,43 @@ config PBL_OPTEE
 	  Requires explicit support in the boards lowlevel file.
 
 endmenu
+
+if FASTBOOT_BASE
+
+menu "Android Fastboot"
+
+config FASTBOOT_SPARSE
+	bool
+	select IMAGE_SPARSE
+	prompt "Enable Fastboot sparse image support"
+	help
+	  Sparse images are a way for the fastboot protocol to write
+	  images that are bigger than the available memory. If unsure,
+	  say yes here.
+
+config FASTBOOT_BUF
+	bool
+	prompt "Download files to temporary buffer instead of file"
+	help
+	  With this option enabled the fastboot code will download files to a
+	  temporary buffer instead of a temporary file. Normally you want to
+	  use a file as this also works when your memory is fragmented. However,
+	  in some special cases, when the file consumer also better copes with
+	  a buffer, then using a buffer might be better.
+
+	  Say no here unless you know what you are doing.
+
+config FASTBOOT_CMD_OEM
+	bool
+	prompt "Enable OEM commands"
+	help
+	  This option enables the fastboot "oem" group of commands. They allow to
+	  executing arbitrary barebox commands and may be disabled in secure
+	  environments.
+
+endmenu
+
+endif
 
 endmenu
 

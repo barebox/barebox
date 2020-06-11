@@ -16,11 +16,12 @@
 static LIST_HEAD(poller_list);
 static int poller_active;
 
-int poller_register(struct poller_struct *poller)
+int poller_register(struct poller_struct *poller, const char *name)
 {
 	if (poller->registered)
 		return -EBUSY;
 
+	poller->name = xstrdup(name);
 	list_add_tail(&poller->list, &poller_list);
 	poller->registered = 1;
 
@@ -35,6 +36,7 @@ int poller_unregister(struct poller_struct *poller)
 
 	list_del(&poller->list);
 	poller->registered = 0;
+	free(poller->name);
 
 	return 0;
 }
@@ -92,12 +94,12 @@ int poller_call_async(struct poller_async *pa, uint64_t delay_ns,
 	return 0;
 }
 
-int poller_async_register(struct poller_async *pa)
+int poller_async_register(struct poller_async *pa, const char *name)
 {
 	pa->poller.func = poller_async_callback;
 	pa->active = 0;
 
-	return poller_register(&pa->poller);
+	return poller_register(&pa->poller, name);
 }
 
 int poller_async_unregister(struct poller_async *pa)
@@ -119,3 +121,74 @@ void poller_call(void)
 
 	poller_active = 0;
 }
+
+#if defined CONFIG_CMD_POLLER
+
+#include <command.h>
+#include <getopt.h>
+
+static void poller_time(void)
+{
+	uint64_t start = get_time_ns();
+	int i = 0;
+
+	/*
+	 * How many times we can run the registered pollers in one second?
+	 *
+	 * A low number here may point to problems with pollers taking too
+	 * much time.
+	 */
+	while (!is_timeout(start, SECOND))
+		i++;
+
+	printf("%d poller calls in 1s\n", i);
+}
+
+static void poller_info(void)
+{
+	struct poller_struct *poller;
+
+	printf("Registered pollers:\n");
+
+	if (list_empty(&poller_list)) {
+		printf("<none>\n");
+		return;
+	}
+
+	list_for_each_entry(poller, &poller_list, list)
+		printf("%s\n", poller->name);
+}
+
+BAREBOX_CMD_HELP_START(poller)
+BAREBOX_CMD_HELP_TEXT("print info about registered pollers")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-i", "Print information about registered pollers")
+BAREBOX_CMD_HELP_OPT ("-t", "measure how many pollers we run in 1s")
+BAREBOX_CMD_HELP_END
+
+static int do_poller(int argc, char *argv[])
+{
+	int opt;
+
+	while ((opt = getopt(argc, argv, "it")) > 0) {
+		switch (opt) {
+		case 'i':
+			poller_info();
+			return 0;
+		case 't':
+			poller_time();
+			return 0;
+		}
+	}
+
+	return COMMAND_ERROR_USAGE;
+}
+
+BAREBOX_CMD_START(poller)
+	.cmd = do_poller,
+	BAREBOX_CMD_DESC("print info about registered pollers")
+	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
+	BAREBOX_CMD_HELP(cmd_poller_help)
+BAREBOX_CMD_END
+#endif

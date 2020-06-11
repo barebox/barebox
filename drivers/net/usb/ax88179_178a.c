@@ -409,7 +409,7 @@ static int ax88179_bind(struct usbnet *dev)
 
 	priv->last = get_time_ns();
 	priv->poller.func = ax88179_poller;
-	poller_register(&priv->poller);
+	poller_register(&priv->poller, dev_name(&dev->udev->dev));
 
 	return 0;
 }

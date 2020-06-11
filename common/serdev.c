@@ -73,7 +73,7 @@ int serdev_device_open(struct serdev_device *serdev)
 	if (!serdev->fifo)
 		return -ENOMEM;
 
-	ret = poller_async_register(&serdev->poller);
+	ret = poller_async_register(&serdev->poller, "serdev");
 	if (ret)
 		return ret;
 

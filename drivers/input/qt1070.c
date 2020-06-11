@@ -269,7 +269,7 @@ static int qt1070_probe(struct device_d *dev)
 
 	console_register(&data->cdev);
 
-	ret = poller_register(&data->poller);
+	ret = poller_register(&data->poller, dev_name(dev));
 	if (ret)
 		goto err;
 

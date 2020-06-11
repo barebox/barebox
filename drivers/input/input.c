@@ -201,7 +201,7 @@ static int input_init(void)
 	ic->fifo = kfifo_alloc(32);
 	ic->notifier.notify = input_console_notify;
 	input_register_notfier(&ic->notifier);
-	poller_async_register(&ic->poller);
+	poller_async_register(&ic->poller, "input");
 
 	return console_register(&ic->console);
 }

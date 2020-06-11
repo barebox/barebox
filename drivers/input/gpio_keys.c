@@ -166,7 +166,7 @@ static int __init gpio_keys_probe(struct device_d *dev)
 	if (ret)
 		return ret;
 
-	ret = poller_register(&gk->poller);
+	ret = poller_register(&gk->poller, dev_name(dev));
 	if (ret)
 		return ret;
 

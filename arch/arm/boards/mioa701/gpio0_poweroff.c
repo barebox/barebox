@@ -73,7 +73,7 @@ static struct poller_struct gpio0_poller = {
 
 static int gpio0_poweroff_probe(void)
 {
-	return poller_register(&gpio0_poller);
+	return poller_register(&gpio0_poller, "power-button");
 }
 
 device_initcall(gpio0_poweroff_probe);

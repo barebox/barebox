@@ -6,7 +6,7 @@
 #include <usb/usbserial.h>
 
 struct f_multi_opts {
-	struct f_fastboot_opts fastboot_opts;
+	struct fastboot_opts fastboot_opts;
 	struct f_dfu_opts dfu_opts;
 	int create_acm;
 	void (*release)(struct f_multi_opts *opts);

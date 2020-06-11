@@ -319,7 +319,7 @@ static int udc_bind_to_driver(struct usb_udc *udc, struct usb_gadget_driver *dri
 
 	if (udc->gadget->ops->udc_poll) {
 		udc->poller.func = udc_poll_driver;
-		ret = poller_register(&udc->poller);
+		ret = poller_register(&udc->poller, dev_name(&udc->dev));
 		if (ret)
 			return ret;
 	}

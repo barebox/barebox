@@ -253,32 +253,12 @@ out_free:
 	return ret;
 }
 
-static int digest_update_from_memory(struct digest *d,
-				     const unsigned char *buf,
-				     loff_t size)
-{
-	while (size) {
-		unsigned long now = min_t(typeof(size), PAGE_SIZE, size);
-		int ret;
-
-		ret = digest_update_interruptible(d, buf, now);
-		if (ret)
-			return ret;
-
-		size -= now;
-		buf  += now;
-	}
-
-	return 0;
-}
-
 int digest_file_window(struct digest *d, const char *filename,
 		       unsigned char *hash,
 		       const unsigned char *sig,
 		       loff_t start, loff_t size)
 {
 	int fd, ret;
-	unsigned char *buf;
 
 	ret = digest_init(d);
 	if (ret)
@@ -290,12 +270,7 @@ int digest_file_window(struct digest *d, const char *filename,
 		return -errno;
 	}
 
-	buf = memmap(fd, PROT_READ);
-	if (buf == MAP_FAILED)
-		ret = digest_update_from_fd(d, fd, start, size);
-	else
-		ret = digest_update_from_memory(d, buf + start, size);
-
+	ret = digest_update_from_fd(d, fd, start, size);
 	if (ret)
 		goto out;
 

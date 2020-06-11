@@ -34,9 +34,6 @@ struct ramfs_chunk {
 struct ramfs_inode {
 	struct inode inode;
 	char *name;
-	struct ramfs_inode *parent;
-	struct ramfs_inode *next;
-	struct ramfs_inode *child;
 	char *symlink;
 	ulong mode;
 
@@ -52,10 +49,6 @@ static inline struct ramfs_inode *to_ramfs_inode(struct inode *inode)
 {
 	return container_of(inode, struct ramfs_inode, inode);
 }
-
-struct ramfs_priv {
-	struct ramfs_inode root;
-};
 
 /* ---------------------------------------------------------------*/
 
@@ -411,15 +404,8 @@ static const struct super_operations ramfs_ops = {
 static int ramfs_probe(struct device_d *dev)
 {
 	struct inode *inode;
-	struct ramfs_priv *priv = xzalloc(sizeof(struct ramfs_priv));
 	struct fs_device_d *fsdev = dev_to_fs_device(dev);
 	struct super_block *sb = &fsdev->sb;
-
-	dev->priv = priv;
-
-	priv->root.name = "/";
-	priv->root.mode = S_IFDIR | S_IRWXU | S_IRWXG | S_IRWXO;
-	priv->root.parent = &priv->root;
 
 	sb->s_op = &ramfs_ops;
 

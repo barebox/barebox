@@ -57,8 +57,8 @@ quiet_cmd_elf__ ?= LD      $@
       cmd_elf__ ?= $(LD) $(LDFLAGS_pbl) --gc-sections		\
 		-e $(2) -Map $@.map $(LDFLAGS_$(@F)) -o $@		\
 		-T $(pbl-lds)						\
-		--start-group $(BAREBOX_PBL_OBJS) $(obj)/piggy.o	\
-		$(obj)/sha_sum.o --end-group
+		--whole-archive $(BAREBOX_PBL_OBJS) $(obj)/piggy.o	\
+		$(obj)/sha_sum.o
 
 PBL_CPPFLAGS	+= -fdata-sections -ffunction-sections
 

@@ -73,8 +73,8 @@ lds-$(CONFIG_X86_64)   := arch/x86/mach-efi/elf_x86_64_efi.lds
 cmd_barebox__ ?= $(LD) $(KBUILD_LDFLAGS) $(LDFLAGS_barebox) -o $@	\
 		-T $(lds-y)					\
 		-shared -Bsymbolic -nostdlib -znocombreloc	\
-		--start-group $(BAREBOX_OBJS)			\
-		--end-group					\
+		--whole-archive $(BAREBOX_OBJS)			\
+		--no-whole-archive				\
 		$(filter-out $(BAREBOX_LDS) $(BAREBOX_OBJS) FORCE ,$^)
 
 quiet_cmd_efi_image = EFI-IMG $@

@@ -416,7 +416,7 @@ KBUILD_CPPFLAGS        := -D__KERNEL__ -D__BAREBOX__ $(LINUXINCLUDE) -fno-builti
 KBUILD_CFLAGS   := -Wall -Wundef -Werror=strict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common \
                    -Werror=implicit-function-declaration -Werror=implicit-int \
-                   -Os -pipe -Wmissing-prototypes
+                   -Os -pipe -Wmissing-prototypes -std=gnu89
 KBUILD_AFLAGS          := -D__ASSEMBLY__
 
 LDFLAGS_barebox	:= -Map barebox.map
@@ -530,6 +530,10 @@ endif
 # Just "make" or "make all" shall build modules as well
 
 ifneq ($(filter all _all modules,$(MAKECMDGOALS)),)
+  KBUILD_MODULES := 1
+endif
+
+ifeq ($(MAKECMDGOALS),)
   KBUILD_MODULES := 1
 endif
 
@@ -660,8 +664,8 @@ barebox-alldirs	:= $(sort $(barebox-dirs) $(patsubst %/,%,$(filter %/, \
 		     $(core-n) $(core-) $(drivers-n) $(drivers-) \
 		     $(net-n)  $(net-)  $(libs-n)    $(libs-))))
 
-pbl-common-y	:= $(patsubst %/, %/built-in-pbl.o, $(common-y))
-common-y	:= $(patsubst %/, %/built-in.o, $(common-y))
+pbl-common-y	:= $(patsubst %/, %/built-in.pbl.a, $(common-y))
+common-y	:= $(patsubst %/, %/built-in.a, $(common-y))
 
 ifeq ($(CONFIG_DEFAULT_COMPRESSION_GZIP),y)
 DEFAULT_COMPRESSION_SUFFIX := .gz
@@ -683,7 +687,7 @@ export DEFAULT_COMPRESSION_SUFFIX
 # Build barebox
 # ---------------------------------------------------------------------------
 # barebox is built from the objects selected by $(barebox-init) and
-# $(barebox-main). Most are built-in.o files from top-level directories
+# $(barebox-main). Most are built-in.a files from top-level directories
 # in the kernel tree, others are specified in arch/$(SRCARCH)/Makefile.
 # Ordering when linking is important, and $(barebox-init) must be first.
 #
@@ -696,7 +700,7 @@ export DEFAULT_COMPRESSION_SUFFIX
 #   |   +--< init/version.o + more
 #   |
 #   +--< $(barebox-main)
-#   |    +--< driver/built-in.o mm/built-in.o + more
+#   |    +--< driver/built-in.a mm/built-in.a + more
 #   |
 #   +-< kallsyms.o (see description in CONFIG_KALLSYMS section)
 #
@@ -715,7 +719,7 @@ BAREBOX_LDS    := $(lds-y)
 quiet_cmd_barebox__ ?= LD      $@
       cmd_barebox__ ?= $(LD) $(KBUILD_LDFLAGS) $(LDFLAGS_barebox) -o $@ \
       -T $(BAREBOX_LDS)                         \
-      --start-group $(BAREBOX_OBJS) --end-group                  \
+      --whole-archive $(BAREBOX_OBJS) --no-whole-archive                  \
       $(filter-out $(BAREBOX_LDS) $(BAREBOX_OBJS) FORCE ,$^)
 
 # Generate new barebox version

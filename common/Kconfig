@@ -319,6 +319,7 @@ config MODULES
 	depends on HAS_MODULES
 	depends on EXPERIMENTAL
 	bool "module support"
+	option modules
 	help
 	  This option enables support for loadable modules via insmod. Module
 	  support is quite experimental at the moment. There is no convenient

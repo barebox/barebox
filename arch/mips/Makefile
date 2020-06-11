@@ -102,7 +102,7 @@ lds-$(CONFIG_GENERIC_LINKER_SCRIPT)   := arch/mips/lib/barebox.lds
 
 cmd_barebox__ ?= $(LD) $(KBUILD_LDFLAGS) $(LDFLAGS_barebox) -o $@ \
       -T $(BAREBOX_LDS)                         \
-      --start-group $(BAREBOX_OBJS) --end-group                  \
+      --whole-archive $(BAREBOX_OBJS) --no-whole-archive        \
       $(filter-out $(BAREBOX_LDS) $(BAREBOX_OBJS) FORCE ,$^);	\
 	$(objtree)/scripts/mips-relocs $@
 

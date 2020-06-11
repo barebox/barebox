@@ -20,19 +20,9 @@ obj-m := $(filter-out $(obj-y),$(obj-m))
 
 lib-y := $(filter-out $(obj-y), $(sort $(lib-y) $(lib-m)))
 
-
-pbl-y		+= $(pbl-dtb-y)
-obj-y		+= $(obj-dtb-y)
-extra-y		+= $(patsubst %.dtb.o,%.dtb.S,$(obj-dtb-y))
-extra-y		+= $(patsubst %.dtb.o,%.dtb,$(obj-dtb-y))
-extra-y		+= $(patsubst %.dtb.o,%.dtb.S,$(pbl-dtb-y))
-extra-y		+= $(patsubst %.dtb.o,%.dtb,$(pbl-dtb-y))
-extra-y		+= $(patsubst %.dtb.o,%.dtb.S,$(lwl-dtb-y))
-extra-y		+= $(patsubst %.dtb.o,%.dtb,$(lwl-dtb-y))
-
 # Handle objects in subdirs
 # ---------------------------------------------------------------------------
-# o if we encounter foo/ in $(obj-y), replace it by foo/built-in.o
+# o if we encounter foo/ in $(obj-y), replace it by foo/built-in.a
 #   and add the directory to the list of dirs to descend into: $(subdir-y)
 # o if we encounter foo/ in $(obj-m), remove it from $(obj-m)
 #   and add the directory to the list of dirs to descend into: $(subdir-m)
@@ -40,29 +30,29 @@ extra-y		+= $(patsubst %.dtb.o,%.dtb,$(lwl-dtb-y))
 # lowlevel is present in the PBL if enabled
 # otherwise in barebox
 ifeq ($(CONFIG_PBL_IMAGE), y)
-pbl-y		+= $(lwl-y) $(lwl-dtb-y)
+pbl-y		+= $(lwl-y)
 else
-obj-y		+= $(lwl-y) $(lwl-dtb-y)
+obj-y		+= $(lwl-y)
 endif
 
 obj-y		+= $(obj-pbl-y)
 pbl-y		+= $(obj-pbl-y)
 
-# add pbl- prefix to the target
-pbl-y		:= $(shell echo $(pbl-y) | sed -e 's%\(\([^ \t]\+/\)*\)\([^ \t]*\.o\)%\2pbl-\3%g')
+# pbl objects are suffixed with .pbl.o
+pbl-y		:= $(patsubst %.o,%.pbl.o,$(pbl-y))
 
 # add subdir from $(obj-y) too so we do not need to have the dir define in
 # both $(obj-y) and $(pbl-y)
 __pbl-y		:= $(filter-out $(pbl-y), $(filter %/, $(obj-y)))
 pbl-y		+= $(__pbl-y)
 
-pbl-y		:= $(sort $(patsubst %/, %/built-in-pbl.o, $(pbl-y)))
+pbl-y		:= $(sort $(patsubst %/, %/built-in.pbl.a, $(pbl-y)))
 
 __subdir-y	:= $(patsubst %/,%,$(filter %/, $(obj-y)))
 subdir-y	+= $(__subdir-y)
 __subdir-m	:= $(patsubst %/,%,$(filter %/, $(obj-m)))
 subdir-m	+= $(__subdir-m)
-obj-y		:= $(patsubst %/, %/built-in.o, $(obj-y))
+obj-y		:= $(patsubst %/, %/built-in.a, $(obj-y))
 obj-m		:= $(filter-out %/, $(obj-m))
 
 # Subdirectories we need to descend into
@@ -83,16 +73,19 @@ multi-objs   := $(multi-objs-y) $(multi-objs-m)
 
 # $(subdir-obj-y) is the list of objects in $(obj-y) which uses dir/ to
 # tell kbuild to descend
-__subdir-obj-y := $(filter %/built-in-pbl.o, $(pbl-y))
-subdir-obj-y := $(filter %/built-in.o, $(obj-y))
+__subdir-obj-y := $(filter %/built-in.pbl.a, $(pbl-y))
+subdir-obj-y := $(filter %/built-in.a, $(obj-y))
 subdir-obj-y += $(__subdir-obj-y)
 
-# $(obj-dirs) is a list of directories that contain object files
-obj-dirs := $(dir $(multi-objs) $(obj-y) $(pbl-y))
+obj-y += $(patsubst %,%.bbenv$(DEFAULT_COMPRESSION_SUFFIX).o,$(bbenv-y))
+extra-y += $(patsubst %,%.bbenv$(DEFAULT_COMPRESSION_SUFFIX),$(bbenv-y))
+extra-y += $(patsubst %,%.bbenv$(DEFAULT_COMPRESSION_SUFFIX).S,$(bbenv-y))
+extra-y += $(patsubst %,%.bbenv$(DEFAULT_COMPRESSION_SUFFIX).o,$(bbenv-y))
 
-# Replace multi-part objects by their individual parts, look at local dir only
-real-objs-y := $(foreach m, $(filter-out $(subdir-obj-y), $(obj-y)), $(if $(strip $($(m:.o=-objs)) $($(m:.o=-y))),$($(m:.o=-objs)) $($(m:.o=-y)),$(m))) $(extra-y)
-real-objs-m := $(foreach m, $(obj-m), $(if $(strip $($(m:.o=-objs)) $($(m:.o=-y))),$($(m:.o=-objs)) $($(m:.o=-y)),$(m)))
+# Replace multi-part objects by their individual parts,
+# including built-in.a from subdirectories
+real-obj-y := $(foreach m, $(obj-y), $(if $(strip $($(m:.o=-objs)) $($(m:.o=-y)) $($(m:.o=-))),$($(m:.o=-objs)) $($(m:.o=-y)),$(m)))
+real-obj-m := $(foreach m, $(obj-m), $(if $(strip $($(m:.o=-objs)) $($(m:.o=-y)) $($(m:.o=-m)) $($(m:.o=-))),$($(m:.o=-objs)) $($(m:.o=-y)) $($(m:.o=-m)),$(m)))
 
 always-y += $(always-m)
 
@@ -106,16 +99,14 @@ obj-m		:= $(addprefix $(obj)/,$(obj-m))
 lib-y		:= $(addprefix $(obj)/,$(lib-y))
 pbl-y		:= $(addprefix $(obj)/,$(pbl-y))
 subdir-obj-y	:= $(addprefix $(obj)/,$(subdir-obj-y))
-real-objs-y	:= $(addprefix $(obj)/,$(real-objs-y))
-real-objs-m	:= $(addprefix $(obj)/,$(real-objs-m))
+real-obj-y	:= $(addprefix $(obj)/,$(real-obj-y))
+real-obj-m	:= $(addprefix $(obj)/,$(real-obj-m))
 single-used-m	:= $(addprefix $(obj)/,$(single-used-m))
 multi-used-y	:= $(addprefix $(obj)/,$(multi-used-y))
 multi-used-m	:= $(addprefix $(obj)/,$(multi-used-m))
 multi-objs-y	:= $(addprefix $(obj)/,$(multi-objs-y))
 multi-objs-m	:= $(addprefix $(obj)/,$(multi-objs-m))
 subdir-ym	:= $(addprefix $(obj)/,$(subdir-ym))
-obj-dirs	:= $(addprefix $(obj)/,$(obj-dirs))
-bbenv-y		:= $(addprefix $(obj)/,$(bbenv-y))
 
 # target with $(obj)/ and its suffix stripped
 target-stem = $(basename $(patsubst $(obj)/%,%,$@))
@@ -162,12 +153,27 @@ __a_flags	=                          $(call flags,_a_flags)
 __cpp_flags     =                          $(call flags,_cpp_flags)
 endif
 
+part-of-module = $(if $(filter $(basename $@).o, $(real-obj-m)),y)
+part-of-pbl    = $(if $(filter $(basename $@).o, $(pbl-y))$(filter $@, $(pbl-target)),y)
+quiet_modtag = $(if $(part-of-pbl),[P],$(if $(part-of-module),[M],   ))
+
+pbl_cppflags = $(if $(part-of-pbl), -D__PBL__ $(PBL_CPPFLAGS))
+
+modkern_cflags =                                          \
+	$(if $(part-of-module),                           \
+		$(KBUILD_CFLAGS_MODULE) $(CFLAGS_MODULE), \
+		$(KBUILD_CFLAGS_KERNEL) $(CFLAGS_KERNEL) $(modfile_flags))
+
+modkern_aflags = $(if $(part-of-module),				\
+			$(KBUILD_AFLAGS_MODULE) $(AFLAGS_MODULE),	\
+			$(KBUILD_AFLAGS_KERNEL) $(AFLAGS_KERNEL))
+
 c_flags        = -Wp,-MD,$(depfile) $(NOSTDINC_FLAGS) $(KBUILD_CPPFLAGS) \
-		 $(__c_flags) $(modkern_cflags) \
+		 $(__c_flags) $(modkern_cflags) $(pbl_cppflags) \
 		 -D"KBUILD_STR(s)=\#s" $(basename_flags) $(modname_flags)
 
 a_flags        = -Wp,-MD,$(depfile) $(NOSTDINC_FLAGS) $(KBUILD_CPPFLAGS) \
-		 $(__a_flags) $(modkern_aflags)
+		 $(__a_flags) $(modkern_aflags) $(pbl_cppflags)
 
 cpp_flags      = -Wp,-MD,$(depfile) $(NOSTDINC_FLAGS) $(__cpp_flags)
 
@@ -308,11 +314,6 @@ $(obj)/%.dtb: $(src)/%.dts FORCE
 	$(call if_changed_dep,dtc)
 
 dtc-tmp = $(subst $(comma),_,$(dot-target).dts)
-
-obj-y += $(patsubst %,%.bbenv$(DEFAULT_COMPRESSION_SUFFIX).o,$(bbenv-y))
-extra-y += $(patsubst %,%.bbenv$(DEFAULT_COMPRESSION_SUFFIX),$(bbenv-y))
-extra-y += $(patsubst %,%.bbenv$(DEFAULT_COMPRESSION_SUFFIX).S,$(bbenv-y))
-extra-y += $(patsubst %,%.bbenv$(DEFAULT_COMPRESSION_SUFFIX).o,$(bbenv-y))
 
 quiet_cmd_env_S = ENV.S   $@
 cmd_env_S =							\

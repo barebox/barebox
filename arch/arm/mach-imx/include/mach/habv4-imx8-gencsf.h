@@ -29,7 +29,7 @@ hab [Authenticate CSF]
 
 hab [Unlock]
 hab Engine = CAAM
-hab Features = RNG
+hab Features = RNG, MID
 
 hab [Install Key]
 /* verification key index in key store (0, 2...4) */

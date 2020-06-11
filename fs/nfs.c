@@ -1202,6 +1202,13 @@ static struct inode *nfs_alloc_inode(struct super_block *sb)
 	return &node->inode;
 }
 
+static void nfs_destroy_inode(struct inode *inode)
+{
+	struct nfs_inode *node = nfsi(inode);
+
+	free(node);
+}
+
 static const struct inode_operations nfs_file_inode_operations;
 static const struct file_operations nfs_dir_operations;
 static const struct inode_operations nfs_dir_inode_operations;
@@ -1273,6 +1280,7 @@ static const struct inode_operations nfs_dir_inode_operations =
 
 static const struct super_operations nfs_ops = {
 	.alloc_inode = nfs_alloc_inode,
+	.destroy_inode = nfs_destroy_inode,
 };
 
 static char *rootnfsopts;

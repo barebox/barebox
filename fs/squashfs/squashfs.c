@@ -76,8 +76,16 @@ static struct inode *squashfs_alloc_inode(struct super_block *sb)
 	return &node->vfs_inode;
 }
 
+static void squashfs_destroy_inode(struct inode *inode)
+{
+	struct squashfs_inode_info *node = squashfs_i(inode);
+
+	free(node);
+}
+
 static const struct super_operations squashfs_super_ops = {
-        .alloc_inode = squashfs_alloc_inode,
+	.alloc_inode = squashfs_alloc_inode,
+	.destroy_inode = squashfs_destroy_inode,
 };
 
 static int squashfs_probe(struct device_d *dev)

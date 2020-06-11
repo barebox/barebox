@@ -333,6 +333,15 @@ static struct inode *cramfs_alloc_inode(struct super_block *sb)
 	return &info->i_inode;
 }
 
+static void cramfs_destroy_inode(struct inode *inode)
+{
+	struct cramfs_inode_info *info;
+
+	info = to_cramfs_inode_info(inode);
+
+	free(info);
+}
+
 static int cramfs_iterate(struct file *file, struct dir_context *ctx)
 {
 	struct dentry *dentry = file->f_path.dentry;
@@ -427,6 +436,7 @@ static const struct inode_operations cramfs_symlink_inode_operations =
 
 static const struct super_operations cramfs_ops = {
 	.alloc_inode = cramfs_alloc_inode,
+	.destroy_inode = cramfs_destroy_inode,
 };
 
 static int cramfs_probe(struct device_d *dev)

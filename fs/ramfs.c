@@ -396,8 +396,16 @@ static struct inode *ramfs_alloc_inode(struct super_block *sb)
 	return &node->inode;
 }
 
+static void ramfs_destroy_inode(struct inode *inode)
+{
+	struct ramfs_inode *node = to_ramfs_inode(inode);
+
+	free(node);
+}
+
 static const struct super_operations ramfs_ops = {
 	.alloc_inode = ramfs_alloc_inode,
+	.destroy_inode = ramfs_destroy_inode,
 };
 
 static int ramfs_probe(struct device_d *dev)

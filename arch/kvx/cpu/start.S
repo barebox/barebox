@@ -3,7 +3,6 @@
  * Copyright (C) 2019 Kalray Inc.
  */
 
-#include <config.h>
 #include <linux/linkage.h>
 #include <asm/privilege.h>
 #include <asm/sys_arch.h>

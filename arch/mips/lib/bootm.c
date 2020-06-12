@@ -50,9 +50,13 @@ static int do_bootm_elf(struct image_data *data)
 	void *fdt;
 	int ret = 0;
 
-	elf = elf_load_image(data->os_file);
+	elf = elf_open(data->os_file);
 	if (IS_ERR(elf))
 		return PTR_ERR(elf);
+
+	ret = elf_load(elf);
+	if (ret)
+		goto bootm_elf_done;
 
 	fdt = bootm_get_devicetree(data);
 	if (IS_ERR(fdt)) {
@@ -76,7 +80,7 @@ static int do_bootm_elf(struct image_data *data)
 	ret = -EINVAL;
 
 bootm_elf_done:
-	elf_release_image(elf);
+	elf_close(elf);
 	free(fdt);
 
 	return ret;

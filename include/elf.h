@@ -414,8 +414,9 @@ static inline size_t elf_get_mem_size(struct elf_image *elf)
 	return elf->high_addr - elf->low_addr;
 }
 
-struct elf_image *elf_load_image(const char *filename);
-void elf_release_image(struct elf_image *elf);
+struct elf_image *elf_open(const char *filename);
+void elf_close(struct elf_image *elf);
+int elf_load(struct elf_image *elf);
 
 #define ELF_GET_FIELD(__s, __field, __type) \
 static inline __type elf_##__s##_##__field(struct elf_image *elf, void *arg) { \

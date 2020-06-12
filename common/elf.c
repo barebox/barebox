@@ -285,23 +285,17 @@ err_free_elf:
 	return ERR_PTR(ret);
 }
 
-struct elf_image *elf_load_image(const char *filename)
+struct elf_image *elf_open(const char *filename)
 {
-	int ret;
-	struct elf_image *elf;
-
-	elf = elf_check_init(filename);
-	if (IS_ERR(elf))
-		return elf;
-
-	ret = load_elf_image_segments(elf);
-	if (ret)
-		return ERR_PTR(ret);
-
-	return elf;
+	return elf_check_init(filename);
 }
 
-void elf_release_image(struct elf_image *elf)
+int elf_load(struct elf_image *elf)
+{
+	return load_elf_image_segments(elf);
+}
+
+void elf_close(struct elf_image *elf)
 {
 	elf_release_regions(elf);
 

@@ -119,6 +119,11 @@ static int elf_check_image(struct elf_image *elf)
 		return -ENOEXEC;
 	}
 
+	if (!elf_hdr_e_phnum(elf, elf->buf)) {
+		pr_err("No phdr found.\n");
+		return -ENOEXEC;
+	}
+
 	return 0;
 }
 

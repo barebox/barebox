@@ -364,14 +364,15 @@ int copy_file(const char *src, const char *dst, int verbose)
 		goto out;
 	}
 
-	discard_range(dstfd, srcstat.st_size, 0);
+	ret = stat(src, &srcstat);
+	if (ret)
+		goto out;
 
-	if (verbose) {
-		if (stat(src, &srcstat) < 0)
-			srcstat.st_size = 0;
+	if (srcstat.st_size != FILESIZE_MAX)
+		discard_range(dstfd, srcstat.st_size, 0);
 
+	if (verbose)
 		init_progression_bar(srcstat.st_size);
-	}
 
 	while (1) {
 		r = read(srcfd, rw_buf, RW_BUF_SIZE);

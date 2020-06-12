@@ -47,14 +47,10 @@ static int do_bootm_elf(struct image_data *data)
 {
 	void (*entry)(int, void *);
 	struct elf_image *elf;
-	void *fdt, *buf;
+	void *fdt;
 	int ret = 0;
 
-	buf = read_file(data->os_file, NULL);
-	if (!buf)
-		return -EINVAL;
-
-	elf = elf_load_image(buf);
+	elf = elf_load_image(data->os_file);
 	if (IS_ERR(elf))
 		return PTR_ERR(elf);
 
@@ -82,7 +78,6 @@ static int do_bootm_elf(struct image_data *data)
 bootm_elf_done:
 	elf_release_image(elf);
 	free(fdt);
-	free(buf);
 
 	return ret;
 }

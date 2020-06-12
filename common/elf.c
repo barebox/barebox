@@ -19,7 +19,10 @@ static int elf_request_region(struct elf_image *elf, resource_size_t start,
 	struct resource *r_new;
 	struct elf_section *r;
 
-	r = xzalloc(sizeof(*r));
+	r = calloc(1, sizeof(*r));
+	if (!r)
+		return -ENOMEM;
+
 	r_new = request_sdram_region("elf_section", start, size);
 	if (!r_new) {
 		pr_err("Failed to request region: %pa %pa\n", &start, &size);

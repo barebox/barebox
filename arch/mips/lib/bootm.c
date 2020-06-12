@@ -46,41 +46,35 @@ static struct binfmt_hook binfmt_barebox_hook = {
 static int do_bootm_elf(struct image_data *data)
 {
 	void (*entry)(int, void *);
-	struct elf_image *elf;
 	void *fdt;
 	int ret = 0;
 
-	elf = elf_open(data->os_file);
-	if (IS_ERR(elf))
-		return PTR_ERR(elf);
-
-	ret = elf_load(elf);
+	ret = bootm_load_os(data, data->os_address);
 	if (ret)
-		goto bootm_elf_done;
+		return ret;
 
 	fdt = bootm_get_devicetree(data);
 	if (IS_ERR(fdt)) {
 		ret = PTR_ERR(fdt);
-		goto bootm_elf_done;
+		goto bootm_free_fdt;
 	}
 
 	pr_info("Starting application at 0x%08lx, dts 0x%08lx...\n",
-		phys_to_virt(elf->entry), data->of_root_node);
+		phys_to_virt(data->os_address), data->of_root_node);
 
 	if (data->dryrun)
-		goto bootm_elf_done;
+		goto bootm_free_fdt;
 
 	shutdown_barebox();
 
-	entry = (void *) (unsigned long) elf->entry;
+	entry = (void *) (unsigned long) data->os_address;
 
 	entry(-2, phys_to_virt((unsigned long)fdt));
 
 	pr_err("ELF application terminated\n");
 	ret = -EINVAL;
 
-bootm_elf_done:
-	elf_close(elf);
+bootm_free_fdt:
 	free(fdt);
 
 	return ret;

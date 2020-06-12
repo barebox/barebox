@@ -47,7 +47,7 @@ static void elf_release_regions(struct elf_image *elf)
 static int load_elf_phdr_segment(struct elf_image *elf, void *src,
 				 void *phdr)
 {
-	void *dst = (void *) elf_phdr_p_paddr(elf, phdr);
+	void *dst = (void *) (phys_addr_t) elf_phdr_p_paddr(elf, phdr);
 	int ret;
 	u64 p_filesz = elf_phdr_p_filesz(elf, phdr);
 	u64 p_memsz = elf_phdr_p_memsz(elf, phdr);

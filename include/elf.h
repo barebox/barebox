@@ -403,8 +403,15 @@ struct elf_image {
 	struct list_head list;
 	u8 class;
 	u64 entry;
+	void *low_addr;
+	void *high_addr;
 	void *buf;
 };
+
+static inline size_t elf_get_mem_size(struct elf_image *elf)
+{
+	return elf->high_addr - elf->low_addr;
+}
 
 struct elf_image *elf_load_image(void *buf);
 void elf_release_image(struct elf_image *elf);

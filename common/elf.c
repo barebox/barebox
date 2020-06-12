@@ -59,6 +59,11 @@ static int load_elf_phdr_segment(struct elf_image *elf, void *src,
 	if (!p_filesz)
 		return 0;
 
+	if (dst < elf->low_addr)
+		elf->low_addr = dst;
+	if (dst + p_memsz > elf->high_addr)
+		elf->high_addr = dst + p_memsz;
+
 	pr_debug("Loading phdr to 0x%p (%llu bytes)\n", dst, p_filesz);
 
 	ret = elf_request_region(elf, (resource_size_t)dst, p_filesz);
@@ -124,6 +129,8 @@ struct elf_image *elf_load_image(void *buf)
 	INIT_LIST_HEAD(&elf->list);
 
 	elf->buf = buf;
+	elf->low_addr = (void *) (unsigned long) -1;
+	elf->high_addr = 0;
 
 	ret = elf_check_image(elf);
 	if (ret)

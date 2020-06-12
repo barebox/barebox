@@ -387,6 +387,25 @@ static int ramfs_truncate(struct device_d *dev, FILE *f, loff_t size)
 	return 0;
 }
 
+static int ramfs_memmap(struct device_d *_dev, FILE *f, void **map, int flags)
+{
+	struct inode *inode = f->f_inode;
+	struct ramfs_inode *node = to_ramfs_inode(inode);
+	struct ramfs_chunk *data;
+
+	if (list_empty(&node->data))
+		return -EINVAL;
+
+	if (!list_is_singular(&node->data))
+		return -EINVAL;
+
+	data = list_first_entry(&node->data, struct ramfs_chunk, list);
+
+	*map = data->data;
+
+	return 0;
+}
+
 static struct inode *ramfs_alloc_inode(struct super_block *sb)
 {
 	struct ramfs_inode *node;
@@ -434,6 +453,7 @@ static void ramfs_remove(struct device_d *dev)
 static struct fs_driver_d ramfs_driver = {
 	.read      = ramfs_read,
 	.write     = ramfs_write,
+	.memmap    = ramfs_memmap,
 	.truncate  = ramfs_truncate,
 	.flags     = FS_DRIVER_NO_DEV,
 	.drv = {

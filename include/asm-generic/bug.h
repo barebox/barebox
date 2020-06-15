@@ -34,4 +34,17 @@
 	unlikely(__ret_warn_on);					\
 })
 #endif
+
+#define WARN_ONCE(condition, format...) ({	\
+	static int __warned;			\
+	int __ret_warn_once = !!(condition);	\
+						\
+	if (unlikely(__ret_warn_once)) {	\
+		if (WARN(!__warned, format)) {	\
+			__warned = 1;		\
+			dump_stack();		\
+		}				\
+	}					\
+	unlikely(__ret_warn_once);		\
+})
 #endif

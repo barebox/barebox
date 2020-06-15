@@ -31,6 +31,7 @@
 #include <environment.h>
 #include <libgen.h>
 #include <block.h>
+#include <slice.h>
 #include <libfile.h>
 #include <parseopt.h>
 #include <linux/namei.h>
@@ -73,6 +74,8 @@ static struct vfsmount *cwd_mnt;
 static FILE *files;
 static struct dentry *d_root;
 static struct vfsmount *mnt_root;
+
+static struct fs_driver_d *ramfs_driver;
 
 static int init_fs(void)
 {
@@ -257,6 +260,9 @@ static ssize_t __read(FILE *f, void *buf, size_t count)
 
 	fsdrv = f->fsdev->driver;
 
+	if (fsdrv != ramfs_driver)
+		assert_command_context();
+
 	if (f->size != FILE_SIZE_STREAM && f->pos + count > f->size)
 		count = f->size - f->pos;
 
@@ -315,6 +321,10 @@ static ssize_t __write(FILE *f, const void *buf, size_t count)
 	}
 
 	fsdrv = f->fsdev->driver;
+
+	if (fsdrv != ramfs_driver)
+		assert_command_context();
+
 	if (f->size != FILE_SIZE_STREAM && f->pos + count > f->size) {
 		ret = fsdrv->truncate(&f->fsdev->dev, f, f->pos + count);
 		if (ret) {
@@ -402,6 +412,9 @@ loff_t lseek(int fd, loff_t offset, int whence)
 
 	fsdrv = f->fsdev->driver;
 
+	if (fsdrv != ramfs_driver)
+		assert_command_context();
+
 	ret = -EINVAL;
 
 	switch (whence) {
@@ -457,6 +470,10 @@ int erase(int fd, loff_t count, loff_t offset)
 		return -EINVAL;
 
 	fsdrv = f->fsdev->driver;
+
+	if (fsdrv != ramfs_driver)
+		assert_command_context();
+
 	if (fsdrv->erase)
 		ret = fsdrv->erase(&f->fsdev->dev, f, count, offset);
 	else
@@ -483,6 +500,10 @@ int protect(int fd, size_t count, loff_t offset, int prot)
 		count = f->size - offset;
 
 	fsdrv = f->fsdev->driver;
+
+	if (fsdrv != ramfs_driver)
+		assert_command_context();
+
 	if (fsdrv->protect)
 		ret = fsdrv->protect(&f->fsdev->dev, f, count, offset, prot);
 	else
@@ -509,6 +530,10 @@ int discard_range(int fd, loff_t count, loff_t offset)
 		count = f->size - offset;
 
 	fsdrv = f->fsdev->driver;
+
+	if (fsdrv != ramfs_driver)
+		assert_command_context();
+
 	if (fsdrv->discard_range)
 		ret = fsdrv->discard_range(&f->fsdev->dev, f, count, offset);
 	else
@@ -547,6 +572,9 @@ void *memmap(int fd, int flags)
 
 	fsdrv = f->fsdev->driver;
 
+	if (fsdrv != ramfs_driver)
+		assert_command_context();
+
 	if (fsdrv->memmap)
 		ret = fsdrv->memmap(&f->fsdev->dev, f, &retp, flags);
 	else
@@ -569,6 +597,9 @@ int close(int fd)
 		return -errno;
 
 	fsdrv = f->fsdev->driver;
+
+	if (fsdrv != ramfs_driver)
+		assert_command_context();
 
 	if (fsdrv->close)
 		ret = fsdrv->close(&f->fsdev->dev, f);
@@ -699,6 +730,9 @@ int register_fs_driver(struct fs_driver_d *fsdrv)
 {
 	fsdrv->drv.bus = &fs_bus;
 	register_driver(&fsdrv->drv);
+
+	if (!strcmp(fsdrv->drv.name, "ramfs"))
+		ramfs_driver = fsdrv;
 
 	return 0;
 }

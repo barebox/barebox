@@ -16,7 +16,7 @@
 #include <slice.h>
 
 static LIST_HEAD(poller_list);
-static int poller_active;
+int poller_active;
 
 int poller_register(struct poller_struct *poller, const char *name)
 {

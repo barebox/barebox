@@ -19,6 +19,7 @@ Contents:
    boards
    glossary
    devicetree/*
+   devel/devel.rst
 
 * :ref:`search`
 * :ref:`genindex`

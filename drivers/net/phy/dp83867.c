@@ -177,12 +177,6 @@ static int dp83867_of_init(struct phy_device *phydev)
 			&dp83867->fifo_depth);
 }
 
-static inline bool phy_interface_is_rgmii(struct phy_device *phydev)
-{
-	return phydev->interface >= PHY_INTERFACE_MODE_RGMII &&
-			phydev->interface <= PHY_INTERFACE_MODE_RGMII_TXID;
-}
-
 static inline bool phy_interface_is_sgmii(struct phy_device *phydev)
 {
 	return phydev->interface == PHY_INTERFACE_MODE_SGMII ||

@@ -1,0 +1,81 @@
+/*
+ * Copyright (C) 2016 Protonic Holland
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+/dts-v1/;
+
+#include "imx6ul-prti6g.dtsi"
+
+/ {
+	model = "Protonic PRTI6G Board";
+	compatible = "prt,prti6g", "fsl,imx6ul";
+};
+
+&pinctrl_hog {
+	fsl,pins = <
+		/* HW revision detect */
+		MX6UL_PAD_ENET2_RX_DATA0__GPIO2_IO08	0x1b0b0	/* REV_ID0 */
+		MX6UL_PAD_ENET2_RX_DATA1__GPIO2_IO09	0x1b0b0	/* REV_ID1 */
+		MX6UL_PAD_ENET2_RX_EN__GPIO2_IO10	0x1b0b0 /* REV_ID2 */
+		MX6UL_PAD_ENET2_TX_DATA0__GPIO2_IO11	0x1b0b0	/* REV_ID3 */
+		MX6UL_PAD_ENET2_TX_EN__GPIO2_IO13	0x1b0b0	/* BOARD_ID0 */
+		MX6UL_PAD_ENET2_TX_CLK__GPIO2_IO14	0x1b0b0	/* BOARD_ID1 */
+		MX6UL_PAD_ENET2_RX_ER__GPIO2_IO15	0x1b0b0	/* BOARD_ID2 */
+		MX6UL_PAD_ENET2_TX_DATA1__GPIO2_IO12	0x1b0b0	/* BOARD_ID3 */
+
+		/* Safety controller IO */
+		MX6UL_PAD_SNVS_TAMPER6__GPIO5_IO06	0x1b0b0	/* WAKE_SC */
+		MX6UL_PAD_SNVS_TAMPER7__GPIO5_IO07	0x1b0b0	/* PROGRAM_SC */
+	>;
+};
+
+&ecspi2 {
+	status = "okay";
+};
+
+&can2 {
+	status = "okay";
+};
+
+&i2c2 {
+	can_adc: ads1015@49 {
+		compatible = "ti,ads1015";
+		reg = <0x49>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		channel@4 {
+			reg = <4>;
+			ti,gain = <3>;
+			ti,datarate = <3>;
+		};
+
+		channel@5 {
+			reg = <5>;
+			ti,gain = <3>;
+			ti,datarate = <3>;
+		};
+
+		channel@6 {
+			reg = <6>;
+			ti,gain = <3>;
+			ti,datarate = <3>;
+		};
+
+		channel@7 {
+			reg = <7>;
+			ti,gain = <3>;
+			ti,datarate = <3>;
+		};
+	};
+};

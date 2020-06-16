@@ -50,6 +50,9 @@ struct ratp_ctx {
 	struct ratp_bb_pkt *fs_rx;
 
 	struct poller_struct poller;
+
+	bool console_registered;
+	bool poller_registered;
 };
 
 static int compare_ratp_command(struct list_head *a, struct list_head *b)
@@ -295,26 +298,6 @@ static void ratp_console_putc(struct console_device *cdev, char c)
 	kfifo_putc(ctx->console_transmit_fifo, c);
 }
 
-static int ratp_console_register(struct ratp_ctx *ctx)
-{
-	int ret;
-
-	ctx->ratp_console.tstc = ratp_console_tstc;
-	ctx->ratp_console.puts = ratp_console_puts;
-	ctx->ratp_console.putc = ratp_console_putc;
-	ctx->ratp_console.getc = ratp_console_getc;
-	ctx->ratp_console.devname = "ratpconsole";
-	ctx->ratp_console.devid = DEVICE_ID_SINGLE;
-
-	ret = console_register(&ctx->ratp_console);
-	if (ret) {
-		pr_err("registering failed with %s\n", strerror(-ret));
-		return ret;
-	}
-
-	return 0;
-}
-
 void barebox_ratp_command_run(void)
 {
 	int ret;
@@ -344,15 +327,27 @@ int barebox_ratp_fs_mount(const char *path)
 	return 0;
 }
 
-static void ratp_console_unregister(struct ratp_ctx *ctx)
+static void ratp_unregister(struct ratp_ctx *ctx)
 {
 	int ret;
 
-	console_set_active(&ctx->ratp_console, 0);
-	poller_unregister(&ctx->poller);
+	if (ctx->console_registered)
+		console_unregister(&ctx->ratp_console);
+
+	if (ctx->poller_registered)
+		poller_unregister(&ctx->poller);
+
 	ratp_close(&ctx->ratp);
 	console_set_active(ctx->cdev, ctx->old_active);
-	ctx->cdev = NULL;
+
+	if (ctx->console_recv_fifo)
+		kfifo_free(ctx->console_recv_fifo);
+
+	if (ctx->console_transmit_fifo)
+		kfifo_free(ctx->console_transmit_fifo);
+
+	free(ctx);
+	ratp_ctx = NULL;
 
 	if (ratpfs_mount_path) {
 		ret = umount(ratpfs_mount_path);
@@ -388,7 +383,7 @@ static void ratp_poller(struct poller_struct *poller)
 	return;
 
 out:
-	ratp_console_unregister(ctx);
+	ratp_unregister(ctx);
 }
 
 int barebox_ratp_fs_call(struct ratp_bb_pkt *tx, struct ratp_bb_pkt **rx)
@@ -433,28 +428,34 @@ int barebox_ratp(struct console_device *cdev)
 {
 	int ret;
 	struct ratp_ctx *ctx;
-	struct ratp *ratp;
 
 	if (!cdev->getc || !cdev->putc)
 		return -EINVAL;
 
-	if (ratp_ctx) {
-		ctx = ratp_ctx;
-	} else {
-		ctx = xzalloc(sizeof(*ctx));
-		ratp_ctx = ctx;
-		ctx->ratp.send = console_send;
-		ctx->ratp.recv = console_recv;
-		ctx->console_recv_fifo = kfifo_alloc(512);
-		ctx->console_transmit_fifo = kfifo_alloc(SZ_128K);
-		ctx->poller.func = ratp_poller;
-		ratp_console_register(ctx);
-	}
-
-	if (ctx->cdev)
+	if (ratp_ctx)
 		return -EBUSY;
 
-	ratp = &ctx->ratp;
+	ctx = xzalloc(sizeof(*ctx));
+	ratp_ctx = ctx;
+	ctx->ratp.send = console_send;
+	ctx->ratp.recv = console_recv;
+	ctx->console_recv_fifo = kfifo_alloc(512);
+	ctx->console_transmit_fifo = kfifo_alloc(SZ_128K);
+	ctx->poller.func = ratp_poller;
+	ctx->ratp_console.tstc = ratp_console_tstc;
+	ctx->ratp_console.puts = ratp_console_puts;
+	ctx->ratp_console.putc = ratp_console_putc;
+	ctx->ratp_console.getc = ratp_console_getc;
+	ctx->ratp_console.devname = "ratpconsole";
+	ctx->ratp_console.devid = DEVICE_ID_SINGLE;
+
+	ret = console_register(&ctx->ratp_console);
+	if (ret) {
+		pr_err("registering console failed with %s\n", strerror(-ret));
+		return ret;
+	}
+
+	ctx->console_registered = true;
 
 	ctx->old_active = console_get_active(cdev);
 	console_set_active(cdev, 0);
@@ -462,31 +463,30 @@ int barebox_ratp(struct console_device *cdev)
 	ctx->cdev = cdev;
 	ctx->have_synch = 1;
 
-	ret = ratp_establish(ratp, false, 100);
+	ret = ratp_establish(&ctx->ratp, false, 100);
 	if (ret < 0)
 		goto out;
 
 	ret = poller_register(&ctx->poller, "ratp");
 	if (ret)
-		goto out1;
+		goto out;
+
+	ctx->poller_registered = true;
 
 	console_set_active(&ctx->ratp_console, CONSOLE_STDOUT | CONSOLE_STDERR |
 			CONSOLE_STDIN);
 
 	return 0;
 
-out1:
-	ratp_close(ratp);
 out:
-	console_set_active(ctx->cdev, ctx->old_active);
-	ctx->cdev = NULL;
+	ratp_unregister(ctx);
 
 	return ret;
 }
 
 static void barebox_ratp_close(void)
 {
-	if (ratp_ctx && ratp_ctx->cdev)
-		ratp_console_unregister(ratp_ctx);
+	if (ratp_ctx)
+		ratp_unregister(ratp_ctx);
 }
 predevshutdown_exitcall(barebox_ratp_close);

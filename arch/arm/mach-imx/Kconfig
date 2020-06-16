@@ -336,6 +336,12 @@ config MACH_PHYTEC_SOM_IMX6
         select ARCH_IMX6
 	select ARCH_IMX6UL
 
+config MACH_PROTONIC_IMX6
+	bool "Protonic-Holland i.MX6 based boards"
+	select ARCH_IMX6
+	select ARCH_IMX6UL
+	select ARM_USE_COMPRESSED_DTB
+
 config MACH_KONTRON_SAMX6I
         bool "Kontron sAMX6i"
         select ARCH_IMX6

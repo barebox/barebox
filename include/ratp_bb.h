@@ -41,7 +41,6 @@ struct ratp_bb_pkt {
 };
 
 int  barebox_ratp(struct console_device *cdev);
-void barebox_ratp_command_run(void);
 int  barebox_ratp_fs_call(struct ratp_bb_pkt *tx, struct ratp_bb_pkt **rx);
 int  barebox_ratp_fs_mount(const char *path);
 

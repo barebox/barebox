@@ -24,6 +24,7 @@
 #include <environment.h>
 #include <kfifo.h>
 #include <poller.h>
+#include <work.h>
 #include <linux/sizes.h>
 #include <ratp_bb.h>
 #include <fs.h>
@@ -50,9 +51,11 @@ struct ratp_ctx {
 	struct ratp_bb_pkt *fs_rx;
 
 	struct poller_struct poller;
+	struct work_queue wq;
 
 	bool console_registered;
 	bool poller_registered;
+	bool wq_registered;
 };
 
 static int compare_ratp_command(struct list_head *a, struct list_head *b)
@@ -194,8 +197,13 @@ static int ratp_bb_send_command_return(struct ratp_ctx *ctx, uint32_t errno)
 	return ret;
 }
 
-static char *ratp_command;
 static struct ratp_ctx *ratp_ctx;
+
+struct ratp_work {
+	struct work_struct work;
+	struct ratp_ctx *ctx;
+	char *command;
+};
 
 static int ratp_bb_dispatch(struct ratp_ctx *ctx, const void *buf, int len)
 {
@@ -205,6 +213,7 @@ static int ratp_bb_dispatch(struct ratp_ctx *ctx, const void *buf, int len)
 	int ret = 0;
 	uint16_t type = be16_to_cpu(rbb->type);
 	struct ratp_command *cmd;
+	struct ratp_work *rw;
 
 	/* See if there's a command registered to this type */
 	cmd = find_ratp_request(type);
@@ -222,12 +231,16 @@ static int ratp_bb_dispatch(struct ratp_ctx *ctx, const void *buf, int len)
 
 	switch (type) {
 	case BB_RATP_TYPE_COMMAND:
-		if (!IS_ENABLED(CONFIG_CONSOLE_RATP) || ratp_command)
+		if (!IS_ENABLED(CONFIG_CONSOLE_RATP))
 			return 0;
 
-		ratp_command = xstrndup((const char *)rbb->data, dlen);
-		ratp_ctx = ctx;
-		pr_debug("got command: %s\n", ratp_command);
+		rw = xzalloc(sizeof(*rw));
+		rw->ctx = ctx;
+		rw->command = xstrndup((const char *)rbb->data, dlen);
+
+		wq_queue_work(&ctx->wq, &rw->work);
+
+		pr_debug("got command: %s\n", rw->command);
 
 		break;
 
@@ -298,21 +311,20 @@ static void ratp_console_putc(struct console_device *cdev, char c)
 	kfifo_putc(ctx->console_transmit_fifo, c);
 }
 
-void barebox_ratp_command_run(void)
+static void ratp_command_run(struct work_struct *w)
 {
+	struct ratp_work *rw = container_of(w, struct ratp_work, work);
+	struct ratp_ctx *ctx = rw->ctx;
 	int ret;
 
-	if (!ratp_command)
-		return;
+	pr_debug("running command: %s\n", rw->command);
 
-	pr_debug("running command: %s\n", ratp_command);
+	ret = run_command(rw->command);
 
-	ret = run_command(ratp_command);
+	free(rw->command);
+	free(rw);
 
-	free(ratp_command);
-	ratp_command = NULL;
-
-	ratp_bb_send_command_return(ratp_ctx, ret);
+	ratp_bb_send_command_return(ctx, ret);
 }
 
 static const char *ratpfs_mount_path;
@@ -336,6 +348,9 @@ static void ratp_unregister(struct ratp_ctx *ctx)
 
 	if (ctx->poller_registered)
 		poller_unregister(&ctx->poller);
+
+	if (ctx->wq_registered)
+		wq_unregister(&ctx->wq);
 
 	ratp_close(&ctx->ratp);
 	console_set_active(ctx->cdev, ctx->old_active);
@@ -369,6 +384,7 @@ static void ratp_poller(struct poller_struct *poller)
 	ret = ratp_poll(&ctx->ratp);
 	if (ret == -EINTR)
 		goto out;
+
 	if (ratp_closed(&ctx->ratp))
 		goto out;
 
@@ -424,6 +440,14 @@ int barebox_ratp_fs_call(struct ratp_bb_pkt *tx, struct ratp_bb_pkt **rx)
 	return 0;
 }
 
+static void ratp_work_cancel(struct work_struct *w)
+{
+	struct ratp_work *rw = container_of(w, struct ratp_work, work);
+
+	free(rw->command);
+	free(rw);
+}
+
 int barebox_ratp(struct console_device *cdev)
 {
 	int ret;
@@ -466,6 +490,11 @@ int barebox_ratp(struct console_device *cdev)
 	ret = ratp_establish(&ctx->ratp, false, 100);
 	if (ret < 0)
 		goto out;
+
+	ctx->wq.fn = ratp_command_run;
+	ctx->wq.cancel = ratp_work_cancel;
+	wq_register(&ctx->wq);
+	ctx->wq_registered = true;
 
 	ret = poller_register(&ctx->poller, "ratp");
 	if (ret)

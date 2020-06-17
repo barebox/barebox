@@ -4,10 +4,10 @@
 	chosen {
 		stdout-path = &uart1;
 	};
+};
 
-	memory {
-		reg = <0x0 0x0>;
-	};
+&{/memory@0} {
+	reg = <0x0 0x0>;
 };
 
 &sdhci {

@@ -1,0 +1,140 @@
+// SPDX-License-Identifier: GPL-2.0
+/dts-v1/;
+#include <mips/qca/ar9331.dtsi>
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+
+#include "ar9331.dtsi"
+
+/ {
+	model = "o&kud max9331";
+	compatible = "okud,max9331";
+
+	aliases {
+		spiflash = &spiflash;
+		serial0 = &uart;
+	};
+
+	chosen {
+		environment {
+			compatible = "barebox,environment";
+			device-path = &spiflash, "partname:barebox-environment";
+		};
+
+		art@0 {
+			compatible = "qca,art-ar9331", "qca,art";
+			device-path = &spiflash_art;
+			barebox,provide-mac-address = <&eth0>;
+		};
+	};
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0x0 0x4000000>;
+	};
+
+	/* FIXME: leds and gpio */
+	leds {
+		compatible = "gpio-leds";
+
+		net {
+			label = "board:LED1:system";
+			gpios = <&gpio 1 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+			barebox,default-trigger = "net";
+		};
+
+		panic {
+			label = "board:LED2:system";
+			gpios = <&gpio 0 GPIO_ACTIVE_LOW>;
+			default-state = "on";
+			barebox,default-trigger = "panic";
+		};
+
+		system {
+			label = "board:LED3:system";
+			gpios = <&gpio 27 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+			barebox,default-trigger = "heartbeat";
+		};
+	};
+
+	gpio-keys {
+		compatible = "gpio-keys";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		button@0 {
+			label = "reset";
+			linux,code = <KEY_ENTER>;
+			gpios = <&gpio 11 GPIO_ACTIVE_LOW>;
+		};
+	};
+};
+
+&eth0 {
+	status = "okay";
+};
+
+&ref {
+	clock-frequency = <25000000>;
+};
+
+&uart {
+	status = "okay";
+};
+
+&gpio {
+	status = "okay";
+};
+
+&usb {
+	dr_mode = "host";
+	status = "okay";
+};
+
+&usb_phy {
+	status = "okay";
+};
+
+&spi {
+	num-chipselects = <1>;
+	status = "okay";
+
+	/* Spansion FL128SA SPI flash */
+	spiflash: s25fl128s@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "spansion,s25fl128s1", "jedec,spi-nor";
+		spi-max-frequency = <25000000>;
+		reg = <0>;
+	};
+};
+
+&spiflash {
+	partition@0 {
+		label = "boot0";
+		reg = <0 0x10000>;
+	};
+
+	partition@10000 {
+		label = "barebox-environment";
+		reg = <0x10000 0x10000>;
+	};
+
+	partition@20000 {
+		label = "barebox";
+		reg = <0x20000 0x80000>;
+	};
+
+	partition@a0000 {
+		label = "kernel";
+		reg = <0xA0000 0xF50000>;
+	};
+
+	spiflash_art: partition@ff0000 {
+		label = "art";
+		reg = <0xff0000 0x10000>;
+	};
+};

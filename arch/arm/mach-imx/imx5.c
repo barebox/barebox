@@ -37,10 +37,13 @@ void imx5_init_lowlevel(void)
 {
 	u32 r;
 
-	/* ARM errata ID #468414 */
 	__asm__ __volatile__("mrc 15, 0, %0, c1, c0, 1":"=r"(r));
+
+	if (r & (1 << 1))
+		return;
+
+	/* ARM errata ID #468414 */
 	r |= (1 << 5);    /* enable L1NEON bit */
-	r &= ~(1 << 1);   /* explicitly disable L2 cache */
 	__asm__ __volatile__("mcr 15, 0, %0, c1, c0, 1" : : "r"(r));
 
         /* reconfigure L2 cache aux control reg */

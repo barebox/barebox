@@ -313,8 +313,6 @@ static struct usb_function *fastboot_alloc_func(struct usb_function_instance *fi
 
 	f_fb = xzalloc(sizeof(*f_fb));
 
-	INIT_LIST_HEAD(&f_fb->fastboot.variables);
-
 	f_fb->func.name = "fastboot";
 	f_fb->func.strings = fastboot_strings;
 	f_fb->func.bind = fastboot_bind;

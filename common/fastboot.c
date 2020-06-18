@@ -171,6 +171,8 @@ int fastboot_generic_init(struct fastboot *fb, bool export_bbu)
 	struct file_list_entry *fentry;
 	struct fb_variable *var;
 
+	INIT_LIST_HEAD(&fb->variables);
+
 	var = fb_addvar(fb, "version");
 	fb_setvar(var, "0.4");
 	var = fb_addvar(fb, "bootloader-version");

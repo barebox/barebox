@@ -24,15 +24,14 @@
 						wp-gpios = <&pioE 19 GPIO_ACTIVE_HIGH>;
 					};
 			};
-		};
-	};
 
-
-	pinctrl@fffff200 {
-		pinctrl_board_mmc1: mmc1-board {
-			atmel,pins =
-				<AT91_PIOE 18 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP_DEGLITCH	/* PE18 gpio CD pin pull up and deglitch */
-				 AT91_PIOE 19 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP>;		/* PE19 gpio WP pin pull up */
+			pinctrl@fffff200 {
+				pinctrl_board_mmc1: mmc1-board {
+					atmel,pins =
+						<AT91_PIOE 18 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP_DEGLITCH	/* PE18 gpio CD pin pull up and deglitch */
+						 AT91_PIOE 19 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP>;		/* PE19 gpio WP pin pull up */
+				};
+			};
 		};
 	};
 };

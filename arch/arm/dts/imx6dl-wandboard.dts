@@ -11,10 +11,10 @@
 			device-path = &environment_usdhc3;
 		};
 	};
+};
 
-	memory {
-		reg = <0x0 0x0>;
-	};
+&{/memory@10000000} {
+	reg = <0x10000000 0x0>;
 };
 
 &ocotp {

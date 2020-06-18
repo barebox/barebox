@@ -22,10 +22,6 @@
 		};
 	};
 
-	memory {
-		reg = <0x80000000 0x7ff00000>;
-	};
-
 	pcie-controller@00003000 {
 		status = "okay";
 		pex-clk-supply = <&sys_3v3_pexs_reg>;
@@ -935,4 +931,8 @@
 			 <&tegra_car TEGRA30_CLK_EXTERN1>;
 		clock-names = "pll_a", "pll_a_out0", "mclk";
 	};
+};
+
+&{/memory@80000000} {
+	reg = <0x80000000 0x7ff00000>;
 };

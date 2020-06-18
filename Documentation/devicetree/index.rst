@@ -3,9 +3,11 @@ Barebox devicetree handling and bindings
 
 The preferred way of adding board support to barebox is to have devices
 on non-enumerable buses probed from device tree.
-barebox imports the Linux OpenFirmware ``of_*``-API functions for device tree
-parsing, which makes porting the device tree specific bits from device drivers
-very straight forward.
+barebox provide both the Linux OpenFirmware ``of_*`` and the libfdt ``fdt_`` APIs
+for device tree parsing. The former makes porting the device tree specific
+bits from Linux device drivers very straight forward, while the latter can be
+used for very early (PBL) handling of flattened device trees, should this be
+necessary.
 
 Additionally, barebox has support for programmatically fixing up device trees
 it passes to the kernel, either directly via ``of_register_fixup`` or via device

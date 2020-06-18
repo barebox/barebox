@@ -8,5 +8,4 @@
  */
 
 #include <arm64/xilinx/zynqmp-zcu104-revA.dts>
-#include "zynqmp.dtsi"
 #include "zynqmp-clk.dtsi"

@@ -9,10 +9,6 @@
 			device-path = &environment_usdhc1;
 		};
 	};
-
-	memory {
-		/delete-property/ device_type;
-	};
 };
 
 &usdhc1 {

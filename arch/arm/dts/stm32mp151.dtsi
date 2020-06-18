@@ -1,10 +1,5 @@
 
 / {
-	clocks {
-		/* Needed to let barebox find the clock nodes */
-		compatible = "simple-bus";
-	};
-
 	aliases {
 		gpio0 = &gpioa;
 		gpio1 = &gpiob;
@@ -35,15 +30,21 @@
 		pwm17 = &{/soc/timer@44008000/pwm};
 	};
 
-	psci {
-		compatible = "arm,psci-0.2";
-	};
+};
 
-	soc {
-		memory-controller@5a003000 {
-			compatible = "st,stm32mp1-ddr";
-			reg = <0x5a003000 0x1000>;
-		};
+&{/clocks} {
+	/* Needed to let barebox find the clock nodes */
+	compatible = "simple-bus";
+};
+
+&{/psci} {
+		compatible = "arm,psci-0.2";
+};
+
+&{/soc} {
+	memory-controller@5a003000 {
+		compatible = "st,stm32mp1-ddr";
+		reg = <0x5a003000 0x1000>;
 	};
 };
 

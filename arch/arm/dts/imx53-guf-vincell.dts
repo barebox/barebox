@@ -25,12 +25,6 @@
 		stdout-path = &uart2;
 	};
 
-	clocks {
-		ckih1 {
-			clock-frequency = <0>;
-		};
-	};
-
 	panel: panel {
 		compatible = "ampire,am800480r3tmqwa1h", "simple-panel";
 		enable-gpios = <&gpio2 5 GPIO_ACTIVE_HIGH>;
@@ -72,6 +66,10 @@
 			regulator-always-on;
 		};
 	};
+};
+
+&{/clocks/ckih1} {
+	clock-frequency = <0>;
 };
 
 &audmux {

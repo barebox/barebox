@@ -3,6 +3,4 @@
  * to dynamic memory size detection based on DDR controller settings
  */
 
-/ {
-	/delete-node/ memory@80000000;
-};
+/delete-node/ &{/memory@80000000};

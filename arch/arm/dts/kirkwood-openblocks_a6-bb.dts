@@ -4,10 +4,6 @@
 
 #include "arm/kirkwood-openblocks_a6.dts"
 
-/ {
-	gpio-leds {
-		led-green {
-			barebox,default-trigger = "heartbeat";
-		};
-	};
+&{/gpio-leds/led-green} {
+	barebox,default-trigger = "heartbeat";
 };

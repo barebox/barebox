@@ -5,10 +5,6 @@
 
 #include "arm/armada-xp-lenovo-ix4-300d.dts"
 
-/ {
-	gpio-leds {
-		power-led {
-			linux,default-trigger = "heartbeat";
-		};
-	};
+&{/gpio-leds/power-led} {
+	linux,default-trigger = "heartbeat";
 };

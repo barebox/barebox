@@ -30,12 +30,6 @@
 		};
 	};
 
-	clocks {
-		ckih1 {
-			clock-frequency = <0>;
-		};
-	};
-
 	panel: panel {
 		compatible = "giantplus,gpg482739qs5", "simple-panel";
 		power-supply = <&reg_panel>;
@@ -117,6 +111,10 @@
 			gpio = <&gpio1 0 GPIO_ACTIVE_LOW>;
 		};
 	};
+};
+
+&{/clocks/ckih1} {
+	clock-frequency = <0>;
 };
 
 &audmux {

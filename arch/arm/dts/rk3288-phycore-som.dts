@@ -20,7 +20,8 @@
 	model = "phycore-rk3288";
 	compatible = "phytec,rk3288-phycore-som", "rockchip,rk3288";
 
-	memory {
+	memory@0 {
+		device_type = "memory";
 		reg = <0x0 0x0 0x0 0x40000000>;
 	};
 

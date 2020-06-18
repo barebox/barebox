@@ -20,7 +20,8 @@
 	model = "Garz+Fricke i.MX6q Santaro";
 	compatible = "guf,imx6q-santaro", "fsl,imx6q";
 
-	memory {
+	memory@10000000 {
+		device_type = "memory";
 		reg = <0x10000000 0x40000000>;
 	};
 

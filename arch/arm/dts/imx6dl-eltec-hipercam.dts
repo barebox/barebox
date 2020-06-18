@@ -7,7 +7,8 @@
 	model = "ELTEC HiPerCam";
 	compatible = "eltec,hipercam-rev01", "fsl,imx6dl";
 
-	memory {
+	memory@10000000 {
+		device_type = "memory";
 		reg = <0x10000000 0x10000000>;
 	};
 

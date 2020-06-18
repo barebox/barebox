@@ -17,7 +17,8 @@
 	model = "Variscite i.MX6 Quad SOM";
 	compatible = "variscite,imx6q-som", "fsl,imx6q";
 
-	memory {
+	memory@10000000 {
+		device_type = "memory";
 		reg = <0x10000000 0x40000000>;
 	};
 };

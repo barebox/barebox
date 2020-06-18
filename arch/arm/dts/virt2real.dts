@@ -5,7 +5,7 @@
 / {
 	model = "virt2real";
 
-	memory {
+	memory@82000000 {
 		device_type = "memory";
 		reg = <0x82000000 0x01000000>;
 	};

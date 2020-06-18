@@ -7,6 +7,7 @@
 / {
 	aliases {
 		eeprom = &eeprom;
+		mmc0 = &esdhc;
 	};
 
 	chosen {
@@ -16,10 +17,6 @@
 			compatible = "barebox,environment";
 			device-path = &environment_sd;
 		};
-	};
-
-	aliases {
-		mmc0 = &esdhc;
 	};
 };
 

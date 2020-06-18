@@ -10,34 +10,6 @@
 		state = &state;
 	};
 
-	smb@4000000 {
-		motherboard {
-			flash@0,00000000 {
-				#address-cells = <1>;
-				#size-cells = <1>;
-
-				partitions {
-					compatible = "fixed-partitions";
-
-					partition@0 {
-						label = "barebox";
-						reg = <0x0 0x80000>;
-					};
-
-					barebox_env: partition@80000 {
-						label = "barebox-environment";
-						reg = <0x80000 0x80000>;
-					};
-
-					state_storage: partition@100000 {
-						label = "barebox-state";
-						reg = <0x100000 0x100000>;
-					};
-				};
-			};
-		};
-	};
-
 	/* State: mutable part */
 	state: state {
 		magic = <0x4d433230>;
@@ -89,6 +61,29 @@
 				reg = <0x10 0x4>;
 				type = "uint32";
 			};
+		};
+	};
+};
+
+&{/bus@4000000/motherboard/flash@0,00000000} {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		partition@0 {
+			label = "barebox";
+			reg = <0x0 0x80000>;
+		};
+
+		barebox_env: partition@80000 {
+			label = "barebox-environment";
+			reg = <0x80000 0x80000>;
+		};
+
+		state_storage: partition@100000 {
+			label = "barebox-state";
+			reg = <0x100000 0x100000>;
 		};
 	};
 };

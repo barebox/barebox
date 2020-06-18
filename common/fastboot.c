@@ -337,6 +337,7 @@ int fastboot_handle_download_data(struct fastboot *fb, const void *buffer,
 void fastboot_download_finished(struct fastboot *fb)
 {
 	close(fb->download_fd);
+	fb->download_fd = 0;
 
 	printf("\n");
 
@@ -355,6 +356,11 @@ static void cb_download(struct fastboot *fb, const char *cmd)
 			  fb->download_size);
 
 	init_progression_bar(fb->download_size);
+
+	if (fb->download_fd > 0) {
+		pr_err("%s called and %s is still opened\n", __func__, fb->tempname);
+		close(fb->download_fd);
+	}
 
 	fb->download_fd = open(fb->tempname, O_WRONLY | O_CREAT | O_TRUNC);
 	if (fb->download_fd < 0) {

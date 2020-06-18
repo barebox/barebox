@@ -347,6 +347,18 @@ void fastboot_download_finished(struct fastboot *fb)
 	fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, "");
 }
 
+void fastboot_abort(struct fastboot *fb)
+{
+	if (fb->download_fd > 0) {
+		close(fb->download_fd);
+		fb->download_fd = 0;
+	}
+
+	fb->active = false;
+
+	unlink(fb->tempname);
+}
+
 static void cb_download(struct fastboot *fb, const char *cmd)
 {
 	fb->download_size = simple_strtoul(cmd, NULL, 16);

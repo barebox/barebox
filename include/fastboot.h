@@ -78,4 +78,6 @@ int fastboot_tx_print(struct fastboot *fb, enum fastboot_msg_type type,
 void fastboot_start_download_generic(struct fastboot *fb);
 void fastboot_download_finished(struct fastboot *fb);
 void fastboot_exec_cmd(struct fastboot *fb, const char *cmdbuf);
+void fastboot_abort(struct fastboot *fb);
+
 #endif

@@ -781,7 +781,6 @@ int main(int argc, char *argv[])
 	int outfd;
 	int dcd_only = 0;
 	int now = 0;
-	int i, header_copies;
 	int add_barebox_header;
 	uint32_t barebox_image_size = 0;
 	struct config_data data = {
@@ -978,9 +977,13 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	header_copies = (data.cpu_type == IMX_CPU_IMX35) ? 2 : 1;
-
-	for (i = 0; i < header_copies; i++) {
+	if (data.cpu_type == IMX_CPU_IMX35) {
+		xwrite(outfd, add_barebox_header ? bb_header : buf,
+		       sizeof_bb_header);
+		xwrite(outfd, buf + sizeof_bb_header,
+		       header_len - sizeof_bb_header);
+		xwrite(outfd, buf, header_len);
+	} else {
 		xwrite(outfd, add_barebox_header ? bb_header : buf,
 		       sizeof_bb_header);
 

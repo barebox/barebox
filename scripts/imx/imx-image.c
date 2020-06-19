@@ -329,7 +329,8 @@ static size_t add_header_v2(const struct config_data *data, void *buf)
 	hdr->header.version	= IVT_VERSION;
 
 	hdr->entry		= loadaddr + HEADER_LEN;
-	hdr->dcd_ptr		= loadaddr + offset + offsetof(struct imx_flash_header_v2, dcd_header);
+	if (dcdsize)
+		hdr->dcd_ptr = loadaddr + offset + offsetof(struct imx_flash_header_v2, dcd_header);
 	if (create_usb_image) {
 		dcd_ptr_content = hdr->dcd_ptr;
 		dcd_ptr_offset = offsetof(struct imx_flash_header_v2, dcd_ptr) + offset;
@@ -357,13 +358,14 @@ static size_t add_header_v2(const struct config_data *data, void *buf)
 		hdr->boot_data.size += CSF_LEN;
 	}
 
-	hdr->dcd_header.tag	= TAG_DCD_HEADER;
-	hdr->dcd_header.length	= htobe16(sizeof(uint32_t) + dcdsize);
-	hdr->dcd_header.version	= DCD_VERSION;
-
 	buf += sizeof(*hdr);
 
-	memcpy(buf, dcdtable, dcdsize);
+	if (dcdsize) {
+		hdr->dcd_header.tag	= TAG_DCD_HEADER;
+		hdr->dcd_header.length	= htobe16(sizeof(uint32_t) + dcdsize);
+		hdr->dcd_header.version	= DCD_VERSION;
+		memcpy(buf, dcdtable, dcdsize);
+	}
 
 	return imagesize;
 }

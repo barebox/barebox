@@ -978,10 +978,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (data.cpu_type == IMX_CPU_IMX35) {
-		xwrite(outfd, add_barebox_header ? bb_header : buf,
-		       sizeof_bb_header);
-		xwrite(outfd, buf + sizeof_bb_header,
-		       header_len - sizeof_bb_header);
+		xwrite(outfd, buf, header_len);
 		xwrite(outfd, buf, header_len);
 	} else {
 		if (add_barebox_header &&
@@ -990,17 +987,16 @@ int main(int argc, char *argv[])
 			exit(1);
 		}
 
-		xwrite(outfd, add_barebox_header ? bb_header : buf,
-		       sizeof_bb_header);
-
-		if (lseek(outfd, data.header_gap, SEEK_CUR) < 0) {
+		if (lseek(outfd, data.header_gap, SEEK_SET) < 0) {
 			perror("lseek");
 			exit(1);
 		}
 
-		xwrite(outfd, buf + sizeof_bb_header,
-		       header_len - sizeof_bb_header);
+		xwrite(outfd, buf, header_len);
 	}
+
+	if (add_barebox_header)
+		pwrite(outfd, bb_header, sizeof_bb_header, 0);
 
 	xwrite(outfd, infile, insize);
 

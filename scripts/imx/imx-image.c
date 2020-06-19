@@ -238,7 +238,7 @@ static size_t add_header_v1(struct config_data *data, void *buf)
 {
 	struct imx_flash_header *hdr;
 	int dcdsize = curdcd * sizeof(uint32_t);
-	int offset = data->image_dcd_offset;
+	int offset = data->image_ivt_offset;
 	uint32_t loadaddr = data->image_load_addr;
 	uint32_t imagesize = data->load_size;
 
@@ -307,7 +307,7 @@ static size_t add_header_v2(const struct config_data *data, void *buf)
 {
 	struct imx_flash_header_v2 *hdr;
 	int dcdsize = curdcd * sizeof(uint32_t);
-	int offset = data->image_dcd_offset;
+	int offset = data->image_ivt_offset;
 	uint32_t loadaddr = data->image_load_addr;
 	uint32_t imagesize = data->load_size;
 
@@ -784,7 +784,7 @@ int main(int argc, char *argv[])
 	int add_barebox_header;
 	uint32_t barebox_image_size = 0;
 	struct config_data data = {
-		.image_dcd_offset = 0xffffffff,
+		.image_ivt_offset = 0xffffffff,
 		.write_mem = write_mem,
 		.check = check,
 		.nop = nop,
@@ -882,11 +882,11 @@ int main(int argc, char *argv[])
 		create_usb_image = 0;
 	}
 
-	if (data.image_dcd_offset == 0xffffffff) {
+	if (data.image_ivt_offset == 0xffffffff) {
 		if (create_usb_image)
-			data.image_dcd_offset = 0x0;
+			data.image_ivt_offset = 0x0;
 		else
-			data.image_dcd_offset = FLASH_HEADER_OFFSET;
+			data.image_ivt_offset = FLASH_HEADER_OFFSET;
 	}
 
 	if (!data.header_version) {
@@ -910,14 +910,14 @@ int main(int argc, char *argv[])
 	case 1:
 		barebox_image_size = add_header_v1(&data, buf);
 		if (data.srkfile) {
-			ret = add_srk(buf, data.image_dcd_offset, data.image_load_addr,
+			ret = add_srk(buf, data.image_ivt_offset, data.image_load_addr,
 				      data.srkfile);
 			if (ret)
 				exit(1);
 		}
 		break;
 	case 2:
-		if (data.image_dcd_offset + sizeof(struct imx_flash_header_v2) +
+		if (data.image_ivt_offset + sizeof(struct imx_flash_header_v2) +
 		    MAX_DCD * sizeof(u32) > HEADER_LEN) {
 			fprintf(stderr, "i.MX v2 header exceeds SW limit set by imx-image\n");
 			exit(1);
@@ -982,7 +982,7 @@ int main(int argc, char *argv[])
 		xwrite(outfd, buf, header_len);
 	} else {
 		if (add_barebox_header &&
-		    data.image_dcd_offset + data.header_gap < sizeof_bb_header) {
+		    data.image_ivt_offset + data.header_gap < sizeof_bb_header) {
 			fprintf(stderr, "barebox header conflicts with IVT\n");
 			exit(1);
 		}

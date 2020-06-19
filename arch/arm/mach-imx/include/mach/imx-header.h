@@ -94,7 +94,7 @@ static inline bool is_imx_flash_header_v2(const void *blob)
 
 struct config_data {
 	uint32_t image_load_addr;
-	uint32_t image_dcd_offset;
+	uint32_t image_ivt_offset;
 	uint32_t image_size;
 	uint32_t max_load_size;
 	uint32_t load_size;

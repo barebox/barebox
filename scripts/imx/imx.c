@@ -211,12 +211,12 @@ static int do_loadaddr(struct config_data *data, int argc, char *argv[])
 	return 0;
 }
 
-static int do_dcd_offset(struct config_data *data, int argc, char *argv[])
+static int do_ivt_offset(struct config_data *data, int argc, char *argv[])
 {
 	if (argc < 2)
 		return -EINVAL;
 
-	data->image_dcd_offset = strtoul(argv[1], NULL, 0);
+	data->image_ivt_offset = strtoul(argv[1], NULL, 0);
 
 	return 0;
 }
@@ -334,7 +334,7 @@ static int do_hab_blocks(struct config_data *data, int argc, char *argv[])
 	char *str;
 	int ret;
 	uint32_t signed_size = data->load_size;
-	uint32_t offset = data->image_dcd_offset;
+	uint32_t offset = data->image_ivt_offset;
 
 	if (!data->csf)
 		return -EINVAL;
@@ -358,8 +358,8 @@ static int do_hab_blocks(struct config_data *data, int argc, char *argv[])
 
 	if (signed_size > 0) {
 		ret = asprintf(&str, "Blocks = 0x%08x 0x%08x 0x%08x \"%s\"\n",
-			data->image_load_addr + data->image_dcd_offset, offset,
-			signed_size - data->image_dcd_offset, data->outfile);
+			data->image_load_addr + data->image_ivt_offset, offset,
+			signed_size - data->image_ivt_offset, data->outfile);
 	} else {
 		fprintf(stderr, "Invalid signed size area 0x%08x\n",
 			signed_size);
@@ -586,7 +586,7 @@ struct command cmds[] = {
 		.parse = do_loadaddr,
 	}, {
 		.name = "dcdofs",
-		.parse = do_dcd_offset,
+		.parse = do_ivt_offset,
 	}, {
 		.name = "soc",
 		.parse = do_soc,

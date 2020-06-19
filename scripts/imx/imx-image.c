@@ -984,6 +984,12 @@ int main(int argc, char *argv[])
 		       header_len - sizeof_bb_header);
 		xwrite(outfd, buf, header_len);
 	} else {
+		if (add_barebox_header &&
+		    data.image_dcd_offset + data.header_gap < sizeof_bb_header) {
+			fprintf(stderr, "barebox header conflicts with IVT\n");
+			exit(1);
+		}
+
 		xwrite(outfd, add_barebox_header ? bb_header : buf,
 		       sizeof_bb_header);
 

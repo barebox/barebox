@@ -77,7 +77,7 @@ static int esdhc_read_blocks(struct fsl_esdhc_host *host, void *dst, size_t len)
 #ifdef CONFIG_ARCH_IMX
 static int esdhc_search_header(struct fsl_esdhc_host *host,
 			       struct imx_flash_header_v2 **header_pointer,
-			       void *buffer, u32 *offset)
+			       void *buffer, u32 *offset, u32 ivt_offset)
 {
 	int ret;
 	int i, header_count = 1;
@@ -86,11 +86,11 @@ static int esdhc_search_header(struct fsl_esdhc_host *host,
 
 	for (i = 0; i < header_count; i++) {
 		ret = esdhc_read_blocks(host, buf,
-					*offset + SZ_1K + SECTOR_SIZE);
+					*offset + ivt_offset + SECTOR_SIZE);
 		if (ret)
 			return ret;
 
-		hdr = buf + *offset + SZ_1K;
+		hdr = buf + *offset + ivt_offset;
 
 		if (!is_imx_flash_header_v2(hdr)) {
 			pr_debug("IVT header not found on SD card. "
@@ -123,7 +123,7 @@ static int esdhc_search_header(struct fsl_esdhc_host *host,
 
 static int
 esdhc_load_image(struct fsl_esdhc_host *host, ptrdiff_t address,
-		 ptrdiff_t entry, u32 offset, bool start)
+		 ptrdiff_t entry, u32 offset, u32 ivt_offset, bool start)
 {
 
 	void *buf = (void *)address;
@@ -135,7 +135,7 @@ esdhc_load_image(struct fsl_esdhc_host *host, ptrdiff_t address,
 	len = imx_image_size();
 	len = ALIGN(len, SECTOR_SIZE);
 
-	ret = esdhc_search_header(host, &hdr, buf, &offset);
+	ret = esdhc_search_header(host, &hdr, buf, &offset, ivt_offset);
 	if (ret)
 		return ret;
 
@@ -262,7 +262,7 @@ int imx6_esdhc_start_image(int instance)
 
 	imx_esdhc_init(&host, &data);
 
-	return esdhc_load_image(&host, 0x10000000, 0x10000000, 0, true);
+	return esdhc_load_image(&host, 0x10000000, 0x10000000, 0, SZ_1K, true);
 }
 
 /**
@@ -289,7 +289,35 @@ int imx8m_esdhc_load_image(int instance, bool start)
 		return ret;
 
 	return esdhc_load_image(&host, MX8M_DDR_CSD1_BASE_ADDR,
-				MX8MQ_ATF_BL33_BASE_ADDR, SZ_32K, start);
+				MX8MQ_ATF_BL33_BASE_ADDR, SZ_32K, SZ_1K,
+				start);
+}
+
+/**
+ * imx8mp_esdhc_load_image - Load and optionally start an image from USDHC controller
+ * @instance: The USDHC controller instance (0..2)
+ * @start: Whether to directly start the loaded image
+ *
+ * This uses esdhc_start_image() to load an image from SD/MMC.  It is
+ * assumed that the image is the currently running barebox image (This
+ * information is used to calculate the length of the image). The
+ * image is started afterwards.
+ *
+ * Return: If successful, this function does not return (if directly started)
+ * or 0. A negative error code is returned when this function fails.
+ */
+int imx8mp_esdhc_load_image(int instance, bool start)
+{
+	struct esdhc_soc_data data;
+	struct fsl_esdhc_host host;
+	int ret;
+
+	ret = imx8m_esdhc_init(&host, &data, instance);
+	if (ret)
+		return ret;
+
+	return esdhc_load_image(&host, MX8M_DDR_CSD1_BASE_ADDR,
+				MX8MQ_ATF_BL33_BASE_ADDR, SZ_32K, 0, start);
 }
 #endif
 

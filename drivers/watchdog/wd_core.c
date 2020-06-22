@@ -45,6 +45,9 @@ int watchdog_set_timeout(struct watchdog *wd, unsigned timeout)
 	if (timeout > wd->timeout_max)
 		return -EINVAL;
 
+	if (watchdog_hw_running(wd) == false)
+		return 0;
+
 	pr_debug("setting timeout on %s to %ds\n", watchdog_name(wd), timeout);
 
 	ret = wd->set_timeout(wd, timeout);

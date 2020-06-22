@@ -276,3 +276,30 @@ struct watchdog *watchdog_get_by_name(const char *name)
 	return NULL;
 }
 EXPORT_SYMBOL(watchdog_get_by_name);
+
+int watchdog_inhibit_all(void)
+{
+	struct watchdog *wd;
+	int ret = 0;
+
+	list_for_each_entry(wd, &watchdog_list, list) {
+		int err;
+		if (!wd->priority || watchdog_hw_running(wd) == false)
+			continue;
+
+		err = watchdog_set_timeout(wd, 0);
+		if (!err)
+			continue;
+
+		if (err != -ENOSYS || !IS_ENABLED(CONFIG_WATCHDOG_POLLER)) {
+			ret = err;
+			continue;
+		}
+
+		wd->poller_enable = true;
+		watchdog_poller_start(wd);
+	}
+
+	return ret;
+}
+EXPORT_SYMBOL(watchdog_inhibit_all);

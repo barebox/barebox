@@ -43,6 +43,7 @@
 #include <console_countdown.h>
 #include <environment.h>
 #include <linux/ctype.h>
+#include <watchdog.h>
 
 extern initcall_t __barebox_initcalls_start[], __barebox_early_initcalls_end[],
 		  __barebox_initcalls_end[];
@@ -350,6 +351,9 @@ static int run_init(void)
 
 	if (autoboot == AUTOBOOT_MENU)
 		run_command(MENUFILE);
+
+	if (autoboot == AUTOBOOT_ABORT && autoboot == global_autoboot_state)
+		watchdog_inhibit_all();
 
 	run_shell();
 	run_command(MENUFILE);

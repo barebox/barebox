@@ -384,16 +384,21 @@ static enum filetype imx_bbu_expected_filetype(void)
 
 static unsigned long imx_bbu_flash_header_offset_mmc(void)
 {
-	unsigned long offset = SZ_1K;
+	/*
+	 * i.MX8MQ moved the header by 32K to accomodate for GPT partition
+	 * tables. The offset to the IVT is 1KiB.
+	 */
+	if (cpu_is_mx8mm() || cpu_is_mx8mq())
+		return SZ_32K + SZ_1K;
 
 	/*
-	 * i.MX8MQ moved the header by 32K to accomodate for GPT
-	 * partition tables
+	 * i.MX8MP moved the header by 32K to accomodate for GPT partition
+	 * tables, but the IVT is right at the beginning of the image.
 	 */
-	if (cpu_is_mx8m())
-		offset += SZ_32K;
+	if (cpu_is_mx8mp())
+		return SZ_32K;
 
-	return offset;
+	return SZ_1K;
 }
 
 static int imx_bbu_update(struct bbu_handler *handler, struct bbu_data *data)

@@ -7,13 +7,41 @@
 #include <init.h>
 #include <io.h>
 #include <restart.h>
+#include <linux/bitfield.h>
 #include <linux/clk.h>
 #include <mach/at91_rstc.h>
+#include <reset_source.h>
 
 struct at91sam9x_rst {
 	struct restart_handler restart;
 	void __iomem *base;
 };
+
+static int reasons[] = {
+	RESET_POR, /* GENERAL  Both VDDCORE and VDDBU rising */
+	RESET_WKE, /* WAKEUP   VDDCORE rising */
+	RESET_WDG, /* WATCHDOG Watchdog fault occurred */
+	RESET_RST, /* SOFTWARE Reset required by the software */
+	RESET_EXT, /* USER     NRST pin detected low */
+};
+
+static void at91sam9x_set_reset_reason(struct device_d *dev,
+				       void __iomem *base)
+{
+	enum reset_src_type type = RESET_UKWN;
+	u32 sr, rsttyp;
+
+	sr = readl(base + AT91_RSTC_SR);
+	rsttyp = FIELD_GET(AT91_RSTC_RSTTYP, sr);
+
+	if (rsttyp < ARRAY_SIZE(reasons))
+		type = reasons[rsttyp];
+
+	dev_info(dev, "reset reason %s (RSTC_SR: 0x%05x)\n",
+		reset_source_to_string(type), sr);
+
+	reset_source_set(type);
+}
 
 static void __noreturn at91sam9x_restart_soc(struct restart_handler *rst)
 {
@@ -51,6 +79,8 @@ static int at91sam9x_rst_probe(struct device_d *dev)
 	}
 
 	clk_enable(clk);
+
+	at91sam9x_set_reset_reason(dev, priv->base);
 
 	priv->restart.name = "at91sam9x-rst";
 	priv->restart.restart = at91sam9x_restart_soc;

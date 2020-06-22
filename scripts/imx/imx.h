@@ -4,7 +4,14 @@
 
 static inline int cpu_is_mx8m(const struct config_data *data)
 {
-	return data->cpu_type == IMX_CPU_IMX8MQ || data->cpu_type == IMX_CPU_IMX8MM;
+	switch (data->cpu_type) {
+	case IMX_CPU_IMX8MQ:
+	case IMX_CPU_IMX8MM:
+	case IMX_CPU_IMX8MP:
+		return true;
+	default:
+		return false;
+	}
 }
 
 int parse_config(struct config_data *data, const char *filename);

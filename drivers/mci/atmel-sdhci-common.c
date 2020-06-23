@@ -12,6 +12,13 @@
 #include <common.h>
 #include <mci.h>
 
+#ifdef __PBL__
+#undef  dev_err
+#define dev_err(d, ...)		pr_err(__VA_ARGS__)
+#undef  dev_warn
+#define dev_warn(d, ...)	pr_warn(__VA_ARGS__)
+#endif
+
 #include "atmel-sdhci.h"
 
 #define AT91_SDHCI_CA1R		0x44	/* Capabilities 1 Register */
@@ -91,7 +98,7 @@ static int at91_sdhci_wait_for_done(struct at91_sdhci *host, u32 mask)
 					USEC_PER_SEC);
 
 	if (ret < 0) {
-		pr_err("SDHCI timeout while waiting for done\n");
+		dev_err(host->dev, "SDHCI timeout while waiting for done\n");
 		return ret;
 	}
 
@@ -99,7 +106,7 @@ static int at91_sdhci_wait_for_done(struct at91_sdhci *host, u32 mask)
 		return -ETIMEDOUT;
 
 	if (status & SDHCI_INT_ERROR) {
-		pr_err("SDHCI_INT_STATUS: 0x%08x\n", status);
+		dev_err(host->dev, "SDHCI_INT_STATUS: 0x%08x\n", status);
 		return -EPERM;
 	}
 
@@ -123,7 +130,7 @@ int at91_sdhci_send_command(struct at91_sdhci *host, struct mci_cmd *cmd,
 	ret = sdhci_read32_poll_timeout(sdhci, SDHCI_PRESENT_STATE, state,
 					!(state & mask), 100 * USEC_PER_MSEC);
 	if (ret) {
-		pr_err("timeout while waiting for idle\n");
+		dev_err(host->dev, "timeout while waiting for idle\n");
 		return ret;
 	}
 
@@ -218,7 +225,7 @@ static int at91_sdhci_set_clock(struct at91_sdhci *host, unsigned clock)
 					!(reg & present_mask),
 					100 * USEC_PER_MSEC);
 	if (ret) {
-		pr_warn("Timeout waiting for CMD and DAT Inhibit bits\n");
+		dev_warn(host->dev, "Timeout waiting for CMD and DAT Inhibit bits\n");
 		return ret;
 	}
 
@@ -262,7 +269,7 @@ static int at91_sdhci_set_clock(struct at91_sdhci *host, unsigned clock)
 					clk & SDHCI_INTCLOCK_STABLE,
 					20 * USEC_PER_MSEC);
 	if (ret) {
-		pr_warn("Timeout waiting for clock stable\n");
+		dev_warn(host->dev, "Timeout waiting for clock stable\n");
 		return ret;
 	}
 

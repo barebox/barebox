@@ -8,7 +8,7 @@
 soc imx50
 loadaddr 0x70020000
 
-dcdofs 0x400
+ivtofs 0x400
 
 # Switch pll1_sw_clk to step_clk
 wm 32 0x53fd400c 0x00000004

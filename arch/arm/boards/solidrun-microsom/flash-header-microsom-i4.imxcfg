@@ -1,6 +1,6 @@
 loadaddr 0x10000000
 soc imx6
-dcdofs 0x400
+ivtofs 0x400
 
 #include <mach/imx6-ddr-regs.h>
 #include <mach/imx6q-ddr-regs.h>

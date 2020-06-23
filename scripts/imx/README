@@ -22,7 +22,7 @@ end up at 0x80001000 from where it is then executed.
 Example config file, suitable for an Eukra cpuimx35:
 
 soc imx35
-dcdofs 0x400
+ivtofs 0x400
 loadaddr 0x80000000
 wm 32 0x53F80004 0x00821000
 wm 32 0x53F80004 0x00821000

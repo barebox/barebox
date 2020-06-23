@@ -1,6 +1,6 @@
 soc vf610
 loadaddr 0x80000000
-dcdofs 0x400
+ivtofs 0x400
 
 #include <mach/vf610-iomux-regs.h>
 #include <mach/vf610-ddrmc-regs.h>

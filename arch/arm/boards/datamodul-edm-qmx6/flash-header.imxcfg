@@ -1,3 +1,3 @@
 soc imx6
 loadaddr 0x00907000
-dcdofs 0x400
+ivtofs 0x400

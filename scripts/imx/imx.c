@@ -585,7 +585,7 @@ struct command cmds[] = {
 		.name = "loadaddr",
 		.parse = do_loadaddr,
 	}, {
-		.name = "dcdofs",
+		.name = "ivtofs",
 		.parse = do_ivt_offset,
 	}, {
 		.name = "soc",

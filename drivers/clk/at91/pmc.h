@@ -219,10 +219,4 @@ static inline void pmc_register_id(u8 id) {}
 static inline void pmc_register_pck(u8 pck) {}
 #endif
 
-/* FIXME: can be dropped after v5.8-rc1 dts/include/dt-bindings sync */
-#define PMC_TYPE_PROGRAMMABLE	4
-#define PMC_PLLACK		7
-#define PMC_PLLBCK		8
-#define PMC_AUDIOPLLCK		9
-
 #endif /* __PMC_H_ */

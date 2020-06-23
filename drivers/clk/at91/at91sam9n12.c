@@ -11,6 +11,7 @@
 
 #include <dt-bindings/clock/at91.h>
 
+
 #include "pmc.h"
 
 static const struct clk_master_characteristics mck_characteristics = {
@@ -42,20 +43,33 @@ static const struct clk_pll_characteristics plla_characteristics = {
 	.out = plla_out,
 };
 
+static u8 pllb_out[] = { 0 };
+
+static const struct clk_range pllb_outputs[] = {
+	{ .min = 30000000, .max = 100000000 },
+};
+
+static const struct clk_pll_characteristics pllb_characteristics = {
+	.input = { .min = 2000000, .max = 32000000 },
+	.num_output = ARRAY_SIZE(pllb_outputs),
+	.output = pllb_outputs,
+	.out = pllb_out,
+};
+
 static const struct {
 	char *n;
 	char *p;
 	u8 id;
-} at91sam9x5_systemck[] = {
+} at91sam9n12_systemck[] = {
 	{ .n = "ddrck", .p = "masterck", .id = 2 },
-	{ .n = "smdck", .p = "smdclk",   .id = 4 },
+	{ .n = "lcdck", .p = "masterck", .id = 3 },
 	{ .n = "uhpck", .p = "usbck",    .id = 6 },
 	{ .n = "udpck", .p = "usbck",    .id = 7 },
 	{ .n = "pck0",  .p = "prog0",    .id = 8 },
 	{ .n = "pck1",  .p = "prog1",    .id = 9 },
 };
 
-static const struct clk_pcr_layout at91sam9x5_pcr_layout = {
+static const struct clk_pcr_layout at91sam9n12_pcr_layout = {
 	.offset = 0x10c,
 	.cmd = BIT(12),
 	.pid_mask = GENMASK(5, 0),
@@ -67,74 +81,39 @@ struct pck {
 	u8 id;
 };
 
-static const struct pck at91sam9x5_periphck[] = {
+static const struct pck at91sam9n12_periphck[] = {
 	{ .n = "pioAB_clk",  .id = 2, },
 	{ .n = "pioCD_clk",  .id = 3, },
-	{ .n = "smd_clk",    .id = 4, },
+	{ .n = "fuse_clk",   .id = 4, },
 	{ .n = "usart0_clk", .id = 5, },
 	{ .n = "usart1_clk", .id = 6, },
 	{ .n = "usart2_clk", .id = 7, },
+	{ .n = "usart3_clk", .id = 8, },
 	{ .n = "twi0_clk",   .id = 9, },
 	{ .n = "twi1_clk",   .id = 10, },
-	{ .n = "twi2_clk",   .id = 11, },
 	{ .n = "mci0_clk",   .id = 12, },
 	{ .n = "spi0_clk",   .id = 13, },
 	{ .n = "spi1_clk",   .id = 14, },
 	{ .n = "uart0_clk",  .id = 15, },
 	{ .n = "uart1_clk",  .id = 16, },
-	{ .n = "tcb0_clk",   .id = 17, },
+	{ .n = "tcb_clk",    .id = 17, },
 	{ .n = "pwm_clk",    .id = 18, },
 	{ .n = "adc_clk",    .id = 19, },
 	{ .n = "dma0_clk",   .id = 20, },
-	{ .n = "dma1_clk",   .id = 21, },
 	{ .n = "uhphs_clk",  .id = 22, },
 	{ .n = "udphs_clk",  .id = 23, },
-	{ .n = "mci1_clk",   .id = 26, },
+	{ .n = "lcdc_clk",   .id = 25, },
+	{ .n = "sha_clk",    .id = 27, },
 	{ .n = "ssc0_clk",   .id = 28, },
+	{ .n = "aes_clk",    .id = 29, },
+	{ .n = "trng_clk",   .id = 30, },
 };
 
-static const struct pck at91sam9g15_periphck[] = {
-	{ .n = "lcdc_clk", .id = 25, },
-	{ /* sentinel */}
-};
-
-static const struct pck at91sam9g25_periphck[] = {
-	{ .n = "usart3_clk", .id = 8, },
-	{ .n = "macb0_clk", .id = 24, },
-	{ .n = "isi_clk", .id = 25, },
-	{ /* sentinel */}
-};
-
-static const struct pck at91sam9g35_periphck[] = {
-	{ .n = "macb0_clk", .id = 24, },
-	{ .n = "lcdc_clk", .id = 25, },
-	{ /* sentinel */}
-};
-
-static const struct pck at91sam9x25_periphck[] = {
-	{ .n = "usart3_clk", .id = 8, },
-	{ .n = "macb0_clk", .id = 24, },
-	{ .n = "macb1_clk", .id = 27, },
-	{ .n = "can0_clk", .id = 29, },
-	{ .n = "can1_clk", .id = 30, },
-	{ /* sentinel */}
-};
-
-static const struct pck at91sam9x35_periphck[] = {
-	{ .n = "macb0_clk", .id = 24, },
-	{ .n = "lcdc_clk", .id = 25, },
-	{ .n = "can0_clk", .id = 29, },
-	{ .n = "can1_clk", .id = 30, },
-	{ /* sentinel */}
-};
-
-static void __init at91sam9x5_pmc_setup(struct device_node *np,
-					const struct pck *extra_pcks,
-					bool has_lcdck)
+static void __init at91sam9n12_pmc_setup(struct device_node *np)
 {
 	struct clk_range range = CLK_RANGE(0, 0);
 	const char *slck_name, *mainxtal_name;
-	struct pmc_data *at91sam9x5_pmc;
+	struct pmc_data *at91sam9n12_pmc;
 	const char *parent_names[6];
 	struct regmap *regmap;
 	struct clk *hw;
@@ -156,9 +135,9 @@ static void __init at91sam9x5_pmc_setup(struct device_node *np,
 	if (IS_ERR(regmap))
 		return;
 
-	at91sam9x5_pmc = pmc_data_allocate(PMC_PLLACK + 1,
-					   nck(at91sam9x5_systemck), 31, 0, 2);
-	if (!at91sam9x5_pmc)
+	at91sam9n12_pmc = pmc_data_allocate(PMC_PLLBCK + 1,
+					   nck(at91sam9n12_systemck), 31, 0, 2);
+	if (!at91sam9n12_pmc)
 		return;
 
 	hw = at91_clk_register_main_rc_osc(regmap, "main_rc_osc", 12000000,
@@ -179,7 +158,7 @@ static void __init at91sam9x5_pmc_setup(struct device_node *np,
 	if (IS_ERR(hw))
 		goto err_free;
 
-	at91sam9x5_pmc->chws[PMC_MAIN] = hw;
+	at91sam9n12_pmc->chws[PMC_MAIN] = hw;
 
 	hw = at91_clk_register_pll(regmap, "pllack", "mainck", 0,
 				   &at91rm9200_pll_layout, &plla_characteristics);
@@ -190,45 +169,38 @@ static void __init at91sam9x5_pmc_setup(struct device_node *np,
 	if (IS_ERR(hw))
 		goto err_free;
 
-	at91sam9x5_pmc->chws[PMC_PLLACK] = hw;
+	at91sam9n12_pmc->chws[PMC_PLLACK] = hw;
 
-	hw = at91_clk_register_utmi(regmap, NULL, "utmick", "mainck");
+	hw = at91_clk_register_pll(regmap, "pllbck", "mainck", 1,
+				   &at91rm9200_pll_layout, &pllb_characteristics);
 	if (IS_ERR(hw))
 		goto err_free;
 
-	at91sam9x5_pmc->chws[PMC_UTMI] = hw;
+	at91sam9n12_pmc->chws[PMC_PLLBCK] = hw;
 
 	parent_names[0] = slck_name;
 	parent_names[1] = "mainck";
 	parent_names[2] = "plladivck";
-	parent_names[3] = "utmick";
+	parent_names[3] = "pllbck";
 	hw = at91_clk_register_master(regmap, "masterck", 4, parent_names,
 				      &at91sam9x5_master_layout,
 				      &mck_characteristics);
 	if (IS_ERR(hw))
 		goto err_free;
 
-	at91sam9x5_pmc->chws[PMC_MCK] = hw;
+	at91sam9n12_pmc->chws[PMC_MCK] = hw;
 
-	parent_names[0] = "plladivck";
-	parent_names[1] = "utmick";
-	hw = at91sam9x5_clk_register_usb(regmap, "usbck", parent_names, 2);
-	if (IS_ERR(hw))
-		goto err_free;
-
-	hw = at91sam9x5_clk_register_smd(regmap, "smdclk", parent_names, 2);
+	hw = at91sam9n12_clk_register_usb(regmap, "usbck", "pllbck");
 	if (IS_ERR(hw))
 		goto err_free;
 
 	parent_names[0] = slck_name;
 	parent_names[1] = "mainck";
 	parent_names[2] = "plladivck";
-	parent_names[3] = "utmick";
+	parent_names[3] = "pllbck";
 	parent_names[4] = "masterck";
 	for (i = 0; i < 2; i++) {
-		char *name;
-
-		name = xasprintf("prog%d", i);
+		char *name = xasprintf("prog%d", i);
 
 		hw = at91_clk_register_programmable(regmap, name,
 						    parent_names, 5, i,
@@ -236,92 +208,42 @@ static void __init at91sam9x5_pmc_setup(struct device_node *np,
 		if (IS_ERR(hw))
 			goto err_free;
 
-		at91sam9x5_pmc->pchws[i] = hw;
+		at91sam9n12_pmc->pchws[i] = hw;
 	}
 
-	for (i = 0; i < ARRAY_SIZE(at91sam9x5_systemck); i++) {
-		hw = at91_clk_register_system(regmap, at91sam9x5_systemck[i].n,
-					      at91sam9x5_systemck[i].p,
-					      at91sam9x5_systemck[i].id);
+	for (i = 0; i < ARRAY_SIZE(at91sam9n12_systemck); i++) {
+		hw = at91_clk_register_system(regmap, at91sam9n12_systemck[i].n,
+					      at91sam9n12_systemck[i].p,
+					      at91sam9n12_systemck[i].id);
 		if (IS_ERR(hw))
 			goto err_free;
 
-		at91sam9x5_pmc->shws[at91sam9x5_systemck[i].id] = hw;
+		at91sam9n12_pmc->shws[at91sam9n12_systemck[i].id] = hw;
 	}
 
-	if (has_lcdck) {
-		hw = at91_clk_register_system(regmap, "lcdck", "masterck", 3);
-		if (IS_ERR(hw))
-			goto err_free;
-
-		at91sam9x5_pmc->shws[3] = hw;
-	}
-
-	for (i = 0; i < ARRAY_SIZE(at91sam9x5_periphck); i++) {
+	for (i = 0; i < ARRAY_SIZE(at91sam9n12_periphck); i++) {
 		hw = at91_clk_register_sam9x5_peripheral(regmap,
-							 &at91sam9x5_pcr_layout,
-							 at91sam9x5_periphck[i].n,
+							 &at91sam9n12_pcr_layout,
+							 at91sam9n12_periphck[i].n,
 							 "masterck",
-							 at91sam9x5_periphck[i].id,
+							 at91sam9n12_periphck[i].id,
 							 &range);
 		if (IS_ERR(hw))
 			goto err_free;
 
-		at91sam9x5_pmc->phws[at91sam9x5_periphck[i].id] = hw;
+		at91sam9n12_pmc->phws[at91sam9n12_periphck[i].id] = hw;
 	}
 
-	for (i = 0; extra_pcks[i].id; i++) {
-		hw = at91_clk_register_sam9x5_peripheral(regmap,
-							 &at91sam9x5_pcr_layout,
-							 extra_pcks[i].n,
-							 "masterck",
-							 extra_pcks[i].id,
-							 &range);
-		if (IS_ERR(hw))
-			goto err_free;
-
-		at91sam9x5_pmc->phws[extra_pcks[i].id] = hw;
-	}
-
-	of_clk_add_provider(np, of_clk_hw_pmc_get, at91sam9x5_pmc);
+	of_clk_add_provider(np, of_clk_hw_pmc_get, at91sam9n12_pmc);
 
 	return;
 
 err_free:
-	kfree(at91sam9x5_pmc);
+	kfree(at91sam9n12_pmc);
 }
-
-static void __init at91sam9g15_pmc_setup(struct device_node *np)
-{
-	at91sam9x5_pmc_setup(np, at91sam9g15_periphck, true);
-}
-CLK_OF_DECLARE_DRIVER(at91sam9g15_pmc, "atmel,at91sam9g15-pmc",
-		      at91sam9g15_pmc_setup);
-
-static void __init at91sam9g25_pmc_setup(struct device_node *np)
-{
-	at91sam9x5_pmc_setup(np, at91sam9g25_periphck, false);
-}
-CLK_OF_DECLARE_DRIVER(at91sam9g25_pmc, "atmel,at91sam9g25-pmc",
-		      at91sam9g25_pmc_setup);
-
-static void __init at91sam9g35_pmc_setup(struct device_node *np)
-{
-	at91sam9x5_pmc_setup(np, at91sam9g35_periphck, true);
-}
-CLK_OF_DECLARE_DRIVER(at91sam9g35_pmc, "atmel,at91sam9g35-pmc",
-		      at91sam9g35_pmc_setup);
-
-static void __init at91sam9x25_pmc_setup(struct device_node *np)
-{
-	at91sam9x5_pmc_setup(np, at91sam9x25_periphck, false);
-}
-CLK_OF_DECLARE_DRIVER(at91sam9x25_pmc, "atmel,at91sam9x25-pmc",
-		      at91sam9x25_pmc_setup);
-
-static void __init at91sam9x35_pmc_setup(struct device_node *np)
-{
-	at91sam9x5_pmc_setup(np, at91sam9x35_periphck, true);
-}
-CLK_OF_DECLARE_DRIVER(at91sam9x35_pmc, "atmel,at91sam9x35-pmc",
-		      at91sam9x35_pmc_setup);
+/*
+ * The TCB is used as the clocksource so its clock is needed early. This means
+ * this can't be a platform driver.
+ */
+CLK_OF_DECLARE_DRIVER(at91sam9n12_pmc, "atmel,at91sam9n12-pmc",
+		      at91sam9n12_pmc_setup);

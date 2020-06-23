@@ -30,6 +30,6 @@ lds-y += arch/kvx/cpu/barebox.lds
 
 cmd_barebox__ ?= $(LD) $(KBUILD_LDFLAGS) $(LDFLAGS_barebox) -o $@ \
       -T $(BAREBOX_LDS) \
-      --whole-archive $(BAREBOX_OBJS) --no-while-archive \
+      --whole-archive $(BAREBOX_OBJS) --no-whole-archive \
       -L$(LIBGCC_PATH) -lgcc \
       $(filter-out $(BAREBOX_LDS) $(BAREBOX_OBJS) FORCE ,$^)

@@ -84,10 +84,7 @@ int serdev_device_open(struct serdev_device *serdev)
 	p = dev_add_param_uint64(serdev->dev, "polling_interval",
 				 serdev_device_set_polling_interval, NULL,
 				 &serdev->polling_interval, "%llu", serdev);
-	if (IS_ERR(p))
-		return PTR_ERR(p);
-
-	return 0;
+	return PTR_ERR_OR_ZERO(p);
 }
 
 unsigned int serdev_device_set_baudrate(struct serdev_device *serdev,

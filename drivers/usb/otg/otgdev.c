@@ -62,8 +62,5 @@ int usb_register_otg_device(struct device_d *parent,
 	param_mode = dev_add_param_enum(&otg_device, "mode",
 			otg_set_mode, NULL, &otg_mode,
 			otg_mode_names, ARRAY_SIZE(otg_mode_names), ctx);
-	if (IS_ERR(param_mode))
-		return PTR_ERR(param_mode);
-
-	return 0;
+	return PTR_ERR_OR_ZERO(param_mode);
 }

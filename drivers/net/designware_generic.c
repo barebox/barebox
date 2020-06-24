@@ -21,10 +21,7 @@ static int dwc_ether_probe(struct device_d *dev)
 	struct dw_eth_dev *dwc;
 
 	dwc = dwc_drv_probe(dev);
-	if (IS_ERR(dwc))
-		return PTR_ERR(dwc);
-
-	return 0;
+	return PTR_ERR_OR_ZERO(dwc);
 }
 
 static __maybe_unused struct of_device_id dwc_ether_compatible[] = {

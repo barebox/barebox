@@ -787,10 +787,7 @@ static int rave_sp_add_params(struct rave_sp *sp)
 
 	p = dev_add_param_ip(dev, "netmask", NULL, rave_sp_req_ip_addr,
 			     &sp->netmask, sp);
-	if (IS_ERR(p))
-		return PTR_ERR(p);
-
-	return 0;
+	return PTR_ERR_OR_ZERO(p);
 }
 
 static int rave_sp_probe(struct device_d *dev)

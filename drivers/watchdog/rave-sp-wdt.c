@@ -299,10 +299,7 @@ static int rave_sp_wdt_add_params(struct rave_sp_wdt *sp_wd)
 			      rave_sp_wdt_set_boot_source,
 			      rave_sp_wdt_get_boot_source,
 			      &sp_wd->boot_source, "%u", sp_wd);
-	if (IS_ERR(p))
-		return PTR_ERR(p);
-
-	return 0;
+	return PTR_ERR_OR_ZERO(p);
 }
 
 static int rave_sp_wdt_probe(struct device_d *dev)

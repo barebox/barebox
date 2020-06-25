@@ -235,13 +235,16 @@ void set_autoboot_state(enum autoboot_state autoboot)
  */
 enum autoboot_state do_autoboot_countdown(void)
 {
-	enum autoboot_state autoboot_state;
+	static enum autoboot_state autoboot_state = AUTOBOOT_UNKNOWN;
 	unsigned flags = CONSOLE_COUNTDOWN_EXTERN;
 	int ret;
 	struct stat s;
 	bool menu_exists;
 	char *abortkeys = NULL;
 	unsigned char outkey;
+
+	if (autoboot_state != AUTOBOOT_UNKNOWN)
+		return autoboot_state;
 
 	if (global_autoboot_state != AUTOBOOT_COUNTDOWN)
 		return global_autoboot_state;

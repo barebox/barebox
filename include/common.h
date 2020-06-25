@@ -88,6 +88,7 @@ enum autoboot_state {
 	AUTOBOOT_ABORT,
 	AUTOBOOT_MENU,
 	AUTOBOOT_BOOT,
+	AUTOBOOT_UNKNOWN,
 };
 
 void set_autoboot_state(enum autoboot_state autoboot);

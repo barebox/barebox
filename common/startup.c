@@ -281,19 +281,8 @@ enum autoboot_state do_autoboot_countdown(void)
 	return autoboot_state;
 }
 
-static int run_init(void)
+static int register_autoboot_vars(void)
 {
-	DIR *dir;
-	struct dirent *d;
-	const char *initdir = "/env/init";
-	bool env_bin_init_exists;
-	enum autoboot_state autoboot;
-	struct stat s;
-
-	/*
-	 * Register autoboot variables here as they might be altered by
-	 * init scripts.
-	 */
 	globalvar_add_simple_enum("autoboot_abort_key",
 				  &global_autoboot_abort_key,
                                   global_autoboot_abort_keys,
@@ -304,6 +293,19 @@ static int run_init(void)
 				  &global_autoboot_state,
 				  global_autoboot_states,
 				  ARRAY_SIZE(global_autoboot_states));
+
+	return 0;
+}
+postcore_initcall(register_autoboot_vars);
+
+static int run_init(void)
+{
+	DIR *dir;
+	struct dirent *d;
+	const char *initdir = "/env/init";
+	bool env_bin_init_exists;
+	enum autoboot_state autoboot;
+	struct stat s;
 
 	setenv("PATH", "/env/bin");
 

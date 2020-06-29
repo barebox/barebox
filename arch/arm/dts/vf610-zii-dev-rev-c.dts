@@ -17,6 +17,8 @@
 		 */
 		switch0-eeprom = &switch0;
 		switch1-eeprom = &switch1;
+		fiber-eeprom0 = &fiber_eeprom0;
+		fiber-eeprom1 = &fiber_eeprom1;
 	};
 };
 
@@ -30,4 +32,20 @@
 			reg = <0x0 0x100000>;
 		};
 	};
+};
+
+&sff2_i2c {
+       fiber_eeprom0: eeprom@50 {
+               compatible = "atmel,24c04";
+               reg = <0x50>;
+               label = "fiber0";
+       };
+};
+
+&sff3_i2c {
+       fiber_eeprom1: eeprom@50 {
+               compatible = "atmel,24c04";
+               reg = <0x50>;
+               label = "fiber1";
+       };
 };

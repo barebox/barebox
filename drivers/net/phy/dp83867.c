@@ -18,9 +18,10 @@
 #include <linux/phy.h>
 
 #include <dt-bindings/net/ti-dp83867.h>
+#include <linux/mdio.h>
 
 #define DP83867_PHY_ID		0x2000a231
-#define DP83867_DEVADDR		0x1f
+#define DP83867_DEVADDR		MDIO_MMD_VEND2
 
 #define MII_DP83867_PHYCTRL	0x10
 #define MII_DP83867_MICR	0x12

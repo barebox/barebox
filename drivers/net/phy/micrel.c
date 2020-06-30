@@ -17,6 +17,7 @@
 #include <linux/mii.h>
 #include <linux/ethtool.h>
 #include <linux/phy.h>
+#include <linux/mdio.h>
 #include <linux/micrel_phy.h>
 #include <linux/bitfield.h>
 
@@ -221,7 +222,7 @@ static int ksz9031_of_load_skew_values(struct phy_device *phydev,
 		return 0;
 
 	if (matches < numfields)
-		newval = phy_read_mmd_indirect(phydev, reg, 2);
+		newval = phy_read_mmd_indirect(phydev, reg, MDIO_MMD_WIS);
 	else
 		newval = 0;
 
@@ -235,7 +236,7 @@ static int ksz9031_of_load_skew_values(struct phy_device *phydev,
 				<< (field_sz * i));
 		}
 
-	phy_write_mmd_indirect(phydev, reg, 2, newval);
+	phy_write_mmd_indirect(phydev, reg, MDIO_MMD_WIS, newval);
 	return 0;
 }
 

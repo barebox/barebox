@@ -18,6 +18,10 @@ AS		+= -EL
 LD		+= -EL
 endif
 
+ifeq ($(CONFIG_ARM_MODULE_PLTS),y)
+LDFLAGS_MODULE   += -T $(srctree)/arch/arm/lib32/module.lds
+endif
+
 # Unaligned access is not supported when MMU is disabled, so given how
 # at least some of the code would be executed with MMU off, lets be
 # conservative and instruct the compiler not to generate any unaligned

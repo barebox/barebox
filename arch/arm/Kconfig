@@ -477,4 +477,19 @@ config ARM_PSCI_DEBUG
 	  putc function.
 	  Only use for debugging.
 
+config ARM_MODULE_PLTS
+	bool "Use PLTs to allow loading modules placed far from barebox image"
+	depends on MODULES
+	select QSORT
+	help
+	  Allocate PLTs when loading modules so that jumps and calls whose
+	  targets are too far away for their relative offsets to be encoded
+	  in the instructions themselves can be bounced via veneers in the
+	  module's PLT. The modules will use slightly more memory, but after
+	  rounding up to page size, the actual memory footprint is usually
+	  the same.
+
+	  Say y if your memory configuration puts the heap to far away from the
+	  barebox image, causing relocation out of range errors
+
 endmenu

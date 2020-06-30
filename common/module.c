@@ -176,6 +176,14 @@ static void layout_sections( struct module *mod,
 	debug("core_size: %ld\n", mod->core_size);
 }
 
+int __weak module_frob_arch_sections(Elf_Ehdr *hdr,
+				     Elf_Shdr *sechdrs,
+				     char *secstrings,
+				     struct module *mod)
+{
+	return 0;
+}
+
 static void register_module_cmds(Elf32_Shdr *sechdrs, const char *strtab, unsigned int symindex)
 {
 	Elf32_Sym *sym;
@@ -270,6 +278,12 @@ struct module * load_module(void *mod_image, unsigned long len)
 		err = -ENOEXEC;
 		goto cleanup;
 	}
+
+	/* Allow arches to frob section contents and sizes.  */
+	err = module_frob_arch_sections(ehdr, sechdrs,
+					secstrings, module);
+	if (err < 0)
+		goto cleanup;
 
 	/* Determine total sizes, and put offsets in sh_entsize.  For now
 	   this is done generically; there doesn't appear to be any

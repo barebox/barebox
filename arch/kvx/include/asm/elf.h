@@ -11,6 +11,9 @@
  */
 #include <linux/types.h>
 
+#define EM_KVX		256
+
+#define ELF_ARCH	EM_KVX
 #define ELF_CLASS	ELFCLASS32
 #define ELF_DATA	ELFDATA2MSB
 

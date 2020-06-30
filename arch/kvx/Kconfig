@@ -1,9 +1,14 @@
 config KVX
 	bool
 	select 64BIT
+	select BOOTM
+	select BOOTM_ELF
+	select BOOTM_OFTREE
+	select BOOTM_INITRD
 	select CLKDEV_LOOKUP
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
+	select ELF
 	select FLEXIBLE_BOOTARGS
 	select GENERIC_FIND_NEXT_BIT
 	select LIBFDT

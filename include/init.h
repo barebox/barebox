@@ -18,6 +18,21 @@
 typedef int (*initcall_t)(void);
 typedef void (*exitcall_t)(void);
 
+/* section for code used very early when
+ * - we're not running from where we linked at
+ * - bss not cleared
+ * - static variables not initialized
+ *
+ * Mainly useful for booting from NAND Controllers
+ */
+#define __bare_init          __section(.text_bare_init.text)
+
+#endif
+
+#ifndef MODULE
+
+#ifndef __ASSEMBLY__
+
 #define __define_initcall(level,fn,id) \
 	static initcall_t __initcall_##fn##id __attribute__((__used__)) \
 	__attribute__((__section__(".initcall." level))) = fn
@@ -58,16 +73,9 @@ typedef void (*exitcall_t)(void);
 #define archshutdown_exitcall(fn)	__define_exitcall("5",fn,5)
 #define postarchshutdown_exitcall(fn)	__define_exitcall("6",fn,6)
 
-/* section for code used very early when
- * - we're not running from where we linked at
- * - bss not cleared
- * - static variables not initialized
- *
- * Mainly useful for booting from NAND Controllers
- */
-#define __bare_init          __section(.text_bare_init.text)
+#endif /* __ASSEMBLY__ */
 
-#endif
+#endif /* MODULE */
 
 #endif /* _INIT_H */
 

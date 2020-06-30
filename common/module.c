@@ -297,13 +297,8 @@ struct module * load_module(void *mod_image, unsigned long len)
 		}
 	}
 
-	for (i = 0; i < numsyms; i++) {
-		if (!strcmp(strtab + sym[i].st_name, MODULE_SYMBOL_PREFIX "init_module")) {
-			printf("found init_module() at 0x%08x\n", sym[i].st_value);
-			module->init = (void *)sym[i].st_value;
-		}
-	}
-
+	/* Module has been moved */
+	module = (void *)sechdrs[modindex].sh_addr;
 	list_add_tail(&module->list, &module_list);
 
 	return module;
@@ -311,8 +306,6 @@ struct module * load_module(void *mod_image, unsigned long len)
 cleanup:
 	if (ptr)
 		free(ptr);
-	if (module)
-		free(module);
 
 	return NULL;
 }

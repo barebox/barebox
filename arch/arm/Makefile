@@ -139,7 +139,7 @@ LDFLAGS_barebox += --gc-sections
 LDFLAGS_pbl += --gc-sections
 
 # early code often runs at addresses we are not linked at
-KBUILD_CPPFLAGS += -fPIE
+KBUILD_CFLAGS_KERNEL += -fPIE
 
 ifdef CONFIG_RELOCATABLE
 LDFLAGS_barebox += -pie

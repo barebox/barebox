@@ -10,8 +10,6 @@
 OUTPUT_FORMAT("elf64-kvx")
 OUTPUT_ARCH("kvx:kv3-1:64")
 
-#define DTB_DEFAULT_SIZE	(24 * 1024)
-
 SECTIONS
 {
 	. = CONFIG_ARCH_TEXT_BASE;
@@ -52,13 +50,6 @@ SECTIONS
 		*(.rodata*)
 		. = ALIGN(8);
 		RO_DATA_SECTION
-	}
-
-	.dtb ALIGN(16):
-	{
-		__dtb_start = .;
-		. += DTB_DEFAULT_SIZE;
-		__dtb_end = .;
 	}
 
 	_etext = .; /* End of text and rodata section */

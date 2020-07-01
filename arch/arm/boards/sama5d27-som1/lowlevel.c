@@ -58,9 +58,11 @@ static void ek_dbgu_init(void)
 
 extern char __dtb_z_at91_sama5d27_som1_ek_start[];
 
-static noinline void som1_entry(void)
+ENTRY_FUNCTION(start_sama5d27_som1_ek, r0, r1, r2)
 {
 	void *fdt;
+
+	arm_cpu_lowlevel_init();
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		ek_dbgu_init();
@@ -69,13 +71,4 @@ static noinline void som1_entry(void)
 
 	ek_turn_led(RGB_LED_GREEN);
 	barebox_arm_entry(SAMA5_DDRCS, SZ_128M, fdt);
-}
-
-ENTRY_FUNCTION(start_sama5d27_som1_ek, r0, r1, r2)
-{
-	arm_cpu_lowlevel_init();
-
-	arm_setup_stack(SAMA5D2_SRAM_BASE + SAMA5D2_SRAM_SIZE);
-
-	som1_entry();
 }

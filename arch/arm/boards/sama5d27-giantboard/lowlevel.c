@@ -34,9 +34,11 @@ static void dbgu_init(void)
 
 extern char __dtb_z_at91_sama5d27_giantboard_start[];
 
-static noinline void giantboard_entry(void)
+ENTRY_FUNCTION(start_sama5d27_giantboard, r0, r1, r2)
 {
 	void *fdt;
+
+	arm_cpu_lowlevel_init();
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		dbgu_init();
@@ -44,13 +46,4 @@ static noinline void giantboard_entry(void)
 	fdt = __dtb_z_at91_sama5d27_giantboard_start + get_runtime_offset();
 
 	barebox_arm_entry(SAMA5_DDRCS, SZ_128M, fdt);
-}
-
-ENTRY_FUNCTION(start_sama5d27_giantboard, r0, r1, r2)
-{
-	arm_cpu_lowlevel_init();
-
-	arm_setup_stack(SAMA5D2_SRAM_BASE + SAMA5D2_SRAM_SIZE);
-
-	giantboard_entry();
 }

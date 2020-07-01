@@ -8,9 +8,7 @@
 
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
-#include <mach/at91_pmc_ll.h>
-
-#include <mach/hardware.h>
+#include <mach/sama5d2_ll.h>
 #include <mach/iomux.h>
 #include <debug_ll.h>
 #include <mach/at91_dbgu.h>
@@ -21,11 +19,6 @@
 
 /* PCK = 492MHz, MCK = 164MHz */
 #define MASTER_CLOCK	164000000
-
-static inline void sama5d2_pmc_enable_periph_clock(int clk)
-{
-	at91_pmc_sam9x5_enable_periph_clock(SAMA5D2_BASE_PMC, clk);
-}
 
 static void ek_turn_led(unsigned color)
 {

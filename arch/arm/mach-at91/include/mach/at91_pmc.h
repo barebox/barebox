@@ -42,6 +42,7 @@
 #define	AT91_CKGR_UCKR		0x1C			/* UTMI Clock Register [some SAM9] */
 #define		AT91_PMC_UPLLEN		(1   << 16)		/* UTMI PLL Enable */
 #define		AT91_PMC_UPLLCOUNT	(0xf << 20)		/* UTMI PLL Start-up Time */
+#define			AT91_PMC_UPLLCOUNT_DEFAULT	(0x1UL << 20)
 #define		AT91_PMC_BIASEN		(1   << 24)		/* UTMI BIAS Enable */
 #define		AT91_PMC_BIASCOUNT	(0xf << 28)		/* UTMI BIAS Start-up Time */
 
@@ -66,9 +67,17 @@
 #define	AT91_CKGR_PLLAR		0x28			/* PLL A Register */
 #define	AT91_CKGR_PLLBR		0x2c			/* PLL B Register */
 #define		AT91_PMC_DIV		(0xff  <<  0)		/* Divider */
+#define			AT91_PMC_DIV_BYPASS	(1 << 0)		/* Divider bypass */
 #define		AT91_PMC_PLLCOUNT	(0x3f  <<  8)		/* PLL Counter */
 #define		AT91_PMC_OUT		(3     << 14)		/* PLL Clock Frequency Range */
+#define			AT91_PMC_OUT_0		(0 << 14)
+#define			AT91_PMC_OUT_1		(1 << 14)
+#define			AT91_PMC_OUT_2		(2 << 14)
+#define			AT91_PMC_OUT_3		(3 << 14)
 #define		AT91_PMC_MUL		(0x7ff << 16)		/* PLL Multiplier */
+#define			AT91_PMC_MUL_(n)		(((n) << 16) & AT91_PMC_MUL)
+#define		AT91_PMC3_MUL		(0x7f << 18)		/* PLL Multiplier [SAMA5 only]*/
+#define			AT91_PMC3_MUL_(n)		(((n) << 18) & AT91_PMC3_MUL)
 #define		AT91_PMC_USBDIV		(3     << 28)		/* USB Divisor (PLLB only) */
 #define			AT91_PMC_USBDIV_1		(0 << 28)
 #define			AT91_PMC_USBDIV_2		(1 << 28)
@@ -153,6 +162,7 @@
 #define		AT91_PMC_MOSCSELS	(1 << 16)		/* Main Oscillator Selection [some SAM9] */
 #define		AT91_PMC_MOSCRCS	(1 << 17)		/* Main On-Chip RC [some SAM9] */
 #define		AT91_PMC_CFDEV		(1 << 18)		/* Clock Failure Detector Event [some SAM9] */
+#define		AT91_PMC_GCKRDY		(1 << 24)
 #define	AT91_PMC_IMR		0x6c			/* Interrupt Mask Register */
 #define	AT91_PMC_PLLICPR	0x80			/* PLL Charge Pump Current Register */
 #define		AT91_PMC_ICPPLLA	(0xf <<  0)
@@ -179,6 +189,13 @@
 
 #define AT91_PMC_PCR		0x10c			/* Peripheral Control Register [some SAM9] */
 #define		AT91_PMC_PCR_PID	(0x3f  <<  0)		/* Peripheral ID */
+#define		AT91_PMC_GCKCSS	(0x7 << 8)
+#define			AT91_PMC_GCKCSS_SLOW_CLK	(0x0 << 8)
+#define			AT91_PMC_GCKCSS_MAIN_CLK	(0x1 << 8)
+#define			AT91_PMC_GCKCSS_PLLA_CLK	(0x2 << 8)
+#define			AT91_PMC_GCKCSS_UPLL_CLK	(0x3 << 8)
+#define			AT91_PMC_GCKCSS_MCK_CLK		(0x4 << 8)
+#define			AT91_PMC_GCKCSS_AUDIO_CLK	(0x5 << 8)
 #define		AT91_PMC_PCR_CMD	(0x1  <<  12)		/* Command */
 #define		AT91_PMC_PCR_DIV_MASK	(0x3  <<  16)
 #define		AT91_PMC_PCR_DIV(n)	((n) <<  16)	/* Divisor value */
@@ -186,7 +203,12 @@
 #define			AT91_PMC_PCR_DIV2	0x1		/* Peripheral clock is MCK/2 */
 #define			AT91_PMC_PCR_DIV4	0x2		/* Peripheral clock is MCK/4 */
 #define			AT91_PMC_PCR_DIV8	0x3		/* Peripheral clock is MCK/8 */
+#define		AT91_PMC_GCKDIV		(0xff << 20)
+#define			AT91_PMC_GCKDIV_MSK		0xff
+#define			AT91_PMC_GCKDIV_OFFSET		20
+#define			AT91_PMC_GCKDIV_(x)		(((x) & AT91_PMC_GCKDIV_MSK) << AT91_PMC_GCKDIV_OFFSET)
 #define		AT91_PMC_PCR_EN		(0x1  <<  28)		/* Enable */
+#define		AT91_PMC_GCK_EN		(0x1  <<  29)
 
 #define	AT91_PMC_PCER1		0x100			/* Peripheral Clock Enable Register 1 */
 #define	AT91_PMC_PCDR1		0x104			/* Peripheral Clock Disable Register 1 */

@@ -13,6 +13,7 @@
 #define AT91_PMC_LL_FLAG_SAM9X5_PMC	(1 << 0)
 #define AT91_PMC_LL_FLAG_MEASURE_XTAL	(1 << 1)
 #define AT91_PMC_LL_FLAG_DISABLE_RC	(1 << 2)
+#define AT91_PMC_LL_FLAG_H32MXDIV	(1 << 3)
 
 #define AT91_PMC_LL_AT91RM9200	(0)
 #define AT91_PMC_LL_AT91SAM9260	(0)
@@ -27,7 +28,8 @@
 				 AT91_PMC_LL_FLAG_MEASURE_XTAL)
 #define AT91_PMC_LL_SAMA5D3	(AT91_PMC_LL_FLAG_SAM9X5_PMC | \
 				 AT91_PMC_LL_FLAG_DISABLE_RC)
-#define AT91_PMC_LL_SAMA5D4	(AT91_PMC_LL_FLAG_SAM9X5_PMC)
+#define AT91_PMC_LL_SAMA5D4	(AT91_PMC_LL_FLAG_SAM9X5_PMC | \
+				 AT91_PMC_LL_FLAG_H32MXDIV)
 
 void at91_pmc_init(void __iomem *pmc_base, unsigned int flags);
 void at91_pmc_cfg_mck(void __iomem *pmc_base, u32 pmc_mckr, unsigned int flags);
@@ -73,6 +75,15 @@ static inline int at91_pmc_sam9x5_enable_periph_clock(void __iomem *pmc_base,
        writel(pcr, pmc_base + AT91_PMC_PCR);
 
        return 0;
+}
+
+static inline bool at91_pmc_check_mck_h32mxdiv(void __iomem *pmc_base,
+					       unsigned flags)
+{
+	if (flags & AT91_PMC_LL_FLAG_H32MXDIV)
+		return readl(pmc_base + AT91_PMC_MCKR) & AT91_PMC_H32MXDIV;
+
+	return false;
 }
 
 #endif

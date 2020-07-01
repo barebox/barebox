@@ -603,6 +603,7 @@ config MACH_SAMA5D27_SOM1
 	bool "Microchip SAMA5D27 SoM-1 Evaluation Kit"
 	select SOC_SAMA5D2
 	select OFDEVICE
+	select MCI_ATMEL_SDHCI_PBL
 	select COMMON_CLK_OF_PROVIDER
 	help
 	  Select this if you are using Microchip's sama5d27 SoM evaluation kit

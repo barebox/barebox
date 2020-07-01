@@ -5,13 +5,12 @@
 
 #include <common.h>
 #include <init.h>
-
-#include <asm/barebox-arm-head.h>
-#include <asm/barebox-arm.h>
+#include <mach/barebox-arm.h>
 #include <mach/sama5d2_ll.h>
 #include <mach/iomux.h>
+#include <mach/xload.h>
 #include <debug_ll.h>
-#include <mach/at91_dbgu.h>
+#include <mach/sama5d2-sip-ddramc.h>
 
 #define RGB_LED_GREEN (1 << 0)
 #define RGB_LED_RED   (1 << 1)
@@ -40,23 +39,32 @@ static void ek_turn_led(unsigned color)
 	}
 }
 
-static void ek_dbgu_init(void)
+SAMA5_ENTRY_FUNCTION(start_sama5d27_som1_ek_xload_mmc, r4)
 {
-	sama5d2_resetup_uart_console(MASTER_CLOCK);
+	void __iomem *dbgu_base;
+	sama5d2_lowlevel_init();
 
+	dbgu_base = sama5d2_resetup_uart_console(MASTER_CLOCK);
 	putc_ll('>');
+
+	relocate_to_current_adr();
+	setup_c();
+
+	pbl_set_putc(at91_dbgu_putc, dbgu_base);
+
+	ek_turn_led(RGB_LED_RED | RGB_LED_GREEN); /* Yellow */
+	sama5d2_udelay_init(MASTER_CLOCK);
+	sama5d2_d1g_ddrconf();
+	sama5d2_sdhci_start_image(r4);
 }
 
 extern char __dtb_z_at91_sama5d27_som1_ek_start[];
 
-ENTRY_FUNCTION(start_sama5d27_som1_ek, r0, r1, r2)
+SAMA5_ENTRY_FUNCTION(start_sama5d27_som1_ek, r4)
 {
 	void *fdt;
 
-	arm_cpu_lowlevel_init();
-
-	if (IS_ENABLED(CONFIG_DEBUG_LL))
-		ek_dbgu_init();
+	putc_ll('>');
 
 	fdt = __dtb_z_at91_sama5d27_som1_ek_start + get_runtime_offset();
 

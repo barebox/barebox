@@ -5,22 +5,33 @@
 
 #include <common.h>
 #include <init.h>
-
-#include <asm/barebox-arm-head.h>
 #include <mach/barebox-arm.h>
 #include <mach/sama5d2_ll.h>
+#include <mach/xload.h>
+#include <mach/sama5d2-sip-ddramc.h>
 #include <mach/iomux.h>
 #include <debug_ll.h>
-#include <mach/at91_dbgu.h>
 
 /* PCK = 492MHz, MCK = 164MHz */
 #define MASTER_CLOCK	164000000
 
-static void dbgu_init(void)
+SAMA5_ENTRY_FUNCTION(start_sama5d27_giantboard_xload_mmc, r4)
 {
-	sama5d2_resetup_uart_console(MASTER_CLOCK);
+	void __iomem *dbgu_base;
 
+	sama5d2_lowlevel_init();
+
+	dbgu_base = sama5d2_resetup_uart_console(MASTER_CLOCK);
 	putc_ll('>');
+
+	relocate_to_current_adr();
+	setup_c();
+
+	pbl_set_putc(at91_dbgu_putc, dbgu_base);
+
+	sama5d2_udelay_init(MASTER_CLOCK);
+	sama5d2_d1g_ddrconf();
+	sama5d2_sdhci_start_image(r4);
 }
 
 extern char __dtb_z_at91_sama5d27_giantboard_start[];
@@ -29,10 +40,7 @@ SAMA5_ENTRY_FUNCTION(start_sama5d27_giantboard, r4)
 {
 	void *fdt;
 
-	arm_cpu_lowlevel_init();
-
-	if (IS_ENABLED(CONFIG_DEBUG_LL))
-		dbgu_init();
+	putc_ll('>');
 
 	fdt = __dtb_z_at91_sama5d27_giantboard_start + get_runtime_offset();
 

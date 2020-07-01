@@ -1,6 +1,6 @@
 obj-y			+= bcd.o
 obj-$(CONFIG_BOOTSTRAP)	+= bootstrap/
-obj-y			+= ctype.o
+obj-pbl-y		+= ctype.o
 obj-y			+= rbtree.o
 obj-y			+= display_options.o
 obj-y			+= string.o

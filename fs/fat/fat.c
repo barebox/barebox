@@ -65,37 +65,6 @@ DRESULT disk_write(FATFS *fat, const BYTE *buf, DWORD sector, BYTE count)
 	return 0;
 }
 
-DSTATUS disk_status(FATFS *fat)
-{
-	return 0;
-}
-
-DWORD get_fattime(void)
-{
-	return 0;
-}
-
-DRESULT disk_ioctl (FATFS *fat, BYTE command, void *buf)
-{
-	return 0;
-}
-
-WCHAR ff_convert(WCHAR src, UINT dir)
-{
-	if (src <= 0x80)
-		return src;
-	else
-		return '?';
-}
-
-WCHAR ff_wtoupper(WCHAR chr)
-{
-	if (chr <= 0x80)
-		return toupper(chr);
-	else
-		return '?';
-}
-
 /* ---------------------------------------------------------------*/
 
 #ifdef CONFIG_FS_FAT_WRITE

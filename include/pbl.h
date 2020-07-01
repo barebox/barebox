@@ -27,6 +27,7 @@ static inline int pbl_bio_read(struct pbl_bio *bio, off_t block_off,
 	return bio->read(bio, block_off, buf, nblocks);
 }
 
+ssize_t pbl_fat_load(struct pbl_bio *, const char *filename, void *dest, size_t len);
 #else
 #define IN_PBL	0
 #endif

@@ -14,7 +14,6 @@
  */
 
 #include <linux/linkage.h>
-#include <mach/hardware.h>
 #include <mach/at91sam9_sdramc.h>
 #include <mach/at91_rstc.h>
 

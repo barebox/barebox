@@ -94,30 +94,28 @@ static inline void at91_dbgu_setup_ll(void __iomem *dbgu_base,
 				      unsigned mck,
 				      unsigned baudrate)
 {
-	if (IS_ENABLED(CONFIG_DEBUG_LL)) {
-		u32 brgr = mck / (baudrate * 16);
+	u32 brgr = mck / (baudrate * 16);
 
-		if ((mck / (baudrate * 16)) % 10 >= 5)
-			brgr++;
+	if ((mck / (baudrate * 16)) % 10 >= 5)
+		brgr++;
 
-		writel(~0, dbgu_base + AT91_DBGU_IDR);
+	writel(~0, dbgu_base + AT91_DBGU_IDR);
 
-		writel(AT91_DBGU_RSTRX
-		       | AT91_DBGU_RSTTX
-		       | AT91_DBGU_RXDIS
-		       | AT91_DBGU_TXDIS,
-		       dbgu_base + AT91_DBGU_CR);
+	writel(AT91_DBGU_RSTRX
+	       | AT91_DBGU_RSTTX
+	       | AT91_DBGU_RXDIS
+	       | AT91_DBGU_TXDIS,
+	       dbgu_base + AT91_DBGU_CR);
 
-		writel(brgr, dbgu_base + AT91_DBGU_BRGR);
+	writel(brgr, dbgu_base + AT91_DBGU_BRGR);
 
-		writel(AT91_DBGU_PAR_NONE
-		       | AT91_DBGU_CHMODE_NORMAL
-		       | AT91_DBGU_CHRL_8BIT
-		       | AT91_DBGU_NBSTOP_1BIT,
-		       dbgu_base + AT91_DBGU_MR);
+	writel(AT91_DBGU_PAR_NONE
+	       | AT91_DBGU_CHMODE_NORMAL
+	       | AT91_DBGU_CHRL_8BIT
+	       | AT91_DBGU_NBSTOP_1BIT,
+	       dbgu_base + AT91_DBGU_MR);
 
-		writel(AT91_DBGU_RXEN | AT91_DBGU_TXEN, dbgu_base + AT91_DBGU_CR);
-	}
+	writel(AT91_DBGU_RXEN | AT91_DBGU_TXEN, dbgu_base + AT91_DBGU_CR);
 }
 
 #endif

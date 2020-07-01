@@ -1,4 +1,4 @@
-obj-y += setup.o
+obj-y += setup.o aic.o
 lwl-y += at91_pmc_ll.o ddramc_ll.o matrix.o
 lwl-$(CONFIG_CLOCKSOURCE_ATMEL_PIT) += early_udelay.o
 

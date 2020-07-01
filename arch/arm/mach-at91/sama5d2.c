@@ -3,6 +3,7 @@
 #include <common.h>
 #include <of.h>
 #include <init.h>
+#include <mach/aic.h>
 #include <mach/sama5d2.h>
 #include <asm/cache-l2x0.h>
 #include <asm/mmu.h>
@@ -44,6 +45,7 @@ static int sama5d2_init(void)
 	if (!of_machine_is_compatible("atmel,sama5d2"))
 		return 0;
 
+	at91_aic_redir(SAMA5D2_BASE_SFR, SAMA5D2_AICREDIR_KEY);
 	sama5d2_can_ram_init();
 	sama5d2_l2x0_init();
 

@@ -38,10 +38,6 @@
 			linux,default-trigger = "mmc0";
 		};
 	};
-
-	memory {
-		reg = <0x20000000 0x8000000>;
-	};
 };
 
 &slow_xtal {

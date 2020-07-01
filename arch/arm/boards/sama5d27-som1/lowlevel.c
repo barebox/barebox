@@ -69,5 +69,5 @@ SAMA5_ENTRY_FUNCTION(start_sama5d27_som1_ek, r4)
 	fdt = __dtb_z_at91_sama5d27_som1_ek_start + get_runtime_offset();
 
 	ek_turn_led(RGB_LED_GREEN);
-	barebox_arm_entry(SAMA5_DDRCS, SZ_128M, fdt);
+	sama5d2_barebox_entry(fdt);
 }

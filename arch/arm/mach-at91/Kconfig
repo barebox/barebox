@@ -40,6 +40,9 @@ config HAVE_AT91_I2S_MUX_CLK
 config HAVE_AT91_SAM9X60_PLL
 	bool
 
+config HAVE_AT91_DDRAMC
+	bool
+
 config AT91_MCI_PBL
 	bool
 	depends on MCI_ATMEL_SDHCI_PBL
@@ -87,6 +90,7 @@ config SOC_SAMA5D2
 	select PINCTRL_AT91PIO4
 	select HAS_MACB
 	select HAVE_MACH_ARM_HEAD
+	select HAVE_AT91_DDRAMC
 
 config SOC_SAMA5D3
 	bool

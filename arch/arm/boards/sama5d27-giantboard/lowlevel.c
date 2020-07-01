@@ -36,5 +36,5 @@ ENTRY_FUNCTION(start_sama5d27_giantboard, r0, r1, r2)
 
 	fdt = __dtb_z_at91_sama5d27_giantboard_start + get_runtime_offset();
 
-	barebox_arm_entry(SAMA5_DDRCS, SZ_128M, fdt);
+	sama5d2_barebox_entry(fdt);
 }

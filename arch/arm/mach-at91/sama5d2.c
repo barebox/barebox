@@ -6,6 +6,7 @@
 #include <mach/aic.h>
 #include <mach/sama5d2.h>
 #include <asm/cache-l2x0.h>
+#include <mach/sama5_bootsource.h>
 #include <asm/mmu.h>
 
 #define SFR_CAN		0x48
@@ -52,3 +53,19 @@ static int sama5d2_init(void)
 	return 0;
 }
 postmmu_initcall(sama5d2_init);
+
+static int sama5d2_bootsource_init(void)
+{
+	u32 r4;
+
+	if (!of_machine_is_compatible("atmel,sama5d2"))
+		return 0;
+
+	r4 = __sama5d2_stashed_bootrom_r4;
+
+	bootsource_set(sama5_bootsource(r4));
+	bootsource_set_instance(sama5_bootsource_instance(r4));
+
+	return 0;
+}
+postcore_initcall(sama5d2_bootsource_init);

@@ -9,6 +9,7 @@
 #include <mach/hardware.h>
 #include <asm/barebox-arm.h>
 #include <mach/at91_ddrsdrc.h>
+#include <mach/sama5_bootsource.h>
 #include <asm/memory.h>
 #include <pbl.h>
 #include <io.h>
@@ -18,8 +19,9 @@ static unsigned sama5_ramsize(void __iomem *base)
 	return at91_get_ddram_size(base, true);
 }
 
-void __noreturn sama5d2_barebox_entry(void *boarddata)
+void __noreturn sama5d2_barebox_entry(unsigned int r4, void *boarddata)
 {
+	__sama5d2_stashed_bootrom_r4 = r4;
 	barebox_arm_entry(SAMA5_DDRCS, sama5_ramsize(SAMA5D2_BASE_MPDDRC),
 			  boarddata);
 }

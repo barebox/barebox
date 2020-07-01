@@ -43,4 +43,7 @@ static inline int sama5_bootsource_instance(u32 reg)
 	return FIELD_GET(SAMA5_BOOTSOURCE_INSTANCE, reg);
 }
 
+#define __sama5d2_stashed_bootrom_r4 \
+	(*(volatile u32 *)(SAMA5D2_SRAM_BASE + SAMA5D2_SRAM_SIZE - 0x4))
+
 #endif

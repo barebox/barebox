@@ -7,7 +7,7 @@
 #include <init.h>
 
 #include <asm/barebox-arm-head.h>
-#include <asm/barebox-arm.h>
+#include <mach/barebox-arm.h>
 #include <mach/sama5d2_ll.h>
 #include <mach/iomux.h>
 #include <debug_ll.h>
@@ -25,7 +25,7 @@ static void dbgu_init(void)
 
 extern char __dtb_z_at91_sama5d27_giantboard_start[];
 
-ENTRY_FUNCTION(start_sama5d27_giantboard, r0, r1, r2)
+SAMA5_ENTRY_FUNCTION(start_sama5d27_giantboard, r4)
 {
 	void *fdt;
 
@@ -36,5 +36,5 @@ ENTRY_FUNCTION(start_sama5d27_giantboard, r0, r1, r2)
 
 	fdt = __dtb_z_at91_sama5d27_giantboard_start + get_runtime_offset();
 
-	sama5d2_barebox_entry(fdt);
+	sama5d2_barebox_entry(r4, fdt);
 }

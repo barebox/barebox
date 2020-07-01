@@ -22,6 +22,12 @@ config WATCHDOG_AR9344
 	help
 	  Add support for watchdog on the QCA AR9344 SoC.
 
+config WATCHDOG_AT91SAM9
+	bool "Watchdog for AT91SAM9 and SAMA5 SoCs"
+	depends on ARCH_AT91
+	help
+	  Support for the watchdog in AT91SAM9X and SAMA5D{2,3,4} SoCs.
+
 config WATCHDOG_EFI
 	bool "Generic EFI Watchdog Driver"
 	depends on EFI_BOOTUP

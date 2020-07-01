@@ -20,7 +20,7 @@
 
 static inline void sama5d2_pmc_enable_periph_clock(int clk)
 {
-	at91_pmc_sam9x5_enable_periph_clock(IOMEM(SAMA5D2_BASE_PMC), clk);
+	at91_pmc_sam9x5_enable_periph_clock(SAMA5D2_BASE_PMC, clk);
 }
 
 static void dbgu_init(void)
@@ -29,12 +29,12 @@ static void dbgu_init(void)
 
 	sama5d2_pmc_enable_periph_clock(SAMA5D2_ID_PIOD);
 
-	at91_mux_pio4_set_A_periph(IOMEM(SAMA5D2_BASE_PIOD),
+	at91_mux_pio4_set_A_periph(SAMA5D2_BASE_PIOD,
 				   pin_to_mask(AT91_PIN_PD3)); /* DBGU TXD */
 
 	sama5d2_pmc_enable_periph_clock(SAMA5D2_ID_UART1);
 
-	at91_dbgu_setup_ll(IOMEM(SAMA5D2_BASE_UART1), mck, 115200);
+	at91_dbgu_setup_ll(SAMA5D2_BASE_UART1, mck, 115200);
 
 	putc_ll('>');
 }

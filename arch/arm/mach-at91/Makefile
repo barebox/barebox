@@ -1,5 +1,5 @@
 obj-y += setup.o
-lwl-y += at91_pmc_ll.o ddramc_ll.o
+lwl-y += at91_pmc_ll.o ddramc_ll.o matrix.o
 lwl-$(CONFIG_CLOCKSOURCE_ATMEL_PIT) += early_udelay.o
 
 ifeq ($(CONFIG_COMMON_CLK_OF_PROVIDER),)

@@ -18,16 +18,7 @@
 
 static void dbgu_init(void)
 {
-	unsigned mck = MASTER_CLOCK / 2;
-
-	sama5d2_pmc_enable_periph_clock(SAMA5D2_ID_PIOD);
-
-	at91_mux_pio4_set_A_periph(SAMA5D2_BASE_PIOD,
-				   pin_to_mask(AT91_PIN_PD3)); /* DBGU TXD */
-
-	sama5d2_pmc_enable_periph_clock(SAMA5D2_ID_UART1);
-
-	at91_dbgu_setup_ll(SAMA5D2_BASE_UART1, mck, 115200);
+	sama5d2_resetup_uart_console(MASTER_CLOCK);
 
 	putc_ll('>');
 }

@@ -9,6 +9,9 @@
 #define __MACH_DEBUG_LL_H__
 
 #include <asm/io.h>
+#include <mach/gpio.h>
+#include <mach/hardware.h>
+#include <mach/at91_dbgu.h>
 
 #define ATMEL_US_CSR		0x0014
 #define ATMEL_US_THR		0x001c
@@ -22,13 +25,19 @@
  *
  * This does not append a newline
  */
-static inline void PUTC_LL(char c)
+static inline void at91_dbgu_putc(void __iomem *base, int c)
 {
-	while (!(readl(CONFIG_DEBUG_AT91_UART_BASE + ATMEL_US_CSR) & ATMEL_US_TXRDY))
+	while (!(readl(base + ATMEL_US_CSR) & ATMEL_US_TXRDY))
 		barrier();
-	writel(c, CONFIG_DEBUG_AT91_UART_BASE + ATMEL_US_THR);
+	writel(c, base + ATMEL_US_THR);
 
-	while (!(readl(CONFIG_DEBUG_AT91_UART_BASE + ATMEL_US_CSR) & ATMEL_US_TXEMPTY))
+	while (!(readl(base + ATMEL_US_CSR) & ATMEL_US_TXEMPTY))
 		barrier();
 }
+
+static inline void PUTC_LL(char c)
+{
+	at91_dbgu_putc(IOMEM(CONFIG_DEBUG_AT91_UART_BASE), c);
+}
+
 #endif

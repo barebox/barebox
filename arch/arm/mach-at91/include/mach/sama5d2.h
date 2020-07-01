@@ -16,6 +16,8 @@
 
 #include <asm/io.h>
 #include <linux/sizes.h>
+#include <linux/bitops.h>
+#include <linux/bitfield.h>
 
 /*
  * Peripheral identifiers/interrupts. (Table 18-9)
@@ -260,5 +262,59 @@
 
 #define	SAMA5D2_SRAM_BASE			SAMA5D2_BASE_SRAM0
 #define	SAMA5D2_SRAM_SIZE			(128 * SZ_1K)
+
+static inline void __iomem *sama5d2_pio_map_bank(int bank, unsigned *id)
+{
+	switch(bank + 'A') {
+	case 'A':
+		*id = SAMA5D2_ID_PIOA;
+		return SAMA5D2_BASE_PIOA;
+	case 'B':
+		*id = SAMA5D2_ID_PIOB;
+		return SAMA5D2_BASE_PIOB;
+	case 'C':
+		*id = SAMA5D2_ID_PIOC;
+		return SAMA5D2_BASE_PIOC;
+	case 'D':
+		*id = SAMA5D2_ID_PIOD;
+		return SAMA5D2_BASE_PIOD;
+	}
+
+	return NULL;
+}
+
+#define SAMA5D2_BUREG_INDEX	GENMASK(1, 0)
+#define SAMA5D2_BUREG_VALID	BIT(2)
+
+#define SAMA5D2_SFC_DR(x)	(SAMA5D2_BASE_SFC + 0x20 + 4 * (x))
+
+#define SAMA5D2_BOOTCFG_QSPI_0		GENMASK(1, 0)
+#define SAMA5D2_BOOTCFG_QSPI_1		GENMASK(3, 2)
+#define SAMA5D2_BOOTCFG_SPI_0		GENMASK(5, 4)
+#define SAMA5D2_BOOTCFG_SPI_1		GENMASK(7, 6)
+#define SAMA5D2_BOOTCFG_NFC		GENMASK(9, 8)
+#define SAMA5D2_BOOTCFG_SDMMC_0		BIT(10)
+#define SAMA5D2_BOOTCFG_SDMMC_1		BIT(11)
+#define SAMA5D2_BOOTCFG_UART		GENMASK(15, 12)
+#define SAMA5D2_BOOTCFG_JTAG		GENMASK(17, 16)
+#define SAMA5D2_BOOTCFG_EXT_MEM_BOOT_EN	BIT(18)
+#define SAMA5D2_BOOTCFG_QSPI_XIP	BIT(21)
+#define SAMA5D2_DISABLE_BSC_CR		BIT(22)
+#define SAMA5D2_DISABLE_MONITOR		BIT(24)
+#define SAMA5D2_SECURE_MODE		BIT(29)
+
+static inline u32 sama5d2_bootcfg(void)
+{
+	u32 __iomem *bureg = SAMA5D2_BASE_SECURAM + 0x1400;
+	u32 bsc_cr = readl(SAMA5D2_BASE_SYSC + 0x54);
+	u32 __iomem *bootcfg;
+
+	if (bsc_cr & SAMA5D2_BUREG_VALID)
+		bootcfg = &bureg[FIELD_GET(SAMA5D2_BUREG_INDEX, bsc_cr)];
+	else
+		bootcfg = SAMA5D2_SFC_DR(512 / 32);
+
+	return readl(bootcfg);
+}
 
 #endif

@@ -12,7 +12,10 @@
 #include <common.h>
 #include <mci.h>
 
+#include <mach/early_udelay.h>
+
 #ifdef __PBL__
+#define udelay early_udelay
 #undef  dev_err
 #define dev_err(d, ...)		pr_err(__VA_ARGS__)
 #undef  dev_warn

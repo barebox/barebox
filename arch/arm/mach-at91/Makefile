@@ -12,6 +12,7 @@ obj-$(CONFIG_AT91_BOOTSTRAP)	+= bootstrap.o
 
 obj-y += at91sam9_reset.o
 obj-y += at91sam9g45_reset.o
+pbl-$(CONFIG_AT91_MCI_PBL) +=  xload-mmc.o
 
 obj-$(CONFIG_AT91SAM9_SMC) += sam9_smc.o
 obj-$(CONFIG_HAVE_AT91SAM9_RST) += at91sam9_rst.o

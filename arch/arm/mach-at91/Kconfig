@@ -40,6 +40,11 @@ config HAVE_AT91_I2S_MUX_CLK
 config HAVE_AT91_SAM9X60_PLL
 	bool
 
+config AT91_MCI_PBL
+	bool
+	depends on MCI_ATMEL_SDHCI_PBL
+	default y
+
 # Select if board uses the common at91sam926x_board_init
 config AT91SAM926X_BOARD_INIT
 	bool

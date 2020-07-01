@@ -25,6 +25,12 @@
 
 	chosen {
 		stdout-path = &uart1;
+
+		environment {
+			compatible = "barebox,environment";
+			device-path = &sdmmc1;
+			file-path = "barebox.env";
+		};
 	};
 
 	leds {

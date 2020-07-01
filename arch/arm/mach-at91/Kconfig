@@ -609,6 +609,7 @@ config MACH_SAMA5D27_SOM1
 	select OFDEVICE
 	select MCI_ATMEL_SDHCI_PBL
 	select COMMON_CLK_OF_PROVIDER
+	select FS_FAT_WRITE if MCI_ATMEL_SDHCI && FS_FAT && ENV_HANDLING
 	help
 	  Select this if you are using Microchip's sama5d27 SoM evaluation kit
 

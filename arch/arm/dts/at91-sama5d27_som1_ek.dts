@@ -8,9 +8,24 @@
 
 / {
 	chosen {
-		environment {
+		environment-qspi {
 			compatible = "barebox,environment";
 			device-path = &barebox_env;
+			status = "disabled";
+		};
+
+		environment-sd {
+			compatible = "barebox,environment";
+			device-path = &sdmmc0;
+			file-path = "barebox.env";
+			status = "disabled";
+		};
+
+		environment-microsd {
+			compatible = "barebox,environment";
+			device-path = &sdmmc1;
+			file-path = "barebox.env";
+			status = "disabled";
 		};
 	};
 };

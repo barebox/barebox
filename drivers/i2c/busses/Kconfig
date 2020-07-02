@@ -59,5 +59,6 @@ config I2C_STM32
 	bool "STM32 I2C master driver"
 	select RESET_CONTROLLER
 	depends on HAVE_CLK
+	depends on ARCH_STM32MP || COMPILE_TEST
 
 endmenu

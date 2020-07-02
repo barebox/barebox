@@ -106,8 +106,9 @@ static void smsc_superio_find(u16 sioaddr, u16 id_reg)
 static int smsc_superio_detect(void)
 {
 	u16 ports[] = { 0x2e, 0x4e, 0x162e, 0x164e, 0x3f0, 0x370 };
+	int i;
 
-	for (int i = 0; i < ARRAY_SIZE(ports); i++)
+	for (i = 0; i < ARRAY_SIZE(ports); i++)
 		smsc_superio_find(ports[i], SIO_REG_DEVID);
 
 	return 0;

@@ -3,7 +3,6 @@
 
 #if __SIZEOF_POINTER__ == 8
 #define ELF_CLASS	ELFCLASS64
-#define CONFIG_PHYS_ADDR_T_64BIT
 #else
 #define ELF_CLASS	ELFCLASS32
 #endif

@@ -268,7 +268,7 @@ static int add_image(char *str, char *devname_template, int *devname_number)
 	hf->base = (unsigned long)mmap(NULL, hf->size,
 			PROT_READ | (readonly ? 0 : PROT_WRITE),
 			MAP_SHARED, fd, 0);
-	if ((void *)hf->base == MAP_FAILED)
+	if (hf->base == (unsigned long)MAP_FAILED)
 		printf("warning: mmapping %s failed: %s\n", filename, strerror(errno));
 
 	ret = barebox_register_filedev(hf);

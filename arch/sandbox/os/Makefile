@@ -10,6 +10,7 @@ KBUILD_CFLAGS += -Wall
 NOSTDINC_FLAGS :=
 
 obj-y = common.o tap.o
+obj-$(CONFIG_MALLOC_LIBC) += libc_malloc.o
 
 CFLAGS_sdl.o = $(shell pkg-config sdl --cflags)
 obj-$(CONFIG_DRIVER_VIDEO_SDL) += sdl.o

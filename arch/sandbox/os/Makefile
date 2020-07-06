@@ -6,6 +6,10 @@ KBUILD_CPPFLAGS = $(patsubst %,-I$(srctree)/%include,$(machdirs))
 
 KBUILD_CPPFLAGS += -DCONFIG_MALLOC_SIZE=$(CONFIG_MALLOC_SIZE)
 
+ifeq ($(CONFIG_KASAN),y)
+KBUILD_CPPFLAGS += -DCONFIG_KASAN=1
+endif
+
 KBUILD_CFLAGS += -Wall
 NOSTDINC_FLAGS :=
 

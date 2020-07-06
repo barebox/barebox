@@ -44,6 +44,8 @@
 #include <mach/linux.h>
 #include <mach/hostfile.h>
 
+void __sanitizer_set_death_callback(void (*callback)(void));
+
 int sdl_xres;
 int sdl_yres;
 
@@ -344,6 +346,10 @@ int main(int argc, char *argv[])
 	int malloc_size = CONFIG_MALLOC_SIZE;
 	int fdno = 0, envno = 0, option_index = 0;
 	char *aux;
+
+#ifdef CONFIG_KASAN
+	__sanitizer_set_death_callback(cookmode);
+#endif
 
 	while (1) {
 		option_index = 0;

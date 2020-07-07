@@ -739,13 +739,16 @@ static int fec_probe(struct device_d *dev)
 	void *base;
 	int ret;
 	enum fec_type type;
+	void const *type_v;
 	int phy_reset;
 	u32 msec = 1, phy_post_delay = 0;
 	u32 reg;
 
-	ret = dev_get_drvdata(dev, (const void **)&type);
+	ret = dev_get_drvdata(dev, &type_v);
 	if (ret)
 		return ret;
+
+	type = (uintptr_t)(type_v);
 
 	fec = xzalloc(sizeof(*fec));
 	fec->type = type;

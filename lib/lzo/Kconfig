@@ -1,7 +1,3 @@
 config LZO_DECOMPRESS
 	bool "include lzo uncompression support"
 	select UNCOMPRESS
-
-config LZO_COMPRESS
-	bool
-

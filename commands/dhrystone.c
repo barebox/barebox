@@ -17,7 +17,6 @@
 #include <clock.h>
 #include <asm-generic/div64.h>
 #include <malloc.h>
-#include <stdbool.h>
 #include <stdio.h> /* for strcpy, strcmp */
 
 enum idents {ident_1, ident_2, ident_3, ident_4, ident_5};

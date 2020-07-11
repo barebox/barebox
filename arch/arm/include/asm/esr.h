@@ -1,9 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
+/* SPDX-FileCopyrightText: 2013 ARM Ltd */
 
-/*
- * Copyright (C) 2013 - ARM Ltd
- * Author: Marc Zyngier <marc.zyngier@arm.com>
- */
+/* Author: Marc Zyngier */
 
 #ifndef __ASM_ESR_H
 #define __ASM_ESR_H

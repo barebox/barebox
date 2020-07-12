@@ -221,6 +221,12 @@ static int do_ivt_offset(struct config_data *data, int argc, char *argv[])
 	return 0;
 }
 
+static int do_dcdofs_error(struct config_data *data, int argc, char *argv[])
+{
+	fprintf(stderr, "ERROR: misnomer dcdofs has been renamed to ivtofs. imxcfg must be adapted.\n");
+	return -EINVAL;
+}
+
 struct soc_type {
 	char *name;
 	int header_version;
@@ -588,6 +594,9 @@ struct command cmds[] = {
 	}, {
 		.name = "ivtofs",
 		.parse = do_ivt_offset,
+	}, {
+		.name = "dcdofs",
+		.parse = do_dcdofs_error,
 	}, {
 		.name = "soc",
 		.parse = do_soc,

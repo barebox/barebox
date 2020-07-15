@@ -86,11 +86,14 @@ enum imx_ocotp_format_mac_direction {
 	OCOTP_MAC_TO_HW,
 };
 
+struct ocotp_priv;
+
 struct imx_ocotp_data {
 	int num_regs;
 	u32 (*addr_to_offset)(u32 addr);
 	void (*format_mac)(u8 *dst, const u8 *src,
 			   enum imx_ocotp_format_mac_direction dir);
+	int (*set_timing)(struct ocotp_priv *priv);
 	u8  mac_offsets[MAX_MAC_OFFSETS];
 	u8  mac_offsets_num;
 };
@@ -183,7 +186,7 @@ static int imx6_ocotp_prepare(struct ocotp_priv *priv)
 {
 	int ret;
 
-	ret = imx6_ocotp_set_timing(priv);
+	ret = priv->data->set_timing(priv);
 	if (ret)
 		return ret;
 
@@ -694,6 +697,7 @@ static struct imx_ocotp_data imx6q_ocotp_data = {
 	.mac_offsets_num = 1,
 	.mac_offsets = { MAC_OFFSET_0 },
 	.format_mac = imx_ocotp_format_mac,
+	.set_timing = imx6_ocotp_set_timing,
 };
 
 static struct imx_ocotp_data imx6sl_ocotp_data = {
@@ -702,6 +706,7 @@ static struct imx_ocotp_data imx6sl_ocotp_data = {
 	.mac_offsets_num = 1,
 	.mac_offsets = { MAC_OFFSET_0 },
 	.format_mac = imx_ocotp_format_mac,
+	.set_timing = imx6_ocotp_set_timing,
 };
 
 static struct imx_ocotp_data imx6ul_ocotp_data = {
@@ -710,6 +715,7 @@ static struct imx_ocotp_data imx6ul_ocotp_data = {
 	.mac_offsets_num = 2,
 	.mac_offsets = { MAC_OFFSET_0, IMX6UL_MAC_OFFSET_1 },
 	.format_mac = imx_ocotp_format_mac,
+	.set_timing = imx6_ocotp_set_timing,
 };
 
 static struct imx_ocotp_data imx6ull_ocotp_data = {
@@ -718,6 +724,7 @@ static struct imx_ocotp_data imx6ull_ocotp_data = {
 	.mac_offsets_num = 2,
 	.mac_offsets = { MAC_OFFSET_0, IMX6UL_MAC_OFFSET_1 },
 	.format_mac = imx_ocotp_format_mac,
+	.set_timing = imx6_ocotp_set_timing,
 };
 
 static struct imx_ocotp_data vf610_ocotp_data = {
@@ -726,6 +733,7 @@ static struct imx_ocotp_data vf610_ocotp_data = {
 	.mac_offsets_num = 2,
 	.mac_offsets = { MAC_OFFSET_0, MAC_OFFSET_1 },
 	.format_mac = vf610_ocotp_format_mac,
+	.set_timing = imx6_ocotp_set_timing,
 };
 
 static struct imx_ocotp_data imx8mp_ocotp_data = {
@@ -742,6 +750,7 @@ static struct imx_ocotp_data imx8mq_ocotp_data = {
 	.mac_offsets_num = 1,
 	.mac_offsets = { 0x90 },
 	.format_mac = imx_ocotp_format_mac,
+	.set_timing = imx6_ocotp_set_timing,
 };
 
 static __maybe_unused struct of_device_id imx_ocotp_dt_ids[] = {

@@ -48,6 +48,9 @@
 #define OCOTP_READ_CTRL			0x30
 #define OCOTP_READ_FUSE_DATA		0x40
 
+#define DEF_FSOURCE			1001	/* > 1000 ns */
+#define DEF_STROBE_PROG			10000	/* IPG clocks */
+
 /* OCOTP Registers bits and masks */
 #define OCOTP_CTRL_WR_UNLOCK		16
 #define OCOTP_CTRL_WR_UNLOCK_KEY	0x3E77
@@ -165,6 +168,27 @@ static int imx6_ocotp_set_timing(struct ocotp_priv *priv)
 	timing |= BF(relax, OCOTP_TIMING_RELAX);
 	timing |= BF(strobe_read, OCOTP_TIMING_STROBE_READ);
 	timing |= BF(strobe_prog, OCOTP_TIMING_STROBE_PROG);
+
+	writel(timing, priv->base + OCOTP_TIMING);
+
+	return 0;
+}
+
+static int imx7_ocotp_set_timing(struct ocotp_priv *priv)
+{
+	unsigned long clk_rate;
+	u64 fsource, strobe_prog;
+	u32 timing;
+
+	clk_rate = clk_get_rate(priv->clk);
+
+	fsource = DIV_ROUND_UP_ULL((u64)clk_rate * DEF_FSOURCE,
+				   NSEC_PER_SEC) + 1;
+	strobe_prog = DIV_ROUND_CLOSEST_ULL((u64)clk_rate * DEF_STROBE_PROG,
+					    NSEC_PER_SEC) + 1;
+
+	timing = strobe_prog & 0x00000FFF;
+	timing |= (fsource << 12) & 0x000FF000;
 
 	writel(timing, priv->base + OCOTP_TIMING);
 

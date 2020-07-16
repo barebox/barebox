@@ -561,6 +561,7 @@ struct usb_gadget {
 	uint32_t			product_id;
 	char				*manufacturer;
 	char				*productname;
+	char				*serialnumber;
 };
 #define work_to_gadget(w)	(container_of((w), struct usb_gadget, work))
 

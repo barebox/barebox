@@ -161,11 +161,17 @@ static int physom_imx6_devices_init(void)
 		default_environment_path = "/chosen/environment-spinor";
 		default_envdev = "SPI NOR flash";
 
+		imx6_bbu_internal_mmc_register_handler("mmc2",
+						"/dev/mmc2", 0);
+
 	} else if (of_machine_is_compatible("phytec,imx6q-pcaaxl3")) {
 
 		barebox_set_hostname("phyCARD-i.MX6");
 		default_environment_path = "/chosen/environment-nand";
 		default_envdev = "NAND flash";
+
+		imx6_bbu_internal_mmc_register_handler("mmc2",
+						"/dev/mmc2", 0);
 
 	} else if (of_machine_is_compatible("phytec,imx6q-pcm058-nand")
 		|| of_machine_is_compatible("phytec,imx6q-pcm058-emmc")
@@ -180,6 +186,9 @@ static int physom_imx6_devices_init(void)
 		default_environment_path = "/chosen/environment-spinor";
 		default_envdev = "SPI NOR flash";
 
+		imx6_bbu_internal_mmc_register_handler("mmc0",
+						"/dev/mmc0", 0);
+
 	} else if (of_machine_is_compatible("phytec,imx6ul-pcl063-nand")
 		|| of_machine_is_compatible("phytec,imx6ul-pcl063-emmc")) {
 		barebox_set_hostname("phyCORE-i.MX6UL");
@@ -188,6 +197,9 @@ static int physom_imx6_devices_init(void)
 
 		phy_register_fixup_for_uid(PHY_ID_KSZ8081, MICREL_PHY_ID_MASK,
 				ksz8081_phy_fixup);
+
+		imx6_bbu_internal_mmc_register_handler("mmc0",
+						"/dev/mmc0", 0);
 
 	} else
 		return 0;
@@ -227,10 +239,14 @@ static int physom_imx6_devices_init(void)
 		imx6_bbu_internal_mmc_register_handler("mmc3",
 						"/dev/mmc3",
 						BBU_HANDLER_FLAG_DEFAULT);
+		imx6_bbu_internal_mmcboot_register_handler("mmc3-boot",
+						"mmc3", 0);
 	} else if (of_machine_is_compatible("phytec,imx6ul-pcl063-emmc")) {
 		imx6_bbu_internal_mmc_register_handler("mmc1",
 						"/dev/mmc1",
 						BBU_HANDLER_FLAG_DEFAULT);
+		imx6_bbu_internal_mmcboot_register_handler("mmc1-boot",
+						"mmc1", 0);
 	} else {
 		imx6_bbu_nand_register_handler("nand", BBU_HANDLER_FLAG_DEFAULT);
 	}

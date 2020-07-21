@@ -53,8 +53,6 @@ struct caam_drv_private_jr {
  */
 struct caam_drv_private {
 
-	struct device *dev;
-	struct device *smdev;
 	struct device_d **jrpdev; /* Alloc'ed array per sub-device */
 	struct device_d *pdev;
 
@@ -88,9 +86,6 @@ struct caam_drv_private {
 	struct clk *caam_aclk;
 	struct clk *caam_emi_slow;
 };
-
-void caam_jr_algapi_init(struct device *dev);
-void caam_jr_algapi_remove(struct device *dev);
 
 int caam_rng_probe(struct device_d *dev, struct device_d *jrdev);
 int caam_blob_gen_probe(struct device_d *dev, struct device_d *jrdev);

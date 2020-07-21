@@ -8,12 +8,6 @@
 #include <asm/cache.h>
 #include <pbl.h>
 
-static void __naked __noreturn xload_bb(void __noreturn (*bb)(void), u32 r4)
-{
-	asm volatile("mov r4, %0" : : "r"(r4) : );
-	asm volatile("bx  %0"     : : "r"(bb) : );
-}
-
 static void at91_fat_start_image(struct pbl_bio *bio,
 				 void *buf, unsigned int len,
 				 u32 r4)
@@ -31,7 +25,7 @@ static void at91_fat_start_image(struct pbl_bio *bio,
 
 	sync_caches_for_execution();
 
-	xload_bb(bb, r4);
+	sama5_boot_xload(bb, r4);
 }
 
 static const struct sdhci_instance {

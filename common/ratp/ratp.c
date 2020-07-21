@@ -15,11 +15,9 @@
 
 #include <common.h>
 #include <command.h>
-#include <kfifo.h>
 #include <malloc.h>
 #include <init.h>
 #include <ratp.h>
-#include <command.h>
 #include <byteorder.h>
 #include <environment.h>
 #include <kfifo.h>

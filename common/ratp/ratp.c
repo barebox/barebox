@@ -27,6 +27,7 @@
 #include <linux/sizes.h>
 #include <ratp_bb.h>
 #include <fs.h>
+#include <console_countdown.h>
 
 LIST_HEAD(ratp_command_list);
 EXPORT_SYMBOL(ratp_command_list);
@@ -472,6 +473,8 @@ int barebox_ratp(struct console_device *cdev)
 		goto out;
 
 	ctx->poller_registered = true;
+
+	console_countdown_abort();
 
 	console_set_active(&ctx->ratp_console, CONSOLE_STDOUT | CONSOLE_STDERR |
 			CONSOLE_STDIN);

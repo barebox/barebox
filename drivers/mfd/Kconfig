@@ -91,4 +91,14 @@ config MFD_STM32_TIMERS
 	  Select this to get regmap support for the timer blocks on STM32
 	  MCUs and MPUs.
 
+config MFD_ATMEL_FLEXCOM
+	tristate "Atmel Flexcom (Flexible Serial Communication Unit)"
+	depends on OFDEVICE
+	help
+	  Select this to get support for Atmel Flexcom. This is a wrapper
+	  which embeds a SPI controller, a I2C controller and a USART. Only
+	  one function can be used at a time. The choice is done at boot time
+	  by the probe function of this MFD driver according to a device tree
+	  property.
+
 endmenu

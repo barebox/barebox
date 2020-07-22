@@ -847,6 +847,7 @@ static const struct stm32_i2c_setup stm32f7_setup = {
 
 static __maybe_unused struct of_device_id stm32_i2c_dt_ids[] = {
 	{ .compatible = "st,stm32f7-i2c", .data = &stm32f7_setup, },
+	{ .compatible = "st,stm32mp15-i2c", .data = &stm32f7_setup},
 	{ /* sentinel */ }
 };
 

@@ -328,13 +328,13 @@ static int stm32_usbphyc_probe(struct device_d *dev)
 	if (IS_ERR(usbphyc->clk)) {
 		ret = PTR_ERR(usbphyc->clk);
 		dev_err(dev, "clk get failed: %d\n", ret);
-		return ret;
+		goto release_region;
 	}
 
 	ret = clk_enable(usbphyc->clk);
 	if (ret) {
 		dev_err(dev, "clk enable failed: %d\n", ret);
-		return ret;
+		goto release_region;
 	}
 
 	device_reset_us(dev, 2);
@@ -405,6 +405,11 @@ static int stm32_usbphyc_probe(struct device_d *dev)
 
 clk_disable:
 	clk_disable(usbphyc->clk);
+release_region:
+	release_region(iores);
+
+	free(usbphyc->phys);
+	free(usbphyc);
 
 	return ret;
 }

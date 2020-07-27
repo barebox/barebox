@@ -5,10 +5,6 @@
 
 #include "arm/kirkwood-topkick.dts"
 
-/ {
-	gpio-leds {
-		system {
-			barebox,default-trigger = "heartbeat";
-		};
-	};
+&{/gpio-leds/system} {
+	barebox,default-trigger = "heartbeat";
 };

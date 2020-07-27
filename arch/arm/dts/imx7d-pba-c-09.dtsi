@@ -36,7 +36,6 @@
 		};
 
 		/* Enable if R9 is populated. Conflicts with userbtn2 on PEB-EVAL-02 */
-		/*
 		reg_can1_3v3: regulator@2 {
 			compatible = "regulator-fixed";
 			reg = <2>;
@@ -45,8 +44,8 @@
 			regulator-max-microvolt = <3300000>;
 			gpio = <&gpio5 2 GPIO_ACTIVE_HIGH>;
 			enable-active-high;
+			status = "disabled";
 		};
-		*/
 	};
 };
 

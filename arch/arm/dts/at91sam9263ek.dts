@@ -7,33 +7,29 @@
 		};
 	};
 
-	ahb {
-		apb {
-			mmc1: mmc@fff84000 {
-				pinctrl-0 = <
-					&pinctrl_board_mmc1
-					&pinctrl_mmc1_clk
-					&pinctrl_mmc1_slot0_cmd_dat0
-					&pinctrl_mmc1_slot0_dat1_3>;
-					cd-gpios = <&pioE 18 GPIO_ACTIVE_HIGH>;
-					status = "okay";
-					slot@0 {
-						reg = <0>;
-						bus-width = <4>;
-						cd-gpios = <&pioE 18 GPIO_ACTIVE_HIGH>;
-						wp-gpios = <&pioE 19 GPIO_ACTIVE_HIGH>;
-					};
-			};
-		};
-	};
+};
 
-
-	pinctrl@fffff200 {
-		pinctrl_board_mmc1: mmc1-board {
-			atmel,pins =
-				<AT91_PIOE 18 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP_DEGLITCH	/* PE18 gpio CD pin pull up and deglitch */
-				 AT91_PIOE 19 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP>;		/* PE19 gpio WP pin pull up */
+&{/ahb/apb/mmc@fff84000} {
+	pinctrl-0 = <
+		&pinctrl_board_mmc1
+		&pinctrl_mmc1_clk
+		&pinctrl_mmc1_slot0_cmd_dat0
+		&pinctrl_mmc1_slot0_dat1_3>;
+		cd-gpios = <&pioE 18 GPIO_ACTIVE_HIGH>;
+		status = "okay";
+		slot@0 {
+			reg = <0>;
+			bus-width = <4>;
+			cd-gpios = <&pioE 18 GPIO_ACTIVE_HIGH>;
+			wp-gpios = <&pioE 19 GPIO_ACTIVE_HIGH>;
 		};
+};
+
+&{/ahb/apb/pinctrl@fffff200} {
+	pinctrl_board_mmc1: mmc1-board {
+		atmel,pins =
+			<AT91_PIOE 18 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP_DEGLITCH	/* PE18 gpio CD pin pull up and deglitch */
+			 AT91_PIOE 19 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP>;		/* PE19 gpio WP pin pull up */
 	};
 };
 

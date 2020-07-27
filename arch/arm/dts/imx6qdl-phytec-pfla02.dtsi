@@ -12,8 +12,6 @@
 #include <arm/imx6qdl-phytec-pfla02.dtsi>
 
 / {
-	/delete-node/ memory@10000000;
-
 	chosen {
 		environment-nand {
 			compatible = "barebox,environment";
@@ -52,6 +50,8 @@
 		};
 	};
 };
+
+/delete-node/ &{/memory@10000000};
 
 &ecspi3 {
 	flash: flash@0 {

@@ -14,25 +14,23 @@
 		mmc0 = &mmc0;
 		mmc1 = &mmc1;
 	};
+};
 
-	i2c-gpio-0 {
-		status = "okay";
-	};
+&{/i2c-gpio-0} {
+	status = "okay";
+};
 
-	leds {
-		/*
-		 * PB18 has a resource conflict since it is both used
-                 * as a heartbeat LED and 1-wire bus in the kernel
-                 * device tree. Because 1-wire EEPROMs contains
-                 * importatnt revision information we move heartbeat
-                 * to PD21 and remove the original pb18 node
-		 */
-		/delete-node/ pb18;
+/*
+ * PB18 has a resource conflict since it is both used
+ * as a heartbeat LED and 1-wire bus in the kernel
+ * device tree. Because 1-wire EEPROMs contains
+ * importatnt revision information we move heartbeat
+ * to PD21 and remove the original pb18 node
+ */
+/delete-node/ &{/leds/pb18};
 
-		pd21 {
-			linux,default-trigger = "heartbeat";
-		};
-	};
+&{/leds/pd21} {
+	linux,default-trigger = "heartbeat";
 };
 
 &spi0 {

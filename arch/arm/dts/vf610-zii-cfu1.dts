@@ -26,6 +26,10 @@
 	};
 };
 
+&{/gpio-leds/led-status} {
+	linux,default-trigger = "heartbeat";
+};
+
 &i2c0 {
 	fiber_eeprom0: eeprom@50 {
 		compatible = "atmel,24c04";

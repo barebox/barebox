@@ -31,10 +31,4 @@
 			file-path = "barebox.env";
 		};
 	};
-
-	leds: gpio-leds {
-	};
-
-	buttons: gpio-keys {
-	};
 };

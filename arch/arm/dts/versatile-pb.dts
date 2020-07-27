@@ -3,8 +3,8 @@
 / {
 	model = "ARM Versatile PB";
 	compatible = "arm,versatile-pb";
+};
 
-	memory {
-		reg = <0x0 0x04000000>;
-	};
+&{/memory} {
+	reg = <0x0 0x04000000>;
 };

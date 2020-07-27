@@ -14,17 +14,17 @@
 			device-path = &sdmmc1, "partname:barebox-environment";
 		};
 	};
+};
 
-	led {
-		red {
-			label = "error";
-			gpios = <&gpioa 13 GPIO_ACTIVE_LOW>;
-			default-state = "off";
-			status = "okay";
-		};
-
-		blue {
-			default-state = "on";
-		};
+&{/led} {
+	red {
+		label = "error";
+		gpios = <&gpioa 13 GPIO_ACTIVE_LOW>;
+		default-state = "off";
+		status = "okay";
 	};
+};
+
+&{/led/blue} {
+	default-state = "on";
 };

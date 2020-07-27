@@ -33,9 +33,9 @@
 			status = "disabled";
 		};
 	};
-
-	/delete-node/ memory@10000000;
 };
+
+/delete-node/ &{/memory@10000000};
 
 &fec {
 	/delete-property/ phy-supply;

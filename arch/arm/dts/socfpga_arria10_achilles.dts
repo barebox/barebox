@@ -124,26 +124,22 @@
 			default_attempts = <3>;
 		};
 	};
+};
 
-	soc {
-		clkmgr@ffd04000 {
-			clocks {
-				osc1 {
-					clock-frequency = <25000000>;
-				};
+&{/soc/clkmgr@ffd04000/clocks/osc1} {
+	clock-frequency = <25000000>;
+};
 
-				cb_intosc_hs_div2_clk {
-					clock-frequency = <0>;
-				};
-				cb_intosc_ls_clk {
-					clock-frequency = <60000000>;
-				};
-				f2s_free_clk {
-					clock-frequency = <200000000>;
-				};
-			};
-		};
-	};
+&{/soc/clkmgr@ffd04000/clocks/cb_intosc_hs_div2_clk} {
+	clock-frequency = <0>;
+};
+
+&{/soc/clkmgr@ffd04000/clocks/cb_intosc_ls_clk} {
+	clock-frequency = <60000000>;
+};
+
+&{/soc/clkmgr@ffd04000/clocks/f2s_free_clk} {
+	clock-frequency = <200000000>;
 };
 
 &gmac1 {

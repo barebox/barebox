@@ -9,10 +9,8 @@
 	chosen {
 		stdout-path = &uart0;
 	};
+};
 
-	leds {
-		power {
-			barebox,default-trigger = "heartbeat";
-		};
-	};
+&{/leds/power} {
+		barebox,default-trigger = "heartbeat";
 };

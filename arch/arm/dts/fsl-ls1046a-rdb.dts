@@ -7,6 +7,7 @@
 / {
 	aliases {
 		eeprom = &eeprom;
+		mmc0 = &esdhc;
 	};
 
 	chosen {
@@ -16,10 +17,6 @@
 			compatible = "barebox,environment";
 			device-path = &environment_sd;
 		};
-	};
-
-	aliases {
-		mmc0 = &esdhc;
 	};
 };
 
@@ -61,72 +58,52 @@
 
 /delete-node/ &non_existent_eeprom;
 
-&fman0 {
-	ethernet@e0000 {
-		status = "disabled";
-	};
+&enet0 {
+	status = "disabled";
+};
 
-	ethernet@e2000 {
-		status = "disabled";
-	};
+&enet1 {
+	status = "disabled";
+};
 
-	ethernet@e4000 {
-		phy-mode = "rgmii-id";
-	};
+&enet2 {
+	phy-mode = "rgmii-id";
+};
 
-	ethernet@e6000 {
-		phy-mode = "rgmii-id";
-	};
+&enet3 {
+	phy-mode = "rgmii-id";
+};
 
-	ethernet@e8000 {
-	};
+&{/soc/fman@1a00000/mdio@e1000} {
+	status = "disabled";
+};
 
-	ethernet@ea000 {
-	};
+&{/soc/fman@1a00000/mdio@e3000} {
+	status = "disabled";
+};
 
-	ethernet@f0000 {
-	};
+&{/soc/fman@1a00000/mdio@e5000} {
+	status = "disabled";
+};
 
-	ethernet@f2000 {
-	};
+&{/soc/fman@1a00000/mdio@e7000} {
+	status = "disabled";
+};
 
-	mdio@fc000 {
-	};
+&{/soc/fman@1a00000/mdio@e9000} {
+	status = "disabled";
+};
 
-	mdio@fd000 {
-	};
+&{/soc/fman@1a00000/mdio@eb000} {
+	status = "disabled";
+};
 
-	mdio@e1000 {
-		status = "disabled";
-	};
+&{/soc/fman@1a00000/mdio@f1000} {
+	status = "disabled";
+};
 
-	mdio@e3000 {
-		status = "disabled";
-	};
-
-	mdio@e5000 {
-		status = "disabled";
-	};
-
-	mdio@e7000 {
-		status = "disabled";
-	};
-
-	mdio@e9000 {
-		status = "disabled";
-	};
-
-	mdio@eb000 {
-		status = "disabled";
-	};
-
-	mdio@f1000 {
-		status = "disabled";
-	};
-
-	mdio@f3000 {
-		status = "disabled";
-	};
+&{/soc/fman@1a00000/mdio@f3000} {
+	status = "disabled";
 };
 
 &usb0 {
@@ -143,16 +120,14 @@
 	dr_mode = "host";
 };
 
-&soc {
-	pcie1: pcie@3400000 {
-		status = "okay";
-	};
+&{/soc/pcie@3400000} {
+	status = "okay";
+};
 
-	pcie2: pcie@3500000 {
-		status = "okay";
-	};
+&{/soc/pcie@3500000} {
+	status = "okay";
+};
 
-	pcie3: pcie@3600000 {
-		status = "okay";
-	};
+&{/soc/pcie@3600000} {
+	status = "okay";
 };

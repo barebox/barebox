@@ -35,30 +35,21 @@ HOSTCFLAGS_omap4_usbboot.o = `pkg-config --cflags libusb-1.0`
 HOSTLDLIBS_omap4_usbboot = -lpthread `pkg-config --libs libusb-1.0`
 hostprogs-$(CONFIG_OMAP4_HOSTTOOL_USBBOOT) += omap4_usbboot
 
+userprogs-$(CONFIG_BAREBOXENV_TARGET)		+= bareboxenv-target
+userprogs-$(CONFIG_KERNEL_INSTALL_TARGET)	+= kernel-install-target
+userprogs-$(CONFIG_BAREBOXCRC32_TARGET)		+= bareboxcrc32-target
+userprogs-$(CONFIG_IMD_TARGET)			+= bareboximd-target
+
+userccflags += -I $(srctree)/$(src)/include
+
+userprogs	:= $(userprogs-y)
+always-y	:= $(hostprogs-y) $(hostprogs-m) $(userprogs-y)
+
 subdir-y			+= mod
 subdir-y			+= imx
 subdir-$(CONFIG_X86)		+= setupmbr
 subdir-$(CONFIG_DTC)		+= dtc
 subdir-$(CONFIG_ARCH_TEGRA)	+= tegra
 
-targetprogs-$(CONFIG_BAREBOXENV_TARGET) += bareboxenv-target
-targetprogs-$(CONFIG_KERNEL_INSTALL_TARGET) += kernel-install-target
-targetprogs-$(CONFIG_BAREBOXCRC32_TARGET) += bareboxcrc32-target
-targetprogs-$(CONFIG_IMD_TARGET) += bareboximd-target
-
 # Let clean descend into subdirs
 subdir-	+= basic kconfig setupmbr
-
-quiet_cmd_csingle	= CC      $@
-      cmd_csingle	= $(CC) -Wp,-MD,$(depfile) $(TARGETCFLAGS) $(KBUILD_CFLAGS) -o $@ $<
-
-__targetprogs	:= $(sort $(targetprogs-y) $(targetprogs-m))
-target-csingle	:= $(foreach m,$(__targetprogs),$(if $($(m)-objs),,$(m)))
-__targetprogs	:= $(addprefix $(obj)/,$(__targetprogs))
-target-csingle	:= $(addprefix $(obj)/,$(target-csingle))
-TARGETCFLAGS += -I$(srctree)/scripts/include/
-
-always		:= $(hostprogs-y) $(hostprogs-m) $(targetprogs-y)
-
-$(target-csingle): %-target: %.c FORCE
-	$(call if_changed_dep,csingle)

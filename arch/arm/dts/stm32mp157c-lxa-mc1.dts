@@ -3,7 +3,7 @@
  * Copyright (C) 2020 Ahmad Fatoum, Pengutronix
  */
 
-#include "stm32mp157c-lxa-mc1.dtsi"
+#include <arm/stm32mp157c-lxa-mc1.dts>
 #include "stm32mp151.dtsi"
 
 / {

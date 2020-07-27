@@ -651,6 +651,12 @@ static __maybe_unused struct of_device_id omap_mmc_dt_ids[] = {
 		.compatible = "ti,omap4-hsmmc",
 		.data = &omap4_data,
 	}, {
+		.compatible = "ti,am335-sdhci",
+		.data = &omap4_data,
+	}, {
+		.compatible = "ti,am437-sdhci",
+		.data = &omap4_data,
+	}, {
 		/* sentinel */
 	}
 };

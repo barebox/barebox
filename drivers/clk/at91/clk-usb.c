@@ -30,6 +30,7 @@ struct at91sam9x5_clk_usb {
 	struct regmap *regmap;
 	const char *parent_names[USB_SOURCE_MAX];
 	u32 usbs_mask;
+	u8 num_parents;
 };
 
 #define to_at91sam9x5_clk_usb(clk) \
@@ -62,7 +63,7 @@ static int at91sam9x5_clk_usb_set_parent(struct clk *clk, u8 index)
 {
 	struct at91sam9x5_clk_usb *usb = to_at91sam9x5_clk_usb(clk);
 
-	if (index > 1)
+	if (index >= usb->num_parents)
 		return -EINVAL;
 
 	regmap_write_bits(usb->regmap, AT91_PMC_USB, usb->usbs_mask, index);
@@ -160,7 +161,8 @@ _at91sam9x5_clk_register_usb(struct regmap *regmap, const char *name,
 	/* init.flags = CLK_SET_RATE_GATE | CLK_SET_PARENT_GATE | */
 	/* 	     CLK_SET_RATE_PARENT; */
 	usb->regmap = regmap;
-	usb->usbs_mask = SAM9X5_USBS_MASK;
+	usb->usbs_mask = usbs_mask;
+	usb->num_parents = num_parents;
 
 	ret = clk_register(&usb->clk);
 	if (ret) {
@@ -247,6 +249,9 @@ static long at91rm9200_clk_usb_round_rate(struct clk *clk, unsigned long rate,
 
 		tmp_parent_rate = rate * usb->divisors[i];
 		tmp_parent_rate = clk_round_rate(parent, tmp_parent_rate);
+		if (!tmp_parent_rate)
+			continue;
+
 		tmprate = DIV_ROUND_CLOSEST(tmp_parent_rate, usb->divisors[i]);
 		if (tmprate < rate)
 			tmpdiff = rate - tmprate;

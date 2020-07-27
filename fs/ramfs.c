@@ -23,39 +23,37 @@
 #include <errno.h>
 #include <linux/stat.h>
 #include <xfuncs.h>
+#include <linux/sizes.h>
 
 #define CHUNK_SIZE	(4096 * 2)
 
 struct ramfs_chunk {
 	char *data;
-	struct ramfs_chunk *next;
+	unsigned long ofs;
+	int size;
+	struct list_head list;
 };
 
 struct ramfs_inode {
 	struct inode inode;
 	char *name;
-	struct ramfs_inode *parent;
-	struct ramfs_inode *next;
-	struct ramfs_inode *child;
 	char *symlink;
 	ulong mode;
 
-	ulong size;
-	struct ramfs_chunk *data;
+	/* bytes used in this inode */
+	unsigned long size;
+	/* bytes currently allocated for this inode */
+	unsigned long alloc_size;
 
-	/* Points to recently used chunk */
-	int recent_chunk;
-	struct ramfs_chunk *recent_chunkp;
+	struct list_head data;
+
+	struct ramfs_chunk *current_chunk;
 };
 
 static inline struct ramfs_inode *to_ramfs_inode(struct inode *inode)
 {
 	return container_of(inode, struct ramfs_inode, inode);
 }
-
-struct ramfs_priv {
-	struct ramfs_inode root;
-};
 
 /* ---------------------------------------------------------------*/
 
@@ -96,18 +94,25 @@ static struct inode *ramfs_get_inode(struct super_block *sb, const struct inode 
 	return inode;
 }
 
-static struct ramfs_chunk *ramfs_get_chunk(void)
+#define MIN_SIZE SZ_8K
+
+static struct ramfs_chunk *ramfs_get_chunk(unsigned long size)
 {
 	struct ramfs_chunk *data = malloc(sizeof(struct ramfs_chunk));
+
 	if (!data)
 		return NULL;
 
-	data->data = calloc(CHUNK_SIZE, 1);
+	if (size < MIN_SIZE)
+		size = MIN_SIZE;
+
+	data->data = calloc(size, 1);
 	if (!data->data) {
 		free(data);
 		return NULL;
 	}
-	data->next = NULL;
+
+	data->size = size;
 
 	return data;
 }
@@ -167,23 +172,6 @@ static int ramfs_symlink(struct inode *dir, struct dentry *dentry,
 
 static int ramfs_unlink(struct inode *dir, struct dentry *dentry)
 {
-	struct inode *inode = d_inode(dentry);
-
-	if (inode) {
-		struct ramfs_inode *node = to_ramfs_inode(inode);
-		struct ramfs_chunk *chunk = node->data;
-
-		node->data = NULL;
-
-		while (chunk) {
-			struct ramfs_chunk *tmp = chunk;
-
-			chunk = chunk->next;
-
-			ramfs_put_chunk(tmp);
-		}
-	}
-
 	return simple_unlink(dir, dentry);
 }
 
@@ -207,80 +195,57 @@ static const struct inode_operations ramfs_dir_inode_operations =
 	.create = ramfs_create,
 };
 
-static struct ramfs_chunk *ramfs_find_chunk(struct ramfs_inode *node, int chunk)
+static struct ramfs_chunk *ramfs_find_chunk(struct ramfs_inode *node,
+					    unsigned long pos, int *ofs, int *len)
 {
-	struct ramfs_chunk *data;
-	int left = chunk;
+	struct ramfs_chunk *data, *cur = node->current_chunk;
 
-	if (chunk == 0)
-		return node->data;
+	if (cur && pos >= cur->ofs)
+		data = cur;
+	else
+		data = list_first_entry(&node->data, struct ramfs_chunk, list);
 
-	if (node->recent_chunk == chunk)
-		return node->recent_chunkp;
+	list_for_each_entry_from(data, &node->data, list) {
+		if (data->ofs + data->size > pos) {
+			*ofs = pos - data->ofs;
+			*len = data->ofs + data->size - pos;
 
-	if (node->recent_chunk < chunk && node->recent_chunk != 0) {
-		/* Start at last known chunk */
-		data = node->recent_chunkp;
-		left -= node->recent_chunk;
-	} else {
-		/* Start at first chunk */
-		data = node->data;
+			node->current_chunk = data;
+
+			return data;
+		}
 	}
 
-	while (left--)
-		data = data->next;
+	pr_err("%s: no chunk for pos %ld found\n", __func__, pos);
 
-	node->recent_chunkp = data;
-	node->recent_chunk = chunk;
-
-	return data;
+	return NULL;
 }
 
 static int ramfs_read(struct device_d *_dev, FILE *f, void *buf, size_t insize)
 {
 	struct inode *inode = f->f_inode;
 	struct ramfs_inode *node = to_ramfs_inode(inode);
-	int chunk;
 	struct ramfs_chunk *data;
-	int ofs;
-	int now;
-	int pos = f->pos;
+	int ofs, len, now;
+	unsigned long pos = f->pos;
 	int size = insize;
 
-	chunk = pos / CHUNK_SIZE;
-	debug("%s: reading from chunk %d\n", __FUNCTION__, chunk);
+	debug("%s: %p %zu @ %lld\n", __func__, node, insize, f->pos);
 
-	/* Position ourself in stream */
-	data = ramfs_find_chunk(node, chunk);
-	ofs = pos % CHUNK_SIZE;
+	while (size) {
+		data = ramfs_find_chunk(node, pos, &ofs, &len);
+		if (!data)
+			return -EINVAL;
 
-	/* Read till end of current chunk */
-	if (ofs) {
-		now = min(size, CHUNK_SIZE - ofs);
-		debug("Reading till end of node. size: %d\n", size);
+		debug("%s: pos: %lu ofs: %d len: %d\n", __func__, pos, ofs, len);
+
+		now = min(size, len);
+
 		memcpy(buf, data->data + ofs, now);
+
 		size -= now;
-		pos += now;
 		buf += now;
-		if (pos > node->size)
-			node->size = now;
-		data = data->next;
-	}
-
-	/* Do full chunks */
-	while (size >= CHUNK_SIZE) {
-		debug("do full chunk. size: %d\n", size);
-		memcpy(buf, data->data, CHUNK_SIZE);
-		data = data->next;
-		size -= CHUNK_SIZE;
-		pos += CHUNK_SIZE;
-		buf += CHUNK_SIZE;
-	}
-
-	/* And the rest */
-	if (size) {
-		debug("do rest. size: %d\n", size);
-		memcpy(buf, data->data, size);
+		pos += now;
 	}
 
 	return insize;
@@ -290,100 +255,154 @@ static int ramfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t i
 {
 	struct inode *inode = f->f_inode;
 	struct ramfs_inode *node = to_ramfs_inode(inode);
-	int chunk;
 	struct ramfs_chunk *data;
-	int ofs;
-	int now;
-	int pos = f->pos;
+	int ofs, len, now;
+	unsigned long pos = f->pos;
 	int size = insize;
 
-	chunk = f->pos / CHUNK_SIZE;
-	debug("%s: writing to chunk %d\n", __FUNCTION__, chunk);
+	debug("%s: %p %zu @ %lld\n", __func__, node, insize, f->pos);
 
-	/* Position ourself in stream */
-	data = ramfs_find_chunk(node, chunk);
-	ofs = f->pos % CHUNK_SIZE;
+	while (size) {
+		data = ramfs_find_chunk(node, pos, &ofs, &len);
+		if (!data)
+			return -EINVAL;
 
-	/* Write till end of current chunk */
-	if (ofs) {
-		now = min(size, CHUNK_SIZE - ofs);
-		debug("writing till end of node. size: %d\n", size);
+		debug("%s: pos: %lu ofs: %d len: %d\n", __func__, pos, ofs, len);
+
+		now = min(size, len);
+
 		memcpy(data->data + ofs, buf, now);
+
 		size -= now;
-		pos += now;
 		buf += now;
-		if (pos > node->size)
-			node->size = now;
-		data = data->next;
-	}
-
-	/* Do full chunks */
-	while (size >= CHUNK_SIZE) {
-		debug("do full chunk. size: %d\n", size);
-		memcpy(data->data, buf, CHUNK_SIZE);
-		data = data->next;
-		size -= CHUNK_SIZE;
-		pos += CHUNK_SIZE;
-		buf += CHUNK_SIZE;
-	}
-
-	/* And the rest */
-	if (size) {
-		debug("do rest. size: %d\n", size);
-		memcpy(data->data, buf, size);
+		pos += now;
 	}
 
 	return insize;
+}
+
+static void ramfs_truncate_down(struct ramfs_inode *node, unsigned long size)
+{
+	struct ramfs_chunk *data, *tmp;
+
+	list_for_each_entry_safe(data, tmp, &node->data, list) {
+		if (data->ofs >= size) {
+			list_del(&data->list);
+			node->alloc_size -= data->size;
+			ramfs_put_chunk(data);
+		}
+	}
+
+	node->current_chunk = NULL;
+}
+
+static int ramfs_truncate_up(struct ramfs_inode *node, unsigned long size)
+{
+	struct ramfs_chunk *data, *tmp;
+	LIST_HEAD(list);
+	unsigned long add = size - node->alloc_size;
+	unsigned long chunksize = add;
+	unsigned long alloc_size = 0;
+
+	if (node->alloc_size >= size)
+		return 0;
+
+	/*
+	 * We first try to allocate all space we need in a single chunk.
+	 * This may fail because of fragmented memory, so in case we cannot
+	 * allocate memory we successively decrease the chunk size until
+	 * we have enough allocations made.
+	 */
+	while (1) {
+		unsigned long now = min(chunksize, add);
+
+		data = ramfs_get_chunk(now);
+		if (!data) {
+			/* No luck, try with smaller chunk size */
+			chunksize >>= 1;
+
+			/* If we do not have even 128KiB then go out */
+			if (chunksize < SZ_128K)
+				goto out;
+
+			continue;
+		}
+
+		data->ofs = node->alloc_size + alloc_size;
+
+		alloc_size += data->size;
+
+		list_add_tail(&data->list, &list);
+
+		if (add <= data->size)
+			break;
+
+		add -= data->size;
+	}
+
+	list_splice_tail(&list, &node->data);
+
+	node->alloc_size += alloc_size;
+
+	return 0;
+
+out:
+	list_for_each_entry_safe(data, tmp, &list, list) {
+		list_del(&data->list);
+		ramfs_put_chunk(data);
+	}
+
+	return -ENOSPC;
 }
 
 static int ramfs_truncate(struct device_d *dev, FILE *f, loff_t size)
 {
 	struct inode *inode = f->f_inode;
 	struct ramfs_inode *node = to_ramfs_inode(inode);
-	int oldchunks, newchunks;
-	struct ramfs_chunk *data = node->data;
+	int ret;
 
-	newchunks = (size + CHUNK_SIZE - 1) / CHUNK_SIZE;
-	oldchunks = (node->size + CHUNK_SIZE - 1) / CHUNK_SIZE;
+	/*
+	 * This is a malloc based filesystem, no need to support more
+	 * memory than fits into unsigned long.
+	 */
+	if (size > ULONG_MAX)
+		return -ENOSPC;
 
-	if (newchunks < oldchunks) {
-		if (!newchunks)
-			node->data = NULL;
-		while (newchunks--)
-			data = data->next;
-		while (data) {
-			struct ramfs_chunk *tmp;
-			tmp = data->next;
-			ramfs_put_chunk(data);
-			data = tmp;
-		}
-		if (node->recent_chunk > newchunks)
-			node->recent_chunk = 0;
+	debug("%s: %p cur: %ld new: %lld alloc: %ld\n", __func__, node,
+	       node->size, size, node->alloc_size);
+
+	if (size == node->size)
+		return 0;
+
+	if (size < node->size) {
+		ramfs_truncate_down(node, size);
+	} else {
+		ret = ramfs_truncate_up(node, size);
+		if (ret)
+			return ret;
 	}
 
-	if (newchunks > oldchunks) {
-		if (data) {
-			data = ramfs_find_chunk(node, oldchunks - 1);
-		} else {
-			node->data = ramfs_get_chunk();
-			if (!node->data)
-				return -ENOMEM;
-			data = node->data;
-			oldchunks = 1;
-		}
-
-		while (data->next)
-			data = data->next;
-
-		while (newchunks > oldchunks) {
-			data->next = ramfs_get_chunk();
-			if (!data->next)
-				return -ENOMEM;
-			data = data->next;
-			oldchunks++;
-		}
-	}
 	node->size = size;
+
+	return 0;
+}
+
+static int ramfs_memmap(struct device_d *_dev, FILE *f, void **map, int flags)
+{
+	struct inode *inode = f->f_inode;
+	struct ramfs_inode *node = to_ramfs_inode(inode);
+	struct ramfs_chunk *data;
+
+	if (list_empty(&node->data))
+		return -EINVAL;
+
+	if (!list_is_singular(&node->data))
+		return -EINVAL;
+
+	data = list_first_entry(&node->data, struct ramfs_chunk, list);
+
+	*map = data->data;
+
 	return 0;
 }
 
@@ -393,25 +412,30 @@ static struct inode *ramfs_alloc_inode(struct super_block *sb)
 
 	node = xzalloc(sizeof(*node));
 
+	INIT_LIST_HEAD(&node->data);
+
 	return &node->inode;
+}
+
+static void ramfs_destroy_inode(struct inode *inode)
+{
+	struct ramfs_inode *node = to_ramfs_inode(inode);
+
+	ramfs_truncate_down(node, 0);
+
+	free(node);
 }
 
 static const struct super_operations ramfs_ops = {
 	.alloc_inode = ramfs_alloc_inode,
+	.destroy_inode = ramfs_destroy_inode,
 };
 
 static int ramfs_probe(struct device_d *dev)
 {
 	struct inode *inode;
-	struct ramfs_priv *priv = xzalloc(sizeof(struct ramfs_priv));
 	struct fs_device_d *fsdev = dev_to_fs_device(dev);
 	struct super_block *sb = &fsdev->sb;
-
-	dev->priv = priv;
-
-	priv->root.name = "/";
-	priv->root.mode = S_IFDIR | S_IRWXU | S_IRWXG | S_IRWXO;
-	priv->root.parent = &priv->root;
 
 	sb->s_op = &ramfs_ops;
 
@@ -429,6 +453,7 @@ static void ramfs_remove(struct device_d *dev)
 static struct fs_driver_d ramfs_driver = {
 	.read      = ramfs_read,
 	.write     = ramfs_write,
+	.memmap    = ramfs_memmap,
 	.truncate  = ramfs_truncate,
 	.flags     = FS_DRIVER_NO_DEV,
 	.drv = {

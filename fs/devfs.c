@@ -200,6 +200,13 @@ static struct inode *devfs_alloc_inode(struct super_block *sb)
 	return &node->inode;
 }
 
+static void devfs_destroy_inode(struct inode *inode)
+{
+	struct devfs_inode *node = container_of(inode, struct devfs_inode, inode);
+
+	free(node);
+}
+
 static int devfs_iterate(struct file *file, struct dir_context *ctx)
 {
 	struct cdev *cdev;
@@ -314,6 +321,7 @@ static const struct inode_operations devfs_dir_inode_operations =
 
 static const struct super_operations devfs_ops = {
 	.alloc_inode = devfs_alloc_inode,
+	.destroy_inode = devfs_destroy_inode,
 };
 
 static int devfs_probe(struct device_d *dev)

@@ -1087,10 +1087,15 @@ void iget_failed(struct inode *inode)
 
 void iput(struct inode *inode)
 {
-	if (!inode->i_count)
+	if (!inode)
 		return;
 
 	inode->i_count--;
+
+	if (!inode->i_count) {
+		list_del(&inode->i_sb_list);
+		destroy_inode(inode);
+	}
 }
 
 struct inode *iget(struct inode *inode)

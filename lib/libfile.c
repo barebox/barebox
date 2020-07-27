@@ -353,10 +353,6 @@ int copy_file(const char *src, const char *dst, int verbose)
 		goto out;
 	}
 
-	/* Set O_TRUNC only if file exist and is a regular file */
-	if (!s && S_ISREG(dststat.st_mode))
-		mode |= O_TRUNC;
-
 	dstfd = open(dst, mode);
 	if (dstfd < 0) {
 		printf("could not open %s: %s\n", dst, errno_str());
@@ -364,14 +360,25 @@ int copy_file(const char *src, const char *dst, int verbose)
 		goto out;
 	}
 
-	discard_range(dstfd, srcstat.st_size, 0);
+	ret = ftruncate(dstfd, 0);
+	if (ret)
+		goto out;
 
-	if (verbose) {
-		if (stat(src, &srcstat) < 0)
-			srcstat.st_size = 0;
+	ret = stat(src, &srcstat);
+	if (ret)
+		goto out;
 
-		init_progression_bar(srcstat.st_size);
+	if (srcstat.st_size != FILESIZE_MAX) {
+		discard_range(dstfd, srcstat.st_size, 0);
+		if (S_ISREG(dststat.st_mode)) {
+			ret = ftruncate(dstfd, srcstat.st_size);
+			if (ret)
+				goto out;
+		}
 	}
+
+	if (verbose)
+		init_progression_bar(srcstat.st_size);
 
 	while (1) {
 		r = read(srcfd, rw_buf, RW_BUF_SIZE);

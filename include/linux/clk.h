@@ -556,7 +556,7 @@ struct string_list;
 
 int clk_name_complete(struct string_list *sl, char *instr);
 
-char *of_clk_get_parent_name(struct device_node *np, unsigned int index);
+char *of_clk_get_parent_name(const struct device_node *np, int index);
 
 static inline void clk_unregister(struct clk *clk)
 {

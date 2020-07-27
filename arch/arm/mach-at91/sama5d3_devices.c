@@ -18,7 +18,7 @@
 #include <mach/board.h>
 #include <mach/at91_pmc.h>
 #include <mach/at91sam9x5_matrix.h>
-#include <mach/at91sam9_ddrsdr.h>
+#include <mach/at91_ddrsdrc.h>
 #include <mach/iomux.h>
 #include <mach/cpu.h>
 #include <i2c/i2c-gpio.h>

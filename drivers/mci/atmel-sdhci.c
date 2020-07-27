@@ -46,7 +46,9 @@ static int at91_sdhci_mci_init(struct mci_host *mci, struct device_d *dev)
 	struct sdhci *sdhci = &priv->host.sdhci;
 	int ret;
 
-	ret = sdhci_reset(sdhci, SDHCI_RESET_ALL);
+	priv->host.dev = dev;
+
+	ret = sdhci_reset(sdhci, SDHCI_RESET_CMD | SDHCI_RESET_DATA);
 	if (ret)
 		return ret;
 

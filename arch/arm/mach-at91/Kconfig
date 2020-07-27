@@ -40,6 +40,14 @@ config HAVE_AT91_I2S_MUX_CLK
 config HAVE_AT91_SAM9X60_PLL
 	bool
 
+config HAVE_AT91_DDRAMC
+	bool
+
+config AT91_MCI_PBL
+	bool
+	depends on MCI_ATMEL_SDHCI_PBL
+	default y
+
 # Select if board uses the common at91sam926x_board_init
 config AT91SAM926X_BOARD_INIT
 	bool
@@ -82,6 +90,7 @@ config SOC_SAMA5D2
 	select PINCTRL_AT91PIO4
 	select HAS_MACB
 	select HAVE_MACH_ARM_HEAD
+	select HAVE_AT91_DDRAMC
 
 config SOC_SAMA5D3
 	bool
@@ -598,7 +607,9 @@ config MACH_SAMA5D27_SOM1
 	bool "Microchip SAMA5D27 SoM-1 Evaluation Kit"
 	select SOC_SAMA5D2
 	select OFDEVICE
+	select MCI_ATMEL_SDHCI_PBL
 	select COMMON_CLK_OF_PROVIDER
+	select FS_FAT_WRITE if MCI_ATMEL_SDHCI && FS_FAT && ENV_HANDLING
 	help
 	  Select this if you are using Microchip's sama5d27 SoM evaluation kit
 

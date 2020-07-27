@@ -96,6 +96,7 @@
 #include <filetype.h>
 #include "ff.h"			/* FatFs configurations and declarations */
 #include "diskio.h"		/* Declarations of low level disk I/O functions */
+#include <pbl.h>
 
 #if _FATFS != 8237
 #error Wrong include file (ff.h).
@@ -214,7 +215,7 @@
 #define	DDE			0xE5	/* Deleted directory enrty mark in DIR_Name[0] */
 #define	NDDE			0x05	/* Replacement of a character collides with DDE */
 
-#ifndef CONFIG_FS_FAT_LFN
+#ifndef FS_FAT_LFN
 #define	DEF_NAMEBUF		BYTE sfn[12]
 #define INIT_BUF(dobj)		(dobj).fn = sfn
 #define	FREE_BUF()
@@ -250,7 +251,7 @@ int move_window (
 
 	wsect = fs->winsect;
 	if (wsect != sector) {	/* Changed current window */
-#ifdef CONFIG_FS_FAT_WRITE
+#ifdef FS_FAT_WRITE
 		if (fs->wflag) {	/* Write back dirty window if needed */
 			if (disk_write(fs, fs->win, wsect, 1) != RES_OK)
 				return -EIO;
@@ -277,7 +278,7 @@ int move_window (
 /*
  * Clean-up cached data
  */
-#ifdef CONFIG_FS_FAT_WRITE
+#ifdef FS_FAT_WRITE
 static
 int sync (	/* 0: successful, -EIO: failed */
 	FATFS *fs	/* File system object */
@@ -372,7 +373,7 @@ static DWORD get_fat (	/* 0xFFFFFFFF:Disk error, 1:Internal error, Else:Cluster 
 /*
  * FAT access - Change value of a FAT entry
  */
-#ifdef CONFIG_FS_FAT_WRITE
+#ifdef FS_FAT_WRITE
 
 static int put_fat (
 	FATFS *fs,	/* File system object */
@@ -431,7 +432,7 @@ static int put_fat (
 
 	return res;
 }
-#endif /* CONFIG_FS_FAT_WRITE */
+#endif /* FS_FAT_WRITE */
 
 
 
@@ -439,7 +440,7 @@ static int put_fat (
 /*
  * FAT handling - Remove a cluster chain
  */
-#ifdef CONFIG_FS_FAT_WRITE
+#ifdef FS_FAT_WRITE
 static
 int remove_chain (
 	FATFS *fs,			/* File system object */
@@ -506,7 +507,7 @@ int remove_chain (
 /*
  * FAT handling - Stretch or Create a cluster chain
  */
-#ifdef CONFIG_FS_FAT_WRITE
+#ifdef FS_FAT_WRITE
 static
 DWORD create_chain (	/* 0:No free cluster, 1:Internal error, 0xFFFFFFFF:Disk error, >=2:New cluster# */
 	FATFS *fs,	/* File system object */
@@ -566,7 +567,7 @@ DWORD create_chain (	/* 0:No free cluster, 1:Internal error, 0xFFFFFFFF:Disk err
 
 	return ncl; /* Return new cluster number or error code */
 }
-#endif /* CONFIG_FS_FAT_WRITE */
+#endif /* FS_FAT_WRITE */
 
 /*
  * Directory handling - Set directory index
@@ -657,7 +658,7 @@ static int dir_next (	/* 0:Succeeded, FR_NO_FILE:End of table, FR_DENIED:EOT and
 					return -EIO;
 
 				if (clst >= dj->fs->n_fatent) {	/* When it reached end of dynamic table */
-#ifdef CONFIG_FS_FAT_WRITE
+#ifdef FS_FAT_WRITE
 					BYTE c;
 
 					if (!stretch)
@@ -708,7 +709,7 @@ static int dir_next (	/* 0:Succeeded, FR_NO_FILE:End of table, FR_DENIED:EOT and
 /*
  * LFN handling - Test/Pick/Fit an LFN segment from/to directory entry
  */
-#ifdef CONFIG_FS_FAT_LFN
+#ifdef FS_FAT_LFN
 
 /* Offset of LFN chars in the directory entry */
 static const BYTE LfnOfs[] = {1,3,5,7,9,14,16,18,20,22,24,28,30};
@@ -784,7 +785,7 @@ int pick_lfn (		/* 1:Succeeded, 0:Buffer overflow */
 }
 
 
-#ifdef CONFIG_FS_FAT_WRITE
+#ifdef FS_FAT_WRITE
 static
 void fit_lfn (
 	const WCHAR *lfnbuf,	/* Pointer to the LFN buffer */
@@ -824,7 +825,7 @@ void fit_lfn (
 /*
  * Create numbered name
  */
-#if defined(CONFIG_FS_FAT_LFN) && defined(CONFIG_FS_FAT_WRITE)
+#if defined(FS_FAT_LFN) && defined(FS_FAT_WRITE)
 static void gen_numname (
 	BYTE *dst,		/* Pointer to generated SFN */
 	const BYTE *src,	/* Pointer to source SFN to be modified */
@@ -874,7 +875,7 @@ static void gen_numname (
 /*
  * Calculate sum of an SFN
  */
-#ifdef CONFIG_FS_FAT_LFN
+#ifdef FS_FAT_LFN
 static BYTE sum_sfn (
 	const BYTE *dir		/* Ptr to directory entry */
 )
@@ -897,7 +898,7 @@ static int dir_find (
 {
 	int res;
 	BYTE c, *dir;
-#ifdef CONFIG_FS_FAT_LFN
+#ifdef FS_FAT_LFN
 	BYTE a, ord, sum;
 #endif
 
@@ -905,7 +906,7 @@ static int dir_find (
 	if (res != 0)
 		return res;
 
-#ifdef CONFIG_FS_FAT_LFN
+#ifdef FS_FAT_LFN
 	ord = sum = 0xFF;
 #endif
 	do {
@@ -919,7 +920,7 @@ static int dir_find (
 			res = -ENOENT;
 			break;
 		}
-#ifdef CONFIG_FS_FAT_LFN	/* LFN configuration */
+#ifdef FS_FAT_LFN	/* LFN configuration */
 		a = dir[DIR_Attr] & AM_MASK;
 		if (c == DDE || ((a & AM_VOL) && a != AM_LFN)) {
 			/* An entry without valid data */
@@ -970,7 +971,7 @@ static int dir_read (
 {
 	int res;
 	BYTE c, *dir;
-#ifdef CONFIG_FS_FAT_LFN
+#ifdef FS_FAT_LFN
 	BYTE a, ord = 0xFF, sum = 0xFF;
 #endif
 
@@ -986,7 +987,7 @@ static int dir_read (
 			res = -ENOENT;
 			break;
 		}
-#ifdef CONFIG_FS_FAT_LFN	/* LFN configuration */
+#ifdef FS_FAT_LFN	/* LFN configuration */
 		a = dir[DIR_Attr] & AM_MASK;
 		if (c == DDE || c == '.' || ((a & AM_VOL) && a != AM_LFN)) {	/* An entry without valid data */
 			ord = 0xFF;
@@ -1025,7 +1026,7 @@ static int dir_read (
 /*
  * Register an object to the directory
  */
-#ifdef CONFIG_FS_FAT_WRITE
+#ifdef FS_FAT_WRITE
 static
 int dir_register (	/* 0:Successful, FR_DENIED:No free entry or too many SFN collision, -EIO:Disk error */
 	FF_DIR *dj	/* Target directory with object name to be created */
@@ -1033,7 +1034,7 @@ int dir_register (	/* 0:Successful, FR_DENIED:No free entry or too many SFN coll
 {
 	int res;
 	BYTE c, *dir;
-#ifdef CONFIG_FS_FAT_LFN	/* LFN configuration */
+#ifdef FS_FAT_LFN	/* LFN configuration */
 	WORD n, ne, is;
 	BYTE sn[12], *fn, sum;
 	WCHAR *lfn;
@@ -1127,7 +1128,7 @@ int dir_register (	/* 0:Successful, FR_DENIED:No free entry or too many SFN coll
 			dir = dj->dir;
 			memset(dir, 0, SZ_DIR);	/* Clean the entry */
 			memcpy(dir, dj->fn, 11);	/* Put SFN */
-#ifdef CONFIG_FS_FAT_LFN
+#ifdef FS_FAT_LFN
 			dir[DIR_NTres] = *(dj->fn+NS) & (NS_BODY | NS_EXT);	/* Put NT flag */
 #endif
 			dj->fs->wflag = 1;
@@ -1136,18 +1137,18 @@ int dir_register (	/* 0:Successful, FR_DENIED:No free entry or too many SFN coll
 
 	return res;
 }
-#endif /* CONFIG_FS_FAT_WRITE */
+#endif /* FS_FAT_WRITE */
 
 /*
  * Remove an object from the directory
  */
-#if defined CONFIG_FS_FAT_WRITE
+#if defined FS_FAT_WRITE
 static int dir_remove (	/* 0: Successful, -EIO: A disk error */
 	FF_DIR *dj				/* Directory object pointing the entry to be removed */
 )
 {
 	int res;
-#ifdef CONFIG_FS_FAT_LFN	/* LFN configuration */
+#ifdef FS_FAT_LFN	/* LFN configuration */
 	WORD i;
 
 	i = dj->index;	/* SFN index */
@@ -1181,7 +1182,7 @@ static int dir_remove (	/* 0: Successful, -EIO: A disk error */
 
 	return res;
 }
-#endif /* CONFIG_FS_FAT_WRITE */
+#endif /* FS_FAT_WRITE */
 
 /*
  * Pick a segment and create the object name in directory form
@@ -1195,7 +1196,7 @@ static int create_name (
 	static const BYTE excvt[] = _EXCVT;	/* Upper conversion table for extended chars */
 #endif
 
-#ifdef CONFIG_FS_FAT_LFN	/* LFN configuration */
+#ifdef FS_FAT_LFN	/* LFN configuration */
 	BYTE b, cf;
 	WCHAR w, *lfn;
 	UINT i, ni, si, di;
@@ -1410,7 +1411,7 @@ static void get_fileinfo (		/* No return code */
 				break;
 			if (c == NDDE)
 				c = (TCHAR)DDE;
-#ifdef CONFIG_FS_FAT_LFN
+#ifdef FS_FAT_LFN
 			if ((nt & NS_BODY) && isupper(c))
 				c += 0x20;
 #endif
@@ -1428,7 +1429,7 @@ static void get_fileinfo (		/* No return code */
 				c = dir[i];
 				if (c == ' ')
 					break;
-#ifdef CONFIG_FS_FAT_LFN
+#ifdef FS_FAT_LFN
 				if ((nt & NS_EXT) && isupper(c))
 					c += 0x20;
 #endif
@@ -1449,7 +1450,7 @@ static void get_fileinfo (		/* No return code */
 	}
 	*p = 0;		/* Terminate SFN str by a \0 */
 
-#ifdef CONFIG_FS_FAT_LFN
+#ifdef FS_FAT_LFN
 	if (fno->lfname && fno->lfsize) {
 		TCHAR *tp = fno->lfname;
 		WCHAR w, *lfn;
@@ -1668,7 +1669,7 @@ static int chk_mounted (	/* 0(0): successful, !=0: any error occurred */
 	if (fs->fsize < (szbfat + (SS(fs) - 1)) / SS(fs))
 		return -EINVAL;
 
-#ifdef CONFIG_FS_FAT_WRITE
+#ifdef FS_FAT_WRITE
 	/* Initialize cluster allocation information */
 	fs->free_clust = 0xFFFFFFFF;
 	fs->last_clust = 0;
@@ -1723,7 +1724,7 @@ int f_open (
 
 	fp->fs = NULL;		/* Clear file object */
 
-#ifdef CONFIG_FS_FAT_WRITE
+#ifdef FS_FAT_WRITE
 	mode &= FA_READ | FA_WRITE | FA_CREATE_ALWAYS | FA_OPEN_ALWAYS | FA_CREATE_NEW;
 	dj.fs = fatfs;
 #else
@@ -1735,7 +1736,7 @@ int f_open (
 		res = follow_path(&dj, path);	/* Follow the file path */
 	dir = dj.dir;
 
-#ifdef CONFIG_FS_FAT_WRITE	/* R/W configuration */
+#ifdef FS_FAT_WRITE	/* R/W configuration */
 	if (res == 0) {
 		if (!dir)	/* Current dir itself */
 			res = -EISDIR;
@@ -1870,7 +1871,7 @@ int f_read (
 					cc = fp->fs->csize - csect;
 				if (disk_read(fp->fs, rbuff, sect, (BYTE)cc) != RES_OK)
 					ABORT(fp->fs, -EIO);
-#if defined CONFIG_FS_FAT_WRITE
+#if defined FS_FAT_WRITE
 				/* Replace one of the read sectors with cached data if it contains a dirty sector */
 				if ((fp->flag & FA__DIRTY) && fp->dsect - sect < cc)
 					memcpy(rbuff + ((fp->dsect - sect) * SS(fp->fs)), fp->buf, SS(fp->fs));
@@ -1879,7 +1880,7 @@ int f_read (
 				continue;
 			}
 			if (fp->dsect != sect) {	/* Load data sector if not in cache */
-#ifdef CONFIG_FS_FAT_WRITE
+#ifdef FS_FAT_WRITE
 				if (fp->flag & FA__DIRTY) {	/* Write-back dirty sector cache */
 					if (disk_write(fp->fs, fp->buf, fp->dsect, 1) != RES_OK)
 						ABORT(fp->fs, -EIO);
@@ -1903,7 +1904,7 @@ int f_read (
 
 
 
-#ifdef CONFIG_FS_FAT_WRITE
+#ifdef FS_FAT_WRITE
 /*
  * Write File
  */
@@ -2044,7 +2045,7 @@ int f_sync (
 	return res;
 }
 
-#endif /* CONFIG_FS_FAT_WRITE */
+#endif /* FS_FAT_WRITE */
 
 /*
  * Close File
@@ -2053,7 +2054,7 @@ int f_close (
 	FIL *fp		/* Pointer to the file object to be closed */
 )
 {
-#ifndef CONFIG_FS_FAT_WRITE
+#ifndef FS_FAT_WRITE
 	fp->fs = 0;	/* Discard file object */
 	return 0;
 #else
@@ -2082,7 +2083,7 @@ int f_lseek (
 		return -ERESTARTSYS;
 
 	if (ofs > fp->fsize	/* In read-only mode, clip offset with the file size */
-#ifdef CONFIG_FS_FAT_WRITE
+#ifdef FS_FAT_WRITE
 		 && !(fp->flag & FA_WRITE)
 #endif
 		) ofs = fp->fsize;
@@ -2098,7 +2099,7 @@ int f_lseek (
 			clst = fp->clust;
 		} else {					/* When seek to back cluster, */
 			clst = fp->sclust;			/* start from the first cluster */
-#ifdef CONFIG_FS_FAT_WRITE
+#ifdef FS_FAT_WRITE
 			if (clst == 0) {			/* If no cluster chain, create a new chain */
 				clst = create_chain(fp->fs, 0);
 				if (clst == 1)
@@ -2112,7 +2113,7 @@ int f_lseek (
 		}
 		if (clst != 0) {
 			while (ofs > bcs) {	/* Cluster following loop */
-#ifdef CONFIG_FS_FAT_WRITE
+#ifdef FS_FAT_WRITE
 				if (fp->flag & FA_WRITE) {	/* Check if in write mode or not */
 					/* Force stretch if in write mode */
 					clst = create_chain(fp->fs, clst);
@@ -2143,7 +2144,7 @@ int f_lseek (
 		}
 	}
 	if (fp->fptr % SS(fp->fs) && nsect != fp->dsect) {	/* Fill sector cache if needed */
-#ifdef CONFIG_FS_FAT_WRITE
+#ifdef FS_FAT_WRITE
 		if (fp->flag & FA__DIRTY) {	/* Write-back dirty sector cache */
 			if (disk_write(fp->fs, fp->buf, fp->dsect, 1) != RES_OK)
 				ABORT(fp->fs, -EIO);
@@ -2154,7 +2155,7 @@ int f_lseek (
 			ABORT(fp->fs, -EIO);
 		fp->dsect = nsect;
 	}
-#ifdef CONFIG_FS_FAT_WRITE
+#ifdef FS_FAT_WRITE
 	if (fp->fptr > fp->fsize) {	/* Set file change flag if the file size is extended */
 		fp->fsize = fp->fptr;
 		fp->flag |= FA__WRITTEN;
@@ -2269,7 +2270,7 @@ int f_stat (
 	return res;
 }
 
-#ifdef CONFIG_FS_FAT_WRITE
+#ifdef FS_FAT_WRITE
 /*
  * Get Number of Free Clusters
  */
@@ -2706,4 +2707,4 @@ out:
 
 	return res;
 }
-#endif /* CONFIG_FS_FAT_WRITE */
+#endif /* FS_FAT_WRITE */

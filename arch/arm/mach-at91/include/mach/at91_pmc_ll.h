@@ -13,25 +13,38 @@
 #define AT91_PMC_LL_FLAG_SAM9X5_PMC	(1 << 0)
 #define AT91_PMC_LL_FLAG_MEASURE_XTAL	(1 << 1)
 #define AT91_PMC_LL_FLAG_DISABLE_RC	(1 << 2)
+#define AT91_PMC_LL_FLAG_H32MXDIV	(1 << 3)
+#define AT91_PMC_LL_FLAG_PMC_UTMI	(1 << 4)
+#define AT91_PMC_LL_FLAG_GCSR		(1 << 5)
 
 #define AT91_PMC_LL_AT91RM9200	(0)
 #define AT91_PMC_LL_AT91SAM9260	(0)
 #define AT91_PMC_LL_AT91SAM9261	(0)
 #define AT91_PMC_LL_AT91SAM9263	(0)
-#define AT91_PMC_LL_AT91SAM9G45	(0)
+#define AT91_PMC_LL_AT91SAM9G45	(AT91_PMC_LL_FLAG_PMC_UTMI)
 #define AT91_PMC_LL_AT91SAM9X5	(AT91_PMC_LL_FLAG_SAM9X5_PMC | \
-				 AT91_PMC_LL_FLAG_DISABLE_RC)
+				 AT91_PMC_LL_FLAG_DISABLE_RC | \
+				 AT91_PMC_LL_FLAG_PMC_UTMI)
 #define AT91_PMC_LL_AT91SAM9N12	(AT91_PMC_LL_FLAG_SAM9X5_PMC | \
 				 AT91_PMC_LL_FLAG_DISABLE_RC)
 #define AT91_PMC_LL_SAMA5D2	(AT91_PMC_LL_FLAG_SAM9X5_PMC | \
-				 AT91_PMC_LL_FLAG_MEASURE_XTAL)
+				 AT91_PMC_LL_FLAG_MEASURE_XTAL | \
+				 AT91_PMC_LL_FLAG_PMC_UTMI)
 #define AT91_PMC_LL_SAMA5D3	(AT91_PMC_LL_FLAG_SAM9X5_PMC | \
-				 AT91_PMC_LL_FLAG_DISABLE_RC)
-#define AT91_PMC_LL_SAMA5D4	(AT91_PMC_LL_FLAG_SAM9X5_PMC)
+				 AT91_PMC_LL_FLAG_DISABLE_RC | \
+				 AT91_PMC_LL_FLAG_PMC_UTMI)
+#define AT91_PMC_LL_SAMA5D4	(AT91_PMC_LL_FLAG_SAM9X5_PMC | \
+				 AT91_PMC_LL_FLAG_H32MXDIV | \
+				 AT91_PMC_LL_FLAG_PMC_UTMI)
 
 void at91_pmc_init(void __iomem *pmc_base, unsigned int flags);
 void at91_pmc_cfg_mck(void __iomem *pmc_base, u32 pmc_mckr, unsigned int flags);
 void at91_pmc_cfg_plla(void __iomem *pmc_base, u32 pmc_pllar, unsigned int flags);
+
+int at91_pmc_enable_generic_clock(void __iomem *pmc_base, void __iomem *sfr_base,
+				  unsigned int periph_id,
+				  unsigned int clk_source, unsigned int div,
+				  unsigned int flags);
 
 static inline void at91_pmc_init_pll(void __iomem *pmc_base, u32 pmc_pllicpr)
 {
@@ -73,6 +86,15 @@ static inline int at91_pmc_sam9x5_enable_periph_clock(void __iomem *pmc_base,
        writel(pcr, pmc_base + AT91_PMC_PCR);
 
        return 0;
+}
+
+static inline bool at91_pmc_check_mck_h32mxdiv(void __iomem *pmc_base,
+					       unsigned flags)
+{
+	if (flags & AT91_PMC_LL_FLAG_H32MXDIV)
+		return readl(pmc_base + AT91_PMC_MCKR) & AT91_PMC_H32MXDIV;
+
+	return false;
 }
 
 #endif

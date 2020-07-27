@@ -12,6 +12,16 @@
 #include <common.h>
 #include <mci.h>
 
+#include <mach/early_udelay.h>
+
+#ifdef __PBL__
+#define udelay early_udelay
+#undef  dev_err
+#define dev_err(d, ...)		pr_err(__VA_ARGS__)
+#undef  dev_warn
+#define dev_warn(d, ...)	pr_warn(__VA_ARGS__)
+#endif
+
 #include "atmel-sdhci.h"
 
 #define AT91_SDHCI_CA1R		0x44	/* Capabilities 1 Register */
@@ -83,25 +93,27 @@ exit:
 static int at91_sdhci_wait_for_done(struct at91_sdhci *host, u32 mask)
 {
 	struct sdhci *sdhci = &host->sdhci;
-	u16 status;
+	u32 status;
 	int ret;
 
-	ret = sdhci_read16_poll_timeout(sdhci, SDHCI_INT_NORMAL_STATUS, status,
+	ret = sdhci_read32_poll_timeout(sdhci, SDHCI_INT_STATUS, status,
 					(status & mask) == mask || (status & SDHCI_INT_ERROR),
 					USEC_PER_SEC);
 
 	if (ret < 0) {
-		pr_err("SDHCI timeout while waiting for done\n");
+		dev_err(host->dev, "SDHCI timeout while waiting for done\n");
 		return ret;
 	}
 
+	if (status & SDHCI_INT_TIMEOUT)
+		return -ETIMEDOUT;
+
 	if (status & SDHCI_INT_ERROR) {
-		pr_err("SDHCI_INT_ERROR: 0x%08x\n",
-			sdhci_read16(sdhci, SDHCI_INT_ERROR_STATUS));
+		dev_err(host->dev, "SDHCI_INT_STATUS: 0x%08x\n", status);
 		return -EPERM;
 	}
 
-	return status;
+	return status & 0xFFFF;
 }
 
 int at91_sdhci_send_command(struct at91_sdhci *host, struct mci_cmd *cmd,
@@ -109,7 +121,8 @@ int at91_sdhci_send_command(struct at91_sdhci *host, struct mci_cmd *cmd,
 {
 	unsigned command, xfer;
 	struct sdhci *sdhci = &host->sdhci;
-	u32 mask, status, state;
+	u32 mask, state;
+	int status;
 	int ret;
 
 	/* Wait for idle before next command */
@@ -120,7 +133,7 @@ int at91_sdhci_send_command(struct at91_sdhci *host, struct mci_cmd *cmd,
 	ret = sdhci_read32_poll_timeout(sdhci, SDHCI_PRESENT_STATE, state,
 					!(state & mask), 100 * USEC_PER_MSEC);
 	if (ret) {
-		pr_err("timeout while waiting for idle\n");
+		dev_err(host->dev, "timeout while waiting for idle\n");
 		return ret;
 	}
 
@@ -147,28 +160,29 @@ int at91_sdhci_send_command(struct at91_sdhci *host, struct mci_cmd *cmd,
 	sdhci_write16(sdhci, SDHCI_COMMAND, command);
 
 	status = at91_sdhci_wait_for_done(host, mask);
-	if (status >= 0 && (status & (SDHCI_INT_ERROR | mask)) == mask) {
-		sdhci_read_response(sdhci, cmd);
-		sdhci_write32(sdhci, SDHCI_INT_STATUS, mask);
+	if (status < 0)
+		goto error;
 
-		if (data)
-			sdhci_transfer_data(sdhci, data);
+	sdhci_read_response(sdhci, cmd);
+	sdhci_write32(sdhci, SDHCI_INT_STATUS, mask);
 
-		udelay(1000);
+	if (data)
+		sdhci_transfer_data(sdhci, data);
 
-		status = sdhci_read32(sdhci, SDHCI_INT_STATUS);
-		sdhci_write32(sdhci, SDHCI_INT_STATUS, ~0U);
-
-		return 0;
-	}
+	udelay(1000);
 
 	status = sdhci_read32(sdhci, SDHCI_INT_STATUS);
+	sdhci_write32(sdhci, SDHCI_INT_STATUS, ~0U);
+
+	return 0;
+
+error:
 	sdhci_write32(sdhci, SDHCI_INT_STATUS, ~0U);
 
 	sdhci_reset(sdhci, SDHCI_RESET_CMD);
 	sdhci_reset(sdhci, SDHCI_RESET_DATA);
 
-	return status & SDHCI_INT_TIMEOUT ? -ETIMEDOUT : -ECOMM;
+	return status;
 }
 
 static void at91_sdhci_set_power(struct at91_sdhci *host, unsigned vdd)
@@ -214,7 +228,7 @@ static int at91_sdhci_set_clock(struct at91_sdhci *host, unsigned clock)
 					!(reg & present_mask),
 					100 * USEC_PER_MSEC);
 	if (ret) {
-		pr_warn("Timeout waiting for CMD and DAT Inhibit bits\n");
+		dev_warn(host->dev, "Timeout waiting for CMD and DAT Inhibit bits\n");
 		return ret;
 	}
 
@@ -258,7 +272,7 @@ static int at91_sdhci_set_clock(struct at91_sdhci *host, unsigned clock)
 					clk & SDHCI_INTCLOCK_STABLE,
 					20 * USEC_PER_MSEC);
 	if (ret) {
-		pr_warn("Timeout waiting for clock stable\n");
+		dev_warn(host->dev, "Timeout waiting for clock stable\n");
 		return ret;
 	}
 

@@ -25,6 +25,12 @@
 
 	chosen {
 		stdout-path = &uart1;
+
+		environment {
+			compatible = "barebox,environment";
+			device-path = &sdmmc1;
+			file-path = "barebox.env";
+		};
 	};
 
 	leds {
@@ -37,10 +43,6 @@
 			gpios = <&pioA PIN_PA6 GPIO_ACTIVE_HIGH>;
 			linux,default-trigger = "mmc0";
 		};
-	};
-
-	memory {
-		reg = <0x20000000 0x8000000>;
 	};
 };
 

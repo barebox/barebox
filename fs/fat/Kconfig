@@ -8,9 +8,16 @@ if FS_FAT
 config FS_FAT_WRITE
 	bool
 	prompt "FAT write support"
+	help
+	  Enable support for writing in FAT partitions.
+	  Note: This doesn't apply to FAT usage in barebox PBL.
+
 
 config FS_FAT_LFN
 	bool
 	prompt "Support long filenames"
+	help
+	  Enable support for file names other than 8.3.
+	  Note: This doesn't apply to FAT usage in barebox PBL.
 
 endif

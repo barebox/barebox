@@ -17,6 +17,18 @@
 #ifndef _FATFS
 #define _FATFS	8237	/* Revision ID */
 
+#ifndef __PBL__
+
+#ifdef CONFIG_FS_FAT_LFN
+#define FS_FAT_LFN 1
+#endif
+
+#ifdef CONFIG_FS_FAT_WRITE
+#define FS_FAT_WRITE 1
+#endif
+
+#endif
+
 #include <asm/unaligned.h>
 #include <linux/list.h>
 
@@ -30,7 +42,7 @@
 /* Type of path name strings on FatFs API */
 
 #if _LFN_UNICODE			/* Unicode string */
-#ifndef CONFIG_FS_FAT_LFN
+#ifndef FS_FAT_LFN
 #error _LFN_UNICODE must be 0 in non-LFN cfg.
 #endif
 #ifndef _INC_TCHAR
@@ -63,7 +75,7 @@ typedef struct {
 #if _MAX_SS != 512
 	WORD	ssize;		/* Bytes per sector (512,1024,2048,4096) */
 #endif
-#ifdef CONFIG_FS_FAT_WRITE
+#ifdef FS_FAT_WRITE
 	DWORD	last_clust;	/* Last allocated cluster */
 	DWORD	free_clust;	/* Number of free clusters */
 	DWORD	fsi_sector;	/* fsinfo sector (FAT32) */
@@ -92,7 +104,7 @@ typedef struct {
 	DWORD	sclust;		/* File start cluster (0 when fsize==0) */
 	DWORD	clust;		/* Current cluster */
 	DWORD	dsect;		/* Current data sector */
-#ifdef CONFIG_FS_FAT_WRITE
+#ifdef FS_FAT_WRITE
 	DWORD	dir_sect;	/* Sector containing the directory entry */
 	BYTE*	dir_ptr;	/* Ponter to the directory entry in the window */
 #endif
@@ -119,7 +131,7 @@ typedef struct {
 	DWORD	sect;			/* Current sector */
 	BYTE*	dir;			/* Pointer to the current SFN entry in the win[] */
 	BYTE*	fn;			/* Pointer to the SFN (in/out) {file[8],ext[3],status[1]} */
-#ifdef CONFIG_FS_FAT_LFN
+#ifdef FS_FAT_LFN
 	WCHAR*	lfn;			/* Pointer to the LFN working buffer */
 	WORD	lfn_idx;		/* Last matched LFN index number (0xFFFF:No LFN) */
 #endif
@@ -135,7 +147,7 @@ typedef struct {
 	WORD	ftime;			/* Last modified time */
 	BYTE	fattrib;		/* Attribute */
 	TCHAR	fname[13];		/* Short file name (8.3 format) */
-#ifdef CONFIG_FS_FAT_LFN
+#ifdef FS_FAT_LFN
 	TCHAR*	lfname;			/* Pointer to the LFN buffer */
 	UINT 	lfsize;			/* Size of LFN buffer in TCHAR */
 #endif

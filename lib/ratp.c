@@ -1109,6 +1109,8 @@ static int ratp_behaviour_h2(struct ratp_internal *ri, void *pkt)
 
 	ratp_state_change(ri, RATP_STATE_LAST_ACK);
 
+	ri->sn_received = ratp_sn(hdr);
+
 	return 1;
 }
 

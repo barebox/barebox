@@ -43,7 +43,7 @@ unsigned long mem_malloc_end(void)
 
 #ifdef CONFIG_MALLOC_TLSF
 #include <tlsf.h>
-tlsf_pool tlsf_mem_pool;
+tlsf_t tlsf_mem_pool;
 #endif
 
 int mem_malloc_initialized;
@@ -59,7 +59,7 @@ void mem_malloc_init(void *start, void *end)
 	malloc_end = (unsigned long)end;
 	malloc_brk = malloc_start;
 #ifdef CONFIG_MALLOC_TLSF
-	tlsf_mem_pool = tlsf_create(start, end - start + 1);
+	tlsf_mem_pool = tlsf_create_with_pool(start, end - start + 1);
 #endif
 	mem_malloc_initialized = 1;
 }

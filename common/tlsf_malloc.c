@@ -23,7 +23,7 @@
 #include <module.h>
 #include <tlsf.h>
 
-extern tlsf_pool tlsf_mem_pool;
+extern tlsf_t tlsf_mem_pool;
 
 void *malloc(size_t bytes)
 {
@@ -91,7 +91,7 @@ void malloc_stats(void)
 	s.used = 0;
 	s.free = 0;
 
-	tlsf_walk_heap(tlsf_mem_pool, malloc_walker, &s);
+	tlsf_walk_pool(tlsf_get_pool(tlsf_mem_pool), malloc_walker, &s);
 
 	printf("used: %zu\nfree: %zu\n", s.used, s.free);
 }

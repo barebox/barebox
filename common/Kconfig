@@ -39,7 +39,6 @@ config BLOCK_WRITE
 
 config ELF
 	bool "ELF Support" if COMPILE_TEST
-	depends on MIPS || COMPILE_TEST
 
 config FILETYPE
 	bool

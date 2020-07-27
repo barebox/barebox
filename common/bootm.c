@@ -143,6 +143,9 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
 		return 0;
 	}
 
+	if (IS_ENABLED(CONFIG_ELF) && data->elf)
+		return elf_load(data->elf);
+
 	if (data->os_file) {
 		data->os_res = file_to_sdram(data->os_file, load_address);
 		if (!data->os_res)
@@ -470,6 +473,8 @@ int bootm_get_os_size(struct image_data *data)
 {
 	int ret;
 
+	if (data->elf)
+		return elf_get_mem_size(data->elf);
 	if (data->os)
 		return uimage_get_size(data->os, uimage_part_num(data->os_part));
 	if (data->os_fit)
@@ -513,6 +518,22 @@ static int bootm_open_os_uimage(struct image_data *data)
 
 	if (data->os_address == UIMAGE_SOME_ADDRESS)
 		data->os_address = data->os->header.ih_load;
+
+	return 0;
+}
+
+static int bootm_open_elf(struct image_data *data)
+{
+	if (!IS_ENABLED(CONFIG_ELF))
+		return -ENOSYS;
+
+	data->elf = elf_open(data->os_file);
+	if (IS_ERR(data->elf))
+		return PTR_ERR(data->elf);
+
+	printf("Entry Point:  %08llx\n", data->elf->entry);
+
+	data->os_address = data->elf->entry;
 
 	return 0;
 }
@@ -652,6 +673,16 @@ int bootm_boot(struct bootm_data *bootm_data)
 		}
 	}
 
+	if (os_type == filetype_elf) {
+		ret = bootm_open_elf(data);
+		if (ret) {
+			printf("Loading ELF image failed with: %s\n",
+					strerror(-ret));
+			data->elf = NULL;
+			goto err_out;
+		}
+	}
+
 	if (bootm_data->appendroot) {
 		char *rootarg;
 
@@ -721,6 +752,8 @@ err_out:
 		uimage_close(data->initrd);
 	if (data->os)
 		uimage_close(data->os);
+	if (IS_ENABLED(CONFIG_ELF) && data->elf)
+		elf_close(data->elf);
 	if (IS_ENABLED(CONFIG_FITIMAGE) && data->os_fit)
 		fit_close(data->os_fit);
 	if (data->of_root_node && data->of_root_node != of_get_root_node())

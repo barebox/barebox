@@ -403,11 +403,20 @@ struct elf_image {
 	struct list_head list;
 	u8 class;
 	u64 entry;
-	void *buf;
+	void *low_addr;
+	void *high_addr;
+	void *hdr_buf;
+	char *filename;
 };
 
-struct elf_image *elf_load_image(void *buf);
-void elf_release_image(struct elf_image *elf);
+static inline size_t elf_get_mem_size(struct elf_image *elf)
+{
+	return elf->high_addr - elf->low_addr;
+}
+
+struct elf_image *elf_open(const char *filename);
+void elf_close(struct elf_image *elf);
+int elf_load(struct elf_image *elf);
 
 #define ELF_GET_FIELD(__s, __field, __type) \
 static inline __type elf_##__s##_##__field(struct elf_image *elf, void *arg) { \
@@ -420,6 +429,7 @@ static inline __type elf_##__s##_##__field(struct elf_image *elf, void *arg) { \
 ELF_GET_FIELD(hdr, e_entry, u64)
 ELF_GET_FIELD(hdr, e_phnum, u16)
 ELF_GET_FIELD(hdr, e_phoff, u64)
+ELF_GET_FIELD(hdr, e_phentsize, u16)
 ELF_GET_FIELD(hdr, e_type, u16)
 ELF_GET_FIELD(phdr, p_paddr, u64)
 ELF_GET_FIELD(phdr, p_filesz, u64)

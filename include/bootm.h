@@ -46,6 +46,9 @@ struct image_data {
 	/* if os is an uImage this will be provided */
 	struct uimage_handle *os;
 
+	/* if os is an elf file this will be provided */
+	struct elf_image *elf;
+
 	/* if os is a FIT image this will be provided */
 	struct fit_handle *os_fit;
 

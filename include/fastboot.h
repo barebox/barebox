@@ -22,9 +22,8 @@ struct fastboot {
 	struct file_list *files;
 	int (*cmd_exec)(struct fastboot *fb, const char *cmd);
 	int (*cmd_flash)(struct fastboot *fb, struct file_list_entry *entry,
-			 const char *filename, const void *buf, size_t len);
+			 const char *filename, size_t len);
 	int download_fd;
-	void *buf;
 	char *tempname;
 
 	bool active;
@@ -44,7 +43,7 @@ struct fastboot_opts {
 	bool export_bbu;
 	int (*cmd_exec)(struct fastboot *fb, const char *cmd);
 	int (*cmd_flash)(struct fastboot *fb, struct file_list_entry *entry,
-			 const char *filename, const void *buf, size_t len);
+			 const char *filename, size_t len);
 };
 
 enum fastboot_msg_type {

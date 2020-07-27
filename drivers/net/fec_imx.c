@@ -739,13 +739,16 @@ static int fec_probe(struct device_d *dev)
 	void *base;
 	int ret;
 	enum fec_type type;
+	void const *type_v;
 	int phy_reset;
 	u32 msec = 1, phy_post_delay = 0;
 	u32 reg;
 
-	ret = dev_get_drvdata(dev, (const void **)&type);
+	ret = dev_get_drvdata(dev, &type_v);
 	if (ret)
 		return ret;
+
+	type = (uintptr_t)(type_v);
 
 	fec = xzalloc(sizeof(*fec));
 	fec->type = type;
@@ -921,6 +924,9 @@ static __maybe_unused struct of_device_id imx_fec_dt_ids[] = {
 		.data = (void *)FEC_TYPE_IMX6,
 	}, {
 		.compatible = "fsl,imx6sx-fec",
+		.data = (void *)FEC_TYPE_IMX6,
+	}, {
+		.compatible = "fsl,imx8mp-fec",
 		.data = (void *)FEC_TYPE_IMX6,
 	}, {
 		.compatible = "fsl,mvf600-fec",

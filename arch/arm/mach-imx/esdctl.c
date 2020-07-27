@@ -889,6 +889,11 @@ void __noreturn imx8mm_barebox_entry(void *boarddata)
 	imx8m_barebox_entry(boarddata);
 }
 
+void __noreturn imx8mp_barebox_entry(void *boarddata)
+{
+	imx8m_barebox_entry(boarddata);
+}
+
 void __noreturn imx8mq_barebox_entry(void *boarddata)
 {
 	imx8m_barebox_entry(boarddata);

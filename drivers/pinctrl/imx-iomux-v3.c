@@ -251,6 +251,8 @@ static __maybe_unused struct of_device_id imx_iomux_v3_dt_ids[] = {
 	}, {
 		.compatible = "fsl,imx8mm-iomuxc",
 	}, {
+		.compatible = "fsl,imx8mp-iomuxc",
+	}, {
 		.compatible = "fsl,imx8mq-iomuxc",
 	}, {
 		/* sentinel */

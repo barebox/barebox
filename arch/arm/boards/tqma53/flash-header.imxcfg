@@ -1,6 +1,6 @@
 soc imx53
 loadaddr 0x70000000
-dcdofs 0x400
+ivtofs 0x400
 
 /* IOMUX */
 wm 32 0x53fa8554 0x00300000

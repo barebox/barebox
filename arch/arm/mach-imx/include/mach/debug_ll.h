@@ -15,6 +15,7 @@
 #include <mach/imx53-regs.h>
 #include <mach/imx6-regs.h>
 #include <mach/imx7-regs.h>
+#include <mach/imx8mp-regs.h>
 #include <mach/imx8mq-regs.h>
 #include <mach/vf610-regs.h>
 
@@ -48,6 +49,8 @@
 #define IMX_DEBUG_SOC MX6
 #elif defined CONFIG_DEBUG_IMX7D_UART
 #define IMX_DEBUG_SOC MX7
+#elif defined CONFIG_DEBUG_IMX8MP_UART
+#define IMX_DEBUG_SOC MX8MP
 #elif defined CONFIG_DEBUG_IMX8MQ_UART
 #define IMX_DEBUG_SOC MX8MQ
 #elif defined CONFIG_DEBUG_VF610_UART

@@ -74,6 +74,22 @@ lwl-$(CONFIG_MACH_PHYTEC_PHYCORE_IMX7) += imx7d-phyboard-zeta.dtb.o
 lwl-$(CONFIG_MACH_PHYTEC_SOM_IMX8MQ) += imx8mq-phytec-phycore-som.dtb.o
 lwl-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_AX3) += armada-xp-openblocks-ax3-4-bb.dtb.o
 lwl-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_A6) += kirkwood-openblocks_a6-bb.dtb.o
+lwl-$(CONFIG_MACH_PROTONIC_IMX6) += \
+	imx6q-prti6q.dtb.o \
+	imx6q-prtwd2.dtb.o \
+	imx6q-vicut1.dtb.o \
+	imx6dl-alti6p.dtb.o \
+	imx6dl-lanmcu.dtb.o \
+	imx6dl-plybas.dtb.o \
+	imx6dl-plym2m.dtb.o \
+	imx6dl-prtmvt.dtb.o \
+	imx6dl-prtrvt.dtb.o \
+	imx6dl-prtvt7.dtb.o \
+	imx6dl-victgo.dtb.o \
+	imx6dl-vicut1.dtb.o \
+	imx6qp-prtwd3.dtb.o \
+	imx6qp-vicutp.dtb.o \
+	imx6ul-prti6g.dtb.o
 lwl-$(CONFIG_MACH_RADXA_ROCK) += rk3188-radxarock.dtb.o
 lwl-$(CONFIG_MACH_PHYTEC_SOM_RK3288) += rk3288-phycore-som.dtb.o
 lwl-$(CONFIG_MACH_REALQ7) += imx6q-dmo-edmqmx6.dtb.o
@@ -100,6 +116,7 @@ lwl-$(CONFIG_MACH_TECHNEXION_WANDBOARD) += imx6q-wandboard.dtb.o imx6dl-wandboar
 lwl-$(CONFIG_MACH_TECHNEXION_PICO_HOBBIT) += imx6ul-pico-hobbit.dtb.o
 lwl-$(CONFIG_MACH_NXP_IMX6ULL_EVK) += imx6ull-14x14-evk.dtb.o
 lwl-$(CONFIG_MACH_NXP_IMX8MM_EVK) += imx8mm-evk.dtb.o
+lwl-$(CONFIG_MACH_NXP_IMX8MP_EVK) += imx8mp-evk.dtb.o
 lwl-$(CONFIG_MACH_NXP_IMX8MQ_EVK) += imx8mq-evk.dtb.o
 lwl-$(CONFIG_MACH_TORADEX_COLIBRI_T20) += tegra20-colibri-iris.dtb.o
 lwl-$(CONFIG_MACH_TOSHIBA_AC100) += tegra20-paz00.dtb.o

@@ -299,6 +299,34 @@ $(call build_imx_habv4img, CONFIG_MACH_PHYTEC_SOM_IMX6, start_phytec_phycore_imx
 
 $(call build_imx_habv4img, CONFIG_MACH_PHYTEC_SOM_IMX6, start_phytec_phycore_imx6dl_som_lc_emmc_1gib, phytec-som-imx6/flash-header-phytec-pcm058dl-1gib, phytec-phycore-imx6dl-som-lc-emmc-1gib)
 
+$(call build_imx_habv4img, CONFIG_MACH_PROTONIC_IMX6, start_imx6q_prti6q, protonic-imx6/flash-header-prti6q, protonic-prti6q)
+
+$(call build_imx_habv4img, CONFIG_MACH_PROTONIC_IMX6, start_imx6q_prtwd2, protonic-imx6/flash-header-prtwd2, protonic-prtwd2)
+
+$(call build_imx_habv4img, CONFIG_MACH_PROTONIC_IMX6, start_imx6q_vicut1, protonic-imx6/flash-header-vicut1q, protonic-vicut1q)
+
+$(call build_imx_habv4img, CONFIG_MACH_PROTONIC_IMX6, start_imx6dl_alti6p, protonic-imx6/flash-header-alti6p, protonic-alti6p)
+
+$(call build_imx_habv4img, CONFIG_MACH_PROTONIC_IMX6, start_imx6dl_lanmcu, protonic-imx6/flash-header-lanmcu, protonic-lanmcu)
+
+$(call build_imx_habv4img, CONFIG_MACH_PROTONIC_IMX6, start_imx6dl_plybas, protonic-imx6/flash-header-plybas, protonic-plybas)
+
+$(call build_imx_habv4img, CONFIG_MACH_PROTONIC_IMX6, start_imx6dl_plym2m, protonic-imx6/flash-header-plym2m, protonic-plym2m)
+
+$(call build_imx_habv4img, CONFIG_MACH_PROTONIC_IMX6, start_imx6dl_prtmvt, protonic-imx6/flash-header-prtmvt, protonic-prtmvt)
+
+$(call build_imx_habv4img, CONFIG_MACH_PROTONIC_IMX6, start_imx6dl_prtrvt, protonic-imx6/flash-header-prtrvt, protonic-prtrvt)
+
+$(call build_imx_habv4img, CONFIG_MACH_PROTONIC_IMX6, start_imx6dl_prtvt7, protonic-imx6/flash-header-prtvt7, protonic-prtvt7)
+
+$(call build_imx_habv4img, CONFIG_MACH_PROTONIC_IMX6, start_imx6dl_victgo, protonic-imx6/flash-header-victgo, protonic-victgo)
+
+$(call build_imx_habv4img, CONFIG_MACH_PROTONIC_IMX6, start_imx6dl_vicut1, protonic-imx6/flash-header-vicut1, protonic-vicut1)
+
+$(call build_imx_habv4img, CONFIG_MACH_PROTONIC_IMX6, start_imx6qp_prtwd3, protonic-imx6/flash-header-prtwd3, protonic-prtwd3)
+
+$(call build_imx_habv4img, CONFIG_MACH_PROTONIC_IMX6, start_imx6qp_vicutp, protonic-imx6/flash-header-vicutp, protonic-vicutp)
+
 $(call build_imx_habv4img, CONFIG_MACH_KONTRON_SAMX6I, start_imx6q_samx6i, kontron-samx6i/flash-header-samx6i-quad, imx6q-samx6i)
 
 $(call build_imx_habv4img, CONFIG_MACH_KONTRON_SAMX6I, start_imx6dl_samx6i, kontron-samx6i/flash-header-samx6i-duallite, imx6dl-samx6i)
@@ -325,6 +353,8 @@ $(call build_imx_habv4img, CONFIG_MACH_PHYTEC_SOM_IMX6, start_phytec_phycore_imx
 $(call build_imx_habv4img, CONFIG_MACH_PHYTEC_SOM_IMX6, start_phytec_phycore_imx6ull_som_nand_512mb, phytec-som-imx6/flash-header-phytec-pcl063-512mb, phytec-phycore-imx6ull-nand-512mb)
 
 $(call build_imx_habv4img, CONFIG_MACH_PHYTEC_SOM_IMX6, start_phytec_phycore_imx6ull_som_emmc_512mb, phytec-som-imx6/flash-header-phytec-pcl063-512mb, phytec-phycore-imx6ull-emmc-512mb)
+
+$(call build_imx_habv4img, CONFIG_MACH_PROTONIC_IMX6, start_imx6ul_prti6g, protonic-imx6/flash-header-prti6g, protonic-prti6g)
 
 $(call build_imx_habv4img, CONFIG_MACH_TECHNEXION_PICO_HOBBIT, start_imx6ul_pico_hobbit_256mb, technexion-pico-hobbit/flash-header-imx6ul-pico-hobbit-256, imx6ul-pico-hobbit-256mb)
 
@@ -369,6 +399,12 @@ pblb-$(CONFIG_MACH_NXP_IMX8MM_EVK) += start_nxp_imx8mm_evk
 CFG_start_nxp_imx8mm_evk.pblb.imximg = $(board)/nxp-imx8mm-evk/flash-header-imx8mm-evk.imxcfg
 FILE_barebox-nxp-imx8mm-evk.img = start_nxp_imx8mm_evk.pblb.pimximg
 image-$(CONFIG_MACH_NXP_IMX8MM_EVK) += barebox-nxp-imx8mm-evk.img
+
+# ----------------------- i.MX8mp based boards --------------------------
+pblb-$(CONFIG_MACH_NXP_IMX8MP_EVK) += start_nxp_imx8mp_evk
+CFG_start_nxp_imx8mp_evk.pblb.imximg = $(board)/nxp-imx8mp-evk/flash-header-imx8mp-evk.imxcfg
+FILE_barebox-nxp-imx8mp-evk.img = start_nxp_imx8mp_evk.pblb.pimximg
+image-$(CONFIG_MACH_NXP_IMX8MP_EVK) += barebox-nxp-imx8mp-evk.img
 
 # ----------------------- i.MX8mq based boards --------------------------
 pblb-$(CONFIG_MACH_NXP_IMX8MQ_EVK) += start_nxp_imx8mq_evk

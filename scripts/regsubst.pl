@@ -45,7 +45,7 @@ First you have to add the right #include directives to your file:
  $ cat flash-header-myboard.imxcfg
  soc imx6
  loadaddr 0x20000000
- dcdofs 0x400
+ ivtofs 0x400
  
  #include <mach/imx6-ddr-regs.h>
  #include <mach/imx6dl-ddr-regs.h>
@@ -59,7 +59,7 @@ Then you can process the file with B<regsubst.pl>:
  $ scripts/regsubst.pl -I arch/arm/mach-imx/include flash-header-myboard.imxcfg
  soc imx6
  loadaddr 0x20000000
- dcdofs 0x400
+ ivtofs 0x400
  
  #include <mach/imx6-ddr-regs.h>
  #include <mach/imx6dl-ddr-regs.h>

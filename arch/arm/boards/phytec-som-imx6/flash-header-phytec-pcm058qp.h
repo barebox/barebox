@@ -1,6 +1,6 @@
 soc imx6
 loadaddr 0x10000000
-dcdofs 0x400
+ivtofs 0x400
 
 /* NOC setup */
 wm 32 0x00bb0008 0x00000000

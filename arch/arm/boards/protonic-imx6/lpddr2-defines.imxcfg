@@ -1,0 +1,384 @@
+/*
+ * Timing configuration:
+ *
+ * MDCFG0:
+ *
+ * Par. 	Chip		VALUE		SHIFT	Reg. field
+ * ----------------------------------------------------------------
+ * tRFC 	2Gb 400MHz	0x3f (64)	24	0x3f000000
+ * 		4Gb 400MHz	0x77 (120)	24	0x77000000
+ * 		8Gb 400MHz	0x8b (140)	24	0x8b000000
+ *	 	2Gb 533MHz	0x55 (86)	24	0x55000000
+ * 		4Gb 533MHz	0x9f (160)	24	0x9f000000
+ * 		8Gb 533MHz	0xba (187)	24	0xba000000
+ *              4Gb LPDDR2	0x33 (52)	24	0x33000000
+ * tXS		2Gb 400MHz	0x43 (68)	16	0x00430000
+ * 		4Gb 400MHz	0x7b (124)	16	0x007b0000
+ * 		8Gb 400MHz	0x8f (144)	16	0x008f0000
+ * 		2Gb 533MHz	0x5b (92)	16	0x005b0000
+ * 		4Gb 533MHz	0xa5 (166)	16	0x00a50000
+ * 		8Gb 533MHz	0xc0 (193)	16	0x00c00000
+ *		4Gb LPDDR2	0x37 (56)	16	0x00370000
+ * tXP		* 400MHz	0x2 (3)		13	0x00004000
+ * 		* 533MHz	0x3 (4)		13	0x00006000
+ * 		* LPDDR2	0x2 (3)		13	0x00004000
+ * tXPDLL	* 400MHz	0x9 (10)	9	0x00001200
+ * 		* 533MHz	0xc (13)	9	0x00001800
+ *		* LPDDR2	0x1 (-)		9	0x00000200
+ * tFAW		* 400MHz	0x13 (20)	4	0x00000130
+ *		* 533MHz	0x1a (27)	4	0x000001a0
+ *		* LPDDR2	0x13 (20)	4	0x00000130
+ * tCL		* 400MHz	0x3 (6)		0	0x00000003
+ *		* 533MHz-CL7	0x4 (7)		0	0x00000004
+ *		* 533MHz-CL8	0x5 (8)		0	0x00000005
+ *		* LPDDR2	0x3 (6)		0	0x00000003
+ * ----------------------------------------------------------------
+ */
+#define MDCFG0_2G_400MHZ				0x3f435333
+#define MDCFG0_4G_400MHZ				0x777b5333
+#define MDCFG0_8G_400MHZ				0x8b8f5333
+#define MDCFG0_2G_533MHZ_CL8				0x555b79a5
+#define MDCFG0_2G_533MHZ_CL7				0x555b79a4
+#define MDCFG0_4G_533MHZ_CL8				0x9fa579a5
+#define MDCFG0_4G_533MHZ_CL7				0x9fa579a4
+#define MDCFG0_8G_533MHZ_CL8				0xbac079a5
+#define MDCFG0_8G_533MHZ_CL7				0xbac079a4
+#define MDCFG0_4G_LPDDR2_CL6				0x33374133
+#define MDCFG0_8G_LPDDR2_CL6				0x53574133
+
+
+/*
+ * MDCFG1:
+ *
+ * Par. 	Chip		VALUE		SHIFT	Reg. field
+ * ----------------------------------------------------------------
+ * tRCD		* 400MHz	0x5 (6)		28	0xa0000000
+ * 		* 533MHz	0x7 (8)		28	0xe0000000
+ *		* LPDDR2	0x5 (-)		28	0xa0000000
+ * tRP		* 400MHz	0x5 (6)		26	0x14000000
+ * 		* 533MHz	0x7 (8)		26	0x1c000000
+ * 		* LPDDR2	0x5 (-)		26	0x14000000
+ * tRC		* 400MHz	0x14 (21)	21	0x02800000
+ * 		* 533MHz	0x1b (28)	21	0x03600000
+ *		* LPDDR2	0x15 (-)	21	0x02a00000
+ * tRAS		* 400MHz	0x0e (15)	16	0x000e0000
+ * 		* 533MHz	0x13 (20)	16	0x00130000
+ *		* LPDDR2	0x10 (17)	16	0x00100000
+ * tRPA		*		0x1 (tRP+1)	15	0x00008000
+ *		RM rev 4: unused, read-only!	15	0x00000000
+ * tWR		* 400MHz	0x5 (6)		9	0x00000a00
+ * 		* 533MHz	0x7 (8)		9	0x00000e00
+ *		* LPDDR2	0x5 (6)		9	0x00000a00
+ * tMRD		* 		0x3 (4)		5	0x00000060
+ * max(tMRR,tMRW) LPDDR2	0x4 (5)		5	0x00000080
+ * tCWL		* 400MHz	0x3 (5)		0	0x00000003
+ *		* 533MHz	0x4 (6)		0	0x00000004
+ * tWL		* LPDDR2	0x2 (3)		0	0x00000002
+ * ----------------------------------------------------------------
+ */
+#define MDCFG1_400MHZ					0xb68e8a63
+#define MDCFG1_533MHZ					0xff738e64
+#define MDCFG1_LPDDR2					0x00100a82
+
+/*
+ * MDCFG2:
+ *
+ * Par. 	Chip		VALUE		SHIFT	Reg. field
+ * ----------------------------------------------------------------
+ * tDLLK	*		0x1ff (512)	16	0x01ff0000
+ *		LPDDR2		0x0c7 (-)	16	0x00c70000
+ * tRTP		*		0x3 (4)		6	0x000000c0
+ *		LPDDR2		0x2 (3)		6	0x00000080
+ * tWTR		*		0x3 (4)		3	0x00000018
+ *		LPDDR2		0x2 (3)		3	0x00000010
+ * tRRD		* 400MHz	0x3 (4)		0	0x00000003
+ * 		* 533MHz	0x5 (6)		0	0x00000005
+ *		LPDDR2		0x3 (4)		0	0x00000003
+ * ----------------------------------------------------------------
+ */
+#define MDCFG2_400MHZ					0x01ff00db
+#define MDCFG2_533MHZ					0x01ff00dd
+#define MDCFG2_LPDDR2					0x00000093
+
+/*
+ * MDOR:
+ *
+ * Par. 	Chip		VALUE		SHIFT	Reg. field
+ * ----------------------------------------------------------------
+ * tXPR		2Gb 400MHz	0x43 (68)	16	0x00430000
+ * 		4Gb 400MHz	0x7b (124)	16	0x007b0000
+ * 		8Gb 400MHz	0x8f (144)	16	0x008f0000
+ *		2Gb 533MHz	0x5b (92)	16	0x005b0000
+ *		4Gb 533MHz	0xa5 (166)	16	0x00a50000
+ *		8Gb 533MHz	0xc0 (193)	16	0x00c00000
+ *		* LPDDR2	0x9f (-)	16	0x009f0000
+ * SDE_to_RST	*		0x10 (14)	8	0x00001000
+ *		* LPDDR2	0xe (-)		8	0x00000e00
+ * RST_to_CKE	*		0x23 (33)	0	0x00000023
+ * 		* LPDDR2	0x10 (14)	0	0x00000010
+ * ----------------------------------------------------------------
+ */
+#define MDOR_2G_400MHZ					0x00431023
+#define MDOR_4G_400MHZ					0x007b1023
+#define MDOR_8G_400MHZ					0x008f1023
+#define MDOR_2G_533MHZ					0x005b1023
+#define MDOR_4G_533MHZ					0x00a51023
+#define MDOR_8G_533MHZ					0x00c01023
+#define MDOR_LPDDR2					0x009f0e10
+
+/*
+ * MDOTC ODT delays:
+ *
+ * Par. 	Chip		VALUE		SHIFT	Reg. field
+ * ----------------------------------------------------------------
+ * tAOFPD	* 400MHz	0x3 (4)		27	0x18000000
+ * 		* 533MHz	0x4 (5)		27	0x20000000
+ * tAONPD	* 400MHz	0x3 (4)		24	0x03000000
+ * 		* 533MHz	0x4 (5)		24	0x04000000
+ * tANPD	* 400MHz	0x3 (4)		20	0x00300000
+ * 		* 533MHz	0x4 (5)		20	0x00400000
+ * tAXPD	* 400MHz	0x3 (4)		16	0x00030000
+ * 		* 533MHz	0x4 (5)		16	0x00040000
+ * tODTLon	* 400MHz	0x3 (3)		12	0x00003000
+ * 		* 533MHz	0x4 (4)		12	0x00004000
+ * tODTidle_off	* 400MHz	0x3 (3)		4	0x00000030
+ * 		* 533MHz	0x4 (4) 	4	0x00000040
+ * ----------------------------------------------------------------
+ */
+#define MDOTC_400MHZ					0x1b333030
+#define MDOTC_533MHZ					0x24444040
+/* LPDDR2: not relevant, leave in reset state!! */
+
+/*
+ * MDPDC:
+ *
+ * Par. 	Chip		VALUE		SHIFT	Reg. field
+ * ----------------------------------------------------------------
+ * PRCT_1	*		0x0		28	0x00000000
+ * PRCT_0	*		0x0		24	0x00000000
+ * tCKE		*		0x2 (3)		16	0x00020000
+ * PWDT_1	*		0x5 (256)	12	0x00005000
+ * PWDT_0	*		0x5 (256)	8	0x00000500
+ * SLOW_PD	*		0x0 (0)		7	0x00000000
+ * BOTH_CS_PD	*		0x1 (1)		6	0x00000040
+ * tCKSRX	* 400MHz	0x5 (5)		3	0x00000028
+ * 		* 533MHz	0x6 (6)		3	0x00000030
+ * tCKSRE	* 400MHz	0x5 (5)		0	0x00000005
+ * 		* 533MHz	0x6 (6)		0	0x00000006
+ * ----------------------------------------------------------------
+ */
+#define MDPDC_400MHZ					0x0002556d
+#define MDPDC_533MHZ					0x00025576
+#define MDPDC_LPDDR2					0x00025576 /* FIXME? */
+
+/*
+ * MDCTL:
+ * 2Gb: CS0 enable, 14bit ROW, 10bit COL, BL=8, 64bit data
+ *
+ * Par. 	Chip		VALUE		SHIFT	Reg. field
+ * ----------------------------------------------------------------
+ * SDE_0	*		0x1 (1)		31	0x80000000
+ * SDE_1	*		0x0 (0)		30	0x00000000
+ * SDE_1	LPDDR2		0x1 (1)		30	0x40000000
+ * ROW		2Gb *		0x3 (14)	24	0x03000000
+ * 		4Gb *		0x4 (15)	24	0x04000000
+ * 		8Gb *		0x5 (16)	24	0x05000000
+ *		* LPDDR2	0x3 (14)	24	0x03000000
+ * COL		*		0x1 (10)	20	0x00100000
+ * BL		* 		0x1 (8)		19	0x00080000
+ * 		LPDDR2		0x0 (4)		19	0x00000000
+ * DSIZ		64bit		0x2 (64)	16	0x00020000
+ * DSIZ		32bit		0x1 (32)	16	0x00010000
+ * DSIZ		16bit		0x0 (16)	16	0x00000000
+ * ----------------------------------------------------------------
+ */
+#define MDCTL_2G_16BIT					0x83180000
+#define MDCTL_2G_32BIT					0x83190000
+#define MDCTL_2G					0x831a0000
+#define MDCTL_4G_16BIT					0x84180000
+#define MDCTL_4G_32BIT					0x84190000
+#define MDCTL_4G					0x841a0000
+#define MDCTL_8G					0x851a0000
+#define MDCTL_LPDDR2					0x83110000
+
+
+/*
+ * MDASP Address space partitioning:
+ *
+ * At 0.25GiB, internal address space ends. Above that DDR3 should be
+ * located. The CS1/CS0 split-line determines where:
+ *
+ * For 1x2Gb chips (0.25GiB total on CS0): 0.5GiB
+ * For 2x4Gb chips (1GiB total on CS0): 1.25GiB
+ * For 4x2Gb chips (1GiB total on CS0): 1.25GiB
+ * For 4x4Gb chips (2GiB total on CS0): 2.25GiB
+ * For 4x8Gb chips (4GiB total on CS0): 4.00GiB (maximum possible,
+ *                      shadowed partially by internal address space).
+ *
+ * Register value	Split
+ * ---------------------------
+ * 0x0000000f		0.5GiB
+ * 0x00000017		0.75GiB
+ * 0x00000027		1.25GiB
+ * 0x00000047		2.25GiB
+ * 0x0000007f		4.00GiB
+ */
+#define MDASP_512MIB	0x0000000f
+#define MDASP_768MIB	0x00000017
+#define MDASP_1GIB25	0x00000027
+#define MDASP_2GIB25	0x00000047
+#define MDASP_4GIB00	0x0000007f
+
+/*
+ * Initialize DDR3 chips
+ * MDSCR: Value = 0xvvvv803n, with 0xvvvv = value, n = Reg. number (BA)
+ */
+/*
+ * DDR3 chip MR2, n = 2:
+ *
+ * Par. 	Chip		VALUE		BITS	  vvvv
+ * ----------------------------------------------------------------
+ * Rtt(wr)	*		0x0 (disabled)	10, 9	0x0000
+ * SR-Temp.	*		0x1 (Extended)	7	0x0080
+ * Auto-SR	*		0x0 (Manual)	6	0x0000
+ * CWL		* 400MHz	0x0 (5tCK)	5, 4, 3	0x0000
+ * 		* 533MHz	0x1 (6tCK)	5, 4, 3	0x0008
+ * ----------------------------------------------------------------
+ */
+#define DDR3_MR2_400MHZ_RTT_OFF				0x00808032
+#define DDR3_MR2_533MHZ_RTT_OFF				0x00888032
+#define DDR3_MR2_400MHZ_RTT_120				0x04808032
+#define DDR3_MR2_533MHZ_RTT_120				0x04888032
+
+/*
+ * DDR3 chip MR1, n = 1:
+ *
+ * Par. 		Chip	VALUE		BITS	  vvvv
+ * ----------------------------------------------------------------
+ * Qoff			*	0x0 (enabled)	12	0x0000
+ * TDQS			*	0x0 (disabled)	11	0x0000
+ * Rtt			*	0x0 (disabled)	9, 6, 2	0x0000
+ * Write-levelling	*	0x0 (disable)	7	0x0000
+ * ODS			*	0x0 (RZQ/6=40)	5, 1	0x0000
+ * DLL			*	0x0 (enable)	0	0x0000
+ * ----------------------------------------------------------------
+ */
+#define DDR3_MR1_RTT_OFF_ODS_40				0x00008031
+#define DDR3_MR1_RTT_120_ODS_40				0x00408031
+#define DDR3_MR1_RTT_60_ODS_40				0x00048031
+#define DDR3_MR1_RTT_OFF_ODS_34				0x00028031
+#define DDR3_MR1_RTT_120_ODS_34				0x00428031
+#define DDR3_MR1_RTT_60_ODS_34				0x00068031
+
+/*
+ * DDR3 chip MR0, n = 0:
+ *
+ * Par. 		Chip	VALUE		BITS	  vvvv
+ * ----------------------------------------------------------------
+ * Precharge PD		*	0x1 (fast exit)	12	0x1000
+ * WR			400MHz	0x2 (6)		11,10,9	0x0400
+ * 			533MHz	0x4 (8)		11,10,9 0x0800
+ * DLL reset		*	0x1 (Yes)	8	0x0100
+ * CL			400MHz	0x4 (6)		6,5,4,2	0x0020
+ * 			533MHz	0x6 (7)		6,5,4,2 0x0030
+ * 			533MHz	0x8 (8)		6,5,4,2 0x0040
+ * RD burst type	*	0x0 (seq.)	3	0x0000
+ * BL			*	0x0 (BL8)	0	0x0000
+ * ----------------------------------------------------------------
+ */
+#define DDR3_MR0_400MHZ					0x15208030
+#define DDR3_MR0_533MHZ_CL7				0x19308030
+#define DDR3_MR0_533MHZ_CL8				0x19408030
+
+
+/*
+ * MDREF:
+ * REF_SEL (bit 14,15): 0 (64kHz, needed for high-temp.)
+ * REFR (bit 11, 12, 13): 0x3 (4 refreshes) -> 0x00001800
+ * 			  0x7 (8 refreshes) -> 0x00003800
+ */
+#define MDREF_64KHZ 0x00001800
+#define MDREF_32KHZ 0x00007800
+
+/* MPODTCTRL */
+#define MPODTCTRL_ODT_OFF 0x00000007
+#define MPODTCTRL_ODT_120 0x00011117
+#define MPODTCTRL_ODT_60  0x00022227
+#define MPODTCTRL_ODT_40  0x00033337
+
+/*
+ * MPDGCTRL0:
+ *
+ * Channel 0:
+ *
+ * Par. 		Chip	VALUE		SHIFT	Reg. field
+ * ----------------------------------------------------------------
+ * RST_RD_FIFO		*	0		31	0x00000000
+ * DG_CMP_CYC		*	1		30	0x40000000
+ * DG_DIS		*	0		29	0x00000000
+ * HW_DG_EN		*	0		28	0x00000000
+ * DG_HC_DEL1		400MHz	2		24	0x02000000
+ * 			533MHz	3		24	0x03000000
+ * DG_EXT_UP		*	0		23	0x00000000
+ * DG_DL_ABS_OFFS1	400MHz	0x35		16	0x00350000
+ * 			533MHz	0x4b		16	0x004b0000
+ * DG_HC_DEL0		400MHz	2		8	0x00000200
+ * 			533MHz	3		8	0x00000300
+ * DG_DL_ABS_OFFS0	400MHz	0x35		0	0x00000031
+ * 			533MHz	0x4b		0	0x00000050
+ * ----------------------------------------------------------------
+ */
+#define MPDGCTRL0_CH0_400MHZ				0x42350231
+#define MPDGCTRL0_CH0_533MHZ				0x434b0350
+/*
+ *
+ * Channel 1:
+ *
+ * DG_HC_DEL1 (5)	400MHz	2		24	0x02000000
+ * 			533MHz	3		24	0x03000000
+ * DG_DL_ABS_OFFS1 (5)	400MHz	0x35		16	0x00350000
+ * 			533MHz	0x4b		16	0x004b0000
+ * DG_HC_DEL0 (4)	400MHz	2		8	0x00000200
+ * 			533MHz	3		8	0x00000300
+ * DG_DL_ABS_OFFS0 (4)	400MHz	0x35		0	0x00000031
+ * 			533MHz	0x4b		0	0x00000050
+ * ----------------------------------------------------------------
+ */
+#define MPDGCTRL0_CH1_400MHZ				0x42350231
+#define MPDGCTRL0_CH1_533MHZ				0x434b0350
+
+/*
+ * MPDGCTRL1:
+ *
+ * Channel 0:
+ *
+ * Par. 		Chip	VALUE		SHIFT	Reg. field
+ * ----------------------------------------------------------------
+ * DG_HC_DEL3		400MHz	2		24	0x02000000
+ * 			533MHz	3		24	0x03000000
+ * DG_DL_ABS_OFFS3	400MHz	0x1a		16	0x001a0000
+ * 			533MHz	0x4c		16	0x004c0000
+ * DG_HC_DEL2		400MHz	2		8	0x00000200
+ * 			533MHz	3		8	0x00000300
+ * DG_DL_ABS_OFFS2	400MHz	0x18		0	0x00000018
+ * 			533MHz	0x59		0	0x00000059
+ * ----------------------------------------------------------------
+ */
+#define MPDGCTRL1_CH0_400MHZ				0x021a0218
+#define MPDGCTRL1_CH0_533MHZ				0x034c0359
+/*
+ *
+ * Channel 1:
+ *
+ * DG_HC_DEL3 (7)	400MHz	2		24	0x02000000
+ * 			533MHz	3		24	0x03000000
+ * DG_DL_ABS_OFFS3 (7)	400MHz	0x1a		16	0x001a0000
+ * 			533MHz	0x65		16	0x00650000
+ * DG_HC_DEL2 (6)	400MHz	2		8	0x00000200
+ * 			533MHz	3		8	0x00000300
+ * DG_DL_ABS_OFFS2 (6)	400MHz	0x18		0	0x00000018
+ * 			533MHz	0x48		0	0x00000048
+ * ----------------------------------------------------------------
+ */
+#define MPDGCTRL1_CH1_400MHZ				0x021a0218
+#define MPDGCTRL1_CH1_533MHZ				0x03650348

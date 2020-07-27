@@ -22,6 +22,7 @@
 #include <mach/imx8m-ccm-regs.h>
 #include <mach/reset-reason.h>
 #include <mach/ocotp.h>
+#include <mach/imx8mp-regs.h>
 #include <mach/imx8mq-regs.h>
 #include <mach/imx8m-ccm-regs.h>
 #include <soc/imx8m/clk-early.h>
@@ -101,6 +102,29 @@ int imx8mm_init(void)
 	};
 
 	imx_set_silicon_revision(cputypestr, imx8mm_cpu_revision());
+
+	return imx8m_init(cputypestr);
+}
+
+int imx8mp_init(void)
+{
+	void __iomem *anatop = IOMEM(MX8MP_ANATOP_BASE_ADDR);
+	uint32_t type = FIELD_GET(DIGPROG_MAJOR,
+				  readl(anatop + MX8MP_ANATOP_DIGPROG));
+	const char *cputypestr;
+
+	imx8mp_boot_save_loc();
+
+	switch (type) {
+	case IMX8M_CPUTYPE_IMX8MP:
+		cputypestr = "i.MX8MP";
+		break;
+	default:
+		cputypestr = "unknown i.MX8M";
+		break;
+	};
+
+	imx_set_silicon_revision(cputypestr, imx8mp_cpu_revision());
 
 	return imx8m_init(cputypestr);
 }

@@ -1,0 +1,115 @@
+soc imx6
+loadaddr 0x10000000
+ivtofs 0x400
+
+#include "ddr3-defines.imxcfg"
+
+/* Debug 0 LED */
+wm 32 0x020e023c 0x00000005
+wm 32 0x020e060c 0x000130b0
+
+#include "padsetup-dl.imxcfg"
+
+/* Set Read data delay 3 delay units for all bits */
+wm 32 0x021b081c 0x33333333
+wm 32 0x021b0820 0x33333333
+wm 32 0x021b0824 0x33333333
+wm 32 0x021b0828 0x33333333
+wm 32 0x021b481c 0x33333333
+wm 32 0x021b4820 0x33333333
+wm 32 0x021b4824 0x33333333
+wm 32 0x021b4828 0x33333333
+
+/* MDMISC No addr mirror, 1 WALAT, 5 RALAT, DDR3 mode */
+wm 32 0x021b0018 0x00011740
+
+/* CSCR: Configuration mode */
+wm 32 0x021b001c 0x00008000
+
+wm 32 0x021b000c MDCFG0_2G_400MHZ
+wm 32 0x021b0010 MDCFG1_400MHZ
+wm 32 0x021b0014 MDCFG2_400MHZ
+
+/* MDRWD */
+wm 32 0x021b002c 0x000026d2
+
+wm 32 0x021b0030 MDOR_2G_400MHZ
+wm 32 0x021b0008 MDOTC_400MHZ
+wm 32 0x021b0004 MDPDC_400MHZ
+wm 32 0x021b0040 MDASP_768MIB
+wm 32 0x021b0000 MDCTL_2G_32BIT
+
+/* DDR3 MR config */
+wm 32 0x021b001c DDR3_MR2_400MHZ_RTT_120
+
+/*
+ * DDR3 chip MR3, n = 3, vvvv = 0 (no configurable function of interest).
+ */
+wm 32 0x021b001c 0x00008033
+
+wm 32 0x021b001c DDR3_MR1_RTT_120_ODS_40
+wm 32 0x021b001c DDR3_MR0_400MHZ
+
+/*
+ * ZQ calibration, n = 0x10 (Precharge all):
+ * Bit 10 = 1:  Start ZQ calibration
+ * REGISTER: 0x04008040
+ */
+wm 32 0x021b001c 0x04008040
+
+/* MPZQHWCTRL */
+wm 32 0x021b0800 0xa1390003 /* ZQ mode = 3  force calibration */
+wm 32 0x021b4800 0xa1390003 
+
+wm 32 0x021b0020 MDREF_64KHZ
+
+wm 32 0x021b0818 MPODTCTRL_ODT_120
+wm 32 0x021b4818 MPODTCTRL_ODT_120
+
+wm 32 0x021b083c MPDGCTRL0_CH0_400MHZ
+wm 32 0x021b483c MPDGCTRL0_CH1_400MHZ
+
+wm 32 0x021b0840 MPDGCTRL1_CH0_400MHZ
+wm 32 0x021b4840 MPDGCTRL1_CH1_400MHZ
+
+/* MPRDDLCTL, MPWRDLCTL */
+wm 32 0x021b0848 0x40404040 /* TODO. Read delay line conf. */
+wm 32 0x021b4848 0x40404040 /* For now set all to 50%. */
+wm 32 0x021b0850 0x40404040
+wm 32 0x021b4850 0x40404040
+
+/* MPWLDECTRL0,1 */
+wm 32 0x021b080c 0x001f001f /* TODO. Write level delay control */
+wm 32 0x021b0810 0x001f001f
+wm 32 0x021b480c 0x00440044 /* FIXME: Why these seeminly arbitrary values? */
+wm 32 0x021b4810 0x00440044
+
+/* MPMUR0 */
+wm 32 0x021b08b8 0x00000800 /* Force measurement on delay lines */
+wm 32 0x021b48b8 0x00000800
+
+/* MDSCR */
+wm 32 0x021b001c 0x00000000 /* Disable configuration req */
+
+/* MAPSR */
+wm 32 0x021b0404 0x00011007 /* 0x0001...? FIXME: Disable powersaving for now  */
+
+/* Clock configuration (CCM) */
+/* CCGR0..6 */
+wm 32 0x020c4068 0x00c03f3f
+wm 32 0x020c406c 0x0030fc03
+wm 32 0x020c4070 0x0fffc000
+wm 32 0x020c4074 0x3ff00000
+wm 32 0x020c4078 0x00fff300
+wm 32 0x020c407c 0x0f0000c3
+wm 32 0x020c4080 0x000003ff
+
+/* enable AXI cache for VDOA/PCIe/VPU/IPU */
+wm 32 0x020e0010 0xff0000cf
+/* set IPU AXI-id0 Qos=0xf(bypass AXI-id1 Qos=0x7) */
+wm 32 0x020e0018 0x007f007f
+wm 32 0x020e001c 0x007f007f
+
+/* RGMII config: MVT doesn't have GRMII, disable! */
+wm 32 0x020e0768 0x000c0000 /* 1V5 DDR IO */
+wm 32 0x020e0788 0x00000000 /* disable ODT */

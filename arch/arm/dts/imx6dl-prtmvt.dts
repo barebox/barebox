@@ -1,0 +1,164 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+/*
+ * Copyright (c) 2014 Protonic Holland
+ */
+
+/dts-v1/;
+#include <arm/imx6dl.dtsi>
+#include "imx6qdl-vicut1.dtsi"
+
+/ {
+	model = "Protonic MVT board";
+	compatible = "prt,prtmvt", "fsl,imx6dl";
+
+	memory {
+		reg = <0x10000000 0x20000000>;
+	};
+
+	gpio_keys {
+		compatible = "gpio-keys";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		autorepeat;
+
+		button@20 {
+			label = "GPIO Key F1";
+			linux,code = <59>;
+			gpios = <&pca_gpio 0 GPIO_ACTIVE_LOW>;
+		};
+		button@21 {
+			label = "GPIO Key F2";
+			linux,code = <60>;
+			gpios = <&pca_gpio 1 GPIO_ACTIVE_LOW>;
+		};
+		button@22 {
+			label = "GPIO Key F3";
+			linux,code = <61>;
+			gpios = <&pca_gpio 2 GPIO_ACTIVE_LOW>;
+		};
+		button@23 {
+			label = "GPIO Key F4";
+			linux,code = <62>;
+			gpios = <&pca_gpio 3 GPIO_ACTIVE_LOW>;
+		};
+		button@24 {
+			label = "GPIO Key F5";
+			linux,code = <63>;
+			gpios = <&pca_gpio 4 GPIO_ACTIVE_LOW>;
+		};
+
+		// Center
+		button@25 {
+			label = "GPIO Key CYCLE";
+			linux,code = <154>;
+			gpios = <&pca_gpio 5 GPIO_ACTIVE_LOW>;
+		};
+		button@26 {
+			label = "GPIO Key ESC";
+			linux,code = <1>;
+			gpios = <&pca_gpio 6 GPIO_ACTIVE_LOW>;
+		};
+		button@27 {
+			label = "GPIO Key UP";
+			linux,code = <103>;
+			gpios = <&pca_gpio 7 GPIO_ACTIVE_LOW>;
+		};
+		button@28 {
+			label = "GPIO Key DOWN";
+			linux,code = <108>;
+			gpios = <&pca_gpio 8 GPIO_ACTIVE_LOW>;
+		};
+		button@29 {
+			label = "GPIO Key OK";
+			linux,code = <0x160>;
+			gpios = <&pca_gpio 9 GPIO_ACTIVE_LOW>;
+		};
+
+		button@2a {
+			label = "GPIO Key F6";
+			linux,code = <64>;
+			gpios = <&pca_gpio 10 GPIO_ACTIVE_LOW>;
+		};
+		button@2b {
+			label = "GPIO Key F7";
+			linux,code = <65>;
+			gpios = <&pca_gpio 11 GPIO_ACTIVE_LOW>;
+		};
+		button@2c {
+			label = "GPIO Key F8";
+			linux,code = <66>;
+			gpios = <&pca_gpio 12 GPIO_ACTIVE_LOW>;
+		};
+		button@2d {
+			label = "GPIO Key F9";
+			linux,code = <67>;
+			gpios = <&pca_gpio 13 GPIO_ACTIVE_LOW>;
+		};
+		button@2e {
+			label = "GPIO Key F10";
+			linux,code = <68>;
+			gpios = <&pca_gpio 14 GPIO_ACTIVE_LOW>;
+		};
+	};
+};
+
+&fec {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_enet>;
+	phy-mode = "rmii";
+	phy-reset-gpios = <&gpio4 26 GPIO_ACTIVE_LOW>;
+	clocks = <&clks IMX6QDL_CLK_ENET>,
+		 <&clks IMX6QDL_CLK_ENET>;
+	clock-names = "ipg", "ahb";
+	status = "okay";
+};
+
+&pwm2 {
+	status = "disabled";
+};
+
+&pcie {
+	status = "disabled";
+};
+
+&i2c1 {
+	pca_gpio: gpio@74 {
+		#gpio-cells = <2>;
+		compatible = "nxp,pca9539";
+		reg = <0x74>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_pca9539>;
+		interrupt-parent = <&gpio4>;
+		interrupts = <5 IRQ_TYPE_LEVEL_LOW>;
+		gpio-controller;
+	};
+};
+
+&iomuxc {
+	pinctrl_enet: enetgrp {
+		fsl,pins = <
+			/* MX6QDL_ENET_PINGRP4 */
+			MX6QDL_PAD_ENET_MDC__ENET_MDC           0x1b0b0
+			MX6QDL_PAD_ENET_MDIO__ENET_MDIO         0x1b0b0
+			MX6QDL_PAD_ENET_RXD0__ENET_RX_DATA0     0x1b0b0
+			MX6QDL_PAD_ENET_RXD1__ENET_RX_DATA1     0x1b0b0
+			MX6QDL_PAD_ENET_RX_ER__ENET_RX_ER       0x1b0b0
+			MX6QDL_PAD_ENET_TX_EN__ENET_TX_EN       0x1b0b0
+			MX6QDL_PAD_ENET_TXD0__ENET_TX_DATA0     0x1b0b0
+			MX6QDL_PAD_ENET_TXD1__ENET_TX_DATA1     0x1b0b0
+			MX6QDL_PAD_ENET_CRS_DV__ENET_RX_EN      0x1b0b0
+
+			MX6QDL_PAD_GPIO_16__ENET_REF_CLK   0x1b0b0
+			/* Phy reset */
+			MX6QDL_PAD_DISP0_DAT5__GPIO4_IO26	0x1b0b0
+			/* nINTRP */
+			MX6QDL_PAD_DISP0_DAT9__GPIO4_IO30	0x1b0b0
+		>;
+	};
+
+	pinctrl_pca9539: pca9539 {
+		fsl,pins = <
+			MX6QDL_PAD_GPIO_19__GPIO4_IO05		0x1b0b0
+		>;
+	};
+};

@@ -1,0 +1,229 @@
+soc imx6
+loadaddr 0x10000000
+ivtofs 0x400
+
+#include "lpddr2-defines.imxcfg"
+
+/* Clock configuration (CCM) */
+/* CCGR0..6 */
+wm 32 0x020c4068 0x00c03f3f
+wm 32 0x020c406c 0x0030fc03
+wm 32 0x020c4070 0x0fffc000
+wm 32 0x020c4074 0x3ff00000
+wm 32 0x020c4078 0x00fff300
+wm 32 0x020c407c 0x0f0000c3
+wm 32 0x020c4080 0x000003ff
+
+/* Set DDR clk to 400MHz. */
+wm 32 0x020c4018 0x00060324
+
+/* #include "padsetup-q.imxcfg" */
+
+/* LPDDR2 i.MX6D/Q pad setup */
+wm 32 0x020e0798 0x00080000
+wm 32 0x020e0758 0x00000000
+
+wm 32 0x020e0588 0x00000030
+wm 32 0x020e0594 0x00000030
+
+wm 32 0x020e056c 0x00000030
+wm 32 0x020e0578 0x00000030
+wm 32 0x020e074c 0x00000030
+
+wm 32 0x020e057c 0x00000030
+wm 32 0x020e058c 0x00000000
+wm 32 0x020e059c 0x00000030
+wm 32 0x020e05a0 0x00000030
+wm 32 0x020e078c 0x00000030
+
+wm 32 0x020e0750 0x00020000
+wm 32 0x020e05a8 0x00003030
+wm 32 0x020e05b0 0x00003030
+wm 32 0x020e0524 0x00003030
+wm 32 0x020e051c 0x00003030
+wm 32 0x020e0518 0x00003030
+wm 32 0x020e050c 0x00003030
+wm 32 0x020e05b8 0x00003030
+wm 32 0x020e05c0 0x00003030
+
+wm 32 0x020e0774 0x00020000
+wm 32 0x020e0784 0x00000030
+wm 32 0x020e0788 0x00000030
+wm 32 0x020e0794 0x00000030
+wm 32 0x020e079c 0x00000030
+wm 32 0x020e07a0 0x00000030
+wm 32 0x020e07a4 0x00000030
+wm 32 0x020e07a8 0x00000030
+wm 32 0x020e0748 0x00000030
+
+wm 32 0x020e05ac 0x00000030
+wm 32 0x020e05b4 0x00000030
+wm 32 0x020e0528 0x00000030
+wm 32 0x020e0520 0x00000030
+wm 32 0x020e0514 0x00000030
+wm 32 0x020e0510 0x00000030
+wm 32 0x020e05bc 0x00000030
+wm 32 0x020e05c4 0x00000030
+
+/* CSCR: Configuration mode */
+wm 32 0x021b001c 0x00008000
+check 32 until_any_bit_set 0x021b001c 0x00004000
+wm 32 0x021b401c 0x00008000
+/* check 32 until_any_bit_set 0x021b401c 0x00004000 */
+
+
+wm 32 0x021b085c 0x1b4700c7
+wm 32 0x021b485c 0x1b4700c7
+
+/* MPZQHWCTRL */
+wm 32 0x021b0800 0xa1390003 /* ZQ mode = 3  force calibration */
+wm 32 0x021b4800 0xa1380003 /* FIXME: Why different? */
+
+wm 32 0x021b0890 0x00400000
+wm 32 0x021b4890 0x00400000
+
+/* MPRDDLCTL, MPWRDLCTL */
+wm 32 0x021b0848 0x40404040 /* TODO. Read delay line conf. */
+wm 32 0x021b4848 0x40404040 /* For now set all to 50%. */
+wm 32 0x021b0850 0x40404040
+wm 32 0x021b4850 0x40404040
+
+wm 32 0x021b083c 0x20000000
+wm 32 0x021b0840 0x00000000
+wm 32 0x021b483c 0x20000000
+wm 32 0x021b4840 0x00000000
+
+
+/* Set Read data delay 3 delay units for all bits */
+wm 32 0x021b081c 0x33333333
+wm 32 0x021b0820 0x33333333
+wm 32 0x021b0824 0x33333333
+wm 32 0x021b0828 0x33333333
+wm 32 0x021b481c 0x33333333
+wm 32 0x021b4820 0x33333333
+wm 32 0x021b4824 0x33333333
+wm 32 0x021b4828 0x33333333
+
+/* Set Write data delay 3 delay units for all bits */
+wm 32 0x021b082c 0xf3333333
+wm 32 0x021b0830 0xf3333333
+wm 32 0x021b0834 0xf3333333
+wm 32 0x021b0838 0xf3333333
+wm 32 0x021b482c 0xf3333333
+wm 32 0x021b4830 0xf3333333
+wm 32 0x021b4834 0xf3333333
+wm 32 0x021b4838 0xf3333333
+
+/* MPMUR0 */
+wm 32 0x021b08b8 0x00000800 /* Force measurement on delay lines */
+wm 32 0x021b48b8 0x00000800
+
+/*
+ * Configure MMDC Channel 0
+ */
+
+/* MDMISC No addr mirror, 0 WALAT, 5 RALAT, LPDDR2 mode, RST */
+wm 32 0x021b0018 0x00001602
+check 32 until_all_bits_clear 0x021b0018 0x00000002
+
+wm 32 0x021b0004 0x00020036
+wm 32 0x021b0008 0x12272000 /* FIXME: Why does script aid set this? */
+wm 32 0x021b000c MDCFG0_8G_LPDDR2_CL6
+wm 32 0x021b0010 MDCFG1_LPDDR2
+wm 32 0x021b0014 MDCFG2_LPDDR2
+
+wm 32 0x021b0018 0x0000174c
+wm 32 0x021b001c 0x00008000
+wm 32 0x021b002c 0x0f9f26d2 /* MDRWD */
+wm 32 0x021b0030 MDOR_LPDDR2
+wm 32 0x021b0038 0x00190778 /* MDCFG3LP */
+wm 32 0x021b0040 0x0000004f /* NOTE: According to RM */
+wm 32 0x021b0400 0x11420000 /* MAARCR disable dyn jump */
+wm 32 0x021b0000 MDCTL_LPDDR2
+
+/*
+ * Configure MMDC Channel 1
+ */
+
+/* MDMISC No addr mirror, 0 WALAT, 5 RALAT, LPDDR2 mode, RST */
+wm 32 0x021b4018 0x00001602
+check 32 until_all_bits_clear 0x021b4018 0x00000002
+
+wm 32 0x021b4004 0x00020036
+wm 32 0x021b4008 0x12272000 /* FIXME: Why does script aid set this? */
+wm 32 0x021b400c MDCFG0_8G_LPDDR2_CL6
+wm 32 0x021b4010 MDCFG1_LPDDR2
+wm 32 0x021b4014 MDCFG2_LPDDR2
+
+wm 32 0x021b4018 0x0000174c
+wm 32 0x021b401c 0x00008000
+wm 32 0x021b402c 0x0f9f26d2 /* MDOR */
+wm 32 0x021b4030 MDOR_LPDDR2
+wm 32 0x021b4038 0x00190778 /* MDCFG3LP */
+wm 32 0x021b4040 MDASP_768MIB /* NOTE: According to RM */
+wm 32 0x021b4400 0x11420000 /* MAARCR disable dyn jump */
+wm 32 0x021b4000 MDCTL_LPDDR2
+
+/*
+ * Configure LPDDR2 devices
+ */
+
+wm 32 0x021b001c 0x00008010 /* Precharge all ch 0 */
+wm 32 0x021b401c 0x00008010 /* Precharge all ch 1 */
+
+/* Channel 0 */
+wm 32 0x021b001c 0x003f8030 /* Reset */
+wm 32 0x021b001c 0xff0a8030 /* Calibrate */
+wm 32 0x021b001c 0x82018030 /* MR1: nWR=6, WC=0, BT=0, BL=BL4 */
+wm 32 0x021b001c 0x04028030 /* MR2: RL6/WL3 */
+wm 32 0x021b001c 0x02038030 /* MR3: DS = 40 Ohm */
+
+/* Channel 1 */
+wm 32 0x021b401c 0x003f8030
+wm 32 0x021b401c 0xff0a8030
+wm 32 0x021b401c 0x82018030
+wm 32 0x021b401c 0x04028030
+wm 32 0x021b401c 0x02038030
+
+/* MPDGCTRL disabled, reset fifos */
+wm 32 0x021b083c 0xa0000000
+wm 32 0x021b083c 0xa0000000
+check 32 until_all_bits_clear 0x021b083c 0x80000000
+wm 32 0x021b483c 0xa0000000
+wm 32 0x021b483c 0xa0000000
+check 32 until_all_bits_clear 0x021b483c 0x80000000
+
+/* MPZQHWCTRL */
+wm 32 0x021b0800 0xa1390003 /* ZQ mode = 3  force calibration */
+wm 32 0x021b4800 0xa1380003 /* FIXME: Why different? */
+
+wm 32 0x021b0020 MDREF_64KHZ
+wm 32 0x021b4020 MDREF_64KHZ
+
+wm 32 0x021b0818 0x00000000 /* LPDDR2: Disable ODT! */
+wm 32 0x021b4818 0x00000000
+
+wm 32 0x021b0004 MDPDC_400MHZ
+wm 32 0x021b4004 MDPDC_400MHZ
+
+/* MAPSR */
+wm 32 0x021b0404 0x00011006 /* Enable autorefresh  */
+wm 32 0x021b4404 0x00011006 /* Enable autorefresh  */
+
+/* MDSCR */
+wm 32 0x021b001c 0x00000000 /* Disable configuration req */
+wm 32 0x021b401c 0x00000000 /* Disable configuration req */
+
+
+/* enable AXI cache for VDOA/PCIe/VPU/IPU */
+wm 32 0x020e0010 0xff0000cf
+/* set IPU AXI-id0 Qos=0xf(bypass AXI-id1 Qos=0x7) */
+wm 32 0x020e0018 0x007f007f
+wm 32 0x020e001c 0x007f007f
+
+/* DEBUG leds */
+wm 32 0x020e0244 0x00000005
+wm 32 0x020e0614 0x000130b0
+
+/* configure 100K pull down on USB_ETH_CHG -> ADC_ICHG */
+wm 32 0x020e06cc 0x000130f9

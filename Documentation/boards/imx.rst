@@ -252,7 +252,7 @@ Header:
 +--------------------+--------------------------------------------------------------+
 | ``loadaddr <adr>`` |     The address the binary is uploaded to                    |
 +--------------------+--------------------------------------------------------------+
-| ``dcdofs <ofs>``   | The offset of the image header in the image. This should be: |
+| ``ivtofs <ofs>``   | The offset of the image header in the image. This should be: |
 |                    |                                                              |
 |                    | * ``0x400``:  MMC/SD, NAND, serial ROM, PATA, SATA           |
 |                    | * ``0x1000``: NOR Flash                                      |

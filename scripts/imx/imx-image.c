@@ -238,7 +238,7 @@ static size_t add_header_v1(struct config_data *data, void *buf)
 {
 	struct imx_flash_header *hdr;
 	int dcdsize = curdcd * sizeof(uint32_t);
-	int offset = data->image_dcd_offset;
+	int offset = data->image_ivt_offset;
 	uint32_t loadaddr = data->image_load_addr;
 	uint32_t imagesize = data->load_size;
 
@@ -307,7 +307,7 @@ static size_t add_header_v2(const struct config_data *data, void *buf)
 {
 	struct imx_flash_header_v2 *hdr;
 	int dcdsize = curdcd * sizeof(uint32_t);
-	int offset = data->image_dcd_offset;
+	int offset = data->image_ivt_offset;
 	uint32_t loadaddr = data->image_load_addr;
 	uint32_t imagesize = data->load_size;
 
@@ -329,7 +329,8 @@ static size_t add_header_v2(const struct config_data *data, void *buf)
 	hdr->header.version	= IVT_VERSION;
 
 	hdr->entry		= loadaddr + HEADER_LEN;
-	hdr->dcd_ptr		= loadaddr + offset + offsetof(struct imx_flash_header_v2, dcd_header);
+	if (dcdsize)
+		hdr->dcd_ptr = loadaddr + offset + offsetof(struct imx_flash_header_v2, dcd_header);
 	if (create_usb_image) {
 		dcd_ptr_content = hdr->dcd_ptr;
 		dcd_ptr_offset = offsetof(struct imx_flash_header_v2, dcd_ptr) + offset;
@@ -357,13 +358,14 @@ static size_t add_header_v2(const struct config_data *data, void *buf)
 		hdr->boot_data.size += CSF_LEN;
 	}
 
-	hdr->dcd_header.tag	= TAG_DCD_HEADER;
-	hdr->dcd_header.length	= htobe16(sizeof(uint32_t) + dcdsize);
-	hdr->dcd_header.version	= DCD_VERSION;
-
 	buf += sizeof(*hdr);
 
-	memcpy(buf, dcdtable, dcdsize);
+	if (dcdsize) {
+		hdr->dcd_header.tag	= TAG_DCD_HEADER;
+		hdr->dcd_header.length	= htobe16(sizeof(uint32_t) + dcdsize);
+		hdr->dcd_header.version	= DCD_VERSION;
+		memcpy(buf, dcdtable, dcdsize);
+	}
 
 	return imagesize;
 }
@@ -443,41 +445,42 @@ static int write_mem_v2(uint32_t addr, uint32_t val, int width, int set_bits, in
 	return 0;
 }
 
-static int xread(int fd, void *buf, int len)
+static void xread(int fd, void *buf, int len)
 {
 	int ret;
 
 	while (len) {
 		ret = read(fd, buf, len);
-		if (ret < 0)
-			return ret;
+		if (ret < 0) {
+			fprintf(stderr, "read failed: %s\n", strerror(errno));
+			exit(1);
+		}
+
 		if (!ret)
-			return EOF;
+			return;
 		buf += ret;
 		len -= ret;
 	}
-
-	return 0;
 }
 
-static int xwrite(int fd, void *buf, int len)
+static void xwrite(int fd, void *buf, int len)
 {
 	int ret;
 
 	while (len) {
 		ret = write(fd, buf, len);
-		if (ret < 0)
-			return ret;
+		if (ret < 0) {
+			fprintf(stderr, "write failed: %s\n", strerror(errno));
+			exit(1);
+		}
 		buf += ret;
 		len -= ret;
 	}
-
-	return 0;
 }
 
 static void write_dcd(const char *outfile)
 {
-	int outfd, ret;
+	int outfd;
 	int dcdsize = curdcd * sizeof(uint32_t);
 
 	outfd = open(outfile, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
@@ -487,11 +490,7 @@ static void write_dcd(const char *outfile)
 		exit(1);
 	}
 
-	ret = xwrite(outfd, dcdtable, dcdsize);
-	if (ret < 0) {
-		perror("write");
-		exit(1);
-	}
+	xwrite(outfd, dcdtable, dcdsize);
 }
 
 static int check(const struct config_data *data, uint32_t cmd, uint32_t addr,
@@ -690,11 +689,7 @@ static int hab_sign(struct config_data *data)
 			csf_space);
 	}
 
-	ret = xread(fd, buf, s.st_size);
-	if (ret < 0) {
-		fprintf(stderr, "read failed: %s\n", strerror(errno));
-		return -errno;
-	}
+	xread(fd, buf, s.st_size);
 
 	/*
 	 * For i.MX8M, write into the reserved CSF section
@@ -726,11 +721,7 @@ static int hab_sign(struct config_data *data)
 		}
 	}
 
-	ret = xwrite(outfd, buf, csf_space);
-	if (ret < 0) {
-		fprintf(stderr, "write failed: %s\n", strerror(errno));
-		return -errno;
-	}
+	xwrite(outfd, buf, csf_space);
 
 	ret = close(outfd);
 	if (ret) {
@@ -790,11 +781,10 @@ int main(int argc, char *argv[])
 	int outfd;
 	int dcd_only = 0;
 	int now = 0;
-	int i, header_copies;
 	int add_barebox_header;
 	uint32_t barebox_image_size = 0;
 	struct config_data data = {
-		.image_dcd_offset = 0xffffffff,
+		.image_ivt_offset = 0xffffffff,
 		.write_mem = write_mem,
 		.check = check,
 		.nop = nop,
@@ -892,11 +882,11 @@ int main(int argc, char *argv[])
 		create_usb_image = 0;
 	}
 
-	if (data.image_dcd_offset == 0xffffffff) {
+	if (data.image_ivt_offset == 0xffffffff) {
 		if (create_usb_image)
-			data.image_dcd_offset = 0x0;
+			data.image_ivt_offset = 0x0;
 		else
-			data.image_dcd_offset = FLASH_HEADER_OFFSET;
+			data.image_ivt_offset = FLASH_HEADER_OFFSET;
 	}
 
 	if (!data.header_version) {
@@ -920,14 +910,14 @@ int main(int argc, char *argv[])
 	case 1:
 		barebox_image_size = add_header_v1(&data, buf);
 		if (data.srkfile) {
-			ret = add_srk(buf, data.image_dcd_offset, data.image_load_addr,
+			ret = add_srk(buf, data.image_ivt_offset, data.image_load_addr,
 				      data.srkfile);
 			if (ret)
 				exit(1);
 		}
 		break;
 	case 2:
-		if (data.image_dcd_offset + sizeof(struct imx_flash_header_v2) +
+		if (data.image_ivt_offset + sizeof(struct imx_flash_header_v2) +
 		    MAX_DCD * sizeof(u32) > HEADER_LEN) {
 			fprintf(stderr, "i.MX v2 header exceeds SW limit set by imx-image\n");
 			exit(1);
@@ -987,45 +977,35 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	header_copies = (data.cpu_type == IMX_CPU_IMX35) ? 2 : 1;
-
-	for (i = 0; i < header_copies; i++) {
-		ret = xwrite(outfd, add_barebox_header ? bb_header : buf,
-			     sizeof_bb_header);
-		if (ret < 0) {
-			perror("write");
+	if (data.cpu_type == IMX_CPU_IMX35) {
+		xwrite(outfd, buf, header_len);
+		xwrite(outfd, buf, header_len);
+	} else {
+		if (add_barebox_header &&
+		    data.image_ivt_offset + data.header_gap < sizeof_bb_header) {
+			fprintf(stderr, "barebox header conflicts with IVT\n");
 			exit(1);
 		}
 
-		if (lseek(outfd, data.header_gap, SEEK_CUR) < 0) {
+		if (lseek(outfd, data.header_gap, SEEK_SET) < 0) {
 			perror("lseek");
 			exit(1);
 		}
 
-		ret = xwrite(outfd, buf + sizeof_bb_header,
-			     header_len - sizeof_bb_header);
-		if (ret < 0) {
-			perror("write");
-			exit(1);
-		}
+		xwrite(outfd, buf, header_len);
 	}
 
-	ret = xwrite(outfd, infile, insize);
-	if (ret) {
-		perror("write");
-		exit(1);
-	}
+	if (add_barebox_header)
+		pwrite(outfd, bb_header, sizeof_bb_header, 0);
+
+	xwrite(outfd, infile, insize);
 
 	/* pad until next 4k boundary */
 	now = 4096 - (insize % 4096);
 	if (data.csf && now) {
 		memset(buf, 0x5a, now);
 
-		ret = xwrite(outfd, buf, now);
-		if (ret) {
-			perror("write");
-			exit(1);
-		}
+		xwrite(outfd, buf, now);
 	}
 
 	ret = close(outfd);
@@ -1054,11 +1034,7 @@ int main(int argc, char *argv[])
 			exit(1);
 		}
 
-		ret = xwrite(outfd, infile, insize);
-		if (ret < 0) {
-			perror("write");
-			exit (1);
-		}
+		xwrite(outfd, infile, insize);
 
 		close(outfd);
 	}

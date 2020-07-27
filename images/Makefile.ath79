@@ -22,6 +22,14 @@ pblb-$(CONFIG_BOARD_OPENEMBEDED_SOM9331) += start_openembed_som9331_board
 FILE_barebox-openembed-som9331-board.img = start_openembed_som9331_board.pblb
 image-$(CONFIG_BOARD_OPENEMBEDED_SOM9331) += barebox-openembed-som9331-board.img
 
+pblb-$(CONFIG_BOARD_OKUD_MAX9331) += start_okud_max9331
+FILE_barebox-okud-max9331.img = start_okud_max9331.pblb
+image-$(CONFIG_BOARD_OKUD_MAX9331) += barebox-okud-max9331.img
+
+pblb-$(CONFIG_BOARD_OKUD_MAX9331) += start_okud_max9331_boot0
+FILE_barebox-okud-max9331-boot0.img = start_okud_max9331_boot0.pblb
+image-$(CONFIG_BOARD_OKUD_MAX9331) += barebox-okud-max9331-boot0.img
+
 pblb-$(CONFIG_BOARD_TPLINK_MR3020) += start_tplink_mr3020
 FILE_barebox-tplink-mr3020.img = start_tplink_mr3020.pblb
 image-$(CONFIG_BOARD_TPLINK_MR3020) += barebox-tplink-mr3020.img

@@ -1,0 +1,144 @@
+OKUD MAX9331
+==============
+
+The USELESS Board seems useless
+
+  * Atheros ar9331 SoC(MIPS24Kc, 400MHz, 32bit);
+  * 64 MiB SDRAM;
+  * 16 MiB NOR type SPI Flash Memory;
+  * 3.3V TTL UART;
+  * 4 GiB USB Nand Flash Disk;
+  * 3 RJ45 Ports;
+  *   IEEE 802.11b/g;
+  * 3 User LEDs;
+  * 1 GPIO Button;
+
+The useless board always shiped with the lastest barebox and kernel. OpenWRT
+is supported too.
+
+Perparing Hardware
+------------------
+
+solder the board in the back, use a TTL dongle connect to JP1.
+
+::
+
+	TP2 -- TP3
+	TP1 -- TP4
+
+	+--|PWR|---|wan|---|lan1|---|lan2|-----|ANT|---+
+	|                                              |
+	|                                              |
+	|                                              |
+	|                                              |
+	|                                              |
+	|                          TP2                 |
+	|                           O  O TP1           |
+	|      TP3                                     |
+	|       O                                      |
+	| TP4 O                                        |
+	|     o o o                                    |
+	+----------------------------------------------+
+	    Tx Rx GND
+
+
+Running barebox
+---------------
+
+Barebox can be program to the board with:
+
+ * run by u-boot from tftp server
+ * run barebox from RAM or burn to flash by barebox
+ * run from spi flash
+
+Barebox can be started from U-Boot using tftp.
+To convert barebox.bin to u-boot uImage format:
+
+.. code-block:: sh
+
+  $ mkimage -A mips -O linux -T kernel -C none -a a0060000 -e a0060000 -n 'Barebox uImage' -d images/barebox-okud-max9331.img uImage
+  $ cp uImage /var/lib/tftpboot
+
+connect your board to your tftp-server network via Ethernet.
+next, setup network on MAX9331 and run:
+
+.. code-block:: console
+
+  hornet> set ipaddr 192.168.31.17
+  hornet> set serverip 192.168.31.40
+  hornet> tftpboot 0x81000000 uImage
+
+run from ram:
+
+.. code-block:: console
+
+  hornet> bootm 0x81000000
+
+or burn to flash, replace the 0x40000 to your uImage real size,
+
+.. code-block:: console
+
+  hornet> erase 0x9f020000 +0x40000
+  hornet> cp.b 0x81000000 0x9f020000 0x40000
+  hornet> reset
+
+if your board preinstalled with barebox:
+
+run barebox from ram by barebox
+
+copy the image to tftp server folder
+
+.. code-block:: sh
+
+  $ cp images/barebox-okud-max9331.img /var/lib/tftpboot/none-barebox-max9331
+
+enable dhcp service on the network
+
+.. code-block:: console
+
+   global net.server=10.1.1.72
+   boot bnet
+
+if you want to make it valid next boot
+
+.. code-block:: console
+
+   nv net.server=10.1.1.72
+   boot bnet
+
+update barebox by barebox
+
+.. code-block:: console
+
+   barebox_update /mnt/tftp/none-barebox-max9331
+
+run from spi flash
+
+max9331 has 16MiB spi flash on board, layout is like this
+
+.. code-block:: text
+
+   | boot0 | ... | barebox | ... | art |
+
+by default, the barebox bootloader is not located in the begginning of flash,
+instead we have a so called program boot0, it is a very simple program,
+it jump to 0x9f020000 where the first instruction of barebox.
+This is usefull when debug with jtag or choosing different bootloaders.
+or even boot kernel without bootloader.
+
+.. code-block:: assembly
+
+ lui  ra, 0x9f02
+ jr   ra
+ nop
+
+ b    .
+ nop
+
+Links
+-----
+
+See also
+
+  * http://www.eeboard.com/wp-content/uploads/downloads/2013/08/AR9331.pdf
+  * http://squonk42.github.io/TL-WR703N/

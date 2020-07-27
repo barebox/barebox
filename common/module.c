@@ -176,6 +176,42 @@ static void layout_sections( struct module *mod,
 	debug("core_size: %ld\n", mod->core_size);
 }
 
+int __weak module_frob_arch_sections(Elf_Ehdr *hdr,
+				     Elf_Shdr *sechdrs,
+				     char *secstrings,
+				     struct module *mod)
+{
+	return 0;
+}
+
+static void register_module_cmds(Elf32_Shdr *sechdrs, const char *strtab, unsigned int symindex)
+{
+	Elf32_Sym *sym;
+	unsigned int numsyms;
+	unsigned int i;
+	struct command * const *cmd_start = NULL;
+	struct command * const *cmd_end = NULL;
+	struct command * const *cmd;
+
+	numsyms = sechdrs[symindex].sh_size / sizeof(Elf32_Sym);
+	sym = (void *)sechdrs[symindex].sh_addr;
+
+	for (i = 0; i < numsyms; i++) {
+		if (strcmp(strtab + sym[i].st_name, MODULE_SYMBOL_PREFIX "__barebox_cmd_start") == 0)
+			cmd_start = (struct command * const *)sym[i].st_value;
+
+		if (strcmp(strtab + sym[i].st_name, MODULE_SYMBOL_PREFIX "__barebox_cmd_end") == 0)
+			cmd_end = (struct command * const *)sym[i].st_value;
+	}
+
+	if (cmd_start && cmd_end) {
+		debug("found __barebox_cmd_start at 0x%08x\n", (uint32_t)cmd_start);
+		for (cmd = cmd_start; cmd != cmd_end; cmd++) {
+			register_command(*cmd);
+		}
+	}
+}
+
 LIST_HEAD(module_list);
 
 struct module * load_module(void *mod_image, unsigned long len)
@@ -183,8 +219,6 @@ struct module * load_module(void *mod_image, unsigned long len)
 	struct module *module = NULL;
 	Elf32_Ehdr *ehdr;		/* Elf header structure pointer     */
 	Elf32_Shdr *sechdrs;		/* Section header structure pointer */
-	Elf32_Sym *sym;
-	unsigned int numsyms;
 	char *strtab = 0;		/* String table pointer             */
 	int i;				/* Loop counter                     */
 	unsigned int strindex = 0;
@@ -193,7 +227,6 @@ struct module * load_module(void *mod_image, unsigned long len)
 	char *secstrings;
 	void *ptr = NULL;
 	int err;
-	int cmdindex;
 
 	if (len < sizeof(*ehdr))
 		return NULL;
@@ -246,6 +279,12 @@ struct module * load_module(void *mod_image, unsigned long len)
 		goto cleanup;
 	}
 
+	/* Allow arches to frob section contents and sizes.  */
+	err = module_frob_arch_sections(ehdr, sechdrs,
+					secstrings, module);
+	if (err < 0)
+		goto cleanup;
+
 	/* Determine total sizes, and put offsets in sh_entsize.  For now
 	   this is done generically; there doesn't appear to be any
 	   special cases for the architectures. */
@@ -285,25 +324,10 @@ struct module * load_module(void *mod_image, unsigned long len)
 			apply_relocate_add(sechdrs, strtab, symindex, i, module);
 	}
 
-	numsyms = sechdrs[symindex].sh_size / sizeof(Elf32_Sym);
-	sym = (void *)sechdrs[symindex].sh_addr;
+	register_module_cmds(sechdrs, strtab, symindex);
 
-	cmdindex = find_sec(ehdr, sechdrs, secstrings, ".barebox_cmd");
-	if (cmdindex) {
-		struct command *cmd =(struct command *)sechdrs[cmdindex].sh_addr;
-		for (i = 0; i < sechdrs[cmdindex].sh_size / sizeof(struct command); i++) {
-			register_command(cmd);
-			cmd++;
-		}
-	}
-
-	for (i = 0; i < numsyms; i++) {
-		if (!strcmp(strtab + sym[i].st_name, MODULE_SYMBOL_PREFIX "init_module")) {
-			printf("found init_module() at 0x%08x\n", sym[i].st_value);
-			module->init = (void *)sym[i].st_value;
-		}
-	}
-
+	/* Module has been moved */
+	module = (void *)sechdrs[modindex].sh_addr;
 	list_add_tail(&module->list, &module_list);
 
 	return module;
@@ -311,8 +335,6 @@ struct module * load_module(void *mod_image, unsigned long len)
 cleanup:
 	if (ptr)
 		free(ptr);
-	if (module)
-		free(module);
 
 	return NULL;
 }

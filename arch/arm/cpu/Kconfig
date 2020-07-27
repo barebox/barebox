@@ -6,6 +6,7 @@ config PHYS_ADDR_T_64BIT
 config CPU_32
 	bool
 	select HAS_MODULES
+	select HAVE_MOD_ARCH_SPECIFIC
 	select HAS_DMA
 	select HAVE_PBL_IMAGE
 

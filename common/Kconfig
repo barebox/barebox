@@ -332,6 +332,13 @@ config MODULES
 	  way to compile modules and the list of exported symbols to actually
 	  make use of modules is short to nonexistent
 
+config HAVE_MOD_ARCH_SPECIFIC
+	bool
+	help
+	  The arch uses struct mod_arch_specific to store data.  Many arches
+	  just need a simple module loader without arch specific data - those
+	  should not enable this.
+
 config KALLSYMS
 	depends on HAS_KALLSYMS
 	bool "kallsyms"

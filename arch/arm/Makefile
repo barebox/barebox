@@ -16,6 +16,10 @@ KBUILD_CPPFLAGS	+= -mlittle-endian
 LD		+= -EL
 endif
 
+ifeq ($(CONFIG_ARM_MODULE_PLTS),y)
+LDFLAGS_MODULE   += -T $(srctree)/arch/arm/lib32/module.lds
+endif
+
 # Unaligned access is not supported when MMU is disabled, so given how
 # at least some of the code would be executed with MMU off, lets be
 # conservative and instruct the compiler not to generate any unaligned
@@ -137,7 +141,7 @@ LDFLAGS_barebox += --gc-sections
 LDFLAGS_pbl += --gc-sections
 
 # early code often runs at addresses we are not linked at
-KBUILD_CPPFLAGS += -fPIE
+KBUILD_CFLAGS_KERNEL += -fPIE
 
 ifdef CONFIG_RELOCATABLE
 LDFLAGS_barebox += -pie

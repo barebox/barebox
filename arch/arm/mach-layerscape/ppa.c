@@ -77,8 +77,8 @@ static int ppa_init(void *ppa, size_t ppa_size, void *sec_firmware_addr)
 	if (IS_ERR(conf)) {
 		pr_err("Cannot open default config in ppa FIT image: %s\n",
 		       strerrorp(conf));
-		fit_close(fit);
-		return PTR_ERR(fit);
+		ret = PTR_ERR(fit);
+		goto err;
 	}
 
 
@@ -86,7 +86,6 @@ static int ppa_init(void *ppa, size_t ppa_size, void *sec_firmware_addr)
 	if (ret) {
 		pr_err("Cannot open firmware image in ppa FIT image: %s\n",
 		       strerror(-ret));
-		ret = PTR_ERR(fit);
 		goto err;
 	}
 
@@ -107,7 +106,7 @@ static int ppa_init(void *ppa, size_t ppa_size, void *sec_firmware_addr)
 err:
 	fit_close(fit);
 
-	return 0;
+	return ret;
 }
 
 int ls1046a_ppa_init(resource_size_t ppa_start, resource_size_t ppa_size)

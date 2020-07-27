@@ -563,10 +563,7 @@ int globalvar_add_simple_bitmask(const char *name, unsigned long *value,
 	p = dev_add_param_bitmask(&global_device, name, NULL, NULL,
 		value, names, max, NULL);
 
-	if (IS_ERR(p))
-		return PTR_ERR(p);
-
-	return 0;
+	return PTR_ERR_OR_ZERO(p);
 }
 
 int globalvar_add_simple_ip(const char *name, IPaddr_t *ip)

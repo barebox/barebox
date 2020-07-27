@@ -121,6 +121,8 @@ static inline struct dw_i2c_dev *to_dw_i2c_dev(struct i2c_adapter *a)
 
 static void i2c_dw_enable(struct dw_i2c_dev *dw, bool enable)
 {
+	u32 reg = 0;
+
 	/*
 	 * This subrotine is an implementation of an algorithm
 	 * described in "Cyclone V Hard Processor System Technical
@@ -128,12 +130,13 @@ static void i2c_dw_enable(struct dw_i2c_dev *dw, bool enable)
 	 */
 	int timeout = MAX_T_POLL_COUNT;
 
-	enable = enable ? DW_IC_ENABLE_ENABLE : 0;
+	if (enable)
+		reg |= DW_IC_ENABLE_ENABLE;
 
 	do {
 		uint32_t ic_enable_status;
 
-		writel(enable, dw->base + DW_IC_ENABLE);
+		writel(reg, dw->base + DW_IC_ENABLE);
 
 		ic_enable_status = readl(dw->base + DW_IC_ENABLE_STATUS);
 		if ((ic_enable_status & DW_IC_ENABLE_STATUS_IC_EN) == enable)

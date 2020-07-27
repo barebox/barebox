@@ -1,18 +1,7 @@
-/*
- * include/asm-arm/unified.h - Unified Assembler Syntax helper macros
- *
- * Copyright (C) 2008 ARM Limited
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- */
+/* SPDX-License-Identifier: GPL-2.0-only */
+/* SPDX-FileCopyrightText: 2008 ARM Limited */
+
+/* Unified Assembler Syntax helper macros */
 
 #ifndef __ASM_UNIFIED_H
 #define __ASM_UNIFIED_H

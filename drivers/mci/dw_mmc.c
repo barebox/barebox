@@ -124,7 +124,7 @@ static int dwmci_prepare_data_dma(struct dwmci_host *host,
 {
 	unsigned long ctrl;
 	unsigned int i = 0, flags, cnt, blk_cnt;
-	unsigned long data_start, start_addr;
+	unsigned start_addr;
 	struct dwmci_idmac *desc = host->idmac;
 
 	blk_cnt = data->blocks;
@@ -134,7 +134,6 @@ static int dwmci_prepare_data_dma(struct dwmci_host *host,
 
 	dwmci_wait_reset(host, DWMCI_CTRL_FIFO_RESET);
 
-	data_start = (uint32_t)desc;
 	dwmci_writel(host, DWMCI_DBADDR, (uint32_t)desc);
 
 	if (data->flags & MMC_DATA_READ)

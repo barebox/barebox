@@ -1,13 +1,12 @@
+// SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: 2006 ARM Ltd.
+
 /*
- *  i2c-versatile.c
+ * i2c-versatile.c
  *
- *  Copyright (C) 2006 ARM Ltd.
- *  written by Russell King, Deep Blue Solutions Ltd.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
+ * written by Russell King, Deep Blue Solutions Ltd.
  */
+
 #include <common.h>
 #include <driver.h>
 #include <i2c/i2c.h>

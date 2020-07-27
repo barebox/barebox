@@ -18,9 +18,10 @@
 #include <linux/phy.h>
 
 #include <dt-bindings/net/ti-dp83867.h>
+#include <linux/mdio.h>
 
 #define DP83867_PHY_ID		0x2000a231
-#define DP83867_DEVADDR		0x1f
+#define DP83867_DEVADDR		MDIO_MMD_VEND2
 
 #define MII_DP83867_PHYCTRL	0x10
 #define MII_DP83867_MICR	0x12
@@ -175,12 +176,6 @@ static int dp83867_of_init(struct phy_device *phydev)
 
 	return of_property_read_u32(of_node, "ti,fifo-depth",
 			&dp83867->fifo_depth);
-}
-
-static inline bool phy_interface_is_rgmii(struct phy_device *phydev)
-{
-	return phydev->interface >= PHY_INTERFACE_MODE_RGMII &&
-			phydev->interface <= PHY_INTERFACE_MODE_RGMII_TXID;
 }
 
 static inline bool phy_interface_is_sgmii(struct phy_device *phydev)

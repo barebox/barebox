@@ -7,6 +7,11 @@ KBUILD_CPPFLAGS = $(patsubst %,-I$(srctree)/%include,$(machdirs))
 KBUILD_CPPFLAGS += -DCONFIG_MALLOC_SIZE=$(CONFIG_MALLOC_SIZE)
 
 KBUILD_CFLAGS := -Wall
+
+ifeq ($(CONFIG_KASAN),y)
+KBUILD_CPPFLAGS += -DCONFIG_KASAN=1
+endif
+
 NOSTDINC_FLAGS :=
 
 ifeq ($(CONFIG_SANDBOX_LINUX_I386),y)
@@ -14,6 +19,7 @@ KBUILD_CFLAGS += -m32
 endif
 
 obj-y = common.o tap.o
+obj-$(CONFIG_MALLOC_LIBC) += libc_malloc.o
 
 CFLAGS_sdl.o = $(shell pkg-config sdl --cflags)
 obj-$(CONFIG_DRIVER_VIDEO_SDL) += sdl.o

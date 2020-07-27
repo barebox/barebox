@@ -902,17 +902,6 @@ static inline int of_property_read_u32(const struct device_node *np,
 		s;						\
 		s = of_prop_next_string(prop, s))
 
-/*
- * struct device_node *n;
- *
- * of_property_for_each_phandle(np, root, "propname", n)
- *         printk("phandle points to: %s\n", n->full_name);
- */
-#define of_property_for_each_phandle(np, root, propname, n)	\
-	for (int _i = 0; 					\
-	     (n = of_parse_phandle_from(np, root, propname, _i));\
-	     _i++)
-
 static inline int of_property_write_u8(struct device_node *np,
 				       const char *propname, u8 value)
 {

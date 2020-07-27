@@ -44,6 +44,8 @@
 #include <mach/linux.h>
 #include <mach/hostfile.h>
 
+void __sanitizer_set_death_callback(void (*callback)(void));
+
 int sdl_xres;
 int sdl_yres;
 
@@ -268,7 +270,7 @@ static int add_image(char *str, char *devname_template, int *devname_number)
 	hf->base = (unsigned long)mmap(NULL, hf->size,
 			PROT_READ | (readonly ? 0 : PROT_WRITE),
 			MAP_SHARED, fd, 0);
-	if ((void *)hf->base == MAP_FAILED)
+	if (hf->base == (unsigned long)MAP_FAILED)
 		printf("warning: mmapping %s failed: %s\n", filename, strerror(errno));
 
 	ret = barebox_register_filedev(hf);
@@ -344,6 +346,10 @@ int main(int argc, char *argv[])
 	int malloc_size = CONFIG_MALLOC_SIZE;
 	int fdno = 0, envno = 0, option_index = 0;
 	char *aux;
+
+#ifdef CONFIG_KASAN
+	__sanitizer_set_death_callback(cookmode);
+#endif
 
 	while (1) {
 		option_index = 0;

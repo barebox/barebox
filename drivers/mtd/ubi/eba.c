@@ -324,9 +324,7 @@ static int leb_read_lock(struct ubi_device *ubi, int vol_id, int lnum)
 	struct ubi_ltree_entry *le;
 
 	le = ltree_add_entry(ubi, vol_id, lnum);
-	if (IS_ERR(le))
-		return PTR_ERR(le);
-	return 0;
+	return PTR_ERR_OR_ZERO(le);
 }
 
 /**
@@ -362,9 +360,7 @@ static int leb_write_lock(struct ubi_device *ubi, int vol_id, int lnum)
 	struct ubi_ltree_entry *le;
 
 	le = ltree_add_entry(ubi, vol_id, lnum);
-	if (IS_ERR(le))
-		return PTR_ERR(le);
-	return 0;
+	return PTR_ERR_OR_ZERO(le);
 }
 
 /**
@@ -383,9 +379,7 @@ static int leb_write_trylock(struct ubi_device *ubi, int vol_id, int lnum)
 	struct ubi_ltree_entry *le;
 
 	le = ltree_add_entry(ubi, vol_id, lnum);
-	if (IS_ERR(le))
-		return PTR_ERR(le);
-	return 0;
+	return PTR_ERR_OR_ZERO(le);
 }
 
 /**

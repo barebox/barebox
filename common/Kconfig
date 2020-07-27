@@ -312,6 +312,13 @@ config MALLOC_DUMMY
 	  memory is never freed. This is suitable for well tested noninteractive
 	  environments only.
 
+config MALLOC_LIBC
+	bool "libc malloc"
+	depends on SANDBOX
+	help
+	  select this option to use the libc malloc implementation in the sandbox.
+	  This is benefecial for testing with external memory integrity tools.
+
 endchoice
 
 config MODULES

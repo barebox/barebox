@@ -1,12 +1,8 @@
-/*
- *  arch/arm/include/asm/pgtable-hwdef.h
- *
- *  Copyright (C) 1995-2002 Russell King
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- */
+/* SPDX-License-Identifier: GPL-2.0-only */
+/* SPDX-FileCopyrightText: 1995-2002 Russell King */
+
+/* arch/arm/include/asm/pgtable-hwdef.h */
+
 #ifndef _ASMARM_PGTABLE_HWDEF_H
 #define _ASMARM_PGTABLE_HWDEF_H
 

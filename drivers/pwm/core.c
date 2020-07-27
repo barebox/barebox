@@ -122,10 +122,7 @@ int pwmchip_add(struct pwm_chip *chip, struct device_d *dev)
 
 	p = dev_add_param_bool(&pwm->dev, "inverted", apply_params,
 			       NULL, &pwm->params.polarity, pwm);
-	if (IS_ERR(p))
-		return PTR_ERR(p);
-
-	return 0;
+	return PTR_ERR_OR_ZERO(p);
 }
 EXPORT_SYMBOL_GPL(pwmchip_add);
 

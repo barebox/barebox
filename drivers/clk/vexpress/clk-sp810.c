@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-only
-/*
- * Copyright (C) 2013 ARM Limited
- */
+// SPDX-FileCopyrightText: 2013 ARM Limited
 
 #include <common.h>
 #include <io.h>

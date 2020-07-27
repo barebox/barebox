@@ -17,7 +17,9 @@
 #include <linux/mii.h>
 #include <linux/ethtool.h>
 #include <linux/phy.h>
+#include <linux/mdio.h>
 #include <linux/micrel_phy.h>
+#include <linux/bitfield.h>
 
 /* Operation Mode Strap Override */
 #define MII_KSZPHY_OMSO				0x16
@@ -155,9 +157,50 @@ static int ksz9021_config_init(struct phy_device *phydev)
 
 /* MMD Address 0x2 */
 #define MII_KSZ9031RN_CONTROL_PAD_SKEW	4
+#define MII_KSZ9031RN_RX_CTL_M		GENMASK(7, 4)
+#define MII_KSZ9031RN_TX_CTL_M		GENMASK(3, 0)
+
 #define MII_KSZ9031RN_RX_DATA_PAD_SKEW	5
+#define MII_KSZ9031RN_RXD3		GENMASK(15, 12)
+#define MII_KSZ9031RN_RXD2		GENMASK(11, 8)
+#define MII_KSZ9031RN_RXD1		GENMASK(7, 4)
+#define MII_KSZ9031RN_RXD0		GENMASK(3, 0)
+
 #define MII_KSZ9031RN_TX_DATA_PAD_SKEW	6
+#define MII_KSZ9031RN_TXD3		GENMASK(15, 12)
+#define MII_KSZ9031RN_TXD2		GENMASK(11, 8)
+#define MII_KSZ9031RN_TXD1		GENMASK(7, 4)
+#define MII_KSZ9031RN_TXD0		GENMASK(3, 0)
+
 #define MII_KSZ9031RN_CLK_PAD_SKEW	8
+#define MII_KSZ9031RN_GTX_CLK		GENMASK(9, 5)
+#define MII_KSZ9031RN_RX_CLK		GENMASK(4, 0)
+
+/* KSZ9031 has internal RGMII_IDRX = 1.2ns and RGMII_IDTX = 0ns. To
+ * provide different RGMII options we need to configure delay offset
+ * for each pad relative to build in delay.
+ */
+/* keep rx as "No delay adjustment" and set rx_clk to +0.60ns to get delays of
+ * 1.80ns
+ */
+#define RX_ID				0x7
+#define RX_CLK_ID			0x19
+
+/* set rx to +0.30ns and rx_clk to -0.90ns to compensate the
+ * internal 1.2ns delay.
+ */
+#define RX_ND				0xc
+#define RX_CLK_ND			0x0
+
+/* set tx to -0.42ns and tx_clk to +0.96ns to get 1.38ns delay */
+#define TX_ID				0x0
+#define TX_CLK_ID			0x1f
+
+/* set tx and tx_clk to "No delay adjustment" to keep 0ns
+ * dealy
+ */
+#define TX_ND				0x7
+#define TX_CLK_ND			0xf
 
 static int ksz9031_of_load_skew_values(struct phy_device *phydev,
 					const struct device_node *of_node,
@@ -179,7 +222,7 @@ static int ksz9031_of_load_skew_values(struct phy_device *phydev,
 		return 0;
 
 	if (matches < numfields)
-		newval = phy_read_mmd_indirect(phydev, reg, 2);
+		newval = phy_read_mmd_indirect(phydev, reg, MDIO_MMD_WIS);
 	else
 		newval = 0;
 
@@ -193,7 +236,7 @@ static int ksz9031_of_load_skew_values(struct phy_device *phydev,
 				<< (field_sz * i));
 		}
 
-	phy_write_mmd_indirect(phydev, reg, 2, newval);
+	phy_write_mmd_indirect(phydev, reg, MDIO_MMD_WIS, newval);
 	return 0;
 }
 
@@ -204,6 +247,61 @@ static int ksz9031_center_flp_timing(struct phy_device *phydev)
 	phy_write_mmd_indirect(phydev, MII_KSZ9031RN_FLP_BURST_TX_LO, 0, 0x1a80);
 
 	return genphy_restart_aneg(phydev);
+}
+
+static int ksz9031_config_rgmii_delay(struct phy_device *phydev)
+{
+	u16 rx, tx, rx_clk, tx_clk;
+
+	switch (phydev->interface) {
+	case PHY_INTERFACE_MODE_RGMII:
+		tx = TX_ND;
+		tx_clk = TX_CLK_ND;
+		rx = RX_ND;
+		rx_clk = RX_CLK_ND;
+		break;
+	case PHY_INTERFACE_MODE_RGMII_ID:
+		tx = TX_ID;
+		tx_clk = TX_CLK_ID;
+		rx = RX_ID;
+		rx_clk = RX_CLK_ID;
+		break;
+	case PHY_INTERFACE_MODE_RGMII_RXID:
+		tx = TX_ND;
+		tx_clk = TX_CLK_ND;
+		rx = RX_ID;
+		rx_clk = RX_CLK_ID;
+		break;
+	case PHY_INTERFACE_MODE_RGMII_TXID:
+		tx = TX_ID;
+		tx_clk = TX_CLK_ID;
+		rx = RX_ND;
+		rx_clk = RX_CLK_ND;
+		break;
+	default:
+		return 0;
+	}
+
+	phy_write_mmd_indirect(phydev, MII_KSZ9031RN_CONTROL_PAD_SKEW, 2,
+			       FIELD_PREP(MII_KSZ9031RN_RX_CTL_M, rx) |
+			       FIELD_PREP(MII_KSZ9031RN_TX_CTL_M, tx));
+
+	phy_write_mmd_indirect(phydev, MII_KSZ9031RN_RX_DATA_PAD_SKEW, 2,
+			       FIELD_PREP(MII_KSZ9031RN_RXD3, rx) |
+			       FIELD_PREP(MII_KSZ9031RN_RXD2, rx) |
+			       FIELD_PREP(MII_KSZ9031RN_RXD1, rx) |
+			       FIELD_PREP(MII_KSZ9031RN_RXD0, rx));
+
+	phy_write_mmd_indirect(phydev, MII_KSZ9031RN_TX_DATA_PAD_SKEW, 2,
+			       FIELD_PREP(MII_KSZ9031RN_TXD3, tx) |
+			       FIELD_PREP(MII_KSZ9031RN_TXD2, tx) |
+			       FIELD_PREP(MII_KSZ9031RN_TXD1, tx) |
+			       FIELD_PREP(MII_KSZ9031RN_TXD0, tx));
+
+	phy_write_mmd_indirect(phydev, MII_KSZ9031RN_CLK_PAD_SKEW, 2,
+			       FIELD_PREP(MII_KSZ9031RN_GTX_CLK, tx_clk) |
+			       FIELD_PREP(MII_KSZ9031RN_RX_CLK, rx_clk));
+	return 0;
 }
 
 static int ksz9031_config_init(struct phy_device *phydev)
@@ -226,6 +324,12 @@ static int ksz9031_config_init(struct phy_device *phydev)
 		of_node = dev->parent->device_node;
 
 	if (of_node) {
+		if (phy_interface_is_rgmii(phydev)) {
+			ret = ksz9031_config_rgmii_delay(phydev);
+			if (ret < 0)
+				return ret;
+		}
+
 		ksz9031_of_load_skew_values(phydev, of_node,
 				MII_KSZ9031RN_CLK_PAD_SKEW, 5,
 				clk_skews, 2);

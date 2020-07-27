@@ -1,25 +1,15 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 /*
  * Copyright (C) 2007 Sascha Hauer, Pengutronix
  *               2009 Marc Kleine-Budde, Pengutronix
  * (c) 2010 Eukrea Electromatique, Eric Bénard <eric@eukrea.com>
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
  *
  * Derived from:
  *
  * * mx35_3stack.c - board file for uboot-v1
  *   Copyright (C) 2007, Guennadi Liakhovetski <lg@denx.de>
  *   (C) Copyright 2008-2009 Freescale Semiconductor, Inc.
- *
  */
 
 #include <common.h>

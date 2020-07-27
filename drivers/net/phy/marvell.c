@@ -168,12 +168,6 @@ static int marvell_read_status(struct phy_device *phydev)
 
 #define MII_88E1510_GEN_CTRL_REG_1              0x14
 
-static inline bool phy_interface_is_rgmii(struct phy_device *phydev)
-{
-	return phydev->interface >= PHY_INTERFACE_MODE_RGMII &&
-		phydev->interface <= PHY_INTERFACE_MODE_RGMII_TXID;
-};
-
 /*
  * Set and/or override some configuration registers based on the
  * marvell,reg-init property stored in the of_node for the phydev.

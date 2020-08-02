@@ -106,24 +106,6 @@
 			};
 		};
 	};
-
-	bootstate: bootstate {
-		compatible = "barebox,bootstate";
-		backend-type = "state"; // or "nv", or "efivar"
-		backend = <&state>;
-
-		system0 {
-			default_attempts = <3>;
-		};
-
-		system1 {
-			default_attempts = <3>;
-		};
-
-		factory {
-			default_attempts = <3>;
-		};
-	};
 };
 
 &{/soc/clkmgr@ffd04000/clocks/osc1} {

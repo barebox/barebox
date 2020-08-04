@@ -1,0 +1,88 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/*
+ * Copyright (C) 2017 Atlas Copco Industrial Technique
+ */
+
+#include "imx7d-ac-sxb.dtsi"
+#include "imx7d-ddrc.dtsi"
+
+/ {
+	chosen {
+		stdout-path = &uart1;
+	};
+
+	state: state {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		magic = <0x27031977>;
+		compatible = "barebox,state";
+		backend-type = "raw";
+		backend-storage-type = "direct";
+		backend-stridesize = <0x500>;
+		backend = <&usdhc1_sdcard>;
+
+		bootstate {
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			last_chosen@0 {
+				reg = <0x0 0x4>;
+				type = "uint32";
+				default = <0x1>;
+			};
+
+			fs1.remaining_attempts@4 {
+				reg = <0x4 0x4>;
+				type = "uint32";
+				default = <3>;
+			};
+
+			fs1.priority@8 {
+				reg = <0x8 0x4>;
+				type = "uint32";
+				default= <3>;
+			};
+
+			fs2.remaining_attempts@c {
+				reg = <0xc 0x4>;
+				type = "uint32";
+				default = <3>;
+			};
+
+			fs2.priority@10 {
+				reg = <0x10 0x4>;
+				type = "uint32";
+				default= <2>;
+			};
+
+			rescue.remaining_attempts@14 {
+				reg = <0x14 0x4>;
+				type = "uint32";
+				default = <3>;
+			};
+
+			rescue.priority@18 {
+				reg = <0x18 0x4>;
+				type = "uint32";
+				default= <1>;
+			};
+
+			last_chosen_sucessfull@1c {
+				reg = <0x1c 0x4>;
+				type = "uint32";
+				default = <0>;
+			};
+		};
+	};
+
+	aliases {
+		state = &state;
+	};
+};
+
+/* FIXME: barebox serial is broken when barebox applies requested reparenting */
+&uart1 {
+	/delete-property/ assigned-clocks;
+	/delete-property/ assigned-clock-parents;
+};

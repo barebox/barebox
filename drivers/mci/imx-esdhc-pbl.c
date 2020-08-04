@@ -21,6 +21,7 @@
 #ifdef CONFIG_ARCH_IMX
 #include <mach/atf.h>
 #include <mach/imx6-regs.h>
+#include <mach/imx7-regs.h>
 #include <mach/imx8mq-regs.h>
 #include <mach/imx8mm-regs.h>
 #include <mach/imx-header.h>
@@ -263,6 +264,42 @@ int imx6_esdhc_start_image(int instance)
 	imx_esdhc_init(&host, &data);
 
 	return esdhc_load_image(&host, 0x10000000, 0x10000000, 0, SZ_1K, true);
+}
+
+/**
+ * imx7_esdhc_start_image - Load and start an image from USDHC controller
+ * @instance: The USDHC controller instance (0..2)
+ *
+ * This uses esdhc_start_image() to load an image from SD/MMC.  It is
+ * assumed that the image is the currently running barebox image (This
+ * information is used to calculate the length of the image). The
+ * image is started afterwards.
+ *
+ * Return: If successful, this function does not return. A negative error
+ * code is returned when this function fails.
+ */
+int imx7_esdhc_start_image(int instance)
+{
+	struct esdhc_soc_data data;
+	struct fsl_esdhc_host host;
+
+	switch (instance) {
+	case 0:
+		host.regs = IOMEM(MX7_USDHC1_BASE_ADDR);
+		break;
+	case 1:
+		host.regs = IOMEM(MX7_USDHC2_BASE_ADDR);
+		break;
+	case 2:
+		host.regs = IOMEM(MX7_USDHC3_BASE_ADDR);
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	imx_esdhc_init(&host, &data);
+
+	return esdhc_load_image(&host, 0x80000000, 0x80000000, 0, SZ_1K, true);
 }
 
 /**

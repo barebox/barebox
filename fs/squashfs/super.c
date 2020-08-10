@@ -83,7 +83,6 @@ void squashfs_put_super(struct super_block *sb)
 	}
 
 	if (sb->s_root) {
-		kfree(squashfs_i(sb->s_root->d_inode));
 		kfree(sb->s_root);
 		sb->s_root = NULL;
 	}

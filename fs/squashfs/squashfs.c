@@ -101,6 +101,7 @@ static int squashfs_probe(struct device_d *dev)
 	if (ret)
 		goto err_out;
 
+	sb->s_op = &squashfs_super_ops;
 
 	ret = squashfs_mount(fsdev, 0);
 	if (ret) {
@@ -109,8 +110,6 @@ static int squashfs_probe(struct device_d *dev)
 	}
 
 	squashfs_set_rootarg(fsdev);
-
-	sb->s_op = &squashfs_super_ops;
 
 	return 0;
 

@@ -52,7 +52,6 @@ static inline struct squashfs_page *squashfs_page(struct page *page)
 
 #define WARNING(s, args...)	pr_warn("SQUASHFS: "s, ## args)
 
-struct inode *iget_locked_squashfs(struct super_block *sb, unsigned long ino);
 char *squashfs_devread(struct squashfs_sb_info *fs, int byte_offset,
 		int byte_len);
 extern int squashfs_mount(struct fs_device_d *fsdev,

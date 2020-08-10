@@ -44,22 +44,6 @@
 #include "squashfs_fs_i.h"
 #include "squashfs.h"
 
-struct inode *iget_locked_squashfs(struct super_block *sb, unsigned long ino)
-{
-	struct inode *inode;
-	struct squashfs_inode_info *ei;
-
-	ei = malloc(sizeof(struct squashfs_inode_info));
-	inode = &ei->vfs_inode;
-	if (inode) {
-		inode->i_ino = ino;
-		inode->i_sb = sb;
-		inode->i_state = I_SYNC | I_NEW;
-	}
-
-	return inode;
-}
-
 /*
  * Initialise VFS inode with the base inode information common to all
  * Squashfs inode types.  Sqsh_ino contains the unswapped base inode
@@ -94,7 +78,7 @@ static int squashfs_new_inode(struct super_block *sb, struct inode *inode,
 struct inode *squashfs_iget(struct super_block *sb, long long ino,
 				unsigned int ino_number)
 {
-	struct inode *inode = iget_locked_squashfs(sb, ino_number);
+	struct inode *inode = iget_locked(sb, ino_number);
 	int err;
 
 	TRACE("Entered squashfs_iget\n");

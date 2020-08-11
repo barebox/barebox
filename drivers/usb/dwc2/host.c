@@ -383,6 +383,8 @@ static int dwc2_submit_bulk_msg(struct usb_device *udev, unsigned long pipe,
 	int in = usb_pipein(pipe);
 	u8 *pid;
 	u8 hc = DWC2_HC_CHANNEL;
+	uint64_t start;
+	int ret;
 
 	if ((devnum >= MAX_DEVICE) || (devnum == dwc2->root_hub_devnum)) {
 		udev->status = 0;
@@ -394,7 +396,19 @@ static int dwc2_submit_bulk_msg(struct usb_device *udev, unsigned long pipe,
 	else
 		pid = &dwc2->out_data_toggle[devnum][ep];
 
-	return dwc2_submit_packet(dwc2, udev, hc, pipe, pid, in, buffer, len);
+	start = get_time_ns();
+	do {
+		ret = dwc2_submit_packet(dwc2, udev, hc, pipe, pid, in,
+					 buffer, len);
+	} while (ret == -EAGAIN && !is_timeout(start, timeout * MSECOND));
+	if (ret == -EAGAIN) {
+		dwc2_err(dwc2, "Timeout on bulk endpoint\n");
+		ret = -ETIMEDOUT;
+	}
+
+	dwc2_dbg(dwc2, "%s: return %d\n", __func__, ret);
+
+	return ret;
 }
 
 static int dwc2_submit_int_msg(struct usb_device *udev, unsigned long pipe,

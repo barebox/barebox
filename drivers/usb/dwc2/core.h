@@ -466,15 +466,8 @@ static inline void dwc2_writel(struct dwc2 *dwc2, u32 value, u32 offset)
 static inline int dwc2_wait_bit_set(struct dwc2 *dwc2, u32 offset, u32 mask,
 			    u32 timeout)
 {
-	u32 i;
-
-	for (i = 0; i < timeout; i++) {
-		if (dwc2_readl(dwc2, offset) & mask)
-			return 0;
-		udelay(1);
-	}
-
-	return -ETIMEDOUT;
+	return wait_on_timeout(timeout * USECOND,
+			dwc2_readl(dwc2, offset) & mask);
 }
 
 /**
@@ -489,15 +482,8 @@ static inline int dwc2_wait_bit_set(struct dwc2 *dwc2, u32 offset, u32 mask,
 static inline int dwc2_wait_bit_clear(struct dwc2 *dwc2, u32 offset, u32 mask,
 			    u32 timeout)
 {
-	u32 i;
-
-	for (i = 0; i < timeout; i++) {
-		if (!(dwc2_readl(dwc2, offset) & mask))
-			return 0;
-		udelay(1);
-	}
-
-	return -ETIMEDOUT;
+	return wait_on_timeout(timeout * USECOND,
+			!(dwc2_readl(dwc2, offset) & mask));
 }
 
 /*

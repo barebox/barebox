@@ -157,6 +157,11 @@ static int transfer_chunk(struct dwc2 *dwc2, u8 hc,
 	dma_addr = dma_map_single(dwc2->dev, buffer, xfer_len,
 				  in ? DMA_FROM_DEVICE : DMA_TO_DEVICE);
 
+	if (dma_mapping_error(dwc2->dev, dma_addr)) {
+		dwc2_err(dwc2, "Failed to map buffer@0x%p for dma\n", buffer);
+		return -EFAULT;
+	}
+
 	dwc2_dbg(dwc2, "chunk: pid=%d xfer_len=%u pkts=%u dma_addr=%pad\n",
 		 *pid, xfer_len, num_packets, (void *)dma_addr);
 

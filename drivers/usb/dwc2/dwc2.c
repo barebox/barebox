@@ -28,6 +28,27 @@ static void dwc2_uninit_common(struct dwc2 *dwc2)
 	dwc2_writel(dwc2, hprt0, HPRT0);
 }
 
+static int dwc2_set_mode(void *ctx, enum usb_dr_mode mode)
+{
+	struct dwc2 *dwc2 = ctx;
+	int ret = -ENODEV;
+
+	if (mode == USB_DR_MODE_HOST || mode == USB_DR_MODE_OTG) {
+		if (IS_ENABLED(CONFIG_USB_DWC2_HOST))
+			ret = dwc2_register_host(dwc2);
+		else
+			dwc2_err(dwc2, "Host support not available\n");
+	}
+	if (mode == USB_DR_MODE_PERIPHERAL || mode == USB_DR_MODE_OTG) {
+		if (IS_ENABLED(CONFIG_USB_DWC2_GADGET))
+			ret = dwc2_gadget_init(dwc2);
+		else
+			dwc2_err(dwc2, "Peripheral support not available\n");
+	}
+
+	return ret;
+}
+
 static int dwc2_probe(struct device_d *dev)
 {
 	struct resource *iores;
@@ -57,16 +78,18 @@ static int dwc2_probe(struct device_d *dev)
 	/* Detect config values from hardware */
 	dwc2_get_hwparams(dwc2);
 
-	dwc2_get_dr_mode(dwc2);
+	ret = dwc2_get_dr_mode(dwc2);
 
 	dwc2_set_default_params(dwc2);
 
 	dma_set_mask(dev, DMA_BIT_MASK(32));
 	dev->priv = dwc2;
 
-	ret = dwc2_register_host(dwc2);
+	if (dwc2->dr_mode == USB_DR_MODE_OTG)
+		ret = usb_register_otg_device(dwc2->dev, dwc2_set_mode, dwc2);
+	else
+		ret = dwc2_set_mode(dwc2, dwc2->dr_mode);
 
-	ret = dwc2_gadget_init(dwc2);
 error:
 	return ret;
 }

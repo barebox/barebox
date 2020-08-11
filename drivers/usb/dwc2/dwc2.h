@@ -35,12 +35,12 @@ int dwc2_submit_roothub(struct dwc2 *dwc2, struct usb_device *dev,
 		struct devrequest *setup);
 int dwc2_register_host(struct dwc2 *dwc2);
 #else
-static inline int dwc2_register_host(struct dwc2 *dwc2) { return 0; }
+static inline int dwc2_register_host(struct dwc2 *dwc2) { return -ENODEV; }
 #endif
 
 /* Gadget functions */
 #ifdef CONFIG_USB_DWC2_GADGET
 int dwc2_gadget_init(struct dwc2 *dwc2);
 #else
-static inline int dwc2_gadget_init(struct dwc2 *dwc2) { return 0; }
+static inline int dwc2_gadget_init(struct dwc2 *dwc2) { return -ENODEV; }
 #endif

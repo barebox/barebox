@@ -109,6 +109,14 @@ static void dwc2_hc_init(struct dwc2 *dwc2, uint8_t hc,
 	dwc2_writel(dwc2, 0, HCSPLT(hc));
 }
 
+static void dwc2_endpoint_reset(struct dwc2 *dwc2, int in, int devnum, int ep)
+{
+	if (in)
+		dwc2->in_data_toggle[devnum][ep] = TSIZ_SC_MC_PID_DATA0;
+	else
+		dwc2->out_data_toggle[devnum][ep] = TSIZ_SC_MC_PID_DATA0;
+}
+
 static int wait_for_chhltd(struct dwc2 *dwc2, u8 hc, uint32_t *sub, u8 *tgl)
 {
 	int ret;
@@ -373,7 +381,18 @@ static int dwc2_submit_control_msg(struct usb_device *udev,
 	if (ret)
 		return ret;
 
+	if (setup->requesttype == USB_RECIP_ENDPOINT
+	    && setup->request == USB_REQ_CLEAR_FEATURE) {
+		/* From USB 2.0, section 9.4.5:
+		 * ClearFeature(ENDPOINT_HALT) request always results
+		 * in the data toggle being reinitialized to DATA0.
+		 */
+		int ep = le16_to_cpu(setup->index) & 0xf;
+		dwc2_endpoint_reset(dwc2, usb_pipein(pipe), devnum, ep);
+	}
+
 	udev->act_len = act_len;
+	udev->status = 0;
 
 	return 0;
 }

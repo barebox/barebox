@@ -28,7 +28,7 @@ void dwc2_core_init(struct dwc2 *dwc2);
 
 /* Host functions */
 #ifdef CONFIG_USB_DWC2_HOST
-int dwc2_submit_rh_msg(struct dwc2 *dwc2, struct usb_device *dev,
+int dwc2_submit_roothub(struct dwc2 *dwc2, struct usb_device *dev,
 		unsigned long pipe, void *buf, int len,
 		struct devrequest *setup);
 int dwc2_register_host(struct dwc2 *dwc2);

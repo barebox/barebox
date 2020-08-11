@@ -326,9 +326,9 @@ static int dwc2_submit_control_msg(struct usb_device *udev,
 	int status_direction;
 
 	if (devnum == dwc2->root_hub_devnum) {
-		udev->status = 0;
 		udev->speed = USB_SPEED_HIGH;
-		return dwc2_submit_rh_msg(dwc2, udev, pipe, buffer, len, setup);
+		ret = dwc2_submit_roothub(dwc2, udev, pipe, buffer, len, setup);
+		return ret;
 	}
 
 	/* SETUP stage */

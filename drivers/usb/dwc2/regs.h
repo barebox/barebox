@@ -837,12 +837,4 @@ struct dwc2_dma_desc {
 #define DWC2_FS_IOT_ID		0x55310000
 #define DWC2_HS_IOT_ID		0x55320000
 
-/* ==== u-boot ==== */
-
-/* Default driver configuration */
-#define CONFIG_DWC2_MAX_CHANNELS		DWC2_MAX_EPS_CHANNELS	/* Max # of EPs */
-#define CONFIG_DWC2_HOST_RX_FIFO_SIZE		(516 + CONFIG_DWC2_MAX_CHANNELS)
-#define CONFIG_DWC2_HOST_NPERIO_TX_FIFO_SIZE	0x100	/* nPeriodic TX FIFO */
-#define CONFIG_DWC2_HOST_PERIO_TX_FIFO_SIZE	0x200	/* Periodic TX FIFO */
-
 #endif	/* __DWC2_H__ */

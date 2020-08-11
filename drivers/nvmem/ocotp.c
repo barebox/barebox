@@ -935,6 +935,9 @@ static __maybe_unused struct of_device_id imx_ocotp_dt_ids[] = {
 		.compatible = "fsl,imx8mq-ocotp",
 		.data = &imx8mq_ocotp_data,
 	}, {
+		.compatible = "fsl,imx8mm-ocotp",
+		.data = &imx8mq_ocotp_data,
+	}, {
 		.compatible = "fsl,vf610-ocotp",
 		.data = &vf610_ocotp_data,
 	}, {

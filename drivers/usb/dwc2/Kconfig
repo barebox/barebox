@@ -12,3 +12,10 @@ config USB_DWC2_HOST
 	select USB_DWC2
 	help
 	  Select this when you want to use DWC2 in host mode.
+
+config USB_DWC2_GADGET
+	bool "DWC2 Gadget mode support"
+	depends on USB_GADGET
+	select USB_DWC2
+	help
+	  Select this when you want to use DWC2 in gadget mode.

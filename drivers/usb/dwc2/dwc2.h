@@ -18,6 +18,7 @@ void dwc2_get_hwparams(struct dwc2 *dwc2);
 void dwc2_init_fs_ls_pclk_sel(struct dwc2 *dwc2);
 void dwc2_flush_all_fifo(struct dwc2 *dwc2);
 void dwc2_flush_tx_fifo(struct dwc2 *dwc2, const int idx);
+int dwc2_tx_fifo_count(struct dwc2 *dwc2);
 
 int dwc2_phy_init(struct dwc2 *dwc2, bool select_phy);
 int dwc2_gahbcfg_init(struct dwc2 *dwc2);
@@ -37,3 +38,9 @@ int dwc2_register_host(struct dwc2 *dwc2);
 static inline int dwc2_register_host(struct dwc2 *dwc2) { return 0; }
 #endif
 
+/* Gadget functions */
+#ifdef CONFIG_USB_DWC2_GADGET
+int dwc2_gadget_init(struct dwc2 *dwc2);
+#else
+static inline int dwc2_gadget_init(struct dwc2 *dwc2) { return 0; }
+#endif

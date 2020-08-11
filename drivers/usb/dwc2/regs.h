@@ -502,6 +502,7 @@
 #define D0EPCTL_MPS_32			1
 #define D0EPCTL_MPS_16			2
 #define D0EPCTL_MPS_8			3
+#define D0EPCTL_MPS_LIMIT		64
 
 #define DXEPCTL_EPENA			BIT(31)
 #define DXEPCTL_EPDIS			BIT(30)

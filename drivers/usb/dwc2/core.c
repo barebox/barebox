@@ -88,6 +88,46 @@ void dwc2_set_param_phy_utmi_width(struct dwc2 *dwc2)
 }
 
 /**
+ * dwc2_hsotg_tx_fifo_count - return count of TX FIFOs in device mode
+ *
+ * @hsotg: Programming view of the DWC_otg controller
+ */
+int dwc2_tx_fifo_count(struct dwc2 *dwc2)
+{
+	if (dwc2->hw_params.en_multiple_tx_fifo)
+		/* In dedicated FIFO mode we need count of IN EPs */
+		return dwc2->hw_params.num_dev_in_eps;
+	else
+		/* In shared FIFO mode we need count of Periodic IN EPs */
+		return dwc2->hw_params.num_dev_perio_in_ep;
+}
+
+static void dwc2_set_param_fifo_sizes(struct dwc2 *dwc2)
+{
+	struct dwc2_hw_params *hw = &dwc2->hw_params;
+	struct dwc2_core_params *p = &dwc2->params;
+	u32 total_fifo_size = dwc2->hw_params.total_fifo_size;
+	u32 max_np_tx_fifo_size = hw->dev_nperio_tx_fifo_size;
+	u32 max_rx_fifo_size = hw->rx_fifo_size;
+	u32 depth;
+	int count, i;
+
+	count = dwc2_tx_fifo_count(dwc2);
+
+	depth = total_fifo_size / 4;
+	p->g_np_tx_fifo_size = min(max_np_tx_fifo_size, depth);
+	total_fifo_size -= p->g_np_tx_fifo_size;
+
+	depth = 8 * count + 256;
+	depth = max(total_fifo_size / count, depth);
+	p->g_rx_fifo_size = min(max_rx_fifo_size, depth);
+	total_fifo_size -= p->g_rx_fifo_size;
+
+	for (i = 1; i <= count; i++)
+		p->g_tx_fifo_size[i] = total_fifo_size / count;
+}
+
+/**
  * dwc2_set_default_params() - Set all core parameters to their
  * auto-detected default values.
  *
@@ -138,6 +178,11 @@ void dwc2_set_default_params(struct dwc2 *dwc2)
 		p->host_nperio_tx_fifo_size = hw->host_nperio_tx_fifo_size;
 		p->host_perio_tx_fifo_size = hw->host_perio_tx_fifo_size;
 	}
+
+	if ((dwc2->dr_mode == USB_DR_MODE_PERIPHERAL) ||
+	    (dwc2->dr_mode == USB_DR_MODE_OTG)) {
+		dwc2_set_param_fifo_sizes(dwc2);
+	}
 }
 
 int dwc2_core_snpsid(struct dwc2 *dwc2)
@@ -165,6 +210,23 @@ int dwc2_core_snpsid(struct dwc2 *dwc2)
 		hw->snpsid >> 4 & 0xf, hw->snpsid & 0xf, hw->snpsid);
 
 	return 0;
+}
+
+static void dwc2_get_dev_hwparams(struct dwc2 *dwc2)
+{
+	struct dwc2_hw_params *hw = &dwc2->hw_params;
+	u32 size;
+	int count, i;
+
+	size = FIFOSIZE_DEPTH_GET(dwc2_readl(dwc2, GNPTXFSIZ));
+	hw->dev_nperio_tx_fifo_size = size;
+
+	count = dwc2_tx_fifo_count(dwc2);
+
+	for (i = 1; i <= count; i++) {
+		size = FIFOSIZE_DEPTH_GET(dwc2_readl(dwc2, DPTXFSIZN(i)));
+		hw->g_tx_fifo_size[i] = size;
+	}
 }
 
 /**
@@ -243,6 +305,8 @@ void dwc2_get_hwparams(struct dwc2 *dwc2)
 	/* fifo sizes */
 	hw->rx_fifo_size = (grxfsiz & GRXFSIZ_DEPTH_MASK) >>
 				GRXFSIZ_DEPTH_SHIFT;
+
+	dwc2_get_dev_hwparams(dwc2);
 }
 
 /*

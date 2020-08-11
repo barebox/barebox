@@ -482,7 +482,14 @@ struct dwc2 {
 	void *ctrl_buff;
 	enum dwc2_ep0_state ep0_state;
 	struct usb_gadget_driver *driver;
+
 	int num_eps;
+	u16 frame_number;
+	u32 fifo_map;
+	unsigned int dedicated_fifos:1;
+	unsigned int enabled:1;
+	unsigned int connected:1;
+	unsigned int is_selfpowered:1;
 #endif
 };
 

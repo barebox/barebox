@@ -65,6 +65,8 @@ static int dwc2_probe(struct device_d *dev)
 	dev->priv = dwc2;
 
 	ret = dwc2_register_host(dwc2);
+
+	ret = dwc2_gadget_init(dwc2);
 error:
 	return ret;
 }

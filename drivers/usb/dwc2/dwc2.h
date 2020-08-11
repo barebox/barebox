@@ -17,6 +17,7 @@ void dwc2_get_hwparams(struct dwc2 *dwc2);
 
 void dwc2_init_fs_ls_pclk_sel(struct dwc2 *dwc2);
 void dwc2_flush_all_fifo(struct dwc2 *dwc2);
+void dwc2_flush_tx_fifo(struct dwc2 *dwc2, const int idx);
 
 int dwc2_phy_init(struct dwc2 *dwc2, bool select_phy);
 int dwc2_gahbcfg_init(struct dwc2 *dwc2);

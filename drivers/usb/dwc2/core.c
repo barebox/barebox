@@ -294,6 +294,39 @@ void dwc2_flush_all_fifo(struct dwc2 *dwc2)
 	udelay(1);
 }
 
+/**
+ * dwc2_flush_tx_fifo() - Flushes a Tx FIFO
+ *
+ * @hsotg: Programming view of DWC_otg controller
+ * @idx: The fifo index (0..15)
+ */
+void dwc2_flush_tx_fifo(struct dwc2 *dwc2, const int idx)
+{
+	u32 greset;
+
+	if (idx > 15)
+		return;
+
+	dwc2_dbg(dwc2, "Flush Tx FIFO %d\n", idx);
+
+	/* Wait for AHB master IDLE state */
+	if (dwc2_wait_bit_set(dwc2, GRSTCTL, GRSTCTL_AHBIDLE, 10000)) {
+		dwc2_warn(dwc2, "%s: Timeout waiting for AHB Idle\n", __func__);
+		return;
+	}
+
+	greset = GRSTCTL_TXFFLSH;
+	greset |= GRSTCTL_TXFNUM(idx) & GRSTCTL_TXFNUM_MASK;
+	dwc2_writel(dwc2, greset, GRSTCTL);
+
+	if (dwc2_wait_bit_clear(dwc2, GRSTCTL, GRSTCTL_TXFFLSH, 10000))
+		dwc2_warn(dwc2, "%s: Timeout flushing tx fifo (GRSTCTL=%08x)\n",
+			 __func__, dwc2_readl(dwc2, GRSTCTL));
+
+	/* Wait for at least 3 PHY Clocks */
+	udelay(1);
+}
+
 static int dwc2_fs_phy_init(struct dwc2 *dwc2, bool select_phy)
 {
 	u32 usbcfg, ggpio, i2cctl;

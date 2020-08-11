@@ -32,9 +32,12 @@ static void setup_uart(void)
 
 	imx8mm_setup_pad(IMX8MM_PAD_UART2_TXD_UART2_TX | UART_PAD_CTRL);
 
-	imx8m_uart_setup_ll();
+	imx8mq_uart_setup((void *)MX8M_UART2_BASE_ADDR);
 
-	putc_ll('>');
+	if (IS_ENABLED(CONFIG_DEBUG_LL)) {
+		imx8m_uart_setup_ll();
+		putc_ll('>');
+	}
 }
 
 static void pmic_reg_write(void *i2c, int reg, uint8_t val)
@@ -157,8 +160,7 @@ static void start_atf(void)
  */
 static __noreturn noinline void nxp_imx8mm_evk_start(void)
 {
-	if (IS_ENABLED(CONFIG_DEBUG_LL))
-		setup_uart();
+	setup_uart();
 
 	start_atf();
 

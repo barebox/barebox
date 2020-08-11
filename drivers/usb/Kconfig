@@ -9,6 +9,8 @@ if USB_HOST
 
 source "drivers/usb/imx/Kconfig"
 
+source "drivers/usb/dwc2/Kconfig"
+
 source "drivers/usb/dwc3/Kconfig"
 
 source "drivers/usb/host/Kconfig"

@@ -57,6 +57,8 @@ static int dwc2_probe(struct device_d *dev)
 	/* Detect config values from hardware */
 	dwc2_get_hwparams(dwc2);
 
+	dwc2_get_dr_mode(dwc2);
+
 	dwc2_set_default_params(dwc2);
 
 	dma_set_mask(dev, DMA_BIT_MASK(32));

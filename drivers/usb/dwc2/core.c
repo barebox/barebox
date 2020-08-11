@@ -1,6 +1,33 @@
 // SPDX-License-Identifier: GPL-2.0+
 #include "dwc2.h"
 
+/* Returns the controller's GHWCFG2.OTG_MODE. */
+static unsigned int dwc2_op_mode(struct dwc2 *dwc2)
+{
+	u32 ghwcfg2 = dwc2_readl(dwc2, GHWCFG2);
+
+	return (ghwcfg2 & GHWCFG2_OP_MODE_MASK) >>
+		GHWCFG2_OP_MODE_SHIFT;
+}
+
+/* Returns true if the controller is host-only. */
+static bool dwc2_hw_is_host(struct dwc2 *dwc2)
+{
+	unsigned int op_mode = dwc2_op_mode(dwc2);
+
+	return (op_mode == GHWCFG2_OP_MODE_SRP_CAPABLE_HOST) ||
+		(op_mode == GHWCFG2_OP_MODE_NO_SRP_CAPABLE_HOST);
+}
+
+/* Returns true if the controller is device-only. */
+static bool dwc2_hw_is_device(struct dwc2 *dwc2)
+{
+	unsigned int op_mode = dwc2_op_mode(dwc2);
+
+	return (op_mode == GHWCFG2_OP_MODE_SRP_CAPABLE_DEVICE) ||
+		(op_mode == GHWCFG2_OP_MODE_NO_SRP_CAPABLE_DEVICE);
+}
+
 void dwc2_set_param_otg_cap(struct dwc2 *dwc2)
 {
 	u8 val;
@@ -491,6 +518,74 @@ void dwc2_gusbcfg_init(struct dwc2 *dwc2)
 	}
 
 	dwc2_writel(dwc2, usbcfg, GUSBCFG);
+}
+
+/*
+ * Check the dr_mode against the module configuration and hardware
+ * capabilities.
+ *
+ * The hardware, module, and dr_mode, can each be set to host, device,
+ * or otg. Check that all these values are compatible and adjust the
+ * value of dr_mode if possible.
+ *
+ *                      actual
+ *    HW  MOD dr_mode   dr_mode
+ *  ------------------------------
+ *   HST  HST  any    :  HST
+ *   HST  DEV  any    :  ---
+ *   HST  OTG  any    :  HST
+ *
+ *   DEV  HST  any    :  ---
+ *   DEV  DEV  any    :  DEV
+ *   DEV  OTG  any    :  DEV
+ *
+ *   OTG  HST  any    :  HST
+ *   OTG  DEV  any    :  DEV
+ *   OTG  OTG  any    :  dr_mode
+ */
+int dwc2_get_dr_mode(struct dwc2 *dwc2)
+{
+	enum usb_dr_mode mode;
+
+	mode = of_usb_get_dr_mode(dwc2->dev->device_node, NULL);
+	dwc2->dr_mode = mode;
+
+	if (dwc2_hw_is_device(dwc2)) {
+		dwc2_dbg(dwc2, "Controller is device only\n");
+		if (IS_ENABLED(CONFIG_USB_DWC2_HOST)) {
+			dwc2_err(dwc2,
+				"Controller does not support host mode.\n");
+			return -EINVAL;
+		}
+		mode = USB_DR_MODE_PERIPHERAL;
+	} else if (dwc2_hw_is_host(dwc2)) {
+		dwc2_dbg(dwc2, "Controller is host only\n");
+		if (IS_ENABLED(CONFIG_USB_DWC2_GADGET)) {
+			dwc2_err(dwc2,
+				"Controller does not support device mode.\n");
+			return -EINVAL;
+		}
+		mode = USB_DR_MODE_HOST;
+	} else {
+		dwc2_dbg(dwc2, "Controller is otg\n");
+		if (IS_ENABLED(CONFIG_USB_DWC2_HOST) &&
+		    IS_ENABLED(CONFIG_USB_DWC2_GADGET))
+			mode = dwc2->dr_mode;
+		else if (IS_ENABLED(CONFIG_USB_DWC2_HOST))
+			mode = USB_DR_MODE_HOST;
+		else if (IS_ENABLED(CONFIG_USB_DWC2_GADGET))
+			mode = USB_DR_MODE_PERIPHERAL;
+	}
+
+	if (mode != dwc2->dr_mode) {
+		dwc2_warn(dwc2,
+			 "Configuration mismatch. dr_mode forced to %s\n",
+			mode == USB_DR_MODE_HOST ? "host" : "device");
+
+		dwc2->dr_mode = mode;
+	}
+
+	return 0;
 }
 
 /*

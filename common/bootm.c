@@ -58,6 +58,7 @@ void bootm_data_init_defaults(struct bootm_data *data)
 {
 	data->initrd_address = UIMAGE_INVALID_ADDRESS;
 	data->os_address = UIMAGE_SOME_ADDRESS;
+	data->os_entry = UIMAGE_SOME_ADDRESS;
 	data->oftree_file = getenv_nonempty("global.bootm.oftree");
 	data->tee_file = getenv_nonempty("global.bootm.tee");
 	data->os_file = getenv_nonempty("global.bootm.image");
@@ -638,6 +639,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 
 	if (IS_ENABLED(CONFIG_FITIMAGE) && os_type == filetype_oftree) {
 		struct fit_handle *fit;
+		static const char *kernel_img = "kernel";
 
 		fit = fit_open(data->os_file, data->verbose, data->verify);
 		if (IS_ERR(fit)) {
@@ -658,10 +660,33 @@ int bootm_boot(struct bootm_data *bootm_data)
 			goto err_out;
 		}
 
-		ret = fit_open_image(data->os_fit, data->fit_config, "kernel",
+		ret = fit_open_image(data->os_fit, data->fit_config, kernel_img,
 				     &data->fit_kernel, &data->fit_kernel_size);
 		if (ret)
 			goto err_out;
+		if (data->os_address == UIMAGE_SOME_ADDRESS) {
+			ret = fit_get_image_address(data->os_fit,
+						    data->fit_config,
+						    kernel_img,
+						    "load", &data->os_address);
+			if (!ret)
+				printf("Load address from FIT '%s': 0x%lx\n",
+				       kernel_img, data->os_address);
+			/* Note: Error case uses default value. */
+		}
+		if (data->os_entry == UIMAGE_SOME_ADDRESS) {
+			unsigned long entry;
+			ret = fit_get_image_address(data->os_fit,
+						    data->fit_config,
+						    kernel_img,
+						    "entry", &entry);
+			if (!ret) {
+				data->os_entry = entry - data->os_address;
+				printf("Entry address from FIT '%s': 0x%lx\n",
+				       kernel_img, entry);
+			}
+			/* Note: Error case uses default value. */
+		}
 	}
 
 	if (os_type == filetype_uimage) {
@@ -719,6 +744,8 @@ int bootm_boot(struct bootm_data *bootm_data)
 
 	if (data->os_address == UIMAGE_SOME_ADDRESS)
 		data->os_address = UIMAGE_INVALID_ADDRESS;
+	if (data->os_entry == UIMAGE_SOME_ADDRESS)
+		data->os_entry = 0;
 
 	handler = bootm_find_handler(os_type, data);
 	if (!handler) {

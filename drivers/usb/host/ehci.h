@@ -53,7 +53,6 @@ struct ehci_hcor {
 #define	STD_ASS		(1 << 15)
 #define STS_PSS         (1 << 14)
 #define STS_HALT	(1 << 12)
-#define STS_USBINT	BIT(0)
 	uint32_t or_usbintr;
 	uint32_t or_frindex;
 	uint32_t or_ctrldssegment;

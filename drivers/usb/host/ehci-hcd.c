@@ -308,12 +308,14 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	dma_addr_t buffer_dma, req_dma;
 	struct QH *qh = &ehci->qh_list[1];
 	struct qTD *td;
+	volatile struct qTD *vtd;
 	uint32_t *tdp;
 	uint32_t endpt, token, usbsts;
 	uint32_t status;
 	uint32_t toggle;
 	bool c;
 	int ret;
+	uint64_t start, timeout_val;
 
 
 	dev_dbg(ehci->dev, "pipe=%lx, buffer=%p, length=%d, req=%p\n", pipe,
@@ -442,13 +444,18 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 		return ret;
 	}
 
-	ret = handshake(&ehci->hcor->or_usbsts, STS_USBINT, STS_USBINT,
-			timeout_ms * 1000);
-	if (ret < 0) {
-		ehci_enable_async_schedule(ehci, false);
-		ehci_writel(&qh->qt_token, 0);
-		return -ETIMEDOUT;
-	}
+	/* Wait for TDs to be processed. */
+	timeout_val = timeout_ms * MSECOND;
+	start = get_time_ns();
+	vtd = td;
+	do {
+		token = hc32_to_cpu(vtd->qt_token);
+		if (is_timeout_non_interruptible(start, timeout_val)) {
+			ehci_enable_async_schedule(ehci, false);
+			ehci_writel(&qh->qt_token, 0);
+			return -ETIMEDOUT;
+		}
+	} while (token & QT_TOKEN_STATUS_ACTIVE);
 
 	if (req)
 		dma_unmap_single(ehci->dev, req_dma, sizeof(*req),

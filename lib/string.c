@@ -208,6 +208,8 @@ int strcmp(const char * cs,const char * ct)
 {
 	register signed char __res;
 
+	BUG_ON(!cs || !ct);
+
 	while (1) {
 		if ((__res = *cs - *ct++) != 0 || !*cs++)
 			break;
@@ -228,6 +230,8 @@ EXPORT_SYMBOL(strcmp);
 int strncmp(const char * cs, const char * ct, size_t count)
 {
 	register signed char __res = 0;
+
+	BUG_ON(!cs || !ct);
 
 	while (count) {
 		if ((__res = *cs - *ct++) != 0 || !*cs++)

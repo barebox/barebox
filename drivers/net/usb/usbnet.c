@@ -124,7 +124,7 @@ static int usbnet_recv(struct eth_device *edev)
 
 	len = dev->rx_urb_size;
 
-	ret = usb_bulk_msg(dev->udev, dev->in, dev->rx_buf, len, &alen, 100);
+	ret = usb_bulk_msg(dev->udev, dev->in, dev->rx_buf, len, &alen, 2);
 	if (ret)
 		return ret;
 

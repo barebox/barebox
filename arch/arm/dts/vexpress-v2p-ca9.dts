@@ -10,6 +10,10 @@
 		state = &state;
 	};
 
+	chosen {
+		stdout-path = &v2m_serial0;
+	};
+
 	/* State: mutable part */
 	state: state {
 		magic = <0x4d433230>;

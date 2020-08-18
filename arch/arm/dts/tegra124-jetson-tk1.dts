@@ -7,7 +7,7 @@
 
 		environment {
 			compatible = "barebox,environment";
-			device-path = &{/sdhci@700b0600}, "partname:boot1"; /* eMMC */
+			device-path = &{/mmc@700b0600}, "partname:boot1"; /* eMMC */
 		};
 	};
 };

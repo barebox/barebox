@@ -1,5 +1,5 @@
-hostprogs-y	:= modpost mk_elfconfig
-always		:= $(hostprogs-y) empty.o
+hostprogs-always-y	+= modpost mk_elfconfig
+always-y		+= empty.o
 
 modpost-objs	:= modpost.o sumversion.o
 

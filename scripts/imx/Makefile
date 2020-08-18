@@ -1,7 +1,5 @@
-hostprogs-$(CONFIG_ARCH_IMX_IMXIMAGE) += imx-image
-hostprogs-$(CONFIG_ARCH_IMX_USBLOADER) += imx-usb-loader
-
-always          := $(hostprogs-y)
+hostprogs-always-$(CONFIG_ARCH_IMX_IMXIMAGE)	+= imx-image
+hostprogs-always-$(CONFIG_ARCH_IMX_USBLOADER)	+= imx-usb-loader
 
 HOSTCFLAGS_imx-usb-loader.o = `pkg-config --cflags libusb-1.0`
 HOSTLDLIBS_imx-usb-loader  = `pkg-config --libs libusb-1.0`

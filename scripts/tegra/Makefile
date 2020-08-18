@@ -1,6 +1,4 @@
-hostprogs-$(CONFIG_ARCH_TEGRA) += cbootimage
-
-always          := $(hostprogs-y)
+hostprogs-always-$(CONFIG_ARCH_TEGRA) += cbootimage
 
 HOSTLDLIBS_cbootimage  = '-lm'
 

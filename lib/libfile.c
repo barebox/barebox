@@ -353,6 +353,10 @@ int copy_file(const char *src, const char *dst, int verbose)
 		goto out;
 	}
 
+	/* Set O_TRUNC only if file exists and is a regular file */
+	if (!s && S_ISREG(dststat.st_mode))
+		mode |= O_TRUNC;
+
 	dstfd = open(dst, mode);
 	if (dstfd < 0) {
 		printf("could not open %s: %s\n", dst, errno_str());
@@ -360,17 +364,13 @@ int copy_file(const char *src, const char *dst, int verbose)
 		goto out;
 	}
 
-	ret = ftruncate(dstfd, 0);
-	if (ret)
-		goto out;
-
 	ret = stat(src, &srcstat);
 	if (ret)
 		goto out;
 
 	if (srcstat.st_size != FILESIZE_MAX) {
 		discard_range(dstfd, srcstat.st_size, 0);
-		if (S_ISREG(dststat.st_mode)) {
+		if (s || S_ISREG(dststat.st_mode)) {
 			ret = ftruncate(dstfd, srcstat.st_size);
 			if (ret)
 				goto out;

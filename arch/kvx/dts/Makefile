@@ -9,5 +9,4 @@ endif
 
 obj-$(CONFIG_BOARD_K200) += k200.dtb.o
 
-always := $(dtb-y)
 clean-files := *.dtb *.dtb.S .*.dtc .*.pre .*.dts

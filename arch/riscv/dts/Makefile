@@ -9,5 +9,4 @@ obj-$(CONFIG_BOARD_ERIZO_GENERIC) += erizo-generic.dtb.o
 # created.
 obj- += dummy.o
 
-always := $(dtb-y)
 clean-files := *.dtb *.dtb.S .*.dtc .*.pre .*.dts

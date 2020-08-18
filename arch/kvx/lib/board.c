@@ -103,15 +103,54 @@ err:
 	while (1);
 }
 
+/**
+ * exclude_dtb_from_alloc - Find best zone to allocate without overwriting dtb
+ *
+ * @fdt: fdt blob
+ * @alloc_start: start of allocation zone
+ * @alloc_end: end of allocation zone
+ */
+static void exclude_dtb_from_alloc(void *fdt, u64 *alloc_start, u64 *alloc_end)
+{
+	const struct fdt_header *fdth = fdt;
+	u64 fdt_start = (u64) fdt;
+	u64 fdt_end = fdt_start + be32_to_cpu(fdth->totalsize);
+	u64 start_size = 0, end_size = 0;
+
+	/*
+	 * If the device tree is inside the malloc zone, we must exclude it to
+	 * avoid allocating memory over it while unflattening it
+	 */
+	if (fdt_end < *alloc_start || fdt_start > (*alloc_end))
+		return;
+
+	/* Compute the largest remaining chunk when removing the dtb */
+	if (fdt_start >= *alloc_start)
+		start_size = (fdt_start - *alloc_start);
+
+	if (fdt_end <= *alloc_end)
+		end_size = *alloc_end - fdt_end;
+
+	/* Modify start/end to reflect the maximum area we found */
+	if (start_size >= end_size)
+		*alloc_end = fdt_start;
+	else
+		*alloc_start = fdt_end;
+}
+
 void __noreturn kvx_start_barebox(void)
 {
 	u64 memsize = 0, membase = 0;
 	u64 barebox_text_end = (u64) &__end;
+	u64 alloc_start, alloc_end;
 
 	of_find_mem(boot_dtb, barebox_text_end, &membase, &memsize);
 
-	mem_malloc_init((void *) barebox_text_end,
-			(void *) (membase + memsize));
+	alloc_start = barebox_text_end;
+	alloc_end = (membase + memsize);
+	exclude_dtb_from_alloc(boot_dtb, &alloc_start, &alloc_end);
+
+	mem_malloc_init((void *) alloc_start, (void *) alloc_end);
 
 	start_barebox();
 

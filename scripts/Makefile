@@ -52,4 +52,4 @@ subdir-$(CONFIG_DTC)		+= dtc
 subdir-$(CONFIG_ARCH_TEGRA)	+= tegra
 
 # Let clean descend into subdirs
-subdir-	+= basic kconfig setupmbr
+subdir-	+= basic kconfig

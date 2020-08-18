@@ -396,6 +396,7 @@ static int ssd1307fb_probe(struct device_d *dev)
 	struct ssd1307fb_par *par;
 	struct ssd1307fb_array *array;
 	u8 *vmem = NULL;
+	enum of_gpio_flags of_flags;
 	int ret;
 	int i, j;
 
@@ -413,8 +414,8 @@ static int ssd1307fb_probe(struct device_d *dev)
 
 	par->device_info = (struct ssd1307fb_deviceinfo *)match->data;
 
-	par->reset = of_get_named_gpio(node,
-					 "reset-gpios", 0);
+	par->reset = of_get_named_gpio_flags(node,
+					 "reset-gpios", 0, &of_flags);
 	if (!gpio_is_valid(par->reset) && par->reset == -EPROBE_DEFER) {
 		ret = -EPROBE_DEFER;
 		goto fb_alloc_error;
@@ -500,9 +501,12 @@ static int ssd1307fb_probe(struct device_d *dev)
 	info->screen_base = (u8 __force __iomem *)vmem;
 
 	if (par->reset >= 0) {
-		ret = gpio_request_one(par->reset,
-				       GPIOF_OUT_INIT_HIGH,
-				       "oled-reset");
+		unsigned long flags = GPIOF_OUT_INIT_ACTIVE;
+
+		if (of_flags & OF_GPIO_ACTIVE_LOW)
+			flags |= GPIOF_ACTIVE_LOW;
+
+		ret = gpio_request_one(par->reset, flags, "oled-reset");
 		if (ret) {
 			dev_err(&client->dev,
 				"failed to request gpio %d: %d\n",
@@ -519,7 +523,7 @@ static int ssd1307fb_probe(struct device_d *dev)
 
 	if (par->reset > 0) {
 		/* Reset the screen */
-		gpio_set_value(par->reset, 0);
+		gpio_set_active(par->reset, 1);
 		udelay(4);
 	}
 
@@ -531,7 +535,7 @@ static int ssd1307fb_probe(struct device_d *dev)
 		mdelay(100);
 
 	if (par->reset > 0) {
-		gpio_set_value(par->reset, 1);
+		gpio_set_active(par->reset, 0);
 		udelay(4);
 	}
 

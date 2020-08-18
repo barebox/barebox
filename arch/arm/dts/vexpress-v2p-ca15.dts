@@ -5,6 +5,10 @@
 		compatible = "barebox,environment";
 		device-path = &barebox_env;
 	};
+
+	chosen {
+		stdout-path = &v2m_serial0;
+	};
 };
 
 &nor_flash {

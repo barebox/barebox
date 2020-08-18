@@ -45,6 +45,43 @@ struct bsp_vs_hwparam {
 	uint8_t MAC3[6];
 } __attribute__ ((packed));
 
+static uint8_t get_dip_switch(uint16_t id, uint32_t rev)
+{
+	uint16_t maj, min;
+	uint8_t dip = 0;
+
+	maj = rev >> 16;
+	min = rev & 0xffff;
+
+	if ((id == 220 || id == 222) && (maj == 1 && min == 2))
+		id = 214;
+
+	switch(id) {
+		case 214:
+		case 215:
+			dip = !gpio_get_value(44);
+			dip += !gpio_get_value(45) << 1;
+			dip += !gpio_get_value(46) << 2;
+			dip += !gpio_get_value(47) << 3;
+			break;
+		case 212:
+		case 221:
+		case 223:
+		case 224:
+		case 225:
+		case 226:
+		case 227:
+		case 230:
+			dip = !gpio_get_value(82);
+			dip += !gpio_get_value(83) << 1;
+			dip += !gpio_get_value(105) << 2;
+			dip += !gpio_get_value(106) << 3;
+			break;
+	}
+
+	return dip;
+}
+
 static int baltos_read_eeprom(void)
 {
 	struct bsp_vs_hwparam hw_param;
@@ -52,6 +89,7 @@ static int baltos_read_eeprom(void)
 	char *buf, var_buf[32];
 	int rc;
 	unsigned char mac_addr[6];
+	uint8_t dip;
 
 	if (!of_machine_is_compatible("vscom,onrisc"))
 		return 0;
@@ -108,6 +146,10 @@ static int baltos_read_eeprom(void)
 		gpio_direction_output(134, 0);
 		gpio_direction_output(135, 0);
 	}
+
+	dip = get_dip_switch(hw_param.SystemId, hw_param.HwRev);
+	sprintf(var_buf, "%02x", dip);
+	globalvar_add_simple("board.dip", var_buf);
 
 	return 0;
 }

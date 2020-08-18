@@ -179,8 +179,10 @@ static int multi_bind(struct usb_composite_dev *cdev)
 
 	strings_dev[USB_GADGET_MANUFACTURER_IDX].s = gadget->manufacturer;
 	strings_dev[USB_GADGET_PRODUCT_IDX].s = gadget->productname;
+	strings_dev[USB_GADGET_SERIAL_IDX].s = gadget->serialnumber;
 
 	device_desc.iProduct = strings_dev[USB_GADGET_PRODUCT_IDX].id;
+	device_desc.iSerialNumber = strings_dev[USB_GADGET_SERIAL_IDX].id;
 
 	config.label          = strings_dev[STRING_DESCRIPTION_IDX].s;
 	config.iConfiguration = strings_dev[STRING_DESCRIPTION_IDX].id;

@@ -22,6 +22,11 @@
 
 	chosen {
 		stdout-path = &uart0;
+
+		environment-nand {
+			compatible = "barebox,environment";
+			device-path = &environment_nand;
+		};
 	};
 
 	cpus {
@@ -179,7 +184,7 @@
 	ranges = <0 0 0x08000000 0x10000000>;	/* CS0: NAND */
 	status = "okay";
 
-	nand@0,0 {
+	nand: nand@0,0 {
 		reg = <0 0 0>; /* CS0, offset 0 */
 		nand-bus-width = <8>;
 		ti,nand-ecc-opt = "bch8";
@@ -226,8 +231,8 @@
 		       label = "SPL.backup2";
 		       reg = <0x40000 0x20000>;
 		};
-		boot@60000 {
-		       label = "SPL.backup3";
+		environment_nand: boot@60000 {
+		       label = "bareboxenv";
 		       reg = <0x60000 0x20000>;
 		};
 		boot@80000 {

@@ -64,7 +64,7 @@ int console_countdown(int timeout_s, unsigned flags, const char *keys,
 					goto out;
 				if (flags & CONSOLE_COUNTDOWN_ANYKEY)
 					goto out;
-				if (flags & CONSOLE_COUNTDOWN_RETURN && key == '\n')
+				if (flags & CONSOLE_COUNTDOWN_RETURN && (key == '\n' || key == '\r'))
 					goto out;
 				if (flags & CONSOLE_COUNTDOWN_CTRLC && key == 3)
 					goto out;

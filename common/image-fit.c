@@ -517,6 +517,77 @@ int fit_has_image(struct fit_handle *handle, void *configuration,
 	return 1;
 }
 
+static int fit_get_address(struct device_node *image, const char *property,
+			   unsigned long *addr)
+{
+	const __be32 *cell;
+	int len = 0;
+
+	cell = of_get_property(image, property, &len);
+	if (!cell)
+		return -EINVAL;
+	if (len > sizeof(*addr))
+		return -ENOTSUPP;
+
+	*addr = (unsigned long)of_read_number(cell, len / sizeof(*cell));
+	return 0;
+}
+
+static int
+fit_get_image(struct fit_handle *handle, void *configuration,
+	      const char **unit, struct device_node **image)
+{
+	struct device_node *conf_node = configuration;
+
+	if (conf_node) {
+		if (of_property_read_string(conf_node, *unit, unit)) {
+			pr_err("No image named '%s'\n", *unit);
+			return -ENOENT;
+		}
+	}
+
+	*image = of_get_child_by_name(handle->images, *unit);
+	if (!*image)
+		return -ENOENT;
+
+	return 0;
+}
+
+/**
+ * fit_get_image_address - Get an address from an image in a FIT image
+ * @handle: The FIT image handle
+ * @name: The name of the image to open
+ * @property: The name of the address to get (for example "load" or "entry")
+ * @address: The address given by the image
+ *
+ * Try to parse the @property in the image @name as an address. @configuration
+ * holds the cookie returned from fit_open_configuration() if the image is
+ * opened as part of a configuration, or NULL if the image is opened without a
+ * configuration. If it exists the value will be returned in @address. Otherwise
+ * @address won't be changed.
+ *
+ * Return: 0 for success, negative error code otherwise
+ */
+int fit_get_image_address(struct fit_handle *handle, void *configuration,
+			  const char *name, const char *property,
+			  unsigned long *address)
+{
+	struct device_node *image;
+	const char *unit = name;
+	int ret;
+
+	if (!address || !property || !name)
+		return -EINVAL;
+
+	ret = fit_get_image(handle, configuration, &unit, &image);
+	if (ret)
+		return ret;
+
+	ret = fit_get_address(image, property, address);
+
+	return ret;
+}
+
 /**
  * fit_open_image - Open an image in a FIT image
  * @handle: The FIT image handle
@@ -539,24 +610,14 @@ int fit_open_image(struct fit_handle *handle, void *configuration,
 		   unsigned long *outsize)
 {
 	struct device_node *image;
-	const char *unit, *type = NULL, *desc= "(no description)";
+	const char *unit = name, *type = NULL, *desc= "(no description)";
 	const void *data;
 	int data_len;
 	int ret = 0;
-	struct device_node *conf_node = configuration;
 
-	if (conf_node) {
-		if (of_property_read_string(conf_node, name, &unit)) {
-			pr_err("No image named '%s'\n", name);
-			return -ENOENT;
-		}
-	} else {
-		unit = name;
-	}
-
-	image = of_get_child_by_name(handle->images, unit);
-	if (!image)
-		return -ENOENT;
+	ret = fit_get_image(handle, configuration, &unit, &image);
+	if (ret)
+		return ret;
 
 	of_property_read_string(image, "description", &desc);
 	pr_info("image '%s': '%s'\n", unit, desc);
@@ -573,7 +634,7 @@ int fit_open_image(struct fit_handle *handle, void *configuration,
 		return -EINVAL;
 	}
 
-	if (conf_node)
+	if (configuration)
 		ret = fit_verify_hash(handle, image, data, data_len);
 	else
 		ret = fit_image_verify_signature(handle, image, data, data_len);

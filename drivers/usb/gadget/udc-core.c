@@ -212,6 +212,9 @@ int usb_add_gadget_udc_release(struct device_d *parent, struct usb_gadget *gadge
 	gadget->productname = xstrdup(barebox_get_model());
 	dev_add_param_string(&gadget->dev, "productname", NULL, NULL,
 			&gadget->productname, NULL);
+	gadget->serialnumber = xstrdup("");
+	dev_add_param_string(&gadget->dev, "serialnumber", NULL, NULL,
+			&gadget->serialnumber, NULL);
 
 	dev_set_name(&udc->dev, "udc");
 	udc->dev.id = DEVICE_ID_DYNAMIC;

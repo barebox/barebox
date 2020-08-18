@@ -45,7 +45,6 @@ struct sx150x_device_data {
 };
 
 struct sx150x_gpio {
-	struct device *dev;
 	struct i2c_client *client;
 	struct gpio_chip gpio;
 	struct regmap *regmap;

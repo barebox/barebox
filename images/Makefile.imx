@@ -374,6 +374,11 @@ FILE_barebox-zii-vf610-dev.img = start_zii_vf610_dev.pblb.imximg
 image-$(CONFIG_MACH_ZII_VF610_DEV) += barebox-zii-vf610-dev.img
 
 # ----------------------- i.MX7 based boards ---------------------------
+pblb-$(CONFIG_MACH_AC_SXB) += start_ac_sxb
+CFG_start_ac_sxb.pblb.imximg = $(board)/ac-sxb/flash-header-mx7d-lpddr2.imxcfg
+FILE_barebox-ac-sxb.img = start_ac_sxb.pblb.imximg
+image-$(CONFIG_MACH_AC_SXB) += barebox-ac-sxb.img
+
 pblb-$(CONFIG_MACH_FREESCALE_MX7_SABRESD) += start_imx7d_sabresd
 CFG_start_imx7d_sabresd.pblb.imximg = $(board)/freescale-mx7-sabresd/flash-header-mx7-sabresd.imxcfg
 FILE_barebox-freescale-mx7-sabresd.img = start_imx7d_sabresd.pblb.imximg

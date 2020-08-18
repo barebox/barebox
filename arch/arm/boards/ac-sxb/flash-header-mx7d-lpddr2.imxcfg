@@ -1,0 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/*
+ * Copyright (C) 2017 Atlas Copco Industrial Technique
+ */
+
+soc imx7
+loadaddr 0x00910000
+max_load_size 0x10000
+ivtofs 0x400

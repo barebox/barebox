@@ -458,6 +458,12 @@ config MACH_WARP7
 	bool "NXP i.MX7: element 14 WaRP7 Board"
 	select ARCH_IMX7
 
+config MACH_AC_SXB
+	bool "Atlas Copco: SXB board"
+	select ARCH_IMX7
+	select MCI_IMX_ESDHC_PBL
+	select ARM_USE_COMPRESSED_DTB
+
 config MACH_VF610_TWR
 	bool "Freescale VF610 Tower Board"
 	select ARCH_VF610
@@ -525,6 +531,7 @@ config MACH_NXP_IMX6ULL_EVK
 config MACH_NXP_IMX8MM_EVK
 	bool "NXP i.MX8MM EVK Board"
 	select ARCH_IMX8MM
+	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
 	select FIRMWARE_IMX8MM_ATF
 	select ARM_SMCCC
 	select MCI_IMX_ESDHC_PBL

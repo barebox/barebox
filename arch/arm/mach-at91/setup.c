@@ -403,3 +403,6 @@ void at91sam_phy_reset(void __iomem *rstc_base)
 	/* Restore NRST value */
 	writel(AT91_RSTC_KEY | (rstc) | AT91_RSTC_URSTEN, rstc_base + AT91_RSTC_MR);
 }
+
+unsigned long at91_bootsource;
+EXPORT_SYMBOL(at91_bootsource);

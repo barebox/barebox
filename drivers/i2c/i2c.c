@@ -569,6 +569,18 @@ struct i2c_client *of_find_i2c_device_by_node(struct device_node *node)
 	return to_i2c_client(dev);
 }
 
+static void i2c_parse_timing(struct device_d *dev, char *prop_name, u32 *cur_val_p,
+			    u32 def_val, bool use_def)
+{
+	int ret;
+
+	ret = of_property_read_u32(dev->device_node, prop_name, cur_val_p);
+	if (ret && use_def)
+		*cur_val_p = def_val;
+
+	dev_dbg(dev, "%s: %u\n", prop_name, *cur_val_p);
+}
+
 /**
  * i2c_parse_fw_timings - get I2C related timing parameters from firmware
  * @dev: The device to scan for I2C timing properties
@@ -587,45 +599,28 @@ struct i2c_client *of_find_i2c_device_by_node(struct device_node *node)
 
 void i2c_parse_fw_timings(struct device_d *dev, struct i2c_timings *t, bool use_defaults)
 {
-	int ret;
+	bool u = use_defaults;
+	u32 d;
 
-	memset(t, 0, sizeof(*t));
+	i2c_parse_timing(dev, "clock-frequency", &t->bus_freq_hz,
+			 I2C_MAX_STANDARD_MODE_FREQ, u);
 
-	ret = of_property_read_u32(dev->device_node, "clock-frequency",
-				   &t->bus_freq_hz);
-	if (ret && use_defaults)
-		t->bus_freq_hz = 100000;
+	d = t->bus_freq_hz <= I2C_MAX_STANDARD_MODE_FREQ ? 1000 :
+	    t->bus_freq_hz <= I2C_MAX_FAST_MODE_FREQ ? 300 : 120;
+	i2c_parse_timing(dev, "i2c-scl-rising-time-ns", &t->scl_rise_ns, d, u);
 
-	ret = of_property_read_u32(dev->device_node, "i2c-scl-rising-time-ns",
-				   &t->scl_rise_ns);
-	if (ret && use_defaults) {
-		if (t->bus_freq_hz <= 100000)
-			t->scl_rise_ns = 1000;
-		else if (t->bus_freq_hz <= 400000)
-			t->scl_rise_ns = 300;
-		else
-			t->scl_rise_ns = 120;
-	}
+	d = t->bus_freq_hz <= I2C_MAX_FAST_MODE_FREQ ? 300 : 120;
+	i2c_parse_timing(dev, "i2c-scl-falling-time-ns", &t->scl_fall_ns, d, u);
 
-	ret = of_property_read_u32(dev->device_node, "i2c-scl-falling-time-ns",
-				   &t->scl_fall_ns);
-	if (ret && use_defaults) {
-		if (t->bus_freq_hz <= 400000)
-			t->scl_fall_ns = 300;
-		else
-			t->scl_fall_ns = 120;
-	}
-
-	of_property_read_u32(dev->device_node, "i2c-scl-internal-delay-ns",
-			     &t->scl_int_delay_ns);
-
-	ret = of_property_read_u32(dev->device_node, "i2c-sda-falling-time-ns",
-				   &t->sda_fall_ns);
-	if (ret && use_defaults)
-		t->sda_fall_ns = t->scl_fall_ns;
-
-	of_property_read_u32(dev->device_node, "i2c-sda-hold-time-ns",
-			     &t->sda_hold_ns);
+	i2c_parse_timing(dev, "i2c-scl-internal-delay-ns",
+			 &t->scl_int_delay_ns, 0, u);
+	i2c_parse_timing(dev, "i2c-sda-falling-time-ns", &t->sda_fall_ns,
+			 t->scl_fall_ns, u);
+	i2c_parse_timing(dev, "i2c-sda-hold-time-ns", &t->sda_hold_ns, 0, u);
+	i2c_parse_timing(dev, "i2c-digital-filter-width-ns",
+			 &t->digital_filter_width_ns, 0, u);
+	i2c_parse_timing(dev, "i2c-analog-filter-cutoff-frequency",
+			 &t->analog_filter_cutoff_freq_hz, 0, u);
 }
 EXPORT_SYMBOL_GPL(i2c_parse_fw_timings);
 

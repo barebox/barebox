@@ -30,7 +30,7 @@ Running barebox
 
   3. Wait ``Press <Enter> to execute loading image`` prompt and press the space key.
 
-  4. Build barebox and upload ``zbarebox.bin`` via Ymodem to the board:
+  4. Build barebox and upload ``images/barebox-loongson-ls1b.img`` via Ymodem to the board:
 
 .. code-block:: none
 

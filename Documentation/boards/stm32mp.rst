@@ -31,6 +31,7 @@ The resulting images will be placed under ``images/``:
 
   barebox-stm32mp157c-dk2.img
   barebox-stm32mp157c-lxa-mc1.img
+  barebox-stm32mp157c-seeed-odyssey.img
 
 
 Flashing barebox

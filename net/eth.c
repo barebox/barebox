@@ -224,15 +224,15 @@ int eth_send(struct eth_device *edev, void *packet, int length)
 	return edev->send(edev, packet, length);
 }
 
-static int __eth_rx(struct eth_device *edev)
+static void eth_do_work(struct eth_device *edev)
 {
 	int ret;
 
 	ret = eth_carrier_check(edev, 0);
 	if (ret)
-		return ret;
+		return;
 
-	return edev->recv(edev);
+	edev->recv(edev);
 }
 
 int eth_rx(void)
@@ -241,7 +241,7 @@ int eth_rx(void)
 
 	for_each_netdev(edev) {
 		if (edev->active)
-			__eth_rx(edev);
+			eth_do_work(edev);
 	}
 
 	return 0;

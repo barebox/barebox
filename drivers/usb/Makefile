@@ -1,5 +1,6 @@
 obj-$(CONFIG_USB)		+= core/
 obj-$(CONFIG_USB_IMX_CHIPIDEA)	+= imx/
+obj-$(CONFIG_USB_DWC2)		+= dwc2/
 obj-$(CONFIG_USB_DWC3)		+= dwc3/
 obj-$(CONFIG_USB_MUSB)		+= musb/
 obj-$(CONFIG_USB_STORAGE)	+= storage/

@@ -1,0 +1,21 @@
+config USB_DWC2
+	bool
+	depends on USB && HAS_DMA
+	select USB_OTGDEV
+	select OFDEVICE
+	help
+	  DesignWare Core USB2 OTG driver.
+
+config USB_DWC2_HOST
+	bool "DWC2 Host mode support"
+	depends on USB_HOST
+	select USB_DWC2
+	help
+	  Select this when you want to use DWC2 in host mode.
+
+config USB_DWC2_GADGET
+	bool "DWC2 Gadget mode support"
+	depends on USB_GADGET
+	select USB_DWC2
+	help
+	  Select this when you want to use DWC2 in gadget mode.

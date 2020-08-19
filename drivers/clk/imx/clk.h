@@ -296,4 +296,26 @@ struct clk *imx8m_clk_composite_flags(const char *name,
 #define imx8m_clk_composite_critical(name, parent_names, reg) \
 	__imx8m_clk_composite(name, parent_names, reg, CLK_IS_CRITICAL)
 
+/*
+ * Names of the above functions used in the Linux Kernel. Added here
+ * to be able to use the same names in barebox to reduce the diffs
+ * between barebox and Linux clk drivers.
+ */
+#define imx_clk_hw_mux imx_clk_mux
+#define imx_clk_hw_pll14xx imx_clk_pll14xx
+#define imx_clk_hw_gate imx_clk_gate
+#define imx_clk_hw_fixed_factor imx_clk_fixed_factor
+#define imx_clk_hw_mux_flags imx_clk_mux_flags
+#define imx_clk_hw_divider2 imx_clk_divider2
+#define imx_clk_hw_mux2_flags imx_clk_mux2_flags
+#define imx_clk_hw_gate4_flags imx_clk_gate4_flags
+#define imx_clk_hw_gate4 imx_clk_gate4
+#define imx_clk_hw_cpu imx_clk_cpu
+#define imx_clk_hw_gate2 imx_clk_gate2
+#define imx8m_clk_hw_composite_flags imx8m_clk_composite_flags
+#define imx8m_clk_hw_composite imx8m_clk_composite
+#define imx8m_clk_hw_composite_critical imx8m_clk_composite_critical
+#define imx_clk_hw_gate2_shared2 imx_clk_gate2_shared2
+#define imx_clk_hw_mux2 imx_clk_mux2
+
 #endif /* __IMX_CLK_H */

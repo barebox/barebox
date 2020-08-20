@@ -145,6 +145,10 @@ static inline void gpio_free_array(const struct gpio *array, size_t num)
 	/* GPIO can never have been requested */
 	WARN_ON(1);
 }
+static inline int gpio_array_to_id(const struct gpio *array, size_t num, u32 *val)
+{
+	return -EINVAL;
+}
 #else
 int gpio_request(unsigned gpio, const char *label);
 int gpio_find_by_name(const char *name);
@@ -153,6 +157,7 @@ void gpio_free(unsigned gpio);
 int gpio_request_one(unsigned gpio, unsigned long flags, const char *label);
 int gpio_request_array(const struct gpio *array, size_t num);
 void gpio_free_array(const struct gpio *array, size_t num);
+int gpio_array_to_id(const struct gpio *array, size_t num, u32 *val);
 #endif
 
 struct gpio_chip;

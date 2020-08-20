@@ -31,3 +31,15 @@ const void *of_device_get_match_data(const struct device_d *dev)
 	return match->data;
 }
 EXPORT_SYMBOL(of_device_get_match_data);
+
+const char *of_device_get_match_compatible(const struct device_d *dev)
+{
+	const struct of_device_id *match;
+
+	match = of_match_device(dev->driver->of_compatible, dev);
+	if (!match)
+		return NULL;
+
+	return match->compatible;
+}
+EXPORT_SYMBOL(of_device_get_match_compatible);

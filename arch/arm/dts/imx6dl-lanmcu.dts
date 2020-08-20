@@ -13,6 +13,11 @@
 
 	chosen {
 		stdout-path = &uart4;
+
+		environment-emmc {
+			compatible = "barebox,environment";
+			device-path = &usdhc3, "partname:barebox-environment";
+		};
 	};
 
 	memory {
@@ -414,9 +419,14 @@
 		#size-cells = <1>;
 		#address-cells = <1>;
 
-		bootstate_backend: bootstate_backend@f0000 {
-			reg = <0xf0000 0x10000>;
-			label = "bootstate";
+		partition@100000 {
+			label = "barebox-environment";
+			reg = <0x100000 0x100000>;
+		};
+
+		partition@200000 {
+			label = "state";
+			reg = <0x200000 0x100000>;
 		};
 	};
 };

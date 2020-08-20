@@ -6,6 +6,7 @@
 /dts-v1/;
 #include <arm/imx6dl.dtsi>
 #include "imx6qdl-prti6q.dtsi"
+#include "imx6qdl-prti6q-nor.dtsi"
 #include <dt-bindings/leds/common.h>
 
 / {

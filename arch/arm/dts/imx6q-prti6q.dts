@@ -6,19 +6,13 @@
 /dts-v1/;
 #include <arm/imx6q.dtsi>
 #include "imx6qdl-prti6q.dtsi"
+#include "imx6qdl-prti6q-nor.dtsi"
 #include <dt-bindings/leds/common.h>
 #include <dt-bindings/sound/fsl-imx-audmux.h>
 
 / {
 	model = "Protonic PRTI6Q board";
 	compatible = "prt,prti6q", "fsl,imx6q";
-
-	chosen {
-		environment {
-			compatible = "barebox,environment";
-			device-path = &ecspi1, "partname:env";
-		};
-	};
 
 	memory@10000000 {
 		device_type = "memory";
@@ -161,24 +155,8 @@
 		compatible = "jedec,spi-nor";
 		reg = <0>;
 		spi-max-frequency = <20000000>;
-
 		#address-cells = <1>;
 		#size-cells = <1>;
-
-		partition@0 {
-			label = "boot";
-			reg = <0x0 0x100000>;
-		};
-
-		partition@100000 {
-			label = "env";
-			reg = <0x100000 0x10000>;
-		};
-
-		partition@110000 {
-			label = "spare";
-			reg = <0x110000 0x2f0000>;
-		};
 	};
 };
 

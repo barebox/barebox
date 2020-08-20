@@ -201,7 +201,7 @@
 			fsl,pins = <
 				MX6QDL_PAD_EIM_D26__UART2_RX_DATA	0x1b0b1
 				MX6QDL_PAD_EIM_D27__UART2_TX_DATA	0x1b0b1
-				MX6QDL_PAD_EIM_D28__GPIO3_IO28		0x130b1
+				MX6QDL_PAD_EIM_D28__UART2_CTS_B		0x130b1
 			>;
 		};
 
@@ -209,7 +209,7 @@
 			fsl,pins = <
 				MX6QDL_PAD_EIM_D24__UART3_TX_DATA	0x1b0b1
 				MX6QDL_PAD_EIM_D25__UART3_RX_DATA	0x1b0b1
-				MX6QDL_PAD_EIM_D30__GPIO3_IO30		0x130b1
+				MX6QDL_PAD_EIM_D30__UART3_CTS_B		0x130b1
 			>;
 		};
 
@@ -320,7 +320,6 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart2>;
 	linux,rs485-enabled-at-boot-time;
-	rts-gpios = <&gpio3 28 GPIO_ACTIVE_HIGH>;
 	status = "okay";
 };
 
@@ -328,7 +327,6 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart3>;
 	linux,rs485-enabled-at-boot-time;
-	rts-gpios = <&gpio3 30 GPIO_ACTIVE_HIGH>;
 	status = "okay";
 };
 

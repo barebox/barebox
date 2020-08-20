@@ -97,6 +97,12 @@
 			linux,default-trigger = "heartbeat";
 		};
 	};
+
+	clk50m_phy: phy_clock {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <50000000>;
+	};
 };
 
 &iomuxc {
@@ -304,8 +310,9 @@
 	phy-mode = "rmii";
 	phy-reset-gpios = <&gpio5 22 GPIO_ACTIVE_LOW>;
 	clocks = <&clks IMX6QDL_CLK_ENET>,
-		 <&clks IMX6QDL_CLK_ENET>;
-	clock-names = "ipg", "ahb";
+		 <&clks IMX6QDL_CLK_ENET>,
+		 <&clk50m_phy>;
+	clock-names = "ipg", "ahb", "ptp";
 	status = "okay";
 };
 

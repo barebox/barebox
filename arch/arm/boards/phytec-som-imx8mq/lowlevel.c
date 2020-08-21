@@ -29,11 +29,15 @@ extern char __dtb_imx8mq_phytec_phycore_som_start[];
 
 static void setup_uart(void)
 {
+	void __iomem *uart = IOMEM(MX8M_UART1_BASE_ADDR);
+
 	imx8m_early_setup_uart_clock();
 
 	imx8mq_setup_pad(IMX8MQ_PAD_UART1_TXD__UART1_TX | UART_PAD_CTRL);
 
-	imx8m_uart_setup_ll();
+	imx8m_uart_setup(uart);
+
+	pbl_set_putc(imx_uart_putc, uart);
 
 	putc_ll('>');
 }
@@ -56,8 +60,7 @@ static void phytec_imx8mq_som_sram_setup(void)
 
 static __noreturn noinline void phytec_phycore_imx8mq_start(void)
 {
-	if (IS_ENABLED(CONFIG_DEBUG_LL))
-		setup_uart();
+	setup_uart();
 
 	if (get_pc() < MX8MQ_DDR_CSD1_BASE_ADDR) {
 		/*

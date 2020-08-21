@@ -28,11 +28,14 @@
 
 static void setup_uart(void)
 {
+	void __iomem *uart = IOMEM(MX8M_UART1_BASE_ADDR);
+
 	imx8m_early_setup_uart_clock();
 
 	imx8mq_setup_pad(IMX8MQ_PAD_UART1_TXD__UART1_TX | UART_PAD_CTRL);
+	imx8m_uart_setup(uart);
 
-	imx8m_uart_setup_ll();
+	pbl_set_putc(imx_uart_putc, uart);
 
 	putc_ll('>');
 }
@@ -118,6 +121,8 @@ static __noreturn noinline void zii_imx8mq_dev_start(void)
 	unsigned int system_type;
 	void *fdt;
 
+	setup_uart();
+
 	if (get_pc() < MX8MQ_DDR_CSD1_BASE_ADDR) {
 		/*
 		 * We assume that we were just loaded by MaskROM into
@@ -194,9 +199,6 @@ ENTRY_FUNCTION(start_zii_imx8mq_dev, r0, r1, r2)
 	imx8mq_cpu_lowlevel_init();
 	relocate_to_current_adr();
 	setup_c();
-	
-	if (IS_ENABLED(CONFIG_DEBUG_LL))
-		setup_uart();
 
 	zii_imx8mq_dev_start();
 }

@@ -32,7 +32,7 @@ static void setup_uart(void)
 
 	imx8mm_setup_pad(IMX8MM_PAD_UART2_TXD_UART2_TX | UART_PAD_CTRL);
 
-	imx8mq_uart_setup((void *)MX8M_UART2_BASE_ADDR);
+	imx8m_uart_setup((void *)MX8M_UART2_BASE_ADDR);
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL)) {
 		imx8m_uart_setup_ll();

@@ -102,7 +102,7 @@ static inline void imx8m_uart_setup_ll(void)
 {
 	void *base = IOMEM(IMX_UART_BASE(IMX_DEBUG_SOC,
 					 CONFIG_DEBUG_IMX_UART_PORT));
-	imx8mq_uart_setup(base);
+	imx8m_uart_setup(base);
 }
 
 static inline void PUTC_LL(int c)

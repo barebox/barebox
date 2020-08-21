@@ -2,7 +2,9 @@
 /*
  * Copyright 2018-2019 NXP
  */
-#define DEBUG
+
+#define pr_fmt(fmt) "imx8m-ddr: " fmt
+
 #include <common.h>
 #include <errno.h>
 #include <io.h>
@@ -29,9 +31,9 @@ static int imx8m_ddr_init(unsigned long src_ddrc_rcr,
 	unsigned int tmp, initial_drate, target_freq;
 	int ret;
 
-	debug("DDRINFO: start DRAM init\n");
+	pr_debug("start DRAM init\n");
 
-	debug("DDRINFO: cfg clk\n");
+	pr_debug("cfg clk\n");
 
 	/* disable iso */
 	reg32_write(0x303A00EC, 0x0000ffff); /* PGC_CPU_MAPPING */
@@ -45,9 +47,9 @@ static int imx8m_ddr_init(unsigned long src_ddrc_rcr,
 	reg32_write(SRC_DDRC_RCR_ADDR, 0x8F000006);
 
 	/* Step2: Program the dwc_ddr_umctl2 registers */
-	debug("DDRINFO: ddrc config start\n");
+	pr_debug("ddrc config start\n");
 	ddr_cfg_umctl2(dram_timing->ddrc_cfg, dram_timing->ddrc_cfg_num);
-	debug("DDRINFO: ddrc config done\n");
+	pr_debug("ddrc config done\n");
 
 	/* Step3: De-assert reset signal(core_ddrc_rstn & aresetn_n) */
 	reg32_write(SRC_DDRC_RCR_ADDR, 0x8F000004);
@@ -90,13 +92,13 @@ static int imx8m_ddr_init(unsigned long src_ddrc_rcr,
 	 * Step8 ~ Step13: Start PHY initialization and training by
 	 * accessing relevant PUB registers
 	 */
-	debug("DDRINFO:ddrphy config start\n");
+	pr_debug("ddrphy config start\n");
 
 	ret = ddr_cfg_phy(dram_timing);
 	if (ret)
 		return ret;
 
-	debug("DDRINFO: ddrphy config done\n");
+	pr_debug("ddrphy config done\n");
 
 	/*
 	 * step14 CalBusy.0 =1, indicates the calibrator is actively
@@ -106,7 +108,7 @@ static int imx8m_ddr_init(unsigned long src_ddrc_rcr,
 		tmp = reg32_read(DDRPHY_CalBusy(0));
 	} while ((tmp & 0x1));
 
-	debug("DDRINFO:ddrphy calibration done\n");
+	pr_debug("ddrphy calibration done\n");
 
 	/* Step15: Set SWCTL.sw_done to 0 */
 	reg32_write(DDRC_SWCTL(0), 0x00000000);
@@ -158,7 +160,7 @@ static int imx8m_ddr_init(unsigned long src_ddrc_rcr,
 
 	/* enable port 0 */
 	reg32_write(DDRC_PCTRL_0(0), 0x00000001);
-	debug("DDRINFO: ddrmix config done\n");
+	pr_debug(" ddrmix config done\n");
 
 	return 0;
 }

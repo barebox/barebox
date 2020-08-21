@@ -2,7 +2,9 @@
 /*
  * Copyright 2018 NXP
  */
-#define DEBUG
+
+#define pr_fmt(fmt) "imx8m-ddr: " fmt
+
 #include <common.h>
 #include <linux/kernel.h>
 #include <soc/imx8m/ddr.h>
@@ -50,7 +52,7 @@ int ddr_cfg_phy(struct dram_timing_info *dram_timing)
 	/* load the frequency setpoint message block config */
 	fsp_msg = dram_timing->fsp_msg;
 	for (i = 0; i < dram_timing->fsp_msg_num; i++) {
-		debug("DRAM PHY training for %dMTS\n", fsp_msg->drate);
+		pr_debug("DRAM PHY training for %dMTS\n", fsp_msg->drate);
 		/* set dram PHY input clocks to desired frequency */
 		ddrphy_init_set_dfi_clk(fsp_msg->drate);
 

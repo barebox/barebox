@@ -3,6 +3,8 @@
 * Copyright 2018 NXP
 */
 
+#define pr_fmt(fmt) "imx8m-ddr: " fmt
+
 #include <common.h>
 #include <errno.h>
 #include <io.h>

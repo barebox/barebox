@@ -699,7 +699,6 @@ config IMD
 config IMD_TARGET
 	bool "build bareboximd target tool"
 	depends on IMD
-	depends on !SANDBOX
 
 config KERNEL_INSTALL_TARGET
 	bool

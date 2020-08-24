@@ -143,7 +143,7 @@ int rproc_add(struct rproc *rproc)
 
 	ret = firmwaremgr_register(fh);
 	if (ret)
-		dev_err(dev, "filed to register firmware handler %s\n", rproc->name);
+		dev_err(dev, "failed to register firmware handler %s\n", rproc->name);
 	else
 		dev_info(dev, "%s is available\n", rproc->name);
 

@@ -24,7 +24,7 @@ static int efi_wdt_set_timeout(struct watchdog *wd, unsigned timeout)
 
 	efiret = BS->set_watchdog_timer(timeout, 0, 0, NULL);
 	if (EFI_ERROR(efiret)) {
-		dev_err(priv->dev, "filed to set EFI watchdog: %lx\n", efiret);
+		dev_err(priv->dev, "failed to set EFI watchdog: %lx\n", efiret);
 		return -EINVAL;
 	}
 

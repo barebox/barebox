@@ -7,6 +7,9 @@ static void wq_do_pending_work(struct work_queue *wq)
 	struct work_struct *work, *tmp;
 
 	list_for_each_entry_safe(work, tmp, &wq->work, list) {
+		if (work->delayed && get_time_ns() < work->timeout)
+			continue;
+
 		list_del(&work->list);
 		wq->fn(work);
 	}

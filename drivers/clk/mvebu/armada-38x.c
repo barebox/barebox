@@ -17,7 +17,7 @@
 /*
  * Core Clocks
  *
- * Armada XP Sample At Reset is a 64 bit bitfiled split in two
+ * Armada XP Sample At Reset is a 64 bit bitfield split in two
  * register of 32 bits
  */
 

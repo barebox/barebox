@@ -159,7 +159,7 @@ struct bbm_info {
 
 	int (*isbad_bbt)(struct mtd_info *mtd, loff_t ofs, int allowbbt);
 
-	/* TODO Add more NAND specific fileds */
+	/* TODO Add more NAND specific fields */
 	struct nand_bbt_descr *badblock_pattern;
 
 	void *priv;

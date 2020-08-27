@@ -70,7 +70,7 @@ static int dwc3_of_simple_probe(struct device_d *dev)
 	if (!simple)
 		return -ENOMEM;
 
-        dev->priv = simple;
+	dev->priv = simple;
 	simple->dev = dev;
 
 	ret = dwc3_of_simple_clk_init(simple, of_count_phandle_with_args(np,
@@ -78,7 +78,7 @@ static int dwc3_of_simple_probe(struct device_d *dev)
 	if (ret)
 		return ret;
 
-        ret = of_platform_populate(np, NULL, dev);
+	ret = of_platform_populate(np, NULL, dev);
 	if (ret) {
 		for (i = 0; i < simple->num_clocks; i++) {
 			clk_disable(simple->clks[i]);
@@ -87,7 +87,7 @@ static int dwc3_of_simple_probe(struct device_d *dev)
 		return ret;
 	}
 
-        return 0;
+	return 0;
 }
 
 static void dwc3_of_simple_remove(struct device_d *dev)

@@ -456,6 +456,7 @@ int clk_register(struct clk *clk);
 struct clk *clk_lookup(const char *name);
 
 void clk_dump(int verbose);
+void clk_dump_one(struct clk *clk, int verbose);
 
 struct clk *clk_register_composite(const char *name,
 			const char * const *parent_names, int num_parents,

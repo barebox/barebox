@@ -139,6 +139,7 @@ BAREBOX_CMD_END
 static int do_clk_dump(int argc, char *argv[])
 {
 	int opt, verbose = 0;
+	struct clk *clk;
 
 	while ((opt = getopt(argc, argv, "v")) > 0) {
 		switch(opt) {
@@ -151,7 +152,16 @@ static int do_clk_dump(int argc, char *argv[])
 		}
 	}
 
-	clk_dump(verbose);
+	if (optind == argc) {
+		clk_dump(verbose);
+		return COMMAND_SUCCESS;
+	}
+
+	clk = clk_lookup(argv[optind]);
+	if (IS_ERR(clk))
+		return PTR_ERR(clk);
+
+	clk_dump_one(clk, verbose);
 
 	return COMMAND_SUCCESS;
 }
@@ -164,9 +174,10 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(clk_dump)
 	.cmd		= do_clk_dump,
 	BAREBOX_CMD_DESC("show information about registered clocks")
-	BAREBOX_CMD_OPTS("[-v]")
+	BAREBOX_CMD_OPTS("[-v] [clkname]")
 	BAREBOX_CMD_GROUP(CMD_GRP_INFO)
 	BAREBOX_CMD_HELP(cmd_clk_dump_help)
+	BAREBOX_CMD_COMPLETE(clk_name_complete)
 BAREBOX_CMD_END
 
 static int do_clk_set_parent(int argc, char *argv[])

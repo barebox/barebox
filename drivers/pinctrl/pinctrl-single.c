@@ -219,8 +219,4 @@ static struct driver_d pcs_driver = {
 	.of_compatible	= DRV_OF_COMPAT(pcs_dt_ids),
 };
 
-static int pcs_init(void)
-{
-	return platform_driver_register(&pcs_driver);
-}
-core_initcall(pcs_init);
+core_platform_driver(pcs_driver);

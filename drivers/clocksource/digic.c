@@ -88,8 +88,4 @@ static struct driver_d digic_timer_driver = {
 	.of_compatible = DRV_OF_COMPAT(digic_timer_dt_ids),
 };
 
-static int digic_timer_init(void)
-{
-	return platform_driver_register(&digic_timer_driver);
-}
-coredevice_initcall(digic_timer_init);
+coredevice_platform_driver(digic_timer_driver);

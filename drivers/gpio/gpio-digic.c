@@ -176,8 +176,4 @@ static struct driver_d digic_gpio_driver = {
 	.of_compatible = DRV_OF_COMPAT(digic_gpio_dt_ids),
 };
 
-static int digic_gpio_init(void)
-{
-	return platform_driver_register(&digic_gpio_driver);
-}
-coredevice_initcall(digic_gpio_init);
+coredevice_platform_driver(digic_gpio_driver);

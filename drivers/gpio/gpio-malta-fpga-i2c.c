@@ -180,8 +180,4 @@ static struct driver_d malta_i2c_gpio_driver = {
 	.of_compatible	= DRV_OF_COMPAT(malta_i2c_gpio_dt_ids),
 };
 
-static int malta_i2c_gpio_driver_init(void)
-{
-	return platform_driver_register(&malta_i2c_gpio_driver);
-}
-coredevice_initcall(malta_i2c_gpio_driver_init);
+coredevice_platform_driver(malta_i2c_gpio_driver);

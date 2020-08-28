@@ -156,8 +156,4 @@ static struct driver_d vf610_gpio_driver = {
 	.of_compatible = DRV_OF_COMPAT(vf610_gpio_dt_ids),
 };
 
-static int __init gpio_vf610_init(void)
-{
-	return platform_driver_register(&vf610_gpio_driver);
-}
-postcore_initcall(gpio_vf610_init);
+postcore_platform_driver(vf610_gpio_driver);

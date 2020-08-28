@@ -115,8 +115,4 @@ static struct driver_d mpc8xxx_driver = {
 	.of_compatible  = DRV_OF_COMPAT(mpc8xxx_gpio_ids),
 };
 
-static int __init mpc8xxx_init(void)
-{
-	return platform_driver_register(&mpc8xxx_driver);
-}
-postcore_initcall(mpc8xxx_init);
+postcore_platform_driver(mpc8xxx_driver);

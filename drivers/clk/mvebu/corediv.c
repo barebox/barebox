@@ -254,8 +254,4 @@ static struct driver_d mvebu_corediv_clk_driver = {
 	.of_compatible = DRV_OF_COMPAT(mvebu_corediv_clk_ids),
 };
 
-static int mvebu_corediv_clk_init(void)
-{
-	return platform_driver_register(&mvebu_corediv_clk_driver);
-}
-postcore_initcall(mvebu_corediv_clk_init);
+postcore_platform_driver(mvebu_corediv_clk_driver);

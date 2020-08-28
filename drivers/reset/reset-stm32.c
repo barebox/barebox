@@ -211,8 +211,4 @@ static struct driver_d stm32_rcc_reset_driver = {
 	.of_compatible = DRV_OF_COMPAT(stm32_rcc_reset_dt_ids),
 };
 
-static int stm32_rcc_reset_init(void)
-{
-	return platform_driver_register(&stm32_rcc_reset_driver);
-}
-postcore_initcall(stm32_rcc_reset_init);
+postcore_platform_driver(stm32_rcc_reset_driver);

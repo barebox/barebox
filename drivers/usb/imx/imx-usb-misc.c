@@ -673,10 +673,4 @@ static struct driver_d imx_usbmisc_driver = {
 	.of_compatible = DRV_OF_COMPAT(imx_usbmisc_dt_ids),
 };
 
-static int imx_usbmisc_init(void)
-{
-	platform_driver_register(&imx_usbmisc_driver);
-	return 0;
-}
-
-coredevice_initcall(imx_usbmisc_init);
+coredevice_platform_driver(imx_usbmisc_driver);

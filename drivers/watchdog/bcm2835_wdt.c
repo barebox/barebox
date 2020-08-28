@@ -139,8 +139,4 @@ static struct driver_d bcm2835_wd_driver = {
 	.probe		= bcm2835_wd_probe,
 };
 
-static int __init bcm2835_wd_init(void)
-{
-	return platform_driver_register(&bcm2835_wd_driver);
-}
-device_initcall(bcm2835_wd_init);
+device_platform_driver(bcm2835_wd_driver);

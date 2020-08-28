@@ -182,8 +182,4 @@ static struct driver_d imx_gpt_driver = {
 	.id_table = imx_gpt_ids,
 };
 
-static int imx_gpt_init(void)
-{
-	return platform_driver_register(&imx_gpt_driver);
-}
-postcore_initcall(imx_gpt_init);
+postcore_platform_driver(imx_gpt_driver);

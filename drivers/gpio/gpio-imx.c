@@ -217,9 +217,4 @@ static struct driver_d imx_gpio_driver = {
 	.id_table = imx_gpio_ids,
 };
 
-static int imx_gpio_add(void)
-{
-	platform_driver_register(&imx_gpio_driver);
-	return 0;
-}
-postcore_initcall(imx_gpio_add);
+postcore_platform_driver(imx_gpio_driver);

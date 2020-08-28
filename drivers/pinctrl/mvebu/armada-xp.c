@@ -400,9 +400,4 @@ static struct driver_d armada_xp_pinctrl_driver = {
 	.probe		= armada_xp_pinctrl_probe,
 	.of_compatible	= armada_xp_pinctrl_of_match,
 };
-
-static int armada_xp_pinctrl_init(void)
-{
-	return platform_driver_register(&armada_xp_pinctrl_driver);
-}
-core_initcall(armada_xp_pinctrl_init);
+core_platform_driver(armada_xp_pinctrl_driver);

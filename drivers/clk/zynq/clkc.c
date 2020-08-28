@@ -490,8 +490,4 @@ static struct driver_d zynq_clock_driver = {
 	.of_compatible = DRV_OF_COMPAT(zynq_clock_dt_ids),
 };
 
-static int zynq_clock_init(void)
-{
-	return platform_driver_register(&zynq_clock_driver);
-}
-postcore_initcall(zynq_clock_init);
+postcore_platform_driver(zynq_clock_driver);

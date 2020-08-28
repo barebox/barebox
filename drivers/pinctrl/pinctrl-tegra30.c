@@ -931,8 +931,4 @@ static struct driver_d pinctrl_tegra30_driver = {
 	.of_compatible	= DRV_OF_COMPAT(pinctrl_tegra30_dt_ids),
 };
 
-static int pinctrl_tegra30_init(void)
-{
-	return platform_driver_register(&pinctrl_tegra30_driver);
-}
-core_initcall(pinctrl_tegra30_init);
+core_platform_driver(pinctrl_tegra30_driver);

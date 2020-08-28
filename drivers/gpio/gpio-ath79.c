@@ -151,8 +151,4 @@ static struct driver_d ath79_gpio_driver = {
 	.of_compatible = DRV_OF_COMPAT(ath79_gpio_of_match),
 };
 
-static int ath79_gpio_init(void)
-{
-	return platform_driver_register(&ath79_gpio_driver);
-}
-coredevice_initcall(ath79_gpio_init);
+coredevice_platform_driver(ath79_gpio_driver);

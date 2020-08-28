@@ -102,8 +102,4 @@ static struct driver_d at91sam9x_wdt_driver = {
 	.probe		= at91sam9x_wdt_probe,
 };
 
-static int __init at91sam9x_wdt_init(void)
-{
-	return platform_driver_register(&at91sam9x_wdt_driver);
-}
-device_initcall(at91sam9x_wdt_init);
+device_platform_driver(at91sam9x_wdt_driver);

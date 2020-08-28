@@ -195,8 +195,4 @@ static struct driver_d dwgpio_driver = {
 	.of_compatible = DRV_OF_COMPAT(dwgpio_match),
 };
 
-static int __init dwgpio_init(void)
-{
-	return platform_driver_register(&dwgpio_driver);
-}
-postcore_initcall(dwgpio_init);
+postcore_platform_driver(dwgpio_driver);

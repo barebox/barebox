@@ -738,8 +738,4 @@ static struct driver_d dove_pinctrl_driver = {
 	.of_compatible	= dove_pinctrl_of_match,
 };
 
-static int dove_pinctrl_init(void)
-{
-	return platform_driver_register(&dove_pinctrl_driver);
-}
-core_initcall(dove_pinctrl_init);
+core_platform_driver(dove_pinctrl_driver);

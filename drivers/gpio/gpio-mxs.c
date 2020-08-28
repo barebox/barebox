@@ -178,9 +178,4 @@ static struct driver_d mxs_gpio_driver = {
 	.id_table = mxs_gpio_ids,
 };
 
-static int mxs_gpio_add(void)
-{
-	platform_driver_register(&mxs_gpio_driver);
-	return 0;
-}
-postcore_initcall(mxs_gpio_add);
+postcore_platform_driver(mxs_gpio_driver);

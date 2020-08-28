@@ -95,8 +95,4 @@ static struct driver_d bcm2835_cs_driver = {
 	.of_compatible = DRV_OF_COMPAT(bcm2835_cs_dt_ids),
 };
 
-static int bcm2835_cs_init(void)
-{
-	return platform_driver_register(&bcm2835_cs_driver);
-}
-core_initcall(bcm2835_cs_init);
+core_platform_driver(bcm2835_cs_driver);

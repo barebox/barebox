@@ -136,8 +136,4 @@ static struct driver_d jz4740_gpio_driver = {
 	.of_compatible	= DRV_OF_COMPAT(jz4740_gpio_dt_ids),
 };
 
-static int jz4740_gpio_init(void)
-{
-	return platform_driver_register(&jz4740_gpio_driver);
-}
-coredevice_initcall(jz4740_gpio_init);
+coredevice_platform_driver(jz4740_gpio_driver);

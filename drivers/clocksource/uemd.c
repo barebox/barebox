@@ -123,8 +123,4 @@ static struct driver_d uemd_timer_driver = {
 	.of_compatible = DRV_OF_COMPAT(uemd_timer_dt_ids),
 };
 
-static int uemd_timer_init(void)
-{
-	return platform_driver_register(&uemd_timer_driver);
-}
-coredevice_initcall(uemd_timer_init);
+coredevice_platform_driver(uemd_timer_driver);

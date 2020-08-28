@@ -440,8 +440,4 @@ static struct driver_d stm32_pinctrl_driver = {
 	.of_compatible	= DRV_OF_COMPAT(stm32_pinctrl_dt_ids),
 };
 
-static int stm32_pinctrl_init(void)
-{
-	return platform_driver_register(&stm32_pinctrl_driver);
-}
-core_initcall(stm32_pinctrl_init);
+core_platform_driver(stm32_pinctrl_driver);

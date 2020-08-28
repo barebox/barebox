@@ -428,8 +428,4 @@ static struct driver_d socfpga_ccm_driver = {
 	.of_compatible = DRV_OF_COMPAT(socfpga_ccm_dt_ids),
 };
 
-static int socfpga_ccm_init(void)
-{
-	return platform_driver_register(&socfpga_ccm_driver);
-}
-core_initcall(socfpga_ccm_init);
+core_platform_driver(socfpga_ccm_driver);

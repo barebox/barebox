@@ -103,10 +103,4 @@ static struct driver_d art_driver = {
 	.of_compatible	= art_dt_ids,
 };
 
-static int art_of_driver_init(void)
-{
-	platform_driver_register(&art_driver);
-
-	return 0;
-}
-late_initcall(art_of_driver_init);
+late_platform_driver(art_driver);

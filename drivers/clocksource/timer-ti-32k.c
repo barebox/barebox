@@ -99,8 +99,4 @@ static struct driver_d omap_32ktimer_driver = {
 	.of_compatible = DRV_OF_COMPAT(omap_32ktimer_dt_ids),
 };
 
-static int omap_32ktimer_init(void)
-{
-	return platform_driver_register(&omap_32ktimer_driver);
-}
-postcore_initcall(omap_32ktimer_init);
+postcore_platform_driver(omap_32ktimer_driver);

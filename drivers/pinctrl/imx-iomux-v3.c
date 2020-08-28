@@ -265,8 +265,4 @@ static struct driver_d imx_iomux_v3_driver = {
 	.of_compatible	= DRV_OF_COMPAT(imx_iomux_v3_dt_ids),
 };
 
-static int imx_iomux_v3_init(void)
-{
-	return platform_driver_register(&imx_iomux_v3_driver);
-}
-core_initcall(imx_iomux_v3_init);
+core_platform_driver(imx_iomux_v3_driver);

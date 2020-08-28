@@ -229,13 +229,7 @@ static struct driver_d mxs_ocotp_driver = {
 	.of_compatible = DRV_OF_COMPAT(mxs_ocotp_compatible),
 };
 
-static int mxs_ocotp_init(void)
-{
-	platform_driver_register(&mxs_ocotp_driver);
-
-	return 0;
-}
-coredevice_initcall(mxs_ocotp_init);
+coredevice_platform_driver(mxs_ocotp_driver);
 
 int mxs_ocotp_read(void *buf, int count, int offset)
 {

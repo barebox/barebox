@@ -112,8 +112,4 @@ static struct driver_d at91_pit_driver = {
 	.of_compatible = DRV_OF_COMPAT(at91_pit_dt_ids),
 };
 
-static int at91_pit_init(void)
-{
-	return platform_driver_register(&at91_pit_driver);
-}
-postcore_initcall(at91_pit_init);
+postcore_platform_driver(at91_pit_driver);

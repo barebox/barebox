@@ -703,12 +703,7 @@ static struct driver_d imx_esdctl_driver = {
 	.of_compatible = DRV_OF_COMPAT(imx_esdctl_dt_ids),
 };
 
-static int imx_esdctl_init(void)
-{
-	return platform_driver_register(&imx_esdctl_driver);
-}
-
-mem_initcall(imx_esdctl_init);
+mem_platform_driver(imx_esdctl_driver);
 
 /*
  * The i.MX SoCs usually have two SDRAM chipselects. The following

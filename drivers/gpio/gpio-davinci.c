@@ -206,8 +206,4 @@ static struct driver_d davinci_gpio_driver = {
 	.of_compatible	= DRV_OF_COMPAT(davinci_gpio_ids),
 };
 
-static int davinci_gpio_drv_reg(void)
-{
-	return platform_driver_register(&davinci_gpio_driver);
-}
-coredevice_initcall(davinci_gpio_drv_reg);
+coredevice_platform_driver(davinci_gpio_driver);

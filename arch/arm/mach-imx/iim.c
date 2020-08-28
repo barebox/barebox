@@ -586,10 +586,4 @@ static struct driver_d imx_iim_driver = {
 	.of_compatible = DRV_OF_COMPAT(imx_iim_dt_ids),
 };
 
-static int imx_iim_init(void)
-{
-	platform_driver_register(&imx_iim_driver);
-
-	return 0;
-}
-coredevice_initcall(imx_iim_init);
+coredevice_platform_driver(imx_iim_driver);

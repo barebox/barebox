@@ -401,6 +401,8 @@ int platform_driver_register(struct driver_d *drv);
 	}						\
 	level##_initcall(drv##_register)
 
+#define core_platform_driver(drv)	\
+	register_driver_macro(core,platform,drv)
 #define postcore_platform_driver(drv)	\
 	register_driver_macro(postcore,platform,drv)
 #define coredevice_platform_driver(drv)	\
@@ -409,6 +411,10 @@ int platform_driver_register(struct driver_d *drv);
 	register_driver_macro(device,platform,drv)
 #define console_platform_driver(drv)	\
 	register_driver_macro(console,platform,drv)
+#define mem_platform_driver(drv)	\
+	register_driver_macro(mem,platform,drv)
+#define fs_platform_driver(drv)	\
+	register_driver_macro(fs,platform,drv)
 #define late_platform_driver(drv)	\
 	register_driver_macro(late,platform,drv)
 

@@ -261,8 +261,4 @@ static struct driver_d cadence_serial_driver = {
 	.id_table = cadence_serial_ids,
 };
 
-static int cadence_serial_init(void)
-{
-	return platform_driver_register(&cadence_serial_driver);
-}
-console_initcall(cadence_serial_init);
+console_platform_driver(cadence_serial_driver);

@@ -424,8 +424,4 @@ static struct driver_d ar231x_eth_driver = {
 	.probe = ar231x_eth_probe,
 };
 
-static int ar231x_eth_driver_init(void)
-{
-	return platform_driver_register(&ar231x_eth_driver);
-}
-device_initcall(ar231x_eth_driver_init);
+device_platform_driver(ar231x_eth_driver);

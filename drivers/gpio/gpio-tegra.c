@@ -201,8 +201,4 @@ static struct driver_d tegra_gpio_driver = {
 	.probe		= tegra_gpio_probe,
 };
 
-static int __init tegra_gpio_init(void)
-{
-	return platform_driver_register(&tegra_gpio_driver);
-}
-coredevice_initcall(tegra_gpio_init);
+coredevice_platform_driver(tegra_gpio_driver);

@@ -399,8 +399,4 @@ static struct driver_d tegra30_car_driver = {
 	.of_compatible = DRV_OF_COMPAT(tegra30_car_dt_ids),
 };
 
-static int tegra30_car_init(void)
-{
-	return platform_driver_register(&tegra30_car_driver);
-}
-postcore_initcall(tegra30_car_init);
+postcore_platform_driver(tegra30_car_driver);

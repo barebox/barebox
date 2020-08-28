@@ -267,11 +267,7 @@ static struct driver_d syscon_driver = {
 	.id_table	= syscon_ids,
 };
 
-static int __init syscon_init(void)
-{
-	return platform_driver_register(&syscon_driver);
-}
-core_initcall(syscon_init);
+core_platform_driver(syscon_driver);
 
 MODULE_AUTHOR("Dong Aisheng <dong.aisheng@linaro.org>");
 MODULE_DESCRIPTION("System Control driver");

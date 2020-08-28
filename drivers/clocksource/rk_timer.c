@@ -66,8 +66,4 @@ static struct driver_d rktimer_driver = {
 	.of_compatible = DRV_OF_COMPAT(rktimer_dt_ids),
 };
 
-static int rktimer_init(void)
-{
-	return platform_driver_register(&rktimer_driver);
-}
-core_initcall(rktimer_init);
+core_platform_driver(rktimer_driver);

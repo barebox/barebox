@@ -206,15 +206,4 @@ static struct driver_d pfuze_i2c_driver = {
 	.of_compatible	= DRV_OF_COMPAT(pfuze_dt_ids),
 };
 
-static int __init pfuze_init(void)
-{
-	int ret;
-
-	ret = i2c_driver_register(&pfuze_i2c_driver);
-	if (ret)
-		return ret;
-
-	return 0;
-
-}
-late_initcall(pfuze_init);
+device_i2c_driver(pfuze_i2c_driver);

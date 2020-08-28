@@ -981,8 +981,4 @@ static struct phy_driver genphy_driver = {
 		SUPPORTED_BNC,
 };
 
-static int generic_phy_register(void)
-{
-	return phy_driver_register(&genphy_driver);
-}
-device_initcall(generic_phy_register);
+device_phy_driver(genphy_driver);

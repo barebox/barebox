@@ -135,8 +135,4 @@ static struct phy_driver smsc_phy_driver[] = {
 	.config_init	= lan87xx_config_init,
 } };
 
-static int __init smsc_init(void)
-{
-	return phy_drivers_register(smsc_phy_driver, ARRAY_SIZE(smsc_phy_driver));
-}
-fs_initcall(smsc_init);
+device_phy_drivers(smsc_phy_driver);

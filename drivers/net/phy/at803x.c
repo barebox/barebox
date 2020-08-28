@@ -243,9 +243,4 @@ static struct phy_driver at803x_driver[] = {
 	.read_status	= &genphy_read_status,
 } };
 
-static int atheros_phy_init(void)
-{
-	return phy_drivers_register(at803x_driver,
-				    ARRAY_SIZE(at803x_driver));
-}
-fs_initcall(atheros_phy_init);
+device_phy_drivers(at803x_driver);

@@ -547,11 +547,7 @@ static struct phy_driver mv88e6xxx_port_driver = {
 	.read_status	= mv88e6xxx_port_read_status,
 };
 
-static int __init mv88e6xxx_port_driver_register(void)
-{
-	return phy_driver_register(&mv88e6xxx_port_driver);
-}
-fs_initcall(mv88e6xxx_port_driver_register);
+device_phy_driver(mv88e6xxx_port_driver);
 
 int mv88e6xxx_port_probe(struct mv88e6xxx_chip *chip)
 {

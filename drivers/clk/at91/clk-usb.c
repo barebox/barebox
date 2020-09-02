@@ -9,6 +9,7 @@
 #include <linux/list.h>
 #include <linux/clk.h>
 #include <linux/clk/at91_pmc.h>
+#include <linux/overflow.h>
 #include <mfd/syscon.h>
 #include <regmap.h>
 
@@ -28,9 +29,9 @@
 struct at91sam9x5_clk_usb {
 	struct clk clk;
 	struct regmap *regmap;
-	const char *parent_names[USB_SOURCE_MAX];
 	u32 usbs_mask;
 	u8 num_parents;
+	const char *parent_names[];
 };
 
 #define to_at91sam9x5_clk_usb(clk) \
@@ -150,7 +151,7 @@ _at91sam9x5_clk_register_usb(struct regmap *regmap, const char *name,
 	struct at91sam9x5_clk_usb *usb;
 	int ret;
 
-	usb = kzalloc(sizeof(*usb), GFP_KERNEL);
+	usb = kzalloc(struct_size(usb, parent_names, num_parents), GFP_KERNEL);
 	usb->clk.name = name;
 	usb->clk.ops = &at91sam9x5_usb_ops;
 	memcpy(usb->parent_names, parent_names,

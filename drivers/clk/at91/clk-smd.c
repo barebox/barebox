@@ -9,6 +9,7 @@
 #include <linux/list.h>
 #include <linux/clk.h>
 #include <linux/clk/at91_pmc.h>
+#include <linux/overflow.h>
 #include <mfd/syscon.h>
 #include <regmap.h>
 
@@ -22,7 +23,7 @@
 struct at91sam9x5_clk_smd {
 	struct clk clk;
 	struct regmap *regmap;
-	const char *parent_names[SMD_SOURCE_MAX];
+	const char *parent_names[];
 };
 
 #define to_at91sam9x5_clk_smd(clk) \
@@ -116,7 +117,7 @@ at91sam9x5_clk_register_smd(struct regmap *regmap, const char *name,
 	struct at91sam9x5_clk_smd *smd;
 	int ret;
 
-	smd = xzalloc(sizeof(*smd));
+	smd = xzalloc(struct_size(smd, parent_names, num_parents));
 	smd->clk.name = name;
 	smd->clk.ops = &at91sam9x5_smd_ops;
 	memcpy(smd->parent_names, parent_names,

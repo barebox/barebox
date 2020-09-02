@@ -13,6 +13,7 @@
 #include <linux/list.h>
 #include <linux/clk.h>
 #include <linux/clk/at91_pmc.h>
+#include <linux/overflow.h>
 #include <mfd/syscon.h>
 #include <regmap.h>
 
@@ -69,7 +70,7 @@ struct clk_sam9x5_slow {
 	void __iomem *sckcr;
 	const struct clk_slow_bits *bits;
 	u8 parent;
-	const char *parent_names[2];
+	const char *parent_names[];
 };
 
 #define to_clk_sam9x5_slow(clk) container_of(clk, struct clk_sam9x5_slow, clk)
@@ -305,7 +306,7 @@ at91_clk_register_sam9x5_slow(void __iomem *sckcr,
 	if (!sckcr || !name || !parent_names || !num_parents)
 		return ERR_PTR(-EINVAL);
 
-	slowck = xzalloc(sizeof(*slowck));
+	slowck = xzalloc(struct_size(slowck, parent_names, num_parents));
 	slowck->clk.name = name;
 	slowck->clk.ops = &sam9x5_slow_ops;
 

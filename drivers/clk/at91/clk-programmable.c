@@ -9,12 +9,12 @@
 #include <linux/list.h>
 #include <linux/clk.h>
 #include <linux/clk/at91_pmc.h>
+#include <linux/overflow.h>
 #include <mfd/syscon.h>
 #include <regmap.h>
 
 #include "pmc.h"
 
-#define PROG_SOURCE_MAX		5
 #define PROG_ID_MAX		7
 
 #define PROG_STATUS_MASK(id)	(1 << ((id) + 8))
@@ -26,7 +26,7 @@ struct clk_programmable {
 	struct regmap *regmap;
 	u8 id;
 	const struct clk_programmable_layout *layout;
-	const char *parent_names[PROG_SOURCE_MAX];
+	const char *parent_names[];
 };
 
 #define to_clk_programmable(clk) container_of(clk, struct clk_programmable, clk)
@@ -140,7 +140,7 @@ at91_clk_register_programmable(struct regmap *regmap,
 	if (id > PROG_ID_MAX)
 		return ERR_PTR(-EINVAL);
 
-	prog = kzalloc(sizeof(*prog), GFP_KERNEL);
+	prog = kzalloc(struct_size(prog, parent_names, num_parents), GFP_KERNEL);
 	if (!prog)
 		return ERR_PTR(-ENOMEM);
 

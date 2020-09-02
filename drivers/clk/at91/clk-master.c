@@ -7,12 +7,11 @@
 #include <linux/list.h>
 #include <linux/clk.h>
 #include <linux/clk/at91_pmc.h>
+#include <linux/overflow.h>
 #include <mfd/syscon.h>
 #include <regmap.h>
 
 #include "pmc.h"
-
-#define MASTER_SOURCE_MAX	4
 
 #define MASTER_PRES_MASK	0x7
 #define MASTER_PRES_MAX		MASTER_PRES_MASK
@@ -26,8 +25,8 @@ struct clk_master {
 	struct regmap *regmap;
 	const struct clk_master_layout *layout;
 	const struct clk_master_characteristics *characteristics;
-	const char *parents[MASTER_SOURCE_MAX];
 	u32 mckr;
+	const char *parents[];
 };
 
 static inline bool clk_master_ready(struct regmap *regmap)
@@ -120,7 +119,7 @@ at91_clk_register_master(struct regmap *regmap,
 	if (!name || !num_parents || !parent_names)
 		return ERR_PTR(-EINVAL);
 
-	master = xzalloc(sizeof(*master));
+	master = xzalloc(struct_size(master, parents, num_parents));
 
 	master->clk.name = name;
 	master->clk.ops = &master_ops;

@@ -12,6 +12,7 @@
 #include <linux/list.h>
 #include <linux/clk.h>
 #include <linux/clk/at91_pmc.h>
+#include <linux/overflow.h>
 #include <mfd/syscon.h>
 #include <regmap.h>
 
@@ -19,13 +20,11 @@
 
 #include "pmc.h"
 
-#define I2S_MUX_SOURCE_MAX	2
-
 struct clk_i2s_mux {
 	struct clk clk;
 	struct regmap *regmap;
 	u8 bus_id;
-	const char *parent_names[I2S_MUX_SOURCE_MAX];
+	const char *parent_names[];
 };
 
 #define to_clk_i2s_mux(clk) container_of(clk, struct clk_i2s_mux, clk)
@@ -63,7 +62,7 @@ at91_clk_i2s_mux_register(struct regmap *regmap, const char *name,
 	struct clk_i2s_mux *i2s_ck;
 	int ret;
 
-	i2s_ck = kzalloc(sizeof(*i2s_ck), GFP_KERNEL);
+	i2s_ck = kzalloc(struct_size(i2s_ck, parent_names, num_parents), GFP_KERNEL);
 	if (!i2s_ck)
 		return ERR_PTR(-ENOMEM);
 

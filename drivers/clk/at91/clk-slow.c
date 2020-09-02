@@ -11,6 +11,7 @@
 #include <linux/list.h>
 #include <linux/clk.h>
 #include <linux/clk/at91_pmc.h>
+#include <linux/overflow.h>
 #include <mfd/syscon.h>
 #include <regmap.h>
 
@@ -19,7 +20,7 @@
 struct clk_sam9260_slow {
 	struct clk clk;
 	struct regmap *regmap;
-	const char *parent_names[2];
+	const char *parent_names[];
 };
 
 #define to_clk_sam9260_slow(clk) container_of(clk, struct clk_sam9260_slow, clk)
@@ -53,7 +54,7 @@ at91_clk_register_sam9260_slow(struct regmap *regmap,
 	if (!parent_names || !num_parents)
 		return ERR_PTR(-EINVAL);
 
-	slowck = xzalloc(sizeof(*slowck));
+	slowck = xzalloc(struct_size(slowck, parent_names, num_parents));
 	slowck->clk.name = name;
 	slowck->clk.ops = &sam9260_slow_ops;
 	memcpy(slowck->parent_names, parent_names,

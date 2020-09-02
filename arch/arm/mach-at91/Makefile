@@ -1,4 +1,4 @@
-obj-y += setup.o aic.o bootm-barebox.o
+obj-y += setup.o aic.o
 lwl-y += at91_pmc_ll.o ddramc_ll.o matrix.o
 lwl-$(CONFIG_CLOCKSOURCE_ATMEL_PIT) += early_udelay.o
 
@@ -9,6 +9,7 @@ endif
 obj-$(CONFIG_CMD_AT91_BOOT_TEST) += boot_test_cmd.o
 
 obj-$(CONFIG_AT91_BOOTSTRAP)	+= bootstrap.o
+obj-$(CONFIG_BOOTM) += bootm-barebox.o
 
 obj-y += at91sam9_reset.o
 obj-y += at91sam9g45_reset.o

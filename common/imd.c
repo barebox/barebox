@@ -312,6 +312,7 @@ static int imd_calculate_crc32(void *input, const struct imd_header *imd_start,
 	const struct imd_header *imd;
 	int length;
 	int end_ofs = (char *)imd_start - (char *)input + sizeof(char) * 8;
+	*imd_crc = NULL;
 
 	/* search the checksum imd token */
 	imd_for_each(imd_start, imd) {

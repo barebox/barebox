@@ -233,7 +233,11 @@ int bootm_load_initrd(struct image_data *data, unsigned long load_address)
 
 		ret = fit_open_image(data->os_fit, data->fit_config, "ramdisk",
 				     &initrd, &initrd_size);
-
+		if (ret) {
+			pr_err("Cannot open ramdisk image in FIT image: %s\n",
+					strerror(-ret));
+			return ret;
+		}
 		data->initrd_res = request_sdram_region("initrd",
 				load_address,
 				initrd_size);

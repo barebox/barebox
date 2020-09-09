@@ -27,12 +27,13 @@ struct pinctrl_single {
 	unsigned (*read)(void __iomem *reg);
 	void (*write)(unsigned val, void __iomem *reg);
 	unsigned int width;
-	unsigned int  fmask;
+	unsigned int fmask;
 	unsigned int fshift;
 	unsigned int fmax;
 
 	bool bits_per_mux;
 	unsigned int bits_per_pin;
+	unsigned int args_count;
 };
 
 static unsigned __maybe_unused pcs_readb(void __iomem *reg)
@@ -96,7 +97,7 @@ static int pcs_set_state(struct pinctrl_device *pdev, struct device_node *np)
 
 		size /= sizeof(*mux);	/* Number of elements in array */
 
-		if (!mux || !size || (size & 1)) {
+		if (!mux || !size || (size % (pcs->args_count + 1))) {
 			dev_err(pcs->pinctrl.dev, "bad data for mux %s\n",
 				np->full_name);
 			return -EINVAL;
@@ -107,6 +108,14 @@ static int pcs_set_state(struct pinctrl_device *pdev, struct device_node *np)
 
 			offset = be32_to_cpup(mux + index++);
 			val = be32_to_cpup(mux + index++);
+			if (pcs->args_count > 1) {
+				/* If a 2nd data cell is present, it's ORed into
+				 * the 1st.  Additional cells are undefined,
+				 * just skip them.
+				 */
+				val |= be32_to_cpup(mux + index);
+				index += pcs->args_count - 1;
+			}
 
 			pcs->write(val, pcs->base + offset);
 		}
@@ -176,6 +185,13 @@ static int pcs_probe(struct device_d *dev)
 		of_property_read_bool(np, "pinctrl-single,bit-per-mux");
 	if (pcs->bits_per_mux)
 		pcs->bits_per_pin = fls(pcs->fmask);
+
+	/* If no pinctrl-cells is present, default to old style of 2 cells with
+	 * bits per mux and 1 cell otherwise.
+	 */
+	ret = of_property_read_u32(np, "#pinctrl-cells", &pcs->args_count);
+	if (ret)
+		pcs->args_count = pcs->bits_per_mux ? 2 : 1;
 
 	ret = pinctrl_register(&pcs->pinctrl);
 	if (ret)

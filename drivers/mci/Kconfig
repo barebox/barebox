@@ -34,6 +34,13 @@ config MCI_WRITE
 
 config MCI_MMC_BOOT_PARTITIONS
 	bool "support MMC boot partitions"
+	help
+	  Provide access to the 'boot partitions' of devices of type 'MMC'.
+	  These so called 'hardware partitions' act like an independent memory
+	  device and thus, need special handling.
+
+	  Note: only 'MMC' have 'boot partitions'. So, if you don't use an
+	  'MMC' device, you don't need this support.
 
 comment "--- MCI host drivers ---"
 

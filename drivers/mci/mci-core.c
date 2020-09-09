@@ -33,6 +33,7 @@
 #include <disks.h>
 #include <of.h>
 #include <linux/err.h>
+#include <linux/sizes.h>
 
 #define MAX_BUFFER_NUMBER 0xffffffff
 
@@ -441,6 +442,69 @@ static void mci_part_add(struct mci *mci, uint64_t size,
 }
 
 /**
+ * Read a value spread to three consecutive bytes in the ECSD information
+ * @param[in] ecsd_info Information from the eMMC
+ * @param[in] idx The index where to start to read
+ * @return The GPP size in units of 'write protect group' size
+ *
+ * The value in the ECSD information block is meant in little endian
+ */
+static __maybe_unused unsigned mmc_extract_gpp_units(const char *ecsd_info, unsigned idx)
+{
+	unsigned val;
+
+	val = ecsd_info[idx];
+	val |= ecsd_info[idx + 1] << 8;
+	val |= ecsd_info[idx + 2] << 16;
+
+	return val;
+}
+
+/**
+ * Create and enable access to 'general purpose hardware partitions' on demand
+ * @param mci[in,out] MCI instance
+ *
+ * General Purpose hardware Partitions (aka GPPs) aren't enabled by default. Its
+ * up to the application to (one-time) setup the eMMC to provide GPPs. Since
+ * they aren't wildly used, enable access to them on demand only.
+ */
+static __maybe_unused void mmc_extract_gpp_partitions(struct mci *mci)
+{
+	uint64_t wpgs, part_size;
+	size_t idx;
+	char *name, *partname;
+	static const unsigned gpp_offsets[MMC_NUM_GP_PARTITION] = {
+		EXT_CSD_GP_SIZE_MULT0, EXT_CSD_GP_SIZE_MULT1,
+		EXT_CSD_GP_SIZE_MULT2, EXT_CSD_GP_SIZE_MULT3, };
+
+	if (!(mci->ext_csd[EXT_CSD_PARTITIONING_SUPPORT] & 0x01))
+		return; /* no partitioning support */
+	/*
+	 * The size of GPPs is defined in units of 'write protect group' size.
+	 * The 'write protect group' size is defined to:
+	 *  CSD_HC_ERASE_GRP_SIZE * CSD_HC_WP_GRP_SIZE * 512 kiB
+	 */
+	wpgs = mci->ext_csd[EXT_CSD_HC_ERASE_GRP_SIZE];
+	wpgs *= mci->ext_csd[EXT_CSD_HC_WP_GRP_SIZE];
+	wpgs *= SZ_512K;
+
+	/* up to four GPPs can be enabled. */
+	for (idx = 0; idx < ARRAY_SIZE(gpp_offsets); idx++) {
+		part_size = mmc_extract_gpp_units(mci->ext_csd, gpp_offsets[idx]);
+		if (part_size == 0)
+			continue;
+		/* Convert to bytes */
+		part_size *= wpgs;
+
+		partname = xasprintf("gpp%zu", idx);
+		name = xasprintf("%s.%s", mci->cdevname, partname);
+		/* TODO read-only flag */
+		mci_part_add(mci, part_size, EXT_CSD_PART_CONFIG_ACC_GPP0 + idx,
+			     name, partname, idx, false, MMC_BLK_DATA_AREA_GP);
+	}
+}
+
+/**
  * Change transfer frequency for an MMC card
  * @param mci MCI instance
  * @return Transaction status (0 on success)
@@ -514,6 +578,9 @@ static int mmc_change_freq(struct mci *mci)
 		mci->ext_csd_part_config = mci->ext_csd[EXT_CSD_PARTITION_CONFIG];
 		mci->bootpart = (mci->ext_csd_part_config >> 3) & 0x7;
 	}
+
+	if (IS_ENABLED(CONFIG_MCI_MMC_GPP_PARTITIONS))
+		mmc_extract_gpp_partitions(mci);
 
 	return 0;
 }
@@ -1239,13 +1306,16 @@ static int sd_send_if_cond(struct mci *mci)
 	return 0;
 }
 
+/**
+ * Switch between hardware MMC partitions on demand
+ */
 static int mci_blk_part_switch(struct mci_part *part)
 {
 	struct mci *mci = part->mci;
 	int ret;
 
-	if (!IS_ENABLED(CONFIG_MCI_MMC_BOOT_PARTITIONS))
-		return 0;
+	if (!IS_ENABLED(CONFIG_MCI_MMC_BOOT_PARTITIONS) && !IS_ENABLED(CONFIG_MCI_MMC_GPP_PARTITIONS))
+		return 0; /* no need */
 
 	if (mci->part_curr == part)
 		return 0;
@@ -1636,6 +1706,8 @@ static int mci_register_partition(struct mci_part *part)
 					  partnodename);
 		break;
 	case MMC_BLK_DATA_AREA_MAIN:
+		break;
+	case MMC_BLK_DATA_AREA_GP:
 		break;
 	default:
 		return 0;

@@ -2163,7 +2163,7 @@ static int print_field(u8 *reg, int index)
 			str = "FIFO policy for cache";
 		else
 			str = "not provided";
-		printf("\t[0] Device flushing: %s", str);
+		printf("\t[0] Device flushing: %s\n", str);
 		return 1;
 
 	case EXT_CSD_OPTIMAL_READ_SIZE:

@@ -679,7 +679,6 @@ static void fs_remove(struct device_d *dev)
 	mntput(fsdev->vfsmount.parent);
 
 	free(fsdev->backingstore);
-	free(fsdev);
 }
 
 struct bus_type fs_bus = {
@@ -759,10 +758,18 @@ static void init_super(struct super_block *sb)
 
 static int fsdev_umount(struct fs_device_d *fsdev)
 {
+	int ret;
+
 	if (fsdev->vfsmount.ref)
 		return -EBUSY;
 
-	return unregister_device(&fsdev->dev);
+	ret = unregister_device(&fsdev->dev);
+	if (ret)
+		return ret;
+
+	free(fsdev);
+
+	return 0;
 }
 
 /**

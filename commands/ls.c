@@ -75,8 +75,13 @@ int ls(const char *path, ulong flags)
 	if (!dir)
 		return -errno;
 
-	while ((d = readdir(dir)))
+	while ((d = readdir(dir))) {
+		if (!strcmp(d->d_name, "."))
+			continue;
+		if (!strcmp(d->d_name, ".."))
+			continue;
 		string_list_add_sorted(&sl, d->d_name);
+	}
 
 	closedir(dir);
 
@@ -99,10 +104,6 @@ int ls(const char *path, ulong flags)
 		goto out;
 
 	string_list_for_each_entry(entry, &sl) {
-		if (!strcmp(entry->str, "."))
-			continue;
-		if (!strcmp(entry->str, ".."))
-			continue;
 		sprintf(tmp, "%s/%s", path, entry->str);
 
 		ret = lstat(tmp, &s);

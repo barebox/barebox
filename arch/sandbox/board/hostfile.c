@@ -134,6 +134,7 @@ static int of_hostfile_fixup(struct device_node *root, void *ctx)
 	uint32_t reg[] = {
 		hf->base >> 32,
 		hf->base,
+		hf->size >> 32,
 		hf->size
 	};
 	int ret;

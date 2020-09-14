@@ -267,9 +267,13 @@ static int add_image(char *str, char *devname_template, int *devname_number)
 			goto err_out;
 		}
 	}
-	hf->base = (unsigned long)mmap(NULL, hf->size,
-			PROT_READ | (readonly ? 0 : PROT_WRITE),
-			MAP_SHARED, fd, 0);
+	if (hf->size <= SIZE_MAX)
+		hf->base = (unsigned long)mmap(NULL, hf->size,
+				PROT_READ | (readonly ? 0 : PROT_WRITE),
+				MAP_SHARED, fd, 0);
+	else
+		printf("warning: %s: contiguous map failed\n", filename);
+
 	if (hf->base == (unsigned long)MAP_FAILED)
 		printf("warning: mmapping %s failed: %s\n", filename, strerror(errno));
 

@@ -4,7 +4,7 @@
 struct hf_info {
 	int fd;
 	unsigned long long base;
-	size_t size;
+	unsigned long long size;
 	const char *devname;
 	const char *filename;
 };

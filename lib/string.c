@@ -455,6 +455,49 @@ char * strsep(char **s, const char *ct)
 #endif
 EXPORT_SYMBOL(strsep);
 
+/**
+ * strsep_unescaped - Split a string into tokens, while ignoring escaped delimiters
+ * @s: The string to be searched
+ * @ct: The delimiter characters to search for
+ *
+ * strsep_unescaped() behaves like strsep unless it meets an escaped delimiter.
+ * In that case, it shifts the string back in memory to overwrite the escape's
+ * backslash then continues the search until an unescaped delimiter is found.
+ */
+char *strsep_unescaped(char **s, const char *ct)
+{
+        char *sbegin = *s, *hay;
+        const char *needle;
+        size_t shift = 0;
+
+        if (sbegin == NULL)
+                return NULL;
+
+        for (hay = sbegin; *hay != '\0'; ++hay) {
+                *hay = hay[shift];
+
+                if (*hay == '\\') {
+                        *hay = hay[++shift];
+                        if (*hay != '\\')
+                                continue;
+                }
+
+                for (needle = ct; *needle != '\0'; ++needle) {
+                        if (*hay == *needle)
+                                goto match;
+                }
+        }
+
+        *s = NULL;
+        return sbegin;
+
+match:
+        *hay = '\0';
+        *s = &hay[shift + 1];
+
+        return sbegin;
+}
+
 #ifndef __HAVE_ARCH_STRSWAB
 /**
  * strswab - swap adjacent even and odd bytes in %NUL-terminated string

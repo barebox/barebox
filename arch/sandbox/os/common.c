@@ -212,6 +212,8 @@ int linux_execve(const char * filename, char *const argv[], char *const envp[])
 extern void start_barebox(void);
 extern void mem_malloc_init(void *start, void *end);
 
+extern char * strsep_unescaped(char **s, const char *ct);
+
 static int add_image(char *str, char *devname_template, int *devname_number)
 {
 	struct hf_info *hf = malloc(sizeof(struct hf_info));
@@ -225,15 +227,15 @@ static int add_image(char *str, char *devname_template, int *devname_number)
 	if (!hf)
 		return -1;
 
-	filename = strtok(str, ",");
-	while ((opt = strtok(NULL, ","))) {
+	filename = strsep_unescaped(&str, ",");
+	while ((opt = strsep_unescaped(&str, ","))) {
 		if (!strcmp(opt, "ro"))
 			readonly = 1;
 	}
 
 	/* parses: "devname=filename" */
-	devname = strtok(filename, "=");
-	filename = strtok(NULL, "=");
+	devname = strsep_unescaped(&filename, "=");
+	filename = strsep_unescaped(&filename, "=");
 	if (!filename) {
 		filename = devname;
 		snprintf(tmp, sizeof(tmp),

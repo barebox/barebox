@@ -15,7 +15,7 @@
 /*
  * SIZELEN = strlen(itoa(MAX_LFS_FILESIZE)) + 1;
  */
-#ifdef CONFIG_CPU_64
+#ifdef CONFIG_64BIT
 #define SIZELEN		20
 #else
 #define SIZELEN		14

@@ -19,10 +19,23 @@ static struct restart_handler rst_hang = {
 	.restart = sandbox_rst_hang
 };
 
+static void sandbox_rst_reexec(struct restart_handler *rst)
+{
+	linux_reexec();
+}
+
+static struct restart_handler rst_reexec = {
+	.name = "reexec", .priority = 200,
+	.restart = sandbox_rst_reexec,
+};
+
 static int poweroff_register_feature(void)
 {
 	poweroff_handler_register_fn(sandbox_poweroff);
 	restart_handler_register(&rst_hang);
+
+	if (IS_ENABLED(CONFIG_SANDBOX_REEXEC))
+		restart_handler_register(&rst_reexec);
 
 	return 0;
 }

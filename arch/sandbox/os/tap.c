@@ -30,7 +30,7 @@ int tap_alloc(const char *dev)
 	struct ifreq ifr;
 	int fd, err;
 
-	if ((fd = open("/dev/net/tun", O_RDWR)) < 0) {
+	if ((fd = open("/dev/net/tun", O_RDWR | O_CLOEXEC)) < 0) {
 		perror("could not open /dev/net/tun");
 		return -1;
 	}

@@ -44,6 +44,8 @@
 #include <mach/linux.h>
 #include <mach/hostfile.h>
 
+#define DELETED_OFFSET (sizeof(" (deleted)") - 1)
+
 void __sanitizer_set_death_callback(void (*callback)(void));
 
 int sdl_xres;
@@ -122,6 +124,31 @@ void __attribute__((noreturn)) linux_exit(void)
 	exit(0);
 }
 
+static char **saved_argv;
+
+void linux_reexec(void)
+{
+	char buf[4097];
+	ssize_t ret;
+
+	cookmode();
+
+	/* we must follow the symlink, so we can exec an updated executable */
+	ret = readlink("/proc/self/exe", buf, sizeof(buf) - 1);
+	if (0 < ret && ret < sizeof(buf) - 1) {
+		buf[ret] = '\0';
+		execv(buf, saved_argv);
+		if (!strcmp(&buf[ret - DELETED_OFFSET], " (deleted)")) {
+			printf("barebox image on disk changed. Loading new.\n");
+			buf[ret - DELETED_OFFSET] = '\0';
+			execv(buf, saved_argv);
+		}
+	}
+
+	printf("exec(%s) failed: %d\n", buf, errno);
+	/* falls through to generic hang() */
+}
+
 void linux_hang(void)
 {
 	cookmode();
@@ -130,7 +157,7 @@ void linux_hang(void)
 
 int linux_open(const char *filename, int readwrite)
 {
-	return open(filename, readwrite ? O_RDWR : O_RDONLY);
+	return open(filename, (readwrite ? O_RDWR : O_RDONLY) | O_CLOEXEC);
 }
 
 int linux_read(int fd, void *buf, size_t count)
@@ -220,10 +247,10 @@ extern void mem_malloc_init(void *start, void *end);
 
 extern char * strsep_unescaped(char **s, const char *ct);
 
-static int add_image(char *str, char *devname_template, int *devname_number)
+static int add_image(const char *_str, char *devname_template, int *devname_number)
 {
 	struct hf_info *hf = malloc(sizeof(struct hf_info));
-	char *filename, *devname;
+	char *str, *filename, *devname;
 	char tmp[16];
 	int readonly = 0;
 	struct stat s;
@@ -232,6 +259,8 @@ static int add_image(char *str, char *devname_template, int *devname_number)
 
 	if (!hf)
 		return -1;
+
+	str = strdup(_str);
 
 	filename = strsep_unescaped(&str, ",");
 	while ((opt = strsep_unescaped(&str, ","))) {
@@ -252,7 +281,7 @@ static int add_image(char *str, char *devname_template, int *devname_number)
 	printf("add %s backed by file %s%s\n", devname,
 	       filename, readonly ? "(ro)" : "");
 
-	fd = open(filename, readonly ? O_RDONLY : O_RDWR);
+	fd = open(filename, (readonly ? O_RDONLY : O_RDWR) | O_CLOEXEC);
 	hf->fd = fd;
 	hf->filename = filename;
 
@@ -303,7 +332,7 @@ static int add_dtb(const char *file)
 	void *dtb = NULL;
 	int fd;
 
-	fd = open(file, O_RDONLY);
+	fd = open(file, O_RDONLY | O_CLOEXEC);
 	if (fd < 0) {
 		perror("open");
 		goto err_out;
@@ -362,6 +391,8 @@ int main(int argc, char *argv[])
 #ifdef CONFIG_KASAN
 	__sanitizer_set_death_callback(cookmode);
 #endif
+
+	saved_argv = argv;
 
 	while (1) {
 		option_index = 0;
@@ -434,7 +465,7 @@ int main(int argc, char *argv[])
 				exit(1);
 			break;
 		case 'O':
-			fd = open(optarg, O_WRONLY);
+			fd = open(optarg, O_WRONLY | O_CLOEXEC);
 			if (fd < 0) {
 				perror("open");
 				exit(1);
@@ -443,7 +474,7 @@ int main(int argc, char *argv[])
 			barebox_register_console(-1, fd);
 			break;
 		case 'I':
-			fd = open(optarg, O_RDWR);
+			fd = open(optarg, O_RDWR | O_CLOEXEC);
 			if (fd < 0) {
 				perror("open");
 				exit(1);
@@ -459,7 +490,7 @@ int main(int argc, char *argv[])
 			}
 
 			/* open stdout file */
-			fd = open(aux + 1, O_WRONLY);
+			fd = open(aux + 1, O_WRONLY | O_CLOEXEC);
 			if (fd < 0) {
 				perror("open stdout");
 				exit(1);
@@ -467,7 +498,7 @@ int main(int argc, char *argv[])
 
 			/* open stdin file */
 			aux = strndup(optarg, aux - optarg);
-			fd2 = open(aux, O_RDWR);
+			fd2 = open(aux, O_RDWR | O_CLOEXEC);
 			if (fd2 < 0) {
 				perror("open stdin");
 				exit(1);

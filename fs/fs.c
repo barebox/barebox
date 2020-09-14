@@ -667,7 +667,6 @@ static void fs_remove(struct device_d *dev)
 	if (fsdev->loop && fsdev->cdev)
 		cdev_remove_loop(fsdev->cdev);
 
-	dput(sb->s_root);
 	dentry_delete_subtree(sb, sb->s_root);
 
 	list_for_each_entry_safe(inode, tmp, &sb->s_inodes, i_sb_list)

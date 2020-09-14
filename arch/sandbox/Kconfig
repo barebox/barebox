@@ -7,6 +7,9 @@ config SANDBOX
 	select ARCH_HAS_UBSAN_SANITIZE_ALL
 	select HAVE_ARCH_KASAN
 	select HAS_DMA
+	select BLOCK
+	select BLOCK_WRITE
+	select PARTITION_DISK
 	default y
 
 config ARCH_TEXT_BASE

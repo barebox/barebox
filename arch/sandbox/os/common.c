@@ -252,7 +252,7 @@ static int add_image(const char *_str, char *devname_template, int *devname_numb
 	struct hf_info *hf = malloc(sizeof(struct hf_info));
 	char *str, *filename, *devname;
 	char tmp[16];
-	int readonly = 0;
+	int readonly = 0, cdev = 0, blkdev = 0;
 	struct stat s;
 	char *opt;
 	int fd, ret;
@@ -266,6 +266,10 @@ static int add_image(const char *_str, char *devname_template, int *devname_numb
 	while ((opt = strsep_unescaped(&str, ","))) {
 		if (!strcmp(opt, "ro"))
 			readonly = 1;
+		if (!strcmp(opt, "cdev"))
+			cdev = 1;
+		if (!strcmp(opt, "blkdev"))
+			blkdev = 1;
 	}
 
 	/* parses: "devname=filename" */
@@ -284,6 +288,7 @@ static int add_image(const char *_str, char *devname_template, int *devname_numb
 	fd = open(filename, (readonly ? O_RDONLY : O_RDWR) | O_CLOEXEC);
 	hf->fd = fd;
 	hf->filename = filename;
+	hf->is_blockdev = blkdev;
 
 	if (fd < 0) {
 		perror("open");
@@ -303,6 +308,8 @@ static int add_image(const char *_str, char *devname_template, int *devname_numb
 			perror("ioctl");
 			goto err_out;
 		}
+		if (!cdev)
+			hf->is_blockdev = 1;
 	}
 	if (hf->size <= SIZE_MAX)
 		hf->base = (unsigned long)mmap(NULL, hf->size,
@@ -313,6 +320,12 @@ static int add_image(const char *_str, char *devname_template, int *devname_numb
 
 	if (hf->base == (unsigned long)MAP_FAILED)
 		printf("warning: mmapping %s failed: %s\n", filename, strerror(errno));
+
+	if (blkdev && hf->size % 512 != 0) {
+		printf("warning: registering %s as block device failed: invalid block size\n",
+		       filename);
+		return -EINVAL;
+	}
 
 	ret = barebox_register_filedev(hf);
 	if (ret)

@@ -76,6 +76,8 @@ static int do_boot(int argc, char *argv[])
 	entries = bootentries_alloc();
 
 	while ((name = next(&handle)) != NULL) {
+		if (!*name)
+			continue;
 		ret = bootentry_create_from_name(entries, name);
 		if (ret <= 0)
 			printf("Nothing bootable found on '%s'\n", name);

@@ -22,7 +22,7 @@ config SANDBOX_UNWIND
 	bool
 	default y
 	select ARCH_HAS_STACK_DUMP
-	depends on UBSAN || KASAN
+	depends on KASAN
 
 config PHYS_ADDR_T_64BIT
 	bool

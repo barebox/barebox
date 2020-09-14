@@ -7,5 +7,5 @@ void __sanitizer_print_stack_trace(void);
 
 void dump_stack(void)
 {
-		__sanitizer_print_stack_trace();
+	__sanitizer_print_stack_trace();
 }

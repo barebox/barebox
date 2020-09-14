@@ -122,6 +122,12 @@ void __attribute__((noreturn)) linux_exit(void)
 	exit(0);
 }
 
+void linux_hang(void)
+{
+	cookmode();
+	/* falls through to generic hang() */
+}
+
 int linux_open(const char *filename, int readwrite)
 {
 	return open(filename, readwrite ? O_RDWR : O_RDONLY);

@@ -37,10 +37,6 @@
 	compatible = "simple-bus";
 };
 
-&{/psci} {
-		compatible = "arm,psci-0.2";
-};
-
 &{/soc} {
 	memory-controller@5a003000 {
 		compatible = "st,stm32mp1-ddr";

@@ -91,6 +91,9 @@ static int hf_probe(struct device_d *dev)
 	if (!priv->fd)
 		priv->fd = linux_open(priv->filename, true);
 
+	if (priv->fd < 0)
+		return priv->fd;
+
 	priv->cdev.name = dev->device_node->name;
 	priv->cdev.dev = dev;
 	priv->cdev.ops = &hf_fops;

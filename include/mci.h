@@ -457,7 +457,7 @@ struct mci {
 	uint64_t capacity;	/**< Card's data capacity in bytes */
 	int ready_for_use;	/** true if already probed */
 	int dsr_imp;		/**< DSR implementation state from CSD */
-	char *ext_csd;
+	u8 *ext_csd;
 	int probe;
 	struct param_d *param_boot;
 	int bootpart;

@@ -13,14 +13,15 @@
  * * Fri Jun 25 1999, Ingo Oeser <ioe@informatik.tu-chemnitz.de>
  * -  Added strsep() which will replace strtok() soon (because strsep() is
  *    reentrant and should be faster). Use only strsep() in new code, please.
+ * * Mon Sep 14 2020, Ahmad Fatoum <a.fatoum@pengutronix.de>
+ * -  Kissed strtok() goodbye
+ *
  */
 
 #include <linux/types.h>
 #include <string.h>
 #include <linux/ctype.h>
 #include <malloc.h>
-
-char * ___strtok;
 
 #ifndef __HAVE_ARCH_STRNICMP
 /**
@@ -395,36 +396,6 @@ char * strpbrk(const char * cs,const char * ct)
 }
 #endif
 EXPORT_SYMBOL(strpbrk);
-
-#ifndef __HAVE_ARCH_STRTOK
-/**
- * strtok - Split a string into tokens
- * @s: The string to be searched
- * @ct: The characters to search for
- *
- * WARNING: strtok is deprecated, use strsep instead.
- */
-char * strtok(char * s, const char * ct)
-{
-	char *sbegin, *send;
-
-	sbegin  = s ? s : ___strtok;
-	if (!sbegin) {
-		return NULL;
-	}
-	sbegin += strspn(sbegin,ct);
-	if (*sbegin == '\0') {
-		___strtok = NULL;
-		return( NULL );
-	}
-	send = strpbrk( sbegin, ct);
-	if (send && *send != '\0')
-		*send++ = '\0';
-	___strtok = send;
-	return (sbegin);
-}
-#endif
-EXPORT_SYMBOL(strtok);
 
 #ifndef __HAVE_ARCH_STRSEP
 /**

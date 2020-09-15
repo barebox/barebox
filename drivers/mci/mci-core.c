@@ -362,9 +362,9 @@ static int mmc_send_op_cond(struct mci *mci)
 }
 
 /**
- * FIXME
- * @param mci MCI instance
- * @param ext_csd Buffer for a 512 byte sized extended CSD
+ * Read-in the card's whole extended CSD configuration area
+ * @param[in] mci MCI instance
+ * @param[out] ext_csd Buffer for an #EXT_CSD_BLOCKSIZE byte sized extended CSD
  * @return Transaction status (0 on success)
  *
  * Note: Only cards newer than Version 1.1 (Physical Layer Spec) support
@@ -387,12 +387,16 @@ int mci_send_ext_csd(struct mci *mci, char *ext_csd)
 }
 
 /**
- * FIXME
- * @param mci MCI instance
- * @param set FIXME
- * @param index FIXME
- * @param value FIXME
+ * Write a byte into the card's extended CSD configuration area
+ * @param[in] mci MCI instance
+ * @param[in] index Byte index in the extended CSD configuration area
+ * @param[in] value Byte to write at index into the extended CSD configuration area
  * @return Transaction status (0 on success)
+ *
+ * This sends a CMD6 (aka SWITCH) to the card and writes @b value at extended CSD @b index.
+ *
+ * @note It always writes a full byte, the alternatives 'bit set' and
+ *      'bit clear' aren't supported.
  */
 int mci_switch(struct mci *mci, unsigned index, unsigned value)
 {

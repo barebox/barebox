@@ -17,6 +17,7 @@
 #include "cbootimage.h"
 #include "data_layout.h"
 #include "set.h"
+#include "context.h"
 
 void
 cleanup_context(build_image_context *context)

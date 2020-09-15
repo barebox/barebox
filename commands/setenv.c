@@ -8,12 +8,20 @@
 
 static int do_setenv(int argc, char *argv[])
 {
+	char *equal;
+
 	if (argc < 2)
 		return COMMAND_ERROR_USAGE;
 
-	setenv(argv[1], argv[2]);
+	equal = strrchr(argv[1], '=');
+	if (equal) {
+		equal[0] = '\0';
+		if (equal[1])
+			argv[2] = &equal[1];
+	}
 
-	return 0;
+
+	return setenv(argv[1], argv[2]) ? COMMAND_ERROR : COMMAND_SUCCESS;
 }
 
 BAREBOX_CMD_HELP_START(setenv)

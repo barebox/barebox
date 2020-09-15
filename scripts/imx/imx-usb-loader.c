@@ -562,7 +562,7 @@ static int transfer(int report, unsigned char *p, unsigned cnt, int *last_trans)
 	return err;
 }
 
-int do_status(void)
+static int do_status(void)
 {
 	int last_trans;
 	unsigned char tmp[64];

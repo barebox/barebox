@@ -45,7 +45,7 @@ struct ubl_header
   uint32_t ldAddr;   /* Address where image is copied to */
 };
 
-void usage(char *prgname)
+static void usage(char *prgname)
 {
 	printf( "Usage : %s [OPTION] FILE > HEADER\n"
 		"\n"

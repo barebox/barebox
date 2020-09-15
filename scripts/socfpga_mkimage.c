@@ -147,7 +147,7 @@ static const uint32_t crc_table[256] = {
 	0xbcb4666d, 0xb8757bda, 0xb5365d03, 0xb1f740b4
 };
 
-uint32_t crc32(uint32_t crc, void *_buf, int length)
+static uint32_t crc32(uint32_t crc, void *_buf, int length)
 {
 	uint8_t *buf = _buf;
 

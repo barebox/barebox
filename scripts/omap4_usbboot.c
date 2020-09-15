@@ -43,21 +43,21 @@
 #define host_print(fmt, arg...)	printf(HFORMAT fmt TFORMAT, \
 					HOST_FORMAT, ##arg, TARGET_FORMAT)
 
-int usb_write(void *h, void const *data, int len)
+static int usb_write(void *h, void const *data, int len)
 {
 	int actual;
 	return libusb_bulk_transfer(h, 0x01, (void *)data, len, &actual, 5000) ?
 		0 : actual;
 }
 
-int usb_read(void *h, void *data, int len)
+static int usb_read(void *h, void *data, int len)
 {
 	int actual;
 	return libusb_bulk_transfer(h, 0x81, data, len, &actual, 5000) ?
 		0 : actual;
 }
 
-void panic(struct termios *t_restore)
+static void panic(struct termios *t_restore)
 {
 	tcsetattr(STDIN_FILENO, TCSANOW, t_restore);
 	printf(HFORMAT, HOST_FORMAT);
@@ -70,7 +70,7 @@ struct thread_vars {
 	struct termios t_restore;
 };
 
-void *listenerTask(void *argument)
+static void *listenerTask(void *argument)
 {
 	struct thread_vars *vars = argument;
 	int c;
@@ -88,7 +88,7 @@ void *listenerTask(void *argument)
 	return NULL;
 }
 
-int read_asic_id(struct libusb_device_handle *usb)
+static int read_asic_id(struct libusb_device_handle *usb)
 {
 #define LINEWIDTH 16
 	const uint32_t msg_getid = 0xF0030003;
@@ -189,7 +189,7 @@ struct file_data {
 	void *data;
 };
 
-int process_file(struct libusb_device_handle *usb, const char *rootfs,
+static int process_file(struct libusb_device_handle *usb, const char *rootfs,
 	struct file_data *fd_vector, struct termios *t_restore)
 {
 	uint32_t i, j, pos, size;
@@ -339,7 +339,7 @@ open_ok:
 	return ret;
 }
 
-int usb_boot(struct libusb_device_handle *usb,
+static int usb_boot(struct libusb_device_handle *usb,
 	void *data, unsigned sz, const char *rootfs)
 {
 	const uint32_t msg_boot  = 0xF0030002;

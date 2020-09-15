@@ -100,7 +100,7 @@ static void make_crc_table(void)
 	crc_table_valid = 1;
 }
 
-uint32_t pbl_crc32(uint32_t in_crc, const char *buf, uint32_t len)
+static uint32_t pbl_crc32(uint32_t in_crc, const char *buf, uint32_t len)
 {
 	uint32_t crc32_val;
 	int i;

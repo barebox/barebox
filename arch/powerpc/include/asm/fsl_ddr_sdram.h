@@ -184,4 +184,12 @@ struct memctl_options_s {
 
 extern phys_size_t fsl_ddr_sdram(void);
 extern phys_size_t fixed_sdram(void);
+
+struct dimm_params_s;
+
+void fsl_ddr_board_options(
+		struct memctl_options_s *popts,
+		struct dimm_params_s *pdimm);
+void fsl_ddr_board_info(struct ddr_board_info_s *info);
+
 #endif

@@ -109,8 +109,4 @@ int fsl_ddr_get_spd(
 		struct ddr_board_info_s *binfo);
 int fsl_ddr_set_memctl_regs(
 		const struct fsl_ddr_info_s *info);
-void fsl_ddr_board_options(
-		struct memctl_options_s *popts,
-		struct dimm_params_s *pdimm);
-void fsl_ddr_board_info(struct ddr_board_info_s *info);
 #endif

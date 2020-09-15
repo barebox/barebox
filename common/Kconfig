@@ -411,6 +411,7 @@ choice
 		select COMMAND_SUPPORT
 		select PARAMETER
 		select STDDEV
+		select CMD_SETENV
 		help
 		  simple shell. No if/then, no return values from commands, no loops
 

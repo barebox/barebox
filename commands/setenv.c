@@ -5,6 +5,7 @@
 #include <command.h>
 #include <errno.h>
 #include <environment.h>
+#include <complete.h>
 
 static int do_setenv(int argc, char *argv[])
 {
@@ -34,5 +35,6 @@ BAREBOX_CMD_START(setenv)
 	BAREBOX_CMD_DESC("set environment variable")
 	BAREBOX_CMD_OPTS("NAME [VALUE]")
 	BAREBOX_CMD_GROUP(CMD_GRP_ENV)
+	BAREBOX_CMD_COMPLETE(env_param_noeval_complete)
 	BAREBOX_CMD_HELP(cmd_setenv_help)
 BAREBOX_CMD_END

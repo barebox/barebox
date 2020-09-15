@@ -718,6 +718,19 @@ config CMD_SAVEENV
 	  /dev/env0. Note that envfs can only handle files, directories are being
 	  skipped silently.
 
+config CMD_SETENV
+	tristate
+	default y
+	depends on !CONFIG_SHELL_NONE
+	prompt "setenv"
+	help
+	  Set environment variable
+
+	  Usage: setenv NAME [VALUE]
+
+	  Set environment variable NAME to VALUE.
+	  If VALUE is ommitted, then the variable is deleted.
+
 # end Environment commands
 endmenu
 

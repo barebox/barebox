@@ -1109,6 +1109,14 @@ void ll_puts(const char *);
 /* In misc.c */
 void _nmask_and_or_msr(unsigned long nmask, unsigned long or_val);
 
+void CritcalInputException(struct pt_regs *regs);
+void MachineCheckException(struct pt_regs *regs);
+void AlignmentException(struct pt_regs *regs);
+void ProgramCheckException(struct pt_regs *regs);
+void PITException(struct pt_regs *regs);
+void UnknownException(struct pt_regs *regs);
+void DebugException(struct pt_regs *regs);
+
 #endif /* ndef ASSEMBLY*/
 
 #ifdef CONFIG_MACH_SPECIFIC

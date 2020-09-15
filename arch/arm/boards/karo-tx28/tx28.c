@@ -15,6 +15,8 @@
 #include <mach/iomux.h>
 #include <asm/mmu.h>
 
+#include "tx28.h"
+
 /* setup the CPU card internal signals */
 static const uint32_t tx28_pad_setup[] = {
 	/* NAND interface */
@@ -60,8 +62,6 @@ static const uint32_t tx28_pad_setup[] = {
 	ENET0_TX_CLK | VE_3_3V | BITKEEPER(0),
 
 };
-
-extern void base_board_init(void);
 
 static int tx28_devices_init(void)
 {

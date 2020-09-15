@@ -69,6 +69,9 @@ static void exception_hang(int vect)
 	hang();
 }
 
+/* Called from assembly */
+void exception_handler(int vect);
+
 void exception_handler(int vect)
 {
 	int exception = vect >> 8;

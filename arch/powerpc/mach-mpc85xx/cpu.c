@@ -28,6 +28,7 @@
 #include <asm-generic/memory_layout.h>
 #include <mach/mmu.h>
 #include <mach/immap_85xx.h>
+#include <mach/mpc85xx.h>
 
 static void __noreturn mpc85xx_restart_soc(struct restart_handler *rst)
 {

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <common.h>
 #include <config.h>
 #include <mach/mpc5xxx.h>
 #include <asm/io.h>

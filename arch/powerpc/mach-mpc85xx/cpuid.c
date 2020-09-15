@@ -23,6 +23,7 @@
 #include <asm/cache.h>
 #include <asm/io.h>
 #include <mach/immap_85xx.h>
+#include <mach/mpc85xx.h>
 
 struct cpu_type cpu_type_list[] = {
 	CPU_TYPE_ENTRY(8544, 8544, 1),

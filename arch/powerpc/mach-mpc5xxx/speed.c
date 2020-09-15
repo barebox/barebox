@@ -19,6 +19,7 @@
 #include <init.h>
 #include <asm/processor.h>
 #include <types.h>
+#include <mach/clock.h>
 
 /* Bus-to-Core Multipliers */
 

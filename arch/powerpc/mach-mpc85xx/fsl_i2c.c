@@ -21,6 +21,7 @@
 #include <mach/clock.h>
 #include <mach/immap_85xx.h>
 #include <mach/early_udelay.h>
+#include <mach/fsl_i2c.h>
 
 /* FSL I2C registers */
 #define FSL_I2C_ADR	0x00

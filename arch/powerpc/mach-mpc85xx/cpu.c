@@ -49,6 +49,9 @@ static int restart_register_feature(void)
 }
 coredevice_initcall(restart_register_feature);
 
+/* Called from assembly */
+long int initdram(int board_type);
+
 long int initdram(int board_type)
 {
 	phys_size_t dram_size = 0;

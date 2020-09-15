@@ -184,6 +184,9 @@ static void fsl_erratum_p1010_a003549(void)
 static void fsl_erratum_p1010_a003549(void) {}
 #endif
 
+/* Called from assembly */
+void cpu_init_early_f(void);
+
 void cpu_init_early_f(void)
 {
 	u32 mas0, mas1, mas2, mas3, mas7;

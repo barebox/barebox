@@ -33,6 +33,9 @@
  ************************************************************************
  */
 
+/* Called from assembly */
+void board_init_r (ulong end_of_ram);
+
 void board_init_r (ulong end_of_ram)
 {
 	unsigned long malloc_end;

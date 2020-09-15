@@ -143,6 +143,9 @@ static void sdram_start (int hi_addr)
 	__asm__ volatile ("sync");
 }
 
+/* Called from assembly */
+void initdram(int board_type);
+
 void initdram (int board_type)
 {
 	ulong dramsize = 0;

@@ -16,6 +16,7 @@
 
 #include <common.h>
 #include <asm/system.h>
+#include <asm/openrisc_exc.h>
 
 static const char * const excp_table[] = {
 	"Unknown exception",

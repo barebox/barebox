@@ -17,6 +17,7 @@
 #include <common.h>
 #include <init.h>
 #include <asm/system.h>
+#include <asm/cache.h>
 
 void flush_dcache_range(unsigned long addr, unsigned long stop)
 {

@@ -175,6 +175,11 @@ static inline struct regulator *regulator_get(struct device_d *dev, const char *
 	return NULL;
 }
 
+static inline struct regulator *regulator_get_name(const char *name)
+{
+	return NULL;
+}
+
 static inline int regulator_enable(struct regulator *r)
 {
 	return 0;

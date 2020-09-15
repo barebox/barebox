@@ -85,15 +85,6 @@ void fsl_get_sys_info(struct sys_info *sysInfo)
 	}
 }
 
-unsigned long fsl_get_local_freq(void)
-{
-	struct sys_info sys_info;
-
-	fsl_get_sys_info(&sys_info);
-
-	return sys_info.freqLocalBus;
-}
-
 unsigned long fsl_get_bus_freq(ulong dummy)
 {
 	struct sys_info sys_info;

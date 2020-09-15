@@ -28,39 +28,4 @@ void fsl_enable_gpiout(void)
 
 	out_be32(gpiocr, in_be32(gpiocr) | MPC85xx_GPIOCR_GPOUT);
 }
-
-void gpio_set_value(unsigned gpio, int val)
-{
-	void __iomem *gpout = IOMEM(MPC85xx_GUTS_ADDR + MPC85xx_GPOUTDR_OFFSET);
-	int gpoutdr;
-
-	if (gpio >= 8)
-		return;
-
-	gpoutdr = in_be32(gpout);
-	if (val)
-		gpoutdr |= MPC85xx_GPIOBIT(gpio);
-	else
-		gpoutdr &= ~MPC85xx_GPIOBIT(gpio);
-	out_be32(gpout, gpoutdr);
-}
-#else
-int gpio_direction_output(unsigned gpio, int val)
-{
-	void __iomem *gpior = IOMEM(MPC85xx_GPIO_ADDR);
-
-	if (gpio >= 16)
-		return -EINVAL;
-
-	if (val)
-		setbits_be32(gpior + MPC85xx_GPIO_GPDAT_OFFSET,
-				1 << (32 - gpio));
-	else
-		clrbits_be32(gpior + MPC85xx_GPIO_GPDAT_OFFSET,
-				1 << (32 - gpio));
-
-	setbits_be32(gpior + MPC85xx_GPIO_GPDIR_OFFSET, 1 << (32 - gpio));
-
-	return 0;
-}
 #endif

@@ -61,7 +61,7 @@ static inline unsigned long get_esr(void)
 /*
  * Trap & Exception support
  */
-void print_backtrace(unsigned long *sp)
+static void print_backtrace(unsigned long *sp)
 {
 	int cnt = 0;
 	unsigned long i;
@@ -82,7 +82,7 @@ void print_backtrace(unsigned long *sp)
 	printf("\n");
 }
 
-void show_regs(struct pt_regs *regs)
+static void show_regs(struct pt_regs *regs)
 {
 	int i;
 
@@ -107,7 +107,7 @@ void show_regs(struct pt_regs *regs)
 	}
 }
 
-void _exception(int signr, struct pt_regs *regs)
+static void _exception(int signr, struct pt_regs *regs)
 {
 	show_regs(regs);
 	print_backtrace((unsigned long *)regs->gpr[1]);

@@ -164,7 +164,7 @@ static uint32_t determine_refresh_rate_ps(const uint32_t spd_refresh)
 			  /* CL2  CL3   CL4   CL5   CL6   CL7 */
 uint16_t ddr2_speed_bins[] = { 0, 5000, 3750, 3000, 2500, 1875 };
 
-uint32_t compute_derated_DDR2_CAS_latency(uint32_t mclk_ps)
+static uint32_t compute_derated_DDR2_CAS_latency(uint32_t mclk_ps)
 {
 	const uint32_t num_speed_bins = ARRAY_SIZE(ddr2_speed_bins);
 	uint32_t lowest_tCKmin_found = 0, lowest_tCKmin_CL = 0, i, x;

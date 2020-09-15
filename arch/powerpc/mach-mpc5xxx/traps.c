@@ -41,7 +41,7 @@ int (*debugger_exception_handler)(struct pt_regs *) = 0;
  * Trap & Exception support
  */
 
-void
+static void
 print_backtrace(unsigned long *sp)
 {
 	int cnt = 0;
@@ -62,7 +62,7 @@ print_backtrace(unsigned long *sp)
 	printf("\n");
 }
 
-void show_regs(struct pt_regs * regs)
+static void show_regs(struct pt_regs * regs)
 {
 	int i;
 
@@ -90,7 +90,7 @@ void show_regs(struct pt_regs * regs)
 }
 
 
-void
+static void
 _exception(int signr, struct pt_regs *regs)
 {
 	show_regs(regs);

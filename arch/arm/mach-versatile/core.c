@@ -75,19 +75,6 @@ void clk_disable(struct clk *clk)
 }
 EXPORT_SYMBOL(clk_disable);
 
-/* Create a clock structure with the given name */
-int vpb_clk_create(struct clk *clk, const char *dev_id)
-{
-	struct clk_lookup *clkdev;
-
-	clkdev = clkdev_alloc(clk, NULL, dev_id);
-	if (!clkdev)
-		return -ENOMEM;
-
-	clkdev_add(clkdev);
-	return 0;
-}
-
 /* 1Mhz / 256 */
 #define TIMER_FREQ (1000000/256)
 

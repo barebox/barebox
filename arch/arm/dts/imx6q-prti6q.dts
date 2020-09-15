@@ -29,7 +29,7 @@
 		compatible = "pwm-backlight";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_backlight>;
-		pwms = <&pwm1 0 5000000>;
+		pwms = <&pwm1 0 5000000 0>;
 		brightness-levels = <0 16 64 255>;
 		num-interpolated-steps = <16>;
 		default-brightness-level = <16>;

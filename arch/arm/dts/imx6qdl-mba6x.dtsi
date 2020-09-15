@@ -38,7 +38,7 @@
 
 	beeper: beeper@0 {
 		compatible = "pwm-beeper";
-		pwms = <&pwm1 2 5000000>;
+		pwms = <&pwm1 2 5000000 0>;
 	};
 
 	disp0: display@0 {

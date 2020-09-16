@@ -896,8 +896,12 @@ static int cqspi_set_protocol(struct spi_nor *nor, const int read)
 {
 	struct cqspi_st *cqspi = nor->priv;
 	struct cqspi_flash_pdata *f_pdata;
+	int cs = cqspi_find_chipselect(nor);
 
-	f_pdata = &cqspi->f_pdata[cqspi->current_cs];
+	if (cs < 0)
+		return -EINVAL;
+
+	f_pdata = &cqspi->f_pdata[cs];
 
 	f_pdata->inst_width = CQSPI_INST_TYPE_SINGLE;
 	f_pdata->addr_width = CQSPI_INST_TYPE_SINGLE;

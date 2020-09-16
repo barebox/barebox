@@ -115,14 +115,6 @@ int __pr_memory_display(int level, const void *addr, loff_t offs, unsigned nbyte
 				(offs), (nbytes), (size), (swab), pr_fmt("")) : 0; \
 	 })
 
-#define DUMP_PREFIX_OFFSET 0
-static inline void print_hex_dump(const char *level, const char *prefix_str,
-		int prefix_type, int rowsize, int groupsize,
-		const void *buf, size_t len, bool ascii)
-{
-	memory_display(buf, 0, len, groupsize, 0);
-}
-
 struct log_entry {
 	struct list_head list;
 	char *msg;
@@ -155,5 +147,17 @@ struct va_format {
 	const char *fmt;
 	va_list *va;
 };
+
+enum {
+	DUMP_PREFIX_NONE,
+	DUMP_PREFIX_ADDRESS,
+	DUMP_PREFIX_OFFSET
+};
+extern int hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
+			      int groupsize, char *linebuf, size_t linebuflen,
+			      bool ascii);
+extern void print_hex_dump(const char *level, const char *prefix_str,
+			   int prefix_type, int rowsize, int groupsize,
+			   const void *buf, size_t len, bool ascii);
 
 #endif

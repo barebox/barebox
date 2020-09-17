@@ -229,6 +229,8 @@ extern long long simple_strtoll(const char *,char **,unsigned int);
 }							\
 )
 
+#define _RET_IP_             (unsigned long)__builtin_return_address(0)
+
 extern const char hex_asc[];
 #define hex_asc_lo(x)	hex_asc[((x) & 0x0f)]
 #define hex_asc_hi(x)	hex_asc[((x) & 0xf0) >> 4]

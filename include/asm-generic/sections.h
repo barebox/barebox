@@ -13,6 +13,9 @@ extern void *_barebox_image_size;
 extern void *_barebox_bare_init_size;
 extern void *_barebox_pbl_size;
 
+/* Start and end of .ctors section - used for constructor calls. */
+extern char __ctors_start[], __ctors_end[];
+
 #define barebox_image_size	(__image_end - __image_start)
 #define barebox_bare_init_size	(unsigned int)&_barebox_bare_init_size
 #define barebox_pbl_size	(__piggydata_start - __image_start)

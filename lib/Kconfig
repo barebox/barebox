@@ -60,6 +60,9 @@ config REED_SOLOMON
 config BASE64
 	bool "include base64 encode/decode support"
 
+config CONSTRUCTORS
+	bool
+
 config GENERIC_FIND_NEXT_BIT
 	def_bool n
 

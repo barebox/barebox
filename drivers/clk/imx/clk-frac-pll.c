@@ -110,7 +110,7 @@ static unsigned long clk_pll_recalc_rate(struct clk *clk,
 	temp64 = (u64)parent_rate * 8;
 	temp64 *= divff;
 	do_div(temp64, PLL_FRAC_DENOM);
-	temp64 /= divq;
+	do_div(temp64, divq);
 
 	return parent_rate * 8 * (divfi + 1) / divq + (unsigned long)temp64;
 }

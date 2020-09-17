@@ -3,8 +3,13 @@
 #include <string.h>
 #include <tlsf.h>
 #include "tlsfbits.h"
+#include <linux/kasan.h>
 
 #define CHAR_BIT	8
+
+#ifndef CONFIG_KASAN
+#define __memcpy memcpy
+#endif
 
 /*
 ** Constants.
@@ -529,7 +534,7 @@ static void block_trim_free(control_t* control, block_header_t* block, size_t si
 }
 
 /* Trim any trailing block space off the end of a used block, return to pool. */
-static void block_trim_used(control_t* control, block_header_t* block, size_t size)
+static void block_trim_used(control_t* control, block_header_t* block, size_t size, size_t used)
 {
 	tlsf_assert(!block_is_free(block) && "block must be used");
 	if (block_can_split(block, size))
@@ -541,6 +546,10 @@ static void block_trim_used(control_t* control, block_header_t* block, size_t si
 		remaining_block = block_merge_next(control, remaining_block);
 		block_insert(control, remaining_block);
 	}
+
+	kasan_poison_shadow(&block->size, size + 2 * sizeof(size_t),
+			    KASAN_KMALLOC_REDZONE);
+	kasan_unpoison_shadow(block_to_ptr(block), used);
 }
 
 static block_header_t* block_trim_free_leading(control_t* control, block_header_t* block, size_t size)
@@ -589,7 +598,8 @@ static block_header_t* block_locate_free(control_t* control, size_t size)
 	return block;
 }
 
-static void* block_prepare_used(control_t* control, block_header_t* block, size_t size)
+static void* block_prepare_used(control_t* control, block_header_t* block,
+				size_t size, size_t used)
 {
 	void* p = 0;
 	if (block)
@@ -598,6 +608,10 @@ static void* block_prepare_used(control_t* control, block_header_t* block, size_
 		block_trim_free(control, block, size);
 		block_mark_as_used(block);
 		p = block_to_ptr(block);
+
+		kasan_poison_shadow(&block->size, size + 2 * sizeof(size_t),
+			    KASAN_KMALLOC_REDZONE);
+		kasan_unpoison_shadow(p, used);
 	}
 	return p;
 }
@@ -907,6 +921,7 @@ tlsf_t tlsf_create_with_pool(void* mem, size_t bytes)
 {
 	tlsf_t tlsf = tlsf_create(mem);
 	tlsf_add_pool(tlsf, (char*)mem + tlsf_size(), bytes - tlsf_size());
+	kasan_poison_shadow(mem, bytes, KASAN_TAG_INVALID);
 	return tlsf;
 }
 
@@ -926,7 +941,8 @@ void* tlsf_malloc(tlsf_t tlsf, size_t size)
 	control_t* control = tlsf_cast(control_t*, tlsf);
 	const size_t adjust = adjust_request_size(size, ALIGN_SIZE);
 	block_header_t* block = block_locate_free(control, adjust);
-	return block_prepare_used(control, block, adjust);
+
+	return block_prepare_used(control, block, adjust, size);
 }
 
 void* tlsf_memalign(tlsf_t tlsf, size_t align, size_t size)
@@ -983,7 +999,7 @@ void* tlsf_memalign(tlsf_t tlsf, size_t align, size_t size)
 		}
 	}
 
-	return block_prepare_used(control, block, adjust);
+	return block_prepare_used(control, block, adjust, size);
 }
 
 void tlsf_free(tlsf_t tlsf, void* ptr)
@@ -994,6 +1010,7 @@ void tlsf_free(tlsf_t tlsf, void* ptr)
 		control_t* control = tlsf_cast(control_t*, tlsf);
 		block_header_t* block = block_from_ptr(ptr);
 		tlsf_assert(!block_is_free(block) && "block already marked as free");
+		kasan_poison_shadow(ptr, block_size(block), 0xff);
 		block_mark_as_free(block);
 		block = block_merge_prev(control, block);
 		block = block_merge_next(control, block);
@@ -1050,7 +1067,7 @@ void* tlsf_realloc(tlsf_t tlsf, void* ptr, size_t size)
 			if (p)
 			{
 				const size_t minsize = tlsf_min(cursize, size);
-				memcpy(p, ptr, minsize);
+				__memcpy(p, ptr, minsize);
 				tlsf_free(tlsf, ptr);
 			}
 		}
@@ -1064,7 +1081,7 @@ void* tlsf_realloc(tlsf_t tlsf, void* ptr, size_t size)
 			}
 
 			/* Trim the resulting block and return the original pointer. */
-			block_trim_used(control, block, adjust);
+			block_trim_used(control, block, adjust, size);
 			p = ptr;
 		}
 	}

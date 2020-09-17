@@ -515,6 +515,7 @@ EXPORT_SYMBOL(__nokasan_default_memset);
 
 #ifndef __HAVE_ARCH_MEMSET
 void *memset(void *s, int c, size_t count) __alias(__default_memset);
+void *__memset(void *s, int c, size_t count) __alias(__default_memset);
 #endif
 
 /**
@@ -551,6 +552,8 @@ EXPORT_SYMBOL(__nokasan_default_memcpy);
 
 #ifndef __HAVE_ARCH_MEMCPY
 void *memcpy(void * dest, const void *src, size_t count)
+	__alias(__default_memcpy);
+void *__memcpy(void * dest, const void *src, size_t count)
 	__alias(__default_memcpy);
 #endif
 

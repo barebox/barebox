@@ -120,7 +120,7 @@ void relocate_to_current_adr(void)
 		dstart += sizeof(*rel);
 	}
 
-	memset(dynsym, 0, (unsigned long)dynend - (unsigned long)dynsym);
+	__memset(dynsym, 0, (unsigned long)dynend - (unsigned long)dynsym);
 #else
 #error "Architecture not specified"
 #endif

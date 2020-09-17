@@ -15,6 +15,8 @@
 	.text
 	.align	5
 
+.weak memset
+ENTRY(__memset)
 ENTRY(memset)
 	ands	r3, r0, #3		@ 1 unaligned?
 	mov	ip, r0			@ preserve r0 as return value
@@ -121,4 +123,4 @@ ENTRY(memset)
 	add	r2, r2, r3		@ 1 (r2 = r2 - (4 - r3))
 	b	1b
 ENDPROC(memset)
-
+ENDPROC(__memset)

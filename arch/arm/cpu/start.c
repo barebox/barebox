@@ -15,6 +15,7 @@
 #include <asm/unaligned.h>
 #include <asm/cache.h>
 #include <asm/mmu.h>
+#include <linux/kasan.h>
 #include <memory.h>
 #include <uncompress.h>
 #include <malloc.h>
@@ -135,7 +136,7 @@ static int barebox_memory_areas_init(void)
 }
 device_initcall(barebox_memory_areas_init);
 
-__noreturn void barebox_non_pbl_start(unsigned long membase,
+__noreturn __no_sanitize_address void barebox_non_pbl_start(unsigned long membase,
 		unsigned long memsize, void *boarddata)
 {
 	unsigned long endmem = membase + memsize;
@@ -233,6 +234,8 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 	pr_debug("initializing malloc pool at 0x%08lx (size 0x%08lx)\n",
 			malloc_start, malloc_end - malloc_start);
 
+	kasan_init(membase, memsize, malloc_start - (memsize >> KASAN_SHADOW_SCALE_SHIFT));
+
 	mem_malloc_init((void *)malloc_start, (void *)malloc_end - 1);
 
 	if (IS_ENABLED(CONFIG_BOOTM_OPTEE))
@@ -259,7 +262,7 @@ void start(unsigned long membase, unsigned long memsize, void *boarddata);
  * First function in the uncompressed image. We get here from
  * the pbl. The stack already has been set up by the pbl.
  */
-void NAKED __section(.text_entry) start(unsigned long membase,
+void NAKED __no_sanitize_address __section(.text_entry) start(unsigned long membase,
 		unsigned long memsize, void *boarddata)
 {
 	barebox_non_pbl_start(membase, memsize, boarddata);

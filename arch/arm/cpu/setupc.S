@@ -21,12 +21,12 @@ ENTRY(setup_c)
 	ldr	r2,=__bss_start
 	sub	r2, r2, r0
 	add	r1, r0, r4
-	bl	memcpy			/* memcpy(_text, _text + offset, __bss_start - _text) */
+	bl	__memcpy			/* memcpy(_text, _text + offset, __bss_start - _text) */
 1:	ldr	r0, =__bss_start
 	mov	r1, #0
 	ldr	r2, =__bss_stop
 	sub	r2, r2, r0
-	bl	memset			/* clear bss */
+	bl	__memset			/* clear bss */
 	bl	sync_caches_for_execution
 	sub	lr, r5, r4		/* adjust return address to new location */
 	pop	{r4, r5}
@@ -67,7 +67,7 @@ ENTRY(relocate_to_adr)
 	sub	r7, r7, r1		/* sub address where we are actually running */
 	add	r7, r7, r0		/* add address where we are going to run */
 
-	bl	memcpy			/* copy binary */
+	bl	__memcpy			/* copy binary */
 
 	bl	sync_caches_for_execution
 

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0+
+// SPDX-License-Identifier: GPL-2.0-or-later WITH LicenseRef-OpenSSL-exception
 /*
  * rsatoc - utility to convert an RSA key to a C struct
  *

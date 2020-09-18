@@ -44,7 +44,7 @@ ifeq ($(CONFIG_GPIO_LIBFTDI1),y)
 FTDI1_LIBS := $(shell pkg-config libftdi1 --libs)
 endif
 
-ifeq ($(CONFIG_KASAN),y)
+ifeq ($(CONFIG_ASAN),y)
 KBUILD_CPPFLAGS += -fsanitize=address
 SANITIZER_LIBS += -fsanitize=address
 endif

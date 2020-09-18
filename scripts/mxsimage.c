@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
+// SPDX-License-Identifier: GPL-2.0-or-later WITH LicenseRef-OpenSSL-exception
 // SPDX-FileCopyrightText: 2012-2013 Marek Vasut <marex@denx.de>
 
 /* Freescale i.MX23/i.MX28 SB image generator */

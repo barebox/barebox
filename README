@@ -115,7 +115,7 @@ in board/sandbox/env:
 
   # ./scripts/bareboxenv -s -p 0x10000 arch/sandbox/board/env env.bin
 
-To get some files to play with you can generate a cramfs image:
+To get some files to play with, you can generate a cramfs image:
   # mkcramfs somedir/ cramfs.bin
 
 The barebox image is a normal Linux executable, so it can be started
@@ -134,14 +134,14 @@ given with '-i' will appear as /dev/fd[n].
 
 If barebox finds a valid configuration sector on /dev/env0 it will
 load it to /env. It then executes /env/init if it exists. If you have
-loaded the example environment barebox will show you a menu asking for
+loaded the example environment, barebox will show you a menu asking for
 your settings.
 
-If you have started barebox as root you will find a new tap device on your
+If you have started barebox as root, you will find a new tap device on your
 host which you can configure using ifconfig. Once you configured barebox'
 network settings accordingly you can do a ping or tftpboot.
 
-If you have mapped a cramfs image try mounting it with
+If you have mapped a cramfs image, try mounting it with
 
   # mkdir /cram
   # mount /dev/fd0 cramfs /cram

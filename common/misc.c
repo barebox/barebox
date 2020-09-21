@@ -22,6 +22,7 @@
 #include <led.h>
 #include <of.h>
 #include <restart.h>
+#include <linux/stringify.h>
 
 int errno;
 EXPORT_SYMBOL(errno);
@@ -29,7 +30,7 @@ EXPORT_SYMBOL(errno);
 
 const char *strerror(int errnum)
 {
-	static char errno_string[10];
+	static char errno_string[sizeof("error -2147483648")];
 
 #ifdef CONFIG_ERRNO_MESSAGES
 	char *str;

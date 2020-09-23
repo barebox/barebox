@@ -652,11 +652,17 @@ static int globalvar_init(void)
 
 	globalvar_add_simple("version", UTS_RELEASE);
 
+	if (strlen(buildsystem_version_string) > 0)
+		globalvar_add_simple("buildsystem.version", buildsystem_version_string);
+
 	return 0;
 }
 pure_initcall(globalvar_init);
 
 BAREBOX_MAGICVAR_NAMED(global_version, global.version, "The barebox version");
+BAREBOX_MAGICVAR_NAMED(global_buildsystem_version,
+		       global.buildsystem.version,
+		       "version of buildsystem barebox was built with");
 
 /**
  * nvvar_save - save NV variables to persistent environment

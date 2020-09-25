@@ -85,3 +85,13 @@
 		status = "okay";
 	};
 };
+
+&tscadc {
+	status = "okay";
+	adc {
+		/* Ch 0-6 are on connector P9.	Ch 7 measures the 3.3V rail
+		 * divided by 2 (e.g., it should read 1650).
+		 */
+		ti,adc-channels = <0>, <1>, <2>, <3>, <4>, <5>, <6>, <7>;
+	};
+};

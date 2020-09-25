@@ -34,6 +34,26 @@ config MCI_WRITE
 
 config MCI_MMC_BOOT_PARTITIONS
 	bool "support MMC boot partitions"
+	help
+	  Provide access to the 'boot partitions' of devices of type 'MMC'.
+	  These so called 'hardware partitions' act like an independent memory
+	  device and thus, need special handling.
+
+	  Note: only 'MMC' have 'boot partitions'. So, if you don't use an
+	  'MMC' device, you don't need this support.
+
+config MCI_MMC_GPP_PARTITIONS
+	bool "support MMC general purpose partitions (GPP)"
+	help
+	  Provide access to the 'general purpose partitions' of devices of type
+	  'MMC'. These so called 'hardware partitions' act like an independent
+	  memory device and thus, need special handling.
+
+	  Note: only 'MMC' devices have 'general purpose partitions'. So, if
+	  you don't use an 'MMC' device, you don't need this support.
+
+	  Note: by default, 'MMC' devices have no 'general purpose partitions',
+	  it requires a special one-time configuration step to enable them.
 
 comment "--- MCI host drivers ---"
 

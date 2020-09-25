@@ -11,6 +11,7 @@
 #include <mci.h>
 #include <getopt.h>
 #include <fs.h>
+#include <linux/sizes.h>
 
 #define EXT_CSD_BLOCKSIZE	512
 
@@ -1142,7 +1143,7 @@ static int print_field(u8 *reg, int index)
 		return 1;
 
 	case EXT_CSD_SEC_COUNT:
-		tmp64 = val * 512;
+		tmp64 *= 512;
 		printf("\tDevice density: %llu B\n", tmp64);
 		return 1;
 
@@ -1232,7 +1233,7 @@ static int print_field(u8 *reg, int index)
 
 	case EXT_CSD_HC_ERASE_GRP_SIZE:
 		val = get_field_val(EXT_CSD_HC_ERASE_GRP_SIZE, 0, 0xFF);
-		val = val * 524288;
+		val = val * SZ_512K;
 		if (val)
 			str = basprintf("Erase-unit size: %u", val);
 		else
@@ -1342,7 +1343,8 @@ static int print_field(u8 *reg, int index)
 	case EXT_CSD_ENH_SIZE_MULT:
 		tmp = get_field_val(EXT_CSD_HC_WP_GRP_SIZE, 0, 0xFF);
 		tmp = tmp + get_field_val(EXT_CSD_HC_ERASE_GRP_SIZE, 0, 0xFF);
-		tmp64 = val * tmp * 524288;
+		tmp64 *= tmp;
+		tmp64 *= SZ_512K;
 		printf("\tEnhanced User Data Area %i Size: %llu B\n",
 				index - EXT_CSD_ENH_SIZE_MULT, tmp64);
 		return 1;
@@ -1350,28 +1352,32 @@ static int print_field(u8 *reg, int index)
 	case EXT_CSD_GP_SIZE_MULT3:
 		tmp = get_field_val(EXT_CSD_HC_WP_GRP_SIZE, 0, 0xFF);
 		tmp = tmp + get_field_val(EXT_CSD_HC_ERASE_GRP_SIZE, 0, 0xFF);
-		tmp64 = val * tmp * 524288;
+		tmp64 *= tmp;
+		tmp64 *= SZ_512K;
 		printf("\tGeneral_Purpose_Partition_3 Size: %llu B\n", tmp64);
 		return 1;
 
 	case EXT_CSD_GP_SIZE_MULT2:
 		tmp = get_field_val(EXT_CSD_HC_WP_GRP_SIZE, 0, 0xFF);
 		tmp = tmp + get_field_val(EXT_CSD_HC_ERASE_GRP_SIZE, 0, 0xFF);
-		tmp64 = val * tmp * 524288;
+		tmp64 *= tmp;
+		tmp64 *= SZ_512K;
 		printf("\tGeneral_Purpose_Partition_2 Size: %llu B\n", tmp64);
 		return 1;
 
 	case EXT_CSD_GP_SIZE_MULT1:
 		tmp = get_field_val(EXT_CSD_HC_WP_GRP_SIZE, 0, 0xFF);
 		tmp = tmp + get_field_val(EXT_CSD_HC_ERASE_GRP_SIZE, 0, 0xFF);
-		tmp64 = val * tmp * 524288;
+		tmp64 *= tmp;
+		tmp64 *= SZ_512K;
 		printf("\tGeneral_Purpose_Partition_1 Size: %llu B\n", tmp64);
 		return 1;
 
 	case EXT_CSD_GP_SIZE_MULT0:
 		tmp = get_field_val(EXT_CSD_HC_WP_GRP_SIZE, 0, 0xFF);
 		tmp = tmp + get_field_val(EXT_CSD_HC_ERASE_GRP_SIZE, 0, 0xFF);
-		tmp64 = val * tmp * 524288;
+		tmp64 *= tmp;
+		tmp64 *= SZ_512K;
 		printf("\tGeneral_Purpose_Partition_0 Size: %llu B\n", tmp64);
 		return 1;
 
@@ -1422,7 +1428,8 @@ static int print_field(u8 *reg, int index)
 	case EXT_CSD_MAX_ENH_SIZE_MULT:
 		tmp = get_field_val(EXT_CSD_HC_WP_GRP_SIZE, 0, 0xFF);
 		tmp = tmp + get_field_val(EXT_CSD_HC_ERASE_GRP_SIZE, 0, 0xFF);
-		tmp64 = val * tmp * 524288;
+		tmp64 *= tmp;
+		tmp64 *= SZ_512K;
 		printf("\tMax Enhanced Area: %llu B\n", tmp64);
 		return 1;
 
@@ -2156,7 +2163,7 @@ static int print_field(u8 *reg, int index)
 			str = "FIFO policy for cache";
 		else
 			str = "not provided";
-		printf("\t[0] Device flushing: %s", str);
+		printf("\t[0] Device flushing: %s\n", str);
 		return 1;
 
 	case EXT_CSD_OPTIMAL_READ_SIZE:

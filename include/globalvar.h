@@ -15,6 +15,7 @@ int globalvar_add_simple(const char *name, const char *value);
 void globalvar_remove(const char *name);
 char *globalvar_get_match(const char *match, const char *separator);
 void globalvar_set_match(const char *match, const char *val);
+void globalvar_set(const char *name, const char *val);
 
 int globalvar_add_simple_string(const char *name, char **value);
 int globalvar_add_simple_int(const char *name, int *value,

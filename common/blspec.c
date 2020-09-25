@@ -133,18 +133,17 @@ static int blspec_boot(struct bootentry *be, int verbose, int dryrun)
 	const char *overlays;
 	const char *appendroot;
 	struct bootm_data data = {
-		.initrd_address = UIMAGE_INVALID_ADDRESS,
-		.os_address = UIMAGE_SOME_ADDRESS,
-		.verbose = verbose,
 		.dryrun = dryrun,
 	};
 
 	globalvar_set_match("linux.bootargs.dyn.", "");
-	globalvar_set_match("bootm.image", "");
-	globalvar_set_match("bootm.oftree", "");
-	globalvar_set_match("bootm.initrd", "");
+	globalvar_set("bootm.image", "");
+	globalvar_set("bootm.oftree", "");
+	globalvar_set("bootm.initrd", "");
 
 	bootm_data_init_defaults(&data);
+
+	data.verbose = verbose || data.verbose;
 
 	devicetree = blspec_entry_var_get(entry, "devicetree");
 	initrd = blspec_entry_var_get(entry, "initrd");

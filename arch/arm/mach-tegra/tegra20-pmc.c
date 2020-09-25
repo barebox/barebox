@@ -246,7 +246,7 @@ static struct driver_d tegra20_pmc_driver = {
 
 static int tegra20_pmc_init(void)
 {
-	restart_handler_register_fn(tegra20_restart_soc);
+	restart_handler_register_fn("soc", tegra20_restart_soc);
 	return platform_driver_register(&tegra20_pmc_driver);
 }
 coredevice_initcall(tegra20_pmc_init);

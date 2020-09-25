@@ -69,6 +69,7 @@ config MCI_S3C
 config MCI_BCM283X
 	bool "MCI support for BCM283X"
 	depends on ARCH_BCM283X || COMPILE_TEST
+	select MCI_SDHCI
 
 config MCI_BCM283X_SDHOST
 	bool "BCM283X sdhost"

@@ -9,6 +9,9 @@
 #include "pll_cfg.h"
 #include "early_udelay.h"
 
+/* Called from assembly */
+void pll_cfg(void);
+
 void pll_cfg(void)
 {
 	struct syscon_regs *syscon = (struct syscon_regs *)SYSCON_BASE;

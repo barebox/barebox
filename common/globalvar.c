@@ -514,7 +514,9 @@ int globalvar_add_simple_int(const char *name, int *value,
 	return 0;
 }
 
-int globalvar_add_simple_bool(const char *name, int *value)
+int globalvar_add_bool(const char *name,
+		       int (*set)(struct param_d *, void *),
+		       int *value, void *priv)
 {
 	struct param_d *p;
 	int ret;
@@ -523,8 +525,8 @@ int globalvar_add_simple_bool(const char *name, int *value)
 	if (ret)
 		return ret;
 
-	p = dev_add_param_bool(&global_device, name, NULL, NULL,
-		value, NULL);
+	p = dev_add_param_bool(&global_device, name, set, NULL,
+		value, priv);
 
 	if (IS_ERR(p))
 		return PTR_ERR(p);

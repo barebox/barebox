@@ -34,7 +34,7 @@ static int kirkwood_init_soc(void)
 	if (!of_machine_is_compatible("marvell,kirkwood"))
 		return 0;
 
-	restart_handler_register_fn(kirkwood_restart_soc);
+	restart_handler_register_fn("soc", kirkwood_restart_soc);
 
 	barebox_set_model("Marvell Kirkwood");
 	barebox_set_hostname("kirkwood");

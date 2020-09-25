@@ -17,6 +17,9 @@ static void precharge_all_banks(void);
 static void setup_refresh_timer(void);
 static void program_mode_registers(void);
 
+/* Called from assembly */
+void sdram_cfg(void);
+
 void sdram_cfg(void)
 {
 	struct sdram_regs *sdram = (struct sdram_regs *)SDRAM_BASE;

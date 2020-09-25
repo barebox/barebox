@@ -678,7 +678,6 @@ static const char *clk_hw_stat(struct clk *clk)
 
 static void dump_one(struct clk *clk, int verbose, int indent)
 {
-	struct clk *c;
 	int enabled = clk_is_enabled(clk);
 	const char *hwstat, *stat;
 
@@ -705,13 +704,19 @@ static void dump_one(struct clk *clk, int verbose, int indent)
 			printf("\n");
 		}
 	}
+}
+
+static void dump_subtree(struct clk *clk, int verbose, int indent)
+{
+	struct clk *c;
+
+	dump_one(clk, verbose, indent);
 
 	list_for_each_entry(c, &clks, list) {
 		struct clk *parent = clk_get_parent(c);
 
-		if (parent == clk) {
-			dump_one(c, verbose, indent + 1);
-		}
+		if (parent == clk)
+			dump_subtree(c, verbose, indent + 1);
 	}
 }
 
@@ -723,7 +728,42 @@ void clk_dump(int verbose)
 		struct clk *parent = clk_get_parent(c);
 
 		if (IS_ERR_OR_NULL(parent))
-			dump_one(c, verbose, 0);
+			dump_subtree(c, verbose, 0);
+	}
+}
+
+static int clk_print_parent(struct clk *clk, int verbose)
+{
+	struct clk *c;
+	int indent;
+
+	c = clk_get_parent(clk);
+	if (IS_ERR_OR_NULL(c))
+		return 0;
+
+	indent = clk_print_parent(c, verbose);
+
+	dump_one(c, verbose, indent);
+
+	return indent + 1;
+}
+
+void clk_dump_one(struct clk *clk, int verbose)
+{
+	int indent;
+	struct clk *c;
+
+	indent = clk_print_parent(clk, verbose);
+
+	printf("\033[1m");
+	dump_one(clk, verbose, indent);
+	printf("\033[0m");
+
+	list_for_each_entry(c, &clks, list) {
+		struct clk *parent = clk_get_parent(c);
+
+		if (parent == clk)
+			dump_subtree(c, verbose, indent + 1);
 	}
 }
 

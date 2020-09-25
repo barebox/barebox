@@ -540,7 +540,7 @@ int omap3_init(void)
 {
 	omap_gpmc_base = (void *)OMAP3_GPMC_BASE;
 
-	restart_handler_register_fn(omap3_restart_soc);
+	restart_handler_register_fn("soc", omap3_restart_soc);
 
 	if (IS_ENABLED(CONFIG_RESET_SOURCE))
 		omap3_detect_reset_reason();

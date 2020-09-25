@@ -828,7 +828,7 @@ t124_set_sdram_param(build_image_context *context,
 	return 0;
 }
 
-int
+static int
 t124_getbl_param(u_int32_t set,
 		parse_token id,
 		u_int32_t *data,
@@ -863,7 +863,7 @@ t124_getbl_param(u_int32_t set,
 	return 0;
 }
 
-int
+static int
 t124_setbl_param(u_int32_t set,
 		parse_token id,
 		u_int32_t *data,
@@ -898,7 +898,7 @@ t124_setbl_param(u_int32_t set,
 	return 0;
 }
 
-int
+static int
 t124_bct_get_value(parse_token id, u_int32_t *data, u_int8_t *bct)
 {
 	nvboot_config_table *bct_ptr = (nvboot_config_table *)bct;
@@ -982,7 +982,7 @@ t124_bct_get_value(parse_token id, u_int32_t *data, u_int8_t *bct)
 	return 0;
 }
 
-int
+static int
 t124_bct_set_value(parse_token id, u_int32_t data, u_int8_t *bct)
 {
 	nvboot_config_table *bct_ptr = (nvboot_config_table *)bct;
@@ -1010,7 +1010,7 @@ t124_bct_set_value(parse_token id, u_int32_t data, u_int8_t *bct)
 	return 0;
 }
 
-int
+static int
 t124_bct_set_data(parse_token id,
 	u_int8_t *data,
 	u_int32_t length,
@@ -1036,7 +1036,7 @@ t124_bct_set_data(parse_token id,
 	return 0;
 }
 
-void t124_init_bad_block_table(build_image_context *context)
+static void t124_init_bad_block_table(build_image_context *context)
 {
 	u_int32_t bytes_per_entry;
 	nvboot_badblock_table *table;

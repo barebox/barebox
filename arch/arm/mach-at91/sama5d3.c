@@ -397,7 +397,7 @@ static void sama5d3_initialize(void)
 	at91_add_pit(SAMA5D3_BASE_PIT);
 	at91_add_sam9_smc(DEVICE_ID_SINGLE, SAMA5D3_BASE_HSMC + 0x600, 0xa0);
 
-	restart_handler_register_fn(sama5d3_restart);
+	restart_handler_register_fn("soc", sama5d3_restart);
 }
 
 static int sama5d3_setup(void)

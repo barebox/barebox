@@ -200,7 +200,7 @@ static int stpmic1_wdt_probe(struct device_d *dev)
 	if (ret)
 		dev_warn(dev, "Cannot register poweroff handler\n");
 
-	stpmic1_set_reset_reason(wdt->regmap);
+	ret = stpmic1_set_reset_reason(wdt->regmap);
 	if (ret)
 		dev_warn(dev, "Cannot query reset reason\n");
 

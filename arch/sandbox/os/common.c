@@ -44,6 +44,8 @@
 #include <mach/linux.h>
 #include <mach/hostfile.h>
 
+#define DELETED_OFFSET (sizeof(" (deleted)") - 1)
+
 void __sanitizer_set_death_callback(void (*callback)(void));
 
 int sdl_xres;
@@ -122,9 +124,40 @@ void __attribute__((noreturn)) linux_exit(void)
 	exit(0);
 }
 
+static char **saved_argv;
+
+void linux_reexec(void)
+{
+	char buf[4097];
+	ssize_t ret;
+
+	cookmode();
+
+	/* we must follow the symlink, so we can exec an updated executable */
+	ret = readlink("/proc/self/exe", buf, sizeof(buf) - 1);
+	if (0 < ret && ret < sizeof(buf) - 1) {
+		buf[ret] = '\0';
+		execv(buf, saved_argv);
+		if (!strcmp(&buf[ret - DELETED_OFFSET], " (deleted)")) {
+			printf("barebox image on disk changed. Loading new.\n");
+			buf[ret - DELETED_OFFSET] = '\0';
+			execv(buf, saved_argv);
+		}
+	}
+
+	printf("exec(%s) failed: %d\n", buf, errno);
+	/* falls through to generic hang() */
+}
+
+void linux_hang(void)
+{
+	cookmode();
+	/* falls through to generic hang() */
+}
+
 int linux_open(const char *filename, int readwrite)
 {
-	return open(filename, readwrite ? O_RDWR : O_RDONLY);
+	return open(filename, (readwrite ? O_RDWR : O_RDONLY) | O_CLOEXEC);
 }
 
 int linux_read(int fd, void *buf, size_t count)
@@ -212,12 +245,14 @@ int linux_execve(const char * filename, char *const argv[], char *const envp[])
 extern void start_barebox(void);
 extern void mem_malloc_init(void *start, void *end);
 
-static int add_image(char *str, char *devname_template, int *devname_number)
+extern char * strsep_unescaped(char **s, const char *ct);
+
+static int add_image(const char *_str, char *devname_template, int *devname_number)
 {
 	struct hf_info *hf = malloc(sizeof(struct hf_info));
-	char *filename, *devname;
+	char *str, *filename, *devname;
 	char tmp[16];
-	int readonly = 0;
+	int readonly = 0, cdev = 0, blkdev = 0;
 	struct stat s;
 	char *opt;
 	int fd, ret;
@@ -225,15 +260,21 @@ static int add_image(char *str, char *devname_template, int *devname_number)
 	if (!hf)
 		return -1;
 
-	filename = strtok(str, ",");
-	while ((opt = strtok(NULL, ","))) {
+	str = strdup(_str);
+
+	filename = strsep_unescaped(&str, ",");
+	while ((opt = strsep_unescaped(&str, ","))) {
 		if (!strcmp(opt, "ro"))
 			readonly = 1;
+		if (!strcmp(opt, "cdev"))
+			cdev = 1;
+		if (!strcmp(opt, "blkdev"))
+			blkdev = 1;
 	}
 
 	/* parses: "devname=filename" */
-	devname = strtok(filename, "=");
-	filename = strtok(NULL, "=");
+	devname = strsep_unescaped(&filename, "=");
+	filename = strsep_unescaped(&filename, "=");
 	if (!filename) {
 		filename = devname;
 		snprintf(tmp, sizeof(tmp),
@@ -244,9 +285,10 @@ static int add_image(char *str, char *devname_template, int *devname_number)
 	printf("add %s backed by file %s%s\n", devname,
 	       filename, readonly ? "(ro)" : "");
 
-	fd = open(filename, readonly ? O_RDONLY : O_RDWR);
+	fd = open(filename, (readonly ? O_RDONLY : O_RDWR) | O_CLOEXEC);
 	hf->fd = fd;
 	hf->filename = filename;
+	hf->is_blockdev = blkdev;
 
 	if (fd < 0) {
 		perror("open");
@@ -266,12 +308,24 @@ static int add_image(char *str, char *devname_template, int *devname_number)
 			perror("ioctl");
 			goto err_out;
 		}
+		if (!cdev)
+			hf->is_blockdev = 1;
 	}
-	hf->base = (unsigned long)mmap(NULL, hf->size,
-			PROT_READ | (readonly ? 0 : PROT_WRITE),
-			MAP_SHARED, fd, 0);
+	if (hf->size <= SIZE_MAX)
+		hf->base = (unsigned long)mmap(NULL, hf->size,
+				PROT_READ | (readonly ? 0 : PROT_WRITE),
+				MAP_SHARED, fd, 0);
+	else
+		printf("warning: %s: contiguous map failed\n", filename);
+
 	if (hf->base == (unsigned long)MAP_FAILED)
 		printf("warning: mmapping %s failed: %s\n", filename, strerror(errno));
+
+	if (blkdev && hf->size % 512 != 0) {
+		printf("warning: registering %s as block device failed: invalid block size\n",
+		       filename);
+		return -EINVAL;
+	}
 
 	ret = barebox_register_filedev(hf);
 	if (ret)
@@ -291,7 +345,7 @@ static int add_dtb(const char *file)
 	void *dtb = NULL;
 	int fd;
 
-	fd = open(file, O_RDONLY);
+	fd = open(file, O_RDONLY | O_CLOEXEC);
 	if (fd < 0) {
 		perror("open");
 		goto err_out;
@@ -350,6 +404,8 @@ int main(int argc, char *argv[])
 #ifdef CONFIG_ASAN
 	__sanitizer_set_death_callback(cookmode);
 #endif
+
+	saved_argv = argv;
 
 	while (1) {
 		option_index = 0;
@@ -422,7 +478,7 @@ int main(int argc, char *argv[])
 				exit(1);
 			break;
 		case 'O':
-			fd = open(optarg, O_WRONLY);
+			fd = open(optarg, O_WRONLY | O_CLOEXEC);
 			if (fd < 0) {
 				perror("open");
 				exit(1);
@@ -431,7 +487,7 @@ int main(int argc, char *argv[])
 			barebox_register_console(-1, fd);
 			break;
 		case 'I':
-			fd = open(optarg, O_RDWR);
+			fd = open(optarg, O_RDWR | O_CLOEXEC);
 			if (fd < 0) {
 				perror("open");
 				exit(1);
@@ -447,7 +503,7 @@ int main(int argc, char *argv[])
 			}
 
 			/* open stdout file */
-			fd = open(aux + 1, O_WRONLY);
+			fd = open(aux + 1, O_WRONLY | O_CLOEXEC);
 			if (fd < 0) {
 				perror("open stdout");
 				exit(1);
@@ -455,7 +511,7 @@ int main(int argc, char *argv[])
 
 			/* open stdin file */
 			aux = strndup(optarg, aux - optarg);
-			fd2 = open(aux, O_RDWR);
+			fd2 = open(aux, O_RDWR | O_CLOEXEC);
 			if (fd2 < 0) {
 				perror("open stdin");
 				exit(1);

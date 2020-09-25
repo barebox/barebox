@@ -274,7 +274,7 @@ In any case, make sure that the specified mountpoint is exported by your NFS
 server.
 
 For more information about booting with ``nfsroot``, see
-`Documentation/filesystems/nfs/nfsroot.txt <https://github.com/torvalds/linux/blob/master/Documentation/filesystems/nfs/nfsroot.txt>`__
+`Documentation/admin-guide/nfs/nfsroot.rst <https://github.com/torvalds/linux/blob/master/Documentation/admin-guide/nfs/nfsroot.rst>`__
 in the Linux kernel documentation.
 
 If the preconfigured paths or names are not suitable, they can be adjusted in

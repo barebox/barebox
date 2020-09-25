@@ -62,6 +62,7 @@ typedef unsigned int  uint;
       defined(__NetBSD__) || defined(__DragonFly__)
 # include <sys/endian.h>
 #else /* assume Linux */
+# include <sys/types.h>
 # include <endian.h>
 # include <byteswap.h>
 #endif

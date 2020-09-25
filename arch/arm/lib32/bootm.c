@@ -20,7 +20,7 @@
 #include <restart.h>
 #include <globalvar.h>
 #include <tee/optee.h>
-
+#include <image-fit.h>
 #include <asm/byteorder.h>
 #include <asm/setup.h>
 #include <asm/barebox-arm.h>
@@ -166,6 +166,34 @@ static int optee_verify_header_request_region(struct image_data *data, struct op
 	return ret;
 }
 
+static int bootm_load_tee_from_fit(struct image_data *data)
+{
+	int ret = 0;
+	struct optee_header hdr;
+
+	if (data->os_fit &&
+	    fit_has_image(data->os_fit, data->fit_config, "tee")) {
+		const void *tee;
+		unsigned long tee_size;
+
+		ret = fit_open_image(data->os_fit, data->fit_config, "tee",
+				     &tee, &tee_size);
+		if (ret) {
+			pr_err("Error opening tee fit image: %s\n", strerror(-ret));
+			return ret;
+		}
+		memcpy(&hdr, tee, sizeof(hdr));
+		if (optee_verify_header_request_region(data, &hdr) < 0) {
+			pr_err("%s", strerror(errno));
+			ret = -errno;
+			goto out;
+		}
+		memcpy((void *)data->tee_res->start, tee + sizeof(hdr), hdr.init_size);
+		printf("Read optee image to %pa, size 0x%08x\n", (void *)data->tee_res->start, hdr.init_size);
+	}
+out:
+	return ret;
+}
 static int bootm_load_tee_from_file(struct image_data *data)
 {
 	int fd, ret;
@@ -262,10 +290,16 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem,
 			return ret;
 	}
 
-	if (IS_ENABLED(CONFIG_BOOTM_OPTEE) && data->tee_file) {
-		ret = bootm_load_tee_from_file(data);
-		if (ret)
-			return ret;
+	if (IS_ENABLED(CONFIG_BOOTM_OPTEE)) {
+		if (data->tee_file && !IS_ENABLED(CONFIG_BOOTM_FORCE_SIGNED_IMAGES)) {
+			ret = bootm_load_tee_from_file(data);
+			if (ret)
+				return ret;
+		} else if (IS_ENABLED(CONFIG_FITIMAGE)) {
+			ret = bootm_load_tee_from_fit(data);
+			if (ret)
+				return ret;
+		}
 	}
 
 

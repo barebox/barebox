@@ -37,7 +37,7 @@ static void __noreturn socfpga_restart_soc(struct restart_handler *rst)
 
 static int restart_register_feature(void)
 {
-	restart_handler_register_fn(socfpga_restart_soc);
+	restart_handler_register_fn("soc", socfpga_restart_soc);
 
 	return 0;
 }

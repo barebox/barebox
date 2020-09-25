@@ -7,6 +7,9 @@ config SANDBOX
 	select ARCH_HAS_UBSAN_SANITIZE_ALL
 	select HAVE_ARCH_ASAN
 	select HAS_DMA
+	select BLOCK
+	select BLOCK_WRITE
+	select PARTITION_DISK
 	default y
 
 config ARCH_TEXT_BASE
@@ -23,6 +26,13 @@ config SANDBOX_UNWIND
 	default y
 	select ARCH_HAS_STACK_DUMP
 	depends on UBSAN || ASAN
+
+config SANDBOX_REEXEC
+	prompt "exec(2) reset handler"
+	def_bool y
+	help
+	  The normal reset handler hangs barebox. On Linux, barebox
+	  instead can exec itself to simulate a reset.
 
 config PHYS_ADDR_T_64BIT
 	bool

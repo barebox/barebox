@@ -88,7 +88,7 @@ static void __noreturn at91rm9200_restart_soc(struct restart_handler *rst)
 
 static int restart_register_feature(void)
 {
-	restart_handler_register_fn(at91rm9200_restart_soc);
+	restart_handler_register_fn("soc-wdt", at91rm9200_restart_soc);
 
 	return 0;
 }

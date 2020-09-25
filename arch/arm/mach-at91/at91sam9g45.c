@@ -270,7 +270,7 @@ static void at91sam9g45_initialize(void)
 	at91_add_pit(AT91SAM9G45_BASE_PIT);
 	at91_add_sam9_smc(DEVICE_ID_SINGLE, AT91SAM9G45_BASE_SMC, 0x200);
 
-	restart_handler_register_fn(at91sam9g45_restart);
+	restart_handler_register_fn("soc", at91sam9g45_restart);
 }
 
 static int at91sam9g45_setup(void)

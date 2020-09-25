@@ -292,7 +292,7 @@ static void __noreturn efi_poweroff_system(struct poweroff_handler *handler)
 
 static int restart_register_feature(void)
 {
-	restart_handler_register_fn(efi_restart_system);
+	restart_handler_register_fn("efi", efi_restart_system);
 	poweroff_handler_register_fn(efi_poweroff_system);
 
 	return 0;

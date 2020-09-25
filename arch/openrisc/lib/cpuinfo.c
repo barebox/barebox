@@ -95,7 +95,7 @@ static void cpu_implementation(ulong vr2, char *string)
 	}
 }
 
-int checkcpu(void)
+static int checkcpu(void)
 {
 	ulong upr = mfspr(SPR_UPR);
 	ulong vr = mfspr(SPR_VR);

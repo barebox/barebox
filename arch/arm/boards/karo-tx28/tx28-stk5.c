@@ -22,6 +22,8 @@
 #include <mach/iomux.h>
 #include <generated/mach-types.h>
 
+#include "tx28.h"
+
 static struct mxs_mci_platform_data mci_pdata = {
 	.caps = MMC_CAP_4_BIT_DATA,
 	.voltages = MMC_VDD_32_33 | MMC_VDD_33_34,	/* fixed to 3.3 V */

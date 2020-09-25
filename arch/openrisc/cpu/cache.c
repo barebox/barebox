@@ -17,6 +17,7 @@
 #include <common.h>
 #include <init.h>
 #include <asm/system.h>
+#include <asm/cache.h>
 
 void flush_dcache_range(unsigned long addr, unsigned long stop)
 {
@@ -130,7 +131,7 @@ void icache_disable(void)
 	mtspr(SPR_SR, mfspr(SPR_SR) & ~SPR_SR_ICE);
 }
 
-int cache_init(void)
+static int cache_init(void)
 {
 	if (mfspr(SPR_UPR) & SPR_UPR_ICP) {
 		icache_disable();

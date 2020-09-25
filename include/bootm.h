@@ -18,6 +18,7 @@ struct bootm_data {
 	const char *initrd_file;
 	const char *oftree_file;
 	const char *tee_file;
+	const char *root_dev;
 	int verbose;
 	enum bootm_verify verify;
 	bool force;
@@ -25,6 +26,7 @@ struct bootm_data {
 	/*
 	 * appendroot - if true, try to add a suitable root= Kernel option to
 	 * mount the rootfs from the same device as the Kernel comes from.
+	 * The default rootfs device can be overridden with root_dev.
 	 */
 	bool appendroot;
 	/*

@@ -210,7 +210,7 @@ static void __noreturn davinci_restart_soc(struct restart_handler *rst)
 
 static int restart_register_feature(void)
 {
-	restart_handler_register_fn(davinci_restart_soc);
+	restart_handler_register_fn("soc-wdt", davinci_restart_soc);
 
 	return 0;
 }

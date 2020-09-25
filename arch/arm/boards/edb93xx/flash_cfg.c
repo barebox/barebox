@@ -11,6 +11,9 @@
 				SMC_BCR_BLE | 2 << SMC_BCR_WST2_SHIFT | \
 				1 << SMC_BCR_MW_SHIFT)
 
+/* Called from assembly */
+void flash_cfg(void);
+
 void flash_cfg(void)
 {
 	struct smc_regs *smc = (struct smc_regs *)SMC_BASE;

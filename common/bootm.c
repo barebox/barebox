@@ -65,6 +65,7 @@ void bootm_data_init_defaults(struct bootm_data *data)
 	getenv_ul("global.bootm.image.loadaddr", &data->os_address);
 	getenv_ul("global.bootm.initrd.loadaddr", &data->initrd_address);
 	data->initrd_file = getenv_nonempty("global.bootm.initrd");
+	data->root_dev = getenv_nonempty("global.bootm.root_dev");
 	data->verify = bootm_get_verify_mode();
 	data->appendroot = bootm_appendroot;
 	data->provide_machine_id = bootm_provide_machine_id;
@@ -232,7 +233,11 @@ int bootm_load_initrd(struct image_data *data, unsigned long load_address)
 
 		ret = fit_open_image(data->os_fit, data->fit_config, "ramdisk",
 				     &initrd, &initrd_size);
-
+		if (ret) {
+			pr_err("Cannot open ramdisk image in FIT image: %s\n",
+					strerror(-ret));
+			return ret;
+		}
 		data->initrd_res = request_sdram_region("initrd",
 				load_address,
 				initrd_size);
@@ -711,7 +716,25 @@ int bootm_boot(struct bootm_data *bootm_data)
 	if (bootm_data->appendroot) {
 		char *rootarg;
 
-		rootarg = path_get_linux_rootarg(data->os_file);
+		if (bootm_data->root_dev) {
+			const char *root_dev_name = devpath_to_name(bootm_data->root_dev);
+			const struct cdev *root_cdev = cdev_by_name(root_dev_name);
+
+			if (root_cdev && root_cdev->partuuid[0] != 0) {
+				rootarg = basprintf("root=PARTUUID=%s", root_cdev->partuuid);
+			} else {
+				rootarg = ERR_PTR(-EINVAL);
+
+				if (!root_cdev)
+					pr_err("no cdev found for %s, cannot set root= option\n",
+						root_dev_name);
+				else if (!root_cdev->partuuid[0])
+					pr_err("%s doesn't have a PARTUUID, cannot set root= option\n",
+						root_dev_name);
+			}
+		} else {
+			rootarg = path_get_linux_rootarg(data->os_file);
+		}
 		if (!IS_ERR(rootarg)) {
 			printf("Adding \"%s\" to Kernel commandline\n", rootarg);
 			globalvar_add_simple("linux.bootargs.bootm.appendroot",
@@ -802,6 +825,7 @@ static int bootm_init(void)
 	globalvar_add_simple("bootm.image", NULL);
 	globalvar_add_simple("bootm.image.loadaddr", NULL);
 	globalvar_add_simple("bootm.oftree", NULL);
+	globalvar_add_simple("bootm.root_dev", NULL);
 	globalvar_add_simple("bootm.tee", NULL);
 	globalvar_add_simple_bool("bootm.appendroot", &bootm_appendroot);
 	globalvar_add_simple_bool("bootm.provide_machine_id", &bootm_provide_machine_id);
@@ -831,5 +855,6 @@ BAREBOX_MAGICVAR_NAMED(global_bootm_oftree, global.bootm.oftree, "bootm default 
 BAREBOX_MAGICVAR_NAMED(global_bootm_tee, global.bootm.tee, "bootm default tee image");
 BAREBOX_MAGICVAR_NAMED(global_bootm_verify, global.bootm.verify, "bootm default verify level");
 BAREBOX_MAGICVAR_NAMED(global_bootm_verbose, global.bootm.verbose, "bootm default verbosity level (0=quiet)");
-BAREBOX_MAGICVAR_NAMED(global_bootm_appendroot, global.bootm.appendroot, "Add root= option to Kernel to mount rootfs from the device the Kernel comes from");
+BAREBOX_MAGICVAR_NAMED(global_bootm_appendroot, global.bootm.appendroot, "Add root= option to Kernel to mount rootfs from the device the Kernel comes from (default, device can be overridden via global.bootm.root_dev)");
+BAREBOX_MAGICVAR_NAMED(global_bootm_root_dev, global.bootm.root_dev, "bootm default root device (overrides default device in global.bootm.appendroot)");
 BAREBOX_MAGICVAR_NAMED(global_bootm_provide_machine_id, global.bootm.provide_machine_id, "If true, add systemd.machine_id= with value of global.machine_id to Kernel");

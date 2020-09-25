@@ -275,7 +275,7 @@ static int do_soc(struct config_data *data, int argc, char *argv[])
 		}
 	}
 
-	fprintf(stderr, "unkown SoC type \"%s\". Known SoCs are:\n", soc);
+	fprintf(stderr, "unknown SoC type \"%s\". Known SoCs are:\n", soc);
 	for (i = 0; i < ARRAY_SIZE(socs); i++)
 		fprintf(stderr, "%s ", socs[i].name);
 	fprintf(stderr, "\n");

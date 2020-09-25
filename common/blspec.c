@@ -109,8 +109,11 @@ static void blspec_apply_oftree_overlays(const char *overlays,
 
 	sep = freep = xstrdup(overlays);
 
-	while ((overlay = strsep(&sep, " ")))
+	while ((overlay = strsep(&sep, " "))) {
+		if (!*overlay)
+			continue;
 		blspec_apply_oftree_overlay(overlay, abspath, dryrun);
+	}
 
 	free(freep);
 }

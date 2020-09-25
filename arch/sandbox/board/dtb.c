@@ -46,7 +46,7 @@ static int of_sandbox_init(void)
 		if (ret)
 			return ret;
 
-		ret = of_property_write_u32(root, "#size-cells", 1);
+		ret = of_property_write_u32(root, "#size-cells", 2);
 		if (ret)
 			return ret;
 	}

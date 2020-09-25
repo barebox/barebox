@@ -411,6 +411,7 @@ choice
 		select COMMAND_SUPPORT
 		select PARAMETER
 		select STDDEV
+		select CMD_SETENV
 		help
 		  simple shell. No if/then, no return values from commands, no loops
 
@@ -699,7 +700,6 @@ config IMD
 config IMD_TARGET
 	bool "build bareboximd target tool"
 	depends on IMD
-	depends on !SANDBOX
 
 config KERNEL_INSTALL_TARGET
 	bool

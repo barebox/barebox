@@ -16,6 +16,7 @@
 
 #include <common.h>
 #include <asm/system.h>
+#include <asm/openrisc_exc.h>
 
 static const char * const excp_table[] = {
 	"Unknown exception",
@@ -68,6 +69,9 @@ static void exception_hang(int vect)
 	printf("ESR:  0x%08lx\n", mfspr(SPR_ESR_BASE));
 	hang();
 }
+
+/* Called from assembly */
+void exception_handler(int vect);
 
 void exception_handler(int vect)
 {

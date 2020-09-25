@@ -4,9 +4,10 @@
 struct hf_info {
 	int fd;
 	unsigned long long base;
-	size_t size;
+	unsigned long long size;
 	const char *devname;
 	const char *filename;
+	unsigned int is_blockdev:1;
 };
 
 int barebox_register_filedev(struct hf_info *hf);

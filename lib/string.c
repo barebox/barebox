@@ -13,14 +13,15 @@
  * * Fri Jun 25 1999, Ingo Oeser <ioe@informatik.tu-chemnitz.de>
  * -  Added strsep() which will replace strtok() soon (because strsep() is
  *    reentrant and should be faster). Use only strsep() in new code, please.
+ * * Mon Sep 14 2020, Ahmad Fatoum <a.fatoum@pengutronix.de>
+ * -  Kissed strtok() goodbye
+ *
  */
 
 #include <linux/types.h>
 #include <string.h>
 #include <linux/ctype.h>
 #include <malloc.h>
-
-char * ___strtok;
 
 #ifndef __HAVE_ARCH_STRNICMP
 /**
@@ -396,36 +397,6 @@ char * strpbrk(const char * cs,const char * ct)
 #endif
 EXPORT_SYMBOL(strpbrk);
 
-#ifndef __HAVE_ARCH_STRTOK
-/**
- * strtok - Split a string into tokens
- * @s: The string to be searched
- * @ct: The characters to search for
- *
- * WARNING: strtok is deprecated, use strsep instead.
- */
-char * strtok(char * s, const char * ct)
-{
-	char *sbegin, *send;
-
-	sbegin  = s ? s : ___strtok;
-	if (!sbegin) {
-		return NULL;
-	}
-	sbegin += strspn(sbegin,ct);
-	if (*sbegin == '\0') {
-		___strtok = NULL;
-		return( NULL );
-	}
-	send = strpbrk( sbegin, ct);
-	if (send && *send != '\0')
-		*send++ = '\0';
-	___strtok = send;
-	return (sbegin);
-}
-#endif
-EXPORT_SYMBOL(strtok);
-
 #ifndef __HAVE_ARCH_STRSEP
 /**
  * strsep - Split a string into tokens
@@ -454,6 +425,49 @@ char * strsep(char **s, const char *ct)
 }
 #endif
 EXPORT_SYMBOL(strsep);
+
+/**
+ * strsep_unescaped - Split a string into tokens, while ignoring escaped delimiters
+ * @s: The string to be searched
+ * @ct: The delimiter characters to search for
+ *
+ * strsep_unescaped() behaves like strsep unless it meets an escaped delimiter.
+ * In that case, it shifts the string back in memory to overwrite the escape's
+ * backslash then continues the search until an unescaped delimiter is found.
+ */
+char *strsep_unescaped(char **s, const char *ct)
+{
+        char *sbegin = *s, *hay;
+        const char *needle;
+        size_t shift = 0;
+
+        if (sbegin == NULL)
+                return NULL;
+
+        for (hay = sbegin; *hay != '\0'; ++hay) {
+                *hay = hay[shift];
+
+                if (*hay == '\\') {
+                        *hay = hay[++shift];
+                        if (*hay != '\\')
+                                continue;
+                }
+
+                for (needle = ct; *needle != '\0'; ++needle) {
+                        if (*hay == *needle)
+                                goto match;
+                }
+        }
+
+        *s = NULL;
+        return sbegin;
+
+match:
+        *hay = '\0';
+        *s = &hay[shift + 1];
+
+        return sbegin;
+}
 
 #ifndef __HAVE_ARCH_STRSWAB
 /**

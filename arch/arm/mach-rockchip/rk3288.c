@@ -60,7 +60,7 @@ static void rk3288_detect_reset_reason(void)
 
 static int rk3288_init(void)
 {
-	restart_handler_register_fn(rockchip_restart_soc);
+	restart_handler_register_fn("soc", rockchip_restart_soc);
 
 	if (IS_ENABLED(CONFIG_RESET_SOURCE))
 		rk3288_detect_reset_reason();

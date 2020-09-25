@@ -256,7 +256,7 @@ static void at91sam9263_initialize(void)
 	at91_add_sam9_smc(0, AT91SAM9263_BASE_SMC0, 0x200);
 	at91_add_sam9_smc(1, AT91SAM9263_BASE_SMC1, 0x200);
 
-	restart_handler_register_fn(at91sam9263_restart);
+	restart_handler_register_fn("soc", at91sam9263_restart);
 }
 
 static int at91sam9263_setup(void)

@@ -35,7 +35,7 @@ static void __noreturn nomadik_restart_soc(struct restart_handler *rst)
 
 static int restart_register_feature(void)
 {
-	restart_handler_register_fn(nomadik_restart_soc);
+	restart_handler_register_fn("soc", nomadik_restart_soc);
 
 	return 0;
 }

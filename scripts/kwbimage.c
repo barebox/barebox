@@ -231,7 +231,7 @@ static const char *image_boot_mode_name(unsigned int id)
 	return NULL;
 }
 
-int image_boot_mode_id(const char *boot_mode_name)
+static int image_boot_mode_id(const char *boot_mode_name)
 {
 	int i;
 	for (i = 0; boot_modes[i].name; i++)
@@ -250,7 +250,7 @@ static const char *image_nand_ecc_mode_name(unsigned int id)
 	return NULL;
 }
 
-int image_nand_ecc_mode_id(const char *nand_ecc_mode_name)
+static int image_nand_ecc_mode_id(const char *nand_ecc_mode_name)
 {
 	int i;
 	for (i = 0; nand_ecc_modes[i].name; i++)

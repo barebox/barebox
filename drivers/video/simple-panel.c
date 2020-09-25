@@ -135,7 +135,7 @@ static int simple_panel_ioctl(struct vpl *vpl, unsigned int port,
 	case VPL_GET_VIDEOMODES:
 		return simple_panel_get_modes(panel, ptr);
 	default:
-		return -ENOSYS;
+		return 0;
 	}
 }
 

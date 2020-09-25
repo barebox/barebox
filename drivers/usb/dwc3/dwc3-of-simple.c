@@ -21,42 +21,9 @@
 
 struct dwc3_of_simple {
 	struct device_d		*dev;
-	struct clk		**clks;
+	struct clk_bulk_data	*clks;
 	int			num_clocks;
 };
-
-static int dwc3_of_simple_clk_init(struct dwc3_of_simple *simple, int count)
-{
-	struct device_d		*dev = simple->dev;
-	struct device_node	*np = dev->device_node;
-	int			i;
-
-	simple->num_clocks = count;
-
-	if (!count)
-		return 0;
-
-	simple->clks = xzalloc(sizeof(struct clk *));
-	if (!simple->clks)
-		return -ENOMEM;
-
-	for (i = 0; i < simple->num_clocks; i++) {
-		struct clk	*clk;
-
-		clk = of_clk_get(np, i);
-		if (IS_ERR(clk)) {
-			while (--i >= 0) {
-				clk_disable(simple->clks[i]);
-				clk_put(simple->clks[i]);
-			}
-			return PTR_ERR(clk);
-		}
-
-		simple->clks[i] = clk;
-	}
-
-	return 0;
-}
 
 static int dwc3_of_simple_probe(struct device_d *dev)
 {
@@ -64,42 +31,37 @@ static int dwc3_of_simple_probe(struct device_d *dev)
 	struct device_node	*np = dev->device_node;
 
 	int			ret;
-	int			i;
 
 	simple = xzalloc(sizeof(*simple));
 	if (!simple)
 		return -ENOMEM;
 
-        dev->priv = simple;
+	dev->priv = simple;
 	simple->dev = dev;
 
-	ret = dwc3_of_simple_clk_init(simple, of_count_phandle_with_args(np,
-						"clocks", "#clock-cells"));
+	ret = clk_bulk_get_all(simple->dev, &simple->clks);
+	if (ret < 0)
+		return ret;
+
+	simple->num_clocks = ret;
+	ret = clk_bulk_enable(simple->num_clocks, simple->clks);
 	if (ret)
 		return ret;
 
         ret = of_platform_populate(np, NULL, dev);
 	if (ret) {
-		for (i = 0; i < simple->num_clocks; i++) {
-			clk_disable(simple->clks[i]);
-			clk_put(simple->clks[i]);
-		}
+		clk_bulk_disable(simple->num_clocks, simple->clks);
 		return ret;
 	}
 
-        return 0;
+	return 0;
 }
 
 static void dwc3_of_simple_remove(struct device_d *dev)
 {
 	struct dwc3_of_simple	*simple = dev->priv;
-	int			i;
 
-	for (i = 0; i < simple->num_clocks; i++) {
-		clk_disable(simple->clks[i]);
-		clk_put(simple->clks[i]);
-	}
-	simple->num_clocks = 0;
+	clk_bulk_disable(simple->num_clocks, simple->clks);
 }
 
 static const struct of_device_id of_dwc3_simple_match[] = {

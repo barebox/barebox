@@ -27,6 +27,8 @@
 
 #include "imx-ipu-v3.h"
 
+#define IMX_PD_OUTPUT_PORT	1
+
 struct imx_pd {
 	struct device_d *dev;
 	struct display_timings *timings;
@@ -39,7 +41,6 @@ static int imx_pd_ioctl(struct vpl *vpl, unsigned int port,
 {
 	struct imx_pd *imx_pd = container_of(vpl, struct imx_pd, vpl);
 	struct ipu_di_mode *mode;
-	struct display_timings *timings;
 
 	switch (cmd) {
 	case IMX_IPU_VPL_DI_MODE:
@@ -50,14 +51,20 @@ static int imx_pd_ioctl(struct vpl *vpl, unsigned int port,
 		return 0;
 
 	case VPL_GET_VIDEOMODES:
-		timings = data;
+		if (imx_pd->timings) {
+			struct display_timings *timings = data;
 
-		timings->num_modes   = imx_pd->timings->num_modes;
-		timings->native_mode = imx_pd->timings->native_mode;
-		timings->modes       = imx_pd->timings->modes;
-		timings->edid        = NULL;
-		return 0;
+			timings->num_modes   = imx_pd->timings->num_modes;
+			timings->native_mode = imx_pd->timings->native_mode;
+			timings->modes       = imx_pd->timings->modes;
+			timings->edid        = NULL;
+			return 0;
+		}
+		break;
 	}
+
+	if (!imx_pd->timings)
+		return vpl_ioctl(vpl, IMX_PD_OUTPUT_PORT, cmd, data);
 
 	return 0;
 }
@@ -66,6 +73,7 @@ static int imx_pd_probe(struct device_d *dev)
 {
 	struct device_node *node = dev->device_node;
 	struct imx_pd *imx_pd;
+	struct device_node *port;
 	const char *fmt;
 	int ret;
 
@@ -88,8 +96,11 @@ static int imx_pd_probe(struct device_d *dev)
 
 	imx_pd->timings = of_get_display_timings(node);
 	if (!imx_pd->timings) {
-		dev_err(dev, "No display timings panel found\n");
-		return -EINVAL;
+		port = of_graph_get_port_by_id(node, IMX_PD_OUTPUT_PORT);
+		if (!port) {
+			dev_err(dev, "Neither display timings in nor remote panel found in node\n");
+			return -EINVAL;
+		}
 	}
 
 	imx_pd->vpl.node = node;

@@ -17,6 +17,8 @@ ssize_t linux_write(int fd, const void *buf, size_t count);
 off_t linux_lseek(int fildes, off_t offset);
 int linux_tstc(int fd);
 void __attribute__((noreturn)) linux_exit(void);
+void linux_hang(void);
+void linux_reexec(void);
 
 int linux_execve(const char * filename, char *const argv[], char *const envp[]);
 

@@ -85,7 +85,7 @@ static void __noreturn ep92xx_restart_soc(struct restart_handler *rst)
 
 static int restart_register_feature(void)
 {
-	restart_handler_register_fn(ep92xx_restart_soc);
+	restart_handler_register_fn("soc", ep92xx_restart_soc);
 
 	return 0;
 }

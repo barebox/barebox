@@ -347,7 +347,7 @@ int main(int argc, char *argv[])
 	int fdno = 0, envno = 0, option_index = 0;
 	char *aux;
 
-#ifdef CONFIG_KASAN
+#ifdef CONFIG_ASAN
 	__sanitizer_set_death_callback(cookmode);
 #endif
 

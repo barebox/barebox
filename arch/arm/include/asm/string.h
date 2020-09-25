@@ -10,4 +10,7 @@ extern void *memset(void *, int, __kernel_size_t);
 
 #endif
 
+extern void *__memcpy(void *, const void *, __kernel_size_t);
+extern void *__memset(void *, int, __kernel_size_t);
+
 #endif

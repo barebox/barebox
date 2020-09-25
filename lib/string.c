@@ -491,7 +491,7 @@ char *strswab(const char *s)
  *
  * Do not use memset() to access IO space, use memset_io() instead.
  */
-void *__default_memset(void * s,int c,size_t count)
+void *__default_memset(void * s, int c, size_t count)
 {
 	char *xs = (char *) s;
 
@@ -502,8 +502,20 @@ void *__default_memset(void * s,int c,size_t count)
 }
 EXPORT_SYMBOL(__default_memset);
 
+void __no_sanitize_address *__nokasan_default_memset(void * s, int c, size_t count)
+{
+	char *xs = (char *) s;
+
+	while (count--)
+		*xs++ = c;
+
+	return s;
+}
+EXPORT_SYMBOL(__nokasan_default_memset);
+
 #ifndef __HAVE_ARCH_MEMSET
 void *memset(void *s, int c, size_t count) __alias(__default_memset);
+void *__memset(void *s, int c, size_t count) __alias(__default_memset);
 #endif
 
 /**
@@ -515,7 +527,7 @@ void *memset(void *s, int c, size_t count) __alias(__default_memset);
  * You should not use this function to access IO space, use memcpy_toio()
  * or memcpy_fromio() instead.
  */
-void *__default_memcpy(void * dest,const void *src,size_t count)
+void *__default_memcpy(void * dest,const void *src, size_t count)
 {
 	char *tmp = (char *) dest, *s = (char *) src;
 
@@ -524,10 +536,24 @@ void *__default_memcpy(void * dest,const void *src,size_t count)
 
 	return dest;
 }
-EXPORT_SYMBOL(memcpy);
+EXPORT_SYMBOL(__default_memcpy);
+
+void __no_sanitize_address *__nokasan_default_memcpy(void * dest,
+						     const void *src, size_t count)
+{
+	char *tmp = (char *) dest, *s = (char *) src;
+
+	while (count--)
+		*tmp++ = *s++;
+
+	return dest;
+}
+EXPORT_SYMBOL(__nokasan_default_memcpy);
 
 #ifndef __HAVE_ARCH_MEMCPY
 void *memcpy(void * dest, const void *src, size_t count)
+	__alias(__default_memcpy);
+void *__memcpy(void * dest, const void *src, size_t count)
 	__alias(__default_memcpy);
 #endif
 

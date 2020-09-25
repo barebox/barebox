@@ -60,6 +60,9 @@ config REED_SOLOMON
 config BASE64
 	bool "include base64 encode/decode support"
 
+config CONSTRUCTORS
+	bool
+
 config GENERIC_FIND_NEXT_BIT
 	def_bool n
 
@@ -150,6 +153,8 @@ source "lib/fonts/Kconfig"
 source "lib/logo/Kconfig"
 
 source "lib/bootstrap/Kconfig"
+
+source "lib/kasan/Kconfig"
 
 config PRINTF_UUID
 	bool

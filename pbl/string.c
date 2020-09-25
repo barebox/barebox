@@ -6,6 +6,7 @@
 
 #include <linux/types.h>
 #include <linux/string.h>
+#include <linux/compiler.h>
 
 void *memcpy(void *__dest, __const void *__src, size_t __n)
 {
@@ -40,6 +41,9 @@ void *memcpy(void *__dest, __const void *__src, size_t __n)
 
 	return __dest;
 }
+
+void *__memcpy(void *__dest, __const void *__src, size_t __n)
+	__alias(memcpy);
 
 void *memmove(void *__dest, __const void *__src, size_t count)
 {
@@ -119,6 +123,9 @@ void *memset(void *s, int c, size_t count)
 		*xs++ = c;
 	return s;
 }
+
+void *__memset(void *s, int c, size_t count)
+	__alias(memset);
 
 /**
  * strnlen - Find the length of a length-limited string

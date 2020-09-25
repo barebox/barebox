@@ -1,0 +1,16 @@
+source "scripts/Kconfig.include"
+
+config HAVE_ARCH_KASAN
+	bool
+
+config CC_HAS_KASAN_GENERIC
+	def_bool $(cc-option, -fsanitize=kernel-address)
+
+config KASAN
+	bool "KASAN: runtime memory debugger"
+	depends on (HAVE_ARCH_KASAN && CC_HAS_KASAN_GENERIC)
+	depends on MALLOC_TLSF
+	select CONSTRUCTORS
+	help
+	  Enables KASAN (KernelAddressSANitizer) - runtime memory debugger,
+	  designed to find out-of-bounds accesses and use-after-free bugs.

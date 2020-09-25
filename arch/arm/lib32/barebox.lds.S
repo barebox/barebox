@@ -77,7 +77,9 @@ SECTIONS
 	_sdata = .;
 
 	. = ALIGN(4);
-	.data : { *(.data*) }
+	.data : { *(.data*)
+		CONSTRUCTORS
+	}
 
 	.barebox_imd : { BAREBOX_IMD }
 

@@ -9,6 +9,7 @@ AFLAGS_hyp.o :=-Wa,-march=armv7-a -Wa,-mcpu=all
 AFLAGS_hyp.pbl.o :=-Wa,-march=armv7-a -Wa,-mcpu=all
 
 obj-y += start.o entry.o entry_ll$(S64).o
+KASAN_SANITIZE_start.o := n
 
 pbl-$(CONFIG_BOARD_ARM_GENERIC_DT) += board-dt-2nd.o
 pbl-$(CONFIG_BOARD_ARM_GENERIC_DT_AARCH64) += board-dt-2nd-aarch64.o
@@ -51,3 +52,4 @@ pbl-y += entry.o entry_ll$(S64).o
 pbl-y += uncompress.o
 
 obj-pbl-y += common.o sections.o
+KASAN_SANITIZE_common.o := n

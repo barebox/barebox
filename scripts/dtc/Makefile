@@ -1,8 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0
 # scripts/dtc makefile
 
-hostprogs-$(CONFIG_DTC) := dtc fdtget
-always		:= $(hostprogs-y)
+hostprogs-always-$(CONFIG_DTC)		+= dtc fdtget
 
 dtc-objs	:= dtc.o flattree.o fstree.o data.o livetree.o treesource.o \
 		   srcpos.o checks.o util.o

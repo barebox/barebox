@@ -45,7 +45,7 @@ include $(if $(wildcard $(kbuild-dir)/Kbuild), $(kbuild-dir)/Kbuild, $(kbuild-di
 include scripts/Makefile.lib
 
 # Do not include host rules unless needed
-ifneq ($(hostprogs)$(hostprogs-y)$(hostprogs-m),)
+ifneq ($(hostprogs),)
 include scripts/Makefile.host
 endif
 

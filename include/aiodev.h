@@ -31,7 +31,8 @@ struct aiodevice {
 int aiodevice_register(struct aiodevice *aiodev);
 
 struct aiochannel *aiochannel_get(struct device_d *dev, int index);
-struct aiochannel *aiochannel_get_by_name(const char *name);
+/* Find aiochannel by channel name, e.g. "aiodev0.in_value0_mV" */
+struct aiochannel *aiochannel_by_name(const char *name);
 
 int aiochannel_get_value(struct aiochannel *aiochan, int *value);
 int aiochannel_get_index(struct aiochannel *aiochan);

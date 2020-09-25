@@ -46,6 +46,8 @@
 #define FASTBOOT_VERSION		"0.4"
 
 static unsigned int fastboot_max_download_size = SZ_8M;
+static int fastboot_bbu;
+static char *fastboot_partitions;
 
 struct fb_variable {
 	char *name;
@@ -169,6 +171,8 @@ int fastboot_generic_init(struct fastboot *fb, bool export_bbu)
 	struct file_list_entry *fentry;
 	struct fb_variable *var;
 
+	INIT_LIST_HEAD(&fb->variables);
+
 	var = fb_addvar(fb, "version");
 	fb_setvar(var, "0.4");
 	var = fb_addvar(fb, "bootloader-version");
@@ -241,6 +245,7 @@ static char *fastboot_msg[] = {
 	[FASTBOOT_MSG_FAIL] = "FAIL",
 	[FASTBOOT_MSG_INFO] = "INFO",
 	[FASTBOOT_MSG_DATA] = "DATA",
+	[FASTBOOT_MSG_NONE] = "",
 };
 
 int fastboot_tx_print(struct fastboot *fb, enum fastboot_msg_type type,
@@ -269,6 +274,7 @@ int fastboot_tx_print(struct fastboot *fb, enum fastboot_msg_type type,
 	case FASTBOOT_MSG_INFO:
 		pr_info("%pV\n", &vaf);
 		break;
+	case FASTBOOT_MSG_NONE:
 	case FASTBOOT_MSG_DATA:
 		break;
 	}
@@ -283,6 +289,7 @@ int fastboot_tx_print(struct fastboot *fb, enum fastboot_msg_type type,
 
 static void cb_reboot(struct fastboot *fb, const char *cmd)
 {
+	fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, "");
 	restart_machine();
 }
 
@@ -335,6 +342,7 @@ int fastboot_handle_download_data(struct fastboot *fb, const void *buffer,
 void fastboot_download_finished(struct fastboot *fb)
 {
 	close(fb->download_fd);
+	fb->download_fd = 0;
 
 	printf("\n");
 
@@ -342,6 +350,18 @@ void fastboot_download_finished(struct fastboot *fb)
 			  fb->download_bytes);
 
 	fastboot_tx_print(fb, FASTBOOT_MSG_OKAY, "");
+}
+
+void fastboot_abort(struct fastboot *fb)
+{
+	if (fb->download_fd > 0) {
+		close(fb->download_fd);
+		fb->download_fd = 0;
+	}
+
+	fb->active = false;
+
+	unlink(fb->tempname);
 }
 
 static void cb_download(struct fastboot *fb, const char *cmd)
@@ -353,6 +373,11 @@ static void cb_download(struct fastboot *fb, const char *cmd)
 			  fb->download_size);
 
 	init_progression_bar(fb->download_size);
+
+	if (fb->download_fd > 0) {
+		pr_err("%s called and %s is still opened\n", __func__, fb->tempname);
+		close(fb->download_fd);
+	}
 
 	fb->download_fd = open(fb->tempname, O_WRONLY | O_CREAT | O_TRUNC);
 	if (fb->download_fd < 0) {
@@ -903,17 +928,43 @@ void fastboot_exec_cmd(struct fastboot *fb, const char *cmdbuf)
 				ARRAY_SIZE(cmd_dispatch_info));
 }
 
+bool get_fastboot_bbu(void)
+{
+	return fastboot_bbu;
+}
+
+const char *get_fastboot_partitions(void)
+{
+	return fastboot_partitions;
+}
+
 static int fastboot_globalvars_init(void)
 {
 	if (IS_ENABLED(CONFIG_FASTBOOT_SPARSE))
-		globalvar_add_simple_int("usbgadget.fastboot_max_download_size",
+		globalvar_add_simple_int("fastboot.max_download_size",
 				 &fastboot_max_download_size, "%u");
+	globalvar_add_simple_bool("fastboot.bbu", &fastboot_bbu);
+	globalvar_add_simple_string("fastboot.partitions",
+				    &fastboot_partitions);
+
+	globalvar_alias_deprecated("usbgadget.fastboot_function",
+				   "fastboot.partitions");
+	globalvar_alias_deprecated("usbgadget.fastboot_bbu",
+				   "fastboot.bbu");
+	globalvar_alias_deprecated("usbgadget.fastboot_max_download_size",
+				   "fastboot.max_download_size");
 
 	return 0;
 }
 
 device_initcall(fastboot_globalvars_init);
 
-BAREBOX_MAGICVAR_NAMED(global_usbgadget_fastboot_max_download_size,
-		       global.usbgadget.fastboot_max_download_size,
+BAREBOX_MAGICVAR_NAMED(global_fastboot_max_download_size,
+		       global.fastboot.max_download_size,
 		       "Fastboot maximum download size");
+BAREBOX_MAGICVAR_NAMED(global_fastboot_partitions,
+		       global.fastboot.partitions,
+		       "Partitions exported for update via fastboot");
+BAREBOX_MAGICVAR_NAMED(global_fastboot_bbu,
+		       global.fastboot.bbu,
+		       "Export barebox update handlers via fastboot");

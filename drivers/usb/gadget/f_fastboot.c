@@ -21,6 +21,7 @@
 #define pr_fmt(fmt) "fastboot: " fmt
 
 #include <dma.h>
+#include <work.h>
 #include <unistd.h>
 #include <progress.h>
 #include <fastboot.h>
@@ -39,6 +40,7 @@ struct f_fastboot {
 	/* IN/OUT EP's and corresponding requests */
 	struct usb_ep *in_ep, *out_ep;
 	struct usb_request *in_req, *out_req;
+	struct work_queue wq;
 };
 
 static inline struct f_fastboot *func_to_fastboot(struct usb_function *f)
@@ -136,6 +138,32 @@ static void fastboot_complete(struct usb_ep *ep, struct usb_request *req)
 {
 }
 
+struct fastboot_work {
+	struct work_struct work;
+	struct f_fastboot *f_fb;
+	char command[FASTBOOT_MAX_CMD_LEN + 1];
+};
+
+static void fastboot_do_work(struct work_struct *w)
+{
+	struct fastboot_work *fw = container_of(w, struct fastboot_work, work);
+	struct f_fastboot *f_fb = fw->f_fb;
+
+	fastboot_exec_cmd(&f_fb->fastboot, fw->command);
+
+	memset(f_fb->out_req->buf, 0, EP_BUFFER_SIZE);
+	usb_ep_queue(f_fb->out_ep, f_fb->out_req);
+
+	free(fw);
+}
+
+static void fastboot_work_cancel(struct work_struct *w)
+{
+	struct fastboot_work *fw = container_of(w, struct fastboot_work, work);
+
+	free(fw);
+}
+
 static struct usb_request *fastboot_alloc_request(struct usb_ep *ep)
 {
 	struct usb_request *req;
@@ -171,6 +199,11 @@ static int fastboot_bind(struct usb_configuration *c, struct usb_function *f)
 	f_fb->fastboot.files = opts->common.files;
 	f_fb->fastboot.cmd_exec = opts->common.cmd_exec;
 	f_fb->fastboot.cmd_flash = opts->common.cmd_flash;
+
+	f_fb->wq.fn = fastboot_do_work;
+	f_fb->wq.cancel = fastboot_work_cancel;
+
+	wq_register(&f_fb->wq);
 
 	ret = fastboot_generic_init(&f_fb->fastboot, opts->common.export_bbu);
 	if (ret)
@@ -246,6 +279,8 @@ static void fastboot_unbind(struct usb_configuration *c, struct usb_function *f)
 	usb_ep_free_request(f_fb->out_ep, f_fb->out_req);
 	f_fb->out_req = NULL;
 
+	wq_unregister(&f_fb->wq);
+
 	fastboot_generic_free(&f_fb->fastboot);
 }
 
@@ -312,8 +347,6 @@ static struct usb_function *fastboot_alloc_func(struct usb_function_instance *fi
 	struct f_fastboot *f_fb;
 
 	f_fb = xzalloc(sizeof(*f_fb));
-
-	INIT_LIST_HEAD(&f_fb->fastboot.variables);
 
 	f_fb->func.name = "fastboot";
 	f_fb->func.strings = fastboot_strings;
@@ -430,16 +463,19 @@ static void fastboot_start_download_usb(struct fastboot *fb)
 
 static void rx_handler_command(struct usb_ep *ep, struct usb_request *req)
 {
-	char *cmdbuf = req->buf;
 	struct f_fastboot *f_fb = req->context;
+	struct fastboot_work *w;
+	int len;
 
 	if (req->status != 0)
 		return;
 
-	*(cmdbuf + req->actual) = 0;
-	fastboot_exec_cmd(&f_fb->fastboot, cmdbuf);
-	*cmdbuf = '\0';
-	req->actual = 0;
-	memset(req->buf, 0, EP_BUFFER_SIZE);
-	usb_ep_queue(ep, req);
+	w = xzalloc(sizeof(*w));
+	w->f_fb = f_fb;
+
+	len = min_t(unsigned int, req->actual, FASTBOOT_MAX_CMD_LEN);
+
+	memcpy(w->command, req->buf, len);
+
+	wq_queue_work(&f_fb->wq, &w->work);
 }

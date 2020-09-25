@@ -266,7 +266,7 @@ USB Gadget autostart Options
   See :ref:`command_usbgadget` -a. (Default 0).
 ``global.usbgadget.dfu_function``
   Function description for DFU. See :ref:`command_usbgadget` -D [desc].
-``global.usbgadget.fastboot_function``
+``global.fastboot.partitions``
   Function description for fastboot. See :ref:`command_usbgadget` -A [desc].
-``global.usbgadget.fastboot_bbu``
+``global.fastboot.bbu``
   Export barebox update handlers. See :ref:`command_usbgadget` -b. (Default 0).

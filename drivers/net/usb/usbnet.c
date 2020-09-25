@@ -124,7 +124,7 @@ static int usbnet_recv(struct eth_device *edev)
 
 	len = dev->rx_urb_size;
 
-	ret = usb_bulk_msg(dev->udev, dev->in, dev->rx_buf, len, &alen, 100);
+	ret = usb_bulk_msg(dev->udev, dev->in, dev->rx_buf, len, &alen, 2);
 	if (ret)
 		return ret;
 
@@ -232,6 +232,9 @@ int usbnet_probe(struct usb_device *usbdev, const struct usb_device_id *prod)
 	}
 
 	eth_register(edev);
+
+	slice_depends_on(eth_device_slice(edev), usb_device_slice(usbdev));
+	slice_depends_on(mdiobus_slice(&undev->miibus), usb_device_slice(usbdev));
 
 	return 0;
 out1:

@@ -57,7 +57,7 @@ BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-a\t", "Create CDC ACM function")
 BAREBOX_CMD_HELP_OPT ("-A <desc>", "Create Android Fastboot function. If 'desc' is not provided, "
-				   "try to use 'global.usbgadget.fastboot_function' variable.")
+				   "try to use 'global.fastboot.partitions' variable.")
 BAREBOX_CMD_HELP_OPT ("-b\t", "include registered barebox update handlers (fastboot specific)")
 BAREBOX_CMD_HELP_OPT ("-D <desc>", "Create DFU function. If 'desc' is not provided, "
 				   "try to use 'global.usbgadget.dfu_function' variable.")

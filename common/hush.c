@@ -121,6 +121,7 @@
 #include <libbb.h>
 #include <password.h>
 #include <glob.h>
+#include <slice.h>
 #include <getopt.h>
 #include <libfile.h>
 #include <libbb.h>
@@ -460,7 +461,12 @@ static void get_user_input(struct in_str *i)
 	else
 		prompt = CONFIG_PROMPT_HUSH_PS2;
 
+	command_slice_release();
+
 	n = readline(prompt, console_buffer, CONFIG_CBSIZE);
+
+	command_slice_acquire();
+
 	if (n == -1 ) {
 		i->interrupt = 1;
 		n = 0;

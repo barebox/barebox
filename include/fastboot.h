@@ -5,6 +5,8 @@
 #include <file-list.h>
 #include <net.h>
 
+#define FASTBOOT_MAX_CMD_LEN  64
+
 /*
  * Return codes for the exec_cmd callback above:
  *
@@ -51,7 +53,23 @@ enum fastboot_msg_type {
 	FASTBOOT_MSG_FAIL,
 	FASTBOOT_MSG_INFO,
 	FASTBOOT_MSG_DATA,
+	FASTBOOT_MSG_NONE,
 };
+
+#ifdef CONFIG_FASTBOOT_BASE
+bool get_fastboot_bbu(void);
+const char *get_fastboot_partitions(void);
+#else
+static inline int get_fastboot_bbu(void)
+{
+	return false;
+}
+
+static inline const char *get_fastboot_partitions(void)
+{
+	return NULL;
+}
+#endif
 
 int fastboot_generic_init(struct fastboot *fb, bool export_bbu);
 void fastboot_generic_close(struct fastboot *fb);
@@ -63,4 +81,6 @@ int fastboot_tx_print(struct fastboot *fb, enum fastboot_msg_type type,
 void fastboot_start_download_generic(struct fastboot *fb);
 void fastboot_download_finished(struct fastboot *fb);
 void fastboot_exec_cmd(struct fastboot *fb, const char *cmdbuf);
+void fastboot_abort(struct fastboot *fb);
+
 #endif

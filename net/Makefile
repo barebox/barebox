@@ -8,3 +8,4 @@ obj-$(CONFIG_CMD_PING)	+= ping.o
 obj-$(CONFIG_NET_RESOLV)+= dns.o
 obj-$(CONFIG_NET_NETCONSOLE) += netconsole.o
 obj-$(CONFIG_NET_IFUP)	+= ifup.o
+obj-$(CONFIG_NET_FASTBOOT) += fastboot.o

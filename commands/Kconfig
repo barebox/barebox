@@ -253,6 +253,14 @@ config CMD_POLLER
 	  is_timeout() or one of the various delay functions. The poller command prints
 	  informations about registered pollers.
 
+config CMD_SLICE
+	tristate
+	prompt "slice"
+	help
+	  slices are a way to protect resources from being accessed by pollers. The slice
+	  command can be used to print informations about slices and also to manipulate
+	  them on the command line for debugging purposes.
+
 # end Information commands
 endmenu
 

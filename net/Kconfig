@@ -1,5 +1,6 @@
 menuconfig NET
 	bool "Networking Support"
+	select POLLER
 
 if NET
 
@@ -30,5 +31,15 @@ config NET_DHCP
 config NET_SNTP
 	bool
 	prompt "sntp support"
+
+config NET_FASTBOOT
+	bool
+	select BANNER
+	select FILE_LIST
+	select FASTBOOT_BASE
+	prompt "Android Fastboot support"
+	help
+	  This option adds support for the UDP variant of the Fastboot
+	  protocol.
 
 endif

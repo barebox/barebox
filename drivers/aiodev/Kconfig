@@ -35,4 +35,12 @@ config MC13XXX_ADC
 	help
 	  Support for MC13783, MC13892, MC34708 ADC
 
+config AM335X_ADC
+	tristate "AM335X ADC driver"
+	depends on ARCH_AM33XX
+	help
+	  Support for ADC on TI AM335X SoCs.  Supports simple one-shot readings
+	  rather than continuous sampling with DMA, etc.  ADC channels should be
+	  configured via device tree, using the kernel bindings.
+
 endif

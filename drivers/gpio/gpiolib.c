@@ -381,6 +381,37 @@ void gpio_free_array(const struct gpio *array, size_t num)
 }
 EXPORT_SYMBOL_GPL(gpio_free_array);
 
+int gpio_array_to_id(const struct gpio *array, size_t num, u32 *val)
+{
+	u32 id = 0;
+	int ret, i;
+
+	if (num > 32)
+		return -EOVERFLOW;
+
+	ret = gpio_request_array(array, num);
+	if (ret)
+		return ret;
+
+	/* Wait until logic level will be stable */
+	udelay(5);
+	for (i = 0; i < num; i++) {
+		ret = gpio_is_active(array[i].gpio);
+		if (ret < 0)
+			goto free_array;
+		if (ret)
+			id |= 1UL << i;
+	}
+
+	*val = id;
+	ret = 0;
+
+free_array:
+	gpio_free_array(array, num);
+	return ret;
+}
+EXPORT_SYMBOL(gpio_array_to_id);
+
 static int gpiochip_find_base(int start, int ngpio)
 {
 	int i;

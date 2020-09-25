@@ -13,6 +13,11 @@
 
 	chosen {
 		stdout-path = &uart4;
+
+		environment-emmc {
+			compatible = "barebox,environment";
+			device-path = &usdhc3, "partname:barebox-environment";
+		};
 	};
 
 	memory {
@@ -91,6 +96,12 @@
 			gpios = <&gpio1 8 0>;
 			linux,default-trigger = "heartbeat";
 		};
+	};
+
+	clk50m_phy: phy_clock {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <50000000>;
 	};
 };
 
@@ -190,7 +201,7 @@
 			fsl,pins = <
 				MX6QDL_PAD_EIM_D26__UART2_RX_DATA	0x1b0b1
 				MX6QDL_PAD_EIM_D27__UART2_TX_DATA	0x1b0b1
-				MX6QDL_PAD_EIM_D28__GPIO3_IO28		0x130b1
+				MX6QDL_PAD_EIM_D28__UART2_CTS_B		0x130b1
 			>;
 		};
 
@@ -198,7 +209,7 @@
 			fsl,pins = <
 				MX6QDL_PAD_EIM_D24__UART3_TX_DATA	0x1b0b1
 				MX6QDL_PAD_EIM_D25__UART3_RX_DATA	0x1b0b1
-				MX6QDL_PAD_EIM_D30__GPIO3_IO30		0x130b1
+				MX6QDL_PAD_EIM_D30__UART3_CTS_B		0x130b1
 			>;
 		};
 
@@ -297,18 +308,32 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_enet>;
 	phy-mode = "rmii";
-	phy-reset-gpios = <&gpio5 22 GPIO_ACTIVE_LOW>;
 	clocks = <&clks IMX6QDL_CLK_ENET>,
-		 <&clks IMX6QDL_CLK_ENET>;
-	clock-names = "ipg", "ahb";
+		 <&clks IMX6QDL_CLK_ENET>,
+		 <&clk50m_phy>;
+	clock-names = "ipg", "ahb", "ptp";
 	status = "okay";
+
+	mdio {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		/* Microchip KSZ8081RNA PHY */
+		rgmii_phy: ethernet-phy@0 {
+			reg = <0>;
+			interrupts-extended = <&gpio5 23 IRQ_TYPE_LEVEL_LOW>;
+			reset-gpios = <&gpio5 22 GPIO_ACTIVE_LOW>;
+			reset-assert-us = <10000>;
+			reset-deassert-us = <300>;
+		};
+	};
 };
 
 &uart2 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart2>;
 	linux,rs485-enabled-at-boot-time;
-	rts-gpios = <&gpio3 28 GPIO_ACTIVE_HIGH>;
+	uart-has-rtscts;
 	status = "okay";
 };
 
@@ -316,7 +341,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart3>;
 	linux,rs485-enabled-at-boot-time;
-	rts-gpios = <&gpio3 30 GPIO_ACTIVE_HIGH>;
+	uart-has-rtscts;
 	status = "okay";
 };
 
@@ -414,9 +439,14 @@
 		#size-cells = <1>;
 		#address-cells = <1>;
 
-		bootstate_backend: bootstate_backend@f0000 {
-			reg = <0xf0000 0x10000>;
-			label = "bootstate";
+		partition@100000 {
+			label = "barebox-environment";
+			reg = <0x100000 0x100000>;
+		};
+
+		partition@200000 {
+			label = "state";
+			reg = <0x200000 0x100000>;
 		};
 	};
 };

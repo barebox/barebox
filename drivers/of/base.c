@@ -2130,6 +2130,21 @@ static void of_probe_memory(void)
 	}
 }
 
+static void of_platform_device_create_root(struct device_node *np)
+{
+	struct device_d *dev;
+	int ret;
+
+	dev = xzalloc(sizeof(*dev));
+	dev->id = DEVICE_ID_SINGLE;
+	dev->device_node = np;
+	dev_set_name(dev, "machine");
+
+	ret = platform_device_register(dev);
+	if (ret)
+		free(dev);
+}
+
 int of_probe(void)
 {
 	struct device_node *firmware;
@@ -2148,6 +2163,8 @@ int of_probe(void)
 	firmware = of_find_node_by_path("/firmware");
 	if (firmware)
 		of_platform_populate(firmware, NULL, NULL);
+
+	of_platform_device_create_root(root_node);
 
 	of_clk_init(root_node, NULL);
 	of_platform_populate(root_node, of_default_bus_match_table, NULL);

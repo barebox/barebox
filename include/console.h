@@ -87,6 +87,7 @@ int console_unregister(struct console_device *cdev);
 
 struct console_device *console_get_by_dev(struct device_d *dev);
 struct console_device *console_get_by_name(const char *name);
+struct console_device *of_console_get_by_alias(const char *alias);
 
 extern struct list_head console_list;
 #define for_each_console(console) list_for_each_entry(console, &console_list, list)

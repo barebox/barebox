@@ -9,6 +9,22 @@
 / {
 	chosen {
 		stdout-path = &uart4;
+
+		environment-emmc {
+			compatible = "barebox,environment";
+			device-path = &usdhc3, "partname:barebox-environment";
+		};
+	};
+
+	reserved-memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		/* Address will be determined by the bootloader */
+		ramoops {
+			compatible = "ramoops";
+		};
 	};
 
 	reg_1v8: regulator-1v8 {
@@ -105,7 +121,22 @@
 	pinctrl-0 = <&pinctrl_usdhc3>;
 	bus-width = <8>;
 	non-removable;
+	no-sdio;
+	no-sd;
 	status = "okay";
+
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	partition@100000 {
+		label = "barebox-environment";
+		reg = <0x100000 0x100000>;
+	};
+
+	partition@200000 {
+		label = "state";
+		reg = <0x200000 0x100000>;
+	};
 };
 
 &iomuxc {

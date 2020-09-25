@@ -6,6 +6,7 @@
 /dts-v1/;
 #include <arm/imx6dl.dtsi>
 #include "imx6qdl-prti6q.dtsi"
+#include "imx6qdl-prti6q-nor.dtsi"
 
 / {
 	model = "Plymovent M2M board";
@@ -26,18 +27,52 @@
 			linux,default-trigger = "heartbeat";
 		};
 	};
+
+	clk50m_phy: phy_clock {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <50000000>;
+	};
 };
 
+&ecspi1 {
+	cs-gpios = <&gpio3 19 GPIO_ACTIVE_HIGH>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_ecspi1>;
+	status = "okay";
+
+	flash@0 {
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		spi-max-frequency = <20000000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+	};
+};
 
 &fec {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_enet>;
 	phy-mode = "rmii";
-	phy-reset-gpios = <&gpio5 22 GPIO_ACTIVE_LOW>;
 	clocks = <&clks IMX6QDL_CLK_ENET>,
-		 <&clks IMX6QDL_CLK_ENET>;
-	clock-names = "ipg", "ahb";
+		 <&clks IMX6QDL_CLK_ENET>,
+		 <&clk50m_phy>;
+	clock-names = "ipg", "ahb", "ptp";
 	status = "okay";
+
+	mdio {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		/* Microchip KSZ8081RNA PHY */
+		rgmii_phy: ethernet-phy@0 {
+			reg = <0>;
+			interrupts-extended = <&gpio5 23 IRQ_TYPE_LEVEL_LOW>;
+			reset-gpios = <&gpio5 22 GPIO_ACTIVE_LOW>;
+			reset-assert-us = <10000>;
+			reset-deassert-us = <300>;
+		};
+	};
 };
 
 &iomuxc {
@@ -55,6 +90,16 @@
 			MX6QDL_PAD_SD4_DAT2__GPIO2_IO10 0x1b0b0 /* REV_ID2 */
 			MX6QDL_PAD_SD4_DAT3__GPIO2_IO11 0x1b0b0 /* REV_ID3 */
 			MX6QDL_PAD_SD4_DAT4__GPIO2_IO12 0x1b0b0 /* REV_ID4 */
+		>;
+	};
+
+	pinctrl_ecspi1: ecspi1grp {
+		fsl,pins = <
+			MX6QDL_PAD_EIM_D17__ECSPI1_MISO		0x100b1
+			MX6QDL_PAD_EIM_D18__ECSPI1_MOSI		0x100b1
+			MX6QDL_PAD_EIM_D16__ECSPI1_SCLK		0x100b1
+			/* CS */
+			MX6QDL_PAD_EIM_D19__GPIO3_IO19		0x000b1
 		>;
 	};
 

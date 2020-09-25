@@ -23,6 +23,7 @@
 #include <environment.h>
 #include <globalvar.h>
 #include <magicvar.h>
+#include <of.h>
 #include <password.h>
 #include <clock.h>
 #include <malloc.h>
@@ -322,6 +323,23 @@ struct console_device *console_get_first_active(void)
 	return NULL;
 }
 EXPORT_SYMBOL(console_get_first_active);
+
+struct console_device *of_console_get_by_alias(const char *alias)
+{
+	struct device_node *node;
+	struct device_d *dev;
+
+	node = of_find_node_by_alias(NULL, alias);
+	if (!node)
+		return NULL;
+
+	dev = of_find_device_by_node(node);
+	if (!dev)
+		return NULL;
+
+	return console_get_by_dev(dev);
+}
+EXPORT_SYMBOL(of_console_get_by_alias);
 
 #endif /* !CONFIG_CONSOLE_NONE */
 

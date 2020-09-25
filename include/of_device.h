@@ -22,6 +22,7 @@ static inline int of_driver_match_device(struct device_d *dev,
 }
 
 extern const void *of_device_get_match_data(const struct device_d *dev);
+extern const char *of_device_get_match_compatible(const struct device_d *dev);
 
 #else /* CONFIG_OFTREE */
 
@@ -32,6 +33,11 @@ static inline int of_driver_match_device(struct device_d *dev,
 }
 
 static inline const void *of_device_get_match_data(const struct device_d *dev)
+{
+	return NULL;
+}
+
+static inline const char *of_device_get_match_compatible(const struct device_d *dev)
 {
 	return NULL;
 }

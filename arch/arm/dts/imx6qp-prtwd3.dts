@@ -97,7 +97,7 @@
 
 	backlight_lcd: backlight_lcd {
 		compatible = "pwm-backlight";
-		pwms = <&pwm1 0 5000000>;
+		pwms = <&pwm1 0 5000000 0>;
 		brightness-levels = <0 1 2 4 6 8 12 16 24 32 48 64 96 128 192 255>;
 		default-brightness-level = <15>;
 		power-supply = <&reg_3v3>;
@@ -105,7 +105,7 @@
 
 	backlight_panel1: backlight_panel1 {
 		compatible = "pwm-backlight";
-		pwms = <&pwm2 0 5000000>;
+		pwms = <&pwm2 0 5000000 0>;
 		brightness-levels = <0 1 2 4 6 8 12 16 24 32 48 64 96 128 192 255>;
 		default-brightness-level = <0>;
 		power-supply = <&reg_3v3>;

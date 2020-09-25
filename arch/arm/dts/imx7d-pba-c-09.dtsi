@@ -265,7 +265,7 @@
 };
 
 &backlight {
-	pwms = <&pwm3 0 5000000>;
+	pwms = <&pwm3 0 5000000 0>;
 	enable-gpios = <&gpio1 1 0>;
 	status = "disabled";
 };

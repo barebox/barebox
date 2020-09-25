@@ -215,6 +215,7 @@ config ARCH_VF610
 config IMX_MULTI_BOARDS
 	bool "Allow multiple boards to be selected"
 	select HAVE_PBL_MULTI_IMAGES
+	select RELOCATABLE
 
 if IMX_MULTI_BOARDS
 

@@ -15,6 +15,7 @@
 #define PCG_PREDIV_MAX		8
 
 #define PCG_DIV_SHIFT		0
+#define PCG_CORE_DIV_WIDTH	3
 #define PCG_DIV_WIDTH		6
 #define PCG_DIV_MAX		64
 
@@ -113,6 +114,29 @@ static int imx8m_clk_composite_divider_set_rate(struct clk *clk,
 
 	return ret;
 }
+static int imx8m_clk_composite_mux_get_parent(struct clk *clk)
+{
+	return clk_mux_ops.get_parent(clk);
+}
+
+static int imx8m_clk_composite_mux_set_parent(struct clk *clk, u8 index)
+{
+	struct clk_mux *m = container_of(clk, struct clk_mux, clk);
+	u32 val;
+
+	val = readl(m->reg);
+	val &= ~(((1 << m->width) - 1) << m->shift);
+	val |= index << m->shift;
+
+	/*
+	 * write twice to make sure non-target interface
+	 * SEL_A/B point the same clk input.
+	 */
+	writel(val, m->reg);
+	writel(val, m->reg);
+
+	return 0;
+}
 
 static const struct clk_ops imx8m_clk_composite_divider_ops = {
 	.recalc_rate = imx8m_clk_composite_divider_recalc_rate,
@@ -120,15 +144,25 @@ static const struct clk_ops imx8m_clk_composite_divider_ops = {
 	.set_rate = imx8m_clk_composite_divider_set_rate,
 };
 
+static const struct clk_ops imx8m_clk_composite_mux_ops = {
+	.get_parent = imx8m_clk_composite_mux_get_parent,
+	.set_parent = imx8m_clk_composite_mux_set_parent,
+	.set_rate = clk_parent_set_rate,
+	.round_rate = clk_parent_round_rate,
+};
+
 struct clk *imx8m_clk_composite_flags(const char *name,
-					const char **parent_names,
+					const char * const *parent_names,
 					int num_parents, void __iomem *reg,
+					u32 composite_flags,
 					unsigned long flags)
 {
 	struct clk *comp = ERR_PTR(-ENOMEM);
 	struct clk_divider *div = NULL;
 	struct clk_gate *gate = NULL;
 	struct clk_mux *mux = NULL;
+	const struct clk_ops *divider_ops;
+	const struct clk_ops *mux_ops;
 
 	mux = kzalloc(sizeof(*mux), GFP_KERNEL);
 	if (!mux)
@@ -144,9 +178,23 @@ struct clk *imx8m_clk_composite_flags(const char *name,
 		goto fail;
 
 	div->reg = reg;
-	div->shift = PCG_PREDIV_SHIFT;
-	div->width = PCG_PREDIV_WIDTH;
-	div->clk.ops = &imx8m_clk_composite_divider_ops;
+	if (composite_flags & IMX_COMPOSITE_CORE) {
+		div->shift = PCG_DIV_SHIFT;
+		div->width = PCG_CORE_DIV_WIDTH;
+		divider_ops = &clk_divider_ops;
+		mux_ops = &imx8m_clk_composite_mux_ops;
+	} else if (composite_flags & IMX_COMPOSITE_BUS) {
+		div->shift = PCG_PREDIV_SHIFT;
+		div->width = PCG_PREDIV_WIDTH;
+		divider_ops = &imx8m_clk_composite_divider_ops;
+		mux_ops = &imx8m_clk_composite_mux_ops;
+	} else {
+		div->shift = PCG_PREDIV_SHIFT;
+		div->width = PCG_PREDIV_WIDTH;
+		divider_ops = &imx8m_clk_composite_divider_ops;
+		mux_ops = &clk_mux_ops;
+	}
+	div->clk.ops = divider_ops;
 
 	gate = kzalloc(sizeof(*gate), GFP_KERNEL);
 	if (!gate)

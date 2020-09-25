@@ -60,6 +60,7 @@ struct imx_serial_priv {
 	void __iomem *regs;
 	struct clk *clk;
 	struct imx_serial_devtype_data *devtype;
+	bool rs485_mode;
 };
 
 static int imx_serial_reffreq(struct imx_serial_priv *priv)
@@ -107,6 +108,9 @@ static int imx_serial_init_port(struct console_device *cdev)
 
 	/* Enable FIFOs */
 	val = readl(regs + UCR2);
+	/* set CTS to not block RS485 bus */
+	if (priv->rs485_mode)
+		val |= UCR2_CTS;
 	val |= UCR2_SRST | UCR2_RXEN | UCR2_TXEN;
 	writel(val, regs + UCR2);
 
@@ -251,6 +255,10 @@ static int imx_serial_probe(struct device_d *dev)
 
 	if (of_property_read_bool(dev->device_node, "fsl,dte-mode"))
 		priv->dte_mode = 1;
+
+	if (of_property_read_bool(dev->device_node, "linux,rs485-enabled-at-boot-time") &&
+	    !of_property_read_bool(dev->device_node, "rs485-rts-active-low"))
+		priv->rs485_mode = 1;
 
 	imx_serial_init_port(cdev);
 

@@ -4,13 +4,6 @@
  * Copyright (C) 2017 Pengutronix, Lucas Stach <kernel@pengutronix.de>
  */
 
-/ {
-	aliases {
-		mmc0 = &usdhc1;
-		mmc1 = &usdhc2;
-	};
-};
-
 &clk {
 	assigned-clocks = <&clk IMX8MQ_CLK_USDHC1>,
 			  <&clk IMX8MQ_CLK_USDHC2>,

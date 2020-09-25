@@ -7,4 +7,3 @@
 	wm 32 0x021B0000 0x84180000
 
 #include "flash-header-phytec-pcl063.h"
-#include <mach/habv4-imx6-gencsf.h>

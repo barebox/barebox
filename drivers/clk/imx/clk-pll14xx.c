@@ -358,8 +358,7 @@ static void clk_pll14xx_unprepare(struct clk *clk)
 {
 	struct clk_pll14xx *pll = to_clk_pll14xx(clk);
 	u32 val;
-printf("%s %p\n", __func__, pll);
-printf("%s %p\n", __func__, pll->base);
+
 	/*
 	 * Set RST to 0, power down mode is enabled and
 	 * every digital block is reset

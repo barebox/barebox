@@ -41,7 +41,7 @@ static inline struct clk *imx_clk_divider_table(const char *name,
 }
 
 static inline struct clk *imx_clk_mux_ldb(const char *name, void __iomem *reg,
-		u8 shift, u8 width, const char **parents, int num_parents)
+		u8 shift, u8 width, const char * const *parents, int num_parents)
 {
 	return clk_mux(name, CLK_SET_RATE_NO_REPARENT | CLK_SET_RATE_PARENT, reg,
 		       shift, width, parents, num_parents, CLK_MUX_READ_ONLY);
@@ -56,7 +56,7 @@ static inline struct clk *imx_clk_fixed_factor(const char *name,
 
 static inline struct clk *imx_clk_mux_flags(const char *name, void __iomem *reg,
 					    u8 shift, u8 width,
-					    const char **parents, u8 num_parents,
+					    const char * const *parents, u8 num_parents,
 					    unsigned long clk_flags)
 {
 	return clk_mux(name, clk_flags, reg, shift, width, parents, num_parents,
@@ -64,7 +64,7 @@ static inline struct clk *imx_clk_mux_flags(const char *name, void __iomem *reg,
 }
 
 static inline struct clk *imx_clk_mux2_flags(const char *name,
-		void __iomem *reg, u8 shift, u8 width, const char **parents,
+		void __iomem *reg, u8 shift, u8 width, const char * const *parents,
 		int num_parents, unsigned long clk_flags)
 {
 	return clk_mux(name, clk_flags | CLK_OPS_PARENT_ENABLE, reg, shift,
@@ -72,20 +72,20 @@ static inline struct clk *imx_clk_mux2_flags(const char *name,
 }
 
 static inline struct clk *imx_clk_mux(const char *name, void __iomem *reg,
-		u8 shift, u8 width, const char **parents, u8 num_parents)
+		u8 shift, u8 width, const char * const *parents, u8 num_parents)
 {
 	return clk_mux(name, 0, reg, shift, width, parents, num_parents, 0);
 }
 
 static inline struct clk *imx_clk_mux2(const char *name, void __iomem *reg,
-		u8 shift, u8 width, const char **parents, u8 num_parents)
+		u8 shift, u8 width, const char * const *parents, u8 num_parents)
 {
 	return clk_mux(name, CLK_OPS_PARENT_ENABLE, reg, shift, width, parents,
 		       num_parents, 0);
 }
 
 static inline struct clk *imx_clk_mux_p(const char *name, void __iomem *reg,
-		u8 shift, u8 width, const char **parents, u8 num_parents)
+		u8 shift, u8 width, const char * const *parents, u8 num_parents)
 {
 	return clk_mux(name, CLK_SET_RATE_PARENT, reg, shift, width, parents,
 		       num_parents, 0);
@@ -139,6 +139,12 @@ static inline struct clk *imx_clk_gate4(const char *name, const char *parent,
 		void __iomem *reg, u8 shift)
 {
 	return clk_gate2(name, parent, reg, shift, 0x3, CLK_OPS_PARENT_ENABLE);
+}
+
+static inline struct clk *imx_clk_gate4_flags(const char *name, const char *parent,
+		void __iomem *reg, u8 shift, unsigned long flags)
+{
+	return clk_gate2(name, parent, reg, shift, 0x3, flags | CLK_OPS_PARENT_ENABLE);
 }
 
 static inline struct clk *imx_clk_gate_shared(const char *name, const char *parent,
@@ -259,13 +265,29 @@ struct clk *imx_clk_cpu(const char *name, const char *parent_name,
 		struct clk *div, struct clk *mux, struct clk *pll,
 		struct clk *step);
 
+#define IMX_COMPOSITE_CORE      BIT(0)
+#define IMX_COMPOSITE_BUS       BIT(1)
+
 struct clk *imx8m_clk_composite_flags(const char *name,
-		const char **parent_names, int num_parents, void __iomem *reg,
+		const char * const *parent_names, int num_parents, void __iomem *reg,
+		u32 composite_flags,
 		unsigned long flags);
+
+#define imx8m_clk_hw_composite_core(name, parent_names, reg)    \
+        imx8m_clk_hw_composite_flags(name, parent_names, \
+                        ARRAY_SIZE(parent_names), reg, \
+                        IMX_COMPOSITE_CORE, \
+                        CLK_SET_RATE_NO_REPARENT | CLK_OPS_PARENT_ENABLE)
+
+#define imx8m_clk_hw_composite_bus(name, parent_names, reg)     \
+        imx8m_clk_hw_composite_flags(name, parent_names, \
+                        ARRAY_SIZE(parent_names), reg, \
+                        IMX_COMPOSITE_BUS, \
+                        CLK_SET_RATE_NO_REPARENT | CLK_OPS_PARENT_ENABLE)
 
 #define __imx8m_clk_composite(name, parent_names, reg, flags) \
 		imx8m_clk_composite_flags(name, parent_names, \
-			ARRAY_SIZE(parent_names), reg, \
+			ARRAY_SIZE(parent_names), reg, 0, \
 			flags | CLK_OPS_PARENT_ENABLE)
 
 #define imx8m_clk_composite(name, parent_names, reg) \
@@ -273,5 +295,27 @@ struct clk *imx8m_clk_composite_flags(const char *name,
 
 #define imx8m_clk_composite_critical(name, parent_names, reg) \
 	__imx8m_clk_composite(name, parent_names, reg, CLK_IS_CRITICAL)
+
+/*
+ * Names of the above functions used in the Linux Kernel. Added here
+ * to be able to use the same names in barebox to reduce the diffs
+ * between barebox and Linux clk drivers.
+ */
+#define imx_clk_hw_mux imx_clk_mux
+#define imx_clk_hw_pll14xx imx_clk_pll14xx
+#define imx_clk_hw_gate imx_clk_gate
+#define imx_clk_hw_fixed_factor imx_clk_fixed_factor
+#define imx_clk_hw_mux_flags imx_clk_mux_flags
+#define imx_clk_hw_divider2 imx_clk_divider2
+#define imx_clk_hw_mux2_flags imx_clk_mux2_flags
+#define imx_clk_hw_gate4_flags imx_clk_gate4_flags
+#define imx_clk_hw_gate4 imx_clk_gate4
+#define imx_clk_hw_cpu imx_clk_cpu
+#define imx_clk_hw_gate2 imx_clk_gate2
+#define imx8m_clk_hw_composite_flags imx8m_clk_composite_flags
+#define imx8m_clk_hw_composite imx8m_clk_composite
+#define imx8m_clk_hw_composite_critical imx8m_clk_composite_critical
+#define imx_clk_hw_gate2_shared2 imx_clk_gate2_shared2
+#define imx_clk_hw_mux2 imx_clk_mux2
 
 #endif /* __IMX_CLK_H */

@@ -39,8 +39,6 @@
 
 #define get_min(a, b) (((a) < (b)) ? (a) : (b))
 
-#define ALIGN(x, a)        (((x) + (a) - 1) & ~((a) - 1))
-
 #define FT_APP	0xaa
 #define FT_CSF	0xcc
 #define FT_DCD	0xee

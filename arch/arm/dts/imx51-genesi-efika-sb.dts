@@ -94,7 +94,7 @@
 	backlight: backlight {
 		compatible = "pwm-backlight";
 		enable-gpios = <&gpio4 12 GPIO_ACTIVE_LOW>;
-		pwms = <&pwm1 0 78770>;
+		pwms = <&pwm1 0 78770 0>;
 		brightness-levels = <0 1 2 4 8 16 32 64 128 255>;
 		default-brightness-level = <9>;
 		pinctrl-names = "default";

@@ -34,7 +34,7 @@
 /* NOR workaround for P1010 erratum A003399 */
 #if defined(CONFIG_FSL_ERRATUM_P1010_A003549)
 #define SRAM_BASE_ADDR 0x100
-void setup_ifc(void)
+static void setup_ifc(void)
 {
 	u32 mas0, mas1, mas2, mas3, mas7;
 	phys_addr_t flash_phys = CFG_FLASH_BASE_PHYS;
@@ -89,7 +89,7 @@ void setup_ifc(void)
 	set_ifc_amask(0, CFG_IFC_AMASK0);
 }
 
-void fsl_erratum_ifc_a003399(void)
+static void fsl_erratum_ifc_a003399(void)
 {
 	u32 mas0, mas1, mas2, mas3, mas7;
 	void __iomem *l2cache = IOMEM(MPC85xx_L2_ADDR);
@@ -127,7 +127,7 @@ void fsl_erratum_ifc_a003399(void)
 	out_be32(l2cache + MPC85xx_L2_L2SRBAR0_OFFSET, 0x0);
 }
 #else
-void fsl_erratum_ifc_a003399(void) {}
+static void fsl_erratum_ifc_a003399(void) {}
 #endif
 
 int fsl_l2_cache_init(void)
@@ -173,7 +173,7 @@ int fsl_l2_cache_init(void)
 }
 
 #if defined(CONFIG_FSL_ERRATUM_P1010_A003549)
-void fsl_erratum_p1010_a003549(void)
+static void fsl_erratum_p1010_a003549(void)
 {
 	void __iomem *guts = IOMEM(MPC85xx_GUTS_ADDR);
 
@@ -181,8 +181,11 @@ void fsl_erratum_p1010_a003549(void)
 			MPC85xx_PMUXCR_LCLK_IFC_CS3);
 }
 #else
-void fsl_erratum_p1010_a003549(void) {}
+static void fsl_erratum_p1010_a003549(void) {}
 #endif
+
+/* Called from assembly */
+void cpu_init_early_f(void);
 
 void cpu_init_early_f(void)
 {

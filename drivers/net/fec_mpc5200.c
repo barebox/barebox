@@ -637,7 +637,7 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 	return len;
 }
 
-int mpc5xxx_fec_probe(struct device_d *dev)
+static int mpc5xxx_fec_probe(struct device_d *dev)
 {
 	struct resource *iores;
 	struct fec_platform_data *pdata = dev->platform_data;

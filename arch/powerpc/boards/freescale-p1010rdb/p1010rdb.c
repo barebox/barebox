@@ -37,6 +37,8 @@
 #include <mach/early_udelay.h>
 #include <of.h>
 
+#include "p1010rdb.h"
+
 static struct gfar_info_struct gfar_info[] = {
 	{
 		.phyaddr = 1,

@@ -20,7 +20,7 @@
 
 static const u8 spd_addr = 0x52;
 
-int fsl_ddr_board_info(struct ddr_board_info_s *info)
+void fsl_ddr_board_info(struct ddr_board_info_s *info)
 {
 	p1010rdb_early_init();
 
@@ -34,8 +34,6 @@ int fsl_ddr_board_info(struct ddr_board_info_s *info)
 	info->i2c_speed = 400000;
 	info->i2c_base = IOMEM(I2C2_BASE_ADDR);
 	info->spd_i2c_addr = &spd_addr;
-
-	return 0;
 }
 
 void fsl_ddr_board_options(struct memctl_options_s *popts,

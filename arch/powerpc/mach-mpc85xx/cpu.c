@@ -28,6 +28,7 @@
 #include <asm-generic/memory_layout.h>
 #include <mach/mmu.h>
 #include <mach/immap_85xx.h>
+#include <mach/mpc85xx.h>
 
 static void __noreturn mpc85xx_restart_soc(struct restart_handler *rst)
 {
@@ -47,6 +48,9 @@ static int restart_register_feature(void)
 	return 0;
 }
 coredevice_initcall(restart_register_feature);
+
+/* Called from assembly */
+long int initdram(int board_type);
 
 long int initdram(int board_type)
 {

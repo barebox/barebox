@@ -411,7 +411,8 @@ set_ddr_sdram_interval(struct fsl_ddr_cfg_regs_s *ddr,
 	ddr->ddr_sdram_interval = (((refint & 0xFFFF) << 16)
 				   | ((bstopre & 0x3FFF) << 0));
 }
-void set_ddr3_sdram_mode(struct fsl_ddr_cfg_regs_s *ddr,
+
+static void set_ddr3_sdram_mode(struct fsl_ddr_cfg_regs_s *ddr,
 			       const struct memctl_options_s *popts,
 			       const struct common_timing_params_s *dimm,
 			       uint32_t cas_latency, uint32_t additive_latency)
@@ -508,7 +509,7 @@ void set_ddr3_sdram_mode(struct fsl_ddr_cfg_regs_s *ddr,
 			       );
 }
 
-void set_ddr2_sdram_mode(struct fsl_ddr_cfg_regs_s *ddr,
+static void set_ddr2_sdram_mode(struct fsl_ddr_cfg_regs_s *ddr,
 			       const struct memctl_options_s *popts,
 			       const struct common_timing_params_s *dimm,
 			       uint32_t cas_latency, uint32_t additive_latency)
@@ -571,7 +572,7 @@ void set_ddr2_sdram_mode(struct fsl_ddr_cfg_regs_s *ddr,
 			       | ((sdmode & 0xFFFF) << 0));
 }
 
-void set_ddrx_sdram_mode(struct fsl_ddr_cfg_regs_s *ddr,
+static void set_ddrx_sdram_mode(struct fsl_ddr_cfg_regs_s *ddr,
 			       const struct memctl_options_s *popts,
 			       const struct common_timing_params_s *dimm,
 			       uint32_t cas_latency, uint32_t additive_latency)

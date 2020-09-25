@@ -20,7 +20,7 @@
 #include <init.h>
 #include <mach/clock.h>
 
-uint64_t ppc_clocksource_read(void)
+static uint64_t ppc_clocksource_read(void)
 {
 	return get_ticks();
 }

@@ -41,7 +41,7 @@ int (*debugger_exception_handler)(struct pt_regs *) = 0;
  * Trap & Exception support
  */
 
-void
+static void
 print_backtrace(unsigned long *sp)
 {
 	int cnt = 0;
@@ -62,7 +62,7 @@ print_backtrace(unsigned long *sp)
 	printf("\n");
 }
 
-void show_regs(struct pt_regs * regs)
+static void show_regs(struct pt_regs * regs)
 {
 	int i;
 
@@ -90,7 +90,7 @@ void show_regs(struct pt_regs * regs)
 }
 
 
-void
+static void
 _exception(int signr, struct pt_regs *regs)
 {
 	show_regs(regs);
@@ -169,19 +169,6 @@ ProgramCheckException(struct pt_regs *regs)
 }
 
 void
-SoftEmuException(struct pt_regs *regs)
-{
-#ifdef CONFIG_KGDB
-	if (debugger_exception_handler && (*debugger_exception_handler)(regs))
-		return;
-#endif
-	show_regs(regs);
-	print_backtrace((unsigned long *)regs->gpr[1]);
-	panic("Software Emulation Exception");
-}
-
-
-void
 UnknownException(struct pt_regs *regs)
 {
 #ifdef CONFIG_KGDB
@@ -206,13 +193,4 @@ DebugException(struct pt_regs *regs)
 #ifdef CONFIG_BEDBUG
   do_bedbug_breakpoint( regs );
 #endif
-}
-
-/* Probe an address by reading.  If not present, return -1, otherwise
- * return 0.
- */
-int
-addr_probe(uint *addr)
-{
-	return 0;
 }

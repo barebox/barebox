@@ -34,6 +34,8 @@
 #include <mach/clock.h>
 #include <mach/early_udelay.h>
 
+#include "p1022ds.h"
+
 /* Define attributes for eTSEC1 and eTSEC2 */
 static struct gfar_info_struct gfar_info[] = {
 	{

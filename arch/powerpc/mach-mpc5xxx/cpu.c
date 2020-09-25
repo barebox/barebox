@@ -33,30 +33,6 @@
 #include <asm-generic/memory_layout.h>
 #include <memory.h>
 
-int checkcpu (void)
-{
-	ulong clock = get_cpu_clock();
-	uint svr, pvr;
-
-	puts ("CPU:   ");
-
-	svr = get_svr();
-	pvr = get_pvr();
-	switch (SVR_VER (svr)) {
-	case SVR_MPC5200:
-		printf ("MPC5200");
-		break;
-	default:
-		printf ("MPC52??  (SVR %08x)", svr);
-		break;
-	}
-
-	printf (" v%d.%d, Core v%d.%d", SVR_MJREV (svr), SVR_MNREV (svr),
-		PVR_MAJ(pvr), PVR_MIN(pvr));
-	printf (" at %ld Hz\n", clock);
-	return 0;
-}
-
 /* ------------------------------------------------------------------------- */
 
 static int mpc5xxx_reserve_region(void)

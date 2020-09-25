@@ -19,6 +19,7 @@
 #include <init.h>
 #include <asm/processor.h>
 #include <types.h>
+#include <mach/clock.h>
 
 /* Bus-to-Core Multipliers */
 
@@ -87,7 +88,7 @@ unsigned long get_timebase_clock(void)
 	return (get_bus_clock() + 3L) / 4L;
 }
 
-int prt_mpc5xxx_clks (void)
+static int prt_mpc5xxx_clks (void)
 {
 	printf("       Bus %ld MHz, IPB %ld MHz, PCI %ld MHz\n",
 			get_bus_clock() / 1000000, get_ipb_clock() / 1000000,

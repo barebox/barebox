@@ -1,12 +1,7 @@
-/* -----------------------------------------------------------------------
- *
- *   Copyright 2009 Intel Corporation; author H. Peter Anvin
- *
- *   This file is part of the Linux kernel, and is made available under
- *   the terms of the GNU General Public License version 2 or (at your
- *   option) any later version; incorporated herein by reference.
- *
- * ----------------------------------------------------------------------- */
+/* SPDX-License-Identifier: GPL-2.0-or-later */
+/* SPDX-FileCopyrightText: 2009 Intel Corporation */
+
+/* Author: H. Peter Anvin */
 
 /*
  * "Glove box" for BIOS calls.  Avoids the constant problems with BIOSes

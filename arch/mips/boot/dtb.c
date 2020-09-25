@@ -42,13 +42,7 @@ static int of_mips_init(void)
 	if (!fdt)
 		fdt = __dtb_start;
 
-	root = of_unflatten_dtb(fdt);
-	if (!IS_ERR(root)) {
-		pr_debug("using internal DTB\n");
-		of_set_root_node(root);
-		if (IS_ENABLED(CONFIG_OFDEVICE))
-			of_probe();
-	}
+	barebox_register_fdt(fdt);
 
 	return 0;
 }

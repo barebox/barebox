@@ -54,10 +54,7 @@ static int of_sandbox_init(void)
 	if (IS_ERR(root))
 		return PTR_ERR(root);
 
-	of_set_root_node(root);
-	of_fix_tree(root);
-	if (IS_ENABLED(CONFIG_OFDEVICE))
-		of_probe();
+	barebox_register_of(root);
 
 	return 0;
 }

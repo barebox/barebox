@@ -58,14 +58,14 @@ static inline void PUTC_LL(char ch)
  * Macros for use in assembly language code
  */
 
-.macro	debug_ll_ns16550_init
+.macro	debug_ll_ns16550_init divisor=DEBUG_LL_UART_DIVISOR
 #ifdef CONFIG_DEBUG_LL
 	la	t0, DEBUG_LL_UART_ADDR
 
 	li	t1, UART_LCR_DLAB		/* DLAB on */
 	sb	t1, UART_LCR(t0)		/* Write it out */
 
-	li	t1, DEBUG_LL_UART_DIVISOR
+	li	t1, \divisor
 	sb	t1, UART_DLL(t0)		/* write low order byte */
 	srl	t1, t1, 8
 	sb	t1, UART_DLM(t0)		/* write high order byte */

@@ -177,6 +177,17 @@ static char *string(char *buf, const char *end, const char *s, int field_width,
 	return buf;
 }
 
+static char *raw_pointer(char *buf, const char *end, const void *ptr, int field_width,
+			 int precision, int flags)
+{
+	flags |= SMALL;
+	if (field_width == -1) {
+		field_width = 2*sizeof(void *);
+		flags |= ZEROPAD;
+	}
+	return number(buf, end, (unsigned long) ptr, 16, field_width, precision, flags);
+}
+
 #ifndef __PBL__
 static char *symbol_string(char *buf, const char *end, const void *ptr, int field_width,
 			   int precision, int flags)
@@ -212,6 +223,16 @@ char *ip4_addr_string(char *buf, const char *end, const u8 *addr, int field_widt
 	*pos = 0;
 
 	return string(buf, end, ip4_addr, field_width, precision, flags);
+}
+
+static
+char *error_string(char *buf, const char *end, const u8 *errptr, int field_width,
+		   int precision, int flags, const char *fmt)
+{
+    if (!IS_ERR(errptr))
+	    return raw_pointer(buf, end, errptr, field_width, precision, flags);
+
+    return string(buf, end, strerrorp(errptr), field_width, precision, flags);
 }
 
 static noinline_for_stack
@@ -345,24 +366,18 @@ static char *pointer(const char *fmt, char *buf, const char *end, const void *pt
                         return ip4_addr_string(buf, end, ptr, field_width, precision, flags, fmt);
 		}
 		break;
+	case 'e':
+		return error_string(buf, end, ptr, field_width, precision, flags, fmt);
 	}
-	flags |= SMALL;
-	if (field_width == -1) {
-		field_width = 2*sizeof(void *);
-		flags |= ZEROPAD;
-	}
-	return number(buf, end, (unsigned long) ptr, 16, field_width, precision, flags);
+
+	return raw_pointer(buf, end, ptr, field_width, precision, flags);
 }
+
 #else
 static char *pointer(const char *fmt, char *buf, const char *end, const void *ptr,
 		     int field_width, int precision, int flags)
 {
-	flags |= SMALL;
-	if (field_width == -1) {
-		field_width = 2*sizeof(void *);
-		flags |= ZEROPAD;
-	}
-	return number(buf, end, (unsigned long) ptr, 16, field_width, precision, flags);
+	return raw_pointer(buf, end, ptr, field_width, precision, flags);
 }
 #endif
 

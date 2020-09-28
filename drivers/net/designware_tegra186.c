@@ -213,9 +213,8 @@ static int eqos_init_tegra186(struct device_d *dev, struct eqos *eqos)
 
 	priv->rst = reset_control_get(dev, "eqos");
 	if (IS_ERR(priv->rst)) {
-		ret = PTR_ERR(priv->rst);
-		dev_err(dev, "reset_get_by_name(rst) failed: %s\n", strerror(-ret));
-		return ret;
+		dev_err(dev, "reset_get_by_name(rst) failed: %pe\n", priv->rst);
+		return PTR_ERR(priv->rst);
 	}
 
 	phy_reset = of_get_named_gpio(dev->device_node, "phy-reset-gpios", 0);

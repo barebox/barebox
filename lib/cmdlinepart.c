@@ -30,7 +30,6 @@ int cmdlinepart_do_parse_one(const char *devname, const char *partstr,
 	char *end;
 	char buf[PATH_MAX] = {};
 	unsigned long flags = 0;
-	int ret = 0;
 	struct cdev *cdev;
 
 	memset(buf, 0, PATH_MAX);
@@ -85,11 +84,11 @@ int cmdlinepart_do_parse_one(const char *devname, const char *partstr,
 
 	cdev = devfs_add_partition(devname, *offset, size, flags, buf);
 	if (IS_ERR(cdev)) {
-		ret = PTR_ERR(cdev);
-		printf("cannot create %s: %s\n", buf, strerror(-ret));
+		printf("cannot create %s: %pe\n", buf, cdev);
+		return PTR_ERR(cdev);
 	}
 
-	return ret;
+	return 0;
 }
 
 int cmdlinepart_do_parse(const char *devname, const char *parts, loff_t devsize,

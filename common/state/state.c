@@ -271,9 +271,8 @@ static int state_convert_node_variable(struct state *state,
 	if (conv == STATE_CONVERT_FROM_NODE_CREATE) {
 		sv = vtype->create(state, name, node, vtype);
 		if (IS_ERR(sv)) {
+			dev_err(&state->dev, "failed to create %s: %pe\n", name, sv);
 			ret = PTR_ERR(sv);
-			dev_err(&state->dev, "failed to create %s: %s\n", name,
-				strerror(-ret));
 			goto out_free;
 		}
 

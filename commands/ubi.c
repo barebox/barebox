@@ -304,8 +304,8 @@ static int do_ubirmvol(int argc, char *argv[])
 
 	desc = ubi_open_volume_nm(ubinum, argv[2], UBI_EXCLUSIVE);
 	if (IS_ERR(desc)) {
+		printf("failed to open volume %s: %pe\n", argv[2], desc);
 		ret = PTR_ERR(desc);
-		printf("failed to open volume %s: %s\n", argv[2], strerror(-ret));
 		goto err;
 	}
 

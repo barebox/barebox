@@ -277,9 +277,8 @@ static int imx_chipidea_probe(struct device_d *dev)
 	if (of_property_read_bool(dev->device_node, "fsl,usbphy")) {
 		ci->phy = of_phy_get_by_phandle(dev, "fsl,usbphy", 0);
 		if (IS_ERR(ci->phy)) {
-			ret = PTR_ERR(ci->phy);
-			dev_err(dev, "Cannot get phy: %s\n", strerror(-ret));
-			return ret;
+			dev_err(dev, "Cannot get phy: %pe\n", ci->phy);
+			return PTR_ERR(ci->phy);
 		} else {
 			ci->usbphy = phy_to_usbphy(ci->phy);
 			if (IS_ERR(ci->usbphy))

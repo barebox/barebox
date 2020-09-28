@@ -163,6 +163,9 @@ int of_regulator_register(struct regulator_dev *rd, struct device_node *node)
 	struct regulator_internal *ri;
 	const char *name;
 
+	if (!rd || !node)
+		return -EINVAL;
+
 	rd->boot_on = of_property_read_bool(node, "regulator-boot-on");
 
 	name = of_get_property(node, "regulator-name", NULL);

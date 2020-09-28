@@ -15,8 +15,8 @@ extern const unsigned long kallsyms_markers[] __attribute__((weak));
 
 static inline int is_kernel_text(unsigned long addr)
 {
-        if (addr >= (unsigned long)_stext && addr <= (unsigned long)_end)
-                return 1;
+	if (addr >= (unsigned long)_stext && addr <= (unsigned long)_end)
+		return 1;
 	return 0;
 }
 

@@ -45,6 +45,17 @@ Reboot mode providers have priorities. The provider with the highest
 priority has its parameters aliased as ``$global.system.reboot_mode.prev``
 and ``$global.system.reboot_mode.next``.
 
+Reset
+~~~~~
+
+Reboot modes can be stored on a syscon wrapping general purpose registers
+that survives warm resets. If the system instead did reset via an external
+power management IC, the registers may lose their value.
+
+If such reboot mode storage is used, users must take care to use the correct
+reset provider. In barebox, multiple reset providers may co-exist. They
+``reset`` command allows listing and choosing a specific reboot mode.
+
 Disambiguation
 ~~~~~~~~~~~~~~
 

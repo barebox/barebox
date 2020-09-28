@@ -38,6 +38,7 @@
 #include <linux/stat.h>
 #include <envfs.h>
 #include <magicvar.h>
+#include <linux/reboot-mode.h>
 #include <asm/sections.h>
 #include <uncompress.h>
 #include <globalvar.h>
@@ -310,6 +311,7 @@ static int run_init(void)
 	DIR *dir;
 	struct dirent *d;
 	const char *initdir = "/env/init";
+	const char *bmode;
 	bool env_bin_init_exists;
 	enum autoboot_state autoboot;
 	struct stat s;
@@ -348,6 +350,20 @@ static int run_init(void)
 		}
 
 		closedir(dir);
+	}
+
+	/* source matching script in /env/bmode/ */
+	bmode = reboot_mode_get();
+	if (bmode) {
+		char *scr, *path;
+
+		scr = xasprintf("source /env/bmode/%s", bmode);
+		path = &scr[strlen("source ")];
+		if (stat(path, &s) == 0) {
+			pr_info("Invoking '%s'...\n", path);
+			run_command(scr);
+		}
+		free(scr);
 	}
 
 	autoboot = do_autoboot_countdown();

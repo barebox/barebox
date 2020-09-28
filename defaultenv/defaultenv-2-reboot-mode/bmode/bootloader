@@ -1,0 +1,3 @@
+# Mode to re-flash partitions
+global.autoboot_timeout=30
+global.usbgadget.autostart=1

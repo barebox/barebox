@@ -168,6 +168,9 @@ int of_regulator_register(struct regulator_dev *rd, struct device_node *node)
 	name = of_get_property(node, "regulator-name", NULL);
 
 	ri = __regulator_register(rd, name);
+	if (IS_ERR(ri))
+		return PTR_ERR(ri);
+
 	ri->node = node;
 
 	of_property_read_u32(node, "regulator-enable-ramp-delay",

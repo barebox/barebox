@@ -35,8 +35,7 @@ static struct file_list *parse(const char *files)
 {
 	struct file_list *list = file_list_parse(files);
 	if (IS_ERR(list)) {
-		pr_err("Parsing file list \"%s\" failed: %s\n", files,
-		       strerrorp(list));
+		pr_err("Parsing file list \"%s\" failed: %pe\n", files, list);
 		return NULL;
 	}
 	return list;

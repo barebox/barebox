@@ -87,8 +87,7 @@ void superio_chip_add(struct superio_chip *siochip)
 	regmap = regmap_init(siochip->dev, &superio_regmap_bus, siochip,
 			     &superio_regmap_config);
 	if (IS_ERR(regmap))
-		pr_warn("creating %s regmap failed: %s\n",
-			chipname, strerrorp(regmap));
+		pr_warn("creating %s regmap failed: %pe\n", chipname, regmap);
 
 	ret = regmap_register_cdev(regmap, chipname);
 	if (ret)

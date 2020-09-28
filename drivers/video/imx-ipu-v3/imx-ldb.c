@@ -162,7 +162,7 @@ static int imx6q_set_clock(struct imx_ldb *ldb, int ipuno, int dino, int chno, u
 	diclk = clk_lookup(clkname);
 	free(clkname);
 	if (IS_ERR(diclk)) {
-		dev_err(ldb->dev, "failed to get di clk: %s\n", strerrorp(diclk));
+		dev_err(ldb->dev, "failed to get di clk: %pe\n", diclk);
 		return PTR_ERR(diclk);
 	}
 
@@ -170,7 +170,7 @@ static int imx6q_set_clock(struct imx_ldb *ldb, int ipuno, int dino, int chno, u
 	ldbclk = clk_lookup(clkname);
 	free(clkname);
 	if (IS_ERR(ldbclk)) {
-		dev_err(ldb->dev, "failed to get ldb clk: %s\n", strerrorp(ldbclk));
+		dev_err(ldb->dev, "failed to get ldb clk: %pe\n", ldbclk);
 		return PTR_ERR(ldbclk);
 	}
 
@@ -233,7 +233,7 @@ static int imx53_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, int di,
 	diclk = clk_lookup(clkname);
 	free(clkname);
 	if (IS_ERR(diclk)) {
-		dev_err(ldb->dev, "failed to get di clk: %s\n", strerrorp(diclk));
+		dev_err(ldb->dev, "failed to get di clk: %pe\n", diclk);
 		return PTR_ERR(diclk);
 	}
 
@@ -241,7 +241,7 @@ static int imx53_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, int di,
 	ldbclk = clk_lookup(clkname);
 	free(clkname);
 	if (IS_ERR(ldbclk)) {
-		dev_err(ldb->dev, "failed to get ldb clk: %s\n", strerrorp(ldbclk));
+		dev_err(ldb->dev, "failed to get ldb clk: %pe\n", ldbclk);
 		return PTR_ERR(ldbclk);
 	}
 

@@ -648,8 +648,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 
 		fit = fit_open(data->os_file, data->verbose, data->verify);
 		if (IS_ERR(fit)) {
-			printf("Loading FIT image %s failed with: %s\n", data->os_file,
-			       strerrorp(fit));
+			printf("Loading FIT image %s failed with: %pe\n", data->os_file, fit);
 			ret = PTR_ERR(fit);
 			goto err_out;
 		}

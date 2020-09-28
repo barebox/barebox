@@ -232,7 +232,7 @@ char *error_string(char *buf, const char *end, const u8 *errptr, int field_width
     if (!IS_ERR(errptr))
 	    return raw_pointer(buf, end, errptr, field_width, precision, flags);
 
-    return string(buf, end, strerrorp(errptr), field_width, precision, flags);
+    return string(buf, end, strerror(-PTR_ERR(errptr)), field_width, precision, flags);
 }
 
 static noinline_for_stack

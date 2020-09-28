@@ -430,8 +430,7 @@ static int ubifs_probe(struct device_d *dev)
 
 	priv->ubi = ubi_open_volume_cdev(priv->cdev, UBI_READONLY);
 	if (IS_ERR(priv->ubi)) {
-		dev_err(dev, "failed to open ubi volume: %s\n",
-				strerrorp(priv->ubi));
+		dev_err(dev, "failed to open ubi volume: %pe\n", priv->ubi);
 		ret = PTR_ERR(priv->ubi);
 		goto err_free;
 	}

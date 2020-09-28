@@ -29,7 +29,7 @@ static int acpi_test_probe(struct device_d *dev)
 
 	sdt = (u8 __force *)dev_request_mem_region_by_name(dev, "SDT");
 	if (IS_ERR(sdt)) {
-		dev_err(dev, "no SDT resource available: %s\n", strerrorp(sdt));
+		dev_err(dev, "no SDT resource available: %pe\n", sdt);
 		return PTR_ERR(sdt);
 	}
 

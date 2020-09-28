@@ -64,14 +64,14 @@ static int do_of_diff(int argc, char *argv[])
 	b = get_tree(argv[2], root);
 
 	if (IS_ERR(a)) {
-		printf("Cannot read %s: %s\n", argv[1], strerrorp(a));
+		printf("Cannot read %s: %pe\n", argv[1], a);
 		ret = COMMAND_ERROR;
 		a = NULL;
 		goto out;
 	}
 
 	if (IS_ERR(b)) {
-		printf("Cannot read %s: %s\n", argv[2], strerrorp(b));
+		printf("Cannot read %s: %pe\n", argv[2], b);
 		ret = COMMAND_ERROR;
 		b = NULL;
 		goto out;

@@ -52,12 +52,55 @@ static int reboot_mode_add_param(struct device_d *dev,
 	return PTR_ERR_OR_ZERO(param);
 }
 
+static struct device_node *of_get_node_by_reproducible_name(struct device_node *dstroot,
+							    struct device_node *srcnp)
+{
+	struct device_node *dstnp;
+	char *name;
+
+	name = of_get_reproducible_name(srcnp);
+	dstnp = of_find_node_by_reproducible_name(dstroot, name);
+	free(name);
+
+	return dstnp;
+}
+
+static int of_reboot_mode_fixup(struct device_node *root, void *ctx)
+{
+	struct reboot_mode_driver *reboot = ctx;
+	struct device_node *dstnp, *srcnp, *dstparent;
+
+	srcnp = reboot->dev->device_node;
+	dstnp = of_get_node_by_reproducible_name(root, srcnp);
+
+	/* nothing to do when called on barebox-internal tree */
+	if (srcnp == dstnp)
+		return 0;
+
+	if (dstnp) {
+		dstparent = dstnp->parent;
+		of_delete_node(dstnp);
+	} else {
+		dstparent = of_get_node_by_reproducible_name(root, srcnp->parent);
+	}
+
+	if (!dstparent)
+		return -EINVAL;
+
+	of_copy_node(dstparent, srcnp);
+
+	return 0;
+}
+
 static int reboot_mode_add_globalvar(void)
 {
 	struct reboot_mode_driver *reboot = __boot_mode;
 
 	if (!reboot)
 		return 0;
+
+	if (!reboot->no_fixup)
+		of_register_fixup(of_reboot_mode_fixup, reboot);
 
 	return reboot_mode_add_param(&global_device, "system.reboot_mode.", reboot);
 }

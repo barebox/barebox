@@ -11,6 +11,7 @@ struct reboot_mode_driver {
 	struct device_d *dev;
 	int (*write)(struct reboot_mode_driver *reboot, u32 magic);
 	int priority;
+	bool no_fixup;
 
 	/* filled by reboot_mode_register */
 	int reboot_mode_prev, reboot_mode_next;

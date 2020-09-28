@@ -421,7 +421,7 @@ static int ssd1307fb_probe(struct device_d *dev)
 		goto fb_alloc_error;
 	}
 
-	par->vbat = regulator_get(&client->dev, "vbat-supply");
+	par->vbat = regulator_get(&client->dev, "vbat");
 	if (IS_ERR(par->vbat)) {
 		dev_info(&client->dev, "Will not use VBAT");
 		par->vbat = NULL;

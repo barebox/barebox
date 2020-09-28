@@ -19,7 +19,7 @@ struct syscon_reboot_mode {
 };
 
 static int syscon_reboot_mode_write(struct reboot_mode_driver *reboot,
-				    unsigned int magic)
+				    const u32 *magic)
 {
 	struct syscon_reboot_mode *syscon_rbm;
 	int ret;
@@ -27,7 +27,7 @@ static int syscon_reboot_mode_write(struct reboot_mode_driver *reboot,
 	syscon_rbm = container_of(reboot, struct syscon_reboot_mode, reboot);
 
 	ret = regmap_update_bits(syscon_rbm->map, syscon_rbm->offset,
-				 syscon_rbm->mask, magic);
+				 syscon_rbm->mask, *magic);
 	if (ret < 0)
 		dev_err(reboot->dev, "update reboot mode bits failed\n");
 
@@ -39,7 +39,12 @@ static int syscon_reboot_mode_probe(struct device_d *dev)
 	int ret;
 	struct syscon_reboot_mode *syscon_rbm;
 	struct device_node *np = dev->device_node;
+	size_t nelems;
 	u32 magic;
+
+	nelems = of_property_count_elems_of_size(np, "offset", sizeof(__be32));
+	if (nelems != 1)
+		return -EINVAL;
 
 	syscon_rbm = xzalloc(sizeof(*syscon_rbm));
 
@@ -65,7 +70,7 @@ static int syscon_reboot_mode_probe(struct device_d *dev)
 
 	magic &= syscon_rbm->mask;
 
-	ret = reboot_mode_register(&syscon_rbm->reboot, magic);
+	ret = reboot_mode_register(&syscon_rbm->reboot, &magic, 1);
 	if (ret)
 		dev_err(dev, "can't register reboot mode\n");
 

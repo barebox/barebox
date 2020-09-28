@@ -20,11 +20,9 @@ static struct reboot_mode_driver *__boot_mode;
 static int reboot_mode_param_set(struct param_d *p, void *priv)
 {
 	struct reboot_mode_driver *reboot = priv;
-	u32 magic;
+	size_t i = reboot->reboot_mode_next * reboot->nelems;
 
-	magic = reboot->magics[reboot->reboot_mode_next];
-
-	return reboot->write(reboot, magic);
+	return reboot->write(reboot, &reboot->magics[i]);
 }
 
 static int reboot_mode_add_param(struct device_d *dev,
@@ -108,9 +106,13 @@ late_initcall(reboot_mode_add_globalvar);
 
 
 static void reboot_mode_print(struct reboot_mode_driver *reboot,
-			      const char *prefix, u32 magic)
+			      const char *prefix, const u32 *arr)
 {
-	dev_dbg(reboot->dev, "%s: %08x\n", prefix, magic);
+	size_t i;
+	dev_dbg(reboot->dev, "%s: ", prefix);
+	for (i = 0; i < reboot->nelems; i++)
+		__pr_printk(7, "%08x ", arr[i]);
+	__pr_printk(7, "\n");
 }
 
 /**
@@ -120,7 +122,8 @@ static void reboot_mode_print(struct reboot_mode_driver *reboot,
  *
  * Returns: 0 on success or a negative error code on failure.
  */
-int reboot_mode_register(struct reboot_mode_driver *reboot, u32 reboot_mode)
+int reboot_mode_register(struct reboot_mode_driver *reboot,
+			 const u32 *reboot_mode, size_t nelems)
 {
 	struct property *prop;
 	struct device_node *np = reboot->dev->device_node;
@@ -142,7 +145,8 @@ int reboot_mode_register(struct reboot_mode_driver *reboot, u32 reboot_mode)
 	}
 
 	reboot->nmodes = nmodes;
-	reboot->magics = xzalloc(nmodes * sizeof(u32));
+	reboot->nelems = nelems;
+	reboot->magics = xzalloc(nmodes * nelems * sizeof(u32));
 	reboot->modes = xzalloc(nmodes * sizeof(const char *));
 
 	reboot_mode_print(reboot, "registering magic", reboot_mode);
@@ -151,13 +155,13 @@ int reboot_mode_register(struct reboot_mode_driver *reboot, u32 reboot_mode)
 		const char **mode;
 		u32 *magic;
 
-		magic = &reboot->magics[i];
+		magic = &reboot->magics[i * nelems];
 		mode = &reboot->modes[i];
 
 		if (strncmp(prop->name, PREFIX, len))
 			continue;
 
-		if (of_property_read_u32(np, prop->name, magic)) {
+		if (of_property_read_u32_array(np, prop->name, magic, nelems)) {
 			dev_err(reboot->dev, "reboot mode %s without magic number\n",
 				*mode);
 			continue;
@@ -171,22 +175,23 @@ int reboot_mode_register(struct reboot_mode_driver *reboot, u32 reboot_mode)
 			goto error;
 		}
 
-		reboot_mode_print(reboot, *mode, *magic);
+		reboot_mode_print(reboot, *mode, magic);
 
 		i++;
 	}
 
 	for (i = 0; i < reboot->nmodes; i++) {
-		if (reboot->magics[i] == reboot_mode) {
-			reboot->reboot_mode_prev = i;
-			break;
-		}
+		if (memcmp(&reboot->magics[i * nelems], reboot_mode, nelems * sizeof(u32)))
+			continue;
+
+		reboot->reboot_mode_prev = i;
+		break;
 	}
 
 	reboot_mode_add_param(reboot->dev, "", reboot);
 
 	/* clear mode for next reboot */
-	reboot->write(reboot, 0);
+	reboot->write(reboot, &(u32) { 0 });
 
 	if (!reboot->priority)
 		reboot->priority = REBOOT_MODE_DEFAULT_PRIORITY;

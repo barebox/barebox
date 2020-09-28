@@ -154,8 +154,6 @@ source "lib/logo/Kconfig"
 
 source "lib/bootstrap/Kconfig"
 
-source "lib/kasan/Kconfig"
-
 config PRINTF_UUID
 	bool
 

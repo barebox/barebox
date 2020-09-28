@@ -1374,6 +1374,7 @@ config PBL_BREAK
 	  on early pbl init. This option should be used only with JTAG debugger!
 
 source "lib/Kconfig.ubsan"
+source "lib/kasan/Kconfig"
 
 config ASAN
 	bool "ASAN: runtime memory debugger"

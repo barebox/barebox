@@ -42,3 +42,4 @@ obj-y	+= memory/
 obj-y	+= soc/imx/
 obj-y	+= nvme/
 obj-y	+= ddr/
+obj-y	+= power/

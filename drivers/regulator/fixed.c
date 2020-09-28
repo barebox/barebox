@@ -82,6 +82,7 @@ static int regulator_fixed_probe(struct device_d *dev)
 
 	fix->rdesc.ops = &fixed_ops;
 	fix->rdev.desc = &fix->rdesc;
+	fix->rdev.dev = dev;
 
 	if (of_find_property(dev->device_node, "regulator-always-on", NULL) ||
 	    of_find_property(dev->device_node, "regulator-boot-on", NULL)) {

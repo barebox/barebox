@@ -67,6 +67,7 @@ static int anatop_regulator_probe(struct device_d *dev)
 
 	rdev->desc = rdesc;
 	rdev->regmap = syscon_node_to_regmap(anatop_np);
+	rdev->dev = dev;
 	if (IS_ERR(rdev->regmap))
 		return PTR_ERR(rdev->regmap);
 

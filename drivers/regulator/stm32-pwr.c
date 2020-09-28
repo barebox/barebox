@@ -182,6 +182,7 @@ static int stm32_pwr_regulator_probe(struct device_d *dev)
 		priv->dev = dev;
 
 		priv->rdev.desc = &desc->desc;
+		priv->rdev.dev = dev;
 
 		priv->supply = regulator_get(dev, desc->supply_name);
 		if (IS_ERR(priv->supply))

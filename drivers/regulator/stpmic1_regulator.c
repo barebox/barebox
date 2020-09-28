@@ -390,6 +390,7 @@ static int stpmic1_regulator_register(struct device_d *dev, int id,
 
 	cfg->dev = dev;
 	cfg->rdev.desc = &cfg->desc;
+	cfg->rdev.dev = dev;
 	cfg->rdev.regmap = dev_get_regmap(dev->parent, NULL);
 	if (IS_ERR(cfg->rdev.regmap))
 		return PTR_ERR(cfg->rdev.regmap);

@@ -16,6 +16,7 @@
 #define AT91_PMC_LL_FLAG_H32MXDIV	(1 << 3)
 #define AT91_PMC_LL_FLAG_PMC_UTMI	(1 << 4)
 #define AT91_PMC_LL_FLAG_GCSR		(1 << 5)
+#define AT91_PMC_LL_FLAG_MCK_BYPASS	(1 << 6)
 
 #define AT91_PMC_LL_AT91RM9200	(0)
 #define AT91_PMC_LL_AT91SAM9260	(0)
@@ -30,6 +31,10 @@
 #define AT91_PMC_LL_SAMA5D2	(AT91_PMC_LL_FLAG_SAM9X5_PMC | \
 				 AT91_PMC_LL_FLAG_MEASURE_XTAL | \
 				 AT91_PMC_LL_FLAG_PMC_UTMI)
+/* This assumes a crystal on both XIN and XOUT. If your board
+ * instead has an extenal oscillator on XIN only,
+ * AT91_PMC_LL_FLAG_MCK_BYPASS needs to be OR`ed in as well
+ */
 #define AT91_PMC_LL_SAMA5D3	(AT91_PMC_LL_FLAG_SAM9X5_PMC | \
 				 AT91_PMC_LL_FLAG_DISABLE_RC | \
 				 AT91_PMC_LL_FLAG_PMC_UTMI)

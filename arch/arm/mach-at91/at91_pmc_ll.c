@@ -88,6 +88,8 @@ void at91_pmc_init(void __iomem *pmc_base, unsigned int flags)
 		tmp &= ~AT91_PMC_OSCBYPASS;
 		tmp &= ~AT91_PMC_KEY_MASK;
 		tmp |= AT91_PMC_KEY;
+		if (flags & AT91_PMC_LL_FLAG_MCK_BYPASS)
+			tmp |= AT91_PMC_OSCBYPASS;
 		at91_pmc_write(AT91_CKGR_MOR, tmp);
 
 		tmp = at91_pmc_read(AT91_CKGR_MOR);

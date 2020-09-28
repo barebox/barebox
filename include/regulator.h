@@ -2,6 +2,8 @@
 #ifndef __REGULATOR_H
 #define __REGULATOR_H
 
+struct device_d;
+
 /* struct regulator is an opaque object for consumers */
 struct regulator;
 

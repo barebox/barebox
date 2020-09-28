@@ -383,6 +383,11 @@ static int stpmic1_regulator_register(struct device_d *dev, int id,
 {
 	int ret;
 
+	if (!match->of_node) {
+		dev_dbg(dev, "Skip missing DTB regulator %s", match->name);
+		return 0;
+	}
+
 	cfg->dev = dev;
 	cfg->rdev.desc = &cfg->desc;
 	cfg->rdev.regmap = dev_get_regmap(dev->parent, NULL);

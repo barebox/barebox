@@ -39,18 +39,6 @@ static iomux_v3_cfg_t sabrelite_enet_gpio_pads[] = {
 	MX6Q_PAD_RGMII_RX_CTL__GPIO_6_24,
 };
 
-static int sabrelite_mem_init(void)
-{
-	if (!of_machine_is_compatible("fsl,imx6q-sabrelite") &&
-	    !of_machine_is_compatible("fsl,imx6dl-sabrelite"))
-		return 0;
-
-	arm_add_mem_device("ram0", 0x10000000, SZ_1G);
-
-	return 0;
-}
-mem_initcall(sabrelite_mem_init);
-
 static int ksz9021rn_phy_fixup(struct phy_device *dev)
 {
 	phy_write(dev, 0x09, 0x0f00);

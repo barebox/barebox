@@ -111,7 +111,7 @@ config LIBFDT
 
 config RATP
 	select CRC_ITU_T
-	select COMPILE_MEMORY
+	select DEV_MEM
 	select COMMAND_SUPPORT
 	select POLLER
 	depends on CONSOLE_FULL

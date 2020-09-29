@@ -9,6 +9,9 @@
 #include <mach/linux.h>
 #include <init.h>
 #include <mach/linux.h>
+#include <asm/io.h>
+
+unsigned char __pci_iobase[IO_SPACE_LIMIT];
 
 static LIST_HEAD(sandbox_device_list);
 

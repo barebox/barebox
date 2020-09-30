@@ -150,7 +150,7 @@ EXPORT_SYMBOL_GPL(reset_control_deassert);
 static struct reset_control *of_reset_control_get(struct device_node *node,
 						  const char *id)
 {
-	struct reset_control *rstc = ERR_PTR(-ENODEV);
+	struct reset_control *rstc;
 	struct reset_controller_dev *r, *rcdev;
 	struct of_phandle_args args;
 	int index = 0;

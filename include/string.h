@@ -5,6 +5,7 @@
 #include <linux/string.h>
 
 int strtobool(const char *str, int *val);
+char *strsep_unescaped(char **, const char *);
 
 void *__default_memset(void *, int, __kernel_size_t);
 void *__nokasan_default_memset(void *, int, __kernel_size_t);

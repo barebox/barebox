@@ -366,4 +366,4 @@ static int stm32mp_init(void)
 
 	return 0;
 }
-postcore_initcall(stm32mp_init);
+core_initcall(stm32mp_init);

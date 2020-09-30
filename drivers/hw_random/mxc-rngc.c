@@ -133,7 +133,7 @@ static int mxc_rngc_data_present(struct hwrng *rng)
 static int mxc_rngc_read(struct hwrng *rng, void *buf, size_t max, bool wait)
 {
 	struct mxc_rngc *rngc = container_of(rng, struct mxc_rngc, rng);
-	unsigned int err;
+	unsigned int err = 0;
 	int count = 0;
 	u32 *data = buf;
 

@@ -289,6 +289,7 @@ static int add_image(const char *_str, char *devname_template, int *devname_numb
 	hf->fd = fd;
 	hf->filename = filename;
 	hf->is_blockdev = blkdev;
+	hf->base = (unsigned long)MAP_FAILED;
 
 	if (fd < 0) {
 		perror("open");
@@ -311,15 +312,16 @@ static int add_image(const char *_str, char *devname_template, int *devname_numb
 		if (!cdev)
 			hf->is_blockdev = 1;
 	}
-	if (hf->size <= SIZE_MAX)
+	if (hf->size <= SIZE_MAX) {
 		hf->base = (unsigned long)mmap(NULL, hf->size,
 				PROT_READ | (readonly ? 0 : PROT_WRITE),
 				MAP_SHARED, fd, 0);
-	else
-		printf("warning: %s: contiguous map failed\n", filename);
 
-	if (hf->base == (unsigned long)MAP_FAILED)
-		printf("warning: mmapping %s failed: %s\n", filename, strerror(errno));
+		if (hf->base == (unsigned long)MAP_FAILED)
+			printf("warning: mmapping %s failed: %s\n", filename, strerror(errno));
+	} else {
+		printf("warning: %s: contiguous map failed\n", filename);
+	}
 
 	if (blkdev && hf->size % 512 != 0) {
 		printf("warning: registering %s as block device failed: invalid block size\n",

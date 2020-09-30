@@ -330,7 +330,6 @@ void musb_load_testpacket(struct musb *musb)
 static void musb_generic_disable(struct musb *musb)
 {
 	void __iomem	*mbase = musb->mregs;
-	u16	temp;
 
 	/* disable interrupts */
 	musb_writeb(mbase, MUSB_INTRUSBE, 0);
@@ -343,9 +342,9 @@ static void musb_generic_disable(struct musb *musb)
 	musb_writeb(mbase, MUSB_DEVCTL, 0);
 
 	/*  flush pending interrupts */
-	temp = musb_readb(mbase, MUSB_INTRUSB);
-	temp = musb_readw(mbase, MUSB_INTRTX);
-	temp = musb_readw(mbase, MUSB_INTRRX);
+	(void)musb_readb(mbase, MUSB_INTRUSB);
+	(void)musb_readw(mbase, MUSB_INTRTX);
+	(void)musb_readw(mbase, MUSB_INTRRX);
 
 }
 

@@ -34,8 +34,8 @@
 struct ar9344_wd {
 	struct watchdog		wd;
 	void __iomem		*base;
-	struct clk		*clk;
 	struct device_d		*dev;
+	unsigned int		rate;
 };
 
 static int ar9344_watchdog_set_timeout(struct watchdog *wd, unsigned timeout)
@@ -45,7 +45,7 @@ static int ar9344_watchdog_set_timeout(struct watchdog *wd, unsigned timeout)
 
 	if (timeout) {
 		ctrl = AR9344_WD_CTRL_ACTION_FCR;
-		val = timeout * clk_get_rate(priv->clk);
+		val = timeout * priv->rate;
 	} else {
 		ctrl = AR9344_WD_CTRL_ACTION_NONE;
 		val = U32_MAX;
@@ -74,6 +74,7 @@ static int ar9344_wdt_probe(struct device_d *dev)
 {
 	struct resource *iores;
 	struct ar9344_wd *priv;
+	struct clk *clk;
 	int ret;
 
 	priv = xzalloc(sizeof(struct ar9344_wd));
@@ -93,16 +94,22 @@ static int ar9344_wdt_probe(struct device_d *dev)
 
 	ar9344_watchdog_detect_reset_source(priv);
 
-	priv->clk = clk_get(dev, NULL);
-	if (IS_ERR(priv->clk)) {
+	clk = clk_get(dev, NULL);
+	if (IS_ERR(clk)) {
 		dev_err(dev, "could not get clk\n");
-		ret = PTR_ERR(priv->clk);
+		ret = PTR_ERR(clk);
 		goto on_error;
 	}
 
-	clk_enable(priv->clk);
+	clk_enable(clk);
 
-	priv->wd.timeout_max = U32_MAX / clk_get_rate(priv->clk);
+	priv->rate = clk_get_rate(clk);
+	if (priv->rate == 0) {
+		ret = -EINVAL;
+		goto on_error;
+	}
+
+	priv->wd.timeout_max = U32_MAX / priv->rate;
 
 	ret = watchdog_register(&priv->wd);
 	if (ret)

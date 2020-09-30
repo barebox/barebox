@@ -157,6 +157,8 @@ static int stm32_iwdg_probe(struct device_d *dev)
 		return ret;
 
 	wd->rate = clk_get_rate(clk);
+	if (wd->rate == 0)
+		return -EINVAL;
 
 	if (data->has_pclk) {
 		clk = clk_get(dev, "pclk");

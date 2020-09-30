@@ -41,10 +41,10 @@
 
 struct dw_wdt {
 	void __iomem		*regs;
-	struct clk		*clk;
 	struct restart_handler	restart;
 	struct watchdog		wdd;
 	struct reset_control	*rst;
+	unsigned int		rate;
 };
 
 #define to_dw_wdt(wdd)	container_of(wdd, struct dw_wdt, wdd)
@@ -55,7 +55,7 @@ static inline int dw_wdt_top_in_seconds(struct dw_wdt *dw_wdt, unsigned top)
 	 * There are 16 possible timeout values in 0..15 where the number of
 	 * cycles is 2 ^ (16 + i) and the watchdog counts down.
 	 */
-	return (1U << (16 + top)) / clk_get_rate(dw_wdt->clk);
+	return (1U << (16 + top)) / dw_wdt->rate;
 }
 
 static int dw_wdt_start(struct watchdog *wdd)
@@ -134,6 +134,7 @@ static int dw_wdt_drv_probe(struct device_d *dev)
 	struct watchdog *wdd;
 	struct dw_wdt *dw_wdt;
 	struct resource *mem;
+	struct clk *clk;
 	int ret;
 
 	dw_wdt = xzalloc(sizeof(*dw_wdt));
@@ -143,11 +144,11 @@ static int dw_wdt_drv_probe(struct device_d *dev)
 	if (IS_ERR(dw_wdt->regs))
 		return PTR_ERR(dw_wdt->regs);
 
-	dw_wdt->clk = clk_get(dev, NULL);
-	if (IS_ERR(dw_wdt->clk))
-		return PTR_ERR(dw_wdt->clk);
+	clk = clk_get(dev, NULL);
+	if (IS_ERR(clk))
+		return PTR_ERR(clk);
 
-	ret = clk_enable(dw_wdt->clk);
+	ret = clk_enable(clk);
 	if (ret)
 		return ret;
 
@@ -159,6 +160,10 @@ static int dw_wdt_drv_probe(struct device_d *dev)
 	wdd->name = "dw_wdt";
 	wdd->hwdev = dev;
 	wdd->set_timeout = dw_wdt_set_timeout;
+
+	dw_wdt->rate = clk_get_rate(clk);
+	if (dw_wdt->rate == 0)
+		return -EINVAL;
 
 	ret = watchdog_register(wdd);
 	if (ret)
@@ -179,7 +184,7 @@ static int dw_wdt_drv_probe(struct device_d *dev)
 	return 0;
 
 out_disable_clk:
-	clk_disable(dw_wdt->clk);
+	clk_disable(clk);
 	return ret;
 }
 

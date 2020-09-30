@@ -89,7 +89,7 @@ static unsigned long psci_cpu_suspend(u32 power_state, unsigned long entry,
 {
 	psci_printf("%s\n", __func__);
 
-	if (psci_ops->cpu_off)
+	if (psci_ops->cpu_suspend)
 		return psci_ops->cpu_suspend(power_state, entry, context_id);
 
 	return ARM_PSCI_RET_NOT_SUPPORTED;

@@ -403,6 +403,7 @@ static struct of_device_id zynqmpp_fpga_id_table[] = {
 	{
 		.compatible = "xlnx,zynqmp-pcap-fpga",
 	},
+	{ /* sentinel */ }
 };
 
 static struct driver_d zynqmp_fpga_driver = {

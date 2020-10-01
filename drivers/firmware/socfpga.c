@@ -471,6 +471,7 @@ static struct of_device_id fpgamgr_id_table[] = {
 	{
 		.compatible = "altr,socfpga-fpga-mgr",
 	},
+	{ /* sentinel */ }
 };
 
 static struct driver_d fpgamgr_driver = {

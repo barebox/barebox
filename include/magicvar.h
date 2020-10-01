@@ -26,13 +26,9 @@ static const struct magicvar _name							\
 	.description = MAGICVAR_DESCRIPTION(_description),	\
 };
 
-#define BAREBOX_MAGICVAR_NAMED(_name, _varname, _description)			\
-	__BAREBOX_MAGICVAR_NAMED(__barebox_magicvar_##_name, _varname, _description)
-
 #define BAREBOX_MAGICVAR(_name, _description)			\
 	__BAREBOX_MAGICVAR_NAMED(__UNIQUE_ID(magicvar), _name, _description)
 #else
-#define BAREBOX_MAGICVAR_NAMED(_name, _varname, _description)
 #define BAREBOX_MAGICVAR(_name, _description)
 #endif
 

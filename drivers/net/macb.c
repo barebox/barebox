@@ -731,7 +731,7 @@ static int macb_probe(struct device_d *dev)
 
 	if (hclk_name) {
 		macb->hclk = clk_get(dev, pclk_name);
-		if (IS_ERR(macb->pclk)) {
+		if (IS_ERR(macb->hclk)) {
 			dev_err(dev, "no hclk\n");
 			return PTR_ERR(macb->hclk);
 		}

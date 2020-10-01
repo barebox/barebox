@@ -186,7 +186,7 @@ struct image_cfg_element {
 	} type;
 	union {
 		unsigned int version;
-		unsigned int bootfrom;
+		int bootfrom;
 		struct {
 			char *file;
 			unsigned int args[BINARY_MAX_ARGS];
@@ -197,7 +197,7 @@ struct image_cfg_element {
 		unsigned int execaddr;
 		unsigned int nandblksz;
 		unsigned int nandbadblklocation;
-		unsigned int nandeccmode;
+		int nandeccmode;
 		unsigned int nandpagesz;
 		struct ext_hdr_v0_reg regdata;
 	};

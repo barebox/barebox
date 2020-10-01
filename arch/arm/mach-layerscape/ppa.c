@@ -77,7 +77,7 @@ static int ppa_init(void *ppa, size_t ppa_size, void *sec_firmware_addr)
 	if (IS_ERR(conf)) {
 		pr_err("Cannot open default config in ppa FIT image: %s\n",
 		       strerrorp(conf));
-		ret = PTR_ERR(fit);
+		ret = PTR_ERR(conf);
 		goto err;
 	}
 

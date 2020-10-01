@@ -318,9 +318,8 @@ static int ifup_all_init(void)
 }
 late_initcall(ifup_all_init);
 
-BAREBOX_MAGICVAR_NAMED(global_net_ifup_force_detect,
-                       global.net.ifup_force_detect,
-                       "net: force detection of devices on ifup -a");
+BAREBOX_MAGICVAR(global.net.ifup_force_detect,
+                 "net: force detection of devices on ifup -a");
 
 #if IS_ENABLED(CONFIG_NET_CMD_IFUP)
 

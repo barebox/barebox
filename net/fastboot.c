@@ -578,6 +578,5 @@ static void fastboot_net_exit(void)
 postenvironment_initcall(fastboot_on_boot);
 predevshutdown_exitcall(fastboot_net_exit);
 
-BAREBOX_MAGICVAR_NAMED(global_fastboot_net_autostart,
-		       global.fastboot.net.autostart,
-		       "If true, automatically start fastboot over UDP during startup");
+BAREBOX_MAGICVAR(global.fastboot.net.autostart,
+		 "If true, automatically start fastboot over UDP during startup");

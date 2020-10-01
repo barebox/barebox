@@ -745,8 +745,8 @@ static struct binfmt_hook binfmt_barebox_hook = {
 	.exec = "bootm",
 };
 
-BAREBOX_MAGICVAR_NAMED(global_bootm_boot_atag, global.bootm.boot_atag,
-		       "If true, ignore device tree and boot using ATAGs");
+BAREBOX_MAGICVAR(global.bootm.boot_atag,
+		 "If true, ignore device tree and boot using ATAGs");
 
 static int armlinux_register_image_handler(void)
 {

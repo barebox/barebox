@@ -99,4 +99,4 @@ void cfa10036_detect_hw(void)
 	pr_info("Booting on a CFA10036 with %s\n", board_name);
 }
 
-BAREBOX_MAGICVAR_NAMED(global_board_variant, global.board.variant, "The board variant");
+BAREBOX_MAGICVAR(global.board.variant, "The board variant");

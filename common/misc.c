@@ -154,7 +154,7 @@ const char *barebox_get_model(void)
 }
 EXPORT_SYMBOL(barebox_get_model);
 
-BAREBOX_MAGICVAR_NAMED(global_model, global.model, "Product name of this hardware");
+BAREBOX_MAGICVAR(global.model, "Product name of this hardware");
 
 static char *hostname;
 
@@ -184,7 +184,7 @@ void barebox_set_hostname_no_overwrite(const char *__hostname)
 }
 EXPORT_SYMBOL(barebox_set_hostname_no_overwrite);
 
-BAREBOX_MAGICVAR_NAMED(global_hostname, global.hostname,
+BAREBOX_MAGICVAR(global.hostname,
 		"shortname of the board. Also used as hostname for DHCP requests");
 
 void __noreturn panic(const char *fmt, ...)

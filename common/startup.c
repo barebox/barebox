@@ -438,12 +438,9 @@ void shutdown_barebox(void)
 	}
 }
 
-BAREBOX_MAGICVAR_NAMED(autoboot_state,
-                       global.autoboot,
-                       "Autoboot state. Possible values: countdown (default), abort, menu, boot");
-BAREBOX_MAGICVAR_NAMED(global_autoboot_abort_key,
-                       global.autoboot_abort_key,
-                       "Which key allows to interrupt autoboot. Possible values: any, ctrl-c");
-BAREBOX_MAGICVAR_NAMED(global_autoboot_timeout,
-                       global.autoboot_timeout,
-                       "Timeout before autoboot starts in seconds");
+BAREBOX_MAGICVAR(global.autoboot,
+                 "Autoboot state. Possible values: countdown (default), abort, menu, boot");
+BAREBOX_MAGICVAR(global.autoboot_abort_key,
+                 "Which key allows to interrupt autoboot. Possible values: any, ctrl-c");
+BAREBOX_MAGICVAR(global.autoboot_timeout,
+                 "Timeout before autoboot starts in seconds");

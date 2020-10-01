@@ -67,6 +67,7 @@ lwl-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += imx6q-phytec-phycard.dtb.o \
 				imx6dl-phytec-phycore-som-emmc.dtb.o \
 				imx6dl-phytec-phycore-som-lc-emmc.dtb.o \
 				imx6ul-phytec-phycore-som-nand.dtb.o \
+				imx6ul-phytec-phycore-som-emmc.dtb.o \
 				imx6ull-phytec-phycore-som-lc-nand.dtb.o \
 				imx6ull-phytec-phycore-som-nand.dtb.o \
 				imx6ull-phytec-phycore-som-emmc.dtb.o

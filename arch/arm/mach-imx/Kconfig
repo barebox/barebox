@@ -449,6 +449,7 @@ config MACH_GW_VENTANA
 config MACH_CM_FX6
 	bool "CM FX6"
 	select ARCH_IMX6
+	select MCI_IMX_ESDHC_PBL
 
 config MACH_ADVANTECH_ROM_742X
 	bool "Advantech ROM 742X"

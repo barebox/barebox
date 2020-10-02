@@ -157,8 +157,6 @@ config ARCH_IMX6SL
 config ARCH_IMX6SX
 	bool
 	select ARCH_IMX6
-	select OFTREE
-	select COMMON_CLK_OF_PROVIDER
 
 config ARCH_IMX6UL
 	bool

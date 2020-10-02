@@ -146,7 +146,7 @@ config ARCH_IMX6
 	select ARCH_HAS_IMX_GPT
 	select CPU_V7
 	select PINCTRL_IMX_IOMUX_V3
-	select OFTREE
+	select OFDEVICE
 	select COMMON_CLK_OF_PROVIDER
 	select HW_HAS_PCI
 

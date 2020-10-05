@@ -3,5 +3,6 @@
 #include "skeleton.dtsi"
 
 / {
-
+	model = "Sandbox";
+	compatible = "barebox,sandbox";
 };

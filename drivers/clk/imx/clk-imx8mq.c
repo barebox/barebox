@@ -255,6 +255,9 @@ static const char *imx8mq_dram_core_sels[] = {"dram_pll_out", "dram_alt_root", }
 
 static const char *imx8mq_clko2_sels[] = {"osc_25m", "sys2_pll_200m", "sys1_pll_400m", "sys2_pll_166m", "audio_pll1_out",
 					 "video_pll1_out", "ckil", };
+static const char * const imx8mq_arm_m4_sels[] = {"osc_25m", "sys2_pll_200m",
+	"sys2_pll_250m", "sys1_pll_266m", "sys1_pll_800m", "audio_pll1_out",
+	"video_pll1_out", "sys3_pll_out", };
 
 static struct clk_onecell_data clk_data;
 
@@ -551,6 +554,8 @@ static int imx8mq_clocks_init(struct device_node *ccm_node)
 	clks[IMX8MQ_CLK_CSI2_ROOT] = imx_clk_gate4("csi2_root_clk", "csi2_core", base + 0x4660, 0);
 	clks[IMX8MQ_CLK_SDMA1_ROOT] = imx_clk_gate4("sdma1_clk", "ipg_root", base + 0x43a0, 0);
 	clks[IMX8MQ_CLK_SDMA2_ROOT] = imx_clk_gate4("sdma2_clk", "ipg_audio_root", base + 0x43b0, 0);
+
+	clks[IMX8MQ_CLK_M4_CORE] = imx8m_clk_hw_composite_core("arm_m4_core", imx8mq_arm_m4_sels, base + 0x8080);
 
 	clks[IMX8MQ_GPT_3M_CLK] = imx_clk_fixed_factor("gpt_3m", "osc_25m", 1, 8);
 	clks[IMX8MQ_CLK_DRAM_ALT_ROOT] = imx_clk_fixed_factor("dram_alt_root", "dram_alt", 1, 4);

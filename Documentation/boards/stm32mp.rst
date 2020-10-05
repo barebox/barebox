@@ -29,7 +29,7 @@ The resulting images will be placed under ``images/``:
 
 ::
 
-  barebox-stm32mp157c-dk2.img
+  barebox-stm32mp15xx-dkx.img # both DK1 and DK2
   barebox-stm32mp157c-lxa-mc1.img
   barebox-stm32mp157c-seeed-odyssey.img
 

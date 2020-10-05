@@ -8,9 +8,12 @@ config ARCH_STM32MP157
 	select ARM_PSCI_CLIENT
 	bool
 
-config MACH_STM32MP157C_DK2
+config MACH_STM32MP15XX_DKX
 	select ARCH_STM32MP157
-	bool "STM32MP157C-DK2 board"
+	bool "STM32MP157 DK1 and DK2 boards"
+	help
+	  builds a single barebox-stm32mp15xx-dkx.img that can be deployed
+	  as SSBL on both the stm32mp157a-dk1 and stm32mp157c-dk2
 
 config MACH_LXA_MC1
 	select ARCH_STM32MP157

@@ -13,7 +13,7 @@ static void setup_uart(void)
 	putc_ll('>');
 }
 
-ENTRY_FUNCTION(start_stm32mp157c_dk2, r0, r1, r2)
+ENTRY_FUNCTION(start_stm32mp15xx_dkx, r0, r1, r2)
 {
 	void *fdt;
 	u32 cputype;

@@ -42,8 +42,6 @@ static struct image_handler zynq_image_handler = {
 
 static int zynq_register_image_handler(void)
 {
-	register_image_handler(&zynq_image_handler);
-
-	return 0;
+	return register_image_handler(&zynq_image_handler);
 }
 late_initcall(zynq_register_image_handler);

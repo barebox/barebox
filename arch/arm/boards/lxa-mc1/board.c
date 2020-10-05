@@ -28,11 +28,9 @@ static int of_fixup_regulator_supply_disable(struct device_node *root, void *pat
 	return 0;
 }
 
-static int mc1_device_init(void)
+static int mc1_probe(struct device_d *dev)
 {
 	int flags;
-	if (!of_machine_is_compatible("lxa,stm32mp157c-mc1"))
-		return 0;
 
 	flags = bootsource_get_instance() == 0 ? BBU_HANDLER_FLAG_DEFAULT : 0;
 	stm32mp_bbu_mmc_register_handler("sd", "/dev/mmc0.ssbl", flags);
@@ -55,4 +53,15 @@ static int mc1_device_init(void)
 	 */
 	return of_register_fixup(of_fixup_regulator_supply_disable, "/regulator_3v3");
 }
-device_initcall(mc1_device_init);
+
+static const struct of_device_id mc1_of_match[] = {
+	{ .compatible = "lxa,stm32mp157c-mc1" },
+	{ /* sentinel */ },
+};
+
+static struct driver_d mc1_board_driver = {
+	.name = "board-lxa-mc1",
+	.probe = mc1_probe,
+	.of_compatible = mc1_of_match,
+};
+device_platform_driver(mc1_board_driver);

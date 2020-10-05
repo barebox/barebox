@@ -94,6 +94,27 @@ struct imx_rproc {
 	struct clk			*clk;
 };
 
+static const struct imx_rproc_att imx_rproc_att_imx6sx[] = {
+	/* dev addr , sys addr  , size	    , flags */
+	/* TCML (M4 Boot Code) - alias */
+	{ 0x00000000, 0x007F8000, 0x00008000, 0 },
+	/* OCRAM_S (Code) */
+	{ 0x00180000, 0x008F8000, 0x00004000, 0 },
+	/* OCRAM_S (Code) - alias */
+	{ 0x00180000, 0x008FC000, 0x00004000, 0 },
+	/* TCML (Code) */
+	{ 0x1FFF8000, 0x007F8000, 0x00008000, ATT_OWN },
+	/* DDR (Code) - alias, first part of DDR (Data) */
+	{ 0x10000000, 0x80000000, 0x0FFF8000, 0 },
+
+	/* TCMU (Data) */
+	{ 0x20000000, 0x00800000, 0x00008000, ATT_OWN },
+	/* OCRAM_S (Data) - alias? */
+	{ 0x208F8000, 0x008F8000, 0x00004000, 0 },
+	/* DDR (Data) */
+	{ 0x80000000, 0x80000000, 0x60000000, 0 },
+};
+
 static const struct imx_rproc_att imx_rproc_att_imx7d[] = {
 	/* dev addr , sys addr  , size	    , flags */
 	/* OCRAM_S (M4 Boot code) - alias */
@@ -123,25 +144,13 @@ static const struct imx_rproc_att imx_rproc_att_imx7d[] = {
 	{ 0x80000000, 0x80000000, 0x60000000, 0 },
 };
 
-static const struct imx_rproc_att imx_rproc_att_imx6sx[] = {
-	/* dev addr , sys addr  , size	    , flags */
-	/* TCML (M4 Boot Code) - alias */
-	{ 0x00000000, 0x007F8000, 0x00008000, 0 },
-	/* OCRAM_S (Code) */
-	{ 0x00180000, 0x008F8000, 0x00004000, 0 },
-	/* OCRAM_S (Code) - alias */
-	{ 0x00180000, 0x008FC000, 0x00004000, 0 },
-	/* TCML (Code) */
-	{ 0x1FFF8000, 0x007F8000, 0x00008000, ATT_OWN },
-	/* DDR (Code) - alias, first part of DDR (Data) */
-	{ 0x10000000, 0x80000000, 0x0FFF8000, 0 },
-
-	/* TCMU (Data) */
-	{ 0x20000000, 0x00800000, 0x00008000, ATT_OWN },
-	/* OCRAM_S (Data) - alias? */
-	{ 0x208F8000, 0x008F8000, 0x00004000, 0 },
-	/* DDR (Data) */
-	{ 0x80000000, 0x80000000, 0x60000000, 0 },
+static const struct imx_rproc_dcfg imx_rproc_cfg_imx6sx = {
+	.src_reg	= IMX6SX_SRC_SCR,
+	.src_mask	= IMX6SX_M4_RST_MASK,
+	.src_start	= IMX6SX_M4_START,
+	.src_stop	= IMX6SX_M4_STOP,
+	.att		= imx_rproc_att_imx6sx,
+	.att_size	= ARRAY_SIZE(imx_rproc_att_imx6sx),
 };
 
 static const struct imx_rproc_dcfg imx_rproc_cfg_imx7d = {
@@ -151,15 +160,6 @@ static const struct imx_rproc_dcfg imx_rproc_cfg_imx7d = {
 	.src_stop	= IMX7D_M4_STOP,
 	.att		= imx_rproc_att_imx7d,
 	.att_size	= ARRAY_SIZE(imx_rproc_att_imx7d),
-};
-
-static const struct imx_rproc_dcfg imx_rproc_cfg_imx6sx = {
-	.src_reg	= IMX6SX_SRC_SCR,
-	.src_mask	= IMX6SX_M4_RST_MASK,
-	.src_start	= IMX6SX_M4_START,
-	.src_stop	= IMX6SX_M4_STOP,
-	.att		= imx_rproc_att_imx6sx,
-	.att_size	= ARRAY_SIZE(imx_rproc_att_imx6sx),
 };
 
 static int imx_rproc_start(struct rproc *rproc)
@@ -389,8 +389,8 @@ err_put_rproc:
 }
 
 static const struct of_device_id imx_rproc_of_match[] = {
-	{ .compatible = "fsl,imx7d-cm4", .data = &imx_rproc_cfg_imx7d },
 	{ .compatible = "fsl,imx6sx-cm4", .data = &imx_rproc_cfg_imx6sx },
+	{ .compatible = "fsl,imx7d-cm4", .data = &imx_rproc_cfg_imx7d },
 	{},
 };
 

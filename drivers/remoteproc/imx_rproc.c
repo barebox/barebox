@@ -305,7 +305,7 @@ static int imx_rproc_addr_init(struct imx_rproc *priv,
 			break;
 
 		res_cpu = request_sdram_region(dev_name(dev), res.start,
-					       res.end - res.start);
+					       resource_size(&res));
 		if (!res_cpu) {
 			dev_err(dev, "remap optional addresses failed\n");
 			return -ENOMEM;

@@ -294,18 +294,19 @@ HOWTOs in the net, for example on http://tianocore.sourceforge.net/wiki/Using_ED
 
   git clone git://github.com/tianocore/edk2.git
   cd edk2
+  git submodule update --init
   make -C BaseTools
   . edksetup.sh
 
 At least the following lines in ``Conf/target.txt`` should be edited::
 
-  ACTIVE_PLATFORM = MdeModulePkg/MdeModulePkg.dsc
+  ACTIVE_PLATFORM = NetworkPkg/NetworkPkg.dsc
   TARGET_ARCH = X64
   TOOL_CHAIN_TAG = GCC48
   MAX_CONCURRENT_THREAD_NUMBER = 4
 
 The actual build is started with invoking ``build``. After building
-``Build/MdeModule/DEBUG_GCC48/X64/SnpDxe.efi`` should exist.
+``Build/NetworkPkg/DEBUG_GCC48/X64/SnpDxe.efi`` should exist.
 
 **NOTE** As of this writing (July 2014) the following patch was needed to
 compile EDK2.

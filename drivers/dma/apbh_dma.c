@@ -50,6 +50,7 @@
 static struct mxs_dma_chan mxs_dma_channels[MXS_MAX_DMA_CHANNELS];
 
 enum mxs_dma_id {
+	UNKNOWN_DMA_ID,
 	IMX23_DMA,
 	IMX28_DMA,
 };
@@ -596,9 +597,9 @@ static int apbh_dma_probe(struct device_d *dev)
 	enum mxs_dma_id id;
 	int ret, channel;
 
-	ret = dev_get_drvdata(dev, (const void **)&id);
-	if (ret)
-		return ret;
+	id = (enum mxs_dma_id)device_get_match_data(dev);
+	if (id == UNKNOWN_DMA_ID)
+		return -ENODEV;
 
 	apbh_dma = apbh = xzalloc(sizeof(*apbh));
 	iores = dev_request_mem_resource(dev, 0);

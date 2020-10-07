@@ -1083,19 +1083,18 @@ static void dw_hdmi_enable_video_path(struct dw_hdmi *hdmi)
 /* Workaround to clear the overflow condition */
 static void dw_hdmi_clear_overflow(struct dw_hdmi *hdmi)
 {
-	int count;
+	int count = 4;
 	u8 val;
 
 	/* TMDS software reset */
 	hdmi_writeb(hdmi, (u8)~HDMI_MC_SWRSTZ_TMDSSWRST_REQ, HDMI_MC_SWRSTZ);
 
 	val = hdmi_readb(hdmi, HDMI_FC_INVIDCONF);
-	if (hdmi->dev_type == IMX6DL_HDMI) {
-		hdmi_writeb(hdmi, val, HDMI_FC_INVIDCONF);
-		return;
-	}
 
-	for (count = 0; count < 4; count++)
+	if (hdmi->dev_type == IMX6DL_HDMI)
+		count = 1;
+
+	while (count--)
 		hdmi_writeb(hdmi, val, HDMI_FC_INVIDCONF);
 }
 
@@ -1193,28 +1192,13 @@ static void initialize_hdmi_ih_mutes(struct dw_hdmi *hdmi)
 	hdmi_writeb(hdmi, ih_mute, HDMI_IH_MUTE);
 }
 
-struct dw_hdmi_data {
-	unsigned ipu_mask;
-	enum dw_hdmi_devtype devtype;
-};
-
-static struct dw_hdmi_data imx6q_hdmi_data = {
-	.ipu_mask = 0xf,
-	.devtype = IMX6Q_HDMI,
-};
-
-static struct dw_hdmi_data imx6dl_hdmi_data = {
-	.ipu_mask = 0x3,
-	.devtype = IMX6DL_HDMI,
-};
-
 static struct of_device_id dw_hdmi_dt_ids[] = {
 	{
 		.compatible = "fsl,imx6q-hdmi",
-		.data = &imx6q_hdmi_data,
+		.data = (void *)IMX6Q_HDMI,
 	}, {
 		.compatible = "fsl,imx6dl-hdmi",
-		.data = &imx6dl_hdmi_data,
+		.data = (void *)IMX6DL_HDMI,
 	}, {
 		/* sentinel */
 	}
@@ -1276,11 +1260,6 @@ static int dw_hdmi_probe(struct device_d *dev)
 	struct device_node *np = dev->device_node;
 	struct dw_hdmi *hdmi;
 	int ret;
-	const struct dw_hdmi_data *devtype;
-
-	ret = dev_get_drvdata(dev, (const void **)&devtype);
-	if (ret)
-		return ret;
 
 	hdmi = xzalloc(sizeof(*hdmi));
 
@@ -1289,9 +1268,7 @@ static int dw_hdmi_probe(struct device_d *dev)
 	hdmi->sample_rate = 48000;
 	hdmi->ratio = 100;
 
-	ret = dev_get_drvdata(dev, (const void **)&hdmi->dev_type);
-	if (ret)
-		return ret;
+	hdmi->dev_type = (enum dw_hdmi_devtype)device_get_match_data(dev);
 
 	hdmi->ddc_node = of_parse_phandle(np, "ddc-i2c-bus", 0);
 

@@ -959,12 +959,9 @@ static int fastboot_globalvars_init(void)
 
 device_initcall(fastboot_globalvars_init);
 
-BAREBOX_MAGICVAR_NAMED(global_fastboot_max_download_size,
-		       global.fastboot.max_download_size,
-		       "Fastboot maximum download size");
-BAREBOX_MAGICVAR_NAMED(global_fastboot_partitions,
-		       global.fastboot.partitions,
+BAREBOX_MAGICVAR(global.fastboot.max_download_size,
+		 "Fastboot maximum download size");
+BAREBOX_MAGICVAR(global.fastboot.partitions,
 		       "Partitions exported for update via fastboot");
-BAREBOX_MAGICVAR_NAMED(global_fastboot_bbu,
-		       global.fastboot.bbu,
+BAREBOX_MAGICVAR(global.fastboot.bbu,
 		       "Export barebox update handlers via fastboot");

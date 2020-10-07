@@ -517,8 +517,7 @@ static int ubifs_init(void)
 
 coredevice_initcall(ubifs_init);
 
-BAREBOX_MAGICVAR_NAMED(global_ubifs_allow_encrypted, global.ubifs.allow_encrypted,
-		       "If true, allow to mount UBIFS with encrypted files");
-BAREBOX_MAGICVAR_NAMED(global_ubifs_allow_authenticated_unauthenticated,
-		       global.ubifs.allow_authenticated_unauthenticated,
-		       "If true, allow to mount authenticated UBIFS images without doing authentication");
+BAREBOX_MAGICVAR(global.ubifs.allow_encrypted,
+		 "If true, allow to mount UBIFS with encrypted files");
+BAREBOX_MAGICVAR(global.ubifs.allow_authenticated_unauthenticated,
+		 "If true, allow to mount authenticated UBIFS images without doing authentication");

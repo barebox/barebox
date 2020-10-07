@@ -124,12 +124,9 @@ static int usbgadget_globalvars_init(void)
 }
 device_initcall(usbgadget_globalvars_init);
 
-BAREBOX_MAGICVAR_NAMED(global_usbgadget_autostart,
-		       global.usbgadget.autostart,
-		       "usbgadget: Automatically start usbgadget on boot");
-BAREBOX_MAGICVAR_NAMED(global_usbgadget_acm,
-		       global.usbgadget.acm,
-		       "usbgadget: Create CDC ACM function");
-BAREBOX_MAGICVAR_NAMED(global_usbgadget_dfu_function,
-		       global.usbgadget.dfu_function,
-		       "usbgadget: Create DFU function");
+BAREBOX_MAGICVAR(global.usbgadget.autostart,
+		 "usbgadget: Automatically start usbgadget on boot");
+BAREBOX_MAGICVAR(global.usbgadget.acm,
+		 "usbgadget: Create CDC ACM function");
+BAREBOX_MAGICVAR(global.usbgadget.dfu_function,
+		 "usbgadget: Create DFU function");

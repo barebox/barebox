@@ -225,9 +225,7 @@ const char *reboot_mode_get(void)
 }
 EXPORT_SYMBOL_GPL(reboot_mode_get);
 
-BAREBOX_MAGICVAR_NAMED(global_system_reboot_mode_prev,
-		       global.system.reboot_mode.prev,
-		       "reboot-mode: Mode set previously, before barebox start");
-BAREBOX_MAGICVAR_NAMED(global_system_reboot_mode_next,
-		       global.system.reboot_mode.next,
-		       "reboot-mode: Mode to set next, to be evaluated after reset");
+BAREBOX_MAGICVAR(global.system.reboot_mode.prev,
+		 "reboot-mode: Mode set previously, before barebox start");
+BAREBOX_MAGICVAR(global.system.reboot_mode.next,
+		 "reboot-mode: Mode to set next, to be evaluated after reset");

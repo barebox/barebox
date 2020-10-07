@@ -136,7 +136,7 @@ static int init_boot(void)
 }
 late_initcall(init_boot);
 
-BAREBOX_MAGICVAR_NAMED(global_watchdog_timeout, global.boot.watchdog_timeout,
+BAREBOX_MAGICVAR(global.boot.watchdog_timeout,
 		"Watchdog enable timeout in seconds before booting");
 
 int boot_entry(struct bootentry *be, int verbose, int dryrun)
@@ -361,4 +361,4 @@ void bootsources_list(struct bootentries *bootentries)
 		printf("%-20s %s\n", entry->title, entry->description);
 }
 
-BAREBOX_MAGICVAR_NAMED(global_boot_default, global.boot.default, "default boot order");
+BAREBOX_MAGICVAR(global.boot.default, "default boot order");

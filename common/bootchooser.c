@@ -954,21 +954,15 @@ static int bootchooser_init(void)
 }
 device_initcall(bootchooser_init);
 
-BAREBOX_MAGICVAR_NAMED(global_bootchooser_disable_on_zero_attempts,
-		       global.bootchooser.disable_on_zero_attempts,
-		       "bootchooser: Disable target when remaining attempts counter reaches 0");
-BAREBOX_MAGICVAR_NAMED(global_bootchooser_retry,
-		       global.bootchooser.retry,
-		       "bootchooser: Try again when booting a target fails");
-BAREBOX_MAGICVAR_NAMED(global_bootchooser_targets,
-		       global.bootchooser.targets,
-		       "bootchooser: Space separated list of target names");
-BAREBOX_MAGICVAR_NAMED(global_bootchooser_default_attempts,
-		       global.bootchooser.default_attempts,
-		       "bootchooser: Default number of attempts for a target");
-BAREBOX_MAGICVAR_NAMED(global_bootchooser_default_priority,
-		       global.bootchooser.default_priority,
-		       "bootchooser: Default priority for a target");
-BAREBOX_MAGICVAR_NAMED(global_bootchooser_state_prefix,
-		       global.bootchooser.state_prefix,
-		       "bootchooser: state name prefix, empty for nv backend");
+BAREBOX_MAGICVAR(global.bootchooser.disable_on_zero_attempts,
+		 "bootchooser: Disable target when remaining attempts counter reaches 0");
+BAREBOX_MAGICVAR(global.bootchooser.retry,
+		 "bootchooser: Try again when booting a target fails");
+BAREBOX_MAGICVAR(global.bootchooser.targets,
+		 "bootchooser: Space separated list of target names");
+BAREBOX_MAGICVAR(global.bootchooser.default_attempts,
+		 "bootchooser: Default number of attempts for a target");
+BAREBOX_MAGICVAR(global.bootchooser.default_priority,
+		 "bootchooser: Default priority for a target");
+BAREBOX_MAGICVAR(global.bootchooser.state_prefix,
+		 "bootchooser: state name prefix, empty for nv backend");

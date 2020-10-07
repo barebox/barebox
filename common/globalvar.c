@@ -656,7 +656,7 @@ static int globalvar_init(void)
 }
 pure_initcall(globalvar_init);
 
-BAREBOX_MAGICVAR_NAMED(global_version, global.version, "The barebox version");
+BAREBOX_MAGICVAR(global.version, "The barebox version");
 
 /**
  * nvvar_save - save NV variables to persistent environment

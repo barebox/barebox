@@ -363,9 +363,8 @@ static phandle ls_pcie_get_iommu_handle(struct device_node *np, phandle *handle)
  */
 static int ls_pcie_share_stream_id;
 
-BAREBOX_MAGICVAR_NAMED(global_ls_pcie_share_stream_id,
-		       global.layerscape_pcie.share_stream_ids,
-		       "If true, use a stream_id per host controller and not per device");
+BAREBOX_MAGICVAR(global.layerscape_pcie.share_stream_ids,
+		 "If true, use a stream_id per host controller and not per device");
 
 static int ls_pcie_of_fixup(struct device_node *root, void *ctx)
 {

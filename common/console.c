@@ -628,8 +628,8 @@ void console_ctrlc_forbid(void)
 	ctrlc_allowed = 0;
 }
 
-BAREBOX_MAGICVAR_NAMED(global_console_ctrlc_allowed, global.console.ctrlc_allowed,
+BAREBOX_MAGICVAR(global.console.ctrlc_allowed,
 		"If true, scripts can be aborted with ctrl-c");
 
-BAREBOX_MAGICVAR_NAMED(global_linux_bootargs_console, global.linux.bootargs.console,
+BAREBOX_MAGICVAR(global.linux.bootargs.console,
 		"console= argument for Linux from the stdout-path property in /chosen node");

@@ -647,13 +647,13 @@ static int dhcp_global_init(void)
 late_initcall(dhcp_global_init);
 #endif
 
-BAREBOX_MAGICVAR_NAMED(global_dhcp_bootfile, global.dhcp.bootfile, "bootfile returned from DHCP request");
-BAREBOX_MAGICVAR_NAMED(global_dhcp_rootpath, global.dhcp.rootpath, "rootpath returned from DHCP request");
-BAREBOX_MAGICVAR_NAMED(global_dhcp_vendor_id, global.dhcp.vendor_id, "vendor id to send to the DHCP server");
-BAREBOX_MAGICVAR_NAMED(global_dhcp_client_uuid, global.dhcp.client_uuid, "client uuid to send to the DHCP server");
-BAREBOX_MAGICVAR_NAMED(global_dhcp_client_id, global.dhcp.client_id, "client id to send to the DHCP server");
-BAREBOX_MAGICVAR_NAMED(global_dhcp_user_class, global.dhcp.user_class, "user class to send to the DHCP server");
-BAREBOX_MAGICVAR_NAMED(global_dhcp_tftp_server_name, global.dhcp.tftp_server_name, "TFTP server Name returned from DHCP request");
-BAREBOX_MAGICVAR_NAMED(global_dhcp_oftree_file, global.dhcp.oftree_file, "OF tree returned from DHCP request (option 224)");
-BAREBOX_MAGICVAR_NAMED(global_dhcp_retries, global.dhcp.retries, "retry limit");
-BAREBOX_MAGICVAR_NAMED(global_dhcp_option224, global.dhcp.option224, "private data to send to the DHCP server (option 224)");
+BAREBOX_MAGICVAR(global.dhcp.bootfile, "bootfile returned from DHCP request");
+BAREBOX_MAGICVAR(global.dhcp.rootpath, "rootpath returned from DHCP request");
+BAREBOX_MAGICVAR(global.dhcp.vendor_id, "vendor id to send to the DHCP server");
+BAREBOX_MAGICVAR(global.dhcp.client_uuid, "client uuid to send to the DHCP server");
+BAREBOX_MAGICVAR(global.dhcp.client_id, "client id to send to the DHCP server");
+BAREBOX_MAGICVAR(global.dhcp.user_class, "user class to send to the DHCP server");
+BAREBOX_MAGICVAR(global.dhcp.tftp_server_name, "TFTP server Name returned from DHCP request");
+BAREBOX_MAGICVAR(global.dhcp.oftree_file, "OF tree returned from DHCP request (option 224)");
+BAREBOX_MAGICVAR(global.dhcp.retries, "retry limit");
+BAREBOX_MAGICVAR(global.dhcp.option224, "private data to send to the DHCP server (option 224)");

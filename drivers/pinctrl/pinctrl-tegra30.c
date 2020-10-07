@@ -32,7 +32,7 @@ struct pinctrl_tegra30 {
 		u32 __iomem *mux;
 	} regs;
 	struct pinctrl_device pinctrl;
-	struct pinctrl_tegra30_drvdata *drvdata;
+	const struct pinctrl_tegra30_drvdata *drvdata;
 };
 
 struct tegra_pingroup {
@@ -893,7 +893,7 @@ static int pinctrl_tegra30_probe(struct device_d *dev)
 		regs[i] = IOMEM(iores->start);
 	}
 
-	dev_get_drvdata(dev, (const void **)&ctrl->drvdata);
+	ctrl->drvdata = device_get_match_data(dev);
 
 	ctrl->pinctrl.dev = dev;
 	ctrl->pinctrl.ops = &pinctrl_tegra30_ops;

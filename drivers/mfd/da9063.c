@@ -370,11 +370,9 @@ static int da9063_probe(struct device_d *dev)
 {
 	struct da9063 *priv = NULL;
 	struct da906x_device_data const *dev_data;
-	void const *dev_data_tmp;
 	int ret;
 
-	ret = dev_get_drvdata(dev, &dev_data_tmp);
-	dev_data = ret < 0 ? NULL : dev_data_tmp;
+	dev_data = device_get_match_data(dev);
 
 	priv = xzalloc(sizeof(struct da9063));
 	priv->wd.set_timeout = da9063_watchdog_set_timeout;

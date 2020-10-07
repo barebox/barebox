@@ -468,12 +468,10 @@ static int ns16550_probe(struct device_d *dev)
 	struct ns16550_priv *priv;
 	struct console_device *cdev;
 	struct NS16550_plat *plat = (struct NS16550_plat *)dev->platform_data;
-	struct ns16550_drvdata *devtype;
+	const struct ns16550_drvdata *devtype;
 	int ret;
 
-	ret = dev_get_drvdata(dev, (const void **)&devtype);
-	if (ret)
-		devtype = &ns16550_drvdata;
+	devtype = device_get_match_data(dev) ?: &ns16550_drvdata;
 
 	priv = xzalloc(sizeof(*priv));
 

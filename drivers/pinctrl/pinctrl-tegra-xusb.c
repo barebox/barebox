@@ -388,7 +388,7 @@ static int pinctrl_tegra_xusb_probe(struct device_d *dev)
 	dev->priv = padctl;
 	padctl->dev = dev;
 
-	dev_get_drvdata(dev, (const void **)&padctl->soc);
+	padctl->soc = device_get_match_data(dev);
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores)) {

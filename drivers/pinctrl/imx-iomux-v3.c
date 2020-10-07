@@ -168,10 +168,10 @@ static struct pinctrl_ops imx_iomux_v3_ops = {
 static int imx_pinctrl_dt(struct device_d *dev, void __iomem *base)
 {
 	struct imx_iomux_v3 *iomux;
-	struct imx_iomux_v3_data *drvdata = NULL;
+	const struct imx_iomux_v3_data *drvdata;
 	int ret;
 
-	dev_get_drvdata(dev, (const void **)&drvdata);
+	drvdata = device_get_match_data(dev);
 	iomux = xzalloc(sizeof(*iomux));
 
 	iomux->base = base;

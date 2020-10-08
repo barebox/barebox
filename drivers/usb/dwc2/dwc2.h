@@ -34,13 +34,17 @@ int dwc2_submit_roothub(struct dwc2 *dwc2, struct usb_device *dev,
 		unsigned long pipe, void *buf, int len,
 		struct devrequest *setup);
 int dwc2_register_host(struct dwc2 *dwc2);
+void dwc2_host_uninit(struct dwc2 *dwc2);
 #else
 static inline int dwc2_register_host(struct dwc2 *dwc2) { return -ENODEV; }
+static inline void dwc2_host_uninit(struct dwc2 *dwc2) {};
 #endif
 
 /* Gadget functions */
 #ifdef CONFIG_USB_DWC2_GADGET
 int dwc2_gadget_init(struct dwc2 *dwc2);
+void dwc2_gadget_uninit(struct dwc2 *dwc2);
 #else
 static inline int dwc2_gadget_init(struct dwc2 *dwc2) { return -ENODEV; }
+static inline void dwc2_gadget_uninit(struct dwc2 *dwc2) {};
 #endif

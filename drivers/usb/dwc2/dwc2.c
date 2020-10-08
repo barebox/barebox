@@ -15,19 +15,6 @@
 
 #include "dwc2.h"
 
-static void dwc2_uninit_common(struct dwc2 *dwc2)
-{
-	uint32_t hprt0;
-
-	hprt0 = dwc2_readl(dwc2, HPRT0);
-
-	/* Put everything in reset. */
-	hprt0 &= ~(HPRT0_ENA | HPRT0_ENACHG | HPRT0_CONNDET | HPRT0_OVRCURRCHG);
-	hprt0 |= HPRT0_RST;
-
-	dwc2_writel(dwc2, hprt0, HPRT0);
-}
-
 static int dwc2_set_mode(void *ctx, enum usb_dr_mode mode)
 {
 	struct dwc2 *dwc2 = ctx;
@@ -98,7 +85,8 @@ static void dwc2_remove(struct device_d *dev)
 {
 	struct dwc2 *dwc2 = dev->priv;
 
-	dwc2_uninit_common(dwc2);
+	dwc2_host_uninit(dwc2);
+	dwc2_gadget_uninit(dwc2);
 }
 
 static const struct of_device_id dwc2_platform_dt_ids[] = {

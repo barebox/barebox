@@ -788,3 +788,16 @@ int dwc2_register_host(struct dwc2 *dwc2)
 
 	return usb_register_host(host);
 }
+
+void dwc2_host_uninit(struct dwc2 *dwc2)
+{
+	uint32_t hprt0;
+
+	hprt0 = dwc2_readl(dwc2, HPRT0);
+
+	/* Put everything in reset. */
+	hprt0 &= ~(HPRT0_ENA | HPRT0_ENACHG | HPRT0_CONNDET | HPRT0_OVRCURRCHG);
+	hprt0 |= HPRT0_RST;
+
+	dwc2_writel(dwc2, hprt0, HPRT0);
+}

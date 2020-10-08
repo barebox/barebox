@@ -2734,3 +2734,9 @@ int dwc2_gadget_init(struct dwc2 *dwc2)
 
 	return 0;
 }
+
+void dwc2_gadget_uninit(struct dwc2 *dwc2)
+{
+	dwc2_core_disconnect(dwc2);
+	dwc2_gadget_disconnect(dwc2);
+}

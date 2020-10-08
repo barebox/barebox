@@ -120,4 +120,3 @@ wm 32 0x020e0614 0x000130b0
 
 /* RGMII config */
 wm 32 0x020e0790 0x00080000 /* 1V2 DDR IO */
-wm 32 0x020e07ac 0x00000200 /* 60 Ohm ODT */

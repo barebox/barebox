@@ -29,7 +29,7 @@
 
 		/* Microchip KSZ9031RNX PHY */
 		rgmii_phy: ethernet-phy@4 {
-			reg = <4>;
+			reg = <0>;
 			interrupts-extended = <&gpio1 28 IRQ_TYPE_LEVEL_LOW>;
 			reset-gpios = <&gpio1 25 GPIO_ACTIVE_LOW>;
 			reset-assert-us = <10000>;

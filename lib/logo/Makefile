@@ -38,17 +38,15 @@ cmd_logo_S =							\
 %.bblogo.S: %.bblogo FORCE
 	$(call if_changed,logo_S)
 
-# Inkscape 0.92.4 supports -z but Inkscape 1.0 doesn't
-INKSCAPEOPTS += $(call try-run, inkscape -z,-z,)
-# Inkscape 0.92.4 uses -e but Inkscape 1.0 uses --export-type=png
-INKSCAPEOPTS += $(call try-run, inkscape -e -,-e -,--export-type=png)
+# Inkscape 0.92.4 supports -z -e but Inkscape 1.0 uses --export-type=png
+INKSCAPEOPTS += $(call try-run, inkscape -z -e -,-z -e -,--export-type=png)
 # Inkscape 1.0 supports -o -
 INKSCAPEOPTS += $(call try-run, inkscape -o -,-o -,)
 
 quiet_cmd_logo = LOGO.S   $@
 cmd_logo =							\
 (								\
-	DISPLAY="" inkscape $(OPTS_$(@F)) $(INKSCAPEOPTS) $< > $@; \
+	inkscape $(OPTS_$(@F)) $(INKSCAPEOPTS) $< > $@; \
 )
 
 %.bblogo: $(srctree)/Documentation/barebox.svg FORCE

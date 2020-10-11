@@ -21,7 +21,7 @@ extra-y += $(patsubst %,%.bblogo.o,$(bblogo-y))
 
 obj-$(CONFIG_BAREBOX_LOGO) += logo.o
 
-quiet_cmd_logo_S = LOGO.S   $@
+quiet_cmd_logo_S = LOGO.S  $@
 cmd_logo_S =							\
 (								\
 	echo '\#include <asm-generic/barebox.lds.h>';		\
@@ -43,7 +43,7 @@ INKSCAPEOPTS += $(call try-run, inkscape -z -e -,-z -e -,--export-type=png)
 # Inkscape 1.0 supports -o -
 INKSCAPEOPTS += $(call try-run, inkscape -o -,-o -,)
 
-quiet_cmd_logo = LOGO.S   $@
+quiet_cmd_logo = LOGO.S  $@
 cmd_logo =							\
 (								\
 	inkscape $(OPTS_$(@F)) $(INKSCAPEOPTS) $< > $@; \

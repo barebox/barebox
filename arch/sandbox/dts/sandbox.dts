@@ -11,10 +11,30 @@
 	};
 
 	chosen {
+		environment {
+			compatible = "barebox,environment";
+			device-path = &part_env;
+		};
 	};
 
 	memory {
 		device_type = "memory";
 		reg = <0 0 0 0>;
+	};
+
+	stickypage: stickypage {
+		compatible = "barebox,hostfile";
+		reg = <0 0 0 4096>;
+
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			part_env: env@400 {
+				reg = <0x400 0x800>;
+				label = "env";
+			};
+		};
 	};
 };

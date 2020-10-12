@@ -1,0 +1,12 @@
+if [ "x$state.dirty" != "x1" -o $global.system.reset != "POR" ]; then
+    exit
+fi
+
+source /env/data/ansi-colors
+
+echo -e $CYAN
+echo "******************************************************************"
+echo "*** Inconsistent barebox state buckets detected on first boot ***"
+echo "***         barebox will repair them on next shutdown         ***"
+echo "*****************************************************************"
+echo -e -n $NC

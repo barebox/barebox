@@ -9,6 +9,7 @@
 
 	aliases {
 		bmode = &bmode;
+		state = &state;
 	};
 
 	chosen {
@@ -21,6 +22,35 @@
 	memory {
 		device_type = "memory";
 		reg = <0 0 0 0>;
+	};
+
+	state: state {
+		magic = <0xaa3b86a6>;
+		compatible = "barebox,state";
+		backend-type = "raw";
+		backend = <&part_state>;
+		backend-storage-type = "direct";
+		backend-stridesize = <64>;
+
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		vars {
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			x {
+				reg = <0x0 0x4>;
+				type = "uint32";
+				default = <1>;
+			};
+
+			y {
+				reg = <0x4 0x4>;
+				type = "uint32";
+				default = <3>;
+			};
+		};
 	};
 
 	stickypage: stickypage {
@@ -46,6 +76,11 @@
 			part_env: env@400 {
 				reg = <0x400 0x800>;
 				label = "env";
+			};
+
+			part_state: state@800 {
+				reg = <0xC00 0x400>;
+				label = "state";
 			};
 		};
 	};

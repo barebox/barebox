@@ -292,14 +292,36 @@ static int add_image(const char *_str, char *devname_template, int *devname_numb
 
 int linux_open_hostfile(struct hf_info *hf)
 {
+	char *buf = NULL;
 	struct stat s;
 	int fd;
 
 	printf("add %s backed by file %s%s\n", hf->devname,
 	       hf->filename, hf->is_readonly ? "(ro)" : "");
 
-	fd = hf->fd = open(hf->filename, (hf->is_readonly ? O_RDONLY : O_RDWR) | O_CLOEXEC);
-	hf->base = (unsigned long)MAP_FAILED;
+	if (hf->filename) {
+		fd = hf->fd = open(hf->filename, (hf->is_readonly ? O_RDONLY : O_RDWR) | O_CLOEXEC);
+	} else {
+		buf = strdup("/tmp/barebox-hostfileXXXXXX");
+		int ret;
+
+		fd = hf->fd = mkstemp(buf);
+		if (fd >= 0) {
+			ret = fcntl(fd, F_SETFD, FD_CLOEXEC);
+			if (ret < 0) {
+				perror("fcntl");
+				goto err_out;
+			}
+
+			ret = ftruncate(fd, hf->size);
+			if (ret < 0) {
+				perror("ftruncate");
+				goto err_out;
+			}
+
+			hf->filename = buf;
+		}
+	}
 
 	if (fd < 0) {
 		perror("open");
@@ -311,6 +333,7 @@ int linux_open_hostfile(struct hf_info *hf)
 		goto err_out;
 	}
 
+	hf->base = (unsigned long)MAP_FAILED;
 	hf->size = s.st_size;
 
 	if (S_ISBLK(s.st_mode)) {
@@ -344,6 +367,7 @@ int linux_open_hostfile(struct hf_info *hf)
 err_out:
 	if (fd > 0)
 		close(fd);
+	free(buf);
 	return -1;
 }
 

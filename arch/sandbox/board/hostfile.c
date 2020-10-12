@@ -226,17 +226,22 @@ static int of_hostfile_map_fixup(struct device_node *root, void *ctx)
 
 	for_each_compatible_node_from(node, root, NULL, hostfile_dt_ids->compatible) {
 		struct hf_info hf = {};
-		uint64_t reg[2];
+		uint64_t reg[2] = {};
+		bool no_filename;
 
 		hf.devname = node->name;
 
 		ret = of_property_read_string(node, "barebox,filename", &hf.filename);
-		if (ret)
-			goto out;
+		no_filename = ret;
 
 		hf.is_blockdev = of_property_read_bool(node, "barebox,blockdev");
 		hf.is_cdev = of_property_read_bool(node, "barebox,cdev");
 		hf.is_readonly = of_property_read_bool(node, "barebox,read-only");
+
+		of_property_read_u64_array(node, "reg", reg, ARRAY_SIZE(reg));
+
+		hf.base = reg[0];
+		hf.size = reg[1];
 
 		ret = linux_open_hostfile(&hf);
 		if (ret)
@@ -252,6 +257,12 @@ static int of_hostfile_map_fixup(struct device_node *root, void *ctx)
 		ret = of_property_write_bool(node, "barebox,blockdev", hf.is_blockdev);
 		if (ret)
 			goto out;
+
+		if (no_filename) {
+			ret = of_property_write_string(node, "barebox,filename", hf.filename);
+			if (ret)
+				goto out;
+		}
 
 		ret = of_property_write_u32(node, "barebox,fd", hf.fd);
 out:

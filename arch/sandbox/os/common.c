@@ -252,10 +252,8 @@ static int add_image(const char *_str, char *devname_template, int *devname_numb
 	struct hf_info *hf = malloc(sizeof(struct hf_info));
 	char *str, *filename, *devname;
 	char tmp[16];
-	int readonly = 0, cdev = 0, blkdev = 0;
-	struct stat s;
 	char *opt;
-	int fd, ret;
+	int ret;
 
 	if (!hf)
 		return -1;
@@ -265,11 +263,11 @@ static int add_image(const char *_str, char *devname_template, int *devname_numb
 	filename = strsep_unescaped(&str, ",");
 	while ((opt = strsep_unescaped(&str, ","))) {
 		if (!strcmp(opt, "ro"))
-			readonly = 1;
+			hf->is_readonly = 1;
 		if (!strcmp(opt, "cdev"))
-			cdev = 1;
+			hf->is_cdev = 1;
 		if (!strcmp(opt, "blkdev"))
-			blkdev = 1;
+			hf->is_blockdev = 1;
 	}
 
 	/* parses: "devname=filename" */
@@ -282,13 +280,25 @@ static int add_image(const char *_str, char *devname_template, int *devname_numb
 		devname = tmp;
 	}
 
-	printf("add %s backed by file %s%s\n", devname,
-	       filename, readonly ? "(ro)" : "");
-
-	fd = open(filename, (readonly ? O_RDONLY : O_RDWR) | O_CLOEXEC);
-	hf->fd = fd;
 	hf->filename = filename;
-	hf->is_blockdev = blkdev;
+	hf->devname = strdup(devname);
+
+	ret = barebox_register_filedev(hf);
+	if (ret)
+		free(hf);
+
+	return ret;
+}
+
+int linux_open_hostfile(struct hf_info *hf)
+{
+	struct stat s;
+	int fd;
+
+	printf("add %s backed by file %s%s\n", hf->devname,
+	       hf->filename, hf->is_readonly ? "(ro)" : "");
+
+	fd = hf->fd = open(hf->filename, (hf->is_readonly ? O_RDONLY : O_RDWR) | O_CLOEXEC);
 	hf->base = (unsigned long)MAP_FAILED;
 
 	if (fd < 0) {
@@ -302,42 +312,38 @@ static int add_image(const char *_str, char *devname_template, int *devname_numb
 	}
 
 	hf->size = s.st_size;
-	hf->devname = strdup(devname);
 
 	if (S_ISBLK(s.st_mode)) {
 		if (ioctl(fd, BLKGETSIZE64, &hf->size) == -1) {
 			perror("ioctl");
 			goto err_out;
 		}
-		if (!cdev)
+		if (!hf->is_cdev)
 			hf->is_blockdev = 1;
 	}
 	if (hf->size <= SIZE_MAX) {
 		hf->base = (unsigned long)mmap(NULL, hf->size,
-				PROT_READ | (readonly ? 0 : PROT_WRITE),
+				PROT_READ | (hf->is_readonly ? 0 : PROT_WRITE),
 				MAP_SHARED, fd, 0);
 
 		if (hf->base == (unsigned long)MAP_FAILED)
-			printf("warning: mmapping %s failed: %s\n", filename, strerror(errno));
+			printf("warning: mmapping %s failed: %s\n",
+			       hf->filename, strerror(errno));
 	} else {
-		printf("warning: %s: contiguous map failed\n", filename);
+		printf("warning: %s: contiguous map failed\n", hf->filename);
 	}
 
-	if (blkdev && hf->size % 512 != 0) {
+	if (hf->is_blockdev && hf->size % 512 != 0) {
 		printf("warning: registering %s as block device failed: invalid block size\n",
-		       filename);
+		       hf->filename);
 		return -EINVAL;
 	}
 
-	ret = barebox_register_filedev(hf);
-	if (ret)
-		goto err_out;
 	return 0;
 
 err_out:
 	if (fd > 0)
 		close(fd);
-	free(hf);
 	return -1;
 }
 

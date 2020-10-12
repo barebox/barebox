@@ -19,6 +19,7 @@
  * These are host includes. Never include any barebox header
  * files here...
  */
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -124,6 +125,7 @@ void __attribute__((noreturn)) linux_exit(void)
 	exit(0);
 }
 
+static size_t saved_argv_len;
 static char **saved_argv;
 
 void linux_reexec(void)
@@ -296,16 +298,25 @@ int linux_open_hostfile(struct hf_info *hf)
 	struct stat s;
 	int fd;
 
-	printf("add %s backed by file %s%s\n", hf->devname,
-	       hf->filename, hf->is_readonly ? "(ro)" : "");
+	printf("add %s %sbacked by file %s%s\n", hf->devname,
+	       hf->filename ? "" : "initially un", hf->filename ?: "",
+	       hf->is_readonly ? "(ro)" : "");
 
 	if (hf->filename) {
 		fd = hf->fd = open(hf->filename, (hf->is_readonly ? O_RDONLY : O_RDWR) | O_CLOEXEC);
 	} else {
-		buf = strdup("/tmp/barebox-hostfileXXXXXX");
+		char *filename;
 		int ret;
 
-		fd = hf->fd = mkstemp(buf);
+		ret = asprintf(&buf, "--image=%s=/tmp/barebox-hostfileXXXXXX", hf->devname);
+		if (ret < 0) {
+			perror("asprintf");
+			goto err_out;
+		}
+
+		filename = buf + strlen("--image==") + strlen(hf->devname);
+
+		fd = hf->fd = mkstemp(filename);
 		if (fd >= 0) {
 			ret = fcntl(fd, F_SETFD, FD_CLOEXEC);
 			if (ret < 0) {
@@ -319,7 +330,14 @@ int linux_open_hostfile(struct hf_info *hf)
 				goto err_out;
 			}
 
-			hf->filename = buf;
+			hf->filename = filename;
+
+			saved_argv = realloc(saved_argv,
+					     ++saved_argv_len * sizeof(*saved_argv));
+			if (!saved_argv)
+				exit(1);
+			saved_argv[saved_argv_len - 2] = buf;
+			saved_argv[saved_argv_len - 1] = NULL;
 		}
 	}
 
@@ -437,8 +455,6 @@ int main(int argc, char *argv[])
 	__sanitizer_set_death_callback(cookmode);
 #endif
 
-	saved_argv = argv;
-
 	while (1) {
 		option_index = 0;
 		opt = getopt_long(argc, argv, optstring,
@@ -475,6 +491,12 @@ int main(int argc, char *argv[])
 			break;
 		}
 	}
+
+	saved_argv_len = argc + 1;
+	saved_argv = calloc(saved_argv_len, sizeof(*saved_argv));
+	if (!saved_argv)
+		exit(1);
+	memcpy(saved_argv, argv, saved_argv_len * sizeof(*saved_argv));
 
 	ram = malloc(malloc_size);
 	if (!ram) {

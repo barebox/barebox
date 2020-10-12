@@ -191,13 +191,21 @@ static int of_hostfile_fixup(struct device_node *root, void *ctx)
 {
 	struct hf_info *hf = ctx;
 	struct device_node *node;
+	bool name_only = false;
 	int ret;
 
-	node = of_new_node(root, hf->devname);
+	node = of_get_child_by_name(root, hf->devname);
+	if (node)
+		name_only = true;
+	else
+		node = of_new_node(root, hf->devname);
 
 	ret = of_property_write_string(node, "barebox,filename", hf->filename);
 	if (ret)
 		return ret;
+
+	if (name_only)
+		return 0;
 
 	ret = of_property_write_string(node, "compatible", hostfile_dt_ids->compatible);
 	if (ret)

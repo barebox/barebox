@@ -23,13 +23,15 @@
 	};
 
 	stickypage: stickypage {
-		compatible = "barebox,hostfile";
+		compatible = "barebox,hostfile", "syscon";
 		reg = <0 0 0 4096>;
 
 		partitions {
 			compatible = "fixed-partitions";
 			#address-cells = <1>;
 			#size-cells = <1>;
+
+			/* 0x00+4 reserved for syscon use */
 
 			part_env: env@400 {
 				reg = <0x400 0x800>;
@@ -40,5 +42,6 @@
 
 	power {
 		compatible = "barebox,sandbox-power";
+		barebox,reset-source = <&stickypage 0>;
 	};
 };

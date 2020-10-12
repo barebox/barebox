@@ -37,4 +37,8 @@
 			};
 		};
 	};
+
+	power {
+		compatible = "barebox,sandbox-power";
+	};
 };

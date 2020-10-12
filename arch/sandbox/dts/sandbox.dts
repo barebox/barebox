@@ -1,8 +1,20 @@
 /dts-v1/;
 
-#include "skeleton.dtsi"
-
 / {
 	model = "Sandbox";
 	compatible = "barebox,sandbox";
+
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	aliases {
+	};
+
+	chosen {
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0 0 0 0>;
+	};
 };

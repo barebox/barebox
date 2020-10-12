@@ -25,6 +25,8 @@ void linux_reexec(void);
 
 int linux_execve(const char * filename, char *const argv[], char *const envp[]);
 
+int linux_watchdog_set_timeout(unsigned int timeout);
+
 int barebox_register_console(int stdinfd, int stdoutfd);
 
 int barebox_register_dtb(const void *dtb);

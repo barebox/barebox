@@ -39,6 +39,8 @@
 #include <sys/wait.h>
 #include <sys/ioctl.h>
 #include <linux/fs.h>
+#include <sys/time.h>
+#include <signal.h>
 /*
  * ...except the ones needed to connect with barebox
  */
@@ -242,6 +244,29 @@ int linux_execve(const char * filename, char *const argv[], char *const envp[])
 
 		return execve_status;
 	}
+}
+
+static void linux_watchdog(int signo)
+{
+	linux_reexec();
+	_exit(0);
+}
+
+int linux_watchdog_set_timeout(unsigned int timeout)
+{
+	static int signal_handler_installed;
+
+	if (!signal_handler_installed) {
+		struct sigaction sact = {
+			.sa_flags = SA_NODEFER, .sa_handler = linux_watchdog
+		};
+
+		sigemptyset(&sact.sa_mask);
+		sigaction(SIGALRM, &sact, NULL);
+		signal_handler_installed = 1;
+	}
+
+	return alarm(timeout);
 }
 
 extern void start_barebox(void);

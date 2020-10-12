@@ -54,4 +54,9 @@
 		compatible = "barebox,sandbox-power";
 		barebox,reset-source = <&stickypage 0>;
 	};
+
+	watchdog {
+		compatible = "barebox,sandbox-watchdog";
+		barebox,reset-source = <&stickypage 0>;
+	};
 };

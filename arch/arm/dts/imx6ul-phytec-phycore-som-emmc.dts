@@ -10,6 +10,7 @@
 #endif
 #include <arm/imx6ul.dtsi>
 #include "imx6ul-phytec-phycore-som.dtsi"
+#include "imx6ul-phytec-state.dtsi"
 
 / {
 	model = "PHYTEC phyCORE-i.MX6 Ultra Light SOM with eMMC";
@@ -22,6 +23,10 @@
 
 &i2c1 {
 	status = "okay";
+};
+
+&state {
+        status = "okay";
 };
 
 &uart1 {

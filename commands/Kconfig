@@ -285,9 +285,9 @@ config CMD_AT91_BOOT_TEST
 config CMD_BOOT_ORDER
 	tristate
 	depends on ARCH_OMAP4
-	prompt "boot_order"
+	prompt "OMAP boot_order"
 	help
-	  Set warm boot order (the next boot device on a warm reset).
+	  Set OMAP warm boot order (the next boot device on a warm reset).
 
 	  Usage: boot_order DEVICE...
 

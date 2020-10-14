@@ -3,7 +3,7 @@
 #ifndef __ASM_GENERIC_BITIO_H
 #define __ASM_GENERIC_BITIO_H
 
-#include <asm-generic/io.h>
+#include <asm/io.h>
 
 /*
  * Clear and set bits in one shot. These macros can be used to clear and

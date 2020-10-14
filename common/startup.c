@@ -436,6 +436,8 @@ void shutdown_barebox(void)
 		pr_debug("exitcall-> %pS\n", *exitcall);
 		(*exitcall)();
 	}
+
+	console_flush();
 }
 
 BAREBOX_MAGICVAR(global.autoboot,

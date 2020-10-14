@@ -70,13 +70,13 @@ static int cmd_boot_order(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(boot_order)
-BAREBOX_CMD_HELP_TEXT("Set warm boot order of up to four devices. Each device can be one of:")
+BAREBOX_CMD_HELP_TEXT("Set OMAP warm boot order of up to four devices. Each device can be one of:")
 BAREBOX_CMD_HELP_TEXT("xip xipwait nand onenand mmc1 mmc2_1 mmc2_2 uart usb_1 usb_ulpi usb_2")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(boot_order)
 	.cmd		= cmd_boot_order,
-	BAREBOX_CMD_DESC("set warm boot order")
+	BAREBOX_CMD_DESC("set OMAP warm boot order")
 	BAREBOX_CMD_OPTS("DEVICE...")
 	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 	BAREBOX_CMD_HELP(cmd_boot_order_help)

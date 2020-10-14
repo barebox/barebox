@@ -5,4 +5,4 @@
  */
 
 #include <arm/stm32mp157a-dk1.dts>
-#include "stm32mp157a-dk1.dtsi"
+#include "stm32mp15xx-dkx.dtsi"

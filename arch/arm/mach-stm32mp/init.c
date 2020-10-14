@@ -15,26 +15,6 @@
 #include <bootsource.h>
 #include <dt-bindings/pinctrl/stm32-pinfunc.h>
 
-/* DBGMCU register */
-#define DBGMCU_IDC		(STM32_DBGMCU_BASE + 0x00)
-#define DBGMCU_APB4FZ1		(STM32_DBGMCU_BASE + 0x2C)
-#define DBGMCU_APB4FZ1_IWDG2	BIT(2)
-#define DBGMCU_IDC_DEV_ID_MASK	GENMASK(11, 0)
-#define DBGMCU_IDC_DEV_ID_SHIFT	0
-#define DBGMCU_IDC_REV_ID_MASK	GENMASK(31, 16)
-#define DBGMCU_IDC_REV_ID_SHIFT	16
-
-#define RCC_DBGCFGR		(STM32_RCC_BASE + 0x080C)
-#define RCC_DBGCFGR_DBGCKEN	BIT(8)
-
-/* BSEC OTP index */
-#define BSEC_OTP_RPN	1
-#define BSEC_OTP_PKG	16
-
-/* Device Part Number (RPN) = OTP_DATA1 lower 8 bits */
-#define RPN_SHIFT	0
-#define RPN_MASK	GENMASK(7, 0)
-
 /* Package = bit 27:29 of OTP16
  * - 100: LBGA448  (FFI) => AA = LFBGA 18x18mm 448 balls p. 0.8mm
  * - 011: LBGA354  (LCI) => AB = LFBGA 16x16mm 359 balls p. 0.8mm
@@ -152,38 +132,9 @@ int stm32mp_package(void)
 	return __stm32mp_package;
 }
 
-static inline u32 read_idc(void)
-{
-	setbits_le32(RCC_DBGCFGR, RCC_DBGCFGR_DBGCKEN);
-	return readl(IOMEM(DBGMCU_IDC));
-}
-
-/* Get Device Part Number (RPN) from OTP */
-static int get_cpu_rpn(u32 *rpn)
-{
-	int ret = bsec_read_field(BSEC_OTP_RPN, rpn);
-	if (ret)
-		return ret;
-
-	*rpn = (*rpn >> RPN_SHIFT) & RPN_MASK;
-	return 0;
-}
-
 static u32 get_cpu_revision(void)
 {
-	return (read_idc() & DBGMCU_IDC_REV_ID_MASK) >> DBGMCU_IDC_REV_ID_SHIFT;
-}
-
-static int get_cpu_type(u32 *type)
-{
-	u32 id;
-	int ret = get_cpu_rpn(type);
-	if (ret)
-		return ret;
-
-	id = (read_idc() & DBGMCU_IDC_DEV_ID_MASK) >> DBGMCU_IDC_DEV_ID_SHIFT;
-	*type |= id << 16;
-	return 0;
+	return (stm32mp_read_idc() & DBGMCU_IDC_REV_ID_MASK) >> DBGMCU_IDC_REV_ID_SHIFT;
 }
 
 static int get_cpu_package(u32 *pkg)
@@ -250,7 +201,7 @@ static int setup_cpu_type(void)
 	u32 pkg;
 	int ret;
 
-	get_cpu_type(&__stm32mp_cputype);
+	__stm32mp_get_cpu_type(&__stm32mp_cputype);
 	switch (__stm32mp_cputype) {
 	case CPU_STM32MP157Fxx:
 		cputypestr = "157F";
@@ -366,4 +317,4 @@ static int stm32mp_init(void)
 
 	return 0;
 }
-postcore_initcall(stm32mp_init);
+core_initcall(stm32mp_init);

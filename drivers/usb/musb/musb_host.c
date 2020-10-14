@@ -1189,8 +1189,8 @@ void musb_host_rx(struct musb *musb, u8 epnum)
 
 	pipe = urb->pipe;
 
-	dev_dbg(musb->controller, "<== hw %d rxcsr %04x, urb actual %d (+dma %zu)\n",
-		epnum, rx_csr, urb->actual_length, 0);
+	dev_dbg(musb->controller, "<== hw %d rxcsr %04x, urb actual %d (+dma 0)\n",
+		epnum, rx_csr, urb->actual_length);
 
 	/* check for errors, concurrent stall & unlink is not really
 	 * handled yet! */

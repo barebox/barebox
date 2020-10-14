@@ -24,7 +24,7 @@
 LIST_HEAD(aiodevices);
 EXPORT_SYMBOL(aiodevices);
 
-struct aiochannel *aiochannel_get_by_name(const char *name)
+struct aiochannel *aiochannel_by_name(const char *name)
 {
 	struct aiodevice *aiodev;
 	int i;
@@ -131,7 +131,7 @@ int aiodevice_register(struct aiodevice *aiodev)
 				  aiochannel_param_get_value,
 				  &aiochan->value, "%d", aiochan);
 
-		aiochan->name = xasprintf("%s.%s", aiodev->name, name);
+		aiochan->name = xasprintf("%s.%s", dev_name(&aiodev->dev), name);
 
 		free(name);
 	}

@@ -41,7 +41,7 @@
  * Copyright (c) 2006, Atmel Corporation
  */
 
-#include <asm-generic/io.h>
+#include <asm/io.h>
 
 static inline void at91_wdt_disable(void __iomem *wdt_base)
 {

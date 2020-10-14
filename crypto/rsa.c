@@ -317,7 +317,7 @@ int rsa_verify(const struct rsa_public_key *key, const uint8_t *sig,
 		return -EOPNOTSUPP;
 
 	if (sig_len != (key->len * sizeof(uint32_t))) {
-		debug("Signature is of incorrect length %d, should be %d\n", sig_len,
+		debug("Signature is of incorrect length %u, should be %zu\n", sig_len,
 				key->len * sizeof(uint32_t));
 		ret = -EINVAL;
 		goto out_free_digest;

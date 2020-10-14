@@ -23,6 +23,7 @@
 #include <memory.h>
 #include <linux/sizes.h>
 #include <of_graph.h>
+#include <string.h>
 #include <linux/ctype.h>
 #include <linux/amba/bus.h>
 #include <linux/err.h>
@@ -1180,6 +1181,53 @@ int of_property_write_u64_array(struct device_node *np,
 	}
 
 	return 0;
+}
+
+/**
+ * of_property_write_strings - Write strings to a property. If
+ * the property does not exist, it will be created and appended to the given
+ * device node.
+ *
+ * @np:		device node to which the property value is to be written.
+ * @propname:	name of the property to be written.
+ * @...:	pointers to strings to write
+ *
+ * Search for a property in a device node and write a string to
+ * it. If the property does not exist, it will be created and appended to
+ * the device node. Returns 0 on success, -ENOMEM if the property or array
+ * of elements cannot be created, -EINVAL if no strings specified.
+ */
+int of_property_write_strings(struct device_node *np,
+			      const char *propname, ...)
+{
+	const char *val;
+	char *buf = NULL, *next;
+	size_t len = 0;
+	va_list ap;
+	int ret = 0;
+
+	va_start(ap, propname);
+	for (val = va_arg(ap, char *); val; val = va_arg(ap, char *))
+		len += strlen(val) + 1;
+	va_end(ap);
+
+	if (!len)
+		return -EINVAL;
+
+	buf = malloc(len);
+	if (!buf)
+		return -ENOMEM;
+
+	next = buf;
+
+	va_start(ap, propname);
+	for (val = va_arg(ap, char *); val; val = va_arg(ap, char *))
+		next = stpcpy(next, val) + 1;
+	va_end(ap);
+
+	ret = of_set_property(np, propname, buf, len, 1);
+	free(buf);
+	return ret;
 }
 
 /**

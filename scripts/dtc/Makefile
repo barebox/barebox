@@ -14,7 +14,7 @@ libfdt-objs	:= $(libfdt-objs:%.o=libfdt/%.o)
 fdtget-objs    += fdtget.o $(libfdt-objs) util.o
 
 # Source files need to get at the userspace version of libfdt_env.h to compile
-HOST_EXTRACFLAGS := -I$(src)/libfdt
+HOST_EXTRACFLAGS += -I$(src)/libfdt
 
 ifeq ($(wildcard /usr/include/yaml.h),)
 ifneq ($(CHECK_DTBS),)

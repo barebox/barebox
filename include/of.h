@@ -231,6 +231,8 @@ extern int of_property_write_u64_array(struct device_node *np,
 				size_t sz);
 extern int of_property_write_string(struct device_node *np, const char *propname,
 				    const char *value);
+extern int of_property_write_strings(struct device_node *np, const char *propname,
+				    ...) __attribute__((__sentinel__));
 
 extern struct device_node *of_parse_phandle(const struct device_node *np,
 					    const char *phandle_name,

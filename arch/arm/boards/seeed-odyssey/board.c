@@ -7,13 +7,10 @@
 #include <bootsource.h>
 #include <of.h>
 
-static int odyssey_device_init(void)
+static int odyssey_som_probe(struct device_d *dev)
 {
 	int flags;
 	int instance = bootsource_get_instance();
-
-	if (!of_machine_is_compatible("seeed,stm32mp157c-odyssey-som"))
-		return 0;
 
 	flags = instance == 0 ? BBU_HANDLER_FLAG_DEFAULT : 0;
 	stm32mp_bbu_mmc_register_handler("sd", "/dev/mmc0.ssbl", flags);
@@ -29,4 +26,15 @@ static int odyssey_device_init(void)
 
 	return 0;
 }
-device_initcall(odyssey_device_init);
+
+static const struct of_device_id odyssey_som_of_match[] = {
+	{ .compatible = "seeed,stm32mp157c-odyssey-som" },
+	{ /* sentinel */ },
+};
+
+static struct driver_d odyssey_som_driver = {
+	.name = "odyssey-som",
+	.probe = odyssey_som_probe,
+	.of_compatible = odyssey_som_of_match,
+};
+device_platform_driver(odyssey_som_driver);

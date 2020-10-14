@@ -1004,6 +1004,22 @@ include/generated/utsrelease.h: include/config/kernel.release FORCE
 	$(call filechk,utsrelease.h)
 
 # ---------------------------------------------------------------------------
+# Devicetree files
+
+ifneq ($(wildcard $(srctree)/arch/$(SRCARCH)/dts/),)
+dtstree := arch/$(SRCARCH)/dts
+endif
+
+ifneq ($(dtstree),)
+
+PHONY += dtbs
+all_dtbs += $(patsubst $(srctree)/%.dts,$(objtree)/%.dtb,$(wildcard $(srctree)/$(dtstree)/*.dts))
+targets += $(all_dtbs)
+dtbs: $(all_dtbs)
+
+endif
+
+# ---------------------------------------------------------------------------
 # Modules
 
 ifdef CONFIG_MODULES
@@ -1178,6 +1194,10 @@ help:
 	@$(if $(archhelp),$(archhelp),\
 		echo '  No architecture specific help defined for $(SRCARCH)')
 	@echo  ''
+	@$(if $(dtstree), \
+		echo '  Devicetree:'; \
+		echo '    * dtbs             - Build device tree blobs for all boards'; \
+		echo '')
 	@$(if $(boards), \
 		$(foreach b, $(boards), \
 		printf "  %-24s - Build for %s\\n" $(b) $(subst _defconfig,,$(b));) \

@@ -19,7 +19,7 @@ static int uimage_flush(void *buf, unsigned int len)
 static int do_uimage(int argc, char *argv[])
 {
 	struct uimage_handle *handle;
-	int ret;
+	int ret = 0;
 	int verify = 0;
 	int fd;
 	int opt;
@@ -84,7 +84,7 @@ static int do_uimage(int argc, char *argv[])
 err:
 	uimage_close(handle);
 
-	return ret ? 1 : 0;
+	return ret ? COMMAND_ERROR : COMMAND_SUCCESS;
 }
 
 BAREBOX_CMD_HELP_START(uimage)

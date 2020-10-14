@@ -766,7 +766,7 @@ int blspec_scan_devices(struct bootentries *bootentries)
 		device_detect(dev);
 
 	for_each_block_device(bdev) {
-		struct cdev *cdev = &bdev->cdev;
+		struct cdev *cdev;
 
 		list_for_each_entry(cdev, &bdev->dev->cdevs, devices_list) {
 			ret = blspec_scan_cdev(bootentries, cdev);

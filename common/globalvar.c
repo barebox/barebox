@@ -674,7 +674,7 @@ int nvvar_save(void)
 {
 	struct param_d *param;
 	const char *env = default_environment_path_get();
-	int ret;
+	int ret = 0;
 #define TMPDIR "/.env.tmp"
 	if (!nv_dirty || !env)
 		return 0;

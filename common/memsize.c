@@ -58,7 +58,7 @@ long get_ram_size(volatile long *base, long maxsize)
 	*addr = 0;
 
 	sync ();
-	if ((val = *addr) != 0) {
+	if (*addr != 0) {
 		/* Restore the original data before leaving the function.
 		 */
 		sync ();

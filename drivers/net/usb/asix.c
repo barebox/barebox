@@ -252,11 +252,19 @@ static int asix_mdio_read(struct mii_bus *bus, int phy_id, int loc)
 {
 	struct usbnet *dev = bus->priv;
 	__le16 res;
+	int ret;
 
-	asix_set_sw_mii(dev);
-	asix_read_cmd(dev, AX_CMD_READ_MII_REG, phy_id,
-				(__u16)loc, 2, &res);
-	asix_set_hw_mii(dev);
+	ret = asix_set_sw_mii(dev);
+	if (ret < 0)
+		return ret;
+
+	ret = asix_read_cmd(dev, AX_CMD_READ_MII_REG, phy_id, (__u16)loc, 2, &res);
+	if (ret < 0)
+		return ret;
+
+	ret = asix_set_hw_mii(dev);
+	if (ret < 0)
+		return ret;
 
 	dev_dbg(&dev->edev.dev, "asix_mdio_read() phy_id=0x%02x, loc=0x%02x, returns=0x%04x\n",
 			phy_id, loc, le16_to_cpu(res));
@@ -268,13 +276,22 @@ static int asix_mdio_write(struct mii_bus *bus, int phy_id, int loc, u16 val)
 {
 	struct usbnet *dev = bus->priv;
 	__le16 res = cpu_to_le16(val);
+	int ret;
 
 	dev_dbg(&dev->edev.dev, "asix_mdio_write() phy_id=0x%02x, loc=0x%02x, val=0x%04x\n",
 			phy_id, loc, val);
 
-	asix_set_sw_mii(dev);
-	asix_write_cmd(dev, AX_CMD_WRITE_MII_REG, phy_id, (__u16)loc, 2, &res);
-	asix_set_hw_mii(dev);
+	ret = asix_set_sw_mii(dev);
+	if (ret < 0)
+		return ret;
+
+	ret = asix_write_cmd(dev, AX_CMD_WRITE_MII_REG, phy_id, (__u16)loc, 2, &res);
+	if (ret < 0)
+		return ret;
+
+	ret = asix_set_hw_mii(dev);
+	if (ret < 0)
+		return ret;
 
 	return 0;
 }

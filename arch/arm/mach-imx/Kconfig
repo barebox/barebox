@@ -577,6 +577,11 @@ config MACH_DIGI_CCIMX6ULSBCPRO
 	select ARCH_IMX6UL
 	select ARM_USE_COMPRESSED_DTB
 
+config MACH_WEBASTO_CCBV2
+	bool "Webasto Common Communication Board V2"
+	select ARCH_IMX6UL
+	select ARM_USE_COMPRESSED_DTB
+
 endif
 
 # ----------------------------------------------------------

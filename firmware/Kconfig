@@ -16,4 +16,9 @@ config FIRMWARE_IMX8MP_ATF
 config FIRMWARE_IMX8MQ_ATF
         bool
 
+config FIRMWARE_CCBV2_OPTEE
+	bool
+	depends on MACH_WEBASTO_CCBV2 && PBL_OPTEE
+	default y
+
 endmenu

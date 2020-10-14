@@ -69,14 +69,13 @@ static int ppa_init(void *ppa, size_t ppa_size, void *sec_firmware_addr)
 
 	fit = fit_open_buf(ppa, ppa_size, false, BOOTM_VERIFY_AVAILABLE);
 	if (IS_ERR(fit)) {
-		pr_err("Cannot open ppa FIT image: %s\n", strerrorp(fit));
+		pr_err("Cannot open ppa FIT image: %pe\n", fit);
 		return PTR_ERR(fit);
 	}
 
 	conf = fit_open_configuration(fit, NULL);
 	if (IS_ERR(conf)) {
-		pr_err("Cannot open default config in ppa FIT image: %s\n",
-		       strerrorp(conf));
+		pr_err("Cannot open default config in ppa FIT image: %pe\n", conf);
 		ret = PTR_ERR(conf);
 		goto err;
 	}

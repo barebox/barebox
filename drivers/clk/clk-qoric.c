@@ -589,7 +589,7 @@ static void __init clockgen_init(struct device_node *np,
 
 	clockgen.sysclk = of_clk_get(clockgen.node, 0);
 	if (IS_ERR(clockgen.sysclk)) {
-		pr_err("sysclk not found: %s\n", strerrorp(clockgen.sysclk));
+		pr_err("sysclk not found: %pe\n", clockgen.sysclk);
 		return;
 	}
 	

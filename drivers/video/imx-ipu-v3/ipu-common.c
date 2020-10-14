@@ -804,9 +804,8 @@ static int ipu_probe(struct device_d *dev)
 
 	ipu->clk = clk_get(dev, "bus");
 	if (IS_ERR(ipu->clk)) {
-		ret = PTR_ERR(ipu->clk);
-		dev_err(dev, "clk_get failed: %s\n", strerror(-ret));
-		return ret;
+		dev_err(dev, "clk_get failed: %pe\n", ipu->clk);
+		return PTR_ERR(ipu->clk);
 	}
 
 	dev->priv = ipu;

@@ -41,7 +41,8 @@ static int skip_atoi(const char **s)
 #define SMALL	32		/* Must be 32 == 0x20 */
 #define SPECIAL	64		/* 0x */
 
-static char *number(char *buf, char *end, unsigned long long num, int base, int size, int precision, int type)
+static char *number(char *buf, const char *end, unsigned long long num, int base, int size,
+		    int precision, int type)
 {
 	/* we are called with base 8, 10 or 16, only, thus don't need "G..."  */
 	static const char digits[16] = "0123456789ABCDEF"; /* "GHIJKLMNOPQRSTUVWXYZ"; */
@@ -146,7 +147,8 @@ static char *number(char *buf, char *end, unsigned long long num, int base, int 
 #define PAGE_SIZE 4096
 #endif
 
-static char *string(char *buf, char *end, char *s, int field_width, int precision, int flags)
+static char *string(char *buf, const char *end, const char *s, int field_width,
+		    int precision, int flags)
 {
 	int len, i;
 
@@ -175,8 +177,20 @@ static char *string(char *buf, char *end, char *s, int field_width, int precisio
 	return buf;
 }
 
+static char *raw_pointer(char *buf, const char *end, const void *ptr, int field_width,
+			 int precision, int flags)
+{
+	flags |= SMALL;
+	if (field_width == -1) {
+		field_width = 2*sizeof(void *);
+		flags |= ZEROPAD;
+	}
+	return number(buf, end, (unsigned long) ptr, 16, field_width, precision, flags);
+}
+
 #ifndef __PBL__
-static char *symbol_string(char *buf, char *end, void *ptr, int field_width, int precision, int flags)
+static char *symbol_string(char *buf, const char *end, const void *ptr, int field_width,
+			   int precision, int flags)
 {
 	unsigned long value = (unsigned long) ptr;
 #ifdef CONFIG_KALLSYMS
@@ -191,7 +205,7 @@ static char *symbol_string(char *buf, char *end, void *ptr, int field_width, int
 }
 
 static noinline_for_stack
-char *ip4_addr_string(char *buf, char *end, const u8 *addr, int field_width,
+char *ip4_addr_string(char *buf, const char *end, const u8 *addr, int field_width,
 		      int precision, int flags, const char *fmt)
 {
 	char ip4_addr[sizeof("255.255.255.255")];
@@ -211,9 +225,19 @@ char *ip4_addr_string(char *buf, char *end, const u8 *addr, int field_width,
 	return string(buf, end, ip4_addr, field_width, precision, flags);
 }
 
+static
+char *error_string(char *buf, const char *end, const u8 *errptr, int field_width,
+		   int precision, int flags, const char *fmt)
+{
+    if (!IS_ERR(errptr))
+	    return raw_pointer(buf, end, errptr, field_width, precision, flags);
+
+    return string(buf, end, strerror(-PTR_ERR(errptr)), field_width, precision, flags);
+}
+
 static noinline_for_stack
-char *uuid_string(char *buf, char *end, const u8 *addr, int field_width,
-		int precision, int flags, const char *fmt)
+char *uuid_string(char *buf, const char *end, const u8 *addr, int field_width,
+		  int precision, int flags, const char *fmt)
 {
 	char uuid[sizeof("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")];
 	char *p = uuid;
@@ -259,8 +283,8 @@ char *uuid_string(char *buf, char *end, const u8 *addr, int field_width,
 }
 
 static noinline_for_stack
-char *address_val(char *buf, char *end, const void *addr,
-		int field_width, int precision, int flags, const char *fmt)
+char *address_val(char *buf, const char *end, const void *addr,
+		  int field_width, int precision, int flags, const char *fmt)
 {
 	unsigned long long num;
 
@@ -314,7 +338,8 @@ char *address_val(char *buf, char *end, const void *addr,
  * function pointers are really function descriptors, which contain a
  * pointer to the real address.
  */
-static char *pointer(const char *fmt, char *buf, char *end, void *ptr, int field_width, int precision, int flags)
+static char *pointer(const char *fmt, char *buf, const char *end, const void *ptr,
+		     int field_width, int precision, int flags)
 {
 	switch (*fmt) {
 	case 'S':
@@ -341,23 +366,18 @@ static char *pointer(const char *fmt, char *buf, char *end, void *ptr, int field
                         return ip4_addr_string(buf, end, ptr, field_width, precision, flags, fmt);
 		}
 		break;
+	case 'e':
+		return error_string(buf, end, ptr, field_width, precision, flags, fmt);
 	}
-	flags |= SMALL;
-	if (field_width == -1) {
-		field_width = 2*sizeof(void *);
-		flags |= ZEROPAD;
-	}
-	return number(buf, end, (unsigned long) ptr, 16, field_width, precision, flags);
+
+	return raw_pointer(buf, end, ptr, field_width, precision, flags);
 }
+
 #else
-static char *pointer(const char *fmt, char *buf, char *end, void *ptr, int field_width, int precision, int flags)
+static char *pointer(const char *fmt, char *buf, const char *end, const void *ptr,
+		     int field_width, int precision, int flags)
 {
-	flags |= SMALL;
-	if (field_width == -1) {
-		field_width = 2*sizeof(void *);
-		flags |= ZEROPAD;
-	}
-	return number(buf, end, (unsigned long) ptr, 16, field_width, precision, flags);
+	return raw_pointer(buf, end, ptr, field_width, precision, flags);
 }
 #endif
 

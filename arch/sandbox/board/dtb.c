@@ -32,32 +32,14 @@ int barebox_register_dtb(const void *new_dtb)
 	return 0;
 }
 
+extern char __dtb_sandbox_start[];
+
 static int of_sandbox_init(void)
 {
-	struct device_node *root;
-	int ret;
+	if (!dtb)
+		dtb = __dtb_sandbox_start;
 
-	if (dtb) {
-		root = of_unflatten_dtb(dtb);
-	} else {
-		root = of_new_node(NULL, NULL);
-
-		ret = of_property_write_u32(root, "#address-cells", 2);
-		if (ret)
-			return ret;
-
-		ret = of_property_write_u32(root, "#size-cells", 2);
-		if (ret)
-			return ret;
-	}
-
-	if (IS_ERR(root))
-		return PTR_ERR(root);
-
-	of_set_root_node(root);
-	of_fix_tree(root);
-	if (IS_ENABLED(CONFIG_OFDEVICE))
-		of_probe();
+	barebox_register_fdt(dtb);
 
 	return 0;
 }

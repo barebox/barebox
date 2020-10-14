@@ -18,19 +18,7 @@ extern char __dtb_start[];
 
 static int of_riscv_init(void)
 {
-	struct device_node *root;
-
-	root = of_get_root_node();
-	if (root)
-		return 0;
-
-	root = of_unflatten_dtb(__dtb_start);
-	if (!IS_ERR(root)) {
-		pr_debug("using internal DTB\n");
-		of_set_root_node(root);
-		if (IS_ENABLED(CONFIG_OFDEVICE))
-			of_probe();
-	}
+	barebox_register_fdt(__dtb_start);
 
 	return 0;
 }

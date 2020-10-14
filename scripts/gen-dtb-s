@@ -62,9 +62,9 @@ echo ".section .dtbz.rodata.${name},\"a\""
 echo ".balign STRUCT_ALIGNMENT"
 echo ".global __dtb_z_${name}_start"
 echo "__dtb_z_${name}_start:"
-printf ".word 0x%08x\n"  0x7b66bcbd
-printf ".word 0x%08x\n"  $compressed
-printf ".word 0x%08x\n"  $uncompressed
+printf ".int 0x%08x\n"  0x7b66bcbd
+printf ".int 0x%08x\n"  $compressed
+printf ".int 0x%08x\n"  $uncompressed
 echo ".incbin \"$dtb.lzo\""
 echo "__dtb_z_${name}_end:"
 echo ".global __dtb_z_${name}_end"

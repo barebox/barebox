@@ -1,6 +1,8 @@
 #ifndef __ASM_ARCH_LINUX_H
 #define __ASM_ARCH_LINUX_H
 
+struct hf_info;
+
 struct device_d;
 
 int sandbox_add_device(struct device_d *dev);
@@ -11,6 +13,7 @@ int linux_register_device(const char *name, void *start, void *end);
 int tap_alloc(const char *dev);
 uint64_t linux_get_time(void);
 int linux_open(const char *filename, int readwrite);
+int linux_open_hostfile(struct hf_info *hf);
 int linux_read(int fd, void *buf, size_t count);
 int linux_read_nonblock(int fd, void *buf, size_t count);
 ssize_t linux_write(int fd, const void *buf, size_t count);
@@ -21,6 +24,8 @@ void linux_hang(void);
 void linux_reexec(void);
 
 int linux_execve(const char * filename, char *const argv[], char *const envp[]);
+
+int linux_watchdog_set_timeout(unsigned int timeout);
 
 int barebox_register_console(int stdinfd, int stdoutfd);
 

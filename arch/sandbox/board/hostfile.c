@@ -124,9 +124,6 @@ static int hf_probe(struct device_d *dev)
 	if (err)
 		return err;
 
-	if (!priv->fd)
-		priv->fd = linux_open(priv->filename, true);
-
 	if (priv->fd < 0)
 		return priv->fd;
 
@@ -194,37 +191,98 @@ static int of_hostfile_fixup(struct device_node *root, void *ctx)
 {
 	struct hf_info *hf = ctx;
 	struct device_node *node;
-	uint32_t reg[] = {
-		hf->base >> 32,
-		hf->base,
-		hf->size >> 32,
-		hf->size
-	};
+	bool name_only = false;
 	int ret;
 
-	node = of_new_node(root, hf->devname);
+	node = of_get_child_by_name(root, hf->devname);
+	if (node)
+		name_only = true;
+	else
+		node = of_new_node(root, hf->devname);
+
+	ret = of_property_write_string(node, "barebox,filename", hf->filename);
+	if (ret)
+		return ret;
+
+	if (name_only)
+		return 0;
 
 	ret = of_property_write_string(node, "compatible", hostfile_dt_ids->compatible);
 	if (ret)
 		return ret;
 
-	ret = of_property_write_u32_array(node, "reg", reg, ARRAY_SIZE(reg));
+	ret = of_property_write_bool(node, "barebox,blockdev", hf->is_blockdev);
 	if (ret)
 		return ret;
 
-	ret = of_property_write_u32(node, "barebox,fd", hf->fd);
+	ret = of_property_write_bool(node, "barebox,cdev", hf->is_cdev);
 	if (ret)
 		return ret;
 
-	ret = of_property_write_string(node, "barebox,filename", hf->filename);
-
-	if (hf->is_blockdev)
-		ret = of_property_write_bool(node, "barebox,blockdev", true);
-
-	return ret;
+	return of_property_write_bool(node, "barebox,read-only", hf->is_readonly);
 }
 
 int barebox_register_filedev(struct hf_info *hf)
 {
 	return of_register_fixup(of_hostfile_fixup, hf);
 }
+
+static int of_hostfile_map_fixup(struct device_node *root, void *ctx)
+{
+	struct device_node *node;
+	int ret;
+
+	for_each_compatible_node_from(node, root, NULL, hostfile_dt_ids->compatible) {
+		struct hf_info hf = {};
+		uint64_t reg[2] = {};
+		bool no_filename;
+
+		hf.devname = node->name;
+
+		ret = of_property_read_string(node, "barebox,filename", &hf.filename);
+		no_filename = ret;
+
+		hf.is_blockdev = of_property_read_bool(node, "barebox,blockdev");
+		hf.is_cdev = of_property_read_bool(node, "barebox,cdev");
+		hf.is_readonly = of_property_read_bool(node, "barebox,read-only");
+
+		of_property_read_u64_array(node, "reg", reg, ARRAY_SIZE(reg));
+
+		hf.base = reg[0];
+		hf.size = reg[1];
+
+		ret = linux_open_hostfile(&hf);
+		if (ret)
+			goto out;
+
+		reg[0] = hf.base;
+		reg[1] = hf.size;
+
+		ret = of_property_write_u64_array(node, "reg", reg, ARRAY_SIZE(reg));
+		if (ret)
+			goto out;
+
+		ret = of_property_write_bool(node, "barebox,blockdev", hf.is_blockdev);
+		if (ret)
+			goto out;
+
+		if (no_filename) {
+			ret = of_property_write_string(node, "barebox,filename", hf.filename);
+			if (ret)
+				goto out;
+		}
+
+		ret = of_property_write_u32(node, "barebox,fd", hf.fd);
+out:
+		if (ret)
+			pr_err("error fixing up %s: %pe\n", hf.devname, ERR_PTR(ret));
+	}
+
+	return 0;
+}
+
+static int barebox_fixup_filedevs(void)
+{
+	return of_register_fixup(of_hostfile_map_fixup, NULL);
+}
+pure_initcall(barebox_fixup_filedevs);

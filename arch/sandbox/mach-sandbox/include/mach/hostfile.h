@@ -8,6 +8,8 @@ struct hf_info {
 	const char *devname;
 	const char *filename;
 	unsigned int is_blockdev:1;
+	unsigned int is_cdev:1;
+	unsigned int is_readonly:1;
 };
 
 int barebox_register_filedev(struct hf_info *hf);

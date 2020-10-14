@@ -26,9 +26,6 @@ static int sandbox_device_init(void)
 {
 	struct device_d *dev, *tmp;
 
-	barebox_set_model("barebox sandbox");
-	barebox_set_hostname("barebox");
-
 	list_for_each_entry_safe(dev, tmp, &sandbox_device_list, list) {
 		/* reset the list_head before registering for real */
 		dev->list.prev = NULL;

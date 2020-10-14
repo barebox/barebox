@@ -26,13 +26,7 @@ static int of_arm_init(void)
 		return 0;
 	}
 
-	root = of_unflatten_dtb(fdt);
-	if (!IS_ERR(root)) {
-		of_set_root_node(root);
-		of_fix_tree(root);
-		if (IS_ENABLED(CONFIG_OFDEVICE))
-			of_probe();
-	}
+	barebox_register_fdt(fdt);
 
 	return 0;
 }

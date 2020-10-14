@@ -12,17 +12,7 @@ static int of_kvx_init(void)
 	int ret;
 	struct device_node *root;
 
-	root = of_unflatten_dtb(boot_dtb);
-	if (IS_ERR(root)) {
-		ret = PTR_ERR(root);
-		panic("Failed to parse DTB: %d\n", ret);
-	}
-
-	ret = of_set_root_node(root);
-	if (ret)
-		panic("Failed to set of root node\n");
-
-	of_probe();
+	barebox_register_fdt(boot_dtb);
 
 	return 0;
 }

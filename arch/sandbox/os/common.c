@@ -19,6 +19,7 @@
  * These are host includes. Never include any barebox header
  * files here...
  */
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -38,6 +39,8 @@
 #include <sys/wait.h>
 #include <sys/ioctl.h>
 #include <linux/fs.h>
+#include <sys/time.h>
+#include <signal.h>
 /*
  * ...except the ones needed to connect with barebox
  */
@@ -124,6 +127,7 @@ void __attribute__((noreturn)) linux_exit(void)
 	exit(0);
 }
 
+static size_t saved_argv_len;
 static char **saved_argv;
 
 void linux_reexec(void)
@@ -242,6 +246,29 @@ int linux_execve(const char * filename, char *const argv[], char *const envp[])
 	}
 }
 
+static void linux_watchdog(int signo)
+{
+	linux_reexec();
+	_exit(0);
+}
+
+int linux_watchdog_set_timeout(unsigned int timeout)
+{
+	static int signal_handler_installed;
+
+	if (!signal_handler_installed) {
+		struct sigaction sact = {
+			.sa_flags = SA_NODEFER, .sa_handler = linux_watchdog
+		};
+
+		sigemptyset(&sact.sa_mask);
+		sigaction(SIGALRM, &sact, NULL);
+		signal_handler_installed = 1;
+	}
+
+	return alarm(timeout);
+}
+
 extern void start_barebox(void);
 extern void mem_malloc_init(void *start, void *end);
 
@@ -252,10 +279,8 @@ static int add_image(const char *_str, char *devname_template, int *devname_numb
 	struct hf_info *hf = malloc(sizeof(struct hf_info));
 	char *str, *filename, *devname;
 	char tmp[16];
-	int readonly = 0, cdev = 0, blkdev = 0;
-	struct stat s;
 	char *opt;
-	int fd, ret;
+	int ret;
 
 	if (!hf)
 		return -1;
@@ -265,11 +290,11 @@ static int add_image(const char *_str, char *devname_template, int *devname_numb
 	filename = strsep_unescaped(&str, ",");
 	while ((opt = strsep_unescaped(&str, ","))) {
 		if (!strcmp(opt, "ro"))
-			readonly = 1;
+			hf->is_readonly = 1;
 		if (!strcmp(opt, "cdev"))
-			cdev = 1;
+			hf->is_cdev = 1;
 		if (!strcmp(opt, "blkdev"))
-			blkdev = 1;
+			hf->is_blockdev = 1;
 	}
 
 	/* parses: "devname=filename" */
@@ -282,13 +307,64 @@ static int add_image(const char *_str, char *devname_template, int *devname_numb
 		devname = tmp;
 	}
 
-	printf("add %s backed by file %s%s\n", devname,
-	       filename, readonly ? "(ro)" : "");
-
-	fd = open(filename, (readonly ? O_RDONLY : O_RDWR) | O_CLOEXEC);
-	hf->fd = fd;
 	hf->filename = filename;
-	hf->is_blockdev = blkdev;
+	hf->devname = strdup(devname);
+
+	ret = barebox_register_filedev(hf);
+	if (ret)
+		free(hf);
+
+	return ret;
+}
+
+int linux_open_hostfile(struct hf_info *hf)
+{
+	char *buf = NULL;
+	struct stat s;
+	int fd;
+
+	printf("add %s %sbacked by file %s%s\n", hf->devname,
+	       hf->filename ? "" : "initially un", hf->filename ?: "",
+	       hf->is_readonly ? "(ro)" : "");
+
+	if (hf->filename) {
+		fd = hf->fd = open(hf->filename, (hf->is_readonly ? O_RDONLY : O_RDWR) | O_CLOEXEC);
+	} else {
+		char *filename;
+		int ret;
+
+		ret = asprintf(&buf, "--image=%s=/tmp/barebox-hostfileXXXXXX", hf->devname);
+		if (ret < 0) {
+			perror("asprintf");
+			goto err_out;
+		}
+
+		filename = buf + strlen("--image==") + strlen(hf->devname);
+
+		fd = hf->fd = mkstemp(filename);
+		if (fd >= 0) {
+			ret = fcntl(fd, F_SETFD, FD_CLOEXEC);
+			if (ret < 0) {
+				perror("fcntl");
+				goto err_out;
+			}
+
+			ret = ftruncate(fd, hf->size);
+			if (ret < 0) {
+				perror("ftruncate");
+				goto err_out;
+			}
+
+			hf->filename = filename;
+
+			saved_argv = realloc(saved_argv,
+					     ++saved_argv_len * sizeof(*saved_argv));
+			if (!saved_argv)
+				exit(1);
+			saved_argv[saved_argv_len - 2] = buf;
+			saved_argv[saved_argv_len - 1] = NULL;
+		}
+	}
 
 	if (fd < 0) {
 		perror("open");
@@ -300,42 +376,41 @@ static int add_image(const char *_str, char *devname_template, int *devname_numb
 		goto err_out;
 	}
 
+	hf->base = (unsigned long)MAP_FAILED;
 	hf->size = s.st_size;
-	hf->devname = strdup(devname);
 
 	if (S_ISBLK(s.st_mode)) {
 		if (ioctl(fd, BLKGETSIZE64, &hf->size) == -1) {
 			perror("ioctl");
 			goto err_out;
 		}
-		if (!cdev)
+		if (!hf->is_cdev)
 			hf->is_blockdev = 1;
 	}
-	if (hf->size <= SIZE_MAX)
+	if (hf->size <= SIZE_MAX) {
 		hf->base = (unsigned long)mmap(NULL, hf->size,
-				PROT_READ | (readonly ? 0 : PROT_WRITE),
+				PROT_READ | (hf->is_readonly ? 0 : PROT_WRITE),
 				MAP_SHARED, fd, 0);
-	else
-		printf("warning: %s: contiguous map failed\n", filename);
 
-	if (hf->base == (unsigned long)MAP_FAILED)
-		printf("warning: mmapping %s failed: %s\n", filename, strerror(errno));
+		if (hf->base == (unsigned long)MAP_FAILED)
+			printf("warning: mmapping %s failed: %s\n",
+			       hf->filename, strerror(errno));
+	} else {
+		printf("warning: %s: contiguous map failed\n", hf->filename);
+	}
 
-	if (blkdev && hf->size % 512 != 0) {
+	if (hf->is_blockdev && hf->size % 512 != 0) {
 		printf("warning: registering %s as block device failed: invalid block size\n",
-		       filename);
+		       hf->filename);
 		return -EINVAL;
 	}
 
-	ret = barebox_register_filedev(hf);
-	if (ret)
-		goto err_out;
 	return 0;
 
 err_out:
 	if (fd > 0)
 		close(fd);
-	free(hf);
+	free(buf);
 	return -1;
 }
 
@@ -405,8 +480,6 @@ int main(int argc, char *argv[])
 	__sanitizer_set_death_callback(cookmode);
 #endif
 
-	saved_argv = argv;
-
 	while (1) {
 		option_index = 0;
 		opt = getopt_long(argc, argv, optstring,
@@ -443,6 +516,12 @@ int main(int argc, char *argv[])
 			break;
 		}
 	}
+
+	saved_argv_len = argc + 1;
+	saved_argv = calloc(saved_argv_len, sizeof(*saved_argv));
+	if (!saved_argv)
+		exit(1);
+	memcpy(saved_argv, argv, saved_argv_len * sizeof(*saved_argv));
 
 	ram = malloc(malloc_size);
 	if (!ram) {

@@ -19,10 +19,11 @@ All new boards should use defaultenv-2 exclusively.
 
 The default environment is composed from different directories during compilation::
 
-  defaultenv/defaultenv-2-base   -> base files
-  defaultenv/defaultenv-2-dfu    -> overlay for DFU
-  defaultenv/defaultenv-2-menu   -> overlay for menus
-  arch/$ARCH/boards/<board>/env  -> board specific overlay
+  defaultenv/defaultenv-2-base        -> base files
+  defaultenv/defaultenv-2-dfu         -> overlay for DFU
+  defaultenv/defaultenv-2-reboot-mode -> overlay for reboot modes
+  defaultenv/defaultenv-2-menu        -> overlay for menus
+  arch/$ARCH/boards/<board>/env       -> board specific overlay
 
 The content of the above directories is applied one after another. If the
 same file exists in a later overlay, it will overwrite the preceding one.
@@ -37,6 +38,7 @@ and their respective included directories in ``defaultenv/Makefile``:
   bbenv-$(CONFIG_DEFAULT_ENVIRONMENT_GENERIC_NEW) += defaultenv-2-base
   bbenv-$(CONFIG_DEFAULT_ENVIRONMENT_GENERIC_NEW_MENU) += defaultenv-2-menu
   bbenv-$(CONFIG_DEFAULT_ENVIRONMENT_GENERIC_NEW_DFU) += defaultenv-2-dfu
+  bbenv-$(CONFIG_DEFAULT_ENVIRONMENT_GENERIC_NEW_REBOOT_MODE) += defaultenv-2-reboot-mode
   bbenv-$(CONFIG_DEFAULT_ENVIRONMENT_GENERIC) += defaultenv-1
 
 /env/bin/init
@@ -138,3 +140,11 @@ there will be a file ``eth0`` with a content like this:
   # put code to discover eth0 (i.e. 'usb') to /env/network/eth0-discover
 
   exit 0
+
+/env/bmode/
+-----------
+
+This contains the files to be sourced when barebox detects that the OS
+had requested a specific reboot mode (via e.g. ``reboot bootloader``
+under Linux). After the ``/env/init`` scripts were executed, barebox will
+``source /env/bmode/${global.system.reboot_mode.prev}`` if available.

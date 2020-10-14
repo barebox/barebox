@@ -100,7 +100,7 @@ int usbgadget_register(bool dfu, const char *dfu_opts,
 	return ret;
 }
 
-static int usbgadget_autostart(void)
+static int usbgadget_autostart_set(struct param_d *param, void *ctx)
 {
 	bool fastboot_bbu = get_fastboot_bbu();
 
@@ -109,12 +109,12 @@ static int usbgadget_autostart(void)
 
 	return usbgadget_register(true, NULL, true, NULL, acm, fastboot_bbu);
 }
-postenvironment_initcall(usbgadget_autostart);
 
 static int usbgadget_globalvars_init(void)
 {
 	if (IS_ENABLED(CONFIG_USB_GADGET_AUTOSTART)) {
-		globalvar_add_simple_bool("usbgadget.autostart", &autostart);
+		globalvar_add_bool("usbgadget.autostart", usbgadget_autostart_set,
+				   &autostart, NULL);
 		globalvar_add_simple_bool("usbgadget.acm", &acm);
 	}
 	globalvar_add_simple_string("usbgadget.dfu_function", &dfu_function);

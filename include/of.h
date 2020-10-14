@@ -734,6 +734,8 @@ static inline int of_autoenable_i2c_by_component(char *path)
 
 #endif
 
+#define for_each_property_of_node(dn, pp) \
+	list_for_each_entry(pp, &dn->properties, list)
 #define for_each_node_by_name(dn, name) \
 	for (dn = of_find_node_by_name(NULL, name); dn; \
 	     dn = of_find_node_by_name(dn, name))

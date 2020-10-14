@@ -60,12 +60,6 @@
 #define FIXUP_CPU_NUM(mask) ((mask) >> 16)
 #define FIXUP_CPU_HZ(mask) (((mask) & GENMASK(15, 0)) * 1000UL * 1000UL)
 
-static enum stm32mp_forced_boot_mode __stm32mp_forced_boot_mode;
-enum stm32mp_forced_boot_mode st32mp_get_forced_boot_mode(void)
-{
-	return __stm32mp_forced_boot_mode;
-}
-
 static void setup_boot_mode(void)
 {
 	u32 boot_ctx = readl(TAMP_BOOT_CONTEXT);
@@ -101,17 +95,11 @@ static void setup_boot_mode(void)
 		break;
 	}
 
-	__stm32mp_forced_boot_mode = boot_ctx & TAMP_BOOT_FORCED_MASK;
-
-	pr_debug("[boot_ctx=0x%x] => mode=0x%x, instance=%d forced=0x%x\n",
-		 boot_ctx, boot_mode, instance, __stm32mp_forced_boot_mode);
+	pr_debug("[boot_ctx=0x%x] => mode=0x%x, instance=%d\n",
+		 boot_ctx, boot_mode, instance);
 
 	bootsource_set(src);
 	bootsource_set_instance(instance);
-
-	/* clear TAMP for next reboot */
-	clrsetbits_le32(TAMP_BOOT_CONTEXT, TAMP_BOOT_FORCED_MASK,
-			STM32MP_BOOT_NORMAL);
 }
 
 static int __stm32mp_cputype;

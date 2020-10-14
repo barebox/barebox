@@ -906,6 +906,11 @@ config DEFAULT_ENVIRONMENT_GENERIC_NEW_DFU
 	depends on USB_GADGET_DFU
 	default y
 
+config DEFAULT_ENVIRONMENT_GENERIC_NEW_REBOOT_MODE
+	bool "Generic reboot-mode handlers in the environment"
+	depends on DEFAULT_ENVIRONMENT_GENERIC_NEW
+	depends on REBOOT_MODE
+
 config DEFAULT_ENVIRONMENT_PATH
 	string
 	depends on DEFAULT_ENVIRONMENT

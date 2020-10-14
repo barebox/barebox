@@ -6,5 +6,26 @@
 		pwm2 = &pwm3;
 		pwm3 = &pwm4;
 		ipu0 = &ipu1;
+		gpr.reboot_mode = &reboot_mode_gpr;
+	};
+};
+
+&src {
+	compatible = "fsl,imx6q-src", "fsl,imx51-src", "syscon", "simple-mfd";
+
+	reboot_mode_gpr: reboot-mode {
+		compatible = "barebox,syscon-reboot-mode";
+		offset = <0x40>, <0x44>; /* SRC_GPR{9,10} */
+		mask = <0xffffffff>, <0x10000000>;
+		mode-normal = <0>, <0>;
+		mode-serial = <0x00000010>, <0x10000000>;
+		mode-spi0-0 = <0x08000030>, <0x10000000>;
+		mode-spi0-1 = <0x18000030>, <0x10000000>;
+		mode-spi0-2 = <0x28000030>, <0x10000000>;
+		mode-spi0-3 = <0x38000030>, <0x10000000>;
+		mode-mmc0 = <0x00002040>, <0x10000000>;
+		mode-mmc1 = <0x00002840>, <0x10000000>;
+		mode-mmc2 = <0x00003040>, <0x10000000>;
+		mode-mmc3 = <0x00003840>, <0x10000000>;
 	};
 };

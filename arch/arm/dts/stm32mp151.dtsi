@@ -28,6 +28,7 @@
 		pwm15 = &{/soc/timer@44006000/pwm};
 		pwm16 = &{/soc/timer@44007000/pwm};
 		pwm17 = &{/soc/timer@44008000/pwm};
+		tamp.reboot_mode = &reboot_mode_tamp;
 	};
 
 };
@@ -41,6 +42,20 @@
 	memory-controller@5a003000 {
 		compatible = "st,stm32mp1-ddr";
 		reg = <0x5a003000 0x1000>;
+	};
+
+	tamp@5c00a000 {
+		compatible = "simple-bus", "syscon", "simple-mfd";
+		reg = <0x5c00a000 0x400>;
+
+		reboot_mode_tamp: reboot-mode {
+			compatible = "syscon-reboot-mode";
+			offset = <0x150>; /* reg20 */
+			mask = <0xff>;
+			mode-normal = <0>;
+			mode-loader = <0xBB>;
+			mode-recovery = <0xBC>;
+		};
 	};
 };
 

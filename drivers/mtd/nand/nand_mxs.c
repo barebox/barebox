@@ -2145,9 +2145,7 @@ static int mxs_nand_probe(struct device_d *dev)
 	if (mxs_nand_mtd)
 		return -EBUSY;
 
-	err = dev_get_drvdata(dev, (const void **)&type);
-	if (err)
-		type = GPMI_MXS;
+	type = (enum gpmi_type)device_get_match_data(dev);
 
 	nand_info = kzalloc(sizeof(struct mxs_nand_info), GFP_KERNEL);
 	if (!nand_info) {

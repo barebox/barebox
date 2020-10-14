@@ -500,3 +500,14 @@ int dev_get_drvdata(struct device_d *dev, const void **data)
 
 	return -ENODEV;
 }
+
+const void *device_get_match_data(struct device_d *dev)
+{
+	if (dev->of_id_entry)
+		return dev->of_id_entry->data;
+
+	if (dev->id_entry)
+		return (void *)dev->id_entry->driver_data;
+
+	return NULL;
+}

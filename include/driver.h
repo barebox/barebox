@@ -534,7 +534,25 @@ int devfs_create_partitions(const char *devname,
 #define DRV_OF_COMPAT(compat) \
 	IS_ENABLED(CONFIG_OFDEVICE) ? (compat) : NULL
 
+/**
+ * dev_get_drvdata - get driver match data associated with device
+ * @dev: device instance
+ * @data: pointer to void *, where match data is stored
+ *
+ * Returns 0 on success and error code otherwise.
+ *
+ * DEPRECATED: use device_get_match_data instead, which avoids
+ * common pitfalls due to explicit pointer casts
+ */
 int dev_get_drvdata(struct device_d *dev, const void **data);
+
+/**
+ * device_get_match_data - get driver match data associated with device
+ * @dev: device instance
+ *
+ * Returns match data on success and NULL otherwise
+ */
+const void *device_get_match_data(struct device_d *dev);
 
 int device_match_of_modalias(struct device_d *dev, struct driver_d *drv);
 

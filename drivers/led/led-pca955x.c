@@ -72,53 +72,47 @@ enum led_brightness {
 	LED_FULL	= 255,
 };
 
-enum pca955x_type {
-	pca9550,
-	pca9551,
-	pca9552,
-	pca9553,
-};
-
 struct pca955x_chipdef {
 	int	bits;
 	u8	slv_addr;	/* 7-bit slave address mask */
 	int	slv_addr_shift;	/* Number of bits to ignore */
 };
 
-static struct pca955x_chipdef pca955x_chipdefs[] = {
-	[pca9550] = {
-		.bits		= 2,
-		.slv_addr	= /* 110000x */ 0x60,
-		.slv_addr_shift	= 1,
-	},
-	[pca9551] = {
-		.bits		= 8,
-		.slv_addr	= /* 1100xxx */ 0x60,
-		.slv_addr_shift	= 3,
-	},
-	[pca9552] = {
-		.bits		= 16,
-		.slv_addr	= /* 1100xxx */ 0x60,
-		.slv_addr_shift	= 3,
-	},
-	[pca9553] = {
-		.bits		= 4,
-		.slv_addr	= /* 110001x */ 0x62,
-		.slv_addr_shift	= 1,
-	},
+static const struct pca955x_chipdef pca9550_chipdef = {
+	.bits		= 2,
+	.slv_addr	= /* 110000x */ 0x60,
+	.slv_addr_shift	= 1,
+};
+
+static const struct pca955x_chipdef pca9551_chipdef = {
+	.bits		= 8,
+	.slv_addr	= /* 1100xxx */ 0x60,
+	.slv_addr_shift	= 3,
+};
+
+static const struct pca955x_chipdef pca9552_chipdef = {
+	.bits		= 16,
+	.slv_addr	= /* 1100xxx */ 0x60,
+	.slv_addr_shift	= 3,
+};
+
+static const struct pca955x_chipdef pca9553_chipdef = {
+	.bits		= 4,
+	.slv_addr	= /* 110001x */ 0x62,
+	.slv_addr_shift	= 1,
 };
 
 static const struct platform_device_id led_pca955x_id[] = {
-	{ "pca9550", pca9550 },
-	{ "pca9551", pca9551 },
-	{ "pca9552", pca9552 },
-	{ "pca9553", pca9553 },
+	{ "pca9550", (unsigned long) &pca9550_chipdef },
+	{ "pca9551", (unsigned long) &pca9551_chipdef },
+	{ "pca9552", (unsigned long) &pca9552_chipdef },
+	{ "pca9553", (unsigned long) &pca9553_chipdef },
 	{ }
 };
 
 struct pca955x {
 	struct pca955x_led *leds;
-	struct pca955x_chipdef	*chipdef;
+	const struct pca955x_chipdef	*chipdef;
 	struct i2c_client	*client;
 };
 
@@ -278,7 +272,7 @@ static struct pca955x_platform_data *
 led_pca955x_pdata_of_init(struct device_node *np, struct pca955x *pca955x)
 {
 	struct device_node *child;
-	struct pca955x_chipdef *chip = pca955x->chipdef;
+	const struct pca955x_chipdef *chip = pca955x->chipdef;
 	struct pca955x_platform_data *pdata;
 	int count, err;
 
@@ -334,10 +328,10 @@ led_pca955x_pdata_of_init(struct device_node *np, struct pca955x *pca955x)
 }
 
 static const struct of_device_id of_pca955x_match[] = {
-	{ .compatible = "nxp,pca9550", .data = (void *)pca9550 },
-	{ .compatible = "nxp,pca9551", .data = (void *)pca9551 },
-	{ .compatible = "nxp,pca9552", .data = (void *)pca9552 },
-	{ .compatible = "nxp,pca9553", .data = (void *)pca9553 },
+	{ .compatible = "nxp,pca9550", .data = &pca9550_chipdef },
+	{ .compatible = "nxp,pca9551", .data = &pca9551_chipdef },
+	{ .compatible = "nxp,pca9552", .data = &pca9552_chipdef },
+	{ .compatible = "nxp,pca9553", .data = &pca9553_chipdef },
 	{},
 };
 
@@ -345,12 +339,15 @@ static int led_pca955x_probe(struct device_d *dev)
 {
 	struct pca955x *pca955x;
 	struct pca955x_led *pca955x_led;
-	struct pca955x_chipdef *chip;
+	const struct pca955x_chipdef *chip;
 	struct i2c_client *client;
 	int err;
 	struct pca955x_platform_data *pdata;
 
-	chip = &pca955x_chipdefs[dev->id_entry->driver_data];
+	chip = device_get_match_data(dev);
+	if (!chip)
+		return -ENODEV;
+
 	client = to_i2c_client(dev);
 
 	/* Make sure the slave address / chip type combo given is possible */

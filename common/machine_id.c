@@ -66,4 +66,4 @@ out:
 }
 late_initcall(machine_id_set_bootarg);
 
-BAREBOX_MAGICVAR_NAMED(global_machine_id, global.machine_id, "Persistent device-specific, hexadecimal, 32-character id");
+BAREBOX_MAGICVAR(global.machine_id, "Persistent device-specific, hexadecimal, 32-character id");

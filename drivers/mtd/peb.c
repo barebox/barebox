@@ -88,18 +88,14 @@ static int mtd_peb_debug_init(void)
 }
 device_initcall(mtd_peb_debug_init);
 
-BAREBOX_MAGICVAR_NAMED(global_mtd_peb_emulate_bitflip,
-		       global.mtd_peb.emulate_bitflip,
-		       "random bitflips, on average every #nth access returns -EUCLEAN");
-BAREBOX_MAGICVAR_NAMED(global_mtd_peb_emulate_write_failure,
-		       global.mtd_peb.emulate_write_failure,
-		       "random write failures, on average every #nth access returns write failure");
-BAREBOX_MAGICVAR_NAMED(global_mtd_peb_emulate_erase_failures,
-		       global.mtd_peb.emulate_erase_failures,
-		       "random erase failures, on average every #nth access returns erase failure");
-BAREBOX_MAGICVAR_NAMED(global_mtd_peb_chk_io,
-		       global.mtd_peb.chk_io,
-		       "If true, written data will be verified");
+BAREBOX_MAGICVAR(global.mtd_peb.emulate_bitflip,
+		 "random bitflips, on average every #nth access returns -EUCLEAN");
+BAREBOX_MAGICVAR(global.mtd_peb.emulate_write_failure,
+		 "random write failures, on average every #nth access returns write failure");
+BAREBOX_MAGICVAR(global.mtd_peb.emulate_erase_failures,
+		 "random erase failures, on average every #nth access returns erase failure");
+BAREBOX_MAGICVAR(global.mtd_peb.chk_io,
+		 "If true, written data will be verified");
 
 #endif
 

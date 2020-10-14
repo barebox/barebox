@@ -449,7 +449,7 @@ static int login_global_init(void)
 }
 late_initcall(login_global_init);
 
-BAREBOX_MAGICVAR_NAMED(global_login_fail_command, global.login.fail_command,
+BAREBOX_MAGICVAR(global.login.fail_command,
 		"command to run when password entry failed");
-BAREBOX_MAGICVAR_NAMED(global_login_timeout, global.login.timeout,
+BAREBOX_MAGICVAR(global.login.timeout,
 		"timeout to type the password");

@@ -753,6 +753,6 @@ static int net_init(void)
 
 postcore_initcall(net_init);
 
-BAREBOX_MAGICVAR_NAMED(global_net_nameserver, global.net.nameserver, "The DNS server used for resolving host names");
-BAREBOX_MAGICVAR_NAMED(global_net_domainname, global.net.domainname, "Domain name used for DNS requests");
-BAREBOX_MAGICVAR_NAMED(global_net_server, global.net.server, "Standard server used for NFS/TFTP");
+BAREBOX_MAGICVAR(global.net.nameserver, "The DNS server used for resolving host names");
+BAREBOX_MAGICVAR(global.net.domainname, "Domain name used for DNS requests");
+BAREBOX_MAGICVAR(global.net.server, "Standard server used for NFS/TFTP");

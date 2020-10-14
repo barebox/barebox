@@ -847,14 +847,14 @@ static int bootm_init(void)
 late_initcall(bootm_init);
 
 BAREBOX_MAGICVAR(bootargs, "Linux kernel parameters");
-BAREBOX_MAGICVAR_NAMED(global_bootm_image, global.bootm.image, "bootm default boot image");
-BAREBOX_MAGICVAR_NAMED(global_bootm_image_loadaddr, global.bootm.image.loadaddr, "bootm default boot image loadaddr");
-BAREBOX_MAGICVAR_NAMED(global_bootm_initrd, global.bootm.initrd, "bootm default initrd");
-BAREBOX_MAGICVAR_NAMED(global_bootm_initrd_loadaddr, global.bootm.initrd.loadaddr, "bootm default initrd loadaddr");
-BAREBOX_MAGICVAR_NAMED(global_bootm_oftree, global.bootm.oftree, "bootm default oftree");
-BAREBOX_MAGICVAR_NAMED(global_bootm_tee, global.bootm.tee, "bootm default tee image");
-BAREBOX_MAGICVAR_NAMED(global_bootm_verify, global.bootm.verify, "bootm default verify level");
-BAREBOX_MAGICVAR_NAMED(global_bootm_verbose, global.bootm.verbose, "bootm default verbosity level (0=quiet)");
-BAREBOX_MAGICVAR_NAMED(global_bootm_appendroot, global.bootm.appendroot, "Add root= option to Kernel to mount rootfs from the device the Kernel comes from (default, device can be overridden via global.bootm.root_dev)");
-BAREBOX_MAGICVAR_NAMED(global_bootm_root_dev, global.bootm.root_dev, "bootm default root device (overrides default device in global.bootm.appendroot)");
-BAREBOX_MAGICVAR_NAMED(global_bootm_provide_machine_id, global.bootm.provide_machine_id, "If true, add systemd.machine_id= with value of global.machine_id to Kernel");
+BAREBOX_MAGICVAR(global.bootm.image, "bootm default boot image");
+BAREBOX_MAGICVAR(global.bootm.image.loadaddr, "bootm default boot image loadaddr");
+BAREBOX_MAGICVAR(global.bootm.initrd, "bootm default initrd");
+BAREBOX_MAGICVAR(global.bootm.initrd.loadaddr, "bootm default initrd loadaddr");
+BAREBOX_MAGICVAR(global.bootm.oftree, "bootm default oftree");
+BAREBOX_MAGICVAR(global.bootm.tee, "bootm default tee image");
+BAREBOX_MAGICVAR(global.bootm.verify, "bootm default verify level");
+BAREBOX_MAGICVAR(global.bootm.verbose, "bootm default verbosity level (0=quiet)");
+BAREBOX_MAGICVAR(global.bootm.appendroot, "Add root= option to Kernel to mount rootfs from the device the Kernel comes from (default, device can be overridden via global.bootm.root_dev)");
+BAREBOX_MAGICVAR(global.bootm.root_dev, "bootm default root device (overrides default device in global.bootm.appendroot)");
+BAREBOX_MAGICVAR(global.bootm.provide_machine_id, "If true, add systemd.machine_id= with value of global.machine_id to Kernel");

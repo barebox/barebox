@@ -84,6 +84,6 @@ int linux_bootargs_overwrite(const char *bootargs)
 	return 0;
 }
 
-BAREBOX_MAGICVAR_NAMED(global_linux_bootargs_, global.linux.bootargs.*, "Linux bootargs variables");
-BAREBOX_MAGICVAR_NAMED(global_linux_mtdparts_, global.linux.mtdparts.*, "Linux mtdparts variables");
-BAREBOX_MAGICVAR_NAMED(global_linux_blkdevparts_, global.linux.blkdevparts.*, "Linux blkdevparts variables");
+BAREBOX_MAGICVAR(global.linux.bootargs.*, "Linux bootargs variables");
+BAREBOX_MAGICVAR(global.linux.mtdparts.*, "Linux mtdparts variables");
+BAREBOX_MAGICVAR(global.linux.blkdevparts.*, "Linux blkdevparts variables");

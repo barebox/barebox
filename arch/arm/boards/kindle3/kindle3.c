@@ -64,9 +64,9 @@ static const char *get_env_16char_tag(const char *tag)
 	return value;
 }
 
-BAREBOX_MAGICVAR_NAMED(global_atags_serial16, global.board.serial16,
+BAREBOX_MAGICVAR(global.board.serial16,
 	"Pass the kindle Serial as vendor-specific ATAG to linux");
-BAREBOX_MAGICVAR_NAMED(global_atags_revision16, global.board.revision16,
+BAREBOX_MAGICVAR(global.board.revision16,
 	"Pass the kindle BoardId as vendor-specific ATAG to linux");
 
 /* The Kindle3 Kernel expects two custom ATAGs, ATAG_REVISION16 describing

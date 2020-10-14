@@ -282,7 +282,7 @@ amba_err_free:
 	return NULL;
 }
 #else /* CONFIG_ARM_AMBA */
-static inline struct amba_device *of_amba_device_create(struct device_node *np)
+static inline struct device_d *of_amba_device_create(struct device_node *np)
 {
 	return NULL;
 }

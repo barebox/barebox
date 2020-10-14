@@ -103,7 +103,9 @@ struct spi_device *spi_new_device(struct spi_controller *ctrl,
 		goto fail;
 	}
 
-	register_device(&proxy->dev);
+	status = register_device(&proxy->dev);
+	if (status)
+		goto fail;
 
 	return proxy;
 fail:

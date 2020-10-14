@@ -21,7 +21,6 @@
  * @icc_mask: icc register mask
  */
 struct stpmic1_regulator_cfg {
-	struct device_d *dev;
 	struct regulator_dev rdev;
 	struct regulator_desc desc;
 	u8 mask_reset_reg;
@@ -383,8 +382,13 @@ static int stpmic1_regulator_register(struct device_d *dev, int id,
 {
 	int ret;
 
-	cfg->dev = dev;
+	if (!match->of_node) {
+		dev_dbg(dev, "Skip missing DTB regulator %s", match->name);
+		return 0;
+	}
+
 	cfg->rdev.desc = &cfg->desc;
+	cfg->rdev.dev = dev;
 	cfg->rdev.regmap = dev_get_regmap(dev->parent, NULL);
 	if (IS_ERR(cfg->rdev.regmap))
 		return PTR_ERR(cfg->rdev.regmap);

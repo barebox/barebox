@@ -39,18 +39,6 @@ static iomux_v3_cfg_t sabrelite_enet_gpio_pads[] = {
 	MX6Q_PAD_RGMII_RX_CTL__GPIO_6_24,
 };
 
-static int sabrelite_mem_init(void)
-{
-	if (!of_machine_is_compatible("fsl,imx6q-sabrelite") &&
-	    !of_machine_is_compatible("fsl,imx6dl-sabrelite"))
-		return 0;
-
-	arm_add_mem_device("ram0", 0x10000000, SZ_1G);
-
-	return 0;
-}
-mem_initcall(sabrelite_mem_init);
-
 static int ksz9021rn_phy_fixup(struct phy_device *dev)
 {
 	phy_write(dev, 0x09, 0x0f00);
@@ -70,37 +58,37 @@ static int ksz9021rn_phy_fixup(struct phy_device *dev)
 
 static struct gpio fec_gpios[] = {
 	{
-		.gpio = 87,
+		.gpio = IMX_GPIO_NR(3, 23),
 		.flags = GPIOF_OUT_INIT_LOW,
 		.label = "phy-rst",
 	}, {
-		.gpio = 190,
+		.gpio = IMX_GPIO_NR(6, 30),
 		.flags = GPIOF_OUT_INIT_HIGH,
 		.label = "phy-addr2",
 	}, {
-		.gpio = 23,
+		.gpio = IMX_GPIO_NR(1, 23),
 		.flags = GPIOF_OUT_INIT_LOW,
 		.label = "phy-led-mode",
 	}, {
 		/* MODE strap-in pins: advertise all capabilities */
-		.gpio = 185,
+		.gpio = IMX_GPIO_NR(6, 25),
 		.flags = GPIOF_OUT_INIT_HIGH,
 		.label = "phy-adv1",
 	}, {
-		.gpio = 187,
+		.gpio = IMX_GPIO_NR(6, 27),
 		.flags = GPIOF_OUT_INIT_HIGH,
 		.label = "phy-adv1",
 	}, {
-		.gpio = 188,
+		.gpio = IMX_GPIO_NR(6, 28),
 		.flags = GPIOF_OUT_INIT_HIGH,
 		.label = "phy-adv1",
 	}, {
-		.gpio = 189,
+		.gpio = IMX_GPIO_NR(6, 29),
 		.flags = GPIOF_OUT_INIT_HIGH,
 		.label = "phy-adv1",
 	}, {
 		/* Enable 125 MHz clock output */
-		.gpio = 184,
+		.gpio = IMX_GPIO_NR(6, 24),
 		.flags = GPIOF_OUT_INIT_HIGH,
 		.label = "phy-125MHz",
 	},
@@ -139,9 +127,9 @@ fs_initcall(sabrelite_ksz9021rn_setup);
 static void sabrelite_ehci_init(void)
 {
 	/* hub reset */
-	gpio_direction_output(204, 0);
+	gpio_direction_output(IMX_GPIO_NR(7, 12), 0);
 	udelay(2000);
-	gpio_set_value(204, 1);
+	gpio_set_value(IMX_GPIO_NR(7, 12), 1);
 }
 
 static int sabrelite_devices_init(void)

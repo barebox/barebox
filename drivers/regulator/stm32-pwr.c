@@ -44,7 +44,6 @@ static u32 ready_mask_table[STM32PWR_REG_NUM_REGS] = {
 
 struct stm32_pwr_reg {
 	void __iomem *base;
-	struct device_d *dev;
 	u32 ready_mask;
 	struct regulator_dev rdev;
 	struct regulator *supply;
@@ -97,7 +96,7 @@ static int stm32_pwr_reg_enable(struct regulator_dev *rdev)
 	ret = readx_poll_timeout(stm32_pwr_reg_is_ready, rdev, val, val,
 				 20 * USEC_PER_MSEC);
 	if (ret)
-		dev_err(priv->dev, "%s: regulator enable timed out!\n",
+		dev_err(rdev->dev, "%s: regulator enable timed out!\n",
 			desc->name);
 
 	return ret;
@@ -118,7 +117,7 @@ static int stm32_pwr_reg_disable(struct regulator_dev *rdev)
 	ret = readx_poll_timeout(stm32_pwr_reg_is_ready, rdev, val, !val,
 				 20 * USEC_PER_MSEC);
 	if (ret)
-		dev_err(priv->dev, "%s: regulator disable timed out!\n",
+		dev_err(rdev->dev, "%s: regulator disable timed out!\n",
 			desc->name);
 
 	regulator_disable(priv->supply);
@@ -179,9 +178,9 @@ static int stm32_pwr_regulator_probe(struct device_d *dev)
 		priv = xzalloc(sizeof(*priv));
 		priv->base = IOMEM(iores->start);
 		priv->ready_mask = ready_mask_table[i];
-		priv->dev = dev;
 
 		priv->rdev.desc = &desc->desc;
+		priv->rdev.dev = dev;
 
 		priv->supply = regulator_get(dev, desc->supply_name);
 		if (IS_ERR(priv->supply))

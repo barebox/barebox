@@ -14,7 +14,7 @@
 
 #define REG_DEV(_id, _name)		\
 	{				\
-		.id 		= _id,	\
+		.id		= _id,	\
 		.devname	= _name,\
 	}
 
@@ -22,7 +22,6 @@ static struct regulator_bcm2835 {
 	int id;
 	char *devname;
 
-	struct device_d *dev;
 	struct regulator_dev rdev;
 	struct regulator_desc rdesc;
 } regs[] = {
@@ -43,8 +42,9 @@ struct msg_set_power_state {
 	u32 end_tag;
 };
 
-static int regulator_bcm2835_set(struct regulator_bcm2835 *rb, int state)
+static int regulator_bcm2835_set(struct regulator_dev *rdev, int state)
 {
+	struct regulator_bcm2835 *rb = container_of(rdev, struct regulator_bcm2835, rdev);
 	BCM2835_MBOX_STACK_ALIGN(struct msg_set_power_state, msg_pwr);
 	int ret;
 
@@ -59,8 +59,8 @@ static int regulator_bcm2835_set(struct regulator_bcm2835 *rb, int state)
 	ret = bcm2835_mbox_call_prop(BCM2835_MBOX_PROP_CHAN,
 				     &msg_pwr->hdr);
 	if (ret) {
-		dev_err(rb->dev ,"bcm2835: Could not set module %u power state\n",
-		       rb->id);
+		dev_err(rdev->dev, "bcm2835: Could not set module %u power state\n",
+			rb->id);
 		return ret;
 	}
 
@@ -69,16 +69,12 @@ static int regulator_bcm2835_set(struct regulator_bcm2835 *rb, int state)
 
 static int regulator_bcm2835_enable(struct regulator_dev *rdev)
 {
-	struct regulator_bcm2835 *rb = container_of(rdev, struct regulator_bcm2835, rdev);
-
-	return regulator_bcm2835_set(rb, BCM2835_MBOX_SET_POWER_STATE_REQ_ON);
+	return regulator_bcm2835_set(rdev, BCM2835_MBOX_SET_POWER_STATE_REQ_ON);
 }
 
 static int regulator_bcm2835_disable(struct regulator_dev *rdev)
 {
-	struct regulator_bcm2835 *rb = container_of(rdev, struct regulator_bcm2835, rdev);
-
-	return regulator_bcm2835_set(rb, BCM2835_MBOX_SET_POWER_STATE_REQ_OFF);
+	return regulator_bcm2835_set(rdev, BCM2835_MBOX_SET_POWER_STATE_REQ_OFF);
 }
 
 struct msg_get_power_state {
@@ -101,8 +97,8 @@ static int regulator_bcm2835_is_enabled(struct regulator_dev *rdev)
 	ret = bcm2835_mbox_call_prop(BCM2835_MBOX_PROP_CHAN,
 				     &msg_pwr->hdr);
 	if (ret) {
-		dev_err(rb->dev ,"bcm2835: Could not get module %u power state\n",
-		       rb->id);
+		dev_err(rdev->dev, "bcm2835: Could not get module %u power state\n",
+			rb->id);
 		return ret;
 	}
 
@@ -125,7 +121,7 @@ static int regulator_bcm2835_probe(struct device_d *dev)
 
 		rb->rdesc.ops = &bcm2835_ops;
 		rb->rdev.desc = &rb->rdesc;
-		rb->dev = dev;
+		rb->rdev.dev = dev;
 
 		ret = dev_regulator_register(&rb->rdev, rb->devname, NULL);
 		if (ret)

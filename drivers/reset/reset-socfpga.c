@@ -118,8 +118,4 @@ static struct driver_d socfpga_reset_driver = {
 	.of_compatible	= DRV_OF_COMPAT(socfpga_reset_dt_ids),
 };
 
-static int socfpga_reset_init(void)
-{
-	return platform_driver_register(&socfpga_reset_driver);
-}
-postcore_initcall(socfpga_reset_init);
+postcore_platform_driver(socfpga_reset_driver);

@@ -19,9 +19,4 @@ static struct phy_driver lxt97x_driver[] = {
 	.features	= PHY_BASIC_FEATURES,
 } };
 
-static int lxt97x_phy_init(void)
-{
-	return phy_drivers_register(lxt97x_driver,
-				    ARRAY_SIZE(lxt97x_driver));
-}
-fs_initcall(lxt97x_phy_init);
+device_phy_drivers(lxt97x_driver);

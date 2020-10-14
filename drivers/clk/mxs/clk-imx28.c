@@ -202,8 +202,4 @@ static struct driver_d imx28_ccm_driver = {
 	.of_compatible = DRV_OF_COMPAT(imx28_ccm_dt_ids),
 };
 
-static int imx28_ccm_init(void)
-{
-	return platform_driver_register(&imx28_ccm_driver);
-}
-postcore_initcall(imx28_ccm_init);
+postcore_platform_driver(imx28_ccm_driver);

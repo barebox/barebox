@@ -447,8 +447,4 @@ static struct driver_d bcm2835_mci_driver = {
 	.of_compatible = DRV_OF_COMPAT(bcm2835_mci_compatible),
 };
 
-static int bcm2835_mci_add(void)
-{
-	return platform_driver_register(&bcm2835_mci_driver);
-}
-device_initcall(bcm2835_mci_add);
+device_platform_driver(bcm2835_mci_driver);

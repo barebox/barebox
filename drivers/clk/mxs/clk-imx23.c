@@ -141,8 +141,4 @@ static struct driver_d imx23_ccm_driver = {
 	.of_compatible = DRV_OF_COMPAT(imx23_ccm_dt_ids),
 };
 
-static int imx23_ccm_init(void)
-{
-	return platform_driver_register(&imx23_ccm_driver);
-}
-postcore_initcall(imx23_ccm_init);
+postcore_platform_driver(imx23_ccm_driver);

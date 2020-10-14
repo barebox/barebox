@@ -85,8 +85,4 @@ struct amba_driver sp804_driver = {
 	.id_table	= sp804_ids,
 };
 
-static int sp804_init(void)
-{
-	return amba_driver_register(&sp804_driver);
-}
-coredevice_initcall(sp804_init);
+coredevice_platform_driver(sp804_driver);

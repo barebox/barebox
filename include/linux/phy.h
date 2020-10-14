@@ -284,6 +284,26 @@ struct phy_device *get_phy_device(struct mii_bus *bus, int addr);
 int phy_init(void);
 int phy_init_hw(struct phy_device *phydev);
 
+#define phy_register_drivers_macro(level, drvs)				\
+        static int __init drvs##_register(void)				\
+        {								\
+                return phy_drivers_register(drvs, ARRAY_SIZE(drvs));	\
+        }								\
+        level##_initcall(drvs##_register)
+
+#define device_phy_drivers(drvs)	\
+        phy_register_drivers_macro(device, drvs)
+
+#define phy_register_driver_macro(level, drv)		\
+        static int __init drv##_register(void)		\
+        {						\
+                return phy_driver_register(&drv);	\
+        }						\
+        level##_initcall(drv##_register)
+
+#define device_phy_driver(drv)	\
+        phy_register_driver_macro(device, drv)
+
 int phy_save_page(struct phy_device *phydev);
 int phy_select_page(struct phy_device *phydev, int page);
 int phy_restore_page(struct phy_device *phydev, int oldpage, int ret);

@@ -268,9 +268,4 @@ static struct phy_driver ar8327n_driver[] = {
 	.aneg_done	= &ar8327n_aneg_done,
 }};
 
-static int atheros_phy_init(void)
-{
-	return phy_drivers_register(ar8327n_driver,
-				    ARRAY_SIZE(ar8327n_driver));
-}
-fs_initcall(atheros_phy_init);
+device_phy_drivers(ar8327n_driver);

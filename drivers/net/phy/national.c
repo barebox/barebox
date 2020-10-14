@@ -84,8 +84,4 @@ static struct phy_driver dp83865_driver = {
 	.config_init    = ns_config_init,
 };
 
-static int ns_phy_init(void)
-{
-	return phy_driver_register(&dp83865_driver);
-}
-fs_initcall(ns_phy_init);
+device_phy_driver(dp83865_driver);

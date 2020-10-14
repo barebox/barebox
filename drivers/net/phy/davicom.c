@@ -127,9 +127,4 @@ static struct phy_driver dm91xx_driver[] = {
 	.features	= PHY_BASIC_FEATURES,
 } };
 
-static int dm9161_init(void)
-{
-	return phy_drivers_register(dm91xx_driver,
-		ARRAY_SIZE(dm91xx_driver));
-}
-fs_initcall(dm9161_init);
+device_phy_drivers(dm91xx_driver);

@@ -138,8 +138,4 @@ static struct driver_d ar933x_clk_driver = {
 	.of_compatible = DRV_OF_COMPAT(ar933x_clk_dt_ids),
 };
 
-static int ar933x_clk_init(void)
-{
-	return platform_driver_register(&ar933x_clk_driver);
-}
-postcore_initcall(ar933x_clk_init);
+postcore_platform_driver(ar933x_clk_driver);

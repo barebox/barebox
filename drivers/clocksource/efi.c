@@ -106,9 +106,4 @@ static struct driver_d efi_cs_driver = {
 	.probe = efi_cs_probe,
 };
 
-static int efi_cs_initcall(void)
-{
-	return platform_driver_register(&efi_cs_driver);
-}
-/* for efi the time must be init at core initcall level */
-core_initcall(efi_cs_initcall);
+core_platform_driver(efi_cs_driver);

@@ -176,8 +176,4 @@ static struct driver_d imx21_ccm_driver = {
 	.of_compatible = DRV_OF_COMPAT(imx21_ccm_dt_ids),
 };
 
-static int imx21_ccm_init(void)
-{
-	return platform_driver_register(&imx21_ccm_driver);
-}
-core_initcall(imx21_ccm_init);
+core_platform_driver(imx21_ccm_driver);

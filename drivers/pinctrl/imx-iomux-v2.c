@@ -150,8 +150,4 @@ static struct driver_d imx_iomux_driver = {
 	.id_table = imx_iomux_ids,
 };
 
-static int imx_iomux_init(void)
-{
-	return platform_driver_register(&imx_iomux_driver);
-}
-core_initcall(imx_iomux_init);
+core_platform_driver(imx_iomux_driver);

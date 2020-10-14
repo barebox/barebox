@@ -102,11 +102,7 @@ static struct driver_d mvebu_coreclk_driver = {
 	.of_compatible = DRV_OF_COMPAT(mvebu_coreclk_ids),
 };
 
-static int mvebu_coreclk_init(void)
-{
-	return platform_driver_register(&mvebu_coreclk_driver);
-}
-core_initcall(mvebu_coreclk_init);
+core_platform_driver(mvebu_coreclk_driver);
 
 /*
  * Clock Gating Control
@@ -207,8 +203,4 @@ static struct driver_d mvebu_clk_gating_driver = {
 	.of_compatible = DRV_OF_COMPAT(mvebu_clk_gating_ids),
 };
 
-static int mvebu_clk_gating_init(void)
-{
-	return platform_driver_register(&mvebu_clk_gating_driver);
-}
-postcore_initcall(mvebu_clk_gating_init);
+postcore_platform_driver(mvebu_clk_gating_driver);

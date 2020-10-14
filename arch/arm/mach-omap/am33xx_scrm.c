@@ -43,9 +43,4 @@ static struct driver_d am33xx_scrm_driver = {
 	.of_compatible = DRV_OF_COMPAT(am33xx_scrm_dt_ids),
 };
 
-static int am33xx_scrm_init(void)
-{
-	return platform_driver_register(&am33xx_scrm_driver);
-}
-
-mem_initcall(am33xx_scrm_init);
+mem_platform_driver(am33xx_scrm_driver);

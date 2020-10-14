@@ -154,8 +154,4 @@ static struct driver_d stmpe_gpio_driver = {
 	.probe = stmpe_gpio_probe,
 };
 
-static int stmpe_gpio_add(void)
-{
-	return platform_driver_register(&stmpe_gpio_driver);
-}
-coredevice_initcall(stmpe_gpio_add);
+coredevice_platform_driver(stmpe_gpio_driver);

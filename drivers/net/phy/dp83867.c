@@ -311,8 +311,4 @@ static struct phy_driver dp83867_driver[] = {
 		},
 };
 
-static int dp83867_phy_init(void)
-{
-	return phy_drivers_register(dp83867_driver, ARRAY_SIZE(dp83867_driver));
-}
-fs_initcall(dp83867_phy_init);
+device_phy_drivers(dp83867_driver);

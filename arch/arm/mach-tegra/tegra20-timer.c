@@ -104,8 +104,4 @@ static struct driver_d tegra20_timer_driver = {
 	.of_compatible = DRV_OF_COMPAT(tegra20_timer_dt_ids),
 };
 
-static int tegra20_timer_init(void)
-{
-	return platform_driver_register(&tegra20_timer_driver);
-}
-core_initcall(tegra20_timer_init);
+core_platform_driver(tegra20_timer_driver);

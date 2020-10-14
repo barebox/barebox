@@ -161,8 +161,4 @@ static struct driver_d mxs_pinctrl_driver = {
 	.of_compatible	= DRV_OF_COMPAT(mxs_pinctrl_dt_ids),
 };
 
-static int mxs_pinctrl_init(void)
-{
-	return platform_driver_register(&mxs_pinctrl_driver);
-}
-core_initcall(mxs_pinctrl_init);
+core_platform_driver(mxs_pinctrl_driver);

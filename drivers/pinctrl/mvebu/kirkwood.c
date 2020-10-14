@@ -452,8 +452,4 @@ static struct driver_d kirkwood_pinctrl_driver = {
 	.of_compatible	= kirkwood_pinctrl_of_match,
 };
 
-static int kirkwood_pinctrl_init(void)
-{
-	return platform_driver_register(&kirkwood_pinctrl_driver);
-}
-core_initcall(kirkwood_pinctrl_init);
+core_platform_driver(kirkwood_pinctrl_driver);

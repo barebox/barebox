@@ -179,8 +179,4 @@ static struct driver_d bcm2835_mbox_driver = {
 	.probe		= bcm2835_mbox_probe,
 };
 
-static int __init bcm2835_mbox_init(void)
-{
-	return platform_driver_register(&bcm2835_mbox_driver);
-}
-core_initcall(bcm2835_mbox_init);
+core_platform_driver(bcm2835_mbox_driver);

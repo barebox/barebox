@@ -356,8 +356,4 @@ static struct driver_d ipufb_driver = {
 	.remove		= ipufb_remove,
 };
 
-static int ipufb_register(void)
-{
-	return platform_driver_register(&ipufb_driver);
-}
-late_initcall(ipufb_register);
+late_platform_driver(ipufb_driver);

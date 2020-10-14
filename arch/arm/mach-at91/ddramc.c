@@ -52,8 +52,4 @@ static struct driver_d sama5_ddr_driver = {
 	.of_compatible = sama5_ddr_dt_ids,
 };
 
-static int sama5_ddr_init(void)
-{
-	return platform_driver_register(&sama5_ddr_driver);
-}
-mem_initcall(sama5_ddr_init);
+mem_platform_driver(sama5_ddr_driver);

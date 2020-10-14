@@ -537,9 +537,4 @@ static struct phy_driver ksphy_driver[] = {
 	.read_status	= ksz8873mll_read_status,
 } };
 
-static int ksphy_init(void)
-{
-	return phy_drivers_register(ksphy_driver,
-		ARRAY_SIZE(ksphy_driver));
-}
-fs_initcall(ksphy_init);
+device_phy_drivers(ksphy_driver);

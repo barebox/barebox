@@ -68,8 +68,4 @@ static struct driver_d tegra124_mc_driver = {
 	.probe		= tegra124_mc_probe,
 };
 
-static int __init tegra124_mc_init(void)
-{
-	return platform_driver_register(&tegra124_mc_driver);
-}
-device_initcall(tegra124_mc_init);
+device_platform_driver(tegra124_mc_driver);

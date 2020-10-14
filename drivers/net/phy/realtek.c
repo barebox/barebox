@@ -196,9 +196,4 @@ static struct phy_driver realtek_drvs[] = {
 	},
 };
 
-static int __init realtek_phy_init(void)
-{
-	return phy_drivers_register(realtek_drvs,
-				    ARRAY_SIZE(realtek_drvs));
-}
-fs_initcall(realtek_phy_init);
+device_phy_drivers(realtek_drvs);

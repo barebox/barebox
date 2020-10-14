@@ -470,8 +470,4 @@ static struct driver_d imx6sx_ccm_driver = {
 	.of_compatible = DRV_OF_COMPAT(imx6sx_ccm_dt_ids),
 };
 
-static int imx6sx_ccm_init(void)
-{
-	return platform_driver_register(&imx6sx_ccm_driver);
-}
-core_initcall(imx6sx_ccm_init);
+core_platform_driver(imx6sx_ccm_driver);

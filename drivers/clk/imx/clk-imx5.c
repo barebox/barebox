@@ -339,7 +339,7 @@ static __maybe_unused struct of_device_id imx50_ccm_dt_ids[] = {
 	}
 };
 
-static struct driver_d imx50_ccm_driver = {
+static __maybe_unused struct driver_d imx50_ccm_driver = {
 	.probe	= imx50_ccm_probe,
 	.name	= "imx50-ccm",
 	.of_compatible = DRV_OF_COMPAT(imx50_ccm_dt_ids),
@@ -426,7 +426,7 @@ static __maybe_unused struct of_device_id imx51_ccm_dt_ids[] = {
 	}
 };
 
-static struct driver_d imx51_ccm_driver = {
+static __maybe_unused struct driver_d imx51_ccm_driver = {
 	.probe	= imx51_ccm_probe,
 	.name	= "imx51-ccm",
 	.of_compatible = DRV_OF_COMPAT(imx51_ccm_dt_ids),
@@ -522,21 +522,18 @@ static __maybe_unused struct of_device_id imx53_ccm_dt_ids[] = {
 	}
 };
 
-static struct driver_d imx53_ccm_driver = {
+static __maybe_unused struct driver_d imx53_ccm_driver = {
 	.probe	= imx53_ccm_probe,
 	.name	= "imx53-ccm",
 	.of_compatible = DRV_OF_COMPAT(imx53_ccm_dt_ids),
 };
 
-static int imx5_ccm_init(void)
-{
-	if (IS_ENABLED(CONFIG_ARCH_IMX50))
-		platform_driver_register(&imx50_ccm_driver);
-	if (IS_ENABLED(CONFIG_ARCH_IMX51))
-		platform_driver_register(&imx51_ccm_driver);
-	if (IS_ENABLED(CONFIG_ARCH_IMX53))
-		platform_driver_register(&imx53_ccm_driver);
-
-	return 0;
-}
-core_initcall(imx5_ccm_init);
+#if IS_ENABLED(CONFIG_ARCH_IMX50)
+core_platform_driver(imx50_ccm_driver);
+#endif
+#if IS_ENABLED(CONFIG_ARCH_IMX51)
+core_platform_driver(imx51_ccm_driver);
+#endif
+#if IS_ENABLED(CONFIG_ARCH_IMX53)
+core_platform_driver(imx53_ccm_driver);
+#endif

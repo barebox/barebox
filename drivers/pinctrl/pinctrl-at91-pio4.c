@@ -313,8 +313,4 @@ static struct driver_d pinctrl_at91_pio4_driver = {
 	.of_compatible	= DRV_OF_COMPAT(pinctrl_at91_pio4_dt_ids),
 };
 
-static int pinctrl_at91_pio4_init(void)
-{
-	return platform_driver_register(&pinctrl_at91_pio4_driver);
-}
-core_initcall(pinctrl_at91_pio4_init);
+core_platform_driver(pinctrl_at91_pio4_driver);

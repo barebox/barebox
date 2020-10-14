@@ -146,8 +146,4 @@ static struct driver_d nop_usbphy_driver = {
 	.of_compatible = DRV_OF_COMPAT(nop_usbphy_dt_ids),
 };
 
-static int nop_usbphy_driver_init(void)
-{
-	return platform_driver_register(&nop_usbphy_driver);
-}
-fs_initcall(nop_usbphy_driver_init);
+fs_platform_driver(nop_usbphy_driver);

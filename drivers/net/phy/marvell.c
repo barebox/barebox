@@ -733,9 +733,4 @@ static struct phy_driver marvell_drivers[] = {
 	},
 };
 
-static int __init marvell_phy_init(void)
-{
-	return phy_drivers_register(marvell_drivers,
-				    ARRAY_SIZE(marvell_drivers));
-}
-fs_initcall(marvell_phy_init);
+device_phy_drivers(marvell_drivers);

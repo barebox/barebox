@@ -302,10 +302,6 @@ static struct driver_d imx_iomux_v1_driver = {
 	.of_compatible	= DRV_OF_COMPAT(imx_iomux_v1_dt_ids),
 };
 
-static int imx_iomux_v1_init(void)
-{
-	return platform_driver_register(&imx_iomux_v1_driver);
-}
-core_initcall(imx_iomux_v1_init);
+core_platform_driver(imx_iomux_v1_driver);
 
 #endif

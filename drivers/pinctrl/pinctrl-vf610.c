@@ -158,8 +158,4 @@ static struct driver_d pinctrl_vf610_driver = {
 	.of_compatible	= DRV_OF_COMPAT(pinctrl_vf610_dt_ids),
 };
 
-static int pinctrl_vf610_init(void)
-{
-	return platform_driver_register(&pinctrl_vf610_driver);
-}
-core_initcall(pinctrl_vf610_init);
+core_platform_driver(pinctrl_vf610_driver);

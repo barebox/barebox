@@ -105,8 +105,4 @@ static struct driver_d mvebu_timer_driver = {
 	.of_compatible = DRV_OF_COMPAT(mvebu_timer_dt_ids),
 };
 
-static int mvebu_timer_init(void)
-{
-	return platform_driver_register(&mvebu_timer_driver);
-}
-postcore_initcall(mvebu_timer_init);
+postcore_platform_driver(mvebu_timer_driver);

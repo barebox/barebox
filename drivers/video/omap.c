@@ -514,9 +514,4 @@ static struct driver_d omapfb_driver = {
 	.probe	= omapfb_probe,
 };
 
-static int omapfb_init(void)
-{
-	return platform_driver_register(&omapfb_driver);
-}
-
-device_initcall(omapfb_init);
+device_platform_driver(omapfb_driver);

@@ -142,8 +142,4 @@ static struct driver_d nmdk_mtu_driver = {
 	.probe = nmdk_mtu_probe,
 };
 
-static int nmdk_mtu_init(void)
-{
-	return platform_driver_register(&nmdk_mtu_driver);
-}
-coredevice_initcall(nmdk_mtu_init);
+coredevice_platform_driver(nmdk_mtu_driver);

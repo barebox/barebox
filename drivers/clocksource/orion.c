@@ -79,8 +79,4 @@ static struct driver_d orion_timer_driver = {
 	.of_compatible = DRV_OF_COMPAT(orion_timer_dt_ids),
 };
 
-static int orion_timer_init(void)
-{
-	return platform_driver_register(&orion_timer_driver);
-}
-postcore_initcall(orion_timer_init);
+postcore_platform_driver(orion_timer_driver);

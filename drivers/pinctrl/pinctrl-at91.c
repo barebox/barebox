@@ -526,11 +526,7 @@ static struct driver_d at91_pinctrl_driver = {
 	.of_compatible = DRV_OF_COMPAT(at91_pinctrl_dt_ids),
 };
 
-static int at91_pinctrl_init(void)
-{
-	return platform_driver_register(&at91_pinctrl_driver);
-}
-core_initcall(at91_pinctrl_init);
+core_platform_driver(at91_pinctrl_driver);
 
 static int at91_gpio_get(struct gpio_chip *chip, unsigned offset)
 {
@@ -706,8 +702,4 @@ static struct driver_d at91_gpio_driver = {
 	.of_compatible	= DRV_OF_COMPAT(at91_gpio_dt_ids),
 };
 
-static int at91_gpio_init(void)
-{
-	return platform_driver_register(&at91_gpio_driver);
-}
-core_initcall(at91_gpio_init);
+core_platform_driver(at91_gpio_driver);

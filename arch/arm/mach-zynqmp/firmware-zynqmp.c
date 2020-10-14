@@ -637,8 +637,4 @@ static struct driver_d zynqmp_firmware_driver = {
 	.of_compatible = DRV_OF_COMPAT(zynqmp_firmware_id_table),
 };
 
-static int zynqmp_firmware_init(void)
-{
-	return platform_driver_register(&zynqmp_firmware_driver);
-}
-core_initcall(zynqmp_firmware_init);
+core_platform_driver(zynqmp_firmware_driver);

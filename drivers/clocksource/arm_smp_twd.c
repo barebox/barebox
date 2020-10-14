@@ -105,8 +105,4 @@ static struct driver_d smp_twd_driver = {
 	.of_compatible = DRV_OF_COMPAT(smp_twd_compatible),
 };
 
-static int smp_twd_init(void)
-{
-	return platform_driver_register(&smp_twd_driver);
-}
-coredevice_initcall(smp_twd_init);
+coredevice_platform_driver(smp_twd_driver);

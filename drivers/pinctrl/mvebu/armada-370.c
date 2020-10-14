@@ -411,8 +411,4 @@ static struct driver_d armada_370_pinctrl_driver = {
 	.of_compatible	= armada_370_pinctrl_of_match,
 };
 
-static int armada_370_pinctrl_init(void)
-{
-	return platform_driver_register(&armada_370_pinctrl_driver);
-}
-core_initcall(armada_370_pinctrl_init);
+core_platform_driver(armada_370_pinctrl_driver);

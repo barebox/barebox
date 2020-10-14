@@ -78,8 +78,4 @@ static struct driver_d am335x_phy_driver = {
 	.of_compatible = DRV_OF_COMPAT(am335x_phy_dt_ids),
 };
 
-static int am335x_phy_init(void)
-{
-	return platform_driver_register(&am335x_phy_driver);
-}
-fs_initcall(am335x_phy_init);
+fs_platform_driver(am335x_phy_driver);

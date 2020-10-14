@@ -410,8 +410,4 @@ static struct driver_d led_pca955x_driver = {
 	.of_compatible = DRV_OF_COMPAT(of_pca955x_match),
 };
 
-static int __init led_pca955x_init(void)
-{
-	return i2c_driver_register(&led_pca955x_driver);
-}
-device_initcall(led_pca955x_init);
+device_i2c_driver(led_pca955x_driver);

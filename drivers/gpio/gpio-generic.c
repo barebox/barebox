@@ -424,11 +424,7 @@ static struct driver_d bgpio_driver = {
 	.remove		= bgpio_dev_remove,
 };
 
-static int bgpio_register(void)
-{
-	return platform_driver_register(&bgpio_driver);
-}
-coredevice_initcall(bgpio_register);
+coredevice_platform_driver(bgpio_driver);
 
 #endif
 

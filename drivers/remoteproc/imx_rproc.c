@@ -43,9 +43,6 @@
 #define IMX6SX_SW_M4C_NON_SCLR_RST	BIT(4)
 #define IMX6SX_SW_M4C_RST		BIT(3)
 
-#define IMX6SX_M4_START			(IMX6SX_ENABLE_M4 | IMX6SX_SW_M4P_RST \
-					 | IMX6SX_SW_M4C_RST)
-#define IMX6SX_M4_STOP			IMX6SX_SW_M4C_NON_SCLR_RST
 #define IMX6SX_M4_RST_MASK		(IMX6SX_ENABLE_M4 | IMX6SX_SW_M4P_RST \
 					 | IMX6SX_SW_M4C_NON_SCLR_RST \
 					 | IMX6SX_SW_M4C_RST)
@@ -77,21 +74,42 @@ struct imx_rproc_att {
 };
 
 struct imx_rproc_dcfg {
-	u32				src_reg;
-	u32				src_mask;
-	u32				src_start;
-	u32				src_stop;
 	const struct imx_rproc_att	*att;
 	size_t				att_size;
+	int (*rproc_init)(struct rproc *rproc);
+	int (*rproc_start)(struct rproc *rproc);
+	int (*rproc_stop)(struct rproc *rproc);
 };
 
 struct imx_rproc {
 	struct device_d			*dev;
 	struct regmap			*regmap;
+	struct regmap			*gpr;
 	struct rproc			*rproc;
 	const struct imx_rproc_dcfg	*dcfg;
 	struct imx_rproc_mem		mem[IMX7D_RPROC_MEM_MAX];
 	struct clk			*clk;
+};
+
+static const struct imx_rproc_att imx_rproc_att_imx6sx[] = {
+	/* dev addr , sys addr  , size	    , flags */
+	/* TCML (M4 Boot Code) - alias */
+	{ 0x00000000, 0x007F8000, 0x00008000, 0 },
+	/* OCRAM_S (Code) */
+	{ 0x00180000, 0x008F8000, 0x00004000, 0 },
+	/* OCRAM_S (Code) - alias */
+	{ 0x00180000, 0x008FC000, 0x00004000, 0 },
+	/* TCML (Code) */
+	{ 0x1FFF8000, 0x007F8000, 0x00008000, ATT_OWN },
+	/* DDR (Code) - alias, first part of DDR (Data) */
+	{ 0x10000000, 0x80000000, 0x0FFF8000, 0 },
+
+	/* TCMU (Data) */
+	{ 0x20000000, 0x00800000, 0x00008000, ATT_OWN },
+	/* OCRAM_S (Data) - alias? */
+	{ 0x208F8000, 0x008F8000, 0x00004000, 0 },
+	/* DDR (Data) */
+	{ 0x80000000, 0x80000000, 0x60000000, 0 },
 };
 
 static const struct imx_rproc_att imx_rproc_att_imx7d[] = {
@@ -123,73 +141,188 @@ static const struct imx_rproc_att imx_rproc_att_imx7d[] = {
 	{ 0x80000000, 0x80000000, 0x60000000, 0 },
 };
 
-static const struct imx_rproc_att imx_rproc_att_imx6sx[] = {
-	/* dev addr , sys addr  , size	    , flags */
-	/* TCML (M4 Boot Code) - alias */
-	{ 0x00000000, 0x007F8000, 0x00008000, 0 },
-	/* OCRAM_S (Code) */
-	{ 0x00180000, 0x008F8000, 0x00004000, 0 },
-	/* OCRAM_S (Code) - alias */
-	{ 0x00180000, 0x008FC000, 0x00004000, 0 },
-	/* TCML (Code) */
-	{ 0x1FFF8000, 0x007F8000, 0x00008000, ATT_OWN },
-	/* DDR (Code) - alias, first part of DDR (Data) */
-	{ 0x10000000, 0x80000000, 0x0FFF8000, 0 },
+static const struct imx_rproc_att imx_rproc_att_imx8mn[] = {
+	/* dev addr , sys addr  , size      , flags */
+	{ 0x00000000, 0x007e0000, 0x00020000, ATT_OWN }, /* ITCM   */
+	{ 0x00180000, 0x00180000, 0x00009000, 0 },	 /* OCRAM_S */
+	{ 0x00900000, 0x00900000, 0x00020000, 0 },	 /* OCRAM */
+	{ 0x00920000, 0x00920000, 0x00020000, 0 },	 /* OCRAM */
+	{ 0x00940000, 0x00940000, 0x00050000, 0 },	 /* OCRAM */
+	{ 0x08000000, 0x08000000, 0x08000000, 0 },	 /* QSPI Code - alias */
+	{ 0x10000000, 0x80000000, 0x0ffe0000, 0 },	 /* DDR (Code) - alias */
+	{ 0x20000000, 0x00800000, 0x00020000, ATT_OWN }, /* DTCM */
+	{ 0x20180000, 0x00180000, 0x00008000, ATT_OWN }, /* OCRAM_S - alias */
+	{ 0x20200000, 0x00900000, 0x00020000, ATT_OWN }, /* OCRAM */
+	{ 0x20220000, 0x00920000, 0x00020000, ATT_OWN }, /* OCRAM */
+	{ 0x20240000, 0x00940000, 0x00040000, ATT_OWN }, /* OCRAM */
+	{ 0x40000000, 0x40000000, 0x80000000, 0 },	 /* DDR (Data) */
+};
 
-	/* TCMU (Data) */
-	{ 0x20000000, 0x00800000, 0x00008000, ATT_OWN },
-	/* OCRAM_S (Data) - alias? */
-	{ 0x208F8000, 0x008F8000, 0x00004000, 0 },
-	/* DDR (Data) */
-	{ 0x80000000, 0x80000000, 0x60000000, 0 },
+static const struct imx_rproc_att imx_rproc_att_imx8mq[] = {
+	/* dev addr , sys addr  , size      , flags */
+	{ 0x00000000, 0x007e0000, 0x00020000, 0 },	 /* TCML - alias */
+	{ 0x00180000, 0x00180000, 0x00008000, 0 },	 /* OCRAM_S */
+	{ 0x00900000, 0x00900000, 0x00020000, 0 },	 /* OCRAM */
+	{ 0x00920000, 0x00920000, 0x00020000, 0 },	 /* OCRAM */
+	{ 0x08000000, 0x08000000, 0x08000000, 0 },	 /* QSPI Code - alias */
+	{ 0x10000000, 0x80000000, 0x0ffe0000, 0 },	 /* DDR (Code) - alias */
+	{ 0x1ffe0000, 0x007e0000, 0x00020000, ATT_OWN }, /* TCML */
+	{ 0x20000000, 0x00800000, 0x00020000, ATT_OWN }, /* TCMU */
+	{ 0x20180000, 0x00180000, 0x00008000, ATT_OWN }, /* OCRAM_S */
+	{ 0x20200000, 0x00900000, 0x00020000, ATT_OWN }, /* OCRAM */
+	{ 0x20220000, 0x00920000, 0x00020000, ATT_OWN }, /* OCRAM */
+	{ 0x40000000, 0x40000000, 0x80000000, 0 },	 /* DDR (Data) */
+};
+
+static int imx6sx_rproc_start(struct rproc *rproc)
+{
+	struct imx_rproc *priv = rproc->priv;
+
+	return regmap_update_bits(priv->regmap,
+			IMX6SX_SRC_SCR,
+			IMX6SX_M4_RST_MASK,
+			IMX6SX_ENABLE_M4 | IMX6SX_SW_M4P_RST | IMX6SX_SW_M4C_RST);
+}
+
+static int imx6sx_rproc_stop(struct rproc *rproc)
+{
+	struct imx_rproc *priv = rproc->priv;
+
+	return regmap_update_bits(priv->regmap,
+			IMX6SX_SRC_SCR,
+			IMX6SX_M4_RST_MASK,
+			IMX6SX_SW_M4C_NON_SCLR_RST);
+}
+
+static int imx7d_rproc_start(struct rproc *rproc)
+{
+	struct imx_rproc *priv = rproc->priv;
+
+	return regmap_update_bits(priv->regmap,
+			IMX7D_SRC_SCR,
+			IMX7D_M4_RST_MASK,
+			IMX7D_M4_START);
+}
+
+static int imx7d_rproc_stop(struct rproc *rproc)
+{
+	struct imx_rproc *priv = rproc->priv;
+
+	return regmap_update_bits(priv->regmap,
+			IMX7D_SRC_SCR,
+			IMX7D_M4_RST_MASK,
+			IMX7D_M4_STOP);
+}
+
+#define IOMUXC_GPR22		0x58
+#define IOMUXC_GPR22_CM7_CPUWAIT	BIT(0)
+
+static int imx8mn_cm7_wait(struct rproc *rproc, bool wait)
+{
+	struct imx_rproc *priv = rproc->priv;
+
+	return regmap_update_bits(priv->gpr,
+			IOMUXC_GPR22,
+			IOMUXC_GPR22_CM7_CPUWAIT,
+			wait ? IOMUXC_GPR22_CM7_CPUWAIT : 0);
+}
+
+static int imx8mn_rproc_start(struct rproc *rproc)
+{
+	struct imx_rproc *priv = rproc->priv;
+	int ret;
+
+	ret = regmap_update_bits(priv->regmap,
+			IMX7D_SRC_SCR,
+			IMX7D_M4_RST_MASK,
+			IMX7D_ENABLE_M4 | IMX7D_SW_M4C_RST);
+	if (ret)
+		return ret;
+
+	ret = imx8mn_cm7_wait(rproc, false);
+	if (ret)
+		return ret;
+
+	return 0;
+}
+
+static int imx8mn_rproc_stop(struct rproc *rproc)
+{
+	struct imx_rproc *priv = rproc->priv;
+	int ret;
+
+	ret = imx8mn_cm7_wait(rproc, true);
+	if (ret)
+		return ret;
+
+	return regmap_update_bits(priv->regmap,
+			IMX7D_SRC_SCR,
+			IMX7D_M4_RST_MASK,
+			IMX7D_ENABLE_M4 | IMX7D_SW_M4C_RST | IMX7D_SW_M4C_NON_SCLR_RST);
+}
+
+static int imx8mn_rproc_init(struct rproc *rproc)
+{
+	struct imx_rproc *priv = rproc->priv;
+	int ret;
+
+	priv->gpr = syscon_regmap_lookup_by_compatible("fsl,imx8mp-iomuxc-gpr");
+	if (IS_ERR(priv->gpr))
+		return PTR_ERR(priv->gpr);
+
+	ret = imx8mn_cm7_wait(rproc, true);
+	if (ret)
+		return ret;
+
+	return regmap_update_bits(priv->regmap,
+			IMX7D_SRC_SCR,
+			IMX7D_M4_RST_MASK,
+			IMX7D_ENABLE_M4 | IMX7D_SW_M4C_RST);
+}
+
+static const struct imx_rproc_dcfg imx_rproc_cfg_imx6sx = {
+	.att		= imx_rproc_att_imx6sx,
+	.att_size	= ARRAY_SIZE(imx_rproc_att_imx6sx),
+	.rproc_start	= imx6sx_rproc_start,
+	.rproc_stop	= imx6sx_rproc_stop,
 };
 
 static const struct imx_rproc_dcfg imx_rproc_cfg_imx7d = {
-	.src_reg	= IMX7D_SRC_SCR,
-	.src_mask	= IMX7D_M4_RST_MASK,
-	.src_start	= IMX7D_M4_START,
-	.src_stop	= IMX7D_M4_STOP,
 	.att		= imx_rproc_att_imx7d,
 	.att_size	= ARRAY_SIZE(imx_rproc_att_imx7d),
+	.rproc_start	= imx7d_rproc_start,
+	.rproc_stop	= imx7d_rproc_stop,
 };
 
-static const struct imx_rproc_dcfg imx_rproc_cfg_imx6sx = {
-	.src_reg	= IMX6SX_SRC_SCR,
-	.src_mask	= IMX6SX_M4_RST_MASK,
-	.src_start	= IMX6SX_M4_START,
-	.src_stop	= IMX6SX_M4_STOP,
-	.att		= imx_rproc_att_imx6sx,
-	.att_size	= ARRAY_SIZE(imx_rproc_att_imx6sx),
+static const struct imx_rproc_dcfg imx_rproc_cfg_imx8mn = {
+	.att		= imx_rproc_att_imx8mn,
+	.att_size	= ARRAY_SIZE(imx_rproc_att_imx8mn),
+	.rproc_init	= imx8mn_rproc_init,
+	.rproc_start	= imx8mn_rproc_start,
+	.rproc_stop	= imx8mn_rproc_stop,
+};
+
+static const struct imx_rproc_dcfg imx_rproc_cfg_imx8mq = {
+	.att		= imx_rproc_att_imx8mq,
+	.att_size	= ARRAY_SIZE(imx_rproc_att_imx8mq),
+	.rproc_start	= imx7d_rproc_start,
+	.rproc_stop	= imx7d_rproc_stop,
 };
 
 static int imx_rproc_start(struct rproc *rproc)
 {
 	struct imx_rproc *priv = rproc->priv;
 	const struct imx_rproc_dcfg *dcfg = priv->dcfg;
-	struct device_d *dev = priv->dev;
-	int ret;
 
-	ret = regmap_update_bits(priv->regmap, dcfg->src_reg,
-				 dcfg->src_mask, dcfg->src_start);
-	if (ret)
-		dev_err(dev, "Failed to enable M4!\n");
-
-	return ret;
+	return dcfg->rproc_start(rproc);
 }
 
 static int imx_rproc_stop(struct rproc *rproc)
 {
 	struct imx_rproc *priv = rproc->priv;
 	const struct imx_rproc_dcfg *dcfg = priv->dcfg;
-	struct device_d *dev = priv->dev;
-	int ret;
 
-	ret = regmap_update_bits(priv->regmap, dcfg->src_reg,
-				 dcfg->src_mask, dcfg->src_stop);
-	if (ret)
-		dev_err(dev, "Failed to stop M4!\n");
-
-	return ret;
+	return dcfg->rproc_stop(rproc);
 }
 
 static int imx_rproc_da_to_sys(struct imx_rproc *priv, u64 da,
@@ -305,7 +438,7 @@ static int imx_rproc_addr_init(struct imx_rproc *priv,
 			break;
 
 		res_cpu = request_sdram_region(dev_name(dev), res.start,
-					       res.end - res.start);
+					       resource_size(&res));
 		if (!res_cpu) {
 			dev_err(dev, "remap optional addresses failed\n");
 			return -ENOMEM;
@@ -374,6 +507,12 @@ static int imx_rproc_probe(struct device_d *dev)
 		goto err_put_rproc;
 	}
 
+	if (dcfg->rproc_init) {
+		ret = dcfg->rproc_init(rproc);
+		if (ret)
+			goto err_put_clk;
+	}
+
 	ret = rproc_add(rproc);
 	if (ret) {
 		dev_err(dev, "rproc_add failed\n");
@@ -389,8 +528,12 @@ err_put_rproc:
 }
 
 static const struct of_device_id imx_rproc_of_match[] = {
-	{ .compatible = "fsl,imx7d-cm4", .data = &imx_rproc_cfg_imx7d },
 	{ .compatible = "fsl,imx6sx-cm4", .data = &imx_rproc_cfg_imx6sx },
+	{ .compatible = "fsl,imx7d-cm4", .data = &imx_rproc_cfg_imx7d },
+	{ .compatible = "fsl,imx8mm-cm4", .data = &imx_rproc_cfg_imx8mq },
+	{ .compatible = "fsl,imx8mn-cm7", .data = &imx_rproc_cfg_imx8mn },
+	{ .compatible = "fsl,imx8mp-cm7", .data = &imx_rproc_cfg_imx8mn },
+	{ .compatible = "fsl,imx8mq-cm4", .data = &imx_rproc_cfg_imx8mq },
 	{},
 };
 

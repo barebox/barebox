@@ -4,6 +4,14 @@
  * Copyright (C) 2017 Pengutronix, Lucas Stach <kernel@pengutronix.de>
  */
 
+/ {
+	remoteproc_cm4: remoteproc-cm4 {
+		compatible = "fsl,imx8mq-cm4";
+		clocks = <&clk IMX8MQ_CLK_M4_CORE>;
+		syscon = <&src>;
+	};
+};
+
 &clk {
 	assigned-clocks = <&clk IMX8MQ_CLK_USDHC1>,
 			  <&clk IMX8MQ_CLK_USDHC2>,

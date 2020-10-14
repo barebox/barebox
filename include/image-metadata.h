@@ -26,6 +26,7 @@
 #define IMD_TYPE_MODEL		0x640c8004 /* The board name this image is for */
 #define IMD_TYPE_OF_COMPATIBLE	0x640c8005 /* the device tree compatible string */
 #define IMD_TYPE_PARAMETER	0x640c8006 /* A generic parameter. Use key=value as data */
+#define IMD_TYPE_BUILDSYSTEM	0x640c8007 /* The buildsystem version barebox was built with */
 #define IMD_TYPE_CRC32		0x640c1007 /* the checksum of the barebox images */
 #define IMD_TYPE_END		0x640c7fff
 #define IMD_TYPE_INVALID	0xffffffff

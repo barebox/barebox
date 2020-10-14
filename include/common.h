@@ -124,6 +124,7 @@ int memcpy_parse_options(int argc, char *argv[], int *sourcefd,
 
 extern const char version_string[];
 extern const char release_string[];
+extern const char buildsystem_version_string[];
 #ifdef CONFIG_BANNER
 void barebox_banner(void);
 #else

@@ -168,6 +168,9 @@ static struct imd_type_names imd_types[] = {
 	}, {
 		.type = IMD_TYPE_CRC32,
 		.name = "crc32",
+	}, {
+		.type = IMD_TYPE_BUILDSYSTEM,
+		.name = "buildsystem version",
 	},
 };
 

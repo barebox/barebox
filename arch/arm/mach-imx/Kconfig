@@ -146,7 +146,7 @@ config ARCH_IMX6
 	select ARCH_HAS_IMX_GPT
 	select CPU_V7
 	select PINCTRL_IMX_IOMUX_V3
-	select OFTREE
+	select OFDEVICE
 	select COMMON_CLK_OF_PROVIDER
 	select HW_HAS_PCI
 
@@ -157,8 +157,6 @@ config ARCH_IMX6SL
 config ARCH_IMX6SX
 	bool
 	select ARCH_IMX6
-	select OFTREE
-	select COMMON_CLK_OF_PROVIDER
 
 config ARCH_IMX6UL
 	bool
@@ -340,6 +338,8 @@ config MACH_PHYTEC_SOM_IMX6
         bool "Phytec phyCARD-i.MX6 and phyFLEX-i.MX6"
         select ARCH_IMX6
 	select ARCH_IMX6UL
+	select I2C
+	select I2C_IMX
 
 config MACH_PROTONIC_IMX6
 	bool "Protonic-Holland i.MX6 based boards"
@@ -575,6 +575,11 @@ config MACH_GRINN_LITEBOARD
 config MACH_DIGI_CCIMX6ULSBCPRO
 	bool "Digi Internal CC-IMX6UL SBC Pro"
 	select ARCH_IMX6
+	select ARCH_IMX6UL
+	select ARM_USE_COMPRESSED_DTB
+
+config MACH_WEBASTO_CCBV2
+	bool "Webasto Common Communication Board V2"
 	select ARCH_IMX6UL
 	select ARM_USE_COMPRESSED_DTB
 

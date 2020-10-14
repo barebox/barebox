@@ -118,7 +118,7 @@ static struct dram_cfg_param lpddr4_ddrc_cfg[] = {
 	{ DDRC_FREQ2_INIT7(0), 0x0006004a },
 
 	/* boot start point */
-	{ DDRC_MSTR2(0), 0x2 }, //DDRC_MSTR2
+	{ DDRC_MSTR2(0), 0x0 },
 };
 
 /* PHY Initialize Configuration */
@@ -1941,12 +1941,6 @@ static struct dram_fsp_msg lpddr4_dram_fsp_msg[] = {
 		.fsp_cfg = lpddr4_fsp0_cfg,
 		.fsp_cfg_num = ARRAY_SIZE(lpddr4_fsp0_cfg),
 	}, {
-		/* P0 3000mts 2D */
-		.drate = 3000,
-		.fw_type = FW_2D_IMAGE,
-		.fsp_cfg = lpddr4_fsp0_2d_cfg,
-		.fsp_cfg_num = ARRAY_SIZE(lpddr4_fsp0_2d_cfg),
-	}, {
 		/* P1 400mts 1D */
 		.drate = 400,
 		.fw_type = FW_1D_IMAGE,
@@ -1958,6 +1952,12 @@ static struct dram_fsp_msg lpddr4_dram_fsp_msg[] = {
 		.fw_type = FW_1D_IMAGE,
 		.fsp_cfg = lpddr4_fsp2_cfg,
 		.fsp_cfg_num = ARRAY_SIZE(lpddr4_fsp2_cfg),
+	}, {
+		/* P0 3000mts 2D */
+		.drate = 3000,
+		.fw_type = FW_2D_IMAGE,
+		.fsp_cfg = lpddr4_fsp0_2d_cfg,
+		.fsp_cfg_num = ARRAY_SIZE(lpddr4_fsp0_2d_cfg),
 	},
 };
 

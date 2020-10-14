@@ -55,7 +55,7 @@ static int nxp_imx8mm_evk_init(void)
 
 	imx8mq_bbu_internal_mmc_register_handler("SD", "/dev/mmc1.barebox",
 						 emmc_sd_flag);
-	imx8mq_bbu_internal_mmc_register_handler("eMMC", "/dev/mmc2",
+	imx8mq_bbu_internal_mmcboot_register_handler("eMMC", "/dev/mmc2",
 						     emmc_bbu_flag);
 
 	phy_register_fixup_for_uid(PHY_ID_AR8031, AR_PHY_ID_MASK,

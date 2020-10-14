@@ -67,6 +67,7 @@ lwl-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += imx6q-phytec-phycard.dtb.o \
 				imx6dl-phytec-phycore-som-emmc.dtb.o \
 				imx6dl-phytec-phycore-som-lc-emmc.dtb.o \
 				imx6ul-phytec-phycore-som-nand.dtb.o \
+				imx6ul-phytec-phycore-som-emmc.dtb.o \
 				imx6ull-phytec-phycore-som-lc-nand.dtb.o \
 				imx6ull-phytec-phycore-som-nand.dtb.o \
 				imx6ull-phytec-phycore-som-emmc.dtb.o
@@ -138,6 +139,7 @@ lwl-$(CONFIG_MACH_VIRT2REAL) += virt2real.dtb.o
 lwl-$(CONFIG_MACH_VSCOM_BALTOS) += am335x-baltos-minimal.dtb.o
 lwl-$(CONFIG_MACH_WARP7) += imx7s-warp.dtb.o
 lwl-$(CONFIG_MACH_VF610_TWR) += vf610-twr.dtb.o
+lwl-$(CONFIG_MACH_WEBASTO_CCBV2) += imx6ul-webasto-ccbv2.dtb.o
 lwl-$(CONFIG_MACH_ZII_RDU1) +=	\
 	imx51-zii-rdu1.dtb.o		\
 	imx51-zii-scu2-mezz.dtb.o	\

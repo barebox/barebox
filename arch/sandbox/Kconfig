@@ -10,6 +10,7 @@ config SANDBOX
 	select BLOCK
 	select BLOCK_WRITE
 	select PARTITION_DISK
+	select ARCH_HAS_STACK_DUMP if ASAN
 	default y
 
 config ARCH_TEXT_BASE
@@ -20,12 +21,6 @@ config LINUX
 	bool
 	default y
 	select GENERIC_FIND_NEXT_BIT
-
-config SANDBOX_UNWIND
-	bool
-	default y
-	select ARCH_HAS_STACK_DUMP
-	depends on UBSAN || ASAN
 
 config SANDBOX_REEXEC
 	prompt "exec(2) reset handler"

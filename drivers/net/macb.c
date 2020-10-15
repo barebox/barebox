@@ -258,9 +258,38 @@ static int macb_recv(struct eth_device *edev)
 	return 0;
 }
 
+static int macb_set_tx_clk(struct macb_device *macb, int speed)
+{
+	int rate;
+	int rate_rounded;
+
+	if (!macb->txclk) {
+		dev_dbg(macb->dev, "txclk not available\n");
+		return 0;
+	}
+
+	switch (speed) {
+	case SPEED_100:
+		rate = 25000000;
+		break;
+	case SPEED_1000:
+		rate = 125000000;
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	rate_rounded = clk_round_rate(macb->txclk, rate);
+	if (rate_rounded <= 0)
+		return -EINVAL;
+
+	return clk_set_rate(macb->txclk, rate_rounded);
+}
+
 static void macb_adjust_link(struct eth_device *edev)
 {
 	struct macb_device *macb = edev->priv;
+	int err;
 	u32 reg;
 
 	reg = macb_readl(macb, NCFGR);
@@ -276,6 +305,10 @@ static void macb_adjust_link(struct eth_device *edev)
 		reg |= GEM_BIT(GBE);
 
 	macb_or_gem_writel(macb, NCFGR, reg);
+
+	err = macb_set_tx_clk(macb, edev->phydev->speed);
+	if (err)
+		dev_warn(macb->dev, "cannot set txclk\n");
 }
 
 static int macb_open(struct eth_device *edev)
@@ -724,6 +757,8 @@ static int macb_probe(struct device_d *dev)
 	macb->txclk = clk_get(dev, "tx_clk");
 	if (!IS_ERR(macb->txclk))
 		clk_enable(macb->txclk);
+	else
+		macb->txclk = NULL;
 
 	macb->rxclk = clk_get(dev, "rx_clk");
 	if (!IS_ERR(macb->rxclk))

@@ -144,8 +144,6 @@ static void reclaim_rx_buffers(struct macb_device *macb,
 {
 	unsigned int i;
 
-	dev_dbg(macb->dev, "%s\n", __func__);
-
 	i = macb->rx_tail;
 	while (i > new_tail) {
 		macb->rx_ring[i].addr &= ~MACB_BIT(RX_USED);
@@ -169,8 +167,6 @@ static int gem_recv(struct eth_device *edev)
 	void *buffer;
 	int length;
 	u32 status;
-
-	dev_dbg(macb->dev, "%s\n", __func__);
 
 	for (;;) {
 		barrier();
@@ -205,8 +201,6 @@ static int macb_recv(struct eth_device *edev)
 	int length;
 	int wrapped = 0;
 	u32 status;
-
-	dev_dbg(macb->dev, "%s\n", __func__);
 
 	for (;;) {
 		barrier();
@@ -288,8 +282,6 @@ static int macb_open(struct eth_device *edev)
 {
 	struct macb_device *macb = edev->priv;
 
-	dev_dbg(macb->dev, "%s\n", __func__);
-
 	/* Enable TX and RX */
 	macb_writel(macb, NCR, MACB_BIT(TE) | MACB_BIT(RE));
 
@@ -349,8 +341,6 @@ static void macb_init(struct macb_device *macb)
 {
 	unsigned long paddr, val = 0;
 	int i;
-
-	dev_dbg(macb->dev, "%s\n", __func__);
 
 	/*
 	 * macb_halt should have been called at some point before now,
@@ -441,8 +431,6 @@ static int macb_phy_read(struct mii_bus *bus, int addr, int reg)
 	int value;
 	uint64_t start;
 
-	dev_dbg(macb->dev, "%s\n", __func__);
-
 	netctl = macb_readl(macb, NCR);
 	netctl |= MACB_BIT(MPE);
 	macb_writel(macb, NCR, netctl);
@@ -478,8 +466,6 @@ static int macb_phy_write(struct mii_bus *bus, int addr, int reg, u16 value)
 	unsigned long netctl;
 	unsigned long frame;
 
-	dev_dbg(macb->dev, "%s\n", __func__);
-
 	netctl = macb_readl(macb, NCR);
 	netctl |= MACB_BIT(MPE);
 	macb_writel(macb, NCR, netctl);
@@ -510,8 +496,6 @@ static int macb_get_ethaddr(struct eth_device *edev, unsigned char *adr)
 	u8 addr[6];
 	int i;
 
-	dev_dbg(macb->dev, "%s\n", __func__);
-
 	/* Check all 4 address register for vaild address */
 	for (i = 0; i < 4; i++) {
 		bottom = macb_or_gem_readl(macb, SA1B + i * 8);
@@ -536,8 +520,6 @@ static int macb_get_ethaddr(struct eth_device *edev, unsigned char *adr)
 static int macb_set_ethaddr(struct eth_device *edev, const unsigned char *adr)
 {
 	struct macb_device *macb = edev->priv;
-
-	dev_dbg(macb->dev, "%s\n", __func__);
 
 	/* set hardware address */
 	macb_or_gem_writel(macb, SA1B, adr[0] | adr[1] << 8 | adr[2] << 16 | adr[3] << 24);

@@ -365,7 +365,7 @@ static int gmac_init_dummy_tx_queues(struct macb_device *macb)
 		MACB_BIT(TX_LAST) | MACB_BIT(TX_USED);
 
 	for (i = 1; i < num_queues; i++)
-		gem_writel_queue_TBQP(macb, &macb->gem_q1_descs[0], i - 1);
+		gem_writel_queue_TBQP(macb, (ulong)macb->gem_q1_descs, i - 1);
 
 	return 0;
 }

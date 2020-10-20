@@ -1,8 +1,8 @@
-Aarch64
-=======
-
 Aarch64 Qemu virt
------------------
+=================
+
+Besides a number of physical ARM64 targets, barebox also supports a
+``qemu-virt64`` board.
 
 Running barebox on QEMU aarch64 virt machine
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -1,6 +1,11 @@
 x86
 ===
 
+.. note::
+   This is about legacy x86 PC boot, which is not as well supported as booting
+   under UEFI. Refer to :doc:`boards/efi.rst` for documentation on the barebox
+   EFI support.
+
 Features
 --------
 

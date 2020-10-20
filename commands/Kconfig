@@ -498,6 +498,23 @@ config CMD_UIMAGE
 		  -e OUTFILE	extract image to OUTFILE
 		  -n NO		use image number NO in multifile image
 
+config CMD_BOOTCHOOSER
+	tristate
+	depends on BOOTCHOOSER
+	prompt "bootchooser control utility"
+	help
+	  Control misc behaviour of the bootchooser
+
+	  Options:
+	    -a <n|default> [TARGETS]
+	    	set remaining attempts of given targets to 'n' or the default attempts
+	    -p <n|default> [TARGETS]
+	    	set priority of given targets to 'n' or the default priority
+	    -i
+	    	Show information about the bootchooser
+	    -s
+		Mark the last boot successful
+
 # end Boot commands
 endmenu
 
@@ -2178,11 +2195,6 @@ config CMD_STATE
 	tristate
 	depends on STATE
 	prompt "state"
-
-config CMD_BOOTCHOOSER
-	tristate
-	depends on BOOTCHOOSER
-	prompt "bootchooser"
 
 config CMD_DHRYSTONE
 	bool

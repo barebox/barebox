@@ -10,6 +10,7 @@
 #include <init.h>
 #include <mmu.h>
 #include <errno.h>
+#include <zero_page.h>
 #include <linux/sizes.h>
 #include <asm/memory.h>
 #include <asm/pgtable64.h>
@@ -168,6 +169,16 @@ static void mmu_enable(void)
 	set_cr(get_cr() | CR_M | CR_C | CR_I);
 }
 
+void zero_page_access(void)
+{
+	create_sections(0x0, 0x0, PAGE_SIZE, CACHED_MEM);
+}
+
+void zero_page_faulting(void)
+{
+	create_sections(0x0, 0x0, PAGE_SIZE, 0x0);
+}
+
 /*
  * Prepare MMU for usage enable it.
  */
@@ -194,7 +205,7 @@ void __mmu_init(bool mmu_on)
 		create_sections(bank->start, bank->start, bank->size, CACHED_MEM);
 
 	/* Make zero page faulting to catch NULL pointer derefs */
-	create_sections(0x0, 0x0, 0x1000, 0x0);
+	zero_page_faulting();
 
 	mmu_enable();
 }

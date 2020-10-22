@@ -996,14 +996,23 @@ static void imx_nand_command(struct mtd_info *mtd, unsigned command,
 		else
 			host->buf_start = column + mtd->writesize;
 
-		command = NAND_CMD_READ0;
-
-		host->send_cmd(host, command);
+		host->send_cmd(host, NAND_CMD_READ0);
 		mxc_do_addr_cycle(mtd, column, page_addr);
 
 		if (host->pagesize_2k)
 			/* send read confirm command */
 			host->send_cmd(host, NAND_CMD_READSTART);
+
+		/*
+		 * After the core issued READOOB the result is read using
+		 * .read_buf, so we have to make sure the data is actually
+		 * there.
+		 */
+		if (command == NAND_CMD_READOOB) {
+			host->send_page(host, NFC_OUTPUT);
+			copy_spare(mtd, 1, host->data_buf + mtd->writesize);
+		}
+
 		break;
 
 	case NAND_CMD_SEQIN:

@@ -332,6 +332,8 @@ static int usb_setup_descriptor(struct usb_device *dev, bool do_read)
 		dev->descriptor->bMaxPacketSize0 = 64;
 		dev->maxpacketsize = PACKET_SIZE_64;
 	}
+	dev->epmaxpacketin[0] = dev->descriptor->bMaxPacketSize0;
+	dev->epmaxpacketout[0] = dev->descriptor->bMaxPacketSize0;
 
 	if (do_read && dev->speed == USB_SPEED_FULL) {
 		int err;
@@ -355,10 +357,10 @@ static int usb_setup_descriptor(struct usb_device *dev, bool do_read)
 		err = get_descriptor_len(dev, 64, 8);
 		if (err)
 			return err;
-	}
 
-	dev->epmaxpacketin[0] = dev->descriptor->bMaxPacketSize0;
-	dev->epmaxpacketout[0] = dev->descriptor->bMaxPacketSize0;
+		dev->epmaxpacketin[0] = dev->descriptor->bMaxPacketSize0;
+		dev->epmaxpacketout[0] = dev->descriptor->bMaxPacketSize0;
+	}
 
 	switch (dev->descriptor->bMaxPacketSize0) {
 	case 8:

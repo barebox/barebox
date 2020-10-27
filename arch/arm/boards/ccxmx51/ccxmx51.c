@@ -31,7 +31,7 @@ static const struct ccxmx_ident {
 	unsigned char	eth1:1;
 	unsigned char	wless:1;
 	unsigned char	accel:1;
-} *ccxmx_id, ccxmx51_ids[] = {
+} ccxmx51_ids[] = {
 	[0x00] = { NULL /* Unknown */,					0,       0,   0, 0, 0, 0 },
 	[0x01] = { NULL /* Not supported */,				0,       0,   0, 0, 0, 0 },
 	[0x02] = { "i.MX515@800MHz, Wireless, PHY, Ext. Eth, Accel",	SZ_512M, 800, 1, 1, 1, 1 },
@@ -52,7 +52,9 @@ static const struct ccxmx_ident {
 	[0x11] = { "i.MX515@800MHz, PHY, Accel",			SZ_128M, 800, 1, 0, 0, 1 },
 	[0x12] = { "i.MX515@600MHz, Wireless, PHY, Accel",		SZ_512M, 600, 1, 0, 1, 1 },
 	[0x13] = { "i.MX515@800MHz, PHY, Accel",			SZ_512M, 800, 1, 0, 0, 1 },
-};
+	[0x14] = { NULL,						0,       0,   0, 0, 0, 0 },
+	[0x15] = { "i.MX515@600MHz, PHY, Accel",			SZ_512M, 600, 1, 0, 0, 1 },
+}, *ccxmx_id = &ccxmx51_ids[0];
 
 static u32 boardserial;
 
@@ -228,13 +230,18 @@ static __init int ccxmx51_init(void)
 {
 	char manloc = 'N';
 	u8 hwid[6];
+	int ret;
 
 	if (!ccxmx51_is_compatible())
 		return 0;
 
-	if ((imx_iim_read(1, 9, hwid, sizeof(hwid)) != sizeof(hwid)) ||
-	    (hwid[0] < 0x02) || (hwid[0] >= ARRAY_SIZE(ccxmx51_ids))) {
-		printf("Unknown board variant (0x%02x). System halted.\n", hwid[0]);
+	ret = imx_iim_read(1, 9, hwid, sizeof(hwid));
+	if ((ret == sizeof(hwid)) && (hwid[0] < ARRAY_SIZE(ccxmx51_ids)))
+		ccxmx_id = &ccxmx51_ids[hwid[0]];
+
+	if (!ccxmx_id->mem_sz) {
+		printf("Unknown/unsupported board variant (0x%02x).\n"
+		       "System halted.\n", hwid[0]);
 		hang();
 	}
 

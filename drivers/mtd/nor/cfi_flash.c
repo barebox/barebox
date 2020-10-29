@@ -932,11 +932,11 @@ static void cfi_init_mtd(struct flash_info *info)
 	u32 erasesize;
 	int i;
 
-	mtd->read = cfi_mtd_read;
-	mtd->write = cfi_mtd_write;
-	mtd->erase = cfi_mtd_erase;
-	mtd->lock = cfi_mtd_lock;
-	mtd->unlock = cfi_mtd_unlock;
+	mtd->_read = cfi_mtd_read;
+	mtd->_write = cfi_mtd_write;
+	mtd->_erase = cfi_mtd_erase;
+	mtd->_lock = cfi_mtd_lock;
+	mtd->_unlock = cfi_mtd_unlock;
 	mtd->size = info->size;
 
 	erasesize = 0;

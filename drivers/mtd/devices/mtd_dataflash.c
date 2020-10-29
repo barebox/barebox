@@ -627,9 +627,9 @@ add_dataflash_otp(struct spi_device *spi, char *name,
 	device->writesize = pagesize;
 	device->type = MTD_DATAFLASH;
 	device->flags = MTD_WRITEABLE;
-	device->erase = dataflash_erase;
-	device->read = dataflash_read;
-	device->write = dataflash_write;
+	device->_erase = dataflash_erase;
+	device->_read = dataflash_read;
+	device->_write = dataflash_write;
 	device->priv = priv;
 
 	device->parent = &spi->dev;

@@ -1257,19 +1257,19 @@ static int mxs_nand_scan_bbt(struct nand_chip *chip)
 	writel(BCH_CTRL_COMPLETE_IRQ_EN, bch_regs + BCH_CTRL + STMP_OFFSET_REG_SET);
 
 	/* Hook some operations at the MTD level. */
-	if (mtd->read_oob != mxs_nand_hook_read_oob) {
-		nand_info->hooked_read_oob = mtd->read_oob;
-		mtd->read_oob = mxs_nand_hook_read_oob;
+	if (mtd->_read_oob != mxs_nand_hook_read_oob) {
+		nand_info->hooked_read_oob = mtd->_read_oob;
+		mtd->_read_oob = mxs_nand_hook_read_oob;
 	}
 
-	if (mtd->write_oob != mxs_nand_hook_write_oob) {
-		nand_info->hooked_write_oob = mtd->write_oob;
-		mtd->write_oob = mxs_nand_hook_write_oob;
+	if (mtd->_write_oob != mxs_nand_hook_write_oob) {
+		nand_info->hooked_write_oob = mtd->_write_oob;
+		mtd->_write_oob = mxs_nand_hook_write_oob;
 	}
 
-	if (mtd->block_markbad != mxs_nand_hook_block_markbad) {
-		nand_info->hooked_block_markbad = mtd->block_markbad;
-		mtd->block_markbad = mxs_nand_hook_block_markbad;
+	if (mtd->_block_markbad != mxs_nand_hook_block_markbad) {
+		nand_info->hooked_block_markbad = mtd->_block_markbad;
+		mtd->_block_markbad = mxs_nand_hook_block_markbad;
 	}
 
 	/* We use the reference implementation for bad block management. */

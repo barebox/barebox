@@ -199,7 +199,7 @@ static int mtd_op_erase(struct cdev *cdev, loff_t count, loff_t offset)
 	erase.mtd = mtd;
 	addr = offset;
 
-	if (!mtd->block_isbad) {
+	if (!mtd->_block_isbad) {
 		erase.addr = addr;
 		erase.len = count;
 		return mtd_erase(mtd, &erase);
@@ -236,7 +236,7 @@ static int mtd_op_protect(struct cdev *cdev, size_t count, loff_t offset, int pr
 {
 	struct mtd_info *mtd = cdev->priv;
 
-	if (!mtd->unlock || !mtd->lock)
+	if (!mtd->_unlock || !mtd->_lock)
 		return -ENOSYS;
 
 	if (prot)
@@ -318,35 +318,35 @@ int mtd_ioctl(struct cdev *cdev, int request, void *buf)
 
 int mtd_lock(struct mtd_info *mtd, loff_t ofs, uint64_t len)
 {
-	if (!mtd->lock)
+	if (!mtd->_lock)
 		return -EOPNOTSUPP;
 	if (ofs < 0 || ofs > mtd->size || len > mtd->size - ofs)
 		return -EINVAL;
 	if (!len)
 		return 0;
-	return mtd->lock(mtd, ofs, len);
+	return mtd->_lock(mtd, ofs, len);
 }
 
 int mtd_unlock(struct mtd_info *mtd, loff_t ofs, uint64_t len)
 {
-	if (!mtd->unlock)
+	if (!mtd->_unlock)
 		return -EOPNOTSUPP;
 	if (ofs < 0 || ofs > mtd->size || len > mtd->size - ofs)
 		return -EINVAL;
 	if (!len)
 		return 0;
-	return mtd->unlock(mtd, ofs, len);
+	return mtd->_unlock(mtd, ofs, len);
 }
 
 int mtd_block_isbad(struct mtd_info *mtd, loff_t ofs)
 {
-	if (!mtd->block_isbad)
+	if (!mtd->_block_isbad)
 		return 0;
 
 	if (ofs < 0 || ofs > mtd->size)
 		return -EINVAL;
 
-	return mtd->block_isbad(mtd, ofs);
+	return mtd->_block_isbad(mtd, ofs);
 }
 
 int mtd_block_markbad(struct mtd_info *mtd, loff_t ofs)
@@ -356,8 +356,8 @@ int mtd_block_markbad(struct mtd_info *mtd, loff_t ofs)
 	if (ofs < 0 || ofs >= mtd->size)
 		return -EINVAL;
 
-	if (mtd->block_markbad)
-		ret = mtd->block_markbad(mtd, ofs);
+	if (mtd->_block_markbad)
+		ret = mtd->_block_markbad(mtd, ofs);
 	else
 		ret = -ENOSYS;
 
@@ -368,8 +368,8 @@ int mtd_block_markgood(struct mtd_info *mtd, loff_t ofs)
 {
 	int ret;
 
-	if (mtd->block_markgood)
-		ret = mtd->block_markgood(mtd, ofs);
+	if (mtd->_block_markgood)
+		ret = mtd->_block_markgood(mtd, ofs);
 	else
 		ret = -ENOSYS;
 
@@ -392,7 +392,7 @@ int mtd_read(struct mtd_info *mtd, loff_t from, size_t len, size_t *retlen,
 	 * representing the maximum number of bitflips that were corrected on
 	 * any one ecc region (if applicable; zero otherwise).
 	 */
-	ret_code = mtd->read(mtd, from, len, retlen, buf);
+	ret_code = mtd->_read(mtd, from, len, retlen, buf);
 	if (unlikely(ret_code < 0))
 		return ret_code;
 	if (mtd->ecc_strength == 0)
@@ -407,12 +407,12 @@ int mtd_write(struct mtd_info *mtd, loff_t to, size_t len, size_t *retlen,
 
 	if (to < 0 || to >= mtd->size || len > mtd->size - to)
 		return -EINVAL;
-	if (!mtd->write || !(mtd->flags & MTD_WRITEABLE))
+	if (!mtd->_write || !(mtd->flags & MTD_WRITEABLE))
 		return -EROFS;
 	if (!len)
 		return 0;
 
-	return mtd->write(mtd, to, len, retlen, buf);
+	return mtd->_write(mtd, to, len, retlen, buf);
 }
 
 int mtd_erase(struct mtd_info *mtd, struct erase_info *instr)
@@ -425,7 +425,7 @@ int mtd_erase(struct mtd_info *mtd, struct erase_info *instr)
 	if (!instr->len)
 		return 0;
 
-	return mtd->erase(mtd, instr);
+	return mtd->_erase(mtd, instr);
 }
 
 int mtd_read_oob(struct mtd_info *mtd, loff_t from, struct mtd_oob_ops *ops)
@@ -433,7 +433,7 @@ int mtd_read_oob(struct mtd_info *mtd, loff_t from, struct mtd_oob_ops *ops)
 	int ret_code;
 
 	ops->retlen = ops->oobretlen = 0;
-	if (!mtd->read_oob)
+	if (!mtd->_read_oob)
 		return -EOPNOTSUPP;
 	/*
 	 * In cases where ops->datbuf != NULL, mtd->_read_oob() has semantics
@@ -441,7 +441,7 @@ int mtd_read_oob(struct mtd_info *mtd, loff_t from, struct mtd_oob_ops *ops)
 	 * representing max bitflips. In other cases, mtd->_read_oob() may
 	 * return -EUCLEAN. In all cases, perform similar logic to mtd_read().
 	 */
-	ret_code = mtd->read_oob(mtd, from, ops);
+	ret_code = mtd->_read_oob(mtd, from, ops);
 	if (unlikely(ret_code < 0))
 		return ret_code;
 	if (mtd->ecc_strength == 0)

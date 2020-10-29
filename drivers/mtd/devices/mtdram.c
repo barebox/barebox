@@ -86,9 +86,9 @@ static int mtdram_probe(struct device_d *dev)
 	mtd->flags = MTD_CAP_RAM;
 	mtd->size = size;
 
-	mtd->read = ram_read;
-	mtd->write = ram_write;
-	mtd->erase = ram_erase;
+	mtd->_read = ram_read;
+	mtd->_write = ram_write;
+	mtd->_erase = ram_erase;
 	mtd->erasesize = 1;
 
 	mtd->parent = dev;

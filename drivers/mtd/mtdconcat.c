@@ -383,13 +383,11 @@ static int concat_erase(struct mtd_info *mtd, struct erase_info *instr)
 		erase->addr = 0;
 		offset += subdev->size;
 	}
-	instr->state = erase->state;
+
 	kfree(erase);
 	if (err)
 		return err;
 
-	if (instr->callback)
-		instr->callback(instr);
 	return 0;
 }
 

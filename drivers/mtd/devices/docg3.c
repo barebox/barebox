@@ -852,7 +852,6 @@ static int doc_erase(struct mtd_info *mtd, struct erase_info *info)
 	doc_dbg("doc_erase(from=%lld, len=%lld\n", info->addr, info->len);
 	doc_set_device_id(docg3, docg3->device_id);
 
-	info->state = MTD_ERASE_PENDING;
 	calc_block_sector(info->addr + info->len, &block0, &block1, &page,
 			  &ofs, docg3->reliable);
 	ret = -EINVAL;
@@ -864,7 +863,6 @@ static int doc_erase(struct mtd_info *mtd, struct erase_info *info)
 			  docg3->reliable);
 	doc_set_reliable_mode(docg3);
 	for (len = info->len; !ret && len > 0; len -= mtd->erasesize) {
-		info->state = MTD_ERASING;
 		ret = doc_erase_block(docg3, block0, block1);
 		block0 += 2;
 		block1 += 2;
@@ -873,11 +871,9 @@ static int doc_erase(struct mtd_info *mtd, struct erase_info *info)
 	if (ret)
 		goto reset_err;
 
-	info->state = MTD_ERASE_DONE;
 	return 0;
 
 reset_err:
-	info->state = MTD_ERASE_FAILED;
 	return ret;
 }
 

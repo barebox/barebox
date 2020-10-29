@@ -422,11 +422,9 @@ int mtd_erase(struct mtd_info *mtd, struct erase_info *instr)
 	if (!(mtd->flags & MTD_WRITEABLE))
 		return -EROFS;
 	instr->fail_addr = MTD_FAIL_ADDR_UNKNOWN;
-	if (!instr->len) {
-		instr->state = MTD_ERASE_DONE;
-		mtd_erase_callback(instr);
+	if (!instr->len)
 		return 0;
-	}
+
 	return mtd->erase(mtd, instr);
 }
 

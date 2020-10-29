@@ -20,12 +20,6 @@
 #define MTD_BLOCK_MAJOR 31
 #define MAX_MTD_DEVICES 32
 
-#define MTD_ERASE_PENDING      	0x01
-#define MTD_ERASING		0x02
-#define MTD_ERASE_SUSPEND	0x04
-#define MTD_ERASE_DONE          0x08
-#define MTD_ERASE_FAILED        0x10
-
 #define MTD_FAIL_ADDR_UNKNOWN -1LL
 
 /* If the erase fails, fail_addr might indicate exactly which block failed.  If
@@ -40,9 +34,7 @@ struct erase_info {
 	u_long retries;
 	u_int dev;
 	u_int cell;
-	void (*callback) (struct erase_info *self);
 	u_long priv;
-	u_char state;
 	struct erase_info *next;
 };
 
@@ -141,13 +133,6 @@ struct mtd_info {
 	int numeraseregions;
 	struct mtd_erase_region_info *eraseregions;
 
-	/*
-	 * Erase is an asynchronous operation.  Device drivers are supposed
-	 * to call instr->callback() whenever the operation completes, even
-	 * if it completes with a failure.
-	 * Callers are supposed to pass a callback function and wait for it
-	 * to be called before writing to the block.
-	 */
 	int (*erase) (struct mtd_info *mtd, struct erase_info *instr);
 
 	int (*read) (struct mtd_info *mtd, loff_t from, size_t len, size_t *retlen, u_char *buf);
@@ -297,16 +282,6 @@ int mtd_del_partition(struct mtd_info *mtd);
 
 extern void register_mtd_user (struct mtd_notifier *new);
 extern int unregister_mtd_user (struct mtd_notifier *old);
-
-#ifdef CONFIG_MTD_PARTITIONS
-void mtd_erase_callback(struct erase_info *instr);
-#else
-static inline void mtd_erase_callback(struct erase_info *instr)
-{
-	if (instr->callback)
-		instr->callback(instr);
-}
-#endif
 
 int mtd_lock(struct mtd_info *mtd, loff_t ofs, uint64_t len);
 int mtd_unlock(struct mtd_info *mtd, loff_t ofs, uint64_t len);

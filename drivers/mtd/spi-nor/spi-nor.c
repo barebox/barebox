@@ -540,14 +540,10 @@ static int spi_nor_erase(struct mtd_info *mtd, struct erase_info *instr)
 
 	spi_nor_unlock_and_unprep(nor, SPI_NOR_OPS_ERASE);
 
-	instr->state = MTD_ERASE_DONE;
-	mtd_erase_callback(instr);
-
 	return ret;
 
 erase_err:
 	spi_nor_unlock_and_unprep(nor, SPI_NOR_OPS_ERASE);
-	instr->state = MTD_ERASE_FAILED;
 	return ret;
 }
 

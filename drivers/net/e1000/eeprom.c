@@ -1426,13 +1426,9 @@ static int e1000_mtd_erase(struct mtd_info *mtd, struct erase_info *instr)
 	if (ret < 0)
 		goto fail;
 
-	instr->state = MTD_ERASE_DONE;
-	mtd_erase_callback(instr);
-
 	return 0;
 
 fail:
-	instr->state = MTD_ERASE_FAILED;
 	return ret;
 }
 

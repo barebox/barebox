@@ -920,13 +920,8 @@ static int cfi_mtd_erase(struct mtd_info *mtd, struct erase_info *instr)
 	int ret;
 
 	ret = cfi_erase(info, instr->len, instr->addr);
-	if (ret) {
-		instr->state = MTD_ERASE_FAILED;
+	if (ret)
 		return -EIO;
-	}
-
-	instr->state = MTD_ERASE_DONE;
-	mtd_erase_callback(instr);
 
 	return 0;
 }

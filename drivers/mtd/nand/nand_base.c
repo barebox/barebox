@@ -952,7 +952,6 @@ int nand_lock(struct mtd_info *mtd, loff_t ofs, uint64_t len)
 	if (nand_check_wp(mtd)) {
 		pr_debug("%s: device is write protected!\n",
 					__func__);
-		status = MTD_ERASE_FAILED;
 		ret = -EIO;
 		goto out;
 	}
@@ -2721,14 +2720,12 @@ int nand_erase_nand(struct mtd_info *mtd, struct erase_info *instr,
 	if (nand_check_wp(mtd)) {
 		pr_debug("%s: device is write protected!\n",
 				__func__);
-		instr->state = MTD_ERASE_FAILED;
+		ret = -EIO;
 		goto erase_exit;
 	}
 
 	/* Loop through the pages */
 	len = instr->len;
-
-	instr->state = MTD_ERASING;
 
 	while (len) {
 		/* Check if we have a bad block, we do not erase bad blocks! */
@@ -2737,7 +2734,7 @@ int nand_erase_nand(struct mtd_info *mtd, struct erase_info *instr,
 					chip->page_shift, 0, allowbbt)) {
 			pr_warn("%s: attempt to erase a bad block at page 0x%08x\n",
 				    __func__, page);
-			instr->state = MTD_ERASE_FAILED;
+			ret = -EIO;
 			goto erase_exit;
 		}
 
@@ -2765,7 +2762,7 @@ int nand_erase_nand(struct mtd_info *mtd, struct erase_info *instr,
 		if (status & NAND_STATUS_FAIL) {
 			pr_debug("%s: failed erase, page 0x%08x\n",
 					__func__, page);
-			instr->state = MTD_ERASE_FAILED;
+			ret = -EIO;
 			instr->fail_addr =
 				((loff_t)page << chip->page_shift);
 			goto erase_exit;
@@ -2782,19 +2779,13 @@ int nand_erase_nand(struct mtd_info *mtd, struct erase_info *instr,
 			chip->select_chip(mtd, chipnr);
 		}
 	}
-	instr->state = MTD_ERASE_DONE;
+
+	ret = 0;
 
 erase_exit:
-
-	ret = instr->state == MTD_ERASE_DONE ? 0 : -EIO;
-
 	/* Deselect and wake up anyone waiting on the device */
 	chip->select_chip(mtd, -1);
 	nand_release_device(mtd);
-
-	/* Do call back function */
-	if (!ret)
-		mtd_erase_callback(instr);
 
 	/* Return more or less happy */
 	return ret;

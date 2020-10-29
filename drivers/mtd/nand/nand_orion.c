@@ -27,9 +27,8 @@ struct orion_nand {
 	u8 cle;         /* address line number connected to CLE */
 };
 
-static void orion_nand_cmd_ctrl(struct mtd_info *mtd, int cmd, unsigned int ctrl)
+static void orion_nand_cmd_ctrl(struct nand_chip *chip, int cmd, unsigned int ctrl)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
 	struct orion_nand *priv = chip->priv;
 	u32 offs;
 
@@ -49,9 +48,8 @@ static void orion_nand_cmd_ctrl(struct mtd_info *mtd, int cmd, unsigned int ctrl
 	writeb(cmd, chip->IO_ADDR_W + offs);
 }
 
-static void orion_nand_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
+static void orion_nand_read_buf(struct nand_chip *chip, uint8_t *buf, int len)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
 	void __iomem *io_base = chip->IO_ADDR_R;
 	uint64_t *buf64;
 	int i = 0;
@@ -132,12 +130,12 @@ static int orion_nand_probe(struct device_d *dev)
 	if (!IS_ERR(clk))
 		clk_enable(clk);
 
-	if (nand_scan(mtd, 1)) {
+	if (nand_scan(chip, 1)) {
 		ret = -ENXIO;
 		goto no_dev;
 	}
 
-	add_mtd_nand_device(mtd, "orion_nand");
+	add_mtd_nand_device(chip, "orion_nand");
 	return 0;
 no_dev:
 	if (!IS_ERR(clk))

@@ -200,10 +200,9 @@ static void __nand_boot_init disable_nand_controller(void __iomem *host)
  *
  * This is a special block read variant for the S3C2440 CPU.
  */
-static void s3c2440_nand_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
+static void s3c2440_nand_read_buf(struct nand_chip *chip, uint8_t *buf, int len)
 {
-	struct nand_chip *nand_chip = mtd_to_nand(mtd);
-	struct s3c24x0_nand_host *host = nand_chip->priv;
+	struct s3c24x0_nand_host *host = chip->priv;
 
 	readsl(host->base + NFDATA, buf, len >> 2);
 
@@ -224,11 +223,10 @@ static void s3c2440_nand_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
  *
  * This is a special block write variant for the S3C2440 CPU.
  */
-static void s3c2440_nand_write_buf(struct mtd_info *mtd, const uint8_t *buf,
+static void s3c2440_nand_write_buf(struct nand_chip *chip, const uint8_t *buf,
 					int len)
 {
-	struct nand_chip *nand_chip = mtd_to_nand(mtd);
-	struct s3c24x0_nand_host *host = nand_chip->priv;
+	struct s3c24x0_nand_host *host = chip->priv;
 
 	writesl(host->base + NFDATA, buf, len >> 2);
 
@@ -252,7 +250,7 @@ static void s3c2440_nand_write_buf(struct mtd_info *mtd, const uint8_t *buf,
  *
  * @note: This routine works always on a 24 bit ECC
  */
-static int s3c2410_nand_correct_data(struct mtd_info *mtd, uint8_t *dat,
+static int s3c2410_nand_correct_data(struct nand_chip *chip, uint8_t *dat,
 				uint8_t *read_ecc, uint8_t *calc_ecc)
 {
 	unsigned int diff0, diff1, diff2;
@@ -313,10 +311,9 @@ static int s3c2410_nand_correct_data(struct mtd_info *mtd, uint8_t *dat,
 	return -1;
 }
 
-static void s3c2410_nand_enable_hwecc(struct mtd_info *mtd, int mode)
+static void s3c2410_nand_enable_hwecc(struct nand_chip *chip, int mode)
 {
-	struct nand_chip *nand_chip = mtd_to_nand(mtd);
-	struct s3c24x0_nand_host *host = nand_chip->priv;
+	struct s3c24x0_nand_host *host = chip->priv;
 
 #ifdef CONFIG_CPU_S3C2410
 	writel(readl(host->base + NFCONF) | NFCONF_INITECC , host->base + NFCONF);
@@ -326,10 +323,9 @@ static void s3c2410_nand_enable_hwecc(struct mtd_info *mtd, int mode)
 #endif
 }
 
-static int s3c2410_nand_calculate_ecc(struct mtd_info *mtd, const uint8_t *dat, uint8_t *ecc_code)
+static int s3c2410_nand_calculate_ecc(struct nand_chip *chip, const uint8_t *dat, uint8_t *ecc_code)
 {
-	struct nand_chip *nand_chip = mtd_to_nand(mtd);
-	struct s3c24x0_nand_host *host = nand_chip->priv;
+	struct s3c24x0_nand_host *host = chip->priv;
 
 #ifdef CONFIG_CPU_S3C2410
 	ecc_code[0] = readb(host->base + NFECC);
@@ -346,30 +342,27 @@ static int s3c2410_nand_calculate_ecc(struct mtd_info *mtd, const uint8_t *dat, 
 	return 0;
 }
 
-static void s3c24x0_nand_select_chip(struct mtd_info *mtd, int chip)
+static void s3c24x0_nand_select_chip(struct nand_chip *chip, int num)
 {
-	struct nand_chip *nand_chip = mtd_to_nand(mtd);
-	struct s3c24x0_nand_host *host = nand_chip->priv;
+	struct s3c24x0_nand_host *host = chip->priv;
 
-	if (chip == -1)
+	if (num == -1)
 		disable_cs(host->base);
 	else
 		enable_cs(host->base);
 }
 
-static int s3c24x0_nand_devready(struct mtd_info *mtd)
+static int s3c24x0_nand_devready(struct nand_chip *chip)
 {
-	struct nand_chip *nand_chip = mtd_to_nand(mtd);
-	struct s3c24x0_nand_host *host = nand_chip->priv;
+	struct s3c24x0_nand_host *host = chip->priv;
 
 	return readw(host->base + NFSTAT) & NFSTAT_BUSY;
 }
 
-static void s3c24x0_nand_hwcontrol(struct mtd_info *mtd, int cmd,
+static void s3c24x0_nand_hwcontrol(struct nand_chip *chip, int cmd,
 					unsigned int ctrl)
 {
-	struct nand_chip *nand_chip = mtd_to_nand(mtd);
-	struct s3c24x0_nand_host *host = nand_chip->priv;
+	struct s3c24x0_nand_host *host = chip->priv;
 
 	if (cmd == NAND_CMD_NONE)
 		return;
@@ -482,13 +475,13 @@ static int s3c24x0_nand_probe(struct device_d *dev)
 		goto on_error;
 
 	/* Scan to find existence of the device */
-	ret = nand_scan(mtd, 1);
+	ret = nand_scan(chip, 1);
 	if (ret != 0) {
 		ret = -ENXIO;
 		goto on_error;
 	}
 
-	return add_mtd_nand_device(mtd, "nand");
+	return add_mtd_nand_device(chip, "nand");
 
 on_error:
 	free(host);

@@ -23,28 +23,29 @@
 #include <linux/mtd/bbm.h>
 
 struct mtd_info;
+struct nand_chip;
 struct nand_flash_dev;
 /* Scan and identify a NAND device */
-extern int nand_scan(struct mtd_info *mtd, int max_chips);
+extern int nand_scan(struct nand_chip *chip, int max_chips);
 /*
  * Separate phases of nand_scan(), allowing board driver to intervene
  * and override command or ECC setup according to flash type.
  */
-extern int nand_scan_ident(struct mtd_info *mtd, int max_chips,
+extern int nand_scan_ident(struct nand_chip *chip, int max_chips,
 			   struct nand_flash_dev *table);
-extern int nand_scan_tail(struct mtd_info *mtd);
+extern int nand_scan_tail(struct nand_chip *chip);
 
 /* Free resources held by the NAND device */
-extern void nand_release(struct mtd_info *mtd);
+extern void nand_release(struct nand_chip *chip);
 
 /* Internal helper for board drivers which need to override command function */
-extern void nand_wait_ready(struct mtd_info *mtd);
+extern void nand_wait_ready(struct nand_chip *chip);
 
 /* locks all blocks present in the device */
-extern int nand_lock(struct mtd_info *mtd, loff_t ofs, uint64_t len);
+extern int nand_lock(struct nand_chip *chip, loff_t ofs, uint64_t len);
 
 /* unlocks specified locked blocks */
-extern int nand_unlock(struct mtd_info *mtd, loff_t ofs, uint64_t len);
+extern int nand_unlock(struct nand_chip *chip, loff_t ofs, uint64_t len);
 
 extern int nand_check_erased_ecc_chunk(void *data, int datalen,
 				       void *ecc, int ecclen,
@@ -346,31 +347,28 @@ struct nand_ecc_ctrl {
 	int postpad;
 	struct nand_ecclayout	*layout;
 	void *priv;
-	void (*hwctl)(struct mtd_info *mtd, int mode);
-	int (*calculate)(struct mtd_info *mtd, const uint8_t *dat,
+	void (*hwctl)(struct nand_chip *chip, int mode);
+	int (*calculate)(struct nand_chip *chip, const uint8_t *dat,
 			uint8_t *ecc_code);
-	int (*correct)(struct mtd_info *mtd, uint8_t *dat, uint8_t *read_ecc,
+	int (*correct)(struct nand_chip *chip, uint8_t *dat, uint8_t *read_ecc,
 			uint8_t *calc_ecc);
-	int (*read_page_raw)(struct mtd_info *mtd, struct nand_chip *chip,
+	int (*read_page_raw)(struct nand_chip *chip,
 			uint8_t *buf, int oob_required, int page);
-	int (*write_page_raw)(struct mtd_info *mtd, struct nand_chip *chip,
+	int (*write_page_raw)(struct nand_chip *chip,
 			const uint8_t *buf, int oob_required);
-	int (*read_page)(struct mtd_info *mtd, struct nand_chip *chip,
+	int (*read_page)(struct nand_chip *chip,
 			uint8_t *buf, int oob_required, int page);
-	int (*read_subpage)(struct mtd_info *mtd, struct nand_chip *chip,
+	int (*read_subpage)(struct nand_chip *chip,
 			uint32_t offs, uint32_t len, uint8_t *buf, int page);
-	int (*write_subpage)(struct mtd_info *mtd, struct nand_chip *chip,
+	int (*write_subpage)(struct nand_chip *chip,
 			uint32_t offset, uint32_t data_len,
 			const uint8_t *data_buf, int oob_required);
-	int (*write_page)(struct mtd_info *mtd, struct nand_chip *chip,
+	int (*write_page)(struct nand_chip *chip,
 			const uint8_t *buf, int oob_required);
-	int (*write_oob_raw)(struct mtd_info *mtd, struct nand_chip *chip,
-			int page);
-	int (*read_oob_raw)(struct mtd_info *mtd, struct nand_chip *chip,
-			int page);
-	int (*read_oob)(struct mtd_info *mtd, struct nand_chip *chip, int page);
-	int (*write_oob)(struct mtd_info *mtd, struct nand_chip *chip,
-			int page);
+	int (*write_oob_raw)(struct nand_chip *chip, int page);
+	int (*read_oob_raw)(struct nand_chip *chip, int page);
+	int (*read_oob)(struct nand_chip *chip, int page);
+	int (*write_oob)(struct nand_chip *chip, int page);
 };
 
 /**
@@ -473,27 +471,25 @@ struct nand_chip {
 	void __iomem *IO_ADDR_R;
 	void __iomem *IO_ADDR_W;
 
-	uint8_t (*read_byte)(struct mtd_info *mtd);
-	u16 (*read_word)(struct mtd_info *mtd);
-	void (*write_buf)(struct mtd_info *mtd, const uint8_t *buf, int len);
-	void (*read_buf)(struct mtd_info *mtd, uint8_t *buf, int len);
-	void (*select_chip)(struct mtd_info *mtd, int chip);
-	int (*block_bad)(struct mtd_info *mtd, loff_t ofs, int getchip);
-	int (*block_markbad)(struct mtd_info *mtd, loff_t ofs);
-	void (*cmd_ctrl)(struct mtd_info *mtd, int dat, unsigned int ctrl);
-	int (*init_size)(struct mtd_info *mtd, struct nand_chip *this,
-			u8 *id_data);
-	int (*dev_ready)(struct mtd_info *mtd);
-	void (*cmdfunc)(struct mtd_info *mtd, unsigned command, int column,
+	uint8_t (*read_byte)(struct nand_chip *chip);
+	u16 (*read_word)(struct nand_chip *chip);
+	void (*write_buf)(struct nand_chip *chip, const uint8_t *buf, int len);
+	void (*read_buf)(struct nand_chip *chip, uint8_t *buf, int len);
+	void (*select_chip)(struct nand_chip *_chip, int chip);
+	int (*block_bad)(struct nand_chip *chip, loff_t ofs, int getchip);
+	int (*block_markbad)(struct nand_chip *chip, loff_t ofs);
+	void (*cmd_ctrl)(struct nand_chip *chip, int dat, unsigned int ctrl);
+	int (*dev_ready)(struct nand_chip *chip);
+	void (*cmdfunc)(struct nand_chip *chip, unsigned command, int column,
 			int page_addr);
-	int(*waitfunc)(struct mtd_info *mtd, struct nand_chip *this);
-	int (*scan_bbt)(struct mtd_info *mtd);
-	int (*write_page)(struct mtd_info *mtd, struct nand_chip *chip,
+	int(*waitfunc)(struct nand_chip *chip);
+	int (*scan_bbt)(struct nand_chip *chip);
+	int (*write_page)(struct nand_chip *chip,
 			uint32_t offset, int data_len, const uint8_t *buf,
 			int oob_required, int page, int cached, int raw);
-	int (*onfi_set_features)(struct mtd_info *mtd, struct nand_chip *chip,
+	int (*onfi_set_features)(struct nand_chip *chip,
 			int feature_addr, uint8_t *subfeature_para);
-	int (*onfi_get_features)(struct mtd_info *mtd, struct nand_chip *chip,
+	int (*onfi_get_features)(struct nand_chip *chip,
 			int feature_addr, uint8_t *subfeature_para);
 
 	int chip_delay;
@@ -629,16 +625,16 @@ struct nand_manufacturers {
 extern struct nand_flash_dev nand_flash_ids[];
 extern struct nand_manufacturers nand_manuf_ids[];
 
-extern int nand_update_bbt(struct mtd_info *mtd, loff_t offs);
-extern int nand_default_bbt(struct mtd_info *mtd);
-extern int nand_markbad_bbt(struct mtd_info *mtd, loff_t offs);
-extern int nand_markgood_bbt(struct mtd_info *mtd, loff_t offs);
-extern int nand_isbad_bbt(struct mtd_info *mtd, loff_t offs, int allowbbt);
-extern int nand_erase_nand(struct mtd_info *mtd, struct erase_info *instr,
+extern int nand_update_bbt(struct nand_chip *chip, loff_t offs);
+extern int nand_default_bbt(struct nand_chip *chip);
+extern int nand_markbad_bbt(struct nand_chip *chip, loff_t offs);
+extern int nand_markgood_bbt(struct nand_chip *chip, loff_t offs);
+extern int nand_isbad_bbt(struct nand_chip *chip, loff_t offs, int allowbbt);
+extern int nand_erase_nand(struct nand_chip *chip, struct erase_info *instr,
 			   int allowbbt);
-extern int nand_do_read(struct mtd_info *mtd, loff_t from, size_t len,
+extern int nand_do_read(struct nand_chip *chip, loff_t from, size_t len,
 			size_t *retlen, uint8_t *buf);
-extern int add_mtd_nand_device(struct mtd_info *mtd, char *devname);
+extern int add_mtd_nand_device(struct nand_chip *chip, char *devname);
 
 /**
  * struct platform_nand_chip - chip level device structure
@@ -796,6 +792,11 @@ const struct nand_sdr_timings *onfi_async_timing_mode_to_sdr_timings(int mode);
 static inline struct nand_chip *mtd_to_nand(struct mtd_info *mtd)
 {
 	return container_of(mtd, struct nand_chip, mtd);
+}
+
+static inline struct mtd_info *nand_to_mtd(struct nand_chip *chip)
+{
+	return &chip->mtd;
 }
 
 #endif /* __LINUX_MTD_NAND_H */

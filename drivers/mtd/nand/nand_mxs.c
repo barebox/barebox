@@ -330,9 +330,9 @@ static uint32_t mxs_nand_get_mark_offset(struct mtd_info *mtd)
 	return block_mark_bit_offset;
 }
 
-static int mxs_nand_calc_geo(struct mtd_info *mtd)
+static int mxs_nand_calc_geo(struct nand_chip *chip)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct mtd_info *mtd = nand_to_mtd(chip);
 	struct mxs_nand_info *nand_info = chip->priv;
 	int ecc_chunk_count = mxs_nand_ecc_chunk_cnt(mtd->writesize);
 	int gf_len = 13;  /* length of Galois Field for non-DDR nand */
@@ -420,9 +420,8 @@ static int mxs_nand_wait_for_bch_complete(struct mxs_nand_info *nand_info)
  * ignore the chip enable bit and concentrate only on sending bytes to the NAND
  * Flash.
  */
-static void mxs_nand_cmd_ctrl(struct mtd_info *mtd, int data, unsigned int ctrl)
+static void mxs_nand_cmd_ctrl(struct nand_chip *chip, int data, unsigned int ctrl)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
 	struct mxs_nand_info *nand_info = chip->priv;
 	struct mxs_dma_desc *d;
 	uint32_t channel = nand_info->dma_channel_base + nand_info->cur_chip;
@@ -496,9 +495,8 @@ static void mxs_nand_cmd_ctrl(struct mtd_info *mtd, int data, unsigned int ctrl)
 /*
  * Test if the NAND flash is ready.
  */
-static int mxs_nand_device_ready(struct mtd_info *mtd)
+static int mxs_nand_device_ready(struct nand_chip *chip)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
 	struct mxs_nand_info *nand_info = chip->priv;
 	void __iomem *gpmi_regs = nand_info->io_base;
 	uint32_t tmp;
@@ -522,9 +520,8 @@ static int mxs_nand_device_ready(struct mtd_info *mtd)
 /*
  * Select the NAND chip.
  */
-static void mxs_nand_select_chip(struct mtd_info *mtd, int chipnum)
+static void mxs_nand_select_chip(struct nand_chip *chip, int chipnum)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
 	struct mxs_nand_info *nand_info = chip->priv;
 
 	nand_info->cur_chip = chipnum;
@@ -537,10 +534,9 @@ static void mxs_nand_select_chip(struct mtd_info *mtd, int chipnum)
  * swapping the block mark, or swapping it *back* -- but it doesn't matter
  * because the the operation is the same.
  */
-static void mxs_nand_swap_block_mark(struct mtd_info *mtd,
+static void mxs_nand_swap_block_mark(struct nand_chip *chip,
 					uint8_t *data_buf, uint8_t *oob_buf)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
 	struct mxs_nand_info *nand_info = chip->priv;
 
 	uint32_t bit_offset;
@@ -579,9 +575,8 @@ static void mxs_nand_swap_block_mark(struct mtd_info *mtd,
 /*
  * Read data from NAND.
  */
-static void mxs_nand_read_buf(struct mtd_info *mtd, uint8_t *buf, int length)
+static void mxs_nand_read_buf(struct nand_chip *chip, uint8_t *buf, int length)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
 	struct mxs_nand_info *nand_info = chip->priv;
 	struct mxs_dma_desc *d;
 	uint32_t channel = nand_info->dma_channel_base + nand_info->cur_chip;
@@ -656,10 +651,9 @@ rtn:
 /*
  * Write data to NAND.
  */
-static void mxs_nand_write_buf(struct mtd_info *mtd, const uint8_t *buf,
+static void mxs_nand_write_buf(struct nand_chip *chip, const uint8_t *buf,
 				int length)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
 	struct mxs_nand_info *nand_info = chip->priv;
 	struct mxs_dma_desc *d;
 	uint32_t channel = nand_info->dma_channel_base + nand_info->cur_chip;
@@ -707,16 +701,15 @@ static void mxs_nand_write_buf(struct mtd_info *mtd, const uint8_t *buf,
 /*
  * Read a single byte from NAND.
  */
-static uint8_t mxs_nand_read_byte(struct mtd_info *mtd)
+static uint8_t mxs_nand_read_byte(struct nand_chip *chip)
 {
 	uint8_t buf;
-	mxs_nand_read_buf(mtd, &buf, 1);
+	mxs_nand_read_buf(chip, &buf, 1);
 	return buf;
 }
 
-static void mxs_nand_config_bch(struct mtd_info *mtd, int readlen)
+static void mxs_nand_config_bch(struct nand_chip *chip, int readlen)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
 	struct mxs_nand_info *nand_info = chip->priv;
 	int chunk_size;
 	void __iomem *bch_regs = nand_info->bch_base;
@@ -744,10 +737,11 @@ static void mxs_nand_config_bch(struct mtd_info *mtd, int readlen)
 /*
  * Read a page from NAND.
  */
-static int __mxs_nand_ecc_read_page(struct mtd_info *mtd, struct nand_chip *chip,
+static int __mxs_nand_ecc_read_page(struct nand_chip *chip,
 					uint8_t *buf, int oob_required, int page,
 					int readlen)
 {
+	struct mtd_info *mtd = nand_to_mtd(chip);
 	struct mxs_nand_info *nand_info = chip->priv;
 	struct mxs_dma_desc *d;
 	uint32_t channel = nand_info->dma_channel_base + nand_info->cur_chip;
@@ -762,7 +756,7 @@ static int __mxs_nand_ecc_read_page(struct mtd_info *mtd, struct nand_chip *chip
 	readtotal += MXS_NAND_CHUNK_DATA_CHUNK_SIZE * nchunks;
 	readtotal += DIV_ROUND_UP(13 * chip->ecc.strength * nchunks, 8);
 
-	mxs_nand_config_bch(mtd, readtotal);
+	mxs_nand_config_bch(chip, readtotal);
 
 	/* Compile the DMA descriptor - wait for ready. */
 	d = mxs_nand_get_dma_desc(nand_info);
@@ -850,7 +844,7 @@ static int __mxs_nand_ecc_read_page(struct mtd_info *mtd, struct nand_chip *chip
 	}
 
 	/* Read DMA completed, now do the mark swapping. */
-	mxs_nand_swap_block_mark(mtd, nand_info->data_buf, nand_info->oob_buf);
+	mxs_nand_swap_block_mark(chip, nand_info->data_buf, nand_info->oob_buf);
 
 	memcpy(buf, nand_info->data_buf, readlen);
 
@@ -931,19 +925,21 @@ static int __mxs_nand_ecc_read_page(struct mtd_info *mtd, struct nand_chip *chip
 rtn:
 	mxs_nand_return_dma_descs(nand_info);
 
-	mxs_nand_config_bch(mtd, mtd->writesize + mtd->oobsize);
+	mxs_nand_config_bch(chip, mtd->writesize + mtd->oobsize);
 
 	return ret ? ret : max_bitflips;
 }
 
-static int mxs_nand_ecc_read_page(struct mtd_info *mtd, struct nand_chip *chip,
+static int mxs_nand_ecc_read_page(struct nand_chip *chip,
 					uint8_t *buf, int oob_required, int page)
 {
-	return __mxs_nand_ecc_read_page(mtd, chip, buf, oob_required, page,
+	struct mtd_info *mtd = nand_to_mtd(chip);
+
+	return __mxs_nand_ecc_read_page(chip, buf, oob_required, page,
 					mtd->writesize);
 }
 
-static int gpmi_ecc_read_subpage(struct mtd_info *mtd, struct nand_chip *chip,
+static int gpmi_ecc_read_subpage(struct nand_chip *chip,
 			uint32_t offs, uint32_t len, uint8_t *buf, int page)
 {
 	/*
@@ -956,16 +952,16 @@ static int gpmi_ecc_read_subpage(struct mtd_info *mtd, struct nand_chip *chip,
 		offs = 0;
 	}
 
-	return __mxs_nand_ecc_read_page(mtd, chip, buf, 0, page, len);
+	return __mxs_nand_ecc_read_page(chip, buf, 0, page, len);
 }
 
 /*
  * Write a page to NAND.
  */
-static int mxs_nand_ecc_write_page(struct mtd_info *mtd,
-				struct nand_chip *chip, const uint8_t *buf,
+static int mxs_nand_ecc_write_page(struct nand_chip *chip, const uint8_t *buf,
 				int oob_required)
 {
+	struct mtd_info *mtd = nand_to_mtd(chip);
 	struct mxs_nand_info *nand_info = chip->priv;
 	struct mxs_dma_desc *d;
 	uint32_t channel = nand_info->dma_channel_base + nand_info->cur_chip;
@@ -975,7 +971,7 @@ static int mxs_nand_ecc_write_page(struct mtd_info *mtd,
 	memcpy(nand_info->oob_buf, chip->oob_poi, mtd->oobsize);
 
 	/* Handle block mark swapping. */
-	mxs_nand_swap_block_mark(mtd, nand_info->data_buf, nand_info->oob_buf);
+	mxs_nand_swap_block_mark(chip, nand_info->data_buf, nand_info->oob_buf);
 
 	/* Compile the DMA descriptor - write data. */
 	d = mxs_nand_get_dma_desc(nand_info);
@@ -1136,9 +1132,9 @@ static int mxs_nand_hook_block_markbad(struct mtd_info *mtd, loff_t ofs)
  * raw_oob_mode field so that, when control finally arrives here, we'll know
  * what to do.
  */
-static int mxs_nand_ecc_read_oob(struct mtd_info *mtd, struct nand_chip *chip,
-				int page)
+static int mxs_nand_ecc_read_oob(struct nand_chip *chip, int page)
 {
+	struct mtd_info *mtd = nand_to_mtd(chip);
 	struct mxs_nand_info *nand_info = chip->priv;
 	int column;
 
@@ -1152,8 +1148,8 @@ static int mxs_nand_ecc_read_oob(struct mtd_info *mtd, struct nand_chip *chip,
 		 * If control arrives here, we're doing a "raw" read. Send the
 		 * command to read the conventional OOB and read it.
 		 */
-		chip->cmdfunc(mtd, NAND_CMD_READ0, mtd->writesize, page);
-		chip->read_buf(mtd, chip->oob_poi, mtd->oobsize);
+		chip->cmdfunc(chip, NAND_CMD_READ0, mtd->writesize, page);
+		chip->read_buf(chip, chip->oob_poi, mtd->oobsize);
 	} else {
 		/*
 		 * If control arrives here, we're not doing a "raw" read. Fill
@@ -1162,8 +1158,8 @@ static int mxs_nand_ecc_read_oob(struct mtd_info *mtd, struct nand_chip *chip,
 		memset(chip->oob_poi, 0xff, mtd->oobsize);
 
 		column = nand_info->version == GPMI_VERSION_TYPE_MX23 ? 0 : mtd->writesize;
-		chip->cmdfunc(mtd, NAND_CMD_READ0, column, page);
-		mxs_nand_read_buf(mtd, chip->oob_poi, 1);
+		chip->cmdfunc(chip, NAND_CMD_READ0, column, page);
+		mxs_nand_read_buf(chip, chip->oob_poi, 1);
 	}
 
 	return 0;
@@ -1173,9 +1169,9 @@ static int mxs_nand_ecc_read_oob(struct mtd_info *mtd, struct nand_chip *chip,
 /*
  * Write OOB data to NAND.
  */
-static int mxs_nand_ecc_write_oob(struct mtd_info *mtd, struct nand_chip *chip,
-					int page)
+static int mxs_nand_ecc_write_oob(struct nand_chip *chip, int page)
 {
+	struct mtd_info *mtd = nand_to_mtd(chip);
 	struct mxs_nand_info *nand_info = chip->priv;
 	int column;
 	uint8_t block_mark = 0;
@@ -1196,12 +1192,12 @@ static int mxs_nand_ecc_write_oob(struct mtd_info *mtd, struct nand_chip *chip,
 
 	column = nand_info->version == GPMI_VERSION_TYPE_MX23 ? 0 : mtd->writesize;
 	/* Write the block mark. */
-	chip->cmdfunc(mtd, NAND_CMD_SEQIN, column, page);
-	chip->write_buf(mtd, &block_mark, 1);
-	chip->cmdfunc(mtd, NAND_CMD_PAGEPROG, -1, -1);
+	chip->cmdfunc(chip, NAND_CMD_SEQIN, column, page);
+	chip->write_buf(chip, &block_mark, 1);
+	chip->cmdfunc(chip, NAND_CMD_PAGEPROG, -1, -1);
 
 	/* Check if it worked. */
-	if (chip->waitfunc(mtd, chip) & NAND_STATUS_FAIL)
+	if (chip->waitfunc(chip) & NAND_STATUS_FAIL)
 		return -EIO;
 
 	return 0;
@@ -1220,7 +1216,7 @@ static int mxs_nand_ecc_write_oob(struct mtd_info *mtd, struct nand_chip *chip,
  * Thus, this function is only called when we want *all* blocks to look good,
  * so it *always* return success.
  */
-static int mxs_nand_block_bad(struct mtd_info *mtd, loff_t ofs, int getchip)
+static int mxs_nand_block_bad(struct nand_chip *chip , loff_t ofs, int getchip)
 {
 	return 0;
 }
@@ -1239,9 +1235,9 @@ static int mxs_nand_block_bad(struct mtd_info *mtd, loff_t ofs, int getchip)
  * call to nand_scan(). Anything other than zero will cause this driver to
  * tear everything down and declare failure.
  */
-static int mxs_nand_scan_bbt(struct mtd_info *mtd)
+static int mxs_nand_scan_bbt(struct nand_chip *chip)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct mtd_info *mtd = nand_to_mtd(chip);
 	struct mxs_nand_info *nand_info = chip->priv;
 	void __iomem *bch_regs = nand_info->bch_base;
 	int ret;
@@ -1252,7 +1248,7 @@ static int mxs_nand_scan_bbt(struct mtd_info *mtd)
 	if (ret)
 		return ret;
 
-	mxs_nand_config_bch(mtd, mtd->writesize + mtd->oobsize);
+	mxs_nand_config_bch(chip, mtd->writesize + mtd->oobsize);
 
 	/* Set *all* chip selects to use layout 0 */
 	writel(0, bch_regs + BCH_LAYOUTSELECT);
@@ -1277,7 +1273,7 @@ static int mxs_nand_scan_bbt(struct mtd_info *mtd)
 	}
 
 	/* We use the reference implementation for bad block management. */
-	return nand_default_bbt(mtd);
+	return nand_default_bbt(chip);
 }
 
 /*
@@ -2029,7 +2025,6 @@ static void mxs_nand_compute_edo_timing(struct mxs_nand_info *info,
 static int mxs_nand_enable_edo_mode(struct mxs_nand_info *info)
 {
 	struct nand_chip *chip = &info->nand_chip;
-	struct mtd_info	 *mtd = &chip->mtd;
 	uint8_t feature[ONFI_SUBFEATURE_PARAM_LEN] = {};
 	int ret, mode;
 
@@ -2049,7 +2044,7 @@ static int mxs_nand_enable_edo_mode(struct mxs_nand_info *info)
 	else
 		return -EINVAL;
 
-	chip->select_chip(mtd, 0);
+	chip->select_chip(chip, 0);
 
 	if (le16_to_cpu(chip->onfi_params.opt_cmd)
 	      & ONFI_OPT_CMD_SET_GET_FEATURES) {
@@ -2057,19 +2052,19 @@ static int mxs_nand_enable_edo_mode(struct mxs_nand_info *info)
 		/* [1] send SET FEATURE commond to NAND */
 		feature[0] = mode;
 
-		ret = chip->onfi_set_features(mtd, chip,
+		ret = chip->onfi_set_features(chip,
 				ONFI_FEATURE_ADDR_TIMING_MODE, feature);
 		if (ret)
 			goto err_out;
 
 		/* [2] send GET FEATURE command to double-check the timing mode */
-		ret = chip->onfi_get_features(mtd, chip,
+		ret = chip->onfi_get_features(chip,
 				ONFI_FEATURE_ADDR_TIMING_MODE, feature);
 		if (ret || feature[0] != mode)
 			goto err_out;
 	}
 
-	chip->select_chip(mtd, -1);
+	chip->select_chip(chip, -1);
 
 	/* [3] set the main IO clock, 100MHz for mode 5, 80MHz for mode 4. */
 	clk_disable(info->clk);
@@ -2081,7 +2076,7 @@ static int mxs_nand_enable_edo_mode(struct mxs_nand_info *info)
 	return mode;
 
 err_out:
-	chip->select_chip(mtd, -1);
+	chip->select_chip(chip, -1);
 
 	return -EINVAL;
 }
@@ -2221,11 +2216,11 @@ static int mxs_nand_probe(struct device_d *dev)
 	chip->ecc.mode		= NAND_ECC_HW;
 
 	/* first scan to find the device and get the page size */
-	err = nand_scan_ident(mtd, 4, NULL);
+	err = nand_scan_ident(chip, 4, NULL);
 	if (err)
 		goto err2;
 
-	err = mxs_nand_calc_geo(mtd);
+	err = mxs_nand_calc_geo(chip);
 	if (err)
 		goto err2;
 
@@ -2239,11 +2234,11 @@ static int mxs_nand_probe(struct device_d *dev)
 	mxs_nand_setup_timing(nand_info);
 
 	/* second phase scan */
-	err = nand_scan_tail(mtd);
+	err = nand_scan_tail(chip);
 	if (err)
 		goto err2;
 
-	err = add_mtd_nand_device(mtd, "nand");
+	err = add_mtd_nand_device(chip, "nand");
 	if (err)
 		goto err2;
 

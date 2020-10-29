@@ -66,7 +66,7 @@ static const u_char nand_ecc_precalc_table[] = {
  * @dat:	raw data
  * @ecc_code:	buffer for ECC
  */
-int nand_calculate_ecc(struct mtd_info *mtd, const u_char *dat,
+int nand_calculate_ecc(struct nand_chip *chip, const u_char *dat,
 		       u_char *ecc_code)
 {
 	uint8_t idx, reg1, reg2, reg3, tmp1, tmp2;
@@ -139,7 +139,7 @@ static inline int countbits(uint32_t byte)
  *
  * Detect and correct a 1 bit error for 256 byte block
  */
-int nand_correct_data(struct mtd_info *mtd, u_char *dat,
+int nand_correct_data(struct nand_chip *chip, u_char *dat,
 		      u_char *read_ecc, u_char *calc_ecc)
 {
 	uint8_t s0, s1, s2;

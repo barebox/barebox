@@ -76,10 +76,8 @@ static uint32_t denali_irq_mask = DENALI_IRQ_ALL;
  * this macro allows us to convert from an MTD structure to our own
  * device context (denali) structure.
  */
-static inline struct denali_nand_info *mtd_to_denali(struct mtd_info *mtd)
+static inline struct denali_nand_info *nand_to_denali(struct nand_chip *nand)
 {
-	struct nand_chip *nand = mtd_to_nand(mtd);
-
 	return container_of(nand, struct denali_nand_info, nand);
 }
 
@@ -788,9 +786,10 @@ static int read_data_from_flash_mem(struct denali_nand_info *denali,
 }
 
 /* writes OOB data to the device */
-static int write_oob_data(struct mtd_info *mtd, uint8_t *buf, int page)
+static int write_oob_data(struct nand_chip *chip, uint8_t *buf, int page)
 {
-	struct denali_nand_info *denali = mtd_to_denali(mtd);
+	struct mtd_info *mtd = nand_to_mtd(chip);
+	struct denali_nand_info *denali = nand_to_denali(chip);
 	uint32_t irq_status;
 	uint32_t irq_mask = INTR_STATUS__PROGRAM_COMP |
 						INTR_STATUS__PROGRAM_FAIL;
@@ -827,9 +826,10 @@ static int write_oob_data(struct mtd_info *mtd, uint8_t *buf, int page)
 }
 
 /* reads OOB data from the device */
-static void read_oob_data(struct mtd_info *mtd, uint8_t *buf, int page)
+static void read_oob_data(struct nand_chip *chip, uint8_t *buf, int page)
 {
-	struct denali_nand_info *denali = mtd_to_denali(mtd);
+	struct mtd_info *mtd = nand_to_mtd(chip);
+	struct denali_nand_info *denali = nand_to_denali(chip);
 	uint32_t irq_mask = INTR_STATUS__LOAD_COMP;
 	uint32_t irq_status, addr, cmd;
 
@@ -995,10 +995,10 @@ static void denali_setup_dma(struct denali_nand_info *denali, int op)
  * writes a page. user specifies type, and this function handles the
  * configuration details.
  */
-static int write_page(struct mtd_info *mtd, struct nand_chip *chip,
-			const uint8_t *buf, bool raw_xfer)
+static int write_page(struct nand_chip *chip, const uint8_t *buf, bool raw_xfer)
 {
-	struct denali_nand_info *denali = mtd_to_denali(mtd);
+	struct mtd_info *mtd = nand_to_mtd(chip);
+	struct denali_nand_info *denali = nand_to_denali(chip);
 	dma_addr_t addr = (unsigned long)denali->buf.buf;
 	size_t size = mtd->writesize + mtd->oobsize;
 	uint32_t irq_status;
@@ -1051,14 +1051,14 @@ static int write_page(struct mtd_info *mtd, struct nand_chip *chip,
  * writing a page with ECC or without is similar, all the work is done
  * by write_page above.
  */
-static int denali_write_page(struct mtd_info *mtd, struct nand_chip *chip,
+static int denali_write_page(struct nand_chip *chip,
 				const uint8_t *buf, int oob_required)
 {
 	/*
 	 * for regular page writes, we let HW handle all the ECC
 	 * data written to the device.
 	 */
-	return write_page(mtd, chip, buf, false);
+	return write_page(chip, buf, false);
 }
 
 /*
@@ -1066,35 +1066,34 @@ static int denali_write_page(struct mtd_info *mtd, struct nand_chip *chip,
  * raw access is similar to ECC page writes, so all the work is done in the
  * write_page() function above.
  */
-static int denali_write_page_raw(struct mtd_info *mtd, struct nand_chip *chip,
+static int denali_write_page_raw(struct nand_chip *chip,
 					const uint8_t *buf, int oob_required)
 {
 	/*
 	 * for raw page writes, we want to disable ECC and simply write
 	 * whatever data is in the buffer.
 	 */
-	return write_page(mtd, chip, buf, true);
+	return write_page(chip, buf, true);
 }
 
-static int denali_write_oob(struct mtd_info *mtd, struct nand_chip *chip,
-			    int page)
+static int denali_write_oob(struct nand_chip *chip, int page)
 {
-	return write_oob_data(mtd, chip->oob_poi, page);
+	return write_oob_data(chip, chip->oob_poi, page);
 }
 
-static int denali_read_oob(struct mtd_info *mtd, struct nand_chip *chip,
-			   int page)
+static int denali_read_oob(struct nand_chip *chip, int page)
 {
-	read_oob_data(mtd, chip->oob_poi, page);
+	read_oob_data(chip, chip->oob_poi, page);
 
 	return 0;
 }
 
-static int denali_read_page(struct mtd_info *mtd, struct nand_chip *chip,
+static int denali_read_page(struct nand_chip *chip,
 			    uint8_t *buf, int oob_required, int page)
 {
+	struct mtd_info *mtd = nand_to_mtd(chip);
 	unsigned int max_bitflips = 0;
-	struct denali_nand_info *denali = mtd_to_denali(mtd);
+	struct denali_nand_info *denali = nand_to_denali(chip);
 
 	dma_addr_t addr = (unsigned long)denali->buf.buf;
 	size_t size = mtd->writesize + mtd->oobsize;
@@ -1138,8 +1137,7 @@ static int denali_read_page(struct mtd_info *mtd, struct nand_chip *chip,
 			if (!is_erased(buf, mtd->writesize))
 				mtd->ecc_stats.failed++;
 		} else {
-			read_oob_data(&denali->nand.mtd, chip->oob_poi,
-				denali->page);
+			read_oob_data(chip, chip->oob_poi, denali->page);
 
 			/* check ECC failures that may have occurred on
 			 * erased pages */
@@ -1154,10 +1152,11 @@ static int denali_read_page(struct mtd_info *mtd, struct nand_chip *chip,
 	return max_bitflips;
 }
 
-static int denali_read_page_raw(struct mtd_info *mtd, struct nand_chip *chip,
+static int denali_read_page_raw(struct nand_chip *chip,
 				uint8_t *buf, int oob_required, int page)
 {
-	struct denali_nand_info *denali = mtd_to_denali(mtd);
+	struct mtd_info *mtd = nand_to_mtd(chip);
+	struct denali_nand_info *denali = nand_to_denali(chip);
 	dma_addr_t addr = (unsigned long)denali->buf.buf;
 	size_t size = mtd->writesize + mtd->oobsize;
 	uint32_t irq_mask = INTR_STATUS__DMA_CMD_COMP;
@@ -1190,9 +1189,9 @@ static int denali_read_page_raw(struct mtd_info *mtd, struct nand_chip *chip,
 	return 0;
 }
 
-static uint8_t denali_read_byte(struct mtd_info *mtd)
+static uint8_t denali_read_byte(struct nand_chip *chip)
 {
-	struct denali_nand_info *denali = mtd_to_denali(mtd);
+	struct denali_nand_info *denali = nand_to_denali(chip);
 	uint8_t result = 0xff;
 
 	if (denali->buf.head < denali->buf.tail)
@@ -1201,23 +1200,23 @@ static uint8_t denali_read_byte(struct mtd_info *mtd)
 	return result;
 }
 
-static void denali_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
+static void denali_read_buf(struct nand_chip *chip, uint8_t *buf, int len)
 {
 	int i;
 	for (i = 0; i < len; i++)
-		buf[i] = denali_read_byte(mtd);
+		buf[i] = denali_read_byte(chip);
 }
 
-static void denali_select_chip(struct mtd_info *mtd, int chip)
+static void denali_select_chip(struct nand_chip *chip, int num)
 {
-	struct denali_nand_info *denali = mtd_to_denali(mtd);
+	struct denali_nand_info *denali = nand_to_denali(chip);
 
-	denali->flash_bank = chip;
+	denali->flash_bank = num;
 }
 
-static int denali_waitfunc(struct mtd_info *mtd, struct nand_chip *chip)
+static int denali_waitfunc(struct nand_chip *chip)
 {
-	struct denali_nand_info *denali = mtd_to_denali(mtd);
+	struct denali_nand_info *denali = nand_to_denali(chip);
 	int status = denali->status;
 
 	denali->status = 0;
@@ -1225,10 +1224,11 @@ static int denali_waitfunc(struct mtd_info *mtd, struct nand_chip *chip)
 	return status;
 }
 
-static void denali_cmdfunc(struct mtd_info *mtd, unsigned int cmd, int col,
+static void denali_cmdfunc(struct nand_chip *chip, unsigned int cmd, int col,
 			   int page)
 {
-	struct denali_nand_info *denali = mtd_to_denali(mtd);
+	struct mtd_info *mtd = nand_to_mtd(chip);
+	struct denali_nand_info *denali = nand_to_denali(chip);
 	uint32_t addr, id;
 	uint32_t pages_per_block;
 	uint32_t block;
@@ -1415,7 +1415,7 @@ int denali_init(struct denali_nand_info *denali)
 	 * this is the first stage in a two step process to register
 	 * with the nand subsystem
 	 */
-	if (nand_scan_ident(mtd, denali->max_banks, NULL)) {
+	if (nand_scan_ident(nand, denali->max_banks, NULL)) {
 		ret = -ENXIO;
 		goto failed_req_irq;
 	}
@@ -1537,12 +1537,12 @@ int denali_init(struct denali_nand_info *denali)
 				MAIN_ACCESS);
 	}
 
-	if (nand_scan_tail(mtd)) {
+	if (nand_scan_tail(nand)) {
 		ret = -ENXIO;
 		goto failed_req_irq;
 	}
 
-	return add_mtd_nand_device(mtd, "nand");
+	return add_mtd_nand_device(nand, "nand");
 
 failed_req_irq:
 	denali_irq_cleanup(denali->irq, denali);

@@ -1,17 +1,7 @@
-/*
- * Copyright (C) 2008 by Sascha Hauer <kernel@pengutronix.de>
- * Copyright (C) 2009 by Holger Schurig <hs4233@mail.mn-solutions.de>
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- */
+/* SPDX-License-Identifier: GPL-2.0-or-later */
+/* SPDX-FileCopyrightText: 2008 Sascha Hauer <kernel@pengutronix.de> */
+/* SPDX-FileCopyrightText: 2009 Holger Schurig <hs4233@mail.mn-solutions.de> */
+
 #ifndef __MACH_IOMUX_MX27_H__
 #define __MACH_IOMUX_MX27_H__
 

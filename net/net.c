@@ -1,24 +1,14 @@
+// SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: 2010 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
+// SPDX-FileCopyrightText: 1994-2000 Neil Russell
+// SPDX-FileCopyrightText: 2000 Roland Borde
+// SPDX-FileCopyrightText: 2000 Paolo Scaffardi
+// SPDX-FileCopyrightText: 2000-2002 Wolfgang Denk <wd@denx.de>
+
 /*
  * net.c - barebox networking support
  *
- * Copyright (c) 2010 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
- *
  * based on U-Boot (LiMon) code
- *
- * Copyright 1994 - 2000 Neil Russell.
- * Copyright 2000 Roland Borde
- * Copyright 2000 Paolo Scaffardi
- * Copyright 2000-2002 Wolfgang Denk, wd@denx.de
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
  */
 
 #define pr_fmt(fmt) "net: " fmt

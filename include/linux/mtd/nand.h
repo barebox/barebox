@@ -466,9 +466,6 @@ struct nand_buffers {
  *			structure which is shared among multiple independent
  *			devices.
  * @priv:		[OPTIONAL] pointer to private chip data
- * @errstat:		[OPTIONAL] hardware specific function to perform
- *			additional error status checks (determine if errors are
- *			correctable).
  * @write_page:		[REPLACEABLE] High-level page write function
  */
 
@@ -491,8 +488,6 @@ struct nand_chip {
 			int page_addr);
 	int(*waitfunc)(struct mtd_info *mtd, struct nand_chip *this);
 	int (*scan_bbt)(struct mtd_info *mtd);
-	int (*errstat)(struct mtd_info *mtd, struct nand_chip *this, int state,
-			int status, int page);
 	int (*write_page)(struct mtd_info *mtd, struct nand_chip *chip,
 			uint32_t offset, int data_len, const uint8_t *buf,
 			int oob_required, int page, int cached, int raw);

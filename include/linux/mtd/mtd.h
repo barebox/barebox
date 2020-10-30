@@ -194,7 +194,6 @@ struct mtd_info {
 	void (*_put_device) (struct mtd_info *mtd);
 
 	struct device_d class_dev;
-	struct device_d *parent;
 	struct cdev cdev;
 
 	struct cdev *cdev_bb;

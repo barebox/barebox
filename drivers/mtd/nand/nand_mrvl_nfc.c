@@ -1118,7 +1118,7 @@ static struct mrvl_nand_host *alloc_nand_resource(struct device_d *dev)
 	host->num_cs = 1;
 	host->cs = 0;
 	mtd = &host->chip.mtd;
-	mtd->parent = dev;
+	mtd->class_dev.parent = dev;
 	mtd->name = "mrvl_nand";
 
 	chip = &host->chip;

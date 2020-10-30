@@ -619,8 +619,6 @@ int add_mtd_device(struct mtd_info *mtd, const char *devname, int device_id)
 		devname = "mtd";
 	dev_set_name(&mtd->class_dev, devname);
 	mtd->class_dev.id = device_id;
-	if (mtd->parent)
-		mtd->class_dev.parent = mtd->parent;
 
 	if (IS_ENABLED(CONFIG_MTD_UBI))
 		mtd->class_dev.detect = mtd_detect;
@@ -673,11 +671,11 @@ int add_mtd_device(struct mtd_info *mtd, const char *devname, int device_id)
 	if (mtd_can_have_bb(mtd))
 		mtd->cdev_bb = mtd_add_bb(mtd, NULL);
 
-	if (mtd->parent && !mtd->master) {
+	if (mtd->class_dev.parent && !mtd->master) {
 		dev_add_param_string(&mtd->class_dev, "partitions", mtd_partition_set, mtd_partition_get, &mtd->partition_string, mtd);
-		of_parse_partitions(&mtd->cdev, mtd->parent->device_node);
-		if (IS_ENABLED(CONFIG_OFDEVICE) && mtd->parent->device_node) {
-			mtd->of_path = xstrdup(mtd->parent->device_node->full_name);
+		of_parse_partitions(&mtd->cdev, mtd->class_dev.parent->device_node);
+		if (IS_ENABLED(CONFIG_OFDEVICE) && mtd->class_dev.parent->device_node) {
+			mtd->of_path = xstrdup(mtd->class_dev.parent->device_node->full_name);
 			ret = of_partitions_register_fixup(&mtd->cdev);
 			if (ret)
 				goto err1;

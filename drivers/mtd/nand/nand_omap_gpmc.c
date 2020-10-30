@@ -1192,7 +1192,7 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	nand->priv = (void *)oinfo;
 
 	minfo = &nand->mtd;
-	minfo->parent = pdev;
+	minfo->class_dev.parent = pdev;
 
 	if (pdata->cs >= GPMC_NUM_CS) {
 		dev_dbg(pdev, "Invalid CS!\n");

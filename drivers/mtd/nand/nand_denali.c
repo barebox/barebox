@@ -1396,7 +1396,7 @@ int denali_init(struct denali_nand_info *denali)
 	if (!denali->buf.buf)
 		return -ENOMEM;
 
-	mtd->parent = denali->dev;
+	mtd->class_dev.parent = denali->dev;
 	denali_hw_init(denali);
 	denali_drv_init(denali);
 

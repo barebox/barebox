@@ -91,7 +91,7 @@ static int mtdram_probe(struct device_d *dev)
 	mtd->_erase = ram_erase;
 	mtd->erasesize = 1;
 
-	mtd->parent = dev;
+	mtd->class_dev.parent = dev;
 
 	ret = add_mtd_device(mtd, mtd->name, device_id);
 	return ret;

@@ -954,7 +954,7 @@ static void cfi_init_mtd(struct flash_info *info)
 	mtd->numeraseregions = info->numeraseregions;
 	mtd->flags = MTD_CAP_NORFLASH;
 	mtd->type = MTD_NORFLASH;
-	mtd->parent = info->dev;
+	mtd->class_dev.parent = info->dev;
 }
 
 static int cfi_probe_one(struct flash_info *info, int num)
@@ -1030,7 +1030,7 @@ static int cfi_probe(struct device_d *dev)
 		mtd = &priv->infos[0].mtd;
 	}
 
-	mtd->parent = dev;
+	mtd->class_dev.parent = dev;
 
 	ret = add_mtd_device(mtd, "nor", DEVICE_ID_DYNAMIC);
 	if (ret)

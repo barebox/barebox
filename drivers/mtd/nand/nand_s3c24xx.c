@@ -26,6 +26,7 @@
 #include <malloc.h>
 #include <init.h>
 #include <linux/mtd/mtd.h>
+#include <linux/mtd/rawnand.h>
 #include <linux/mtd/nand.h>
 #include <mach/s3c-generic.h>
 #include <mach/s3c-iomap.h>
@@ -420,7 +421,7 @@ static int s3c24x0_nand_probe(struct device_d *dev)
 
 	/* structures must be linked */
 	chip = &host->nand;
-	mtd = &chip->mtd;
+	mtd = nand_to_mtd(chip);
 	mtd->dev.parent = dev;
 
 	/* init the default settings */
@@ -462,7 +463,7 @@ static int s3c24x0_nand_probe(struct device_d *dev)
 	{
 		/* small page (512 bytes per page) */
 		chip->ecc.size = 512;
-		chip->ecc.layout = &nand_hw_eccoob;
+		mtd_set_ecclayout(mtd, &nand_hw_eccoob);
 	}
 
 	if (pdata->flash_bbt) {
@@ -481,7 +482,7 @@ static int s3c24x0_nand_probe(struct device_d *dev)
 		goto on_error;
 	}
 
-	return add_mtd_nand_device(chip, "nand");
+	return add_mtd_nand_device(mtd, "nand");
 
 on_error:
 	free(host);

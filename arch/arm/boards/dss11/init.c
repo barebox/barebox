@@ -14,6 +14,7 @@
 #include <asm/io.h>
 #include <mach/hardware.h>
 #include <nand.h>
+#include <linux/mtd/rawnand.h>
 #include <linux/mtd/nand.h>
 #include <mach/board.h>
 #include <mach/at91sam9_smc.h>

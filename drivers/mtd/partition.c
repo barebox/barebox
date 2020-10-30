@@ -167,6 +167,7 @@ struct mtd_info *mtd_add_partition(struct mtd_info *mtd, off_t offset,
 	part->bitflip_threshold = mtd->bitflip_threshold;
 	part->ecclayout = mtd->ecclayout;
 	part->ecc_step_size = mtd->ecc_step_size;
+	part->ooblayout = mtd->ooblayout;
 	part->ecc_strength = mtd->ecc_strength;
 	part->subpage_sft = mtd->subpage_sft;
 	part->cdev.flags = flags;

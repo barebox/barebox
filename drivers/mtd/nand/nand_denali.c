@@ -23,6 +23,7 @@
 #include <malloc.h>
 #include <init.h>
 #include <linux/mtd/mtd.h>
+#include <linux/mtd/rawnand.h>
 #include <linux/mtd/nand.h>
 #include <io.h>
 #include <clock.h>
@@ -888,6 +889,8 @@ static bool is_erased(uint8_t *buf, int len)
 static bool handle_ecc(struct denali_nand_info *denali, uint8_t *buf,
 		       uint32_t irq_status, unsigned int *max_bitflips)
 {
+	struct nand_chip *chip = &denali->nand;
+	struct mtd_info *mtd = nand_to_mtd(chip);
 	bool check_erased_page = false;
 	unsigned int bitflips = 0;
 
@@ -933,7 +936,7 @@ static bool handle_ecc(struct denali_nand_info *denali, uint8_t *buf,
 							err_device;
 					/* correct the ECC error */
 					buf[offset] ^= err_correction_value;
-					denali->nand.mtd.ecc_stats.corrected++;
+					mtd->ecc_stats.corrected++;
 					bitflips++;
 				}
 			} else {
@@ -995,7 +998,8 @@ static void denali_setup_dma(struct denali_nand_info *denali, int op)
  * writes a page. user specifies type, and this function handles the
  * configuration details.
  */
-static int write_page(struct nand_chip *chip, const uint8_t *buf, bool raw_xfer)
+static int write_page(struct nand_chip *chip, const uint8_t *buf, bool raw_xfer,
+		      int page)
 {
 	struct mtd_info *mtd = nand_to_mtd(chip);
 	struct denali_nand_info *denali = nand_to_denali(chip);
@@ -1011,6 +1015,8 @@ static int write_page(struct nand_chip *chip, const uint8_t *buf, bool raw_xfer)
 	 * raw_xfer - transfer spare
 	 */
 	setup_ecc_for_xfer(denali, !raw_xfer, raw_xfer);
+
+	nand_prog_page_begin_op(chip, page, 0, NULL, 0);
 
 	/* copy buffer into DMA buffer */
 	memcpy(denali->buf.buf, buf, mtd->writesize);
@@ -1041,7 +1047,7 @@ static int write_page(struct nand_chip *chip, const uint8_t *buf, bool raw_xfer)
 	denali_enable_dma(denali, false);
 	dma_sync_single_for_cpu(addr, size, DMA_TO_DEVICE);
 
-	return 0;
+	return nand_prog_page_end_op(chip);
 }
 
 /* NAND core entry points */
@@ -1052,13 +1058,13 @@ static int write_page(struct nand_chip *chip, const uint8_t *buf, bool raw_xfer)
  * by write_page above.
  */
 static int denali_write_page(struct nand_chip *chip,
-				const uint8_t *buf, int oob_required)
+				const uint8_t *buf, int oob_required, int page)
 {
 	/*
 	 * for regular page writes, we let HW handle all the ECC
 	 * data written to the device.
 	 */
-	return write_page(chip, buf, false);
+	return write_page(chip, buf, false, page);
 }
 
 /*
@@ -1067,13 +1073,13 @@ static int denali_write_page(struct nand_chip *chip,
  * write_page() function above.
  */
 static int denali_write_page_raw(struct nand_chip *chip,
-					const uint8_t *buf, int oob_required)
+					const uint8_t *buf, int oob_required, int page)
 {
 	/*
 	 * for raw page writes, we want to disable ECC and simply write
 	 * whatever data is in the buffer.
 	 */
-	return write_page(chip, buf, true);
+	return write_page(chip, buf, true, page);
 }
 
 static int denali_write_oob(struct nand_chip *chip, int page)
@@ -1104,14 +1110,9 @@ static int denali_read_page(struct nand_chip *chip,
 		(INTR_STATUS__ECC_TRANSACTION_DONE | INTR_STATUS__ECC_ERR);
 	bool check_erased_page = false;
 
-	if (page != denali->page) {
-		dev_err(denali->dev,
-			"IN %s: page %d is not equal to denali->page %d",
-			__func__, page, denali->page);
-		BUG();
-	}
-
 	setup_ecc_for_xfer(denali, true, false);
+
+	nand_read_page_op(chip, page, 0, NULL, 0);
 
 	denali_enable_dma(denali, true);
 	dma_sync_single_for_device(addr, size, DMA_FROM_DEVICE);
@@ -1160,6 +1161,8 @@ static int denali_read_page_raw(struct nand_chip *chip,
 	dma_addr_t addr = (unsigned long)denali->buf.buf;
 	size_t size = mtd->writesize + mtd->oobsize;
 	uint32_t irq_mask = INTR_STATUS__DMA_CMD_COMP;
+
+	nand_read_page_op(chip, page, 0, NULL, 0);
 
 	if (page != denali->page) {
 		dev_err(denali->dev,
@@ -1227,11 +1230,8 @@ static int denali_waitfunc(struct nand_chip *chip)
 static void denali_cmdfunc(struct nand_chip *chip, unsigned int cmd, int col,
 			   int page)
 {
-	struct mtd_info *mtd = nand_to_mtd(chip);
 	struct denali_nand_info *denali = nand_to_denali(chip);
 	uint32_t addr, id;
-	uint32_t pages_per_block;
-	uint32_t block;
 	int i;
 
 	switch (cmd) {
@@ -1295,18 +1295,6 @@ static void denali_cmdfunc(struct nand_chip *chip, unsigned int cmd, int col,
 		break;
 	case NAND_CMD_READOOB:
 		/* TODO: Read OOB data */
-		break;
-	case NAND_CMD_UNLOCK1:
-		pages_per_block = mtd->erasesize / mtd->writesize;
-		block = page / pages_per_block;
-		addr = (uint32_t)MODE_10 | (block * pages_per_block);
-		index_addr(denali, addr, 0x10);
-		break;
-	case NAND_CMD_UNLOCK2:
-		pages_per_block = mtd->erasesize / mtd->writesize;
-		block = (page+pages_per_block-1) / pages_per_block;
-		addr = (uint32_t)MODE_10 | (block * pages_per_block);
-		index_addr(denali, addr, 0x11);
 		break;
 	case NAND_CMD_ERASE1:
 	case NAND_CMD_ERASE2:
@@ -1376,9 +1364,10 @@ static void denali_drv_init(struct denali_nand_info *denali)
 int denali_init(struct denali_nand_info *denali)
 {
 	struct nand_chip *nand = &denali->nand;
-	struct mtd_info *mtd = &nand->mtd;
+	struct mtd_info *mtd = nand_to_mtd(nand);
 	int ret = 0;
 	uint32_t val;
+	struct nand_ecclayout *ecclayout;
 
 	if (denali->platform == INTEL_CE4100) {
 		/*
@@ -1477,7 +1466,7 @@ int denali_init(struct denali_nand_info *denali)
 			ECC_SECTOR_SIZE)))) {
 		/* if MLC OOB size is large enough, use 15bit ECC*/
 		nand->ecc.strength = 15;
-		nand->ecc.layout = &nand_15bit_oob;
+		ecclayout = &nand_15bit_oob;
 		nand->ecc.bytes = ECC_15BITS;
 		iowrite32(15, denali->flash_reg + ECC_CORRECTION);
 	} else if (mtd->oobsize < (denali->bbtskipbytes +
@@ -1487,16 +1476,18 @@ int denali_init(struct denali_nand_info *denali)
 		goto failed_req_irq;
 	} else {
 		nand->ecc.strength = 8;
-		nand->ecc.layout = &nand_8bit_oob;
+		ecclayout = &nand_8bit_oob;
 		nand->ecc.bytes = ECC_8BITS;
 		iowrite32(8, denali->flash_reg + ECC_CORRECTION);
 	}
 
-	nand->ecc.layout->oobfree[0].offset =
-		denali->bbtskipbytes + nand->ecc.layout->eccbytes;
-	nand->ecc.layout->oobfree[0].length =
-		mtd->oobsize - nand->ecc.layout->eccbytes -
+	ecclayout->oobfree[0].offset =
+		denali->bbtskipbytes + ecclayout->eccbytes;
+	ecclayout->oobfree[0].length =
+		mtd->oobsize - ecclayout->eccbytes -
 		denali->bbtskipbytes;
+
+	mtd_set_ecclayout(mtd, ecclayout);
 
 	/*
 	 * Let driver know the total blocks number and how many blocks
@@ -1504,7 +1495,7 @@ int denali_init(struct denali_nand_info *denali)
 	 * know how many blocks is taken by FW.
 	 */
 	denali->totalblks = mtd->size >> nand->phys_erase_shift;
-	denali->blksperchip = denali->totalblks / nand->numchips;
+	denali->blksperchip = denali->totalblks;
 
 	/* override the default read operations */
 	nand->ecc.size = ECC_SECTOR_SIZE;
@@ -1534,7 +1525,7 @@ int denali_init(struct denali_nand_info *denali)
 		goto failed_req_irq;
 	}
 
-	return add_mtd_nand_device(nand, "nand");
+	return add_mtd_nand_device(mtd, "nand");
 
 failed_req_irq:
 	denali_irq_cleanup(denali->irq, denali);

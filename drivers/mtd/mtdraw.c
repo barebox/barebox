@@ -247,7 +247,6 @@ static int mtdraw_erase(struct cdev *cdev, loff_t count, loff_t offset)
 	count = mtdraw_raw_to_mtd_offset(mtdraw, count);
 
 	memset(&erase, 0, sizeof(erase));
-	erase.mtd = mtd;
 	erase.addr = offset;
 	erase.len = mtd->erasesize;
 

@@ -15,6 +15,7 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
+#include <linux/mtd/rawnand.h>
 #include <linux/mtd/nand.h>
 #include <mach/imx-nand.h>
 #include <mach/generic.h>

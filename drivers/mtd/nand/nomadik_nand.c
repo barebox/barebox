@@ -30,6 +30,7 @@
 #include <linux/types.h>
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
+#include <linux/mtd/rawnand.h>
 
 #include <io.h>
 #include <mach/nand.h>
@@ -196,7 +197,7 @@ static int nomadik_nand_probe(struct device_d *dev)
 
 	/* Link all private pointers */
 	nand = &host->nand;
-	mtd = &nand->mtd;
+	mtd = nand_to_mtd(nand);
 	nand->priv = host;
 	mtd->dev.parent = dev;
 
@@ -207,7 +208,7 @@ static int nomadik_nand_probe(struct device_d *dev)
 	nand->legacy.cmd_ctrl = nomadik_cmd_ctrl;
 
 	nand->ecc.mode = NAND_ECC_HW;
-	nand->ecc.layout = &nomadik_ecc_layout;
+	mtd_set_ecclayout(mtd, &nomadik_ecc_layout);
 	nand->ecc.calculate = nomadik_ecc512_calc;
 	nand->ecc.correct = nomadik_ecc512_correct;
 	nand->ecc.hwctl = nomadik_ecc_control;
@@ -226,7 +227,7 @@ static int nomadik_nand_probe(struct device_d *dev)
 	}
 
 	pr_info("Registering %s as whole device\n", mtd->name);
-	add_mtd_nand_device(nand, "nand");
+	add_mtd_nand_device(mtd, "nand");
 
 	return 0;
 

@@ -20,6 +20,7 @@
 
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
+#include <linux/mtd/rawnand.h>
 #include <linux/mtd/nand_mxs.h>
 #include <linux/types.h>
 #include <linux/clk.h>
@@ -235,8 +236,6 @@ struct mxs_nand_info {
 	int		bb_mark_bit_offset;
 };
 
-static struct nand_ecclayout fake_ecc_layout;
-
 static inline int mxs_nand_is_imx6(struct mxs_nand_info *info)
 {
 	return info->type == GPMI_IMX6;
@@ -337,8 +336,6 @@ static int mxs_nand_calc_geo(struct nand_chip *chip)
 	int ecc_chunk_count = mxs_nand_ecc_chunk_cnt(mtd->writesize);
 	int gf_len = 13;  /* length of Galois Field for non-DDR nand */
 	int max_ecc_strength;
-
-	nand_of_parse_node(mtd, mtd->dev.parent->device_node);
 
 	max_ecc_strength = ((mtd->oobsize - MXS_NAND_METADATA_SIZE) * 8)
 			   / (gf_len * ecc_chunk_count);
@@ -750,6 +747,8 @@ static int __mxs_nand_ecc_read_page(struct nand_chip *chip,
 	unsigned int  max_bitflips = 0;
 	int i, ret, readtotal, nchunks;
 
+	nand_read_page_op(chip, page, 0, NULL, 0);
+
 	readlen = roundup(readlen, MXS_NAND_CHUNK_DATA_CHUNK_SIZE);
 	nchunks = mxs_nand_ecc_chunk_cnt(readlen);
 	readtotal =  MXS_NAND_METADATA_SIZE;
@@ -959,13 +958,15 @@ static int gpmi_ecc_read_subpage(struct nand_chip *chip,
  * Write a page to NAND.
  */
 static int mxs_nand_ecc_write_page(struct nand_chip *chip, const uint8_t *buf,
-				int oob_required)
+				int oob_required, int page)
 {
 	struct mtd_info *mtd = nand_to_mtd(chip);
 	struct mxs_nand_info *nand_info = chip->priv;
 	struct mxs_dma_desc *d;
 	uint32_t channel = nand_info->dma_channel_base + nand_info->cur_chip;
 	int ret = 0;
+
+	nand_prog_page_begin_op(chip, page, 0, NULL, 0);
 
 	memcpy(nand_info->data_buf, buf, mtd->writesize);
 	memcpy(nand_info->oob_buf, chip->oob_poi, mtd->oobsize);
@@ -1014,7 +1015,10 @@ static int mxs_nand_ecc_write_page(struct nand_chip *chip, const uint8_t *buf,
 rtn:
 	mxs_nand_return_dma_descs(nand_info);
 
-	return ret;
+	if (ret)
+		return ret;
+
+	return nand_prog_page_end_op(chip);
 }
 
 /*
@@ -1216,7 +1220,7 @@ static int mxs_nand_ecc_write_oob(struct nand_chip *chip, int page)
  * Thus, this function is only called when we want *all* blocks to look good,
  * so it *always* return success.
  */
-static int mxs_nand_block_bad(struct nand_chip *chip , loff_t ofs, int getchip)
+static int mxs_nand_block_bad(struct nand_chip *chip , loff_t ofs)
 {
 	return 0;
 }
@@ -1273,7 +1277,7 @@ static int mxs_nand_scan_bbt(struct nand_chip *chip)
 	}
 
 	/* We use the reference implementation for bad block management. */
-	return nand_default_bbt(chip);
+	return nand_create_bbt(chip);
 }
 
 /*
@@ -1474,11 +1478,11 @@ static int mxs_nand_compute_hardware_timing(struct mxs_nand_info *info,
 	 * If there are multiple chips, we need to relax the timings to allow
 	 * for signal distortion due to higher capacitance.
 	 */
-	if (chip->numchips > 2) {
+	if (nanddev_ntargets(&chip->base) > 2) {
 		target.data_setup_in_ns    += 10;
 		target.data_hold_in_ns     += 10;
 		target.address_setup_in_ns += 10;
-	} else if (chip->numchips > 1) {
+	} else if (nanddev_ntargets(&chip->base) > 1) {
 		target.data_setup_in_ns    += 5;
 		target.data_hold_in_ns     += 5;
 		target.address_setup_in_ns += 5;
@@ -2031,7 +2035,7 @@ static int mxs_nand_enable_edo_mode(struct mxs_nand_info *info)
 	if (!mxs_nand_is_imx6(info))
 		return -ENODEV;
 
-	if (!chip->onfi_version)
+	if (!chip->parameters.onfi)
 		return -ENOENT;
 
 	mode = onfi_get_async_timing_mode(chip);
@@ -2046,8 +2050,7 @@ static int mxs_nand_enable_edo_mode(struct mxs_nand_info *info)
 
 	chip->legacy.select_chip(chip, 0);
 
-	if (le16_to_cpu(chip->onfi_params.opt_cmd)
-	      & ONFI_OPT_CMD_SET_GET_FEATURES) {
+	if (nand_supports_set_features(chip, ONFI_FEATURE_ADDR_TIMING_MODE)) {
 
 		/* [1] send SET FEATURE commond to NAND */
 		feature[0] = mode;
@@ -2200,7 +2203,6 @@ static int mxs_nand_probe(struct device_d *dev)
 	chip->legacy.dev_ready		= mxs_nand_device_ready;
 	chip->legacy.select_chip	= mxs_nand_select_chip;
 	chip->legacy.block_bad		= mxs_nand_block_bad;
-	chip->scan_bbt			= mxs_nand_scan_bbt;
 
 	chip->legacy.read_byte		= mxs_nand_read_byte;
 
@@ -2212,7 +2214,6 @@ static int mxs_nand_probe(struct device_d *dev)
 	chip->ecc.read_oob	= mxs_nand_ecc_read_oob;
 	chip->ecc.write_oob	= mxs_nand_ecc_write_oob;
 
-	chip->ecc.layout	= &fake_ecc_layout;
 	chip->ecc.mode		= NAND_ECC_HW;
 
 	/* first scan to find the device and get the page size */
@@ -2229,7 +2230,7 @@ static int mxs_nand_probe(struct device_d *dev)
 		chip->options |= NAND_SUBPAGE_READ;
 	}
 
-	chip->options |= NAND_NO_SUBPAGE_WRITE;
+	chip->options |= NAND_NO_SUBPAGE_WRITE | NAND_SKIP_BBTSCAN;
 
 	mxs_nand_setup_timing(nand_info);
 
@@ -2238,7 +2239,9 @@ static int mxs_nand_probe(struct device_d *dev)
 	if (err)
 		goto err2;
 
-	err = add_mtd_nand_device(chip, "nand");
+	mxs_nand_scan_bbt(chip);
+
+	err = add_mtd_nand_device(mtd, "nand");
 	if (err)
 		goto err2;
 

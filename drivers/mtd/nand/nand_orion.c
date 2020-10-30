@@ -18,6 +18,7 @@
 #include <errno.h>
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
+#include <linux/mtd/rawnand.h>
 #include <linux/clk.h>
 
 struct orion_nand {
@@ -135,7 +136,7 @@ static int orion_nand_probe(struct device_d *dev)
 		goto no_dev;
 	}
 
-	add_mtd_nand_device(chip, "orion_nand");
+	add_mtd_nand_device(mtd, "orion_nand");
 	return 0;
 no_dev:
 	if (!IS_ERR(clk))

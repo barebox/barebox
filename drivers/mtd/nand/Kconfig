@@ -1,6 +1,5 @@
 menuconfig NAND
 	bool "NAND support"
-	select MTD_NAND_IDS
 	help
 	  This enables support for accessing all type of NAND flash
 	  devices. For further information see
@@ -8,54 +7,10 @@ menuconfig NAND
 
 if NAND
 
-config NAND_ECC_SOFT
-	bool
-	default y
-	prompt "Support software ecc"
-
-config NAND_ECC_BCH
+config MTD_NAND_ECC_SW_BCH
 	select BCH
 	bool
 	prompt "Support software BCH ecc"
-
-config NAND_ECC_HW
-	bool
-	default y
-	prompt "Support hardware ecc"
-
-config NAND_ECC_HW_OOB_FIRST
-	bool
-	prompt "Support hardware ecc (oob first)"
-
-config NAND_ECC_HW_SYNDROME
-	bool
-	default y
-	prompt "Support syndrome hardware ecc controllers"
-
-config NAND_ECC_HW_NONE
-	bool
-	default y
-	prompt "Support skipping ecc support"
-
-config NAND_INFO
-	bool
-	default y
-	prompt "Nand vendor/size information"
-	help
-	  Show informational strings about the vendor and nand flash type
-	  during startup
-
-config NAND_READ_OOB
-	bool
-
-config NAND_BBT
-	bool
-	select NAND_READ_OOB
-	default y
-	prompt "support bad block tables"
-	help
-	  Say y here to include support for bad block tables. This speeds
-	  up the process of checking for bad blocks
 
 config NAND_ALLOW_ERASE_BAD
 	bool
@@ -119,7 +74,6 @@ config NAND_ATMEL_PMECC
 	bool
 	prompt "PMECC support"
 	depends on NAND_ATMEL || COMPILE_TEST
-	select NAND_ECC_HW
 	help
 	  Support for PMECC present on the SoC sam9x5 and sam9n12
 
@@ -130,15 +84,12 @@ config NAND_S3C24XX
 	help
 	  Add support for processor's NAND device controller.
 
-config MTD_NAND_ECC_SMC
+config MTD_NAND_ECC_SW_HAMMING_SMC
 	bool "NAND ECC Smart Media byte order"
 	default n
 	help
 	  Software ECC according to the Smart Media Specification.
 	  The original Linux implementation had byte 0 and 1 swapped.
-
-config MTD_NAND_IDS
-	tristate
 
 config MTD_NAND_NOMADIK
 	tristate "ST Nomadik 8815 NAND support"

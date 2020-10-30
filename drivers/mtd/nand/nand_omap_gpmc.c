@@ -66,6 +66,7 @@
 #include <clock.h>
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
+#include <linux/mtd/rawnand.h>
 #include <linux/mtd/nand_ecc.h>
 #include <io.h>
 #include <mach/gpmc.h>
@@ -682,15 +683,15 @@ static int omap_gpmc_read_page_bch_rom_mode(struct nand_chip *chip, uint8_t *buf
 	struct gpmc_nand_info *oinfo = chip->priv;
 	int dev_width = chip->options & NAND_BUSWIDTH_16 ? GPMC_ECC_CONFIG_ECC16B : 0;
 	uint8_t *p = buf;
-	uint8_t *ecc_calc = chip->buffers->ecccalc;
-	uint8_t *ecc_code = chip->buffers->ecccode;
-	uint32_t *eccpos = chip->ecc.layout->eccpos;
+	uint8_t *ecc_calc = chip->ecc.calc_buf;
+	uint8_t *ecc_code = chip->ecc.code_buf;
 	int eccbytes = chip->ecc.bytes;
 	int eccsteps = chip->ecc.steps;
 	int eccsize = chip->ecc.size;
 	unsigned int max_bitflips = 0;
-	int stat, i, j;
+	int stat, i, j, ret;
 
+	nand_read_page_op(chip, page, 0, NULL, 0);
 
 	writel(GPMC_ECC_SIZE_CONFIG_ECCSIZE1(0) |
 			GPMC_ECC_SIZE_CONFIG_ECCSIZE0(64),
@@ -725,8 +726,10 @@ static int omap_gpmc_read_page_bch_rom_mode(struct nand_chip *chip, uint8_t *buf
 
 	p += omap_gpmc_read_buf_manual(chip, p, 6, 5);
 
-	for (i = 0; i < chip->ecc.total; i++)
-		ecc_code[i] = chip->oob_poi[eccpos[i]];
+	ret = mtd_ooblayout_get_eccbytes(mtd, ecc_code, chip->oob_poi, 0,
+				   chip->ecc.total);
+	if (ret)
+		return ret;
 
 	p = buf;
 
@@ -950,19 +953,23 @@ static int gpmc_read_page_hwecc_elm(struct nand_chip *chip, uint8_t *buf,
 				    int oob_required, int page)
 {
 	struct mtd_info *mtd = nand_to_mtd(chip);
-	int i;
+	int i, ret;
 	int eccbytes = chip->ecc.bytes;
 	int eccsteps = chip->ecc.steps;
-	uint8_t *ecc_calc = chip->buffers->ecccalc;
-	uint8_t *ecc_code = chip->buffers->ecccode;
-	uint32_t *eccpos = chip->ecc.layout->eccpos;
+	uint8_t *ecc_calc = chip->ecc.calc_buf;
+	uint8_t *ecc_code = chip->ecc.code_buf;
 
 	chip->ecc.hwctl(chip, NAND_ECC_READ);
+
+	nand_read_page_op(chip, page, 0, NULL, 0);
+
 	chip->legacy.read_buf(chip, buf, mtd->writesize);
 	chip->legacy.read_buf(chip, chip->oob_poi, mtd->oobsize);
 
-	for (i = 0; i < chip->ecc.total; i++)
-		ecc_code[i] = chip->oob_poi[eccpos[i]];
+	ret = mtd_ooblayout_get_eccbytes(mtd, ecc_code, chip->oob_poi, 0,
+                                  chip->ecc.total);
+	if (ret)
+		return ret;
 
 	eccsteps = chip->ecc.steps;
 
@@ -976,21 +983,25 @@ static int gpmc_read_page_hwecc(struct nand_chip *chip, uint8_t *buf,
 				int oob_required, int page)
 {
 	struct mtd_info *mtd = nand_to_mtd(chip);
-	int i, eccsize = chip->ecc.size;
+	int i, ret, eccsize = chip->ecc.size;
 	int eccbytes = chip->ecc.bytes;
 	int eccsteps = chip->ecc.steps;
 	uint8_t *p = buf;
-	uint8_t *ecc_calc = chip->buffers->ecccalc;
-	uint8_t *ecc_code = chip->buffers->ecccode;
-	uint32_t *eccpos = chip->ecc.layout->eccpos;
+	uint8_t *ecc_calc = chip->ecc.calc_buf;
+	uint8_t *ecc_code = chip->ecc.code_buf;
 	unsigned int max_bitflips = 0;
 
 	chip->ecc.hwctl(chip, NAND_ECC_READ);
+
+	nand_read_page_op(chip, page, 0, NULL, 0);
+
 	chip->legacy.read_buf(chip, p, mtd->writesize);
 	chip->legacy.read_buf(chip, chip->oob_poi, mtd->oobsize);
 
-	for (i = 0; i < chip->ecc.total; i++)
-		ecc_code[i] = chip->oob_poi[eccpos[i]];
+	ret = mtd_ooblayout_get_eccbytes(mtd, ecc_code, chip->oob_poi, 0,
+					chip->ecc.total);
+	if (ret)
+		return ret;
 
 	eccsteps = chip->ecc.steps;
 	p = buf;
@@ -1014,7 +1025,7 @@ static int omap_gpmc_eccmode(struct gpmc_nand_info *oinfo,
 		enum gpmc_ecc_mode mode)
 {
 	struct nand_chip *nand = &oinfo->nand;
-	struct mtd_info *minfo = &nand->mtd;
+	struct mtd_info *minfo = nand_to_mtd(nand);
 	int offset, err;
 	int i, j;
 
@@ -1029,7 +1040,7 @@ static int omap_gpmc_eccmode(struct gpmc_nand_info *oinfo,
 		offset = 1;
 
 	if (mode != OMAP_ECC_SOFT) {
-		nand->ecc.layout = &omap_oobinfo;
+		mtd_set_ecclayout(minfo, &omap_oobinfo);
 		nand->ecc.calculate = omap_calculate_ecc;
 		nand->ecc.hwctl = omap_enable_hwecc;
 		nand->ecc.correct = omap_correct_data;
@@ -1117,7 +1128,7 @@ static int omap_gpmc_eccmode(struct gpmc_nand_info *oinfo,
 
 		break;
 	case OMAP_ECC_SOFT:
-		nand->ecc.layout = NULL;
+		minfo->ecclayout = NULL;
 		nand->ecc.mode = NAND_ECC_SOFT;
 		oinfo->nand.ecc.strength = 1;
 		break;
@@ -1191,7 +1202,7 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	nand = &oinfo->nand;
 	nand->priv = (void *)oinfo;
 
-	minfo = &nand->mtd;
+	minfo = nand_to_mtd(nand);
 	minfo->dev.parent = pdev;
 
 	if (pdata->cs >= GPMC_NUM_CS) {
@@ -1263,9 +1274,6 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	/* Dont do a bbt scan at the start */
 	nand->options |= NAND_SKIP_BBTSCAN;
 
-	nand->options |= NAND_OWN_BUFFERS;
-	nand->buffers = xzalloc(sizeof(*nand->buffers));
-
 	/* All information is ready.. now lets call setup, if present */
 	if (pdata->nand_setup) {
 		err = pdata->nand_setup(pdata);
@@ -1307,7 +1315,7 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	omap_gpmc_eccmode(oinfo, oinfo->ecc_mode);
 
 	/* We are all set to register with the system now! */
-	err = add_mtd_nand_device(nand, "nand");
+	err = add_mtd_nand_device(minfo, "nand");
 	if (err) {
 		dev_dbg(pdev, "device registration failed\n");
 		goto out_release_mem;

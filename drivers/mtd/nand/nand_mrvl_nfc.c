@@ -20,6 +20,7 @@
 #include <init.h>
 #include <io.h>
 #include <linux/mtd/mtd.h>
+#include <linux/mtd/rawnand.h>
 #include <linux/mtd/nand.h>
 #include <linux/types.h>
 #include <linux/clk.h>
@@ -398,7 +399,7 @@ static int mrvl_nand_ready(struct nand_chip *chip)
  * Thus, this function is only called when we want *all* blocks to look good,
  * so it *always* return success.
  */
-static int mrvl_nand_block_bad(struct nand_chip *chip, loff_t ofs, int getchip)
+static int mrvl_nand_block_bad(struct nand_chip *chip, loff_t ofs)
 {
 	return 0;
 }
@@ -799,10 +800,12 @@ static void mrvl_nand_cmdfunc(struct nand_chip *chip, unsigned command,
  * Returns 0
  */
 static int mrvl_nand_write_page_hwecc(struct nand_chip *chip, const uint8_t *buf,
-				      int oob_required)
+				      int oob_required, int page)
 {
 	struct mtd_info *mtd = nand_to_mtd(chip);
 	struct mrvl_nand_host *host = nand_to_host(chip);
+
+	nand_prog_page_begin_op(chip, page, 0, NULL, 0);
 
 	memcpy(host->data_buff, buf, mtd->writesize);
 	if (oob_required)
@@ -812,7 +815,8 @@ static int mrvl_nand_write_page_hwecc(struct nand_chip *chip, const uint8_t *buf
 		memset(host->data_buff + mtd->writesize, 0xff, mtd->oobsize);
 	dev_dbg(host->dev, "%s(buf=%p, oob_required=%d) => 0\n",
 		__func__, buf, oob_required);
-	return 0;
+
+	return nand_prog_page_end_op(chip);
 }
 
 static int mrvl_nand_read_page_hwecc(struct nand_chip *chip, uint8_t *buf,
@@ -822,6 +826,8 @@ static int mrvl_nand_read_page_hwecc(struct nand_chip *chip, uint8_t *buf,
 	struct mrvl_nand_host *host = nand_to_host(chip);
 	u32 ndsr;
 	int ret = 0;
+
+	nand_read_page_op(chip, page, 0, NULL, 0);
 
 	chip->legacy.read_buf(chip, buf, mtd->writesize);
 	chip->legacy.read_buf(chip, chip->oob_poi, mtd->oobsize);
@@ -920,6 +926,9 @@ static void mrvl_nand_config_flash(struct mrvl_nand_host *host)
 static int pxa_ecc_strength1(struct mrvl_nand_host *host,
 		struct nand_ecc_ctrl *ecc, int ecc_stepsize, int page_size)
 {
+	struct nand_chip *chip = &host->chip;
+	struct mtd_info *mtd = nand_to_mtd(chip);
+
 	if (ecc_stepsize == 512 && page_size == 2048) {
 		host->chunk_size = 2048;
 		host->spare_size = 40;
@@ -928,7 +937,7 @@ static int pxa_ecc_strength1(struct mrvl_nand_host *host,
 		ecc->mode = NAND_ECC_HW;
 		ecc->size = 512;
 		ecc->strength = 1;
-		ecc->layout = &ecc_layout_2KB_hwecc;
+		mtd_set_ecclayout(mtd, &ecc_layout_2KB_hwecc);
 		return 0;
 	}
 
@@ -939,7 +948,7 @@ static int pxa_ecc_strength1(struct mrvl_nand_host *host,
 		host->ecc_bch = 0;
 		ecc->mode = NAND_ECC_HW;
 		ecc->size = 512;
-		ecc->layout = &ecc_layout_512B_hwecc;
+		mtd_set_ecclayout(mtd, &ecc_layout_512B_hwecc);
 		ecc->strength = 1;
 		return 0;
 	}
@@ -950,6 +959,9 @@ static int pxa_ecc_strength1(struct mrvl_nand_host *host,
 static int pxa_ecc_strength4(struct mrvl_nand_host *host,
 		struct nand_ecc_ctrl *ecc, int ecc_stepsize, int page_size)
 {
+	struct nand_chip *chip = &host->chip;
+	struct mtd_info *mtd = nand_to_mtd(chip);
+
 	if (!(host->hwflags & HWFLAGS_ECC_BCH))
 		return -ENODEV;
 
@@ -964,7 +976,7 @@ static int pxa_ecc_strength4(struct mrvl_nand_host *host,
 		host->ecc_bch = 1;
 		ecc->mode = NAND_ECC_HW;
 		ecc->size = 2048;
-		ecc->layout = &ecc_layout_2KB_bch4bit;
+		mtd_set_ecclayout(mtd, &ecc_layout_2KB_bch4bit);
 		ecc->strength = 16;
 		return 0;
 	}
@@ -976,7 +988,7 @@ static int pxa_ecc_strength4(struct mrvl_nand_host *host,
 		host->ecc_bch = 1;
 		ecc->mode = NAND_ECC_HW;
 		ecc->size = 2048;
-		ecc->layout = &ecc_layout_4KB_bch4bit;
+		mtd_set_ecclayout(mtd, &ecc_layout_4KB_bch4bit);
 		ecc->strength = 16;
 		return 0;
 	}
@@ -987,6 +999,9 @@ static int pxa_ecc_strength4(struct mrvl_nand_host *host,
 static int pxa_ecc_strength8(struct mrvl_nand_host *host,
 		struct nand_ecc_ctrl *ecc, int ecc_stepsize, int page_size)
 {
+	struct nand_chip *chip = &host->chip;
+	struct mtd_info *mtd = nand_to_mtd(chip);
+
 	if (!(host->hwflags & HWFLAGS_ECC_BCH))
 		return -ENODEV;
 
@@ -1001,7 +1016,7 @@ static int pxa_ecc_strength8(struct mrvl_nand_host *host,
 		host->ecc_bch = 1;
 		ecc->mode = NAND_ECC_HW;
 		ecc->size = 1024;
-		ecc->layout = &ecc_layout_4KB_bch8bit;
+		mtd_set_ecclayout(mtd, &ecc_layout_4KB_bch8bit);
 		ecc->strength = 16;
 		return 0;
 	}
@@ -1234,7 +1249,7 @@ static int mrvl_nand_probe(struct device_d *dev)
 		return -ENODEV;
 	}
 
-	ret = add_mtd_nand_device(&host->chip, "nand");
+	ret = add_mtd_nand_device(mtd, "nand");
 	return ret;
 }
 

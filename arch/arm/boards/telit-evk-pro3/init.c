@@ -8,6 +8,7 @@
 #include <init.h>
 #include <linux/clk.h>
 #include <linux/mtd/nand.h>
+#include <linux/mtd/rawnand.h>
 #include <mach/at91_rstc.h>
 #include <mach/at91sam9_smc.h>
 #include <mach/board.h>

@@ -24,6 +24,7 @@
 #include <init.h>
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
+#include <linux/mtd/rawnand.h>
 #include <linux/clk.h>
 #include <mach/generic.h>
 #include <mach/imx-nand.h>
@@ -885,20 +886,18 @@ static void preset_v3(struct nand_chip *chip)
 }
 
 static int imx_nand_write_page(struct nand_chip *chip,
-		uint32_t offset, int data_len, const uint8_t *buf,
-		int oob_required, int page, int cached, int raw)
+		const uint8_t *buf, bool ecc, int page)
 {
 	struct mtd_info *mtd = nand_to_mtd(chip);
 	struct imx_nand_host *host = chip->priv;
 	int status;
 
-	host->enable_hwecc(chip, !raw);
+	host->enable_hwecc(chip, ecc);
 
 	chip->legacy.cmdfunc(chip, NAND_CMD_SEQIN, 0x00, page);
 
 	memcpy32(host->main_area0, buf, mtd->writesize);
-	if (oob_required)
-		copy_spare(chip, 0, chip->oob_poi);
+	copy_spare(chip, 0, chip->oob_poi);
 
 	host->send_page(host, NFC_INPUT);
 	chip->legacy.cmdfunc(chip, NAND_CMD_PAGEPROG, -1, -1);
@@ -910,11 +909,25 @@ static int imx_nand_write_page(struct nand_chip *chip,
 	return 0;
 }
 
+static int imx_nand_write_page_ecc(struct nand_chip *chip, const uint8_t *buf,
+				   int oob_required, int page)
+{
+	return imx_nand_write_page(chip, buf, true, page);
+}
+
+static int imx_nand_write_page_raw(struct nand_chip *chip, const uint8_t *buf,
+				   int oob_required, int page)
+{
+	return imx_nand_write_page(chip, buf, false, page);
+}
+
 static void imx_nand_do_read_page(struct nand_chip *chip, uint8_t *buf,
-				  int oob_required)
+				  int oob_required, int page)
 {
 	struct mtd_info *mtd = nand_to_mtd(chip);
 	struct imx_nand_host *host = chip->priv;
+
+	nand_read_page_op(chip, page, 0, NULL, 0);
 
 	host->send_page(host, NFC_OUTPUT);
 
@@ -931,7 +944,7 @@ static int imx_nand_read_page(struct nand_chip *chip, uint8_t *buf,
 
 	host->enable_hwecc(chip, true);
 
-	imx_nand_do_read_page(chip, buf, oob_required);
+	imx_nand_do_read_page(chip, buf, oob_required, page);
 
 	return host->correct(chip);
 }
@@ -943,7 +956,7 @@ static int imx_nand_read_page_raw(struct nand_chip *chip, uint8_t *buf,
 
 	host->enable_hwecc(chip, false);
 
-	imx_nand_do_read_page(chip, buf, oob_required);
+	imx_nand_do_read_page(chip, buf, oob_required, page);
 
 	return 0;
 }
@@ -1205,7 +1218,7 @@ static int imxnd_create_bbt(struct nand_chip *chip)
 	if (ret)
 		return ret;
 
-	ret = nand_default_bbt(chip);
+	ret = nand_create_bbt(chip);
 	if (ret)
 		return ret;
 
@@ -1336,7 +1349,7 @@ static int __init imxnd_probe(struct device_d *dev)
 
 	/* structures must be linked */
 	this = &host->nand;
-	mtd = &this->mtd;
+	mtd = nand_to_mtd(this);
 	mtd->dev.parent = dev;
 	mtd->name = "imx_nand";
 
@@ -1351,7 +1364,8 @@ static int __init imxnd_probe(struct device_d *dev)
 	this->legacy.read_word = imx_nand_read_word;
 	this->legacy.write_buf = imx_nand_write_buf;
 	this->legacy.read_buf = imx_nand_read_buf;
-	this->write_page = imx_nand_write_page;
+	this->ecc.write_page = imx_nand_write_page_ecc;
+	this->ecc.write_page_raw = imx_nand_write_page_raw;
 
 	if (host->hw_ecc) {
 		this->ecc.calculate = imx_nand_calculate_ecc;
@@ -1372,12 +1386,12 @@ static int __init imxnd_probe(struct device_d *dev)
 		this->ecc.mode = NAND_ECC_SOFT;
 	}
 
-	this->ecc.layout = oob_smallpage;
+	mtd_set_ecclayout(mtd, oob_smallpage);
 
 	/* NAND bus width determines access functions used by upper layer */
 	if (host->data_width == 2) {
 		this->options |= NAND_BUSWIDTH_16;
-		this->ecc.layout = &nandv1_hw_eccoob_smallpage;
+		mtd_set_ecclayout(mtd, &nandv1_hw_eccoob_smallpage);
 		imx_nand_set_layout(0, 16);
 	}
 
@@ -1405,9 +1419,9 @@ static int __init imxnd_probe(struct device_d *dev)
 					"You will loose factory bad block markers!\n");
 
 		if (mtd->writesize == 2048)
-			this->ecc.layout = oob_largepage;
+			mtd_set_ecclayout(mtd, oob_largepage);
 		else
-			this->ecc.layout = oob_4kpage;
+			mtd_set_ecclayout(mtd, oob_4kpage);
 		host->pagesize_2k = 1;
 		if (nfc_is_v21())
 			writew(NFC_V2_SPAS_SPARESIZE(64), host->regs + NFC_V2_SPAS);
@@ -1437,7 +1451,7 @@ static int __init imxnd_probe(struct device_d *dev)
 		err = 0;
 	}
 
-	add_mtd_nand_device(this, "nand");
+	add_mtd_nand_device(mtd, "nand");
 
 	dev->priv = host;
 

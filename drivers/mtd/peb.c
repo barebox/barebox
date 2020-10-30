@@ -542,7 +542,6 @@ int mtd_peb_erase(struct mtd_info *mtd, int pnum)
 	if (!mtd_peb_valid(mtd, pnum))
 		return -EINVAL;
 
-	ei.mtd = mtd;
 	ei.addr = (loff_t)pnum * mtd->erasesize;
 	ei.len = mtd->erasesize;
 

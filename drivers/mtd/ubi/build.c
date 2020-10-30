@@ -241,8 +241,8 @@ static int get_bad_peb_limit(const struct ubi_device *ubi, int max_beb_per1024)
 	 * is that all the bad eraseblocks of the chip are in
 	 * the MTD partition we are attaching (ubi->mtd).
 	 */
-	if (ubi->mtd->master)
-		device_size = ubi->mtd->master->size;
+	if (ubi->mtd->parent)
+		device_size = ubi->mtd->parent->size;
 	else
 		device_size = ubi->mtd->size;
 

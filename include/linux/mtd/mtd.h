@@ -205,7 +205,13 @@ struct mtd_info {
 	bool allow_erasebad;
 	int p_allow_erasebad;
 
-	struct mtd_info *master;
+	/*
+	 * Parent device from the MTD partition point of view.
+	 *
+	 * MTD masters do not have any parent, MTD partitions do. The parent
+	 * MTD device can itself be a partition.
+	 */
+	struct mtd_info *parent;
 	loff_t master_offset;
 
 	struct list_head partitions;

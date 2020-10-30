@@ -210,7 +210,7 @@ static int mtd_op_erase(struct cdev *cdev, loff_t count, loff_t offset)
 	while (count > 0) {
 		dev_dbg(cdev->dev, "erase 0x%08llx len: 0x%08llx\n", addr, erase.len);
 
-		if (mtd->allow_erasebad || (mtd->master && mtd->master->allow_erasebad))
+		if (mtd->allow_erasebad || (mtd->parent && mtd->parent->allow_erasebad))
 			ret = 0;
 		else
 			ret = mtd_block_isbad(mtd, addr);
@@ -652,10 +652,10 @@ int add_mtd_device(struct mtd_info *mtd, const char *devname, int device_id)
 	if (ret)
 		goto err;
 
-	if (mtd->master && !(mtd->cdev.flags & DEVFS_PARTITION_FIXED)) {
+	if (mtd->parent && !(mtd->cdev.flags & DEVFS_PARTITION_FIXED)) {
 		struct mtd_info *mtdpart;
 
-		list_for_each_entry(mtdpart, &mtd->master->partitions, partitions_entry) {
+		list_for_each_entry(mtdpart, &mtd->parent->partitions, partitions_entry) {
 			if (mtdpart->master_offset + mtdpart->size <= mtd->master_offset)
 				continue;
 			if (mtd->master_offset + mtd->size <= mtdpart->master_offset)
@@ -665,13 +665,13 @@ int add_mtd_device(struct mtd_info *mtd, const char *devname, int device_id)
 			goto err1;
 		}
 
-		list_add_sort(&mtd->partitions_entry, &mtd->master->partitions, mtd_part_compare);
+		list_add_sort(&mtd->partitions_entry, &mtd->parent->partitions, mtd_part_compare);
 	}
 
 	if (mtd_can_have_bb(mtd))
 		mtd->cdev_bb = mtd_add_bb(mtd, NULL);
 
-	if (mtd->dev.parent && !mtd->master) {
+	if (mtd->dev.parent && !mtd->parent) {
 		dev_add_param_string(&mtd->dev, "partitions", mtd_partition_set, mtd_partition_get, &mtd->partition_string, mtd);
 		of_parse_partitions(&mtd->cdev, mtd->dev.parent->device_node);
 		if (IS_ENABLED(CONFIG_OFDEVICE) && mtd->dev.parent->device_node) {
@@ -710,7 +710,7 @@ int del_mtd_device (struct mtd_info *mtd)
 	unregister_device(&mtd->dev);
 	free(mtd->param_size.value);
 	free(mtd->cdev.name);
-	if (mtd->master)
+	if (mtd->parent)
 		list_del(&mtd->partitions_entry);
 
 	return 0;

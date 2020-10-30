@@ -297,7 +297,7 @@ static int add_mtdraw_device(struct mtd_info *mtd, const char *devname, void **p
 {
 	struct mtdraw *mtdraw;
 
-	if (mtd->master || mtd->oobsize == 0)
+	if (mtd->parent || mtd->oobsize == 0)
 		return 0;
 
 	mtdraw = xzalloc(sizeof(*mtdraw));
@@ -321,7 +321,7 @@ static int del_mtdraw_device(struct mtd_info *mtd, void **priv)
 {
 	struct mtdraw *mtdraw;
 
-	if (mtd->master || mtd->oobsize == 0)
+	if (mtd->parent || mtd->oobsize == 0)
 		return 0;
 
 	mtdraw = *priv;

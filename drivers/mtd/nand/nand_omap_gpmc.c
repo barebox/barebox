@@ -192,23 +192,23 @@ static void omap_hwcontrol(struct nand_chip *nand, int cmd, unsigned int ctrl)
 
 	switch (ctrl) {
 	case NAND_CTRL_CHANGE | NAND_CTRL_CLE:
-		nand->IO_ADDR_W = oinfo->gpmc_command;
-		nand->IO_ADDR_R = oinfo->gpmc_data;
+		nand->legacy.IO_ADDR_W = oinfo->gpmc_command;
+		nand->legacy.IO_ADDR_R = oinfo->gpmc_data;
 		break;
 
 	case NAND_CTRL_CHANGE | NAND_CTRL_ALE:
-		nand->IO_ADDR_W = oinfo->gpmc_address;
-		nand->IO_ADDR_R = oinfo->gpmc_data;
+		nand->legacy.IO_ADDR_W = oinfo->gpmc_address;
+		nand->legacy.IO_ADDR_R = oinfo->gpmc_data;
 		break;
 
 	case NAND_CTRL_CHANGE | NAND_NCE:
-		nand->IO_ADDR_W = oinfo->gpmc_data;
-		nand->IO_ADDR_R = oinfo->gpmc_data;
+		nand->legacy.IO_ADDR_W = oinfo->gpmc_data;
+		nand->legacy.IO_ADDR_R = oinfo->gpmc_data;
 		break;
 	}
 
 	if (cmd != NAND_CMD_NONE)
-		writeb(cmd, nand->IO_ADDR_W);
+		writeb(cmd, nand->legacy.IO_ADDR_W);
 	return;
 }
 
@@ -561,7 +561,7 @@ static int omap_gpmc_read_buf_manual(struct nand_chip *chip,
 	writel(GPMC_ECC_CONTROL_ECCPOINTER(result_reg),
 			oinfo->gpmc_base + GPMC_ECC_CONTROL);
 
-	chip->read_buf(chip, buf, bytes);
+	chip->legacy.read_buf(chip, buf, bytes);
 
 	return bytes;
 }
@@ -623,7 +623,7 @@ static void omap_write_buf_pref(struct nand_chip *nand_chip,
 
 	/* take care of subpage writes */
 	while (len % 4 != 0) {
-		writeb(*buf, info->nand.IO_ADDR_W);
+		writeb(*buf, info->nand.legacy.IO_ADDR_W);
 		buf1++;
 		p32 = (u32 *)buf1;
 		len--;
@@ -958,8 +958,8 @@ static int gpmc_read_page_hwecc_elm(struct nand_chip *chip, uint8_t *buf,
 	uint32_t *eccpos = chip->ecc.layout->eccpos;
 
 	chip->ecc.hwctl(chip, NAND_ECC_READ);
-	chip->read_buf(chip, buf, mtd->writesize);
-	chip->read_buf(chip, chip->oob_poi, mtd->oobsize);
+	chip->legacy.read_buf(chip, buf, mtd->writesize);
+	chip->legacy.read_buf(chip, chip->oob_poi, mtd->oobsize);
 
 	for (i = 0; i < chip->ecc.total; i++)
 		ecc_code[i] = chip->oob_poi[eccpos[i]];
@@ -986,8 +986,8 @@ static int gpmc_read_page_hwecc(struct nand_chip *chip, uint8_t *buf,
 	unsigned int max_bitflips = 0;
 
 	chip->ecc.hwctl(chip, NAND_ECC_READ);
-	chip->read_buf(chip, p, mtd->writesize);
-	chip->read_buf(chip, chip->oob_poi, mtd->oobsize);
+	chip->legacy.read_buf(chip, p, mtd->writesize);
+	chip->legacy.read_buf(chip, chip->oob_poi, mtd->oobsize);
 
 	for (i = 0; i < chip->ecc.total; i++)
 		ecc_code[i] = chip->oob_poi[eccpos[i]];
@@ -1230,7 +1230,7 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	}
 
 	/* Same data register for in and out */
-	nand->IO_ADDR_W = nand->IO_ADDR_R = (void *)oinfo->gpmc_data;
+	nand->legacy.IO_ADDR_W = nand->legacy.IO_ADDR_R = (void *)oinfo->gpmc_data;
 	/*
 	 * If RDY/BSY line is connected to OMAP then use the omap ready
 	 * function and the generic nand_wait function which reads the
@@ -1249,16 +1249,16 @@ static int gpmc_nand_probe(struct device_d *pdev)
 		/* Set up the wait monitoring mask
 		 * This is GPMC_STATUS reg relevant */
 		oinfo->wait_mon_mask = (0x1 << (pdata->wait_mon_pin - 1)) << 8;
-		nand->dev_ready = omap_dev_ready;
-		nand->chip_delay = 0;
+		nand->legacy.dev_ready = omap_dev_ready;
+		nand->legacy.chip_delay = 0;
 	} else {
 		/* use the default nand_wait function */
-		nand->chip_delay = 50;
+		nand->legacy.chip_delay = 50;
 	}
 
 	/* Use default cmdfunc */
 	/* nand cmd control */
-	nand->cmd_ctrl = omap_hwcontrol;
+	nand->legacy.cmd_ctrl = omap_hwcontrol;
 
 	/* Dont do a bbt scan at the start */
 	nand->options |= NAND_SKIP_BBTSCAN;
@@ -1295,9 +1295,9 @@ static int gpmc_nand_probe(struct device_d *pdev)
 
 	gpmc_set_buswidth(nand, nand->options & NAND_BUSWIDTH_16);
 
-	nand->read_buf   = omap_read_buf_pref;
+	nand->legacy.read_buf   = omap_read_buf_pref;
 	if (IS_ENABLED(CONFIG_MTD_WRITE))
-		nand->write_buf  = omap_write_buf_pref;
+		nand->legacy.write_buf  = omap_write_buf_pref;
 
 	nand->options |= NAND_SKIP_BBTSCAN;
 

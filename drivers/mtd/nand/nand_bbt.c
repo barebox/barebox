@@ -696,7 +696,7 @@ static void mark_bbt_block_bad(struct nand_chip *this,
 	bbt_mark_entry(this, block, BBT_BLOCK_WORN);
 
 	to = (loff_t)block << this->bbt_erase_shift;
-	res = this->block_markbad(this, to);
+	res = this->legacy.block_markbad(this, to);
 	if (res)
 		pr_warn("nand_bbt: error %d while marking block %d bad\n",
 			res, block);

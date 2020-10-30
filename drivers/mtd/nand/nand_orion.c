@@ -45,12 +45,12 @@ static void orion_nand_cmd_ctrl(struct nand_chip *chip, int cmd, unsigned int ct
 	if (chip->options & NAND_BUSWIDTH_16)
 		offs <<= 1;
 
-	writeb(cmd, chip->IO_ADDR_W + offs);
+	writeb(cmd, chip->legacy.IO_ADDR_W + offs);
 }
 
 static void orion_nand_read_buf(struct nand_chip *chip, uint8_t *buf, int len)
 {
-	void __iomem *io_base = chip->IO_ADDR_R;
+	void __iomem *io_base = chip->legacy.IO_ADDR_R;
 	uint64_t *buf64;
 	int i = 0;
 
@@ -112,13 +112,13 @@ static int orion_nand_probe(struct device_d *dev)
 		width = 8;
 
 	if (!of_property_read_u32(dev_node, "chip-delay", &val))
-		chip->chip_delay = (u8)val;
+		chip->legacy.chip_delay = (u8)val;
 
 	mtd->dev.parent = dev;
 	chip->priv = priv;
-	chip->IO_ADDR_R = chip->IO_ADDR_W = io_base;
-	chip->cmd_ctrl = orion_nand_cmd_ctrl;
-	chip->read_buf = orion_nand_read_buf;
+	chip->legacy.IO_ADDR_R = chip->legacy.IO_ADDR_W = io_base;
+	chip->legacy.cmd_ctrl = orion_nand_cmd_ctrl;
+	chip->legacy.read_buf = orion_nand_read_buf;
 	chip->ecc.mode = NAND_ECC_SOFT;
 
 	WARN(width > 16, "%d bit bus width out of range", width);

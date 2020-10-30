@@ -387,38 +387,66 @@ struct nand_buffers {
 };
 
 /**
+ * struct nand_legacy - NAND chip legacy fields/hooks
+ * @IO_ADDR_R: address to read the 8 I/O lines of the flash device
+ * @IO_ADDR_W: address to write the 8 I/O lines of the flash device
+ * @select_chip: select/deselect a specific target/die
+ * @read_byte: read one byte from the chip
+ * @write_byte: write a single byte to the chip on the low 8 I/O lines
+ * @write_buf: write data from the buffer to the chip
+ * @read_buf: read data from the chip into the buffer
+ * @cmd_ctrl: hardware specific function for controlling ALE/CLE/nCE. Also used
+ *	      to write command and address
+ * @cmdfunc: hardware specific function for writing commands to the chip.
+ * @dev_ready: hardware specific function for accessing device ready/busy line.
+ *	       If set to NULL no access to ready/busy is available and the
+ *	       ready/busy information is read from the chip status register.
+ * @waitfunc: hardware specific function for wait on ready.
+ * @block_bad: check if a block is bad, using OOB markers
+ * @block_markbad: mark a block bad
+ * @set_features: set the NAND chip features
+ * @get_features: get the NAND chip features
+ * @chip_delay: chip dependent delay for transferring data from array to read
+ *		regs (tR).
+ * @dummy_controller: dummy controller implementation for drivers that can
+ *		      only control a single chip
+ *
+ * If you look at this structure you're already wrong. These fields/hooks are
+ * all deprecated.
+ */
+struct nand_legacy {
+	void __iomem *IO_ADDR_R;
+	void __iomem *IO_ADDR_W;
+	void (*select_chip)(struct nand_chip *chip, int cs);
+	u8 (*read_byte)(struct nand_chip *chip);
+	u16 (*read_word)(struct nand_chip *chip);
+	void (*write_byte)(struct nand_chip *chip, u8 byte);
+	void (*write_buf)(struct nand_chip *chip, const u8 *buf, int len);
+	void (*read_buf)(struct nand_chip *chip, u8 *buf, int len);
+	void (*cmd_ctrl)(struct nand_chip *chip, int dat, unsigned int ctrl);
+	void (*cmdfunc)(struct nand_chip *chip, unsigned command, int column,
+			int page_addr);
+	int (*dev_ready)(struct nand_chip *chip);
+	int (*waitfunc)(struct nand_chip *chip);
+	int (*block_bad)(struct nand_chip *chip, loff_t ofs, int getchip);
+	int (*block_markbad)(struct nand_chip *chip, loff_t ofs);
+	int (*set_features)(struct nand_chip *chip, int feature_addr,
+			    u8 *subfeature_para);
+	int (*get_features)(struct nand_chip *chip, int feature_addr,
+			    u8 *subfeature_para);
+	int chip_delay;
+};
+
+/**
  * struct nand_chip - NAND Private Flash Chip Data
- * @IO_ADDR_R:		[BOARDSPECIFIC] address to read the 8 I/O lines of the
- *			flash device
- * @IO_ADDR_W:		[BOARDSPECIFIC] address to write the 8 I/O lines of the
- *			flash device.
- * @read_byte:		[REPLACEABLE] read one byte from the chip
- * @read_word:		[REPLACEABLE] read one word from the chip
- * @write_buf:		[REPLACEABLE] write data from the buffer to the chip
- * @read_buf:		[REPLACEABLE] read data from the chip into the buffer
- * @select_chip:	[REPLACEABLE] select chip nr
- * @block_bad:		[REPLACEABLE] check, if the block is bad
- * @block_markbad:	[REPLACEABLE] mark the block bad
- * @cmd_ctrl:		[BOARDSPECIFIC] hardwarespecific function for controlling
- *			ALE/CLE/nCE. Also used to write command and address
  * @init_size:		[BOARDSPECIFIC] hardwarespecific function for setting
  *			mtd->oobsize, mtd->writesize and so on.
  *			@id_data contains the 8 bytes values of NAND_CMD_READID.
  *			Return with the bus width.
- * @dev_ready:		[BOARDSPECIFIC] hardwarespecific function for accessing
- *			device ready/busy line. If set to NULL no access to
- *			ready/busy is available and the ready/busy information
- *			is read from the chip status register.
- * @cmdfunc:		[REPLACEABLE] hardwarespecific function for writing
- *			commands to the chip.
- * @waitfunc:		[REPLACEABLE] hardwarespecific function for wait on
- *			ready.
  * @ecc:		[BOARDSPECIFIC] ECC control structure
  * @buffers:		buffer structure for read/write
  * @hwcontrol:		platform-specific hardware control structure
  * @scan_bbt:		[REPLACEABLE] function to scan bad block table
- * @chip_delay:		[BOARDSPECIFIC] chip dependent delay for transferring
- *			data from array to read regs (tR).
  * @state:		[INTERN] the current state of the NAND device
  * @oob_poi:		"poison value buffer," used for laying out OOB data
  *			before writing
@@ -468,31 +496,13 @@ struct nand_buffers {
  */
 
 struct nand_chip {
-	void __iomem *IO_ADDR_R;
-	void __iomem *IO_ADDR_W;
-
-	uint8_t (*read_byte)(struct nand_chip *chip);
-	u16 (*read_word)(struct nand_chip *chip);
-	void (*write_buf)(struct nand_chip *chip, const uint8_t *buf, int len);
-	void (*read_buf)(struct nand_chip *chip, uint8_t *buf, int len);
-	void (*select_chip)(struct nand_chip *_chip, int chip);
-	int (*block_bad)(struct nand_chip *chip, loff_t ofs, int getchip);
-	int (*block_markbad)(struct nand_chip *chip, loff_t ofs);
-	void (*cmd_ctrl)(struct nand_chip *chip, int dat, unsigned int ctrl);
-	int (*dev_ready)(struct nand_chip *chip);
-	void (*cmdfunc)(struct nand_chip *chip, unsigned command, int column,
-			int page_addr);
-	int(*waitfunc)(struct nand_chip *chip);
 	int (*scan_bbt)(struct nand_chip *chip);
 	int (*write_page)(struct nand_chip *chip,
 			uint32_t offset, int data_len, const uint8_t *buf,
 			int oob_required, int page, int cached, int raw);
-	int (*onfi_set_features)(struct nand_chip *chip,
-			int feature_addr, uint8_t *subfeature_para);
-	int (*onfi_get_features)(struct nand_chip *chip,
-			int feature_addr, uint8_t *subfeature_para);
 
-	int chip_delay;
+	struct nand_legacy legacy;
+
 	unsigned int options;
 	unsigned int bbt_options;
 

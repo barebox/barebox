@@ -1148,8 +1148,8 @@ static int mxs_nand_ecc_read_oob(struct nand_chip *chip, int page)
 		 * If control arrives here, we're doing a "raw" read. Send the
 		 * command to read the conventional OOB and read it.
 		 */
-		chip->cmdfunc(chip, NAND_CMD_READ0, mtd->writesize, page);
-		chip->read_buf(chip, chip->oob_poi, mtd->oobsize);
+		chip->legacy.cmdfunc(chip, NAND_CMD_READ0, mtd->writesize, page);
+		chip->legacy.read_buf(chip, chip->oob_poi, mtd->oobsize);
 	} else {
 		/*
 		 * If control arrives here, we're not doing a "raw" read. Fill
@@ -1158,7 +1158,7 @@ static int mxs_nand_ecc_read_oob(struct nand_chip *chip, int page)
 		memset(chip->oob_poi, 0xff, mtd->oobsize);
 
 		column = nand_info->version == GPMI_VERSION_TYPE_MX23 ? 0 : mtd->writesize;
-		chip->cmdfunc(chip, NAND_CMD_READ0, column, page);
+		chip->legacy.cmdfunc(chip, NAND_CMD_READ0, column, page);
 		mxs_nand_read_buf(chip, chip->oob_poi, 1);
 	}
 
@@ -1192,12 +1192,12 @@ static int mxs_nand_ecc_write_oob(struct nand_chip *chip, int page)
 
 	column = nand_info->version == GPMI_VERSION_TYPE_MX23 ? 0 : mtd->writesize;
 	/* Write the block mark. */
-	chip->cmdfunc(chip, NAND_CMD_SEQIN, column, page);
-	chip->write_buf(chip, &block_mark, 1);
-	chip->cmdfunc(chip, NAND_CMD_PAGEPROG, -1, -1);
+	chip->legacy.cmdfunc(chip, NAND_CMD_SEQIN, column, page);
+	chip->legacy.write_buf(chip, &block_mark, 1);
+	chip->legacy.cmdfunc(chip, NAND_CMD_PAGEPROG, -1, -1);
 
 	/* Check if it worked. */
-	if (chip->waitfunc(chip) & NAND_STATUS_FAIL)
+	if (chip->legacy.waitfunc(chip) & NAND_STATUS_FAIL)
 		return -EIO;
 
 	return 0;
@@ -2044,7 +2044,7 @@ static int mxs_nand_enable_edo_mode(struct mxs_nand_info *info)
 	else
 		return -EINVAL;
 
-	chip->select_chip(chip, 0);
+	chip->legacy.select_chip(chip, 0);
 
 	if (le16_to_cpu(chip->onfi_params.opt_cmd)
 	      & ONFI_OPT_CMD_SET_GET_FEATURES) {
@@ -2052,19 +2052,19 @@ static int mxs_nand_enable_edo_mode(struct mxs_nand_info *info)
 		/* [1] send SET FEATURE commond to NAND */
 		feature[0] = mode;
 
-		ret = chip->onfi_set_features(chip,
+		ret = chip->legacy.set_features(chip,
 				ONFI_FEATURE_ADDR_TIMING_MODE, feature);
 		if (ret)
 			goto err_out;
 
 		/* [2] send GET FEATURE command to double-check the timing mode */
-		ret = chip->onfi_get_features(chip,
+		ret = chip->legacy.get_features(chip,
 				ONFI_FEATURE_ADDR_TIMING_MODE, feature);
 		if (ret || feature[0] != mode)
 			goto err_out;
 	}
 
-	chip->select_chip(chip, -1);
+	chip->legacy.select_chip(chip, -1);
 
 	/* [3] set the main IO clock, 100MHz for mode 5, 80MHz for mode 4. */
 	clk_disable(info->clk);
@@ -2076,7 +2076,7 @@ static int mxs_nand_enable_edo_mode(struct mxs_nand_info *info)
 	return mode;
 
 err_out:
-	chip->select_chip(chip, -1);
+	chip->legacy.select_chip(chip, -1);
 
 	return -EINVAL;
 }
@@ -2195,17 +2195,17 @@ static int mxs_nand_probe(struct device_d *dev)
 
 	chip->priv = nand_info;
 
-	chip->cmd_ctrl		= mxs_nand_cmd_ctrl;
+	chip->legacy.cmd_ctrl		= mxs_nand_cmd_ctrl;
 
-	chip->dev_ready		= mxs_nand_device_ready;
-	chip->select_chip	= mxs_nand_select_chip;
-	chip->block_bad		= mxs_nand_block_bad;
-	chip->scan_bbt		= mxs_nand_scan_bbt;
+	chip->legacy.dev_ready		= mxs_nand_device_ready;
+	chip->legacy.select_chip	= mxs_nand_select_chip;
+	chip->legacy.block_bad		= mxs_nand_block_bad;
+	chip->scan_bbt			= mxs_nand_scan_bbt;
 
-	chip->read_byte		= mxs_nand_read_byte;
+	chip->legacy.read_byte		= mxs_nand_read_byte;
 
-	chip->read_buf		= mxs_nand_read_buf;
-	chip->write_buf		= mxs_nand_write_buf;
+	chip->legacy.read_buf		= mxs_nand_read_buf;
+	chip->legacy.write_buf		= mxs_nand_write_buf;
 
 	chip->ecc.read_page	= mxs_nand_ecc_read_page;
 	chip->ecc.write_page	= mxs_nand_ecc_write_page;

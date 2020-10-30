@@ -352,8 +352,8 @@ static void mrvl_nand_set_timing(struct mrvl_nand_host *host, bool use_default)
 	if (use_default) {
 		id = 0;
 	} else {
-		chip->cmdfunc(chip, NAND_CMD_READID, 0x00, -1);
-		chip->read_buf(chip, (unsigned char *)&id, sizeof(id));
+		chip->legacy.cmdfunc(chip, NAND_CMD_READID, 0x00, -1);
+		chip->legacy.read_buf(chip, (unsigned char *)&id, sizeof(id));
 	}
 	for (t = &timings[0]; t->id; t++)
 		if (t->id == id)
@@ -472,7 +472,7 @@ static void mrvl_nand_start(struct mrvl_nand_host *host)
 	nand_writel(host, NDSR, NDSR_MASK);
 	nand_writel(host, NDCR, ndcr | NDCR_ND_RUN);
 
-	if (wait_on_timeout(host->chip.chip_delay * USECOND,
+	if (wait_on_timeout(host->chip.legacy.chip_delay * USECOND,
 			    nand_readl(host, NDSR) & NDSR_WRCMDREQ)) {
 		dev_err(host->dev, "Waiting for command request failed\n");
 	} else {
@@ -719,7 +719,7 @@ static void mrvl_data_stage(struct mrvl_nand_host *host)
 	if (!host->data_size)
 		return;
 
-	wait_on_timeout(host->chip.chip_delay * USECOND,
+	wait_on_timeout(host->chip.legacy.chip_delay * USECOND,
 			nand_readl(host, NDSR) & mask);
 	if (!(nand_readl(host, NDSR) & mask)) {
 		dev_err(host->dev, "Timeout waiting for data ndsr=0x%08x\n",
@@ -752,7 +752,7 @@ static void mrvl_nand_wait_cmd_done(struct mrvl_nand_host *host,
 		mask = NDSR_CS0_CMDD;
 	else
 		mask = NDSR_CS1_CMDD;
-	wait_on_timeout(host->chip.chip_delay * USECOND,
+	wait_on_timeout(host->chip.legacy.chip_delay * USECOND,
 			(nand_readl(host, NDSR) & mask) == mask);
 	if ((nand_readl(host, NDSR) & mask) != mask) {
 		dev_err(host->dev, "Waiting end of command %dth %d timeout, ndsr=0x%08x ndcr=0x%08x\n",
@@ -817,8 +817,8 @@ static int mrvl_nand_read_page_hwecc(struct nand_chip *chip, uint8_t *buf,
 	u32 ndsr;
 	int ret = 0;
 
-	chip->read_buf(chip, buf, mtd->writesize);
-	chip->read_buf(chip, chip->oob_poi, mtd->oobsize);
+	chip->legacy.read_buf(chip, buf, mtd->writesize);
+	chip->legacy.read_buf(chip, chip->oob_poi, mtd->oobsize);
 	ndsr = nand_readl(host, NDSR);
 
 	if (ndsr & NDSR_UNCORERR) {
@@ -1122,19 +1122,19 @@ static struct mrvl_nand_host *alloc_nand_resource(struct device_d *dev)
 	mtd->name = "mrvl_nand";
 
 	chip = &host->chip;
-	chip->read_byte		= mrvl_nand_read_byte;
-	chip->read_word		= mrvl_nand_read_word;
+	chip->legacy.read_byte = mrvl_nand_read_byte;
+	chip->legacy.read_word = mrvl_nand_read_word;
 	chip->ecc.read_page	= mrvl_nand_read_page_hwecc;
 	chip->ecc.write_page	= mrvl_nand_write_page_hwecc;
-	chip->dev_ready		= mrvl_nand_ready;
-	chip->select_chip	= mrvl_nand_select_chip;
-	chip->block_bad		= mrvl_nand_block_bad;
-	chip->read_buf		= mrvl_nand_read_buf;
-	chip->write_buf		= mrvl_nand_write_buf;
+	chip->legacy.dev_ready = mrvl_nand_ready;
+	chip->legacy.select_chip = mrvl_nand_select_chip;
+	chip->legacy.block_bad = mrvl_nand_block_bad;
+	chip->legacy.read_buf = mrvl_nand_read_buf;
+	chip->legacy.write_buf = mrvl_nand_write_buf;
 	chip->options		|= NAND_NO_SUBPAGE_WRITE;
-	chip->cmdfunc		= mrvl_nand_cmdfunc;
+	chip->legacy.cmdfunc = mrvl_nand_cmdfunc;
 	chip->priv		= host;
-	chip->chip_delay	= CHIP_DELAY_TIMEOUT_US;
+	chip->legacy.chip_delay = CHIP_DELAY_TIMEOUT_US;
 
 	host->dev = dev;
 	iores = dev_request_mem_resource(dev, 0);

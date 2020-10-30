@@ -161,22 +161,22 @@ static int atmel_nand_device_ready(struct nand_chip *nand_chip)
  */
 static void atmel_read_buf(struct nand_chip *nand_chip, u8 *buf, int len)
 {
-	readsb(nand_chip->IO_ADDR_R, buf, len);
+	readsb(nand_chip->legacy.IO_ADDR_R, buf, len);
 }
 
 static void atmel_read_buf16(struct nand_chip *nand_chip, u8 *buf, int len)
 {
-	readsw(nand_chip->IO_ADDR_R, buf, len / 2);
+	readsw(nand_chip->legacy.IO_ADDR_R, buf, len / 2);
 }
 
 static void atmel_write_buf(struct nand_chip *nand_chip, const u8 *buf, int len)
 {
-	writesb(nand_chip->IO_ADDR_W, buf, len);
+	writesb(nand_chip->legacy.IO_ADDR_W, buf, len);
 }
 
 static void atmel_write_buf16(struct nand_chip *nand_chip, const u8 *buf, int len)
 {
-	writesw(nand_chip->IO_ADDR_W, buf, len / 2);
+	writesw(nand_chip->legacy.IO_ADDR_W, buf, len / 2);
 }
 
 /*
@@ -636,8 +636,8 @@ static int atmel_nand_pmecc_read_page(struct nand_chip *chip, uint8_t *buf,
 	pmecc_writel(host->ecc, CTRL, PMECC_CTRL_ENABLE);
 	pmecc_writel(host->ecc, CTRL, PMECC_CTRL_DATA);
 
-	chip->read_buf(chip, buf, eccsize);
-	chip->read_buf(chip, oob, mtd->oobsize);
+	chip->legacy.read_buf(chip, buf, eccsize);
+	chip->legacy.read_buf(chip, oob, mtd->oobsize);
 
 	ret = wait_on_timeout(PMECC_MAX_TIMEOUT_MS,
 		!(pmecc_readl_relaxed(host->ecc, SR) & PMECC_SR_BUSY));
@@ -671,7 +671,7 @@ static int atmel_nand_pmecc_write_page(struct nand_chip *chip, const uint8_t *bu
 	pmecc_writel(host->ecc, CTRL, PMECC_CTRL_ENABLE);
 	pmecc_writel(host->ecc, CTRL, PMECC_CTRL_DATA);
 
-	chip->write_buf(chip, (u8 *)buf, mtd->writesize);
+	chip->legacy.write_buf(chip, (u8 *)buf, mtd->writesize);
 
 	ret = wait_on_timeout(PMECC_MAX_TIMEOUT_MS,
 		!(pmecc_readl_relaxed(host->ecc, SR) & PMECC_SR_BUSY));
@@ -689,7 +689,7 @@ static int atmel_nand_pmecc_write_page(struct nand_chip *chip, const uint8_t *bu
 				pmecc_readb_ecc_relaxed(host->ecc, i, j);
 		}
 	}
-	chip->write_buf(chip, chip->oob_poi, mtd->oobsize);
+	chip->legacy.write_buf(chip, chip->oob_poi, mtd->oobsize);
 
 	return 0;
 }
@@ -1026,7 +1026,7 @@ static int atmel_nand_read_page(struct nand_chip *chip, uint8_t *buf,
 #endif
 
 	/* read the page */
-	chip->read_buf(chip, p, eccsize);
+	chip->legacy.read_buf(chip, p, eccsize);
 
 	/* move to ECC position if needed */
 	if (eccpos[0] != 0) {
@@ -1036,13 +1036,13 @@ static int atmel_nand_read_page(struct nand_chip *chip, uint8_t *buf,
 		 * NAND_CMD_RNDOUT.
 		 * anyway, for small pages, the eccpos[0] == 0
 		 */
-		chip->cmdfunc(chip, NAND_CMD_RNDOUT,
+		chip->legacy.cmdfunc(chip, NAND_CMD_RNDOUT,
 				mtd->writesize + eccpos[0], -1);
 	}
 
 	/* the ECC controller needs to read the ECC just after the data */
 	ecc_pos = oob + eccpos[0];
-	chip->read_buf(chip, ecc_pos, eccbytes);
+	chip->legacy.read_buf(chip, ecc_pos, eccbytes);
 
 	/* check if there's an error */
 	stat = chip->ecc.correct(chip, p, oob, NULL);
@@ -1053,10 +1053,10 @@ static int atmel_nand_read_page(struct nand_chip *chip, uint8_t *buf,
 		mtd->ecc_stats.corrected += stat;
 
 	/* get back to oob start (end of page) */
-	chip->cmdfunc(chip, NAND_CMD_RNDOUT, mtd->writesize, -1);
+	chip->legacy.cmdfunc(chip, NAND_CMD_RNDOUT, mtd->writesize, -1);
 
 	/* read the oob */
-	chip->read_buf(chip, oob, mtd->oobsize);
+	chip->legacy.read_buf(chip, oob, mtd->oobsize);
 
 	return 0;
 }
@@ -1334,9 +1334,9 @@ static int __init atmel_nand_probe(struct device_d *dev)
 	mtd->dev.parent = dev;
 
 	/* Set address of NAND IO lines */
-	nand_chip->IO_ADDR_R = host->io_base;
-	nand_chip->IO_ADDR_W = host->io_base;
-	nand_chip->cmd_ctrl = atmel_nand_cmd_ctrl;
+	nand_chip->legacy.IO_ADDR_R = host->io_base;
+	nand_chip->legacy.IO_ADDR_W = host->io_base;
+	nand_chip->legacy.cmd_ctrl = atmel_nand_cmd_ctrl;
 
 	if (gpio_is_valid(host->board->rdy_pin)) {
 		res = gpio_request(host->board->rdy_pin, "nand_rdy");
@@ -1354,7 +1354,7 @@ static int __init atmel_nand_probe(struct device_d *dev)
 			goto err_no_card;
 		}
 
-		nand_chip->dev_ready = atmel_nand_device_ready;
+		nand_chip->legacy.dev_ready = atmel_nand_device_ready;
 	}
 
 	if (gpio_is_valid(host->board->enable_pin)) {
@@ -1384,7 +1384,7 @@ static int __init atmel_nand_probe(struct device_d *dev)
 		nand_chip->ecc.mode = NAND_ECC_HW;
 	}
 
-	nand_chip->chip_delay = 40;		/* 40us command delay time */
+	nand_chip->legacy.chip_delay = 40;		/* 40us command delay time */
 
 	if (IS_ENABLED(CONFIG_NAND_ECC_BCH) &&
 			pdata->ecc_mode == NAND_ECC_SOFT_BCH) {
@@ -1393,11 +1393,11 @@ static int __init atmel_nand_probe(struct device_d *dev)
 
 	if (host->board->bus_width_16) {	/* 16-bit bus width */
 		nand_chip->options |= NAND_BUSWIDTH_16;
-		nand_chip->read_buf = atmel_read_buf16;
-		nand_chip->write_buf = atmel_write_buf16;
+		nand_chip->legacy.read_buf = atmel_read_buf16;
+		nand_chip->legacy.write_buf = atmel_write_buf16;
 	} else {
-		nand_chip->read_buf = atmel_read_buf;
-		nand_chip->write_buf = atmel_write_buf;
+		nand_chip->legacy.read_buf = atmel_read_buf;
+		nand_chip->legacy.write_buf = atmel_write_buf;
 	}
 
 	atmel_nand_enable(host);

@@ -1404,11 +1404,11 @@ int denali_init(struct denali_nand_info *denali)
 	mtd->name = "denali-nand";
 
 	/* register the driver with the NAND core subsystem */
-	nand->read_buf = denali_read_buf;
-	nand->select_chip = denali_select_chip;
-	nand->cmdfunc = denali_cmdfunc;
-	nand->read_byte = denali_read_byte;
-	nand->waitfunc = denali_waitfunc;
+	nand->legacy.read_buf = denali_read_buf;
+	nand->legacy.select_chip = denali_select_chip;
+	nand->legacy.cmdfunc = denali_cmdfunc;
+	nand->legacy.read_byte = denali_read_byte;
+	nand->legacy.waitfunc = denali_waitfunc;
 
 	/*
 	 * scan for NAND devices attached to the controller

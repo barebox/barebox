@@ -894,15 +894,15 @@ static int imx_nand_write_page(struct nand_chip *chip,
 
 	host->enable_hwecc(chip, !raw);
 
-	chip->cmdfunc(chip, NAND_CMD_SEQIN, 0x00, page);
+	chip->legacy.cmdfunc(chip, NAND_CMD_SEQIN, 0x00, page);
 
 	memcpy32(host->main_area0, buf, mtd->writesize);
 	if (oob_required)
 		copy_spare(chip, 0, chip->oob_poi);
 
 	host->send_page(host, NFC_INPUT);
-	chip->cmdfunc(chip, NAND_CMD_PAGEPROG, -1, -1);
-	status = chip->waitfunc(chip);
+	chip->legacy.cmdfunc(chip, NAND_CMD_PAGEPROG, -1, -1);
+	status = chip->legacy.waitfunc(chip);
 
 	if (status & NAND_STATUS_FAIL)
 		return -EIO;
@@ -1341,16 +1341,16 @@ static int __init imxnd_probe(struct device_d *dev)
 	mtd->name = "imx_nand";
 
 	/* 50 us command delay time */
-	this->chip_delay = 5;
+	this->legacy.chip_delay = 5;
 
 	this->priv = host;
-	this->dev_ready = imx_nand_dev_ready;
-	this->cmdfunc = imx_nand_command;
-	this->select_chip = imx_nand_select_chip;
-	this->read_byte = imx_nand_read_byte;
-	this->read_word = imx_nand_read_word;
-	this->write_buf = imx_nand_write_buf;
-	this->read_buf = imx_nand_read_buf;
+	this->legacy.dev_ready = imx_nand_dev_ready;
+	this->legacy.cmdfunc = imx_nand_command;
+	this->legacy.select_chip = imx_nand_select_chip;
+	this->legacy.read_byte = imx_nand_read_byte;
+	this->legacy.read_word = imx_nand_read_word;
+	this->legacy.write_buf = imx_nand_write_buf;
+	this->legacy.read_buf = imx_nand_read_buf;
 	this->write_page = imx_nand_write_page;
 
 	if (host->hw_ecc) {

@@ -200,10 +200,11 @@ static int nomadik_nand_probe(struct device_d *dev)
 	nand->priv = host;
 	mtd->dev.parent = dev;
 
-	nand->IO_ADDR_W = nand->IO_ADDR_R = dev_request_mem_region_by_name(dev, "nand_data");
-	if (IS_ERR(nand->IO_ADDR_W))
-		return PTR_ERR(nand->IO_ADDR_W);
-	nand->cmd_ctrl = nomadik_cmd_ctrl;
+	nand->legacy.IO_ADDR_W = nand->legacy.IO_ADDR_R =
+		dev_request_mem_region_by_name(dev, "nand_data");
+	if (IS_ERR(nand->legacy.IO_ADDR_W))
+		return PTR_ERR(nand->legacy.IO_ADDR_W);
+	nand->legacy.cmd_ctrl = nomadik_cmd_ctrl;
 
 	nand->ecc.mode = NAND_ECC_HW;
 	nand->ecc.layout = &nomadik_ecc_layout;

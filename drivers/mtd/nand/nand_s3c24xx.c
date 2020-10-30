@@ -426,18 +426,18 @@ static int s3c24x0_nand_probe(struct device_d *dev)
 	/* init the default settings */
 
 	/* 50 us command delay time */
-	chip->chip_delay = 50;
+	chip->legacy.chip_delay = 50;
 	chip->priv = host;
 
-	chip->IO_ADDR_R = chip->IO_ADDR_W = host->base + NFDATA;
+	chip->legacy.IO_ADDR_R = chip->legacy.IO_ADDR_W = host->base + NFDATA;
 
 #ifdef CONFIG_CPU_S3C2440
-	chip->read_buf = s3c2440_nand_read_buf;
-	chip->write_buf = s3c2440_nand_write_buf;
+	chip->legacy.read_buf = s3c2440_nand_read_buf;
+	chip->legacy.write_buf = s3c2440_nand_write_buf;
 #endif
-	chip->cmd_ctrl = s3c24x0_nand_hwcontrol;
-	chip->dev_ready = s3c24x0_nand_devready;
-	chip->select_chip = s3c24x0_nand_select_chip;
+	chip->legacy.cmd_ctrl = s3c24x0_nand_hwcontrol;
+	chip->legacy.dev_ready = s3c24x0_nand_devready;
+	chip->legacy.select_chip = s3c24x0_nand_select_chip;
 
 	/* we are using the hardware ECC feature of this device */
 	chip->ecc.calculate = s3c2410_nand_calculate_ecc;

@@ -1187,7 +1187,7 @@ static int imxnd_create_bbt(struct nand_chip *chip)
 
 		if (ret) {
 			bbt[i >> 3] |= 0x03 << (i & 0x6);
-			dev_info(mtd->class_dev.parent, "Bad eraseblock %d at 0x%08x\n",
+			dev_info(mtd->dev.parent, "Bad eraseblock %d at 0x%08x\n",
 				 i >> 1, (unsigned int)from);
 		}
 
@@ -1337,7 +1337,7 @@ static int __init imxnd_probe(struct device_d *dev)
 	/* structures must be linked */
 	this = &host->nand;
 	mtd = &this->mtd;
-	mtd->class_dev.parent = dev;
+	mtd->dev.parent = dev;
 	mtd->name = "imx_nand";
 
 	/* 50 us command delay time */

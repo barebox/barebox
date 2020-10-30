@@ -193,7 +193,7 @@ struct mtd_info {
 	int (*_get_device) (struct mtd_info *mtd);
 	void (*_put_device) (struct mtd_info *mtd);
 
-	struct device_d class_dev;
+	struct device_d dev;
 	struct cdev cdev;
 
 	struct cdev *cdev_bb;

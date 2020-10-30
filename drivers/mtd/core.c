@@ -568,7 +568,7 @@ static int mtd_part_compare(struct list_head *a, struct list_head *b)
 
 static int mtd_detect(struct device_d *dev)
 {
-	struct mtd_info *mtd = container_of(dev, struct mtd_info, class_dev);
+	struct mtd_info *mtd = container_of(dev, struct mtd_info, dev);
 	int bufsize = 512;
 	void *buf;
 	int ret = 0, i;
@@ -617,13 +617,13 @@ int add_mtd_device(struct mtd_info *mtd, const char *devname, int device_id)
 
 	if (!devname)
 		devname = "mtd";
-	dev_set_name(&mtd->class_dev, devname);
-	mtd->class_dev.id = device_id;
+	dev_set_name(&mtd->dev, devname);
+	mtd->dev.id = device_id;
 
 	if (IS_ENABLED(CONFIG_MTD_UBI))
-		mtd->class_dev.detect = mtd_detect;
+		mtd->dev.detect = mtd_detect;
 
-	ret = register_device(&mtd->class_dev);
+	ret = register_device(&mtd->dev);
 	if (ret)
 		return ret;
 
@@ -633,19 +633,19 @@ int add_mtd_device(struct mtd_info *mtd, const char *devname, int device_id)
 		mtd->cdev.name = xstrdup(devname);
 	else
 		mtd->cdev.name = basprintf("%s%d", devname,
-					     mtd->class_dev.id);
+					     mtd->dev.id);
 
 	INIT_LIST_HEAD(&mtd->partitions);
 
 	mtd->cdev.priv = mtd;
-	mtd->cdev.dev = &mtd->class_dev;
+	mtd->cdev.dev = &mtd->dev;
 	mtd->cdev.mtd = mtd;
 
 	if (IS_ENABLED(CONFIG_PARAMETER)) {
-		dev_add_param_uint64_ro(&mtd->class_dev, "size", &mtd->size, "%llu");
-		dev_add_param_uint32_ro(&mtd->class_dev, "erasesize", &mtd->erasesize, "%u");
-		dev_add_param_uint32_ro(&mtd->class_dev, "writesize", &mtd->writesize, "%u");
-		dev_add_param_uint32_ro(&mtd->class_dev, "oobsize", &mtd->oobsize, "%u");
+		dev_add_param_uint64_ro(&mtd->dev, "size", &mtd->size, "%llu");
+		dev_add_param_uint32_ro(&mtd->dev, "erasesize", &mtd->erasesize, "%u");
+		dev_add_param_uint32_ro(&mtd->dev, "writesize", &mtd->writesize, "%u");
+		dev_add_param_uint32_ro(&mtd->dev, "oobsize", &mtd->oobsize, "%u");
 	}
 
 	ret = devfs_create(&mtd->cdev);
@@ -660,7 +660,7 @@ int add_mtd_device(struct mtd_info *mtd, const char *devname, int device_id)
 				continue;
 			if (mtd->master_offset + mtd->size <= mtdpart->master_offset)
 				continue;
-			dev_err(&mtd->class_dev, "New partition %s conflicts with %s\n",
+			dev_err(&mtd->dev, "New partition %s conflicts with %s\n",
 					mtd->name, mtdpart->name);
 			goto err1;
 		}
@@ -671,11 +671,11 @@ int add_mtd_device(struct mtd_info *mtd, const char *devname, int device_id)
 	if (mtd_can_have_bb(mtd))
 		mtd->cdev_bb = mtd_add_bb(mtd, NULL);
 
-	if (mtd->class_dev.parent && !mtd->master) {
-		dev_add_param_string(&mtd->class_dev, "partitions", mtd_partition_set, mtd_partition_get, &mtd->partition_string, mtd);
-		of_parse_partitions(&mtd->cdev, mtd->class_dev.parent->device_node);
-		if (IS_ENABLED(CONFIG_OFDEVICE) && mtd->class_dev.parent->device_node) {
-			mtd->of_path = xstrdup(mtd->class_dev.parent->device_node->full_name);
+	if (mtd->dev.parent && !mtd->master) {
+		dev_add_param_string(&mtd->dev, "partitions", mtd_partition_set, mtd_partition_get, &mtd->partition_string, mtd);
+		of_parse_partitions(&mtd->cdev, mtd->dev.parent->device_node);
+		if (IS_ENABLED(CONFIG_OFDEVICE) && mtd->dev.parent->device_node) {
+			mtd->of_path = xstrdup(mtd->dev.parent->device_node->full_name);
 			ret = of_partitions_register_fixup(&mtd->cdev);
 			if (ret)
 				goto err1;
@@ -691,7 +691,7 @@ err1:
 	devfs_remove(&mtd->cdev);
 err:
 	free(mtd->cdev.name);
-	unregister_device(&mtd->class_dev);
+	unregister_device(&mtd->dev);
 
 	return ret;
 }
@@ -707,7 +707,7 @@ int del_mtd_device (struct mtd_info *mtd)
 	devfs_remove(&mtd->cdev);
 	if (mtd->cdev_bb)
 		mtd_del_bb(mtd);
-	unregister_device(&mtd->class_dev);
+	unregister_device(&mtd->dev);
 	free(mtd->param_size.value);
 	free(mtd->cdev.name);
 	if (mtd->master)

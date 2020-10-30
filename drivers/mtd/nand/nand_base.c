@@ -3891,7 +3891,7 @@ static int mtd_set_erasebad(struct param_d *param, void *priv)
 	}
 
 	if (!mtd->allow_erasebad)
-		dev_warn(&mtd->class_dev,
+		dev_warn(&mtd->dev,
 			"Allowing to erase bad blocks. This may be dangerous!\n");
 
 	mtd->allow_erasebad = true;
@@ -3940,17 +3940,17 @@ int add_mtd_nand_device(struct nand_chip *chip, char *devname)
 		return ret;
 
 	if (IS_ENABLED(CONFIG_NAND_ALLOW_ERASE_BAD))
-		dev_add_param_bool(&mtd->class_dev, "erasebad", mtd_set_erasebad,
+		dev_add_param_bool(&mtd->dev, "erasebad", mtd_set_erasebad,
 			NULL, &mtd->p_allow_erasebad, mtd);
 
-	dev_add_param_enum(&mtd->class_dev, "bbt", NULL, mtd_get_bbt_type,
+	dev_add_param_enum(&mtd->dev, "bbt", NULL, mtd_get_bbt_type,
 			   &chip->bbt_type, bbt_type_strings,
 			   ARRAY_SIZE(bbt_type_strings),
 			   mtd);
 
-	dev_add_param_uint32_ro(&mtd->class_dev, "ecc.bytes", &chip->ecc.bytes, "%u");
-	dev_add_param_uint32_ro(&mtd->class_dev, "ecc.strength", &chip->ecc.strength, "%u");
-	dev_add_param_uint32_ro(&mtd->class_dev, "ecc.size", &chip->ecc.size, "%u");
+	dev_add_param_uint32_ro(&mtd->dev, "ecc.bytes", &chip->ecc.bytes, "%u");
+	dev_add_param_uint32_ro(&mtd->dev, "ecc.strength", &chip->ecc.strength, "%u");
+	dev_add_param_uint32_ro(&mtd->dev, "ecc.size", &chip->ecc.size, "%u");
 
 	return ret;
 }

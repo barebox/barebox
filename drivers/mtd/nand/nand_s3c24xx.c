@@ -421,7 +421,7 @@ static int s3c24x0_nand_probe(struct device_d *dev)
 	/* structures must be linked */
 	chip = &host->nand;
 	mtd = &chip->mtd;
-	mtd->class_dev.parent = dev;
+	mtd->dev.parent = dev;
 
 	/* init the default settings */
 

@@ -252,7 +252,7 @@ static int mtdraw_erase(struct cdev *cdev, loff_t count, loff_t offset)
 	erase.len = mtd->erasesize;
 
 	while (count > 0) {
-		dev_dbg(&mtd->class_dev, "erase 0x%08llx len: 0x%08llx\n",
+		dev_dbg(&mtd->dev, "erase 0x%08llx len: 0x%08llx\n",
 			erase.addr, erase.len);
 
 		if (!mtd->allow_erasebad)
@@ -261,7 +261,7 @@ static int mtdraw_erase(struct cdev *cdev, loff_t count, loff_t offset)
 			ret = 0;
 
 		if (ret > 0) {
-			dev_info(&mtd->class_dev, "Skipping bad block at 0x%08llx\n",
+			dev_info(&mtd->dev, "Skipping bad block at 0x%08llx\n",
 				 erase.addr);
 		} else {
 			ret = mtd_erase(mtd, &erase);
@@ -309,7 +309,7 @@ static int add_mtdraw_device(struct mtd_info *mtd, const char *devname, void **p
 	mtdraw->cdev.size = (loff_t)mtd_div_by_wb(mtd->size, mtd) * mtdraw->rps;
 	mtdraw->cdev.name = basprintf("%s.raw", mtd->cdev.name);
 	mtdraw->cdev.priv = mtdraw;
-	mtdraw->cdev.dev = &mtd->class_dev;
+	mtdraw->cdev.dev = &mtd->dev;
 	mtdraw->cdev.mtd = mtd;
 	*priv = mtdraw;
 	devfs_create(&mtdraw->cdev);

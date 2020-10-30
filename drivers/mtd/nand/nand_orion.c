@@ -114,7 +114,7 @@ static int orion_nand_probe(struct device_d *dev)
 	if (!of_property_read_u32(dev_node, "chip-delay", &val))
 		chip->chip_delay = (u8)val;
 
-	mtd->class_dev.parent = dev;
+	mtd->dev.parent = dev;
 	chip->priv = priv;
 	chip->IO_ADDR_R = chip->IO_ADDR_W = io_base;
 	chip->cmd_ctrl = orion_nand_cmd_ctrl;

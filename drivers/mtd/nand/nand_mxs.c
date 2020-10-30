@@ -338,7 +338,7 @@ static int mxs_nand_calc_geo(struct nand_chip *chip)
 	int gf_len = 13;  /* length of Galois Field for non-DDR nand */
 	int max_ecc_strength;
 
-	nand_of_parse_node(mtd, mtd->class_dev.parent->device_node);
+	nand_of_parse_node(mtd, mtd->dev.parent->device_node);
 
 	max_ecc_strength = ((mtd->oobsize - MXS_NAND_METADATA_SIZE) * 8)
 			   / (gf_len * ecc_chunk_count);
@@ -2191,7 +2191,7 @@ static int mxs_nand_probe(struct device_d *dev)
 	/* structures must be linked */
 	chip = &nand_info->nand_chip;
 	mtd = &nand_info->nand_chip.mtd;
-	mtd->class_dev.parent = dev;
+	mtd->dev.parent = dev;
 
 	chip->priv = nand_info;
 

@@ -160,6 +160,10 @@
 	barebox,provide-mac-address = <&fec 0x620>;
 };
 
+&som_eeprom {
+	pagesize = <32>;
+};
+
 &usdhc3 {
 	#address-cells = <1>;
 	#size-cells = <1>;
@@ -179,12 +183,6 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_i2c1>;
 	status = "okay";
-
-	eeprom: eeprom@50 {
-		compatible = "atmel,24c32";
-		pagesize = <32>;
-		reg = <0x50>;
-	};
 
 	pmic@58 {
 		watchdog-priority = <500>;

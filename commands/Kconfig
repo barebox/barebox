@@ -1628,6 +1628,14 @@ config CMD_MEMTEST
 		  -i ITERATIONS	perform number of iterations (default 1, 0 is endless)
 		  -b	perform only a test on bus lines
 
+config CMD_MEMTESTER
+	tristate
+	prompt "memtester"
+	help
+	  Utility for testing the memory subsystem.
+
+	  Homepage: http://pyropus.ca/software/memtester/
+
 config CMD_MM
 	tristate
 	select DEV_MEM

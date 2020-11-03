@@ -47,25 +47,25 @@
 &am33xx_pinmux {
 	mmc1_pins: pinmux_mmc1_pins {
 		pinctrl-single,pins = <
-			0xf0 (MUX_MODE0 | INPUT_EN | PULL_UP)	/* mmc0_dat3.mmc0_dat3 */
-			0xf4 (MUX_MODE0 | INPUT_EN | PULL_UP)	/* mmc0_dat2.mmc0_dat2 */
-			0xf8 (MUX_MODE0 | INPUT_EN | PULL_UP)	/* mmc0_dat1.mmc0_dat1 */
-			0xfc (MUX_MODE0 | INPUT_EN | PULL_UP)	/* mmc0_dat0.mmc0_dat0 */
-			0x100 (MUX_MODE0 | INPUT_EN | PULL_UP)	/* mmc0_clk.mmc0_clk */
-			0x104 (MUX_MODE0 | INPUT_EN | PULL_UP)	/* mmc0_cmd.mmc0_cmd */
+			0xf0 (INPUT_EN | PULL_UP) MUX_MODE0	/* mmc0_dat3.mmc0_dat3 */
+			0xf4 (INPUT_EN | PULL_UP) MUX_MODE0	/* mmc0_dat2.mmc0_dat2 */
+			0xf8 (INPUT_EN | PULL_UP) MUX_MODE0	/* mmc0_dat1.mmc0_dat1 */
+			0xfc (INPUT_EN | PULL_UP) MUX_MODE0	/* mmc0_dat0.mmc0_dat0 */
+			0x100 (INPUT_EN | PULL_UP) MUX_MODE0	/* mmc0_clk.mmc0_clk */
+			0x104 (INPUT_EN | PULL_UP) MUX_MODE0	/* mmc0_cmd.mmc0_cmd */
 		>;
 	};
 
 	i2c1_pins: pinmux_i2c1_pins {
 		pinctrl-single,pins = <
-			0x158 0x2a      /* spi0_d1.i2c1_sda_mux3, INPUT | MODE2 */
-			0x15c 0x2a      /* spi0_cs0.i2c1_scl_mux3, INPUT | MODE2 */
+			0x158 0x2a 0    /* spi0_d1.i2c1_sda_mux3, INPUT | MODE2 */
+			0x15c 0x2a 0    /* spi0_cs0.i2c1_scl_mux3, INPUT | MODE2 */
 		>;
 	};
 
 	tps65910_pins: pinmux_tps65910_pins {
 		pinctrl-single,pins = <
-			0x078 (PIN_INPUT_PULLUP | MUX_MODE7)      /* gpmc_ben1.gpio1[28] */
+			0x078 PIN_INPUT_PULLUP MUX_MODE7      /* gpmc_ben1.gpio1[28] */
 		>;
 
 	};
@@ -77,99 +77,99 @@
 
 	uart0_pins: pinmux_uart0_pins {
 		pinctrl-single,pins = <
-			0x170 (PIN_INPUT_PULLUP | MUX_MODE0)	/* uart0_rxd.uart0_rxd */
-			0x174 (PIN_OUTPUT_PULLDOWN | MUX_MODE0)		/* uart0_txd.uart0_txd */
+			0x170 PIN_INPUT_PULLUP MUX_MODE0	/* uart0_rxd.uart0_rxd */
+			0x174 PIN_OUTPUT_PULLDOWN MUX_MODE0	/* uart0_txd.uart0_txd */
 		>;
 	};
 
 	cpsw_default: cpsw_default {
 		pinctrl-single,pins = <
 			/* Slave 1 */
-			0x10c (PIN_INPUT_PULLDOWN | MUX_MODE1)       /* mii1_crs.rmii1_crs_dv */
-			0x114 (PIN_OUTPUT_PULLDOWN | MUX_MODE1)      /* mii1_tx_en.rmii1_txen */
-			0x124 (PIN_OUTPUT_PULLDOWN | MUX_MODE1)      /* mii1_txd1.rmii1_txd1 */
-			0x128 (PIN_OUTPUT_PULLDOWN | MUX_MODE1)      /* mii1_txd0.rmii1_txd0 */
-			0x13c (PIN_INPUT_PULLDOWN | MUX_MODE1)      /* mii1_rxd1.rmii1_rxd1 */
-			0x140 (PIN_INPUT_PULLDOWN | MUX_MODE1)      /* mii1_rxd0.rmii1_rxd0 */
-			0x144 (PIN_INPUT_PULLDOWN | MUX_MODE0)      /* rmii1_ref_clk.rmii1_refclk */
+			0x10c PIN_INPUT_PULLDOWN MUX_MODE1     /* mii1_crs.rmii1_crs_dv */
+			0x114 PIN_OUTPUT_PULLDOWN MUX_MODE1    /* mii1_tx_en.rmii1_txen */
+			0x124 PIN_OUTPUT_PULLDOWN MUX_MODE1    /* mii1_txd1.rmii1_txd1 */
+			0x128 PIN_OUTPUT_PULLDOWN MUX_MODE1    /* mii1_txd0.rmii1_txd0 */
+			0x13c PIN_INPUT_PULLDOWN MUX_MODE1     /* mii1_rxd1.rmii1_rxd1 */
+			0x140 PIN_INPUT_PULLDOWN MUX_MODE1     /* mii1_rxd0.rmii1_rxd0 */
+			0x144 PIN_INPUT_PULLDOWN MUX_MODE0     /* rmii1_ref_clk.rmii1_refclk */
 
 
 			/* Slave 2 */
-			0x40 (PIN_OUTPUT_PULLDOWN | MUX_MODE2)	/* gpmc_a0.rgmii2_tctl */
-			0x44 (PIN_INPUT_PULLDOWN | MUX_MODE2)	/* gpmc_a1.rgmii2_rctl */
-			0x48 (PIN_OUTPUT_PULLDOWN | MUX_MODE2)	/* gpmc_a2.rgmii2_td3 */
-			0x4c (PIN_OUTPUT_PULLDOWN | MUX_MODE2)	/* gpmc_a3.rgmii2_td2 */
-			0x50 (PIN_OUTPUT_PULLDOWN | MUX_MODE2)	/* gpmc_a4.rgmii2_td1 */
-			0x54 (PIN_OUTPUT_PULLDOWN | MUX_MODE2)	/* gpmc_a5.rgmii2_td0 */
-			0x58 (PIN_OUTPUT_PULLDOWN | MUX_MODE2)	/* gpmc_a6.rgmii2_tclk */
-			0x5c (PIN_INPUT_PULLDOWN | MUX_MODE2)	/* gpmc_a7.rgmii2_rclk */
-			0x60 (PIN_INPUT_PULLDOWN | MUX_MODE2)	/* gpmc_a8.rgmii2_rd3 */
-			0x64 (PIN_INPUT_PULLDOWN | MUX_MODE2)	/* gpmc_a9.rgmii2_rd2 */
-			0x68 (PIN_INPUT_PULLDOWN | MUX_MODE2)	/* gpmc_a10.rgmii2_rd1 */
-			0x6c (PIN_INPUT_PULLDOWN | MUX_MODE2)	/* gpmc_a11.rgmii2_rd0 */
+			0x40 PIN_OUTPUT_PULLDOWN MUX_MODE2	/* gpmc_a0.rgmii2_tctl */
+			0x44 PIN_INPUT_PULLDOWN MUX_MODE2	/* gpmc_a1.rgmii2_rctl */
+			0x48 PIN_OUTPUT_PULLDOWN MUX_MODE2	/* gpmc_a2.rgmii2_td3 */
+			0x4c PIN_OUTPUT_PULLDOWN MUX_MODE2	/* gpmc_a3.rgmii2_td2 */
+			0x50 PIN_OUTPUT_PULLDOWN MUX_MODE2	/* gpmc_a4.rgmii2_td1 */
+			0x54 PIN_OUTPUT_PULLDOWN MUX_MODE2	/* gpmc_a5.rgmii2_td0 */
+			0x58 PIN_OUTPUT_PULLDOWN MUX_MODE2	/* gpmc_a6.rgmii2_tclk */
+			0x5c PIN_INPUT_PULLDOWN MUX_MODE2	/* gpmc_a7.rgmii2_rclk */
+			0x60 PIN_INPUT_PULLDOWN MUX_MODE2	/* gpmc_a8.rgmii2_rd3 */
+			0x64 PIN_INPUT_PULLDOWN MUX_MODE2	/* gpmc_a9.rgmii2_rd2 */
+			0x68 PIN_INPUT_PULLDOWN MUX_MODE2	/* gpmc_a10.rgmii2_rd1 */
+			0x6c PIN_INPUT_PULLDOWN MUX_MODE2	/* gpmc_a11.rgmii2_rd0 */
 		>;
 	};
 
 	cpsw_sleep: cpsw_sleep {
 		pinctrl-single,pins = <
 			/* Slave 1 reset value */
-			0x10c (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x114 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x124 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x128 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x13c (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x140 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x144 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x10c PIN_INPUT_PULLDOWN MUX_MODE7
+			0x114 PIN_INPUT_PULLDOWN MUX_MODE7
+			0x124 PIN_INPUT_PULLDOWN MUX_MODE7
+			0x128 PIN_INPUT_PULLDOWN MUX_MODE7
+			0x13c PIN_INPUT_PULLDOWN MUX_MODE7
+			0x140 PIN_INPUT_PULLDOWN MUX_MODE7
+			0x144 PIN_INPUT_PULLDOWN MUX_MODE7
 
 			/* Slave 2 reset value*/
-			0x40 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x44 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x48 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x4c (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x50 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x54 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x58 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x5c (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x60 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x64 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x68 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x6c (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x40 PIN_INPUT_PULLDOWN MUX_MODE7
+			0x44 PIN_INPUT_PULLDOWN MUX_MODE7
+			0x48 PIN_INPUT_PULLDOWN MUX_MODE7
+			0x4c PIN_INPUT_PULLDOWN MUX_MODE7
+			0x50 PIN_INPUT_PULLDOWN MUX_MODE7
+			0x54 PIN_INPUT_PULLDOWN MUX_MODE7
+			0x58 PIN_INPUT_PULLDOWN MUX_MODE7
+			0x5c PIN_INPUT_PULLDOWN MUX_MODE7
+			0x60 PIN_INPUT_PULLDOWN MUX_MODE7
+			0x64 PIN_INPUT_PULLDOWN MUX_MODE7
+			0x68 PIN_INPUT_PULLDOWN MUX_MODE7
+			0x6c PIN_INPUT_PULLDOWN MUX_MODE7
 		>;
 	};
 
 	davinci_mdio_default: davinci_mdio_default {
 		pinctrl-single,pins = <
 			/* MDIO */
-			0x148 (PIN_INPUT_PULLUP | SLEWCTRL_FAST | MUX_MODE0)	/* mdio_data.mdio_data */
-			0x14c (PIN_OUTPUT_PULLUP | MUX_MODE0)			/* mdio_clk.mdio_clk */
+			0x148 (PIN_INPUT_PULLUP | SLEWCTRL_FAST) MUX_MODE0	/* mdio_data.mdio_data */
+			0x14c PIN_OUTPUT_PULLUP MUX_MODE0			/* mdio_clk.mdio_clk */
 		>;
 	};
 
 	davinci_mdio_sleep: davinci_mdio_sleep {
 		pinctrl-single,pins = <
 			/* MDIO reset value */
-			0x148 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x14c (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x148 PIN_INPUT_PULLDOWN MUX_MODE7
+			0x14c PIN_INPUT_PULLDOWN MUX_MODE7
 		>;
 	};
 
 	nandflash_pins_s0: nandflash_pins_s0 {
 		pinctrl-single,pins = <
-			0x0 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad0.gpmc_ad0 */
-			0x4 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad1.gpmc_ad1 */
-			0x8 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad2.gpmc_ad2 */
-			0xc (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad3.gpmc_ad3 */
-			0x10 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad4.gpmc_ad4 */
-			0x14 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad5.gpmc_ad5 */
-			0x18 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad6.gpmc_ad6 */
-			0x1c (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad7.gpmc_ad7 */
-			0x70 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_wait0.gpmc_wait0 */
-			0x74 (PIN_INPUT_PULLUP | MUX_MODE7)	/* gpmc_wpn.gpio0_30 */
-			0x7c (PIN_OUTPUT | MUX_MODE0)		/* gpmc_csn0.gpmc_csn0  */
-			0x90 (PIN_OUTPUT | MUX_MODE0)		/* gpmc_advn_ale.gpmc_advn_ale */
-			0x94 (PIN_OUTPUT | MUX_MODE0)		/* gpmc_oen_ren.gpmc_oen_ren */
-			0x98 (PIN_OUTPUT | MUX_MODE0)		/* gpmc_wen.gpmc_wen */
-			0x9c (PIN_OUTPUT | MUX_MODE0)		/* gpmc_be0n_cle.gpmc_be0n_cle */
+			0x0 PIN_INPUT_PULLUP MUX_MODE0	/* gpmc_ad0.gpmc_ad0 */
+			0x4 PIN_INPUT_PULLUP MUX_MODE0	/* gpmc_ad1.gpmc_ad1 */
+			0x8 PIN_INPUT_PULLUP MUX_MODE0	/* gpmc_ad2.gpmc_ad2 */
+			0xc PIN_INPUT_PULLUP MUX_MODE0	/* gpmc_ad3.gpmc_ad3 */
+			0x10 PIN_INPUT_PULLUP MUX_MODE0	/* gpmc_ad4.gpmc_ad4 */
+			0x14 PIN_INPUT_PULLUP MUX_MODE0	/* gpmc_ad5.gpmc_ad5 */
+			0x18 PIN_INPUT_PULLUP MUX_MODE0	/* gpmc_ad6.gpmc_ad6 */
+			0x1c PIN_INPUT_PULLUP MUX_MODE0	/* gpmc_ad7.gpmc_ad7 */
+			0x70 PIN_INPUT_PULLUP MUX_MODE0	/* gpmc_wait0.gpmc_wait0 */
+			0x74 PIN_INPUT_PULLUP MUX_MODE7	/* gpmc_wpn.gpio0_30 */
+			0x7c PIN_OUTPUT MUX_MODE0	/* gpmc_csn0.gpmc_csn0  */
+			0x90 PIN_OUTPUT MUX_MODE0	/* gpmc_advn_ale.gpmc_advn_ale */
+			0x94 PIN_OUTPUT MUX_MODE0	/* gpmc_oen_ren.gpmc_oen_ren */
+			0x98 PIN_OUTPUT MUX_MODE0	/* gpmc_wen.gpmc_wen */
+			0x9c PIN_OUTPUT MUX_MODE0	/* gpmc_be0n_cle.gpmc_be0n_cle */
 		>;
 	};
 };

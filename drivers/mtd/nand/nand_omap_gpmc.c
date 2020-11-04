@@ -106,7 +106,6 @@ static const char *ecc_mode_strings[] = {
 
 /** internal structure maintained for nand information */
 struct gpmc_nand_info {
-	struct nand_hw_control controller;
 	struct device_d *pdev;
 	struct gpmc_nand_platform_data *pdata;
 	struct nand_chip nand;
@@ -1265,9 +1264,6 @@ static int gpmc_nand_probe(struct device_d *pdev)
 
 	nand->options |= NAND_OWN_BUFFERS;
 	nand->buffers = xzalloc(sizeof(*nand->buffers));
-
-	/* State my controller */
-	nand->controller = &oinfo->controller;
 
 	/* All information is ready.. now lets call setup, if present */
 	if (pdata->nand_setup) {

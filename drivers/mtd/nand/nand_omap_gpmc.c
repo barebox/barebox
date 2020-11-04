@@ -632,7 +632,7 @@ static void omap_write_buf_pref(struct nand_chip *nand_chip,
 	gpmc_prefetch_enable(info->gpmc_cs,
 			PREFETCH_FIFOTHRESHOLD_MAX, 0x0, len, 0x1);
 
-	while (len >= 0) {
+	while (len) {
 		w_count = readl(info->gpmc_base + GPMC_PREFETCH_STATUS);
 		w_count = GPMC_PREFETCH_STATUS_FIFO_CNT(w_count);
 		w_count = w_count >> 2;

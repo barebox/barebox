@@ -1435,17 +1435,13 @@ int denali_init(struct denali_nand_info *denali)
 	 * the real pagesize and anything necessery
 	 */
 	denali->devnum = ioread32(denali->flash_reg + DEVICES_CONNECTED);
-	nand->chipsize <<= (denali->devnum - 1);
-	nand->page_shift += (denali->devnum - 1);
-	nand->pagemask = (nand->chipsize >> nand->page_shift) - 1;
-	nand->bbt_erase_shift += (denali->devnum - 1);
-	nand->phys_erase_shift = nand->bbt_erase_shift;
-	nand->chip_shift += (denali->devnum - 1);
-	mtd->writesize <<= (denali->devnum - 1);
-	mtd->oobsize <<= (denali->devnum - 1);
-	mtd->erasesize <<= (denali->devnum - 1);
-	mtd->size = nand->numchips * nand->chipsize;
-	denali->bbtskipbytes *= denali->devnum;
+	if (denali->devnum != 1) {
+		ret = -EINVAL;
+		dev_err(denali->dev,
+			"Multiple devices (%d) detected, not yet supported\n",
+			denali->devnum);
+		goto failed_req_irq;
+	}
 
 	/*
 	 * second stage of the NAND scan
@@ -1496,10 +1492,6 @@ int denali_init(struct denali_nand_info *denali)
 		iowrite32(8, denali->flash_reg + ECC_CORRECTION);
 	}
 
-	nand->ecc.bytes *= denali->devnum;
-	nand->ecc.strength *= denali->devnum;
-	nand->ecc.layout->eccbytes *=
-		mtd->writesize / ECC_SECTOR_SIZE;
 	nand->ecc.layout->oobfree[0].offset =
 		denali->bbtskipbytes + nand->ecc.layout->eccbytes;
 	nand->ecc.layout->oobfree[0].length =
@@ -1515,7 +1507,7 @@ int denali_init(struct denali_nand_info *denali)
 	denali->blksperchip = denali->totalblks / nand->numchips;
 
 	/* override the default read operations */
-	nand->ecc.size = ECC_SECTOR_SIZE * denali->devnum;
+	nand->ecc.size = ECC_SECTOR_SIZE;
 	nand->ecc.read_page = denali_read_page;
 	nand->ecc.read_page_raw = denali_read_page_raw;
 	nand->ecc.write_page = denali_write_page;

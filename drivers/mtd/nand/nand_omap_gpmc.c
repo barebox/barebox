@@ -102,6 +102,7 @@ static const char *ecc_mode_strings[] = {
 	"hamming_hw_romcode",
 	"bch8_hw",
 	"bch8_hw_romcode",
+	"bch16_hw",
 };
 
 /** internal structure maintained for nand information */

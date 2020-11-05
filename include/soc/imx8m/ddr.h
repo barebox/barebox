@@ -363,8 +363,15 @@ struct dram_timing_info {
 
 extern struct dram_timing_info dram_timing;
 
+enum ddrc_type {
+	DDRC_TYPE_MM,
+	DDRC_TYPE_MQ,
+	DDRC_TYPE_MP,
+};
+
 int imx8mm_ddr_init(struct dram_timing_info *timing_info);
 int imx8mq_ddr_init(struct dram_timing_info *timing_info);
+int imx8mp_ddr_init(struct dram_timing_info *timing_info);
 int ddr_cfg_phy(struct dram_timing_info *timing_info);
 void load_lpddr4_phy_pie(void);
 void ddrphy_trained_csr_save(struct dram_cfg_param *param, unsigned int num);

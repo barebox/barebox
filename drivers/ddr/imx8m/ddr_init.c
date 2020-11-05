@@ -156,7 +156,7 @@ static int imx8m_ddr_init(unsigned long src_ddrc_rcr,
 	/* Step26: Set back register in Step4 to the original values if desired */
 	reg32_write(DDRC_RFSHCTL3(0), 0x0000000);
 	/* enable selfref_en by default */
-	setbits_le32(DDRC_PWRCTL(0), 0x1 << 3);
+	setbits_le32(DDRC_PWRCTL(0), 0x1);
 
 	/* enable port 0 */
 	reg32_write(DDRC_PCTRL_0(0), 0x00000001);

@@ -88,8 +88,8 @@ static int orion_nand_probe(struct device_d *dev)
 	u32 val = 0;
 
 	priv = xzalloc(sizeof(struct orion_nand));
-	mtd = &priv->chip.mtd;
 	chip = &priv->chip;
+	mtd = nand_to_mtd(chip);
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))

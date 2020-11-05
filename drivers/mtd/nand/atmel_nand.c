@@ -1026,21 +1026,6 @@ static int atmel_nand_read_page(struct nand_chip *chip, uint8_t *buf,
 
 	nand_read_page_op(chip, page, 0, NULL, 0);
 
-	/*
-	 * Errata: ALE is incorrectly wired up to the ECC controller
-	 * on the AP7000, so it will include the address cycles in the
-	 * ECC calculation.
-	 *
-	 * Workaround: Reset the parity registers before reading the
-	 * actual data.
-	 */
-#if 0
-	if (cpu_is_at32ap7000()) {
-		struct atmel_nand_host *host = chip->priv;
-		ecc_writel(host->ecc, CR, ATMEL_ECC_RST);
-	}
-#endif
-
 	/* read the page */
 	chip->legacy.read_buf(chip, p, eccsize);
 
@@ -1157,13 +1142,6 @@ static int atmel_nand_correct(struct nand_chip *nand_chip, u_char *dat,
  */
 static void atmel_nand_hwctl(struct nand_chip *nand_chip, int mode)
 {
-#if 0
-	if (cpu_is_at32ap7000()) {
-		struct nand_chip *nand_chip = mtd_to_nand(mtd);
-		struct atmel_nand_host *host = nand_chip->priv;
-		ecc_writel(host->ecc, CR, ATMEL_ECC_RST);
-	}
-#endif
 }
 
 static int atmel_nand_of_init(struct atmel_nand_host *host, struct device_node *np)

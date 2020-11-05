@@ -24,57 +24,127 @@
 #include <errno.h>
 
 #include <linux/clk.h>
+#include <linux/spinlock.h>
 
 
 #include "denali.h"
 
 struct denali_dt {
-	struct denali_nand_info	denali;
-	struct clk		*clk;
+	struct denali_controller	denali;
+	struct clk *clk;	/* core clock */
+	struct clk *clk_x;	/* bus interface clock */
+	struct clk *clk_ecc;	/* ECC circuit clock */
 };
 
+struct denali_dt_data {
+	unsigned int revision;
+	unsigned int caps;
+	unsigned int oob_skip_bytes;
+	const  struct nand_ecc_caps *ecc_caps;
+};
+
+NAND_ECC_CAPS_SINGLE(denali_socfpga_ecc_caps, denali_calc_ecc_bytes,
+		     512, 8, 15);
+static const struct denali_dt_data denali_socfpga_data = {
+	.caps = DENALI_CAP_HW_ECC_FIXUP,
+	.oob_skip_bytes = 2,
+	.ecc_caps = &denali_socfpga_ecc_caps,
+};
+
+static int denali_dt_chip_init(struct denali_controller *denali,
+			       struct device_node *chip_np)
+{
+	struct denali_chip *dchip;
+	u32 bank;
+	int nsels, i, ret;
+
+	nsels = of_property_count_elems_of_size(chip_np, "reg", sizeof(u32));
+	if (nsels < 0)
+		return nsels;
+
+	dchip = xzalloc(sizeof(*dchip) + sizeof(struct denali_chip_sel) *nsels);
+
+	dchip->nsels = nsels;
+
+	for (i = 0; i < nsels; i++) {
+		ret = of_property_read_u32_index(chip_np, "reg", i, &bank);
+		if (ret)
+			return ret;
+
+		dchip->sels[i].bank = bank;
+
+		nand_set_flash_node(&dchip->chip, chip_np);
+	}
+
+	return denali_chip_init(denali, dchip);
+}
 
 static int denali_dt_probe(struct device_d *ofdev)
 {
 	struct resource *iores;
 	struct denali_dt *dt;
-	struct denali_nand_info *denali;
+	struct denali_controller *denali;
+	struct denali_dt_data *data;
+	struct device_node *np;
 	int ret;
 
 	if (!IS_ENABLED(CONFIG_OFDEVICE))
 		return 1;
+
+	ret = dev_get_drvdata(ofdev, (const void **)&data);
+	if (ret)
+		return ret;
 
 	dt = kzalloc(sizeof(*dt), GFP_KERNEL);
 	if (!dt)
 		return -ENOMEM;
 	denali = &dt->denali;
 
-	denali->platform = DT;
 	denali->dev = ofdev;
 
 	iores = dev_request_mem_resource(ofdev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
-	denali->flash_mem = IOMEM(iores->start);
+	denali->host = IOMEM(iores->start);
 
 	iores = dev_request_mem_resource(ofdev, 1);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
-	denali->flash_reg = IOMEM(iores->start);
+	denali->reg = IOMEM(iores->start);
 
-	dt->clk = clk_get(ofdev, NULL);
-	if (IS_ERR(dt->clk)) {
-		dev_err(ofdev, "no clk available\n");
+	dt->clk = clk_get(ofdev, "nand");
+	if (IS_ERR(dt->clk))
 		return PTR_ERR(dt->clk);
-	}
-	clk_enable(dt->clk);
 
-	denali->have_hw_ecc_fixup = of_property_read_bool(ofdev->device_node,
-		"have-hw-ecc-fixup");
+	dt->clk_x = clk_get(ofdev, "nand_x");
+	if (IS_ERR(dt->clk_x))
+		return PTR_ERR(dt->clk_x);
+
+	dt->clk_ecc = clk_get(ofdev, "ecc");
+	if (IS_ERR(dt->clk_ecc))
+		return PTR_ERR(dt->clk_ecc);
+
+	clk_enable(dt->clk);
+	clk_enable(dt->clk_x);
+	clk_enable(dt->clk_ecc);
+
+	denali->clk_rate = clk_get_rate(dt->clk);
+	denali->clk_x_rate = clk_get_rate(dt->clk_x);
+
+	denali->revision = data->revision;
+	denali->caps = data->caps;
+	denali->oob_skip_bytes = data->oob_skip_bytes;
+	denali->ecc_caps = data->ecc_caps;
 
 	ret = denali_init(denali);
 	if (ret)
 		goto out_disable_clk;
+
+	for_each_child_of_node(ofdev->device_node, np) {
+		ret = denali_dt_chip_init(denali, np);
+		if (ret)
+			goto out_disable_clk;
+	}
 
 	return 0;
 
@@ -86,7 +156,8 @@ out_disable_clk:
 
 static __maybe_unused struct of_device_id denali_nand_compatible[] = {
 	{
-		.compatible = "altr,socfpga-denali-nand"
+		.compatible = "altr,socfpga-denali-nand",
+		.data = &denali_socfpga_data,
 	}, {
 		/* sentinel */
 	}

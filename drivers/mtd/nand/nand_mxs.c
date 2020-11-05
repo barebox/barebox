@@ -2190,7 +2190,7 @@ static int mxs_nand_probe(struct device_d *dev)
 
 	/* structures must be linked */
 	chip = &nand_info->nand_chip;
-	mtd = &nand_info->nand_chip.mtd;
+	mtd = nand_to_mtd(chip);
 	mtd->dev.parent = dev;
 
 	chip->priv = nand_info;

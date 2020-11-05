@@ -382,6 +382,10 @@ int wait_ddrphy_training_complete(void);
 void ddrphy_init_set_dfi_clk(unsigned int drate);
 void ddrphy_init_read_msg_block(enum fw_type type);
 
+void update_umctl2_rank_space_setting(unsigned int pstat_num,
+				      enum ddrc_type type);
+void get_trained_CDD(unsigned int fsp);
+
 #define reg32_write(a, v)	writel(v, a)
 #define reg32_read(a)		readl(a)
 

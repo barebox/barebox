@@ -13,6 +13,7 @@
 #include <ioctl.h>
 #include <nand.h>
 #include <linux/mtd/mtd-abi.h>
+#include <linux/mtd/mtd.h>
 #include <fcntl.h>
 #include <libgen.h>
 
@@ -130,6 +131,8 @@ static int do_nand(int argc, char *argv[])
 		loff_t ofs;
 		int bad = 0;
 
+		printf("---- bad blocks ----\n");
+
 		for (ofs = 0; ofs < mtdinfo.size; ofs += mtdinfo.erasesize) {
 			if (ioctl(fd, MEMGETBADBLOCK, &ofs)) {
 				printf("Block at 0x%08llx is bad\n", ofs);
@@ -139,6 +142,8 @@ static int do_nand(int argc, char *argv[])
 
 		if (!bad)
 			printf("No bad blocks\n");
+
+		mtd_print_oob_info(mtdinfo.mtd);
 	}
 
 out:

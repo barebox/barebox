@@ -1251,3 +1251,84 @@ void mtd_set_ecclayout(struct mtd_info *mtd, struct nand_ecclayout *ecclayout)
 	mtd_set_ooblayout(mtd, &mtd_ecclayout_wrapper_ops);
 }
 EXPORT_SYMBOL_GPL(mtd_set_ecclayout);
+
+void mtd_print_oob_info(struct mtd_info *mtd)
+{
+	struct mtd_oob_region region;
+	int ret, i = 0, j, rowsize;
+	unsigned char *oob;
+
+	if (!mtd->ooblayout)
+		return;
+
+	oob = malloc(mtd->oobsize);
+	if (!oob)
+		return;
+
+	memset(oob, ' ', mtd->oobsize);
+
+	printf("---- ECC regions ----\n");
+	while (1) {
+		ret = mtd->ooblayout->ecc(mtd, i, &region);
+		if (ret)
+			break;
+		printf("ecc:  offset: %4d length: %4d\n",
+		       region.offset, region.length);
+		i++;
+
+		for (j = 0; j < region.length; j++) {
+			unsigned char *p = oob + region.offset + j;
+
+			if (*p != ' ')
+				printf("oob offset %d already set to '%c'\n",
+				       region.offset + j, *p);
+			*p = 'e';
+		}
+	}
+
+	i = 0;
+
+	printf("---- free regions ----\n");
+	while (1) {
+		ret = mtd->ooblayout->free(mtd, i, &region);
+		if (ret)
+			break;
+
+		printf("free: offset: %4d length: %4d\n",
+		       region.offset, region.length);
+		i++;
+
+		for (j = 0; j < region.length; j++) {
+			unsigned char *p = oob + region.offset + j;
+
+			if (*p != ' ')
+				printf("oob offset %d already set to '%c'\n",
+				       region.offset + j, *p);
+			*p = 'f';
+		}
+	}
+
+	j = 0;
+	rowsize = 16;
+
+	printf("---- OOB area ----\n");
+	while (1) {
+		printf("%-4d", j);
+
+		for (i = 0; i < rowsize; i++) {
+			if (i + j >= mtd->oobsize)
+				break;
+			if (i == rowsize / 2)
+				printf(" ");
+			printf(" %c", oob[j + i]);
+		}
+
+		printf("\n");
+		j += rowsize;
+
+		if (j >= mtd->oobsize)
+			break;
+	}
+
+	free(oob);
+}

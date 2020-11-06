@@ -376,4 +376,6 @@ static inline int mtd_is_bitflip_or_eccerr(int err) {
 
 void mtd_set_ecclayout(struct mtd_info *mtd, struct nand_ecclayout *ecclayout);
 
+void mtd_print_oob_info(struct mtd_info *mtd);
+
 #endif /* __MTD_MTD_H__ */

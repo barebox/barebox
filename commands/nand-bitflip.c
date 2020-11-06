@@ -53,7 +53,7 @@ static int do_nand_bitflip(int argc, char *argv[])
 			block = simple_strtoul(optarg, NULL, 0);
 			break;
 		case 'o':
-			offset = simple_strtoull(optarg, NULL, 0);
+			offset = strtoull_suffix(optarg, NULL, 0);
 			break;
 		case 'c':
 			check = 1;

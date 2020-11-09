@@ -19,33 +19,6 @@
 
 #define V2M_SYS_FLASH	0x03c
 
-static int vexpress_core_init(void)
-{
-	char *hostname = "vexpress-unknown";
-
-	if (amba_is_arm_sp804(IOMEM(0x10011000))) {
-		vexpress_a9_legacy_init();
-		hostname = "vexpress-a9-legacy";
-	} else {
-		vexpress_init();
-		if (cpu_is_cortex_a5())
-			hostname = "vexpress-a5";
-		else if (cpu_is_cortex_a7())
-			hostname = "vexpress-a7";
-		else if (cpu_is_cortex_a9())
-			hostname = "vexpress-a9";
-		else if (cpu_is_cortex_a15())
-			hostname = "vexpress-a15";
-	}
-
-	writel(1, v2m_sysreg_base + V2M_SYS_FLASH);
-
-	barebox_set_hostname(hostname);
-
-	return 0;
-}
-postcore_initcall(vexpress_core_init);
-
 static int of_fixup_virtio_mmio(struct device_node *root, void *unused)
 {
 	struct device_node *barebox_root, *np, *parent;
@@ -69,8 +42,46 @@ static int of_fixup_virtio_mmio(struct device_node *root, void *unused)
 	return 0;
 }
 
-static int of_register_virtio_mmio_fixup(void)
+static int vexpress_probe(struct device_d *dev)
 {
-	return of_register_fixup(of_fixup_virtio_mmio, NULL);
+	char *hostname = "vexpress-unknown";
+	int ret = 0;
+
+	if (amba_is_arm_sp804(IOMEM(0x10011000))) {
+		vexpress_a9_legacy_init();
+		hostname = "vexpress-a9-legacy";
+	} else {
+		vexpress_init();
+		if (cpu_is_cortex_a5())
+			hostname = "vexpress-a5";
+		else if (cpu_is_cortex_a7())
+			hostname = "vexpress-a7";
+		else if (cpu_is_cortex_a9())
+			hostname = "vexpress-a9";
+		else if (cpu_is_cortex_a15())
+			hostname = "vexpress-a15";
+	}
+
+	writel(1, v2m_sysreg_base + V2M_SYS_FLASH);
+
+	barebox_set_hostname(hostname);
+
+	ret = of_register_fixup(of_fixup_virtio_mmio, NULL);
+
+	return ret;
 }
-late_initcall(of_register_virtio_mmio_fixup);
+
+static const struct of_device_id vexpress_of_match[] = {
+	{ .compatible = "arm,vexpress,v2p-ca9" },
+	{ .compatible = "arm,vexpress,v2p-ca15" },
+	{ .compatible = "arm,vexpress" },
+	{ /* Sentinel */},
+};
+
+static struct driver_d vexpress_board_driver = {
+	.name = "board-vexpress",
+	.probe = vexpress_probe,
+	.of_compatible = vexpress_of_match,
+};
+
+postcore_platform_driver(vexpress_board_driver);

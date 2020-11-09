@@ -2203,6 +2203,9 @@ int of_add_memory(struct device_node *node, bool dump)
 		if (!resource_size(&res))
 			continue;
 
+		if (!of_device_is_available(node))
+			continue;
+
 		of_add_memory_bank(node, dump, mem_bank_num,
 				res.start, resource_size(&res));
 		mem_bank_num++;

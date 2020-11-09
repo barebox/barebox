@@ -237,10 +237,4 @@ struct amba_driver pl011_driver = {
 	.id_table	= pl011_ids,
 };
 
-static int pl011_init(void)
-{
-	amba_driver_register(&pl011_driver);
-	return 0;
-}
-
-console_initcall(pl011_init);
+console_amba_driver(pl011_driver);

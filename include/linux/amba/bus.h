@@ -60,6 +60,13 @@ extern struct bus_type amba_bustype;
 
 #define to_amba_device(d)	container_of(d, struct amba_device, dev)
 
+#define device_amba_driver(drv)	\
+	register_driver_macro(device,amba,drv)
+#define coredevice_amba_driver(drv)	\
+	register_driver_macro(coredevice,amba,drv)
+#define console_amba_driver(drv)	\
+	register_driver_macro(console,amba,drv)
+
 int amba_driver_register(struct amba_driver *);
 void amba_driver_unregister(struct amba_driver *);
 struct amba_device *amba_device_alloc(const char *, int id, resource_size_t, size_t);

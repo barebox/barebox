@@ -85,4 +85,4 @@ struct amba_driver sp804_driver = {
 	.id_table	= sp804_ids,
 };
 
-coredevice_platform_driver(sp804_driver);
+coredevice_amba_driver(sp804_driver);

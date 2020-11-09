@@ -216,7 +216,7 @@ config ARCH_VERSATILE
 	select HAS_DEBUG_LL
 
 config ARCH_VEXPRESS
-	bool "ARM Vexpres boards"
+	bool "ARM Vexpress & virt boards"
 	select HAS_DEBUG_LL
 	select CPU_V7
 	select ARM_AMBA

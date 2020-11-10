@@ -84,6 +84,11 @@
 };
 
 &fec {
+	/*
+	 * barebox doesn't have a driver for the PMIC providing the phy-supply
+	 * (dlg,da9063). So remove the phy-supply property and rely on the
+	 * PMIC's reset default which has this supply enabled.
+	 */
 	/delete-property/ phy-supply;
 };
 
@@ -155,6 +160,10 @@
 	barebox,provide-mac-address = <&fec 0x620>;
 };
 
+&som_eeprom {
+	pagesize = <32>;
+};
+
 &usdhc3 {
 	#address-cells = <1>;
 	#size-cells = <1>;
@@ -174,12 +183,6 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_i2c1>;
 	status = "okay";
-
-	eeprom: eeprom@50 {
-		compatible = "atmel,24c32";
-		pagesize = <32>;
-		reg = <0x50>;
-	};
 
 	pmic@58 {
 		watchdog-priority = <500>;

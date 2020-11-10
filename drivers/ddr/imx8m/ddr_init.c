@@ -13,8 +13,6 @@
 #include <mach/imx8m-regs.h>
 #include <mach/imx8m-ccm-regs.h>
 
-#define SRC_DDRC_RCR_ADDR MX8MQ_SRC_DDRC_RCR_ADDR
-
 static void ddr_cfg_umctl2(struct dram_cfg_param *ddrc_cfg, int num)
 {
 	int i = 0;
@@ -25,13 +23,36 @@ static void ddr_cfg_umctl2(struct dram_cfg_param *ddrc_cfg, int num)
 	}
 }
 
-static int imx8m_ddr_init(unsigned long src_ddrc_rcr,
-			  struct dram_timing_info *dram_timing)
+/*
+ * We store the timing parameters here. the TF-A will pick these up.
+ * Note that the timing used we leave the driver with is a PLL bypass 25MHz
+ * mode. So if your board runs horribly slow you'll likely have to provide a
+ * TF-A binary.
+ */
+#define IMX8M_SAVED_DRAM_TIMING_BASE		0x180000
+
+static int imx8m_ddr_init(struct dram_timing_info *dram_timing,
+			  enum ddrc_type type)
 {
+	unsigned long src_ddrc_rcr = MX8M_SRC_DDRC_RCR_ADDR;
 	unsigned int tmp, initial_drate, target_freq;
 	int ret;
 
 	pr_debug("start DRAM init\n");
+
+	/* Step1: Follow the power up procedure */
+	switch (type) {
+	case DDRC_TYPE_MQ:
+		reg32_write(src_ddrc_rcr + 0x04, 0x8f00000f);
+		reg32_write(src_ddrc_rcr, 0x8f00000f);
+		reg32_write(src_ddrc_rcr + 0x04, 0x8f000000);
+		break;
+	case DDRC_TYPE_MM:
+	case DDRC_TYPE_MP:
+		reg32_write(src_ddrc_rcr, 0x8f00001f);
+		reg32_write(src_ddrc_rcr, 0x8f00000f);
+		break;
+	}
 
 	pr_debug("cfg clk\n");
 
@@ -44,7 +65,7 @@ static int imx8m_ddr_init(unsigned long src_ddrc_rcr,
 	ddrphy_init_set_dfi_clk(initial_drate);
 
 	/* D-aasert the presetn */
-	reg32_write(SRC_DDRC_RCR_ADDR, 0x8F000006);
+	reg32_write(src_ddrc_rcr, 0x8F000006);
 
 	/* Step2: Program the dwc_ddr_umctl2 registers */
 	pr_debug("ddrc config start\n");
@@ -52,8 +73,8 @@ static int imx8m_ddr_init(unsigned long src_ddrc_rcr,
 	pr_debug("ddrc config done\n");
 
 	/* Step3: De-assert reset signal(core_ddrc_rstn & aresetn_n) */
-	reg32_write(SRC_DDRC_RCR_ADDR, 0x8F000004);
-	reg32_write(SRC_DDRC_RCR_ADDR, 0x8F000000);
+	reg32_write(src_ddrc_rcr, 0x8F000004);
+	reg32_write(src_ddrc_rcr, 0x8F000000);
 
 	/*
 	 * Step4: Disable auto-refreshes, self-refresh, powerdown, and
@@ -113,6 +134,9 @@ static int imx8m_ddr_init(unsigned long src_ddrc_rcr,
 	/* Step15: Set SWCTL.sw_done to 0 */
 	reg32_write(DDRC_SWCTL(0), 0x00000000);
 
+	/* Apply rank-to-rank workaround */
+	update_umctl2_rank_space_setting(dram_timing->fsp_msg_num - 1, type);
+
 	/* Step16: Set DFIMISC.dfi_init_start to 1 */
 	setbits_le32(DDRC_DFIMISC(0), (0x1 << 5));
 
@@ -156,58 +180,29 @@ static int imx8m_ddr_init(unsigned long src_ddrc_rcr,
 	/* Step26: Set back register in Step4 to the original values if desired */
 	reg32_write(DDRC_RFSHCTL3(0), 0x0000000);
 	/* enable selfref_en by default */
-	setbits_le32(DDRC_PWRCTL(0), 0x1 << 3);
+	setbits_le32(DDRC_PWRCTL(0), 0x1);
 
 	/* enable port 0 */
 	reg32_write(DDRC_PCTRL_0(0), 0x00000001);
 	pr_debug(" ddrmix config done\n");
 
-	return 0;
-}
-
-/*
- * We store the timing parameters here. the TF-A will pick these up.
- * Note that the timing used we leave the driver with is a PLL bypass 25MHz
- * mode. So if your board runs horribly slow you'll likely have to provide a
- * TF-A binary.
- */
-#define IMX8M_SAVED_DRAM_TIMING_BASE		0x180000
-
-int imx8mm_ddr_init(struct dram_timing_info *dram_timing)
-{
-	unsigned long src_ddrc_rcr = MX8M_SRC_DDRC_RCR_ADDR;
-	int ret;
-
-	/* Step1: Follow the power up procedure */
-	reg32_write(src_ddrc_rcr, 0x8f00001f);
-	reg32_write(src_ddrc_rcr, 0x8f00000f);
-
-	ret = imx8m_ddr_init(src_ddrc_rcr, dram_timing);
-	if (ret)
-		return ret;
-
 	/* save the dram timing config into memory */
 	dram_config_save(dram_timing, IMX8M_SAVED_DRAM_TIMING_BASE);
 
 	return 0;
+}
+
+int imx8mm_ddr_init(struct dram_timing_info *dram_timing)
+{
+	return imx8m_ddr_init(dram_timing, DDRC_TYPE_MM);
 }
 
 int imx8mq_ddr_init(struct dram_timing_info *dram_timing)
 {
-	unsigned long src_ddrc_rcr = MX8MQ_SRC_DDRC_RCR_ADDR;
-	int ret;
+	return imx8m_ddr_init(dram_timing, DDRC_TYPE_MQ);
+}
 
-	/* Step1: Follow the power up procedure */
-	reg32_write(src_ddrc_rcr + 0x04, 0x8f00000f);
-	reg32_write(src_ddrc_rcr, 0x8f00000f);
-	reg32_write(src_ddrc_rcr + 0x04, 0x8f000000);
-
-	ret = imx8m_ddr_init(src_ddrc_rcr, dram_timing);
-	if (ret)
-		return ret;
-
-	/* save the dram timing config into memory */
-	dram_config_save(dram_timing, IMX8M_SAVED_DRAM_TIMING_BASE);
-
-	return 0;
+int imx8mp_ddr_init(struct dram_timing_info *dram_timing)
+{
+	return imx8m_ddr_init(dram_timing, DDRC_TYPE_MP);
 }

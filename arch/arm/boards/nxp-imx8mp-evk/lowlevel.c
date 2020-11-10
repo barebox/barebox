@@ -118,7 +118,7 @@ static void start_atf(void)
 
 	power_init_board();
 
-	imx8mm_ddr_init(&imx8mp_evk_dram_timing);
+	imx8mp_ddr_init(&imx8mp_evk_dram_timing);
 
 	imx8mp_get_boot_source(&src, &instance);
 	switch (src) {

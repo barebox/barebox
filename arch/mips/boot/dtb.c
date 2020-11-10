@@ -35,7 +35,6 @@ extern char __dtb_start[];
 
 static int of_mips_init(void)
 {
-	struct device_node *root;
 	void *fdt;
 
 	fdt = glob_fdt;

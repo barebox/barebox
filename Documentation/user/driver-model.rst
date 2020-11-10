@@ -88,7 +88,14 @@ The parameters can be used as shell variables:
 .. code-block:: sh
 
   eth0.ipaddr=192.168.23.15
-  echo "my current ip is: $eth0.ipaddr"
+  echo "my current ip is: ${eth0.ipaddr}"
+
+.. note::
+
+  Hush shell syntax for defining and setting variables is the same, so
+  some characters such as hyphens are not allowed on the left hand side
+  of a shell variable assignment. :ref:`command_setenv`, if enabled,
+  can still be used to write such a variable though.
 
 device variables may have a type, so assigning wrong values may fail:
 

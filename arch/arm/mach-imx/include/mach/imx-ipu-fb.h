@@ -1,11 +1,5 @@
-/*
- * Copyright (C) 2008
- * Guennadi Liakhovetski, DENX Software Engineering, <lg@denx.de>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- */
+/* SPDX-License-Identifier: GPL-2.0-only */
+/* SPDX-FileCopyrightText: 2008 Guennadi Liakhovetski <lg@denx.de>, DENX Software Engineering */
 
 #ifndef __MACH_IMX_IPU_FB_H__
 #define __MACH_IMX_IPU_FB_H__

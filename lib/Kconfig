@@ -182,6 +182,9 @@ config ARCH_HAS_STACK_DUMP
 config ARCH_HAS_DATA_ABORT_MASK
 	bool
 
+config ARCH_HAS_ZERO_PAGE
+	bool
+
 config HAVE_EFFICIENT_UNALIGNED_ACCESS
 	bool
 

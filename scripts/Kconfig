@@ -20,15 +20,6 @@ config MVEBU_HOSTTOOLS
 	  This enables building the tools kwbimage to create an image suitable
 	  for Marvell mvebu machines and kwboot to boot via UART.
 
-config MXS_HOSTTOOLS
-	bool "mxs hosttools" if COMPILE_HOST_TOOLS
-	depends on ARCH_MXS || COMPILE_HOST_TOOLS
-	default y if ARCH_MXS
-	help
-	  This builds the tools mxsimage and mxsboot which are needed to
-	  create bootable image files for mxs. You need openssl development
-	  files to compile this tool.
-
 config OMAP3_USB_LOADER
 	bool "omap3 USB loader"
 	depends on ARCH_OMAP3 || COMPILE_HOST_TOOLS

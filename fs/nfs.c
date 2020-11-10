@@ -263,6 +263,74 @@ struct nfs_dir {
 	struct nfs_fh fh;
 };
 
+struct nfserror {
+	int ne;
+	int e;
+	const char *name;
+};
+
+static struct nfserror nfserrors[] = {
+	{ .ne = NFS3ERR_PERM, .e = EPERM },
+	{ .ne = NFS3ERR_NOENT, .e = ENOENT },
+	{ .ne = NFS3ERR_IO, .e = EIO },
+	{ .ne = NFS3ERR_NXIO, .e = ENXIO },
+	{ .ne = NFS3ERR_ACCES, .e = EACCES },
+	{ .ne = NFS3ERR_EXIST, .e = EEXIST },
+	{ .ne = NFS3ERR_XDEV, .e = EXDEV },
+	{ .ne = NFS3ERR_NODEV, .e = ENODEV },
+	{ .ne = NFS3ERR_NOTDIR, .e = ENOTDIR },
+	{ .ne = NFS3ERR_ISDIR, .e = EISDIR },
+	{ .ne = NFS3ERR_INVAL, .e = EINVAL },
+	{ .ne = NFS3ERR_FBIG, .e = EFBIG },
+	{ .ne = NFS3ERR_NOSPC, .e = ENOSPC },
+	{ .ne = NFS3ERR_ROFS, .e = EROFS },
+	{ .ne = NFS3ERR_MLINK, .e = EMLINK },
+	{ .ne = NFS3ERR_NAMETOOLONG, .e = ENAMETOOLONG },
+	{ .ne = NFS3ERR_NOTEMPTY, .e = ENOTEMPTY },
+	{ .ne = NFS3ERR_DQUOT, .e = EDQUOT },
+	{ .ne = NFS3ERR_STALE, .e = ESTALE },
+	{ .ne = NFS3ERR_REMOTE, .e = EREMOTE },
+	{ .ne = NFS3ERR_NOTSUPP, .e = EOPNOTSUPP },
+	{ .ne = NFS3ERR_BADHANDLE, .e = EINVAL, .name = "BADHANDLE"},
+	{ .ne = NFS3ERR_NOT_SYNC, .e = EINVAL, .name = "NOT_SYNC" },
+	{ .ne = NFS3ERR_BAD_COOKIE, .e = EINVAL, .name = "BAD_COOKIE" },
+	{ .ne = NFS3ERR_TOOSMALL, .e = EINVAL, .name = "TOOSMALL" },
+	{ .ne = NFS3ERR_SERVERFAULT, .e = EINVAL, .name = "SERVERFAULT" },
+	{ .ne = NFS3ERR_BADTYPE, .e = EINVAL, .name = "BADTYPE" },
+	{ .ne = NFS3ERR_JUKEBOX, .e = EINVAL, .name = "JUKEBOX" },
+};
+
+static const char *nfserrstr(u32 nfserror, int *errcode)
+{
+	static char str[32];
+	int i;
+
+	/*
+	 * Most NFS errors have a corresponding POSIX error code. But not all of
+	 * them have one, so some must be mapped to a different code here.
+	 */
+	for (i = 0; i < ARRAY_SIZE(nfserrors); i++) {
+		struct nfserror *err = &nfserrors[i];
+
+		if (nfserror == err->ne) {
+			if (errcode)
+				*errcode = -err->e;
+
+			if (err->name) {
+				snprintf(str, sizeof(str), "NFS3ERR_%s", err->name);
+				return str;
+			} else
+				return strerror(err->e);
+		}
+	}
+
+	if (errcode)
+		*errcode = -EINVAL;
+
+	snprintf(str, sizeof(str), "Unknown NFS error %d", nfserror);
+	return str;
+}
+
 static void xdr_init(struct xdr_stream *stream, void *buf, int len)
 {
 	stream->p = stream->buf = buf;
@@ -642,7 +710,7 @@ static uint32_t *nfs_read_post_op_attr(uint32_t *p, struct inode *inode)
 static int nfs_mount_req(struct nfs_priv *npriv)
 {
 	uint32_t data[1024];
-	uint32_t *p;
+	uint32_t *p, status;
 	int len;
 	int pathlen;
 	struct packet *nfs_packet;
@@ -667,7 +735,18 @@ static int nfs_mount_req(struct nfs_priv *npriv)
 	if (IS_ERR(nfs_packet))
 		return PTR_ERR(nfs_packet);
 
-	p = (void *)nfs_packet->data + sizeof(struct rpc_reply) + 4;
+	p = (void *)nfs_packet->data + sizeof(struct rpc_reply);
+
+	/*
+	 * Theoretically the error status is one of MNT3ERR_..., but the NFS
+	 * constants are identical.
+	 */
+	status = ntoh32(net_read_uint32(p++));
+	if (status != NFS3_OK) {
+		int ret;
+		pr_err("Mounting failed: %s\n", nfserrstr(status, &ret));
+		return ret;
+	}
 
 	npriv->rootfh.size = ntoh32(net_read_uint32(p++));
 	if (npriv->rootfh.size > NFS3_FHSIZE) {
@@ -719,7 +798,7 @@ static int nfs_lookup_req(struct nfs_priv *npriv, struct nfs_fh *fh,
 {
 	struct nfs_inode *ninode = nfsi(inode);
 	uint32_t data[1024];
-	uint32_t *p;
+	uint32_t *p, status;
 	int len;
 	struct packet *nfs_packet;
 
@@ -761,7 +840,13 @@ static int nfs_lookup_req(struct nfs_priv *npriv, struct nfs_fh *fh,
 	if (IS_ERR(nfs_packet))
 		return PTR_ERR(nfs_packet);
 
-	p = (void *)nfs_packet->data + sizeof(struct rpc_reply) + 4;
+	p = (void *)nfs_packet->data + sizeof(struct rpc_reply);
+	status = ntoh32(net_read_uint32(p++));
+	if (status != NFS3_OK) {
+		int ret;
+		pr_err("Lookup failed: %s\n", nfserrstr(status, &ret));
+		return ret;
+	}
 
 	ninode->fh.size = ntoh32(net_read_uint32(p++));
 	if (ninode->fh.size > NFS3_FHSIZE) {
@@ -787,7 +872,7 @@ static int nfs_lookup_req(struct nfs_priv *npriv, struct nfs_fh *fh,
 static void *nfs_readdirattr_req(struct nfs_priv *npriv, struct nfs_dir *dir)
 {
 	uint32_t data[1024];
-	uint32_t *p;
+	uint32_t *p, status;
 	int len;
 	struct packet *nfs_packet;
 	void *buf;
@@ -845,7 +930,13 @@ static void *nfs_readdirattr_req(struct nfs_priv *npriv, struct nfs_dir *dir)
 	if (IS_ERR(nfs_packet))
 		return NULL;
 
-	p = (void *)nfs_packet->data + sizeof(struct rpc_reply) + 4;
+	p = (void *)nfs_packet->data + sizeof(struct rpc_reply);
+	status = ntoh32(net_read_uint32(p++));
+	if (status != NFS3_OK) {
+		pr_err("Readdir failed: %s\n", nfserrstr(status, NULL));
+		return NULL;
+	}
+
 	p = nfs_read_post_op_attr(p, NULL);
 
 	/* update cookieverf */
@@ -879,8 +970,8 @@ static int nfs_read_req(struct file_priv *priv, uint64_t offset,
 		uint32_t readlen)
 {
 	uint32_t data[1024];
-	uint32_t *p;
-	int len;
+	uint32_t *p, status;
+	int len, ret;
 	struct packet *nfs_packet;
 	uint32_t rlen, eof;
 
@@ -922,7 +1013,12 @@ static int nfs_read_req(struct file_priv *priv, uint64_t offset,
 	if (IS_ERR(nfs_packet))
 		return PTR_ERR(nfs_packet);
 
-	p = (void *)nfs_packet->data + sizeof(struct rpc_reply) + 4;
+	p = (void *)nfs_packet->data + sizeof(struct rpc_reply);
+	status = ntoh32(net_read_uint32(p++));
+	if (status != NFS3_OK) {
+		pr_err("Read failed: %s\n", nfserrstr(status, &ret));
+		return ret;
+	}
 
 	p = nfs_read_post_op_attr(p, NULL);
 
@@ -981,7 +1077,7 @@ static int nfs_readlink_req(struct nfs_priv *npriv, struct nfs_fh *fh,
 			    char **target)
 {
 	uint32_t data[1024];
-	uint32_t *p;
+	uint32_t *p, status;
 	uint32_t len;
 	struct packet *nfs_packet;
 
@@ -1017,7 +1113,13 @@ static int nfs_readlink_req(struct nfs_priv *npriv, struct nfs_fh *fh,
 	if (IS_ERR(nfs_packet))
 		return PTR_ERR(nfs_packet);
 
-	p = (void *)nfs_packet->data + sizeof(struct rpc_reply) + 4;
+	p = (void *)nfs_packet->data + sizeof(struct rpc_reply);
+	status = ntoh32(net_read_uint32(p++));
+	if (status != NFS3_OK) {
+		int ret;
+		pr_err("Readlink failed: %s\n", nfserrstr(status, &ret));
+		return ret;
+	}
 
 	p = nfs_read_post_op_attr(p, NULL);
 

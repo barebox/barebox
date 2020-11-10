@@ -144,8 +144,6 @@ static void reclaim_rx_buffers(struct macb_device *macb,
 {
 	unsigned int i;
 
-	dev_dbg(macb->dev, "%s\n", __func__);
-
 	i = macb->rx_tail;
 	while (i > new_tail) {
 		macb->rx_ring[i].addr &= ~MACB_BIT(RX_USED);
@@ -169,8 +167,6 @@ static int gem_recv(struct eth_device *edev)
 	void *buffer;
 	int length;
 	u32 status;
-
-	dev_dbg(macb->dev, "%s\n", __func__);
 
 	for (;;) {
 		barrier();
@@ -205,8 +201,6 @@ static int macb_recv(struct eth_device *edev)
 	int length;
 	int wrapped = 0;
 	u32 status;
-
-	dev_dbg(macb->dev, "%s\n", __func__);
 
 	for (;;) {
 		barrier();
@@ -264,9 +258,38 @@ static int macb_recv(struct eth_device *edev)
 	return 0;
 }
 
+static int macb_set_tx_clk(struct macb_device *macb, int speed)
+{
+	int rate;
+	int rate_rounded;
+
+	if (!macb->txclk) {
+		dev_dbg(macb->dev, "txclk not available\n");
+		return 0;
+	}
+
+	switch (speed) {
+	case SPEED_100:
+		rate = 25000000;
+		break;
+	case SPEED_1000:
+		rate = 125000000;
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	rate_rounded = clk_round_rate(macb->txclk, rate);
+	if (rate_rounded <= 0)
+		return -EINVAL;
+
+	return clk_set_rate(macb->txclk, rate_rounded);
+}
+
 static void macb_adjust_link(struct eth_device *edev)
 {
 	struct macb_device *macb = edev->priv;
+	int err;
 	u32 reg;
 
 	reg = macb_readl(macb, NCFGR);
@@ -282,13 +305,15 @@ static void macb_adjust_link(struct eth_device *edev)
 		reg |= GEM_BIT(GBE);
 
 	macb_or_gem_writel(macb, NCFGR, reg);
+
+	err = macb_set_tx_clk(macb, edev->phydev->speed);
+	if (err)
+		dev_warn(macb->dev, "cannot set txclk\n");
 }
 
 static int macb_open(struct eth_device *edev)
 {
 	struct macb_device *macb = edev->priv;
-
-	dev_dbg(macb->dev, "%s\n", __func__);
 
 	/* Enable TX and RX */
 	macb_writel(macb, NCR, MACB_BIT(TE) | MACB_BIT(RE));
@@ -340,7 +365,7 @@ static int gmac_init_dummy_tx_queues(struct macb_device *macb)
 		MACB_BIT(TX_LAST) | MACB_BIT(TX_USED);
 
 	for (i = 1; i < num_queues; i++)
-		gem_writel_queue_TBQP(macb, &macb->gem_q1_descs[0], i - 1);
+		gem_writel_queue_TBQP(macb, (ulong)macb->gem_q1_descs, i - 1);
 
 	return 0;
 }
@@ -349,8 +374,6 @@ static void macb_init(struct macb_device *macb)
 {
 	unsigned long paddr, val = 0;
 	int i;
-
-	dev_dbg(macb->dev, "%s\n", __func__);
 
 	/*
 	 * macb_halt should have been called at some point before now,
@@ -441,8 +464,6 @@ static int macb_phy_read(struct mii_bus *bus, int addr, int reg)
 	int value;
 	uint64_t start;
 
-	dev_dbg(macb->dev, "%s\n", __func__);
-
 	netctl = macb_readl(macb, NCR);
 	netctl |= MACB_BIT(MPE);
 	macb_writel(macb, NCR, netctl);
@@ -478,8 +499,6 @@ static int macb_phy_write(struct mii_bus *bus, int addr, int reg, u16 value)
 	unsigned long netctl;
 	unsigned long frame;
 
-	dev_dbg(macb->dev, "%s\n", __func__);
-
 	netctl = macb_readl(macb, NCR);
 	netctl |= MACB_BIT(MPE);
 	macb_writel(macb, NCR, netctl);
@@ -510,8 +529,6 @@ static int macb_get_ethaddr(struct eth_device *edev, unsigned char *adr)
 	u8 addr[6];
 	int i;
 
-	dev_dbg(macb->dev, "%s\n", __func__);
-
 	/* Check all 4 address register for vaild address */
 	for (i = 0; i < 4; i++) {
 		bottom = macb_or_gem_readl(macb, SA1B + i * 8);
@@ -536,8 +553,6 @@ static int macb_get_ethaddr(struct eth_device *edev, unsigned char *adr)
 static int macb_set_ethaddr(struct eth_device *edev, const unsigned char *adr)
 {
 	struct macb_device *macb = edev->priv;
-
-	dev_dbg(macb->dev, "%s\n", __func__);
 
 	/* set hardware address */
 	macb_or_gem_writel(macb, SA1B, adr[0] | adr[1] << 8 | adr[2] << 16 | adr[3] << 24);
@@ -742,6 +757,8 @@ static int macb_probe(struct device_d *dev)
 	macb->txclk = clk_get(dev, "tx_clk");
 	if (!IS_ERR(macb->txclk))
 		clk_enable(macb->txclk);
+	else
+		macb->txclk = NULL;
 
 	macb->rxclk = clk_get(dev, "rx_clk");
 	if (!IS_ERR(macb->rxclk))

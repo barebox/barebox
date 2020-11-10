@@ -1,15 +1,5 @@
-/*
- * Copyright (C) 2017 Pengutronix, Fridolin Tux <kernel@pengutronix.de>
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * version 2, as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- */
+/* SPDX-License-Identifier: GPL-2.0-only */
+/* SPDX-FileCopyrightText: 2017 Uwe Kleine-König <u.kleine-koenig@pengutronix.de>, Pengutronix */
 
 #define MX7_DDRC_MSTR			0x307a0000
 #define MX7_DDRC_STAT			0x307a0004

@@ -89,6 +89,7 @@ config CPU_V8
 	select ARM_EXCEPTIONS
 	select GENERIC_FIND_NEXT_BIT
 	select ARCH_HAS_STACK_DUMP
+	select ARCH_HAS_ZERO_PAGE
 
 config CPU_XSC3
         bool

@@ -633,9 +633,14 @@ priv_free:
 }
 
 static struct amba_id stm32_sdmmc2_ids[] = {
-	/* ST Micro STM32MP157C */
+	/* ST Micro STM32MP15 v1.1 */
 	{
 		.id     = 0x10153180,
+		.mask	= 0xf0ffffff,
+	},
+	/* ST Micro STM32MP15 v2.0 */
+	{
+		.id     = 0x00253180,
 		.mask	= 0xf0ffffff,
 	},
 	{ 0, 0 },

@@ -43,7 +43,7 @@ int mc34704_reg_read(struct mc34704 *mc34704, u8 reg, u8 *val)
 {
 	int ret;
 
-	ret = i2c_read_reg(mc34704->client, reg, val, 1);
+	ret = i2c_read_reg(mc34704->client, 1 << 7 | reg, val, 1);
 
 	return ret == 1 ? 0 : ret;
 }
@@ -112,7 +112,7 @@ static int mc34704_probe(struct device_d *dev)
 	mc34704_dev = xzalloc(sizeof(struct mc34704));
 	mc34704_dev->cdev.name = DRIVERNAME;
 	mc34704_dev->client = to_i2c_client(dev);
-	mc34704_dev->cdev.size = 256;
+	mc34704_dev->cdev.size = 128;
 	mc34704_dev->cdev.dev = dev;
 	mc34704_dev->cdev.ops = &mc34704_fops;
 

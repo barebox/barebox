@@ -684,9 +684,9 @@ Frontend
 --------
 
 As frontend a *state* instance is a regular barebox device which has
-device parameters for the *state* variables. With this the variables can
+:ref:`device_parameters` for the *state* variables. With this the variables can
 be accessed like normal shell variables. The ``state`` command is used
 to save/restore a *state* variable set to the backend device.
 
-After initializing the variable can be accessed with ``$state.foo``.
-``state -s`` stores the *state* to the backend device.
+After initializing the variable can be accessed with ``${state.foo}`` or
+:ref:`command_setenv`. ``state -s`` stores the *state* to the backend device.

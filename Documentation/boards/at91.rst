@@ -21,7 +21,24 @@ processor and then load and execute barebox.
 
 AT91 boards
 -----------
-The majority of the supported boards have a short entry here.
+Newer boards can be built with the ``at91_multi_defconfig``:
+
+.. code-block:: sh
+
+  make ARCH=arm at91_multi_defconfig
+
+The resulting images will be placed under ``images/``:
+
+::
+
+  barebox-groboards-sama5d27-giantboard.img
+  barebox-groboards-sama5d27-giantboard-xload-mmc.img
+  barebox-microchip-ksz9477-evb.img
+  barebox-sama5d27-som1-ek.img
+  barebox-sama5d27-som1-ek-xload-mmc.img
+
+Older supported boards have yet to be migrated to multi-image and/or the
+new defconfig. The majority of these have a short entry here.
 For each board defconfig file(s) are noted but barebox may include additional
 defconfig files and may also include boards not included in the following.
 
@@ -35,17 +52,9 @@ TODO
 ----
 This is a list of AT91 specific TODO items, listed in no particular order.
 
-* fix prototype for barebox_arm_reset_vector. Introduce the prototype:
-
-.. code-block:: c
-
-  void __naked __bare_init barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2)
-
-
-This will unify the prototype for the reset vector for multi image and standalone images
-
 * Update remaining boards to DT
 * Update remaing boards to support multi image boot
+* Include remaining boards in ``at91_multi_defconfig``
 * Get bootstrap working in combination with multi image
 * Introduce defaultenv2 for all boards
 * Add pwm driver (required to support backlight)

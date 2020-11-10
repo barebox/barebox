@@ -28,8 +28,6 @@ struct mtdram_priv_data {
 static int ram_erase(struct mtd_info *mtd, struct erase_info *instr)
 {
 	memset((char *)mtd->priv + instr->addr, 0xff, instr->len);
-	instr->state = MTD_ERASE_DONE;
-	mtd_erase_callback(instr);
 	return 0;
 }
 
@@ -88,12 +86,12 @@ static int mtdram_probe(struct device_d *dev)
 	mtd->flags = MTD_CAP_RAM;
 	mtd->size = size;
 
-	mtd->read = ram_read;
-	mtd->write = ram_write;
-	mtd->erase = ram_erase;
+	mtd->_read = ram_read;
+	mtd->_write = ram_write;
+	mtd->_erase = ram_erase;
 	mtd->erasesize = 1;
 
-	mtd->parent = dev;
+	mtd->dev.parent = dev;
 
 	ret = add_mtd_device(mtd, mtd->name, device_id);
 	return ret;

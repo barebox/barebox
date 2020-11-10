@@ -10,6 +10,25 @@
 #include <linux/mtd/mtd.h>
 #include <mtd/mtd-peb.h>
 
+static int bitflip_mtd_read(struct mtd_info *mtd, loff_t from, size_t len,
+			    size_t *retlen, void *buf)
+{
+	int ret_code;
+
+	if (mtd->_read_oob) {
+		struct mtd_oob_ops ops = {
+			.len = len,
+			.datbuf = buf,
+		};
+
+		ret_code = mtd->_read_oob(mtd, from, &ops);
+	} else {
+		ret_code = mtd->_read(mtd, from, len, retlen, buf);
+	}
+
+	return ret_code;
+}
+
 static int do_nand_bitflip(int argc, char *argv[])
 {
 	int opt, ret, fd;
@@ -34,7 +53,7 @@ static int do_nand_bitflip(int argc, char *argv[])
 			block = simple_strtoul(optarg, NULL, 0);
 			break;
 		case 'o':
-			offset = simple_strtoull(optarg, NULL, 0);
+			offset = strtoull_suffix(optarg, NULL, 0);
 			break;
 		case 'c':
 			check = 1;
@@ -77,7 +96,7 @@ static int do_nand_bitflip(int argc, char *argv[])
 	buf = xzalloc(meminfo.writesize);
 
 	roffset = (loff_t)block * meminfo.mtd->erasesize + offset;
-	ret = meminfo.mtd->read(meminfo.mtd, roffset, meminfo.writesize, &r, buf);
+	ret = bitflip_mtd_read(meminfo.mtd, roffset, meminfo.writesize, &r, buf);
 	if (ret > 0) {
 		printf("page at block %d, offset 0x%08llx has %d bitflips%s\n",
 		       block, offset, ret,

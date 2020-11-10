@@ -11,6 +11,7 @@
 
 #include <driver.h>
 #include <errno.h>
+#include <printk.h>
 #include <linux/types.h>
 #include <linux/list.h>
 #include <linux/mtd/mtd-abi.h>
@@ -19,12 +20,6 @@
 #define MTD_CHAR_MAJOR 90
 #define MTD_BLOCK_MAJOR 31
 #define MAX_MTD_DEVICES 32
-
-#define MTD_ERASE_PENDING      	0x01
-#define MTD_ERASING		0x02
-#define MTD_ERASE_SUSPEND	0x04
-#define MTD_ERASE_DONE          0x08
-#define MTD_ERASE_FAILED        0x10
 
 #define MTD_FAIL_ADDR_UNKNOWN -1LL
 
@@ -40,9 +35,7 @@ struct erase_info {
 	u_long retries;
 	u_int dev;
 	u_int cell;
-	void (*callback) (struct erase_info *self);
 	u_long priv;
-	u_char state;
 	struct erase_info *next;
 };
 
@@ -81,6 +74,39 @@ struct mtd_oob_ops {
 	uint32_t	ooboffs;
 	uint8_t		*datbuf;
 	uint8_t		*oobbuf;
+};
+
+#define MTD_MAX_OOBFREE_ENTRIES_LARGE	32
+#define MTD_MAX_ECCPOS_ENTRIES_LARGE	640
+/**
+ * struct mtd_oob_region - oob region definition
+ * @offset: region offset
+ * @length: region length
+ *
+ * This structure describes a region of the OOB area, and is used
+ * to retrieve ECC or free bytes sections.
+ * Each section is defined by an offset within the OOB area and a
+ * length.
+ */
+struct mtd_oob_region {
+	u32 offset;
+	u32 length;
+};
+
+/*
+ * struct mtd_ooblayout_ops - NAND OOB layout operations
+ * @ecc: function returning an ECC region in the OOB area.
+ *	 Should return -ERANGE if %section exceeds the total number of
+ *	 ECC sections.
+ * @free: function returning a free region in the OOB area.
+ *	  Should return -ERANGE if %section exceeds the total number of
+ *	  free sections.
+ */
+struct mtd_ooblayout_ops {
+	int (*ecc)(struct mtd_info *mtd, int section,
+		   struct mtd_oob_region *oobecc);
+	int (*free)(struct mtd_info *mtd, int section,
+		    struct mtd_oob_region *oobfree);
 };
 
 struct mtd_info {
@@ -131,6 +157,11 @@ struct mtd_info {
 
 	/* ecc layout structure pointer - read only ! */
 	struct nand_ecclayout *ecclayout;
+	/* OOB layout description */
+	const struct mtd_ooblayout_ops *ooblayout;
+
+	/* the ecc step size. */
+	unsigned int ecc_step_size;
 
 	/* max number of correctible bit errors per ecc step */
 	unsigned int ecc_strength;
@@ -141,30 +172,14 @@ struct mtd_info {
 	int numeraseregions;
 	struct mtd_erase_region_info *eraseregions;
 
-	/*
-	 * Erase is an asynchronous operation.  Device drivers are supposed
-	 * to call instr->callback() whenever the operation completes, even
-	 * if it completes with a failure.
-	 * Callers are supposed to pass a callback function and wait for it
-	 * to be called before writing to the block.
-	 */
-	int (*erase) (struct mtd_info *mtd, struct erase_info *instr);
+	int (*_erase) (struct mtd_info *mtd, struct erase_info *instr);
 
-	int (*read) (struct mtd_info *mtd, loff_t from, size_t len, size_t *retlen, u_char *buf);
-	int (*write) (struct mtd_info *mtd, loff_t to, size_t len, size_t *retlen, const u_char *buf);
+	int (*_read) (struct mtd_info *mtd, loff_t from, size_t len, size_t *retlen, u_char *buf);
+	int (*_write) (struct mtd_info *mtd, loff_t to, size_t len, size_t *retlen, const u_char *buf);
 
-	/* In blackbox flight recorder like scenarios we want to make successful
-	   writes in interrupt context. panic_write() is only intended to be
-	   called when its known the kernel is about to panic and we need the
-	   write to succeed. Since the kernel is not going to be running for much
-	   longer, this function can break locks and delay to ensure the write
-	   succeeds (but not sleep). */
-
-	int (*panic_write) (struct mtd_info *mtd, loff_t to, size_t len, size_t *retlen, const u_char *buf);
-
-	int (*read_oob) (struct mtd_info *mtd, loff_t from,
+	int (*_read_oob) (struct mtd_info *mtd, loff_t from,
 			 struct mtd_oob_ops *ops);
-	int (*write_oob) (struct mtd_info *mtd, loff_t to,
+	int (*_write_oob) (struct mtd_info *mtd, loff_t to,
 			 struct mtd_oob_ops *ops);
 
 	/*
@@ -172,24 +187,24 @@ struct mtd_info {
 	 * flash devices. The user data is one time programmable but the
 	 * factory data is read only.
 	 */
-	int (*get_fact_prot_info) (struct mtd_info *mtd, struct otp_info *buf, size_t len);
-	int (*read_fact_prot_reg) (struct mtd_info *mtd, loff_t from, size_t len, size_t *retlen, u_char *buf);
-	int (*get_user_prot_info) (struct mtd_info *mtd, struct otp_info *buf, size_t len);
-	int (*read_user_prot_reg) (struct mtd_info *mtd, loff_t from, size_t len, size_t *retlen, u_char *buf);
-	int (*write_user_prot_reg) (struct mtd_info *mtd, loff_t from, size_t len, size_t *retlen, u_char *buf);
-	int (*lock_user_prot_reg) (struct mtd_info *mtd, loff_t from, size_t len);
+	int (*_get_fact_prot_info) (struct mtd_info *mtd, struct otp_info *buf, size_t len);
+	int (*_read_fact_prot_reg) (struct mtd_info *mtd, loff_t from, size_t len, size_t *retlen, u_char *buf);
+	int (*_get_user_prot_info) (struct mtd_info *mtd, struct otp_info *buf, size_t len);
+	int (*_read_user_prot_reg) (struct mtd_info *mtd, loff_t from, size_t len, size_t *retlen, u_char *buf);
+	int (*_write_user_prot_reg) (struct mtd_info *mtd, loff_t from, size_t len, size_t *retlen, u_char *buf);
+	int (*_lock_user_prot_reg) (struct mtd_info *mtd, loff_t from, size_t len);
 
 	/* Sync */
-	void (*sync) (struct mtd_info *mtd);
+	void (*_sync) (struct mtd_info *mtd);
 
 	/* Chip-supported device locking */
-	int (*lock) (struct mtd_info *mtd, loff_t ofs, size_t len);
-	int (*unlock) (struct mtd_info *mtd, loff_t ofs, size_t len);
+	int (*_lock) (struct mtd_info *mtd, loff_t ofs, size_t len);
+	int (*_unlock) (struct mtd_info *mtd, loff_t ofs, size_t len);
 
 	/* Bad block management functions */
-	int (*block_isbad) (struct mtd_info *mtd, loff_t ofs);
-	int (*block_markbad) (struct mtd_info *mtd, loff_t ofs);
-	int (*block_markgood) (struct mtd_info *mtd, loff_t ofs);
+	int (*_block_isbad) (struct mtd_info *mtd, loff_t ofs);
+	int (*_block_markbad) (struct mtd_info *mtd, loff_t ofs);
+	int (*_block_markgood) (struct mtd_info *mtd, loff_t ofs);
 
 	/* ECC status information */
 	struct mtd_ecc_stats ecc_stats;
@@ -205,11 +220,10 @@ struct mtd_info {
 	 * its own reference counting. The below functions are only for driver.
 	 * The driver may register its callbacks. These callbacks are not
 	 * supposed to be called by MTD users */
-	int (*get_device) (struct mtd_info *mtd);
-	void (*put_device) (struct mtd_info *mtd);
+	int (*_get_device) (struct mtd_info *mtd);
+	void (*_put_device) (struct mtd_info *mtd);
 
-	struct device_d class_dev;
-	struct device_d *parent;
+	struct device_d dev;
 	struct cdev cdev;
 
 	struct cdev *cdev_bb;
@@ -221,7 +235,13 @@ struct mtd_info {
 	bool allow_erasebad;
 	int p_allow_erasebad;
 
-	struct mtd_info *master;
+	/*
+	 * Parent device from the MTD partition point of view.
+	 *
+	 * MTD masters do not have any parent, MTD partitions do. The parent
+	 * MTD device can itself be a partition.
+	 */
+	struct mtd_info *parent;
 	loff_t master_offset;
 
 	struct list_head partitions;
@@ -232,6 +252,30 @@ struct mtd_info {
 	unsigned int of_binding;
 };
 
+int mtd_ooblayout_ecc(struct mtd_info *mtd, int section,
+		      struct mtd_oob_region *oobecc);
+int mtd_ooblayout_find_eccregion(struct mtd_info *mtd, int eccbyte,
+				 int *section,
+				 struct mtd_oob_region *oobregion);
+int mtd_ooblayout_get_eccbytes(struct mtd_info *mtd, u8 *eccbuf,
+			       const u8 *oobbuf, int start, int nbytes);
+int mtd_ooblayout_set_eccbytes(struct mtd_info *mtd, const u8 *eccbuf,
+			       u8 *oobbuf, int start, int nbytes);
+int mtd_ooblayout_free(struct mtd_info *mtd, int section,
+		       struct mtd_oob_region *oobfree);
+int mtd_ooblayout_get_databytes(struct mtd_info *mtd, u8 *databuf,
+				const u8 *oobbuf, int start, int nbytes);
+int mtd_ooblayout_set_databytes(struct mtd_info *mtd, const u8 *databuf,
+				u8 *oobbuf, int start, int nbytes);
+int mtd_ooblayout_count_freebytes(struct mtd_info *mtd);
+int mtd_ooblayout_count_eccbytes(struct mtd_info *mtd);
+
+static inline void mtd_set_ooblayout(struct mtd_info *mtd,
+				     const struct mtd_ooblayout_ops *ooblayout)
+{
+	mtd->ooblayout = ooblayout;
+}
+
 int mtd_erase(struct mtd_info *mtd, struct erase_info *instr);
 int mtd_read(struct mtd_info *mtd, loff_t from, size_t len, size_t *retlen,
 	     u_char *buf);
@@ -240,20 +284,31 @@ int mtd_write(struct mtd_info *mtd, loff_t to, size_t len, size_t *retlen,
 
 int mtd_read_oob(struct mtd_info *mtd, loff_t from, struct mtd_oob_ops *ops);
 
-static inline int mtd_write_oob(struct mtd_info *mtd, loff_t to,
-				struct mtd_oob_ops *ops)
+static inline void mtd_set_of_node(struct mtd_info *mtd,
+				   struct device_node *np)
 {
-	ops->retlen = ops->oobretlen = 0;
-	if (!mtd->write_oob)
-		return -EOPNOTSUPP;
-	if (!(mtd->flags & MTD_WRITEABLE))
-		return -EROFS;
-	return mtd->write_oob(mtd, to, ops);
+	mtd->dev.device_node = np;
 }
+
+static inline struct device_node *mtd_get_of_node(struct mtd_info *mtd)
+{
+	if (mtd->dev.device_node)
+		return mtd->dev.device_node;
+	if (mtd->dev.parent)
+		return mtd->dev.parent->device_node;
+	return NULL;
+}
+
+static inline u32 mtd_oobavail(struct mtd_info *mtd, struct mtd_oob_ops *ops)
+{
+	return ops->mode == MTD_OPS_AUTO_OOB ? mtd->oobavail : mtd->oobsize;
+}
+
+int mtd_write_oob(struct mtd_info *mtd, loff_t to, struct mtd_oob_ops *ops);
 
 static inline int mtd_can_have_bb(const struct mtd_info *mtd)
 {
-	return !!mtd->block_isbad;
+	return !!mtd->_block_isbad;
 }
 
 static inline uint32_t mtd_div_by_eb(uint64_t sz, struct mtd_info *mtd)
@@ -298,16 +353,6 @@ int mtd_del_partition(struct mtd_info *mtd);
 extern void register_mtd_user (struct mtd_notifier *new);
 extern int unregister_mtd_user (struct mtd_notifier *old);
 
-#ifdef CONFIG_MTD_PARTITIONS
-void mtd_erase_callback(struct erase_info *instr);
-#else
-static inline void mtd_erase_callback(struct erase_info *instr)
-{
-	if (instr->callback)
-		instr->callback(instr);
-}
-#endif
-
 int mtd_lock(struct mtd_info *mtd, loff_t ofs, uint64_t len);
 int mtd_unlock(struct mtd_info *mtd, loff_t ofs, uint64_t len);
 int mtd_block_isbad(struct mtd_info *mtd, loff_t ofs);
@@ -328,5 +373,9 @@ static inline int mtd_is_eccerr(int err) {
 static inline int mtd_is_bitflip_or_eccerr(int err) {
 	return mtd_is_bitflip(err) || mtd_is_eccerr(err);
 }
+
+void mtd_set_ecclayout(struct mtd_info *mtd, struct nand_ecclayout *ecclayout);
+
+void mtd_print_oob_info(struct mtd_info *mtd);
 
 #endif /* __MTD_MTD_H__ */

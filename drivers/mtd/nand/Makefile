@@ -1,10 +1,14 @@
 
 # Generic NAND options
 obj-$(CONFIG_NAND)			+= nand_ecc.o
-obj-$(CONFIG_NAND_ECC_BCH)		+= nand_bch.o
-obj-$(CONFIG_MTD_NAND_IDS)		+= nand_ids.o
+obj-$(CONFIG_MTD_NAND_ECC_SW_BCH)	+= nand_bch.o
+obj-$(CONFIG_NAND)			+= nand_ids.o
 obj-$(CONFIG_NAND)			+= nand_base.o nand-bb.o nand_timings.o
-obj-$(CONFIG_NAND_BBT)			+= nand_bbt.o
+obj-$(CONFIG_NAND)			+= nand_legacy.o nand_onfi.o nand_amd.o
+obj-$(CONFIG_NAND)			+= nand_esmt.o nand_hynix.o nand_macronix.o
+obj-$(CONFIG_NAND)			+= nand_micron.o nand_samsung.o nand_toshiba.o
+obj-$(CONFIG_NAND)			+= nand_jedec.o core.o bbt.o
+obj-$(CONFIG_NAND)			+= nand_bbt.o
 
 obj-$(CONFIG_MTD_NAND_NOMADIK)		+= nomadik_nand.o
 obj-$(CONFIG_NAND_IMX)			+= nand_imx.o
@@ -18,4 +22,3 @@ pbl-$(CONFIG_NAND_S3C24XX)		+= nand_s3c24xx.o
 obj-$(CONFIG_NAND_MXS)			+= nand_mxs.o
 obj-$(CONFIG_MTD_NAND_DENALI)		+= nand_denali.o
 obj-$(CONFIG_MTD_NAND_DENALI_DT)	+= nand_denali_dt.o
-

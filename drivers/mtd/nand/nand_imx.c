@@ -24,6 +24,7 @@
 #include <init.h>
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
+#include <linux/mtd/rawnand.h>
 #include <linux/clk.h>
 #include <mach/generic.h>
 #include <mach/imx-nand.h>
@@ -57,7 +58,7 @@ struct imx_nand_host {
 	int			data_width;
 	int			flash_bbt;
 
-	void			(*preset)(struct mtd_info *);
+	void			(*preset)(struct nand_chip *);
 	void			(*send_cmd)(struct imx_nand_host *, uint16_t);
 	void			(*send_addr)(struct imx_nand_host *, uint16_t);
 	void			(*send_page)(struct imx_nand_host *, unsigned int);
@@ -65,7 +66,7 @@ struct imx_nand_host {
 	void			(*send_read_param)(struct imx_nand_host *);
 	uint16_t		(*get_dev_status)(struct imx_nand_host *);
 	int			(*check_int)(struct imx_nand_host *);
-	int			(*correct)(struct mtd_info *mtd);
+	int			(*correct)(struct nand_chip *);
 	void			(*enable_hwecc)(struct nand_chip *, bool enable);
 };
 
@@ -429,7 +430,7 @@ static u16 get_dev_status_v1_v2(struct imx_nand_host *host)
  *
  * @return  0 if device is busy else 1
  */
-static int imx_nand_dev_ready(struct mtd_info *mtd)
+static int imx_nand_dev_ready(struct nand_chip *chip)
 {
 	/*
 	 * NFC handles R/B internally.Therefore,this function
@@ -475,10 +476,10 @@ static void imx_nand_enable_hwecc_v3(struct nand_chip *chip, bool enable)
 	writel(config2, NFC_V3_CONFIG2);
 }
 
-static int imx_nand_correct_data_v1(struct mtd_info *mtd)
+static int imx_nand_correct_data_v1(struct nand_chip *chip)
 {
-	struct nand_chip *nand_chip = mtd_to_nand(mtd);
-	struct imx_nand_host *host = nand_chip->priv;
+	struct mtd_info *mtd = nand_to_mtd(chip);
+	struct imx_nand_host *host = chip->priv;
 
 	if (host->eccstatus_v1 < 0)
 		return host->eccstatus_v1;
@@ -491,10 +492,10 @@ static int imx_nand_correct_data_v1(struct mtd_info *mtd)
 		return 0;
 }
 
-static int imx_nand_correct_data_v2_v3(struct mtd_info *mtd)
+static int imx_nand_correct_data_v2_v3(struct nand_chip *chip)
 {
-	struct nand_chip *nand_chip = mtd_to_nand(mtd);
-	struct imx_nand_host *host = nand_chip->priv;
+	struct mtd_info *mtd = nand_to_mtd(chip);
+	struct imx_nand_host *host = chip->priv;
 	u32 ecc_stat, err;
 	int no_subpages;
 	u8 ecc_bit_mask, err_limit, max_bitflips = 0;
@@ -521,7 +522,7 @@ static int imx_nand_correct_data_v2_v3(struct mtd_info *mtd)
 	return max_bitflips;
 }
 
-static int imx_nand_calculate_ecc(struct mtd_info *mtd, const u_char * dat,
+static int imx_nand_calculate_ecc(struct nand_chip *chip, const u_char * dat,
 				  u_char * ecc_code)
 {
 	return 0;
@@ -534,17 +535,16 @@ static int imx_nand_calculate_ecc(struct mtd_info *mtd, const u_char * dat,
  *
  * @return    data read from the NAND Flash
  */
-static u_char imx_nand_read_byte(struct mtd_info *mtd)
+static u_char imx_nand_read_byte(struct nand_chip *chip)
 {
-	struct nand_chip *nand_chip = mtd_to_nand(mtd);
-	struct imx_nand_host *host = nand_chip->priv;
+	struct imx_nand_host *host = chip->priv;
 	u_char ret;
 
 	/* Check for status request */
 	if (host->status_request)
 		return host->get_dev_status(host) & 0xFF;
 
-	if (nand_chip->options & NAND_BUSWIDTH_16) {
+	if (chip->options & NAND_BUSWIDTH_16) {
 		/* only take the lower byte of each word */
 		BUG_ON(host->buf_start & 1);
 		ret = *(uint16_t *)(host->data_buf + host->buf_start);
@@ -565,10 +565,9 @@ static u_char imx_nand_read_byte(struct mtd_info *mtd)
   *
   * @return    data read from the NAND Flash
   */
-static u16 imx_nand_read_word(struct mtd_info *mtd)
+static u16 imx_nand_read_word(struct nand_chip *chip)
 {
-	struct nand_chip *nand_chip = mtd_to_nand(mtd);
-	struct imx_nand_host *host = nand_chip->priv;
+	struct imx_nand_host *host = chip->priv;
 	uint16_t ret;
 
 	ret = *(uint16_t *)(host->data_buf + host->buf_start);
@@ -586,11 +585,11 @@ static u16 imx_nand_read_word(struct mtd_info *mtd)
  * @param       buf     data to be written to NAND Flash
  * @param       len     number of bytes to be written
  */
-static void imx_nand_write_buf(struct mtd_info *mtd,
+static void imx_nand_write_buf(struct nand_chip *chip,
 			       const u_char *buf, int len)
 {
-	struct nand_chip *nand_chip = mtd_to_nand(mtd);
-	struct imx_nand_host *host = nand_chip->priv;
+	struct mtd_info *mtd = nand_to_mtd(chip);
+	struct imx_nand_host *host = chip->priv;
 	u16 col = host->buf_start;
 	int n = mtd->oobsize + mtd->writesize - col;
 
@@ -610,10 +609,10 @@ static void imx_nand_write_buf(struct mtd_info *mtd,
  * @param       buf     data to be read from NAND Flash
  * @param       len     number of bytes to be read
  */
-static void imx_nand_read_buf(struct mtd_info *mtd, u_char * buf, int len)
+static void imx_nand_read_buf(struct nand_chip *chip, u_char * buf, int len)
 {
-	struct nand_chip *nand_chip = mtd_to_nand(mtd);
-	struct imx_nand_host *host = nand_chip->priv;
+	struct mtd_info *mtd = nand_to_mtd(chip);
+	struct imx_nand_host *host = chip->priv;
 	u16 col = host->buf_start;
 	int n = mtd->oobsize + mtd->writesize - col;
 
@@ -631,10 +630,10 @@ static void imx_nand_read_buf(struct mtd_info *mtd, u_char * buf, int len)
 /*
  * Function to transfer data to/from spare area.
  */
-static void copy_spare(struct mtd_info *mtd, int bfrom, void *buf)
+static void copy_spare(struct nand_chip *chip, int bfrom, void *buf)
 {
-	struct nand_chip *this = mtd_to_nand(mtd);
-	struct imx_nand_host *host = this->priv;
+	struct mtd_info *mtd = nand_to_mtd(chip);
+	struct imx_nand_host *host = chip->priv;
 	u16 i, j;
 	u16 n = mtd->writesize >> 9;
 	u8 *d = buf;
@@ -665,14 +664,14 @@ static void copy_spare(struct mtd_info *mtd, int bfrom, void *buf)
  * @param       mtd     MTD structure for the NAND Flash
  * @param       chip    val indicating select or deselect
  */
-static void imx_nand_select_chip(struct mtd_info *mtd, int chip)
+static void imx_nand_select_chip(struct nand_chip *_chip, int chip)
 {
 }
 
-static void mxc_do_addr_cycle(struct mtd_info *mtd, int column, int page_addr)
+static void mxc_do_addr_cycle(struct nand_chip *chip, int column, int page_addr)
 {
-	struct nand_chip *nand_chip = mtd_to_nand(mtd);
-	struct imx_nand_host *host = nand_chip->priv;
+	struct mtd_info *mtd = nand_to_mtd(chip);
+	struct imx_nand_host *host = chip->priv;
 
 	/*
 	 * Write out column address, if necessary
@@ -735,10 +734,9 @@ static int get_eccsize(struct mtd_info *mtd)
 		return 8;
 }
 
-static void preset_v1(struct mtd_info *mtd)
+static void preset_v1(struct nand_chip *chip)
 {
-	struct nand_chip *nand_chip = mtd_to_nand(mtd);
-	struct imx_nand_host *host = nand_chip->priv;
+	struct imx_nand_host *host = chip->priv;
 	uint16_t config1 = 0;
 
 	host->eccsize = 1;
@@ -757,14 +755,14 @@ static void preset_v1(struct mtd_info *mtd)
 	writew(0x4, host->regs + NFC_V1_V2_WRPROT);
 }
 
-static void preset_v2(struct mtd_info *mtd)
+static void preset_v2(struct nand_chip *chip)
 {
-	struct nand_chip *nand_chip = mtd_to_nand(mtd);
-	struct imx_nand_host *host = nand_chip->priv;
+	struct mtd_info *mtd = nand_to_mtd(chip);
+	struct imx_nand_host *host = chip->priv;
 	uint16_t config1 = 0;
 	int mode;
 
-	mode = onfi_get_async_timing_mode(nand_chip);
+	mode = onfi_get_async_timing_mode(chip);
 	if (mode != ONFI_TIMING_MODE_UNKNOWN && !IS_ERR(host->clk)) {
 		const struct nand_sdr_timings *timings;
 
@@ -817,9 +815,9 @@ static void preset_v2(struct mtd_info *mtd)
 	writew(0x4, host->regs + NFC_V1_V2_WRPROT);
 }
 
-static void preset_v3(struct mtd_info *mtd)
+static void preset_v3(struct nand_chip *chip)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct mtd_info *mtd = nand_to_mtd(chip);
 	struct imx_nand_host *host = chip->priv;
 	uint32_t config2, config3;
 	int i, addr_phases;
@@ -887,24 +885,23 @@ static void preset_v3(struct mtd_info *mtd)
 	writel(0, NFC_V3_DELAY_LINE);
 }
 
-static int imx_nand_write_page(struct mtd_info *mtd, struct nand_chip *chip,
-		uint32_t offset, int data_len, const uint8_t *buf,
-		int oob_required, int page, int cached, int raw)
+static int imx_nand_write_page(struct nand_chip *chip,
+		const uint8_t *buf, bool ecc, int page)
 {
+	struct mtd_info *mtd = nand_to_mtd(chip);
 	struct imx_nand_host *host = chip->priv;
 	int status;
 
-	host->enable_hwecc(chip, !raw);
+	host->enable_hwecc(chip, ecc);
 
-	chip->cmdfunc(mtd, NAND_CMD_SEQIN, 0x00, page);
+	chip->legacy.cmdfunc(chip, NAND_CMD_SEQIN, 0x00, page);
 
 	memcpy32(host->main_area0, buf, mtd->writesize);
-	if (oob_required)
-		copy_spare(mtd, 0, chip->oob_poi);
+	copy_spare(chip, 0, chip->oob_poi);
 
 	host->send_page(host, NFC_INPUT);
-	chip->cmdfunc(mtd, NAND_CMD_PAGEPROG, -1, -1);
-	status = chip->waitfunc(mtd, chip);
+	chip->legacy.cmdfunc(chip, NAND_CMD_PAGEPROG, -1, -1);
+	status = chip->legacy.waitfunc(chip);
 
 	if (status & NAND_STATUS_FAIL)
 		return -EIO;
@@ -912,39 +909,54 @@ static int imx_nand_write_page(struct mtd_info *mtd, struct nand_chip *chip,
 	return 0;
 }
 
-static void imx_nand_do_read_page(struct mtd_info *mtd,
-		struct nand_chip *chip, uint8_t *buf, int oob_required)
+static int imx_nand_write_page_ecc(struct nand_chip *chip, const uint8_t *buf,
+				   int oob_required, int page)
 {
+	return imx_nand_write_page(chip, buf, true, page);
+}
+
+static int imx_nand_write_page_raw(struct nand_chip *chip, const uint8_t *buf,
+				   int oob_required, int page)
+{
+	return imx_nand_write_page(chip, buf, false, page);
+}
+
+static void imx_nand_do_read_page(struct nand_chip *chip, uint8_t *buf,
+				  int oob_required, int page)
+{
+	struct mtd_info *mtd = nand_to_mtd(chip);
 	struct imx_nand_host *host = chip->priv;
+
+	nand_read_page_op(chip, page, 0, NULL, 0);
 
 	host->send_page(host, NFC_OUTPUT);
 
 	memcpy32(buf, host->main_area0, mtd->writesize);
 
 	if (oob_required)
-		copy_spare(mtd, 1, chip->oob_poi);
+		copy_spare(chip, 1, chip->oob_poi);
 }
 
-static int imx_nand_read_page(struct mtd_info *mtd,
-		struct nand_chip *chip, uint8_t *buf, int oob_required, int page)
+static int imx_nand_read_page(struct nand_chip *chip, uint8_t *buf,
+			      int oob_required, int page)
 {
 	struct imx_nand_host *host = chip->priv;
 
 	host->enable_hwecc(chip, true);
 
-	imx_nand_do_read_page(mtd, chip, buf, oob_required);
+	imx_nand_do_read_page(chip, buf, oob_required, page);
 
-	return host->correct(mtd);
+	return host->correct(chip);
 }
 
-static int imx_nand_read_page_raw(struct mtd_info *mtd,
-		struct nand_chip *chip, uint8_t *buf, int oob_required, int page)
+static int imx_nand_read_page_raw(struct nand_chip *chip, uint8_t *buf,
+				  int oob_required, int page)
 {
 	struct imx_nand_host *host = chip->priv;
 
 	host->enable_hwecc(chip, false);
 
-	imx_nand_do_read_page(mtd, chip, buf, oob_required);
+	imx_nand_do_read_page(chip, buf, oob_required, page);
 
 	return 0;
 }
@@ -958,11 +970,11 @@ static int imx_nand_read_page_raw(struct mtd_info *mtd,
  * @param       column          column offset for the page read
  * @param       page_addr       page to be read from NAND Flash
  */
-static void imx_nand_command(struct mtd_info *mtd, unsigned command,
+static void imx_nand_command(struct nand_chip *chip, unsigned command,
 			     int column, int page_addr)
 {
-	struct nand_chip *nand_chip = mtd_to_nand(mtd);
-	struct imx_nand_host *host = nand_chip->priv;
+	struct mtd_info *mtd = nand_to_mtd(chip);
+	struct imx_nand_host *host = chip->priv;
 
 	dev_dbg(host->dev,
 	      "imx_nand_command (cmd = 0x%x, col = 0x%x, page = 0x%x)\n",
@@ -978,7 +990,7 @@ static void imx_nand_command(struct mtd_info *mtd, unsigned command,
 	 */
 	switch (command) {
 	case NAND_CMD_RESET:
-		host->preset(mtd);
+		host->preset(chip);
 		host->send_cmd(host, command);
 		break;
 
@@ -986,7 +998,7 @@ static void imx_nand_command(struct mtd_info *mtd, unsigned command,
 		host->buf_start = 0;
 		host->status_request = 1;
 		host->send_cmd(host, command);
-		mxc_do_addr_cycle(mtd, column, page_addr);
+		mxc_do_addr_cycle(chip, column, page_addr);
 		break;
 
 	case NAND_CMD_READ0:
@@ -997,7 +1009,7 @@ static void imx_nand_command(struct mtd_info *mtd, unsigned command,
 			host->buf_start = column + mtd->writesize;
 
 		host->send_cmd(host, NAND_CMD_READ0);
-		mxc_do_addr_cycle(mtd, column, page_addr);
+		mxc_do_addr_cycle(chip, column, page_addr);
 
 		if (host->pagesize_2k)
 			/* send read confirm command */
@@ -1026,7 +1038,7 @@ static void imx_nand_command(struct mtd_info *mtd, unsigned command,
 				  * whole page including OOB together.
 				  */
 				/* call ourself to read a page */
-				imx_nand_command(mtd, NAND_CMD_READ0, 0,
+				imx_nand_command(chip, NAND_CMD_READ0, 0,
 						 page_addr);
 			}
 			host->buf_start = column;
@@ -1042,25 +1054,25 @@ static void imx_nand_command(struct mtd_info *mtd, unsigned command,
 				host->send_cmd(host, NAND_CMD_READ0);
 		}
 		host->send_cmd(host, command);
-		mxc_do_addr_cycle(mtd, column, page_addr);
+		mxc_do_addr_cycle(chip, column, page_addr);
 
 		break;
 
 	case NAND_CMD_PAGEPROG:
 		host->send_cmd(host, command);
-		mxc_do_addr_cycle(mtd, column, page_addr);
+		mxc_do_addr_cycle(chip, column, page_addr);
 		break;
 
 	case NAND_CMD_READID:
 		host->send_cmd(host, command);
-		mxc_do_addr_cycle(mtd, column, page_addr);
+		mxc_do_addr_cycle(chip, column, page_addr);
 		host->send_read_id(host);
 		host->buf_start = 0;
 		break;
 
 	case NAND_CMD_PARAM:
 		host->send_cmd(host, command);
-		mxc_do_addr_cycle(mtd, column, page_addr);
+		mxc_do_addr_cycle(chip, column, page_addr);
 		host->send_read_param(host);
 		host->buf_start = 0;
 		break;
@@ -1068,7 +1080,7 @@ static void imx_nand_command(struct mtd_info *mtd, unsigned command,
 	case NAND_CMD_ERASE1:
 	case NAND_CMD_ERASE2:
 		host->send_cmd(host, command);
-		mxc_do_addr_cycle(mtd, column, page_addr);
+		mxc_do_addr_cycle(chip, column, page_addr);
 		break;
 	}
 }
@@ -1150,8 +1162,9 @@ static int __init mxcnd_probe_dt(struct imx_nand_host *host)
  * on the flash BBT.
  *
  */
-static int checkbad(struct mtd_info *mtd, loff_t ofs)
+static int checkbad(struct nand_chip *chip, loff_t ofs)
 {
+	struct mtd_info *mtd = nand_to_mtd(chip);
 	int ret;
 	uint8_t buf[mtd->writesize + mtd->oobsize];
 	struct mtd_oob_ops ops;
@@ -1173,9 +1186,9 @@ static int checkbad(struct mtd_info *mtd, loff_t ofs)
 	return 0;
 }
 
-static int imxnd_create_bbt(struct mtd_info *mtd)
+static int imxnd_create_bbt(struct nand_chip *chip)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct mtd_info *mtd = nand_to_mtd(chip);
 	int len, i, numblocks, ret;
 	loff_t from = 0;
 	uint8_t *bbt;
@@ -1190,13 +1203,13 @@ static int imxnd_create_bbt(struct mtd_info *mtd)
 	numblocks = mtd->size >> (chip->bbt_erase_shift - 1);
 
 	for (i = 0; i < numblocks;) {
-		ret = checkbad(mtd, from);
+		ret = checkbad(chip, from);
 		if (ret < 0)
 			goto out;
 
 		if (ret) {
 			bbt[i >> 3] |= 0x03 << (i & 0x6);
-			dev_info(mtd->parent, "Bad eraseblock %d at 0x%08x\n",
+			dev_info(mtd->dev.parent, "Bad eraseblock %d at 0x%08x\n",
 				 i >> 1, (unsigned int)from);
 		}
 
@@ -1210,11 +1223,11 @@ static int imxnd_create_bbt(struct mtd_info *mtd)
 	free(chip->bbt);
 	chip->bbt = bbt;
 
-	ret = nand_update_bbt(mtd, 0);
+	ret = nand_update_bbt(chip, 0);
 	if (ret)
 		return ret;
 
-	ret = nand_default_bbt(mtd);
+	ret = nand_create_bbt(chip);
 	if (ret)
 		return ret;
 
@@ -1345,22 +1358,23 @@ static int __init imxnd_probe(struct device_d *dev)
 
 	/* structures must be linked */
 	this = &host->nand;
-	mtd = &this->mtd;
-	mtd->parent = dev;
+	mtd = nand_to_mtd(this);
+	mtd->dev.parent = dev;
 	mtd->name = "imx_nand";
 
 	/* 50 us command delay time */
-	this->chip_delay = 5;
+	this->legacy.chip_delay = 5;
 
 	this->priv = host;
-	this->dev_ready = imx_nand_dev_ready;
-	this->cmdfunc = imx_nand_command;
-	this->select_chip = imx_nand_select_chip;
-	this->read_byte = imx_nand_read_byte;
-	this->read_word = imx_nand_read_word;
-	this->write_buf = imx_nand_write_buf;
-	this->read_buf = imx_nand_read_buf;
-	this->write_page = imx_nand_write_page;
+	this->legacy.dev_ready = imx_nand_dev_ready;
+	this->legacy.cmdfunc = imx_nand_command;
+	this->legacy.select_chip = imx_nand_select_chip;
+	this->legacy.read_byte = imx_nand_read_byte;
+	this->legacy.read_word = imx_nand_read_word;
+	this->legacy.write_buf = imx_nand_write_buf;
+	this->legacy.read_buf = imx_nand_read_buf;
+	this->ecc.write_page = imx_nand_write_page_ecc;
+	this->ecc.write_page_raw = imx_nand_write_page_raw;
 
 	if (host->hw_ecc) {
 		this->ecc.calculate = imx_nand_calculate_ecc;
@@ -1381,12 +1395,12 @@ static int __init imxnd_probe(struct device_d *dev)
 		this->ecc.mode = NAND_ECC_SOFT;
 	}
 
-	this->ecc.layout = oob_smallpage;
+	mtd_set_ecclayout(mtd, oob_smallpage);
 
 	/* NAND bus width determines access functions used by upper layer */
 	if (host->data_width == 2) {
 		this->options |= NAND_BUSWIDTH_16;
-		this->ecc.layout = &nandv1_hw_eccoob_smallpage;
+		mtd_set_ecclayout(mtd, &nandv1_hw_eccoob_smallpage);
 		imx_nand_set_layout(0, 16);
 	}
 
@@ -1398,13 +1412,13 @@ static int __init imxnd_probe(struct device_d *dev)
 	}
 
 	/* first scan to find the device and get the page size */
-	if (nand_scan_ident(mtd, 1, NULL)) {
+	if (nand_scan_ident(this, 1, NULL)) {
 		err = -ENXIO;
 		goto escan;
 	}
 
 	/* Call preset again, with correct writesize this time */
-	host->preset(mtd);
+	host->preset(this);
 
 	imx_nand_set_layout(mtd->writesize, host->data_width == 2 ? 16 : 8);
 
@@ -1414,9 +1428,9 @@ static int __init imxnd_probe(struct device_d *dev)
 					"You will loose factory bad block markers!\n");
 
 		if (mtd->writesize == 2048)
-			this->ecc.layout = oob_largepage;
+			mtd_set_ecclayout(mtd, oob_largepage);
 		else
-			this->ecc.layout = oob_4kpage;
+			mtd_set_ecclayout(mtd, oob_4kpage);
 		host->pagesize_2k = 1;
 		if (nfc_is_v21())
 			writew(NFC_V2_SPAS_SPARESIZE(64), host->regs + NFC_V2_SPAS);
@@ -1432,14 +1446,14 @@ static int __init imxnd_probe(struct device_d *dev)
 		this->ecc.strength = host->eccsize;
 
 	/* second phase scan */
-	if (nand_scan_tail(mtd)) {
+	if (nand_scan_tail(this)) {
 		err = -ENXIO;
 		goto escan;
 	}
 
 	if (host->flash_bbt && this->bbt_td->pages[0] == -1 && this->bbt_md->pages[0] == -1) {
 		dev_info(dev, "no BBT found. creating one\n");
-		err = imxnd_create_bbt(mtd);
+		err = imxnd_create_bbt(this);
 		if (err)
 			dev_warn(dev, "Failed to create bbt: %s\n",
 				 strerror(-err));

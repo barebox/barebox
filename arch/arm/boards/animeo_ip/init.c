@@ -19,6 +19,7 @@
 #include <nand.h>
 #include <linux/sizes.h>
 #include <linux/mtd/nand.h>
+#include <linux/mtd/rawnand.h>
 #include <linux/clk.h>
 #include <mach/board.h>
 #include <mach/at91sam9_smc.h>

@@ -30,6 +30,7 @@
 #include <linux/types.h>
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
+#include <linux/mtd/rawnand.h>
 
 #include <io.h>
 #include <mach/nand.h>
@@ -58,7 +59,7 @@ static inline int parity(int b) /* uses low 8 bits: returns 0 or all-1 */
  * I haven't managed to get the desired data out of it; so do it in sw.
  * There is problably some errata involved, but currently miss the info.
  */
-static int nomadik_ecc512_calc(struct mtd_info *mtd, const u_char *data,
+static int nomadik_ecc512_calc(struct nand_chip *nand, const u_char *data,
 			u_char *ecc)
 {
 	int gpar = 0;
@@ -101,10 +102,9 @@ static int nomadik_ecc512_calc(struct mtd_info *mtd, const u_char *data,
 	return 0;
 }
 
-static int nomadik_ecc512_correct(struct mtd_info *mtd, uint8_t *dat,
+static int nomadik_ecc512_correct(struct nand_chip *chip, uint8_t *dat,
 				uint8_t *r_ecc, uint8_t *c_ecc)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
 	uint32_t r, c, d, diff; /*read, calculated, xor of them */
 
 	if (!memcmp(r_ecc, c_ecc, chip->ecc.bytes))
@@ -149,14 +149,13 @@ static struct nand_ecclayout nomadik_ecc_layout = {
 	.oobfree = { {0x08, 0x08}, {0x18, 0x08}, {0x28, 0x08}, {0x38, 0x08} },
 };
 
-static void nomadik_ecc_control(struct mtd_info *mtd, int mode)
+static void nomadik_ecc_control(struct nand_chip *nand, int mode)
 {
 	/* No need to enable hw ecc, it's on by default */
 }
 
-static void nomadik_cmd_ctrl(struct mtd_info *mtd, int cmd, unsigned int ctrl)
+static void nomadik_cmd_ctrl(struct nand_chip *nand, int cmd, unsigned int ctrl)
 {
-	struct nand_chip *nand = mtd_to_nand(mtd);
 	struct nomadik_nand_host *host = nand->priv;
 
 	if (cmd == NAND_CMD_NONE)
@@ -198,17 +197,18 @@ static int nomadik_nand_probe(struct device_d *dev)
 
 	/* Link all private pointers */
 	nand = &host->nand;
-	mtd = &nand->mtd;
+	mtd = nand_to_mtd(nand);
 	nand->priv = host;
-	mtd->parent = dev;
+	mtd->dev.parent = dev;
 
-	nand->IO_ADDR_W = nand->IO_ADDR_R = dev_request_mem_region_by_name(dev, "nand_data");
-	if (IS_ERR(nand->IO_ADDR_W))
-		return PTR_ERR(nand->IO_ADDR_W);
-	nand->cmd_ctrl = nomadik_cmd_ctrl;
+	nand->legacy.IO_ADDR_W = nand->legacy.IO_ADDR_R =
+		dev_request_mem_region_by_name(dev, "nand_data");
+	if (IS_ERR(nand->legacy.IO_ADDR_W))
+		return PTR_ERR(nand->legacy.IO_ADDR_W);
+	nand->legacy.cmd_ctrl = nomadik_cmd_ctrl;
 
 	nand->ecc.mode = NAND_ECC_HW;
-	nand->ecc.layout = &nomadik_ecc_layout;
+	mtd_set_ecclayout(mtd, &nomadik_ecc_layout);
 	nand->ecc.calculate = nomadik_ecc512_calc;
 	nand->ecc.correct = nomadik_ecc512_correct;
 	nand->ecc.hwctl = nomadik_ecc_control;
@@ -221,7 +221,7 @@ static int nomadik_nand_probe(struct device_d *dev)
 	/*
 	 * Scan to find existance of the device
 	 */
-	if (nand_scan(mtd, 1)) {
+	if (nand_scan(nand, 1)) {
 		ret = -ENXIO;
 		goto err;
 	}

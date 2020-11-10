@@ -920,13 +920,8 @@ static int cfi_mtd_erase(struct mtd_info *mtd, struct erase_info *instr)
 	int ret;
 
 	ret = cfi_erase(info, instr->len, instr->addr);
-	if (ret) {
-		instr->state = MTD_ERASE_FAILED;
+	if (ret)
 		return -EIO;
-	}
-
-	instr->state = MTD_ERASE_DONE;
-	mtd_erase_callback(instr);
 
 	return 0;
 }
@@ -937,11 +932,11 @@ static void cfi_init_mtd(struct flash_info *info)
 	u32 erasesize;
 	int i;
 
-	mtd->read = cfi_mtd_read;
-	mtd->write = cfi_mtd_write;
-	mtd->erase = cfi_mtd_erase;
-	mtd->lock = cfi_mtd_lock;
-	mtd->unlock = cfi_mtd_unlock;
+	mtd->_read = cfi_mtd_read;
+	mtd->_write = cfi_mtd_write;
+	mtd->_erase = cfi_mtd_erase;
+	mtd->_lock = cfi_mtd_lock;
+	mtd->_unlock = cfi_mtd_unlock;
 	mtd->size = info->size;
 
 	erasesize = 0;
@@ -959,7 +954,7 @@ static void cfi_init_mtd(struct flash_info *info)
 	mtd->numeraseregions = info->numeraseregions;
 	mtd->flags = MTD_CAP_NORFLASH;
 	mtd->type = MTD_NORFLASH;
-	mtd->parent = info->dev;
+	mtd->dev.parent = info->dev;
 }
 
 static int cfi_probe_one(struct flash_info *info, int num)
@@ -1035,7 +1030,7 @@ static int cfi_probe(struct device_d *dev)
 		mtd = &priv->infos[0].mtd;
 	}
 
-	mtd->parent = dev;
+	mtd->dev.parent = dev;
 
 	ret = add_mtd_device(mtd, "nor", DEVICE_ID_DYNAMIC);
 	if (ret)

@@ -1120,7 +1120,7 @@ static int cqspi_setup_flash(struct device_d *dev,
 		if (ret)
 			return ret;
 
-		mtd->parent = nor->dev;
+		mtd->dev.parent = nor->dev;
 	} else {
 		nor->dev = dev;
 	}

@@ -540,14 +540,10 @@ static int spi_nor_erase(struct mtd_info *mtd, struct erase_info *instr)
 
 	spi_nor_unlock_and_unprep(nor, SPI_NOR_OPS_ERASE);
 
-	instr->state = MTD_ERASE_DONE;
-	mtd_erase_callback(instr);
-
 	return ret;
 
 erase_err:
 	spi_nor_unlock_and_unprep(nor, SPI_NOR_OPS_ERASE);
-	instr->state = MTD_ERASE_FAILED;
 	return ret;
 }
 
@@ -1441,20 +1437,20 @@ int spi_nor_scan(struct spi_nor *nor, const char *name,
 	mtd->writesize = 1;
 	mtd->flags = MTD_CAP_NORFLASH;
 	mtd->size = params.size;
-	mtd->erase = spi_nor_erase;
-	mtd->read = spi_nor_read;
+	mtd->_erase = spi_nor_erase;
+	mtd->_read = spi_nor_read;
 
 	/* nor protection support for STmicro chips */
 	if (JEDEC_MFR(info) == CFI_MFR_ST) {
-		mtd->lock = spi_nor_lock;
-		mtd->unlock = spi_nor_unlock;
+		mtd->_lock = spi_nor_lock;
+		mtd->_unlock = spi_nor_unlock;
 	}
 
 	/* sst nor chips use AAI word program */
 	if (info->flags & SST_WRITE)
-		mtd->write = sst_write;
+		mtd->_write = sst_write;
 	else
-		mtd->write = spi_nor_write;
+		mtd->_write = spi_nor_write;
 
 	if (info->flags & USE_FSR)
 		nor->flags |= SNOR_F_USE_FSR;

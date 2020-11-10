@@ -72,7 +72,7 @@ static int add_mtdoob_device(struct mtd_info *mtd, const char *devname, void **p
 {
 	struct mtdoob *mtdoob;
 
-	if (mtd->master || mtd->oobsize == 0)
+	if (mtd->parent || mtd->oobsize == 0)
 		return 0;
 
 	mtdoob = xzalloc(sizeof(*mtdoob));
@@ -80,7 +80,7 @@ static int add_mtdoob_device(struct mtd_info *mtd, const char *devname, void **p
 	mtdoob->cdev.size = mtd_div_by_wb(mtd->size, mtd) * mtd->oobsize;
 	mtdoob->cdev.name = basprintf("%s.oob", mtd->cdev.name);
 	mtdoob->cdev.priv = mtdoob;
-	mtdoob->cdev.dev = &mtd->class_dev;
+	mtdoob->cdev.dev = &mtd->dev;
 	mtdoob->mtd = mtd;
 	*priv = mtdoob;
 	devfs_create(&mtdoob->cdev);
@@ -92,7 +92,7 @@ static int del_mtdoob_device(struct mtd_info *mtd, void **priv)
 {
 	struct mtdoob *mtdoob;
 
-	if (mtd->master || mtd->oobsize == 0)
+	if (mtd->parent || mtd->oobsize == 0)
 		return 0;
 
 	mtdoob = *priv;

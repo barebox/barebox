@@ -237,7 +237,7 @@ retry:
 			 * enabled. A corresponding message will be printed
 			 * later, when it is has been scrubbed.
 			 */
-			dev_dbg(&mtd->class_dev, "fixable bit-flip detected at PEB %d\n", pnum);
+			dev_dbg(&mtd->dev, "fixable bit-flip detected at PEB %d\n", pnum);
 			if (len != read)
 				return -EIO;
 			return -EUCLEAN;
@@ -246,7 +246,7 @@ retry:
 		if (mtd_is_eccerr(err) && retries++ < MTD_IO_RETRIES)
 			goto retry;
 
-		dev_err(&mtd->class_dev, "error %d%s while reading %d bytes from PEB %d:%d\n",
+		dev_err(&mtd->dev, "error %d%s while reading %d bytes from PEB %d:%d\n",
 			err, errstr, len, pnum, offset);
 		return err;
 	}
@@ -284,7 +284,7 @@ int mtd_peb_check_all_ff(struct mtd_info *mtd, int pnum, int offset, int len,
 
 	err = mtd_peb_read(mtd, buf, pnum, offset, len);
 	if (err && !mtd_is_bitflip(err)) {
-		dev_err(&mtd->class_dev,
+		dev_err(&mtd->dev,
 			"error %d while reading %d bytes from PEB %d:%d\n",
 			err, len, pnum, offset);
 		goto out;
@@ -293,7 +293,7 @@ int mtd_peb_check_all_ff(struct mtd_info *mtd, int pnum, int offset, int len,
 	err = mtd_buf_all_ff(buf, len);
 	if (err == 0) {
 		if (warn)
-			dev_err(&mtd->class_dev, "all-ff check failed for PEB %d\n",
+			dev_err(&mtd->dev, "all-ff check failed for PEB %d\n",
 				pnum);
 		err = -EBADMSG;
 		goto out;
@@ -343,15 +343,15 @@ int mtd_peb_verify(struct mtd_info *mtd, const void *buf, int pnum,
 		if (c == c1)
 			continue;
 
-		dev_err(&mtd->class_dev, "self-check failed for PEB %d:%d, len %d\n",
+		dev_err(&mtd->dev, "self-check failed for PEB %d:%d, len %d\n",
 			pnum, offset, len);
-		dev_info(&mtd->class_dev, "data differs at position %d\n", i);
+		dev_info(&mtd->dev, "data differs at position %d\n", i);
 		dump_len = max_t(int, 128, len - i);
 #ifdef DEBUG
-		dev_info(&mtd->class_dev, "hex dump of the original buffer from %d to %d\n",
+		dev_info(&mtd->dev, "hex dump of the original buffer from %d to %d\n",
 			i, i + dump_len);
 		memory_display(buf + i, i, dump_len, 4, 0);
-		dev_info(&mtd->class_dev, "hex dump of the read buffer from %d to %d\n",
+		dev_info(&mtd->dev, "hex dump of the read buffer from %d to %d\n",
 			i, i + dump_len);
 		memory_display(buf1 + i, i, dump_len, 4, 0);
 		dump_stack();
@@ -391,7 +391,7 @@ int mtd_peb_write(struct mtd_info *mtd, const void *buf, int pnum, int offset,
 	size_t written;
 	loff_t addr;
 
-	dev_dbg(&mtd->class_dev, "write %d bytes to PEB %d:%d\n", len, pnum, offset);
+	dev_dbg(&mtd->dev, "write %d bytes to PEB %d:%d\n", len, pnum, offset);
 
 	if (!mtd_peb_valid(mtd, pnum))
 		return -EINVAL;
@@ -405,7 +405,7 @@ int mtd_peb_write(struct mtd_info *mtd, const void *buf, int pnum, int offset,
 		return -EINVAL;
 
 	if (mtd_peb_emulate_write_failure()) {
-		dev_err(&mtd->class_dev, "Cannot write %d bytes to PEB %d:%d (emulated)\n",
+		dev_err(&mtd->dev, "Cannot write %d bytes to PEB %d:%d (emulated)\n",
 			len, pnum, offset);
 		return -EIO;
 	}
@@ -420,7 +420,7 @@ int mtd_peb_write(struct mtd_info *mtd, const void *buf, int pnum, int offset,
 	addr = (loff_t)pnum * mtd->erasesize + offset;
 	err = mtd_write(mtd, addr, len, &written, buf);
 	if (err) {
-		dev_err(&mtd->class_dev, "error %d while writing %d bytes to PEB %d:%d, written %zu bytes\n",
+		dev_err(&mtd->dev, "error %d while writing %d bytes to PEB %d:%d, written %zu bytes\n",
 			err, len, pnum, offset, written);
 	} else {
 		if (written != len)
@@ -533,12 +533,11 @@ int mtd_peb_erase(struct mtd_info *mtd, int pnum)
 	int ret;
 	struct erase_info ei = {};
 
-	dev_dbg(&mtd->class_dev, "erase PEB %d\n", pnum);
+	dev_dbg(&mtd->dev, "erase PEB %d\n", pnum);
 
 	if (!mtd_peb_valid(mtd, pnum))
 		return -EINVAL;
 
-	ei.mtd = mtd;
 	ei.addr = (loff_t)pnum * mtd->erasesize;
 	ei.len = mtd->erasesize;
 
@@ -553,7 +552,7 @@ int mtd_peb_erase(struct mtd_info *mtd, int pnum)
 	}
 
 	if (mtd_peb_emulate_erase_failure()) {
-		dev_err(&mtd->class_dev, "cannot erase PEB %d (emulated)", pnum);
+		dev_err(&mtd->dev, "cannot erase PEB %d (emulated)", pnum);
 		return -EIO;
 	}
 
@@ -588,7 +587,7 @@ int mtd_peb_torture(struct mtd_info *mtd, int pnum)
 	if (!peb_buf)
 		return -ENOMEM;
 
-	dev_dbg(&mtd->class_dev, "run torture test for PEB %d\n", pnum);
+	dev_dbg(&mtd->dev, "run torture test for PEB %d\n", pnum);
 
 	patt_count = ARRAY_SIZE(patterns);
 
@@ -618,7 +617,7 @@ int mtd_peb_torture(struct mtd_info *mtd, int pnum)
 		goto out;
 
 	err = patt_count + 1;
-	dev_dbg(&mtd->class_dev, "PEB %d passed torture test, do not mark it as bad\n",
+	dev_dbg(&mtd->dev, "PEB %d passed torture test, do not mark it as bad\n",
 		pnum);
 
 out:
@@ -628,7 +627,7 @@ out:
 		 * has not passed because it happened on a freshly erased
 		 * physical eraseblock which means something is wrong with it.
 		 */
-		dev_err(&mtd->class_dev, "read problems on freshly erased PEB %d, must be bad\n",
+		dev_err(&mtd->dev, "read problems on freshly erased PEB %d, must be bad\n",
 			pnum);
 
 		err = -EIO;
@@ -703,7 +702,7 @@ int mtd_peb_create_bitflips(struct mtd_info *mtd, int pnum, int offset,
 
 		ret = mtd_read_oob(mtd, offs, &ops);
 		if (ret) {
-			dev_err(&mtd->class_dev, "Cannot read raw data at 0x%08llx\n", offs);
+			dev_err(&mtd->dev, "Cannot read raw data at 0x%08llx\n", offs);
 			goto err;
 		}
 	}
@@ -729,12 +728,12 @@ int mtd_peb_create_bitflips(struct mtd_info *mtd, int pnum, int offset,
 		pos[offs] ^= 1 << bit;
 
 		if (info)
-			dev_info(&mtd->class_dev, "Flipping bit %d @ %d\n", bit, offs);
+			dev_info(&mtd->dev, "Flipping bit %d @ %d\n", bit, offs);
 	}
 
 	ret = mtd_peb_erase(mtd, pnum);
 	if (ret < 0) {
-		dev_err(&mtd->class_dev, "Cannot erase PEB %d\n", pnum);
+		dev_err(&mtd->dev, "Cannot erase PEB %d\n", pnum);
 		goto err;
 	}
 
@@ -746,7 +745,7 @@ int mtd_peb_create_bitflips(struct mtd_info *mtd, int pnum, int offset,
 
 		ret = mtd_write_oob(mtd, offs, &ops);
 		if (ret) {
-			dev_err(&mtd->class_dev, "Cannot write page at 0x%08llx\n", offs);
+			dev_err(&mtd->dev, "Cannot write page at 0x%08llx\n", offs);
 			goto err;
 		}
 	}
@@ -754,7 +753,7 @@ int mtd_peb_create_bitflips(struct mtd_info *mtd, int pnum, int offset,
 	ret = 0;
 err:
 	if (ret)
-		dev_err(&mtd->class_dev, "Failed to create bitflips: %s\n", strerror(-ret));
+		dev_err(&mtd->dev, "Failed to create bitflips: %s\n", strerror(-ret));
 
 	free(buf);
 	free(oobbuf);

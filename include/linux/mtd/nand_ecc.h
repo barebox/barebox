@@ -1,13 +1,8 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 /*
- *  drivers/mtd/nand_ecc.h
- *
- *  Copyright (C) 2000 Steven J. Hill (sjhill@realitydiluted.com)
- *
- * $Id: nand_ecc.h,v 1.4 2004/06/17 02:35:02 dbrown Exp $
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
+ *  Copyright (C) 2000-2010 Steven J. Hill <sjhill@realitydiluted.com>
+ *			    David Woodhouse <dwmw2@infradead.org>
+ *			    Thomas Gleixner <tglx@linutronix.de>
  *
  * This file is the header for the ECC algorithm.
  */
@@ -15,16 +10,30 @@
 #ifndef __MTD_NAND_ECC_H__
 #define __MTD_NAND_ECC_H__
 
-struct mtd_info;
+struct nand_chip;
 
 /*
- * Calculate 3 byte ECC code for 256 byte block
+ * Calculate 3 byte ECC code for eccsize byte block
  */
-int nand_calculate_ecc(struct mtd_info *mtd, const u_char *dat, u_char *ecc_code);
+void __nand_calculate_ecc(const u_char *dat, unsigned int eccsize,
+			  u_char *ecc_code, bool sm_order);
 
 /*
- * Detect and correct a 1 bit error for 256 byte block
+ * Calculate 3 byte ECC code for 256/512 byte block
  */
-int nand_correct_data(struct mtd_info *mtd, u_char *dat, u_char *read_ecc, u_char *calc_ecc);
+int nand_calculate_ecc(struct nand_chip *chip, const u_char *dat,
+		       u_char *ecc_code);
+
+/*
+ * Detect and correct a 1 bit error for eccsize byte block
+ */
+int __nand_correct_data(u_char *dat, u_char *read_ecc, u_char *calc_ecc,
+			unsigned int eccsize, bool sm_order);
+
+/*
+ * Detect and correct a 1 bit error for 256/512 byte block
+ */
+int nand_correct_data(struct nand_chip *chip, u_char *dat, u_char *read_ecc,
+		      u_char *calc_ecc);
 
 #endif /* __MTD_NAND_ECC_H__ */

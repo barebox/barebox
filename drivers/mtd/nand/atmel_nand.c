@@ -33,6 +33,7 @@
 #include <of_mtd.h>
 
 #include <linux/mtd/mtd.h>
+#include <linux/mtd/rawnand.h>
 #include <linux/mtd/nand.h>
 #include <linux/err.h>
 
@@ -102,9 +103,9 @@ struct atmel_nand_host {
 	int			*pmecc_mu;
 	int			*pmecc_dmu;
 	int			*pmecc_delta;
+	struct nand_ecclayout	*ecclayout;
+	void			*ecc_code;
 };
-
-static struct nand_ecclayout atmel_pmecc_oobinfo;
 
 /*
  * Enable NAND.
@@ -127,9 +128,8 @@ static void atmel_nand_disable(struct atmel_nand_host *host)
 /*
  * Hardware specific access to control-lines
  */
-static void atmel_nand_cmd_ctrl(struct mtd_info *mtd, int cmd, unsigned int ctrl)
+static void atmel_nand_cmd_ctrl(struct nand_chip *nand_chip, int cmd, unsigned int ctrl)
 {
-	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct atmel_nand_host *host = nand_chip->priv;
 
 	if (ctrl & NAND_CTRL_CHANGE) {
@@ -150,9 +150,8 @@ static void atmel_nand_cmd_ctrl(struct mtd_info *mtd, int cmd, unsigned int ctrl
 /*
  * Read the Device Ready pin.
  */
-static int atmel_nand_device_ready(struct mtd_info *mtd)
+static int atmel_nand_device_ready(struct nand_chip *nand_chip)
 {
-	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct atmel_nand_host *host = nand_chip->priv;
 
 	return gpio_get_value(host->board->rdy_pin);
@@ -161,32 +160,24 @@ static int atmel_nand_device_ready(struct mtd_info *mtd)
 /*
  * Minimal-overhead PIO for data access.
  */
-static void atmel_read_buf(struct mtd_info *mtd, u8 *buf, int len)
+static void atmel_read_buf(struct nand_chip *nand_chip, u8 *buf, int len)
 {
-	struct nand_chip	*nand_chip = mtd_to_nand(mtd);
-
-	readsb(nand_chip->IO_ADDR_R, buf, len);
+	readsb(nand_chip->legacy.IO_ADDR_R, buf, len);
 }
 
-static void atmel_read_buf16(struct mtd_info *mtd, u8 *buf, int len)
+static void atmel_read_buf16(struct nand_chip *nand_chip, u8 *buf, int len)
 {
-	struct nand_chip	*nand_chip = mtd_to_nand(mtd);
-
-	readsw(nand_chip->IO_ADDR_R, buf, len / 2);
+	readsw(nand_chip->legacy.IO_ADDR_R, buf, len / 2);
 }
 
-static void atmel_write_buf(struct mtd_info *mtd, const u8 *buf, int len)
+static void atmel_write_buf(struct nand_chip *nand_chip, const u8 *buf, int len)
 {
-	struct nand_chip	*nand_chip = mtd_to_nand(mtd);
-
-	writesb(nand_chip->IO_ADDR_W, buf, len);
+	writesb(nand_chip->legacy.IO_ADDR_W, buf, len);
 }
 
-static void atmel_write_buf16(struct mtd_info *mtd, const u8 *buf, int len)
+static void atmel_write_buf16(struct nand_chip *nand_chip, const u8 *buf, int len)
 {
-	struct nand_chip	*nand_chip = mtd_to_nand(mtd);
-
-	writesw(nand_chip->IO_ADDR_W, buf, len / 2);
+	writesw(nand_chip->legacy.IO_ADDR_W, buf, len / 2);
 }
 
 /*
@@ -206,22 +197,6 @@ static int pmecc_get_ecc_bytes(int cap, int sector_size)
 {
 	int m = 12 + sector_size / 512;
 	return (m * cap + 7) / 8;
-}
-
-static void pmecc_config_ecc_layout(struct nand_ecclayout *layout,
-	int oobsize, int ecc_len)
-{
-	int i;
-
-	layout->eccbytes = ecc_len;
-
-	/* ECC will occupy the last ecc_len bytes continuously */
-	for (i = 0; i < ecc_len; i++)
-		layout->eccpos[i] = oobsize - ecc_len + i;
-
-	layout->oobfree[0].offset = 2;
-	layout->oobfree[0].length =
-		oobsize - ecc_len - layout->oobfree[0].offset;
 }
 
 static void __iomem *pmecc_get_alpha_to(struct atmel_nand_host *host)
@@ -545,7 +520,7 @@ static void pmecc_correct_data(struct mtd_info *mtd, uint8_t *buf, uint8_t *ecc,
 	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct atmel_nand_host *host = nand_chip->priv;
 	int i = 0;
-	int byte_pos, bit_pos, sector_size, pos;
+	int byte_pos, bit_pos, sector_size;
 	uint32_t tmp;
 	uint8_t err_byte;
 
@@ -562,20 +537,12 @@ static void pmecc_correct_data(struct mtd_info *mtd, uint8_t *buf, uint8_t *ecc,
 		if (byte_pos < sector_size) {
 			err_byte = *(buf + byte_pos);
 			*(buf + byte_pos) ^= (1 << bit_pos);
-
-			pos = sector_num * host->board->pmecc_sector_size + byte_pos;
-			dev_info(host->dev, "Bit flip in data area, byte_pos: %d, bit_pos: %d, 0x%02x -> 0x%02x\n",
-				pos, bit_pos, err_byte, *(buf + byte_pos));
 		} else {
 			/* Bit flip in OOB area */
 			tmp = sector_num * host->pmecc_bytes_per_sector
 					+ (byte_pos - sector_size);
 			err_byte = ecc[tmp];
 			ecc[tmp] ^= (1 << bit_pos);
-
-			pos = tmp + nand_chip->ecc.layout->eccpos[0];
-			dev_info(host->dev, "Bit flip in OOB, oob_byte_pos: %d, bit_pos: %d, 0x%02x -> 0x%02x\n",
-				pos, bit_pos, err_byte, ecc[tmp]);
 		}
 
 		i++;
@@ -585,17 +552,21 @@ static void pmecc_correct_data(struct mtd_info *mtd, uint8_t *buf, uint8_t *ecc,
 	return;
 }
 
-static int pmecc_correction(struct mtd_info *mtd, u32 pmecc_stat, uint8_t *buf,
-	u8 *ecc)
+static int pmecc_correction(struct mtd_info *mtd, u32 pmecc_stat, uint8_t *buf)
 {
 	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct atmel_nand_host *host = nand_chip->priv;
-	int i, err_nbr, eccbytes;
+	int i, err_nbr, ret, max_bitflips = 0;
 	uint8_t *buf_pos;
+	uint8_t *ecc_code = host->ecc_code;
 
-	eccbytes = nand_chip->ecc.bytes;
-	for (i = 0; i < eccbytes; i++)
-		if (ecc[i] != 0xff)
+	ret = mtd_ooblayout_get_eccbytes(mtd, ecc_code, nand_chip->oob_poi, 0,
+					 nand_chip->ecc.total);
+	if (ret)
+		return ret;
+
+	for (i = 0; i < nand_chip->ecc.bytes * nand_chip->ecc.steps; i++)
+		if (ecc_code[i] != 0xff)
 			goto normal_check;
 	/* Erased page, return OK */
 	return 0;
@@ -614,26 +585,25 @@ normal_check:
 			if (err_nbr == -1) {
 				dev_err(host->dev, "PMECC: Too many errors\n");
 				mtd->ecc_stats.failed++;
-				return -EIO;
+				return -EBADMSG;
 			} else {
-				pmecc_correct_data(mtd, buf_pos, ecc, i,
+				pmecc_correct_data(mtd, buf_pos, ecc_code, i,
 					host->pmecc_bytes_per_sector, err_nbr);
 				mtd->ecc_stats.corrected += err_nbr;
+				max_bitflips = max(max_bitflips, err_nbr);
 			}
 		}
 		pmecc_stat >>= 1;
 	}
 
-	return 0;
+	return max_bitflips;
 }
 
-static int atmel_nand_pmecc_read_page(struct mtd_info *mtd,
-		struct nand_chip *chip, uint8_t *buf, int oob_required, int page)
+static int atmel_nand_pmecc_read_page(struct nand_chip *chip, uint8_t *buf,
+				      int oob_required, int page)
 {
+	struct mtd_info *mtd = nand_to_mtd(chip);
 	struct atmel_nand_host *host = chip->priv;
-	int eccsize = chip->ecc.size;
-	uint8_t *oob = chip->oob_poi;
-	uint32_t *eccpos = chip->ecc.layout->eccpos;
 	uint32_t stat;
 	int ret;
 
@@ -645,8 +615,10 @@ static int atmel_nand_pmecc_read_page(struct mtd_info *mtd,
 	pmecc_writel(host->ecc, CTRL, PMECC_CTRL_ENABLE);
 	pmecc_writel(host->ecc, CTRL, PMECC_CTRL_DATA);
 
-	chip->read_buf(mtd, buf, eccsize);
-	chip->read_buf(mtd, oob, mtd->oobsize);
+	nand_read_page_op(chip, page, 0, NULL, 0);
+
+	chip->legacy.read_buf(chip, buf, mtd->writesize);
+	chip->legacy.read_buf(chip, chip->oob_poi, mtd->oobsize);
 
 	ret = wait_on_timeout(PMECC_MAX_TIMEOUT_MS,
 		!(pmecc_readl_relaxed(host->ecc, SR) & PMECC_SR_BUSY));
@@ -657,19 +629,22 @@ static int atmel_nand_pmecc_read_page(struct mtd_info *mtd,
 
 	stat = pmecc_readl_relaxed(host->ecc, ISR);
 	if (stat != 0)
-		if (pmecc_correction(mtd, stat, buf, &oob[eccpos[0]]) != 0)
-			return -EIO;
+		return pmecc_correction(mtd, stat, buf);
 
 	return 0;
 }
 
-static int atmel_nand_pmecc_write_page(struct mtd_info *mtd,
-		struct nand_chip *chip, const uint8_t *buf,
-		int oob_required)
+static int atmel_nand_pmecc_write_page(struct nand_chip *chip, const uint8_t *buf,
+				       int oob_required, int page)
 {
+	struct mtd_info *mtd = nand_to_mtd(chip);
 	struct atmel_nand_host *host = chip->priv;
-	uint32_t *eccpos = chip->ecc.layout->eccpos;
+	uint8_t *ecc_calc = host->ecc_code;
 	int i, j, ret;
+
+	ret = nand_prog_page_begin_op(chip, page, 0, NULL, 0);
+	if (ret)
+		return ret;
 
 	pmecc_writel(host->ecc, CTRL, PMECC_CTRL_RST);
 	pmecc_writel(host->ecc, CTRL, PMECC_CTRL_DISABLE);
@@ -680,7 +655,7 @@ static int atmel_nand_pmecc_write_page(struct mtd_info *mtd,
 	pmecc_writel(host->ecc, CTRL, PMECC_CTRL_ENABLE);
 	pmecc_writel(host->ecc, CTRL, PMECC_CTRL_DATA);
 
-	chip->write_buf(mtd, (u8 *)buf, mtd->writesize);
+	chip->legacy.write_buf(chip, (u8 *)buf, mtd->writesize);
 
 	ret = wait_on_timeout(PMECC_MAX_TIMEOUT_MS,
 		!(pmecc_readl_relaxed(host->ecc, SR) & PMECC_SR_BUSY));
@@ -694,13 +669,22 @@ static int atmel_nand_pmecc_write_page(struct mtd_info *mtd,
 			int pos;
 
 			pos = i * host->pmecc_bytes_per_sector + j;
-			chip->oob_poi[eccpos[pos]] =
-				pmecc_readb_ecc_relaxed(host->ecc, i, j);
+			ecc_calc[pos] =	pmecc_readb_ecc_relaxed(host->ecc, i, j);
 		}
 	}
-	chip->write_buf(mtd, chip->oob_poi, mtd->oobsize);
 
-	return 0;
+	ret = mtd_ooblayout_set_eccbytes(mtd, ecc_calc,
+			chip->oob_poi, 0, chip->ecc.total);
+	if (ret)
+		return ret;
+
+	chip->legacy.write_buf(chip, chip->oob_poi, mtd->oobsize);
+
+	ret = nand_write_data_op(chip, chip->oob_poi, mtd->oobsize, false);
+	if (ret)
+		return ret;
+
+	return nand_prog_page_end_op(chip);
 }
 
 static void atmel_pmecc_core_init(struct mtd_info *mtd)
@@ -708,7 +692,7 @@ static void atmel_pmecc_core_init(struct mtd_info *mtd)
 	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct atmel_nand_host *host = nand_chip->priv;
 	uint32_t val = 0;
-	struct nand_ecclayout *ecc_layout;
+	int eccbytes;
 
 	pmecc_writel(host->ecc, CTRL, PMECC_CTRL_RST);
 	pmecc_writel(host->ecc, CTRL, PMECC_CTRL_DISABLE);
@@ -755,11 +739,10 @@ static void atmel_pmecc_core_init(struct mtd_info *mtd)
 		| PMECC_CFG_AUTO_DISABLE);
 	pmecc_writel(host->ecc, CFG, val);
 
-	ecc_layout = nand_chip->ecc.layout;
+	eccbytes = host->pmecc_sector_number * host->pmecc_bytes_per_sector;
 	pmecc_writel(host->ecc, SAREA, mtd->oobsize - 1);
-	pmecc_writel(host->ecc, SADDR, ecc_layout->eccpos[0]);
-	pmecc_writel(host->ecc, EADDR,
-			ecc_layout->eccpos[ecc_layout->eccbytes - 1]);
+	pmecc_writel(host->ecc, SADDR, mtd->oobsize - eccbytes);
+	pmecc_writel(host->ecc, EADDR, mtd->oobsize - 1);
 	/* See datasheet about PMECC Clock Control Register */
 	pmecc_writel(host->ecc, CLK, 2);
 	pmecc_writel(host->ecc, IDR, 0xff);
@@ -862,7 +845,7 @@ static int __init atmel_pmecc_nand_init_params(struct device_d *dev,
 {
 	struct resource *iores;
 	struct nand_chip *nand_chip = &host->nand_chip;
-	struct mtd_info *mtd = &nand_chip->mtd;
+	struct mtd_info *mtd = nand_to_mtd(nand_chip);
 	int cap, sector_size, err_no;
 	int ret;
 
@@ -911,9 +894,6 @@ static int __init atmel_pmecc_nand_init_params(struct device_d *dev,
 		host->board->pmecc_lookup_table_offset = 0;
 	}
 
-	/* ECC is calculated for the whole page (1 step) */
-	nand_chip->ecc.size = mtd->writesize;
-
 	/* set ECC page size and oob layout */
 	switch (mtd->writesize) {
 	case 2048:
@@ -929,17 +909,16 @@ static int __init atmel_pmecc_nand_init_params(struct device_d *dev,
 		host->pmecc_index_of = host->pmecc_rom_base +
 			host->board->pmecc_lookup_table_offset;
 
-		nand_chip->ecc.steps = 1;
-		nand_chip->ecc.bytes = host->pmecc_bytes_per_sector *
-				       host->pmecc_sector_number;
+		nand_chip->ecc.steps = host->pmecc_sector_number;
+		nand_chip->ecc.bytes = host->pmecc_bytes_per_sector;
+		nand_chip->ecc.size = sector_size;
+		nand_chip->ecc.strength = cap;
+
 		if (nand_chip->ecc.bytes > mtd->oobsize - 2) {
 			dev_err(host->dev, "No room for ECC bytes\n");
 			return -EINVAL;
 		}
-		pmecc_config_ecc_layout(&atmel_pmecc_oobinfo,
-					mtd->oobsize,
-					nand_chip->ecc.bytes);
-		nand_chip->ecc.layout = &atmel_pmecc_oobinfo;
+		mtd_set_ooblayout(mtd, &nand_ooblayout_lp_ops);
 		break;
 	case 512:
 	case 1024:
@@ -979,10 +958,9 @@ static int __init atmel_pmecc_nand_init_params(struct device_d *dev,
  * dat:        raw data (unused)
  * ecc_code:   buffer for ECC
  */
-static int atmel_nand_calculate(struct mtd_info *mtd,
+static int atmel_nand_calculate(struct nand_chip *nand_chip,
 		const u_char *dat, unsigned char *ecc_code)
 {
-	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct atmel_nand_host *host = nand_chip->priv;
 	unsigned int ecc_value;
 
@@ -1008,34 +986,22 @@ static int atmel_nand_calculate(struct mtd_info *mtd,
  * chip:       nand chip info structure
  * buf:        buffer to store read data
  */
-static int atmel_nand_read_page(struct mtd_info *mtd,
-		struct nand_chip *chip, uint8_t *buf, int oob_required, int page)
+static int atmel_nand_read_page(struct nand_chip *chip, uint8_t *buf,
+				int oob_required, int page)
 {
-	int eccsize = chip->ecc.size;
+	struct mtd_info *mtd = nand_to_mtd(chip);
+	struct atmel_nand_host *host = chip->priv;
 	int eccbytes = chip->ecc.bytes;
-	uint32_t *eccpos = chip->ecc.layout->eccpos;
+	uint32_t *eccpos = host->ecclayout->eccpos;
 	uint8_t *p = buf;
 	uint8_t *oob = chip->oob_poi;
 	uint8_t *ecc_pos;
 	int stat;
 
-	/*
-	 * Errata: ALE is incorrectly wired up to the ECC controller
-	 * on the AP7000, so it will include the address cycles in the
-	 * ECC calculation.
-	 *
-	 * Workaround: Reset the parity registers before reading the
-	 * actual data.
-	 */
-#if 0
-	if (cpu_is_at32ap7000()) {
-		struct atmel_nand_host *host = chip->priv;
-		ecc_writel(host->ecc, CR, ATMEL_ECC_RST);
-	}
-#endif
+	nand_read_page_op(chip, page, 0, NULL, 0);
 
 	/* read the page */
-	chip->read_buf(mtd, p, eccsize);
+	chip->legacy.read_buf(chip, p, mtd->writesize);
 
 	/* move to ECC position if needed */
 	if (eccpos[0] != 0) {
@@ -1045,16 +1011,16 @@ static int atmel_nand_read_page(struct mtd_info *mtd,
 		 * NAND_CMD_RNDOUT.
 		 * anyway, for small pages, the eccpos[0] == 0
 		 */
-		chip->cmdfunc(mtd, NAND_CMD_RNDOUT,
+		chip->legacy.cmdfunc(chip, NAND_CMD_RNDOUT,
 				mtd->writesize + eccpos[0], -1);
 	}
 
 	/* the ECC controller needs to read the ECC just after the data */
 	ecc_pos = oob + eccpos[0];
-	chip->read_buf(mtd, ecc_pos, eccbytes);
+	chip->legacy.read_buf(chip, ecc_pos, eccbytes);
 
 	/* check if there's an error */
-	stat = chip->ecc.correct(mtd, p, oob, NULL);
+	stat = chip->ecc.correct(chip, p, oob, NULL);
 
 	if (stat < 0)
 		mtd->ecc_stats.failed++;
@@ -1062,10 +1028,10 @@ static int atmel_nand_read_page(struct mtd_info *mtd,
 		mtd->ecc_stats.corrected += stat;
 
 	/* get back to oob start (end of page) */
-	chip->cmdfunc(mtd, NAND_CMD_RNDOUT, mtd->writesize, -1);
+	chip->legacy.cmdfunc(chip, NAND_CMD_RNDOUT, mtd->writesize, -1);
 
 	/* read the oob */
-	chip->read_buf(mtd, oob, mtd->oobsize);
+	chip->legacy.read_buf(chip, oob, mtd->oobsize);
 
 	return 0;
 }
@@ -1082,10 +1048,9 @@ static int atmel_nand_read_page(struct mtd_info *mtd,
  *
  * Detect and correct a 1 bit error for a page
  */
-static int atmel_nand_correct(struct mtd_info *mtd, u_char *dat,
+static int atmel_nand_correct(struct nand_chip *nand_chip, u_char *dat,
 		u_char *read_ecc, u_char *isnull)
 {
-	struct nand_chip *nand_chip = mtd_to_nand(mtd);
 	struct atmel_nand_host *host = nand_chip->priv;
 	unsigned int ecc_status;
 	unsigned int ecc_word, ecc_bit;
@@ -1149,15 +1114,8 @@ static int atmel_nand_correct(struct mtd_info *mtd, u_char *dat,
 /*
  * Enable HW ECC : unused on most chips
  */
-static void atmel_nand_hwctl(struct mtd_info *mtd, int mode)
+static void atmel_nand_hwctl(struct nand_chip *nand_chip, int mode)
 {
-#if 0
-	if (cpu_is_at32ap7000()) {
-		struct nand_chip *nand_chip = mtd_to_nand(mtd);
-		struct atmel_nand_host *host = nand_chip->priv;
-		ecc_writel(host->ecc, CR, ATMEL_ECC_RST);
-	}
-#endif
 }
 
 static int atmel_nand_of_init(struct atmel_nand_host *host, struct device_node *np)
@@ -1251,7 +1209,7 @@ static int atmel_hw_nand_init_params(struct device_d *dev,
 {
 	struct resource *iores;
 	struct nand_chip *nand_chip = &host->nand_chip;
-	struct mtd_info *mtd = &nand_chip->mtd;
+	struct mtd_info *mtd = nand_to_mtd(nand_chip);
 
 	iores = dev_request_mem_resource(dev, 1);
 	if (IS_ERR(iores))
@@ -1268,19 +1226,23 @@ static int atmel_hw_nand_init_params(struct device_d *dev,
 	/* set ECC page size and oob layout */
 	switch (mtd->writesize) {
 	case 512:
-		nand_chip->ecc.layout = &atmel_oobinfo_small;
+		host->ecclayout = &atmel_oobinfo_small;
+		mtd_set_ecclayout(mtd, host->ecclayout);
 		ecc_writel(host->ecc, MR, ATMEL_ECC_PAGESIZE_528);
 		break;
 	case 1024:
-		nand_chip->ecc.layout = &atmel_oobinfo_large;
+		host->ecclayout = &atmel_oobinfo_large;
+		mtd_set_ecclayout(mtd, host->ecclayout);
 		ecc_writel(host->ecc, MR, ATMEL_ECC_PAGESIZE_1056);
 		break;
 	case 2048:
-		nand_chip->ecc.layout = &atmel_oobinfo_large;
+		host->ecclayout = &atmel_oobinfo_large;
+		mtd_set_ecclayout(mtd, host->ecclayout);
 		ecc_writel(host->ecc, MR, ATMEL_ECC_PAGESIZE_2112);
 		break;
 	case 4096:
-		nand_chip->ecc.layout = &atmel_oobinfo_large;
+		host->ecclayout = &atmel_oobinfo_large;
+		mtd_set_ecclayout(mtd, host->ecclayout);
 		ecc_writel(host->ecc, MR, ATMEL_ECC_PAGESIZE_4224);
 		break;
 	default:
@@ -1328,7 +1290,7 @@ static int __init atmel_nand_probe(struct device_d *dev)
 	host->io_base = IOMEM(iores->start);
 
 	nand_chip = &host->nand_chip;
-	mtd = &nand_chip->mtd;
+	mtd = nand_to_mtd(nand_chip);
 	host->board = pdata;
 	host->dev = dev;
 
@@ -1341,12 +1303,12 @@ static int __init atmel_nand_probe(struct device_d *dev)
 	}
 
 	nand_chip->priv = host;		/* link the private data structures */
-	mtd->parent = dev;
+	mtd->dev.parent = dev;
 
 	/* Set address of NAND IO lines */
-	nand_chip->IO_ADDR_R = host->io_base;
-	nand_chip->IO_ADDR_W = host->io_base;
-	nand_chip->cmd_ctrl = atmel_nand_cmd_ctrl;
+	nand_chip->legacy.IO_ADDR_R = host->io_base;
+	nand_chip->legacy.IO_ADDR_W = host->io_base;
+	nand_chip->legacy.cmd_ctrl = atmel_nand_cmd_ctrl;
 
 	if (gpio_is_valid(host->board->rdy_pin)) {
 		res = gpio_request(host->board->rdy_pin, "nand_rdy");
@@ -1364,7 +1326,7 @@ static int __init atmel_nand_probe(struct device_d *dev)
 			goto err_no_card;
 		}
 
-		nand_chip->dev_ready = atmel_nand_device_ready;
+		nand_chip->legacy.dev_ready = atmel_nand_device_ready;
 	}
 
 	if (gpio_is_valid(host->board->enable_pin)) {
@@ -1394,7 +1356,7 @@ static int __init atmel_nand_probe(struct device_d *dev)
 		nand_chip->ecc.mode = NAND_ECC_HW;
 	}
 
-	nand_chip->chip_delay = 40;		/* 40us command delay time */
+	nand_chip->legacy.chip_delay = 40;		/* 40us command delay time */
 
 	if (IS_ENABLED(CONFIG_NAND_ECC_BCH) &&
 			pdata->ecc_mode == NAND_ECC_SOFT_BCH) {
@@ -1403,11 +1365,11 @@ static int __init atmel_nand_probe(struct device_d *dev)
 
 	if (host->board->bus_width_16) {	/* 16-bit bus width */
 		nand_chip->options |= NAND_BUSWIDTH_16;
-		nand_chip->read_buf = atmel_read_buf16;
-		nand_chip->write_buf = atmel_write_buf16;
+		nand_chip->legacy.read_buf = atmel_read_buf16;
+		nand_chip->legacy.write_buf = atmel_write_buf16;
 	} else {
-		nand_chip->read_buf = atmel_read_buf;
-		nand_chip->write_buf = atmel_write_buf;
+		nand_chip->legacy.read_buf = atmel_read_buf;
+		nand_chip->legacy.write_buf = atmel_write_buf;
 	}
 
 	atmel_nand_enable(host);
@@ -1442,10 +1404,12 @@ static int __init atmel_nand_probe(struct device_d *dev)
 
 
 	/* first scan to find the device and get the page size */
-	if (nand_scan_ident(mtd, 1, NULL)) {
+	if (nand_scan_ident(nand_chip, 1, NULL)) {
 		res = -ENXIO;
 		goto err_scan_ident;
 	}
+
+	host->ecc_code = xmalloc(mtd->oobsize);
 
 	if (IS_ENABLED(CONFIG_NAND_ECC_HW) &&
 	    nand_chip->ecc.mode == NAND_ECC_HW) {
@@ -1459,7 +1423,7 @@ static int __init atmel_nand_probe(struct device_d *dev)
 	}
 
 	/* second phase scan */
-	if (nand_scan_tail(mtd)) {
+	if (nand_scan_tail(nand_chip)) {
 		res = -ENXIO;
 		goto err_scan_tail;
 	}
@@ -1469,7 +1433,6 @@ static int __init atmel_nand_probe(struct device_d *dev)
 	if (!res)
 		return res;
 
-	nand_release(mtd);
 err_scan_tail:
 err_hw_ecc:
 err_scan_ident:

@@ -159,7 +159,7 @@ static int uif_init(struct ubi_device *ubi, int *ref)
 
 	dev_set_name(&ubi->dev, "%s.ubi", ubi->mtd->cdev.name);
 	ubi->dev.id = DEVICE_ID_SINGLE;
-	ubi->dev.parent = &ubi->mtd->class_dev;
+	ubi->dev.parent = &ubi->mtd->dev;
 
 	err = register_device(&ubi->dev);
 	if (err)
@@ -241,8 +241,8 @@ static int get_bad_peb_limit(const struct ubi_device *ubi, int max_beb_per1024)
 	 * is that all the bad eraseblocks of the chip are in
 	 * the MTD partition we are attaching (ubi->mtd).
 	 */
-	if (ubi->mtd->master)
-		device_size = ubi->mtd->master->size;
+	if (ubi->mtd->parent)
+		device_size = ubi->mtd->parent->size;
 	else
 		device_size = ubi->mtd->size;
 

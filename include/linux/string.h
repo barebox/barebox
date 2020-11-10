@@ -134,4 +134,6 @@ static inline void *kmemdup(const void *src, size_t len, gfp_t gfp)
 
 extern int kstrtobool(const char *s, bool *res);
 
+int match_string(const char * const *array, size_t n, const char *string);
+
 #endif /* _LINUX_STRING_H_ */

@@ -18,6 +18,7 @@
 #include <of_mtd.h>
 #include <linux/clk.h>
 #include <linux/err.h>
+#include <linux/mtd/rawnand.h>
 #include <mach/gpmc_nand.h>
 #include <mach/gpmc.h>
 

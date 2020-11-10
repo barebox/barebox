@@ -23,6 +23,7 @@
 #include <mach/at91_pmc.h>
 #include <mach/at91_rstc.h>
 #include <mach/at91sam9x5_matrix.h>
+#include <linux/mtd/rawnand.h>
 #include <readkey.h>
 #include <poller.h>
 #include <linux/clk.h>

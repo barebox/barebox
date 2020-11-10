@@ -9,6 +9,7 @@
 #include <common.h>
 #include <of_mtd.h>
 #include <linux/mtd/nand.h>
+#include <linux/mtd/rawnand.h>
 
 /**
  * It maps 'enum nand_ecc_modes_t' found in include/linux/mtd/nand.h
@@ -16,10 +17,12 @@
  * device driver can get nand ecc from device tree.
  */
 static const char *nand_ecc_modes[] = {
+	[NAND_ECC_INVALID]	= "invalid",
 	[NAND_ECC_NONE]		= "none",
 	[NAND_ECC_SOFT]		= "soft",
 	[NAND_ECC_HW]		= "hw",
 	[NAND_ECC_HW_SYNDROME]	= "hw_syndrome",
+	[NAND_ECC_ON_DIE]	= "on-die",
 	[NAND_ECC_HW_OOB_FIRST]	= "hw_oob_first",
 	[NAND_ECC_SOFT_BCH]	= "soft_bch",
 };

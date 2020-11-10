@@ -852,7 +852,6 @@ static int doc_erase(struct mtd_info *mtd, struct erase_info *info)
 	doc_dbg("doc_erase(from=%lld, len=%lld\n", info->addr, info->len);
 	doc_set_device_id(docg3, docg3->device_id);
 
-	info->state = MTD_ERASE_PENDING;
 	calc_block_sector(info->addr + info->len, &block0, &block1, &page,
 			  &ofs, docg3->reliable);
 	ret = -EINVAL;
@@ -864,7 +863,6 @@ static int doc_erase(struct mtd_info *mtd, struct erase_info *info)
 			  docg3->reliable);
 	doc_set_reliable_mode(docg3);
 	for (len = info->len; !ret && len > 0; len -= mtd->erasesize) {
-		info->state = MTD_ERASING;
 		ret = doc_erase_block(docg3, block0, block1);
 		block0 += 2;
 		block1 += 2;
@@ -873,11 +871,9 @@ static int doc_erase(struct mtd_info *mtd, struct erase_info *info)
 	if (ret)
 		goto reset_err;
 
-	info->state = MTD_ERASE_DONE;
 	return 0;
 
 reset_err:
-	info->state = MTD_ERASE_FAILED;
 	return ret;
 }
 
@@ -1073,13 +1069,13 @@ static void __init doc_set_driver_info(int chip_id, struct mtd_info *mtd)
 		mtd->erasesize /= 2;
 	mtd->writesize = DOC_LAYOUT_PAGE_SIZE;
 	mtd->oobsize = DOC_LAYOUT_OOB_SIZE;
-	mtd->read = doc_read;
-	mtd->read_oob = doc_read_oob;
-	mtd->block_isbad = doc_block_isbad;
+	mtd->_read = doc_read;
+	mtd->_read_oob = doc_read_oob;
+	mtd->_block_isbad = doc_block_isbad;
 #ifdef CONFIG_MTD_WRITE
-	mtd->erase = doc_erase;
-	mtd->write = doc_write;
-	mtd->write_oob = doc_write_oob;
+	mtd->_erase = doc_erase;
+	mtd->_write = doc_write;
+	mtd->_write_oob = doc_write_oob;
 #endif
 }
 
@@ -1176,7 +1172,7 @@ static int __init docg3_probe(struct device_d *dev)
 				continue;
 		}
 		docg3_floors[floor] = mtd;
-		mtd->parent = dev;
+		mtd->dev.parent = dev;
 		ret = add_mtd_device(mtd, NULL, DEVICE_ID_DYNAMIC);
 		if (ret)
 			goto err_probe;

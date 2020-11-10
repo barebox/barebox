@@ -20,6 +20,7 @@
 #include <init.h>
 #include <io.h>
 #include <linux/mtd/mtd.h>
+#include <linux/mtd/rawnand.h>
 #include <linux/mtd/nand.h>
 #include <linux/types.h>
 #include <linux/clk.h>
@@ -277,8 +278,10 @@ static struct nand_ecclayout ecc_layout_4KB_bch8bit = {
 #define NDTR1_tWHR(c)	(min((c), 15) << 4)
 #define NDTR1_tAR(c)	(min((c), 15) << 0)
 
-#define mtd_info_to_host(mtd) ((struct mrvl_nand_host *) \
-			       (((struct nand_chip *)((mtd)->priv))->priv))
+static inline struct mrvl_nand_host *nand_to_host(struct nand_chip *chip)
+{
+	return container_of(chip, struct mrvl_nand_host, chip);
+}
 
 static const struct mrvl_nand_variant pxa3xx_variant = {
 	.hwflags	= 0,
@@ -341,7 +344,7 @@ static struct mrvl_nand_timing timings[] = {
 
 static void mrvl_nand_set_timing(struct mrvl_nand_host *host, bool use_default)
 {
-	struct mtd_info *mtd = &host->chip.mtd;
+	struct nand_chip *chip = &host->chip;
 	unsigned long nand_clk = clk_get_rate(host->core_clk);
 	struct mrvl_nand_timing *t;
 	uint32_t ndtr0, ndtr1;
@@ -350,8 +353,8 @@ static void mrvl_nand_set_timing(struct mrvl_nand_host *host, bool use_default)
 	if (use_default) {
 		id = 0;
 	} else {
-		host->chip.cmdfunc(mtd, NAND_CMD_READID, 0x00, -1);
-		host->chip.read_buf(mtd, (unsigned char *)&id, sizeof(id));
+		chip->legacy.cmdfunc(chip, NAND_CMD_READID, 0x00, -1);
+		chip->legacy.read_buf(chip, (unsigned char *)&id, sizeof(id));
 	}
 	for (t = &timings[0]; t->id; t++)
 		if (t->id == id)
@@ -370,9 +373,9 @@ static void mrvl_nand_set_timing(struct mrvl_nand_host *host, bool use_default)
 	nand_writel(host, NDTR1CS0, ndtr1);
 }
 
-static int mrvl_nand_ready(struct mtd_info *mtd)
+static int mrvl_nand_ready(struct nand_chip *chip)
 {
-	struct mrvl_nand_host *host = mtd_info_to_host(mtd);
+	struct mrvl_nand_host *host = nand_to_host(chip);
 	u32 ndcr;
 
 	ndcr = nand_readl(host, NDSR);
@@ -396,14 +399,14 @@ static int mrvl_nand_ready(struct mtd_info *mtd)
  * Thus, this function is only called when we want *all* blocks to look good,
  * so it *always* return success.
  */
-static int mrvl_nand_block_bad(struct mtd_info *mtd, loff_t ofs, int getchip)
+static int mrvl_nand_block_bad(struct nand_chip *chip, loff_t ofs)
 {
 	return 0;
 }
 
-static void mrvl_nand_select_chip(struct mtd_info *mtd, int chipnr)
+static void mrvl_nand_select_chip(struct nand_chip *chip, int chipnr)
 {
-	struct mrvl_nand_host *host = mtd_info_to_host(mtd);
+	struct mrvl_nand_host *host = nand_to_host(chip);
 
 	if (chipnr <= 0 || chipnr >= 3 || chipnr == host->cs)
 		return;
@@ -417,9 +420,12 @@ static void mrvl_nand_select_chip(struct mtd_info *mtd, int chipnr)
  */
 static unsigned int mrvl_datasize(struct mrvl_nand_host *host)
 {
+	struct nand_chip *chip = &host->chip;
+	struct mtd_info *mtd = nand_to_mtd(chip);
+
 	unsigned int datasize;
 
-	datasize = host->chip.mtd.writesize;
+	datasize = mtd->writesize;
 	if (host->use_spare) {
 		datasize += host->spare_size;
 		if (!host->use_ecc)
@@ -470,7 +476,7 @@ static void mrvl_nand_start(struct mrvl_nand_host *host)
 	nand_writel(host, NDSR, NDSR_MASK);
 	nand_writel(host, NDCR, ndcr | NDCR_ND_RUN);
 
-	if (wait_on_timeout(host->chip.chip_delay * USECOND,
+	if (wait_on_timeout(host->chip.legacy.chip_delay * USECOND,
 			    nand_readl(host, NDSR) & NDSR_WRCMDREQ)) {
 		dev_err(host->dev, "Waiting for command request failed\n");
 	} else {
@@ -529,6 +535,9 @@ static void set_command_address(struct mrvl_nand_host *host,
 
 static void prepare_start_command(struct mrvl_nand_host *host, int command)
 {
+	struct nand_chip *chip = &host->chip;
+	struct mtd_info *mtd = nand_to_mtd(chip);
+
 	/* reset data and oob column point to handle data */
 	host->buf_start		= 0;
 	host->buf_count		= 0;
@@ -571,7 +580,7 @@ static void prepare_start_command(struct mrvl_nand_host *host, int command)
 	if (command == NAND_CMD_READ0 ||
 	    command == NAND_CMD_READOOB ||
 	    command == NAND_CMD_SEQIN) {
-		host->buf_count = host->chip.mtd.writesize + host->chip.mtd.oobsize;
+		host->buf_count = mtd->writesize + mtd->oobsize;
 		memset(host->data_buff, 0xFF, host->buf_count);
 	}
 
@@ -588,10 +597,10 @@ static void prepare_start_command(struct mrvl_nand_host *host, int command)
 static int prepare_set_command(struct mrvl_nand_host *host, int command,
 		int ext_cmd_type, uint16_t column, int page_addr)
 {
+	struct nand_chip *chip = &host->chip;
+	struct mtd_info *mtd = nand_to_mtd(chip);
 	int addr_cycle, exec_cmd;
-	struct mtd_info *mtd;
 
-	mtd = &host->chip.mtd;
 	exec_cmd = 1;
 
 	if (host->cs != 0)
@@ -717,7 +726,7 @@ static void mrvl_data_stage(struct mrvl_nand_host *host)
 	if (!host->data_size)
 		return;
 
-	wait_on_timeout(host->chip.chip_delay * USECOND,
+	wait_on_timeout(host->chip.legacy.chip_delay * USECOND,
 			nand_readl(host, NDSR) & mask);
 	if (!(nand_readl(host, NDSR) & mask)) {
 		dev_err(host->dev, "Timeout waiting for data ndsr=0x%08x\n",
@@ -750,7 +759,7 @@ static void mrvl_nand_wait_cmd_done(struct mrvl_nand_host *host,
 		mask = NDSR_CS0_CMDD;
 	else
 		mask = NDSR_CS1_CMDD;
-	wait_on_timeout(host->chip.chip_delay * USECOND,
+	wait_on_timeout(host->chip.legacy.chip_delay * USECOND,
 			(nand_readl(host, NDSR) & mask) == mask);
 	if ((nand_readl(host, NDSR) & mask) != mask) {
 		dev_err(host->dev, "Waiting end of command %dth %d timeout, ndsr=0x%08x ndcr=0x%08x\n",
@@ -759,10 +768,10 @@ static void mrvl_nand_wait_cmd_done(struct mrvl_nand_host *host,
 	}
 }
 
-static void mrvl_nand_cmdfunc(struct mtd_info *mtd, unsigned command,
+static void mrvl_nand_cmdfunc(struct nand_chip *chip, unsigned command,
 			       int column, int page_addr)
 {
-	struct mrvl_nand_host *host = mtd_info_to_host(mtd);
+	struct mrvl_nand_host *host = nand_to_host(chip);
 
 	/*
 	 * if this is a x16 device ,then convert the input
@@ -790,10 +799,13 @@ static void mrvl_nand_cmdfunc(struct mtd_info *mtd, unsigned command,
  *
  * Returns 0
  */
-static int mrvl_nand_write_page_hwecc(struct mtd_info *mtd,
-		struct nand_chip *chip, const uint8_t *buf, int oob_required)
+static int mrvl_nand_write_page_hwecc(struct nand_chip *chip, const uint8_t *buf,
+				      int oob_required, int page)
 {
-	struct mrvl_nand_host *host = mtd_info_to_host(mtd);
+	struct mtd_info *mtd = nand_to_mtd(chip);
+	struct mrvl_nand_host *host = nand_to_host(chip);
+
+	nand_prog_page_begin_op(chip, page, 0, NULL, 0);
 
 	memcpy(host->data_buff, buf, mtd->writesize);
 	if (oob_required)
@@ -803,19 +815,22 @@ static int mrvl_nand_write_page_hwecc(struct mtd_info *mtd,
 		memset(host->data_buff + mtd->writesize, 0xff, mtd->oobsize);
 	dev_dbg(host->dev, "%s(buf=%p, oob_required=%d) => 0\n",
 		__func__, buf, oob_required);
-	return 0;
+
+	return nand_prog_page_end_op(chip);
 }
 
-static int mrvl_nand_read_page_hwecc(struct mtd_info *mtd,
-		struct nand_chip *chip, uint8_t *buf, int oob_required,
-		int page)
+static int mrvl_nand_read_page_hwecc(struct nand_chip *chip, uint8_t *buf,
+				     int oob_required, int page)
 {
-	struct mrvl_nand_host *host = mtd_info_to_host(mtd);
+	struct mtd_info *mtd = nand_to_mtd(chip);
+	struct mrvl_nand_host *host = nand_to_host(chip);
 	u32 ndsr;
 	int ret = 0;
 
-	chip->read_buf(mtd, buf, mtd->writesize);
-	chip->read_buf(mtd, chip->oob_poi, mtd->oobsize);
+	nand_read_page_op(chip, page, 0, NULL, 0);
+
+	chip->legacy.read_buf(chip, buf, mtd->writesize);
+	chip->legacy.read_buf(chip, chip->oob_poi, mtd->oobsize);
 	ndsr = nand_readl(host, NDSR);
 
 	if (ndsr & NDSR_UNCORERR) {
@@ -837,9 +852,9 @@ static int mrvl_nand_read_page_hwecc(struct mtd_info *mtd,
 	return ret;
 }
 
-static void mrvl_nand_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
+static void mrvl_nand_read_buf(struct nand_chip *chip, uint8_t *buf, int len)
 {
-	struct mrvl_nand_host *host = mtd_info_to_host(mtd);
+	struct mrvl_nand_host *host = nand_to_host(chip);
 	int xfer;
 
 	xfer = min_t(int, len, host->buf_count);
@@ -848,26 +863,26 @@ static void mrvl_nand_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
 	host->buf_count -= xfer;
 }
 
-static uint8_t mrvl_nand_read_byte(struct mtd_info *mtd)
+static uint8_t mrvl_nand_read_byte(struct nand_chip *chip)
 {
 	uint8_t ret;
 
-	mrvl_nand_read_buf(mtd, (uint8_t *)&ret, sizeof(ret));
+	mrvl_nand_read_buf(chip, (uint8_t *)&ret, sizeof(ret));
 	return ret;
 }
 
-static u16 mrvl_nand_read_word(struct mtd_info *mtd)
+static u16 mrvl_nand_read_word(struct nand_chip *chip)
 {
 	u16 ret;
 
-	mrvl_nand_read_buf(mtd, (uint8_t *)&ret, sizeof(ret));
+	mrvl_nand_read_buf(chip, (uint8_t *)&ret, sizeof(ret));
 	return ret;
 }
 
-static void mrvl_nand_write_buf(struct mtd_info *mtd,
+static void mrvl_nand_write_buf(struct nand_chip *chip,
 		const uint8_t *buf, int len)
 {
-	struct mrvl_nand_host *host = mtd_info_to_host(mtd);
+	struct mrvl_nand_host *host = nand_to_host(chip);
 
 	memcpy(host->data_buff + host->buf_start, buf, len);
 	host->buf_start += len;
@@ -877,7 +892,7 @@ static void mrvl_nand_write_buf(struct mtd_info *mtd,
 static void mrvl_nand_config_flash(struct mrvl_nand_host *host)
 {
 	struct nand_chip *chip = &host->chip;
-	struct mtd_info *mtd = &host->chip.mtd;
+	struct mtd_info *mtd = nand_to_mtd(chip);
 	uint32_t ndcr = host->reg_ndcr;
 
 	/* calculate flash information */
@@ -911,6 +926,9 @@ static void mrvl_nand_config_flash(struct mrvl_nand_host *host)
 static int pxa_ecc_strength1(struct mrvl_nand_host *host,
 		struct nand_ecc_ctrl *ecc, int ecc_stepsize, int page_size)
 {
+	struct nand_chip *chip = &host->chip;
+	struct mtd_info *mtd = nand_to_mtd(chip);
+
 	if (ecc_stepsize == 512 && page_size == 2048) {
 		host->chunk_size = 2048;
 		host->spare_size = 40;
@@ -919,7 +937,7 @@ static int pxa_ecc_strength1(struct mrvl_nand_host *host,
 		ecc->mode = NAND_ECC_HW;
 		ecc->size = 512;
 		ecc->strength = 1;
-		ecc->layout = &ecc_layout_2KB_hwecc;
+		mtd_set_ecclayout(mtd, &ecc_layout_2KB_hwecc);
 		return 0;
 	}
 
@@ -930,7 +948,7 @@ static int pxa_ecc_strength1(struct mrvl_nand_host *host,
 		host->ecc_bch = 0;
 		ecc->mode = NAND_ECC_HW;
 		ecc->size = 512;
-		ecc->layout = &ecc_layout_512B_hwecc;
+		mtd_set_ecclayout(mtd, &ecc_layout_512B_hwecc);
 		ecc->strength = 1;
 		return 0;
 	}
@@ -941,6 +959,9 @@ static int pxa_ecc_strength1(struct mrvl_nand_host *host,
 static int pxa_ecc_strength4(struct mrvl_nand_host *host,
 		struct nand_ecc_ctrl *ecc, int ecc_stepsize, int page_size)
 {
+	struct nand_chip *chip = &host->chip;
+	struct mtd_info *mtd = nand_to_mtd(chip);
+
 	if (!(host->hwflags & HWFLAGS_ECC_BCH))
 		return -ENODEV;
 
@@ -955,7 +976,7 @@ static int pxa_ecc_strength4(struct mrvl_nand_host *host,
 		host->ecc_bch = 1;
 		ecc->mode = NAND_ECC_HW;
 		ecc->size = 2048;
-		ecc->layout = &ecc_layout_2KB_bch4bit;
+		mtd_set_ecclayout(mtd, &ecc_layout_2KB_bch4bit);
 		ecc->strength = 16;
 		return 0;
 	}
@@ -967,7 +988,7 @@ static int pxa_ecc_strength4(struct mrvl_nand_host *host,
 		host->ecc_bch = 1;
 		ecc->mode = NAND_ECC_HW;
 		ecc->size = 2048;
-		ecc->layout = &ecc_layout_4KB_bch4bit;
+		mtd_set_ecclayout(mtd, &ecc_layout_4KB_bch4bit);
 		ecc->strength = 16;
 		return 0;
 	}
@@ -978,6 +999,9 @@ static int pxa_ecc_strength4(struct mrvl_nand_host *host,
 static int pxa_ecc_strength8(struct mrvl_nand_host *host,
 		struct nand_ecc_ctrl *ecc, int ecc_stepsize, int page_size)
 {
+	struct nand_chip *chip = &host->chip;
+	struct mtd_info *mtd = nand_to_mtd(chip);
+
 	if (!(host->hwflags & HWFLAGS_ECC_BCH))
 		return -ENODEV;
 
@@ -992,7 +1016,7 @@ static int pxa_ecc_strength8(struct mrvl_nand_host *host,
 		host->ecc_bch = 1;
 		ecc->mode = NAND_ECC_HW;
 		ecc->size = 1024;
-		ecc->layout = &ecc_layout_4KB_bch8bit;
+		mtd_set_ecclayout(mtd, &ecc_layout_4KB_bch8bit);
 		ecc->strength = 16;
 		return 0;
 	}
@@ -1033,9 +1057,9 @@ static int pxa_ecc_init(struct mrvl_nand_host *host,
 	return 0;
 }
 
-static int mrvl_nand_scan(struct mtd_info *mtd)
+static int mrvl_nand_scan(struct nand_chip *chip)
 {
-	struct nand_chip *chip = mtd_to_nand(mtd);
+	struct mtd_info *mtd = nand_to_mtd(chip);
 	struct mrvl_nand_host *host = chip->priv;
 	int ret;
 	unsigned int ndcr;
@@ -1053,9 +1077,9 @@ static int mrvl_nand_scan(struct mtd_info *mtd)
 			    nand_readl(host, NDECCCTRL) & ~NDECCCTRL_BCH_EN);
 
 	mrvl_nand_set_timing(host, true);
-	if (nand_scan_ident(mtd, 1, NULL)) {
+	if (nand_scan_ident(chip, 1, NULL)) {
 		host->reg_ndcr |= NDCR_DWIDTH_M | NDCR_DWIDTH_C;
-		if (nand_scan_ident(mtd, 1, NULL))
+		if (nand_scan_ident(chip, 1, NULL))
 			return -ENODEV;
 	}
 	mrvl_nand_config_flash(host);
@@ -1099,7 +1123,7 @@ static int mrvl_nand_scan(struct mtd_info *mtd)
 	host->buf_size = mtd->writesize + mtd->oobsize;
 	host->data_buff = xmalloc(host->buf_size);
 
-	return nand_scan_tail(mtd);
+	return nand_scan_tail(chip);
 }
 
 static struct mrvl_nand_host *alloc_nand_resource(struct device_d *dev)
@@ -1114,24 +1138,24 @@ static struct mrvl_nand_host *alloc_nand_resource(struct device_d *dev)
 	host = xzalloc(sizeof(*host));
 	host->num_cs = 1;
 	host->cs = 0;
-	mtd = &host->chip.mtd;
-	mtd->parent = dev;
+	mtd = nand_to_mtd(&host->chip);
+	mtd->dev.parent = dev;
 	mtd->name = "mrvl_nand";
 
 	chip = &host->chip;
-	chip->read_byte		= mrvl_nand_read_byte;
-	chip->read_word		= mrvl_nand_read_word;
+	chip->legacy.read_byte = mrvl_nand_read_byte;
+	chip->legacy.read_word = mrvl_nand_read_word;
 	chip->ecc.read_page	= mrvl_nand_read_page_hwecc;
 	chip->ecc.write_page	= mrvl_nand_write_page_hwecc;
-	chip->dev_ready		= mrvl_nand_ready;
-	chip->select_chip	= mrvl_nand_select_chip;
-	chip->block_bad		= mrvl_nand_block_bad;
-	chip->read_buf		= mrvl_nand_read_buf;
-	chip->write_buf		= mrvl_nand_write_buf;
+	chip->legacy.dev_ready = mrvl_nand_ready;
+	chip->legacy.select_chip = mrvl_nand_select_chip;
+	chip->legacy.block_bad = mrvl_nand_block_bad;
+	chip->legacy.read_buf = mrvl_nand_read_buf;
+	chip->legacy.write_buf = mrvl_nand_write_buf;
 	chip->options		|= NAND_NO_SUBPAGE_WRITE;
-	chip->cmdfunc		= mrvl_nand_cmdfunc;
+	chip->legacy.cmdfunc = mrvl_nand_cmdfunc;
 	chip->priv		= host;
-	chip->chip_delay	= CHIP_DELAY_TIMEOUT_US;
+	chip->legacy.chip_delay = CHIP_DELAY_TIMEOUT_US;
 
 	host->dev = dev;
 	iores = dev_request_mem_resource(dev, 0);
@@ -1201,6 +1225,8 @@ static int mrvl_nand_probe_dt(struct mrvl_nand_host *host)
 static int mrvl_nand_probe(struct device_d *dev)
 {
 	struct mrvl_nand_host *host;
+	struct nand_chip *chip;
+	struct mtd_info *mtd;
 	int ret;
 
 	host = alloc_nand_resource(dev);
@@ -1213,15 +1239,17 @@ static int mrvl_nand_probe(struct device_d *dev)
 	if (ret)
 		return ret;
 
-	host->chip.controller = &host->chip.hwcontrol;
-	ret = mrvl_nand_scan(&host->chip.mtd);
+	chip = &host->chip;
+	mtd = nand_to_mtd(chip);
+
+	ret = mrvl_nand_scan(chip);
 	if (ret) {
 		dev_warn(dev, "failed to scan nand at cs %d\n",
 			 host->cs);
 		return -ENODEV;
 	}
 
-	ret = add_mtd_nand_device(&host->chip.mtd, "nand");
+	ret = add_mtd_nand_device(mtd, "nand");
 	return ret;
 }
 

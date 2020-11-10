@@ -15,6 +15,7 @@
 #include <init.h>
 #include <io.h>
 #include <linux/mtd/nand.h>
+#include <linux/mtd/rawnand.h>
 #include <asm/cache.h>
 #include <asm/sections.h>
 #include <asm/barebox-arm.h>

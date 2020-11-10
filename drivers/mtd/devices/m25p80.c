@@ -239,7 +239,7 @@ static int m25p_probe(struct device_d *dev)
 	nor->priv = flash;
 
 	flash->mtd.priv = nor;
-	flash->mtd.parent = &spi->dev;
+	flash->mtd.dev.parent = &spi->dev;
 	flash->spimem = spimem;
 
 	if (spi->mode & SPI_RX_QUAD)

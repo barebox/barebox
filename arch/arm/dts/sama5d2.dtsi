@@ -7,7 +7,7 @@
 	};
 };
 
-/delete-node/ &{/memory};
+/delete-node/ &{/memory@20000000};
 
 &sdmmc0 {
 	assigned-clock-parents = <&pmc PMC_TYPE_CORE PMC_UTMI>;

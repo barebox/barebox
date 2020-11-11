@@ -43,6 +43,7 @@ static int of_psci_do_fixup(struct device_node *root, void *unused)
 			continue;
 
 		of_delete_node(np);
+		break;
 	}
 
 	return of_psci_fixup(root, psci_version);

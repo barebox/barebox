@@ -833,6 +833,8 @@ static struct imx_ocotp_data imx6q_ocotp_data = {
 	.mac_offsets = { MAC_OFFSET_0 },
 	.format_mac = imx_ocotp_format_mac,
 	.set_timing = imx6_ocotp_set_timing,
+	.fuse_blow = imx6_fuse_blow_addr,
+	.fuse_read = imx6_fuse_read_addr,
 };
 
 static struct imx_ocotp_data imx6sl_ocotp_data = {

@@ -21,7 +21,7 @@
 
 		environment-spinor {
 			compatible = "barebox,environment";
-			device-path = &flash, "partname:barebox-environment";
+			device-path = &som_flash, "partname:barebox-environment";
 			status = "disabled";
 		};
 
@@ -53,32 +53,30 @@
 
 /delete-node/ &{/memory@10000000};
 
-&ecspi3 {
-	flash: flash@0 {
-		partitions {
-			compatible = "fixed-partitions";
-			#address-cells = <1>;
-			#size-cells = <1>;
+&som_flash {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
 
-			partition@0 {
-				label = "barebox";
-				reg = <0x0 0x100000>;
-			};
+		partition@0 {
+			label = "barebox";
+			reg = <0x0 0x100000>;
+		};
 
-			partition@100000 {
-				label = "barebox-environment";
-				reg = <0x100000 0x20000>;
-			};
+		partition@100000 {
+			label = "barebox-environment";
+			reg = <0x100000 0x20000>;
+		};
 
-			partition@120000 {
-				label = "oftree";
-				reg = <0x120000 0x20000>;
-			};
+		partition@120000 {
+			label = "oftree";
+			reg = <0x120000 0x20000>;
+		};
 
-			partition@140000 {
-				label = "kernel";
-				reg = <0x140000 0x0>;
-			};
+		partition@140000 {
+			label = "kernel";
+			reg = <0x140000 0x0>;
 		};
 	};
 };

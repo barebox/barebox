@@ -18,8 +18,7 @@ static int do_setenv(int argc, char *argv[])
 	equal = strrchr(argv[1], '=');
 	if (equal) {
 		equal[0] = '\0';
-		if (equal[1])
-			argv[2] = &equal[1];
+		argv[2] = &equal[1];
 	}
 
 	if (argv[2])

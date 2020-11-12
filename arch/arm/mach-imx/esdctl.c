@@ -686,6 +686,9 @@ static __maybe_unused struct of_device_id imx_esdctl_dt_ids[] = {
 		.compatible = "fsl,vf610-ddrmc",
 		.data = &vf610_data
 	}, {
+		.compatible = "fsl,imx8mm-ddrc",
+		.data = &imx8mq_data
+	}, {
 		.compatible = "fsl,imx8mq-ddrc",
 		.data = &imx8mq_data
 	}, {

@@ -50,7 +50,7 @@ static int do_readlink(int argc, char *argv[])
 
 	return 0;
 err:
-	setenv(argv[optind + 1], "");
+	unsetenv(argv[optind + 1]);
 	return 1;
 }
 

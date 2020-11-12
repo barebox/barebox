@@ -87,6 +87,11 @@ int env_push_context(void);
 
 int export(const char *);
 
+static inline int unsetenv(const char *var)
+{
+	return setenv(var, NULL);
+}
+
 #endif	/* _ENVIRONMENT_H_ */
 
 /**

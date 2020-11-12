@@ -10,6 +10,7 @@
 static int do_setenv(int argc, char *argv[])
 {
 	char *equal;
+	int ret;
 
 	if (argc < 2)
 		return COMMAND_ERROR_USAGE;
@@ -21,8 +22,12 @@ static int do_setenv(int argc, char *argv[])
 			argv[2] = &equal[1];
 	}
 
+	if (argv[2])
+		ret = setenv(argv[1], argv[2]);
+	else
+		ret = unsetenv(argv[1]);
 
-	return setenv(argv[1], argv[2]) ? COMMAND_ERROR : COMMAND_SUCCESS;
+	return ret ? COMMAND_ERROR : COMMAND_SUCCESS;
 }
 
 BAREBOX_CMD_HELP_START(setenv)

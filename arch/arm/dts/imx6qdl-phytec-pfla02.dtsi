@@ -101,12 +101,12 @@
 			reg = <0x0 0x1000000>;
 		};
 
-		partition@400000 {
+		partition@1000000 {
 			label = "barebox-environment";
 			reg = <0x1000000 0x100000>;
 		};
 
-		partition@500000 {
+		partition@1100000 {
 			label = "root";
 			reg = <0x1100000 0x0>;
 		};

@@ -179,15 +179,11 @@ static int nv_set(struct device_d *dev, struct param_d *p, const char *name, con
 {
 	int ret;
 
-	if (!val) {
-		if (p)
-			free(p->value);
-		return 0;
+	if (val) {
+		ret = dev_set_param(&global_device, name, val);
+		if (ret)
+			return ret;
 	}
-
-	ret = dev_set_param(&global_device, name, val);
-	if (ret)
-		return ret;
 
 	if (p) {
 		free(p->value);

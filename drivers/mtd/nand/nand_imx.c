@@ -1022,7 +1022,7 @@ static void imx_nand_command(struct nand_chip *chip, unsigned command,
 		 */
 		if (command == NAND_CMD_READOOB) {
 			host->send_page(host, NFC_OUTPUT);
-			copy_spare(mtd, 1, host->data_buf + mtd->writesize);
+			copy_spare(chip, 1, host->data_buf + mtd->writesize);
 		}
 
 		break;

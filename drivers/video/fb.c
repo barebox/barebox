@@ -119,22 +119,25 @@ int fb_disable(struct fb_info *info)
 	return 0;
 }
 
+static int fb_enable_get(struct param_d *param, void *priv)
+{
+	struct fb_info *info = priv;
+
+	info->p_enable = info->enabled;
+	return 0;
+}
+
 static int fb_enable_set(struct param_d *param, void *priv)
 {
 	struct fb_info *info = priv;
-	int enable;
 
 	if (!info->mode)
 		return -EINVAL;
 
-	enable = info->p_enable;
-
-	if (enable)
-		fb_enable(info);
+	if (info->p_enable)
+		return fb_enable(info);
 	else
-		fb_disable(info);
-
-	return 0;
+		return fb_disable(info);
 }
 
 static struct fb_videomode *fb_num_to_mode(struct fb_info *info, int num)
@@ -314,7 +317,7 @@ int register_framebuffer(struct fb_info *info)
 	if (ret)
 		goto err_free;
 
-	dev_add_param_bool(dev, "enable", fb_enable_set, NULL,
+	dev_add_param_bool(dev, "enable", fb_enable_set, fb_enable_get,
 			&info->p_enable, info);
 
 	if (IS_ENABLED(CONFIG_DRIVER_VIDEO_EDID))

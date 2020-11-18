@@ -24,7 +24,7 @@ void machine_id_set_hashable(const void *hashable, size_t len)
 	__machine_id_hashable_length = len;
 }
 
-static int machine_id_set_bootarg(void)
+static int machine_id_set_globalvar(void)
 {
 	struct digest *digest = NULL;
 	unsigned char machine_id[SHA1_DIGEST_SIZE];
@@ -64,6 +64,6 @@ out:
 	return ret;
 
 }
-late_initcall(machine_id_set_bootarg);
+late_initcall(machine_id_set_globalvar);
 
 BAREBOX_MAGICVAR(global.machine_id, "Persistent device-specific, hexadecimal, 32-character id");

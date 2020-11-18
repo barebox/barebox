@@ -39,7 +39,7 @@ config USB_GADGET_AUTOSTART
 	help
 	  Enabling this option allows to automatically start a dfu or
 	  fastboot gadget during boot. This behaviour is controlled with
-	  the global.usbgadget.{dfu,fastboot}_function variable.
+	  the global.usbgadget.dfu_function and global.fastboot.* variables.
 
 comment "USB Gadget drivers"
 

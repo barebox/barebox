@@ -351,11 +351,10 @@ void bootsources_list(struct bootentries *bootentries)
 {
 	struct bootentry *entry;
 
-	printf("%-20s\n", "title");
-	printf("%-20s\n", "------");
+	printf("title\n------\n");
 
 	bootentries_for_each_entry(bootentries, entry)
-		printf("%-20s %s\n", entry->title, entry->description);
+		printf("%s\n\t%s\n", entry->title, entry->description);
 }
 
 BAREBOX_MAGICVAR(global.boot.default, "default boot order");

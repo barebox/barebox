@@ -9,22 +9,19 @@
  * General Public License for more details.
  */
 
-#include <environment.h>
-#include <bootchooser.h>
+#include <boot.h>
 #include <globalvar.h>
 #include <magicvar.h>
 #include <watchdog.h>
 #include <command.h>
 #include <readkey.h>
 #include <common.h>
-#include <blspec.h>
 #include <libgen.h>
-#include <malloc.h>
 #include <bootm.h>
 #include <glob.h>
 #include <init.h>
 #include <menu.h>
-#include <fs.h>
+#include <unistd.h>
 
 #include <linux/stat.h>
 

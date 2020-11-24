@@ -206,6 +206,8 @@ struct mtd_info {
 	int (*_block_markbad) (struct mtd_info *mtd, loff_t ofs);
 	int (*_block_markgood) (struct mtd_info *mtd, loff_t ofs);
 
+	int (*of_fixup)(struct mtd_info *mtd, struct device_node *root);
+
 	/* ECC status information */
 	struct mtd_ecc_stats ecc_stats;
 	/* Subpage shift (NAND) */

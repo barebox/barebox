@@ -116,6 +116,13 @@ void boot_set_watchdog_timeout(unsigned int timeout)
 	boot_watchdog_timeout = timeout;
 }
 
+static struct watchdog *boot_enabled_watchdog;
+
+struct watchdog *boot_get_enabled_watchdog(void)
+{
+	return boot_enabled_watchdog;
+}
+
 static char *global_boot_default;
 static char *global_user;
 
@@ -143,10 +150,13 @@ int boot_entry(struct bootentry *be, int verbose, int dryrun)
 	printf("Booting entry '%s'\n", be->title);
 
 	if (IS_ENABLED(CONFIG_WATCHDOG) && boot_watchdog_timeout) {
-		ret = watchdog_set_timeout(watchdog_get_default(),
-					   boot_watchdog_timeout);
-		if (ret)
+		boot_enabled_watchdog = watchdog_get_default();
+
+		ret = watchdog_set_timeout(boot_enabled_watchdog, boot_watchdog_timeout);
+		if (ret) {
 			pr_warn("Failed to enable watchdog: %s\n", strerror(-ret));
+			boot_enabled_watchdog = NULL;
+		}
 	}
 
 	ret = be->boot(be, verbose, dryrun);

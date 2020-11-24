@@ -14,6 +14,8 @@
 #include <bootsource.h>
 #include <i2c/i2c.h>
 #include <reset_source.h>
+#include <watchdog.h>
+#include <globalvar.h>
 
 #define MAX_LEVEL	32		/* how deeply nested we will go */
 
@@ -139,6 +141,26 @@ static int of_fixup_bootargs_bootsource(struct device_node *root,
 	return ret;
 }
 
+static void watchdog_build_bootargs(struct watchdog *watchdog, struct device_node *root)
+{
+	int alias_id;
+	char *buf;
+
+	if (!watchdog)
+		return;
+
+	alias_id = watchdog_get_alias_id_from(watchdog, root);
+	if (alias_id < 0)
+		return;
+
+	buf = basprintf("systemd.watchdog-device=/dev/watchdog%d", alias_id);
+	if (!buf)
+		return;
+
+	globalvar_add_simple("linux.bootargs.dyn.watchdog", buf);
+	free(buf);
+}
+
 static int of_fixup_bootargs(struct device_node *root, void *unused)
 {
 	struct device_node *node;
@@ -146,6 +168,9 @@ static int of_fixup_bootargs(struct device_node *root, void *unused)
 	int err;
 	int instance = reset_source_get_instance();
 	struct device_d *dev;
+
+	if (IS_ENABLED(CONFIG_SYSTEMD_OF_WATCHDOG))
+		watchdog_build_bootargs(boot_get_enabled_watchdog(), root);
 
 	str = linux_bootargs_get();
 	if (!str)

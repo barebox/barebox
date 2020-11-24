@@ -42,7 +42,10 @@ int bootentry_register_provider(int (*fn)(struct bootentries *bootentries, const
 #define bootentries_for_each_entry(bootentries, entry) \
 	list_for_each_entry(entry, &bootentries->entries, list)
 
+struct watchdog;
+
 void boot_set_watchdog_timeout(unsigned int timeout);
+struct watchdog *boot_get_enabled_watchdog(void);
 struct bootentries *bootentries_alloc(void);
 void bootentries_free(struct bootentries *bootentries);
 int bootentry_create_from_name(struct bootentries *bootentries,

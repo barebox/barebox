@@ -149,6 +149,31 @@ static void of_alias_add(struct alias_prop *ap, struct device_node *np,
 		 ap->alias, ap->stem, ap->id, np->full_name);
 }
 
+static struct device_node *of_alias_resolve(struct device_node *root, struct property *pp)
+{
+	/* Skip those we do not want to proceed */
+	if (!of_prop_cmp(pp->name, "name") ||
+	    !of_prop_cmp(pp->name, "phandle") ||
+	    !of_prop_cmp(pp->name, "linux,phandle"))
+		return NULL;
+
+	return of_find_node_by_path_from(root, of_property_get_value(pp));
+}
+
+static int of_alias_id_parse(const char *start, int *len)
+{
+	const char *end = start + strlen(start);
+
+	/* walk the alias backwards to extract the id and work out
+	 * the 'stem' string */
+	while (isdigit(*(end-1)) && end > start)
+		end--;
+
+	*len = end - start;
+
+	return simple_strtol(end, NULL, 10);
+}
+
 /**
  * of_alias_scan - Scan all properties of 'aliases' node
  *
@@ -175,28 +200,15 @@ void of_alias_scan(void)
 
 	list_for_each_entry(pp, &of_aliases->properties, list) {
 		const char *start = pp->name;
-		const char *end = start + strlen(start);
 		struct device_node *np;
 		struct alias_prop *ap;
 		int id, len;
 
-		/* Skip those we do not want to proceed */
-		if (!of_prop_cmp(pp->name, "name") ||
-		    !of_prop_cmp(pp->name, "phandle") ||
-		    !of_prop_cmp(pp->name, "linux,phandle"))
-			continue;
-
-		np = of_find_node_by_path(of_property_get_value(pp));
+		np = of_alias_resolve(root_node, pp);
 		if (!np)
 			continue;
 
-		/* walk the alias backwards to extract the id and work out
-		 * the 'stem' string */
-		while (isdigit(*(end-1)) && end > start)
-			end--;
-		len = end - start;
-
-		id = simple_strtol(end, NULL, 10);
+		id = of_alias_id_parse(start, &len);
 		if (id < 0)
 			continue;
 
@@ -234,6 +246,41 @@ int of_alias_get_id(struct device_node *np, const char *stem)
 	return id;
 }
 EXPORT_SYMBOL_GPL(of_alias_get_id);
+
+int of_alias_get_id_from(struct device_node *root, struct device_node *np,
+			 const char *stem)
+{
+	struct device_node *aliasnp, *entrynp;
+	struct property *pp;
+
+	if (!root)
+		return of_alias_get_id(np, stem);
+
+	aliasnp = of_find_node_by_path_from(root, "/aliases");
+	if (!aliasnp)
+		return -ENODEV;
+
+	for_each_property_of_node(aliasnp, pp) {
+		const char *start = pp->name;
+		int id, len;
+
+		entrynp = of_alias_resolve(root_node, pp);
+		if (entrynp != np)
+			continue;
+
+		id = of_alias_id_parse(start, &len);
+		if (id < 0)
+			continue;
+
+		if (strncasecmp(start, stem, len))
+			continue;
+
+		return id;
+	}
+
+	return -ENODEV;
+}
+EXPORT_SYMBOL_GPL(of_alias_get_id_from);
 
 const char *of_alias_get(struct device_node *np)
 {

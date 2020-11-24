@@ -275,6 +275,7 @@ extern struct device_d *of_device_enable_and_register_by_alias(
 
 struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node);
 int of_parse_partitions(struct cdev *cdev, struct device_node *node);
+int of_fixup_partitions(struct device_node *np, struct cdev *cdev);
 int of_partitions_register_fixup(struct cdev *cdev);
 int of_device_is_stdout_path(struct device_d *dev);
 const char *of_get_model(void);
@@ -301,6 +302,11 @@ static inline int of_parse_partitions(struct cdev *cdev,
 					  struct device_node *node)
 {
 	return -EINVAL;
+}
+
+static inline int of_fixup_partitions(struct device_node *np, struct cdev *cdev)
+{
+	return -ENOSYS;
 }
 
 static inline int of_partitions_register_fixup(struct cdev *cdev)

@@ -248,7 +248,6 @@ struct mtd_info {
 	struct list_head partitions_entry;
 	char *partition_string;
 
-	char *of_path;
 	unsigned int of_binding;
 };
 

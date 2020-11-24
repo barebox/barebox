@@ -706,7 +706,6 @@ int add_mtd_device(struct mtd_info *mtd, const char *devname, int device_id)
 		dev_add_param_string(&mtd->dev, "partitions", mtd_partition_set, mtd_partition_get, &mtd->partition_string, mtd);
 		if (IS_ENABLED(CONFIG_OFDEVICE) && np) {
 			of_parse_partitions(&mtd->cdev, np);
-			mtd->of_path = xstrdup(np->full_name);
 			ret = of_partitions_register_fixup(&mtd->cdev);
 			if (ret)
 				goto err1;

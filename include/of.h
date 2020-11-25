@@ -403,6 +403,17 @@ static inline struct device_node *of_get_child_by_name(
 	return NULL;
 }
 
+static inline char *of_get_reproducible_name(struct device_node *node)
+{
+	return NULL;
+}
+
+static inline struct device_node *
+of_find_node_by_reproducible_name(struct device_node *from, const char *name)
+{
+	return NULL;
+}
+
 static inline struct property *of_find_property(const struct device_node *np,
 						const char *name,
 						int *lenp)

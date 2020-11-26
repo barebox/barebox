@@ -242,7 +242,7 @@ config DRIVER_NET_SMC91111
 
 config DRIVER_NET_TAP
 	bool "tap Ethernet driver"
-	depends on LINUX
+	depends on SANDBOX
 
 config DRIVER_NET_EFI_SNP
 	bool "EFI SNP ethernet driver"

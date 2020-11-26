@@ -52,7 +52,7 @@ config DRIVER_SERIAL_AUART
 	bool "i.MX23/i.MX28 application UART serial driver"
 
 config DRIVER_SERIAL_LINUX_CONSOLE
-	depends on LINUX
+	depends on SANDBOX
 	default y
 	bool "linux console driver"
 

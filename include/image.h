@@ -127,8 +127,8 @@ enum {
 #define IH_ARCH IH_ARCH_BLACKFIN
 #elif defined(__avr32__)
 #define IH_ARCH IH_ARCH_AVR32
-#elif defined(CONFIG_LINUX)
-#define IH_ARCH IH_ARCH_LINUX
+#elif defined(CONFIG_SANDBOX)
+#define IH_ARCH IH_ARCH_SANDBOX
 #else
 #define IH_ARCH IH_ARCH_INVALID
 #endif

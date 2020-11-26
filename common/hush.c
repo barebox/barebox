@@ -1117,12 +1117,11 @@ static int set_local_var(const char *s, int flg_export)
 	/* Assume when we enter this function that we are already in
 	 * NAME=VALUE format.  So the first order of business is to
 	 * split 's' on the '=' into 'name' and 'value' */
-	value = strchr(name, '=');
+	value = parse_assignment(name);
 	if (!value) {
 		free(name);
 		return -1;
 	}
-	*value++ = 0;
 
 	remove_quotes_in_str(value);
 

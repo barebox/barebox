@@ -151,13 +151,11 @@ static int pr_setenv(struct bootchooser *bc, const char *fmt, ...)
 	if (!str)
 		return -ENOMEM;
 
-	val = strchr(str, '=');
+	val = parse_assignment(str);
 	if (!val) {
 		ret = -EINVAL;
 		goto err;
 	}
-
-	*val++ = '\0';
 
 	oldval = getenv(str);
 	if (!oldval || strcmp(oldval, val)) {

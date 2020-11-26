@@ -20,10 +20,8 @@ static int do_export(int argc, char *argv[])
 		return COMMAND_ERROR_USAGE;
 
 	while (i < argc) {
-		if ((ptr = strchr(argv[i], '='))) {
-			*ptr++ = 0;
+		if ((ptr = parse_assignment(argv[i])))
 			setenv(argv[i], ptr);
-		}
 		if (export(argv[i])) {
 			printf("could not export: %s\n", argv[i]);
 			return 1;

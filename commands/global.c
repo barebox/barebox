@@ -37,11 +37,7 @@ static int do_global(int argc, char *argv[])
 		return COMMAND_ERROR_USAGE;
 
 	for (i = 0; i < argc; i++) {
-		value = strchr(argv[i], '=');
-		if (value) {
-			*value = 0;
-			value++;
-		}
+		value = parse_assignment(argv[i]);
 
 		if (do_remove)
 			globalvar_remove(argv[i]);

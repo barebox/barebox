@@ -55,7 +55,7 @@ static int do_nv(int argc, char *argv[])
 
 	for (i = 0; i < argc; i++) {
 		int ret;
-		value = strchr(argv[0], '=');
+		value = strchr(argv[i], '=');
 		if (value) {
 			*value = 0;
 			value++;

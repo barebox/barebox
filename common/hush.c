@@ -798,16 +798,9 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 			 * This junk is all to decide whether or not to export this
 			 * variable. */
 			int export_me = 0;
-			char *name, *value;
 
-			name = xstrdup(child->argv[i]);
-			hush_debug("Local environment set: %s\n", name);
-			value = strchr(name, '=');
+			hush_debug("Local environment set: %s\n", child->argv[i]);
 
-			if (value)
-				*value = 0;
-
-			free(name);
 			p = insert_var_value(child->argv[i]);
 			rcode = set_local_var(p, export_me);
 			if (rcode)

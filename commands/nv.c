@@ -59,6 +59,8 @@ static int do_nv(int argc, char *argv[])
 		if (value) {
 			*value = 0;
 			value++;
+		} else {
+			value = "";
 		}
 
 		if (do_remove) {

@@ -25,8 +25,18 @@
 #include <mach/mbox.h>
 #include <mach/platform.h>
 
-#include "rpi.h"
 #include "lowlevel.h"
+
+struct rpi_model {
+	const char *name;
+	void (*init)(void);
+};
+
+#define RPI_MODEL(_id, _name, _init)	\
+	[_id] = {				\
+		.name			= _name,\
+		.init			= _init,\
+	}
 
 struct msg_get_arm_mem {
 	struct bcm2835_mbox_hdr hdr;
@@ -85,7 +95,7 @@ static struct clk *rpi_register_firmware_clock(u32 clock_id, const char *name)
 	return clk_fixed(name, msg->get_clock_rate.body.resp.rate_hz);
 }
 
-void rpi_set_usbethaddr(void)
+static void rpi_set_usbethaddr(void)
 {
 	BCM2835_MBOX_STACK_ALIGN(struct msg_get_mac_address, msg);
 	int ret;
@@ -103,7 +113,7 @@ void rpi_set_usbethaddr(void)
 	eth_register_ethaddr(0, msg->get_mac_address.body.resp.mac);
 }
 
-struct gpio_led rpi_leds[] = {
+static struct gpio_led rpi_leds[] = {
 	{
 		.gpio	= -EINVAL,
 		.led	= {
@@ -149,7 +159,7 @@ static void rpi_b_plus_init(void)
 }
 
 /* See comments in mbox.h for data source */
-const struct rpi_model rpi_models_old_scheme[] = {
+static const struct rpi_model rpi_models_old_scheme[] = {
 	RPI_MODEL(0, "Unknown model", NULL),
 	RPI_MODEL(BCM2835_BOARD_REV_B_I2C0_2, "Model B (no P5)", rpi_b_init),
 	RPI_MODEL(BCM2835_BOARD_REV_B_I2C0_3, "Model B (no P5)", rpi_b_init),
@@ -170,7 +180,7 @@ const struct rpi_model rpi_models_old_scheme[] = {
 	RPI_MODEL(BCM2835_BOARD_REV_A_PLUS_15, "Model A+", NULL),
 };
 
-const struct rpi_model rpi_models_new_scheme[] = {
+static const struct rpi_model rpi_models_new_scheme[] = {
 	RPI_MODEL(BCM2835_BOARD_REV_A, 		"Model A",	NULL ),
 	RPI_MODEL(BCM2835_BOARD_REV_B, 		"Model B", 	rpi_b_init ),
 	RPI_MODEL(BCM2835_BOARD_REV_A_PLUS, 	"Model A+", 	NULL ),
@@ -191,7 +201,7 @@ const struct rpi_model rpi_models_new_scheme[] = {
 };
 
 static int rpi_board_rev = 0;
-const struct rpi_model *model = NULL;
+static const struct rpi_model *model = NULL;
 
 static void rpi_get_board_rev(void)
 {

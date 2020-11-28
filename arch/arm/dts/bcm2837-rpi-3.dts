@@ -1,11 +1,5 @@
 #include <arm64/broadcom/bcm2837-rpi-3-b.dts>
 
-/ {
-	chosen {
-		stdout-path = &uart1;
-	};
-};
-
 &{/memory@0} {
 	reg = <0x0 0x0>;
 };

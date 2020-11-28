@@ -1,11 +1,5 @@
 #include <arm/bcm2836-rpi-2-b.dts>
 
-/ {
-	chosen {
-		stdout-path = &uart0;
-	};
-};
-
 &{/memory@0} {
 	reg = <0x0 0x0>;
 };

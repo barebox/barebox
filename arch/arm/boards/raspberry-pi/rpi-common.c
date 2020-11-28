@@ -20,6 +20,7 @@
 #include <generated/mach-types.h>
 #include <linux/sizes.h>
 #include <globalvar.h>
+#include <asm/system_info.h>
 
 #include <mach/core.h>
 #include <mach/mbox.h>
@@ -414,6 +415,8 @@ static int rpi_env_init(void)
 		return 0;
 	}
 
+	defaultenv_append_directory(defaultenv_rpi);
+
 	default_environment_path_set("/boot/barebox.env");
 
 	return 0;
@@ -449,6 +452,18 @@ static int rpi_vc_fdt_bootargs(void *fdt)
 	}
 
 	globalvar_add_simple("vc.bootargs", cmdline);
+
+	switch(cpu_architecture()) {
+	case CPU_ARCH_ARMv6:
+		globalvar_add_simple("vc.kernel", "kernel.img");
+		break;
+	case CPU_ARCH_ARMv7:
+		globalvar_add_simple("vc.kernel", "kernel7.img");
+		break;
+	case CPU_ARCH_ARMv8:
+		globalvar_add_simple("vc.kernel", "kernel7l.img");
+		break;
+	}
 
 out:
 	if (root)

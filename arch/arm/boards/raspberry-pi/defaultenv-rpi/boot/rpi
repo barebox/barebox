@@ -1,0 +1,5 @@
+#!/bin/sh
+
+global linux.bootargs.dyn.vc="${global.vc.bootargs}"
+global.bootm.image="/boot/${global.vc.kernel}"
+global.bootm.oftree=/vc.dtb

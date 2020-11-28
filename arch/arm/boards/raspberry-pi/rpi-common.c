@@ -347,6 +347,7 @@ static int rpi_console_clock_init(void)
 	if (IS_ERR(clk))
 		return PTR_ERR(clk);
 
+	clkdev_add_physbase(clk, BCM2835_MINIUART_BASE, NULL);
 	clkdev_add_physbase(clk, BCM2836_MINIUART_BASE, NULL);
 
 	clk = clk_fixed("bcm2835-cs", 1 * 1000 * 1000);

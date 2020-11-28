@@ -279,7 +279,6 @@ static void rpi_model_init(void)
 		return;
 
 	model->init();
-	rpi_add_led();
 }
 
 static int rpi_mem_init(void)
@@ -301,6 +300,7 @@ static int rpi_postcore_init(void)
 {
 	rpi_get_board_rev();
 	barebox_set_hostname("rpi");
+	rpi_model_init();
 
 	return 0;
 }
@@ -463,7 +463,7 @@ static int rpi_devices_init(void)
 {
 	struct regulator *reg;
 
-	rpi_model_init();
+	rpi_add_led();
 	bcm2835_register_fb();
 	armlinux_set_architecture(MACH_TYPE_BCM2708);
 	rpi_env_init();

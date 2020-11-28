@@ -2520,6 +2520,21 @@ int of_device_disable_path(const char *path)
 }
 
 /**
+ * of_device_disable_by_alias - disable a devicenode by alias
+ * @alias - the alias of the device tree node to disable
+ */
+int of_device_disable_by_alias(const char *alias)
+{
+	struct device_node *node;
+
+	node = of_find_node_by_alias(NULL, alias);
+	if (!node)
+		return -ENODEV;
+
+	return of_device_disable(node);
+}
+
+/**
  * of_get_reproducible_name() - get a reproducible name of a node
  * @node: The node to get a name from
  *

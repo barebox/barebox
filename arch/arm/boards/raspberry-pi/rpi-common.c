@@ -173,6 +173,27 @@ static void rpi_0_init(void)
 	rpi_set_usbotg("usb0");
 }
 
+static void rpi_0_w_init(void)
+{
+	struct device_node *np;
+	int ret;
+
+	rpi_0_init();
+
+	np = of_find_node_by_path("/chosen");
+	if (!np)
+		return;
+
+	if (!of_device_enable_and_register_by_alias("serial1"))
+		return;
+
+	ret = of_property_write_string(np, "stdout-path", "serial1:115200n8");
+	if (ret)
+		return;
+
+	of_device_disable_by_alias("serial0");
+}
+
 /* See comments in mbox.h for data source */
 static const struct rpi_model rpi_models_old_scheme[] = {
 	RPI_MODEL(0, "Unknown model", NULL),
@@ -208,7 +229,7 @@ static const struct rpi_model rpi_models_new_scheme[] = {
 	RPI_MODEL(BCM2835_BOARD_REV_ZERO, 	"Zero", 	rpi_0_init),
 	RPI_MODEL(BCM2837_BOARD_REV_CM3, 	"Compute Module 3", NULL ),
 	RPI_MODEL(0xb, "Unknown model", NULL),
-	RPI_MODEL(BCM2835_BOARD_REV_ZERO_W, 	"Zero W", 	rpi_0_init),
+	RPI_MODEL(BCM2835_BOARD_REV_ZERO_W, 	"Zero W", 	rpi_0_w_init),
 	RPI_MODEL(BCM2837B0_BOARD_REV_3B_PLUS, 	"Model 3 B+", 	rpi_b_plus_init ),
 	RPI_MODEL(BCM2837B0_BOARD_REV_3A_PLUS, 	"Nodel 3 A+", 	rpi_b_plus_init),
 	RPI_MODEL(0xf, "Unknown model", NULL),

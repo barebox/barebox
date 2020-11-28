@@ -113,6 +113,15 @@ static void rpi_set_usbethaddr(void)
 	eth_register_ethaddr(0, msg->get_mac_address.body.resp.mac);
 }
 
+static void rpi_set_usbotg(const char *alias)
+{
+	struct device_node *usb;
+
+	usb = of_find_node_by_alias(NULL, alias);
+	if (usb)
+		of_property_write_string(usb, "dr_mode", "otg");
+}
+
 static struct gpio_led rpi_leds[] = {
 	{
 		.gpio	= -EINVAL,
@@ -158,6 +167,12 @@ static void rpi_b_plus_init(void)
 	rpi_set_usbethaddr();
 }
 
+static void rpi_0_init(void)
+{
+	rpi_leds[0].gpio = 47;
+	rpi_set_usbotg("usb0");
+}
+
 /* See comments in mbox.h for data source */
 static const struct rpi_model rpi_models_old_scheme[] = {
 	RPI_MODEL(0, "Unknown model", NULL),
@@ -190,10 +205,10 @@ static const struct rpi_model rpi_models_new_scheme[] = {
 	RPI_MODEL(BCM2835_BOARD_REV_CM1, 	"Compute Module", NULL ),
 	RPI_MODEL(0x7, "Unknown model", NULL),
 	RPI_MODEL(BCM2837_BOARD_REV_3_B, 	"Model 3B", 	rpi_b_init ),
-	RPI_MODEL(BCM2835_BOARD_REV_ZERO, 	"Zero", 	rpi_b_plus_init),
+	RPI_MODEL(BCM2835_BOARD_REV_ZERO, 	"Zero", 	rpi_0_init),
 	RPI_MODEL(BCM2837_BOARD_REV_CM3, 	"Compute Module 3", NULL ),
 	RPI_MODEL(0xb, "Unknown model", NULL),
-	RPI_MODEL(BCM2835_BOARD_REV_ZERO_W, 	"Zero W", 	rpi_b_plus_init),
+	RPI_MODEL(BCM2835_BOARD_REV_ZERO_W, 	"Zero W", 	rpi_0_init),
 	RPI_MODEL(BCM2837B0_BOARD_REV_3B_PLUS, 	"Model 3 B+", 	rpi_b_plus_init ),
 	RPI_MODEL(BCM2837B0_BOARD_REV_3A_PLUS, 	"Nodel 3 A+", 	rpi_b_plus_init),
 	RPI_MODEL(0xf, "Unknown model", NULL),

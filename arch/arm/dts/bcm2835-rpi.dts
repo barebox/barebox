@@ -1,5 +1,9 @@
 #include <arm/bcm2835-rpi-a.dts>
 
+&{/aliases} {
+	usb0 = &usb;
+};
+
 &{/memory@0} {
 	reg = <0x0 0x0>;
 };

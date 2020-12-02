@@ -1,26 +1,13 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// SPDX-FileCopyrightText: 2010 Juergen Beisert <juergen@kreuzholzen.de>
+// SPDX-FileCopyrightText: 2004-2006 Thomas Kleffel <tk@maintech.de>, maintech GmbH
+// SPDX-FileCopyrightText: 2008 Simtec Electronics <ben-linux@fluff.org>
+// SPDX-FileCopyrightText: 2006 OpenMoko, Inc (Harald Welte <laforge@openmoko.org>)
+// SPDX-FileCopyrightText: 2005 Thomas Kleffel
+
 /*
- * Copyright (C) 2010 Juergen Beisert <juergen@kreuzholzen.de>
- *
- * This code is partially based on u-boot code:
- *
- * This code is based on various Linux and u-boot sources:
- *  Copyright (C) 2004-2006 maintech GmbH, Thomas Kleffel <tk@maintech.de>
- *  Copyright (C) 2008 Simtec Electronics <ben-linux@fluff.org>
- *  (C) Copyright 2006 by OpenMoko, Inc.
- *  Author: Harald Welte <laforge@openmoko.org>
- *  based on u-boot pxa MMC driver and linux/drivers/mmc/s3c2410mci.c
- *  (C) 2005-2005 Thomas Kleffel
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
+ * This code is partially based on Linux and u-boot sources, among others the
+ * u-boot pxa MMC driver and linux/drivers/mmc/s3c2410mci.c.
  */
 
 /**

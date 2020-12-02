@@ -1,26 +1,13 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// SPDX-FileCopyrightText: 2010 Juergen Beisert <jbe@pengutronix.de>, Pengutronix
+// SPDX-FileCopyrightText: 2007 SigmaTel, Inc. (Ioannis Kappas <ikappas@sigmatel.com>)
+// SPDX-FileCopyrightText: 2003 Russell King
+// SPDX-FileCopyrightText: 2004-2005 Pierre Ossman
+// SPDX-FileCopyrightText: 2008-2009 Freescale Semiconductor, Inc
+// SPDX-FileCopyrightText: 2008 Embedded Alley Solutions, Inc
+
 /*
- * Copyright (C) 2010 Juergen Beisert, Pengutronix <jbe@pengutronix.de>
- *
- * This code is based on:
- *
- * Copyright (C) 2007 SigmaTel, Inc., Ioannis Kappas <ikappas@sigmatel.com>
- *
- * Portions copyright (C) 2003 Russell King, PXA MMCI Driver
- * Portions copyright (C) 2004-2005 Pierre Ossman, W83L51xD SD/MMC driver
- *
- * Copyright 2008-2009 Freescale Semiconductor, Inc. All Rights Reserved.
- * Copyright 2008 Embedded Alley Solutions, Inc All Rights Reserved.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
+ * This code is reused code from the PXA MMCI Driver and W83L51xD SD/MMC driver.
  */
 
 /**

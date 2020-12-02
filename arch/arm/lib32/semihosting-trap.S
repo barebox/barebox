@@ -1,18 +1,10 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+/* SPDX-FileCopyrightText: 2015 Zodiac Inflight Innovations */
+
 /*
  * semihosting-trap.S -- Assembly code needed to make a semihosting call
  *
- * Copyright (c) 2015 Zodiac Inflight Innovations
  * Author: Andrey Smirnov <andrew.smirnov@gmail.com>
- *
- * This software is licensed under the terms of the GNU General Public
- * License version 2, as published by the Free Software Foundation, and
- * may be copied, distributed, and modified under those terms.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
- * GNU General Public License for more details.
- *
  */
 
 #include <linux/linkage.h>

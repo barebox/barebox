@@ -240,7 +240,7 @@ static int ehci_td_buffer(struct qTD *td, dma_addr_t addr, size_t sz)
 	}
 
 	if (idx == buffer_count) {
-		pr_debug("out of buffer pointers (%u bytes left)\n", sz);
+		pr_debug("out of buffer pointers (%zu bytes left)\n", sz);
 		return -ENOMEM;
 	}
 

@@ -50,6 +50,7 @@ static inline void imx31_gpio_direction_output(void *base, int gpio, int value)
 #define imx51_gpio_direction_output(base, gpio, value) imx31_gpio_direction_output(base, gpio,value)
 #define imx53_gpio_direction_output(base, gpio, value) imx31_gpio_direction_output(base, gpio,value)
 #define imx6_gpio_direction_output(base, gpio, value) imx31_gpio_direction_output(base, gpio,value)
+#define imx8m_gpio_direction_output(base, gpio, value) imx31_gpio_direction_output(base, gpio,value)
 
 static inline void imx1_gpio_direction_input(void *base, int gpio, int value)
 {
@@ -69,6 +70,7 @@ static inline void imx31_gpio_direction_input(void *base, int gpio)
 #define imx51_gpio_direction_input(base, gpio, value) imx31_gpio_direction_input(base, gpio)
 #define imx53_gpio_direction_input(base, gpio, value) imx31_gpio_direction_input(base, gpio)
 #define imx6_gpio_direction_input(base, gpio) imx31_gpio_direction_input(base, gpio)
+#define imx8m_gpio_direction_input(base, gpio) imx31_gpio_direction_input(base, gpio)
 
 #define imx1_gpio_val(base, gpio) readl(base + 0x1c) & (1 << gpio) ? 1 : 0
 #define imx21_gpio_val(base, gpio) imx1_gpio_val(base, gpio)
@@ -80,5 +82,6 @@ static inline void imx31_gpio_direction_input(void *base, int gpio)
 #define imx51_gpio_val(base, gpio) imx31_gpio_val(base, gpio)
 #define imx53_gpio_val(base, gpio) imx31_gpio_val(base, gpio)
 #define imx6_gpio_val(base, gpio) imx31_gpio_val(base, gpio)
+#define imx8m_gpio_val(base, gpio) imx31_gpio_val(base, gpio)
 
 #endif /* __MACH_IMX_GPIO_H */

@@ -344,4 +344,22 @@
 #define IMX6Q_GPR13_SATA_PHY_1_MED		(0x1 << 0)
 #define IMX6Q_GPR13_SATA_PHY_1_SLOW		(0x2 << 0)
 
+/* For imx6ul iomux gpr register field define */
+/* IMX6UL_GPR1_ENET*_CLK_DIR:
+ * 0 - ENET1_TX_CLK output driver is disabled when configured for ALT1
+ * 1 - ENET1_TX_CLK output driver is enabled when configured for ALT1
+ */
+#define IMX6UL_GPR1_ENET2_CLK_DIR		(0x1 << 18)
+#define IMX6UL_GPR1_ENET1_CLK_DIR		(0x1 << 17)
+
+/* IMX6UL_GPR1_ENET*_CLK_SEL:
+ * 0 - ENET TX reference clock driven by ref_enetpll. This clock is also
+ * output to pins via the IOMUX. ENET_REF_CLK2 function.
+ * 1 - Gets ENET2 TX reference clk from the ENET2_TX_CLK pin. In this use case,
+ * an external OSC provides the clock for both the external PHY and the
+ * internal controller.
+ */
+#define IMX6UL_GPR1_ENET2_CLK_SEL		(0x1 << 14)
+#define IMX6UL_GPR1_ENET1_CLK_SEL		(0x1 << 13)
+
 #endif /* __LINUX_IMX6Q_IOMUXC_GPR_H */

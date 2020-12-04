@@ -40,12 +40,10 @@ static int nxp_imx8mq_evk_init(void)
 	barebox_set_hostname("imx8mq-evk");
 
 	flags = bootsource_get_instance() == 0 ? BBU_HANDLER_FLAG_DEFAULT : 0;
-	imx8mq_bbu_internal_mmc_register_handler("eMMC",
-						 "/dev/mmc0.barebox", flags);
+	imx8m_bbu_internal_mmc_register_handler("eMMC", "/dev/mmc0.barebox", flags);
 
 	flags = bootsource_get_instance() == 1 ? BBU_HANDLER_FLAG_DEFAULT : 0;
-	imx8mq_bbu_internal_mmc_register_handler("SD",
-						 "/dev/mmc1.barebox", flags);
+	imx8m_bbu_internal_mmc_register_handler("SD", "/dev/mmc1.barebox", flags);
 
 	if (bootsource_get_instance() == 0)
 		of_device_enable_path("/chosen/environment-emmc");

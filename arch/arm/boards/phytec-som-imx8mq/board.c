@@ -73,10 +73,8 @@ static int physom_imx8mq_devices_init(void)
 		break;
 	}
 
-	imx8mq_bbu_internal_mmc_register_handler("eMMC",
-						 "/dev/mmc0.barebox", flag_emmc);
-	imx8mq_bbu_internal_mmc_register_handler("SD",
-						 "/dev/mmc1.barebox", flag_sd);
+	imx8m_bbu_internal_mmc_register_handler("eMMC", "/dev/mmc0.barebox", flag_emmc);
+	imx8m_bbu_internal_mmc_register_handler("SD", "/dev/mmc1.barebox", flag_sd);
 
 
 	return 0;

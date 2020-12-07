@@ -161,6 +161,7 @@ static void usage(const char *prgname)
 "Options:\n"
 "-t <type>    only show information of <type>\n"
 "-n <no>      for tags with multiple strings only show string <no>\n"
+"-v           Be verbose\n"
 "-V           Verify checksum of FILE\n"
 "-c           Create checksum for FILE and write it to the crc32 tag\n"
 "\n"

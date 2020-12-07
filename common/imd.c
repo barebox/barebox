@@ -489,10 +489,15 @@ int imd_command(int argc, char *argv[])
 		goto out;
 	}
 
-	if (checksum)
-		imd_write_crc32(buf, imd_start, filename, size);
-	if (verify)
-		imd_verify_crc32(buf, size);
+	if (checksum) {
+		ret = imd_write_crc32(buf, imd_start, filename, size);
+		goto out;
+	}
+
+	if (verify) {
+		ret = imd_verify_crc32(buf, size);
+		goto out;
+	}
 
 	if (type == IMD_TYPE_INVALID) {
 		imd_for_each(imd_start, imd) {

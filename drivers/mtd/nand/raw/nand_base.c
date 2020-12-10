@@ -4312,7 +4312,7 @@ static int nand_do_write_ops(struct nand_chip *chip, loff_t to,
 		return 0;
 
 	/* Reject writes, which are not page aligned */
-	if (NOTALIGNED(to) || NOTALIGNED(ops->len)) {
+	if (NOTALIGNED(to)) {
 		pr_notice("%s: attempt to write non page aligned data\n",
 			   __func__);
 		return -EINVAL;

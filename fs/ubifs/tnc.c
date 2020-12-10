@@ -1935,7 +1935,12 @@ static int tnc_delete(struct ubifs_info *c, struct ubifs_znode *znode, int n)
 
 	do {
 		ubifs_assert(c, !ubifs_zn_obsolete(znode));
-		ubifs_assert(c, ubifs_zn_dirty(znode));
+		/*
+		 * This assertion is invalid in barebox due to the shortcuts we take
+		 * in our readonly implementation.
+		 *
+		 * ubifs_assert(c, ubifs_zn_dirty(znode));
+		 */
 
 		zp = znode->parent;
 		n = znode->iip;

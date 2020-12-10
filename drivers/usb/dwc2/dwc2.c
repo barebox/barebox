@@ -63,7 +63,7 @@ static int dwc2_probe(struct device_d *dev)
 	if (ret)
 		goto err_phy_power;
 
-	ret = dwc2_core_snpsid(dwc2);
+	ret = dwc2_check_core_version(dwc2);
 	if (ret)
 		goto error;
 

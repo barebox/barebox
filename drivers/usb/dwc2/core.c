@@ -185,11 +185,9 @@ void dwc2_set_default_params(struct dwc2 *dwc2)
 	}
 }
 
-int dwc2_core_snpsid(struct dwc2 *dwc2)
+int dwc2_check_core_version(struct dwc2 *dwc2)
 {
 	struct dwc2_hw_params *hw = &dwc2->hw_params;
-
-	hw->snpsid = dwc2_readl(dwc2, GSNPSID);
 
 	/*
 	 * Attempt to ensure this device is really a DWC2 Controller.

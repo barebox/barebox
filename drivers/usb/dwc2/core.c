@@ -28,7 +28,7 @@ static bool dwc2_hw_is_device(struct dwc2 *dwc2)
 		(op_mode == GHWCFG2_OP_MODE_NO_SRP_CAPABLE_DEVICE);
 }
 
-void dwc2_set_param_otg_cap(struct dwc2 *dwc2)
+static void dwc2_set_param_otg_cap(struct dwc2 *dwc2)
 {
 	u8 val;
 
@@ -49,7 +49,7 @@ void dwc2_set_param_otg_cap(struct dwc2 *dwc2)
 	dwc2->params.otg_cap = val;
 }
 
-void dwc2_set_param_phy_type(struct dwc2 *dwc2)
+static void dwc2_set_param_phy_type(struct dwc2 *dwc2)
 {
 	u8 val;
 
@@ -69,7 +69,7 @@ void dwc2_set_param_phy_type(struct dwc2 *dwc2)
 	dwc2->params.phy_type = val;
 }
 
-void dwc2_set_param_speed(struct dwc2 *dwc2)
+static void dwc2_set_param_speed(struct dwc2 *dwc2)
 {
 	if (dwc2->params.phy_type == DWC2_PHY_TYPE_PARAM_FS)
 		dwc2->params.speed = DWC2_SPEED_PARAM_FULL;
@@ -77,7 +77,7 @@ void dwc2_set_param_speed(struct dwc2 *dwc2)
 		dwc2->params.speed = DWC2_SPEED_PARAM_HIGH;
 }
 
-void dwc2_set_param_phy_utmi_width(struct dwc2 *dwc2)
+static void dwc2_set_param_phy_utmi_width(struct dwc2 *dwc2)
 {
 	int val;
 

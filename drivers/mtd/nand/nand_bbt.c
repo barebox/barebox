@@ -1018,14 +1018,16 @@ static int check_create(struct nand_chip *this, uint8_t *buf,
 		}
 
 		/* Write the bad block table to the device? */
-		if ((writeops & 0x01) && (td->options & NAND_BBT_WRITE)) {
+		if ((writeops & 0x01) && (td->options & NAND_BBT_WRITE) &&
+		    IS_ENABLED(CONFIG_MTD_WRITE)) {
 			res = write_bbt(this, buf, td, md, chipsel);
 			if (res < 0)
 				return res;
 		}
 
 		/* Write the mirror bad block table to the device? */
-		if ((writeops & 0x02) && md && (md->options & NAND_BBT_WRITE)) {
+		if ((writeops & 0x02) && md && (md->options & NAND_BBT_WRITE) &&
+		    IS_ENABLED(CONFIG_MTD_WRITE)) {
 			res = write_bbt(this, buf, md, td, chipsel);
 			if (res < 0)
 				return res;
@@ -1074,13 +1076,13 @@ int nand_update_bbt(struct nand_chip *this, loff_t offs)
 		md->version[chip]++;
 
 	/* Write the bad block table to the device? */
-	if (td->options & NAND_BBT_WRITE) {
+	if ((td->options & NAND_BBT_WRITE) && IS_ENABLED(CONFIG_MTD_WRITE)) {
 		res = write_bbt(this, buf, td, md, chipsel);
 		if (res < 0)
 			goto out;
 	}
 	/* Write the mirror bad block table to the device? */
-	if (md && (md->options & NAND_BBT_WRITE)) {
+	if (md && (md->options & NAND_BBT_WRITE) && IS_ENABLED(CONFIG_MTD_WRITE)) {
 		res = write_bbt(this, buf, md, td, chipsel);
 	}
 

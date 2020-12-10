@@ -91,6 +91,8 @@
 
 #define BCH8_MAX_ERROR	8	/* upto 8 bit correctable */
 
+#define BADBLOCK_MARKER_LENGTH 2
+
 static const uint8_t bch8_vector[] = {0xf3, 0xdb, 0x14, 0x16, 0x8b, 0xd2,
 		0xbe, 0xcc, 0xac, 0x6b, 0xff, 0x99, 0x7b};
 static u_char bch16_vector[] = {0xf5, 0x24, 0x1c, 0xd0, 0x61, 0xb3, 0xf1, 0x55,
@@ -497,9 +499,9 @@ static void omap_enable_hwecc(struct nand_chip *nand, int mode)
 	case OMAP_ECC_BCH16_CODE_HW:
 		bch_mod = 2;
 		if (mode == NAND_ECC_READ) {
-			bch_wrapmode = 4;
-			eccsize0 = 4; /* ECC bits in nibbles per sector */
-			eccsize1 = 52;  /* non-ECC bits in nibbles per sector */
+			bch_wrapmode = 1;
+			eccsize0 = 52; /* ECC bits in nibbles per sector */
+			eccsize1 = 0;  /* non-ECC bits in nibbles per sector */
 		} else {
 			bch_wrapmode = 4;
 			eccsize0 = 4;  /* extra bits in nibbles per sector */
@@ -964,7 +966,12 @@ static int gpmc_read_page_hwecc_elm(struct nand_chip *chip, uint8_t *buf,
 	nand_read_page_op(chip, page, 0, NULL, 0);
 
 	chip->legacy.read_buf(chip, buf, mtd->writesize);
-	chip->legacy.read_buf(chip, chip->oob_poi, mtd->oobsize);
+
+	/* Read oob bytes */
+	nand_change_read_column_op(chip,
+				mtd->writesize + BADBLOCK_MARKER_LENGTH,
+				chip->oob_poi + BADBLOCK_MARKER_LENGTH,
+				chip->ecc.total, false);
 
 	ret = mtd_ooblayout_get_eccbytes(mtd, ecc_code, chip->oob_poi, 0,
                                   chip->ecc.total);

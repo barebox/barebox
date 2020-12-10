@@ -649,18 +649,16 @@ int dwc2_get_dr_mode(struct dwc2 *dwc2)
 
 	if (dwc2_hw_is_device(dwc2)) {
 		dwc2_dbg(dwc2, "Controller is device only\n");
-		if (IS_ENABLED(CONFIG_USB_DWC2_HOST)) {
-			dwc2_err(dwc2,
-				"Controller does not support host mode.\n");
-			return -EINVAL;
+		if (!IS_ENABLED(CONFIG_USB_DWC2_GADGET)) {
+			dwc2_err(dwc2, "gadget mode support not compiled in!\n");
+			return -ENOTSUPP;
 		}
 		mode = USB_DR_MODE_PERIPHERAL;
 	} else if (dwc2_hw_is_host(dwc2)) {
 		dwc2_dbg(dwc2, "Controller is host only\n");
-		if (IS_ENABLED(CONFIG_USB_DWC2_GADGET)) {
-			dwc2_err(dwc2,
-				"Controller does not support device mode.\n");
-			return -EINVAL;
+		if (!IS_ENABLED(CONFIG_USB_DWC2_HOST)) {
+			dwc2_err(dwc2, "host mode support not compiled in!\n");
+			return -ENOTSUPP;
 		}
 		mode = USB_DR_MODE_HOST;
 	} else {

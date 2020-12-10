@@ -79,6 +79,8 @@ static int dwc2_probe(struct device_d *dev)
 	dwc2_get_hwparams(dwc2);
 
 	ret = dwc2_get_dr_mode(dwc2);
+	if (ret)
+		goto error;
 
 	dwc2_set_default_params(dwc2);
 

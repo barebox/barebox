@@ -2,6 +2,7 @@
 #include <usb/usb.h>
 #include <usb/usb_defs.h>
 #include <usb/gadget.h>
+#include <linux/phy/phy.h>
 
 #include "regs.h"
 #include "core.h"

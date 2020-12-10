@@ -50,6 +50,19 @@ static int dwc2_probe(struct device_d *dev)
 	dwc2->regs = IOMEM(iores->start);
 	dwc2->dev = dev;
 
+	dwc2->phy = phy_optional_get(dev, "usb2-phy");
+	if (IS_ERR(dwc2->phy)) {
+		ret = PTR_ERR(dwc2->phy);
+		return ret;
+	}
+
+	ret = phy_init(dwc2->phy);
+	if (ret)
+		goto err_phy_init;
+	ret = phy_power_on(dwc2->phy);
+	if (ret)
+		goto err_phy_power;
+
 	ret = dwc2_core_snpsid(dwc2);
 	if (ret)
 		goto error;
@@ -77,7 +90,16 @@ static int dwc2_probe(struct device_d *dev)
 	else
 		ret = dwc2_set_mode(dwc2, dwc2->dr_mode);
 
+	if (ret)
+		goto error;
+
+	return 0;
 error:
+	phy_power_off(dwc2->phy);
+err_phy_power:
+	phy_exit(dwc2->phy);
+err_phy_init:
+
 	return ret;
 }
 
@@ -87,6 +109,9 @@ static void dwc2_remove(struct device_d *dev)
 
 	dwc2_host_uninit(dwc2);
 	dwc2_gadget_uninit(dwc2);
+
+	phy_power_off(dwc2->phy);
+	phy_exit(dwc2->phy);
 }
 
 static const struct of_device_id dwc2_platform_dt_ids[] = {

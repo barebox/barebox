@@ -7,8 +7,13 @@ menuconfig NAND
 
 if NAND
 
+config MTD_NAND_ECC_SOFT
+	bool
+	prompt "Support software ecc"
+
 config MTD_NAND_ECC_SW_BCH
 	select BCH
+	depends on MTD_NAND_ECC_SOFT
 	bool
 	prompt "Support software BCH ecc"
 

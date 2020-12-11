@@ -5053,6 +5053,9 @@ static int nand_set_ecc_soft_ops(struct nand_chip *chip)
 	struct mtd_info *mtd = nand_to_mtd(chip);
 	struct nand_ecc_ctrl *ecc = &chip->ecc;
 
+	if (!IS_ENABLED(CONFIG_MTD_NAND_ECC_SOFT))
+		return -ENOSYS;
+
 	if (WARN_ON(ecc->mode != NAND_ECC_SOFT))
 		return -EINVAL;
 

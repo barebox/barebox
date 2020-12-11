@@ -7,10 +7,19 @@ menuconfig NAND
 
 if NAND
 
+config MTD_NAND_ECC_SOFT
+	bool
+	prompt "Support software ecc"
+
 config MTD_NAND_ECC_SW_BCH
 	select BCH
+	depends on MTD_NAND_ECC_SOFT
 	bool
 	prompt "Support software BCH ecc"
+
+config NAND_ECC_HW_SYNDROME
+	bool
+	prompt "Support syndrome hardware ecc controllers"
 
 config NAND_ALLOW_ERASE_BAD
 	bool

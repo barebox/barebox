@@ -123,19 +123,15 @@ static void delete_subnodes(struct device_node *np)
 	}
 }
 
-static int of_partition_fixup(struct device_node *root, void *ctx)
+int of_fixup_partitions(struct device_node *np, struct cdev *cdev)
 {
-	struct cdev *cdev = ctx, *partcdev;
-	struct device_node *np, *part, *partnode;
-	char *name;
+	struct cdev *partcdev;
+	struct device_node *part, *partnode;
 	int ret;
 	int n_cells, n_parts = 0;
 
 	if (of_partition_binding == MTD_OF_BINDING_DONTTOUCH)
 		return 0;
-
-	if (!cdev->device_node)
-		return -EINVAL;
 
 	list_for_each_entry(partcdev, &cdev->partitions, partition_entry) {
 		if (partcdev->flags & DEVFS_PARTITION_FROM_TABLE)
@@ -150,15 +146,6 @@ static int of_partition_fixup(struct device_node *root, void *ctx)
 		n_cells = 2;
 	else
 		n_cells = 1;
-
-	name = of_get_reproducible_name(cdev->device_node);
-	np = of_find_node_by_reproducible_name(root, name);
-	free(name);
-	if (!np) {
-		dev_err(cdev->dev, "Cannot find nodepath %s, cannot fixup\n",
-				cdev->device_node->full_name);
-		return -EINVAL;
-	}
 
 	partnode = of_get_child_by_name(np, "partitions");
 	if (partnode) {
@@ -240,6 +227,24 @@ static int of_partition_fixup(struct device_node *root, void *ctx)
 	}
 
 	return 0;
+}
+
+static int of_partition_fixup(struct device_node *root, void *ctx)
+{
+	struct cdev *cdev = ctx;
+	struct device_node *np;
+	char *name;
+
+	name = of_get_reproducible_name(cdev->device_node);
+	np = of_find_node_by_reproducible_name(root, name);
+	free(name);
+	if (!np) {
+		dev_err(cdev->dev, "Cannot find nodepath %s, cannot fixup\n",
+				cdev->device_node->full_name);
+		return -EINVAL;
+	}
+
+	return of_fixup_partitions(np, cdev);
 }
 
 int of_partitions_register_fixup(struct cdev *cdev)

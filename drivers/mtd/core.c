@@ -639,6 +639,34 @@ static int mtd_detect(struct device_d *dev)
 	return ret;
 }
 
+static int mtd_partition_fixup_generic(struct mtd_info *mtd, struct device_node *root)
+{
+	struct cdev *cdev = &mtd->cdev;
+	struct device_node *np, *mtdnp = mtd_get_of_node(mtd);
+	char *name;
+
+	name = of_get_reproducible_name(mtdnp);
+	np = of_find_node_by_reproducible_name(root, name);
+	free(name);
+	if (!np) {
+		dev_err(&mtd->dev, "Cannot find nodepath %s, cannot fixup\n",
+				mtdnp->full_name);
+		return -EINVAL;
+	}
+
+	return of_fixup_partitions(np, cdev);
+}
+
+static int mtd_partition_fixup(struct device_node *root, void *ctx)
+{
+	struct mtd_info *mtd = ctx;
+
+	if (mtd->of_fixup)
+		return mtd->of_fixup(mtd, root);
+
+	return mtd_partition_fixup_generic(mtd, root);
+}
+
 int add_mtd_device(struct mtd_info *mtd, const char *devname, int device_id)
 {
 	struct mtddev_hook *hook;
@@ -706,8 +734,7 @@ int add_mtd_device(struct mtd_info *mtd, const char *devname, int device_id)
 		dev_add_param_string(&mtd->dev, "partitions", mtd_partition_set, mtd_partition_get, &mtd->partition_string, mtd);
 		if (IS_ENABLED(CONFIG_OFDEVICE) && np) {
 			of_parse_partitions(&mtd->cdev, np);
-			mtd->of_path = xstrdup(np->full_name);
-			ret = of_partitions_register_fixup(&mtd->cdev);
+			ret = of_register_fixup(mtd_partition_fixup, mtd);
 			if (ret)
 				goto err1;
 		}

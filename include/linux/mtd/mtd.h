@@ -206,6 +206,8 @@ struct mtd_info {
 	int (*_block_markbad) (struct mtd_info *mtd, loff_t ofs);
 	int (*_block_markgood) (struct mtd_info *mtd, loff_t ofs);
 
+	int (*of_fixup)(struct mtd_info *mtd, struct device_node *root);
+
 	/* ECC status information */
 	struct mtd_ecc_stats ecc_stats;
 	/* Subpage shift (NAND) */
@@ -248,7 +250,6 @@ struct mtd_info {
 	struct list_head partitions_entry;
 	char *partition_string;
 
-	char *of_path;
 	unsigned int of_binding;
 };
 

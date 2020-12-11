@@ -5098,6 +5098,9 @@ static int nand_set_ecc_soft_ops(struct nand_chip *chip)
 	struct mtd_info *mtd = nand_to_mtd(chip);
 	struct nand_ecc_ctrl *ecc = &chip->ecc;
 
+	if (!IS_ENABLED(CONFIG_MTD_NAND_ECC_SOFT))
+		return -ENOSYS;
+
 	if (WARN_ON(ecc->mode != NAND_ECC_SOFT))
 		return -EINVAL;
 
@@ -5619,6 +5622,10 @@ int nand_scan_tail(struct nand_chip *chip)
 		if (!ecc->write_subpage && ecc->hwctl && ecc->calculate)
 			ecc->write_subpage = nand_write_subpage_hwecc;
 	case NAND_ECC_HW_SYNDROME:
+		if (!IS_ENABLED(CONFIG_NAND_ECC_HW_SYNDROME)) {
+			ret = -ENOSYS;
+			goto err_nand_manuf_cleanup;
+		}
 		if ((!ecc->calculate || !ecc->correct || !ecc->hwctl) &&
 		    (!ecc->read_page ||
 		     ecc->read_page == nand_read_page_hwecc ||

@@ -1121,8 +1121,11 @@ static int omap_gpmc_eccmode(struct gpmc_nand_info *oinfo,
 		err = elm_config(BCH16_ECC,
 				 minfo->writesize / nand->ecc.size,
 				 nand->ecc.size, nand->ecc.bytes);
-		if (err < 0)
+		if (err < 0) {
+			dev_err(oinfo->pdev, "ELM config failed: %s\n",
+				strerror(-err));
 			return err;
+		}
 
 		nand->ecc.read_page = gpmc_read_page_hwecc_elm;
 

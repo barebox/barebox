@@ -12,6 +12,10 @@ config MTD_NAND_ECC_SW_BCH
 	bool
 	prompt "Support software BCH ecc"
 
+config NAND_ECC_HW_SYNDROME
+	bool
+	prompt "Support syndrome hardware ecc controllers"
+
 config NAND_ALLOW_ERASE_BAD
 	bool
 	depends on MTD_WRITE

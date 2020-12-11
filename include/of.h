@@ -1006,6 +1006,7 @@ int of_device_enable(struct device_node *node);
 int of_device_enable_path(const char *path);
 int of_device_disable(struct device_node *node);
 int of_device_disable_path(const char *path);
+int of_device_disable_by_alias(const char *alias);
 
 phandle of_get_tree_max_phandle(struct device_node *root);
 phandle of_node_create_phandle(struct device_node *node);

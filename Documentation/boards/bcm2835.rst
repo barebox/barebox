@@ -23,6 +23,13 @@ Raspberry Pi
          kernel=barebox.img
          enable_uart=1
 
+     If you want to use the mini-uart instead of the PL011, you may need to additionally set::
+
+         uart_2ndstage=1
+
+     This is required on boards, like the Raspberry Pi Zero W, that use the mini-uart as the
+     primary UART. It is needed on boards like the CM3 as well if the mini-uart is to be used.
+
      (For more information, refer to the `documentation for config.txt`_.)
 
   5. Connect to board's UART (115200 8N1);

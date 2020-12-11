@@ -1,19 +1,9 @@
 #include <arm/bcm2835-rpi-a.dts>
 
-/ {
-	chosen {
-		stdout-path = &uart0;
-	};
+&{/aliases} {
+	usb0 = &usb;
 };
 
 &{/memory@0} {
 	reg = <0x0 0x0>;
-};
-
-&sdhci {
-	status = "okay";
-};
-
-&sdhost {
-	status = "disabled";
 };

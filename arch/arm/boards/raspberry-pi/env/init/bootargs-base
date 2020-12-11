@@ -1,3 +1,0 @@
-#!/bin/sh
-
-global.linux.bootargs.base="console=ttyAMA0,115200"

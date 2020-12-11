@@ -20,13 +20,24 @@
 #include <generated/mach-types.h>
 #include <linux/sizes.h>
 #include <globalvar.h>
+#include <asm/system_info.h>
 
 #include <mach/core.h>
 #include <mach/mbox.h>
 #include <mach/platform.h>
 
-#include "rpi.h"
 #include "lowlevel.h"
+
+struct rpi_model {
+	const char *name;
+	void (*init)(void);
+};
+
+#define RPI_MODEL(_id, _name, _init)	\
+	[_id] = {				\
+		.name			= _name,\
+		.init			= _init,\
+	}
 
 struct msg_get_arm_mem {
 	struct bcm2835_mbox_hdr hdr;
@@ -85,7 +96,7 @@ static struct clk *rpi_register_firmware_clock(u32 clock_id, const char *name)
 	return clk_fixed(name, msg->get_clock_rate.body.resp.rate_hz);
 }
 
-void rpi_set_usbethaddr(void)
+static void rpi_set_usbethaddr(void)
 {
 	BCM2835_MBOX_STACK_ALIGN(struct msg_get_mac_address, msg);
 	int ret;
@@ -103,7 +114,16 @@ void rpi_set_usbethaddr(void)
 	eth_register_ethaddr(0, msg->get_mac_address.body.resp.mac);
 }
 
-struct gpio_led rpi_leds[] = {
+static void rpi_set_usbotg(const char *alias)
+{
+	struct device_node *usb;
+
+	usb = of_find_node_by_alias(NULL, alias);
+	if (usb)
+		of_property_write_string(usb, "dr_mode", "otg");
+}
+
+static struct gpio_led rpi_leds[] = {
 	{
 		.gpio	= -EINVAL,
 		.led	= {
@@ -148,8 +168,35 @@ static void rpi_b_plus_init(void)
 	rpi_set_usbethaddr();
 }
 
+static void rpi_0_init(void)
+{
+	rpi_leds[0].gpio = 47;
+	rpi_set_usbotg("usb0");
+}
+
+static void rpi_0_w_init(void)
+{
+	struct device_node *np;
+	int ret;
+
+	rpi_0_init();
+
+	np = of_find_node_by_path("/chosen");
+	if (!np)
+		return;
+
+	if (!of_device_enable_and_register_by_alias("serial1"))
+		return;
+
+	ret = of_property_write_string(np, "stdout-path", "serial1:115200n8");
+	if (ret)
+		return;
+
+	of_device_disable_by_alias("serial0");
+}
+
 /* See comments in mbox.h for data source */
-const struct rpi_model rpi_models_old_scheme[] = {
+static const struct rpi_model rpi_models_old_scheme[] = {
 	RPI_MODEL(0, "Unknown model", NULL),
 	RPI_MODEL(BCM2835_BOARD_REV_B_I2C0_2, "Model B (no P5)", rpi_b_init),
 	RPI_MODEL(BCM2835_BOARD_REV_B_I2C0_3, "Model B (no P5)", rpi_b_init),
@@ -170,7 +217,7 @@ const struct rpi_model rpi_models_old_scheme[] = {
 	RPI_MODEL(BCM2835_BOARD_REV_A_PLUS_15, "Model A+", NULL),
 };
 
-const struct rpi_model rpi_models_new_scheme[] = {
+static const struct rpi_model rpi_models_new_scheme[] = {
 	RPI_MODEL(BCM2835_BOARD_REV_A, 		"Model A",	NULL ),
 	RPI_MODEL(BCM2835_BOARD_REV_B, 		"Model B", 	rpi_b_init ),
 	RPI_MODEL(BCM2835_BOARD_REV_A_PLUS, 	"Model A+", 	NULL ),
@@ -180,18 +227,18 @@ const struct rpi_model rpi_models_new_scheme[] = {
 	RPI_MODEL(BCM2835_BOARD_REV_CM1, 	"Compute Module", NULL ),
 	RPI_MODEL(0x7, "Unknown model", NULL),
 	RPI_MODEL(BCM2837_BOARD_REV_3_B, 	"Model 3B", 	rpi_b_init ),
-	RPI_MODEL(BCM2835_BOARD_REV_ZERO, 	"Zero", 	rpi_b_plus_init),
+	RPI_MODEL(BCM2835_BOARD_REV_ZERO, 	"Zero", 	rpi_0_init),
 	RPI_MODEL(BCM2837_BOARD_REV_CM3, 	"Compute Module 3", NULL ),
 	RPI_MODEL(0xb, "Unknown model", NULL),
-	RPI_MODEL(BCM2835_BOARD_REV_ZERO_W, 	"Zero W", 	rpi_b_plus_init),
-	RPI_MODEL(BCM2837B0_BOARD_REV_3B_PLUS, 	"Model 3 B+", 	rpi_b_plus_init ),
-	RPI_MODEL(BCM2837B0_BOARD_REV_3A_PLUS, 	"Nodel 3 A+", 	rpi_b_plus_init),
+	RPI_MODEL(BCM2835_BOARD_REV_ZERO_W, 	"Zero W", 	rpi_0_w_init),
+	RPI_MODEL(BCM2837B0_BOARD_REV_3B_PLUS, 	"Model 3B+", 	rpi_b_plus_init ),
+	RPI_MODEL(BCM2837B0_BOARD_REV_3A_PLUS, 	"Model 3A+", 	rpi_b_plus_init),
 	RPI_MODEL(0xf, "Unknown model", NULL),
 	RPI_MODEL(BCM2837B0_BOARD_REV_CM3_PLUS, "Compute Module 3+", NULL),
 };
 
 static int rpi_board_rev = 0;
-const struct rpi_model *model = NULL;
+static const struct rpi_model *model = NULL;
 
 static void rpi_get_board_rev(void)
 {
@@ -269,7 +316,6 @@ static void rpi_model_init(void)
 		return;
 
 	model->init();
-	rpi_add_led();
 }
 
 static int rpi_mem_init(void)
@@ -291,6 +337,7 @@ static int rpi_postcore_init(void)
 {
 	rpi_get_board_rev();
 	barebox_set_hostname("rpi");
+	rpi_model_init();
 
 	return 0;
 }
@@ -337,6 +384,7 @@ static int rpi_console_clock_init(void)
 	if (IS_ERR(clk))
 		return PTR_ERR(clk);
 
+	clkdev_add_physbase(clk, BCM2835_MINIUART_BASE, NULL);
 	clkdev_add_physbase(clk, BCM2836_MINIUART_BASE, NULL);
 
 	clk = clk_fixed("bcm2835-cs", 1 * 1000 * 1000);
@@ -366,6 +414,8 @@ static int rpi_env_init(void)
 		printf("failed to mount %s\n", diskdev);
 		return 0;
 	}
+
+	defaultenv_append_directory(defaultenv_rpi);
 
 	default_environment_path_set("/boot/barebox.env");
 
@@ -402,6 +452,18 @@ static int rpi_vc_fdt_bootargs(void *fdt)
 	}
 
 	globalvar_add_simple("vc.bootargs", cmdline);
+
+	switch(cpu_architecture()) {
+	case CPU_ARCH_ARMv6:
+		globalvar_add_simple("vc.kernel", "kernel.img");
+		break;
+	case CPU_ARCH_ARMv7:
+		globalvar_add_simple("vc.kernel", "kernel7.img");
+		break;
+	case CPU_ARCH_ARMv8:
+		globalvar_add_simple("vc.kernel", "kernel7l.img");
+		break;
+	}
 
 out:
 	if (root)
@@ -453,7 +515,7 @@ static int rpi_devices_init(void)
 {
 	struct regulator *reg;
 
-	rpi_model_init();
+	rpi_add_led();
 	bcm2835_register_fb();
 	armlinux_set_architecture(MACH_TYPE_BCM2708);
 	rpi_env_init();

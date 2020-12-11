@@ -11,8 +11,11 @@
 #include <i2c/i2c.h>
 #include <mach/bbu.h>
 #include <mach/imx6.h>
+#include <mfd/imx6q-iomuxc-gpr.h>
+#include <mfd/syscon.h>
 #include <net.h>
 #include <of_device.h>
+#include <regmap.h>
 #include <sys/mount.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -577,6 +580,27 @@ static int prt_imx6_init_victgo(struct prt_imx6_priv *priv)
 	return prt_imx6_init_kvg_power(priv, PW_MODE_KVG_NEW);
 }
 
+static int prt_imx6_init_prti6g(struct prt_imx6_priv *priv)
+{
+	struct regmap *gpr;
+
+	gpr = syscon_regmap_lookup_by_compatible("fsl,imx6ul-iomuxc-gpr");
+	if (!IS_ERR(gpr)) {
+		int ret;
+
+		/* Configure FEC1 to use 50MHz clock provided by the PHY */
+		ret = regmap_update_bits(gpr, IOMUXC_GPR1,
+			IMX6UL_GPR1_ENET1_CLK_DIR | IMX6UL_GPR1_ENET1_CLK_SEL,
+			IMX6UL_GPR1_ENET1_CLK_SEL);
+		if (ret)
+			dev_err(priv->dev, "regmap error\n");
+	} else {
+		dev_err(priv->dev, "failed to find fsl,imx6ul-iomux-gpr regmap\n");
+	}
+
+	return 0;
+}
+
 static int prt_imx6_init_kvg_new(struct prt_imx6_priv *priv)
 {
 	return prt_imx6_init_kvg_power(priv, PW_MODE_KVG_NEW);
@@ -923,6 +947,7 @@ static const struct prt_machine_data prt_imx6_cfg_prti6g[] = {
 		.hw_rev = 0,
 		.i2c_addr = 0x51,
 		.i2c_adapter = 0,
+		.init = prt_imx6_init_prti6g,
 		.flags = PRT_IMX6_BOOTSRC_EMMC,
 	}, {
 		.hw_id = UINT_MAX

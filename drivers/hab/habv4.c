@@ -500,11 +500,34 @@ static bool is_known_rng_fail_event(const uint8_t *data, size_t len)
 	return false;
 }
 
+static uint8_t *hab_get_event(const struct habv4_rvt *rvt, int index, int *len)
+{
+	enum hab_status err;
+	uint8_t *buf;
+
+	err = rvt->report_event(HAB_STATUS_ANY, index, NULL, len);
+	if (err != HAB_STATUS_SUCCESS)
+		return NULL;
+
+	buf = malloc(*len);
+	if (!buf)
+		return NULL;
+
+	err = rvt->report_event(HAB_STATUS_ANY, index, buf, len);
+	if (err != HAB_STATUS_SUCCESS) {
+		pr_err("Unexpected HAB return code\n");
+		free(buf);
+		return NULL;
+	}
+
+	return buf;
+}
+
 static int habv4_get_status(const struct habv4_rvt *rvt)
 {
-	uint8_t data[256];
+	uint8_t *data;
 	uint32_t len;
-	uint32_t index = 0;
+	int i;
 	enum hab_status status;
 	enum hab_config config = 0x0;
 	enum hab_state state = 0x0;
@@ -524,39 +547,23 @@ static int habv4_get_status(const struct habv4_rvt *rvt)
 		return 0;
 	}
 
-	len = sizeof(data);
-	while (rvt->report_event(HAB_STATUS_WARNING, index, data, &len) == HAB_STATUS_SUCCESS) {
+	for (i = 0;; i++) {
+		data = hab_get_event(rvt, i, &len);
+		if (!data)
+			break;
 
 		/* suppress RNG self-test fail events if they can be handled in software */
 		if (IS_ENABLED(CONFIG_CRYPTO_DEV_FSL_CAAM_RNG_SELF_TEST) &&
 		    is_known_rng_fail_event(data, len)) {
 			pr_debug("RNG self-test failure detected, will run software self-test\n");
 		} else {
-			pr_err("-------- HAB warning Event %d --------\n", index);
+			pr_err("-------- HAB Event %d --------\n", i);
 			pr_err("event data:\n");
 			habv4_display_event(data, len);
 		}
 
-		len = sizeof(data);
-		index++;
+		free(data);
 	}
-
-	len = sizeof(data);
-	index = 0;
-	while (rvt->report_event(HAB_STATUS_FAILURE, index, data, &len) == HAB_STATUS_SUCCESS) {
-		pr_err("-------- HAB failure Event %d --------\n", index);
-		pr_err("event data:\n");
-
-		habv4_display_event(data, len);
-		len = sizeof(data);
-		index++;
-	}
-
-	/* Check reason for stopping */
-	len = sizeof(data);
-	index = 0;
-	if (rvt->report_event(HAB_STATUS_ANY, index, NULL, &len) == HAB_STATUS_SUCCESS)
-		pr_err("ERROR: Recompile with larger event data buffer (at least %d bytes)\n\n", len);
 
 	return -EPERM;
 }

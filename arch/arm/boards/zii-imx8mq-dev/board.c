@@ -31,9 +31,9 @@ static int zii_imx8mq_dev_init(void)
 	if (of_machine_is_compatible("zii,imx8mq-ultra-rmb3"))
 		barebox_set_hostname("rmb3");
 
-	imx8mq_bbu_internal_mmcboot_register_handler("eMMC", "/dev/mmc0",
-						     BBU_HANDLER_FLAG_DEFAULT);
-	imx8mq_bbu_internal_mmc_register_handler("SD", "/dev/mmc1", 0);
+	imx8m_bbu_internal_mmcboot_register_handler("eMMC", "/dev/mmc0",
+						    BBU_HANDLER_FLAG_DEFAULT);
+	imx8m_bbu_internal_mmc_register_handler("SD", "/dev/mmc1", 0);
 
 	if (bootsource_get_instance() == 0)
 		of_device_enable_path("/chosen/environment-emmc");

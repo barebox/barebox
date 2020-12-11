@@ -168,6 +168,9 @@ static int imx_chipidea_probe_dt(struct imx_chipidea *ci)
 				   "over-current-active-high", NULL))
 		ci->flags |= MXC_EHCI_OC_PIN_ACTIVE_LOW;
 
+	if (of_find_property(ci->dev->device_node, "power-active-high", NULL))
+		ci->flags |= MXC_EHCI_PWR_PIN_ACTIVE_HIGH;
+
 	if (of_usb_get_maximum_speed(ci->dev->device_node, NULL) ==
 			USB_SPEED_FULL)
 		ci->flags |= MXC_EHCI_PFSC;

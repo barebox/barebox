@@ -36,10 +36,8 @@ static int nxp_imx8mp_evk_init(void)
 		emmc_bbu_flag = BBU_HANDLER_FLAG_DEFAULT;
 	}
 
-	imx8mq_bbu_internal_mmc_register_handler("SD", "/dev/mmc1.barebox",
-						 emmc_sd_flag);
-	imx8mq_bbu_internal_mmc_register_handler("eMMC", "/dev/mmc2",
-						     emmc_bbu_flag);
+	imx8m_bbu_internal_mmc_register_handler("SD", "/dev/mmc1.barebox", emmc_sd_flag);
+	imx8m_bbu_internal_mmc_register_handler("eMMC", "/dev/mmc2", emmc_bbu_flag);
 
 	val = readl(MX8MP_IOMUXC_GPR_BASE_ADDR + MX8MP_IOMUXC_GPR1);
 	val |= MX8MP_IOMUXC_GPR1_ENET1_RGMII_EN;

@@ -593,9 +593,9 @@ int vf610_bbu_internal_mmc_register_handler(const char *name,
 	__alias(imx6_bbu_internal_mmc_register_handler);
 
 /*
- * Register an i.MX8MQ internal boot update handler for MMC/SD
+ * Register an i.MX8M* internal boot update handler for MMC/SD
  */
-int imx8mq_bbu_internal_mmc_register_handler(const char *name,
+int imx8m_bbu_internal_mmc_register_handler(const char *name,
 					     const char *devicefile,
 					     unsigned long flags)
 	__alias(imx6_bbu_internal_mmc_register_handler);
@@ -643,7 +643,7 @@ int imx7_bbu_internal_mmcboot_register_handler(const char *name,
 						unsigned long flags)
 	__alias(imx_bbu_internal_mmcboot_register_handler);
 
-int imx8mq_bbu_internal_mmcboot_register_handler(const char *name,
+int imx8m_bbu_internal_mmcboot_register_handler(const char *name,
 						 const char *devicefile,
 						 unsigned long flags)
 	__alias(imx_bbu_internal_mmcboot_register_handler);

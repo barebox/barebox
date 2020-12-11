@@ -482,9 +482,9 @@ static void init_ldb_clks(struct device_node *np, void __iomem *ccm_base)
 	of_assigned_ldb_sels(np, &sel[0][3], &sel[1][3]);
 
 	for (i = 0; i < 2; i++) {
-		/* Warn if a glitch might have been introduced already */
+		/* log if a glitch might have been introduced already */
 		if (sel[i][0] != LDB_DI_SEL_MMDC_CH1_AXI) {
-			pr_warn("ccm: ldb_di%d_sel already changed from reset value: %d\n",
+			pr_debug("ccm: ldb_di%d_sel already changed from reset value: %d\n",
 				i, sel[i][0]);
 		}
 

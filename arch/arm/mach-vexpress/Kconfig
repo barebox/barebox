@@ -4,17 +4,12 @@ config ARCH_TEXT_BASE
 	hex
 	default 0x0
 
-choice
-	prompt "ARM Board type"
-
 config MACH_VEXPRESS
 	bool "ARM Vexpress"
-	select RELOCATABLE
-	select HAVE_PBL_MULTI_IMAGES
-	select OFTREE
-	select OFDEVICE
-	select COMMON_CLK_OF_PROVIDER
 
-endchoice
+config MACH_VIRT
+	bool "QEMU virt"
+	select ARM_PSCI_CLIENT
+	select BOARD_ARM_GENERIC_DT
 
 endif

@@ -709,9 +709,4 @@ static struct amba_driver mmci_driver = {
 	.id_table	= mmci_ids,
 };
 
-static int mmci_init(void)
-{
-	amba_driver_register(&mmci_driver);
-	return 0;
-}
-device_initcall(mmci_init);
+device_amba_driver(mmci_driver);

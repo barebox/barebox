@@ -1315,7 +1315,9 @@ static int gpmc_nand_probe(struct device_d *pdev)
 			omap_gpmc_eccmode_set, NULL, (int *)&oinfo->ecc_mode,
 			ecc_mode_strings, ARRAY_SIZE(ecc_mode_strings), oinfo);
 
-	omap_gpmc_eccmode(oinfo, oinfo->ecc_mode);
+	err = omap_gpmc_eccmode(oinfo, oinfo->ecc_mode);
+	if (err)
+		goto out_release_mem;
 
 	/* We are all set to register with the system now! */
 	err = add_mtd_nand_device(minfo, "nand");

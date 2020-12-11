@@ -470,6 +470,9 @@ static int spi_nor_erase(struct mtd_info *mtd, struct erase_info *instr)
 	uint32_t rem;
 	int ret;
 
+	if (!IS_ENABLED(CONFIG_MTD_WRITE))
+		return -ENOSYS;
+
 	dev_dbg(nor->dev, "at 0x%llx, len %lld\n", (long long)instr->addr,
 			(long long)instr->len);
 
@@ -928,6 +931,9 @@ static int sst_write(struct mtd_info *mtd, loff_t to, size_t len,
 	size_t actual;
 	int ret;
 
+	if (!IS_ENABLED(CONFIG_MTD_WRITE))
+		return -ENOSYS;
+
 	dev_dbg(nor->dev, "to 0x%08x, len %zd\n", (u32)to, len);
 
 	ret = spi_nor_lock_and_prep(nor, SPI_NOR_OPS_WRITE);
@@ -999,6 +1005,9 @@ static int spi_nor_write(struct mtd_info *mtd, loff_t to, size_t len,
 	size_t page_offset, page_remain, i;
 	size_t retval;
 	int ret;
+
+	if (!IS_ENABLED(CONFIG_MTD_WRITE))
+		return -ENOSYS;
 
 	dev_dbg(nor->dev, "to 0x%08x, len %zd\n", (u32)to, len);
 

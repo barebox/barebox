@@ -1,30 +1,12 @@
-/*
- * (C) Copyright 2011 - Franck JULLIEN <elec4fun@gmail.com>
- *
- * This code was inspired from u-boot mmc_spi.c:
- * Copyright (C) 2010 Thomas Chou <thomas@wytron.com.tw>
- *
- * and linux mmc_spi.c:
- * (C) Copyright 2005, Intec Automation,
- *              Mike Lavender (mike@steroidmicros)
- * (C) Copyright 2006-2007, David Brownell
- * (C) Copyright 2007, Axis Communications,
- *              Hans-Peter Nilsson (hp@axis.com)
- * (C) Copyright 2007, ATRON electronic GmbH,
- *              Jan Nikitenko <jan.nikitenko@gmail.com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- *
- */
+// SPDX-License-Identifier: GPL-2.0-or-later
+// SPDX-FileCopyrightText: 2011 Franck JULLIEN <elec4fun@gmail.com>
+// SPDX-FileCopyrightText: 2010 Thomas Chou <thomas@wytron.com.tw>
+// SPDX-FileCopyrightText: 2005 Intec Automation (Mike Lavender <mike@steroidmicros>)
+// SPDX-FileCopyrightText: 2006-2007 David Brownell
+// SPDX-FileCopyrightText: 2007 Axis Communications (Hans-Peter Nilsson <hp@axis.com>)
+// SPDX-FileCopyrightText: 2007 ATRON electronic GmbH (Jan Nikitenko <jan.nikitenko@gmail.com>)
+
+/* This code was inspired from u-boot mmc_spi.c and linux mmc_spi.c. */
 
 #include <common.h>
 #include <init.h>

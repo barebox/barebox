@@ -1,18 +1,10 @@
-/*
- * Atmel MCI driver
- *
- * Copyright (C) 2011 Hubert Feurstein <h.feurstein@gmail.com>
- *
- * based on imx.c by:
- * Copyright (C) 2009 Ilya Yanok, <yanok@emcraft.com>
- * Copyright (C) 2008 Sascha Hauer, Pengutronix <s.hauer@pengutronix.de>
- * Copyright (C) 2006 Pavel Pisa, PiKRON <ppisa@pikron.com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- *
- */
+// SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: 2011 Hubert Feurstein <h.feurstein@gmail.com>
+// SPDX-FileCopyrightText: 2009 Ilya Yanok <yanok@emcraft.com>
+// SPDX-FileCopyrightText: 2008 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
+// SPDX-FileCopyrightText: 2006 Pavel Pisa <ppisa@pikron.com>, PiKRON
+
+/* Atmel MCI driver */
 
 #include <common.h>
 #include <init.h>

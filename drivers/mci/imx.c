@@ -1,19 +1,15 @@
+// SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: 2009 Ilya Yanok <yanok@emcraft.com>
+// SPDX-FileCopyrightText: 2008 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
+// SPDX-FileCopyrightText: 2006 Pavel Pisa <ppisa@pikron.com>, PiKRON
+
 /*
- *  This is a driver for the SDHC controller found in Freescale MX2/MX3
- *  SoCs. It is basically the same hardware as found on MX1 (imxmmc.c).
- *  Unlike the hardware found on MX1, this hardware just works and does
- *  not need all the quirks found in imxmmc.c, hence the separate driver.
+ * This is a driver for the SDHC controller found in Freescale MX2/MX3
+ * SoCs. It is basically the same hardware as found on MX1 (imxmmc.c).
+ * Unlike the hardware found on MX1, this hardware just works and does
+ * not need all the quirks found in imxmmc.c, hence the separate driver.
  *
- *  Copyright (C) 2009 Ilya Yanok, <yanok@emcraft.com>
- *  Copyright (C) 2008 Sascha Hauer, Pengutronix <s.hauer@pengutronix.de>
- *  Copyright (C) 2006 Pavel Pisa, PiKRON <ppisa@pikron.com>
- *
- *  derived from pxamci.c by Russell King
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- *
+ * Derived from pxamci.c by Russell King
  */
 
 #include <config.h>

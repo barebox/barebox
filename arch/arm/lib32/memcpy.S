@@ -1,13 +1,8 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+/* SPDX-FileCopyrightText: 2005 MontaVista Software, Inc (Nicolas Pitre)
+
 /*
- *  linux/arch/arm/lib/memcpy.S
- *
- *  Author:	Nicolas Pitre
- *  Created:	Sep 28, 2005
- *  Copyright:	MontaVista Software, Inc.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as
- *  published by the Free Software Foundation.
+ * linux/arch/arm/lib/memcpy.S
  */
 
 #include <linux/linkage.h>

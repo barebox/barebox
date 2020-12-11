@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * (C) Copyright 2008 - 2009
  * Windriver, <www.windriver.com>
@@ -14,8 +15,6 @@
  * Copyright 2020 Edmund Henniges <eh@emlix.com>
  * Copyright 2020 Daniel Glöckner <dg@emlix.com>
  * Split off of generic parts
- *
- * SPDX-License-Identifier:	GPL-2.0+
  */
 
 #define pr_fmt(fmt) "fastboot: " fmt

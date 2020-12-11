@@ -13,6 +13,7 @@
 #include <linux/list.h>
 #include <linux/stringify.h>
 #include <linux/stddef.h>
+#include <string.h>
 
 #ifndef	__ASSEMBLY__
 

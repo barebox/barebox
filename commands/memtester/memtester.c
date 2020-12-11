@@ -139,7 +139,7 @@ static int do_memtester(int argc, char **argv) {
 
     wantbytes = (size_t) strtoull_suffix(argv[optind], 0, 0);
     if (wantbytes < 2 * sizeof(ul)) {
-        printf("need at least %ldB of memory to test\n", 2 * sizeof(ul));
+        printf("need at least %zuB of memory to test\n", 2 * sizeof(ul));
         return COMMAND_ERROR_USAGE;
     }
     wantmb = (wantbytes >> 20);

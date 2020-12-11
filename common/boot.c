@@ -9,22 +9,19 @@
  * General Public License for more details.
  */
 
-#include <environment.h>
-#include <bootchooser.h>
+#include <boot.h>
 #include <globalvar.h>
 #include <magicvar.h>
 #include <watchdog.h>
 #include <command.h>
 #include <readkey.h>
 #include <common.h>
-#include <blspec.h>
 #include <libgen.h>
-#include <malloc.h>
 #include <bootm.h>
 #include <glob.h>
 #include <init.h>
 #include <menu.h>
-#include <fs.h>
+#include <unistd.h>
 
 #include <linux/stat.h>
 
@@ -119,6 +116,13 @@ void boot_set_watchdog_timeout(unsigned int timeout)
 	boot_watchdog_timeout = timeout;
 }
 
+static struct watchdog *boot_enabled_watchdog;
+
+struct watchdog *boot_get_enabled_watchdog(void)
+{
+	return boot_enabled_watchdog;
+}
+
 static char *global_boot_default;
 static char *global_user;
 
@@ -146,10 +150,13 @@ int boot_entry(struct bootentry *be, int verbose, int dryrun)
 	printf("Booting entry '%s'\n", be->title);
 
 	if (IS_ENABLED(CONFIG_WATCHDOG) && boot_watchdog_timeout) {
-		ret = watchdog_set_timeout(watchdog_get_default(),
-					   boot_watchdog_timeout);
-		if (ret)
+		boot_enabled_watchdog = watchdog_get_default();
+
+		ret = watchdog_set_timeout(boot_enabled_watchdog, boot_watchdog_timeout);
+		if (ret) {
 			pr_warn("Failed to enable watchdog: %s\n", strerror(-ret));
+			boot_enabled_watchdog = NULL;
+		}
 	}
 
 	ret = be->boot(be, verbose, dryrun);
@@ -354,11 +361,10 @@ void bootsources_list(struct bootentries *bootentries)
 {
 	struct bootentry *entry;
 
-	printf("%-20s\n", "title");
-	printf("%-20s\n", "------");
+	printf("title\n------\n");
 
 	bootentries_for_each_entry(bootentries, entry)
-		printf("%-20s %s\n", entry->title, entry->description);
+		printf("%s\n\t%s\n", entry->title, entry->description);
 }
 
 BAREBOX_MAGICVAR(global.boot.default, "default boot order");

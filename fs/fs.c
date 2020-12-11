@@ -3066,7 +3066,7 @@ static int automount_mount(struct dentry *dentry)
 		setenv("automount_path", am->path);
 		export("automount_path");
 		ret = run_command(am->cmd);
-		setenv("automount_path", NULL);
+		unsetenv("automount_path");
 
 		if (ret) {
 			printf("running automount command '%s' failed\n",

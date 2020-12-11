@@ -55,11 +55,8 @@ static int do_nv(int argc, char *argv[])
 
 	for (i = 0; i < argc; i++) {
 		int ret;
-		value = strchr(argv[0], '=');
-		if (value) {
-			*value = 0;
-			value++;
-		}
+
+		value = parse_assignment(argv[i]) ?: "";
 
 		if (do_remove) {
 			ret = nvvar_remove(argv[i]);

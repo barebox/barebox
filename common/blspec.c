@@ -649,7 +649,8 @@ int blspec_scan_directory(struct bootentries *bootentries, const char *root)
 				hwdevname = xstrdup(dev_name(entry->cdev->dev->parent));
 		}
 
-		entry->entry.title = xstrdup(blspec_entry_var_get(entry, "title"));
+		entry->entry.title = xasprintf("%s (%s)", blspec_entry_var_get(entry, "title"),
+					       configname);
 		entry->entry.description = basprintf("blspec entry, device: %s hwdevice: %s",
 						    devname ? devname : "none",
 						    hwdevname ? hwdevname : "none");

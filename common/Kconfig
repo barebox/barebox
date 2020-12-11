@@ -989,22 +989,33 @@ config RESET_SOURCE
 	  useful for any kind of system recovery or repair.
 
 config MACHINE_ID
-	bool "pass machine-id to kernel"
+	bool "compute unique machine-id"
 	depends on FLEXIBLE_BOOTARGS
 	depends on SHA1
 	help
-	  Sets the linux.bootargs.machine_id global variable with a value of
-	  systemd.machine_id=UID. The UID is a persistent device-specific
-	  id. It is a hash over device-specific information provided by various
-	  sources.
+	  Compute a persistent machine-specific id and store it to $global.machine_id.
+	  The id is a hash of device-specific information added via
+	  machine_id_set_hashable(). If multiple sources are available, the
+	  information provided by the last call prior to the late initcall
+	  set_machine_id() is used to generate the machine id from. Thus when
+	  updating barebox the machine id might change.
 
-	  Note: if multiple sources provide hashable device-specific information
-	  (via machine_id_set_hashable()) the information provided by the last call
-	  prior to the late initcall set_machine_id() is used to generate the
-	  machine id from. Thus when updating barebox the machine id might change.
+	  global.bootm.provide_machine_id may be used to automatically set
+	  the linux.bootargs.machine_id global variable with a value of
+	  systemd.machine_id=${global.machine_id}
 
 	  Note: if no hashable information is available no machine id will be passed
 	  to the kernel.
+
+config SYSTEMD_OF_WATCHDOG
+	bool "inform devicetree-enabled kernel of used watchdog"
+	depends on WATCHDOG && OFTREE && FLEXIBLE_BOOTARGS
+	help
+	  Sets the linux.bootargs.dyn.watchdog global variable with a value of
+	  systemd.watchdog-device=/dev/WDOG if barebox succeeded in enabling
+	  the watchdog WDOG prior to boot. WDOG is the alias of the watchdog
+	  in the kernel device tree. If the kernel is booted without a device
+	  tree or with one that lacks aliases, nothing is added.
 
 menu "OP-TEE loading"
 

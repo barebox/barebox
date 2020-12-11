@@ -86,7 +86,7 @@ static int source_env_network(struct eth_device *edev)
 	env_push_context();
 
 	for (i = 0; i < ARRAY_SIZE(vars); i++)
-		setenv(vars[i], "");
+		unsetenv(vars[i]);
 
 	cmd = basprintf("source /env/network/%s", edev->devname);
 	ret = run_command(cmd);

@@ -13,6 +13,8 @@ enum wdog_hw_runnning {
 	 WDOG_HW_NOT_RUNNING = PARAM_TRISTATE_FALSE
 };
 
+struct device_node;
+
 struct watchdog {
 	int (*set_timeout)(struct watchdog *, unsigned);
 	const char *name;
@@ -44,6 +46,7 @@ int watchdog_register(struct watchdog *);
 int watchdog_deregister(struct watchdog *);
 struct watchdog *watchdog_get_default(void);
 struct watchdog *watchdog_get_by_name(const char *name);
+int watchdog_get_alias_id_from(struct watchdog *, struct device_node *);
 int watchdog_set_timeout(struct watchdog*, unsigned);
 int watchdog_inhibit_all(void);
 #else
@@ -73,6 +76,11 @@ static inline int watchdog_set_timeout(struct watchdog*w, unsigned t)
 }
 
 static inline int watchdog_inhibit_all(void)
+{
+	return -ENOSYS;
+}
+
+static inline int watchdog_get_alias_id_from(struct watchdog *wd, struct device_node *np)
 {
 	return -ENOSYS;
 }

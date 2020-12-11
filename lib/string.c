@@ -899,3 +899,14 @@ int match_string(const char * const *array, size_t n, const char *string)
 	return -EINVAL;
 }
 EXPORT_SYMBOL(match_string);
+
+char *parse_assignment(char *str)
+{
+	char *value;
+
+	value = strchr(str, '=');
+	if (value)
+		*value++ = '\0';
+
+	return value;
+}

@@ -21,7 +21,7 @@ struct pci_device_id {
 #define SPI_NAME_SIZE 32
 
 struct spi_device_id {
-	char name[SPI_NAME_SIZE];
+	const char *name;
 	unsigned long driver_data;
 };
 

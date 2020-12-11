@@ -823,13 +823,11 @@ static void cb_oem_setenv(struct fastboot *fb, const char *cmd)
 
 	pr_debug("%s: \"%s\"\n", __func__, cmd);
 
-	value = strchr(var, '=');
+	value = parse_assignment(var);
 	if (!value) {
 		ret = -EINVAL;
 		goto out;
 	}
-
-	*value++ = 0;
 
 	ret = setenv(var, value);
 	if (ret)

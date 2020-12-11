@@ -798,16 +798,9 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 			 * This junk is all to decide whether or not to export this
 			 * variable. */
 			int export_me = 0;
-			char *name, *value;
 
-			name = xstrdup(child->argv[i]);
-			hush_debug("Local environment set: %s\n", name);
-			value = strchr(name, '=');
+			hush_debug("Local environment set: %s\n", child->argv[i]);
 
-			if (value)
-				*value = 0;
-
-			free(name);
 			p = insert_var_value(child->argv[i]);
 			rcode = set_local_var(p, export_me);
 			if (rcode)
@@ -1124,12 +1117,11 @@ static int set_local_var(const char *s, int flg_export)
 	/* Assume when we enter this function that we are already in
 	 * NAME=VALUE format.  So the first order of business is to
 	 * split 's' on the '=' into 'name' and 'value' */
-	value = strchr(name, '=');
+	value = parse_assignment(name);
 	if (!value) {
 		free(name);
 		return -1;
 	}
-	*value++ = 0;
 
 	remove_quotes_in_str(value);
 

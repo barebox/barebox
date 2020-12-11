@@ -251,14 +251,20 @@ static int dev_setenv(const char *name, const char *val)
 	return -ENODEV;
 }
 
+/**
+ * setenv - set environment variables
+ * @_name - Variable name
+ * @value - the value to set, empty string not handled specially
+ *
+ * Returns 0 for success and a negative error code otherwise
+ * Use unsetenv() to unset.
+ */
+
 int setenv(const char *_name, const char *value)
 {
 	char *name = strdup(_name);
 	int ret = 0;
 	struct list_head *list;
-
-	if (value && !*value)
-		value = NULL;
 
 	if (strchr(name, '.')) {
 		ret = dev_setenv(name, value);

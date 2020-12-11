@@ -261,6 +261,25 @@ struct watchdog *watchdog_get_default(void)
 }
 EXPORT_SYMBOL(watchdog_get_default);
 
+int watchdog_get_alias_id_from(struct watchdog *wd, struct device_node *root)
+{
+	struct device_node *dstnp, *srcnp = wd->hwdev ? wd->hwdev->device_node : NULL;
+	char *name;
+
+	if (!srcnp)
+		return -ENODEV;
+
+	name = of_get_reproducible_name(srcnp);
+	dstnp = of_find_node_by_reproducible_name(root, name);
+	free(name);
+
+	if (!dstnp)
+		return -ENODEV;
+
+	return of_alias_get_id_from(root, wd->hwdev->device_node, "watchdog");
+}
+EXPORT_SYMBOL(watchdog_get_alias_id_from);
+
 struct watchdog *watchdog_get_by_name(const char *name)
 {
 	struct watchdog *tmp;

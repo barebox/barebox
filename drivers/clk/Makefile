@@ -19,4 +19,5 @@ obj-$(CONFIG_ARCH_IMX)		+= imx/
 obj-$(CONFIG_COMMON_CLK_AT91)	+= at91/
 obj-$(CONFIG_ARCH_STM32MP)	+= clk-stm32mp1.o
 obj-$(CONFIG_MACH_VEXPRESS)	+= vexpress/
+obj-$(CONFIG_MACH_MIPS_LOONGSON)+= loongson/
 obj-$(CONFIG_ARCH_LAYERSCAPE)	+= clk-qoric.o

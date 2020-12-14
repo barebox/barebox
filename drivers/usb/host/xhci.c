@@ -443,7 +443,7 @@ static int xhci_configure_endpoints(struct usb_device *udev, bool ctx_change)
 	xhci_flush_cache((uintptr_t)in_ctx->bytes, in_ctx->size);
 	xhci_queue_command(ctrl, in_ctx->bytes, udev->slot_id, 0,
 			   ctx_change ? TRB_EVAL_CONTEXT : TRB_CONFIG_EP);
-	event = xhci_wait_for_event(ctrl, TRB_COMPLETION);
+	event = xhci_wait_for_event(ctrl, TRB_COMPLETION, XHCI_TIMEOUT_DEFAULT);
 	BUG_ON(TRB_TO_SLOT_ID(le32_to_cpu(event->event_cmd.flags))
 		!= udev->slot_id);
 
@@ -629,7 +629,7 @@ static int xhci_address_device(struct usb_device *udev, int root_portnr)
 	ctrl_ctx->drop_flags = 0;
 
 	xhci_queue_command(ctrl, (void *)ctrl_ctx, slot_id, 0, TRB_ADDR_DEV);
-	event = xhci_wait_for_event(ctrl, TRB_COMPLETION);
+	event = xhci_wait_for_event(ctrl, TRB_COMPLETION, XHCI_TIMEOUT_DEFAULT);
 	BUG_ON(TRB_TO_SLOT_ID(le32_to_cpu(event->event_cmd.flags)) != slot_id);
 
 	switch (GET_COMP_CODE(le32_to_cpu(event->event_cmd.status))) {
@@ -704,7 +704,7 @@ static int _xhci_alloc_device(struct usb_device *udev)
 	}
 
 	xhci_queue_command(ctrl, NULL, 0, 0, TRB_ENABLE_SLOT);
-	event = xhci_wait_for_event(ctrl, TRB_COMPLETION);
+	event = xhci_wait_for_event(ctrl, TRB_COMPLETION, XHCI_TIMEOUT_DEFAULT);
 	BUG_ON(GET_COMP_CODE(le32_to_cpu(event->event_cmd.status))
 		!= COMP_SUCCESS);
 
@@ -1097,7 +1097,7 @@ static int _xhci_submit_int_msg(struct usb_device *udev, unsigned long pipe,
 	 * (at most) one TD. A TD (comprised of sg list entries) can
 	 * take several service intervals to transmit.
 	 */
-	return xhci_bulk_tx(udev, pipe, length, buffer);
+	return xhci_bulk_tx(udev, pipe, length, buffer, 0);
 }
 
 /**
@@ -1115,7 +1115,7 @@ static int _xhci_submit_bulk_msg(struct usb_device *udev, unsigned long pipe,
 	if (usb_pipetype(pipe) != PIPE_BULK)
 		return -EINVAL;
 
-	return xhci_bulk_tx(udev, pipe, length, buffer);
+	return xhci_bulk_tx(udev, pipe, length, buffer, timeout_ms);
 }
 
 /**
@@ -1131,7 +1131,8 @@ static int _xhci_submit_bulk_msg(struct usb_device *udev, unsigned long pipe,
  */
 static int _xhci_submit_control_msg(struct usb_device *udev, unsigned long pipe,
 				    void *buffer, int length,
-				    struct devrequest *setup, int root_portnr)
+				    struct devrequest *setup, int root_portnr,
+				    unsigned int timeout_ms)
 {
 	struct xhci_ctrl *ctrl = xhci_get_ctrl(udev);
 	int ret = 0;
@@ -1155,7 +1156,7 @@ static int _xhci_submit_control_msg(struct usb_device *udev, unsigned long pipe,
 		}
 	}
 
-	return xhci_ctrl_tx(udev, pipe, setup, length, buffer);
+	return xhci_ctrl_tx(udev, pipe, setup, length, buffer, timeout_ms);
 }
 
 static int xhci_lowlevel_init(struct xhci_ctrl *ctrl)
@@ -1239,7 +1240,7 @@ static int xhci_submit_control_msg(struct usb_device *udev,
 	}
 
 	return _xhci_submit_control_msg(udev, pipe, buffer, length, setup,
-					root_portnr);
+					root_portnr, timeout_ms);
 }
 
 static int xhci_submit_bulk_msg(struct usb_device *udev,

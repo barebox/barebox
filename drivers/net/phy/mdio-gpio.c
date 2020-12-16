@@ -52,7 +52,7 @@ static struct mdio_gpio_info *mdio_gpio_of_get_info(struct device_d *dev)
 
 	ret = of_get_gpio_flags(dev->device_node, 0, &flags);
 	if (ret < 0) {
-		dev_dbg(dev, "failed to get MDC inforamtion from DT\n");
+		dev_dbg(dev, "failed to get MDC information from DT\n");
 		goto free_info;
 	}
 
@@ -61,7 +61,7 @@ static struct mdio_gpio_info *mdio_gpio_of_get_info(struct device_d *dev)
 
 	ret = of_get_gpio_flags(dev->device_node, 1, &flags);
 	if (ret < 0) {
-		dev_dbg(dev, "failed to get MDIO inforamtion from DT\n");
+		dev_dbg(dev, "failed to get MDIO information from DT\n");
 		goto free_info;
 	}
 

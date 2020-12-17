@@ -53,12 +53,12 @@ static int dwc2_probe(struct device_d *dev)
 	dwc2->phy = phy_optional_get(dev, "usb2-phy");
 	if (IS_ERR(dwc2->phy)) {
 		ret = PTR_ERR(dwc2->phy);
-		return ret;
+		goto release_region;
 	}
 
 	ret = phy_init(dwc2->phy);
 	if (ret)
-		goto err_phy_init;
+		goto release_region;
 	ret = phy_power_on(dwc2->phy);
 	if (ret)
 		goto err_phy_power;
@@ -100,7 +100,8 @@ error:
 	phy_power_off(dwc2->phy);
 err_phy_power:
 	phy_exit(dwc2->phy);
-err_phy_init:
+release_region:
+	release_region(iores);
 
 	return ret;
 }

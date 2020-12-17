@@ -20,6 +20,9 @@ static int dwc2_set_mode(void *ctx, enum usb_dr_mode mode)
 {
 	struct dwc2 *dwc2 = ctx;
 	int ret = -ENODEV;
+	int oldmode = dwc2->dr_mode;
+
+	dwc2->dr_mode = mode;
 
 	if (mode == USB_DR_MODE_HOST || mode == USB_DR_MODE_OTG) {
 		if (IS_ENABLED(CONFIG_USB_DWC2_HOST))
@@ -33,6 +36,9 @@ static int dwc2_set_mode(void *ctx, enum usb_dr_mode mode)
 		else
 			dwc2_err(dwc2, "Peripheral support not available\n");
 	}
+
+	if (ret)
+		dwc2->dr_mode = oldmode;
 
 	return ret;
 }

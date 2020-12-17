@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <driver.h>
 #include <linux/clk.h>
+#include <linux/reset.h>
 
 #include "dwc2.h"
 
@@ -60,6 +61,10 @@ static int dwc2_probe(struct device_d *dev)
 	ret = clk_enable(dwc2->clk);
 	if (ret)
 		goto clk_put;
+
+	ret = device_reset_us(dev, 2);
+	if (ret)
+		goto clk_disable;
 
 	dwc2->phy = phy_optional_get(dev, "usb2-phy");
 	if (IS_ERR(dwc2->phy)) {

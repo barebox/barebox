@@ -467,6 +467,7 @@ struct dwc2 {
 	struct dwc2_core_params params;
 
 	struct phy *phy; /* optional */
+	struct clk *clk;
 
 #ifdef CONFIG_USB_DWC2_HOST
 	struct usb_host host;

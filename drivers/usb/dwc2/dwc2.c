@@ -50,15 +50,26 @@ static int dwc2_probe(struct device_d *dev)
 	dwc2->regs = IOMEM(iores->start);
 	dwc2->dev = dev;
 
+	dwc2->clk = clk_get(dev, "otg");
+	if (IS_ERR(dwc2->clk)) {
+		ret = PTR_ERR(dwc2->clk);
+		dev_err(dev, "Failed to get USB clock %d\n", ret);
+		goto release_region;
+	}
+
+	ret = clk_enable(dwc2->clk);
+	if (ret)
+		goto clk_put;
+
 	dwc2->phy = phy_optional_get(dev, "usb2-phy");
 	if (IS_ERR(dwc2->phy)) {
 		ret = PTR_ERR(dwc2->phy);
-		goto release_region;
+		goto clk_disable;
 	}
 
 	ret = phy_init(dwc2->phy);
 	if (ret)
-		goto release_region;
+		goto clk_disable;
 	ret = phy_power_on(dwc2->phy);
 	if (ret)
 		goto err_phy_power;
@@ -100,6 +111,10 @@ error:
 	phy_power_off(dwc2->phy);
 err_phy_power:
 	phy_exit(dwc2->phy);
+clk_disable:
+	clk_disable(dwc2->clk);
+clk_put:
+	clk_put(dwc2->clk);
 release_region:
 	release_region(iores);
 

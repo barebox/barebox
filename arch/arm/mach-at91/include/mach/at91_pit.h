@@ -1,16 +1,12 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
+/* SPDX-FileCopyrightText: 2007 Andrew Victor */
+/* SPDX-FileCopyrightText: 2007 Atmel Corporation */
+
 /*
  * [origin: Linux kernel include/asm-arm/arch-at91/at91_pit.h]
  *
- * Copyright (C) 2007 Andrew Victor
- * Copyright (C) 2007 Atmel Corporation.
- *
  * Periodic Interval Timer (PIT) - System peripherals regsters.
  * Based on AT91SAM9261 datasheet revision D.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
  */
 
 #ifndef AT91_PIT_H

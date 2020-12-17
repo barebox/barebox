@@ -1,15 +1,11 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
+/* SPDX-FileCopyrightText: 2006 Andrew Victor */
+
 /*
  * [origin: Linux kernel include/asm-arm/arch-at91/at91sam9260.h]
  *
- * (C) 2006 Andrew Victor
- *
  * Common definitions.
  * Based on AT91SAM9260 datasheet revision A (Preliminary).
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
  */
 
 #ifndef AT91SAM9260_H

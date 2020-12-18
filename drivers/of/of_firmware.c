@@ -43,6 +43,9 @@ static int load_firmware(struct device_node *target,
 	else if (err)
 		return -EINVAL;
 
+	if (!target)
+		return -EINVAL;
+
 	mgr = of_node_get_mgr(target);
 	if (!mgr)
 		return -EINVAL;
@@ -69,11 +72,13 @@ int of_firmware_load_overlay(struct device_node *overlay, const char *path)
 	struct device_node *ovl;
 
 	root = of_get_root_node();
-	/*
-	 * If we cannot resolve the symbols in the overlay, ensure that the
-	 * overlay does depend on firmware to be loaded.
-	 */
 	resolved = of_resolve_phandles(root, overlay);
+	/*
+	 * If the overlay cannot be resolved, use the load_firmware callback
+	 * with the unresolved overlay to verify that the overlay does not
+	 * depend on a firmware to be loaded. If a required firmware cannot be
+	 * loaded, the overlay must not be applied.
+	 */
 	ovl = resolved ? resolved : overlay;
 
 	err = of_process_overlay(root, ovl,

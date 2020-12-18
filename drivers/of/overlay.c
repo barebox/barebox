@@ -215,12 +215,13 @@ int of_process_overlay(struct device_node *root,
 
 		target = find_target(root, fragment);
 		if (!target)
-			continue;
+			pr_debug("cannot find target for fragment",
+				 fragment->name);
 
 		err = process(target, ovl, data);
 		if (err) {
 			pr_warn("failed to process overlay for %s\n",
-				target->name);
+				target ? target->name : "unknown");
 			break;
 		}
 	}

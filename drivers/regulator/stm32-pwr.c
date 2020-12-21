@@ -86,8 +86,6 @@ static int stm32_pwr_reg_enable(struct regulator_dev *rdev)
 	int ret;
 	u32 val;
 
-	regulator_enable(priv->supply);
-
 	val = readl(priv->base + REG_PWR_CR3);
 	val |= rdev->desc->enable_mask;
 	writel(val, priv->base + REG_PWR_CR3);
@@ -119,8 +117,6 @@ static int stm32_pwr_reg_disable(struct regulator_dev *rdev)
 	if (ret)
 		dev_err(rdev->dev, "%s: regulator disable timed out!\n",
 			desc->name);
-
-	regulator_disable(priv->supply);
 
 	return ret;
 }
@@ -194,6 +190,8 @@ static int stm32_pwr_regulator_probe(struct device_d *dev)
 				desc->name, ret);
 			goto release_region;
 		}
+
+		regulator_enable(priv->supply);
 	}
 
 	return 0;

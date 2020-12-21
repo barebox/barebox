@@ -78,12 +78,13 @@ static int dwc2_probe(struct device_d *dev)
 		goto clk_disable;
 	}
 
-	ret = phy_init(dwc2->phy);
-	if (ret)
-		goto clk_disable;
 	ret = phy_power_on(dwc2->phy);
 	if (ret)
-		goto err_phy_power;
+		goto clk_disable;
+
+	ret = phy_init(dwc2->phy);
+	if (ret)
+		goto phy_power_off;
 
 	ret = dwc2_check_core_version(dwc2);
 	if (ret)
@@ -119,9 +120,9 @@ static int dwc2_probe(struct device_d *dev)
 
 	return 0;
 error:
-	phy_power_off(dwc2->phy);
-err_phy_power:
 	phy_exit(dwc2->phy);
+phy_power_off:
+	phy_power_off(dwc2->phy);
 clk_disable:
 	clk_disable(dwc2->clk);
 clk_put:
@@ -139,8 +140,8 @@ static void dwc2_remove(struct device_d *dev)
 	dwc2_host_uninit(dwc2);
 	dwc2_gadget_uninit(dwc2);
 
-	phy_power_off(dwc2->phy);
 	phy_exit(dwc2->phy);
+	phy_power_off(dwc2->phy);
 }
 
 static const struct of_device_id dwc2_platform_dt_ids[] = {

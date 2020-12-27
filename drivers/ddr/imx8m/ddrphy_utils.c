@@ -214,7 +214,7 @@ static struct imx_int_pll_rate_table *fracpll(u32 freq)
 	return NULL;
 }
 
-static int dram_pll_init(u32 freq)
+static int dram_frac_pll_init(u32 freq)
 {
 	volatile int i;
 	u32 tmp;
@@ -261,35 +261,124 @@ static int dram_pll_init(u32 freq)
 	return 0;
 }
 
-void ddrphy_init_set_dfi_clk(unsigned int drate)
+#define SSCG_PLL_LOCK			BIT(31)
+#define SSCG_PLL_DRAM_PLL_CLKE		BIT(9)
+#define SSCG_PLL_PD			BIT(7)
+#define SSCG_PLL_BYPASS1		BIT(5)
+#define SSCG_PLL_BYPASS2		BIT(4)
+
+#define SSCG_PLL_REF_DIVR2_MASK		(0x3f << 19)
+#define SSCG_PLL_REF_DIVR2_VAL(n)	(((n) << 19) & SSCG_PLL_REF_DIVR2_MASK)
+#define SSCG_PLL_FEEDBACK_DIV_F1_MASK	(0x3f << 13)
+#define SSCG_PLL_FEEDBACK_DIV_F1_VAL(n)	(((n) << 13) & SSCG_PLL_FEEDBACK_DIV_F1_MASK)
+#define SSCG_PLL_FEEDBACK_DIV_F2_MASK	(0x3f << 7)
+#define SSCG_PLL_FEEDBACK_DIV_F2_VAL(n)	(((n) << 7) & SSCG_PLL_FEEDBACK_DIV_F2_MASK)
+#define SSCG_PLL_OUTPUT_DIV_VAL_MASK	(0x3f << 1)
+#define SSCG_PLL_OUTPUT_DIV_VAL(n)	(((n) << 1) & SSCG_PLL_OUTPUT_DIV_VAL_MASK)
+
+static int dram_sscg_pll_init(u32 freq)
+{
+	u32 val;
+	void __iomem *pll_base = IOMEM(MX8M_ANATOP_BASE_ADDR) + 0x60;
+
+	/* Bypass */
+	setbits_le32(pll_base, SSCG_PLL_BYPASS1 | SSCG_PLL_BYPASS2);
+
+	val = readl(pll_base + 0x8);
+	val &= ~(SSCG_PLL_OUTPUT_DIV_VAL_MASK |
+		 SSCG_PLL_FEEDBACK_DIV_F2_MASK |
+		 SSCG_PLL_FEEDBACK_DIV_F1_MASK |
+		 SSCG_PLL_REF_DIVR2_MASK);
+
+	switch (freq) {
+	case MHZ(800):
+		val |= SSCG_PLL_OUTPUT_DIV_VAL(0);
+		val |= SSCG_PLL_FEEDBACK_DIV_F2_VAL(11);
+		val |= SSCG_PLL_FEEDBACK_DIV_F1_VAL(39);
+		val |= SSCG_PLL_REF_DIVR2_VAL(29);
+		break;
+	case MHZ(600):
+		val |= SSCG_PLL_OUTPUT_DIV_VAL(1);
+		val |= SSCG_PLL_FEEDBACK_DIV_F2_VAL(17);
+		val |= SSCG_PLL_FEEDBACK_DIV_F1_VAL(39);
+		val |= SSCG_PLL_REF_DIVR2_VAL(29);
+		break;
+	case MHZ(400):
+		val |= SSCG_PLL_OUTPUT_DIV_VAL(1);
+		val |= SSCG_PLL_FEEDBACK_DIV_F2_VAL(11);
+		val |= SSCG_PLL_FEEDBACK_DIV_F1_VAL(39);
+		val |= SSCG_PLL_REF_DIVR2_VAL(29);
+		break;
+	case MHZ(167):
+		val |= SSCG_PLL_OUTPUT_DIV_VAL(3);
+		val |= SSCG_PLL_FEEDBACK_DIV_F2_VAL(8);
+		val |= SSCG_PLL_FEEDBACK_DIV_F1_VAL(45);
+		val |= SSCG_PLL_REF_DIVR2_VAL(30);
+		break;
+	default:
+		break;
+	}
+
+	writel(val, pll_base + 0x8);
+
+	/* Clear power down bit */
+	clrbits_le32(pll_base, SSCG_PLL_PD);
+	/* Enable PLL  */
+	setbits_le32(pll_base, SSCG_PLL_DRAM_PLL_CLKE);
+
+	/* Clear bypass */
+	clrbits_le32(pll_base, SSCG_PLL_BYPASS1);
+	udelay(100);
+	clrbits_le32(pll_base, SSCG_PLL_BYPASS2);
+	/* Wait lock */
+	while (!(readl(pll_base) & SSCG_PLL_LOCK))
+		;
+
+	return 0;
+}
+
+static int dram_pll_init(u32 freq, enum ddrc_type type)
+{
+	switch (type) {
+	case DDRC_TYPE_MQ:
+		return dram_sscg_pll_init(freq);
+	case DDRC_TYPE_MM:
+	case DDRC_TYPE_MP:
+		return dram_frac_pll_init(freq);
+	default:
+		return -ENODEV;
+	}
+}
+
+void ddrphy_init_set_dfi_clk(unsigned int drate, enum ddrc_type type)
 {
 	switch (drate) {
 	case 4000:
-		dram_pll_init(MHZ(1000));
+		dram_pll_init(MHZ(1000), type);
 		dram_disable_bypass();
 		break;
 	case 3200:
-		dram_pll_init(MHZ(800));
+		dram_pll_init(MHZ(800), type);
 		dram_disable_bypass();
 		break;
 	case 3000:
-		dram_pll_init(MHZ(750));
+		dram_pll_init(MHZ(750), type);
 		dram_disable_bypass();
 		break;
 	case 2400:
-		dram_pll_init(MHZ(600));
+		dram_pll_init(MHZ(600), type);
 		dram_disable_bypass();
 		break;
 	case 1600:
-		dram_pll_init(MHZ(400));
+		dram_pll_init(MHZ(400), type);
 		dram_disable_bypass();
 		break;
 	case 1066:
-		dram_pll_init(MHZ(266));
+		dram_pll_init(MHZ(266),type);
 		dram_disable_bypass();
 		break;
 	case 667:
-		dram_pll_init(MHZ(167));
+		dram_pll_init(MHZ(167), type);
 		dram_disable_bypass();
 		break;
 	case 400:

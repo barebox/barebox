@@ -372,14 +372,14 @@ enum ddrc_type {
 int imx8mm_ddr_init(struct dram_timing_info *timing_info);
 int imx8mq_ddr_init(struct dram_timing_info *timing_info);
 int imx8mp_ddr_init(struct dram_timing_info *timing_info);
-int ddr_cfg_phy(struct dram_timing_info *timing_info);
+int ddr_cfg_phy(struct dram_timing_info *timing_info, enum ddrc_type type);
 void load_lpddr4_phy_pie(void);
 void ddrphy_trained_csr_save(struct dram_cfg_param *param, unsigned int num);
 void dram_config_save(struct dram_timing_info *info, unsigned long base);
 
 /* utils function for ddr phy training */
 int wait_ddrphy_training_complete(void);
-void ddrphy_init_set_dfi_clk(unsigned int drate);
+void ddrphy_init_set_dfi_clk(unsigned int drate, enum ddrc_type type);
 void ddrphy_init_read_msg_block(enum fw_type type);
 
 void update_umctl2_rank_space_setting(unsigned int pstat_num,

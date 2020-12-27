@@ -5,6 +5,8 @@
 
 #include <common.h>
 #include <soc/imx8m/ddr.h>
+
+#define DDR_ONE_RANK
 #include <soc/imx8m/lpddr4_define.h>
 
 static struct dram_cfg_param lpddr4_ddrc_cfg[] = {

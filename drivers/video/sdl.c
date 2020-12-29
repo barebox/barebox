@@ -59,15 +59,6 @@ static int sdlfb_probe(struct device_d *dev)
 	fb->screen_base = xzalloc(fb->xres * fb->yres *
 				  fb->bits_per_pixel >> 3);
 
-	dev_dbg(dev, "red: length = %d, offset = %d\n",
-		fb->red.length, fb->red.offset);
-	dev_dbg(dev, "green: length = %d, offset = %d\n",
-		fb->green.length, fb->green.offset);
-	dev_dbg(dev, "blue: length = %d, offset = %d\n",
-		fb->blue.length, fb->blue.offset);
-	dev_dbg(dev, "transp: length = %d, offset = %d\n",
-		fb->transp.length, fb->transp.offset);
-
 	/* add runtime hardware info */
 	dev->priv = fb;
 

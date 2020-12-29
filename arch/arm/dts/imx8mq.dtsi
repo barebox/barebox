@@ -17,7 +17,9 @@
 			  <&clk IMX8MQ_CLK_USDHC2>,
 			  <&clk IMX8MQ_CLK_ENET_AXI>,
 			  <&clk IMX8MQ_CLK_ENET_TIMER>,
-			  <&clk IMX8MQ_CLK_ENET_REF>;
+			  <&clk IMX8MQ_CLK_ENET_REF>,
+			  <&clk IMX8MQ_ARM_PLL>,
+			  <&clk IMX8MQ_CLK_A53_DIV>;
 
 	assigned-clock-parents =  <&clk IMX8MQ_SYS1_PLL_400M>,
 				  <&clk IMX8MQ_SYS1_PLL_400M>,
@@ -29,5 +31,7 @@
 			       <200000000>,
 			       <266000000>,
 			       <25000000>,
-			       <125000000>;
+			       <125000000>,
+			       <800000000>,
+			       <800000000>;
 };

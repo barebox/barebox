@@ -215,6 +215,11 @@ void __iomem *dev_request_mem_region(struct device_d *dev, int num);
 struct resource *dev_request_mem_resource(struct device_d *dev, int num);
 
 /*
+ * exlusively request resource 'name' for a device
+ */
+struct resource *dev_request_mem_resource_by_name(struct device_d *dev, const char *name);
+
+/*
  * exlusively request register base 'num' for a device
  * will return NULL on error
  * only used on platform like at91 where the Ressource address collision with

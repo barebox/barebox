@@ -223,19 +223,19 @@ static int edid_checksum(unsigned char *edid)
 	return err;
 }
 
-static int edid_check_header(unsigned char *edid)
+bool edid_check_header(unsigned char *edid)
 {
-	int i, err = 1, fix = check_edid(edid);
+	int i, fix = check_edid(edid);
 
 	if (fix)
 		fix_edid(edid, fix);
 
 	for (i = 0; i < 8; i++) {
 		if (edid[i] != edid_v1_header[i])
-			err = 0;
+			return false;
 	}
 
-	return err;
+	return true;
 }
 
 /*

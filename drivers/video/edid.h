@@ -135,4 +135,14 @@
 #define DPMS_SUSPEND		(1 << 6)
 #define DPMS_STANDBY		(1 << 7)
 
+/**
+ * edid_check_header - sanity check the header of the base EDID block
+ * @raw_edid: pointer to raw base EDID block
+ *
+ * Sanity check the header of the base EDID block.
+ *
+ * Return: true if the header is perfect, false if any byte is wrong.
+ */
+bool edid_check_header(unsigned char *edid);
+
 #endif /* __EDID_H__ */

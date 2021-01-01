@@ -98,6 +98,8 @@ config DRIVER_VIDEO_BCM283X
 
 source "drivers/video/imx-ipu-v3/Kconfig"
 
+source "drivers/video/bochs/Kconfig"
+
 config DRIVER_VIDEO_SIMPLEFB
 	bool "Simple framebuffer support"
 	depends on OFTREE

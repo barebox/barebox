@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+config DRIVER_VIDEO_BOCHS
+	select DRIVER_VIDEO_EDID
+	bool
+
+config DRIVER_VIDEO_BOCHS_PCI
+	bool "bochs dispi / QEMU standard VGA PCI driver"
+	select DRIVER_VIDEO_BOCHS
+	depends on PCI
+	help
+	  Say yes here if you have a PCI VGA display controller that
+	  implements the bochs dispi VBE extension. This is a very simple
+	  interface to drive the graphical output of virtual machines
+	  like bochs, VirtualBox and Qemu (-device VGA).
+
+config DRIVER_VIDEO_BOCHS_ISA
+	bool "bochs dispi / QEMU standard VGA ISA driver"
+	select DRIVER_VIDEO_BOCHS
+	help
+	  Say yes here if you have a ISA (I/O ports) VGA display controller that
+	  implements the bochs dispi VBE extension. This is a very simple
+	  interface to drive the graphical output of virtual machines
+	  like bochs, VirtualBox and Qemu (-device isa-vga).

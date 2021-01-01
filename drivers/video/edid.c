@@ -858,6 +858,9 @@ void *edid_read_i2c(struct i2c_adapter *adapter)
 {
 	u8 *block;
 
+	if (!IS_ENABLED(CONFIG_I2C))
+		return NULL;
+
 	block = xmalloc(EDID_LENGTH);
 
 	if (edid_do_read_i2c(adapter, block, 0, EDID_LENGTH))

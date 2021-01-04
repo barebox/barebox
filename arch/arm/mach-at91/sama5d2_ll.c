@@ -18,7 +18,7 @@
 #define sama5d2_pmc_write(off, val) writel(val, SAMA5D2_BASE_PMC + off)
 #define sama5d2_pmc_read(off) readl(SAMA5D2_BASE_PMC + off)
 
-void sama5d2_ddr2_init(struct at91_ddramc_register *ddramc_reg_config)
+void sama5d2_ddr2_init(const struct at91_ddramc_register *ddramc_reg_config)
 {
 	unsigned int reg;
 

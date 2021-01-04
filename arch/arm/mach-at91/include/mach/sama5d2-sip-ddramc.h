@@ -11,7 +11,7 @@
 
 static inline void sama5d2_d1g_ddrconf(void) /* DDR2 1Gbit SDRAM */
 {
-	struct at91_ddramc_register conf = {
+	const struct at91_ddramc_register conf = {
 		.mdr = AT91_DDRC2_DBW_16_BITS | AT91_DDRC2_MD_DDR2_SDRAM,
 
 		.cr = AT91_DDRC2_NC_DDR10_SDR9 | AT91_DDRC2_NR_13 |

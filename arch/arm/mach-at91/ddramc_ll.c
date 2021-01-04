@@ -12,7 +12,7 @@
 
 void at91_ddram_initialize(void __iomem *base_address,
 			   void __iomem *ram_address,
-			   struct at91_ddramc_register *ddramc_config)
+			   const struct at91_ddramc_register *ddramc_config)
 {
 	unsigned long ba_offset;
 	unsigned long cr = 0;
@@ -235,7 +235,7 @@ void at91_ddram_initialize(void __iomem *base_address,
 
 void at91_lpddr2_sdram_initialize(void __iomem *base_address,
 				  void __iomem *ram_address,
-				  struct at91_ddramc_register *ddramc_config)
+				  const struct at91_ddramc_register *ddramc_config)
 {
 	unsigned long reg;
 
@@ -386,7 +386,7 @@ void at91_lpddr2_sdram_initialize(void __iomem *base_address,
 
 void at91_lpddr1_sdram_initialize(void __iomem *base_address,
 				  void __iomem *ram_address,
-				  struct at91_ddramc_register *ddramc_config)
+				  const struct at91_ddramc_register *ddramc_config)
 {
 	unsigned long ba_offset;
 

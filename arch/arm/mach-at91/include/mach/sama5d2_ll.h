@@ -25,7 +25,7 @@ static inline void sama5d2_udelay_init(unsigned int msc)
 }
 
 
-void sama5d2_ddr2_init(struct at91_ddramc_register *ddramc_reg_config);
+void sama5d2_ddr2_init(const struct at91_ddramc_register *ddramc_reg_config);
 
 static inline int sama5d2_pmc_enable_generic_clock(unsigned int periph_id,
 						   unsigned int clk_source,

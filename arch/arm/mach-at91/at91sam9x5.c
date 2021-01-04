@@ -11,10 +11,17 @@ static void at91sam9x5_restart(struct restart_handler *rst)
 			  IOMEM(AT91SAM9X5_BASE_RSTC + AT91_RSTC_CR));
 }
 
+static struct restart_handler restart;
+
 static int at91sam9x5_initialize(void)
 {
-	restart_handler_register_fn("soc", at91sam9x5_restart);
+	if (IS_ENABLED(CONFIG_OFDEVICE) && !of_machine_is_compatible("atmel,at91sam9x5"))
+		return 0;
 
-	return 0;
+	restart.name = "soc";
+	restart.priority = 110;
+	restart.restart = at91sam9x5_restart;
+
+	return restart_handler_register(&restart);
 }
 coredevice_initcall(at91sam9x5_initialize);

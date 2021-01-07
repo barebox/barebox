@@ -37,6 +37,8 @@
 #include <stmp-device.h>
 #include <mach/generic.h>
 
+#include "internals.h"
+
 #define	MX28_BLOCK_SFTRST				(1 << 31)
 #define	MX28_BLOCK_CLKGATE				(1 << 30)
 

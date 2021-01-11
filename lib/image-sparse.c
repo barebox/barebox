@@ -62,7 +62,8 @@ struct sparse_image_ctx {
 
 static int sparse_seek(struct sparse_image_ctx *si)
 {
-	unsigned int chunk_data_sz, payload;
+	uint64_t chunk_data_sz;
+	unsigned int payload;
 	loff_t offs;
 	int ret;
 
@@ -94,7 +95,7 @@ again:
 			return -errno;
 	}
 
-	chunk_data_sz = si->sparse.blk_sz * si->chunk.chunk_sz;
+	chunk_data_sz = (uint64_t) si->sparse.blk_sz * si->chunk.chunk_sz;
 	payload = si->chunk.total_sz - si->sparse.chunk_hdr_sz;
 
 	si->processed_chunks++;

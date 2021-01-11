@@ -190,7 +190,7 @@ out:
 }
 
 int sparse_image_read(struct sparse_image_ctx *si, void *buf, loff_t *pos,
-		      size_t len, int *retlen)
+		      size_t len, size_t *retlen)
 {
 	size_t now;
 	int ret, i;

@@ -60,7 +60,7 @@ struct sparse_image_ctx;
 
 struct sparse_image_ctx *sparse_image_open(const char *path);
 int sparse_image_read(struct sparse_image_ctx *si, void *buf,
-		      loff_t *pos, size_t len, int *retlen);
+		      loff_t *pos, size_t len, size_t *retlen);
 void sparse_image_close(struct sparse_image_ctx *si);
 loff_t sparse_image_size(struct sparse_image_ctx *si);
 

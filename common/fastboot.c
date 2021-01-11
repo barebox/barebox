@@ -565,7 +565,7 @@ static int fastboot_handle_sparse(struct fastboot *fb,
 	}
 
 	while (1) {
-		int retlen;
+		size_t retlen;
 		loff_t pos;
 
 		ret = sparse_image_read(sparse, buf, &pos, bufsiz, &retlen);

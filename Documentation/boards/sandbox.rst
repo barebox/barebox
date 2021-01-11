@@ -34,6 +34,20 @@ Available sandbox invocation options include:
     Map a <file> to barebox. This option can be given multiple times. The <file>s
     will show up as ``/dev/fd0`` ... ``/dev/fdX`` in the barebox simulator.
 
+    How the file is mapped in barebox can be controlled by a number of flags:
+
+    * ``,ro``: The host file is mapped read-only
+
+    * ``,blkdev``: The host file is to be mapped as block device. This is the
+      default when passing block devices from the host. The file's size must
+      be a multiple of the barebox sector size of 512 bytes.
+
+    * ``,cdev``: The host file is mapped as character device. This is the default,
+      unless the the host file is a block device.
+
+    Multiple options can be appended if they don't clash. Literal commas within the
+    file path can be escaped with a backslash. Example: ``-i './0\,0.hdimg,blkdev,ro'``.
+
   ``-e <file>``
 
     Map <file> to barebox. With this option <file>s are mapped as

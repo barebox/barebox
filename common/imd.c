@@ -406,7 +406,7 @@ int imd_verify_crc32(void *buf, size_t size)
 			       *p, crc);
 			return -EILSEQ;
 		} else if (*p != crc && !imd_crc32_is_valid(*flags)) {
-			printf("CRC: is invalid, but the checksum tag is not enabled\n");
+			debug("CRC: is invalid, but the checksum tag is not enabled\n");
 			return -EINVAL;
 		} else {
 			printf("CRC: valid\n");

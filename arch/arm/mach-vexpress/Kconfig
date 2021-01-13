@@ -11,5 +11,6 @@ config MACH_VIRT
 	bool "QEMU virt"
 	select ARM_PSCI_CLIENT
 	select BOARD_ARM_GENERIC_DT
+	select OF_OVERLAY
 
 endif

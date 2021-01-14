@@ -5622,10 +5622,6 @@ int nand_scan_tail(struct nand_chip *chip)
 		if (!ecc->write_subpage && ecc->hwctl && ecc->calculate)
 			ecc->write_subpage = nand_write_subpage_hwecc;
 	case NAND_ECC_HW_SYNDROME:
-		if (!IS_ENABLED(CONFIG_NAND_ECC_HW_SYNDROME)) {
-			ret = -ENOSYS;
-			goto err_nand_manuf_cleanup;
-		}
 		if ((!ecc->calculate || !ecc->correct || !ecc->hwctl) &&
 		    (!ecc->read_page ||
 		     ecc->read_page == nand_read_page_hwecc ||
@@ -5635,19 +5631,24 @@ int nand_scan_tail(struct nand_chip *chip)
 			ret = -EINVAL;
 			goto err_nand_manuf_cleanup;
 		}
-		/* Use standard syndrome read/write page function? */
-		if (!ecc->read_page)
-			ecc->read_page = nand_read_page_syndrome;
-		if (!ecc->write_page)
-			ecc->write_page = nand_write_page_syndrome;
-		if (!ecc->read_page_raw)
-			ecc->read_page_raw = nand_read_page_raw_syndrome;
-		if (!ecc->write_page_raw)
-			ecc->write_page_raw = nand_write_page_raw_syndrome;
-		if (!ecc->read_oob)
-			ecc->read_oob = nand_read_oob_syndrome;
-		if (!ecc->write_oob)
-			ecc->write_oob = nand_write_oob_syndrome;
+		if (IS_ENABLED(CONFIG_NAND_ECC_HW_SYNDROME)) {
+			/* Use standard syndrome read/write page function? */
+			if (!ecc->read_page)
+				ecc->read_page = nand_read_page_syndrome;
+			if (!ecc->write_page)
+				ecc->write_page = nand_write_page_syndrome;
+			if (!ecc->read_page_raw)
+				ecc->read_page_raw = nand_read_page_raw_syndrome;
+			if (!ecc->write_page_raw)
+				ecc->write_page_raw = nand_write_page_raw_syndrome;
+			if (!ecc->read_oob)
+				ecc->read_oob = nand_read_oob_syndrome;
+			if (!ecc->write_oob)
+				ecc->write_oob = nand_write_oob_syndrome;
+		} else if (ecc->mode == NAND_ECC_HW_SYNDROME) {
+			ret = -ENOSYS;
+			goto err_nand_manuf_cleanup;
+		}
 
 		if (mtd->writesize >= ecc->size) {
 			if (!ecc->strength) {

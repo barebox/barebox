@@ -307,6 +307,7 @@ static int run_init(void)
 	struct stat s;
 
 	setenv("PATH", "/env/bin");
+	export("PATH");
 
 	/* Run legacy /env/bin/init if it exists */
 	env_bin_init_exists = stat(INITFILE, &s) == 0;

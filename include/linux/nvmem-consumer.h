@@ -84,6 +84,20 @@ static inline struct nvmem_device *nvmem_device_get(struct device_d *dev,
 static inline void nvmem_device_put(struct nvmem_device *nvmem)
 {
 }
+
+static inline ssize_t nvmem_device_cell_read(struct nvmem_device *nvmem,
+					 struct nvmem_cell_info *info,
+					 void *buf)
+{
+	return -EOPNOTSUPP;
+}
+
+static inline int nvmem_device_cell_write(struct nvmem_device *nvmem,
+					  struct nvmem_cell_info *info,
+					  void *buf)
+{
+	return -EOPNOTSUPP;
+}
 #endif /* CONFIG_NVMEM */
 
 #if IS_ENABLED(CONFIG_NVMEM) && IS_ENABLED(CONFIG_OFTREE)

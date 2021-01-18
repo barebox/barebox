@@ -129,6 +129,16 @@
 	status = "okay";
 };
 
+&gpio2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_gpio2_hog>;
+};
+
+&gpio6 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_gpio6_hog>;
+};
+
 &i2c_pfuze {
 	pfuze100@08 {
 		compatible = "fsl,pfuze100";
@@ -352,18 +362,6 @@
 };
 
 &iomuxc {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_boot>;
-
-	pinctrl_boot: boot {
-		fsl,pins = <
-			/* GPIOS for version and id detection */
-			MX6QDL_PAD_NANDF_CLE__GPIO6_IO07	0x80000000
-			MX6QDL_PAD_NANDF_WP_B__GPIO6_IO09	0x80000000
-			MX6QDL_PAD_NANDF_D2__GPIO2_IO02		0x80000000
-		>;
-	};
-
 	pinctrl_flexcan1: flexcan1-smarc {
 		fsl,pins = <
 			MX6QDL_PAD_GPIO_7__FLEXCAN1_TX 0x80000000
@@ -375,6 +373,21 @@
 		fsl,pins = <
 			MX6QDL_PAD_KEY_COL4__FLEXCAN2_TX 0x80000000
 			MX6QDL_PAD_KEY_ROW4__FLEXCAN2_RX 0x80000000
+		>;
+	};
+
+	pinctrl_gpio2_hog: gpio2-hog {
+		fsl,pins = <
+			/* GPIO for version detection */
+			MX6QDL_PAD_NANDF_D2__GPIO2_IO02		0xb0b0
+		>;
+	};
+
+	pinctrl_gpio6_hog: gpio6-hog {
+		fsl,pins = <
+			/* GPIOs for ddr3 size detection */
+			MX6QDL_PAD_NANDF_CLE__GPIO6_IO07	0xb0b0
+			MX6QDL_PAD_NANDF_WP_B__GPIO6_IO09	0xb0b0
 		>;
 	};
 

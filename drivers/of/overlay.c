@@ -109,7 +109,7 @@ static char *of_overlay_fix_path(struct device_node *root,
 }
 
 static void of_overlay_apply_symbols(struct device_node *root,
-				    struct device_node *overlay)
+				     struct device_node *overlay)
 {
 	const char *old_path;
 	char *new_path;
@@ -120,8 +120,13 @@ static void of_overlay_apply_symbols(struct device_node *root,
 	root_symbols = of_get_child_by_name(root, "__symbols__");
 	overlay_symbols = of_get_child_by_name(overlay, "__symbols__");
 
-	if (!overlay_symbols || !root_symbols) {
-		pr_info("overlay/root doesn't have a __symbols__ node\n");
+	if (!overlay_symbols) {
+		pr_debug("overlay doesn't have a __symbols__ node\n");
+		return;
+	}
+
+	if (!root_symbols) {
+		pr_info("root doesn't have a __symbols__ node\n");
 		return;
 	}
 

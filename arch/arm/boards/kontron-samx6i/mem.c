@@ -49,26 +49,22 @@ resource_size_t samx6i_get_size(void)
 	id0 = imx6_gpio_val(gpio6, 7);
 	id1 = imx6_gpio_val(gpio6, 9);
 
-	if (cpu_type == IMX6_CPUTYPE_IMX6D ||
-			cpu_type == IMX6_CPUTYPE_IMX6Q) {
-		if (id0 && id1)
-			size = SZ_2G;
-		else if (id0)
-			size = SZ_2G;
-		else if (id1)
-			size = SZ_1G;
+	/* Solo/DualLite module sizes */
+	if (id0 && id1)
+		size = SZ_2G;
+	else if (id0)
+		size = SZ_1G;
+	else if (id1)
+		size = SZ_512M;
+	else
+		size = SZ_256M;
+
+	/* Dual/Quad modules always have twice the size */
+	if (cpu_type == IMX6_CPUTYPE_IMX6D || cpu_type == IMX6_CPUTYPE_IMX6Q) {
+		if (size == SZ_2G)
+			size = 0xf0000000; /* 4G on a 32bit system */
 		else
-			size = SZ_512M;
-	} else if (cpu_type == IMX6_CPUTYPE_IMX6S ||
-			cpu_type == IMX6_CPUTYPE_IMX6DL) {
-		if (id0 && id1)
-			size = SZ_2G;
-		else if (id0)
-			size = SZ_1G;
-		else if (id1)
-			size = SZ_512M;
-		else
-			size = SZ_256M;
+			size *= 2;
 	}
 
 	return size;

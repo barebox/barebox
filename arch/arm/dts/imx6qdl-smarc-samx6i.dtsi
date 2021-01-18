@@ -42,18 +42,18 @@
 	#size-cells = <1>;
 
 	partition@0 {
+		reg = <0x0 0x0c0000>;
 		label = "bootloader";
-		reg = <0x000000 0x0c0000>;
 	};
 
 	flash_bareboxenv: partition@c0000 {
-		label = "environment";
 		reg = <0x0c0000 0x010000>;
+		label = "environment";
 	};
 
 	partition@d0000 {
-		label = "user";
 		reg = <0x0d0000 0x130000>;
+		label = "user";
 	};
 };
 

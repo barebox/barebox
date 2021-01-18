@@ -50,7 +50,7 @@ int nvmem_device_cell_write(struct nvmem_device *nvmem,
 static inline struct nvmem_cell *nvmem_cell_get(struct device_d *dev,
 						const char *name)
 {
-	return ERR_PTR(-ENOSYS);
+	return ERR_PTR(-EOPNOTSUPP);
 }
 
 static inline void nvmem_cell_put(struct nvmem_cell *cell)
@@ -59,26 +59,26 @@ static inline void nvmem_cell_put(struct nvmem_cell *cell)
 
 static inline char *nvmem_cell_read(struct nvmem_cell *cell, size_t *len)
 {
-	return ERR_PTR(-ENOSYS);
+	return ERR_PTR(-EOPNOTSUPP);
 }
 
 static inline void *nvmem_cell_get_and_read(struct device_node *np,
 					    const char *cell_name,
 					    size_t bytes)
 {
-	return ERR_PTR(-ENOSYS);
+	return ERR_PTR(-EOPNOTSUPP);
 }
 
 static inline int nvmem_cell_write(struct nvmem_cell *cell,
 				    const char *buf, size_t len)
 {
-	return -ENOSYS;
+	return -EOPNOTSUPP;
 }
 
 static inline struct nvmem_device *nvmem_device_get(struct device_d *dev,
 						    const char *name)
 {
-	return ERR_PTR(-ENOSYS);
+	return ERR_PTR(-EOPNOTSUPP);
 }
 
 static inline void nvmem_device_put(struct nvmem_device *nvmem)

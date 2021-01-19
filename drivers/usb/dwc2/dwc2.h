@@ -2,17 +2,14 @@
 #include <usb/usb.h>
 #include <usb/usb_defs.h>
 #include <usb/gadget.h>
+#include <linux/phy/phy.h>
 
 #include "regs.h"
 #include "core.h"
 
 /* Core functions */
-void dwc2_set_param_otg_cap(struct dwc2 *dwc2);
-void dwc2_set_param_phy_type(struct dwc2 *dwc2);
-void dwc2_set_param_speed(struct dwc2 *dwc2);
-void dwc2_set_param_phy_utmi_width(struct dwc2 *dwc2);
 void dwc2_set_default_params(struct dwc2 *dwc2);
-int dwc2_core_snpsid(struct dwc2 *dwc2);
+int dwc2_check_core_version(struct dwc2 *dwc2);
 void dwc2_get_hwparams(struct dwc2 *dwc2);
 
 void dwc2_init_fs_ls_pclk_sel(struct dwc2 *dwc2);

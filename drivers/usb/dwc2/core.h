@@ -466,6 +466,9 @@ struct dwc2 {
 	struct dwc2_hw_params hw_params;
 	struct dwc2_core_params params;
 
+	struct phy *phy; /* optional */
+	struct clk *clk;
+
 #ifdef CONFIG_USB_DWC2_HOST
 	struct usb_host host;
 	u8 in_data_toggle[MAX_DEVICE][MAX_ENDPOINT];

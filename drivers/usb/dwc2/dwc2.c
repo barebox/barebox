@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <driver.h>
 #include <linux/clk.h>
+#include <linux/reset.h>
 
 #include "dwc2.h"
 
@@ -19,6 +20,9 @@ static int dwc2_set_mode(void *ctx, enum usb_dr_mode mode)
 {
 	struct dwc2 *dwc2 = ctx;
 	int ret = -ENODEV;
+	int oldmode = dwc2->dr_mode;
+
+	dwc2->dr_mode = mode;
 
 	if (mode == USB_DR_MODE_HOST || mode == USB_DR_MODE_OTG) {
 		if (IS_ENABLED(CONFIG_USB_DWC2_HOST))
@@ -32,6 +36,9 @@ static int dwc2_set_mode(void *ctx, enum usb_dr_mode mode)
 		else
 			dwc2_err(dwc2, "Peripheral support not available\n");
 	}
+
+	if (ret)
+		dwc2->dr_mode = oldmode;
 
 	return ret;
 }
@@ -50,7 +57,36 @@ static int dwc2_probe(struct device_d *dev)
 	dwc2->regs = IOMEM(iores->start);
 	dwc2->dev = dev;
 
-	ret = dwc2_core_snpsid(dwc2);
+	dwc2->clk = clk_get(dev, "otg");
+	if (IS_ERR(dwc2->clk)) {
+		ret = PTR_ERR(dwc2->clk);
+		dev_err(dev, "Failed to get USB clock %d\n", ret);
+		goto release_region;
+	}
+
+	ret = clk_enable(dwc2->clk);
+	if (ret)
+		goto clk_put;
+
+	ret = device_reset_us(dev, 2);
+	if (ret)
+		goto clk_disable;
+
+	dwc2->phy = phy_optional_get(dev, "usb2-phy");
+	if (IS_ERR(dwc2->phy)) {
+		ret = PTR_ERR(dwc2->phy);
+		goto clk_disable;
+	}
+
+	ret = phy_power_on(dwc2->phy);
+	if (ret)
+		goto clk_disable;
+
+	ret = phy_init(dwc2->phy);
+	if (ret)
+		goto phy_power_off;
+
+	ret = dwc2_check_core_version(dwc2);
 	if (ret)
 		goto error;
 
@@ -66,6 +102,8 @@ static int dwc2_probe(struct device_d *dev)
 	dwc2_get_hwparams(dwc2);
 
 	ret = dwc2_get_dr_mode(dwc2);
+	if (ret)
+		goto error;
 
 	dwc2_set_default_params(dwc2);
 
@@ -77,7 +115,21 @@ static int dwc2_probe(struct device_d *dev)
 	else
 		ret = dwc2_set_mode(dwc2, dwc2->dr_mode);
 
+	if (ret)
+		goto error;
+
+	return 0;
 error:
+	phy_exit(dwc2->phy);
+phy_power_off:
+	phy_power_off(dwc2->phy);
+clk_disable:
+	clk_disable(dwc2->clk);
+clk_put:
+	clk_put(dwc2->clk);
+release_region:
+	release_region(iores);
+
 	return ret;
 }
 
@@ -87,6 +139,9 @@ static void dwc2_remove(struct device_d *dev)
 
 	dwc2_host_uninit(dwc2);
 	dwc2_gadget_uninit(dwc2);
+
+	phy_exit(dwc2->phy);
+	phy_power_off(dwc2->phy);
 }
 
 static const struct of_device_id dwc2_platform_dt_ids[] = {

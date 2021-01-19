@@ -86,8 +86,6 @@ static int stm32_pwr_reg_enable(struct regulator_dev *rdev)
 	int ret;
 	u32 val;
 
-	regulator_enable(priv->supply);
-
 	val = readl(priv->base + REG_PWR_CR3);
 	val |= rdev->desc->enable_mask;
 	writel(val, priv->base + REG_PWR_CR3);
@@ -119,8 +117,6 @@ static int stm32_pwr_reg_disable(struct regulator_dev *rdev)
 	if (ret)
 		dev_err(rdev->dev, "%s: regulator disable timed out!\n",
 			desc->name);
-
-	regulator_disable(priv->supply);
 
 	return ret;
 }
@@ -183,18 +179,27 @@ static int stm32_pwr_regulator_probe(struct device_d *dev)
 		priv->rdev.dev = dev;
 
 		priv->supply = regulator_get(dev, desc->supply_name);
-		if (IS_ERR(priv->supply))
-			return PTR_ERR(priv->supply);
+		if (IS_ERR(priv->supply)) {
+			ret = PTR_ERR(priv->supply);
+			goto release_region;
+		}
 
 		ret = of_regulator_register(&priv->rdev, child);
 		if (ret) {
 			dev_err(dev, "%s: Failed to register regulator: %d\n",
 				desc->name, ret);
-			return ret;
+			goto release_region;
 		}
+
+		regulator_enable(priv->supply);
 	}
 
 	return 0;
+
+release_region:
+	release_region(iores);
+
+	return ret;
 }
 
 static const struct of_device_id stm32_pwr_of_match[] = {

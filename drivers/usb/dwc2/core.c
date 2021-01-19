@@ -28,7 +28,7 @@ static bool dwc2_hw_is_device(struct dwc2 *dwc2)
 		(op_mode == GHWCFG2_OP_MODE_NO_SRP_CAPABLE_DEVICE);
 }
 
-void dwc2_set_param_otg_cap(struct dwc2 *dwc2)
+static void dwc2_set_param_otg_cap(struct dwc2 *dwc2)
 {
 	u8 val;
 
@@ -49,7 +49,7 @@ void dwc2_set_param_otg_cap(struct dwc2 *dwc2)
 	dwc2->params.otg_cap = val;
 }
 
-void dwc2_set_param_phy_type(struct dwc2 *dwc2)
+static void dwc2_set_param_phy_type(struct dwc2 *dwc2)
 {
 	u8 val;
 
@@ -69,7 +69,7 @@ void dwc2_set_param_phy_type(struct dwc2 *dwc2)
 	dwc2->params.phy_type = val;
 }
 
-void dwc2_set_param_speed(struct dwc2 *dwc2)
+static void dwc2_set_param_speed(struct dwc2 *dwc2)
 {
 	if (dwc2->params.phy_type == DWC2_PHY_TYPE_PARAM_FS)
 		dwc2->params.speed = DWC2_SPEED_PARAM_FULL;
@@ -77,7 +77,7 @@ void dwc2_set_param_speed(struct dwc2 *dwc2)
 		dwc2->params.speed = DWC2_SPEED_PARAM_HIGH;
 }
 
-void dwc2_set_param_phy_utmi_width(struct dwc2 *dwc2)
+static void dwc2_set_param_phy_utmi_width(struct dwc2 *dwc2)
 {
 	int val;
 
@@ -185,11 +185,9 @@ void dwc2_set_default_params(struct dwc2 *dwc2)
 	}
 }
 
-int dwc2_core_snpsid(struct dwc2 *dwc2)
+int dwc2_check_core_version(struct dwc2 *dwc2)
 {
 	struct dwc2_hw_params *hw = &dwc2->hw_params;
-
-	hw->snpsid = dwc2_readl(dwc2, GSNPSID);
 
 	/*
 	 * Attempt to ensure this device is really a DWC2 Controller.
@@ -649,18 +647,16 @@ int dwc2_get_dr_mode(struct dwc2 *dwc2)
 
 	if (dwc2_hw_is_device(dwc2)) {
 		dwc2_dbg(dwc2, "Controller is device only\n");
-		if (IS_ENABLED(CONFIG_USB_DWC2_HOST)) {
-			dwc2_err(dwc2,
-				"Controller does not support host mode.\n");
-			return -EINVAL;
+		if (!IS_ENABLED(CONFIG_USB_DWC2_GADGET)) {
+			dwc2_err(dwc2, "gadget mode support not compiled in!\n");
+			return -ENOTSUPP;
 		}
 		mode = USB_DR_MODE_PERIPHERAL;
 	} else if (dwc2_hw_is_host(dwc2)) {
 		dwc2_dbg(dwc2, "Controller is host only\n");
-		if (IS_ENABLED(CONFIG_USB_DWC2_GADGET)) {
-			dwc2_err(dwc2,
-				"Controller does not support device mode.\n");
-			return -EINVAL;
+		if (!IS_ENABLED(CONFIG_USB_DWC2_HOST)) {
+			dwc2_err(dwc2, "host mode support not compiled in!\n");
+			return -ENOTSUPP;
 		}
 		mode = USB_DR_MODE_HOST;
 	} else {

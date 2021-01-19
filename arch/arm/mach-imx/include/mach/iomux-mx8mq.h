@@ -623,6 +623,23 @@ enum {
 	IMX8MQ_PAD_UART4_TXD__GPIO5_IO29			= IOMUX_PAD(0x04B8, 0x0250, 5, 0x0000, 0, 0),
 };
 
+#define MX8MQ_PAD_CTL_DSE_HIZ	(0 << 0)
+#define MX8MQ_PAD_CTL_DSE_255R	(1 << 0)
+#define MX8MQ_PAD_CTL_DSE_155R	(2 << 0)
+#define MX8MQ_PAD_CTL_DSE_75R	(3 << 0)
+#define MX8MQ_PAD_CTL_DSE_85R	(4 << 0)
+#define MX8MQ_PAD_CTL_DSE_65R	(5 << 0)
+#define MX8MQ_PAD_CTL_DSE_45R	(6 << 0)
+#define MX8MQ_PAD_CTL_DSE_40R	(7 << 0)
+#define MX8MQ_PAD_CTL_SR_50M	(0 << 3)
+#define MX8MQ_PAD_CTL_SR_100M	(1 << 3)
+#define MX8MQ_PAD_CTL_SR_150M	(2 << 3)
+#define MX8MQ_PAD_CTL_SR_200M	(3 << 3)
+#define MX8MQ_PAD_CTL_ODE	BIT(5)
+#define MX8MQ_PAD_CTL_PUE	BIT(6)
+#define MX8MQ_PAD_CTL_HYS	BIT(7)
+#define MX8MQ_PAD_CTL_LVTTL	BIT(8)
+
 static inline void imx8mq_setup_pad(iomux_v3_cfg_t pad)
 {
 	void __iomem *iomux = IOMEM(MX8MQ_IOMUXC_BASE_ADDR);

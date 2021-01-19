@@ -178,3 +178,4 @@ obj-$(CONFIG_MACH_ZII_IMX7D_DEV)		+= zii-imx7d-dev/
 obj-$(CONFIG_MACH_WAGO_PFC_AM35XX)		+= wago-pfc-am35xx/
 obj-$(CONFIG_MACH_LS1046ARDB)			+= ls1046ardb/
 obj-$(CONFIG_MACH_TQMLS1046A)			+= tqmls1046a/
+obj-$(CONFIG_MACH_MNT_REFORM)			+= mnt-reform/

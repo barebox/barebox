@@ -62,7 +62,7 @@ static int imx8m_ddr_init(struct dram_timing_info *dram_timing,
 
 	initial_drate = dram_timing->fsp_msg[0].drate;
 	/* default to the frequency point 0 clock */
-	ddrphy_init_set_dfi_clk(initial_drate);
+	ddrphy_init_set_dfi_clk(initial_drate, type);
 
 	/* D-aasert the presetn */
 	reg32_write(src_ddrc_rcr, 0x8F000006);
@@ -115,7 +115,7 @@ static int imx8m_ddr_init(struct dram_timing_info *dram_timing,
 	 */
 	pr_debug("ddrphy config start\n");
 
-	ret = ddr_cfg_phy(dram_timing);
+	ret = ddr_cfg_phy(dram_timing, type);
 	if (ret)
 		return ret;
 

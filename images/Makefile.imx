@@ -432,3 +432,9 @@ CFG_start_phytec_phycore_imx8mq.pblb.imximg = $(board)/phytec-som-imx8mq/flash-h
 MAX_PBL_MEMORY_SIZE_start_phytec_phycore_imx8mq = 0x3f000
 FILE_barebox-phytec-phycore-imx8mq.img = start_phytec_phycore_imx8mq.pblb.imximg
 image-$(CONFIG_MACH_PHYTEC_SOM_IMX8MQ) += barebox-phytec-phycore-imx8mq.img
+
+pblb-$(CONFIG_MACH_MNT_REFORM) += start_mnt_reform
+CFG_start_mnt_reform.pblb.imximg = $(board)/mnt-reform/flash-header-mnt-reform.imxcfg
+MAX_PBL_MEMORY_SIZE_start_mnt_reform = 0x3f000
+FILE_barebox-mnt-reform.img = start_mnt_reform.pblb.imximg
+image-$(CONFIG_MACH_MNT_REFORM) += barebox-mnt-reform.img

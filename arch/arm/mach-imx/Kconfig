@@ -583,6 +583,15 @@ config MACH_WEBASTO_CCBV2
 	select ARCH_IMX6UL
 	select ARM_USE_COMPRESSED_DTB
 
+config MACH_MNT_REFORM
+	bool "MNT Reform"
+	select ARCH_IMX8MQ
+	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
+	select FIRMWARE_IMX8MQ_ATF
+	select ARM_SMCCC
+	select MCI_IMX_ESDHC_PBL
+	select I2C_IMX_EARLY
+
 endif
 
 # ----------------------------------------------------------

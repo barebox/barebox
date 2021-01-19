@@ -6,13 +6,6 @@
 #ifndef __LPDDR4_DEFINE_H_
 #define __LPDDR4_DEFINE_H_
 
-#define LPDDR4_DVFS_DBI
-#define DDR_ONE_RANK
-/* #define LPDDR4_DBI_ON */
-#define DFI_BUG_WR
-#define M845S_4GBx2
-#define PRETRAIN
-
 /* DRAM MR setting */
 #ifdef LPDDR4_DBI_ON
 #define LPDDR4_MR3			0xf1

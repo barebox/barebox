@@ -372,7 +372,7 @@ struct resource *dev_get_resource_by_name(struct device_d *dev,
 	return ERR_PTR(-ENOENT);
 }
 
-void __iomem *dev_request_mem_region_by_name(struct device_d *dev, const char *name)
+struct resource *dev_request_mem_resource_by_name(struct device_d *dev, const char *name)
 {
 	struct resource *res;
 
@@ -380,7 +380,15 @@ void __iomem *dev_request_mem_region_by_name(struct device_d *dev, const char *n
 	if (IS_ERR(res))
 		return ERR_CAST(res);
 
-	res = request_iomem_region(dev_name(dev), res->start, res->end);
+	return request_iomem_region(dev_name(dev), res->start, res->end);
+}
+EXPORT_SYMBOL(dev_request_mem_resource_by_name);
+
+void __iomem *dev_request_mem_region_by_name(struct device_d *dev, const char *name)
+{
+	struct resource *res;
+
+	res = dev_request_mem_resource_by_name(dev, name);
 	if (IS_ERR(res))
 		return ERR_CAST(res);
 

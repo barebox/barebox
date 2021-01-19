@@ -1,16 +1,12 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
+/* SPDX-FileCopyrightText: 2010 BitBox Ltd */
+
 /*
  * reset AT91SAM9G20 as per errata
- *
- * (C) BitBox Ltd 2010
  *
  * unless the SDRAM is cleanly shutdown before we hit the
  * reset register it can be left driving the data bus and
  * killing the chance of a subsequent boot from NAND
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
  */
 
 #include <linux/linkage.h>

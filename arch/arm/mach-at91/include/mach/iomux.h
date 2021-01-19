@@ -1,14 +1,7 @@
-/*
- * [origin: Linux kernel include/asm-arm/arch-at91/gpio.h]
- *
- *  Copyright (C) 2005 HP Labs
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- */
+/* SPDX-License-Identifier: GPL-2.0-or-later */
+/* SPDX-FileCopyrightText: 2005 HP Labs */
+
+/* [origin: Linux kernel include/asm-arm/arch-at91/gpio.h] */
 
 #ifndef __ASM_ARCH_AT91_GPIO_H
 #define __ASM_ARCH_AT91_GPIO_H

@@ -1,12 +1,7 @@
-/*
- * linux/arch/arm/mach-at91/generic.h
- *
- *  Copyright (C) 2005 David Brownell
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- */
+/* SPDX-License-Identifier: GPL-2.0-only */
+/* SPDX-FileCopyrightText: 2005 David Brownell */
+
+/* linux/arch/arm/mach-at91/generic.h */
 
 /* function called by setup to perform late init */
 extern void (*at91_boot_soc)(void);

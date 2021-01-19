@@ -1,16 +1,12 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
+/* SPDX-FileCopyrightText: 2005 Ivan Kokshaysky */
+/* SPDX-FileCopyrightText: SAN People */
+
 /*
  * [origin: arch/arm/mach-at91/include/mach/at91rm9200_emac.h]
  *
- * Copyright (C) 2005 Ivan Kokshaysky
- * Copyright (C) SAN People
- *
  * Ethernet MAC registers.
  * Based on AT91RM9200 datasheet revision E.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
  */
 
 #ifndef AT91RM9200_EMAC_H

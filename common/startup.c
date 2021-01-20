@@ -36,6 +36,7 @@
 #include <environment.h>
 #include <linux/ctype.h>
 #include <watchdog.h>
+#include <glob.h>
 
 extern initcall_t __barebox_initcalls_start[], __barebox_early_initcalls_end[],
 		  __barebox_initcalls_end[];
@@ -298,13 +299,12 @@ postcore_initcall(register_autoboot_vars);
 
 static int run_init(void)
 {
-	DIR *dir;
-	struct dirent *d;
-	const char *initdir = "/env/init";
 	const char *bmode;
 	bool env_bin_init_exists;
 	enum autoboot_state autoboot;
 	struct stat s;
+	glob_t g;
+	int i, ret;
 
 	setenv("PATH", "/env/bin");
 	export("PATH");
@@ -326,22 +326,27 @@ static int run_init(void)
 	}
 
 	/* Run scripts in /env/init/ */
-	dir = opendir(initdir);
-	if (dir) {
-		char *scr;
+	ret = glob("/env/init/*", 0, NULL, &g);
+	if (!ret) {
+		for (i = 0; i < g.gl_pathc; i++) {
+			const char *path = g.gl_pathv[i];
+			char *scr;
 
-		while ((d = readdir(dir))) {
-			if (*d->d_name == '.')
+			ret = stat(path, &s);
+			if (ret)
 				continue;
 
-			pr_debug("Executing '%s/%s'...\n", initdir, d->d_name);
-			scr = basprintf("source %s/%s", initdir, d->d_name);
+			if (!S_ISREG(s.st_mode))
+				continue;
+
+			pr_debug("Executing '%s'...\n", path);
+			scr = basprintf("source %s", path);
 			run_command(scr);
 			free(scr);
 		}
-
-		closedir(dir);
 	}
+
+	globfree(&g);
 
 	/* source matching script in /env/bmode/ */
 	bmode = reboot_mode_get();

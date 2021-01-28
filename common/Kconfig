@@ -874,6 +874,13 @@ config DEFAULT_ENVIRONMENT_GENERIC_NEW
 	select NET_CMD_IFUP if NET
 	select CMD_IP_ROUTE_GET if NET
 	select CMD_HOST if NET
+	help
+	  With this option barebox will use the files found under
+	  defaultenv/defaultenv-2-base/ in the source tree as a template for
+	  the defaultenv. The directories specified in DEFAULT_ENVIRONMENT_PATH
+	  will be added to the default environment. If a file is present in
+	  both locations, the file from DEFAULT_ENVIRONMENT_PATH will overwrite
+	  that from the template.
 
 config DEFAULT_ENVIRONMENT_GENERIC
 	bool "Generic environment template (old version)"
@@ -887,9 +894,12 @@ config DEFAULT_ENVIRONMENT_GENERIC
 	select CMD_CRC_CMP
 	select CMD_GLOBAL
 	help
-	  With this option barebox will use the generic default
-	  environment found under defaultenv/ in the src tree.
-	  The Directory given with DEFAULT_ENVIRONMENT_PATH
+	  Note: this option is not recommended for new boards; use
+	  DEFAULT_ENVIRONMENT_GENERIC_NEW instead.
+
+	  With this option barebox will use the old generic default environment
+	  found under defaultenv/defaultenv-1/ in the source tree.
+	  The directory given with DEFAULT_ENVIRONMENT_PATH
 	  will be added to the default environment. This should
 	  at least contain a /env/config file.
 	  This will be able to overwrite the files from defaultenv.
@@ -899,12 +909,18 @@ config DEFAULT_ENVIRONMENT_GENERIC_NEW_MENU
 	depends on DEFAULT_ENVIRONMENT_GENERIC_NEW
 	depends on CMD_MENUTREE
 	default y
+	help
+	  Extend the defaultenv template with a menu that is displayed at boot.
+	  The menu files are taken from defaultenv/defaultenv-2-menu/.
 
 config DEFAULT_ENVIRONMENT_GENERIC_NEW_DFU
 	bool
 	depends on DEFAULT_ENVIRONMENT_GENERIC_NEW
 	depends on USB_GADGET_DFU
 	default y
+	help
+	  Extend the defaultenv template with the 'dfu' boot entry, which
+	  allows uploading the kernel and oftree over USB via the dfu protocol.
 
 config DEFAULT_ENVIRONMENT_GENERIC_NEW_REBOOT_MODE
 	bool "Generic reboot-mode handlers in the environment"
@@ -916,9 +932,9 @@ config DEFAULT_ENVIRONMENT_PATH
 	depends on DEFAULT_ENVIRONMENT
 	prompt "Default environment path"
 	help
-	  Space separated list of paths the default environment will be taken from.
-	  Relative paths will be relative to the barebox Toplevel dir, but absolute
-	  paths are fine as well.
+	  Space separated list of paths from which the default environment will
+	  be taken. Relative paths will be relative to the barebox top-level
+	  directory, but absolute paths are fine as well.
 
 config BAREBOXENV_TARGET
 	bool

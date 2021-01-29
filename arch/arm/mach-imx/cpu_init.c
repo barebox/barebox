@@ -20,6 +20,7 @@
 #include <mach/generic.h>
 #include <mach/imx7-regs.h>
 #include <mach/imx8mq-regs.h>
+#include <mach/imx8m-ccm-regs.h>
 #include <common.h>
 #include <io.h>
 #include <asm/syscounter.h>
@@ -79,6 +80,9 @@ static void imx8m_cpu_lowlevel_init(void)
 
 void imx8mm_cpu_lowlevel_init(void)
 {
+	/* ungate system counter */
+	imx8m_ccgr_clock_enable(IMX8M_CCM_CCGR_SCTR);
+
 	imx8m_cpu_lowlevel_init();
 }
 

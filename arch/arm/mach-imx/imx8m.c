@@ -35,14 +35,14 @@
 
 void imx8m_clock_set_target_val(int clock_id, u32 val)
 {
-	void *ccm = IOMEM(MX8M_CCM_BASE_ADDR);
+	void __iomem *ccm = IOMEM(MX8M_CCM_BASE_ADDR);
 
 	writel(val, ccm + IMX8M_CCM_TARGET_ROOTn(clock_id));
 }
 
 void imx8m_ccgr_clock_enable(int index)
 {
-	void *ccm = IOMEM(MX8M_CCM_BASE_ADDR);
+	void __iomem *ccm = IOMEM(MX8M_CCM_BASE_ADDR);
 
 	writel(IMX8M_CCM_CCGR_SETTINGn_NEEDED(0),
 	       ccm + IMX8M_CCM_CCGRn_SET(index));
@@ -50,7 +50,7 @@ void imx8m_ccgr_clock_enable(int index)
 
 void imx8m_ccgr_clock_disable(int index)
 {
-	void *ccm = IOMEM(MX8M_CCM_BASE_ADDR);
+	void __iomem *ccm = IOMEM(MX8M_CCM_BASE_ADDR);
 
 	writel(IMX8M_CCM_CCGR_SETTINGn_NEEDED(0),
 	       ccm + IMX8M_CCM_CCGRn_CLR(index));

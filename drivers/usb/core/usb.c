@@ -88,11 +88,25 @@ static inline void usb_host_release(struct usb_host *host)
 	slice_release(&host->slice);
 }
 
+static int usb_hw_detect(struct device_d *dev)
+{
+	struct usb_host *host;
+
+	list_for_each_entry(host, &host_list, list) {
+		if (dev == host->hw_dev)
+			return usb_host_detect(host);
+	}
+
+	return -ENODEV;
+}
+
 int usb_register_host(struct usb_host *host)
 {
 	list_add_tail(&host->list, &host_list);
 	host->busnum = host_busnum++;
 	slice_init(&host->slice, dev_name(host->hw_dev));
+	if (!host->hw_dev->detect)
+		host->hw_dev->detect = usb_hw_detect;
 	return 0;
 }
 

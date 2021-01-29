@@ -1389,13 +1389,6 @@ int xhci_deregister(struct xhci_ctrl *ctrl)
 	return 0;
 }
 
-static int xhci_detect(struct device_d *dev)
-{
-	struct xhci_ctrl *ctrl = dev->priv;
-
-	return usb_host_detect(&ctrl->host);
-}
-
 /*
  * xHCI platform driver
  */
@@ -1417,7 +1410,6 @@ static int xhci_probe(struct device_d *dev)
 		HC_LENGTH(xhci_readl(&(ctrl->hccr)->cr_capbase)));
 
 	dev->priv = ctrl;
-	dev->detect = xhci_detect;
 
 	return xhci_register(ctrl);
 }

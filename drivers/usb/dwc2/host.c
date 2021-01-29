@@ -766,13 +766,6 @@ static int dwc2_host_init(struct usb_host *host)
 	return 0;
 }
 
-static int dwc2_detect(struct device_d *dev)
-{
-	struct dwc2 *dwc2 = dev->priv;
-
-	return usb_host_detect(&dwc2->host);
-}
-
 int dwc2_register_host(struct dwc2 *dwc2)
 {
 	struct usb_host *host;
@@ -783,8 +776,6 @@ int dwc2_register_host(struct dwc2 *dwc2)
 	host->submit_bulk_msg = dwc2_submit_bulk_msg;
 	host->submit_control_msg = dwc2_submit_control_msg;
 	host->submit_int_msg = dwc2_submit_int_msg;
-
-	dwc2->dev->detect = dwc2_detect;
 
 	return usb_register_host(host);
 }

@@ -6,3 +6,16 @@ menuconfig SOUND
 	  Say Y here for sound support. At the moment that's just beep tones.
 	  Tones are played asynchronously in a poller. Check the beep command
 	  for how to exercise the API.
+
+if SOUND
+
+config SYNTH_SQUARES
+	bool "Synthesize square waves only"
+	help
+	  For beeping on PCM sound cards, barebox needs to synthesize samples,
+	  which can take too much poller time for crisp playback and/or quick
+	  booting. If your playback stutters, say Y here. This will have all
+	  synthesizers output a gain-adjusted square wave instead, which is
+	  less time-consuming to compute.
+
+endif

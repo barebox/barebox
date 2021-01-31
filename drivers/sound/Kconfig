@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: GPL-2.0-only
+menuconfig SOUND
+	bool "Sound drivers"
+	select POLLER
+	help
+	  Say Y here for sound support. At the moment that's just beep tones.
+	  Tones are played asynchronously in a poller. Check the beep command
+	  for how to exercise the API.

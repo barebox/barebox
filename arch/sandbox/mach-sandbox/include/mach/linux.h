@@ -49,6 +49,11 @@ int sdl_video_open(const struct sdl_fb_info *);
 void sdl_video_pause(void);
 void sdl_video_close(void);
 
+int sdl_sound_init(unsigned sample_rate);
+int sdl_sound_play(const void *data, unsigned nsamples);
+void sdl_sound_stop(void);
+void sdl_sound_close(void);
+
 struct ft2232_bitbang;
 struct ft2232_bitbang *barebox_libftdi1_open(int vendor_id, int device_id,
 						const char *serial);

@@ -9,6 +9,11 @@ menuconfig SOUND
 
 if SOUND
 
+config SOUND_SDL
+	bool "SDL sound driver for sandbox"
+	depends on SANDBOX && OFDEVICE
+	select SDL
+
 config SYNTH_SQUARES
 	bool "Synthesize square waves only"
 	help

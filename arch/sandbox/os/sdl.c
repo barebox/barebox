@@ -111,3 +111,47 @@ quit_subsystem:
 
 	return -1;
 }
+
+static SDL_AudioDeviceID dev;
+
+int sdl_sound_init(unsigned sample_rate)
+{
+	SDL_AudioSpec audiospec = {
+		.freq = sample_rate,
+		.format = AUDIO_S16,
+		.channels = 1,
+		.samples = 2048,
+	};
+
+	if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
+		sdl_perror("initialize SDL Audio");
+		return -1;
+	}
+
+	dev = SDL_OpenAudioDevice(NULL, 0, &audiospec, NULL, 0);
+	if (!dev) {
+		sdl_perror("initialize open audio device");
+		SDL_QuitSubSystem(SDL_INIT_AUDIO);
+		return -1;
+	}
+
+	SDL_PauseAudioDevice(dev, 0);
+	return 0;
+}
+
+void sdl_sound_close(void)
+{
+	SDL_QuitSubSystem(SDL_INIT_AUDIO);
+}
+
+int sdl_sound_play(const void *data, unsigned nsamples)
+{
+	/* core sound support handles all the queueing for us */
+	SDL_ClearQueuedAudio(dev);
+	return SDL_QueueAudio(dev, data, nsamples * sizeof(uint16_t));
+}
+
+void sdl_sound_stop(void)
+{
+	SDL_ClearQueuedAudio(dev);
+}

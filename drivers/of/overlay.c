@@ -218,7 +218,7 @@ int of_process_overlay(struct device_node *root,
 
 		target = find_target(root, fragment);
 		if (!target)
-			pr_debug("cannot find target for fragment",
+			pr_debug("cannot find target for fragment %s\n",
 				 fragment->name);
 
 		err = process(target, ovl, data);

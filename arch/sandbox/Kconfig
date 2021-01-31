@@ -44,3 +44,6 @@ config 64BIT
 
 config SANDBOX_LINUX_I386
 	bool "32-bit x86 barebox" if CC_HAS_LINUX_I386_SUPPORT
+
+config SDL
+	bool

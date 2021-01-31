@@ -13,23 +13,25 @@
 #include <errno.h>
 #include <gui/graphic_utils.h>
 
+#define to_mask(color) GENMASK(color.length - 1, color.offset)
+
 static void sdlfb_enable(struct fb_info *info)
 {
-	int ret;
+	struct sdl_fb_info sdl_info = {
+		.screen_base = info->screen_base,
+		.xres = info->xres, .yres = info->yres, .bpp = info->bits_per_pixel,
+		.rmask = to_mask(info->red),
+		.gmask = to_mask(info->green),
+		.bmask = to_mask(info->blue),
+		.amask = to_mask(info->transp),
+	};
 
-	ret = sdl_open(info->xres, info->yres, info->bits_per_pixel,
-		     info->screen_base);
-	if (ret)
-		return;
-	sdl_get_bitfield_rgba(&info->red, &info->green, &info->blue, &info->transp);
-
-	sdl_start_timer();
+	sdl_video_open(&sdl_info);
 }
 
 static void sdlfb_disable(struct fb_info *info)
 {
-	sdl_stop_timer();
-	sdl_close();
+	sdl_video_close();
 }
 
 static struct fb_ops sdlfb_ops = {
@@ -48,9 +50,18 @@ static int sdlfb_probe(struct device_d *dev)
 	fb = xzalloc(sizeof(*fb));
 	fb->modes.modes = fb->mode = dev->platform_data;
 	fb->modes.num_modes = 1;
-	fb->bits_per_pixel = 4 << 3;
 	fb->xres = fb->mode->xres;
 	fb->yres = fb->mode->yres;
+
+	fb->bits_per_pixel = 32;
+	fb->transp.length = 8;
+	fb->red.length = 8;
+	fb->green.length = 8;
+	fb->blue.length = 8;
+	fb->transp.offset = 24;
+	fb->red.offset = 16;
+	fb->green.offset = 8;
+	fb->blue.offset = 0;
 
 	fb->priv = fb;
 	fb->fbops = &sdlfb_ops;
@@ -68,7 +79,6 @@ static int sdlfb_probe(struct device_d *dev)
 
 	kfree(fb->screen_base);
 	kfree(fb);
-	sdl_close();
 	return ret;
 }
 
@@ -78,7 +88,6 @@ static void sdlfb_remove(struct device_d *dev)
 
 	kfree(fb->screen_base);
 	kfree(fb);
-	sdl_close();
 }
 
 static struct driver_d sdlfb_driver = {

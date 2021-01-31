@@ -20,6 +20,12 @@ config PWM_BEEPER
 	help
 	  Say Y here to get support for PWM based beeper devices.
 
+config GPIO_BEEPER
+	bool "GPIO beeper support"
+	depends on GPIOLIB && OFDEVICE
+	help
+	  Say Y here to get support for GPIO based beeper devices.
+
 config SYNTH_SQUARES
 	bool "Synthesize square waves only"
 	help

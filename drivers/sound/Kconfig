@@ -14,6 +14,12 @@ config SOUND_SDL
 	depends on SANDBOX && OFDEVICE
 	select SDL
 
+config PWM_BEEPER
+	bool "PWM beeper support"
+	depends on PWM && OFDEVICE
+	help
+	  Say Y here to get support for PWM based beeper devices.
+
 config SYNTH_SQUARES
 	bool "Synthesize square waves only"
 	help

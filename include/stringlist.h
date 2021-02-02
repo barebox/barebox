@@ -19,6 +19,7 @@ void string_list_print_by_column(struct string_list *sl);
 static inline void string_list_init(struct string_list *sl)
 {
 	INIT_LIST_HEAD(&sl->list);
+	sl->str = NULL;
 }
 
 static inline void string_list_free(struct string_list *sl)

@@ -101,14 +101,7 @@ static int path_command_complete(struct string_list *sl, char *instr)
 				else
 					strcat(tmp, " ");
 
-				/* This function is called
-				 * after command_complete,
-				 * so we check if a double
-				 * entry exist */
-				if (string_list_contains
-						(sl, tmp) == 0) {
-					string_list_add_sorted(sl, tmp);
-				}
+				string_list_add_sort_uniq(sl, tmp);
 			}
 		}
 

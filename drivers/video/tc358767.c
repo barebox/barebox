@@ -1191,8 +1191,7 @@ static int tc_read_edid(struct tc_data *tc)
 
 #ifdef DEBUG
 	printk(KERN_DEBUG "eDP display EDID:\n");
-	print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 16, 1, tc->edid,
-		       EDID_LENGTH, true);
+	print_hex_dump_bytes("", DUMP_PREFIX_OFFSET, tc->edid, EDID_LENGTH);
 #endif
 
 	return 0;

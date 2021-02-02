@@ -54,6 +54,9 @@ int watchdog_set_timeout(struct watchdog *wd, unsigned timeout)
 	if (ret)
 		return ret;
 
+	wd->last_ping = get_time_ns();
+	wd->timeout_cur = timeout;
+
 	wd->running = timeout ? WDOG_HW_RUNNING : WDOG_HW_NOT_RUNNING;
 
 	return 0;
@@ -155,6 +158,25 @@ static unsigned int dev_get_watchdog_priority(struct device_d *dev)
 	return priority;
 }
 
+static int seconds_to_expire_get(struct param_d *p, void *priv)
+{
+	struct watchdog *wd = priv;
+	uint64_t diff;
+
+	if (!wd->timeout_cur) {
+		wd->seconds_to_expire = -1;
+		return 0;
+	}
+
+	diff = get_time_ns() - wd->last_ping;
+
+	do_div(diff, 1000000000);
+
+	wd->seconds_to_expire = wd->timeout_cur - diff;
+
+	return 0;
+}
+
 int watchdog_register(struct watchdog *wd)
 {
 	struct param_d *p;
@@ -216,6 +238,13 @@ int watchdog_register(struct watchdog *wd)
 		ret = watchdog_register_poller(wd);
 		if (ret)
 			goto error_unregister;
+	}
+
+	p = dev_add_param_uint32(&wd->dev, "seconds_to_expire", param_set_readonly,
+			seconds_to_expire_get, &wd->seconds_to_expire, "%d", wd);
+	if (IS_ERR(p)) {
+		ret = PTR_ERR(p);
+		goto error_unregister;
 	}
 
 	list_add_tail(&wd->list, &watchdog_list);

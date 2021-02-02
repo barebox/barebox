@@ -22,8 +22,11 @@ struct watchdog {
 	struct device_d dev;
 	unsigned int priority;
 	unsigned int timeout_max;
+	unsigned int timeout_cur;
 	unsigned int poller_timeout_cur;
 	unsigned int poller_enable;
+	uint64_t last_ping;
+	int seconds_to_expire;
 	struct poller_async poller;
 	struct list_head list;
 	int running; /* enum wdog_hw_running */

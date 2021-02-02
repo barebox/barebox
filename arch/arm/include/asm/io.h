@@ -3,6 +3,10 @@
 
 #define	IO_SPACE_LIMIT	0
 
+#define memcpy_fromio memcpy_fromio
+#define memcpy_toio memcpy_toio
+#define memset_io memset_io
+
 #include <asm-generic/io.h>
 #include <asm-generic/bitio.h>
 

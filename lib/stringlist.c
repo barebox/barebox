@@ -60,6 +60,29 @@ int string_list_add_sorted(struct string_list *sl, const char *str)
 	return 0;
 }
 
+int string_list_add_sort_uniq(struct string_list *sl, const char *str)
+{
+	struct string_list *new, *entry = sl;
+
+	string_list_for_each_entry(entry, sl) {
+		int cmp = strcmp(entry->str, str);
+
+		if (cmp < 0)
+			continue;
+		if (cmp == 0)
+			return 0;
+
+		break;
+	}
+
+	new = xmalloc(sizeof(*new));
+	new->str = xstrdup(str);
+
+	list_add_tail(&new->list, &entry->list);
+
+	return 0;
+}
+
 int string_list_contains(struct string_list *sl, const char *str)
 {
 	struct string_list *entry;

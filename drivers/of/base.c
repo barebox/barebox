@@ -1704,8 +1704,8 @@ void barebox_register_of(struct device_node *root)
 	if (root_node)
 		return;
 
-	of_fix_tree(root);
 	of_set_root_node(root);
+	of_fix_tree(root);
 
 	if (IS_ENABLED(CONFIG_OFDEVICE))
 		of_probe();

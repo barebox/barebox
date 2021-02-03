@@ -91,10 +91,7 @@ static int orion_gpio_probe(struct device_d *dev)
 {
 	struct resource *iores;
 	struct orion_gpio_chip *gpio;
-
-	dev->id = of_alias_get_id(dev->device_node, "gpio");
-	if (dev->id < 0)
-		return dev->id;
+	int id;
 
 	gpio = xzalloc(sizeof(*gpio));
 	iores = dev_request_mem_resource(dev, 0);
@@ -105,7 +102,12 @@ static int orion_gpio_probe(struct device_d *dev)
 	gpio->regs = IOMEM(iores->start);
 	gpio->chip.dev = dev;
 	gpio->chip.ops = &orion_gpio_ops;
-	gpio->chip.base = dev->id * 32;
+
+	id = of_alias_get_id(dev->device_node, "gpio");
+	if (id < 0)
+		return id;
+
+	gpio->chip.base = id * 32;
 	gpio->chip.ngpio = 32;
 	of_property_read_u32(dev->device_node, "ngpios", &gpio->chip.ngpio);
 

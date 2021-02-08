@@ -51,6 +51,7 @@ struct regulator_bulk_data {
  * @disable_val: Disabling value for control when using regmap enable/disable ops
  * @enable_is_inverted: A flag to indicate set enable_mask bits to disable
  *                      when using regulator_enable_regmap and friends APIs.
+ * @fixed_uV: Fixed voltage of rails.
  */
 
 struct regulator_desc {
@@ -73,6 +74,7 @@ struct regulator_desc {
 
 	const struct regulator_linear_range *linear_ranges;
 	int n_linear_ranges;
+	int fixed_uV;
 };
 
 struct regulator_dev {
@@ -92,6 +94,9 @@ struct regulator_ops {
 	int (*list_voltage) (struct regulator_dev *, unsigned int);
 	int (*set_voltage_sel) (struct regulator_dev *, unsigned int);
 	int (*map_voltage)(struct regulator_dev *, int min_uV, int max_uV);
+
+	int (*get_voltage) (struct regulator_dev *);
+	int (*get_voltage_sel) (struct regulator_dev *);
 };
 
 /*
@@ -166,6 +171,17 @@ int regulator_bulk_disable(int num_consumers,
 void regulator_bulk_free(int num_consumers,
 			 struct regulator_bulk_data *consumers);
 
+/**
+ * regulator_get_voltage - get regulator output voltage
+ * @regulator: regulator source
+ *
+ * This returns the current regulator voltage in uV.
+ *
+ * NOTE: If the regulator is disabled it will return the voltage value. This
+ * function should not be used to determine regulator state.
+ */
+int regulator_get_voltage(struct regulator *regulator);
+
 /*
  * Helper functions intended to be used by regulator drivers prior registering
  * their regulators.
@@ -221,6 +237,11 @@ static inline int regulator_bulk_disable(int num_consumers,
 static inline void regulator_bulk_free(int num_consumers,
 				       struct regulator_bulk_data *consumers)
 {
+}
+
+static inline int regulator_get_voltage(struct regulator *regulator)
+{
+	return -EINVAL;
 }
 
 #endif

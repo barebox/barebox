@@ -52,6 +52,7 @@ struct regulator_bulk_data {
  * @enable_is_inverted: A flag to indicate set enable_mask bits to disable
  *                      when using regulator_enable_regmap and friends APIs.
  * @fixed_uV: Fixed voltage of rails.
+ * @off_on_delay: guard time (in uS), before re-enabling a regulator
  */
 
 struct regulator_desc {
@@ -75,6 +76,7 @@ struct regulator_desc {
 	const struct regulator_linear_range *linear_ranges;
 	int n_linear_ranges;
 	int fixed_uV;
+	unsigned int off_on_delay;
 };
 
 struct regulator_dev {

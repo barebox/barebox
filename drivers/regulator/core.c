@@ -176,6 +176,9 @@ int of_regulator_register(struct regulator_dev *rd, struct device_node *node)
 
 	ri->node = node;
 
+	if (rd->desc->off_on_delay)
+		ri->enable_time_us = rd->desc->off_on_delay;
+
 	if (rd->desc->fixed_uV && rd->desc->n_voltages == 1)
 		ri->min_uv = ri->max_uv = rd->desc->fixed_uV;
 

@@ -181,7 +181,7 @@ dfu_bind(struct usb_configuration *c, struct usb_function *f)
 	struct usb_descriptor_header **header;
 	struct usb_interface_descriptor *desc;
 	struct file_list_entry *fentry;
-	struct f_dfu *dfu = container_of(f, struct f_dfu, func);
+	struct f_dfu *dfu = func_to_dfu(f);
 	int i;
 	int			status;
 	struct usb_string	*us;
@@ -863,7 +863,7 @@ out:
 
 static void dfu_free_func(struct usb_function *f)
 {
-	struct f_dfu *dfu = container_of(f, struct f_dfu, func);
+	struct f_dfu *dfu = func_to_dfu(f);
 
 	free(dfu);
 }

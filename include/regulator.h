@@ -51,6 +51,7 @@ struct regulator_bulk_data {
  * @disable_val: Disabling value for control when using regmap enable/disable ops
  * @enable_is_inverted: A flag to indicate set enable_mask bits to disable
  *                      when using regulator_enable_regmap and friends APIs.
+ * @volt_table: Voltage mapping table (if table based mapping)
  * @fixed_uV: Fixed voltage of rails.
  * @off_on_delay: guard time (in uS), before re-enabling a regulator
  */
@@ -75,6 +76,7 @@ struct regulator_desc {
 
 	const struct regulator_linear_range *linear_ranges;
 	int n_linear_ranges;
+	const unsigned int *volt_table;
 	int fixed_uV;
 	unsigned int off_on_delay;
 };
@@ -190,6 +192,9 @@ int regulator_get_voltage(struct regulator *regulator);
  */
 int regulator_desc_list_voltage_linear_range(const struct regulator_desc *desc,
 					     unsigned int selector);
+
+int regulator_list_voltage_table(struct regulator_dev *rdev,
+				  unsigned int selector);
 #else
 
 static inline struct regulator *regulator_get(struct device_d *dev, const char *id)

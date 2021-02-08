@@ -62,3 +62,7 @@
 &bsec {
 	barebox,provide-mac-address = <&ethernet0 0x39>;
 };
+
+&vrefbuf {
+	regulator-name = "vref";
+};

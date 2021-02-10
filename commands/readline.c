@@ -16,13 +16,13 @@ static int do_readline(int argc, char *argv[])
 
 	if (readline(argv[1], buf, CONFIG_CBSIZE) < 0) {
 		free(buf);
-		return 1;
+		return COMMAND_ERROR;
 	}
 
 	setenv(argv[2], buf);
 	free(buf);
 
-	return 0;
+	return COMMAND_SUCCESS;
 }
 
 BAREBOX_CMD_HELP_START(readline)

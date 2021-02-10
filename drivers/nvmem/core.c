@@ -129,7 +129,7 @@ static struct nvmem_device *of_nvmem_find(struct device_node *nvmem_np)
 		return NULL;
 
 	list_for_each_entry(dev, &nvmem_devs, node)
-		if (dev->dev.device_node->name && !strcmp(dev->dev.device_node->name, nvmem_np->name))
+		if (dev->dev.device_node == nvmem_np)
 			return dev;
 
 	return NULL;

@@ -746,7 +746,7 @@ config CMD_SAVEENV
 config CMD_SETENV
 	tristate
 	default y
-	depends on !CONFIG_SHELL_NONE
+	depends on !SHELL_NONE
 	prompt "setenv"
 	help
 	  Set environment variable

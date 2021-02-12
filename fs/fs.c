@@ -89,7 +89,13 @@ static int init_fs(void)
 
 postcore_initcall(init_fs);
 
+struct filename;
+
 static struct fs_device_d *get_fsdevice_by_path(const char *path);
+static int filename_lookup(int dfd, struct filename *name, unsigned flags,
+			   struct path *path);;
+static struct filename *getname(const char *filename);
+static void path_put(const struct path *path);
 
 LIST_HEAD(fs_device_list);
 
@@ -683,6 +689,8 @@ static void fs_remove(struct device_d *dev)
 	struct fs_device_d *fsdev = dev_to_fs_device(dev);
 	struct super_block *sb = &fsdev->sb;
 	struct inode *inode, *tmp;
+	struct path path;
+	int ret;
 
 	if (fsdev->dev.driver) {
 		dev->driver->remove(dev);
@@ -695,8 +703,16 @@ static void fs_remove(struct device_d *dev)
 	if (fsdev->cdev)
 		cdev_close(fsdev->cdev);
 
-	if (fsdev->loop && fsdev->cdev)
+	if (fsdev->loop && fsdev->cdev) {
 		cdev_remove_loop(fsdev->cdev);
+
+		ret = filename_lookup(AT_FDCWD, getname(fsdev->backingstore),
+				      LOOKUP_FOLLOW, &path);
+		if (!ret) {
+			mntput(path.mnt);
+			path_put(&path);
+		}
+	}
 
 	if (fsdev->vfsmount.mountpoint)
 		fsdev->vfsmount.mountpoint->d_flags &= ~DCACHE_MOUNTED;
@@ -767,16 +783,30 @@ static const char *detect_fs(const char *filename, const char *fsoptions)
 int fsdev_open_cdev(struct fs_device_d *fsdev)
 {
 	unsigned long long offset = 0;
+	struct path path = {};
+	int ret;
 
 	parseopt_b(fsdev->options, "loop", &fsdev->loop);
 	parseopt_llu_suffix(fsdev->options, "offset", &offset);
-	if (fsdev->loop)
-		fsdev->cdev = cdev_create_loop(fsdev->backingstore, O_RDWR,
-					       offset);
-	else
+	if (fsdev->loop) {
+		ret = filename_lookup(AT_FDCWD, getname(fsdev->backingstore),
+				      LOOKUP_FOLLOW, &path);
+		if (ret)
+			return ret;
+
+		fsdev->cdev = cdev_create_loop(fsdev->backingstore, O_RDWR, offset);
+	} else {
 		fsdev->cdev = cdev_open(fsdev->backingstore, O_RDWR);
-	if (!fsdev->cdev)
+	}
+	if (!fsdev->cdev) {
+		path_put(&path);
 		return -EINVAL;
+	}
+
+	if (path.mnt) {
+		mntget(path.mnt);
+		path_put(&path);
+	}
 
 	fsdev->dev.parent = fsdev->cdev->dev;
 	fsdev->parent_device = fsdev->cdev->dev;

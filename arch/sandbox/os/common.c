@@ -276,7 +276,7 @@ extern char * strsep_unescaped(char **s, const char *ct);
 
 static int add_image(const char *_str, char *devname_template, int *devname_number)
 {
-	struct hf_info *hf = malloc(sizeof(struct hf_info));
+	struct hf_info *hf = calloc(1, sizeof(struct hf_info));
 	char *str, *filename, *devname;
 	char tmp[16];
 	char *opt;

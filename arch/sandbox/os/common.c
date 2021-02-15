@@ -220,7 +220,7 @@ ssize_t linux_write(int fd, const void *buf, size_t count)
 	return write(fd, buf, count);
 }
 
-off_t linux_lseek(int fd, off_t offset)
+loff_t linux_lseek(int fd, loff_t offset)
 {
 	return lseek(fd, offset, SEEK_SET);
 }

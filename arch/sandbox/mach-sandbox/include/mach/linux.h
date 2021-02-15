@@ -17,7 +17,7 @@ int linux_open_hostfile(struct hf_info *hf);
 int linux_read(int fd, void *buf, size_t count);
 int linux_read_nonblock(int fd, void *buf, size_t count);
 ssize_t linux_write(int fd, const void *buf, size_t count);
-off_t linux_lseek(int fildes, off_t offset);
+loff_t linux_lseek(int fildes, loff_t offset);
 int linux_tstc(int fd);
 void __attribute__((noreturn)) linux_exit(void);
 void linux_hang(void);

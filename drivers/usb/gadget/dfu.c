@@ -32,6 +32,7 @@
  *   checking?
  * - make 'dnstate' attached to 'struct usb_device_instance'
  */
+#define pr_fmt(fmt) "dfu: " fmt
 
 #include <dma.h>
 #include <asm/byteorder.h>
@@ -209,7 +210,7 @@ dfu_bind(struct usb_configuration *c, struct usb_function *f)
 
 	dfu->dnreq = usb_ep_alloc_request(c->cdev->gadget->ep0);
 	if (!dfu->dnreq) {
-		printf("usb_ep_alloc_request failed\n");
+		pr_err("usb_ep_alloc_request failed\n");
 		status = -ENOMEM;
 		goto out;
 	}
@@ -254,7 +255,7 @@ dfu_bind(struct usb_configuration *c, struct usb_function *f)
 
 	i = 0;
 	file_list_for_each_entry(dfu_files, fentry) {
-		printf("dfu: register alt%d(%s) with device %s\n",
+		pr_err("register alt%d(%s) with device %s\n",
 				i, fentry->name, fentry->filename);
 		i++;
 	}
@@ -418,7 +419,7 @@ static int handle_manifest(struct usb_function *f, const struct usb_ctrlrequest 
 
 		ret = copy_file(DFU_TEMPFILE, dfu_file_entry->filename, 0);
 		if (ret) {
-			printf("copy file failed\n");
+			pr_err("copy file failed\n");
 			ret = -EINVAL;
 			goto out;
 		}
@@ -500,7 +501,7 @@ static int dfu_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 				value = -EINVAL;
 				goto out;
 			}
-			debug("dfu: starting download to %s\n", dfu_file_entry->filename);
+			pr_debug("starting download to %s\n", dfu_file_entry->filename);
 			if (dfu_file_entry->flags & FILE_LIST_FLAG_SAFE) {
 				dfufd = open(DFU_TEMPFILE, O_WRONLY | O_CREAT);
 			} else {
@@ -529,7 +530,7 @@ static int dfu_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 			return 0;
 		case USB_REQ_DFU_UPLOAD:
 			dfu->dfu_state = DFU_STATE_dfuUPLOAD_IDLE;
-			debug("dfu: starting upload from %s\n", dfu_file_entry->filename);
+			pr_debug("starting upload from %s\n", dfu_file_entry->filename);
 			if (!(dfu_file_entry->flags & FILE_LIST_FLAG_READBACK)) {
 				dfu->dfu_state = DFU_STATE_dfuERROR;
 				goto out;

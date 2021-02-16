@@ -222,7 +222,7 @@ static void __nvme_revalidate_disk(struct block_device *blk,
 }
 
 static void nvme_setup_rw(struct nvme_ns *ns, struct nvme_command *cmnd,
-			  int block, int num_block)
+			  sector_t block, blkcnt_t num_block)
 {
 	cmnd->rw.nsid = cpu_to_le32(ns->head->ns_id);
 	cmnd->rw.slba = cpu_to_le64(nvme_block_nr(ns, block));
@@ -239,7 +239,7 @@ static void nvme_setup_flush(struct nvme_ns *ns, struct nvme_command *cmnd)
 }
 
 static int nvme_submit_sync_rw(struct nvme_ns *ns, struct nvme_command *cmnd,
-			       void *buffer, int block, int num_blocks)
+			       void *buffer, sector_t block, blkcnt_t num_blocks)
 {
 	/*
 	 * ns->ctrl->max_hw_sectors is in units of 512 bytes, so we
@@ -251,7 +251,7 @@ static int nvme_submit_sync_rw(struct nvme_ns *ns, struct nvme_command *cmnd,
 
 	if (num_blocks > max_hw_sectors) {
 		while (num_blocks) {
-			const int chunk = min_t(int, num_blocks,
+			const u32 chunk = min_t(blkcnt_t, num_blocks,
 						max_hw_sectors);
 
 			ret = nvme_submit_sync_rw(ns, cmnd, buffer, block,
@@ -275,7 +275,7 @@ static int nvme_submit_sync_rw(struct nvme_ns *ns, struct nvme_command *cmnd,
 
 	if (ret) {
 		dev_err(ns->ctrl->dev,
-			"I/O failed: block: %d, num blocks: %d, status code type: %xh, status code %02xh\n",
+			"I/O failed: block: %llu, num blocks: %llu, status code type: %xh, status code %02xh\n",
 			block, num_blocks, (ret >> 8) & 0xf,
 			ret & 0xff);
 		return -EIO;
@@ -286,7 +286,7 @@ static int nvme_submit_sync_rw(struct nvme_ns *ns, struct nvme_command *cmnd,
 
 
 static int nvme_block_device_read(struct block_device *blk, void *buffer,
-				  int block, int num_blocks)
+				  sector_t block, blkcnt_t num_blocks)
 {
 	struct nvme_ns *ns = to_nvme_ns(blk);
 	struct nvme_command cmnd = { };
@@ -298,7 +298,7 @@ static int nvme_block_device_read(struct block_device *blk, void *buffer,
 
 static int __maybe_unused
 nvme_block_device_write(struct block_device *blk, const void *buffer,
-			int block, int num_blocks)
+			sector_t block, blkcnt_t num_blocks)
 {
 	struct nvme_ns *ns = to_nvme_ns(blk);
 	struct nvme_command cmnd = { };

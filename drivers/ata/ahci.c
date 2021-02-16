@@ -215,7 +215,7 @@ static int ahci_read_id(struct ata_port *ata, void *buf)
 }
 
 static int ahci_rw(struct ata_port *ata, void *rbuf, const void *wbuf,
-		unsigned int block, int num_blocks)
+		sector_t block, blkcnt_t num_blocks)
 {
 	struct ahci_port *ahci = container_of(ata, struct ahci_port, ata);
 	u8 fis[20];
@@ -237,7 +237,7 @@ static int ahci_rw(struct ata_port *ata, void *rbuf, const void *wbuf,
 	while (num_blocks) {
 		int now;
 
-		now = min(MAX_SATA_BLOCKS_READ_WRITE, num_blocks);
+		now = min_t(blkcnt_t, MAX_SATA_BLOCKS_READ_WRITE, num_blocks);
 
 		fis[4] = (block >> 0) & 0xff;
 		fis[5] = (block >> 8) & 0xff;
@@ -270,14 +270,14 @@ static int ahci_rw(struct ata_port *ata, void *rbuf, const void *wbuf,
 	return 0;
 }
 
-static int ahci_read(struct ata_port *ata, void *buf, unsigned int block,
-		int num_blocks)
+static int ahci_read(struct ata_port *ata, void *buf, sector_t block,
+		blkcnt_t num_blocks)
 {
 	return ahci_rw(ata, buf, NULL, block, num_blocks);
 }
 
-static int ahci_write(struct ata_port *ata, const void *buf, unsigned int block,
-		int num_blocks)
+static int ahci_write(struct ata_port *ata, const void *buf, sector_t block,
+		blkcnt_t num_blocks)
 {
 	return ahci_rw(ata, NULL, buf, block, num_blocks);
 }

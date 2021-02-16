@@ -398,16 +398,16 @@ int mci_switch(struct mci *mci, unsigned index, unsigned value)
 	return mci_send_cmd(mci, &cmd, NULL);
 }
 
-static int mci_calc_blk_cnt(uint64_t cap, unsigned shift)
+static blkcnt_t mci_calc_blk_cnt(blkcnt_t cap, unsigned shift)
 {
-	unsigned ret = cap >> shift;
+	blkcnt_t ret = cap >> shift;
 
 	if (ret > 0x7fffffff) {
 		pr_warn("Limiting card size due to 31 bit contraints\n");
 		return 0x7fffffff;
 	}
 
-	return (int)ret;
+	return ret;
 }
 
 static void mci_part_add(struct mci *mci, uint64_t size,
@@ -1342,14 +1342,14 @@ static int mci_blk_part_switch(struct mci_part *part)
  * This routine expects the buffer has the correct size to read all data!
  */
 static int __maybe_unused mci_sd_write(struct block_device *blk,
-				const void *buffer, int block, int num_blocks)
+				const void *buffer, sector_t block, blkcnt_t num_blocks)
 {
 	struct mci_part *part = container_of(blk, struct mci_part, blk);
 	struct mci *mci = part->mci;
 	struct mci_host *host = mci->host;
 	int rc;
-	unsigned max_req_block = num_blocks;
-	int write_block;
+	blkcnt_t max_req_block = num_blocks;
+	blkcnt_t write_block;
 
 	if (mci->host->max_req_size)
 		max_req_block = mci->host->max_req_size / mci->write_bl_len;
@@ -1361,7 +1361,7 @@ static int __maybe_unused mci_sd_write(struct block_device *blk,
 		return -EPERM;
 	}
 
-	dev_dbg(&mci->dev, "%s: Write %d block(s), starting at %d\n",
+	dev_dbg(&mci->dev, "%s: Write %llu block(s), starting at %llu\n",
 		__func__, num_blocks, block);
 
 	if (mci->write_bl_len != SECTOR_SIZE) {
@@ -1372,15 +1372,15 @@ static int __maybe_unused mci_sd_write(struct block_device *blk,
 
 	/* size of the block number field in the MMC/SD command is 32 bit only */
 	if (block > MAX_BUFFER_NUMBER) {
-		dev_dbg(&mci->dev, "Cannot handle block number %d. Too large!\n", block);
+		dev_dbg(&mci->dev, "Cannot handle block number %llu. Too large!\n", block);
 		return -EINVAL;
 	}
 
 	while (num_blocks) {
-		write_block = min_t(int, num_blocks, max_req_block);
+		write_block = min(num_blocks, max_req_block);
 		rc = mci_block_write(mci, buffer, block, write_block);
 		if (rc != 0) {
-			dev_dbg(&mci->dev, "Writing block %d failed with %d\n", block, rc);
+			dev_dbg(&mci->dev, "Writing block %llu failed with %d\n", block, rc);
 			return rc;
 		}
 		num_blocks -= write_block;
@@ -1401,13 +1401,13 @@ static int __maybe_unused mci_sd_write(struct block_device *blk,
  *
  * This routine expects the buffer has the correct size to store all data!
  */
-static int mci_sd_read(struct block_device *blk, void *buffer, int block,
-				int num_blocks)
+static int mci_sd_read(struct block_device *blk, void *buffer, sector_t block,
+				blkcnt_t num_blocks)
 {
 	struct mci_part *part = container_of(blk, struct mci_part, blk);
 	struct mci *mci = part->mci;
-	unsigned max_req_block = num_blocks;
-	int read_block;
+	blkcnt_t max_req_block = num_blocks;
+	blkcnt_t read_block;
 	int rc;
 
 	if (mci->host->max_req_size)
@@ -1415,7 +1415,7 @@ static int mci_sd_read(struct block_device *blk, void *buffer, int block,
 
 	mci_blk_part_switch(part);
 
-	dev_dbg(&mci->dev, "%s: Read %d block(s), starting at %d\n",
+	dev_dbg(&mci->dev, "%s: Read %llu block(s), starting at %llu\n",
 		__func__, num_blocks, block);
 
 	if (mci->read_bl_len != SECTOR_SIZE) {
@@ -1425,15 +1425,15 @@ static int mci_sd_read(struct block_device *blk, void *buffer, int block,
 	}
 
 	if (block > MAX_BUFFER_NUMBER) {
-		dev_err(&mci->dev, "Cannot handle block number %d. Too large!\n", block);
+		dev_err(&mci->dev, "Cannot handle block number %llu. Too large!\n", block);
 		return -EINVAL;
 	}
 
 	while (num_blocks) {
-		read_block = min_t(int, num_blocks, max_req_block);
+		read_block = min(num_blocks, max_req_block);
 		rc = mci_read_block(mci, buffer, block, read_block);
 		if (rc != 0) {
-			dev_dbg(&mci->dev, "Reading block %d failed with %d\n", block, rc);
+			dev_dbg(&mci->dev, "Reading block %llu failed with %d\n", block, rc);
 			return rc;
 		}
 		num_blocks -= read_block;

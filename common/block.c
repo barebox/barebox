@@ -18,7 +18,7 @@ LIST_HEAD(block_device_list);
 /* a chunk of contiguous data */
 struct chunk {
 	void *data; /* data buffer */
-	int block_start; /* first block in this chunk */
+	sector_t block_start; /* first block in this chunk */
 	int dirty; /* need to write back to device */
 	int num; /* number of chunk, debugging only */
 	struct list_head list;
@@ -28,7 +28,7 @@ struct chunk {
 
 static int writebuffer_io_len(struct block_device *blk, struct chunk *chunk)
 {
-	return min(blk->rdbufsize, blk->num_blocks - chunk->block_start);
+	return min_t(blkcnt_t, blk->rdbufsize, blk->num_blocks - chunk->block_start);
 }
 
 /*
@@ -64,14 +64,14 @@ static int writebuffer_flush(struct block_device *blk)
  * get the chunk containing a given block. Will return NULL if the
  * block is not cached, the chunk otherwise.
  */
-static struct chunk *chunk_get_cached(struct block_device *blk, int block)
+static struct chunk *chunk_get_cached(struct block_device *blk, sector_t block)
 {
 	struct chunk *chunk;
 
 	list_for_each_entry(chunk, &blk->buffered_blocks, list) {
 		if (block >= chunk->block_start &&
 				block < chunk->block_start + blk->rdbufsize) {
-			dev_dbg(blk->dev, "%s: found %d in %d\n", __func__,
+			dev_dbg(blk->dev, "%s: found %llu in %d\n", __func__,
 				block, chunk->num);
 			/*
 			 * move most recently used entry to the head of the list
@@ -88,7 +88,7 @@ static struct chunk *chunk_get_cached(struct block_device *blk, int block)
  * Get the data pointer for a given block. Will return NULL if
  * the block is not cached, the data pointer otherwise.
  */
-static void *block_get_cached(struct block_device *blk, int block)
+static void *block_get_cached(struct block_device *blk, sector_t block)
 {
 	struct chunk *chunk;
 
@@ -135,7 +135,7 @@ static struct chunk *get_chunk(struct block_device *blk)
  * not cached already. By definition block_get_cached() for
  * the same block will succeed after this call.
  */
-static int block_cache(struct block_device *blk, int block)
+static int block_cache(struct block_device *blk, sector_t block)
 {
 	struct chunk *chunk;
 	int ret;
@@ -146,7 +146,7 @@ static int block_cache(struct block_device *blk, int block)
 
 	chunk->block_start = block & ~blk->blkmask;
 
-	dev_dbg(blk->dev, "%s: %d to %d\n", __func__, chunk->block_start,
+	dev_dbg(blk->dev, "%s: %llu to %d\n", __func__, chunk->block_start,
 		chunk->num);
 
 	if (chunk->block_start * BLOCKSIZE(blk) >= blk->discard_start &&
@@ -172,7 +172,7 @@ static int block_cache(struct block_device *blk, int block)
  * Get the data for a block, either from the cache or from
  * the device.
  */
-static void *block_get(struct block_device *blk, int block)
+static void *block_get(struct block_device *blk, sector_t block)
 {
 	void *outdata;
 	int ret;
@@ -200,9 +200,9 @@ static ssize_t block_op_read(struct cdev *cdev, void *buf, size_t count,
 {
 	struct block_device *blk = cdev->priv;
 	unsigned long mask = BLOCKSIZE(blk) - 1;
-	unsigned long block = offset >> blk->blockbits;
+	sector_t block = offset >> blk->blockbits;
 	size_t icount = count;
-	int blocks;
+	blkcnt_t blocks;
 
 	if (offset & mask) {
 		size_t now = BLOCKSIZE(blk) - (offset & mask);
@@ -252,7 +252,7 @@ static ssize_t block_op_read(struct cdev *cdev, void *buf, size_t count,
  * Put data into a block. This only overwrites the data in the
  * cache and marks the corresponding chunk as dirty.
  */
-static int block_put(struct block_device *blk, const void *buf, int block)
+static int block_put(struct block_device *blk, const void *buf, sector_t block)
 {
 	struct chunk *chunk;
 	void *data;
@@ -277,9 +277,10 @@ static ssize_t block_op_write(struct cdev *cdev, const void *buf, size_t count,
 {
 	struct block_device *blk = cdev->priv;
 	unsigned long mask = BLOCKSIZE(blk) - 1;
-	unsigned long block = offset >> blk->blockbits;
+	sector_t block = offset >> blk->blockbits;
 	size_t icount = count;
-	int blocks, ret;
+	blkcnt_t blocks;
+	int ret;
 
 	if (offset & mask) {
 		size_t now = BLOCKSIZE(blk) - (offset & mask);
@@ -419,24 +420,24 @@ int blockdevice_unregister(struct block_device *blk)
 	return 0;
 }
 
-int block_read(struct block_device *blk, void *buf, int block, int num_blocks)
+int block_read(struct block_device *blk, void *buf, sector_t block, blkcnt_t num_blocks)
 {
 	int ret;
 
 	ret = cdev_read(&blk->cdev, buf,
 			num_blocks << blk->blockbits,
-			(loff_t)block << blk->blockbits, 0);
+			block << blk->blockbits, 0);
 
 	return ret < 0 ? ret : 0;
 }
 
-int block_write(struct block_device *blk, void *buf, int block, int num_blocks)
+int block_write(struct block_device *blk, void *buf, sector_t block, blkcnt_t num_blocks)
 {
 	int ret;
 
 	ret = cdev_write(&blk->cdev, buf,
 			num_blocks << blk->blockbits,
-			(loff_t)block << blk->blockbits, 0);
+			block << blk->blockbits, 0);
 
 	return ret < 0 ? ret : 0;
 }

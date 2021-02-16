@@ -138,7 +138,7 @@ static int ata_wait_ready(struct ide_port *ide, unsigned timeout)
  * @param num Sector number
  */
 static int ata_set_lba_sector(struct ata_port *port, unsigned drive,
-				uint64_t num)
+				sector_t num)
 {
 	struct ide_port *ide = to_ata_drive_access(port);
 
@@ -324,11 +324,11 @@ static int ide_reset(struct ata_port *port)
  * @note Due to 'block' is of type 'int' only small disks can be handled!
  * @todo Optimize the read loop
  */
-static int ide_read(struct ata_port *port, void *buffer, unsigned int block,
-				int num_blocks)
+static int ide_read(struct ata_port *port, void *buffer, sector_t block,
+				blkcnt_t num_blocks)
 {
 	int rc;
-	uint64_t sector = block;
+	sector_t sector = block;
 	struct ide_port *ide = to_ata_drive_access(port);
 
 	while (num_blocks) {
@@ -372,10 +372,10 @@ static int ide_read(struct ata_port *port, void *buffer, unsigned int block,
  * @todo Optimize the write loop
  */
 static int __maybe_unused ide_write(struct ata_port *port,
-				const void *buffer, unsigned int block, int num_blocks)
+				const void *buffer, sector_t block, blkcnt_t num_blocks)
 {
 	int rc;
-	uint64_t sector = block;
+	sector_t sector = block;
 	struct ide_port *ide = to_ata_drive_access(port);
 
 	while (num_blocks) {

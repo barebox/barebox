@@ -26,7 +26,7 @@
 #include <disks.h>
 #include <dma.h>
 
-static uint64_t ata_id_n_sectors(uint16_t *id)
+static blkcnt_t ata_id_n_sectors(uint16_t *id)
 {
 	if (ata_id_has_lba(id)) {
 		if (ata_id_has_lba48(id))
@@ -75,7 +75,7 @@ static void __maybe_unused ata_dump_id(uint16_t *id)
 	unsigned char serial[ATA_ID_SERNO_LEN + 1];
 	unsigned char firmware[ATA_ID_FW_REV_LEN + 1];
 	unsigned char product[ATA_ID_PROD_LEN + 1];
-	uint64_t n_sectors;
+	sector_t n_sectors;
 
 	/* Serial number */
 	ata_id_c_string(id, serial, ATA_ID_SERNO, sizeof(serial));
@@ -165,8 +165,8 @@ static void ata_fix_endianess(uint16_t *buf, unsigned wds)
  * @note Due to 'block' is of type 'int' only small disks can be handled!
  * @todo Optimize the read loop
  */
-static int ata_read(struct block_device *blk, void *buffer, int block,
-				int num_blocks)
+static int ata_read(struct block_device *blk, void *buffer, sector_t block,
+				blkcnt_t num_blocks)
 {
 	struct ata_port *port = container_of(blk, struct ata_port, blk);
 
@@ -187,7 +187,7 @@ static int ata_read(struct block_device *blk, void *buffer, int block,
  * @todo Optimize the write loop
  */
 static int __maybe_unused ata_write(struct block_device *blk,
-				const void *buffer, int block, int num_blocks)
+				const void *buffer, sector_t block, blkcnt_t num_blocks)
 {
 	struct ata_port *port = container_of(blk, struct ata_port, blk);
 

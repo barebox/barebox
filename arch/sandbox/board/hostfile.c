@@ -72,14 +72,14 @@ static struct cdev_operations hf_cdev_ops = {
 	.write = hf_cdev_write,
 };
 
-static int hf_blk_read(struct block_device *blk, void *buf, int block, int num_blocks)
+static int hf_blk_read(struct block_device *blk, void *buf, sector_t block, blkcnt_t num_blocks)
 {
 	ssize_t ret = hf_read(container_of(blk, struct hf_priv, blk), buf,
 			      num_blocks << SECTOR_SHIFT, block << SECTOR_SHIFT, 0);
 	return ret > 0 ? 0 : ret;
 }
 
-static int hf_blk_write(struct block_device *blk, const void *buf, int block, int num_blocks)
+static int hf_blk_write(struct block_device *blk, const void *buf, sector_t block, blkcnt_t num_blocks)
 {
 	ssize_t ret = hf_write(container_of(blk, struct hf_priv, blk), buf,
 			       num_blocks << SECTOR_SHIFT, block << SECTOR_SHIFT, 0);

@@ -28,7 +28,7 @@ struct efi_block_io_media{
 	bool write_caching;
 	u32 block_size;
 	u32 io_align;
-	u64 last_block;
+	sector_t last_block;
 	u64 lowest_aligned_lba; /* added in Revision 2 */
 	u32 logical_blocks_per_physical_block; /* added in Revision 2 */
 	u32 optimal_transfer_length_granularity; /* added in Revision 3 */
@@ -53,8 +53,8 @@ struct efi_bio_priv {
 	u32 media_id;
 };
 
-static int efi_bio_read(struct block_device *blk, void *buffer, int block,
-		int num_blocks)
+static int efi_bio_read(struct block_device *blk, void *buffer, sector_t block,
+		blkcnt_t num_blocks)
 {
 	struct efi_bio_priv *priv = container_of(blk, struct efi_bio_priv, blk);
 	efi_status_t efiret;
@@ -69,7 +69,7 @@ static int efi_bio_read(struct block_device *blk, void *buffer, int block,
 }
 
 static int efi_bio_write(struct block_device *blk,
-		const void *buffer, int block, int num_blocks)
+		const void *buffer, sector_t block, blkcnt_t num_blocks)
 {
 	struct efi_bio_priv *priv = container_of(blk, struct efi_bio_priv, blk);
 	efi_status_t efiret;

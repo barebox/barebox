@@ -305,10 +305,11 @@ static int usb_stor_init_blkdev(struct us_blk_dev *pblk_dev)
 		return result;
 	}
 
-	if (last_lba > INT_MAX - 1) {
-		last_lba = INT_MAX - 1;
+	if (last_lba == U32_MAX) {
+		last_lba = U32_MAX - 1;
 		dev_warn(dev,
-			 "Limiting device size due to 31 bit contraints\n");
+			 "Limiting device size due to 32 bit constraints\n");
+		/* To support LBA >= U32_MAX, a READ CAPACITY (16) should be issued here */
 	}
 
 	pblk_dev->blk.num_blocks = last_lba + 1;

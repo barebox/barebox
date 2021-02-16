@@ -232,5 +232,4 @@ struct ext2_data {
 	struct ext4fs_indir_block indir1, indir2, indir3;
 };
 
-extern unsigned long part_offset;
 #endif

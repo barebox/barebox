@@ -95,7 +95,7 @@ int ext4fs_mount(struct ext_filesystem *fs);
 void ext4fs_umount(struct ext_filesystem *fs);
 char *ext4fs_read_symlink(struct ext2fs_node *node);
 void ext4fs_free_node(struct ext2fs_node *node, struct ext2fs_node *currroot);
-int ext4fs_devread(struct ext_filesystem *fs, int sector, int byte_offset, int byte_len, char *buf);
+ssize_t ext4fs_devread(struct ext_filesystem *fs, sector_t sector, int byte_offset, size_t byte_len, char *buf);
 long int read_allocated_block(struct ext2fs_node *node, int fileblock);
 
 #endif

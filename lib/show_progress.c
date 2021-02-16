@@ -19,7 +19,7 @@
 #include <progress.h>
 #include <asm-generic/div64.h>
 
-#define HASHES_PER_LINE	65
+#define HASHES_PER_LINE	64
 
 static int printed;
 static int progress_max;

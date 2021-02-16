@@ -221,7 +221,7 @@ struct inode *ext_get_inode(struct super_block *sb, int ino)
 
 	inode->i_ino = ino;
 	inode->i_mode = le16_to_cpu(node->inode.mode);
-	inode->i_size = le32_to_cpu(node->inode.size);
+	inode->i_size = ext4_isize(node);
 
 	switch (inode->i_mode & S_IFMT) {
 	default:

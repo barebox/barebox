@@ -55,7 +55,7 @@ loff_t ext4fs_read_file(struct ext2fs_node *node, loff_t pos,
 	int log2blocksize = LOG2_EXT2_BLOCK_SIZE(node->data);
 	const int blockshift = log2blocksize + DISK_SECTOR_BITS;
 	const int blocksize = 1 << blockshift;
-	unsigned int filesize = le32_to_cpu(node->inode.size);
+	loff_t filesize = ext4_isize(node);
 	ssize_t ret;
 	struct ext_filesystem *fs = node->data->fs;
 

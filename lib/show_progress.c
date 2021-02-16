@@ -17,15 +17,15 @@
 #include <common.h>
 #include <fs.h>
 #include <progress.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 
 #define HASHES_PER_LINE	64
 
-static int printed;
-static int progress_max;
-static int spin;
+static loff_t printed;
+static loff_t progress_max;
+static unsigned spin;
 
-void show_progress(int now)
+void show_progress(loff_t now)
 {
 	char spinchr[] = "\\|/-";
 
@@ -35,9 +35,8 @@ void show_progress(int now)
 	}
 
 	if (progress_max && progress_max != FILESIZE_MAX) {
-		uint64_t tmp = (int64_t)now * HASHES_PER_LINE;
-		do_div(tmp, progress_max);
-		now = tmp;
+		uint64_t tmp = now * HASHES_PER_LINE;
+		now = div64_u64(tmp, progress_max);
 	}
 
 	while (printed < now) {
@@ -48,7 +47,7 @@ void show_progress(int now)
 	}
 }
 
-void init_progression_bar(int max)
+void init_progression_bar(loff_t max)
 {
 	printed = 0;
 	progress_max = max;

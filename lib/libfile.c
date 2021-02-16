@@ -332,7 +332,7 @@ int copy_file(const char *src, const char *dst, int verbose)
 	int r, s;
 	int ret = 1, err1 = 0;
 	int mode;
-	int total = 0;
+	loff_t total = 0;
 	struct stat srcstat, dststat;
 
 	rw_buf = xmalloc(RW_BUF_SIZE);

@@ -74,39 +74,10 @@ struct ext4_extent_header {
 };
 
 struct ext_filesystem {
-	/* Total Sector of partition */
-	uint64_t total_sect;
-	/* Block size  of partition */
-	uint32_t blksz;
 	/* Inode size of partition */
 	uint32_t inodesz;
-	/* Sectors per Block */
-	uint32_t sect_perblk;
 	/* Group Descriptor size */
 	uint16_t gdsize;
-	/* Group Descriptor Block Number */
-	uint32_t gdtable_blkno;
-	/* Total block groups of partition */
-	uint32_t no_blkgrp;
-	/* No of blocks required for bgdtable */
-	uint32_t no_blk_pergdt;
-	/* Superblock */
-	struct ext2_sblock *sb;
-	/* Block group descritpor table */
-	struct ext2_block_group *bgd;
-	char *gdtable;
-
-	/* Block Bitmap Related */
-	unsigned char **blk_bmaps;
-	long int curr_blkno;
-	uint16_t first_pass_bbmap;
-
-	/* Inode Bitmap Related */
-	unsigned char **inode_bmaps;
-	int curr_inode_no;
-	uint16_t first_pass_ibmap;
-
-	/* Journal Related */
 
 	/* Block Device Descriptor */
 	struct cdev *cdev;

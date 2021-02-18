@@ -6,7 +6,7 @@
 #include <io.h>
 #include <mci.h>
 #include <linux/sizes.h>
-#include <asm-generic/sections.h>
+#include <asm/sections.h>
 #include <asm/cache.h>
 #include <mach/xload.h>
 #ifdef CONFIG_ARCH_IMX

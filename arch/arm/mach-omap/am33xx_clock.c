@@ -16,7 +16,7 @@
 #include <asm/io.h>
 #include <mach/am33xx-clock.h>
 #include <mach/am33xx-generic.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 
 #define PRCM_MOD_EN		0x2
 #define	PRCM_FORCE_WAKEUP	0x2

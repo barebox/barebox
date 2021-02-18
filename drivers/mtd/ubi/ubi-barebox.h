@@ -17,7 +17,7 @@
 #include <common.h>
 #include <malloc.h>
 #include <crc.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 #include <errno.h>
 #include <linux/err.h>
 #include <linux/types.h>

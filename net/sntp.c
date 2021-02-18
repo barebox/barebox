@@ -3,7 +3,7 @@
 #include <common.h>
 #include <asm/byteorder.h>
 #include <asm/unaligned.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 #include <command.h>
 #include <clock.h>
 #include <net.h>

@@ -13,7 +13,7 @@
 #include <linux/kernel.h>
 #include <of_address.h>
 #include <of.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 
 #define PLL_DIV1	0
 #define PLL_DIV2	1

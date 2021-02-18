@@ -10,7 +10,7 @@
 #include <io.h>
 #include <of.h>
 #include <of_address.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 
 #include <dt-bindings/clock/stm32mp1-clks.h>
 

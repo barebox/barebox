@@ -15,7 +15,7 @@
 #include <command.h>
 #include <errno.h>
 #include <clock.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 #include <malloc.h>
 #include <stdio.h> /* for strcpy, strcmp */
 

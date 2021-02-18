@@ -13,7 +13,7 @@
 #include <linux/types.h>
 #include <linux/string.h>
 #include <linux/ctype.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 #include <malloc.h>
 #include <kallsyms.h>
 

@@ -10,7 +10,7 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <linux/log2.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 
 static unsigned int _get_table_maxdiv(const struct clk_div_table *table)
 {

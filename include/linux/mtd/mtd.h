@@ -15,7 +15,7 @@
 #include <linux/types.h>
 #include <linux/list.h>
 #include <linux/mtd/mtd-abi.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 
 #define MTD_CHAR_MAJOR 90
 #define MTD_BLOCK_MAJOR 31

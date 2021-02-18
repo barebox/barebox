@@ -23,7 +23,7 @@
 #include <mach/imxfb.h>
 #include <malloc.h>
 #include <errno.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 #include <mmu.h>
 #include <mach/imx-ipu-fb.h>
 #include <linux/clk.h>

@@ -1,7 +1,7 @@
 #include <common.h>
 #include <command.h>
 #include <clock.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 #include <malloc.h>
 
 static int do_time(int argc, char *argv[])

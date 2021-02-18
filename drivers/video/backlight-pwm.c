@@ -24,7 +24,7 @@
 #include <regulator.h>
 #include <gpio.h>
 #include <of_gpio.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 
 struct pwm_backlight {
 	struct backlight_device backlight;

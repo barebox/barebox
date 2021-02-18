@@ -17,7 +17,7 @@
 /* This file mostly implements UBI kernel API functions */
 
 #include <linux/err.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 #include "ubi.h"
 
 /**

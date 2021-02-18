@@ -8,7 +8,7 @@
 #include <soc/fsl/fsl_immap.h>
 #include <io.h>
 #include <soc/fsl/immap_lsch2.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 #include "fsl_ddr.h"
 
 /* To avoid 64-bit full-divides, we factor this here */

@@ -31,7 +31,7 @@
 #include <mtd/ubi-user.h>
 #include <mtd/utils.h>
 #include <mtd/ubi-media.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 
 int libscan_ubi_scan(struct mtd_info *mtd, struct ubi_scan_info **info,
 	     int verbose)

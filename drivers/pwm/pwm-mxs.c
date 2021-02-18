@@ -9,7 +9,7 @@
 #include <stmp-device.h>
 #include <linux/clk.h>
 #include <linux/err.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 
 #define SET	0x4
 #define CLR	0x8

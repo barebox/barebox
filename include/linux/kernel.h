@@ -6,7 +6,7 @@
 #include <linux/bug.h>
 #include <linux/barebox-wrapper.h>
 #include <linux/limits.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 
 #define ALIGN(x, a)		__ALIGN_MASK(x, (typeof(x))(a) - 1)
 #define ALIGN_DOWN(x, a)	ALIGN((x) - ((a) - 1), (a))

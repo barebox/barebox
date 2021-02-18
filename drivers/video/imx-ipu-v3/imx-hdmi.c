@@ -19,7 +19,7 @@
 #include <init.h>
 #include <linux/clk.h>
 #include <linux/err.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 #include <linux/clk.h>
 #include <i2c/i2c.h>
 #include <video/media-bus-format.h>

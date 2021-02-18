@@ -14,7 +14,7 @@
 #include <malloc.h>
 #include <clock.h>
 #include <soc/imx8m/clk-early.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 
 #include "clk.h"
 

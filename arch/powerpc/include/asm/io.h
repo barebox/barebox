@@ -86,10 +86,6 @@ extern void _outsl_ns(volatile u32 *port, const void *buf, int nl);
 
 #define IO_SPACE_LIMIT ~0
 
-#define memset_io(a,b,c)       memset((void *)(a),(b),(c))
-#define memcpy_fromio(a,b,c)   memcpy((a),(void *)(b),(c))
-#define memcpy_toio(a,b,c)  memcpy((void *)(a),(b),(c))
-
 /*
  * Enforce In-order Execution of I/O:
  * Acts as a barrier to ensure all previous I/O accesses have

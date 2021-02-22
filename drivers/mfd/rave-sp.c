@@ -269,9 +269,8 @@ static int rave_sp_write(struct rave_sp *sp, const u8 *data, u8 data_size)
 
 	length = dest - frame;
 
-	if (IS_ENABLED(DEBUG))
-		print_hex_dump(0, "rave-sp tx: ", DUMP_PREFIX_NONE,
-			       16, 1, frame, length, false);
+	print_hex_dump_debug("rave-sp tx: ", DUMP_PREFIX_NONE, 16, 1,
+			     frame, length, false);
 
 	return serdev_device_write(sp->serdev, frame, length, SECOND);
 }
@@ -406,9 +405,8 @@ static void rave_sp_receive_frame(struct rave_sp *sp,
 	struct device_d *dev         = sp->serdev->dev;
 	u8 crc_calculated[checksum_length];
 
-	if (IS_ENABLED(DEBUG))
-		print_hex_dump(0, "rave-sp rx: ", DUMP_PREFIX_NONE,
-			       16, 1, data, length, false);
+	print_hex_dump_debug("rave-sp rx: ", DUMP_PREFIX_NONE, 16, 1,
+			     data, length, false);
 
 	if (unlikely(length <= checksum_length)) {
 		dev_warn(dev, "Dropping short frame\n");

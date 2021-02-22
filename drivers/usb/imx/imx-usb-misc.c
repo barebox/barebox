@@ -353,7 +353,7 @@ static __maybe_unused struct imx_usb_misc_data mx5_data = {
 
 #define MX6_USB_CTRL(n)			((n) * 4)
 #define MX6_USB_CTRL_OVER_CUR_DIS	(1 << 7)
-#define MX6_USB_CTRL_OVER_CUR_ACT_HIGH	(1 << 8)
+#define MX6_USB_CTRL_OVER_CUR_ACT_LOW	(1 << 8)
 #define MX6_USB_CTRL_PWR_POLARITY	(1 << 9)
 
 static void mx6_hsic_pullup(unsigned long reg, int on)
@@ -379,8 +379,15 @@ static __maybe_unused int mx6_initialize_usb_hw(void __iomem *base, int port,
 	case 0:
 	case 1:
 		val = readl(base + MX6_USB_CTRL(port));
-		if (flags & MXC_EHCI_DISABLE_OVERCURRENT)
+		if (flags & MXC_EHCI_DISABLE_OVERCURRENT) {
 			val |= MX6_USB_CTRL_OVER_CUR_DIS;
+		} else {
+			val &= ~MX6_USB_CTRL_OVER_CUR_DIS;
+			if (flags & MXC_EHCI_OC_PIN_ACTIVE_LOW)
+				val |= MX6_USB_CTRL_OVER_CUR_ACT_LOW;
+			else
+				val &= ~MX6_USB_CTRL_OVER_CUR_ACT_LOW;
+		}
 		if (flags & MXC_EHCI_PWR_PIN_ACTIVE_HIGH)
 			val |= MX6_USB_CTRL_PWR_POLARITY;
 		writel(val, base + MX6_USB_CTRL(port));
@@ -453,9 +460,9 @@ static int usbmisc_imx7d_init(void __iomem *base, int port,
 	} else {
 		reg &= ~MX6_USB_CTRL_OVER_CUR_DIS;
 		if (flags & MXC_EHCI_OC_PIN_ACTIVE_LOW)
-			reg &= ~MX6_USB_CTRL_OVER_CUR_ACT_HIGH;
+			reg |= MX6_USB_CTRL_OVER_CUR_ACT_LOW;
 		else
-			reg |= MX6_USB_CTRL_OVER_CUR_ACT_HIGH;
+			reg &= ~MX6_USB_CTRL_OVER_CUR_ACT_LOW;
 	}
 	if (flags & MXC_EHCI_PWR_PIN_ACTIVE_HIGH)
 		reg |= MX6_USB_CTRL_PWR_POLARITY;

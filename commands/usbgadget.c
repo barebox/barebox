@@ -67,7 +67,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(usbgadget)
 	.cmd		= do_usbgadget,
 	BAREBOX_CMD_DESC("Create USB Gadget multifunction device")
-	BAREBOX_CMD_OPTS("[-asdAD]")
+	BAREBOX_CMD_OPTS("[-adAD]")
 	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_usbgadget_help)
 BAREBOX_CMD_END

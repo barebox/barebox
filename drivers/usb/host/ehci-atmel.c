@@ -57,13 +57,6 @@ static void atmel_stop_clock(struct atmel_ehci_priv *atehci)
 	clk_disable(atehci->uclk);
 }
 
-static int atmel_ehci_detect(struct device_d *dev)
-{
-	struct atmel_ehci_priv *atehci = dev->priv;
-
-	return ehci_detect(atehci->ehci);
-}
-
 static int atmel_ehci_probe(struct device_d *dev)
 {
 	int ret;
@@ -78,7 +71,6 @@ static int atmel_ehci_probe(struct device_d *dev)
 	atehci = xzalloc(sizeof(*atehci));
 	atehci->dev = dev;
 	dev->priv = atehci;
-	dev->detect = atmel_ehci_detect;
 
 	atehci->iclk = clk_get(dev, "ehci_clk");
 	if (IS_ERR(atehci->iclk)) {

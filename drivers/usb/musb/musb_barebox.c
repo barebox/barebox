@@ -121,13 +121,6 @@ submit_int_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
 	return submit_urb(dev, urb, 100);
 }
 
-static int musb_detect(struct device_d *dev)
-{
-	struct musb *musb = dev->priv;
-
-	return usb_host_detect(&musb->host);
-}
-
 int musb_register(struct musb *musb)
 {
 	struct usb_host *host;
@@ -139,8 +132,6 @@ int musb_register(struct musb *musb)
 	host->submit_control_msg = submit_control_msg;
 	host->submit_bulk_msg = submit_bulk_msg;
 
-	musb->controller->priv = musb;
-	musb->controller->detect = musb_detect;
 	usb_register_host(host);
 
 	return 0;

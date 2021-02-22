@@ -178,13 +178,6 @@ static int imx_chipidea_probe_dt(struct imx_chipidea *ci)
 	return 0;
 }
 
-static int ci_ehci_detect(struct device_d *dev)
-{
-	struct imx_chipidea *ci = dev->priv;
-
-	return ehci_detect(ci->ehci);
-}
-
 static int ci_set_mode(void *ctx, enum usb_dr_mode mode)
 {
 	struct imx_chipidea *ci = ctx;
@@ -205,8 +198,6 @@ static int ci_set_mode(void *ctx, enum usb_dr_mode mode)
 			}
 
 			ci->ehci = ehci;
-
-			ci->dev->detect = ci_ehci_detect;
 		} else {
 			dev_err(ci->dev, "Host support not available\n");
 			return -ENODEV;

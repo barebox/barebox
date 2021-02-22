@@ -1349,11 +1349,6 @@ submit_int_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
 	return result;
 }
 
-int ehci_detect(struct ehci_host *ehci)
-{
-	return usb_host_detect(&ehci->host);
-}
-
 struct ehci_host *ehci_register(struct device_d *dev, struct ehci_data *data)
 {
 	struct usb_host *host;
@@ -1411,13 +1406,6 @@ void ehci_unregister(struct ehci_host *ehci)
 	free(ehci);
 }
 
-static int ehci_dev_detect(struct device_d *dev)
-{
-	struct ehci_host *ehci = dev->priv;
-
-	return ehci_detect(ehci);
-}
-
 static int ehci_probe(struct device_d *dev)
 {
 	struct resource *iores;
@@ -1457,7 +1445,6 @@ static int ehci_probe(struct device_d *dev)
 		return PTR_ERR(ehci);
 
 	dev->priv = ehci;
-	dev->detect = ehci_dev_detect;
 
 	return 0;
 }

@@ -27,15 +27,15 @@
 #include <fcntl.h>
 #include "ext4_common.h"
 
-int ext4fs_devread(struct ext_filesystem *fs, int __sector, int byte_offset,
-		int byte_len, char *buf)
+ssize_t ext4fs_devread(struct ext_filesystem *fs, sector_t __sector, int byte_offset,
+		       size_t byte_len, char *buf)
 {
 	ssize_t size;
 	uint64_t sector = __sector;
 
 	size = cdev_read(fs->cdev, buf, byte_len, sector * SECTOR_SIZE + byte_offset, 0);
 	if (size < 0) {
-		dev_err(fs->dev, "read error at sector %d: %s\n", __sector,
+		dev_err(fs->dev, "read error at sector %llu: %s\n", __sector,
 				strerror(-size));
 		return size;
 	}
@@ -221,7 +221,7 @@ struct inode *ext_get_inode(struct super_block *sb, int ino)
 
 	inode->i_ino = ino;
 	inode->i_mode = le16_to_cpu(node->inode.mode);
-	inode->i_size = le32_to_cpu(node->inode.size);
+	inode->i_size = ext4_isize(node);
 
 	switch (inode->i_mode & S_IFMT) {
 	default:

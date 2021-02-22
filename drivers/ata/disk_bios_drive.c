@@ -115,7 +115,7 @@ static struct DAPS bios_daps __attribute__((aligned(16)));
  * @param buffer Buffer to read from or write to (in the low memory area)
  * @return 0 on success, anything else on failure
  */
-static int biosdisk_bios_call(struct media_access *media, int cmd, uint64_t sector_start, unsigned sector_count, void *buffer)
+static int biosdisk_bios_call(struct media_access *media, int cmd, sector_t sector_start, blkcnt_t sector_count, void *buffer)
 {
 	int rc;
 
@@ -150,12 +150,12 @@ static int biosdisk_bios_call(struct media_access *media, int cmd, uint64_t sect
  *
  * @note Due to 'block' is of type 'int' only small disks can be handled!
  */
-static int biosdisk_read(struct block_device *blk, void *buffer, int block,
-				int num_blocks)
+static int biosdisk_read(struct block_device *blk, void *buffer, sector_t block,
+				blkcnt_t num_blocks)
 {
 	int rc;
-	uint64_t sector_start = block;
-	unsigned sector_count = num_blocks;
+	sector_t sector_start = block;
+	blkcnt_t sector_count = num_blocks;
 	struct media_access *media = to_media_access(blk);
 
 	while (sector_count >= SECTORS_AT_ONCE) {
@@ -191,11 +191,11 @@ static int biosdisk_read(struct block_device *blk, void *buffer, int block,
  * @note Due to 'block' is of type 'int' only small disks can be handled!
  */
 static int __maybe_unused biosdisk_write(struct block_device *blk,
-				const void *buffer, int block, int num_blocks)
+				const void *buffer, sector_t block, blkcnt_t num_blocks)
 {
 	int rc;
-	uint64_t sector_start = block;
-	unsigned sector_count = num_blocks;
+	sector_t sector_start = block;
+	blkcnt_t sector_count = num_blocks;
 	struct media_access *media = to_media_access(blk);
 
 	while (sector_count >= SECTORS_AT_ONCE) {

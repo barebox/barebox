@@ -47,28 +47,32 @@ void ext4fs_free_node(struct ext2fs_node *node, struct ext2fs_node *currroot)
  * Optimized read file API : collects and defers contiguous sector
  * reads into one potentially more efficient larger sequential read action
  */
-int ext4fs_read_file(struct ext2fs_node *node, int pos,
+loff_t ext4fs_read_file(struct ext2fs_node *node, loff_t pos,
 		unsigned int len, char *buf)
 {
-	int i;
-	int blockcnt;
+	loff_t i;
+	blkcnt_t blockcnt;
 	int log2blocksize = LOG2_EXT2_BLOCK_SIZE(node->data);
-	int blocksize = 1 << (log2blocksize + DISK_SECTOR_BITS);
-	unsigned int filesize = le32_to_cpu(node->inode.size);
-	short ret;
+	const int blockshift = log2blocksize + DISK_SECTOR_BITS;
+	const int blocksize = 1 << blockshift;
+	loff_t filesize = ext4_isize(node);
+	ssize_t ret;
 	struct ext_filesystem *fs = node->data->fs;
 
 	/* Adjust len so it we can't read past the end of the file. */
-	if (len > filesize)
-		len = filesize;
+	if (len + pos > filesize)
+		len = filesize - pos;
 
-	blockcnt = ((len + pos) + blocksize - 1) / blocksize;
+	if (filesize <= pos)
+		return -EINVAL;
 
-	for (i = pos / blocksize; i < blockcnt; i++) {
-		int blknr;
-		int blockoff = pos % blocksize;
-		int blockend = blocksize;
-		int skipfirst = 0;
+	blockcnt = ((len + pos) + blocksize - 1) >> blockshift;
+
+	for (i = pos >> blockshift; i < blockcnt; i++) {
+		sector_t blknr;
+		loff_t blockoff = pos - (blocksize * i);
+		loff_t blockend = blocksize;
+		loff_t skipfirst = 0;
 
 		blknr = read_allocated_block(node, i);
 		if (blknr < 0)
@@ -78,7 +82,7 @@ int ext4fs_read_file(struct ext2fs_node *node, int pos,
 
 		/* Last block.  */
 		if (i == blockcnt - 1) {
-			blockend = (len + pos) % blocksize;
+			blockend = (len + pos) - (blocksize * i);
 
 			/* The last portion is exactly blocksize. */
 			if (!blockend)
@@ -86,7 +90,7 @@ int ext4fs_read_file(struct ext2fs_node *node, int pos,
 		}
 
 		/* First block. */
-		if (i == pos / blocksize) {
+		if (i == pos >> blockshift) {
 			skipfirst = blockoff;
 			blockend -= skipfirst;
 		}

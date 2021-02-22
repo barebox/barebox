@@ -74,39 +74,10 @@ struct ext4_extent_header {
 };
 
 struct ext_filesystem {
-	/* Total Sector of partition */
-	uint64_t total_sect;
-	/* Block size  of partition */
-	uint32_t blksz;
 	/* Inode size of partition */
 	uint32_t inodesz;
-	/* Sectors per Block */
-	uint32_t sect_perblk;
 	/* Group Descriptor size */
 	uint16_t gdsize;
-	/* Group Descriptor Block Number */
-	uint32_t gdtable_blkno;
-	/* Total block groups of partition */
-	uint32_t no_blkgrp;
-	/* No of blocks required for bgdtable */
-	uint32_t no_blk_pergdt;
-	/* Superblock */
-	struct ext2_sblock *sb;
-	/* Block group descritpor table */
-	struct ext2_block_group *bgd;
-	char *gdtable;
-
-	/* Block Bitmap Related */
-	unsigned char **blk_bmaps;
-	long int curr_blkno;
-	uint16_t first_pass_bbmap;
-
-	/* Inode Bitmap Related */
-	unsigned char **inode_bmaps;
-	int curr_inode_no;
-	uint16_t first_pass_ibmap;
-
-	/* Journal Related */
 
 	/* Block Device Descriptor */
 	struct cdev *cdev;
@@ -124,7 +95,7 @@ int ext4fs_mount(struct ext_filesystem *fs);
 void ext4fs_umount(struct ext_filesystem *fs);
 char *ext4fs_read_symlink(struct ext2fs_node *node);
 void ext4fs_free_node(struct ext2fs_node *node, struct ext2fs_node *currroot);
-int ext4fs_devread(struct ext_filesystem *fs, int sector, int byte_offset, int byte_len, char *buf);
+ssize_t ext4fs_devread(struct ext_filesystem *fs, sector_t sector, int byte_offset, size_t byte_len, char *buf);
 long int read_allocated_block(struct ext2fs_node *node, int fileblock);
 
 #endif

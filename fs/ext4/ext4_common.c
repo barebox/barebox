@@ -43,10 +43,11 @@ static struct ext4_extent_header *ext4fs_get_extent_block(struct ext2_data *data
 		uint32_t fileblock, int log2_blksz)
 {
 	struct ext4_extent_idx *index;
-	unsigned long long block;
+	sector_t block;
 	struct ext_filesystem *fs = data->fs;
 	int blksz = EXT2_BLOCK_SIZE(data);
-	int i, ret;
+	ssize_t ret;
+	int i;
 
 	while (1) {
 		index = (struct ext4_extent_idx *)(ext_block + 1);
@@ -77,10 +78,10 @@ static struct ext4_extent_header *ext4fs_get_extent_block(struct ext2_data *data
 	}
 }
 
-static int ext4fs_blockgroup(struct ext2_data *data, int group,
+static ssize_t ext4fs_blockgroup(struct ext2_data *data, int group,
 		struct ext2_block_group *blkgrp)
 {
-	long int blkno;
+	sector_t blkno;
 	unsigned int blkoff, desc_per_blk;
 	struct ext_filesystem *fs = data->fs;
 	int desc_size = fs->gdsize;
@@ -91,7 +92,7 @@ static int ext4fs_blockgroup(struct ext2_data *data, int group,
 			group / desc_per_blk;
 	blkoff = (group % desc_per_blk) * desc_size;
 
-	dev_dbg(fs->dev, "read %d group descriptor (blkno %ld blkoff %u)\n",
+	dev_dbg(fs->dev, "read %d group descriptor (blkno %llu blkoff %u)\n",
 	      group, blkno, blkoff);
 
 	return ext4fs_devread(fs, blkno << LOG2_EXT2_BLOCK_SIZE(data),
@@ -103,8 +104,9 @@ int ext4fs_read_inode(struct ext2_data *data, int ino, struct ext2_inode *inode)
 	struct ext2_block_group blkgrp;
 	struct ext2_sblock *sblock = &data->sblock;
 	struct ext_filesystem *fs = data->fs;
-	int inodes_per_block, ret;
-	long int blkno;
+	int inodes_per_block;
+	ssize_t ret;
+	sector_t blkno;
 	unsigned int blkoff;
 
 	/* It is easier to calculate if the first inode is 0. */
@@ -128,11 +130,11 @@ int ext4fs_read_inode(struct ext2_data *data, int ino, struct ext2_inode *inode)
 }
 
 static int ext4fs_get_indir_block(struct ext2fs_node *node,
-				struct ext4fs_indir_block *indir, int blkno)
+				struct ext4fs_indir_block *indir, sector_t blkno)
 {
 	struct ext_filesystem *fs = node->data->fs;
 	int blksz;
-	int ret;
+	ssize_t ret;
 
 	blksz = EXT2_BLOCK_SIZE(node->data);
 
@@ -488,7 +490,8 @@ fail:
 int ext4fs_mount(struct ext_filesystem *fs)
 {
 	struct ext2_data *data;
-	int ret, blksz;
+	ssize_t ret;
+	int blksz;
 
 	data = zalloc(sizeof(struct ext2_data));
 	if (!data)

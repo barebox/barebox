@@ -124,7 +124,7 @@ int parse_partition_table(struct block_device *blk)
 
 	rc = block_read(blk, buf, 0, 2);
 	if (rc != 0) {
-		dev_err(blk->dev, "Cannot read MBR/partition table\n");
+		dev_err(blk->dev, "Cannot read MBR/partition table: %pe\n", ERR_PTR(rc));
 		goto on_error;
 	}
 

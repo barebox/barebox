@@ -48,8 +48,8 @@ static inline void *zalloc(size_t size)
 
 int ext4fs_read_inode(struct ext2_data *data, int ino,
 		      struct ext2_inode *inode);
-int ext4fs_read_file(struct ext2fs_node *node, int pos,
-		unsigned int len, char *buf);
+loff_t ext4fs_read_file(struct ext2fs_node *node, loff_t pos,
+			unsigned int len, char *buf);
 int ext4fs_find_file(const char *path, struct ext2fs_node *rootnode,
 			struct ext2fs_node **foundnode, int *foundtype);
 int ext4fs_iterate_dir(struct ext2fs_node *dir, char *name,

@@ -232,5 +232,13 @@ struct ext2_data {
 	struct ext4fs_indir_block indir1, indir2, indir3;
 };
 
-extern unsigned long part_offset;
+static inline loff_t ext4_isize(struct ext2fs_node *node)
+{
+        if (S_ISREG(le16_to_cpu(node->inode.mode)))
+                return ((loff_t)le32_to_cpu(node->inode.size_high) << 32) |
+                        le32_to_cpu(node->inode.size);
+
+        return (loff_t) le32_to_cpu(node->inode.size);
+}
+
 #endif

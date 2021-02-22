@@ -166,13 +166,8 @@ typedef __u32 __bitwise __wsum;
  *
  * blkcnt_t is the type of the inode's block count.
  */
-#ifdef CONFIG_LBDAF
 typedef u64 sector_t;
 typedef u64 blkcnt_t;
-#else
-typedef unsigned long sector_t;
-typedef unsigned long blkcnt_t;
-#endif
 
 /*
  * The type of an index into the pagecache.

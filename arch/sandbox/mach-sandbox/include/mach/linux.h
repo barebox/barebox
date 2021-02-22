@@ -38,13 +38,21 @@ struct linux_console_data {
 
 extern int sdl_xres;
 extern int sdl_yres;
-void sdl_close(void);
-int sdl_open(int xres, int yres, int bpp, void* buf);
-void sdl_stop_timer(void);
-void sdl_start_timer(void);
-void sdl_get_bitfield_rgba(struct fb_bitfield *r, struct fb_bitfield *g,
-			    struct fb_bitfield *b, struct fb_bitfield *a);
-void sdl_setpixel(int x, int y, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+struct sdl_fb_info {
+	void *screen_base;
+	int xres;
+	int yres;
+	int bpp;
+	int rmask, gmask, bmask, amask;
+};
+int sdl_video_open(const struct sdl_fb_info *);
+void sdl_video_pause(void);
+void sdl_video_close(void);
+
+int sdl_sound_init(unsigned sample_rate);
+int sdl_sound_play(const void *data, unsigned nsamples);
+void sdl_sound_stop(void);
+void sdl_sound_close(void);
 
 struct ft2232_bitbang;
 struct ft2232_bitbang *barebox_libftdi1_open(int vendor_id, int device_id,

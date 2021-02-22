@@ -3,6 +3,7 @@
 #define __PWM_H
 
 #include <dt-bindings/pwm/pwm.h>
+#include <errno.h>
 
 struct pwm_device;
 struct device_d;
@@ -62,6 +63,38 @@ int pwm_enable(struct pwm_device *pwm);
 void pwm_disable(struct pwm_device *pwm);
 
 unsigned int pwm_get_period(struct pwm_device *pwm);
+
+/**
+ * pwm_set_relative_duty_cycle() - Set a relative duty cycle value
+ * @state: PWM state to fill
+ * @duty_cycle: relative duty cycle value
+ * @scale: scale in which @duty_cycle is expressed
+ *
+ * This functions converts a relative into an absolute duty cycle (expressed
+ * in nanoseconds), and puts the result in state->duty_cycle.
+ *
+ * For example if you want to configure a 50% duty cycle, call:
+ *
+ * pwm_init_state(pwm, &state);
+ * pwm_set_relative_duty_cycle(&state, 50, 100);
+ * pwm_apply_state(pwm, &state);
+ *
+ * This functions returns -EINVAL if @duty_cycle and/or @scale are
+ * inconsistent (@scale == 0 or @duty_cycle > @scale).
+ */
+static inline int
+pwm_set_relative_duty_cycle(struct pwm_state *state, unsigned int duty_cycle,
+			    unsigned int scale)
+{
+	if (!scale || duty_cycle > scale)
+		return -EINVAL;
+
+	state->duty_ns = DIV_ROUND_CLOSEST_ULL((u64)duty_cycle *
+					       state->period_ns,
+					       scale);
+
+	return 0;
+}
 
 struct pwm_chip;
 

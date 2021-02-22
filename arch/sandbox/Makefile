@@ -37,8 +37,8 @@ archprepare: maketools
 
 PHONY += maketools
 
-ifeq ($(CONFIG_DRIVER_VIDEO_SDL),y)
-SDL_LIBS := $(shell pkg-config sdl --libs)
+ifeq ($(CONFIG_SDL),y)
+SDL_LIBS := $(shell pkg-config sdl2 --libs)
 endif
 
 ifeq ($(CONFIG_GPIO_LIBFTDI1),y)
@@ -64,7 +64,7 @@ endif
 BAREBOX_LDFLAGS += \
 	-Wl,-T,$(BAREBOX_LDS) \
 	-Wl,--whole-archive $(BAREBOX_OBJS) -Wl,--no-whole-archive \
-	-lrt -lpthread $(SDL_LIBS) $(FTDI1_LIBS) \
+	-lrt $(SDL_LIBS) $(FTDI1_LIBS) \
 	$(SANITIZER_LIBS)
 
 cmd_barebox__ = $(CC) -o $@ $(BAREBOX_LDFLAGS)

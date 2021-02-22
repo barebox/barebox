@@ -82,6 +82,7 @@ endif
 config DRIVER_VIDEO_SDL
 	bool "SDL framebuffer driver"
 	depends on SANDBOX
+	select SDL
 
 config DRIVER_VIDEO_PXA
 	bool "PXA27x framebuffer driver"

@@ -1,103 +1,157 @@
+// SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2012 Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
- *
- * GPL v2
+ * Copyright (c) 2021 Ahmad Fatoum
  */
 
 #include <stdio.h>
+#include <stdbool.h>
 #include <SDL.h>
-#include <time.h>
-#include <signal.h>
 #include <mach/linux.h>
-#include <unistd.h>
-#include <pthread.h>
 
-struct fb_bitfield {
-	uint32_t offset;			/* beginning of bitfield	*/
-	uint32_t length;			/* length of bitfield		*/
-	uint32_t msb_right;			/* != 0 : Most significant bit is */
-					/* right */
-};
-
-static SDL_Surface *real_screen;
-static void *buffer = NULL;
-pthread_t th;
-
-static void sdl_copy_buffer(SDL_Surface *screen)
+static void sdl_perror(const char *what)
 {
-	if (SDL_MUSTLOCK(screen)) {
-		if (SDL_LockSurface(screen) < 0)
-			return;
-	}
-
-	memcpy(screen->pixels, buffer, screen->pitch * screen->h);
-
-	if(SDL_MUSTLOCK(screen))
-		SDL_UnlockSurface(screen);
+	printf("SDL: Could not %s: %s.\n", what, SDL_GetError());
 }
 
-static void *threadStart(void *ptr)
+static struct sdl_fb_info info;
+static SDL_atomic_t shutdown;
+SDL_Window *window;
+
+static int scanout(void *ptr)
 {
-	while (1) {
-		usleep(1000 * 100);
+	SDL_Renderer *renderer;
+	SDL_Surface *surface;
+	SDL_Texture *texture;
+	void *buf = info.screen_base;
+	int ret = -1;
 
-		sdl_copy_buffer(real_screen);
-		SDL_Flip(real_screen);
-	}
-
-	return 0;
-}
-
-void sdl_start_timer(void)
-{
-	pthread_attr_t attr;
-	pthread_attr_init(&attr);
-	pthread_create(&th, &attr, threadStart, NULL);
-}
-
-void sdl_stop_timer(void)
-{
-	pthread_cancel(th);
-}
-
-void sdl_get_bitfield_rgba(struct fb_bitfield *r, struct fb_bitfield *g,
-			    struct fb_bitfield *b, struct fb_bitfield *a)
-{
-	SDL_Surface *screen = real_screen;
-
-	r->length = 8 - screen->format->Rloss;
-	r->offset = screen->format->Rshift;
-	g->length = 8 - screen->format->Gloss;
-	g->offset = screen->format->Gshift;
-	b->length = 8 - screen->format->Bloss;
-	b->offset = screen->format->Bshift;
-	a->length = 8 - screen->format->Aloss;
-	a->offset = screen->format->Ashift;
-}
-
-int sdl_open(int xres, int yres, int bpp, void* buf)
-{
-	int flags = SDL_HWSURFACE | SDL_ASYNCBLIT | SDL_HWACCEL;
-
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE) < 0) {
-		printf("Could not initialize SDL: %s.\n", SDL_GetError());
+	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+	if (!renderer) {
+		sdl_perror("create renderer");
 		return -1;
 	}
 
-	real_screen = SDL_SetVideoMode(xres, yres, bpp, flags);
-	if (!real_screen) {
-		sdl_close();
-		fprintf(stderr, "Couldn't create renderer: %s\n", SDL_GetError());
+	surface = SDL_CreateRGBSurface(0, info.xres, info.yres, info.bpp,
+				       info.rmask, info.gmask, info.bmask, info.amask);
+	if (!surface) {
+		sdl_perror("create surface");
+		goto destroy_renderer;
+	}
+
+	texture = SDL_CreateTextureFromSurface(renderer, surface);
+	if (!texture) {
+		sdl_perror("create texture");
+		goto free_surface;
+	}
+
+	while (!SDL_AtomicGet(&shutdown)) {
+		SDL_Delay(100);
+
+		SDL_UpdateTexture(texture, NULL, buf, surface->pitch);
+		SDL_RenderClear(renderer);
+		SDL_RenderCopy(renderer, texture, NULL, NULL);
+		SDL_RenderPresent(renderer);
+	}
+
+	ret = 0;
+
+	SDL_DestroyTexture(texture);
+free_surface:
+	SDL_FreeSurface(surface);
+destroy_renderer:
+	SDL_DestroyRenderer(renderer);
+
+	return ret;
+}
+
+static SDL_Thread *thread;
+
+void sdl_video_close(void)
+{
+	SDL_AtomicSet(&shutdown, true); /* implies full memory barrier */
+	SDL_WaitThread(thread, NULL);
+	SDL_AtomicSet(&shutdown, false);
+	SDL_DestroyWindow(window);
+	SDL_QuitSubSystem(SDL_INIT_VIDEO);
+}
+
+int sdl_video_open(const struct sdl_fb_info *_info)
+{
+	info = *_info;
+
+	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
+		sdl_perror("initialize SDL Video");
 		return -1;
 	}
 
-	buffer = buf;
+	window = SDL_CreateWindow("barebox", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+				  info.xres, info.yres, 0);
+	if (!window) {
+		sdl_perror("create window");
+		goto quit_subsystem;
+	}
 
+	/* All scanout needs to happen in the same thread, because not all
+	 * graphic backends are thread-safe. The window is created in the main
+	 * thread though to work around libEGL crashing with SDL_VIDEODRIVER=wayland
+	 */
+
+	thread = SDL_CreateThread(scanout, "video-scanout", NULL);
+	if (!thread) {
+		sdl_perror("start scanout thread");
+		goto destroy_window;
+	}
+
+	return 0;
+
+destroy_window:
+	SDL_DestroyWindow(window);
+quit_subsystem:
+	SDL_QuitSubSystem(SDL_INIT_VIDEO);
+
+	return -1;
+}
+
+static SDL_AudioDeviceID dev;
+
+int sdl_sound_init(unsigned sample_rate)
+{
+	SDL_AudioSpec audiospec = {
+		.freq = sample_rate,
+		.format = AUDIO_S16,
+		.channels = 1,
+		.samples = 2048,
+	};
+
+	if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
+		sdl_perror("initialize SDL Audio");
+		return -1;
+	}
+
+	dev = SDL_OpenAudioDevice(NULL, 0, &audiospec, NULL, 0);
+	if (!dev) {
+		sdl_perror("initialize open audio device");
+		SDL_QuitSubSystem(SDL_INIT_AUDIO);
+		return -1;
+	}
+
+	SDL_PauseAudioDevice(dev, 0);
 	return 0;
 }
 
-void sdl_close(void)
+void sdl_sound_close(void)
 {
-	sdl_stop_timer();
-	SDL_Quit();
+	SDL_QuitSubSystem(SDL_INIT_AUDIO);
+}
+
+int sdl_sound_play(const void *data, unsigned nsamples)
+{
+	/* core sound support handles all the queueing for us */
+	SDL_ClearQueuedAudio(dev);
+	return SDL_QueueAudio(dev, data, nsamples * sizeof(uint16_t));
+}
+
+void sdl_sound_stop(void)
+{
+	SDL_ClearQueuedAudio(dev);
 }

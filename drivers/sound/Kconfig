@@ -1,0 +1,38 @@
+# SPDX-License-Identifier: GPL-2.0-only
+menuconfig SOUND
+	bool "Sound drivers"
+	select POLLER
+	help
+	  Say Y here for sound support. At the moment that's just beep tones.
+	  Tones are played asynchronously in a poller. Check the beep command
+	  for how to exercise the API.
+
+if SOUND
+
+config SOUND_SDL
+	bool "SDL sound driver for sandbox"
+	depends on SANDBOX && OFDEVICE
+	select SDL
+
+config PWM_BEEPER
+	bool "PWM beeper support"
+	depends on PWM && OFDEVICE
+	help
+	  Say Y here to get support for PWM based beeper devices.
+
+config GPIO_BEEPER
+	bool "GPIO beeper support"
+	depends on GPIOLIB && OFDEVICE
+	help
+	  Say Y here to get support for GPIO based beeper devices.
+
+config SYNTH_SQUARES
+	bool "Synthesize square waves only"
+	help
+	  For beeping on PCM sound cards, barebox needs to synthesize samples,
+	  which can take too much poller time for crisp playback and/or quick
+	  booting. If your playback stutters, say Y here. This will have all
+	  synthesizers output a gain-adjusted square wave instead, which is
+	  less time-consuming to compute.
+
+endif

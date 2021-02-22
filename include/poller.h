@@ -34,6 +34,10 @@ int poller_async_unregister(struct poller_async *pa);
 int poller_call_async(struct poller_async *pa, uint64_t delay_ns,
 		void (*fn)(void *), void *ctx);
 int poller_async_cancel(struct poller_async *pa);
+static inline bool poller_async_active(struct poller_async *pa)
+{
+	return pa->active;
+}
 
 #ifdef CONFIG_POLLER
 void poller_call(void);

@@ -94,4 +94,8 @@
 		compatible = "barebox,sandbox-watchdog";
 		barebox,reset-source = <&stickypage 0>;
 	};
+
+	sound {
+		compatible = "barebox,sandbox-sound";
+	};
 };

@@ -1474,6 +1474,13 @@ config CMD_FBTEST
 	  Framebuffer test command that allows to produce a number of
 	  test patterns on a screen.
 
+config CMD_BEEP
+	def_bool y
+	depends on SOUND
+	prompt "Beep"
+	help
+	  Play beeps. Accepts same format as GRUB play
+
 config CMD_READLINE
 	tristate
 	prompt "readline"

@@ -29,4 +29,11 @@ config HWRNG_DEV_RANDOM
 	  This driver allows use of the host provided /dev/urandom
 	  as barebox HWRNGs.
 
+config HW_RANDOM_VIRTIO
+	tristate "VirtIO Random Number Generator support"
+	depends on VIRTIO
+	help
+	  This driver provides guest-side support for the virtual Random Number
+	  Generator hardware.
+
 endif

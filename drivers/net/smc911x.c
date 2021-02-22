@@ -541,7 +541,7 @@ static int smc911x_probe(struct device_d *dev)
 	 * forbidden while this bit isn't set. Try for 100ms
 	 */
 	ret = wait_on_timeout(100 * MSECOND, smc911x_reg_read(priv, PMT_CTRL) & PMT_CTRL_READY);
-	if (!ret) {
+	if (ret) {
 		dev_err(dev, "Device not READY in 100ms aborting\n");
 		return -ENODEV;
 	}

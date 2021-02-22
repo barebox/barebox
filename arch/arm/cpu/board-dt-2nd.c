@@ -10,7 +10,7 @@
 #include <asm/sections.h>
 #include <linux/libfdt.h>
 
-static void of_find_mem(void *fdt, unsigned long *membase, unsigned long *memsize)
+static void fdt_find_mem(const void *fdt, unsigned long *membase, unsigned long *memsize)
 {
 	const __be32 *nap, *nsp, *reg;
 	uint32_t na, ns;
@@ -85,7 +85,7 @@ static noinline void dt_2nd_continue_aarch64(void *fdt)
 	if (!fdt)
 		hang();
 
-	of_find_mem(fdt, &membase, &memsize);
+	fdt_find_mem(fdt, &membase, &memsize);
 
 	barebox_arm_entry(membase, memsize, fdt);
 }
@@ -114,7 +114,7 @@ static noinline void dt_2nd_continue(void *fdt)
 	if (!fdt)
 		hang();
 
-	of_find_mem(fdt, &membase, &memsize);
+	fdt_find_mem(fdt, &membase, &memsize);
 
 	barebox_arm_entry(membase, memsize, fdt);
 }

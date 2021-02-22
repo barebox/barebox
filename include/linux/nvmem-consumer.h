@@ -40,6 +40,10 @@ int nvmem_cell_write(struct nvmem_cell *cell, void *buf, size_t len);
 /* direct nvmem device read/write interface */
 struct nvmem_device *nvmem_device_get(struct device_d *dev, const char *name);
 void nvmem_device_put(struct nvmem_device *nvmem);
+int nvmem_device_read(struct nvmem_device *nvmem, unsigned int offset,
+		      size_t bytes, void *buf);
+int nvmem_device_write(struct nvmem_device *nvmem, unsigned int offset,
+		       size_t bytes, const void *buf);
 ssize_t nvmem_device_cell_read(struct nvmem_device *nvmem,
 			       struct nvmem_cell_info *info, void *buf);
 int nvmem_device_cell_write(struct nvmem_device *nvmem,
@@ -50,7 +54,7 @@ int nvmem_device_cell_write(struct nvmem_device *nvmem,
 static inline struct nvmem_cell *nvmem_cell_get(struct device_d *dev,
 						const char *name)
 {
-	return ERR_PTR(-ENOSYS);
+	return ERR_PTR(-EOPNOTSUPP);
 }
 
 static inline void nvmem_cell_put(struct nvmem_cell *cell)
@@ -59,31 +63,60 @@ static inline void nvmem_cell_put(struct nvmem_cell *cell)
 
 static inline char *nvmem_cell_read(struct nvmem_cell *cell, size_t *len)
 {
-	return ERR_PTR(-ENOSYS);
+	return ERR_PTR(-EOPNOTSUPP);
 }
 
 static inline void *nvmem_cell_get_and_read(struct device_node *np,
 					    const char *cell_name,
 					    size_t bytes)
 {
-	return ERR_PTR(-ENOSYS);
+	return ERR_PTR(-EOPNOTSUPP);
 }
 
 static inline int nvmem_cell_write(struct nvmem_cell *cell,
 				    const char *buf, size_t len)
 {
-	return -ENOSYS;
+	return -EOPNOTSUPP;
 }
 
 static inline struct nvmem_device *nvmem_device_get(struct device_d *dev,
 						    const char *name)
 {
-	return ERR_PTR(-ENOSYS);
+	return ERR_PTR(-EOPNOTSUPP);
 }
 
 static inline void nvmem_device_put(struct nvmem_device *nvmem)
 {
 }
+
+static inline ssize_t nvmem_device_cell_read(struct nvmem_device *nvmem,
+					 struct nvmem_cell_info *info,
+					 void *buf)
+{
+	return -EOPNOTSUPP;
+}
+
+static inline int nvmem_device_cell_write(struct nvmem_device *nvmem,
+					  struct nvmem_cell_info *info,
+					  void *buf)
+{
+	return -EOPNOTSUPP;
+}
+
+static inline int nvmem_device_read(struct nvmem_device *nvmem,
+				    unsigned int offset, size_t bytes,
+				    void *buf)
+{
+	return -EOPNOTSUPP;
+}
+
+static inline int nvmem_device_write(struct nvmem_device *nvmem,
+				     unsigned int offset, size_t bytes,
+				     const void *buf)
+{
+	return -EOPNOTSUPP;
+}
+
 #endif /* CONFIG_NVMEM */
 
 #if IS_ENABLED(CONFIG_NVMEM) && IS_ENABLED(CONFIG_OFTREE)

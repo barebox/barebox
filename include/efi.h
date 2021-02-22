@@ -257,7 +257,8 @@ typedef struct {
 	efi_status_t (EFIAPI *open_protocol)(efi_handle_t handle, efi_guid_t *protocol,
 			void ** interface, efi_handle_t agent_handle,
 			efi_handle_t controller_handle, u32 attributes);
-	void *close_protocol;
+	efi_status_t (EFIAPI *close_protocol)(efi_handle_t handle, efi_guid_t *protocol,
+					      efi_handle_t agent, efi_handle_t controller);
 	efi_status_t(EFIAPI *open_protocol_information)(efi_handle_t handle, efi_guid_t *Protocol,
 			struct efi_open_protocol_information_entry **entry_buffer,
 			unsigned long *entry_count);

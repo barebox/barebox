@@ -4,28 +4,33 @@
 #include <driver.h>
 #include <usb/usb.h>
 
-static int (*set_mode_callback)(void *ctx, enum usb_dr_mode mode);
-static unsigned int otg_mode;
+struct otg_mode {
+	struct device_d dev;
+	unsigned int var_mode;
+	unsigned int cur_mode;
+	int (*set_mode_callback)(void *ctx, enum usb_dr_mode mode);
+	void *ctx;
+};
 
 static int otg_set_mode(struct param_d *param, void *ctx)
 {
-	static int cur_mode = USB_DR_MODE_OTG;
+	struct otg_mode *otg = ctx;
 	int ret;
 
-	if (otg_mode == USB_DR_MODE_UNKNOWN)
+	if (otg->var_mode == USB_DR_MODE_UNKNOWN)
 		return -EINVAL;
 
-	if (otg_mode == cur_mode)
+	if (otg->var_mode == otg->cur_mode)
 		return 0;
 
-	if (cur_mode != USB_DR_MODE_OTG)
+	if (otg->cur_mode != USB_DR_MODE_OTG)
 		return -EBUSY;
 
-	ret = set_mode_callback(ctx, otg_mode);
+	ret = otg->set_mode_callback(otg->ctx, otg->var_mode);
 	if (ret)
 		return ret;
 
-	cur_mode = otg_mode;
+	otg->cur_mode = otg->var_mode;
 
 	return 0;
 }
@@ -47,20 +52,38 @@ int usb_register_otg_device(struct device_d *parent,
 {
 	int ret;
 	struct param_d *param_mode;
+	struct otg_mode *otg;
 
-	if (otg_device.parent)
-		return -EBUSY;
+	otg = xzalloc(sizeof(*otg));
+	otg->dev.priv = otg;
+	otg->dev.parent = parent;
+	otg->dev.id = DEVICE_ID_DYNAMIC;
+	dev_set_name(&otg->dev, "otg");
 
-	otg_device.parent = parent;
-	set_mode_callback = set_mode;
-	otg_mode = USB_DR_MODE_OTG;
+	otg->var_mode = USB_DR_MODE_OTG;
+	otg->cur_mode = USB_DR_MODE_OTG;
+	otg->set_mode_callback = set_mode;
+	otg->ctx = ctx;
 
-	ret = register_device(&otg_device);
+	/* register otg.mode as an alias of otg0.mode */
+	if (otg_device.parent == NULL) {
+		otg_device.parent = parent;
+		ret = register_device(&otg_device);
+		if (ret)
+			return ret;
+
+		param_mode = dev_add_param_enum(&otg_device, "mode",
+				otg_set_mode, NULL, &otg->var_mode,
+				otg_mode_names, ARRAY_SIZE(otg_mode_names), otg);
+	}
+
+	ret = register_device(&otg->dev);
 	if (ret)
 		return ret;
 
-	param_mode = dev_add_param_enum(&otg_device, "mode",
-			otg_set_mode, NULL, &otg_mode,
-			otg_mode_names, ARRAY_SIZE(otg_mode_names), ctx);
+	param_mode = dev_add_param_enum(&otg->dev, "mode",
+			otg_set_mode, NULL, &otg->var_mode,
+			otg_mode_names, ARRAY_SIZE(otg_mode_names), otg);
+
 	return PTR_ERR_OR_ZERO(param_mode);
 }

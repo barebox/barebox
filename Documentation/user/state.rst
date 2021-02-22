@@ -579,6 +579,9 @@ content, its backend-type and *state* variable layout.
 		};
 	};
 
+If the *state* variable set is set to be located in a GPT partition, use
+``4778ed65-bf42-45fa-9c5b-287a1dc4aab1`` as the partition type GUID.
+
 SRAM
 ####
 

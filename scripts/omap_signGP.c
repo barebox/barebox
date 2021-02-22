@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: 2010 Texas Instruments Incorporated (http://www.ti.com/)
+
 /**
  * signGP.c - Read the x-load.bin file and write out the x-load.bin.ift file
  *
@@ -5,17 +8,6 @@
  * and the load address.  If not entered on command line, file name is
  * assumed to be x-load.bin in current directory and load address is
  * 0x40200800.
- *
- * Copyright (C) 2010 Texas Instruments Incorporated - http://www.ti.com
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2  of
- * the License as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
  */
 
 #include <stdio.h>

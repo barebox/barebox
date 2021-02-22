@@ -1,3 +1,9 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// SPDX-FileCopyrightText: 1997-1998 Andrew Tridgell
+// SPDX-FileCopyrightText: Cryptoapi developers.
+// SPDX-FileCopyrightText: 2002 David S. Miller <davem@redhat.com>
+// SPDX-FileCopyrightText: 2002 James Morris <jmorris@intercode.com.au>
+
 #include <netinet/in.h>
 #ifdef __sun__
 #include <inttypes.h>
@@ -20,17 +26,7 @@
  * originally based on the public domain implementation written
  * by Colin Plumb in 1993.
  *
- * Copyright (c) Andrew Tridgell 1997-1998.
  * Modified by Steve French (sfrench@us.ibm.com) 2002
- * Copyright (c) Cryptoapi developers.
- * Copyright (c) 2002 David S. Miller (davem@redhat.com)
- * Copyright (c) 2002 James Morris <jmorris@intercode.com.au>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
  */
 #define MD4_DIGEST_SIZE		16
 #define MD4_HMAC_BLOCK_SIZE	64

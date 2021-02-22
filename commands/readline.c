@@ -4,6 +4,7 @@
 #include <common.h>
 #include <command.h>
 #include <malloc.h>
+#include <slice.h>
 #include <xfuncs.h>
 #include <environment.h>
 
@@ -14,15 +15,20 @@ static int do_readline(int argc, char *argv[])
 	if (argc < 3)
 		return COMMAND_ERROR_USAGE;
 
+	command_slice_release();
+
 	if (readline(argv[1], buf, CONFIG_CBSIZE) < 0) {
+		command_slice_acquire();
 		free(buf);
-		return 1;
+		return COMMAND_ERROR;
 	}
+
+	command_slice_acquire();
 
 	setenv(argv[2], buf);
 	free(buf);
 
-	return 0;
+	return COMMAND_SUCCESS;
 }
 
 BAREBOX_CMD_HELP_START(readline)

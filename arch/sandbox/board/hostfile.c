@@ -102,20 +102,17 @@ static int hf_probe(struct device_d *dev)
 {
 	struct device_node *np = dev->device_node;
 	struct hf_priv *priv = xzalloc(sizeof(*priv));
-	struct resource *res;
 	struct cdev *cdev;
 	bool is_blockdev;
-	resource_size_t size;
+	u64 reg[2];
 	int err;
-
-	res = dev_get_resource(dev, IORESOURCE_MEM, 0);
-	if (IS_ERR(res))
-		return PTR_ERR(res);
-
-	size = resource_size(res);
 
 	if (!np)
 		return -ENODEV;
+
+	err = of_property_read_u64_array(np, "reg", reg, ARRAY_SIZE(reg));
+	if (err)
+		return err;
 
 	of_property_read_u32(np, "barebox,fd", &priv->fd);
 
@@ -141,7 +138,7 @@ static int hf_probe(struct device_d *dev)
 		priv->blk.dev = dev;
 		priv->blk.ops = &hf_blk_ops;
 		priv->blk.blockbits = SECTOR_SHIFT;
-		priv->blk.num_blocks = size / SECTOR_SIZE;
+		priv->blk.num_blocks = reg[1] / SECTOR_SIZE;
 
 		err = blockdevice_register(&priv->blk);
 		if (err)
@@ -156,7 +153,7 @@ static int hf_probe(struct device_d *dev)
 		cdev->name = np->name;
 		cdev->dev = dev;
 		cdev->ops = &hf_cdev_ops;
-		cdev->size = size;
+		cdev->size = reg[1];
 		cdev->priv = priv;
 
 		err = devfs_create(cdev);

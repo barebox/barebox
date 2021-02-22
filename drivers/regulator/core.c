@@ -176,6 +176,12 @@ int of_regulator_register(struct regulator_dev *rd, struct device_node *node)
 
 	ri->node = node;
 
+	if (rd->desc->off_on_delay)
+		ri->enable_time_us = rd->desc->off_on_delay;
+
+	if (rd->desc->fixed_uV && rd->desc->n_voltages == 1)
+		ri->min_uv = ri->max_uv = rd->desc->fixed_uV;
+
 	of_property_read_u32(node, "regulator-enable-ramp-delay",
 			&ri->enable_time_us);
 	of_property_read_u32(node, "regulator-min-microvolt",
@@ -538,6 +544,30 @@ void regulator_bulk_free(int num_consumers,
 		consumers[i].consumer = NULL;
 }
 EXPORT_SYMBOL_GPL(regulator_bulk_free);
+
+int regulator_get_voltage(struct regulator *regulator)
+{
+	struct regulator_dev *rdev = regulator->ri->rdev;
+	int sel, ret;
+
+	if (rdev->desc->ops->get_voltage_sel) {
+		sel = rdev->desc->ops->get_voltage_sel(rdev);
+		if (sel < 0)
+			return sel;
+		ret = rdev->desc->ops->list_voltage(rdev, sel);
+	} else if (rdev->desc->ops->get_voltage) {
+		ret = rdev->desc->ops->get_voltage(rdev);
+	} else if (rdev->desc->ops->list_voltage) {
+		ret = rdev->desc->ops->list_voltage(rdev, 0);
+	} else if (rdev->desc->fixed_uV && (rdev->desc->n_voltages == 1)) {
+		ret = rdev->desc->fixed_uV;
+	} else {
+		return -EINVAL;
+	}
+
+	return ret;
+}
+EXPORT_SYMBOL_GPL(regulator_get_voltage_rdev);
 
 static void regulator_print_one(struct regulator_internal *ri)
 {

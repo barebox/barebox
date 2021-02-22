@@ -8,7 +8,7 @@
 #include <malloc.h>
 #include <linux/clk.h>
 #include <linux/err.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 
 #include "clk.h"
 

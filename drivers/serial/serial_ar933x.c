@@ -18,7 +18,7 @@
 #include <init.h>
 #include <malloc.h>
 #include <io.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 #include <linux/clk.h>
 #include <linux/err.h>
 

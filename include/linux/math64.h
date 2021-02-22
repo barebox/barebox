@@ -3,6 +3,7 @@
 #define _LINUX_MATH64_H
 
 #include <linux/types.h>
+#include <linux/compiler.h>
 #include <asm-generic/div64.h>
 
 #if BITS_PER_LONG == 64

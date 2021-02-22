@@ -14,7 +14,7 @@
 #include <mci.h>
 #include <malloc.h>
 #include <errno.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 #include <asm/byteorder.h>
 #include <block.h>
 #include <disks.h>

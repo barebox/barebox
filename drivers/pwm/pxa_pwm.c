@@ -17,7 +17,7 @@
 #include <mach/clock.h>
 #include <mach/pxa-regs.h>
 #include <mach/regs-pwm.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 #include <linux/compiler.h>
 
 /* PWM registers and bits definitions */

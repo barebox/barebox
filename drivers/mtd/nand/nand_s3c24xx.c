@@ -32,7 +32,7 @@
 #include <mach/s3c-iomap.h>
 #include <mach/s3c24xx-nand.h>
 #include <io.h>
-#include <asm-generic/errno.h>
+#include <errno.h>
 #include <asm/sections.h>
 
 #ifdef CONFIG_S3C_NAND_BOOT

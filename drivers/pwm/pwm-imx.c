@@ -15,7 +15,7 @@
 #include <pwm.h>
 #include <linux/clk.h>
 #include <linux/err.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 
 /* i.MX1 and i.MX21 share the same PWM function block: */
 

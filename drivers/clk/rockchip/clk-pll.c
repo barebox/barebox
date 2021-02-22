@@ -4,7 +4,7 @@
  * Author: Heiko Stuebner <heiko@sntech.de>
  */
 
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 #include <common.h>
 #include <io.h>
 #include <linux/list.h>

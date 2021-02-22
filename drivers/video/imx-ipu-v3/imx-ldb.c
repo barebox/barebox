@@ -31,7 +31,7 @@
 #include <mfd/imx6q-iomuxc-gpr.h>
 #include <linux/clk.h>
 #include <linux/err.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 #include <linux/clk.h>
 #include <mach/imx6-regs.h>
 #include <mach/imx53-regs.h>

@@ -17,7 +17,7 @@
 #include <common.h>
 #include <fs.h>
 #include <progress.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 
 #define HASHES_PER_LINE	65
 

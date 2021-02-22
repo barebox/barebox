@@ -20,7 +20,7 @@
 #include <led.h>
 #include <pwm.h>
 #include <of.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 
 struct pwmled {
 	bool active_low;

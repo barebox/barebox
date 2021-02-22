@@ -38,7 +38,7 @@
 #include <mach/pxafb.h>
 
 #include <asm/io.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 
 /* PXA LCD DMA descriptor */
 struct pxafb_dma_descriptor {

@@ -17,7 +17,7 @@
 #include <init.h>
 #include <clock.h>
 #include <io.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 #include <mach/s3c-iomap.h>
 #include <mach/s3c-generic.h>
 #include <mach/s3c-clocks.h>

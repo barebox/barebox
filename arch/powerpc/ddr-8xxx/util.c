@@ -8,7 +8,7 @@
 
 #include <common.h>
 #include <asm/fsl_law.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 #include <mach/clock.h>
 #include "ddr.h"
 

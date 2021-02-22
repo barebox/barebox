@@ -18,7 +18,7 @@
 #include <clock.h>
 #include <malloc.h>
 #include <linux/pstore.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 
 #ifndef CONFIG_CONSOLE_NONE
 

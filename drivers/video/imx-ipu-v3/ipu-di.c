@@ -15,7 +15,7 @@
 #include <common.h>
 #include <linux/err.h>
 #include <linux/clk.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 #include <malloc.h>
 
 #include "imx-ipu-v3.h"

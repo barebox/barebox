@@ -12,7 +12,7 @@
 #include <linux/err.h>
 #include <malloc.h>
 #include <clock.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 
 #include "clk.h"
 

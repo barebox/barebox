@@ -7,7 +7,7 @@
 #ifndef __MTD_ABI_H__
 #define __MTD_ABI_H__
 
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 
 struct erase_info_user {
 	uint64_t start;

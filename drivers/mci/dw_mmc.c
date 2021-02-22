@@ -19,7 +19,7 @@
 #include <linux/bitops.h>
 #include <linux/clk.h>
 #include <linux/err.h>
-#include <asm-generic/errno.h>
+#include <errno.h>
 #include "dw_mmc.h"
 
 

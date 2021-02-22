@@ -12,7 +12,7 @@
 #include <io.h>
 #include <linux/phy/phy.h>
 #include <linux/reset.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 #include <usb/phy.h>
 
 #define STM32_USBPHYC_PLL	0x0

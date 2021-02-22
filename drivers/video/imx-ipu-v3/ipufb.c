@@ -22,7 +22,7 @@
 #include <of_graph.h>
 #include <linux/clk.h>
 #include <linux/err.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 #include <video/media-bus-format.h>
 
 #include "imx-ipu-v3.h"

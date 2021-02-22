@@ -27,7 +27,7 @@
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/concat.h>
 
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 
 /*
  * Our storage structure:

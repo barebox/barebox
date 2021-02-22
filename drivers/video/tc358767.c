@@ -31,7 +31,7 @@
 #include <of_gpio.h>
 #include <video/media-bus-format.h>
 #include <video/vpl.h>
-#include <asm-generic/div64.h>
+#include <linux/math64.h>
 
 #define DP_LINK_BW_SET			0x100
 #define DP_ENHANCED_FRAME_EN		(1 << 7)

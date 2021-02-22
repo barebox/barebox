@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: GPL-2.0-only
+config VIRTIO
+	bool
+	help
+	  This option is selected by any driver which implements the virtio
+	  bus, such as CONFIG_VIRTIO_MMIO.
+
+config ARCH_HAS_RESTRICTED_VIRTIO_MEMORY_ACCESS
+	bool
+	help
+	  This option is selected if the architecture may need to enforce
+	  VIRTIO_F_ACCESS_PLATFORM
+
+menuconfig VIRTIO_MENU
+	bool "Virtio drivers"
+	default y
+
+if VIRTIO_MENU
+
+config VIRTIO_MMIO
+	bool "Platform bus driver for memory mapped virtio devices"
+	depends on HAS_DMA
+	select VIRTIO
+	help
+	 This drivers provides support for memory mapped virtio
+	 platform device driver. This is usually used with Qemu.
+
+endif # VIRTIO_MENU

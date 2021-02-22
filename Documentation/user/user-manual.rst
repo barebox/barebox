@@ -36,6 +36,7 @@ Contents:
    optee
    debugging
    watchdog
+   virtio
 
 * :ref:`search`
 * :ref:`genindex`

@@ -16,6 +16,8 @@ config DISK_WRITE
 	select BLOCK_WRITE
 	bool "support writing to disk drives"
 
+source "drivers/block/Kconfig"
+
 comment "drive types"
 
 config DISK_BIOS

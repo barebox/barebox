@@ -102,7 +102,10 @@ int device_probe(struct device_d *dev)
 	list_del(&dev->active);
 	INIT_LIST_HEAD(&dev->active);
 
-	dev_err(dev, "probe failed: %s\n", strerror(-ret));
+	if (ret == -ENODEV || ret == -ENXIO)
+		dev_dbg(dev, "probe failed: %s\n", strerror(-ret));
+	else
+		dev_err(dev, "probe failed: %s\n", strerror(-ret));
 
 	return ret;
 }

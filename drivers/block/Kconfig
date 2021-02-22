@@ -1,0 +1,6 @@
+config VIRTIO_BLK
+        bool "Virtio block driver"
+        depends on VIRTIO
+        help
+          This is the virtual block driver for virtio.  It can be used with
+          QEMU based VMMs (like KVM or Xen).

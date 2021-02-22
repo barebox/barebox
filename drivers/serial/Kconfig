@@ -156,4 +156,12 @@ config DRIVER_SERIAL_LPUART
 	default y
 	bool "LPUART serial driver"
 
+config VIRTIO_CONSOLE
+	tristate "Virtio console"
+	select VIRTIO
+	help
+	  Virtio console for use with hypervisors.
+
+	  Also serves as a general-purpose serial device for data
+	  transfer between the guest and host.
 endmenu

@@ -44,5 +44,6 @@ source "drivers/soc/imx/Kconfig"
 source "drivers/nvme/Kconfig"
 source "drivers/ddr/Kconfig"
 source "drivers/power/Kconfig"
+source "drivers/virtio/Kconfig"
 
 endmenu

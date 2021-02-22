@@ -32,4 +32,6 @@ ssize_t pbl_fat_load(struct pbl_bio *, const char *filename, void *dest, size_t 
 #define IN_PBL	0
 #endif
 
+void fdt_find_mem(const void *fdt, unsigned long *membase, unsigned long *memsize);
+
 #endif /* __PBL_H__ */

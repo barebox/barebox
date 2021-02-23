@@ -1351,8 +1351,7 @@ static int __init atmel_nand_probe(struct device_d *dev)
 	nand_chip->ecc.strength = pdata->ecc_strength ? : 1;
 	nand_chip->ecc.size = 1 << pdata->ecc_size_shift ? : 512;
 
-	if (IS_ENABLED(CONFIG_NAND_ECC_HW) &&
-	    pdata->ecc_mode == NAND_ECC_HW) {
+	if (pdata->ecc_mode == NAND_ECC_HW) {
 		nand_chip->ecc.mode = NAND_ECC_HW;
 	}
 
@@ -1411,8 +1410,7 @@ static int __init atmel_nand_probe(struct device_d *dev)
 
 	host->ecc_code = xmalloc(mtd->oobsize);
 
-	if (IS_ENABLED(CONFIG_NAND_ECC_HW) &&
-	    nand_chip->ecc.mode == NAND_ECC_HW) {
+	if (nand_chip->ecc.mode == NAND_ECC_HW) {
 		if (IS_ENABLED(CONFIG_NAND_ATMEL_PMECC) && pdata->has_pmecc)
 			res = atmel_pmecc_nand_init_params(dev, host);
 		else

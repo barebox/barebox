@@ -313,7 +313,7 @@ static int bbu_std_file_handler(struct bbu_handler *handler,
 		return fd;
 
 	ret = protect(fd, data->len, 0, 0);
-	if (ret && ret != -ENOSYS) {
+	if (ret && (ret != -ENOSYS) && (ret != -ENOTSUPP)) {
 		printf("unprotecting %s failed with %s\n", data->devicefile,
 				strerror(-ret));
 		goto err_close;

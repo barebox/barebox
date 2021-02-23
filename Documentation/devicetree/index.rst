@@ -108,6 +108,7 @@ Contents:
    :maxdepth: 1
 
    bindings/barebox/*
+   bindings/firmware/*
    bindings/leds/*
    bindings/misc/*
    bindings/mtd/*

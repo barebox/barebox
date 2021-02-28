@@ -20,7 +20,7 @@ just the guest's device driver "knows" it is running in a virtual environment,
 and cooperates with the hypervisor. This enables guests to get high performance
 network and disk operations, and gives most of the performance benefits of
 paravirtualization. In the barebox case, the guest is barebox itself, while the
-virtual environment will normally be QEMU_ targets like ARM, RISC-V and x86.
+virtual environment will normally be QEMU_ targets like ARM, MIPS, RISC-V or x86.
 
 Status
 ------
@@ -31,8 +31,8 @@ embedded devices models like ARM/RISC-V, which does not normally come with
 PCI support might use simple memory mapped device (MMIO) instead of the PCI
 device. The memory mapped virtio device behaviour is based on the PCI device
 specification. Therefore most operations including device initialization,
-queues configuration and buffer transfers are nearly identical. Only MMIO
-is currently supported in barebox.
+queues configuration and buffer transfers are nearly identical. Both MMIO
+and non-legacy PCI are supported in barebox.
 
 The VirtIO spec defines a lots of VirtIO device types, however at present only
 block, console and RNG devices are supported.
@@ -67,16 +67,20 @@ to pass barebox a fixed-up device tree describing the ``virtio-mmio``
 rings.
 
 Except for the console, multiple instances of a VirtIO device can be created
-by appending more '-device' parameters. For example to create one HWRNG
-and 2 block devices::
+by appending more '-device' parameters. For example to extend a MIPS
+malta VM with one HWRNG and 2 block VirtIO PCI devices::
 
-  $ qemu-system-arm -m 256M -M virt -nographic                  \
-    	-kernel ./images/barebox-dt-2nd.img                     \
-  	-device virtio-rng-device                               \
-  	-drive if=none,file=/tmp/first.hdimg,format=raw,id=hd0  \
-  	-device virtio-blk-device,drive=hd0		        \
-  	-drive if=none,file=/tmp/second.hdimg,format=raw,id=hd1 \
-  	-device virtio-blk-device,drive=hd1
+  $ qemu-system-mips -m 256M -M malta -serial stdio         \
+    	-bios ./images/barebox-qemu-malta.img -monitor null \
+  	-device virtio-rng-pci,disable-legacy=on            \
+  	-drive if=none,file=image1.hdimg,format=raw,id=hd0  \
+  	-device virtio-blk-pci,drive=hd0,disable-legacy=on  \
+  	-drive if=none,file=image2.hdimg,format=raw,id=hd1  \
+  	-device virtio-blk-pci,drive=hd1,disable-legacy=on
+
+Note the use of ``disable-legacy=on``. barebox doesn't support legacy
+or transitional VirtIO devices. Some versions of QEMU may need to
+have ``,disable-modern=off`` specfied as well.
 
 .. _VirtIO: http://docs.oasis-open.org/virtio/virtio/v1.0/virtio-v1.0.pdf
 .. _qemu: https://www.qemu.org

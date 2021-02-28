@@ -203,7 +203,8 @@ static inline bool virtio_has_dma_quirk(const struct virtio_device *vdev)
 
 static inline bool virtio_is_little_endian(struct virtio_device *vdev)
 {
-	return virtio_legacy_is_little_endian();
+	return virtio_has_feature(vdev, VIRTIO_F_VERSION_1) ||
+		virtio_legacy_is_little_endian();
 }
 
 

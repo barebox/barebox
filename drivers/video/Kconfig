@@ -101,8 +101,14 @@ source "drivers/video/imx-ipu-v3/Kconfig"
 
 source "drivers/video/bochs/Kconfig"
 
+config DRIVER_VIDEO_SIMPLEFB_CLIENT
+	bool "Simple framebuffer client support"
+	depends on OFTREE
+	help
+	  Add support for reusing a previously set up simple framebuffer.
+
 config DRIVER_VIDEO_SIMPLEFB
-	bool "Simple framebuffer support"
+	bool "Simple framebuffer fixup support"
 	depends on OFTREE
 	help
 	  Add support for setting up the kernel's simple framebuffer driver

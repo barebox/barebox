@@ -49,10 +49,9 @@ struct virtio_config_ops {
 	 * generation() - config generation counter
 	 *
 	 * @vdev:	the real virtio device
-	 * @counter:	the returned config generation counter
-	 * @return 0 if OK, -ve on error
+	 * @return the config generation counter
 	 */
-	int (*generation)(struct virtio_device *vdev, u32 *counter);
+	u32 (*generation)(struct virtio_device *vdev);
 	/**
 	 * get_status() - read the status byte
 	 *
@@ -311,7 +310,7 @@ static inline void __virtio_cread_many(struct virtio_device *vdev,
 	int i;
 
 	/* no need to check return value as generation can be optional */
-	vdev->config->generation(vdev, &gen);
+	gen = vdev->config->generation(vdev);
 	do {
 		old = gen;
 
@@ -319,7 +318,7 @@ static inline void __virtio_cread_many(struct virtio_device *vdev,
 			virtio_get_config(vdev, offset + bytes * i,
 					  buf + i * bytes, bytes);
 
-		vdev->config->generation(vdev, &gen);
+		gen = vdev->config->generation(vdev);
 	} while (gen != old);
 }
 

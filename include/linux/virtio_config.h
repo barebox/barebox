@@ -83,13 +83,6 @@ struct virtio_config_ops {
 	 */
 	u64 (*get_features)(struct virtio_device *vdev);
 	/**
-	 * set_features() - confirm what device features we'll be using
-	 *
-	 * @vdev:	the real virtio device
-	 * @return 0 if OK, -ve on error
-	 */
-	int (*set_features)(struct virtio_device *vdev);
-	/**
 	 * find_vqs() - find virtqueues and instantiate them
 	 *
 	 * @vdev:	the real virtio device

@@ -506,6 +506,96 @@ int pci_enable_device(struct pci_dev *dev)
 }
 EXPORT_SYMBOL(pci_enable_device);
 
+static u8 __pci_find_next_cap_ttl(struct pci_bus *bus, unsigned int devfn,
+				  u8 pos, int cap, int *ttl)
+{
+	u8 id;
+	u16 ent;
+
+	pci_bus_read_config_byte(bus, devfn, pos, &pos);
+
+	while ((*ttl)--) {
+		if (pos < 0x40)
+			break;
+		pos &= ~3;
+		pci_bus_read_config_word(bus, devfn, pos, &ent);
+
+		id = ent & 0xff;
+		if (id == 0xff)
+			break;
+		if (id == cap)
+			return pos;
+		pos = (ent >> 8);
+	}
+	return 0;
+}
+
+static u8 __pci_find_next_cap(struct pci_bus *bus, unsigned int devfn,
+			      u8 pos, int cap)
+{
+	int ttl = PCI_FIND_CAP_TTL;
+
+	return __pci_find_next_cap_ttl(bus, devfn, pos, cap, &ttl);
+}
+
+u8 pci_find_next_capability(struct pci_dev *dev, u8 pos, int cap)
+{
+	return __pci_find_next_cap(dev->bus, dev->devfn,
+				   pos + PCI_CAP_LIST_NEXT, cap);
+}
+EXPORT_SYMBOL_GPL(pci_find_next_capability);
+
+static u8 __pci_bus_find_cap_start(struct pci_bus *bus,
+				    unsigned int devfn, u8 hdr_type)
+{
+	u16 status;
+
+	pci_bus_read_config_word(bus, devfn, PCI_STATUS, &status);
+	if (!(status & PCI_STATUS_CAP_LIST))
+		return 0;
+
+	switch (hdr_type) {
+	case PCI_HEADER_TYPE_NORMAL:
+	case PCI_HEADER_TYPE_BRIDGE:
+		return PCI_CAPABILITY_LIST;
+	case PCI_HEADER_TYPE_CARDBUS:
+		return PCI_CB_CAPABILITY_LIST;
+	}
+
+	return 0;
+}
+
+/**
+ * pci_find_capability - query for devices' capabilities
+ * @dev: PCI device to query
+ * @cap: capability code
+ *
+ * Tell if a device supports a given PCI capability.
+ * Returns the address of the requested capability structure within the
+ * device's PCI configuration space or 0 in case the device does not
+ * support it.  Possible values for @cap include:
+ *
+ *  %PCI_CAP_ID_PM           Power Management
+ *  %PCI_CAP_ID_AGP          Accelerated Graphics Port
+ *  %PCI_CAP_ID_VPD          Vital Product Data
+ *  %PCI_CAP_ID_SLOTID       Slot Identification
+ *  %PCI_CAP_ID_MSI          Message Signalled Interrupts
+ *  %PCI_CAP_ID_CHSWP        CompactPCI HotSwap
+ *  %PCI_CAP_ID_PCIX         PCI-X
+ *  %PCI_CAP_ID_EXP          PCI Express
+ */
+u8 pci_find_capability(struct pci_dev *dev, int cap)
+{
+	u8 pos;
+
+	pos = __pci_bus_find_cap_start(dev->bus, dev->devfn, dev->hdr_type);
+	if (pos)
+		pos = __pci_find_next_cap(dev->bus, dev->devfn, pos, cap);
+
+	return pos;
+}
+EXPORT_SYMBOL(pci_find_capability);
+
 static void pci_do_fixups(struct pci_dev *dev, struct pci_fixup *f,
 			  struct pci_fixup *end)
 {

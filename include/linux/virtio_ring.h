@@ -108,6 +108,8 @@ struct virtqueue {
 	u16 last_used_idx;
 	u16 avail_flags_shadow;
 	u16 avail_idx_shadow;
+	dma_addr_t queue_dma_addr;
+	size_t queue_size_in_bytes;
 };
 
 /*

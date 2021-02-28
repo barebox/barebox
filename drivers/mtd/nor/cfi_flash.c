@@ -969,6 +969,10 @@ static int cfi_probe_one(struct flash_info *info, int num)
 		return PTR_ERR(iores);
 	info->base = IOMEM(iores->start);
 
+	/* TODO: either remap memory region or disable NULL pointer page */
+	if (IS_ENABLED(CONFIG_MMU) && iores->start == 0)
+		return -EPERM;
+
 	ret = flash_detect_size(info);
 	if (ret) {
 		dev_warn(info->dev, "## Unknown FLASH on Bank at 0x%p - Size = 0x%08lx = %ld MB\n",

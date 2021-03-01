@@ -184,10 +184,21 @@ static struct device_node *__of_unflatten_dtb(const void *infdt, bool constprops
 				goto err;
 			}
 
-			if (!node)
+			if (!node) {
+				/* The root node must have an empty name */
+				if (*pathp) {
+					ret = -EINVAL;
+					goto err;
+				}
 				node = root;
-			else
+			} else {
+				/* Only the root node may have an empty name */
+				if (!*pathp) {
+					ret = -EINVAL;
+					goto err;
+				}
 				node = of_new_node(node, pathp);
+			}
 
 			dt_struct = dt_struct_advance(&f, dt_struct,
 					sizeof(struct fdt_node_header) + len + 1);

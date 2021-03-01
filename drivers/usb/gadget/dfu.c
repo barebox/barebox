@@ -359,7 +359,6 @@ static void dfu_do_copy(struct dfu_work *dw)
 	}
 
 	dfu->dfu_state = DFU_STATE_dfuIDLE;
-	dfu_do_close(dw);
 }
 
 static int
@@ -556,6 +555,11 @@ static int handle_manifest(struct usb_function *f, const struct usb_ctrlrequest 
 		dw->task = dfu_do_copy;
 		wq_queue_work(&dfu->wq, &dw->work);
 	}
+
+	dw = xzalloc(sizeof(*dw));
+	dw->dfu = dfu;
+	dw->task = dfu_do_close;
+	wq_queue_work(&dfu->wq, &dw->work);
 
 	return 0;
 }

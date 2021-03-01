@@ -54,7 +54,6 @@ variable. Currently, ``ARCH`` must be one of:
 
 * arm
 * mips
-* nios2
 * openrisc
 * ppc
 * riscv

@@ -37,10 +37,10 @@
 	.org	0x100
 __reset:
 	/* there is no guarantee r0 is hardwired to zero, clear it here */
-	l.andi	r0, r0, 0
+	l.movhi	r0, 0x0
 	/* reset stack and frame pointers */
-	l.andi	r1, r0, 0
-	l.andi	r2, r0, 0
+	l.movhi	r1, 0x0
+	l.movhi	r2, 0x0
 
 	/* set supervisor mode */
 	l.ori	r3,r0,SPR_SR_SM

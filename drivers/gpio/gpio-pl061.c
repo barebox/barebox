@@ -1,10 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: 2008,2009 Provigent Ltd.
+
 /*
- * Copyright (C) 2008, 2009 Provigent Ltd.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- *
  * Driver for the ARM PrimeCell(tm) General Purpose Input/Output (PL061)
  *
  * Data sheet: ARM DDI 0190B, September 2000

@@ -1,14 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// SPDX-FileCopyrightText: 2006-2007 David Brownell
+// SPDX-FileCopyrightText: 2007 MontaVista Software, Inc. <source@mvista.com>
+// SPDX-FileCopyrightText: 2014 Antony Pavlov <antonynpavlov@gmail.com>
+
 /*
  * TI DaVinci GPIO Support
- *
- * Copyright (c) 2006-2007 David Brownell
- * Copyright (c) 2007, MontaVista Software, Inc. <source@mvista.com>
- * Copyright (c) 2014 Antony Pavlov <antonynpavlov@gmail.com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
  */
 
 #include <common.h>

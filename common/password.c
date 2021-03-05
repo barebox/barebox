@@ -18,6 +18,7 @@
 #include <init.h>
 #include <stdlib.h>
 #include <globalvar.h>
+#include <crypto.h>
 #include <generated/passwd.h>
 #include <crypto/pbkdf2.h>
 
@@ -311,7 +312,7 @@ static int check_passwd(unsigned char *passwd, size_t length)
 		if (ret)
 			goto err;
 
-		if (strncmp(passwd1_sum, key, keylen) == 0)
+		if (!crypto_memneq(passwd1_sum, key, keylen))
 			ret = 1;
 	} else {
 		ret = digest_digest(d, passwd, length, passwd1_sum);
@@ -319,7 +320,7 @@ static int check_passwd(unsigned char *passwd, size_t length)
 		if (ret)
 			goto err;
 
-		if (strncmp(passwd1_sum, passwd2_sum, hash_len) == 0)
+		if (!crypto_memneq(passwd1_sum, passwd2_sum, hash_len))
 			ret = 1;
 	}
 

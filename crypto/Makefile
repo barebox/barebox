@@ -12,6 +12,7 @@ pbl-$(CONFIG_PBL_VERIFY_PIGGY)		+= sha2.o
 pbl-$(CONFIG_PBL_VERIFY_PIGGY)		+= digest.o
 obj-$(CONFIG_DIGEST_SHA384_GENERIC)	+= sha4.o
 obj-$(CONFIG_DIGEST_SHA512_GENERIC)	+= sha4.o
+obj-y	+= memneq.o
 
 obj-$(CONFIG_CRYPTO_PBKDF2)	+= pbkdf2.o
 obj-$(CONFIG_CRYPTO_RSA)	+= rsa.o

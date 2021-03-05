@@ -22,6 +22,7 @@
 #include <errno.h>
 #include <module.h>
 #include <linux/err.h>
+#include <crypto.h>
 #include <crypto/internal.h>
 
 static LIST_HEAD(digests);
@@ -47,8 +48,10 @@ int digest_generic_verify(struct digest *d, const unsigned char *md)
 	if (ret)
 		goto end;
 
-	ret = memcmp(md, tmp, len);
-	ret = ret ? -EINVAL : 0;
+	if (crypto_memneq(md, tmp, len))
+		ret = -EINVAL;
+	else
+		ret = 0;
 end:
 	free(tmp);
 	return ret;

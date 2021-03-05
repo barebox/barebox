@@ -9,9 +9,6 @@
 
 static int of_kvx_init(void)
 {
-	int ret;
-	struct device_node *root;
-
 	barebox_register_fdt(boot_dtb);
 
 	return 0;

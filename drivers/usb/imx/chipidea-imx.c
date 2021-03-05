@@ -256,8 +256,11 @@ static int imx_chipidea_probe(struct device_d *dev)
 	}
 
 	ci->vbus = regulator_get(dev, "vbus");
-	if (IS_ERR(ci->vbus))
+	if (IS_ERR(ci->vbus)) {
+		dev_warn(dev, "Cannot get vbus regulator: %pe (ignoring)\n",
+			 ci->vbus);
 		ci->vbus = NULL;
+	}
 
 	/*
 	 * Some devices have more than one clock, in this case they are enabled

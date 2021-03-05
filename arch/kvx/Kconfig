@@ -13,6 +13,7 @@ config KVX
 	select GENERIC_FIND_NEXT_BIT
 	select HAS_ARCH_SJLJ
 	select HAS_CACHE
+	select HAS_DMA
 	select LIBFDT
 	select MFD_SYSCON
 	select OF_BAREBOX_DRIVERS

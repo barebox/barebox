@@ -11,6 +11,9 @@
 #define EXCEPTION_STRIDE	0x40
 #define EXCEPTION_ALIGNMENT	0x100
 
+#define kvx_cluster_id() ((int) \
+	((kvx_sfr_get(PCR) & KVX_SFR_PCR_CID_MASK) \
+					>> KVX_SFR_PCR_CID_SHIFT))
 #define KVX_SFR_START(__sfr_reg) \
 	(KVX_SFR_## __sfr_reg ## _SHIFT)
 

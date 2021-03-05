@@ -371,7 +371,6 @@ static int fit_verify_hash(struct fit_handle *handle, struct device_node *image,
 	struct digest *d;
 	const char *algo;
 	const char *value_read;
-	char *value_calc;
 	int hash_len, ret;
 	struct device_node *hash;
 
@@ -418,21 +417,16 @@ static int fit_verify_hash(struct fit_handle *handle, struct device_node *image,
 		goto err_digest_free;
 	}
 
-	value_calc = xmalloc(hash_len);
-
 	digest_init(d);
 	digest_update(d, data, data_len);
-	digest_final(d, value_calc);
 
-	if (memcmp(value_read, value_calc, hash_len)) {
+	if (digest_verify(d, value_read)) {
 		pr_info("%s: hash BAD\n", hash->full_name);
 		ret =  -EBADMSG;
 	} else {
 		pr_info("%s: hash OK\n", hash->full_name);
 		ret = 0;
 	}
-
-	free(value_calc);
 
 err_digest_free:
 	digest_free(d);

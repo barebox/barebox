@@ -984,8 +984,11 @@ int main(int argc, char *argv[])
 		xwrite(outfd, buf, header_len);
 	}
 
-	if (add_barebox_header)
+	if (add_barebox_header) {
 		pwrite(outfd, bb_header, sizeof_bb_header, 0);
+		if (data.cpu_type == IMX_CPU_IMX35)
+			pwrite(outfd, bb_header, sizeof_bb_header, header_len);
+	}
 
 	xwrite(outfd, infile, insize);
 

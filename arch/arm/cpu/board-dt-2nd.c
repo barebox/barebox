@@ -29,9 +29,7 @@ void dt_2nd_aarch64(void *fdt);
 
 void dt_2nd_aarch64(void *fdt)
 {
-	unsigned long image_start = (unsigned long)_text + global_variable_offset();
-
-	arm_setup_stack(image_start);
+	/* entry point already set up stack */
 
 	relocate_to_current_adr();
 	setup_c();

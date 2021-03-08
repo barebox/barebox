@@ -106,7 +106,6 @@ machine-$(CONFIG_ARCH_TEGRA)		:= tegra
 machine-$(CONFIG_ARCH_UEMD)		:= uemd
 machine-$(CONFIG_ARCH_ZYNQ)		:= zynq
 machine-$(CONFIG_ARCH_ZYNQMP)		:= zynqmp
-machine-$(CONFIG_ARCH_QEMU)		:= qemu
 
 
 # Board directory name.  This list is sorted alphanumerically

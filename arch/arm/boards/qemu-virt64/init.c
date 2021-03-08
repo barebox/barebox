@@ -51,11 +51,6 @@ static int virt_core_init(void)
 {
 	char *hostname = "virt64";
 
-	if (cpu_is_cortex_a53())
-		hostname = "virt64-a53";
-	else if (cpu_is_cortex_a57())
-		hostname = "virt64-a57";
-
 	barebox_set_model("ARM QEMU virt64");
 	barebox_set_hostname(hostname);
 

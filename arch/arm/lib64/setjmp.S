@@ -36,3 +36,12 @@ ENTRY(longjmp)
 	ret
 ENDPROC(longjmp)
 .popsection
+
+.pushsection .text.initjmp, "ax"
+ENTRY(initjmp)
+	str  x2, [x0, #96] /* stack pointer */
+	str  x1, [x0, #88] /* return address */
+	mov  x0, #0
+	ret
+ENDPROC(initjmp)
+.popsection

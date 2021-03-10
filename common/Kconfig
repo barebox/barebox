@@ -28,6 +28,11 @@ config HAS_DMA
 	  Drivers that depend on a DMA implementation can depend on this
 	  config, so that you don't get a compilation error.
 
+config HAS_ARCH_SJLJ
+	bool
+	help
+	  Architecture has support implemented for setjmp()/longjmp()/initjmp()
+
 config GENERIC_GPIO
 	bool
 

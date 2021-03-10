@@ -2,7 +2,7 @@
 #include <readkey.h>
 #include <init.h>
 #include <libbb.h>
-#include <poller.h>
+#include <sched.h>
 #include <xfuncs.h>
 #include <complete.h>
 #include <linux/ctype.h>
@@ -200,7 +200,7 @@ int readline(const char *prompt, char *buf, int len)
 
 	while (1) {
 		while (!tstc())
-			poller_call();
+			resched();
 
 		ichar = read_key();
 

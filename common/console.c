@@ -17,7 +17,7 @@
 #include <clock.h>
 #include <kfifo.h>
 #include <module.h>
-#include <poller.h>
+#include <sched.h>
 #include <ratp_bb.h>
 #include <magicvar.h>
 #include <globalvar.h>
@@ -585,7 +585,7 @@ int ctrlc(void)
 	if (ctrlc_abort)
 		return 1;
 
-	poller_call();
+	resched();
 
 #ifdef ARCH_HAS_CTRLC
 	ret = arch_ctrlc();

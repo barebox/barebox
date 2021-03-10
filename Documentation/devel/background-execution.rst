@@ -1,10 +1,10 @@
 Background execution in barebox
 ===============================
 
-barebox is single-threaded and doesn't support interrupts. Nevertheless it is
-sometimes desired to execute code "in the background", like for example polling
-for completion of transfers or to regularly blink a heartbeat LED.  For these
-scenarios barebox offers the techniques described below.
+barebox does not use interrupts to avoid the associated increase in complexity.
+Nevertheless it is sometimes desired to execute code "in the background",
+like for example polling for completion of transfers or to regularly blink a
+heartbeat LED. For these scenarios barebox offers the techniques described below.
 
 Pollers
 -------
@@ -70,6 +70,35 @@ freeing the memory associated to a work item.  ``wq_queue_work()`` is for
 actually queueing a work item on a work queue. This can be called from poller
 code. Usually a work item is allocated by the poller and then freed either in
 ``work_queue.fn()`` or in ``work_queue.cancel()``.
+
+bthreads
+--------
+
+barebox threads are co-operative green threads, which are scheduled whenever
+``is_timeout()`` is called.  This has a few implications. First of all,
+bthreads are not scheduled when ``is_timeout()`` is not called.
+For this and other reasons, loops polling for hardware events should always
+use a timeout, which is best implemented with ``is_timeout()``.
+Another thing to remember is that bthreads can be scheduled anywhere
+in the middle of other device accesses whenever ``is_timeout()`` is
+called. Care must be taken that a green thread doesn't access the very same device
+again itself. See "slices" below on how devices can safely be accessed from
+bthreads.
+
+The bthread interface is declared in ``include/bthread.h``.
+``bthread_create()`` is used to allocate a bthread control block along with
+its stack. ``bthread_wake()`` can be used to add it into the run queue.
+From this moment on and until the thread terminates, the thread will be
+switched to regularly as long as someone calls ``is_timeout()``.
+bthreads are allowed to call ``is_timeout()``, which will arrange for
+other threads to execute.
+
+barebox threads are planned to replace previous infrastructure, pollers
+and workqueues. Poller like behavior can be easily achieved by looping
+and yielding on every iteration. There's ``bthread_should_stop()``, which
+can be used as condition for continuing the loop. Workqueues could be
+replaced along the same line, but with mutexes protecting underlying device
+access.
 
 Slices
 ------

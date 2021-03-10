@@ -579,13 +579,13 @@ int ctrlc(void)
 {
 	int ret = 0;
 
+	resched();
+
 	if (!ctrlc_allowed)
 		return 0;
 
 	if (ctrlc_abort)
 		return 1;
-
-	resched();
 
 #ifdef ARCH_HAS_CTRLC
 	ret = arch_ctrlc();

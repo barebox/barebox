@@ -230,11 +230,9 @@ static struct digest *fit_alloc_digest(struct device_node *sig_node,
 		return ERR_PTR(-EINVAL);
 	}
 
-	if (strcmp(algo_name, "sha1,rsa2048") == 0) {
+	if (strncmp(algo_name, "sha1,", 5) == 0) {
 		algo = HASH_ALGO_SHA1;
-	} else if (strcmp(algo_name, "sha256,rsa2048") == 0) {
-		algo = HASH_ALGO_SHA256;
-	} else if (strcmp(algo_name, "sha256,rsa4096") == 0) {
+	} else if (strncmp(algo_name, "sha256,", 7) == 0) {
 		algo = HASH_ALGO_SHA256;
 	} else	{
 		pr_err("unknown algo %s\n", algo_name);

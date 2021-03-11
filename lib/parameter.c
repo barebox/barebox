@@ -746,7 +746,6 @@ struct param_d *dev_add_param_bitmask(struct device_d *dev, const char *name,
 struct param_ip {
 	struct param_d param;
 	IPaddr_t *ip;
-	const char *format;
 	int (*set)(struct param_d *p, void *priv);
 	int (*get)(struct param_d *p, void *priv);
 };
@@ -825,7 +824,6 @@ struct param_mac {
 	struct param_d param;
 	char *mac;
 	u8 mac_str[sizeof("xx:xx:xx:xx:xx:xx")];
-	const char *format;
 	int (*set)(struct param_d *p, void *priv);
 	int (*get)(struct param_d *p, void *priv);
 };

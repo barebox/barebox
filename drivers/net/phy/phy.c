@@ -571,7 +571,7 @@ int phy_wait_aneg_done(struct phy_device *phydev)
 	}
 
 	do {
-		genphy_update_link(phydev);
+		phy_update_status(phydev);
 		if (phydev->link == 1)
 			return 0;
 	} while (!is_timeout(start, PHY_AN_TIMEOUT * SECOND));

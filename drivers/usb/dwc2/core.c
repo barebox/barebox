@@ -696,8 +696,8 @@ int dwc2_core_reset(struct dwc2 *dwc2)
 	/* Wait for AHB master IDLE state. */
 	ret = dwc2_wait_bit_set(dwc2, GRSTCTL, GRSTCTL_AHBIDLE, 10000);
 	if (ret) {
-		pr_info("%s: Timeout! Waiting for AHB master IDLE state\n",
-			__func__);
+		dwc2_warn(dwc2, "%s: Timeout! Waiting for AHB master IDLE state\n",
+				__func__);
 		return ret;
 	}
 
@@ -728,7 +728,8 @@ int dwc2_core_reset(struct dwc2 *dwc2)
 
 	ret = dwc2_wait_bit_clear(dwc2, GRSTCTL, GRSTCTL_CSFTRST, 10000);
 	if (ret) {
-		pr_info("%s: Timeout! Waiting for Core Soft Reset\n", __func__);
+		dwc2_warn(dwc2, "%s: Timeout! Waiting for Core Soft Reset\n",
+				__func__);
 		return ret;
 	}
 

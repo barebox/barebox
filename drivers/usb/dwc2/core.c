@@ -764,16 +764,16 @@ int dwc2_core_reset(struct dwc2 *dwc2)
 	 * Determine whether we will go back into host mode after a
 	 * reset and account for this delay after the reset.
 	 */
-	{
-	u32 gotgctl = dwc2_readl(dwc2, GOTGCTL);
-	u32 gusbcfg = dwc2_readl(dwc2, GUSBCFG);
+	if (dwc2_iddig_filter_enabled(dwc2)) {
+		u32 gotgctl = dwc2_readl(dwc2, GOTGCTL);
+		u32 gusbcfg = dwc2_readl(dwc2, GUSBCFG);
 
-	if (!(gotgctl & GOTGCTL_CONID_B) ||
-	    (gusbcfg & GUSBCFG_FORCEHOSTMODE)) {
-		dwc2_dbg(dwc2, "HOST MODE\n");
-		wait_for_host_mode = true;
+		if (!(gotgctl & GOTGCTL_CONID_B) ||
+		    (gusbcfg & GUSBCFG_FORCEHOSTMODE)) {
+			wait_for_host_mode = true;
+		}
 	}
-	}
+
 	/* Core Soft Reset */
 	greset = dwc2_readl(dwc2, GRSTCTL);
 	greset |= GRSTCTL_CSFTRST;
@@ -786,12 +786,8 @@ int dwc2_core_reset(struct dwc2 *dwc2)
 		return ret;
 	}
 
-	/*
-	 * Wait for core to come out of reset.
-	 * NOTE: This long sleep is _very_ important, otherwise the core will
-	 *       not stay in host mode after a connector ID change!
-	 */
-	mdelay(100);
+	if (wait_for_host_mode)
+		dwc2_wait_for_mode(dwc2, wait_for_host_mode);
 
 	return 0;
 }

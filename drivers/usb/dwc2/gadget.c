@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0+
 #include <dma.h>
 #include <usb/gadget.h>
-#include <linux/iopoll.h>
 #include "dwc2.h"
 
 #define to_dwc2 gadget_to_dwc2
@@ -2668,13 +2667,13 @@ static int dwc2_eps_alloc(struct dwc2 *dwc2)
  */
 static void dwc2_wait_for_mode(struct dwc2 *dwc2, bool host_mode)
 {
-	int val, ret;
+	unsigned int timeout = 110 * USECOND;
+	int ret;
 
 	dev_vdbg(dwc2->dev, "Waiting for %s mode\n",
 		 host_mode ? "host" : "device");
 
-	ret = readx_poll_timeout(dwc2_is_host_mode, dwc2, val,
-			val == host_mode, 110 * USEC_PER_MSEC);
+	ret = wait_on_timeout(timeout, dwc2_is_host_mode(dwc2) == host_mode);
 	if (ret)
 		dev_err(dwc2->dev, "%s: Couldn't set %s mode\n",
 				 __func__, host_mode ? "host" : "device");

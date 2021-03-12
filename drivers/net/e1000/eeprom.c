@@ -1614,12 +1614,12 @@ int e1000_register_eeprom(struct e1000_hw *hw)
 	}
 
 	if (eecd & E1000_EECD_I210_FLASH_DETECTED) {
-		hw->mtd.parent = hw->dev;
-		hw->mtd.read = e1000_mtd_read;
-		hw->mtd.write = e1000_mtd_write;
-		hw->mtd.erase = e1000_mtd_erase;
-		hw->mtd.lock = e1000_mtd_lock;
-		hw->mtd.unlock = e1000_mtd_unlock;
+		hw->mtd.dev.parent = hw->dev;
+		hw->mtd._read = e1000_mtd_read;
+		hw->mtd._write = e1000_mtd_write;
+		hw->mtd._erase = e1000_mtd_erase;
+		hw->mtd._lock = e1000_mtd_lock;
+		hw->mtd._unlock = e1000_mtd_unlock;
 		hw->mtd.size = eeprom->word_size * 2;
 		hw->mtd.writesize = 1;
 		hw->mtd.subpage_sft = 0;

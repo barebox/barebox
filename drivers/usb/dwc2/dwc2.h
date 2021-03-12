@@ -25,6 +25,9 @@ int dwc2_get_dr_mode(struct dwc2 *dwc2);
 int dwc2_core_reset(struct dwc2 *dwc2);
 void dwc2_core_init(struct dwc2 *dwc2);
 
+void dwc2_wait_for_mode(struct dwc2 *dwc2, bool host_mode);
+bool dwc2_iddig_filter_enabled(struct dwc2 *dwc2);
+
 /* Host functions */
 #ifdef CONFIG_USB_DWC2_HOST
 int dwc2_submit_roothub(struct dwc2 *dwc2, struct usb_device *dev,

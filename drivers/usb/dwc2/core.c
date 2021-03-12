@@ -681,6 +681,59 @@ int dwc2_get_dr_mode(struct dwc2 *dwc2)
 	return 0;
 }
 
+/**
+ * dwc2_wait_for_mode() - Waits for the controller mode.
+ * @dwc2:	Programming view of the DWC_otg controller.
+ * @host_mode:	If true, waits for host mode, otherwise device mode.
+ */
+void dwc2_wait_for_mode(struct dwc2 *dwc2, bool host_mode)
+{
+	unsigned int timeout = 110 * USECOND;
+	int ret;
+
+	dev_vdbg(dwc2->dev, "Waiting for %s mode\n",
+		 host_mode ? "host" : "device");
+
+	ret = wait_on_timeout(timeout, dwc2_is_host_mode(dwc2) == host_mode);
+	if (ret)
+		dev_err(dwc2->dev, "%s: Couldn't set %s mode\n",
+				 __func__, host_mode ? "host" : "device");
+
+	dev_vdbg(dwc2->dev, "%s mode set\n",
+		 host_mode ? "Host" : "Device");
+}
+
+/**
+ * dwc2_iddig_filter_enabled() - Returns true if the IDDIG debounce
+ * filter is enabled.
+ *
+ * @hsotg: Programming view of DWC_otg controller
+ */
+bool dwc2_iddig_filter_enabled(struct dwc2 *dwc2)
+{
+	u32 gsnpsid;
+	u32 ghwcfg4;
+
+	/* Check if core configuration includes the IDDIG filter. */
+	ghwcfg4 = dwc2_readl(dwc2, GHWCFG4);
+	if (!(ghwcfg4 & GHWCFG4_IDDIG_FILT_EN))
+		return false;
+
+	/*
+	 * Check if the IDDIG debounce filter is bypassed. Available
+	 * in core version >= 3.10a.
+	 */
+	gsnpsid = dwc2_readl(dwc2, GSNPSID);
+	if (gsnpsid >= DWC2_CORE_REV_3_10a) {
+		u32 gotgctl = dwc2_readl(dwc2, GOTGCTL);
+
+		if (gotgctl & GOTGCTL_DBNCE_FLTR_BYPASS)
+			return false;
+	}
+
+	return true;
+}
+
 /*
  * Do core a soft reset of the core.  Be careful with this because it
  * resets all the internal state machines of the core.

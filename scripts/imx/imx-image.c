@@ -984,8 +984,13 @@ int main(int argc, char *argv[])
 		xwrite(outfd, buf, header_len);
 	}
 
-	if (add_barebox_header)
-		pwrite(outfd, bb_header, sizeof_bb_header, 0);
+	if (add_barebox_header) {
+		ret = pwrite(outfd, bb_header, sizeof_bb_header, 0);
+		if (ret < 0) {
+			fprintf(stderr, "pwrite failed: %s\n", strerror(errno));
+			exit(1);
+		}
+	}
 
 	xwrite(outfd, infile, insize);
 

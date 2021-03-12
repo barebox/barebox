@@ -44,6 +44,7 @@ config ARCH_BCM283X
 	select GPIOLIB
 	select CLKDEV_LOOKUP
 	select COMMON_CLK
+	select COMMON_CLK_OF_PROVIDER
 	select CLOCKSOURCE_BCM283X
 	select ARM_AMBA
 	select HAS_DEBUG_LL

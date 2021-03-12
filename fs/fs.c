@@ -909,7 +909,6 @@ EXPORT_SYMBOL(readdir);
 
 static void stat_inode(struct inode *inode, struct stat *s)
 {
-	s->st_dev = 0;
 	s->st_ino = inode->i_ino;
 	s->st_mode = inode->i_mode;
 	s->st_uid = inode->i_uid;

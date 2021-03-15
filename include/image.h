@@ -129,6 +129,8 @@ enum {
 #define IH_ARCH IH_ARCH_AVR32
 #elif defined(CONFIG_SANDBOX)
 #define IH_ARCH IH_ARCH_SANDBOX
+#elif defined(__riscv)
+#define IH_ARCH IH_ARCH_RISCV
 #else
 #define IH_ARCH IH_ARCH_INVALID
 #endif

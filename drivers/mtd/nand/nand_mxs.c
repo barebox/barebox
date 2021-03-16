@@ -215,7 +215,6 @@ struct mxs_nand_info {
 	uint8_t		*data_buf;
 	uint8_t		*oob_buf;
 
-	uint8_t		marking_block_bad;
 	uint8_t		raw_oob_mode;
 
 	/* Functions with altered behaviour */
@@ -223,8 +222,6 @@ struct mxs_nand_info {
 				loff_t from, struct mtd_oob_ops *ops);
 	int		(*hooked_write_oob)(struct mtd_info *mtd,
 				loff_t to, struct mtd_oob_ops *ops);
-	int		(*hooked_block_markbad)(struct mtd_info *mtd,
-				loff_t ofs);
 
 	/* DMA descriptors */
 	struct mxs_dma_desc	**desc;
@@ -1074,27 +1071,6 @@ static int mxs_nand_hook_write_oob(struct mtd_info *mtd, loff_t to,
 }
 
 /*
- * Mark a block bad in NAND.
- *
- * This function is a veneer that replaces the function originally installed by
- * the NAND Flash MTD code.
- */
-static int mxs_nand_hook_block_markbad(struct mtd_info *mtd, loff_t ofs)
-{
-	struct nand_chip *chip = mtd_to_nand(mtd);
-	struct mxs_nand_info *nand_info = chip->priv;
-	int ret;
-
-	nand_info->marking_block_bad = 1;
-
-	ret = nand_info->hooked_block_markbad(mtd, ofs);
-
-	nand_info->marking_block_bad = 0;
-
-	return ret;
-}
-
-/*
  * There are several places in this driver where we have to handle the OOB and
  * block marks. This is the function where things are the most complicated, so
  * this is where we try to explain it all. All the other places refer back to
@@ -1177,36 +1153,14 @@ static int mxs_nand_ecc_read_oob(struct nand_chip *chip, int page)
  */
 static int mxs_nand_ecc_write_oob(struct nand_chip *chip, int page)
 {
-	struct mtd_info *mtd = nand_to_mtd(chip);
-	struct mxs_nand_info *nand_info = chip->priv;
-	int column;
-	uint8_t block_mark = 0;
-
 	/*
 	 * There are fundamental incompatibilities between the i.MX GPMI NFC and
 	 * the NAND Flash MTD model that make it essentially impossible to write
 	 * the out-of-band bytes.
-	 *
-	 * We permit *ONE* exception. If the *intent* of writing the OOB is to
-	 * mark a block bad, we can do that.
 	 */
 
-	if (!nand_info->marking_block_bad) {
-		printf("NXS NAND: Writing OOB isn't supported\n");
-		return -EIO;
-	}
-
-	column = nand_info->version == GPMI_VERSION_TYPE_MX23 ? 0 : mtd->writesize;
-	/* Write the block mark. */
-	chip->legacy.cmdfunc(chip, NAND_CMD_SEQIN, column, page);
-	chip->legacy.write_buf(chip, &block_mark, 1);
-	chip->legacy.cmdfunc(chip, NAND_CMD_PAGEPROG, -1, -1);
-
-	/* Check if it worked. */
-	if (chip->legacy.waitfunc(chip) & NAND_STATUS_FAIL)
-		return -EIO;
-
-	return 0;
+	printf("MXS NAND: Writing OOB isn't supported\n");
+	return -EIO;
 }
 
 /*
@@ -1224,6 +1178,37 @@ static int mxs_nand_ecc_write_oob(struct nand_chip *chip, int page)
  */
 static int mxs_nand_block_bad(struct nand_chip *chip , loff_t ofs)
 {
+	return 0;
+}
+
+/*
+ * Mark a block as bad in NAND.
+ */
+static int mxs_nand_block_markbad(struct nand_chip *chip , loff_t ofs)
+{
+	struct mtd_info *mtd = nand_to_mtd(chip);
+	struct mxs_nand_info *nand_info = chip->priv;
+	int column, page, chipnr, status;
+	uint8_t block_mark = 0;
+
+	chipnr = (int)(ofs >> chip->chip_shift);
+	nand_select_target(chip, chipnr);
+
+	column = nand_info->version == GPMI_VERSION_TYPE_MX23 ? 0 : mtd->writesize;
+	page = (int)(ofs >> chip->page_shift);
+	/* Write the block mark. */
+	chip->legacy.cmdfunc(chip, NAND_CMD_SEQIN, column, page);
+	chip->legacy.write_buf(chip, &block_mark, 1);
+	chip->legacy.cmdfunc(chip, NAND_CMD_PAGEPROG, -1, -1);
+
+	/* Check if it worked. */
+	status = chip->legacy.waitfunc(chip);
+
+	nand_deselect_target(chip);
+
+	if (status & NAND_STATUS_FAIL)
+		return -EIO;
+
 	return 0;
 }
 
@@ -1271,11 +1256,6 @@ static int mxs_nand_scan_bbt(struct nand_chip *chip)
 	if (mtd->_write_oob != mxs_nand_hook_write_oob) {
 		nand_info->hooked_write_oob = mtd->_write_oob;
 		mtd->_write_oob = mxs_nand_hook_write_oob;
-	}
-
-	if (mtd->_block_markbad != mxs_nand_hook_block_markbad) {
-		nand_info->hooked_block_markbad = mtd->_block_markbad;
-		mtd->_block_markbad = mxs_nand_hook_block_markbad;
 	}
 
 	/* We use the reference implementation for bad block management. */
@@ -2201,6 +2181,7 @@ static int mxs_nand_probe(struct device_d *dev)
 	chip->legacy.dev_ready		= mxs_nand_device_ready;
 	chip->legacy.select_chip	= mxs_nand_select_chip;
 	chip->legacy.block_bad		= mxs_nand_block_bad;
+	chip->legacy.block_markbad	= mxs_nand_block_markbad;
 
 	chip->legacy.read_byte		= mxs_nand_read_byte;
 

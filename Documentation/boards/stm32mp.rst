@@ -32,6 +32,7 @@ The resulting images will be placed under ``images/``:
   barebox-stm32mp15xx-dkx.img # both DK1 and DK2
   barebox-stm32mp157c-lxa-mc1.img
   barebox-stm32mp157c-seeed-odyssey.img
+  barebox-stm32mp15x-ev1.img # stm32mp157c-ev1 and friends
 
 
 Flashing barebox
@@ -94,8 +95,38 @@ acknowledge.
 Boot source selection
 ---------------------
 
-The STM32MP BootROM samples three boot pins at reset. Usually BOOT1 is
-pulled down and BOOT0 and BOOT2 are connected to a 2P DIP switch::
+The STM32MP BootROM samples three boot pins at reset. On official
+eval kit, they are either connected to a 3P DIP switch or 2P (with
+BOOT1 pulled down).
+
+EV-1
+^^^^
+SW1 on the DK boards sets boot mode as follows::
+
+       +-------+
+       |   --- |
+ BOOT2 |   O-- |
+ BOOT1 | O --O |
+ BOOT0 | N O-- |  <---- SD-Card
+       +-------+
+
+       +-------+
+       |   --- |
+ BOOT2 |   --O |
+ BOOT1 | O O-- |
+ BOOT0 | N --O |  <---- eMMC
+       +-------+
+
+       +-------+
+       |   --- |
+ BOOT2 |   --O |
+ BOOT1 | O --O |
+ BOOT0 | N --O |  <---- DFU on UART and USB OTG
+       +-------+
+
+DK-1/DK-2
+^^^^^^^^^
+Boot mode on the DK board is set as follows::
 
        +-------+
  BOOT2 | O O-- |

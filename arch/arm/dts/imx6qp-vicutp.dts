@@ -1,52 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-/*
- * Copyright (c) 2014 Protonic Holland
- */
-
 /dts-v1/;
-#include <arm/imx6qp.dtsi>
-#include "imx6qdl-vicut1.dtsi"
 
-/ {
-	model = "Kverneland UT1P Board";
-	compatible = "kvg,vicutp", "fsl,imx6qp";
-
-	memory {
-		reg = <0x10000000 0x80000000>;
-	};
-};
-
-&fec {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_enet>;
-	phy-mode = "rgmii";
-	/* phy-reset-gpios = <&gpio1 25 GPIO_ACTIVE_LOW>; */
-	status = "okay";
-};
-
-&iomuxc {
-	pinctrl_enet: enetgrp {
-		fsl,pins = <
-			/* MX6QDL_ENET_PINGRP_RGMII_MD(0x1b030, 0x10030) */
-			MX6QDL_PAD_RGMII_RXC__RGMII_RXC         0x1b030
-			MX6QDL_PAD_RGMII_RD0__RGMII_RD0         0x1b030
-			MX6QDL_PAD_RGMII_RD1__RGMII_RD1         0x1b030
-			MX6QDL_PAD_RGMII_RD2__RGMII_RD2         0x1b030
-			MX6QDL_PAD_RGMII_RD3__RGMII_RD3         0x1b030
-			MX6QDL_PAD_RGMII_RX_CTL__RGMII_RX_CTL   0x1b030
-			MX6QDL_PAD_RGMII_TXC__RGMII_TXC         0x10030
-			MX6QDL_PAD_RGMII_TD0__RGMII_TD0         0x10030
-			MX6QDL_PAD_RGMII_TD1__RGMII_TD1         0x10030
-			MX6QDL_PAD_RGMII_TD2__RGMII_TD2         0x10030
-			MX6QDL_PAD_RGMII_TD3__RGMII_TD3         0x10030
-			MX6QDL_PAD_RGMII_TX_CTL__RGMII_TX_CTL   0x10030
-			MX6QDL_PAD_ENET_REF_CLK__ENET_TX_CLK    0x10030
-			MX6QDL_PAD_ENET_MDIO__ENET_MDIO         0x10030
-			MX6QDL_PAD_ENET_MDC__ENET_MDC           0x10030
-
-			/* Phy reset */
-			MX6QDL_PAD_ENET_CRS_DV__GPIO1_IO25	0x1b0b0
-			MX6QDL_PAD_ENET_TX_EN__GPIO1_IO28	0x1b0b1
-		>;
-	};
-};
+#include <arm/imx6qp-vicutp.dts>
+#include "imx6qdl-prti6q-nor.dtsi"

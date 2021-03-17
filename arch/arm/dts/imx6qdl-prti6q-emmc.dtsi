@@ -1,7 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
-/dts-v1/;
-
-#include <arm/imx6ul-prti6g.dts>
+// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
 
 / {
 	chosen {
@@ -9,7 +6,7 @@
 
 		environment@0 {
 			compatible = "barebox,environment";
-			device-path = &usdhc2, "partname:barebox-environment";
+			device-path = &usdhc3, "partname:barebox-environment";
 		};
 	};
 
@@ -36,19 +33,7 @@
 	};
 };
 
-&ecspi1 {
-	flash@0 {
-		#address-cells = <1>;
-		#size-cells = <1>;
-
-		partition@0 {
-			label = "barebox";
-			reg = <0x0 0x100000>;
-		};
-	};
-};
-
-&usdhc2 {
+&usdhc3 {
 	#address-cells = <1>;
 	#size-cells = <1>;
 

@@ -33,7 +33,7 @@ QEMU run string:
 .. code-block:: sh
 
   qemu-system-mipsel -nodefaults -M malta -m 256 \
-      -devica VGA -serial stdio -monitor null \
+      -device VGA -serial stdio -monitor null \
       -bios barebox-flash-image
 
 

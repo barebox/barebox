@@ -15,6 +15,10 @@
 #include <asm/setjmp.h>
 #include <linux/overflow.h>
 
+#if defined CONFIG_ASAN && !defined CONFIG_32BIT
+#define HAVE_FIBER_SANITIZER
+#endif
+
 static struct bthread {
 	int (*threadfn)(void *);
 	union {
@@ -26,7 +30,7 @@ static struct bthread {
 	void *stack;
 	u32 stack_size;
 	struct list_head list;
-#ifdef CONFIG_ASAN
+#ifdef HAVE_FIBER_SANITIZER
 	void *fake_stack_save;
 #endif
 	u8 awake :1;
@@ -178,7 +182,7 @@ void bthread_schedule(struct bthread *to)
 	finish_switch_fiber(from);
 }
 
-#ifdef CONFIG_ASAN
+#ifdef HAVE_FIBER_SANITIZER
 
 void __sanitizer_start_switch_fiber(void **fake_stack_save, const void *bottom, size_t size);
 void __sanitizer_finish_switch_fiber(void *fake_stack_save, const void **bottom_old, size_t *size_old);

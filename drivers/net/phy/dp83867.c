@@ -180,7 +180,7 @@ static int dp83867_config_init(struct phy_device *phydev)
 {
 	struct dp83867_private *dp83867;
 	int ret;
-	u16 val, delay, cfg2;
+	u16 val, delay;
 
 	if (!phydev->priv) {
 		dp83867 = kzalloc(sizeof(*dp83867), GFP_KERNEL);
@@ -253,15 +253,6 @@ static int dp83867_config_init(struct phy_device *phydev)
 	} else if (phy_interface_is_sgmii(phydev)) {
 		phy_write(phydev, MII_BMCR,
 			  BMCR_ANENABLE | BMCR_FULLDPLX | BMCR_SPEED1000);
-
-		cfg2 = phy_read(phydev, MII_DP83867_CFG2);
-		cfg2 &= MII_DP83867_CFG2_MASK;
-		cfg2 |= MII_DP83867_CFG2_SPEEDOPT_10EN |
-			MII_DP83867_CFG2_SGMII_AUTONEGEN |
-			MII_DP83867_CFG2_SPEEDOPT_ENH |
-			MII_DP83867_CFG2_SPEEDOPT_CNT |
-			MII_DP83867_CFG2_SPEEDOPT_INTLOW;
-		phy_write(phydev, MII_DP83867_CFG2, cfg2);
 
 		phy_write_mmd_indirect(phydev, DP83867_RGMIICTL,
 				       DP83867_DEVADDR, 0x0);

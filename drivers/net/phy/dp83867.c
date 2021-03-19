@@ -278,12 +278,8 @@ static int dp83867_config_init(struct phy_device *phydev)
 		}
 	}
 
-	genphy_config_aneg(phydev);
-
 	if (dp83867->port_mirroring != DP83867_PORT_MIRROING_KEEP)
 		dp83867_config_port_mirroring(phydev);
-
-	dev_info(&phydev->dev, "DP83867\n");
 
 	return 0;
 }
@@ -294,11 +290,7 @@ static struct phy_driver dp83867_driver[] = {
 		.phy_id_mask = 0xfffffff0,
 		.drv.name = "TI DP83867",
 		.features = PHY_GBIT_FEATURES,
-
 		.config_init = dp83867_config_init,
-
-		.config_aneg = genphy_config_aneg,
-		.read_status = genphy_read_status,
 	},
 };
 

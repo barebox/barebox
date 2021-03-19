@@ -16,6 +16,7 @@
 #define DP83867_DEVADDR		MDIO_MMD_VEND2
 
 #define MII_DP83867_PHYCTRL	0x10
+#define MII_DP83867_PHYSTS	0x11
 #define MII_DP83867_MICR	0x12
 #define MII_DP83867_ISR		0x13
 #define MII_DP83867_CFG2	0x14
@@ -65,6 +66,11 @@
 #define DP83867_PHYCTRL_TXFIFO_SHIFT		14
 #define DP83867_PHYCR_RESERVED_MASK		BIT(11)
 
+/* PHY STS bits */
+#define DP83867_PHYSTS_SPEED_1000		BIT(15)
+#define DP83867_PHYSTS_SPEED_100		BIT(14)
+#define DP83867_PHYSTS_DUPLEX_FULL		BIT(13)
+
 /* RGMIIDCTL bits */
 #define DP83867_RGMII_TX_CLK_DELAY_SHIFT	4
 
@@ -108,6 +114,35 @@ struct dp83867_private {
 	int port_mirroring;
 	bool rxctrl_strap_quirk;
 };
+
+static int dp83867_read_status(struct phy_device *phydev)
+{
+	int status;
+	int ret;
+
+	ret = genphy_update_link(phydev);
+	if (ret)
+		return ret;
+
+	status = phy_read(phydev, MII_DP83867_PHYSTS);
+	if (status < 0)
+		return status;
+
+	phydev->speed = SPEED_10;
+	phydev->duplex = DUPLEX_HALF;
+
+	if (status & DP83867_PHYSTS_SPEED_1000)
+		phydev->speed = SPEED_1000;
+	else if (status & DP83867_PHYSTS_SPEED_100)
+		phydev->speed = SPEED_100;
+
+	if (status & DP83867_PHYSTS_DUPLEX_FULL)
+		phydev->duplex = DUPLEX_FULL;
+
+	phydev->pause = phydev->asym_pause = 0;
+
+	return 0;
+}
 
 static int dp83867_config_port_mirroring(struct phy_device *phydev)
 {
@@ -279,6 +314,7 @@ static struct phy_driver dp83867_driver[] = {
 		.drv.name = "TI DP83867",
 		.features = PHY_GBIT_FEATURES,
 		.config_init = dp83867_config_init,
+		.read_status = dp83867_read_status,
 	},
 };
 

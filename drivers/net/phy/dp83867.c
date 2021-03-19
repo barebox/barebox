@@ -75,12 +75,12 @@
 #define DP83867_RGMII_TX_CLK_DELAY_SHIFT	4
 
 /* CFG2 bits */
-#define MII_DP83867_CFG2_SPEEDOPT_10EN		0x0040
-#define MII_DP83867_CFG2_SGMII_AUTONEGEN	0x0080
-#define MII_DP83867_CFG2_SPEEDOPT_ENH		0x0100
-#define MII_DP83867_CFG2_SPEEDOPT_CNT		0x0800
-#define MII_DP83867_CFG2_SPEEDOPT_INTLOW	0x2000
-#define MII_DP83867_CFG2_MASK			0x003F
+#define DP83867_DOWNSHIFT_EN			(BIT(8) | BIT(9))
+#define DP83867_DOWNSHIFT_ATTEMPT_MASK		(BIT(10) | BIT(11))
+#define DP83867_DOWNSHIFT_1_COUNT_VAL		0
+#define DP83867_DOWNSHIFT_2_COUNT_VAL		1
+#define DP83867_DOWNSHIFT_4_COUNT_VAL		2
+#define DP83867_DOWNSHIFT_8_COUNT_VAL		3
 
 /* CFG4 bits */
 #define DP83867_CFG4_SGMII_AUTONEG_TIMER_MASK	0x60
@@ -300,6 +300,10 @@ static int dp83867_config_init(struct phy_device *phydev)
 		phy_write(phydev, MII_DP83867_PHYCTRL, val);
 		phy_write(phydev, MII_DP83867_BISCR, 0x0);
 	}
+
+	val = phy_read(phydev, MII_DP83867_CFG2);
+	val |= DP83867_DOWNSHIFT_EN;
+	phy_write(phydev, MII_DP83867_CFG2, val);
 
 	if (dp83867->port_mirroring != DP83867_PORT_MIRROING_KEEP)
 		dp83867_config_port_mirroring(phydev);

@@ -269,6 +269,9 @@ static int macb_set_tx_clk(struct macb_device *macb, int speed)
 	}
 
 	switch (speed) {
+	case SPEED_10:
+		rate = 2500000;
+		break;
 	case SPEED_100:
 		rate = 25000000;
 		break;

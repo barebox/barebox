@@ -110,6 +110,7 @@ config USBGADGET_START
 	default y
 
 config BOOT
+	select GLOB
 	bool
 
 config FASTBOOT_BASE

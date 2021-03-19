@@ -406,6 +406,18 @@ static int glob_in_dir(const char *pattern, const char *directory,
 	}
 	return nfound == 0 ? GLOB_NOMATCH : 0;
 }
+
+/* Free storage allocated in PGLOB by a previous `glob' call.  */
+void globfree(glob_t *pglob)
+{
+	if (pglob->gl_pathv != NULL) {
+		int i = pglob->gl_flags & GLOB_DOOFFS ? pglob->gl_offs : 0;
+		for (; i < pglob->gl_pathc; ++i)
+			if (pglob->gl_pathv[i] != NULL)
+				free((__ptr_t) pglob->gl_pathv[i]);
+		free((__ptr_t) pglob->gl_pathv);
+	}
+}
 #endif /* CONFIG_GLOB */
 
 #ifdef CONFIG_FAKE_GLOB
@@ -443,15 +455,3 @@ glob_t *pglob;
 	return 0;
 }
 #endif /* CONFIG_FAKE_GLOB */
-
-/* Free storage allocated in PGLOB by a previous `glob' call.  */
-void globfree(glob_t *pglob)
-{
-	if (pglob->gl_pathv != NULL) {
-		int i = pglob->gl_flags & GLOB_DOOFFS ? pglob->gl_offs : 0;
-		for (; i < pglob->gl_pathc; ++i)
-			if (pglob->gl_pathv[i] != NULL)
-				free((__ptr_t) pglob->gl_pathv[i]);
-		free((__ptr_t) pglob->gl_pathv);
-	}
-}

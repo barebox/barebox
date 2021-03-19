@@ -177,6 +177,7 @@ extern int glob __P ((__const char *__restrict __pattern, int __flags,
 		      int (*__errfunc) (__const char *, int),
 		      glob_t *__restrict __pglob));
 
+extern void globfree __P ((glob_t *__pglob));
 #else
 static inline int glob __P ((__const char *__restrict __pattern, int __flags,
 		      int (*__errfunc) (__const char *, int),
@@ -184,9 +185,12 @@ static inline int glob __P ((__const char *__restrict __pattern, int __flags,
 {
 	return GLOB_ABORTED;
 }
+
+static inline void globfree __P ((glob_t *__pglob))
+{
+}
 #endif
 /* Free storage allocated in PGLOB by a previous `glob' call.  */
-extern void globfree __P ((glob_t *__pglob));
 #else
 extern int glob __P ((__const char *__restrict __pattern, int __flags,
 		      int (*__errfunc) (__const char *, int),

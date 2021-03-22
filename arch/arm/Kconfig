@@ -312,7 +312,7 @@ config BOARD_ARM_VIRT
 	select OF_OVERLAY
 
 config BOARD_ARM_GENERIC_DT
-	select LIBFDT
+	select BOARD_GENERIC_DT
 	select ARM_AMBA
 	depends on HAVE_PBL_MULTI_IMAGES
 	depends on OFDEVICE

@@ -40,6 +40,10 @@ config PBL_VERIFY_PIGGY
 	depends on ARM
 	bool
 
+config BOARD_GENERIC_DT
+	bool
+	select LIBFDT
+
 config IMAGE_COMPRESSION
 	bool
 	depends on HAVE_IMAGE_COMPRESSION

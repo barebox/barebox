@@ -319,21 +319,27 @@ int of_fix_tree(struct device_node *node)
 struct fdt_header *of_get_fixed_tree(struct device_node *node)
 {
 	int ret;
-	struct fdt_header *fdt;
+	struct fdt_header *fdt = NULL;
+	struct device_node *freenp = NULL;
 
 	if (!node) {
 		node = of_get_root_node();
+		if (!node)
+			return NULL;
+
+		freenp = node = of_copy_node(NULL, node);
 		if (!node)
 			return NULL;
 	}
 
 	ret = of_fix_tree(node);
 	if (ret)
-		return NULL;
+		goto out;
 
 	fdt = of_flatten_dtb(node);
-	if (!fdt)
-		return NULL;
+
+out:
+	of_delete_node(freenp);
 
 	return fdt;
 }

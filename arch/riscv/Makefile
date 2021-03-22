@@ -1,4 +1,4 @@
-KBUILD_DEFCONFIG := erizo_generic_defconfig
+KBUILD_DEFCONFIG := virt64_defconfig
 
 KBUILD_CPPFLAGS += -fno-strict-aliasing
 
@@ -20,6 +20,7 @@ cflags-y += $(riscv-cflags-y)
 LDFLAGS_barebox += -nostdlib
 
 machine-$(CONFIG_MACH_ERIZO)	:= erizo
+machine-$(CONFIG_MACH_VIRT)	:= virt
 
 LDFLAGS_barebox += $(riscv-ldflags-y)
 

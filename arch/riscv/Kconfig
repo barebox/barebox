@@ -34,6 +34,14 @@ config MACH_ERIZO
 	select RISCV_M_MODE
 	select RISCV_TIMER
 
+config MACH_VIRT
+	bool "virt family"
+	select BOARD_RISCV_GENERIC_DT
+	select CLINT_TIMER
+	help
+	  Generates an image tht can be be booted by QEMU. The image is called
+	  barebox-dt-2nd.img
+
 endchoice
 
 choice

@@ -61,6 +61,8 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_kwbimage_v1] = { "MVEBU kwbimage (v1)", "kwb1" },
 	[filetype_android_sparse] = { "Android sparse image", "sparse" },
 	[filetype_arm64_linux_image] = { "ARM aarch64 Linux image", "aarch64-linux" },
+	[filetype_riscv_linux_image] = { "RISC-V Linux image", "riscv-linux" },
+	[filetype_riscv_barebox_image] = { "RISC-V barebox image", "riscv-barebox" },
 	[filetype_elf] = { "ELF", "elf" },
 	[filetype_imx_image_v1] = { "i.MX image (v1)", "imx-image-v1" },
 	[filetype_imx_image_v2] = { "i.MX image (v2)", "imx-image-v2" },
@@ -303,6 +305,10 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 		return filetype_bpk;
 	if (le32_to_cpu(buf[14]) == 0x644d5241)
 		return filetype_arm64_linux_image;
+	if (le32_to_cpu(buf[14]) == 0x05435352)
+		return filetype_riscv_linux_image;
+	if (le32_to_cpu(buf[14]) == 0x56435352 && !memcmp(&buf[12], "barebox", 8))
+		return filetype_riscv_barebox_image;
 	if ((buf8[0] == 0x5a || buf8[0] == 0x69 || buf8[0] == 0x78 ||
 	     buf8[0] == 0x8b || buf8[0] == 0x9c) &&
 	    buf8[0x1] == 0 && buf8[0x2] == 0 && buf8[0x3] == 0 &&

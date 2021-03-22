@@ -18,9 +18,8 @@ config HAVE_MACH_ARM_HEAD
 	bool
 
 config ARM_USE_COMPRESSED_DTB
-	bool
-	select UNCOMPRESS
-	select LZO_DECOMPRESS
+       bool
+       select USE_COMPRESSED_DTB
 
 config TEXT_BASE
 	hex

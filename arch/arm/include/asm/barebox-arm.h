@@ -84,13 +84,6 @@ u32 barebox_arm_machine(void);
 unsigned long arm_mem_ramoops_get(void);
 unsigned long arm_mem_endmem_get(void);
 
-struct barebox_arm_boarddata_compressed_dtb {
-#define BAREBOX_ARM_BOARDDATA_COMPRESSED_DTB_MAGIC 0x7b66bcbd
-	u32 magic;
-	u32 datalen;
-	u32 datalen_uncompressed;
-};
-
 struct barebox_arm_boarddata *barebox_arm_get_boarddata(void);
 
 #if defined(CONFIG_RELOCATABLE) && defined(CONFIG_ARM_EXCEPTIONS)

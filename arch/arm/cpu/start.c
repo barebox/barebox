@@ -18,6 +18,7 @@
 #include <linux/kasan.h>
 #include <memory.h>
 #include <uncompress.h>
+#include <compressed-dtb.h>
 #include <malloc.h>
 
 #include <debug_ll.h>
@@ -29,18 +30,6 @@ static unsigned long arm_barebox_size;
 static unsigned long arm_endmem;
 static void *barebox_boarddata;
 static unsigned long barebox_boarddata_size;
-
-static bool blob_is_fdt(const void *blob)
-{
-	return get_unaligned_be32(blob) == FDT_MAGIC;
-}
-
-static bool blob_is_compressed_fdt(const void *blob)
-{
-	const struct barebox_arm_boarddata_compressed_dtb *dtb = blob;
-
-	return dtb->magic == BAREBOX_ARM_BOARDDATA_COMPRESSED_DTB_MAGIC;
-}
 
 static bool blob_is_arm_boarddata(const void *blob)
 {
@@ -64,7 +53,7 @@ void *barebox_arm_boot_dtb(void)
 	void *dtb;
 	void *data;
 	int ret;
-	struct barebox_arm_boarddata_compressed_dtb *compressed_dtb;
+	struct barebox_boarddata_compressed_dtb *compressed_dtb;
 	static void *boot_dtb;
 
 	if (boot_dtb)
@@ -75,8 +64,7 @@ void *barebox_arm_boot_dtb(void)
 		return barebox_boarddata;
 	}
 
-	if (!IS_ENABLED(CONFIG_ARM_USE_COMPRESSED_DTB) || !barebox_boarddata
-			|| !blob_is_compressed_fdt(barebox_boarddata))
+	if (!fdt_blob_can_be_decompressed(barebox_boarddata))
 		return NULL;
 
 	compressed_dtb = barebox_boarddata;
@@ -185,7 +173,7 @@ __noreturn __no_sanitize_address void barebox_non_pbl_start(unsigned long membas
 			totalsize = get_unaligned_be32(boarddata + 4);
 			name = "DTB";
 		} else if (blob_is_compressed_fdt(boarddata)) {
-			struct barebox_arm_boarddata_compressed_dtb *bd = boarddata;
+			struct barebox_boarddata_compressed_dtb *bd = boarddata;
 			totalsize = bd->datalen + sizeof(*bd);
 			name = "Compressed DTB";
 		} else if (blob_is_arm_boarddata(boarddata)) {

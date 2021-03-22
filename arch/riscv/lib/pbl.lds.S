@@ -6,6 +6,11 @@
 #include <asm-generic/memory_layout.h>
 
 OUTPUT_ARCH(riscv)
+#ifdef CONFIG_64BIT
+OUTPUT_FORMAT("elf64-littleriscv")
+#else
+OUTPUT_FORMAT("elf32-littleriscv")
+#endif
 SECTIONS
 {
 	. = 0x0;

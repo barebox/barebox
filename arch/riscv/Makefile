@@ -3,8 +3,11 @@ KBUILD_DEFCONFIG := erizo_generic_defconfig
 KBUILD_CPPFLAGS += -fno-strict-aliasing
 
 ifeq ($(CONFIG_ARCH_RV32I),y)
-	riscv-cflags-y := -march=rv32im -mabi=ilp32
-	riscv-ldflags-y := -melf32lriscv
+	riscv-cflags-y += -march=rv32im -mabi=ilp32
+	riscv-ldflags-y += -melf32lriscv
+else
+	riscv-cflags-y += -march=rv64im -mabi=lp64
+	riscv-ldflags-y += -melf64lriscv
 endif
 
 riscv-cflags-y += -Wstrict-prototypes -mcmodel=medany -fpic

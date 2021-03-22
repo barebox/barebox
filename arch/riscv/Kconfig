@@ -11,6 +11,7 @@ config RISCV
 	select HAVE_PBL_IMAGE
 	select HAVE_PBL_MULTI_IMAGES
 	select HAVE_IMAGE_COMPRESSION
+	select HAS_ARCH_SJLJ
 	select HAS_KALLSYMS
 
 config ARCH_TEXT_BASE
@@ -25,6 +26,7 @@ choice
 
 config MACH_ERIZO
 	bool "erizo family"
+	select ARCH_RV32I
 	select HAS_DEBUG_LL
 	select HAS_NMON
 	select USE_COMPRESSED_DTB
@@ -41,24 +43,33 @@ config ARCH_RV32I
 	select GENERIC_LIB_ASHLDI3
 	select GENERIC_LIB_ASHRDI3
 	select GENERIC_LIB_LSHRDI3
-	select HAS_ARCH_SJLJ
+	select 32BIT
+
+config ARCH_RV64I
+	bool "RV64I"
+	select CPU_SUPPORTS_64BIT_KERNEL
+	select 64BIT
 
 endchoice
 
 config CPU_SUPPORTS_32BIT_KERNEL
 	bool
 
-choice
-	prompt "barebox code model"
-	default 32BIT
+config CPU_SUPPORTS_64BIT_KERNEL
+	bool
+
+config PHYS_ADDR_T_64BIT
+	bool
 
 config 32BIT
-	bool "32-bit barebox"
+	bool
 	depends on CPU_SUPPORTS_32BIT_KERNEL
-	help
-	  Select this option to build a 32-bit barebox.
 
-endchoice
+config 64BIT
+	bool
+	depends on CPU_SUPPORTS_64BIT_KERNEL
+	select ARCH_DMA_ADDR_T_64BIT
+	select PHYS_ADDR_T_64BIT
 
 source "arch/riscv/mach-erizo/Kconfig"
 

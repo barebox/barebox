@@ -15,6 +15,11 @@
 
 OUTPUT_ARCH(riscv)
 ENTRY(start)
+#ifdef CONFIG_64BIT
+OUTPUT_FORMAT("elf64-littleriscv")
+#else
+OUTPUT_FORMAT("elf32-littleriscv")
+#endif
 SECTIONS
 {
 	. = 0x0;

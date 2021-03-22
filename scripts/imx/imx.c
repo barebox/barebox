@@ -328,6 +328,7 @@ static int do_hab_blocks(struct config_data *data, int argc, char *argv[])
 {
 	char *str;
 	int ret;
+	int i;
 	uint32_t signed_size = data->load_size;
 	uint32_t offset = data->image_ivt_offset;
 
@@ -352,7 +353,7 @@ static int do_hab_blocks(struct config_data *data, int argc, char *argv[])
 	}
 
 	if (signed_size > 0) {
-		ret = asprintf(&str, "Blocks = 0x%08x 0x%08x 0x%08x \"%s\"\n",
+		ret = asprintf(&str, "Blocks = 0x%08x 0x%08x 0x%08x \"%s\"",
 			data->image_load_addr + data->image_ivt_offset, offset,
 			signed_size - data->image_ivt_offset, data->outfile);
 	} else {
@@ -365,10 +366,57 @@ static int do_hab_blocks(struct config_data *data, int argc, char *argv[])
 		return -ENOMEM;
 
 	ret = hab_add_str(data, str);
+	free(str);
 	if (ret)
 		return ret;
 
-	return 0;
+	for (i = 1; i < argc; i++) {
+		uint32_t addr;
+		uint32_t off;
+		uint32_t size;
+		char *b;
+		char *e;
+
+		b = argv[i];
+		if (*b == '"') // remove leading qoute
+			b++;
+		if (!*b || *b == '"')
+			continue; // skip if empty
+
+		off = strtoul(b, &e, 0);
+		if (*e != '+') {
+			fprintf(stderr, "failed to find '+' in '%s'\n", b);
+			fprintf(stderr, "format off+size@addr expected, but given: %s\n", argv[i]);
+			return -EINVAL;
+		}
+
+		b = e + 1;
+		size = strtoul(b, &e, 0);
+		if (*e != '@') {
+			fprintf(stderr, "failed to find '@' in '%s'\n", b);
+			fprintf(stderr, "format off+size@addr expected, but given: %s\n", argv[i]);
+			return -EINVAL;
+		}
+
+		b = e + 1;
+		addr = strtoul(b, &e, 0);
+		if (*e && *e != '"') { // ignore trailing qoute
+			fprintf(stderr, "unexpected char at the end: '%c'\n", *e);
+			fprintf(stderr, "format off+size@addr expected, but given: %s\n", argv[i]);
+			return -EINVAL;
+		}
+
+		ret = asprintf(&str, ", 0x%08x 0x%08x 0x%08x \"%s\"", addr, off, size, data->outfile);
+		if (ret < 0)
+			return -ENOMEM;
+
+		ret = hab_add_str(data, str);
+		free(str);
+		if (ret)
+			return ret;
+	}
+
+	return hab_add_str(data, "\n");
 }
 
 static int do_hab_encrypt(struct config_data *data, int argc, char *argv[])

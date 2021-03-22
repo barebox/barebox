@@ -8,7 +8,7 @@
  * we are currently running at.
  */
 ENTRY(get_runtime_offset)
-1:	adr x0, _text
+	adr x0, _text
 	ldr x1, linkadr
 	subs x0, x0, x1
 	ret

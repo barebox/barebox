@@ -7,9 +7,7 @@ ifeq ($(CONFIG_ARCH_RV32I),y)
 	riscv-ldflags-y += -melf32lriscv
 endif
 
-cflags-y += -fno-pic -pipe
-cflags-y += -Wall -Wstrict-prototypes \
-	-Wno-uninitialized -Wno-format -Wno-main -mcmodel=medany
+cflags-y += -fno-pic -Wstrict-prototypes -mcmodel=medany
 
 LDFLAGS_barebox += -nostdlib
 

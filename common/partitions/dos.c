@@ -16,7 +16,6 @@
 #include <disks.h>
 #include <init.h>
 #include <asm/unaligned.h>
-#include <dma.h>
 #include <linux/err.h>
 
 #include "parser.h"
@@ -64,7 +63,7 @@ static uint64_t disk_guess_size(struct device_d *dev,
 
 static void *read_mbr(struct block_device *blk)
 {
-	void *buf = dma_alloc(SECTOR_SIZE);
+	void *buf = malloc(SECTOR_SIZE);
 	int ret;
 
 	ret = block_read(blk, buf, 0, 1);
@@ -135,7 +134,7 @@ static int dos_get_disk_signature(struct param_d *p, void *_priv)
 static void dos_extended_partition(struct block_device *blk, struct partition_desc *pd,
 		struct partition *partition, uint32_t signature)
 {
-	uint8_t *buf = dma_alloc(SECTOR_SIZE);
+	uint8_t *buf = malloc(SECTOR_SIZE);
 	uint32_t ebr_sector = partition->first_sec;
 	struct partition_entry *table = (struct partition_entry *)&buf[0x1be];
 	unsigned partno = 5;
@@ -185,7 +184,7 @@ static void dos_extended_partition(struct block_device *blk, struct partition_de
 	}
 
 out:
-	dma_free(buf);
+	free(buf);
 	return;
 }
 

@@ -17,7 +17,6 @@
 #include <asm/unaligned.h>
 #include <disks.h>
 #include <filetype.h>
-#include <dma.h>
 #include <linux/err.h>
 
 #include "partitions/parser.h"
@@ -120,7 +119,7 @@ int parse_partition_table(struct block_device *blk)
 	uint8_t *buf;
 
 	pdesc = xzalloc(sizeof(*pdesc));
-	buf = dma_alloc(SECTOR_SIZE * 2);
+	buf = malloc(2 * SECTOR_SIZE);
 
 	rc = block_read(blk, buf, 0, 2);
 	if (rc != 0) {
@@ -149,7 +148,7 @@ int parse_partition_table(struct block_device *blk)
 	}
 
 on_error:
-	dma_free(buf);
+	free(buf);
 	free(pdesc);
 	return rc;
 }

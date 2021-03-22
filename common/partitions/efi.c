@@ -16,7 +16,6 @@
 #include <disks.h>
 #include <init.h>
 #include <asm/unaligned.h>
-#include <dma.h>
 #include <crc.h>
 #include <linux/ctype.h>
 

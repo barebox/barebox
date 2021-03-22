@@ -10,10 +10,12 @@
 
 static int do_readline(int argc, char *argv[])
 {
-	char *buf = xzalloc(CONFIG_CBSIZE);
+	char *buf;
 
 	if (argc < 3)
 		return COMMAND_ERROR_USAGE;
+
+	buf = xzalloc(CONFIG_CBSIZE);
 
 	command_slice_release();
 

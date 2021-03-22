@@ -1,8 +1,11 @@
 RISC-V
 ======
 
-Running RISC-V barebox on qemu
-------------------------------
+Erizo
+-----
+
+Running on qemu
+~~~~~~~~~~~~~~~
 
 Obtain RISC-V GCC/Newlib Toolchain,
 see https://github.com/riscv/riscv-tools/blob/master/README.md
@@ -44,7 +47,7 @@ Next compile barebox::
 Run barebox::
 
   $ <path to riscv-qemu source>/riscv32-softmmu/qemu-system-riscv32 \
-      -nographic -M erizo -bios <path to barebox sources >/barebox.bin \
+      -nographic -M erizo -bios ./images/barebox-erizo-generic.img \
       -serial stdio -monitor none -trace file=/dev/null
   Switch to console [cs0]
   
@@ -59,8 +62,8 @@ Run barebox::
   barebox:/
 
 
-Running RISC-V barebox on DE0-Nano FPGA board
----------------------------------------------
+Running on DE0-Nano FPGA board
+------------------------------
 
 See https://github.com/open-design/riscv-soc-cores/ for instructions
 on DE0-Nano bitstream generation and loading.

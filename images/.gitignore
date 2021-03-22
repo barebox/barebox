@@ -31,3 +31,4 @@ barebox.sum
 *.image
 *.mvebu1img
 *.stm32
+*.nmon

@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+quiet_cmd_erizo_nmon_image = MKIMAGE $@
+      cmd_erizo_nmon_image = $(srctree)/scripts/erizo-nmon-image $< $@ || \
+	echo "WARNING: Couldn't create erizo nmon image due to previous errors."
+
+$(obj)/%.nmon: $(obj)/%.img FORCE
+	$(call if_changed,erizo_nmon_image)
+
+pblb-$(CONFIG_BOARD_ERIZO_GENERIC) += start_erizo_generic
+FILE_barebox-erizo-generic.img = start_erizo_generic.pblb
+image-$(CONFIG_BOARD_ERIZO_GENERIC) += barebox-erizo-generic.img barebox-erizo-generic.nmon

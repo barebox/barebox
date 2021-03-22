@@ -1,35 +1,18 @@
 // SPDX-License-Identifier: GPL-2.0-only
-/*
- * Copyright (C) 2016 Antony Pavlov <antonynpavlov@gmail.com>
- *
- * This file is part of barebox.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- */
 
 #include <common.h>
-#include <memory.h>
-#include <asm-generic/memory_layout.h>
-#include <asm/sections.h>
+#include <asm/barebox-riscv.h>
+#include <debug_ll.h>
 
-void main_entry(void);
-
-/**
- * Called plainly from assembler code
- *
- * @note The C environment isn't initialized yet
- */
-void main_entry(void)
+ENTRY_FUNCTION(start_erizo_generic, a0, a1, a2)
 {
-	/* clear the BSS first */
-	memset(__bss_start, 0x00, __bss_stop - __bss_start);
+	extern char __dtb_z_erizo_generic_start[];
 
-	mem_malloc_init((void *)MALLOC_BASE,
-			(void *)(MALLOC_BASE + MALLOC_SIZE - 1));
+	debug_ll_ns16550_init();
+	putc_ll('>');
 
-	start_barebox();
+	/* On POR, we are running from read-only memory here. */
+
+	barebox_riscv_entry(0x80000000, SZ_8M,
+			    __dtb_z_erizo_generic_start + get_runtime_offset());
 }

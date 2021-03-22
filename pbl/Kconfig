@@ -27,7 +27,7 @@ config PBL_SINGLE_IMAGE
 if PBL_IMAGE
 
 config PBL_RELOCATABLE
-	depends on ARM || MIPS
+	depends on ARM || MIPS || RISCV
 	bool "relocatable pbl image"
 	help
 	  Generate a pbl binary which can relocate itself during startup to run

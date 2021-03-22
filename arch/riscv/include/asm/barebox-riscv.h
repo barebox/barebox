@@ -18,6 +18,7 @@
 #include <linux/types.h>
 #include <linux/compiler.h>
 #include <asm/sections.h>
+#include <asm/barebox-riscv-head.h>
 
 unsigned long get_runtime_offset(void);
 

@@ -783,6 +783,7 @@ define rule_barebox__
 	$(if $(CONFIG_KALLSYMS),,+$(call cmd,barebox_version))
 	$(call cmd,barebox__)
 	$(Q)echo 'cmd_$@ := $(cmd_barebox__)' > $(@D)/.$(@F).cmd
+	$(call cmd,prelink__)
 	$(call cmd,sysmap)
 endef
 

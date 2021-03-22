@@ -147,7 +147,11 @@ static struct amba_driver pl061_gpio_driver = {
 	.probe		= pl061_probe,
 };
 
-coredevice_platform_driver(pl061_gpio_driver);
+static int __init pl061_gpio_init(void)
+{
+	return amba_driver_register(&pl061_gpio_driver);
+}
+coredevice_initcall(pl061_gpio_init);
 
 MODULE_AUTHOR("Baruch Siach <baruch@tkos.co.il>");
 MODULE_DESCRIPTION("PL061 GPIO driver");

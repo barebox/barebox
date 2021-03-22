@@ -1,7 +1,0 @@
-#!/bin/sh
-
-if [ -e /dev/dtb ]
-then
-	oftree -l /dev/dtb
-	oftree -p
-fi

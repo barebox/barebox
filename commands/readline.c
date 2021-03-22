@@ -19,7 +19,7 @@ static int do_readline(int argc, char *argv[])
 
 	command_slice_release();
 
-	if (readline(argv[1], buf, CONFIG_CBSIZE) < 0) {
+	if (readline(argv[1], buf, CONFIG_CBSIZE - 1) < 0) {
 		command_slice_acquire();
 		free(buf);
 		return COMMAND_ERROR;

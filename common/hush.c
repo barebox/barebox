@@ -451,7 +451,7 @@ static void get_user_input(struct in_str *i)
 
 	command_slice_release();
 
-	n = readline(prompt, console_buffer, CONFIG_CBSIZE);
+	n = readline(prompt, console_buffer, CONFIG_CBSIZE - 1);
 
 	command_slice_acquire();
 

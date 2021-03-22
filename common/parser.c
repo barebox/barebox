@@ -270,7 +270,7 @@ int run_shell(void)
 	login();
 
 	for (;;) {
-		len = readline (CONFIG_PROMPT, console_buffer, CONFIG_CBSIZE);
+		len = readline (CONFIG_PROMPT, console_buffer, CONFIG_CBSIZE - 1);
 
 		if (len > 0)
 			strcpy (lastcommand, console_buffer);

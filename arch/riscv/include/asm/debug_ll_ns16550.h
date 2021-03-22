@@ -51,9 +51,13 @@
 #if defined(DEBUG_LL_UART_IOSIZE32)
 #define UART_REG_L	lw
 #define UART_REG_S	sw
+#define __uart_read	readl
+#define __uart_write	writel
 #elif defined(DEBUG_LL_UART_IOSIZE8)
 #define UART_REG_L	lbu
 #define UART_REG_S	sb
+#define __uart_read	readb
+#define __uart_write	writeb
 #else
 #error "Please define DEBUG_LL_UART_IOSIZE{8,32}"
 #endif
@@ -68,19 +72,19 @@
 static inline void PUTC_LL(char ch)
 {
 #ifdef CONFIG_DEBUG_LL
-	while (!(__raw_readl((u8 *)DEBUG_LL_UART_ADDR + UART_LSR) & UART_LSR_THRE))
+	while (!(__uart_read((u8 *)DEBUG_LL_UART_ADDR + UART_LSR) & UART_LSR_THRE))
 		;
-	__raw_writel(ch, (u8 *)DEBUG_LL_UART_ADDR + UART_THR);
+	__uart_write(ch, (u8 *)DEBUG_LL_UART_ADDR + UART_THR);
 #endif /* CONFIG_DEBUG_LL */
 }
 
 static inline void debug_ll_ns16550_init(void)
 {
 #ifdef CONFIG_DEBUG_LL
-	__raw_writel(UART_LCR_DLAB, (u8 *)DEBUG_LL_UART_ADDR + UART_LCR);
-	__raw_writel(DEBUG_LL_UART_DIVISOR & 0xff, (u8 *)DEBUG_LL_UART_ADDR + UART_DLL);
-	__raw_writel((DEBUG_LL_UART_DIVISOR >> 8) & 0xff, (u8 *)DEBUG_LL_UART_ADDR + UART_DLM);
-	__raw_writel(UART_LCR_W, (u8 *)DEBUG_LL_UART_ADDR + UART_LCR);
+	__uart_write(UART_LCR_DLAB, (u8 *)DEBUG_LL_UART_ADDR + UART_LCR);
+	__uart_write(DEBUG_LL_UART_DIVISOR & 0xff, (u8 *)DEBUG_LL_UART_ADDR + UART_DLL);
+	__uart_write((DEBUG_LL_UART_DIVISOR >> 8) & 0xff, (u8 *)DEBUG_LL_UART_ADDR + UART_DLM);
+	__uart_write(UART_LCR_W, (u8 *)DEBUG_LL_UART_ADDR + UART_LCR);
 #endif /* CONFIG_DEBUG_LL */
 }
 #else /* __ASSEMBLY__ */

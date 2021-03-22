@@ -11,6 +11,7 @@
 
 #include <dma-dir.h>
 #include <asm/dma.h>
+#include <driver.h>
 
 #define DMA_ADDRESS_BROKEN	NULL
 

@@ -32,3 +32,4 @@ mips-relocs
 rsatoc
 stm32image
 mvebuimg
+prelink-riscv

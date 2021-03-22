@@ -247,6 +247,17 @@ $(obj)/%:: $(src)/%_shipped
 #	and add target to extra-y so that we know we have to
 #	read in the saved command line
 
+# Prelinking
+# ---------------------------------------------------------------------------
+
+ifneq ($(CONFIG_RISCV),)
+quiet_cmd_prelink__ = PRELINK $@
+      cmd_prelink__ = $(objtree)/scripts/prelink-riscv $@
+endif
+
+quiet_cmd_prelink__ ?=
+      cmd_prelink__ ?=
+
 # Linking
 # ---------------------------------------------------------------------------
 

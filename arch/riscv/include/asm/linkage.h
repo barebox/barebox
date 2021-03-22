@@ -9,4 +9,8 @@
 #define __ALIGN		.balign 4
 #define __ALIGN_STR	".balign 4"
 
+#define ENDPROC(name) \
+  .type name, %function; \
+  END(name)
+
 #endif /* _ASM_RISCV_LINKAGE_H */

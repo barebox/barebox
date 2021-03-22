@@ -43,6 +43,7 @@ endif
 common-y += $(MACH)
 common-y += arch/riscv/boards/
 common-y += arch/riscv/lib/
+common-y += arch/riscv/boot/
 
 common-$(CONFIG_OFTREE) += arch/riscv/dts/
 

@@ -43,10 +43,18 @@ SECTIONS
 
 	.barebox_imd : { BAREBOX_IMD }
 
-	. = ALIGN(8);
-	.got : { *(.got*) }
+	/DISCARD/ : { *(.rela.plt*) }
+	.rela.dyn : {
+		__rel_dyn_start = .;
+		*(.rel*)
+		__rel_dyn_end = .;
+	}
 
-	.rela.dyn : { *(.rela*) }
+	.dynsym : {
+		__dynsym_start = .;
+		*(.dynsym)
+		__dynsym_end = .;
+	}
 
 	_edata = .;
 	. = ALIGN(8);

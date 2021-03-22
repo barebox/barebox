@@ -24,6 +24,7 @@ hostprogs-always-$(CONFIG_ARCH_SOCFPGA)			+= socfpga_mkimage
 hostprogs-always-$(CONFIG_ARCH_MXS)			+= mxsimage mxsboot
 hostprogs-always-$(CONFIG_ARCH_LAYERSCAPE)		+= pblimage
 hostprogs-always-$(CONFIG_ARCH_STM32MP)			+= stm32image
+hostprogs-always-$(CONFIG_RISCV)			+= prelink-riscv
 KBUILD_HOSTCFLAGS += -I$(srctree)/scripts/include/
 HOSTLDLIBS_mxsimage  = `pkg-config --libs openssl`
 HOSTCFLAGS_omap3-usb-loader.o = `pkg-config --cflags libusb-1.0`

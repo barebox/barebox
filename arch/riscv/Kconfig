@@ -70,6 +70,13 @@ endmenu
 
 menu "RISC-V specific settings"
 
+config RISCV_OPTIMZED_STRING_FUNCTIONS
+	bool "use assembler optimized string functions"
+	help
+	  Say yes here to use assembler optimized memcpy / memset functions.
+	  These functions work faster than the normal versions but increase
+	  your binary size.
+
 config HAS_NMON
 	bool
 

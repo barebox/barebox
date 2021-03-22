@@ -321,7 +321,7 @@ int linux_open_hostfile(struct hf_info *hf)
 {
 	char *buf = NULL;
 	struct stat s;
-	int fd;
+	int fd = -1;
 
 	printf("add %s %sbacked by file %s%s\n", hf->devname,
 	       hf->filename ? "" : "initially un", hf->filename ?: "",
@@ -408,7 +408,7 @@ int linux_open_hostfile(struct hf_info *hf)
 	return 0;
 
 err_out:
-	if (fd > 0)
+	if (fd >= 0)
 		close(fd);
 	free(buf);
 	return -1;

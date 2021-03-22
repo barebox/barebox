@@ -4,6 +4,7 @@
 #include <init.h>
 #include <of.h>
 #include <asm/barebox-riscv.h>
+#include <asm/timer.h>
 
 static int of_riscv_init(void)
 {
@@ -20,6 +21,9 @@ static int of_riscv_init(void)
 
 
 	barebox_register_fdt(fdt);
+
+	/* do it now, before clocksource drivers run postcore */
+	timer_init();
 
 	return 0;
 }

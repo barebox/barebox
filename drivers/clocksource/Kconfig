@@ -99,4 +99,19 @@ config CLOCKSOURCE_TI_DM
 config CLOCKSOURCE_TI_32K
 	bool
 
+config RISCV_TIMER
+	bool "Timer for the RISC-V platform" if COMPILE_TEST
+	depends on RISCV
+	help
+	  This enables the per-hart timer built into all RISC-V systems, which
+	  is accessed via both the SBI and the rdcycle instruction.  This is
+	  required for all RISC-V systems.
+
+config CLINT_TIMER
+	bool "CLINT Timer for the RISC-V platform" if COMPILE_TEST
+	depends on OFDEVICE
+	help
+	  This option enables the CLINT timer for RISC-V systems.  The CLINT
+	  driver is usually used for NoMMU RISC-V systems.
+
 endmenu

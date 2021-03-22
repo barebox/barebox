@@ -1,0 +1,50 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2012 Regents of the University of California
+ * Copyright (C) 2017 SiFive
+ *
+ * All RISC-V systems have a timer attached to every hart.  These timers can
+ * either be read from the "time" and "timeh" CSRs, and can use the SBI to
+ * setup events, or directly accessed using MMIO registers.
+ */
+#include <common.h>
+#include <init.h>
+#include <clock.h>
+#include <errno.h>
+#include <of.h>
+#include <linux/clk.h>
+#include <linux/err.h>
+#include <io.h>
+
+static struct device_d timer_dev;
+
+static int riscv_probe(struct device_d *parent)
+{
+	int ret;
+
+	/* Each hart has a timer, but we only need one */
+	if (IS_ENABLED(CONFIG_RISCV_TIMER) && !timer_dev.parent) {
+		timer_dev.id = DEVICE_ID_SINGLE;
+		timer_dev.device_node = parent->device_node;
+		timer_dev.parent = parent;
+		dev_set_name(&timer_dev, "riscv-timer");
+
+		ret = platform_device_register(&timer_dev);
+		if (ret)
+			return ret;
+	}
+
+	return 0;
+}
+
+static struct of_device_id riscv_dt_ids[] = {
+	{ .compatible = "riscv", },
+	{ /* sentinel */ },
+};
+
+static struct driver_d riscv_driver = {
+	.name = "riscv",
+	.probe = riscv_probe,
+	.of_compatible = riscv_dt_ids,
+};
+postcore_platform_driver(riscv_driver);

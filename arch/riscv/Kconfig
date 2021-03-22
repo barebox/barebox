@@ -13,6 +13,7 @@ config RISCV
 	select HAVE_IMAGE_COMPRESSION
 	select HAS_ARCH_SJLJ
 	select HAS_KALLSYMS
+	select RISCV_TIMER if RISCV_SBI
 
 config ARCH_TEXT_BASE
 	hex
@@ -30,6 +31,8 @@ config MACH_ERIZO
 	select HAS_DEBUG_LL
 	select HAS_NMON
 	select USE_COMPRESSED_DTB
+	select RISCV_M_MODE
+	select RISCV_TIMER
 
 endchoice
 
@@ -112,5 +115,15 @@ config NMON_HELP
 	help
 	  Say yes here to get the nmon commands message on
 	  every nmon start.
+
+# set if we run in machine mode, cleared if we run in supervisor mode
+config RISCV_M_MODE
+	bool
+
+# set if we are running in S-mode and can use SBI calls
+config RISCV_SBI
+	bool
+	depends on !RISCV_M_MODE
+	default y
 
 endmenu

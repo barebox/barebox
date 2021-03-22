@@ -21,3 +21,5 @@ obj-$(CONFIG_CLOCKSOURCE_IMX_GPT) += timer-imx-gpt.o
 obj-$(CONFIG_CLOCKSOURCE_DW_APB_TIMER) += dw_apb_timer.o
 obj-$(CONFIG_CLOCKSOURCE_TI_DM) += timer-ti-dm.o
 obj-$(CONFIG_CLOCKSOURCE_TI_32K) += timer-ti-32k.o
+obj-$(CONFIG_CLINT_TIMER) += timer-clint.o
+obj-$(CONFIG_RISCV_TIMER) += timer-riscv.o

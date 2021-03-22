@@ -14,3 +14,17 @@ config SYSCON_REBOOT_MODE
 	  get reboot mode arguments and store it in SYSCON mapped
 	  register, then the bootloader can read it to take different
 	  action according to the mode.
+
+config POWER_RESET_SYSCON
+	bool "Generic SYSCON regmap reset driver"
+	depends on OFDEVICE
+	select MFD_SYSCON
+	help
+	  Reboot support for generic SYSCON mapped register reset.
+
+config POWER_RESET_SYSCON_POWEROFF
+	bool "Generic SYSCON regmap poweroff driver"
+	depends on OFDEVICE
+	select MFD_SYSCON
+	help
+	  Poweroff support for generic SYSCON mapped register poweroff.

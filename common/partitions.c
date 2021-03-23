@@ -7,7 +7,6 @@
  * @file
  * @brief Generic support for partition tables on disk like media
  *
- * @todo Support for disks larger than 4 GiB
  * @todo Reliable size detection for BIOS based disks (on x86 only)
  */
 #include <common.h>

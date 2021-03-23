@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0+
 #include <dma.h>
 #include <usb/gadget.h>
-#include <linux/iopoll.h>
 #include "dwc2.h"
 
 #define to_dwc2 gadget_to_dwc2
@@ -2659,59 +2658,6 @@ static int dwc2_eps_alloc(struct dwc2 *dwc2)
 		 dwc2->dedicated_fifos ? "dedicated" : "shared",
 		 dwc2->hw_params.total_fifo_size);
 	return 0;
-}
-
-/**
- * dwc2_wait_for_mode() - Waits for the controller mode.
- * @dwc2:	Programming view of the DWC_otg controller.
- * @host_mode:	If true, waits for host mode, otherwise device mode.
- */
-static void dwc2_wait_for_mode(struct dwc2 *dwc2, bool host_mode)
-{
-	int val, ret;
-
-	dev_vdbg(dwc2->dev, "Waiting for %s mode\n",
-		 host_mode ? "host" : "device");
-
-	ret = readx_poll_timeout(dwc2_is_host_mode, dwc2, val,
-			val == host_mode, 110 * USEC_PER_MSEC);
-	if (ret)
-		dev_err(dwc2->dev, "%s: Couldn't set %s mode\n",
-				 __func__, host_mode ? "host" : "device");
-
-	dev_vdbg(dwc2->dev, "%s mode set\n",
-		 host_mode ? "Host" : "Device");
-}
-
-/**
- * dwc2_iddig_filter_enabled() - Returns true if the IDDIG debounce
- * filter is enabled.
- *
- * @hsotg: Programming view of DWC_otg controller
- */
-static bool dwc2_iddig_filter_enabled(struct dwc2 *dwc2)
-{
-	u32 gsnpsid;
-	u32 ghwcfg4;
-
-	/* Check if core configuration includes the IDDIG filter. */
-	ghwcfg4 = dwc2_readl(dwc2, GHWCFG4);
-	if (!(ghwcfg4 & GHWCFG4_IDDIG_FILT_EN))
-		return false;
-
-	/*
-	 * Check if the IDDIG debounce filter is bypassed. Available
-	 * in core version >= 3.10a.
-	 */
-	gsnpsid = dwc2_readl(dwc2, GSNPSID);
-	if (gsnpsid >= DWC2_CORE_REV_3_10a) {
-		u32 gotgctl = dwc2_readl(dwc2, GOTGCTL);
-
-		if (gotgctl & GOTGCTL_DBNCE_FLTR_BYPASS)
-			return false;
-	}
-
-	return true;
 }
 
 /**

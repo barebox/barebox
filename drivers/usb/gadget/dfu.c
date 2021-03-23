@@ -320,6 +320,8 @@ static void dfu_do_close(struct dfu_work *dw)
 
 	if (!stat(DFU_TEMPFILE, &s))
 		unlink(DFU_TEMPFILE);
+
+	dw->dfu->dfu_state = DFU_STATE_dfuIDLE;
 }
 
 static void dfu_do_copy(struct dfu_work *dw)
@@ -359,7 +361,6 @@ static void dfu_do_copy(struct dfu_work *dw)
 	}
 
 	dfu->dfu_state = DFU_STATE_dfuIDLE;
-	dfu_do_close(dw);
 }
 
 static int
@@ -557,6 +558,11 @@ static int handle_manifest(struct usb_function *f, const struct usb_ctrlrequest 
 		wq_queue_work(&dfu->wq, &dw->work);
 	}
 
+	dw = xzalloc(sizeof(*dw));
+	dw->dfu = dfu;
+	dw->task = dfu_do_close;
+	wq_queue_work(&dfu->wq, &dw->work);
+
 	return 0;
 }
 
@@ -752,11 +758,8 @@ static int dfu_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 	case DFU_STATE_dfuMANIFEST_SYNC:
 		switch (ctrl->bRequest) {
 		case USB_REQ_DFU_GETSTATUS:
+			dfu->dfu_state = DFU_STATE_dfuMANIFEST;
 			value = dfu_status(f, ctrl);
-			if (dfu_file_entry->flags & FILE_LIST_FLAG_SAFE)
-				dfu->dfu_state = DFU_STATE_dfuMANIFEST;
-			else
-				dfu->dfu_state = DFU_STATE_dfuIDLE;
 			value = min(value, w_length);
 			break;
 		case USB_REQ_DFU_GETSTATE:

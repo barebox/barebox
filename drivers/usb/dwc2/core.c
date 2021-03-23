@@ -681,6 +681,59 @@ int dwc2_get_dr_mode(struct dwc2 *dwc2)
 	return 0;
 }
 
+/**
+ * dwc2_wait_for_mode() - Waits for the controller mode.
+ * @dwc2:	Programming view of the DWC_otg controller.
+ * @host_mode:	If true, waits for host mode, otherwise device mode.
+ */
+void dwc2_wait_for_mode(struct dwc2 *dwc2, bool host_mode)
+{
+	unsigned int timeout = 110 * USECOND;
+	int ret;
+
+	dev_vdbg(dwc2->dev, "Waiting for %s mode\n",
+		 host_mode ? "host" : "device");
+
+	ret = wait_on_timeout(timeout, dwc2_is_host_mode(dwc2) == host_mode);
+	if (ret)
+		dev_err(dwc2->dev, "%s: Couldn't set %s mode\n",
+				 __func__, host_mode ? "host" : "device");
+
+	dev_vdbg(dwc2->dev, "%s mode set\n",
+		 host_mode ? "Host" : "Device");
+}
+
+/**
+ * dwc2_iddig_filter_enabled() - Returns true if the IDDIG debounce
+ * filter is enabled.
+ *
+ * @hsotg: Programming view of DWC_otg controller
+ */
+bool dwc2_iddig_filter_enabled(struct dwc2 *dwc2)
+{
+	u32 gsnpsid;
+	u32 ghwcfg4;
+
+	/* Check if core configuration includes the IDDIG filter. */
+	ghwcfg4 = dwc2_readl(dwc2, GHWCFG4);
+	if (!(ghwcfg4 & GHWCFG4_IDDIG_FILT_EN))
+		return false;
+
+	/*
+	 * Check if the IDDIG debounce filter is bypassed. Available
+	 * in core version >= 3.10a.
+	 */
+	gsnpsid = dwc2_readl(dwc2, GSNPSID);
+	if (gsnpsid >= DWC2_CORE_REV_3_10a) {
+		u32 gotgctl = dwc2_readl(dwc2, GOTGCTL);
+
+		if (gotgctl & GOTGCTL_DBNCE_FLTR_BYPASS)
+			return false;
+	}
+
+	return true;
+}
+
 /*
  * Do core a soft reset of the core.  Be careful with this because it
  * resets all the internal state machines of the core.
@@ -696,8 +749,8 @@ int dwc2_core_reset(struct dwc2 *dwc2)
 	/* Wait for AHB master IDLE state. */
 	ret = dwc2_wait_bit_set(dwc2, GRSTCTL, GRSTCTL_AHBIDLE, 10000);
 	if (ret) {
-		pr_info("%s: Timeout! Waiting for AHB master IDLE state\n",
-			__func__);
+		dwc2_warn(dwc2, "%s: Timeout! Waiting for AHB master IDLE state\n",
+				__func__);
 		return ret;
 	}
 
@@ -711,16 +764,16 @@ int dwc2_core_reset(struct dwc2 *dwc2)
 	 * Determine whether we will go back into host mode after a
 	 * reset and account for this delay after the reset.
 	 */
-	{
-	u32 gotgctl = dwc2_readl(dwc2, GOTGCTL);
-	u32 gusbcfg = dwc2_readl(dwc2, GUSBCFG);
+	if (dwc2_iddig_filter_enabled(dwc2)) {
+		u32 gotgctl = dwc2_readl(dwc2, GOTGCTL);
+		u32 gusbcfg = dwc2_readl(dwc2, GUSBCFG);
 
-	if (!(gotgctl & GOTGCTL_CONID_B) ||
-	    (gusbcfg & GUSBCFG_FORCEHOSTMODE)) {
-		dwc2_dbg(dwc2, "HOST MODE\n");
-		wait_for_host_mode = true;
+		if (!(gotgctl & GOTGCTL_CONID_B) ||
+		    (gusbcfg & GUSBCFG_FORCEHOSTMODE)) {
+			wait_for_host_mode = true;
+		}
 	}
-	}
+
 	/* Core Soft Reset */
 	greset = dwc2_readl(dwc2, GRSTCTL);
 	greset |= GRSTCTL_CSFTRST;
@@ -728,16 +781,13 @@ int dwc2_core_reset(struct dwc2 *dwc2)
 
 	ret = dwc2_wait_bit_clear(dwc2, GRSTCTL, GRSTCTL_CSFTRST, 10000);
 	if (ret) {
-		pr_info("%s: Timeout! Waiting for Core Soft Reset\n", __func__);
+		dwc2_warn(dwc2, "%s: Timeout! Waiting for Core Soft Reset\n",
+				__func__);
 		return ret;
 	}
 
-	/*
-	 * Wait for core to come out of reset.
-	 * NOTE: This long sleep is _very_ important, otherwise the core will
-	 *       not stay in host mode after a connector ID change!
-	 */
-	mdelay(100);
+	if (wait_for_host_mode)
+		dwc2_wait_for_mode(dwc2, wait_for_host_mode);
 
 	return 0;
 }

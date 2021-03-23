@@ -109,6 +109,7 @@
 #define SCSI_MED_REMOVL	0x1E		/* Prevent/Allow medium Removal (O) */
 #define SCSI_READ6	0x08		/* Read 6-byte (MANDATORY) */
 #define SCSI_READ10	0x28		/* Read 10-byte (MANDATORY) */
+#define SCSI_READ16	0x88		/* Read 16-byte (O) */
 #define SCSI_RD_CAPAC	0x25		/* Read Capacity (MANDATORY) */
 #define SCSI_RD_DEFECT	0x37		/* Read Defect Data (O) */
 #define SCSI_READ_LONG	0x3E		/* Read Long (O) */
@@ -128,10 +129,14 @@
 #define SCSI_VERIFY	0x2F		/* Verify (O) */
 #define SCSI_WRITE6	0x0A		/* Write 6-Byte (MANDATORY) */
 #define SCSI_WRITE10	0x2A		/* Write 10-Byte (MANDATORY) */
+#define SCSI_WRITE16	0x8A		/* Write 16-Byte (O) */
 #define SCSI_WRT_VERIFY	0x2E		/* Write and Verify (O) */
 #define SCSI_WRITE_LONG	0x3F		/* Write Long (O) */
 #define SCSI_WRITE_SAME	0x41		/* Write Same (O) */
 
+#define SERVICE_ACTION_IN_16	0x9e
+/* values for service action in */
+#define	SAI_READ_CAPACITY_16	0x10
 
 /****************************************************************************
  * decleration of functions which have to reside in the LowLevel Part Driver

@@ -157,31 +157,95 @@ static int usb_stor_test_unit_ready(struct us_blk_dev *usb_blkdev)
 	return 0;
 }
 
-static int usb_stor_read_capacity(struct us_blk_dev *usb_blkdev,
-				  u32 *last_lba, u32 *block_length)
+static int read_capacity_16(struct us_blk_dev *usb_blkdev)
 {
 	struct device_d *dev = &usb_blkdev->us->pusb_dev->dev;
-	const u32 datalen = 8;
-	u32 *data = xzalloc(datalen);
-	u8 cmd[10];
+	unsigned char cmd[16];
+	const u8 datalen = 32;
+	u8 *data = xzalloc(datalen);
 	int ret;
+	sector_t lba;
+	unsigned sector_size;
+
+	memset(cmd, 0, 16);
+	cmd[0] = SERVICE_ACTION_IN_16;
+	cmd[1] = SAI_READ_CAPACITY_16;
+	cmd[13] = datalen;
+
+	ret = usb_stor_transport(usb_blkdev, cmd, sizeof(cmd), data, datalen,
+				 3, USB_STOR_NO_REQUEST_SENSE);
+
+	if (ret < 0) {
+		dev_warn(dev, "Read Capacity(16) failed\n");
+		return ret;
+	}
+
+	/* Note this is logical, not physical sector size */
+	sector_size = be32_to_cpup((u32 *)&data[8]);
+	lba = be64_to_cpup((u64 *)&data[0]);
+
+	dev_dbg(dev, "LBA (16) = 0x%llx w/ sector size = %u\n",
+		lba, sector_size);
+
+	if ((data[12] & 1) == 1) {
+		dev_warn(dev, "Protection unsupported\n");
+		return -ENOTSUPP;
+	}
+
+	usb_blkdev->blk.blockbits = SECTOR_SHIFT;
+	usb_blkdev->blk.num_blocks = lba + 1;
+
+	return sector_size;
+}
+
+static int read_capacity_10(struct us_blk_dev *usb_blkdev)
+{
+	struct device_d *dev = &usb_blkdev->us->pusb_dev->dev;
+	unsigned char cmd[16];
+	const u32 datalen = 8;
+	__be32 *data = xzalloc(datalen);
+	int ret;
+	sector_t lba;
+	unsigned sector_size;
 
 	memset(cmd, 0, sizeof(cmd));
 	cmd[0] = SCSI_RD_CAPAC;
 
 	ret = usb_stor_transport(usb_blkdev, cmd, sizeof(cmd), data, datalen,
 				 3, USB_STOR_NO_REQUEST_SENSE);
-	if (ret < 0)
-		goto exit;
 
-	dev_dbg(dev, "Read Capacity returns: 0x%x, 0x%x\n",
-		data[0], data[1]);
-	*last_lba = be32_to_cpu(data[0]);
-	*block_length = be32_to_cpu(data[1]);
+	if (ret < 0) {
+		dev_warn(dev, "Read Capacity(10) failed\n");
+		return ret;
+	}
 
-exit:
-	free(data);
-	return ret;
+	sector_size = be32_to_cpu(data[1]);
+	lba = be32_to_cpu(data[0]);
+
+	dev_dbg(dev, "LBA (10) = 0x%llx w/ sector size = %u\n",
+		lba, sector_size);
+
+	if (sector_size != SECTOR_SIZE)
+		dev_warn(dev, "Support only %d bytes sectors\n", SECTOR_SIZE);
+
+	usb_blkdev->blk.num_blocks = lba + 1;
+	usb_blkdev->blk.blockbits = SECTOR_SHIFT;
+
+	return SECTOR_SIZE;
+}
+
+static int usb_stor_io_16(struct us_blk_dev *usb_blkdev, u8 opcode,
+			  sector_t start, u8 *data, u16 blocks)
+{
+	u8 cmd[16];
+
+	memset(cmd, 0, sizeof(cmd));
+	cmd[0] = opcode;
+	put_unaligned_be64(start, &cmd[2]);
+	put_unaligned_be32(blocks, &cmd[10]);
+
+	return usb_stor_transport(usb_blkdev, cmd, sizeof(cmd), data,
+				  blocks * SECTOR_SIZE, 10, 0);
 }
 
 static int usb_stor_io_10(struct us_blk_dev *usb_blkdev, u8 opcode,
@@ -214,6 +278,7 @@ static int usb_stor_blk_io(struct block_device *disk_dev,
 						   blk);
 	struct us_data *us = pblk_dev->us;
 	struct device_d *dev = &us->pusb_dev->dev;
+	int result;
 
 	/* ensure unit ready */
 	dev_dbg(dev, "Testing for unit ready\n");
@@ -230,13 +295,24 @@ static int usb_stor_blk_io(struct block_device *disk_dev,
 	while (sector_count > 0) {
 		u16 n = min_t(blkcnt_t, sector_count, US_MAX_IO_BLK);
 
-		if (usb_stor_io_10(pblk_dev,
-				   read ? SCSI_READ10 : SCSI_WRITE10,
-				   sector_start,
-				   buffer, n)) {
+		if (disk_dev->num_blocks > 0xffffffff) {
+			result = usb_stor_io_16(pblk_dev,
+						read ? SCSI_READ16 : SCSI_WRITE16,
+						sector_start,
+						buffer, n);
+		} else {
+
+			result = usb_stor_io_10(pblk_dev,
+						read ? SCSI_READ10 : SCSI_WRITE10,
+						sector_start,
+						buffer, n);
+		}
+
+		if (result) {
 			dev_dbg(dev, "I/O error at sector %llu\n", sector_start);
 			break;
 		}
+
 		sector_start += n;
 		sector_count -= n;
 		buffer += n * SECTOR_SIZE;
@@ -275,7 +351,6 @@ static int usb_stor_init_blkdev(struct us_blk_dev *pblk_dev)
 {
 	struct us_data *us = pblk_dev->us;
 	struct device_d *dev = &us->pusb_dev->dev;
-	u32 last_lba = 0, block_length = 0;
 	int result;
 
 	/* get device info */
@@ -299,23 +374,18 @@ static int usb_stor_init_blkdev(struct us_blk_dev *pblk_dev)
 	/* read capacity */
 	dev_dbg(dev, "Reading capacity\n");
 
-	result = usb_stor_read_capacity(pblk_dev, &last_lba, &block_length);
-	if (result < 0) {
-		dev_dbg(dev, "Cannot read device capacity\n");
+	result = read_capacity_10(pblk_dev);
+	if (result < 0)
 		return result;
+
+	if (pblk_dev->blk.num_blocks > 0xffffffff) {
+		result = read_capacity_16(pblk_dev);
+		if (result < 0) {
+			dev_notice(dev, "Using 0xffffffff as device size\n");
+			pblk_dev->blk.num_blocks = 1 + (sector_t) 0xffffffff;
+		}
 	}
 
-	if (last_lba == U32_MAX) {
-		last_lba = U32_MAX - 1;
-		dev_warn(dev,
-			 "Limiting device size due to 32 bit constraints\n");
-		/* To support LBA >= U32_MAX, a READ CAPACITY (16) should be issued here */
-	}
-
-	pblk_dev->blk.num_blocks = last_lba + 1;
-	if (block_length != SECTOR_SIZE)
-		pr_warn("Support only %d bytes sectors\n", SECTOR_SIZE);
-	pblk_dev->blk.blockbits = SECTOR_SHIFT;
 	dev_dbg(dev, "Capacity = 0x%llx, blockshift = 0x%x\n",
 		 pblk_dev->blk.num_blocks, pblk_dev->blk.blockbits);
 

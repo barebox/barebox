@@ -532,7 +532,7 @@ static inline int dwc2_wait_bit_set(struct dwc2 *dwc2, u32 offset, u32 mask,
 			    u32 timeout)
 {
 	return wait_on_timeout(timeout * USECOND,
-			dwc2_readl(dwc2, offset) & mask);
+			(dwc2_readl(dwc2, offset) & mask) == mask);
 }
 
 /**

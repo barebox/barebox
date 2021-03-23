@@ -1,25 +1,15 @@
-KBUILD_DEFCONFIG := generic_defconfig
+KBUILD_DEFCONFIG := efi_defconfig
 
 KBUILD_CPPFLAGS += -D__X86__
 
-board-$(CONFIG_MACH_X86_GENERIC) := x86_generic
-
 TEXT_BASE = $(CONFIG_TEXT_BASE)
 
-ifeq ($(CONFIG_X86_EFI),y)
 machine-y := efi
 KBUILD_CFLAGS += -fpic -fshort-wchar -mno-sse -mno-mmx
 ifeq ($(CONFIG_X86_32),y)
 	TARGET = efi-app-ia32
 else
 	TARGET = efi-app-x86_64
-endif
-else
-KBUILD_CPPFLAGS += -fno-strict-aliasing
-KBUILD_CPPFLAGS += -march=i386 -DTEXT_BASE=$(TEXT_BASE) \
-	-fno-unwind-tables -fno-asynchronous-unwind-tables
-
-machine-y := i386
 endif
 
 ifeq ($(CONFIG_X86_32),y)
@@ -48,25 +38,17 @@ machdirs := $(patsubst %,arch/x86/mach-%/,$(machine-y))
 
 KBUILD_CPPFLAGS += $(patsubst %,-I$(srctree)/%include,$(machdirs))
 
-ifneq ($(board-y),)
-BOARD  := arch/x86/boards/$(board-y)/
-else
-BOARD  :=
-endif
-
 ifneq ($(machine-y),)
 MACH  := arch/x86/mach-$(machine-y)/
 else
 MACH  :=
 endif
 
-common-y += $(BOARD) $(MACH)
+common-y += $(MACH)
 common-y += arch/x86/lib/
-common-$(CONFIG_X86_BIOS_BRINGUP) += arch/x86/bios/
 
 # arch/x86/cpu/
 
-ifeq ($(CONFIG_X86_EFI),y)
 lds-$(CONFIG_X86_32)   := arch/x86/mach-efi/elf_ia32_efi.lds
 lds-$(CONFIG_X86_64)   := arch/x86/mach-efi/elf_x86_64_efi.lds
 
@@ -92,16 +74,6 @@ barebox.efi: $(KBUILD_BINARY) FORCE
 
 KBUILD_IMAGE := barebox.efi
 
-else
-common-y += arch/x86/boot/
-
-lds-$(CONFIG_GENERIC_LINKER_SCRIPT)   := arch/x86/lib/barebox.lds
-lds-$(CONFIG_BOARD_LINKER_SCRIPT)     := $(BOARD)/barebox.lds
-
-endif
-
 KBUILD_LDFLAGS += -m elf_$(UTS_MACHINE)
 
 CLEAN_FILES += $(lds-y)
-CLEAN_FILES    += arch/x86/lib/barebox.lds barebox.map barebox.S
-

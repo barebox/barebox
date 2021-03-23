@@ -6,8 +6,6 @@
 /**
  * @file
  * @brief Generic support for partition tables on disk like media
- *
- * @todo Reliable size detection for BIOS based disks (on x86 only)
  */
 #include <common.h>
 #include <malloc.h>

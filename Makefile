@@ -891,33 +891,6 @@ quiet_cmd_barebox_mkimage = MKIMAGE $@
 barebox.uimage: $(KBUILD_BINARY) FORCE
 	$(call if_changed,barebox_mkimage)
 
-ifdef CONFIG_X86
-barebox.S barebox.s: barebox
-ifdef CONFIG_X86_HDBOOT
-	@echo "-------------------------------------------------" > barebox.S
-	@echo " * MBR content" >> barebox.S
-	$(Q)$(OBJDUMP) -j .bootsector -mi8086 -d barebox >> barebox.S
-	@echo "-------------------------------------------------" >> barebox.S
-	@echo " * Boot loader content" >> barebox.S
-	$(Q)$(OBJDUMP) -j .bootstrapping -mi8086 -d barebox >> barebox.S
-endif
-	@echo "-------------------------------------------------" >> barebox.S
-	@echo " * Regular Text content" >> barebox.S
-	$(Q)$(OBJDUMP) -j .text -d barebox >> barebox.S
-	@echo "-------------------------------------------------" >> barebox.S
-	@echo " * Regular Data content" >> barebox.S
-	$(Q)$(OBJDUMP) -j .data -d barebox >> barebox.S
-	@echo "-------------------------------------------------" >> barebox.S
-	@echo " * Commands content" >> barebox.S
-	$(Q)$(OBJDUMP) -j .barebox_cmd -d barebox >> barebox.S
-	@echo "-------------------------------------------------" >> barebox.S
-	@echo " * Init Calls content" >> barebox.S
-	$(Q)$(OBJDUMP) -j .barebox_initcalls -d barebox >> barebox.S
-else
-barebox.S barebox.s: barebox FORCE
-	$(call if_changed,disasm)
-endif
-
 # barebox image
 barebox: $(BAREBOX_LDS) $(BAREBOX_OBJS) $(kallsyms.o) FORCE
 	$(call if_changed_rule,barebox__)
@@ -1119,7 +1092,7 @@ endif # CONFIG_MODULES
 # Directories & files removed with 'make clean'
 CLEAN_DIRS  += $(MODVERDIR)
 CLEAN_FILES +=	barebox System.map include/generated/barebox_default_env.h \
-                .tmp_version .tmp_barebox* barebox.bin barebox.map barebox.S \
+                .tmp_version .tmp_barebox* barebox.bin barebox.map \
 		.tmp_kallsyms* barebox.ldr compile_commands.json \
 		scripts/bareboxenv-target barebox-flash-image \
 		barebox.srec barebox.s5p barebox.ubl barebox.zynq \

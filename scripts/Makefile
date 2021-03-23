@@ -43,7 +43,6 @@ userccflags += -I $(srctree)/$(src)/include
 
 subdir-y			+= mod
 subdir-y			+= imx
-subdir-$(CONFIG_X86)		+= setupmbr
 subdir-$(CONFIG_DTC)		+= dtc
 subdir-$(CONFIG_ARCH_TEGRA)	+= tegra
 

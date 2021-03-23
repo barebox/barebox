@@ -729,7 +729,9 @@ static int blspec_scan_cdev(struct bootentries *bootentries, struct cdev *cdev)
 			found += ret;
 	}
 
-	rootpath = cdev_mount_default(cdev, NULL);
+	rootpath = cdev_get_mount_path(cdev);
+	if (!rootpath)
+		rootpath = cdev_mount_default(cdev, NULL);
 	if (!IS_ERR(rootpath)) {
 		ret = blspec_scan_directory(bootentries, rootpath);
 		if (ret > 0)

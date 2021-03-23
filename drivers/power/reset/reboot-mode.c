@@ -71,10 +71,6 @@ static int of_reboot_mode_fixup(struct device_node *root, void *ctx)
 	srcnp = reboot->dev->device_node;
 	dstnp = of_get_node_by_reproducible_name(root, srcnp);
 
-	/* nothing to do when called on barebox-internal tree */
-	if (srcnp == dstnp)
-		return 0;
-
 	if (dstnp) {
 		dstparent = dstnp->parent;
 		of_delete_node(dstnp);

@@ -630,6 +630,13 @@ KBUILD_CFLAGS += $(call cc-option, -fno-delete-null-pointer-checks,)
 # disable invalid "can't wrap" optimizations for signed / pointers
 KBUILD_CFLAGS	+= $(call cc-option,-fno-strict-overflow)
 
+# Make sure -fstack-check isn't enabled (like gentoo apparently did)
+KBUILD_CFLAGS  += $(call cc-option,-fno-stack-check)
+
+# ensure -fcf-protection is disabled as it is incompatible with our sjlj
+# Platforms that have their setjmp appropriately implemented may override this
+KBUILD_CFLAGS += $(call cc-option,-fcf-protection=none)
+
 KBUILD_CFLAGS   += $(call cc-disable-warning, address-of-packed-member)
 
 # Align the bit size of userspace programs with the kernel

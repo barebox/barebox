@@ -45,8 +45,6 @@ extern "C" {
 #define S_IRWXUGO	(S_IRWXU|S_IRWXG|S_IRWXO)
 
 struct stat {
-	unsigned short st_dev;
-	unsigned short __pad1;
 	unsigned long st_ino;
 	unsigned short st_mode;
 	unsigned short st_nlink;
@@ -55,16 +53,6 @@ struct stat {
 	unsigned short st_rdev;
 	unsigned short __pad2;
 	loff_t  st_size;
-	unsigned long  st_blksize;
-	unsigned long  st_blocks;
-	unsigned long  st_atime;
-	unsigned long  __unused1;
-	unsigned long  st_mtime;
-	unsigned long  __unused2;
-	unsigned long  st_ctime;
-	unsigned long  __unused3;
-	unsigned long  __unused4;
-	unsigned long  __unused5;
 };
 
 #ifdef __cplusplus

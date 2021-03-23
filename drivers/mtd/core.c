@@ -222,8 +222,11 @@ static int mtd_op_erase(struct cdev *cdev, loff_t count, loff_t offset)
 			printf("Skipping bad block at 0x%08llx\n", addr);
 		} else {
 			ret = mtd_erase(mtd, &erase);
-			if (ret)
+			if (ret) {
+				printf("%s: failed to erase block at 0x%08llx\n",
+					__func__, addr);
 				return ret;
+			}
 		}
 
 		addr += mtd->erasesize;

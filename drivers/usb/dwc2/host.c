@@ -181,7 +181,7 @@ static int transfer_chunk(struct dwc2 *dwc2, u8 hc,
 	}
 
 	dwc2_dbg(dwc2, "chunk: pid=%d xfer_len=%u pkts=%u dma_addr=%pad\n",
-		 *pid, xfer_len, num_packets, (void *)dma_addr);
+		 *pid, xfer_len, num_packets, &dma_addr);
 
 	dwc2_writel(dwc2, dma_addr, HCDMA(hc));
 

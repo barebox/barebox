@@ -33,7 +33,7 @@ static int ar8031_phy_fixup(struct phy_device *phydev)
 static int nxp_imx8mm_evk_init(void)
 {
 	int emmc_bbu_flag = 0;
-	int emmc_sd_flag = 0;
+	int sd_bbu_flag = 0;
 
 	if (!of_machine_is_compatible("fsl,imx8mm-evk"))
 		return 0;
@@ -46,14 +46,14 @@ static int nxp_imx8mm_evk_init(void)
 			emmc_bbu_flag = BBU_HANDLER_FLAG_DEFAULT;
 		} else {
 			of_device_enable_path("/chosen/environment-sd");
-			emmc_sd_flag = BBU_HANDLER_FLAG_DEFAULT;
+			sd_bbu_flag = BBU_HANDLER_FLAG_DEFAULT;
 		}
 	} else {
 		of_device_enable_path("/chosen/environment-emmc");
 		emmc_bbu_flag = BBU_HANDLER_FLAG_DEFAULT;
 	}
 
-	imx8m_bbu_internal_mmc_register_handler("SD", "/dev/mmc1.barebox", emmc_sd_flag);
+	imx8m_bbu_internal_mmc_register_handler("SD", "/dev/mmc1.barebox", sd_bbu_flag);
 	imx8m_bbu_internal_mmcboot_register_handler("eMMC", "/dev/mmc2", emmc_bbu_flag);
 
 	phy_register_fixup_for_uid(PHY_ID_AR8031, AR_PHY_ID_MASK,

@@ -23,4 +23,12 @@ config MACH_SEEED_ODYSSEY
 	select ARCH_STM32MP157
 	bool "Seeed Studio Odyssey"
 
+config MACH_STM32MP15X_EV1
+	select ARCH_STM32MP157
+	bool "STM32MP15X-EV1 board"
+	help
+	  builds a single barebox-stm32mp15x-ev1.img that can be deployed
+	  as SSBL on any STM32MP15X-EVAL platform, like the
+	  STM32MP157C-EV1
+
 endif

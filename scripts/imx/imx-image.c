@@ -985,9 +985,18 @@ int main(int argc, char *argv[])
 	}
 
 	if (add_barebox_header) {
-		pwrite(outfd, bb_header, sizeof_bb_header, 0);
-		if (data.cpu_type == IMX_CPU_IMX35)
-			pwrite(outfd, bb_header, sizeof_bb_header, header_len);
+		ret = pwrite(outfd, bb_header, sizeof_bb_header, 0);
+		if (ret < 0) {
+			fprintf(stderr, "pwrite failed: %s\n", strerror(errno));
+			exit(1);
+		}
+		if (data.cpu_type == IMX_CPU_IMX35) {
+			ret = pwrite(outfd, bb_header, sizeof_bb_header, header_len);
+			if (ret < 0) {
+				fprintf(stderr, "pwrite failed: %s\n", strerror(errno));
+				exit(1);
+			}
+		}
 	}
 
 	xwrite(outfd, infile, insize);

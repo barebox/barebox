@@ -307,7 +307,7 @@ static void dwc2_gadget_start_req(struct dwc2 *dwc2,
 		dwc2_writel(dwc2, ureq->dma, dma_reg);
 
 		dwc2_dbg(dwc2, "%s: 0x%pad => 0x%08x\n",
-			 __func__, (void *)ureq->dma, dma_reg);
+			 __func__, &ureq->dma, dma_reg);
 	}
 
 	if (hs_ep->isochronous && hs_ep->interval == 1) {

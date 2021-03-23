@@ -61,12 +61,14 @@ struct resource *__request_region(struct resource *parent,
 			goto ok;
 		if (start > r->end)
 			continue;
-		debug("%s: 0x%08llx:0x%08llx conflicts with 0x%08llx:0x%08llx\n",
+		debug("%s: 0x%08llx:0x%08llx (%s) conflicts with 0x%08llx:0x%08llx (%s)\n",
 				__func__,
 				(unsigned long long)start,
 				(unsigned long long)end,
+				name,
 				(unsigned long long)r->start,
-				(unsigned long long)r->end);
+				(unsigned long long)r->end,
+				r->name);
 		return ERR_PTR(-EBUSY);
 	}
 

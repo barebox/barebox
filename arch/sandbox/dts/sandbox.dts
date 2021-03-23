@@ -98,4 +98,8 @@
 	sound {
 		compatible = "barebox,sandbox-sound";
 	};
+
+	led {
+		compatible = "barebox,sandbox-led";
+	};
 };

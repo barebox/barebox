@@ -40,8 +40,7 @@ ENTRY_FUNCTION(BOARD_PBL_START)
 	   0x1fc00010 address is reserved for BoardID
 	*/
 	.org	0x10
-	.word	0xffffffff
-	.word	0xffffffff
+	.asciiz	"barebox"
 
 __start:
 	mips_disable_interrupts

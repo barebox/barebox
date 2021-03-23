@@ -909,7 +909,6 @@ EXPORT_SYMBOL(readdir);
 
 static void stat_inode(struct inode *inode, struct stat *s)
 {
-	s->st_dev = 0;
 	s->st_ino = inode->i_ino;
 	s->st_mode = inode->i_mode;
 	s->st_uid = inode->i_uid;
@@ -951,9 +950,10 @@ const char *cdev_get_mount_path(struct cdev *cdev)
 /*
  * cdev_mount_default - mount a cdev to the default path
  *
- * If a cdev is already mounted return the path it's mounted on, otherwise
- * mount it to /mnt/<cdevname> and return the path. Returns an error pointer
- * on failure.
+ * If a cdev is already mounted to the default mount path return the path
+ * it's mounted on. If it is mounted to any other path return EBUSY.
+ * Otherwise mount it to /mnt/<cdevname> and return the path. Returns an
+ * error pointer on failure.
  */
 const char *cdev_mount_default(struct cdev *cdev, const char *fsoptions)
 {
@@ -962,15 +962,24 @@ const char *cdev_mount_default(struct cdev *cdev, const char *fsoptions)
 	int ret;
 
 	/*
-	 * If this cdev is already mounted somewhere use this path
-	 * instead of mounting it again to avoid corruption on the
-	 * filesystem. Note this ignores eventual fsoptions though.
+	 * If this cdev is already mounted somewhere other than the
+	 * default mount path return -EBUSY instead of mounting it
+	 * again to avoid corruption on the filesystem. Note this
+	 * ignores eventual fsoptions though. If the cdev is already
+	 * mounted on the default path just return that path.
 	 */
 	path = cdev_get_mount_path(cdev);
-	if (path)
-		return path;
-
 	newpath = basprintf("/mnt/%s", cdev->name);
+
+	if (path) {
+		if (strcmp(newpath, path)) {
+			free(newpath);
+			return ERR_PTR(-EBUSY);
+		} else {
+			return path;
+		}
+	}
+
 	make_directory(newpath);
 
 	devpath = basprintf("/dev/%s", cdev->name);

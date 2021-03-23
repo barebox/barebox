@@ -1,14 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// SPDX-FileCopyrightText: 2007 David Brownell
+
 /*
  * Driver for pcf857x, pca857x, and pca967x I2C GPIO expanders
  *
  * This code was ported from linux-5.1 kernel by Michael Grzeschik.
- *
- * Copyright (C) 2007 David Brownell
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
  */
 
 #include <common.h>

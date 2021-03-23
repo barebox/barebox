@@ -1,19 +1,16 @@
+// SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: 2016 BayLibre, SAS (Neil Armstrong <narmstrong@baylibre.com>)
+// SPDX-FileCopyrightText: 2010 Code Aurora Forum
+
 /*
  *  Driver for SX150x I2C GPIO expanders
  *
  *  This code was ported from linux-4.9 kernel driver by
  *  Andrey Smirnov <andrew.smirnov@gmail.com>.
  *
- *  Orginal code with it's copyright info can be found in
- *  drivers/pinctrl/pinctrl-sx150x.c
- *
  *  Note: That although linux driver was converted from being a GPIO
  *  subsystem to Pinctrl subsytem driver, due to Barebox's lack of
  *  similar provisions this driver is still a GPIO driver.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; version 2 of the License.
  */
 
 #include <common.h>

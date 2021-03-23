@@ -49,10 +49,9 @@ struct virtio_config_ops {
 	 * generation() - config generation counter
 	 *
 	 * @vdev:	the real virtio device
-	 * @counter:	the returned config generation counter
-	 * @return 0 if OK, -ve on error
+	 * @return the config generation counter
 	 */
-	int (*generation)(struct virtio_device *vdev, u32 *counter);
+	u32 (*generation)(struct virtio_device *vdev);
 	/**
 	 * get_status() - read the status byte
 	 *
@@ -83,13 +82,6 @@ struct virtio_config_ops {
 	 * @return features
 	 */
 	u64 (*get_features)(struct virtio_device *vdev);
-	/**
-	 * set_features() - confirm what device features we'll be using
-	 *
-	 * @vdev:	the real virtio device
-	 * @return 0 if OK, -ve on error
-	 */
-	int (*set_features)(struct virtio_device *vdev);
 	/**
 	 * find_vqs() - find virtqueues and instantiate them
 	 *
@@ -211,7 +203,8 @@ static inline bool virtio_has_dma_quirk(const struct virtio_device *vdev)
 
 static inline bool virtio_is_little_endian(struct virtio_device *vdev)
 {
-	return virtio_legacy_is_little_endian();
+	return virtio_has_feature(vdev, VIRTIO_F_VERSION_1) ||
+		virtio_legacy_is_little_endian();
 }
 
 
@@ -311,7 +304,7 @@ static inline void __virtio_cread_many(struct virtio_device *vdev,
 	int i;
 
 	/* no need to check return value as generation can be optional */
-	vdev->config->generation(vdev, &gen);
+	gen = vdev->config->generation(vdev);
 	do {
 		old = gen;
 
@@ -319,7 +312,7 @@ static inline void __virtio_cread_many(struct virtio_device *vdev,
 			virtio_get_config(vdev, offset + bytes * i,
 					  buf + i * bytes, bytes);
 
-		vdev->config->generation(vdev, &gen);
+		gen = vdev->config->generation(vdev);
 	} while (gen != old);
 }
 

@@ -3,7 +3,7 @@ config VIRTIO
 	bool
 	help
 	  This option is selected by any driver which implements the virtio
-	  bus, such as CONFIG_VIRTIO_MMIO.
+	  bus, such as CONFIG_VIRTIO_MMIO, CONFIG_VIRTIO_PCI.
 
 config ARCH_HAS_RESTRICTED_VIRTIO_MEMORY_ACCESS
 	bool
@@ -24,5 +24,16 @@ config VIRTIO_MMIO
 	help
 	 This drivers provides support for memory mapped virtio
 	 platform device driver. This is usually used with Qemu.
+
+config VIRTIO_PCI
+	tristate "PCI driver for virtio devices"
+	depends on PCI && HAS_DMA
+	depends on MMU && MIPS || !MIPS
+	select VIRTIO
+	help
+	  This driver provides support for virtio based paravirtual device
+	  drivers over PCI. This requires that your VMM has appropriate PCI
+	  virtio backends.  Most QEMU based VMMs should support these devices
+	  (like KVM or Xen).
 
 endif # VIRTIO_MENU

@@ -31,6 +31,8 @@
 
 #define PCI_ANY_ID (~0)
 
+#define PCI_FIND_CAP_TTL	48
+
 /*
  * The PCI interface treats multi-function devices as independent
  * devices.  The slot/function address of each device is encoded
@@ -319,6 +321,9 @@ static inline int pci_write_config_dword(const struct pci_dev *dev, int where,
 void pci_set_master(struct pci_dev *dev);
 void pci_clear_master(struct pci_dev *dev);
 int pci_enable_device(struct pci_dev *dev);
+
+u8 pci_find_next_capability(struct pci_dev *dev, u8 pos, int cap);
+u8 pci_find_capability(struct pci_dev *dev, int cap);
 
 extern void __iomem *pci_iomap(struct pci_dev *dev, int bar);
 

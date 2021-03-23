@@ -141,16 +141,14 @@ static int virtio_mmio_set_config(struct virtio_device *vdev, unsigned int offse
 	return 0;
 }
 
-static int virtio_mmio_generation(struct virtio_device *vdev, u32 *counter)
+static u32 virtio_mmio_generation(struct virtio_device *vdev)
 {
 	struct virtio_mmio_device *priv = to_virtio_mmio_device(vdev);
 
 	if (priv->version == 1)
-		*counter = 0;
-	else
-		*counter = readl(priv->base + VIRTIO_MMIO_CONFIG_GENERATION);
+		return 0;
 
-	return 0;
+	return readl(priv->base + VIRTIO_MMIO_CONFIG_GENERATION);
 }
 
 static int virtio_mmio_get_status(struct virtio_device *vdev)

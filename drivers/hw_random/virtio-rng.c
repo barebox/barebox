@@ -61,7 +61,7 @@ static int virtio_rng_read(struct hwrng *hwrng, void *data, size_t len, bool wai
 	return len;
 }
 
-static int probe_common(struct virtio_device *vdev)
+static int virtrng_probe(struct virtio_device *vdev)
 {
 	struct virtrng_info *vi;
 
@@ -76,20 +76,10 @@ static int probe_common(struct virtio_device *vdev)
 	return virtio_find_vqs(vdev, 1, &vi->rng_vq);
 }
 
-static void remove_common(struct virtio_device *vdev)
+static void virtrng_remove(struct virtio_device *vdev)
 {
 	vdev->config->reset(vdev);
 	vdev->config->del_vqs(vdev);
-}
-
-static int virtrng_probe(struct virtio_device *vdev)
-{
-	return probe_common(vdev);
-}
-
-static void virtrng_remove(struct virtio_device *vdev)
-{
-	remove_common(vdev);
 }
 
 static void virtrng_scan(struct virtio_device *vdev)

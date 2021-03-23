@@ -22,12 +22,45 @@
 #define vq_info(vq, fmt, ...) \
 	dev_info(&vq->vdev->dev, fmt, ##__VA_ARGS__)
 
+static inline struct device_d *vring_dma_dev(const struct virtqueue *vq)
+{
+	return vq->vdev->dev.parent;
+}
+
+/* Map one sg entry. */
+static dma_addr_t vring_map_one_sg(struct virtqueue *vq,
+				   struct virtio_sg *sg,
+				   enum dma_data_direction direction)
+{
+	return dma_map_single(vring_dma_dev(vq), sg->addr, sg->length, direction);
+}
+
+static int vring_mapping_error(struct virtqueue *vq,
+			       dma_addr_t addr)
+{
+	return dma_mapping_error(vring_dma_dev(vq), addr);
+}
+
+static void vring_unmap_one(struct virtqueue *vq,
+			    struct vring_desc *desc)
+{
+	u16 flags;
+
+	flags = virtio16_to_cpu(vq->vdev, desc->flags);
+
+	dma_unmap_single(vring_dma_dev(vq),
+		       virtio64_to_cpu(vq->vdev, desc->addr),
+		       virtio32_to_cpu(vq->vdev, desc->len),
+		       (flags & VRING_DESC_F_WRITE) ?
+		       DMA_FROM_DEVICE : DMA_TO_DEVICE);
+}
+
 int virtqueue_add(struct virtqueue *vq, struct virtio_sg *sgs[],
 		  unsigned int out_sgs, unsigned int in_sgs)
 {
 	struct vring_desc *desc;
 	unsigned int total_sg = out_sgs + in_sgs;
-	unsigned int i, n, avail, descs_used, uninitialized_var(prev);
+	unsigned int i, err_idx, n, avail, descs_used, uninitialized_var(prev);
 	int head;
 
 	WARN_ON(total_sg == 0);
@@ -53,9 +86,13 @@ int virtqueue_add(struct virtqueue *vq, struct virtio_sg *sgs[],
 
 	for (n = 0; n < out_sgs; n++) {
 		struct virtio_sg *sg = sgs[n];
+		dma_addr_t addr = vring_map_one_sg(vq, sg, DMA_TO_DEVICE);
+		if (vring_mapping_error(vq, addr))
+			goto unmap_release;
+
 
 		desc[i].flags = cpu_to_virtio16(vq->vdev, VRING_DESC_F_NEXT);
-		desc[i].addr = cpu_to_virtio64(vq->vdev, (u64)(size_t)sg->addr);
+		desc[i].addr = cpu_to_virtio64(vq->vdev, addr);
 		desc[i].len = cpu_to_virtio32(vq->vdev, sg->length);
 
 		prev = i;
@@ -63,11 +100,13 @@ int virtqueue_add(struct virtqueue *vq, struct virtio_sg *sgs[],
 	}
 	for (; n < (out_sgs + in_sgs); n++) {
 		struct virtio_sg *sg = sgs[n];
+		dma_addr_t addr = vring_map_one_sg(vq, sg, DMA_FROM_DEVICE);
+		if (vring_mapping_error(vq, addr))
+			goto unmap_release;
 
 		desc[i].flags = cpu_to_virtio16(vq->vdev, VRING_DESC_F_NEXT |
 						VRING_DESC_F_WRITE);
-		desc[i].addr = cpu_to_virtio64(vq->vdev,
-					       (u64)(uintptr_t)sg->addr);
+		desc[i].addr = cpu_to_virtio64(vq->vdev, addr);
 		desc[i].len = cpu_to_virtio32(vq->vdev, sg->length);
 
 		prev = i;
@@ -106,6 +145,19 @@ int virtqueue_add(struct virtqueue *vq, struct virtio_sg *sgs[],
 		virtqueue_kick(vq);
 
 	return 0;
+
+unmap_release:
+	err_idx = i;
+
+	for (n = 0; n < total_sg; n++) {
+		if (i == err_idx)
+			break;
+		vring_unmap_one(vq, &desc[i]);
+		i = virtio16_to_cpu(vq->vdev, desc[i].next);
+	}
+
+	return -ENOMEM;
+
 }
 
 static bool virtqueue_kick_prepare(struct virtqueue *vq)
@@ -149,10 +201,12 @@ static void detach_buf(struct virtqueue *vq, unsigned int head)
 	i = head;
 
 	while (vq->vring.desc[i].flags & nextflag) {
+		vring_unmap_one(vq, &vq->vring.desc[i]);
 		i = virtio16_to_cpu(vq->vdev, vq->vring.desc[i].next);
 		vq->num_free++;
 	}
 
+	vring_unmap_one(vq, &vq->vring.desc[i]);
 	vq->vring.desc[i].next = cpu_to_virtio16(vq->vdev, vq->free_head);
 	vq->free_head = head;
 
@@ -225,6 +279,8 @@ static struct virtqueue *__vring_new_virtqueue(unsigned int index,
 	vq->avail_flags_shadow = 0;
 	vq->avail_idx_shadow = 0;
 	vq->num_added = 0;
+	vq->queue_dma_addr = 0;
+	vq->queue_size_in_bytes = 0;
 	list_add_tail(&vq->list, &vdev->vqs);
 
 	vq->event = virtio_has_feature(vdev, VIRTIO_RING_F_EVENT_IDX);
@@ -243,12 +299,24 @@ static struct virtqueue *__vring_new_virtqueue(unsigned int index,
 	return vq;
 }
 
+static void *vring_alloc_queue(size_t size, dma_addr_t *dma_handle)
+{
+	return dma_alloc_coherent(size, dma_handle);
+}
+
+static void vring_free_queue(size_t size, void *queue, dma_addr_t dma_handle)
+{
+	dma_free_coherent(queue, dma_handle, size);
+}
+
 struct virtqueue *vring_create_virtqueue(unsigned int index, unsigned int num,
 					 unsigned int vring_align,
 					 struct virtio_device *vdev)
 {
 	struct virtqueue *vq;
 	void *queue = NULL;
+	dma_addr_t dma_addr;
+	size_t queue_size_in_bytes;
 	struct vring vring;
 
 	/* We assume num is a power of 2 */
@@ -259,7 +327,7 @@ struct virtqueue *vring_create_virtqueue(unsigned int index, unsigned int num,
 
 	/* TODO: allocate each queue chunk individually */
 	for (; num && vring_size(num, vring_align) > PAGE_SIZE; num /= 2) {
-		queue = memalign(PAGE_SIZE, vring_size(num, vring_align));
+		queue = vring_alloc_queue(vring_size(num, vring_align), &dma_addr);
 		if (queue)
 			break;
 	}
@@ -269,27 +337,31 @@ struct virtqueue *vring_create_virtqueue(unsigned int index, unsigned int num,
 
 	if (!queue) {
 		/* Try to get a single page. You are my only hope! */
-		queue = memalign(PAGE_SIZE, vring_size(num, vring_align));
+		queue = vring_alloc_queue(vring_size(num, vring_align), &dma_addr);
 	}
 	if (!queue)
 		return NULL;
 
-	memset(queue, 0, vring_size(num, vring_align));
+	queue_size_in_bytes = vring_size(num, vring_align);
 	vring_init(&vring, num, queue, vring_align);
 
 	vq = __vring_new_virtqueue(index, vring, vdev);
 	if (!vq) {
-		free(queue);
+		vring_free_queue(queue_size_in_bytes, queue, dma_addr);
 		return NULL;
 	}
-	vq_debug(vq, "created vring @ %p for vq with num %u\n", queue, num);
+	vq_debug(vq, "created vring @ (virt=%p, phys=%pad) for vq with num %u\n",
+		 queue, &dma_addr, num);
+
+	vq->queue_dma_addr = dma_addr;
+	vq->queue_size_in_bytes = queue_size_in_bytes;
 
 	return vq;
 }
 
 void vring_del_virtqueue(struct virtqueue *vq)
 {
-	free(vq->vring.desc);
+	vring_free_queue(vq->queue_size_in_bytes, vq->vring.desc, vq->queue_dma_addr);
 	list_del(&vq->list);
 	free(vq);
 }
@@ -301,18 +373,18 @@ unsigned int virtqueue_get_vring_size(struct virtqueue *vq)
 
 dma_addr_t virtqueue_get_desc_addr(struct virtqueue *vq)
 {
-	return (dma_addr_t)vq->vring.desc;
+	return vq->queue_dma_addr;
 }
 
 dma_addr_t virtqueue_get_avail_addr(struct virtqueue *vq)
 {
-	return (dma_addr_t)vq->vring.desc +
+	return vq->queue_dma_addr +
 	       ((char *)vq->vring.avail - (char *)vq->vring.desc);
 }
 
 dma_addr_t virtqueue_get_used_addr(struct virtqueue *vq)
 {
-	return (dma_addr_t)vq->vring.desc +
+	return vq->queue_dma_addr +
 	       ((char *)vq->vring.used - (char *)vq->vring.desc);
 }
 

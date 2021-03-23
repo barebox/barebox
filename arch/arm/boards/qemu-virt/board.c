@@ -9,6 +9,12 @@
 #include <asm/system_info.h>
 #include <asm/barebox-arm.h>
 
+#ifdef CONFIG_64BIT
+#define MACHINE "virt64"
+#else
+#define MACHINE "virt"
+#endif
+
 extern char __dtb_overlay_of_flash_start[];
 
 static int replace_dtb(void) {
@@ -43,14 +49,14 @@ pure_initcall(replace_dtb);
 
 static int virt_probe(struct device_d *dev)
 {
-	char *hostname = "virt";
+	const char *hostname = MACHINE;
 
 	if (cpu_is_cortex_a7())
 		hostname = "virt-a7";
 	else if (cpu_is_cortex_a15())
 		hostname = "virt-a15";
 
-	barebox_set_model("ARM QEMU virt");
+	barebox_set_model("ARM QEMU " MACHINE);
 	barebox_set_hostname(hostname);
 
 	return 0;

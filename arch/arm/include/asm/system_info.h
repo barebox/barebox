@@ -42,12 +42,6 @@
 #define CPU_IS_CORTEX_A15	0x410fc0f0
 #define CPU_IS_CORTEX_A15_MASK	0xff0ffff0
 
-#define CPU_IS_CORTEX_A53	0x410fd034
-#define CPU_IS_CORTEX_A53_MASK	0xff0ffff0
-
-#define CPU_IS_CORTEX_A57	0x411fd070
-#define CPU_IS_CORTEX_A57_MASK	0xff0ffff0
-
 #define CPU_IS_PXA250		0x69052100
 #define CPU_IS_PXA250_MASK	0xfffff7f0
 
@@ -125,11 +119,6 @@
 #else
 #define ARM_ARCH CPU_ARCH_ARMv8
 #endif
-#define cpu_is_cortex_a53() cpu_is_arm(CORTEX_A53)
-#define cpu_is_cortex_a57() cpu_is_arm(CORTEX_A57)
-#else
-#define cpu_is_cortex_a53() (0)
-#define cpu_is_cortex_a57() (0)
 #endif
 
 #ifndef __ASSEMBLY__

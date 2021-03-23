@@ -267,9 +267,16 @@ config ARCH_ZYNQMP
 	select SYS_SUPPORTS_64BIT_KERNEL
 	select HAS_MACB
 
-config ARCH_QEMU
-	bool "ARM QEMU boards"
-	select HAS_DEBUG_LL
+config ARCH_ARM64_VIRT
+	bool "ARM64 QEMU Virt board"
+	select CPU_V8
+	select HAVE_PBL_MULTI_IMAGES
+	select OFDEVICE
+	select OFTREE
+	select RELOCATABLE
+	select SYS_SUPPORTS_64BIT_KERNEL
+	select ARM_AMBA
+	select BOARD_ARM_VIRT
 
 endchoice
 
@@ -296,8 +303,12 @@ source "arch/arm/mach-vexpress/Kconfig"
 source "arch/arm/mach-tegra/Kconfig"
 source "arch/arm/mach-uemd/Kconfig"
 source "arch/arm/mach-zynq/Kconfig"
-source "arch/arm/mach-qemu/Kconfig"
 source "arch/arm/mach-zynqmp/Kconfig"
+
+config BOARD_ARM_VIRT
+	bool
+	select BOARD_ARM_GENERIC_DT
+	select OF_OVERLAY
 
 config BOARD_ARM_GENERIC_DT
 	select LIBFDT

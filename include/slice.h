@@ -1,6 +1,8 @@
 #ifndef __SLICE_H
 #define __SLICE_H
 
+#include <bthread.h>
+
 enum slice_action {
 	SLICE_ACQUIRE = 1,
 	SLICE_RELEASE = -1,
@@ -35,12 +37,11 @@ void command_slice_release(void);
 
 extern int poller_active;
 
-#ifdef CONFIG_POLLER
-#define assert_command_context() ({    \
-	WARN_ONCE(poller_active, "%s called in poller\n", __func__); \
-})
-#else
-#define assert_command_context() do { } while (0)
-#endif
+#define assert_command_context() do { \
+	WARN_ONCE(IS_ENABLED(CONFIG_POLLER) && poller_active, \
+		  "%s called in poller\n", __func__); \
+	WARN_ONCE(IS_ENABLED(CONFIG_BTHREAD) && !bthread_is_main(current), \
+		  "%s called in secondary bthread\n", __func__); \
+} while (0)
 
-#endif /* __SLICE_H */
+#endif

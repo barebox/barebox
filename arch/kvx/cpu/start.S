@@ -115,6 +115,10 @@ ENDPROC(kvx_start)
 	wfxl $psow = $r21 ;\
 	;; ;\
 	wfxm $psow = $r22 ;\
+	;; ;\
+	make $r21 = DO_WFXL_VALUE_##__pl ;\
+	;; ;\
+	wfxl $dow = $r21 ;\
 	;;
 
 /**

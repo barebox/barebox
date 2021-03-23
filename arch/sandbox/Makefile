@@ -27,7 +27,8 @@ KBUILD_CFLAGS += -Dmalloc=barebox_malloc -Dcalloc=barebox_calloc \
 		-Dftruncate=barebox_ftruncate -Dasprintf=barebox_asprintf \
 		-Dopendir=barebox_opendir -Dreaddir=barebox_readdir \
 		-Dclosedir=barebox_closedir -Dreadlink=barebox_readlink \
-		-Doptarg=barebox_optarg -Doptind=barebox_optind
+		-Doptarg=barebox_optarg -Doptind=barebox_optind \
+		-Dsetjmp=barebox_setjmp -Dlongjmp=barebox_longjmp
 
 machdirs := $(patsubst %,arch/sandbox/mach-%/,$(machine-y))
 
@@ -64,7 +65,7 @@ endif
 BAREBOX_LDFLAGS += \
 	-Wl,-T,$(BAREBOX_LDS) \
 	-Wl,--whole-archive $(BAREBOX_OBJS) -Wl,--no-whole-archive \
-	-lrt $(SDL_LIBS) $(FTDI1_LIBS) \
+	-lrt -pthread $(SDL_LIBS) $(FTDI1_LIBS) \
 	$(SANITIZER_LIBS)
 
 cmd_barebox__ = $(CC) -o $@ $(BAREBOX_LDFLAGS)

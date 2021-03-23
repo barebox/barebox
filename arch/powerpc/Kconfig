@@ -6,6 +6,7 @@ config PPC
 	select HAS_CACHE
 	select GENERIC_FIND_NEXT_BIT
 	select OFTREE
+	select HAS_ARCH_SJLJ
 	default y
 
 choice

@@ -39,6 +39,8 @@ static inline bool poller_async_active(struct poller_async *pa)
 	return pa->active;
 }
 
+extern int poller_active;
+
 #ifdef CONFIG_POLLER
 void poller_call(void);
 #else

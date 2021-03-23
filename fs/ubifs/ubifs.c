@@ -25,8 +25,6 @@
 
 #include <linux/err.h>
 
-struct task_struct *current;
-
 struct ubifs_priv {
 	struct cdev *cdev;
 	struct ubi_volume_desc *ubi;

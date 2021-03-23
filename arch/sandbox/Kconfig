@@ -13,6 +13,7 @@ config SANDBOX
 	select PARTITION_DISK
 	select ARCH_HAS_STACK_DUMP if ASAN
 	select GENERIC_FIND_NEXT_BIT
+	select HAS_ARCH_SJLJ
 	default y
 
 config ARCH_TEXT_BASE
@@ -41,6 +42,9 @@ config 64BIT
 	default CC_IS_64BIT
 	select ARCH_DMA_ADDR_T_64BIT
 	select PHYS_ADDR_T_64BIT
+
+config 32BIT
+	def_bool !64BIT
 
 config SANDBOX_LINUX_I386
 	bool "32-bit x86 barebox" if CC_HAS_LINUX_I386_SUPPORT

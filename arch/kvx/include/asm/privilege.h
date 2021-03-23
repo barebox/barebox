@@ -114,6 +114,21 @@
 #define ITO_WFXM_VALUE_PL_CUR		ITO_WFXM_VALUE(PL_CUR)
 
 /**
+ * Debug Owner configuration
+ */
+
+#define DO_WFXL_OWN(__field, __pl) \
+	SFR_SET_VAL_WFXL(DO, __field, __pl)
+
+#define DO_WFXL_VALUE(__pl) (DO_WFXL_OWN(B0, __pl) | \
+			     DO_WFXL_OWN(B1, __pl) | \
+			     DO_WFXL_OWN(W0, __pl) | \
+			     DO_WFXL_OWN(W1, __pl))
+
+#define DO_WFXL_VALUE_PL_CUR_PLUS_1     DO_WFXL_VALUE(PL_CUR_PLUS_1)
+#define DO_WFXL_VALUE_PL_CUR            DO_WFXL_VALUE(PL_CUR)
+
+/**
  * Misc owner configuration
  */
 #define MO_WFXL_OWN(__field, __pl) \
@@ -160,6 +175,7 @@
 					 PSO_WFXL_OWN(IE, __pl) | \
 					 PSO_WFXL_OWN(HLE, __pl) | \
 					 PSO_WFXL_OWN(SRE, __pl) | \
+					 PSO_WFXL_OWN(DAUS, __pl) | \
 					 PSO_WFXL_OWN(ICE, __pl) | \
 					 PSO_WFXL_OWN(USE, __pl) | \
 					 PSO_WFXL_OWN(DCE, __pl) | \

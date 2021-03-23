@@ -8,6 +8,7 @@ obj-y += reloc.o
 obj-y += sections.o
 obj-y += shutdown.o
 obj-y += dma-default.o
+obj-$(CONFIG_HAS_ARCH_SJLJ) += setjmp.o
 
 obj-$(CONFIG_MIPS_OPTIMIZED_STRING_FUNCTIONS) += memcpy.o
 obj-$(CONFIG_MIPS_OPTIMIZED_STRING_FUNCTIONS) += memset.o

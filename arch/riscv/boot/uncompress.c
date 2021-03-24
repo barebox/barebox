@@ -22,9 +22,6 @@
 unsigned long free_mem_ptr;
 unsigned long free_mem_end_ptr;
 
-extern unsigned char input_data[];
-extern unsigned char input_data_end[];
-
 void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 				  void *fdt)
 {
@@ -49,7 +46,7 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 		relocate_to_adr(membase);
 
 	pg_len = pg_end - pg_start;
-	uncompressed_len = get_unaligned((const u32 *)(pg_start + pg_len - 4));
+	uncompressed_len = input_data_len();
 
 	barebox_base = riscv_mem_barebox_image(membase, endmem,
 					       uncompressed_len + MAX_BSS_SIZE);

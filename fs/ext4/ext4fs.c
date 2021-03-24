@@ -74,11 +74,11 @@ loff_t ext4fs_read_file(struct ext2fs_node *node, loff_t pos,
 		loff_t blockend = blocksize;
 		loff_t skipfirst = 0;
 
-		blknr = read_allocated_block(node, i);
-		if (blknr < 0)
-			return blknr;
+		ret = read_allocated_block(node, i);
+		if (ret < 0)
+			return ret;
 
-		blknr = blknr << log2blocksize;
+		blknr = ret << log2blocksize;
 
 		/* Last block.  */
 		if (i == blockcnt - 1) {

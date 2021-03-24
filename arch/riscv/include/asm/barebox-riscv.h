@@ -36,7 +36,7 @@ void *barebox_riscv_boot_dtb(void);
 static inline unsigned long riscv_mem_stack_top(unsigned long membase,
 						unsigned long endmem)
 {
-	return endmem - SZ_2M;
+	return endmem;
 }
 
 static inline unsigned long riscv_mem_stack(unsigned long membase,

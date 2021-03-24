@@ -650,6 +650,9 @@ CHECKFLAGS     += $(NOSTDINC_FLAGS)
 # warn about C99 declaration after statement
 KBUILD_CFLAGS += $(call cc-option,-Wdeclaration-after-statement,)
 
+# warn about e.g. (unsigned)x < 0
+KBUILD_CFLAGS += $(call cc-option,-Wtype-limits)
+
 # disable pointer signed / unsigned warnings in gcc 4.0
 KBUILD_CFLAGS += $(call cc-option,-Wno-pointer-sign,)
 

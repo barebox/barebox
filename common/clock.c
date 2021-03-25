@@ -222,6 +222,12 @@ int init_clock(struct clocksource *cs)
 			return ret;
 	}
 
+	/*
+	 * If clocksource is freerunning it might have been running for a while
+	 * before barebox started, we only care about the time spent in barebox
+	 * thus we must discard the clocksource cycles up to this exact moment:
+	 */
+	cs->cycle_last = cs->read() & cs->mask;
 	current_clock = cs;
 	time_beginning = get_time_ns();
 

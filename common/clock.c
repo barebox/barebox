@@ -17,12 +17,6 @@
 
 static uint64_t time_ns;
 
-/*
- * The first timestamp when the clocksource is registered.
- * Useful for measuring the time spent in barebox.
- */
-uint64_t time_beginning;
-
 static uint64_t dummy_read(void)
 {
 	static uint64_t dummy_counter;
@@ -229,7 +223,6 @@ int init_clock(struct clocksource *cs)
 	 */
 	cs->cycle_last = cs->read() & cs->mask;
 	current_clock = cs;
-	time_beginning = get_time_ns();
 
 	return 0;
 }

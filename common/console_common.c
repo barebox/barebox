@@ -188,7 +188,7 @@ void log_print(unsigned flags, unsigned levels)
 	unsigned long last = 0;
 
 	list_for_each_entry(log, &barebox_logbuf, list) {
-		uint64_t diff = log->timestamp - time_beginning;
+		uint64_t diff = log->timestamp;
 		unsigned long difful;
 
 		if (levels && !(levels & (1 << log->level)))

@@ -54,6 +54,8 @@ static int zii_imx7d_dev_init(void)
 		barebox_set_hostname("rpu2");
 	else if (of_machine_is_compatible("zii,imx7d-rmu2"))
 		barebox_set_hostname("rmu2");
+	else
+		return 0;
 
 	defaultenv_append_directory(defaultenv_zii_common);
 

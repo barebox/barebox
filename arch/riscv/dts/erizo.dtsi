@@ -20,6 +20,8 @@
 		#address-cells = <1>;
 		#size-cells = <0>;
 
+		timebase-frequency = <24000000>;
+
 		cpu@0 {
 			device_type = "cpu";
 			compatible = "cliffordwolf,picorv32", "riscv";

@@ -30,10 +30,17 @@ static u64 notrace riscv_timer_get_count_sbi(void)
 
 static u64 notrace riscv_timer_get_count_rdcycle(void)
 {
-	u64 ticks;
-	asm volatile("rdcycle %0" : "=r" (ticks));
+	__maybe_unused u32 hi, lo;
 
-	return ticks;
+	if (IS_ENABLED(CONFIG_64BIT))
+		return csr_read(CSR_CYCLE);
+
+	do {
+		hi = csr_read(CSR_CYCLEH);
+		lo = csr_read(CSR_CYCLE);
+	} while (hi != csr_read(CSR_CYCLEH));
+
+	return ((u64)hi << 32) | lo;
 }
 
 static u64 notrace riscv_timer_get_count(void)

@@ -71,4 +71,11 @@ config INPUT_SPECIALKEYS
 	help
 	  Say Y here to handle key events like KEY_RESTART and KEY_POWER.
 
+config VIRTIO_INPUT
+	bool "Virtio input driver"
+	depends on VIRTIO && BTHREAD
+	select INPUT
+	help
+	 This driver supports virtio keyboard input devices.
+
 endmenu

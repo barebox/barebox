@@ -178,12 +178,14 @@ static int erase_and_write(loff_t ofs, unsigned char *data,
 }
 
 /* Print stats of nandtest. */
-static void print_stats(int nr_passes, int length)
+static void print_stats(int nr_passes, loff_t length)
 {
 	unsigned int i;
+	uint64_t blocks = (uint64_t)length;
+
+	do_div(blocks, meminfo.erasesize);
 	printf("-------- Summary --------\n");
-	printf("Tested blocks		: %d\n", (length/meminfo.erasesize)
-			* nr_passes);
+	printf("Tested blocks		: %lld\n", blocks * nr_passes);
 
 	for (i = 0; i < MAX_ECC_BITS; i++)
 		printf("ECC %d bit error(s)	: %u\n", i + 1, ecc_stats[i]);

@@ -37,8 +37,8 @@ Next, setup network on DIR-320 and run barebox.bin, e.g.:
 Links
 -----
 
-  * http://www.dlink.com.au/products/?pid=768
-  * http://wiki.openwrt.org/toh/d-link/dir-320
+  * http://web.archive.org/web/20140301070636/http://www.dlink.com.au/products/?pid=768
+  * https://openwrt.org/toh/d-link/dir-320
 
 CFE links:
 

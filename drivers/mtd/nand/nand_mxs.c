@@ -269,6 +269,33 @@ static void mxs_nand_return_dma_descs(struct mxs_nand_info *info)
 	info->desc_index = 0;
 }
 
+/*
+ * We don't support writing the oob area so simply return the whole oob
+ * as ECC.
+ */
+static int mxs_nand_ooblayout_ecc(struct mtd_info *mtd, int section,
+				  struct mtd_oob_region *oobregion)
+{
+	if (section)
+		return -ERANGE;
+
+	oobregion->offset = 0;
+	oobregion->length = mtd->oobsize;
+
+	return 0;
+}
+
+static int mxs_nand_ooblayout_free(struct mtd_info *mtd, int section,
+				   struct mtd_oob_region *oobregion)
+{
+	return -ERANGE;
+}
+
+static const struct mtd_ooblayout_ops mxs_nand_ooblayout_ops = {
+	.ecc = mxs_nand_ooblayout_ecc,
+	.free = mxs_nand_ooblayout_free,
+};
+
 static uint32_t mxs_nand_ecc_chunk_cnt(uint32_t page_data_size)
 {
 	return page_data_size / MXS_NAND_CHUNK_DATA_CHUNK_SIZE;
@@ -2217,6 +2244,8 @@ static int mxs_nand_probe(struct device_d *dev)
 	err = nand_scan_tail(chip);
 	if (err)
 		goto err2;
+
+	mtd_set_ooblayout(mtd, &mxs_nand_ooblayout_ops);
 
 	mxs_nand_scan_bbt(chip);
 

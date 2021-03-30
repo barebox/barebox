@@ -1884,7 +1884,6 @@ config CMD_NANDTEST
 	tristate
 	depends on NAND
 	depends on PARTITION
-	depends on NAND_ECC_HW || NAND_ECC_SOFT
 	prompt "nandtest"
 	help
 	  NAND flash memory test

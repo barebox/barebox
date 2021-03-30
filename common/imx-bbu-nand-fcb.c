@@ -501,7 +501,8 @@ static int imx_bbu_firmware_start_block(struct mtd_info *mtd, int num)
  * @num: The slot number (0 or 1)
  *
  * This returns the start page for a firmware slot, to be written into the
- * Firmwaren_startingPage field in the FCB.
+ * Firmwaren_startingPage field in the FCB or a negative error code in case
+ * of a failure.
  */
 static int imx_bbu_firmware_fcb_start_page(struct mtd_info *mtd, int num)
 {
@@ -511,6 +512,11 @@ static int imx_bbu_firmware_fcb_start_page(struct mtd_info *mtd, int num)
 	block = imx_bbu_firmware_start_block(mtd, num);
 
 	blocksleft = imx_bbu_firmware_max_blocks(mtd);
+
+	if (blocksleft <= 0) {
+		pr_err("partition size too small for both firmwares\n");
+		return -ENOMEM;
+	}
 
 	/*
 	 * The ROM only checks for a bad block when advancing the read position,
@@ -1258,7 +1264,15 @@ static int imx_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *dat
 		free(fcb);
 		fcb = xzalloc(sizeof(*fcb));
 		fcb->Firmware1_startingPage = imx_bbu_firmware_fcb_start_page(mtd, !used);
+		if (fcb->Firmware1_startingPage < 0) {
+			ret = fcb->Firmware1_startingPage;
+			goto out;
+		}
 		fcb->Firmware2_startingPage = imx_bbu_firmware_fcb_start_page(mtd, used);
+		if (fcb->Firmware2_startingPage < 0) {
+			ret = fcb->Firmware2_startingPage;
+			goto out;
+		}
 		fcb->PagesInFirmware1 = fw_size / mtd->writesize;
 		fcb->PagesInFirmware2 = fcb->PagesInFirmware1;
 

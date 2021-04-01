@@ -1,7 +1,8 @@
 .. _reboot_mode:
 
+###########
 Reboot Mode
------------
+###########
 
 To simplify debugging, many BootROMs sample registers that survive
 a warm reset to customize the boot. These registers can e.g. indicate
@@ -23,7 +24,7 @@ modes in the device tree. If a match is found the associated magic
 is written to the location referenced in the device tree node.
 
 User API
-~~~~~~~~
+========
 
 Devices registered with the reboot mode API gain two parameters:
 
@@ -46,7 +47,7 @@ priority has its parameters aliased as ``$global.system.reboot_mode.prev``
 and ``$global.system.reboot_mode.next``.
 
 Reset
-~~~~~
+=====
 
 Reboot modes can be stored on a syscon wrapping general purpose registers
 that survives warm resets. If the system instead did reset via an external
@@ -57,7 +58,7 @@ reset provider. In barebox, multiple reset providers may co-exist. They
 ``reset`` command allows listing and choosing a specific reboot mode.
 
 Disambiguation
-~~~~~~~~~~~~~~
+==============
 
 Some uses of reboot modes partially overlap with other barebox
 functionality. They all ultimately serve different purposes, however.

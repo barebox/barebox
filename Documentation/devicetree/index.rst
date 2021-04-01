@@ -1,3 +1,5 @@
+.. _bareboxdt:
+
 Barebox devicetree handling and bindings
 ========================================
 

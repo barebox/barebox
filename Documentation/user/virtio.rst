@@ -4,7 +4,7 @@
   Copyright (C) 2018, Bin Meng <bmeng.cn@gmail.com>
   Copyright (C) 2021, Ahmad Fatoum
 
-.. _virtio:
+.. _virtio_sect:
 
 VirtIO Support
 ==============

@@ -9,7 +9,7 @@ barebox supports both the qemu riscv32 and riscv64 ``-M virt`` boards::
   make ARCH=riscv virt64_defconfig
   qemu-system-riscv64 -M virt -serial stdio -kernel build/images/barebox-dt-2nd.img
 
-Replace ``64`` by ``32`` for 32-bit build. :ref:`virtio` over MMIO is supported and
+Replace ``64`` by ``32`` for 32-bit build. :ref:`virtio_sect` over MMIO is supported and
 can be used for e.g. an extra console or to pass in a virtio-blk device::
 
   qemu-system-riscv64 -M virt -serial stdio                                \

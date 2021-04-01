@@ -36,6 +36,7 @@ Contents:
    optee
    debugging
    watchdog
+   reboot-mode
    virtio
 
 * :ref:`search`

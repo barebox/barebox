@@ -32,8 +32,11 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 	void *pg_start, *pg_end;
 	unsigned long pc = get_pc();
 
+	/* piggy data is not relocated, so determine the bounds now */
 	pg_start = input_data + get_runtime_offset();
 	pg_end = input_data_end + get_runtime_offset();
+	pg_len = pg_end - pg_start;
+	uncompressed_len = input_data_len();
 
 	/*
 	 * If we run from inside the memory just relocate the binary
@@ -44,9 +47,6 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 		relocate_to_current_adr();
 	else
 		relocate_to_adr(membase);
-
-	pg_len = pg_end - pg_start;
-	uncompressed_len = input_data_len();
 
 	barebox_base = riscv_mem_barebox_image(membase, endmem,
 					       uncompressed_len + MAX_BSS_SIZE);

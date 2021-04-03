@@ -15,9 +15,11 @@ extern char __dynsym_end[];
 extern char input_data[];
 extern char input_data_end[];
 
+unsigned long get_runtime_offset(void);
+
 static inline unsigned int input_data_len(void)
 {
-	return get_unaligned((const u32 *)(input_data_end - 4));
+	return get_unaligned((const u32 *)(input_data_end + get_runtime_offset() - 4));
 }
 
 #endif

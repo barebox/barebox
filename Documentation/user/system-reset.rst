@@ -31,7 +31,7 @@ But there are some drawbacks within this simple approach.
 * some SoC's boot behaviour gets parametrized by so called 'bootstrap pins'.
   These pins can have a different meaning at reset time and at run-time later
   on (multi purpose pins) but their correct values at reset time are very
-  important to boot the SoC sucessfully. If external devices are connected to
+  important to boot the SoC successfully. If external devices are connected to
   these multi purpose pins they can disturb the reset values, and so parametrizing
   the boot behaviour differently and hence crashing the SoC until the next real
   POR happens which also resets the external devices (and keep them away from the

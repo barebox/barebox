@@ -34,4 +34,13 @@ ssize_t pbl_fat_load(struct pbl_bio *, const char *filename, void *dest, size_t 
 
 void fdt_find_mem(const void *fdt, unsigned long *membase, unsigned long *memsize);
 
+struct fdt_device_id {
+	const char *compatible;
+	const void *data;
+};
+
+const void *
+fdt_device_get_match_data(const void *fdt, const char *nodepath,
+			  const struct fdt_device_id ids[]);
+
 #endif /* __PBL_H__ */

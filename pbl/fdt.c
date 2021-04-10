@@ -68,3 +68,38 @@ err:
 	pr_err("No memory, cannot continue\n");
 	while (1);
 }
+
+const void *fdt_device_get_match_data(const void *fdt, const char *nodepath,
+				      const struct fdt_device_id ids[])
+{
+	int node, length;
+	const char *list, *end;
+	const struct fdt_device_id *id;
+
+	node = fdt_path_offset(fdt, nodepath);
+	if (node < 0)
+		return NULL;
+
+	list = fdt_getprop(fdt, node, "compatible", &length);
+	if (!list)
+		return NULL;
+
+	end = list + length;
+
+	while (list < end) {
+		length = strnlen(list, end - list) + 1;
+
+		/* Abort if the last string isn't properly NUL-terminated. */
+		if (list + length > end)
+			return NULL;
+
+		for (id = ids; id->compatible; id++) {
+			if (!strcasecmp(list, id->compatible))
+				return id->data;
+		}
+
+		list += length;
+	}
+
+	return NULL;
+}

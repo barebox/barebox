@@ -53,7 +53,7 @@ void mem_malloc_init(void *start, void *end)
 	mem_malloc_initialized = 1;
 }
 
-#if !defined __SANDBOX__ && !defined CONFIG_EFI_BOOTUP
+#if !defined __SANDBOX__
 static int mem_malloc_resource(void)
 {
 	/*

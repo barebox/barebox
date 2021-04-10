@@ -91,6 +91,15 @@ typedef	struct {
  * Memory map descriptor:
  */
 
+struct efi_memory_desc {
+    u32 type; /* enum efi_memory_type */
+    u32 _padding;
+    efi_physical_addr_t phys_start;
+    void *virt_start;
+    u64 npages;
+    u64 attrs;
+};
+
 /* Memory types: */
 enum efi_memory_type {
 	EFI_RESERVED_TYPE,

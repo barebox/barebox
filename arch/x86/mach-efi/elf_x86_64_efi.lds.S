@@ -42,6 +42,7 @@ SECTIONS
 		*(.got.plt)
 		*(.got)
 		*(.data*)
+		__bss_start = .;
 		*(.sdata)
 		/* the EFI loader doesn't seem to like a .bss section, so we stick
 		 * it all into .data: */
@@ -51,7 +52,9 @@ SECTIONS
 		*(.bss)
 		*(COMMON)
 		*(.rel.local)
+		__bss_stop = .;
 	}
+	_edata = .;
 
 	. = ALIGN(4096);
 	.dynamic : { *(.dynamic) }

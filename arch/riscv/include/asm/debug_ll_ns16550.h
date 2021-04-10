@@ -35,19 +35,6 @@
 
 #endif /* CONFIG_DEBUG_LL */
 
-#define UART_THR	(0x0 << DEBUG_LL_UART_SHIFT)
-#define UART_RBR	(0x0 << DEBUG_LL_UART_SHIFT)
-#define UART_DLL	(0x0 << DEBUG_LL_UART_SHIFT)
-#define UART_DLM	(0x1 << DEBUG_LL_UART_SHIFT)
-#define UART_LCR	(0x3 << DEBUG_LL_UART_SHIFT)
-#define UART_LSR	(0x5 << DEBUG_LL_UART_SHIFT)
-
-#define UART_LCR_W	0x07	/* Set UART to 8,N,2 & DLAB = 0 */
-#define UART_LCR_DLAB	0x87	/* Set UART to 8,N,2 & DLAB = 1 */
-
-#define UART_LSR_DR	0x01    /* UART received data present */
-#define UART_LSR_THRE	0x20	/* Xmit holding register empty */
-
 #if defined(DEBUG_LL_UART_IOSIZE32)
 #define UART_REG_L	lw
 #define UART_REG_S	sw
@@ -62,31 +49,29 @@
 #error "Please define DEBUG_LL_UART_IOSIZE{8,32}"
 #endif
 
+#include <asm/ns16550.h>
+
 #ifndef __ASSEMBLY__
 /*
  * C macros
  */
 
-#include <asm/io.h>
-
 static inline void PUTC_LL(char ch)
 {
 #ifdef CONFIG_DEBUG_LL
-	while (!(__uart_read((u8 *)DEBUG_LL_UART_ADDR + UART_LSR) & UART_LSR_THRE))
-		;
-	__uart_write(ch, (u8 *)DEBUG_LL_UART_ADDR + UART_THR);
-#endif /* CONFIG_DEBUG_LL */
+	early_ns16550_putc(ch, DEBUG_LL_UART_ADDR, DEBUG_LL_UART_SHIFT,
+			   __uart_read, __uart_write);
+#endif
 }
 
 static inline void debug_ll_ns16550_init(void)
 {
 #ifdef CONFIG_DEBUG_LL
-	__uart_write(UART_LCR_DLAB, (u8 *)DEBUG_LL_UART_ADDR + UART_LCR);
-	__uart_write(DEBUG_LL_UART_DIVISOR & 0xff, (u8 *)DEBUG_LL_UART_ADDR + UART_DLL);
-	__uart_write((DEBUG_LL_UART_DIVISOR >> 8) & 0xff, (u8 *)DEBUG_LL_UART_ADDR + UART_DLM);
-	__uart_write(UART_LCR_W, (u8 *)DEBUG_LL_UART_ADDR + UART_LCR);
-#endif /* CONFIG_DEBUG_LL */
+	early_ns16550_init(DEBUG_LL_UART_ADDR, DEBUG_LL_UART_DIVISOR,
+			   DEBUG_LL_UART_SHIFT, __uart_write);
+#endif
 }
+
 #else /* __ASSEMBLY__ */
 /*
  * Macros for use in assembly language code
@@ -97,15 +82,15 @@ static inline void debug_ll_ns16550_init(void)
 	li	t0, DEBUG_LL_UART_ADDR
 
 	li	t1, UART_LCR_DLAB		/* DLAB on */
-	UART_REG_S	t1, UART_LCR(t0)		/* Write it out */
+	UART_REG_S	t1, UART_LCR(DEBUG_LL_UART_SHIFT)(t0)	/* Write it out */
 
 	li	t1, \divisor
-	UART_REG_S	t1, UART_DLL(t0)		/* write low order byte */
+	UART_REG_S	t1, UART_DLL(DEBUG_LL_UART_SHIFT)(t0)	/* write low order byte */
 	srl	t1, t1, 8
-	UART_REG_S	t1, UART_DLM(t0)		/* write high order byte */
+	UART_REG_S	t1, UART_DLM(DEBUG_LL_UART_SHIFT)(t0)	/* write high order byte */
 
 	li	t1, UART_LCR_W			/* DLAB off */
-	UART_REG_S	t1, UART_LCR(t0)		/* Write it out */
+	UART_REG_S	t1, UART_LCR(DEBUG_LL_UART_SHIFT)(t0)	/* Write it out */
 #endif /* CONFIG_DEBUG_LL */
 .endm
 
@@ -118,11 +103,11 @@ static inline void debug_ll_ns16550_init(void)
 	li	t0, DEBUG_LL_UART_ADDR
 
 201:
-	UART_REG_L	t1, UART_LSR(t0)	/* get line status */
+	UART_REG_L	t1, UART_LSR(DEBUG_LL_UART_SHIFT)(t0)	/* get line status */
 	andi	t1, t1, UART_LSR_THRE	/* check for transmitter empty */
 	beqz	t1, 201b			/* try again */
 
-	UART_REG_S	a0, UART_THR(t0)	/* write the character */
+	UART_REG_S	a0, UART_THR(DEBUG_LL_UART_SHIFT)(t0)	/* write the character */
 
 #endif /* CONFIG_DEBUG_LL */
 .endm
@@ -158,7 +143,7 @@ static inline void debug_ll_ns16550_init(void)
 	li      t0, DEBUG_LL_UART_ADDR
 
 	/* get line status and check for data present */
-	UART_REG_L	s0, UART_LSR(t0)
+	UART_REG_L	s0, UART_LSR(DEBUG_LL_UART_SHIFT)(t0)
 	andi	s0, s0, UART_LSR_DR
 
 #endif /* CONFIG_DEBUG_LL */
@@ -177,7 +162,7 @@ static inline void debug_ll_ns16550_init(void)
 	beqz	s0, 204b
 
 	/* read a character */
-	UART_REG_L	s0, UART_RBR(t0)
+	UART_REG_L	s0, UART_RBR(DEBUG_LL_UART_SHIFT)(t0)
 
 #endif /* CONFIG_DEBUG_LL */
 .endm

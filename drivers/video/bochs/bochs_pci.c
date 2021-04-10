@@ -27,6 +27,7 @@ static int bochs_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent
 static DEFINE_PCI_DEVICE_TABLE(bochs_pci_tbl) = {
 	/* https://github.com/qemu/qemu/blob/master/docs/specs/standard-vga.txt */
 	{ PCI_DEVICE(0x1234, 0x1111) },
+	{ },
 };
 
 static struct pci_driver bochs_pci_driver = {

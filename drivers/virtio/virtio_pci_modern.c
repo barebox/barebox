@@ -335,13 +335,6 @@ static void __iomem *virtio_pci_map_capability(struct pci_dev *dev, int off)
 	offset = off + offsetof(struct virtio_pci_cap, offset);
 	pci_read_config_dword(dev, offset, &offset);
 
-	/*
-	 * TODO: adding 64-bit BAR support
-	 *
-	 * Per spec, the BAR is permitted to be either 32-bit or 64-bit.
-	 * For simplicity, only read the BAR address as 32-bit.
-	 */
-
         return pci_iomap(dev, bar) + offset;
 }
 

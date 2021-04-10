@@ -47,7 +47,7 @@ struct virtio_pci_device {
 	void __iomem *notify_base;
 
 	/* So we can sanity-check accesses. */
-	size_t device_len;
+	u32 device_len;
 
 	/* Multiply queue_notify_off by this value. (non-legacy mode). */
 	u32 notify_offset_multiplier;

@@ -350,6 +350,8 @@ endif
 
 KCONFIG_CONFIG	?= .config
 
+export KCONFIG_CONFIG
+
 # Default file for 'make defconfig'. This may be overridden by arch-Makefile.
 export KBUILD_DEFCONFIG := defconfig
 

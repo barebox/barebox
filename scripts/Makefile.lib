@@ -365,6 +365,9 @@ cmd_env_S =							\
 $(obj)/%.bbenv$(DEFAULT_COMPRESSION_SUFFIX).S: $(src)/%.bbenv$(DEFAULT_COMPRESSION_SUFFIX) FORCE
 	$(call if_changed,env_S)
 
+quiet_cmd_envgen = ENVGEN  $@
+cmd_envgen=$(srctree)/scripts/genenv $(objtree) $(objtree) $@ $2
+
 quiet_cmd_env = ENV     $@
 cmd_env=$(srctree)/scripts/genenv $(srctree) $(objtree) $@ $<
 

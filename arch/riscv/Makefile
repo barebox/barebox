@@ -20,7 +20,6 @@ cflags-y += $(riscv-cflags-y)
 LDFLAGS_barebox += -nostdlib
 
 machine-$(CONFIG_MACH_ERIZO)	:= erizo
-machine-$(CONFIG_MACH_VIRT)	:= virt
 
 LDFLAGS_barebox += $(riscv-ldflags-y)
 

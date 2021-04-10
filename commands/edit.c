@@ -495,6 +495,10 @@ static int do_edit(int argc, char *argv[])
 	if (argc != 2)
 		return COMMAND_ERROR_USAGE;
 
+	buffer = NULL;
+	if(edit_read_file(argv[1]))
+		return 1;
+
 	screenwidth = 80;
 
 	/*
@@ -516,10 +520,6 @@ static int do_edit(int argc, char *argv[])
 		if (*argv[0] == 'v')
 			is_vi = true;
 	}
-
-	buffer = NULL;
-	if(edit_read_file(argv[1]))
-		return 1;
 
 	cursx  = 0;
 	cursy  = 0;

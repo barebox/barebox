@@ -3,7 +3,7 @@
 #include <common.h>
 #include <asm/sections.h>
 #include <linux/sizes.h>
-#include <debug_ll.h>
+#include <asm/ns16550.h>
 #include <pbl.h>
 #include <fdt.h>
 
@@ -22,16 +22,41 @@
 
 #include <asm/barebox-riscv.h>
 
+static void virt_ns16550_putc(void *base, int ch)
+{
+	early_ns16550_putc(ch, base, 0, readb, writeb);
+}
+
+static void virt_ns16550_init(void)
+{
+	void __iomem *base = IOMEM(0x10000000);
+
+	early_ns16550_init(base, 3686400 / CONFIG_BAUDRATE, 0, writeb);
+	pbl_set_putc(virt_ns16550_putc, base);
+}
+
+static const struct fdt_device_id console_ids[] = {
+	{ .compatible = "riscv-virtio", .data = virt_ns16550_init },
+	{ /* sentinel */ }
+};
+
 ENTRY_FUNCTION(start_dt_2nd, a0, _fdt, a2)
 {
 	unsigned long membase, memsize, endmem, endfdt, uncompressed_len;
 	struct fdt_header *fdt = (void *)_fdt;
+	void (*pbl_uart_init)(void);
 
 	if (!fdt)
 		hang();
 
 	relocate_to_current_adr();
 	setup_c();
+
+	pbl_uart_init = fdt_device_get_match_data(fdt, "/", console_ids);
+	if (pbl_uart_init) {
+		pbl_uart_init();
+		putchar('>');
+	}
 
 	fdt_find_mem(fdt, &membase, &memsize);
 	endmem = membase + memsize;

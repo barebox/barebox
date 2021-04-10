@@ -117,4 +117,11 @@ config F71808E_WDT
 	  F71862FG, F71868, F71869, F71882FG, F71889FG, F81865 and F81866
 	  Super I/O controllers.
 
+config GPIO_WATCHDOG
+	tristate "Watchdog device controlled through GPIO-line"
+	depends on OF_GPIO
+	help
+	  If you say yes here you get support for watchdog device
+	  controlled through GPIO-line.
+
 endif

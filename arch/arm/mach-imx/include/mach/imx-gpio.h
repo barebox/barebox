@@ -72,11 +72,18 @@ static inline void imx31_gpio_direction_input(void *base, int gpio)
 #define imx6_gpio_direction_input(base, gpio) imx31_gpio_direction_input(base, gpio)
 #define imx8m_gpio_direction_input(base, gpio) imx31_gpio_direction_input(base, gpio)
 
-#define imx1_gpio_val(base, gpio) readl(base + 0x1c) & (1 << gpio) ? 1 : 0
+static inline int imx1_gpio_val(void __iomem *base, int gpio)
+{
+	return readl(base + 0x1c) & (1 << gpio) ? 1 : 0;
+}
+
+static inline int imx31_gpio_val(void __iomem *base, int gpio)
+{
+	return readl(base) & (1 << gpio) ? 1 : 0;
+}
+
 #define imx21_gpio_val(base, gpio) imx1_gpio_val(base, gpio)
 #define imx27_gpio_val(base, gpio) imx1_gpio_val(base, gpio)
-
-#define imx31_gpio_val(base, gpio) readl(base) & (1 << gpio) ? 1 : 0
 #define imx25_gpio_val(base, gpio) imx31_gpio_val(base, gpio)
 #define imx35_gpio_val(base, gpio) imx31_gpio_val(base, gpio)
 #define imx51_gpio_val(base, gpio) imx31_gpio_val(base, gpio)

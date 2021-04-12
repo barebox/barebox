@@ -2240,12 +2240,12 @@ static int mxs_nand_probe(struct device_d *dev)
 
 	mxs_nand_setup_timing(nand_info);
 
+	mtd_set_ooblayout(mtd, &mxs_nand_ooblayout_ops);
+
 	/* second phase scan */
 	err = nand_scan_tail(chip);
 	if (err)
 		goto err2;
-
-	mtd_set_ooblayout(mtd, &mxs_nand_ooblayout_ops);
 
 	mxs_nand_scan_bbt(chip);
 

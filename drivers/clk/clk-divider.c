@@ -265,19 +265,17 @@ static int clk_divider_set_rate(struct clk *clk, unsigned long rate,
 		unsigned long parent_rate)
 {
 	struct clk_divider *divider = container_of(clk, struct clk_divider, clk);
-	unsigned int div, value;
+	unsigned int value;
 	u32 val;
 
 	if (divider->flags & CLK_DIVIDER_READ_ONLY)
 		return 0;
 
 	if (clk->flags & CLK_SET_RATE_PARENT) {
-		unsigned long best_parent_rate = parent_rate;
-		div = clk_divider_bestdiv(clk, rate, &best_parent_rate,
-				divider->table, divider->width, divider->flags);
-		clk_set_rate(clk_get_parent(clk), best_parent_rate);
-	} else {
-		div = DIV_ROUND_UP(parent_rate, rate);
+		clk_divider_bestdiv(clk, rate, &parent_rate,
+				    divider->table, divider->width,
+				    divider->flags);
+		clk_set_rate(clk_get_parent(clk), parent_rate);
 	}
 
 	value = divider_get_val(rate, parent_rate, divider->table,

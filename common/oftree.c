@@ -16,6 +16,7 @@
 #include <reset_source.h>
 #include <watchdog.h>
 #include <globalvar.h>
+#include <magicvar.h>
 
 #define MAX_LEVEL	32		/* how deeply nested we will go */
 
@@ -161,9 +162,14 @@ static void watchdog_build_bootargs(struct watchdog *watchdog, struct device_nod
 	free(buf);
 }
 
+static int bootargs_append = 0;
+BAREBOX_MAGICVAR(global.linux.bootargs_append, "append to original oftree bootargs");
+
 static int of_write_bootargs(struct device_node *node)
 {
 	const char *str;
+	char *buf = NULL;
+	int ret;
 
 	if (IS_ENABLED(CONFIG_SYSTEMD_OF_WATCHDOG))
 		watchdog_build_bootargs(boot_get_enabled_watchdog(), of_get_parent(node));
@@ -176,7 +182,20 @@ static int of_write_bootargs(struct device_node *node)
 	if (strlen(str) == 0)
 		return 0;
 
-	return of_property_write_string(node, "bootargs", str);
+	if (bootargs_append) {
+		const char *oldstr;
+
+		ret = of_property_read_string(node, "bootargs", &oldstr);
+		if (!ret) {
+			str = buf = basprintf("%s %s", oldstr, str);
+			if (!buf)
+				return -ENOMEM;
+		}
+	}
+
+	ret = of_property_write_string(node, "bootargs", str);
+	free(buf);
+	return ret;
 }
 
 static int of_fixup_bootargs(struct device_node *root, void *unused)
@@ -218,6 +237,7 @@ static int of_fixup_bootargs(struct device_node *root, void *unused)
 
 static int of_register_bootargs_fixup(void)
 {
+	globalvar_add_simple_bool("linux.bootargs_append", &bootargs_append);
 	return of_register_fixup(of_fixup_bootargs, NULL);
 }
 late_initcall(of_register_bootargs_fixup);

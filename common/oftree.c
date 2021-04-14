@@ -161,16 +161,12 @@ static void watchdog_build_bootargs(struct watchdog *watchdog, struct device_nod
 	free(buf);
 }
 
-static int of_fixup_bootargs(struct device_node *root, void *unused)
+static int of_write_bootargs(struct device_node *node)
 {
-	struct device_node *node;
 	const char *str;
-	int err;
-	int instance = reset_source_get_instance();
-	struct device_d *dev;
 
 	if (IS_ENABLED(CONFIG_SYSTEMD_OF_WATCHDOG))
-		watchdog_build_bootargs(boot_get_enabled_watchdog(), root);
+		watchdog_build_bootargs(boot_get_enabled_watchdog(), of_get_parent(node));
 
 	str = linux_bootargs_get();
 	if (!str)
@@ -180,13 +176,23 @@ static int of_fixup_bootargs(struct device_node *root, void *unused)
 	if (strlen(str) == 0)
 		return 0;
 
+	return of_property_write_string(node, "bootargs", str);
+}
+
+static int of_fixup_bootargs(struct device_node *root, void *unused)
+{
+	struct device_node *node;
+	int err;
+	int instance = reset_source_get_instance();
+	struct device_d *dev;
+
 	node = of_create_node(root, "/chosen");
 	if (!node)
 		return -ENOMEM;
 
 	of_property_write_string(node, "barebox-version", release_string);
 
-	err = of_property_write_string(node, "bootargs", str);
+	err = of_write_bootargs(node);
 	if (err)
 		return err;
 

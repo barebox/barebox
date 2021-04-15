@@ -6,6 +6,7 @@
 #include <complete.h>
 #include <gpio.h>
 #include <of_gpio.h>
+#include <gpiod.h>
 #include <errno.h>
 #include <malloc.h>
 
@@ -552,6 +553,48 @@ static int of_gpiochip_scan_hogs(struct gpio_chip *chip)
 	}
 
 	return 0;
+}
+
+/* Linux compatibility helper: Get a GPIO descriptor from device tree */
+int gpiod_get(struct device_d *dev, const char *_con_id, enum gpiod_flags flags)
+{
+	struct device_node *np = dev->device_node;
+	enum of_gpio_flags of_flags;
+	const char *con_id = "gpios", *label = dev_name(dev);
+	char *buf = NULL;
+	int gpio;
+	int ret;
+
+	if (!IS_ENABLED(CONFIG_OFDEVICE) || !dev->device_node)
+		return -ENODEV;
+
+	if (_con_id) {
+		con_id = buf = basprintf("%s-gpios", _con_id);
+		if (!buf)
+			return -ENOMEM;
+	}
+
+	gpio = of_get_named_gpio_flags(np, con_id, 0, &of_flags);
+	free(buf);
+
+	if (!gpio_is_valid(gpio))
+		return gpio < 0 ? gpio : -EINVAL;
+
+	if (of_flags & OF_GPIO_ACTIVE_LOW)
+		flags |= GPIOF_ACTIVE_LOW;
+
+	buf = NULL;
+
+	if (_con_id) {
+		label = buf = basprintf("%s-%s", dev_name(dev), _con_id);
+		if (!label)
+			return -ENOMEM;
+	}
+
+	ret = gpio_request_one(gpio, flags, label);
+	free(buf);
+
+	return ret ?: gpio;
 }
 
 int gpiochip_add(struct gpio_chip *chip)

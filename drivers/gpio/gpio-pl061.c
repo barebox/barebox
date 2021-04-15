@@ -84,7 +84,18 @@ static void pl061_set_value(struct gpio_chip *gc, unsigned offset, int value)
 	writeb(!!value << offset, chip->base + (1 << (offset + 2)));
 }
 
+static int pl061_get_direction(struct gpio_chip *gc, unsigned offset)
+{
+	struct pl061_gpio *chip = container_of(gc, struct pl061_gpio, gc);
+
+	if (readb(chip->base + GPIODIR) & (1 << offset))
+		return GPIOF_DIR_OUT;
+
+	return GPIOF_DIR_IN;
+}
+
 static struct gpio_ops pl061_gpio_ops = {
+	.get_direction = pl061_get_direction,
 	.direction_input = pl061_direction_input,
 	.direction_output = pl061_direction_output,
 	.get = pl061_get_value,

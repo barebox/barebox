@@ -526,6 +526,11 @@ config MACH_FREESCALE_MX7_SABRESD
 
 	  https://goo.gl/6EKGdk
 
+config MACH_KAMSTRUP_MX7_CONCENTRATOR
+	bool "Kamstrup i.MX7 Concentrator"
+	select ARCH_IMX7
+	select ARM_USE_COMPRESSED_DTB
+
 config MACH_NXP_IMX6ULL_EVK
 	bool "NXP i.MX6ull EVK Board"
 	select ARCH_IMX6UL
@@ -591,6 +596,12 @@ config MACH_MNT_REFORM
 	select ARM_SMCCC
 	select MCI_IMX_ESDHC_PBL
 	select I2C_IMX_EARLY
+
+config MACH_SKOV_IMX6
+	bool "Skov IMX6"
+	select ARCH_IMX6
+	select ARM_USE_COMPRESSED_DTB
+	select MCI_IMX_ESDHC_PBL
 
 endif
 

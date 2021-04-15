@@ -1,0 +1,28 @@
+/*
+ * Copyright 2015 Juergen Borleis, Pengutronix <kernel@pengutronix.de>
+ *
+ * The code contained herein is licensed under the GNU General Public
+ * License. You may obtain a copy of the GNU General Public License
+ * Version 2 or later at the following locations:
+ *
+ * http://www.opensource.org/licenses/gpl-license.html
+ * http://www.gnu.org/copyleft/gpl.html
+ */
+
+/dts-v1/;
+#include <arm/imx6q.dtsi>
+#include "imx6q.dtsi"
+#include "imx6qdl-skov-imx6.dtsi"
+
+/ {
+	model = "Skov IMX6";
+	compatible = "skov,imx6", "fsl,imx6q";
+
+	chosen {
+		stdout-path = &uart2;
+	};
+};
+
+&i2c2 {
+	status = "okay";
+};

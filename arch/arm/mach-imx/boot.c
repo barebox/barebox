@@ -506,6 +506,9 @@ static void __imx7_get_boot_source(enum bootsource *src, int *instance,
 	case 5:
 		*src = BOOTSOURCE_NOR;
 		break;
+	case 15:
+		*src = BOOTSOURCE_SERIAL;
+		break;
 	default:
 		break;
 	}

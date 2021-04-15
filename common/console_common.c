@@ -188,8 +188,8 @@ void log_print(unsigned flags, unsigned levels)
 	unsigned long last = 0;
 
 	list_for_each_entry(log, &barebox_logbuf, list) {
-		uint64_t diff = log->timestamp - time_beginning;
-		unsigned long difful;
+		uint64_t time_ns = log->timestamp;
+		unsigned long time;
 
 		if (levels && !(levels & (1 << log->level)))
 			continue;
@@ -201,21 +201,19 @@ void log_print(unsigned flags, unsigned levels)
 		if (flags & BAREBOX_LOG_PRINT_RAW)
 			printf("<%i>", log->level);
 
-		do_div(diff, 1000);
-		difful = diff;
-
-		if (!log->timestamp)
-			difful = 0;
+		/* convert ns to us */
+		do_div(time_ns, 1000);
+		time = time_ns;
 
 		if (flags & (BAREBOX_LOG_PRINT_TIME | BAREBOX_LOG_DIFF_TIME))
 			printf("[");
 
 		if (flags & BAREBOX_LOG_PRINT_TIME)
-			printf("%10luus", difful);
+			printf("%10luus", time);
 
 		if (flags & BAREBOX_LOG_DIFF_TIME) {
-			printf(" < %10luus", difful - last);
-			last = difful;
+			printf(" < %10luus", time - last);
+			last = time;
 		}
 
 		if (flags & (BAREBOX_LOG_PRINT_TIME | BAREBOX_LOG_DIFF_TIME))

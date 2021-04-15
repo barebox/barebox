@@ -17,7 +17,7 @@ struct clocksource {
 	int		(*init)(struct clocksource*);
 };
 
-static inline uint32_t cyc2ns(struct clocksource *cs, uint64_t cycles)
+static inline uint64_t cyc2ns(struct clocksource *cs, uint64_t cycles)
 {
         uint64_t ret = cycles;
         ret = (ret * cs->mult) >> cs->shift;

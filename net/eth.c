@@ -304,7 +304,8 @@ static void eth_of_fixup_node(struct device_node *root,
 			      const char *node_path, int ethid,
 			      const u8 ethaddr[ETH_ALEN])
 {
-	struct device_node *node;
+	struct device_node *bb_node, *fixup_node;
+	char *name;
 	int ret;
 
 	if (!is_valid_ether_addr(ethaddr)) {
@@ -314,22 +315,25 @@ static void eth_of_fixup_node(struct device_node *root,
 	}
 
 	if (node_path) {
-		node = of_find_node_by_path_from(root, node_path);
+		bb_node = of_find_node_by_path_from(0, node_path);
+		name = of_get_reproducible_name(bb_node);
+		fixup_node = of_find_node_by_reproducible_name(root, name);
+		free(name);
 	} else {
 		char eth[12];
 		sprintf(eth, "ethernet%d", ethid);
-		node = of_find_node_by_alias(root, eth);
+		fixup_node = of_find_node_by_alias(root, eth);
 	}
 
-	if (!node) {
+	if (!fixup_node) {
 		pr_debug("%s: no node to fixup\n", __func__);
 		return;
 	}
 
-	ret = of_set_property(node, "mac-address", ethaddr, ETH_ALEN, 1);
+	ret = of_set_property(fixup_node, "mac-address", ethaddr, ETH_ALEN, 1);
 	if (ret)
 		pr_err("Setting mac-address property of %s failed with: %s\n",
-		       node->full_name, strerror(-ret));
+		       fixup_node->full_name, strerror(-ret));
 }
 
 static int eth_of_fixup(struct device_node *root, void *unused)

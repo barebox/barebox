@@ -52,6 +52,7 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 	void *pg_start, *pg_end;
 	unsigned long pc = get_pc();
 
+	/* piggy data is not relocated, so determine the bounds now */
 	pg_start = input_data + global_variable_offset();
 	pg_end = input_data_end + global_variable_offset();
 

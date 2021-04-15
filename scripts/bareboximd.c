@@ -15,6 +15,7 @@
 #include <stdarg.h>
 #include <linux/err.h>
 #include <linux/kernel.h>
+#include <sys/mman.h>
 
 #include "../include/image-metadata.h"
 
@@ -96,29 +97,35 @@ static int read_file_2(const char *filename, size_t *size, void **outbuf, size_t
 		goto close;
 	}
 
-	buf = malloc(max_size);
-	if (!buf) {
-		fprintf(stderr, "Cannot allocate memory\n");
-		ret = -ENOMEM;
-		goto close;
-	}
+	buf = mmap(NULL, max_size, PROT_READ, MAP_SHARED, fd, 0);
+	if (buf == MAP_FAILED ) {
+		buf = malloc(max_size);
+		if (!buf) {
+			fprintf(stderr, "Cannot allocate memory\n");
+			ret = -ENOMEM;
+			goto close;
+		}
 
-	*outbuf = buf;
-	while (*size < max_size) {
-		rsize = read(fd, buf, max_size-*size);
-		if (rsize == 0) {
-			ret = -EIO;
-			goto free;
-		} else if (rsize < 0) {
-			if (errno == EAGAIN)
-				continue;
-			else {
+		*outbuf = buf;
+
+		while (*size < max_size) {
+			rsize = read(fd, buf, max_size - *size);
+			if (rsize == 0) {
+				ret = -EIO;
+				goto free;
+			}
+
+			if (rsize < 0) {
 				ret = -errno;
 				goto free;
 			}
-		} /* ret > 0 */
-		buf += rsize;
-		*size += rsize;
+
+			buf += rsize;
+			*size += rsize;
+		}
+	} else {
+		*outbuf = buf;
+		*size = max_size;
 	}
 
 	ret = 0;
@@ -129,6 +136,14 @@ free:
 close:
 	close(fd);
 	return ret;
+}
+
+static inline void read_file_2_free(void *buf)
+{
+	/*
+	 * Can't free() here because buffer might be mmapped. No need
+	 * to do anything as we are exitting in a moment anyway.
+	 */
 }
 
 static unsigned long simple_strtoul(const char *cp, char **endp, unsigned int base)

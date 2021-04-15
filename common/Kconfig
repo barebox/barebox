@@ -941,6 +941,14 @@ config DEFAULT_ENVIRONMENT_GENERIC_NEW_REBOOT_MODE
 	depends on DEFAULT_ENVIRONMENT_GENERIC_NEW
 	depends on REBOOT_MODE
 
+config DEFAULT_ENVIRONMENT_GENERIC_NEW_IKCONFIG
+	bool "Ship .config as /env/data/config"
+	depends on DEFAULT_ENVIRONMENT_GENERIC_NEW
+	help
+	  This option embeds the used barebox Kconfig .config file into the
+	  environment as /env/data/config. This will increases barebox image
+	  size. If unsure, say n here.
+
 config DEFAULT_ENVIRONMENT_PATH
 	string
 	depends on DEFAULT_ENVIRONMENT

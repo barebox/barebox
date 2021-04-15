@@ -17,6 +17,10 @@ int imd_command_setenv(const char *variable_name, const char *value)
 	return -ENOSYS;
 }
 #endif
+static inline void read_file_2_free(void *buf)
+{
+	free(buf);
+}
 #endif
 
 /*
@@ -542,6 +546,6 @@ int imd_command(int argc, char *argv[])
 
 	ret = 0;
 out:
-	free(buf);
+	read_file_2_free(buf);
 	return ret;
 }

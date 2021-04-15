@@ -129,7 +129,7 @@ static int atmel_lcdfb_check_var(struct fb_info *info)
 			= info->bits_per_pixel;
 		break;
 	case 16:
-		/* Older SOCs use BGR:555 rather than BGR:565. */
+		/* Older SOCs use BRG:555 rather than BRG:565. */
 		if (sinfo->have_intensity_bit)
 			info->green.length = 5;
 		else
@@ -139,7 +139,7 @@ static int atmel_lcdfb_check_var(struct fb_info *info)
 			info->red.offset = info->green.length + 5;
 			info->blue.offset = 0;
 		} else {
-			/* BGR:5X5 mode */
+			/* BRG:5X5 mode */
 			info->red.offset = 0;
 			info->blue.offset = info->green.length + 5;
 		}
@@ -156,7 +156,7 @@ static int atmel_lcdfb_check_var(struct fb_info *info)
 			info->red.offset = 16;
 			info->blue.offset = 0;
 		} else {
-			/* BGR:888 mode */
+			/* BRG:888 mode */
 			info->red.offset = 0;
 			info->blue.offset = 16;
 		}
@@ -279,7 +279,7 @@ static int power_control_init(struct device_d *dev,
 }
 
 /*
- * Syntax: atmel,lcd-wiring-mode: lcd wiring mode "RGB", "BGR"
+ * Syntax: atmel,lcd-wiring-mode: lcd wiring mode "RGB", "BRG"
  */
 static int of_get_wiring_mode(struct device_node *np,
 			      struct atmel_lcdfb_info *sinfo)
@@ -290,12 +290,12 @@ static int of_get_wiring_mode(struct device_node *np,
 	ret = of_property_read_string(np, "atmel,lcd-wiring-mode", &mode);
 	if (ret < 0) {
 		/* Not present, use defaults */
-		sinfo->lcd_wiring_mode = ATMEL_LCDC_WIRING_BGR;
+		sinfo->lcd_wiring_mode = ATMEL_LCDC_WIRING_BRG;
 		return 0;
 	}
 
-	if (!strcasecmp(mode, "BGR")) {
-		sinfo->lcd_wiring_mode = ATMEL_LCDC_WIRING_BGR;
+	if (!strcasecmp(mode, "BRG")) {
+		sinfo->lcd_wiring_mode = ATMEL_LCDC_WIRING_BRG;
 	} else if (!strcasecmp(mode, "RGB")) {
 		sinfo->lcd_wiring_mode = ATMEL_LCDC_WIRING_RGB;
 	} else {

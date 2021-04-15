@@ -695,7 +695,7 @@ int mtd_peb_create_bitflips(struct mtd_info *mtd, int pnum, int offset,
 	ops.ooblen = mtd->oobsize;
 
 	for (i = 0; i < pages_per_block; i++) {
-		loff_t offs = (loff_t)pnum * mtd->erasesize + i * mtd->writesize;
+		loff_t offs = (loff_t)pnum * mtd->erasesize + i * (loff_t)mtd->writesize;
 
 		ops.datbuf = buf + i * mtd->writesize;
 		ops.oobbuf = oobbuf + i * mtd->oobsize;
@@ -738,7 +738,7 @@ int mtd_peb_create_bitflips(struct mtd_info *mtd, int pnum, int offset,
 	}
 
 	for (i = 0; i < pages_per_block; i++) {
-		loff_t offs = (loff_t)pnum * mtd->erasesize + i * mtd->writesize;
+		loff_t offs = (loff_t)pnum * mtd->erasesize + i * (loff_t)mtd->writesize;
 
 		ops.datbuf = buf + i * mtd->writesize;
 		ops.oobbuf = oobbuf + i * mtd->oobsize;

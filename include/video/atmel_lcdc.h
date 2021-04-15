@@ -23,10 +23,10 @@
 #define __ATMEL_LCDC_H__
 
 /* Way LCD wires are connected to the chip:
- * Some Atmel chips use BGR color mode (instead of standard RGB)
+ * Some Atmel chips use BRG color mode (instead of standard RGB)
  * A swapped wiring onboard can bring to RGB mode.
  */
-#define ATMEL_LCDC_WIRING_BGR	0
+#define ATMEL_LCDC_WIRING_BRG	0
 #define ATMEL_LCDC_WIRING_RGB	1
 #define ATMEL_LCDC_WIRING_RGB555	2
 

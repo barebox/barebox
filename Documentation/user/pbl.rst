@@ -26,6 +26,6 @@ This way source code can be shared between regular barebox and PBL. A special
 case is ``lwl-y += file.o`` which expands to ``obj-y`` when PBL is disabled
 and to ``pbl-y`` when PBL is enabled.
 
-**HINT:** for getting an overview over the binaries, disassemble barebox.bin
-(``make barebox.S``) with or without PBL support and also disassemble the
-PBL (``make arch/$ARCH/pbl/zbarebox.S``)
+**HINT:** for getting an overview over the binaries, disassemble
+``barebox.bin`` with or without PBL support and also disassemble the PBL
+(``./images/*.pblb``).

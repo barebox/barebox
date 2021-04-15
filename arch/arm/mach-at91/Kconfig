@@ -577,6 +577,17 @@ config AT91_MULTI_BOARDS
 
 if AT91_MULTI_BOARDS
 
+config MACH_SKOV_ARM9CPU
+	bool "SKOV ARM9 CPU"
+	select SOC_AT91SAM9263
+	select OFDEVICE
+	select COMMON_CLK_OF_PROVIDER
+	select HAVE_AT91_USB_CLK
+	select HAVE_AT91_BOOTSTRAP
+	select AT91SAM926X_BOARD_INIT
+	help
+	  Say y here if you are using SKOV's ARM9 CPU board
+
 config MACH_AT91SAM9263EK
 	bool "Atmel AT91SAM9263-EK"
 	select SOC_AT91SAM9263

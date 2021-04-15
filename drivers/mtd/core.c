@@ -131,7 +131,7 @@ static struct mtd_erase_region_info *mtd_find_erase_region(struct mtd_info *mtd,
 
 	for (i = 0; i < mtd->numeraseregions; i++) {
 		struct mtd_erase_region_info *e = &mtd->eraseregions[i];
-		if (offset > e->offset + e->erasesize * e->numblocks)
+		if (offset > e->offset + (loff_t)e->erasesize * e->numblocks)
 			continue;
 		return e;
 	}

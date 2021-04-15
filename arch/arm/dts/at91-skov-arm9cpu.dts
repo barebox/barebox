@@ -1,0 +1,451 @@
+// SPDX-License-Identifier: GPL-2.0
+// SPDX-FileCopyrightText: 2018 Sam Ravnborg <sam@ravnborg.org>
+
+/*
+ * Device Tree file for SKOV ARM9 CPU board with 128 MB RAM and
+ * Logic Technology Display
+ */
+
+/dts-v1/;
+
+#include "arm/at91sam9263.dtsi"
+
+/ {
+	model = "SKOV ARM9 CPU";
+	compatible = "skov,arm9-cpu", "atmel,at91sam9263", "atmel,at91sam9";
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+
+		environment {
+			compatible = "barebox,environment";
+			device-path = &environment_nor;
+		};
+	};
+
+	flash: nor_flash@10000000 {
+		compatible = "cfi-flash";
+		reg = <0x10000000 0x4000000>;
+		linux,mtd-name = "physmap-flash.0";
+		bank-width = <2>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			barebox@0 {
+				label = "bootloader";
+				reg = <0x00000 0x80000>;
+			};
+
+			environment_nor: env@80000 {
+				label = "environment";
+				reg = <0x80000 0x20000>;
+			};
+
+			linux@a0000 {
+				label = "linux";
+				reg = <0xa0000 0x2a0000>;
+			};
+
+			rootfs@340000  {
+				label = "rootfs";
+				reg = <0x340000 0x3cc0000>;
+			};
+		};
+	};
+
+	leds {
+		compatible = "gpio-leds";
+
+		D0 {
+			label = "D0";
+			gpios = <&pioD 0 GPIO_ACTIVE_LOW>;
+			linux,default-trigger = "heartbeat";
+		};
+
+		D1 {
+			label = "D1";
+			gpios = <&pioD 1 GPIO_ACTIVE_LOW>;
+			linux,default-trigger = "mmc0";
+		};
+
+		D2 {
+			label = "D2";
+			gpios = <&pioD 7 GPIO_ACTIVE_LOW>;
+		};
+
+		led_0 {
+			label = "led_0";
+			gpios = <&pioB 14 GPIO_ACTIVE_LOW>;
+		};
+
+		led_1 {
+			label = "led_1";
+			gpios = <&pioB 23 GPIO_ACTIVE_LOW>;
+		};
+
+		led_2 {
+			label = "led_2";
+			gpios = <&pioB 18 GPIO_ACTIVE_LOW>;
+		};
+
+		led_3 {
+			label = "led_3";
+			gpios = <&pioB 22 GPIO_ACTIVE_LOW>;
+		};
+
+		led_4 {
+			label = "led_4";
+			gpios = <&pioA 22 GPIO_ACTIVE_LOW>;
+		};
+
+		led_5 {
+			label = "led_5";
+			gpios = <&pioA 23 GPIO_ACTIVE_LOW>;
+		};
+
+		led_6 {
+			label = "led_6";
+			gpios = <&pioA 24 GPIO_ACTIVE_LOW>;
+		};
+
+		led_7 {
+			label = "led_7";
+			gpios = <&pioA 20 GPIO_ACTIVE_LOW>;
+		};
+	};
+
+	i2c-gpio-0 {
+		status = "okay";
+
+		24c512@50 {
+			compatible = "24c512";
+			reg = <0x50>;
+			pagesize = <128>;
+		};
+	};
+
+	rotary-encoder {
+		compatible = "rotary-encoder";
+		gpios = <&pioB 19 GPIO_ACTIVE_LOW>, <&pioB 20 GPIO_ACTIVE_LOW>;
+		linux,axis = <0>; /* REL_X */
+		rotary-encoder,steps-per-period = <4>;
+		rotary-encoder,relative-axis;
+	};
+
+	gpio-keys {
+		compatible = "gpio-keys";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		rotary_button {
+			label = "rotary_button";
+			gpios = <&pioB 15 GPIO_ACTIVE_LOW>;
+			debounce-interval = <10>;
+			linux,code = <28>; /* enter */
+		};
+	};
+
+	matrix-keypad-6x5 {
+		compatible = "gpio-matrix-keypad";
+		debounce-delay-ms = <10>;
+		col-scan-delay-us = <10>;
+
+		row-gpios = <&pioB 25 GPIO_ACTIVE_HIGH    /* 1 */
+			     &pioB 21 GPIO_ACTIVE_HIGH    /* 2 */
+			     &pioB 16 GPIO_ACTIVE_HIGH    /* 3 */
+			     &pioB 24 GPIO_ACTIVE_HIGH    /* 4 */
+			     &pioB 12 GPIO_ACTIVE_HIGH>;  /* 5 */
+
+		col-gpios = <&pioB 13 GPIO_ACTIVE_HIGH    /* 1 */
+			     &pioB 17 GPIO_ACTIVE_HIGH    /* 2 */
+			     &pioA 25 GPIO_ACTIVE_HIGH    /* 3 */
+			     &pioA 21 GPIO_ACTIVE_HIGH    /* 4 */
+			     &pioA 19 GPIO_ACTIVE_HIGH    /* 5 */
+			     &pioA 18 GPIO_ACTIVE_HIGH>;  /* 6 */
+
+
+		linux,keymap = <
+			0x00000011 /* col0 row0 KEY_W */
+			0x01000021 /* col0 row1 KEY_F */
+			0x02000031 /* col0 row2 KEY_N */
+			0x03000041 /* col0 row3 KEY_F7 */
+			0x04000051 /* col0 row4 KEY_KP3 */
+			0x00010012 /* col1 row0 KEY_E */
+			0x01010022 /* col1 row1 KEY_G */
+			0x02010032 /* col1 row2 KEY_M */
+			0x03010042 /* col1 row3 KEY_F8 */
+			0x04010052 /* col1 row4 KEY_KP0 */
+			0x00020013 /* col2 row0 KEY_R */
+			0x01020023 /* col2 row1 KEY_H */
+			0x02020033 /* col2 row2 KEY_COMMA */
+			0x03020043 /* col2 row3 KEY_F9 */
+			0x04020053 /* col2 row4 KEY_F9 */
+			0x00030014 /* col3 row0 KEY_T */
+			0x01030024 /* col3 row1 KEY_J */
+			0x02030034 /* col3 row2 KEY_DOT */
+			0x03030044 /* col3 row3 KEY_NUMLOCK */
+			0x04030054 /* col3 row4 */
+			0x00040015 /* col4 row0 KEY_Y */
+			0x01040025 /* col4 row1 KEY_K */
+			0x02040035 /* col4 row2 KEY_SLASH */
+			0x03040045 /* col4 row3 KEY_NUMLOCK */
+			0x04040055 /* col4 row4 KEY_ZENKAKUHANKAKU */
+			0x00050016 /* col5 row0 KEY_U */
+			0x01050026 /* col5 row1 KEY_L */
+			0x02050036 /* col5 row2 KEY_RIGH_SHIFT */
+			0x03050046 /* col5 row3 KEY_SCROLLLOCK */
+			0x04050056 /* col5 row4 KEY_102ND */
+		>;
+	};
+};
+
+&{/ahb/apb} {
+	pinctrl: pinctrl@fffff200 {
+	};
+
+	watchdog@fffffd40 {
+		status = "okay";
+	};
+};
+
+&dbgu {
+	status = "okay";
+};
+
+&fb0 {
+	status = "okay";
+	display = <&display0>;
+	display0: display0 {
+		bits-per-pixel = <16>;
+		atmel,lcdcon-backlight;
+		atmel,dmacon = <0x1>;
+		atmel,lcdcon2 = <0x80008002>;
+		atmel,guard-time = <1>;
+		atmel,lcd-wiring-mode = "BRG";
+		pinctrl-names = "default";
+		pinctrl-0 = <
+			&pinctrl_board_fb
+			&pinctrl_disp_type
+			&pinctrl_logic_type
+		>;
+
+		atmel,power-control-gpio = <&pioA 30 GPIO_ACTIVE_HIGH>;
+
+		display-timings {
+			native-mode = <&l2rt>;
+
+			l2rt: l2rt {
+				/* LTTD800480070-L2RT @ 55 */
+				clock-frequency = <30000000>;
+				hactive = <800>;
+				vactive = <480>;
+				/* Atmel calculation
+				 * Horizontal =
+				 * Hsync + left margin + picture + right_margin + 1
+				 * (3 + 85 + 800 + 0 + 1 = 889)
+				 */
+				hback-porch = <85>;
+				hfront-porch = <1>;
+				hsync-len = <3>;
+				/* Vertical =
+				 * upper margin + picture + lower_margin
+				 * (32 + 480 + 1 = 513) (25MHz / ( 889 * 513 ) = 54,8Hz
+				 */
+				vback-porch = <32>;
+				vfront-porch = <1>;
+				vsync-len = <3>;
+				pixelclk-active = <1>;
+				hsync-active = <0>;
+				vsync-active = <0>;
+				de-active = <1>;
+			};
+
+			l6whrt: l6whrt {
+				clock-frequency = <33000000>;
+				hactive = <800>;
+				vactive = <480>;
+				hback-porch = <43>;
+				hfront-porch = <154>;
+				vback-porch = <20>;
+				vfront-porch = <47>;
+				hsync-len = <3>;
+				vsync-len = <3>;
+				pixelclk-active = <1>;
+				hsync-active = <0>;
+				vsync-active = <0>;
+				de-active = <1>;
+			};
+
+			seiko: seiko {
+				/* 70WVW2AZ0 @ 55 */
+				clock-frequency = <33000000>;
+				hactive = <800>;
+				vactive = <480>;
+				hback-porch = <0>;
+				hfront-porch = <256>;
+				vback-porch = <45>;
+				vfront-porch = <0>;
+				hsync-len = <0>;
+				vsync-len = <0>;
+				pixelclk-active = <1>;
+				hsync-active = <0>;
+				vsync-active = <0>;
+				de-active = <1>;
+			};
+		};
+	};
+};
+
+&macb0 {
+	status = "okay";
+	phy-mode = "rmii";
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	ethphy0: ethernet-phy@1 {
+		reg = <3>;
+		reset-gpios = <&pioE 17 GPIO_ACTIVE_LOW>;
+		reset-assert-us = <1000>;
+		reset-deassert-us = <100>;
+	};
+};
+
+&main_xtal {
+	clock-frequency = <16000000>;
+};
+
+&mmc1 {
+	status = "okay";
+	pinctrl-0 = <
+		&pinctrl_board_mmc1
+		&pinctrl_mmc1_clk
+		&pinctrl_mmc1_slot0_cmd_dat0
+		&pinctrl_mmc1_slot0_dat1_3>;
+	cd-gpios = <&pioE 18 GPIO_ACTIVE_HIGH>;
+	slot@0 {
+		reg = <0>;
+		bus-width = <4>;
+		cd-gpios = <&pioE 18 GPIO_ACTIVE_HIGH>;
+		wp-gpios = <&pioE 19 GPIO_ACTIVE_HIGH>;
+	};
+};
+
+&pinctrl {
+	mmc1 {
+		pinctrl_board_mmc1: mmc1-board {
+			atmel,pins =
+				<AT91_PIOE 18 AT91_PERIPH_GPIO
+				 AT91_PINCTRL_PULL_UP_DEGLITCH 	/* PE18 gpio CD pin pull up and deglitch */
+				 AT91_PIOE 19 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP>;	/* PE19 gpio WP pin pull up */
+		};
+	};
+
+	display_type_inputs {
+		pinctrl_disp_type: disp_type-0 {
+			/* Pull-up (HIGH) if Seiko display, otherwise Logic display */
+			atmel,pins =
+				<AT91_PIOD 2 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP>;
+		};
+		pinctrl_logic_type: logic_type-0 {
+			/* Pull-down (LOW) if l6whrt display, otherwise l2rt display */
+			atmel,pins =
+				<AT91_PIOC 28 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP>;
+		};
+	};
+
+	fb {
+		pinctrl_board_fb: fb-0 {
+			atmel,pins =
+			       <AT91_PIOC 0  AT91_PERIPH_A AT91_PINCTRL_NONE    /* LCDVSYNC */
+				AT91_PIOC 1  AT91_PERIPH_A AT91_PINCTRL_NONE    /* LCDHSYNC */
+				AT91_PIOC 2  AT91_PERIPH_A AT91_PINCTRL_NONE    /* LCDDOTCK */
+				AT91_PIOC 3  AT91_PERIPH_A AT91_PINCTRL_NONE    /* LCDDEN */
+				AT91_PIOB 9  AT91_PERIPH_B AT91_PINCTRL_NONE    /* LCDCC */
+				AT91_PIOC 6  AT91_PERIPH_A AT91_PINCTRL_NONE    /* LCDD2 */
+				AT91_PIOC 7  AT91_PERIPH_A AT91_PINCTRL_NONE    /* LCDD3 */
+				AT91_PIOC 8  AT91_PERIPH_A AT91_PINCTRL_NONE    /* LCDD4 */
+				AT91_PIOC 9  AT91_PERIPH_A AT91_PINCTRL_NONE    /* LCDD5 */
+				AT91_PIOC 10 AT91_PERIPH_A AT91_PINCTRL_NONE    /* LCDD6 */
+				AT91_PIOC 11 AT91_PERIPH_A AT91_PINCTRL_NONE    /* LCDD7 */
+				AT91_PIOC 14 AT91_PERIPH_A AT91_PINCTRL_NONE    /* LCDD10 */
+				AT91_PIOC 15 AT91_PERIPH_A AT91_PINCTRL_NONE    /* LCDD11 */
+				AT91_PIOC 16 AT91_PERIPH_A AT91_PINCTRL_NONE    /* LCDD12 */
+				AT91_PIOC 12 AT91_PERIPH_B AT91_PINCTRL_NONE    /* LCDD13 */
+				AT91_PIOC 18 AT91_PERIPH_A AT91_PINCTRL_NONE    /* LCDD14 */
+				AT91_PIOC 19 AT91_PERIPH_A AT91_PINCTRL_NONE    /* LCDD15 */
+				AT91_PIOC 22 AT91_PERIPH_A AT91_PINCTRL_NONE    /* LCDD18 */
+				AT91_PIOC 23 AT91_PERIPH_A AT91_PINCTRL_NONE    /* LCDD19 */
+				AT91_PIOC 24 AT91_PERIPH_A AT91_PINCTRL_NONE    /* LCDD20 */
+				AT91_PIOC 17 AT91_PERIPH_B AT91_PINCTRL_NONE    /* LCDD21 */
+				AT91_PIOC 26 AT91_PERIPH_A AT91_PINCTRL_NONE    /* LCDD22 */
+				AT91_PIOC 27 AT91_PERIPH_A AT91_PINCTRL_NONE>;  /* LCDD23 */
+		};
+	};
+
+	pwm0 {
+		pinctrl_pwm0: pwm0_pwm1 {
+			atmel,pins = <AT91_PIOB 8 AT91_PERIPH_B AT91_PINCTRL_NONE>;
+		};
+	};
+};
+
+&pwm0 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pwm0>;
+};
+
+&slow_xtal {
+	clock-frequency = <32768>;
+};
+
+&spi0 {
+	status = "okay";
+	cs-gpios = <&pioA 3 0>, <&pioB 11 0>;
+
+	mcp3002@0 {
+		compatible = "microchip,mcp3002";
+		reg = <0>;
+		spi-max-frequency = <750000>;
+	};
+
+	tsc2046@1 {
+		compatible = "ti,tsc2046";
+		reg = <1>;
+		interrupts-extended = <&pioA 15 IRQ_TYPE_EDGE_BOTH>;
+		spi-max-frequency = <500000>;
+		pendown-gpio = <&pioA 15 GPIO_ACTIVE_LOW>;
+
+		ti,x-min = /bits/ 16 <800>;
+		ti,x-max = /bits/ 16 <3830>;
+		ti,y-min = /bits/ 16 <500>;
+		ti,y-max = /bits/ 16 <3830>;
+		ti,vref-delay-usecs = /bits/ 16 <300>;
+		ti,x-plate-ohms = /bits/ 16 <642>;
+		ti,y-plate-ohms = /bits/ 16 <295>;
+		ti,pressure-max = /bits/ 16 <1500>;
+		ti,debounce-rep = /bits/ 16 <8>;
+		ti,debounce-tol = /bits/ 16 <(~0)>;
+		ti,debounce-max = /bits/ 16 <100>;
+
+		wakeup-source;
+	};
+};
+
+&usart0 {
+	status = "okay";
+	pinctrl-0 = <
+		&pinctrl_usart0
+		&pinctrl_usart0_rts
+		&pinctrl_usart0_cts>;
+};
+
+&usb0 {
+	status = "okay";
+	num-ports = <2>;
+};

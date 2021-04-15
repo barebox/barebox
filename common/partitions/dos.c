@@ -36,31 +36,6 @@ static inline int is_extended_partition(struct partition *p)
 		p->dos_partition_type == LINUX_EXTENDED_PARTITION);
 }
 
-/**
- * Guess the size of the disk, based on the partition table entries
- * @param dev device to create partitions for
- * @param table partition table
- * @return sector count
- */
-static uint64_t disk_guess_size(struct device_d *dev,
-		struct partition_entry *table)
-{
-	uint64_t size = 0;
-	int i;
-
-	for (i = 0; i < 4; i++) {
-		if (get_unaligned_le32(&table[i].partition_start) != 0) {
-			uint64_t part_end = get_unaligned_le32(&table[i].partition_start) +
-				get_unaligned_le32(&table[i].partition_size);
-
-			if (size < part_end)
-				size = part_end;
-		}
-	}
-
-	return size;
-}
-
 static void *read_mbr(struct block_device *blk)
 {
 	void *buf = malloc(SECTOR_SIZE);
@@ -208,10 +183,6 @@ static void dos_partition(void *buf, struct block_device *blk,
 	uint32_t signature = get_unaligned_le32(buf + 0x1b8);
 
 	table = (struct partition_entry *)&buffer[446];
-
-	/* valid for x86 BIOS based disks only */
-	if (IS_ENABLED(CONFIG_DISK_BIOS) && blk->num_blocks == 0)
-		blk->num_blocks = disk_guess_size(blk->dev, table);
 
 	for (i = 0; i < 4; i++) {
 		pentry.first_sec = get_unaligned_le32(&table[i].partition_start);

@@ -6,13 +6,7 @@
 
 #include <linux/kbuild.h>
 
-#ifdef CONFIG_EFI_BOOTUP
 int main(void)
 {
 	return 0;
 }
-#else
-void common(void)
-{
-}
-#endif

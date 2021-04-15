@@ -12,11 +12,20 @@
 
 #include "clk.h"
 
+#define MFN_BITS	(10)
+#define MFN_SIGN	(BIT(MFN_BITS - 1))
+#define MFN_MASK	(MFN_SIGN - 1)
+
 struct clk_pllv1 {
 	struct clk clk;
 	void __iomem *reg;
 	const char *parent;
 };
+
+static inline bool mfn_is_negative(unsigned int mfn)
+{
+    return mfn & MFN_SIGN;
+}
 
 static unsigned long clk_pllv1_recalc_rate(struct clk *clk,
 		unsigned long parent_rate)
@@ -50,7 +59,7 @@ static unsigned long clk_pllv1_recalc_rate(struct clk *clk,
 	ll = (unsigned long long)freq * mfn_abs;
 
 	do_div(ll, mfd + 1);
-	if (mfn < 0)
+	if (mfn_is_negative(mfn))
 		ll = (freq * mfi) - ll;
 	else
 		ll = (freq * mfi) + ll;

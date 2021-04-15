@@ -380,26 +380,6 @@ config CMD_BOOTZ
 
 	  Usage: bootz FILE
 
-config CMD_LINUX16
-	tristate
-	depends on X86 && !X86_EFI
-	default y if X86
-	prompt "linux16"
-	help
-	  Usage: linux16 [-v VESAMODE] FILE
-
-	  Load kernel from FILE and boot on x86 in real-mode.
-
-	  Only kernel images in bzImage format are supported by now.
-
-	  For the video mode refer the Linux kernel documentation
-	  'Documentation/fb/vesafb.txt' for correct VESA mode numbers. Use 'ask'
-	  instead of a number to make Linux prompt for options.
-
-	  Options:
-	  -v VESAMODE   set VESAMODE
-
-
 config CMD_GO
 	tristate
 	prompt "go"

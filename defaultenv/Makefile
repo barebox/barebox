@@ -32,3 +32,10 @@ cmd_env_zero = ($(objtree)/scripts/bareboxenv -z $(CONFIG_DEFAULT_ENVIRONMENT_PA
 
 $(obj)/barebox_zero_env: FORCE
 	$(call if_changed,env_zero)
+
+bbenv-$(CONFIG_DEFAULT_ENVIRONMENT_GENERIC_NEW_IKCONFIG) += defaultenv-2-ikconfig
+
+defaultenv/defaultenv-2-ikconfig.bbenv$(DEFAULT_COMPRESSION_SUFFIX): $(KCONFIG_CONFIG)
+	@mkdir -p defaultenv/defaultenv-2-ikconfig/data
+	@cp $(KCONFIG_CONFIG) defaultenv/defaultenv-2-ikconfig/data/config
+	$(call cmd,envgen,defaultenv/defaultenv-2-ikconfig)

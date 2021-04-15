@@ -9,17 +9,7 @@ config X86
 
 config ARCH_TEXT_BASE
 	hex
-	default 0x00007c00 if MACH_X86_GENERIC
-	default 0x0 if MACH_EFI_GENERIC
-
-config BOARD_LINKER_SCRIPT
-	bool
-	default n
-
-config GENERIC_LINKER_SCRIPT
-	bool
-	default y
-	depends on !BOARD_LINKER_SCRIPT
+	default 0x0
 
 menu "ARCH specific settings"
 
@@ -45,51 +35,18 @@ config X86_64
 
 endmenu
 
-config X86_BOOTLOADER
-	bool
-	select X86_32
-	select HAS_MODULES
-	select HAVE_CONFIGURABLE_MEMORY_LAYOUT
-	select HAVE_CONFIGURABLE_TEXT_BASE
-
-choice
-	prompt "Select your board"
-
-config MACH_X86_GENERIC
-	bool "Generic x86"
-	select X86_BOOTLOADER
-	depends on !X86_EFI 
-	help
-	  Say Y here if you want barebox to be your BIOS based bootloader
-
 config MACH_EFI_GENERIC
-	bool "Generic EFI"
-	depends on X86_EFI 
+	def_bool y
+	depends on X86_EFI
 	select HAS_DEBUG_LL
 	help
 	  Say Y here if you want barebox to be your EFI based bootloader
 
-endchoice
 
-choice
-	prompt "Bring up type"
-
-	config X86_EFI
-		bool "EFI"
-		select EFI_BOOTUP
-		select EFI_GUID
-		select EFI_DEVICEPATH
-		select PRINTF_UUID
-		select CLOCKSOURCE_EFI_X86
-
-	config X86_BIOS_BRINGUP
-		bool "16 bit BIOS"
-		help
-		  Barebox will act as a BIOS based bootloader. This includes
-		  some 16 bit real mode code and some restrictions everyone knows
-		  from BIOS based systems.
-
-endchoice
-
-source "arch/x86/boot/Kconfig"
-source "arch/x86/mach-i386/Kconfig"
+config X86_EFI
+	def_bool y
+	select EFI_BOOTUP
+	select EFI_GUID
+	select EFI_DEVICEPATH
+	select PRINTF_UUID
+	select CLOCKSOURCE_EFI_X86

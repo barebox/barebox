@@ -165,6 +165,9 @@ static void input_console_notify(struct input_notifier *in,
 	if (ic->modstate[4] || ic->modstate[5])
 		modstate |= 1 << 2;
 
+	if (ev->code >= NR_KEYS)
+		return;
+
 	if (modstate & (1 << 1)) {
 		ascii = keycode_bb_keys[ev->code];
 		ascii = ascii >= 'a' ? CTL_CH(ascii) : 0;

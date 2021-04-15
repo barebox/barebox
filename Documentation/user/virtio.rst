@@ -4,7 +4,7 @@
   Copyright (C) 2018, Bin Meng <bmeng.cn@gmail.com>
   Copyright (C) 2021, Ahmad Fatoum
 
-.. _virtio:
+.. _virtio_sect:
 
 VirtIO Support
 ==============
@@ -35,7 +35,7 @@ queues configuration and buffer transfers are nearly identical. Both MMIO
 and non-legacy PCI are supported in barebox.
 
 The VirtIO spec defines a lots of VirtIO device types, however at present only
-block, console and RNG devices are supported.
+block, console, input and RNG devices are supported.
 
 Build Instructions
 ------------------

@@ -181,6 +181,40 @@ int virtqueue_add(struct virtqueue *vq, struct virtio_sg *sgs[],
 		  unsigned int out_sgs, unsigned int in_sgs);
 
 /**
+ * virtqueue_add_outbuf - expose output buffers to other end
+ * @vq: the struct virtqueue we're talking about.
+ * @sg: scatterlist (must be well-formed and terminated!)
+ * @num: the number of entries in @sg readable by other side
+ *
+ * Caller must ensure we don't call this with other virtqueue operations
+ * at the same time (except where noted).
+ *
+ * Returns zero or a negative error (ie. ENOSPC, ENOMEM, EIO).
+ */
+static inline int virtqueue_add_outbuf(struct virtqueue *vq,
+                                      struct virtio_sg *sg, unsigned int num)
+{
+	return virtqueue_add(vq, &sg, num, 0);
+}
+
+/**
+ * virtqueue_add_inbuf - expose input buffers to other end
+ * @vq: the struct virtqueue we're talking about.
+ * @sg: scatterlist (must be well-formed and terminated!)
+ * @num: the number of entries in @sg writable by other side
+ *
+ * Caller must ensure we don't call this with other virtqueue operations
+ * at the same time (except where noted).
+ *
+ * Returns zero or a negative error (ie. ENOSPC, ENOMEM, EIO).
+ */
+static inline int virtqueue_add_inbuf(struct virtqueue *vq,
+                                     struct virtio_sg *sg, unsigned int num)
+{
+	return virtqueue_add(vq, &sg, 0, num);
+}
+
+/**
  * virtqueue_kick - update after add_buf
  *
  * @vq:		the struct virtqueue

@@ -24,6 +24,13 @@ struct virtio_sg {
 	size_t length;
 };
 
+static inline void virtio_sg_init_one(struct virtio_sg *sg,
+				      void *addr, size_t length)
+{
+	sg[0].addr = addr;
+	sg[0].length = length;
+}
+
 struct virtio_config_ops;
 
 /**

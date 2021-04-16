@@ -141,20 +141,23 @@ exit:
 	return ret;
 }
 
-static int usb_stor_test_unit_ready(struct us_blk_dev *usb_blkdev)
+static int usb_stor_test_unit_ready(struct us_blk_dev *usb_blkdev, u64 timeout_ns)
 {
+	u64 start;
 	u8 cmd[6];
 	int ret;
 
 	memset(cmd, 0, sizeof(cmd));
 	cmd[0] = SCSI_TST_U_RDY;
 
-	ret = usb_stor_transport(usb_blkdev, cmd, sizeof(cmd), NULL, 0,
-				 10, 100);
-	if (ret < 0)
-		return -ENODEV;
+	start = get_time_ns();
 
-	return 0;
+	do {
+		ret = usb_stor_transport(usb_blkdev, cmd, sizeof(cmd), NULL, 0,
+					 10, 100);
+	} while (ret < 0 && !is_timeout(start, timeout_ns));
+
+	return ret ? -ENODEV : 0;
 }
 
 static int read_capacity_16(struct us_blk_dev *usb_blkdev)
@@ -282,7 +285,7 @@ static int usb_stor_blk_io(struct block_device *disk_dev,
 
 	/* ensure unit ready */
 	dev_dbg(dev, "Testing for unit ready\n");
-	if (usb_stor_test_unit_ready(pblk_dev)) {
+	if (usb_stor_test_unit_ready(pblk_dev, 0)) {
 		dev_dbg(dev, "Device NOT ready\n");
 		return -EIO;
 	}
@@ -365,7 +368,8 @@ static int usb_stor_init_blkdev(struct us_blk_dev *pblk_dev)
 	/* ensure unit ready */
 	dev_dbg(dev, "Testing for unit ready\n");
 
-	result = usb_stor_test_unit_ready(pblk_dev);
+	/* retry a bit longer than usual as some HDDs take longer to spin up */
+	result = usb_stor_test_unit_ready(pblk_dev, 10ULL * NSEC_PER_SEC);
 	if (result) {
 		dev_dbg(dev, "Device NOT ready\n");
 		return result;

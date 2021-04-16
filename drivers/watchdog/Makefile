@@ -17,3 +17,4 @@ obj-$(CONFIG_STM32_IWDG_WATCHDOG) += stm32_iwdg.o
 obj-$(CONFIG_STPMIC1_WATCHDOG) += stpmic1_wdt.o
 obj-$(CONFIG_F71808E_WDT) += f71808e_wdt.o
 obj-$(CONFIG_GPIO_WATCHDOG) += gpio_wdt.o
+obj-$(CONFIG_ITCO_WDT) += itco_wdt.o

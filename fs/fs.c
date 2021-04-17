@@ -1928,6 +1928,8 @@ static int link_path_walk(const char *name, struct nameidata *nd)
 	int err;
 	char separator = '/';
 
+	if (!*name)
+		return -ENOENT;
 	while (*name=='/')
 		name++;
 	if (!*name)

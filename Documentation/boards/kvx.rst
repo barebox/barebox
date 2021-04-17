@@ -93,6 +93,6 @@ message appearing on the serial console.
 
 .. rubric:: References
 
-.. [#f1] `Toolchain releases <https://github.com/build-scripts/releases>`_
+.. [#f1] `Toolchain releases <https://github.com/kalray/build-scripts/releases>`_
 .. [#f2] `Build scripts <https://github.com/kalray/build-scripts/>`_
 

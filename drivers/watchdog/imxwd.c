@@ -21,6 +21,7 @@
 #include <restart.h>
 #include <watchdog.h>
 #include <reset_source.h>
+#include <linux/clk.h>
 
 struct imx_wd;
 
@@ -224,6 +225,7 @@ static int imx_wd_probe(struct device_d *dev)
 {
 	struct resource *iores;
 	struct imx_wd *priv;
+	struct clk *clk;
 	void *ops;
 	int ret;
 
@@ -237,6 +239,15 @@ static int imx_wd_probe(struct device_d *dev)
 		dev_err(dev, "could not get memory region\n");
 		return PTR_ERR(iores);
 	}
+
+	clk = clk_get(dev, NULL);
+	if (IS_ERR(clk))
+		return PTR_ERR(clk);
+
+	ret = clk_enable(clk);
+	if (ret)
+		return ret;
+
 	priv->base = IOMEM(iores->start);
 	priv->ops = ops;
 	priv->wd.set_timeout = imx_watchdog_set_timeout;

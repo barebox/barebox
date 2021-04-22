@@ -209,6 +209,6 @@ void imx_set_reset_reason(void __iomem *srsr,
 
 	reset_source_set_prinst(type, RESET_SOURCE_DEFAULT_PRIORITY, instance);
 
-	pr_info("i.MX reset reason %s (SRSR: 0x%08x)\n",
-		reset_source_to_string(type), reg);
+	pr_debug("i.MX reset reason %s (SRSR: 0x%08x)\n",
+		 reset_source_to_string(type), reg);
 }

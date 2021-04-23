@@ -8,19 +8,15 @@
 #include <init.h>
 
 #include <asm/barebox-arm-head.h>
-#include <asm/barebox-arm.h>
-#include <mach/at91_pmc_ll.h>
-
-#include <mach/hardware.h>
-#include <mach/iomux.h>
 #include <debug_ll.h>
-#include <mach/at91_dbgu.h>
+#include <mach/barebox-arm.h>
+#include <mach/iomux.h>
+#include <mach/sama5d3.h>
+#include <mach/sama5d3-xplained-ddramc.h>
+#include <mach/xload.h>
 
 /* PCK = 528MHz, MCK = 132MHz */
 #define MASTER_CLOCK	132000000
-
-#define sama5d3_pmc_enable_periph_clock(clk) \
-	at91_pmc_enable_periph_clock(IOMEM(SAMA5D3_BASE_PMC), clk)
 
 static void dbgu_init(void)
 {
@@ -36,13 +32,26 @@ static void dbgu_init(void)
 	putc_ll('>');
 }
 
+SAMA5_ENTRY_FUNCTION(start_sama5d3_xplained_ung8071_xload_mmc, r4)
+{
+	sama5d3_lowlevel_init();
+
+	relocate_to_current_adr();
+	setup_c();
+
+	sama5d3_udelay_init(MASTER_CLOCK);
+	sama5d3_xplained_ddrconf();
+	if (IS_ENABLED(CONFIG_DEBUG_LL))
+		dbgu_init();
+
+	sama5d3_atmci_start_image(0, MASTER_CLOCK, 0);
+}
+
 extern char __dtb_z_at91_microchip_ksz9477_evb_start[];
 
-ENTRY_FUNCTION(start_sama5d3_xplained_ung8071, r0, r1, r2)
+SAMA5_ENTRY_FUNCTION(start_sama5d3_xplained_ung8071, r4)
 {
 	void *fdt;
-
-	arm_cpu_lowlevel_init();
 
 	arm_setup_stack(SAMA5D3_SRAM_BASE + SAMA5D3_SRAM_SIZE);
 

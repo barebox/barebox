@@ -26,6 +26,14 @@ void __noreturn sama5d2_barebox_entry(unsigned int r4, void *boarddata)
 			  boarddata);
 }
 
+void __noreturn sama5d3_barebox_entry(unsigned int r4, void *boarddata)
+{
+	__sama5d3_stashed_bootrom_r4 = r4;
+
+	barebox_arm_entry(SAMA5_DDRCS, at91sama5d3_get_ddram_size(),
+			  boarddata);
+}
+
 static int sama5_ddr_probe(struct device_d *dev)
 {
 	struct resource *iores;

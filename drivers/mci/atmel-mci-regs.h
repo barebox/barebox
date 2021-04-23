@@ -144,6 +144,37 @@
 #	define ATMCI_PDC_CONNECTED	1
 #endif
 
+struct atmel_mci_caps {
+	bool	has_cfg_reg;
+	bool	has_highspeed;
+	bool    has_rwproof;
+	bool	has_odd_clk_div;
+	bool	need_reset_after_xfer;
+};
+
+struct atmel_mci {
+	struct mci_host		mci;
+	void  __iomem		*regs;
+	struct device_d		*hw_dev;
+	struct clk		*clk;
+
+	u32			datasize;
+	struct mci_cmd		*cmd;
+	struct mci_data		*data;
+	unsigned		slot_b;
+	int			version;
+	struct atmel_mci_caps	caps;
+
+	unsigned long		bus_hz;
+	u32			mode_reg;
+	u32			cfg_reg;
+	u32			sdc_reg;
+	bool			need_reset;
+	int			detect_pin;
+};
+
+#define to_mci_host(mci)	container_of(mci, struct atmel_mci, mci)
+
 /*
  * Fix sconfig's burst size according to atmel MCI. We need to convert them as:
  * 1 -> 0, 4 -> 1, 8 -> 2, 16 -> 3.
@@ -157,5 +188,11 @@ static inline unsigned int atmci_convert_chksize(unsigned int maxburst)
 	else
 		return 0;
 }
+
+void atmci_common_set_ios(struct atmel_mci *host, struct mci_ios *ios);
+int atmci_reset(struct mci_host *mci, struct device_d *mci_dev);
+int atmci_common_request(struct atmel_mci *host, struct mci_cmd *cmd,
+			 struct mci_data *data);
+void atmci_get_cap(struct atmel_mci *host);
 
 #endif /* __DRIVERS_MMC_ATMEL_MCI_H__ */

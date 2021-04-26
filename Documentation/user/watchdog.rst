@@ -57,6 +57,9 @@ measured in seconds:
   barebox@DPTechnics DPT-Module:/ devinfo wdog0
   Parameters:
     autoping: 1 (type: bool)
+    priority: 100 (type: uint32)
+    running: 1 (type: enum) (values: "unknown", "1", "0")
+    seconds_to_expire: 7 (type: uint32)
     timeout_cur: 7 (type: uint32)
     timeout_max: 10 (type: uint32)
 
@@ -66,6 +69,34 @@ Use barebox' environment to persist these changes between reboots:
 
   nv dev.wdog0.autoping=1
   nv dev.wdog0.timeout_cur=7
+
+Watchdog State
+~~~~~~~~~~~~~~
+
+To check whether a watchdog is currently running, the ``running`` device
+parameter can be consulted. Not all watchdog devices (or their drivers)
+provide the information whether a watchdog was running prior to barebox.
+In that case, the parameter will contain the value ``unknown``.
+
+Watchdogs started by barebox can be monitored using the
+``seconds_to_expire`` parameter. A well-behaving system of watchdog
+device, watchdog driver and clocksource should reset as soon as the
+count down reaches zero.
+
+To manually start a watchdog, :ref:`command_wd` can be used.
+
+Default Watchdog
+~~~~~~~~~~~~~~~~
+
+barebox supports multiple concurrent watchdogs. The default watchdog used
+with :ref:`command_wd`, ``boot.watchdog_timeout`` and :ref:`command_boot`'s
+``-w`` option is the one with the highest positive priority.
+If multiple watchdogs share the same priority, only one will be affected.
+
+The priority is initially set by drivers and can be overridden in the
+device tree or via the ``priority`` device parameter. Normally, watchdogs
+that have a wider effect should be given the higher priority (e.g.
+PMIC watchdog resetting the board vs. SoC's watchdog resetting only itself).
 
 Boot Watchdog Timeout
 ~~~~~~~~~~~~~~~~~~~~~
@@ -85,7 +116,4 @@ or persistently by
   nv boot.watchdog_timeout=10
 
 where the used value again is measured in seconds.
-
-On a system with multiple watchdogs, the watchdog with the highest positive
-priority is the one affected by the ``boot.watchdog_timeout`` parameter.  If
-multiple watchdogs share the same priority, only one will be started.
+Only the default watchdog will be started.

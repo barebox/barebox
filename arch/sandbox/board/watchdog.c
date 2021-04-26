@@ -29,7 +29,8 @@ static int sandbox_watchdog_set_timeout(struct watchdog *wdd, unsigned int timeo
 	if (timeout > wdd->timeout_max)
 		return -EINVAL;
 
-	return linux_watchdog_set_timeout(timeout);
+	linux_watchdog_set_timeout(timeout);
+	return 0;
 }
 
 static int sandbox_watchdog_probe(struct device_d *dev)

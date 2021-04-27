@@ -164,6 +164,13 @@ config GPIO_SX150X
 	  Say Y here to build support for the Semtec Sx150x I2C GPIO
 	  expander chip.
 
+config GPIO_SIFIVE
+	bool "SiFive GPIO support"
+	depends on OF_GPIO
+	select GPIO_GENERIC
+	help
+	  Say yes here to support the GPIO device on SiFive SoCs.
+
 config GPIO_LIBFTDI1
 	bool "libftdi1 driver"
 	depends on SANDBOX

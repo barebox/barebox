@@ -337,7 +337,6 @@ static int bgpio_dev_probe(struct device_d *dev)
 	unsigned long flags = 0;
 	int err;
 	struct bgpio_chip *bgc;
-	struct bgpio_pdata *pdata = dev->platform_data;
 
 	r = dev_get_resource_by_name(dev, IORESOURCE_MEM, "dat");
 	if (IS_ERR(r))
@@ -373,12 +372,6 @@ static int bgpio_dev_probe(struct device_d *dev)
 	if (err)
 		return err;
 
-	if (pdata) {
-		bgc->gc.base = pdata->base;
-		if (pdata->ngpio > 0)
-			bgc->gc.ngpio = pdata->ngpio;
-	}
-
 	dev->priv = bgc;
 
 	return gpiochip_add(&bgc->gc);
@@ -391,18 +384,6 @@ static void bgpio_dev_remove(struct device_d *dev)
 	bgpio_remove(bgc);
 }
 
-static struct platform_device_id bgpio_id_table[] = {
-	{
-		.name		= "basic-mmio-gpio",
-		.driver_data	= 0,
-	},
-	{
-		.name		= "basic-mmio-gpio-be",
-		.driver_data	= BGPIOF_BIG_ENDIAN,
-	},
-	{ }
-};
-
 static struct of_device_id __maybe_unused bgpio_of_match[] = {
 	{
 		.compatible = "wd,mbl-gpio",
@@ -413,8 +394,7 @@ static struct of_device_id __maybe_unused bgpio_of_match[] = {
 
 static struct driver_d bgpio_driver = {
 	.name		= "basic-mmio-gpio",
-	.id_table	= bgpio_id_table,
-	.of_compatible	= DRV_OF_COMPAT(bgpio_of_match),
+	.of_compatible	= bgpio_of_match,
 	.probe		= bgpio_dev_probe,
 	.remove		= bgpio_dev_remove,
 };

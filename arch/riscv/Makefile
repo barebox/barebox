@@ -19,8 +19,6 @@ LDFLAGS_pbl += $(riscv-ldflags-y)
 cflags-y += $(riscv-cflags-y)
 LDFLAGS_barebox += -nostdlib
 
-machine-$(CONFIG_SOC_ERIZO)	:= erizo
-
 LDFLAGS_barebox += $(riscv-ldflags-y)
 
 ifndef CONFIG_MODULES
@@ -31,21 +29,10 @@ endif
 
 KBUILD_BINARY := barebox.bin
 
-machdirs := $(patsubst %,arch/riscv/mach-%/,$(machine-y))
-
-KBUILD_CPPFLAGS += $(patsubst %,-I$(srctree)/%include,$(machdirs))
-
 archprepare: maketools
 
 PHONY += maketools
 
-ifneq ($(machine-y),)
-MACH  := arch/riscv/mach-$(machine-y)/
-else
-MACH  :=
-endif
-
-common-y += $(MACH)
 common-y += arch/riscv/boards/
 common-y += arch/riscv/cpu/
 common-y += arch/riscv/lib/

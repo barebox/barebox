@@ -168,4 +168,6 @@ static inline void debug_ll_ns16550_init(void)
 .endm
 #endif /* __ASSEMBLY__ */
 
+#define debug_ll_init debug_ll_ns16550_init
+
 #endif /* __INCLUDE_RISCV_ASM_DEBUG_LL_NS16550_H__ */

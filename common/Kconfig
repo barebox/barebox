@@ -1342,6 +1342,11 @@ config DEBUG_RPI3_MINI_UART
 	help
 	  Say Y here if you want low-level debugging support on
 	  RaspberryPi 3 board mini UART.
+
+config DEBUG_ERIZO
+	bool "Erizo ns16550 port"
+	depends on SOC_ERIZO
+
 endchoice
 
 config DEBUG_IMX_UART_PORT

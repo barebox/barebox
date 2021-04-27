@@ -2,7 +2,7 @@ menu "SoC selection"
 
 config SOC_ERIZO
 	bool "Erizo SoC"
-	select ARCH_RV32I
+	depends on ARCH_RV32I
 	select HAS_DEBUG_LL
 	select HAS_NMON
 	select USE_COMPRESSED_DTB

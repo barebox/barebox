@@ -1462,6 +1462,10 @@ endmenu
 config HAS_DEBUG_LL
 	bool
 
+config HAS_ASM_DEBUG_LL
+	bool
+	select HAS_DEBUG_LL
+
 config DDR_SPD
 	bool
 	select CRC_ITU_T

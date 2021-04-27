@@ -19,3 +19,5 @@ config CLK_SOCFPGA
 	bool
 	select COMMON_CLK_OF_PROVIDER
 	default y if ARCH_SOCFPGA && OFDEVICE
+
+source "drivers/clk/sifive/Kconfig"

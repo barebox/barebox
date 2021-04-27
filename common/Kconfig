@@ -1347,6 +1347,10 @@ config DEBUG_ERIZO
 	bool "Erizo ns16550 port"
 	depends on SOC_ERIZO
 
+config DEBUG_SIFIVE
+	bool "SiFive serial0 port"
+	depends on SOC_SIFIVE
+
 endchoice
 
 config DEBUG_IMX_UART_PORT

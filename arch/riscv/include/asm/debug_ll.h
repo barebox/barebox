@@ -24,6 +24,20 @@
 
 #include <asm/debug_ll_ns16550.h>
 
+#elif defined CONFIG_DEBUG_SIFIVE
+
+#include <io.h>
+
+static inline void PUTC_LL(char ch)
+{
+	void __iomem *uart0 = IOMEM(0x10010000);
+
+	while (readl(uart0) & 0x80000000)
+		;
+
+	writel(ch, uart0);
+}
+
 #endif
 
 #ifndef debug_ll_init

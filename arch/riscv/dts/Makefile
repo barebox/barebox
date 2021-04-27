@@ -5,5 +5,7 @@
 obj- += dummy.o
 
 pbl-$(CONFIG_BOARD_ERIZO_GENERIC) += erizo-generic.dtb.o
+pbl-$(CONFIG_BOARD_HIFIVE) += hifive-unmatched-a00.dtb.o \
+                              hifive-unleashed-a00.dtb.o
 
 clean-files := *.dtb *.dtb.S .*.dtc .*.pre .*.dts

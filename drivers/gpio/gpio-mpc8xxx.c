@@ -65,7 +65,8 @@ static int mpc8xxx_probe(struct device_d *dev)
 		ret = bgpio_init(bgc, dev, 4,
 				 mpc8xxx_gc->regs + GPIO_DAT,
 				 NULL, NULL,
-				 mpc8xxx_gc->regs + GPIO_DIR, NULL, 0);
+				 mpc8xxx_gc->regs + GPIO_DIR, NULL,
+				 BGPIOF_BIG_ENDIAN);
 		if (ret)
 			goto err;
 		dev_dbg(dev, "GPIO registers are LITTLE endian\n");
@@ -74,7 +75,8 @@ static int mpc8xxx_probe(struct device_d *dev)
 				 mpc8xxx_gc->regs + GPIO_DAT,
 				 NULL, NULL,
 				 mpc8xxx_gc->regs + GPIO_DIR, NULL,
-				 BGPIOF_BIG_ENDIAN);
+				 BGPIOF_BIG_ENDIAN
+				 | BGPIOF_BIG_ENDIAN_BYTE_ORDER);
 		if (ret)
 			goto err;
 		dev_dbg(dev, "GPIO registers are BIG endian\n");

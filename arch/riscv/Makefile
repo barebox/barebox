@@ -19,7 +19,7 @@ LDFLAGS_pbl += $(riscv-ldflags-y)
 cflags-y += $(riscv-cflags-y)
 LDFLAGS_barebox += -nostdlib
 
-machine-$(CONFIG_MACH_ERIZO)	:= erizo
+machine-$(CONFIG_SOC_ERIZO)	:= erizo
 
 LDFLAGS_barebox += $(riscv-ldflags-y)
 

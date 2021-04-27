@@ -19,31 +19,6 @@ config ARCH_TEXT_BASE
 	hex
 	default 0x0
 
-menu "Machine selection"
-
-choice
-	prompt "System type"
-	default MACH_ERIZO
-
-config MACH_ERIZO
-	bool "erizo family"
-	select ARCH_RV32I
-	select HAS_DEBUG_LL
-	select HAS_NMON
-	select USE_COMPRESSED_DTB
-	select RISCV_M_MODE
-	select RISCV_TIMER
-
-config MACH_VIRT
-	bool "virt family"
-	select BOARD_RISCV_GENERIC_DT
-	select CLINT_TIMER
-	help
-	  Generates an image tht can be be booted by QEMU. The image is called
-	  barebox-dt-2nd.img
-
-endchoice
-
 choice
 	prompt "Base ISA"
 	default ARCH_RV32I
@@ -62,6 +37,8 @@ config ARCH_RV64I
 	select 64BIT
 
 endchoice
+
+source "arch/riscv/Kconfig.socs"
 
 config CPU_SUPPORTS_32BIT_KERNEL
 	bool
@@ -82,8 +59,6 @@ config 64BIT
 	select ARCH_DMA_ADDR_T_64BIT
 	select PHYS_ADDR_T_64BIT
 
-source "arch/riscv/mach-erizo/Kconfig"
-
 config BOARD_RISCV_GENERIC_DT
 	select BOARD_GENERIC_DT
 	bool "Build generic RISC-V device tree 2nd stage image"
@@ -92,8 +67,6 @@ config BOARD_RISCV_GENERIC_DT
 	  stage from barebox or from qemu. It picks up a device tree passed
 	  in a1 like the Kernel does, so it could be used anywhere where a Kernel
 	  image could be used. The image will be called images/barebox-dt-2nd.img
-
-endmenu
 
 menu "RISC-V specific settings"
 

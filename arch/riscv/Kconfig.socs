@@ -1,0 +1,24 @@
+menu "SoC selection"
+
+config SOC_ERIZO
+	bool "Erizo SoC"
+	select ARCH_RV32I
+	select HAS_DEBUG_LL
+	select HAS_NMON
+	select USE_COMPRESSED_DTB
+	select RISCV_M_MODE
+	select RISCV_TIMER
+
+config BOARD_ERIZO_GENERIC
+	depends on SOC_ERIZO
+	def_bool y
+
+config SOC_VIRT
+	bool "QEMU Virt Machine"
+	select BOARD_RISCV_GENERIC_DT
+	select CLINT_TIMER
+	help
+	  Generates an image tht can be be booted by QEMU. The image is called
+	  barebox-dt-2nd.img
+
+endmenu

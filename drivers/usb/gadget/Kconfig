@@ -45,7 +45,6 @@ comment "USB Gadget drivers"
 
 config USB_GADGET_DFU
 	bool
-	select FILE_LIST
 	prompt "Device Firmware Update Gadget"
 
 config USB_GADGET_SERIAL
@@ -56,7 +55,6 @@ config USB_GADGET_SERIAL
 config USB_GADGET_FASTBOOT
 	bool
 	select BANNER
-	select FILE_LIST
 	select FASTBOOT_BASE
 	prompt "Android Fastboot USB Gadget"
 endif

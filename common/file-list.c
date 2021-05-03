@@ -8,6 +8,7 @@
 #include <file-list.h>
 #include <stringlist.h>
 #include <linux/err.h>
+#include <driver.h>
 
 #define PARSE_DEVICE	0
 #define PARSE_NAME	1
@@ -216,4 +217,20 @@ out:
 	string_list_free(&sl);
 
 	return str;
+}
+
+int file_list_detect_all(const struct file_list *files)
+{
+	struct file_list_entry *fentry;
+	struct stat s;
+	int i = 0;
+
+	list_for_each_entry(fentry, &files->list, list) {
+		if (stat(fentry->filename, &s))
+			continue;
+		if (device_detect_by_name(devpath_to_name(fentry->filename)) == 0)
+			i++;
+	}
+
+	return i;
 }

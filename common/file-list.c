@@ -170,6 +170,24 @@ void file_list_free(struct file_list *files)
 	free(files);
 }
 
+struct file_list *file_list_dup(struct file_list *old)
+{
+	struct file_list_entry *old_entry;
+	struct file_list *new;
+
+	new = xzalloc(sizeof(*new));
+
+	INIT_LIST_HEAD(&new->list);
+
+	list_for_each_entry(old_entry, &old->list, list) {
+		(void)file_list_add_entry(new, old_entry->name, old_entry->filename,
+					  old_entry->flags); /* can't fail */
+		new->num_entries++;
+	}
+
+	return new;
+}
+
 char *file_list_to_str(const struct file_list *files)
 {
 	struct file_list_entry *entry;

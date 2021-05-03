@@ -703,6 +703,17 @@ config FLEXIBLE_BOOTARGS
 config BAREBOX_UPDATE
 	bool "In-system barebox update infrastructure"
 
+config SYSTEM_PARTITIONS
+	bool "Generic system partitions support"
+	depends on GLOBALVAR
+	help
+	  System partitions are a generic way for boards to specify the
+	  partitions that should be exported for flashing.
+	  Board drivers that set this directly will select this option
+	  automatically.
+	  Say y here if this should be configurable over the
+	  global.system.partitions device parameter as well.
+
 config IMD
 	select CRC32
 	bool "barebox metadata support"

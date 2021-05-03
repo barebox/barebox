@@ -97,7 +97,7 @@ static int usbgadget_autostart_set(struct param_d *param, void *ctx)
 	bool fastboot_bbu = get_fastboot_bbu();
 	int err;
 
-	if (!IS_ENABLED(CONFIG_USB_GADGET_AUTOSTART) || !autostart || started)
+	if (!autostart || started)
 		return 0;
 
 	err = usbgadget_register(true, NULL, true, NULL, acm, fastboot_bbu);
@@ -109,16 +109,20 @@ static int usbgadget_autostart_set(struct param_d *param, void *ctx)
 
 static int usbgadget_globalvars_init(void)
 {
-	if (IS_ENABLED(CONFIG_USB_GADGET_AUTOSTART)) {
-		globalvar_add_bool("usbgadget.autostart", usbgadget_autostart_set,
-				   &autostart, NULL);
-		globalvar_add_simple_bool("usbgadget.acm", &acm);
-	}
+	globalvar_add_simple_bool("usbgadget.acm", &acm);
 	globalvar_add_simple_string("usbgadget.dfu_function", &dfu_function);
 
 	return 0;
 }
 device_initcall(usbgadget_globalvars_init);
+
+static int usbgadget_autostart_init(void)
+{
+	if (IS_ENABLED(CONFIG_USB_GADGET_AUTOSTART))
+		globalvar_add_bool("usbgadget.autostart", usbgadget_autostart_set, &autostart, NULL);
+	return 0;
+}
+postenvironment_initcall(usbgadget_autostart_init);
 
 BAREBOX_MAGICVAR(global.usbgadget.autostart,
 		 "usbgadget: Automatically start usbgadget on boot");

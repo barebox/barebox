@@ -266,6 +266,18 @@ void usb_multi_unregister(void)
 	gadget_multi_opts = NULL;
 }
 
+unsigned usb_multi_count_functions(struct f_multi_opts *opts)
+{
+	unsigned count = 0;
+
+	count += !file_list_empty(opts->fastboot_opts.files) ||
+		opts->fastboot_opts.export_bbu;
+	count += !file_list_empty(opts->dfu_opts.files);
+	count += opts->create_acm;
+
+	return count;
+}
+
 void usb_multi_opts_release(struct f_multi_opts *opts)
 {
 	file_list_free(opts->fastboot_opts.files);

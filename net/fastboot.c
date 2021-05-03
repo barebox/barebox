@@ -499,7 +499,6 @@ void fastboot_net_free(struct fastboot_net *fbn)
 struct fastboot_net *fastboot_net_init(struct fastboot_opts *opts)
 {
 	struct fastboot_net *fbn;
-	const char *partitions = get_fastboot_partitions();
 	bool bbu = get_fastboot_bbu();
 	int ret;
 
@@ -513,8 +512,7 @@ struct fastboot_net *fastboot_net_init(struct fastboot_opts *opts)
 		fbn->fastboot.cmd_flash = opts->cmd_flash;
 		ret = fastboot_generic_init(&fbn->fastboot, opts->export_bbu);
 	} else {
-		fbn->fastboot.files = file_list_parse(partitions ?
-						      partitions : "");
+		fbn->fastboot.files = get_fastboot_partitions() ?: file_list_parse("");
 		ret = fastboot_generic_init(&fbn->fastboot, bbu);
 	}
 	if (ret)

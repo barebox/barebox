@@ -58,16 +58,16 @@ enum fastboot_msg_type {
 
 #ifdef CONFIG_FASTBOOT_BASE
 bool get_fastboot_bbu(void);
-const char *get_fastboot_partitions(void);
+struct file_list *get_fastboot_partitions(void);
 #else
 static inline int get_fastboot_bbu(void)
 {
 	return false;
 }
 
-static inline const char *get_fastboot_partitions(void)
+static inline struct file_list *get_fastboot_partitions(void)
 {
-	return NULL;
+	return file_list_parse("");
 }
 #endif
 

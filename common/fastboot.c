@@ -41,6 +41,7 @@
 #include <linux/stat.h>
 #include <linux/mtd/mtd.h>
 #include <fastboot.h>
+#include <system-partitions.h>
 
 #define FASTBOOT_VERSION		"0.4"
 
@@ -932,9 +933,13 @@ bool get_fastboot_bbu(void)
 	return fastboot_bbu;
 }
 
-const char *get_fastboot_partitions(void)
+struct file_list *get_fastboot_partitions(void)
 {
-	return fastboot_partitions;
+	if (fastboot_partitions && *fastboot_partitions)
+		return file_list_parse(fastboot_partitions);
+	if (!system_partitions_empty())
+		return system_partitions_get();
+	return NULL;
 }
 
 static int fastboot_globalvars_init(void)

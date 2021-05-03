@@ -35,4 +35,9 @@ struct file_list_entry *file_list_entry_by_name(struct file_list *files, const c
 #define file_list_for_each_entry(files, entry) \
 	list_for_each_entry(entry, &files->list, list)
 
+static inline bool file_list_empty(struct file_list *files)
+{
+	return !files || !files->num_entries;
+}
+
 #endif /* __FILE_LIST */

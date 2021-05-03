@@ -14,6 +14,7 @@ int string_list_add_asprintf(struct string_list *sl, const char *fmt, ...);
 int string_list_add_sorted(struct string_list *sl, const char *str);
 int string_list_add_sort_uniq(struct string_list *sl, const char *str);
 int string_list_contains(struct string_list *sl, const char *str);
+char *string_list_join(const struct string_list *sl, const char *joinstr);
 void string_list_print_by_column(struct string_list *sl);
 
 static inline void string_list_init(struct string_list *sl)

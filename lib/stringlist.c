@@ -2,6 +2,7 @@
 #include <xfuncs.h>
 #include <malloc.h>
 #include <errno.h>
+#include <string.h>
 #include <stringlist.h>
 
 static int string_list_compare(struct list_head *a, struct list_head *b)
@@ -93,6 +94,35 @@ int string_list_contains(struct string_list *sl, const char *str)
 	}
 
 	return 0;
+}
+
+char *string_list_join(const struct string_list *sl, const char *joinstr)
+{
+	struct string_list *entry;
+	size_t len = 0;
+	size_t joinstr_len = strlen(joinstr);
+	char *str, *next;
+
+	string_list_for_each_entry(entry, sl)
+		len += strlen(entry->str) + joinstr_len;
+
+	if (len == 0)
+		return strdup("");
+
+	str = malloc(len + 1);
+	if (!str)
+		return NULL;
+
+	next = str;
+
+	string_list_for_each_entry(entry, sl) {
+		next = stpcpy(next, entry->str);
+		next = stpcpy(next, joinstr);
+	}
+
+	next[-joinstr_len] = '\0';
+
+	return str;
 }
 
 void string_list_print_by_column(struct string_list *sl)

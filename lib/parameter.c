@@ -27,6 +27,8 @@
 #include <string.h>
 #include <globalvar.h>
 #include <linux/err.h>
+#include <file-list.h>
+#include <stringlist.h>
 
 static const char *param_type_string[] = {
 	[PARAM_TYPE_STRING] = "string",
@@ -39,6 +41,7 @@ static const char *param_type_string[] = {
 	[PARAM_TYPE_BITMASK] = "bitmask",
 	[PARAM_TYPE_IPV4] = "ipv4",
 	[PARAM_TYPE_MAC] = "MAC",
+	[PARAM_TYPE_FILE_LIST] = "file-list",
 };
 
 const char *get_param_type(struct param_d *param)
@@ -906,6 +909,91 @@ struct param_d *dev_add_param_mac(struct device_d *dev, const char *name,
 
 	return &pm->param;
 }
+
+struct param_file_list {
+	struct param_d param;
+	struct file_list **file_list;
+	char *file_list_str;
+	int (*set)(struct param_d *p, void *priv);
+	int (*get)(struct param_d *p, void *priv);
+};
+
+static inline struct param_file_list *to_param_file_list(struct param_d *p)
+{
+	return container_of(p, struct param_file_list, param);
+}
+
+static int param_file_list_set(struct device_d *dev, struct param_d *p, const char *val)
+{
+	struct param_file_list *pfl = to_param_file_list(p);
+	struct file_list *file_list_save = *pfl->file_list;
+	int ret;
+
+	if (!val)
+		val = "";
+
+	*pfl->file_list = file_list_parse(val);
+	if (IS_ERR(*pfl->file_list)) {
+		ret = PTR_ERR(*pfl->file_list);
+		goto out;
+	}
+
+	if (pfl->set) {
+		ret = pfl->set(p, p->driver_priv);
+		if (ret) {
+			file_list_free(*pfl->file_list);
+			goto out;
+		}
+	}
+
+	return 0;
+out:
+	*pfl->file_list = file_list_save;
+
+	return ret;
+}
+
+static const char *param_file_list_get(struct device_d *dev, struct param_d *p)
+{
+	struct param_file_list *pfl = to_param_file_list(p);
+	int ret;
+
+	if (pfl->get) {
+		ret = pfl->get(p, p->driver_priv);
+		if (ret)
+			return NULL;
+	}
+
+	free(p->value);
+	p->value = file_list_to_str(*pfl->file_list);
+	return p->value;
+}
+
+struct param_d *dev_add_param_file_list(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		struct file_list **file_list, void *priv)
+{
+	struct param_file_list *pfl;
+	int ret;
+
+	pfl = xzalloc(sizeof(*pfl));
+	pfl->file_list = file_list;
+	pfl->set = set;
+	pfl->get = get;
+	pfl->param.driver_priv = priv;
+	pfl->param.type = PARAM_TYPE_FILE_LIST;
+
+	ret = __dev_add_param(&pfl->param, dev, name,
+			param_file_list_set, param_file_list_get, 0);
+	if (ret) {
+		free(pfl);
+		return ERR_PTR(ret);
+	}
+
+	return &pfl->param;
+}
+
 
 /**
  * dev_remove_param - remove a parameter from a device and free its

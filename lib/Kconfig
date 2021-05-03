@@ -154,6 +154,12 @@ source "lib/logo/Kconfig"
 
 source "lib/bootstrap/Kconfig"
 
+config PROGRESS_NOTIFIER
+	bool
+	help
+	  This is selected by boards that register a notifier to visualize
+	  progress, like blinking a LED during an update.
+
 config PRINTF_UUID
 	bool
 

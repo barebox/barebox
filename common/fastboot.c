@@ -158,10 +158,12 @@ static int fastboot_add_bbu_variables(struct bbu_handler *handler, void *ctx)
 	name = basprintf("bbu-%s", handler->name);
 
 	ret = file_list_add_entry(fb->files, name, handler->devicefile, 0);
+	if (ret)
+		pr_warn("duplicate partition name %s\n", name);
 
 	free(name);
 
-	return ret;
+	return 0;
 }
 
 int fastboot_generic_init(struct fastboot *fb, bool export_bbu)

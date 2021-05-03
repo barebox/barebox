@@ -161,6 +161,9 @@ void file_list_free(struct file_list *files)
 {
 	struct file_list_entry *entry, *tmp;
 
+	if (!files)
+		return;
+
 	list_for_each_entry_safe(entry, tmp, &files->list, list) {
 		free(entry->name);
 		free(entry->filename);

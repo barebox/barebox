@@ -268,10 +268,8 @@ void usb_multi_unregister(void)
 
 void usb_multi_opts_release(struct f_multi_opts *opts)
 {
-	if (opts->fastboot_opts.files)
-		file_list_free(opts->fastboot_opts.files);
-	if (opts->dfu_opts.files)
-		file_list_free(opts->dfu_opts.files);
+	file_list_free(opts->fastboot_opts.files);
+	file_list_free(opts->dfu_opts.files);
 
 	free(opts);
 }

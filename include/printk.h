@@ -141,6 +141,7 @@ extern void log_clean(unsigned int limit);
 #define BAREBOX_LOG_PRINT_ALERT		BIT(1)
 #define BAREBOX_LOG_PRINT_EMERG		BIT(0)
 
+int log_writefile(const char *filepath);
 void log_print(unsigned flags, unsigned levels);
 
 struct va_format {

@@ -182,6 +182,26 @@ static int console_common_init(void)
 }
 device_initcall(console_common_init);
 
+int log_writefile(const char *filepath)
+{
+	int ret = 0, nbytes = 0, fd = -1;
+	struct log_entry *log;
+
+	fd = open(filepath, O_WRONLY | O_CREAT | O_TRUNC);
+	if (fd < 0)
+		return -errno;
+
+	list_for_each_entry(log, &barebox_logbuf, list) {
+		ret = dputs(fd, log->msg);
+		if (ret < 0)
+			break;
+		nbytes += ret;
+	}
+
+	close(fd);
+	return ret < 0 ? ret : nbytes;
+}
+
 void log_print(unsigned flags, unsigned levels)
 {
 	struct log_entry *log;

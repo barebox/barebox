@@ -447,8 +447,7 @@ dfu_bind(struct usb_configuration *c, struct usb_function *f)
 
 	i = 0;
 	file_list_for_each_entry(dfu_files, fentry) {
-		pr_err("register alt%d(%s) with device %s\n",
-				i, fentry->name, fentry->filename);
+		pr_info("register alt%d(%s) with device %s\n", i, fentry->name, fentry->filename);
 		i++;
 	}
 

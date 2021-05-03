@@ -48,7 +48,7 @@ struct bbu_handler *bbu_find_handler_by_device(const char *devicepath);
 
 void bbu_handlers_list(void);
 
-int bbu_handlers_iterate(int (*fn)(struct bbu_handler *, void *), void *);
+struct file_list;
 
 #ifdef CONFIG_BAREBOX_UPDATE
 
@@ -56,6 +56,8 @@ int bbu_register_handler(struct bbu_handler *);
 
 int bbu_register_std_file_update(const char *name, unsigned long flags,
 		const char *devicefile, enum filetype imagetype);
+
+void bbu_append_handlers_to_file_list(struct file_list *files);
 
 #else
 
@@ -69,6 +71,12 @@ static inline int bbu_register_std_file_update(const char *name, unsigned long f
 {
 	return -ENOSYS;
 }
+
+static inline void bbu_append_handlers_to_file_list(struct file_list *files)
+{
+	/* none could be registered, so nothing to do */
+}
+
 #endif
 
 #if defined(CONFIG_BAREBOX_UPDATE_IMX_NAND_FCB)

@@ -52,14 +52,13 @@ int usbgadget_register(bool dfu, const char *dfu_opts,
 		return COMMAND_ERROR_USAGE;
 
 	/*
-	 * Creating a gadget with both DFU and Fastboot doesn't work.
-	 * Both client tools seem to assume that the device only has
-	 * a single configuration
+	 * Creating a gadget with both DFU and Fastboot may not work.
+	 * fastboot 1:8.1.0+r23-5 can deal with it, but dfu-util 0.9
+	 * seems to assume that the device only has a single configuration
+	 * That's not our fault though. Emit a warning and continue
 	 */
-	if (fastboot_opts && dfu_opts) {
-		pr_err("Only one of Fastboot and DFU allowed\n");
-		return -EINVAL;
-	}
+	if (fastboot_opts && dfu_opts)
+		pr_warn("Both DFU and Fastboot enabled. dfu-util may not like this!\n");
 
 	opts = xzalloc(sizeof(*opts));
 	opts->release = usb_multi_opts_release;

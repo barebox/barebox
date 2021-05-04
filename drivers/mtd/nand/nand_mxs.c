@@ -2041,9 +2041,6 @@ static int mxs_nand_enable_edo_mode(struct mxs_nand_info *info)
 	uint8_t feature[ONFI_SUBFEATURE_PARAM_LEN] = {};
 	int ret, mode;
 
-	if (!mxs_nand_is_imx6(info))
-		return -ENODEV;
-
 	if (!chip->parameters.onfi)
 		return -ENOENT;
 
@@ -2186,6 +2183,7 @@ static int mxs_nand_probe(struct device_d *dev)
 		nand_info->dma_channel_base = 0;
 	} else {
 		nand_info->dma_channel_base = MXS_DMA_CHANNEL_AHB_APBH_GPMI0;
+		clk_set_rate(nand_info->clk, 22000000);
 	}
 
 	err = mxs_nand_alloc_buffers(nand_info);

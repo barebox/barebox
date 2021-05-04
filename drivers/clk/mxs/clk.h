@@ -35,7 +35,7 @@ static inline struct clk *mxs_clk_fixed(const char *name, int rate)
 static inline struct clk *mxs_clk_gate(const char *name,
 			const char *parent_name, void __iomem *reg, u8 shift)
 {
-	return clk_gate_inverted(name, parent_name, reg, shift, 0);
+	return clk_gate_inverted(name, parent_name, reg, shift, CLK_SET_RATE_PARENT);
 }
 
 static inline struct clk *mxs_clk_mux(const char *name, void __iomem *reg,

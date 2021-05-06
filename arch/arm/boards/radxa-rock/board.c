@@ -4,6 +4,7 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
+#include <envfs.h>
 #include <i2c/i2c.h>
 #include <i2c/i2c-gpio.h>
 #include <mach/rk3188-regs.h>
@@ -50,6 +51,8 @@ static int devices_init(void)
 	/* Map SRAM to address 0, kernel relies on this */
 	writel((RK_SOC_CON0_REMAP << 16) | RK_SOC_CON0_REMAP,
 	    RK_GRF_BASE + RK_GRF_SOC_CON0);
+
+	defaultenv_append_directory(defaultenv_radxa_rock);
 
 	return 0;
 }

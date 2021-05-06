@@ -21,6 +21,7 @@
 #include <mach/rk3288-regs.h>
 #include <mach/cru_rk3288.h>
 #include <mach/hardware.h>
+#include <mach/rockchip.h>
 
 static void __noreturn rockchip_restart_soc(struct restart_handler *rst)
 {
@@ -58,17 +59,6 @@ static void rk3288_detect_reset_reason(void)
 	}
 }
 
-static int rk3288_init(void)
-{
-	restart_handler_register_fn("soc", rockchip_restart_soc);
-
-	if (IS_ENABLED(CONFIG_RESET_SOURCE))
-		rk3288_detect_reset_reason();
-
-	return 0;
-}
-postcore_initcall(rk3288_init);
-
 /*
  * ATM we are not able to determine the boot source.
  * So let's handle the environment on eMMC, regardless which device
@@ -89,4 +79,15 @@ static int rk3288_env_init(void)
 
 	return 0;
 }
-device_initcall(rk3288_env_init);
+
+int rk3288_init(void)
+{
+	restart_handler_register_fn("soc", rockchip_restart_soc);
+
+	if (IS_ENABLED(CONFIG_RESET_SOURCE))
+		rk3288_detect_reset_reason();
+
+	rk3288_env_init();
+
+	return 0;
+}

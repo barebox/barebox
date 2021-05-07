@@ -1866,14 +1866,17 @@ static struct filename *getname(const char *filename)
 {
 	struct filename *result;
 
+	if (!*filename)
+		return ERR_PTR(-ENOENT);
+
 	result = malloc(sizeof(*result));
 	if (!result)
-		return NULL;
+		return ERR_PTR(-ENOMEM);
 
 	result->name = strdup(filename);
 	if (!result->name) {
 		free(result);
-		return NULL;
+		return ERR_PTR(-ENOMEM);
 	}
 
 	result->refcnt = 1;

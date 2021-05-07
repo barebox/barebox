@@ -231,7 +231,7 @@ Contributing
 For any questions regarding barebox, send a mail to the mailing list at
 <barebox@lists.infradead.org>. The archives for this list are available
 publicly at <http://lists.infradead.org/pipermail/barebox/> and
-<https://www.mail-archive.com/barebox@lists.infradead.org/>.
+<https://lore.barebox.org/barebox/>.
 
 The same list should also be used to send patches. barebox uses a similar
 process as the Linux kernel, so most of the Linux guide for submitting patches

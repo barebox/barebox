@@ -2189,6 +2189,9 @@ static int filename_lookup(int dfd, struct filename *name, unsigned flags,
 	struct nameidata nd;
 	const char *s;
 
+	if (IS_ERR(name))
+		return PTR_ERR(name);
+
 	set_nameidata(&nd, dfd, name);
 
 	s = path_init(&nd, flags);

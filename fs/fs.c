@@ -2368,8 +2368,14 @@ int open(const char *pathname, int flags, ...)
 	struct dentry *dentry = NULL;
 	struct nameidata nd;
 	const char *s;
+	struct filename *filename;
 
-	set_nameidata(&nd, AT_FDCWD, getname(pathname));
+	filename = getname(pathname);
+	if (IS_ERR(filename))
+		return PTR_ERR(filename);
+
+	set_nameidata(&nd, AT_FDCWD, filename);
+
 	s = path_init(&nd, LOOKUP_FOLLOW);
 
 	while (1) {

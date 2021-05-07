@@ -688,7 +688,7 @@ int dwc2_get_dr_mode(struct dwc2 *dwc2)
  */
 void dwc2_wait_for_mode(struct dwc2 *dwc2, bool host_mode)
 {
-	unsigned int timeout = 110 * USECOND;
+	unsigned int timeout = 110 * MSECOND;
 	int ret;
 
 	dev_vdbg(dwc2->dev, "Waiting for %s mode\n",

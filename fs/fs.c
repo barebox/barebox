@@ -2833,6 +2833,33 @@ out:
 }
 EXPORT_SYMBOL(chdir);
 
+static char *get_linux_mmcblkdev(struct fs_device_d *fsdev)
+{
+	struct cdev *cdevm, *cdev;
+	int id, partnum;
+
+	cdevm = fsdev->cdev->master;
+	id = of_alias_get_id(cdevm->device_node, "mmc");
+	if (id < 0)
+		return NULL;
+
+	partnum = 1; /* linux partitions are 1 based */
+	list_for_each_entry(cdev, &cdevm->partitions, partition_entry) {
+
+		/*
+		 * Partname is not guaranteed but this partition cdev is listed
+		 * in the partitions list so we need to count it instead of
+		 * skipping it.
+		 */
+		if (cdev->partname &&
+		    !strcmp(cdev->partname, fsdev->cdev->partname))
+			return basprintf("root=/dev/mmcblk%dp%d", id, partnum);
+		partnum++;
+	}
+
+	return NULL;
+}
+
 /*
  * Mount a device to a directory.
  * We do this by registering a new device on which the filesystem
@@ -2921,11 +2948,19 @@ int mount(const char *device, const char *fsname, const char *pathname,
 
 	fsdev->vfsmount.mnt_root = fsdev->sb.s_root;
 
-	if (!fsdev->linux_rootarg && fsdev->cdev && fsdev->cdev->partuuid[0] != 0) {
-		char *str = basprintf("root=PARTUUID=%s",
-					fsdev->cdev->partuuid);
+	if (!fsdev->linux_rootarg && fsdev->cdev) {
+		char *str = NULL;
 
-		fsdev_set_linux_rootarg(fsdev, str);
+		if (IS_ENABLED(CONFIG_MMCBLKDEV_ROOTARG) &&
+		    fsdev->cdev->master &&
+		    cdev_is_mci_main_part_dev(fsdev->cdev->master))
+			str = get_linux_mmcblkdev(fsdev);
+
+		if (!str && fsdev->cdev->partuuid[0] != 0)
+			str = basprintf("root=PARTUUID=%s", fsdev->cdev->partuuid);
+
+		if (str)
+			fsdev_set_linux_rootarg(fsdev, str);
 	}
 
 	path_put(&path);

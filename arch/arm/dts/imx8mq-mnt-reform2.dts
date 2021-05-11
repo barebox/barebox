@@ -12,7 +12,7 @@
 
 / {
 	model = "MNT Reform2";
-	compatible = "mnt,reform2", "fsl,imx8mq";
+	compatible = "mntre,reform2", "fsl,imx8mq";
 
 	chosen {
 		stdout-path = &uart1;

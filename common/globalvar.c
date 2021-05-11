@@ -641,6 +641,8 @@ int globalvar_add_simple_ip(const char *name, IPaddr_t *ip)
 
 static int globalvar_init(void)
 {
+	const char *endianness;
+
 	register_device(&global_device);
 
 	if (IS_ENABLED(CONFIG_NVVAR))
@@ -651,6 +653,16 @@ static int globalvar_init(void)
 	if (strlen(buildsystem_version_string) > 0)
 		globalvar_add_simple("buildsystem.version", buildsystem_version_string);
 
+#ifdef __BIG_ENDIAN
+	endianness = "big";
+#elif defined(__LITTLE_ENDIAN)
+	endianness = "little";
+#else
+#error "could not determine byte order"
+#endif
+
+	globalvar_add_simple("endianness", endianness);
+
 	return 0;
 }
 pure_initcall(globalvar_init);
@@ -658,6 +670,7 @@ pure_initcall(globalvar_init);
 BAREBOX_MAGICVAR(global.version, "The barebox version");
 BAREBOX_MAGICVAR(global.buildsystem.version,
 		 "version of buildsystem barebox was built with");
+BAREBOX_MAGICVAR(global.endianness, "The barebox endianness");
 
 /**
  * nvvar_save - save NV variables to persistent environment

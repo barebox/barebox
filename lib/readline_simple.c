@@ -44,7 +44,7 @@ int readline (const char *prompt, char *line, int len)
 	int	n = 0;				/* buffer index		*/
 	int	plen = 0;			/* prompt length	*/
 	int	col;				/* output column cnt	*/
-	char	c;
+	int	c;
 
 	/* print prompt */
 	if (prompt) {

@@ -24,7 +24,7 @@ struct at91_sdhci_priv {
 	struct mci_host mci;
 	struct clk *hclock, *gck, *mainck;
 	bool cal_always_on;
-	u32 gck_rate;
+	int gck_rate;
 };
 
 #define to_priv(h) container_of(h, struct at91_sdhci_priv, mci)

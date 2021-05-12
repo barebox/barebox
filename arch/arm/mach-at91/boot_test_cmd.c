@@ -24,7 +24,6 @@ static int do_at91_boot_test(int argc, char *argv[])
 	int ret = 1;
 	char *sram = "/dev/sram0";
 	u32 read_size, write_size;
-	u32 tmp = 0;
 
 	while ((opt = getopt(argc, argv, "j:s:")) > 0) {
 		switch (opt) {
@@ -64,7 +63,7 @@ static int do_at91_boot_test(int argc, char *argv[])
 	}
 
 	while (write_size) {
-		tmp = write(fd, buf, write_size);
+		int tmp = write(fd, buf, write_size);
 		if (tmp < 0) {
 			perror("write");
 			goto err_open;

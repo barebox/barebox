@@ -136,7 +136,7 @@ static int a10_fpga_init(void *buf)
 {
 	uint32_t stat, mask;
 	uint32_t val;
-	uint32_t timeout;
+	int timeout;
 
 	val = CFGWDTH_32 << A10_FPGAMGR_IMGCFG_CTL_02_CFGWIDTH_SHIFT;
 	a10_update_bits(A10_FPGAMGR_IMGCFG_CTL_02_OFST,

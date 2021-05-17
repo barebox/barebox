@@ -81,7 +81,7 @@ static void fsl_set_next_law(phys_addr_t addr, enum law_size sz,
 static void fsl_set_last_law(phys_addr_t addr, enum law_size sz,
 			enum law_trgt_if id)
 {
-	u32 idx;
+	int idx;
 
 	for (idx = (FSL_HW_NUM_LAWS - 1); idx >= 0; idx--) {
 		if (fsl_is_free_law(idx)) {

@@ -31,11 +31,6 @@
 #include <mach/s3c-clocks.h>
 #include <mach/s3c-generic.h>
 
-
-static const unsigned pin_usage[] = {
-	/* TODO */
-};
-
 static struct gpio_led leds[] = {
 	{
 		.gpio = GPJ20,
@@ -91,8 +86,6 @@ console_initcall(tiny210_console_init);
 static int tiny210_devices_init(void)
 {
 	int i;
-	for (i = 0; i < ARRAY_SIZE(pin_usage); i++)
-		s3c_gpio_mode(pin_usage[i]);
 
 	for (i = 0; i < ARRAY_SIZE(leds); i++) {
 		leds[i].active_low = 1;

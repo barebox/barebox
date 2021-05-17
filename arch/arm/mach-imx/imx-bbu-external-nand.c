@@ -39,7 +39,7 @@ static int imx_bbu_external_nand_update(struct bbu_handler *handler, struct bbu_
 	uint32_t num_bb = 0, bbt = 0;
 	loff_t offset = 0;
 	int block = 0, len, now, blocksize;
-	void *image = data->image;
+	void *image = NULL;
 
 	ret = stat(data->devicefile, &s);
 	if (ret)
@@ -54,6 +54,12 @@ static int imx_bbu_external_nand_update(struct bbu_handler *handler, struct bbu_
 	ret = ioctl(fd, MEMGETINFO, &meminfo);
 	if (ret)
 		goto out;
+
+	image = memdup(data->image, data->len);
+	if (!image) {
+		ret = -ENOMEM;
+		goto out;
+	}
 
 	blocksize = meminfo.erasesize;
 
@@ -172,6 +178,7 @@ static int imx_bbu_external_nand_update(struct bbu_handler *handler, struct bbu_
 
 out:
 	close(fd);
+	free(image);
 
 	return ret;
 }

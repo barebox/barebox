@@ -270,8 +270,8 @@ static struct mvebu_pcie *mvebu_pcie_port_probe(struct device_d *dev,
 	enum of_gpio_flags flags;
 	struct property *prop;
 	const __be32 *p;
-	int reset_gpio;
-	u32 u, port, lane, lane_mask, devfn;
+	int reset_gpio, devfn;
+	u32 u, port, lane, lane_mask;
 	int mem_target, mem_attr;
 	int io_target, io_attr;
 	int ret;

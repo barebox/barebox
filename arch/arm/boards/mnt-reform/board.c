@@ -28,7 +28,7 @@ static int mnt_reform_probe(struct device_d *dev)
 }
 
 static const struct of_device_id mnt_reform_of_match[] = {
-	{ .compatible = "mnt,reform2"},
+	{ .compatible = "mntre,reform2"},
 	{ /* sentinel */ },
 };
 

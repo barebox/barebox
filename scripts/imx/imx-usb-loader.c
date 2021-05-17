@@ -267,7 +267,8 @@ static void list_imx_device_types(void)
 	}
 }
 
-static int device_location_equal(libusb_device *device, const char *location)
+static int device_location_equal(libusb_device *device, const char *location,
+		struct libusb_device_descriptor desc)
 {
 	uint8_t port_path[MAX_USB_PORTS];
 	uint8_t dev_bus;
@@ -314,8 +315,9 @@ static int device_location_equal(libusb_device *device, const char *location)
 	/* walked the full path, all elements match */
 	if (path_step == path_len)
 		result = 1;
-	else
-		fprintf(stderr, " excluded by device path option\n");
+	else if (verbose)
+		fprintf(stderr, "USB device [%04x:%04x] excluded by device path option\n",
+			desc.idVendor, desc.idProduct);
 
 done:
 	free(loc);
@@ -343,7 +345,7 @@ static libusb_device *find_imx_dev(libusb_device **devs, const struct mach_id **
 			return NULL;
 		}
 
-		if (location && !device_location_equal(dev, location)) {
+		if (location && !device_location_equal(dev, location, desc)) {
 			libusb_close(usb_dev_handle);
 			usb_dev_handle = NULL;
 			continue;

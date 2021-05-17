@@ -145,6 +145,7 @@ static int __init mx28_clocks_init(struct device_d *dev, void __iomem *regs)
 	clk_set_rate(clks[ssp2], 96000000);
 	clk_set_rate(clks[ssp3], 96000000);
 	clk_set_parent(clks[lcdif_sel], clks[ref_pix]);
+	clk_set_parent(clks[gpmi_sel], clks[ref_gpmi]);
 
 	if (dev->device_node) {
 		clk_data.clks = clks;

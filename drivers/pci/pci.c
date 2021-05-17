@@ -51,25 +51,27 @@ void register_pci_controller(struct pci_controller *hose)
 	bus->resource[PCI_BUS_RESOURCE_MEM] = hose->mem_resource;
 	bus->resource[PCI_BUS_RESOURCE_MEM_PREF] = hose->mem_pref_resource;
 	bus->resource[PCI_BUS_RESOURCE_IO] = hose->io_resource;
-	bus->number = bus_index++;
 
-	if (hose->set_busno)
-		hose->set_busno(hose, bus->number);
+	if (pcibios_assign_all_busses()) {
+		bus->number = bus_index++;
+		if (hose->set_busno)
+			hose->set_busno(hose, bus->number);
 
-	if (bus->resource[PCI_BUS_RESOURCE_MEM])
-		last_mem = bus->resource[PCI_BUS_RESOURCE_MEM]->start;
-	else
-		last_mem = 0;
+		if (bus->resource[PCI_BUS_RESOURCE_MEM])
+			last_mem = bus->resource[PCI_BUS_RESOURCE_MEM]->start;
+		else
+			last_mem = 0;
 
-	if (bus->resource[PCI_BUS_RESOURCE_MEM_PREF])
-		last_mem_pref = bus->resource[PCI_BUS_RESOURCE_MEM_PREF]->start;
-	else
-		last_mem_pref = 0;
+		if (bus->resource[PCI_BUS_RESOURCE_MEM_PREF])
+			last_mem_pref = bus->resource[PCI_BUS_RESOURCE_MEM_PREF]->start;
+		else
+			last_mem_pref = 0;
 
-	if (bus->resource[PCI_BUS_RESOURCE_IO])
-		last_io = bus->resource[PCI_BUS_RESOURCE_IO]->start;
-	else
-		last_io = 0;
+		if (bus->resource[PCI_BUS_RESOURCE_IO])
+			last_io = bus->resource[PCI_BUS_RESOURCE_IO]->start;
+		else
+			last_io = 0;
+	}
 
 	pci_scan_bus(bus);
 	pci_bus_register_devices(bus);
@@ -156,13 +158,16 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 	u8 cmd;
 
 	pci_read_config_byte(dev, PCI_COMMAND, &cmd);
-	pci_write_config_byte(dev, PCI_COMMAND,
-			      cmd & ~(PCI_COMMAND_IO | PCI_COMMAND_MEMORY));
+
+	if (pcibios_assign_all_busses())
+		pci_write_config_byte(dev, PCI_COMMAND,
+				      cmd & ~(PCI_COMMAND_IO | PCI_COMMAND_MEMORY));
+
 
 	for (bar = 0; bar < max_bar; bar++) {
 		const int pci_base_address_0 = PCI_BASE_ADDRESS_0 + bar * 4;
 		const int pci_base_address_1 = PCI_BASE_ADDRESS_1 + bar * 4;
-		resource_size_t *last_addr;
+		resource_size_t *last_addr, start;
 		u32 orig, mask, size;
 		unsigned long flags;
 		const char *kind;
@@ -207,38 +212,59 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 		pr_debug("pbar%d: mask=%08x %s %d bytes\n", bar, mask, kind,
 			 size);
 
-		if (ALIGN(*last_addr, size) + size >
-		    dev->bus->resource[busres]->end) {
-			pr_debug("BAR does not fit within bus %s res\n", kind);
-			return;
+		if (pcibios_assign_all_busses()) {
+			if (ALIGN(*last_addr, size) + size >
+			    dev->bus->resource[busres]->end) {
+				pr_debug("BAR does not fit within bus %s res\n", kind);
+				return;
+			}
+
+			*last_addr = ALIGN(*last_addr, size);
+			pci_write_config_dword(dev, pci_base_address_0, *last_addr);
+			if (mask & PCI_BASE_ADDRESS_MEM_TYPE_64)
+				pci_write_config_dword(dev, pci_base_address_1, 0);
+			start = *last_addr;
+			*last_addr += size;
+		} else {
+			u32 tmp;
+			pci_read_config_dword(dev, pci_base_address_0, &tmp);
+			tmp &= mask & PCI_BASE_ADDRESS_SPACE_IO ? PCI_BASE_ADDRESS_IO_MASK
+				                                : PCI_BASE_ADDRESS_MEM_MASK;
+			start = tmp;
+
+			if (mask & PCI_BASE_ADDRESS_MEM_TYPE_64) {
+				pci_read_config_dword(dev, pci_base_address_1, &tmp);
+				start |= (u64)tmp << 32;
+			}
 		}
 
-		*last_addr = ALIGN(*last_addr, size);
-		pci_write_config_dword(dev, pci_base_address_0, *last_addr);
 		dev->resource[bar].flags = flags;
-		dev->resource[bar].start = *last_addr;
-		dev->resource[bar].end = dev->resource[bar].start + size - 1;
-
-		pr_debug("pbar%d: allocated at %pa\n", bar, last_addr);
-
-		*last_addr += size;
+		dev->resource[bar].start = start;
+		dev->resource[bar].end = start + size - 1;
 
 		if (mask & PCI_BASE_ADDRESS_MEM_TYPE_64) {
 			dev->resource[bar].flags |= IORESOURCE_MEM_64;
-			pci_write_config_dword(dev, pci_base_address_1, 0);
 			bar++;
 		}
 	}
 
 	pci_fixup_device(pci_fixup_header, dev);
 
-	pci_write_config_byte(dev, PCI_COMMAND, cmd);
+	if (pcibios_assign_all_busses())
+		pci_write_config_byte(dev, PCI_COMMAND, cmd);
+
 	list_add_tail(&dev->bus_list, &dev->bus->devices);
 }
 
 static void prescan_setup_bridge(struct pci_dev *dev)
 {
 	u16 cmdstat;
+
+	if (!pcibios_assign_all_busses()) {
+		pci_read_config_byte(dev, PCI_PRIMARY_BUS, &dev->bus->number);
+		pci_read_config_byte(dev, PCI_SECONDARY_BUS, &dev->subordinate->number);
+		return;
+	}
 
 	pci_read_config_word(dev, PCI_COMMAND, &cmdstat);
 
@@ -283,6 +309,9 @@ static void prescan_setup_bridge(struct pci_dev *dev)
 
 static void postscan_setup_bridge(struct pci_dev *dev)
 {
+	if (!pcibios_assign_all_busses())
+		return;
+
 	/* limit subordinate to last used bus number */
 	pci_write_config_byte(dev, PCI_SUBORDINATE_BUS, bus_index - 1);
 
@@ -416,8 +445,11 @@ static unsigned int pci_scan_bus(struct pci_bus *bus)
 				bus->resource[PCI_BUS_RESOURCE_IO];
 
 			child_bus->parent = &dev->dev;
-			child_bus->number = bus_index++;
-			child_bus->primary = bus->number;
+
+			if (pcibios_assign_all_busses()) {
+				child_bus->number = bus_index++;
+				child_bus->primary = bus->number;
+			}
 			list_add_tail(&child_bus->node, &bus->children);
 			dev->subordinate = child_bus;
 

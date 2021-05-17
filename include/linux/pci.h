@@ -29,6 +29,9 @@
 
 #include <linux/pci_ids.h>
 
+/* Include architecture-dependent settings and functions */
+
+#include <asm/pci.h>
 #define PCI_ANY_ID (~0)
 
 #define PCI_FIND_CAP_TTL	48

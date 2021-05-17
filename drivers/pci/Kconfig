@@ -54,6 +54,11 @@ config PCI_LAYERSCAPE
 	select OF_PCI
 	select PCI
 
+config PCI_EFI
+	bool "EFI PCI protocol"
+	depends on EFI_BOOTUP
+	select PCI
+
 endmenu
 
 endif

@@ -704,6 +704,27 @@ config FLEXIBLE_BOOTARGS
 	  to replace parts of the bootargs string without reconstructing it
 	  completely.
 
+config MMCBLKDEV_ROOTARG
+	bool
+	prompt "Support 'root=mmcblkXpN' cmdline appending"
+	depends on FLEXIBLE_BOOTARGS
+	depends on MCI
+	depends on OFTREE
+	help
+	  Enable this option to append 'root=mmcblkXpN' to the cmdline instead
+	  of 'root=PARTUUID=XYZ'. Don't enable this option if your used linux
+	  kernel doesn't contain commit [1]. The first linux kernel release
+	  containing that commit is v5.10-rc1.
+
+	  The appending only happen if barebox 'linux.bootargs.bootm.appendroot'
+	  variable is set or the used blspec entry contains 'linux-appendroot'.
+
+	  Note: It is crucial that the kernel device tree and the barebox device
+	  tree uses the same mmc aliases.
+
+	  [1] fa2d0aa96941 ("mmc: core: Allow setting slot index via device tree
+	      alias")
+
 config BAREBOX_UPDATE
 	bool "In-system barebox update infrastructure"
 

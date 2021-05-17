@@ -496,6 +496,7 @@ int cdev_erase(struct cdev *cdev, loff_t count, loff_t offset);
 #define DEVFS_PARTITION_READONLY	(1U << 1)
 #define DEVFS_IS_CHARACTER_DEV		(1U << 3)
 #define DEVFS_PARTITION_FROM_TABLE	(1U << 4)
+#define DEVFS_IS_MCI_MAIN_PART_DEV	(1U << 5)
 
 struct cdev *devfs_add_partition(const char *devname, loff_t offset,
 		loff_t size, unsigned int flags, const char *name);
@@ -508,6 +509,11 @@ static inline void cdev_create_default_automount(struct cdev *cdev)
 {
 }
 #endif
+
+static inline bool cdev_is_mci_main_part_dev(struct cdev *cdev)
+{
+	return cdev->flags & DEVFS_IS_MCI_MAIN_PART_DEV;
+}
 
 #define DEVFS_PARTITION_APPEND		0
 

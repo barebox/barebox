@@ -54,7 +54,7 @@ int printf(const char *fmt, ...)
 	char printbuffer[CFG_PBSIZE];
 
 	va_start(args, fmt);
-	i = vsprintf(printbuffer, fmt, args);
+	i = vsnprintf(printbuffer, sizeof(printbuffer), fmt, args);
 	va_end(args);
 
 	console_puts(CONSOLE_STDOUT, printbuffer);
@@ -69,7 +69,7 @@ int pr_print(int level, const char *fmt, ...)
 	char printbuffer[CFG_PBSIZE];
 
 	va_start(args, fmt);
-	i = vsprintf(printbuffer, fmt, args);
+	i = vsnprintf(printbuffer, sizeof(printbuffer), fmt, args);
 	va_end(args);
 
 	console_puts(CONSOLE_STDOUT, printbuffer);

@@ -577,8 +577,6 @@ static int net_handle_arp(struct eth_device *edev, unsigned char *pkt, int len)
 		return -EINVAL;
 	}
 
-	return 0;
-
 bad:
 	net_bad_packet(pkt, len);
 	return -EINVAL;

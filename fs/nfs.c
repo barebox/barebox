@@ -1125,7 +1125,7 @@ static int nfs_readlink_req(struct nfs_priv *npriv, struct nfs_fh *fh,
 
 	len = ntoh32(net_read_uint32(p)); /* new path length */
 
-	len = max_t(unsigned int, len,
+	len = min_t(unsigned int, len,
 		    nfs_packet->len - sizeof(struct rpc_reply) - sizeof(uint32_t));
 
 	p++;

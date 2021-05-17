@@ -27,13 +27,17 @@ struct bgpio_chip {
 	struct gpio_chip gc;
 	struct gpio_ops ops;
 
-	unsigned int (*read_reg)(void __iomem *reg);
-	void (*write_reg)(void __iomem *reg, unsigned int data);
+	unsigned long (*read_reg)(void __iomem *reg);
+	void (*write_reg)(void __iomem *reg, unsigned long data);
 
 	void __iomem *reg_dat;
 	void __iomem *reg_set;
 	void __iomem *reg_clr;
-	void __iomem *reg_dir;
+	void __iomem *reg_dir_out;
+	void __iomem *reg_dir_in;
+
+	bool dir_unreadable;
+	bool be_bits;
 
 	/* Number of bits (GPIOs): <register width> * 8. */
 	int bits;
@@ -65,5 +69,9 @@ void bgpio_remove(struct bgpio_chip *bgc);
 #define BGPIOF_BIG_ENDIAN		BIT(0)
 #define BGPIOF_UNREADABLE_REG_SET	BIT(1) /* reg_set is unreadable */
 #define BGPIOF_UNREADABLE_REG_DIR	BIT(2) /* reg_dir is unreadable */
+#define BGPIOF_BIG_ENDIAN_BYTE_ORDER	BIT(3)
+#define BGPIOF_READ_OUTPUT_REG_SET	BIT(4) /* reg_set stores output value */
+#define BGPIOF_NO_OUTPUT		BIT(5) /* only input */
+#define BGPIOF_NO_SET_ON_INPUT		BIT(6)
 
 #endif /* __BASIC_MMIO_GPIO_H */

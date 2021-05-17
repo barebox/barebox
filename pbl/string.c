@@ -7,6 +7,7 @@
 #include <linux/types.h>
 #include <linux/string.h>
 #include <linux/compiler.h>
+#include <linux/ctype.h>
 
 void *memcpy(void *__dest, __const void *__src, size_t __n)
 {
@@ -96,6 +97,17 @@ int strcmp(const char *cs, const char *ct)
 			break;
 	} while (c1);
 	return res;
+}
+
+int strcasecmp(const char *s1, const char *s2)
+{
+	int c1, c2;
+
+	do {
+		c1 = tolower(*s1++);
+		c2 = tolower(*s2++);
+	} while (c1 == c2 && c1 != 0);
+	return c1 - c2;
 }
 
 void *memchr(const void *s, int c, size_t count)

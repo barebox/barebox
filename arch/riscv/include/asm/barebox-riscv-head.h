@@ -30,7 +30,7 @@
 
 #ifndef __barebox_riscv_head
 #define __barebox_riscv_head() \
-	__barebox_riscv_header("nop", 0x55555555FFFFFFFF, 0x0, "barebox", "RSCV")
+	__barebox_riscv_header("nop", 0x0, 0x0, "barebox", "RSCV")
 #endif
 
 #endif /* __ASM_RISCV_HEAD_H */

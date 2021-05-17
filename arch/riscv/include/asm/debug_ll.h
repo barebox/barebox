@@ -1,24 +1,18 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (C) 2017 Antony Pavlov <antonynpavlov@gmail.com>
- *
- * This file is part of barebox.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
  */
 
-#ifndef __MACH_ERIZO_DEBUG_LL__
-#define __MACH_ERIZO_DEBUG_LL__
+#ifndef __ASM_DEBUG_LL__
+#define __ASM_DEBUG_LL__
 
 /** @file
  *  This File contains declaration for early output support
  */
 
 #include <linux/kconfig.h>
+
+#ifdef CONFIG_DEBUG_ERIZO
 
 #define DEBUG_LL_UART_ADDR	0x90000000
 #define DEBUG_LL_UART_SHIFT	2
@@ -30,4 +24,24 @@
 
 #include <asm/debug_ll_ns16550.h>
 
-#endif /* __MACH_ERIZO_DEBUG_LL__ */
+#elif defined CONFIG_DEBUG_SIFIVE
+
+#include <io.h>
+
+static inline void PUTC_LL(char ch)
+{
+	void __iomem *uart0 = IOMEM(0x10010000);
+
+	while (readl(uart0) & 0x80000000)
+		;
+
+	writel(ch, uart0);
+}
+
+#endif
+
+#ifndef debug_ll_init
+#define debug_ll_init() (void)0
+#endif
+
+#endif /* __ASM_DEBUG_LL__ */

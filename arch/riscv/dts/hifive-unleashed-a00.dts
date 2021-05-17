@@ -1,0 +1,3 @@
+/* SPDX-License-Identifier: GPL-2.0 OR X11 */
+
+#include <riscv/sifive/hifive-unleashed-a00.dts>

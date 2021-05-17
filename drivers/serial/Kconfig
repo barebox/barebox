@@ -164,4 +164,13 @@ config VIRTIO_CONSOLE
 
 	  Also serves as a general-purpose serial device for data
 	  transfer between the guest and host.
+
+config SERIAL_SIFIVE
+	tristate "SiFive UART support"
+	depends on OFDEVICE
+	help
+	  Select this option if you are building barebox for a device that
+	  contains a SiFive UART IP block.  This type of UART is present on
+	  SiFive FU540 SoCs, among others.
+
 endmenu

@@ -8,7 +8,7 @@ ENTRY_FUNCTION(start_erizo_generic, a0, a1, a2)
 {
 	extern char __dtb_z_erizo_generic_start[];
 
-	debug_ll_ns16550_init();
+	debug_ll_init();
 	putc_ll('>');
 
 	/* On POR, we are running from read-only memory here. */

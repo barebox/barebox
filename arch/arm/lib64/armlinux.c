@@ -1,90 +1,26 @@
 // SPDX-License-Identifier: GPL-2.0-only
 // SPDX-FileCopyrightText: 2018 Sascha Hauer <s.hauer@pengutronix.de>
 
-#include <boot.h>
 #include <common.h>
-#include <environment.h>
-#include <image.h>
-#include <fs.h>
-#include <xfuncs.h>
-#include <malloc.h>
-#include <fcntl.h>
-#include <errno.h>
 #include <memory.h>
-#include <of.h>
 #include <init.h>
 #include <bootm.h>
-#include <linux/list.h>
-#include <asm/byteorder.h>
-#include <asm/setup.h>
-#include <asm/barebox-arm.h>
-#include <asm/armlinux.h>
-#include <asm/system.h>
 
 static int do_bootm_linux(struct image_data *data)
 {
-	const void *kernel_header =
-			data->os_fit ? data->fit_kernel : data->os_header;
 	void (*fn)(unsigned long dtb, unsigned long x1, unsigned long x2,
 		       unsigned long x3);
-	resource_size_t start, end;
-	unsigned long text_offset, image_size, devicetree, kernel;
-	unsigned long image_end;
-	int ret;
-	void *fdt;
+	phys_addr_t devicetree;
 
-	text_offset = le64_to_cpup(kernel_header + 8);
-	image_size = le64_to_cpup(kernel_header+ 16);
-
-	ret = memory_bank_first_find_space(&start, &end);
-	if (ret)
-		goto out;
-
-	kernel = ALIGN(start, SZ_2M) + text_offset;
-
-	ret = bootm_load_os(data, kernel);
-	if (ret)
-		goto out;
-
-	image_end = PAGE_ALIGN(kernel + image_size);
-
-	if (bootm_has_initrd(data)) {
-		ret = bootm_load_initrd(data, image_end);
-		if (ret)
-			return ret;
-
-		image_end += resource_size(data->initrd_res);
-		image_end = PAGE_ALIGN(image_end);
-	}
-
-	devicetree = image_end;
-
-	fdt = bootm_get_devicetree(data);
-	if (IS_ERR(fdt)) {
-		ret = PTR_ERR(fdt);
-		goto out;
-	}
-
-	ret = bootm_load_devicetree(data, fdt, devicetree);
-
-	free(fdt);
-
-	if (ret)
-		goto out;
-
-	printf("Loaded kernel to 0x%08lx, devicetree at 0x%08lx\n",
-	       kernel, devicetree);
+	fn = booti_load_image(data, &devicetree);
+	if (IS_ERR(fn))
+		return PTR_ERR(fn);
 
 	shutdown_barebox();
 
-	fn = (void *)kernel;
-
 	fn(devicetree, 0, 0, 0);
 
-	ret = -EINVAL;
-
-out:
-	return ret;
+	return -EINVAL;
 }
 
 static struct image_handler aarch64_linux_handler = {

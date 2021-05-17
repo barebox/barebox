@@ -148,4 +148,6 @@ enum bootm_verify bootm_get_verify_mode(void);
 
 #define UIMAGE_SOME_ADDRESS (UIMAGE_INVALID_ADDRESS - 1)
 
+void *booti_load_image(struct image_data *data, phys_addr_t *oftree);
+
 #endif /* __BOOTM_H */

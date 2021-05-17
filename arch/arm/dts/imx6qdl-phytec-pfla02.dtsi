@@ -115,7 +115,7 @@
 
 &iomuxc {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_hog>, <&pinctrl_rev>;
+	pinctrl-0 = <&pinctrl_rev>;
 
 	imx6q-phytec-pfla02 {
 		pinctrl_rev: revgrp {

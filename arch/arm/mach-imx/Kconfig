@@ -14,7 +14,6 @@ config ARCH_TEXT_BASE
 	default 0xa7f00000 if MACH_PCA100
 	default 0xa0000000 if MACH_PCM038
 	default 0x87f00000 if MACH_PCM037
-	default 0x87f00000 if MACH_MX31MOBOARD
 	default 0x87f00000 if MACH_PCM043
 	default 0xa7e00000 if MACH_NESO
 	default 0x97f00000 if MACH_FREESCALE_MX51_PDK
@@ -678,15 +677,6 @@ config MACH_PCM037
 	select ARCH_HAS_L2X0
 	help
 	  Say Y here if you are using Phytec's phyCORE-i.MX31 (pcm037) equipped
-	  with a Freescale i.MX31 Processor
-
-config MACH_MX31MOBOARD
-	bool "mx31moboard-i.MX31"
-	select ARCH_IMX31
-	select USB_ULPI if USB
-	select ARCH_HAS_L2X0
-	help
-	  Say Y here if you are using EPFL mx31moboard board equipped
 	  with a Freescale i.MX31 Processor
 
 # ----------------------------------------------------------

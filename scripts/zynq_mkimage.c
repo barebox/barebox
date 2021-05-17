@@ -142,7 +142,7 @@ static char *readcmd(FILE *f)
 	}
 }
 
-int parse_config(char *buf, const char *filename)
+static int parse_config(char *buf, const char *filename)
 {
 	FILE *f;
 	int lineno = 0;

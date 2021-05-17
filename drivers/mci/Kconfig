@@ -210,6 +210,10 @@ config MCI_IMX_ESDHC_PBL
 	bool
 	select MCI_SDHCI
 
+config MCI_ATMEL_PBL
+	bool
+	select MCI_ATMEL
+
 config MCI_ATMEL_SDHCI_PBL
 	bool
 	select MCI_SDHCI

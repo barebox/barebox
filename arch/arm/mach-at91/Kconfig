@@ -45,6 +45,7 @@ config HAVE_AT91_DDRAMC
 
 config AT91_MCI_PBL
 	bool
+	depends on MCI_ATMEL_PBL
 	depends on MCI_ATMEL_SDHCI_PBL
 	default y
 
@@ -610,6 +611,7 @@ config MACH_MICROCHIP_KSZ9477_EVB
 	bool "Microchip EVB-KSZ9477 Evaluation Kit"
 	select SOC_SAMA5D3
 	select OFDEVICE
+	select MCI_ATMEL_PBL
 	select COMMON_CLK_OF_PROVIDER
 	help
 	  Select this if you are using Microchip's EVB-KSZ9477 Evaluation Kit.

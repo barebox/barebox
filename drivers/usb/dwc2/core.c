@@ -672,8 +672,8 @@ int dwc2_get_dr_mode(struct dwc2 *dwc2)
 
 	if (mode != dwc2->dr_mode) {
 		dwc2_warn(dwc2,
-			 "Configuration mismatch. dr_mode forced to %s\n",
-			mode == USB_DR_MODE_HOST ? "host" : "device");
+			 "Selected dr_mode not supported by controller/driver. Enforcing '%s' mode.\n",
+			mode == USB_DR_MODE_HOST ? "host" : "peripheral");
 
 		dwc2->dr_mode = mode;
 	}

@@ -1866,14 +1866,17 @@ static struct filename *getname(const char *filename)
 {
 	struct filename *result;
 
+	if (!*filename)
+		return ERR_PTR(-ENOENT);
+
 	result = malloc(sizeof(*result));
 	if (!result)
-		return NULL;
+		return ERR_PTR(-ENOMEM);
 
 	result->name = strdup(filename);
 	if (!result->name) {
 		free(result);
-		return NULL;
+		return ERR_PTR(-ENOMEM);
 	}
 
 	result->refcnt = 1;
@@ -2186,6 +2189,9 @@ static int filename_lookup(int dfd, struct filename *name, unsigned flags,
 	struct nameidata nd;
 	const char *s;
 
+	if (IS_ERR(name))
+		return PTR_ERR(name);
+
 	set_nameidata(&nd, dfd, name);
 
 	s = path_init(&nd, flags);
@@ -2362,8 +2368,14 @@ int open(const char *pathname, int flags, ...)
 	struct dentry *dentry = NULL;
 	struct nameidata nd;
 	const char *s;
+	struct filename *filename;
 
-	set_nameidata(&nd, AT_FDCWD, getname(pathname));
+	filename = getname(pathname);
+	if (IS_ERR(filename))
+		return PTR_ERR(filename);
+
+	set_nameidata(&nd, AT_FDCWD, filename);
+
 	s = path_init(&nd, LOOKUP_FOLLOW);
 
 	while (1) {

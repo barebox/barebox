@@ -305,8 +305,8 @@ static void fdt_fixup_fman_port_icid_by_compat(struct device_node *root,
 					       const char *compat)
 {
 	struct device_node *np;
-	int ret;
-	u32 cell_index, icid;
+	int ret, icid;
+	u32 cell_index;
 
 	for_each_compatible_node_from(np, root, NULL, compat) {
 		ret = of_property_read_u32(np, "cell-index", &cell_index);

@@ -24,7 +24,6 @@ config ARCH_TEXT_BASE
 	default 0x87f00000 if MACH_GUF_CUPID
 	default 0x93d00000 if MACH_TX25
 	default 0x7ff00000 if MACH_TQMA53
-	default 0x97f00000 if MACH_TX51
 	default 0x4fc00000 if MACH_SABRELITE
 	default 0x8fe00000 if MACH_TX53
 	default 0x97f00000 if MACH_EFIKA_MX_SMARTBOOK
@@ -746,12 +745,6 @@ config MACH_EUKREA_CPUIMX51SD
 	help
 	  Say Y here if you are using Eukrea's CPUIMX51 equipped
 	  with a Freescale i.MX51 Processor
-
-config MACH_TX51
-	bool "Ka-Ro TX51"
-	select ARCH_IMX51
-	help
-	  Say Y here if you are using the Ka-Ro tx51 board
 
 # ----------------------------------------------------------
 

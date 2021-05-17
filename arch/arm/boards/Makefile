@@ -149,7 +149,6 @@ obj-$(CONFIG_MACH_TQMA6X)			+= tqma6x/
 obj-$(CONFIG_MACH_TURRIS_OMNIA)			+= turris-omnia/
 obj-$(CONFIG_MACH_TX25)				+= karo-tx25/
 obj-$(CONFIG_MACH_TX28)				+= karo-tx28/
-obj-$(CONFIG_MACH_TX51)				+= karo-tx51/
 obj-$(CONFIG_MACH_TX53)				+= karo-tx53/
 obj-$(CONFIG_MACH_TX6X)				+= karo-tx6x/
 obj-$(CONFIG_MACH_UDOO)				+= udoo/

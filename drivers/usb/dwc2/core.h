@@ -500,7 +500,7 @@ struct dwc2 {
 #define gadget_to_dwc2(ptr) container_of(ptr, struct dwc2, gadget)
 
 #define dwc2_err(d, arg...) dev_err((d)->dev, ## arg)
-#define dwc2_warn(d, arg...) dev_err((d)->dev, ## arg)
+#define dwc2_warn(d, arg...) dev_warn((d)->dev, ## arg)
 #define dwc2_info(d, arg...) dev_info((d)->dev, ## arg)
 #define dwc2_dbg(d, arg...) dev_dbg((d)->dev, ## arg)
 #define dwc2_vdbg(d, arg...) dev_vdbg((d)->dev, ## arg)

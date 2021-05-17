@@ -111,14 +111,15 @@ static int mxs_dma_enable(struct mxs_dma_chan *pchan,
 	struct apbh_dma *apbh = pchan->apbh;
 	int channel_bit;
 	int channel = pchan->channel;
+	unsigned long pdesc32 = (unsigned long)pdesc;
 
 	if (apbh_dma_is_imx23(apbh)) {
-		writel((uint32_t)pdesc,
+		writel(pdesc32,
 			apbh->regs + HW_APBHX_CHn_NXTCMDAR_MX23(channel));
 		writel(1, apbh->regs + HW_APBHX_CHn_SEMA_MX23(channel));
 		channel_bit = channel + BP_APBH_CTRL0_CLKGATE_CHANNEL;
 	} else {
-		writel((uint32_t)pdesc,
+		writel(pdesc32,
 			apbh->regs + HW_APBHX_CHn_NXTCMDAR_MX28(channel));
 		writel(1, apbh->regs + HW_APBHX_CHn_SEMA_MX28(channel));
 		channel_bit = channel;
@@ -174,7 +175,7 @@ static int mxs_dma_run(struct mxs_dma_chan *pchan, struct mxs_dma_cmd *pdesc,
 
 	/* chain descriptors */
 	for (i = 0; i < num - 1; i++) {
-		pdesc[i].next = (uint32_t)(&pdesc[i + 1]);
+		pdesc[i].next = (unsigned long)(&pdesc[i + 1]);
 		pdesc[i].data |= DMACMD_CHAIN;
 	}
 

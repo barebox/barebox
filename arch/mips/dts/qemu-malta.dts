@@ -27,6 +27,19 @@
 		clock-frequency = <1843200>;
 	};
 
+	fpga_regs: system-controller@1f000000 {
+		compatible = "mti,malta-fpga", "syscon", "simple-mfd";
+		reg = <0x1f000000 0x600>;
+		native-endian;
+
+		reboot {
+			compatible = "syscon-reboot";
+			regmap = <&fpga_regs>;
+			offset = <0x500>;
+			mask = <0x42>;
+		};
+	};
+
 	gpio: gpio@1f000b00 {
 		compatible = "mti,malta-fpga-i2c-gpio";
 		gpio-controller;

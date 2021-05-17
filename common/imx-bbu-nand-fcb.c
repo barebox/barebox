@@ -1263,16 +1263,17 @@ static int imx_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *dat
 
 		free(fcb);
 		fcb = xzalloc(sizeof(*fcb));
-		fcb->Firmware1_startingPage = imx_bbu_firmware_fcb_start_page(mtd, !used);
-		if (fcb->Firmware1_startingPage < 0) {
-			ret = fcb->Firmware1_startingPage;
+
+		ret = imx_bbu_firmware_fcb_start_page(mtd, !used);
+		if (ret < 0)
 			goto out;
-		}
-		fcb->Firmware2_startingPage = imx_bbu_firmware_fcb_start_page(mtd, used);
-		if (fcb->Firmware2_startingPage < 0) {
-			ret = fcb->Firmware2_startingPage;
+		fcb->Firmware1_startingPage = ret;
+
+		ret = imx_bbu_firmware_fcb_start_page(mtd, used);
+		if (ret < 0)
 			goto out;
-		}
+		fcb->Firmware2_startingPage = ret;
+
 		fcb->PagesInFirmware1 = fw_size / mtd->writesize;
 		fcb->PagesInFirmware2 = fcb->PagesInFirmware1;
 

@@ -866,6 +866,15 @@ int strtobool(const char *str, int *val)
 }
 EXPORT_SYMBOL(strtobool);
 
+bool strends(const char *str, const char *postfix)
+{
+	if (strlen(str) < strlen(postfix))
+		return false;
+
+	return strcmp(str + strlen(str) - strlen(postfix), postfix) == 0;
+}
+EXPORT_SYMBOL(strends);
+
 /**
  * match_string - matches given string in an array
  * @array:	array of strings

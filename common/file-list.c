@@ -6,7 +6,9 @@
 #include <malloc.h>
 #include <fs.h>
 #include <file-list.h>
+#include <stringlist.h>
 #include <linux/err.h>
+#include <driver.h>
 
 #define PARSE_DEVICE	0
 #define PARSE_NAME	1
@@ -109,6 +111,25 @@ static int file_list_parse_one(struct file_list *files, const char *partstr, con
 	return file_list_add_entry(files, name, filename, flags);
 }
 
+static const char *flags_to_str(int flags)
+{
+	static char str[sizeof "srcu"];
+	char *s = str;;
+
+	if (flags & FILE_LIST_FLAG_SAFE)
+		*s++ = 's';
+	if (flags & FILE_LIST_FLAG_READBACK)
+		*s++ = 'r';
+	if (flags & FILE_LIST_FLAG_CREATE)
+		*s++ = 'c';
+	if (flags & FILE_LIST_FLAG_UBI)
+		*s++ = 'u';
+
+	*s = '\0';
+
+	return str;
+}
+
 struct file_list *file_list_parse(const char *str)
 {
 	struct file_list *files;
@@ -141,6 +162,9 @@ void file_list_free(struct file_list *files)
 {
 	struct file_list_entry *entry, *tmp;
 
+	if (!files)
+		return;
+
 	list_for_each_entry_safe(entry, tmp, &files->list, list) {
 		free(entry->name);
 		free(entry->filename);
@@ -148,4 +172,65 @@ void file_list_free(struct file_list *files)
 	}
 
 	free(files);
+}
+
+struct file_list *file_list_dup(struct file_list *old)
+{
+	struct file_list_entry *old_entry;
+	struct file_list *new;
+
+	new = xzalloc(sizeof(*new));
+
+	INIT_LIST_HEAD(&new->list);
+
+	list_for_each_entry(old_entry, &old->list, list) {
+		(void)file_list_add_entry(new, old_entry->name, old_entry->filename,
+					  old_entry->flags); /* can't fail */
+		new->num_entries++;
+	}
+
+	return new;
+}
+
+char *file_list_to_str(const struct file_list *files)
+{
+	struct file_list_entry *entry;
+	struct string_list sl;
+	char *str;
+
+	if (!files)
+		return strdup("");
+
+	string_list_init(&sl);
+
+	list_for_each_entry(entry, &files->list, list) {
+		int ret = string_list_add_asprintf(&sl, "%s(%s)%s", entry->filename, entry->name,
+						   flags_to_str(entry->flags));
+		if (ret) {
+			str = ERR_PTR(ret);
+			goto out;
+		}
+	}
+
+	str = string_list_join(&sl, ",");
+out:
+	string_list_free(&sl);
+
+	return str;
+}
+
+int file_list_detect_all(const struct file_list *files)
+{
+	struct file_list_entry *fentry;
+	struct stat s;
+	int i = 0;
+
+	list_for_each_entry(fentry, &files->list, list) {
+		if (stat(fentry->filename, &s))
+			continue;
+		if (device_detect_by_name(devpath_to_name(fentry->filename)) == 0)
+			i++;
+	}
+
+	return i;
 }

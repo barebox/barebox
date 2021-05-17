@@ -136,4 +136,14 @@ extern int kstrtobool(const char *s, bool *res);
 
 int match_string(const char * const *array, size_t n, const char *string);
 
+/**
+ * strstarts - does @str start with @prefix?
+ * @str: string to examine
+ * @prefix: prefix to look for.
+ */
+static inline bool strstarts(const char *str, const char *prefix)
+{
+	return strncmp(str, prefix, strlen(prefix)) == 0;
+}
+
 #endif /* _LINUX_STRING_H_ */

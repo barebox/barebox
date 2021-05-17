@@ -16,22 +16,28 @@
 #include <malloc.h>
 #include <linux/stat.h>
 #include <image-metadata.h>
+#include <file-list.h>
 
 static LIST_HEAD(bbu_image_handlers);
 
-int bbu_handlers_iterate(int (*fn)(struct bbu_handler *, void *), void *ctx)
+static void append_bbu_entry(struct bbu_handler *handler, struct file_list *files)
+{
+	char *name;
+
+	name = basprintf("bbu-%s", handler->name);
+
+	if (file_list_add_entry(files, name, handler->devicefile, 0))
+		pr_warn("duplicate partition name %s\n", name);
+
+	free(name);
+}
+
+void bbu_append_handlers_to_file_list(struct file_list *files)
 {
 	struct bbu_handler *handler;
 
-	list_for_each_entry(handler, &bbu_image_handlers, list) {
-		int ret;
-
-		ret = fn(handler, ctx);
-		if (ret)
-			return ret;
-	}
-
-	return 0;
+	list_for_each_entry(handler, &bbu_image_handlers, list)
+		append_bbu_entry(handler, files);
 }
 
 int bbu_force(struct bbu_data *data, const char *fmt, ...)

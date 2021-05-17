@@ -373,11 +373,20 @@ static char *pointer(const char *fmt, char *buf, const char *end, const void *pt
 	return raw_pointer(buf, end, ptr, field_width, precision, flags);
 }
 
+static char *errno_string(char *buf, const char *end, int field_width, int precision, int flags)
+{
+	return string(buf, end, strerror(errno), field_width, precision, flags);
+}
 #else
 static char *pointer(const char *fmt, char *buf, const char *end, const void *ptr,
 		     int field_width, int precision, int flags)
 {
 	return raw_pointer(buf, end, ptr, field_width, precision, flags);
+}
+
+static char *errno_string(char *buf, const char *end, int field_width, int precision, int flags)
+{
+	return buf;
 }
 #endif
 
@@ -568,6 +577,10 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 				flags |= SIGN;
 			case 'u':
 				break;
+
+			case 'm':
+				str = errno_string(str, end, field_width, precision, flags);
+				continue;
 
 			default:
 				if (str < end)

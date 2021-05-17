@@ -41,6 +41,7 @@
 #include <linux/stat.h>
 #include <linux/mtd/mtd.h>
 #include <fastboot.h>
+#include <system-partitions.h>
 
 #define FASTBOOT_VERSION		"0.4"
 
@@ -149,21 +150,6 @@ out:
 	return ret;
 }
 
-static int fastboot_add_bbu_variables(struct bbu_handler *handler, void *ctx)
-{
-	struct fastboot *fb = ctx;
-	char *name;
-	int ret;
-
-	name = basprintf("bbu-%s", handler->name);
-
-	ret = file_list_add_entry(fb->files, name, handler->devicefile, 0);
-
-	free(name);
-
-	return ret;
-}
-
 int fastboot_generic_init(struct fastboot *fb, bool export_bbu)
 {
 	int ret;
@@ -185,8 +171,8 @@ int fastboot_generic_init(struct fastboot *fb, bool export_bbu)
 	if (!fb->tempname)
 		return -ENOMEM;
 
-	if (IS_ENABLED(CONFIG_BAREBOX_UPDATE) && export_bbu)
-		bbu_handlers_iterate(fastboot_add_bbu_variables, fb);
+	if (export_bbu)
+		bbu_append_handlers_to_file_list(fb->files);
 
 	file_list_for_each_entry(fb->files, fentry) {
 		ret = fastboot_add_partition_variables(fb, fentry);
@@ -930,9 +916,13 @@ bool get_fastboot_bbu(void)
 	return fastboot_bbu;
 }
 
-const char *get_fastboot_partitions(void)
+struct file_list *get_fastboot_partitions(void)
 {
-	return fastboot_partitions;
+	if (fastboot_partitions && *fastboot_partitions)
+		return file_list_parse(fastboot_partitions);
+	if (!system_partitions_empty())
+		return system_partitions_get();
+	return NULL;
 }
 
 static int fastboot_globalvars_init(void)

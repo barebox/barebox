@@ -91,9 +91,6 @@ config EFI_GUID
 config EFI_DEVICEPATH
 	bool
 
-config FILE_LIST
-	bool
-
 config ARCH_DMA_ADDR_T_64BIT
 	bool
 
@@ -117,7 +114,6 @@ config USBGADGET_START
 	bool
 	depends on CMD_USBGADGET || USB_GADGET_AUTOSTART
 	select ENVIRONMENT_VARIABLES
-	select FILE_LIST
 	default y
 
 config BOOT
@@ -727,6 +723,17 @@ config MMCBLKDEV_ROOTARG
 
 config BAREBOX_UPDATE
 	bool "In-system barebox update infrastructure"
+
+config SYSTEM_PARTITIONS
+	bool "Generic system partitions support"
+	depends on GLOBALVAR
+	help
+	  System partitions are a generic way for boards to specify the
+	  partitions that should be exported for flashing.
+	  Board drivers that set this directly will select this option
+	  automatically.
+	  Say y here if this should be configurable over the
+	  global.system.partitions device parameter as well.
 
 config IMD
 	select CRC32

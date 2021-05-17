@@ -15,6 +15,7 @@ struct f_multi_opts {
 int usb_multi_register(struct f_multi_opts *opts);
 void usb_multi_unregister(void);
 void usb_multi_opts_release(struct f_multi_opts *opts);
+unsigned usb_multi_count_functions(struct f_multi_opts *opts);
 
 int usbgadget_register(bool dfu, const char *dfu_opts,
 		       bool fastboot, const char *fastboot_opts,

@@ -17,6 +17,7 @@
 #include <usb/gadget-multi.h>
 #include <globalvar.h>
 #include <magicvar.h>
+#include <system-partitions.h>
 
 static int autostart;
 static int acm;
@@ -24,12 +25,27 @@ static char *dfu_function;
 
 static struct file_list *parse(const char *files)
 {
-	struct file_list *list = file_list_parse(files);
+	struct file_list *list;
+
+	if (!files)
+		return NULL;
+
+	list = file_list_parse(files);
 	if (IS_ERR(list)) {
 		pr_err("Parsing file list \"%s\" failed: %pe\n", files, list);
 		return NULL;
 	}
+
 	return list;
+}
+
+static inline struct file_list *get_dfu_function(void)
+{
+	if (dfu_function && *dfu_function)
+		return file_list_parse(dfu_function);
+	if (!system_partitions_empty())
+		return system_partitions_get();
+	return NULL;
 }
 
 int usbgadget_register(bool dfu, const char *dfu_opts,
@@ -39,46 +55,44 @@ int usbgadget_register(bool dfu, const char *dfu_opts,
 	int ret;
 	struct device_d *dev;
 	struct f_multi_opts *opts;
-	const char *fastboot_partitions = get_fastboot_partitions();
-
-	if (dfu && !dfu_opts && dfu_function && *dfu_function)
-		dfu_opts = dfu_function;
-
-	if (IS_ENABLED(CONFIG_FASTBOOT_BASE) && fastboot && !fastboot_opts &&
-	    fastboot_partitions && *fastboot_partitions)
-		fastboot_opts = fastboot_partitions;
-
-	if (!dfu_opts && !fastboot_opts && !acm)
-		return COMMAND_ERROR_USAGE;
-
-	/*
-	 * Creating a gadget with both DFU and Fastboot doesn't work.
-	 * Both client tools seem to assume that the device only has
-	 * a single configuration
-	 */
-	if (fastboot_opts && dfu_opts) {
-		pr_err("Only one of Fastboot and DFU allowed\n");
-		return -EINVAL;
-	}
 
 	opts = xzalloc(sizeof(*opts));
 	opts->release = usb_multi_opts_release;
 
-	if (fastboot_opts) {
+	if (dfu) {
+		opts->dfu_opts.files = parse(dfu_opts);
+		if (IS_ENABLED(CONFIG_USB_GADGET_DFU) && file_list_empty(opts->dfu_opts.files)) {
+			file_list_free(opts->dfu_opts.files);
+			opts->dfu_opts.files = get_dfu_function();
+		}
+	}
+
+	if (fastboot) {
 		opts->fastboot_opts.files = parse(fastboot_opts);
+		if (IS_ENABLED(CONFIG_FASTBOOT_BASE) && file_list_empty(opts->fastboot_opts.files)) {
+			file_list_free(opts->fastboot_opts.files);
+			opts->fastboot_opts.files = get_fastboot_partitions();
+		}
+
 		opts->fastboot_opts.export_bbu = export_bbu;
 	}
 
-	if (dfu_opts)
-		opts->dfu_opts.files = parse(dfu_opts);
+	opts->create_acm = acm;
 
-	if (!opts->dfu_opts.files && !opts->fastboot_opts.files && !acm) {
+	if (usb_multi_count_functions(opts) == 0) {
 		pr_warn("No functions to register\n");
-		free(opts);
-		return 0;
+		ret = COMMAND_ERROR_USAGE;
+		goto err;
 	}
 
-	opts->create_acm = acm;
+	/*
+	 * Creating a gadget with both DFU and Fastboot may not work.
+	 * fastboot 1:8.1.0+r23-5 can deal with it, but dfu-util 0.9
+	 * seems to assume that the device only has a single configuration
+	 * That's not our fault though. Emit a warning and continue
+	 */
+	if (!file_list_empty(opts->fastboot_opts.files) && !file_list_empty(opts->dfu_opts.files))
+		pr_warn("Both DFU and Fastboot enabled. dfu-util may not like this!\n");
 
 	dev = get_device_by_name("otg");
 	if (dev)
@@ -86,7 +100,11 @@ int usbgadget_register(bool dfu, const char *dfu_opts,
 
 	ret = usb_multi_register(opts);
 	if (ret)
-		usb_multi_opts_release(opts);
+		goto err;
+
+	return 0;
+err:
+	usb_multi_opts_release(opts);
 
 	return ret;
 }
@@ -97,7 +115,7 @@ static int usbgadget_autostart_set(struct param_d *param, void *ctx)
 	bool fastboot_bbu = get_fastboot_bbu();
 	int err;
 
-	if (!IS_ENABLED(CONFIG_USB_GADGET_AUTOSTART) || !autostart || started)
+	if (!autostart || started)
 		return 0;
 
 	err = usbgadget_register(true, NULL, true, NULL, acm, fastboot_bbu);
@@ -109,16 +127,20 @@ static int usbgadget_autostart_set(struct param_d *param, void *ctx)
 
 static int usbgadget_globalvars_init(void)
 {
-	if (IS_ENABLED(CONFIG_USB_GADGET_AUTOSTART)) {
-		globalvar_add_bool("usbgadget.autostart", usbgadget_autostart_set,
-				   &autostart, NULL);
-		globalvar_add_simple_bool("usbgadget.acm", &acm);
-	}
+	globalvar_add_simple_bool("usbgadget.acm", &acm);
 	globalvar_add_simple_string("usbgadget.dfu_function", &dfu_function);
 
 	return 0;
 }
 device_initcall(usbgadget_globalvars_init);
+
+static int usbgadget_autostart_init(void)
+{
+	if (IS_ENABLED(CONFIG_USB_GADGET_AUTOSTART))
+		globalvar_add_bool("usbgadget.autostart", usbgadget_autostart_set, &autostart, NULL);
+	return 0;
+}
+postenvironment_initcall(usbgadget_autostart_init);
 
 BAREBOX_MAGICVAR(global.usbgadget.autostart,
 		 "usbgadget: Automatically start usbgadget on boot");

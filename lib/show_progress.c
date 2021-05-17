@@ -57,3 +57,31 @@ void init_progression_bar(loff_t max)
 	else
 		printf("\t");
 }
+
+NOTIFIER_HEAD(progress_notifier_list);
+
+static int progress_logger(struct notifier_block *r, unsigned long stage, void *_prefix)
+{
+	const char *prefix = _prefix;
+
+	switch ((enum progress_stage)stage) {
+		case PROGRESS_UPDATING:
+			pr_info("%sSoftware update in progress\n", prefix);
+			break;
+		case PROGRESS_UPDATE_SUCCESS:
+			pr_info("%sSoftware update finished successfully\n", prefix);
+			break;
+		case PROGRESS_UPDATE_FAIL:
+			pr_info("%sSoftware update failed\n", prefix);
+			break;
+		case PROGRESS_UNSPECIFIED:
+			/* default state. This should not be reached */
+			break;
+	}
+
+	return 0;
+}
+
+struct notifier_block progress_log_client =  {
+	.notifier_call = progress_logger
+};

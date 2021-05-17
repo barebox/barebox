@@ -10,6 +10,7 @@
 #define PARAM_GLOBALVAR_UNQUALIFIED	(1 << 1)
 
 struct device_d;
+struct file_list;
 typedef uint32_t          IPaddr_t;
 
 enum param_type {
@@ -23,6 +24,7 @@ enum param_type {
 	PARAM_TYPE_BITMASK,
 	PARAM_TYPE_IPV4,
 	PARAM_TYPE_MAC,
+	PARAM_TYPE_FILE_LIST,
 };
 
 struct param_d {
@@ -88,6 +90,11 @@ struct param_d *dev_add_param_mac(struct device_d *dev, const char *name,
 		int (*set)(struct param_d *p, void *priv),
 		int (*get)(struct param_d *p, void *priv),
 		u8 *mac, void *priv);
+
+struct param_d *dev_add_param_file_list(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		struct file_list **file_list, void *priv);
 
 struct param_d *dev_add_param_fixed(struct device_d *dev, const char *name, const char *value);
 
@@ -181,6 +188,14 @@ static inline struct param_d *dev_add_param_mac(struct device_d *dev, const char
 		int (*set)(struct param_d *p, void *priv),
 		int (*get)(struct param_d *p, void *priv),
 		u8 *mac, void *priv)
+{
+	return NULL;
+}
+
+static inline struct param_d *dev_add_param_file_list(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		struct file_list **file_list, void *priv)
 {
 	return NULL;
 }

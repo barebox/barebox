@@ -321,12 +321,12 @@ static ssize_t __write(FILE *f, const void *buf, size_t count)
 	struct fs_driver_d *fsdrv;
 	int ret;
 
-	if (!(f->flags & O_ACCMODE)) {
+	fsdrv = f->fsdev->driver;
+
+	if ((f->flags & O_ACCMODE) == O_RDONLY || !fsdrv->write) {
 		ret = -EBADF;
 		goto out;
 	}
-
-	fsdrv = f->fsdev->driver;
 
 	if (fsdrv != ramfs_driver)
 		assert_command_context();

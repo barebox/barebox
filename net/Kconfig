@@ -35,7 +35,6 @@ config NET_SNTP
 config NET_FASTBOOT
 	bool
 	select BANNER
-	select FILE_LIST
 	select FASTBOOT_BASE
 	prompt "Android Fastboot support"
 	help

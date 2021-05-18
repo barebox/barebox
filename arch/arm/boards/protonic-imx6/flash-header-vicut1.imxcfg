@@ -114,7 +114,6 @@ wm 32 0x020e001c 0x007f007f
 
 /* RGMII config */
 wm 32 0x020e0768 0x00080000 /* 1V2 DDR IO */
-wm 32 0x020e0788 0x00000200 /* 60 Ohm ODT */
 
 /* Debug */
 wm 32 0x020e023c 0x00000005

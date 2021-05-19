@@ -19,14 +19,18 @@ All new boards should use defaultenv-2 exclusively.
 
 The default environment is composed from different directories during compilation::
 
-  defaultenv/defaultenv-2-base        -> base files
-  defaultenv/defaultenv-2-dfu         -> overlay for DFU
-  defaultenv/defaultenv-2-reboot-mode -> overlay for reboot modes
-  defaultenv/defaultenv-2-menu        -> overlay for menus
-  arch/$ARCH/boards/<board>/env       -> board specific overlay
+  defaultenv/defaultenv-2-base                 -> base files
+  defaultenv/defaultenv-2-dfu                  -> overlay for DFU
+  defaultenv/defaultenv-2-reboot-mode          -> overlay for reboot modes
+  defaultenv/defaultenv-2-menu                 -> overlay for menus
+  arch/$ARCH/boards/<board>/defaultenv-<board> -> board specific overlay
+  $(CONFIG_DEFAULT_ENVIRONMENT_PATH)           -> config specific overlay
 
 The content of the above directories is applied one after another. If the
-same file exists in a later overlay, it will overwrite the preceding one.
+same file exists in a later overlay, it will overwrite the preceding one.  The
+board specific overlay, or overlays, could be at any path, but usually follows
+the form given.  They must be added to a Makefile in ``bbenv-y`` and
+``defaultenv_append_directory()`` used to add them in board init code.
 
 Note that not all of the above directories will necessarily be
 included in your default environment, it depends on your barebox

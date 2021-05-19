@@ -277,7 +277,7 @@ static int arasan_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, ~0);
 
 	mask = SDHCI_INT_CMD_COMPLETE;
-	if (data)
+	if (data && data->flags == MMC_DATA_READ)
 		mask |= SDHCI_INT_DATA_AVAIL;
 
 	sdhci_set_cmd_xfer_mode(&host->sdhci, cmd, data, false, &command, &xfer);

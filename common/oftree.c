@@ -115,7 +115,7 @@ void of_print_cmdline(struct device_node *root)
 
 	cmdline = of_get_property(node, "bootargs", NULL);
 
-	printf("commandline: %s\n", cmdline);
+	pr_info("commandline: %s\n", cmdline);
 }
 
 static int of_fixup_bootargs_bootsource(struct device_node *root,

@@ -111,7 +111,7 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
 		data->os_res = request_sdram_region("kernel",
 				load_address, kernel_size);
 		if (!data->os_res) {
-			printf("unable to request SDRAM region for kernel at"
+			pr_err("unable to request SDRAM region for kernel at"
 					"0x%08llx-0x%08llx\n",
 				(unsigned long long)load_address,
 				(unsigned long long)load_address + kernel_size - 1);
@@ -175,7 +175,7 @@ static int bootm_open_initrd_uimage(struct image_data *data)
 		if (bootm_get_verify_mode() > BOOTM_VERIFY_NONE) {
 			ret = uimage_verify(data->initrd);
 			if (ret) {
-				printf("Checking data crc failed with %s\n",
+				pr_err("Checking data crc failed with %s\n",
 					strerror(-ret));
 				return ret;
 			}
@@ -231,21 +231,21 @@ int bootm_load_initrd(struct image_data *data, unsigned long load_address)
 				load_address,
 				initrd_size);
 		if (!data->initrd_res) {
-			printf("unable to request SDRAM region for initrd at"
+			pr_err("unable to request SDRAM region for initrd at"
 					"0x%08llx-0x%08llx\n",
 				(unsigned long long)load_address,
 				(unsigned long long)load_address + initrd_size - 1);
 			return -ENOMEM;
 		}
 		memcpy((void *)load_address, initrd, initrd_size);
-		printf("Loaded initrd from FIT image\n");
+		pr_info("Loaded initrd from FIT image\n");
 		goto done1;
 	}
 
 	type = file_name_detect_type(data->initrd_file);
 
 	if ((int)type < 0) {
-		printf("could not open %s: %s\n", data->initrd_file,
+		pr_err("could not open %s: %s\n", data->initrd_file,
 				strerror(-type));
 		return (int)type;
 	}
@@ -254,8 +254,8 @@ int bootm_load_initrd(struct image_data *data, unsigned long load_address)
 		int num;
 		ret = bootm_open_initrd_uimage(data);
 		if (ret) {
-			printf("loading initrd failed with %s\n",
-					strerror(-ret));
+			pr_err("loading initrd failed with %s\n",
+			       strerror(-ret));
 			return ret;
 		}
 
@@ -275,13 +275,13 @@ int bootm_load_initrd(struct image_data *data, unsigned long load_address)
 
 done:
 
-	printf("Loaded initrd %s '%s'", file_type_to_string(type),
+	pr_info("Loaded initrd %s '%s'", file_type_to_string(type),
 	       data->initrd_file);
 	if (type == filetype_uimage && data->initrd->header.ih_type == IH_TYPE_MULTI)
-		printf(", multifile image %s", data->initrd_part);
-	printf("\n");
+		pr_info(", multifile image %s", data->initrd_part);
+	pr_info("\n");
 done1:
-	printf("initrd is at %pa-%pa\n",
+	pr_info("initrd is at %pa-%pa\n",
 		&data->initrd_res->start,
 		&data->initrd_res->end);
 
@@ -297,7 +297,7 @@ static int bootm_open_oftree_uimage(struct image_data *data, size_t *size,
 	struct uimage_handle *of_handle;
 	int release = 0;
 
-	printf("Loading devicetree from '%s'@%d\n", oftree, num);
+	pr_info("Loading devicetree from '%s'@%d\n", oftree, num);
 
 	if (!IS_ENABLED(CONFIG_BOOTM_OFTREE_UIMAGE))
 		return -EINVAL;
@@ -321,7 +321,7 @@ static int bootm_open_oftree_uimage(struct image_data *data, size_t *size,
 
 	ft = file_detect_type(*fdt, *size);
 	if (ft != filetype_oftree) {
-		printf("%s is not an oftree but %s\n",
+		pr_err("%s is not an oftree but %s\n",
 			data->oftree_file, file_type_to_string(ft));
 		free(*fdt);
 		return -EINVAL;
@@ -367,8 +367,8 @@ void *bootm_get_devicetree(struct image_data *data)
 		type = file_name_detect_type(data->oftree_file);
 
 		if ((int)type < 0) {
-			printf("could not open %s: %s\n", data->oftree_file,
-					strerror(-type));
+			pr_err("could not open %s: %s\n", data->oftree_file,
+			       strerror(-type));
 			return ERR_PTR((int)type);
 		}
 
@@ -377,7 +377,7 @@ void *bootm_get_devicetree(struct image_data *data)
 			ret = bootm_open_oftree_uimage(data, &size, &oftree);
 			break;
 		case filetype_oftree:
-			printf("Loading devicetree from '%s'\n", data->oftree_file);
+			pr_info("Loading devicetree from '%s'\n", data->oftree_file);
 			ret = read_file_2(data->oftree_file, &size, (void *)&oftree,
 					  FILESIZE_MAX);
 			break;
@@ -448,7 +448,7 @@ int bootm_load_devicetree(struct image_data *data, void *fdt,
 	data->oftree_res = request_sdram_region("oftree", load_address,
 			fdt_size);
 	if (!data->oftree_res) {
-		printf("unable to request SDRAM region for device tree at"
+		pr_err("unable to request SDRAM region for device tree at"
 				"0x%08llx-0x%08llx\n",
 			(unsigned long long)load_address,
 			(unsigned long long)load_address + fdt_size - 1);
@@ -497,7 +497,7 @@ static int bootm_open_os_uimage(struct image_data *data)
 	if (bootm_get_verify_mode() > BOOTM_VERIFY_NONE) {
 		ret = uimage_verify(data->os);
 		if (ret) {
-			printf("Checking data crc failed with %s\n",
+			pr_err("Checking data crc failed with %s\n",
 					strerror(-ret));
 			return ret;
 		}
@@ -506,7 +506,7 @@ static int bootm_open_os_uimage(struct image_data *data)
 	uimage_print_contents(data->os);
 
 	if (IH_ARCH == IH_ARCH_INVALID || data->os->header.ih_arch != IH_ARCH) {
-		printf("Unsupported Architecture 0x%x\n",
+		pr_err("Unsupported Architecture 0x%x\n",
 		       data->os->header.ih_arch);
 		return -EINVAL;
 	}
@@ -526,7 +526,7 @@ static int bootm_open_elf(struct image_data *data)
 	if (IS_ERR(data->elf))
 		return PTR_ERR(data->elf);
 
-	printf("Entry Point:  %08llx\n", data->elf->entry);
+	pr_info("Entry Point:  %08llx\n", data->elf->entry);
 
 	data->os_address = data->elf->entry;
 
@@ -578,7 +578,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 	size_t size;
 
 	if (!bootm_data->os_file) {
-		printf("no image given\n");
+		pr_err("no image given\n");
 		return -ENOENT;
 	}
 
@@ -599,7 +599,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 
 	ret = read_file_2(data->os_file, &size, &data->os_header, PAGE_SIZE);
 	if (ret < 0 && ret != -EFBIG) {
-		printf("could not open %s: %s\n", data->os_file,
+		pr_err("could not open %s: %s\n", data->os_file,
 				strerror(-ret));
 		goto err_out;
 	}
@@ -609,7 +609,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 	os_type = file_detect_type(data->os_header, PAGE_SIZE);
 
 	if (!data->force && os_type == filetype_unknown) {
-		printf("Unknown OS filetype (try -f)\n");
+		pr_err("Unknown OS filetype (try -f)\n");
 		ret = -EINVAL;
 		goto err_out;
 	}
@@ -625,7 +625,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 		data->initrd_file = NULL;
 		data->tee_file = NULL;
 		if (os_type != filetype_oftree) {
-			printf("Signed boot and image is no FIT image, aborting\n");
+			pr_err("Signed boot and image is no FIT image, aborting\n");
 			ret = -EINVAL;
 			goto err_out;
 		}
@@ -637,7 +637,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 
 		fit = fit_open(data->os_file, data->verbose, data->verify);
 		if (IS_ERR(fit)) {
-			printf("Loading FIT image %s failed with: %pe\n", data->os_file, fit);
+			pr_err("Loading FIT image %s failed with: %pe\n", data->os_file, fit);
 			ret = PTR_ERR(fit);
 			goto err_out;
 		}
@@ -647,7 +647,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 		data->fit_config = fit_open_configuration(data->os_fit,
 							  data->os_part);
 		if (IS_ERR(data->fit_config)) {
-			printf("Cannot open FIT image configuration '%s'\n",
+			pr_err("Cannot open FIT image configuration '%s'\n",
 			       data->os_part ? data->os_part : "default");
 			ret = PTR_ERR(data->fit_config);
 			goto err_out;
@@ -663,8 +663,8 @@ int bootm_boot(struct bootm_data *bootm_data)
 						    kernel_img,
 						    "load", &data->os_address);
 			if (!ret)
-				printf("Load address from FIT '%s': 0x%lx\n",
-				       kernel_img, data->os_address);
+				pr_info("Load address from FIT '%s': 0x%lx\n",
+					kernel_img, data->os_address);
 			/* Note: Error case uses default value. */
 		}
 		if (data->os_entry == UIMAGE_SOME_ADDRESS) {
@@ -675,8 +675,8 @@ int bootm_boot(struct bootm_data *bootm_data)
 						    "entry", &entry);
 			if (!ret) {
 				data->os_entry = entry - data->os_address;
-				printf("Entry address from FIT '%s': 0x%lx\n",
-				       kernel_img, entry);
+				pr_info("Entry address from FIT '%s': 0x%lx\n",
+					kernel_img, entry);
 			}
 			/* Note: Error case uses default value. */
 		}
@@ -685,8 +685,8 @@ int bootm_boot(struct bootm_data *bootm_data)
 	if (os_type == filetype_uimage) {
 		ret = bootm_open_os_uimage(data);
 		if (ret) {
-			printf("Loading OS image failed with: %s\n",
-					strerror(-ret));
+			pr_err("Loading OS image failed with: %s\n",
+			       strerror(-ret));
 			goto err_out;
 		}
 	}
@@ -694,8 +694,8 @@ int bootm_boot(struct bootm_data *bootm_data)
 	if (os_type == filetype_elf) {
 		ret = bootm_open_elf(data);
 		if (ret) {
-			printf("Loading ELF image failed with: %s\n",
-					strerror(-ret));
+			pr_err("Loading ELF image failed with: %s\n",
+			       strerror(-ret));
 			data->elf = NULL;
 			goto err_out;
 		}
@@ -724,7 +724,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 			rootarg = path_get_linux_rootarg(data->os_file);
 		}
 		if (!IS_ERR(rootarg)) {
-			printf("Adding \"%s\" to Kernel commandline\n", rootarg);
+			pr_info("Adding \"%s\" to Kernel commandline\n", rootarg);
 			globalvar_add_simple("linux.bootargs.bootm.appendroot",
 					     rootarg);
 			free(rootarg);
@@ -736,7 +736,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 		char *machine_id_bootarg;
 
 		if (!machine_id) {
-			printf("Providing machine id is enabled but no machine id set\n");
+			pr_err("Providing machine id is enabled but no machine id set\n");
 			ret = -EINVAL;
 			goto err_out;
 		}
@@ -746,12 +746,12 @@ int bootm_boot(struct bootm_data *bootm_data)
 		free(machine_id_bootarg);
 	}
 
-	printf("\nLoading %s '%s'", file_type_to_string(os_type),
-			data->os_file);
+	pr_info("\nLoading %s '%s'", file_type_to_string(os_type),
+		data->os_file);
 	if (os_type == filetype_uimage &&
 			data->os->header.ih_type == IH_TYPE_MULTI)
-		printf(", multifile image %d", uimage_part_num(data->os_part));
-	printf("\n");
+		pr_info(", multifile image %d", uimage_part_num(data->os_part));
+	pr_info("\n");
 
 	if (data->os_address == UIMAGE_SOME_ADDRESS)
 		data->os_address = UIMAGE_INVALID_ADDRESS;
@@ -760,10 +760,10 @@ int bootm_boot(struct bootm_data *bootm_data)
 
 	handler = bootm_find_handler(os_type, data);
 	if (!handler) {
-		printf("no image handler found for image type %s\n",
-			file_type_to_string(os_type));
+		pr_err("no image handler found for image type %s\n",
+		       file_type_to_string(os_type));
 		if (os_type == filetype_uimage)
-			printf("and OS type: %d\n", data->os->header.ih_os);
+			pr_err("and OS type: %d\n", data->os->header.ih_os);
 		ret = -ENODEV;
 		goto err_out;
 	}
@@ -775,7 +775,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 
 	ret = handler->bootm(data);
 	if (data->dryrun)
-		printf("Dryrun. Aborted\n");
+		pr_info("Dryrun. Aborted\n");
 
 err_out:
 	if (data->os_res)

@@ -138,7 +138,7 @@ int boot_entry(struct bootentry *be, int verbose, int dryrun)
 {
 	int ret;
 
-	printf("Booting entry '%s'\n", be->title);
+	pr_info("Booting entry '%s'\n", be->title);
 
 	if (IS_ENABLED(CONFIG_WATCHDOG) && boot_watchdog_timeout) {
 		boot_enabled_watchdog = watchdog_get_default();
@@ -319,7 +319,7 @@ void bootsources_menu(struct bootentries *bootentries, int timeout)
 	struct menu_entry *back_entry;
 
 	if (!IS_ENABLED(CONFIG_MENU)) {
-		printf("no menu support available\n");
+		pr_warn("no menu support available\n");
 		return;
 	}
 

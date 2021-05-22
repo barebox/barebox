@@ -1,17 +1,7 @@
-/*
- * esdctl-v4.c - i.MX sdram controller functions for i.MX53
- *
- * Copyright (c) 2012 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- */
+// SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: 2012 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
+
+/* esdctl-v4.c - i.MX sdram controller functions for i.MX53 */
 
 #include <common.h>
 #include <io.h>

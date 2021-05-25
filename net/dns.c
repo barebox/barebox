@@ -215,7 +215,7 @@ int resolv(const char *host, IPaddr_t *ip)
 
 	nameserver = net_get_nameserver();
 	if (!nameserver) {
-		pr_err("no nameserver specified in $net.nameserver\n");
+		pr_err("no nameserver specified in $global.net.nameserver\n");
 		return 0;
 	}
 

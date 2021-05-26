@@ -770,7 +770,7 @@ int main(int argc, char *argv[])
 	int outfd;
 	int dcd_only = 0;
 	int now = 0;
-	int add_barebox_header;
+	int add_barebox_header = 0;
 	uint32_t barebox_image_size = 0;
 	struct config_data data = {
 		.image_ivt_offset = 0xffffffff,

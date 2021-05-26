@@ -12,6 +12,7 @@
 #include <environment.h>
 #include <linux/stat.h>
 #include <magicvar.h>
+#include <uncompress.h>
 
 static LIST_HEAD(handler_list);
 
@@ -808,6 +809,86 @@ err_out:
 	return ret;
 }
 
+static int do_bootm_compressed(struct image_data *img_data)
+{
+	struct bootm_data bootm_data = {
+		.oftree_file = img_data->oftree_file,
+		.initrd_file = img_data->initrd_file,
+		.tee_file = img_data->tee_file,
+		.verbose = img_data->verbose,
+		.verify = img_data->verify,
+		.force = img_data->force,
+		.dryrun = img_data->dryrun,
+		.initrd_address = img_data->initrd_address,
+		.os_address = img_data->os_address,
+		.os_entry = img_data->os_entry,
+	};
+	int from, to, ret;
+	char *dstpath;
+
+	from = open(img_data->os_file, O_RDONLY);
+	if (from < 0)
+		return -ENODEV;
+
+	dstpath = make_temp("bootm-compressed");
+	if (!dstpath) {
+		ret = -ENOMEM;
+		goto fail_from;
+	}
+
+	to = open(dstpath, O_CREAT | O_WRONLY);
+	if (to < 0) {
+		ret = -ENODEV;
+		goto fail_make_temp;
+	}
+
+	ret = uncompress_fd_to_fd(from, to, uncompress_err_stdout);
+	if (ret)
+		goto fail_to;
+
+	bootm_data.os_file = dstpath;
+	ret = bootm_boot(&bootm_data);
+
+fail_to:
+	close(to);
+	unlink(dstpath);
+fail_make_temp:
+	free(dstpath);
+fail_from:
+	close(from);
+	return ret;
+}
+
+static struct image_handler bzip2_bootm_handler = {
+	.name = "BZIP2 compressed file",
+	.bootm = do_bootm_compressed,
+	.filetype = filetype_bzip2,
+};
+
+static struct image_handler gzip_bootm_handler = {
+	.name = "GZIP compressed file",
+	.bootm = do_bootm_compressed,
+	.filetype = filetype_gzip,
+};
+
+static struct image_handler lzo_bootm_handler = {
+	.name = "LZO compressed file",
+	.bootm = do_bootm_compressed,
+	.filetype = filetype_lzo_compressed,
+};
+
+static struct image_handler lz4_bootm_handler = {
+	.name = "LZ4 compressed file",
+	.bootm = do_bootm_compressed,
+	.filetype = filetype_lz4_compressed,
+};
+
+static struct image_handler xz_bootm_handler = {
+	.name = "XZ compressed file",
+	.bootm = do_bootm_compressed,
+	.filetype = filetype_xz_compressed,
+};
+
 static int bootm_init(void)
 {
 	globalvar_add_simple("bootm.image", NULL);
@@ -829,6 +910,18 @@ static int bootm_init(void)
 
 	globalvar_add_simple_enum("bootm.verify", (unsigned int *)&bootm_verify_mode,
 				  bootm_verify_names, ARRAY_SIZE(bootm_verify_names));
+
+
+	if (IS_ENABLED(CONFIG_BZLIB))
+		register_image_handler(&bzip2_bootm_handler);
+	if (IS_ENABLED(CONFIG_ZLIB))
+		register_image_handler(&gzip_bootm_handler);
+	if (IS_ENABLED(CONFIG_LZO_DECOMPRESS))
+		register_image_handler(&lzo_bootm_handler);
+	if (IS_ENABLED(CONFIG_LZ4_DECOMPRESS))
+		register_image_handler(&lz4_bootm_handler);
+	if (IS_ENABLED(CONFIG_XZ_DECOMPRESS))
+		register_image_handler(&xz_bootm_handler);
 
 	return 0;
 }

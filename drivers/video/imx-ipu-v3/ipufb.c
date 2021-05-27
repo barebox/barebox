@@ -336,6 +336,7 @@ static int ipufb_probe(struct device_d *dev)
 		if (ret)
 			dev_dbg(fbi->dev, "failed to get modes: %s\n", strerror(-ret));
 
+		info->dev.parent = dev;
 		ret = register_framebuffer(info);
 		if (ret < 0) {
 			dev_err(fbi->dev, "failed to register framebuffer\n");

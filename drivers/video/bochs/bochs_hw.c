@@ -201,5 +201,6 @@ int bochs_hw_probe(struct device_d *dev, void __iomem *fb_map, void __iomem *mmi
 	fb->priv = bochs;
 	fb->fbops = &bochs_fb_ops;
 
+	fb->dev.parent = dev;
 	return register_framebuffer(fb);
 }

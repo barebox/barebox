@@ -514,6 +514,7 @@ static int imxfb_register_overlay(struct imxfb_info *fbi, void *fb)
 	overlay->blue   = rgb->blue;
 	overlay->transp = rgb->transp;
 
+	overlay->dev.parent = &fbi->info.dev;
 	ret = register_framebuffer(overlay);
 	if (ret < 0) {
 		dev_err(fbi->dev, "failed to register framebuffer\n");
@@ -592,6 +593,7 @@ static int imxfb_probe(struct device_d *dev)
 
 	imxfb_activate_var(&fbi->info);
 
+	fbi->info.dev.parent = dev;
 	ret = register_framebuffer(&fbi->info);
 	if (ret < 0) {
 		dev_err(dev, "failed to register framebuffer\n");

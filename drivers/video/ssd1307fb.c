@@ -543,6 +543,7 @@ static int ssd1307fb_probe(struct device_d *dev)
 	if (ret)
 		goto reset_oled_error;
 
+	info->dev.parent = dev;
 	ret = register_framebuffer(info);
 	if (ret) {
 		dev_err(&client->dev, "Couldn't register the framebuffer\n");

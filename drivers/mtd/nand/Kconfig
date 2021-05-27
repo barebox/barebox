@@ -32,14 +32,27 @@ config NAND_ALLOW_ERASE_BAD
 
 config NAND_IMX
 	bool
-	prompt "i.MX NAND driver"
+	prompt "i.MX21 to 53 NAND driver aka 'mxc', for NFC"
 	depends on ARCH_IMX
+	help
+	  Support for NAND flash on Freescale/NXP i.MX devices.  This is for the
+	  "MXC" series:  i.MX21/25/27/31/35/51/53.
+
+	  This is not for the "MXS" series i.MX processors (23 & 28), or i.MX6
+	  and later, which use the GPMI NAND controller from the MXS series. 
+	  See the i.MX 'mxs' driver for those chips.
 
 config NAND_MXS
 	bool
 	select STMP_DEVICE
-	prompt "i.MX23/28/6 NAND driver"
+	prompt "i.MX23/28 & 6+ NAND driver aka 'mxs', for GPMI"
 	depends on MXS_APBH_DMA
+	help
+	  Support for NAND flash on Freescale/NXP i.MX devices.	 This is for the
+	  "MXS" series:  i.MX23/28 and all i.MX6 and later SoCs.
+
+	  This is not for the "MXC" series of i.MX processors in the i.MX21 to
+	  i.MX53 range.  See the i.MX "mxc" driver for those chips.
 
 config NAND_OMAP_GPMC
 	tristate "NAND Flash Support for GPMC based OMAP platforms"

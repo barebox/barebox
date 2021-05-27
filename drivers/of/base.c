@@ -2002,6 +2002,14 @@ static void __of_print_property(struct property *p, int indent)
 	printf(";\n");
 }
 
+void of_print_properties(struct device_node *node)
+{
+	struct property *prop;
+
+	list_for_each_entry(prop, &node->properties, list)
+		__of_print_property(prop, 0);
+}
+
 static int __of_print_parents(struct device_node *node)
 {
 	int indent, i;

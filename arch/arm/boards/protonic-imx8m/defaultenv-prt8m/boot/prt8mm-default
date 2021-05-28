@@ -1,0 +1,7 @@
+#!/bin/sh
+
+if [ "$bootsource_instance" = "2" ]; then
+	boot mmc2
+else
+	boot mmc3
+fi

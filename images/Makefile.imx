@@ -420,6 +420,11 @@ CFG_start_nxp_imx8mm_evk.pblb.imximg = $(board)/nxp-imx8mm-evk/flash-header-imx8
 FILE_barebox-nxp-imx8mm-evk.img = start_nxp_imx8mm_evk.pblb.pimximg
 image-$(CONFIG_MACH_NXP_IMX8MM_EVK) += barebox-nxp-imx8mm-evk.img
 
+pblb-$(CONFIG_MACH_PROTONIC_IMX8M) += start_prt_prt8mm
+CFG_start_prt_prt8mm.pblb.imximg = $(board)/protonic-imx8m/flash-header-prt8mm.imxcfg
+FILE_barebox-prt-prt8mm.img = start_prt_prt8mm.pblb.pimximg
+image-$(CONFIG_MACH_PROTONIC_IMX8M) += barebox-prt-prt8mm.img
+
 # ----------------------- i.MX8mp based boards --------------------------
 pblb-$(CONFIG_MACH_NXP_IMX8MP_EVK) += start_nxp_imx8mp_evk
 CFG_start_nxp_imx8mp_evk.pblb.imximg = $(board)/nxp-imx8mp-evk/flash-header-imx8mp-evk.imxcfg

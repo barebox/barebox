@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# PRT8M doesn't have a ETH port, but may have USB network attached
+usb

@@ -1048,7 +1048,7 @@ int of_property_match_string(struct device_node *np, const char *propname,
 }
 EXPORT_SYMBOL_GPL(of_property_match_string);
 
-const __be32 *of_prop_next_u32(struct property *prop, const __be32 *cur,
+const __be32 *of_prop_next_u32(const struct property *prop, const __be32 *cur,
 			u32 *pu)
 {
 	const void *curv = cur;
@@ -1074,7 +1074,7 @@ out_val:
 }
 EXPORT_SYMBOL_GPL(of_prop_next_u32);
 
-const char *of_prop_next_string(struct property *prop, const char *cur)
+const char *of_prop_next_string(const struct property *prop, const char *cur)
 {
 	const void *curv = cur;
 	const void *value;

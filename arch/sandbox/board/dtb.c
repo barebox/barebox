@@ -39,8 +39,6 @@ static int of_sandbox_init(void)
 	if (!dtb)
 		dtb = __dtb_sandbox_start;
 
-	barebox_register_fdt(dtb);
-
-	return 0;
+	return barebox_register_fdt(dtb);
 }
 core_initcall(of_sandbox_init);

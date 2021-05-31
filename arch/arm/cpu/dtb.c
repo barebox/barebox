@@ -26,8 +26,6 @@ static int of_arm_init(void)
 		return 0;
 	}
 
-	barebox_register_fdt(fdt);
-
-	return 0;
+	return barebox_register_fdt(fdt);
 }
 core_initcall(of_arm_init);

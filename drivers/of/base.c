@@ -1699,32 +1699,34 @@ int of_set_root_node(struct device_node *node)
 	return 0;
 }
 
-void barebox_register_of(struct device_node *root)
+int barebox_register_of(struct device_node *root)
 {
 	if (root_node)
-		return;
+		return -EBUSY;
 
 	of_set_root_node(root);
 	of_fix_tree(root);
 
 	if (IS_ENABLED(CONFIG_OFDEVICE))
-		of_probe();
+		return of_probe();
+
+	return 0;
 }
 
-void barebox_register_fdt(const void *dtb)
+int barebox_register_fdt(const void *dtb)
 {
 	struct device_node *root;
 
 	if (root_node)
-		return;
+		return -EBUSY;
 
 	root = of_unflatten_dtb(dtb);
 	if (IS_ERR(root)) {
 		pr_err("Cannot unflatten dtb: %pe\n", root);
-		return;
+		return PTR_ERR(root);
 	}
 
-	barebox_register_of(root);
+	return barebox_register_of(root);
 }
 
 /**

@@ -41,8 +41,6 @@ static int of_mips_init(void)
 	if (!fdt)
 		fdt = __dtb_start;
 
-	barebox_register_fdt(fdt);
-
-	return 0;
+	return barebox_register_fdt(fdt);
 }
 core_initcall(of_mips_init);

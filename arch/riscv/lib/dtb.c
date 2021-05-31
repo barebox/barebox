@@ -9,6 +9,7 @@
 static int of_riscv_init(void)
 {
 	void *fdt;
+	int ret;
 
 	/* See if we are provided a dtb in boarddata */
 	fdt = barebox_riscv_boot_dtb();
@@ -20,11 +21,11 @@ static int of_riscv_init(void)
 	pr_debug("using boarddata provided DTB\n");
 
 
-	barebox_register_fdt(fdt);
+	ret = barebox_register_fdt(fdt);
 
 	/* do it now, before clocksource drivers run postcore */
 	timer_init();
 
-	return 0;
+	return ret;
 }
 core_initcall(of_riscv_init);

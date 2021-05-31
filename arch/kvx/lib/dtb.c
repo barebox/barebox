@@ -9,8 +9,6 @@
 
 static int of_kvx_init(void)
 {
-	barebox_register_fdt(boot_dtb);
-
-	return 0;
+	return barebox_register_fdt(boot_dtb);
 }
 core_initcall(of_kvx_init);

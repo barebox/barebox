@@ -261,8 +261,8 @@ extern int of_modalias_node(struct device_node *node, char *modalias, int len);
 
 extern struct device_node *of_get_root_node(void);
 extern int of_set_root_node(struct device_node *node);
-extern void barebox_register_of(struct device_node *root);
-extern void barebox_register_fdt(const void *dtb);
+extern int barebox_register_of(struct device_node *root);
+extern int barebox_register_fdt(const void *dtb);
 
 extern struct device_d *of_platform_device_create(struct device_node *np,
 						struct device_d *parent);

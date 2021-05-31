@@ -28,12 +28,15 @@
 #define KSZPHY_OMSO_MII_OVERRIDE		BIT(0)
 
 /* general PHY control reg in vendor specific block. */
-#define	MII_KSZPHY_CTRL			0x1F
+#define	MII_KSZPHY_CTRL				0x1F
 /* bitmap of PHY register to set interrupt mode */
 #define KSZPHY_CTRL_INT_ACTIVE_HIGH		BIT(9)
 #define KSZ9021_CTRL_INT_ACTIVE_HIGH		BIT(14)
 #define KS8737_CTRL_INT_ACTIVE_HIGH		BIT(14)
 #define KSZ8051_RMII_50MHZ_CLK			BIT(7)
+
+/* PHY Control 1 */
+#define MII_KSZPHY_CTRL_1			0x1e
 
 /* Write/read to/from extended registers */
 #define MII_KSZPHY_EXTREG                       0x0b
@@ -63,18 +66,35 @@ static int kszphy_extended_read(struct phy_device *phydev,
 	return phy_read(phydev, MII_KSZPHY_EXTREG_READ);
 }
 
+/* Handle LED mode, shift = position of first led mode bit, usually 4 or 14 */
+static int kszphy_led_mode(struct phy_device *phydev, int reg, int shift)
+{
+	const struct device_d *dev = &phydev->dev;
+	const struct device_node *of_node = dev->device_node ? : dev->parent->device_node;
+	u32 val;
+
+	if (!of_property_read_u32(of_node, "micrel,led-mode", &val)) {
+		if (val > 0x03) {
+			dev_err(dev, "led-mode 0x%02x out of range\n", val);
+			return -1;
+		}
+		return phy_modify(phydev, reg, 0x03 << shift, val << shift);
+	}
+	return 0;
+}
+
 static int kszphy_config_init(struct phy_device *phydev)
 {
+	kszphy_led_mode(phydev, MII_KSZPHY_CTRL_1, 14);
+
 	return 0;
 }
 
 static int ksz8021_config_init(struct phy_device *phydev)
 {
-	u16 val;
+	phy_set_bits(phydev, MII_KSZPHY_OMSO, KSZPHY_OMSO_B_CAST_OFF);
 
-	val = phy_read(phydev, MII_KSZPHY_OMSO);
-	val |= KSZPHY_OMSO_B_CAST_OFF;
-	phy_write(phydev, MII_KSZPHY_OMSO, val);
+	kszphy_led_mode(phydev, MII_KSZPHY_CTRL, 4);
 
 	return 0;
 }
@@ -88,6 +108,8 @@ static int ks8051_config_init(struct phy_device *phydev)
 		regval |= KSZ8051_RMII_50MHZ_CLK;
 		phy_write(phydev, MII_KSZPHY_CTRL, regval);
 	}
+
+	kszphy_led_mode(phydev, MII_KSZPHY_CTRL, 4);
 
 	return 0;
 }
@@ -143,6 +165,8 @@ static int ksz9021_config_init(struct phy_device *phydev)
 		ksz9021_load_values_from_of(phydev, of_node,
 				    MII_KSZPHY_TX_DATA_PAD_SKEW,
 				    tx_pad_skew_names);
+
+		kszphy_led_mode(phydev, 0x11, 6);
 	}
 
 	return 0;

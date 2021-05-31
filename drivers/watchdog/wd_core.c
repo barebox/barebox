@@ -18,6 +18,7 @@
 #include <errno.h>
 #include <linux/ctype.h>
 #include <watchdog.h>
+#include <restart.h>
 
 static LIST_HEAD(watchdog_list);
 
@@ -177,6 +178,24 @@ static int seconds_to_expire_get(struct param_d *p, void *priv)
 	return 0;
 }
 
+static void __noreturn watchdog_restart_handle(struct restart_handler *this)
+{
+	struct watchdog *wd = watchdog_get_default();
+	int ret = -ENODEV;
+
+	if (wd)
+		ret = watchdog_set_timeout(wd, 1);
+
+	BUG_ON(ret);
+	mdelay(2000);
+	__builtin_unreachable();
+}
+
+static struct restart_handler restart_handler = {
+	.restart = watchdog_restart_handle,
+	.name = "watchdog-restart",
+};
+
 int watchdog_register(struct watchdog *wd)
 {
 	struct param_d *p;
@@ -245,6 +264,13 @@ int watchdog_register(struct watchdog *wd)
 	if (IS_ERR(p)) {
 		ret = PTR_ERR(p);
 		goto error_unregister;
+	}
+
+	if (!restart_handler.priority) {
+		restart_handler.priority = 10; /* don't override others */
+		ret = restart_handler_register(&restart_handler);
+		if (ret)
+			dev_warn(&wd->dev, "failed to register restart handler\n");
 	}
 
 	list_add_tail(&wd->list, &watchdog_list);

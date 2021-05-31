@@ -779,10 +779,9 @@ static int mv88e6xxx_switch_reset(struct mv88e6xxx_chip *chip)
 	return 0;
 }
 
-static int mv88e6xxx_eeprom_read(struct device_d *dev, const int offset,
-				 void *val, int bytes)
+static int mv88e6xxx_eeprom_read(void *ctx, unsigned offset, void *val, size_t bytes)
 {
-	struct mv88e6xxx_chip *chip = dev->parent->priv;
+	struct mv88e6xxx_chip *chip = ctx;
 	struct ethtool_eeprom eeprom = {
 		.offset = offset,
 		.len = bytes,
@@ -794,10 +793,9 @@ static int mv88e6xxx_eeprom_read(struct device_d *dev, const int offset,
 	return chip->info->ops->get_eeprom(chip, &eeprom, val);
 }
 
-static int mv88e6xxx_eeprom_write(struct device_d *dev, const int offset,
-				  const void *val, int bytes)
+static int mv88e6xxx_eeprom_write(void *ctx, unsigned offset, const void *val, size_t bytes)
 {
-	struct mv88e6xxx_chip *chip = dev->parent->priv;
+	struct mv88e6xxx_chip *chip = ctx;
 	struct ethtool_eeprom eeprom = {
 		.offset = offset,
 		.len = bytes,
@@ -883,6 +881,7 @@ static int mv88e6xxx_probe(struct device_d *dev)
 		struct nvmem_config config = {
 			.name = basprintf("%s-eeprom", dev_name(dev)),
 			.dev = dev,
+			.priv = chip,
 			.word_size = 1,
 			.stride = 1,
 			.size = eeprom_len,

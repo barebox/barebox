@@ -673,18 +673,16 @@ static void imx_ocotp_init_dt(struct ocotp_priv *priv)
 	}
 }
 
-static int imx_ocotp_write(struct device_d *dev, const int offset,
-			    const void *val, int bytes)
+static int imx_ocotp_write(void *ctx, unsigned offset, const void *val, size_t bytes)
 {
-	struct ocotp_priv *priv = dev->parent->priv;
+	struct ocotp_priv *priv = ctx;
 
 	return regmap_bulk_write(priv->map, offset, val, bytes);
 }
 
-static int imx_ocotp_read(struct device_d *dev, const int offset, void *val,
-			   int bytes)
+static int imx_ocotp_read(void *ctx, unsigned offset, void *val, size_t bytes)
 {
-	struct ocotp_priv *priv = dev->parent->priv;
+	struct ocotp_priv *priv = ctx;
 
 	return regmap_bulk_read(priv->map, offset, val, bytes);
 }
@@ -746,11 +744,11 @@ static int imx_ocotp_probe(struct device_d *dev)
 
 	priv->config.name = "imx-ocotp";
 	priv->config.dev = dev;
+	priv->config.priv = priv;
 	priv->config.stride = 4;
 	priv->config.word_size = 4;
 	priv->config.size = data->num_regs;
 	priv->config.bus = &imx_ocotp_nvmem_bus;
-	dev->priv = priv;
 
 	nvmem = nvmem_register(&priv->config);
 	if (IS_ERR(nvmem))

@@ -42,10 +42,9 @@ static const struct snvs_lpgpr_cfg snvs_lpgpr_cfg_imx6q = {
 	.offset_lplr	= IMX6Q_SNVS_LPLR,
 };
 
-static int snvs_lpgpr_write(struct device_d *dev, const int offset,
-			    const void *val, int bytes)
+static int snvs_lpgpr_write(void *ctx, unsigned offset, const void *val, size_t bytes)
 {
-	struct snvs_lpgpr_priv *priv = dev->parent->priv;
+	struct snvs_lpgpr_priv *priv = ctx;
 	const struct snvs_lpgpr_cfg *dcfg = priv->dcfg;
 	unsigned int lock_reg;
 	int ret;
@@ -68,10 +67,9 @@ static int snvs_lpgpr_write(struct device_d *dev, const int offset,
 				 bytes);
 }
 
-static int snvs_lpgpr_read(struct device_d *dev, const int offset, void *val,
-			   int bytes)
+static int snvs_lpgpr_read(void *ctx, unsigned offset, void *val, size_t bytes)
 {
-	struct snvs_lpgpr_priv *priv = dev->parent->priv;
+	struct snvs_lpgpr_priv *priv = ctx;
 	const struct snvs_lpgpr_cfg *dcfg = priv->dcfg;
 
 	return regmap_bulk_read(priv->regmap, dcfg->offset + offset,
@@ -113,6 +111,7 @@ static int snvs_lpgpr_probe(struct device_d *dev)
 	cfg = &priv->cfg;
 	cfg->name = dev_name(dev);
 	cfg->dev = dev;
+	cfg->priv = priv;
 	cfg->stride = 4;
 	cfg->word_size = 4;
 	cfg->size = 4;
@@ -123,8 +122,6 @@ static int snvs_lpgpr_probe(struct device_d *dev)
 		free(priv);
 		return PTR_ERR(nvmem);
 	}
-
-	dev->priv = priv;
 
 	return 0;
 }

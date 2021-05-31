@@ -33,6 +33,7 @@ struct nvmem_device {
 	size_t			size;
 	bool			read_only;
 	struct cdev		cdev;
+	void			*priv;
 };
 
 struct nvmem_cell {
@@ -206,6 +207,7 @@ struct nvmem_device *nvmem_register(const struct nvmem_config *config)
 	nvmem->bus = config->bus;
 	np = config->dev->device_node;
 	nvmem->dev.device_node = np;
+	nvmem->priv = config->priv;
 
 	nvmem->read_only = of_property_read_bool(np, "read-only") |
 			   config->read_only;
@@ -507,7 +509,7 @@ static int __nvmem_cell_read(struct nvmem_device *nvmem,
 {
 	int rc;
 
-	rc = nvmem->bus->read(&nvmem->dev, cell->offset, buf, cell->bytes);
+	rc = nvmem->bus->read(nvmem->priv, cell->offset, buf, cell->bytes);
 	if (IS_ERR_VALUE(rc))
 		return rc;
 
@@ -572,7 +574,7 @@ static inline void *nvmem_cell_prepare_write_buffer(struct nvmem_cell *cell,
 		*b <<= bit_offset;
 
 		/* setup the first byte with lsb bits from nvmem */
-		rc = nvmem->bus->read(&nvmem->dev, cell->offset, &v, 1);
+		rc = nvmem->bus->read(nvmem->priv, cell->offset, &v, 1);
 		*b++ |= GENMASK(bit_offset - 1, 0) & v;
 
 		/* setup rest of the byte if any */
@@ -589,7 +591,7 @@ static inline void *nvmem_cell_prepare_write_buffer(struct nvmem_cell *cell,
 	/* if it's not end on byte boundary */
 	if ((nbits + bit_offset) % BITS_PER_BYTE) {
 		/* setup the last byte with msb bits from nvmem */
-		rc = nvmem->bus->read(&nvmem->dev, cell->offset + cell->bytes - 1,
+		rc = nvmem->bus->read(nvmem->priv, cell->offset + cell->bytes - 1,
 				      &v, 1);
 		*p |= GENMASK(7, (nbits + bit_offset) % BITS_PER_BYTE) & v;
 
@@ -622,7 +624,7 @@ int nvmem_cell_write(struct nvmem_cell *cell, void *buf, size_t len)
 			return PTR_ERR(buf);
 	}
 
-	rc = nvmem->bus->write(&nvmem->dev, cell->offset, buf, cell->bytes);
+	rc = nvmem->bus->write(nvmem->priv, cell->offset, buf, cell->bytes);
 
 	/* free the tmp buffer */
 	if (cell->bit_offset || cell->nbits)
@@ -719,7 +721,7 @@ int nvmem_device_read(struct nvmem_device *nvmem,
 	if (!bytes)
 		return 0;
 
-	rc = nvmem->bus->read(&nvmem->dev, offset, buf, bytes);
+	rc = nvmem->bus->read(nvmem->priv, offset, buf, bytes);
 
 	if (IS_ERR_VALUE(rc))
 		return rc;
@@ -753,7 +755,7 @@ int nvmem_device_write(struct nvmem_device *nvmem,
 	if (!bytes)
 		return 0;
 
-	rc = nvmem->bus->write(&nvmem->dev, offset, buf, bytes);
+	rc = nvmem->bus->write(nvmem->priv, offset, buf, bytes);
 
 	if (IS_ERR_VALUE(rc))
 		return rc;

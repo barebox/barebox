@@ -245,12 +245,9 @@ static ssize_t at24_read(struct at24_data *at24,
 	return retval;
 }
 
-static int at24_nvmem_read(struct device_d *dev, int off,
-			       void *buf, int count)
+static int at24_nvmem_read(void *ctx, unsigned off, void *buf, size_t count)
 {
-	struct at24_data *at24 = dev->parent->priv;
-
-	return at24_read(at24, buf, off, count);
+	return at24_read(ctx, buf, off, count);
 }
 
 /*
@@ -363,12 +360,9 @@ static ssize_t at24_write(struct at24_data *at24, const char *buf, loff_t off,
 	return retval;
 }
 
-static int at24_nvmem_write(struct device_d *dev, const int off,
-			       const void *buf, int count)
+static int at24_nvmem_write(void *ctx, unsigned off, const void *buf, size_t count)
 {
-	struct at24_data *at24 = dev->parent->priv;
-
-	return at24_write(at24, buf, off, count);
+	return at24_write(ctx, buf, off, count);
 }
 
 static const struct nvmem_bus at24_nvmem_bus = {
@@ -495,13 +489,12 @@ static int at24_probe(struct device_d *dev)
 
 	at24->nvmem_config.name = devname;
 	at24->nvmem_config.dev = dev;
+	at24->nvmem_config.priv = at24;
 	at24->nvmem_config.read_only = !writable;
 	at24->nvmem_config.bus = &at24_nvmem_bus;
 	at24->nvmem_config.stride = 1;
 	at24->nvmem_config.word_size = 1;
 	at24->nvmem_config.size = chip.byte_len;
-
-	dev->priv = at24;
 
 	at24->nvmem = nvmem_register(&at24->nvmem_config);
 	err = PTR_ERR_OR_ZERO(at24->nvmem);

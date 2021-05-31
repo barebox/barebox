@@ -72,10 +72,9 @@ static struct regmap_bus stm32_bsec_regmap_bus = {
 	.reg_read = stm32_bsec_read_shadow,
 };
 
-static int stm32_bsec_write(struct device_d *dev, int offset,
-			    const void *val, int bytes)
+static int stm32_bsec_write(void *ctx, unsigned offset, const void *val, size_t bytes)
 {
-	struct bsec_priv *priv = dev->parent->priv;
+	struct bsec_priv *priv = ctx;
 
 	/* Allow only writing complete 32-bits aligned words */
 	if ((bytes % 4) || (offset % 4))
@@ -84,10 +83,9 @@ static int stm32_bsec_write(struct device_d *dev, int offset,
 	return regmap_bulk_write(priv->map, offset, val, bytes);
 }
 
-static int stm32_bsec_read(struct device_d *dev, int offset,
-			   void *buf, int bytes)
+static int stm32_bsec_read(void *ctx, unsigned offset, void *buf, size_t bytes)
 {
-	struct bsec_priv *priv = dev->parent->priv;
+	struct bsec_priv *priv = ctx;
 	u32 roffset, rbytes, val;
 	u8 *buf8 = buf, *val8 = (u8 *)&val;
 	int i, j = 0, ret, skip_bytes, size;
@@ -103,7 +101,7 @@ static int stm32_bsec_read(struct device_d *dev, int offset,
 	for (i = roffset; i < roffset + rbytes; i += 4) {
 		ret = regmap_bulk_read(priv->map, i, &val, 4);
 		if (ret) {
-			dev_err(dev, "Can't read data%d (%d)\n", i, ret);
+			dev_err(&priv->dev, "Can't read data%d (%d)\n", i, ret);
 			return ret;
 		}
 
@@ -218,12 +216,12 @@ static int stm32_bsec_probe(struct device_d *dev)
 		return PTR_ERR(priv->map);
 
 	priv->config.name = "stm32-bsec";
+	priv->config.priv = priv;
 	priv->config.dev = dev;
 	priv->config.stride = 1;
 	priv->config.word_size = 1;
 	priv->config.size = data->num_regs;
 	priv->config.bus = &stm32_bsec_nvmem_bus;
-	dev->priv = priv;
 
 	nvmem = nvmem_register(&priv->config);
 	if (IS_ERR(nvmem))

@@ -44,9 +44,7 @@ static int sama5_ddr_probe(struct device_d *dev)
 		return PTR_ERR(iores);
 	base = IOMEM(iores->start);
 
-	arm_add_mem_device("ram0", SAMA5_DDRCS, sama5_ramsize(base));
-
-	return 0;
+	return arm_add_mem_device("ram0", SAMA5_DDRCS, sama5_ramsize(base));
 }
 
 static struct of_device_id sama5_ddr_dt_ids[] = {

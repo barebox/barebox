@@ -132,9 +132,7 @@ static int stm32mp1_ddr_probe(struct device_d *dev)
 		return PTR_ERR(iores);
 	base = IOMEM(iores->start);
 
-	arm_add_mem_device("ram0", STM32_DDR_BASE, ddrctrl_ramsize(base));
-
-	return 0;
+	return arm_add_mem_device("ram0", STM32_DDR_BASE, ddrctrl_ramsize(base));
 }
 
 static __maybe_unused struct of_device_id stm32mp1_ddr_dt_ids[] = {

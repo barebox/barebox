@@ -24,9 +24,7 @@
 
 static int am33xx_scrm_probe(struct device_d *dev)
 {
-	arm_add_mem_device("ram0", 0x80000000, am335x_sdram_size());
-
-	return 0;
+	return arm_add_mem_device("ram0", 0x80000000, am335x_sdram_size());
 }
 
 static __maybe_unused struct of_device_id am33xx_scrm_dt_ids[] = {

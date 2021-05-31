@@ -115,15 +115,11 @@ int barebox_add_memory_bank(const char *name, resource_size_t start,
 				    resource_size_t size)
 {
 	struct memory_bank *bank = xzalloc(sizeof(*bank));
-	struct device_d *dev;
 
 	bank->res = request_iomem_region(name, start, start + size - 1);
 	if (IS_ERR(bank->res))
 		return PTR_ERR(bank->res);
 
-	dev = add_mem_device(name, start, size, IORESOURCE_MEM_WRITEABLE);
-
-	bank->dev = dev;
 	bank->start = start;
 	bank->size = size;
 
@@ -131,6 +127,19 @@ int barebox_add_memory_bank(const char *name, resource_size_t start,
 
 	return 0;
 }
+
+static int add_mem_devices(void)
+{
+	struct memory_bank *bank;
+
+	for_each_memory_bank(bank) {
+		add_mem_device(bank->res->name, bank->start, bank->size,
+			       IORESOURCE_MEM_WRITEABLE);
+	}
+
+	return 0;
+}
+mmu_initcall(add_mem_devices);
 
 /*
  * Request a region from the registered sdram

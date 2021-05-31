@@ -11,7 +11,6 @@ ulong mem_malloc_end(void);
 
 struct memory_bank {
 	struct list_head list;
-	struct device_d *dev;
 	unsigned long start;
 	unsigned long size;
 	struct resource *res;

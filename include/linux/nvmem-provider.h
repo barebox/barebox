@@ -33,13 +33,21 @@ struct nvmem_config {
 	void			*priv;
 };
 
+struct regmap;
+
 #if IS_ENABLED(CONFIG_NVMEM)
 
 struct nvmem_device *nvmem_register(const struct nvmem_config *cfg);
+struct nvmem_device *nvmem_regmap_register(struct regmap *regmap, const char *name);
 
 #else
 
 static inline struct nvmem_device *nvmem_register(const struct nvmem_config *c)
+{
+	return ERR_PTR(-ENOSYS);
+}
+
+static inline struct nvmem_device *nvmem_regmap_register(struct regmap *regmap, const char *name)
 {
 	return ERR_PTR(-ENOSYS);
 }

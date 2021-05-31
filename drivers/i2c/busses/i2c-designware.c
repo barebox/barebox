@@ -274,7 +274,7 @@ static void i2c_dw_setup_timings(struct dw_i2c_dev *dw)
 		if (!(dw->sda_hold_time & DW_IC_SDA_HOLD_RX_MASK))
 			dw->sda_hold_time |= 1 << DW_IC_SDA_HOLD_RX_SHIFT;
 
-		dev_dbg(&dw->adapter.dev, "adjust SDA hold time.\n");
+		dev_dbg(dw->adapter.dev.parent, "adjust SDA hold time.\n");
 		writel(dw->sda_hold_time, dw->base + DW_IC_SDA_HOLD);
 	}
 }
@@ -547,9 +547,7 @@ static int i2c_dw_probe(struct device_d *pdev)
 
 	ic_comp_type_value = readl(dw->base + DW_IC_COMP_TYPE);
 	if (ic_comp_type_value != DW_IC_COMP_TYPE_VALUE) {
-		dev_err(pdev,
-			"unknown DesignWare IP block 0x%08x",
-			ic_comp_type_value);
+		dev_err(pdev, "unknown DesignWare IP block 0x%08x\n", ic_comp_type_value);
 		ret = -ENODEV;
 		goto fail;
 	}
@@ -574,7 +572,7 @@ static int i2c_dw_probe(struct device_d *pdev)
 		ic_con = DW_IC_CON_SPEED_FAST;
 		break;
 	default:
-		dev_warn(pdev, "requested bitrate (%d) is not supported."
+		dev_warn(pdev, "requested bitrate (%d) is not supported.\n"
 			 " Falling back to 100kHz", bitrate);
 	case 100000:		/* FALLTHROUGH */
 		ic_con = DW_IC_CON_SPEED_STD;

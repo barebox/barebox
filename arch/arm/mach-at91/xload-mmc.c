@@ -116,7 +116,7 @@ void __noreturn sama5d3_atmci_start_image(u32 boot_src, unsigned int clock,
 
 	instance = &sama5d3_atmci_instances[boot_src];
 
-	sama5d3_pmc_enable_periph_clock(SAMA5D2_ID_PIOD);
+	sama5d3_pmc_enable_periph_clock(SAMA5D3_ID_PIOD);
 	for (pin = instance->pins; *pin >= 0; pin++) {
 		at91_mux_pio3_pin(IOMEM(SAMA5D3_BASE_PIOD),
 					 pin_to_mask(*pin), instance->periph, 0);

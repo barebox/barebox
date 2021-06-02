@@ -446,7 +446,14 @@ static void efi_partition(void *buf, struct block_device *blk,
 	}
 
 	nb_part = le32_to_cpu(gpt->num_partition_entries);
-	for (i = 0; i < MAX_PARTITION && i < nb_part; i++) {
+
+	if (nb_part > MAX_PARTITION) {
+		dev_warn(blk->dev, "GPT has more partitions than we support (%d) > max partition number (%d)\n",
+			 nb_part, MAX_PARTITION);
+		nb_part = MAX_PARTITION;
+	}
+
+	for (i = 0; i < nb_part; i++) {
 		if (!is_pte_valid(&ptes[i], last_lba(blk))) {
 			dev_dbg(blk->dev, "Invalid pte %d\n", i);
 			return;
@@ -460,10 +467,6 @@ static void efi_partition(void *buf, struct block_device *blk,
 		snprintf(pentry->partuuid, sizeof(pentry->partuuid), "%pUl", &ptes[i].unique_partition_guid);
 		pd->used_entries++;
 	}
-
-	if (i > MAX_PARTITION)
-		dev_warn(blk->dev, "num_partition_entries (%d) > max partition number (%d)\n",
-			 nb_part, MAX_PARTITION);
 }
 
 static struct partition_parser efi_partition_parser = {

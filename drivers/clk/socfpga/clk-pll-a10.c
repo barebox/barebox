@@ -117,7 +117,7 @@ static struct clk *__socfpga_pll_init(struct device_node *node,
 	clk_pll_ops.enable = clk_socfpga_enable;
 	clk_pll_ops.disable = clk_socfpga_disable;
 
-	rc = clk_register(&pll_clk->clk);
+	rc = bclk_register(&pll_clk->clk);
 	if (rc) {
 		free(pll_clk);
 		return NULL;

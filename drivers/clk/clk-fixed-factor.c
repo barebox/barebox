@@ -73,7 +73,7 @@ struct clk *clk_fixed_factor(const char *name,
 	f->clk.parent_names = &f->parent;
 	f->clk.num_parents = 1;
 
-	ret = clk_register(&f->clk);
+	ret = bclk_register(&f->clk);
 	if (ret) {
 		free(f);
 		return ERR_PTR(ret);

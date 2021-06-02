@@ -104,7 +104,7 @@ struct clk *clk_gate2(const char *name, const char *parent, void __iomem *reg,
 
 	g = clk_gate2_alloc(name , parent, reg, shift, cgr_val, flags);
 
-	ret = clk_register(g);
+	ret = bclk_register(g);
 	if (ret) {
 		free(to_clk_gate2(g));
 		return ERR_PTR(ret);

@@ -103,7 +103,7 @@ at91_clk_register_h32mx(struct regmap *regmap, const char *name,
 
 	h32mxclk->regmap = regmap;
 
-	ret = clk_register(&h32mxclk->hw);
+	ret = bclk_register(&h32mxclk->hw);
 	if (ret) {
 		kfree(h32mxclk);
 		return ERR_PTR(ret);

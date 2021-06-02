@@ -95,7 +95,7 @@ at91_clk_register_plldiv(struct regmap *regmap, const char *name,
 
 	plldiv->regmap = regmap;
 
-	ret = clk_register(&plldiv->clk);
+	ret = bclk_register(&plldiv->clk);
 	if (ret) {
 		kfree(plldiv);
 		return ERR_PTR(ret);

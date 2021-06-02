@@ -104,7 +104,7 @@ struct clk *imx_clk_cpu(const char *name, const char *parent_name,
 	cpu->clk.parent_names = &icpu->parent_name;
 	cpu->clk.num_parents = 1;
 
-	ret = clk_register(&cpu->clk);
+	ret = bclk_register(&cpu->clk);
 	if (ret) {
 		free(cpu);
 		return NULL;

@@ -125,7 +125,7 @@ struct clk *clk_register_composite(const char *name,
 	composite->rate_clk = rate_clk;
 	composite->gate_clk = gate_clk;
 
-	ret = clk_register(&composite->clk);
+	ret = bclk_register(&composite->clk);
 	if (ret)
 		goto err;
 

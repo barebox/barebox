@@ -154,7 +154,7 @@ at91_clk_register_main_osc(struct regmap *regmap,
 				  AT91_PMC_MOSCEN,
 				  AT91_PMC_OSCBYPASS | AT91_PMC_KEY);
 
-	ret = clk_register(&osc->clk);
+	ret = bclk_register(&osc->clk);
 	if (ret) {
 		free(osc);
 		return ERR_PTR(ret);
@@ -254,7 +254,7 @@ at91_clk_register_main_rc_osc(struct regmap *regmap,
 	osc->regmap = regmap;
 	osc->frequency = frequency;
 
-	ret = clk_register(&osc->clk);
+	ret = bclk_register(&osc->clk);
 	if (ret) {
 		kfree(osc);
 		return ERR_PTR(ret);
@@ -347,7 +347,7 @@ at91_clk_register_rm9200_main(struct regmap *regmap,
 	clkmain->clk.num_parents = 1;
 	clkmain->regmap = regmap;
 
-	ret = clk_register(&clkmain->clk);
+	ret = bclk_register(&clkmain->clk);
 	if (ret) {
 		kfree(clkmain);
 		return ERR_PTR(ret);
@@ -463,7 +463,7 @@ at91_clk_register_sam9x5_main(struct regmap *regmap,
 	regmap_read(clkmain->regmap, AT91_CKGR_MOR, &status);
 	clkmain->parent = clk_main_parent_select(status);
 
-	ret = clk_register(&clkmain->clk);
+	ret = bclk_register(&clkmain->clk);
 	if (ret) {
 		kfree(clkmain);
 		return ERR_PTR(ret);

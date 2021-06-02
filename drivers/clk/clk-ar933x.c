@@ -84,7 +84,7 @@ static struct clk *clk_ar933x(const char *name, const char *parent,
 	f->clk.parent_names = &f->parent;
 	f->clk.num_parents = 1;
 
-	clk_register(&f->clk);
+	bclk_register(&f->clk);
 
 	return &f->clk;
 }

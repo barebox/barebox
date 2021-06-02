@@ -153,7 +153,7 @@ static struct clk *_tegra_clk_register_periph(const char *name,
 	periph->rst_reg = clk_base + rst_offs;
 	periph->rst_shift = id & 0x1f;
 
-	ret = clk_register(&periph->hw);
+	ret = bclk_register(&periph->hw);
 	if (ret)
 		goto out_register;
 

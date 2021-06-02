@@ -138,7 +138,7 @@ struct clk *clk_fractional_divider(
 	if (IS_ERR(fd))
 		return fd;
 
-	ret = clk_register(fd);
+	ret = bclk_register(fd);
 	if (ret) {
 		clk_fractional_divider_free(fd);
 		return ERR_PTR(ret);

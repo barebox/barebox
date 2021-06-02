@@ -171,7 +171,7 @@ static struct clk *__socfpga_gate_init(struct device_node *node,
 	socfpga_clk->clk.num_parents = i;
 	socfpga_clk->clk.parent_names = socfpga_clk->parent_names;
 
-	rc = clk_register(&socfpga_clk->clk);
+	rc = bclk_register(&socfpga_clk->clk);
 	if (rc) {
 		free(socfpga_clk);
 		return ERR_PTR(rc);

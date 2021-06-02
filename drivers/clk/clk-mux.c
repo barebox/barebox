@@ -84,7 +84,7 @@ struct clk *clk_mux(const char *name, unsigned clk_flags, void __iomem *reg,
 	m = clk_mux_alloc(name, clk_flags, reg, shift, width, parents,
 			  num_parents, mux_flags);
 
-	ret = clk_register(m);
+	ret = bclk_register(m);
 	if (ret) {
 		free(to_clk_mux(m));
 		return ERR_PTR(ret);

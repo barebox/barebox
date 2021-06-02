@@ -165,7 +165,7 @@ _at91sam9x5_clk_register_usb(struct regmap *regmap, const char *name,
 	usb->usbs_mask = usbs_mask;
 	usb->num_parents = num_parents;
 
-	ret = clk_register(&usb->clk);
+	ret = bclk_register(&usb->clk);
 	if (ret) {
 		kfree(usb);
 		return ERR_PTR(ret);
@@ -206,7 +206,7 @@ at91sam9n12_clk_register_usb(struct regmap *regmap, const char *name,
 	/* init.flags = CLK_SET_RATE_GATE | CLK_SET_RATE_PARENT; */
 	usb->regmap = regmap;
 
-	ret = clk_register(&usb->clk);
+	ret = bclk_register(&usb->clk);
 	if (ret) {
 		kfree(usb);
 		return ERR_PTR(ret);
@@ -321,7 +321,7 @@ at91rm9200_clk_register_usb(struct regmap *regmap, const char *name,
 	usb->regmap = regmap;
 	memcpy(usb->divisors, divisors, sizeof(usb->divisors));
 
-	ret = clk_register(&usb->clk);
+	ret = bclk_register(&usb->clk);
 	if (ret) {
 		kfree(usb);
 		return ERR_PTR(ret);

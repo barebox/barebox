@@ -127,7 +127,7 @@ at91sam9x5_clk_register_smd(struct regmap *regmap, const char *name,
 	/* init.flags = CLK_SET_RATE_GATE | CLK_SET_PARENT_GATE; */
 	smd->regmap = regmap;
 
-	ret = clk_register(&smd->clk);
+	ret = bclk_register(&smd->clk);
 	if (ret) {
 		kfree(smd);
 		return ERR_PTR(ret);

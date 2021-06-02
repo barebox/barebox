@@ -442,7 +442,7 @@ at91_clk_register_audio_pll_frac(struct regmap *regmap, const char *name,
 
 	frac_ck->regmap = regmap;
 
-	ret = clk_register(&frac_ck->clk);
+	ret = bclk_register(&frac_ck->clk);
 	if (ret) {
 		kfree(frac_ck);
 		return ERR_PTR(ret);
@@ -472,7 +472,7 @@ at91_clk_register_audio_pll_pad(struct regmap *regmap, const char *name,
 
 	apad_ck->regmap = regmap;
 
-	ret = clk_register(&apad_ck->clk);
+	ret = bclk_register(&apad_ck->clk);
 	if (ret) {
 		kfree(apad_ck);
 		return ERR_PTR(ret);
@@ -502,7 +502,7 @@ at91_clk_register_audio_pll_pmc(struct regmap *regmap, const char *name,
 
 	apmc_ck->regmap = regmap;
 
-	ret = clk_register(&apmc_ck->clk);
+	ret = bclk_register(&apmc_ck->clk);
 	if (ret) {
 		kfree(apmc_ck);
 		return ERR_PTR(ret);

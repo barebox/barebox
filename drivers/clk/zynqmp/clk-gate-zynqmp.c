@@ -83,7 +83,7 @@ struct clk *zynqmp_clk_register_gate(const char *name,
 	gate->clk.parent_names = &gate->parent;
 	gate->clk.num_parents = 1;
 
-	ret = clk_register(&gate->clk);
+	ret = bclk_register(&gate->clk);
 	if (ret) {
 		kfree(gate);
 		return ERR_PTR(ret);

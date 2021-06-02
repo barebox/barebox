@@ -148,7 +148,7 @@ struct clk *mxs_clk_ref(const char *name, const char *parent_name,
 	ref->reg = reg;
 	ref->idx = idx;
 
-	ret = clk_register(&ref->clk);
+	ret = bclk_register(&ref->clk);
 	if (ret)
 		return ERR_PTR(ret);
 

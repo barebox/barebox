@@ -103,7 +103,7 @@ struct clk *clk_gate_shared(const char *name, const char *parent, const char *co
 
 	clk = clk_gate_shared_alloc(name , parent, companion, flags);
 
-	ret = clk_register(clk);
+	ret = bclk_register(clk);
 	if (ret) {
 		clk_gate_shared_free(clk);
 		return ERR_PTR(ret);

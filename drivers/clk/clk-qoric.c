@@ -339,7 +339,7 @@ static struct clk * __init create_mux_common(struct clockgen *cg,
 	clk->num_parents = hwc->num_parents = i;
 	hwc->cg = cg;
 
-	ret = clk_register(clk);
+	ret = bclk_register(clk);
 	if (ret) {
 		pr_err("%s: Couldn't register %s: %d\n", __func__, clk->name, ret);
 		kfree(hwc);

@@ -330,7 +330,7 @@ struct clk *rockchip_clk_register_pll(enum rockchip_pll_type pll_type,
 	pll->lock_shift = lock_shift;
 	pll->flags = clk_pll_flags;
 
-	ret = clk_register(&pll->hw);
+	ret = bclk_register(&pll->hw);
 	if (ret) {
 		pr_err("%s: failed to register pll clock %s : %d\n",
 			__func__, name, ret);
@@ -351,7 +351,7 @@ struct clk *rockchip_clk_register_pll(enum rockchip_pll_type pll_type,
 	if (pll_type == pll_rk3066)
 		pll_mux->flags |= CLK_MUX_HIWORD_MASK;
 
-	ret = clk_register(pll_mux);
+	ret = bclk_register(pll_mux);
 	if (ret)
 		goto err_exit;
 

@@ -101,7 +101,7 @@ struct clk *mxs_clk_pll(const char *name, const char *parent_name,
 	pll->rate = rate;
 	pll->power = power;
 
-	ret = clk_register(&pll->clk);
+	ret = bclk_register(&pll->clk);
 	if (ret)
 		ERR_PTR(ret);
 

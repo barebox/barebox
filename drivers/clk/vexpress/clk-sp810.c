@@ -111,7 +111,7 @@ static void clk_sp810_of_setup(struct device_node *node)
 		 */
 		clk_sp810_timerclken_set_parent(&sp810->timerclken[i].hw, 1);
 
-		clk_register(&sp810->timerclken[i].hw);
+		bclk_register(&sp810->timerclken[i].hw);
 	}
 
 	of_clk_add_provider(node, clk_sp810_timerclken_of_get, sp810);

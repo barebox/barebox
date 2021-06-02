@@ -132,7 +132,7 @@ struct clk *imx_clk_pfd(const char *name, const char *parent,
 	pfd->clk.parent_names = &pfd->parent;
 	pfd->clk.num_parents = 1;
 
-	ret = clk_register(&pfd->clk);
+	ret = bclk_register(&pfd->clk);
 	if (ret) {
 		free(pfd);
 		return ERR_PTR(ret);

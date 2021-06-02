@@ -131,7 +131,7 @@ at91_clk_register_master(struct regmap *regmap,
 	master->characteristics = characteristics;
 	master->regmap = regmap;
 
-	ret = clk_register(&master->clk);
+	ret = bclk_register(&master->clk);
 	if (ret) {
 		kfree(master);
 		return ERR_PTR(ret);

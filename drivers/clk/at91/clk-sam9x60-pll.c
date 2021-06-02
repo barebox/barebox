@@ -311,7 +311,7 @@ sam9x60_clk_register_pll(struct regmap *regmap,
 	regmap_read(regmap, PMC_PLL_CTRL1, &pllr);
 	pll->mul = FIELD_GET(PMC_PLL_CTRL1_MUL_MSK, pllr);
 
-	ret = clk_register(&pll->clk);
+	ret = bclk_register(&pll->clk);
 	if (ret) {
 		kfree(pll);
 		return ERR_PTR(ret);

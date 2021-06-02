@@ -740,7 +740,7 @@ int ipu_di_init(struct ipu_soc *ipu, struct device_d *dev, int id,
 	di->clk_di_pixel.ops = &clk_di_ops;
 	di->clk_di_pixel.num_parents = 2;
 	di->clk_di_pixel.name = di->clk_name;
-	ret = clk_register(&di->clk_di_pixel);
+	ret = bclk_register(&di->clk_di_pixel);
 	if (ret)
 		goto failed_clk_register;
 

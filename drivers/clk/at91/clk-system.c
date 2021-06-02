@@ -105,7 +105,7 @@ at91_clk_register_system(struct regmap *regmap, const char *name,
 	sys->id = id;
 	sys->regmap = regmap;
 
-	ret = clk_register(&sys->clk);
+	ret = bclk_register(&sys->clk);
 	if (ret) {
 		kfree(sys);
 		return ERR_PTR(ret);

@@ -100,7 +100,7 @@ struct clk *clk_gate(const char *name, const char *parent, void __iomem *reg,
 
 	g = clk_gate_alloc(name , parent, reg, shift, flags, clk_gate_flags);
 
-	ret = clk_register(g);
+	ret = bclk_register(g);
 	if (ret) {
 		free(to_clk_gate(g));
 		return ERR_PTR(ret);

@@ -147,7 +147,7 @@ at91_clk_register_utmi(struct regmap *regmap_pmc, struct regmap *regmap_sfr,
 	utmi->regmap_pmc = regmap_pmc;
 	utmi->regmap_sfr = regmap_sfr;
 
-	ret = clk_register(&utmi->clk);
+	ret = bclk_register(&utmi->clk);
 	if (ret) {
 		kfree(utmi);
 		return ERR_PTR(ret);

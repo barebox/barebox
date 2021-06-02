@@ -564,7 +564,7 @@ clk_stm32_register_gate_ops(const char *name,
 	clk->num_parents = 1;
 	clk->flags = flags;
 
-	ret = clk_register(clk);
+	ret = bclk_register(clk);
 	if (ret)
 		clk = ERR_PTR(ret);
 
@@ -810,7 +810,7 @@ static struct clk *clk_register_pll(const char *name,
 
 	element->reg = reg;
 
-	err = clk_register(clk);
+	err = bclk_register(clk);
 
 	if (err) {
 		kfree(element);
@@ -934,7 +934,7 @@ static struct clk *clk_register_cktim(const char *name,
 	tim_ker->apbdiv = apbdiv;
 	tim_ker->timpre = timpre;
 
-	err = clk_register(clk);
+	err = bclk_register(clk);
 	if (err) {
 		kfree(tim_ker);
 		return ERR_PTR(err);

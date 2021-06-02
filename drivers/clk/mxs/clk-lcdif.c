@@ -68,7 +68,7 @@ struct clk *mxs_clk_lcdif(const char *name, struct clk *frac, struct clk *div,
 	lcdif->clk.parent_names = &lcdif->parent;
 	lcdif->clk.num_parents = 1;
 
-	ret = clk_register(&lcdif->clk);
+	ret = bclk_register(&lcdif->clk);
 	if (ret)
 		return ERR_PTR(ret);
 

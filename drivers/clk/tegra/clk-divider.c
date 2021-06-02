@@ -180,7 +180,7 @@ struct clk *tegra_clk_register_divider(const char *name,
 				  reg, flags, clk_divider_flags, shift, width,
 				  frac_width));
 
-	ret = clk_register(&divider->hw);
+	ret = bclk_register(&divider->hw);
 	if (ret) {
 		kfree(divider);
 		return ERR_PTR(ret);

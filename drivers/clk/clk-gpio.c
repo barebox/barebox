@@ -90,7 +90,7 @@ static int of_gpio_clk_setup(struct device_node *node)
 	if (ret)
 		goto no_request;
 
-	ret = clk_register(&clk_gpio->clk);
+	ret = bclk_register(&clk_gpio->clk);
 	if (ret)
 		goto no_register;
 

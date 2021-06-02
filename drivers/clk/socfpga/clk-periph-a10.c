@@ -104,7 +104,7 @@ static struct clk *__socfpga_periph_init(struct device_node *node,
 	periph_clk->clk.name = xstrdup(clk_name);
 	periph_clk->clk.ops = ops;
 
-	rc = clk_register(&periph_clk->clk);
+	rc = bclk_register(&periph_clk->clk);
 	if (rc) {
 		free(periph_clk);
 		return ERR_PTR(rc);

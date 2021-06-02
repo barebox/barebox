@@ -119,7 +119,7 @@ at91_clk_register_peripheral(struct regmap *regmap, const char *name,
 	periph->id = id;
 	periph->regmap = regmap;
 
-	ret = clk_register(&periph->clk);
+	ret = bclk_register(&periph->clk);
 	if (ret) {
 		kfree(periph);
 		return ERR_PTR(ret);
@@ -338,7 +338,7 @@ at91_clk_register_sam9x5_peripheral(struct regmap *regmap,
 	periph->layout = layout;
 	periph->range = *range;
 
-	ret = clk_register(&periph->clk);
+	ret = bclk_register(&periph->clk);
 	if (ret) {
 		kfree(periph);
 		return ERR_PTR(ret);

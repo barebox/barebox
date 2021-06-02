@@ -90,7 +90,7 @@ struct clk *imx_clk_gate_exclusive(const char *name, const char *parent,
 	exgate->shift = shift;
 	exgate->exclusive_mask = exclusive_mask;
 
-	ret = clk_register(&exgate->clk);
+	ret = bclk_register(&exgate->clk);
 	if (ret) {
 		free(exgate);
 		return ERR_PTR(ret);

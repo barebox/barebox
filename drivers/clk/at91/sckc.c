@@ -152,7 +152,7 @@ at91_clk_register_slow_osc(void __iomem *sckcr,
 		writel((readl(sckcr) & ~osc->bits->cr_osc32en) |
 					osc->bits->cr_osc32byp, sckcr);
 
-	ret = clk_register(&osc->clk);
+	ret = bclk_register(&osc->clk);
 	if (ret) {
 		kfree(osc);
 		return ERR_PTR(ret);
@@ -237,7 +237,7 @@ at91_clk_register_slow_rc_osc(void __iomem *sckcr,
 	osc->frequency = frequency;
 	osc->startup_usec = startup;
 
-	ret = clk_register(&osc->clk);
+	ret = bclk_register(&osc->clk);
 	if (ret) {
 		kfree(osc);
 		return ERR_PTR(ret);
@@ -318,7 +318,7 @@ at91_clk_register_sam9x5_slow(void __iomem *sckcr,
 	slowck->bits = bits;
 	slowck->parent = !!(readl(sckcr) & slowck->bits->cr_oscsel);
 
-	ret = clk_register(&slowck->clk);
+	ret = bclk_register(&slowck->clk);
 	if (ret) {
 		kfree(slowck);
 		return ERR_PTR(ret);
@@ -571,7 +571,7 @@ static void __init of_sama5d4_sckc_setup(struct device_node *np)
 	osc->startup_usec = 1200000;
 	osc->bits = &at91sama5d4_bits;
 
-	ret = clk_register(&osc->clk);
+	ret = bclk_register(&osc->clk);
 	if (ret)
 		goto free_slow_osc_data;
 

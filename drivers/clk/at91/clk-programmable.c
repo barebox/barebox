@@ -156,7 +156,7 @@ at91_clk_register_programmable(struct regmap *regmap,
 	prog->layout = layout;
 	prog->regmap = regmap;
 
-	ret = clk_register(&prog->clk);
+	ret = bclk_register(&prog->clk);
 	if (ret) {
 		kfree(prog);
 		return ERR_PTR(ret);

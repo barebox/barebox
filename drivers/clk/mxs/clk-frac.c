@@ -122,7 +122,7 @@ struct clk *mxs_clk_frac(const char *name, const char *parent_name,
 	frac->shift = shift;
 	frac->width = width;
 
-	ret = clk_register(&frac->clk);
+	ret = bclk_register(&frac->clk);
 	if (ret)
 		return ERR_PTR(ret);
 

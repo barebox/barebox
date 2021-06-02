@@ -242,7 +242,7 @@ static int mvebu_corediv_clk_probe(struct device_d *dev)
 		corediv->desc = &soc_desc->descs[n];
 		corediv->reg = base;
 		clk_data.clks[n] = clk;
-		WARN_ON(IS_ERR_VALUE(clk_register(clk)));
+		WARN_ON(IS_ERR_VALUE(bclk_register(clk)));
 	}
 
 	return of_clk_add_provider(np, of_clk_src_onecell_get, &clk_data);

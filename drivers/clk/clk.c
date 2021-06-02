@@ -258,7 +258,7 @@ struct clk *clk_get_parent(struct clk *clk)
 	return clk->parents[idx];
 }
 
-int clk_register(struct clk *clk)
+int bclk_register(struct clk *clk)
 {
 	struct clk *c;
 	int ret;

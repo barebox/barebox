@@ -63,7 +63,7 @@ at91_clk_register_sam9260_slow(struct regmap *regmap,
 	slowck->clk.num_parents = num_parents;
 	slowck->regmap = regmap;
 
-	ret = clk_register(&slowck->clk);
+	ret = bclk_register(&slowck->clk);
 	if (ret) {
 		kfree(slowck);
 		return ERR_PTR(ret);

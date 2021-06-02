@@ -304,7 +304,7 @@ at91_clk_register_pll(struct regmap *regmap, const char *name,
 	pll->div = PLL_DIV(pllr);
 	pll->mul = PLL_MUL(pllr, layout);
 
-	ret = clk_register(&pll->clk);
+	ret = bclk_register(&pll->clk);
 	if (ret) {
 		kfree(pll);
 		return ERR_PTR(ret);

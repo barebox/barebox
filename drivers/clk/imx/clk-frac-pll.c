@@ -210,7 +210,7 @@ struct clk *imx_clk_frac_pll(const char *name, const char *parent,
 	pll->clk.parent_names = &pll->parent;
 	pll->clk.num_parents = 1;
 
-	ret = clk_register(&pll->clk);
+	ret = bclk_register(&pll->clk);
 	if (ret) {
 		free(pll);
 		return ERR_PTR(ret);

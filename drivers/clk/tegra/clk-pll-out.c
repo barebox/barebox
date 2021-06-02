@@ -117,7 +117,7 @@ struct clk *tegra_clk_register_pll_out(const char *name,
 	pll_out->enb_bit_idx = shift + 1;
 	pll_out->rst_bit_idx = shift;
 
-	ret = clk_register(&pll_out->hw);
+	ret = bclk_register(&pll_out->hw);
 	if (ret) {
 		tegra_clk_divider_free(pll_out->div);
 		kfree(pll_out);

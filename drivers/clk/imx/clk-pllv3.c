@@ -409,7 +409,7 @@ struct clk *imx_clk_pllv3(enum imx_pllv3_type type, const char *name,
 	val &= ~BM_PLL_BYPASS;
 	writel(val, pll->base);
 
-	ret = clk_register(&pll->clk);
+	ret = bclk_register(&pll->clk);
 	if (ret) {
 		free(pll);
 		return ERR_PTR(ret);

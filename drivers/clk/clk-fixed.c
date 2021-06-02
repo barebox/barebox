@@ -49,7 +49,7 @@ struct clk *clk_register_fixed_rate(const char *name,
 		fix->clk.num_parents = 1;
 	}
 
-	ret = clk_register(&fix->clk);
+	ret = bclk_register(&fix->clk);
 	if (ret) {
 		free(parent_names);
 		free(fix);

@@ -203,7 +203,7 @@ struct clk *zynqmp_clk_register_pll(const char *name,
 	pll->clk.parent_names = &pll->parent;
 	pll->clk.num_parents = 1;
 
-	ret = clk_register(&pll->clk);
+	ret = bclk_register(&pll->clk);
 	if (ret) {
 		kfree(pll);
 		return ERR_PTR(ret);

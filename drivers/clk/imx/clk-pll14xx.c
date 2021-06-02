@@ -435,7 +435,7 @@ struct clk *imx_clk_pll14xx(const char *name, const char *parent_name,
 	val &= ~BYPASS_MASK;
 	writel(val, pll->base + GNRL_CTL);
 
-	ret = clk_register(clk);
+	ret = bclk_register(clk);
 	if (ret) {
 		free(pll);
 		return ERR_PTR(ret);

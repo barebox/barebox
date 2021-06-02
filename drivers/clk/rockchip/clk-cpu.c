@@ -141,7 +141,7 @@ struct clk *rockchip_clk_register_cpuclk(const char *name,
 		}
 	}
 
-	ret = clk_register(&cpuclk->hw);
+	ret = bclk_register(&cpuclk->hw);
 	if (ret) {
 		pr_err("%s: could not register cpuclk %s\n", __func__,	name);
 		goto free_rate_table;

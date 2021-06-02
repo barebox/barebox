@@ -128,7 +128,7 @@ static inline struct clk *zynq_pll_clk(enum zynq_pll_type type,
 		break;
 	}
 
-	ret = clk_register(&pll->clk);
+	ret = bclk_register(&pll->clk);
 	if (ret) {
 		free(pll);
 		return ERR_PTR(ret);
@@ -186,7 +186,7 @@ static struct clk *zynq_periph_clk(const char *name, void __iomem *clk_ctrl)
 	periph->clk.parent_names = peripheral_parents;
 	periph->clk.num_parents	= ARRAY_SIZE(peripheral_parents);
 
-	ret = clk_register(&periph->clk);
+	ret = bclk_register(&periph->clk);
 	if (ret) {
 		free(periph);
 		return ERR_PTR(ret);
@@ -248,7 +248,7 @@ static struct clk *zynq_cpu_clk(const char *name, void __iomem *clk_ctrl)
 	cpu->clk.parent_names	= cpu_parents;
 	cpu->clk.num_parents	= ARRAY_SIZE(cpu_parents);
 
-	ret = clk_register(&cpu->clk);
+	ret = bclk_register(&cpu->clk);
 	if (ret) {
 		free(cpu);
 		return ERR_PTR(ret);
@@ -355,7 +355,7 @@ static struct clk *zynq_cpu_subclk(const char *name,
 	subclk->clk.parent_names = &subclk_parent;
 	subclk->clk.num_parents	= 1;
 
-	ret = clk_register(&subclk->clk);
+	ret = bclk_register(&subclk->clk);
 	if (ret) {
 		free(subclk);
 		return ERR_PTR(ret);

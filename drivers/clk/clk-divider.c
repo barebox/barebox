@@ -335,7 +335,7 @@ struct clk *clk_divider(const char *name, const char *parent, unsigned clk_flags
 	d = clk_divider_alloc(name , parent, clk_flags, reg, shift, width,
 			      div_flags);
 
-	ret = clk_register(d);
+	ret = bclk_register(d);
 	if (ret) {
 		clk_divider_free(d);
 		return ERR_PTR(ret);
@@ -390,7 +390,7 @@ struct clk *clk_divider_table(const char *name, const char *parent,
 		div->table_size++;
 	}
 
-	ret = clk_register(&div->clk);
+	ret = bclk_register(&div->clk);
 	if (ret) {
 		free(div);
 		return ERR_PTR(ret);

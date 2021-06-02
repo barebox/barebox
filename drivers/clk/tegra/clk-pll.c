@@ -678,7 +678,7 @@ static struct clk *_tegra_clk_register_pll(const char *name,
 	pll->divm_shift = PLL_BASE_DIVM_SHIFT;
 	pll->divm_width = PLL_BASE_DIVM_WIDTH;
 
-	ret = clk_register(&pll->hw);
+	ret = bclk_register(&pll->hw);
 	if (ret) {
 		kfree(pll);
 		return ERR_PTR(ret);

@@ -76,7 +76,7 @@ at91_clk_i2s_mux_register(struct regmap *regmap, const char *name,
 	i2s_ck->bus_id = bus_id;
 	i2s_ck->regmap = regmap;
 
-	ret = clk_register(&i2s_ck->clk);
+	ret = bclk_register(&i2s_ck->clk);
 	if (ret) {
 		kfree(i2s_ck);
 		return ERR_PTR(ret);

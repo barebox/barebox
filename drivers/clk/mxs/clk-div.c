@@ -96,7 +96,7 @@ struct clk *mxs_clk_div(const char *name, const char *parent_name,
 	div->divider.flags = CLK_DIVIDER_ONE_BASED;
 	div->ops = &clk_divider_ops;
 
-	ret = clk_register(&div->divider.clk);
+	ret = bclk_register(&div->divider.clk);
 	if (ret)
 		return ERR_PTR(ret);
 

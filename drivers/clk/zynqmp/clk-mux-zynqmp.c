@@ -91,7 +91,7 @@ struct clk *zynqmp_clk_register_mux(const char *name,
 	mux->clk.parent_names = parent_names;
 	mux->clk.num_parents = num_parents;
 
-	ret = clk_register(&mux->clk);
+	ret = bclk_register(&mux->clk);
 	if (ret) {
 		kfree(parent_names);
 		kfree(mux);

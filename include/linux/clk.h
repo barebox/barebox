@@ -494,7 +494,7 @@ long clk_parent_round_rate(struct clk *clk, unsigned long rate,
 int clk_parent_set_rate(struct clk *clk, unsigned long rate,
 				unsigned long parent_rate);
 
-int clk_register(struct clk *clk);
+int bclk_register(struct clk *clk);
 
 struct clk *clk_lookup(const char *name);
 

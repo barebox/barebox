@@ -97,7 +97,7 @@ static struct clk *socfpga_pll_clk(struct device_node *node)
 
 	of_property_read_u32(node, "reg", &pll->regofs);
 
-	ret = clk_register(&pll->clk);
+	ret = bclk_register(&pll->clk);
 	if (ret) {
 		free(pll);
 		return ERR_PTR(ret);
@@ -169,7 +169,7 @@ static struct clk *socfpga_periph_clk(struct device_node *node)
 	of_property_read_u32(node, "reg", &periph->regofs);
 	of_property_read_u32(node, "fixed-divider", &periph->fixed_div);
 
-	ret = clk_register(&periph->clk);
+	ret = bclk_register(&periph->clk);
 	if (ret) {
 		free(periph);
 		return ERR_PTR(ret);
@@ -356,7 +356,7 @@ static struct clk *socfpga_gate_clk(struct device_node *node)
 	cs->clk.name = xstrdup(node->name);
 	cs->clk.ops = &clk_socfpga_ops;
 
-	ret = clk_register(&cs->clk);
+	ret = bclk_register(&cs->clk);
 	if (ret) {
 		free(cs);
 		return ERR_PTR(ret);

@@ -101,7 +101,7 @@ struct clk *zynqmp_clk_register_divider(const char *name,
 	div->clk.parent_names = &div->parent;
 	div->clk.num_parents = 1;
 
-	ret = clk_register(&div->clk);
+	ret = bclk_register(&div->clk);
 	if (ret) {
 		kfree(div);
 		return ERR_PTR(ret);

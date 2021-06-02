@@ -191,7 +191,7 @@ at91_clk_register_generated(struct regmap *regmap,
 
 	clk_generated_startup(gck);
 	hw = &gck->hw;
-	ret = clk_register(&gck->hw);
+	ret = bclk_register(&gck->hw);
 	if (ret) {
 		kfree(gck);
 		hw = ERR_PTR(ret);

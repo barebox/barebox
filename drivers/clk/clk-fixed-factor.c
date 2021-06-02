@@ -11,24 +11,30 @@
 #include <linux/err.h>
 
 struct clk_fixed_factor {
-	struct clk clk;
+	struct clk_hw hw;
 	int mult;
 	int div;
 	const char *parent;
 };
 
-static unsigned long clk_fixed_factor_recalc_rate(struct clk *clk,
+static inline struct clk_fixed_factor *to_clk_fixed_factor(struct clk_hw *hw)
+{
+	return container_of(hw, struct clk_fixed_factor, hw);
+}
+
+static unsigned long clk_fixed_factor_recalc_rate(struct clk_hw *hw,
 		unsigned long parent_rate)
 {
-	struct clk_fixed_factor *f = container_of(clk, struct clk_fixed_factor, clk);
+	struct clk_fixed_factor *f = to_clk_fixed_factor(hw);
 
 	return (parent_rate / f->div) * f->mult;
 }
 
-static long clk_factor_round_rate(struct clk *clk, unsigned long rate,
+static long clk_factor_round_rate(struct clk_hw *hw, unsigned long rate,
 		unsigned long *prate)
 {
-	struct clk_fixed_factor *fix = container_of(clk, struct clk_fixed_factor, clk);
+	struct clk_fixed_factor *fix = to_clk_fixed_factor(hw);
+	struct clk *clk = clk_hw_to_clk(hw);
 
 	if (clk->flags & CLK_SET_RATE_PARENT) {
 		unsigned long best_parent;
@@ -40,10 +46,11 @@ static long clk_factor_round_rate(struct clk *clk, unsigned long rate,
 	return (*prate / fix->div) * fix->mult;
 }
 
-static int clk_factor_set_rate(struct clk *clk, unsigned long rate,
+static int clk_factor_set_rate(struct clk_hw *hw, unsigned long rate,
 		unsigned long parent_rate)
 {
-	struct clk_fixed_factor *fix = container_of(clk, struct clk_fixed_factor, clk);
+	struct clk_fixed_factor *fix = to_clk_fixed_factor(hw);
+	struct clk *clk = clk_hw_to_clk(hw);
 
 	if (clk->flags & CLK_SET_RATE_PARENT) {
 		return clk_set_rate(clk_get_parent(clk), rate * fix->div / fix->mult);
@@ -67,19 +74,19 @@ struct clk *clk_fixed_factor(const char *name,
 	f->mult = mult;
 	f->div = div;
 	f->parent = parent;
-	f->clk.ops = &clk_fixed_factor_ops;
-	f->clk.name = name;
-	f->clk.flags = flags;
-	f->clk.parent_names = &f->parent;
-	f->clk.num_parents = 1;
+	f->hw.clk.ops = &clk_fixed_factor_ops;
+	f->hw.clk.name = name;
+	f->hw.clk.flags = flags;
+	f->hw.clk.parent_names = &f->parent;
+	f->hw.clk.num_parents = 1;
 
-	ret = bclk_register(&f->clk);
+	ret = bclk_register(&f->hw.clk);
 	if (ret) {
 		free(f);
 		return ERR_PTR(ret);
 	}
 
-	return &f->clk;
+	return &f->hw.clk;
 }
 
 /**

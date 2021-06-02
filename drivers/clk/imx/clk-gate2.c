@@ -13,7 +13,7 @@
 
 
 struct clk_gate2 {
-	struct clk clk;
+	struct clk_hw hw;
 	void __iomem *reg;
 	int shift;
 	u8 cgr_val;
@@ -22,11 +22,14 @@ struct clk_gate2 {
 	unsigned flags;
 };
 
-#define to_clk_gate2(_clk) container_of(_clk, struct clk_gate2, clk)
-
-static int clk_gate2_enable(struct clk *clk)
+static inline struct clk_gate2 *to_clk_gate2(struct clk_hw *hw)
 {
-	struct clk_gate2 *g = to_clk_gate2(clk);
+	return container_of(hw, struct clk_gate2, hw);
+}
+
+static int clk_gate2_enable(struct clk_hw *hw)
+{
+	struct clk_gate2 *g = to_clk_gate2(hw);
 	u32 val;
 
 	val = readl(g->reg);
@@ -41,9 +44,9 @@ static int clk_gate2_enable(struct clk *clk)
 	return 0;
 }
 
-static void clk_gate2_disable(struct clk *clk)
+static void clk_gate2_disable(struct clk_hw *hw)
 {
-	struct clk_gate2 *g = to_clk_gate2(clk);
+	struct clk_gate2 *g = to_clk_gate2(hw);
 	u32 val;
 
 	val = readl(g->reg);
@@ -56,9 +59,9 @@ static void clk_gate2_disable(struct clk *clk)
 	writel(val, g->reg);
 }
 
-static int clk_gate2_is_enabled(struct clk *clk)
+static int clk_gate2_is_enabled(struct clk_hw *hw)
 {
-	struct clk_gate2 *g = to_clk_gate2(clk);
+	struct clk_gate2 *g = to_clk_gate2(hw);
 	u32 val;
 
 	val = readl(g->reg);
@@ -87,13 +90,13 @@ static struct clk *clk_gate2_alloc(const char *name, const char *parent,
 	g->reg = reg;
 	g->cgr_val = cgr_val;
 	g->shift = shift;
-	g->clk.ops = &clk_gate2_ops;
-	g->clk.name = name;
-	g->clk.parent_names = &g->parent;
-	g->clk.num_parents = 1;
-	g->clk.flags = CLK_SET_RATE_PARENT | flags;
+	g->hw.clk.ops = &clk_gate2_ops;
+	g->hw.clk.name = name;
+	g->hw.clk.parent_names = &g->parent;
+	g->hw.clk.num_parents = 1;
+	g->hw.clk.flags = CLK_SET_RATE_PARENT | flags;
 
-	return &g->clk;
+	return &g->hw.clk;
 }
 
 struct clk *clk_gate2(const char *name, const char *parent, void __iomem *reg,
@@ -106,7 +109,8 @@ struct clk *clk_gate2(const char *name, const char *parent, void __iomem *reg,
 
 	ret = bclk_register(g);
 	if (ret) {
-		free(to_clk_gate2(g));
+		struct clk_hw *hw = clk_to_clk_hw(g);
+		free(to_clk_gate2(hw));
 		return ERR_PTR(ret);
 	}
 

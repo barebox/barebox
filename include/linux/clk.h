@@ -23,6 +23,7 @@ struct device_d;
  * struct clk - an machine class defined object / cookie.
  */
 struct clk;
+struct clk_hw;
 
 /**
  * struct clk_bulk_data - Data used for bulk clk operations.
@@ -163,6 +164,7 @@ void clk_bulk_disable(int num_clks, const struct clk_bulk_data *clks);
  * @clk: clock source
  */
 unsigned long clk_get_rate(struct clk *clk);
+unsigned long clk_hw_get_rate(struct clk_hw *hw);
 
 /**
  * clk_bulk_put	- "free" the clock source
@@ -203,7 +205,7 @@ void clk_bulk_put_all(int num_clks, struct clk_bulk_data *clks);
  * Returns rounded clock rate in Hz, or negative errno.
  */
 long clk_round_rate(struct clk *clk, unsigned long rate);
-
+long clk_hw_round_rate(struct clk_hw *hw, unsigned long rate);
 /**
  * clk_set_rate - set the clock rate for a clock source
  * @clk: clock source
@@ -212,6 +214,7 @@ long clk_round_rate(struct clk *clk, unsigned long rate);
  * Returns success (0) or negative errno.
  */
 int clk_set_rate(struct clk *clk, unsigned long rate);
+int clk_hw_set_rate(struct clk_hw *hw, unsigned long rate);
 
 /**
  * clk_set_parent - set the parent clock source for this clock
@@ -221,6 +224,7 @@ int clk_set_rate(struct clk *clk, unsigned long rate);
  * Returns success (0) or negative errno.
  */
 int clk_set_parent(struct clk *clk, struct clk *parent);
+int clk_hw_set_parent(struct clk_hw *hw, struct clk_hw *hwp);
 
 /**
  * clk_get_parent - get the parent clock source for this clock
@@ -230,6 +234,7 @@ int clk_set_parent(struct clk *clk, struct clk *parent);
  * valid IS_ERR() condition containing errno.
  */
 struct clk *clk_get_parent(struct clk *clk);
+struct clk_hw *clk_hw_get_parent(struct clk_hw *hw);
 
 /**
  * clk_get_sys - get a clock based upon the device name
@@ -336,18 +341,36 @@ static inline void clk_put(struct clk *clk)
 #define CLK_GATE_HIWORD_MASK	(1 << 1)
 
 struct clk_ops {
-	int 		(*init)(struct clk *clk);
-	int		(*enable)(struct clk *clk);
-	void		(*disable)(struct clk *clk);
-	int		(*is_enabled)(struct clk *clk);
-	unsigned long	(*recalc_rate)(struct clk *clk,
+	int 		(*init)(struct clk_hw *hw);
+	int		(*enable)(struct clk_hw *hw);
+	void		(*disable)(struct clk_hw *hw);
+	int		(*is_enabled)(struct clk_hw *hw);
+	unsigned long	(*recalc_rate)(struct clk_hw *hw,
 					unsigned long parent_rate);
-	long		(*round_rate)(struct clk *clk, unsigned long,
+	long		(*round_rate)(struct clk_hw *hw, unsigned long,
 					unsigned long *);
-	int		(*set_parent)(struct clk *clk, u8 index);
-	int		(*get_parent)(struct clk *clk);
-	int		(*set_rate)(struct clk *clk, unsigned long,
+	int		(*set_parent)(struct clk_hw *hw, u8 index);
+	int		(*get_parent)(struct clk_hw *hw);
+	int		(*set_rate)(struct clk_hw *hw, unsigned long,
 				    unsigned long);
+};
+
+/**
+ * struct clk_init_data - holds init data that's common to all clocks and is
+ * shared between the clock provider and the common clock framework.
+ *
+ * @name: clock name
+ * @ops: operations this clock supports
+ * @parent_names: array of string names for all possible parents
+ * @num_parents: number of possible parents
+ * @flags: framework-level hints and quirks
+ */
+struct clk_init_data {
+	const char		*name;
+	const struct clk_ops	*ops;
+	const char		* const *parent_names;
+	unsigned int		num_parents;
+	unsigned long		flags;
 };
 
 struct clk {
@@ -361,6 +384,32 @@ struct clk {
 	struct clk **parents;
 	unsigned long flags;
 };
+
+/**
+ * struct clk_hw - handle for traversing from a struct clk to its corresponding
+ * hardware-specific structure.  struct clk_hw should be declared within struct
+ * clk_foo and then referenced by the struct clk instance that uses struct
+ * clk_foo's clk_ops
+ *
+ * @clk: pointer to the per-user struct clk instance that can be used to call
+ * into the clk API
+ *
+ * @init: pointer to struct clk_init_data that contains the init data shared
+ * with the common clock framework.
+ */
+struct clk_hw {
+	struct clk clk;
+};
+
+static inline struct clk *clk_hw_to_clk(struct clk_hw *hw)
+{
+	return &hw->clk;
+}
+
+static inline struct clk_hw *clk_to_clk_hw(struct clk *clk)
+{
+	return container_of(clk, struct clk_hw, clk);
+}
 
 struct clk_div_table {
 	unsigned int	val;
@@ -377,7 +426,7 @@ static inline struct clk *clk_fixed(const char *name, int rate)
 }
 
 struct clk_divider {
-	struct clk clk;
+	struct clk_hw hw;
 	u8 shift;
 	u8 width;
 	void __iomem *reg;
@@ -388,6 +437,8 @@ struct clk_divider {
 	int max_div_index;
 	int table_size;
 };
+
+#define to_clk_divider(_hw) container_of(_hw, struct clk_divider, hw)
 
 #define clk_div_mask(width)	((1 << (width)) - 1)
 
@@ -441,14 +492,14 @@ struct clk *clk_fractional_divider(
 void clk_fractional_divider_free(struct clk *clk_fd);
 
 struct clk_mux {
-	struct clk clk;
+	struct clk_hw hw;
 	void __iomem *reg;
 	int shift;
 	int width;
 	unsigned flags;
 };
 
-#define to_clk_mux(_clk) container_of(_clk, struct clk_mux, clk)
+#define to_clk_mux(_hw) container_of(_hw, struct clk_mux, hw)
 
 extern struct clk_ops clk_mux_ops;
 
@@ -462,16 +513,16 @@ struct clk *clk_mux(const char *name, unsigned clk_flags, void __iomem *reg,
 		    u8 num_parents, unsigned mux_flags);
 
 struct clk_gate {
-	struct clk clk;
+	struct clk_hw hw;
 	void __iomem *reg;
 	int shift;
 	const char *parent;
 	unsigned flags;
 };
 
-int clk_gate_is_enabled(struct clk *clk);
+int clk_gate_is_enabled(struct clk_hw *hw);
 
-#define to_clk_gate(_clk) container_of(_clk, struct clk_gate, clk)
+#define to_clk_gate(_hw) container_of(_hw, struct clk_gate, hw)
 
 extern struct clk_ops clk_gate_ops;
 
@@ -487,11 +538,12 @@ struct clk *clk_gate_shared(const char *name, const char *parent, const char *sh
 			    unsigned flags);
 
 int clk_is_enabled(struct clk *clk);
+int clk_hw_is_enabled(struct clk_hw *hw);
 
-int clk_is_enabled_always(struct clk *clk);
-long clk_parent_round_rate(struct clk *clk, unsigned long rate,
+int clk_is_enabled_always(struct clk_hw *hw);
+long clk_parent_round_rate(struct clk_hw *hw, unsigned long rate,
 				unsigned long *prate);
-int clk_parent_set_rate(struct clk *clk, unsigned long rate,
+int clk_parent_set_rate(struct clk_hw *hw, unsigned long rate,
 				unsigned long parent_rate);
 
 int bclk_register(struct clk *clk);
@@ -507,6 +559,12 @@ struct clk *clk_register_composite(const char *name,
 			struct clk *rate_clk,
 			struct clk *gate_clk,
 			unsigned long flags);
+
+static inline const char *clk_hw_get_name(struct clk_hw *hw)
+{
+	return hw->clk.name;
+}
+
 #endif
 
 struct device_node;

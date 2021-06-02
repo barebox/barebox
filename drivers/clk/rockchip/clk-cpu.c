@@ -48,7 +48,7 @@
  * @reg_data:	cpu-specific register settings
  */
 struct rockchip_cpuclk {
-	struct clk				hw;
+	struct clk_hw				hw;
 
 	struct clk				*alt_parent;
 	void __iomem				*reg_base;
@@ -57,9 +57,9 @@ struct rockchip_cpuclk {
 	const struct rockchip_cpuclk_reg_data	*reg_data;
 };
 
-#define to_rockchip_cpuclk_hw(hw) container_of(hw, struct rockchip_cpuclk, hw)
+#define to_rockchip_cpuclk_hw(_hw) container_of(_hw, struct rockchip_cpuclk, hw)
 
-static unsigned long rockchip_cpuclk_recalc_rate(struct clk *hw,
+static unsigned long rockchip_cpuclk_recalc_rate(struct clk_hw *hw,
 					unsigned long parent_rate)
 {
 	struct rockchip_cpuclk *cpuclk = to_rockchip_cpuclk_hw(hw);
@@ -94,13 +94,13 @@ struct clk *rockchip_clk_register_cpuclk(const char *name,
 	if (!cpuclk)
 		return ERR_PTR(-ENOMEM);
 
-	cpuclk->hw.name = name;
-	cpuclk->hw.parent_names = &parent_names[0];
-	cpuclk->hw.num_parents = 1;
-	cpuclk->hw.ops = &rockchip_cpuclk_ops;
+	cpuclk->hw.clk.name = name;
+	cpuclk->hw.clk.parent_names = &parent_names[0];
+	cpuclk->hw.clk.num_parents = 1;
+	cpuclk->hw.clk.ops = &rockchip_cpuclk_ops;
 
 	/* only allow rate changes when we have a rate table */
-	cpuclk->hw.flags = (nrates > 0) ? CLK_SET_RATE_PARENT : 0;
+	cpuclk->hw.clk.flags = (nrates > 0) ? CLK_SET_RATE_PARENT : 0;
 
 	cpuclk->reg_base = reg_base;
 	cpuclk->reg_data = reg_data;
@@ -141,13 +141,13 @@ struct clk *rockchip_clk_register_cpuclk(const char *name,
 		}
 	}
 
-	ret = bclk_register(&cpuclk->hw);
+	ret = bclk_register(&cpuclk->hw.clk);
 	if (ret) {
 		pr_err("%s: could not register cpuclk %s\n", __func__,	name);
 		goto free_rate_table;
 	}
 
-	return &cpuclk->hw;
+	return &cpuclk->hw.clk;
 
 free_rate_table:
 	kfree(cpuclk->rate_table);

@@ -15,10 +15,10 @@
 #include <linux/math64.h>
 #include <linux/barebox-wrapper.h>
 
-#define to_clk_fd(_hw) container_of(_hw, struct clk_fractional_divider, clk)
+#define to_clk_fd(_hw) container_of(_hw, struct clk_fractional_divider, hw)
 
 struct clk_fractional_divider {
-	struct clk	clk;
+	struct clk_hw	hw;
 	void __iomem	*reg;
 	u8		mshift;
 	u32		mmask;
@@ -27,7 +27,7 @@ struct clk_fractional_divider {
 	u8		flags;
 };
 
-static unsigned long clk_fd_recalc_rate(struct clk *hw,
+static unsigned long clk_fd_recalc_rate(struct clk_hw *hw,
 					unsigned long parent_rate)
 {
 	struct clk_fractional_divider *fd = to_clk_fd(hw);
@@ -45,7 +45,7 @@ static unsigned long clk_fd_recalc_rate(struct clk *hw,
 	return ret;
 }
 
-static long clk_fd_round_rate(struct clk *hw, unsigned long rate,
+static long clk_fd_round_rate(struct clk_hw *hw, unsigned long rate,
 			      unsigned long *prate)
 {
 	struct clk_fractional_divider *fd = to_clk_fd(hw);
@@ -65,7 +65,7 @@ static long clk_fd_round_rate(struct clk *hw, unsigned long rate,
 	return rate;
 }
 
-static int clk_fd_set_rate(struct clk *hw, unsigned long rate,
+static int clk_fd_set_rate(struct clk_hw *hw, unsigned long rate,
 			   unsigned long parent_rate)
 {
 	struct clk_fractional_divider *fd = to_clk_fd(hw);
@@ -107,18 +107,18 @@ struct clk *clk_fractional_divider_alloc(
 	fd->nshift = nshift;
 	fd->nmask = (BIT(nwidth) - 1) << nshift;
 	fd->flags = clk_divider_flags;
-	fd->clk.name = name;
-	fd->clk.ops = &clk_fractional_divider_ops;
-	fd->clk.flags = flags;
-	fd->clk.parent_names = parent_name ? &parent_name : NULL;
-	fd->clk.num_parents = parent_name ? 1 : 0;
+	fd->hw.clk.name = name;
+	fd->hw.clk.ops = &clk_fractional_divider_ops;
+	fd->hw.clk.flags = flags;
+	fd->hw.clk.parent_names = parent_name ? &parent_name : NULL;
+	fd->hw.clk.num_parents = parent_name ? 1 : 0;
 
-	return &fd->clk;
+	return &fd->hw.clk;
 }
 
 void clk_fractional_divider_free(struct clk *clk_fd)
 {
-	struct clk_fractional_divider *fd = to_clk_fd(clk_fd);
+	struct clk_fractional_divider *fd = to_clk_fd(clk_to_clk_hw(clk_fd));
 
 	free(fd);
 }

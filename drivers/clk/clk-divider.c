@@ -92,10 +92,11 @@ unsigned long divider_recalc_rate(struct clk *clk, unsigned long parent_rate,
 	return DIV_ROUND_UP_ULL((u64)parent_rate, div);
 }
 
-static unsigned long clk_divider_recalc_rate(struct clk *clk,
+static unsigned long clk_divider_recalc_rate(struct clk_hw *hw,
 		unsigned long parent_rate)
 {
-	struct clk_divider *divider = container_of(clk, struct clk_divider, clk);
+	struct clk *clk = clk_hw_to_clk(hw);
+	struct clk_divider *divider = container_of(hw, struct clk_divider, hw);
 	unsigned int val;
 
 	val = readl(divider->reg) >> divider->shift;
@@ -233,13 +234,14 @@ long divider_round_rate(struct clk *clk, unsigned long rate,
 	return DIV_ROUND_UP(*prate, div);
 }
 
-static long clk_divider_round_rate(struct clk *clk, unsigned long rate,
+static long clk_divider_round_rate(struct clk_hw *hw, unsigned long rate,
 				unsigned long *prate)
 {
-	struct clk_divider *divider = container_of(clk, struct clk_divider, clk);
+	struct clk *clk = clk_hw_to_clk(hw);
+	struct clk_divider *divider = to_clk_divider(hw);
 
 	if (divider->flags & CLK_DIVIDER_READ_ONLY)
-		return clk_divider_recalc_rate(clk, *prate);
+		return clk_divider_recalc_rate(hw, *prate);
 
 	return divider_round_rate(clk, rate, prate, divider->table,
 				  divider->width, divider->flags);
@@ -261,10 +263,11 @@ int divider_get_val(unsigned long rate, unsigned long parent_rate,
 	return min_t(unsigned int, value, clk_div_mask(width));
 }
 
-static int clk_divider_set_rate(struct clk *clk, unsigned long rate,
+static int clk_divider_set_rate(struct clk_hw *hw, unsigned long rate,
 		unsigned long parent_rate)
 {
-	struct clk_divider *divider = container_of(clk, struct clk_divider, clk);
+	struct clk *clk = clk_hw_to_clk(hw);
+	struct clk_divider *divider = to_clk_divider(hw);
 	unsigned int value;
 	u32 val;
 
@@ -310,18 +313,19 @@ struct clk *clk_divider_alloc(const char *name, const char *parent,
 	div->width = width;
 	div->parent = parent;
 	div->flags = div_flags;
-	div->clk.ops = &clk_divider_ops;
-	div->clk.name = name;
-	div->clk.flags = clk_flags;
-	div->clk.parent_names = &div->parent;
-	div->clk.num_parents = 1;
+	div->hw.clk.ops = &clk_divider_ops;
+	div->hw.clk.name = name;
+	div->hw.clk.flags = clk_flags;
+	div->hw.clk.parent_names = &div->parent;
+	div->hw.clk.num_parents = 1;
 
-	return &div->clk;
+	return &div->hw.clk;
 }
 
 void clk_divider_free(struct clk *clk)
 {
-	struct clk_divider *d =  container_of(clk, struct clk_divider, clk);
+	struct clk_hw *hw = clk_to_clk_hw(clk);
+	struct clk_divider *d = to_clk_divider(hw);
 
 	free(d);
 }
@@ -350,12 +354,15 @@ struct clk *clk_divider_one_based(const char *name, const char *parent,
 {
 	struct clk_divider *div;
 	struct clk *clk;
+	struct clk_hw *hw;
 
 	clk = clk_divider(name, parent, clk_flags, reg, shift, width, div_flags);
 	if (IS_ERR(clk))
 		return clk;
 
-	div = container_of(clk, struct clk_divider, clk);
+	hw = clk_to_clk_hw(clk);
+	div = to_clk_divider(hw);
+
 	div->flags |= CLK_DIVIDER_ONE_BASED;
 
 	return clk;
@@ -375,11 +382,11 @@ struct clk *clk_divider_table(const char *name, const char *parent,
 	div->width = width;
 	div->parent = parent;
 	div->flags = div_flags;
-	div->clk.ops = &clk_divider_ops;
-	div->clk.name = name;
-	div->clk.flags = clk_flags;
-	div->clk.parent_names = &div->parent;
-	div->clk.num_parents = 1;
+	div->hw.clk.ops = &clk_divider_ops;
+	div->hw.clk.name = name;
+	div->hw.clk.flags = clk_flags;
+	div->hw.clk.parent_names = &div->parent;
+	div->hw.clk.num_parents = 1;
 	div->table = table;
 
 	for (clkt = div->table; clkt->div; clkt++) {
@@ -390,11 +397,11 @@ struct clk *clk_divider_table(const char *name, const char *parent,
 		div->table_size++;
 	}
 
-	ret = bclk_register(&div->clk);
+	ret = bclk_register(&div->hw.clk);
 	if (ret) {
 		free(div);
 		return ERR_PTR(ret);
 	}
 
-	return &div->clk;
+	return &div->hw.clk;
 }

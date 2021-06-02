@@ -36,6 +36,7 @@ static void clk_parent_disable(struct clk *clk)
 
 int clk_enable(struct clk *clk)
 {
+	struct clk_hw *hw;
 	int ret;
 
 	if (!clk)
@@ -44,13 +45,15 @@ int clk_enable(struct clk *clk)
 	if (IS_ERR(clk))
 		return PTR_ERR(clk);
 
+	hw = clk_to_clk_hw(clk);
+
 	if (!clk->enable_count) {
 		ret = clk_parent_enable(clk);
 		if (ret)
 			return ret;
 
 		if (clk->ops->enable) {
-			ret = clk->ops->enable(clk);
+			ret = clk->ops->enable(hw);
 			if (ret) {
 				clk_parent_disable(clk);
 				return ret;
@@ -65,6 +68,8 @@ int clk_enable(struct clk *clk)
 
 void clk_disable(struct clk *clk)
 {
+	struct clk_hw *hw;
+
 	if (!clk)
 		return;
 
@@ -81,9 +86,11 @@ void clk_disable(struct clk *clk)
 
 	clk->enable_count--;
 
+	hw = clk_to_clk_hw(clk);
+
 	if (!clk->enable_count) {
 		if (clk->ops->disable)
-			clk->ops->disable(clk);
+			clk->ops->disable(hw);
 
 		clk_parent_disable(clk);
 	}
@@ -91,6 +98,7 @@ void clk_disable(struct clk *clk)
 
 unsigned long clk_get_rate(struct clk *clk)
 {
+	struct clk_hw *hw;
 	struct clk *parent;
 	unsigned long parent_rate = 0;
 
@@ -106,14 +114,22 @@ unsigned long clk_get_rate(struct clk *clk)
 	if (!IS_ERR_OR_NULL(parent))
 		parent_rate = clk_get_rate(parent);
 
+	hw = clk_to_clk_hw(clk);
+
 	if (clk->ops->recalc_rate)
-		return clk->ops->recalc_rate(clk, parent_rate);
+		return clk->ops->recalc_rate(hw, parent_rate);
 
 	return parent_rate;
 }
 
+unsigned long clk_hw_get_rate(struct clk_hw *hw)
+{
+	return clk_get_rate(clk_hw_to_clk(hw));
+}
+
 long clk_round_rate(struct clk *clk, unsigned long rate)
 {
+	struct clk_hw *hw;
 	unsigned long parent_rate = 0;
 	struct clk *parent;
 
@@ -127,14 +143,22 @@ long clk_round_rate(struct clk *clk, unsigned long rate)
 	if (parent)
 		parent_rate = clk_get_rate(parent);
 
+	hw = clk_to_clk_hw(clk);
+
 	if (clk->ops->round_rate)
-		return clk->ops->round_rate(clk, rate, &parent_rate);
+		return clk->ops->round_rate(hw, rate, &parent_rate);
 
 	return clk_get_rate(clk);
 }
 
+long clk_hw_round_rate(struct clk_hw *hw, unsigned long rate)
+{
+	return clk_round_rate(&hw->clk, rate);
+}
+
 int clk_set_rate(struct clk *clk, unsigned long rate)
 {
+	struct clk_hw *hw;
 	struct clk *parent;
 	unsigned long parent_rate = 0;
 	int ret;
@@ -159,12 +183,19 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
 		}
 	}
 
-	ret = clk->ops->set_rate(clk, rate, parent_rate);
+	hw = clk_to_clk_hw(clk);
+
+	ret = clk->ops->set_rate(hw, rate, parent_rate);
 
 	if (parent && clk->flags & CLK_OPS_PARENT_ENABLE)
 		clk_disable(parent);
 
 	return ret;
+}
+
+int clk_hw_set_rate(struct clk_hw *hw, unsigned long rate)
+{
+	return clk_set_rate(&hw->clk, rate);
 }
 
 struct clk *clk_lookup(const char *name)
@@ -184,6 +215,7 @@ struct clk *clk_lookup(const char *name)
 
 int clk_set_parent(struct clk *clk, struct clk *newparent)
 {
+	struct clk_hw *hw;
 	int i, ret;
 	struct clk *curparent = clk_get_parent(clk);
 
@@ -217,7 +249,9 @@ int clk_set_parent(struct clk *clk, struct clk *newparent)
 		clk_enable(newparent);
 	}
 
-	ret = clk->ops->set_parent(clk, i);
+	hw = clk_to_clk_hw(clk);
+
+	ret = clk->ops->set_parent(hw, i);
 
 	if (clk->flags & CLK_OPS_PARENT_ENABLE) {
 		clk_disable(curparent);
@@ -230,8 +264,14 @@ int clk_set_parent(struct clk *clk, struct clk *newparent)
 	return ret;
 }
 
+int clk_hw_set_parent(struct clk_hw *hw, struct clk_hw *newparent)
+{
+	return clk_set_parent(&hw->clk, &newparent->clk);
+}
+
 struct clk *clk_get_parent(struct clk *clk)
 {
+	struct clk_hw *hw;
 	int idx;
 
 	if (IS_ERR(clk))
@@ -240,11 +280,13 @@ struct clk *clk_get_parent(struct clk *clk)
 	if (!clk->num_parents)
 		return ERR_PTR(-ENODEV);
 
+	hw = clk_to_clk_hw(clk);
+
 	if (clk->num_parents != 1) {
 		if (!clk->ops->get_parent)
 			return ERR_PTR(-EINVAL);
 
-		idx = clk->ops->get_parent(clk);
+		idx = clk->ops->get_parent(hw);
 
 		if (idx >= clk->num_parents)
 			return ERR_PTR(-ENODEV);
@@ -258,8 +300,19 @@ struct clk *clk_get_parent(struct clk *clk)
 	return clk->parents[idx];
 }
 
+struct clk_hw *clk_hw_get_parent(struct clk_hw *hw)
+{
+	struct clk *clk = clk_get_parent(clk_hw_to_clk(hw));
+
+	if (IS_ERR(clk))
+		return ERR_CAST(clk);
+
+	return clk_to_clk_hw(clk);
+}
+
 int bclk_register(struct clk *clk)
 {
+	struct clk_hw *hw = clk_to_clk_hw(clk);
 	struct clk *c;
 	int ret;
 
@@ -276,7 +329,7 @@ int bclk_register(struct clk *clk)
 	list_add_tail(&clk->list, &clks);
 
 	if (clk->ops->init) {
-		ret = clk->ops->init(clk);
+		ret = clk->ops->init(hw);
 		if (ret)
 			goto out;
 	}
@@ -295,6 +348,7 @@ out:
 int clk_is_enabled(struct clk *clk)
 {
 	int enabled;
+	struct clk_hw *hw = clk_to_clk_hw(clk);
 
 	if (IS_ERR(clk))
 		return 0;
@@ -303,7 +357,7 @@ int clk_is_enabled(struct clk *clk)
 		/*
 		 * If we can ask a clk, do it
 		 */
-		enabled = clk->ops->is_enabled(clk);
+		enabled = clk->ops->is_enabled(hw);
 	} else {
 		if (clk->ops->enable) {
 			/*
@@ -332,26 +386,35 @@ int clk_is_enabled(struct clk *clk)
 	return clk_is_enabled(clk);
 }
 
+int clk_hw_is_enabled(struct clk_hw *hw)
+{
+	return clk_is_enabled(&hw->clk);
+}
+
 /*
  * Generic struct clk_ops callbacks
  */
-int clk_is_enabled_always(struct clk *clk)
+int clk_is_enabled_always(struct clk_hw *hw)
 {
 	return 1;
 }
 
-long clk_parent_round_rate(struct clk *clk, unsigned long rate,
+long clk_parent_round_rate(struct clk_hw *hw, unsigned long rate,
 				unsigned long *prate)
 {
+	struct clk *clk = clk_hw_to_clk(hw);
+
 	if (!(clk->flags & CLK_SET_RATE_PARENT))
 		return *prate;
 
 	return clk_round_rate(clk_get_parent(clk), rate);
 }
 
-int clk_parent_set_rate(struct clk *clk, unsigned long rate,
+int clk_parent_set_rate(struct clk_hw *hw, unsigned long rate,
 				unsigned long parent_rate)
 {
+	struct clk *clk = clk_hw_to_clk(hw);
+
 	if (!(clk->flags & CLK_SET_RATE_PARENT))
 		return 0;
 	return clk_set_rate(clk_get_parent(clk), rate);
@@ -675,8 +738,10 @@ int of_clk_init(struct device_node *root, const struct of_device_id *matches)
 
 static const char *clk_hw_stat(struct clk *clk)
 {
+	struct clk_hw *hw = clk_to_clk_hw(clk);
+
 	if (clk->ops->is_enabled) {
-		if (clk->ops->is_enabled(clk))
+		if (clk->ops->is_enabled(hw))
 			return "enabled";
 		else
 			return "disabled";

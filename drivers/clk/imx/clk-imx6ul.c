@@ -98,6 +98,7 @@ static int imx6_ccm_probe(struct device_d *dev)
 	void __iomem *base, *anatop_base, *ccm_base;
 	int i;
 	struct device_node *ccm_node = dev->device_node;
+	struct clk_hw *hw;
 
 	anatop_base = IOMEM(MX6_ANATOP_BASE_ADDR);
 	iores = dev_request_mem_resource(dev, 0);
@@ -445,7 +446,8 @@ static int imx6_ccm_probe(struct device_d *dev)
 				clks[IMX6UL_CLK_PLL3_PFD2]);
 
 	/* Disable GPMI_IO clk before reparenting to avoid glitches */
-	clks[IMX6UL_CLK_GPMI_IO]->ops->disable(clks[IMX6UL_CLK_GPMI_IO]);
+	hw = clk_to_clk_hw(clks[IMX6UL_CLK_GPMI_IO]);
+	clks[IMX6UL_CLK_GPMI_IO]->ops->disable(hw);
 
 	clk_set_parent(clks[IMX6UL_CLK_ENFC_SEL], clks[IMX6UL_CLK_PLL2_PFD2]);
 

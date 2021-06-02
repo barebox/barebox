@@ -503,7 +503,7 @@ struct clk_mux {
 
 #define to_clk_mux(_hw) container_of(_hw, struct clk_mux, hw)
 
-extern struct clk_ops clk_mux_ops;
+extern const struct clk_ops clk_mux_ops;
 
 struct clk *clk_mux_alloc(const char *name, unsigned clk_flags,
 			  void __iomem *reg, u8 shift, u8 width,

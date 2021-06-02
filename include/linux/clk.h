@@ -399,6 +399,7 @@ struct clk {
  */
 struct clk_hw {
 	struct clk clk;
+	const struct clk_init_data *init;
 };
 
 static inline struct clk *clk_hw_to_clk(struct clk_hw *hw)
@@ -547,6 +548,7 @@ int clk_parent_set_rate(struct clk_hw *hw, unsigned long rate,
 				unsigned long parent_rate);
 
 int bclk_register(struct clk *clk);
+struct clk *clk_register(struct device_d *dev, struct clk_hw *hw);
 
 struct clk *clk_lookup(const char *name);
 

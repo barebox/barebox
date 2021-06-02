@@ -345,6 +345,43 @@ out:
 	return ret;
 }
 
+struct clk *clk_register(struct device_d *dev, struct clk_hw *hw)
+{
+	struct clk *clk;
+	const struct clk_init_data *init = hw->init;
+	char **parent_names;
+	int i, ret;
+
+	if (!hw->init)
+		return ERR_PTR(-EINVAL);
+
+	clk = clk_hw_to_clk(hw);
+
+	memset(clk, 0, sizeof(*clk));
+
+	clk->name = xstrdup(init->name);
+	clk->ops = init->ops;
+	clk->num_parents = init->num_parents;
+	parent_names = xzalloc(init->num_parents * sizeof(char *));
+
+	for (i = 0; i < init->num_parents; i++)
+		parent_names[i] = xstrdup(init->parent_names[i]);
+
+	clk->parent_names = (const char *const*)parent_names;
+
+	clk->flags = init->flags;
+
+	ret = bclk_register(clk);
+	if (ret) {
+		for (i = 0; i < init->num_parents; i++)
+			free(parent_names[i]);
+		free(parent_names);
+		return ERR_PTR(ret);
+	}
+
+	return clk;
+}
+
 int clk_is_enabled(struct clk *clk)
 {
 	int enabled;

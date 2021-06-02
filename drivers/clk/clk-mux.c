@@ -48,6 +48,10 @@ const struct clk_ops clk_mux_ops = {
 	.set_parent = clk_mux_set_parent,
 };
 
+const struct clk_ops clk_mux_ro_ops = {
+	.get_parent = clk_mux_get_parent,
+};
+
 struct clk *clk_mux_alloc(const char *name, unsigned clk_flags, void __iomem *reg,
 		u8 shift, u8 width, const char * const *parents, u8 num_parents,
 		unsigned mux_flags)

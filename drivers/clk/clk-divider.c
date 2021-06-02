@@ -302,6 +302,10 @@ const struct clk_ops clk_divider_ops = {
 	.round_rate = clk_divider_round_rate,
 };
 
+const struct clk_ops clk_divider_ro_ops = {
+	.recalc_rate = clk_divider_recalc_rate,
+};
+
 struct clk *clk_divider_alloc(const char *name, const char *parent,
 			      unsigned clk_flags, void __iomem *reg, u8 shift,
 			      u8 width, unsigned div_flags)

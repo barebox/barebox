@@ -237,6 +237,9 @@ int clk_hw_set_parent(struct clk_hw *hw, struct clk_hw *hwp);
 struct clk *clk_get_parent(struct clk *clk);
 struct clk_hw *clk_hw_get_parent(struct clk_hw *hw);
 
+int clk_set_phase(struct clk *clk, int degrees);
+int clk_get_phase(struct clk *clk);
+
 /**
  * clk_get_sys - get a clock based upon the device name
  * @dev_id: device name
@@ -356,6 +359,8 @@ struct clk_ops {
 	int		(*get_parent)(struct clk_hw *hw);
 	int		(*set_rate)(struct clk_hw *hw, unsigned long,
 				    unsigned long);
+	int		(*set_phase)(struct clk_hw *hw, int degrees);
+	int		(*get_phase)(struct clk_hw *hw);
 };
 
 /**

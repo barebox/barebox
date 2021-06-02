@@ -11,6 +11,7 @@
 #define __LINUX_CLK_H
 
 #include <linux/err.h>
+#include <linux/spinlock.h>
 #include <linux/stringify.h>
 
 struct device_d;
@@ -437,6 +438,7 @@ struct clk_divider {
 	const struct clk_div_table *table;
 	int max_div_index;
 	int table_size;
+	spinlock_t *lock;
 };
 
 #define to_clk_divider(_hw) container_of(_hw, struct clk_divider, hw)
@@ -533,6 +535,7 @@ struct clk_fractional_divider {
 	void		(*approximation)(struct clk_hw *hw,
 				unsigned long rate, unsigned long *parent_rate,
 				unsigned long *m, unsigned long *n);
+	spinlock_t *lock;
 };
 
 #define CLK_FRAC_DIVIDER_ZERO_BASED		BIT(0)
@@ -558,6 +561,7 @@ struct clk_mux {
 	int shift;
 	int width;
 	unsigned flags;
+	spinlock_t *lock;
 };
 
 #define to_clk_mux(_hw) container_of(_hw, struct clk_mux, hw)
@@ -580,6 +584,7 @@ struct clk_gate {
 	int shift;
 	const char *parent;
 	unsigned flags;
+	spinlock_t *lock;
 };
 
 int clk_gate_is_enabled(struct clk_hw *hw);

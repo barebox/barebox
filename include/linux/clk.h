@@ -450,7 +450,7 @@ struct clk_divider {
 #define CLK_MUX_HIWORD_MASK		(1 << 2)
 #define CLK_MUX_READ_ONLY		(1 << 3) /* mux can't be changed */
 
-extern struct clk_ops clk_divider_ops;
+extern const struct clk_ops clk_divider_ops;
 
 unsigned long divider_recalc_rate(struct clk *clk, unsigned long parent_rate,
 		unsigned int val,

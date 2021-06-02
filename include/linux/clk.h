@@ -336,6 +336,7 @@ static inline void clk_put(struct clk *clk)
 #define CLK_GATE_HIWORD_MASK	(1 << 1)
 
 struct clk_ops {
+	int 		(*init)(struct clk *clk);
 	int		(*enable)(struct clk *clk);
 	void		(*disable)(struct clk *clk);
 	int		(*is_enabled)(struct clk *clk);

@@ -261,6 +261,7 @@ struct clk *clk_get_parent(struct clk *clk)
 int clk_register(struct clk *clk)
 {
 	struct clk *c;
+	int ret;
 
 	list_for_each_entry(c, &clks, list) {
 		if (!strcmp(c->name, clk->name)) {
@@ -274,10 +275,21 @@ int clk_register(struct clk *clk)
 
 	list_add_tail(&clk->list, &clks);
 
+	if (clk->ops->init) {
+		ret = clk->ops->init(clk);
+		if (ret)
+			goto out;
+	}
+
 	if (clk->flags & CLK_IS_CRITICAL)
 		clk_enable(clk);
 
 	return 0;
+out:
+	list_del(&clk->list);
+	free(clk->parents);
+
+	return ret;
 }
 
 int clk_is_enabled(struct clk *clk)

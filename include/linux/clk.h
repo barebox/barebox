@@ -498,6 +498,46 @@ extern struct clk_ops clk_fixed_factor_ops;
 struct clk *clk_fixed_factor(const char *name,
 		const char *parent, unsigned int mult, unsigned int div,
 		unsigned flags);
+
+/**
+ * struct clk_fractional_divider - adjustable fractional divider clock
+ *
+ * @hw:		handle between common and hardware-specific interfaces
+ * @reg:	register containing the divider
+ * @mshift:	shift to the numerator bit field
+ * @mwidth:	width of the numerator bit field
+ * @nshift:	shift to the denominator bit field
+ * @nwidth:	width of the denominator bit field
+ *
+ * Clock with adjustable fractional divider affecting its output frequency.
+ *
+ * Flags:
+ * CLK_FRAC_DIVIDER_ZERO_BASED - by default the numerator and denominator
+ *      is the value read from the register. If CLK_FRAC_DIVIDER_ZERO_BASED
+ *      is set then the numerator and denominator are both the value read
+ *      plus one.
+ * CLK_FRAC_DIVIDER_BIG_ENDIAN - By default little endian register accesses are
+ *      used for the divider register.  Setting this flag makes the register
+ *      accesses big endian.
+ */
+struct clk_fractional_divider {
+	struct clk_hw	hw;
+	void __iomem	*reg;
+	u8		mshift;
+	u8		mwidth;
+	u32		mmask;
+	u8		nshift;
+	u8		nwidth;
+	u32		nmask;
+	u8		flags;
+	void		(*approximation)(struct clk_hw *hw,
+				unsigned long rate, unsigned long *parent_rate,
+				unsigned long *m, unsigned long *n);
+};
+
+#define CLK_FRAC_DIVIDER_ZERO_BASED		BIT(0)
+#define CLK_FRAC_DIVIDER_BIG_ENDIAN		BIT(1)
+
 struct clk *clk_fractional_divider_alloc(
 		const char *name, const char *parent_name, unsigned long flags,
 		void __iomem *reg, u8 mshift, u8 mwidth, u8 nshift, u8 nwidth,
@@ -507,6 +547,10 @@ struct clk *clk_fractional_divider(
 		void __iomem *reg, u8 mshift, u8 mwidth, u8 nshift, u8 nwidth,
 		u8 clk_divider_flags);
 void clk_fractional_divider_free(struct clk *clk_fd);
+
+#define to_clk_fd(_hw) container_of(_hw, struct clk_fractional_divider, hw)
+
+extern const struct clk_ops clk_fractional_divider_ops;
 
 struct clk_mux {
 	struct clk_hw hw;

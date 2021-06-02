@@ -10,18 +10,6 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 
-struct clk_fixed_factor {
-	struct clk_hw hw;
-	int mult;
-	int div;
-	const char *parent;
-};
-
-static inline struct clk_fixed_factor *to_clk_fixed_factor(struct clk_hw *hw)
-{
-	return container_of(hw, struct clk_fixed_factor, hw);
-}
-
 static unsigned long clk_fixed_factor_recalc_rate(struct clk_hw *hw,
 		unsigned long parent_rate)
 {
@@ -59,7 +47,7 @@ static int clk_factor_set_rate(struct clk_hw *hw, unsigned long rate,
 	return 0;
 }
 
-static struct clk_ops clk_fixed_factor_ops = {
+struct clk_ops clk_fixed_factor_ops = {
 	.set_rate = clk_factor_set_rate,
 	.round_rate = clk_factor_round_rate,
 	.recalc_rate = clk_fixed_factor_recalc_rate,

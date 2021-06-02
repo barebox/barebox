@@ -172,6 +172,12 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
 	if (!clk->ops->set_rate)
 		return -ENOSYS;
 
+	if (clk->flags & CLK_SET_RATE_UNGATE) {
+		ret = clk_enable(clk);
+		if (ret)
+			return ret;
+	}
+
 	parent = clk_get_parent(clk);
 	if (parent) {
 		parent_rate = clk_get_rate(parent);
@@ -179,7 +185,7 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
 		if (clk->flags & CLK_OPS_PARENT_ENABLE) {
 			ret = clk_enable(parent);
 			if (ret)
-				return ret;
+				goto out;
 		}
 	}
 
@@ -189,6 +195,10 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
 
 	if (parent && clk->flags & CLK_OPS_PARENT_ENABLE)
 		clk_disable(parent);
+
+out:
+	if (clk->flags & CLK_SET_RATE_UNGATE)
+		clk_disable(clk);
 
 	return ret;
 }

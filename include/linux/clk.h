@@ -335,6 +335,7 @@ static inline void clk_put(struct clk *clk)
 #define CLK_IGNORE_UNUSED       (1 << 3) /* do not gate even if unused */
 #define CLK_GET_RATE_NOCACHE    (1 << 6) /* do not use the cached clk rate */
 #define CLK_SET_RATE_NO_REPARENT (1 << 7) /* don't re-parent on rate change */
+#define CLK_SET_RATE_UNGATE     (1 << 10) /* clock needs to run to set rate */
 #define CLK_IS_CRITICAL         (1 << 11) /* do not gate, ever */
 /* parents need enable during gate/ungate, set rate and re-parent */
 #define CLK_OPS_PARENT_ENABLE   (1 << 12)

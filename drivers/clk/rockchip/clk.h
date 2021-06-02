@@ -19,7 +19,6 @@
 
 /* To keep changes from kernel smaller */
 #define CLK_GATE_SET_TO_DISABLE	CLK_GATE_INVERTED
-#define CLK_GET_RATE_NOCACHE 0
 
 #define HIWORD_UPDATE(val, mask, shift) \
 		((val) << (shift) | (mask) << ((shift) + 16))

@@ -77,6 +77,13 @@ struct clk *clk_fixed_factor(const char *name,
 	return &f->hw.clk;
 }
 
+struct clk *clk_register_fixed_factor(struct device_d *dev, const char *name,
+		const char *parent_name, unsigned long flags,
+		unsigned int mult, unsigned int div)
+{
+	return clk_fixed_factor(name, parent_name, mult, div, flags);
+}
+
 /**
  * of_fixed_factor_clk_setup() - Setup function for simple fixed factor clock
  */

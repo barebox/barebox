@@ -27,7 +27,13 @@ config SELFTEST_AUTORUN
 
 config SELFTEST_ENABLE_ALL
 	bool "Enable all self-tests"
+	select SELFTEST_PRINTF
 	help
 	  Selects all self-tests compatible with current configuration
+
+config SELFTEST_PRINTF
+	bool "printf selftest"
+	help
+	  Tests barebox vsnprintf() functionality
 
 endif

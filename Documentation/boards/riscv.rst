@@ -41,24 +41,24 @@ TinyEMU
 -------
 
 TinyEMU can emulate a qemu-virt like machine with a RISC-V 32-, 64-
-and 128-bit CPU. It can run barebox with this sample configuration::
+and 128-bit CPU. It can run 32-bit barebox with this sample configuration:
 
-  /* temu barebox-virt64.cfg */
-  {
-      version: 1,
-      machine: "riscv64",
-      memory_size: 256,
-      bios: "bbl64.bin",
-      kernel: "./images/barebox-dt-2nd.img",
-  }
+.. literalinclude:: riscv/barebox-virt32.cfg
+
+as well as 64-bit barebox with this configuration:
+
+.. literalinclude:: riscv/barebox-virt64.cfg
 
 ``barebox-dt-2nd.img`` can be generated like with Qemu. Graphical
-output is also supported, but virtio input support is still missing.
+output and input are also supported.
 To activate add::
 
     display0: { device: "simplefb", width: 800, height: 600 },
+    input_device: "virtio",
 
 into the config file.
+
+See https://barebox.org/jsbarebox/?graphic=1 for a live example.
 
 Erizo
 -----

@@ -32,3 +32,4 @@ barebox.sum
 *.mvebu1img
 *.stm32
 *.nmon
+*.swapped

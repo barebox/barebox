@@ -1,0 +1,12 @@
+targets:
+  main:
+    drivers:
+      NativeExecutableDriver: # not yet supported by labgrid, only for interactive use
+        command: ./barebox
+        image: barebox
+    runner:
+      tuxmake_arch: um
+images:
+  barebox: !template "$LG_BUILDDIR/barebox"
+tools:
+  qemu: /usr/local/bin/temu

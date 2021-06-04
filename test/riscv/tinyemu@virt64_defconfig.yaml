@@ -1,0 +1,22 @@
+targets:
+  main:
+    drivers:
+      TinyEMUDriver: # not yet supported by labgrid, only for interactive use
+        temu_bin: temu
+        config: ./Documentation/boards/riscv/barebox-virt64.cfg
+        image: barebox-dt-2nd.img
+      BareboxDriver:
+        prompt: 'barebox@[^:]+:[^ ]+ '
+        bootstring: 'commandline:'
+      BareboxTestStrategy: {}
+    features:
+      - virtio-mmio
+    runner:
+      download:
+        bbl64.bin: https://barebox.org/jsbarebox/bbl64.bin
+images:
+  barebox-dt-2nd.img: !template "$LG_BUILDDIR/images/barebox-dt-2nd.img"
+tools:
+  temu: /usr/local/bin/temu
+imports:
+  -  ../strategy.py

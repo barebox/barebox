@@ -290,19 +290,18 @@ static int dove_sdhci_mci_init(struct mci_host *mci, struct device_d *dev)
 
 static void dove_sdhci_set_mci_caps(struct dove_sdhci *host)
 {
-	u16 caps[2];
+	u32 caps;
 
-	caps[0] = sdhci_read16(&host->sdhci, SDHCI_CAPABILITIES);
-	caps[1] = sdhci_read16(&host->sdhci, SDHCI_CAPABILITIES_1);
+	caps = sdhci_read32(&host->sdhci, SDHCI_CAPABILITIES);
 
-	if (caps[1] & SDHCI_HOSTCAP_VOLTAGE_180)
+	if (caps & SDHCI_CAN_VDD_180)
 		host->mci.voltages |= MMC_VDD_165_195;
-	if (caps[1] & SDHCI_HOSTCAP_VOLTAGE_300)
+	if (caps & SDHCI_CAN_VDD_300)
 		host->mci.voltages |= MMC_VDD_29_30 | MMC_VDD_30_31;
-	if (caps[1] & SDHCI_HOSTCAP_VOLTAGE_330)
+	if (caps & SDHCI_CAN_VDD_330)
 		host->mci.voltages |= MMC_VDD_32_33 | MMC_VDD_33_34;
 
-	if (caps[1] & SDHCI_HOSTCAP_HIGHSPEED)
+	if (caps & SDHCI_CAN_DO_HISPD)
 		host->mci.host_caps |= (MMC_CAP_MMC_HIGHSPEED_52MHZ |
 					MMC_CAP_MMC_HIGHSPEED |
 					MMC_CAP_SD_HIGHSPEED);
@@ -311,7 +310,7 @@ static void dove_sdhci_set_mci_caps(struct dove_sdhci *host)
 	mci_of_parse(&host->mci);
 
 	/* limit bus widths to controller capabilities */
-	if ((caps[1] & SDHCI_HOSTCAP_8BIT) == 0)
+	if ((caps & SDHCI_CAN_DO_8BIT) == 0)
 		host->mci.host_caps &= ~MMC_CAP_8_BIT_DATA;
 }
 

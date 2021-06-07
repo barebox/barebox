@@ -271,11 +271,11 @@ static int fsl_esdhc_probe(struct device_d *dev)
 
 	caps = sdhci_read32(&host->sdhci, SDHCI_CAPABILITIES);
 
-	if (caps & ESDHC_HOSTCAPBLT_VS18)
+	if (caps & SDHCI_CAN_VDD_180)
 		mci->voltages |= MMC_VDD_165_195;
-	if (caps & ESDHC_HOSTCAPBLT_VS30)
+	if (caps & SDHCI_CAN_VDD_300)
 		mci->voltages |= MMC_VDD_29_30 | MMC_VDD_30_31;
-	if (caps & ESDHC_HOSTCAPBLT_VS33)
+	if (caps & SDHCI_CAN_VDD_330)
 		mci->voltages |= MMC_VDD_32_33 | MMC_VDD_33_34;
 
 	if (pdata) {
@@ -284,7 +284,7 @@ static int fsl_esdhc_probe(struct device_d *dev)
 			mci->devname = pdata->devname;
 	}
 
-	if (caps & ESDHC_HOSTCAPBLT_HSS)
+	if (caps & SDHCI_CAN_DO_HISPD)
 		mci->host_caps |= MMC_CAP_MMC_HIGHSPEED | MMC_CAP_SD_HIGHSPEED;
 
 	host->mci.send_cmd = esdhc_send_cmd;

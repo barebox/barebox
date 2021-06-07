@@ -318,17 +318,17 @@ error:
 
 static void arasan_sdhci_set_mci_caps(struct arasan_sdhci_host *host)
 {
-	u16 caps = sdhci_read16(&host->sdhci, SDHCI_CAPABILITIES_1);
+	u32 caps = sdhci_read32(&host->sdhci, SDHCI_CAPABILITIES);
 
-	if ((caps & SDHCI_HOSTCAP_VOLTAGE_180) &&
+	if ((caps & SDHCI_CAN_VDD_180) &&
 	    !(host->quirks & SDHCI_ARASAN_QUIRK_NO_1_8_V))
 		host->mci.voltages |= MMC_VDD_165_195;
-	if (caps & SDHCI_HOSTCAP_VOLTAGE_300)
+	if (caps & SDHCI_CAN_VDD_300)
 		host->mci.voltages |= MMC_VDD_29_30 | MMC_VDD_30_31;
-	if (caps & SDHCI_HOSTCAP_VOLTAGE_330)
+	if (caps & SDHCI_CAN_VDD_330)
 		host->mci.voltages |= MMC_VDD_32_33 | MMC_VDD_33_34;
 
-	if (caps & SDHCI_HOSTCAP_HIGHSPEED)
+	if (caps & SDHCI_CAN_DO_HISPD)
 		host->mci.host_caps |= (MMC_CAP_MMC_HIGHSPEED_52MHZ |
 					MMC_CAP_MMC_HIGHSPEED |
 					MMC_CAP_SD_HIGHSPEED);
@@ -337,7 +337,7 @@ static void arasan_sdhci_set_mci_caps(struct arasan_sdhci_host *host)
 	mci_of_parse(&host->mci);
 
 	/* limit bus widths to controller capabilities */
-	if (!(caps & SDHCI_HOSTCAP_8BIT))
+	if (!(caps & SDHCI_CAN_DO_8BIT))
 		host->mci.host_caps &= ~MMC_CAP_8_BIT_DATA;
 }
 

@@ -42,13 +42,13 @@ void at91_sdhci_host_capability(struct at91_sdhci *host,
 {
 	u16 caps;
 
-	caps = sdhci_read16(&host->sdhci, SDHCI_CAPABILITIES_1);
+	caps = sdhci_read32(&host->sdhci, SDHCI_CAPABILITIES);
 
-	if (caps & SDHCI_HOSTCAP_VOLTAGE_330)
+	if (caps & SDHCI_CAN_VDD_330)
 		*voltages |= MMC_VDD_32_33 | MMC_VDD_33_34;
-	if (caps & SDHCI_HOSTCAP_VOLTAGE_300)
+	if (caps & SDHCI_CAN_VDD_300)
 		*voltages |= MMC_VDD_29_30 | MMC_VDD_30_31;
-	if (caps & SDHCI_HOSTCAP_VOLTAGE_180)
+	if (caps & SDHCI_CAN_VDD_180)
 		*voltages |= MMC_VDD_165_195;
 }
 

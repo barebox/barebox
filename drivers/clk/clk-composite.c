@@ -57,9 +57,18 @@ static long clk_composite_round_rate(struct clk_hw *hw, unsigned long rate,
 {
 	struct clk_composite *composite = to_clk_composite(hw);
 	struct clk *rate_clk = composite->rate_clk;
+	struct clk *mux_clk = composite->mux_clk;
 	struct clk_hw *rate_hw = clk_to_clk_hw(rate_clk);
 
-	return rate_clk ? rate_clk->ops->round_rate(rate_hw, rate, prate) : 0;
+	if (rate_clk)
+		return rate_clk->ops->round_rate(rate_hw, rate, prate);
+
+	if (!(hw->clk.flags & CLK_SET_RATE_NO_REPARENT) &&
+	    mux_clk &&
+	    mux_clk->ops->set_rate)
+		return mux_clk->ops->round_rate(clk_to_clk_hw(mux_clk), rate, prate);
+
+	return *prate;
 }
 
 static int clk_composite_set_rate(struct clk_hw *hw, unsigned long rate,
@@ -67,10 +76,23 @@ static int clk_composite_set_rate(struct clk_hw *hw, unsigned long rate,
 {
 	struct clk_composite *composite = to_clk_composite(hw);
 	struct clk *rate_clk = composite->rate_clk;
+	struct clk *mux_clk = composite->mux_clk;
 	struct clk_hw *rate_hw = clk_to_clk_hw(rate_clk);
 
-	return rate_clk ?
-		rate_clk->ops->set_rate(rate_hw, rate, parent_rate) : 0;
+	/*
+	 * When the rate clock is present use that to set the rate,
+	 * otherwise try the mux clock. We currently do not support
+	 * to find the best rate using a combination of both.
+	 */
+	if (rate_clk)
+		return rate_clk->ops->set_rate(rate_hw, rate, parent_rate);
+
+	if (!(hw->clk.flags & CLK_SET_RATE_NO_REPARENT) &&
+	    mux_clk &&
+	    mux_clk->ops->set_rate)
+		return mux_clk->ops->set_rate(clk_to_clk_hw(mux_clk), rate, parent_rate);
+
+	return 0;
 }
 
 static int clk_composite_is_enabled(struct clk_hw *hw)
@@ -136,6 +158,12 @@ struct clk *clk_register_composite(const char *name,
 	ret = bclk_register(&composite->hw.clk);
 	if (ret)
 		goto err;
+
+	if (composite->mux_clk) {
+		composite->mux_clk->parents = composite->hw.clk.parents;
+		composite->mux_clk->parent_names = composite->hw.clk.parent_names;
+		composite->mux_clk->num_parents = composite->hw.clk.num_parents;
+	}
 
 	return &composite->hw.clk;
 

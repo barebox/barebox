@@ -264,7 +264,7 @@ static int fsl_esdhc_probe(struct device_d *dev)
 		ret = PTR_ERR(iores);
 		goto err_clk_disable;
 	}
-	host->regs = IOMEM(iores->start);
+	host->sdhci.base = IOMEM(iores->start);
 
 	esdhc_populate_sdhci(host);
 

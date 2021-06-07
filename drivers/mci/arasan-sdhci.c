@@ -33,7 +33,6 @@
 struct arasan_sdhci_host {
 	struct mci_host		mci;
 	struct sdhci		sdhci;
-	void __iomem		*ioaddr;
 	unsigned int		quirks; /* Arasan deviations from spec */
 /* Controller does not have CD wired and will not function normally without */
 #define SDHCI_ARASAN_QUIRK_FORCE_CDTEST		BIT(0)
@@ -51,48 +50,6 @@ static inline
 struct arasan_sdhci_host *sdhci_to_arasan(struct sdhci *sdhci)
 {
 	return container_of(sdhci, struct arasan_sdhci_host, sdhci);
-}
-
-static void arasan_sdhci_writel(struct sdhci *sdhci, int reg, u32 val)
-{
-	struct arasan_sdhci_host *p = sdhci_to_arasan(sdhci);
-
-	writel(val, p->ioaddr + reg);
-}
-
-static void arasan_sdhci_writew(struct sdhci *sdhci, int reg, u16 val)
-{
-	struct arasan_sdhci_host *p = sdhci_to_arasan(sdhci);
-
-	writew(val, p->ioaddr + reg);
-}
-
-static void arasan_sdhci_writeb(struct sdhci *sdhci, int reg, u8 val)
-{
-	struct arasan_sdhci_host *p = sdhci_to_arasan(sdhci);
-
-	writeb(val, p->ioaddr + reg);
-}
-
-static u32 arasan_sdhci_readl(struct sdhci *sdhci, int reg)
-{
-	struct arasan_sdhci_host *p = sdhci_to_arasan(sdhci);
-
-	return readl(p->ioaddr + reg);
-}
-
-static u16 arasan_sdhci_readw(struct sdhci *sdhci, int reg)
-{
-	struct arasan_sdhci_host *p = sdhci_to_arasan(sdhci);
-
-	return readw(p->ioaddr + reg);
-}
-
-static u8 arasan_sdhci_readb(struct sdhci *sdhci, int reg)
-{
-	struct arasan_sdhci_host *p = sdhci_to_arasan(sdhci);
-
-	return readb(p->ioaddr + reg);
 }
 
 static int arasan_sdhci_card_present(struct mci_host *mci)
@@ -285,7 +242,6 @@ static int arasan_sdhci_probe(struct device_d *dev)
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
-	arasan_sdhci->ioaddr = IOMEM(iores->start);
 
 	clk_ahb = clk_get(dev, "clk_ahb");
 	if (IS_ERR(clk_ahb)) {
@@ -317,12 +273,7 @@ static int arasan_sdhci_probe(struct device_d *dev)
 	if (of_property_read_bool(np, "no-1-8-v"))
 		arasan_sdhci->quirks |= SDHCI_ARASAN_QUIRK_NO_1_8_V;
 
-	arasan_sdhci->sdhci.read32 = arasan_sdhci_readl;
-	arasan_sdhci->sdhci.read16 = arasan_sdhci_readw;
-	arasan_sdhci->sdhci.read8 = arasan_sdhci_readb;
-	arasan_sdhci->sdhci.write32 = arasan_sdhci_writel;
-	arasan_sdhci->sdhci.write16 = arasan_sdhci_writew;
-	arasan_sdhci->sdhci.write8 = arasan_sdhci_writeb;
+	arasan_sdhci->sdhci.base = IOMEM(iores->start);
 	arasan_sdhci->sdhci.mci = mci;
 	mci->send_cmd = arasan_sdhci_send_cmd;
 	mci->set_ios = arasan_sdhci_set_ios;

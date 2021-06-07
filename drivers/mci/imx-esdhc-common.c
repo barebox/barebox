@@ -16,42 +16,41 @@ struct fsl_esdhc_dma_transfer {
 	enum dma_data_direction dir;
 };
 
-static u32 esdhc_op_read32_le(struct sdhci *sdhci, int reg)
-{
-	struct fsl_esdhc_host *host = sdhci_to_esdhc(sdhci);
-
-	return readl(host->regs + reg);
-}
-
 static u32 esdhc_op_read32_be(struct sdhci *sdhci, int reg)
 {
 	struct fsl_esdhc_host *host = sdhci_to_esdhc(sdhci);
 
-	return in_be32(host->regs + reg);
-}
-
-static void esdhc_op_write32_le(struct sdhci *sdhci, int reg, u32 val)
-{
-	struct fsl_esdhc_host *host = sdhci_to_esdhc(sdhci);
-
-	writel(val, host->regs + reg);
+	return in_be32(host->sdhci.base + reg);
 }
 
 static void esdhc_op_write32_be(struct sdhci *sdhci, int reg, u32 val)
 {
 	struct fsl_esdhc_host *host = sdhci_to_esdhc(sdhci);
 
-	out_be32(host->regs + reg, val);
+	out_be32(host->sdhci.base + reg, val);
+}
+
+static u16 esdhc_op_read16_be(struct sdhci *sdhci, int reg)
+{
+	struct fsl_esdhc_host *host = sdhci_to_esdhc(sdhci);
+
+	return in_be16(host->sdhci.base + reg);
+}
+
+static void esdhc_op_write16_be(struct sdhci *sdhci, int reg, u16 val)
+{
+	struct fsl_esdhc_host *host = sdhci_to_esdhc(sdhci);
+
+	out_be16(host->sdhci.base + reg, val);
 }
 
 void esdhc_populate_sdhci(struct fsl_esdhc_host *host)
 {
 	if (host->socdata->flags & ESDHC_FLAG_BIGENDIAN) {
+		host->sdhci.read16 = esdhc_op_read16_be;
+		host->sdhci.write16 = esdhc_op_write16_be;
 		host->sdhci.read32 = esdhc_op_read32_be;
 		host->sdhci.write32 = esdhc_op_write32_be;
-	} else {
-		host->sdhci.read32 = esdhc_op_read32_le;
-		host->sdhci.write32 = esdhc_op_write32_le;
 	}
 }
 

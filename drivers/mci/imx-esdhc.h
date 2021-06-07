@@ -101,7 +101,6 @@ struct fsl_esdhc_host {
 	struct mci_host		mci;
 	struct clk		*clk;
 	struct device_d		*dev;
-	void __iomem		*regs;
 	const struct esdhc_soc_data *socdata;
 	struct sdhci	sdhci;
 };

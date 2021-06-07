@@ -20,54 +20,11 @@
 
 struct dove_sdhci {
 	struct mci_host mci;
-	void __iomem *base;
 	struct sdhci sdhci;
 };
 
 #define priv_from_mci_host(h)	\
 	container_of(h, struct dove_sdhci, mci);
-
-static void dove_sdhci_writel(struct sdhci *sdhci, int reg, u32 val)
-{
-	struct dove_sdhci *p = container_of(sdhci, struct dove_sdhci, sdhci);
-
-	writel(val, p->base + reg);
-}
-
-static void dove_sdhci_writew(struct sdhci *sdhci, int reg, u16 val)
-{
-	struct dove_sdhci *p = container_of(sdhci, struct dove_sdhci, sdhci);
-
-	writew(val, p->base + reg);
-}
-
-static void dove_sdhci_writeb(struct sdhci *sdhci, int reg, u8 val)
-{
-	struct dove_sdhci *p = container_of(sdhci, struct dove_sdhci, sdhci);
-
-	writeb(val, p->base + reg);
-}
-
-static u32 dove_sdhci_readl(struct sdhci *sdhci, int reg)
-{
-	struct dove_sdhci *p = container_of(sdhci, struct dove_sdhci, sdhci);
-
-	return readl(p->base + reg);
-}
-
-static u16 dove_sdhci_readw(struct sdhci *sdhci, int reg)
-{
-	struct dove_sdhci *p = container_of(sdhci, struct dove_sdhci, sdhci);
-
-	return readw(p->base + reg);
-}
-
-static u8 dove_sdhci_readb(struct sdhci *sdhci, int reg)
-{
-	struct dove_sdhci *p = container_of(sdhci, struct dove_sdhci, sdhci);
-
-	return readb(p->base + reg);
-}
 
 static int dove_sdhci_wait_for_done(struct dove_sdhci *host, u16 mask)
 {
@@ -320,7 +277,7 @@ static int dove_sdhci_probe(struct device_d *dev)
 	int ret;
 
 	host = xzalloc(sizeof(*host));
-	host->base = dev_request_mem_region(dev, 0);
+	host->sdhci.base = dev_request_mem_region(dev, 0);
 	host->mci.max_req_size = 0x8000;
 	host->mci.hw_dev = dev;
 	host->mci.send_cmd = dove_sdhci_mci_send_cmd;
@@ -328,12 +285,6 @@ static int dove_sdhci_probe(struct device_d *dev)
 	host->mci.init = dove_sdhci_mci_init;
 	host->mci.f_max = 50000000;
 	host->mci.f_min = host->mci.f_max / 256;
-	host->sdhci.read32 = dove_sdhci_readl;
-	host->sdhci.read16 = dove_sdhci_readw;
-	host->sdhci.read8 = dove_sdhci_readb;
-	host->sdhci.write32 = dove_sdhci_writel;
-	host->sdhci.write16 = dove_sdhci_writew;
-	host->sdhci.write8 = dove_sdhci_writeb;
 
 	dove_sdhci_set_mci_caps(host);
 

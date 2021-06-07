@@ -378,43 +378,7 @@ int at91_sdhci_init(struct at91_sdhci *host, u32 maxclk,
 	return 0;
 }
 
-static u32 at91_sdhci_read32(struct sdhci *sdhci, int reg)
-{
-	return readl(to_priv(sdhci)->base + reg);
-}
-
-static void at91_sdhci_write32(struct sdhci *sdhci, int reg, u32 value)
-{
-	writel(value, to_priv(sdhci)->base + reg);
-}
-
-static u16 at91_sdhci_read16(struct sdhci *sdhci, int reg)
-{
-	return readw(to_priv(sdhci)->base + reg);
-}
-
-static void at91_sdhci_write16(struct sdhci *sdhci, int reg, u16 value)
-{
-	writew(value, to_priv(sdhci)->base + reg);
-}
-
-static u8 at91_sdhci_read8(struct sdhci *sdhci, int reg)
-{
-	return readb(to_priv(sdhci)->base + reg);
-}
-
-static void at91_sdhci_write8(struct sdhci *sdhci, int reg, u8 value)
-{
-	writeb(value, to_priv(sdhci)->base + reg);
-}
-
 void at91_sdhci_mmio_init(struct at91_sdhci *host, void __iomem *base)
 {
-	host->base = base;
-	host->sdhci.read8 = at91_sdhci_read8;
-	host->sdhci.read16 = at91_sdhci_read16;
-	host->sdhci.read32 = at91_sdhci_read32;
-	host->sdhci.write8 = at91_sdhci_write8;
-	host->sdhci.write16 = at91_sdhci_write16;
-	host->sdhci.write32 = at91_sdhci_write32;
+	host->sdhci.base = base;
 }

@@ -200,14 +200,14 @@ static int imx8m_esdhc_init(struct fsl_esdhc_host *host,
 {
 	switch (instance) {
 	case 0:
-		host->regs = IOMEM(MX8M_USDHC1_BASE_ADDR);
+		host->sdhci.base = IOMEM(MX8M_USDHC1_BASE_ADDR);
 		break;
 	case 1:
-		host->regs = IOMEM(MX8M_USDHC2_BASE_ADDR);
+		host->sdhci.base = IOMEM(MX8M_USDHC2_BASE_ADDR);
 		break;
 	case 2:
 		/* Only exists on i.MX8MM, not on i.MX8MQ */
-		host->regs = IOMEM(MX8MM_USDHC3_BASE_ADDR);
+		host->sdhci.base = IOMEM(MX8MM_USDHC3_BASE_ADDR);
 		break;
 	default:
 		return -EINVAL;
@@ -237,16 +237,16 @@ int imx6_esdhc_start_image(int instance)
 
 	switch (instance) {
 	case 0:
-		host.regs = IOMEM(MX6_USDHC1_BASE_ADDR);
+		host.sdhci.base = IOMEM(MX6_USDHC1_BASE_ADDR);
 		break;
 	case 1:
-		host.regs = IOMEM(MX6_USDHC2_BASE_ADDR);
+		host.sdhci.base = IOMEM(MX6_USDHC2_BASE_ADDR);
 		break;
 	case 2:
-		host.regs = IOMEM(MX6_USDHC3_BASE_ADDR);
+		host.sdhci.base = IOMEM(MX6_USDHC3_BASE_ADDR);
 		break;
 	case 3:
-		host.regs = IOMEM(MX6_USDHC4_BASE_ADDR);
+		host.sdhci.base = IOMEM(MX6_USDHC4_BASE_ADDR);
 		break;
 	default:
 		return -EINVAL;
@@ -276,13 +276,13 @@ int imx7_esdhc_start_image(int instance)
 
 	switch (instance) {
 	case 0:
-		host.regs = IOMEM(MX7_USDHC1_BASE_ADDR);
+		host.sdhci.base = IOMEM(MX7_USDHC1_BASE_ADDR);
 		break;
 	case 1:
-		host.regs = IOMEM(MX7_USDHC2_BASE_ADDR);
+		host.sdhci.base = IOMEM(MX7_USDHC2_BASE_ADDR);
 		break;
 	case 2:
-		host.regs = IOMEM(MX7_USDHC3_BASE_ADDR);
+		host.sdhci.base = IOMEM(MX7_USDHC3_BASE_ADDR);
 		break;
 	default:
 		return -EINVAL;
@@ -375,7 +375,7 @@ int ls1046a_esdhc_start_image(unsigned long r0, unsigned long r1, unsigned long 
 		.flags = ESDHC_FLAG_BIGENDIAN,
 	};
 	struct fsl_esdhc_host host = {
-		.regs = IOMEM(0x01560000),
+		.sdhci.base = IOMEM(0x01560000),
 		.socdata = &data,
 	};
 	unsigned long sdram = 0x80000000;

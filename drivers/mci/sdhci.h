@@ -184,6 +184,8 @@ struct sdhci {
 	void (*write16)(struct sdhci *host, int reg, u16 val);
 	void (*write8)(struct sdhci *host, int reg, u8 val);
 
+	void __iomem *base;
+
 	int max_clk; /* Max possible freq (Hz) */
 	int clk_mul; /* Clock Muliplier value */
 
@@ -205,32 +207,50 @@ struct sdhci {
 
 static inline u32 sdhci_read32(struct sdhci *host, int reg)
 {
-	return host->read32(host, reg);
+	if (host->read32)
+		return host->read32(host, reg);
+	else
+		return readl(host->base + reg);
 }
 
 static inline u32 sdhci_read16(struct sdhci *host, int reg)
 {
-	return host->read16(host, reg);
+	if (host->read16)
+		return host->read16(host, reg);
+	else
+		return readw(host->base + reg);
 }
 
 static inline u32 sdhci_read8(struct sdhci *host, int reg)
 {
-	return host->read8(host, reg);
+	if (host->read8)
+		return host->read8(host, reg);
+	else
+		return readb(host->base + reg);
 }
 
 static inline void sdhci_write32(struct sdhci *host, int reg, u32 val)
 {
-	host->write32(host, reg, val);
+	if (host->write32)
+		host->write32(host, reg, val);
+	else
+		writel(val, host->base + reg);
 }
 
 static inline void sdhci_write16(struct sdhci *host, int reg, u32 val)
 {
-	host->write16(host, reg, val);
+	if (host->write16)
+		host->write16(host, reg, val);
+	else
+		writew(val, host->base + reg);
 }
 
 static inline void sdhci_write8(struct sdhci *host, int reg, u32 val)
 {
-	host->write8(host, reg, val);
+	if (host->write8)
+		host->write8(host, reg, val);
+	else
+		writeb(val, host->base + reg);
 }
 
 void sdhci_read_response(struct sdhci *host, struct mci_cmd *cmd);

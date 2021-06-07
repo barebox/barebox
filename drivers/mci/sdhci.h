@@ -75,15 +75,18 @@
 #define  SDHCI_BUS_VOLTAGE(v)			((v) << 1)
 #define  SDHCI_BUS_POWER_EN			BIT(0)
 #define SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET	0x2c
-#define SDHCI_CLOCK_CONTROL					0x2c
+#define SDHCI_CLOCK_CONTROL					0x2C
+#define  SDHCI_DIVIDER_SHIFT			8
 #define  SDHCI_DIVIDER_HI_SHIFT			6
-#define  SDHCI_DIV_HI_MASK			0x300
+#define  SDHCI_DIV_MASK				0xFF
 #define  SDHCI_DIV_MASK_LEN			8
-#define  SDHCI_FREQ_SEL(x)			(((x) & 0xff) << 8)
+#define  SDHCI_FREQ_SEL(x)                     (((x) & 0xff) << 8)
+#define  SDHCI_DIV_HI_MASK			0x300
 #define  SDHCI_PROG_CLOCK_MODE			BIT(5)
-#define  SDHCI_SDCLOCK_EN			BIT(2)
-#define  SDHCI_INTCLOCK_STABLE			BIT(1)
-#define  SDHCI_INTCLOCK_EN			BIT(0)
+#define  SDHCI_CLOCK_CARD_EN			BIT(2)
+#define  SDHCI_CLOCK_PLL_EN			BIT(3)
+#define  SDHCI_CLOCK_INT_STABLE			BIT(1)
+#define  SDHCI_CLOCK_INT_EN     		BIT(0)
 #define SDHCI_TIMEOUT_CONTROL					0x2e
 #define SDHCI_SOFTWARE_RESET					0x2f
 #define  SDHCI_RESET_ALL			BIT(0)

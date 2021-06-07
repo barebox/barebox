@@ -244,13 +244,13 @@ static void dove_sdhci_mci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	/* set bus clock */
 	sdhci_write16(&host->sdhci, SDHCI_CLOCK_CONTROL, 0);
 	val = dove_sdhci_get_clock_divider(host, ios->clock);
-	val = SDHCI_INTCLOCK_EN | SDHCI_FREQ_SEL(val);
+	val = SDHCI_CLOCK_INT_EN | SDHCI_FREQ_SEL(val);
 	sdhci_write16(&host->sdhci, SDHCI_CLOCK_CONTROL, val);
 
 	/* wait for internal clock stable */
 	start = get_time_ns();
 	while (!(sdhci_read16(&host->sdhci, SDHCI_CLOCK_CONTROL) &
-			SDHCI_INTCLOCK_STABLE)) {
+			SDHCI_CLOCK_INT_STABLE)) {
 		if (is_timeout(start, 20 * MSECOND)) {
 			dev_err(host->mci.hw_dev, "SDHCI clock stable timeout\n");
 			return;
@@ -258,7 +258,7 @@ static void dove_sdhci_mci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	}
 
 	/* enable bus clock */
-	sdhci_write16(&host->sdhci, SDHCI_CLOCK_CONTROL, val | SDHCI_SDCLOCK_EN);
+	sdhci_write16(&host->sdhci, SDHCI_CLOCK_CONTROL, val | SDHCI_CLOCK_CARD_EN);
 }
 
 static int dove_sdhci_mci_init(struct mci_host *mci, struct device_d *dev)

@@ -263,19 +263,19 @@ static int at91_sdhci_set_clock(struct at91_sdhci *host, unsigned clock)
 	clk |= SDHCI_FREQ_SEL(clk_div);
 	clk |= ((clk_div & SDHCI_DIV_HI_MASK) >> SDHCI_DIV_MASK_LEN)
 		<< SDHCI_DIVIDER_HI_SHIFT;
-	clk |= SDHCI_INTCLOCK_EN;
+	clk |= SDHCI_CLOCK_INT_EN;
 
 	sdhci_write16(sdhci, SDHCI_CLOCK_CONTROL, clk);
 
 	ret = sdhci_read32_poll_timeout(sdhci, SDHCI_CLOCK_CONTROL, clk,
-					clk & SDHCI_INTCLOCK_STABLE,
+					clk & SDHCI_CLOCK_INT_STABLE,
 					20 * USEC_PER_MSEC);
 	if (ret) {
 		dev_warn(host->dev, "Timeout waiting for clock stable\n");
 		return ret;
 	}
 
-	clk |= SDHCI_SDCLOCK_EN;
+	clk |= SDHCI_CLOCK_CARD_EN;
 	sdhci_write16(sdhci, SDHCI_CLOCK_CONTROL, clk);
 
 	reg = sdhci_read8(sdhci, SDHCI_HOST_CONTROL);

@@ -182,12 +182,12 @@ static void arasan_sdhci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 		val = arasan_sdhci_get_clock_divider(host, ios->clock);
 		/* Bit 6 & 7 are upperbits of 10bit divider */
 		val = SDHCI_FREQ_SEL(val) | SDHCI_FREQ_SEL_10_BIT(val);
-		val |= SDHCI_INTCLOCK_EN;
+		val |= SDHCI_CLOCK_INT_EN;
 		sdhci_write16(&host->sdhci, SDHCI_CLOCK_CONTROL, val);
 
 		start = get_time_ns();
 		while (!(sdhci_read16(&host->sdhci, SDHCI_CLOCK_CONTROL) &
-			SDHCI_INTCLOCK_STABLE)) {
+			SDHCI_CLOCK_INT_STABLE)) {
 			if (is_timeout(start, 20 * MSECOND)) {
 				dev_err(host->mci.hw_dev,
 						"SDHCI clock stable timeout\n");
@@ -196,7 +196,7 @@ static void arasan_sdhci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 		}
 		/* enable bus clock */
 		sdhci_write16(&host->sdhci, SDHCI_CLOCK_CONTROL,
-				    val | SDHCI_SDCLOCK_EN);
+				    val | SDHCI_CLOCK_CARD_EN);
 	}
 
 	val = sdhci_read8(&host->sdhci, SDHCI_HOST_CONTROL) &

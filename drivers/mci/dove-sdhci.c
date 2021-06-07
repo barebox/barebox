@@ -197,7 +197,7 @@ static u16 dove_sdhci_get_clock_divider(struct dove_sdhci *host, u32 reqclk)
 {
 	u16 div;
 
-	for (div = 1; div < SDHCI_SPEC_200_MAX_CLK_DIVIDER; div *= 2)
+	for (div = 1; div < SDHCI_MAX_DIV_SPEC_200; div *= 2)
 		if ((host->mci.f_max / div) <= reqclk)
 			break;
 	div /= 2;

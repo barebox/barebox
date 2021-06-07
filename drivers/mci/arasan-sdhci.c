@@ -152,8 +152,6 @@ static int arasan_sdhci_init(struct mci_host *mci, struct device_d *dev)
 	return 0;
 }
 
-#define SDHCI_MAX_DIV_SPEC_300		2046
-
 static u16 arasan_sdhci_get_clock_divider(struct arasan_sdhci_host *host,
 					  unsigned int reqclk)
 {

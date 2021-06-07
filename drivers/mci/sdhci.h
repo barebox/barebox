@@ -139,8 +139,10 @@
 
 #define  SDHCI_CLOCK_MUL_SHIFT	16
 
-#define SDHCI_SPEC_200_MAX_CLK_DIVIDER	256
 #define SDHCI_MMC_BOOT						0xC4
+
+#define SDHCI_MAX_DIV_SPEC_200	256
+#define SDHCI_MAX_DIV_SPEC_300	2046
 
 struct sdhci {
 	u32 (*read32)(struct sdhci *host, int reg);

@@ -41,9 +41,87 @@ static int clk_mux_set_parent(struct clk_hw *hw, u8 idx)
 	return 0;
 }
 
+static struct clk *clk_get_parent_index(struct clk *clk, int num)
+{
+	if (num >= clk->num_parents)
+		return NULL;
+
+	if (clk->parents[num])
+		return clk->parents[num];
+
+	clk->parents[num] = clk_lookup(clk->parent_names[num]);
+
+	return clk->parents[num];
+}
+
+static struct clk *clk_mux_best_parent(struct clk *mux, unsigned long rate,
+	unsigned long *rrate)
+{
+	struct clk *bestparent = NULL;
+	long bestrate = LONG_MAX;
+	int i;
+
+	for (i = 0; i < mux->num_parents; i++) {
+		struct clk *parent = clk_get_parent_index(mux, i);
+		unsigned long r;
+
+		if (IS_ERR_OR_NULL(parent))
+			continue;
+
+		if (mux->flags & CLK_SET_RATE_PARENT)
+			r = clk_round_rate(parent, rate);
+		else
+			r = clk_get_rate(parent);
+
+		if (abs((long)rate - r) < abs((long)rate - bestrate)) {
+			bestrate = r;
+			bestparent = parent;
+		}
+	}
+
+	*rrate = bestrate;
+
+	return bestparent;
+}
+
+static long clk_mux_round_rate(struct clk_hw *hw, unsigned long rate,
+			       unsigned long *prate)
+{
+	struct clk *clk = clk_hw_to_clk(hw);
+	unsigned long rrate;
+	struct clk *bestparent;
+
+	if (clk->flags & CLK_SET_RATE_NO_REPARENT)
+		return *prate;
+
+	bestparent = clk_mux_best_parent(clk, rate, &rrate);
+
+	return rrate;
+}
+
+static int clk_mux_set_rate(struct clk_hw *hw, unsigned long rate,
+			unsigned long parent_rate)
+{
+	struct clk *clk = clk_hw_to_clk(hw);
+	struct clk *parent;
+	unsigned long rrate;
+	int ret;
+
+	if (clk->flags & CLK_SET_RATE_NO_REPARENT)
+		return 0;
+
+	parent = clk_mux_best_parent(clk, rate, &rrate);
+
+	ret = clk_set_parent(clk, parent);
+	if (ret)
+		return ret;
+
+	return clk_set_rate(parent, rate);
+}
+
 const struct clk_ops clk_mux_ops = {
-	.set_rate = clk_parent_set_rate,
-	.round_rate = clk_parent_round_rate,
+	.set_rate = clk_mux_set_rate,
+	.round_rate = clk_mux_round_rate,
 	.get_parent = clk_mux_get_parent,
 	.set_parent = clk_mux_set_parent,
 };

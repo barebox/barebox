@@ -313,32 +313,6 @@ error:
 	return ret;
 }
 
-
-static void arasan_sdhci_set_mci_caps(struct arasan_sdhci_host *host)
-{
-	u32 caps = sdhci_read32(&host->sdhci, SDHCI_CAPABILITIES);
-
-	if ((caps & SDHCI_CAN_VDD_180) &&
-	    !(host->quirks & SDHCI_ARASAN_QUIRK_NO_1_8_V))
-		host->mci.voltages |= MMC_VDD_165_195;
-	if (caps & SDHCI_CAN_VDD_300)
-		host->mci.voltages |= MMC_VDD_29_30 | MMC_VDD_30_31;
-	if (caps & SDHCI_CAN_VDD_330)
-		host->mci.voltages |= MMC_VDD_32_33 | MMC_VDD_33_34;
-
-	if (caps & SDHCI_CAN_DO_HISPD)
-		host->mci.host_caps |= (MMC_CAP_MMC_HIGHSPEED_52MHZ |
-					MMC_CAP_MMC_HIGHSPEED |
-					MMC_CAP_SD_HIGHSPEED);
-
-	/* parse board supported bus width capabilities */
-	mci_of_parse(&host->mci);
-
-	/* limit bus widths to controller capabilities */
-	if (!(caps & SDHCI_CAN_DO_8BIT))
-		host->mci.host_caps &= ~MMC_CAP_8_BIT_DATA;
-}
-
 static int arasan_sdhci_probe(struct device_d *dev)
 {
 	struct device_node *np = dev->device_node;
@@ -393,6 +367,7 @@ static int arasan_sdhci_probe(struct device_d *dev)
 	arasan_sdhci->sdhci.write32 = arasan_sdhci_writel;
 	arasan_sdhci->sdhci.write16 = arasan_sdhci_writew;
 	arasan_sdhci->sdhci.write8 = arasan_sdhci_writeb;
+	arasan_sdhci->sdhci.mci = mci;
 	mci->send_cmd = arasan_sdhci_send_cmd;
 	mci->set_ios = arasan_sdhci_set_ios;
 	mci->init = arasan_sdhci_init;
@@ -403,7 +378,10 @@ static int arasan_sdhci_probe(struct device_d *dev)
 	mci->f_max = clk_get_rate(clk_xin);
 	mci->f_min = 50000000 / 256;
 
-	arasan_sdhci_set_mci_caps(arasan_sdhci);
+	/* parse board supported bus width capabilities */
+	mci_of_parse(&arasan_sdhci->mci);
+
+	sdhci_setup_host(&arasan_sdhci->sdhci);
 
 	dev->priv = arasan_sdhci;
 

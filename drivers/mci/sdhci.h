@@ -79,6 +79,7 @@
 #define  SDHCI_DIVIDER_SHIFT			8
 #define  SDHCI_DIVIDER_HI_SHIFT			6
 #define  SDHCI_DIV_MASK				0xFF
+#define  SDHCI_DIV_HI_MASK			0x300
 #define  SDHCI_DIV_MASK_LEN			8
 #define  SDHCI_FREQ_SEL(x)                     (((x) & 0xff) << 8)
 #define  SDHCI_DIV_HI_MASK			0x300
@@ -147,6 +148,27 @@
 #define  SDHCI_CAN_DO_ADMA3			0x08000000
 #define  SDHCI_SUPPORT_HS400			0x80000000 /* Non-standard */
 
+#define SDHCI_PRESET_FOR_SDR12	0x66
+#define SDHCI_PRESET_FOR_SDR25	0x68
+#define SDHCI_PRESET_FOR_SDR50	0x6A
+#define SDHCI_PRESET_FOR_SDR104	0x6C
+#define SDHCI_PRESET_FOR_DDR50	0x6E
+#define SDHCI_PRESET_FOR_HS400	0x74 /* Non-standard */
+#define SDHCI_PRESET_CLKGEN_SEL		BIT(10)
+#define SDHCI_PRESET_SDCLK_FREQ_MASK	GENMASK(9, 0)
+
+#define SDHCI_HOST_VERSION	0xFE
+#define  SDHCI_VENDOR_VER_MASK	0xFF00
+#define  SDHCI_VENDOR_VER_SHIFT	8
+#define  SDHCI_SPEC_VER_MASK	0x00FF
+#define  SDHCI_SPEC_VER_SHIFT	0
+#define   SDHCI_SPEC_100	0
+#define   SDHCI_SPEC_200	1
+#define   SDHCI_SPEC_300	2
+#define   SDHCI_SPEC_400	3
+#define   SDHCI_SPEC_410	4
+#define   SDHCI_SPEC_420	5
+
 #define  SDHCI_CLOCK_MUL_SHIFT	16
 
 #define SDHCI_MMC_BOOT						0xC4
@@ -161,6 +183,24 @@ struct sdhci {
 	void (*write32)(struct sdhci *host, int reg, u32 val);
 	void (*write16)(struct sdhci *host, int reg, u16 val);
 	void (*write8)(struct sdhci *host, int reg, u8 val);
+
+	int max_clk; /* Max possible freq (Hz) */
+	int clk_mul; /* Clock Muliplier value */
+
+	unsigned int version; /* SDHCI spec. version */
+
+	enum mci_timing timing;
+	bool preset_enabled; /* Preset is enabled */
+
+	unsigned int quirks;
+#define SDHCI_QUIRK_MISSING_CAPS		BIT(27)
+	unsigned int quirks2;
+#define SDHCI_QUIRK2_CLOCK_DIV_ZERO_BROKEN	BIT(15)
+	u32 caps;	/* CAPABILITY_0 */
+	u32 caps1;	/* CAPABILITY_1 */
+	bool read_caps;	/* Capability flags have been read */
+
+	struct mci_host	*mci;
 };
 
 static inline u32 sdhci_read32(struct sdhci *host, int reg)
@@ -199,6 +239,18 @@ void sdhci_set_cmd_xfer_mode(struct sdhci *host, struct mci_cmd *cmd,
 			     u32 *xfer);
 int sdhci_transfer_data(struct sdhci *sdhci, struct mci_data *data);
 int sdhci_reset(struct sdhci *sdhci, u8 mask);
+u16 sdhci_calc_clk(struct sdhci *host, unsigned int clock,
+		   unsigned int *actual_clock, unsigned int input_clock);
+void sdhci_set_clock(struct sdhci *host, unsigned int clock, unsigned int input_clock);
+void sdhci_enable_clk(struct sdhci *host, u16 clk);
+int sdhci_setup_host(struct sdhci *host);
+void __sdhci_read_caps(struct sdhci *host, const u16 *ver,
+			const u32 *caps, const u32 *caps1);
+static inline void sdhci_read_caps(struct sdhci *host)
+{
+	__sdhci_read_caps(host, NULL, NULL, NULL);
+}
+void sdhci_set_bus_width(struct sdhci *host, int width);
 
 #define sdhci_read8_poll_timeout(sdhci, reg, val, cond, timeout_us) \
 	read_poll_timeout(sdhci_read8, val, cond, timeout_us, sdhci, reg)

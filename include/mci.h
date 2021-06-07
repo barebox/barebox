@@ -365,6 +365,8 @@ enum mci_timing {
 	MMC_TIMING_UHS_SDR104	= 4,
 	MMC_TIMING_UHS_DDR50	= 5,
 	MMC_TIMING_MMC_HS200	= 6,
+	MMC_TIMING_MMC_DDR52	= 7,
+	MMC_TIMING_MMC_HS400	= 8,
 };
 
 struct mci_ios {

@@ -152,21 +152,6 @@ static int arasan_sdhci_init(struct mci_host *mci, struct device_d *dev)
 	return 0;
 }
 
-static u16 arasan_sdhci_get_clock_divider(struct arasan_sdhci_host *host,
-					  unsigned int reqclk)
-{
-	u16 div;
-
-	for (div = 1; div < SDHCI_MAX_DIV_SPEC_300; div += 2)
-		if ((host->mci.f_max / div) <= reqclk)
-			break;
-	div /= 2;
-
-	return div;
-}
-
-#define SDHCI_FREQ_SEL_10_BIT(x)	(((x) & 0x300) >> 2)
-
 static void arasan_sdhci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 {
 	struct arasan_sdhci_host *host = to_arasan_sdhci_host(mci);
@@ -175,29 +160,8 @@ static void arasan_sdhci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	/* stop clock */
 	sdhci_write16(&host->sdhci, SDHCI_CLOCK_CONTROL, 0);
 
-	if (ios->clock) {
-		u64 start;
-
-		/* set & start clock */
-		val = arasan_sdhci_get_clock_divider(host, ios->clock);
-		/* Bit 6 & 7 are upperbits of 10bit divider */
-		val = SDHCI_FREQ_SEL(val) | SDHCI_FREQ_SEL_10_BIT(val);
-		val |= SDHCI_CLOCK_INT_EN;
-		sdhci_write16(&host->sdhci, SDHCI_CLOCK_CONTROL, val);
-
-		start = get_time_ns();
-		while (!(sdhci_read16(&host->sdhci, SDHCI_CLOCK_CONTROL) &
-			SDHCI_CLOCK_INT_STABLE)) {
-			if (is_timeout(start, 20 * MSECOND)) {
-				dev_err(host->mci.hw_dev,
-						"SDHCI clock stable timeout\n");
-				return;
-			}
-		}
-		/* enable bus clock */
-		sdhci_write16(&host->sdhci, SDHCI_CLOCK_CONTROL,
-				    val | SDHCI_CLOCK_CARD_EN);
-	}
+	if (ios->clock)
+		sdhci_set_clock(&host->sdhci, ios->clock, host->sdhci.max_clk);
 
 	sdhci_set_bus_width(&host->sdhci, ios->bus_width);
 

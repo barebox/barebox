@@ -11,6 +11,7 @@
 
 #include <common.h>
 #include <mci.h>
+#include <linux/bitfield.h>
 
 #include <mach/early_udelay.h>
 
@@ -23,8 +24,6 @@
 #endif
 
 #include "atmel-sdhci.h"
-
-#define AT91_SDHCI_CA1R		0x44	/* Capabilities 1 Register */
 
 #define AT91_SDHCI_MC1R		0x204
 #define		AT91_SDHCI_MC1_FCD		BIT(7)
@@ -237,9 +236,9 @@ static int at91_sdhci_set_clock(struct at91_sdhci *host, unsigned clock)
 	if (clock == 0)
 		return 0;
 
-	caps = sdhci_read32(sdhci, AT91_SDHCI_CA1R);
+	caps = sdhci_read32(sdhci, SDHCI_CAPABILITIES_1);
 
-	caps_clk_mult = (caps & SDHCI_CLOCK_MUL_MASK) >> SDHCI_CLOCK_MUL_SHIFT;
+	caps_clk_mult = FIELD_GET(SDHCI_CLOCK_MUL_MASK, caps);
 
 	if (caps_clk_mult) {
 		for (clk_div = 1; clk_div <= 1024; clk_div++) {

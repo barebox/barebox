@@ -280,9 +280,9 @@ static int at91_sdhci_set_clock(struct at91_sdhci *host, unsigned clock)
 
 	reg = sdhci_read8(sdhci, SDHCI_HOST_CONTROL);
 	if (clock > 26000000)
-		reg |= SDHCI_HIGHSPEED_EN;
+		reg |= SDHCI_CTRL_HISPD;
 	else
-		reg &= ~SDHCI_HIGHSPEED_EN;
+		reg &= ~SDHCI_CTRL_HISPD;
 
 	sdhci_write8(sdhci, SDHCI_HOST_CONTROL, reg);
 
@@ -298,15 +298,15 @@ static int at91_sdhci_set_bus_width(struct at91_sdhci *host, unsigned bus_width)
 
 	switch(bus_width) {
 	case MMC_BUS_WIDTH_8:
-		reg |= SDHCI_DATA_WIDTH_8BIT;
+		reg |= SDHCI_CTRL_8BITBUS;
 		break;
 	case MMC_BUS_WIDTH_4:
-		reg &= ~SDHCI_DATA_WIDTH_8BIT;
-		reg |= SDHCI_DATA_WIDTH_4BIT;
+		reg &= ~SDHCI_CTRL_8BITBUS;
+		reg |= SDHCI_CTRL_8BITBUS;
 		break;
 	default:
-		reg &= ~SDHCI_DATA_WIDTH_8BIT;
-		reg &= ~SDHCI_DATA_WIDTH_4BIT;
+		reg &= ~SDHCI_CTRL_8BITBUS;
+		reg &= ~SDHCI_CTRL_8BITBUS;
 	}
 
 	sdhci_write8(sdhci, SDHCI_HOST_CONTROL, reg);

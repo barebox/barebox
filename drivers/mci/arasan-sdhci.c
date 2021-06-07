@@ -124,7 +124,7 @@ static int arasan_sdhci_reset(struct arasan_sdhci_host *host, u8 mask)
 		u8 ctrl;
 
 		ctrl = sdhci_read8(&host->sdhci, SDHCI_HOST_CONTROL);
-		ctrl |= SDHCI_CARD_DETECT_TEST_LEVEL | SDHCI_CARD_DETECT_SIGNAL_SELECTION;
+		ctrl |= SDHCI_CTRL_CDTEST_INS | SDHCI_CTRL_CDTEST_INS;
 		sdhci_write8(&host->sdhci, ctrl, SDHCI_HOST_CONTROL);
 	}
 
@@ -200,21 +200,21 @@ static void arasan_sdhci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	}
 
 	val = sdhci_read8(&host->sdhci, SDHCI_HOST_CONTROL) &
-			~(SDHCI_DATA_WIDTH_4BIT | SDHCI_DATA_WIDTH_8BIT);
+			~(SDHCI_CTRL_8BITBUS | SDHCI_CTRL_8BITBUS);
 
 	switch (ios->bus_width) {
 	case MMC_BUS_WIDTH_8:
-		val |= SDHCI_DATA_WIDTH_8BIT;
+		val |= SDHCI_CTRL_8BITBUS;
 		break;
 	case MMC_BUS_WIDTH_4:
-		val |= SDHCI_DATA_WIDTH_4BIT;
+		val |= SDHCI_CTRL_8BITBUS;
 		break;
 	}
 
 	if (ios->clock > 26000000)
-		val |= SDHCI_HIGHSPEED_EN;
+		val |= SDHCI_CTRL_HISPD;
 	else
-		val &= ~SDHCI_HIGHSPEED_EN;
+		val &= ~SDHCI_CTRL_HISPD;
 
 	sdhci_write8(&host->sdhci, SDHCI_HOST_CONTROL, val);
 }

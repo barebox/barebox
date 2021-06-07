@@ -169,6 +169,9 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
 	if (IS_ERR(clk))
 		return PTR_ERR(clk);
 
+	if (clk_get_rate(clk) == clk_round_rate(clk, rate))
+		return 0;
+
 	if (!clk->ops->set_rate)
 		return -ENOSYS;
 

@@ -18,7 +18,6 @@ struct clk_gate2 {
 	int shift;
 	u8 cgr_val;
 	const char *parent;
-#define CLK_GATE_INVERTED	(1 << 0)
 	unsigned flags;
 };
 
@@ -34,7 +33,7 @@ static int clk_gate2_enable(struct clk_hw *hw)
 
 	val = readl(g->reg);
 
-	if (g->flags & CLK_GATE_INVERTED)
+	if (g->flags & CLK_GATE_SET_TO_DISABLE)
 		val &= ~(3 << g->shift);
 	else
 		val |= g->cgr_val << g->shift;
@@ -51,7 +50,7 @@ static void clk_gate2_disable(struct clk_hw *hw)
 
 	val = readl(g->reg);
 
-	if (g->flags & CLK_GATE_INVERTED)
+	if (g->flags & CLK_GATE_SET_TO_DISABLE)
 		val |= 3 << g->shift;
 	else
 		val &= ~(3 << g->shift);
@@ -67,9 +66,9 @@ static int clk_gate2_is_enabled(struct clk_hw *hw)
 	val = readl(g->reg);
 
 	if (val & (1 << g->shift))
-		return g->flags & CLK_GATE_INVERTED ? 0 : 1;
+		return g->flags & CLK_GATE_SET_TO_DISABLE ? 0 : 1;
 	else
-		return g->flags & CLK_GATE_INVERTED ? 1 : 0;
+		return g->flags & CLK_GATE_SET_TO_DISABLE ? 1 : 0;
 }
 
 static struct clk_ops clk_gate2_ops = {

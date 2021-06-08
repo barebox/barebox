@@ -13,7 +13,7 @@
 static void clk_gate_endisable(struct clk_hw *hw, int enable)
 {
 	struct clk_gate *gate = container_of(hw, struct clk_gate, hw);
-	int set = gate->flags & CLK_GATE_INVERTED ? 1 : 0;
+	int set = gate->flags & CLK_GATE_SET_TO_DISABLE ? 1 : 0;
 	u32 val;
 
 	set ^= enable;
@@ -54,9 +54,9 @@ int clk_gate_is_enabled(struct clk_hw *hw)
 	val = readl(g->reg);
 
 	if (val & (1 << g->shift))
-		return g->flags & CLK_GATE_INVERTED ? 0 : 1;
+		return g->flags & CLK_GATE_SET_TO_DISABLE ? 0 : 1;
 	else
-		return g->flags & CLK_GATE_INVERTED ? 1 : 0;
+		return g->flags & CLK_GATE_SET_TO_DISABLE ? 1 : 0;
 }
 
 struct clk_ops clk_gate_ops = {
@@ -114,7 +114,7 @@ struct clk *clk_gate(const char *name, const char *parent, void __iomem *reg,
 struct clk *clk_gate_inverted(const char *name, const char *parent,
 		void __iomem *reg, u8 shift, unsigned flags)
 {
-	return clk_gate(name, parent, reg, shift, flags, CLK_GATE_INVERTED);
+	return clk_gate(name, parent, reg, shift, flags, CLK_GATE_SET_TO_DISABLE);
 }
 
 struct clk *clk_register_gate(struct device_d *dev, const char *name,

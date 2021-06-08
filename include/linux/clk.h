@@ -339,7 +339,7 @@ static inline void clk_put(struct clk *clk)
 /* parents need enable during gate/ungate, set rate and re-parent */
 #define CLK_OPS_PARENT_ENABLE   (1 << 12)
 
-#define CLK_GATE_INVERTED	(1 << 0)
+#define CLK_GATE_SET_TO_DISABLE	(1 << 0)
 #define CLK_GATE_HIWORD_MASK	(1 << 1)
 
 struct clk_ops {

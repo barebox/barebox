@@ -70,7 +70,7 @@ struct rockchip_pin_ctrl {
 	u32				nr_pins;
 	char				*label;
 	enum rockchip_pinctrl_type	type;
-	int				mux_offset;
+	int				grf_mux_offset;
 	void	(*pull_calc_reg)(struct rockchip_pin_bank *bank, int pin_num,
 				 void __iomem **reg, u8 *bit);
 };
@@ -229,7 +229,7 @@ static int rockchip_pinctrl_set_func(struct rockchip_pin_bank *bank, int pin,
 				     int mux)
 {
 	struct rockchip_pinctrl *info = bank->drvdata;
-	void __iomem *reg = info->reg_base + info->ctrl->mux_offset;
+	void __iomem *reg = info->reg_base + info->ctrl->grf_mux_offset;
 	u8 bit;
 	u32 data;
 
@@ -462,7 +462,7 @@ static struct rockchip_pin_ctrl rk2928_pin_ctrl = {
 	.pin_banks	= rk2928_pin_banks,
 	.nr_banks	= ARRAY_SIZE(rk2928_pin_banks),
 	.type		= RK2928,
-	.mux_offset	= 0xa8,
+	.grf_mux_offset	= 0xa8,
 	.pull_calc_reg	= rk2928_calc_pull_reg_and_bit,
 };
 
@@ -479,7 +479,7 @@ static struct rockchip_pin_ctrl rk3066a_pin_ctrl = {
 	.pin_banks	= rk3066a_pin_banks,
 	.nr_banks	= ARRAY_SIZE(rk3066a_pin_banks),
 	.type		= RK2928,
-	.mux_offset	= 0xa8,
+	.grf_mux_offset	= 0xa8,
 	.pull_calc_reg	= rk2928_calc_pull_reg_and_bit,
 };
 
@@ -494,7 +494,7 @@ static struct rockchip_pin_ctrl rk3066b_pin_ctrl = {
 	.pin_banks	= rk3066b_pin_banks,
 	.nr_banks	= ARRAY_SIZE(rk3066b_pin_banks),
 	.type		= RK3066B,
-	.mux_offset	= 0x60,
+	.grf_mux_offset	= 0x60,
 };
 
 static struct rockchip_pin_bank rk3188_pin_banks[] = {
@@ -508,7 +508,7 @@ static struct rockchip_pin_ctrl rk3188_pin_ctrl = {
 	.pin_banks	= rk3188_pin_banks,
 	.nr_banks	= ARRAY_SIZE(rk3188_pin_banks),
 	.type		= RK3188,
-	.mux_offset	= 0x60,
+	.grf_mux_offset	= 0x60,
 	.pull_calc_reg	= rk3188_calc_pull_reg_and_bit,
 };
 

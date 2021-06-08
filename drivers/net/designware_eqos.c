@@ -862,6 +862,7 @@ int eqos_probe(struct device_d *dev, const struct eqos_ops *ops, void *priv)
 	miibus->read = eqos_mdio_read;
 	miibus->write = eqos_mdio_write;
 	miibus->priv = eqos;
+	miibus->dev.device_node = of_get_child_by_name(dev->device_node, "mdio");
 
 	ret = eqos_init(dev, eqos);
 	if (ret)

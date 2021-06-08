@@ -555,27 +555,39 @@ static int of_gpiochip_scan_hogs(struct gpio_chip *chip)
 	return 0;
 }
 
+static const char *gpio_suffixes[] = {
+	"gpios",
+	"gpio",
+};
+
 /* Linux compatibility helper: Get a GPIO descriptor from device tree */
 int gpiod_get(struct device_d *dev, const char *_con_id, enum gpiod_flags flags)
 {
 	struct device_node *np = dev->device_node;
 	enum of_gpio_flags of_flags;
-	const char *con_id = "gpios", *label = dev_name(dev);
-	char *buf = NULL;
+	const char *label = dev_name(dev);
+	char *buf = NULL, *con_id;
 	int gpio;
-	int ret;
+	int ret, i;
 
 	if (!IS_ENABLED(CONFIG_OFDEVICE) || !dev->device_node)
 		return -ENODEV;
 
-	if (_con_id) {
-		con_id = buf = basprintf("%s-gpios", _con_id);
-		if (!buf)
-			return -ENOMEM;
-	}
+	for (i = 0; i < ARRAY_SIZE(gpio_suffixes); i++) {
+		if (_con_id)
+			con_id = basprintf("%s-%s", _con_id, gpio_suffixes[i]);
+		else
+			con_id = basprintf("%s", gpio_suffixes[i]);
 
-	gpio = of_get_named_gpio_flags(np, con_id, 0, &of_flags);
-	free(buf);
+		if (!con_id)
+			return -ENOMEM;
+
+		gpio = of_get_named_gpio_flags(np, con_id, 0, &of_flags);
+		free(con_id);
+
+		if (gpio_is_valid(gpio))
+			break;
+	}
 
 	if (!gpio_is_valid(gpio))
 		return gpio < 0 ? gpio : -EINVAL;

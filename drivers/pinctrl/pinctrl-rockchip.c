@@ -342,8 +342,8 @@ static int rockchip_get_bank_data(struct rockchip_pin_bank *bank,
 
 	res = request_iomem_region(dev_name(dev), node_res.start, node_res.end);
 	if (IS_ERR(res)) {
-		dev_err(dev, "cannot request iomem region %08x\n",
-			node_res.start);
+		dev_err(dev, "cannot request iomem region %pa\n",
+			&node_res.start);
 		return PTR_ERR(res);
 	}
 

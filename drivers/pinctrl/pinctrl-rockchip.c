@@ -186,6 +186,8 @@ struct rockchip_pin_ctrl {
 	u32				niomux_routes;
 	void	(*pull_calc_reg)(struct rockchip_pin_bank *bank, int pin_num,
 				 void __iomem **reg, u8 *bit);
+	void	(*drv_calc_reg)(struct rockchip_pin_bank *bank,
+				    int pin_num, void __iomem **reg, u8 *bit);
 };
 
 struct rockchip_pinctrl {
@@ -468,12 +470,129 @@ static int rockchip_pinctrl_set_pull(struct rockchip_pin_bank *bank,
 	return 0;
 }
 
+static int rockchip_perpin_drv_list[DRV_TYPE_MAX][8] = {
+	{ 2, 4, 8, 12, -1, -1, -1, -1 },
+	{ 3, 6, 9, 12, -1, -1, -1, -1 },
+	{ 5, 10, 15, 20, -1, -1, -1, -1 },
+	{ 4, 6, 8, 10, 12, 14, 16, 18 },
+	{ 4, 7, 10, 13, 16, 19, 22, 26 }
+};
+
+#define RK3288_DRV_BITS_PER_PIN		2
+#define RK3399_DRV_3BITS_PER_PIN	3
+
+static int rockchip_set_drive_perpin(struct rockchip_pin_bank *bank,
+				     int pin_num, int strength)
+{
+	struct rockchip_pinctrl *info = bank->drvdata;
+	struct rockchip_pin_ctrl *ctrl = info->ctrl;
+	int ret, i;
+	void __iomem *reg;
+	u32 data, rmask, rmask_bits, temp, val;
+	u8 bit;
+	int drv_type = bank->drv[pin_num / 8].drv_type;
+
+	if (!ctrl->drv_calc_reg)
+		return -ENOTSUPP;
+
+	dev_dbg(info->pctl_dev.dev, "setting drive of GPIO%d-%d to %d\n",
+		bank->bank_num, pin_num, strength);
+
+	ctrl->drv_calc_reg(bank, pin_num, &reg, &bit);
+
+	ret = -EINVAL;
+	for (i = 0; i < ARRAY_SIZE(rockchip_perpin_drv_list[drv_type]); i++) {
+		if (rockchip_perpin_drv_list[drv_type][i] == strength) {
+			ret = i;
+			break;
+		} else if (rockchip_perpin_drv_list[drv_type][i] < 0) {
+			ret = rockchip_perpin_drv_list[drv_type][i];
+			break;
+		}
+	}
+
+	if (ret < 0) {
+		dev_err(info->pctl_dev.dev, "unsupported driver strength %d\n",
+			strength);
+		return ret;
+	}
+
+	switch (drv_type) {
+	case DRV_TYPE_IO_1V8_3V0_AUTO:
+	case DRV_TYPE_IO_3V3_ONLY:
+		rmask_bits = RK3399_DRV_3BITS_PER_PIN;
+		switch (bit) {
+		case 0 ... 12:
+			/* regular case, nothing to do */
+			break;
+		case 15:
+			/*
+			 * drive-strength offset is special, as it is spread
+			 * over 2 registers, the bit data[15] contains bit 0
+			 * of the value while temp[1:0] contains bits 2 and 1
+			 */
+			data = (ret & 0x1) << 15;
+			temp = (ret >> 0x1) & 0x3;
+
+			rmask = BIT(15) | BIT(31);
+			data |= BIT(31);
+
+			val = readl(reg);
+			val &= ~rmask;
+			val |= data & rmask;
+			writel(val, reg);
+
+			rmask = 0x3 | (0x3 << 16);
+			temp |= (0x3 << 16);
+			reg += 0x4;
+
+			val = readl(reg);
+			val &= ~rmask;
+			val |= temp & rmask;
+			writel(val, reg);
+
+			return ret;
+		case 18 ... 21:
+			/* setting fully enclosed in the second register */
+			reg += 4;
+			bit -= 16;
+			break;
+		default:
+			dev_err(info->pctl_dev.dev, "unsupported bit: %d for pinctrl drive type: %d\n",
+				bit, drv_type);
+			return -EINVAL;
+		}
+		break;
+	case DRV_TYPE_IO_DEFAULT:
+	case DRV_TYPE_IO_1V8_OR_3V0:
+	case DRV_TYPE_IO_1V8_ONLY:
+		rmask_bits = RK3288_DRV_BITS_PER_PIN;
+		break;
+	default:
+		dev_err(info->pctl_dev.dev, "unsupported pinctrl drive type: %d\n",
+			drv_type);
+		return -EINVAL;
+	}
+
+	/* enable the write to the equivalent lower bits */
+	data = ((1 << rmask_bits) - 1) << (bit + 16);
+	rmask = data | (data >> 16);
+	data |= (ret << bit);
+
+	val = readl(reg);
+	val &= ~rmask;
+	val |= data & rmask;
+	writel(val, reg);
+
+	return ret;
+}
+
 static int rockchip_pinctrl_set_state(struct pinctrl_device *pdev,
 				      struct device_node *np)
 {
 	struct rockchip_pinctrl *info = to_rockchip_pinctrl(pdev);
 	const __be32 *list;
-	int i, size;
+	int i, size, ret;
 	int bank_num, pin_num, func;
 
 	/*
@@ -492,6 +611,7 @@ static int rockchip_pinctrl_set_state(struct pinctrl_device *pdev,
 		const __be32 *phandle;
 		struct device_node *np_config;
 		struct rockchip_pin_bank *bank;
+		u32 drive_strength;
 
 		bank_num = be32_to_cpu(*list++);
 		pin_num = be32_to_cpu(*list++);
@@ -506,6 +626,10 @@ static int rockchip_pinctrl_set_state(struct pinctrl_device *pdev,
 		rockchip_pinctrl_set_func(bank, pin_num, func);
 		rockchip_pinctrl_set_pull(bank, pin_num,
 					  parse_bias_config(np_config));
+
+		ret = of_property_read_u32(np_config, "drive-strength", &drive_strength);
+		if (!ret)
+			rockchip_set_drive_perpin(bank, pin_num, drive_strength);
 	}
 
 	return 0;

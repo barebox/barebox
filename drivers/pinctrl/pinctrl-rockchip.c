@@ -1281,4 +1281,4 @@ static struct driver_d rockchip_pinctrl_driver = {
 	.of_compatible = DRV_OF_COMPAT(rockchip_pinctrl_dt_match),
 };
 
-console_platform_driver(rockchip_pinctrl_driver);
+core_platform_driver(rockchip_pinctrl_driver);

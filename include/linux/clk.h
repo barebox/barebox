@@ -85,6 +85,19 @@ int __must_check clk_bulk_get(struct device_d *dev, int num_clks,
 			      struct clk_bulk_data *clks);
 
 /**
+ * clk_bulk_get_optional - lookup and obtain a number of references to clock producer
+ * @dev: device for clock "consumer"
+ * @num_clks: the number of clk_bulk_data
+ * @clks: the clk_bulk_data table of consumer
+ *
+ * Behaves the same as clk_bulk_get() except where there is no clock producer.
+ * In this case, instead of returning -ENOENT, the function returns 0 and
+ * NULL for a clk for which a clock producer could not be determined.
+ */
+int __must_check clk_bulk_get_optional(struct device_d *dev, int num_clks,
+				       struct clk_bulk_data *clks);
+
+/**
  * clk_bulk_get_all - lookup and obtain all available references to clock
  *                    producer.
  * @dev: device for clock "consumer"
@@ -279,6 +292,13 @@ static inline struct clk *clk_get(struct device_d *dev, const char *id)
 
 static inline int __must_check clk_bulk_get(struct device_d *dev, int num_clks,
 					    struct clk_bulk_data *clks)
+{
+	return 0;
+}
+
+static inline int __must_check clk_bulk_get_optional(struct device_d *dev,
+						     int num_clks,
+						     struct clk_bulk_data *clks)
 {
 	return 0;
 }

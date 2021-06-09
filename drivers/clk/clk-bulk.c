@@ -23,8 +23,9 @@ void clk_bulk_put(int num_clks, struct clk_bulk_data *clks)
 }
 EXPORT_SYMBOL_GPL(clk_bulk_put);
 
-int __must_check clk_bulk_get(struct device_d *dev, int num_clks,
-			      struct clk_bulk_data *clks)
+static int __clk_bulk_get(struct device_d *dev, int num_clks,
+			      struct clk_bulk_data *clks,
+			      bool optional)
 {
 	int ret;
 	int i;
@@ -36,10 +37,15 @@ int __must_check clk_bulk_get(struct device_d *dev, int num_clks,
 		clks[i].clk = clk_get(dev, clks[i].id);
 		if (IS_ERR(clks[i].clk)) {
 			ret = PTR_ERR(clks[i].clk);
+			clks[i].clk = NULL;
+
+			if (ret == -ENOENT && optional)
+				continue;
+
 			if (ret != -EPROBE_DEFER)
 				dev_err(dev, "Failed to get clk '%s': %d\n",
 					clks[i].id, ret);
-			clks[i].clk = NULL;
+
 			goto err;
 		}
 	}
@@ -51,7 +57,20 @@ err:
 
 	return ret;
 }
+
+int __must_check clk_bulk_get(struct device_d *dev, int num_clks,
+			      struct clk_bulk_data *clks)
+{
+	return __clk_bulk_get(dev, num_clks, clks, false);
+}
 EXPORT_SYMBOL(clk_bulk_get);
+
+int __must_check clk_bulk_get_optional(struct device_d *dev, int num_clks,
+				       struct clk_bulk_data *clks)
+{
+	return __clk_bulk_get(dev, num_clks, clks, true);
+}
+EXPORT_SYMBOL(clk_bulk_get_optional);
 
 static int __must_check of_clk_bulk_get(struct device_node *np, int num_clks,
 					struct clk_bulk_data *clks)

@@ -79,6 +79,13 @@ config MCI_MXS
 	  Enable this entry to add support to read and write SD cards on a
 	  i.MX23/i.MX28 based system.
 
+config MCI_ROCKCHIP_DWCMSHC
+	bool "MCI sdhc support for Rockchip SoCs"
+	select MCI_SDHCI
+	help
+	  Enable this entry to add support for a Rockchip derivation of the
+	  DWCMSHC controller found on some Rockchip SoCs like the RK3568.
+
 config MCI_S3C
 	bool "S3C"
 	depends on ARCH_S3C24xx

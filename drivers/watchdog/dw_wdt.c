@@ -159,17 +159,18 @@ static int dw_wdt_drv_probe(struct device_d *dev)
 	if (IS_ERR(dw_wdt->rst))
 		return PTR_ERR(dw_wdt->rst);
 
+	dw_wdt->rate = clk_get_rate(clk);
+	if (dw_wdt->rate == 0)
+		return -EINVAL;
+
 	wdd = &dw_wdt->wdd;
 	wdd->name = "dw_wdt";
 	wdd->hwdev = dev;
 	wdd->set_timeout = dw_wdt_set_timeout;
+	wdd->timeout_max = dw_wdt_top_in_seconds(dw_wdt, DW_WDT_MAX_TOP);
 
 	wdd->running = readl(dw_wdt->regs + WDOG_CONTROL_REG_OFFSET) &
 		WDOG_CONTROL_REG_WDT_EN_MASK ? WDOG_HW_RUNNING : WDOG_HW_NOT_RUNNING;
-
-	dw_wdt->rate = clk_get_rate(clk);
-	if (dw_wdt->rate == 0)
-		return -EINVAL;
 
 	ret = watchdog_register(wdd);
 	if (ret)

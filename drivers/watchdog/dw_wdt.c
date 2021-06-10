@@ -111,6 +111,9 @@ static int dw_wdt_set_timeout(struct watchdog *wdd, unsigned int top_s)
 	writel(top_val | top_val << WDOG_TIMEOUT_RANGE_TOPINIT_SHIFT,
 	       dw_wdt->regs + WDOG_TIMEOUT_RANGE_REG_OFFSET);
 
+	writel(WDOG_COUNTER_RESTART_KICK_VALUE,
+	       dw_wdt->regs + WDOG_COUNTER_RESTART_REG_OFFSET);
+
 	dw_wdt_start(wdd);
 
 	return 0;

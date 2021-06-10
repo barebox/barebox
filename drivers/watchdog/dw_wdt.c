@@ -186,7 +186,7 @@ static int dw_wdt_drv_probe(struct device_d *dev)
 	if (dw_wdt->rst)
 		reset_control_deassert(dw_wdt->rst);
 	else
-		dev_warn(dev, "No reset lines. Will not be able to stop once started.\n");
+		dev_dbg(dev, "No reset lines. Will not be able to stop once started.\n");
 
 	return 0;
 

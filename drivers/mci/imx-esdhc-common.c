@@ -109,7 +109,7 @@ static int esdhc_do_data(struct fsl_esdhc_host *host, struct mci_data *data,
 	u32 irqstat;
 
 	if (esdhc_use_pio_mode())
-		return sdhci_transfer_data(&host->sdhci, data);
+		return sdhci_transfer_data_pio(&host->sdhci, data);
 
 	do {
 		irqstat = sdhci_read32(&host->sdhci, SDHCI_INT_STATUS);

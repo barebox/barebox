@@ -4,6 +4,7 @@
 #include <driver.h>
 #include <mci.h>
 #include <io.h>
+#include <dma.h>
 #include <linux/bitfield.h>
 
 #include "sdhci.h"
@@ -123,11 +124,111 @@ void sdhci_set_bus_width(struct sdhci *host, int width)
 
 #endif
 
-int sdhci_transfer_data(struct sdhci *sdhci, struct mci_data *data)
+void sdhci_setup_data_pio(struct sdhci *sdhci, struct mci_data *data)
+{
+	if (!data)
+		return;
+
+	sdhci_write16(sdhci, SDHCI_BLOCK_SIZE, sdhci->sdma_boundary |
+		    SDHCI_TRANSFER_BLOCK_SIZE(data->blocksize));
+	sdhci_write16(sdhci, SDHCI_BLOCK_COUNT, data->blocks);
+}
+
+void sdhci_setup_data_dma(struct sdhci *sdhci, struct mci_data *data,
+			  dma_addr_t *dma)
+{
+	struct device_d *dev = sdhci->mci->hw_dev;
+	int nbytes;
+
+	if (!data)
+		return;
+
+	sdhci_setup_data_pio(sdhci, data);
+
+	if (!dma)
+		return;
+
+	nbytes = data->blocks * data->blocksize;
+
+	if (data->flags & MMC_DATA_READ)
+		*dma = dma_map_single(dev, (void *)data->src, nbytes,
+				      DMA_FROM_DEVICE);
+	else
+		*dma = dma_map_single(dev, data->dest, nbytes,
+				      DMA_TO_DEVICE);
+
+	if (dma_mapping_error(dev, *dma)) {
+		*dma = SDHCI_NO_DMA;
+		return;
+	}
+
+	sdhci_write32(sdhci, SDHCI_DMA_ADDRESS, *dma);
+}
+
+int sdhci_transfer_data_dma(struct sdhci *sdhci, struct mci_data *data,
+			    dma_addr_t dma)
+{
+	struct device_d *dev = sdhci->mci->hw_dev;
+	int nbytes;
+	u32 irqstat;
+	int ret;
+
+	if (!data)
+		return 0;
+
+	nbytes = data->blocks * data->blocksize;
+
+	do {
+		irqstat = sdhci_read32(sdhci, SDHCI_INT_STATUS);
+
+		if (irqstat & SDHCI_INT_DATA_END_BIT) {
+			ret = -EIO;
+			goto out;
+		}
+
+		if (irqstat & SDHCI_INT_DATA_CRC) {
+			ret = -EBADMSG;
+			goto out;
+		}
+
+		if (irqstat & SDHCI_INT_DATA_TIMEOUT) {
+			ret = -ETIMEDOUT;
+			goto out;
+		}
+
+		if (irqstat & SDHCI_INT_DMA) {
+			u32 addr = sdhci_read32(sdhci, SDHCI_DMA_ADDRESS);
+
+			/*
+			 * DMA engine has stopped on buffer boundary. Acknowledge
+			 * the interrupt and kick the DMA engine again.
+			 */
+			sdhci_write32(sdhci, SDHCI_INT_STATUS, SDHCI_INT_DMA);
+			sdhci_write32(sdhci, SDHCI_DMA_ADDRESS, addr);
+		}
+
+		if (irqstat & SDHCI_INT_XFER_COMPLETE)
+			break;
+	} while (1);
+
+	ret = 0;
+out:
+	if (data->flags & MMC_DATA_READ)
+		dma_unmap_single(dev, dma, nbytes, DMA_FROM_DEVICE);
+	else
+		dma_unmap_single(dev, dma, nbytes, DMA_TO_DEVICE);
+
+	return 0;
+}
+
+int sdhci_transfer_data_pio(struct sdhci *sdhci, struct mci_data *data)
 {
 	unsigned int block = 0;
 	u32 stat, prs;
 	uint64_t start = get_time_ns();
+
+	if (!data)
+		return 0;
 
 	do {
 		stat = sdhci_read32(sdhci, SDHCI_INT_STATUS);
@@ -159,6 +260,19 @@ int sdhci_transfer_data(struct sdhci *sdhci, struct mci_data *data)
 	} while (!(stat & SDHCI_INT_XFER_COMPLETE));
 
 	return 0;
+}
+
+int sdhci_transfer_data(struct sdhci *sdhci, struct mci_data *data, dma_addr_t dma)
+{
+	struct device_d *dev = sdhci->mci->hw_dev;
+
+	if (!data)
+		return 0;
+
+	if (dma_mapping_error(dev, dma))
+		return sdhci_transfer_data_pio(sdhci, data);
+	else
+		return sdhci_transfer_data_dma(sdhci, data, dma);
 }
 
 int sdhci_reset(struct sdhci *sdhci, u8 mask)
@@ -427,6 +541,8 @@ int sdhci_setup_host(struct sdhci *host)
 
 	if (host->caps & SDHCI_CAN_DO_HISPD)
 		mci->host_caps |= MMC_CAP_MMC_HIGHSPEED | MMC_CAP_SD_HIGHSPEED;
+
+	host->sdma_boundary = SDHCI_DMA_BOUNDARY_512K;
 
 	return 0;
 }

@@ -166,7 +166,7 @@ int at91_sdhci_send_command(struct at91_sdhci *host, struct mci_cmd *cmd,
 	sdhci_write32(sdhci, SDHCI_INT_STATUS, mask);
 
 	if (data)
-		sdhci_transfer_data(sdhci, data);
+		sdhci_transfer_data_pio(sdhci, data);
 
 	udelay(1000);
 

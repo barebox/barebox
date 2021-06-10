@@ -2,6 +2,7 @@
 #define __MCI_SDHCI_H
 
 #include <pbl.h>
+#include <dma.h>
 #include <linux/iopoll.h>
 
 #define SDHCI_DMA_ADDRESS					0x00
@@ -201,6 +202,7 @@ struct sdhci {
 	u32 caps;	/* CAPABILITY_0 */
 	u32 caps1;	/* CAPABILITY_1 */
 	bool read_caps;	/* Capability flags have been read */
+	u32 sdma_boundary;
 
 	struct mci_host	*mci;
 };
@@ -253,11 +255,17 @@ static inline void sdhci_write8(struct sdhci *host, int reg, u32 val)
 		writeb(val, host->base + reg);
 }
 
+#define SDHCI_NO_DMA DMA_ERROR_CODE
 void sdhci_read_response(struct sdhci *host, struct mci_cmd *cmd);
 void sdhci_set_cmd_xfer_mode(struct sdhci *host, struct mci_cmd *cmd,
 			     struct mci_data *data, bool dma, u32 *command,
 			     u32 *xfer);
-int sdhci_transfer_data(struct sdhci *sdhci, struct mci_data *data);
+void sdhci_setup_data_pio(struct sdhci *sdhci, struct mci_data *data);
+void sdhci_setup_data_dma(struct sdhci *sdhci, struct mci_data *data, dma_addr_t *dma);
+int sdhci_transfer_data(struct sdhci *sdhci, struct mci_data *data, dma_addr_t dma);
+int sdhci_transfer_data_pio(struct sdhci *sdhci, struct mci_data *data);
+int sdhci_transfer_data_dma(struct sdhci *sdhci, struct mci_data *data,
+			    dma_addr_t dma);
 int sdhci_reset(struct sdhci *sdhci, u8 mask);
 u16 sdhci_calc_clk(struct sdhci *host, unsigned int clock,
 		   unsigned int *actual_clock, unsigned int input_clock);

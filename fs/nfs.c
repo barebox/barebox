@@ -119,8 +119,8 @@ struct rpc_reply {
 	uint32_t data[0];
 };
 
-#define NFS_TIMEOUT	(2 * SECOND)
-#define NFS_MAX_RESEND	5
+#define NFS_TIMEOUT	(100 * MSECOND)
+#define NFS_MAX_RESEND	100
 
 struct nfs_fh {
 	unsigned short size;

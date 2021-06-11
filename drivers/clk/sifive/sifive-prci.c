@@ -185,7 +185,7 @@ static void __prci_wrpll_write_cfg1(struct __prci_data *pd,
  * these functions.
  */
 
-unsigned long sifive_prci_wrpll_recalc_rate(struct clk *hw,
+unsigned long sifive_prci_wrpll_recalc_rate(struct clk_hw *hw,
 					    unsigned long parent_rate)
 {
 	struct __prci_clock *pc = clk_hw_to_prci_clock(hw);
@@ -194,7 +194,7 @@ unsigned long sifive_prci_wrpll_recalc_rate(struct clk *hw,
 	return wrpll_calc_output_rate(&pwd->c, parent_rate);
 }
 
-long sifive_prci_wrpll_round_rate(struct clk *hw,
+long sifive_prci_wrpll_round_rate(struct clk_hw *hw,
 				  unsigned long rate,
 				  unsigned long *parent_rate)
 {
@@ -209,7 +209,7 @@ long sifive_prci_wrpll_round_rate(struct clk *hw,
 	return wrpll_calc_output_rate(&c, *parent_rate);
 }
 
-int sifive_prci_wrpll_set_rate(struct clk *hw,
+int sifive_prci_wrpll_set_rate(struct clk_hw *hw,
 			       unsigned long rate, unsigned long parent_rate)
 {
 	struct __prci_clock *pc = clk_hw_to_prci_clock(hw);
@@ -231,7 +231,7 @@ int sifive_prci_wrpll_set_rate(struct clk *hw,
 	return 0;
 }
 
-int sifive_clk_is_enabled(struct clk *hw)
+int sifive_clk_is_enabled(struct clk_hw *hw)
 {
 	struct __prci_clock *pc = clk_hw_to_prci_clock(hw);
 	struct __prci_wrpll_data *pwd = pc->pwd;
@@ -246,7 +246,7 @@ int sifive_clk_is_enabled(struct clk *hw)
 		return 0;
 }
 
-int sifive_prci_clock_enable(struct clk *hw)
+int sifive_prci_clock_enable(struct clk_hw *hw)
 {
 	struct __prci_clock *pc = clk_hw_to_prci_clock(hw);
 	struct __prci_wrpll_data *pwd = pc->pwd;
@@ -263,7 +263,7 @@ int sifive_prci_clock_enable(struct clk *hw)
 	return 0;
 }
 
-void sifive_prci_clock_disable(struct clk *hw)
+void sifive_prci_clock_disable(struct clk_hw *hw)
 {
 	struct __prci_clock *pc = clk_hw_to_prci_clock(hw);
 	struct __prci_wrpll_data *pwd = pc->pwd;
@@ -281,7 +281,7 @@ void sifive_prci_clock_disable(struct clk *hw)
 
 /* TLCLKSEL clock integration */
 
-unsigned long sifive_prci_tlclksel_recalc_rate(struct clk *hw,
+unsigned long sifive_prci_tlclksel_recalc_rate(struct clk_hw *hw,
 					       unsigned long parent_rate)
 {
 	struct __prci_clock *pc = clk_hw_to_prci_clock(hw);
@@ -298,7 +298,7 @@ unsigned long sifive_prci_tlclksel_recalc_rate(struct clk *hw,
 
 /* HFPCLK clock integration */
 
-unsigned long sifive_prci_hfpclkplldiv_recalc_rate(struct clk *hw,
+unsigned long sifive_prci_hfpclkplldiv_recalc_rate(struct clk_hw *hw,
 						   unsigned long parent_rate)
 {
 	struct __prci_clock *pc = clk_hw_to_prci_clock(hw);
@@ -473,6 +473,7 @@ void sifive_prci_hfpclkpllsel_use_hfpclkpll(struct __prci_data *pd)
 static int __prci_register_clocks(struct device_d *dev, struct __prci_data *pd,
 				  const struct prci_clk_desc *desc)
 {
+	struct clk_init_data init = { };
 	struct __prci_clock *pic;
 	int parent_count, i, r;
 
@@ -485,33 +486,36 @@ static int __prci_register_clocks(struct device_d *dev, struct __prci_data *pd,
 
 	/* Register PLLs */
 	for (i = 0; i < desc->num_clks; ++i) {
+		struct clk *clk;
+
 		pic = &(desc->clks[i]);
 
-		pic->hw.name = pic->name;
-		pic->hw.parent_names = &pic->parent_name;
-		pic->hw.num_parents = 1;
-		pic->hw.ops = pic->ops;
+		init.name = pic->name;
+		init.parent_names = &pic->parent_name;
+		init.num_parents = 1;
+		init.ops = pic->ops;
+		pic->hw.init = &init;
 
 		pic->pd = pd;
 
 		if (pic->pwd)
 			__prci_wrpll_read_cfg0(pd, pic->pwd);
 
-		r = clk_register(&pic->hw);
-		if (r) {
+		clk = clk_register(dev, &pic->hw);
+		if (IS_ERR(clk)) {
 			dev_warn(dev, "Failed to register clock %s: %d\n",
-				 pic->hw.name, r);
-			return r;
+				 clk_hw_get_name(&pic->hw), r);
+			return PTR_ERR(clk);
 		}
 
-		r = clk_register_clkdev(&pic->hw, pic->name, dev_name(dev));
+		r = clk_register_clkdev(clk, pic->name, dev_name(dev));
 		if (r) {
 			dev_warn(dev, "Failed to register clkdev for %s: %d\n",
-				 pic->hw.name, r);
+				 clk_hw_get_name(&pic->hw), r);
 			return r;
 		}
 
-		pd->hw_clks.clks[i] = &pic->hw;
+		pd->hw_clks.clks[i] = clk;
 	}
 
 	pd->hw_clks.clk_num = i;

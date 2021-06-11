@@ -254,7 +254,7 @@ struct __prci_clock {
 	const char *name;
 	const char *parent_name;
 	const struct clk_ops *ops;
-	struct clk hw;
+	struct clk_hw hw;
 	struct __prci_wrpll_data *pwd;
 	struct __prci_data *pd;
 };
@@ -281,18 +281,18 @@ void sifive_prci_hfpclkpllsel_use_hfclk(struct __prci_data *pd);
 void sifive_prci_hfpclkpllsel_use_hfpclkpll(struct __prci_data *pd);
 
 /* Linux clock framework integration */
-long sifive_prci_wrpll_round_rate(struct clk *hw, unsigned long rate,
+long sifive_prci_wrpll_round_rate(struct clk_hw *hw, unsigned long rate,
 				  unsigned long *parent_rate);
-int sifive_prci_wrpll_set_rate(struct clk *hw, unsigned long rate,
+int sifive_prci_wrpll_set_rate(struct clk_hw *hw, unsigned long rate,
 			       unsigned long parent_rate);
-int sifive_clk_is_enabled(struct clk *hw);
-int sifive_prci_clock_enable(struct clk *hw);
-void sifive_prci_clock_disable(struct clk *hw);
-unsigned long sifive_prci_wrpll_recalc_rate(struct clk *hw,
+int sifive_clk_is_enabled(struct clk_hw *hw);
+int sifive_prci_clock_enable(struct clk_hw *hw);
+void sifive_prci_clock_disable(struct clk_hw *hw);
+unsigned long sifive_prci_wrpll_recalc_rate(struct clk_hw *hw,
 					    unsigned long parent_rate);
-unsigned long sifive_prci_tlclksel_recalc_rate(struct clk *hw,
+unsigned long sifive_prci_tlclksel_recalc_rate(struct clk_hw *hw,
 					       unsigned long parent_rate);
-unsigned long sifive_prci_hfpclkplldiv_recalc_rate(struct clk *hw,
+unsigned long sifive_prci_hfpclkplldiv_recalc_rate(struct clk_hw *hw,
 						   unsigned long parent_rate);
 
 #endif /* __SIFIVE_CLK_SIFIVE_PRCI_H */

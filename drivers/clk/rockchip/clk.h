@@ -21,9 +21,6 @@
 #include <linux/clk.h>
 #include <restart.h>
 
-#define writel_relaxed	writel
-#define readl_relaxed	readl
-
 #define HIWORD_UPDATE(val, mask, shift) \
 		((val) << (shift) | (mask) << ((shift) + 16))
 

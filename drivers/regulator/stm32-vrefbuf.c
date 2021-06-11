@@ -10,6 +10,7 @@
 #include <linux/clk.h>
 #include <linux/iopoll.h>
 #include <of.h>
+#include <io.h>
 #include <regulator.h>
 
 /* STM32 VREFBUF registers */
@@ -22,9 +23,6 @@
 #define STM32_ENVR			BIT(0)
 
 #define STM32_VREFBUF_AUTO_SUSPEND_DELAY_MS	10
-
-#define readl_relaxed readl
-#define writel_relaxed writel
 
 struct stm32_vrefbuf {
 	void __iomem *base;

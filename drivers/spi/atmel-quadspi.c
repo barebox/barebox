@@ -34,9 +34,6 @@
 #include <of_device.h>
 #include <linux/iopoll.h>
 
-#define writel_relaxed   writel
-#define readl_relaxed   readl
-
 /* QSPI register offsets */
 #define QSPI_CR      0x0000  /* Control Register */
 #define QSPI_MR      0x0004  /* Mode Register */

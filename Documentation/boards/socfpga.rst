@@ -121,7 +121,7 @@ Now run the command:
 
 .. code-block:: sh
 
-  scripts/socfpga_import_preloader <EMBEDDED_SDK> <ISW_HANDOFF> <BOARD_DIRECTORY>
+  scripts/socfpga_import_preloader -e <EMBEDDED_SDK> -i <ISW_HANDOFF> -b <BOARD_DIRECTORY>
 
 where `<SPL_GENERATED_DIR>` is the directory where the bsp-editor generated the files,
 `<ISW_HANDOFF>` is the directory where Quartus generated the handoff files, and

@@ -1,16 +1,70 @@
 #!/usr/bin/env bash
 
-if [ "$#" -lt "2" ]
-then
-	echo "USAGE: $0 <EMBEDDED_SDK> <ISW_HANDOFF> <BOARD_DIRECTORY>"
-	echo "EXAMPLE: $0 ~/altera-embedded-sdk/ ~/cv_soc_devkit_ghrd/hps_isw_handoff/soc_system_hps_0/ arch/arm/boards/altera-socdk"
+usage() {
+	echo "USAGE: $0
+	parameters:
+	  -s|--spl-dir <SPL_GENERATED_DIR>
+	  -i|--isw-handoff <ISW_HANDOFF>
+	  -b|--board <BOARD_DIRECTORY>
+	optional:
+	  -e|--embedded-sdk <ALTERA_EMBEDDED_SDK>"
+	echo "EXAMPLE: $0 -i ~/cv_soc_devkit_ghrd/hps_isw_handoff/soc_system_hps_0/ -b arch/arm/boards/altera-socdk -e ~/altera-embedded-sdk/" 
 	exit 1
-fi
+}
 
-splroot="$(mktemp -d)"
-embeddedsw=$1
-handoff=$2
-boardroot=$3
+die() {
+	printf '%s\n' "$1" >&2
+	exit 1
+}
+
+generate=
+splroot=
+embeddedsw=
+handoff=
+boardroot=
+
+while :; do
+	case $1 in
+	-e|--embedded-sdk)
+		if [ "$2" ]; then
+			generate=1
+			splroot="$(mktemp -d)"
+			embeddedsw=${2}
+			shift
+		else
+			die 'ERROR: "--embedded-sdk" requires a non-empty option argument.'
+		fi
+		;;
+	-s|--spl-dir)
+		if [ "$2" ]; then
+			splroot="$2"
+			shift
+		else
+			die 'ERROR: "--spl-dir" requires a non-empty option argument.'
+		fi
+		;;
+	-i|--isw-handoff)
+		if [ "$2" ]; then
+			handoff="$2"
+			shift
+		else
+			die 'ERROR: "--isw-handoff" requires a non-empty option argument.'
+		fi
+		;;
+	-b|--board)
+		if [ "$2" ]; then
+			boardroot="$2"
+			shift
+		else
+			die 'ERROR: "--board" requires a non-empty option argument.'
+		fi
+		;;
+	*)
+		break
+	esac
+	shift
+done
+
 bareboxsrc=.
 
 cd ${bareboxsrc}
@@ -57,7 +111,17 @@ copy_source() {
 	sed -i 's/ $//g' $tgt
 }
 
-python2.7 ${embeddedsw}/embedded/ip/altera/preloader/scripts/iswgen.py -i ${handoff} -o ${splroot}/
+generate_spl() {
+	python2.7 ${embeddedsw}/embedded/ip/altera/preloader/scripts/iswgen.py -i ${handoff} -o ${splroot}/
+}
+
+if [ -z $splroot ] || [ -z $boardroot ] || [ -z $handoff ]; then
+	usage
+fi
+
+if [ $generate ]; then
+	generate_spl
+fi
 
 copy_source ${splroot}/iocsr_config_cyclone5.c ${boardroot}/iocsr_config_cyclone5.c
 copy_source ${splroot}/pinmux_config_cyclone5.c ${boardroot}/pinmux_config.c
@@ -69,6 +133,8 @@ copy_source ${handoff}/sequencer_auto_ac_init.c ${boardroot}/sequencer_auto_ac_i
 copy_source ${handoff}/sequencer_auto_inst_init.c ${boardroot}/sequencer_auto_inst_init.c
 copy_source ${handoff}/sequencer_defines.h ${boardroot}/sequencer_defines.h
 
-rm -r ${splroot}
+if [ $generate ]; then
+	rm -r ${splroot}
+fi
 
 echo "DONE"

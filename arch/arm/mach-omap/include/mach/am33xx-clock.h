@@ -24,6 +24,7 @@
 #define MPUPLL_M_550	550	/* 125 * n */
 #define MPUPLL_M_600	600	/* 125 * n */
 #define MPUPLL_M_720	720	/* 125 * n */
+#define MPUPLL_M_800	800
 
 #define MPUPLL_M2	1
 

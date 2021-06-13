@@ -126,7 +126,7 @@ static noinline int beaglebone_sram_init(void)
 
 	/* Setup the PLLs and the clocks for the peripherals */
 	if (is_beaglebone_black()) {
-		am33xx_pll_init(MPUPLL_M_500, DDRPLL_M_400);
+		am33xx_pll_init(MPUPLL_M_800, DDRPLL_M_400);
 		am335x_sdram_init(0x18B, &ddr3_cmd_ctrl, &ddr3_regs,
 				&ddr3_data);
 	} else {

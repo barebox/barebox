@@ -122,7 +122,7 @@ Run barebox::
 
 
 Running on DE0-Nano FPGA board
-------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 See https://github.com/open-design/riscv-soc-cores/ for instructions
 on DE0-Nano bitstream generation and loading.

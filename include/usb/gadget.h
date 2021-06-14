@@ -1002,16 +1002,6 @@ void usb_free_all_descriptors(struct usb_function *f);
 
 /*-------------------------------------------------------------------------*/
 
-/* utility to simplify map/unmap of usb_requests to/from DMA */
-
-extern int usb_gadget_map_request(struct usb_gadget *gadget,
-		struct usb_request *req, int is_in);
-
-extern void usb_gadget_unmap_request(struct usb_gadget *gadget,
-		struct usb_request *req, int is_in);
-
-/*-------------------------------------------------------------------------*/
-
 /* utility to set gadget state properly */
 
 extern void usb_gadget_set_state(struct usb_gadget *gadget,

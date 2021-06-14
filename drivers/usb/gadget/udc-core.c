@@ -46,61 +46,6 @@ static LIST_HEAD(udc_list);
 
 /* ------------------------------------------------------------------------- */
 
-#ifdef	CONFIG_KERNEL_HAS_DMA
-
-int usb_gadget_map_request(struct usb_gadget *gadget,
-		struct usb_request *req, int is_in)
-{
-	if (req->length == 0)
-		return 0;
-
-	if (req->num_sgs) {
-		int     mapped;
-
-		mapped = dma_map_sg(&gadget->dev, req->sg, req->num_sgs,
-				is_in ? DMA_TO_DEVICE : DMA_FROM_DEVICE);
-		if (mapped == 0) {
-			dev_err(&gadget->dev, "failed to map SGs\n");
-			return -EFAULT;
-		}
-
-		req->num_mapped_sgs = mapped;
-	} else {
-		req->dma = dma_map_single(&gadget->dev, req->buf, req->length,
-				is_in ? DMA_TO_DEVICE : DMA_FROM_DEVICE);
-
-		if (dma_mapping_error(&gadget->dev, req->dma)) {
-			dev_err(&gadget->dev, "failed to map buffer\n");
-			return -EFAULT;
-		}
-	}
-
-	return 0;
-}
-EXPORT_SYMBOL_GPL(usb_gadget_map_request);
-
-void usb_gadget_unmap_request(struct usb_gadget *gadget,
-		struct usb_request *req, int is_in)
-{
-	if (req->length == 0)
-		return;
-
-	if (req->num_mapped_sgs) {
-		dma_unmap_sg(&gadget->dev, req->sg, req->num_mapped_sgs,
-				is_in ? DMA_TO_DEVICE : DMA_FROM_DEVICE);
-
-		req->num_mapped_sgs = 0;
-	} else {
-		dma_unmap_single(&gadget->dev, req->dma, req->length,
-				is_in ? DMA_TO_DEVICE : DMA_FROM_DEVICE);
-	}
-}
-EXPORT_SYMBOL_GPL(usb_gadget_unmap_request);
-
-#endif	/* CONFIG_HAS_DMA */
-
-/* ------------------------------------------------------------------------- */
-
 void usb_gadget_set_state(struct usb_gadget *gadget,
 		enum usb_device_state state)
 {

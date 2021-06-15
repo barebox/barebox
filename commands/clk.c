@@ -82,6 +82,38 @@ BAREBOX_CMD_START(clk_set_rate)
 	BAREBOX_CMD_COMPLETE(clk_name_complete)
 BAREBOX_CMD_END
 
+static int do_clk_round_rate(int argc, char *argv[])
+{
+	struct clk *clk;
+	unsigned long rate;
+
+	if (argc != 3)
+		return COMMAND_ERROR_USAGE;
+
+	clk = clk_lookup(argv[1]);
+	if (IS_ERR(clk))
+		return PTR_ERR(clk);
+
+	rate = simple_strtoul(argv[2], NULL, 0);
+
+	printf("%ld\n", clk_round_rate(clk, rate));
+
+	return 0;
+}
+
+BAREBOX_CMD_HELP_START(clk_round_rate)
+BAREBOX_CMD_HELP_TEXT("Set clock CLK to RATE")
+BAREBOX_CMD_HELP_END
+
+BAREBOX_CMD_START(clk_round_rate)
+	.cmd		= do_clk_round_rate,
+	BAREBOX_CMD_DESC("set a clocks rate")
+	BAREBOX_CMD_OPTS("CLK HZ")
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
+	BAREBOX_CMD_HELP(cmd_clk_round_rate_help)
+	BAREBOX_CMD_COMPLETE(clk_name_complete)
+BAREBOX_CMD_END
+
 static int do_clk_get_rate(int argc, char *argv[])
 {
 	int opt;

@@ -40,9 +40,8 @@ static int replace_dtb(void) {
 
 	overlay = of_unflatten_dtb(__dtb_overlay_of_flash_start);
 	of_overlay_apply_tree(root, overlay);
-	barebox_register_of(root);
 
-	return 0;
+	return barebox_register_of(root);
 }
 
 pure_initcall(replace_dtb);

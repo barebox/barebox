@@ -262,8 +262,8 @@ extern int of_modalias_node(struct device_node *node, char *modalias, int len);
 
 extern struct device_node *of_get_root_node(void);
 extern int of_set_root_node(struct device_node *node);
-extern void barebox_register_of(struct device_node *root);
-extern void barebox_register_fdt(const void *dtb);
+extern int barebox_register_of(struct device_node *root);
+extern int barebox_register_fdt(const void *dtb);
 
 extern struct device_d *of_platform_device_create(struct device_node *np,
 						struct device_d *parent);
@@ -284,7 +284,7 @@ int of_device_is_stdout_path(struct device_d *dev);
 const char *of_get_model(void);
 void *of_flatten_dtb(struct device_node *node);
 int of_add_memory(struct device_node *node, bool dump);
-void of_add_memory_bank(struct device_node *node, bool dump, int r,
+int of_add_memory_bank(struct device_node *node, bool dump, int r,
 		u64 base, u64 size);
 struct device_d *of_find_device_by_node_path(const char *path);
 #define OF_FIND_PATH_FLAGS_BB 1		/* return .bb device if available */

@@ -102,6 +102,28 @@ int release_region(struct resource *res)
 	return 0;
 }
 
+
+/*
+ * merge two adjacent sibling regions.
+ */
+int __merge_regions(const char *name,
+		struct resource *resa, struct resource *resb)
+{
+	if (!resource_adjacent(resa, resb))
+		return -EINVAL;
+
+	if (resa->start < resb->start)
+		resa->end = resb->end;
+	else
+		resa->start = resb->start;
+
+	free((char *)resa->name);
+	resa->name = xstrdup(name);
+	release_region(resb);
+
+	return 0;
+}
+
 /* The root resource for the whole memory-mapped io space */
 struct resource iomem_resource = {
 	.start = 0,

@@ -10,10 +10,10 @@
  */
 #define UL(x) _AC(x, UL)
 
-static inline void arm_add_mem_device(const char* name, resource_size_t start,
-				    resource_size_t size)
+static inline int arm_add_mem_device(const char* name, resource_size_t start,
+				     resource_size_t size)
 {
-	barebox_add_memory_bank(name, start, size);
+	return barebox_add_memory_bank(name, start, size);
 }
 
 #endif	/* __ASM_ARM_MEMORY_H */

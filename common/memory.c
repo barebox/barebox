@@ -111,19 +111,56 @@ void *sbrk(ptrdiff_t increment)
 
 LIST_HEAD(memory_banks);
 
+static int barebox_grow_memory_bank(struct memory_bank *bank, const char *name,
+				    const struct resource *newres)
+{
+	struct resource *res;
+	resource_size_t bank_end = bank->res->end;
+
+	if (newres->start < bank->start) {
+		res = request_iomem_region(name, newres->start, bank->start - 1);
+		if (IS_ERR(res))
+			return PTR_ERR(res);
+		__merge_regions(name, bank->res, res);
+	}
+
+	if (bank_end < newres->end) {
+		res = request_iomem_region(name, bank_end + 1, newres->end);
+		if (IS_ERR(res))
+			return PTR_ERR(res);
+		__merge_regions(name, bank->res, res);
+	}
+
+	bank->start = newres->start;
+	bank->size = resource_size(bank->res);
+
+	return 0;
+}
+
 int barebox_add_memory_bank(const char *name, resource_size_t start,
 				    resource_size_t size)
 {
-	struct memory_bank *bank = xzalloc(sizeof(*bank));
-	struct device_d *dev;
+	struct memory_bank *bank;
+	struct resource *res;
+	struct resource newres = {
+		.start = start,
+		.end = start + size - 1,
+	};
 
-	bank->res = request_iomem_region(name, start, start + size - 1);
-	if (IS_ERR(bank->res))
-		return PTR_ERR(bank->res);
+	for_each_memory_bank(bank) {
+		if (resource_contains(bank->res, &newres))
+			return 0;
+		if (resource_contains(&newres, bank->res))
+			return barebox_grow_memory_bank(bank, name, &newres);
+	}
 
-	dev = add_mem_device(name, start, size, IORESOURCE_MEM_WRITEABLE);
+	res = request_iomem_region(name, start, start + size - 1);
+	if (IS_ERR(res))
+		return PTR_ERR(res);
 
-	bank->dev = dev;
+	bank = xzalloc(sizeof(*bank));
+
+	bank->res = res;
 	bank->start = start;
 	bank->size = size;
 
@@ -131,6 +168,19 @@ int barebox_add_memory_bank(const char *name, resource_size_t start,
 
 	return 0;
 }
+
+static int add_mem_devices(void)
+{
+	struct memory_bank *bank;
+
+	for_each_memory_bank(bank) {
+		add_mem_device(bank->res->name, bank->start, bank->size,
+			       IORESOURCE_MEM_WRITEABLE);
+	}
+
+	return 0;
+}
+mmu_initcall(add_mem_devices);
 
 /*
  * Request a region from the registered sdram

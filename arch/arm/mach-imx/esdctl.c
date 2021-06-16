@@ -32,7 +32,7 @@
 struct imx_esdctl_data {
 	unsigned long base0;
 	unsigned long base1;
-	void (*add_mem)(void *esdctlbase, struct imx_esdctl_data *);
+	int (*add_mem)(void *esdctlbase, struct imx_esdctl_data *);
 };
 
 static int imx_esdctl_disabled;
@@ -182,9 +182,11 @@ static inline u64 __imx6_mmdc_sdram_size(void __iomem *mmdcbase, int cs)
 	return memory_sdram_size(cols, rows, banks, width);
 }
 
-static void add_mem(unsigned long base0, unsigned long size0,
+static int add_mem(unsigned long base0, unsigned long size0,
 		unsigned long base1, unsigned long size1)
 {
+	int ret0 = 0, ret1 = 0;
+
 	debug("%s: cs0 base: 0x%08lx cs0 size: 0x%08lx\n", __func__, base0, size0);
 	debug("%s: cs1 base: 0x%08lx cs1 size: 0x%08lx\n", __func__, base1, size1);
 
@@ -192,16 +194,16 @@ static void add_mem(unsigned long base0, unsigned long size0,
 		/*
 		 * concatenate both chip selects to a single bank
 		 */
-		arm_add_mem_device("ram0", base0, size0 + size1);
-
-		return;
+		return arm_add_mem_device("ram0", base0, size0 + size1);
 	}
 
 	if (size0)
-		arm_add_mem_device("ram0", base0, size0);
+		ret0 = arm_add_mem_device("ram0", base0, size0);
 
 	if (size1)
-		arm_add_mem_device(size0 ? "ram1" : "ram0", base1, size1);
+		ret1 = arm_add_mem_device(size0 ? "ram1" : "ram0", base1, size1);
+
+	return ret0 ? ret0 : ret1;
 }
 
 /*
@@ -224,35 +226,35 @@ static inline void imx_esdctl_v2_disable_default(void __iomem *esdctlbase)
 	}
 }
 
-static void imx_esdctl_v1_add_mem(void *esdctlbase, struct imx_esdctl_data *data)
+static int imx_esdctl_v1_add_mem(void *esdctlbase, struct imx_esdctl_data *data)
 {
-	add_mem(data->base0, imx_v1_sdram_size(esdctlbase, 0),
+	return add_mem(data->base0, imx_v1_sdram_size(esdctlbase, 0),
 			data->base1, imx_v1_sdram_size(esdctlbase, 1));
 }
 
-static void imx_esdctl_v2_add_mem(void *esdctlbase, struct imx_esdctl_data *data)
+static int imx_esdctl_v2_add_mem(void *esdctlbase, struct imx_esdctl_data *data)
 {
-	add_mem(data->base0, imx_v2_sdram_size(esdctlbase, 0),
+	return add_mem(data->base0, imx_v2_sdram_size(esdctlbase, 0),
 			data->base1, imx_v2_sdram_size(esdctlbase, 1));
 }
 
-static void imx_esdctl_v2_bug_add_mem(void *esdctlbase, struct imx_esdctl_data *data)
+static int imx_esdctl_v2_bug_add_mem(void *esdctlbase, struct imx_esdctl_data *data)
 {
 	imx_esdctl_v2_disable_default(esdctlbase);
 
-	add_mem(data->base0, imx_v2_sdram_size(esdctlbase, 0),
+	return add_mem(data->base0, imx_v2_sdram_size(esdctlbase, 0),
 			data->base1, imx_v2_sdram_size(esdctlbase, 1));
 }
 
-static void imx_esdctl_v3_add_mem(void *esdctlbase, struct imx_esdctl_data *data)
+static int imx_esdctl_v3_add_mem(void *esdctlbase, struct imx_esdctl_data *data)
 {
-	add_mem(data->base0, imx_v3_sdram_size(esdctlbase, 0),
+	return add_mem(data->base0, imx_v3_sdram_size(esdctlbase, 0),
 			data->base1, imx_v3_sdram_size(esdctlbase, 1));
 }
 
-static void imx_esdctl_v4_add_mem(void *esdctlbase, struct imx_esdctl_data *data)
+static int imx_esdctl_v4_add_mem(void *esdctlbase, struct imx_esdctl_data *data)
 {
-	add_mem(data->base0, imx_v4_sdram_size(esdctlbase, 0),
+	return add_mem(data->base0, imx_v4_sdram_size(esdctlbase, 0),
 			data->base1, imx_v4_sdram_size(esdctlbase, 1));
 }
 
@@ -281,9 +283,9 @@ static inline resource_size_t imx6_mmdc_sdram_size(void __iomem *mmdcbase)
 	return size;
 }
 
-static void imx6_mmdc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
+static int imx6_mmdc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
 {
-	arm_add_mem_device("ram0", data->base0,
+	return arm_add_mem_device("ram0", data->base0,
 			   imx6_mmdc_sdram_size(mmdcbase));
 }
 
@@ -303,9 +305,9 @@ static inline resource_size_t vf610_ddrmc_sdram_size(void __iomem *ddrmc)
 	return memory_sdram_size(cols, rows, banks, width);
 }
 
-static void vf610_ddrmc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
+static int vf610_ddrmc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
 {
-	arm_add_mem_device("ram0", data->base0,
+	return arm_add_mem_device("ram0", data->base0,
 			   vf610_ddrmc_sdram_size(mmdcbase));
 }
 
@@ -467,9 +469,9 @@ static resource_size_t imx8m_ddrc_sdram_size(void __iomem *ddrc)
 				   reduced_adress_space);
 }
 
-static void imx8m_ddrc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
+static int imx8m_ddrc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
 {
-	arm_add_mem_device("ram0", data->base0,
+	return arm_add_mem_device("ram0", data->base0,
 			   imx8m_ddrc_sdram_size(mmdcbase));
 }
 
@@ -509,9 +511,9 @@ static resource_size_t imx7d_ddrc_sdram_size(void __iomem *ddrc)
 				   reduced_adress_space);
 }
 
-static void imx7d_ddrc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
+static int imx7d_ddrc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
 {
-	arm_add_mem_device("ram0", data->base0,
+	return arm_add_mem_device("ram0", data->base0,
 			   imx7d_ddrc_sdram_size(mmdcbase));
 }
 
@@ -534,9 +536,7 @@ static int imx_esdctl_probe(struct device_d *dev)
 	if (imx_esdctl_disabled)
 		return 0;
 
-	data->add_mem(base, data);
-
-	return 0;
+	return data->add_mem(base, data);
 }
 
 static __maybe_unused struct imx_esdctl_data imx1_data = {

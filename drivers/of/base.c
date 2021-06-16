@@ -1699,32 +1699,34 @@ int of_set_root_node(struct device_node *node)
 	return 0;
 }
 
-void barebox_register_of(struct device_node *root)
+int barebox_register_of(struct device_node *root)
 {
 	if (root_node)
-		return;
+		return -EBUSY;
 
 	of_set_root_node(root);
 	of_fix_tree(root);
 
 	if (IS_ENABLED(CONFIG_OFDEVICE))
-		of_probe();
+		return of_probe();
+
+	return 0;
 }
 
-void barebox_register_fdt(const void *dtb)
+int barebox_register_fdt(const void *dtb)
 {
 	struct device_node *root;
 
 	if (root_node)
-		return;
+		return -EBUSY;
 
 	root = of_unflatten_dtb(dtb);
 	if (IS_ERR(root)) {
 		pr_err("Cannot unflatten dtb: %pe\n", root);
-		return;
+		return PTR_ERR(root);
 	}
 
-	barebox_register_of(root);
+	return barebox_register_of(root);
 }
 
 /**
@@ -2254,6 +2256,7 @@ int of_add_memory(struct device_node *node, bool dump)
 		return -ENXIO;
 
 	while (!of_address_to_resource(node, n, &res)) {
+		int err;
 		n++;
 		if (!resource_size(&res))
 			continue;
@@ -2261,12 +2264,15 @@ int of_add_memory(struct device_node *node, bool dump)
 		if (!of_device_is_available(node))
 			continue;
 
-		of_add_memory_bank(node, dump, mem_bank_num,
+		err = of_add_memory_bank(node, dump, mem_bank_num,
 				res.start, resource_size(&res));
+		if (err)
+			ret = err;
+
 		mem_bank_num++;
 	}
 
-	return 0;
+	return ret;
 }
 
 static struct device_node *of_chosen;
@@ -2289,18 +2295,25 @@ const struct of_device_id of_default_bus_match_table[] = {
 	}
 };
 
-static void of_probe_memory(void)
+static int of_probe_memory(void)
 {
 	struct device_node *memory = root_node;
+	int ret = 0;
 
 	/* Parse all available node with "memory" device_type */
 	while (1) {
+		int err;
+
 		memory = of_find_node_by_type(memory, "memory");
 		if (!memory)
 			break;
 
-		of_add_memory(memory, false);
+		err = of_add_memory(memory, false);
+		if (err)
+			ret = err;
 	}
+
+	return ret;
 }
 
 static void of_platform_device_create_root(struct device_node *np)
@@ -2321,6 +2334,7 @@ static void of_platform_device_create_root(struct device_node *np)
 int of_probe(void)
 {
 	struct device_node *firmware;
+	int ret;
 
 	if(!root_node)
 		return -ENODEV;
@@ -2331,7 +2345,7 @@ int of_probe(void)
 	if (of_model)
 		barebox_set_model(of_model);
 
-	of_probe_memory();
+	ret = of_probe_memory();
 
 	firmware = of_find_node_by_path("/firmware");
 	if (firmware)
@@ -2342,7 +2356,7 @@ int of_probe(void)
 	of_clk_init(root_node, NULL);
 	of_platform_populate(root_node, of_default_bus_match_table, NULL);
 
-	return 0;
+	return ret;
 }
 
 /**

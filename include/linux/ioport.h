@@ -130,6 +130,23 @@ static inline unsigned long resource_type(const struct resource *res)
 	return res->flags & IORESOURCE_TYPE_BITS;
 }
 
+/* True iff r1 completely contains r2 */
+static inline bool resource_contains(struct resource *r1, struct resource *r2)
+{
+	if (resource_type(r1) != resource_type(r2))
+		return false;
+	if (r1->flags & IORESOURCE_UNSET || r2->flags & IORESOURCE_UNSET)
+		return false;
+	return r1->start <= r2->start && r1->end >= r2->end;
+}
+
+/* True if r1 and r2 are adjacent to each other */
+static inline bool resource_adjacent(struct resource *r1, struct resource *r2)
+{
+	return (r1->end != ~(resource_size_t)0 && r1->end + 1 == r2->start) ||
+		(r2->end != ~(resource_size_t)0 && r2->end + 1 == r1->start);
+}
+
 struct resource *request_iomem_region(const char *name,
 		resource_size_t start, resource_size_t end);
 struct resource *request_ioport_region(const char *name,
@@ -138,6 +155,9 @@ struct resource *request_ioport_region(const char *name,
 struct resource *__request_region(struct resource *parent,
 		const char *name, resource_size_t end,
 		resource_size_t size);
+
+int __merge_regions(const char *name,
+		struct resource *resa, struct resource *resb);
 
 int release_region(struct resource *res);
 

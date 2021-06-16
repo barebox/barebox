@@ -28,8 +28,6 @@ static int of_openrisc_init(void)
 	if (root)
 		return 0;
 
-	barebox_register_fdt(__dtb_start);
-
-	return 0;
+	return barebox_register_fdt(__dtb_start);
 }
 core_initcall(of_openrisc_init);

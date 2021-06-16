@@ -288,15 +288,6 @@ static int socfpga_fpgamgr_program_start(struct firmware_handler *fh)
 	/* disable all signals from hps peripheral controller to fpga */
 	writel(0, SYSMGR_FPGAINTF_MODULE);
 
-	/* disable all signals from fpga to hps sdram */
-	writel(0, (CYCLONE5_SDR_ADDRESS + SDR_CTRLGRP_FPGAPORTRST_ADDRESS));
-
-	/* disable all axi bridge (hps2fpga, lwhps2fpga & fpga2hps) */
-	writel(~0, CYCLONE5_RSTMGR_ADDRESS + RESET_MGR_BRG_MOD_RESET_OFS);
-
-	/* unmap the bridges from NIC-301 */
-	writel(0x1, CYCLONE5_L3REGS_ADDRESS);
-
 	dev_dbg(&mgr->dev, "start programming...\n");
 
 	/* initialize the FPGA Manager */

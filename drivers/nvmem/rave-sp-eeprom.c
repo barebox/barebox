@@ -280,19 +280,15 @@ static int rave_sp_eeprom_access(struct rave_sp_eeprom *eeprom,
 	return 0;
 }
 
-static int rave_sp_eeprom_read(struct device_d *dev, const int offset,
-			       void *val, int bytes)
+static int rave_sp_eeprom_read(void *ctx, unsigned offset, void *val, size_t bytes)
 {
-	return rave_sp_eeprom_access(dev->parent->priv,
-				     RAVE_SP_EEPROM_READ,
+	return rave_sp_eeprom_access(ctx, RAVE_SP_EEPROM_READ,
 				     offset, val, bytes);
 }
 
-static int rave_sp_eeprom_write(struct device_d *dev, const int offset,
-				const void *val, int bytes)
+static int rave_sp_eeprom_write(void *ctx, unsigned offset, const void *val, size_t bytes)
 {
-	return rave_sp_eeprom_access(dev->parent->priv,
-				     RAVE_SP_EEPROM_WRITE,
+	return rave_sp_eeprom_access(ctx, RAVE_SP_EEPROM_WRITE,
 				     offset, (void *)val, bytes);
 }
 
@@ -329,8 +325,6 @@ static int rave_sp_eeprom_probe(struct device_d *dev)
 	eeprom->address = reg[0];
 	eeprom->sp      = sp;
 
-	dev->priv = eeprom;
-
 	if (size > SZ_8K)
 		eeprom->header_size = RAVE_SP_EEPROM_HEADER_BIG;
 	else
@@ -343,6 +337,7 @@ static int rave_sp_eeprom_probe(struct device_d *dev)
 	of_property_read_string(dev->device_node, "zii,eeprom-name",
 				&config.name);
 	config.dev       = dev;
+	config.priv      = eeprom;
 	config.word_size = 1;
 	config.stride    = 1;
 	config.size      = reg[1];

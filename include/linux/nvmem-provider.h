@@ -18,10 +18,8 @@
 struct nvmem_device;
 
 struct nvmem_bus {
-	int (*write)(struct device_d *dev, const int reg, const void *val,
-		     int val_size);
-	int (*read)(struct device_d *dev, const int reg, void *val,
-		    int val_size);
+	int (*write)(void *ctx, unsigned int reg, const void *val, size_t val_size);
+	int (*read)(void *ctx, unsigned int reg, void *val, size_t val_size);
 };
 
 struct nvmem_config {
@@ -32,15 +30,24 @@ struct nvmem_config {
 	int			word_size;
 	int			size;
 	const struct nvmem_bus	*bus;
+	void			*priv;
 };
+
+struct regmap;
 
 #if IS_ENABLED(CONFIG_NVMEM)
 
 struct nvmem_device *nvmem_register(const struct nvmem_config *cfg);
+struct nvmem_device *nvmem_regmap_register(struct regmap *regmap, const char *name);
 
 #else
 
 static inline struct nvmem_device *nvmem_register(const struct nvmem_config *c)
+{
+	return ERR_PTR(-ENOSYS);
+}
+
+static inline struct nvmem_device *nvmem_regmap_register(struct regmap *regmap, const char *name)
 {
 	return ERR_PTR(-ENOSYS);
 }

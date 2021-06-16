@@ -511,10 +511,9 @@ static const struct rtc_class_ops dryice_rtc_ops = {
 	.set_time = dryice_rtc_set_time,
 };
 
-static int nvstore_write(struct device_d *dev, const int reg, const void *val,
-			 int bytes)
+static int nvstore_write(void *ctx, unsigned reg, const void *val, size_t bytes)
 {
-	struct imxdi_dev *imxdi = dev->parent->priv;
+	struct imxdi_dev *imxdi = ctx;
 	const u32 *val32 = val;
 
 	if (bytes != 4)
@@ -525,10 +524,9 @@ static int nvstore_write(struct device_d *dev, const int reg, const void *val,
 	return 0;
 }
 
-static int nvstore_read(struct device_d *dev, const int reg, void *val,
-			int bytes)
+static int nvstore_read(void *ctx, unsigned reg, void *val, size_t bytes)
 {
-	struct imxdi_dev *imxdi = dev->parent->priv;
+	struct imxdi_dev *imxdi = ctx;
 	u32 *val32 = val;
 
 	if (bytes != 4)
@@ -588,9 +586,8 @@ static int __init dryice_rtc_probe(struct device_d *dev)
 	if (ret)
 		goto err;
 
-	dev->priv = imxdi;
-
 	nvstore_nvmem_config.dev = dev;
+	nvstore_nvmem_config.priv = imxdi;
 
 	imxdi->nvmem = nvmem_register(&nvstore_nvmem_config);
 	if (IS_ENABLED(CONFIG_NVMEM) && IS_ERR(imxdi->nvmem)) {

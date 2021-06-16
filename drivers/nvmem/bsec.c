@@ -21,9 +21,7 @@
 #define BSEC_OTP_SERIAL	13
 
 struct bsec_priv {
-	struct regmap *map;
 	u32 svc_id;
-	struct device_d dev;
 	struct regmap_config map_config;
 	struct nvmem_config config;
 };
@@ -72,61 +70,6 @@ static struct regmap_bus stm32_bsec_regmap_bus = {
 	.reg_read = stm32_bsec_read_shadow,
 };
 
-static int stm32_bsec_write(struct device_d *dev, int offset,
-			    const void *val, int bytes)
-{
-	struct bsec_priv *priv = dev->parent->priv;
-
-	/* Allow only writing complete 32-bits aligned words */
-	if ((bytes % 4) || (offset % 4))
-		return -EINVAL;
-
-	return regmap_bulk_write(priv->map, offset, val, bytes);
-}
-
-static int stm32_bsec_read(struct device_d *dev, int offset,
-			   void *buf, int bytes)
-{
-	struct bsec_priv *priv = dev->parent->priv;
-	u32 roffset, rbytes, val;
-	u8 *buf8 = buf, *val8 = (u8 *)&val;
-	int i, j = 0, ret, skip_bytes, size;
-
-	/* Round unaligned access to 32-bits */
-	roffset = rounddown(offset, 4);
-	skip_bytes = offset & 0x3;
-	rbytes = roundup(bytes + skip_bytes, 4);
-
-	if (roffset + rbytes > priv->config.size)
-		return -EINVAL;
-
-	for (i = roffset; i < roffset + rbytes; i += 4) {
-		ret = regmap_bulk_read(priv->map, i, &val, 4);
-		if (ret) {
-			dev_err(dev, "Can't read data%d (%d)\n", i, ret);
-			return ret;
-		}
-
-		/* skip first bytes in case of unaligned read */
-		if (skip_bytes)
-			size = min(bytes, 4 - skip_bytes);
-		else
-			size = min(bytes, 4);
-
-		memcpy(&buf8[j], &val8[skip_bytes], size);
-		bytes -= size;
-		j += size;
-		skip_bytes = 0;
-	}
-
-	return 0;
-}
-
-static const struct nvmem_bus stm32_bsec_nvmem_bus = {
-	.write = stm32_bsec_write,
-	.read  = stm32_bsec_read,
-};
-
 static void stm32_bsec_set_unique_machine_id(struct regmap *map)
 {
 	u32 unique_id[3];
@@ -153,9 +96,9 @@ static int stm32_bsec_read_mac(struct regmap *map, int offset, u8 *mac)
 	return 0;
 }
 
-static void stm32_bsec_init_dt(struct bsec_priv *priv)
+static void stm32_bsec_init_dt(struct device_d *dev, struct regmap *map)
 {
-	struct device_node *node = priv->dev.parent->device_node;
+	struct device_node *node = dev->device_node;
 	struct device_node *rnode;
 	u32 phandle, offset;
 	char mac[ETH_ALEN];
@@ -163,9 +106,6 @@ static void stm32_bsec_init_dt(struct bsec_priv *priv)
 
 	int len;
 	int ret;
-
-	if (!node)
-		return;
 
 	prop = of_get_property(node, "barebox,provide-mac-address", &len);
 	if (!prop)
@@ -179,10 +119,9 @@ static void stm32_bsec_init_dt(struct bsec_priv *priv)
 	rnode = of_find_node_by_phandle(phandle);
 	offset = be32_to_cpup(prop++);
 
-	ret = stm32_bsec_read_mac(priv->map, offset, mac);
+	ret = stm32_bsec_read_mac(map, offset, mac);
 	if (ret) {
-		dev_warn(&priv->dev, "error setting MAC address: %s\n",
-			 strerror(-ret));
+		dev_warn(dev, "error setting MAC address: %s\n", strerror(-ret));
 		return;
 	}
 
@@ -191,6 +130,7 @@ static void stm32_bsec_init_dt(struct bsec_priv *priv)
 
 static int stm32_bsec_probe(struct device_d *dev)
 {
+	struct regmap *map;
 	struct bsec_priv *priv;
 	int ret = 0;
 	const struct stm32_bsec_data *data;
@@ -204,35 +144,23 @@ static int stm32_bsec_probe(struct device_d *dev)
 
 	priv->svc_id = data->svc_id;
 
-	dev_set_name(&priv->dev, "bsec");
-	priv->dev.parent = dev;
-	register_device(&priv->dev);
-
 	priv->map_config.reg_bits = 32;
 	priv->map_config.val_bits = 32;
 	priv->map_config.reg_stride = 4;
 	priv->map_config.max_register = data->num_regs;
 
-	priv->map = regmap_init(dev, &stm32_bsec_regmap_bus, priv, &priv->map_config);
-	if (IS_ERR(priv->map))
-		return PTR_ERR(priv->map);
+	map = regmap_init(dev, &stm32_bsec_regmap_bus, priv, &priv->map_config);
+	if (IS_ERR(map))
+		return PTR_ERR(map);
 
-	priv->config.name = "stm32-bsec";
-	priv->config.dev = dev;
-	priv->config.stride = 1;
-	priv->config.word_size = 1;
-	priv->config.size = data->num_regs;
-	priv->config.bus = &stm32_bsec_nvmem_bus;
-	dev->priv = priv;
-
-	nvmem = nvmem_register(&priv->config);
+	nvmem = nvmem_regmap_register(map, "stm32-bsec");
 	if (IS_ERR(nvmem))
 		return PTR_ERR(nvmem);
 
 	if (IS_ENABLED(CONFIG_MACHINE_ID))
-		stm32_bsec_set_unique_machine_id(priv->map);
+		stm32_bsec_set_unique_machine_id(map);
 
-	stm32_bsec_init_dt(priv);
+	stm32_bsec_init_dt(dev, map);
 
 	return 0;
 }

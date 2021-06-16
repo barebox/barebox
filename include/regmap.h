@@ -77,6 +77,19 @@ struct regmap *regmap_init_mmio_clk(struct device_d *dev, const char *clk_id,
 				    const struct regmap_config *config);
 
 /**
+ * regmap_init_i2c() - Initialise i2c register map
+ *
+ * @i2c: Device that will be interacted with
+ * @config: Configuration for register map
+ *
+ * The return value will be an ERR_PTR() on error or a valid pointer
+ * to a struct regmap.
+ */
+struct i2c_client;
+struct regmap *regmap_init_i2c(struct i2c_client *i2c,
+			       const struct regmap_config *config);
+
+/**
  * regmap_init_mmio() - Initialise register map
  *
  * @dev: Device that will be interacted with
@@ -96,6 +109,7 @@ void regmap_mmio_detach_clk(struct regmap *map);
 void regmap_exit(struct regmap *map);
 
 struct regmap *dev_get_regmap(struct device_d *dev, const char *name);
+struct device_d *regmap_get_device(struct regmap *map);
 
 int regmap_register_cdev(struct regmap *map, const char *name);
 

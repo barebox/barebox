@@ -132,6 +132,11 @@ struct regmap *dev_get_regmap(struct device_d *dev, const char *name)
 	return ERR_PTR(-ENOENT);
 }
 
+struct device_d *regmap_get_device(struct regmap *map)
+{
+	return map->dev;
+}
+
 /*
  * regmap_write - write a register in a map
  *

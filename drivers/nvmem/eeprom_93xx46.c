@@ -79,10 +79,9 @@ static inline bool has_quirk_instruction_length(struct eeprom_93xx46_dev *edev)
 	return edev->pdata->quirks & EEPROM_93XX46_QUIRK_INSTRUCTION_LENGTH;
 }
 
-static int eeprom_93xx46_read(struct device_d *dev, int off,
-			      void *val, int count)
+static int eeprom_93xx46_read(void *ctx, unsigned off, void *val, size_t count)
 {
-	struct eeprom_93xx46_dev *edev = dev->parent->priv;
+	struct eeprom_93xx46_dev *edev = ctx;
 	char *buf = val;
 	int err = 0;
 
@@ -241,10 +240,9 @@ eeprom_93xx46_write_word(struct eeprom_93xx46_dev *edev,
 	return ret;
 }
 
-static int eeprom_93xx46_write(struct device_d *dev, const int off,
-			       const void *val, int count)
+static int eeprom_93xx46_write(void *ctx, unsigned off, const void *val, size_t count)
 {
-	struct eeprom_93xx46_dev *edev = dev->parent->priv;
+	struct eeprom_93xx46_dev *edev = ctx;
 	const char *buf = val;
 	int i, ret, step = 1;
 
@@ -411,13 +409,12 @@ static int eeprom_93xx46_probe(struct device_d *dev)
 	edev->size = 128;
 	edev->nvmem_config.name = dev_name(&spi->dev);
 	edev->nvmem_config.dev = &spi->dev;
+	edev->nvmem_config.priv = edev;
 	edev->nvmem_config.read_only = pd->flags & EE_READONLY;
 	edev->nvmem_config.bus = &eeprom_93xx46_nvmem_bus;
 	edev->nvmem_config.stride = 4;
 	edev->nvmem_config.word_size = 1;
 	edev->nvmem_config.size = edev->size;
-
-	dev->priv = edev;
 
 	edev->nvmem = nvmem_register(&edev->nvmem_config);
 	if (IS_ERR(edev->nvmem)) {

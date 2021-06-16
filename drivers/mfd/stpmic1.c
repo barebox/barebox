@@ -8,46 +8,9 @@
 #include <errno.h>
 #include <i2c/i2c.h>
 #include <init.h>
-#include <malloc.h>
 #include <of.h>
 #include <regmap.h>
-#include <xfuncs.h>
 #include <linux/mfd/stpmic1.h>
-
-struct stpmic1 {
-	struct device_d		*dev;
-	struct i2c_client	*client;
-};
-
-static int stpmic1_i2c_reg_read(void *ctx, unsigned int reg, unsigned int *val)
-{
-	struct stpmic1 *stpmic1 = ctx;
-	u8 buf[1];
-	int ret;
-
-	ret = i2c_read_reg(stpmic1->client, reg, buf, 1);
-	*val = buf[0];
-
-	return ret == 1 ? 0 : ret;
-}
-
-static int stpmic1_i2c_reg_write(void *ctx, unsigned int reg, unsigned int val)
-{
-	struct stpmic1 *stpmic1 = ctx;
-	u8 buf[] = {
-		val & 0xff,
-	};
-	int ret;
-
-	ret = i2c_write_reg(stpmic1->client, reg, buf, 1);
-
-	return ret == 1 ? 0 : ret;
-}
-
-static struct regmap_bus regmap_stpmic1_i2c_bus = {
-	.reg_write = stpmic1_i2c_reg_write,
-	.reg_read = stpmic1_i2c_reg_read,
-};
 
 static const struct regmap_config stpmic1_regmap_i2c_config = {
 	.reg_bits = 8,
@@ -57,17 +20,13 @@ static const struct regmap_config stpmic1_regmap_i2c_config = {
 
 static int __init stpmic1_probe(struct device_d *dev)
 {
-	struct stpmic1 *stpmic1;
 	struct regmap *regmap;
 	u32 reg;
 	int ret;
 
-	stpmic1 = xzalloc(sizeof(*stpmic1));
-	stpmic1->dev = dev;
-
-	stpmic1->client = to_i2c_client(dev);
-	regmap = regmap_init(dev, &regmap_stpmic1_i2c_bus,
-			     stpmic1, &stpmic1_regmap_i2c_config);
+	regmap = regmap_init_i2c(to_i2c_client(dev), &stpmic1_regmap_i2c_config);
+	if (IS_ERR(regmap))
+		return PTR_ERR(regmap);
 
 	ret = regmap_register_cdev(regmap, NULL);
 	if (ret)

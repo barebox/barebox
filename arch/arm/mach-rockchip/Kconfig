@@ -11,27 +11,23 @@ config RK_TIMER
 	hex
 	default 1
 
-choice
-	prompt "Select Rockchip SoC"
-
 config ARCH_RK3188
-	bool "Rockchip RK3188 SoCs"
+	bool
 
 config ARCH_RK3288
-	bool "Rockchip RK3288 SoCs"
+	bool
 	select CLOCKSOURCE_ROCKCHIP
-endchoice
 
 comment "select Rockchip boards:"
 
 config MACH_RADXA_ROCK
-	depends on ARCH_RK3188
+	select ARCH_RK3188
 	select I2C
 	select MFD_ACT8846
 	bool "Radxa rock board"
 
 config MACH_PHYTEC_SOM_RK3288
-	depends on ARCH_RK3288
+	select ARCH_RK3288
 	select I2C
 	bool "RK3288 phyCORE SOM"
 	help

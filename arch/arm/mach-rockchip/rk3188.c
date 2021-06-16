@@ -16,6 +16,7 @@
 #include <init.h>
 #include <restart.h>
 #include <mach/rk3188-regs.h>
+#include <mach/rockchip.h>
 
 static void __noreturn rockchip_restart_soc(struct restart_handler *rst)
 {
@@ -27,10 +28,9 @@ static void __noreturn rockchip_restart_soc(struct restart_handler *rst)
 	hang();
 }
 
-static int restart_register_feature(void)
+int rk3188_init(void)
 {
 	restart_handler_register_fn("soc", rockchip_restart_soc);
 
 	return 0;
 }
-coredevice_initcall(restart_register_feature);

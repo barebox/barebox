@@ -6,14 +6,16 @@
 #include <mach/rk3188-regs.h>
 #include <mach/rk3288-regs.h>
 
-#ifdef CONFIG_ARCH_RK3188
+#ifdef CONFIG_DEBUG_LL
+
+#ifdef CONFIG_DEBUG_ROCKCHIP_RK3188_UART
 
 #define UART_CLOCK		100000000
 #define RK_DEBUG_SOC		RK3188
 #define serial_out(a, v)	writeb(v, a)
 #define serial_in(a)		readb(a)
 
-#elif defined CONFIG_ARCH_RK3288
+#elif defined CONFIG_DEBUG_ROCKCHIP_RK3288_UART
 
 #define UART_CLOCK		24000000
 #define RK_DEBUG_SOC		RK3288
@@ -70,4 +72,10 @@ static inline void PUTC_LL(char c)
 	while ((serial_in(base + LSR) & LSR_THRE) == 0)
 		;
 }
+#else
+static inline void INIT_LL(void)
+{
+}
+#endif
+
 #endif

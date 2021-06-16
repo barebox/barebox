@@ -12,20 +12,20 @@
 #define SDHCI_ARASAN_HCAP_CLK_FREQ_MASK		0xFF00
 #define SDHCI_ARASAN_HCAP_CLK_FREQ_SHIFT	8
 #define SDHCI_INT_ADMAE				BIT(29)
-#define SDHCI_ARASAN_INT_DATA_MASK 		SDHCI_INT_XFER_COMPLETE | \
+#define SDHCI_ARASAN_INT_DATA_MASK		(SDHCI_INT_XFER_COMPLETE | \
 						SDHCI_INT_DMA | \
 						SDHCI_INT_SPACE_AVAIL | \
 						SDHCI_INT_DATA_AVAIL | \
 						SDHCI_INT_DATA_TIMEOUT | \
 						SDHCI_INT_DATA_CRC | \
 						SDHCI_INT_DATA_END_BIT | \
-						SDHCI_INT_ADMAE
+						SDHCI_INT_ADMAE)
 
-#define SDHCI_ARASAN_INT_CMD_MASK		SDHCI_INT_CMD_COMPLETE | \
+#define SDHCI_ARASAN_INT_CMD_MASK		(SDHCI_INT_CMD_COMPLETE | \
 						SDHCI_INT_TIMEOUT | \
 						SDHCI_INT_CRC | \
 						SDHCI_INT_END_BIT | \
-						SDHCI_INT_INDEX
+						SDHCI_INT_INDEX)
 
 #define SDHCI_ARASAN_BUS_WIDTH			4
 #define TIMEOUT_VAL				0xE
@@ -38,7 +38,6 @@ struct arasan_sdhci_host {
 #define SDHCI_ARASAN_QUIRK_FORCE_CDTEST		BIT(0)
 #define SDHCI_ARASAN_QUIRK_NO_1_8_V		BIT(1)
 };
-
 
 static inline
 struct arasan_sdhci_host *to_arasan_sdhci_host(struct mci_host *mci)
@@ -55,15 +54,21 @@ struct arasan_sdhci_host *sdhci_to_arasan(struct sdhci *sdhci)
 static int arasan_sdhci_card_present(struct mci_host *mci)
 {
 	struct arasan_sdhci_host *host = to_arasan_sdhci_host(mci);
+	u32 val;
 
-	return !!(sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) & SDHCI_CARD_DETECT);
+	val = sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE);
+
+	return !!(val & SDHCI_CARD_DETECT);
 }
 
 static int arasan_sdhci_card_write_protected(struct mci_host *mci)
 {
 	struct arasan_sdhci_host *host = to_arasan_sdhci_host(mci);
+	u32 val;
 
-	return !(sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) & SDHCI_WRITE_PROTECT);
+	val = sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE);
+
+	return !(val & SDHCI_WRITE_PROTECT);
 }
 
 static int arasan_sdhci_reset(struct arasan_sdhci_host *host, u8 mask)
@@ -72,7 +77,7 @@ static int arasan_sdhci_reset(struct arasan_sdhci_host *host, u8 mask)
 
 	/* wait for reset completion */
 	if (wait_on_timeout(100 * MSECOND,
-			!(sdhci_read8(&host->sdhci, SDHCI_SOFTWARE_RESET) & mask))){
+			    !(sdhci_read8(&host->sdhci, SDHCI_SOFTWARE_RESET) & mask))) {
 		dev_err(host->mci.hw_dev, "SDHCI reset timeout\n");
 		return -ETIMEDOUT;
 	}
@@ -98,13 +103,12 @@ static int arasan_sdhci_init(struct mci_host *mci, struct device_d *dev)
 		return ret;
 
 	sdhci_write8(&host->sdhci, SDHCI_POWER_CONTROL,
-			    SDHCI_BUS_VOLTAGE_330 | SDHCI_BUS_POWER_EN);
+		     SDHCI_BUS_VOLTAGE_330 | SDHCI_BUS_POWER_EN);
 	udelay(400);
 
 	sdhci_write32(&host->sdhci, SDHCI_INT_ENABLE,
-			    SDHCI_ARASAN_INT_DATA_MASK |
-			    SDHCI_ARASAN_INT_CMD_MASK);
-	sdhci_write32(&host->sdhci, SDHCI_SIGNAL_ENABLE, 0x00);
+		      SDHCI_ARASAN_INT_DATA_MASK | SDHCI_ARASAN_INT_CMD_MASK);
+	sdhci_write32(&host->sdhci, SDHCI_SIGNAL_ENABLE, 0);
 
 	return 0;
 }
@@ -136,18 +140,21 @@ static int arasan_sdhci_wait_for_done(struct arasan_sdhci_host *host, u32 mask)
 {
 	u64 start = get_time_ns();
 	u16 stat;
+	u16 error;
 
 	do {
 		stat = sdhci_read16(&host->sdhci, SDHCI_INT_NORMAL_STATUS);
 		if (stat & SDHCI_INT_ERROR) {
+			error = sdhci_read16(&host->sdhci,
+					     SDHCI_INT_ERROR_STATUS);
 			dev_err(host->mci.hw_dev, "SDHCI_INT_ERROR: 0x%08x\n",
-				sdhci_read16(&host->sdhci, SDHCI_INT_ERROR_STATUS));
+				error);
 			return -EPERM;
 		}
 
 		if (is_timeout(start, 1000 * MSECOND)) {
 			dev_err(host->mci.hw_dev,
-					"SDHCI timeout while waiting for done\n");
+				"SDHCI timeout while waiting for done\n");
 			return -ETIMEDOUT;
 		}
 	} while ((stat & mask) != mask);
@@ -158,7 +165,7 @@ static int arasan_sdhci_wait_for_done(struct arasan_sdhci_host *host, u32 mask)
 static void print_error(struct arasan_sdhci_host *host, int cmdidx)
 {
 	dev_err(host->mci.hw_dev,
-		"error while transfering data for command %d\n", cmdidx);
+		"error while transferring data for command %d\n", cmdidx);
 	dev_err(host->mci.hw_dev, "state = 0x%08x , interrupt = 0x%08x\n",
 		sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE),
 		sdhci_read32(&host->sdhci, SDHCI_INT_NORMAL_STATUS));
@@ -177,11 +184,10 @@ static int arasan_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 		mask |= SDHCI_CMD_INHIBIT_DATA;
 
 	ret = wait_on_timeout(10 * MSECOND,
-			!(sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) & mask));
-
+			      !(sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) & mask));
 	if (ret) {
 		dev_err(host->mci.hw_dev,
-				"SDHCI timeout while waiting for idle\n");
+			"SDHCI timeout while waiting for idle\n");
 		return ret;
 	}
 
@@ -191,7 +197,8 @@ static int arasan_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 	if (data && data->flags == MMC_DATA_READ)
 		mask |= SDHCI_INT_DATA_AVAIL;
 
-	sdhci_set_cmd_xfer_mode(&host->sdhci, cmd, data, false, &command, &xfer);
+	sdhci_set_cmd_xfer_mode(&host->sdhci,
+				cmd, data, false, &command, &xfer);
 
 	sdhci_write8(&host->sdhci, SDHCI_TIMEOUT_CONTROL, TIMEOUT_VAL);
 	if (data) {
@@ -223,6 +230,7 @@ error:
 	}
 
 	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, ~0);
+
 	return ret;
 }
 

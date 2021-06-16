@@ -38,7 +38,7 @@ apply_relocate(Elf32_Shdr *sechdrs, const char *strtab, unsigned int symindex,
 
 		sym = ((Elf32_Sym *)symsec->sh_addr) + offset;
 
-		if (rel->r_offset < 0 || rel->r_offset > dstsec->sh_size - sizeof(u32)) {
+		if (rel->r_offset > dstsec->sh_size - sizeof(u32)) {
 			printf("%s: out of bounds relocation, "
 				"section %u reloc %u offset %d size %d\n",
 				module->name, relindex, i, rel->r_offset,

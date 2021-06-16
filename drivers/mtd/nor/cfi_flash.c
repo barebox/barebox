@@ -466,9 +466,16 @@ flash_sect_t find_sector(struct flash_info *info, unsigned long addr)
 {
 	flash_sect_t sector;
 
-	for (sector = info->sector_count - 1; sector >= 0; sector--) {
+	sector = info->sector_count - 1;
+
+	while (1) {
 		if (addr >= info->start[sector])
 			break;
+
+		if (sector == 0)
+			BUG();
+
+		sector--;
 	}
 
 	return sector;

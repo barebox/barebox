@@ -182,6 +182,8 @@ static int lm75_probe(struct device_d *dev)
 		clr_mask |= 1 << 5;		/* not one-shot mode */
 		data->resolution = 12;
 		break;
+	default:
+		return -EINVAL;
 	}
 
 	/* configure as specified */

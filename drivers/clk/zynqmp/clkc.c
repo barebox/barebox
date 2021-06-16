@@ -453,7 +453,7 @@ static int zynqmp_register_clocks(struct device_d *dev,
 	const char *parent_names[MAX_PARENT];
 	char *name;
 	struct device_node *node = dev->device_node;
-	unsigned int num_parents;
+	int num_parents;
 
 	for (i = 0; i < num_clocks; i++) {
 		if (zynqmp_get_clock_type(i) != CLK_TYPE_OUTPUT)

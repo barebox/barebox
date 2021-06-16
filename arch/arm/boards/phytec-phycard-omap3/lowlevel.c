@@ -98,7 +98,7 @@ static void config_sdram_ddr(u8 cs, u8 cfg)
 static void pcaal1_sdrc_init(void)
 {
 	u32 test0, test1;
-	char cfg;
+	signed char cfg;
 
 	init_sdram_ddr();
 

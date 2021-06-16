@@ -118,9 +118,6 @@ static void arasan_sdhci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	struct arasan_sdhci_host *host = to_arasan_sdhci_host(mci);
 	u16 val;
 
-	/* stop clock */
-	sdhci_write16(&host->sdhci, SDHCI_CLOCK_CONTROL, 0);
-
 	if (ios->clock)
 		sdhci_set_clock(&host->sdhci, ios->clock, host->sdhci.max_clk);
 

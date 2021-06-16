@@ -49,6 +49,7 @@ config OF_BAREBOX_ENV_IN_FS
 
 config OF_OVERLAY
 	select OFTREE
+	select FIRMWARE
 	bool "Devicetree overlays"
 	help
 	  Overlays allow to patch the devicetree. Unlike Linux, Barebox does

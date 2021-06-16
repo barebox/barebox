@@ -108,6 +108,12 @@ config DRIVER_NET_DESIGNWARE_TEGRA186
 	help
 	  This option enables support for the ethernet MAC on the Tegra186 & 194.
 
+config DRIVER_NET_DESIGNWARE_ROCKCHIP
+	bool "Designware Universal MAC ethernet driver for Rockchip platforms"
+	select MFD_SYSCON
+	help
+	  This option enables support for the ethernet MAC on different Rockchip SoCs
+
 endif
 
 config DRIVER_NET_DM9K

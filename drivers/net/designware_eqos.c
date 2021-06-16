@@ -8,9 +8,12 @@
 
 #include <common.h>
 #include <init.h>
+#include <gpio.h>
+#include <gpiod.h>
 #include <dma.h>
 #include <net.h>
 #include <of_net.h>
+#include <of_gpio.h>
 #include <linux/iopoll.h>
 #include <linux/time.h>
 #include <linux/sizes.h>
@@ -188,6 +191,27 @@ struct eqos_desc {
 #define EQOS_MDIO_CLK_CSR(clk_csr)	((clk_csr << 8) & GENMASK(11, 8))
 
 #define MII_BUSY		(1 << 0)
+
+static int eqos_phy_reset(struct device_d *dev, struct eqos *eqos)
+{
+	int phy_reset;
+	u32 delays[3] = { 0, 0, 0 };
+
+	phy_reset = gpiod_get(dev, "snps,reset", GPIOF_OUT_INIT_ACTIVE);
+
+	if (!gpio_is_valid(phy_reset))
+		return 0;
+
+	of_property_read_u32_array(dev->device_node,
+				   "snps,reset-delays-us",
+				   delays, ARRAY_SIZE(delays));
+
+	udelay(delays[1]);
+	gpio_set_active(phy_reset, false);
+	udelay(delays[2]);
+
+	return 0;
+}
 
 static int eqos_mdio_wait_idle(struct eqos *eqos)
 {
@@ -838,8 +862,13 @@ int eqos_probe(struct device_d *dev, const struct eqos_ops *ops, void *priv)
 	miibus->read = eqos_mdio_read;
 	miibus->write = eqos_mdio_write;
 	miibus->priv = eqos;
+	miibus->dev.device_node = of_get_child_by_name(dev->device_node, "mdio");
 
 	ret = eqos_init(dev, eqos);
+	if (ret)
+		return ret;
+
+	ret = eqos_phy_reset(dev, eqos);
 	if (ret)
 		return ret;
 

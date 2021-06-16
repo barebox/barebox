@@ -27,6 +27,7 @@
  */
 
 #include <firmware.h>
+#include <fpga-mgr.h>
 #include <command.h>
 #include <common.h>
 #include <malloc.h>
@@ -76,14 +77,6 @@
 #define CDRATIO_x2	0x1
 #define CDRATIO_x4	0x2
 #define CDRATIO_x8	0x3
-
-struct fpgamgr {
-	struct firmware_handler fh;
-	struct device_d dev;
-	void __iomem *regs;
-	void __iomem *regs_data;
-	int programmed;
-};
 
 /* Get the FPGA mode */
 static uint32_t socfpga_fpgamgr_get_mode(struct fpgamgr *mgr)

@@ -1358,7 +1358,8 @@ static int __maybe_unused mci_sd_write(struct block_device *blk,
 
 	mci_blk_part_switch(part);
 
-	if (host->card_write_protected && host->card_write_protected(host)) {
+	if (!host->disable_wp &&
+	    host->card_write_protected && host->card_write_protected(host)) {
 		dev_err(&mci->dev, "card write protected\n");
 		return -EPERM;
 	}
@@ -2016,6 +2017,7 @@ void mci_of_parse_node(struct mci_host *host,
 
 	host->non_removable = of_property_read_bool(np, "non-removable");
 	host->no_sd = of_property_read_bool(np, "no-sd");
+	host->disable_wp = of_property_read_bool(np, "disable-wp");
 }
 
 void mci_of_parse(struct mci_host *host)

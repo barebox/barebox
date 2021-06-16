@@ -1,0 +1,22 @@
+targets:
+  main:
+    drivers:
+      QEMUDriver:
+        qemu_bin: qemu
+        machine: malta
+        cpu: M14Kc
+        memory: 256M
+        bios: barebox-qemu-malta.img
+        extra_args: ''
+      BareboxDriver:
+        prompt: 'barebox@[^:]+:[^ ]+ '
+        bootstring: 'commandline:'
+      BareboxTestStrategy: {}
+    features:
+      - virtio-pci
+images:
+  barebox-qemu-malta.img: !template "$LG_BUILDDIR/images/barebox-qemu-malta.img"
+tools:
+  qemu: /usr/bin/qemu-system-mips
+imports:
+  -  ../strategy.py

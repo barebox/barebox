@@ -1,0 +1,8 @@
+menuconfig TEST
+	bool "Testing"
+
+if TEST
+
+source "test/self/Kconfig"
+
+endif

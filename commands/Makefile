@@ -130,5 +130,6 @@ obj-$(CONFIG_CMD_SEED)		+= seed.o
 obj-$(CONFIG_CMD_IP_ROUTE_GET)  += ip-route-get.o
 obj-$(CONFIG_CMD_BTHREAD)	+= bthread.o
 obj-$(CONFIG_CMD_UBSAN)		+= ubsan.o
+obj-$(CONFIG_CMD_SELFTEST)	+= selftest.o
 
 UBSAN_SANITIZE_ubsan.o := y

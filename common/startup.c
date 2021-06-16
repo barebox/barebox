@@ -37,6 +37,7 @@
 #include <linux/ctype.h>
 #include <watchdog.h>
 #include <glob.h>
+#include <bselftest.h>
 
 extern initcall_t __barebox_initcalls_start[], __barebox_early_initcalls_end[],
 		  __barebox_initcalls_end[];
@@ -416,6 +417,9 @@ void __noreturn start_barebox(void)
 	}
 
 	pr_debug("initcalls done\n");
+
+	if (IS_ENABLED(CONFIG_SELFTEST_AUTORUN))
+		selftests_run();
 
 	if (barebox_main)
 		barebox_main();

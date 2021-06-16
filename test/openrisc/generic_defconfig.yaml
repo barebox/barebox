@@ -1,0 +1,20 @@
+targets:
+  main:
+    drivers:
+      QEMUDriver:
+        qemu_bin: qemu
+        machine: or1k-sim
+        cpu: or1200
+        memory: 256M
+        kernel: barebox
+        extra_args: ''
+      BareboxDriver:
+        prompt: 'barebox@[^:]+:[^ ]+ '
+        bootstring: 'commandline:'
+      BareboxTestStrategy: {}
+images:
+  barebox: !template "$LG_BUILDDIR/barebox"
+tools:
+  qemu: /usr/bin/qemu-system-or1k
+imports:
+  -  ../strategy.py

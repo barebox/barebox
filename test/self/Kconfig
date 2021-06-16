@@ -1,0 +1,39 @@
+# SPDX-License-Identifier: GPL-2.0
+
+config SELFTEST
+	bool "Self-tests"
+	help
+	  Configures support for in-barebox testing
+
+if SELFTEST
+
+config CMD_SELFTEST
+	bool "selftest command"
+	depends on COMMAND_SUPPORT
+	help
+	  Command to run enabled barebox self-tests.
+	  If run without arguments, all tests are run
+
+	  Usage: selftest [-l] [tests...]
+
+	  Options:
+	    -l     list available tests
+
+config SELFTEST_AUTORUN
+	bool "Run self-tests on startup"
+	help
+	  Self tests are run automatically after initcalls are done,
+	  but before barebox_main (shell or board-specific startup).
+
+config SELFTEST_ENABLE_ALL
+	bool "Enable all self-tests"
+	select SELFTEST_PRINTF
+	help
+	  Selects all self-tests compatible with current configuration
+
+config SELFTEST_PRINTF
+	bool "printf selftest"
+	help
+	  Tests barebox vsnprintf() functionality
+
+endif

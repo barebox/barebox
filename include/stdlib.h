@@ -25,4 +25,9 @@ static inline u32 random32(void)
 	return ret;
 }
 
+static inline u32 prandom_u32_max(u32 ep_ro)
+{
+	return (u32)(((u64) random32() * ep_ro) >> 32);
+}
+
 #endif /* __STDLIB_H */

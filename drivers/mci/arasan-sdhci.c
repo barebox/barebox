@@ -193,6 +193,8 @@ static int arasan_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 	mask = SDHCI_INT_CMD_COMPLETE;
 	if (data && data->flags == MMC_DATA_READ)
 		mask |= SDHCI_INT_DATA_AVAIL;
+	if (cmd->resp_type & MMC_RSP_BUSY)
+		mask |= SDHCI_INT_XFER_COMPLETE;
 
 	sdhci_set_cmd_xfer_mode(&host->sdhci,
 				cmd, data, false, &command, &xfer);

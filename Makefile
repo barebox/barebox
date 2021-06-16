@@ -352,9 +352,6 @@ KCONFIG_CONFIG	?= .config
 
 export KCONFIG_CONFIG
 
-# Default file for 'make defconfig'. This may be overridden by arch-Makefile.
-export KBUILD_DEFCONFIG := defconfig
-
 # SHELL used by kbuild
 CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 	  else if [ -x /bin/bash ]; then echo /bin/bash; \
@@ -596,8 +593,11 @@ $(KCONFIG_CONFIG):
 # This exploits the 'multi-target pattern rule' trick.
 # The syncconfig should be executed only once to make all the targets.
 # (Note: use the grouped target '&:' when we bump to GNU Make 4.3)
-%/auto.conf %/auto.conf.cmd: $(KCONFIG_CONFIG)
-	$(Q)$(MAKE) -f $(srctree)/Makefile syncconfig
+quiet_cmd_syncconfig = SYNC    $@
+      cmd_syncconfig = $(MAKE) -f $(srctree)/Makefile syncconfig
+
+%/config/auto.conf %/config/auto.conf.cmd %/generated/autoconf.h: $(KCONFIG_CONFIG)
+	+$(call cmd,syncconfig)
 else # !may-sync-config
 # External modules and some install targets need include/generated/autoconf.h
 # and include/config/auto.conf but do not care if they are up-to-date.
@@ -941,7 +941,8 @@ scripts: scripts_basic
 PHONY += prepare archprepare prepare0
 
 archprepare: outputmakefile scripts_basic include/config/kernel.release \
-	$(version_h) include/generated/utsrelease.h include/config.h
+	$(version_h) include/generated/utsrelease.h include/config.h \
+	include/generated/autoconf.h
 
 prepare0: archprepare FORCE
 ifneq ($(KBUILD_MODULES),)

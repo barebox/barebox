@@ -1,8 +1,3 @@
-config DEFCONFIG_LIST
-	string
-	option defconfig_list
-	default "arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG)"
-
 config GREGORIAN_CALENDER
 	bool
 
@@ -333,7 +328,7 @@ config MODULES
 	depends on HAS_MODULES
 	depends on EXPERIMENTAL
 	bool "module support"
-	option modules
+	modules
 	help
 	  This option enables support for loadable modules via insmod. Module
 	  support is quite experimental at the moment. There is no convenient

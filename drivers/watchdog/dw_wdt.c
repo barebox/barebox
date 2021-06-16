@@ -111,6 +111,9 @@ static int dw_wdt_set_timeout(struct watchdog *wdd, unsigned int top_s)
 	writel(top_val | top_val << WDOG_TIMEOUT_RANGE_TOPINIT_SHIFT,
 	       dw_wdt->regs + WDOG_TIMEOUT_RANGE_REG_OFFSET);
 
+	writel(WDOG_COUNTER_RESTART_KICK_VALUE,
+	       dw_wdt->regs + WDOG_COUNTER_RESTART_REG_OFFSET);
+
 	dw_wdt_start(wdd);
 
 	return 0;
@@ -156,14 +159,18 @@ static int dw_wdt_drv_probe(struct device_d *dev)
 	if (IS_ERR(dw_wdt->rst))
 		return PTR_ERR(dw_wdt->rst);
 
+	dw_wdt->rate = clk_get_rate(clk);
+	if (dw_wdt->rate == 0)
+		return -EINVAL;
+
 	wdd = &dw_wdt->wdd;
 	wdd->name = "dw_wdt";
 	wdd->hwdev = dev;
 	wdd->set_timeout = dw_wdt_set_timeout;
+	wdd->timeout_max = dw_wdt_top_in_seconds(dw_wdt, DW_WDT_MAX_TOP);
 
-	dw_wdt->rate = clk_get_rate(clk);
-	if (dw_wdt->rate == 0)
-		return -EINVAL;
+	wdd->running = readl(dw_wdt->regs + WDOG_CONTROL_REG_OFFSET) &
+		WDOG_CONTROL_REG_WDT_EN_MASK ? WDOG_HW_RUNNING : WDOG_HW_NOT_RUNNING;
 
 	ret = watchdog_register(wdd);
 	if (ret)
@@ -179,7 +186,7 @@ static int dw_wdt_drv_probe(struct device_d *dev)
 	if (dw_wdt->rst)
 		reset_control_deassert(dw_wdt->rst);
 	else
-		dev_warn(dev, "No reset lines. Will not be able to stop once started.\n");
+		dev_dbg(dev, "No reset lines. Will not be able to stop once started.\n");
 
 	return 0;
 

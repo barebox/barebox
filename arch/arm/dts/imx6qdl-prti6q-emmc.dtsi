@@ -1,12 +1,80 @@
 // SPDX-License-Identifier: GPL-2.0-or-later OR MIT
 
 / {
+	aliases {
+		state = &state_emmc;
+	};
+
 	chosen {
 		stdout-path = &uart4;
 
 		environment@0 {
 			compatible = "barebox,environment";
 			device-path = &usdhc3, "partname:barebox-environment";
+		};
+	};
+
+	state_emmc: state {
+		magic = <0x292D3A3C>;
+		compatible = "barebox,state";
+		backend-type = "raw";
+		backend = <&state_backend_emmc>;
+		backend-stridesize = <0x400>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		bootstate {
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			system0 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+
+				remaining_attempts {
+					reg = <0x0 0x4>;
+					type = "uint32";
+					default = <3>;
+				};
+
+				priority {
+					reg = <0x4 0x4>;
+					type = "uint32";
+					default = <21>;
+				};
+			};
+
+			system1 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+
+				remaining_attempts {
+					reg = <0x10 0x4>;
+					type = "uint32";
+					default = <3>;
+				};
+
+				priority {
+					reg = <0x14 0x4>;
+					type = "uint32";
+					default = <20>;
+				};
+			};
+
+			last_chosen {
+				reg = <0x20 0x4>;
+				type = "uint32";
+			};
+		};
+
+		blobs {
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			data_partitions {
+				reg = <0x26 0x100>;
+				type = "string";
+			};
 		};
 	};
 
@@ -42,7 +110,7 @@
 		reg = <0x40000 0x80000>;
 	};
 
-	partition@c0000 {
+	state_backend_emmc: partition@c0000 {
 		label = "state";
 		reg = <0xc0000 0x40000>;
 	};

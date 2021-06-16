@@ -1,0 +1,5 @@
+soc imx8mm
+
+loadaddr 0x007e1000
+max_load_size 0x3f000
+ivtofs 0x400

@@ -1,19 +1,12 @@
+// SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: 2010 Baruch Siach <baruch@tkos.co.il>, Orex Computed Radiography
+
 /*
  * iim.c - i.MX IIM fusebox driver
  *
  * Provide an interface for programming and sensing the information that are
  * stored in on-chip fuse elements. This functionality is part of the IC
  * Identification Module (IIM), which is present on some i.MX CPUs.
- *
- * Copyright (c) 2010 Baruch Siach <baruch@tkos.co.il>,
- * 	Orex Computed Radiography
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2
- * as published by the Free Software Foundation.
- *
- * http://www.opensource.org/licenses/gpl-license.html
- * http://www.gnu.org/copyleft/gpl.html
  */
 
 #include <common.h>

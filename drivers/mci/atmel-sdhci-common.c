@@ -11,6 +11,7 @@
 
 #include <common.h>
 #include <mci.h>
+#include <linux/bitfield.h>
 
 #include <mach/early_udelay.h>
 
@@ -23,8 +24,6 @@
 #endif
 
 #include "atmel-sdhci.h"
-
-#define AT91_SDHCI_CA1R		0x44	/* Capabilities 1 Register */
 
 #define AT91_SDHCI_MC1R		0x204
 #define		AT91_SDHCI_MC1_FCD		BIT(7)
@@ -42,13 +41,13 @@ void at91_sdhci_host_capability(struct at91_sdhci *host,
 {
 	u16 caps;
 
-	caps = sdhci_read16(&host->sdhci, SDHCI_CAPABILITIES_1);
+	caps = sdhci_read32(&host->sdhci, SDHCI_CAPABILITIES);
 
-	if (caps & SDHCI_HOSTCAP_VOLTAGE_330)
+	if (caps & SDHCI_CAN_VDD_330)
 		*voltages |= MMC_VDD_32_33 | MMC_VDD_33_34;
-	if (caps & SDHCI_HOSTCAP_VOLTAGE_300)
+	if (caps & SDHCI_CAN_VDD_300)
 		*voltages |= MMC_VDD_29_30 | MMC_VDD_30_31;
-	if (caps & SDHCI_HOSTCAP_VOLTAGE_180)
+	if (caps & SDHCI_CAN_VDD_180)
 		*voltages |= MMC_VDD_165_195;
 }
 
@@ -167,7 +166,7 @@ int at91_sdhci_send_command(struct at91_sdhci *host, struct mci_cmd *cmd,
 	sdhci_write32(sdhci, SDHCI_INT_STATUS, mask);
 
 	if (data)
-		sdhci_transfer_data(sdhci, data);
+		sdhci_transfer_data_pio(sdhci, data);
 
 	udelay(1000);
 
@@ -237,9 +236,9 @@ static int at91_sdhci_set_clock(struct at91_sdhci *host, unsigned clock)
 	if (clock == 0)
 		return 0;
 
-	caps = sdhci_read32(sdhci, AT91_SDHCI_CA1R);
+	caps = sdhci_read32(sdhci, SDHCI_CAPABILITIES_1);
 
-	caps_clk_mult = (caps & SDHCI_CLOCK_MUL_MASK) >> SDHCI_CLOCK_MUL_SHIFT;
+	caps_clk_mult = FIELD_GET(SDHCI_CLOCK_MUL_MASK, caps);
 
 	if (caps_clk_mult) {
 		for (clk_div = 1; clk_div <= 1024; clk_div++) {
@@ -264,26 +263,26 @@ static int at91_sdhci_set_clock(struct at91_sdhci *host, unsigned clock)
 	clk |= SDHCI_FREQ_SEL(clk_div);
 	clk |= ((clk_div & SDHCI_DIV_HI_MASK) >> SDHCI_DIV_MASK_LEN)
 		<< SDHCI_DIVIDER_HI_SHIFT;
-	clk |= SDHCI_INTCLOCK_EN;
+	clk |= SDHCI_CLOCK_INT_EN;
 
 	sdhci_write16(sdhci, SDHCI_CLOCK_CONTROL, clk);
 
 	ret = sdhci_read32_poll_timeout(sdhci, SDHCI_CLOCK_CONTROL, clk,
-					clk & SDHCI_INTCLOCK_STABLE,
+					clk & SDHCI_CLOCK_INT_STABLE,
 					20 * USEC_PER_MSEC);
 	if (ret) {
 		dev_warn(host->dev, "Timeout waiting for clock stable\n");
 		return ret;
 	}
 
-	clk |= SDHCI_SDCLOCK_EN;
+	clk |= SDHCI_CLOCK_CARD_EN;
 	sdhci_write16(sdhci, SDHCI_CLOCK_CONTROL, clk);
 
 	reg = sdhci_read8(sdhci, SDHCI_HOST_CONTROL);
 	if (clock > 26000000)
-		reg |= SDHCI_HIGHSPEED_EN;
+		reg |= SDHCI_CTRL_HISPD;
 	else
-		reg &= ~SDHCI_HIGHSPEED_EN;
+		reg &= ~SDHCI_CTRL_HISPD;
 
 	sdhci_write8(sdhci, SDHCI_HOST_CONTROL, reg);
 
@@ -299,15 +298,15 @@ static int at91_sdhci_set_bus_width(struct at91_sdhci *host, unsigned bus_width)
 
 	switch(bus_width) {
 	case MMC_BUS_WIDTH_8:
-		reg |= SDHCI_DATA_WIDTH_8BIT;
+		reg |= SDHCI_CTRL_8BITBUS;
 		break;
 	case MMC_BUS_WIDTH_4:
-		reg &= ~SDHCI_DATA_WIDTH_8BIT;
-		reg |= SDHCI_DATA_WIDTH_4BIT;
+		reg &= ~SDHCI_CTRL_8BITBUS;
+		reg |= SDHCI_CTRL_8BITBUS;
 		break;
 	default:
-		reg &= ~SDHCI_DATA_WIDTH_8BIT;
-		reg &= ~SDHCI_DATA_WIDTH_4BIT;
+		reg &= ~SDHCI_CTRL_8BITBUS;
+		reg &= ~SDHCI_CTRL_8BITBUS;
 	}
 
 	sdhci_write8(sdhci, SDHCI_HOST_CONTROL, reg);
@@ -379,43 +378,7 @@ int at91_sdhci_init(struct at91_sdhci *host, u32 maxclk,
 	return 0;
 }
 
-static u32 at91_sdhci_read32(struct sdhci *sdhci, int reg)
-{
-	return readl(to_priv(sdhci)->base + reg);
-}
-
-static void at91_sdhci_write32(struct sdhci *sdhci, int reg, u32 value)
-{
-	writel(value, to_priv(sdhci)->base + reg);
-}
-
-static u16 at91_sdhci_read16(struct sdhci *sdhci, int reg)
-{
-	return readw(to_priv(sdhci)->base + reg);
-}
-
-static void at91_sdhci_write16(struct sdhci *sdhci, int reg, u16 value)
-{
-	writew(value, to_priv(sdhci)->base + reg);
-}
-
-static u8 at91_sdhci_read8(struct sdhci *sdhci, int reg)
-{
-	return readb(to_priv(sdhci)->base + reg);
-}
-
-static void at91_sdhci_write8(struct sdhci *sdhci, int reg, u8 value)
-{
-	writeb(value, to_priv(sdhci)->base + reg);
-}
-
 void at91_sdhci_mmio_init(struct at91_sdhci *host, void __iomem *base)
 {
-	host->base = base;
-	host->sdhci.read8 = at91_sdhci_read8;
-	host->sdhci.read16 = at91_sdhci_read16;
-	host->sdhci.read32 = at91_sdhci_read32;
-	host->sdhci.write8 = at91_sdhci_write8;
-	host->sdhci.write16 = at91_sdhci_write16;
-	host->sdhci.write32 = at91_sdhci_write32;
+	host->sdhci.base = base;
 }

@@ -10,48 +10,41 @@
 
 #define PRSSTAT_DAT0  0x01000000
 
-struct fsl_esdhc_dma_transfer {
-	dma_addr_t dma;
-	unsigned int size;
-	enum dma_data_direction dir;
-};
-
-static u32 esdhc_op_read32_le(struct sdhci *sdhci, int reg)
-{
-	struct fsl_esdhc_host *host = sdhci_to_esdhc(sdhci);
-
-	return readl(host->regs + reg);
-}
-
 static u32 esdhc_op_read32_be(struct sdhci *sdhci, int reg)
 {
 	struct fsl_esdhc_host *host = sdhci_to_esdhc(sdhci);
 
-	return in_be32(host->regs + reg);
-}
-
-static void esdhc_op_write32_le(struct sdhci *sdhci, int reg, u32 val)
-{
-	struct fsl_esdhc_host *host = sdhci_to_esdhc(sdhci);
-
-	writel(val, host->regs + reg);
+	return in_be32(host->sdhci.base + reg);
 }
 
 static void esdhc_op_write32_be(struct sdhci *sdhci, int reg, u32 val)
 {
 	struct fsl_esdhc_host *host = sdhci_to_esdhc(sdhci);
 
-	out_be32(host->regs + reg, val);
+	out_be32(host->sdhci.base + reg, val);
+}
+
+static u16 esdhc_op_read16_be(struct sdhci *sdhci, int reg)
+{
+	struct fsl_esdhc_host *host = sdhci_to_esdhc(sdhci);
+
+	return in_be16(host->sdhci.base + reg);
+}
+
+static void esdhc_op_write16_be(struct sdhci *sdhci, int reg, u16 val)
+{
+	struct fsl_esdhc_host *host = sdhci_to_esdhc(sdhci);
+
+	out_be16(host->sdhci.base + reg, val);
 }
 
 void esdhc_populate_sdhci(struct fsl_esdhc_host *host)
 {
 	if (host->socdata->flags & ESDHC_FLAG_BIGENDIAN) {
+		host->sdhci.read16 = esdhc_op_read16_be;
+		host->sdhci.write16 = esdhc_op_write16_be;
 		host->sdhci.read32 = esdhc_op_read32_be;
 		host->sdhci.write32 = esdhc_op_write32_be;
-	} else {
-		host->sdhci.read32 = esdhc_op_read32_le;
-		host->sdhci.write32 = esdhc_op_write32_le;
 	}
 }
 
@@ -59,71 +52,33 @@ static bool esdhc_use_pio_mode(void)
 {
 	return IN_PBL || IS_ENABLED(CONFIG_MCI_IMX_ESDHC_PIO);
 }
+
 static int esdhc_setup_data(struct fsl_esdhc_host *host, struct mci_data *data,
-			    struct fsl_esdhc_dma_transfer *tr)
+			    dma_addr_t *dma)
 {
 	u32 wml_value;
-	void *ptr;
 
-	if (!esdhc_use_pio_mode()) {
-		wml_value = data->blocksize/4;
+	wml_value = data->blocksize / 4;
 
-		if (data->flags & MMC_DATA_READ) {
-			if (wml_value > 0x10)
-				wml_value = 0x10;
+	if (data->flags & MMC_DATA_READ) {
+		if (wml_value > 0x10)
+			wml_value = 0x10;
 
-			esdhc_clrsetbits32(host, IMX_SDHCI_WML, WML_RD_WML_MASK, wml_value);
-		} else {
-			if (wml_value > 0x80)
-				wml_value = 0x80;
+		esdhc_clrsetbits32(host, IMX_SDHCI_WML, WML_RD_WML_MASK, wml_value);
+	} else {
+		if (wml_value > 0x80)
+			wml_value = 0x80;
 
-			esdhc_clrsetbits32(host, IMX_SDHCI_WML, WML_WR_WML_MASK,
-						wml_value << 16);
-		}
-
-		tr->size = data->blocks * data->blocksize;
-
-		if (data->flags & MMC_DATA_WRITE) {
-			ptr = (void *)data->src;
-			tr->dir = DMA_TO_DEVICE;
-		} else {
-			ptr = data->dest;
-			tr->dir = DMA_FROM_DEVICE;
-		}
-
-		tr->dma = dma_map_single(host->dev, ptr, tr->size, tr->dir);
-		if (dma_mapping_error(host->dev, tr->dma))
-			return -EFAULT;
-
-
-		sdhci_write32(&host->sdhci, SDHCI_DMA_ADDRESS, tr->dma);
+		esdhc_clrsetbits32(host, IMX_SDHCI_WML, WML_WR_WML_MASK,
+					wml_value << 16);
 	}
 
-	sdhci_write32(&host->sdhci, SDHCI_BLOCK_SIZE__BLOCK_COUNT, data->blocks << 16 | data->blocksize);
-
-	return 0;
-}
-
-static int esdhc_do_data(struct fsl_esdhc_host *host, struct mci_data *data,
-		  struct fsl_esdhc_dma_transfer *tr)
-{
-	u32 irqstat;
+	host->sdhci.sdma_boundary = 0;
 
 	if (esdhc_use_pio_mode())
-		return sdhci_transfer_data(&host->sdhci, data);
-
-	do {
-		irqstat = sdhci_read32(&host->sdhci, SDHCI_INT_STATUS);
-
-		if (irqstat & DATA_ERR)
-			return -EIO;
-
-		if (irqstat & SDHCI_INT_DATA_TIMEOUT)
-			return -ETIMEDOUT;
-	} while (!(irqstat & SDHCI_INT_XFER_COMPLETE) &&
-		(sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) & SDHCI_DATA_LINE_ACTIVE));
-
-	dma_unmap_single(host->dev, tr->dma, tr->size, tr->dir);
+		sdhci_setup_data_pio(&host->sdhci, data);
+	else
+		sdhci_setup_data_dma(&host->sdhci, data, dma);
 
 	return 0;
 }
@@ -175,7 +130,7 @@ int __esdhc_send_cmd(struct fsl_esdhc_host *host, struct mci_cmd *cmd,
 {
 	u32	xfertyp, mixctrl, command;
 	u32	irqstat;
-	struct fsl_esdhc_dma_transfer tr = { 0 };
+	dma_addr_t dma = SDHCI_NO_DMA;
 	int ret;
 
 	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, -1);
@@ -185,13 +140,13 @@ int __esdhc_send_cmd(struct fsl_esdhc_host *host, struct mci_cmd *cmd,
 
 	/* Set up for a data transfer if we have one */
 	if (data) {
-		ret = esdhc_setup_data(host, data, &tr);
+		ret = esdhc_setup_data(host, data, &dma);
 		if (ret)
 			return ret;
 	}
 
 	sdhci_set_cmd_xfer_mode(&host->sdhci, cmd, data,
-				!esdhc_use_pio_mode(), &command, &xfertyp);
+				dma != SDHCI_NO_DMA, &command, &xfertyp);
 
 	if ((host->socdata->flags & ESDHC_FLAG_MULTIBLK_NO_INT) &&
 	    (cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION))
@@ -248,7 +203,11 @@ int __esdhc_send_cmd(struct fsl_esdhc_host *host, struct mci_cmd *cmd,
 
 	/* Wait until all of the blocks are transferred */
 	if (data) {
-		ret = esdhc_do_data(host, data, &tr);
+		if (esdhc_use_pio_mode())
+			ret = sdhci_transfer_data_pio(&host->sdhci, data);
+		else
+			ret = sdhci_transfer_data_dma(&host->sdhci, data, dma);
+
 		if (ret)
 			return ret;
 	}

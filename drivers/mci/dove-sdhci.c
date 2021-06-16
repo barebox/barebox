@@ -20,54 +20,11 @@
 
 struct dove_sdhci {
 	struct mci_host mci;
-	void __iomem *base;
 	struct sdhci sdhci;
 };
 
 #define priv_from_mci_host(h)	\
 	container_of(h, struct dove_sdhci, mci);
-
-static void dove_sdhci_writel(struct sdhci *sdhci, int reg, u32 val)
-{
-	struct dove_sdhci *p = container_of(sdhci, struct dove_sdhci, sdhci);
-
-	writel(val, p->base + reg);
-}
-
-static void dove_sdhci_writew(struct sdhci *sdhci, int reg, u16 val)
-{
-	struct dove_sdhci *p = container_of(sdhci, struct dove_sdhci, sdhci);
-
-	writew(val, p->base + reg);
-}
-
-static void dove_sdhci_writeb(struct sdhci *sdhci, int reg, u8 val)
-{
-	struct dove_sdhci *p = container_of(sdhci, struct dove_sdhci, sdhci);
-
-	writeb(val, p->base + reg);
-}
-
-static u32 dove_sdhci_readl(struct sdhci *sdhci, int reg)
-{
-	struct dove_sdhci *p = container_of(sdhci, struct dove_sdhci, sdhci);
-
-	return readl(p->base + reg);
-}
-
-static u16 dove_sdhci_readw(struct sdhci *sdhci, int reg)
-{
-	struct dove_sdhci *p = container_of(sdhci, struct dove_sdhci, sdhci);
-
-	return readw(p->base + reg);
-}
-
-static u8 dove_sdhci_readb(struct sdhci *sdhci, int reg)
-{
-	struct dove_sdhci *p = container_of(sdhci, struct dove_sdhci, sdhci);
-
-	return readb(p->base + reg);
-}
 
 static int dove_sdhci_wait_for_done(struct dove_sdhci *host, u16 mask)
 {
@@ -197,7 +154,7 @@ static u16 dove_sdhci_get_clock_divider(struct dove_sdhci *host, u32 reqclk)
 {
 	u16 div;
 
-	for (div = 1; div < SDHCI_SPEC_200_MAX_CLK_DIVIDER; div *= 2)
+	for (div = 1; div < SDHCI_MAX_DIV_SPEC_200; div *= 2)
 		if ((host->mci.f_max / div) <= reqclk)
 			break;
 	div /= 2;
@@ -224,33 +181,33 @@ static void dove_sdhci_mci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 
 	/* set bus width */
 	val = sdhci_read8(&host->sdhci, SDHCI_HOST_CONTROL) &
-		~(SDHCI_DATA_WIDTH_4BIT | SDHCI_DATA_WIDTH_8BIT);
+		~(SDHCI_CTRL_8BITBUS | SDHCI_CTRL_8BITBUS);
 	switch (ios->bus_width) {
 	case MMC_BUS_WIDTH_8:
-		val |= SDHCI_DATA_WIDTH_8BIT;
+		val |= SDHCI_CTRL_8BITBUS;
 		break;
 	case MMC_BUS_WIDTH_4:
-		val |= SDHCI_DATA_WIDTH_4BIT;
+		val |= SDHCI_CTRL_8BITBUS;
 		break;
 	}
 
 	if (ios->clock > 26000000)
-		val |= SDHCI_HIGHSPEED_EN;
+		val |= SDHCI_CTRL_HISPD;
 	else
-		val &= ~SDHCI_HIGHSPEED_EN;
+		val &= ~SDHCI_CTRL_HISPD;
 
 	sdhci_write8(&host->sdhci, SDHCI_HOST_CONTROL, val);
 
 	/* set bus clock */
 	sdhci_write16(&host->sdhci, SDHCI_CLOCK_CONTROL, 0);
 	val = dove_sdhci_get_clock_divider(host, ios->clock);
-	val = SDHCI_INTCLOCK_EN | SDHCI_FREQ_SEL(val);
+	val = SDHCI_CLOCK_INT_EN | SDHCI_FREQ_SEL(val);
 	sdhci_write16(&host->sdhci, SDHCI_CLOCK_CONTROL, val);
 
 	/* wait for internal clock stable */
 	start = get_time_ns();
 	while (!(sdhci_read16(&host->sdhci, SDHCI_CLOCK_CONTROL) &
-			SDHCI_INTCLOCK_STABLE)) {
+			SDHCI_CLOCK_INT_STABLE)) {
 		if (is_timeout(start, 20 * MSECOND)) {
 			dev_err(host->mci.hw_dev, "SDHCI clock stable timeout\n");
 			return;
@@ -258,7 +215,7 @@ static void dove_sdhci_mci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	}
 
 	/* enable bus clock */
-	sdhci_write16(&host->sdhci, SDHCI_CLOCK_CONTROL, val | SDHCI_SDCLOCK_EN);
+	sdhci_write16(&host->sdhci, SDHCI_CLOCK_CONTROL, val | SDHCI_CLOCK_CARD_EN);
 }
 
 static int dove_sdhci_mci_init(struct mci_host *mci, struct device_d *dev)
@@ -290,19 +247,18 @@ static int dove_sdhci_mci_init(struct mci_host *mci, struct device_d *dev)
 
 static void dove_sdhci_set_mci_caps(struct dove_sdhci *host)
 {
-	u16 caps[2];
+	u32 caps;
 
-	caps[0] = sdhci_read16(&host->sdhci, SDHCI_CAPABILITIES);
-	caps[1] = sdhci_read16(&host->sdhci, SDHCI_CAPABILITIES_1);
+	caps = sdhci_read32(&host->sdhci, SDHCI_CAPABILITIES);
 
-	if (caps[1] & SDHCI_HOSTCAP_VOLTAGE_180)
+	if (caps & SDHCI_CAN_VDD_180)
 		host->mci.voltages |= MMC_VDD_165_195;
-	if (caps[1] & SDHCI_HOSTCAP_VOLTAGE_300)
+	if (caps & SDHCI_CAN_VDD_300)
 		host->mci.voltages |= MMC_VDD_29_30 | MMC_VDD_30_31;
-	if (caps[1] & SDHCI_HOSTCAP_VOLTAGE_330)
+	if (caps & SDHCI_CAN_VDD_330)
 		host->mci.voltages |= MMC_VDD_32_33 | MMC_VDD_33_34;
 
-	if (caps[1] & SDHCI_HOSTCAP_HIGHSPEED)
+	if (caps & SDHCI_CAN_DO_HISPD)
 		host->mci.host_caps |= (MMC_CAP_MMC_HIGHSPEED_52MHZ |
 					MMC_CAP_MMC_HIGHSPEED |
 					MMC_CAP_SD_HIGHSPEED);
@@ -311,7 +267,7 @@ static void dove_sdhci_set_mci_caps(struct dove_sdhci *host)
 	mci_of_parse(&host->mci);
 
 	/* limit bus widths to controller capabilities */
-	if ((caps[1] & SDHCI_HOSTCAP_8BIT) == 0)
+	if ((caps & SDHCI_CAN_DO_8BIT) == 0)
 		host->mci.host_caps &= ~MMC_CAP_8_BIT_DATA;
 }
 
@@ -321,7 +277,7 @@ static int dove_sdhci_probe(struct device_d *dev)
 	int ret;
 
 	host = xzalloc(sizeof(*host));
-	host->base = dev_request_mem_region(dev, 0);
+	host->sdhci.base = dev_request_mem_region(dev, 0);
 	host->mci.max_req_size = 0x8000;
 	host->mci.hw_dev = dev;
 	host->mci.send_cmd = dove_sdhci_mci_send_cmd;
@@ -329,12 +285,6 @@ static int dove_sdhci_probe(struct device_d *dev)
 	host->mci.init = dove_sdhci_mci_init;
 	host->mci.f_max = 50000000;
 	host->mci.f_min = host->mci.f_max / 256;
-	host->sdhci.read32 = dove_sdhci_readl;
-	host->sdhci.read16 = dove_sdhci_readw;
-	host->sdhci.read8 = dove_sdhci_readb;
-	host->sdhci.write32 = dove_sdhci_writel;
-	host->sdhci.write16 = dove_sdhci_writew;
-	host->sdhci.write8 = dove_sdhci_writeb;
 
 	dove_sdhci_set_mci_caps(host);
 

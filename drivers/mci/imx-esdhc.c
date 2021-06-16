@@ -230,7 +230,6 @@ static int fsl_esdhc_probe(struct device_d *dev)
 	struct resource *iores;
 	struct fsl_esdhc_host *host;
 	struct mci_host *mci;
-	u32 caps;
 	int ret;
 	unsigned long rate;
 	struct esdhc_platform_data *pdata = dev->platform_data;
@@ -265,18 +264,9 @@ static int fsl_esdhc_probe(struct device_d *dev)
 		ret = PTR_ERR(iores);
 		goto err_clk_disable;
 	}
-	host->regs = IOMEM(iores->start);
+	host->sdhci.base = IOMEM(iores->start);
 
 	esdhc_populate_sdhci(host);
-
-	caps = sdhci_read32(&host->sdhci, SDHCI_CAPABILITIES);
-
-	if (caps & ESDHC_HOSTCAPBLT_VS18)
-		mci->voltages |= MMC_VDD_165_195;
-	if (caps & ESDHC_HOSTCAPBLT_VS30)
-		mci->voltages |= MMC_VDD_29_30 | MMC_VDD_30_31;
-	if (caps & ESDHC_HOSTCAPBLT_VS33)
-		mci->voltages |= MMC_VDD_32_33 | MMC_VDD_33_34;
 
 	if (pdata) {
 		mci->host_caps = pdata->caps;
@@ -284,14 +274,16 @@ static int fsl_esdhc_probe(struct device_d *dev)
 			mci->devname = pdata->devname;
 	}
 
-	if (caps & ESDHC_HOSTCAPBLT_HSS)
-		mci->host_caps |= MMC_CAP_MMC_HIGHSPEED | MMC_CAP_SD_HIGHSPEED;
-
 	host->mci.send_cmd = esdhc_send_cmd;
 	host->mci.set_ios = esdhc_set_ios;
 	host->mci.init = esdhc_init;
 	host->mci.card_present = esdhc_card_present;
 	host->mci.hw_dev = dev;
+	host->sdhci.mci = &host->mci;
+
+	ret = sdhci_setup_host(&host->sdhci);
+	if (ret)
+		goto err_clk_disable;
 
 	rate = clk_get_rate(host->clk);
 	host->mci.f_min = rate >> 12;

@@ -172,7 +172,7 @@ static int bcm2835_mci_request(struct mci_host *mci, struct mci_cmd *cmd,
 	}
 
 	if (!ret && data)
-		ret = sdhci_transfer_data(&host->sdhci, data);
+		ret = sdhci_transfer_data_pio(&host->sdhci, data);
 
 	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, 0xFFFFFFFF);
 	if (ret) {

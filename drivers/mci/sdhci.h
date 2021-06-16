@@ -2,6 +2,7 @@
 #define __MCI_SDHCI_H
 
 #include <pbl.h>
+#include <dma.h>
 #include <linux/iopoll.h>
 
 #define SDHCI_DMA_ADDRESS					0x00
@@ -54,11 +55,18 @@
 #define SDHCI_PRESENT_STATE1					0x26
 #define SDHCI_HOST_CONTROL__POWER_CONTROL__BLOCK_GAP_CONTROL	0x28
 #define SDHCI_HOST_CONTROL					0x28
-#define  SDHCI_CARD_DETECT_SIGNAL_SELECTION	BIT(7)
-#define  SDHCI_CARD_DETECT_TEST_LEVEL		BIT(6)
-#define  SDHCI_DATA_WIDTH_8BIT			BIT(5)
-#define  SDHCI_HIGHSPEED_EN			BIT(2)
-#define  SDHCI_DATA_WIDTH_4BIT			BIT(1)
+#define  SDHCI_CTRL_LED         BIT(0)
+#define  SDHCI_CTRL_4BITBUS     BIT(1)
+#define  SDHCI_CTRL_HISPD       BIT(2)
+#define  SDHCI_CTRL_DMA_MASK    0x18
+#define   SDHCI_CTRL_SDMA       0x00
+#define   SDHCI_CTRL_ADMA1      0x08
+#define   SDHCI_CTRL_ADMA32     0x10
+#define   SDHCI_CTRL_ADMA64     0x18
+#define   SDHCI_CTRL_ADMA3      0x18
+#define  SDHCI_CTRL_8BITBUS     BIT(5)
+#define  SDHCI_CTRL_CDTEST_INS  BIT(6)
+#define  SDHCI_CTRL_CDTEST_EN   BIT(7)
 #define SDHCI_POWER_CONTROL					0x29
 #define  SDHCI_POWER_ON				0x01
 #define  SDHCI_POWER_180			0x0A
@@ -68,15 +76,19 @@
 #define  SDHCI_BUS_VOLTAGE(v)			((v) << 1)
 #define  SDHCI_BUS_POWER_EN			BIT(0)
 #define SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET	0x2c
-#define SDHCI_CLOCK_CONTROL					0x2c
+#define SDHCI_CLOCK_CONTROL					0x2C
+#define  SDHCI_DIVIDER_SHIFT			8
 #define  SDHCI_DIVIDER_HI_SHIFT			6
+#define  SDHCI_DIV_MASK				0xFF
 #define  SDHCI_DIV_HI_MASK			0x300
 #define  SDHCI_DIV_MASK_LEN			8
-#define  SDHCI_FREQ_SEL(x)			(((x) & 0xff) << 8)
+#define  SDHCI_FREQ_SEL(x)                     (((x) & 0xff) << 8)
+#define  SDHCI_DIV_HI_MASK			0x300
 #define  SDHCI_PROG_CLOCK_MODE			BIT(5)
-#define  SDHCI_SDCLOCK_EN			BIT(2)
-#define  SDHCI_INTCLOCK_STABLE			BIT(1)
-#define  SDHCI_INTCLOCK_EN			BIT(0)
+#define  SDHCI_CLOCK_CARD_EN			BIT(2)
+#define  SDHCI_CLOCK_PLL_EN			BIT(3)
+#define  SDHCI_CLOCK_INT_STABLE			BIT(1)
+#define  SDHCI_CLOCK_INT_EN     		BIT(0)
 #define SDHCI_TIMEOUT_CONTROL					0x2e
 #define SDHCI_SOFTWARE_RESET					0x2f
 #define  SDHCI_RESET_ALL			BIT(0)
@@ -105,18 +117,65 @@
 #define SDHCI_SIGNAL_ENABLE					0x38
 #define SDHCI_ACMD12_ERR__HOST_CONTROL2				0x3C
 #define SDHCI_CAPABILITIES					0x40
-#define SDHCI_CAPABILITIES_1					0x42
-#define  SDHCI_HOSTCAP_VOLTAGE_180		BIT(10)
-#define  SDHCI_HOSTCAP_VOLTAGE_300		BIT(9)
-#define  SDHCI_HOSTCAP_VOLTAGE_330		BIT(8)
-#define  SDHCI_HOSTCAP_HIGHSPEED		BIT(5)
-#define  SDHCI_HOSTCAP_8BIT			BIT(2)
+#define  SDHCI_TIMEOUT_CLK_MASK			GENMASK(5, 0)
+#define  SDHCI_TIMEOUT_CLK_UNIT			0x00000080
+#define  SDHCI_CLOCK_BASE_MASK			GENMASK(13, 8)
+#define  SDHCI_CLOCK_V3_BASE_MASK		GENMASK(15, 8)
+#define  SDHCI_MAX_BLOCK_MASK			0x00030000
+#define  SDHCI_MAX_BLOCK_SHIFT			16
+#define  SDHCI_CAN_DO_8BIT			0x00040000
+#define  SDHCI_CAN_DO_ADMA2			0x00080000
+#define  SDHCI_CAN_DO_ADMA1			0x00100000
+#define  SDHCI_CAN_DO_HISPD			0x00200000
+#define  SDHCI_CAN_DO_SDMA			0x00400000
+#define  SDHCI_CAN_DO_SUSPEND			0x00800000
+#define  SDHCI_CAN_VDD_330			0x01000000
+#define  SDHCI_CAN_VDD_300			0x02000000
+#define  SDHCI_CAN_VDD_180			0x04000000
+#define  SDHCI_CAN_64BIT_V4			0x08000000
+#define  SDHCI_CAN_64BIT			0x10000000
 
-#define  SDHCI_CLOCK_MUL_MASK	0x00FF0000
+#define SDHCI_CAPABILITIES_1			0x44
+#define  SDHCI_SUPPORT_SDR50			0x00000001
+#define  SDHCI_SUPPORT_SDR104			0x00000002
+#define  SDHCI_SUPPORT_DDR50			0x00000004
+#define  SDHCI_DRIVER_TYPE_A			0x00000010
+#define  SDHCI_DRIVER_TYPE_C			0x00000020
+#define  SDHCI_DRIVER_TYPE_D			0x00000040
+#define  SDHCI_RETUNING_TIMER_COUNT_MASK	GENMASK(11, 8)
+#define  SDHCI_USE_SDR50_TUNING			0x00002000
+#define  SDHCI_RETUNING_MODE_MASK		GENMASK(15, 14)
+#define  SDHCI_CLOCK_MUL_MASK			GENMASK(23, 16)
+#define  SDHCI_CAN_DO_ADMA3			0x08000000
+#define  SDHCI_SUPPORT_HS400			0x80000000 /* Non-standard */
+
+#define SDHCI_PRESET_FOR_SDR12	0x66
+#define SDHCI_PRESET_FOR_SDR25	0x68
+#define SDHCI_PRESET_FOR_SDR50	0x6A
+#define SDHCI_PRESET_FOR_SDR104	0x6C
+#define SDHCI_PRESET_FOR_DDR50	0x6E
+#define SDHCI_PRESET_FOR_HS400	0x74 /* Non-standard */
+#define SDHCI_PRESET_CLKGEN_SEL		BIT(10)
+#define SDHCI_PRESET_SDCLK_FREQ_MASK	GENMASK(9, 0)
+
+#define SDHCI_HOST_VERSION	0xFE
+#define  SDHCI_VENDOR_VER_MASK	0xFF00
+#define  SDHCI_VENDOR_VER_SHIFT	8
+#define  SDHCI_SPEC_VER_MASK	0x00FF
+#define  SDHCI_SPEC_VER_SHIFT	0
+#define   SDHCI_SPEC_100	0
+#define   SDHCI_SPEC_200	1
+#define   SDHCI_SPEC_300	2
+#define   SDHCI_SPEC_400	3
+#define   SDHCI_SPEC_410	4
+#define   SDHCI_SPEC_420	5
+
 #define  SDHCI_CLOCK_MUL_SHIFT	16
 
-#define SDHCI_SPEC_200_MAX_CLK_DIVIDER	256
 #define SDHCI_MMC_BOOT						0xC4
+
+#define SDHCI_MAX_DIV_SPEC_200	256
+#define SDHCI_MAX_DIV_SPEC_300	2046
 
 struct sdhci {
 	u32 (*read32)(struct sdhci *host, int reg);
@@ -125,44 +184,101 @@ struct sdhci {
 	void (*write32)(struct sdhci *host, int reg, u32 val);
 	void (*write16)(struct sdhci *host, int reg, u16 val);
 	void (*write8)(struct sdhci *host, int reg, u8 val);
+
+	void __iomem *base;
+
+	int max_clk; /* Max possible freq (Hz) */
+	int clk_mul; /* Clock Muliplier value */
+
+	unsigned int version; /* SDHCI spec. version */
+
+	enum mci_timing timing;
+	bool preset_enabled; /* Preset is enabled */
+
+	unsigned int quirks;
+#define SDHCI_QUIRK_MISSING_CAPS		BIT(27)
+	unsigned int quirks2;
+#define SDHCI_QUIRK2_CLOCK_DIV_ZERO_BROKEN	BIT(15)
+	u32 caps;	/* CAPABILITY_0 */
+	u32 caps1;	/* CAPABILITY_1 */
+	bool read_caps;	/* Capability flags have been read */
+	u32 sdma_boundary;
+
+	struct mci_host	*mci;
 };
 
 static inline u32 sdhci_read32(struct sdhci *host, int reg)
 {
-	return host->read32(host, reg);
+	if (host->read32)
+		return host->read32(host, reg);
+	else
+		return readl(host->base + reg);
 }
 
 static inline u32 sdhci_read16(struct sdhci *host, int reg)
 {
-	return host->read16(host, reg);
+	if (host->read16)
+		return host->read16(host, reg);
+	else
+		return readw(host->base + reg);
 }
 
 static inline u32 sdhci_read8(struct sdhci *host, int reg)
 {
-	return host->read8(host, reg);
+	if (host->read8)
+		return host->read8(host, reg);
+	else
+		return readb(host->base + reg);
 }
 
 static inline void sdhci_write32(struct sdhci *host, int reg, u32 val)
 {
-	host->write32(host, reg, val);
+	if (host->write32)
+		host->write32(host, reg, val);
+	else
+		writel(val, host->base + reg);
 }
 
 static inline void sdhci_write16(struct sdhci *host, int reg, u32 val)
 {
-	host->write16(host, reg, val);
+	if (host->write16)
+		host->write16(host, reg, val);
+	else
+		writew(val, host->base + reg);
 }
 
 static inline void sdhci_write8(struct sdhci *host, int reg, u32 val)
 {
-	host->write8(host, reg, val);
+	if (host->write8)
+		host->write8(host, reg, val);
+	else
+		writeb(val, host->base + reg);
 }
 
+#define SDHCI_NO_DMA DMA_ERROR_CODE
 void sdhci_read_response(struct sdhci *host, struct mci_cmd *cmd);
 void sdhci_set_cmd_xfer_mode(struct sdhci *host, struct mci_cmd *cmd,
 			     struct mci_data *data, bool dma, u32 *command,
 			     u32 *xfer);
-int sdhci_transfer_data(struct sdhci *sdhci, struct mci_data *data);
+void sdhci_setup_data_pio(struct sdhci *sdhci, struct mci_data *data);
+void sdhci_setup_data_dma(struct sdhci *sdhci, struct mci_data *data, dma_addr_t *dma);
+int sdhci_transfer_data(struct sdhci *sdhci, struct mci_data *data, dma_addr_t dma);
+int sdhci_transfer_data_pio(struct sdhci *sdhci, struct mci_data *data);
+int sdhci_transfer_data_dma(struct sdhci *sdhci, struct mci_data *data,
+			    dma_addr_t dma);
 int sdhci_reset(struct sdhci *sdhci, u8 mask);
+u16 sdhci_calc_clk(struct sdhci *host, unsigned int clock,
+		   unsigned int *actual_clock, unsigned int input_clock);
+void sdhci_set_clock(struct sdhci *host, unsigned int clock, unsigned int input_clock);
+void sdhci_enable_clk(struct sdhci *host, u16 clk);
+int sdhci_setup_host(struct sdhci *host);
+void __sdhci_read_caps(struct sdhci *host, const u16 *ver,
+			const u32 *caps, const u32 *caps1);
+static inline void sdhci_read_caps(struct sdhci *host)
+{
+	__sdhci_read_caps(host, NULL, NULL, NULL);
+}
+void sdhci_set_bus_width(struct sdhci *host, int width);
 
 #define sdhci_read8_poll_timeout(sdhci, reg, val, cond, timeout_us) \
 	read_poll_timeout(sdhci_read8, val, cond, timeout_us, sdhci, reg)

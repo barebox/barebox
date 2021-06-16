@@ -25,6 +25,7 @@
 
 struct dwmci_host {
 	struct mci_host mci;
+	struct device_d *dev;
 	struct clk *clk_biu, *clk_ciu;
 	void *ioaddr;
 	unsigned int fifo_size_bytes;
@@ -34,6 +35,7 @@ struct dwmci_host {
 	int ciu_div;
 	u32 fifoth_val;
 	u32 pwren_value;
+	dma_addr_t idmac_dma;
 };
 
 struct dwmci_idmac {
@@ -110,12 +112,12 @@ static int dwmci_prepare_data_pio(struct dwmci_host *host,
 }
 
 static int dwmci_prepare_data_dma(struct dwmci_host *host,
-		struct mci_data *data)
+		struct mci_data *data, dma_addr_t dma)
 {
 	unsigned long ctrl;
 	unsigned int i = 0, flags, cnt, blk_cnt;
-	unsigned start_addr;
 	struct dwmci_idmac *desc = host->idmac;
+	dma_addr_t desc_dma = host->idmac_dma;
 
 	blk_cnt = data->blocks;
 
@@ -124,12 +126,7 @@ static int dwmci_prepare_data_dma(struct dwmci_host *host,
 
 	dwmci_wait_reset(host, DWMCI_CTRL_FIFO_RESET);
 
-	dwmci_writel(host, DWMCI_DBADDR, (uint32_t)desc);
-
-	if (data->flags & MMC_DATA_READ)
-		start_addr = (uint32_t)data->dest;
-	else
-		start_addr = (uint32_t)data->src;
+	dwmci_writel(host, DWMCI_DBADDR, desc_dma);
 
 	do {
 		flags = DWMCI_IDMAC_OWN | DWMCI_IDMAC_CH;
@@ -142,10 +139,12 @@ static int dwmci_prepare_data_dma(struct dwmci_host *host,
 			cnt = data->blocksize * 8;
 		}
 
+		desc_dma += sizeof(*desc);
+
 		desc->flags = flags;
 		desc->cnt = cnt;
-		desc->addr = start_addr + (i * PAGE_SIZE);
-		desc->next_addr = (uint32_t)(desc + 1);
+		desc->addr = dma + (i * PAGE_SIZE);
+		desc->next_addr = desc_dma;
 
 		dev_dbg(host->mci.hw_dev, "desc@ 0x%p 0x%08x 0x%08x 0x%08x 0x%08x\n",
 				desc, flags, cnt, desc->addr, desc->next_addr);
@@ -172,12 +171,12 @@ static int dwmci_prepare_data_dma(struct dwmci_host *host,
 }
 
 static int dwmci_prepare_data(struct dwmci_host *host,
-		struct mci_data *data)
+		struct mci_data *data, dma_addr_t dma)
 {
 	if (dwmci_use_pio(host))
 		return dwmci_prepare_data_pio(host, data);
 	else
-		return dwmci_prepare_data_dma(host, data);
+		return dwmci_prepare_data_dma(host, data, dma);
 }
 
 static int dwmci_set_transfer_mode(struct dwmci_host *host,
@@ -272,6 +271,7 @@ dwmci_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 	uint64_t start;
 	int ret;
 	unsigned int num_bytes = 0;
+	dma_addr_t dma = 0;
 
 	start = get_time_ns();
 	while (1) {
@@ -287,16 +287,20 @@ dwmci_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 	dwmci_writel(host, DWMCI_RINTSTS, DWMCI_INTMSK_ALL);
 
 	if (data) {
+
 		num_bytes = data->blocks * data->blocksize;
 
 		if (data->flags & MMC_DATA_WRITE)
-			dma_sync_single_for_device((unsigned long)data->src,
-						   num_bytes, DMA_TO_DEVICE);
+			dma = dma_map_single(host->dev, (void *)data->src, num_bytes,
+					     DMA_TO_DEVICE);
 		else
-			dma_sync_single_for_device((unsigned long)data->dest,
-						   num_bytes, DMA_FROM_DEVICE);
+			dma = dma_map_single(host->dev, data->dest, num_bytes,
+					     DMA_FROM_DEVICE);
 
-		ret = dwmci_prepare_data(host, data);
+		if (dma_mapping_error(host->dev, dma))
+			return -EFAULT;
+
+		ret = dwmci_prepare_data(host, data, dma);
 		if (ret)
 			return ret;
 	}
@@ -400,11 +404,11 @@ dwmci_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 			dwmci_writel(host, DWMCI_CTRL, ctrl);
 
 			if (data->flags & MMC_DATA_WRITE)
-				dma_sync_single_for_cpu((unsigned long)data->src,
-							num_bytes, DMA_TO_DEVICE);
+				dma_unmap_single(host->dev, dma, num_bytes,
+						 DMA_TO_DEVICE);
 			else
-				dma_sync_single_for_cpu((unsigned long)data->dest,
-							num_bytes, DMA_FROM_DEVICE);
+				dma_unmap_single(host->dev, dma, num_bytes,
+						 DMA_FROM_DEVICE);
 		}
 	}
 
@@ -550,6 +554,9 @@ static int dw_mmc_probe(struct device_d *dev)
 
 	host = xzalloc(sizeof(*host));
 
+	dma_set_mask(dev, DMA_BIT_MASK(32));
+	host->dev = dev;
+
 	host->clk_biu = clk_get(dev, "biu");
 	if (IS_ERR(host->clk_biu))
 		return PTR_ERR(host->clk_biu);
@@ -567,7 +574,9 @@ static int dw_mmc_probe(struct device_d *dev)
 	host->ioaddr = IOMEM(iores->start);
 
 	host->idmac = dma_alloc_coherent(sizeof(*host->idmac) * DW_MMC_NUM_IDMACS,
-					 DMA_ADDRESS_BROKEN);
+					 &host->idmac_dma);
+	if (!host->idmac)
+		return -ENOMEM;
 
 	host->mci.send_cmd = dwmci_cmd;
 	host->mci.set_ios = dwmci_set_ios;

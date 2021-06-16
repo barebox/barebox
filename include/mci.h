@@ -365,6 +365,8 @@ enum mci_timing {
 	MMC_TIMING_UHS_SDR104	= 4,
 	MMC_TIMING_UHS_DDR50	= 5,
 	MMC_TIMING_MMC_HS200	= 6,
+	MMC_TIMING_MMC_DDR52	= 7,
+	MMC_TIMING_MMC_HS400	= 8,
 };
 
 struct mci_ios {
@@ -404,6 +406,7 @@ struct mci_host {
 	int use_dsr;		/**< optional dsr usage flag */
 	bool non_removable;	/**< device is non removable */
 	bool no_sd;		/**< do not send SD commands during initialization */
+	bool disable_wp;	/**< ignore write-protect detection logic */
 	struct regulator *supply;
 
 	/** init the host interface */

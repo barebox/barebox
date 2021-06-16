@@ -37,13 +37,6 @@
 #define BLKATTR_SIZE(x)	(x & 0x1fff)
 #define MAX_BLK_CNT	0x7fff	/* so malloc will have enough room with 32M */
 
-#define ESDHC_HOSTCAPBLT_VS18	0x04000000
-#define ESDHC_HOSTCAPBLT_VS30	0x02000000
-#define ESDHC_HOSTCAPBLT_VS33	0x01000000
-#define ESDHC_HOSTCAPBLT_SRS	0x00800000
-#define ESDHC_HOSTCAPBLT_DMAS	0x00400000
-#define ESDHC_HOSTCAPBLT_HSS	0x00200000
-
 #define PIO_TIMEOUT		100000
 
 #define IMX_SDHCI_WML		0x44
@@ -108,7 +101,6 @@ struct fsl_esdhc_host {
 	struct mci_host		mci;
 	struct clk		*clk;
 	struct device_d		*dev;
-	void __iomem		*regs;
 	const struct esdhc_soc_data *socdata;
 	struct sdhci	sdhci;
 };

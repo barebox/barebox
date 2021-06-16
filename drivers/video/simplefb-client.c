@@ -121,6 +121,7 @@ static int simplefb_probe(struct device_d *dev)
 		 info->xres, info->yres,
 		 info->bits_per_pixel, info->line_length);
 
+	info->dev.parent = dev;
 	ret = register_framebuffer(info);
 	if (ret < 0) {
 		dev_err(dev, "Unable to register simplefb: %d\n", ret);

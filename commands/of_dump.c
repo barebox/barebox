@@ -36,9 +36,9 @@ static int do_of_dump(int argc, char *argv[])
 	char *dtbfile = NULL;
 	size_t size;
 	const char *nodename;
-	int names_only = 0;
+	int names_only = 0, properties_only = 0;
 
-	while ((opt = getopt(argc, argv, "Ff:n")) > 0) {
+	while ((opt = getopt(argc, argv, "Ff:np")) > 0) {
 		switch (opt) {
 		case 'f':
 			dtbfile = optarg;
@@ -48,6 +48,9 @@ static int do_of_dump(int argc, char *argv[])
 			break;
 		case 'n':
 			names_only = 1;
+			break;
+		case 'p':
+			properties_only = 1;
 			break;
 		default:
 			return COMMAND_ERROR_USAGE;
@@ -111,8 +114,10 @@ static int do_of_dump(int argc, char *argv[])
 		goto out;
 	}
 
-	if (names_only)
+	if (names_only && !properties_only)
 		of_print_nodenames(node);
+	else if (properties_only && !names_only)
+		of_print_properties(node);
 	else
 		of_print_nodes(node, 0);
 
@@ -128,12 +133,13 @@ BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT  ("-f dtb",  "work on dtb instead of internal devicetree")
 BAREBOX_CMD_HELP_OPT  ("-F",  "return fixed devicetree")
 BAREBOX_CMD_HELP_OPT  ("-n",  "Print node names only, no properties")
+BAREBOX_CMD_HELP_OPT  ("-p",  "Print properties only, no child nodes")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(of_dump)
 	.cmd		= do_of_dump,
 	BAREBOX_CMD_DESC("dump devicetree nodes")
-	BAREBOX_CMD_OPTS("[-fFn] [NODE]")
+	BAREBOX_CMD_OPTS("[-fFnp] [NODE]")
 	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 	BAREBOX_CMD_COMPLETE(devicetree_file_complete)
 	BAREBOX_CMD_HELP(cmd_of_dump_help)

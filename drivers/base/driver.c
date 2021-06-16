@@ -480,9 +480,7 @@ int dev_set_name(struct device_d *dev, const char *fmt, ...)
 	 */
 	free(oldname);
 
-	WARN_ON(err < 0);
-
-	return err;
+	return WARN_ON(err < 0) ? err : 0;
 }
 EXPORT_SYMBOL_GPL(dev_set_name);
 

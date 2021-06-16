@@ -118,6 +118,7 @@ static int bcm2835fb_probe(struct device_d *dev)
 	info->fbi.mode->xres = info->fbi.xres;
 	info->fbi.mode->yres = info->fbi.yres;
 
+	info->fbi.dev.parent = dev;
 	ret = register_framebuffer(&info->fbi);
 	if (ret) {
 		free(info);

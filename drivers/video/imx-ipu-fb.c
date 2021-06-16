@@ -969,6 +969,7 @@ static int sdc_fb_register_overlay(struct ipu_fb_info *fbi, void *fb)
 
 	sdc_enable_channel(fbi, overlay->screen_base, IDMAC_SDC_1);
 
+	fbi->overlay.dev.parent = &fbi->info.dev;
 	ret = register_framebuffer(&fbi->overlay);
 	if (ret < 0) {
 		dev_err(fbi->dev, "failed to register framebuffer\n");
@@ -1039,6 +1040,7 @@ static int imxfb_probe(struct device_d *dev)
 
 	sdc_enable_channel(fbi, info->screen_base, IDMAC_SDC_0);
 
+	fbi->info.dev.parent = dev;
 	ret = register_framebuffer(&fbi->info);
 	if (ret < 0) {
 		dev_err(dev, "failed to register framebuffer\n");

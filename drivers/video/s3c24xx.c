@@ -395,6 +395,7 @@ static int s3cfb_probe(struct device_d *hw_dev)
 	if (IS_ENABLED(CONFIG_DRIVER_VIDEO_S3C_VERBOSE))
 		hw_dev->info = s3cfb_info;
 
+	fbi.info.dev.parent = hw_dev;
 	ret = register_framebuffer(&fbi.info);
 	if (ret != 0) {
 		dev_err(hw_dev, "Failed to register framebuffer\n");

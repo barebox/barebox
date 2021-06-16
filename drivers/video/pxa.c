@@ -533,6 +533,7 @@ static int pxafb_probe(struct device_d *dev)
 
 	pxafb_activate_var(fbi);
 
+	fbi->info.dev.parent = dev;
 	ret = register_framebuffer(&fbi->info);
 	if (ret < 0) {
 		dev_err(dev, "failed to register framebuffer\n");

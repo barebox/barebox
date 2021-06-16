@@ -24,6 +24,7 @@
 #include <filetype.h>
 #include <malloc.h>
 #include <fs.h>
+#include <libfile.h>
 
 static void *uncompress_buf;
 static unsigned int uncompress_size;
@@ -142,7 +143,7 @@ static int uncompress_infd, uncompress_outfd;
 
 static int fill_fd(void *buf, unsigned int len)
 {
-	return read(uncompress_infd, buf, len);
+	return read_full(uncompress_infd, buf, len);
 }
 
 static int flush_fd(void *buf, unsigned int len)

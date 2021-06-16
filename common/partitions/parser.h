@@ -11,7 +11,7 @@
 #include <filetype.h>
 #include <linux/list.h>
 
-#define MAX_PARTITION		8
+#define MAX_PARTITION		128
 #define MAX_PARTITION_NAME	38
 
 struct partition {

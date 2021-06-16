@@ -493,6 +493,7 @@ static int omapfb_probe(struct device_d *dev)
 		goto out;
 	}
 
+	info->dev.parent = dev;
 	rc = register_framebuffer(info);
 	if (rc < 0) {
 		dev_err(dev, "failed to register framebuffer: %d\n", rc);

@@ -571,6 +571,7 @@ static int stmfb_probe(struct device_d *hw_dev)
 
 	fb_of_reserve_add_fixup(&fbi.info);
 
+	fbi.info.dev.parent = hw_dev;
 	ret = register_framebuffer(&fbi.info);
 	if (ret != 0) {
 		dev_err(hw_dev, "Failed to register framebuffer\n");

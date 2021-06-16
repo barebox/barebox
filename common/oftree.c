@@ -16,6 +16,7 @@
 #include <reset_source.h>
 #include <watchdog.h>
 #include <globalvar.h>
+#include <magicvar.h>
 
 #define MAX_LEVEL	32		/* how deeply nested we will go */
 
@@ -115,7 +116,7 @@ void of_print_cmdline(struct device_node *root)
 
 	cmdline = of_get_property(node, "bootargs", NULL);
 
-	printf("commandline: %s\n", cmdline);
+	pr_info("commandline: %s\n", cmdline);
 }
 
 static int of_fixup_bootargs_bootsource(struct device_node *root,
@@ -161,16 +162,17 @@ static void watchdog_build_bootargs(struct watchdog *watchdog, struct device_nod
 	free(buf);
 }
 
-static int of_fixup_bootargs(struct device_node *root, void *unused)
+static int bootargs_append = 0;
+BAREBOX_MAGICVAR(global.linux.bootargs_append, "append to original oftree bootargs");
+
+static int of_write_bootargs(struct device_node *node)
 {
-	struct device_node *node;
 	const char *str;
-	int err;
-	int instance = reset_source_get_instance();
-	struct device_d *dev;
+	char *buf = NULL;
+	int ret;
 
 	if (IS_ENABLED(CONFIG_SYSTEMD_OF_WATCHDOG))
-		watchdog_build_bootargs(boot_get_enabled_watchdog(), root);
+		watchdog_build_bootargs(boot_get_enabled_watchdog(), of_get_parent(node));
 
 	str = linux_bootargs_get();
 	if (!str)
@@ -180,13 +182,36 @@ static int of_fixup_bootargs(struct device_node *root, void *unused)
 	if (strlen(str) == 0)
 		return 0;
 
+	if (bootargs_append) {
+		const char *oldstr;
+
+		ret = of_property_read_string(node, "bootargs", &oldstr);
+		if (!ret) {
+			str = buf = basprintf("%s %s", oldstr, str);
+			if (!buf)
+				return -ENOMEM;
+		}
+	}
+
+	ret = of_property_write_string(node, "bootargs", str);
+	free(buf);
+	return ret;
+}
+
+static int of_fixup_bootargs(struct device_node *root, void *unused)
+{
+	struct device_node *node;
+	int err;
+	int instance = reset_source_get_instance();
+	struct device_d *dev;
+
 	node = of_create_node(root, "/chosen");
 	if (!node)
 		return -ENOMEM;
 
 	of_property_write_string(node, "barebox-version", release_string);
 
-	err = of_property_write_string(node, "bootargs", str);
+	err = of_write_bootargs(node);
 	if (err)
 		return err;
 
@@ -212,6 +237,7 @@ static int of_fixup_bootargs(struct device_node *root, void *unused)
 
 static int of_register_bootargs_fixup(void)
 {
+	globalvar_add_simple_bool("linux.bootargs_append", &bootargs_append);
 	return of_register_fixup(of_fixup_bootargs, NULL);
 }
 late_initcall(of_register_bootargs_fixup);

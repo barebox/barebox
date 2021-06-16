@@ -1048,7 +1048,7 @@ int of_property_match_string(struct device_node *np, const char *propname,
 }
 EXPORT_SYMBOL_GPL(of_property_match_string);
 
-const __be32 *of_prop_next_u32(struct property *prop, const __be32 *cur,
+const __be32 *of_prop_next_u32(const struct property *prop, const __be32 *cur,
 			u32 *pu)
 {
 	const void *curv = cur;
@@ -1074,7 +1074,7 @@ out_val:
 }
 EXPORT_SYMBOL_GPL(of_prop_next_u32);
 
-const char *of_prop_next_string(struct property *prop, const char *cur)
+const char *of_prop_next_string(const struct property *prop, const char *cur)
 {
 	const void *curv = cur;
 	const void *value;
@@ -2000,6 +2000,14 @@ static void __of_print_property(struct property *p, int indent)
 		of_print_property(of_property_get_value(p), p->length);
 	}
 	printf(";\n");
+}
+
+void of_print_properties(struct device_node *node)
+{
+	struct property *prop;
+
+	list_for_each_entry(prop, &node->properties, list)
+		__of_print_property(prop, 0);
 }
 
 static int __of_print_parents(struct device_node *node)

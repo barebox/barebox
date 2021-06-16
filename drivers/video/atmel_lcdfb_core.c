@@ -489,6 +489,7 @@ int atmel_lcdc_register(struct device_d *dev, struct atmel_lcdfb_devdata *data)
 		sinfo->dma_desc = dma_alloc_coherent(data->dma_desc_size,
 						     DMA_ADDRESS_BROKEN);
 
+	info->dev.parent = dev;
 	ret = register_framebuffer(info);
 	if (ret != 0) {
 		dev_err(dev, "Failed to register framebuffer\n");

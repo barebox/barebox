@@ -19,17 +19,17 @@ static struct clk *clks[ATH79_CLK_END];
 static struct clk_onecell_data clk_data;
 
 struct clk_ar933x {
-	struct clk clk;
+	struct clk_hw hw;
 	void __iomem *base;
 	u32 div_shift;
 	u32 div_mask;
 	const char *parent;
 };
 
-static unsigned long clk_ar933x_recalc_rate(struct clk *clk,
+static unsigned long clk_ar933x_recalc_rate(struct clk_hw *hw,
 	unsigned long parent_rate)
 {
-	struct clk_ar933x *f = container_of(clk, struct clk_ar933x, clk);
+	struct clk_ar933x *f = container_of(hw, struct clk_ar933x, hw);
 	unsigned long rate;
 	unsigned long freq;
 	u32 clock_ctrl;
@@ -79,14 +79,14 @@ static struct clk *clk_ar933x(const char *name, const char *parent,
 	f->div_shift = div_shift;
 	f->div_mask = div_mask;
 
-	f->clk.ops = &clk_ar933x_ops;
-	f->clk.name = name;
-	f->clk.parent_names = &f->parent;
-	f->clk.num_parents = 1;
+	f->hw.clk.ops = &clk_ar933x_ops;
+	f->hw.clk.name = name;
+	f->hw.clk.parent_names = &f->parent;
+	f->hw.clk.num_parents = 1;
 
-	clk_register(&f->clk);
+	bclk_register(&f->hw.clk);
 
-	return &f->clk;
+	return &f->hw.clk;
 }
 
 static void ar933x_pll_init(void __iomem *base)

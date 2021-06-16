@@ -23,7 +23,7 @@
  * when the divider is adjusted.
  */
 struct clk_frac {
-	struct clk clk;
+	struct clk_hw hw;
 	const char *parent;
 	void __iomem *reg;
 	u8 shift;
@@ -31,12 +31,12 @@ struct clk_frac {
 	u8 busy;
 };
 
-#define to_clk_frac(_hw) container_of(_hw, struct clk_frac, clk)
+#define to_clk_frac(_hw) container_of(_hw, struct clk_frac, hw)
 
-static unsigned long clk_frac_recalc_rate(struct clk *clk,
+static unsigned long clk_frac_recalc_rate(struct clk_hw *hw,
 					  unsigned long parent_rate)
 {
-	struct clk_frac *frac = to_clk_frac(clk);
+	struct clk_frac *frac = to_clk_frac(hw);
 	u32 div;
 
 	div = readl(frac->reg) >> frac->shift;
@@ -45,10 +45,10 @@ static unsigned long clk_frac_recalc_rate(struct clk *clk,
 	return (parent_rate >> frac->width) * div;
 }
 
-static long clk_frac_round_rate(struct clk *clk, unsigned long rate,
+static long clk_frac_round_rate(struct clk_hw *hw, unsigned long rate,
 				unsigned long *prate)
 {
-	struct clk_frac *frac = to_clk_frac(clk);
+	struct clk_frac *frac = to_clk_frac(hw);
 	unsigned long parent_rate = *prate;
 	u32 div;
 	u64 tmp;
@@ -67,10 +67,10 @@ static long clk_frac_round_rate(struct clk *clk, unsigned long rate,
 	return (parent_rate >> frac->width) * div;
 }
 
-static int clk_frac_set_rate(struct clk *clk, unsigned long rate,
+static int clk_frac_set_rate(struct clk_hw *hw, unsigned long rate,
 			     unsigned long parent_rate)
 {
-	struct clk_frac *frac = to_clk_frac(clk);
+	struct clk_frac *frac = to_clk_frac(hw);
 	u32 div, val;
 	u64 tmp;
 
@@ -90,7 +90,7 @@ static int clk_frac_set_rate(struct clk *clk, unsigned long rate,
 	val |= div << frac->shift;
 	writel(val, frac->reg);
 
-	if (clk_is_enabled(clk))
+	if (clk_hw_is_enabled(hw))
 		while (readl(frac->reg) & 1 << frac->busy);
 
 	return 0;
@@ -113,18 +113,18 @@ struct clk *mxs_clk_frac(const char *name, const char *parent_name,
 		return ERR_PTR(-ENOMEM);
 
 	frac->parent = parent_name;
-	frac->clk.name = name;
-	frac->clk.ops = &clk_frac_ops;
-	frac->clk.parent_names = &frac->parent;
-	frac->clk.num_parents = 1;
+	frac->hw.clk.name = name;
+	frac->hw.clk.ops = &clk_frac_ops;
+	frac->hw.clk.parent_names = &frac->parent;
+	frac->hw.clk.num_parents = 1;
 
 	frac->reg = reg;
 	frac->shift = shift;
 	frac->width = width;
 
-	ret = clk_register(&frac->clk);
+	ret = bclk_register(&frac->hw.clk);
 	if (ret)
 		return ERR_PTR(ret);
 
-	return &frac->clk;
+	return &frac->hw.clk;
 }

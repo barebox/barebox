@@ -14,30 +14,30 @@
 #include <init.h>
 
 struct clk_gpio {
-	struct clk clk;
+	struct clk_hw hw;
 	const char *parent;
 	int gpio;
 };
-#define to_clk_gpio(_clk) container_of(_clk, struct clk_gpio, clk)
+#define to_clk_gpio(_hw) container_of(_hw, struct clk_gpio, hw)
 
-static int clk_gpio_enable(struct clk *clk)
+static int clk_gpio_enable(struct clk_hw *hw)
 {
-	struct clk_gpio *clk_gpio = to_clk_gpio(clk);
+	struct clk_gpio *clk_gpio = to_clk_gpio(hw);
 
 	gpio_set_active(clk_gpio->gpio, true);
 	return 0;
 }
 
-static void clk_gpio_disable(struct clk *clk)
+static void clk_gpio_disable(struct clk_hw *hw)
 {
-	struct clk_gpio *clk_gpio = to_clk_gpio(clk);
+	struct clk_gpio *clk_gpio = to_clk_gpio(hw);
 
 	gpio_set_active(clk_gpio->gpio, false);
 }
 
-static int clk_gpio_is_enabled(struct clk *clk)
+static int clk_gpio_is_enabled(struct clk_hw *hw)
 {
-	struct clk_gpio *clk_gpio = to_clk_gpio(clk);
+	struct clk_gpio *clk_gpio = to_clk_gpio(hw);
 
 	return gpio_is_active(clk_gpio->gpio);
 }
@@ -67,13 +67,13 @@ static int of_gpio_clk_setup(struct device_node *node)
 		goto no_parent;
 	}
 
-	clk_gpio->clk.ops = &clk_gpio_ops;
-	clk_gpio->clk.parent_names = &clk_gpio->parent;
-	clk_gpio->clk.num_parents = 1;
+	clk_gpio->hw.clk.ops = &clk_gpio_ops;
+	clk_gpio->hw.clk.parent_names = &clk_gpio->parent;
+	clk_gpio->hw.clk.num_parents = 1;
 
-	clk_gpio->clk.name = node->name;
+	clk_gpio->hw.clk.name = node->name;
 	of_property_read_string(node, "clock-output-names",
-			&clk_gpio->clk.name);
+			&clk_gpio->hw.clk.name);
 
 	ret = of_get_named_gpio_flags(node, "enable-gpios", 0,
 			&of_flags);
@@ -86,15 +86,15 @@ static int of_gpio_clk_setup(struct device_node *node)
 	flags = GPIOF_OUT_INIT_ACTIVE;
 	if (of_flags & OF_GPIO_ACTIVE_LOW)
 		flags |= GPIOF_ACTIVE_LOW;
-	ret = gpio_request_one(clk_gpio->gpio, flags, clk_gpio->clk.name);
+	ret = gpio_request_one(clk_gpio->gpio, flags, clk_gpio->hw.clk.name);
 	if (ret)
 		goto no_request;
 
-	ret = clk_register(&clk_gpio->clk);
+	ret = bclk_register(&clk_gpio->hw.clk);
 	if (ret)
 		goto no_register;
 
-	return of_clk_add_provider(node, of_clk_src_simple_get, &clk_gpio->clk);
+	return of_clk_add_provider(node, of_clk_src_simple_get, &clk_gpio->hw.clk);
 
 no_register:
 	gpio_free(clk_gpio->gpio);

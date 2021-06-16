@@ -144,7 +144,7 @@
 
 #define to_clk_pll(_hw) container_of(_hw, struct tegra_clk_pll, hw)
 
-static int clk_pll_is_enabled(struct clk *hw)
+static int clk_pll_is_enabled(struct clk_hw *hw)
 {
 	struct tegra_clk_pll *pll = to_clk_pll(hw);
 	u32 val;
@@ -187,12 +187,12 @@ static int clk_pll_wait_for_lock(struct tegra_clk_pll *pll,
 	}
 
 	pr_err("%s: Timed out waiting for pll %s lock\n", __func__,
-	       pll->hw.name);
+	       clk_hw_get_name(&pll->hw));
 
 	return -1;
 }
 
-static int clk_pll_enable(struct clk *hw)
+static int clk_pll_enable(struct clk_hw *hw)
 {
 	struct tegra_clk_pll *pll = to_clk_pll(hw);
 	u32 val;
@@ -210,7 +210,7 @@ static int clk_pll_enable(struct clk *hw)
 	return 0;
 }
 
-static void clk_pll_disable(struct clk *hw)
+static void clk_pll_disable(struct clk_hw *hw)
 {
 	struct tegra_clk_pll *pll = to_clk_pll(hw);
 	u32 val;
@@ -220,7 +220,7 @@ static void clk_pll_disable(struct clk *hw)
 	pll_writel_base(val, pll);
 }
 
-static int _get_table_rate(struct clk *hw,
+static int _get_table_rate(struct clk_hw *hw,
 			   struct tegra_clk_pll_freq_table *cfg,
 			   unsigned long rate, unsigned long parent_rate)
 {
@@ -245,7 +245,7 @@ static int _get_table_rate(struct clk *hw,
 	return 0;
 }
 
-static unsigned long clk_pll_recalc_rate(struct clk *hw,
+static unsigned long clk_pll_recalc_rate(struct clk_hw *hw,
 					 unsigned long parent_rate)
 {
 	struct tegra_clk_pll *pll = to_clk_pll(hw);
@@ -260,7 +260,7 @@ static unsigned long clk_pll_recalc_rate(struct clk *hw,
 		struct tegra_clk_pll_freq_table sel;
 		if (_get_table_rate(hw, &sel, pll->fixed_rate, parent_rate)) {
 			pr_err("Clock %s has unknown fixed frequency\n",
-			       hw->name);
+			       clk_hw_get_name(hw));
 			BUG();
 		}
 		return pll->fixed_rate;
@@ -280,7 +280,7 @@ static unsigned long clk_pll_recalc_rate(struct clk *hw,
 	return rate;
 }
 
-static int _calc_rate(struct clk *hw, struct tegra_clk_pll_freq_table *cfg,
+static int _calc_rate(struct clk_hw *hw, struct tegra_clk_pll_freq_table *cfg,
 		      unsigned long rate, unsigned long parent_rate)
 {
 	struct tegra_clk_pll *pll = to_clk_pll(hw);
@@ -325,14 +325,14 @@ static int _calc_rate(struct clk *hw, struct tegra_clk_pll_freq_table *cfg,
 	if (cfg->m > divm_max(pll) || cfg->n > divn_max(pll) ||
 	    cfg->p > divp_max(pll) || cfg->output_rate > pll->params->vco_max) {
 		pr_err("%s: Failed to set %s rate %lu\n",
-		       __func__, hw->name, rate);
+		       __func__, clk_hw_get_name(hw), rate);
 		return -EINVAL;
 	}
 
 	return 0;
 }
 
-static long clk_pll_round_rate(struct clk *hw, unsigned long rate,
+static long clk_pll_round_rate(struct clk_hw *hw, unsigned long rate,
 			unsigned long *prate)
 {
 	struct tegra_clk_pll *pll = to_clk_pll(hw);
@@ -344,7 +344,7 @@ static long clk_pll_round_rate(struct clk *hw, unsigned long rate,
 
 	/* PLLM is used for memory; we do not change rate */
 	if (pll->flags & TEGRA_PLLM)
-		return clk_get_rate(hw);
+		return clk_get_rate(clk_hw_to_clk(hw));
 
 	if (_get_table_rate(hw, &cfg, rate, *prate) &&
 	    _calc_rate(hw, &cfg, rate, *prate))
@@ -356,7 +356,7 @@ static long clk_pll_round_rate(struct clk *hw, unsigned long rate,
 	return output_rate;
 }
 
-static int _program_pll(struct clk *hw, struct tegra_clk_pll_freq_table *cfg,
+static int _program_pll(struct clk_hw *hw, struct tegra_clk_pll_freq_table *cfg,
 			unsigned long rate)
 {
 	struct tegra_clk_pll *pll = to_clk_pll(hw);
@@ -411,7 +411,7 @@ static int _program_pll(struct clk *hw, struct tegra_clk_pll_freq_table *cfg,
 	return 0;
 }
 
-static int clk_pll_set_rate(struct clk *hw, unsigned long rate,
+static int clk_pll_set_rate(struct clk_hw *hw, unsigned long rate,
 			unsigned long parent_rate)
 {
 	struct tegra_clk_pll_freq_table cfg;
@@ -432,7 +432,7 @@ const struct clk_ops tegra_clk_pll_ops = {
 	.set_rate = clk_pll_set_rate,
 };
 
-static unsigned long clk_plle_recalc_rate(struct clk *hw,
+static unsigned long clk_plle_recalc_rate(struct clk_hw *hw,
 					 unsigned long parent_rate)
 {
 	struct tegra_clk_pll *pll = to_clk_pll(hw);
@@ -474,10 +474,10 @@ static int clk_plle_training(struct tegra_clk_pll *pll)
 			(pll_readl_misc(pll) & PLLE_MISC_READY));
 }
 
-static int clk_plle_enable(struct clk *hw)
+static int clk_plle_enable(struct clk_hw *hw)
 {
 	struct tegra_clk_pll *pll = to_clk_pll(hw);
-	unsigned long input_rate = clk_get_rate(clk_get_parent(hw));
+	unsigned long input_rate = clk_get_rate(clk_get_parent(clk_hw_to_clk(hw)));
 	struct tegra_clk_pll_freq_table sel;
 	u32 val;
 	int err;
@@ -534,10 +534,10 @@ const struct clk_ops tegra_clk_plle_ops = {
 	.enable = clk_plle_enable,
 };
 
-static int clk_plle_tegra114_enable(struct clk *hw)
+static int clk_plle_tegra114_enable(struct clk_hw *hw)
 {
 	struct tegra_clk_pll *pll = to_clk_pll(hw);
-	unsigned long input_rate = clk_get_rate(clk_get_parent(hw));
+	unsigned long input_rate = clk_get_rate(clk_get_parent(clk_hw_to_clk(hw)));
 	struct tegra_clk_pll_freq_table sel;
 	u32 val;
 	int ret;
@@ -623,7 +623,7 @@ static int clk_plle_tegra114_enable(struct clk *hw)
 	return ret;
 }
 
-static void clk_plle_tegra114_disable(struct clk *hw)
+static void clk_plle_tegra114_disable(struct clk_hw *hw)
 {
 	struct tegra_clk_pll *pll = to_clk_pll(hw);
 	u32 val;
@@ -658,11 +658,11 @@ static struct clk *_tegra_clk_register_pll(const char *name,
 		return NULL;
 
 	pll->parent = parent_name;
-	pll->hw.name = name;
-	pll->hw.ops = ops;
-	pll->hw.flags = flags;
-	pll->hw.parent_names = (pll->parent ? &pll->parent : NULL);
-	pll->hw.num_parents = (pll->parent ? 1 : 0);
+	pll->hw.clk.name = name;
+	pll->hw.clk.ops = ops;
+	pll->hw.clk.flags = flags;
+	pll->hw.clk.parent_names = (pll->parent ? &pll->parent : NULL);
+	pll->hw.clk.num_parents = (pll->parent ? 1 : 0);
 
 	pll->clk_base = clk_base;
 
@@ -678,13 +678,13 @@ static struct clk *_tegra_clk_register_pll(const char *name,
 	pll->divm_shift = PLL_BASE_DIVM_SHIFT;
 	pll->divm_width = PLL_BASE_DIVM_WIDTH;
 
-	ret = clk_register(&pll->hw);
+	ret = bclk_register(&pll->hw.clk);
 	if (ret) {
 		kfree(pll);
 		return ERR_PTR(ret);
 	}
 
-	return &pll->hw;
+	return &pll->hw.clk;
 }
 
 struct clk *tegra_clk_register_pll(const char *name, const char *parent_name,

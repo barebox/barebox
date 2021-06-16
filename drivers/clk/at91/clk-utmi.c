@@ -22,13 +22,13 @@
 #define UTMI_RATE      480000000
 
 struct clk_utmi {
-	struct clk clk;
+	struct clk_hw hw;
 	const char *parent;
 	struct regmap *regmap_pmc;
 	struct regmap *regmap_sfr;
 };
 
-#define to_clk_utmi(clk) container_of(clk, struct clk_utmi, clk)
+#define to_clk_utmi(_hw) container_of(_hw, struct clk_utmi, hw)
 
 static inline bool clk_utmi_ready(struct regmap *regmap)
 {
@@ -39,10 +39,10 @@ static inline bool clk_utmi_ready(struct regmap *regmap)
 	return status & AT91_PMC_LOCKU;
 }
 
-static int clk_utmi_enable(struct clk *clk)
+static int clk_utmi_enable(struct clk_hw *hw)
 {
 	struct clk *hw_parent;
-	struct clk_utmi *utmi = to_clk_utmi(clk);
+	struct clk_utmi *utmi = to_clk_utmi(hw);
 	unsigned int uckr = AT91_PMC_UPLLEN | AT91_PMC_UPLLCOUNT |
 			    AT91_PMC_BIASEN;
 	unsigned int utmi_ref_clk_freq;
@@ -53,7 +53,7 @@ static int clk_utmi_enable(struct clk *clk)
 	 * FREQ field of the SFR_UTMICKTRIM register to generate properly
 	 * the utmi clock.
 	 */
-	hw_parent = clk_get_parent(clk);
+	hw_parent = clk_get_parent(clk_hw_to_clk(hw));
 	parent_rate = clk_get_rate(hw_parent);
 
 	switch (parent_rate) {
@@ -95,22 +95,22 @@ static int clk_utmi_enable(struct clk *clk)
 	return 0;
 }
 
-static int clk_utmi_is_enabled(struct clk *clk)
+static int clk_utmi_is_enabled(struct clk_hw *hw)
 {
-	struct clk_utmi *utmi = to_clk_utmi(clk);
+	struct clk_utmi *utmi = to_clk_utmi(hw);
 
 	return clk_utmi_ready(utmi->regmap_pmc);
 }
 
-static void clk_utmi_disable(struct clk *clk)
+static void clk_utmi_disable(struct clk_hw *hw)
 {
-	struct clk_utmi *utmi = to_clk_utmi(clk);
+	struct clk_utmi *utmi = to_clk_utmi(hw);
 
 	regmap_write_bits(utmi->regmap_pmc, AT91_CKGR_UCKR,
 			  AT91_PMC_UPLLEN, 0);
 }
 
-static unsigned long clk_utmi_recalc_rate(struct clk *clk,
+static unsigned long clk_utmi_recalc_rate(struct clk_hw *hw,
 					  unsigned long parent_rate)
 {
 	/* UTMI clk rate is fixed */
@@ -133,13 +133,13 @@ at91_clk_register_utmi(struct regmap *regmap_pmc, struct regmap *regmap_sfr,
 
 	utmi = xzalloc(sizeof(*utmi));
 
-	utmi->clk.name = name;
-	utmi->clk.ops = &utmi_ops;
+	utmi->hw.clk.name = name;
+	utmi->hw.clk.ops = &utmi_ops;
 
 	if (parent_name) {
 		utmi->parent = parent_name;
-		utmi->clk.parent_names = &utmi->parent;
-		utmi->clk.num_parents = 1;
+		utmi->hw.clk.parent_names = &utmi->parent;
+		utmi->hw.clk.num_parents = 1;
 	}
 
 	/* utmi->clk.flags = CLK_SET_RATE_GATE; */
@@ -147,11 +147,11 @@ at91_clk_register_utmi(struct regmap *regmap_pmc, struct regmap *regmap_sfr,
 	utmi->regmap_pmc = regmap_pmc;
 	utmi->regmap_sfr = regmap_sfr;
 
-	ret = clk_register(&utmi->clk);
+	ret = bclk_register(&utmi->hw.clk);
 	if (ret) {
 		kfree(utmi);
 		return ERR_PTR(ret);
 	}
 
-	return &utmi->clk;
+	return &utmi->hw.clk;
 }

@@ -20,14 +20,14 @@
 #define H32MX_MAX_FREQ	90000000
 
 struct clk_sama5d4_h32mx {
-	struct clk hw;
+	struct clk_hw hw;
 	struct regmap *regmap;
 	const char *parent;
 };
 
-#define to_clk_sama5d4_h32mx(hw) container_of(hw, struct clk_sama5d4_h32mx, hw)
+#define to_clk_sama5d4_h32mx(_hw) container_of(_hw, struct clk_sama5d4_h32mx, hw)
 
-static unsigned long clk_sama5d4_h32mx_recalc_rate(struct clk *hw,
+static unsigned long clk_sama5d4_h32mx_recalc_rate(struct clk_hw *hw,
 						 unsigned long parent_rate)
 {
 	struct clk_sama5d4_h32mx *h32mxclk = to_clk_sama5d4_h32mx(hw);
@@ -42,7 +42,7 @@ static unsigned long clk_sama5d4_h32mx_recalc_rate(struct clk *hw,
 	return parent_rate;
 }
 
-static long clk_sama5d4_h32mx_round_rate(struct clk *hw, unsigned long rate,
+static long clk_sama5d4_h32mx_round_rate(struct clk_hw *hw, unsigned long rate,
 				       unsigned long *parent_rate)
 {
 	unsigned long div;
@@ -59,7 +59,7 @@ static long clk_sama5d4_h32mx_round_rate(struct clk *hw, unsigned long rate,
 	return *parent_rate;
 }
 
-static int clk_sama5d4_h32mx_set_rate(struct clk *hw, unsigned long rate,
+static int clk_sama5d4_h32mx_set_rate(struct clk_hw *hw, unsigned long rate,
 				    unsigned long parent_rate)
 {
 	struct clk_sama5d4_h32mx *h32mxclk = to_clk_sama5d4_h32mx(hw);
@@ -95,19 +95,19 @@ at91_clk_register_h32mx(struct regmap *regmap, const char *name,
 		return ERR_PTR(-ENOMEM);
 
 	h32mxclk->parent = parent_name;
-	h32mxclk->hw.name = name;
-	h32mxclk->hw.ops = &h32mx_ops;
-	h32mxclk->hw.parent_names = &h32mxclk->parent;
-	h32mxclk->hw.num_parents = 1;
+	h32mxclk->hw.clk.name = name;
+	h32mxclk->hw.clk.ops = &h32mx_ops;
+	h32mxclk->hw.clk.parent_names = &h32mxclk->parent;
+	h32mxclk->hw.clk.num_parents = 1;
 	/* h32mxclk.hw.flags = CLK_SET_RATE_GATE; */
 
 	h32mxclk->regmap = regmap;
 
-	ret = clk_register(&h32mxclk->hw);
+	ret = bclk_register(&h32mxclk->hw.clk);
 	if (ret) {
 		kfree(h32mxclk);
 		return ERR_PTR(ret);
 	}
 
-	return &h32mxclk->hw;
+	return &h32mxclk->hw.clk;
 }

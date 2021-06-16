@@ -29,7 +29,7 @@
 #define CGB_PLL2	5
 
 struct clockgen_pll_div {
-	struct clk *clk;
+	struct clk_hw *hw;
 	char name[32];
 };
 
@@ -254,20 +254,20 @@ static const struct clockgen_chipinfo chipinfo_ls2080a = {
 };
 
 struct mux_hwclock {
-	struct clk clk;
+	struct clk_hw hw;
 	struct clockgen *cg;
 	const struct clockgen_muxinfo *info;
 	u32 __iomem *reg;
 	int num_parents;
 };
 
-#define to_mux_hwclock(p)	container_of(p, struct mux_hwclock, clk)
+#define to_mux_hwclock(p)	container_of(p, struct mux_hwclock, hw)
 #define CLKSEL_MASK		0x78000000
 #define	CLKSEL_SHIFT		27
 
-static int mux_set_parent(struct clk *clk, u8 idx)
+static int mux_set_parent(struct clk_hw *hw, u8 idx)
 {
-	struct mux_hwclock *hwc = to_mux_hwclock(clk);
+	struct mux_hwclock *hwc = to_mux_hwclock(hw);
 
 	if (idx >= hwc->num_parents)
 		return -EINVAL;
@@ -277,9 +277,9 @@ static int mux_set_parent(struct clk *clk, u8 idx)
 	return 0;
 }
 
-static int mux_get_parent(struct clk *clk)
+static int mux_get_parent(struct clk_hw *hw)
 {
-	struct mux_hwclock *hwc = to_mux_hwclock(clk);
+	struct mux_hwclock *hwc = to_mux_hwclock(hw);
 
 	return (cg_in(hwc->cg, hwc->reg) & CLKSEL_MASK) >> CLKSEL_SHIFT;
 }
@@ -318,7 +318,7 @@ static struct clk * __init create_mux_common(struct clockgen *cg,
 					     const struct clk_ops *ops,
 					     const char *fmt, int idx)
 {
-	struct clk *clk = &hwc->clk;
+	struct clk_hw *hw = &hwc->hw;
 	const struct clockgen_pll_div *div;
 	const char **parent_names;
 	int i, ret;
@@ -333,20 +333,20 @@ static struct clk * __init create_mux_common(struct clockgen *cg,
 		parent_names[i] = div->name;
 	}
 
-	clk->name = xasprintf(fmt, idx);;
-	clk->ops = ops;
-	clk->parent_names = parent_names;
-	clk->num_parents = hwc->num_parents = i;
+	hw->clk.name = xasprintf(fmt, idx);;
+	hw->clk.ops = ops;
+	hw->clk.parent_names = parent_names;
+	hw->clk.num_parents = hwc->num_parents = i;
 	hwc->cg = cg;
 
-	ret = clk_register(clk);
+	ret = bclk_register(&hw->clk);
 	if (ret) {
-		pr_err("%s: Couldn't register %s: %d\n", __func__, clk->name, ret);
+		pr_err("%s: Couldn't register %s: %d\n", __func__, clk_hw_get_name(hw), ret);
 		kfree(hwc);
 		return NULL;
 	}
 
-	return clk;
+	return &hw->clk;
 }
 
 static struct clk * __init create_one_cmux(struct clockgen *cg, int idx)
@@ -499,7 +499,7 @@ static void __init create_one_pll(struct clockgen *cg, int idx)
 			continue;
 		}
 
-		pll->div[i].clk = clk;
+		pll->div[i].hw = clk_to_clk_hw(clk);
 	}
 }
 
@@ -551,7 +551,7 @@ static struct clk *clockgen_clk_get(struct of_phandle_args *clkspec, void *data)
 		pll = &cg->pll[PLATFORM_PLL];
 		if (idx >= ARRAY_SIZE(pll->div))
 			goto bad_args;
-		clk = pll->div[idx].clk;
+		clk = clk_hw_to_clk(pll->div[idx].hw);
 		break;
 	case 5:
 		if (idx != 0)

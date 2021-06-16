@@ -16,14 +16,14 @@
 #include "clk-zynqmp.h"
 
 struct zynqmp_pll {
-	struct clk clk;
+	struct clk_hw hw;
 	unsigned int clk_id;
 	const char *parent;
 	const struct zynqmp_eemi_ops *ops;
 };
 
-#define to_zynqmp_pll(clk) \
-	container_of(clk, struct zynqmp_pll, clk)
+#define to_zynqmp_pll(_hw) \
+	container_of(_hw, struct zynqmp_pll, hw)
 
 #define PLL_FBDIV_MIN		25
 #define PLL_FBDIV_MAX		125
@@ -53,10 +53,10 @@ static inline void zynqmp_pll_set_mode(struct zynqmp_pll *pll, enum pll_mode mod
 	pll->ops->ioctl(0, IOCTL_SET_PLL_FRAC_MODE, pll->clk_id, mode, NULL);
 }
 
-static long zynqmp_pll_round_rate(struct clk *clk, unsigned long rate,
+static long zynqmp_pll_round_rate(struct clk_hw *hw, unsigned long rate,
 				  unsigned long *prate)
 {
-	struct zynqmp_pll *pll = to_zynqmp_pll(clk);
+	struct zynqmp_pll *pll = to_zynqmp_pll(hw);
 	u32 fbdiv;
 	long rate_div;
 
@@ -84,10 +84,10 @@ static long zynqmp_pll_round_rate(struct clk *clk, unsigned long rate,
 	return rate;
 }
 
-static unsigned long zynqmp_pll_recalc_rate(struct clk *clk,
+static unsigned long zynqmp_pll_recalc_rate(struct clk_hw *hw,
 					    unsigned long parent_rate)
 {
-	struct zynqmp_pll *pll = to_zynqmp_pll(clk);
+	struct zynqmp_pll *pll = to_zynqmp_pll(hw);
 	u32 clk_id = pll->clk_id;
 	u32 fbdiv, data;
 	unsigned long rate, frac;
@@ -109,10 +109,10 @@ static unsigned long zynqmp_pll_recalc_rate(struct clk *clk,
 	return rate;
 }
 
-static int zynqmp_pll_set_rate(struct clk *clk, unsigned long rate,
+static int zynqmp_pll_set_rate(struct clk_hw *hw, unsigned long rate,
 			       unsigned long parent_rate)
 {
-	struct zynqmp_pll *pll = to_zynqmp_pll(clk);
+	struct zynqmp_pll *pll = to_zynqmp_pll(hw);
 	u32 clk_id = pll->clk_id;
 	u32 fbdiv;
 	long rate_div, frac, m, f;
@@ -138,9 +138,9 @@ static int zynqmp_pll_set_rate(struct clk *clk, unsigned long rate,
 	}
 }
 
-static int zynqmp_pll_is_enabled(struct clk *clk)
+static int zynqmp_pll_is_enabled(struct clk_hw *hw)
 {
-	struct zynqmp_pll *pll = to_zynqmp_pll(clk);
+	struct zynqmp_pll *pll = to_zynqmp_pll(hw);
 	u32 is_enabled;
 	int ret;
 
@@ -151,21 +151,21 @@ static int zynqmp_pll_is_enabled(struct clk *clk)
 	return !!(is_enabled);
 }
 
-static int zynqmp_pll_enable(struct clk *clk)
+static int zynqmp_pll_enable(struct clk_hw *hw)
 {
-	struct zynqmp_pll *pll = to_zynqmp_pll(clk);
+	struct zynqmp_pll *pll = to_zynqmp_pll(hw);
 
-	if (zynqmp_pll_is_enabled(clk))
+	if (zynqmp_pll_is_enabled(hw))
 		return 0;
 
 	return pll->ops->clock_enable(pll->clk_id);
 }
 
-static void zynqmp_pll_disable(struct clk *clk)
+static void zynqmp_pll_disable(struct clk_hw *hw)
 {
-	struct zynqmp_pll *pll = to_zynqmp_pll(clk);
+	struct zynqmp_pll *pll = to_zynqmp_pll(hw);
 
-	if (!zynqmp_pll_is_enabled(clk))
+	if (!zynqmp_pll_is_enabled(hw))
 		return;
 
 	pll->ops->clock_disable(pll->clk_id);
@@ -197,17 +197,17 @@ struct clk *zynqmp_clk_register_pll(const char *name,
 	pll->ops = zynqmp_pm_get_eemi_ops();
 	pll->parent = strdup(parents[0]);
 
-	pll->clk.name = strdup(name);
-	pll->clk.ops = &zynqmp_pll_ops;
-	pll->clk.flags = nodes->flag | CLK_SET_RATE_PARENT;
-	pll->clk.parent_names = &pll->parent;
-	pll->clk.num_parents = 1;
+	pll->hw.clk.name = strdup(name);
+	pll->hw.clk.ops = &zynqmp_pll_ops;
+	pll->hw.clk.flags = nodes->flag | CLK_SET_RATE_PARENT;
+	pll->hw.clk.parent_names = &pll->parent;
+	pll->hw.clk.num_parents = 1;
 
-	ret = clk_register(&pll->clk);
+	ret = bclk_register(&pll->hw.clk);
 	if (ret) {
 		kfree(pll);
 		return ERR_PTR(ret);
 	}
 
-	return &pll->clk;
+	return &pll->hw.clk;
 }

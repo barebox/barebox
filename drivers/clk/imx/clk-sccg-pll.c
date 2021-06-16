@@ -39,26 +39,26 @@
 #define OSC_27M		27000000
 
 struct clk_sccg_pll {
-	struct clk	clk;
+	struct clk_hw	hw;
 	void __iomem	*base;
 	const char	*parent;
 };
 
-#define to_clk_sccg_pll(_clk) container_of(_clk, struct clk_sccg_pll, clk)
+#define to_clk_sccg_pll(_hw) container_of(_hw, struct clk_sccg_pll, hw)
 
-static int clk_pll1_is_prepared(struct clk *clk)
+static int clk_pll1_is_prepared(struct clk_hw *hw)
 {
-	struct clk_sccg_pll *pll = to_clk_sccg_pll(clk);
+	struct clk_sccg_pll *pll = to_clk_sccg_pll(hw);
 	u32 val;
 
 	val = readl(pll->base + PLL_CFG0);
 	return (val & (1 << PLL_PD)) ? 0 : 1;
 }
 
-static unsigned long clk_pll1_recalc_rate(struct clk *clk,
+static unsigned long clk_pll1_recalc_rate(struct clk_hw *hw,
 					 unsigned long parent_rate)
 {
-	struct clk_sccg_pll *pll = to_clk_sccg_pll(clk);
+	struct clk_sccg_pll *pll = to_clk_sccg_pll(hw);
 	u32 val, divf;
 
 	val = readl(pll->base + PLL_CFG2);
@@ -67,7 +67,7 @@ static unsigned long clk_pll1_recalc_rate(struct clk *clk,
 	return parent_rate * 2 * (divf + 1);
 }
 
-static long clk_pll1_round_rate(struct clk *clk, unsigned long rate,
+static long clk_pll1_round_rate(struct clk_hw *hw, unsigned long rate,
 			       unsigned long *prate)
 {
 	unsigned long parent_rate = *prate;
@@ -78,10 +78,10 @@ static long clk_pll1_round_rate(struct clk *clk, unsigned long rate,
 	return parent_rate * div * 2;
 }
 
-static int clk_pll1_set_rate(struct clk *clk, unsigned long rate,
+static int clk_pll1_set_rate(struct clk_hw *hw, unsigned long rate,
 			    unsigned long parent_rate)
 {
-	struct clk_sccg_pll *pll = to_clk_sccg_pll(clk);
+	struct clk_sccg_pll *pll = to_clk_sccg_pll(hw);
 	u32 val;
 	u32 divf;
 
@@ -97,9 +97,9 @@ static int clk_pll1_set_rate(struct clk *clk, unsigned long rate,
 	return 0;
 }
 
-static int clk_pll1_prepare(struct clk *clk)
+static int clk_pll1_prepare(struct clk_hw *hw)
 {
-	struct clk_sccg_pll *pll = to_clk_sccg_pll(clk);
+	struct clk_sccg_pll *pll = to_clk_sccg_pll(hw);
 	u32 val;
 
 	val = readl(pll->base);
@@ -111,19 +111,20 @@ static int clk_pll1_prepare(struct clk *clk)
 	return 0;
 }
 
-static void clk_pll1_unprepare(struct clk *clk)
+static void clk_pll1_unprepare(struct clk_hw *hw)
 {
-	struct clk_sccg_pll *pll = to_clk_sccg_pll(clk);
+	struct clk_sccg_pll *pll = to_clk_sccg_pll(hw);
 	u32 val;
+
 	val = readl(pll->base);
 	val |= (1 << PLL_PD);
 	writel(val, pll->base);
 }
 
-static unsigned long clk_pll2_recalc_rate(struct clk *clk,
+static unsigned long clk_pll2_recalc_rate(struct clk_hw *hw,
 					 unsigned long parent_rate)
 {
-	struct clk_sccg_pll *pll = to_clk_sccg_pll(clk);
+	struct clk_sccg_pll *pll = to_clk_sccg_pll(hw);
 	u32 val, ref, divr1, divf1, divr2, divf2;
 	u64 temp64;
 
@@ -154,7 +155,7 @@ static unsigned long clk_pll2_recalc_rate(struct clk *clk,
 	return (unsigned long)temp64;
 }
 
-static long clk_pll2_round_rate(struct clk *clk, unsigned long rate,
+static long clk_pll2_round_rate(struct clk_hw *hw, unsigned long rate,
 			       unsigned long *prate)
 {
 	u32 div;
@@ -165,12 +166,12 @@ static long clk_pll2_round_rate(struct clk *clk, unsigned long rate,
 	return parent_rate * div;
 }
 
-static int clk_pll2_set_rate(struct clk *clk, unsigned long rate,
+static int clk_pll2_set_rate(struct clk_hw *hw, unsigned long rate,
 			    unsigned long parent_rate)
 {
+	struct clk_sccg_pll *pll = to_clk_sccg_pll(hw);
 	u32 val;
 	u32 divf;
-	struct clk_sccg_pll *pll = to_clk_sccg_pll(clk);
 
 	divf = rate / (parent_rate);
 
@@ -210,25 +211,25 @@ struct clk *imx_clk_sccg_pll(const char *name, const char *parent_name,
 		return ERR_PTR(-ENOMEM);
 
 	pll->base = base;
-	pll->clk.name = name;
+	pll->hw.clk.name = name;
 	switch (pll_type) {
 	case SCCG_PLL1:
-		pll->clk.ops = &clk_sccg_pll1_ops;
+		pll->hw.clk.ops = &clk_sccg_pll1_ops;
 		break;
 	case SCCG_PLL2:
-		pll->clk.ops = &clk_sccg_pll2_ops;
+		pll->hw.clk.ops = &clk_sccg_pll2_ops;
 		break;
 	}
 
 	pll->parent = parent_name;
-        pll->clk.parent_names = &pll->parent;
-        pll->clk.num_parents = 1;
+        pll->hw.clk.parent_names = &pll->parent;
+        pll->hw.clk.num_parents = 1;
 
-	ret = clk_register(&pll->clk);
+	ret = bclk_register(&pll->hw.clk);
 	if (ret) {
 		free(pll);
 		return ERR_PTR(ret);
 	}
 
-	return &pll->clk;
+	return &pll->hw.clk;
 }

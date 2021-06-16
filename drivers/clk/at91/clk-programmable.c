@@ -22,19 +22,19 @@
 #define PROG_MAX_RM9200_CSS	3
 
 struct clk_programmable {
-	struct clk clk;
+	struct clk_hw hw;
 	struct regmap *regmap;
 	u8 id;
 	const struct clk_programmable_layout *layout;
 	const char *parent_names[];
 };
 
-#define to_clk_programmable(clk) container_of(clk, struct clk_programmable, clk)
+#define to_clk_programmable(_hw) container_of(_hw, struct clk_programmable, hw)
 
-static unsigned long clk_programmable_recalc_rate(struct clk *clk,
+static unsigned long clk_programmable_recalc_rate(struct clk_hw *hw,
 						  unsigned long parent_rate)
 {
-	struct clk_programmable *prog = to_clk_programmable(clk);
+	struct clk_programmable *prog = to_clk_programmable(hw);
 	const struct clk_programmable_layout *layout = prog->layout;
 	unsigned int pckr;
 	unsigned long rate;
@@ -49,9 +49,9 @@ static unsigned long clk_programmable_recalc_rate(struct clk *clk,
 	return rate;
 }
 
-static int clk_programmable_set_parent(struct clk *clk, u8 index)
+static int clk_programmable_set_parent(struct clk_hw *hw, u8 index)
 {
-	struct clk_programmable *prog = to_clk_programmable(clk);
+	struct clk_programmable *prog = to_clk_programmable(hw);
 	const struct clk_programmable_layout *layout = prog->layout;
 	unsigned int mask = layout->css_mask;
 	unsigned int pckr = index;
@@ -71,9 +71,9 @@ static int clk_programmable_set_parent(struct clk *clk, u8 index)
 	return 0;
 }
 
-static int clk_programmable_get_parent(struct clk *clk)
+static int clk_programmable_get_parent(struct clk_hw *hw)
 {
-	struct clk_programmable *prog = to_clk_programmable(clk);
+	struct clk_programmable *prog = to_clk_programmable(hw);
 	const struct clk_programmable_layout *layout = prog->layout;
 	unsigned int pckr;
 	u8 ret;
@@ -88,10 +88,10 @@ static int clk_programmable_get_parent(struct clk *clk)
 	return ret;
 }
 
-static int clk_programmable_set_rate(struct clk *clk, unsigned long rate,
+static int clk_programmable_set_rate(struct clk_hw *hw, unsigned long rate,
 				     unsigned long parent_rate)
 {
-	struct clk_programmable *prog = to_clk_programmable(clk);
+	struct clk_programmable *prog = to_clk_programmable(hw);
 	const struct clk_programmable_layout *layout = prog->layout;
 	unsigned long div = parent_rate / rate;
 	int shift = 0;
@@ -144,19 +144,19 @@ at91_clk_register_programmable(struct regmap *regmap,
 	if (!prog)
 		return ERR_PTR(-ENOMEM);
 
-	prog->clk.name = name;
-	prog->clk.ops = &programmable_ops;
+	prog->hw.clk.name = name;
+	prog->hw.clk.ops = &programmable_ops;
 	memcpy(prog->parent_names, parent_names,
 	       num_parents * sizeof(prog->parent_names[0]));
-	prog->clk.parent_names = &prog->parent_names[0];
-	prog->clk.num_parents = num_parents;
+	prog->hw.clk.parent_names = &prog->parent_names[0];
+	prog->hw.clk.num_parents = num_parents;
 	/* init.flags = CLK_SET_RATE_GATE | CLK_SET_PARENT_GATE; */
 
 	prog->id = id;
 	prog->layout = layout;
 	prog->regmap = regmap;
 
-	ret = clk_register(&prog->clk);
+	ret = bclk_register(&prog->hw.clk);
 	if (ret) {
 		kfree(prog);
 		return ERR_PTR(ret);
@@ -164,7 +164,7 @@ at91_clk_register_programmable(struct regmap *regmap,
 
 	pmc_register_pck(id);
 
-	return &prog->clk;
+	return &prog->hw.clk;
 }
 
 const struct clk_programmable_layout at91rm9200_programmable_layout = {

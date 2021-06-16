@@ -14,15 +14,15 @@
 
 #include "clk.h"
 
-#define to_socfpga_gate_clk(p) container_of(p, struct socfpga_gate_clk, clk)
+#define to_socfpga_gate_clk(p) container_of(p, struct socfpga_gate_clk, hw)
 
 /* SDMMC Group for System Manager defines */
 #define SYSMGR_SDMMCGRP_CTRL_OFFSET	0x28
 
-static unsigned long socfpga_gate_clk_recalc_rate(struct clk *clk,
+static unsigned long socfpga_gate_clk_recalc_rate(struct clk_hw *hw,
 	unsigned long parent_rate)
 {
-	struct socfpga_gate_clk *socfpgaclk = to_socfpga_gate_clk(clk);
+	struct socfpga_gate_clk *socfpgaclk = to_socfpga_gate_clk(hw);
 	u32 div = 1, val;
 
 	if (socfpgaclk->fixed_div)
@@ -36,9 +36,9 @@ static unsigned long socfpga_gate_clk_recalc_rate(struct clk *clk,
 	return parent_rate / div;
 }
 
-static int socfpga_clk_prepare(struct clk *clk)
+static int socfpga_clk_prepare(struct clk_hw *hw)
 {
-	struct socfpga_gate_clk *socfpgaclk = to_socfpga_gate_clk(clk);
+	struct socfpga_gate_clk *socfpgaclk = to_socfpga_gate_clk(hw);
 	int i;
 	u32 hs_timing;
 	u32 clk_phase[2];
@@ -82,12 +82,12 @@ static int socfpga_clk_prepare(struct clk *clk)
 	return 0;
 }
 
-static int clk_socfpga_enable(struct clk *clk)
+static int clk_socfpga_enable(struct clk_hw *hw)
 {
-	struct socfpga_gate_clk *socfpga_clk = to_socfpga_gate_clk(clk);
+	struct socfpga_gate_clk *socfpga_clk = to_socfpga_gate_clk(hw);
 	u32 val;
 
-	socfpga_clk_prepare(clk);
+	socfpga_clk_prepare(hw);
 
 	val = readl(socfpga_clk->reg);
 	val |= 1 << socfpga_clk->bit_idx;
@@ -96,9 +96,9 @@ static int clk_socfpga_enable(struct clk *clk)
 	return 0;
 }
 
-static void clk_socfpga_disable(struct clk *clk)
+static void clk_socfpga_disable(struct clk_hw *hw)
 {
-	struct socfpga_gate_clk *socfpga_clk = to_socfpga_gate_clk(clk);
+	struct socfpga_gate_clk *socfpga_clk = to_socfpga_gate_clk(hw);
 	u32 val;
 
 	val = readl(socfpga_clk->reg);
@@ -159,8 +159,8 @@ static struct clk *__socfpga_gate_init(struct device_node *node,
 
 	of_property_read_string(node, "clock-output-names", &clk_name);
 
-	socfpga_clk->clk.name = xstrdup(clk_name);
-	socfpga_clk->clk.ops = ops;
+	socfpga_clk->hw.clk.name = xstrdup(clk_name);
+	socfpga_clk->hw.clk.ops = ops;
 
 	for (i = 0; i < SOCFPGA_MAX_PARENTS; i++) {
 		socfpga_clk->parent_names[i] = of_clk_get_parent_name(node, i);
@@ -168,16 +168,16 @@ static struct clk *__socfpga_gate_init(struct device_node *node,
 			break;
 	}
 
-	socfpga_clk->clk.num_parents = i;
-	socfpga_clk->clk.parent_names = socfpga_clk->parent_names;
+	socfpga_clk->hw.clk.num_parents = i;
+	socfpga_clk->hw.clk.parent_names = socfpga_clk->parent_names;
 
-	rc = clk_register(&socfpga_clk->clk);
+	rc = bclk_register(&socfpga_clk->hw.clk);
 	if (rc) {
 		free(socfpga_clk);
 		return ERR_PTR(rc);
 	}
 
-	return &socfpga_clk->clk;
+	return &socfpga_clk->hw.clk;
 }
 
 struct clk *socfpga_a10_gate_init(struct device_node *node)

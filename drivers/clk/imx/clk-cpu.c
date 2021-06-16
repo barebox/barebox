@@ -16,38 +16,38 @@
 #include "clk.h"
 
 struct clk_cpu {
-	struct clk	clk;
+	struct clk_hw	hw;
 	struct clk	*div;
 	struct clk	*mux;
 	struct clk	*pll;
 	struct clk	*step;
 };
 
-static inline struct clk_cpu *to_clk_cpu(struct clk *clk)
+static inline struct clk_cpu *to_clk_cpu(struct clk_hw *hw)
 {
-	return container_of(clk, struct clk_cpu, clk);
+	return container_of(hw, struct clk_cpu, hw);
 }
 
-static unsigned long clk_cpu_recalc_rate(struct clk *clk,
+static unsigned long clk_cpu_recalc_rate(struct clk_hw *hw,
 					 unsigned long parent_rate)
 {
-	struct clk_cpu *cpu = to_clk_cpu(clk);
+	struct clk_cpu *cpu = to_clk_cpu(hw);
 
 	return clk_get_rate(cpu->div);
 }
 
-static long clk_cpu_round_rate(struct clk *clk, unsigned long rate,
+static long clk_cpu_round_rate(struct clk_hw *hw, unsigned long rate,
 			       unsigned long *prate)
 {
-	struct clk_cpu *cpu = to_clk_cpu(clk);
+	struct clk_cpu *cpu = to_clk_cpu(hw);
 
 	return clk_round_rate(cpu->pll, rate);
 }
 
-static int clk_cpu_set_rate(struct clk *clk, unsigned long rate,
+static int clk_cpu_set_rate(struct clk_hw *hw, unsigned long rate,
 			    unsigned long parent_rate)
 {
-	struct clk_cpu *cpu = to_clk_cpu(clk);
+	struct clk_cpu *cpu = to_clk_cpu(hw);
 	int ret;
 
 	/* switch to PLL bypass clock */
@@ -98,17 +98,17 @@ struct clk *imx_clk_cpu(const char *name, const char *parent_name,
 	cpu->pll = pll;
 	cpu->step = step;
 
-	cpu->clk.name = name;
-	cpu->clk.ops = &clk_cpu_ops;
-	cpu->clk.flags = CLK_IS_CRITICAL;
-	cpu->clk.parent_names = &icpu->parent_name;
-	cpu->clk.num_parents = 1;
+	cpu->hw.clk.name = name;
+	cpu->hw.clk.ops = &clk_cpu_ops;
+	cpu->hw.clk.flags = CLK_IS_CRITICAL;
+	cpu->hw.clk.parent_names = &icpu->parent_name;
+	cpu->hw.clk.num_parents = 1;
 
-	ret = clk_register(&cpu->clk);
+	ret = bclk_register(&cpu->hw.clk);
 	if (ret) {
 		free(cpu);
 		return NULL;
 	}
 
-	return &cpu->clk;
+	return &cpu->hw.clk;
 }

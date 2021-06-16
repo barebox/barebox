@@ -12,85 +12,115 @@
 #include <linux/err.h>
 
 struct clk_composite {
-	struct clk	clk;
+	struct clk_hw	hw;
 
 	struct clk	*mux_clk;
 	struct clk	*rate_clk;
 	struct clk	*gate_clk;
 };
 
-#define to_clk_composite(_clk) container_of(_clk, struct clk_composite, clk)
+#define to_clk_composite(_hw) container_of(_hw, struct clk_composite, hw)
 
-static int clk_composite_get_parent(struct clk *clk)
+static int clk_composite_get_parent(struct clk_hw *hw)
 {
-	struct clk_composite *composite = to_clk_composite(clk);
+	struct clk_composite *composite = to_clk_composite(hw);
 	struct clk *mux_clk = composite->mux_clk;
+	struct clk_hw *mux_hw = clk_to_clk_hw(mux_clk);
 
-	return mux_clk ? mux_clk->ops->get_parent(mux_clk) : 0;
+	return mux_clk ? mux_clk->ops->get_parent(mux_hw) : 0;
 }
 
-static int clk_composite_set_parent(struct clk *clk, u8 index)
+static int clk_composite_set_parent(struct clk_hw *hw, u8 index)
 {
-	struct clk_composite *composite = to_clk_composite(clk);
+	struct clk_composite *composite = to_clk_composite(hw);
 	struct clk *mux_clk = composite->mux_clk;
+	struct clk_hw *mux_hw = clk_to_clk_hw(mux_clk);
 
-	return mux_clk ? mux_clk->ops->set_parent(mux_clk, index) : 0;
+	return mux_clk ? mux_clk->ops->set_parent(mux_hw, index) : 0;
 }
 
-static unsigned long clk_composite_recalc_rate(struct clk *clk,
+static unsigned long clk_composite_recalc_rate(struct clk_hw *hw,
 					    unsigned long parent_rate)
 {
-	struct clk_composite *composite = to_clk_composite(clk);
+	struct clk_composite *composite = to_clk_composite(hw);
 	struct clk *rate_clk = composite->rate_clk;
+	struct clk_hw *rate_hw = clk_to_clk_hw(rate_clk);
 
 	if (rate_clk)
-		return rate_clk->ops->recalc_rate(rate_clk, parent_rate);
+		return rate_clk->ops->recalc_rate(rate_hw, parent_rate);
 
 	return parent_rate;
 }
 
-static long clk_composite_round_rate(struct clk *clk, unsigned long rate,
+static long clk_composite_round_rate(struct clk_hw *hw, unsigned long rate,
 				  unsigned long *prate)
 {
-	struct clk_composite *composite = to_clk_composite(clk);
+	struct clk_composite *composite = to_clk_composite(hw);
 	struct clk *rate_clk = composite->rate_clk;
+	struct clk *mux_clk = composite->mux_clk;
+	struct clk_hw *rate_hw = clk_to_clk_hw(rate_clk);
 
-	return rate_clk ? rate_clk->ops->round_rate(rate_clk, rate, prate) : 0;
+	if (rate_clk)
+		return rate_clk->ops->round_rate(rate_hw, rate, prate);
+
+	if (!(hw->clk.flags & CLK_SET_RATE_NO_REPARENT) &&
+	    mux_clk &&
+	    mux_clk->ops->set_rate)
+		return mux_clk->ops->round_rate(clk_to_clk_hw(mux_clk), rate, prate);
+
+	return *prate;
 }
 
-static int clk_composite_set_rate(struct clk *clk, unsigned long rate,
+static int clk_composite_set_rate(struct clk_hw *hw, unsigned long rate,
 			       unsigned long parent_rate)
 {
-	struct clk_composite *composite = to_clk_composite(clk);
+	struct clk_composite *composite = to_clk_composite(hw);
 	struct clk *rate_clk = composite->rate_clk;
+	struct clk *mux_clk = composite->mux_clk;
+	struct clk_hw *rate_hw = clk_to_clk_hw(rate_clk);
 
-	return rate_clk ?
-		rate_clk->ops->set_rate(rate_clk, rate, parent_rate) : 0;
+	/*
+	 * When the rate clock is present use that to set the rate,
+	 * otherwise try the mux clock. We currently do not support
+	 * to find the best rate using a combination of both.
+	 */
+	if (rate_clk)
+		return rate_clk->ops->set_rate(rate_hw, rate, parent_rate);
+
+	if (!(hw->clk.flags & CLK_SET_RATE_NO_REPARENT) &&
+	    mux_clk &&
+	    mux_clk->ops->set_rate)
+		return mux_clk->ops->set_rate(clk_to_clk_hw(mux_clk), rate, parent_rate);
+
+	return 0;
 }
 
-static int clk_composite_is_enabled(struct clk *clk)
+static int clk_composite_is_enabled(struct clk_hw *hw)
 {
-	struct clk_composite *composite = to_clk_composite(clk);
+	struct clk_composite *composite = to_clk_composite(hw);
 	struct clk *gate_clk = composite->gate_clk;
+	struct clk_hw *gate_hw = clk_to_clk_hw(gate_clk);
 
-	return gate_clk ? gate_clk->ops->is_enabled(gate_clk) : 0;
+	return gate_clk ? gate_clk->ops->is_enabled(gate_hw) : 0;
 }
 
-static int clk_composite_enable(struct clk *clk)
+static int clk_composite_enable(struct clk_hw *hw)
 {
-	struct clk_composite *composite = to_clk_composite(clk);
+	struct clk_composite *composite = to_clk_composite(hw);
 	struct clk *gate_clk = composite->gate_clk;
+	struct clk_hw *gate_hw = clk_to_clk_hw(gate_clk);
 
-	return gate_clk ? gate_clk->ops->enable(gate_clk) : 0;
+	return gate_clk ? gate_clk->ops->enable(gate_hw) : 0;
 }
 
-static void clk_composite_disable(struct clk *clk)
+static void clk_composite_disable(struct clk_hw *hw)
 {
-	struct clk_composite *composite = to_clk_composite(clk);
+	struct clk_composite *composite = to_clk_composite(hw);
 	struct clk *gate_clk = composite->gate_clk;
+	struct clk_hw *gate_hw = clk_to_clk_hw(gate_clk);
 
 	if (gate_clk)
-		gate_clk->ops->disable(gate_clk);
+		gate_clk->ops->disable(gate_hw);
 }
 
 static struct clk_ops clk_composite_ops = {
@@ -116,20 +146,26 @@ struct clk *clk_register_composite(const char *name,
 
 	composite = xzalloc(sizeof(*composite));
 
-	composite->clk.name = name;
-	composite->clk.ops = &clk_composite_ops;
-	composite->clk.flags = flags;
-	composite->clk.parent_names = parent_names;
-	composite->clk.num_parents = num_parents;
+	composite->hw.clk.name = name;
+	composite->hw.clk.ops = &clk_composite_ops;
+	composite->hw.clk.flags = flags;
+	composite->hw.clk.parent_names = parent_names;
+	composite->hw.clk.num_parents = num_parents;
 	composite->mux_clk = mux_clk;
 	composite->rate_clk = rate_clk;
 	composite->gate_clk = gate_clk;
 
-	ret = clk_register(&composite->clk);
+	ret = bclk_register(&composite->hw.clk);
 	if (ret)
 		goto err;
 
-	return &composite->clk;
+	if (composite->mux_clk) {
+		composite->mux_clk->parents = composite->hw.clk.parents;
+		composite->mux_clk->parent_names = composite->hw.clk.parent_names;
+		composite->mux_clk->num_parents = composite->hw.clk.num_parents;
+	}
+
+	return &composite->hw.clk;
 
 err:
 	kfree(composite);

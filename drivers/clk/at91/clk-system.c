@@ -17,9 +17,9 @@
 
 #define SYSTEM_MAX_NAME_SZ	32
 
-#define to_clk_system(clk) container_of(clk, struct clk_system, clk)
+#define to_clk_system(_hw) container_of(_hw, struct clk_system, hw)
 struct clk_system {
-	struct clk clk;
+	struct clk_hw hw;
 	struct regmap *regmap;
 	u8 id;
 	const char *parent_name;
@@ -39,9 +39,9 @@ static inline bool clk_system_ready(struct regmap *regmap, int id)
 	return status & (1 << id) ? 1 : 0;
 }
 
-static int clk_system_enable(struct clk *clk)
+static int clk_system_enable(struct clk_hw *hw)
 {
-	struct clk_system *sys = to_clk_system(clk);
+	struct clk_system *sys = to_clk_system(hw);
 
 	regmap_write(sys->regmap, AT91_PMC_SCER, 1 << sys->id);
 
@@ -54,16 +54,16 @@ static int clk_system_enable(struct clk *clk)
 	return 0;
 }
 
-static void clk_system_disable(struct clk *clk)
+static void clk_system_disable(struct clk_hw *hw)
 {
-	struct clk_system *sys = to_clk_system(clk);
+	struct clk_system *sys = to_clk_system(hw);
 
 	regmap_write(sys->regmap, AT91_PMC_SCDR, 1 << sys->id);
 }
 
-static int clk_system_is_enabled(struct clk *clk)
+static int clk_system_is_enabled(struct clk_hw *hw)
 {
-	struct clk_system *sys = to_clk_system(clk);
+	struct clk_system *sys = to_clk_system(hw);
 	unsigned int status;
 
 	regmap_read(sys->regmap, AT91_PMC_SCSR, &status);
@@ -96,20 +96,20 @@ at91_clk_register_system(struct regmap *regmap, const char *name,
 		return ERR_PTR(-EINVAL);
 
 	sys = xzalloc(sizeof(*sys));
-	sys->clk.name = name;
-	sys->clk.ops = &system_ops;
+	sys->hw.clk.name = name;
+	sys->hw.clk.ops = &system_ops;
 	sys->parent_name = parent_name;
-	sys->clk.parent_names = &sys->parent_name;
-	sys->clk.num_parents = 1;
+	sys->hw.clk.parent_names = &sys->parent_name;
+	sys->hw.clk.num_parents = 1;
 	/* init.flags = CLK_SET_RATE_PARENT; */
 	sys->id = id;
 	sys->regmap = regmap;
 
-	ret = clk_register(&sys->clk);
+	ret = bclk_register(&sys->hw.clk);
 	if (ret) {
 		kfree(sys);
 		return ERR_PTR(ret);
 	}
 
-	return &sys->clk;
+	return &sys->hw.clk;
 }

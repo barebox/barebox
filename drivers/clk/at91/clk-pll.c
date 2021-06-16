@@ -31,10 +31,10 @@
 #define PLL_OUT_SHIFT		14
 #define PLL_MAX_ID		1
 
-#define to_clk_pll(clk) container_of(clk, struct clk_pll, clk)
+#define to_clk_pll(_hw) container_of(_hw, struct clk_pll, hw)
 
 struct clk_pll {
-	struct clk clk;
+	struct clk_hw hw;
 	struct regmap *regmap;
 	u8 id;
 	u8 div;
@@ -54,9 +54,9 @@ static inline bool clk_pll_ready(struct regmap *regmap, int id)
 	return status & PLL_STATUS_MASK(id) ? 1 : 0;
 }
 
-static int clk_pll_enable(struct clk *clk)
+static int clk_pll_enable(struct clk_hw *hw)
 {
-	struct clk_pll *pll = to_clk_pll(clk);
+	struct clk_pll *pll = to_clk_pll(hw);
 	struct regmap *regmap = pll->regmap;
 	const struct clk_pll_layout *layout = pll->layout;
 	const struct clk_pll_characteristics *characteristics =
@@ -97,25 +97,25 @@ static int clk_pll_enable(struct clk *clk)
 	return 0;
 }
 
-static int clk_pll_is_enabled(struct clk *clk)
+static int clk_pll_is_enabled(struct clk_hw *hw)
 {
-	struct clk_pll *pll = to_clk_pll(clk);
+	struct clk_pll *pll = to_clk_pll(hw);
 
 	return clk_pll_ready(pll->regmap, pll->id);
 }
 
-static void clk_pll_disable(struct clk *clk)
+static void clk_pll_disable(struct clk_hw *hw)
 {
-	struct clk_pll *pll = to_clk_pll(clk);
+	struct clk_pll *pll = to_clk_pll(hw);
 	unsigned int mask = pll->layout->pllr_mask;
 
 	regmap_write_bits(pll->regmap, PLL_REG(pll->id), mask, ~mask);
 }
 
-static unsigned long clk_pll_recalc_rate(struct clk *clk,
+static unsigned long clk_pll_recalc_rate(struct clk_hw *hw,
 					 unsigned long parent_rate)
 {
-	struct clk_pll *pll = to_clk_pll(clk);
+	struct clk_pll *pll = to_clk_pll(hw);
 
 	if (!pll->div || !pll->mul)
 		return 0;
@@ -233,19 +233,19 @@ static long clk_pll_get_best_div_mul(struct clk_pll *pll, unsigned long rate,
 	return bestrate;
 }
 
-static long clk_pll_round_rate(struct clk *clk, unsigned long rate,
+static long clk_pll_round_rate(struct clk_hw *hw, unsigned long rate,
 			       unsigned long *parent_rate)
 {
-	struct clk_pll *pll = to_clk_pll(clk);
+	struct clk_pll *pll = to_clk_pll(hw);
 
 	return clk_pll_get_best_div_mul(pll, rate, *parent_rate,
 					NULL, NULL, NULL);
 }
 
-static int clk_pll_set_rate(struct clk *clk, unsigned long rate,
+static int clk_pll_set_rate(struct clk_hw *hw, unsigned long rate,
 			    unsigned long parent_rate)
 {
-	struct clk_pll *pll = to_clk_pll(clk);
+	struct clk_pll *pll = to_clk_pll(hw);
 	long ret;
 	u32 div;
 	u32 mul;
@@ -289,10 +289,10 @@ at91_clk_register_pll(struct regmap *regmap, const char *name,
 	pll = xzalloc(sizeof(*pll));
 
 	pll->parent = parent_name;
-	pll->clk.name = name;
-	pll->clk.ops = &pll_ops;
-	pll->clk.parent_names = &pll->parent;
-	pll->clk.num_parents = 1;
+	pll->hw.clk.name = name;
+	pll->hw.clk.ops = &pll_ops;
+	pll->hw.clk.parent_names = &pll->parent;
+	pll->hw.clk.num_parents = 1;
 
 	/* init.flags = CLK_SET_RATE_GATE; */
 
@@ -304,13 +304,13 @@ at91_clk_register_pll(struct regmap *regmap, const char *name,
 	pll->div = PLL_DIV(pllr);
 	pll->mul = PLL_MUL(pllr, layout);
 
-	ret = clk_register(&pll->clk);
+	ret = bclk_register(&pll->hw.clk);
 	if (ret) {
 		kfree(pll);
 		return ERR_PTR(ret);
 	}
 
-	return &pll->clk;
+	return &pll->hw.clk;
 }
 
 

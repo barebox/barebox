@@ -285,7 +285,7 @@ static const struct clk_div_table ck_trace_div_table[] = {
 
 struct stm32_mmux {
 	u8 nbr_clk;
-	struct clk *hws[MAX_MUX_CLK];
+	struct clk_hw *hws[MAX_MUX_CLK];
 };
 
 struct stm32_clk_mmux {
@@ -419,19 +419,19 @@ _clk_hw_register_mux(void __iomem *base,
 
 /* MP1 Gate clock with set & clear registers */
 
-static int mp1_gate_clk_enable(struct clk *clk)
+static int mp1_gate_clk_enable(struct clk_hw *hw)
 {
-	if (!clk_gate_ops.is_enabled(clk))
-		clk_gate_ops.enable(clk);
+	if (!clk_gate_ops.is_enabled(hw))
+		clk_gate_ops.enable(hw);
 
 	return 0;
 }
 
-static void mp1_gate_clk_disable(struct clk *clk)
+static void mp1_gate_clk_disable(struct clk_hw *hw)
 {
-	struct clk_gate *gate = to_clk_gate(clk);
+	struct clk_gate *gate = to_clk_gate(hw);
 
-	if (clk_gate_ops.is_enabled(clk)) {
+	if (clk_gate_ops.is_enabled(hw)) {
 		writel(BIT(gate->shift), gate->reg + RCC_CLR);
 	}
 }
@@ -442,12 +442,12 @@ static const struct clk_ops mp1_gate_clk_ops = {
 	.is_enabled	= clk_gate_is_enabled,
 };
 
-static struct clk *_get_stm32_mux(void __iomem *base,
+static struct clk_hw *_get_stm32_mux(void __iomem *base,
 				     const struct stm32_mux_cfg *cfg)
 {
 	struct stm32_clk_mmux *mmux;
 	struct clk_mux *mux;
-	struct clk *mux_hw;
+	struct clk_hw *mux_hw;
 
 	if (cfg->mmux) {
 		mmux = kzalloc(sizeof(*mmux), GFP_KERNEL);
@@ -458,7 +458,7 @@ static struct clk *_get_stm32_mux(void __iomem *base,
 		mmux->mux.shift = cfg->mux->shift;
 		mmux->mux.width = cfg->mux->width;
 		mmux->mmux = cfg->mmux;
-		mux_hw = &mmux->mux.clk;
+		mux_hw = &mmux->mux.hw;
 		cfg->mmux->hws[cfg->mmux->nbr_clk++] = mux_hw;
 		mux = &mmux->mux;
 	} else {
@@ -469,18 +469,18 @@ static struct clk *_get_stm32_mux(void __iomem *base,
 		mux->reg = cfg->mux->reg_off + base;
 		mux->shift = cfg->mux->shift;
 		mux->width = cfg->mux->width;
-		mux_hw = &mux->clk;
+		mux_hw = &mux->hw;
 	}
 
 	if (cfg->ops)
-		mux->clk.ops = cfg->ops;
+		mux->hw.clk.ops = cfg->ops;
 	else
-		mux->clk.ops = &clk_mux_ops;
+		mux->hw.clk.ops = &clk_mux_ops;
 
 	return mux_hw;
 }
 
-static struct clk *_get_stm32_div(void __iomem *base,
+static struct clk_hw *_get_stm32_div(void __iomem *base,
 				     const struct stm32_div_cfg *cfg)
 {
 	struct clk_divider *div;
@@ -496,11 +496,11 @@ static struct clk *_get_stm32_div(void __iomem *base,
 	div->table = cfg->div->table;
 
 	if (cfg->ops)
-		div->clk.ops = cfg->ops;
+		div->hw.clk.ops = cfg->ops;
 	else
-		div->clk.ops = &clk_divider_ops;
+		div->hw.clk.ops = &clk_divider_ops;
 
-	return &div->clk;
+	return &div->hw;
 }
 
 static struct clk_gate *
@@ -535,9 +535,9 @@ _get_stm32_gate(void __iomem *base,
 	}
 	
 	if (cfg->ops)
-		gate->clk.ops = cfg->ops;
+		gate->hw.clk.ops = cfg->ops;
 	else
-		gate->clk.ops = &clk_gate_ops;
+		gate->hw.clk.ops = &clk_gate_ops;
 
 	return gate;
 }
@@ -558,13 +558,13 @@ clk_stm32_register_gate_ops(const char *name,
 		return ERR_PTR(-ENOMEM);
 
 	gate->parent = parent_name;
-	clk = &gate->clk;
+	clk = &gate->hw.clk;
 	clk->name = name;
 	clk->parent_names = &gate->parent;
 	clk->num_parents = 1;
 	clk->flags = flags;
 
-	ret = clk_register(clk);
+	ret = bclk_register(clk);
 	if (ret)
 		clk = ERR_PTR(ret);
 
@@ -577,7 +577,7 @@ clk_stm32_register_composite(const char *name, const char * const *parent_names,
 			     const struct stm32_composite_cfg *cfg,
 			     unsigned long flags)
 {
-	struct clk *mux_hw, *div_hw, *gate_hw;
+	struct clk_hw *mux_hw, *div_hw, *gate_hw;
 	struct clk_gate *gate;
 
 	mux_hw = NULL;
@@ -592,36 +592,36 @@ clk_stm32_register_composite(const char *name, const char * const *parent_names,
 
 	if (cfg->gate) {
 		gate = _get_stm32_gate(base, cfg->gate);
-		gate_hw = &gate->clk;
+		gate_hw = &gate->hw;
 	}
 
 	return clk_register_composite(name, parent_names, num_parents,
-				       mux_hw, div_hw, gate_hw, flags);
+				       &mux_hw->clk, &div_hw->clk, &gate_hw->clk, flags);
 }
 
 #define to_clk_mgate(_gate) container_of(_gate, struct stm32_clk_mgate, gate)
 
-static int mp1_mgate_clk_enable(struct clk *clk)
+static int mp1_mgate_clk_enable(struct clk_hw *hw)
 {
-	struct clk_gate *gate = to_clk_gate(clk);
+	struct clk_gate *gate = to_clk_gate(hw);
 	struct stm32_clk_mgate *clk_mgate = to_clk_mgate(gate);
 
 	clk_mgate->mgate->flag |= clk_mgate->mask;
 
-	mp1_gate_clk_enable(clk);
+	mp1_gate_clk_enable(hw);
 
 	return  0;
 }
 
-static void mp1_mgate_clk_disable(struct clk *clk)
+static void mp1_mgate_clk_disable(struct clk_hw *hw)
 {
-	struct clk_gate *gate = to_clk_gate(clk);
+	struct clk_gate *gate = to_clk_gate(hw);
 	struct stm32_clk_mgate *clk_mgate = to_clk_mgate(gate);
 
 	clk_mgate->mgate->flag &= ~clk_mgate->mask;
 
 	if (clk_mgate->mgate->flag == 0)
-		mp1_gate_clk_disable(clk);
+		mp1_gate_clk_disable(hw);
 }
 
 static const struct clk_ops mp1_mgate_clk_ops = {
@@ -633,26 +633,26 @@ static const struct clk_ops mp1_mgate_clk_ops = {
 
 #define to_clk_mmux(_mux) container_of(_mux, struct stm32_clk_mmux, mux)
 
-static int clk_mmux_get_parent(struct clk *clk)
+static int clk_mmux_get_parent(struct clk_hw *hw)
 {
-	return clk_mux_ops.get_parent(clk);
+	return clk_mux_ops.get_parent(hw);
 }
 
-static int clk_mmux_set_parent(struct clk *clk, u8 index)
+static int clk_mmux_set_parent(struct clk_hw *hw, u8 index)
 {
-	struct clk_mux *mux = to_clk_mux(clk);
+	struct clk_mux *mux = to_clk_mux(hw);
 	struct stm32_clk_mmux *clk_mmux = to_clk_mmux(mux);
-	struct clk *parent;
+	struct clk_hw *hwp;
 	int ret, n;
 
-	ret = clk_mux_ops.set_parent(clk, index);
+	ret = clk_mux_ops.set_parent(hw, index);
 	if (ret)
 		return ret;
 
-	parent = clk_get_parent(clk);
+	hwp = clk_hw_get_parent(hw);
 
 	for (n = 0; n < clk_mmux->mmux->nbr_clk; n++)
-		clk_set_parent(clk_mmux->mmux->hws[n], parent);
+		clk_hw_set_parent(clk_mmux->mmux->hws[n], hw);
 
 	return 0;
 }
@@ -691,8 +691,9 @@ static int __pll_is_enabled(struct clk *clk)
 
 #define TIMEOUT 5
 
-static int pll_enable(struct clk *clk)
+static int pll_enable(struct clk_hw *hw)
 {
+	struct clk *clk = clk_hw_to_clk(hw);
 	struct stm32_pll_obj *clk_elem = to_pll(clk);
 	u32 reg;
 	unsigned int timeout = TIMEOUT;
@@ -722,8 +723,9 @@ unlock:
 	return bit_status;
 }
 
-static void pll_disable(struct clk *clk)
+static void pll_disable(struct clk_hw *hw)
 {
+	struct clk *clk = clk_hw_to_clk(hw);
 	struct stm32_pll_obj *clk_elem = to_pll(clk);
 	u32 reg;
 
@@ -744,9 +746,10 @@ static u32 pll_frac_val(struct clk *clk)
 	return frac;
 }
 
-static unsigned long pll_recalc_rate(struct clk *clk,
+static unsigned long pll_recalc_rate(struct clk_hw *hw,
 				     unsigned long parent_rate)
 {
+	struct clk *clk = clk_hw_to_clk(hw);
 	struct stm32_pll_obj *clk_elem = to_pll(clk);
 	u32 reg;
 	u32 frac, divm, divn;
@@ -769,8 +772,9 @@ static unsigned long pll_recalc_rate(struct clk *clk,
 	return rate + rate_frac;
 }
 
-static int pll_is_enabled(struct clk *clk)
+static int pll_is_enabled(struct clk_hw *hw)
 {
+	struct clk *clk = clk_hw_to_clk(hw);
 	int ret;
 
 	ret = __pll_is_enabled(clk);
@@ -810,7 +814,7 @@ static struct clk *clk_register_pll(const char *name,
 
 	element->reg = reg;
 
-	err = clk_register(clk);
+	err = bclk_register(clk);
 
 	if (err) {
 		kfree(element);
@@ -852,17 +856,19 @@ static unsigned long __bestmult(struct clk *clk, unsigned long rate,
 	return mult;
 }
 
-static long timer_ker_round_rate(struct clk *clk, unsigned long rate,
+static long timer_ker_round_rate(struct clk_hw *hw, unsigned long rate,
 				 unsigned long *parent_rate)
 {
+	struct clk *clk = clk_hw_to_clk(hw);
 	unsigned long factor = __bestmult(clk, rate, *parent_rate);
 
 	return *parent_rate * factor;
 }
 
-static int timer_ker_set_rate(struct clk *clk, unsigned long rate,
+static int timer_ker_set_rate(struct clk_hw *hw, unsigned long rate,
 			      unsigned long parent_rate)
 {
+	struct clk *clk = clk_hw_to_clk(hw);
 	struct timer_cker *tim_ker = to_timer_cker(clk);
 	unsigned long factor = __bestmult(clk, rate, parent_rate);
 	int ret = 0;
@@ -883,10 +889,11 @@ static int timer_ker_set_rate(struct clk *clk, unsigned long rate,
 	return ret;
 }
 
-static unsigned long timer_ker_recalc_rate(struct clk *hw,
+static unsigned long timer_ker_recalc_rate(struct clk_hw *hw,
 					   unsigned long parent_rate)
 {
-	struct timer_cker *tim_ker = to_timer_cker(hw);
+	struct clk *clk = clk_hw_to_clk(hw);
+	struct timer_cker *tim_ker = to_timer_cker(clk);
 	u32 prescaler, timpre;
 	u32 mul;
 
@@ -934,7 +941,7 @@ static struct clk *clk_register_cktim(const char *name,
 	tim_ker->apbdiv = apbdiv;
 	tim_ker->timpre = timpre;
 
-	err = clk_register(clk);
+	err = bclk_register(clk);
 	if (err) {
 		kfree(tim_ker);
 		return ERR_PTR(err);

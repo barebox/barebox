@@ -61,7 +61,7 @@ struct tegra_clk_pll_params {
 
 /* struct tegra_clk_pll - Tegra PLL clock */
 struct tegra_clk_pll {
-	struct clk	hw;
+	struct clk_hw	hw;
 	void __iomem	*clk_base;
 	u8		flags;
 	unsigned long	fixed_rate;
@@ -105,7 +105,7 @@ struct clk *tegra_clk_register_plle_tegra114(const char *name,
 
 /* struct tegra_clk_pll_out - PLL output divider */
 struct tegra_clk_pll_out {
-	struct clk	hw;
+	struct clk_hw	hw;
 	struct clk	*div;
 	void __iomem	*reg;
 	u8		enb_bit_idx;
@@ -119,7 +119,7 @@ struct clk *tegra_clk_register_pll_out(const char *name,
 
 /* struct clk-periph - peripheral clock */
 struct tegra_clk_periph {
-	struct clk	hw;
+	struct clk_hw	hw;
 	struct clk	*gate;
 	struct clk	*mux;
 	struct clk	*div;

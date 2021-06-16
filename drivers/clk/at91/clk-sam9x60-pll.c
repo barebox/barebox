@@ -55,7 +55,7 @@ struct sam9x60_pll {
 	const char *parent_name;
 };
 
-#define to_sam9x60_pll(clk) container_of(clk, struct sam9x60_pll, clk)
+#define to_sam9x60_pll(_hw) container_of(_hw->clk, struct sam9x60_pll, clk)
 
 static inline bool sam9x60_pll_ready(struct regmap *regmap, int id)
 {
@@ -66,9 +66,9 @@ static inline bool sam9x60_pll_ready(struct regmap *regmap, int id)
 	return !!(status & BIT(id));
 }
 
-static int sam9x60_pll_enable(struct clk *clk)
+static int sam9x60_pll_enable(struct clk_hw *hw)
 {
-	struct sam9x60_pll *pll = to_sam9x60_pll(clk);
+	struct sam9x60_pll *pll = to_sam9x60_pll(hw);
 	struct regmap *regmap = pll->regmap;
 	u8 div;
 	u16 mul;
@@ -127,16 +127,16 @@ static int sam9x60_pll_enable(struct clk *clk)
 	return 0;
 }
 
-static int sam9x60_pll_is_enabled(struct clk *clk)
+static int sam9x60_pll_is_enabled(struct clk_hw *hw)
 {
-	struct sam9x60_pll *pll = to_sam9x60_pll(clk);
+	struct sam9x60_pll *pll = to_sam9x60_pll(hw);
 
 	return sam9x60_pll_ready(pll->regmap, pll->id);
 }
 
-static void sam9x60_pll_disable(struct clk *clk)
+static void sam9x60_pll_disable(struct clk_hw *hw)
 {
-	struct sam9x60_pll *pll = to_sam9x60_pll(clk);
+	struct sam9x60_pll *pll = to_sam9x60_pll(hw);
 
 	regmap_write(pll->regmap, PMC_PLL_UPDT, pll->id);
 
@@ -156,10 +156,10 @@ static void sam9x60_pll_disable(struct clk *clk)
 			   PMC_PLL_UPDT_UPDATE, PMC_PLL_UPDT_UPDATE);
 }
 
-static unsigned long sam9x60_pll_recalc_rate(struct clk *clk,
+static unsigned long sam9x60_pll_recalc_rate(struct clk_hw *hw,
 					     unsigned long parent_rate)
 {
-	struct sam9x60_pll *pll = to_sam9x60_pll(clk);
+	struct sam9x60_pll *pll = to_sam9x60_pll(hw);
 
 	return (parent_rate * (pll->mul + 1)) / (pll->div + 1);
 }
@@ -253,18 +253,18 @@ static long sam9x60_pll_get_best_div_mul(struct sam9x60_pll *pll,
 	return bestrate;
 }
 
-static long sam9x60_pll_round_rate(struct clk *clk, unsigned long rate,
+static long sam9x60_pll_round_rate(struct clk_hw *hw, unsigned long rate,
 				   unsigned long *parent_rate)
 {
-	struct sam9x60_pll *pll = to_sam9x60_pll(clk);
+	struct sam9x60_pll *pll = to_sam9x60_pll(hw);
 
 	return sam9x60_pll_get_best_div_mul(pll, rate, *parent_rate, false);
 }
 
-static int sam9x60_pll_set_rate(struct clk *clk, unsigned long rate,
+static int sam9x60_pll_set_rate(struct clk_hw *hw, unsigned long rate,
 				unsigned long parent_rate)
 {
-	struct sam9x60_pll *pll = to_sam9x60_pll(clk);
+	struct sam9x60_pll *pll = to_sam9x60_pll(hw);
 
 	return sam9x60_pll_get_best_div_mul(pll, rate, parent_rate, true);
 }
@@ -311,7 +311,7 @@ sam9x60_clk_register_pll(struct regmap *regmap,
 	regmap_read(regmap, PMC_PLL_CTRL1, &pllr);
 	pll->mul = FIELD_GET(PMC_PLL_CTRL1_MUL_MSK, pllr);
 
-	ret = clk_register(&pll->clk);
+	ret = bclk_register(&pll->clk);
 	if (ret) {
 		kfree(pll);
 		return ERR_PTR(ret);

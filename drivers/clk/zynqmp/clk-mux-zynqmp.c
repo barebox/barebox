@@ -18,17 +18,17 @@
 #define ZYNQMP_CLK_MUX_READ_ONLY		BIT(3)
 
 struct zynqmp_clk_mux {
-	struct clk clk;
+	struct clk_hw hw;
 	u32 clk_id;
 	const struct zynqmp_eemi_ops *ops;
 };
 
-#define to_zynqmp_clk_mux(clk) \
-	container_of(clk, struct zynqmp_clk_mux, clk)
+#define to_zynqmp_clk_mux(_hw) \
+	container_of(_hw, struct zynqmp_clk_mux, hw)
 
-static int zynqmp_clk_mux_get_parent(struct clk *clk)
+static int zynqmp_clk_mux_get_parent(struct clk_hw *hw)
 {
-	struct zynqmp_clk_mux *mux = to_zynqmp_clk_mux(clk);
+	struct zynqmp_clk_mux *mux = to_zynqmp_clk_mux(hw);
 	u32 value;
 
 	mux->ops->clock_getparent(mux->clk_id, &value);
@@ -36,9 +36,9 @@ static int zynqmp_clk_mux_get_parent(struct clk *clk)
 	return value;
 }
 
-static int zynqmp_clk_mux_set_parent(struct clk *clk, u8 index)
+static int zynqmp_clk_mux_set_parent(struct clk_hw *hw, u8 index)
 {
-	struct zynqmp_clk_mux *mux = to_zynqmp_clk_mux(clk);
+	struct zynqmp_clk_mux *mux = to_zynqmp_clk_mux(hw);
 
 	return mux->ops->clock_setparent(mux->clk_id, index);
 }
@@ -82,21 +82,21 @@ struct clk *zynqmp_clk_register_mux(const char *name,
 	mux->clk_id = clk_id;
 	mux->ops = zynqmp_pm_get_eemi_ops();
 
-	mux->clk.name = strdup(name);
+	mux->hw.clk.name = strdup(name);
 	if (nodes->type_flag & ZYNQMP_CLK_MUX_READ_ONLY)
-		mux->clk.ops = &zynqmp_clk_mux_ro_ops;
+		mux->hw.clk.ops = &zynqmp_clk_mux_ro_ops;
 	else
-		mux->clk.ops = &zynqmp_clk_mux_ops;
-	mux->clk.flags = nodes->flag | CLK_SET_RATE_PARENT;
-	mux->clk.parent_names = parent_names;
-	mux->clk.num_parents = num_parents;
+		mux->hw.clk.ops = &zynqmp_clk_mux_ops;
+	mux->hw.clk.flags = nodes->flag | CLK_SET_RATE_PARENT;
+	mux->hw.clk.parent_names = parent_names;
+	mux->hw.clk.num_parents = num_parents;
 
-	ret = clk_register(&mux->clk);
+	ret = bclk_register(&mux->hw.clk);
 	if (ret) {
 		kfree(parent_names);
 		kfree(mux);
 		return ERR_PTR(ret);
 	}
 
-	return &mux->clk;
+	return &mux->hw.clk;
 }

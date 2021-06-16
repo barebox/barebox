@@ -18,10 +18,10 @@
 #define MASTER_DIV_SHIFT	8
 #define MASTER_DIV_MASK		0x3
 
-#define to_clk_master(clk) container_of(clk, struct clk_master, clk)
+#define to_clk_master(_hw) container_of(_hw, struct clk_master, hw)
 
 struct clk_master {
-	struct clk clk;
+	struct clk_hw hw;
 	struct regmap *regmap;
 	const struct clk_master_layout *layout;
 	const struct clk_master_characteristics *characteristics;
@@ -38,9 +38,9 @@ static inline bool clk_master_ready(struct regmap *regmap)
 	return status & AT91_PMC_MCKRDY ? 1 : 0;
 }
 
-static int clk_master_enable(struct clk *clk)
+static int clk_master_enable(struct clk_hw *hw)
 {
-	struct clk_master *master = to_clk_master(clk);
+	struct clk_master *master = to_clk_master(hw);
 
 	while (!clk_master_ready(master->regmap))
 		barrier();
@@ -48,20 +48,20 @@ static int clk_master_enable(struct clk *clk)
 	return 0;
 }
 
-static int clk_master_is_enabled(struct clk *clk)
+static int clk_master_is_enabled(struct clk_hw *hw)
 {
-	struct clk_master *master = to_clk_master(clk);
+	struct clk_master *master = to_clk_master(hw);
 
 	return clk_master_ready(master->regmap);
 }
 
-static unsigned long clk_master_recalc_rate(struct clk *clk,
+static unsigned long clk_master_recalc_rate(struct clk_hw *hw,
 					    unsigned long parent_rate)
 {
 	u8 pres;
 	u8 div;
 	unsigned long rate = parent_rate;
-	struct clk_master *master = to_clk_master(clk);
+	struct clk_master *master = to_clk_master(hw);
 	const struct clk_master_layout *layout = master->layout;
 	const struct clk_master_characteristics *characteristics =
 						master->characteristics;
@@ -88,9 +88,9 @@ static unsigned long clk_master_recalc_rate(struct clk *clk,
 	return rate;
 }
 
-static int clk_master_get_parent(struct clk *clk)
+static int clk_master_get_parent(struct clk_hw *hw)
 {
-	struct clk_master *master = to_clk_master(clk);
+	struct clk_master *master = to_clk_master(hw);
 	unsigned int mckr;
 
 	regmap_read(master->regmap, master->layout->offset, &mckr);
@@ -121,23 +121,23 @@ at91_clk_register_master(struct regmap *regmap,
 
 	master = xzalloc(struct_size(master, parents, num_parents));
 
-	master->clk.name = name;
-	master->clk.ops = &master_ops;
+	master->hw.clk.name = name;
+	master->hw.clk.ops = &master_ops;
 	memcpy(master->parents, parent_names, parent_names_size);
-	master->clk.parent_names = master->parents;
-	master->clk.num_parents = num_parents;
+	master->hw.clk.parent_names = master->parents;
+	master->hw.clk.num_parents = num_parents;
 
 	master->layout = layout;
 	master->characteristics = characteristics;
 	master->regmap = regmap;
 
-	ret = clk_register(&master->clk);
+	ret = bclk_register(&master->hw.clk);
 	if (ret) {
 		kfree(master);
 		return ERR_PTR(ret);
 	}
 
-	return &master->clk;
+	return &master->hw.clk;
 }
 
 

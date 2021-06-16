@@ -25,7 +25,7 @@
 #define IMX7_ENET_PLL_POWER	(0x1 << 5)
 
 struct clk_pllv3 {
-	struct clk	clk;
+	struct clk_hw	hw;
 	void __iomem	*base;
 	bool		powerup_set;
 	u32		div_mask;
@@ -35,11 +35,11 @@ struct clk_pllv3 {
 	u32		power_bit;
 };
 
-#define to_clk_pllv3(_clk) container_of(_clk, struct clk_pllv3, clk)
+#define to_clk_pllv3(_hw) container_of(_hw, struct clk_pllv3, hw)
 
-static int clk_pllv3_enable(struct clk *clk)
+static int clk_pllv3_enable(struct clk_hw *hw)
 {
-	struct clk_pllv3 *pll = to_clk_pllv3(clk);
+	struct clk_pllv3 *pll = to_clk_pllv3(hw);
 	u32 val;
 	int timeout = 10000;
 
@@ -66,9 +66,9 @@ static int clk_pllv3_enable(struct clk *clk)
 	return 0;
 }
 
-static void clk_pllv3_disable(struct clk *clk)
+static void clk_pllv3_disable(struct clk_hw *hw)
 {
-	struct clk_pllv3 *pll = to_clk_pllv3(clk);
+	struct clk_pllv3 *pll = to_clk_pllv3(hw);
 	u32 val;
 
 	val = readl(pll->base);
@@ -82,16 +82,16 @@ static void clk_pllv3_disable(struct clk *clk)
 	writel(val, pll->base);
 }
 
-static unsigned long clk_pllv3_recalc_rate(struct clk *clk,
+static unsigned long clk_pllv3_recalc_rate(struct clk_hw *hw,
 					   unsigned long parent_rate)
 {
-	struct clk_pllv3 *pll = to_clk_pllv3(clk);
+	struct clk_pllv3 *pll = to_clk_pllv3(hw);
 	u32 div = (readl(pll->base) >> pll->div_shift) & pll->div_mask;
 
 	return (div == 1) ? parent_rate * 22 : parent_rate * 20;
 }
 
-static long clk_pllv3_round_rate(struct clk *clk, unsigned long rate,
+static long clk_pllv3_round_rate(struct clk_hw *hw, unsigned long rate,
 				 unsigned long *prate)
 {
 	unsigned long parent_rate = *prate;
@@ -100,10 +100,10 @@ static long clk_pllv3_round_rate(struct clk *clk, unsigned long rate,
 					    parent_rate * 20;
 }
 
-static int clk_pllv3_set_rate(struct clk *clk, unsigned long rate,
+static int clk_pllv3_set_rate(struct clk_hw *hw, unsigned long rate,
 		unsigned long parent_rate)
 {
-	struct clk_pllv3 *pll = to_clk_pllv3(clk);
+	struct clk_pllv3 *pll = to_clk_pllv3(hw);
 	u32 val, div;
 
 	if (rate == parent_rate * 22)
@@ -129,16 +129,16 @@ static const struct clk_ops clk_pllv3_ops = {
 	.set_rate	= clk_pllv3_set_rate,
 };
 
-static unsigned long clk_pllv3_sys_recalc_rate(struct clk *clk,
+static unsigned long clk_pllv3_sys_recalc_rate(struct clk_hw *hw,
 					       unsigned long parent_rate)
 {
-	struct clk_pllv3 *pll = to_clk_pllv3(clk);
+	struct clk_pllv3 *pll = to_clk_pllv3(hw);
 	u32 div = readl(pll->base) & pll->div_mask;
 
 	return parent_rate * div / 2;
 }
 
-static long clk_pllv3_sys_round_rate(struct clk *clk, unsigned long rate,
+static long clk_pllv3_sys_round_rate(struct clk_hw *hw, unsigned long rate,
 				     unsigned long *prate)
 {
 	unsigned long parent_rate = *prate;
@@ -155,10 +155,10 @@ static long clk_pllv3_sys_round_rate(struct clk *clk, unsigned long rate,
 	return parent_rate * div / 2;
 }
 
-static int clk_pllv3_sys_set_rate(struct clk *clk, unsigned long rate,
+static int clk_pllv3_sys_set_rate(struct clk_hw *hw, unsigned long rate,
 		unsigned long parent_rate)
 {
-	struct clk_pllv3 *pll = to_clk_pllv3(clk);
+	struct clk_pllv3 *pll = to_clk_pllv3(hw);
 	unsigned long min_rate = parent_rate * 54 / 2;
 	unsigned long max_rate = parent_rate * 108 / 2;
 	u32 val, div;
@@ -183,10 +183,11 @@ static const struct clk_ops clk_pllv3_sys_ops = {
 	.set_rate	= clk_pllv3_sys_set_rate,
 };
 
-static unsigned long clk_pllv3_av_recalc_rate(struct clk *clk,
+static unsigned long clk_pllv3_av_recalc_rate(struct clk_hw *hw,
 					      unsigned long parent_rate)
 {
-	struct clk_pllv3 *pll = to_clk_pllv3(clk);
+	struct clk_pllv3 *pll = to_clk_pllv3(hw);
+
 	u32 mfn = readl(pll->base + PLL_NUM_OFFSET);
 	u32 mfd = readl(pll->base + PLL_DENOM_OFFSET);
 	u32 div = readl(pll->base) & pll->div_mask;
@@ -194,7 +195,7 @@ static unsigned long clk_pllv3_av_recalc_rate(struct clk *clk,
 	return (parent_rate * div) + ((parent_rate / mfd) * mfn);
 }
 
-static long clk_pllv3_av_round_rate(struct clk *clk, unsigned long rate,
+static long clk_pllv3_av_round_rate(struct clk_hw *hw, unsigned long rate,
 				    unsigned long *prate)
 {
 	unsigned long parent_rate = *prate;
@@ -218,10 +219,11 @@ static long clk_pllv3_av_round_rate(struct clk *clk, unsigned long rate,
 	return parent_rate * div + parent_rate / mfd * mfn;
 }
 
-static int clk_pllv3_av_set_rate(struct clk *clk, unsigned long rate,
+static int clk_pllv3_av_set_rate(struct clk_hw *hw, unsigned long rate,
 		unsigned long parent_rate)
 {
-	struct clk_pllv3 *pll = to_clk_pllv3(clk);
+	struct clk_pllv3 *pll = to_clk_pllv3(hw);
+
 	unsigned long min_rate = parent_rate * 27;
 	unsigned long max_rate = parent_rate * 54;
 	u32 val, div;
@@ -255,10 +257,10 @@ static const struct clk_ops clk_pllv3_av_ops = {
 	.set_rate	= clk_pllv3_av_set_rate,
 };
 
-static unsigned long clk_pllv3_enet_recalc_rate(struct clk *clk,
+static unsigned long clk_pllv3_enet_recalc_rate(struct clk_hw *hw,
 						unsigned long parent_rate)
 {
-	struct clk_pllv3 *pll = to_clk_pllv3(clk);
+	struct clk_pllv3 *pll = to_clk_pllv3(hw);
 
 	return pll->ref_clock;
 }
@@ -274,10 +276,10 @@ static const struct clk_ops clk_pllv3_mlb_ops = {
 	.disable	= clk_pllv3_disable,
 };
 
-static unsigned long clk_pllv3_sys_vf610_recalc_rate(struct clk *clk,
+static unsigned long clk_pllv3_sys_vf610_recalc_rate(struct clk_hw *hw,
 						     unsigned long parent_rate)
 {
-	struct clk_pllv3 *pll = to_clk_pllv3(clk);
+	struct clk_pllv3 *pll = to_clk_pllv3(hw);
 
 	u32 mfn = readl(pll->base + SYS_VF610_PLL_OFFSET + PLL_NUM_OFFSET);
 	u32 mfd = readl(pll->base + SYS_VF610_PLL_OFFSET + PLL_DENOM_OFFSET);
@@ -286,7 +288,7 @@ static unsigned long clk_pllv3_sys_vf610_recalc_rate(struct clk *clk,
 	return (parent_rate * div) + ((parent_rate / mfd) * mfn);
 }
 
-static long clk_pllv3_sys_vf610_round_rate(struct clk *clk, unsigned long rate,
+static long clk_pllv3_sys_vf610_round_rate(struct clk_hw *hw, unsigned long rate,
 					   unsigned long *prate)
 {
 	unsigned long parent_rate = *prate;
@@ -308,10 +310,10 @@ static long clk_pllv3_sys_vf610_round_rate(struct clk *clk, unsigned long rate,
 	return parent_rate * 20 + parent_rate / mfd * mfn;
 }
 
-static int clk_pllv3_sys_vf610_set_rate(struct clk *clk, unsigned long rate,
+static int clk_pllv3_sys_vf610_set_rate(struct clk_hw *hw, unsigned long rate,
 					unsigned long parent_rate)
 {
-	struct clk_pllv3 *pll = to_clk_pllv3(clk);
+	struct clk_pllv3 *pll = to_clk_pllv3(hw);
 	unsigned long min_rate = parent_rate * 20;
 	unsigned long max_rate = 528000000;
 	u32 val;
@@ -400,20 +402,20 @@ struct clk *imx_clk_pllv3(enum imx_pllv3_type type, const char *name,
 	pll->base = base;
 	pll->div_mask = div_mask;
 	pll->parent = parent;
-	pll->clk.ops = ops;
-	pll->clk.name = name;
-	pll->clk.parent_names = &pll->parent;
-	pll->clk.num_parents = 1;
+	pll->hw.clk.ops = ops;
+	pll->hw.clk.name = name;
+	pll->hw.clk.parent_names = &pll->parent;
+	pll->hw.clk.num_parents = 1;
 
 	val = readl(pll->base);
 	val &= ~BM_PLL_BYPASS;
 	writel(val, pll->base);
 
-	ret = clk_register(&pll->clk);
+	ret = bclk_register(&pll->hw.clk);
 	if (ret) {
 		free(pll);
 		return ERR_PTR(ret);
 	}
 
-	return &pll->clk;
+	return &pll->hw.clk;
 }

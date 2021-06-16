@@ -50,15 +50,15 @@
 void __iomem *clk_mgr_base_addr;
 
 struct clk_pll {
-	struct clk clk;
+	struct clk_hw hw;
 	const char *parent;
 	unsigned regofs;
 };
 
-static unsigned long clk_pll_recalc_rate(struct clk *clk,
+static unsigned long clk_pll_recalc_rate(struct clk_hw *hw,
 		unsigned long parent_rate)
 {
-	struct clk_pll *pll = container_of(clk, struct clk_pll, clk);
+	struct clk_pll *pll = container_of(hw, struct clk_pll, hw);
 	unsigned long divf, divq, vco_freq, reg;
 	unsigned long bypass;
 
@@ -90,24 +90,24 @@ static struct clk *socfpga_pll_clk(struct device_node *node)
 	if (!pll->parent)
 		return ERR_PTR(-EINVAL);
 
-	pll->clk.parent_names = &pll->parent;
-	pll->clk.num_parents = 1;
-	pll->clk.name = xstrdup(node->name);
-	pll->clk.ops = &clk_pll_ops;
+	pll->hw.clk.parent_names = &pll->parent;
+	pll->hw.clk.num_parents = 1;
+	pll->hw.clk.name = xstrdup(node->name);
+	pll->hw.clk.ops = &clk_pll_ops;
 
 	of_property_read_u32(node, "reg", &pll->regofs);
 
-	ret = clk_register(&pll->clk);
+	ret = bclk_register(&pll->hw.clk);
 	if (ret) {
 		free(pll);
 		return ERR_PTR(ret);
 	}
 
-	return &pll->clk;
+	return &pll->hw.clk;
 }
 
 struct clk_periph {
-	struct clk clk;
+	struct clk_hw hw;
 	const char *parent;
 	unsigned regofs;
 	unsigned int fixed_div;
@@ -116,10 +116,10 @@ struct clk_periph {
 	unsigned int shift;
 };
 
-static unsigned long clk_periph_recalc_rate(struct clk *clk,
+static unsigned long clk_periph_recalc_rate(struct clk_hw *hw,
 		unsigned long parent_rate)
 {
-	struct clk_periph *periph = container_of(clk, struct clk_periph, clk);
+	struct clk_periph *periph = container_of(hw, struct clk_periph, hw);
 	u32 div, val;
 
 	if (periph->fixed_div) {
@@ -152,10 +152,10 @@ static struct clk *socfpga_periph_clk(struct device_node *node)
 	if (!periph->parent)
 		return ERR_PTR(-EINVAL);
 
-	periph->clk.parent_names = &periph->parent;
-	periph->clk.num_parents = 1;
-	periph->clk.name = xstrdup(node->name);
-	periph->clk.ops = &clk_periph_ops;
+	periph->hw.clk.parent_names = &periph->parent;
+	periph->hw.clk.num_parents = 1;
+	periph->hw.clk.name = xstrdup(node->name);
+	periph->hw.clk.ops = &clk_periph_ops;
 
 	ret = of_property_read_u32_array(node, "div-reg", div_reg, 3);
 	if (!ret) {
@@ -169,17 +169,17 @@ static struct clk *socfpga_periph_clk(struct device_node *node)
 	of_property_read_u32(node, "reg", &periph->regofs);
 	of_property_read_u32(node, "fixed-divider", &periph->fixed_div);
 
-	ret = clk_register(&periph->clk);
+	ret = bclk_register(&periph->hw.clk);
 	if (ret) {
 		free(periph);
 		return ERR_PTR(ret);
 	}
 
-	return &periph->clk;
+	return &periph->hw.clk;
 }
 
 struct clk_socfpga {
-	struct clk clk;
+	struct clk_hw hw;
 	const char *parent;
 	void __iomem *reg;
 	void __iomem *div_reg;
@@ -190,9 +190,9 @@ struct clk_socfpga {
 	const char *parent_names[SOCFGPA_MAX_PARENTS];
 };
 
-static int clk_socfpga_enable(struct clk *clk)
+static int clk_socfpga_enable(struct clk_hw *hw)
 {
-	struct clk_socfpga *cs = container_of(clk, struct clk_socfpga, clk);
+	struct clk_socfpga *cs = container_of(hw, struct clk_socfpga, hw);
 	u32 val;
 
 	val = readl(cs->reg);
@@ -202,9 +202,9 @@ static int clk_socfpga_enable(struct clk *clk)
 	return 0;
 }
 
-static void clk_socfpga_disable(struct clk *clk)
+static void clk_socfpga_disable(struct clk_hw *hw)
 {
-	struct clk_socfpga *cs = container_of(clk, struct clk_socfpga, clk);
+	struct clk_socfpga *cs = container_of(hw, struct clk_socfpga, hw);
 	u32 val;
 
 	val = readl(cs->reg);
@@ -212,9 +212,9 @@ static void clk_socfpga_disable(struct clk *clk)
 	writel(val, cs->reg);
 }
 
-static int clk_socfpga_is_enabled(struct clk *clk)
+static int clk_socfpga_is_enabled(struct clk_hw *hw)
 {
-	struct clk_socfpga *cs = container_of(clk, struct clk_socfpga, clk);
+	struct clk_socfpga *cs = container_of(hw, struct clk_socfpga, hw);
 	u32 val;
 
 	val = readl(cs->reg);
@@ -225,10 +225,10 @@ static int clk_socfpga_is_enabled(struct clk *clk)
 		return 0;
 }
 
-static unsigned long clk_socfpga_recalc_rate(struct clk *clk,
+static unsigned long clk_socfpga_recalc_rate(struct clk_hw *hw,
 	unsigned long parent_rate)
 {
-	struct clk_socfpga *cs = container_of(clk, struct clk_socfpga, clk);
+	struct clk_socfpga *cs = container_of(hw, struct clk_socfpga, hw);
 	u32 div = 1, val;
 
 	if (cs->fixed_div) {
@@ -236,7 +236,7 @@ static unsigned long clk_socfpga_recalc_rate(struct clk *clk,
 	} else if (cs->div_reg) {
 		val = readl(cs->div_reg) >> cs->shift;
 		val &= div_mask(cs->width);
-		if (streq(clk->name, SOCFPGA_DB_CLK))
+		if (streq(clk_hw_get_name(hw), SOCFPGA_DB_CLK))
 			div = val + 1;
 		else
 			div = (1 << val);
@@ -245,8 +245,9 @@ static unsigned long clk_socfpga_recalc_rate(struct clk *clk,
 	return parent_rate / div;
 }
 
-static int clk_socfpga_get_parent(struct clk *clk)
+static int clk_socfpga_get_parent(struct clk_hw *hw)
 {
+	struct clk *clk = clk_hw_to_clk(hw);
 	u32 perpll_src;
 	u32 l4_src;
 
@@ -270,8 +271,9 @@ static int clk_socfpga_get_parent(struct clk *clk)
 	return (perpll_src >> 4) & 3;
 }
 
-static int clk_socfpga_set_parent(struct clk *clk, u8 parent)
+static int clk_socfpga_set_parent(struct clk_hw *hw, u8 parent)
 {
+	struct clk *clk = clk_hw_to_clk(hw);
 	u32 src_reg;
 
 	if (streq(clk->name, SOCFPGA_L4_MP_CLK)) {
@@ -351,18 +353,18 @@ static struct clk *socfpga_gate_clk(struct device_node *node)
 			break;
 	}
 
-	cs->clk.parent_names = cs->parent_names;
-	cs->clk.num_parents = i;
-	cs->clk.name = xstrdup(node->name);
-	cs->clk.ops = &clk_socfpga_ops;
+	cs->hw.clk.parent_names = cs->parent_names;
+	cs->hw.clk.num_parents = i;
+	cs->hw.clk.name = xstrdup(node->name);
+	cs->hw.clk.ops = &clk_socfpga_ops;
 
-	ret = clk_register(&cs->clk);
+	ret = bclk_register(&cs->hw.clk);
 	if (ret) {
 		free(cs);
 		return ERR_PTR(ret);
 	}
 
-	return &cs->clk;
+	return &cs->hw.clk;
 }
 
 static void socfpga_register_clocks(struct device_d *dev, struct device_node *node)

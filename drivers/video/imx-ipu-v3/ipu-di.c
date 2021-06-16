@@ -167,9 +167,10 @@ static int ipu_di_clk_calc_div(unsigned long inrate, unsigned long outrate)
 	return div;
 }
 
-static unsigned long clk_di_recalc_rate(struct clk *clk,
+static unsigned long clk_di_recalc_rate(struct clk_hw *hw,
 		unsigned long parent_rate)
 {
+	struct clk *clk = clk_hw_to_clk(hw);
 	struct ipu_di *di = container_of(clk, struct ipu_di, clk_di_pixel);
 	unsigned long outrate;
 	u32 div = ipu_di_read(di, DI_BS_CLKGEN0);
@@ -182,9 +183,10 @@ static unsigned long clk_di_recalc_rate(struct clk *clk,
 	return outrate;
 }
 
-static long clk_di_round_rate(struct clk *clk, unsigned long rate,
+static long clk_di_round_rate(struct clk_hw *hw, unsigned long rate,
 				unsigned long *prate)
 {
+	struct clk *clk = clk_hw_to_clk(hw);
 	struct ipu_di *di = container_of(clk, struct ipu_di, clk_di_pixel);
 	unsigned long outrate;
 	int div;
@@ -206,9 +208,10 @@ static long clk_di_round_rate(struct clk *clk, unsigned long rate,
 	return outrate;
 }
 
-static int clk_di_set_rate(struct clk *clk, unsigned long rate,
+static int clk_di_set_rate(struct clk_hw *hw, unsigned long rate,
 				unsigned long parent_rate)
 {
+	struct clk *clk = clk_hw_to_clk(hw);
 	struct ipu_di *di = container_of(clk, struct ipu_di, clk_di_pixel);
 	int div;
 	u32 clkgen0;
@@ -224,8 +227,9 @@ static int clk_di_set_rate(struct clk *clk, unsigned long rate,
 	return 0;
 }
 
-static int clk_di_get_parent(struct clk *clk)
+static int clk_di_get_parent(struct clk_hw *hw)
 {
+	struct clk *clk = clk_hw_to_clk(hw);
 	struct ipu_di *di = container_of(clk, struct ipu_di, clk_di_pixel);
 	u32 val;
 
@@ -234,8 +238,9 @@ static int clk_di_get_parent(struct clk *clk)
 	return val & DI_GEN_DI_CLK_EXT ? 1 : 0;
 }
 
-static int clk_di_set_parent(struct clk *clk, u8 index)
+static int clk_di_set_parent(struct clk_hw *hw, u8 index)
 {
+	struct clk *clk = clk_hw_to_clk(hw);
 	struct ipu_di *di = container_of(clk, struct ipu_di, clk_di_pixel);
 	u32 val;
 
@@ -740,7 +745,7 @@ int ipu_di_init(struct ipu_soc *ipu, struct device_d *dev, int id,
 	di->clk_di_pixel.ops = &clk_di_ops;
 	di->clk_di_pixel.num_parents = 2;
 	di->clk_di_pixel.name = di->clk_name;
-	ret = clk_register(&di->clk_di_pixel);
+	ret = bclk_register(&di->clk_di_pixel);
 	if (ret)
 		goto failed_clk_register;
 

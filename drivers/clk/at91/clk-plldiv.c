@@ -14,18 +14,18 @@
 
 #include "pmc.h"
 
-#define to_clk_plldiv(hw) container_of(clk, struct clk_plldiv, clk)
+#define to_clk_plldiv(_hw) container_of(_hw, struct clk_plldiv, hw)
 
 struct clk_plldiv {
-	struct clk clk;
+	struct clk_hw hw;
 	struct regmap *regmap;
 	const char *parent;
 };
 
-static unsigned long clk_plldiv_recalc_rate(struct clk *clk,
+static unsigned long clk_plldiv_recalc_rate(struct clk_hw *hw,
 					    unsigned long parent_rate)
 {
-	struct clk_plldiv *plldiv = to_clk_plldiv(clk);
+	struct clk_plldiv *plldiv = to_clk_plldiv(hw);
 	unsigned int mckr;
 
 	regmap_read(plldiv->regmap, AT91_PMC_MCKR, &mckr);
@@ -36,7 +36,7 @@ static unsigned long clk_plldiv_recalc_rate(struct clk *clk,
 	return parent_rate;
 }
 
-static long clk_plldiv_round_rate(struct clk *clk, unsigned long rate,
+static long clk_plldiv_round_rate(struct clk_hw *hw, unsigned long rate,
 				  unsigned long *parent_rate)
 {
 	unsigned long div;
@@ -53,10 +53,10 @@ static long clk_plldiv_round_rate(struct clk *clk, unsigned long rate,
 	return *parent_rate;
 }
 
-static int clk_plldiv_set_rate(struct clk *clk, unsigned long rate,
+static int clk_plldiv_set_rate(struct clk_hw *hw, unsigned long rate,
 			       unsigned long parent_rate)
 {
-	struct clk_plldiv *plldiv = to_clk_plldiv(clk);
+	struct clk_plldiv *plldiv = to_clk_plldiv(hw);
 
 	if ((parent_rate != rate) && (parent_rate / 2 != rate))
 		return -EINVAL;
@@ -82,24 +82,24 @@ at91_clk_register_plldiv(struct regmap *regmap, const char *name,
 
 	plldiv = xzalloc(sizeof(*plldiv));
 
-	plldiv->clk.name = name;
-	plldiv->clk.ops  = &plldiv_ops;
+	plldiv->hw.clk.name = name;
+	plldiv->hw.clk.ops  = &plldiv_ops;
 
 	if (parent_name) {
 		plldiv->parent = parent_name;
-		plldiv->clk.parent_names = &plldiv->parent;
-		plldiv->clk.num_parents = 1;
+		plldiv->hw.clk.parent_names = &plldiv->parent;
+		plldiv->hw.clk.num_parents = 1;
 	}
 
 	/* init.flags = CLK_SET_RATE_GATE; */
 
 	plldiv->regmap = regmap;
 
-	ret = clk_register(&plldiv->clk);
+	ret = bclk_register(&plldiv->hw.clk);
 	if (ret) {
 		kfree(plldiv);
 		return ERR_PTR(ret);
 	}
 
-	return &plldiv->clk;
+	return &plldiv->hw.clk;
 }

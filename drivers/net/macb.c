@@ -52,6 +52,10 @@
 #define TX_RING_BYTES		(sizeof(struct macb_dma_desc) * TX_RING_SIZE)
 #define GEM_Q1_DESC_BYTES	(sizeof(struct macb_dma_desc) * GEM_Q1_DESCS)
 
+struct macb_config {
+	int (*txclk_init)(struct device_d *dev, struct clk **tx_clk);
+};
+
 struct macb_device {
 	void			__iomem *regs;
 
@@ -666,12 +670,115 @@ static void macb_init_rx_buffer_size(struct macb_device *bp, size_t size)
 		   size, bp->rx_buffer_size);
 }
 
+#ifdef CONFIG_COMMON_CLK
+/* This structure is only used for MACB on SiFive FU540 devices */
+struct sifive_fu540_macb_mgmt {
+	void __iomem *reg;
+	unsigned long rate;
+	struct clk clk;
+};
+
+static struct sifive_fu540_macb_mgmt *mgmt;
+
+static unsigned long fu540_macb_tx_recalc_rate(struct clk_hw *hw,
+					       unsigned long parent_rate)
+{
+	return mgmt->rate;
+}
+
+static long fu540_macb_tx_round_rate(struct clk_hw *hw, unsigned long rate,
+				     unsigned long *parent_rate)
+{
+	if (WARN_ON(rate < 2500000))
+		return 2500000;
+	else if (rate == 2500000)
+		return 2500000;
+	else if (WARN_ON(rate < 13750000))
+		return 2500000;
+	else if (WARN_ON(rate < 25000000))
+		return 25000000;
+	else if (rate == 25000000)
+		return 25000000;
+	else if (WARN_ON(rate < 75000000))
+		return 25000000;
+	else if (WARN_ON(rate < 125000000))
+		return 125000000;
+	else if (rate == 125000000)
+		return 125000000;
+
+	WARN_ON(rate > 125000000);
+
+	return 125000000;
+}
+
+static int fu540_macb_tx_set_rate(struct clk_hw *hw, unsigned long rate,
+				  unsigned long parent_rate)
+{
+	rate = fu540_macb_tx_round_rate(hw, rate, &parent_rate);
+	if (rate != 125000000)
+		iowrite32(1, mgmt->reg);
+	else
+		iowrite32(0, mgmt->reg);
+	mgmt->rate = rate;
+
+	return 0;
+}
+
+static const struct clk_ops fu540_c000_ops = {
+	.recalc_rate = fu540_macb_tx_recalc_rate,
+	.round_rate = fu540_macb_tx_round_rate,
+	.set_rate = fu540_macb_tx_set_rate,
+};
+
+static int fu540_c000_txclk_init(struct device_d *dev, struct clk **tx_clk)
+{
+	struct clk *clk;
+	struct resource *res;
+	int err = 0;
+
+	mgmt = xzalloc(sizeof(*mgmt));
+
+	res = dev_request_mem_resource(dev, 1);
+	if (IS_ERR(res))
+		return PTR_ERR(res);
+
+	mgmt->reg = IOMEM(res->start);
+
+	clk = &mgmt->clk;
+
+	clk->name = "sifive-gemgxl-mgmt";
+	clk->ops = &fu540_c000_ops;
+
+	err = bclk_register(&mgmt->clk);
+	if (err)
+		return err;
+
+	*tx_clk = &mgmt->clk;
+
+	err = clk_enable(*tx_clk);
+	if (err) {
+		dev_err(dev, "failed to enable tx_clk (%u)\n", err);
+		*tx_clk = NULL;
+		return err;
+	}
+
+	dev_info(dev, "Registered clk switch '%s'\n", clk->name);
+	return 0;
+}
+#else
+static int fu540_c000_txclk_init(struct device_d *dev, struct clk **tx_clk)
+{
+	return -ENOSYS;
+}
+#endif
+
 static int macb_probe(struct device_d *dev)
 {
 	struct resource *iores;
 	struct eth_device *edev;
 	struct macb_device *macb;
 	const char *pclk_name, *hclk_name;
+	const struct macb_config *config = NULL;
 	u32 ncfgr;
 
 	macb = xzalloc(sizeof(*macb));
@@ -725,6 +832,8 @@ static int macb_probe(struct device_d *dev)
 		macb->phy_addr = -1;
 		pclk_name = "pclk";
 		hclk_name = "hclk";
+
+		config = device_get_match_data(dev);
 	} else {
 		dev_err(dev, "macb: no platform_data\n");
 		return -ENODEV;
@@ -767,6 +876,12 @@ static int macb_probe(struct device_d *dev)
 	if (!IS_ERR(macb->rxclk))
 		clk_enable(macb->rxclk);
 
+	if (config) {
+		int ret = config->txclk_init(dev, &macb->txclk);
+		if (ret)
+			return ret;
+	}
+
 	macb->is_gem = read_is_gem(macb);
 
 	if (macb_is_gem(macb))
@@ -808,12 +923,17 @@ static void macb_remove(struct device_d *dev)
 	macb_halt(&macb->netdev);
 }
 
+static const struct macb_config fu540_c000_config = {
+	.txclk_init = fu540_c000_txclk_init,
+};
+
 static const struct of_device_id macb_dt_ids[] = {
 	{ .compatible = "cdns,at91sam9260-macb",},
 	{ .compatible = "atmel,sama5d2-gem",},
 	{ .compatible = "atmel,sama5d3-gem",},
 	{ .compatible = "cdns,zynq-gem",},
 	{ .compatible = "cdns,zynqmp-gem",},
+	{ .compatible = "sifive,fu540-c000-gem", .data = &fu540_c000_config },
 	{ /* sentinel */ }
 };
 

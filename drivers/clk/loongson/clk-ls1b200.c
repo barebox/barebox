@@ -35,21 +35,21 @@ static struct clk *clks[LS1B_CLK_END];
 static struct clk_onecell_data clk_data;
 
 struct clk_ls1b200 {
-	struct clk clk;
+	struct clk_hw hw;
 	void __iomem *base;
 	int div_shift;
 	int div_mask;
 	const char *parent;
 };
 
-static unsigned long clk_ls1b200_recalc_rate(struct clk *clk, unsigned long parent_rate)
+static unsigned long clk_ls1b200_recalc_rate(struct clk_hw *hw, unsigned long parent_rate)
 {
 	int n;
 	unsigned long rate;
 	int pll_freq;
 	struct clk_ls1b200 *ls1bclk;
 
-	ls1bclk = container_of(clk, struct clk_ls1b200, clk);
+	ls1bclk = container_of(hw, struct clk_ls1b200, hw);
 	pll_freq = __raw_readl(ls1bclk->base);
 
 	n  = 12 * 1024;
@@ -77,14 +77,14 @@ static struct clk *clk_ls1b200(const char *name, const char *parent,
 	f->div_shift = div_shift;
 	f->div_mask = div_mask;
 
-	f->clk.ops = &clk_ls1b200_ops;
-	f->clk.name = name;
-	f->clk.parent_names = &f->parent;
-	f->clk.num_parents = 1;
+	f->hw.clk.ops = &clk_ls1b200_ops;
+	f->hw.clk.name = name;
+	f->hw.clk.parent_names = &f->parent;
+	f->hw.clk.num_parents = 1;
 
-	clk_register(&f->clk);
+	bclk_register(&f->hw.clk);
 
-	return &f->clk;
+	return &f->hw.clk;
 }
 
 static const char * const cpu_mux[] = {"cpu_div", "oscillator", };

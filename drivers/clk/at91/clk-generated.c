@@ -23,7 +23,7 @@
 #define GCK_INDEX_DT_AUDIO_PLL	5
 
 struct clk_generated {
-	struct clk hw;
+	struct clk_hw hw;
 	struct regmap *regmap;
 	struct clk_range range;
 	u32 id;
@@ -33,10 +33,10 @@ struct clk_generated {
 	bool audio_pll_allowed;
 };
 
-#define to_clk_generated(hw) \
-	container_of(hw, struct clk_generated, hw)
+#define to_clk_generated(_hw) \
+	container_of(_hw, struct clk_generated, hw)
 
-static int clk_generated_enable(struct clk *hw)
+static int clk_generated_enable(struct clk_hw *hw)
 {
 	struct clk_generated *gck = to_clk_generated(hw);
 
@@ -55,7 +55,7 @@ static int clk_generated_enable(struct clk *hw)
 	return 0;
 }
 
-static void clk_generated_disable(struct clk *hw)
+static void clk_generated_disable(struct clk_hw *hw)
 {
 	struct clk_generated *gck = to_clk_generated(hw);
 
@@ -66,7 +66,7 @@ static void clk_generated_disable(struct clk *hw)
 			   gck->layout->cmd);
 }
 
-static int clk_generated_is_enabled(struct clk *hw)
+static int clk_generated_is_enabled(struct clk_hw *hw)
 {
 	struct clk_generated *gck = to_clk_generated(hw);
 	unsigned int status;
@@ -79,7 +79,7 @@ static int clk_generated_is_enabled(struct clk *hw)
 }
 
 static unsigned long
-clk_generated_recalc_rate(struct clk *hw,
+clk_generated_recalc_rate(struct clk_hw *hw,
 			  unsigned long parent_rate)
 {
 	struct clk_generated *gck = to_clk_generated(hw);
@@ -88,18 +88,18 @@ clk_generated_recalc_rate(struct clk *hw,
 }
 
 /* No modification of hardware as we have the flag CLK_SET_PARENT_GATE set */
-static int clk_generated_set_parent(struct clk *hw, u8 index)
+static int clk_generated_set_parent(struct clk_hw *hw, u8 index)
 {
 	struct clk_generated *gck = to_clk_generated(hw);
 
-	if (index >= clk_get_num_parents(hw))
+	if (index >= clk_get_num_parents(clk_hw_to_clk(hw)))
 		return -EINVAL;
 
 	gck->parent_id = index;
 	return 0;
 }
 
-static int clk_generated_get_parent(struct clk *hw)
+static int clk_generated_get_parent(struct clk_hw *hw)
 {
 	struct clk_generated *gck = to_clk_generated(hw);
 
@@ -107,7 +107,7 @@ static int clk_generated_get_parent(struct clk *hw)
 }
 
 /* No modification of hardware as we have the flag CLK_SET_RATE_GATE set */
-static int clk_generated_set_rate(struct clk *hw,
+static int clk_generated_set_rate(struct clk_hw *hw,
 				  unsigned long rate,
 				  unsigned long parent_rate)
 {
@@ -168,7 +168,7 @@ at91_clk_register_generated(struct regmap *regmap,
 {
 	size_t parents_array_size;
 	struct clk_generated *gck;
-	struct clk *hw;
+	struct clk *clk;
 	int ret;
 
 	gck = kzalloc(sizeof(*gck), GFP_KERNEL);
@@ -176,12 +176,12 @@ at91_clk_register_generated(struct regmap *regmap,
 		return ERR_PTR(-ENOMEM);
 
 	gck->id = id;
-	gck->hw.name = name;
-	gck->hw.ops = &generated_ops;
+	gck->hw.clk.name = name;
+	gck->hw.clk.ops = &generated_ops;
 
-	parents_array_size = num_parents * sizeof(gck->hw.parent_names[0]);
-	gck->hw.parent_names = xmemdup(parent_names, parents_array_size);
-	gck->hw.num_parents = num_parents;
+	parents_array_size = num_parents * sizeof(gck->hw.clk.parent_names[0]);
+	gck->hw.clk.parent_names = xmemdup(parent_names, parents_array_size);
+	gck->hw.clk.num_parents = num_parents;
 
 	/* gck->hw.flags = CLK_SET_RATE_GATE | CLK_SET_PARENT_GATE | CLK_SET_PARENT; */
 	gck->regmap = regmap;
@@ -190,14 +190,14 @@ at91_clk_register_generated(struct regmap *regmap,
 	gck->layout = layout;
 
 	clk_generated_startup(gck);
-	hw = &gck->hw;
-	ret = clk_register(&gck->hw);
+	clk = &gck->hw.clk;
+	ret = bclk_register(&gck->hw.clk);
 	if (ret) {
 		kfree(gck);
-		hw = ERR_PTR(ret);
+		clk = ERR_PTR(ret);
 	} else {
 		pmc_register_id(id);
 	}
 
-	return hw;
+	return clk;
 }

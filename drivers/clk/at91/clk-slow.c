@@ -18,16 +18,16 @@
 #include "pmc.h"
 
 struct clk_sam9260_slow {
-	struct clk clk;
+	struct clk_hw hw;
 	struct regmap *regmap;
 	const char *parent_names[];
 };
 
-#define to_clk_sam9260_slow(clk) container_of(clk, struct clk_sam9260_slow, clk)
+#define to_clk_sam9260_slow(_hw) container_of(_hw, struct clk_sam9260_slow, hw)
 
-static int clk_sam9260_slow_get_parent(struct clk *clk)
+static int clk_sam9260_slow_get_parent(struct clk_hw *hw)
 {
-	struct clk_sam9260_slow *slowck = to_clk_sam9260_slow(clk);
+	struct clk_sam9260_slow *slowck = to_clk_sam9260_slow(hw);
 	unsigned int status;
 
 	regmap_read(slowck->regmap, AT91_PMC_SR, &status);
@@ -55,19 +55,19 @@ at91_clk_register_sam9260_slow(struct regmap *regmap,
 		return ERR_PTR(-EINVAL);
 
 	slowck = xzalloc(struct_size(slowck, parent_names, num_parents));
-	slowck->clk.name = name;
-	slowck->clk.ops = &sam9260_slow_ops;
+	slowck->hw.clk.name = name;
+	slowck->hw.clk.ops = &sam9260_slow_ops;
 	memcpy(slowck->parent_names, parent_names,
 	       num_parents * sizeof(slowck->parent_names[0]));
-	slowck->clk.parent_names = slowck->parent_names;
-	slowck->clk.num_parents = num_parents;
+	slowck->hw.clk.parent_names = slowck->parent_names;
+	slowck->hw.clk.num_parents = num_parents;
 	slowck->regmap = regmap;
 
-	ret = clk_register(&slowck->clk);
+	ret = bclk_register(&slowck->hw.clk);
 	if (ret) {
 		kfree(slowck);
 		return ERR_PTR(ret);
 	}
 
-	return &slowck->clk;
+	return &slowck->hw.clk;
 }

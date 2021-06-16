@@ -27,37 +27,37 @@
  * register has SET, CLR and TOG registers at offset 0x4 0x8 and 0xc.
  */
 struct clk_pfd {
-	struct clk	clk;
+	struct clk_hw	hw;
 	void __iomem	*reg;
 	u8		idx;
 	const char	*parent;
 };
 
-#define to_clk_pfd(_clk) container_of(_clk, struct clk_pfd, clk)
+#define to_clk_pfd(_hw) container_of(_hw, struct clk_pfd, hw)
 
 #define SET	0x4
 #define CLR	0x8
 #define OTG	0xc
 
-static int clk_pfd_enable(struct clk *clk)
+static int clk_pfd_enable(struct clk_hw *hw)
 {
-	struct clk_pfd *pfd = to_clk_pfd(clk);
+	struct clk_pfd *pfd = to_clk_pfd(hw);
 	writel(1 << ((pfd->idx + 1) * 8 - 1), pfd->reg + CLR);
 
 	return 0;
 }
 
-static void clk_pfd_disable(struct clk *clk)
+static void clk_pfd_disable(struct clk_hw *hw)
 {
-	struct clk_pfd *pfd = to_clk_pfd(clk);
+	struct clk_pfd *pfd = to_clk_pfd(hw);
 
 	writel(1 << ((pfd->idx + 1) * 8 - 1), pfd->reg + SET);
 }
 
-static unsigned long clk_pfd_recalc_rate(struct clk *clk,
+static unsigned long clk_pfd_recalc_rate(struct clk_hw *hw,
 					 unsigned long parent_rate)
 {
-	struct clk_pfd *pfd = to_clk_pfd(clk);
+	struct clk_pfd *pfd = to_clk_pfd(hw);
 	u64 tmp = parent_rate;
 	u8 frac = (readl(pfd->reg) >> (pfd->idx * 8)) & 0x3f;
 
@@ -67,7 +67,7 @@ static unsigned long clk_pfd_recalc_rate(struct clk *clk,
 	return tmp;
 }
 
-static long clk_pfd_round_rate(struct clk *clk, unsigned long rate,
+static long clk_pfd_round_rate(struct clk_hw *hw, unsigned long rate,
 			       unsigned long *prate)
 {
 	u64 tmp = *prate;
@@ -87,10 +87,10 @@ static long clk_pfd_round_rate(struct clk *clk, unsigned long rate,
 	return tmp;
 }
 
-static int clk_pfd_set_rate(struct clk *clk, unsigned long rate,
+static int clk_pfd_set_rate(struct clk_hw *hw, unsigned long rate,
 		unsigned long parent_rate)
 {
-	struct clk_pfd *pfd = to_clk_pfd(clk);
+	struct clk_pfd *pfd = to_clk_pfd(hw);
 	u64 tmp = parent_rate;
 	u8 frac;
 
@@ -127,16 +127,16 @@ struct clk *imx_clk_pfd(const char *name, const char *parent,
 	pfd->reg = reg;
 	pfd->idx = idx;
 	pfd->parent = parent;
-	pfd->clk.name = name;
-	pfd->clk.ops = &clk_pfd_ops;
-	pfd->clk.parent_names = &pfd->parent;
-	pfd->clk.num_parents = 1;
+	pfd->hw.clk.name = name;
+	pfd->hw.clk.ops = &clk_pfd_ops;
+	pfd->hw.clk.parent_names = &pfd->parent;
+	pfd->hw.clk.num_parents = 1;
 
-	ret = clk_register(&pfd->clk);
+	ret = bclk_register(&pfd->hw.clk);
 	if (ret) {
 		free(pfd);
 		return ERR_PTR(ret);
 	}
 
-	return &pfd->clk;
+	return &pfd->hw.clk;
 }

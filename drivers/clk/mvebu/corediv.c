@@ -51,7 +51,7 @@ struct clk_corediv_soc_desc {
  * existing in the current SoC.
  */
 struct clk_corediv {
-	struct clk clk;
+	struct clk_hw hw;
 	void __iomem *reg;
 	const struct clk_corediv_desc *desc;
 	const struct clk_corediv_soc_desc *soc_desc;
@@ -70,11 +70,11 @@ static const struct clk_corediv_desc mvebu_corediv_desc[] = {
 
 #define CORE_CLK_DIV_RATIO_MASK	0xff
 
-#define to_corediv_clk(p) container_of(p, struct clk_corediv, clk)
+#define to_corediv_clk(p) container_of(p, struct clk_corediv, hw)
 
-static int clk_corediv_is_enabled(struct clk *clk)
+static int clk_corediv_is_enabled(struct clk_hw *hw)
 {
-	struct clk_corediv *corediv = to_corediv_clk(clk);
+	struct clk_corediv *corediv = to_corediv_clk(hw);
 	const struct clk_corediv_soc_desc *soc_desc = corediv->soc_desc;
 	const struct clk_corediv_desc *desc = corediv->desc;
 	u32 enable_mask = BIT(desc->fieldbit) << soc_desc->enable_bit_offset;
@@ -82,9 +82,9 @@ static int clk_corediv_is_enabled(struct clk *clk)
 	return !!(readl(corediv->reg) & enable_mask);
 }
 
-static int clk_corediv_enable(struct clk *clk)
+static int clk_corediv_enable(struct clk_hw *hw)
 {
-	struct clk_corediv *corediv = to_corediv_clk(clk);
+	struct clk_corediv *corediv = to_corediv_clk(hw);
 	const struct clk_corediv_soc_desc *soc_desc = corediv->soc_desc;
 	const struct clk_corediv_desc *desc = corediv->desc;
 	u32 reg;
@@ -96,9 +96,9 @@ static int clk_corediv_enable(struct clk *clk)
 	return 0;
 }
 
-static void clk_corediv_disable(struct clk *clk)
+static void clk_corediv_disable(struct clk_hw *hw)
 {
-	struct clk_corediv *corediv = to_corediv_clk(clk);
+	struct clk_corediv *corediv = to_corediv_clk(hw);
 	const struct clk_corediv_soc_desc *soc_desc = corediv->soc_desc;
 	const struct clk_corediv_desc *desc = corediv->desc;
 	u32 reg;
@@ -108,10 +108,10 @@ static void clk_corediv_disable(struct clk *clk)
 	writel(reg, corediv->reg);
 }
 
-static unsigned long clk_corediv_recalc_rate(struct clk *clk,
+static unsigned long clk_corediv_recalc_rate(struct clk_hw *hw,
 					     unsigned long parent_rate)
 {
-	struct clk_corediv *corediv = to_corediv_clk(clk);
+	struct clk_corediv *corediv = to_corediv_clk(hw);
 	const struct clk_corediv_soc_desc *soc_desc = corediv->soc_desc;
 	const struct clk_corediv_desc *desc = corediv->desc;
 	u32 reg, div;
@@ -121,7 +121,7 @@ static unsigned long clk_corediv_recalc_rate(struct clk *clk,
 	return parent_rate / div;
 }
 
-static long clk_corediv_round_rate(struct clk *clk, unsigned long rate,
+static long clk_corediv_round_rate(struct clk_hw *hw, unsigned long rate,
 				   unsigned long *parent_rate)
 {
 	/* Valid ratio are 1:4, 1:5, 1:6 and 1:8 */
@@ -136,10 +136,10 @@ static long clk_corediv_round_rate(struct clk *clk, unsigned long rate,
 	return *parent_rate / div;
 }
 
-static int clk_corediv_set_rate(struct clk *clk, unsigned long rate,
+static int clk_corediv_set_rate(struct clk_hw *hw, unsigned long rate,
 				unsigned long parent_rate)
 {
-	struct clk_corediv *corediv = to_corediv_clk(clk);
+	struct clk_corediv *corediv = to_corediv_clk(hw);
 	const struct clk_corediv_soc_desc *soc_desc = corediv->soc_desc;
 	const struct clk_corediv_desc *desc = corediv->desc;
 	u32 reg, div;
@@ -225,7 +225,7 @@ static int mvebu_corediv_clk_probe(struct device_d *dev)
 
 	for (n = 0; n < clk_data.clk_num; n++) {
 		const char *clk_name;
-		struct clk *clk = &corediv->clk;
+		struct clk *clk = &corediv->hw.clk;
 
 		if (of_property_read_string_index(np,
 				"clock-output-names", n, &clk_name)) {
@@ -242,7 +242,7 @@ static int mvebu_corediv_clk_probe(struct device_d *dev)
 		corediv->desc = &soc_desc->descs[n];
 		corediv->reg = base;
 		clk_data.clks[n] = clk;
-		WARN_ON(IS_ERR_VALUE(clk_register(clk)));
+		WARN_ON(IS_ERR_VALUE(bclk_register(clk)));
 	}
 
 	return of_clk_add_provider(np, of_clk_src_onecell_get, &clk_data);

@@ -16,31 +16,31 @@
 #include "clk-zynqmp.h"
 
 struct zynqmp_clk_gate {
-	struct clk clk;
+	struct clk_hw hw;
 	unsigned int clk_id;
 	const char *parent;
 	const struct zynqmp_eemi_ops *ops;
 };
 
-#define to_zynqmp_clk_gate(_hw) container_of(_hw, struct zynqmp_clk_gate, clk)
+#define to_zynqmp_clk_gate(_hw) container_of(_hw, struct zynqmp_clk_gate, hw)
 
-static int zynqmp_clk_gate_enable(struct clk *clk)
+static int zynqmp_clk_gate_enable(struct clk_hw *hw)
 {
-	struct zynqmp_clk_gate *gate = to_zynqmp_clk_gate(clk);
+	struct zynqmp_clk_gate *gate = to_zynqmp_clk_gate(hw);
 
 	return gate->ops->clock_enable(gate->clk_id);
 }
 
-static void zynqmp_clk_gate_disable(struct clk *clk)
+static void zynqmp_clk_gate_disable(struct clk_hw *hw)
 {
-	struct zynqmp_clk_gate *gate = to_zynqmp_clk_gate(clk);
+	struct zynqmp_clk_gate *gate = to_zynqmp_clk_gate(hw);
 
 	gate->ops->clock_disable(gate->clk_id);
 }
 
-static int zynqmp_clk_gate_is_enabled(struct clk *clk)
+static int zynqmp_clk_gate_is_enabled(struct clk_hw *hw)
 {
-	struct zynqmp_clk_gate *gate = to_zynqmp_clk_gate(clk);
+	struct zynqmp_clk_gate *gate = to_zynqmp_clk_gate(hw);
 	u32 state;
 	int ret;
 	const struct zynqmp_eemi_ops *eemi_ops = zynqmp_pm_get_eemi_ops();
@@ -77,17 +77,17 @@ struct clk *zynqmp_clk_register_gate(const char *name,
 	gate->ops = zynqmp_pm_get_eemi_ops();
 	gate->parent = strdup(parents[0]);
 
-	gate->clk.name = strdup(name);
-	gate->clk.ops = &zynqmp_clk_gate_ops;
-	gate->clk.flags = nodes->flag | CLK_SET_RATE_PARENT;
-	gate->clk.parent_names = &gate->parent;
-	gate->clk.num_parents = 1;
+	gate->hw.clk.name = strdup(name);
+	gate->hw.clk.ops = &zynqmp_clk_gate_ops;
+	gate->hw.clk.flags = nodes->flag | CLK_SET_RATE_PARENT;
+	gate->hw.clk.parent_names = &gate->parent;
+	gate->hw.clk.num_parents = 1;
 
-	ret = clk_register(&gate->clk);
+	ret = bclk_register(&gate->hw.clk);
 	if (ret) {
 		kfree(gate);
 		return ERR_PTR(ret);
 	}
 
-	return &gate->clk;
+	return &gate->hw.clk;
 }

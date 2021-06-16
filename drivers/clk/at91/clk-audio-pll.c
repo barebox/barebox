@@ -57,7 +57,7 @@
 #define AUDIO_PLL_FOUT_MAX	700000000UL
 
 struct clk_audio_frac {
-	struct clk clk;
+	struct clk_hw hw;
 	struct regmap *regmap;
 	u32 fracr;
 	u8 nd;
@@ -65,7 +65,7 @@ struct clk_audio_frac {
 };
 
 struct clk_audio_pad {
-	struct clk clk;
+	struct clk_hw hw;
 	struct regmap *regmap;
 	u8 qdaudio;
 	u8 div;
@@ -73,19 +73,19 @@ struct clk_audio_pad {
 };
 
 struct clk_audio_pmc {
-	struct clk clk;
+	struct clk_hw hw;
 	struct regmap *regmap;
 	u8 qdpmc;
 	const char *parent_name;
 };
 
-#define to_clk_audio_frac(clk) container_of(clk, struct clk_audio_frac, clk)
-#define to_clk_audio_pad(clk) container_of(clk, struct clk_audio_pad, clk)
-#define to_clk_audio_pmc(clk) container_of(clk, struct clk_audio_pmc, clk)
+#define to_clk_audio_frac(_hw) container_of(_hw, struct clk_audio_frac, hw)
+#define to_clk_audio_pad(_hw) container_of(_hw, struct clk_audio_pad, hw)
+#define to_clk_audio_pmc(_hw) container_of(_hw, struct clk_audio_pmc, hw)
 
-static int clk_audio_pll_frac_enable(struct clk *clk)
+static int clk_audio_pll_frac_enable(struct clk_hw *hw)
 {
-	struct clk_audio_frac *frac = to_clk_audio_frac(clk);
+	struct clk_audio_frac *frac = to_clk_audio_frac(hw);
 
 	regmap_update_bits(frac->regmap, AT91_PMC_AUDIO_PLL0,
 			   AT91_PMC_AUDIO_PLL_RESETN, 0);
@@ -108,9 +108,9 @@ static int clk_audio_pll_frac_enable(struct clk *clk)
 	return 0;
 }
 
-static int clk_audio_pll_pad_enable(struct clk *clk)
+static int clk_audio_pll_pad_enable(struct clk_hw *hw)
 {
-	struct clk_audio_pad *apad_ck = to_clk_audio_pad(clk);
+	struct clk_audio_pad *apad_ck = to_clk_audio_pad(hw);
 
 	regmap_update_bits(apad_ck->regmap, AT91_PMC_AUDIO_PLL1,
 			   AT91_PMC_AUDIO_PLL_QDPAD_MASK,
@@ -121,9 +121,9 @@ static int clk_audio_pll_pad_enable(struct clk *clk)
 	return 0;
 }
 
-static int clk_audio_pll_pmc_enable(struct clk *clk)
+static int clk_audio_pll_pmc_enable(struct clk_hw *hw)
 {
-	struct clk_audio_pmc *apmc_ck = to_clk_audio_pmc(clk);
+	struct clk_audio_pmc *apmc_ck = to_clk_audio_pmc(hw);
 
 	regmap_update_bits(apmc_ck->regmap, AT91_PMC_AUDIO_PLL0,
 			   AT91_PMC_AUDIO_PLL_PMCEN |
@@ -133,9 +133,9 @@ static int clk_audio_pll_pmc_enable(struct clk *clk)
 	return 0;
 }
 
-static void clk_audio_pll_frac_disable(struct clk *clk)
+static void clk_audio_pll_frac_disable(struct clk_hw *hw)
 {
-	struct clk_audio_frac *frac = to_clk_audio_frac(clk);
+	struct clk_audio_frac *frac = to_clk_audio_frac(hw);
 
 	regmap_update_bits(frac->regmap, AT91_PMC_AUDIO_PLL0,
 			   AT91_PMC_AUDIO_PLL_PLLEN, 0);
@@ -144,17 +144,17 @@ static void clk_audio_pll_frac_disable(struct clk *clk)
 			   AT91_PMC_AUDIO_PLL_RESETN, 0);
 }
 
-static void clk_audio_pll_pad_disable(struct clk *clk)
+static void clk_audio_pll_pad_disable(struct clk_hw *hw)
 {
-	struct clk_audio_pad *apad_ck = to_clk_audio_pad(clk);
+	struct clk_audio_pad *apad_ck = to_clk_audio_pad(hw);
 
 	regmap_update_bits(apad_ck->regmap, AT91_PMC_AUDIO_PLL0,
 			   AT91_PMC_AUDIO_PLL_PADEN, 0);
 }
 
-static void clk_audio_pll_pmc_disable(struct clk *clk)
+static void clk_audio_pll_pmc_disable(struct clk_hw *hw)
 {
-	struct clk_audio_pmc *apmc_ck = to_clk_audio_pmc(clk);
+	struct clk_audio_pmc *apmc_ck = to_clk_audio_pmc(hw);
 
 	regmap_update_bits(apmc_ck->regmap, AT91_PMC_AUDIO_PLL0,
 			   AT91_PMC_AUDIO_PLL_PMCEN, 0);
@@ -174,10 +174,10 @@ static unsigned long clk_audio_pll_fout(unsigned long parent_rate,
 	return parent_rate * (nd + 1) + fr;
 }
 
-static unsigned long clk_audio_pll_frac_recalc_rate(struct clk *clk,
+static unsigned long clk_audio_pll_frac_recalc_rate(struct clk_hw *hw,
 						    unsigned long parent_rate)
 {
-	struct clk_audio_frac *frac = to_clk_audio_frac(clk);
+	struct clk_audio_frac *frac = to_clk_audio_frac(hw);
 	unsigned long fout;
 
 	fout = clk_audio_pll_fout(parent_rate, frac->nd, frac->fracr);
@@ -188,10 +188,10 @@ static unsigned long clk_audio_pll_frac_recalc_rate(struct clk *clk,
 	return fout;
 }
 
-static unsigned long clk_audio_pll_pad_recalc_rate(struct clk *clk,
+static unsigned long clk_audio_pll_pad_recalc_rate(struct clk_hw *hw,
 						   unsigned long parent_rate)
 {
-	struct clk_audio_pad *apad_ck = to_clk_audio_pad(clk);
+	struct clk_audio_pad *apad_ck = to_clk_audio_pad(hw);
 	unsigned long apad_rate = 0;
 
 	if (apad_ck->qdaudio && apad_ck->div)
@@ -203,10 +203,10 @@ static unsigned long clk_audio_pll_pad_recalc_rate(struct clk *clk,
 	return apad_rate;
 }
 
-static unsigned long clk_audio_pll_pmc_recalc_rate(struct clk *clk,
+static unsigned long clk_audio_pll_pmc_recalc_rate(struct clk_hw *hw,
 						   unsigned long parent_rate)
 {
-	struct clk_audio_pmc *apmc_ck = to_clk_audio_pmc(clk);
+	struct clk_audio_pmc *apmc_ck = to_clk_audio_pmc(hw);
 	unsigned long apmc_rate = 0;
 
 	apmc_rate = parent_rate / (apmc_ck->qdpmc + 1);
@@ -245,10 +245,10 @@ static int clk_audio_pll_frac_compute_frac(unsigned long rate,
 	return 0;
 }
 
-static long clk_audio_pll_pad_round_rate(struct clk *clk, unsigned long rate,
+static long clk_audio_pll_pad_round_rate(struct clk_hw *hw, unsigned long rate,
 					 unsigned long *parent_rate)
 {
-	struct clk *pclk = clk_get_parent(clk);
+	struct clk *pclk = clk_get_parent(clk_hw_to_clk(hw));
 	long best_rate = -EINVAL;
 	unsigned long best_parent_rate;
 	unsigned long tmp_qd;
@@ -296,9 +296,10 @@ static long clk_audio_pll_pad_round_rate(struct clk *clk, unsigned long rate,
 	return best_rate;
 }
 
-static long clk_audio_pll_pmc_round_rate(struct clk *clk, unsigned long rate,
+static long clk_audio_pll_pmc_round_rate(struct clk_hw *hw, unsigned long rate,
 					 unsigned long *parent_rate)
 {
+	struct clk *clk = clk_hw_to_clk(hw);
 	struct clk *pclk = clk_get_parent(clk);
 	long best_rate = -EINVAL;
 	unsigned long best_parent_rate = 0;
@@ -336,10 +337,10 @@ static long clk_audio_pll_pmc_round_rate(struct clk *clk, unsigned long rate,
 	return best_rate;
 }
 
-static int clk_audio_pll_frac_set_rate(struct clk *clk, unsigned long rate,
+static int clk_audio_pll_frac_set_rate(struct clk_hw *hw, unsigned long rate,
 				       unsigned long parent_rate)
 {
-	struct clk_audio_frac *frac = to_clk_audio_frac(clk);
+	struct clk_audio_frac *frac = to_clk_audio_frac(hw);
 	unsigned long fracr, nd;
 	int ret;
 
@@ -359,10 +360,10 @@ static int clk_audio_pll_frac_set_rate(struct clk *clk, unsigned long rate,
 	return 0;
 }
 
-static int clk_audio_pll_pad_set_rate(struct clk *clk, unsigned long rate,
+static int clk_audio_pll_pad_set_rate(struct clk_hw *hw, unsigned long rate,
 				      unsigned long parent_rate)
 {
-	struct clk_audio_pad *apad_ck = to_clk_audio_pad(clk);
+	struct clk_audio_pad *apad_ck = to_clk_audio_pad(hw);
 	u8 tmp_div;
 
 	pr_debug("A PLL/PAD: %s, rate = %lu (parent_rate = %lu)\n", __func__,
@@ -383,10 +384,10 @@ static int clk_audio_pll_pad_set_rate(struct clk *clk, unsigned long rate,
 	return 0;
 }
 
-static int clk_audio_pll_pmc_set_rate(struct clk *clk, unsigned long rate,
+static int clk_audio_pll_pmc_set_rate(struct clk_hw *hw, unsigned long rate,
 				      unsigned long parent_rate)
 {
-	struct clk_audio_pmc *apmc_ck = to_clk_audio_pmc(clk);
+	struct clk_audio_pmc *apmc_ck = to_clk_audio_pmc(hw);
 
 	if (!rate)
 		return -EINVAL;
@@ -433,22 +434,22 @@ at91_clk_register_audio_pll_frac(struct regmap *regmap, const char *name,
 	if (!frac_ck)
 		return ERR_PTR(-ENOMEM);
 
-	frac_ck->clk.name = name;
-	frac_ck->clk.ops = &audio_pll_frac_ops;
+	frac_ck->hw.clk.name = name;
+	frac_ck->hw.clk.ops = &audio_pll_frac_ops;
 	frac_ck->parent_name = parent_name;
-	frac_ck->clk.parent_names = &frac_ck->parent_name;
-	frac_ck->clk.num_parents = 1;
+	frac_ck->hw.clk.parent_names = &frac_ck->parent_name;
+	frac_ck->hw.clk.num_parents = 1;
 	/* frac_ck->clk.flags = CLK_SET_RATE_GATE; */
 
 	frac_ck->regmap = regmap;
 
-	ret = clk_register(&frac_ck->clk);
+	ret = bclk_register(&frac_ck->hw.clk);
 	if (ret) {
 		kfree(frac_ck);
 		return ERR_PTR(ret);
 	}
 
-	return &frac_ck->clk;
+	return &frac_ck->hw.clk;
 }
 
 struct clk * __init
@@ -462,23 +463,23 @@ at91_clk_register_audio_pll_pad(struct regmap *regmap, const char *name,
 	if (!apad_ck)
 		return ERR_PTR(-ENOMEM);
 
-	apad_ck->clk.name = name;
-	apad_ck->clk.ops = &audio_pll_pad_ops;
+	apad_ck->hw.clk.name = name;
+	apad_ck->hw.clk.ops = &audio_pll_pad_ops;
 	apad_ck->parent_name = parent_name;
-	apad_ck->clk.parent_names = &apad_ck->parent_name;
-	apad_ck->clk.num_parents = 1;
+	apad_ck->hw.clk.parent_names = &apad_ck->parent_name;
+	apad_ck->hw.clk.num_parents = 1;
 	/* apad_ck->clk.flags = CLK_SET_RATE_GATE | CLK_SET_PARENT_GATE |
 		CLK_SET_RATE_PARENT; */
 
 	apad_ck->regmap = regmap;
 
-	ret = clk_register(&apad_ck->clk);
+	ret = bclk_register(&apad_ck->hw.clk);
 	if (ret) {
 		kfree(apad_ck);
 		return ERR_PTR(ret);
 	}
 
-	return &apad_ck->clk;
+	return &apad_ck->hw.clk;
 }
 
 struct clk * __init
@@ -492,21 +493,21 @@ at91_clk_register_audio_pll_pmc(struct regmap *regmap, const char *name,
 	if (!apmc_ck)
 		return ERR_PTR(-ENOMEM);
 
-	apmc_ck->clk.name = name;
-	apmc_ck->clk.ops = &audio_pll_pmc_ops;
+	apmc_ck->hw.clk.name = name;
+	apmc_ck->hw.clk.ops = &audio_pll_pmc_ops;
 	apmc_ck->parent_name = parent_name;
-	apmc_ck->clk.parent_names = &apmc_ck->parent_name;
-	apmc_ck->clk.num_parents = 1;
+	apmc_ck->hw.clk.parent_names = &apmc_ck->parent_name;
+	apmc_ck->hw.clk.num_parents = 1;
 	/* apmc_ck.flags = CLK_SET_RATE_GATE | CLK_SET_PARENT_GATE |
 		CLK_SET_RATE_PARENT; */
 
 	apmc_ck->regmap = regmap;
 
-	ret = clk_register(&apmc_ck->clk);
+	ret = bclk_register(&apmc_ck->hw.clk);
 	if (ret) {
 		kfree(apmc_ck);
 		return ERR_PTR(ret);
 	}
 
-	return &apmc_ck->clk;
+	return &apmc_ck->hw.clk;
 }

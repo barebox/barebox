@@ -16,14 +16,14 @@
 #include "clk-zynqmp.h"
 
 struct zynqmp_clk_divider {
-	struct clk clk;
+	struct clk_hw hw;
 	unsigned int clk_id;
 	enum topology_type type;
 	const char *parent;
 	const struct zynqmp_eemi_ops *ops;
 };
-#define to_zynqmp_clk_divider(clk) \
-	container_of(clk, struct zynqmp_clk_divider, clk)
+#define to_zynqmp_clk_divider(_hw) \
+	container_of(_hw, struct zynqmp_clk_divider, hw)
 
 static int zynqmp_clk_divider_bestdiv(unsigned long rate,
 				      unsigned long *best_parent_rate)
@@ -31,10 +31,10 @@ static int zynqmp_clk_divider_bestdiv(unsigned long rate,
 	return DIV_ROUND_CLOSEST(*best_parent_rate, rate);
 }
 
-static unsigned long zynqmp_clk_divider_recalc_rate(struct clk *clk,
+static unsigned long zynqmp_clk_divider_recalc_rate(struct clk_hw *hw,
 						    unsigned long parent_rate)
 {
-	struct zynqmp_clk_divider *div = to_zynqmp_clk_divider(clk);
+	struct zynqmp_clk_divider *div = to_zynqmp_clk_divider(hw);
 	u32 value;
 
 	div->ops->clock_getdivider(div->clk_id, &value);
@@ -46,7 +46,7 @@ static unsigned long zynqmp_clk_divider_recalc_rate(struct clk *clk,
 	return DIV_ROUND_UP(parent_rate, value);
 }
 
-static long zynqmp_clk_divider_round_rate(struct clk *clk, unsigned long rate,
+static long zynqmp_clk_divider_round_rate(struct clk_hw *hw, unsigned long rate,
 					  unsigned long *parent_rate)
 {
 	int bestdiv;
@@ -56,10 +56,10 @@ static long zynqmp_clk_divider_round_rate(struct clk *clk, unsigned long rate,
 	return *parent_rate / bestdiv;
 }
 
-static int zynqmp_clk_divider_set_rate(struct clk *clk, unsigned long rate,
+static int zynqmp_clk_divider_set_rate(struct clk_hw *hw, unsigned long rate,
 				       unsigned long parent_rate)
 {
-	struct zynqmp_clk_divider *div = to_zynqmp_clk_divider(clk);
+	struct zynqmp_clk_divider *div = to_zynqmp_clk_divider(hw);
 	u32 bestdiv;
 
 	bestdiv = zynqmp_clk_divider_bestdiv(rate, &parent_rate);
@@ -95,17 +95,17 @@ struct clk *zynqmp_clk_register_divider(const char *name,
 	div->ops = zynqmp_pm_get_eemi_ops();
 	div->parent = strdup(parents[0]);
 
-	div->clk.name = strdup(name);
-	div->clk.ops = &zynqmp_clk_divider_ops;
-	div->clk.flags = nodes->flag;
-	div->clk.parent_names = &div->parent;
-	div->clk.num_parents = 1;
+	div->hw.clk.name = strdup(name);
+	div->hw.clk.ops = &zynqmp_clk_divider_ops;
+	div->hw.clk.flags = nodes->flag;
+	div->hw.clk.parent_names = &div->parent;
+	div->hw.clk.num_parents = 1;
 
-	ret = clk_register(&div->clk);
+	ret = bclk_register(&div->hw.clk);
 	if (ret) {
 		kfree(div);
 		return ERR_PTR(ret);
 	}
 
-	return &div->clk;
+	return &div->hw.clk;
 }

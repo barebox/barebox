@@ -21,18 +21,18 @@
 #define SMD_MAX_DIV		0xf
 
 struct at91sam9x5_clk_smd {
-	struct clk clk;
+	struct clk_hw hw;
 	struct regmap *regmap;
 	const char *parent_names[];
 };
 
-#define to_at91sam9x5_clk_smd(clk) \
-	container_of(clk, struct at91sam9x5_clk_smd, clk)
+#define to_at91sam9x5_clk_smd(_hw) \
+	container_of(_hw, struct at91sam9x5_clk_smd, hw)
 
-static unsigned long at91sam9x5_clk_smd_recalc_rate(struct clk *clk,
+static unsigned long at91sam9x5_clk_smd_recalc_rate(struct clk_hw *hw,
 						    unsigned long parent_rate)
 {
-	struct at91sam9x5_clk_smd *smd = to_at91sam9x5_clk_smd(clk);
+	struct at91sam9x5_clk_smd *smd = to_at91sam9x5_clk_smd(hw);
 	unsigned int smdr;
 	u8 smddiv;
 
@@ -42,7 +42,7 @@ static unsigned long at91sam9x5_clk_smd_recalc_rate(struct clk *clk,
 	return parent_rate / (smddiv + 1);
 }
 
-static long at91sam9x5_clk_smd_round_rate(struct clk *clk, unsigned long rate,
+static long at91sam9x5_clk_smd_round_rate(struct clk_hw *hw, unsigned long rate,
 					  unsigned long *parent_rate)
 {
 	unsigned long div;
@@ -64,9 +64,9 @@ static long at91sam9x5_clk_smd_round_rate(struct clk *clk, unsigned long rate,
 	return bestrate;
 }
 
-static int at91sam9x5_clk_smd_set_parent(struct clk *clk, u8 index)
+static int at91sam9x5_clk_smd_set_parent(struct clk_hw *hw, u8 index)
 {
-	struct at91sam9x5_clk_smd *smd = to_at91sam9x5_clk_smd(clk);
+	struct at91sam9x5_clk_smd *smd = to_at91sam9x5_clk_smd(hw);
 
 	if (index > 1)
 		return -EINVAL;
@@ -77,9 +77,9 @@ static int at91sam9x5_clk_smd_set_parent(struct clk *clk, u8 index)
 	return 0;
 }
 
-static int at91sam9x5_clk_smd_get_parent(struct clk *clk)
+static int at91sam9x5_clk_smd_get_parent(struct clk_hw *hw)
 {
-	struct at91sam9x5_clk_smd *smd = to_at91sam9x5_clk_smd(clk);
+	struct at91sam9x5_clk_smd *smd = to_at91sam9x5_clk_smd(hw);
 	unsigned int smdr;
 
 	regmap_read(smd->regmap, AT91_PMC_SMD, &smdr);
@@ -87,10 +87,10 @@ static int at91sam9x5_clk_smd_get_parent(struct clk *clk)
 	return smdr & AT91_PMC_SMDS;
 }
 
-static int at91sam9x5_clk_smd_set_rate(struct clk *clk, unsigned long rate,
+static int at91sam9x5_clk_smd_set_rate(struct clk_hw *hw, unsigned long rate,
 				       unsigned long parent_rate)
 {
-	struct at91sam9x5_clk_smd *smd = to_at91sam9x5_clk_smd(clk);
+	struct at91sam9x5_clk_smd *smd = to_at91sam9x5_clk_smd(hw);
 	unsigned long div = parent_rate / rate;
 
 	if (parent_rate % rate || div < 1 || div > (SMD_MAX_DIV + 1))
@@ -118,20 +118,20 @@ at91sam9x5_clk_register_smd(struct regmap *regmap, const char *name,
 	int ret;
 
 	smd = xzalloc(struct_size(smd, parent_names, num_parents));
-	smd->clk.name = name;
-	smd->clk.ops = &at91sam9x5_smd_ops;
+	smd->hw.clk.name = name;
+	smd->hw.clk.ops = &at91sam9x5_smd_ops;
 	memcpy(smd->parent_names, parent_names,
 	       num_parents * sizeof(smd->parent_names[0]));
-	smd->clk.parent_names = smd->parent_names;
-	smd->clk.num_parents = num_parents;
+	smd->hw.clk.parent_names = smd->parent_names;
+	smd->hw.clk.num_parents = num_parents;
 	/* init.flags = CLK_SET_RATE_GATE | CLK_SET_PARENT_GATE; */
 	smd->regmap = regmap;
 
-	ret = clk_register(&smd->clk);
+	ret = bclk_register(&smd->hw.clk);
 	if (ret) {
 		kfree(smd);
 		return ERR_PTR(ret);
 	}
 
-	return &smd->clk;
+	return &smd->hw.clk;
 }

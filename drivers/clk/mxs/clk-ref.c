@@ -23,20 +23,20 @@
  * as pll rate  * (18 / FRAC), where FRAC = 18 ~ 35.
  */
 struct clk_ref {
-	struct clk clk;
+	struct clk_hw hw;
 	const char *parent;
 	void __iomem *reg;
 	u8 idx;
 };
 
-#define to_clk_ref(_hw) container_of(_hw, struct clk_ref, clk)
+#define to_clk_ref(_hw) container_of(_hw, struct clk_ref, hw)
 
 #define SET	0x4
 #define CLR	0x8
 
-static int clk_ref_is_enabled(struct clk *clk)
+static int clk_ref_is_enabled(struct clk_hw *hw)
 {
-	struct clk_ref *ref = to_clk_ref(clk);
+	struct clk_ref *ref = to_clk_ref(hw);
 	u32 reg = readl(ref->reg);
 
 	if (reg & 1 << ((ref->idx + 1) * 8 - 1))
@@ -45,26 +45,26 @@ static int clk_ref_is_enabled(struct clk *clk)
 	return 1;
 }
 
-static int clk_ref_enable(struct clk *clk)
+static int clk_ref_enable(struct clk_hw *hw)
 {
-	struct clk_ref *ref = to_clk_ref(clk);
+	struct clk_ref *ref = to_clk_ref(hw);
 
 	writel(1 << ((ref->idx + 1) * 8 - 1), ref->reg + CLR);
 
 	return 0;
 }
 
-static void clk_ref_disable(struct clk *clk)
+static void clk_ref_disable(struct clk_hw *hw)
 {
-	struct clk_ref *ref = to_clk_ref(clk);
+	struct clk_ref *ref = to_clk_ref(hw);
 
 	writel(1 << ((ref->idx + 1) * 8 - 1), ref->reg + SET);
 }
 
-static unsigned long clk_ref_recalc_rate(struct clk *clk,
+static unsigned long clk_ref_recalc_rate(struct clk_hw *hw,
 					 unsigned long parent_rate)
 {
-	struct clk_ref *ref = to_clk_ref(clk);
+	struct clk_ref *ref = to_clk_ref(hw);
 	u64 tmp = parent_rate;
 	u8 frac = (readl(ref->reg) >> (ref->idx * 8)) & 0x3f;
 
@@ -74,7 +74,7 @@ static unsigned long clk_ref_recalc_rate(struct clk *clk,
 	return tmp;
 }
 
-static long clk_ref_round_rate(struct clk *clk, unsigned long rate,
+static long clk_ref_round_rate(struct clk_hw *hw, unsigned long rate,
 			       unsigned long *prate)
 {
 	unsigned long parent_rate = *prate;
@@ -97,10 +97,10 @@ static long clk_ref_round_rate(struct clk *clk, unsigned long rate,
 	return tmp;
 }
 
-static int clk_ref_set_rate(struct clk *clk, unsigned long rate,
+static int clk_ref_set_rate(struct clk_hw *hw, unsigned long rate,
 			    unsigned long parent_rate)
 {
-	struct clk_ref *ref = to_clk_ref(clk);
+	struct clk_ref *ref = to_clk_ref(hw);
 	u64 tmp = parent_rate;
 	u32 val;
 	u32 frac, shift = ref->idx * 8;
@@ -140,17 +140,17 @@ struct clk *mxs_clk_ref(const char *name, const char *parent_name,
 	ref = xzalloc(sizeof(*ref));
 
 	ref->parent = parent_name;
-	ref->clk.name = name;
-	ref->clk.ops = &clk_ref_ops;
-	ref->clk.parent_names = &ref->parent;
-	ref->clk.num_parents = 1;
+	ref->hw.clk.name = name;
+	ref->hw.clk.ops = &clk_ref_ops;
+	ref->hw.clk.parent_names = &ref->parent;
+	ref->hw.clk.num_parents = 1;
 
 	ref->reg = reg;
 	ref->idx = idx;
 
-	ret = clk_register(&ref->clk);
+	ret = bclk_register(&ref->hw.clk);
 	if (ret)
 		return ERR_PTR(ret);
 
-	return &ref->clk;
+	return &ref->hw.clk;
 }

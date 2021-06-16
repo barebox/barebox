@@ -17,12 +17,12 @@
 #define SOCFPGA_MPU_FREE_CLK		"mpu_free_clk"
 #define SOCFPGA_NOC_FREE_CLK		"noc_free_clk"
 #define SOCFPGA_SDMMC_FREE_CLK		"sdmmc_free_clk"
-#define to_socfpga_periph_clk(p) container_of(p, struct socfpga_periph_clk, clk)
+#define to_socfpga_periph_clk(p) container_of(p, struct socfpga_periph_clk, hw)
 
-static unsigned long clk_periclk_recalc_rate(struct clk *clk,
+static unsigned long clk_periclk_recalc_rate(struct clk_hw *hw,
 					     unsigned long parent_rate)
 {
-	struct socfpga_periph_clk *socfpgaclk = to_socfpga_periph_clk(clk);
+	struct socfpga_periph_clk *socfpgaclk = to_socfpga_periph_clk(hw);
 	u32 div;
 
 	if (socfpgaclk->fixed_div) {
@@ -38,15 +38,15 @@ static unsigned long clk_periclk_recalc_rate(struct clk *clk,
 	return parent_rate / div;
 }
 
-static int clk_periclk_get_parent(struct clk *clk)
+static int clk_periclk_get_parent(struct clk_hw *hw)
 {
-	struct socfpga_periph_clk *socfpgaclk = to_socfpga_periph_clk(clk);
+	struct socfpga_periph_clk *socfpgaclk = to_socfpga_periph_clk(hw);
 	u32 clk_src;
 
 	clk_src = readl(socfpgaclk->reg);
-	if (streq(clk->name, SOCFPGA_MPU_FREE_CLK) ||
-	    streq(clk->name, SOCFPGA_NOC_FREE_CLK) ||
-	    streq(clk->name, SOCFPGA_SDMMC_FREE_CLK))
+	if (streq(clk_hw_get_name(hw), SOCFPGA_MPU_FREE_CLK) ||
+	    streq(clk_hw_get_name(hw), SOCFPGA_NOC_FREE_CLK) ||
+	    streq(clk_hw_get_name(hw), SOCFPGA_SDMMC_FREE_CLK))
 		return (clk_src >> CLK_MGR_FREE_SHIFT) &
 			CLK_MGR_FREE_MASK;
 	else
@@ -98,19 +98,19 @@ static struct clk *__socfpga_periph_init(struct device_node *node,
 			break;
 	}
 
-	periph_clk->clk.num_parents = i;
-	periph_clk->clk.parent_names = periph_clk->parent_names;
+	periph_clk->hw.clk.num_parents = i;
+	periph_clk->hw.clk.parent_names = periph_clk->parent_names;
 
-	periph_clk->clk.name = xstrdup(clk_name);
-	periph_clk->clk.ops = ops;
+	periph_clk->hw.clk.name = xstrdup(clk_name);
+	periph_clk->hw.clk.ops = ops;
 
-	rc = clk_register(&periph_clk->clk);
+	rc = bclk_register(&periph_clk->hw.clk);
 	if (rc) {
 		free(periph_clk);
 		return ERR_PTR(rc);
 	}
 
-	return &periph_clk->clk;
+	return &periph_clk->hw.clk;
 }
 
 struct clk *socfpga_a10_periph_init(struct device_node *node)

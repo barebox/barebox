@@ -35,17 +35,17 @@ static struct clk *clks[ATH79_CLK_END];
 static struct clk_onecell_data clk_data;
 
 struct clk_ar9344 {
-	struct clk clk;
+	struct clk_hw hw;
 	void __iomem *base;
 	u32 div_shift;
 	u32 div_mask;
 	const char *parent;
 };
 
-static unsigned long clk_ar9344_recalc_rate(struct clk *clk,
+static unsigned long clk_ar9344_recalc_rate(struct clk_hw *hw,
 	unsigned long parent_rate)
 {
-	struct clk_ar9344 *f = container_of(clk, struct clk_ar9344, clk);
+	struct clk_ar9344 *f = container_of(hw, struct clk_ar9344, hw);
 	int outdiv, refdiv, nint, nfrac;
 	int cpu_post_div;
 	u32 clock_ctrl;
@@ -84,14 +84,14 @@ static struct clk *clk_ar9344(const char *name, const char *parent,
 	f->div_shift = 0;
 	f->div_mask = 0;
 
-	f->clk.ops = &clk_ar9344_ops;
-	f->clk.name = name;
-	f->clk.parent_names = &f->parent;
-	f->clk.num_parents = 1;
+	f->hw.clk.ops = &clk_ar9344_ops;
+	f->hw.clk.name = name;
+	f->hw.clk.parent_names = &f->parent;
+	f->hw.clk.num_parents = 1;
 
-	clk_register(&f->clk);
+	bclk_register(&f->hw.clk);
 
-	return &f->clk;
+	return &f->hw.clk;
 }
 
 static void ar9344_pll_init(void __iomem *base)

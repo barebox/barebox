@@ -13,9 +13,6 @@
 #include <io.h>
 #include <linux/err.h>
 
-#define readl_relaxed	readl
-#define writel_relaxed	writel
-
 struct davinci_gpio_regs {
 	u32	dir;
 	u32	out_data;

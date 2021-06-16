@@ -70,7 +70,7 @@
 #define MAX_DPLL_WAIT_TRIES	1000 /* 1000 * udelay(1) = 1ms */
 
 struct clk_pllv2 {
-	struct clk clk;
+	struct clk_hw hw;
 	void __iomem *reg;
 	const char *parent;
 };
@@ -110,12 +110,12 @@ static unsigned long __clk_pllv2_recalc_rate(unsigned long parent_rate,
 	return temp;
 }
 
-static unsigned long clk_pllv2_recalc_rate(struct clk *clk,
+static unsigned long clk_pllv2_recalc_rate(struct clk_hw *hw,
 		unsigned long parent_rate)
 {
 	u32 dp_op, dp_mfd, dp_mfn, dp_ctl;
 	void __iomem *pllbase;
-	struct clk_pllv2 *pll = container_of(clk, struct clk_pllv2, clk);
+	struct clk_pllv2 *pll = container_of(hw, struct clk_pllv2, hw);
 
 	pllbase = pll->reg;
 
@@ -156,10 +156,10 @@ static int __clk_pllv2_set_rate(unsigned long rate, unsigned long parent_rate,
 	return 0;
 }
 
-static int clk_pllv2_set_rate(struct clk *clk, unsigned long rate,
+static int clk_pllv2_set_rate(struct clk_hw *hw, unsigned long rate,
 		unsigned long parent_rate)
 {
-	struct clk_pllv2 *pll = container_of(clk, struct clk_pllv2, clk);
+	struct clk_pllv2 *pll = container_of(hw, struct clk_pllv2, hw);
 	void __iomem *pllbase;
 	u32 dp_ctl, dp_op, dp_mfd, dp_mfn;
 	int ret;
@@ -181,7 +181,7 @@ static int clk_pllv2_set_rate(struct clk *clk, unsigned long rate,
 	return 0;
 }
 
-static long clk_pllv2_round_rate(struct clk *clk, unsigned long rate,
+static long clk_pllv2_round_rate(struct clk_hw *hw, unsigned long rate,
 		unsigned long *prate)
 {
 	u32 dp_op, dp_mfd, dp_mfn;
@@ -205,16 +205,16 @@ struct clk *imx_clk_pllv2(const char *name, const char *parent,
 
 	pll->parent = parent;
 	pll->reg = base;
-	pll->clk.ops = &clk_pllv2_ops;
-	pll->clk.name = name;
-	pll->clk.parent_names = &pll->parent;
-	pll->clk.num_parents = 1;
+	pll->hw.clk.ops = &clk_pllv2_ops;
+	pll->hw.clk.name = name;
+	pll->hw.clk.parent_names = &pll->parent;
+	pll->hw.clk.num_parents = 1;
 
-	ret = clk_register(&pll->clk);
+	ret = bclk_register(&pll->hw.clk);
 	if (ret) {
 		free(pll);
 		return ERR_PTR(ret);
 	}
 
-	return &pll->clk;
+	return &pll->hw.clk;
 }

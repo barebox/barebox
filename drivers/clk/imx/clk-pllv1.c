@@ -17,7 +17,7 @@
 #define MFN_MASK	(MFN_SIGN - 1)
 
 struct clk_pllv1 {
-	struct clk clk;
+	struct clk_hw hw;
 	void __iomem *reg;
 	const char *parent;
 };
@@ -27,10 +27,10 @@ static inline bool mfn_is_negative(unsigned int mfn)
     return mfn & MFN_SIGN;
 }
 
-static unsigned long clk_pllv1_recalc_rate(struct clk *clk,
+static unsigned long clk_pllv1_recalc_rate(struct clk_hw *hw,
 		unsigned long parent_rate)
 {
-	struct clk_pllv1 *pll = container_of(clk, struct clk_pllv1, clk);
+	struct clk_pllv1 *pll = container_of(hw, struct clk_pllv1, hw);
 	unsigned long long ll;
 	int mfn_abs;
 	unsigned int mfi, mfn, mfd, pd;
@@ -79,16 +79,16 @@ struct clk *imx_clk_pllv1(const char *name, const char *parent,
 
 	pll->parent = parent;
 	pll->reg = base;
-	pll->clk.ops = &clk_pllv1_ops;
-	pll->clk.name = name;
-	pll->clk.parent_names = &pll->parent;
-	pll->clk.num_parents = 1;
+	pll->hw.clk.ops = &clk_pllv1_ops;
+	pll->hw.clk.name = name;
+	pll->hw.clk.parent_names = &pll->parent;
+	pll->hw.clk.num_parents = 1;
 
-	ret = clk_register(&pll->clk);
+	ret = bclk_register(&pll->hw.clk);
 	if (ret) {
 		free(pll);
 		return ERR_PTR(ret);
 	}
 
-	return &pll->clk;
+	return &pll->hw.clk;
 }

@@ -10,14 +10,14 @@
 #include <linux/err.h>
 
 struct clk_fixed {
-	struct clk clk;
+	struct clk_hw hw;
 	unsigned long rate;
 };
 
-static unsigned long clk_fixed_recalc_rate(struct clk *clk,
+static unsigned long clk_fixed_recalc_rate(struct clk_hw *hw,
 		unsigned long parent_rate)
 {
-	struct clk_fixed *fix = container_of(clk, struct clk_fixed, clk);
+	struct clk_fixed *fix = container_of(hw, struct clk_fixed, hw);
 
 	return fix->rate;
 }
@@ -36,27 +36,27 @@ struct clk *clk_register_fixed_rate(const char *name,
 	int ret;
 
 	fix->rate = rate;
-	fix->clk.ops = &clk_fixed_ops;
-	fix->clk.name = name;
-	fix->clk.flags = flags;
+	fix->hw.clk.ops = &clk_fixed_ops;
+	fix->hw.clk.name = name;
+	fix->hw.clk.flags = flags;
 
 	if (parent_name) {
 		parent_names = kzalloc(sizeof(const char *), GFP_KERNEL);
 		if (!parent_names)
 			return ERR_PTR(-ENOMEM);
 
-		fix->clk.parent_names = parent_names;
-		fix->clk.num_parents = 1;
+		fix->hw.clk.parent_names = parent_names;
+		fix->hw.clk.num_parents = 1;
 	}
 
-	ret = clk_register(&fix->clk);
+	ret = bclk_register(&fix->hw.clk);
 	if (ret) {
 		free(parent_names);
 		free(fix);
 		return ERR_PTR(ret);
 	}
 
-	return &fix->clk;
+	return &fix->hw.clk;
 }
 
 /**

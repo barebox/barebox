@@ -11,13 +11,13 @@
 #include <linux/err.h>
 
 struct clk_gate_shared {
-	struct clk clk;
+	struct clk_hw hw;
 	const char *parent;
 	const char *companion_gate;
 	struct clk *companion_clk;
 };
 
-#define to_clk_gate_shared(_clk) container_of(_clk, struct clk_gate_shared, clk)
+#define to_clk_gate_shared(_hw) container_of(_hw, struct clk_gate_shared, hw)
 
 static struct clk *lookup_companion(struct clk_gate_shared *g)
 {
@@ -30,23 +30,23 @@ static struct clk *lookup_companion(struct clk_gate_shared *g)
 	return g->companion_clk;
 }
 
-static int clk_gate_shared_enable(struct clk *clk)
+static int clk_gate_shared_enable(struct clk_hw *hw)
 {
-	struct clk_gate_shared *g = to_clk_gate_shared(clk);
+	struct clk_gate_shared *g = to_clk_gate_shared(hw);
 
 	return clk_enable(lookup_companion(g));
 }
 
-static void clk_gate_shared_disable(struct clk *clk)
+static void clk_gate_shared_disable(struct clk_hw *hw)
 {
-	struct clk_gate_shared *g = to_clk_gate_shared(clk);
+	struct clk_gate_shared *g = to_clk_gate_shared(hw);
 
 	clk_disable(lookup_companion(g));
 }
 
-static int clk_gate_shared_is_enabled(struct clk *clk)
+static int clk_gate_shared_is_enabled(struct clk_hw *hw)
 {
-	struct clk_gate_shared *g = to_clk_gate_shared(clk);
+	struct clk_gate_shared *g = to_clk_gate_shared(hw);
 
 	return clk_is_enabled(lookup_companion(g));
 }
@@ -67,18 +67,19 @@ static struct clk *clk_gate_shared_alloc(const char *name, const char *parent,
 	g->parent = parent;
 	g->companion_gate = companion;
 	g->companion_clk = ERR_PTR(-EINVAL);
-	g->clk.ops = &clk_gate_shared_ops;
-	g->clk.name = name;
-	g->clk.flags = flags;
-	g->clk.parent_names = &g->parent;
-	g->clk.num_parents = 1;
+	g->hw.clk.ops = &clk_gate_shared_ops;
+	g->hw.clk.name = name;
+	g->hw.clk.flags = flags;
+	g->hw.clk.parent_names = &g->parent;
+	g->hw.clk.num_parents = 1;
 
-	return &g->clk;
+	return &g->hw.clk;
 }
 
 static void clk_gate_shared_free(struct clk *clk)
 {
-	struct clk_gate_shared *g = to_clk_gate_shared(clk);
+	struct clk_hw *hw = clk_to_clk_hw(clk);
+	struct clk_gate_shared *g = to_clk_gate_shared(hw);
 
 	free(g);
 }
@@ -103,7 +104,7 @@ struct clk *clk_gate_shared(const char *name, const char *parent, const char *co
 
 	clk = clk_gate_shared_alloc(name , parent, companion, flags);
 
-	ret = clk_register(clk);
+	ret = bclk_register(clk);
 	if (ret) {
 		clk_gate_shared_free(clk);
 		return ERR_PTR(ret);

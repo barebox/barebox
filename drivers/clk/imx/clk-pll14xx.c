@@ -37,7 +37,7 @@
 #define LOCK_TIMEOUT_US		10000
 
 struct clk_pll14xx {
-	struct clk			clk;
+	struct clk_hw			hw;
 	void __iomem			*base;
 	enum imx_pll14xx_type		type;
 	const struct imx_pll14xx_rate_table *rate_table;
@@ -45,7 +45,7 @@ struct clk_pll14xx {
 	const char *parent;
 };
 
-#define to_clk_pll14xx(clk) container_of(clk, struct clk_pll14xx, clk)
+#define to_clk_pll14xx(_hw) container_of(_hw, struct clk_pll14xx, hw)
 
 static const struct imx_pll14xx_rate_table imx_pll1416x_tbl[] = {
 	PLL_1416X_RATE(1800000000U, 225, 3, 0),
@@ -92,10 +92,10 @@ static const struct imx_pll14xx_rate_table *imx_get_pll_settings(
 	return NULL;
 }
 
-static long clk_pll14xx_round_rate(struct clk *clk, unsigned long rate,
+static long clk_pll14xx_round_rate(struct clk_hw *hw, unsigned long rate,
 			unsigned long *prate)
 {
-	struct clk_pll14xx *pll = to_clk_pll14xx(clk);
+	struct clk_pll14xx *pll = to_clk_pll14xx(hw);
 	const struct imx_pll14xx_rate_table *rate_table = pll->rate_table;
 	int i;
 
@@ -108,10 +108,10 @@ static long clk_pll14xx_round_rate(struct clk *clk, unsigned long rate,
 	return rate_table[i - 1].rate;
 }
 
-static unsigned long clk_pll1416x_recalc_rate(struct clk *clk,
+static unsigned long clk_pll1416x_recalc_rate(struct clk_hw *hw,
 						  unsigned long parent_rate)
 {
-	struct clk_pll14xx *pll = to_clk_pll14xx(clk);
+	struct clk_pll14xx *pll = to_clk_pll14xx(hw);
 	u32 mdiv, pdiv, sdiv, pll_div;
 	u64 fvco = parent_rate;
 
@@ -126,10 +126,10 @@ static unsigned long clk_pll1416x_recalc_rate(struct clk *clk,
 	return fvco;
 }
 
-static unsigned long clk_pll1443x_recalc_rate(struct clk *clk,
+static unsigned long clk_pll1443x_recalc_rate(struct clk_hw *hw,
 						  unsigned long parent_rate)
 {
-	struct clk_pll14xx *pll = to_clk_pll14xx(clk);
+	struct clk_pll14xx *pll = to_clk_pll14xx(hw);
 	u32 mdiv, pdiv, sdiv, pll_div_ctl0, pll_div_ctl1;
 	short int kdiv;
 	u64 fvco = parent_rate;
@@ -169,10 +169,10 @@ static int clk_pll14xx_wait_lock(struct clk_pll14xx *pll)
 			LOCK_TIMEOUT_US);
 }
 
-static int clk_pll1416x_set_rate(struct clk *clk, unsigned long drate,
+static int clk_pll1416x_set_rate(struct clk_hw *hw, unsigned long drate,
 				 unsigned long prate)
 {
-	struct clk_pll14xx *pll = to_clk_pll14xx(clk);
+	struct clk_pll14xx *pll = to_clk_pll14xx(hw);
 	const struct imx_pll14xx_rate_table *rate;
 	u32 tmp, div_val;
 	int ret;
@@ -180,7 +180,7 @@ static int clk_pll1416x_set_rate(struct clk *clk, unsigned long drate,
 	rate = imx_get_pll_settings(pll, drate);
 	if (!rate) {
 		pr_err("%s: Invalid rate : %lu for pll clk %s\n", __func__,
-		       drate, clk->name);
+		       drate, hw->clk.name);
 		return -EINVAL;
 	}
 
@@ -239,7 +239,7 @@ int clk_pll1416x_early_set_rate(void __iomem *base, unsigned long drate,
 			  unsigned long prate)
 {
 	struct clk_pll14xx pll = {
-		.clk = {
+		.hw.clk = {
 			.name = "pll1416x",
 		},
 		.base = base,
@@ -247,13 +247,14 @@ int clk_pll1416x_early_set_rate(void __iomem *base, unsigned long drate,
 		.rate_count = ARRAY_SIZE(imx_pll1416x_tbl),
 	};
 
-	return clk_pll1416x_set_rate(&pll.clk, drate, prate);
+	return clk_pll1416x_set_rate(&pll.hw, drate, prate);
 }
 
-static int clk_pll1443x_set_rate(struct clk *clk, unsigned long drate,
+static int clk_pll1443x_set_rate(struct clk_hw *hw, unsigned long drate,
 				 unsigned long prate)
 {
-	struct clk_pll14xx *pll = to_clk_pll14xx(clk);
+	struct clk_pll14xx *pll = to_clk_pll14xx(hw);
+	struct clk *clk = clk_hw_to_clk(hw);
 	const struct imx_pll14xx_rate_table *rate;
 	u32 tmp, div_val;
 	int ret;
@@ -316,9 +317,9 @@ static int clk_pll1443x_set_rate(struct clk *clk, unsigned long drate,
 	return 0;
 }
 
-static int clk_pll14xx_prepare(struct clk *clk)
+static int clk_pll14xx_prepare(struct clk_hw *hw)
 {
-	struct clk_pll14xx *pll = to_clk_pll14xx(clk);
+	struct clk_pll14xx *pll = to_clk_pll14xx(hw);
 	u32 val;
 	int ret;
 
@@ -344,9 +345,9 @@ static int clk_pll14xx_prepare(struct clk *clk)
 	return 0;
 }
 
-static int clk_pll14xx_is_prepared(struct clk *clk)
+static int clk_pll14xx_is_prepared(struct clk_hw *hw)
 {
-	struct clk_pll14xx *pll = to_clk_pll14xx(clk);
+	struct clk_pll14xx *pll = to_clk_pll14xx(hw);
 	u32 val;
 
 	val = readl(pll->base + GNRL_CTL);
@@ -354,9 +355,9 @@ static int clk_pll14xx_is_prepared(struct clk *clk)
 	return (val & RST_MASK) ? 1 : 0;
 }
 
-static void clk_pll14xx_unprepare(struct clk *clk)
+static void clk_pll14xx_unprepare(struct clk_hw *hw)
 {
-	struct clk_pll14xx *pll = to_clk_pll14xx(clk);
+	struct clk_pll14xx *pll = to_clk_pll14xx(hw);
 	u32 val;
 
 	/*
@@ -403,7 +404,7 @@ struct clk *imx_clk_pll14xx(const char *name, const char *parent_name,
 	if (!pll)
 		return ERR_PTR(-ENOMEM);
 
-	clk = &pll->clk;
+	clk = &pll->hw.clk;
 
 	pll->parent = parent_name;
 	clk->name = name;
@@ -435,7 +436,7 @@ struct clk *imx_clk_pll14xx(const char *name, const char *parent_name,
 	val &= ~BYPASS_MASK;
 	writel(val, pll->base + GNRL_CTL);
 
-	ret = clk_register(clk);
+	ret = bclk_register(clk);
 	if (ret) {
 		free(pll);
 		return ERR_PTR(ret);

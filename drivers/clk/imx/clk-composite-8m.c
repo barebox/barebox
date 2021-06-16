@@ -26,10 +26,11 @@
 
 #define clk_div_mask(width)	((1 << (width)) - 1)
 
-static unsigned long imx8m_clk_composite_divider_recalc_rate(struct clk *clk,
+static unsigned long imx8m_clk_composite_divider_recalc_rate(struct clk_hw *hw,
 						unsigned long parent_rate)
 {
-	struct clk_divider *divider = container_of(clk, struct clk_divider, clk);
+	struct clk_divider *divider = container_of(hw, struct clk_divider, hw);
+	struct clk *clk = clk_hw_to_clk(hw);
 	unsigned long prediv_rate;
 	unsigned int prediv_value;
 	unsigned int div_value;
@@ -74,7 +75,7 @@ static int imx8m_clk_composite_compute_dividers(unsigned long rate,
 	return ret;
 }
 
-static long imx8m_clk_composite_divider_round_rate(struct clk *clk,
+static long imx8m_clk_composite_divider_round_rate(struct clk_hw *hw,
 						unsigned long rate,
 						unsigned long *prate)
 {
@@ -89,11 +90,11 @@ static long imx8m_clk_composite_divider_round_rate(struct clk *clk,
 
 }
 
-static int imx8m_clk_composite_divider_set_rate(struct clk *clk,
+static int imx8m_clk_composite_divider_set_rate(struct clk_hw *hw,
 					unsigned long rate,
 					unsigned long parent_rate)
 {
-	struct clk_divider *divider = container_of(clk, struct clk_divider, clk);
+	struct clk_divider *divider = container_of(hw, struct clk_divider, hw);
 	int prediv_value;
 	int div_value;
 	int ret;
@@ -114,14 +115,14 @@ static int imx8m_clk_composite_divider_set_rate(struct clk *clk,
 
 	return ret;
 }
-static int imx8m_clk_composite_mux_get_parent(struct clk *clk)
+static int imx8m_clk_composite_mux_get_parent(struct clk_hw *hw)
 {
-	return clk_mux_ops.get_parent(clk);
+	return clk_mux_ops.get_parent(hw);
 }
 
-static int imx8m_clk_composite_mux_set_parent(struct clk *clk, u8 index)
+static int imx8m_clk_composite_mux_set_parent(struct clk_hw *hw, u8 index)
 {
-	struct clk_mux *m = container_of(clk, struct clk_mux, clk);
+	struct clk_mux *m = container_of(hw, struct clk_mux, hw);
 	u32 val;
 
 	val = readl(m->reg);
@@ -161,7 +162,6 @@ struct clk *imx8m_clk_composite_flags(const char *name,
 	struct clk_divider *div = NULL;
 	struct clk_gate *gate = NULL;
 	struct clk_mux *mux = NULL;
-	const struct clk_ops *divider_ops;
 	const struct clk_ops *mux_ops;
 
 	mux = kzalloc(sizeof(*mux), GFP_KERNEL);
@@ -171,7 +171,7 @@ struct clk *imx8m_clk_composite_flags(const char *name,
 	mux->reg = reg;
 	mux->shift = PCG_PCS_SHIFT;
 	mux->width = PCG_PCS_WIDTH;
-	mux->clk.ops = &clk_mux_ops;
+	mux->hw.clk.ops = &clk_mux_ops;
 
 	div = kzalloc(sizeof(*div), GFP_KERNEL);
 	if (!div)
@@ -181,20 +181,19 @@ struct clk *imx8m_clk_composite_flags(const char *name,
 	if (composite_flags & IMX_COMPOSITE_CORE) {
 		div->shift = PCG_DIV_SHIFT;
 		div->width = PCG_CORE_DIV_WIDTH;
-		divider_ops = &clk_divider_ops;
+		div->hw.clk.ops = &clk_divider_ops;
 		mux_ops = &imx8m_clk_composite_mux_ops;
 	} else if (composite_flags & IMX_COMPOSITE_BUS) {
 		div->shift = PCG_PREDIV_SHIFT;
 		div->width = PCG_PREDIV_WIDTH;
-		divider_ops = &imx8m_clk_composite_divider_ops;
+		div->hw.clk.ops = &imx8m_clk_composite_divider_ops;
 		mux_ops = &imx8m_clk_composite_mux_ops;
 	} else {
 		div->shift = PCG_PREDIV_SHIFT;
 		div->width = PCG_PREDIV_WIDTH;
-		divider_ops = &imx8m_clk_composite_divider_ops;
+		div->hw.clk.ops = &imx8m_clk_composite_divider_ops;
 		mux_ops = &clk_mux_ops;
 	}
-	div->clk.ops = divider_ops;
 
 	gate = kzalloc(sizeof(*gate), GFP_KERNEL);
 	if (!gate)
@@ -202,10 +201,10 @@ struct clk *imx8m_clk_composite_flags(const char *name,
 
 	gate->reg = reg;
 	gate->shift = PCG_CGC_SHIFT;
-	gate->clk.ops = &clk_gate_ops;
+	gate->hw.clk.ops = &clk_gate_ops;
 
 	comp = clk_register_composite(name, parent_names, num_parents,
-				      &mux->clk, &div->clk, &gate->clk, flags);
+				      &mux->hw.clk, &div->hw.clk, &gate->hw.clk, flags);
 	if (IS_ERR(comp))
 		goto fail;
 

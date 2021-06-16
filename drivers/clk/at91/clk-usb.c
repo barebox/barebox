@@ -27,30 +27,30 @@
 #define SAM9X60_USBS_MASK	GENMASK(1, 0)
 
 struct at91sam9x5_clk_usb {
-	struct clk clk;
+	struct clk_hw hw;
 	struct regmap *regmap;
 	u32 usbs_mask;
 	u8 num_parents;
 	const char *parent_names[];
 };
 
-#define to_at91sam9x5_clk_usb(clk) \
-	container_of(clk, struct at91sam9x5_clk_usb, clk)
+#define to_at91sam9x5_clk_usb(_hw) \
+	container_of(_hw, struct at91sam9x5_clk_usb, hw)
 
 struct at91rm9200_clk_usb {
-	struct clk clk;
+	struct clk_hw hw;
 	struct regmap *regmap;
 	u32 divisors[4];
 	const char *parent_name;
 };
 
-#define to_at91rm9200_clk_usb(clk) \
-	container_of(clk, struct at91rm9200_clk_usb, clk)
+#define to_at91rm9200_clk_usb(_hw) \
+	container_of(_hw, struct at91rm9200_clk_usb, hw)
 
-static unsigned long at91sam9x5_clk_usb_recalc_rate(struct clk *clk,
+static unsigned long at91sam9x5_clk_usb_recalc_rate(struct clk_hw *hw,
 						    unsigned long parent_rate)
 {
-	struct at91sam9x5_clk_usb *usb = to_at91sam9x5_clk_usb(clk);
+	struct at91sam9x5_clk_usb *usb = to_at91sam9x5_clk_usb(hw);
 	unsigned int usbr;
 	u8 usbdiv;
 
@@ -60,9 +60,9 @@ static unsigned long at91sam9x5_clk_usb_recalc_rate(struct clk *clk,
 	return DIV_ROUND_CLOSEST(parent_rate, (usbdiv + 1));
 }
 
-static int at91sam9x5_clk_usb_set_parent(struct clk *clk, u8 index)
+static int at91sam9x5_clk_usb_set_parent(struct clk_hw *hw, u8 index)
 {
-	struct at91sam9x5_clk_usb *usb = to_at91sam9x5_clk_usb(clk);
+	struct at91sam9x5_clk_usb *usb = to_at91sam9x5_clk_usb(hw);
 
 	if (index >= usb->num_parents)
 		return -EINVAL;
@@ -72,9 +72,9 @@ static int at91sam9x5_clk_usb_set_parent(struct clk *clk, u8 index)
 	return 0;
 }
 
-static int at91sam9x5_clk_usb_get_parent(struct clk *clk)
+static int at91sam9x5_clk_usb_get_parent(struct clk_hw *hw)
 {
-	struct at91sam9x5_clk_usb *usb = to_at91sam9x5_clk_usb(clk);
+	struct at91sam9x5_clk_usb *usb = to_at91sam9x5_clk_usb(hw);
 	unsigned int usbr;
 
 	regmap_read(usb->regmap, AT91_PMC_USB, &usbr);
@@ -82,10 +82,10 @@ static int at91sam9x5_clk_usb_get_parent(struct clk *clk)
 	return usbr & usb->usbs_mask;
 }
 
-static int at91sam9x5_clk_usb_set_rate(struct clk *clk, unsigned long rate,
+static int at91sam9x5_clk_usb_set_rate(struct clk_hw *hw, unsigned long rate,
 				       unsigned long parent_rate)
 {
-	struct at91sam9x5_clk_usb *usb = to_at91sam9x5_clk_usb(clk);
+	struct at91sam9x5_clk_usb *usb = to_at91sam9x5_clk_usb(hw);
 	unsigned long div;
 
 	if (!rate)
@@ -108,9 +108,9 @@ static const struct clk_ops at91sam9x5_usb_ops = {
 	.set_rate = at91sam9x5_clk_usb_set_rate,
 };
 
-static int at91sam9n12_clk_usb_enable(struct clk *clk)
+static int at91sam9n12_clk_usb_enable(struct clk_hw *hw)
 {
-	struct at91sam9x5_clk_usb *usb = to_at91sam9x5_clk_usb(clk);
+	struct at91sam9x5_clk_usb *usb = to_at91sam9x5_clk_usb(hw);
 
 	regmap_write_bits(usb->regmap, AT91_PMC_USB, AT91_PMC_USBS,
 			  AT91_PMC_USBS);
@@ -118,16 +118,16 @@ static int at91sam9n12_clk_usb_enable(struct clk *clk)
 	return 0;
 }
 
-static void at91sam9n12_clk_usb_disable(struct clk *clk)
+static void at91sam9n12_clk_usb_disable(struct clk_hw *hw)
 {
-	struct at91sam9x5_clk_usb *usb = to_at91sam9x5_clk_usb(clk);
+	struct at91sam9x5_clk_usb *usb = to_at91sam9x5_clk_usb(hw);
 
 	regmap_write_bits(usb->regmap, AT91_PMC_USB, AT91_PMC_USBS, 0);
 }
 
-static int at91sam9n12_clk_usb_is_enabled(struct clk *clk)
+static int at91sam9n12_clk_usb_is_enabled(struct clk_hw *hw)
 {
-	struct at91sam9x5_clk_usb *usb = to_at91sam9x5_clk_usb(clk);
+	struct at91sam9x5_clk_usb *usb = to_at91sam9x5_clk_usb(hw);
 	unsigned int usbr;
 
 	regmap_read(usb->regmap, AT91_PMC_USB, &usbr);
@@ -152,26 +152,26 @@ _at91sam9x5_clk_register_usb(struct regmap *regmap, const char *name,
 	int ret;
 
 	usb = kzalloc(struct_size(usb, parent_names, num_parents), GFP_KERNEL);
-	usb->clk.name = name;
-	usb->clk.ops = &at91sam9x5_usb_ops;
+	usb->hw.clk.name = name;
+	usb->hw.clk.ops = &at91sam9x5_usb_ops;
 	memcpy(usb->parent_names, parent_names,
 	       num_parents * sizeof(usb->parent_names[0]));
-	usb->clk.parent_names = usb->parent_names;
-	usb->clk.num_parents = num_parents;
-	usb->clk.flags = CLK_SET_RATE_PARENT;
+	usb->hw.clk.parent_names = usb->parent_names;
+	usb->hw.clk.num_parents = num_parents;
+	usb->hw.clk.flags = CLK_SET_RATE_PARENT;
 	/* init.flags = CLK_SET_RATE_GATE | CLK_SET_PARENT_GATE | */
 	/* 	     CLK_SET_RATE_PARENT; */
 	usb->regmap = regmap;
 	usb->usbs_mask = usbs_mask;
 	usb->num_parents = num_parents;
 
-	ret = clk_register(&usb->clk);
+	ret = bclk_register(&usb->hw.clk);
 	if (ret) {
 		kfree(usb);
 		return ERR_PTR(ret);
 	}
 
-	return &usb->clk;
+	return &usb->hw.clk;
 }
 
 struct clk * __init
@@ -198,27 +198,27 @@ at91sam9n12_clk_register_usb(struct regmap *regmap, const char *name,
 	int ret;
 
 	usb = xzalloc(sizeof(*usb));
-	usb->clk.name = name;
-	usb->clk.ops = &at91sam9n12_usb_ops;
+	usb->hw.clk.name = name;
+	usb->hw.clk.ops = &at91sam9n12_usb_ops;
 	usb->parent_names[0] = parent_name;
-	usb->clk.parent_names = &usb->parent_names[0];
-	usb->clk.num_parents = 1;
+	usb->hw.clk.parent_names = &usb->parent_names[0];
+	usb->hw.clk.num_parents = 1;
 	/* init.flags = CLK_SET_RATE_GATE | CLK_SET_RATE_PARENT; */
 	usb->regmap = regmap;
 
-	ret = clk_register(&usb->clk);
+	ret = bclk_register(&usb->hw.clk);
 	if (ret) {
 		kfree(usb);
 		return ERR_PTR(ret);
 	}
 
-	return &usb->clk;
+	return &usb->hw.clk;
 }
 
-static unsigned long at91rm9200_clk_usb_recalc_rate(struct clk *clk,
+static unsigned long at91rm9200_clk_usb_recalc_rate(struct clk_hw *hw,
 						    unsigned long parent_rate)
 {
-	struct at91rm9200_clk_usb *usb = to_at91rm9200_clk_usb(clk);
+	struct at91rm9200_clk_usb *usb = to_at91rm9200_clk_usb(hw);
 	unsigned int pllbr;
 	u8 usbdiv;
 
@@ -231,11 +231,11 @@ static unsigned long at91rm9200_clk_usb_recalc_rate(struct clk *clk,
 	return 0;
 }
 
-static long at91rm9200_clk_usb_round_rate(struct clk *clk, unsigned long rate,
+static long at91rm9200_clk_usb_round_rate(struct clk_hw *hw, unsigned long rate,
 					  unsigned long *parent_rate)
 {
-	struct at91rm9200_clk_usb *usb = to_at91rm9200_clk_usb(clk);
-	struct clk *parent = clk_get_parent(clk);
+	struct at91rm9200_clk_usb *usb = to_at91rm9200_clk_usb(hw);
+	struct clk *parent = clk_get_parent(clk_hw_to_clk(hw));
 	unsigned long bestrate = 0;
 	int bestdiff = -1;
 	unsigned long tmprate;
@@ -272,11 +272,11 @@ static long at91rm9200_clk_usb_round_rate(struct clk *clk, unsigned long rate,
 	return bestrate;
 }
 
-static int at91rm9200_clk_usb_set_rate(struct clk *clk, unsigned long rate,
+static int at91rm9200_clk_usb_set_rate(struct clk_hw *hw, unsigned long rate,
 				       unsigned long parent_rate)
 {
 	int i;
-	struct at91rm9200_clk_usb *usb = to_at91rm9200_clk_usb(clk);
+	struct at91rm9200_clk_usb *usb = to_at91rm9200_clk_usb(hw);
 	unsigned long div;
 
 	if (!rate)
@@ -311,21 +311,21 @@ at91rm9200_clk_register_usb(struct regmap *regmap, const char *name,
 	int ret;
 
 	usb = xzalloc(sizeof(*usb));
-	usb->clk.name = name;
-	usb->clk.ops = &at91rm9200_usb_ops;
+	usb->hw.clk.name = name;
+	usb->hw.clk.ops = &at91rm9200_usb_ops;
 	usb->parent_name = parent_name;
-	usb->clk.parent_names = &usb->parent_name;
-	usb->clk.num_parents = 1;
+	usb->hw.clk.parent_names = &usb->parent_name;
+	usb->hw.clk.num_parents = 1;
 	/* init.flags = CLK_SET_RATE_PARENT; */
 
 	usb->regmap = regmap;
 	memcpy(usb->divisors, divisors, sizeof(usb->divisors));
 
-	ret = clk_register(&usb->clk);
+	ret = bclk_register(&usb->hw.clk);
 	if (ret) {
 		kfree(usb);
 		return ERR_PTR(ret);
 	}
 
-	return &usb->clk;
+	return &usb->hw.clk;
 }

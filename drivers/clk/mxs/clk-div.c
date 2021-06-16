@@ -28,40 +28,40 @@ struct clk_div {
 	u8 busy;
 };
 
-static inline struct clk_div *to_clk_div(struct clk *clk)
+static inline struct clk_div *to_clk_div(struct clk_hw *hw)
 {
-	struct clk_divider *divider = container_of(clk, struct clk_divider, clk);
+	struct clk_divider *divider = to_clk_divider(hw);
 
 	return container_of(divider, struct clk_div, divider);
 }
 
-static unsigned long clk_div_recalc_rate(struct clk *clk,
+static unsigned long clk_div_recalc_rate(struct clk_hw *hw,
 					 unsigned long parent_rate)
 {
-	struct clk_div *div = to_clk_div(clk);
+	struct clk_div *div = to_clk_div(hw);
 
-	return div->ops->recalc_rate(&div->divider.clk, parent_rate);
+	return div->ops->recalc_rate(&div->divider.hw, parent_rate);
 }
 
-static long clk_div_round_rate(struct clk *clk, unsigned long rate,
+static long clk_div_round_rate(struct clk_hw *hw, unsigned long rate,
 			       unsigned long *prate)
 {
-	struct clk_div *div = to_clk_div(clk);
+	struct clk_div *div = to_clk_div(hw);
 
-	return div->ops->round_rate(&div->divider.clk, rate, prate);
+	return div->ops->round_rate(&div->divider.hw, rate, prate);
 }
 
-static int clk_div_set_rate(struct clk *clk, unsigned long rate,
+static int clk_div_set_rate(struct clk_hw *hw, unsigned long rate,
 			    unsigned long parent_rate)
 {
-	struct clk_div *div = to_clk_div(clk);
+	struct clk_div *div = to_clk_div(hw);
 	int ret;
 
-	ret = div->ops->set_rate(&div->divider.clk, rate, parent_rate);
+	ret = div->ops->set_rate(&div->divider.hw, rate, parent_rate);
 	if (ret)
 		return ret;
 
-	if (clk_is_enabled(clk))
+	if (clk_hw_is_enabled(hw))
 		while (readl(div->reg) & 1 << div->busy);
 
 	return 0;
@@ -82,10 +82,10 @@ struct clk *mxs_clk_div(const char *name, const char *parent_name,
 	div = xzalloc(sizeof(*div));
 
 	div->parent = parent_name;
-	div->divider.clk.name = name;
-	div->divider.clk.ops = &clk_div_ops;
-	div->divider.clk.parent_names = &div->parent;
-	div->divider.clk.num_parents = 1;
+	div->divider.hw.clk.name = name;
+	div->divider.hw.clk.ops = &clk_div_ops;
+	div->divider.hw.clk.parent_names = &div->parent;
+	div->divider.hw.clk.num_parents = 1;
 
 	div->reg = reg;
 	div->busy = busy;
@@ -96,9 +96,9 @@ struct clk *mxs_clk_div(const char *name, const char *parent_name,
 	div->divider.flags = CLK_DIVIDER_ONE_BASED;
 	div->ops = &clk_divider_ops;
 
-	ret = clk_register(&div->divider.clk);
+	ret = bclk_register(&div->divider.hw.clk);
 	if (ret)
 		return ERR_PTR(ret);
 
-	return &div->divider.clk;
+	return &div->divider.hw.clk;
 }

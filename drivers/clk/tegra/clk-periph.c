@@ -16,65 +16,65 @@
 
 #define to_clk_periph(_hw) container_of(_hw, struct tegra_clk_periph, hw)
 
-static int clk_periph_get_parent(struct clk *hw)
+static int clk_periph_get_parent(struct clk_hw *hw)
 {
 	struct tegra_clk_periph *periph = to_clk_periph(hw);
 
-	return periph->mux->ops->get_parent(periph->mux);
+	return periph->mux->ops->get_parent(clk_to_clk_hw(periph->mux));
 }
 
-static int clk_periph_set_parent(struct clk *hw, u8 index)
+static int clk_periph_set_parent(struct clk_hw *hw, u8 index)
 {
 	struct tegra_clk_periph *periph = to_clk_periph(hw);
 
-	return periph->mux->ops->set_parent(periph->mux, index);
+	return periph->mux->ops->set_parent(clk_to_clk_hw(periph->mux), index);
 }
 
-static unsigned long clk_periph_recalc_rate(struct clk *hw,
+static unsigned long clk_periph_recalc_rate(struct clk_hw *hw,
 					    unsigned long parent_rate)
 {
 	struct tegra_clk_periph *periph = to_clk_periph(hw);
 
-	return periph->div->ops->recalc_rate(periph->div, parent_rate);
+	return periph->div->ops->recalc_rate(clk_to_clk_hw(periph->div), parent_rate);
 }
 
-static long clk_periph_round_rate(struct clk *hw, unsigned long rate,
+static long clk_periph_round_rate(struct clk_hw *hw, unsigned long rate,
 				  unsigned long *prate)
 {
 	struct tegra_clk_periph *periph = to_clk_periph(hw);
 
-	return periph->div->ops->round_rate(periph->div, rate, prate);
+	return periph->div->ops->round_rate(clk_to_clk_hw(periph->div), rate, prate);
 }
 
-static int clk_periph_set_rate(struct clk *hw, unsigned long rate,
+static int clk_periph_set_rate(struct clk_hw *hw, unsigned long rate,
 			       unsigned long parent_rate)
 {
 	struct tegra_clk_periph *periph = to_clk_periph(hw);
 
-	return periph->div->ops->set_rate(periph->div, rate, parent_rate);
+	return periph->div->ops->set_rate(clk_to_clk_hw(periph->div), rate, parent_rate);
 }
 
-static int clk_periph_is_enabled(struct clk *hw)
+static int clk_periph_is_enabled(struct clk_hw *hw)
 {
 	struct tegra_clk_periph *periph = to_clk_periph(hw);
 
-	return periph->gate->ops->is_enabled(periph->gate);
+	return periph->gate->ops->is_enabled(clk_to_clk_hw(periph->gate));
 }
 
-static int clk_periph_enable(struct clk *hw)
+static int clk_periph_enable(struct clk_hw *hw)
 {
 	struct tegra_clk_periph *periph = to_clk_periph(hw);
 
-	periph->gate->ops->enable(periph->gate);
+	periph->gate->ops->enable(clk_to_clk_hw(periph->gate));
 
 	return 0;
 }
 
-static void clk_periph_disable(struct clk *hw)
+static void clk_periph_disable(struct clk_hw *hw)
 {
 	struct tegra_clk_periph *periph = to_clk_periph(hw);
 
-	periph->gate->ops->disable(periph->gate);
+	periph->gate->ops->disable(clk_to_clk_hw(periph->gate));
 }
 
 const struct clk_ops tegra_clk_periph_ops = {
@@ -139,11 +139,11 @@ static struct clk *_tegra_clk_register_periph(const char *name,
 			goto out_div;
 	}
 
-	periph->hw.name = name;
-	periph->hw.ops = div ? &tegra_clk_periph_ops :
+	periph->hw.clk.name = name;
+	periph->hw.clk.ops = div ? &tegra_clk_periph_ops :
 				   &tegra_clk_periph_nodiv_ops;
-	periph->hw.parent_names = parent_names;
-	periph->hw.num_parents = num_parents;
+	periph->hw.clk.parent_names = parent_names;
+	periph->hw.clk.num_parents = num_parents;
 	periph->flags = flags;
 
 	if (id >= 96)
@@ -153,11 +153,11 @@ static struct clk *_tegra_clk_register_periph(const char *name,
 	periph->rst_reg = clk_base + rst_offs;
 	periph->rst_shift = id & 0x1f;
 
-	ret = clk_register(&periph->hw);
+	ret = bclk_register(&periph->hw.clk);
 	if (ret)
 		goto out_register;
 
-	return &periph->hw;
+	return &periph->hw.clk;
 
 out_register:
 	tegra_clk_divider_free(periph->div);

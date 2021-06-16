@@ -28,12 +28,12 @@
 #define SOCFPGA_MAIN_PLL_CLK		"main_pll"
 #define SOCFPGA_PERIP_PLL_CLK		"periph_pll"
 
-#define to_socfpga_clk(p) container_of(p, struct socfpga_pll, clk)
+#define to_socfpga_clk(p) container_of(p, struct socfpga_pll, hw)
 
-static unsigned long clk_pll_recalc_rate(struct clk *clk,
+static unsigned long clk_pll_recalc_rate(struct clk_hw *hw,
 					 unsigned long parent_rate)
 {
-	struct socfpga_pll *socfpgaclk = to_socfpga_clk(clk);
+	struct socfpga_pll *socfpgaclk = to_socfpga_clk(hw);
 	unsigned long divf, divq, reg;
 	unsigned long long vco_freq;
 
@@ -46,9 +46,9 @@ static unsigned long clk_pll_recalc_rate(struct clk *clk,
 	return (unsigned long)vco_freq;
 }
 
-static int clk_pll_get_parent(struct clk *clk)
+static int clk_pll_get_parent(struct clk_hw *hw)
 {
-	struct socfpga_pll *socfpgaclk = to_socfpga_clk(clk);
+	struct socfpga_pll *socfpgaclk = to_socfpga_clk(hw);
 	u32 pll_src;
 
 	pll_src = readl(socfpgaclk->reg);
@@ -57,9 +57,9 @@ static int clk_pll_get_parent(struct clk *clk)
 		CLK_MGR_PLL_CLK_SRC_MASK;
 }
 
-static int clk_socfpga_enable(struct clk *clk)
+static int clk_socfpga_enable(struct clk_hw *hw)
 {
-	struct socfpga_pll *socfpga_clk = to_socfpga_clk(clk);
+	struct socfpga_pll *socfpga_clk = to_socfpga_clk(hw);
 	u32 val;
 
 	val = readl(socfpga_clk->reg);
@@ -69,9 +69,9 @@ static int clk_socfpga_enable(struct clk *clk)
 	return 0;
 }
 
-static void clk_socfpga_disable(struct clk *clk)
+static void clk_socfpga_disable(struct clk_hw *hw)
 {
-	struct socfpga_pll *socfpga_clk = to_socfpga_clk(clk);
+	struct socfpga_pll *socfpga_clk = to_socfpga_clk(hw);
 	u32 val;
 
 	val = readl(socfpga_clk->reg);
@@ -101,8 +101,8 @@ static struct clk *__socfpga_pll_init(struct device_node *node,
 
 	of_property_read_string(node, "clock-output-names", &clk_name);
 
-	pll_clk->clk.name = xstrdup(clk_name);
-	pll_clk->clk.ops = ops;
+	pll_clk->hw.clk.name = xstrdup(clk_name);
+	pll_clk->hw.clk.ops = ops;
 
 	for (i = 0; i < SOCFPGA_MAX_PARENTS; i++) {
 		pll_clk->parent_names[i] = of_clk_get_parent_name(node, i);
@@ -111,19 +111,19 @@ static struct clk *__socfpga_pll_init(struct device_node *node,
 	}
 
 	pll_clk->bit_idx = SOCFPGA_PLL_EXT_ENA;
-	pll_clk->clk.num_parents = i;
-	pll_clk->clk.parent_names = pll_clk->parent_names;
+	pll_clk->hw.clk.num_parents = i;
+	pll_clk->hw.clk.parent_names = pll_clk->parent_names;
 
 	clk_pll_ops.enable = clk_socfpga_enable;
 	clk_pll_ops.disable = clk_socfpga_disable;
 
-	rc = clk_register(&pll_clk->clk);
+	rc = bclk_register(&pll_clk->hw.clk);
 	if (rc) {
 		free(pll_clk);
 		return NULL;
 	}
 
-	return &pll_clk->clk;
+	return &pll_clk->hw.clk;
 }
 
 struct clk *socfpga_a10_pll_init(struct device_node *node)

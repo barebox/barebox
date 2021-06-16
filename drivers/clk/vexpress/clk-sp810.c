@@ -15,15 +15,15 @@
 struct clk_sp810;
 
 struct clk_sp810_timerclken {
-	struct clk hw;
+	struct clk_hw hw;
 	struct clk_sp810 *sp810;
 	int channel;
 };
 
 static inline struct clk_sp810_timerclken *
-to_clk_sp810_timerclken(struct clk *clk)
+to_clk_sp810_timerclken(struct clk_hw *hw)
 {
-	return container_of(clk, struct clk_sp810_timerclken, hw);
+	return container_of(hw, struct clk_sp810_timerclken, hw);
 }
 
 struct clk_sp810 {
@@ -32,12 +32,12 @@ struct clk_sp810 {
 	struct clk_sp810_timerclken timerclken[4];
 };
 
-static int clk_sp810_timerclken_get_parent(struct clk *hw)
+static int clk_sp810_timerclken_get_parent(struct clk_hw *hw)
 {
 	return 1;
 }
 
-static int clk_sp810_timerclken_set_parent(struct clk *hw, u8 index)
+static int clk_sp810_timerclken_set_parent(struct clk_hw *hw, u8 index)
 {
 	struct clk_sp810_timerclken *timerclken = to_clk_sp810_timerclken(hw);
 	struct clk_sp810 *sp810 = timerclken->sp810;
@@ -71,7 +71,7 @@ static struct clk *clk_sp810_timerclken_of_get(struct of_phandle_args *clkspec,
 		    clkspec->args[0] >=	ARRAY_SIZE(sp810->timerclken)))
 		return NULL;
 
-	return &sp810->timerclken[clkspec->args[0]].hw;
+	return &sp810->timerclken[clkspec->args[0]].hw.clk;
 }
 
 static void clk_sp810_of_setup(struct device_node *node)
@@ -100,18 +100,18 @@ static void clk_sp810_of_setup(struct device_node *node)
 
 		sp810->timerclken[i].sp810 = sp810;
 		sp810->timerclken[i].channel = i;
-		sp810->timerclken[i].hw.name = strdup(name);
-		sp810->timerclken[i].hw.parent_names = parent_names;
-		sp810->timerclken[i].hw.num_parents = num;
-		sp810->timerclken[i].hw.ops = &clk_sp810_timerclken_ops;
+		sp810->timerclken[i].hw.clk.name = strdup(name);
+		sp810->timerclken[i].hw.clk.parent_names = parent_names;
+		sp810->timerclken[i].hw.clk.num_parents = num;
+		sp810->timerclken[i].hw.clk.ops = &clk_sp810_timerclken_ops;
+
+		bclk_register(&sp810->timerclken[i].hw.clk);
 
 		/*
 		 * Always set parent to 1MHz clock to match QEMU emulation
 		 * and satisfy requirements on real HW.
 		 */
 		clk_sp810_timerclken_set_parent(&sp810->timerclken[i].hw, 1);
-
-		clk_register(&sp810->timerclken[i].hw);
 	}
 
 	of_clk_add_provider(node, clk_sp810_timerclken_of_get, sp810);

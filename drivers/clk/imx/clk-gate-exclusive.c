@@ -24,17 +24,21 @@
  * register is mutually exclusive to this gate clock.
  */
 struct clk_gate_exclusive {
-	struct clk clk;
+	struct clk_hw hw;
 	void __iomem *reg;
 	int shift;
 	const char *parent;
 	u32 exclusive_mask;
 };
 
-static int clk_gate_exclusive_enable(struct clk *clk)
+static inline struct clk_gate_exclusive *to_clk_gate_exclusive(struct clk_hw *hw)
 {
-	struct clk_gate_exclusive *exgate = container_of(clk,
-					struct clk_gate_exclusive, clk);
+	return container_of(hw, struct clk_gate_exclusive, hw);
+}
+
+static int clk_gate_exclusive_enable(struct clk_hw *hw)
+{
+	struct clk_gate_exclusive *exgate = to_clk_gate_exclusive(hw);
 	u32 val = readl(exgate->reg);
 
 	if (val & exgate->exclusive_mask)
@@ -47,10 +51,9 @@ static int clk_gate_exclusive_enable(struct clk *clk)
 	return 0;
 }
 
-static void clk_gate_exclusive_disable(struct clk *clk)
+static void clk_gate_exclusive_disable(struct clk_hw *hw)
 {
-	struct clk_gate_exclusive *exgate = container_of(clk,
-					struct clk_gate_exclusive, clk);
+	struct clk_gate_exclusive *exgate = to_clk_gate_exclusive(hw);
 	u32 val = readl(exgate->reg);
 
 	val &= ~(1 << exgate->shift);
@@ -58,10 +61,9 @@ static void clk_gate_exclusive_disable(struct clk *clk)
 	writel(val, exgate->reg);
 }
 
-static int clk_gate_exclusive_is_enabled(struct clk *clk)
+static int clk_gate_exclusive_is_enabled(struct clk_hw *hw)
 {
-	struct clk_gate_exclusive *exgate = container_of(clk,
-					struct clk_gate_exclusive, clk);
+	struct clk_gate_exclusive *exgate = to_clk_gate_exclusive(hw);
 
 	return readl(exgate->reg) & (1 << exgate->shift);
 }
@@ -80,21 +82,21 @@ struct clk *imx_clk_gate_exclusive(const char *name, const char *parent,
 
 	exgate = xzalloc(sizeof(*exgate));
 	exgate->parent = parent;
-	exgate->clk.name = name;
-	exgate->clk.ops = &clk_gate_exclusive_ops;
-	exgate->clk.flags = CLK_SET_RATE_PARENT;
-	exgate->clk.parent_names = &exgate->parent;
-	exgate->clk.num_parents = 1;
+	exgate->hw.clk.name = name;
+	exgate->hw.clk.ops = &clk_gate_exclusive_ops;
+	exgate->hw.clk.flags = CLK_SET_RATE_PARENT;
+	exgate->hw.clk.parent_names = &exgate->parent;
+	exgate->hw.clk.num_parents = 1;
 
 	exgate->reg = reg;
 	exgate->shift = shift;
 	exgate->exclusive_mask = exclusive_mask;
 
-	ret = clk_register(&exgate->clk);
+	ret = bclk_register(&exgate->hw.clk);
 	if (ret) {
 		free(exgate);
 		return ERR_PTR(ret);
 	}
 
-	return &exgate->clk;
+ 	return &exgate->hw.clk;
 }

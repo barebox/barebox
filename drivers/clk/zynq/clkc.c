@@ -50,25 +50,25 @@ static struct clk *clks[clk_max];
 static struct clk_onecell_data clk_data;
 
 struct zynq_pll_clk {
-	struct clk	clk;
+	struct clk_hw	hw;
 	u32		pll_lock;
 	void __iomem	*pll_ctrl;
 };
 
-#define to_zynq_pll_clk(c)	container_of(c, struct zynq_pll_clk, clk)
+#define to_zynq_pll_clk(c)	container_of(c, struct zynq_pll_clk, hw)
 
 #define PLL_CTRL_FDIV(x)	(((x) >> 12) & 0x7F)
 
-static unsigned long zynq_pll_recalc_rate(struct clk *clk,
+static unsigned long zynq_pll_recalc_rate(struct clk_hw *hw,
 					  unsigned long parent_rate)
 {
-	struct zynq_pll_clk *pll = to_zynq_pll_clk(clk);
+	struct zynq_pll_clk *pll = to_zynq_pll_clk(hw);
 	return parent_rate * PLL_CTRL_FDIV(readl(pll->pll_ctrl));
 }
 
-static int zynq_pll_enable(struct clk *clk)
+static int zynq_pll_enable(struct clk_hw *hw)
 {
-	struct zynq_pll_clk *pll = to_zynq_pll_clk(clk);
+	struct zynq_pll_clk *pll = to_zynq_pll_clk(hw);
 	u32 val;
 	int timeout = 10000;
 
@@ -87,9 +87,9 @@ static int zynq_pll_enable(struct clk *clk)
 	return 0;
 }
 
-static int zynq_pll_is_enabled(struct clk *clk)
+static int zynq_pll_is_enabled(struct clk_hw *hw)
 {
-	struct zynq_pll_clk *pll = to_zynq_pll_clk(clk);
+	struct zynq_pll_clk *pll = to_zynq_pll_clk(hw);
 	u32 val = readl(pll->pll_ctrl);
 
 	return !(val & (PLL_CTRL_PWRDOWN | PLL_CTRL_RESET));
@@ -111,10 +111,10 @@ static inline struct clk *zynq_pll_clk(enum zynq_pll_type type,
 
 	pll = xzalloc(sizeof(*pll));
 	pll->pll_ctrl		= pll_ctrl;
-	pll->clk.ops		= &zynq_pll_clk_ops;
-	pll->clk.name		= name;
-	pll->clk.parent_names	= &pll_parent;
-	pll->clk.num_parents	= 1;
+	pll->hw.clk.ops = &zynq_pll_clk_ops;
+	pll->hw.clk.name = name;
+	pll->hw.clk.parent_names = &pll_parent;
+	pll->hw.clk.num_parents = 1;
 
 	switch(type) {
 	case ZYNQ_PLL_ARM:
@@ -128,17 +128,17 @@ static inline struct clk *zynq_pll_clk(enum zynq_pll_type type,
 		break;
 	}
 
-	ret = clk_register(&pll->clk);
+	ret = bclk_register(&pll->hw.clk);
 	if (ret) {
 		free(pll);
 		return ERR_PTR(ret);
 	}
 
-	return &pll->clk;
+	return &pll->hw.clk;
 }
 
 struct zynq_periph_clk {
-	struct clk	clk;
+	struct clk_hw	hw;
 	void __iomem	*clk_ctrl;
 };
 
@@ -150,16 +150,16 @@ static const u8 periph_clk_parent_map[] = {
 #define PERIPH_CLK_CTRL_SRC(x) (periph_clk_parent_map[((x) & 0x30) >> 4])
 #define PERIPH_CLK_CTRL_DIV(x) (((x) & 0x3F00) >> 8)
 
-static unsigned long zynq_periph_recalc_rate(struct clk *clk,
+static unsigned long zynq_periph_recalc_rate(struct clk_hw *hw,
 					     unsigned long parent_rate)
 {
-	struct zynq_periph_clk *periph = to_zynq_periph_clk(clk);
+	struct zynq_periph_clk *periph = to_zynq_periph_clk(hw);
 	return parent_rate / PERIPH_CLK_CTRL_DIV(readl(periph->clk_ctrl));
 }
 
-static int zynq_periph_get_parent(struct clk *clk)
+static int zynq_periph_get_parent(struct clk_hw *hw)
 {
-	struct zynq_periph_clk *periph = to_zynq_periph_clk(clk);
+	struct zynq_periph_clk *periph = to_zynq_periph_clk(hw);
 	return PERIPH_CLK_CTRL_SRC(readl(periph->clk_ctrl));
 }
 
@@ -181,18 +181,18 @@ static struct clk *zynq_periph_clk(const char *name, void __iomem *clk_ctrl)
 	periph = xzalloc(sizeof(*periph));
 
 	periph->clk_ctrl	= clk_ctrl;
-	periph->clk.name	= name;
-	periph->clk.ops		= &zynq_periph_clk_ops;
-	periph->clk.parent_names = peripheral_parents;
-	periph->clk.num_parents	= ARRAY_SIZE(peripheral_parents);
+	periph->hw.clk.name = name;
+	periph->hw.clk.ops = &zynq_periph_clk_ops;
+	periph->hw.clk.parent_names = peripheral_parents;
+	periph->hw.clk.num_parents = ARRAY_SIZE(peripheral_parents);
 
-	ret = clk_register(&periph->clk);
+	ret = bclk_register(&periph->hw.clk);
 	if (ret) {
 		free(periph);
 		return ERR_PTR(ret);
 	}
 
-	return &periph->clk;
+	return &periph->hw.clk;
 }
 
 /* CPU Clock domain is modelled as a mux with 4 children subclks, whose
@@ -200,7 +200,7 @@ static struct clk *zynq_periph_clk(const char *name, void __iomem *clk_ctrl)
  */
 
 struct zynq_cpu_clk {
-	struct clk	clk;
+	struct clk_hw	hw;
 	void __iomem	*clk_ctrl;
 };
 
@@ -212,16 +212,16 @@ static const u8 zynq_cpu_clk_parent_map[] = {
 #define CPU_CLK_SRCSEL(x)	(zynq_cpu_clk_parent_map[(((x) & 0x30) >> 4)])
 #define CPU_CLK_CTRL_DIV(x)	(((x) & 0x3F00) >> 8)
 
-static unsigned long zynq_cpu_clk_recalc_rate(struct clk *clk,
+static unsigned long zynq_cpu_clk_recalc_rate(struct clk_hw *hw,
 					      unsigned long parent_rate)
 {
-	struct zynq_cpu_clk *cpuclk = to_zynq_cpu_clk(clk);
+	struct zynq_cpu_clk *cpuclk = to_zynq_cpu_clk(hw);
 	return parent_rate / CPU_CLK_CTRL_DIV(readl(cpuclk->clk_ctrl));
 }
 
-static int zynq_cpu_clk_get_parent(struct clk *clk)
+static int zynq_cpu_clk_get_parent(struct clk_hw *hw)
 {
-	struct zynq_cpu_clk *cpuclk = to_zynq_cpu_clk(clk);
+	struct zynq_cpu_clk *cpuclk = to_zynq_cpu_clk(hw);
 	return CPU_CLK_SRCSEL(readl(cpuclk->clk_ctrl));
 }
 
@@ -243,18 +243,18 @@ static struct clk *zynq_cpu_clk(const char *name, void __iomem *clk_ctrl)
 	cpu = xzalloc(sizeof(*cpu));
 
 	cpu->clk_ctrl		= clk_ctrl;
-	cpu->clk.ops		= &zynq_cpu_clk_ops;
-	cpu->clk.name		= name;
-	cpu->clk.parent_names	= cpu_parents;
-	cpu->clk.num_parents	= ARRAY_SIZE(cpu_parents);
+	cpu->hw.clk.ops = &zynq_cpu_clk_ops;
+	cpu->hw.clk.name = name;
+	cpu->hw.clk.parent_names = cpu_parents;
+	cpu->hw.clk.num_parents = ARRAY_SIZE(cpu_parents);
 
-	ret = clk_register(&cpu->clk);
+	ret = bclk_register(&cpu->hw.clk);
 	if (ret) {
 		free(cpu);
 		return ERR_PTR(ret);
 	}
 
-	return &cpu->clk;
+	return &cpu->hw.clk;
 }
 
 enum zynq_cpu_subclk_which {
@@ -265,7 +265,7 @@ enum zynq_cpu_subclk_which {
 };
 
 struct zynq_cpu_subclk {
-	struct clk	clk;
+	struct clk_hw	hw;
 	void __iomem	*clk_ctrl;
 	void __iomem	*clk_621;
 	enum zynq_cpu_subclk_which which;
@@ -273,16 +273,16 @@ struct zynq_cpu_subclk {
 
 #define CLK_621_TRUE(x)		((x) & 1)
 
-#define to_zynq_cpu_subclk(c)	container_of(c, struct zynq_cpu_subclk, c);
+#define to_zynq_cpu_subclk(c)	container_of(c, struct zynq_cpu_subclk, hw);
 
-static unsigned long zynq_cpu_subclk_recalc_rate(struct clk *clk,
+static unsigned long zynq_cpu_subclk_recalc_rate(struct clk_hw *hw,
 						 unsigned long parent_rate)
 {
 	unsigned long uninitialized_var(rate);
 	struct zynq_cpu_subclk *subclk;
 	bool is_621;
 
-	subclk = to_zynq_cpu_subclk(clk);
+	subclk = to_zynq_cpu_subclk(hw);
 	is_621 = CLK_621_TRUE(readl(subclk->clk_621));
 
 	switch (subclk->which) {
@@ -303,12 +303,12 @@ static unsigned long zynq_cpu_subclk_recalc_rate(struct clk *clk,
 	return rate;
 }
 
-static int zynq_cpu_subclk_enable(struct clk *clk)
+static int zynq_cpu_subclk_enable(struct clk_hw *hw)
 {
 	struct zynq_cpu_subclk *subclk;
 	u32 tmp;
 
-	subclk = to_zynq_cpu_subclk(clk);
+	subclk = to_zynq_cpu_subclk(hw);
 
 	tmp = readl(subclk->clk_ctrl);
 	tmp |= 1 << (24 + subclk->which);
@@ -317,12 +317,12 @@ static int zynq_cpu_subclk_enable(struct clk *clk)
 	return 0;
 }
 
-static void zynq_cpu_subclk_disable(struct clk *clk)
+static void zynq_cpu_subclk_disable(struct clk_hw *hw)
 {
 	struct zynq_cpu_subclk *subclk;
 	u32 tmp;
 
-	subclk = to_zynq_cpu_subclk(clk);
+	subclk = to_zynq_cpu_subclk(hw);
 
 	tmp = readl(subclk->clk_ctrl);
 	tmp &= ~(1 << (24 + subclk->which));
@@ -349,19 +349,19 @@ static struct clk *zynq_cpu_subclk(const char *name,
 	subclk->clk_ctrl	= clk_ctrl;
 	subclk->clk_621		= clk_621;
 	subclk->which		= which;
-	subclk->clk.name	= name;
-	subclk->clk.ops		= &zynq_cpu_subclk_ops;
+	subclk->hw.clk.name = name;
+	subclk->hw.clk.ops = &zynq_cpu_subclk_ops;
 
-	subclk->clk.parent_names = &subclk_parent;
-	subclk->clk.num_parents	= 1;
+	subclk->hw.clk.parent_names = &subclk_parent;
+	subclk->hw.clk.num_parents = 1;
 
-	ret = clk_register(&subclk->clk);
+	ret = bclk_register(&subclk->hw.clk);
 	if (ret) {
 		free(subclk);
 		return ERR_PTR(ret);
 	}
 
-	return &subclk->clk;
+	return &subclk->hw.clk;
 }
 
 static int zynq_clock_probe(struct device_d *dev)

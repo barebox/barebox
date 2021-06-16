@@ -7,18 +7,18 @@
 #include "clk.h"
 
 struct clk_lcdif {
-	struct clk clk;
+	struct clk_hw hw;
 
 	struct clk *frac, *div, *gate;
 	const char *parent;
 };
 
-#define to_clk_lcdif(_hw) container_of(_hw, struct clk_lcdif, clk)
+#define to_clk_lcdif(_hw) container_of(_hw, struct clk_lcdif, hw)
 
-static int clk_lcdif_set_rate(struct clk *clk, unsigned long rate,
+static int clk_lcdif_set_rate(struct clk_hw *hw, unsigned long rate,
 			    unsigned long unused)
 {
-	struct clk_lcdif *lcdif = to_clk_lcdif(clk);
+	struct clk_lcdif *lcdif = to_clk_lcdif(hw);
 	unsigned long frac, div, best_div = 1;
 	int delta, best_delta = 0x7fffffff;
 	unsigned long frate, rrate, best_frate;
@@ -63,14 +63,14 @@ struct clk *mxs_clk_lcdif(const char *name, struct clk *frac, struct clk *div,
 	lcdif->frac = frac;
 	lcdif->div = div;
 	lcdif->gate = gate;
-	lcdif->clk.name = name;
-	lcdif->clk.ops = &clk_lcdif_ops;
-	lcdif->clk.parent_names = &lcdif->parent;
-	lcdif->clk.num_parents = 1;
+	lcdif->hw.clk.name = name;
+	lcdif->hw.clk.ops = &clk_lcdif_ops;
+	lcdif->hw.clk.parent_names = &lcdif->parent;
+	lcdif->hw.clk.num_parents = 1;
 
-	ret = clk_register(&lcdif->clk);
+	ret = bclk_register(&lcdif->hw.clk);
 	if (ret)
 		return ERR_PTR(ret);
 
-	return &lcdif->clk;
+	return &lcdif->hw.clk;
 }

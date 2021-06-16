@@ -26,12 +26,12 @@
 #define PLL_FRAC_DENOM		0x1000000
 
 struct clk_frac_pll {
-	struct clk	clk;
+	struct clk_hw	hw;
 	void __iomem	*base;
 	const char *parent;
 };
 
-#define to_clk_frac_pll(_clk) container_of(_clk, struct clk_frac_pll, clk)
+#define to_clk_frac_pll(_hw) container_of(_hw, struct clk_frac_pll, hw)
 
 static int clk_wait_lock(struct clk_frac_pll *pll)
 {
@@ -63,9 +63,9 @@ static int clk_wait_ack(struct clk_frac_pll *pll)
 	return readl(pll->base) & PLL_NEWDIV_ACK ? 0 : ETIMEDOUT;
 }
 
-static int clk_pll_enable(struct clk *clk)
+static int clk_pll_enable(struct clk_hw *hw)
 {
-	struct clk_frac_pll *pll = to_clk_frac_pll(clk);
+	struct clk_frac_pll *pll = to_clk_frac_pll(hw);
 	u32 val;
 
 	val = readl(pll->base + PLL_CFG0);
@@ -75,9 +75,9 @@ static int clk_pll_enable(struct clk *clk)
 	return clk_wait_lock(pll);
 }
 
-static void clk_pll_disable(struct clk *clk)
+static void clk_pll_disable(struct clk_hw *hw)
 {
-	struct clk_frac_pll *pll = to_clk_frac_pll(clk);
+	struct clk_frac_pll *pll = to_clk_frac_pll(hw);
 	u32 val;
 
 	val = readl(pll->base + PLL_CFG0);
@@ -85,19 +85,19 @@ static void clk_pll_disable(struct clk *clk)
 	writel(val, pll->base + PLL_CFG0);
 }
 
-static int clk_pll_is_enabled(struct clk *clk)
+static int clk_pll_is_enabled(struct clk_hw *hw)
 {
-	struct clk_frac_pll *pll = to_clk_frac_pll(clk);
+	struct clk_frac_pll *pll = to_clk_frac_pll(hw);
 	u32 val;
 
 	val = readl(pll->base + PLL_CFG0);
 	return (val & (1 << PLL_PD)) ? 0 : 1;
 }
 
-static unsigned long clk_pll_recalc_rate(struct clk *clk,
+static unsigned long clk_pll_recalc_rate(struct clk_hw *hw,
 					 unsigned long parent_rate)
 {
-	struct clk_frac_pll *pll = to_clk_frac_pll(clk);
+	struct clk_frac_pll *pll = to_clk_frac_pll(hw);
 	u32 val, divff, divfi, divq;
 	u64 temp64;
 
@@ -115,7 +115,7 @@ static unsigned long clk_pll_recalc_rate(struct clk *clk,
 	return parent_rate * 8 * (divfi + 1) / divq + (unsigned long)temp64;
 }
 
-static long clk_pll_round_rate(struct clk *clk, unsigned long rate,
+static long clk_pll_round_rate(struct clk_hw *hw, unsigned long rate,
 			       unsigned long *prate)
 {
 	u32 divff, divfi;
@@ -144,10 +144,10 @@ static long clk_pll_round_rate(struct clk *clk, unsigned long rate,
  * pllout = parent_rate * 8 / 2 * DIVF_VAL;
  * where DIVF_VAL = 1 + DIVFI + DIVFF / 2^24.
  */
-static int clk_pll_set_rate(struct clk *clk, unsigned long rate,
+static int clk_pll_set_rate(struct clk_hw *hw, unsigned long rate,
 			    unsigned long parent_rate)
 {
-	struct clk_frac_pll *pll = to_clk_frac_pll(clk);
+	struct clk_frac_pll *pll = to_clk_frac_pll(hw);
 	u32 val, divfi, divff;
 	u64 temp64;
 	int ret;
@@ -205,16 +205,16 @@ struct clk *imx_clk_frac_pll(const char *name, const char *parent,
 
 	pll->base = base;
 	pll->parent = parent;
-	pll->clk.ops = &clk_frac_pll_ops;
-	pll->clk.name = name;
-	pll->clk.parent_names = &pll->parent;
-	pll->clk.num_parents = 1;
+	pll->hw.clk.ops = &clk_frac_pll_ops;
+	pll->hw.clk.name = name;
+	pll->hw.clk.parent_names = &pll->parent;
+	pll->hw.clk.num_parents = 1;
 
-	ret = clk_register(&pll->clk);
+	ret = bclk_register(&pll->hw.clk);
 	if (ret) {
 		free(pll);
 		return ERR_PTR(ret);
 	}
 
-	return &pll->clk;
+	return &pll->hw.clk;
 }

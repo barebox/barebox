@@ -57,10 +57,11 @@ static int get_div(struct tegra_clk_frac_div *divider, unsigned long rate,
 	return divider_ux1;
 }
 
-static unsigned long clk_frac_div_recalc_rate(struct clk *hw,
+static unsigned long clk_frac_div_recalc_rate(struct clk_hw *hw,
 					     unsigned long parent_rate)
 {
-	struct tegra_clk_frac_div *divider = to_clk_frac_div(hw);
+	struct clk *clk = clk_hw_to_clk(hw);
+	struct tegra_clk_frac_div *divider = to_clk_frac_div(clk);
 	u32 reg;
 	int div, mul;
 	u64 rate = parent_rate;
@@ -78,10 +79,11 @@ static unsigned long clk_frac_div_recalc_rate(struct clk *hw,
 	return rate;
 }
 
-static long clk_frac_div_round_rate(struct clk *hw, unsigned long rate,
+static long clk_frac_div_round_rate(struct clk_hw *hw, unsigned long rate,
 				   unsigned long *prate)
 {
-	struct tegra_clk_frac_div *divider = to_clk_frac_div(hw);
+	struct clk *clk = clk_hw_to_clk(hw);
+	struct tegra_clk_frac_div *divider = to_clk_frac_div(clk);
 	int div, mul;
 	unsigned long output_rate = *prate;
 
@@ -97,10 +99,11 @@ static long clk_frac_div_round_rate(struct clk *hw, unsigned long rate,
 	return DIV_ROUND_UP(output_rate * mul, div + mul);
 }
 
-static int clk_frac_div_set_rate(struct clk *hw, unsigned long rate,
+static int clk_frac_div_set_rate(struct clk_hw *hw, unsigned long rate,
 				unsigned long parent_rate)
 {
-	struct tegra_clk_frac_div *divider = to_clk_frac_div(hw);
+	struct clk *clk = clk_hw_to_clk(hw);
+	struct tegra_clk_frac_div *divider = to_clk_frac_div(clk);
 	int div;
 	u32 val;
 
@@ -180,7 +183,7 @@ struct clk *tegra_clk_register_divider(const char *name,
 				  reg, flags, clk_divider_flags, shift, width,
 				  frac_width));
 
-	ret = clk_register(&divider->hw);
+	ret = bclk_register(&divider->hw);
 	if (ret) {
 		kfree(divider);
 		return ERR_PTR(ret);

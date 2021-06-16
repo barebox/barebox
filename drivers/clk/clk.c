@@ -36,6 +36,7 @@ static void clk_parent_disable(struct clk *clk)
 
 int clk_enable(struct clk *clk)
 {
+	struct clk_hw *hw;
 	int ret;
 
 	if (!clk)
@@ -44,13 +45,15 @@ int clk_enable(struct clk *clk)
 	if (IS_ERR(clk))
 		return PTR_ERR(clk);
 
+	hw = clk_to_clk_hw(clk);
+
 	if (!clk->enable_count) {
 		ret = clk_parent_enable(clk);
 		if (ret)
 			return ret;
 
 		if (clk->ops->enable) {
-			ret = clk->ops->enable(clk);
+			ret = clk->ops->enable(hw);
 			if (ret) {
 				clk_parent_disable(clk);
 				return ret;
@@ -65,6 +68,8 @@ int clk_enable(struct clk *clk)
 
 void clk_disable(struct clk *clk)
 {
+	struct clk_hw *hw;
+
 	if (!clk)
 		return;
 
@@ -81,9 +86,11 @@ void clk_disable(struct clk *clk)
 
 	clk->enable_count--;
 
+	hw = clk_to_clk_hw(clk);
+
 	if (!clk->enable_count) {
 		if (clk->ops->disable)
-			clk->ops->disable(clk);
+			clk->ops->disable(hw);
 
 		clk_parent_disable(clk);
 	}
@@ -91,6 +98,7 @@ void clk_disable(struct clk *clk)
 
 unsigned long clk_get_rate(struct clk *clk)
 {
+	struct clk_hw *hw;
 	struct clk *parent;
 	unsigned long parent_rate = 0;
 
@@ -106,14 +114,22 @@ unsigned long clk_get_rate(struct clk *clk)
 	if (!IS_ERR_OR_NULL(parent))
 		parent_rate = clk_get_rate(parent);
 
+	hw = clk_to_clk_hw(clk);
+
 	if (clk->ops->recalc_rate)
-		return clk->ops->recalc_rate(clk, parent_rate);
+		return clk->ops->recalc_rate(hw, parent_rate);
 
 	return parent_rate;
 }
 
+unsigned long clk_hw_get_rate(struct clk_hw *hw)
+{
+	return clk_get_rate(clk_hw_to_clk(hw));
+}
+
 long clk_round_rate(struct clk *clk, unsigned long rate)
 {
+	struct clk_hw *hw;
 	unsigned long parent_rate = 0;
 	struct clk *parent;
 
@@ -127,14 +143,22 @@ long clk_round_rate(struct clk *clk, unsigned long rate)
 	if (parent)
 		parent_rate = clk_get_rate(parent);
 
+	hw = clk_to_clk_hw(clk);
+
 	if (clk->ops->round_rate)
-		return clk->ops->round_rate(clk, rate, &parent_rate);
+		return clk->ops->round_rate(hw, rate, &parent_rate);
 
 	return clk_get_rate(clk);
 }
 
+long clk_hw_round_rate(struct clk_hw *hw, unsigned long rate)
+{
+	return clk_round_rate(&hw->clk, rate);
+}
+
 int clk_set_rate(struct clk *clk, unsigned long rate)
 {
+	struct clk_hw *hw;
 	struct clk *parent;
 	unsigned long parent_rate = 0;
 	int ret;
@@ -145,8 +169,17 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
 	if (IS_ERR(clk))
 		return PTR_ERR(clk);
 
+	if (clk_get_rate(clk) == clk_round_rate(clk, rate))
+		return 0;
+
 	if (!clk->ops->set_rate)
 		return -ENOSYS;
+
+	if (clk->flags & CLK_SET_RATE_UNGATE) {
+		ret = clk_enable(clk);
+		if (ret)
+			return ret;
+	}
 
 	parent = clk_get_parent(clk);
 	if (parent) {
@@ -155,16 +188,27 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
 		if (clk->flags & CLK_OPS_PARENT_ENABLE) {
 			ret = clk_enable(parent);
 			if (ret)
-				return ret;
+				goto out;
 		}
 	}
 
-	ret = clk->ops->set_rate(clk, rate, parent_rate);
+	hw = clk_to_clk_hw(clk);
+
+	ret = clk->ops->set_rate(hw, rate, parent_rate);
 
 	if (parent && clk->flags & CLK_OPS_PARENT_ENABLE)
 		clk_disable(parent);
 
+out:
+	if (clk->flags & CLK_SET_RATE_UNGATE)
+		clk_disable(clk);
+
 	return ret;
+}
+
+int clk_hw_set_rate(struct clk_hw *hw, unsigned long rate)
+{
+	return clk_set_rate(&hw->clk, rate);
 }
 
 struct clk *clk_lookup(const char *name)
@@ -184,6 +228,7 @@ struct clk *clk_lookup(const char *name)
 
 int clk_set_parent(struct clk *clk, struct clk *newparent)
 {
+	struct clk_hw *hw;
 	int i, ret;
 	struct clk *curparent = clk_get_parent(clk);
 
@@ -217,7 +262,9 @@ int clk_set_parent(struct clk *clk, struct clk *newparent)
 		clk_enable(newparent);
 	}
 
-	ret = clk->ops->set_parent(clk, i);
+	hw = clk_to_clk_hw(clk);
+
+	ret = clk->ops->set_parent(hw, i);
 
 	if (clk->flags & CLK_OPS_PARENT_ENABLE) {
 		clk_disable(curparent);
@@ -230,8 +277,14 @@ int clk_set_parent(struct clk *clk, struct clk *newparent)
 	return ret;
 }
 
+int clk_hw_set_parent(struct clk_hw *hw, struct clk_hw *newparent)
+{
+	return clk_set_parent(&hw->clk, &newparent->clk);
+}
+
 struct clk *clk_get_parent(struct clk *clk)
 {
+	struct clk_hw *hw;
 	int idx;
 
 	if (IS_ERR(clk))
@@ -240,11 +293,13 @@ struct clk *clk_get_parent(struct clk *clk)
 	if (!clk->num_parents)
 		return ERR_PTR(-ENODEV);
 
+	hw = clk_to_clk_hw(clk);
+
 	if (clk->num_parents != 1) {
 		if (!clk->ops->get_parent)
 			return ERR_PTR(-EINVAL);
 
-		idx = clk->ops->get_parent(clk);
+		idx = clk->ops->get_parent(hw);
 
 		if (idx >= clk->num_parents)
 			return ERR_PTR(-ENODEV);
@@ -258,9 +313,76 @@ struct clk *clk_get_parent(struct clk *clk)
 	return clk->parents[idx];
 }
 
-int clk_register(struct clk *clk)
+struct clk_hw *clk_hw_get_parent(struct clk_hw *hw)
 {
+	struct clk *clk = clk_get_parent(clk_hw_to_clk(hw));
+
+	if (IS_ERR(clk))
+		return ERR_CAST(clk);
+
+	return clk_to_clk_hw(clk);
+}
+
+/**
+ * clk_set_phase - adjust the phase shift of a clock signal
+ * @clk: clock signal source
+ * @degrees: number of degrees the signal is shifted
+ *
+ * Shifts the phase of a clock signal by the specified
+ * degrees. Returns 0 on success, -EERROR otherwise.
+ *
+ * This function makes no distinction about the input or reference
+ * signal that we adjust the clock signal phase against. For example
+ * phase locked-loop clock signal generators we may shift phase with
+ * respect to feedback clock signal input, but for other cases the
+ * clock phase may be shifted with respect to some other, unspecified
+ * signal.
+ *
+ * Additionally the concept of phase shift does not propagate through
+ * the clock tree hierarchy, which sets it apart from clock rates and
+ * clock accuracy. A parent clock phase attribute does not have an
+ * impact on the phase attribute of a child clock.
+ */
+int clk_set_phase(struct clk *clk, int degrees)
+{
+	if (!clk)
+		return 0;
+
+	/* sanity check degrees */
+	degrees %= 360;
+	if (degrees < 0)
+		degrees += 360;
+
+	if (!clk->ops->set_phase)
+		return -EINVAL;
+
+	return clk->ops->set_phase(clk_to_clk_hw(clk), degrees);
+}
+
+/**
+ * clk_get_phase - return the phase shift of a clock signal
+ * @clk: clock signal source
+ *
+ * Returns the phase shift of a clock node in degrees, otherwise returns
+ * -EERROR.
+ */
+int clk_get_phase(struct clk *clk)
+{
+	int ret;
+
+	if (!clk->ops->get_phase)
+		return 0;
+
+	ret = clk->ops->get_phase(clk_to_clk_hw(clk));
+
+	return ret;
+}
+
+int bclk_register(struct clk *clk)
+{
+	struct clk_hw *hw = clk_to_clk_hw(clk);
 	struct clk *c;
+	int ret;
 
 	list_for_each_entry(c, &clks, list) {
 		if (!strcmp(c->name, clk->name)) {
@@ -274,15 +396,64 @@ int clk_register(struct clk *clk)
 
 	list_add_tail(&clk->list, &clks);
 
+	if (clk->ops->init) {
+		ret = clk->ops->init(hw);
+		if (ret)
+			goto out;
+	}
+
 	if (clk->flags & CLK_IS_CRITICAL)
 		clk_enable(clk);
 
 	return 0;
+out:
+	list_del(&clk->list);
+	free(clk->parents);
+
+	return ret;
+}
+
+struct clk *clk_register(struct device_d *dev, struct clk_hw *hw)
+{
+	struct clk *clk;
+	const struct clk_init_data *init = hw->init;
+	char **parent_names;
+	int i, ret;
+
+	if (!hw->init)
+		return ERR_PTR(-EINVAL);
+
+	clk = clk_hw_to_clk(hw);
+
+	memset(clk, 0, sizeof(*clk));
+
+	clk->name = xstrdup(init->name);
+	clk->ops = init->ops;
+	clk->num_parents = init->num_parents;
+	parent_names = xzalloc(init->num_parents * sizeof(char *));
+
+	for (i = 0; i < init->num_parents; i++)
+		parent_names[i] = xstrdup(init->parent_names[i]);
+
+	clk->parent_names = (const char *const*)parent_names;
+
+	clk->flags = init->flags;
+
+	ret = bclk_register(clk);
+	if (ret) {
+		for (i = 0; i < init->num_parents; i++)
+			free(parent_names[i]);
+		free(parent_names);
+		return ERR_PTR(ret);
+	}
+
+	return clk;
 }
 
 int clk_is_enabled(struct clk *clk)
 {
 	int enabled;
+	struct clk_hw *hw = clk_to_clk_hw(clk);
 
 	if (IS_ERR(clk))
 		return 0;
@@ -291,7 +462,7 @@ int clk_is_enabled(struct clk *clk)
 		/*
 		 * If we can ask a clk, do it
 		 */
-		enabled = clk->ops->is_enabled(clk);
+		enabled = clk->ops->is_enabled(hw);
 	} else {
 		if (clk->ops->enable) {
 			/*
@@ -320,26 +491,35 @@ int clk_is_enabled(struct clk *clk)
 	return clk_is_enabled(clk);
 }
 
+int clk_hw_is_enabled(struct clk_hw *hw)
+{
+	return clk_is_enabled(&hw->clk);
+}
+
 /*
  * Generic struct clk_ops callbacks
  */
-int clk_is_enabled_always(struct clk *clk)
+int clk_is_enabled_always(struct clk_hw *hw)
 {
 	return 1;
 }
 
-long clk_parent_round_rate(struct clk *clk, unsigned long rate,
+long clk_parent_round_rate(struct clk_hw *hw, unsigned long rate,
 				unsigned long *prate)
 {
+	struct clk *clk = clk_hw_to_clk(hw);
+
 	if (!(clk->flags & CLK_SET_RATE_PARENT))
 		return *prate;
 
 	return clk_round_rate(clk_get_parent(clk), rate);
 }
 
-int clk_parent_set_rate(struct clk *clk, unsigned long rate,
+int clk_parent_set_rate(struct clk_hw *hw, unsigned long rate,
 				unsigned long parent_rate)
 {
+	struct clk *clk = clk_hw_to_clk(hw);
+
 	if (!(clk->flags & CLK_SET_RATE_PARENT))
 		return 0;
 	return clk_set_rate(clk_get_parent(clk), rate);
@@ -663,8 +843,10 @@ int of_clk_init(struct device_node *root, const struct of_device_id *matches)
 
 static const char *clk_hw_stat(struct clk *clk)
 {
+	struct clk_hw *hw = clk_to_clk_hw(clk);
+
 	if (clk->ops->is_enabled) {
-		if (clk->ops->is_enabled(clk))
+		if (clk->ops->is_enabled(hw))
 			return "enabled";
 		else
 			return "disabled";

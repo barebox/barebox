@@ -68,7 +68,7 @@ struct fpga_bridge *of_fpga_bridge_get(struct device_node *np)
 {
 	struct device_d *dev;
 	struct fpga_bridge *bridge;
-	int ret = -ENODEV;
+	int ret = -EPROBE_DEFER;
 
 	dev = of_find_device_by_node(np);
 	if (!dev || !dev->priv)

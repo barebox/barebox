@@ -305,7 +305,7 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	struct usb_host *host = dev->host;
 	struct ehci_host *ehci = to_ehci(host);
 	const bool dir_in = usb_pipein(pipe);
-	dma_addr_t buffer_dma, req_dma;
+	dma_addr_t buffer_dma = DMA_ERROR_CODE, req_dma;
 	struct QH *qh = &ehci->qh_list[1];
 	struct qTD *td;
 	volatile struct qTD *vtd;

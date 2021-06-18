@@ -138,6 +138,29 @@ static u32 *arm_create_pte(unsigned long virt, uint32_t flags)
 	return table;
 }
 
+static u32 pmd_flags_to_pte(u32 pmd)
+{
+	u32 pte = 0;
+
+	if (pmd & PMD_SECT_BUFFERABLE)
+		pte |= PTE_BUFFERABLE;
+	if (pmd & PMD_SECT_CACHEABLE)
+		pte |= PTE_CACHEABLE;
+	if (pmd & PMD_SECT_nG)
+		pte |= PTE_EXT_NG;
+	if (pmd & PMD_SECT_XN)
+		pte |= PTE_EXT_XN;
+
+	/* TEX[2:0] */
+	pte |= PTE_EXT_TEX((pmd >> 12) & 7);
+	/* AP[1:0] */
+	pte |= ((pmd >> 10) & 0x3) << 4;
+	/* AP[2] */
+	pte |= ((pmd >> 15) & 0x1) << 9;
+
+	return pte;
+}
+
 int arch_remap_range(void *start, size_t size, unsigned flags)
 {
 	u32 addr = (u32)start;
@@ -206,11 +229,8 @@ int arch_remap_range(void *start, size_t size, unsigned flags)
 				 * If PTE is not found it means that
 				 * we needs to split this section and
 				 * create a new page table for it
-				 *
-				 * NOTE: Here we assume that section
-				 * we just split was mapped as cached
 				 */
-				table = arm_create_pte(addr, pte_flags_cached);
+				table = arm_create_pte(addr, pmd_flags_to_pte(*pgd));
 				pte = find_pte(addr);
 				BUG_ON(!pte);
 			}

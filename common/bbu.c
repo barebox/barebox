@@ -4,6 +4,9 @@
  *
  * Copyright (c) 2012 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  */
+
+#define pr_fmt(fmt) "bbu: " fmt
+
 #include <common.h>
 #include <bbu.h>
 #include <linux/list.h>

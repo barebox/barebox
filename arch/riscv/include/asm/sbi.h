@@ -9,9 +9,7 @@
 
 #include <linux/types.h>
 
-#ifdef CONFIG_RISCV_SBI
 enum sbi_ext_id {
-#ifdef CONFIG_RISCV_SBI_V01
 	SBI_EXT_0_1_SET_TIMER = 0x0,
 	SBI_EXT_0_1_CONSOLE_PUTCHAR = 0x1,
 	SBI_EXT_0_1_CONSOLE_GETCHAR = 0x2,
@@ -21,7 +19,7 @@ enum sbi_ext_id {
 	SBI_EXT_0_1_REMOTE_SFENCE_VMA = 0x6,
 	SBI_EXT_0_1_REMOTE_SFENCE_VMA_ASID = 0x7,
 	SBI_EXT_0_1_SHUTDOWN = 0x8,
-#endif
+
 	SBI_EXT_BASE = 0x10,
 	SBI_EXT_TIME = 0x54494D45,
 	SBI_EXT_IPI = 0x735049,
@@ -167,7 +165,5 @@ static inline unsigned long sbi_minor_version(void)
 }
 
 int sbi_err_map_linux_errno(int err);
-#else /* CONFIG_RISCV_SBI */
-static inline int sbi_remote_fence_i(const unsigned long *hart_mask) { return -1; }
-#endif /* CONFIG_RISCV_SBI */
+
 #endif /* _ASM_RISCV_SBI_H */

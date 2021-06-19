@@ -47,9 +47,9 @@ config CMD_ARM_CPUINFO
 config CMD_RISCV_CPUINFO
 	bool "cpuinfo command"
 	default y
-	depends on RISCV_SBI
+	depends on RISCV
 	help
-	  Show SBI info about RISC-V CPU
+	  Show info about RISC-V CPU
 
 config CMD_DEVINFO
 	tristate

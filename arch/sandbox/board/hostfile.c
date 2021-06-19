@@ -182,7 +182,7 @@ static struct driver_d hf_drv = {
 	.of_compatible = DRV_OF_COMPAT(hostfile_dt_ids),
 	.probe = hf_probe,
 };
-device_platform_driver(hf_drv);
+postcore_platform_driver(hf_drv);
 
 static int of_hostfile_fixup(struct device_node *root, void *ctx)
 {

@@ -16,7 +16,6 @@ config BOARD_ERIZO_GENERIC
 config SOC_VIRT
 	bool "QEMU Virt Machine"
 	select BOARD_RISCV_GENERIC_DT
-	select CLINT_TIMER
 	help
 	  Generates an image tht can be be booted by QEMU. The image is called
 	  barebox-dt-2nd.img

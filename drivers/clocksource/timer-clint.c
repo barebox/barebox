@@ -72,7 +72,7 @@ static int clint_timer_init_dt(struct device_d* dev)
 		return PTR_ERR(iores);
 	clint_timer_val = IOMEM(iores->start) + CLINT_TIMER_VAL_OFF;
 
-	dev_info(dev, "running at %lu Hz\n", riscv_timebase);
+	dev_dbg(dev, "running at %lu Hz\n", riscv_timebase);
 
 	clint_clocksource.mult = clocksource_hz2mult(riscv_timebase, clint_clocksource.shift);
 

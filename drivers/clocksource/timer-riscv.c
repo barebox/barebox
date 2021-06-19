@@ -59,7 +59,7 @@ static struct clocksource riscv_clocksource = {
 
 static int riscv_timer_init(struct device_d* dev)
 {
-	dev_info(dev, "running at %lu Hz\n", riscv_timebase);
+	dev_dbg(dev, "running at %lu Hz\n", riscv_timebase);
 
 	riscv_clocksource.mult = clocksource_hz2mult(riscv_timebase, riscv_clocksource.shift);
 

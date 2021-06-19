@@ -15,6 +15,7 @@
 #include <init.h>
 #include <soc/sifive/l2_cache.h>
 #include <asm/barrier.h>
+#include <linux/bitops.h>
 
 #define SIFIVE_L2_DIRECCFIX_LOW 0x100
 #define SIFIVE_L2_DIRECCFIX_HIGH 0x104
@@ -39,6 +40,9 @@
 #define SIFIVE_L2_ECCINJECTERR 0x40
 
 #define SIFIVE_L2_MAX_ECCINTR 4
+
+#define MASK_NUM_WAYS   GENMASK(15, 8)
+#define NUM_WAYS_SHIFT  8
 
 #define SIFIVE_L2_FLUSH64_LINE_LEN 64
 
@@ -84,6 +88,19 @@ void sifive_l2_flush64_range(dma_addr_t start, dma_addr_t end)
 	}
 }
 
+static void sifive_l2_enable_ways(void)
+{
+	u32 config;
+	u32 ways;
+
+	config = readl(l2_base + SIFIVE_L2_CONFIG);
+	ways = (config & MASK_NUM_WAYS) >> NUM_WAYS_SHIFT;
+
+	mb();
+	writel(ways - 1, l2_base + SIFIVE_L2_WAYENABLE);
+	mb();
+}
+
 static int sifive_l2_probe(struct device_d *dev)
 {
 	struct resource *iores;
@@ -96,6 +113,8 @@ static int sifive_l2_probe(struct device_d *dev)
 		return PTR_ERR(iores);
 
 	l2_base = IOMEM(iores->start);
+
+	sifive_l2_enable_ways();
 
 	dev->info = sifive_l2_config_read;
 

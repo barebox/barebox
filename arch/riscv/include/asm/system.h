@@ -26,6 +26,22 @@ static inline enum riscv_mode __riscv_mode(u32 flags)
 	return flags & RISCV_MODE_MASK;
 }
 
+static inline long __riscv_hartid(u32 flags)
+{
+	long hartid = -1;
+
+	switch (__riscv_mode(flags)) {
+	case RISCV_S_MODE:
+		__asm__ volatile("mv %0, tp\n" : "=r"(hartid) :);
+		break;
+	default:
+		/* unimplemented */
+		break;
+	}
+
+	return hartid;
+}
+
 #ifndef __PBL__
 extern unsigned barebox_riscv_pbl_flags;
 
@@ -34,6 +50,10 @@ static inline enum riscv_mode riscv_mode(void)
 	return __riscv_mode(barebox_riscv_pbl_flags);
 }
 
+static inline long riscv_hartid(void)
+{
+	return __riscv_hartid(barebox_riscv_pbl_flags);
+}
 #endif
 
 #endif

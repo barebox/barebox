@@ -34,6 +34,7 @@ static int do_cpuinfo(int argc, char *argv[])
 
 	switch (mode) {
 	case RISCV_S_MODE:
+		printf("Hart ID=%lu\n", riscv_hartid());
 		if (!IS_ENABLED(CONFIG_RISCV_SBI))
 			break;
 		printf("SBI specification v%lu.%lu detected\n",

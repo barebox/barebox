@@ -3,11 +3,13 @@
 
 #include <common.h>
 #include <bootm.h>
+#include <asm/system.h>
 
 static int do_bootm_linux(struct image_data *data)
 {
 	void (*fn)(unsigned long a0, unsigned long dtb, unsigned long a2);
 	phys_addr_t devicetree;
+	long hartid = riscv_hartid();
 
 	fn = booti_load_image(data, &devicetree);
 	if (IS_ERR(fn))
@@ -15,7 +17,7 @@ static int do_bootm_linux(struct image_data *data)
 
 	shutdown_barebox();
 
-	fn(0, devicetree, 0);
+	fn(hartid >= 0 ? hartid : 0, devicetree, 0);
 
 	return -EINVAL;
 }

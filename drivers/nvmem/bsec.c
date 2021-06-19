@@ -23,7 +23,6 @@
 struct bsec_priv {
 	u32 svc_id;
 	struct regmap_config map_config;
-	struct nvmem_config config;
 };
 
 struct stm32_bsec_data {

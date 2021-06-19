@@ -46,6 +46,8 @@ ENTRY(relocate_to_adr)
 
 	jal	__memcpy
 
+	jal	sync_caches_for_execution
+
 	REG_L	a0, (SZREG * 1)(sp)
 	jr	a0 			/* jump to relocated address */
 copied:

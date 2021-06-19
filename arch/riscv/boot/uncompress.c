@@ -66,6 +66,8 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 
 	pbl_barebox_uncompress((void*)barebox_base, pg_start, pg_len);
 
+	sync_caches_for_execution();
+
 	barebox = (void *)barebox_base;
 
 	pr_debug("jumping to uncompressed image at 0x%p. dtb=0x%p\n", barebox, fdt);

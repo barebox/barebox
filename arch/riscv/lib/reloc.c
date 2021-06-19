@@ -5,6 +5,7 @@
 #include <linux/linkage.h>
 #include <asm/sections.h>
 #include <asm/barebox-riscv.h>
+#include <asm/cacheflush.h>
 #include <debug_ll.h>
 #include <asm-generic/module.h>
 
@@ -23,6 +24,11 @@
 #endif
 
 #define RISC_R_TYPE(x)	((x) & 0xFF)
+
+void sync_caches_for_execution(void)
+{
+	local_flush_icache_all();
+}
 
 void relocate_to_current_adr(void)
 {
@@ -63,4 +69,6 @@ void relocate_to_current_adr(void)
 			panic("");
 		}
 	}
+
+	sync_caches_for_execution();
 }

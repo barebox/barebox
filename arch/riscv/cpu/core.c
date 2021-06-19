@@ -18,6 +18,7 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <memory.h>
+#include <asm/barebox-riscv.h>
 #include <asm-generic/memory_layout.h>
 #include <globalvar.h>
 #include <magicvar.h>
@@ -92,3 +93,9 @@ static struct driver_d riscv_driver = {
 	.of_compatible = riscv_dt_ids,
 };
 postcore_platform_driver(riscv_driver);
+
+static void arch_shutdown(void)
+{
+	sync_caches_for_execution();
+}
+archshutdown_exitcall(arch_shutdown);

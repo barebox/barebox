@@ -28,6 +28,7 @@ config SELFTEST_AUTORUN
 config SELFTEST_ENABLE_ALL
 	bool "Enable all self-tests"
 	select SELFTEST_PRINTF
+	select SELFTEST_PROGRESS_NOTIFIER
 	help
 	  Selects all self-tests compatible with current configuration
 
@@ -35,5 +36,8 @@ config SELFTEST_PRINTF
 	bool "printf selftest"
 	help
 	  Tests barebox vsnprintf() functionality
+
+config SELFTEST_PROGRESS_NOTIFIER
+	bool "progress notifier selftest"
 
 endif

@@ -64,5 +64,10 @@ config SOC_STARFIVE_JH7100
 
 endif
 
+comment "CPU features"
+
+config SIFIVE_L2
+	bool "SiFive L2 cache controller"
+	depends on CPU_SIFIVE
 
 endmenu

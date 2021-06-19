@@ -1376,12 +1376,18 @@ config DEBUG_RPI3_MINI_UART
 config DEBUG_ERIZO
 	bool "Erizo ns16550 port"
 	depends on SOC_ERIZO
+	select DEBUG_LL_NS16550
 
 config DEBUG_SIFIVE
 	bool "SiFive serial0 port"
 	depends on SOC_SIFIVE
 
 endchoice
+
+config DEBUG_LL_NS16550
+	bool
+	help
+	  Selected by RISC-V platforms that use ns16550 for debug_ll
 
 config DEBUG_IMX_UART_PORT
 	int "i.MX Debug UART Port Selection" if DEBUG_IMX1_UART || \

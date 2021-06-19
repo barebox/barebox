@@ -1,0 +1,13 @@
+#!/bin/sh
+
+BOOT=/mnt/mmc0.0/boot
+
+detect mmc0
+
+global.linux.bootargs.base="rhgb stmmaceth=chain_mode:1"
+
+global.bootm.oftree=$BOOT/jh7100-starlight.dtb
+global.bootm.image=$BOOT/Image
+global linux.bootargs.root=rootwait
+global linux.bootargs.earlycon=earlycon
+global.bootm.appendroot=1

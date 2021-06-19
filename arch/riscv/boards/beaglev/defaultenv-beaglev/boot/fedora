@@ -1,0 +1,16 @@
+#!/bin/sh
+
+BOOT=/mnt/mmc0.0
+VERSION=5.10.6-210.0.riscv64.fc33.riscv64
+
+detect mmc0
+
+global.linux.bootargs.base="root=UUID=ae1e722a-d01b-4cdc-ab56-7b68abcdd0fe rhgb stmmaceth=chain_mode:1 selinux=0 LANG=en_US.UTF-8"
+
+global.bootm.oftree=${BOOT}/starfive_vic7100_beagle_v.dtb
+global.bootm.initrd=${BOOT}/initramfs-${VERSION}.img
+global.bootm.image=${BOOT}/vmlinuz-${VERSION}
+global linux.bootargs.root=rootwait
+global linux.bootargs.earlycon=earlycon
+#global.bootm.root_dev=mmc0.1
+#global.bootm.appendroot=1

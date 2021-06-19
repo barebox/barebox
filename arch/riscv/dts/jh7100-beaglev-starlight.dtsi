@@ -1,0 +1,369 @@
+// SPDX-License-Identifier: GPL-2.0
+
+#include "jh7100.dtsi"
+#include <dt-bindings/gpio/gpio.h>
+
+/ {
+	#address-cells = <2>;
+	#size-cells = <2>;
+	compatible = "beagle,beaglev-starlight-jh7100", "starfive,jh7100";
+	model = "BeagleV Starlight Beta";
+
+	aliases {
+		serial0 = &uart3;
+		serial1 = &uart0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200";
+	};
+
+	cpus {
+		timebase-frequency = <6250000>;
+	};
+
+	gpiopof: gpio-poweroff {
+		compatible = "gpio-poweroff";
+		gpios = <&gpio 63 GPIO_ACTIVE_HIGH>;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+
+		led-0 {
+			label = "beaglev:green:ack";
+			gpios = <&gpio 43 GPIO_ACTIVE_HIGH>;
+		};
+	};
+
+	memory@80000000 {
+		device_type = "memory";
+		reg = <0x0 0x80000000 0x2 0x0>;
+	};
+
+	memory@3000000000 {
+		device_type = "memory";
+		reg = <0x30 0x0 0x0 0x0>;
+	};
+};
+
+&gmac {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_rgmii>;
+	phy-mode = "rgmii-txid";
+	nvmem-cell-names = "mac-address";
+	nvmem-cells = <&ethaddr>;
+};
+
+&gpio {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_gpio>;
+};
+
+&sdio0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_sdio0>;
+	bus-width = <4>;
+	cap-sd-highspeed;
+	broken-cd;
+	no-sdio;
+	status = "okay";
+};
+
+&sdio1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_sdio1>;
+	status = "okay";
+};
+
+&uart0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart0>;
+	status = "okay";
+};
+
+&uart3 {
+	status = "okay";
+};
+
+&usb3 {
+	dr_mode = "host";
+	status = "okay";
+};
+
+&i2c0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c0>;
+	status = "okay";
+
+	imx219@10 {
+		compatible = "imx219";
+		reg = <0x10>;
+		reset-gpio = <&gpio 58 0>;
+	};
+
+	tps65086@5e {
+		compatible = "ti,tps65086";
+		reg = <0x5e>;
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
+
+	tda998x@70 {
+		compatible = "nxp,tda998x";
+		reg = <0x70>;
+	};
+};
+
+&i2c1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c1>;
+	status = "okay";
+};
+
+&i2c2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c2>;
+	status = "okay";
+
+	seeed_plane_i2c@45 {
+		compatible = "seeed_panel";
+		reg = <0x45>;
+	};
+};
+
+&qspi {
+	nor_flash: nor-flash@0 {
+		compatible = "spi-flash";
+		reg = <0>;
+		spi-max-frequency = <31250000>;
+		cdns,page-size = <256>;
+		cdns,block-size = <16>;
+		cdns,read-delay = <4>;
+		cdns,tshsl-ns = <1>;
+		cdns,tsd2d-ns = <1>;
+		cdns,tchsh-ns = <1>;
+		cdns,tslch-ns = <1>;
+		spi-tx-bus-width = <1>;
+		spi-rx-bus-width = <1>;
+	};
+};
+
+&spi2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_spi2>;
+	status = "okay";
+
+	spi_dev0: spi@0 {
+		compatible = "rohm,dh2228fv";
+		spi-max-frequency = <10000000>;
+		reg = <0>;
+		status = "okay";
+	};
+};
+
+&qspi {
+	status = "okay";
+};
+
+&spi2 {
+	status = "okay";
+};
+
+&otp {
+	power-gpios = <&gpio 56 GPIO_ACTIVE_HIGH>;
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	ethaddr: ethaddr@28 {
+		reg = <0x28 6>;
+		label = "mac-address";
+	};
+};
+
+&gpio {
+	pinctrl_uart0: uart0_pins {
+		pinctrl-single,pins = <
+			0x358 0x2a	/* GPIO40: uart0_pad_sin */
+			0x194 0x1	/* GPIO40: doen_HIGH */
+			0x198 0x7f	/* GPIO41: dout_uart0_pad_sout */
+			0x19c 0x0	/* GPIO41: doen_LOW */
+			0x1a0 0x7e	/* GPIO42: dout_uart0_pad_rtsn */
+			0x1a4 0x0	/* GPIO42: doen_LOW */
+			0x348 0x29	/* GPIO39: uart0_pad_ctsn */
+			0x18c 0x1	/* GPIO39: doen_HIGH */
+			0x16c 0x0	/* GPIO35: doen_LOW */
+			0x168 0x1	/* GPIO35: dout_HIGH */
+		>;
+	};
+
+	pinctrl_i2c0: i2c0_pins {
+		pinctrl-single,pins = <
+			0x240 0x0		/* GPIO62: dout_LOW */
+			0x238 0x0		/* GPIO61: dout_LOW */
+			0x244 0x80000008	/* GPIO62: doen_i2c0_pad_sck_oe
+							   doen_reverse_(1) */
+			0x23c 0x80000009	/* GPIO61: doen_i2c0_pad_sda_oe
+							   doen_reverse_(1) */
+			0x278 0x40		/* GPIO62: i2c0_pad_sck_in */
+			0x27c 0x3f		/* GPIO61: i2c0_pad_sda_in */
+		>;
+	};
+
+	pinctrl_i2c1: i2c1_pins {
+		pinctrl-single,pins = <
+			0x1c8 0x0		/* GPIO47: dout_LOW */
+			0x1d0 0x0		/* GPIO48: dout_LOW */
+			0x1cc 0x8000000a	/* GPIO47: doen_i2c1_pad_sck_oe
+							   doen_reverse_(1) */
+			0x1d4 0x8000000b	/* GPIO48: doen_i2c1_pad_sda_oe
+							   doen_reverse_(1) */
+			0x280 0x31		/* GPIO47: i2c1_pad_sck_in */
+			0x284 0x32		/* GPIO48: i2c1_pad_sda_in */
+		>;
+	};
+
+	pinctrl_i2c2: i2c2_pins {
+		pinctrl-single,pins = <
+			0x230 0x0		/* GPIO60: dout_LOW */
+			0x228 0x0		/* GPIO59: dout_LOW */
+			0x234 0x8000000c	/* GPIO60: doen_i2c2_pad_sck_oe
+							   doen_reverse_(1) */
+			0x22c 0x8000000d	/* GPIO59: doen_i2c2_pad_sda_oe
+							   doen_reverse_(1) */
+			0x288 0x3e		/* GPIO60: i2c2_pad_sck_in */
+			0x28c 0x3d		/* GPIO59: i2c2_pad_sda_in */
+		>;
+	};
+
+	pinctrl_spi2: spi2_pins {
+		pinctrl-single,pins = <
+			/* MISO */
+			0xa8  0x6f	/* GPIO11: dout_spi2_pad_txd */
+			0xac  0x0	/* GPIO11: doen_LOW */
+			/* MOSI */
+			0x320 0xe	/* GPIO12: spi2_pad_rxd */
+			0xb4  0x1	/* GPIO12: doen_HIGH */
+			/* SCLK */
+			0xe0  0x6c	/* GPIO18: dout_spi2_pad_sck_out */
+			0xe4  0x0	/* GPIO18: doen_LOW */
+			/* CS */
+			0xe8  0x6d	/* GPIO19: dout_spi2_pad_ss_0_n */
+			0xec  0x0	/* GPIO19: doen_LOW */
+		>;
+
+	};
+
+	pinctrl_sdio0: sdio0_pins {
+		pinctrl-single,pins = <
+			0x2b4 0x39		/* GPIO55: sdio0_pad_card_detect_n */
+			0x20c 0x1		/* GPIO55: doen_HIGH */
+			0x200 0x36		/* GPIO54: dout_sdio0_pad_cclk_out */
+			0x204 0x0		/* GPIO54: doen_LOW */
+			0x1fc 0x80000037	/* GPIO53: doen_sdio0_pad_ccmd_oe
+							   doen_reverse_(1) */
+			0x1f8 0x38		/* GPIO53: dout_sdio0_pad_ccmd_out */
+			0x2bc 0x37		/* GPIO53: _sdio0_pad_ccmd_in */
+			0x1dc 0x80000039	/* GPIO49: doen_sdio0_pad_cdata_oe_bit0
+							   doen_reverse_(1) */
+			0x1d8 0x41		/* GPIO49: dout_sdio0_pad_cdata_out_bit0 */
+			0x2c0 0x33		/* GPIO49: sdio0_pad_cdata_in_bit0 */
+			0x1e4 0x8000003a	/* GPIO50: doen_sdio0_pad_cdata_oe_bit1
+							   doen_reverse_(1) */
+			0x1e0 0x42		/* GPIO50: dout_sdio0_pad_cdata_out_bit1 */
+			0x2c4 0x34		/* GPIO50: sdio0_pad_cdata_in_bit1 */
+			0x1ec 0x8000003b	/* GPIO51: doen_sdio0_pad_cdata_oe_bit2
+							   doen_reverse_(1) */
+			0x1e8 0x43		/* GPIO51: dout_sdio0_pad_cdata_out_bit2 */
+			0x2c8 0x35		/* GPIO51: sdio0_pad_cdata_in_bit2 */
+			0x1f4 0x8000003c	/* GPIO52: doen_sdio0_pad_cdata_oe_bit3
+							   doen_reverse_(1) */
+			0x1f0 0x44		/* GPIO52: dout_sdio0_pad_cdata_out_bit3 */
+			0x2cc 0x36		/* GPIO52: sdio0_pad_cdata_in_bit3(52) */
+		>;
+	};
+
+	pinctrl_sdio1: sdio1_pins {
+		pinctrl-single,pins = <
+			0x158 0x4b		/* GPIO33: dout_sdio1_pad_cclk_out */
+			0x15c 0x0		/* GPIO33: doen_LOW */
+			0x13c 0x8000004c	/* GPIO29: doen_sdio1_pad_ccmd_oe
+							   doen_reverse_(1) */
+			0x138 0x4d		/* GPIO29: dout_sdio1_pad_ccmd_out */
+			0x2e8 0x1f		/* GPIO29: sdio1_pad_ccmd_in */
+			0x174 0x8000004e	/* GPIO36: doen_sdio1_pad_cdata_oe_bit0
+							   doen_reverse_(1) */
+			0x170 0x56		/* GPIO36: dout_sdio1_pad_cdata_out_bit0 */
+			0x2ec 0x26		/* GPIO36: sdio1_pad_cdata_in_bit0 */
+			0x144 0x8000004f	/* GPIO30: doen_sdio1_pad_cdata_oe_bit1
+							   doen_reverse_(1) */
+			0x140 0x57		/* GPIO30: dout_sdio1_pad_cdata_out_bit1 */
+			0x2f0 0x20		/* GPIO30: sdio1_pad_cdata_in_bit1 */
+			0x164 0x80000050	/* GPIO34: doen_sdio1_pad_cdata_oe_bit2
+							   doen_reverse_(1) */
+			0x160 0x58		/* GPIO34: dout_sdio1_pad_cdata_out_bit2 */
+			0x2f4 0x24		/* GPIO34: sdio1_pad_cdata_in_bit2 */
+			0x14c 0x80000051	/* GPIO31: doen_sdio1_pad_cdata_oe_bit3
+							   doen_reverse_(1) */
+			0x148 0x59		/* GPIO31: dout_sdio1_pad_cdata_out_bit3 */
+			0x2f8 0x21		/* GPIO31: sdio1_pad_cdata_in_bit3 */
+		>;
+	};
+};
+
+&pinconf {
+	pinctrl_rgmii: rgmii_pins {
+		pinctrl-single,pins = <
+			0x164	0xC30080
+			0x168	0x30080
+
+			0x16c	0x30003
+			0x170	0x30003
+			0x174	0x30003
+			0x178	0x30003
+
+			0x17c	0xC800003
+
+			0x180	0x8000C0
+			0x184	0xC000C0
+			0x188	0xC000C0
+			0x18c	0xC000C0
+			0x190	0xC000C0
+			0x194	0xC000C0
+			0x198	0xC000C0
+		>;
+	};
+
+	/* Force most pins to input. Taken from vendor's sys_funcshare_io_input_en */
+	pinctrl_gpio: gpio_pins {
+		pinctrl-single,pins = <
+			0x80 0xc000c0 /* gpio0     */
+			0x90 0xc000c0 /* gpio8-9   */
+			0x94 0xc000c0 /* gpio10-11 */
+			0x98 0xc000c0 /* gpio12    */
+			0xa0 0xc000c0 /* gpio16-17 */
+			0xa4 0xc000c0 /* gpio18-19 */
+			0xa8 0xc000c0 /* gpio20-21 */
+			0xac 0xc000c0 /* gpio22-23 */
+			0xb0 0xc000c0 /* gpio24-25 */
+			0xb4 0xc000c0 /* gpio26-27 */
+			0xb8 0xc000c0 /* gpio28-29 */
+			0xbc 0xc000c0 /* gpio30-31 */
+			0xc0 0xc000c0 /* gpio32-33 */
+			0xc4 0xc000c0 /* gpio34-35 */
+			0xcc 0xc000c0 /* gpio38-39 */
+			0xd0 0xc000c0 /* gpio40-41 */
+			0xd4 0xc000c0 /* gpio42-43 */
+			0xd8 0xc000c0 /* gpio44-45 */
+			0xdc 0xc000c0 /* gpio46-47 */
+			0xe0 0xc000c0 /* gpio48-49 */
+			0xe4 0xc000c0 /* gpio50-51 */
+			0xe8 0xc000c0 /* gpio52-53 */
+			0xec 0xc000c0 /* gpio54-55 */
+			0xf0 0xc000c0 /* gpio56-57 */
+			0xf4 0xc000c0 /* gpio58-59 */
+			0xf8 0xc000c0 /* gpio60-61 */
+			0xfc 0xc000c0 /* gpio62-63 */
+		>;
+	};
+};

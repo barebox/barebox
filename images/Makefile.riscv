@@ -15,3 +15,7 @@ pblb-$(CONFIG_BOARD_HIFIVE) += start_hifive_unmatched start_hifive_unleashed
 FILE_barebox-hifive-unmatched.img = start_hifive_unmatched.pblb
 FILE_barebox-hifive-unleashed.img = start_hifive_unleashed.pblb
 image-$(CONFIG_BOARD_HIFIVE) += barebox-hifive-unmatched.img barebox-hifive-unleashed.img
+
+pblb-$(CONFIG_BOARD_BEAGLEV) += start_beaglev_starlight
+FILE_barebox-beaglev-starlight.img = start_beaglev_starlight.pblb
+image-$(CONFIG_BOARD_BEAGLEV) += barebox-beaglev-starlight.img

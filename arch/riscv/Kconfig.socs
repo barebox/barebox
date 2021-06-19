@@ -50,6 +50,8 @@ endif
 config SOC_STARFIVE
 	bool "StarFive SoCs"
 	select ARCH_HAS_RESET_CONTROLLER
+	select RISCV_S_MODE
+	select HAS_ASM_DEBUG_LL
 	help
 	  This enables support for SiFive SoC platform hardware.
 
@@ -67,6 +69,22 @@ config SOC_STARFIVE_JH7100
 	  Unlike JH7110 and later, CPU on the JH7100 are not cache-coherent
 	  with respect to DMA masters like GMAC and DW MMC controller.
 	  Select this if barebox needs to do DMA on this SoC.
+
+config BOARD_BEAGLEV
+	bool "BeagleV"
+	depends on ARCH_RV64I
+	select SOC_STARFIVE_JH71XX
+	select USE_COMPRESSED_DTB
+
+config BOARD_BEAGLEV_BETA
+	bool "BeagleV Beta (with JH7100)"
+	depends on BOARD_BEAGLEV
+	select SOC_STARFIVE_JH7100
+	help
+	  Select this for hardware using the earlier JH7100 SoC. The JH7110
+	  used with later production runs is cache-coherent and thus can do
+	  without the special DMA handling enabled by this option. It's safe
+	  to enable this option for other SoCs.
 
 endif
 

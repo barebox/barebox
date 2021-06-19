@@ -1378,6 +1378,11 @@ config DEBUG_ERIZO
 	depends on SOC_ERIZO
 	select DEBUG_LL_NS16550
 
+config DEBUG_STARFIVE
+	bool "Starfive ns16550 serial0 port"
+	depends on SOC_STARFIVE
+	select DEBUG_LL_NS16550
+
 config DEBUG_SIFIVE
 	bool "SiFive serial0 port"
 	depends on SOC_SIFIVE

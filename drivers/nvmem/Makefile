@@ -20,3 +20,5 @@ nvmem_eeprom_93xx46-y		:= eeprom_93xx46.o
 
 obj-$(CONFIG_STM32_BSEC)	+= nvmem_bsec.o
 nvmem_bsec-y			:= bsec.o
+
+obj-$(CONFIG_STARFIVE_OTP)	+= starfive-otp.o

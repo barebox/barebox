@@ -21,6 +21,7 @@
 #include <of.h>
 #include <linux/err.h>
 #include <linux/sizes.h>
+#include <dma.h>
 
 #define MAX_BUFFER_NUMBER 0xffffffff
 
@@ -1852,7 +1853,7 @@ static int mci_set_probe(struct param_d *param, void *priv)
 
 static int mci_init(void)
 {
-	sector_buf = xmemalign(32, SECTOR_SIZE);
+	sector_buf = dma_alloc(SECTOR_SIZE);
 
 	return 0;
 }

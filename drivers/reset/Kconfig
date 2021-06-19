@@ -27,4 +27,10 @@ config RESET_STM32
 	help
 	  This enables the reset controller driver for STM32MP and STM32 MCUs.
 
+config RESET_STARFIVE
+	bool "StarFive Controller Driver" if COMPILE_TEST
+	default SOC_STARFIVE
+	help
+	  This enables the reset controller driver for the StarFive JH7100.
+
 endif

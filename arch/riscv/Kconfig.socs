@@ -49,6 +49,7 @@ endif
 
 config SOC_STARFIVE
 	bool "StarFive SoCs"
+	select ARCH_HAS_RESET_CONTROLLER
 	help
 	  This enables support for SiFive SoC platform hardware.
 

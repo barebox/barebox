@@ -6,7 +6,7 @@
 #include <mach/linux.h>
 #include <of.h>
 #include <watchdog.h>
-#include <mfd/syscon.h>
+#include <linux/nvmem-consumer.h>
 #include <reset_source.h>
 
 struct sandbox_watchdog {
@@ -36,10 +36,9 @@ static int sandbox_watchdog_set_timeout(struct watchdog *wdd, unsigned int timeo
 static int sandbox_watchdog_probe(struct device_d *dev)
 {
 	struct device_node *np = dev->device_node;
+	struct nvmem_cell *reset_source_cell;
 	struct sandbox_watchdog *wd;
 	struct watchdog *wdd;
-	struct regmap *src;
-	u32 src_offset;
 	int ret;
 
 	wd = xzalloc(sizeof(*wd));
@@ -57,16 +56,17 @@ static int sandbox_watchdog_probe(struct device_d *dev)
 		return ret;
 	}
 
-	src = syscon_regmap_lookup_by_phandle(np, "barebox,reset-source");
-	if (IS_ERR(src))
-		return 0;
+	reset_source_cell = of_nvmem_cell_get(dev->device_node, "reset-source");
+	if (IS_ERR(reset_source_cell)) {
+		dev_warn(dev, "No reset source info available: %pe\n", reset_source_cell);
+		goto out;
+	}
 
-	ret = of_property_read_u32_index(np, "barebox,reset-source", 1, &src_offset);
-	if (ret)
-		return 0;
+	nvmem_cell_write(reset_source_cell, &(u8) { RESET_WDG }, 1);
 
-	regmap_update_bits(src, src_offset, 0xff, RESET_WDG);
+	nvmem_cell_put(reset_source_cell);
 
+out:
 	dev_info(dev, "probed\n");
 	return 0;
 }

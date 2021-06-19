@@ -59,11 +59,12 @@
 		barebox,cdev; /* no caching allowed */
 
 		bmode: reboot-mode {
-			compatible = "syscon-reboot-mode";
-			offset = <0>;
-			mask = <0xffffff00>;
-			mode-normal = <0x00000000>;
-			mode-loader = <0xbbbbbb00>;
+			compatible = "nvmem-reboot-mode";
+			nvmem-cells = <&reboot_mode>;
+			nvmem-cell-names = "reboot-mode";
+
+			mode-normal = <0x000000>;
+			mode-loader = <0xbbbbbb>;
 		};
 
 		partitions {
@@ -80,6 +81,10 @@
 
 				reset_source: reset-source@0 {
 					reg = <0x0 0x1>;
+				};
+
+				reboot_mode: reboot-mode@1 {
+					reg = <0x1 0x4>;
 				};
 			};
 

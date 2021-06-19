@@ -17,6 +17,7 @@
 #include <io.h>
 #include <platform_data/dw_mmc.h>
 #include <linux/bitops.h>
+#include <linux/reset.h>
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <errno.h>
@@ -548,6 +549,7 @@ static int dwmci_init(struct mci_host *mci, struct device_d *dev)
 
 static int dw_mmc_probe(struct device_d *dev)
 {
+	struct reset_control	*rst;
 	struct resource *iores;
 	struct dwmci_host *host;
 	struct dw_mmc_platform_data *pdata = dev->platform_data;
@@ -567,6 +569,15 @@ static int dw_mmc_probe(struct device_d *dev)
 
 	clk_enable(host->clk_biu);
 	clk_enable(host->clk_ciu);
+
+	rst = reset_control_get(dev, "reset");
+	if (IS_ERR(rst)) {
+		dev_warn(dev, "error claiming reset: %pe\n", rst);
+	} else if (rst) {
+		reset_control_assert(rst);
+		udelay(10);
+		reset_control_deassert(rst);
+	}
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))

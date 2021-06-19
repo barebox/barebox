@@ -128,7 +128,7 @@ static struct pinctrl_ops pcs_ops = {
 	.set_state = pcs_set_state,
 };
 
-static int pcs_probe(struct device_d *dev)
+int pinctrl_single_probe(struct device_d *dev)
 {
 	struct resource *iores;
 	struct pinctrl_single *pcs;
@@ -215,7 +215,7 @@ static __maybe_unused struct of_device_id pcs_dt_ids[] = {
 
 static struct driver_d pcs_driver = {
 	.name		= "pinctrl-single",
-	.probe		= pcs_probe,
+	.probe		= pinctrl_single_probe,
 	.of_compatible	= DRV_OF_COMPAT(pcs_dt_ids),
 };
 

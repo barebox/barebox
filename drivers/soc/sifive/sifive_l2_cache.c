@@ -105,6 +105,7 @@ static int sifive_l2_probe(struct device_d *dev)
 static const struct of_device_id sifive_l2_ids[] = {
 	{ .compatible = "sifive,fu540-c000-ccache" },
 	{ .compatible = "sifive,fu740-c000-ccache" },
+	{ .compatible = "starfive,ccache0" },
 	{ /* end of table */ },
 };
 

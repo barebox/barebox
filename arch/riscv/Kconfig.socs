@@ -61,6 +61,11 @@ config SOC_STARFIVE_JH71XX
 config SOC_STARFIVE_JH7100
 	bool
 	select SOC_STARFIVE_JH71XX
+	select SIFIVE_L2
+	help
+	  Unlike JH7110 and later, CPU on the JH7100 are not cache-coherent
+	  with respect to DMA masters like GMAC and DW MMC controller.
+	  Select this if barebox needs to do DMA on this SoC.
 
 endif
 

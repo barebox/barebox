@@ -59,7 +59,7 @@ static int do_mem_md(int argc, char *argv[])
 		goto out;
 	}
 
-	buf = xmalloc(RW_BUF_SIZE);
+	buf = xzalloc(RW_BUF_SIZE + 7);
 
 	do {
 		now = min(size, (loff_t)RW_BUF_SIZE);

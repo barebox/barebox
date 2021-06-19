@@ -23,10 +23,10 @@ unsigned long free_mem_ptr;
 unsigned long free_mem_end_ptr;
 
 void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
-				  void *fdt)
+				  void *fdt, unsigned flags)
 {
 	uint32_t pg_len, uncompressed_len;
-	void __noreturn (*barebox)(unsigned long, unsigned long, void *);
+	void __noreturn (*barebox)(unsigned long, unsigned long, void *, unsigned);
 	unsigned long endmem = membase + memsize;
 	unsigned long barebox_base;
 	void *pg_start, *pg_end;
@@ -67,5 +67,5 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 
 	pr_debug("jumping to uncompressed image at 0x%p. dtb=0x%p\n", barebox, fdt);
 
-	barebox(membase, memsize, fdt);
+	barebox(membase, memsize, fdt, flags);
 }

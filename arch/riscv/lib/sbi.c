@@ -6,6 +6,7 @@
  */
 
 #include <asm/sbi.h>
+#include <asm/system.h>
 #include <linux/export.h>
 #include <errno.h>
 #include <init.h>
@@ -52,6 +53,9 @@ static inline long sbi_get_spec_version(void)
 static int sbi_init(void)
 {
 	int ret;
+
+	if (riscv_mode() != RISCV_S_MODE)
+		return 0;
 
 	ret = sbi_get_spec_version();
 	if (ret > 0)

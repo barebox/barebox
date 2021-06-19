@@ -74,7 +74,7 @@ static inline void *nvmem_cell_get_and_read(struct device_node *np,
 }
 
 static inline int nvmem_cell_write(struct nvmem_cell *cell,
-				    const char *buf, size_t len)
+				    void *buf, size_t len)
 {
 	return -EOPNOTSUPP;
 }

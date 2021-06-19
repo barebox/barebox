@@ -32,7 +32,7 @@ struct dwmci_host {
 	unsigned int fifo_size_bytes;
 
 	struct dwmci_idmac *idmac;
-	unsigned long clkrate;
+	u32 clkrate;
 	int ciu_div;
 	u32 fifoth_val;
 	u32 pwren_value;
@@ -572,7 +572,7 @@ static int dw_mmc_probe(struct device_d *dev)
 
 	rst = reset_control_get(dev, "reset");
 	if (IS_ERR(rst)) {
-		dev_warn(dev, "error claiming reset: %pe\n", rst);
+		return PTR_ERR(rst);
 	} else if (rst) {
 		reset_control_assert(rst);
 		udelay(10);
@@ -617,7 +617,11 @@ static int dw_mmc_probe(struct device_d *dev)
 	else
 		host->pwren_value = 1;
 
-	host->clkrate = clk_get_rate(host->clk_ciu);
+	if (of_device_is_compatible(dev->device_node, "starfive,jh7100-dw-mshc"))
+		of_property_read_u32(dev->device_node, "clock-frequency", &host->clkrate);
+	if (!host->clkrate)
+		host->clkrate = clk_get_rate(host->clk_ciu);
+
 	host->mci.f_min = host->clkrate / 510 / host->ciu_div;
 	if (host->mci.f_min < 200000)
 		host->mci.f_min = 200000;
@@ -635,6 +639,10 @@ static __maybe_unused struct of_device_id dw_mmc_compatible[] = {
 		.compatible = "rockchip,rk2928-dw-mshc",
 	}, {
 		.compatible = "rockchip,rk3288-dw-mshc",
+	}, {
+		.compatible = "snps,dw-mshc",
+	}, {
+		.compatible = "starfive,jh7100-dw-mshc",
 	}, {
 		/* sentinel */
 	}

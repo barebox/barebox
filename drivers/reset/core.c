@@ -139,30 +139,35 @@ int reset_control_deassert(struct reset_control *rstc)
 EXPORT_SYMBOL_GPL(reset_control_deassert);
 
 /**
- * of_reset_control_get - Lookup and obtain a reference to a reset controller.
+ * of_reset_control_count - Count reset lines
+ * @node: device node
+ *
+ * Returns number of resets, 0 if none specified
+ */
+static int of_reset_control_count(struct device_node *node)
+{
+	return of_count_phandle_with_args(node, "resets", "#reset-cells");
+}
+
+/**
+ * of_reset_control_get_by_index - Lookup and obtain a reference to a reset controller.
  * @node: device to be reset by the controller
- * @id: reset line name
+ * @index: reset line index
  *
  * Returns a struct reset_control or IS_ERR() condition containing errno.
- *
- * Use of id names is optional.
  */
-static struct reset_control *of_reset_control_get(struct device_node *node,
-						  const char *id)
+static struct reset_control *of_reset_control_get_by_index(struct device_node *node,
+							   int index)
 {
 	struct reset_control *rstc;
 	struct reset_controller_dev *r, *rcdev;
 	struct of_phandle_args args;
-	int index = 0;
 	int rstc_id;
 	int ret;
 
 	if (!of_get_property(node, "resets", NULL))
 		return NULL;
 
-	if (id)
-		index = of_property_match_string(node,
-						 "reset-names", id);
 	ret = of_parse_phandle_with_args(node, "resets", "#reset-cells",
 					 index, &args);
 	if (ret)
@@ -193,6 +198,26 @@ static struct reset_control *of_reset_control_get(struct device_node *node,
 	rstc->gpio = -ENODEV;
 
 	return rstc;
+}
+
+/**
+ * of_reset_control_get - Lookup and obtain a reference to a reset controller.
+ * @node: device to be reset by the controller
+ * @id: reset line name
+ *
+ * Returns a struct reset_control or IS_ERR() condition containing errno.
+ *
+ * Use of id names is optional.
+ */
+static struct reset_control *of_reset_control_get(struct device_node *node,
+						  const char *id)
+{
+	int index = 0;
+
+	if (id)
+		index = of_property_match_string(node, "reset-names", id);
+
+	return of_reset_control_get_by_index(node, index);
 }
 
 static struct reset_control *
@@ -301,6 +326,39 @@ int device_reset(struct device_d *dev)
 	return ret;
 }
 EXPORT_SYMBOL_GPL(device_reset);
+
+int device_reset_all(struct device_d *dev)
+{
+	struct reset_control *rstc;
+	int ret, i;
+
+	for (i = 0; i < of_reset_control_count(dev->device_node); i++) {
+		int ret;
+
+		rstc = of_reset_control_get_by_index(dev->device_node, i);
+		if (IS_ERR(rstc))
+			return PTR_ERR(rstc);
+
+		ret = reset_control_reset(rstc);
+		if (ret)
+			return ret;
+
+		reset_control_put(rstc);
+	}
+
+	if (i == 0) {
+		rstc = gpio_reset_control_get(dev, NULL);
+
+		ret = reset_control_reset(rstc);
+		if (ret)
+			return ret;
+
+		reset_control_put(rstc);
+	}
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(device_reset_all);
 
 int device_reset_us(struct device_d *dev, int us)
 {

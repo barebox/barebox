@@ -23,3 +23,4 @@ obj-$(CONFIG_MACH_MIPS_LOONGSON)+= loongson/
 obj-$(CONFIG_ARCH_LAYERSCAPE)	+= clk-qoric.o
 obj-y				+= analogbits/
 obj-$(CONFIG_CLK_SIFIVE)	+= sifive/
+obj-$(CONFIG_SOC_STARFIVE)	+= starfive/

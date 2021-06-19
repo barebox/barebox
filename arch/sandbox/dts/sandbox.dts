@@ -93,7 +93,7 @@
 				label = "env";
 			};
 
-			part_state: state@800 {
+			part_state: state@c00 {
 				reg = <0xC00 0x400>;
 				label = "state";
 			};

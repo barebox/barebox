@@ -82,6 +82,14 @@ config DRIVER_NET_DESIGNWARE_SOCFPGA
 	  This option enables support for the Synopsys
 	  Designware Core Univesal MAC 10M/100M/1G ethernet IP on SoCFPGA.
 
+config DRIVER_NET_DESIGNWARE_STARFIVE
+	bool "Designware Universal MAC ethernet driver for StarFive platforms"
+	depends on SOC_STARFIVE || COMPILE_TEST
+	select MFD_SYSCON
+	help
+	  This option enables support for the Synopsys
+	  Designware Core Univesal MAC 10M/100M/1G ethernet IP on StarFive.
+
 endif
 
 config DRIVER_NET_DESIGNWARE_EQOS

@@ -39,6 +39,7 @@ struct dw_eth_dev {
 
 struct dw_eth_drvdata {
 	bool enh_desc;
+	void (*fix_mac_speed)(int speed);
 	void *priv;
 };
 

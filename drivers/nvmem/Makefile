@@ -3,7 +3,7 @@
 #
 
 obj-$(CONFIG_NVMEM)		+= nvmem_core.o
-nvmem_core-y			:= core.o regmap.o
+nvmem_core-y			:= core.o regmap.o partition.o
 
 obj-$(CONFIG_NVMEM_RMEM)	+= rmem.o
 

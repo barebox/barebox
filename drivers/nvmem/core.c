@@ -205,7 +205,7 @@ struct nvmem_device *nvmem_register(const struct nvmem_config *config)
 	nvmem->size = config->size;
 	nvmem->dev.parent = config->dev;
 	nvmem->bus = config->bus;
-	np = config->dev->device_node;
+	np = config->cdev ? config->cdev->device_node : config->dev->device_node;
 	nvmem->dev.device_node = np;
 	nvmem->priv = config->priv;
 
@@ -223,10 +223,12 @@ struct nvmem_device *nvmem_register(const struct nvmem_config *config)
 		return ERR_PTR(rval);
 	}
 
-	rval = nvmem_register_cdev(nvmem, config->name);
-	if (rval) {
-		kfree(nvmem);
-		return ERR_PTR(rval);
+	if (!config->cdev) {
+		rval = nvmem_register_cdev(nvmem, config->name);
+		if (rval) {
+			kfree(nvmem);
+			return ERR_PTR(rval);
+		}
 	}
 
 	list_add_tail(&nvmem->node, &nvmem_devs);

@@ -20,6 +20,7 @@
 #include <linux/mtd/mtd.h>
 #include <linux/err.h>
 #include <nand.h>
+#include <linux/nvmem-provider.h>
 #include <init.h>
 #include <globalvar.h>
 
@@ -82,6 +83,12 @@ struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node)
 
 	if (new)
 		new->device_node = node;;
+
+	if (IS_ENABLED(CONFIG_NVMEM) && of_device_is_compatible(node, "nvmem-cells")) {
+		struct nvmem_device *nvmem = nvmem_partition_register(new);
+		if (IS_ERR(nvmem))
+			dev_warn(cdev->dev, "nvmem registeration failed: %pe\n", nvmem);
+	}
 
 	free(filename);
 

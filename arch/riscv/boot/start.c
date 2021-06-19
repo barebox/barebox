@@ -16,6 +16,7 @@
 #include <uncompress.h>
 #include <malloc.h>
 #include <compressed-dtb.h>
+#include <asm/irq.h>
 
 #include <debug_ll.h>
 
@@ -121,6 +122,8 @@ void barebox_non_pbl_start(unsigned long membase, unsigned long memsize,
 	setup_c();
 
 	barrier();
+
+	irq_init_vector(__riscv_mode(flags));
 
 	pr_debug("memory at 0x%08lx, size 0x%08lx\n", membase, memsize);
 

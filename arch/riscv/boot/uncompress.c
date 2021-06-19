@@ -14,6 +14,7 @@
 #include <asm-generic/memory_layout.h>
 #include <asm/sections.h>
 #include <asm/unaligned.h>
+#include <asm/irq.h>
 
 #include <debug_ll.h>
 
@@ -31,6 +32,8 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 	unsigned long barebox_base;
 	void *pg_start, *pg_end;
 	unsigned long pc = get_pc();
+
+	irq_init_vector(__riscv_mode(flags));
 
 	/* piggy data is not relocated, so determine the bounds now */
 	pg_start = input_data + get_runtime_offset();

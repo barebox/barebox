@@ -77,6 +77,11 @@ config RISCV_OPTIMZED_STRING_FUNCTIONS
 	  These functions work faster than the normal versions but increase
 	  your binary size.
 
+config RISCV_EXCEPTIONS
+	bool "enable exception handling support"
+	default y
+	select ARCH_HAS_DATA_ABORT_MASK
+
 config HAS_NMON
 	bool
 

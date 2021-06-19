@@ -60,7 +60,7 @@ static struct nvmem_bus nvmem_regmap_bus = {
 
 struct nvmem_device *nvmem_regmap_register(struct regmap *map, const char *name)
 {
-	struct nvmem_config config;
+	struct nvmem_config config = {};
 
 	/* Can be retrofitted if needed */
 	if (regmap_get_reg_stride(map) != regmap_get_val_bytes(map))

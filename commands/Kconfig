@@ -206,6 +206,13 @@ config CMD_REGULATOR
 	  the regulator command lists the currently registered regulators and
 	  their current state.
 
+config CMD_NVMEM
+	bool
+	depends on NVMEM
+	prompt "nvmem command"
+	help
+	  the nvmem command lists the currently registered nvmem devices.
+
 config CMD_LSPCI
 	bool
 	depends on PCI

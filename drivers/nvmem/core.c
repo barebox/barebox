@@ -49,6 +49,15 @@ struct nvmem_cell {
 static LIST_HEAD(nvmem_cells);
 static LIST_HEAD(nvmem_devs);
 
+void nvmem_devices_print(void)
+{
+	struct nvmem_device *dev;
+
+	list_for_each_entry(dev, &nvmem_devs, node) {
+		printf("%s\n", dev_name(&dev->dev));
+	}
+}
+
 static ssize_t nvmem_cdev_read(struct cdev *cdev, void *buf, size_t count,
 			       loff_t offset, unsigned long flags)
 {

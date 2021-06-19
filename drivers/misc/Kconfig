@@ -42,4 +42,14 @@ config ACPI_TEST
 	help
 	  This is a simple Test driver to test the ACPI bus.
 
+config STARFIVE_PWRSEQ
+	bool "StarFive power sequencing driver"
+	depends on SOC_STARFIVE
+	help
+	  This driver sets up a number of StarFive peripherals not matched
+	  by more specific barebox drivers by deasserting reset lines, muxing
+	  pins and/or enabling clocks. Peripherals set up by this can then
+	  be accessed over /dev/mem or used from kernels which still depend
+	  on bootloader for initialization.
+
 endmenu

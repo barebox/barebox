@@ -143,9 +143,10 @@ static int dw_wdt_drv_probe(struct device_d *dev)
 	dw_wdt = xzalloc(sizeof(*dw_wdt));
 
 	mem = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(mem))
+		return PTR_ERR(mem);
+
 	dw_wdt->regs = IOMEM(mem->start);
-	if (IS_ERR(dw_wdt->regs))
-		return PTR_ERR(dw_wdt->regs);
 
 	clk = clk_get(dev, NULL);
 	if (IS_ERR(clk))

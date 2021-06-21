@@ -19,4 +19,15 @@ static inline int rk3288_init(void)
 }
 #endif
 
+#ifdef CONFIG_ARCH_RK3568
+int rk3568_init(void);
+#else
+static inline int rk3568_init(void)
+{
+	return -ENOTSUPP;
+}
+#endif
+
+int rk3568_lowlevel_init(void);
+
 #endif /* __MACH_ROCKCHIP_H */

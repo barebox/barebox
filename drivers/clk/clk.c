@@ -525,6 +525,28 @@ int clk_parent_set_rate(struct clk_hw *hw, unsigned long rate,
 	return clk_set_rate(clk_get_parent(clk), rate);
 }
 
+int clk_name_set_parent(const char *clkname, const char *clkparentname)
+{
+	struct clk *clk = clk_lookup(clkname);
+	struct clk *parent = clk_lookup(clkparentname);
+
+	if (IS_ERR(clk))
+		return -ENOENT;
+	if (IS_ERR(parent))
+		return -ENOENT;
+	return clk_set_parent(clk, parent);
+}
+
+int clk_name_set_rate(const char *clkname, unsigned long rate)
+{
+	struct clk *clk = clk_lookup(clkname);
+
+	if (IS_ERR(clk))
+		return -ENOENT;
+
+	return clk_set_rate(clk, rate);
+}
+
 #if defined(CONFIG_COMMON_CLK_OF_PROVIDER)
 /**
  * struct of_clk_provider - Clock provider registration structure

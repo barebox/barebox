@@ -341,7 +341,6 @@ Considerations when writing Linux drivers also apply to barebox:
 Miscellaneous Linux porting advice:
 
   * Branches dependent on ``system_state``: Take the ``SYSTEM_BOOTING`` branch
-  * ``struct clk_hw``: rename to ``struct clk``
   * ``struct of_clk_hw_simple_get``: rename to ``struct of_clk_src_simple_get``
   * ``usleep`` and co.: use ``[mud]elay``
   * ``.of_node``: use ``.device_node``

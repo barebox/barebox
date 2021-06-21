@@ -45,3 +45,42 @@ Instructions.
 * Run "rk-makebootable FlashData barebox-radxa-rock.bin rrboot.bin"
 * Insert SD card and run "dd if=rrboot.bin of=</dev/sdcard> bs=$((0x200)) seek=$((0x40))"
 * SD card is ready
+
+Rockchip RK3568
+===============
+
+RK3568 EVB
+----------
+
+Building
+^^^^^^^^
+
+The build process needs three binary files which have to be copied from the
+`rkbin https://github.com/rockchip-linux/rkbin` repository to the barebox source tree:
+
+.. code-block:: sh
+  cp $RKBIN/rk35/rk3568_bl31_v1.24.elf firmware/rk3568-bl31.bin
+  cp $RKBIN/bin/rk35/rk3568_bl32_v1.05.bin firmware/rk3568-op-tee.bin
+  cp $RKBIN/bin/rk35/rk3568_ddr_1560MHz_v1.08.bin arch/arm/boards/rockchip-rk3568-evb/sdram-init.bin
+
+With these barebox can be compiled as:
+
+.. code-block:: sh
+
+  make ARCH=arm rockchip_v8_defconfig
+  make ARCH=arm
+
+**NOTE** I found the bl32 firmware non working for me as of 7d631e0d5b2d373b54d4533580d08fb9bd2eaad4 in the rkbin repository.
+
+Creating a bootable SD card
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A bootable SD card can be created with:
+
+.. code-block:: sh
+
+  dd if=images/barebox-rk3568-evb.img of=/dev/sdx bs=1024 seek=32
+
+The barebox image is written to the raw device, so make sure the partitioning
+doesn't conflict with the are barebox is written to. Starting the first
+partition at offset 8MiB is a safe bet.

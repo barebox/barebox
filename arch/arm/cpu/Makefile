@@ -50,6 +50,7 @@ AFLAGS-cache-armv8.pbl.o   :=-Wa,-march=armv8-a
 
 pbl-y += entry.o entry_ll$(S64).o
 pbl-y += uncompress.o
+pbl-$(CONFIG_ARM_ATF) += atf.o
 
 obj-pbl-y += common.o sections.o
 KASAN_SANITIZE_common.o := n

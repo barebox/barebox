@@ -499,4 +499,7 @@ config ARM_MODULE_PLTS
 	  Say y if your memory configuration puts the heap to far away from the
 	  barebox image, causing relocation out of range errors
 
+config ARM_ATF
+	bool
+
 endmenu

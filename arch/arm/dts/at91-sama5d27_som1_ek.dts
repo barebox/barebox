@@ -4,7 +4,7 @@
  */
 
 #include <arm/at91-sama5d27_som1_ek.dts>
-#include "sama5d2.dtsi"
+#include "at91-sama5d27_som1.dtsi"
 
 / {
 	chosen {

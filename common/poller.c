@@ -10,11 +10,14 @@
 #include <param.h>
 #include <poller.h>
 #include <clock.h>
-#include <work.h>
-#include <slice.h>
 
 static LIST_HEAD(poller_list);
-int poller_active;
+static int __poller_active;
+
+bool poller_active(void)
+{
+	return __poller_active;
+}
 
 int poller_register(struct poller_struct *poller, const char *name)
 {
@@ -110,23 +113,13 @@ int poller_async_unregister(struct poller_async *pa)
 void poller_call(void)
 {
 	struct poller_struct *poller, *tmp;
-	bool run_workqueues = !slice_acquired(&command_slice);
 
-	if (poller_active)
-		return;
-
-	command_slice_acquire();
-
-	if (run_workqueues)
-		wq_do_all_works();
-
-	poller_active = 1;
+	__poller_active = 1;
 
 	list_for_each_entry_safe(poller, tmp, &poller_list, list)
 		poller->func(poller);
 
-	command_slice_release();
-	poller_active = 0;
+	__poller_active = 0;
 }
 
 #if defined CONFIG_CMD_POLLER

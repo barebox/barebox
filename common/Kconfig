@@ -997,11 +997,16 @@ config BAREBOXCRC32_TARGET
 	  'bareboxcrc32' is a userspacetool to generate the crc32 checksums the same way
 	  barebox does. Say yes here to build it for the target.
 
+config HAS_SCHED
+	bool
+
 config POLLER
 	bool "generic polling infrastructure"
+	select HAS_SCHED
 
 config BTHREAD
 	bool "barebox co-operative (green) thread infrastructure"
+	select HAS_SCHED
 	depends on HAS_ARCH_SJLJ
 	help
 	 barebox threads are lightweight cooperative (green) threads that are

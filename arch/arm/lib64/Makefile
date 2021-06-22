@@ -6,5 +6,5 @@ obj-$(CONFIG_ARM_OPTIMZED_STRING_FUNCTIONS)	+= memset.o string.o
 extra-y += barebox.lds
 obj-pbl-y   += runtime-offset.o
 obj-pbl-y   += setjmp.o
-
+obj-y += io.o
 pbl-y	+= div0.o pbl.o

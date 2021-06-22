@@ -66,6 +66,14 @@ int usbgadget_register(const struct usbgadget_funcs *funcs)
 		}
 	}
 
+	if (flags & USBGADGET_MASS_STORAGE) {
+		opts->ums_opts.files = parse(funcs->ums_opts);
+		if (IS_ENABLED(CONFIG_USB_GADGET_MASS_STORAGE) && file_list_empty(opts->ums_opts.files)) {
+			file_list_free(opts->ums_opts.files);
+			opts->ums_opts.files = system_partitions_get();
+		}
+	}
+
 	if (flags & USBGADGET_FASTBOOT) {
 		opts->fastboot_opts.files = parse(funcs->fastboot_opts);
 		if (IS_ENABLED(CONFIG_FASTBOOT_BASE) && file_list_empty(opts->fastboot_opts.files)) {
@@ -122,7 +130,7 @@ static int usbgadget_autostart_set(struct param_d *param, void *ctx)
 	if (acm)
 		funcs.flags |= USBGADGET_ACM;
 
-	funcs.flags |= USBGADGET_DFU | USBGADGET_FASTBOOT;
+	funcs.flags |= USBGADGET_DFU | USBGADGET_FASTBOOT | USBGADGET_MASS_STORAGE;
 
 	err = usbgadget_register(&funcs);
 	if (!err)

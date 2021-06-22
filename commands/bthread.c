@@ -10,11 +10,14 @@
 #include <command.h>
 #include <getopt.h>
 #include <clock.h>
+#include <slice.h>
 
 static int bthread_time(void)
 {
 	uint64_t start = get_time_ns();
 	int i = 0;
+
+	slice_release(&command_slice);
 
 	/*
 	 * How many background tasks can we have in one second?
@@ -24,6 +27,8 @@ static int bthread_time(void)
 	 */
 	while (!is_timeout(start, SECOND))
 		i++;
+
+	slice_acquire(&command_slice);
 
 	return i;
 }

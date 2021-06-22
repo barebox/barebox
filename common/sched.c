@@ -15,12 +15,12 @@ void resched(void)
 
 	command_slice_acquire();
 
-	if (run_workqueues)
+	if (run_workqueues) {
 		wq_do_all_works();
+		bthread_reschedule();
+	}
 
 	poller_call();
 
 	command_slice_release();
-
-	bthread_reschedule();
 }

@@ -38,8 +38,6 @@ void command_slice_release(void);
 
 #define assert_command_context() do { \
 	WARN_ONCE(poller_active(), "%s called in poller\n", __func__); \
-	WARN_ONCE(IS_ENABLED(CONFIG_BTHREAD) && !bthread_is_main(current), \
-		  "%s called in secondary bthread\n", __func__); \
 } while (0)
 
 #endif

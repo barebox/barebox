@@ -163,7 +163,10 @@ void bthread_info(void)
 
 void bthread_reschedule(void)
 {
-	bthread_schedule(list_next_entry(current, list));
+	struct bthread *next = list_next_entry(current, list);
+	if (current != next)
+		pr_debug("switch %s -> %s\n", current->name, next->name);
+	bthread_schedule(next);
 }
 
 void bthread_schedule(struct bthread *to)

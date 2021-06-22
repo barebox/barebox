@@ -1,13 +1,8 @@
-/*
- * w1-gpio - GPIO w1 bus master driver
- *
- * Copyright (C) 2007 Ville Syrjala <syrjala@sci.fi>
- * Copyright (c) 2012 Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2
- * as published by the Free Software Foundation.
- */
+// SPDX-License-Identifier: GPL-2.0-only
+// SPDX-FileCopyrightText: 2007 Ville Syrjala <syrjala@sci.fi>
+// SPDX-FileCopyrightText: 2012 Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+
+/* w1-gpio - GPIO w1 bus master driver */
 
 #include <common.h>
 #include <init.h>

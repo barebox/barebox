@@ -81,8 +81,8 @@ static u32 stm32_reset_status(struct stm32_reset *priv, unsigned long bank)
 
 static void stm32_reset(struct stm32_reset *priv, unsigned long id, bool assert)
 {
-	int bank = (id / BITS_PER_LONG) * 4;
-	int offset = id % BITS_PER_LONG;
+	int bank = (id / 32) * 4;
+	int offset = id % 32;
 
 	priv->ops->reset(priv->base + bank, offset, assert);
 }

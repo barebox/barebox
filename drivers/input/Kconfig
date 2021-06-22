@@ -73,7 +73,8 @@ config INPUT_SPECIALKEYS
 
 config VIRTIO_INPUT
 	bool "Virtio input driver"
-	depends on VIRTIO && BTHREAD
+	depends on VIRTIO
+	select POLLER
 	select INPUT
 	help
 	 This driver supports virtio keyboard input devices.

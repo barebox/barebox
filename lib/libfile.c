@@ -100,6 +100,29 @@ int read_full(int fd, void *buf, size_t size)
 }
 EXPORT_SYMBOL(read_full);
 
+int copy_fd(int in, int out)
+{
+	int bs = 4096, ret;
+	void *buf = malloc(bs);
+
+	if (!buf)
+		return -ENOMEM;
+
+	while (1) {
+		ret = read(in, buf, bs);
+		if (ret <= 0)
+			break;
+
+		ret = write_full(out, buf, ret);
+		if (ret < 0)
+			break;
+	}
+
+        free(buf);
+
+	return ret;
+}
+
 /*
  * read_file_line - read a line from a file
  *

@@ -14,6 +14,8 @@
 #include <linux/list.h>
 #include <linux/stat.h>
 #include <linux/err.h>
+#include <uncompress.h>
+#include <filetype.h>
 
 #define BUFSIZ 4096
 
@@ -211,12 +213,52 @@ out:
  */
 int firmwaremgr_load_file(struct firmware_mgr *mgr, const char *firmware)
 {
-	int ret;
-	char *name = basprintf("/dev/%s", mgr->handler->id);
+	char *dst;
+	enum filetype type;
+	int ret = 0;
+	int firmwarefd = 0;
+	int devicefd = 0;
 
-	ret = copy_file(firmware, name, 0);
+	if (!firmware)
+		return -EINVAL;
 
-	free(name);
+	if (!mgr->handler->id) {
+		pr_err("id not defined for handler\n");
+		return -ENODEV;
+	}
+
+	dst = basprintf("/dev/%s", mgr->handler->id);
+
+	firmwarefd = open(firmware, O_RDONLY);
+	if (firmwarefd < 0) {
+		printf("could not open %s: %s\n", firmware,
+		       errno_str());
+		ret = firmwarefd;
+		goto out;
+	}
+
+	type = file_name_detect_type(firmware);
+
+	devicefd = open(dst, O_WRONLY);
+	if (devicefd < 0) {
+		printf("could not open %s: %s\n", dst, errno_str());
+		ret = devicefd;
+		goto out;
+	}
+
+	if (file_is_compressed_file(type))
+		ret = uncompress_fd_to_fd(firmwarefd, devicefd,
+					  uncompress_err_stdout);
+	else
+		ret = copy_fd(firmwarefd, devicefd);
+
+out:
+	free(dst);
+
+	if (firmwarefd > 0)
+		close(firmwarefd);
+	if (devicefd > 0)
+		close(devicefd);
 
 	return ret;
 }

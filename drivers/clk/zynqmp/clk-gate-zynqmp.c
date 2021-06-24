@@ -28,6 +28,9 @@ static int zynqmp_clk_gate_enable(struct clk_hw *hw)
 {
 	struct zynqmp_clk_gate *gate = to_zynqmp_clk_gate(hw);
 
+	if (clk_hw_is_enabled(hw))
+		return 0;
+
 	return gate->ops->clock_enable(gate->clk_id);
 }
 

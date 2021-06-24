@@ -68,10 +68,22 @@ struct firmware_mgr *firmwaremgr_find(const char *id)
 struct firmware_mgr *firmwaremgr_find_by_node(struct device_node *np)
 {
 	struct firmware_mgr *mgr;
+	char *na, *nb;
 
-	list_for_each_entry(mgr, &firmwaremgr_list, list)
-		if (mgr->handler->device_node == np)
+	na = of_get_reproducible_name(np);
+
+	list_for_each_entry(mgr, &firmwaremgr_list, list) {
+		nb = of_get_reproducible_name(mgr->handler->device_node);
+		if (!strcmp(na, nb)) {
+			free(na);
+			free(nb);
 			return mgr;
+		}
+
+		free(nb);
+	}
+
+	free(na);
 
 	return NULL;
 }

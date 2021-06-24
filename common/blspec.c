@@ -139,6 +139,8 @@ static int blspec_boot(struct bootentry *be, int verbose, int dryrun)
 			(entry->cdev && entry->cdev->dev) ?
 			dev_name(entry->cdev->dev) : "none");
 
+	of_overlay_set_basedir(abspath);
+
 	old_fws = firmware_get_searchpath();
 	if (old_fws && *old_fws)
 		fws = basprintf("%s/lib/firmware:%s", abspath, old_fws);
@@ -154,6 +156,7 @@ static int blspec_boot(struct bootentry *be, int verbose, int dryrun)
 	if (overlays)
 		of_unregister_fixup(blspec_overlay_fixup, entry);
 
+	of_overlay_set_basedir("/");
 	firmware_set_searchpath(old_fws);
 
 err_out:

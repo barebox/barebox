@@ -325,6 +325,10 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem,
 	if (data->dryrun)
 		return 0;
 
+	ret = of_overlay_load_firmware();
+	if (ret)
+		return ret;
+
 	if (data->tee_res)
 		tee = (void *)data->tee_res->start;
 	else

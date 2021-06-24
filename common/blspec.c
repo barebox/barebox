@@ -32,71 +32,33 @@ int blspec_entry_var_set(struct blspec_entry *entry, const char *name,
 			val ? strlen(val) + 1 : 0, 1);
 }
 
-static int blspec_apply_oftree_overlay(char *file, const char *abspath,
-				       int dryrun)
+static int blspec_overlay_fixup(struct device_node *root, void *ctx)
 {
-	int ret = 0;
-	struct fdt_header *fdt;
-	struct device_node *overlay;
-	char *path;
-	size_t size;
-
-	path = basprintf("%s/%s", abspath, file);
-
-	fdt = read_file(path, &size);
-	if (!fdt) {
-		pr_warn("unable to read \"%s\"\n", path);
-		ret = -EINVAL;
-		goto out;
-	}
-
-	overlay = of_unflatten_dtb(fdt, size);
-	free(fdt);
-	if (IS_ERR(overlay)) {
-		ret = PTR_ERR(overlay);
-		goto out;
-	}
-
-	if (dryrun) {
-		pr_info("dry run: skip overlay %s\n", path);
-		of_delete_node(overlay);
-		goto out;
-	}
-
-	ret = of_firmware_load_overlay(overlay);
-	if (ret) {
-		pr_warn("failed to load firmware: skip overlay \"%s\"\n", path);
-		of_delete_node(overlay);
-		goto out;
-	}
-
-	ret = of_register_overlay(overlay);
-	if (ret) {
-		pr_warn("cannot register devicetree overlay \"%s\"\n", path);
-		of_delete_node(overlay);
-	}
-
-out:
-	free(path);
-
-	return ret;
-}
-
-static void blspec_apply_oftree_overlays(const char *overlays,
-					 const char *abspath, int dryrun)
-{
+	struct blspec_entry *entry = ctx;
+	const char *overlays;
 	char *overlay;
 	char *sep, *freep;
+
+	overlays = blspec_entry_var_get(entry, "devicetree-overlay");
 
 	sep = freep = xstrdup(overlays);
 
 	while ((overlay = strsep(&sep, " "))) {
+		char *path;
+
 		if (!*overlay)
 			continue;
-		blspec_apply_oftree_overlay(overlay, abspath, dryrun);
+
+		path = basprintf("%s/%s", entry->rootpath, overlay);
+
+		of_overlay_apply_file(root, path);
+
+		free(path);
 	}
 
 	free(freep);
+
+	return 0;
 }
 
 /*
@@ -153,7 +115,7 @@ static int blspec_boot(struct bootentry *be, int verbose, int dryrun)
 	}
 
 	if (overlays)
-		blspec_apply_oftree_overlays(overlays, abspath, dryrun);
+		of_register_fixup(blspec_overlay_fixup, entry);
 
 	if (initrd)
 		data.initrd_file = basprintf("%s/%s", abspath, initrd);
@@ -188,6 +150,9 @@ static int blspec_boot(struct bootentry *be, int verbose, int dryrun)
 	ret = bootm_boot(&data);
 	if (ret)
 		pr_err("Booting failed\n");
+
+	if (overlays)
+		of_unregister_fixup(blspec_overlay_fixup, entry);
 
 	firmware_set_searchpath(old_fws);
 

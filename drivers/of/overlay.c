@@ -181,6 +181,10 @@ int of_overlay_apply_tree(struct device_node *root,
 	if (!resolved)
 		return -EINVAL;
 
+	err = of_overlay_pre_load_firmware(root, resolved);
+	if (err)
+		goto out_err;
+
 	/* Copy symbols from resolved overlay to base device tree */
 	of_overlay_apply_symbols(root, resolved);
 
@@ -191,6 +195,7 @@ int of_overlay_apply_tree(struct device_node *root,
 			pr_warn("failed to apply %s\n", fragment->name);
 	}
 
+out_err:
 	of_delete_node(resolved);
 
 	return err;

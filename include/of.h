@@ -1035,7 +1035,9 @@ int of_process_overlay(struct device_node *root,
 				   struct device_node *overlay, void *data),
 		    void *data);
 
-int of_firmware_load_overlay(struct device_node *overlay);
+int of_overlay_pre_load_firmware(struct device_node *root, struct device_node *overlay);
+int of_overlay_load_firmware(void);
+void of_overlay_load_firmware_clear(void);
 #else
 static inline struct device_node *of_resolve_phandles(struct device_node *root,
 					const struct device_node *overlay)
@@ -1069,10 +1071,21 @@ static inline int of_process_overlay(struct device_node *root,
 	return -ENOSYS;
 }
 
-static inline int of_firmware_load_overlay(struct device_node *overlay)
+static inline int of_overlay_pre_load_firmware(struct device_node *root,
+					       struct device_node *overlay)
 {
 	return -ENOSYS;
 }
+
+static inline int of_overlay_load_firmware(void)
+{
+	return 0;
+}
+
+static inline void of_overlay_load_firmware_clear(void)
+{
+}
+
 #endif
 
 #endif /* __OF_H */

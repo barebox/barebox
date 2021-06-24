@@ -32,10 +32,6 @@ static int do_of_overlay(int argc, char *argv[])
 	if (IS_ERR(overlay))
 		return PTR_ERR(overlay);
 
-	ret = of_firmware_load_overlay(overlay);
-	if (ret)
-		goto err;
-
 	ret = of_register_overlay(overlay);
 	if (ret) {
 		printf("cannot apply oftree overlay: %s\n", strerror(-ret));

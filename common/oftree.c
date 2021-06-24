@@ -353,7 +353,7 @@ struct fdt_header *of_get_fixed_tree(struct device_node *node)
 		if (!node)
 			return NULL;
 
-		freenp = node = of_copy_node(NULL, node);
+		freenp = node = of_dup(node);
 		if (!node)
 			return NULL;
 	}

@@ -2420,6 +2420,11 @@ struct device_node *of_copy_node(struct device_node *parent, const struct device
 	return np;
 }
 
+struct device_node *of_dup(const struct device_node *root)
+{
+	return of_copy_node(NULL, root);
+}
+
 void of_delete_node(struct device_node *node)
 {
 	struct device_node *n, *nt;

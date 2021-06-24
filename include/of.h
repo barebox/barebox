@@ -162,6 +162,7 @@ extern struct device_node *of_create_node(struct device_node *root,
 					const char *path);
 extern struct device_node *of_copy_node(struct device_node *parent,
 				const struct device_node *other);
+extern struct device_node *of_dup(const struct device_node *root);
 extern void of_delete_node(struct device_node *node);
 
 extern const char *of_get_machine_compatible(void);

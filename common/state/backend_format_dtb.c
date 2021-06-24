@@ -59,7 +59,7 @@ static int state_backend_format_dtb_verify(struct state_backend_format *format,
 		fdtb->root = NULL;
 	}
 
-	root = of_unflatten_dtb(buf);
+	root = of_unflatten_dtb(buf, dtb_len);
 	if (IS_ERR(root)) {
 		dev_err(fdtb->dev, "Failed to unflatten dtb from buffer with length %zd, %ld\n",
 			len, PTR_ERR(root));

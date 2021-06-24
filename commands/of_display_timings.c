@@ -83,7 +83,7 @@ static int do_of_display_timings(int argc, char *argv[])
 			return -EINVAL;
 		}
 
-		root = of_unflatten_dtb(fdt);
+		root = of_unflatten_dtb(fdt, size);
 
 		free(fdt);
 

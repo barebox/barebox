@@ -1720,7 +1720,7 @@ int barebox_register_fdt(const void *dtb)
 	if (root_node)
 		return -EBUSY;
 
-	root = of_unflatten_dtb(dtb);
+	root = of_unflatten_dtb(dtb, INT_MAX);
 	if (IS_ERR(root)) {
 		pr_err("Cannot unflatten dtb: %pe\n", root);
 		return PTR_ERR(root);

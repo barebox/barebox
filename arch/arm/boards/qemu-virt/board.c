@@ -31,14 +31,14 @@ static int replace_dtb(void) {
 		return 0;
 	}
 
-	root = of_unflatten_dtb(fdt);
+	root = of_unflatten_dtb(fdt, INT_MAX);
 
 	if (!of_device_is_compatible(root, "linux,dummy-virt")) {
 		of_delete_node(root);
 		return 0;
 	}
 
-	overlay = of_unflatten_dtb(__dtb_overlay_of_flash_start);
+	overlay = of_unflatten_dtb(__dtb_overlay_of_flash_start, INT_MAX);
 	of_overlay_apply_tree(root, overlay);
 
 	return barebox_register_of(root);

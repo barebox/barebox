@@ -430,7 +430,7 @@ static int rpi_vc_fdt_bootargs(void *fdt)
 	struct device_node *root = NULL, *node;
 	const char *cmdline;
 
-	root = of_unflatten_dtb(fdt);
+	root = of_unflatten_dtb(fdt, INT_MAX);
 	if (IS_ERR(root)) {
 		ret = PTR_ERR(root);
 		root = NULL;

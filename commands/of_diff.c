@@ -44,7 +44,7 @@ static struct device_node *get_tree(const char *filename, struct device_node *ro
 	if (ret)
 		return ERR_PTR(ret);
 
-	node = of_unflatten_dtb(fdt);
+	node = of_unflatten_dtb(fdt, size);
 
 	free(fdt);
 

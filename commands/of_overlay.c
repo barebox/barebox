@@ -17,6 +17,7 @@ static int do_of_overlay(int argc, char *argv[])
 	struct fdt_header *fdt;
 	struct device_node *overlay;
 	const char *search_path = NULL;
+	size_t size;
 
 	while ((opt = getopt(argc, argv, "S:")) > 0) {
 		switch (opt) {
@@ -31,13 +32,13 @@ static int do_of_overlay(int argc, char *argv[])
 	if (argc != optind + 1)
 		return COMMAND_ERROR_USAGE;
 
-	fdt = read_file(argv[optind], NULL);
+	fdt = read_file(argv[optind], &size);
 	if (!fdt) {
 		printf("cannot read %s\n", argv[optind]);
 		return 1;
 	}
 
-	overlay = of_unflatten_dtb(fdt);
+	overlay = of_unflatten_dtb(fdt, size);
 	free(fdt);
 	if (IS_ERR(overlay))
 		return PTR_ERR(overlay);

@@ -754,7 +754,7 @@ static int fit_do_open(struct fit_handle *handle)
 	const char *desc = "(no description)";
 	struct device_node *root;
 
-	root = of_unflatten_dtb_const(handle->fit);
+	root = of_unflatten_dtb_const(handle->fit, handle->size);
 	if (IS_ERR(root))
 		return PTR_ERR(root);
 

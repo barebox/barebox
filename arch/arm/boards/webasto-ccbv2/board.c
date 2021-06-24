@@ -28,7 +28,7 @@ static int ccbv2_probe(struct device_d *dev)
 		return 0;
 
 	fdt = (void*)OPTEE_OVERLAY_LOCATION;
-	overlay = of_unflatten_dtb(fdt);
+	overlay = of_unflatten_dtb(fdt, INT_MAX);
 
 	if (IS_ERR(overlay))
 		return PTR_ERR(overlay);

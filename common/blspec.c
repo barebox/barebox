@@ -40,17 +40,18 @@ static int blspec_apply_oftree_overlay(char *file, const char *abspath,
 	struct device_node *overlay;
 	char *path;
 	char *firmware_path;
+	size_t size;
 
 	path = basprintf("%s/%s", abspath, file);
 
-	fdt = read_file(path, NULL);
+	fdt = read_file(path, &size);
 	if (!fdt) {
 		pr_warn("unable to read \"%s\"\n", path);
 		ret = -EINVAL;
 		goto out;
 	}
 
-	overlay = of_unflatten_dtb(fdt);
+	overlay = of_unflatten_dtb(fdt, size);
 	free(fdt);
 	if (IS_ERR(overlay)) {
 		ret = PTR_ERR(overlay);
@@ -490,7 +491,7 @@ static bool entry_is_of_compatible(struct blspec_entry *entry)
 		goto out;
 	}
 
-	root = of_unflatten_dtb(fdt);
+	root = of_unflatten_dtb(fdt, size);
 	if (IS_ERR(root)) {
 		ret = false;
 		root = NULL;

@@ -421,7 +421,7 @@ static int do_bootz_linux_fdt(int fd, struct image_data *data, void **outfdt)
 	if (IS_BUILTIN(CONFIG_OFTREE)) {
 		struct device_node *root;
 
-		root = of_unflatten_dtb(oftree);
+		root = of_unflatten_dtb(oftree, header->totalsize);
 		if (IS_ERR(root)) {
 			pr_err("unable to unflatten devicetree\n");
 			goto err_free;

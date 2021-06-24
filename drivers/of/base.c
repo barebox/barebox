@@ -2409,6 +2409,7 @@ struct device_node *of_copy_node(struct device_node *parent, const struct device
 	struct property *pp;
 
 	np = of_new_node(parent, other->name);
+	np->phandle = other->phandle;
 
 	list_for_each_entry(pp, &other->properties, list)
 		of_new_property(np, pp->name, pp->value, pp->length);

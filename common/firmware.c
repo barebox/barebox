@@ -70,7 +70,7 @@ struct firmware_mgr *firmwaremgr_find_by_node(struct device_node *np)
 	struct firmware_mgr *mgr;
 
 	list_for_each_entry(mgr, &firmwaremgr_list, list)
-		if (mgr->handler->dev->parent->device_node == np)
+		if (mgr->handler->device_node == np)
 			return mgr;
 
 	return NULL;

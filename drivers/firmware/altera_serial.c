@@ -371,6 +371,7 @@ static int altera_spi_probe(struct device_d *dev)
 	if (model)
 		fh->model = xstrdup(model);
 	fh->dev = dev;
+	fh->device_node = dev->device_node;
 
 	this->spi = (struct spi_device *)dev->type_data;
 	this->data = data;

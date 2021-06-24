@@ -14,6 +14,7 @@ struct firmware_handler {
 	char *model; /* description for this device */
 	struct device_d *dev;
 	void *priv;
+	struct device_node *device_node;
 	/* called once to prepare the firmware's programming cycle */
 	int (*open)(struct firmware_handler*);
 	/* called multiple times to program the firmware with the given data */

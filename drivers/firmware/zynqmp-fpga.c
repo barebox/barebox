@@ -383,6 +383,8 @@ static int zynqmp_fpga_probe(struct device_d *dev)
 	}
 
 	fh->dev = &mgr->dev;
+	fh->device_node = dev->device_node;
+
 	ret = firmwaremgr_register(fh);
 	if (ret != 0) {
 		free(mgr);

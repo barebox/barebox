@@ -6,10 +6,6 @@
 #include <firmware.h>
 #include <of.h>
 
-struct overlay_info {
-	const char *firmware_path;
-};
-
 static struct firmware_mgr *of_node_get_mgr(struct device_node *np)
 {
 	struct device_node *mgr_node;
@@ -26,12 +22,9 @@ static struct firmware_mgr *of_node_get_mgr(struct device_node *np)
 }
 
 static int load_firmware(struct device_node *target,
-			 struct device_node *fragment, void *data)
+			 struct device_node *fragment, void *unused)
 {
-	struct overlay_info *info = data;
 	const char *firmware_name;
-	const char *firmware_path = info->firmware_path;
-	char *firmware;
 	int err;
 	struct firmware_mgr *mgr;
 
@@ -50,22 +43,13 @@ static int load_firmware(struct device_node *target,
 	if (!mgr)
 		return -EINVAL;
 
-	firmware = basprintf("%s/%s", firmware_path, firmware_name);
-	if (!firmware)
-		return -ENOMEM;
-
-	err = firmwaremgr_load_file(mgr, firmware);
-
-	free(firmware);
+	err = firmwaremgr_load_file(mgr, firmware_name);
 
 	return err;
 }
 
-int of_firmware_load_overlay(struct device_node *overlay, const char *path)
+int of_firmware_load_overlay(struct device_node *overlay)
 {
-	struct overlay_info info = {
-		.firmware_path = path,
-	};
 	int err;
 	struct device_node *root;
 	struct device_node *resolved;
@@ -81,8 +65,7 @@ int of_firmware_load_overlay(struct device_node *overlay, const char *path)
 	 */
 	ovl = resolved ? resolved : overlay;
 
-	err = of_process_overlay(root, ovl,
-				 load_firmware, &info);
+	err = of_process_overlay(root, ovl, load_firmware, NULL);
 
 	if (resolved)
 		of_delete_node(resolved);

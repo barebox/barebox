@@ -42,9 +42,9 @@
 #define CLK_U74_CORE1		33
 #define CLK_U74_AXI		34
 #define CLK_U74RTC_TOGGLE	35
-#define CLK_SGDMA2P_AXI		35
+#define CLK_SGDMA2P_AXI		36
 #define CLK_DMA2PNOC_AXI	37
-#define CLK_SGDMA2P_AHB		37
+#define CLK_SGDMA2P_AHB		38
 #define CLK_DLA_BUS		39
 #define CLK_DLA_AXI		40
 #define CLK_DLANOC_AXI		41

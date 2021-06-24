@@ -122,6 +122,8 @@ static int blspec_boot(struct bootentry *be, int verbose, int dryrun)
 	const char *abspath, *devicetree, *options, *initrd, *linuximage;
 	const char *overlays;
 	const char *appendroot;
+	const char *old_fws;
+	char *fws;
 	struct bootm_data data = {
 		.dryrun = dryrun,
 	};
@@ -184,9 +186,20 @@ static int blspec_boot(struct bootentry *be, int verbose, int dryrun)
 			(entry->cdev && entry->cdev->dev) ?
 			dev_name(entry->cdev->dev) : "none");
 
+	old_fws = firmware_get_searchpath();
+	if (old_fws && *old_fws)
+		fws = basprintf("%s/lib/firmware:%s", abspath, old_fws);
+	else
+		fws = basprintf("%s/lib/firmware", abspath);
+	firmware_set_searchpath(fws);
+	free(fws);
+
 	ret = bootm_boot(&data);
 	if (ret)
 		pr_err("Booting failed\n");
+
+	firmware_set_searchpath(old_fws);
+
 err_out:
 	free((char *)data.oftree_file);
 	free((char *)data.initrd_file);

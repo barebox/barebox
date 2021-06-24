@@ -51,7 +51,7 @@ static int blspec_overlay_fixup(struct device_node *root, void *ctx)
 
 		path = basprintf("%s/%s", entry->rootpath, overlay);
 
-		of_overlay_apply_file(root, path);
+		of_overlay_apply_file(root, path, false);
 
 		free(path);
 	}

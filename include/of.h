@@ -1022,12 +1022,20 @@ static inline struct device_node *of_find_root_node(struct device_node *node)
 	return node;
 }
 
+struct of_overlay_filter {
+	bool (*filter_filename)(struct of_overlay_filter *, const char *filename);
+	bool (*filter_content)(struct of_overlay_filter *, struct device_node *);
+	char *name;
+	struct list_head list;
+};
+
 #ifdef CONFIG_OF_OVERLAY
 struct device_node *of_resolve_phandles(struct device_node *root,
 					const struct device_node *overlay);
 int of_overlay_apply_tree(struct device_node *root,
 			  struct device_node *overlay);
-int of_overlay_apply_file(struct device_node *root, const char *filename);
+int of_overlay_apply_file(struct device_node *root, const char *filename,
+			  bool filter);
 int of_register_overlay(struct device_node *overlay);
 int of_process_overlay(struct device_node *root,
 		    struct device_node *overlay,
@@ -1038,6 +1046,8 @@ int of_process_overlay(struct device_node *root,
 int of_overlay_pre_load_firmware(struct device_node *root, struct device_node *overlay);
 int of_overlay_load_firmware(void);
 void of_overlay_load_firmware_clear(void);
+void of_overlay_set_basedir(const char *path);
+int of_overlay_register_filter(struct of_overlay_filter *);
 #else
 static inline struct device_node *of_resolve_phandles(struct device_node *root,
 					const struct device_node *overlay)
@@ -1052,7 +1062,7 @@ static inline int of_overlay_apply_tree(struct device_node *root,
 }
 
 static inline int of_overlay_apply_file(struct device_node *root,
-					const char *filename)
+					const char *filename, bool filter)
 {
 	return -ENOSYS;
 }
@@ -1083,6 +1093,10 @@ static inline int of_overlay_load_firmware(void)
 }
 
 static inline void of_overlay_load_firmware_clear(void)
+{
+}
+
+static inline void of_overlay_set_basedir(const char *path)
 {
 }
 

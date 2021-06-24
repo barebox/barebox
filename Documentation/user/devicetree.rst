@@ -21,7 +21,7 @@ The internal devicetree
 -----------------------
 
 The devicetree consulted by barebox plays a special role. It is referred to
-as the "internal devicetree." The barebox devicetree commands work on this
+as the "internal devicetree" or "live tree". The barebox devicetree commands work on this
 devicetree. The devicetree source (DTS) files are kept in sync with the kernel DTS
 files. As the FDT files are meant to be backward compatible, it should always be possible
 to start a kernel with the barebox internal devicetree. However, since the barebox

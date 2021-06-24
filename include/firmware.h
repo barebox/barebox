@@ -28,9 +28,9 @@ int firmwaremgr_register(struct firmware_handler *);
 
 struct firmware_mgr *firmwaremgr_find(const char *);
 #ifdef CONFIG_FIRMWARE
-struct firmware_mgr *firmwaremgr_find_by_node(const struct device_node *np);
+struct firmware_mgr *firmwaremgr_find_by_node(struct device_node *np);
 #else
-static inline struct firmware_mgr *firmwaremgr_find_by_node(const struct device_node *np)
+static inline struct firmware_mgr *firmwaremgr_find_by_node(struct device_node *np)
 {
 	return NULL;
 }

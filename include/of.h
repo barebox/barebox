@@ -1027,6 +1027,7 @@ struct device_node *of_resolve_phandles(struct device_node *root,
 					const struct device_node *overlay);
 int of_overlay_apply_tree(struct device_node *root,
 			  struct device_node *overlay);
+int of_overlay_apply_file(struct device_node *root, const char *filename);
 int of_register_overlay(struct device_node *overlay);
 int of_process_overlay(struct device_node *root,
 		    struct device_node *overlay,
@@ -1044,6 +1045,12 @@ static inline struct device_node *of_resolve_phandles(struct device_node *root,
 
 static inline int of_overlay_apply_tree(struct device_node *root,
 					struct device_node *overlay)
+{
+	return -ENOSYS;
+}
+
+static inline int of_overlay_apply_file(struct device_node *root,
+					const char *filename)
 {
 	return -ENOSYS;
 }

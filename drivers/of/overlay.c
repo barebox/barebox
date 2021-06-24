@@ -11,6 +11,11 @@
 #include <common.h>
 #include <of.h>
 #include <errno.h>
+#include <globalvar.h>
+#include <magicvar.h>
+#include <string.h>
+#include <libfile.h>
+#include <fs.h>
 
 static struct device_node *find_target(struct device_node *root,
 				       struct device_node *fragment)
@@ -189,6 +194,39 @@ int of_overlay_apply_tree(struct device_node *root,
 	of_delete_node(resolved);
 
 	return err;
+}
+
+int of_overlay_apply_file(struct device_node *root, const char *filename)
+{
+	void *fdt;
+	struct device_node *ovl;
+	size_t size;
+	int ret;
+
+	ret = read_file_2(filename, &size, &fdt, FILESIZE_MAX);
+	if (ret)
+		return ret;
+
+	ovl = of_unflatten_dtb(fdt, size);
+
+	free(fdt);
+
+	if (IS_ERR(ovl)) {
+		pr_err("Failed to unflatten %s: %pe\n", filename, ovl);
+		return PTR_ERR(ovl);
+	}
+
+	ret = of_overlay_apply_tree(root, ovl);
+	if (ret == -ENODEV)
+		pr_debug("Not applied %s (not compatible)\n", filename);
+	else if (ret)
+		pr_err("Cannot apply %s: %s\n", filename, strerror(-ret));
+	else
+		pr_info("Applied %s\n", filename);
+
+	of_delete_node(ovl);
+
+	return ret;
 }
 
 static int of_overlay_fixup(struct device_node *root, void *data)

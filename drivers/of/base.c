@@ -1682,6 +1682,9 @@ int of_modalias_node(struct device_node *node, char *modalias, int len)
 }
 EXPORT_SYMBOL_GPL(of_modalias_node);
 
+static struct device_node *of_chosen;
+static const char *of_model;
+
 struct device_node *of_get_root_node(void)
 {
 	return root_node;
@@ -1693,6 +1696,12 @@ int of_set_root_node(struct device_node *node)
 		return -EBUSY;
 
 	root_node = node;
+
+	of_chosen = of_find_node_by_path("/chosen");
+	of_property_read_string(root_node, "model", &of_model);
+
+	if (of_model)
+		barebox_set_model(of_model);
 
 	of_alias_scan();
 
@@ -2277,9 +2286,6 @@ int of_add_memory(struct device_node *node, bool dump)
 	return ret;
 }
 
-static struct device_node *of_chosen;
-static const char *of_model;
-
 const char *of_get_model(void)
 {
 	return of_model;
@@ -2343,12 +2349,6 @@ int of_probe(void)
 
 	if(!root_node)
 		return -ENODEV;
-
-	of_chosen = of_find_node_by_path("/chosen");
-	of_property_read_string(root_node, "model", &of_model);
-
-	if (of_model)
-		barebox_set_model(of_model);
 
 	firmware = of_find_node_by_path("/firmware");
 	if (firmware)

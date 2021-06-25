@@ -169,6 +169,15 @@ struct device_d *of_platform_device_create(struct device_node *np,
 	return NULL;
 }
 
+struct driver_d dummy_driver = {
+	.name = "dummy-driver",
+};
+
+void of_platform_device_dummy_drv(struct device_d *dev)
+{
+	dev->driver = &dummy_driver;
+}
+
 /**
  * of_device_enable_and_register - Enable and register device
  * @np: pointer to node to enable create device for

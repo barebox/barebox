@@ -268,6 +268,7 @@ extern int barebox_register_fdt(const void *dtb);
 
 extern struct device_d *of_platform_device_create(struct device_node *np,
 						struct device_d *parent);
+extern void of_platform_device_dummy_drv(struct device_d *dev);
 extern int of_platform_populate(struct device_node *root,
 				const struct of_device_id *matches,
 				struct device_d *parent);
@@ -363,6 +364,10 @@ static inline struct device_d *of_platform_device_create(struct device_node *np,
 							 struct device_d *parent)
 {
 	return NULL;
+}
+
+static inline void of_platform_device_dummy_drv(struct device_d *dev)
+{
 }
 
 static inline int of_device_ensure_probed(struct device_node *np)

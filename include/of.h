@@ -281,6 +281,7 @@ struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node);
 int of_parse_partitions(struct cdev *cdev, struct device_node *node);
 int of_fixup_partitions(struct device_node *np, struct cdev *cdev);
 int of_partitions_register_fixup(struct cdev *cdev);
+struct device_node *of_get_stdoutpath(void);
 int of_device_is_stdout_path(struct device_d *dev);
 const char *of_get_model(void);
 void *of_flatten_dtb(struct device_node *node);
@@ -316,6 +317,11 @@ static inline int of_fixup_partitions(struct device_node *np, struct cdev *cdev)
 static inline int of_partitions_register_fixup(struct cdev *cdev)
 {
 	return -ENOSYS;
+}
+
+static inline struct device_node *of_get_stdoutpath(void)
+{
+	return NULL;
 }
 
 static inline int of_device_is_stdout_path(struct device_d *dev)

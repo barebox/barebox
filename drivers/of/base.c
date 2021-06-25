@@ -2453,15 +2453,12 @@ void of_delete_node(struct device_node *node)
 		of_set_root_node(NULL);
 }
 
-int of_device_is_stdout_path(struct device_d *dev)
+struct device_node *of_get_stdoutpath(void)
 {
 	struct device_node *dn;
 	const char *name;
 	const char *p;
 	char *q;
-
-	if (!dev->device_node)
-		return 0;
 
 	name = of_get_property(of_chosen, "stdout-path", NULL);
 	if (!name)
@@ -2481,7 +2478,15 @@ int of_device_is_stdout_path(struct device_d *dev)
 
 	free(q);
 
-	return dn == dev->device_node;
+	return dn;
+}
+
+int of_device_is_stdout_path(struct device_d *dev)
+{
+	if (!dev->device_node)
+		return 0;
+
+	return dev->device_node == of_get_stdoutpath();
 }
 
 /**

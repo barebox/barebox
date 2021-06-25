@@ -39,6 +39,9 @@
 #include <mach/cyclone5-reset-manager.h>
 #include <mach/cyclone5-regs.h>
 #include <mach/cyclone5-sdram.h>
+#include <asm/fncpy.h>
+#include <mmu.h>
+#include <asm/cache.h>
 
 #define FPGAMGRREGS_STAT			0x0
 #define FPGAMGRREGS_CTRL			0x4
@@ -77,6 +80,10 @@
 #define CDRATIO_x2	0x1
 #define CDRATIO_x4	0x2
 #define CDRATIO_x8	0x3
+
+extern void socfpga_sdram_apply_static_cfg(void __iomem *sdrctrlgrp);
+extern void socfpga_sdram_apply_static_cfg_end(void *);
+extern const u32 socfpga_sdram_apply_static_cfg_sz;
 
 /* Get the FPGA mode */
 static uint32_t socfpga_fpgamgr_get_mode(struct fpgamgr *mgr)
@@ -337,6 +344,7 @@ static int socfpga_fpgamgr_program_finish(struct firmware_handler *fh)
 {
 	struct fpgamgr *mgr = container_of(fh, struct fpgamgr, fh);
 	int status;
+	void (*ocram_func)(void __iomem *ocram_base);
 
 	/* Ensure the FPGA entering config done */
 	status = socfpga_fpgamgr_program_poll_cd(mgr);
@@ -365,6 +373,19 @@ static int socfpga_fpgamgr_program_finish(struct firmware_handler *fh)
 				strerror(-status));
 		return status;
 	}
+
+	remap_range((void *)CYCLONE5_OCRAM_ADDRESS, PAGE_SIZE, MAP_CACHED);
+
+	dev_dbg(&mgr->dev, "Setting APPLYCFG bit...\n");
+
+	ocram_func = fncpy((void __iomem *)CYCLONE5_OCRAM_ADDRESS,
+			   &socfpga_sdram_apply_static_cfg,
+			   socfpga_sdram_apply_static_cfg_sz);
+
+	sync_caches_for_execution();
+
+	ocram_func((void __iomem *) (CYCLONE5_SDR_ADDRESS +
+				     SDR_CTRLGRP_STATICCFG_ADDRESS));
 
 	return 0;
 }

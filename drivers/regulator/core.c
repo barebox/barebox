@@ -175,6 +175,7 @@ int of_regulator_register(struct regulator_dev *rd, struct device_node *node)
 		return PTR_ERR(ri);
 
 	ri->node = node;
+	node->dev = rd->dev;
 
 	if (rd->desc->off_on_delay)
 		ri->enable_time_us = rd->desc->off_on_delay;
@@ -197,6 +198,7 @@ static struct regulator_internal *of_regulator_get(struct device_d *dev, const c
 	char *propname;
 	struct regulator_internal *ri;
 	struct device_node *node;
+	int ret;
 
 	propname = basprintf("%s-supply", supply);
 
@@ -227,6 +229,10 @@ static struct regulator_internal *of_regulator_get(struct device_d *dev, const c
 		ri = ERR_PTR(-EINVAL);
 		goto out;
 	}
+
+	ret = of_device_ensure_probed(node);
+	if (ret)
+		return ERR_PTR(ret);
 
 	list_for_each_entry(ri, &regulator_list, list) {
 		if (ri->node == node) {

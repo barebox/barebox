@@ -21,6 +21,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <deep-probe.h>
 #include <driver.h>
 #include <malloc.h>
 #include <console.h>
@@ -95,7 +96,15 @@ int device_probe(struct device_d *dev)
 	if (ret == -EPROBE_DEFER) {
 		list_del(&dev->active);
 		list_add(&dev->active, &deferred);
-		dev_dbg(dev, "probe deferred\n");
+
+		/*
+		 * -EPROBE_DEFER should never appear on a deep-probe machine so
+		 * inform the user immediately.
+		 */
+		if (deep_probe_is_supported())
+			dev_err(dev, "probe deferred\n");
+		else
+			dev_dbg(dev, "probe deferred\n");
 		return ret;
 	}
 

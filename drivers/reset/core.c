@@ -168,6 +168,10 @@ static struct reset_control *of_reset_control_get(struct device_node *node,
 	if (ret)
 		return ERR_PTR(ret);
 
+	ret = of_device_ensure_probed(args.np);
+	if (ret)
+		return ERR_PTR(ret);
+
 	rcdev = NULL;
 	list_for_each_entry(r, &reset_controller_list, list) {
 		if (args.np == r->of_node) {

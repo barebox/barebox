@@ -407,6 +407,9 @@ static struct i2c_client *i2c_new_device(struct i2c_adapter *adapter,
 	}
 	client->dev.info = i2c_info;
 
+	if (chip->of_node)
+		chip->of_node->dev = &client->dev;
+
 	return client;
 }
 
@@ -548,6 +551,11 @@ struct i2c_adapter *i2c_get_adapter(int busnum)
 struct i2c_adapter *of_find_i2c_adapter_by_node(struct device_node *node)
 {
 	struct i2c_adapter *adap;
+	int ret;
+
+	ret = of_device_ensure_probed(node);
+	if (ret)
+		return ERR_PTR(ret);
 
 	for_each_i2c_adapter(adap)
 		if (adap->dev.device_node == node)

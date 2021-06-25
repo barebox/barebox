@@ -15,6 +15,7 @@
  * GNU General Public License for more details.
  */
 #include <common.h>
+#include <deep-probe.h>
 #include <of.h>
 #include <of_address.h>
 #include <errno.h>
@@ -1708,6 +1709,15 @@ int of_set_root_node(struct device_node *node)
 	return 0;
 }
 
+static int barebox_of_populate(void)
+{
+	if (IS_ENABLED(CONFIG_OFDEVICE) && deep_probe_is_supported())
+		return of_probe();
+
+	return 0;
+}
+of_populate_initcall(barebox_of_populate);
+
 int barebox_register_of(struct device_node *root)
 {
 	if (root_node)
@@ -1718,7 +1728,8 @@ int barebox_register_of(struct device_node *root)
 
 	if (IS_ENABLED(CONFIG_OFDEVICE)) {
 		of_clk_init(root, NULL);
-		return of_probe();
+		if (!deep_probe_is_supported())
+			return of_probe();
 	}
 
 	return 0;

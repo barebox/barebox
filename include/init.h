@@ -47,6 +47,9 @@ typedef void (*exitcall_t)(void);
  * initializes variables that couldn't be statically initialized.
  *
  * This only exists for built-in code, not for modules.
+ *
+ * The only purpose for "of_populate" is to call of_probe() other functions are
+ * not allowed.
  */
 #define pure_initcall(fn)		__define_initcall("0",fn,0)
 
@@ -61,9 +64,10 @@ typedef void (*exitcall_t)(void);
 #define fs_initcall(fn)			__define_initcall("9",fn,9)
 #define device_initcall(fn)		__define_initcall("10",fn,10)
 #define crypto_initcall(fn)		__define_initcall("11",fn,11)
-#define late_initcall(fn)		__define_initcall("12",fn,12)
-#define environment_initcall(fn)	__define_initcall("13",fn,13)
-#define postenvironment_initcall(fn)	__define_initcall("14",fn,14)
+#define of_populate_initcall(fn)	__define_initcall("12",fn,12)
+#define late_initcall(fn)		__define_initcall("13",fn,13)
+#define environment_initcall(fn)	__define_initcall("14",fn,14)
+#define postenvironment_initcall(fn)	__define_initcall("15",fn,15)
 
 #define early_exitcall(fn)		__define_exitcall("0",fn,0)
 #define predevshutdown_exitcall(fn)	__define_exitcall("1",fn,1)

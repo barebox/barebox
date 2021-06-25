@@ -76,7 +76,7 @@ static struct pinctrl_device *find_pinctrl(struct device_node *node)
 	return NULL;
 }
 
-static int pinctrl_config_one(struct device_node *np)
+static int pinctrl_config_one(struct device_node *for_node, struct device_node *np)
 {
 	struct pinctrl_device *pdev;
 	struct device_node *pinctrl_node = np;
@@ -88,6 +88,9 @@ static int pinctrl_config_one(struct device_node *np)
 		if (of_get_property(pinctrl_node, "compatible", NULL))
 			break;
 	}
+
+	if (pinctrl_node != for_node)
+		of_device_ensure_probed(pinctrl_node);
 
 	pdev = find_pinctrl(pinctrl_node);
 	if (pdev)
@@ -151,7 +154,7 @@ int of_pinctrl_select_state(struct device_node *np, const char *name)
 			}
 
 			/* Parse the node */
-			ret = pinctrl_config_one(np_config);
+			ret = pinctrl_config_one(np, np_config);
 			if (ret < 0)
 				goto err;
 		}

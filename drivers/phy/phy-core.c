@@ -259,6 +259,10 @@ static struct phy *_of_phy_get(struct device_node *np, int index)
 	if (ret)
 		return ERR_PTR(-ENODEV);
 
+	ret = of_device_ensure_probed(args.np);
+	if (ret)
+		return ERR_PTR(ret);
+
 	phy_provider = of_phy_provider_lookup(args.np);
 	if (IS_ERR(phy_provider)) {
 		return ERR_CAST(phy_provider);

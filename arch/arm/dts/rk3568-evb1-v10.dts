@@ -462,6 +462,8 @@
 	non-removable;
 	no-sd;
 	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&emmc_bus8 &emmc_clk &emmc_cmd &emmc_datastrobe>;
 
 	partitions {
 		compatible = "fixed-partitions";

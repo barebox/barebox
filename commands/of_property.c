@@ -4,6 +4,7 @@
 /* of_property.c - device tree property handling support */
 
 #include <common.h>
+#include <libfile.h>
 #include <environment.h>
 #include <fdt.h>
 #include <of.h>
@@ -18,7 +19,7 @@
 #include <init.h>
 #include <xfuncs.h>
 
-static int of_parse_prop_cells(char * const *newval, int count, char *data, int *len)
+static int of_parse_prop_cells(struct device_node *root, char * const *newval, int count, char *data, int *len)
 {
 	char *cp;
 	unsigned long tmp;	/* holds converted values */
@@ -60,7 +61,7 @@ static int of_parse_prop_cells(char * const *newval, int count, char *data, int 
 			str = xzalloc(len + 1);
 			strncpy(str, cp, len);
 
-			n = of_find_node_by_path_or_alias(NULL, str);
+			n = of_find_node_by_path_or_alias(root, str);
 			if (!n)
 				printf("Cannot find node '%s'\n", str);
 
@@ -164,7 +165,7 @@ static int of_parse_prop_string(char * const *newval, int count, char *data, int
  * data: A bytestream to be placed in the property
  * len: The length of the resulting bytestream
  */
-static int of_parse_prop(char * const *newval, int count, char *data, int *len)
+static int of_parse_prop(struct device_node *root, char * const *newval, int count, char *data, int *len)
 {
 	char *newp;		/* temporary newval char pointer */
 
@@ -177,7 +178,7 @@ static int of_parse_prop(char * const *newval, int count, char *data, int *len)
 
 	switch (*newp) {
 	case '<':
-		return of_parse_prop_cells(newval, count, data, len);
+		return of_parse_prop_cells(root, newval, count, data, len);
 	case '[':
 		return of_parse_prop_stream(newval, count, data, len);
 	default:
@@ -302,8 +303,13 @@ static int do_of_property(int argc, char *argv[])
 	int set = 0;
 	int fixup = 0;
 	char *path, *propname;
+	char *dtbfile = NULL;
+	int ret = 0;
+	size_t size;
+	struct fdt_header *fdt = NULL;
+	struct device_node *root = NULL;
 
-	while ((opt = getopt(argc, argv, "dsf")) > 0) {
+	while ((opt = getopt(argc, argv, "dsfe:")) > 0) {
 		switch (opt) {
 		case 'd':
 			delete = 1;
@@ -313,6 +319,9 @@ static int do_of_property(int argc, char *argv[])
 			break;
 		case 'f':
 			fixup = 1;
+			break;
+		case 'e':
+			dtbfile = optarg;
 			break;
 		default:
 			return COMMAND_ERROR_USAGE;
@@ -327,8 +336,22 @@ static int do_of_property(int argc, char *argv[])
 
 	debug("path: %s propname: %s\n", path, propname);
 
+	if ( !(set || delete))
+		return COMMAND_ERROR_USAGE;
+
+	if (dtbfile) {
+		fdt = read_file(dtbfile, &size);
+		if (!fdt) {
+			printf("unable to read %s: %m\n", dtbfile);
+			return -errno;
+		}
+
+		root = of_unflatten_dtb(fdt, size);
+
+		free(fdt);
+	}
+
 	if (set) {
-		int ret;
 		int len;
 		void *data;
 
@@ -340,10 +363,10 @@ static int do_of_property(int argc, char *argv[])
 		if (!data)
 			return -ENOMEM;
 
-		ret = of_parse_prop(&argv[optind + 2], argc - optind - 2, data, &len);
+		ret = of_parse_prop(root, &argv[optind + 2], argc - optind - 2, data, &len);
 		if (ret) {
 			free(data);
-			return ret;
+			goto out;
 		}
 
 		if (fixup) {
@@ -351,21 +374,37 @@ static int do_of_property(int argc, char *argv[])
 			if (ret)
 				free(data);
 		} else {
-			ret = do_of_property_set_now(NULL, path, propname, data, len);
+			ret = do_of_property_set_now(root, path, propname, data, len);
 			free(data);
 		}
 
-		return ret;
-	}
+		if (ret)
+			goto out;
 
-	if (delete) {
+	} else if (delete) {
 		if (fixup)
-			return do_of_property_delete_fixup(path, propname);
+			ret = do_of_property_delete_fixup(path, propname);
 		else
-			return do_of_property_delete_now(NULL, path, propname);
+			ret = do_of_property_delete_now(root, path, propname);
+
+		if (ret)
+			goto out;
 	}
 
-	return COMMAND_ERROR_USAGE;
+	if (root && !fixup) {
+		fdt = of_flatten_dtb(root);
+
+		ret = write_file(dtbfile, fdt, fdt32_to_cpu(fdt->totalsize));
+
+		free(fdt);
+	}
+
+out:
+
+	if (root)
+		of_delete_node(root);
+
+	return ret;
 }
 
 BAREBOX_CMD_HELP_START(of_property)
@@ -373,6 +412,7 @@ BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-s",  "set property to value")
 BAREBOX_CMD_HELP_OPT ("-d",  "delete property")
 BAREBOX_CMD_HELP_OPT ("-f",  "set/delete as a fixup (defer the action until booting)")
+BAREBOX_CMD_HELP_OPT ("-e dtb",  "set/delete/fixup from external dtb")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Valid formats for values:")
 BAREBOX_CMD_HELP_TEXT("<0x00112233 4 05> - an array of cells. cells not beginning with a digit are")
@@ -384,8 +424,8 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(of_property)
 	.cmd		= do_of_property,
 	BAREBOX_CMD_DESC("handle device tree properties")
-	BAREBOX_CMD_OPTS("[-sd] [-f] NODE [PROPERTY] [VALUES]")
+	BAREBOX_CMD_OPTS("[-sd] [-e] [-f] NODE [PROPERTY] [VALUES]")
 	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
-	BAREBOX_CMD_COMPLETE(devicetree_complete)
+	BAREBOX_CMD_COMPLETE(devicetree_file_complete)
 	BAREBOX_CMD_HELP(cmd_of_property_help)
 BAREBOX_CMD_END

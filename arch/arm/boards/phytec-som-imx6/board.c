@@ -14,6 +14,7 @@
 #include <gpio.h>
 #include <init.h>
 #include <of.h>
+#include <deep-probe.h>
 #include <i2c/i2c.h>
 #include <mach/bbu.h>
 #include <platform_data/eth-fec.h>
@@ -110,6 +111,10 @@ static int phycore_da9062_setup_buck_mode(void)
 	if (!pmic_np)
 		return -ENODEV;
 
+	ret = of_device_ensure_probed(pmic_np);
+	if (ret)
+		return ret;
+
 	adapter = of_find_i2c_adapter_by_node(pmic_np->parent);
 	if (!adapter)
 		return -ENODEV;
@@ -161,6 +166,10 @@ static int physom_imx6_probe(struct device_d *dev)
 	unsigned flags = brd->flags;
 
 	if (flags & IS_PHYFLEX) {
+		ret = of_devices_ensure_probed_by_property("gpio-controller");
+		if (ret)
+			return ret;
+
 		phyflex_err006282_workaround();
 
 		pfla02_module_revision = get_module_rev();
@@ -358,3 +367,5 @@ static struct driver_d physom_imx6_driver = {
 };
 
 postcore_platform_driver(physom_imx6_driver);
+
+BAREBOX_DEEP_PROBE_ENABLE(physom_imx6_match);

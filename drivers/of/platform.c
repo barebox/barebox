@@ -518,3 +518,20 @@ int of_devices_ensure_probed_by_property(const char *property_name)
 	return 0;
 }
 EXPORT_SYMBOL_GPL(of_devices_ensure_probed_by_property);
+
+static int of_stdoutpath_init(void)
+{
+	struct device_node *np;
+
+	np = of_get_stdoutpath();
+	if (!np)
+		return 0;
+
+	/*
+	 * With deep probe support the device providing the console
+	 * can come quite late in the probe order. Make sure it's
+	 * probed now so that we get output earlier.
+	 */
+	return of_device_ensure_probed(np);
+}
+postconsole_initcall(of_stdoutpath_init);

@@ -2436,7 +2436,6 @@ void of_delete_node(struct device_node *node)
 {
 	struct device_node *n, *nt;
 	struct property *p, *pt;
-	struct device_d *dev;
 
 	if (!node)
 		return;
@@ -2456,10 +2455,6 @@ void of_delete_node(struct device_node *node)
 		list_del(&node->parent_list);
 		list_del(&node->list);
 	}
-
-	dev = of_find_device_by_node(node);
-	if (dev)
-		dev->device_node = NULL;
 
 	free(node->name);
 	free(node->full_name);

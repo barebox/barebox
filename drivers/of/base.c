@@ -2300,6 +2300,9 @@ static int of_probe_memory(void)
 	struct device_node *memory = root_node;
 	int ret = 0;
 
+	if (!IS_ENABLED(CONFIG_OFDEVICE))
+		return 0;
+
 	/* Parse all available node with "memory" device_type */
 	while (1) {
 		int err;
@@ -2315,6 +2318,7 @@ static int of_probe_memory(void)
 
 	return ret;
 }
+mem_initcall(of_probe_memory);
 
 static void of_platform_device_create_root(struct device_node *np)
 {
@@ -2334,7 +2338,6 @@ static void of_platform_device_create_root(struct device_node *np)
 int of_probe(void)
 {
 	struct device_node *firmware;
-	int ret;
 
 	if(!root_node)
 		return -ENODEV;
@@ -2345,8 +2348,6 @@ int of_probe(void)
 	if (of_model)
 		barebox_set_model(of_model);
 
-	ret = of_probe_memory();
-
 	firmware = of_find_node_by_path("/firmware");
 	if (firmware)
 		of_platform_populate(firmware, NULL, NULL);
@@ -2356,7 +2357,7 @@ int of_probe(void)
 	of_clk_init(root_node, NULL);
 	of_platform_populate(root_node, of_default_bus_match_table, NULL);
 
-	return ret;
+	return 0;
 }
 
 /**

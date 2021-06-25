@@ -13,7 +13,9 @@
 #include <mach/bbu.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
+#include <of.h>
 #include <partition.h>
+#include <deep-probe.h>
 #include <linux/phy.h>
 #include <asm/io.h>
 #include <asm/mmu.h>
@@ -98,10 +100,6 @@ static int sabrelite_ksz9021rn_setup(void)
 {
 	int ret;
 
-	if (!of_machine_is_compatible("fsl,imx6q-sabrelite") &&
-	    !of_machine_is_compatible("fsl,imx6dl-sabrelite"))
-		return 0;
-
 	mxc_iomux_v3_setup_multiple_pads(sabrelite_enet_gpio_pads,
 			ARRAY_SIZE(sabrelite_enet_gpio_pads));
 
@@ -118,11 +116,6 @@ static int sabrelite_ksz9021rn_setup(void)
 
 	return 0;
 }
-/*
- * Do this before the fec initializes but after our
- * gpios are available.
- */
-fs_initcall(sabrelite_ksz9021rn_setup);
 
 static void sabrelite_ehci_init(void)
 {
@@ -132,11 +125,22 @@ static void sabrelite_ehci_init(void)
 	gpio_set_value(IMX_GPIO_NR(7, 12), 1);
 }
 
-static int sabrelite_devices_init(void)
+static int sabrelite_probe(struct device_d *dev)
 {
-	if (!of_machine_is_compatible("fsl,imx6q-sabrelite") &&
-	    !of_machine_is_compatible("fsl,imx6dl-sabrelite"))
-		return 0;
+	int ret;
+
+	phy_register_fixup_for_uid(PHY_ID_KSZ9021, MICREL_PHY_ID_MASK,
+					   ksz9021rn_phy_fixup);
+
+	barebox_set_hostname("sabrelite");
+
+	ret = of_devices_ensure_probed_by_property("gpio-controller");
+	if (ret)
+		return ret;
+
+	ret = sabrelite_ksz9021rn_setup();
+	if (ret)
+		return ret;
 
 	sabrelite_ehci_init();
 
@@ -147,19 +151,21 @@ static int sabrelite_devices_init(void)
 
 	return 0;
 }
-device_initcall(sabrelite_devices_init);
+static const struct of_device_id sabrelite_match[] = {
+	{
+		.compatible = "fsl,imx6q-sabrelite",
+	}, {
+		.compatible = "fsl,imx6dl-sabrelite",
+	},
+	{ /* Sentinel */ },
+};
 
-static int sabrelite_coredevices_init(void)
-{
-	if (!of_machine_is_compatible("fsl,imx6q-sabrelite") &&
-	    !of_machine_is_compatible("fsl,imx6dl-sabrelite"))
-		return 0;
+static struct driver_d sabrelite_driver = {
+	.name = "physom-imx6",
+	.probe = sabrelite_probe,
+	.of_compatible = sabrelite_match,
+};
 
-	phy_register_fixup_for_uid(PHY_ID_KSZ9021, MICREL_PHY_ID_MASK,
-					   ksz9021rn_phy_fixup);
+postcore_platform_driver(sabrelite_driver);
 
-	barebox_set_hostname("sabrelite");
-
-	return 0;
-}
-coredevice_initcall(sabrelite_coredevices_init);
+BAREBOX_DEEP_PROBE_ENABLE(sabrelite_match);

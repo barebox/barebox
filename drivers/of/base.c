@@ -1707,8 +1707,10 @@ int barebox_register_of(struct device_node *root)
 	of_set_root_node(root);
 	of_fix_tree(root);
 
-	if (IS_ENABLED(CONFIG_OFDEVICE))
+	if (IS_ENABLED(CONFIG_OFDEVICE)) {
+		of_clk_init(root, NULL);
 		return of_probe();
+	}
 
 	return 0;
 }
@@ -2354,7 +2356,6 @@ int of_probe(void)
 
 	of_platform_device_create_root(root_node);
 
-	of_clk_init(root_node, NULL);
 	of_platform_populate(root_node, of_default_bus_match_table, NULL);
 
 	return 0;

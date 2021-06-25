@@ -2441,6 +2441,11 @@ void of_delete_node(struct device_node *node)
 	if (!node)
 		return;
 
+	if (node == root_node) {
+		pr_err("Won't delete root device node\n");
+		return;
+	}
+
 	list_for_each_entry_safe(p, pt, &node->properties, list)
 		of_delete_property(p);
 
@@ -2459,9 +2464,6 @@ void of_delete_node(struct device_node *node)
 	free(node->name);
 	free(node->full_name);
 	free(node);
-
-	if (node == root_node)
-		of_set_root_node(NULL);
 }
 
 struct device_node *of_get_stdoutpath(void)

@@ -85,12 +85,15 @@ static int pinctrl_config_one(struct device_node *np)
 		pinctrl_node = pinctrl_node->parent;
 		if (!pinctrl_node)
 			return -ENODEV;
-		pdev = find_pinctrl(pinctrl_node);
-		if (pdev)
+		if (of_get_property(pinctrl_node, "compatible", NULL))
 			break;
 	}
 
-	return pdev->ops->set_state(pdev, np);
+	pdev = find_pinctrl(pinctrl_node);
+	if (pdev)
+		return pdev->ops->set_state(pdev, np);
+	else
+		return -ENODEV;
 }
 
 int of_pinctrl_select_state(struct device_node *np, const char *name)

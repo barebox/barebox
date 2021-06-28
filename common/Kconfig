@@ -1466,6 +1466,10 @@ config DEBUG_INITCALLS
 	help
 	  If enabled this will print initcall traces.
 
+config DEBUG_PROBES
+	bool "Trace driver probes"
+	help
+	  If enabled this will print driver probe traces.
 
 config PBL_BREAK
 	bool "Execute software break on pbl start"

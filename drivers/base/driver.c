@@ -36,6 +36,12 @@
 #include <pinctrl.h>
 #include <linux/clk/clk-conf.h>
 
+#ifdef CONFIG_DEBUG_PROBES
+#define pr_report_probe		pr_info
+#else
+#define pr_report_probe		pr_debug
+#endif
+
 LIST_HEAD(device_list);
 EXPORT_SYMBOL(device_list);
 
@@ -82,7 +88,12 @@ int get_free_deviceid(const char *name_template)
 
 int device_probe(struct device_d *dev)
 {
+	static int depth = 0;
 	int ret;
+
+	depth++;
+
+	pr_report_probe("%*sprobe-> %s\n", depth * 4, "", dev_name(dev));
 
 	pinctrl_select_state_default(dev);
 	of_clk_set_defaults(dev->device_node, false);
@@ -91,7 +102,7 @@ int device_probe(struct device_d *dev)
 
 	ret = dev->bus->probe(dev);
 	if (ret == 0)
-		return 0;
+		goto out;
 
 	if (ret == -EPROBE_DEFER) {
 		list_del(&dev->active);
@@ -105,7 +116,7 @@ int device_probe(struct device_d *dev)
 			dev_err(dev, "probe deferred\n");
 		else
 			dev_dbg(dev, "probe deferred\n");
-		return ret;
+		goto out;
 	}
 
 	list_del(&dev->active);
@@ -116,6 +127,8 @@ int device_probe(struct device_d *dev)
 	else
 		dev_err(dev, "probe failed: %s\n", strerror(-ret));
 
+out:
+	depth--;
 	return ret;
 }
 

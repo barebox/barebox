@@ -135,6 +135,8 @@ struct spawn {
 
 static int do_bthread(int argc, char *argv[])
 {
+	static int dummynr;
+	static LIST_HEAD(dummies);
 	LIST_HEAD(spawners);
 	struct spawn *spawner, *tmp;
 	int ret = 0;
@@ -142,8 +144,29 @@ static int do_bthread(int argc, char *argv[])
 	bool time = false;
 	struct arg *arg;
 
-	while ((opt = getopt(argc, argv, "itcv")) > 0) {
+	while ((opt = getopt(argc, argv, "aritcv")) > 0) {
 		switch (opt) {
+		case 'a':
+			spawner = xzalloc(sizeof(*spawner));
+			spawner->bthread = bthread_run(bthread_infinite, NULL,
+						       "dummy%u", dummynr++);
+			if (!spawner->bthread) {
+				free(spawner);
+				ret = -ENOMEM;
+				goto cleanup;
+			}
+
+			list_add(&spawner->list, &dummies);
+			break;
+		case 'r':
+			if (dummynr == 0)
+				return -EINVAL;
+			spawner = list_first_entry(&dummies, struct spawn, list);
+			bthread_cancel(spawner->bthread);
+			list_del(&spawner->list);
+			free(spawner);
+			dummynr--;
+			break;
 		case 'i':
 			bthread_info();
 			break;
@@ -198,6 +221,8 @@ BAREBOX_CMD_HELP_START(bthread)
 	BAREBOX_CMD_HELP_OPT ("-i", "Print information about registered bthreads")
 	BAREBOX_CMD_HELP_OPT ("-t", "measure how many bthreads we currently run in 1s")
 	BAREBOX_CMD_HELP_OPT ("-c", "count maximum context switches in 1s")
+	BAREBOX_CMD_HELP_OPT ("-a", "add a dummy bthread")
+	BAREBOX_CMD_HELP_OPT ("-r", "remove a dummy bthread")
 	BAREBOX_CMD_HELP_OPT ("-v", "verify correct bthread operation")
 BAREBOX_CMD_HELP_END
 

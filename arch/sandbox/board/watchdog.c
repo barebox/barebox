@@ -12,6 +12,7 @@
 struct sandbox_watchdog {
 	struct watchdog wdd;
 	bool cant_disable :1;
+	struct nvmem_cell *reset_source_cell;
 };
 
 static inline struct sandbox_watchdog *to_sandbox_watchdog(struct watchdog *wdd)
@@ -29,6 +30,8 @@ static int sandbox_watchdog_set_timeout(struct watchdog *wdd, unsigned int timeo
 	if (timeout > wdd->timeout_max)
 		return -EINVAL;
 
+	nvmem_cell_write(wd->reset_source_cell, &(u8) { RESET_WDG }, 1);
+
 	linux_watchdog_set_timeout(timeout);
 	return 0;
 }
@@ -36,7 +39,6 @@ static int sandbox_watchdog_set_timeout(struct watchdog *wdd, unsigned int timeo
 static int sandbox_watchdog_probe(struct device_d *dev)
 {
 	struct device_node *np = dev->device_node;
-	struct nvmem_cell *reset_source_cell;
 	struct sandbox_watchdog *wd;
 	struct watchdog *wdd;
 	int ret;
@@ -56,15 +58,11 @@ static int sandbox_watchdog_probe(struct device_d *dev)
 		return ret;
 	}
 
-	reset_source_cell = of_nvmem_cell_get(dev->device_node, "reset-source");
-	if (IS_ERR(reset_source_cell)) {
-		dev_warn(dev, "No reset source info available: %pe\n", reset_source_cell);
+	wd->reset_source_cell = of_nvmem_cell_get(dev->device_node, "reset-source");
+	if (IS_ERR(wd->reset_source_cell)) {
+		dev_warn(dev, "No reset source info available: %pe\n", wd->reset_source_cell);
 		goto out;
 	}
-
-	nvmem_cell_write(reset_source_cell, &(u8) { RESET_WDG }, 1);
-
-	nvmem_cell_put(reset_source_cell);
 
 out:
 	dev_info(dev, "probed\n");

@@ -20,6 +20,7 @@
 #include <mach/linux.h>
 #include <init.h>
 #include <errno.h>
+#include <deep-probe.h>
 #include <fb.h>
 
 struct fb_videomode mode = {
@@ -44,7 +45,7 @@ static struct device_d devrandom_device = {
 	.name     = "devrandom",
 };
 
-static int devices_init(void)
+static int devices_init(struct device_d *dev)
 {
 	platform_device_register(&tap_device);
 
@@ -61,4 +62,15 @@ static int devices_init(void)
 	return 0;
 }
 
-device_initcall(devices_init);
+static struct of_device_id sandbox_dt_ids[] = {
+	{ .compatible = "barebox,sandbox" },
+	{ /* sentinel */ }
+};
+BAREBOX_DEEP_PROBE_ENABLE(sandbox_dt_ids);
+
+static struct driver_d sandbox_board_drv = {
+	.name  = "sandbox-board",
+	.of_compatible = sandbox_dt_ids,
+	.probe = devices_init,
+};
+device_platform_driver(sandbox_board_drv);

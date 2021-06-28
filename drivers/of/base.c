@@ -2475,10 +2475,7 @@ struct device_node *of_get_stdoutpath(void)
 	if (!name)
 		return 0;
 
-	/* This could make use of strchrnul if it were available */
-	p = strchr(name, ':');
-	if (!p)
-		p = name + strlen(name);
+	p = strchrnul(name, ':');
 
 	q = xstrndup(name, p - name);
 

@@ -9,14 +9,6 @@
 #include <string.h>
 #include <environment.h>
 
-static char *strchrnul(const char *s, int c)
-{
-	while (*s != '\0' && *s != c)
-		s++;
-
-	return (char *)s;
-}
-
 static int sscanf_two_digits(char *s, int *res)
 {
 	char buf[3];

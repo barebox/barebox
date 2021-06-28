@@ -246,13 +246,26 @@ struct nvmem_device *nvmem_register(const struct nvmem_config *config)
 }
 EXPORT_SYMBOL_GPL(nvmem_register);
 
+static int of_nvmem_device_ensure_probed(struct device_node *np)
+{
+	if (of_device_is_compatible(np, "nvmem-cells"))
+		return of_partition_ensure_probed(np);
+
+	return of_device_ensure_probed(np);
+}
+
 static struct nvmem_device *__nvmem_device_get(struct device_node *np,
 					       struct nvmem_cell **cellp,
 					       const char *cell_id)
 {
 	struct nvmem_device *nvmem = NULL;
+	int ret;
 
 	if (np) {
+		ret = of_nvmem_device_ensure_probed(np);
+		if (ret)
+			return ERR_PTR(ret);
+
 		nvmem = of_nvmem_find(np);
 		if (!nvmem)
 			return ERR_PTR(-EPROBE_DEFER);

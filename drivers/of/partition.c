@@ -118,6 +118,17 @@ int of_parse_partitions(struct cdev *cdev, struct device_node *node)
 	return 0;
 }
 
+int of_partition_ensure_probed(struct device_node *np)
+{
+	np = of_get_parent(np);
+
+	if (of_device_is_compatible(np, "fixed-partitions"))
+		np = of_get_parent(np);
+
+	return np ? of_device_ensure_probed(np) : -EINVAL;
+}
+EXPORT_SYMBOL_GPL(of_partition_ensure_probed);
+
 static void delete_subnodes(struct device_node *np)
 {
 	struct device_node *part, *tmp;

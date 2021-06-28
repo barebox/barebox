@@ -283,6 +283,7 @@ extern int of_device_ensure_probed(struct device_node *np);
 extern int of_device_ensure_probed_by_alias(const char *alias);
 extern int of_devices_ensure_probed_by_property(const char *property_name);
 extern int of_devices_ensure_probed_by_dev_id(const struct of_device_id *ids);
+extern int of_partition_ensure_probed(struct device_node *np);
 
 struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node);
 int of_parse_partitions(struct cdev *cdev, struct device_node *node);
@@ -388,6 +389,11 @@ static inline int of_devices_ensure_probed_by_property(const char *property_name
 
 static inline int
 of_devices_ensure_probed_by_dev_id(const struct of_device_id *ids)
+{
+	return 0;
+}
+
+static inline int of_partition_ensure_probed(struct device_node *np)
 {
 	return 0;
 }

@@ -215,7 +215,7 @@ struct nvmem_device *nvmem_register(const struct nvmem_config *config)
 	dev_set_name(&nvmem->dev, config->name);
 	nvmem->dev.id = DEVICE_ID_DYNAMIC;
 
-	dev_dbg(&nvmem->dev, "Registering nvmem device %s\n", config->name);
+	dev_dbg(nvmem->dev.parent, "Registering nvmem device %s\n", config->name);
 
 	rval = register_device(&nvmem->dev);
 	if (rval) {

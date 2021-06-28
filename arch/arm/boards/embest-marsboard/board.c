@@ -10,6 +10,7 @@
 #include <envfs.h>
 #include <mach/bbu.h>
 #include <linux/phy.h>
+#include <deep-probe.h>
 
 static int ar8035_phy_fixup(struct phy_device *dev)
 {
@@ -32,11 +33,8 @@ static int ar8035_phy_fixup(struct phy_device *dev)
 	return 0;
 }
 
-static int marsboard_device_init(void)
+static int marsboard_device_init(struct device_d *dev)
 {
-	if (!of_machine_is_compatible("embest,imx6q-marsboard"))
-		return 0;
-
 	barebox_set_hostname("marsboard");
 
 	phy_register_fixup_for_uid(0x004dd072, 0xffffffef, ar8035_phy_fixup);
@@ -48,4 +46,16 @@ static int marsboard_device_init(void)
 
 	return 0;
 }
-device_initcall(marsboard_device_init);
+
+static const struct of_device_id marsboard_of_match[] = {
+	{ .compatible = "embest,imx6q-marsboard" },
+	{ /* sentinel */ },
+};
+BAREBOX_DEEP_PROBE_ENABLE(marsboard_of_match);
+
+static struct driver_d marsboard_driver = {
+	.name = "board-mars",
+	.probe = marsboard_device_init,
+	.of_compatible = marsboard_of_match,
+};
+postcore_platform_driver(marsboard_driver);

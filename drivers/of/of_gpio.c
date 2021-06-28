@@ -70,10 +70,6 @@ int of_get_named_gpio_flags(struct device_node *np, const char *propname,
 		return ret;
 	}
 
-	ret = of_device_ensure_probed(out_args.np);
-	if (ret)
-		return ret;
-
 	dev = of_find_device_by_node(out_args.np);
 	if (!dev) {
 		pr_debug("%s: unable to find device of node %s\n",

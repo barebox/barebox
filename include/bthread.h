@@ -13,7 +13,7 @@ struct bthread;
 extern struct bthread *current;
 
 struct bthread *bthread_create(void (*threadfn)(void *), void *data, const char *namefmt, ...);
-void bthread_free(struct bthread *bthread);
+void bthread_cancel(struct bthread *bthread);
 
 void bthread_schedule(struct bthread *);
 void bthread_wake(struct bthread *bthread);

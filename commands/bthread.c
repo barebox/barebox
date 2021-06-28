@@ -61,7 +61,6 @@ static int bthread_isolated_time(void)
 	}
 
 	__bthread_stop(bthread);
-	bthread_free(bthread);
 
 	return i;
 }
@@ -120,7 +119,6 @@ cleanup:
 	while (i--) {
 		arg = bthread_data(bthread[i]);
 		__bthread_stop(bthread[i]);
-		bthread_free(bthread[i]);
 
 		if (!ret && (arg->out != 4 || yields < arg->out))
 			ret = -EIO;
@@ -184,7 +182,6 @@ cleanup:
 	list_for_each_entry_safe(spawner, tmp, &spawners, list) {
 		arg = bthread_data(spawner->bthread);
 		__bthread_stop(spawner->bthread);
-		bthread_free(spawner->bthread);
 		if (!ret && arg->out)
 			ret = arg->out;
 		free(arg);

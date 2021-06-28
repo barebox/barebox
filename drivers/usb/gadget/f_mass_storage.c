@@ -2335,9 +2335,12 @@ static void handle_exception(struct fsg_common *common)
 
 /*-------------------------------------------------------------------------*/
 
-static void fsg_main_thread(void *common_)
+static void fsg_main_thread(void *fsg_)
 {
-	struct fsg_common	*common = common_;
+	struct fsg_dev *fsg = fsg_;
+	struct fsg_common *common = fsg->common;
+	struct fsg_buffhd *bh;
+	unsigned i;
 	int ret = 0;
 
 	/* The main loop */
@@ -2376,6 +2379,21 @@ static void fsg_main_thread(void *common_)
 
 	if (ret && ret != -ERESTARTSYS)
 		pr_warn("%s: error %pe\n", __func__, ERR_PTR(ret));
+
+	usb_free_all_descriptors(&fsg->function);
+
+	for (i = 0; i < ums_count; i++)
+		close(ums[i].fd);
+
+	bh = common->buffhds;
+	i = FSG_NUM_BUFFERS;
+
+	do {
+		dma_free(bh->buf);
+	} while (++bh, --i);
+
+	ums_count = 0;
+	ums_files = NULL;
 }
 
 static void fsg_common_release(struct fsg_common *common);
@@ -2409,7 +2427,7 @@ static int fsg_common_init(struct fsg_common *common,
 	common->ep0 = gadget->ep0;
 	common->ep0req = cdev->req;
 
-	thread_task = bthread_run(fsg_main_thread, common, "mass-storage-gadget");
+	thread_task = bthread_run(fsg_main_thread, common->fsg, "mass-storage-gadget");
 	if (IS_ERR(thread_task))
 		return PTR_ERR(thread_task);
 
@@ -2531,52 +2549,27 @@ close:
 
 static void fsg_common_release(struct fsg_common *common)
 {
-	struct fsg_buffhd *bh;
-	unsigned i;
-
 	/* If the thread isn't already dead, tell it to exit now */
 	if (common->state != FSG_STATE_TERMINATED) {
 		raise_exception(common, FSG_STATE_EXIT);
-		__bthread_stop(thread_task);
-		bthread_free(thread_task);
 	}
 
-	bh = common->buffhds;
-	i = FSG_NUM_BUFFERS;
-
-	do {
-		dma_free(bh->buf);
-	} while (++bh, --i);
-
-	ums_count = 0;
+	bthread_cancel(thread_task);
 }
 
 
 static void fsg_unbind(struct usb_configuration *c, struct usb_function *f)
 {
 	struct fsg_dev		*fsg = fsg_from_func(f);
-	struct fsg_common	*common = fsg->common;
-	int i;
 
 	DBG(fsg, "unbind\n");
 
 	if (fsg->common->fsg == fsg) {
 		fsg->common->new_fsg = NULL;
 		raise_exception(fsg->common, FSG_STATE_CONFIG_CHANGE);
-
-		__bthread_stop(thread_task);
-		while (common->fsg == fsg)
-			bthread_reschedule();
 	}
 
-	usb_free_all_descriptors(&fsg->function);
-
-	for (i = 0; i < ums_count; i++)
-		close(ums[i].fd);
-
 	fsg_common_release(fsg->common);
-
-	ums_files = NULL;
 }
 
 static int fsg_bind(struct usb_configuration *c, struct usb_function *f)

@@ -8,12 +8,15 @@
 
 struct sandbox_power {
 	struct restart_handler rst_hang, rst_reexec;
+	struct poweroff_handler poweroff;
 	struct nvmem_cell *reset_source_cell;
-	u32 src_offset;
 };
 
 static void sandbox_poweroff(struct poweroff_handler *poweroff)
 {
+	struct sandbox_power *power = container_of(poweroff, struct sandbox_power, poweroff);
+
+	nvmem_cell_write(power->reset_source_cell, &(u8) { RESET_POR }, 1);
 	linux_exit();
 }
 
@@ -36,10 +39,15 @@ static void sandbox_rst_reexec(struct restart_handler *rst)
 static int sandbox_power_probe(struct device_d *dev)
 {
 	struct sandbox_power *power = xzalloc(sizeof(*power));
-	size_t len = 1;
+	size_t len;
 	u8 *rst;
 
-	poweroff_handler_register_fn(sandbox_poweroff);
+	power->poweroff = (struct poweroff_handler) {
+		.name = "exit",
+		.poweroff = sandbox_poweroff
+	};
+
+	poweroff_handler_register(&power->poweroff);
 
 	power->rst_hang = (struct restart_handler) {
 		.name = "hang",

@@ -615,6 +615,10 @@ struct state *state_new_from_node(struct device_node *node, bool readonly)
 	}
 
 #ifdef __BAREBOX__
+	ret = of_partition_ensure_probed(partition_node);
+	if (ret)
+		goto out_release_state;
+
 	ret = of_find_path_by_node(partition_node, &state->backend_path, 0);
 #else
 	ret = of_get_devicepath(partition_node, &state->backend_path, &offset, &size);

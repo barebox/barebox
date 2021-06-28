@@ -412,11 +412,14 @@ static int stm32_pinctrl_probe(struct device_d *dev)
 		if (!of_property_read_bool(child, "gpio-controller"))
 			continue;
 
-		ret = stm32_gpiochip_add(gpio_bank++, child, dev);
+		ret = stm32_gpiochip_add(gpio_bank, child, dev);
 		if (ret) {
 			dev_err(dev, "couldn't add gpiochip %s, ret = %d\n", child->name, ret);
 			return ret;
 		}
+
+		of_platform_device_dummy_drv(gpio_bank->chip.dev);
+		gpio_bank++;
 	}
 
 	dev_dbg(dev, "pinctrl/gpio driver registered\n");

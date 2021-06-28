@@ -532,7 +532,7 @@ static int of_stdoutpath_init(void)
 {
 	struct device_node *np;
 
-	np = of_get_stdoutpath();
+	np = of_get_stdoutpath(NULL);
 	if (!np)
 		return 0;
 

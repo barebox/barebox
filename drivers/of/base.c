@@ -2461,7 +2461,7 @@ void of_delete_node(struct device_node *node)
 	free(node);
 }
 
-struct device_node *of_get_stdoutpath(void)
+struct device_node *of_get_stdoutpath(unsigned int *baudrate)
 {
 	struct device_node *dn;
 	const char *name;
@@ -2483,15 +2483,24 @@ struct device_node *of_get_stdoutpath(void)
 
 	free(q);
 
+	if (baudrate && *p) {
+		unsigned rate = simple_strtoul(p + 1, NULL, 10);
+		if (rate)
+			*baudrate = rate;
+	}
+
 	return dn;
 }
 
-int of_device_is_stdout_path(struct device_d *dev)
+int of_device_is_stdout_path(struct device_d *dev, unsigned int *baudrate)
 {
-	if (!dev->device_node)
-		return 0;
+	unsigned int tmp = *baudrate;
 
-	return dev->device_node == of_get_stdoutpath();
+	if (!dev || !dev->device_node || dev->device_node != of_get_stdoutpath(&tmp))
+		return false;
+
+	*baudrate = tmp;
+	return true;
 }
 
 /**

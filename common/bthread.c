@@ -20,11 +20,8 @@
 #endif
 
 static struct bthread {
-	int (*threadfn)(void *);
-	union {
-		void *data;
-		int ret;
-	};
+	void (*threadfn)(void *);
+	void *data;
 	char *name;
 	jmp_buf jmp_buf;
 	void *stack;
@@ -54,7 +51,7 @@ static void __noreturn bthread_trampoline(void)
 	finish_switch_fiber(current);
 	bthread_reschedule();
 
-	current->ret = current->threadfn(current->data);
+	current->threadfn(current->data);
 
 	bthread_suspend(current);
 	current->has_stopped = true;
@@ -81,7 +78,7 @@ const char *bthread_name(struct bthread *bthread)
 	return bthread->name;
 }
 
-struct bthread *bthread_create(int (*threadfn)(void *), void *data,
+struct bthread *bthread_create(void (*threadfn)(void *), void *data,
 			       const char *namefmt, ...)
 {
 	struct bthread *bthread;
@@ -117,6 +114,11 @@ err:
 	return NULL;
 }
 
+void *bthread_data(struct bthread *bthread)
+{
+	return bthread->data;
+}
+
 void bthread_wake(struct bthread *bthread)
 {
 	if (bthread->awake)
@@ -133,14 +135,12 @@ void bthread_suspend(struct bthread *bthread)
 	list_del(&bthread->list);
 }
 
-int bthread_stop(struct bthread *bthread)
+void __bthread_stop(struct bthread *bthread)
 {
 	bthread->should_stop = true;
 
 	while (!bthread->has_stopped)
 		bthread_reschedule();
-
-	return bthread->ret;
 }
 
 int bthread_should_stop(void)

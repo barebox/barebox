@@ -2335,7 +2335,7 @@ static void handle_exception(struct fsg_common *common)
 
 /*-------------------------------------------------------------------------*/
 
-static int fsg_main_thread(void *common_)
+static void fsg_main_thread(void *common_)
 {
 	struct fsg_common	*common = common_;
 	int ret = 0;
@@ -2374,12 +2374,8 @@ static int fsg_main_thread(void *common_)
 			common->state = FSG_STATE_IDLE;
 	}
 
-	if (ret && ret != -ERESTARTSYS) {
+	if (ret && ret != -ERESTARTSYS)
 		pr_warn("%s: error %pe\n", __func__, ERR_PTR(ret));
-		return ret;
-	}
-
-	return 0;
 }
 
 static void fsg_common_release(struct fsg_common *common);
@@ -2541,7 +2537,7 @@ static void fsg_common_release(struct fsg_common *common)
 	/* If the thread isn't already dead, tell it to exit now */
 	if (common->state != FSG_STATE_TERMINATED) {
 		raise_exception(common, FSG_STATE_EXIT);
-		bthread_stop(thread_task);
+		__bthread_stop(thread_task);
 		bthread_free(thread_task);
 	}
 
@@ -2568,7 +2564,7 @@ static void fsg_unbind(struct usb_configuration *c, struct usb_function *f)
 		fsg->common->new_fsg = NULL;
 		raise_exception(fsg->common, FSG_STATE_CONFIG_CHANGE);
 
-		bthread_stop(thread_task);
+		__bthread_stop(thread_task);
 		while (common->fsg == fsg)
 			bthread_reschedule();
 	}

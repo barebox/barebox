@@ -18,28 +18,16 @@ static int ar8035_phy_fixup(struct phy_device *dev)
 	/* Ar803x phy SmartEEE feature cause link status generates glitch,
 	 * which cause ethernet link down/up issue, so disable SmartEEE
 	 */
-	phy_write(dev, 0xd, 0x3);
-	phy_write(dev, 0xe, 0x805d);
-	phy_write(dev, 0xd, 0x4003);
+	val = phy_read_mmd_indirect(dev, 0x805d, 0x3);
+	phy_write(dev, MII_MMD_DATA, val & ~(1 << 8));
 
-	val = phy_read(dev, 0xe);
-	phy_write(dev, 0xe, val & ~(1 << 8));
+	val = phy_read_mmd_indirect(dev, 0x4003, 0x3);
+	phy_write(dev, MII_MMD_DATA, val & ~(1 << 8));
 
-	/* To enable AR8031 ouput a 125MHz clk from CLK_25M */
-	phy_write(dev, 0xd, 0x7);
-	phy_write(dev, 0xe, 0x8016);
-	phy_write(dev, 0xd, 0x4007);
-
-	val = phy_read(dev, 0xe);
+	val = phy_read_mmd_indirect(dev, 0x4007, 0x3);
 	val &= 0xffe3;
 	val |= 0x18;
-	phy_write(dev, 0xe, val);
-
-	/* introduce tx clock delay */
-	phy_write(dev, 0x1d, 0x5);
-	val = phy_read(dev, 0x1e);
-	val |= 0x0100;
-	phy_write(dev, 0x1e, val);
+	phy_write(dev, MII_MMD_DATA, val);
 
 	return 0;
 }

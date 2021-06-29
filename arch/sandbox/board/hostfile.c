@@ -232,12 +232,21 @@ static int of_hostfile_map_fixup(struct device_node *root, void *ctx)
 	for_each_compatible_node_from(node, root, NULL, hostfile_dt_ids->compatible) {
 		struct hf_info hf = {};
 		uint64_t reg[2] = {};
-		bool no_filename;
 
 		hf.devname = node->name;
 
 		ret = of_property_read_string(node, "barebox,filename", &hf.filename);
-		no_filename = ret;
+		if (ret) {
+			pr_err("skipping nameless hostfile %s\n", hf.devname);
+			continue;
+		}
+
+		if (memcmp(hf.filename, "$build/", 7) == 0) {
+			char *fullpath = xasprintf("%s/%s", linux_get_builddir(),
+					           hf.filename + sizeof "$build/" - 1);
+
+			hf.filename = fullpath;
+		}
 
 		hf.is_blockdev = of_property_read_bool(node, "barebox,blockdev");
 		hf.is_cdev = of_property_read_bool(node, "barebox,cdev");
@@ -262,12 +271,6 @@ static int of_hostfile_map_fixup(struct device_node *root, void *ctx)
 		ret = of_property_write_bool(node, "barebox,blockdev", hf.is_blockdev);
 		if (ret)
 			goto out;
-
-		if (no_filename) {
-			ret = of_property_write_string(node, "barebox,filename", hf.filename);
-			if (ret)
-				goto out;
-		}
 
 		ret = of_property_write_u32(node, "barebox,fd", hf.fd);
 out:

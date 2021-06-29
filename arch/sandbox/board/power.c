@@ -64,8 +64,6 @@ static int sandbox_power_probe(struct device_d *dev)
 
 	rst = nvmem_cell_read(power->reset_source_cell, &len);
 	if (!IS_ERR(rst)) {
-		if (*rst == 0)
-			*rst = RESET_POR;
 		reset_source_set_prinst(*rst, RESET_SOURCE_DEFAULT_PRIORITY, 0);
 
 		free(rst);

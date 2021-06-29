@@ -10,3 +10,5 @@ obj-y += watchdog.o
 obj-$(CONFIG_LED) += led.o
 
 extra-y += barebox.lds
+
+extra-y += stickypage.o

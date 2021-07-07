@@ -208,9 +208,15 @@ int creat(const char *pathname, mode_t mode)
 }
 EXPORT_SYMBOL(creat);
 
+static int fsdev_truncate(struct device_d *dev, FILE *f, loff_t length)
+{
+	struct fs_driver_d *fsdrv = f->fsdev->driver;
+
+	return fsdrv->truncate ? fsdrv->truncate(dev, f, length) : -EROFS;
+}
+
 int ftruncate(int fd, loff_t length)
 {
-	struct fs_driver_d *fsdrv;
 	FILE *f = fd_to_file(fd);
 	int ret;
 
@@ -220,9 +226,7 @@ int ftruncate(int fd, loff_t length)
 	if (f->size == FILE_SIZE_STREAM)
 		return 0;
 
-	fsdrv = f->fsdev->driver;
-
-	ret = fsdrv->truncate(&f->fsdev->dev, f, length);
+	ret = fsdev_truncate(&f->fsdev->dev, f, length);
 	if (ret) {
 		errno = -ret;
 		return ret;
@@ -332,7 +336,7 @@ static ssize_t __write(FILE *f, const void *buf, size_t count)
 		assert_command_context();
 
 	if (f->size != FILE_SIZE_STREAM && f->pos + count > f->size) {
-		ret = fsdrv->truncate(&f->fsdev->dev, f, f->pos + count);
+		ret = fsdev_truncate(&f->fsdev->dev, f, f->pos + count);
 		if (ret) {
 			if (ret != -ENOSPC)
 				goto out;
@@ -2463,7 +2467,7 @@ int open(const char *pathname, int flags, ...)
 	}
 
 	if (flags & O_TRUNC) {
-		error = fsdrv->truncate(&fsdev->dev, f, 0);
+		error = fsdev_truncate(&fsdev->dev, f, 0);
 		f->size = 0;
 		inode->i_size = 0;
 		if (error)

@@ -52,6 +52,7 @@ config SOC_STARFIVE
 	select ARCH_HAS_RESET_CONTROLLER
 	select RISCV_S_MODE
 	select HAS_ASM_DEBUG_LL
+	select HAS_NMON
 	help
 	  This enables support for SiFive SoC platform hardware.
 

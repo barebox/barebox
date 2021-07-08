@@ -3,6 +3,7 @@
 #include <common.h>
 #include <debug_ll.h>
 #include <asm/barebox-riscv.h>
+#include <asm/riscv_nmon.h>
 
 ENTRY_FUNCTION(start_beaglev_starlight, a0, a1, a2)
 {
@@ -10,6 +11,7 @@ ENTRY_FUNCTION(start_beaglev_starlight, a0, a1, a2)
 	void *fdt;
 
 	debug_ll_init();
+	barebox_nmon_entry();
 	putc_ll('>');
 
 	fdt = __dtb_z_jh7100_beaglev_starlight_start + get_runtime_offset();

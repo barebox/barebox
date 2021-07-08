@@ -5646,6 +5646,7 @@ int nand_scan_tail(struct nand_chip *chip)
 			if (!ecc->write_oob)
 				ecc->write_oob = nand_write_oob_syndrome;
 		} else if (ecc->mode == NAND_ECC_HW_SYNDROME) {
+			WARN(1, "CONFIG_NAND_ECC_HW_SYNDROME not enabled\n");
 			ret = -ENOSYS;
 			goto err_nand_manuf_cleanup;
 		}

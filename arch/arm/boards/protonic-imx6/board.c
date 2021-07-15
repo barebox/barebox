@@ -794,12 +794,6 @@ static int prt_imx6_probe(struct device_d *dev)
 	if (ret)
 		goto free_priv;
 
-	ret = of_register_fixup(prt_imx6_of_fixup, priv);
-	if (ret) {
-		dev_err(dev, "Failed to register fixup\n");
-		goto free_priv;
-	}
-
 	prt_priv = priv;
 
 	return 0;

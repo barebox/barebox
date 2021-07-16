@@ -553,8 +553,7 @@ static int habv4_get_status(const struct habv4_rvt *rvt)
 			break;
 
 		/* suppress RNG self-test fail events if they can be handled in software */
-		if (IS_ENABLED(CONFIG_CRYPTO_DEV_FSL_CAAM_RNG_SELF_TEST) &&
-		    is_known_rng_fail_event(data, len)) {
+		if (is_known_rng_fail_event(data, len)) {
 			pr_debug("RNG self-test failure detected, will run software self-test\n");
 		} else {
 			pr_err("-------- HAB Event %d --------\n", i);

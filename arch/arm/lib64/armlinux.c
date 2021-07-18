@@ -16,6 +16,9 @@ static int do_bootm_linux(struct image_data *data)
 	if (IS_ERR(fn))
 		return PTR_ERR(fn);
 
+	if (data->dryrun)
+		return 0;
+
 	shutdown_barebox();
 
 	fn(devicetree, 0, 0, 0);

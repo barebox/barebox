@@ -47,6 +47,7 @@ obj-$(CONFIG_CMD_SAVEENV)	+= saveenv.o
 obj-$(CONFIG_CMD_LOADENV)	+= loadenv.o
 obj-$(CONFIG_CMD_NAND)		+= nand.o
 obj-$(CONFIG_CMD_NANDTEST)	+= nandtest.o
+obj-$(CONFIG_CMD_NVMEM)		+= nvmem.o
 obj-$(CONFIG_CMD_MEMTEST)	+= memtest.o
 obj-$(CONFIG_CMD_MEMTESTER)	+= memtester/
 obj-$(CONFIG_CMD_TRUE)		+= true.o

@@ -11,6 +11,7 @@
 #include <net.h>
 #include <dma.h>
 #include <of.h>
+#include <of_net.h>
 #include <linux/phy.h>
 #include <errno.h>
 #include <malloc.h>
@@ -504,3 +505,26 @@ void led_trigger_network(enum led_trigger trigger)
 	led_trigger(trigger, TRIGGER_FLASH);
 	led_trigger(LED_TRIGGER_NET_TXRX, TRIGGER_FLASH);
 }
+
+static int of_populate_ethaddr(void)
+{
+	char str[sizeof("xx:xx:xx:xx:xx:xx")];
+	struct eth_device *edev;
+	int ret;
+
+	list_for_each_entry(edev, &netdev_list, list) {
+		if (!edev->parent || is_valid_ether_addr(edev->ethaddr))
+			continue;
+
+		ret = of_get_mac_addr_nvmem(edev->parent->device_node, edev->ethaddr);
+		if (ret)
+			continue;
+
+		ethaddr_to_string(edev->ethaddr, str);
+		dev_info(&edev->dev, "Got preset MAC address from device tree: %s\n", str);
+		eth_set_ethaddr(edev, edev->ethaddr);
+	}
+
+	return 0;
+}
+postenvironment_initcall(of_populate_ethaddr);

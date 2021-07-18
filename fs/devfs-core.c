@@ -529,7 +529,7 @@ void cdev_remove_loop(struct cdev *cdev)
 	free(cdev);
 }
 
-static ssize_t mem_copy(struct device_d *dev, void *dst, const void *src,
+ssize_t mem_copy(struct device_d *dev, void *dst, const void *src,
 			resource_size_t count, resource_size_t offset,
 			unsigned long flags)
 {

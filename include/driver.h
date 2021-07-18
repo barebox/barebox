@@ -347,6 +347,9 @@ struct cdev;
 /* These are used by drivers which work with direct memory accesses */
 ssize_t mem_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags);
 ssize_t mem_write(struct cdev *cdev, const void *buf, size_t count, loff_t offset, ulong flags);
+ssize_t mem_copy(struct device_d *dev, void *dst, const void *src,
+		 resource_size_t count, resource_size_t offset,
+		 unsigned long flags);
 
 int generic_memmap_ro(struct cdev *dev, void **map, int flags);
 int generic_memmap_rw(struct cdev *dev, void **map, int flags);

@@ -26,6 +26,7 @@ struct nvmem_config {
 	struct device_d		*dev;
 	const char		*name;
 	bool			read_only;
+	struct cdev		*cdev;
 	int			stride;
 	int			word_size;
 	int			size;
@@ -34,11 +35,13 @@ struct nvmem_config {
 };
 
 struct regmap;
+struct cdev;
 
 #if IS_ENABLED(CONFIG_NVMEM)
 
 struct nvmem_device *nvmem_register(const struct nvmem_config *cfg);
 struct nvmem_device *nvmem_regmap_register(struct regmap *regmap, const char *name);
+struct nvmem_device *nvmem_partition_register(struct cdev *cdev);
 
 #else
 
@@ -48,6 +51,11 @@ static inline struct nvmem_device *nvmem_register(const struct nvmem_config *c)
 }
 
 static inline struct nvmem_device *nvmem_regmap_register(struct regmap *regmap, const char *name)
+{
+	return ERR_PTR(-ENOSYS);
+}
+
+static inline struct nvmem_device *nvmem_partition_register(struct cdev *cdev)
 {
 	return ERR_PTR(-ENOSYS);
 }

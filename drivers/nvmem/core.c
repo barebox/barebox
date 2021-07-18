@@ -49,6 +49,15 @@ struct nvmem_cell {
 static LIST_HEAD(nvmem_cells);
 static LIST_HEAD(nvmem_devs);
 
+void nvmem_devices_print(void)
+{
+	struct nvmem_device *dev;
+
+	list_for_each_entry(dev, &nvmem_devs, node) {
+		printf("%s\n", dev_name(&dev->dev));
+	}
+}
+
 static ssize_t nvmem_cdev_read(struct cdev *cdev, void *buf, size_t count,
 			       loff_t offset, unsigned long flags)
 {
@@ -205,12 +214,12 @@ struct nvmem_device *nvmem_register(const struct nvmem_config *config)
 	nvmem->size = config->size;
 	nvmem->dev.parent = config->dev;
 	nvmem->bus = config->bus;
-	np = config->dev->device_node;
+	np = config->cdev ? config->cdev->device_node : config->dev->device_node;
 	nvmem->dev.device_node = np;
 	nvmem->priv = config->priv;
 
-	nvmem->read_only = of_property_read_bool(np, "read-only") |
-			   config->read_only;
+	if (config->read_only || !config->bus->write || of_property_read_bool(np, "read-only"))
+		nvmem->read_only = true;
 
 	dev_set_name(&nvmem->dev, config->name);
 	nvmem->dev.id = DEVICE_ID_DYNAMIC;
@@ -223,10 +232,12 @@ struct nvmem_device *nvmem_register(const struct nvmem_config *config)
 		return ERR_PTR(rval);
 	}
 
-	rval = nvmem_register_cdev(nvmem, config->name);
-	if (rval) {
-		kfree(nvmem);
-		return ERR_PTR(rval);
+	if (!config->cdev) {
+		rval = nvmem_register_cdev(nvmem, config->name);
+		if (rval) {
+			kfree(nvmem);
+			return ERR_PTR(rval);
+		}
 	}
 
 	list_add_tail(&nvmem->node, &nvmem_devs);

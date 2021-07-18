@@ -55,15 +55,17 @@
 
 	stickypage: stickypage {
 		compatible = "barebox,hostfile", "syscon", "simple-mfd";
+		barebox,filename = "$build/stickypage.bin";
 		reg = <0 0 0 4096>;
 		barebox,cdev; /* no caching allowed */
 
 		bmode: reboot-mode {
-			compatible = "syscon-reboot-mode";
-			offset = <0>;
-			mask = <0xffffff00>;
-			mode-normal = <0x00000000>;
-			mode-loader = <0xbbbbbb00>;
+			compatible = "nvmem-reboot-mode";
+			nvmem-cells = <&reboot_mode>;
+			nvmem-cell-names = "reboot-mode";
+
+			mode-normal = <0x000000>;
+			mode-loader = <0xbbbbbb>;
 		};
 
 		partitions {
@@ -71,14 +73,28 @@
 			#address-cells = <1>;
 			#size-cells = <1>;
 
-			/* 0x00+4 reserved for syscon use */
+			part_nvmem: nvmem@300 {
+				compatible = "nvmem-cells";
+				reg = <0x300 0x100>;
+				label = "nvmem";
+				#address-cells = <1>;
+				#size-cells = <1>;
+
+				reset_source: reset-source@0 {
+					reg = <0x0 0x1>;
+				};
+
+				reboot_mode: reboot-mode@1 {
+					reg = <0x1 0x4>;
+				};
+			};
 
 			part_env: env@400 {
 				reg = <0x400 0x800>;
 				label = "env";
 			};
 
-			part_state: state@800 {
+			part_state: state@c00 {
 				reg = <0xC00 0x400>;
 				label = "state";
 			};
@@ -87,12 +103,14 @@
 
 	power {
 		compatible = "barebox,sandbox-power";
-		barebox,reset-source = <&stickypage 0>;
+		nvmem-cell-names = "reset-source";
+		nvmem-cells = <&reset_source>;
 	};
 
 	watchdog {
 		compatible = "barebox,sandbox-watchdog";
-		barebox,reset-source = <&stickypage 0>;
+		nvmem-cell-names = "reset-source";
+		nvmem-cells = <&reset_source>;
 	};
 
 	sound {

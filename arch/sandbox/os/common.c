@@ -127,8 +127,22 @@ void __attribute__((noreturn)) linux_exit(void)
 	exit(0);
 }
 
-static size_t saved_argv_len;
 static char **saved_argv;
+
+static int selfpath(char *buf, size_t len)
+{
+	int ret;
+
+	/* we must follow the symlink, so we can exec an updated executable */
+	ret = readlink("/proc/self/exe", buf, len - 1);
+	if (ret < 0)
+		return ret;
+
+	if (0 < ret && ret < len - 1)
+		buf[ret] = '\0';
+
+	return ret;
+}
 
 void linux_reexec(void)
 {
@@ -138,9 +152,8 @@ void linux_reexec(void)
 	cookmode();
 
 	/* we must follow the symlink, so we can exec an updated executable */
-	ret = readlink("/proc/self/exe", buf, sizeof(buf) - 1);
-	if (0 < ret && ret < sizeof(buf) - 1) {
-		buf[ret] = '\0';
+	ret = selfpath(buf, sizeof(buf));
+	if (ret > 0) {
 		execv(buf, saved_argv);
 		if (!strcmp(&buf[ret - DELETED_OFFSET], " (deleted)")) {
 			printf("barebox image on disk changed. Loading new.\n");
@@ -317,6 +330,21 @@ static int add_image(const char *_str, char *devname_template, int *devname_numb
 	return ret;
 }
 
+const char *linux_get_builddir(void)
+{
+	static char path[4097];
+	int ret;
+
+	if (!path[0]) {
+		ret = selfpath(path, sizeof(path));
+		if (ret < 0)
+			return NULL;
+		dirname(path);
+	}
+
+	return path;
+}
+
 int linux_open_hostfile(struct hf_info *hf)
 {
 	char *buf = NULL;
@@ -327,45 +355,10 @@ int linux_open_hostfile(struct hf_info *hf)
 	       hf->filename ? "" : "initially un", hf->filename ?: "",
 	       hf->is_readonly ? "(ro)" : "");
 
-	if (hf->filename) {
-		fd = hf->fd = open(hf->filename, (hf->is_readonly ? O_RDONLY : O_RDWR) | O_CLOEXEC);
-	} else {
-		char *filename;
-		int ret;
+	if (!hf->filename)
+		return -ENOENT;
 
-		ret = asprintf(&buf, "--image=%s=/tmp/barebox-hostfileXXXXXX", hf->devname);
-		if (ret < 0) {
-			perror("asprintf");
-			goto err_out;
-		}
-
-		filename = buf + strlen("--image==") + strlen(hf->devname);
-
-		fd = hf->fd = mkstemp(filename);
-		if (fd >= 0) {
-			ret = fcntl(fd, F_SETFD, FD_CLOEXEC);
-			if (ret < 0) {
-				perror("fcntl");
-				goto err_out;
-			}
-
-			ret = ftruncate(fd, hf->size);
-			if (ret < 0) {
-				perror("ftruncate");
-				goto err_out;
-			}
-
-			hf->filename = filename;
-
-			saved_argv = realloc(saved_argv,
-					     ++saved_argv_len * sizeof(*saved_argv));
-			if (!saved_argv)
-				exit(1);
-			saved_argv[saved_argv_len - 2] = buf;
-			saved_argv[saved_argv_len - 1] = NULL;
-		}
-	}
-
+	fd = hf->fd = open(hf->filename, (hf->is_readonly ? O_RDONLY : O_RDWR) | O_CLOEXEC);
 	if (fd < 0) {
 		perror("open");
 		goto err_out;
@@ -517,11 +510,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	saved_argv_len = argc + 1;
-	saved_argv = calloc(saved_argv_len, sizeof(*saved_argv));
-	if (!saved_argv)
-		exit(1);
-	memcpy(saved_argv, argv, saved_argv_len * sizeof(*saved_argv));
+	saved_argv = argv;
 
 	ram = malloc(malloc_size);
 	if (!ram) {

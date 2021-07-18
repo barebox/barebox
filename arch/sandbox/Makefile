@@ -75,3 +75,10 @@ common-y += $(BOARD) arch/sandbox/os/ arch/sandbox/lib/
 common-$(CONFIG_OFTREE) += arch/sandbox/dts/
 
 CLEAN_FILES += $(BOARD)/barebox.lds
+
+OBJCOPYFLAGS_stickypage.bin = -O binary
+
+stickypage.bin: arch/sandbox/board/stickypage.o
+	$(call if_changed,objcopy)
+
+all: stickypage.bin

@@ -2354,16 +2354,29 @@ static void of_platform_device_create_root(struct device_node *np)
 		free(dev);
 }
 
+static const struct of_device_id reserved_mem_matches[] = {
+	{ .compatible = "nvmem-rmem" },
+	{}
+};
+
 int of_probe(void)
 {
-	struct device_node *firmware;
+	struct device_node *node;
 
 	if(!root_node)
 		return -ENODEV;
 
-	firmware = of_find_node_by_path("/firmware");
-	if (firmware)
-		of_platform_populate(firmware, NULL, NULL);
+	/*
+	 * Handle certain compatibles explicitly, since we don't want to create
+	 * platform_devices for every node in /reserved-memory with a
+	 * "compatible",
+	 */
+	for_each_matching_node(node, reserved_mem_matches)
+		of_platform_device_create(node, NULL);
+
+	node = of_find_node_by_path("/firmware");
+	if (node)
+		of_platform_populate(node, NULL, NULL);
 
 	of_platform_device_create_root(root_node);
 

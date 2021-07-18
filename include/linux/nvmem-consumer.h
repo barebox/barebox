@@ -49,6 +49,8 @@ ssize_t nvmem_device_cell_read(struct nvmem_device *nvmem,
 int nvmem_device_cell_write(struct nvmem_device *nvmem,
 			    struct nvmem_cell_info *info, void *buf);
 
+void nvmem_devices_print(void);
+
 #else
 
 static inline struct nvmem_cell *nvmem_cell_get(struct device_d *dev,

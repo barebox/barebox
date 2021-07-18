@@ -14,6 +14,9 @@ static int do_bootm_linux(struct image_data *data)
 	if (IS_ERR(fn))
 		return PTR_ERR(fn);
 
+	if (data->dryrun)
+		return 0;
+
 	ret = of_overlay_load_firmware();
 	if (ret)
 		return ret;

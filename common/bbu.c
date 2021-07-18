@@ -4,6 +4,9 @@
  *
  * Copyright (c) 2012 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  */
+
+#define pr_fmt(fmt) "bbu: " fmt
+
 #include <common.h>
 #include <bbu.h>
 #include <linux/list.h>
@@ -32,12 +35,32 @@ static void append_bbu_entry(struct bbu_handler *handler, struct file_list *file
 	free(name);
 }
 
+static bool bbu_handler_is_available(struct bbu_handler *handler)
+{
+	struct stat s;
+	int ret;
+
+	device_detect_by_name(devpath_to_name(handler->devicefile));
+
+	ret = stat(handler->devicefile, &s);
+	if (ret)
+		return false;
+
+	return true;
+}
+
 void bbu_append_handlers_to_file_list(struct file_list *files)
 {
 	struct bbu_handler *handler;
 
-	list_for_each_entry(handler, &bbu_image_handlers, list)
-		append_bbu_entry(handler, files);
+	list_for_each_entry(handler, &bbu_image_handlers, list) {
+		if (bbu_handler_is_available(handler)) {
+			append_bbu_entry(handler, files);
+		} else {
+			pr_info("Skipping unavailable handler bbu-%s\n",
+				handler->name);
+		}
+	}
 }
 
 int bbu_force(struct bbu_data *data, const char *fmt, ...)

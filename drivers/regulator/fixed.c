@@ -20,10 +20,10 @@
 #include <of.h>
 #include <of_gpio.h>
 #include <gpio.h>
+#include <gpiod.h>
 
 struct regulator_fixed {
 	int gpio;
-	int active_low;
 	int always_on;
 	struct regulator_dev rdev;
 	struct regulator_desc rdesc;
@@ -36,7 +36,7 @@ static int regulator_fixed_enable(struct regulator_dev *rdev)
 	if (!gpio_is_valid(fix->gpio))
 		return 0;
 
-	return gpio_direction_output(fix->gpio, !fix->active_low);
+	return gpio_direction_active(fix->gpio, true);
 }
 
 static int regulator_fixed_disable(struct regulator_dev *rdev)
@@ -49,7 +49,7 @@ static int regulator_fixed_disable(struct regulator_dev *rdev)
 	if (!gpio_is_valid(fix->gpio))
 		return 0;
 
-	return gpio_direction_output(fix->gpio, fix->active_low);
+	return gpio_direction_active(fix->gpio, false);
 }
 
 const static struct regulator_ops fixed_ops = {
@@ -60,7 +60,6 @@ const static struct regulator_ops fixed_ops = {
 static int regulator_fixed_probe(struct device_d *dev)
 {
 	struct regulator_fixed *fix;
-	enum of_gpio_flags gpioflags;
 	int ret;
 
 	if (!dev->device_node)
@@ -70,14 +69,11 @@ static int regulator_fixed_probe(struct device_d *dev)
 	fix->gpio = -EINVAL;
 
 	if (of_get_property(dev->device_node, "gpio", NULL)) {
-		fix->gpio = of_get_named_gpio_flags(dev->device_node, "gpio", 0, &gpioflags);
+		fix->gpio = gpiod_get(dev, NULL, GPIOD_ASIS);
 		if (fix->gpio < 0) {
 			ret = fix->gpio;
 			goto err;
 		}
-
-		if (gpioflags & OF_GPIO_ACTIVE_LOW)
-			fix->active_low = 1;
 	}
 
 	fix->rdesc.ops = &fixed_ops;

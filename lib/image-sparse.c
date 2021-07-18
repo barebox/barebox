@@ -46,10 +46,6 @@
 
 #include <linux/math64.h>
 
-#ifndef CONFIG_FASTBOOT_FLASH_FILLBUF_SIZE
-#define CONFIG_FASTBOOT_FLASH_FILLBUF_SIZE (1024 * 512)
-#endif
-
 struct sparse_image_ctx {
 	int fd;
 	struct sparse_header sparse;

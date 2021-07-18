@@ -220,7 +220,7 @@ static void console_init_early(void)
 	initialized = CONSOLE_INITIALIZED_BUFFER;
 }
 
-static void console_set_stdoutpath(struct console_device *cdev)
+static void console_set_stdoutpath(struct console_device *cdev, unsigned baudrate)
 {
 	int id;
 	char *str;
@@ -232,8 +232,7 @@ static void console_set_stdoutpath(struct console_device *cdev)
 	if (id < 0)
 		return;
 
-	str = basprintf("console=%s%d,%dn8", cdev->linux_console_name, id,
-			  cdev->baudrate);
+	str = basprintf("console=%s%d,%dn8", cdev->linux_console_name, id, baudrate);
 
 	globalvar_add_simple("linux.bootargs.console", str);
 
@@ -297,6 +296,7 @@ int console_register(struct console_device *newcdev)
 	struct device_node *serdev_node = console_is_serdev_node(newcdev);
 	struct device_d *dev = &newcdev->class_dev;
 	int activate = 0, ret;
+	unsigned baudrate = CONFIG_BAUDRATE;
 
 	if (!serdev_node && initialized == CONSOLE_UNINITIALIZED)
 		console_init_early();
@@ -327,11 +327,16 @@ int console_register(struct console_device *newcdev)
 	if (serdev_node)
 		return of_platform_populate(serdev_node, NULL, dev);
 
+	if (newcdev->dev && of_device_is_stdout_path(newcdev->dev, &baudrate)) {
+		activate = 1;
+		console_set_stdoutpath(newcdev, baudrate);
+	}
+
 	if (newcdev->setbrg) {
-		ret = newcdev->setbrg(newcdev, CONFIG_BAUDRATE);
+		ret = newcdev->setbrg(newcdev, baudrate);
 		if (ret)
 			return ret;
-		newcdev->baudrate_param = newcdev->baudrate = CONFIG_BAUDRATE;
+		newcdev->baudrate_param = newcdev->baudrate = baudrate;
 		dev_add_param_uint32(dev, "baudrate", console_baudrate_set,
 			NULL, &newcdev->baudrate_param, "%u", newcdev);
 	}
@@ -347,11 +352,6 @@ int console_register(struct console_device *newcdev)
 			activate = 1;
 	} else if (IS_ENABLED(CONFIG_CONSOLE_ACTIVATE_ALL)) {
 		activate = 1;
-	}
-
-	if (newcdev->dev && of_device_is_stdout_path(newcdev->dev)) {
-		activate = 1;
-		console_set_stdoutpath(newcdev);
 	}
 
 	list_add_tail(&newcdev->list, &console_list);

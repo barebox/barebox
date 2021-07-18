@@ -14,6 +14,7 @@
 #include <gpio.h>
 #include <init.h>
 #include <of.h>
+#include <deep-probe.h>
 #include <i2c/i2c.h>
 #include <mach/bbu.h>
 #include <platform_data/eth-fec.h>
@@ -110,6 +111,10 @@ static int phycore_da9062_setup_buck_mode(void)
 	if (!pmic_np)
 		return -ENODEV;
 
+	ret = of_device_ensure_probed(pmic_np);
+	if (ret)
+		return ret;
+
 	adapter = of_find_i2c_adapter_by_node(pmic_np->parent);
 	if (!adapter)
 		return -ENODEV;
@@ -141,15 +146,29 @@ err_out:
 	return ret;
 }
 
-static int physom_imx6_devices_init(void)
+#define IS_PHYFLEX	BIT(0)
+#define IS_PHYCORE	BIT(1)
+#define IS_PHYCARD	BIT(2)
+#define IS_PHYCORE_UL	BIT(3)
+#define HAS_MMC3	BIT(4)
+#define HAS_MMC1	BIT(5)
+
+struct board_data {
+	unsigned flags;
+};
+
+static int physom_imx6_probe(struct device_d *dev)
 {
 	int ret;
 	char *environment_path, *default_environment_path;
 	char *envdev, *default_envdev;
+	const struct board_data *brd = device_get_match_data(dev);
+	unsigned flags = brd->flags;
 
-	if (of_machine_is_compatible("phytec,imx6q-pfla02")
-		|| of_machine_is_compatible("phytec,imx6dl-pfla02")
-		|| of_machine_is_compatible("phytec,imx6s-pfla02")) {
+	if (flags & IS_PHYFLEX) {
+		ret = of_devices_ensure_probed_by_property("gpio-controller");
+		if (ret)
+			return ret;
 
 		phyflex_err006282_workaround();
 
@@ -164,21 +183,14 @@ static int physom_imx6_devices_init(void)
 		imx6_bbu_internal_mmc_register_handler("mmc2",
 						"/dev/mmc2", 0);
 
-	} else if (of_machine_is_compatible("phytec,imx6q-pcaaxl3")) {
-
+	} else if (flags & IS_PHYCARD) {
 		barebox_set_hostname("phyCARD-i.MX6");
 		default_environment_path = "/chosen/environment-nand";
 		default_envdev = "NAND flash";
 
 		imx6_bbu_internal_mmc_register_handler("mmc2",
 						"/dev/mmc2", 0);
-
-	} else if (of_machine_is_compatible("phytec,imx6q-pcm058-nand")
-		|| of_machine_is_compatible("phytec,imx6q-pcm058-emmc")
-		|| of_machine_is_compatible("phytec,imx6dl-pcm058-nand")
-		|| of_machine_is_compatible("phytec,imx6qp-pcm058-nand")
-		|| of_machine_is_compatible("phytec,imx6dl-pcm058-emmc")) {
-
+	} else if (flags & IS_PHYCORE) {
 		if (phycore_da9062_setup_buck_mode())
 			pr_err("Setting PMIC BUCK mode failed\n");
 
@@ -189,8 +201,7 @@ static int physom_imx6_devices_init(void)
 		imx6_bbu_internal_mmc_register_handler("mmc0",
 						"/dev/mmc0", 0);
 
-	} else if (of_machine_is_compatible("phytec,imx6ul-pcl063-nand")
-		|| of_machine_is_compatible("phytec,imx6ul-pcl063-emmc")) {
+	} else if (flags & IS_PHYCORE_UL) {
 		barebox_set_hostname("phyCORE-i.MX6UL");
 		default_environment_path = "/chosen/environment-nand";
 		default_envdev = "NAND flash";
@@ -201,8 +212,9 @@ static int physom_imx6_devices_init(void)
 		imx6_bbu_internal_mmc_register_handler("mmc0",
 						"/dev/mmc0", 0);
 
-	} else
-		return 0;
+	} else {
+		return -EINVAL;
+	}
 
 	switch (bootsource_get()) {
 	case BOOTSOURCE_MMC:
@@ -234,14 +246,13 @@ static int physom_imx6_devices_init(void)
 
 	pr_notice("Using environment in %s\n", envdev);
 
-	if (of_machine_is_compatible("phytec,imx6q-pcm058-emmc")
-		|| of_machine_is_compatible("phytec,imx6dl-pcm058-emmc")) {
+	if (flags & HAS_MMC3) {
 		imx6_bbu_internal_mmc_register_handler("mmc3",
 						"/dev/mmc3",
 						BBU_HANDLER_FLAG_DEFAULT);
 		imx6_bbu_internal_mmcboot_register_handler("mmc3-boot",
 						"mmc3", 0);
-	} else if (of_machine_is_compatible("phytec,imx6ul-pcl063-emmc")) {
+	} else if (flags & HAS_MMC1) {
 		imx6_bbu_internal_mmc_register_handler("mmc1",
 						"/dev/mmc1",
 						BBU_HANDLER_FLAG_DEFAULT);
@@ -254,23 +265,107 @@ static int physom_imx6_devices_init(void)
 	defaultenv_append_directory(defaultenv_physom_imx6);
 
 	/* Overwrite file /env/init/automount */
-	if (of_machine_is_compatible("phytec,imx6q-pfla02")
-		|| of_machine_is_compatible("phytec,imx6dl-pfla02")
-		|| of_machine_is_compatible("phytec,imx6s-pfla02")
-		|| of_machine_is_compatible("phytec,imx6q-pcaaxl3")) {
+	if (flags & IS_PHYCARD || flags & IS_PHYFLEX) {
 		defaultenv_append_directory(defaultenv_physom_imx6);
-	} else if (of_machine_is_compatible("phytec,imx6qp-pcm058-nand")
-		|| of_machine_is_compatible("phytec,imx6q-pcm058-nand")
-		|| of_machine_is_compatible("phytec,imx6q-pcm058-emmc")
-		|| of_machine_is_compatible("phytec,imx6dl-pcm058-nand")
-		|| of_machine_is_compatible("phytec,imx6dl-pcm058-emmc")) {
+	} else if (flags & IS_PHYCORE) {
 		defaultenv_append_directory(defaultenv_physom_imx6);
 		defaultenv_append_directory(defaultenv_physom_imx6_phycore);
-	} else if (of_machine_is_compatible("phytec,imx6ul-pcl063-nand")
-		|| of_machine_is_compatible("phytec,imx6ul-pcl063-emmc")) {
+	} else if (flags & IS_PHYCORE_UL) {
 		defaultenv_append_directory(defaultenv_physom_imx6ul_phycore);
 	}
 
 	return 0;
 }
-device_initcall(physom_imx6_devices_init);
+
+static struct board_data imx6q_pfla02 = {
+	.flags = IS_PHYFLEX,
+};
+
+static struct board_data imx6dl_pfla02 = {
+	.flags = IS_PHYFLEX,
+};
+
+static struct board_data imx6s_pfla02 = {
+	.flags = IS_PHYFLEX,
+};
+
+static struct board_data imx6q_pcaaxl3 = {
+	.flags = IS_PHYCARD,
+};
+
+static struct board_data imx6q_pcm058_nand = {
+	.flags = IS_PHYCORE,
+};
+
+static struct board_data imx6q_pcm058_emmc = {
+	.flags = IS_PHYCORE | HAS_MMC3,
+};
+
+static struct board_data imx6dl_pcm058_nand = {
+	.flags = IS_PHYCORE,
+};
+
+static struct board_data imx6qp_pcm058_nand = {
+	.flags = IS_PHYCORE,
+};
+
+static struct board_data imx6dl_pcm058_emmc = {
+	.flags = IS_PHYCORE | HAS_MMC3,
+};
+
+static struct board_data imx6ul_pcl063_nand = {
+	.flags = IS_PHYCORE_UL,
+};
+
+static struct board_data imx6ul_pcl063_emmc = {
+	.flags = IS_PHYCORE_UL | HAS_MMC1,
+};
+
+
+static const struct of_device_id physom_imx6_match[] = {
+	{
+		.compatible = "phytec,imx6q-pfla02",
+		.data = &imx6q_pfla02,
+	}, {
+		.compatible = "phytec,imx6dl-pfla02",
+		.data = &imx6dl_pfla02,
+	}, {
+		.compatible = "phytec,imx6s-pfla02",
+		.data = &imx6s_pfla02,
+	}, {
+		.compatible = "phytec,imx6q-pcaaxl3",
+		.data = &imx6q_pcaaxl3,
+	}, {
+		.compatible = "phytec,imx6q-pcm058-nand",
+		.data = &imx6q_pcm058_nand,
+	}, {
+		.compatible = "phytec,imx6q-pcm058-emmc",
+		.data = &imx6q_pcm058_emmc,
+	}, {
+		.compatible = "phytec,imx6dl-pcm058-nand",
+		.data = &imx6dl_pcm058_nand,
+	}, {
+		.compatible = "phytec,imx6qp-pcm058-nand",
+		.data = &imx6qp_pcm058_nand,
+	}, {
+		.compatible = "phytec,imx6dl-pcm058-emmc",
+		.data = &imx6dl_pcm058_emmc,
+	}, {
+		.compatible = "phytec,imx6ul-pcl063-nand",
+		.data = &imx6ul_pcl063_nand,
+	}, {
+		.compatible = "phytec,imx6ul-pcl063-emmc",
+		.data = &imx6ul_pcl063_emmc,
+	},
+	{ /* Sentinel */ },
+};
+
+static struct driver_d physom_imx6_driver = {
+	.name = "physom-imx6",
+	.probe = physom_imx6_probe,
+	.of_compatible = physom_imx6_match,
+};
+
+postcore_platform_driver(physom_imx6_driver);
+
+BAREBOX_DEEP_PROBE_ENABLE(physom_imx6_match);

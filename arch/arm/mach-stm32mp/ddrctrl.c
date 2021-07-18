@@ -146,4 +146,14 @@ static struct driver_d stm32mp1_ddr_driver = {
 	.of_compatible = DRV_OF_COMPAT(stm32mp1_ddr_dt_ids),
 };
 
-mem_platform_driver(stm32mp1_ddr_driver);
+static int stm32mp1_ddr_init(void)
+{
+	int ret;
+
+	ret = platform_driver_register(&stm32mp1_ddr_driver);
+	if (ret)
+		return ret;
+
+	return of_devices_ensure_probed_by_dev_id(stm32mp1_ddr_dt_ids);
+}
+mem_initcall(stm32mp1_ddr_init);

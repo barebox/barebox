@@ -33,6 +33,7 @@
 	KEEP(*(.initcall.12))			\
 	KEEP(*(.initcall.13))			\
 	KEEP(*(.initcall.14))			\
+	KEEP(*(.initcall.15))			\
 	__barebox_initcalls_end = .;
 
 #define BAREBOX_EXITCALLS			\
@@ -113,6 +114,13 @@
 	KEEP(*(.rsa_keys.rodata.*));		\
 	__rsa_keys_end = .;			\
 
+#define BAREBOX_DEEP_PROBE			\
+	STRUCT_ALIGN();				\
+	__barebox_deep_probe_start = .;		\
+	KEEP(*(SORT_BY_NAME(.barebox_deep_probe*)))	\
+	__barebox_deep_probe_end = .;
+
+
 #ifdef CONFIG_CONSTRUCTORS
 #define KERNEL_CTORS()  . = ALIGN(8);                      \
 			__ctors_start = .;                 \
@@ -135,7 +143,8 @@
 	BAREBOX_CLK_TABLE			\
 	BAREBOX_DTB				\
 	BAREBOX_RSA_KEYS			\
-	BAREBOX_PCI_FIXUP
+	BAREBOX_PCI_FIXUP			\
+	BAREBOX_DEEP_PROBE
 
 #if defined(CONFIG_ARCH_BAREBOX_MAX_BARE_INIT_SIZE) && \
 CONFIG_ARCH_BAREBOX_MAX_BARE_INIT_SIZE < CONFIG_BAREBOX_MAX_BARE_INIT_SIZE

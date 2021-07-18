@@ -25,6 +25,10 @@ extern __kernel_size_t strspn(const char *,const char *);
 	(typeof(&(s1)[0]))(_strstr((s1), (s2))); \
 	})
 
+#ifndef __HAVE_ARCH_STRCHRNUL
+extern char * strchrnul(const char *,int);
+#endif
+
 /*
  * Include machine specific inline routines
  */

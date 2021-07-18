@@ -15,6 +15,7 @@
  * GNU General Public License for more details.
  */
 #include <common.h>
+#include <deep-probe.h>
 #include <of.h>
 #include <of_address.h>
 #include <errno.h>
@@ -1682,6 +1683,9 @@ int of_modalias_node(struct device_node *node, char *modalias, int len)
 }
 EXPORT_SYMBOL_GPL(of_modalias_node);
 
+static struct device_node *of_chosen;
+static const char *of_model;
+
 struct device_node *of_get_root_node(void)
 {
 	return root_node;
@@ -1694,10 +1698,25 @@ int of_set_root_node(struct device_node *node)
 
 	root_node = node;
 
+	of_chosen = of_find_node_by_path("/chosen");
+	of_property_read_string(root_node, "model", &of_model);
+
+	if (of_model)
+		barebox_set_model(of_model);
+
 	of_alias_scan();
 
 	return 0;
 }
+
+static int barebox_of_populate(void)
+{
+	if (IS_ENABLED(CONFIG_OFDEVICE) && deep_probe_is_supported())
+		return of_probe();
+
+	return 0;
+}
+of_populate_initcall(barebox_of_populate);
 
 int barebox_register_of(struct device_node *root)
 {
@@ -1707,8 +1726,11 @@ int barebox_register_of(struct device_node *root)
 	of_set_root_node(root);
 	of_fix_tree(root);
 
-	if (IS_ENABLED(CONFIG_OFDEVICE))
-		return of_probe();
+	if (IS_ENABLED(CONFIG_OFDEVICE)) {
+		of_clk_init(root, NULL);
+		if (!deep_probe_is_supported())
+			return of_probe();
+	}
 
 	return 0;
 }
@@ -2275,9 +2297,6 @@ int of_add_memory(struct device_node *node, bool dump)
 	return ret;
 }
 
-static struct device_node *of_chosen;
-static const char *of_model;
-
 const char *of_get_model(void)
 {
 	return of_model;
@@ -2300,6 +2319,9 @@ static int of_probe_memory(void)
 	struct device_node *memory = root_node;
 	int ret = 0;
 
+	if (!IS_ENABLED(CONFIG_OFDEVICE))
+		return 0;
+
 	/* Parse all available node with "memory" device_type */
 	while (1) {
 		int err;
@@ -2315,6 +2337,7 @@ static int of_probe_memory(void)
 
 	return ret;
 }
+mem_initcall(of_probe_memory);
 
 static void of_platform_device_create_root(struct device_node *np)
 {
@@ -2334,18 +2357,9 @@ static void of_platform_device_create_root(struct device_node *np)
 int of_probe(void)
 {
 	struct device_node *firmware;
-	int ret;
 
 	if(!root_node)
 		return -ENODEV;
-
-	of_chosen = of_find_node_by_path("/chosen");
-	of_property_read_string(root_node, "model", &of_model);
-
-	if (of_model)
-		barebox_set_model(of_model);
-
-	ret = of_probe_memory();
 
 	firmware = of_find_node_by_path("/firmware");
 	if (firmware)
@@ -2353,10 +2367,9 @@ int of_probe(void)
 
 	of_platform_device_create_root(root_node);
 
-	of_clk_init(root_node, NULL);
 	of_platform_populate(root_node, of_default_bus_match_table, NULL);
 
-	return ret;
+	return 0;
 }
 
 /**
@@ -2423,10 +2436,14 @@ void of_delete_node(struct device_node *node)
 {
 	struct device_node *n, *nt;
 	struct property *p, *pt;
-	struct device_d *dev;
 
 	if (!node)
 		return;
+
+	if (node == root_node) {
+		pr_err("Won't delete root device node\n");
+		return;
+	}
 
 	list_for_each_entry_safe(p, pt, &node->properties, list)
 		of_delete_property(p);
@@ -2439,27 +2456,17 @@ void of_delete_node(struct device_node *node)
 		list_del(&node->list);
 	}
 
-	dev = of_find_device_by_node(node);
-	if (dev)
-		dev->device_node = NULL;
-
 	free(node->name);
 	free(node->full_name);
 	free(node);
-
-	if (node == root_node)
-		of_set_root_node(NULL);
 }
 
-int of_device_is_stdout_path(struct device_d *dev)
+struct device_node *of_get_stdoutpath(unsigned int *baudrate)
 {
 	struct device_node *dn;
 	const char *name;
 	const char *p;
 	char *q;
-
-	if (!dev->device_node)
-		return 0;
 
 	name = of_get_property(of_chosen, "stdout-path", NULL);
 	if (!name)
@@ -2468,10 +2475,7 @@ int of_device_is_stdout_path(struct device_d *dev)
 	if (!name)
 		return 0;
 
-	/* This could make use of strchrnul if it were available */
-	p = strchr(name, ':');
-	if (!p)
-		p = name + strlen(name);
+	p = strchrnul(name, ':');
 
 	q = xstrndup(name, p - name);
 
@@ -2479,7 +2483,24 @@ int of_device_is_stdout_path(struct device_d *dev)
 
 	free(q);
 
-	return dn == dev->device_node;
+	if (baudrate && *p) {
+		unsigned rate = simple_strtoul(p + 1, NULL, 10);
+		if (rate)
+			*baudrate = rate;
+	}
+
+	return dn;
+}
+
+int of_device_is_stdout_path(struct device_d *dev, unsigned int *baudrate)
+{
+	unsigned int tmp = *baudrate;
+
+	if (!dev || !dev->device_node || dev->device_node != of_get_stdoutpath(&tmp))
+		return false;
+
+	*baudrate = tmp;
+	return true;
 }
 
 /**

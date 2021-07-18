@@ -15,6 +15,7 @@
  * GNU General Public License for more details.
  */
 #include <common.h>
+#include <deep-probe.h>
 #include <malloc.h>
 #include <of.h>
 #include <of_address.h>
@@ -29,6 +30,12 @@
 struct device_d *of_find_device_by_node(struct device_node *np)
 {
 	struct device_d *dev;
+	int ret;
+
+	ret = of_device_ensure_probed(np);
+	if (ret)
+		return NULL;
+
 	for_each_device(dev)
 		if (dev->device_node == np)
 			return dev;
@@ -101,10 +108,17 @@ struct device_d *of_platform_device_create(struct device_node *np,
 	struct device_d *dev;
 	struct resource *res = NULL, temp_res;
 	resource_size_t resinval;
-	int i, j, ret, num_reg = 0, match;
+	int i, ret, num_reg = 0;
 
 	if (!of_device_is_available(np))
 		return NULL;
+
+	/*
+	 * Linux uses the OF_POPULATED flag to skip already populated/created
+	 * devices.
+	 */
+	if (np->dev)
+		return np->dev;
 
 	/* count the io resources */
 	if (of_can_translate_address(np))
@@ -119,35 +133,6 @@ struct device_d *of_platform_device_create(struct device_node *np,
 			if (ret) {
 				free(res);
 				return NULL;
-			}
-		}
-
-		/*
-		 * A device may already be registered as platform_device.
-		 * Instead of registering the same device again, just
-		 * add this node to the existing device.
-		 */
-		for_each_device(dev) {
-			if (!dev->resource)
-				continue;
-
-			for (i = 0, match = 0; i < num_reg; i++)
-				for (j = 0; j < dev->num_resources; j++)
-					if (dev->resource[j].start ==
-						res[i].start &&
-					    dev->resource[j].end ==
-						res[i].end) {
-						match++;
-						break;
-					}
-
-			/* check if all address resources match */
-			if (match == num_reg) {
-				debug("connecting %s to %s\n",
-					np->name, dev_name(dev));
-				dev->device_node = np;
-				free(res);
-				return dev;
 			}
 		}
 	}
@@ -169,14 +154,28 @@ struct device_d *of_platform_device_create(struct device_node *np,
 			__func__, dev_name(dev),
 		(num_reg) ? &dev->resource[0].start : &resinval);
 
+	BUG_ON(np->dev);
+	np->dev = dev;
+
 	ret = platform_device_register(dev);
 	if (!ret)
 		return dev;
+
+	np->dev = NULL;
 
 	free(dev);
 	if (num_reg)
 		free(res);
 	return NULL;
+}
+
+struct driver_d dummy_driver = {
+	.name = "dummy-driver",
+};
+
+void of_platform_device_dummy_drv(struct device_d *dev)
+{
+	dev->driver = &dummy_driver;
 }
 
 /**
@@ -252,6 +251,13 @@ static struct device_d *of_amba_device_create(struct device_node *np)
 	if (!of_device_is_available(np))
 		return NULL;
 
+	/*
+	 * Linux uses the OF_POPULATED flag to skip already populated/created
+	 * devices.
+	 */
+	if (np->dev)
+		return np->dev;
+
 	dev = xzalloc(sizeof(*dev));
 
 	/* setup generic device info */
@@ -274,6 +280,8 @@ static struct device_d *of_amba_device_create(struct device_node *np)
 	ret = amba_device_add(dev);
 	if (ret)
 		goto amba_err_free;
+
+	np->dev = &dev->dev;
 
 	return &dev->dev;
 
@@ -364,3 +372,175 @@ int of_platform_populate(struct device_node *root,
 	return rc;
 }
 EXPORT_SYMBOL_GPL(of_platform_populate);
+
+static struct device_d *of_device_create_on_demand(struct device_node *np)
+{
+	struct device_node *parent;
+	struct device_d *parent_dev, *dev;
+
+	parent = of_get_parent(np);
+	if (!parent)
+		return NULL;
+
+	if (!np->dev)
+		pr_debug("Creating device for %s\n", np->full_name);
+
+	/* Create all parent devices needed for the requested device */
+	parent_dev = parent->dev ? : of_device_create_on_demand(parent);
+	if (IS_ERR(parent_dev))
+		return parent_dev;
+
+	/*
+	 * Parent devices like i2c/spi controllers are populating their own
+	 * devices. So it can be that the requested device already exists after
+	 * the parent device creation.
+	 */
+	if (np->dev)
+		return np->dev;
+
+	if (of_device_is_compatible(np, "arm,primecell"))
+		dev = of_amba_device_create(np);
+	else
+		dev = of_platform_device_create(np, parent_dev);
+
+	return dev ? : ERR_PTR(-ENODEV);
+}
+
+/**
+ * of_device_ensure_probed() - ensures that a device is probed
+ *
+ * @np: the device_node handle which should be probed
+ *
+ * Ensures that the device is populated and probed so frameworks can make use of
+ * it.
+ *
+ * Return: %0 on success
+ *	   %-ENODEV if either the device can't be populated, the driver is
+ *	     missing or the driver probe returns an error.
+ */
+int of_device_ensure_probed(struct device_node *np)
+{
+	struct device_d *dev;
+
+	if (!deep_probe_is_supported())
+		return 0;
+
+	dev = of_device_create_on_demand(np);
+	if (IS_ERR(dev))
+		return PTR_ERR(dev);
+
+	BUG_ON(!dev);
+
+	/*
+	 * The deep-probe mechanism relies on the fact that all necessary
+	 * drivers are added before the device creation. Furthermore deep-probe
+	 * is the answer to the EPROBE_DEFER errno so we must ensure that the
+	 * driver was probed successfully after the device creation. Both
+	 * requirements are fulfilled if 'dev->driver' is not NULL.
+	 */
+	if (!dev->driver)
+		return -ENODEV;
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(of_device_ensure_probed);
+
+/**
+ * of_device_ensure_probed_by_alias() - ensures that a device is probed
+ *
+ * @alias: the alias string to search for a device
+ *
+ * The function search for a given alias string and ensures that the device is
+ * populated and probed if found.
+ *
+ * Return: %0 on success
+ *	   %-ENODEV if either the device can't be populated, the driver is
+ *	     missing or the driver probe returns an error
+ *	   %-EINVAL if alias can't be found
+ */
+int of_device_ensure_probed_by_alias(const char *alias)
+{
+	struct device_node *dev_node;
+
+	dev_node = of_find_node_by_alias(NULL, alias);
+	if (!dev_node)
+		return -EINVAL;
+
+	return of_device_ensure_probed(dev_node);
+}
+EXPORT_SYMBOL_GPL(of_device_ensure_probed_by_alias);
+
+/**
+ * of_devices_ensure_probed_by_dev_id() - ensures that devices are probed
+ *
+ * @ids: the matching 'struct of_device_id' ids
+ *
+ * The function start searching the device tree from @np and populates and
+ * probes devices which match @ids.
+ *
+ * Return: %0 on success
+ *	   %-ENODEV if either the device wasn't found, can't be populated,
+ *	     the driver is missing or the driver probe returns an error
+ */
+int of_devices_ensure_probed_by_dev_id(const struct of_device_id *ids)
+{
+	struct device_node *np;
+	int err, ret = 0;
+
+	for_each_matching_node(np, ids) {
+		if (!of_device_is_available(np))
+			continue;
+
+		err = of_device_ensure_probed(np);
+		if (err)
+			ret = err;
+	}
+
+	return ret;
+}
+EXPORT_SYMBOL_GPL(of_devices_ensure_probed_by_dev_id);
+
+/**
+ * of_devices_ensure_probed_by_property() - ensures that devices are probed
+ *
+ * @property_name: The property name to search for
+ *
+ * The function starts searching the whole device tree and populates and probes
+ * devices which matches @property_name.
+ *
+ * Return: %0 on success
+ *	   %-ENODEV if either the device wasn't found, can't be populated,
+ *	     the driver is missing or the driver probe returns an error
+ */
+int of_devices_ensure_probed_by_property(const char *property_name)
+{
+	struct device_node *node;
+
+	for_each_node_with_property(node, property_name) {
+		int ret;
+
+		ret = of_device_ensure_probed(node);
+		if (ret)
+			return ret;
+	}
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(of_devices_ensure_probed_by_property);
+
+static int of_stdoutpath_init(void)
+{
+	struct device_node *np;
+
+	np = of_get_stdoutpath(NULL);
+	if (!np)
+		return 0;
+
+	/*
+	 * With deep probe support the device providing the console
+	 * can come quite late in the probe order. Make sure it's
+	 * probed now so that we get output earlier.
+	 */
+	return of_device_ensure_probed(np);
+}
+postconsole_initcall(of_stdoutpath_init);

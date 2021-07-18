@@ -35,6 +35,7 @@ struct device_node {
 	struct list_head parent_list;
 	struct list_head list;
 	phandle phandle;
+	struct device_d *dev;
 };
 
 struct of_device_id {
@@ -267,6 +268,7 @@ extern int barebox_register_fdt(const void *dtb);
 
 extern struct device_d *of_platform_device_create(struct device_node *np,
 						struct device_d *parent);
+extern void of_platform_device_dummy_drv(struct device_d *dev);
 extern int of_platform_populate(struct device_node *root,
 				const struct of_device_id *matches,
 				struct device_d *parent);
@@ -276,11 +278,17 @@ extern struct device_d *of_device_enable_and_register_by_name(const char *name);
 extern struct device_d *of_device_enable_and_register_by_alias(
 							const char *alias);
 
+extern int of_device_ensure_probed(struct device_node *np);
+extern int of_device_ensure_probed_by_alias(const char *alias);
+extern int of_devices_ensure_probed_by_property(const char *property_name);
+extern int of_devices_ensure_probed_by_dev_id(const struct of_device_id *ids);
+
 struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node);
 int of_parse_partitions(struct cdev *cdev, struct device_node *node);
 int of_fixup_partitions(struct device_node *np, struct cdev *cdev);
 int of_partitions_register_fixup(struct cdev *cdev);
-int of_device_is_stdout_path(struct device_d *dev);
+struct device_node *of_get_stdoutpath(unsigned int *);
+int of_device_is_stdout_path(struct device_d *dev, unsigned int *baudrate);
 const char *of_get_model(void);
 void *of_flatten_dtb(struct device_node *node);
 int of_add_memory(struct device_node *node, bool dump);
@@ -317,7 +325,12 @@ static inline int of_partitions_register_fixup(struct cdev *cdev)
 	return -ENOSYS;
 }
 
-static inline int of_device_is_stdout_path(struct device_d *dev)
+static inline struct device_node *of_get_stdoutpath(unsigned int *rate)
+{
+	return NULL;
+}
+
+static inline int of_device_is_stdout_path(struct device_d *dev, unsigned int *baudrate)
 {
 	return 0;
 }
@@ -351,6 +364,31 @@ static inline struct device_d *of_platform_device_create(struct device_node *np,
 							 struct device_d *parent)
 {
 	return NULL;
+}
+
+static inline void of_platform_device_dummy_drv(struct device_d *dev)
+{
+}
+
+static inline int of_device_ensure_probed(struct device_node *np)
+{
+	return 0;
+}
+
+static inline int of_device_ensure_probed_by_alias(const char *alias)
+{
+	return 0;
+}
+
+static inline int of_devices_ensure_probed_by_property(const char *property_name)
+{
+	return 0;
+}
+
+static inline int
+of_devices_ensure_probed_by_dev_id(const struct of_device_id *ids)
+{
+	return 0;
 }
 
 static inline int of_bus_n_addr_cells(struct device_node *np)

@@ -10,6 +10,7 @@
 #include <envfs.h>
 #include <mach/bbu.h>
 #include <linux/phy.h>
+#include <deep-probe.h>
 
 static int ar8035_phy_fixup(struct phy_device *dev)
 {
@@ -18,37 +19,22 @@ static int ar8035_phy_fixup(struct phy_device *dev)
 	/* Ar803x phy SmartEEE feature cause link status generates glitch,
 	 * which cause ethernet link down/up issue, so disable SmartEEE
 	 */
-	phy_write(dev, 0xd, 0x3);
-	phy_write(dev, 0xe, 0x805d);
-	phy_write(dev, 0xd, 0x4003);
+	val = phy_read_mmd_indirect(dev, 0x805d, 0x3);
+	phy_write(dev, MII_MMD_DATA, val & ~(1 << 8));
 
-	val = phy_read(dev, 0xe);
-	phy_write(dev, 0xe, val & ~(1 << 8));
+	val = phy_read_mmd_indirect(dev, 0x4003, 0x3);
+	phy_write(dev, MII_MMD_DATA, val & ~(1 << 8));
 
-	/* To enable AR8031 ouput a 125MHz clk from CLK_25M */
-	phy_write(dev, 0xd, 0x7);
-	phy_write(dev, 0xe, 0x8016);
-	phy_write(dev, 0xd, 0x4007);
-
-	val = phy_read(dev, 0xe);
+	val = phy_read_mmd_indirect(dev, 0x4007, 0x3);
 	val &= 0xffe3;
 	val |= 0x18;
-	phy_write(dev, 0xe, val);
-
-	/* introduce tx clock delay */
-	phy_write(dev, 0x1d, 0x5);
-	val = phy_read(dev, 0x1e);
-	val |= 0x0100;
-	phy_write(dev, 0x1e, val);
+	phy_write(dev, MII_MMD_DATA, val);
 
 	return 0;
 }
 
-static int marsboard_device_init(void)
+static int marsboard_device_init(struct device_d *dev)
 {
-	if (!of_machine_is_compatible("embest,imx6q-marsboard"))
-		return 0;
-
 	barebox_set_hostname("marsboard");
 
 	phy_register_fixup_for_uid(0x004dd072, 0xffffffef, ar8035_phy_fixup);
@@ -60,4 +46,16 @@ static int marsboard_device_init(void)
 
 	return 0;
 }
-device_initcall(marsboard_device_init);
+
+static const struct of_device_id marsboard_of_match[] = {
+	{ .compatible = "embest,imx6q-marsboard" },
+	{ /* sentinel */ },
+};
+BAREBOX_DEEP_PROBE_ENABLE(marsboard_of_match);
+
+static struct driver_d marsboard_driver = {
+	.name = "board-mars",
+	.probe = marsboard_device_init,
+	.of_compatible = marsboard_of_match,
+};
+postcore_platform_driver(marsboard_driver);

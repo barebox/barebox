@@ -23,6 +23,7 @@ config USB_NOP_XCEIV
 	  phy programming such as ISP1x04 etc.
 
 source "drivers/phy/freescale/Kconfig"
+source "drivers/phy/rockchip/Kconfig"
 
 config PHY_STM32_USBPHYC
 	tristate "STM32 USB HS PHY Controller"

@@ -13,10 +13,22 @@ config RK_TIMER
 
 config ARCH_RK3188
 	bool
+	select CPU_V7
+	select ARM_SMP_TWD
+	select ARCH_HAS_L2X0
 
 config ARCH_RK3288
 	bool
+	select CPU_V7
+	select ARM_SMP_TWD
+	select ARCH_HAS_L2X0
 	select CLOCKSOURCE_ROCKCHIP
+
+config ARCH_RK3568
+	bool
+	select CPU_V8
+	select ARM_ATF
+	select SYS_SUPPORTS_64BIT_KERNEL
 
 comment "select Rockchip boards:"
 
@@ -33,4 +45,16 @@ config MACH_PHYTEC_SOM_RK3288
 	help
 	  Say Y here if you are using a RK3288 based Phytecs SOM
 
+config MACH_RK3568_EVB
+	select ARCH_RK3568
+	bool "RK3568 EVB"
+	help
+	  Say Y here if you are using a RK3568 EVB
+
 endmenu
+
+config ARCH_RK3568_OPTEE
+	bool "Build OP-TEE binary into barebox"
+	help
+	  With this option enabled the RK3568 OP-TEE binary is compiled
+	  into barebox and started along with the BL31 trusted firmware.

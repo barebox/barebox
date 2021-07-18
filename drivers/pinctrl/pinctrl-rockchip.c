@@ -332,63 +332,52 @@ static struct gpio_ops rockchip_gpio_ops = {
 	.get_direction = rockchip_gpiov2_get_direction,
 };
 
-static int rockchip_gpiolib_register(struct device_d *dev,
-				     struct rockchip_pinctrl *info)
+static int rockchip_gpio_probe(struct device_d *dev)
 {
+	struct rockchip_pinctrl *info = dev->parent->priv;
 	struct rockchip_pin_ctrl *ctrl = info->ctrl;
-	struct rockchip_pin_bank *bank = ctrl->pin_banks;
+	struct rockchip_pin_bank *bank;
+	struct gpio_chip *gpio;
 	void __iomem *reg_base;
-	int ret;
-	int i;
+	int ret, bankno;
 
-	for (i = 0; i < ctrl->nr_banks; ++i, ++bank) {
-		struct gpio_chip *gpio = &bank->bgpio_chip.gc;
+	bankno = of_alias_get_id(dev->device_node, "gpio");
+	bank = &ctrl->pin_banks[bankno];
+	gpio = &bank->bgpio_chip.gc;
 
-		if (!bank->valid) {
-			dev_warn(dev, "bank %s is not valid\n", bank->name);
-			continue;
-		}
+	if (!bank->valid)
+		dev_warn(dev, "bank %s is not valid\n", bank->name);
 
-		reg_base = bank->reg_base;
+	reg_base = bank->reg_base;
 
-		if (ctrl->type == RK3568) {
-			gpio->ngpio = 32;
-			gpio->dev = dev;
-			gpio->ops = &rockchip_gpio_ops;
-			gpio->base = of_alias_get_id(bank->of_node, "gpio");
-			if (gpio->base < 0)
-				return -EINVAL;
-			gpio->base *= 32;
-		} else {
-			ret = bgpio_init(&bank->bgpio_chip, dev, 4,
-					 reg_base + RK_GPIO_EXT_PORT,
-					 reg_base + RK_GPIO_SWPORT_DR, NULL,
-					 reg_base + RK_GPIO_SWPORT_DDR, NULL, 0);
-			if (ret)
-				goto fail;
-		}
+	if (ctrl->type == RK3568) {
+		gpio->ngpio = 32;
+		gpio->dev = dev;
+		gpio->ops = &rockchip_gpio_ops;
+		gpio->base = bankno;
+		if (gpio->base < 0)
+			return -EINVAL;
+		gpio->base *= 32;
+	} else {
+		ret = bgpio_init(&bank->bgpio_chip, dev, 4,
+				 reg_base + RK_GPIO_EXT_PORT,
+				 reg_base + RK_GPIO_SWPORT_DR, NULL,
+				 reg_base + RK_GPIO_SWPORT_DDR, NULL, 0);
+		if (ret)
+			return ret;
+	}
 
-		bank->bgpio_chip.gc.dev = of_find_device_by_node(bank->of_node);
+	bank->bgpio_chip.gc.dev = dev;
 
-		bank->bgpio_chip.gc.ngpio = bank->nr_pins;
-		ret = gpiochip_add(&bank->bgpio_chip.gc);
-		if (ret) {
-			dev_err(dev, "failed to register gpio_chip %s, error code: %d\n",
-				bank->name, ret);
-			goto fail;
-		}
-
+	bank->bgpio_chip.gc.ngpio = bank->nr_pins;
+	ret = gpiochip_add(&bank->bgpio_chip.gc);
+	if (ret) {
+		dev_err(dev, "failed to register gpio_chip %s, error code: %d\n",
+			bank->name, ret);
+		return ret;
 	}
 
 	return 0;
-fail:
-	for (--i, --bank; i >= 0; --i, --bank) {
-		if (!bank->valid)
-			continue;
-
-		gpiochip_remove(&bank->bgpio_chip.gc);
-	}
-	return ret;
 }
 
 static struct rockchip_pinctrl *to_rockchip_pinctrl(struct pinctrl_device *pdev)
@@ -1010,8 +999,6 @@ static int rockchip_pinctrl_probe(struct device_d *dev)
 	struct rockchip_pin_ctrl *ctrl;
 	int ret;
 
-	of_platform_populate(dev->device_node, NULL, NULL);
-
 	info = xzalloc(sizeof(struct rockchip_pinctrl));
 
 	ctrl = rockchip_pinctrl_get_soc_data(info, dev);
@@ -1038,9 +1025,9 @@ static int rockchip_pinctrl_probe(struct device_d *dev)
 	info->pctl_dev.dev = dev;
 	info->pctl_dev.ops = &rockchip_pinctrl_ops;
 
-	ret = rockchip_gpiolib_register(dev, info);
-	if (ret)
-		return ret;
+	dev->priv = info;
+
+	of_platform_populate(dev->device_node, NULL, dev);
 
 	if (!IS_ENABLED(CONFIG_PINCTRL))
 		return 0;
@@ -1282,3 +1269,20 @@ static struct driver_d rockchip_pinctrl_driver = {
 };
 
 core_platform_driver(rockchip_pinctrl_driver);
+
+static struct of_device_id rockchip_gpio_dt_match[] = {
+	{
+		.compatible = "rockchip,gpio-bank",
+		.data = &rk2928_pin_ctrl,
+	}, {
+		/* sentinel */
+	}
+};
+
+static struct driver_d rockchip_gpio_driver = {
+	.name = "rockchip-gpio",
+	.probe = rockchip_gpio_probe,
+	.of_compatible = DRV_OF_COMPAT(rockchip_gpio_dt_match),
+};
+
+core_platform_driver(rockchip_gpio_driver);

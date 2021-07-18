@@ -54,19 +54,14 @@ BAREBOX_CMD_END
 
 static int do_clk_set_rate(int argc, char *argv[])
 {
-	struct clk *clk;
 	unsigned long rate;
 
 	if (argc != 3)
 		return COMMAND_ERROR_USAGE;
 
-	clk = clk_lookup(argv[1]);
-	if (IS_ERR(clk))
-		return PTR_ERR(clk);
-
 	rate = simple_strtoul(argv[2], NULL, 0);
 
-	return clk_set_rate(clk, rate);
+	return clk_name_set_rate(argv[1], rate);
 }
 
 BAREBOX_CMD_HELP_START(clk_set_rate)
@@ -214,19 +209,10 @@ BAREBOX_CMD_END
 
 static int do_clk_set_parent(int argc, char *argv[])
 {
-	struct clk *clk, *parent;
-
 	if (argc != 3)
 		return COMMAND_ERROR_USAGE;
 
-	clk = clk_lookup(argv[1]);
-	if (IS_ERR(clk))
-		return PTR_ERR(clk);
-	parent = clk_lookup(argv[2]);
-	if (IS_ERR(parent))
-		return PTR_ERR(parent);
-
-	return clk_set_parent(clk, parent);
+	return clk_name_set_parent(argv[1], argv[2]);
 }
 
 BAREBOX_CMD_START(clk_set_parent)

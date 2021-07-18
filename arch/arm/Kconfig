@@ -145,8 +145,6 @@ config ARCH_PXA
 
 config ARCH_ROCKCHIP
 	bool "Rockchip RX3xxx"
-	select CPU_V7
-	select ARM_SMP_TWD
 	select COMMON_CLK
 	select CLKDEV_LOOKUP
 	select COMMON_CLK_OF_PROVIDER
@@ -156,7 +154,6 @@ config ARCH_ROCKCHIP
 	select OFTREE
 	select HAVE_PBL_MULTI_IMAGES
 	select HAS_DEBUG_LL
-	select ARCH_HAS_L2X0
 
 config ARCH_SOCFPGA
 	bool "Altera SOCFPGA"
@@ -498,5 +495,8 @@ config ARM_MODULE_PLTS
 
 	  Say y if your memory configuration puts the heap to far away from the
 	  barebox image, causing relocation out of range errors
+
+config ARM_ATF
+	bool
 
 endmenu

@@ -681,6 +681,9 @@ static inline const char *clk_hw_get_name(struct clk_hw *hw)
 	return hw->clk.name;
 }
 
+int clk_name_set_parent(const char *clkname, const char *clkparentname);
+int clk_name_set_rate(const char *clkname, unsigned long rate);
+
 #endif
 
 struct device_node;
@@ -722,6 +725,7 @@ static inline unsigned int clk_get_num_parents(const struct clk *hw)
 {
 	return hw->num_parents;
 }
+
 #else
 
 

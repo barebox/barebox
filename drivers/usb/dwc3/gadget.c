@@ -643,14 +643,14 @@ static int __dwc3_gadget_ep_enable(struct dwc3_ep *dep, unsigned int action)
 		/* Initialize the TRB ring */
 		dep->trb_dequeue = 0;
 		dep->trb_enqueue = 0;
-		memset(dep->trb_pool, 0,
+		memset_io(dep->trb_pool, 0,
 		       sizeof(struct dwc3_trb) * DWC3_TRB_NUM);
 
 		/* Link TRB. The HWO bit is never reset */
 		trb_st_hw = &dep->trb_pool[0];
 
 		trb_link = &dep->trb_pool[DWC3_TRB_NUM - 1];
-		memset(trb_link, 0, sizeof(*trb_link));
+		memset_io(trb_link, 0, sizeof(*trb_link));
 
 		trb_link->bpl = lower_32_bits(dwc3_trb_dma_offset(dep,
 								 trb_st_hw));
@@ -2908,10 +2908,10 @@ static void dwc3_gadget_poll(struct usb_gadget * g)
 	buf = xzalloc(count);
 
 	amount = min(count, evt->length - evt->lpos);
-	memcpy(buf, evt->buf + evt->lpos, amount);
+	memcpy_fromio(buf, evt->buf + evt->lpos, amount);
 
 	if (amount < count)
-		memcpy(buf + amount, evt->buf, count - amount);
+		memcpy_fromio(buf + amount, evt->buf, count - amount);
 
 	evt->lpos = (evt->lpos + count) % evt->length;
 

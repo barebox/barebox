@@ -24,9 +24,18 @@ ENDPROC(setup_c)
  * executing at new address.
  */
 .section .text.relocate_to_adr
-ENTRY(relocate_to_adr)
 					/* x0: target address */
+#ifdef __PBL__
+ENTRY(relocate_to_adr_full)
+	ldr	x2, =__piggydata_end
+	b	1f
+#endif
 
+ENTRY(relocate_to_adr)
+	ldr	x2, =__bss_start
+	b	1f
+
+1:
 	stp	x19, x20, [sp, #-16]!
 	stp	x21, x22, [sp, #-16]!
 
@@ -44,8 +53,6 @@ ENTRY(relocate_to_adr)
 
 	cmp	x1, x21			/* already at correct address? */
 	beq	1f			/* yes, skip copy to new address */
-
-	ldr	x2, =__bss_start
 
 	sub	x2, x2, x0		/* x2: size */
 	mov	x0, x21			/* x0: target */

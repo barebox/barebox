@@ -1619,10 +1619,19 @@ static void __init rk3568_pmu_clk_init(struct device_node *np)
 	rockchip_clk_register_branches(ctx, rk3568_clk_pmu_branches,
 				       ARRAY_SIZE(rk3568_clk_pmu_branches));
 
+	rockchip_register_softrst(np, 1, reg_base + RK3568_PMU_SOFTRST_CON(0),
+				  ROCKCHIP_SOFTRST_HIWORD_MASK);
+
 	rockchip_clk_protect_critical(rk3568_pmucru_critical_clocks,
 				      ARRAY_SIZE(rk3568_pmucru_critical_clocks));
 
 	rockchip_clk_of_add_provider(np, ctx);
+
+	clk_name_set_parent("ppll", "pll_ppll");
+	clk_name_set_parent("clk_rtc_32k", "clk_rtc32k_frac");
+	clk_name_set_rate("clk_rtc_32k", 32768);
+	clk_name_set_rate("pclk_pmu", 100000000);
+	clk_name_set_rate("pll_ppll", 200000000);
 }
 
 static void __init rk3568_clk_init(struct device_node *np)
@@ -1654,12 +1663,37 @@ static void __init rk3568_clk_init(struct device_node *np)
 	rockchip_clk_register_branches(ctx, rk3568_clk_branches,
 				       ARRAY_SIZE(rk3568_clk_branches));
 
+	rockchip_register_softrst(np, 30, reg_base + RK3568_SOFTRST_CON(0),
+				  ROCKCHIP_SOFTRST_HIWORD_MASK);
+
 	rockchip_register_restart_notifier(ctx, RK3568_GLB_SRST_FST);
 
 	rockchip_clk_protect_critical(rk3568_cru_critical_clocks,
 				      ARRAY_SIZE(rk3568_cru_critical_clocks));
 
 	rockchip_clk_of_add_provider(np, ctx);
+
+	clk_name_set_parent("npll", "pll_npll");
+	clk_name_set_parent("vpll", "pll_vpll");
+	clk_name_set_parent("pclk_bus", "gpll_100m");
+	clk_name_set_parent("clk_sdmmc0", "cpll_50m");
+	clk_name_set_parent("cclk_emmc", "gpll_200m");
+
+	clk_name_set_rate("pll_cpll", 1000000000);
+	clk_name_set_rate("pll_gpll", 1188000000);
+	clk_name_set_rate("armclk", 600000000);
+	clk_name_set_rate("aclk_bus", 150000000);
+	clk_name_set_rate("pclk_bus", 100000000);
+	clk_name_set_rate("aclk_top_high", 300000000);
+	clk_name_set_rate("aclk_top_low", 200000000);
+	clk_name_set_rate("hclk_top", 150000000);
+	clk_name_set_rate("pclk_top", 100000000);
+	clk_name_set_rate("aclk_perimid", 300000000);
+	clk_name_set_rate("hclk_perimid", 150000000);
+	clk_name_set_rate("pll_npll", 1200000000);
+	clk_name_set_rate("pll_apll", 816000000);
+
+	clk_name_set_parent("pclk_top", "gpll_100m");
 }
 
 struct clk_rk3568_inits {

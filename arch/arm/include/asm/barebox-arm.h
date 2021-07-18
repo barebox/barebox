@@ -53,6 +53,7 @@ void setup_c(void);
 void pbl_barebox_break(void);
 void relocate_to_current_adr(void);
 void relocate_to_adr(unsigned long target);
+void relocate_to_adr_full(unsigned long target);
 void __noreturn barebox_arm_entry(unsigned long membase, unsigned long memsize, void *boarddata);
 
 struct barebox_arm_boarddata {

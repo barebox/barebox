@@ -73,6 +73,7 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_stm32_image_v1] = { "STM32 image (v1)", "stm32-image-v1" },
 	[filetype_zynq_image] = { "Zynq image", "zynq-image" },
 	[filetype_mxs_sd_image] = { "i.MX23/28 SD card image", "mxs-sd-image" },
+	[filetype_rockchip_rkns_image] = { "Rockchip boot image", "rk-image" },
 };
 
 const char *file_type_to_string(enum filetype f)
@@ -309,6 +310,8 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 		return filetype_riscv_linux_image;
 	if (le32_to_cpu(buf[14]) == 0x56435352 && !memcmp(&buf[12], "barebox", 8))
 		return filetype_riscv_barebox_image;
+	if (strncmp(buf8, "RKNS", 4) == 0)
+		return filetype_rockchip_rkns_image;
 	if ((buf8[0] == 0x5a || buf8[0] == 0x69 || buf8[0] == 0x78 ||
 	     buf8[0] == 0x8b || buf8[0] == 0x9c) &&
 	    buf8[0x1] == 0 && buf8[0x2] == 0 && buf8[0x3] == 0 &&

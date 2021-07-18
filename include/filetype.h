@@ -54,6 +54,7 @@ enum filetype {
 	filetype_stm32_image_v1,
 	filetype_zynq_image,
 	filetype_mxs_sd_image,
+	filetype_rockchip_rkns_image,
 	filetype_max,
 };
 

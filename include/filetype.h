@@ -70,6 +70,20 @@ enum filetype is_fat_or_mbr(const unsigned char *sector, unsigned long *bootsec)
 int is_fat_boot_sector(const void *_buf);
 bool filetype_is_barebox_image(enum filetype ft);
 
+static inline bool file_is_compressed_file(enum filetype ft)
+{
+	switch (ft) {
+	case filetype_lzo_compressed:
+	case filetype_lz4_compressed:
+	case filetype_gzip:
+	case filetype_bzip2:
+	case filetype_xz_compressed:
+		return true;
+	default:
+		return false;
+	}
+}
+
 #define ARM_HEAD_SIZE			0x30
 #define ARM_HEAD_MAGICWORD_OFFSET	0x20
 #define ARM_HEAD_SIZE_OFFSET		0x2C

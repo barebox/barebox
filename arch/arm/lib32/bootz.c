@@ -111,6 +111,9 @@ static int do_bootz(int argc, char *argv[])
 #ifdef CONFIG_OFTREE
 	oftree = of_get_fixed_tree(NULL);
 #endif
+	ret = of_overlay_load_firmware();
+	if (ret)
+		return ret;
 
 	start_linux(zimage, swap, 0, 0, oftree, ARM_STATE_SECURE, NULL);
 

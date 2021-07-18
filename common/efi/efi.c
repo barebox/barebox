@@ -437,7 +437,7 @@ static int efi_late_init(void)
 			return -EINVAL;
 		}
 
-		root = of_unflatten_dtb(fdt);
+		root = of_unflatten_dtb(fdt, size);
 
 		free(fdt);
 

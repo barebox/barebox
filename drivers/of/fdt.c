@@ -114,7 +114,8 @@ static int of_unflatten_reservemap(struct device_node *root,
  * Parse a flat device tree binary blob and return a pointer to the
  * unflattened tree.
  */
-static struct device_node *__of_unflatten_dtb(const void *infdt, bool constprops)
+static struct device_node *__of_unflatten_dtb(const void *infdt, int size,
+					      bool constprops)
 {
 	const void *nodep;	/* property node pointer */
 	uint32_t tag;		/* tag */
@@ -131,6 +132,9 @@ static struct device_node *__of_unflatten_dtb(const void *infdt, bool constprops
 	unsigned int maxlen;
 	const struct fdt_header *fdt = infdt;
 
+	if (size < sizeof(struct fdt_header))
+		return ERR_PTR(-EINVAL);
+
 	if (fdt->magic != cpu_to_fdt32(FDT_MAGIC)) {
 		pr_err("bad magic: 0x%08x\n", fdt32_to_cpu(fdt->magic));
 		return ERR_PTR(-EINVAL);
@@ -146,6 +150,9 @@ static struct device_node *__of_unflatten_dtb(const void *infdt, bool constprops
 	f.size_dt_struct = fdt32_to_cpu(fdt->size_dt_struct);
 	f.off_dt_strings = fdt32_to_cpu(fdt->off_dt_strings);
 	f.size_dt_strings = fdt32_to_cpu(fdt->size_dt_strings);
+
+	if (f.totalsize > size)
+		return ERR_PTR(-EINVAL);
 
 	if (f.off_dt_struct + f.size_dt_struct > f.totalsize) {
 		pr_err("unflatten: dt size exceeds total size\n");
@@ -274,9 +281,9 @@ err:
  * Parse a flat device tree binary blob and return a pointer to the unflattened
  * tree. The tree must be freed after use with of_delete_node().
  */
-struct device_node *of_unflatten_dtb(const void *infdt)
+struct device_node *of_unflatten_dtb(const void *infdt, int size)
 {
-	return __of_unflatten_dtb(infdt, false);
+	return __of_unflatten_dtb(infdt, size, false);
 }
 
 /**
@@ -290,9 +297,9 @@ struct device_node *of_unflatten_dtb(const void *infdt)
  * whole lifetime of the returned tree. This is normally not what you want, so
  * use of_unflatten_dtb() instead.
  */
-struct device_node *of_unflatten_dtb_const(const void *infdt)
+struct device_node *of_unflatten_dtb_const(const void *infdt, int size)
 {
-	return __of_unflatten_dtb(infdt, true);
+	return __of_unflatten_dtb(infdt, size, true);
 }
 
 struct fdt {

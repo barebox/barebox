@@ -325,6 +325,10 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem,
 	if (data->dryrun)
 		return 0;
 
+	ret = of_overlay_load_firmware();
+	if (ret)
+		return ret;
+
 	if (data->tee_res)
 		tee = (void *)data->tee_res->start;
 	else
@@ -421,7 +425,7 @@ static int do_bootz_linux_fdt(int fd, struct image_data *data, void **outfdt)
 	if (IS_BUILTIN(CONFIG_OFTREE)) {
 		struct device_node *root;
 
-		root = of_unflatten_dtb(oftree);
+		root = of_unflatten_dtb(oftree, header->totalsize);
 		if (IS_ERR(root)) {
 			pr_err("unable to unflatten devicetree\n");
 			goto err_free;

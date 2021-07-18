@@ -361,7 +361,7 @@ void *bootm_get_devicetree(struct image_data *data)
 		if (ret)
 			return ERR_PTR(ret);
 
-		data->of_root_node = of_unflatten_dtb(of_tree);
+		data->of_root_node = of_unflatten_dtb(of_tree, of_size);
 	} else if (data->oftree_file) {
 		size_t size;
 
@@ -389,7 +389,7 @@ void *bootm_get_devicetree(struct image_data *data)
 		if (ret)
 			return ERR_PTR(ret);
 
-		data->of_root_node = of_unflatten_dtb(oftree);
+		data->of_root_node = of_unflatten_dtb(oftree, size);
 
 		free(oftree);
 

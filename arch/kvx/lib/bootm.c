@@ -24,10 +24,16 @@ typedef void __noreturn (*boot_func_entry)(unsigned long, void *);
 static int do_boot_entry(struct image_data *data, boot_func_entry entry,
 			 void *fdt_load_addr)
 {
+	int ret;
+
 	printf("starting elf (entry at %p)\n", entry);
 
 	if (data->dryrun)
 		return 0;
+
+	ret = of_overlay_load_firmware();
+	if (ret)
+		return ret;
 
 	shutdown_barebox();
 

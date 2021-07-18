@@ -25,7 +25,7 @@ static struct device_node *get_tree(const char *filename, struct device_node *ro
 		if (!node)
 			return ERR_PTR(-ENOENT);
 
-		return of_copy_node(NULL, node);
+		return of_dup(node);
 	}
 
 	if (!strcmp(filename, "+")) {
@@ -33,7 +33,7 @@ static struct device_node *get_tree(const char *filename, struct device_node *ro
 		if (!node)
 			return ERR_PTR(-ENOENT);
 
-		node = of_copy_node(NULL, root);
+		node = of_dup(root);
 
 		of_fix_tree(node);
 
@@ -44,7 +44,7 @@ static struct device_node *get_tree(const char *filename, struct device_node *ro
 	if (ret)
 		return ERR_PTR(ret);
 
-	node = of_unflatten_dtb(fdt);
+	node = of_unflatten_dtb(fdt, size);
 
 	free(fdt);
 

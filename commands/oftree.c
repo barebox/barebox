@@ -82,7 +82,7 @@ static int do_oftree(int argc, char *argv[])
 			return 1;
 		}
 
-		root = of_unflatten_dtb(fdt);
+		root = of_unflatten_dtb(fdt, size);
 
 		free(fdt);
 

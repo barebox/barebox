@@ -8,10 +8,15 @@ static int do_bootm_linux(struct image_data *data)
 {
 	void (*fn)(unsigned long a0, unsigned long dtb, unsigned long a2);
 	phys_addr_t devicetree;
+	int ret;
 
 	fn = booti_load_image(data, &devicetree);
 	if (IS_ERR(fn))
 		return PTR_ERR(fn);
+
+	ret = of_overlay_load_firmware();
+	if (ret)
+		return ret;
 
 	shutdown_barebox();
 

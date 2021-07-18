@@ -32,79 +32,33 @@ int blspec_entry_var_set(struct blspec_entry *entry, const char *name,
 			val ? strlen(val) + 1 : 0, 1);
 }
 
-static int blspec_apply_oftree_overlay(char *file, const char *abspath,
-				       int dryrun)
+static int blspec_overlay_fixup(struct device_node *root, void *ctx)
 {
-	int ret = 0;
-	struct fdt_header *fdt;
-	struct device_node *overlay;
-	char *path;
-	char *firmware_path;
-
-	path = basprintf("%s/%s", abspath, file);
-
-	fdt = read_file(path, NULL);
-	if (!fdt) {
-		pr_warn("unable to read \"%s\"\n", path);
-		ret = -EINVAL;
-		goto out;
-	}
-
-	overlay = of_unflatten_dtb(fdt);
-	free(fdt);
-	if (IS_ERR(overlay)) {
-		ret = PTR_ERR(overlay);
-		goto out;
-	}
-
-	if (dryrun) {
-		pr_info("dry run: skip overlay %s\n", path);
-		of_delete_node(overlay);
-		goto out;
-	}
-
-	/*
-	 * Unfortunately the device tree overlay contains only the filename of
-	 * the firmware and relies on the firmware search paths to find the
-	 * actual file. Use /lib/firmware in the Linux root directory and hope
-	 * for the best.
-	 */
-	firmware_path = basprintf("%s/%s", abspath, "/lib/firmware");
-	ret = of_firmware_load_overlay(overlay, firmware_path);
-	free(firmware_path);
-	if (ret) {
-		pr_warn("failed to load firmware: skip overlay \"%s\"\n", path);
-		of_delete_node(overlay);
-		goto out;
-	}
-
-	ret = of_register_overlay(overlay);
-	if (ret) {
-		pr_warn("cannot register devicetree overlay \"%s\"\n", path);
-		of_delete_node(overlay);
-	}
-
-out:
-	free(path);
-
-	return ret;
-}
-
-static void blspec_apply_oftree_overlays(const char *overlays,
-					 const char *abspath, int dryrun)
-{
+	struct blspec_entry *entry = ctx;
+	const char *overlays;
 	char *overlay;
 	char *sep, *freep;
+
+	overlays = blspec_entry_var_get(entry, "devicetree-overlay");
 
 	sep = freep = xstrdup(overlays);
 
 	while ((overlay = strsep(&sep, " "))) {
+		char *path;
+
 		if (!*overlay)
 			continue;
-		blspec_apply_oftree_overlay(overlay, abspath, dryrun);
+
+		path = basprintf("%s/%s", entry->rootpath, overlay);
+
+		of_overlay_apply_file(root, path, false);
+
+		free(path);
 	}
 
 	free(freep);
+
+	return 0;
 }
 
 /*
@@ -121,6 +75,8 @@ static int blspec_boot(struct bootentry *be, int verbose, int dryrun)
 	const char *abspath, *devicetree, *options, *initrd, *linuximage;
 	const char *overlays;
 	const char *appendroot;
+	const char *old_fws;
+	char *fws;
 	struct bootm_data data = {
 		.dryrun = dryrun,
 	};
@@ -159,7 +115,7 @@ static int blspec_boot(struct bootentry *be, int verbose, int dryrun)
 	}
 
 	if (overlays)
-		blspec_apply_oftree_overlays(overlays, abspath, dryrun);
+		of_register_fixup(blspec_overlay_fixup, entry);
 
 	if (initrd)
 		data.initrd_file = basprintf("%s/%s", abspath, initrd);
@@ -183,9 +139,26 @@ static int blspec_boot(struct bootentry *be, int verbose, int dryrun)
 			(entry->cdev && entry->cdev->dev) ?
 			dev_name(entry->cdev->dev) : "none");
 
+	of_overlay_set_basedir(abspath);
+
+	old_fws = firmware_get_searchpath();
+	if (old_fws && *old_fws)
+		fws = basprintf("%s/lib/firmware:%s", abspath, old_fws);
+	else
+		fws = basprintf("%s/lib/firmware", abspath);
+	firmware_set_searchpath(fws);
+	free(fws);
+
 	ret = bootm_boot(&data);
 	if (ret)
 		pr_err("Booting failed\n");
+
+	if (overlays)
+		of_unregister_fixup(blspec_overlay_fixup, entry);
+
+	of_overlay_set_basedir("/");
+	firmware_set_searchpath(old_fws);
+
 err_out:
 	free((char *)data.oftree_file);
 	free((char *)data.initrd_file);
@@ -490,7 +463,7 @@ static bool entry_is_of_compatible(struct blspec_entry *entry)
 		goto out;
 	}
 
-	root = of_unflatten_dtb(fdt);
+	root = of_unflatten_dtb(fdt, size);
 	if (IS_ERR(root)) {
 		ret = false;
 		root = NULL;

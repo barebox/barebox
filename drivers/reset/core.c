@@ -147,7 +147,7 @@ EXPORT_SYMBOL_GPL(reset_control_deassert);
  *
  * Use of id names is optional.
  */
-static struct reset_control *of_reset_control_get(struct device_node *node,
+struct reset_control *of_reset_control_get(struct device_node *node,
 						  const char *id)
 {
 	struct reset_control *rstc;

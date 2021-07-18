@@ -326,6 +326,8 @@ int of_fix_tree(struct device_node *node)
 	struct of_fixup *of_fixup;
 	int ret;
 
+	of_overlay_load_firmware_clear();
+
 	list_for_each_entry(of_fixup, &of_fixup_list, list) {
 		ret = of_fixup->fixup(node, of_fixup->context);
 		if (ret)
@@ -353,7 +355,7 @@ struct fdt_header *of_get_fixed_tree(struct device_node *node)
 		if (!node)
 			return NULL;
 
-		freenp = node = of_copy_node(NULL, node);
+		freenp = node = of_dup(node);
 		if (!node)
 			return NULL;
 	}

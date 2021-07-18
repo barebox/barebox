@@ -13,6 +13,8 @@ struct firmware_handler {
 	char *id; /* unique identifier for this firmware device */
 	char *model; /* description for this device */
 	struct device_d *dev;
+	void *priv;
+	struct device_node *device_node;
 	/* called once to prepare the firmware's programming cycle */
 	int (*open)(struct firmware_handler*);
 	/* called multiple times to program the firmware with the given data */
@@ -27,24 +29,33 @@ int firmwaremgr_register(struct firmware_handler *);
 
 struct firmware_mgr *firmwaremgr_find(const char *);
 #ifdef CONFIG_FIRMWARE
-struct firmware_mgr *firmwaremgr_find_by_node(const struct device_node *np);
+struct firmware_mgr *firmwaremgr_find_by_node(struct device_node *np);
+int firmwaremgr_load_file(struct firmware_mgr *, const char *path);
+const char *firmware_get_searchpath(void);
+void firmware_set_searchpath(const char *path);
 #else
-static inline struct firmware_mgr *firmwaremgr_find_by_node(const struct device_node *np)
+static inline struct firmware_mgr *firmwaremgr_find_by_node(struct device_node *np)
 {
 	return NULL;
 }
-#endif
 
-void firmwaremgr_list_handlers(void);
-
-#ifdef CONFIG_FIRMWARE
-int firmwaremgr_load_file(struct firmware_mgr *, const char *path);
-#else
 static inline int firmwaremgr_load_file(struct firmware_mgr *mgr, const char *path)
 {
 	return -ENOSYS;
 }
+
+static inline const char *firmware_get_searchpath(void)
+{
+	return NULL;
+}
+
+static inline void firmware_set_searchpath(const char *path)
+{
+}
+
 #endif
+
+void firmwaremgr_list_handlers(void);
 
 #define get_builtin_firmware(name, start, size) \
 	{							\

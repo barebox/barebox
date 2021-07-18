@@ -49,11 +49,47 @@ char *concat_subpath_file(const char *path, const char *f)
 }
 EXPORT_SYMBOL(concat_subpath_file);
 
+/**
+ * find_path - find a file in a colon separated path
+ * @path: The search path, colon separated
+ * @filename: The filename to search for
+ * @filter: filter function
+ *
+ * searches for @filename in a colon separated list of directories given in
+ * @path. @filter should return true when the current file matches the expectations,
+ * false otherwise. @filter should check for existence of the file, but could also
+ * check for additional flags.
+ */
+char *find_path(const char *path, const char *filename,
+		bool (*filter)(const char *))
+{
+	char *p, *n, *freep;
+
+	freep = p = strdup(path);
+	while (p) {
+		n = strchr(p, ':');
+		if (n)
+			*n++ = '\0';
+		if (*p != '\0') { /* it's not a PATH="foo::bar" situation */
+			p = concat_path_file(p, filename);
+			if (filter(p)) {
+				free(freep);
+				return p;
+			}
+			free(p);
+		}
+		p = n;
+	}
+	free(freep);
+	return NULL;
+}
+EXPORT_SYMBOL(find_path);
+
 /* check if path points to an executable file;
  * return 1 if found;
  * return 0 otherwise;
  */
-int execable_file(const char *name)
+bool execable_file(const char *name)
 {
 	struct stat s;
 	return (!stat(name, &s) && S_ISREG(s.st_mode));
@@ -67,25 +103,7 @@ EXPORT_SYMBOL(execable_file);
  */
 char *find_execable(const char *filename)
 {
-	char *path, *p, *n;
-
-	p = path = strdup(getenv("PATH"));
-	while (p) {
-		n = strchr(p, ':');
-		if (n)
-			*n++ = '\0';
-		if (*p != '\0') { /* it's not a PATH="foo::bar" situation */
-			p = concat_path_file(p, filename);
-			if (execable_file(p)) {
-				free(path);
-				return p;
-			}
-			free(p);
-		}
-		p = n;
-	}
-	free(path);
-	return NULL;
+	return find_path(getenv("PATH"), filename, execable_file);
 }
 EXPORT_SYMBOL(find_execable);
 

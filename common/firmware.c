@@ -11,9 +11,13 @@
 #include <libbb.h>
 #include <libfile.h>
 #include <fs.h>
+#include <globalvar.h>
+#include <magicvar.h>
 #include <linux/list.h>
 #include <linux/stat.h>
 #include <linux/err.h>
+#include <uncompress.h>
+#include <filetype.h>
 
 #define BUFSIZ 4096
 
@@ -61,13 +65,25 @@ struct firmware_mgr *firmwaremgr_find(const char *id)
  * handler. This allows to retrieve the firmware handler with a phandle from
  * the device tree.
  */
-struct firmware_mgr *firmwaremgr_find_by_node(const struct device_node *np)
+struct firmware_mgr *firmwaremgr_find_by_node(struct device_node *np)
 {
 	struct firmware_mgr *mgr;
+	char *na, *nb;
 
-	list_for_each_entry(mgr, &firmwaremgr_list, list)
-		if (mgr->handler->dev->parent->device_node == np)
+	na = of_get_reproducible_name(np);
+
+	list_for_each_entry(mgr, &firmwaremgr_list, list) {
+		nb = of_get_reproducible_name(mgr->handler->device_node);
+		if (!strcmp(na, nb)) {
+			free(na);
+			free(nb);
 			return mgr;
+		}
+
+		free(nb);
+	}
+
+	free(na);
 
 	return NULL;
 }
@@ -206,17 +222,96 @@ out:
 	return ret;
 }
 
+static char *firmware_path;
+
+const char *firmware_get_searchpath(void)
+{
+	return firmware_path;
+}
+
+void firmware_set_searchpath(const char *path)
+{
+	free(firmware_path);
+	firmware_path = strdup(path);
+}
+
+static bool file_exists(const char *filename)
+{
+	struct stat s;
+
+	return !stat(filename, &s);
+}
+
 /*
  * firmware_load_file - load a firmware to a device
  */
 int firmwaremgr_load_file(struct firmware_mgr *mgr, const char *firmware)
 {
-	int ret;
-	char *name = basprintf("/dev/%s", mgr->handler->id);
+	char *dst;
+	enum filetype type;
+	int ret = 0;
+	char *fw = NULL;
+	int firmwarefd = 0;
+	int devicefd = 0;
 
-	ret = copy_file(firmware, name, 0);
+	if (!firmware)
+		return -EINVAL;
 
-	free(name);
+	if (!mgr->handler->id) {
+		pr_err("id not defined for handler\n");
+		return -ENODEV;
+	}
+
+	dst = basprintf("/dev/%s", mgr->handler->id);
+
+	if (*firmware != '/') {
+		fw = find_path(firmware_path, firmware, file_exists);
+		if (fw)
+			firmware = fw;
+	}
+
+	firmwarefd = open(firmware, O_RDONLY);
+	if (firmwarefd < 0) {
+		printf("could not open %s: %s\n", firmware,
+		       errno_str());
+		ret = firmwarefd;
+		goto out;
+	}
+
+	type = file_name_detect_type(firmware);
+
+	devicefd = open(dst, O_WRONLY);
+	if (devicefd < 0) {
+		printf("could not open %s: %s\n", dst, errno_str());
+		ret = devicefd;
+		goto out;
+	}
+
+	if (file_is_compressed_file(type))
+		ret = uncompress_fd_to_fd(firmwarefd, devicefd,
+					  uncompress_err_stdout);
+	else
+		ret = copy_fd(firmwarefd, devicefd);
+
+out:
+	free(dst);
+	free(fw);
+
+	if (firmwarefd > 0)
+		close(firmwarefd);
+	if (devicefd > 0)
+		close(devicefd);
 
 	return ret;
 }
+
+static int firmware_init(void)
+{
+	firmware_path = strdup("/env/firmware");
+	globalvar_add_simple_string("firmware.path", &firmware_path);
+
+	return 0;
+}
+device_initcall(firmware_init);
+
+BAREBOX_MAGICVAR(global.firmware.path, "Firmware search path");

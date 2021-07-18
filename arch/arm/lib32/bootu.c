@@ -8,7 +8,7 @@
 
 static int do_bootu(int argc, char *argv[])
 {
-	int fd;
+	int fd, ret;
 	void *kernel = NULL;
 	void *oftree = NULL;
 
@@ -25,6 +25,9 @@ static int do_bootu(int argc, char *argv[])
 #ifdef CONFIG_OFTREE
 	oftree = of_get_fixed_tree(NULL);
 #endif
+	ret = of_overlay_load_firmware();
+	if (ret)
+		return ret;
 
 	start_linux(kernel, 0, 0, 0, oftree, ARM_STATE_SECURE, NULL);
 

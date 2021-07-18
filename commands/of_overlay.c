@@ -13,40 +13,24 @@
 
 static int do_of_overlay(int argc, char *argv[])
 {
-	int opt, ret;
+	int ret;
 	struct fdt_header *fdt;
 	struct device_node *overlay;
-	const char *search_path = NULL;
+	size_t size;
 
-	while ((opt = getopt(argc, argv, "S:")) > 0) {
-		switch (opt) {
-		case 'S':
-			search_path = optarg;
-			break;
-		default:
-			return COMMAND_ERROR_USAGE;
-		}
-	}
-
-	if (argc != optind + 1)
+	if (argc != 2)
 		return COMMAND_ERROR_USAGE;
 
-	fdt = read_file(argv[optind], NULL);
+	fdt = read_file(argv[optind], &size);
 	if (!fdt) {
 		printf("cannot read %s\n", argv[optind]);
 		return 1;
 	}
 
-	overlay = of_unflatten_dtb(fdt);
+	overlay = of_unflatten_dtb(fdt, size);
 	free(fdt);
 	if (IS_ERR(overlay))
 		return PTR_ERR(overlay);
-
-	if (search_path) {
-		ret = of_firmware_load_overlay(overlay, search_path);
-		if (ret)
-			goto err;
-	}
 
 	ret = of_register_overlay(overlay);
 	if (ret) {
@@ -61,15 +45,9 @@ err:
 	return ret;
 }
 
-BAREBOX_CMD_HELP_START(of_overlay)
-BAREBOX_CMD_HELP_TEXT("Options:")
-BAREBOX_CMD_HELP_OPT("-S path", "load firmware using this search path")
-BAREBOX_CMD_HELP_END
-
 BAREBOX_CMD_START(of_overlay)
 	.cmd = do_of_overlay,
 	BAREBOX_CMD_DESC("register device tree overlay as fixup")
-	BAREBOX_CMD_OPTS("[-S path] FILE")
+	BAREBOX_CMD_OPTS("FILE")
 	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
-	BAREBOX_CMD_HELP(cmd_of_overlay_help)
 BAREBOX_CMD_END

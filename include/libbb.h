@@ -8,8 +8,10 @@
 
 char *concat_path_file(const char *path, const char *filename);
 char *concat_subpath_file(const char *path, const char *f);
-int execable_file(const char *name);
+bool execable_file(const char *name);
 char *find_execable(const char *filename);
+char *find_path(const char *path, const char *filename,
+				bool (*filter)(const char *));
 char* last_char_is(const char *s, int c);
 
 enum {

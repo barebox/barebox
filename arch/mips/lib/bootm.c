@@ -65,6 +65,10 @@ static int do_bootm_elf(struct image_data *data)
 	if (data->dryrun)
 		goto bootm_free_fdt;
 
+	ret = of_overlay_load_firmware();
+	if (ret)
+		return ret;
+
 	shutdown_barebox();
 
 	entry = (void *) (unsigned long) data->os_address;

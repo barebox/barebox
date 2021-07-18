@@ -1742,7 +1742,7 @@ int barebox_register_fdt(const void *dtb)
 	if (root_node)
 		return -EBUSY;
 
-	root = of_unflatten_dtb(dtb);
+	root = of_unflatten_dtb(dtb, INT_MAX);
 	if (IS_ERR(root)) {
 		pr_err("Cannot unflatten dtb: %pe\n", root);
 		return PTR_ERR(root);
@@ -2422,6 +2422,7 @@ struct device_node *of_copy_node(struct device_node *parent, const struct device
 	struct property *pp;
 
 	np = of_new_node(parent, other->name);
+	np->phandle = other->phandle;
 
 	list_for_each_entry(pp, &other->properties, list)
 		of_new_property(np, pp->name, pp->value, pp->length);
@@ -2430,6 +2431,11 @@ struct device_node *of_copy_node(struct device_node *parent, const struct device
 		of_copy_node(np, child);
 
 	return np;
+}
+
+struct device_node *of_dup(const struct device_node *root)
+{
+	return of_copy_node(NULL, root);
 }
 
 void of_delete_node(struct device_node *node)

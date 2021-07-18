@@ -71,7 +71,7 @@ static int do_of_dump(int argc, char *argv[])
 			return -errno;
 		}
 
-		root = of_unflatten_dtb(fdt);
+		root = of_unflatten_dtb(fdt, size);
 
 		free(fdt);
 
@@ -88,7 +88,7 @@ static int do_of_dump(int argc, char *argv[])
 			/* create a copy of internal devicetree */
 			void *fdt;
 			fdt = of_flatten_dtb(root);
-			root = of_unflatten_dtb(fdt);
+			root = of_unflatten_dtb(fdt, fdt_totalsize(fdt));
 
 			free(fdt);
 

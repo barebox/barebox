@@ -67,6 +67,10 @@ static int do_bootm_linux(struct image_data *data)
 	if (data->dryrun)
 		return 0;
 
+	ret = of_overlay_load_firmware();
+	if (ret)
+		return ret;
+
 	/* Relocate the device tree if outside the initial
 	 * Linux mapped TLB.
 	 */

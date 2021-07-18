@@ -593,6 +593,8 @@ int of_clk_add_provider(struct device_node *np,
 	list_add(&cp->link, &of_clk_providers);
 	pr_debug("Added clock from %s\n", np ? np->full_name : "<none>");
 
+	of_clk_set_defaults(np, true);
+
 	return 0;
 }
 EXPORT_SYMBOL_GPL(of_clk_add_provider);

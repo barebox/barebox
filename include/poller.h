@@ -7,6 +7,7 @@
 #define POLLER_H
 
 #include <linux/list.h>
+#include <linux/types.h>
 
 struct poller_struct {
 	void (*func)(struct poller_struct *poller);
@@ -39,11 +40,14 @@ static inline bool poller_async_active(struct poller_async *pa)
 	return pa->active;
 }
 
-extern int poller_active;
-
 #ifdef CONFIG_POLLER
+bool poller_active(void);
 void poller_call(void);
 #else
+static inline bool poller_active(void)
+{
+	return false;
+}
 static inline void poller_call(void)
 {
 }

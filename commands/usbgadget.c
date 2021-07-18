@@ -18,26 +18,29 @@
 
 static int do_usbgadget(int argc, char *argv[])
 {
+	struct usbgadget_funcs funcs = {};
 	int opt;
-	bool acm = false, dfu = false, fastboot = false, export_bbu = false;
-	const char *fastboot_opts = NULL, *dfu_opts = NULL;
 
-	while ((opt = getopt(argc, argv, "asdA::D::b")) > 0) {
+	while ((opt = getopt(argc, argv, "asdA::D::S::b")) > 0) {
 		switch (opt) {
 		case 'a':
 		case 's':
-			acm = true;
+			funcs.flags |= USBGADGET_ACM;
 			break;
 		case 'D':
-			dfu = true;
-			dfu_opts = optarg;
+			funcs.flags |= USBGADGET_DFU;
+			funcs.dfu_opts = optarg;
 			break;
 		case 'A':
-			fastboot = true;
-			fastboot_opts = optarg;
+			funcs.flags |= USBGADGET_FASTBOOT;
+			funcs.fastboot_opts = optarg;
+			break;
+		case 'S':
+			funcs.flags |= USBGADGET_MASS_STORAGE;
+			funcs.ums_opts = optarg;
 			break;
 		case 'b':
-			export_bbu = true;
+			funcs.flags |= USBGADGET_EXPORT_BBU;
 			break;
 		case 'd':
 			usb_multi_unregister();
@@ -47,8 +50,8 @@ static int do_usbgadget(int argc, char *argv[])
 		}
 	}
 
-	return usbgadget_register(dfu, dfu_opts, fastboot, fastboot_opts, acm,
-				  export_bbu);
+
+	return usbgadget_register(&funcs);
 }
 
 BAREBOX_CMD_HELP_START(usbgadget)
@@ -61,13 +64,15 @@ BAREBOX_CMD_HELP_OPT ("-A <desc>", "Create Android Fastboot function. If 'desc' 
 BAREBOX_CMD_HELP_OPT ("-b\t", "include registered barebox update handlers (fastboot specific)")
 BAREBOX_CMD_HELP_OPT ("-D <desc>", "Create DFU function. If 'desc' is not provided, "
 				   "try to use 'global.usbgadget.dfu_function' variable.")
+BAREBOX_CMD_HELP_OPT ("-S <desc>", "Create USB Mass Storage function. If 'desc' is not provided,"
+				   "fallback directly to 'global.system.partitions' variable.")
 BAREBOX_CMD_HELP_OPT ("-d\t", "Disable the currently running gadget")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(usbgadget)
 	.cmd		= do_usbgadget,
 	BAREBOX_CMD_DESC("Create USB Gadget multifunction device")
-	BAREBOX_CMD_OPTS("[-adAD]")
+	BAREBOX_CMD_OPTS("[-adADS]")
 	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_usbgadget_help)
 BAREBOX_CMD_END

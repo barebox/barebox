@@ -20,11 +20,8 @@
 #endif
 
 static struct bthread {
-	int (*threadfn)(void *);
-	union {
-		void *data;
-		int ret;
-	};
+	void (*threadfn)(void *);
+	void *data;
 	char *name;
 	jmp_buf jmp_buf;
 	void *stack;
@@ -35,10 +32,12 @@ static struct bthread {
 #endif
 	u8 awake :1;
 	u8 should_stop :1;
+	u8 should_clean :1;
 	u8 has_stopped :1;
 } main_thread = {
 	.list = LIST_HEAD_INIT(main_thread.list),
 	.name = "main",
+	.awake = true,
 };
 
 struct bthread *current = &main_thread;
@@ -54,7 +53,7 @@ static void __noreturn bthread_trampoline(void)
 	finish_switch_fiber(current);
 	bthread_reschedule();
 
-	current->ret = current->threadfn(current->data);
+	current->threadfn(current->data);
 
 	bthread_suspend(current);
 	current->has_stopped = true;
@@ -69,7 +68,7 @@ bool bthread_is_main(struct bthread *bthread)
 	return bthread == &main_thread;
 }
 
-void bthread_free(struct bthread *bthread)
+static void bthread_free(struct bthread *bthread)
 {
 	free(bthread->stack);
 	free(bthread->name);
@@ -81,7 +80,7 @@ const char *bthread_name(struct bthread *bthread)
 	return bthread->name;
 }
 
-struct bthread *bthread_create(int (*threadfn)(void *), void *data,
+struct bthread *bthread_create(void (*threadfn)(void *), void *data,
 			       const char *namefmt, ...)
 {
 	struct bthread *bthread;
@@ -107,6 +106,8 @@ struct bthread *bthread_create(int (*threadfn)(void *), void *data,
 	if (len < 0)
 		goto err;
 
+	list_add_tail(&bthread->list, &current->list);
+
 	/* set up bthread context with the new stack */
 	initjmp(bthread->jmp_buf, bthread_trampoline,
 		bthread->stack + CONFIG_STACK_SIZE);
@@ -117,30 +118,38 @@ err:
 	return NULL;
 }
 
+void *bthread_data(struct bthread *bthread)
+{
+	return bthread->data;
+}
+
 void bthread_wake(struct bthread *bthread)
 {
-	if (bthread->awake)
-		return;
-	list_add_tail(&bthread->list, &current->list);
 	bthread->awake = true;
 }
 
 void bthread_suspend(struct bthread *bthread)
 {
-	if (!bthread->awake)
-		return;
 	bthread->awake = false;
-	list_del(&bthread->list);
 }
 
-int bthread_stop(struct bthread *bthread)
+void bthread_cancel(struct bthread *bthread)
 {
 	bthread->should_stop = true;
+	bthread->should_clean = true;
+}
+
+void __bthread_stop(struct bthread *bthread)
+{
+	bthread->should_stop = true;
+
+	pr_debug("waiting for %s to stop\n", bthread->name);
 
 	while (!bthread->has_stopped)
 		bthread_reschedule();
 
-	return bthread->ret;
+	list_del(&bthread->list);
+	bthread_free(bthread);
 }
 
 int bthread_should_stop(void)
@@ -163,7 +172,23 @@ void bthread_info(void)
 
 void bthread_reschedule(void)
 {
-	bthread_schedule(list_next_entry(current, list));
+	struct bthread *next, *tmp;
+
+	if (current == list_next_entry(current, list))
+		return;
+
+	list_for_each_entry_safe(next, tmp, &current->list, list) {
+		if (next->awake) {
+			pr_debug("switch %s -> %s\n", current->name, next->name);
+			bthread_schedule(next);
+			return;
+		}
+		if (next->has_stopped && next->should_clean) {
+			pr_debug("deleting %s\n", next->name);
+			list_del(&next->list);
+			bthread_free(next);
+		}
+	}
 }
 
 void bthread_schedule(struct bthread *to)

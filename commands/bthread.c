@@ -10,11 +10,14 @@
 #include <command.h>
 #include <getopt.h>
 #include <clock.h>
+#include <slice.h>
 
 static int bthread_time(void)
 {
 	uint64_t start = get_time_ns();
 	int i = 0;
+
+	slice_release(&command_slice);
 
 	/*
 	 * How many background tasks can we have in one second?
@@ -25,15 +28,15 @@ static int bthread_time(void)
 	while (!is_timeout(start, SECOND))
 		i++;
 
+	slice_acquire(&command_slice);
+
 	return i;
 }
 
-static int bthread_infinite(void *data)
+static void bthread_infinite(void *data)
 {
 	while (!bthread_should_stop())
 		;
-
-	return 0;
 }
 
 static int bthread_isolated_time(void)
@@ -57,14 +60,19 @@ static int bthread_isolated_time(void)
 		i += 2;
 	}
 
-	bthread_stop(bthread);
-	bthread_free(bthread);
+	__bthread_stop(bthread);
 
 	return i;
 }
 
-static int bthread_printer(void *arg)
+struct arg {
+	unsigned long in;
+	long out;
+};
+
+static void bthread_printer(void *_arg)
 {
+	struct arg *arg = _arg;
 	volatile u64 start;
 	volatile unsigned long i = 0;
 	start = get_time_ns();
@@ -73,28 +81,30 @@ static int bthread_printer(void *arg)
 		if (!is_timeout_non_interruptible(start, 225 * MSECOND))
 			continue;
 
-		if ((unsigned long)arg == i++)
+		if (arg->in == i++)
 			printf("%s yield #%lu\n", bthread_name(current), i);
 		start = get_time_ns();
 	}
 
-	return i;
+	arg->out = i;
 }
 
 static int yields;
 
-static int bthread_spawner(void *arg)
+static void bthread_spawner(void *_spawner_arg)
 {
+	struct arg *arg, *spawner_arg = _spawner_arg;
 	struct bthread *bthread[4];
 	volatile u64 start;
 	volatile unsigned long i = 0;
 	int ret = 0;
-	int ecode;
 
 	start = get_time_ns();
 
 	for (i = 0; i < ARRAY_SIZE(bthread); i++) {
-		bthread[i] = bthread_run(bthread_printer, (void *)(long)i,
+		arg = malloc(sizeof(*arg));
+		arg->in = i;
+		bthread[i] = bthread_run(bthread_printer, arg,
 					 "%s-bthread%u", bthread_name(current), i+1);
 		if (!bthread[i]) {
 			ret = -ENOMEM;
@@ -107,14 +117,15 @@ static int bthread_spawner(void *arg)
 
 cleanup:
 	while (i--) {
-		ecode = bthread_stop(bthread[i]);
-		bthread_free(bthread[i]);
+		arg = bthread_data(bthread[i]);
+		__bthread_stop(bthread[i]);
 
-		if (!ret && (ecode != 4 || yields < ecode))
+		if (!ret && (arg->out != 4 || yields < arg->out))
 			ret = -EIO;
+		free(arg);
 	}
 
-	return ret;
+	spawner_arg->out = ret;
 }
 
 struct spawn {
@@ -124,14 +135,38 @@ struct spawn {
 
 static int do_bthread(int argc, char *argv[])
 {
+	static int dummynr;
+	static LIST_HEAD(dummies);
 	LIST_HEAD(spawners);
 	struct spawn *spawner, *tmp;
 	int ret = 0;
-	int ecode, opt, i = 0;
+	int opt, i = 0;
 	bool time = false;
+	struct arg *arg;
 
-	while ((opt = getopt(argc, argv, "itcv")) > 0) {
+	while ((opt = getopt(argc, argv, "aritcv")) > 0) {
 		switch (opt) {
+		case 'a':
+			spawner = xzalloc(sizeof(*spawner));
+			spawner->bthread = bthread_run(bthread_infinite, NULL,
+						       "dummy%u", dummynr++);
+			if (!spawner->bthread) {
+				free(spawner);
+				ret = -ENOMEM;
+				goto cleanup;
+			}
+
+			list_add(&spawner->list, &dummies);
+			break;
+		case 'r':
+			if (dummynr == 0)
+				return -EINVAL;
+			spawner = list_first_entry(&dummies, struct spawn, list);
+			bthread_cancel(spawner->bthread);
+			list_del(&spawner->list);
+			free(spawner);
+			dummynr--;
+			break;
 		case 'i':
 			bthread_info();
 			break;
@@ -141,7 +176,8 @@ static int do_bthread(int argc, char *argv[])
 			break;
 		case 'v':
 			spawner = xzalloc(sizeof(*spawner));
-			spawner->bthread = bthread_run(bthread_spawner, NULL,
+			arg = malloc(sizeof(*arg));
+			spawner->bthread = bthread_run(bthread_spawner, arg,
 						       "spawner%u", ++i);
 			if (!spawner->bthread) {
 				free(spawner);
@@ -167,10 +203,11 @@ static int do_bthread(int argc, char *argv[])
 
 cleanup:
 	list_for_each_entry_safe(spawner, tmp, &spawners, list) {
-		ecode = bthread_stop(spawner->bthread);
-		bthread_free(spawner->bthread);
-		if (!ret && ecode)
-			ret = ecode;
+		arg = bthread_data(spawner->bthread);
+		__bthread_stop(spawner->bthread);
+		if (!ret && arg->out)
+			ret = arg->out;
+		free(arg);
 		free(spawner);
 	}
 
@@ -184,6 +221,8 @@ BAREBOX_CMD_HELP_START(bthread)
 	BAREBOX_CMD_HELP_OPT ("-i", "Print information about registered bthreads")
 	BAREBOX_CMD_HELP_OPT ("-t", "measure how many bthreads we currently run in 1s")
 	BAREBOX_CMD_HELP_OPT ("-c", "count maximum context switches in 1s")
+	BAREBOX_CMD_HELP_OPT ("-a", "add a dummy bthread")
+	BAREBOX_CMD_HELP_OPT ("-r", "remove a dummy bthread")
 	BAREBOX_CMD_HELP_OPT ("-v", "verify correct bthread operation")
 BAREBOX_CMD_HELP_END
 

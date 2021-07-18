@@ -264,6 +264,11 @@ USB Gadget autostart Options
 ``global.usbgadget.acm``
   Boolean flag. If set to 1, CDC ACM function will be created.
   See :ref:`command_usbgadget` -a. (Default 0).
+``global.system.partitions``
+  Common function description for all of DFU, fastboot and USB mass storage
+  gadgets. Both Fastboot and DFU partitions also have dedicated override
+  variables for backwards-compatibility::
+
 ``global.usbgadget.dfu_function``
   Function description for DFU. See :ref:`command_usbgadget` -D [desc].
 ``global.fastboot.partitions``

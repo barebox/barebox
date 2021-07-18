@@ -10,9 +10,9 @@ Pollers
 -------
 
 Pollers are a way in barebox to frequently execute code in the background.
-barebox is single-threaded, so a poller is not executed as a separate thread,
-but instead pollers are executed whenever ``is_timeout()`` is called.  This has
-a few implications. First of all, pollers are not executed when
+They don't run within their own threads, but instead they are executed
+whenever ``is_timeout()`` is called.
+This has a few implications. First of all, pollers are not executed when
 ``is_timeout()`` is not called. For this and other reasons, loops polling for
 hardware events should always use a timeout, which is best implemented with
 ``is_timeout()``. Another thing to remember is that pollers can be executed
@@ -74,31 +74,19 @@ code. Usually a work item is allocated by the poller and then freed either in
 bthreads
 --------
 
-barebox threads are co-operative green threads, which are scheduled whenever
-``is_timeout()`` is called.  This has a few implications. First of all,
-bthreads are not scheduled when ``is_timeout()`` is not called.
-For this and other reasons, loops polling for hardware events should always
-use a timeout, which is best implemented with ``is_timeout()``.
-Another thing to remember is that bthreads can be scheduled anywhere
-in the middle of other device accesses whenever ``is_timeout()`` is
-called. Care must be taken that a green thread doesn't access the very same device
-again itself. See "slices" below on how devices can safely be accessed from
-bthreads.
+barebox threads are co-operative green threads, which are scheduled for the
+same context as workqueues: Before the shell executes the next command.
+This means that bthreads can be used to implement workqueues, but not pollers.
 
 The bthread interface is declared in ``include/bthread.h``.
 ``bthread_create()`` is used to allocate a bthread control block along with
 its stack. ``bthread_wake()`` can be used to add it into the run queue.
 From this moment on and until the thread terminates, the thread will be
-switched to regularly as long as someone calls ``is_timeout()``.
-bthreads are allowed to call ``is_timeout()``, which will arrange for
-other threads to execute.
+switched to regularly as long as the shell processes commands.
 
-barebox threads are planned to replace previous infrastructure, pollers
-and workqueues. Poller like behavior can be easily achieved by looping
-and yielding on every iteration. There's ``bthread_should_stop()``, which
-can be used as condition for continuing the loop. Workqueues could be
-replaced along the same line, but with mutexes protecting underlying device
-access.
+bthreads are allowed to call ``is_timeout()``, which will eventually
+arrange for other threads to execute. This allowed implementing a Linux-like
+completion API on top, which can be useful for porting threaded kernel code.
 
 Slices
 ------

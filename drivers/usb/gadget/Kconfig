@@ -36,10 +36,12 @@ config USB_GADGET_AUTOSTART
 	bool
 	default y
 	prompt "Automatically start usbgadget on boot"
+	select SYSTEM_PARTITIONS if USB_GADGET_MASS_STORAGE
 	help
 	  Enabling this option allows to automatically start a dfu or
 	  fastboot gadget during boot. This behaviour is controlled with
-	  the global.usbgadget.dfu_function and global.fastboot.* variables.
+	  the global.usbgadget.dfu_function, global.system.partitions
+	  and global.fastboot.* variables.
 
 comment "USB Gadget drivers"
 
@@ -57,4 +59,15 @@ config USB_GADGET_FASTBOOT
 	select BANNER
 	select FASTBOOT_BASE
 	prompt "Android Fastboot USB Gadget"
+
+config USB_GADGET_MASS_STORAGE
+	bool
+	select BTHREAD
+	prompt "USB Mass Storage Gadget"
+	help
+	  The Mass Storage Gadget acts as a USB Mass Storage disk drive.
+	  As its storage repository it can use a regular file or a block
+	  device. Multiple storages can be specified at once on
+	  instantiation time.
+
 endif

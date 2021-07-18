@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <common.h>
-#include <bthread.h>
+#include <poller.h>
 #include <linux/virtio.h>
 #include <linux/virtio_config.h>
 #include <linux/virtio_ring.h>
@@ -17,7 +17,7 @@ struct virtio_input {
 	struct virtio_device       *vdev;
 	struct virtqueue           *evt, *sts;
 	struct virtio_input_event  evts[64];
-	struct bthread             *bthread;
+	struct poller_struct       poller;
 	struct sound_card          beeper;
 	unsigned long              sndbit[BITS_TO_LONGS(SND_CNT)];
 };
@@ -100,21 +100,17 @@ static int virtinput_recv_status(struct virtio_input *vi)
 	return i;
 }
 
-static int virtinput_poll_vqs(void *_vi)
+static void virtinput_poll_vqs(struct poller_struct *poller)
 {
-	struct virtio_input *vi = _vi;
+	struct virtio_input *vi = container_of(poller, struct virtio_input, poller);
 
-	while (!bthread_should_stop()) {
-		int bufs = 0;
+	int bufs = 0;
 
-		bufs += virtinput_recv_events(vi);
-		bufs += virtinput_recv_status(vi);
+	bufs += virtinput_recv_events(vi);
+	bufs += virtinput_recv_status(vi);
 
-		if (bufs)
-			virtqueue_kick(vi->evt);
-	}
-
-	return 0;
+	if (bufs)
+		virtqueue_kick(vi->evt);
 }
 
 static u8 virtinput_cfg_select(struct virtio_input *vi,
@@ -213,6 +209,8 @@ static int virtinput_probe(struct virtio_device *vdev)
 			   name, min(size, sizeof(name)));
 	name[size] = '\0';
 
+	dev_info(&vdev->dev, "'%s' detected\n", name);
+
 	virtinput_cfg_bits(vi, VIRTIO_INPUT_CFG_EV_BITS, EV_SND,
 			   vi->sndbit, SND_CNT);
 
@@ -224,12 +222,12 @@ static int virtinput_probe(struct virtio_device *vdev)
 
 	virtinput_fill_evt(vi);
 
-	vi->bthread = bthread_run(virtinput_poll_vqs, vi,
-				  "%s/input0", dev_name(&vdev->dev));
-	if (!vi->bthread) {
-		err = -ENOMEM;
-		goto err_bthread_run;
-	}
+	vi->poller.func = virtinput_poll_vqs;
+	snprintf(name, sizeof(name), "%s/input0", dev_name(&vdev->dev));
+
+	err = poller_register(&vi->poller, name);
+	if (err)
+		goto err_poller_register;
 
 	if (IS_ENABLED(CONFIG_SOUND) &&
 	    (vi->sndbit[0] & (BIT_MASK(SND_BELL) | BIT_MASK(SND_TONE)))) {
@@ -246,12 +244,10 @@ static int virtinput_probe(struct virtio_device *vdev)
 			dev_info(&vdev->dev, "bell registered\n");
 	}
 
-	dev_info(&vdev->dev, "'%s' probed\n", name);
-
 	return 0;
 
-err_bthread_run:
-	bthread_free(vi->bthread);
+err_poller_register:
+	input_device_unregister(&vi->idev);
 err_input_register:
 	vdev->config->del_vqs(vdev);
 err_init_vq:
@@ -263,8 +259,7 @@ static void virtinput_remove(struct virtio_device *vdev)
 {
 	struct virtio_input *vi = vdev->priv;
 
-	bthread_stop(vi->bthread);
-	bthread_free(vi->bthread);
+	poller_unregister(&vi->poller);
 
 	vdev->config->reset(vdev);
 	vdev->config->del_vqs(vdev);

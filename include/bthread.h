@@ -12,14 +12,15 @@ struct bthread;
 
 extern struct bthread *current;
 
-struct bthread *bthread_create(int (*threadfn)(void *), void *data, const char *namefmt, ...);
-void bthread_free(struct bthread *bthread);
+struct bthread *bthread_create(void (*threadfn)(void *), void *data, const char *namefmt, ...);
+void bthread_cancel(struct bthread *bthread);
 
 void bthread_schedule(struct bthread *);
 void bthread_wake(struct bthread *bthread);
 void bthread_suspend(struct bthread *bthread);
 int bthread_should_stop(void);
-int bthread_stop(struct bthread *bthread);
+void __bthread_stop(struct bthread *bthread);
+void *bthread_data(struct bthread *bthread);
 void bthread_info(void);
 const char *bthread_name(struct bthread *bthread);
 bool bthread_is_main(struct bthread *bthread);

@@ -2,14 +2,12 @@
 #ifndef __BAREBOX_SCHED_H_
 #define __BAREBOX_SCHED_H_
 
-#include <bthread.h>
-#include <poller.h>
-
+#ifdef CONFIG_HAS_SCHED
+void resched(void);
+#else
 static inline void resched(void)
 {
-	poller_call();
-	if (!IS_ENABLED(CONFIG_POLLER) || !poller_active)
-		bthread_reschedule();
 }
+#endif
 
 #endif

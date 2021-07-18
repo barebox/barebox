@@ -51,6 +51,7 @@ extra-$(CONFIG_MODULES)		+= module.lds
 obj-$(CONFIG_OFTREE)		+= oftree.o
 obj-$(CONFIG_PARTITION_DISK)	+= partitions.o partitions/
 obj-$(CONFIG_PASSWORD)		+= password.o
+obj-$(CONFIG_HAS_SCHED)		+= sched.o
 obj-$(CONFIG_POLLER)		+= poller.o
 obj-$(CONFIG_BTHREAD)		+= bthread.o
 obj-$(CONFIG_RESET_SOURCE)	+= reset_source.o

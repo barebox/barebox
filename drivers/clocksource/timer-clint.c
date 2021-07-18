@@ -17,6 +17,7 @@
 #include <linux/err.h>
 #include <io.h>
 #include <asm/timer.h>
+#include <asm/system.h>
 
 #define CLINT_TIMER_VAL_OFF	0xbff8
 
@@ -63,8 +64,8 @@ static int clint_timer_init_dt(struct device_d* dev)
 {
 	struct resource *iores;
 
-	/* one timer is enough */
-	if (clint_timer_val)
+	/* one timer is enough. Only M-Mode */
+	if (clint_timer_val || riscv_mode() != RISCV_M_MODE)
 		return 0;
 
 	iores = dev_request_mem_resource(dev, 0);
@@ -72,7 +73,7 @@ static int clint_timer_init_dt(struct device_d* dev)
 		return PTR_ERR(iores);
 	clint_timer_val = IOMEM(iores->start) + CLINT_TIMER_VAL_OFF;
 
-	dev_info(dev, "running at %lu Hz\n", riscv_timebase);
+	dev_dbg(dev, "running at %lu Hz\n", riscv_timebase);
 
 	clint_clocksource.mult = clocksource_hz2mult(riscv_timebase, clint_clocksource.shift);
 

@@ -16,6 +16,7 @@
 #include <uncompress.h>
 #include <malloc.h>
 #include <compressed-dtb.h>
+#include <asm/irq.h>
 
 #include <debug_ll.h>
 
@@ -26,6 +27,7 @@ static unsigned long riscv_barebox_size;
 static unsigned long riscv_endmem;
 static void *barebox_boarddata;
 static unsigned long barebox_boarddata_size;
+unsigned barebox_riscv_pbl_flags;
 
 void *barebox_riscv_boot_dtb(void)
 {
@@ -107,7 +109,8 @@ device_initcall(barebox_memory_areas_init);
  * the pbl. The stack already has been set up by the pbl.
  */
 __noreturn __no_sanitize_address __section(.text_entry)
-void barebox_non_pbl_start(unsigned long membase, unsigned long memsize, void *boarddata)
+void barebox_non_pbl_start(unsigned long membase, unsigned long memsize,
+			   void *boarddata, unsigned flags)
 {
 	unsigned long endmem = membase + memsize;
 	unsigned long malloc_start, malloc_end;
@@ -119,6 +122,8 @@ void barebox_non_pbl_start(unsigned long membase, unsigned long memsize, void *b
 	setup_c();
 
 	barrier();
+
+	irq_init_vector(__riscv_mode(flags));
 
 	pr_debug("memory at 0x%08lx, size 0x%08lx\n", membase, memsize);
 
@@ -168,18 +173,20 @@ void barebox_non_pbl_start(unsigned long membase, unsigned long memsize, void *b
 
 	mem_malloc_init((void *)malloc_start, (void *)malloc_end - 1);
 
+	barebox_riscv_pbl_flags = flags;
+
 	pr_debug("starting barebox...\n");
 
 	start_barebox();
 }
 
-void start(unsigned long membase, unsigned long memsize, void *boarddata);
+void start(unsigned long membase, unsigned long memsize, void *boarddata, unsigned flags);
 /*
  * First function in the uncompressed image. We get here from
  * the pbl. The stack already has been set up by the pbl.
  */
 void __no_sanitize_address __section(.text_entry) start(unsigned long membase,
-		unsigned long memsize, void *boarddata)
+		unsigned long memsize, void *boarddata, unsigned flags)
 {
-	barebox_non_pbl_start(membase, memsize, boarddata);
+	barebox_non_pbl_start(membase, memsize, boarddata, flags);
 }

@@ -232,7 +232,24 @@ static int of_fixup_bootargs(struct device_node *root, void *unused)
 			return err;
 	}
 
-	return of_fixup_bootargs_bootsource(root, node);
+	err = of_fixup_bootargs_bootsource(root, node);
+	if (err)
+		return err;
+
+	if (IS_ENABLED(CONFIG_RISCV)) {
+		const char *hartid;
+
+		hartid = getenv("global.hartid");
+		if (hartid) {
+			unsigned long id;
+
+			err = kstrtoul(hartid, 10, &id);
+			if (!err)
+				err = of_property_write_u32(node, "boot-hartid", id);
+		}
+	}
+
+	return err;
 }
 
 static int of_register_bootargs_fixup(void)

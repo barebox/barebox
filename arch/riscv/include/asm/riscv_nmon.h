@@ -16,13 +16,26 @@
 #ifndef __ASM_RISCV_NMON_H
 #define __ASM_RISCV_NMON_H
 
+#include <linux/kconfig.h>
+
 #define CODE_ESC	0x1b
+
+#ifndef __ASSEMBLY__
+
+extern void __barebox_nmon_entry(void);
+
+static inline void barebox_nmon_entry(void)
+{
+	if (IS_ENABLED(CONFIG_NMON))
+		__barebox_nmon_entry();
+}
+
+#else
 
 .macro nmon_outs msg
 
-	la	a1, \msg
-
-	jal	_nmon_outs
+	lla	a1, \msg
+	jal	a2, _nmon_outs
 
 .endm
 
@@ -73,7 +86,7 @@ nmon_main:
 	li	a0, 'q'
 	bne	s0, a0, 3f
 
-	jal	_nmon_outc_a0
+	jal	a2, _nmon_outc_a0
 
 	j	nmon_exit
 
@@ -90,12 +103,12 @@ nmon_main:
 	j	nmon_main_help
 
 nmon_cmd_d:
-	jal	_nmon_outc_a0
+	jal	a2, _nmon_outc_a0
 
 	li	a0, ' '
-	jal	_nmon_outc_a0
+	jal	a2, _nmon_outc_a0
 
-	jal	_nmon_gethexw
+	jal	a2, _nmon_gethexw
 
 	nmon_outs	msg_nl
 
@@ -105,28 +118,28 @@ nmon_cmd_d:
 	j	nmon_main
 
 nmon_cmd_w:
-	jal	_nmon_outc_a0
+	jal	a2, _nmon_outc_a0
 
 	li	a0, ' '
-	jal	_nmon_outc_a0
+	jal	a2, _nmon_outc_a0
 
-	jal	_nmon_gethexw
+	jal	a2, _nmon_gethexw
 	move	s2, s0
 
 	li	a0, ' '
-	jal	_nmon_outc_a0
-	jal	_nmon_gethexw
+	jal	a2, _nmon_outc_a0
+	jal	a2, _nmon_gethexw
 
 	sw	s0, 0(s2)
 	j	nmon_main
 
 nmon_cmd_g:
-	jal	_nmon_outc_a0
+	jal	a2, _nmon_outc_a0
 
 	li	a0, ' '
-	jal	_nmon_outc_a0
+	jal	a2, _nmon_outc_a0
 
-	jal	_nmon_gethexw
+	jal	a2, _nmon_gethexw
 	move	s2, s0
 
 	nmon_outs	msg_nl
@@ -136,7 +149,7 @@ nmon_cmd_g:
 
 _nmon_outc_a0:
 	debug_ll_outc_a0
-	jr	ra
+	jr	a2
 
 _nmon_outs:
 
@@ -202,7 +215,7 @@ _get_hex_digit:
 	move	s0, t2
 
 _nmon_jr_ra_exit:
-	jr	ra
+	jr	a2
 
 msg_prompt:
 	.asciz "\r\nnmon> "
@@ -230,5 +243,7 @@ nmon_exit:
 #endif /* CONFIG_NMON */
 
 .endm
+
+#endif /* __ASSEMBLY__ */
 
 #endif /* __ASM_RISCV_NMON_H */

@@ -20,6 +20,8 @@ void globalvar_set(const char *name, const char *val);
 int globalvar_add_simple_string(const char *name, char **value);
 int globalvar_add_simple_int(const char *name, int *value,
 			     const char *format);
+int globalvar_add_simple_uint64(const char *name, u64 *value,
+				const char *format);
 int globalvar_add_bool(const char *name,
 		       int (*set)(struct param_d *, void *),
 		       int *value, void *priv);
@@ -51,6 +53,12 @@ static inline int globalvar_add_simple_string(const char *name, char **value)
 
 static inline int globalvar_add_simple_int(const char *name,
 		int *value, const char *format)
+{
+	return 0;
+}
+
+static inline int globalvar_add_simple_uint64(const char *name,
+		u64 *value, const char *format)
 {
 	return 0;
 }

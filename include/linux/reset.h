@@ -19,6 +19,8 @@ int __must_check device_reset(struct device_d *dev);
 
 int __must_check device_reset_us(struct device_d *dev, int us);
 
+int __must_check device_reset_all(struct device_d *dev);
+
 #else
 
 static inline int reset_control_reset(struct reset_control *rstc)
@@ -52,6 +54,11 @@ static inline int device_reset_us(struct device_d *dev, int us)
 }
 
 static inline int device_reset(struct device_d *dev)
+{
+	return 0;
+}
+
+static inline int device_reset_all(struct device_d *dev)
 {
 	return 0;
 }

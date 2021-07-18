@@ -60,6 +60,43 @@ into the config file.
 
 See https://barebox.org/jsbarebox/?graphic=1 for a live example.
 
+BeagleV
+-------
+
+barebox has second-stage support for the BeagleV Starlight::
+
+  make ARCH=riscv starfive_defconfig
+  make
+
+Thie resulting ``./images/barebox-beaglev-starlight.img`` can be used as payload
+to opensbi::
+
+  git clone https://github.com/starfive-tech/opensbi
+  cd opensbi
+  export ARCH=riscv
+  export PLATFORM=starfive/vic7100
+  export FW_PAYLOAD_PATH=$BAREBOX/build/images/barebox-beaglev-starlight.img
+
+  make ARCH=riscv
+  ./fsz.sh ./build/platform/starfive/vic7100/firmware/fw_payload.bin fw_payload.bin.out
+  ls -l $OPENSBI/build/platform/starfive/vic7100/firmware/fw_payload.bin.out
+
+The resulting ``./platform/starfive/vic7100/firmware/fw_payload.bin.out`` can then
+be flashed via Xmodem to the board::
+
+  picocom -b 115200 /dev/ttyUSB0 --send-cmd "sx -vv" --receive-cmd "rx -vv"
+  0:update uboot
+  select the function: 0␤
+  send file by xmodem
+  ^A^S./platform/starfive/vic7100/firmware/fw_payload.bin.out␤
+
+After reset, barebox should then boot to shell and attempt booting kernel ``Image``
+and device tree ``jh7100-starlight.dtb`` from the first root partition with the same
+partition as rootfs. Note that while barebox does take over some initialization,
+because of lack of Linux drivers, it doesn't yet do everything. If you experience
+boot hangs, you may need to disable devices (or extend the starfive-pwrseq driver
+to initialize it for you).
+
 Erizo
 -----
 

@@ -36,4 +36,11 @@ config HW_RANDOM_VIRTIO
 	  This driver provides guest-side support for the virtual Random Number
 	  Generator hardware.
 
+config HW_RANDOM_STARFIVE
+	tristate "StarFive Random Number Generator"
+	depends on SOC_STARFIVE || COMPILE_TEST
+	help
+	  This driver provides barebox support for the Random Number
+	  Generator hardware found on the StarFive family of SoCs.
+
 endif

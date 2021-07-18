@@ -1,44 +1,22 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-#ifndef _ASM_DMA_MAPPING_H
-#define _ASM_DMA_MAPPING_H
+#ifndef _RISCV_ASM_DMA_H
+#define _RISCV_ASM_DMA_H
 
-#include <common.h>
-#include <xfuncs.h>
-#include <linux/build_bug.h>
-#include <malloc.h>
+#include <linux/types.h>
 
-#ifdef CONFIG_MMU
-#error DMA stubs need be replaced when using MMU and caches
-#endif
+struct dma_ops {
+	void *(*alloc_coherent)(size_t size, dma_addr_t *dma_handle);
+	void (*free_coherent)(void *vaddr, dma_addr_t dma_handle, size_t size);
 
-static inline void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
-{
-	void *ret;
+	void (*flush_range)(dma_addr_t start, dma_addr_t end);
+	void (*inv_range)(dma_addr_t start, dma_addr_t end);
+};
 
-	ret = xmemalign(PAGE_SIZE, size);
+/* Override for SoCs with cache-incoherent DMA masters */
+void dma_set_ops(const struct dma_ops *ops);
 
-	memset(ret, 0, size);
+#define DMA_ALIGNMENT 64
 
-	if (dma_handle)
-		*dma_handle = (dma_addr_t)ret;
-
-	return ret;
-}
-
-static inline void dma_free_coherent(void *vaddr, dma_addr_t dma_handle,
-				     size_t size)
-{
-	free(vaddr);
-}
-
-static inline void dma_sync_single_for_cpu(dma_addr_t address, size_t size,
-					   enum dma_data_direction dir)
-{
-}
-
-static inline void dma_sync_single_for_device(dma_addr_t address, size_t size,
-					      enum dma_data_direction dir)
-{
-}
+#include <dma.h>
 
 #endif /* _ASM_DMA_MAPPING_H */

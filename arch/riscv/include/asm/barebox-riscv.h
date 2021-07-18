@@ -19,14 +19,26 @@
 #include <linux/compiler.h>
 #include <asm/sections.h>
 #include <asm/barebox-riscv-head.h>
+#include <asm/system.h>
 
 unsigned long get_runtime_offset(void);
 
 void setup_c(void);
 void relocate_to_current_adr(void);
 void relocate_to_adr(unsigned long target);
+
+void sync_caches_for_execution(void);
+
 void __noreturn __naked barebox_riscv_entry(unsigned long membase, unsigned long memsize,
-					    void *boarddata);
+					    void *boarddata, unsigned int flags);
+
+#define barebox_riscv_machine_entry(membase, memsize, boarddata) \
+	barebox_riscv_entry(membase, memsize, boarddata, RISCV_M_MODE)
+
+#define barebox_riscv_supervisor_entry(membase, memsize, hartid, boarddata) do { \
+	__asm__ volatile("mv tp, %0\n" : : "r"(hartid)); \
+	barebox_riscv_entry(membase, memsize, boarddata, RISCV_S_MODE); \
+} while (0)
 
 unsigned long riscv_mem_ramoops_get(void);
 unsigned long riscv_mem_endmem_get(void);

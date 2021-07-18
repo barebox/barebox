@@ -8,6 +8,7 @@
 #define __DESIGNWARE_ETH_H
 
 #include <net.h>
+#include <linux/types.h>
 
 struct dw_eth_dev {
 	struct eth_device netdev;
@@ -18,8 +19,11 @@ struct dw_eth_dev {
 	u32 tx_currdescnum;
 	u32 rx_currdescnum;
 
-	struct dmamacdescr *tx_mac_descrtable;
-	struct dmamacdescr *rx_mac_descrtable;
+	struct dmamacdescr *tx_mac_descrtable_cpu;
+	struct dmamacdescr *rx_mac_descrtable_cpu;
+
+	dma_addr_t tx_mac_descrtable_dev;
+	dma_addr_t rx_mac_descrtable_dev;
 
 	u8 *txbuffs;
 	u8 *rxbuffs;
@@ -35,8 +39,23 @@ struct dw_eth_dev {
 
 struct dw_eth_drvdata {
 	bool enh_desc;
+	void (*fix_mac_speed)(int speed);
 	void *priv;
 };
+
+static inline dma_addr_t tx_dma_addr(struct dw_eth_dev *priv,
+				     struct dmamacdescr *desc)
+{
+	return priv->tx_mac_descrtable_dev
+		+ ((u8 *)desc - (u8 *)priv->tx_mac_descrtable_cpu);
+}
+
+static inline dma_addr_t rx_dma_addr(struct dw_eth_dev *priv,
+				     struct dmamacdescr *desc)
+{
+	return priv->rx_mac_descrtable_dev
+		+ ((u8 *)desc - (u8 *)priv->rx_mac_descrtable_cpu);
+}
 
 struct dw_eth_dev *dwc_drv_probe(struct device_d *dev);
 void dwc_drv_remove(struct device_d *dev);
@@ -138,9 +157,11 @@ struct eth_dma_regs {
 struct dmamacdescr {
 	u32 txrx_status;
 	u32 dmamac_cntl;
-	void *dmamac_addr;
-	struct dmamacdescr *dmamac_next;
+	u32 dmamac_addr;
+	u32 dmamac_next;
 };
+
+#define dmamac_addr(descr) (phys_to_virt((descr)->dmamac_addr))
 
 /*
  * txrx_status definitions

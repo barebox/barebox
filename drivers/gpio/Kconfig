@@ -171,6 +171,14 @@ config GPIO_SIFIVE
 	help
 	  Say yes here to support the GPIO device on SiFive SoCs.
 
+config GPIO_STARFIVE
+	bool "StarFive GPIO support"
+	depends on SOC_STARFIVE || CROSS_COMPILE
+	depends on OF_GPIO
+	select GPIO_GENERIC
+	help
+	  Say yes here to support the GPIO device on StarFive SoCs.
+
 config GPIO_LIBFTDI1
 	bool "libftdi1 driver"
 	depends on SANDBOX

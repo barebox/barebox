@@ -21,6 +21,7 @@
 #include <of.h>
 #include <linux/err.h>
 #include <linux/sizes.h>
+#include <dma.h>
 
 #define MAX_BUFFER_NUMBER 0xffffffff
 
@@ -1789,6 +1790,11 @@ static int mci_card_probe(struct mci *mci)
 		mci->cdevname = basprintf("disk%d", disknum);
 	}
 
+	if (!sector_buf)
+		sector_buf = dma_alloc(SECTOR_SIZE);
+
+	/* FIXME we don't check sector_buf against the device dma mask here */
+
 	rc = mci_startup(mci);
 	if (rc) {
 		dev_warn(&mci->dev, "Card's startup fails with %d\n", rc);
@@ -1849,15 +1855,6 @@ static int mci_set_probe(struct param_d *param, void *priv)
 
 	return 0;
 }
-
-static int mci_init(void)
-{
-	sector_buf = xmemalign(32, SECTOR_SIZE);
-
-	return 0;
-}
-
-device_initcall(mci_init);
 
 int mci_detect_card(struct mci_host *host)
 {

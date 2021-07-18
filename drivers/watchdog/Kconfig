@@ -141,4 +141,11 @@ config ITCO_WDT
 	  NO_REBOOT flag which prevents the watchdog from rebooting the
 	  machine.
 
+config STARFIVE_WDT
+	tristate "StarFive Watchdog Timer"
+	depends on SOC_STARFIVE && OFDEVICE
+	help
+	  If you say yes here you get support for the watchdog device
+	  on StarFive SoCs.
+
 endif

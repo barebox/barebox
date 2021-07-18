@@ -565,6 +565,27 @@ int globalvar_add_simple_int(const char *name, int *value,
 	return 0;
 }
 
+int globalvar_add_simple_uint64(const char *name, u64 *value,
+				const char *format)
+{
+	struct param_d *p;
+	int ret;
+
+	ret = globalvar_remove_unqualified(name);
+	if (ret)
+		return ret;
+
+	p = dev_add_param_uint64(&global_device, name, NULL, NULL,
+		value, format, NULL);
+
+	if (IS_ERR(p))
+		return PTR_ERR(p);
+
+	globalvar_nv_sync(name);
+
+	return 0;
+}
+
 int globalvar_add_bool(const char *name,
 		       int (*set)(struct param_d *, void *),
 		       int *value, void *priv)

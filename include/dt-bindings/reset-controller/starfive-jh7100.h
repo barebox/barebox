@@ -1,0 +1,126 @@
+/* SPDX-License-Identifier: GPL-2.0 OR X11 */
+/*
+ * Copyright (c) 2021 Ahmad Fatoum, Pengutronix
+ */
+
+#ifndef _DT_BINDINGS_RESET_CONTROLLER_STARFIVE_JH7100
+#define _DT_BINDINGS_RESET_CONTROLLER_STARFIVE_JH7100
+
+#define RSTN_DOM3AHB_BUS	0
+#define RSTN_DOM7AHB_BUS	1
+#define RST_U74			2
+#define RSTN_U74_AXI		3
+#define RSTN_SGDMA2P_AHB	4
+#define RSTN_SGDMA2P_AXI	5
+#define RSTN_DMA2PNOC_AXI	6
+#define RSTN_DLA_AXI		7
+#define RSTN_DLANOC_AXI		8
+#define RSTN_DLA_APB		9
+#define RST_VP6_DRESET		10
+#define RST_VP6_BRESET		11
+#define RSTN_VP6_AXI		12
+#define RSTN_VDECBRG_MAIN	13
+#define RSTN_VDEC_AXI		14
+#define RSTN_VDEC_BCLK		15
+#define RSTN_VDEC_CCLK		16
+#define RSTN_VDEC_APB		17
+#define RSTN_JPEG_AXI		18
+#define RSTN_JPEG_CCLK		19
+#define RSTN_JPEG_APB		20
+#define RSTN_JPCGC300_MAIN	21
+#define RSTN_GC300_2X		22
+#define RSTN_GC300_AXI		23
+#define RSTN_GC300_AHB		24
+#define RSTN_VENC_AXI		25
+#define RSTN_VENCBRG_MAIN	26
+#define RSTN_VENC_BCLK		27
+#define RSTN_VENC_CCLK		28
+#define RSTN_VENC_APB		29
+#define RSTN_DDRPHY_APB		30
+#define RSTN_NOC_ROB		31
+#define RSTN_NOC_COG		32
+#define RSTN_HIFI4_AXI		33
+#define RSTN_HIFI4NOC_AXI	34
+#define RST_HIFI4_drESET	35
+#define RST_HIFI4_bRESET	36
+#define RSTN_USB_AXI		37
+#define RSTN_USBNOC_AXI		38
+#define RSTN_SGDMA1P_AXI	39
+#define RSTN_DMA1P_AXI		40
+#define RSTN_X2C_AXI		41
+#define RSTN_NNE_AHB		42
+#define RSTN_NNE_AXI		43
+#define RSTN_NNENOC_AXI		44
+#define RSTN_DLASLV_AXI		45
+#define RSTN_DSPX2C_AXI		46
+#define RSTN_VIN_SRC		47
+#define RSTN_ISPSLV_AXI		48
+#define RSTN_VIN_AXI		49
+#define RSTN_VINNOC_AXI		50
+#define RSTN_ISP0_AXI		51
+#define RSTN_ISP0NOC_AXI	52
+#define RSTN_ISP1_AXI		53
+#define RSTN_ISP1NOC_AXI	54
+#define RSTN_VOUT_SRC		55
+#define RSTN_DISP_AXI		56
+#define RSTN_DISPNOC_AXI	57
+#define RSTN_SDIO0_AHB		58
+#define RSTN_SDIO1_AHB		59
+#define RSTN_GMAC_AHB		60
+#define RSTN_SPI2AHB_AHB	61
+#define RSTN_SPI2AHB_CORE	62
+#define RSTN_EZMASTER_AHB	63
+#define RST_E24			64
+#define RSTN_QSPI_AHB		65
+#define RSTN_QSPI_CORE		66
+#define RSTN_QSPI_APB		67
+#define RSTN_SEC_AHB		68
+#define RSTN_AES		69
+#define RSTN_PKA		70
+#define RSTN_SHA		71
+#define RSTN_TRNG_APB		72
+#define RSTN_OTP_APB		73
+#define RSTN_UART0_APB		74
+#define RSTN_UART0_CORE		75
+#define RSTN_UART1_APB		76
+#define RSTN_UART1_CORE		77
+#define RSTN_SPI0_APB		78
+#define RSTN_SPI0_CORE		79
+#define RSTN_SPI1_APB		80
+#define RSTN_SPI1_CORE		81
+#define RSTN_I2C0_APB		82
+#define RSTN_I2C0_CORE		83
+#define RSTN_I2C1_APB		84
+#define RSTN_I2C1_CORE		85
+#define RSTN_GPIO_APB		86
+#define RSTN_UART2_APB		87
+#define RSTN_UART2_CORE		88
+#define RSTN_UART3_APB		89
+#define RSTN_UART3_CORE		90
+#define RSTN_SPI2_APB		91
+#define RSTN_SPI2_CORE		92
+#define RSTN_SPI3_APB		93
+#define RSTN_SPI3_CORE		94
+#define RSTN_I2C2_APB		95
+#define RSTN_I2C2_CORE		96
+#define RSTN_I2C3_APB		97
+#define RSTN_I2C3_CORE		98
+#define RSTN_WDTIMER_APB	99
+#define RSTN_WDT		100
+#define RSTN_TIMER0		101
+#define RSTN_TIMER1		102
+#define RSTN_TIMER2		103
+#define RSTN_TIMER3		104
+#define RSTN_TIMER4		105
+#define RSTN_TIMER5		106
+#define RSTN_TIMER6		107
+#define RSTN_VP6INTC_APB	108
+#define RSTN_PWM_APB		109
+#define RSTN_MSI_APB		110
+#define RSTN_TEMP_APB		111
+#define RSTN_TEMP_SENSE		112
+#define RSTN_SYSERR_APB		113
+
+#define RSTN_END		114
+
+#endif

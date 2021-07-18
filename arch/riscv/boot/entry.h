@@ -6,10 +6,12 @@
 
 void __noreturn barebox_non_pbl_start(unsigned long membase,
 				      unsigned long memsize,
-				      void *boarddata);
+				      void *boarddata,
+				      unsigned flags);
 
 void __noreturn barebox_pbl_start(unsigned long membase,
 				  unsigned long memsize,
-				  void *boarddata);
+				  void *boarddata,
+				  unsigned flags);
 
 #endif

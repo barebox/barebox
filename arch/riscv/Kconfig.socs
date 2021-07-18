@@ -15,14 +15,21 @@ config BOARD_ERIZO_GENERIC
 
 config SOC_VIRT
 	bool "QEMU Virt Machine"
+	select RISCV_S_MODE
 	select BOARD_RISCV_GENERIC_DT
-	select CLINT_TIMER
+	select HAS_CACHE
 	help
 	  Generates an image tht can be be booted by QEMU. The image is called
 	  barebox-dt-2nd.img
 
+config CPU_SIFIVE
+	bool
+	select HAS_CACHE
+
 config SOC_SIFIVE
 	bool "SiFive SoCs"
+	select CPU_SIFIVE
+	select RISCV_S_MODE
 	select CLK_SIFIVE
 	select CLK_SIFIVE_PRCI
 	select RISCV_TIMER
@@ -39,5 +46,53 @@ config BOARD_HIFIVE
 	select USE_COMPRESSED_DTB
 
 endif
+
+config SOC_STARFIVE
+	bool "StarFive SoCs"
+	select ARCH_HAS_RESET_CONTROLLER
+	select RISCV_S_MODE
+	select HAS_ASM_DEBUG_LL
+	select HAS_NMON
+	help
+	  This enables support for SiFive SoC platform hardware.
+
+if SOC_STARFIVE
+
+config SOC_STARFIVE_JH71XX
+	bool
+	select CPU_SIFIVE
+
+config SOC_STARFIVE_JH7100
+	bool
+	select SOC_STARFIVE_JH71XX
+	select SIFIVE_L2
+	help
+	  Unlike JH7110 and later, CPU on the JH7100 are not cache-coherent
+	  with respect to DMA masters like GMAC and DW MMC controller.
+	  Select this if barebox needs to do DMA on this SoC.
+
+config BOARD_BEAGLEV
+	bool "BeagleV"
+	depends on ARCH_RV64I
+	select SOC_STARFIVE_JH71XX
+	select USE_COMPRESSED_DTB
+
+config BOARD_BEAGLEV_BETA
+	bool "BeagleV Beta (with JH7100)"
+	depends on BOARD_BEAGLEV
+	select SOC_STARFIVE_JH7100
+	help
+	  Select this for hardware using the earlier JH7100 SoC. The JH7110
+	  used with later production runs is cache-coherent and thus can do
+	  without the special DMA handling enabled by this option. It's safe
+	  to enable this option for other SoCs.
+
+endif
+
+comment "CPU features"
+
+config SIFIVE_L2
+	bool "SiFive L2 cache controller"
+	depends on CPU_SIFIVE
 
 endmenu

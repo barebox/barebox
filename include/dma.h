@@ -8,6 +8,7 @@
 
 #include <malloc.h>
 #include <xfuncs.h>
+#include <linux/kernel.h>
 
 #include <dma-dir.h>
 #include <asm/dma.h>
@@ -15,10 +16,14 @@
 
 #define DMA_ADDRESS_BROKEN	NULL
 
+#ifndef DMA_ALIGNMENT
+#define DMA_ALIGNMENT	32
+#endif
+
 #ifndef dma_alloc
 static inline void *dma_alloc(size_t size)
 {
-	return xmalloc(size);
+	return xmemalign(DMA_ALIGNMENT, ALIGN(size, DMA_ALIGNMENT));
 }
 #endif
 

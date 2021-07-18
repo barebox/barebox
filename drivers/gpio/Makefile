@@ -24,3 +24,4 @@ obj-$(CONFIG_GPIO_SX150X)	+= gpio-sx150x.o
 obj-$(CONFIG_GPIO_VF610)	+= gpio-vf610.o
 obj-$(CONFIG_GPIO_RASPBERRYPI_EXP) += gpio-raspberrypi-exp.o
 obj-$(CONFIG_GPIO_SIFIVE)	+= gpio-sifive.o
+obj-$(CONFIG_GPIO_STARFIVE)	+= gpio-starfive-vic.o

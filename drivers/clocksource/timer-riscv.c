@@ -12,6 +12,7 @@
 #include <clock.h>
 #include <asm/timer.h>
 #include <asm/csr.h>
+#include <asm/system.h>
 
 static u64 notrace riscv_timer_get_count_sbi(void)
 {
@@ -45,7 +46,7 @@ static u64 notrace riscv_timer_get_count_rdcycle(void)
 
 static u64 notrace riscv_timer_get_count(void)
 {
-	if (IS_ENABLED(CONFIG_RISCV_SBI))
+	if (riscv_mode() == RISCV_S_MODE)
 		return riscv_timer_get_count_sbi();
 	else
 		return riscv_timer_get_count_rdcycle();
@@ -59,7 +60,7 @@ static struct clocksource riscv_clocksource = {
 
 static int riscv_timer_init(struct device_d* dev)
 {
-	dev_info(dev, "running at %lu Hz\n", riscv_timebase);
+	dev_dbg(dev, "running at %lu Hz\n", riscv_timebase);
 
 	riscv_clocksource.mult = clocksource_hz2mult(riscv_timebase, riscv_clocksource.shift);
 

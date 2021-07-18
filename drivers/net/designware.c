@@ -104,15 +104,15 @@ static void tx_descs_init(struct eth_device *dev)
 {
 	struct dw_eth_dev *priv = dev->priv;
 	struct eth_dma_regs *dma_p = priv->dma_regs_p;
-	struct dmamacdescr *desc_table_p = &priv->tx_mac_descrtable[0];
+	struct dmamacdescr *desc_table_p = &priv->tx_mac_descrtable_cpu[0];
 	char *txbuffs = &priv->txbuffs[0];
 	struct dmamacdescr *desc_p;
 	u32 idx;
 
 	for (idx = 0; idx < CONFIG_TX_DESCR_NUM; idx++) {
 		desc_p = &desc_table_p[idx];
-		desc_p->dmamac_addr = &txbuffs[idx * CONFIG_ETH_BUFSIZE];
-		desc_p->dmamac_next = &desc_table_p[idx + 1];
+		desc_p->dmamac_addr = virt_to_phys(&txbuffs[idx * CONFIG_ETH_BUFSIZE]);
+		desc_p->dmamac_next = tx_dma_addr(priv, &desc_table_p[idx + 1]);
 
 		if (priv->enh_desc) {
 			desc_p->txrx_status &= ~(DESC_ENH_TXSTS_TXINT | DESC_ENH_TXSTS_TXLAST |
@@ -130,9 +130,9 @@ static void tx_descs_init(struct eth_device *dev)
 	}
 
 	/* Correcting the last pointer of the chain */
-	desc_p->dmamac_next = &desc_table_p[0];
+	desc_p->dmamac_next = tx_dma_addr(priv, &desc_table_p[0]);
 
-	writel((ulong)&desc_table_p[0], &dma_p->txdesclistaddr);
+	writel(desc_p->dmamac_next, &dma_p->txdesclistaddr);
 	priv->tx_currdescnum = 0;
 }
 
@@ -140,15 +140,15 @@ static void rx_descs_init(struct eth_device *dev)
 {
 	struct dw_eth_dev *priv = dev->priv;
 	struct eth_dma_regs *dma_p = priv->dma_regs_p;
-	struct dmamacdescr *desc_table_p = &priv->rx_mac_descrtable[0];
+	struct dmamacdescr *desc_table_p = &priv->rx_mac_descrtable_cpu[0];
 	char *rxbuffs = &priv->rxbuffs[0];
 	struct dmamacdescr *desc_p;
 	u32 idx;
 
 	for (idx = 0; idx < CONFIG_RX_DESCR_NUM; idx++) {
 		desc_p = &desc_table_p[idx];
-		desc_p->dmamac_addr = &rxbuffs[idx * CONFIG_ETH_BUFSIZE];
-		desc_p->dmamac_next = &desc_table_p[idx + 1];
+		desc_p->dmamac_addr = virt_to_phys(&rxbuffs[idx * CONFIG_ETH_BUFSIZE]);
+		desc_p->dmamac_next = rx_dma_addr(priv, &desc_table_p[idx + 1]);
 
 		desc_p->dmamac_cntl = MAC_MAX_FRAME_SZ;
 		if (priv->enh_desc)
@@ -156,15 +156,15 @@ static void rx_descs_init(struct eth_device *dev)
 		else
 			desc_p->dmamac_cntl |= DESC_RXCTRL_RXCHAIN;
 
-		dma_sync_single_for_cpu((unsigned long)desc_p->dmamac_addr,
+		dma_sync_single_for_cpu(desc_p->dmamac_addr,
 					CONFIG_ETH_BUFSIZE, DMA_FROM_DEVICE);
 		desc_p->txrx_status = DESC_RXSTS_OWNBYDMA;
 	}
 
 	/* Correcting the last pointer of the chain */
-	desc_p->dmamac_next = &desc_table_p[0];
+	desc_p->dmamac_next = rx_dma_addr(priv, &desc_table_p[0]);
 
-	writel((ulong)&desc_table_p[0], &dma_p->rxdesclistaddr);
+	writel(desc_p->dmamac_next, &dma_p->rxdesclistaddr);
 	priv->rx_currdescnum = 0;
 }
 
@@ -276,7 +276,7 @@ static int dwc_ether_send(struct eth_device *dev, void *packet, int length)
 	struct dw_eth_dev *priv = dev->priv;
 	struct eth_dma_regs *dma_p = priv->dma_regs_p;
 	u32 owndma, desc_num = priv->tx_currdescnum;
-	struct dmamacdescr *desc_p = &priv->tx_mac_descrtable[desc_num];
+	struct dmamacdescr *desc_p = &priv->tx_mac_descrtable_cpu[desc_num];
 
 	owndma = priv->enh_desc ? DESC_ENH_TXSTS_OWNBYDMA : DESC_TXSTS_OWNBYDMA;
 	/* Check if the descriptor is owned by CPU */
@@ -285,8 +285,8 @@ static int dwc_ether_send(struct eth_device *dev, void *packet, int length)
 		return -1;
 	}
 
-	memcpy((void *)desc_p->dmamac_addr, packet, length);
-	dma_sync_single_for_device((unsigned long)desc_p->dmamac_addr, length,
+	memcpy(dmamac_addr(desc_p), packet, length);
+	dma_sync_single_for_device(desc_p->dmamac_addr, length,
 				   DMA_TO_DEVICE);
 
 	if (priv->enh_desc) {
@@ -314,7 +314,7 @@ static int dwc_ether_send(struct eth_device *dev, void *packet, int length)
 
 	/* Start the transmission */
 	writel(POLL_DATA, &dma_p->txpolldemand);
-	dma_sync_single_for_cpu((unsigned long)desc_p->dmamac_addr, length,
+	dma_sync_single_for_cpu(desc_p->dmamac_addr, length,
 				DMA_TO_DEVICE);
 
 	return 0;
@@ -324,7 +324,7 @@ static int dwc_ether_rx(struct eth_device *dev)
 {
 	struct dw_eth_dev *priv = dev->priv;
 	u32 desc_num = priv->rx_currdescnum;
-	struct dmamacdescr *desc_p = &priv->rx_mac_descrtable[desc_num];
+	struct dmamacdescr *desc_p = &priv->rx_mac_descrtable_cpu[desc_num];
 
 	u32 status = desc_p->txrx_status;
 	int length = 0;
@@ -358,10 +358,10 @@ static int dwc_ether_rx(struct eth_device *dev)
 		length = (status & DESC_RXSTS_FRMLENMSK) >>
 			 DESC_RXSTS_FRMLENSHFT;
 
-		dma_sync_single_for_cpu((unsigned long)desc_p->dmamac_addr,
+		dma_sync_single_for_cpu(desc_p->dmamac_addr,
 					length, DMA_FROM_DEVICE);
-		net_receive(dev, desc_p->dmamac_addr, length);
-		dma_sync_single_for_device((unsigned long)desc_p->dmamac_addr,
+		net_receive(dev, dmamac_addr(desc_p), length);
+		dma_sync_single_for_device(desc_p->dmamac_addr,
 					   length, DMA_FROM_DEVICE);
 		ret = length;
 	}
@@ -451,17 +451,20 @@ struct dw_eth_dev *dwc_drv_probe(struct device_d *dev)
 	int ret;
 	struct dw_eth_drvdata *drvdata;
 
+	dma_set_mask(dev, DMA_BIT_MASK(32));
+
 	priv = xzalloc(sizeof(struct dw_eth_dev));
 
 	ret = dev_get_drvdata(dev, (const void **)&drvdata);
 	if (ret)
 		return ERR_PTR(ret);
 
-	if (drvdata && drvdata->enh_desc)
+	if (drvdata) {
 		priv->enh_desc = drvdata->enh_desc;
-	else
+		priv->fix_mac_speed = drvdata->fix_mac_speed;
+	} else {
 		dev_warn(dev, "No drvdata specified\n");
-
+	}
 
 	if (pdata) {
 		priv->phy_addr = pdata->phy_addr;
@@ -481,12 +484,21 @@ struct dw_eth_dev *dwc_drv_probe(struct device_d *dev)
 	priv->mac_regs_p = base;
 	dwc_version(dev, readl(&priv->mac_regs_p->version));
 	priv->dma_regs_p = base + DW_DMA_BASE_OFFSET;
-	priv->tx_mac_descrtable = dma_alloc_coherent(
+
+	priv->tx_mac_descrtable_cpu = dma_alloc_coherent(
 		CONFIG_TX_DESCR_NUM * sizeof(struct dmamacdescr),
-		DMA_ADDRESS_BROKEN);
-	priv->rx_mac_descrtable = dma_alloc_coherent(
+		&priv->tx_mac_descrtable_dev);
+
+	if (dma_mapping_error(dev, priv->tx_mac_descrtable_dev))
+		return ERR_PTR(-EFAULT);
+
+	priv->rx_mac_descrtable_cpu = dma_alloc_coherent(
 		CONFIG_RX_DESCR_NUM * sizeof(struct dmamacdescr),
-		DMA_ADDRESS_BROKEN);
+		&priv->rx_mac_descrtable_dev);
+
+	if (dma_mapping_error(dev, priv->rx_mac_descrtable_dev))
+		return ERR_PTR(-EFAULT);
+
 	priv->txbuffs = dma_alloc(TX_TOTAL_BUFSIZE);
 	priv->rxbuffs = dma_alloc(RX_TOTAL_BUFSIZE);
 

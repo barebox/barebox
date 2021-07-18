@@ -40,7 +40,7 @@ static const struct fdt_device_id console_ids[] = {
 	{ /* sentinel */ }
 };
 
-ENTRY_FUNCTION(start_dt_2nd, a0, _fdt, a2)
+ENTRY_FUNCTION(start_dt_2nd, hartid, _fdt, a2)
 {
 	unsigned long membase, memsize, endmem, endfdt, uncompressed_len;
 	struct fdt_header *fdt = (void *)_fdt;
@@ -73,5 +73,5 @@ ENTRY_FUNCTION(start_dt_2nd, a0, _fdt, a2)
 	    _fdt < riscv_mem_stack_top(membase, endmem))
 		memsize = ALIGN_DOWN(_fdt - membase, SZ_1M);
 
-	barebox_riscv_entry(membase, memsize, fdt);
+	barebox_riscv_supervisor_entry(membase, memsize, hartid, fdt);
 }

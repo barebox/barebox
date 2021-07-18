@@ -1,0 +1,54 @@
+// SPDX-License-Identifier: GPL-2.0
+
+/dts-v1/;
+
+#include "jh7100-beaglev-starlight.dtsi"
+#include <dt-bindings/gpio/gpio.h>
+
+/ {
+	#address-cells = <2>;
+	#size-cells = <2>;
+	compatible = "beagle,beaglev-starlight-jh7100", "starfive,jh7100";
+	model = "BeagleV Starlight Beta";
+
+	aliases {
+		serial0 = &uart3;
+		serial1 = &uart0;
+	};
+
+	chosen {
+		environment {
+			compatible = "barebox,environment";
+			device-path = &qpsi_env;
+			status = "disabled"; /* QSPI writes don't work yet */
+		};
+	};
+};
+
+&nor_flash {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		partition@0 {
+			label = "secondboot";
+			reg = <0x0 0x10000>;
+		};
+
+		partition@10000 {
+			label = "ddrinit";
+			reg = <0x10000 0x10000>;
+		};
+
+		partition@20000 {
+			label = "sbi";
+			reg = <0x20000 0x1e0000>;
+		};
+
+		qpsi_env: partition@200000 {
+			label = "environment";
+			reg = <0x200000 0x1e00000>;
+		};
+	};
+};

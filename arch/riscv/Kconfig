@@ -77,6 +77,11 @@ config RISCV_OPTIMZED_STRING_FUNCTIONS
 	  These functions work faster than the normal versions but increase
 	  your binary size.
 
+config RISCV_EXCEPTIONS
+	bool "enable exception handling support"
+	default y
+	select ARCH_HAS_DATA_ABORT_MASK
+
 config HAS_NMON
 	bool
 
@@ -97,14 +102,18 @@ config NMON_HELP
 	  Say yes here to get the nmon commands message on
 	  every nmon start.
 
-# set if we run in machine mode, cleared if we run in supervisor mode
+# selected by boards where barebox runs in machine mode
 config RISCV_M_MODE
 	bool
 
-# set if we are running in S-mode and can use SBI calls
-config RISCV_SBI
+# selected by boards where barebox runs in supervisor mode
+config RISCV_S_MODE
 	bool
-	depends on !RISCV_M_MODE
-	default y
+
+config RISCV_MULTI_MODE
+	def_bool RISCV_S_MODE && RISCV_M_MODE
+
+config RISCV_SBI
+	def_bool RISCV_S_MODE
 
 endmenu

@@ -65,4 +65,12 @@ config STM32_BSEC
 	  This adds support for the STM32 OTP controller. Reads and writes
 	  to will go to the shadow RAM, not the OTP fuses themselvers.
 
+config STARFIVE_OTP
+	tristate "Starfive OTP Supprot"
+	depends on SOC_STARFIVE
+	depends on OFDEVICE
+	help
+	  This adds support for the StarFive OTP controller. Only reading
+	  is currently supported.
+
 endif

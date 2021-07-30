@@ -4,6 +4,7 @@
 static inline void __barebox_arm_head(void)
 {
 	__asm__ __volatile__ (
+#ifdef CONFIG_CPU_32
 #ifdef CONFIG_THUMB2_BAREBOX
 		".arm\n"
 		"adr r9, 1f + 1\n"
@@ -24,10 +25,22 @@ static inline void __barebox_arm_head(void)
 		"1: b 1b\n"
 		"1: b 1b\n"
 #endif
+#else
+		"b 2f\n"
+		"nop\n"
+		"nop\n"
+		"nop\n"
+		"nop\n"
+		"nop\n"
+#endif
 		".asciz \"barebox\"\n"
+#ifdef CONFIG_CPU_32
 		".word _text\n"				/* text base. If copied there,
 							 * barebox can skip relocation
 							 */
+#else
+		".word 0xffffffff\n"
+#endif
 		".word _barebox_image_size\n"		/* image size to copy */
 
 		/*
@@ -42,9 +55,19 @@ static inline void __barebox_arm_head(void)
 		".word 0x55555555\n"
 		".endr\n"
 		"2:\n"
+#ifdef CONFIG_PBL_BREAK
+#ifdef CONFIG_CPU_V8
+		"brk #17\n"
+#else
+		"bkpt #17\n"
+#endif
+		"nop\n"
+#else
+		"nop\n"
+		"nop\n"
+#endif
 	);
 }
-
 static inline void barebox_arm_head(void)
 {
 	__barebox_arm_head();

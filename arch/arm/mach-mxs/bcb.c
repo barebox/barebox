@@ -1,11 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// SPDX-FileCopyrightText: 2011 Wolfram Sang, Pengutronix e.K.
+
 /*
- * (C) Copyright 2011 Wolfram Sang, Pengutronix e.K.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
  * Based on a similar function in Karo Electronics TX28-U-Boot (flash.c).
  * Probably written by Lothar Waßmann (like tx28.c).
  */

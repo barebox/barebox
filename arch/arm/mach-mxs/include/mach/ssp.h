@@ -1,14 +1,7 @@
-/*
- * Freescale MXS SSP
- *
- * Copyright (C) 2013 Michael Grzeschik <mgr@pengutronix.de>
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- */
+/* SPDX-License-Identifier: GPL-2.0-or-later */
+/* SPDX-FileCopyrightText: 2013 Michael Grzeschik <mgr@pengutronix.de> */
+
+/* Freescale MXS SSP */
 
 #ifndef __SSP_H__
 #define __SSP_H__

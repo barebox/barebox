@@ -233,7 +233,7 @@ static int imx8m_esdhc_init(struct fsl_esdhc_host *host,
 int imx6_esdhc_start_image(int instance)
 {
 	struct esdhc_soc_data data;
-	struct fsl_esdhc_host host;
+	struct fsl_esdhc_host host = { 0 };
 
 	switch (instance) {
 	case 0:
@@ -272,7 +272,7 @@ int imx6_esdhc_start_image(int instance)
 int imx7_esdhc_start_image(int instance)
 {
 	struct esdhc_soc_data data;
-	struct fsl_esdhc_host host;
+	struct fsl_esdhc_host host = { 0 };
 
 	switch (instance) {
 	case 0:
@@ -309,7 +309,7 @@ int imx7_esdhc_start_image(int instance)
 int imx8m_esdhc_load_image(int instance, bool start)
 {
 	struct esdhc_soc_data data;
-	struct fsl_esdhc_host host;
+	struct fsl_esdhc_host host = { 0 };
 	int ret;
 
 	ret = imx8m_esdhc_init(&host, &data, instance);
@@ -337,7 +337,7 @@ int imx8m_esdhc_load_image(int instance, bool start)
 int imx8mp_esdhc_load_image(int instance, bool start)
 {
 	struct esdhc_soc_data data;
-	struct fsl_esdhc_host host;
+	struct fsl_esdhc_host host = { 0 };
 	int ret;
 
 	ret = imx8m_esdhc_init(&host, &data, instance);

@@ -22,6 +22,7 @@ struct file_list {
 };
 
 struct file_list *file_list_parse(const char *str);
+struct file_list *file_list_parse_null(const char *str);
 char *file_list_to_str(const struct file_list *files);
 void file_list_free(struct file_list *);
 

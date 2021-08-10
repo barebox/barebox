@@ -158,6 +158,22 @@ out:
 	return ERR_PTR(ret);
 }
 
+struct file_list *file_list_parse_null(const char *files)
+{
+	struct file_list *list;
+
+	if (!files)
+		return NULL;
+
+	list = file_list_parse(files);
+	if (IS_ERR(list)) {
+		pr_err("Parsing file list \"%s\" failed: %pe\n", files, list);
+		return NULL;
+	}
+
+	return list;
+}
+
 void file_list_free(struct file_list *files)
 {
 	struct file_list_entry *entry, *tmp;

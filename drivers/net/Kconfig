@@ -39,10 +39,6 @@ config DRIVER_NET_AT91_ETHER
 	depends on HAS_AT91_ETHER
 	select PHYLIB
 
-config DRIVER_NET_CALXEDA_XGMAC
-	bool "Calxeda xgmac"
-	depends on HAS_DMA
-
 config DRIVER_NET_CS8900
 	bool "cs8900 ethernet driver"
 	depends on HAS_CS8900 || COMPILE_TEST

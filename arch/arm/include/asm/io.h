@@ -8,7 +8,6 @@
 #define memset_io memset_io
 
 #include <asm-generic/io.h>
-#include <asm-generic/bitio.h>
 
 /*
  * String version of IO memory access ops:

@@ -8,7 +8,6 @@
 extern unsigned char __pci_iobase[IO_SPACE_LIMIT];
 
 #include <asm-generic/io.h>
-#include <asm-generic/bitio.h>
 
 static inline void *phys_to_virt(unsigned long phys)
 {

@@ -55,7 +55,7 @@ static inline void ath79_spi_wr(struct ath79_spi *sp, u32 val, int reg)
 	__raw_writel(val, sp->regs + reg);
 }
 
-static inline void setbits(struct ath79_spi *sp, int bits, int on)
+static inline void ath79_spi_setbits(struct ath79_spi *sp, int bits, int on)
 {
 	/*
 	 * We are the only user of SCSPTR so no locking is required.
@@ -82,14 +82,14 @@ static inline void setsck(struct spi_device *spi, int on)
 {
 	struct ath79_spi *sc = ath79_spidev_to_sp(spi);
 
-	setbits(sc, AR71XX_SPI_IOC_CLK, on);
+	ath79_spi_setbits(sc, AR71XX_SPI_IOC_CLK, on);
 }
 
 static inline void setmosi(struct spi_device *spi, int on)
 {
 	struct ath79_spi *sc = ath79_spidev_to_sp(spi);
 
-	setbits(sc, AR71XX_SPI_IOC_DO, on);
+	ath79_spi_setbits(sc, AR71XX_SPI_IOC_DO, on);
 }
 
 static inline u32 getmiso(struct spi_device *spi)

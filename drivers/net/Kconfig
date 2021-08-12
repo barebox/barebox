@@ -28,7 +28,7 @@ config DRIVER_NET_AR231X
 
 config DRIVER_NET_ARC_EMAC
 	bool "ARC Ethernet MAC driver"
-	depends on HAS_DMA
+	depends on HAS_DMA && 32BIT
 	select PHYLIB
 	help
 	  This option enables support for the ARC EMAC ethernet

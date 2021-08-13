@@ -547,14 +547,12 @@ fail_generic_init:
 static struct fastboot_net *fastboot_net_obj;
 static int fastboot_net_autostart;
 
-static int fastboot_on_boot(void)
+static int fastboot_net_autostart_set(struct param_d *p, void * priv)
 {
 	struct fastboot_net *fbn;
+	static bool started;
 
-	globalvar_add_simple_bool("fastboot.net.autostart",
-				  &fastboot_net_autostart);
-
-	if (!fastboot_net_autostart)
+	if (!fastboot_net_autostart || started)
 		return 0;
 
 	ifup_all(0);
@@ -564,7 +562,16 @@ static int fastboot_on_boot(void)
 		return PTR_ERR(fbn);
 
 	fastboot_net_obj = fbn;
+	started = true;
+
 	return 0;
+}
+
+static int fastboot_net_init_globalvar(void)
+{
+	return globalvar_add_bool("fastboot.net.autostart",
+				  fastboot_net_autostart_set,
+				  &fastboot_net_autostart, NULL);
 }
 
 static void fastboot_net_exit(void)
@@ -573,7 +580,7 @@ static void fastboot_net_exit(void)
 		fastboot_net_free(fastboot_net_obj);
 }
 
-postenvironment_initcall(fastboot_on_boot);
+postenvironment_initcall(fastboot_net_init_globalvar);
 predevshutdown_exitcall(fastboot_net_exit);
 
 BAREBOX_MAGICVAR(global.fastboot.net.autostart,

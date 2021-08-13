@@ -143,8 +143,8 @@ esdhc_load_image(struct fsl_esdhc_host *host, ptrdiff_t address,
 		 *
 		 *     buf + ofs = entry
 		 *
-		 * solving the above for 'buf' gvies us the
-		 * adjustement that needs to be made:
+		 * solving the above for 'buf' gives us the
+		 * adjustment that needs to be made:
 		 *
 		 *     buf = entry - ofs
 		 *

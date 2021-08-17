@@ -12,9 +12,8 @@
 #include <clock.h>
 #include <asm/timer.h>
 #include <asm/csr.h>
-#include <asm/system.h>
 
-static u64 notrace riscv_timer_get_count_sbi(void)
+static u64 notrace riscv_timer_get_count_time(void)
 {
 	__maybe_unused u32 hi, lo;
 
@@ -29,7 +28,7 @@ static u64 notrace riscv_timer_get_count_sbi(void)
 	return ((u64)hi << 32) | lo;
 }
 
-static u64 notrace riscv_timer_get_count_rdcycle(void)
+static u64 notrace riscv_timer_get_count_cycle(void)
 {
 	__maybe_unused u32 hi, lo;
 
@@ -44,23 +43,24 @@ static u64 notrace riscv_timer_get_count_rdcycle(void)
 	return ((u64)hi << 32) | lo;
 }
 
-static u64 notrace riscv_timer_get_count(void)
-{
-	if (riscv_mode() == RISCV_S_MODE)
-		return riscv_timer_get_count_sbi();
-	else
-		return riscv_timer_get_count_rdcycle();
-}
-
 static struct clocksource riscv_clocksource = {
-	.read		= riscv_timer_get_count,
 	.mask		= CLOCKSOURCE_MASK(64),
 	.priority	= 100,
 };
 
 static int riscv_timer_init(struct device_d* dev)
 {
+	struct device_node *cpu;
+
 	dev_dbg(dev, "running at %lu Hz\n", riscv_timebase);
+
+	cpu = of_find_node_by_path("/cpus");
+
+	if (of_property_read_bool(cpu, "barebox,csr-cycle")) {
+		riscv_clocksource.read = riscv_timer_get_count_cycle;
+	} else {
+		riscv_clocksource.read = riscv_timer_get_count_time;
+	}
 
 	riscv_clocksource.mult = clocksource_hz2mult(riscv_timebase, riscv_clocksource.shift);
 

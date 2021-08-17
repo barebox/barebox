@@ -22,6 +22,8 @@
 
 		timebase-frequency = <24000000>;
 
+		barebox,csr-cycle;
+
 		cpu@0 {
 			device_type = "cpu";
 			compatible = "cliffordwolf,picorv32", "riscv";

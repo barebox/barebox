@@ -165,11 +165,11 @@ int console_set_baudrate(struct console_device *cdev, unsigned baudrate)
 	int ret;
 	unsigned char c;
 
-	if (!cdev->setbrg)
-		return -ENOSYS;
-
 	if (cdev->baudrate == baudrate)
 		return 0;
+
+	if (!cdev->setbrg)
+		return -ENOSYS;
 
 	/*
 	 * If the device is already active, change its baudrate.
@@ -336,10 +336,12 @@ int console_register(struct console_device *newcdev)
 		ret = newcdev->setbrg(newcdev, baudrate);
 		if (ret)
 			return ret;
-		newcdev->baudrate_param = newcdev->baudrate = baudrate;
+		newcdev->baudrate_param = baudrate;
 		dev_add_param_uint32(dev, "baudrate", console_baudrate_set,
 			NULL, &newcdev->baudrate_param, "%u", newcdev);
 	}
+
+	newcdev->baudrate = baudrate;
 
 	if (newcdev->putc && !newcdev->puts)
 		newcdev->puts = __console_puts;

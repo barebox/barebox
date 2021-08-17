@@ -1399,6 +1399,10 @@ config DEBUG_SIFIVE
 	bool "SiFive serial0 port"
 	depends on SOC_SIFIVE
 
+config DEBUG_LITEX
+	bool "LiteX serial port"
+	depends on SOC_LITEX
+
 endchoice
 
 config DEBUG_LL_NS16550

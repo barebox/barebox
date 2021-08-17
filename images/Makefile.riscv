@@ -19,3 +19,7 @@ image-$(CONFIG_BOARD_HIFIVE) += barebox-hifive-unmatched.img barebox-hifive-unle
 pblb-$(CONFIG_BOARD_BEAGLEV) += start_beaglev_starlight
 FILE_barebox-beaglev-starlight.img = start_beaglev_starlight.pblb
 image-$(CONFIG_BOARD_BEAGLEV) += barebox-beaglev-starlight.img
+
+pblb-$(CONFIG_BOARD_LITEX_LINUX) += start_litex_linux
+FILE_barebox-litex-linux.img = start_litex_linux.pblb
+image-$(CONFIG_BOARD_LITEX_LINUX) += barebox-litex-linux.img

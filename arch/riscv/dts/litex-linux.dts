@@ -1,0 +1,92 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
+#include "litex_soc_linux.dtsi"
+
+#include <dt-bindings/gpio/gpio.h>
+
+/ {
+	model = "LiteX VexRiscV-SoC-Linux";
+	compatible = "litex,vexriscv-soc-linux";
+
+	aliases {
+		rom = &rom;
+		sram = &sram;
+	};
+
+	/* ARTY board */
+	rom: rom@00000000 {
+		compatible = "mmio-sram";
+		reg = <0x00000000 0x00008000>;
+		read-only;
+	};
+
+	sram: sram@20000000 {
+		compatible = "mmio-sram";
+		reg = <0x20000000 0x00004000>;
+	};
+
+	main_ram: memory@40000000 {
+		device_type = "memory";
+		reg = <0x40000000 0x10000000>;
+	};
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&mac0 {
+	status = "okay";
+};
+
+&spi0 {
+	status = "okay";
+
+	spiflash: w25q128@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "winbond,w25q128", "jedec,spi-nor";
+		spi-max-frequency = <104000000>;
+		reg = <0>;
+	};
+};
+
+/ {
+	ledsgpio: gpio@f000a800 {
+		compatible = "ti,74175";
+		reg = <0xf000a800 0x4>;
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+
+		ld0 {
+			label = "arty:green:ld0";
+			gpios = <&ledsgpio 0 GPIO_ACTIVE_HIGH>;
+		};
+
+		ld1 {
+			label = "arty:green:ld1";
+			gpios = <&ledsgpio 1 GPIO_ACTIVE_HIGH>;
+		};
+
+		ld2 {
+			label = "arty:green:ld2";
+			gpios = <&ledsgpio 2 GPIO_ACTIVE_HIGH>;
+		};
+
+		ld3 {
+			label = "arty:green:ld3";
+			gpios = <&ledsgpio 3 GPIO_ACTIVE_HIGH>;
+		};
+	};
+
+	swgpio: gpio@f0006000 {
+		compatible = "ti,74125";
+		reg = <0xf0006000 0x4>;
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
+};

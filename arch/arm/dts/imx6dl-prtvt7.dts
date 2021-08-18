@@ -3,3 +3,14 @@
 
 #include <arm/imx6dl-prtvt7.dts>
 #include "imx6qdl-prti6q-emmc.dtsi"
+
+&state_emmc {
+	magic = <0x72766467>;
+
+	brand {
+		reg = <0x1b0 0x4>;
+		type = "enum32";
+		names = "unbranded", "agco", "vermeer";
+		default = <0>;
+	};
+};

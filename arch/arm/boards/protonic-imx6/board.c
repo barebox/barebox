@@ -171,6 +171,9 @@ static int prt_imx6_set_mac(struct prt_imx6_priv *priv,
 		return -ENODEV;
 	}
 
+	if (!of_device_is_available(node))
+		return 0;
+
 	if (!is_valid_ether_addr(&rfid->mac[0])) {
 		unsigned char ethaddr_str[sizeof("xx:xx:xx:xx:xx:xx")];
 

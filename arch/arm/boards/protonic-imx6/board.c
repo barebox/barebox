@@ -962,7 +962,7 @@ static const struct prt_machine_data prt_imx6_cfg_prti6g[] = {
 		.i2c_adapter = 0,
 		.emmc_usdhc = 1,
 		.init = prt_imx6_init_prti6g,
-		.flags = PRT_IMX6_BOOTSRC_EMMC,
+		.flags = PRT_IMX6_BOOTSRC_EMMC | PRT_IMX6_BOOTCHOOSER,
 	}, {
 		.hw_id = UINT_MAX
 	},

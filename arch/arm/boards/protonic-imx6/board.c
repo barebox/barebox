@@ -427,10 +427,6 @@ static int prt_imx6_bbu(struct prt_imx6_priv *priv)
 	if (ret)
 		goto exit_bbu;
 
-	ret = imx6_bbu_internal_mmc_register_handler("SD", "/dev/mmc0", 0);
-	if (ret)
-		goto exit_bbu;
-
 	return 0;
 exit_bbu:
 	dev_err(priv->dev, "Failed to register bbu: %i\n", ret);

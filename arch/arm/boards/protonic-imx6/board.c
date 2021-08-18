@@ -340,7 +340,7 @@ static void prt_imx6_check_usb_boot(void *data)
 
 	second_word++;
 	if (strncmp(second_word, "usb", 3) == 0) {
-		bootsrc = usbdisk;
+		bootsrc = "usb";
 	} else if (strncmp(second_word, "recovery", 8) == 0) {
 		bootsrc = "recovery";
 	} else {

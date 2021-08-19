@@ -205,7 +205,7 @@ static int fpgamgr_program_finish(struct firmware_handler *fh)
 	enum xilinx_byte_order byte_order;
 	u64 addr;
 	int status = 0;
-	u8 flags = 0;
+	u8 flags = ZYNQMP_FPGA_BIT_ONLY_BIN;
 
 	if (!mgr->buf) {
 		status = -ENOBUFS;
@@ -258,9 +258,6 @@ static int fpgamgr_program_finish(struct firmware_handler *fh)
 		memcpy((u32 *)buf_aligned, body, body_length);
 
 	addr = (u64)buf_aligned;
-
-	/* we do not provide a header */
-	flags |= ZYNQMP_FPGA_BIT_ONLY_BIN;
 
 	if (!(mgr->features & ZYNQMP_PM_FEATURE_SIZE_NOT_NEEDED) && buf_size) {
 		status = mgr->eemi_ops->fpga_load(addr,

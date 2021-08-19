@@ -203,7 +203,7 @@ static int fpgamgr_program_finish(struct firmware_handler *fh)
 	size_t body_length;
 	int header_length = 0;
 	enum xilinx_byte_order byte_order;
-	u64 addr;
+	dma_addr_t addr;
 	int status = 0;
 	u8 flags = ZYNQMP_FPGA_BIT_ONLY_BIN;
 
@@ -237,11 +237,10 @@ static int fpgamgr_program_finish(struct firmware_handler *fh)
 	/*
 	 * The PMU FW variants without the ZYNQMP_PM_FEATURE_SIZE_NOT_NEEDED
 	 * feature expect a pointer to the bitstream size, which is stored in
-	 * memory. Allocate some extra space at the end of the buffer for the
+	 * memory. Allocate extra space at the end of the buffer for the
 	 * bitstream size.
 	 */
-	buf_aligned = dma_alloc_coherent(body_length + sizeof(buf_size),
-					 DMA_ADDRESS_BROKEN);
+	buf_aligned = dma_alloc(body_length + sizeof(buf_size));
 	if (!buf_aligned) {
 		status = -ENOBUFS;
 		goto err_free;
@@ -254,8 +253,6 @@ static int fpgamgr_program_finish(struct firmware_handler *fh)
 	else
 		memcpy((u32 *)buf_aligned, body, body_length);
 
-	addr = (u64)buf_aligned;
-
 	if (mgr->features & ZYNQMP_PM_FEATURE_SIZE_NOT_NEEDED) {
 		buf_size = body_length;
 	} else {
@@ -263,11 +260,21 @@ static int fpgamgr_program_finish(struct firmware_handler *fh)
 		buf_size = addr + body_length;
 	}
 
-	status = mgr->eemi_ops->fpga_load(addr, buf_size, flags);
+	addr = dma_map_single(&mgr->dev, buf_aligned,
+			      body_length + sizeof(buf_size), DMA_TO_DEVICE);
+	if (dma_mapping_error(&mgr->dev, addr)) {
+		status = -EFAULT;
+		goto err_free_dma;
+	}
+
+	status = mgr->eemi_ops->fpga_load((u64)addr, buf_size, flags);
+	dma_unmap_single(&mgr->dev, addr, body_length + sizeof(buf_size),
+			 DMA_TO_DEVICE);
 	if (status < 0)
 		dev_err(&mgr->dev, "unable to load fpga\n");
 
-	dma_free_coherent(buf_aligned, 0, body_length + sizeof(buf_size));
+err_free_dma:
+	dma_free(buf_aligned);
 
  err_free:
 	free(mgr->buf);

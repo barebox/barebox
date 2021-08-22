@@ -15,6 +15,7 @@
 #include <xfuncs.h>
 
 #include <mach/mbox.h>
+#include <of_address.h>
 
 struct bcm2835fb_info {
 	struct fb_info fbi;
@@ -116,8 +117,9 @@ static int bcm2835fb_probe(struct device_d *dev)
 	info = xzalloc(sizeof *info);
 	info->fbi.fbops = &bcm2835fb_ops;
 	info->fbi.screen_base = phys_to_virt(
-	   msg_setup->allocate_buffer.body.resp.fb_address & ~dma_addr + cpu_addr	
-	);
+           (msg_setup->allocate_buffer.body.resp.fb_address & ~dma_addr)
+           + cpu_addr
+        );
 	info->fbi.xres = msg_setup->physical_w_h.body.resp.width;
 	info->fbi.yres = msg_setup->physical_w_h.body.resp.height;
 	info->fbi.bits_per_pixel = 16;

@@ -58,8 +58,22 @@ static int bcm2835fb_probe(struct device_d *dev)
 	BCM2835_MBOX_STACK_ALIGN(struct msg_fb_query, msg_query);
 	BCM2835_MBOX_STACK_ALIGN(struct msg_fb_setup, msg_setup);
 	struct bcm2835fb_info *info;
+	struct device_node *soc;
 	u32 w, h;
+	u64 dma_addr, cpu_addr, _region_size;
 	int ret;
+	
+	soc = of_find_node_by_path("/soc");
+        if (soc == NULL) {
+                dev_err(dev, "could not find required of node /soc\n");
+                return -ENODEV;
+        }
+
+        ret = of_dma_get_range(soc, &dma_addr, &cpu_addr, &_region_size);
+        if(ret) {
+                dev_err(dev, "of node /soc has no dma-ranges\n");
+                return ret;
+        }
 
 	BCM2835_MBOX_INIT_HDR(msg_query);
 	BCM2835_MBOX_INIT_TAG_NO_REQ(&msg_query->physical_w_h,
@@ -101,8 +115,9 @@ static int bcm2835fb_probe(struct device_d *dev)
 
 	info = xzalloc(sizeof *info);
 	info->fbi.fbops = &bcm2835fb_ops;
-	info->fbi.screen_base =
-	   (void *)(msg_setup->allocate_buffer.body.resp.fb_address & ~0xc0000000);
+	info->fbi.screen_base = phys_to_virt(
+	   msg_setup->allocate_buffer.body.resp.fb_address & ~dma_addr + cpu_addr	
+	);
 	info->fbi.xres = msg_setup->physical_w_h.body.resp.width;
 	info->fbi.yres = msg_setup->physical_w_h.body.resp.height;
 	info->fbi.bits_per_pixel = 16;

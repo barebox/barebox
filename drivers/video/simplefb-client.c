@@ -122,9 +122,6 @@ static int simplefb_probe(struct device_d *dev)
 
 	info->fbops = &simplefb_ops;
 
-	dev_info(dev, "framebuffer at 0x%p, 0x%lx bytes\n",
-		 info->screen_base, info->screen_size);
-
 	info->dev.parent = dev;
 	ret = register_framebuffer(info);
 	if (ret < 0) {
@@ -132,7 +129,7 @@ static int simplefb_probe(struct device_d *dev)
 		return ret;
 	}
 
-	dev_info(dev, "simplefb registered!\n");
+	dev_info(dev, "size %s registered\n", size_human_readable(info->screen_size));
 
 	return 0;
 }

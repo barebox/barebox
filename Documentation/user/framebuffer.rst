@@ -4,9 +4,7 @@ Framebuffer support
 Framebuffer splash screen
 -------------------------
 
-barebox supports BMP and PNG graphics using the :ref:`command_splash` command. barebox
-currently has no support for backlights, so unless there is a board specific enable
-hook for enabling a display it must be done manually with a script. Since barebox
+barebox supports BMP and PNG graphics using the :ref:`command_splash` command. Since barebox
 has nothing useful to show on the framebuffer it doesn't enable it during startup.
 A framebuffer can be enabled with the ``enable`` parameter of the framebuffer device:
 
@@ -39,7 +37,7 @@ A typical script to enable the framebuffer could look like this:
   # wait for signals to become stable
   msleep 100
 
-  # finally enable backlight
+  # finally enable backlight manually if no driver exists
   gpio_direction_output 42 1
 
 Framebuffer console

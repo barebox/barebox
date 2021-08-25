@@ -138,7 +138,7 @@ static int prt_imx6_read_rfid(struct prt_imx6_priv *priv, void *buf,
 	/* 0x6000 user storage in the RFID tag */
 	ret = i2c_read_reg(&cl, 0x6000 | I2C_ADDR_16_BIT, buf, size);
 	if (ret < 0) {
-		dev_err(dev, "Failed to read the RFID: %i\n", ret);
+		dev_err(dev, "Failed to read the RFID: %pe\n", ERR_PTR(ret));
 		return ret;
 	}
 
@@ -404,7 +404,7 @@ static int prt_imx6_env_init(struct prt_imx6_priv *priv)
 	return 0;
 
 exit_env_init:
-	dev_err(dev, "Failed to set env: %i\n", ret);
+	dev_err(dev, "Failed to set env: %pe\n", ERR_PTR(ret));
 
 	return ret;
 }
@@ -437,7 +437,7 @@ static int prt_imx6_bbu(struct prt_imx6_priv *priv)
 
 	return 0;
 exit_bbu:
-	dev_err(priv->dev, "Failed to register bbu: %i\n", ret);
+	dev_err(priv->dev, "Failed to register bbu: %pe\n", ERR_PTR(ret));
 	return ret;
 }
 
@@ -510,7 +510,7 @@ static int prt_imx6_yaco_set_kvg_power_mode(struct prt_imx6_priv *priv,
 	return 0;
 
 exit_yaco_set_kvg_power_mode:
-	dev_err(dev, "Failed to set YaCO pw mode: %i", ret);
+	dev_err(dev, "Failed to set YaCO pw mode: %pe", ERR_PTR(ret));
 
 	return ret;
 }
@@ -679,7 +679,7 @@ free_eeprom:
 free_alias:
 	kfree(alias);
 exit_error:
-	dev_err(priv->dev, "Failed to apply fixup: %i\n", ret);
+	dev_err(priv->dev, "Failed to apply fixup: %pe\n", ERR_PTR(ret));
 	return ret;
 }
 
@@ -700,7 +700,7 @@ static int prt_imx6_of_fixup(struct device_node *root, void *data)
 
 	return 0;
 exit_of_fixups:
-	dev_err(priv->dev, "Failed to apply OF fixups: %i\n", ret);
+	dev_err(priv->dev, "Failed to apply OF fixups: %pe\n", ERR_PTR(ret));
 	return ret;
 }
 
@@ -729,7 +729,7 @@ static int prt_imx6_get_id(struct prt_imx6_priv *priv)
 
 	return 0;
 exit_get_id:
-	dev_err(priv->dev, "Failed to read gpio ID: %i\n", ret);
+	dev_err(priv->dev, "Failed to read gpio ID: %pe\n", ERR_PTR(ret));
 	return ret;
 }
 

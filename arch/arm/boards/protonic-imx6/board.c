@@ -51,6 +51,8 @@ enum {
 	HW_TYPE_LANMCU = 23,
 	HW_TYPE_PLYBAS = 24,
 	HW_TYPE_VICTGO = 28,
+	HW_TYPE_JOZACP = 30,
+	HW_TYPE_JOZACPP = 31,
 };
 
 enum prt_imx6_kvg_pw_mode {
@@ -1088,6 +1090,26 @@ static const struct prt_machine_data prt_imx6_cfg_prtwd3[] = {
 	},
 };
 
+static const struct prt_machine_data prt_imx6_cfg_jozacp[] = {
+	{
+		.hw_id = HW_TYPE_JOZACP,
+		.hw_rev = 1,
+		.i2c_addr = 0x51,
+		.i2c_adapter = 0,
+		.emmc_usdhc = 0,
+		.flags = PRT_IMX6_BOOTSRC_EMMC | PRT_IMX6_BOOTCHOOSER,
+	}, {
+		.hw_id = HW_TYPE_JOZACPP,
+		.hw_rev = 1,
+		.i2c_addr = 0x51,
+		.i2c_adapter = 0,
+		.emmc_usdhc = 0,
+		.flags = PRT_IMX6_BOOTSRC_EMMC | PRT_IMX6_BOOTCHOOSER,
+	}, {
+		.hw_id = UINT_MAX
+	},
+};
+
 static const struct of_device_id prt_imx6_of_match[] = {
 	{ .compatible = "alt,alti6p", .data = &prt_imx6_cfg_alti6p },
 	{ .compatible = "kvg,victgo", .data = &prt_imx6_cfg_victgo },
@@ -1104,6 +1126,7 @@ static const struct of_device_id prt_imx6_of_match[] = {
 	{ .compatible = "prt,prtvt7", .data = &prt_imx6_cfg_prtvt7 },
 	{ .compatible = "prt,prtwd2", .data = &prt_imx6_cfg_prtwd2 },
 	{ .compatible = "prt,prtwd3", .data = &prt_imx6_cfg_prtwd3 },
+	{ .compatible = "joz,jozacp", .data = &prt_imx6_cfg_jozacp },
 	{ /* sentinel */ },
 };
 BAREBOX_DEEP_PROBE_ENABLE(prt_imx6_of_match);

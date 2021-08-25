@@ -329,6 +329,8 @@ $(call build_imx_habv4img, CONFIG_MACH_PROTONIC_IMX6, start_imx6qp_prtwd3, proto
 
 $(call build_imx_habv4img, CONFIG_MACH_PROTONIC_IMX6, start_imx6qp_vicutp, protonic-imx6/flash-header-vicutp, protonic-vicutp)
 
+$(call build_imx_habv4img, CONFIG_MACH_PROTONIC_IMX6, start_imx6ull_jozacp, protonic-imx6/flash-header-jozacp, protonic-jozacp)
+
 $(call build_imx_habv4img, CONFIG_MACH_KONTRON_SAMX6I, start_imx6q_samx6i, kontron-samx6i/flash-header-samx6i-quad, imx6q-samx6i)
 
 $(call build_imx_habv4img, CONFIG_MACH_KONTRON_SAMX6I, start_imx6dl_samx6i, kontron-samx6i/flash-header-samx6i-duallite, imx6dl-samx6i)

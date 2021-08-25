@@ -84,6 +84,7 @@ struct prt_imx6_priv {
 	const char *name;
 	struct poller_async poller;
 	unsigned int usb_delay;
+	unsigned int no_usb_check;
 };
 
 struct prti6q_rfid_contents {
@@ -380,16 +381,20 @@ static int prt_imx6_env_init(struct prt_imx6_priv *priv)
 	if (ret)
 		goto exit_env_init;
 
-	if (dcfg->flags & PRT_IMX6_USB_LONG_DELAY)
-		priv->usb_delay = 4;
-	else
-		priv->usb_delay = 1;
+	if (priv->no_usb_check) {
+		set_autoboot_state(AUTOBOOT_BOOT);
+	} else {
+		if (dcfg->flags & PRT_IMX6_USB_LONG_DELAY)
+			priv->usb_delay = 4;
+		else
+			priv->usb_delay = 1;
 
-	/* the usb_delay value is used for poller_call_async() */
-	delay = basprintf("%d", priv->usb_delay);
-	ret = setenv("global.autoboot_timeout", delay);
-	if (ret)
-		goto exit_env_init;
+		/* the usb_delay value is used for poller_call_async() */
+		delay = basprintf("%d", priv->usb_delay);
+		ret = setenv("global.autoboot_timeout", delay);
+		if (ret)
+			goto exit_env_init;
+	}
 
 	if (dcfg->flags & PRT_IMX6_BOOTCHOOSER)
 		bootsrc = "bootchooser";
@@ -458,14 +463,16 @@ static int prt_imx6_devices_init(void)
 
 	prt_imx6_env_init(priv);
 
-	ret = poller_async_register(&priv->poller, "usb-boot");
-	if (ret) {
-		dev_err(priv->dev, "can't setup poller\n");
-		return ret;
-	}
+	if (!priv->no_usb_check) {
+		ret = poller_async_register(&priv->poller, "usb-boot");
+		if (ret) {
+			dev_err(priv->dev, "can't setup poller\n");
+			return ret;
+		}
 
-	poller_call_async(&priv->poller, priv->usb_delay * SECOND,
-			  &prt_imx6_check_usb_boot, priv);
+		poller_call_async(&priv->poller, priv->usb_delay * SECOND,
+				  &prt_imx6_check_usb_boot, priv);
+	}
 
 	return 0;
 }
@@ -616,6 +623,22 @@ static int prt_imx6_init_kvg_new(struct prt_imx6_priv *priv)
 static int prt_imx6_init_kvg_yaco(struct prt_imx6_priv *priv)
 {
 	return prt_imx6_init_kvg_power(priv, PW_MODE_KVG_WITH_YACO);
+}
+
+#define GPIO_KEY_F6     (0xe0 + 5)
+#define GPIO_KEY_CYCLE  (0xe0 + 2)
+
+static int prt_imx6_init_prtvt7(struct prt_imx6_priv *priv)
+{
+	/* This function relies heavely on the gpio-pca9539 driver */
+
+	gpio_direction_input(GPIO_KEY_F6);
+	gpio_direction_input(GPIO_KEY_CYCLE);
+
+	if (gpio_get_value(GPIO_KEY_CYCLE) && gpio_get_value(GPIO_KEY_F6))
+		priv->no_usb_check = 1;
+
+	return 0;
 }
 
 static int prt_imx6_rfid_fixup(struct prt_imx6_priv *priv,
@@ -1031,7 +1054,9 @@ static const struct prt_machine_data prt_imx6_cfg_prtvt7[] = {
 		.i2c_addr = 0x51,
 		.i2c_adapter = 0,
 		.emmc_usdhc = 2,
-		.flags = PRT_IMX6_BOOTSRC_EMMC | PRT_IMX6_BOOTCHOOSER,
+		.init = prt_imx6_init_prtvt7,
+		.flags = PRT_IMX6_BOOTSRC_EMMC | PRT_IMX6_BOOTCHOOSER |
+			PRT_IMX6_USB_LONG_DELAY,
 	}, {
 		.hw_id = UINT_MAX
 	},

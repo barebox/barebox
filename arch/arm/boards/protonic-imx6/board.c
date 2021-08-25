@@ -5,6 +5,7 @@
 
 #include <bbu.h>
 #include <common.h>
+#include <deep-probe.h>
 #include <environment.h>
 #include <fcntl.h>
 #include <gpio.h>
@@ -707,7 +708,16 @@ static int prt_imx6_get_id(struct prt_imx6_priv *priv)
 {
 	struct gpio gpios_type[] = GPIO_HW_TYPE_ID;
 	struct gpio gpios_rev[] = GPIO_HW_REV_ID;
+	struct device_node *gpio_np = NULL;
 	int ret;
+
+	gpio_np = of_find_node_by_name(NULL, "gpio@20a0000");
+	if (!gpio_np)
+		return -ENODEV;
+
+	ret = of_device_ensure_probed(gpio_np);
+	if (ret)
+		return ret;
 
 	ret = gpio_array_to_id(gpios_type, ARRAY_SIZE(gpios_type), &priv->hw_id);
 	if (ret)
@@ -1071,6 +1081,7 @@ static const struct of_device_id prt_imx6_of_match[] = {
 	{ .compatible = "prt,prtwd3", .data = &prt_imx6_cfg_prtwd3 },
 	{ /* sentinel */ },
 };
+BAREBOX_DEEP_PROBE_ENABLE(prt_imx6_of_match);
 
 static struct driver_d prt_imx6_board_driver = {
 	.name = "board-protonic-imx6",

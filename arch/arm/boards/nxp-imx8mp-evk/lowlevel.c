@@ -180,11 +180,6 @@ static __noreturn noinline void nxp_imx8mp_evk_start(void)
 
 ENTRY_FUNCTION(start_nxp_imx8mp_evk, r0, r1, r2)
 {
-	void __iomem *ccm = IOMEM(MX8M_CCM_BASE_ADDR);
-
-	writel(IMX8M_CCM_CCGR_SETTINGn_NEEDED(0),
-	       ccm + IMX8M_CCM_CCGRn_SET(IMX8M_CCM_CCGR_SCTR));
-
 	imx8mp_cpu_lowlevel_init();
 
 	relocate_to_current_adr();

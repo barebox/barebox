@@ -460,6 +460,9 @@ static int of_overlay_global_fixup(struct device_node *root, void *data)
 	if (*of_overlay_dir == '/')
 		return of_overlay_apply_dir(root, of_overlay_dir, true);
 
+	if (*of_overlay_dir == '\0')
+		return 0;
+
 	dir = concat_path_file(of_overlay_basedir, of_overlay_dir);
 
 	ret = of_overlay_apply_dir(root, dir, true);

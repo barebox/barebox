@@ -901,12 +901,12 @@ static int cpsw_open(struct eth_device *edev)
 
 	dev_dbg(&slave->dev, "* %s\n", __func__);
 
+	cpsw_slave_init(slave, priv);
+
 	ret = phy_device_connect(edev, NULL, slave->phy_id,
 				 cpsw_adjust_link, 0, slave->phy_if);
 	if (ret)
 		return ret;
-
-	cpsw_slave_init(slave, priv);
 
 	return 0;
 }

@@ -828,6 +828,7 @@ static void eqos_probe_dt(struct device_d *dev, struct eqos *eqos)
 
 int eqos_probe(struct device_d *dev, const struct eqos_ops *ops, void *priv)
 {
+	struct device_node *np = dev->device_node;
 	struct mii_bus *miibus;
 	struct resource *iores;
 	struct eqos *eqos;
@@ -866,7 +867,10 @@ int eqos_probe(struct device_d *dev, const struct eqos_ops *ops, void *priv)
 	miibus->read = eqos_mdio_read;
 	miibus->write = eqos_mdio_write;
 	miibus->priv = eqos;
-	miibus->dev.device_node = of_get_child_by_name(dev->device_node, "mdio");
+
+	miibus->dev.device_node = of_get_compatible_child(np, "snps,dwmac-mdio");
+	if (!miibus->dev.device_node)
+		miibus->dev.device_node = of_get_child_by_name(np, "mdio");
 
 	ret = eqos_init(dev, eqos);
 	if (ret)

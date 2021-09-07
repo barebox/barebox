@@ -853,6 +853,7 @@ config ENV_HANDLING
 	  startup) will bring them back. If unsure, say yes.
 
 config DEFAULT_ENVIRONMENT
+	select CRC32
 	bool
 	default y if ENV_HANDLING
 	prompt "Compile in default environment"

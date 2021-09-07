@@ -51,4 +51,4 @@ generated a different entry point is selected using the ``-e`` option to ld.
 The linker will throw away all unused entry points and only keep the functions
 used by a particular entry point.
 
-The Multi Image PBL files can be disassembled with ``make <entry-function-name.pbl.S``
+The Multi Image PBL files can be disassembled with ``make images/<entry-function-name>.pbl.S``

@@ -11,6 +11,7 @@
 #include <fs.h>
 #include <xfuncs.h>
 #include <usb/dfu.h>
+#include <usb/gadget-multi.h>
 #include <linux/err.h>
 
 /* dfu /dev/self0(bootloader)sr,/dev/nand0.root.bb(root)
@@ -20,28 +21,28 @@
  */
 static int do_dfu(int argc, char *argv[])
 {
-	struct f_dfu_opts opts;
-	char *argstr;
-	struct usb_dfu_dev *dfu_alts = NULL;
+	struct usbgadget_funcs funcs = {};
 	int ret;
 
 	if (argc != optind + 1)
 		return COMMAND_ERROR_USAGE;
 
-	argstr = argv[optind];
+	funcs.flags |= USBGADGET_DFU;
+	funcs.dfu_opts = argv[optind];
+	ret = usbgadget_register(&funcs);
+	if (ret)
+		return ret;
 
-	opts.files = file_list_parse(argstr);
-	if (IS_ERR(opts.files)) {
-		ret = PTR_ERR(opts.files);
-		goto out;
+	command_slice_release();
+	while (!usb_dfu_detached()) {
+		if (ctrlc()) {
+			ret = -EINTR;
+			break;
+		}
 	}
+	command_slice_acquire();
 
-	ret = usb_dfu_register(&opts);
-
-	file_list_free(opts.files);
-out:
-
-	free(dfu_alts);
+	usb_multi_unregister();
 
 	return ret;
 }

@@ -511,8 +511,10 @@ static void devices_shutdown(void)
 	struct device_d *dev;
 
 	list_for_each_entry(dev, &active, active) {
-		if (dev->bus->remove)
+		if (dev->bus->remove) {
 			dev->bus->remove(dev);
+			dev->driver = NULL;
+		}
 	}
 }
 devshutdown_exitcall(devices_shutdown);

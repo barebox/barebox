@@ -224,9 +224,9 @@ out:
 
 static char *firmware_path;
 
-const char *firmware_get_searchpath(void)
+char *firmware_get_searchpath(void)
 {
-	return firmware_path;
+	return strdup(firmware_path);
 }
 
 void firmware_set_searchpath(const char *path)

@@ -31,7 +31,7 @@ struct firmware_mgr *firmwaremgr_find(const char *);
 #ifdef CONFIG_FIRMWARE
 struct firmware_mgr *firmwaremgr_find_by_node(struct device_node *np);
 int firmwaremgr_load_file(struct firmware_mgr *, const char *path);
-const char *firmware_get_searchpath(void);
+char *firmware_get_searchpath(void);
 void firmware_set_searchpath(const char *path);
 #else
 static inline struct firmware_mgr *firmwaremgr_find_by_node(struct device_node *np)
@@ -44,7 +44,7 @@ static inline int firmwaremgr_load_file(struct firmware_mgr *mgr, const char *pa
 	return -ENOSYS;
 }
 
-static inline const char *firmware_get_searchpath(void)
+static inline char *firmware_get_searchpath(void)
 {
 	return NULL;
 }

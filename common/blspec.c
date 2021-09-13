@@ -75,8 +75,7 @@ static int blspec_boot(struct bootentry *be, int verbose, int dryrun)
 	const char *abspath, *devicetree, *options, *initrd, *linuximage;
 	const char *overlays;
 	const char *appendroot;
-	const char *old_fws;
-	char *fws;
+	char *old_fws, *fws;
 	struct bootm_data data = {
 		.dryrun = dryrun,
 	};
@@ -158,6 +157,7 @@ static int blspec_boot(struct bootentry *be, int verbose, int dryrun)
 
 	of_overlay_set_basedir("/");
 	firmware_set_searchpath(old_fws);
+	free(old_fws);
 
 err_out:
 	free((char *)data.oftree_file);

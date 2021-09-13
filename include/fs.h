@@ -101,7 +101,6 @@ struct fs_device_d {
 	struct cdev *cdev;
 	bool loop;
 	char *path;
-	struct device_d *parent_device;
 	struct list_head list;
 	char *options;
 	char *linux_rootarg;

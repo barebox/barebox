@@ -30,8 +30,8 @@ instructions for these tools how to prepare the BOOT.BIN image.
 Create a FAT partition as the first partition of the SD card and copy the
 produced BOOT.BIN into this partition.
 
-.. _FSBL: `https://github.com/Xilinx/embeddedsw/`
-.. _bootgen: `https://github.com/Xilinx/bootgen`
+.. _FSBL: https://github.com/Xilinx/embeddedsw/
+.. _bootgen: https://github.com/Xilinx/bootgen
 
 Booting Barebox
 ---------------

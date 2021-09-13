@@ -35,7 +35,7 @@ queues configuration and buffer transfers are nearly identical. Both MMIO
 and non-legacy PCI are supported in barebox.
 
 The VirtIO spec defines a lots of VirtIO device types, however at present only
-block, console, input and RNG devices are supported.
+block, network, console, input and RNG devices are supported.
 
 Build Instructions
 ------------------

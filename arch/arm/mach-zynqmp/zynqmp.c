@@ -6,10 +6,35 @@
 #include <common.h>
 #include <init.h>
 #include <linux/types.h>
+#include <bootsource.h>
 #include <reset_source.h>
 
 #define ZYNQMP_CRL_APB_BASE		0xff5e0000
+#define ZYNQMP_CRL_APB_BOOT_MODE_USER	(ZYNQMP_CRL_APB_BASE + 0x200)
 #define ZYNQMP_CRL_APB_RESET_REASON	(ZYNQMP_CRL_APB_BASE + 0x220)
+
+/* PSJTAG interface, PS dedicated pins. */
+#define ZYNQMP_CRL_APB_BOOT_MODE_PSJTAG        0x0
+/* SPI 24-bit addressing */
+#define ZYNQMP_CRL_APB_BOOT_MODE_QSPI24        0x1
+/* SPI 32-bit addressing */
+#define ZYNQMP_CRL_APB_BOOT_MODE_QSPI32        0x2
+/* SD 2.0 card @ controller 0 */
+#define ZYNQMP_CRL_APB_BOOT_MODE_SD0           0x3
+/* SPI NAND flash */
+#define ZYNQMP_CRL_APB_BOOT_MODE_NAND          0x4
+/* SD 2.0 card @ controller 1 */
+#define ZYNQMP_CRL_APB_BOOT_MODE_SD1           0x5
+/* eMMC @ controller 1 */
+#define ZYNQMP_CRL_APB_BOOT_MODE_EMMC          0x6
+/* USB 2.0 */
+#define ZYNQMP_CRL_APB_BOOT_MODE_USB           0x7
+/* PJTAG connection 0 option. */
+#define ZYNQMP_CRL_APB_BOOT_MODE_PJTAG0        0x8
+/* PJTAG connection 1 option. */
+#define ZYNQMP_CRL_APB_BOOT_MODE_PJTAG1        0x9
+/* SD 3.0 card (level-shifted) @ controller 1 */
+#define ZYNQMP_CRL_APB_BOOT_MODE_SD1LS         0xE
 
 /* External POR: The PS_POR_B reset signal pin was asserted. */
 #define ZYNQMP_CRL_APB_RESET_REASON_EXTERNAL   BIT(0)
@@ -25,6 +50,60 @@
 #define ZYNQMP_CRL_APB_RESET_REASON_SOFT       BIT(5)
 /* Software debugger reset: Write to BLOCKONLY_RST [debug_only]. */
 #define ZYNQMP_CRL_APB_RESET_REASON_DEBUG_SYS  BIT(6)
+
+static void zynqmp_get_bootsource(enum bootsource *src, int *instance)
+{
+	u32 v;
+
+	if (!src || !instance)
+		return;
+
+	v = readl(ZYNQMP_CRL_APB_BOOT_MODE_USER);
+	v &= 0x0F;
+
+	/* cf. Table 11-1 "Boot Modes" in UG1085 Zynq UltraScale+ Device TRM */
+	switch (v) {
+	case ZYNQMP_CRL_APB_BOOT_MODE_PSJTAG:
+	case ZYNQMP_CRL_APB_BOOT_MODE_PJTAG0:
+	case ZYNQMP_CRL_APB_BOOT_MODE_PJTAG1:
+		*src = BOOTSOURCE_JTAG;
+		*instance = 0;
+		break;
+
+	case ZYNQMP_CRL_APB_BOOT_MODE_QSPI24:
+	case ZYNQMP_CRL_APB_BOOT_MODE_QSPI32:
+		*src = BOOTSOURCE_SPI;
+		*instance = 0;
+		break;
+
+	case ZYNQMP_CRL_APB_BOOT_MODE_SD0:
+		*src = BOOTSOURCE_MMC;
+		*instance = 0;
+		break;
+
+	case ZYNQMP_CRL_APB_BOOT_MODE_NAND:
+		*src = BOOTSOURCE_SPI_NAND;
+		*instance = 0;
+		break;
+
+	case ZYNQMP_CRL_APB_BOOT_MODE_SD1:
+	case ZYNQMP_CRL_APB_BOOT_MODE_EMMC:
+	case ZYNQMP_CRL_APB_BOOT_MODE_SD1LS:
+		*src = BOOTSOURCE_MMC;
+		*instance = 1;
+		break;
+
+	case ZYNQMP_CRL_APB_BOOT_MODE_USB:
+		*src = BOOTSOURCE_USB;
+		*instance = 0;
+		break;
+
+	default:
+		*src = BOOTSOURCE_UNKNOWN;
+		*instance = BOOTSOURCE_INSTANCE_UNKNOWN;
+		break;
+	}
+}
 
 struct zynqmp_reset_reason {
 	u32 mask;
@@ -65,6 +144,13 @@ static enum reset_src_type zynqmp_get_reset_src(void)
 
 static int zynqmp_init(void)
 {
+	enum bootsource boot_src;
+	int boot_instance;
+
+	zynqmp_get_bootsource(&boot_src, &boot_instance);
+	bootsource_set(boot_src);
+	bootsource_set_instance(boot_instance);
+
 	reset_source_set(zynqmp_get_reset_src());
 
 	return 0;

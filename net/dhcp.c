@@ -640,6 +640,8 @@ static int dhcp_global_init(void)
 {
 	globalvar_add_simple_string("dhcp.bootfile", &global_dhcp_bootfile);
 	globalvar_add_simple_string("dhcp.rootpath", &global_dhcp_rootpath);
+
+	global_dhcp_vendor_id = strdup("barebox");
 	globalvar_add_simple_string("dhcp.vendor_id", &global_dhcp_vendor_id);
 	globalvar_add_simple_string("dhcp.client_uuid", &global_dhcp_client_uuid);
 	globalvar_add_simple_string("dhcp.client_id", &global_dhcp_client_id);

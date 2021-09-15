@@ -812,6 +812,17 @@ config CONSOLE_ALLOW_COLOR
 	  compile time default for colored console output. After boot it
 	  can be controlled using global.allow_color.
 
+config CONSOLE_DISABLE_INPUT
+	prompt "Disable input on all consoles by default (non-interactive)"
+	def_bool CONSOLE_NONE
+	help
+	  If enabled, all consoles are initially configured to not accept any input,
+	  making the consoles effectively non-interactive.
+	  The active device parameter can be used to override this on a per-console
+	  basis.
+	  CAUTION: this will also disable input devices by default, since they are
+	  registered as consoles.
+
 config PBL_CONSOLE
 	depends on PBL_IMAGE
 	depends on !CONSOLE_NONE

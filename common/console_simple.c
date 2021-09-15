@@ -92,7 +92,10 @@ int console_register(struct console_device *newcdev)
 		newcdev->setbrg(newcdev, newcdev->baudrate);
 	}
 
-	newcdev->f_active = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
+	newcdev->f_active = CONSOLE_STDIOE;
+
+	if (IS_ENABLED(CONFIG_CONSOLE_DISABLE_INPUT))
+		newcdev->f_active = ~CONSOLE_STDIN;
 
 	barebox_banner();
 

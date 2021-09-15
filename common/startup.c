@@ -241,6 +241,11 @@ enum autoboot_state do_autoboot_countdown(void)
 	if (autoboot_state != AUTOBOOT_UNKNOWN)
 		return autoboot_state;
 
+	if (IS_ENABLED(CONFIG_CONSOLE_DISABLE_INPUT)) {
+		printf("\nNon-interactive console, booting system\n");
+		return autoboot_state = AUTOBOOT_BOOT;
+	}
+
 	if (global_autoboot_state != AUTOBOOT_COUNTDOWN)
 		return global_autoboot_state;
 

@@ -328,7 +328,7 @@ int console_register(struct console_device *newcdev)
 		return of_platform_populate(serdev_node, NULL, dev);
 
 	if (newcdev->dev && of_device_is_stdout_path(newcdev->dev, &baudrate)) {
-		activate = 1;
+		activate = CONSOLE_STDIOE;
 		console_set_stdoutpath(newcdev, baudrate);
 	}
 
@@ -349,16 +349,18 @@ int console_register(struct console_device *newcdev)
 
 	if (IS_ENABLED(CONFIG_CONSOLE_ACTIVATE_FIRST)) {
 		if (list_empty(&console_list))
-			activate = 1;
+			activate = CONSOLE_STDIOE;
 	} else if (IS_ENABLED(CONFIG_CONSOLE_ACTIVATE_ALL)) {
-		activate = 1;
+		activate = CONSOLE_STDIOE;
 	}
 
 	list_add_tail(&newcdev->list, &console_list);
 
+	if (IS_ENABLED(CONFIG_CONSOLE_DISABLE_INPUT))
+		activate &= ~CONSOLE_STDIN;
+
 	if (activate)
-		console_set_active(newcdev, CONSOLE_STDIN |
-				CONSOLE_STDOUT | CONSOLE_STDERR);
+		console_set_active(newcdev, activate);
 
 	/* expose console as device in fs */
 	newcdev->devfs.name = basprintf("%s%d", newcdev->class_dev.name,

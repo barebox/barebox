@@ -22,6 +22,14 @@ config SOC_VIRT
 	  Generates an image tht can be be booted by QEMU. The image is called
 	  barebox-dt-2nd.img
 
+config BOARD_RISCVEMU
+	depends on SOC_VIRT
+	bool "TinyEMU Virt Machine (riscvemu)"
+	default y
+	help
+	  TinyEMU's Virt machine differs from QEMU in poweroff and restart
+	  mechanisms. This adds the necessary support.
+
 config CPU_SIFIVE
 	bool
 	select HAS_CACHE

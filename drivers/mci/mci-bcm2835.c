@@ -84,7 +84,7 @@ static u32 bcm2835_sdhci_read32(struct sdhci *sdhci, int reg)
 	return readl(host->regs + reg);
 }
 
-static u32 bcm2835_mci_wait_command_done(struct bcm2835_mci_host *host)
+static int bcm2835_mci_wait_command_done(struct bcm2835_mci_host *host)
 {
 	u32 interrupt = 0;
 	uint64_t start;
@@ -131,7 +131,8 @@ static void bcm2835_mci_reset_emmc(struct bcm2835_mci_host *host, u32 reset,
  */
 static int bcm2835_mci_request(struct mci_host *mci, struct mci_cmd *cmd,
 		struct mci_data *data) {
-	u32 command, block_data = 0, ret = 0, transfer_mode = 0;
+	u32 command, block_data = 0, transfer_mode = 0;
+	int ret;
 	u32 wait_inhibit_mask = SDHCI_CMD_INHIBIT_CMD | SDHCI_CMD_INHIBIT_DATA;
 	struct bcm2835_mci_host *host = to_bcm2835_host(mci);
 

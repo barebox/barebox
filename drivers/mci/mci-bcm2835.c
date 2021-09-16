@@ -87,13 +87,17 @@ static u32 bcm2835_sdhci_read32(struct sdhci *sdhci, int reg)
 static u32 bcm2835_mci_wait_command_done(struct bcm2835_mci_host *host)
 {
 	u32 interrupt = 0;
+	uint64_t start;
 
+	start = get_time_ns();
 	while (true) {
 		interrupt = sdhci_read32(&host->sdhci, SDHCI_INT_STATUS);
 		if (interrupt & SDHCI_INT_INDEX)
 			return -EPERM;
 		if (interrupt & SDHCI_INT_CMD_COMPLETE)
 			break;
+		if (is_timeout(start, SECOND))
+			return -ETIMEDOUT;
 	}
 	return 0;
 }

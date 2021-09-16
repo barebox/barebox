@@ -78,8 +78,14 @@ static int virtrng_probe(struct virtio_device *vdev)
 
 static void virtrng_remove(struct virtio_device *vdev)
 {
+	struct virtrng_info *vi = vdev->priv;
+
 	vdev->config->reset(vdev);
+	if (vi->hwrng_register_done)
+		hwrng_unregister(&vi->hwrng);
 	vdev->config->del_vqs(vdev);
+
+	kfree(vi);
 }
 
 static void virtrng_scan(struct virtio_device *vdev)

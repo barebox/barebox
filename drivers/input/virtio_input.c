@@ -259,10 +259,11 @@ static void virtinput_remove(struct virtio_device *vdev)
 {
 	struct virtio_input *vi = vdev->priv;
 
-	poller_unregister(&vi->poller);
-
 	vdev->config->reset(vdev);
+	poller_unregister(&vi->poller);
+	input_device_unregister(&vi->idev);
 	vdev->config->del_vqs(vdev);
+
 	kfree(vi);
 }
 

@@ -134,6 +134,8 @@ static int virtcons_probe(struct virtio_device *vdev)
 
 	virtcons = xzalloc(sizeof(*virtcons));
 
+	vdev->priv = virtcons;
+
 	virtcons->in_vq = vqs[0];
 	virtcons->out_vq = vqs[1];
 
@@ -150,6 +152,17 @@ static int virtcons_probe(struct virtio_device *vdev)
 	return console_register(&virtcons->cdev);
 }
 
+static void virtcons_remove(struct virtio_device *vdev)
+{
+	struct virtio_console *virtcons = vdev->priv;
+
+	vdev->config->reset(vdev);
+	console_unregister(&virtcons->cdev);
+	vdev->config->del_vqs(vdev);
+
+	free(virtcons);
+}
+
 static struct virtio_device_id id_table[] = {
 	{ VIRTIO_ID_CONSOLE, VIRTIO_DEV_ANY_ID },
 	{ 0 },
@@ -159,6 +172,7 @@ static struct virtio_driver virtio_console = {
 	.driver.name =	"virtio_console",
 	.id_table =	id_table,
 	.probe =	virtcons_probe,
+	.remove =	virtcons_remove,
 };
 device_virtio_driver(virtio_console);
 

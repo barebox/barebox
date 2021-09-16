@@ -44,4 +44,6 @@ struct hwrng *hwrng_get_first(void);
 static inline struct hwrng *hwrng_get_first(void) { return ERR_PTR(-ENODEV); };
 #endif
 
+void hwrng_unregister(struct hwrng *rng);
+
 #endif /* LINUX_HWRANDOM_H_ */

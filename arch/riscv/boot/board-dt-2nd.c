@@ -40,7 +40,8 @@ static const struct fdt_device_id console_ids[] = {
 	{ /* sentinel */ }
 };
 
-ENTRY_FUNCTION(start_dt_2nd, hartid, _fdt, a2)
+static void noinline __noreturn start_dt_2nd_nonnaked(unsigned long hartid,
+						      unsigned long _fdt)
 {
 	unsigned long membase, memsize, endmem, endfdt, uncompressed_len;
 	struct fdt_header *fdt = (void *)_fdt;
@@ -74,4 +75,9 @@ ENTRY_FUNCTION(start_dt_2nd, hartid, _fdt, a2)
 		memsize = ALIGN_DOWN(_fdt - membase, SZ_1M);
 
 	barebox_riscv_supervisor_entry(membase, memsize, hartid, fdt);
+}
+
+ENTRY_FUNCTION(start_dt_2nd, hartid, _fdt, a2)
+{
+	start_dt_2nd_nonnaked(hartid, _fdt);
 }

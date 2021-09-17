@@ -205,4 +205,4 @@ static struct driver_d bcm2835_gpio_driver = {
 	.of_compatible = DRV_OF_COMPAT(bcm2835_gpio_dt_ids),
 };
 
-coredevice_platform_driver(bcm2835_gpio_driver);
+core_platform_driver(bcm2835_gpio_driver);

@@ -28,7 +28,7 @@
 #include <errno.h>
 #include <libgen.h>		/* for basename */
 
-#include <libusb-1.0/libusb.h>		/* the main event */
+#include <libusb.h>		/* the main event */
 
 /* Device specific defines (OMAP)
  * Primary source: http://www.ti.com/lit/pdf/sprugn4

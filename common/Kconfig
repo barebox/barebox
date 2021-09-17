@@ -734,18 +734,6 @@ config IMD
 	select CRC32
 	bool "barebox metadata support"
 
-config IMD_TARGET
-	bool "build bareboximd target tool"
-	depends on IMD
-
-config KERNEL_INSTALL_TARGET
-	bool
-	prompt "Build kernel-install utility for the target"
-	help
-	  Enable this to compile the kernel-install script using the cross
-	  compiler. The utility for the target will be under
-	  scripts/kernel-install-target
-
 choice
 	prompt "console support"
 	default CONSOLE_FULL
@@ -979,20 +967,6 @@ config DEFAULT_ENVIRONMENT_PATH
 	  Space separated list of paths from which the default environment will
 	  be taken. Relative paths will be relative to the barebox top-level
 	  directory, but absolute paths are fine as well.
-
-config BAREBOXENV_TARGET
-	bool
-	prompt "build bareboxenv tool for target"
-	help
-	  'bareboxenv' is a tool to access the barebox environment from a running Linux
-	  system. Say yes here to build it for the target.
-
-config BAREBOXCRC32_TARGET
-	bool
-	prompt "build bareboxcrc32 tool for target"
-	help
-	  'bareboxcrc32' is a userspacetool to generate the crc32 checksums the same way
-	  barebox does. Say yes here to build it for the target.
 
 config HAS_SCHED
 	bool

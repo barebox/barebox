@@ -40,3 +40,33 @@ config OMAP4_HOSTTOOL_USBBOOT
 	  You need libusb-1.0 to compile this tool.
 
 endmenu
+
+menu "Target Tools"
+
+config IMD_TARGET
+	bool "build bareboximd target tool"
+	depends on IMD
+
+config KERNEL_INSTALL_TARGET
+	bool
+	prompt "Build kernel-install utility for the target"
+	help
+	  Enable this to compile the kernel-install script using the cross
+	  compiler. The utility for the target will be under
+	  scripts/kernel-install-target
+
+config BAREBOXENV_TARGET
+	bool
+	prompt "build bareboxenv tool for target"
+	help
+	  'bareboxenv' is a tool to access the barebox environment from a running Linux
+	  system. Say yes here to build it for the target.
+
+config BAREBOXCRC32_TARGET
+	bool
+	prompt "build bareboxcrc32 tool for target"
+	help
+	  'bareboxcrc32' is a userspacetool to generate the crc32 checksums the same way
+	  barebox does. Say yes here to build it for the target.
+
+endmenu

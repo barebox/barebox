@@ -84,7 +84,7 @@ int menutree(const char *path, int toplevel)
 	struct stat s;
 	char *box;
 	struct menutree *mt;
-	glob_t g;
+	glob_t g = {};
 	int i;
 	char *globpath, *display;
 	size_t size;

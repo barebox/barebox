@@ -57,6 +57,14 @@ static int nvmem_reboot_mode_probe(struct device_d *dev)
 	nvmem_rbm->reboot.write = nvmem_reboot_mode_write;
 	nvmem_rbm->reboot.priority = 200;
 
+	/*
+	 * Fixing up the nvmem reboot device tree node is problematic, because it
+	 * contains a phandle to another node. Take the easy way out for now and
+	 * expect user to provide matching reboot-mode nodes in both kernel and
+	 * barebox device tree manually.
+	 */
+	nvmem_rbm->reboot.no_fixup = true;
+
 	magicbuf = nvmem_cell_read(nvmem_rbm->cell, &len);
 	if (IS_ERR(magicbuf) || len != 4) {
 		dev_err(dev, "error reading reboot mode: %pe\n", magicbuf);

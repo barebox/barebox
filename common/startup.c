@@ -345,9 +345,9 @@ static int run_init(void)
 			run_command(scr);
 			free(scr);
 		}
-	}
 
-	globfree(&g);
+		globfree(&g);
+	}
 
 	/* source matching script in /env/bmode/ */
 	bmode = reboot_mode_get();

@@ -218,7 +218,7 @@ enum filetype is_fat_or_mbr(const unsigned char *sector, unsigned long *bootsec)
 		 * first partition so we could check if there is a FAT boot
 		 * sector there
 		 */
-		*bootsec = get_unaligned_le16(&sector[MBR_Table + MBR_StartSector]);
+		*bootsec = get_unaligned_le32(&sector[MBR_Table + MBR_StartSector]);
 
 	return filetype_mbr;
 }

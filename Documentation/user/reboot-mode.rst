@@ -44,7 +44,9 @@ the device. By convention, this should end with ``.reboot_mode``, e.g.::
 
 Reboot mode providers have priorities. The provider with the highest
 priority has its parameters aliased as ``$global.system.reboot_mode.prev``
-and ``$global.system.reboot_mode.next``.
+and ``$global.system.reboot_mode.next``. After executing the init scripts,
+barebox startup will ``source /env/bmode/${global.system.reboot_mode.prev}``
+if available.
 
 Reset
 =====

@@ -149,6 +149,6 @@ there will be a file ``eth0`` with a content like this:
 -----------
 
 This contains the files to be sourced when barebox detects that the OS
-had requested a specific reboot mode (via e.g. ``reboot bootloader``
+had requested a specific :ref:`reboot_mode` (via e.g. ``reboot bootloader``
 under Linux). After the ``/env/init`` scripts were executed, barebox will
 ``source /env/bmode/${global.system.reboot_mode.prev}`` if available.

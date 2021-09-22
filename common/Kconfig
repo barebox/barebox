@@ -1091,6 +1091,30 @@ config SYSTEMD_OF_WATCHDOG
 	  in the kernel device tree. If the kernel is booted without a device
 	  tree or with one that lacks aliases, nothing is added.
 
+config EXTERNAL_DTS_FRAGMENTS
+	string "external dts file fragments"
+	depends on OFTREE
+	help
+	  List of dts fragment files that will be appended to Barebox's device
+	  tree(s) source when building the dtb file(s).  If multiple files are
+	  listed, they will be appended in order.  Relative filenames will use
+	  the dtc include search path.
+
+	  A preprocessor macro based on the name of the main dts will be
+	  defined, which allows the dts fragments to based on which image of a
+	  multi image build they are being used in. Given the dts filename
+	  used for a board is "foo-board.dts" the external dts usage can be
+	  limited to that board with
+
+	  #ifdef foo_board_dts
+	  ...
+	  #endif
+
+	  It not intended that this be put into into Barebox defconfig files.
+	  Instead, it's an external build system, like Yocto or buildroot, to
+	  add dts fragments from outside the Barebox source tree into the
+	  Barebox build.
+
 menu "OP-TEE loading"
 
 config OPTEE_SIZE

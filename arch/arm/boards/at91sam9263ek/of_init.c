@@ -15,6 +15,9 @@
 
 static int add_smc_devices(void)
 {
+	if (!of_machine_is_compatible("atmel,at91sam9263ek"))
+		return 0;
+
 	add_generic_device("at91sam9-smc", 0, NULL, AT91SAM9263_BASE_SMC0, 0x200,
 			   IORESOURCE_MEM, NULL);
 	add_generic_device("at91sam9-smc", 1, NULL, AT91SAM9263_BASE_SMC1, 0x200,

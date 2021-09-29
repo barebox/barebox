@@ -33,7 +33,7 @@ config PBL_RELOCATABLE
 	  Generate a pbl binary which can relocate itself during startup to run
 	  on different addresses. This is useful if your memory layout is not
 	  known during compile time.
-	  This option only inflluences the PBL image. See RELOCATABLE to also make
+	  This option only influences the PBL image. See RELOCATABLE to also make
 	  the real image relocatable.
 
 config PBL_VERIFY_PIGGY

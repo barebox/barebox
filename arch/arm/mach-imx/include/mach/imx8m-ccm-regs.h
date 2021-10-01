@@ -50,6 +50,7 @@
 
 void imx8m_early_setup_uart_clock(void);
 void imx8mm_early_clock_init(void);
+void imx8mn_early_clock_init(void);
 void imx8m_clock_set_target_val(int clock_id, u32 val);
 void imx8m_ccgr_clock_enable(int index);
 void imx8m_ccgr_clock_disable(int index);

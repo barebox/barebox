@@ -181,7 +181,7 @@ int imx8mq_init(void)
 #define IMX8MM_CCM_ANALOG_SYS_PLL2_GEN_CTRL	0x104
 #define IMX8MM_CCM_ANALOG_SYS_PLL3_GEN_CTRL	0x114
 
-void imx8mm_early_clock_init(void)
+static void __imx8mm_early_clock_init(unsigned long pll3_freq) /* and later */
 {
 	void __iomem *ana = IOMEM(MX8M_ANATOP_BASE_ADDR);
 	void __iomem *ccm = IOMEM(MX8M_CCM_BASE_ADDR);
@@ -224,9 +224,9 @@ void imx8mm_early_clock_init(void)
 				   IMX8M_CCM_TARGET_ROOTn_MUX(3));
 	imx8m_ccgr_clock_enable(IMX8M_CCM_CCGR_GIC);
 
-	/* Configure SYS_PLL3 to 750MHz */
+	/* Configure SYS_PLL3 */
 	clk_pll1416x_early_set_rate(ana + IMX8MM_CCM_ANALOG_SYS_PLL3_GEN_CTRL,
-				    750000000UL, 25000000UL);
+				    pll3_freq, 25000000UL);
 
 	clrsetbits_le32(ccm + IMX8M_CCM_TARGET_ROOTn(IMX8M_ARM_A53_CLK_ROOT),
 			IMX8M_CCM_TARGET_ROOTn_MUX(7),
@@ -247,6 +247,16 @@ void imx8mm_early_clock_init(void)
 	clrsetbits_le32(ccm + IMX8M_CCM_TARGET_ROOTn(IMX8M_ARM_A53_CLK_ROOT),
 			CCM_TARGET_ROOT0_DIV,
 			FIELD_PREP(CCM_TARGET_ROOT0_DIV, 0));
+}
+
+void imx8mm_early_clock_init(void)
+{
+	__imx8mm_early_clock_init(750000000UL);
+}
+
+void imx8mn_early_clock_init(void)
+{
+	__imx8mm_early_clock_init(600000000UL);
 }
 
 #define KEEP_ALIVE			0x18

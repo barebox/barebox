@@ -321,6 +321,7 @@ static int dram_pll_init(enum ddr_rate drate, enum ddrc_type type)
 	case DDRC_TYPE_MQ:
 		return dram_sscg_pll_init(drate);
 	case DDRC_TYPE_MM:
+	case DDRC_TYPE_MN:
 	case DDRC_TYPE_MP:
 		return dram_frac_pll_init(drate);
 	default:

@@ -1000,6 +1000,7 @@ static struct dram_fsp_msg mnt_reform_lpddr4_dram_fsp_msg[] = {
 
 /* ddr timing config params */
 struct dram_timing_info mnt_reform_dram_timing = {
+	.dram_type = DRAM_TYPE_LPDDR4,
 	.ddrc_cfg = mnt_reform_lpddr4_ddrc_cfg,
 	.ddrc_cfg_num = ARRAY_SIZE(mnt_reform_lpddr4_ddrc_cfg),
 	.ddrphy_cfg = mnt_reform_lpddr4_ddrphy_cfg,

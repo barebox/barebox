@@ -1965,6 +1965,7 @@ static struct dram_fsp_msg lpddr4_dram_fsp_msg[] = {
 
 /* lpddr4 timing config params on EVK board */
 struct dram_timing_info imx8mm_evk_dram_timing = {
+	.dram_type = DRAM_TYPE_LPDDR4,
 	.ddrc_cfg = lpddr4_ddrc_cfg,
 	.ddrc_cfg_num = ARRAY_SIZE(lpddr4_ddrc_cfg),
 	.ddrphy_cfg = lpddr4_ddrphy_cfg,

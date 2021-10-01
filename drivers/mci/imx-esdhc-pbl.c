@@ -384,6 +384,9 @@ int imx8mp_esdhc_load_image(int instance, bool start)
 	return esdhc_load_image(&host, MX8M_DDR_CSD1_BASE_ADDR,
 				MX8MQ_ATF_BL33_BASE_ADDR, offset, 0, start);
 }
+
+int imx8mn_esdhc_load_image(int instance, bool start)
+	__alias(imx8mp_esdhc_load_image);
 #endif
 
 #ifdef CONFIG_ARCH_LS1046

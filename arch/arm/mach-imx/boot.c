@@ -672,6 +672,12 @@ void imx8mm_boot_save_loc(void)
 	imx_boot_save_loc(imx8mm_get_boot_source);
 }
 
+void imx8mn_get_boot_source(enum bootsource *src, int *instance)
+	__alias(imx8mm_get_boot_source);
+
+void imx8mn_boot_save_loc(void)
+	__alias(imx8mm_boot_save_loc);
+
 void imx8mp_get_boot_source(enum bootsource *src, int *instance)
 {
 	unsigned long addr;

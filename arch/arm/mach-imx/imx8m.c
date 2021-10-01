@@ -95,6 +95,29 @@ int imx8mm_init(void)
 	return imx8m_init(cputypestr);
 }
 
+int imx8mn_init(void)
+{
+	void __iomem *anatop = IOMEM(MX8M_ANATOP_BASE_ADDR);
+	uint32_t type = FIELD_GET(DIGPROG_MAJOR,
+				  readl(anatop + MX8MN_ANATOP_DIGPROG));
+	const char *cputypestr;
+
+	imx8mn_boot_save_loc();
+
+	switch (type) {
+	case IMX8M_CPUTYPE_IMX8MN:
+		cputypestr = "i.MX8MN";
+		break;
+	default:
+		cputypestr = "unknown i.MX8M";
+		break;
+	};
+
+	imx_set_silicon_revision(cputypestr, imx8mn_cpu_revision());
+
+	return imx8m_init(cputypestr);
+}
+
 int imx8mp_init(void)
 {
 	void __iomem *anatop = IOMEM(MX8MP_ANATOP_BASE_ADDR);

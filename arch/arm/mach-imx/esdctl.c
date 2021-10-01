@@ -679,6 +679,9 @@ static __maybe_unused struct of_device_id imx_esdctl_dt_ids[] = {
 		.compatible = "fsl,imx8mm-ddrc",
 		.data = &imx8mq_data
 	}, {
+		.compatible = "fsl,imx8mn-ddrc",
+		.data = &imx8mq_data
+	}, {
 		.compatible = "fsl,imx8mq-ddrc",
 		.data = &imx8mq_data
 	}, {
@@ -883,6 +886,11 @@ static void __noreturn imx8m_barebox_entry(void *boarddata)
 }
 
 void __noreturn imx8mm_barebox_entry(void *boarddata)
+{
+	imx8m_barebox_entry(boarddata);
+}
+
+void __noreturn imx8mn_barebox_entry(void *boarddata)
 {
 	imx8m_barebox_entry(boarddata);
 }

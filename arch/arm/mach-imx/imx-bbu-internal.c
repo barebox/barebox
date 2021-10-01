@@ -384,10 +384,10 @@ static unsigned long imx_bbu_flash_header_offset_mmc(void)
 		return SZ_32K + SZ_1K;
 
 	/*
-	 * i.MX8MP moved the header by 32K to accomodate for GPT partition
+	 * i.MX8MN/P moved the header by 32K to accomodate for GPT partition
 	 * tables, but the IVT is right at the beginning of the image.
 	 */
-	if (cpu_is_mx8mp())
+	if (cpu_is_mx8mn() || cpu_is_mx8mp())
 		return SZ_32K;
 
 	return SZ_1K;
@@ -396,10 +396,10 @@ static unsigned long imx_bbu_flash_header_offset_mmc(void)
 static unsigned long imx_bbu_flash_header_offset_mmcboot(unsigned long *flags)
 {
 	/*
-	 * i.MX8MP places IVT directly at start of eMMC boot partition. IVT
+	 * i.MX8MN/P places IVT directly at start of eMMC boot partition. IVT
 	 * in eMMC user partition and SD is at 32K offset.
 	 */
-	if (cpu_is_mx8mp())
+	if (cpu_is_mx8mn() || cpu_is_mx8mp())
 		*flags |= IMX_BBU_FLAG_PARTITION_STARTS_AT_HEADER;
 
 	return imx_bbu_flash_header_offset_mmc();

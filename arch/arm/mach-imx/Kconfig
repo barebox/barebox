@@ -186,6 +186,10 @@ config ARCH_IMX8MM
 	select ARCH_IMX8M
 	bool
 
+config ARCH_IMX8MN
+	select ARCH_IMX8M
+	bool
+
 config ARCH_IMX8MP
 	select ARCH_IMX8M
 	bool

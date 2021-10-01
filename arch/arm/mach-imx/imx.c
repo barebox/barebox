@@ -71,6 +71,8 @@ static int imx_soc_from_dt(void)
 		return IMX_CPU_IMX8MQ;
 	if (of_machine_is_compatible("fsl,imx8mm"))
 		return IMX_CPU_IMX8MM;
+	if (of_machine_is_compatible("fsl,imx8mn"))
+		return IMX_CPU_IMX8MN;
 	if (of_machine_is_compatible("fsl,imx8mp"))
 		return IMX_CPU_IMX8MP;
 	if (of_machine_is_compatible("fsl,vf610"))
@@ -115,6 +117,8 @@ static int imx_init(void)
 		ret = imx7_init();
 	else if (cpu_is_mx8mm())
 		ret = imx8mm_init();
+	else if (cpu_is_mx8mn())
+		ret = imx8mn_init();
 	else if (cpu_is_mx8mp())
 		ret = imx8mp_init();
 	else if (cpu_is_mx8mq())

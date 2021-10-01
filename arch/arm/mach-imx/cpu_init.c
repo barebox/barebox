@@ -75,6 +75,9 @@ void imx8mm_cpu_lowlevel_init(void)
 	imx8m_cpu_lowlevel_init();
 }
 
+void imx8mn_cpu_lowlevel_init(void)
+	__alias(imx8mm_cpu_lowlevel_init);
+
 void imx8mp_cpu_lowlevel_init(void)
 	__alias(imx8mm_cpu_lowlevel_init);
 

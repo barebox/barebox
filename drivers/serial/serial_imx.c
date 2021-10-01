@@ -299,6 +299,9 @@ static __maybe_unused struct of_device_id imx_serial_dt_ids[] = {
 		.compatible = "fsl,imx8mm-uart",
 		.data = &imx21_data,
 	}, {
+		.compatible = "fsl,imx8mn-uart",
+		.data = &imx21_data,
+	}, {
 		.compatible = "fsl,imx8mp-uart",
 		.data = &imx21_data,
 	}, {

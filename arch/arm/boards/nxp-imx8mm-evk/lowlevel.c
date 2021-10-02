@@ -21,6 +21,7 @@
 #include <mfd/bd71837.h>
 #include <soc/imx8m/ddr.h>
 #include <soc/fsl/fsl_udc.h>
+#include <image-metadata.h>
 
 extern char __dtb_imx8mm_evk_start[];
 
@@ -176,6 +177,8 @@ ENTRY_FUNCTION(start_nxp_imx8mm_evk, r0, r1, r2)
 
 	relocate_to_current_adr();
 	setup_c();
+
+	IMD_USED_OF(imx8mm_evk);
 
 	nxp_imx8mm_evk_start();
 }

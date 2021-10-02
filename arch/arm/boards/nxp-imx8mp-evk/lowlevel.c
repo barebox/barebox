@@ -4,6 +4,7 @@
 #include <common.h>
 #include <debug_ll.h>
 #include <firmware.h>
+#include <image-metadata.h>
 #include <asm/mmu.h>
 #include <asm/cache.h>
 #include <asm/sections.h>
@@ -188,6 +189,8 @@ ENTRY_FUNCTION(start_nxp_imx8mp_evk, r0, r1, r2)
 
 	relocate_to_current_adr();
 	setup_c();
+
+	IMD_USED_OF(imx8mp_evk);
 
 	nxp_imx8mp_evk_start();
 }

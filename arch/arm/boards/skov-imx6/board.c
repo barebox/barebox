@@ -432,16 +432,18 @@ static void skov_init_board(const struct board_description *variant)
 	}
 }
 
-static void fixup_machine_compatible(const char *compat)
+static void fixup_machine_compatible(const char *compat,
+				     struct device_node *root)
 {
 	const char *curcompat;
-	struct device_node *root;
 	int cclen = 0, clen = strlen(compat) + 1;
 	void *buf;
 
-	root = of_get_root_node();
-	if (!root)
-		return;
+	if (!root) {
+		root = of_get_root_node();
+		if (!root)
+			return;
+	}
 
 	curcompat = of_get_property(root, "compatible", &cclen);
 
@@ -487,7 +489,7 @@ static int skov_imx6_probe(struct device_d *dev)
 	globalvar_add_simple("board.dts", variant->dts_compatible);
 	globalvar_add_simple("board.display", variant->display ?: NULL);
 
-	fixup_machine_compatible(variant->dts_compatible);
+	fixup_machine_compatible(variant->dts_compatible, NULL);
 
 	skov_init_board(variant);
 

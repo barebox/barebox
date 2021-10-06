@@ -100,3 +100,33 @@ void *read_file(const char *filename, size_t *size)
 
 	return NULL;
 }
+
+int write_file(const char *filename, const void *buf, size_t size)
+{
+	int fd, ret = 0;
+	int now;
+
+	fd = open(filename, O_WRONLY | O_TRUNC | O_CREAT,
+		  S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+	if (fd < 0) {
+		fprintf(stderr, "Cannot open %s: %s\n", filename, strerror(errno));
+		return -errno;
+	}
+
+	while (size) {
+		now = write(fd, buf, size);
+		if (now < 0) {
+			fprintf(stderr, "Cannot write to %s: %s\n", filename,
+				strerror(errno));
+			ret = -errno;
+			goto out;
+		}
+		size -= now;
+		buf += now;
+	}
+
+out:
+	close(fd);
+
+	return ret;
+}

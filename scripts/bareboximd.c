@@ -42,31 +42,6 @@ int imd_command_setenv(const char *variable_name, const char *value)
 	return -EINVAL;
 }
 
-static int write_file(const char *filename, const void *buf, size_t size)
-{
-	int fd, ret = 0;
-	int now;
-
-	fd = open(filename, O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-	if (fd < 0)
-		return fd;
-
-	while (size) {
-		now = write(fd, buf, size);
-		if (now < 0) {
-			ret = now;
-			goto out;
-		}
-		size -= now;
-		buf += now;
-	}
-
-out:
-	close(fd);
-
-	return ret;
-}
-
 static inline void read_file_2_free(void *buf)
 {
 	/*

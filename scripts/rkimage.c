@@ -13,6 +13,9 @@
 #include <errno.h>
 #include <stdbool.h>
 
+#include "common.h"
+#include "common.c"
+
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
 #define ALIGN(x, a)        (((x) + (a) - 1) & ~((a) - 1))
 
@@ -147,42 +150,6 @@ static void usage(const char *prgname)
 "  -o <file>   Output image to <file>\n"
 "  -h          This help\n",
 	prgname);
-}
-
-static int read_full(int fd, void *buf, size_t size)
-{
-	size_t insize = size;
-	int now;
-	int total = 0;
-
-	while (size) {
-		now = read(fd, buf, size);
-		if (now == 0)
-			return total;
-		if (now < 0)
-			return now;
-		total += now;
-		size -= now;
-		buf += now;
-	}
-
-	return insize;
-}
-
-static int write_full(int fd, void *buf, size_t size)
-{
-	size_t insize = size;
-	int now;
-
-	while (size) {
-		now = write(fd, buf, size);
-		if (now <= 0)
-			return now;
-		size -= now;
-		buf += now;
-	}
-
-	return insize;
 }
 
 int main(int argc, char *argv[])

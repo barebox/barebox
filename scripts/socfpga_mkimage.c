@@ -10,8 +10,8 @@
 #include <fcntl.h>
 #include <endian.h>
 
-#include "../common.h"
-#include "../common.c"
+#include "common.h"
+#include "common.c"
 
 #define VALIDATION_WORD 0x31305341
 
@@ -67,26 +67,6 @@ static uint32_t bb_header[] = {
 	0x00000000,	/* socfpga header */
 	0xea00006b,	/* entry. b 0x200 (offset may be adjusted) */
 };
-
-static int read_full(int fd, void *buf, size_t size)
-{
-	size_t insize = size;
-	int now;
-	int total = 0;
-
-	while (size) {
-		now = read(fd, buf, size);
-		if (now == 0)
-			return total;
-		if (now < 0)
-			return now;
-		total += now;
-		size -= now;
-		buf += now;
-	}
-
-	return insize;
-}
 
 static const uint32_t crc_table[256] = {
 	0x00000000, 0x04c11db7, 0x09823b6e, 0x0d4326d9, 0x130476dc, 0x17c56b6b,

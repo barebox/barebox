@@ -168,13 +168,13 @@ Connect to board's UART with your favorite serial communication software
 (e.g. minicom) and check 'nmon> ' prompt (nmon runs from onchip ROM).
 
 Next close your communication software and use ./scripts/nmon-loader
-to load barebox image into board's DRAM, e.g.
+to load barebox image into board's DRAM, e.g.::
 
   # ./scripts/nmon-loader barebox.erizo.nmon /dev/ttyUSB0 115200
 
 Wait several munutes for 'nmon> ' prompt.
 
-Next, start barebox from DRAM:
+Next, start barebox from DRAM::
 
   nmon> g 80000000
   Switch to console [cs0]

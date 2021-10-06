@@ -529,6 +529,7 @@ static void skov_init_board(const struct board_description *variant)
 static int skov_switch_test(void)
 {
 	struct phy_device *phydev;
+	struct device_d *eth0;
 	struct mii_bus *mii;
 	int ret;
 
@@ -555,6 +556,15 @@ no_switch:
 	skov_have_switch = false;
 
 	pr_notice("No-switch variant is detected\n");
+
+	eth0 = get_device_by_name("eth0");
+	if (eth0) {
+		ret = dev_set_param(eth0, "mode", "disabled");
+		if (ret)
+			pr_warn("Can't set eth0 mode\n");
+	} else {
+		pr_warn("Can't disable eth0\n");
+	}
 
 	return 0;
 }

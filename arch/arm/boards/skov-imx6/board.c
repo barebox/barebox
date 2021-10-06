@@ -2,16 +2,17 @@
 
 #define pr_fmt(fmt) "skov-imx6: " fmt
 
-#include <common.h>
-#include <init.h>
-#include <mach/bbu.h>
-#include <environment.h>
 #include <bootsource.h>
+#include <common.h>
+#include <deep-probe.h>
+#include <environment.h>
 #include <globalvar.h>
+#include <gpio.h>
+#include <init.h>
+#include <linux/micrel_phy.h>
+#include <mach/bbu.h>
 #include <net.h>
 #include <of_gpio.h>
-#include <gpio.h>
-#include <linux/micrel_phy.h>
 
 #include "version.h"
 
@@ -489,9 +490,19 @@ static int skov_imx6_fixup(struct device_node *root, void *unused)
  */
 static void skov_init_board(const struct board_description *variant)
 {
+	struct device_node *gpio_np = NULL;
 	struct device_node *np;
 	char *environment_path, *envdev;
 	int ret;
+
+	gpio_np = of_find_node_by_name(NULL, "gpio@20b4000");
+	if (gpio_np) {
+		ret = of_device_ensure_probed(gpio_np);
+		if (ret)
+			pr_warn("Can't probe GPIO node\n");
+	} else {
+		pr_warn("Can't get GPIO node\n");
+	}
 
 	imx6_bbu_internal_spi_i2c_register_handler("spiflash", "/dev/m25p0.barebox",
 		BBU_HANDLER_FLAG_DEFAULT);
@@ -650,6 +661,7 @@ static __maybe_unused struct of_device_id skov_version_ids[] = {
 		/* sentinel */
 	}
 };
+BAREBOX_DEEP_PROBE_ENABLE(skov_version_ids);
 
 static struct driver_d skov_version_driver = {
 	.name = "skov-imx6",

@@ -5,6 +5,7 @@
 #include <bootsource.h>
 #include <common.h>
 #include <deep-probe.h>
+#include <envfs.h>
 #include <environment.h>
 #include <globalvar.h>
 #include <gpio.h>
@@ -650,6 +651,8 @@ static int skov_imx6_probe(struct device_d *dev)
 	fixup_machine_compatible(variant->dts_compatible, NULL);
 
 	skov_init_board(variant);
+
+	defaultenv_append_directory(defaultenv_skov_imx6);
 
 	return 0;
 }

@@ -84,3 +84,18 @@ A bootable SD card can be created with:
 The barebox image is written to the raw device, so make sure the partitioning
 doesn't conflict with the are barebox is written to. Starting the first
 partition at offset 8MiB is a safe bet.
+
+USB bootstrapping
+^^^^^^^^^^^^^^^^^
+
+The RK3568 can be bootstrapped via USB for which the rk-usb-loader tool in the barebox
+repository can be used. The tool takes the same images as written on SD cards:
+
+.. code-block:: sh
+
+  ./scripts/rk-usb-loader images/barebox-rk3568-evb.img
+
+Note that the boot order of the RK3568 is not configurable. The SoC will only enter USB
+MaskROM mode when no other bootsource contains a valid bootloader. This means to use USB
+you have to make all other bootsources invalid by removing SD cards and shortcircuiting
+eMMCs. The RK3568 EVB has a pushbutton to disable the eMMC.

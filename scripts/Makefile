@@ -36,6 +36,9 @@ hostprogs-always-$(CONFIG_OMAP3_USB_LOADER)		+= omap3-usb-loader
 HOSTCFLAGS_omap4_usbboot.o = `pkg-config --cflags libusb-1.0`
 HOSTLDLIBS_omap4_usbboot = -lpthread `pkg-config --libs libusb-1.0`
 hostprogs-always-$(CONFIG_OMAP4_HOSTTOOL_USBBOOT)	+= omap4_usbboot
+HOSTCFLAGS_rk-usb-loader.o = `pkg-config --cflags libusb-1.0`
+HOSTLDLIBS_rk-usb-loader  = `pkg-config --libs libusb-1.0`
+hostprogs-always-$(CONFIG_RK_USB_LOADER)		+= rk-usb-loader
 
 userprogs-always-$(CONFIG_BAREBOXENV_TARGET)		+= bareboxenv-target
 userprogs-always-$(CONFIG_KERNEL_INSTALL_TARGET)	+= kernel-install-target

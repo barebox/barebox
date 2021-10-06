@@ -102,6 +102,14 @@ config OMAP4_HOSTTOOL_USBBOOT
 
 	  You need libusb-1.0 to compile this tool.
 
+config RK_USB_LOADER
+	bool "Rockchip USB loader"
+	depends on ARCH_ROCKCHIP || COMPILE_HOST_TOOLS
+	help
+	  Say Y here to build the rockchip usb loader tool.
+
+	  You need libusb-1.0 to compile this tool.
+
 endmenu
 
 menu "Target Tools"

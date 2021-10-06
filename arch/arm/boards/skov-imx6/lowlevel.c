@@ -618,6 +618,7 @@ static void skov_imx6_init(int cpu_type, unsigned board_variant)
 
 extern char __dtb_z_imx6q_skov_imx6_start[];
 extern char __dtb_z_imx6dl_skov_imx6_start[];
+extern char __dtb_z_imx6s_skov_imx6_start[];
 
 /* called twice: once for SDRAM setup only, second for devicetree setup */
 static noinline void skov_imx6_start(void)
@@ -640,8 +641,11 @@ static noinline void skov_imx6_start(void)
 	/* boot this platform (second call) */
 	switch (cpu_type) {
 	case IMX6_CPUTYPE_IMX6S:
+		pr_debug("Startup i.MX6S based system...\n");
+		imx6q_barebox_entry(__dtb_z_imx6s_skov_imx6_start);
+		break;
 	case IMX6_CPUTYPE_IMX6DL:
-		pr_debug("Startup i.MX6S/DL based system...\n");
+		pr_debug("Startup i.MX6DL based system...\n");
 		imx6q_barebox_entry(__dtb_z_imx6dl_skov_imx6_start);
 		break;
 	case IMX6_CPUTYPE_IMX6D:

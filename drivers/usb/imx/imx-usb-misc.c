@@ -616,6 +616,10 @@ static __maybe_unused struct of_device_id imx_usbmisc_dt_ids[] = {
 		.compatible = "fsl,imx8mm-usbmisc",
 		.data = &mx7_data,
 	},
+	{
+		.compatible = "fsl,imx8mn-usbmisc",
+		.data = &mx7_data,
+	},
 #endif
 #ifdef CONFIG_ARCH_VF610
 	{

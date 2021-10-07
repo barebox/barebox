@@ -1,26 +1,41 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * Copyright (C) 2020 Oleksij Rempel, Pengutronix
+ * Copyright (C) 2021 Ahmad Fatoum, Pengutronix
  */
 
-#include <asm/memory.h>
 #include <bootsource.h>
 #include <common.h>
 #include <init.h>
 #include <linux/phy.h>
 #include <linux/sizes.h>
 #include <mach/bbu.h>
-#include <mach/iomux-mx8mp.h>
-#include <gpio.h>
 #include <envfs.h>
 
-static int nxp_imx8mp_evk_init(void)
+#define PHY_ID_AR8031	0x004dd074
+#define AR_PHY_ID_MASK	0xffffffff
+
+static int ar8031_phy_fixup(struct phy_device *phydev)
+{
+	/*
+	 * Enable 1.8V(SEL_1P5_1P8_POS_REG) on
+	 * Phy control debug reg 0
+	 */
+	phy_write(phydev, 0x1d, 0x1f);
+	phy_write(phydev, 0x1e, 0x8);
+
+	/* rgmii tx clock delay enable */
+	phy_write(phydev, 0x1d, 0x05);
+	phy_write(phydev, 0x1e, 0x100);
+
+	return 0;
+}
+
+static int nxp_imx8mn_evk_init(void)
 {
 	int emmc_bbu_flag = 0;
 	int sd_bbu_flag = 0;
-	u32 val;
 
-	if (!of_machine_is_compatible("fsl,imx8mp-evk"))
+	if (!of_machine_is_compatible("fsl,imx8mn-evk"))
 		return 0;
 
 	if (bootsource_get() == BOOTSOURCE_MMC) {
@@ -39,10 +54,9 @@ static int nxp_imx8mp_evk_init(void)
 	imx8m_bbu_internal_mmc_register_handler("SD", "/dev/mmc1.barebox", sd_bbu_flag);
 	imx8m_bbu_internal_mmcboot_register_handler("eMMC", "/dev/mmc2", emmc_bbu_flag);
 
-	val = readl(MX8MP_IOMUXC_GPR_BASE_ADDR + MX8MP_IOMUXC_GPR1);
-	val |= MX8MP_IOMUXC_GPR1_ENET1_RGMII_EN;
-	writel(val, MX8MP_IOMUXC_GPR_BASE_ADDR + MX8MP_IOMUXC_GPR1);
+	phy_register_fixup_for_uid(PHY_ID_AR8031, AR_PHY_ID_MASK,
+				   ar8031_phy_fixup);
 
 	return 0;
 }
-coredevice_initcall(nxp_imx8mp_evk_init);
+coredevice_initcall(nxp_imx8mn_evk_init);

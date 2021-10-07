@@ -7,7 +7,13 @@ config EXTRA_FIRMWARE_DIR
 config FIRMWARE_IMX_LPDDR4_PMU_TRAIN
        	bool
 
+config FIRMWARE_IMX_DDR4_PMU_TRAIN
+       	bool
+
 config FIRMWARE_IMX8MM_ATF
+        bool
+
+config FIRMWARE_IMX8MN_ATF
         bool
 
 config FIRMWARE_IMX8MP_ATF

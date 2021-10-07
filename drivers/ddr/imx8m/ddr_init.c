@@ -48,6 +48,7 @@ static int imx8m_ddr_init(struct dram_timing_info *dram_timing,
 		reg32_write(src_ddrc_rcr + 0x04, 0x8f000000);
 		break;
 	case DDRC_TYPE_MM:
+	case DDRC_TYPE_MN:
 	case DDRC_TYPE_MP:
 		reg32_write(src_ddrc_rcr, 0x8f00001f);
 		reg32_write(src_ddrc_rcr, 0x8f00000f);
@@ -88,7 +89,7 @@ static int imx8m_ddr_init(struct dram_timing_info *dram_timing,
 
 	/* if ddr type is LPDDR4, do it */
 	tmp = reg32_read(DDRC_MSTR(0));
-	if (tmp & (0x1 << 5))
+	if (tmp & (0x1 << 5) && type != DDRC_TYPE_MN)
 		reg32_write(DDRC_DDR_SS_GPR0, 0x01); /* LPDDR4 mode */
 
 	/* determine the initial boot frequency */
@@ -195,6 +196,11 @@ static int imx8m_ddr_init(struct dram_timing_info *dram_timing,
 int imx8mm_ddr_init(struct dram_timing_info *dram_timing)
 {
 	return imx8m_ddr_init(dram_timing, DDRC_TYPE_MM);
+}
+
+int imx8mn_ddr_init(struct dram_timing_info *dram_timing)
+{
+	return imx8m_ddr_init(dram_timing, DDRC_TYPE_MN);
 }
 
 int imx8mq_ddr_init(struct dram_timing_info *dram_timing)

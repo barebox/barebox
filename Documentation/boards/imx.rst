@@ -83,6 +83,35 @@ The images can also always be started as second stage on the target:
 
   barebox@Board Name:/ bootm /mnt/tftp/barebox-freescale-imx51-babbage.img
 
+BootROM Reboot mode codes (bmode)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For select SoCs, barebox supports communicating an alternative boot medium
+that BootROM should select after a warm reset::
+
+  barebox@FSL i.MX8MM EVK board:/ devinfo gpr.reboot_mode
+  Driver: syscon-reboot-mode
+  Bus: platform
+  Parent: 30390000.reset-controller@30390000.of
+  Parameters:
+    next: normal (type: enum) (values: "normal", "serial")
+    prev: normal (type: enum) (values: "normal", "serial")
+  Device node: /soc@0/bus@30000000/reset-controller@30390000/reboot-mode
+  reboot-mode {
+          compatible = "barebox,syscon-reboot-mode";
+          offset = <0x94 0x98>;
+          mask = <0xffffffff 0x40000000>;
+          mode-normal = <0x0 0x0>;
+          mode-serial = <0x10 0x40000000>;
+  };
+
+  barebox@FSL i.MX8MM EVK board:/ gpr.reboot_mode.next=serial reset -r imxwd-warm
+
+This will cause barebox to fall into serial download mode on an i.MX8MM.
+
+Different SoCs may have more possible reboot modes available.
+See the section on :ref:`Reboot modes<reboot_mode>` for more information.
+
 High Assurance Boot
 ^^^^^^^^^^^^^^^^^^^
 

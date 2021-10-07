@@ -1,0 +1,18 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/ {
+	aliases {
+		gpr.reboot_mode = &reboot_mode_gpr;
+	};
+};
+
+&src {
+	compatible = "fsl,imx8mm-src", "fsl,imx8mq-src", "syscon", "simple-mfd";
+
+	reboot_mode_gpr: reboot-mode {
+		compatible = "barebox,syscon-reboot-mode";
+		offset = <0x94>, <0x98>; /* SRC_GPR{9,10} */
+		mask = <0xffffffff>, <0x40000000>;
+		mode-normal = <0>, <0>;
+		mode-serial = <0x00000010>, <0x40000000>;
+	};
+};

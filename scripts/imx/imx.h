@@ -7,6 +7,7 @@ static inline int cpu_is_mx8m(const struct config_data *data)
 	switch (data->cpu_type) {
 	case IMX_CPU_IMX8MQ:
 	case IMX_CPU_IMX8MM:
+	case IMX_CPU_IMX8MN:
 	case IMX_CPU_IMX8MP:
 		return true;
 	default:

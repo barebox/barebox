@@ -8,6 +8,7 @@
 #include <magicvar.h>
 
 #include <io.h>
+#include <mach/clock-imx6.h>
 #include <mach/generic.h>
 #include <mach/imx25-regs.h>
 #include <mach/imx27-regs.h>
@@ -23,6 +24,7 @@
 #include <mach/imx8mq.h>
 #include <mach/imx6.h>
 
+#include <soc/fsl/fsl_udc.h>
 
 static void
 imx_boot_save_loc(void (*get_boot_source)(enum bootsource *, int *))
@@ -397,6 +399,11 @@ static u32 imx6_get_src_boot_mode(void __iomem *src_base)
 	return readl(src_base + IMX6_SRC_SBMR1);
 }
 
+static inline bool imx6_usboh3_clk_active(void)
+{
+	return (readl(MXC_CCM_CCGR6) & 0x3) == 0x3;
+}
+
 void imx6_get_boot_source(enum bootsource *src, int *instance)
 {
 	void __iomem *src_base = IOMEM(MX6_SRC_BASE_ADDR);
@@ -409,6 +416,26 @@ void imx6_get_boot_source(enum bootsource *src, int *instance)
 		return;
 
 	bootsrc = imx53_bootsource_internal(bootmode);
+
+	/*
+	 * imx6_bootsource_serial() can't detect cases where the boot ROM
+	 * decided to use the serial downloader as a fall back (primary
+	 * boot source failed).
+	 *
+	 * Infer that the boot ROM used the USB serial downloader by
+	 * checking whether both the UDC and the clock enabling access
+	 * to its MMIO region are currently active...
+	 * This assumes:
+	 * - On fresh boots, PBL doesn't itself start a stopped UDC
+	 * - In barebox proper, boot source is saved before the UDC driver
+	 *   may enable the UDC
+	 */
+
+	if (imx6_usboh3_clk_active() &&
+	    is_chipidea_udc_running(IOMEM(MX6_OTG_BASE_ADDR))) {
+		*src = BOOTSOURCE_SERIAL;
+		return;
+	}
 
 	if (imx6_bootsource_serial(sbmr2) ||
 	    imx6_bootsource_serial_forced(bootsrc)) {
@@ -644,6 +671,12 @@ void imx8mm_boot_save_loc(void)
 {
 	imx_boot_save_loc(imx8mm_get_boot_source);
 }
+
+void imx8mn_get_boot_source(enum bootsource *src, int *instance)
+	__alias(imx8mm_get_boot_source);
+
+void imx8mn_boot_save_loc(void)
+	__alias(imx8mm_boot_save_loc);
 
 void imx8mp_get_boot_source(enum bootsource *src, int *instance)
 {

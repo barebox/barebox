@@ -13,6 +13,109 @@
 #include <mach/imx8m-regs.h>
 #include <mach/imx8m-ccm-regs.h>
 
+/* DDR Transfer rate, bus clock is transfer rate / 2, and the DDRC runs at bus
+ * clock / 2, which is therefor transfer rate / 4.  */
+enum ddr_rate {
+	DDR_4000,
+	DDR_3200,
+	DDR_3000,
+	DDR_2600, /* Unused */
+	DDR_2400,
+	DDR_2376, /* Unused */
+	DDR_1600,
+	DDR_1000, /* Unused */
+	DDR_1066,
+	DDR_667,
+	DDR_400,
+	DDR_250, /* Unused */
+	DDR_100,
+	DDR_NUM_RATES
+};
+
+/* PLL config for IMX8MM type DRAM PLL.  This PLL type isn't documented, but
+ * it looks like it is a basically a fractional PLL:
+ * Frequency = Ref (24 MHz) / P * M / 2^S
+ * Note: Divider is equal to register value
+ */
+#define MDIV(x) ((x) << 12)
+#define PDIV(x) ((x) << 4)
+#define SDIV(x) ((x) << 0)
+
+#define LOCK_STATUS     BIT(31)
+#define LOCK_SEL_MASK   BIT(29)
+#define CLKE_MASK       BIT(11)
+#define RST_MASK        BIT(9)
+#define BYPASS_MASK     BIT(4)
+
+static const struct imx8mm_fracpll_config {
+	uint32_t r1, r2;
+	bool valid;
+} imx8mm_fracpll_table[DDR_NUM_RATES] = {
+	[DDR_4000] = { .valid = true, .r1 = MDIV(250) | PDIV(3) | SDIV(1), .r2 = 0 },
+	[DDR_3200] = { .valid = true, .r1 = MDIV(300) | PDIV(9) | SDIV(0), .r2 = 0 },
+	[DDR_3000] = { .valid = true, .r1 = MDIV(250) | PDIV(8) | SDIV(0), .r2 = 0 },
+	[DDR_2600] = { .valid = true, .r1 = MDIV(325) | PDIV(3) | SDIV(2), .r2 = 0 },
+	[DDR_2400] = { .valid = true, .r1 = MDIV(300) | PDIV(3) | SDIV(2), .r2 = 0 },
+	[DDR_2376] = { .valid = true, .r1 = MDIV( 99) | PDIV(1) | SDIV(2), .r2 = 0 },
+	[DDR_1600] = { .valid = true, .r1 = MDIV(300) | PDIV(9) | SDIV(1), .r2 = 0 },
+	[DDR_1066] = { .valid = true, .r1 = MDIV(400) | PDIV(9) | SDIV(2), .r2 = 0 },
+	[DDR_667]  = { .valid = true, .r1 = MDIV(334) | PDIV(3) | SDIV(4), .r2 = 0 },
+	[DDR_400]  = { .valid = true, .r1 = MDIV(300) | PDIV(9) | SDIV(3), .r2 = 0 },
+};
+
+/* PLL config for IMX8MQ type DRAM PLL.  This is SSCG_PLL:
+ * Frequency = Ref (25 MHz) / divr1 * (2*divf1) / divr2 * divf2 / divq
+ * Note: IMX8MQ RM, §5.1.5.4.4 Fig. 5-8 shows ÷2 on divf2, but this is not true.
+ * Note: divider is register value + 1
+ */
+#define SSCG_PLL_LOCK			BIT(31)
+#define SSCG_PLL_DRAM_PLL_CLKE		BIT(9)
+#define SSCG_PLL_PD			BIT(7)
+#define SSCG_PLL_BYPASS1		BIT(5)
+#define SSCG_PLL_BYPASS2		BIT(4)
+
+#define SSCG_PLL_REF_DIVR2_MASK		(0x3f << 19)
+#define SSCG_PLL_REF_DIVR2_VAL(n)	(((n) << 19) & SSCG_PLL_REF_DIVR2_MASK)
+#define SSCG_PLL_FEEDBACK_DIV_F1_MASK	(0x3f << 13)
+#define SSCG_PLL_FEEDBACK_DIV_F1_VAL(n)	(((n) << 13) & SSCG_PLL_FEEDBACK_DIV_F1_MASK)
+#define SSCG_PLL_FEEDBACK_DIV_F2_MASK	(0x3f << 7)
+#define SSCG_PLL_FEEDBACK_DIV_F2_VAL(n)	(((n) << 7) & SSCG_PLL_FEEDBACK_DIV_F2_MASK)
+#define SSCG_PLL_OUTPUT_DIV_VAL_MASK	(0x3f << 1)
+#define SSCG_PLL_OUTPUT_DIV_VAL(n)	(((n) << 1) & SSCG_PLL_OUTPUT_DIV_VAL_MASK)
+
+#define SSCG_PLL_CFG2(divf1, divr2, divf2, divq) \
+	(SSCG_PLL_FEEDBACK_DIV_F1_VAL(divf1) | SSCG_PLL_FEEDBACK_DIV_F2_VAL(divf2) | \
+	SSCG_PLL_REF_DIVR2_VAL(divr2) | SSCG_PLL_OUTPUT_DIV_VAL(divq))
+
+static const struct imx8mq_ssgcpll_config {
+	uint32_t val;
+	bool valid;
+} imx8mq_ssgcpll_table[DDR_NUM_RATES] = {
+	[DDR_3200] = { .valid = true, .val = SSCG_PLL_CFG2(39, 29, 11, 0) },
+	[DDR_2400] = { .valid = true, .val = SSCG_PLL_CFG2(39, 29, 17, 1) },
+	[DDR_1600] = { .valid = true, .val = SSCG_PLL_CFG2(39, 29, 11, 1) },
+	[DDR_667]  = { .valid = true, .val = SSCG_PLL_CFG2(45, 30, 8, 3) }, /* ~166.935 MHz = 667.74 */
+};
+
+/* IMX8M Bypass clock config.  These configure dram_alt1_clk and the dram apb
+ * clock.  For the bypass config, clock rate = DRAM tranfer rate, rather than
+ * clock = dram / 4
+ */
+
+/* prediv is actual divider, register will be set to divider - 1 */
+#define CCM_ROOT_CFG(mux, prediv) (IMX8M_CCM_TARGET_ROOTn_ENABLE | \
+	IMX8M_CCM_TARGET_ROOTn_MUX(mux) | IMX8M_CCM_TARGET_ROOTn_PRE_DIV(prediv-1))
+
+static const struct imx8m_bypass_config {
+	uint32_t alt_clk;
+	uint32_t apb_clk;
+	bool valid;
+} imx8m_bypass_table[DDR_NUM_RATES] = {
+	[DDR_400] = { .valid = true, .alt_clk = CCM_ROOT_CFG(1, 2), .apb_clk = CCM_ROOT_CFG(3, 2) },
+	[DDR_250] = { .valid = true, .alt_clk = CCM_ROOT_CFG(3, 2), .apb_clk = CCM_ROOT_CFG(2, 2) },
+	[DDR_100] = { .valid = true, .alt_clk = CCM_ROOT_CFG(2, 1), .apb_clk = CCM_ROOT_CFG(2, 2) },
+};
+
 void ddrc_phy_load_firmware(void __iomem *phy,
 			    enum ddrc_phy_firmware_offset offset,
 			    const u16 *blob, size_t size)
@@ -102,64 +205,18 @@ int wait_ddrphy_training_complete(void)
 	}
 }
 
-struct dram_bypass_clk_setting {
-	ulong clk;
-	int alt_root_sel;
-	int alt_pre_div;
-	int apb_root_sel;
-	int apb_pre_div;
-};
-
-#define MHZ(x)	(1000000UL * (x))
-
-static struct dram_bypass_clk_setting imx8mq_dram_bypass_tbl[] = {
-	{
-		.clk = MHZ(100),
-		.alt_root_sel = 2,
-		.alt_pre_div = 1 - 1,
-		.apb_root_sel = 2,
-		.apb_pre_div = 2 - 1,
-	} , {
-		.clk = MHZ(250),
-		.alt_root_sel = 3,
-		.alt_pre_div = 2 - 1,
-		.apb_root_sel = 2,
-		.apb_pre_div = 2 - 1,
-	}, {
-		.clk = MHZ(400),
-		.alt_root_sel = 1,
-		.alt_pre_div = 2 - 1,
-		.apb_root_sel = 3,
-		.apb_pre_div = 2 - 1,
-	},
-};
-
-static void dram_enable_bypass(ulong clk_val)
+static void dram_enable_bypass(enum ddr_rate drate)
 {
-	int i;
-	struct dram_bypass_clk_setting *config;
+	const struct imx8m_bypass_config *config = &imx8m_bypass_table[drate];
 
-	for (i = 0; i < ARRAY_SIZE(imx8mq_dram_bypass_tbl); i++) {
-		if (clk_val == imx8mq_dram_bypass_tbl[i].clk)
-			break;
-	}
-
-	if (i == ARRAY_SIZE(imx8mq_dram_bypass_tbl)) {
-		printf("No matched freq table %lu\n", clk_val);
+	if (!config->valid) {
+		printf("No matched freq table entry %u\n", drate);
 		return;
 	}
 
-	config = &imx8mq_dram_bypass_tbl[i];
-
-	imx8m_clock_set_target_val(IMX8M_DRAM_ALT_CLK_ROOT,
-				   IMX8M_CCM_TARGET_ROOTn_ENABLE |
-				   IMX8M_CCM_TARGET_ROOTn_MUX(config->alt_root_sel) |
-				   IMX8M_CCM_TARGET_ROOTn_PRE_DIV(config->alt_pre_div));
-        imx8m_clock_set_target_val(IMX8M_DRAM_APB_CLK_ROOT,
-				   IMX8M_CCM_TARGET_ROOTn_ENABLE |
-				   IMX8M_CCM_TARGET_ROOTn_MUX(config->apb_root_sel) |
-				   IMX8M_CCM_TARGET_ROOTn_PRE_DIV(config->apb_pre_div));
-        imx8m_clock_set_target_val(IMX8M_DRAM_SEL_CFG, IMX8M_CCM_TARGET_ROOTn_ENABLE |
+	imx8m_clock_set_target_val(IMX8M_DRAM_ALT_CLK_ROOT, config->alt_clk);
+	imx8m_clock_set_target_val(IMX8M_DRAM_APB_CLK_ROOT, config->apb_clk);
+	imx8m_clock_set_target_val(IMX8M_DRAM_SEL_CFG, IMX8M_CCM_TARGET_ROOTn_ENABLE |
 				   IMX8M_CCM_TARGET_ROOTn_MUX(1));
 }
 
@@ -174,56 +231,15 @@ static void dram_disable_bypass(void)
 				   IMX8M_CCM_TARGET_ROOTn_PRE_DIV(5 - 1));
 }
 
-struct imx_int_pll_rate_table {
-	u32 rate;
-	u32 r1;
-	u32 r2;
-};
-
-#define MDIV(x) ((x) << 12)
-#define PDIV(x) ((x) << 4)
-#define SDIV(x) ((x) << 0)
-
-#define LOCK_STATUS     BIT(31)
-#define LOCK_SEL_MASK   BIT(29)
-#define CLKE_MASK       BIT(11)
-#define RST_MASK        BIT(9)
-#define BYPASS_MASK     BIT(4)
-
-static struct imx_int_pll_rate_table imx8mm_fracpll_tbl[] = {
-	{ .rate = 1000000000U, .r1 = MDIV(250) | PDIV(3) | SDIV(1), .r2 = 0 },
-	{ .rate = 800000000U,  .r1 = MDIV(300) | PDIV(9) | SDIV(0), .r2 = 0 },
-	{ .rate = 750000000U,  .r1 = MDIV(250) | PDIV(8) | SDIV(0), .r2 = 0 },
-	{ .rate = 650000000U,  .r1 = MDIV(325) | PDIV(3) | SDIV(2), .r2 = 0 },
-	{ .rate = 600000000U,  .r1 = MDIV(300) | PDIV(3) | SDIV(2), .r2 = 0 },
-	{ .rate = 594000000U,  .r1 = MDIV( 99) | PDIV(1) | SDIV(2), .r2 = 0 },
-	{ .rate = 400000000U,  .r1 = MDIV(300) | PDIV(9) | SDIV(1), .r2 = 0 },
-	{ .rate = 266666667U,  .r1 = MDIV(400) | PDIV(9) | SDIV(2), .r2 = 0 },
-	{ .rate = 167000000U,  .r1 = MDIV(334) | PDIV(3) | SDIV(4), .r2 = 0 },
-	{ .rate = 100000000U,  .r1 = MDIV(300) | PDIV(9) | SDIV(3), .r2 = 0 },
-};
-
-static struct imx_int_pll_rate_table *fracpll(u32 freq)
-{
-	int i;
-
-	for (i = 0; i < ARRAY_SIZE(imx8mm_fracpll_tbl); i++)
-		if (freq == imx8mm_fracpll_tbl[i].rate)
-			return &imx8mm_fracpll_tbl[i];
-
-	return NULL;
-}
-
-static int dram_frac_pll_init(u32 freq)
+static int dram_frac_pll_init(enum ddr_rate drate)
 {
 	volatile int i;
 	u32 tmp;
 	void *pll_base;
-	struct imx_int_pll_rate_table *rate;
+	const struct imx8mm_fracpll_config *config = &imx8mm_fracpll_table[drate];
 
-	rate = fracpll(freq);
-	if (!rate) {
-		printf("No matched freq table %u\n", freq);
+	if (!config->valid) {
+		printf("No matched freq table entry %u\n", drate);
 		return -EINVAL;
 	}
 
@@ -242,8 +258,8 @@ static int dram_frac_pll_init(u32 freq)
 	tmp &= ~RST_MASK;
 	writel(tmp, pll_base);
 
-	writel(rate->r1, pll_base + 4);
-	writel(rate->r2, pll_base + 8);
+	writel(config->r1, pll_base + 4);
+	writel(config->r2, pll_base + 8);
 
 	for (i = 0; i < 1000; i++);
 
@@ -261,25 +277,16 @@ static int dram_frac_pll_init(u32 freq)
 	return 0;
 }
 
-#define SSCG_PLL_LOCK			BIT(31)
-#define SSCG_PLL_DRAM_PLL_CLKE		BIT(9)
-#define SSCG_PLL_PD			BIT(7)
-#define SSCG_PLL_BYPASS1		BIT(5)
-#define SSCG_PLL_BYPASS2		BIT(4)
-
-#define SSCG_PLL_REF_DIVR2_MASK		(0x3f << 19)
-#define SSCG_PLL_REF_DIVR2_VAL(n)	(((n) << 19) & SSCG_PLL_REF_DIVR2_MASK)
-#define SSCG_PLL_FEEDBACK_DIV_F1_MASK	(0x3f << 13)
-#define SSCG_PLL_FEEDBACK_DIV_F1_VAL(n)	(((n) << 13) & SSCG_PLL_FEEDBACK_DIV_F1_MASK)
-#define SSCG_PLL_FEEDBACK_DIV_F2_MASK	(0x3f << 7)
-#define SSCG_PLL_FEEDBACK_DIV_F2_VAL(n)	(((n) << 7) & SSCG_PLL_FEEDBACK_DIV_F2_MASK)
-#define SSCG_PLL_OUTPUT_DIV_VAL_MASK	(0x3f << 1)
-#define SSCG_PLL_OUTPUT_DIV_VAL(n)	(((n) << 1) & SSCG_PLL_OUTPUT_DIV_VAL_MASK)
-
-static int dram_sscg_pll_init(u32 freq)
+static int dram_sscg_pll_init(enum ddr_rate drate)
 {
 	u32 val;
 	void __iomem *pll_base = IOMEM(MX8M_ANATOP_BASE_ADDR) + 0x60;
+	const struct imx8mq_ssgcpll_config *config = &imx8mq_ssgcpll_table[drate];
+
+	if (!config->valid) {
+		printf("No matched freq table entry %u\n", drate);
+		return -EINVAL;
+	}
 
 	/* Bypass */
 	setbits_le32(pll_base, SSCG_PLL_BYPASS1 | SSCG_PLL_BYPASS2);
@@ -289,36 +296,7 @@ static int dram_sscg_pll_init(u32 freq)
 		 SSCG_PLL_FEEDBACK_DIV_F2_MASK |
 		 SSCG_PLL_FEEDBACK_DIV_F1_MASK |
 		 SSCG_PLL_REF_DIVR2_MASK);
-
-	switch (freq) {
-	case MHZ(800):
-		val |= SSCG_PLL_OUTPUT_DIV_VAL(0);
-		val |= SSCG_PLL_FEEDBACK_DIV_F2_VAL(11);
-		val |= SSCG_PLL_FEEDBACK_DIV_F1_VAL(39);
-		val |= SSCG_PLL_REF_DIVR2_VAL(29);
-		break;
-	case MHZ(600):
-		val |= SSCG_PLL_OUTPUT_DIV_VAL(1);
-		val |= SSCG_PLL_FEEDBACK_DIV_F2_VAL(17);
-		val |= SSCG_PLL_FEEDBACK_DIV_F1_VAL(39);
-		val |= SSCG_PLL_REF_DIVR2_VAL(29);
-		break;
-	case MHZ(400):
-		val |= SSCG_PLL_OUTPUT_DIV_VAL(1);
-		val |= SSCG_PLL_FEEDBACK_DIV_F2_VAL(11);
-		val |= SSCG_PLL_FEEDBACK_DIV_F1_VAL(39);
-		val |= SSCG_PLL_REF_DIVR2_VAL(29);
-		break;
-	case MHZ(167):
-		val |= SSCG_PLL_OUTPUT_DIV_VAL(3);
-		val |= SSCG_PLL_FEEDBACK_DIV_F2_VAL(8);
-		val |= SSCG_PLL_FEEDBACK_DIV_F1_VAL(45);
-		val |= SSCG_PLL_REF_DIVR2_VAL(30);
-		break;
-	default:
-		break;
-	}
-
+	val |= config->val;
 	writel(val, pll_base + 0x8);
 
 	/* Clear power down bit */
@@ -337,58 +315,43 @@ static int dram_sscg_pll_init(u32 freq)
 	return 0;
 }
 
-static int dram_pll_init(u32 freq, enum ddrc_type type)
+static int dram_pll_init(enum ddr_rate drate, enum ddrc_type type)
 {
 	switch (type) {
 	case DDRC_TYPE_MQ:
-		return dram_sscg_pll_init(freq);
+		return dram_sscg_pll_init(drate);
 	case DDRC_TYPE_MM:
+	case DDRC_TYPE_MN:
 	case DDRC_TYPE_MP:
-		return dram_frac_pll_init(freq);
+		return dram_frac_pll_init(drate);
 	default:
 		return -ENODEV;
 	}
 }
 
-void ddrphy_init_set_dfi_clk(unsigned int drate, enum ddrc_type type)
+void ddrphy_init_set_dfi_clk(unsigned int drate_mhz, enum ddrc_type type)
 {
-	switch (drate) {
-	case 4000:
-		dram_pll_init(MHZ(1000), type);
-		dram_disable_bypass();
-		break;
-	case 3200:
-		dram_pll_init(MHZ(800), type);
-		dram_disable_bypass();
-		break;
-	case 3000:
-		dram_pll_init(MHZ(750), type);
-		dram_disable_bypass();
-		break;
-	case 2400:
-		dram_pll_init(MHZ(600), type);
-		dram_disable_bypass();
-		break;
-	case 1600:
-		dram_pll_init(MHZ(400), type);
-		dram_disable_bypass();
-		break;
-	case 1066:
-		dram_pll_init(MHZ(266),type);
-		dram_disable_bypass();
-		break;
-	case 667:
-		dram_pll_init(MHZ(167), type);
-		dram_disable_bypass();
-		break;
-	case 400:
-		dram_enable_bypass(MHZ(400));
-		break;
-	case 100:
-		dram_enable_bypass(MHZ(100));
-		break;
+	enum ddr_rate drate;
+
+	switch (drate_mhz) {
+	case 4000: drate = DDR_4000; break;
+	case 3200: drate = DDR_3200; break;
+	case 3000: drate = DDR_3000; break;
+	case 2400: drate = DDR_2400; break;
+	case 1600: drate = DDR_1600; break;
+	case 1066: drate = DDR_1066; break;
+	case 667: drate = DDR_667; break;
+	case 400: drate = DDR_400; break;
+	case 100: drate = DDR_100; break;
 	default:
 		return;
+	}
+
+	if (drate_mhz > 400) {
+		dram_pll_init(drate, type);
+		dram_disable_bypass();
+	} else {
+		dram_enable_bypass(drate);
 	}
 }
 

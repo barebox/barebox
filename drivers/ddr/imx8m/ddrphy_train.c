@@ -11,17 +11,29 @@
 #include <firmware.h>
 #include <mach/imx8m-regs.h>
 
-void ddr_load_train_code(enum fw_type type)
+void ddr_load_train_code(enum dram_type dram_type, enum fw_type fw_type)
 {
 	const u16 *imem, *dmem;
 	size_t isize, dsize;
 
-	if (type == FW_1D_IMAGE) {
-		get_builtin_firmware(lpddr4_pmu_train_1d_imem_bin, &imem, &isize);
-		get_builtin_firmware(lpddr4_pmu_train_1d_dmem_bin, &dmem, &dsize);
+	if (dram_is_lpddr4(dram_type)) {
+		if (fw_type == FW_1D_IMAGE) {
+			get_builtin_firmware(lpddr4_pmu_train_1d_imem_bin, &imem, &isize);
+			get_builtin_firmware(lpddr4_pmu_train_1d_dmem_bin, &dmem, &dsize);
+		} else {
+			get_builtin_firmware(lpddr4_pmu_train_2d_imem_bin, &imem, &isize);
+			get_builtin_firmware(lpddr4_pmu_train_2d_dmem_bin, &dmem, &dsize);
+		}
+	} else if (dram_is_ddr4(dram_type)) {
+		if (fw_type == FW_1D_IMAGE) {
+			get_builtin_firmware(ddr4_imem_1d_bin, &imem, &isize);
+			get_builtin_firmware(ddr4_dmem_1d_bin, &dmem, &dsize);
+		} else {
+			get_builtin_firmware(ddr4_imem_2d_bin, &imem, &isize);
+			get_builtin_firmware(ddr4_dmem_2d_bin, &dmem, &dsize);
+		}
 	} else {
-		get_builtin_firmware(lpddr4_pmu_train_2d_imem_bin, &imem, &isize);
-		get_builtin_firmware(lpddr4_pmu_train_2d_dmem_bin, &dmem, &dsize);
+		panic("No matching DDR PHY firmware found");
 	}
 
 	ddrc_phy_load_firmware(IOMEM(MX8M_DDRC_PHY_BASE_ADDR),
@@ -58,7 +70,7 @@ int ddr_cfg_phy(struct dram_timing_info *dram_timing, enum ddrc_type type)
 
 		/* load the dram training firmware image */
 		dwc_ddrphy_apb_wr(0xd0000, 0x0);
-		ddr_load_train_code(fsp_msg->fw_type);
+		ddr_load_train_code(dram_timing->dram_type, fsp_msg->fw_type);
 
 		/* load the frequency set point message block parameter */
 		dram_cfg = fsp_msg->fsp_cfg;

@@ -6,6 +6,7 @@
 
 #include <common.h>
 #include <firmware.h>
+#include <image-metadata.h>
 #include <linux/sizes.h>
 #include <mach/generic.h>
 #include <asm/barebox-arm-head.h>
@@ -199,6 +200,9 @@ ENTRY_FUNCTION(start_zii_imx8mq_dev, r0, r1, r2)
 	imx8mq_cpu_lowlevel_init();
 	relocate_to_current_adr();
 	setup_c();
+
+	IMD_USED_OF(imx8mq_zii_ultra_rmb3);
+	IMD_USED_OF(imx8mq_zii_ultra_zest);
 
 	zii_imx8mq_dev_start();
 }

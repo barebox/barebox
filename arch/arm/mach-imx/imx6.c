@@ -43,6 +43,11 @@ static void imx6_init_lowlevel(void)
 	uint32_t periph_sel_2;
 	uint32_t reg;
 
+	/*
+	 * Before reset the controller imx6_boot_save_loc() must be called to
+	 * detect serial-downloader fall back boots. For further information
+	 * check the comment in imx6_get_boot_source().
+	 */
 	if ((readl(MXC_CCM_CCGR6) & 0x3))
 		imx_reset_otg_controller(IOMEM(MX6_OTG_BASE_ADDR));
 
@@ -205,9 +210,9 @@ int imx6_init(void)
 	void __iomem *src = IOMEM(MX6_SRC_BASE_ADDR);
 	u64 mx6_uid;
 
-	imx6_init_lowlevel();
-
 	imx6_boot_save_loc();
+
+	imx6_init_lowlevel();
 
 	mx6_silicon_revision = imx6_cpu_revision();
 	mx6_uid = imx6_uid();

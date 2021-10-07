@@ -5,6 +5,7 @@
 #include <mach/generic.h>
 #include <mach/imx8mq-regs.h>
 #include <mach/imx8mm-regs.h>
+#include <mach/imx8mn-regs.h>
 #include <mach/imx8mp-regs.h>
 #include <mach/revision.h>
 #include <linux/bitfield.h>
@@ -16,6 +17,7 @@
 
 #define MX8MQ_ANATOP_DIGPROG	0x6c
 #define MX8MM_ANATOP_DIGPROG	0x800
+#define MX8MN_ANATOP_DIGPROG	0x800
 #define MX8MP_ANATOP_DIGPROG	0x800
 
 #define DIGPROG_MAJOR	GENMASK(23, 8)
@@ -23,6 +25,7 @@
 
 #define IMX8M_CPUTYPE_IMX8MQ	0x8240
 #define IMX8M_CPUTYPE_IMX8MM	0x8241
+#define IMX8M_CPUTYPE_IMX8MN	0x8242
 #define IMX8M_CPUTYPE_IMX8MP	0x8243
 
 static inline int imx8mm_cpu_revision(void)
@@ -30,6 +33,14 @@ static inline int imx8mm_cpu_revision(void)
 	void __iomem *anatop = IOMEM(MX8MM_ANATOP_BASE_ADDR);
 	uint32_t revision = FIELD_GET(DIGPROG_MINOR,
 				      readl(anatop + MX8MM_ANATOP_DIGPROG));
+	return revision;
+}
+
+static inline int imx8mn_cpu_revision(void)
+{
+	void __iomem *anatop = IOMEM(MX8MN_ANATOP_BASE_ADDR);
+	uint32_t revision = FIELD_GET(DIGPROG_MINOR,
+				      readl(anatop + MX8MN_ANATOP_DIGPROG));
 	return revision;
 }
 

@@ -37,9 +37,12 @@
 #define BM_USBPHY_CTRL_ENHOSTDISCONDETECT	BIT(1)
 
 #define ANADIG_USB1_CHRG_DETECT_SET		0x1b4
-#define ANADIG_USB2_CHRG_DETECT_SET		0x214
 #define ANADIG_USB1_CHRG_DETECT_EN_B		BIT(20)
 #define ANADIG_USB1_CHRG_DETECT_CHK_CHRG_B	BIT(19)
+#define ANADIG_USB1_VBUS_DETECT_STAT		0x1c0
+#define ANADIG_USB1_VBUS_DETECT_STAT_VBUS_VALID	BIT(3)
+#define ANADIG_USB2_CHRG_DETECT_SET		0x214
+#define ANADIG_USB2_VBUS_DETECT_STAT		0x220
 
 struct imx_usbphy {
 	struct usb_phy usb_phy;
@@ -49,6 +52,8 @@ struct imx_usbphy {
 	struct clk *clk;
 	struct phy_provider *provider;
 	int port_id;
+
+	unsigned int vbus_valid;
 };
 
 static int imx_usbphy_phy_init(struct phy *phy)
@@ -132,6 +137,21 @@ static const struct phy_ops imx_phy_ops = {
 	.to_usbphy = imx_usbphy_to_usbphy,
 };
 
+static int imx_usbphy_get_vbus_state(struct param_d *p, void *priv)
+{
+	struct imx_usbphy *imxphy = priv;
+	unsigned int reg, val;
+
+	reg = imxphy->port_id ?
+		ANADIG_USB1_VBUS_DETECT_STAT :
+		ANADIG_USB2_VBUS_DETECT_STAT;
+	val = readl(imxphy->anatop + reg);
+
+	imxphy->vbus_valid  = !!(val & ANADIG_USB1_VBUS_DETECT_STAT_VBUS_VALID);
+
+	return 0;
+}
+
 static int imx_usbphy_probe(struct device_d *dev)
 {
 	struct resource *iores;
@@ -154,6 +174,15 @@ static int imx_usbphy_probe(struct device_d *dev)
 		ret = PTR_ERR_OR_ZERO(imxphy->anatop);
 		if (ret)
 			goto err_free;
+
+		/*
+		 * This is useful in case of usb-otg = device. In host case
+		 * it isn't that useful since we are the supplier of the vbus
+		 * signal.
+		 */
+		dev_add_param_bool(dev, "vbus_valid", param_set_readonly,
+				   imx_usbphy_get_vbus_state,
+				   &imxphy->vbus_valid, imxphy);
 	}
 
 	iores = dev_request_mem_resource(dev, 0);

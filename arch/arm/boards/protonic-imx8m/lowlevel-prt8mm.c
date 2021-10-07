@@ -2,6 +2,7 @@
 
 #include <asm/barebox-arm.h>
 #include <common.h>
+#include <image-metadata.h>
 #include <debug_ll.h>
 #include <firmware.h>
 #include <mach/atf.h>
@@ -117,6 +118,8 @@ ENTRY_FUNCTION(start_prt_prt8mm, r0, r1, r2)
 
 	relocate_to_current_adr();
 	setup_c();
+
+	IMD_USED_OF(imx8mm_prt8mm);
 
 	prt_prt8mm_start();
 }

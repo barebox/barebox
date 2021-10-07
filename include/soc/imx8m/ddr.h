@@ -329,6 +329,11 @@ enum fw_type {
 	FW_2D_IMAGE,
 };
 
+enum dram_type {
+	DRAM_TYPE_LPDDR4,
+	DRAM_TYPE_DDR4,
+};
+
 struct dram_cfg_param {
 	unsigned int reg;
 	unsigned int val;
@@ -342,6 +347,7 @@ struct dram_fsp_msg {
 };
 
 struct dram_timing_info {
+	enum dram_type dram_type;
 	/* umctl2 config */
 	struct dram_cfg_param *ddrc_cfg;
 	unsigned int ddrc_cfg_num;
@@ -365,11 +371,13 @@ extern struct dram_timing_info dram_timing;
 
 enum ddrc_type {
 	DDRC_TYPE_MM,
+	DDRC_TYPE_MN,
 	DDRC_TYPE_MQ,
 	DDRC_TYPE_MP,
 };
 
 int imx8mm_ddr_init(struct dram_timing_info *timing_info);
+int imx8mn_ddr_init(struct dram_timing_info *timing_info);
 int imx8mq_ddr_init(struct dram_timing_info *timing_info);
 int imx8mp_ddr_init(struct dram_timing_info *timing_info);
 int ddr_cfg_phy(struct dram_timing_info *timing_info, enum ddrc_type type);
@@ -407,11 +415,23 @@ enum ddrc_phy_firmware_offset {
 	DDRC_PHY_DMEM = 0x00054000U,
 };
 
-void ddr_load_train_code(enum fw_type type);
+void ddr_load_train_code(enum dram_type dram_type, enum fw_type type);
 
 void ddrc_phy_load_firmware(void __iomem *,
 			    enum ddrc_phy_firmware_offset,
 			    const u16 *, size_t);
+
+static inline bool dram_is_lpddr4(enum dram_type type)
+{
+	return IS_ENABLED(CONFIG_FIRMWARE_IMX_LPDDR4_PMU_TRAIN) &&
+		type == DRAM_TYPE_LPDDR4;
+}
+
+static inline bool dram_is_ddr4(enum dram_type type)
+{
+	return IS_ENABLED(CONFIG_FIRMWARE_IMX_DDR4_PMU_TRAIN) &&
+		type == DRAM_TYPE_DDR4;
+}
 
 #define DDRC_PHY_REG(x)	((x) * 4)
 

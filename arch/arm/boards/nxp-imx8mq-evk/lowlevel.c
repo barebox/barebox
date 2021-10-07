@@ -2,6 +2,7 @@
 
 #include <common.h>
 #include <firmware.h>
+#include <image-metadata.h>
 #include <linux/sizes.h>
 #include <mach/generic.h>
 #include <asm/barebox-arm-head.h>
@@ -105,6 +106,8 @@ ENTRY_FUNCTION(start_nxp_imx8mq_evk, r0, r1, r2)
 
 	relocate_to_current_adr();
 	setup_c();
+
+	IMD_USED_OF(imx8mq_evk);
 
 	nxp_imx8mq_evk_start();
 }

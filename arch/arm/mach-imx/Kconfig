@@ -186,6 +186,10 @@ config ARCH_IMX8MM
 	select ARCH_IMX8M
 	bool
 
+config ARCH_IMX8MN
+	select ARCH_IMX8M
+	bool
+
 config ARCH_IMX8MP
 	select ARCH_IMX8M
 	bool
@@ -553,6 +557,18 @@ config MACH_NXP_IMX8MM_EVK
 	select IMX8M_DRAM
 	select I2C_IMX_EARLY
 	select USB_GADGET_DRIVER_ARC_PBL
+
+config MACH_NXP_IMX8MN_EVK
+	bool "NXP i.MX8MN EVK Board"
+	select ARCH_IMX8MN
+	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
+	select FIRMWARE_IMX_DDR4_PMU_TRAIN
+	select FIRMWARE_IMX8MN_ATF
+	select ARM_SMCCC
+	select MCI_IMX_ESDHC_PBL
+	select IMX8M_DRAM
+	select I2C_IMX_EARLY
+	select ARM_USE_COMPRESSED_DTB
 
 config MACH_NXP_IMX8MP_EVK
 	bool "NXP i.MX8MP EVK Board"

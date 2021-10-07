@@ -25,6 +25,40 @@
 
 #define esdhc_send_cmd	__esdhc_send_cmd
 
+static u8 ext_csd[512] __aligned(64);
+
+static int esdhc_send_ext_csd(struct fsl_esdhc_host *host)
+{
+	struct mci_cmd cmd;
+	struct mci_data data;
+
+	cmd.cmdidx = MMC_CMD_SEND_EXT_CSD;
+	cmd.cmdarg = 0;
+	cmd.resp_type = MMC_RSP_R1;
+
+	data.dest = ext_csd;
+	data.blocks = 1;
+	data.blocksize = sizeof(ext_csd);
+	data.flags = MMC_DATA_READ;
+
+	return esdhc_send_cmd(host, &cmd, &data);
+}
+
+static bool esdhc_bootpart_active(struct fsl_esdhc_host *host)
+{
+	unsigned bootpart;
+
+	int ret = esdhc_send_ext_csd(host);
+	if (ret)
+		return false;
+
+	bootpart = (ext_csd[EXT_CSD_PARTITION_CONFIG] >> 3) & 0x7;
+	if (bootpart == 1 || bootpart == 2)
+		return true;
+
+	return false;
+}
+
 static int esdhc_read_blocks(struct fsl_esdhc_host *host, void *dst, size_t len)
 {
 	struct mci_cmd cmd;
@@ -143,8 +177,8 @@ esdhc_load_image(struct fsl_esdhc_host *host, ptrdiff_t address,
 		 *
 		 *     buf + ofs = entry
 		 *
-		 * solving the above for 'buf' gvies us the
-		 * adjustement that needs to be made:
+		 * solving the above for 'buf' gives us the
+		 * adjustment that needs to be made:
 		 *
 		 *     buf = entry - ofs
 		 *
@@ -338,15 +372,21 @@ int imx8mp_esdhc_load_image(int instance, bool start)
 {
 	struct esdhc_soc_data data;
 	struct fsl_esdhc_host host = { 0 };
+	u32 offset;
 	int ret;
 
 	ret = imx8m_esdhc_init(&host, &data, instance);
 	if (ret)
 		return ret;
 
+	offset = esdhc_bootpart_active(&host)? 0 : SZ_32K;
+
 	return esdhc_load_image(&host, MX8M_DDR_CSD1_BASE_ADDR,
-				MX8MQ_ATF_BL33_BASE_ADDR, SZ_32K, 0, start);
+				MX8MQ_ATF_BL33_BASE_ADDR, offset, 0, start);
 }
+
+int imx8mn_esdhc_load_image(int instance, bool start)
+	__alias(imx8mp_esdhc_load_image);
 #endif
 
 #ifdef CONFIG_ARCH_LS1046

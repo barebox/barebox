@@ -146,7 +146,7 @@ void ddr_cfg_phy(void) {
 	//enable APB bus to access DDRPHY RAM
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0xd0000, 0x0);
 	//load the 1D training image
-	ddr_load_train_code(FW_1D_IMAGE);
+	ddr_load_train_code(DRAM_TYPE_LPDDR4, FW_1D_IMAGE);
 
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54003,0xc80);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54004,0x2);
@@ -222,7 +222,7 @@ void ddr_cfg_phy(void) {
 	//enable APB bus to access DDRPHY RAM
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0xd0000, 0x0);
 	//load the 1D training image
-	ddr_load_train_code(FW_1D_IMAGE);
+	ddr_load_train_code(DRAM_TYPE_LPDDR4, FW_1D_IMAGE);
 
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54002,0x1);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54003,0x29c);
@@ -298,7 +298,7 @@ void ddr_cfg_phy(void) {
 	//enable APB bus to access DDRPHY RAM
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0xd0000, 0x0);
 	//load the 2D training image
-	ddr_load_train_code(FW_2D_IMAGE);
+	ddr_load_train_code(DRAM_TYPE_LPDDR4, FW_2D_IMAGE);
 
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54003,0xc80);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54004,0x2);

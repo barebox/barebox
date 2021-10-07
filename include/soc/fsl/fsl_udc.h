@@ -1,6 +1,9 @@
 #ifndef __FSL_UDC_H
 #define __FSL_UDC_H
 
+#include <linux/types.h>
+#include <io.h>
+
 /* USB DR device mode registers (Little Endian) */
 struct usb_dr_device {
 	/* Capability register */
@@ -379,5 +382,13 @@ int imx_barebox_start_usb(void __iomem *dr, void *dest);
 
 int imx8mm_barebox_load_usb(void *dest);
 int imx8mm_barebox_start_usb(void *dest);
+
+static inline bool is_chipidea_udc_running(void __iomem *dr)
+{
+	struct usb_dr_device __iomem *dr_regs = dr;
+
+	return (readl(&dr_regs->usbmode) & USB_MODE_CTRL_MODE_DEVICE)
+		&& (readl(&dr_regs->usbcmd) & USB_CMD_RUN_STOP);
+}
 
 #endif /* __FSL_UDC_H */

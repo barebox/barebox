@@ -47,6 +47,11 @@ void imx8mm_atf_load_bl31(const void *fw, size_t fw_size)
 	imx8m_atf_load_bl31(fw, fw_size, (void *)MX8MM_ATF_BL31_BASE_ADDR);
 }
 
+void imx8mn_atf_load_bl31(const void *fw, size_t fw_size)
+{
+	imx8m_atf_load_bl31(fw, fw_size, (void *)MX8MN_ATF_BL31_BASE_ADDR);
+}
+
 void imx8mp_atf_load_bl31(const void *fw, size_t fw_size)
 {
 	imx8m_atf_load_bl31(fw, fw_size, (void *)MX8MP_ATF_BL31_BASE_ADDR);

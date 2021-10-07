@@ -6,8 +6,7 @@
 
 /dts-v1/;
 
-#include <arm64/freescale/imx8mm-evk.dts>
-#include "imx8mm.dtsi"
+#include <arm64/freescale/imx8mn-evk.dts>
 
 / {
 	chosen {

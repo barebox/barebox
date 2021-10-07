@@ -357,6 +357,7 @@ static __maybe_unused struct of_device_id fsl_esdhc_compatible[] = {
 	{ .compatible = "fsl,imx6sx-usdhc", .data = &usdhc_imx6sx_data },
 	{ .compatible = "fsl,imx8mq-usdhc", .data = &usdhc_imx6sx_data },
 	{ .compatible = "fsl,imx8mm-usdhc", .data = &usdhc_imx6sx_data },
+	{ .compatible = "fsl,imx8mn-usdhc", .data = &usdhc_imx6sx_data },
 	{ .compatible = "fsl,imx8mp-usdhc", .data = &usdhc_imx6sx_data },
 	{ .compatible = "fsl,ls1046a-esdhc",.data = &esdhc_ls_data  },
 	{ /* sentinel */ }

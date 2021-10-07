@@ -262,3 +262,48 @@ the usage for a particular command. barebox has tab completion which will comple
 your command. Arguments to commands are also completed depending on the command. If
 a command expects a file argument only files will be offered as completion. Other
 commands will only complete devices or devicetree nodes.
+
+Building barebox tools
+----------------------
+
+The normal barebox build results in one or more barebox images (cf. :ref:`multi_image`)
+and a number of tools built from its ``scripts/`` directory.
+
+Most tools are used for the barebox build itself: e.g. the device tree compiler,
+the Kconfig machinery and the different image formatting tools that wrap barebox,
+so it may be loaded by the boot ROM of the relevant SoCs.
+
+In addition to these barebox also builds host and target tools that are useful
+outside of barebox build: e.g. to manipulate the environment or to load an
+image over a boot ROM's USB recovery protocol.
+
+There are two ``ARCH=sandbox`` to make this more straight forward:
+
+Host Tools
+^^^^^^^^^^
+
+The ``hosttools_defconfig`` will compile standalone host tools for the
+host (build) system. To build the USB loaders, ``pkg-config`` needs to know
+about ``libusb-1.0``.
+
+.. code-block:: console
+
+  export ARCH=sandbox
+  make hosttools_defconfig
+  make scripts
+
+Target Tools
+^^^^^^^^^^^^
+
+The ``targettools_defconfig`` will cross-compile standalone target tools for the
+target system.  To build the USB loaders, ``CROSS_PKG_CONFIG`` needs to know
+about ``libusb-1.0``. This config won't built any host tools, so it's ok to
+set ``CROSS_PKG_CONFIG=pkg-config`` if ``pkg-config`` is primed for target
+use. The default is ``CROSS_PKG_CONFIG=$(CROSS_COMPILE)pkg-config``. Example:
+
+.. code-block:: console
+
+  export ARCH=sandbox CROSS_COMPILE=aarch64-linux-gnu-
+  export CROSS_PKG_CONFIG=pkg-config
+  make targettools_defconfig
+  make scripts

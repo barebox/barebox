@@ -40,3 +40,68 @@ config OMAP4_HOSTTOOL_USBBOOT
 	  You need libusb-1.0 to compile this tool.
 
 endmenu
+
+menu "Target Tools"
+
+config IMD_TARGET
+	bool "build bareboximd target tool"
+	depends on IMD
+
+config KERNEL_INSTALL_TARGET
+	bool
+	prompt "Build kernel-install utility for the target"
+	help
+	  Enable this to compile the kernel-install script using the cross
+	  compiler. The utility for the target will be under
+	  scripts/kernel-install-target
+
+config BAREBOXENV_TARGET
+	bool
+	prompt "build bareboxenv tool for target"
+	help
+	  'bareboxenv' is a tool to access the barebox environment from a running Linux
+	  system. Say yes here to build it for the target.
+
+config BAREBOXCRC32_TARGET
+	bool
+	prompt "build bareboxcrc32 tool for target"
+	help
+	  'bareboxcrc32' is a userspacetool to generate the crc32 checksums the same way
+	  barebox does. Say yes here to build it for the target.
+
+config HAS_TARGET_LIBUSB_1_0
+	def_bool $(success,$(CROSS_PKG_CONFIG) --exists libusb-1.0)
+	help
+	  Ensure $(CROSS_PKG_CONFIG) is set to a valid pkg-config
+	  binary that knows about libusb-1.0 compiled for the
+	  target architecture.
+
+config MVEBU_KWBOOT_TARGET
+	bool "kwboot target tool"
+	help
+	  Say Y here to build the kwboot tool for the target
+	  to bootstrap over UART.
+
+config ARCH_IMX_USBLOADER_TARGET
+	depends on HAS_TARGET_LIBUSB_1_0
+	bool "imx-usb-loader for target"
+	help
+	  Say Y here to build the imx-usb-loader tool for the target.
+	  The cross toolchain needs libusb-1.0 to compile this tool.
+
+config OMAP3_USB_LOADER_TARGET
+	bool "omap3 USB loader for target"
+	depends on HAS_TARGET_LIBUSB_1_0
+	help
+	  Say Y here to build the omap3 usb loader tool for the target.
+	  The cross toolchain needs libusb-1.0 to compile this tool.
+
+
+config OMAP4_USBBOOT_TARGET
+	bool "omap4 usbboot for target"
+	depends on HAS_TARGET_LIBUSB_1_0
+	help
+	  Say Y here to build the omap4 usb loader tool for the target.
+	  The cross toolchain needs libusb-1.0 to compile this tool.
+
+endmenu

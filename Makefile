@@ -362,6 +362,8 @@ endif
 
 KCONFIG_CONFIG	?= .config
 
+CROSS_PKG_CONFIG ?= $(CROSS_COMPILE)pkg-config
+
 export KCONFIG_CONFIG
 
 # SHELL used by kbuild
@@ -1126,10 +1128,15 @@ CLEAN_DIRS  += $(MODVERDIR)
 CLEAN_FILES +=	barebox System.map stickypage.bin include/generated/barebox_default_env.h \
                 .tmp_version .tmp_barebox* barebox.bin barebox.map \
 		.tmp_kallsyms* barebox.ldr compile_commands.json \
-		scripts/bareboxenv-target barebox-flash-image \
+		barebox-flash-image \
 		barebox.srec barebox.s5p barebox.ubl barebox.zynq \
 		barebox.uimage barebox.spi barebox.kwb barebox.kwbuart \
 		barebox.efi barebox.canon-a1100.bin
+
+CLEAN_FILES +=	scripts/bareboxenv-target scripts/kernel-install-target \
+		scripts/bareboxcrc32-target scripts/bareboximd-target \
+		scripts/omap3-usb-loader-target scripts/omap4_usbboot-target \
+		scripts/imx-usb-loader-target scripts/kwboot-target
 
 # Directories & files removed with 'make mrproper'
 MRPROPER_DIRS  += include/config usr/include include/generated Documentation/commands

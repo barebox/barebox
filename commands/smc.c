@@ -9,14 +9,15 @@
 
 #include <asm/psci.h>
 #include <asm/secure.h>
+#include <asm/barebox-arm.h>
 #include <linux/arm-smccc.h>
 
-#define STACK_SIZE 100
+#define HANDSHAKE_STACK_SIZE 100
 #define HANDSHAKE_MAGIC	0xBA12EB0C
 #define ERROR_MAGIC	0xDEADBEEF
 
 struct cpu_context {
-	unsigned long stack[STACK_SIZE];
+	unsigned long stack[HANDSHAKE_STACK_SIZE];
 	long handshake;
 };
 
@@ -35,12 +36,12 @@ static void noinline cpu_handshake(long *handshake)
 		;
 }
 
-static void __naked second_entry(unsigned long arg0)
+static void NAKED second_entry(unsigned long arg0)
 {
 	struct cpu_context *context = (void*)arg0;
 
 	arm_cpu_lowlevel_init();
-	arm_setup_stack((unsigned long)&context->stack[STACK_SIZE]);
+	arm_setup_stack((unsigned long)&context->stack[HANDSHAKE_STACK_SIZE]);
 	barrier();
 
 	cpu_handshake(&context->handshake);
@@ -110,6 +111,11 @@ static int do_smc(int argc, char *argv[])
 			printf("found psci version %ld.%ld\n", res.a0 >> 16, res.a0 & 0xffff);
 			break;
 		case 'c':
+			if (IS_ENABLED(CONFIG_CPU_64)) {
+				printf("CPU bootstrap test not supported for ARMv8\n");
+				return COMMAND_ERROR;
+			}
+
 			if (!context)
 				context = dma_alloc_coherent(sizeof(*context),
 							     DMA_ADDRESS_BROKEN);

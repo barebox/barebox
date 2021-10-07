@@ -169,6 +169,27 @@ Looking at other boards you might see some different patterns:
    needs to be done at start. If a board similar to yours does this, you probably
    want to do likewise.
 
+ - ``__naked``: All functions called before stack is correctly initialized must be
+   marked with this attribute. Otherwise, function prologue and epilogue may access
+   the uninitialized stack. If the compiler for the target architecture doesn't
+   support the attribute, stack must be set up in non-inline assembly:
+   Either a barebox assembly entry point or in earlier firmware.
+   The compiler may still spill excess local C variables used in a naked function
+   to the stack before it was initialized.
+   A naked function should thus preferably only contain inline assembly, set up a
+   stack and jump directly after to a ``noinline`` non naked function where the
+   stack is then normally usable.
+
+ - ``noinline``: Compiler code inlining is oblivious to stack manipulation in
+   inline assembly. If you want to ensure a new function has its own stack frame
+   (e.g. after setting up the stack in a ``__naked`` function), you must jump to
+   a ``__noreturn noinline`` function.
+
+ - ``arm_setup_stack``: For 32-bit ARM, ``arm_setup_stack`` initializes the stack
+   top when called from a naked C function, which allows to write the entry point
+   directly in C. The stack pointer will be decremented before pushing values.
+   Avoid interleaving with C-code. See ``__naked`` above for more details.
+
  - ``__dtb_z_my_board_start[];``: Because the PBL normally doesn't parse anything out
    of the device tree blob, boards can benefit from keeping the device tree blob
    compressed and only unpack it in barebox proper. Such LZO-compressed device trees

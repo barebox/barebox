@@ -162,18 +162,18 @@ static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 }
 
 #define ENTRY_FUNCTION(name, arg0, arg1, arg2)				\
-	void name (uint32_t r0, uint32_t r1, uint32_t r2);		\
+	void name(ulong r0, ulong r1, ulong r2);			\
 									\
-	static void __##name(uint32_t, uint32_t, uint32_t);		\
+	static void __##name(ulong, ulong, ulong);			\
 									\
 	void NAKED __section(.text_head_entry_##name)	name		\
-				(uint32_t r0, uint32_t r1, uint32_t r2)	\
+				(ulong r0, ulong r1, ulong r2)		\
 		{							\
 			__barebox_arm_head();				\
 			__##name(r0, r1, r2);				\
 		}							\
 		static void NAKED noinline __##name			\
-			(uint32_t arg0, uint32_t arg1, uint32_t arg2)
+			(ulong arg0, ulong arg1, ulong arg2)
 
 /*
  * When using compressed images in conjunction with relocatable images

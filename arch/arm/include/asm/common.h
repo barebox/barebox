@@ -1,6 +1,8 @@
 #ifndef __ASM_ARM_COMMON_H
 #define __ASM_ARM_COMMON_H
 
+#include <linux/compiler.h>
+
 static inline unsigned long get_pc(void)
 {
 	unsigned long pc;
@@ -46,8 +48,23 @@ static inline unsigned long get_sp(void)
 	return sp;
 }
 
+extern void __compiletime_error(
+	"arm_setup_stack() called outside of naked function. On ARM64, "
+	"stack should be setup in non-inline assembly before branching to C entry point."
+) __unsafe_setup_stack(void);
+
+/*
+ * Sets up new stack growing down from top within a naked C function.
+ * The first stack word will be top - sizeof(word).
+ *
+ * Avoid interleaving with C code as much as possible and jump
+ * ASAP to a noinline function.
+ */
 static inline void arm_setup_stack(unsigned long top)
 {
+	if (IS_ENABLED(CONFIG_CPU_64))
+		__unsafe_setup_stack();
+
 	__asm__ __volatile__("mov sp, %0"
 			     :
 			     : "r"(top));

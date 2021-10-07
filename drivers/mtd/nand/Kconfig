@@ -42,6 +42,13 @@ config NAND_IMX
 	  and later, which use the GPMI NAND controller from the MXS series. 
 	  See the i.MX 'mxs' driver for those chips.
 
+config NAND_FSL_IFC
+	bool
+	prompt "FSL IFC NAND driver"
+	depends on ARCH_LAYERSCAPE
+	help
+	  Freescale IFC NAND driver for various chips.
+
 config NAND_MXS
 	bool
 	select STMP_DEVICE

@@ -15,6 +15,8 @@
 #include <asm/system.h>
 #include <mach/layerscape.h>
 #include <mach/bbu.h>
+#include <of_address.h>
+#include <linux/fsl_ifc.h>
 
 #define MAX_NUM_PORTS 16
 struct nxid {
@@ -147,6 +149,40 @@ static int rdb_mem_init(void)
 }
 mem_initcall(rdb_mem_init);
 
+static int rdb_nand_init(void)
+{
+	struct device_node *np;
+	void __iomem *ifc;
+
+	np = of_find_compatible_node(NULL, NULL, "fsl,ifc");
+	if (!np)
+		return -EINVAL;
+
+	ifc = of_iomap(np, 0);
+	if (!ifc)
+		return -EINVAL;
+
+	set_ifc_cspr(ifc, IFC_CS0, CSPR_PHYS_ADDR(0x7e800000) |
+			CSPR_PORT_SIZE_8 | CSPR_MSEL_NAND | CSPR_V);
+	set_ifc_csor(ifc, IFC_CS0, CSOR_NAND_ECC_ENC_EN | CSOR_NAND_ECC_DEC_EN |
+			CSOR_NAND_ECC_MODE_8 |
+			CSOR_NAND_RAL_3 | CSOR_NAND_PGS_4K |
+			CSOR_NAND_SPRZ_224 |  CSOR_NAND_PB(64) |
+			CSOR_NAND_TRHZ_20);
+	set_ifc_amask(ifc, IFC_CS0, IFC_AMASK(64*1024));
+	set_ifc_ftim(ifc, IFC_CS0, IFC_FTIM0, FTIM0_NAND_TCCST(0x07) |
+			FTIM0_NAND_TWP(0x18) | FTIM0_NAND_TWCHT(0x07) |
+			FTIM0_NAND_TWH(0x0a));
+	set_ifc_ftim(ifc, IFC_CS0, IFC_FTIM1, FTIM1_NAND_TADLE(0x32) |
+			FTIM1_NAND_TWBE(0x39) | FTIM1_NAND_TRR(0x0e)|
+			FTIM1_NAND_TRP(0x18));
+	set_ifc_ftim(ifc, IFC_CS0, IFC_FTIM2, FTIM2_NAND_TRAD(0xf) |
+			FTIM2_NAND_TREH(0xa) | FTIM2_NAND_TWHRE(0x1e));
+	set_ifc_ftim(ifc, IFC_CS0, IFC_FTIM3, 0);
+
+	return 0;
+}
+
 static int rdb_postcore_init(void)
 {
 	if (!of_machine_is_compatible("fsl,ls1046a-rdb"))
@@ -157,7 +193,7 @@ static int rdb_postcore_init(void)
 	ls1046a_bbu_mmc_register_handler("sd", "/dev/mmc0.barebox",
 					 BBU_HANDLER_FLAG_DEFAULT);
 
-	return 0;
+	return rdb_nand_init();
 }
 
 postcore_initcall(rdb_postcore_init);

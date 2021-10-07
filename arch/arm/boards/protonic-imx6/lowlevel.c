@@ -24,6 +24,7 @@ extern char __dtb_z_imx6dl_vicut1_start[];
 extern char __dtb_z_imx6qp_prtwd3_start[];
 extern char __dtb_z_imx6qp_vicutp_start[];
 extern char __dtb_z_imx6ul_prti6g_start[];
+extern char __dtb_z_imx6ull_jozacp_start[];
 
 ENTRY_FUNCTION(start_imx6q_prti6q, r0, r1, r2)
 {
@@ -186,6 +187,25 @@ ENTRY_FUNCTION(start_imx6ul_prti6g, r0, r1, r2)
 	imx6ul_cpu_lowlevel_init();
 
 	fdt = __dtb_z_imx6ul_prti6g_start + get_runtime_offset();
+
+	imx6ul_barebox_entry(fdt);
+}
+
+ENTRY_FUNCTION(start_imx6ull_jozacp, r0, r1, r2)
+{
+	void *fdt;
+
+	imx6ul_cpu_lowlevel_init();
+
+	/* Disconnect USDHC2 from SD card */
+	writel(0x5, 0x020e0178);
+	writel(0x5, 0x020e017c);
+	writel(0x5, 0x020e0180);
+	writel(0x5, 0x020e0184);
+	writel(0x5, 0x020e0188);
+	writel(0x5, 0x020e018c);
+
+	fdt = __dtb_z_imx6ull_jozacp_start + get_runtime_offset();
 
 	imx6ul_barebox_entry(fdt);
 }

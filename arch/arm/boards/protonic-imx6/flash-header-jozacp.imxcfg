@@ -1,0 +1,81 @@
+soc imx6
+loadaddr 0x80000000
+ivtofs 0x400
+
+#include "ddr3-defines.imxcfg"
+#include "padsetup-ul.imxcfg"
+
+/* Set Read data delay 3 delay units for all bits */
+wm 32 0x021b081c 0x33333333
+wm 32 0x021b0820 0x33333333
+
+/* MDMISC No addr mirror, 1 WALAT, 5 RALAT, DDR3 mode */
+wm 32 0x021b0018 0x00011740
+
+/* CSCR: Configuration mode */
+wm 32 0x021b001c 0x00008000
+
+wm 32 0x021b000c MDCFG0_2G_400MHZ
+wm 32 0x021b0010 MDCFG1_400MHZ
+wm 32 0x021b0014 MDCFG2_400MHZ
+
+/* MDRWD */
+wm 32 0x021b002c 0x000026d2
+
+wm 32 0x021b0030 MDOR_2G_400MHZ
+wm 32 0x021b0008 MDOTC_400MHZ
+wm 32 0x021b0004 MDPDC_400MHZ
+wm 32 0x021b0040 0x00000047	/* MDASP_512MIB */
+wm 32 0x021b0000 MDCTL_2G_16BIT
+
+/* DDR3 MR config */
+wm 32 0x021b001c DDR3_MR2_400MHZ_RTT_120
+
+/*
+ * DDR3 chip MR3, n = 3, vvvv = 0 (no configurable function of interest).
+ */
+wm 32 0x021b001c 0x00008033
+
+wm 32 0x021b001c DDR3_MR1_RTT_120_ODS_40
+wm 32 0x021b001c DDR3_MR0_400MHZ
+
+/*
+ * ZQ calibration, n = 0x10 (Precharge all):
+ * Bit 10 = 1:  Start ZQ calibration
+ * REGISTER: 0x04008040
+ */
+wm 32 0x021b001c 0x04008040
+
+/* MPZQHWCTRL */
+wm 32 0x021b0800 0xa1390003 /* ZQ mode = 3  force calibration */
+
+wm 32 0x021b0020 MDREF_64KHZ
+
+wm 32 0x021b0818 0x00000117	/* MPODTCTRL_ODT_120 */
+
+wm 32 0x021b083c MPDGCTRL0_CH0_400MHZ
+
+/* MPRDDLCTL, MPWRDLCTL */
+wm 32 0x021b0848 0x40404040 /* TODO. Read delay line conf. */
+wm 32 0x021b0850 0x40404040 /* For now set all to 50%. */
+
+/* MPWLDECTRL0 */
+wm 32 0x021b080c 0x001f001f /* TODO. Write level delay control */
+
+/* MPMUR0 */
+wm 32 0x021b08b8 0x00000800 /* Force measurement on delay lines */
+
+/* MDSCR */
+wm 32 0x021b001c 0x00000000 /* Disable configuration req */
+
+/* MAPSR */
+wm 32 0x021b0404 0x00011007 /* 0x0001...? FIXME: Disable powersaving for now  */
+
+/* Enable all clocks */
+wm 32 0x020c4068 0xffffffff
+wm 32 0x020c406c 0xffffffff
+wm 32 0x020c4070 0xffffffff
+wm 32 0x020c4074 0xffffffff
+wm 32 0x020c4078 0xffffffff
+wm 32 0x020c407c 0xffffffff
+wm 32 0x020c4080 0xffffffff

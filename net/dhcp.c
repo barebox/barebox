@@ -444,6 +444,7 @@ static char *global_dhcp_user_class;
 static char *global_dhcp_vendor_id;
 static char *global_dhcp_client_uuid;
 static char *global_dhcp_client_id;
+static char *global_dhcp_hostname;
 static char *global_dhcp_bootfile;
 static char *global_dhcp_oftree_file;
 static char *global_dhcp_rootpath;
@@ -482,6 +483,12 @@ int dhcp_request(struct eth_device *edev, const struct dhcp_req_param *param,
 		dhcp_param.client_uuid = global_dhcp_client_uuid;
 	if (!dhcp_param.client_id)
 		dhcp_param.client_id = global_dhcp_client_id;
+	if (!dhcp_param.hostname) {
+		if (global_dhcp_hostname && strlen(global_dhcp_hostname))
+			dhcp_param.hostname = global_dhcp_hostname;
+		else
+			dhcp_param.hostname = (char *)barebox_get_hostname();
+	}
 	if (!dhcp_param.option224)
 		dhcp_param.option224 = global_dhcp_option224;
 	if (!dhcp_param.retries)
@@ -633,9 +640,12 @@ static int dhcp_global_init(void)
 {
 	globalvar_add_simple_string("dhcp.bootfile", &global_dhcp_bootfile);
 	globalvar_add_simple_string("dhcp.rootpath", &global_dhcp_rootpath);
+
+	global_dhcp_vendor_id = strdup("barebox");
 	globalvar_add_simple_string("dhcp.vendor_id", &global_dhcp_vendor_id);
 	globalvar_add_simple_string("dhcp.client_uuid", &global_dhcp_client_uuid);
 	globalvar_add_simple_string("dhcp.client_id", &global_dhcp_client_id);
+	globalvar_add_simple_string("dhcp.hostname", &global_dhcp_hostname);
 	globalvar_add_simple_string("dhcp.user_class", &global_dhcp_user_class);
 	globalvar_add_simple_string("dhcp.oftree_file", &global_dhcp_oftree_file);
 	globalvar_add_simple_string("dhcp.tftp_server_name", &global_dhcp_tftp_server_name);

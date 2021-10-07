@@ -479,4 +479,6 @@ static inline void memcpy_toio(volatile void __iomem *addr, const void *buffer,
 }
 #endif
 
+#include <asm-generic/bitio.h>
+
 #endif /* __ASM_GENERIC_IO_H */

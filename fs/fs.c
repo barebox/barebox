@@ -813,7 +813,6 @@ int fsdev_open_cdev(struct fs_device_d *fsdev)
 	}
 
 	fsdev->dev.parent = fsdev->cdev->dev;
-	fsdev->parent_device = fsdev->cdev->dev;
 
 	return 0;
 }

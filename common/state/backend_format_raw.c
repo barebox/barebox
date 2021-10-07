@@ -183,6 +183,7 @@ static int backend_format_raw_unpack(struct state_backend_format *format,
 	const struct backend_raw_header *header;
 	const void *data;
 	struct state_backend_format_raw *backend_raw = get_format_raw(format);
+	int ret = 0;
 
 	header = (const struct backend_raw_header *)buf;
 	data = buf + sizeof(*header);
@@ -191,12 +192,13 @@ static int backend_format_raw_unpack(struct state_backend_format *format,
 		if (sv->start + sv->size > header->data_len) {
 			dev_err(backend_raw->dev, "State variable ends behind valid data, %s\n",
 				sv->name);
+			ret = -ENOSPC;
 			continue;
 		}
 		memcpy(sv->raw, data + sv->start, sv->size);
 	}
 
-	return 0;
+	return ret;
 }
 
 static int backend_format_raw_pack(struct state_backend_format *format,

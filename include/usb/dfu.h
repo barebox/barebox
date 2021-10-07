@@ -29,6 +29,6 @@ struct f_dfu_opts {
 	struct file_list *files;
 };
 
-int usb_dfu_register(struct f_dfu_opts *);
+int usb_dfu_detached(void);
 
 #endif /* _USB_DFU_H */

@@ -33,6 +33,7 @@ static int riscv_request_stack(void)
 coredevice_initcall(riscv_request_stack);
 
 static struct device_d timer_dev;
+static struct device_d serial_sbi_dev;
 
 static s64 hartid;
 
@@ -71,6 +72,17 @@ static int riscv_probe(struct device_d *parent)
 		dev_set_name(&timer_dev, "riscv-timer");
 
 		ret = platform_device_register(&timer_dev);
+		if (ret)
+			return ret;
+	}
+
+	if (IS_ENABLED(CONFIG_SERIAL_SBI) && !serial_sbi_dev.parent) {
+		serial_sbi_dev.id = DEVICE_ID_SINGLE;
+		serial_sbi_dev.device_node = 0;
+		serial_sbi_dev.parent = parent;
+		dev_set_name(&serial_sbi_dev, "riscv-serial-sbi");
+
+		ret = platform_device_register(&serial_sbi_dev);
 		if (ret)
 			return ret;
 	}

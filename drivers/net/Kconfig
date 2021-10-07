@@ -28,7 +28,7 @@ config DRIVER_NET_AR231X
 
 config DRIVER_NET_ARC_EMAC
 	bool "ARC Ethernet MAC driver"
-	depends on HAS_DMA
+	depends on HAS_DMA && 32BIT
 	select PHYLIB
 	help
 	  This option enables support for the ARC EMAC ethernet
@@ -38,10 +38,6 @@ config DRIVER_NET_AT91_ETHER
 	bool "at91 ethernet driver"
 	depends on HAS_AT91_ETHER
 	select PHYLIB
-
-config DRIVER_NET_CALXEDA_XGMAC
-	bool "Calxeda xgmac"
-	depends on HAS_DMA
 
 config DRIVER_NET_CS8900
 	bool "cs8900 ethernet driver"
@@ -261,6 +257,13 @@ config DRIVER_NET_TAP
 config DRIVER_NET_EFI_SNP
 	bool "EFI SNP ethernet driver"
 	depends on EFI_BOOTUP
+
+config DRIVER_NET_VIRTIO
+	bool "virtio net driver"
+	depends on VIRTIO
+	help
+	  This is the virtual net driver for virtio. It can be used with
+	  QEMU based targets.
 
 config DRIVER_NET_AG71XX
 	bool "Atheros AG71xx ethernet driver"

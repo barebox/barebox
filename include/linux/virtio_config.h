@@ -232,8 +232,11 @@ static inline int virtio_get_config(struct virtio_device *vdev, unsigned int off
  * @len:	the length of the buffer
  * @return 0 if OK, -ve on error
  */
-int virtio_set_config(struct virtio_device *vdev, unsigned int offset,
-		      void *buf, unsigned int len);
+static inline int virtio_set_config(struct virtio_device *vdev, unsigned int offset,
+		      void *buf, unsigned int len)
+{
+	return vdev->config->set_config(vdev, offset, buf, len);
+}
 
 /**
  * virtio_find_vqs() - find virtqueues and instantiate them

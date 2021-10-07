@@ -98,6 +98,12 @@ static void usage(char *prgname)
 	printf( "Usage : %s [OPTION] DIRECTORY FILE\n"
 		"Load a barebox environment sector into a directory or\n"
 		"save a directory into a barebox environment sector\n"
+#ifndef __BAREBOX__
+		"\n"
+		"Attention:\n"
+		"Depending on your environment backend storage you need to\n"
+		"erase FILE before you save the new environment.\n"
+#endif
 		"\n"
 		"options:\n"
 		"  -s        save (directory -> environment sector)\n"

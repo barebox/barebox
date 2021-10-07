@@ -30,6 +30,11 @@ struct simplefb_params {
 	struct simplefb_format *format;
 };
 
+struct simplefb {
+	struct fb_info info;
+	struct fb_videomode mode;
+};
+
 static int simplefb_parse_dt(struct device_d *dev,
 			   struct simplefb_params *params)
 {
@@ -80,6 +85,7 @@ static int simplefb_probe(struct device_d *dev)
 {
 	int ret;
 	struct simplefb_params params;
+	struct simplefb *simplefb;
 	struct fb_info *info;
 	struct resource *mem;
 
@@ -96,30 +102,25 @@ static int simplefb_probe(struct device_d *dev)
 		return PTR_ERR(mem);
 	}
 
-	info = xzalloc(sizeof(*info));
-	dev->priv = info;
+	simplefb = xzalloc(sizeof(*simplefb));
 
-	info->xres = params.width;
-	info->yres = params.height;
+	simplefb->mode.name = params.format->name;
+	simplefb->mode.xres = params.width;
+	simplefb->mode.yres = params.height;
+
+	info = &simplefb->info;
+	info->mode = &simplefb->mode;
 	info->bits_per_pixel = params.format->bits_per_pixel;
 	info->red = params.format->red;
 	info->green = params.format->green;
 	info->blue = params.format->blue;
 	info->transp = params.format->transp;
-	info->line_length = params.stride;
 
 	info->screen_base = (void *)mem->start;
 	info->screen_size = resource_size(mem);
 
 
 	info->fbops = &simplefb_ops;
-
-	dev_info(dev, "framebuffer at 0x%p, 0x%lx bytes\n",
-		 info->screen_base, info->screen_size);
-	dev_info(dev, "format=%s, mode=%dx%dx%d, linelength=%d\n",
-		 params.format->name,
-		 info->xres, info->yres,
-		 info->bits_per_pixel, info->line_length);
 
 	info->dev.parent = dev;
 	ret = register_framebuffer(info);
@@ -128,7 +129,7 @@ static int simplefb_probe(struct device_d *dev)
 		return ret;
 	}
 
-	dev_info(dev, "simplefb registered!\n");
+	dev_info(dev, "size %s registered\n", size_human_readable(info->screen_size));
 
 	return 0;
 }

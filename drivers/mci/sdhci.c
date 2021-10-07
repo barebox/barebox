@@ -129,9 +129,8 @@ void sdhci_setup_data_pio(struct sdhci *sdhci, struct mci_data *data)
 	if (!data)
 		return;
 
-	sdhci_write16(sdhci, SDHCI_BLOCK_SIZE, sdhci->sdma_boundary |
-		    SDHCI_TRANSFER_BLOCK_SIZE(data->blocksize));
-	sdhci_write16(sdhci, SDHCI_BLOCK_COUNT, data->blocks);
+	sdhci_write32(sdhci, SDHCI_BLOCK_SIZE, sdhci->sdma_boundary |
+		      SDHCI_TRANSFER_BLOCK_SIZE(data->blocksize) | data->blocks << 16);
 }
 
 void sdhci_setup_data_dma(struct sdhci *sdhci, struct mci_data *data,

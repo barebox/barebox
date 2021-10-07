@@ -1920,7 +1920,7 @@ int mci_register(struct mci_host *host)
 
 	host->supply = regulator_get(hw_dev, "vmmc");
 	if (IS_ERR(host->supply)) {
-		dev_err(&mci->dev, "Failed to get 'vmmc' regulator.\n");
+		dev_warn(hw_dev, "Failed to get 'vmmc' regulator (ignored).\n");
 		host->supply = NULL;
 	}
 

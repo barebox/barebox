@@ -18,6 +18,8 @@
 #define CONSOLE_STDOUT          (1 << 1)
 #define CONSOLE_STDERR          (1 << 2)
 
+#define CONSOLE_STDIOE          (CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR)
+
 enum console_mode {
 	CONSOLE_MODE_NORMAL,
 	CONSOLE_MODE_RS485,

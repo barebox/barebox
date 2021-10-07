@@ -52,6 +52,10 @@ struct bcm2835_gpio_chip {
 	struct pinctrl_device pctl;
 };
 
+struct plat_data {
+	unsigned ngpios;
+};
+
 static int bcm2835_set_function(struct gpio_chip *chip, unsigned gpio, int function)
 {
 	struct bcm2835_gpio_chip *bcmgpio = container_of(chip, struct bcm2835_gpio_chip, chip);
@@ -149,9 +153,12 @@ static struct pinctrl_ops bcm2835_pinctrl_ops = {
 
 static int bcm2835_gpio_probe(struct device_d *dev)
 {
+	const struct plat_data *plat_data;
 	struct resource *iores;
 	struct bcm2835_gpio_chip *bcmgpio;
 	int ret;
+
+	plat_data = device_get_match_data(dev);
 
 	bcmgpio = xzalloc(sizeof(*bcmgpio));
 	iores = dev_request_mem_resource(dev, 0);
@@ -160,7 +167,8 @@ static int bcm2835_gpio_probe(struct device_d *dev)
 	bcmgpio->base = IOMEM(iores->start);
 	bcmgpio->chip.ops = &bcm2835_gpio_ops;
 	bcmgpio->chip.base = 0;
-	bcmgpio->chip.ngpio = 54;
+	bcmgpio->chip.ngpio = plat_data->ngpios;
+
 	bcmgpio->chip.dev = dev;
 	bcmgpio->pctl.ops = &bcm2835_pinctrl_ops;
 	bcmgpio->pctl.dev = dev;
@@ -191,9 +199,21 @@ err:
 	return ret;
 }
 
+static const struct plat_data bcm2835_plat_data = {
+	.ngpios = 54,
+};
+
+static const struct plat_data bcm2711_plat_data = {
+	.ngpios = 58,
+};
+
 static __maybe_unused struct of_device_id bcm2835_gpio_dt_ids[] = {
 	{
 		.compatible = "brcm,bcm2835-gpio",
+		.data = &bcm2835_plat_data,
+	}, {
+		.compatible = "brcm,bcm2711-gpio",
+		.data = &bcm2711_plat_data,
 	}, {
 		/* sentinel */
 	}
@@ -205,4 +225,4 @@ static struct driver_d bcm2835_gpio_driver = {
 	.of_compatible = DRV_OF_COMPAT(bcm2835_gpio_dt_ids),
 };
 
-coredevice_platform_driver(bcm2835_gpio_driver);
+core_platform_driver(bcm2835_gpio_driver);

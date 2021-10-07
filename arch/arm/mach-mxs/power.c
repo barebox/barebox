@@ -1,14 +1,9 @@
-/*
- * i.MX28 power related functions
- *
- * Copyright 2011 Sascha Hauer, Pengutronix <s.hauer@pengutronix.de>
- * Copyright (C) 2012 Wolfram Sang, Pengutronix <w.sang@pengutronix.de>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- */
+// SPDX-License-Identifier: GPL-2.0-or-later
+// SPDX-FileCopyrightText: 2011 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
+// SPDX-FileCopyrightText: 2012 Wolfram Sang <w.sang@pengutronix.de>, Pengutronix
+
+/* i.MX28 power related functions */
+
 #include <common.h>
 #include <io.h>
 #include <stmp-device.h>

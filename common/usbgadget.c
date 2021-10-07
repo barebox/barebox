@@ -23,26 +23,10 @@ static int autostart;
 static int acm;
 static char *dfu_function;
 
-static struct file_list *parse(const char *files)
-{
-	struct file_list *list;
-
-	if (!files)
-		return NULL;
-
-	list = file_list_parse(files);
-	if (IS_ERR(list)) {
-		pr_err("Parsing file list \"%s\" failed: %pe\n", files, list);
-		return NULL;
-	}
-
-	return list;
-}
-
 static inline struct file_list *get_dfu_function(void)
 {
 	if (dfu_function && *dfu_function)
-		return file_list_parse(dfu_function);
+		return file_list_parse_null(dfu_function);
 	if (!system_partitions_empty())
 		return system_partitions_get();
 	return NULL;
@@ -59,7 +43,7 @@ int usbgadget_register(const struct usbgadget_funcs *funcs)
 	opts->release = usb_multi_opts_release;
 
 	if (flags & USBGADGET_DFU) {
-		opts->dfu_opts.files = parse(funcs->dfu_opts);
+		opts->dfu_opts.files = file_list_parse_null(funcs->dfu_opts);
 		if (IS_ENABLED(CONFIG_USB_GADGET_DFU) && file_list_empty(opts->dfu_opts.files)) {
 			file_list_free(opts->dfu_opts.files);
 			opts->dfu_opts.files = get_dfu_function();
@@ -67,7 +51,7 @@ int usbgadget_register(const struct usbgadget_funcs *funcs)
 	}
 
 	if (flags & USBGADGET_MASS_STORAGE) {
-		opts->ums_opts.files = parse(funcs->ums_opts);
+		opts->ums_opts.files = file_list_parse_null(funcs->ums_opts);
 		if (IS_ENABLED(CONFIG_USB_GADGET_MASS_STORAGE) && file_list_empty(opts->ums_opts.files)) {
 			file_list_free(opts->ums_opts.files);
 			opts->ums_opts.files = system_partitions_get();
@@ -75,7 +59,7 @@ int usbgadget_register(const struct usbgadget_funcs *funcs)
 	}
 
 	if (flags & USBGADGET_FASTBOOT) {
-		opts->fastboot_opts.files = parse(funcs->fastboot_opts);
+		opts->fastboot_opts.files = file_list_parse_null(funcs->fastboot_opts);
 		if (IS_ENABLED(CONFIG_FASTBOOT_BASE) && file_list_empty(opts->fastboot_opts.files)) {
 			file_list_free(opts->fastboot_opts.files);
 			opts->fastboot_opts.files = get_fastboot_partitions();

@@ -854,7 +854,7 @@ static int run_list_real(struct p_context *ctx, struct pipe *pi)
 	struct pipe *rpipe;
 	int flag_rep = 0;
 	int rcode=0, flag_skip=1;
-	int flag_restore = 0;
+	int flag_restore = 0, flag_conditional = 0;
 	int if_code=0, next_if_code=0;  /* need double-buffer to handle elif */
 	reserved_style rmode, skip_more_in_this_rmode = RES_XXXX;
 
@@ -966,6 +966,20 @@ static int run_list_real(struct p_context *ctx, struct pipe *pi)
 			return rcode;	/* exit */
 		}
 
+		/* Conditional statements like "if", "elif", "while" and "until"
+		 * return 1 if conditional is not met. This is standard behavior.
+		 * However this does not mean that this value (1) should be
+		 * returned as exit code, as it suggests generic error code.
+		 * Catch this by raising a flag and check it later on.
+		 */
+		if (rcode == 1) {
+			if (rmode == RES_IF || rmode == RES_ELIF ||
+				rmode == RES_WHILE || rmode == RES_UNTIL)
+				flag_conditional = 1;
+			else
+				flag_conditional = 0;
+		}
+
 		last_return_code = rcode;
 
 		if (rmode == RES_IF || rmode == RES_ELIF )
@@ -981,6 +995,13 @@ static int run_list_real(struct p_context *ctx, struct pipe *pi)
 		     (rcode != EXIT_SUCCESS && pi->followup == PIPE_AND) )
 			skip_more_in_this_rmode = rmode;
 	}
+
+	/* Substitute exit code in case flag_conditional is set. */
+	if (flag_conditional == 1 && last_return_code == 1) {
+		last_return_code = 0;
+		rcode = 0;
+	}
+
 	return rcode;
 }
 

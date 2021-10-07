@@ -812,6 +812,17 @@ config CONSOLE_ALLOW_COLOR
 	  compile time default for colored console output. After boot it
 	  can be controlled using global.allow_color.
 
+config CONSOLE_DISABLE_INPUT
+	prompt "Disable input on all consoles by default (non-interactive)"
+	def_bool CONSOLE_NONE
+	help
+	  If enabled, all consoles are initially configured to not accept any input,
+	  making the consoles effectively non-interactive.
+	  The active device parameter can be used to override this on a per-console
+	  basis.
+	  CAUTION: this will also disable input devices by default, since they are
+	  registered as consoles.
+
 config PBL_CONSOLE
 	depends on PBL_IMAGE
 	depends on !CONSOLE_NONE
@@ -842,6 +853,7 @@ config ENV_HANDLING
 	  startup) will bring them back. If unsure, say yes.
 
 config DEFAULT_ENVIRONMENT
+	select CRC32
 	bool
 	default y if ENV_HANDLING
 	prompt "Compile in default environment"
@@ -1090,6 +1102,30 @@ config SYSTEMD_OF_WATCHDOG
 	  the watchdog WDOG prior to boot. WDOG is the alias of the watchdog
 	  in the kernel device tree. If the kernel is booted without a device
 	  tree or with one that lacks aliases, nothing is added.
+
+config EXTERNAL_DTS_FRAGMENTS
+	string "external dts file fragments"
+	depends on OFTREE
+	help
+	  List of dts fragment files that will be appended to Barebox's device
+	  tree(s) source when building the dtb file(s).  If multiple files are
+	  listed, they will be appended in order.  Relative filenames will use
+	  the dtc include search path.
+
+	  A preprocessor macro based on the name of the main dts will be
+	  defined, which allows the dts fragments to based on which image of a
+	  multi image build they are being used in. Given the dts filename
+	  used for a board is "foo-board.dts" the external dts usage can be
+	  limited to that board with
+
+	  #ifdef foo_board_dts
+	  ...
+	  #endif
+
+	  It not intended that this be put into into Barebox defconfig files.
+	  Instead, it's an external build system, like Yocto or buildroot, to
+	  add dts fragments from outside the Barebox source tree into the
+	  Barebox build.
 
 menu "OP-TEE loading"
 

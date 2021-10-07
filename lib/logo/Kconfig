@@ -1,9 +1,9 @@
 menuconfig BAREBOX_LOGO
 	bool "include barebox logos in build"
 	help
-	  Say yes here to build the barebox logos. This adds inkscape to the build
-	  dependencies. The logo can be found under /logo/barebox-logo-<width>.png
-	  in the running barebox.
+	  Say yes here to build the barebox logos. This adds ImageMagick's
+	  convert tool to the build dependencies. The logo can be found under
+	  /logo/barebox-logo-<width>.png in the running barebox.
 
 if BAREBOX_LOGO
 

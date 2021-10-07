@@ -25,16 +25,12 @@
 /delete-node/ &dpll_ddr_ck;
 /delete-node/ &dpll_ddr_m2_ck;
 /delete-node/ &dpll_ddr_m2_div2_ck;
-/delete-node/ &dpll_disp_ck;
-/delete-node/ &dpll_disp_m2_ck;
 /delete-node/ &dpll_per_ck;
 /delete-node/ &dpll_per_m2_ck;
 /delete-node/ &dpll_per_m2_div4_wkupdm_ck;
 /delete-node/ &dpll_per_m2_div4_ck;
 /delete-node/ &clk_24mhz;
 /delete-node/ &clkdiv32k_ck;
-/delete-node/ &l3_gclk;
-/delete-node/ &pruss_ocp_gclk;
 /delete-node/ &mmu_fck;
 /delete-node/ &timer1_fck;
 /delete-node/ &timer3_fck;

@@ -7,4 +7,10 @@ config MACH_XILINX_ZCU104
 	  Say Y here if you are using the Xilinx Zynq UltraScale+ MPSoC ZCU104
 	  evaluation board.
 
+config MACH_XILINX_ZCU106
+	bool "Xilinx Zynq UltraScale+ MPSoC ZCU106"
+	help
+	  Say Y here if you are using the Xilinx Zynq UltraScale+ MPSoC ZCU106
+	  evaluation board.
+
 endif

@@ -6,3 +6,7 @@
 pblb-$(CONFIG_MACH_XILINX_ZCU104) += start_zynqmp_zcu104
 FILE_barebox-zynqmp-zcu104.img = start_zynqmp_zcu104.pblb
 image-$(CONFIG_MACH_XILINX_ZCU104) += barebox-zynqmp-zcu104.img
+
+pblb-$(CONFIG_MACH_XILINX_ZCU106) += start_zynqmp_zcu106
+FILE_barebox-zynqmp-zcu106.img = start_zynqmp_zcu106.pblb
+image-$(CONFIG_MACH_XILINX_ZCU106) += barebox-zynqmp-zcu106.img

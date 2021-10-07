@@ -197,15 +197,15 @@ static void zynqmp_fpga_show_header(const struct device_d *dev,
 static int fpgamgr_program_finish(struct firmware_handler *fh)
 {
 	struct fpgamgr *mgr = container_of(fh, struct fpgamgr, fh);
-	char *buf_aligned;
-	u32 *buf_size = NULL;
+	u32 *buf_aligned;
+	u32 buf_size;
 	u32 *body;
 	size_t body_length;
 	int header_length = 0;
 	enum xilinx_byte_order byte_order;
-	u64 addr;
+	dma_addr_t addr;
 	int status = 0;
-	u8 flags = 0;
+	u8 flags = ZYNQMP_FPGA_BIT_ONLY_BIN;
 
 	if (!mgr->buf) {
 		status = -ENOBUFS;
@@ -234,17 +234,13 @@ static int fpgamgr_program_finish(struct firmware_handler *fh)
 		goto err_free;
 	}
 
-	if (!(mgr->features & ZYNQMP_PM_FEATURE_SIZE_NOT_NEEDED)) {
-		buf_size = dma_alloc_coherent(sizeof(*buf_size),
-		DMA_ADDRESS_BROKEN);
-		if (!buf_size) {
-			status = -ENOBUFS;
-			goto err_free;
-		}
-		*buf_size = body_length;
-	}
-
-	buf_aligned = dma_alloc_coherent(body_length, DMA_ADDRESS_BROKEN);
+	/*
+	 * The PMU FW variants without the ZYNQMP_PM_FEATURE_SIZE_NOT_NEEDED
+	 * feature expect a pointer to the bitstream size, which is stored in
+	 * memory. Allocate extra space at the end of the buffer for the
+	 * bitstream size.
+	 */
+	buf_aligned = dma_alloc(body_length + sizeof(buf_size));
 	if (!buf_aligned) {
 		status = -ENOBUFS;
 		goto err_free;
@@ -257,25 +253,28 @@ static int fpgamgr_program_finish(struct firmware_handler *fh)
 	else
 		memcpy((u32 *)buf_aligned, body, body_length);
 
-	addr = (u64)buf_aligned;
-
-	/* we do not provide a header */
-	flags |= ZYNQMP_FPGA_BIT_ONLY_BIN;
-
-	if (!(mgr->features & ZYNQMP_PM_FEATURE_SIZE_NOT_NEEDED) && buf_size) {
-		status = mgr->eemi_ops->fpga_load(addr,
-				(u32)(uintptr_t)buf_size,
-				flags);
-		dma_free_coherent(buf_size, 0, sizeof(*buf_size));
+	if (mgr->features & ZYNQMP_PM_FEATURE_SIZE_NOT_NEEDED) {
+		buf_size = body_length;
 	} else {
-		status = mgr->eemi_ops->fpga_load(addr, (u32)(body_length),
-						  flags);
+		buf_aligned[body_length / sizeof(*buf_aligned)] = body_length;
+		buf_size = addr + body_length;
 	}
 
+	addr = dma_map_single(&mgr->dev, buf_aligned,
+			      body_length + sizeof(buf_size), DMA_TO_DEVICE);
+	if (dma_mapping_error(&mgr->dev, addr)) {
+		status = -EFAULT;
+		goto err_free_dma;
+	}
+
+	status = mgr->eemi_ops->fpga_load((u64)addr, buf_size, flags);
+	dma_unmap_single(&mgr->dev, addr, body_length + sizeof(buf_size),
+			 DMA_TO_DEVICE);
 	if (status < 0)
 		dev_err(&mgr->dev, "unable to load fpga\n");
 
-	dma_free_coherent(buf_aligned, 0, body_length);
+err_free_dma:
+	dma_free(buf_aligned);
 
  err_free:
 	free(mgr->buf);

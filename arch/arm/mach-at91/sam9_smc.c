@@ -195,4 +195,4 @@ static struct driver_d at91sam9_smc_driver = {
 	.probe = at91sam9_smc_probe,
 };
 
-coredevice_platform_driver(at91sam9_smc_driver);
+postcore_platform_driver(at91sam9_smc_driver);

@@ -1,0 +1,18 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+
+#include "sama5d2.dtsi"
+
+&macb0 {
+	nvmem-cells = <&macaddr>;
+	nvmem-cell-names = "mac-address";
+};
+
+&{/ahb/apb/i2c@f8028000/at24@50} {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	macaddr: mac-address@fa {
+		reg = <0xfa 6>;
+		label = "mac-address";
+	};
+};

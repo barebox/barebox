@@ -31,14 +31,20 @@ The resulting images will be placed under ``images/``:
 
 ::
 
-  barebox-groboards-sama5d27-giantboard.img
-  barebox-groboards-sama5d27-giantboard-xload-mmc.img
+  barebox-at91sam9x5ek.img
+  barebox-at91sam9263ek.img
   barebox-microchip-ksz9477-evb.img
+  barebox-microchip-ksz9477-evb-xload-mmc.img
+  barebox-sama5d3-xplained.img
+  barebox-sama5d3-xplained-xload-mmc.img
   barebox-sama5d27-som1-ek.img
   barebox-sama5d27-som1-ek-xload-mmc.img
+  barebox-groboards-sama5d27-giantboard.img
+  barebox-groboards-sama5d27-giantboard-xload-mmc.img
+  barebox-skov-arm9cpu.img
 
-Older supported boards have yet to be migrated to multi-image and/or the
-new defconfig. The majority of these have a short entry here.
+Older supported boards have yet to be migrated to multi-image and device tree.
+The majority of these have a short entry here.
 For each board defconfig file(s) are noted but barebox may include additional
 defconfig files and may also include boards not included in the following.
 
@@ -54,7 +60,5 @@ This is a list of AT91 specific TODO items, listed in no particular order.
 
 * Update remaining boards to DT
 * Update remaing boards to support multi image boot
-* Include remaining boards in ``at91_multi_defconfig``
-* Get bootstrap working in combination with multi image
 * Introduce defaultenv2 for all boards
 * Add pwm driver (required to support backlight)

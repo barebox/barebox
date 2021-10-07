@@ -1,0 +1,50 @@
+/* SPDX-License-Identifier: GPL-2.0 OR X11 */
+/*
+ *  Copyright (C) 2021 Ahmad Fatoum <a.fatoum@pengutronix.de>
+ */
+
+/dts-v1/;
+
+#include <arm/at91-sama5d3_xplained.dts>
+#include "sama5d3.dtsi"
+
+/ {
+	model = "Atmel sama5d3_xplained";
+
+	chosen {
+		environment {
+			compatible = "barebox,environment";
+			device-path = &mmc0, "partname:0";
+			file-path = "barebox.env";
+		};
+	};
+};
+
+/* Will be automatically read back from HW */
+/delete-node/ &{/memory@20000000};
+
+&nand_controller {
+	nand@3 {
+		compatible = "atmel,at91rm9200-nand";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		reg = <	0x60000000 0x01000000	/* EBI CS3 */
+			0xffffc070 0x00000490	/* SMC PMECC regs */
+			0xffffc500 0x00000100	/* SMC PMECC Error Location regs */
+			0x00110000 0x00018000	/* ROM code */
+			>;
+		interrupts = <5 IRQ_TYPE_LEVEL_HIGH 6>;
+		atmel,nand-addr-offset = <21>;
+		atmel,nand-cmd-offset = <22>;
+		atmel,nand-has-dma;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_nand0_ale_cle>;
+		atmel,pmecc-lookup-table-offset = <0x10000 0x8000>;
+
+		atmel,has-pmecc;
+		atmel,pmecc-cap = <4>;
+		atmel,pmecc-sector-size = <512>;
+		status = "okay";
+	};
+};
+

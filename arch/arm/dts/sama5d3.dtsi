@@ -1,0 +1,23 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+/ {
+	aliases {
+		mmc0 = &mmc0;
+		mmc1 = &mmc1;
+	};
+};
+
+&ebi {
+	compatible = "simple-bus";
+	#address-cells = <1>;
+	#size-cells = <1>;
+	ranges;
+
+};
+
+&nand_controller {
+	compatible = "simple-bus";
+	#address-cells = <1>;
+	#size-cells = <1>;
+	ranges;
+
+};

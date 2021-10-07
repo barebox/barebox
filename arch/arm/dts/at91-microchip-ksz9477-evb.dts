@@ -9,6 +9,7 @@
  */
 /dts-v1/;
 #include <arm/sama5d36.dtsi>
+#include "sama5d3.dtsi"
 
 / {
 	model = "Microchip EVB-KSZ9477";

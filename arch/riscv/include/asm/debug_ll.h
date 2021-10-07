@@ -43,6 +43,9 @@ static inline void PUTC_LL(char ch)
 
 	writel(ch, uart0);
 }
+#elif defined CONFIG_DEBUG_LITEX
+
+#include <asm/debug_ll_litex.h>
 
 #endif
 

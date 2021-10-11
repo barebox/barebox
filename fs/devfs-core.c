@@ -301,6 +301,37 @@ int devfs_remove(struct cdev *cdev)
 	return 0;
 }
 
+static bool region_overlap(loff_t starta, loff_t lena,
+			   loff_t startb, loff_t lenb)
+{
+	if (starta + lena <= startb)
+		return 0;
+	if (startb + lenb <= starta)
+		return 0;
+	return 1;
+}
+
+static int check_overlap(struct cdev *cdev, const char *name, loff_t offset, loff_t size)
+{
+	struct cdev *cpart;
+
+	list_for_each_entry(cpart, &cdev->partitions, partition_entry) {
+		if (region_overlap(cpart->offset, cpart->size,
+				   offset, size))
+			goto conflict;
+	}
+
+	return 0;
+
+conflict:
+	pr_err("New partition %s (0x%08llx-0x%08llx) on %s "
+		"overlaps with partition %s (0x%08llx-0x%08llx), not creating it\n",
+		name, offset, offset + size - 1, cpart->name,
+		cpart->name, cpart->offset, cpart->offset + cpart->size - 1);
+
+	return -EINVAL;
+}
+
 static struct cdev *__devfs_add_partition(struct cdev *cdev,
 		const struct devfs_partition *partinfo, loff_t *end)
 {
@@ -335,6 +366,9 @@ static struct cdev *__devfs_add_partition(struct cdev *cdev,
 				partinfo->name, cdev->name);
 		return ERR_PTR(-EINVAL);
 	}
+
+	if (check_overlap(cdev, partinfo->name, offset, size))
+		return ERR_PTR(-EINVAL);
 
 	if (IS_ENABLED(CONFIG_MTD) && cdev->mtd) {
 		struct mtd_info *mtd;

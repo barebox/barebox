@@ -59,7 +59,7 @@ The build process needs three binary files which have to be copied from the
 `rkbin https://github.com/rockchip-linux/rkbin` repository to the barebox source tree:
 
 .. code-block:: sh
-  cp $RKBIN/rk35/rk3568_bl31_v1.24.elf firmware/rk3568-bl31.bin
+  cp $RKBIN/bin/rk35/rk3568_bl31_v1.24.elf firmware/rk3568-bl31.bin
   cp $RKBIN/bin/rk35/rk3568_bl32_v1.05.bin firmware/rk3568-op-tee.bin
   cp $RKBIN/bin/rk35/rk3568_ddr_1560MHz_v1.08.bin arch/arm/boards/rockchip-rk3568-evb/sdram-init.bin
 

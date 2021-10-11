@@ -169,8 +169,10 @@ static int erase_and_write(loff_t ofs, unsigned char *data,
 		printf("\ncompare failed. seed %d\n", seed);
 		for (i = 0; i < meminfo.erasesize; i++) {
 			if (data[i] != rbuf[i])
-				printf("Byte 0x%x is %02x should be %02x\n",
-				       i, rbuf[i], data[i]);
+				printf("Block 0x%llx byte 0x%0x (page 0x%x offset 0x%x) is %02x should be %02x\n",
+				       div64_ul(ofs, meminfo.erasesize), i,
+				       i / meminfo.writesize, i % meminfo.writesize,
+				       rbuf[i], data[i]);
 		}
 		return ret;
 	}

@@ -47,11 +47,14 @@ userprogs-always-$(CONFIG_IMD_TARGET)			+= bareboximd-target
 userprogs-always-$(CONFIG_OMAP3_USB_LOADER_TARGET)	+= omap3-usb-loader-target
 userprogs-always-$(CONFIG_OMAP4_USBBOOT_TARGET)		+= omap4_usbboot-target
 userprogs-always-$(CONFIG_MVEBU_KWBOOT_TARGET)		+= kwboot-target
+userprogs-always-$(CONFIG_RK_USB_LOADER_TARGET)		+= rk-usb-loader-target
 
 omap3-usb-loader-target-userccflags += `$(CROSS_PKG_CONFIG) --cflags libusb-1.0`
 omap3-usb-loader-target-userldlibs += `$(CROSS_PKG_CONFIG) --libs libusb-1.0`
 omap4_usbboot-target-userccflags += `$(CROSS_PKG_CONFIG) --cflags libusb-1.0`
 omap4_usbboot-target-userldlibs += -lpthread `$(CROSS_PKG_CONFIG) --libs libusb-1.0`
+rk-usb-loader-target-userccflags += `$(CROSS_PKG_CONFIG) --cflags libusb-1.0`
+rk-usb-loader-target-userldlibs += `$(CROSS_PKG_CONFIG) --libs libusb-1.0`
 
 userccflags += -I $(srctree)/$(src)/include -isystem $(srctree)/scripts/include
 

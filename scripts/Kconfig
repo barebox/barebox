@@ -175,4 +175,11 @@ config OMAP4_USBBOOT_TARGET
 	  Say Y here to build the omap4 usb loader tool for the target.
 	  The cross toolchain needs libusb-1.0 to compile this tool.
 
+config RK_USB_LOADER_TARGET
+	bool "Rockchip USB loader for target"
+	depends on HAS_TARGET_LIBUSB_1_0
+	help
+	  Say Y here to build the rockchip usb loader tool for the target.
+	  The cross toolchain needs libusb-1.0 to compile this tool.
+
 endmenu

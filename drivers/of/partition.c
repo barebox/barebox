@@ -256,6 +256,9 @@ static int of_partition_fixup(struct device_node *root, void *ctx)
 	if (!cdev->device_node)
 		return -EINVAL;
 
+	if (list_empty(&cdev->partitions))
+		return 0;
+
 	name = of_get_reproducible_name(cdev->device_node);
 	np = of_find_node_by_reproducible_name(root, name);
 	free(name);

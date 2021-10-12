@@ -10,7 +10,7 @@ config HAS_MODULES
 config HAS_CACHE
 	bool
 	help
-	  This allows you do run "make ARCH=sandbox allyesconfig".
+	  This allows you to run "make ARCH=sandbox allyesconfig".
 
 	  Drivers that depend on a cache implementation can depend on this
 	  config, so that you don't get a compilation error.
@@ -18,7 +18,7 @@ config HAS_CACHE
 config HAS_DMA
 	bool
 	help
-	  This allows you do run "make ARCH=sandbox allyesconfig".
+	  This allows you to run "make ARCH=sandbox allyesconfig".
 
 	  Drivers that depend on a DMA implementation can depend on this
 	  config, so that you don't get a compilation error.
@@ -630,7 +630,7 @@ config BOOTM_FITIMAGE
 	select FITIMAGE
 	depends on BOOTM && ARM
 	help
-	  Support using Flattened Image Tree (FIT) Images. FIT is an image
+	  Support using Flattened Image Tree (FIT) images. FIT is an image
 	  format introduced by U-Boot. A FIT image contains one or multiple
 	  kernels, device trees and initrds. The FIT image itself is a flattened
 	  device tree binary. Have a look at the u-boot source tree
@@ -711,7 +711,7 @@ config MMCBLKDEV_ROOTARG
 	  variable is set or the used blspec entry contains 'linux-appendroot'.
 
 	  Note: It is crucial that the kernel device tree and the barebox device
-	  tree uses the same mmc aliases.
+	  tree use the same mmc aliases.
 
 	  [1] fa2d0aa96941 ("mmc: core: Allow setting slot index via device tree
 	      alias")
@@ -968,7 +968,7 @@ config DEFAULT_ENVIRONMENT_GENERIC_NEW_IKCONFIG
 	depends on DEFAULT_ENVIRONMENT_GENERIC_NEW
 	help
 	  This option embeds the used barebox Kconfig .config file into the
-	  environment as /env/data/config. This will increases barebox image
+	  environment as /env/data/config. This will increase barebox' image
 	  size. If unsure, say n here.
 
 config DEFAULT_ENVIRONMENT_PATH
@@ -1010,7 +1010,7 @@ config STATE_CRYPTO
 	select DIGEST
 	select DIGEST_HMAC_GENERIC
 	help
-	  This options enables HMAC based authentication support for
+	  This option enables HMAC based authentication support for
 	  the state's header and data. This means the state framework
 	  can verify both the data integrity and the authentication of
 	  the state's header and data.
@@ -1084,8 +1084,8 @@ config EXTERNAL_DTS_FRAGMENTS
 	  the dtc include search path.
 
 	  A preprocessor macro based on the name of the main dts will be
-	  defined, which allows the dts fragments to based on which image of a
-	  multi image build they are being used in. Given the dts filename
+	  defined, which allows the dts fragments to be based on which image of
+	  a multi image build they are being used in. Given the dts filename
 	  used for a board is "foo-board.dts" the external dts usage can be
 	  limited to that board with
 
@@ -1093,9 +1093,9 @@ config EXTERNAL_DTS_FRAGMENTS
 	  ...
 	  #endif
 
-	  It not intended that this be put into into Barebox defconfig files.
-	  Instead, it's an external build system, like Yocto or buildroot, to
-	  add dts fragments from outside the Barebox source tree into the
+	  It is not intended that this is put into Barebox' defconfig files.
+	  Instead, it's an external build system's job, like Yocto or buildroot,
+	  to add dts fragments from outside the Barebox source tree into the
 	  Barebox build.
 
 menu "OP-TEE loading"
@@ -1127,7 +1127,7 @@ config PBL_OPTEE
 	depends on !THUMB2_BAREBOX
 	help
 	  Allows starting OP-TEE during lowlevel initialization of the PBL.
-	  Requires explicit support in the boards lowlevel file.
+	  Requires explicit support in the board's lowlevel file.
 
 endmenu
 
@@ -1510,7 +1510,7 @@ config PBL_BREAK
 	bool "Execute software break on pbl start"
 	depends on ARM && (!CPU_32v4T && !ARCH_TEGRA)
 	help
-	  If this enabled, barebox will be compiled with BKPT instruction
+	  If enabled, barebox will be compiled with BKPT instruction
 	  on early pbl init. This option should be used only with JTAG debugger!
 
 source "lib/Kconfig.ubsan"

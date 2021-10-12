@@ -264,6 +264,9 @@ static struct phy *rockchip_usb2phy_of_xlate(struct device_d *dev,
 	int port;
 
 	for (port = 0; port < 2; port++) {
+		if (!rphy->phys[port].phy)
+			continue;
+
 		if (phynode == rphy->phys[port].phy->dev.device_node) {
 			p = &rphy->phys[port];
 			return p->phy;
@@ -438,6 +441,9 @@ static int rockchip_usb2phy_probe(struct device_d *dev)
 			return -EINVAL;
 
 		phydev = of_platform_device_create(child, dev);
+		if (!phydev)
+			continue;
+
 		of_platform_device_dummy_drv(phydev);
 
 		phy = phy_create(phydev, child, &rockchip_usb2phy_ops);

@@ -423,6 +423,7 @@ static int rockchip_usb2phy_probe(struct device_d *dev)
 	for_each_child_of_node(np, child) {
 		struct rockchip_usb2phy_phy *p;
 		struct phy *phy;
+		struct device_d *phydev;
 
 		if (!strcmp(child->name, "host-port")) {
 			port = USB2PHY_PORT_OTG;
@@ -436,7 +437,10 @@ static int rockchip_usb2phy_probe(struct device_d *dev)
 		if (rphy->phys[port].phy)
 			return -EINVAL;
 
-		phy = phy_create(dev, child, &rockchip_usb2phy_ops);
+		phydev = of_platform_device_create(child, dev);
+		of_platform_device_dummy_drv(phydev);
+
+		phy = phy_create(phydev, child, &rockchip_usb2phy_ops);
 		if (IS_ERR(phy)) {
 			ret = PTR_ERR(phy);
 			if (ret != -EPROBE_DEFER)

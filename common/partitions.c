@@ -156,3 +156,30 @@ int partition_parser_register(struct partition_parser *p)
 
 	return 0;
 }
+
+/**
+ * cdev_unallocated_space - return unallocated space
+ * cdev: The cdev
+ *
+ * This function returns the space that is not allocated by any partition
+ * at the start of a device.
+ *
+ * Return: The unallocated space at the start of the device in bytes
+ */
+loff_t cdev_unallocated_space(struct cdev *cdev)
+{
+	struct cdev *partcdev;
+	loff_t start;
+
+	if (!cdev)
+		return 0;
+
+	start = cdev->size;
+
+	list_for_each_entry(partcdev, &cdev->partitions, partition_entry) {
+		if (partcdev->offset < start)
+			start = partcdev->offset;
+	}
+
+	return start;
+}

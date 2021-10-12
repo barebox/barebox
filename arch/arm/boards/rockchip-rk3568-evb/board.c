@@ -10,6 +10,7 @@
 #include <environment.h>
 #include <globalvar.h>
 #include <magicvar.h>
+#include <deep-probe.h>
 
 static bool machine_is_rk3568_evb = false;
 
@@ -44,6 +45,8 @@ static struct driver_d rk3568_evb_board_driver = {
 	.of_compatible = rk3568_evb_of_match,
 };
 coredevice_platform_driver(rk3568_evb_board_driver);
+
+BAREBOX_DEEP_PROBE_ENABLE(rk3568_evb_of_match);
 
 static int rk3568_evb_detect_hwid(void)
 {

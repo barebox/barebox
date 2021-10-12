@@ -992,9 +992,9 @@ config BTHREAD
 	select HAS_SCHED
 	depends on HAS_ARCH_SJLJ
 	help
-	 barebox threads are lightweight cooperative (green) threads that are
-	 scheduled within delay loops and the console idle to asynchronously
-	 execute actions, like checking for link up or feeding a watchdog.
+	  barebox threads are lightweight cooperative (green) threads that are
+	  scheduled within delay loops and the console idle to asynchronously
+	  execute actions, like checking for link up or feeding a watchdog.
 
 config STATE
 	bool "generic state infrastructure"

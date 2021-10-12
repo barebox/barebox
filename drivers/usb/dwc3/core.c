@@ -14,6 +14,7 @@
 #include <dma.h>
 #include <driver.h>
 #include <init.h>
+#include <linux/reset.h>
 
 #include "gadget.h"
 #include "core.h"
@@ -1124,6 +1125,16 @@ static int dwc3_probe(struct device_d *dev)
 	ret = clk_bulk_enable(dwc->num_clks, dwc->clks);
 	if (ret)
 		return ret;
+
+	dwc->reset = reset_control_get(dev, NULL);
+	if (IS_ERR(dwc->reset)) {
+		dev_err(dev, "Failed to get reset control: %pe\n", dwc->reset);
+		return PTR_ERR(dwc->reset);
+	}
+
+	reset_control_assert(dwc->reset);
+	mdelay(1);
+	reset_control_deassert(dwc->reset);
 
 	dwc3_coresoft_reset(dwc);
 

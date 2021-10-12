@@ -145,12 +145,12 @@ struct rk_bootsource {
 };
 
 static struct rk_bootsource bootdev_map[] = {
-	{ .src = BOOTSOURCE_UNKNOWN, .instance = 0 },
-	{ .src = BOOTSOURCE_NAND, .instance = 0 },
-	{ .src = BOOTSOURCE_MMC, .instance = 0 },
-	{ .src = BOOTSOURCE_SPI_NOR, .instance = 0 },
-	{ .src = BOOTSOURCE_SPI_NAND, .instance = 0 },
-	{ .src = BOOTSOURCE_MMC, .instance = 1 },
+	[0x1] = { .src = BOOTSOURCE_NAND, .instance = 0 },
+	[0x2] = { .src = BOOTSOURCE_MMC, .instance = 0 },
+	[0x3] = { .src = BOOTSOURCE_SPI_NOR, .instance = 0 },
+	[0x4] = { .src = BOOTSOURCE_SPI_NAND, .instance = 0 },
+	[0x5] = { .src = BOOTSOURCE_MMC, .instance = 1 },
+	[0xa] = { .src = BOOTSOURCE_USB, .instance = 0 },
 };
 
 static enum bootsource rk3568_bootsource(void)

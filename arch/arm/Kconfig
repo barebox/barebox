@@ -248,6 +248,7 @@ config ARCH_ZYNQ
 	bool "Xilinx Zynq-based boards"
 	select HAS_DEBUG_LL
 	select PBL_IMAGE
+	select GPIOLIB
 
 config ARCH_ZYNQMP
 	bool "Xilinx ZynqMP-based boards"
@@ -258,6 +259,7 @@ config ARCH_ZYNQMP
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
 	select CLKDEV_LOOKUP
+	select GPIOLIB
 	select OFDEVICE
 	select OFTREE
 	select RELOCATABLE

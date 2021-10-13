@@ -212,6 +212,7 @@ struct phy_device {
  * phy_id_mask: Defines the important bits of the phy_id
  * features: A list of features (speed, duplex, etc) supported
  *   by this PHY
+ * @driver_data: Static driver data
  *
  * The drivers must implement config_aneg and read_status.  All
  * other functions are optional. Note that none of these
@@ -225,6 +226,7 @@ struct phy_driver {
 	u32 phy_id;
 	unsigned int phy_id_mask;
 	u32 features;
+	const void *driver_data;
 
 	/*
 	 * Called to initialize the PHY,

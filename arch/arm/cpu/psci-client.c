@@ -15,7 +15,7 @@
 
 static struct restart_handler restart;
 
-static void __noreturn psci_invoke_noreturn(int function)
+static void __noreturn psci_invoke_noreturn(ulong function)
 {
 	int ret;
 

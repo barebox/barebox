@@ -69,7 +69,7 @@
 	};
 };
 
-&{/bus@4000000/motherboard/flash@0,00000000} {
+&{/bus@40000000/motherboard-bus@40000000/flash@0,00000000} {
 	partitions {
 		compatible = "fixed-partitions";
 		#address-cells = <1>;

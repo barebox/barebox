@@ -195,7 +195,7 @@ static inline struct phy *phy_get(struct device_d *dev, const char *string)
 static inline struct phy *phy_optional_get(struct device_d *dev,
 					   const char *string)
 {
-	return ERR_PTR(-ENOSYS);
+	return NULL;
 }
 
 static inline struct phy *of_phy_get_by_phandle(struct device_d *dev,

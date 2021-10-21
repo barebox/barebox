@@ -10,7 +10,7 @@ that boot should happen from a different boot medium.
 
 Likewise, many bootloaders reuse such registers, or if unavailable,
 non-volatile memory to determine whether the OS requested a special
-reboot mode, e.g. rebooting into an USB recovery mode. This is
+reboot mode, e.g. rebooting into a USB recovery mode. This is
 common on Android systems.
 
 barebox implements the upstream device tree bindings for
@@ -52,11 +52,11 @@ Reset
 =====
 
 Reboot modes can be stored on a syscon wrapping general purpose registers
-that survives warm resets. If the system instead did reset via an external
+that survive warm resets. If the system instead did reset via an external
 power management IC, the registers may lose their value.
 
 If such reboot mode storage is used, users must take care to use the correct
-reset provider. In barebox, multiple reset providers may co-exist. They
+reset provider. In barebox, multiple reset providers may co-exist. The
 ``reset`` command allows listing and choosing a specific reboot mode.
 
 Disambiguation
@@ -86,7 +86,7 @@ as the reboot mode.
 For cases, where the communication instead happens between barebox and an OS,
 they can be completely different, e.g. ``$bootsource`` may say barebox was
 booted from ``spi-nor``, while the reboot mode describes that barebox should
-boot the Kernel off an USB flash drive.
+boot the Kernel off a USB flash drive.
 
 Comparison to barebox state
 ---------------------------

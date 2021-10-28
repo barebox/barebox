@@ -67,7 +67,7 @@ struct imd_entry_crc32 {
 
 static inline int imd_is_crc32(uint32_t type)
 {
-	return (type & IMD_TYPE_CRC32) ? 1 : 0;
+	return type == IMD_TYPE_CRC32;
 }
 
 static inline int imd_crc32_is_valid(uint32_t flags)

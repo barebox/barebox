@@ -427,6 +427,7 @@ static int atmel_serial_probe(struct device_d *dev)
 {
 	struct atmel_uart_port *uart;
 	struct console_device *cdev;
+	int ret;
 
 	uart = xzalloc(sizeof(struct atmel_uart_port));
 	cdev = &uart->uart;
@@ -438,7 +439,9 @@ static int atmel_serial_probe(struct device_d *dev)
 	cdev->set_mode = atmel_serial_set_mode;
 	cdev->linux_console_name = "ttyAT";
 
-	atmel_serial_init_port(cdev);
+	ret = atmel_serial_init_port(cdev);
+	if (ret)
+		return ret;
 
 	/* Enable UART */
 

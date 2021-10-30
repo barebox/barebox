@@ -88,8 +88,6 @@ enum autoboot_state do_autoboot_countdown(void);
 void __noreturn start_barebox(void);
 void shutdown_barebox(void);
 
-#define ARRAY_AND_SIZE(x)	(x), ARRAY_SIZE(x)
-
 /*
  * The STACK_ALIGN_ARRAY macro is used to allocate a buffer on the stack that
  * meets a minimum alignment requirement.

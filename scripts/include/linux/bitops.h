@@ -4,12 +4,7 @@
 #include <asm/types.h>
 #include <linux/kernel.h>
 #include <linux/compiler.h>
-
-#ifndef __WORDSIZE
-#define __WORDSIZE (__SIZEOF_LONG__ * 8)
-#endif
-
-#define BITS_PER_LONG __WORDSIZE
+#include <asm-generic/bitsperlong.h>
 
 #define BIT_MASK(nr)		(1UL << ((nr) % BITS_PER_LONG))
 #define BIT_WORD(nr)		((nr) / BITS_PER_LONG)

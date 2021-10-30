@@ -56,7 +56,7 @@ static void pmic_reg_write(void *i2c, int addr, int reg, uint8_t val)
 
 	ret = i2c_fsl_xfer(i2c, msgs, ARRAY_SIZE(msgs));
 	if (ret != 1)
-		pr_err("Failed to write to pmic %d\n", ret);
+		pr_err("Failed to write to pmic@%x: %d\n", addr, ret);
 }
 
 static int power_init_board_pca9450(void *i2c, int addr)
@@ -66,7 +66,8 @@ static int power_init_board_pca9450(void *i2c, int addr)
 		{
 			.addr = addr,
 			.buf = buf,
-			.flags = I2C_M_RD
+			.flags = I2C_M_RD,
+			.len = 1,
 		},
 	};
 

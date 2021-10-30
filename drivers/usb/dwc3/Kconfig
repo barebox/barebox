@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0
 config USB_DWC3
 	tristate "DesignWare USB3 DRD Core Support"
 	depends on USB && HAS_DMA

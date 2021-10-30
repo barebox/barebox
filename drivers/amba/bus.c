@@ -1,8 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0
 /*
  * Copyright (C) 2003 Deep Blue Solutions Ltd, All Rights Reserved.
  * Copyright (c) 2012 Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
- *
- * Under GPLv2.
  */
 #include <common.h>
 #include <driver.h>

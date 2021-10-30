@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Driver for the Solomon SSD1307 OLED controller family
  *
@@ -13,8 +14,6 @@
  *
  * Ported to barebox from linux v4.10
  * Copyright (C) 2017 Pengutronix, Bastian Stender <kernel@pengutronix.de>
- *
- * Licensed under the GPLv2 or later.
  */
 
 #include <common.h>

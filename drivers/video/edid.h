@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 /*
  * drivers/video/edid.h - EDID/DDC Header
  *
@@ -9,11 +10,7 @@
  *      Ani Joshi <ajoshi@unixbox.com>
  *
  * DDC is a Trademark of VESA (Video Electronics Standard Association).
- *
- * This file is subject to the terms and conditions of the GNU General Public
- * License.  See the file COPYING in the main directory of this archive
- * for more details.
-*/
+ */
 
 #ifndef __EDID_H__
 #define __EDID_H__

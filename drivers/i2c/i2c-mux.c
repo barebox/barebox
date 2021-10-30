@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0
 /*
  * Multiplexed I2C bus driver.
  *
@@ -16,10 +17,6 @@
  *	i2c-virt.c from Kumar Gala <galak@kernel.crashing.org>
  *	i2c-virtual.c from Ken Harrenstien, Copyright (c) 2004 Google, Inc.
  *	i2c-virtual.c from Brian Kuschak <bkuschak@yahoo.com>
- *
- * This file is licensed under the terms of the GNU General Public
- * License version 2. This program is licensed "as is" without any
- * warranty of any kind, whether express or implied.
  */
 
 #include <common.h>

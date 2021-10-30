@@ -1,19 +1,10 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
  * linux/drivers/usb/gadget/pxa27x_udc.h
  * Intel PXA27x on-chip full speed USB device controller
  *
  * Inspired by original driver by Frank Becker, David Brownell, and others.
  * Copyright (C) 2008 Robert Jarzmik
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
  *
  * Taken from linux-2.6 kernel and adapted to barebox.
  */

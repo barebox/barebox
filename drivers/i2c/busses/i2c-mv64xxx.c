@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0
 /*
  * Driver for the i2c controller on the Marvell line of host bridges
  * (e.g, gt642[46]0, mv643[46]0, mv644[46]0, and Orion SoC family).
@@ -6,10 +7,7 @@
  *
  * Author: Mark A. Greer <mgreer@mvista.com>
  *
- * 2005 (c) MontaVista, Software, Inc.  This file is licensed under
- * the terms of the GNU General Public License version 2.  This program
- * is licensed "as is" without any warranty of any kind, whether express
- * or implied.
+ * 2005 (c) MontaVista, Software, Inc.
  */
 
 #include <common.h>

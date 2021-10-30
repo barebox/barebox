@@ -1,13 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0
 /*
  * drivers/mtd/nand/mrvl_nand.c
  *
  * Copyright © 2005 Intel Corporation
  * Copyright © 2006 Marvell International Ltd.
  * Copyright (C) 2014 Robert Jarzmik
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
  *
  * See Documentation/mtd/nand/pxa3xx-nand.txt for more details.
  */

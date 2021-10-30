@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0
 menu "Multifunction device drivers"
 
 config MFD_ACT8846

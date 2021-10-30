@@ -1,12 +1,9 @@
+// SPDX-License-Identifier: GPL-2.0
 /*
  * (C) Copyright 2014, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
  *
  * Based on Orion NAND driver from Linux (drivers/mtd/nand/orion_nand.c):
  * Author: Tzachi Perelstein <tzachi@marvell.com>
- *
- * This file is licensed under  the terms of the GNU General Public
- * License version 2. This program is licensed "as is" without any
- * warranty of any kind, whether express or implied.
  */
 
 #include <common.h>

@@ -1,12 +1,9 @@
+// SPDX-License-Identifier: GPL-2.0
 /*
  * linux/arch/arm/mach-nomadik/timer.c
  *
  * Copyright (C) 2008 STMicroelectronics
  * Copyright (C) 2009 Alessandro Rubini, somewhat based on at91sam926x
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2, as
- * published by the Free Software Foundation.
  */
 #include <common.h>
 #include <clock.h>

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0
 /*
  * drivers/video/edid.c
  *
@@ -20,11 +21,6 @@
  *
  *      GTF Spreadsheet by Andy Morrish (1/5/97)
  *      available at http://www.vesa.org
- *
- * This file is subject to the terms and conditions of the GNU General Public
- * License.  See the file COPYING in the main directory of this archive
- * for more details.
- *
  */
 
 #define pr_fmt(fmt)  "EDID: " fmt

@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef REGMAP_INTERNAL_H_
 #define REGMAP_INTERNAL_H_
 

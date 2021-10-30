@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0
 obj-y	+= bus.o
 obj-y	+= driver.o
 obj-y	+= platform.o

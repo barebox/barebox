@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0
 #include <common.h>
 #include <of.h>
 #include <of_device.h>

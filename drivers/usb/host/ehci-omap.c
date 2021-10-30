@@ -1,8 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0
 /*
  * Copyright (C) 2010 Michael Grzeschik <mgr@pengutronix.de>
- *
- * This file is released under the GPLv2
- *
  */
 
 /*

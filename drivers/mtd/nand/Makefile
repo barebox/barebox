@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0
 
 # Generic NAND options
 obj-$(CONFIG_NAND)			+= nand_ecc.o

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0
 #include <common.h>
 #include <usb/ch9.h>
 

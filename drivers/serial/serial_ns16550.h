@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 /**
  * @file
  * @brief Serial NS16550 header
@@ -8,11 +9,6 @@
  * Register definitions for NS16550 device
  */
 /*
- * This file is licensed under
- * the terms of the GNU General Public License version 2.  This program
- * is licensed "as is" without any warranty of any kind, whether express
- * or implied.
- *
  * NS16550 Serial Port
  * originally from linux source (arch/ppc/boot/ns16550.h)
  * modified slightly to

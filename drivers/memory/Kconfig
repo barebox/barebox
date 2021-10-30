@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0
 menu "Memory controller drivers"
 
 config MC_TEGRA124

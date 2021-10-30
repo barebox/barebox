@@ -1,7 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0
 /*
  * Copyright (C) 2009 Marc Kleine-Budde <mkl@pengutronix.de>
- *
- * This file is released under the GPLv2
  *
  * Derived from:
  * - i2c-core.c - a device driver for the iic-bus interface

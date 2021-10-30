@@ -1,10 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0
 /*
  * Copyright (C) 2016 Pengutronix, Steffen Trumtrar <kernel@pengutronix.de>
- *
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License version 2 as published by the
- * Free Software Foundation.
  */
+
 #include <common.h>
 #include <dma.h>
 #include <digest.h>

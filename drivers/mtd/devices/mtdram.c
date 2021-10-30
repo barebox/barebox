@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0
 /*
  * Author: Sebastian Block <basti@linux-source.de>
  * Copyright (c) 2014
@@ -5,11 +6,6 @@
  * Some parts are based on mtdram.c found in Linux kernel
  * by   Alexander Larsson <alex@cendio.se>
  * and  Joern Engel <joern@wh.fh-wedel.de>.
- *
- * This code is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- *
  */
 #include <common.h>
 #include <environment.h>

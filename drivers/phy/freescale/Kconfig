@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0
 config PHY_FSL_IMX8MQ_USB
 	bool "Freescale i.MX8M USB3 PHY"
 	default ARCH_IMX8MQ

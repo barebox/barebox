@@ -62,15 +62,6 @@ void ctrlc_handled(void);
 static inline void ctrlc_handled(void) { }
 #endif
 
-#ifdef CONFIG_ARCH_HAS_STACK_DUMP
-void dump_stack(void);
-#else
-static inline void dump_stack(void)
-{
-	printf("no stack data available\n");
-}
-#endif
-
 int parse_area_spec(const char *str, loff_t *start, loff_t *size);
 
 /* Just like simple_strtoul(), but this one honors a K/M/G suffix */

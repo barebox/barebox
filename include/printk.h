@@ -47,4 +47,14 @@ extern void print_hex_dump(const char *level, const char *prefix_str,
 			   int prefix_type, int rowsize, int groupsize,
 			   const void *buf, size_t len, bool ascii);
 
+#ifdef CONFIG_ARCH_HAS_STACK_DUMP
+void dump_stack(void);
+#else
+static inline void dump_stack(void)
+{
+	printf("no stack data available\n");
+}
+#endif
+
+
 #endif

@@ -19,10 +19,6 @@
 #define BITS_TO_U32(nr)		DIV_ROUND_UP(nr, BITS_PER_BYTE * sizeof(u32))
 #define BITS_TO_BYTES(nr)	DIV_ROUND_UP(nr, BITS_PER_BYTE)
 
-extern unsigned int __sw_hweight8(unsigned int w);
-extern unsigned int __sw_hweight16(unsigned int w);
-extern unsigned int __sw_hweight32(unsigned int w);
-extern unsigned long __sw_hweight64(__u64 w);
 
 /*
  * Include this here because some architectures need generic_ffs/fls in

@@ -559,13 +559,13 @@ static int zynq_qspi_probe(struct device_d *dev)
 	xqspi->regs = IOMEM(iores->start);
 
 	xqspi->pclk = clk_get(dev, "pclk");
-	if (IS_ERR_OR_NULL(xqspi->pclk)) {
+	if (IS_ERR(xqspi->pclk)) {
 		dev_err(dev, "pclk clock not found.\n");
 		return PTR_ERR(xqspi->pclk);
 	}
 
 	xqspi->refclk = clk_get(dev, "ref_clk");
-	if (IS_ERR_OR_NULL(xqspi->refclk)) {
+	if (IS_ERR(xqspi->refclk)) {
 		dev_err(dev, "ref_clk clock not found.\n");
 		return PTR_ERR(xqspi->refclk);
 	}

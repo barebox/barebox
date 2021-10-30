@@ -18,7 +18,7 @@
 #include <linux/stddef.h>
 #include <asm/common.h>
 #include <asm/io.h>
-#include <printk.h>
+#include <linux/printk.h>
 
 /*
  * sanity check. The Linux Kernel defines only one of __LITTLE_ENDIAN and

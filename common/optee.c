@@ -3,7 +3,7 @@
 #define pr_fmt(fmt) "optee: " fmt
 
 #include <tee/optee.h>
-#include <printk.h>
+#include <linux/printk.h>
 #include <asm-generic/errno.h>
 
 int optee_verify_header(struct optee_header *hdr)

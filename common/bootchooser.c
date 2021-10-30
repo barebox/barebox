@@ -13,7 +13,7 @@
 #include <libfile.h>
 #include <common.h>
 #include <malloc.h>
-#include <printk.h>
+#include <linux/printk.h>
 #include <xfuncs.h>
 #include <envfs.h>
 #include <errno.h>

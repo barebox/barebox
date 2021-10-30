@@ -31,7 +31,7 @@
 #include <linux/log2.h>
 #include <linux/spinlock.h>
 #include <malloc.h>
-#include <printk.h>
+#include <linux/printk.h>
 #include <stdio.h>
 #include <globalvar.h>
 #include <init.h>

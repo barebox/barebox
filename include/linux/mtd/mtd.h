@@ -11,7 +11,7 @@
 
 #include <driver.h>
 #include <errno.h>
-#include <printk.h>
+#include <linux/printk.h>
 #include <linux/types.h>
 #include <linux/list.h>
 #include <linux/mtd/mtd-abi.h>

@@ -4,7 +4,7 @@
  */
 
 #include <linux/basic_mmio_gpio.h>
-#include <printk.h>
+#include <linux/printk.h>
 #include <driver.h>
 #include <errno.h>
 

@@ -17,7 +17,7 @@
 #include <common.h>
 #include <linux/bitops.h>
 #include <linux/kernel.h>
-#include <printk.h>
+#include <linux/printk.h>
 #include <asm-generic/sections.h>
 
 #include "kasan.h"

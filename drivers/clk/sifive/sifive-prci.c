@@ -8,7 +8,7 @@
 #include <linux/list.h>
 #include <linux/clkdev.h>
 #include <linux/overflow.h>
-#include <printk.h>
+#include <linux/printk.h>
 #include <clock.h>
 #include <io.h>
 #include <of.h>

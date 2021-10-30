@@ -1,6 +1,6 @@
 #include <bbu.h>
 #include <libfile.h>
-#include <printk.h>
+#include <linux/printk.h>
 
 #include <mach/bbu.h>
 

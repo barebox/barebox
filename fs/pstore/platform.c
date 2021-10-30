@@ -27,7 +27,7 @@
 #include <linux/mutex.h>
 #include <console.h>
 #include <malloc.h>
-#include <printk.h>
+#include <linux/printk.h>
 #include <module.h>
 
 #include "internal.h"

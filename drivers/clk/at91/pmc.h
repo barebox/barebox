@@ -10,7 +10,7 @@
 
 #include <io.h>
 #include <linux/bitops.h>
-#include <printk.h>
+#include <linux/printk.h>
 
 struct pmc_data {
 	unsigned int ncore;

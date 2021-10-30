@@ -4,6 +4,7 @@
 
 #include <stdarg.h>
 #include <console.h>
+#include <printk.h>
 
 /*
  * STDIO based functions (can always be used)
@@ -71,8 +72,6 @@ static inline int ctrlc (void)
 
 #if (!defined(__PBL__) && !defined(CONFIG_CONSOLE_NONE)) || \
 	(defined(__PBL__) && defined(CONFIG_PBL_CONSOLE))
-int printf(const char *fmt, ...) __attribute__ ((format(__printf__, 1, 2)));
-
 static inline int puts(const char *s)
 {
 	return console_puts(CONSOLE_STDOUT, s);
@@ -83,11 +82,6 @@ static inline void putchar(char c)
 	console_putc(CONSOLE_STDOUT, c);
 }
 #else
-static int printf(const char *fmt, ...) __attribute__ ((format(__printf__, 1, 2)));
-static inline int printf(const char *fmt, ...)
-{
-	return 0;
-}
 static inline int puts(const char *s)
 {
 	return 0;

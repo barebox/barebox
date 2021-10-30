@@ -6,7 +6,7 @@
 #include <linux/basic_mmio_gpio.h>
 #include <linux/reset.h>
 #include <linux/clk.h>
-#include <printk.h>
+#include <linux/printk.h>
 #include <driver.h>
 #include <errno.h>
 #include <pinctrl.h>

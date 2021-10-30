@@ -21,7 +21,7 @@
 #include <linux/mtd/mtd-abi.h>
 #include <sys/stat.h>
 #include <malloc.h>
-#include <printk.h>
+#include <linux/printk.h>
 
 #include "state.h"
 

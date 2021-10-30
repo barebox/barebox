@@ -7,7 +7,7 @@
 #include <linux/types.h>
 #include <linux/ctype.h>
 #include <linux/log2.h>
-#include <printk.h>
+#include <linux/printk.h>
 #include <asm/unaligned.h>
 
 const char hex_asc[] = "0123456789abcdef";

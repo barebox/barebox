@@ -573,7 +573,7 @@ int regulator_get_voltage(struct regulator *regulator)
 
 	return ret;
 }
-EXPORT_SYMBOL_GPL(regulator_get_voltage_rdev);
+EXPORT_SYMBOL_GPL(regulator_get_voltage);
 
 static void regulator_print_one(struct regulator_internal *ri)
 {

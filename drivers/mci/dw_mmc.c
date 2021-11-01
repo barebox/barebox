@@ -572,7 +572,7 @@ static int dw_mmc_probe(struct device_d *dev)
 
 	rst = reset_control_get(dev, "reset");
 	if (IS_ERR(rst)) {
-		return PTR_ERR(rst);
+		dev_warn(dev, "error claiming reset: %pe\n", rst);
 	} else if (rst) {
 		reset_control_assert(rst);
 		udelay(10);

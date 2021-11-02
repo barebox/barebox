@@ -72,7 +72,9 @@ out:
 }
 
 BAREBOX_CMD_HELP_START(memcpy)
-BAREBOX_CMD_HELP_TEXT("Copy memory at SRC of COUNT bytes to DEST")
+BAREBOX_CMD_HELP_TEXT("Copy memory of COUNT bytes from offsets SRC to DEST.")
+BAREBOX_CMD_HELP_TEXT("If source is a file, COUNT can be left unspecified")
+BAREBOX_CMD_HELP_TEXT("in which case the whole file is copied.")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-b", "byte access")
@@ -86,7 +88,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(memcpy)
 	.cmd		= do_memcpy,
 	BAREBOX_CMD_DESC("memory copy")
-	BAREBOX_CMD_OPTS("[-bwlsd] SRC DEST COUNT")
+	BAREBOX_CMD_OPTS("[-bwlq] [-s FILE] [-d FILE] SRC DEST COUNT")
 	BAREBOX_CMD_GROUP(CMD_GRP_MEM)
 	BAREBOX_CMD_HELP(cmd_memcpy_help)
 BAREBOX_CMD_END

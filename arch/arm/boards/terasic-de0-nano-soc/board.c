@@ -24,7 +24,7 @@ static int phy_fixup(struct phy_device *dev)
 
 static int socfpga_init(void)
 {
-	if (!of_machine_is_compatible("terasic,de0-nano-soc"))
+	if (!of_machine_is_compatible("terasic,de0-atlas"))
 		return 0;
 
 	if (IS_ENABLED(CONFIG_PHYLIB))

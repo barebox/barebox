@@ -19,9 +19,6 @@
 #include "socfpga.dtsi"
 
 / {
-	model = "Terasic SoCkit";
-	compatible = "terasic,sockit", "altr,socfpga";
-
 	chosen {
 		stdout-path = &uart0;
 

@@ -25,7 +25,7 @@ static int phy_fixup(struct phy_device *dev)
 
 static int socfpga_console_init(void)
 {
-	if (!of_machine_is_compatible("terasic,sockit"))
+	if (!of_machine_is_compatible("terasic,socfpga-cyclone5-sockit"))
 		return 0;
 
 	if (IS_ENABLED(CONFIG_PHYLIB))

@@ -106,6 +106,13 @@ config SPI_ZYNQ_QSPI
 	  This enables support for the Zynq Quad SPI controller in master mode.
 	  This controller only supports SPI memory interface.
 
+config DRIVER_SPI_STM32
+	bool "STM32 SPI driver"
+	depends on ARCH_STM32MP || COMPILE_TEST
+	help
+	  Enable the STM32 Serial Peripheral Interface (SPI) driver for STM32MP
+	  SoCs.
+
 endif
 
 endmenu

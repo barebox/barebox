@@ -14,3 +14,4 @@ obj-$(CONFIG_SPI_ATMEL_QUADSPI) += atmel-quadspi.o
 obj-$(CONFIG_DRIVER_SPI_OMAP3) += omap3_spi.o
 obj-$(CONFIG_DRIVER_SPI_DSPI) += dspi_spi.o
 obj-$(CONFIG_SPI_ZYNQ_QSPI) += zynq_qspi.o
+obj-$(CONFIG_DRIVER_SPI_STM32) += stm32_spi.o

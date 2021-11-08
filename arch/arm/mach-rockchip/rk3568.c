@@ -90,7 +90,7 @@ static void qos_priority_init(void)
 	writel(0x303, EBC_PRIORITY_REG);
 }
 
-int rk3568_lowlevel_init(void)
+void rk3568_lowlevel_init(void)
 {
 	/*
 	 * When perform idle operation, corresponding clock can
@@ -135,8 +135,6 @@ int rk3568_lowlevel_init(void)
 	writel(0x01ff01d1, USBPHY_U2_GRF_CON1);
 
 	qos_priority_init();
-
-	return 0;
 }
 
 struct rk_bootsource {

@@ -53,8 +53,11 @@ config MACH_RK3568_EVB
 
 endmenu
 
+comment "select board features:"
+
 config ARCH_RK3568_OPTEE
-	bool "Build OP-TEE binary into barebox"
+	bool "Build rk3568 OP-TEE binary into barebox"
+	depends on ARCH_RK3568
 	help
 	  With this option enabled the RK3568 OP-TEE binary is compiled
 	  into barebox and started along with the BL31 trusted firmware.

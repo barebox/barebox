@@ -845,9 +845,15 @@ int of_clk_init(struct device_node *root, const struct of_device_id *matches)
 
 			struct device_node *np = clk_provider->np;
 			if (force || parent_ready(np)) {
+				struct device_d *dev;
 
 				of_pinctrl_select_state_default(np);
-				clk_provider->clk_init_cb(np);
+
+				dev = of_device_create_on_demand(np);
+
+				if (clk_provider->clk_init_cb(np) == 0 && dev)
+					of_platform_device_dummy_drv(dev);
+
 				of_clk_set_defaults(np, true);
 
 				list_del(&clk_provider->node);

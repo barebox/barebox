@@ -33,30 +33,35 @@ static unsigned long load_elf64_image_phdr(const void *elf)
 	return ehdr->e_entry;
 }
 
+#define rockchip_atf_load_bl31(SOC, atf_bin, tee_bin, fdt) do {                 \
+	const void *bl31_elf, *optee;                                           \
+	unsigned long bl31;                                                     \
+	size_t bl31_elf_size, optee_size;                                       \
+	uintptr_t optee_load_address = 0;                                       \
+										\
+	get_builtin_firmware(atf_bin, &bl31_elf, &bl31_elf_size);               \
+										\
+	bl31 = load_elf64_image_phdr(bl31_elf);                                 \
+										\
+	if (IS_ENABLED(CONFIG_ARCH_##SOC##_OPTEE)) {                            \
+		optee_load_address = SOC##_OPTEE_LOAD_ADDRESS;                  \
+										\
+		get_builtin_firmware(tee_bin, &optee, &optee_size);             \
+										\
+		memcpy((void *)optee_load_address, optee, optee_size);          \
+	}                                                                       \
+										\
+	/* Setup an initial stack for EL2 */                                    \
+	asm volatile("msr sp_el2, %0" : :                                       \
+			"r" (SOC##_BAREBOX_LOAD_ADDRESS - 16) :                 \
+			"cc");                                                  \
+										\
+	bl31_entry(bl31, optee_load_address,                                    \
+		   SOC##_BAREBOX_LOAD_ADDRESS, (uintptr_t)fdt);                 \
+} while (0)                                                                     \
+
+
 void rk3568_atf_load_bl31(void *fdt)
 {
-	const void *bl31_elf, *optee;
-	unsigned long bl31;
-	size_t bl31_elf_size, optee_size;
-	uintptr_t optee_load_address = 0;
-
-	get_builtin_firmware(rk3568_bl31_bin, &bl31_elf, &bl31_elf_size);
-
-	bl31 = load_elf64_image_phdr(bl31_elf);
-
-	if (IS_ENABLED(CONFIG_ARCH_RK3568_OPTEE)) {
-		optee_load_address = RK3568_OPTEE_LOAD_ADDRESS;
-
-		get_builtin_firmware(rk3568_op_tee_bin, &optee, &optee_size);
-
-		memcpy((void *)optee_load_address, optee, optee_size);
-	}
-
-	/* Setup an initial stack for EL2 */
-	asm volatile("msr sp_el2, %0" : :
-			"r" (RK3568_BAREBOX_LOAD_ADDRESS - 16) :
-			"cc");
-
-	bl31_entry(bl31, optee_load_address,
-		   RK3568_BAREBOX_LOAD_ADDRESS, (uintptr_t)fdt);
+	rockchip_atf_load_bl31(RK3568, rk3568_bl31_bin, rk3568_op_tee_bin, fdt);
 }

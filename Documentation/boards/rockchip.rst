@@ -46,19 +46,31 @@ Instructions.
 * Insert SD card and run "dd if=rrboot.bin of=</dev/sdcard> bs=$((0x200)) seek=$((0x40))"
 * SD card is ready
 
-Rockchip RK3568
+Rockchip RK356x
 ===============
 
-RK3568 EVB
-----------
+Barebox features support for the Rockchip RK3566 and RK3568 SoCs, where the
+RK3566 can be considered as reduced but largely identical version of the
+RK3568.
+
+Supported Boards
+----------------
+
+- Rockchip RK3568 EVB
+- Pine64 Quartz64 Model A
+
+The steps described in the following target the RK3568 and the RK3568 EVB but
+generally apply to both SoCs and all boards.
+Differences between the SoCs or boards are outlined where required.
 
 Building
-^^^^^^^^
+--------
 
 The build process needs three binary files which have to be copied from the
 `rkbin https://github.com/rockchip-linux/rkbin` repository to the barebox source tree:
 
 .. code-block:: sh
+
   cp $RKBIN/bin/rk35/rk3568_bl31_v1.24.elf firmware/rk3568-bl31.bin
   cp $RKBIN/bin/rk35/rk3568_bl32_v1.05.bin firmware/rk3568-op-tee.bin
   cp $RKBIN/bin/rk35/rk3568_ddr_1560MHz_v1.08.bin arch/arm/boards/rockchip-rk3568-evb/sdram-init.bin
@@ -72,8 +84,11 @@ With these barebox can be compiled as:
 
 **NOTE** I found the bl32 firmware non working for me as of 7d631e0d5b2d373b54d4533580d08fb9bd2eaad4 in the rkbin repository.
 
+**NOTE** The RK3566 and RK3568 seem to share the bl31 and bl32 firmware files,
+whereas the memory initialization blob is different.
+
 Creating a bootable SD card
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------------------------
 
 A bootable SD card can be created with:
 
@@ -86,7 +101,7 @@ doesn't conflict with the are barebox is written to. Starting the first
 partition at offset 8MiB is a safe bet.
 
 USB bootstrapping
-^^^^^^^^^^^^^^^^^
+-----------------
 
 The RK3568 can be bootstrapped via USB for which the rk-usb-loader tool in the barebox
 repository can be used. The tool takes the same images as written on SD cards:
@@ -99,3 +114,4 @@ Note that the boot order of the RK3568 is not configurable. The SoC will only en
 MaskROM mode when no other bootsource contains a valid bootloader. This means to use USB
 you have to make all other bootsources invalid by removing SD cards and shortcircuiting
 eMMCs. The RK3568 EVB has a pushbutton to disable the eMMC.
+On the Quartz64 boards, remove the eMMC module if present.

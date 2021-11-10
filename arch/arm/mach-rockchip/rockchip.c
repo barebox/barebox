@@ -9,6 +9,8 @@ static int rockchip_init(void)
 		return rk3188_init();
 	if (of_machine_is_compatible("rockchip,rk3288"))
 		return rk3288_init();
+	if (of_machine_is_compatible("rockchip,rk3566"))
+		return rk3568_init();
 	if (of_machine_is_compatible("rockchip,rk3568"))
 		return rk3568_init();
 

@@ -44,7 +44,6 @@ enum {
 	CLK_MAC_PCLK,
 	CLK_MAC_SPEED,
 	CLK_PTP_REF,
-	CLK_XPCS_PCLK,
 };
 
 static const struct clk_bulk_data rk_gmac_clks[] = {
@@ -56,7 +55,6 @@ static const struct clk_bulk_data rk_gmac_clks[] = {
 	[CLK_MAC_PCLK]    = { .id = "pclk_mac" },
 	[CLK_MAC_SPEED]   = { .id = "clk_mac_speed" },
 	[CLK_PTP_REF]     = { .id = "ptp_ref" },
-	[CLK_XPCS_PCLK]   = { .id = "pclk_xpcs" },
 };
 
 static inline struct eqos_rk_gmac *to_rk_gmac(struct eqos *eqos)

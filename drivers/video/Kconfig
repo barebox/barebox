@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0
 menuconfig VIDEO
 	bool "Video drivers"
 	help

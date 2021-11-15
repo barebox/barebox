@@ -1,2 +1,3 @@
+# SPDX-License-Identifier: GPL-2.0
 source "drivers/ddr/fsl/Kconfig"
 source "drivers/ddr/imx8m/Kconfig"

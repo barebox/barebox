@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0
 #include <linux/ethtool.h>
 #include <linux/bitfield.h>
 

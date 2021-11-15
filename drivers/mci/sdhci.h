@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef __MCI_SDHCI_H
 #define __MCI_SDHCI_H
 

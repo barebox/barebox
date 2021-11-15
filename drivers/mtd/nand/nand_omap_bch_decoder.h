@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef MTD_OMAP_GPMC_DECODE_BCH_H
 #define MTD_OMAP_GPMC_DECODE_BCH_H
 

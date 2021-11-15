@@ -1,10 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0
 /*
  * Copyright 2012 Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
  *
  * OF helpers for mtd.
- *
- * This file is released under the GPLv2
- *
  */
 #include <common.h>
 #include <of_mtd.h>

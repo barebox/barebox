@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0
 menuconfig DRIVER_CFI
 	bool "CFI NOR flash support"
 	help

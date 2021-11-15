@@ -1,12 +1,6 @@
+/* SPDX-License-Identifier: LGPL-2.1-or-later */
 /*
  * Copyright 2005-2009 Freescale Semiconductor, Inc.
- *
- * The code contained herein is licensed under the GNU Lesser General
- * Public License.  You may obtain a copy of the GNU Lesser General
- * Public License Version 2.1 or later at the following locations:
- *
- * http://www.opensource.org/licenses/lgpl-license.html
- * http://www.gnu.org/copyleft/lgpl.html
  */
 
 #ifndef __DRM_IPU_H__

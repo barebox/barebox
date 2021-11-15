@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0
 obj-y += phy.o mdio_bus.o phy-core.o
 obj-$(CONFIG_AR8327N_PHY)	+= ar8327.o
 obj-$(CONFIG_AT803X_PHY)	+= at803x.o

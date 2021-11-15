@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0
 menu "Bus devices"
 
 config BUS_OMAP_GPMC

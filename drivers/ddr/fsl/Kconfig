@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0
 config DDR_FSL
 	bool "Freescale DDR support"
 	depends on ARCH_LAYERSCAPE

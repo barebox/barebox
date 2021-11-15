@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef EFI_STDIO_H_
 #define EFI_STDIO_H_
 

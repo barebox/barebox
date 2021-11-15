@@ -1,19 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0
 /*
  * Copyright (C) 2016 Pengutronix, Steffen Trumtrar <kernel@pengutronix.de>
  *
  * The driver is based on information gathered from
  * drivers/mxc/security/imx_scc.c which can be found in
  * the Freescale linux-2.6-imx.git in the imx_2.6.35_maintain branch.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * version 2, as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
  */
 #include <common.h>
 #include <clock.h>

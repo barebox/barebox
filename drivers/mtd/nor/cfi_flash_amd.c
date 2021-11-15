@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0
 #include <common.h>
 #include <stdio.h>
 #include "cfi_flash.h"

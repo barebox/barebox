@@ -1,9 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0
 /*
  * bcm2835 regulator support
  *
  * Copyright (c) 2015 Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
- *
- * GPLv2 Only
  */
 #include <common.h>
 #include <malloc.h>

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0
 /**
  * @file
  * @brief Provide Generic GPMC NAND implementation for OMAP platforms
@@ -53,9 +54,7 @@
  * Copyright (c) 2004 Micron Technology Inc.
  * Copyright (c) 2004 David Brownell
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
+ * 
  */
 
 #include <common.h>

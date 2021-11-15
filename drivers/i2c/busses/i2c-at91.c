@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  *  i2c Support for Atmel's AT91 Two-Wire Interface (TWI)
  *
@@ -10,11 +11,6 @@
  *
  *  Borrowed heavily from original work by:
  *  Copyright (C) 2000 Philip Edelbrock <phil@stimpy.netroedge.com>
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
  */
 
 #include <common.h>

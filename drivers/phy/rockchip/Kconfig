@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0
 config PHY_ROCKCHIP_INNO_USB2
 	bool "Rockchip INNO USB2PHY Driver"
 	depends on (ARCH_ROCKCHIP || COMPILE_TEST) && OFDEVICE

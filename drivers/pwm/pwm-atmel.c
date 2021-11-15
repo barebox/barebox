@@ -1,11 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0
 /*
  * Driver for Atmel Pulse Width Modulation Controller
  *
  * Copyright (C) 2013 Atmel Corporation
  *		 Bo Shen <voice.shen@atmel.com>
  * Copyright (C) 2018 Sam Ravnborg <sam@ravnborg.org>
- *
- * Licensed under GPLv2.
  */
 
 #include <of_device.h>

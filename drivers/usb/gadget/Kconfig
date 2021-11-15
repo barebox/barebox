@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0
 menuconfig USB_GADGET
 	select USB
 	select POLLER

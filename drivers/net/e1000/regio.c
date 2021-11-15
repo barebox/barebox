@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0
 #include <common.h>
 
 #include "e1000.h"

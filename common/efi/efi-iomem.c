@@ -10,7 +10,7 @@
 #include <memory.h>
 #include <linux/sizes.h>
 
-static int efi_parse_mmap(struct efi_memory_desc *desc)
+static int efi_parse_mmap(struct efi_memory_desc *desc, bool verbose)
 {
 	struct resource *res;
 	u32 flags;
@@ -30,7 +30,7 @@ static int efi_parse_mmap(struct efi_memory_desc *desc)
 
 	switch (desc->type) {
 	case EFI_RESERVED_TYPE:
-		if (!IS_ENABLED(DEBUG))
+		if (verbose)
 			return 0;
 		name = "reserved";
 		flags = IORESOURCE_MEM | IORESOURCE_DISABLED;
@@ -44,67 +44,67 @@ static int efi_parse_mmap(struct efi_memory_desc *desc)
 		flags = IORESOURCE_MEM;
 		break;
 	case EFI_BOOT_SERVICES_CODE:
-		if (!IS_ENABLED(DEBUG))
+		if (!verbose)
 			return 0;
 		name = "boot services code";
 		flags = IORESOURCE_MEM | IORESOURCE_READONLY;
 		break;
 	case EFI_BOOT_SERVICES_DATA:
-		if (!IS_ENABLED(DEBUG))
+		if (!verbose)
 			return 0;
 		name = "boot services data";
 		flags = IORESOURCE_MEM;
 		break;
 	case EFI_RUNTIME_SERVICES_CODE:
-		if (!IS_ENABLED(DEBUG))
+		if (!verbose)
 			return 0;
 		name = "runtime services code";
 		flags = IORESOURCE_MEM | IORESOURCE_READONLY;
 		break;
 	case EFI_RUNTIME_SERVICES_DATA:
-		if (!IS_ENABLED(DEBUG))
+		if (!verbose)
 			return 0;
 		name = "runtime services data";
 		flags = IORESOURCE_MEM;
 		break;
 	case EFI_CONVENTIONAL_MEMORY:
-		if (!IS_ENABLED(DEBUG))
+		if (!verbose)
 			return 0;
 		name = "conventional memory";
 		flags = IORESOURCE_MEM | IORESOURCE_PREFETCH | IORESOURCE_CACHEABLE;
 		break;
 	case EFI_UNUSABLE_MEMORY:
-		if (!IS_ENABLED(DEBUG))
+		if (!verbose)
 			return 0;
 		name = "unusable";
 		flags = IORESOURCE_MEM | IORESOURCE_DISABLED;
 		break;
 	case EFI_ACPI_RECLAIM_MEMORY:
-		if (!IS_ENABLED(DEBUG))
+		if (!verbose)
 			return 0;
 		name = "ACPI reclaim memory";
 		flags = IORESOURCE_MEM | IORESOURCE_READONLY;
 		break;
 	case EFI_ACPI_MEMORY_NVS:
-		if (!IS_ENABLED(DEBUG))
+		if (!verbose)
 			return 0;
 		name = "ACPI NVS memory";
 		flags = IORESOURCE_MEM | IORESOURCE_READONLY;
 		break;
 	case EFI_MEMORY_MAPPED_IO:
-		if (!IS_ENABLED(DEBUG))
+		if (!verbose)
 			return 0;
 		name = "MMIO";
 		flags = IORESOURCE_MEM;
 		break;
 	case EFI_MEMORY_MAPPED_IO_PORT_SPACE:
-		if (!IS_ENABLED(DEBUG))
+		if (!verbose)
 			return 0;
 		name = "MMIOPORT";
 		flags = IORESOURCE_IO;
 		break;
 	case EFI_PAL_CODE:
-		if (!IS_ENABLED(DEBUG))
+		if (!verbose)
 			return 0;
 		name = "PAL code";
 		flags = IORESOURCE_MEM | IORESOURCE_ROM_BIOS_COPY;
@@ -116,7 +116,7 @@ static int efi_parse_mmap(struct efi_memory_desc *desc)
 			return -EINVAL;
 		}
 
-		if (!IS_ENABLED(DEBUG))
+		if (!verbose)
 			return 0;
 
 		name = "vendor reserved";
@@ -169,8 +169,8 @@ static int efi_barebox_populate_mmap(void)
 		goto out;
 	}
 
-	for (desc = mmap_buf; (u8 *)desc < &mmap_buf[mmap_size]; desc += descsz)
-		efi_parse_mmap(desc);
+	for (desc = mmap_buf; (u8 *)desc < mmap_buf + mmap_size; desc += descsz)
+		efi_parse_mmap(desc, __is_defined(DEBUG));
 
 out:
 	free(mmap_buf);

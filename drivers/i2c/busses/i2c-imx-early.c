@@ -126,7 +126,7 @@ static int i2c_fsl_start(struct fsl_i2c *fsl_i2c)
 	temp |= I2CR_MTX | I2CR_TXAK;
 	fsl_i2c_write_reg(temp, fsl_i2c, FSL_I2C_I2CR);
 
-	return ret;
+	return 0;
 }
 
 static void i2c_fsl_stop(struct fsl_i2c *fsl_i2c)

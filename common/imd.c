@@ -317,7 +317,7 @@ static int imd_calculate_crc32(void *input, const struct imd_header *imd_start,
 		length = ALIGN(length, 4);
 		length += sizeof(struct imd_header);
 
-		if (imd_read_type(imd) == IMD_TYPE_CRC32) {
+		if (imd_is_crc32(imd_read_type(imd))) {
 			*imd_crc = (struct imd_header *)imd;
 			debug("Found crc token at %d\n", end_ofs);
 			break;

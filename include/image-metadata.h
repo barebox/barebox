@@ -67,7 +67,7 @@ struct imd_entry_crc32 {
 
 static inline int imd_is_crc32(uint32_t type)
 {
-	return (type & IMD_TYPE_CRC32) ? 1 : 0;
+	return type == IMD_TYPE_CRC32;
 }
 
 static inline int imd_crc32_is_valid(uint32_t flags)
@@ -139,12 +139,12 @@ int imd_verify_crc32(void *buf, size_t size);
 	}
 
 #define BAREBOX_IMD_CRC(_name, _crc, _keep_if_unused)					\
-	const struct imd_entry_crc32 __barebox_imd_##__name 				\
-  	__BAREBOX_IMD_SECTION(.barebox_imd_ ## _keep_if_unused ## _ ## _name) = {	\
+	const struct imd_entry_crc32 __barebox_imd_##__name				\
+	__BAREBOX_IMD_SECTION(.barebox_imd_ ## _keep_if_unused ## _ ## _name) = {	\
 		.header.type = cpu_to_le32(IMD_TYPE_CRC32),				\
 		.header.datalength = cpu_to_le32(sizeof(uint32_t) * 2),			\
 		.data = _crc,								\
-  }
+	}
 
 #ifdef CONFIG_IMD
 void imd_used(const void *);

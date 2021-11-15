@@ -1,0 +1,22 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright 2015 Juergen Borleis, Pengutronix <kernel@pengutronix.de>
+ */
+
+/dts-v1/;
+#include <arm/imx6dl.dtsi>
+#include "imx6dl.dtsi"
+#include "imx6qdl-skov-imx6.dtsi"
+
+/ {
+	model = "Skov IMX6";
+	compatible = "skov,imx6", "fsl,imx6dl";
+
+	chosen {
+		stdout-path = &uart2;
+	};
+};
+
+&hdmi {
+	status = "disabled";
+};

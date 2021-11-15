@@ -2,15 +2,18 @@
 
 #define pr_fmt(fmt) "skov-imx6: " fmt
 
-#include <common.h>
-#include <init.h>
-#include <mach/bbu.h>
-#include <environment.h>
 #include <bootsource.h>
+#include <common.h>
+#include <deep-probe.h>
+#include <envfs.h>
+#include <environment.h>
 #include <globalvar.h>
+#include <gpio.h>
+#include <init.h>
+#include <linux/micrel_phy.h>
+#include <mach/bbu.h>
 #include <net.h>
 #include <of_gpio.h>
-#include <gpio.h>
 
 #include "version.h"
 
@@ -129,6 +132,9 @@ static int eth2_of_fixup_node_individually(struct device_node *root,
 copy_mac_from_eth0:
 	return eth_of_fixup_node_from_eth_device(root, node_path, ethname);
 }
+
+#define SKOV_GPIO_MDIO_BUS	0
+#define SKOV_LAN1_PHY_ADDR	1
 
 #define MAX_V_GPIO 8
 
@@ -303,20 +309,148 @@ static const struct board_description imx6_variants[] = {
 };
 
 static int skov_board_no = -1;
+static bool skov_have_switch = true;
+static const char *no_switch_suffix = "-noswitch";
+
+static void fixup_machine_compatible(const char *compat,
+				     struct device_node *root)
+{
+	int cclen = 0, clen = strlen(compat) + 1;
+	const char *curcompat;
+	void *buf;
+
+	if (!root) {
+		root = of_get_root_node();
+		if (!root)
+			return;
+	}
+
+	curcompat = of_get_property(root, "compatible", &cclen);
+
+	buf = xzalloc(cclen + clen);
+
+	memcpy(buf, compat, clen);
+	memcpy(buf + clen, curcompat, cclen);
+
+	/*
+	 * Prepend the compatible from board entry to the machine compatible.
+	 * Used to match bootspec entries against it.
+	 */
+	of_set_property(root, "compatible", buf, cclen + clen, true);
+
+	free(buf);
+}
+
+static void fixup_noswitch_machine_compatible(struct device_node *root)
+{
+	const char *compat = imx6_variants[skov_board_no].dts_compatible;
+	const char *generic = "skov,imx6";
+	size_t size, size_generic;
+	char *buf;
+
+	size = strlen(compat) + strlen(no_switch_suffix) + 1;
+	size_generic = strlen(generic) + strlen(no_switch_suffix) + 1;
+	size = max(size, size_generic);
+
+	/* add generic compatible, so systemd&co can make right decisions */
+	buf = xasprintf("%s%s", generic, no_switch_suffix);
+	fixup_machine_compatible(buf, root);
+
+	/* add specific compatible as fallback, in case this board has new
+	 * challenges.
+	 */
+	buf = xasprintf("%s%s", compat, no_switch_suffix);
+	fixup_machine_compatible(buf, root);
+
+	free(buf);
+}
+
+static void skov_imx6_no_switch(struct device_node *root)
+{
+	const char *fec_alias = "ethernet0";
+	struct device_node *node;
+	int ret;
+
+	fixup_noswitch_machine_compatible(root);
+
+	node = of_find_node_by_alias(root, fec_alias);
+	if (node) {
+		ret = of_device_disable(node);
+		if (ret)
+			pr_warn("Can't disable %s\n", fec_alias);
+	} else {
+		pr_warn("Can't find node by alias: %s\n", fec_alias);
+	}
+
+	node = of_find_node_by_alias(root, "mdio-gpio0");
+	if (node) {
+		ret = of_device_disable(node);
+		if (ret)
+			pr_warn("Can't disable mdio-gpio0 node\n");
+	} else {
+		pr_warn("Can't find mdio-gpio0 node\n");
+	}
+}
+
+static int skov_imx6_switch_port(struct device_node *root, const char *path)
+{
+	size_t size;
+	char *buf;
+	int ret;
+
+	/* size is, string + '\0' + port number */
+	size = strlen(path) + 2;
+	buf = xzalloc(size);
+	if (!buf)
+		return -ENOMEM;
+
+	ret = snprintf(buf, size, "%s0", path);
+	if (ret < 0)
+		return ret;
+
+	ret = eth_of_fixup_node_from_eth_device(root, buf, "eth0");
+	if (ret)
+		return ret;
+
+	ret = snprintf(buf, size, "%s1", path);
+	if (ret < 0)
+		return ret;
+
+	ret = eth2_of_fixup_node_individually(root, buf, "eth0",
+					      "state.ethaddr.eth2",
+					      "/state/ethaddr/eth2");
+	return ret;
+}
+
+static void skov_imx6_switch(struct device_node *root)
+{
+	const char *old = "/mdio-gpio/ksz8873@3/ports/ports@";
+	const char *new = "/mdio/switch@0/ports/ports@";
+	int ret;
+
+	/* Old DTS variants (pre kernel mainline) use different path. Try first
+	 * the new variant, then fall back to the old one.
+	 */
+	ret = skov_imx6_switch_port(root, new);
+	if (ret) {
+		ret = skov_imx6_switch_port(root, old);
+		if (ret)
+			pr_err("Filed to set mac address\n");
+	}
+}
 
 static int skov_imx6_fixup(struct device_node *root, void *unused)
 {
-	int ret;
-	const char *val;
-	uint32_t brightness;
-	struct device_node *node;
 	struct device_node *chosen = of_create_node(root, "/chosen");
+	struct device_node *node;
+	uint32_t brightness;
+	const char *val;
+	int ret;
 
-	eth_of_fixup_node_from_eth_device(root,
-			"/mdio-gpio/ksz8873@3/ports/ports@0", "eth0");
-	eth2_of_fixup_node_individually(root,
-		"/mdio-gpio/ksz8873@3/ports/ports@1", "eth0",
-		"state.ethaddr.eth2", "/state/ethaddr/eth2");
+	if (skov_have_switch)
+		skov_imx6_switch(root);
+	else
+		skov_imx6_no_switch(root);
 
 	switch (bootsource_get()) {
 	case BOOTSOURCE_MMC:
@@ -357,9 +491,19 @@ static int skov_imx6_fixup(struct device_node *root, void *unused)
  */
 static void skov_init_board(const struct board_description *variant)
 {
+	struct device_node *gpio_np = NULL;
 	struct device_node *np;
 	char *environment_path, *envdev;
 	int ret;
+
+	gpio_np = of_find_node_by_name(NULL, "gpio@20b4000");
+	if (gpio_np) {
+		ret = of_device_ensure_probed(gpio_np);
+		if (ret)
+			pr_warn("Can't probe GPIO node\n");
+	} else {
+		pr_warn("Can't get GPIO node\n");
+	}
 
 	imx6_bbu_internal_spi_i2c_register_handler("spiflash", "/dev/m25p0.barebox",
 		BBU_HANDLER_FLAG_DEFAULT);
@@ -432,32 +576,49 @@ static void skov_init_board(const struct board_description *variant)
 	}
 }
 
-static void fixup_machine_compatible(const char *compat)
+static int skov_switch_test(void)
 {
-	const char *curcompat;
-	struct device_node *root;
-	int cclen = 0, clen = strlen(compat) + 1;
-	void *buf;
+	struct phy_device *phydev;
+	struct device_d *eth0;
+	struct mii_bus *mii;
+	int ret;
 
-	root = of_get_root_node();
-	if (!root)
-		return;
+	if (skov_board_no < 0)
+		return 0;
 
-	curcompat = of_get_property(root, "compatible", &cclen);
-
-	buf = xzalloc(cclen + clen);
-
-	memcpy(buf, compat, clen);
-	memcpy(buf + clen, curcompat, cclen);
-
-	/*
-	 * Prepend the compatible from board entry to the machine compatible.
-	 * Used to match bootspec entries against it.
+	/* On this boards, we have only one MDIO bus. So, it is enough to take
+	 * the first one.
 	 */
-	of_set_property(root, "compatible", buf, cclen + clen, true);
+	mii = mdiobus_get_bus(SKOV_GPIO_MDIO_BUS);
+	/* We can't read the switch ID, but we get get ID of the first PHY,
+	 * which is enough to test if the switch is attached.
+	 */
+	phydev = get_phy_device(mii, SKOV_LAN1_PHY_ADDR);
+	if (IS_ERR(phydev))
+		goto no_switch;
 
-	free(buf);
+	if (phydev->phy_id != PHY_ID_KSZ886X)
+		goto no_switch;
+
+	return 0;
+
+no_switch:
+	skov_have_switch = false;
+
+	pr_notice("No-switch variant is detected\n");
+
+	eth0 = get_device_by_name("eth0");
+	if (eth0) {
+		ret = dev_set_param(eth0, "mode", "disabled");
+		if (ret)
+			pr_warn("Can't set eth0 mode\n");
+	} else {
+		pr_warn("Can't disable eth0\n");
+	}
+
+	return 0;
 }
+late_initcall(skov_switch_test);
 
 static int skov_imx6_probe(struct device_d *dev)
 {
@@ -487,9 +648,11 @@ static int skov_imx6_probe(struct device_d *dev)
 	globalvar_add_simple("board.dts", variant->dts_compatible);
 	globalvar_add_simple("board.display", variant->display ?: NULL);
 
-	fixup_machine_compatible(variant->dts_compatible);
+	fixup_machine_compatible(variant->dts_compatible, NULL);
 
 	skov_init_board(variant);
+
+	defaultenv_append_directory(defaultenv_skov_imx6);
 
 	return 0;
 }
@@ -501,6 +664,7 @@ static __maybe_unused struct of_device_id skov_version_ids[] = {
 		/* sentinel */
 	}
 };
+BAREBOX_DEEP_PROBE_ENABLE(skov_version_ids);
 
 static struct driver_d skov_version_driver = {
 	.name = "skov-imx6",

@@ -273,6 +273,26 @@
 	remote-endpoint = <&display0_in>;
 };
 
+&usbh1 {
+	disable-over-current;
+	status = "okay";
+};
+
+/* no usbh2 */
+&usbphynop1 {
+	status = "disabled";
+};
+
+/* no usbh3 */
+&usbphynop2 {
+	status = "disabled";
+};
+
+&usbotg {
+	disable-over-current;
+	status = "okay";
+};
+
 &iomuxc {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_hog>;

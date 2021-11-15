@@ -472,17 +472,12 @@
 
 	partitions {
 		compatible = "fixed-partitions";
-		#address-cells = <1>;
-		#size-cells = <1>;
-
-		partition@8000 {
-			label = "barebox";
-			reg = <0x8000 0x400000>;
-		};
+		#address-cells = <2>;
+		#size-cells = <2>;
 
 		environment_emmc: partition@408000 {
 			label = "barebox-environment";
-			reg = <0x408000 0x8000>;
+			reg = <0x0 0x408000 0x0 0x8000>;
 		};
 	};
 };
@@ -503,17 +498,12 @@
 
 	partitions {
 		compatible = "fixed-partitions";
-		#address-cells = <1>;
-		#size-cells = <1>;
-
-		partition@8000 {
-			label = "barebox";
-			reg = <0x8000 0x400000>;
-		};
+		#address-cells = <2>;
+		#size-cells = <2>;
 
 		environment_sd: partition@408000 {
 			label = "barebox-environment";
-			reg = <0x408000 0x8000>;
+			reg = <0x0 0x408000 0x0 0x8000>;
 		};
 	};
 };

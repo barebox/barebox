@@ -6,14 +6,13 @@
 static int rockchip_init(void)
 {
 	if (of_machine_is_compatible("rockchip,rk3188"))
-		rk3188_init();
-	else if (of_machine_is_compatible("rockchip,rk3288"))
-		rk3288_init();
-	else if (of_machine_is_compatible("rockchip,rk3568"))
-		rk3568_init();
-	else
-		pr_err("Unknown rockchip SoC\n");
+		return rk3188_init();
+	if (of_machine_is_compatible("rockchip,rk3288"))
+		return rk3288_init();
+	if (of_machine_is_compatible("rockchip,rk3568"))
+		return rk3568_init();
 
-	return 0;
+	pr_err("Unknown rockchip SoC\n");
+	return -ENODEV;
 }
 postcore_initcall(rockchip_init);

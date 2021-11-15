@@ -10,6 +10,7 @@
 #include <environment.h>
 #include <globalvar.h>
 #include <magicvar.h>
+#include <deep-probe.h>
 
 static bool machine_is_rk3568_evb = false;
 
@@ -27,8 +28,8 @@ static int rk3568_evb_probe(struct device_d *dev)
 	else
 		of_device_enable_path("/chosen/environment-emmc");
 
-	rk3568_bbu_mmc_register("emmc", BBU_HANDLER_FLAG_DEFAULT, "/dev/emmc.barebox");
-	rk3568_bbu_mmc_register("sd", 0, "/dev/sd.barebox");
+	rk3568_bbu_mmc_register("emmc", BBU_HANDLER_FLAG_DEFAULT, "/dev/emmc");
+	rk3568_bbu_mmc_register("sd", 0, "/dev/sd");
 
 	return 0;
 }
@@ -44,6 +45,8 @@ static struct driver_d rk3568_evb_board_driver = {
 	.of_compatible = rk3568_evb_of_match,
 };
 coredevice_platform_driver(rk3568_evb_board_driver);
+
+BAREBOX_DEEP_PROBE_ENABLE(rk3568_evb_of_match);
 
 static int rk3568_evb_detect_hwid(void)
 {

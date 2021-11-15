@@ -264,6 +264,9 @@ static struct phy *rockchip_usb2phy_of_xlate(struct device_d *dev,
 	int port;
 
 	for (port = 0; port < 2; port++) {
+		if (!rphy->phys[port].phy)
+			continue;
+
 		if (phynode == rphy->phys[port].phy->dev.device_node) {
 			p = &rphy->phys[port];
 			return p->phy;
@@ -423,6 +426,7 @@ static int rockchip_usb2phy_probe(struct device_d *dev)
 	for_each_child_of_node(np, child) {
 		struct rockchip_usb2phy_phy *p;
 		struct phy *phy;
+		struct device_d *phydev;
 
 		if (!strcmp(child->name, "host-port")) {
 			port = USB2PHY_PORT_OTG;
@@ -436,7 +440,13 @@ static int rockchip_usb2phy_probe(struct device_d *dev)
 		if (rphy->phys[port].phy)
 			return -EINVAL;
 
-		phy = phy_create(dev, child, &rockchip_usb2phy_ops);
+		phydev = of_platform_device_create(child, dev);
+		if (!phydev)
+			continue;
+
+		of_platform_device_dummy_drv(phydev);
+
+		phy = phy_create(phydev, child, &rockchip_usb2phy_ops);
 		if (IS_ERR(phy)) {
 			ret = PTR_ERR(phy);
 			if (ret != -EPROBE_DEFER)

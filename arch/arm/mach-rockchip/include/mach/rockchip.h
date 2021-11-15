@@ -28,6 +28,6 @@ static inline int rk3568_init(void)
 }
 #endif
 
-int rk3568_lowlevel_init(void);
+void rk3568_lowlevel_init(void);
 
 #endif /* __MACH_ROCKCHIP_H */

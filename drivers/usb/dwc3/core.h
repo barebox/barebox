@@ -1003,6 +1003,8 @@ struct dwc3 {
 	struct clk_bulk_data	*clks;
 	int			num_clks;
 
+	struct reset_control	*reset;
+
 	struct phy		*usb2_generic_phy;
 	struct phy		*usb3_generic_phy;
 

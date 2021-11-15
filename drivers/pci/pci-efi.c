@@ -209,14 +209,21 @@ static u8 *acpi_parse_resource(u8 *next, struct resource *out)
 	return next;
 }
 
+static struct efi_driver efi_pci_driver;
+
 /* EFI already enumerated the bus for us, match our new pci devices with the efi
  * handles
  */
 static void efi_pci_fixup_dev_parent(struct pci_dev *dev)
 {
-	struct efi_pci_priv *priv = host_to_efi_pci(dev->bus->host);
+	struct efi_pci_priv *priv;
 	struct pci_child *child;
 	struct pci_child_id id;
+
+	if (dev->dev.driver != &efi_pci_driver.driver)
+		return;
+
+	priv = host_to_efi_pci(dev->bus->host);
 
 	id.segmentno = priv->protocol->segmentno;
 	id.busno = dev->bus->number;

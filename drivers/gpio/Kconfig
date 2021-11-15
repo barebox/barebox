@@ -197,6 +197,13 @@ config GPIO_LIBFTDI1
 	bool "libftdi1 driver"
 	depends on SANDBOX
 
+config GPIO_ZYNQ
+	tristate "Xilinx Zynq GPIO support"
+	depends on ARCH_ZYNQ || ARCH_ZYNQMP || CROSS_COMPILE
+	depends on OFDEVICE
+	help
+	  Say yes here to support Xilinx Zynq GPIO controller.
+
 endmenu
 
 endif

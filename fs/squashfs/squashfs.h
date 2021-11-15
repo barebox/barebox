@@ -17,7 +17,7 @@
  * squashfs.h
  */
 
-#include <printk.h>
+#include <linux/printk.h>
 #include <fs.h>
 #include <linux/fs.h>
 #include <linux/kernel.h>

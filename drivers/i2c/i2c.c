@@ -215,7 +215,8 @@ int i2c_write_reg(struct i2c_client *client, u32 addr, const u8 *buf, u16 count)
 	msgbuf[i++] = addr;
 	msg->len += i;
 
-	memcpy(msg->buf + i, buf, count);
+	if (count)
+		memcpy(msg->buf + i, buf, count);
 
 	status = i2c_transfer(client->adapter, msg, ARRAY_SIZE(msg));
 	dev_dbg(&client->adapter->dev, "%s: %u@%u --> %d\n", __func__,

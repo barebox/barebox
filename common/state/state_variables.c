@@ -21,7 +21,7 @@
 #include <linux/types.h>
 #include <malloc.h>
 #include <net.h>
-#include <printk.h>
+#include <linux/printk.h>
 #include <of.h>
 #include <stdio.h>
 

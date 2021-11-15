@@ -2,6 +2,7 @@
 #define _TOOLS_LINUX_ASM_GENERIC_BITOPS___FFS_H_
 
 #include <asm/types.h>
+#include <asm-generic/bitsperlong.h>
 
 /**
  * __ffs - find first bit in word.
@@ -13,7 +14,7 @@ static __always_inline unsigned long __ffs(unsigned long word)
 {
 	int num = 0;
 
-#if __BITS_PER_LONG == 64
+#if BITS_PER_LONG == 64
 	if ((word & 0xffffffff) == 0) {
 		num += 32;
 		word >>= 32;

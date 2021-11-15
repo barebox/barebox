@@ -88,7 +88,7 @@ out:
 
 
 BAREBOX_CMD_HELP_START(md)
-BAREBOX_CMD_HELP_TEXT("Display (hex dump) a memory region.")
+BAREBOX_CMD_HELP_TEXT("Display (hex dump) a memory REGION.")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-b",  "byte access")
@@ -108,7 +108,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(md)
 	.cmd		= do_mem_md,
 	BAREBOX_CMD_DESC("memory display")
-	BAREBOX_CMD_OPTS("[-bwlsx] REGION")
+	BAREBOX_CMD_OPTS("[-bwlqx] [-s FILE] REGION")
 	BAREBOX_CMD_GROUP(CMD_GRP_MEM)
 	BAREBOX_CMD_HELP(cmd_md_help)
 BAREBOX_CMD_END

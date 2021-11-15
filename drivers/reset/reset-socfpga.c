@@ -88,9 +88,10 @@ static int socfpga_reset_probe(struct device_d *dev)
 	data = xzalloc(sizeof(*data));
 
 	res = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(res))
+		return PTR_ERR(res);
+
 	data->membase = IOMEM(res->start);
-	if (IS_ERR(data->membase))
-		return PTR_ERR(data->membase);
 
 	if (of_property_read_u32(np, "altr,modrst-offset", &modrst_offset)) {
 		dev_warn(dev, "missing altr,modrst-offset property, assuming 0x10!\n");

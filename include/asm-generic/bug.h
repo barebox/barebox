@@ -2,6 +2,8 @@
 #define _ASM_GENERIC_BUG_H
 
 #include <linux/compiler.h>
+#include <linux/kernel.h>
+#include <printk.h>
 
 #define BUG() do { \
 	printf("BUG: failure at %s:%d/%s()!\n", __FILE__, __LINE__, __FUNCTION__); \
@@ -28,8 +30,7 @@
 	int __ret_warn_on = !!(condition);				\
 	if (unlikely(__ret_warn_on)) {					\
 		__WARN();						\
-		puts("WARNING: ");					\
-		printf(format);						\
+		printf("WARNING: " format);				\
 	}								\
 	unlikely(__ret_warn_on);					\
 })

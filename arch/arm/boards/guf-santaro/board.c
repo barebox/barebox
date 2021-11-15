@@ -22,12 +22,11 @@
 static int i2c_device_present(struct i2c_adapter *adapter, int addr)
 {
 	struct i2c_client client = {};
-	u8 reg;
 
 	client.adapter = adapter;
 	client.addr = addr;
 
-	return i2c_write_reg(&client, 0x00, &reg, 0) < 0 ? false : true;
+	return i2c_write_reg(&client, 0x00, NULL, 0) < 0 ? false : true;
 }
 
 #define TOUCH_RESET_GPIO	IMX_GPIO_NR(1, 20)

@@ -17,7 +17,7 @@
 #include <libfile.h>
 #include <linux/kernel.h>
 #include <malloc.h>
-#include <printk.h>
+#include <linux/printk.h>
 
 #include "state.h"
 

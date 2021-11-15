@@ -13,7 +13,7 @@
 #include <asm/io.h>
 #include <driver.h>
 #include <watchdog.h>
-#include <printk.h>
+#include <linux/printk.h>
 #include <reset_source.h>
 #include <superio.h>
 #include <common.h>

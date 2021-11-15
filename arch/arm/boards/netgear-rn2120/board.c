@@ -2,7 +2,7 @@
 #include <init.h>
 #include <of.h>
 #include <gpio.h>
-#include <printk.h>
+#include <linux/printk.h>
 #include <linux/kernel.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>

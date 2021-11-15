@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 #include <linux/libfdt.h>
 #include <pbl.h>
-#include <printk.h>
+#include <linux/printk.h>
 
 void fdt_find_mem(const void *fdt, unsigned long *membase, unsigned long *memsize)
 {

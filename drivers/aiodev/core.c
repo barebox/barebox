@@ -37,7 +37,7 @@ struct aiochannel *aiochannel_by_name(const char *name)
 
 	return ERR_PTR(-ENOENT);
 }
-EXPORT_SYMBOL(aiochannel_get_by_name);
+EXPORT_SYMBOL(aiochannel_by_name);
 
 struct aiochannel *aiochannel_get(struct device_d *dev, int index)
 {

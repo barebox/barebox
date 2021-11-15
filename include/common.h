@@ -18,7 +18,7 @@
 #include <linux/stddef.h>
 #include <asm/common.h>
 #include <asm/io.h>
-#include <printk.h>
+#include <linux/printk.h>
 
 /*
  * sanity check. The Linux Kernel defines only one of __LITTLE_ENDIAN and
@@ -62,15 +62,6 @@ void ctrlc_handled(void);
 static inline void ctrlc_handled(void) { }
 #endif
 
-#ifdef CONFIG_ARCH_HAS_STACK_DUMP
-void dump_stack(void);
-#else
-static inline void dump_stack(void)
-{
-	printf("no stack data available\n");
-}
-#endif
-
 int parse_area_spec(const char *str, loff_t *start, loff_t *size);
 
 /* Just like simple_strtoul(), but this one honors a K/M/G suffix */
@@ -96,8 +87,6 @@ enum autoboot_state do_autoboot_countdown(void);
 
 void __noreturn start_barebox(void);
 void shutdown_barebox(void);
-
-#define ARRAY_AND_SIZE(x)	(x), ARRAY_SIZE(x)
 
 /*
  * The STACK_ALIGN_ARRAY macro is used to allocate a buffer on the stack that

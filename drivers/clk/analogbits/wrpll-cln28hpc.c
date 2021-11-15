@@ -23,7 +23,7 @@
 
 #include <linux/kernel.h>
 #include <stdio.h>
-#include <printk.h>
+#include <linux/printk.h>
 #include <linux/bug.h>
 #include <linux/err.h>
 #include <linux/log2.h>

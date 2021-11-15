@@ -110,12 +110,17 @@ BAREBOX_CMD_HELP_OPT ("-l",  "long access (32 bit)")
 BAREBOX_CMD_HELP_OPT ("-q",  "quad access (64 bit)")
 BAREBOX_CMD_HELP_OPT ("-d FILE",  "write file (default /dev/mem)")
 BAREBOX_CMD_HELP_OPT ("-x",       "swap bytes")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Memory regions can be specified in two different forms: START+SIZE")
+BAREBOX_CMD_HELP_TEXT("or START-END, If START is omitted it defaults to 0x100")
+BAREBOX_CMD_HELP_TEXT("Sizes can be specified as decimal, or if prefixed with 0x as hexadecimal.")
+BAREBOX_CMD_HELP_TEXT("An optional suffix of k, M or G is for kbytes, Megabytes or Gigabytes.")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(mw)
 	.cmd		= do_mem_mw,
 	BAREBOX_CMD_DESC("memory write")
-	BAREBOX_CMD_OPTS("[-bwldx] REGION DATA...")
+	BAREBOX_CMD_OPTS("[-bwlqx] [-d FILE] REGION DATA...")
 	BAREBOX_CMD_GROUP(CMD_GRP_MEM)
 	BAREBOX_CMD_HELP(cmd_mw_help)
 BAREBOX_CMD_END

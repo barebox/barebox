@@ -12,7 +12,7 @@
 #include <common.h>
 #include <driver.h>
 #include <module.h>
-#include <printk.h>
+#include <linux/printk.h>
 #include <stdio.h>
 #include <init.h>
 #include <pwm.h>

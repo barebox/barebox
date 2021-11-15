@@ -108,8 +108,8 @@ config RISCV_TIMER
 	  required for all RISC-V systems.
 
 config CLINT_TIMER
-	bool "CLINT Timer for the RISC-V platform" if COMPILE_TEST
-	depends on OFDEVICE
+	bool "CLINT Timer for the RISC-V platform"
+	depends on RISCV && OFDEVICE
 	help
 	  This option enables the CLINT timer for RISC-V systems.  The CLINT
 	  driver is usually used for NoMMU RISC-V systems.

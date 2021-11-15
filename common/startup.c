@@ -68,70 +68,6 @@ static int mount_root(void)
 fs_initcall(mount_root);
 #endif
 
-#ifdef CONFIG_ENV_HANDLING
-static bool region_overlap(loff_t starta, loff_t lena,
-			   loff_t startb, loff_t lenb)
-{
-	if (starta + lena <= startb)
-		return 0;
-	if (startb + lenb <= starta)
-		return 0;
-	return 1;
-}
-
-static int check_overlap(const char *path)
-{
-	struct cdev *cenv, *cdisk, *cpart;
-	const char *name;
-
-	name = devpath_to_name(path);
-
-	if (name == path)
-		/*
-		 * no /dev/ in front, so *path is some file. No need to
-		 * check further.
-		 */
-		return 0;
-
-	cenv = cdev_by_name(name);
-	if (!cenv)
-		return -EINVAL;
-
-	if (cenv->mtd)
-		return 0;
-
-	cdisk = cenv->master;
-
-	if (!cdisk)
-		return 0;
-
-	list_for_each_entry(cpart, &cdisk->partitions, partition_entry) {
-		if (cpart == cenv)
-			continue;
-
-		if (region_overlap(cpart->offset, cpart->size,
-				   cenv->offset, cenv->size))
-			goto conflict;
-	}
-
-	return 0;
-
-conflict:
-	pr_err("Environment partition (0x%08llx-0x%08llx) "
-		"overlaps with partition %s (0x%08llx-0x%08llx), not using it\n",
-		cenv->offset, cenv->offset + cenv->size - 1,
-		cpart->name,
-		cpart->offset, cpart->offset + cpart->size - 1);
-
-	return -EINVAL;
-}
-#else
-static int check_overlap(const char *path)
-{
-	return 0;
-}
-#endif
-
 static int load_environment(void)
 {
 	const char *default_environment_path;
@@ -143,11 +79,7 @@ static int load_environment(void)
 		defaultenv_load("/env", 0);
 
 	if (IS_ENABLED(CONFIG_ENV_HANDLING)) {
-		ret = check_overlap(default_environment_path);
-		if (ret)
-			default_environment_path_set(NULL);
-		else
-			envfs_load(default_environment_path, "/env", 0);
+		envfs_load(default_environment_path, "/env", 0);
 	} else {
 		if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT))
 			pr_notice("No support for persistent environment. Using default environment\n");

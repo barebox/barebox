@@ -9,7 +9,7 @@
 #define pr_fmt(fmt) "sifive-l2: " fmt
 
 #include <io.h>
-#include <printk.h>
+#include <linux/printk.h>
 #include <stdio.h>
 #include <driver.h>
 #include <init.h>

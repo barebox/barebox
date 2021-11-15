@@ -1,17 +1,17 @@
 
-OPTS_barebox-logo-w64.bblogo = --export-width=64
+OPTS_barebox-logo-w64.bblogo = -resize 64
 bblogo-$(CONFIG_BAREBOX_LOGO_64) += barebox-logo-w64
 
-OPTS_barebox-logo-w240.bblogo = --export-width=240
+OPTS_barebox-logo-w240.bblogo = -resize 240
 bblogo-$(CONFIG_BAREBOX_LOGO_240) += barebox-logo-w240
 
-OPTS_barebox-logo-w320.bblogo = --export-width=320
+OPTS_barebox-logo-w320.bblogo = -resize 320
 bblogo-$(CONFIG_BAREBOX_LOGO_320) += barebox-logo-w320
 
-OPTS_barebox-logo-w400.bblogo = --export-width=400
+OPTS_barebox-logo-w400.bblogo = -resize 400
 bblogo-$(CONFIG_BAREBOX_LOGO_400) += barebox-logo-w400
 
-OPTS_barebox-logo-w640.bblogo = --export-width=640
+OPTS_barebox-logo-w640.bblogo = -resize 640
 bblogo-$(CONFIG_BAREBOX_LOGO_640) += barebox-logo-w640
 
 obj-y += $(patsubst %,%.bblogo.o,$(bblogo-y))
@@ -38,15 +38,12 @@ cmd_logo_S =							\
 %.bblogo.S: %.bblogo FORCE
 	$(call if_changed,logo_S)
 
-# Inkscape 0.92.4 supports -z -e but Inkscape 1.0 uses --export-type=png
-INKSCAPEOPTS += $(call try-run, inkscape -z -e -,-z -e -,--export-type=png)
-# Inkscape 1.0 supports -o -
-INKSCAPEOPTS += $(call try-run, inkscape -o -,-o -,)
+CONVERTOPTS += -background none
 
-quiet_cmd_logo = LOGO.S  $@
+quiet_cmd_logo = PNG     $@
 cmd_logo =							\
 (								\
-	inkscape $(OPTS_$(@F)) $(INKSCAPEOPTS) $< > $@; \
+	convert $(OPTS_$(@F)) $(CONVERTOPTS) $< png:$@; \
 )
 
 %.bblogo: $(srctree)/Documentation/barebox.svg FORCE

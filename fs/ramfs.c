@@ -447,7 +447,6 @@ static int ramfs_probe(struct device_d *dev)
 
 static void ramfs_remove(struct device_d *dev)
 {
-	free(dev->priv);
 }
 
 static struct fs_driver_d ramfs_driver = {

@@ -1203,21 +1203,11 @@ static int cqspi_probe(struct device_d *dev)
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
 	cqspi->iobase = IOMEM(iores->start);
-	if (IS_ERR(cqspi->iobase)) {
-		dev_err(dev, "dev_request_mem_region 0 failed\n");
-		ret = PTR_ERR(cqspi->iobase);
-		goto probe_failed;
-	}
 
 	iores = dev_request_mem_resource(dev, 1);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
 	cqspi->ahb_base = IOMEM(iores->start);
-	if (IS_ERR(cqspi->ahb_base)) {
-		dev_err(dev, "dev_request_mem_region 0 failed\n");
-		ret = PTR_ERR(cqspi->ahb_base);
-		goto probe_failed;
-	}
 
 	cqspi_wait_idle(cqspi);
 	cqspi_controller_init(cqspi);

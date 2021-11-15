@@ -1114,8 +1114,6 @@ static int dwc3_probe(struct device_d *dev)
 
 		if (of_find_property(dev->device_node, "clocks", NULL)) {
 			ret = clk_bulk_get(dev, dwc->num_clks, dwc->clks);
-			if (ret == -EPROBE_DEFER)
-				return ret;
 			if (ret)
 				return ret;
 		}

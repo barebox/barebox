@@ -7,7 +7,7 @@ config COMPILE_HOST_TOOLS
 	  on some config options. If you say yes here, the host tools that are
 	  not needed can be selected, too.
 
-	  This is usefull for compile coverage testing and for packaging the
+	  This is useful for compile coverage testing and for packaging the
 	  host tools.
 
 source "scripts/imx/Kconfig"

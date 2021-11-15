@@ -36,9 +36,13 @@ static int efi_parse_mmap(struct efi_memory_desc *desc)
 		flags = IORESOURCE_MEM | IORESOURCE_DISABLED;
 		break;
 	case EFI_LOADER_CODE:
-		return barebox_add_memory_bank("loader code", va_base, va_size);
+		name = "loader code";
+		flags = IORESOURCE_MEM | IORESOURCE_READONLY;
+		break;
 	case EFI_LOADER_DATA:
-		return barebox_add_memory_bank("loader data", va_base, va_size);
+		name = "loader data";
+		flags = IORESOURCE_MEM;
+		break;
 	case EFI_BOOT_SERVICES_CODE:
 		if (!IS_ENABLED(DEBUG))
 			return 0;

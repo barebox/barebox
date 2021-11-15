@@ -12,6 +12,69 @@ config COMPILE_HOST_TOOLS
 
 source "scripts/imx/Kconfig"
 
+config SOCFPGA_MKIMAGE
+	bool "SoCFPGA mkimage" if COMPILE_HOST_TOOLS
+	depends on ARCH_SOCFPGA || COMPILE_HOST_TOOLS
+	default y if ARCH_SOCFPGA
+	help
+	  This enables building the image creation tool for SoCFPGA
+
+config ZYNQ_MKIMAGE
+	bool "Zynq mkimage" if COMPILE_HOST_TOOLS
+	depends on ARCH_ZYNQ || COMPILE_HOST_TOOLS
+	default y if ARCH_ZYNQ
+	help
+	  This enables building the image creation tool for Zynq
+
+config MXS_HOSTTOOLS
+	bool "MXS host tools" if COMPILE_HOST_TOOLS
+	depends on ARCH_MXS || COMPILE_HOST_TOOLS
+	default y if ARCH_MXS
+	help
+	  This enables building the host tools for Freescale MXS SoCs
+
+config LAYERSCAPE_PBLIMAGE
+	bool "Layerscape PBL image tool" if COMPILE_HOST_TOOLS
+	depends on ARCH_LAYERSCAPE || COMPILE_HOST_TOOLS
+	default y if ARCH_LAYERSCAPE
+	help
+	  This enables building the PBL image tool for Freescale Layerscape SoCs
+
+config STM32_IMAGE
+	bool "STM32MP image tool" if COMPILE_HOST_TOOLS
+	depends on ARCH_STM32MP || COMPILE_HOST_TOOLS
+	default y if ARCH_STM32MP
+	help
+	  This enables building the image creation tool for STM32MP SoCs
+
+config RK_IMAGE
+	bool "Rockchip image tool" if COMPILE_HOST_TOOLS
+	depends on ARCH_ROCKCHIP || COMPILE_HOST_TOOLS
+	default y if ARCH_ROCKCHIP
+	help
+	  This enables building the image creation tool for Rockchip SoCs
+
+config OMAP_IMAGE
+	bool "TI OMAP image tools" if COMPILE_HOST_TOOLS
+	depends on ARCH_OMAP || COMPILE_HOST_TOOLS
+	default y if ARCH_OMAP
+	help
+	  This enables building the image creation tools for TI OMAP SoCs
+
+config S5P_IMAGE
+	bool "S5P image tool" if COMPILE_HOST_TOOLS
+	depends on ARCH_S5PCxx || COMPILE_HOST_TOOLS
+	default y if ARCH_S5PCxx
+	help
+	  This enables building the image creation tool for S5P SoCs
+
+config DAVINCI_IMAGE
+	bool "Davinci image tool" if COMPILE_HOST_TOOLS
+	depends on ARCH_DAVINCI || COMPILE_HOST_TOOLS
+	default y if ARCH_DAVINCI
+	help
+	  This enables building the image creation tool for Davinci SoCs
+
 config MVEBU_HOSTTOOLS
 	bool "mvebu hosttools" if COMPILE_HOST_TOOLS
 	depends on ARCH_MVEBU || COMPILE_HOST_TOOLS
@@ -36,6 +99,14 @@ config OMAP4_HOSTTOOL_USBBOOT
 	  Say Y here to build the omap4 usb loader tool.
 	  Note that you need to enable OMAP4_USBBOOT to create an image
 	  suitable to boot using this tool.
+
+	  You need libusb-1.0 to compile this tool.
+
+config RK_USB_LOADER
+	bool "Rockchip USB loader"
+	depends on ARCH_ROCKCHIP || COMPILE_HOST_TOOLS
+	help
+	  Say Y here to build the rockchip usb loader tool.
 
 	  You need libusb-1.0 to compile this tool.
 
@@ -102,6 +173,13 @@ config OMAP4_USBBOOT_TARGET
 	depends on HAS_TARGET_LIBUSB_1_0
 	help
 	  Say Y here to build the omap4 usb loader tool for the target.
+	  The cross toolchain needs libusb-1.0 to compile this tool.
+
+config RK_USB_LOADER_TARGET
+	bool "Rockchip USB loader for target"
+	depends on HAS_TARGET_LIBUSB_1_0
+	help
+	  Say Y here to build the rockchip usb loader tool for the target.
 	  The cross toolchain needs libusb-1.0 to compile this tool.
 
 endmenu

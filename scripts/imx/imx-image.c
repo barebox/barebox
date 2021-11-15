@@ -15,6 +15,7 @@
 #include <linux/kernel.h>
 #include <sys/file.h>
 #include "../compiler.h"
+#include "../common.h"
 
 #include "imx.h"
 
@@ -22,6 +23,8 @@
 
 #define FLASH_HEADER_OFFSET 0x400
 #define ARM_HEAD_SIZE_INDEX	(ARM_HEAD_SIZE_OFFSET / sizeof(uint32_t))
+
+#include "../common.c"
 
 /*
  * Conservative DCD element limit set to restriction v2 header size to
@@ -721,38 +724,6 @@ static int hab_sign(struct config_data *data)
 	return 0;
 }
 
-static void *xread_file(const char *filename, size_t *size)
-{
-	int fd, ret;
-	void *buf;
-	struct stat s;
-
-	fd = open(filename, O_RDONLY);
-	if (fd < 0) {
-		fprintf(stderr, "Cannot open %s: %s\n", filename, strerror(errno));
-		exit(1);
-	}
-
-	ret = fstat(fd, &s);
-	if (ret) {
-		fprintf(stderr, "Cannot stat %s: %s\n", filename, strerror(errno));
-		exit(1);
-	}
-
-	*size = s.st_size;
-	buf = malloc(*size);
-	if (!buf) {
-		perror("malloc");
-		exit(1);
-	}
-
-	xread(fd, buf, *size);
-
-	close(fd);
-
-	return buf;
-}
-
 static bool cpu_is_aarch64(const struct config_data *data)
 {
 	return cpu_is_mx8m(data);
@@ -914,8 +885,10 @@ int main(int argc, char *argv[])
 
 		if (data.signed_hdmi_firmware_file) {
 			free(buf);
-			buf = xread_file(data.signed_hdmi_firmware_file,
+			buf = read_file(data.signed_hdmi_firmware_file,
 					&signed_hdmi_firmware_size);
+			if (!buf)
+				exit(1);
 
 			signed_hdmi_firmware_size =
 				roundup(signed_hdmi_firmware_size,
@@ -957,7 +930,9 @@ int main(int argc, char *argv[])
 	bb_header[0] = data.first_opcode;
 	bb_header[ARM_HEAD_SIZE_INDEX] = barebox_image_size;
 
-	infile = xread_file(imagename, &insize);
+	infile = read_file(imagename, &insize);
+	if (!infile)
+		exit(1);
 
 	outfd = open(data.outfile, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 	if (outfd < 0) {
@@ -1024,7 +999,9 @@ int main(int argc, char *argv[])
 	if (create_usb_image) {
 		uint32_t *dcd;
 
-		infile = xread_file(data.outfile, &insize);
+		infile = read_file(data.outfile, &insize);
+		if (!infile)
+			exit(1);
 
 		dcd = infile + dcd_ptr_offset;
 		*dcd = dcd_ptr_content;

@@ -30,6 +30,9 @@
 
 #include <libusb.h>		/* the main event */
 
+#include "common.h"
+#include "common.c"
+
 /* Device specific defines (OMAP)
  * Primary source: http://www.ti.com/lit/pdf/sprugn4
  * Section 26.4.5 "Peripheral Booting"
@@ -323,50 +326,6 @@ found:
 	fprintf(stdout, ")\n");
 
 	return handle;
-}
-
-static unsigned char *read_file(char *path, size_t *readamt)
-{
-	FILE *fp = fopen(path, "rb");
-
-	if (!fp) {
-		log_error("failed to open file \'%s\': %s\n", path,
-			  strerror(errno));
-		return NULL;
-	}
-
-	unsigned char *data = NULL;
-	size_t allocsize = 0;
-	size_t iter = 0;
-
-	while (1) {
-		allocsize += 1024;
-		data = realloc(data, allocsize);
-		if (!data)
-			return NULL;
-
-		size_t readsize = allocsize - iter;
-		size_t ret = fread(data + iter, sizeof (unsigned char), readsize, fp);
-
-		iter += ret;
-
-		if (ret != readsize) {
-			if (feof(fp)) {
-				break;
-			} else if (ferror(fp)) {
-				log_error("error file reading file \'%s\': %s\n",
-						path, strerror(errno));
-				free(data);
-				return NULL;
-			}
-		}
-	}
-
-	/* trim the allocation down to size */
-	data = realloc(data, iter);
-	*readamt = iter;
-
-	return data;
 }
 
 static int transfer_first_stage(libusb_device_handle * handle, struct arg_state *args)

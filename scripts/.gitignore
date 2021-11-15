@@ -31,6 +31,8 @@ omap4_usbboot
 omap4_usbboot-target
 omap3-usb-loader
 omap3-usb-loader-target
+rk-usb-loader
+rk-usb-loader-target
 mips-relocs
 rsatoc
 stm32image

@@ -10,6 +10,9 @@
 #include <fcntl.h>
 #include <endian.h>
 
+#include "common.h"
+#include "common.c"
+
 #define VALIDATION_WORD 0x31305341
 
 #define BRANCH_INST 0xea /* ARM opcode for "b" (unconditional branch) */
@@ -64,42 +67,6 @@ static uint32_t bb_header[] = {
 	0x00000000,	/* socfpga header */
 	0xea00006b,	/* entry. b 0x200 (offset may be adjusted) */
 };
-
-static int read_full(int fd, void *buf, size_t size)
-{
-	size_t insize = size;
-	int now;
-	int total = 0;
-
-	while (size) {
-		now = read(fd, buf, size);
-		if (now == 0)
-			return total;
-		if (now < 0)
-			return now;
-		total += now;
-		size -= now;
-		buf += now;
-	}
-
-	return insize;
-}
-
-static int write_full(int fd, void *buf, size_t size)
-{
-	size_t insize = size;
-	int now;
-
-	while (size) {
-		now = write(fd, buf, size);
-		if (now <= 0)
-			return now;
-		size -= now;
-		buf += now;
-	}
-
-	return insize;
-}
 
 static const uint32_t crc_table[256] = {
 	0x00000000, 0x04c11db7, 0x09823b6e, 0x0d4326d9, 0x130476dc, 0x17c56b6b,
@@ -381,17 +348,9 @@ int main(int argc, char *argv[])
 	if (ret)
 		exit(1);
 
-	fd = open(outfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	if (fd < 0) {
-		perror("open outfile");
+	ret = write_file(outfile, buf, s.st_size + 4 + addsize + pad);
+	if (ret)
 		exit(1);
-	}
-
-	ret = write_full(fd, buf, s.st_size + 4 + addsize + pad);
-	if (ret < 0) {
-		perror("write outfile");
-		exit(1);
-	}
 
 	exit(0);
 }

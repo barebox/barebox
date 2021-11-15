@@ -34,8 +34,11 @@
 #include <arpa/inet.h>
 #include <linux/kernel.h>
 
+#include "../common.h"
 #include "../compiler.h"
 #include "imx.h"
+
+#include "../common.c"
 
 #define get_min(a, b) (((a) < (b)) ? (a) : (b))
 
@@ -407,61 +410,6 @@ static void dump_bytes(const void *src, unsigned cnt, unsigned addr)
 		}
 		printf("\n");
 	}
-}
-
-static long get_file_size(FILE *xfile)
-{
-	long size;
-	fseek(xfile, 0, SEEK_END);
-	size = ftell(xfile);
-	rewind(xfile);
-
-	return size;
-}
-
-static int read_file(const char *name, unsigned char **buffer, unsigned *size)
-{
-	FILE *xfile;
-	unsigned fsize;
-	int cnt;
-	unsigned char *buf;
-	xfile = fopen(name, "rb");
-	if (!xfile) {
-		printf("error, can not open input file: %s\n", name);
-		return -5;
-	}
-
-	fsize = get_file_size(xfile);
-	if (fsize < 0x20) {
-		printf("error, file: %s is too small\n", name);
-		fclose(xfile);
-		return -2;
-	}
-
-	buf = malloc(ALIGN(fsize, 4));
-	if (!buf) {
-		printf("error, out of memory\n");
-		fclose(xfile);
-		return -2;
-	}
-
-	cnt = fread(buf, 1 , fsize, xfile);
-	if (cnt < fsize) {
-		printf("error, cannot read %s\n", name);
-		fclose(xfile);
-		free(buf);
-		return -1;
-	}
-
-	if (size)
-		*size = fsize;
-
-	if (buffer)
-		*buffer = buf;
-	else
-		free(buf);
-
-	return 0;
 }
 
 /*
@@ -1381,7 +1329,7 @@ static int do_irom_download(struct usb_work *curr, int verify)
 {
 	int ret;
 	unsigned char type;
-	unsigned fsize = 0;
+	size_t fsize = 0;
 	unsigned header_offset;
 	unsigned char *buf = NULL;
 	unsigned char *image;
@@ -1391,9 +1339,9 @@ static int do_irom_download(struct usb_work *curr, int verify)
 	unsigned header_addr = 0;
 	unsigned total_size = 0;
 
-	ret = read_file(curr->filename, &buf, &fsize);
-	if (ret < 0)
-		return ret;
+	buf = read_file(curr->filename, &fsize);
+	if (!buf)
+		return -errno;
 
 	max_length = fsize;
 
@@ -1436,7 +1384,7 @@ static int do_irom_download(struct usb_work *curr, int verify)
 		}
 	}
 
-	printf("loading binary file(%s) to 0x%08x, fsize=%u type=%d...\n",
+	printf("loading binary file(%s) to 0x%08x, fsize=%zu type=%d...\n",
 			curr->filename, header_addr, fsize, type);
 
 	ret = load_file(image, fsize, header_addr, type, false);
@@ -1552,13 +1500,12 @@ static int mxs_load_file(libusb_device_handle *dev, uint8_t *data, int size)
 
 static int mxs_work(struct usb_work *curr)
 {
-	unsigned fsize = 0;
+	size_t fsize = 0;
 	unsigned char *buf = NULL;
-	int ret;
 
-	ret = read_file(curr->filename, &buf, &fsize);
-	if (ret < 0)
-		return ret;
+	buf = read_file(curr->filename, &fsize);
+	if (!buf)
+		return -errno;
 
 	return mxs_load_file(usb_dev_handle, buf, fsize);
 }

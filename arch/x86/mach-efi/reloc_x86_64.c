@@ -41,9 +41,9 @@
 
 #include <elf.h>
 
-asmlinkage efi_status_t _relocate (long, Elf64_Dyn *, efi_handle_t, efi_system_table_t *);
+asmlinkage efi_status_t _relocate(long, Elf64_Dyn *);
 
-efi_status_t _relocate (long ldbase, Elf64_Dyn *dyn, efi_handle_t image, efi_system_table_t *systab)
+efi_status_t _relocate(long ldbase, Elf64_Dyn *dyn)
 {
 	long relsz = 0, relent = 0;
 	Elf64_Rel *rel = 0;

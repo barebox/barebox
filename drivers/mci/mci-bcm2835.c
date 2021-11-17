@@ -10,8 +10,6 @@
  * timing workarounds) obviously extracted from the Linux kernel at:
  * https://github.com/raspberrypi/linux.git rpi-3.6.y
  *
- * The Linux kernel code has the following (c)
- *
  * Author: Wilhelm Lundgren <wilhelm.lundgren@cybercom.com>
  */
 

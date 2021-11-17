@@ -54,17 +54,16 @@ common-y += arch/x86/lib/
 lds-$(CONFIG_X86_32)   := arch/x86/mach-efi/elf_ia32_efi.lds
 lds-$(CONFIG_X86_64)   := arch/x86/mach-efi/elf_x86_64_efi.lds
 
-quiet_cmd_efi_image = EFI-IMG $@
-      cmd_efi_image = $(OBJCOPY) -j .text -j .sdata -j .data -j .dynamic \
-		      -j .dynsym -j .rel -j .rela -j .reloc \
-		      -j .bbenv.* -j .bblogo.* --target=$(TARGET) $< $@
-
 KBUILD_BINARY := barebox
 
 KBUILD_LDFLAGS := --no-undefined
 
+OBJCOPYFLAGS_barebox.efi = \
+	-j .text -j .sdata -j .data -j .dynamic -j .dynsym -j .rel -j .rela \
+	-j .reloc -j .bbenv.* -j .bblogo.* --target=$(TARGET)
+
 barebox.efi: $(KBUILD_BINARY) FORCE
-	$(call if_changed,efi_image)
+	$(call if_changed,objcopy)
 
 KBUILD_IMAGE := barebox.efi
 

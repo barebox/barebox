@@ -17,7 +17,6 @@ PBL_CPPFLAGS += $(riscv-cflags-y)
 LDFLAGS_pbl += $(riscv-ldflags-y)
 
 cflags-y += $(riscv-cflags-y)
-LDFLAGS_barebox += -nostdlib
 
 LDFLAGS_barebox += $(riscv-ldflags-y)
 

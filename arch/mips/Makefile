@@ -72,8 +72,6 @@ KBUILD_BINARY := barebox.bin
 KBUILD_TARGET := barebox.bin
 endif
 
-LDFLAGS_barebox += -nostdlib
-
 machine-$(CONFIG_MACH_MIPS_MALTA)	:= malta
 machine-$(CONFIG_MACH_MIPS_AR231X)	:= ar231x
 machine-$(CONFIG_MACH_MIPS_ATH79)	:= ath79

@@ -276,6 +276,7 @@ config ARCH_ARM64_VIRT
 	select SYS_SUPPORTS_64BIT_KERNEL
 	select ARM_AMBA
 	select BOARD_ARM_VIRT
+	select HW_HAS_PCI
 
 endchoice
 

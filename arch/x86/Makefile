@@ -56,8 +56,7 @@ lds-$(CONFIG_X86_64)   := arch/x86/mach-efi/elf_x86_64_efi.lds
 
 quiet_cmd_efi_image = EFI-IMG $@
       cmd_efi_image = $(OBJCOPY) -j .text -j .sdata -j .data -j .dynamic \
-		      -j .dynsym -j .rel -j .rela -j .reloc -j __barebox_initcalls \
-		      -j __barebox_exitcalls -j __barebox_cmd -j .barebox_magicvar \
+		      -j .dynsym -j .rel -j .rela -j .reloc \
 		      -j .bbenv.* -j .bblogo.* --target=$(TARGET) $< $@
 
 KBUILD_BINARY := barebox

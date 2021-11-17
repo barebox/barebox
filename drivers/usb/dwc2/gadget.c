@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0+
+// SPDX-License-Identifier: GPL-2.0-or-later
 #include <dma.h>
 #include <usb/gadget.h>
 #include "dwc2.h"

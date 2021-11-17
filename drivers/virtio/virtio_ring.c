@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0+
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Copyright (C) 2018, Tuomas Tynkkynen <tuomas.tynkkynen@iki.fi>
  * Copyright (C) 2018, Bin Meng <bmeng.cn@gmail.com>

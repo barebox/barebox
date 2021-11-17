@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: GPL-2.0
+# SPDX-License-Identifier: GPL-2.0-only
 config VIRTIO_BLK
         bool "Virtio block driver"
         depends on VIRTIO

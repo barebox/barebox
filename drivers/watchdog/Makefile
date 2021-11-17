@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: GPL-2.0
+# SPDX-License-Identifier: GPL-2.0-only
 obj-$(CONFIG_WATCHDOG) += wd_core.o
 obj-$(CONFIG_WATCHDOG_AR9344) += ar9344_wdt.o
 obj-$(CONFIG_WATCHDOG_AT91SAM9) += at91sam9_wdt.o

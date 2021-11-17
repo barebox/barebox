@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: GPL-2.0
+# SPDX-License-Identifier: GPL-2.0-only
 obj-$(CONFIG_SPI) += spi.o
 obj-$(CONFIG_SPI_MEM) += spi-mem.o
 obj-$(CONFIG_DRIVER_SPI_ATH79) += ath79_spi.o

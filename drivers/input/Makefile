@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: GPL-2.0
+# SPDX-License-Identifier: GPL-2.0-only
 obj-$(CONFIG_INPUT) += input.o keymap.o
 obj-$(CONFIG_INPUT_MATRIXKMAP) += matrix-keymap.o
 obj-$(CONFIG_KEYBOARD_USB) += usb_kbd.o

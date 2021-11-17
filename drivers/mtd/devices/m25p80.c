@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * MTD SPI driver for ST M25Pxx (and similar) serial flash chips
  *

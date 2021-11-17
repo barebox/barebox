@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+/* SPDX-License-Identifier: GPL-2.0-only */
 #define BCM2835_MCI_SLOTISR_VER			0xfc
 
 #define MIN_FREQ 400000

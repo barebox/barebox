@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * Rockchip PIPE USB3.0 PCIE SATA combphy driver
  *

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * SoC specific PCIe PHY setup for Marvell MVEBU SoCs
  *

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * Driver for the i2c controller on the Marvell line of host bridges
  * (e.g, gt642[46]0, mv643[46]0, mv644[46]0, and Orion SoC family).

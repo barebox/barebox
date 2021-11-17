@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * pinctrl-single - Generic device tree based pinctrl driver for one
  *                  register per pin type pinmux controllers

@@ -94,6 +94,10 @@ lwl-$(CONFIG_MACH_PROTONIC_IMX6) += \
 	imx6ul-prti6g.dtb.o \
 	imx6ull-jozacp.dtb.o
 lwl-$(CONFIG_MACH_PROTONIC_IMX8M) += imx8mm-prt8mm.dtb.o
+lwl-$(CONFIG_MACH_PROTONIC_STM32MP1) += \
+	stm32mp151-prtt1a.dtb.o \
+	stm32mp151-prtt1c.dtb.o \
+	stm32mp151-prtt1s.dtb.o
 lwl-$(CONFIG_MACH_RADXA_ROCK) += rk3188-radxarock.dtb.o
 lwl-$(CONFIG_MACH_PHYTEC_SOM_RK3288) += rk3288-phycore-som.dtb.o
 lwl-$(CONFIG_MACH_REALQ7) += imx6q-dmo-edmqmx6.dtb.o

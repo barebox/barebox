@@ -31,4 +31,11 @@ config MACH_STM32MP15X_EV1
 	  as SSBL on any STM32MP15X-EVAL platform, like the
 	  STM32MP157C-EV1
 
+config MACH_PROTONIC_STM32MP1
+	select ARCH_STM32MP157
+	bool "Protonic PRTT1L family of boards"
+	help
+	  Builds all barebox-prtt1*.img that can be deployed as SSBL
+	  on the respective PRTT1L family board
+
 endif

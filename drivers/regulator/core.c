@@ -244,7 +244,8 @@ static struct regulator_internal *of_regulator_get(struct device_d *dev, const c
 			goto out;
 		}
 
-		return ERR_PTR(ret);
+		ri = ERR_PTR(ret);
+		goto out;
 	}
 
 	list_for_each_entry(ri, &regulator_list, list) {

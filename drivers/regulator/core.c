@@ -188,7 +188,7 @@ static struct regulator_internal *of_regulator_get(struct device_d *dev, const c
 {
 	char *propname;
 	struct regulator_internal *ri;
-	struct device_node *node;
+	struct device_node *node, *node_parent;
 	int ret;
 
 	propname = basprintf("%s-supply", supply);
@@ -222,8 +222,24 @@ static struct regulator_internal *of_regulator_get(struct device_d *dev, const c
 	}
 
 	ret = of_device_ensure_probed(node);
-	if (ret)
+	if (ret) {
+		/* 
+		 * If "barebox,allow-dummy-supply" property is set for regulator
+		 * provider allow use of dummy regulator (NULL is returned).
+		 * Check regulator node and its parent if this setting is set
+		 * PMIC wide.
+		 */
+		node_parent = of_get_parent(node);
+		if (of_get_property(node, "barebox,allow-dummy-supply", NULL) ||
+		    of_get_property(node_parent, "barebox,allow-dummy-supply", NULL)) {
+			dev_dbg(dev, "Allow use of dummy regulator for " \
+				"%s-supply\n", supply);
+			ri = NULL;
+			goto out;
+		}
+
 		return ERR_PTR(ret);
+	}
 
 	list_for_each_entry(ri, &regulator_list, list) {
 		if (ri->node == node) {

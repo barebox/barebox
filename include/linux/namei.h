@@ -45,8 +45,4 @@ enum {LAST_NORM, LAST_ROOT, LAST_DOT, LAST_DOTDOT, LAST_BIND};
 #define LOOKUP_EMPTY		0x4000
 #define LOOKUP_DOWN		0x8000
 
-#define AT_FDCWD                -100    /* Special value used to indicate
-                                           openat should use the current
-                                           working directory. */
-
 #endif /* _LINUX_NAMEI_H */

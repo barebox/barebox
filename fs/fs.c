@@ -92,7 +92,7 @@ postcore_initcall(init_fs);
 struct filename;
 
 static struct fs_device_d *get_fsdevice_by_path(const char *path);
-static int filename_lookup(int dfd, struct filename *name, unsigned flags,
+static int filename_lookup(struct filename *name, unsigned flags,
 			   struct path *path);;
 static struct filename *getname(const char *filename);
 static void path_put(const struct path *path);
@@ -710,7 +710,7 @@ static void fs_remove(struct device_d *dev)
 	if (fsdev->loop && fsdev->cdev) {
 		cdev_remove_loop(fsdev->cdev);
 
-		ret = filename_lookup(AT_FDCWD, getname(fsdev->backingstore),
+		ret = filename_lookup(getname(fsdev->backingstore),
 				      LOOKUP_FOLLOW, &path);
 		if (!ret) {
 			mntput(path.mnt);
@@ -793,7 +793,7 @@ int fsdev_open_cdev(struct fs_device_d *fsdev)
 	parseopt_b(fsdev->options, "loop", &fsdev->loop);
 	parseopt_llu_suffix(fsdev->options, "offset", &offset);
 	if (fsdev->loop) {
-		ret = filename_lookup(AT_FDCWD, getname(fsdev->backingstore),
+		ret = filename_lookup(getname(fsdev->backingstore),
 				      LOOKUP_FOLLOW, &path);
 		if (ret)
 			return ret;
@@ -1467,7 +1467,6 @@ struct nameidata {
 	struct nameidata *saved;
 	struct inode	*link_inode;
 	unsigned	root_seq;
-	int		dfd;
 };
 
 struct filename {
@@ -1475,10 +1474,9 @@ struct filename {
 	int refcnt;
 };
 
-static void set_nameidata(struct nameidata *p, int dfd, struct filename *name)
+static void set_nameidata(struct nameidata *p, struct filename *name)
 {
 	p->stack = p->internal;
-	p->dfd = dfd;
 	p->name = name;
 	p->total_link_count = 0;
 }
@@ -2041,7 +2039,7 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
 	if (*s == '/') {
 		get_root(&nd->path);
 		return s;
-	} else if (nd->dfd == AT_FDCWD) {
+	} else {
 		get_pwd(&nd->path);
 		nd->inode = nd->path.dentry->d_inode;
 		return s;
@@ -2101,7 +2099,7 @@ static int path_parentat(struct nameidata *nd, unsigned flags,
 	return err;
 }
 
-static struct filename *filename_parentat(int dfd, struct filename *name,
+static struct filename *filename_parentat(struct filename *name,
 				unsigned int flags, struct path *parent,
 				struct qstr *last, int *type)
 {
@@ -2111,7 +2109,7 @@ static struct filename *filename_parentat(int dfd, struct filename *name,
 	if (IS_ERR(name))
 		return name;
 
-	set_nameidata(&nd, dfd, name);
+	set_nameidata(&nd, name);
 
 	retval = path_parentat(&nd, flags, parent);
 	if (likely(!retval)) {
@@ -2125,7 +2123,7 @@ static struct filename *filename_parentat(int dfd, struct filename *name,
 	return name;
 }
 
-static struct dentry *filename_create(int dfd, struct filename *name,
+static struct dentry *filename_create(struct filename *name,
 				struct path *path, unsigned int lookup_flags)
 {
 	struct dentry *dentry = ERR_PTR(-EEXIST);
@@ -2140,7 +2138,7 @@ static struct dentry *filename_create(int dfd, struct filename *name,
 	 */
 	lookup_flags &= LOOKUP_REVAL;
 
-	name = filename_parentat(dfd, name, 0, path, &last, &type);
+	name = filename_parentat(name, 0, path, &last, &type);
 	if (IS_ERR(name))
 		return ERR_CAST(name);
 
@@ -2185,7 +2183,7 @@ out:
 	return dentry;
 }
 
-static int filename_lookup(int dfd, struct filename *name, unsigned flags,
+static int filename_lookup(struct filename *name, unsigned flags,
 			   struct path *path)
 {
 	int err;
@@ -2195,7 +2193,7 @@ static int filename_lookup(int dfd, struct filename *name, unsigned flags,
 	if (IS_ERR(name))
 		return PTR_ERR(name);
 
-	set_nameidata(&nd, dfd, name);
+	set_nameidata(&nd, name);
 
 	s = path_init(&nd, flags);
 
@@ -2228,7 +2226,7 @@ static struct fs_device_d *get_fsdevice_by_path(const char *pathname)
 	struct path path;
 	int ret;
 
-	ret = filename_lookup(AT_FDCWD, getname(pathname), 0, &path);
+	ret = filename_lookup(getname(pathname), 0, &path);
 	if (ret)
 		return NULL;
 
@@ -2287,7 +2285,7 @@ int mkdir (const char *pathname, mode_t mode)
 	int error;
 	unsigned int lookup_flags = LOOKUP_DIRECTORY;
 
-	dentry = filename_create(AT_FDCWD, getname(pathname), &path, lookup_flags);
+	dentry = filename_create(getname(pathname), &path, lookup_flags);
 	if (IS_ERR(dentry)) {
 		error = PTR_ERR(dentry);
 		goto out;
@@ -2314,7 +2312,7 @@ int rmdir (const char *pathname)
 	struct qstr last;
 	int type;
 
-	name = filename_parentat(AT_FDCWD, getname(pathname), 0,
+	name = filename_parentat(getname(pathname), 0,
 				&path, &last, &type);
 	if (IS_ERR(name))
 		return PTR_ERR(name);
@@ -2377,7 +2375,7 @@ int open(const char *pathname, int flags, ...)
 	if (IS_ERR(filename))
 		return PTR_ERR(filename);
 
-	set_nameidata(&nd, AT_FDCWD, filename);
+	set_nameidata(&nd, filename);
 
 	s = path_init(&nd, LOOKUP_FOLLOW);
 
@@ -2495,7 +2493,7 @@ int unlink(const char *pathname)
 	struct inode *inode;
 	struct path path;
 
-	ret = filename_lookup(AT_FDCWD, getname(pathname), 0, &path);
+	ret = filename_lookup(getname(pathname), 0, &path);
 	if (ret)
 		goto out;
 
@@ -2543,7 +2541,7 @@ int symlink(const char *pathname, const char *newpath)
 	int error;
 	unsigned int lookup_flags = LOOKUP_DIRECTORY;
 
-	dentry = filename_create(AT_FDCWD, getname(newpath), &path, lookup_flags);
+	dentry = filename_create(getname(newpath), &path, lookup_flags);
 	if (IS_ERR(dentry)) {
 		error = PTR_ERR(dentry);
 		goto out;
@@ -2583,7 +2581,7 @@ DIR *opendir(const char *pathname)
 		},
 	};
 
-	ret = filename_lookup(AT_FDCWD, getname(pathname),
+	ret = filename_lookup(getname(pathname),
 			      LOOKUP_FOLLOW | LOOKUP_DIRECTORY, &path);
 	if (ret)
 		goto out;
@@ -2651,7 +2649,7 @@ int readlink(const char *pathname, char *buf, size_t bufsiz)
 	const char *link;
 	struct path path = {};
 
-	ret = filename_lookup(AT_FDCWD, getname(pathname), 0, &path);
+	ret = filename_lookup(getname(pathname), 0, &path);
 	if (ret)
 		goto out;
 
@@ -2695,7 +2693,7 @@ static int stat_filename(const char *filename, struct stat *s, unsigned int flag
 	struct inode *inode;
 	struct path path = {};
 
-	ret = filename_lookup(AT_FDCWD, getname(filename), flags, &path);
+	ret = filename_lookup(getname(filename), flags, &path);
 	if (ret)
 		goto out;
 
@@ -2799,7 +2797,7 @@ char *canonicalize_path(const char *pathname)
 	struct path path;
 	int ret;
 
-	ret = filename_lookup(AT_FDCWD, getname(pathname), LOOKUP_FOLLOW, &path);
+	ret = filename_lookup(getname(pathname), LOOKUP_FOLLOW, &path);
 	if (ret)
 		goto out;
 
@@ -2823,7 +2821,7 @@ int chdir(const char *pathname)
 	struct path path;
 	int ret;
 
-	ret = filename_lookup(AT_FDCWD, getname(pathname), LOOKUP_FOLLOW | LOOKUP_DIRECTORY, &path);
+	ret = filename_lookup(getname(pathname), LOOKUP_FOLLOW | LOOKUP_DIRECTORY, &path);
 	if (ret)
 		goto out;
 
@@ -2888,7 +2886,7 @@ int mount(const char *device, const char *fsname, const char *pathname,
 	struct path path = {};
 
 	if (d_root) {
-		ret = filename_lookup(AT_FDCWD, getname(pathname), LOOKUP_FOLLOW, &path);
+		ret = filename_lookup(getname(pathname), LOOKUP_FOLLOW, &path);
 		if (ret)
 			goto out;
 
@@ -3001,7 +2999,7 @@ int umount(const char *pathname)
 	struct path path = {};
 	int ret;
 
-	ret = filename_lookup(AT_FDCWD, getname(pathname), LOOKUP_FOLLOW, &path);
+	ret = filename_lookup(getname(pathname), LOOKUP_FOLLOW, &path);
 	if (ret)
 		return ret;
 
@@ -3074,7 +3072,7 @@ void automount_remove(const char *pathname)
 	struct path path;
 	int ret;
 
-	ret = filename_lookup(AT_FDCWD, getname(pathname), LOOKUP_FOLLOW, &path);
+	ret = filename_lookup(getname(pathname), LOOKUP_FOLLOW, &path);
 	if (ret)
 		return;
 
@@ -3090,7 +3088,7 @@ int automount_add(const char *pathname, const char *cmd)
 	struct path path;
 	int ret;
 
-	ret = filename_lookup(AT_FDCWD, getname(pathname), LOOKUP_FOLLOW, &path);
+	ret = filename_lookup(getname(pathname), LOOKUP_FOLLOW, &path);
 	if (ret)
 		return ret;
 
@@ -3199,7 +3197,7 @@ static int do_lookup_dentry(int argc, char *argv[])
 	if (argc < 2)
 		return COMMAND_ERROR_USAGE;
 
-	ret = filename_lookup(AT_FDCWD, getname(argv[1]), 0, &path);
+	ret = filename_lookup(getname(argv[1]), 0, &path);
 	if (ret) {
 		printf("Cannot lookup path \"%s\": %s\n",
 		       argv[1], strerror(-ret));

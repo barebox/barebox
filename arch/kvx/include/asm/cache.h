@@ -10,6 +10,7 @@
 
 void invalidate_dcache_range(unsigned long addr, unsigned long stop);
 
+#define sync_caches_for_execution sync_caches_for_execution
 static inline void sync_caches_for_execution(void)
 {
 	__builtin_kvx_fence();
@@ -27,5 +28,7 @@ static inline void dcache_inval(void)
 	__builtin_kvx_fence();
 	__builtin_kvx_dinval();
 }
+
+#include <asm-generic/cache.h>
 
 #endif /* __KVX_CACHE_H */

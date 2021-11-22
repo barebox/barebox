@@ -182,11 +182,11 @@ static int efi_bio_probe(struct efi_device *efidev)
 	return 0;
 }
 
-static struct efi_driver efi_fs_driver = {
+static struct efi_driver efi_bio_driver = {
         .driver = {
 		.name  = "efi-block-io",
 	},
         .probe = efi_bio_probe,
 	.guid = EFI_BLOCK_IO_PROTOCOL_GUID,
 };
-device_efi_driver(efi_fs_driver);
+device_efi_driver(efi_bio_driver);

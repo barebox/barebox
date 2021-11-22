@@ -2,6 +2,16 @@
 
 menu "EFI (Extensible Firmware Interface) Support"
 
+config EFI_BOOTUP
+	bool
+	select EFI
+	select EFI_GUID
+	select EFI_DEVICEPATH
+	select PRINTF_UUID
+	select BLOCK
+	select PARTITION_DISK
+	select HW_HAS_PCI
+
 config EFI
 	bool
 

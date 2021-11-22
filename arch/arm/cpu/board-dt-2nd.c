@@ -12,9 +12,17 @@
 
 #ifdef CONFIG_CPU_V8
 
-static noinline void dt_2nd_continue_aarch64(void *fdt)
+/* called from assembly */
+void dt_2nd_aarch64(void *fdt);
+
+void dt_2nd_aarch64(void *fdt)
 {
 	unsigned long membase, memsize;
+
+	/* entry point already set up stack */
+
+	relocate_to_current_adr();
+	setup_c();
 
 	if (!fdt)
 		hang();
@@ -22,19 +30,6 @@ static noinline void dt_2nd_continue_aarch64(void *fdt)
 	fdt_find_mem(fdt, &membase, &memsize);
 
 	barebox_arm_entry(membase, memsize, fdt);
-}
-
-/* called from assembly */
-void dt_2nd_aarch64(void *fdt);
-
-void dt_2nd_aarch64(void *fdt)
-{
-	/* entry point already set up stack */
-
-	relocate_to_current_adr();
-	setup_c();
-
-	dt_2nd_continue_aarch64(fdt);
 }
 
 #else

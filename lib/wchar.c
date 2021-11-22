@@ -28,6 +28,15 @@ size_t wcslen(const wchar_t *s)
 	return len;
 }
 
+size_t wcsnlen(const wchar_t * s, size_t count)
+{
+	const wchar_t *sc;
+
+	for (sc = s; count-- && *sc != L'\0'; ++sc)
+		/* nothing */;
+	return sc - s;
+}
+
 wchar_t *strdup_wchar(const wchar_t *src)
 {
 	int len = wcslen(src);

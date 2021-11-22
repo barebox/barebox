@@ -17,6 +17,8 @@ char *strdup_wchar_to_char(const wchar_t *src);
 
 size_t wcslen(const wchar_t *s);
 
+size_t wcsnlen(const wchar_t *s, size_t maxlen);
+
 #define MB_CUR_MAX 4
 
 int mbtowc(wchar_t *pwc, const char *s, size_t n);

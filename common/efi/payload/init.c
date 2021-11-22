@@ -221,12 +221,10 @@ static int efi_init(void)
 }
 device_initcall(efi_init);
 
-asmlinkage efi_status_t efi_main(efi_handle_t, efi_system_table_t *);
-
 /**
  * efi-main - Entry point for EFI images
  */
-efi_status_t efi_main(efi_handle_t image, efi_system_table_t *sys_table)
+void efi_main(efi_handle_t image, efi_system_table_t *sys_table)
 {
 	efi_physical_addr_t mem;
 	size_t memsize;
@@ -266,8 +264,6 @@ efi_status_t efi_main(efi_handle_t image, efi_system_table_t *sys_table)
 	mem_malloc_init((void *)mem, (void *)mem + memsize - 1);
 
 	start_barebox();
-
-	return EFI_SUCCESS;
 }
 
 static int efi_core_init(void)

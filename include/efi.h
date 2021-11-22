@@ -591,6 +591,8 @@ efi_guidcmp (efi_guid_t left, efi_guid_t right)
 	return memcmp(&left, &right, sizeof (efi_guid_t));
 }
 
+__attribute__((noreturn)) void efi_main(efi_handle_t, efi_system_table_t *);
+
 /*
  * Variable Attributes
  */

@@ -1,5 +1,5 @@
 /*
- * efi.c - barebox EFI payload support
+ * init.c - barebox EFI payload support
  *
  * Copyright (c) 2014 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  *

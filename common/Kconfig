@@ -78,14 +78,6 @@ config MENUTREE
 	select GLOB
 	select GLOB_SORT
 
-config EFI_GUID
-	bool
-	help
-	  With this option a table of EFI guids is compiled in.
-
-config EFI_DEVICEPATH
-	bool
-
 config ARCH_DMA_ADDR_T_64BIT
 	bool
 
@@ -1537,6 +1529,8 @@ config COMPILE_TEST
 	  inclusion of unrelated drivers.
 
 endmenu
+
+source "common/efi/Kconfig"
 
 config HAS_DEBUG_LL
 	bool

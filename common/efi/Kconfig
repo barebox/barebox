@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: GPL-2.0
+
+menu "EFI (Extensible Firmware Interface) Support"
+
+config EFI
+	bool
+
+config EFI_GUID
+	bool
+	help
+	  With this option a table of EFI guids is compiled in.
+
+config EFI_DEVICEPATH
+	bool
+
+endmenu

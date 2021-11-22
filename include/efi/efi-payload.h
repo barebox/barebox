@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-#ifndef __MACH_EFI_H
-#define __MACH_EFI_H
+#ifndef __EFI_PAYLOAD_H
+#define __EFI_PAYLOAD_H
 
 #include <efi.h>
 #include <efi/efi-util.h>
@@ -21,4 +21,4 @@ int efi_set_variable(char *name, efi_guid_t *vendor, uint32_t attributes,
 		     void *buf, unsigned long size);
 int efi_set_variable_usec(char *name, efi_guid_t *vendor, uint64_t usec);
 
-#endif /* __MACH_EFI_H */
+#endif

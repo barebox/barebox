@@ -6,7 +6,7 @@
 #define EFI_DEBUG_CLEAR_MEMORY 0
 
 #include <efi.h>
-#include <efi/efi.h>
+#include <efi/efi-payload.h>
 
 static inline void PUTC_LL(char c)
 {

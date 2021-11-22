@@ -13,7 +13,7 @@
 #include <efi.h>
 #include <block.h>
 #include <disks.h>
-#include <efi/efi.h>
+#include <efi/efi-payload.h>
 #include <efi/efi-device.h>
 #include <bootsource.h>
 

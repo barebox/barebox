@@ -16,7 +16,7 @@
 #include <wchar.h>
 #include <init.h>
 #include <efi.h>
-#include <efi/efi.h>
+#include <efi/efi-payload.h>
 #include <efi/efi-device.h>
 #include <linux/err.h>
 

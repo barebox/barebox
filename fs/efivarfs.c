@@ -28,7 +28,7 @@
 #include <wchar.h>
 #include <linux/err.h>
 #include <linux/ctype.h>
-#include <efi/efi.h>
+#include <efi/efi-payload.h>
 #include <efi/efi-device.h>
 
 struct efivarfs_inode {

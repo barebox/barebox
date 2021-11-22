@@ -13,7 +13,7 @@
 #include <efi.h>
 #include <readkey.h>
 #include <linux/ctype.h>
-#include <efi/efi.h>
+#include <efi/efi-payload.h>
 #include <efi/efi-device.h>
 #include <efi/efi-stdio.h>
 

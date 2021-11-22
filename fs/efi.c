@@ -28,7 +28,7 @@
 #include <wchar.h>
 #include <efi.h>
 #include <libfile.h>
-#include <efi/efi.h>
+#include <efi/efi-payload.h>
 #include <efi/efi-device.h>
 #include <linux/stddef.h>
 

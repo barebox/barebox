@@ -3,7 +3,7 @@
 #include <init.h>
 #include <driver.h>
 #include <efi.h>
-#include <efi/efi.h>
+#include <efi/efi-payload.h>
 #include <clock.h>
 
 #ifdef __x86_64__

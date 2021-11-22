@@ -24,7 +24,7 @@
 #include <libfile.h>
 #include <binfmt.h>
 #include <wchar.h>
-#include <efi/efi.h>
+#include <efi/efi-payload.h>
 #include <efi/efi-device.h>
 
 struct linux_kernel_header {

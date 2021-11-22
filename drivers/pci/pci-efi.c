@@ -9,7 +9,7 @@
 #include <init.h>
 #include <xfuncs.h>
 #include <efi.h>
-#include <efi/efi.h>
+#include <efi/efi-payload.h>
 #include <efi/efi-device.h>
 #include <linux/pci.h>
 

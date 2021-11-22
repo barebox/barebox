@@ -6,7 +6,7 @@
 #include <common.h>
 #include <init.h>
 #include <efi.h>
-#include <efi/efi.h>
+#include <efi/efi-payload.h>
 #include <memory.h>
 #include <linux/sizes.h>
 

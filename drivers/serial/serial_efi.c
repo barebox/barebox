@@ -8,7 +8,7 @@
 #include <init.h>
 #include <malloc.h>
 #include <efi.h>
-#include <efi/efi.h>
+#include <efi/efi-payload.h>
 #include <efi/efi-device.h>
 
 /*

@@ -7,7 +7,7 @@
 #include <init.h>
 #include <driver.h>
 #include <efi.h>
-#include <efi/efi.h>
+#include <efi/efi-payload.h>
 #include <watchdog.h>
 
 struct efi_wdt_priv {

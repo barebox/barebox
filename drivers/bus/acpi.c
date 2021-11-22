@@ -6,7 +6,8 @@
 #include <common.h>
 #include <driver.h>
 #include <init.h>
-#include <efi/efi.h>
+#include <efi.h>
+#include <efi/efi-payload.h>
 #include <efi/efi-device.h>
 #include <acpi.h>
 

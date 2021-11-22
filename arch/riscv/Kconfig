@@ -14,6 +14,7 @@ config RISCV
 	select HAS_ARCH_SJLJ
 	select HAS_KALLSYMS
 	select RISCV_TIMER if RISCV_SBI
+	select HW_HAS_PCI
 
 config ARCH_TEXT_BASE
 	hex

@@ -223,6 +223,7 @@ static void acpi_bus_remove(struct device_d *dev)
 }
 
 struct bus_type acpi_bus = {
+	.name = "acpi",
 	.match = acpi_bus_match,
 	.probe = acpi_bus_probe,
 	.remove = acpi_bus_remove,
@@ -240,17 +241,17 @@ static int efi_acpi_probe(void)
 			acpi_bus.name = "acpi2";
 			table = ect;
 		} else if (!table && !efi_guidcmp(ect->guid, EFI_ACPI_TABLE_GUID)) {
-			acpi_bus.name = "acpi";
+			acpi_bus.name = "acpi1";
 			table = ect;
 		}
 	}
 
+	bus_register(&acpi_bus);
+
 	if (!table)
 		return 0;
 
-	bus_register(&acpi_bus);
 	acpi_bus.dev->priv = table;
-
 	return acpi_register_devices(&acpi_bus);
 }
 postcore_initcall(efi_acpi_probe);

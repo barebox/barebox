@@ -213,7 +213,8 @@ again:
 		goto again;
 	}
 
-	buf = calloc(read_size + 1, 1);
+	/* ensure wchar_t nul termination */
+	buf = calloc(ALIGN(read_size, 2) + 2, 1);
 	if (!buf) {
 		ret = -ENOMEM;
 		errno = ENOMEM;

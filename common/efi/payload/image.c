@@ -106,7 +106,6 @@ static int efi_load_image(const char *file, efi_loaded_image_t **loaded_image,
 
 	*h = handle;
 out:
-	memset(exe, 0, size);
 	free(exe);
 	return -efi_errno(efiret);
 }

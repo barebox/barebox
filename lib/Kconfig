@@ -163,6 +163,9 @@ config PROGRESS_NOTIFIER
 config PRINTF_UUID
 	bool
 
+config PRINTF_WCHAR
+	bool
+
 config GENERIC_LIB_ASHLDI3
 	bool
 

@@ -8,6 +8,7 @@ config EFI_BOOTUP
 	select EFI_GUID
 	select EFI_DEVICEPATH
 	select PRINTF_UUID
+	select PRINTF_WCHAR
 	select BLOCK
 	select PARTITION_DISK
 	select HW_HAS_PCI

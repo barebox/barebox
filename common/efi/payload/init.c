@@ -5,6 +5,10 @@
  * Copyright (c) 2014 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  */
 
+#ifdef CONFIG_DEBUG_LL
+#define DEBUG
+#endif
+
 #include <linux/linkage.h>
 #include <common.h>
 #include <linux/sizes.h>

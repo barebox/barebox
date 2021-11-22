@@ -5,7 +5,7 @@ KBUILD_CPPFLAGS += -D__X86__
 TEXT_BASE = $(CONFIG_TEXT_BASE)
 
 machine-y := efi
-KBUILD_CFLAGS += -fpic -fshort-wchar -mno-sse -mno-mmx
+KBUILD_CFLAGS += -fpic -mno-sse -mno-mmx
 ifeq ($(CONFIG_X86_32),y)
 	TARGET = efi-app-ia32
 else

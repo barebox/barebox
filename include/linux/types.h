@@ -1,5 +1,6 @@
 #ifndef _LINUX_TYPES_H
 #define _LINUX_TYPES_H
+#ifndef __ASSEMBLY__
 
 #include <linux/posix_types.h>
 #include <asm/types.h>
@@ -213,4 +214,5 @@ struct hlist_node {
 	struct hlist_node *next, **pprev;
 };
 
+#endif
 #endif /* _LINUX_TYPES_H */

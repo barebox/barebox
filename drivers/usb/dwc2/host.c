@@ -169,10 +169,11 @@ static int transfer_chunk(struct dwc2 *dwc2, u8 hc,
 			  int xfer_len, int *actual_len, int odd_frame)
 {
 	uint32_t hctsiz, hcchar, sub;
-	dma_addr_t dma_addr;
+	dma_addr_t dma_addr = 0;
 	int ret = 0;
 
-	dma_addr = dma_map_single(dwc2->dev, buffer, xfer_len,
+	if (xfer_len)
+		dma_addr = dma_map_single(dwc2->dev, buffer, xfer_len,
 				  in ? DMA_FROM_DEVICE : DMA_TO_DEVICE);
 
 	if (dma_mapping_error(dwc2->dev, dma_addr)) {
@@ -213,7 +214,8 @@ static int transfer_chunk(struct dwc2 *dwc2, u8 hc,
 	*actual_len = xfer_len;
 
 exit:
-	dma_unmap_single(dwc2->dev, dma_addr, xfer_len,
+	if (xfer_len)
+		dma_unmap_single(dwc2->dev, dma_addr, xfer_len,
 				  in ? DMA_FROM_DEVICE : DMA_TO_DEVICE);
 
 	return ret;

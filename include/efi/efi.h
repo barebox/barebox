@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef __MACH_EFI_H
 #define __MACH_EFI_H
 

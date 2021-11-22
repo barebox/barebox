@@ -43,9 +43,6 @@ config USE_COMPRESSED_DTB
 	select UNCOMPRESS
 	select LZO_DECOMPRESS
 
-config ELF
-	bool "ELF Support" if COMPILE_TEST
-
 config FILETYPE
 	bool
 
@@ -607,6 +604,9 @@ config BOOTM_AIMAGE
 	depends on BOOTM && ARM
 	help
 	  Support using Android Images.
+
+config ELF
+	bool "ELF Support" if COMPILE_TEST
 
 config BOOTM_ELF
 	bool

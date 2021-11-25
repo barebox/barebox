@@ -1402,6 +1402,11 @@ config DEBUG_STARFIVE
 	depends on SOC_STARFIVE
 	select DEBUG_LL_NS16550
 
+config DEBUG_RISCV_VIRT
+	bool "RISC-V Virt ns16550 port"
+	depends on SOC_VIRT
+	select DEBUG_LL_NS16550
+
 config DEBUG_SIFIVE
 	bool "SiFive serial0 port"
 	depends on SOC_SIFIVE

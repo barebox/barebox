@@ -101,8 +101,8 @@ static int state_do_load(struct state *state, enum state_flags flags)
 	ret = state_storage_read(&state->storage, state->format,
 				 state->magic, &buf, &len, flags);
 	if (ret) {
-		dev_err(&state->dev, "Failed to read state with format %s, %d\n",
-			state->format->name, ret);
+		dev_err_state_init(&state->dev, ret, "format %s read failed\n",
+				   state->format->name);
 		goto out;
 	}
 

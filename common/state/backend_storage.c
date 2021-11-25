@@ -171,11 +171,8 @@ int state_storage_read(struct state_backend_storage *storage,
 
 	dev_dbg(storage->dev, "Checking redundant buckets finished.\n");
 
-	if (!bucket_used) {
-		dev_err(storage->dev, "Failed to find any valid state copy in any bucket\n");
-
-		return -ENOENT;
-	}
+	if (!bucket_used)
+		return dev_err_state_init(storage->dev, -ENOENT, "no valid state copy in any bucket\n");
 
 	dev_info(storage->dev, "Using bucket %d@0x%08llx\n", bucket_used->num, (long long) bucket_used->offset);
 

@@ -10,11 +10,11 @@ ENTRY_FUNCTION(start_litex_linux, a0, a1, a2)
 	extern char __dtb_z_litex_linux_start[];
 	void *fdt;
 
+	/* BIOS will have loaded us into RAM */
+
 	barebox_nmon_entry();
 
 	putc_ll('>');
-
-	/* On POR, we are running from read-only memory here. */
 
 	fdt = __dtb_z_litex_linux_start + get_runtime_offset();
 

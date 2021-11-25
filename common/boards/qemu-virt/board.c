@@ -54,6 +54,7 @@ static int virt_probe(struct device_d *dev)
 
 static const struct of_device_id virt_of_match[] = {
 	{ .compatible = "linux,dummy-virt", .data = arm_virt_init },
+	{ .compatible = "riscv-virtio" },
 	{ /* Sentinel */},
 };
 BAREBOX_DEEP_PROBE_ENABLE(virt_of_match);

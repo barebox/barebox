@@ -515,7 +515,7 @@ skipped.
 Applies test/kconfig/full.cfg on top of base.cfg. This enables as much as
 possible to avoid skipping tests for disabled functionality.
 
-=item B<--kconfig_add>=%s, B<-K>=%s
+=item B<--kconfig-add>=%s, B<-K>=%s
 
 Extra kconfig fragments, merged on top of the defconfig and Kconfig
 fragments described by the YAML. In tree configuration fragment

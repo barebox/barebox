@@ -199,6 +199,10 @@ int of_overlay_apply_tree(struct device_node *root,
 			pr_warn("failed to apply %s\n", fragment->name);
 	}
 
+	/* We are patching the live tree, reload aliases */
+	if (root == of_get_root_node())
+		of_alias_scan();
+
 out_err:
 	of_delete_node(resolved);
 

@@ -6,8 +6,8 @@
 #include <common.h>
 #include <init.h>
 #include <of.h>
+#include <deep-probe.h>
 #include <asm/system_info.h>
-#include <asm/barebox-arm.h>
 
 #ifdef CONFIG_64BIT
 #define MACHINE "virt64"
@@ -17,38 +17,10 @@
 
 extern char __dtb_overlay_of_flash_start[];
 
-static int replace_dtb(void) {
-	struct device_node *overlay;
-	void *fdt;
-	struct device_node *root;
-
-	fdt = barebox_arm_boot_dtb();
-	if (fdt)
-		pr_debug("using boarddata provided DTB\n");
-
-	if (!fdt) {
-		pr_debug("No DTB found\n");
-		return 0;
-	}
-
-	root = of_unflatten_dtb(fdt, INT_MAX);
-
-	if (!of_device_is_compatible(root, "linux,dummy-virt")) {
-		of_delete_node(root);
-		return 0;
-	}
-
-	overlay = of_unflatten_dtb(__dtb_overlay_of_flash_start, INT_MAX);
-	of_overlay_apply_tree(root, overlay);
-
-	return barebox_register_of(root);
-}
-
-pure_initcall(replace_dtb);
-
 static int virt_probe(struct device_d *dev)
 {
 	const char *hostname = MACHINE;
+	struct device_node *overlay;
 
 	if (cpu_is_cortex_a7())
 		hostname = "virt-a7";
@@ -58,6 +30,10 @@ static int virt_probe(struct device_d *dev)
 	barebox_set_model("ARM QEMU " MACHINE);
 	barebox_set_hostname(hostname);
 
+	overlay = of_unflatten_dtb(__dtb_overlay_of_flash_start, INT_MAX);
+	of_overlay_apply_tree(dev->device_node, overlay);
+	/* of_probe() will happen later at of_populate_initcall */
+
 	return 0;
 }
 
@@ -65,6 +41,7 @@ static const struct of_device_id virt_of_match[] = {
 	{ .compatible = "linux,dummy-virt" },
 	{ /* Sentinel */},
 };
+BAREBOX_DEEP_PROBE_ENABLE(virt_of_match);
 
 static struct driver_d virt_board_driver = {
 	.name = "board-qemu-virt",

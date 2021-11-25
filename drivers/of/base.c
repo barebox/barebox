@@ -171,8 +171,7 @@ static int of_alias_id_parse(const char *start, int *len)
  * of_alias_scan - Scan all properties of 'aliases' node
  *
  * The function scans all the properties of 'aliases' node and populates
- * the global lookup table with the properties.  It returns the
- * number of alias_prop found, or error code in error case.
+ * the global lookup table with the properties.
  */
 void of_alias_scan(void)
 {
@@ -2354,6 +2353,13 @@ static const struct of_device_id reserved_mem_matches[] = {
 	{}
 };
 
+/**
+ * of_probe - Probe unflattened device tree starting at of_get_root_node
+ *
+ * The function walks the device tree and creates devices as needed.
+ * With care, it can be called more than once, but if you really need that,
+ * consider first if deep probe would help instead.
+ */
 int of_probe(void)
 {
 	struct device_node *node;
@@ -2727,8 +2733,6 @@ struct device_node *of_find_node_by_reproducible_name(struct device_node *from,
  * of_graph_parse_endpoint() - parse common endpoint node properties
  * @node: pointer to endpoint device_node
  * @endpoint: pointer to the OF endpoint data structure
- *
- * The caller should hold a reference to @node.
  */
 int of_graph_parse_endpoint(const struct device_node *node,
 			    struct of_endpoint *endpoint)

@@ -2333,8 +2333,11 @@ mem_initcall(of_probe_memory);
 
 static void of_platform_device_create_root(struct device_node *np)
 {
-	struct device_d *dev;
+	static struct device_d *dev;
 	int ret;
+
+	if (dev)
+		return;
 
 	dev = xzalloc(sizeof(*dev));
 	dev->id = DEVICE_ID_SINGLE;

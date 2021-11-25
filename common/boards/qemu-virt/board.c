@@ -7,7 +7,6 @@
 #include <init.h>
 #include <of.h>
 #include <deep-probe.h>
-#include <asm/system_info.h>
 
 #ifdef CONFIG_64BIT
 #define MACHINE "virt64"
@@ -15,12 +14,12 @@
 #define MACHINE "virt"
 #endif
 
-extern char __dtb_overlay_of_flash_start[];
+#ifdef CONFIG_ARM
+#include <asm/system_info.h>
 
-static int virt_probe(struct device_d *dev)
+static inline void arm_virt_init(void)
 {
 	const char *hostname = MACHINE;
-	struct device_node *overlay;
 
 	if (cpu_is_cortex_a7())
 		hostname = "virt-a7";
@@ -29,6 +28,22 @@ static int virt_probe(struct device_d *dev)
 
 	barebox_set_model("ARM QEMU " MACHINE);
 	barebox_set_hostname(hostname);
+}
+
+#else
+static inline void arm_virt_init(void) {}
+#endif
+
+extern char __dtb_overlay_of_flash_start[];
+
+static int virt_probe(struct device_d *dev)
+{
+	struct device_node *overlay;
+	void (*init)(void);
+
+	init = device_get_match_data(dev);
+	if (init)
+		init();
 
 	overlay = of_unflatten_dtb(__dtb_overlay_of_flash_start, INT_MAX);
 	of_overlay_apply_tree(dev->device_node, overlay);
@@ -38,7 +53,7 @@ static int virt_probe(struct device_d *dev)
 }
 
 static const struct of_device_id virt_of_match[] = {
-	{ .compatible = "linux,dummy-virt" },
+	{ .compatible = "linux,dummy-virt", .data = arm_virt_init },
 	{ /* Sentinel */},
 };
 BAREBOX_DEEP_PROBE_ENABLE(virt_of_match);

@@ -1,8 +1,12 @@
 /dts-v1/;
 /plugin/;
+
+#define PARTS_TARGET_PATH	"/flash@0"
+#define ENV_DEVICE_PATH		"/flash@0/partitions/partition@3c00000"
+
 / {
 	fragment@0 {
-		target-path = "/flash@0";
+		target-path = PARTS_TARGET_PATH;
 		__overlay__ {
 			partitions {
 				compatible = "fixed-partitions";
@@ -32,7 +36,7 @@
 			chosen {
 				environment {
 					compatible = "barebox,environment";
-					device-path = "/flash@0/partitions/partition@3c00000";
+					device-path = ENV_DEVICE_PATH;
 				};
 			};
 			aliases {

@@ -308,6 +308,7 @@ source "arch/arm/mach-zynqmp/Kconfig"
 config BOARD_ARM_VIRT
 	bool
 	select BOARD_ARM_GENERIC_DT
+	select BOARD_QEMU_VIRT
 	select OF_OVERLAY
 
 config BOARD_ARM_GENERIC_DT

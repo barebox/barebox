@@ -573,7 +573,10 @@ ssize_t mem_copy(struct device_d *dev, void *dst, const void *src,
 	if (!dev || dev->num_resources < 1)
 		return -1;
 
-	count = size = min(count, resource_size(&dev->resource[0]) - offset);
+	if (resource_size(&dev->resource[0]) > 0 || offset != 0)
+		count = min(count, resource_size(&dev->resource[0]) - offset);
+
+	size = count;
 
 	/* no rwsize specification given. Do whatever memcpy likes best */
 	if (!rwsize) {

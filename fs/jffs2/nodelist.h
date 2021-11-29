@@ -441,8 +441,6 @@ int jffs2_do_crccheck_inode(struct jffs2_sb_info *c, struct jffs2_inode_cache *i
 void jffs2_do_clear_inode(struct jffs2_sb_info *c, struct jffs2_inode_info *f);
 
 /* malloc.c */
-int jffs2_create_slab_caches(void);
-void jffs2_destroy_slab_caches(void);
 
 struct jffs2_full_dirent *jffs2_alloc_full_dirent(int namesize);
 void jffs2_free_full_dirent(struct jffs2_full_dirent *);

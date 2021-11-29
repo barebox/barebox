@@ -17,103 +17,10 @@
 #include <linux/jffs2.h>
 #include "nodelist.h"
 
-/* These are initialised to NULL in the kernel startup code.
-   If you're porting to other operating systems, beware */
-static struct kmem_cache *full_dnode_slab;
-static struct kmem_cache *raw_dirent_slab;
-static struct kmem_cache *raw_inode_slab;
-static struct kmem_cache *tmp_dnode_info_slab;
-static struct kmem_cache *raw_node_ref_slab;
-static struct kmem_cache *node_frag_slab;
-static struct kmem_cache *inode_cache_slab;
-#ifdef CONFIG_JFFS2_FS_XATTR
-static struct kmem_cache *xattr_datum_cache;
-static struct kmem_cache *xattr_ref_cache;
-#endif
-
-int __init jffs2_create_slab_caches(void)
-{
-	full_dnode_slab = kmem_cache_create("jffs2_full_dnode",
-					    sizeof(struct jffs2_full_dnode),
-					    0, 0, NULL);
-	if (!full_dnode_slab)
-		goto err;
-
-	raw_dirent_slab = kmem_cache_create("jffs2_raw_dirent",
-					    sizeof(struct jffs2_raw_dirent),
-					    0, SLAB_HWCACHE_ALIGN, NULL);
-	if (!raw_dirent_slab)
-		goto err;
-
-	raw_inode_slab = kmem_cache_create("jffs2_raw_inode",
-					   sizeof(struct jffs2_raw_inode),
-					   0, SLAB_HWCACHE_ALIGN, NULL);
-	if (!raw_inode_slab)
-		goto err;
-
-	tmp_dnode_info_slab = kmem_cache_create("jffs2_tmp_dnode",
-						sizeof(struct jffs2_tmp_dnode_info),
-						0, 0, NULL);
-	if (!tmp_dnode_info_slab)
-		goto err;
-
-	raw_node_ref_slab = kmem_cache_create("jffs2_refblock",
-					      sizeof(struct jffs2_raw_node_ref) * (REFS_PER_BLOCK + 1),
-					      0, 0, NULL);
-	if (!raw_node_ref_slab)
-		goto err;
-
-	node_frag_slab = kmem_cache_create("jffs2_node_frag",
-					   sizeof(struct jffs2_node_frag),
-					   0, 0, NULL);
-	if (!node_frag_slab)
-		goto err;
-
-	inode_cache_slab = kmem_cache_create("jffs2_inode_cache",
-					     sizeof(struct jffs2_inode_cache),
-					     0, 0, NULL);
-	if (!inode_cache_slab)
-		goto err;
-
-#ifdef CONFIG_JFFS2_FS_XATTR
-	xattr_datum_cache = kmem_cache_create("jffs2_xattr_datum",
-					     sizeof(struct jffs2_xattr_datum),
-					     0, 0, NULL);
-	if (!xattr_datum_cache)
-		goto err;
-
-	xattr_ref_cache = kmem_cache_create("jffs2_xattr_ref",
-					   sizeof(struct jffs2_xattr_ref),
-					   0, 0, NULL);
-	if (!xattr_ref_cache)
-		goto err;
-#endif
-
-	return 0;
- err:
-	jffs2_destroy_slab_caches();
-	return -ENOMEM;
-}
-
-void jffs2_destroy_slab_caches(void)
-{
-	kmem_cache_destroy(full_dnode_slab);
-	kmem_cache_destroy(raw_dirent_slab);
-	kmem_cache_destroy(raw_inode_slab);
-	kmem_cache_destroy(tmp_dnode_info_slab);
-	kmem_cache_destroy(raw_node_ref_slab);
-	kmem_cache_destroy(node_frag_slab);
-	kmem_cache_destroy(inode_cache_slab);
-#ifdef CONFIG_JFFS2_FS_XATTR
-	kmem_cache_destroy(xattr_datum_cache);
-	kmem_cache_destroy(xattr_ref_cache);
-#endif
-}
-
 struct jffs2_full_dirent *jffs2_alloc_full_dirent(int namesize)
 {
 	struct jffs2_full_dirent *ret;
-	ret = kmalloc(sizeof(struct jffs2_full_dirent) + namesize, GFP_KERNEL);
+	ret = kmalloc(sizeof(*ret) + namesize, GFP_KERNEL);
 	dbg_memalloc("%p\n", ret);
 	return ret;
 }
@@ -127,7 +34,7 @@ void jffs2_free_full_dirent(struct jffs2_full_dirent *x)
 struct jffs2_full_dnode *jffs2_alloc_full_dnode(void)
 {
 	struct jffs2_full_dnode *ret;
-	ret = kmem_cache_alloc(full_dnode_slab, GFP_KERNEL);
+	ret = malloc(sizeof(*ret));
 	dbg_memalloc("%p\n", ret);
 	return ret;
 }
@@ -135,13 +42,13 @@ struct jffs2_full_dnode *jffs2_alloc_full_dnode(void)
 void jffs2_free_full_dnode(struct jffs2_full_dnode *x)
 {
 	dbg_memalloc("%p\n", x);
-	kmem_cache_free(full_dnode_slab, x);
+	free(x);
 }
 
 struct jffs2_raw_dirent *jffs2_alloc_raw_dirent(void)
 {
 	struct jffs2_raw_dirent *ret;
-	ret = kmem_cache_alloc(raw_dirent_slab, GFP_KERNEL);
+	ret = malloc(sizeof(*ret));
 	dbg_memalloc("%p\n", ret);
 	return ret;
 }
@@ -149,13 +56,13 @@ struct jffs2_raw_dirent *jffs2_alloc_raw_dirent(void)
 void jffs2_free_raw_dirent(struct jffs2_raw_dirent *x)
 {
 	dbg_memalloc("%p\n", x);
-	kmem_cache_free(raw_dirent_slab, x);
+	free(x);
 }
 
 struct jffs2_raw_inode *jffs2_alloc_raw_inode(void)
 {
 	struct jffs2_raw_inode *ret;
-	ret = kmem_cache_alloc(raw_inode_slab, GFP_KERNEL);
+	ret = malloc(sizeof(*ret));
 	dbg_memalloc("%p\n", ret);
 	return ret;
 }
@@ -163,13 +70,13 @@ struct jffs2_raw_inode *jffs2_alloc_raw_inode(void)
 void jffs2_free_raw_inode(struct jffs2_raw_inode *x)
 {
 	dbg_memalloc("%p\n", x);
-	kmem_cache_free(raw_inode_slab, x);
+	free(x);
 }
 
 struct jffs2_tmp_dnode_info *jffs2_alloc_tmp_dnode_info(void)
 {
 	struct jffs2_tmp_dnode_info *ret;
-	ret = kmem_cache_alloc(tmp_dnode_info_slab, GFP_KERNEL);
+	ret = malloc(sizeof(*ret));
 	dbg_memalloc("%p\n",
 		ret);
 	return ret;
@@ -178,14 +85,14 @@ struct jffs2_tmp_dnode_info *jffs2_alloc_tmp_dnode_info(void)
 void jffs2_free_tmp_dnode_info(struct jffs2_tmp_dnode_info *x)
 {
 	dbg_memalloc("%p\n", x);
-	kmem_cache_free(tmp_dnode_info_slab, x);
+	free(x);
 }
 
 static struct jffs2_raw_node_ref *jffs2_alloc_refblock(void)
 {
 	struct jffs2_raw_node_ref *ret;
 
-	ret = kmem_cache_alloc(raw_node_ref_slab, GFP_KERNEL);
+	ret = malloc(sizeof(*ret) * (REFS_PER_BLOCK + 1));
 	if (ret) {
 		int i = 0;
 		for (i=0; i < REFS_PER_BLOCK; i++) {
@@ -242,13 +149,13 @@ int jffs2_prealloc_raw_node_refs(struct jffs2_sb_info *c,
 void jffs2_free_refblock(struct jffs2_raw_node_ref *x)
 {
 	dbg_memalloc("%p\n", x);
-	kmem_cache_free(raw_node_ref_slab, x);
+	free(x);
 }
 
 struct jffs2_node_frag *jffs2_alloc_node_frag(void)
 {
 	struct jffs2_node_frag *ret;
-	ret = kmem_cache_alloc(node_frag_slab, GFP_KERNEL);
+	ret = malloc(sizeof(*ret));
 	dbg_memalloc("%p\n", ret);
 	return ret;
 }
@@ -256,13 +163,13 @@ struct jffs2_node_frag *jffs2_alloc_node_frag(void)
 void jffs2_free_node_frag(struct jffs2_node_frag *x)
 {
 	dbg_memalloc("%p\n", x);
-	kmem_cache_free(node_frag_slab, x);
+	free(x);
 }
 
 struct jffs2_inode_cache *jffs2_alloc_inode_cache(void)
 {
 	struct jffs2_inode_cache *ret;
-	ret = kmem_cache_alloc(inode_cache_slab, GFP_KERNEL);
+	ret = malloc(sizeof(*ret));
 	dbg_memalloc("%p\n", ret);
 	return ret;
 }
@@ -270,14 +177,14 @@ struct jffs2_inode_cache *jffs2_alloc_inode_cache(void)
 void jffs2_free_inode_cache(struct jffs2_inode_cache *x)
 {
 	dbg_memalloc("%p\n", x);
-	kmem_cache_free(inode_cache_slab, x);
+	free(x);
 }
 
 #ifdef CONFIG_JFFS2_FS_XATTR
 struct jffs2_xattr_datum *jffs2_alloc_xattr_datum(void)
 {
 	struct jffs2_xattr_datum *xd;
-	xd = kmem_cache_zalloc(xattr_datum_cache, GFP_KERNEL);
+	xd = malloc(sizeof(*ret));
 	dbg_memalloc("%p\n", xd);
 	if (!xd)
 		return NULL;
@@ -291,13 +198,13 @@ struct jffs2_xattr_datum *jffs2_alloc_xattr_datum(void)
 void jffs2_free_xattr_datum(struct jffs2_xattr_datum *xd)
 {
 	dbg_memalloc("%p\n", xd);
-	kmem_cache_free(xattr_datum_cache, xd);
+	free(xd);
 }
 
 struct jffs2_xattr_ref *jffs2_alloc_xattr_ref(void)
 {
 	struct jffs2_xattr_ref *ref;
-	ref = kmem_cache_zalloc(xattr_ref_cache, GFP_KERNEL);
+	ref = malloc(sizeof(*ret));
 	dbg_memalloc("%p\n", ref);
 	if (!ref)
 		return NULL;
@@ -310,6 +217,6 @@ struct jffs2_xattr_ref *jffs2_alloc_xattr_ref(void)
 void jffs2_free_xattr_ref(struct jffs2_xattr_ref *ref)
 {
 	dbg_memalloc("%p\n", ref);
-	kmem_cache_free(xattr_ref_cache, ref);
+	free(ref);
 }
 #endif

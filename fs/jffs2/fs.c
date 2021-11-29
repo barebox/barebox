@@ -397,6 +397,8 @@ void jffs2_flash_cleanup(struct jffs2_sb_info *c) {
 	}
 }
 
+static int jffs2_probe_cnt;
+
 static int jffs2_probe(struct device_d *dev)
 {
 	struct fs_device_d *fsdev;
@@ -419,23 +421,27 @@ static int jffs2_probe(struct device_d *dev)
 
 	sb->s_fs_info = ctx;
 
-        ret = jffs2_compressors_init();
-        if (ret) {
-		pr_err("error: Failed to initialise compressors\n");
-		goto err_out;
-        }
+	if (!jffs2_probe_cnt) {
+		ret = jffs2_compressors_init();
+		if (ret) {
+			pr_err("error: Failed to initialise compressors\n");
+			goto err_out;
+		}
 
-        ret = jffs2_create_slab_caches();
-        if (ret) {
-		pr_err("error: Failed to initialise slab caches\n");
-		goto err_compressors;
-        }
+		ret = jffs2_create_slab_caches();
+		if (ret) {
+			pr_err("error: Failed to initialise slab caches\n");
+			goto err_compressors;
+		}
+	}
 
         if (jffs2_fill_super(fsdev, 0)) {
 		dev_err(dev, "no valid jffs2 found\n");
 		ret = -EINVAL;
 		goto err_slab;
 	}
+
+	jffs2_probe_cnt++;
 
 	return 0;
 
@@ -456,8 +462,12 @@ static void jffs2_remove(struct device_d *dev)
 	fsdev = dev_to_fs_device(dev);
 	sb = &fsdev->sb;
 
-	jffs2_destroy_slab_caches();
-	jffs2_compressors_exit();
+	jffs2_probe_cnt--;
+
+	if (!jffs2_probe_cnt) {
+		jffs2_destroy_slab_caches();
+		jffs2_compressors_exit();
+	}
 
 	jffs2_put_super(sb);
 }

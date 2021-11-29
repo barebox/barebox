@@ -30,7 +30,7 @@
 
 #include <asm/debug_ll_ns16550.h>
 
-#elif defined CONFIG_DEBUG_SIFIVE
+#elif defined CONFIG_DEBUG_SIFIVE && !defined __ASSEMBLY__
 
 #include <io.h>
 

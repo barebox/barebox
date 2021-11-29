@@ -156,10 +156,13 @@ int state_storage_read(struct state_backend_storage *storage,
 		totalbuckets++;
 
 		ret = bucket->read(bucket, &bucket->buf, &bucket->len);
-		if (ret == -EUCLEAN)
+		if (ret == -EUCLEAN) {
 			bucket->needs_refresh = 1;
-		else if (ret)
+		} else if (ret) {
+			if (ret == -ENOMEDIUM)
+				zerobuckets++;
 			continue;
+		}
 
 		/*
 		 * Verify the buffer crcs. The buffer length is passed in the len argument,

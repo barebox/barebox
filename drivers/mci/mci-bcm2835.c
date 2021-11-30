@@ -350,10 +350,7 @@ static int bcm2835_mci_reset(struct mci_host *mci, struct device_d *mci_dev)
 	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS,
 			0xFFFFFFFF);
 
-	/*Now write command 0 and see if we get response*/
-	sdhci_write32(&host->sdhci, SDHCI_ARGUMENT, 0x0);
-	sdhci_write32(&host->sdhci, SDHCI_TRANSFER_MODE__COMMAND, 0x0);
-	return bcm2835_mci_wait_command_done(host);
+	return 0;
 }
 
 static int bcm2835_mci_probe(struct device_d *hw_dev)

@@ -147,12 +147,11 @@ kwboot_tty_recv(int fd, void *buf, size_t len, int timeo)
 	FD_ZERO(&rfds);
 	FD_SET(fd, &rfds);
 
-	tv.tv_sec = 0;
 	tv.tv_usec = timeo * 1000;
-	if (tv.tv_usec > 1000000) {
-		tv.tv_sec += tv.tv_usec / 1000000;
-		tv.tv_usec %= 1000000;
-	}
+
+	/* normalize timeval */
+	tv.tv_sec = tv.tv_usec / 1000000;
+	tv.tv_usec %= 1000000;
 
 	do {
 		nfds = select(fd + 1, &rfds, NULL, NULL, &tv);

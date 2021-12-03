@@ -592,7 +592,12 @@ static int cpsw_mdio_probe(struct device_d *dev)
 
 	priv = xzalloc(sizeof(*priv));
 
+	/* If we can't request I/O memory region, we'll assume parent did
+	 * it for us
+	 */
 	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores) && PTR_ERR(iores) == -EBUSY)
+		iores = dev_get_resource(dev, IORESOURCE_MEM, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
 	priv->mdio_regs = IOMEM(iores->start);
@@ -1214,11 +1219,27 @@ static void cpsw_gmii_sel_am335x(struct cpsw_slave *slave)
 	writel(reg, phy_sel_addr);
 }
 
-static int cpsw_probe_dt(struct cpsw_priv *priv)
+static void cpsw_add_slave(struct cpsw_slave *slave, struct device_node *child, int i)
+{
+	uint32_t phy_id[2] = {-1, -1};
+	int ret;
+
+	if (!of_find_node_by_name(child, "fixed-link")) {
+		ret = of_property_read_u32_array(child, "phy_id", phy_id, 2);
+		if (!ret)
+			dev_warn(slave->cpsw->dev, "phy_id is deprecated, use phy-handle\n");
+	}
+
+	slave->dev.device_node = child;
+	slave->phy_id = phy_id[1];
+	slave->phy_if = of_get_phy_mode(child);
+	slave->slave_num = i;
+}
+
+static int cpsw_legacy_probe_dt(struct cpsw_priv *priv)
 {
 	struct device_d *dev = priv->dev;
 	struct device_node *np = dev->device_node, *child;
-	struct device_node *physel;
 	int ret, i = 0;
 
 	ret = of_property_read_u32(np, "slaves", &priv->num_slaves);
@@ -1226,6 +1247,62 @@ static int cpsw_probe_dt(struct cpsw_priv *priv)
 		return ret;
 
 	priv->slaves = xzalloc(sizeof(struct cpsw_slave) * priv->num_slaves);
+
+	for_each_child_of_node(np, child) {
+		if (of_device_is_compatible(child, "ti,davinci_mdio")) {
+			ret = of_pinctrl_select_state_default(child);
+			if (ret)
+				return ret;
+		}
+
+		if (i < priv->num_slaves && !strncmp(child->name, "slave", 5)) {
+			cpsw_add_slave(&priv->slaves[i], child, i);
+			i++;
+		}
+	}
+
+	return 0;
+}
+
+static int cpsw_switch_probe_dt(struct cpsw_priv *priv)
+{
+	struct device_d *dev = priv->dev;
+	struct device_node *np = dev->device_node, *child;
+	struct device_node *ports = NULL;
+	int ret, i = 0;
+
+	for_each_child_of_node(np, child) {
+		if (of_device_is_compatible(child, "ti,davinci_mdio")) {
+			ret = of_pinctrl_select_state_default(child);
+			if (ret)
+				return ret;
+		}
+
+		if (!strcmp(child->name, "ethernet-ports")) {
+			ports = child;
+			priv->num_slaves = of_get_available_child_count(ports);
+		}
+	}
+
+	if (!ports)
+		return -EINVAL;
+
+	priv->slaves = xzalloc(sizeof(struct cpsw_slave) * priv->num_slaves);
+
+	for_each_available_child_of_node(ports, child) {
+		cpsw_add_slave(&priv->slaves[i], child, i);
+		i++;
+	}
+
+	return 0;
+}
+
+static int cpsw_probe_dt(struct cpsw_priv *priv)
+{
+	struct device_d *dev = priv->dev;
+	struct device_node *physel;
+	int (*probe_slaves_dt)(struct cpsw_priv *priv);
+	int ret, i = 0;
 
 	physel = of_find_compatible_node(NULL, NULL, "ti,am3352-phy-gmii-sel");
 	if (!physel) {
@@ -1236,37 +1313,16 @@ static int cpsw_probe_dt(struct cpsw_priv *priv)
 	if (ret)
 		return ret;
 
-	for_each_child_of_node(np, child) {
-		if (of_device_is_compatible(child, "ti,davinci_mdio")) {
-			ret = of_pinctrl_select_state_default(child);
-			if (ret)
-				return ret;
-		}
+	probe_slaves_dt = device_get_match_data(dev);
+	if (!probe_slaves_dt)
+		return -EINVAL;
 
-		if (i < priv->num_slaves && !strncmp(child->name, "slave", 5)) {
-			struct cpsw_slave *slave = &priv->slaves[i];
-			uint32_t phy_id[2] = {-1, -1};
+	ret = probe_slaves_dt(priv);
+	if (ret < 0)
+		return ret;
 
-			if (!of_find_node_by_name(child, "fixed-link")) {
-				ret = of_property_read_u32_array(child, "phy_id", phy_id, 2);
-				if (!ret)
-					dev_warn(dev, "phy_id is deprecated, use phy-handle\n");
-			}
-
-			slave->dev.device_node = child;
-			slave->phy_id = phy_id[1];
-			slave->phy_if = of_get_phy_mode(child);
-			slave->slave_num = i;
-
-			i++;
-		}
-	}
-
-	for (i = 0; i < priv->num_slaves; i++) {
-		struct cpsw_slave *slave = &priv->slaves[i];
-
-		cpsw_gmii_sel_am335x(slave);
-	}
+	for (i = 0; i < priv->num_slaves; i++)
+		cpsw_gmii_sel_am335x(&priv->slaves[i]);
 
 	return 0;
 }
@@ -1282,14 +1338,14 @@ static int cpsw_probe(struct device_d *dev)
 
 	dev_dbg(dev, "* %s\n", __func__);
 
-	ret = of_platform_populate(dev->device_node, NULL, dev);
-	if (ret)
-		return ret;
-
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
 	regs = IOMEM(iores->start);
+
+	ret = of_platform_populate(dev->device_node, NULL, dev);
+	if (ret)
+		return ret;
 
 	priv = xzalloc(sizeof(*priv));
 	priv->dev = dev;
@@ -1371,7 +1427,9 @@ static void cpsw_remove(struct device_d *dev)
 
 static __maybe_unused struct of_device_id cpsw_dt_ids[] = {
 	{
-		.compatible = "ti,cpsw",
+		.compatible = "ti,cpsw", .data = cpsw_legacy_probe_dt
+	}, {
+		.compatible = "ti,cpsw-switch", .data = cpsw_switch_probe_dt
 	}, {
 		/* sentinel */
 	}

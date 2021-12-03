@@ -122,7 +122,7 @@ unsigned long handle_trap(struct pt_regs *regs)
 		goto skip;
 
 	if (regs->cause == 2) { /* illegal instruction */
-		switch(*(unsigned long *)regs->epc) {
+		switch(*(u32 *)regs->epc) {
 		case 0x0000100f: /* fence.i */
 			goto skip;
 		default:

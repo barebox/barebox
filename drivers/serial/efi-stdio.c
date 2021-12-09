@@ -219,9 +219,6 @@ static int efi_process_key(struct efi_console_priv *priv, const char *inp)
 
 	c = *inp;
 
-	if (c != 27)
-		return 0;
-
 	inp++;
 
 	if (*inp == '[')

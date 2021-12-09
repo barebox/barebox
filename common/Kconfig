@@ -1505,6 +1505,13 @@ config PBL_BREAK
 	  If enabled, barebox will be compiled with BKPT instruction
 	  on early pbl init. This option should be used only with JTAG debugger!
 
+config PRINTF_FULL
+	bool "Support all extended printf format specifiers"
+	help
+	  Adds support for lesser used format specifiers like UUIDs and
+	  hex strings. Code requiring them should select it directly,
+	  so this is mainly for debugging. If unsure, say no.
+
 source "lib/Kconfig.ubsan"
 source "lib/kasan/Kconfig"
 

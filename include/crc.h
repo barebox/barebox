@@ -36,6 +36,7 @@ static inline u16 crc_itu_t_byte(u16 crc, const u8 data)
 #endif
 
 uint32_t crc32(uint32_t, const void *, unsigned int);
+uint32_t crc32_be(uint32_t, const void *, unsigned int);
 uint32_t crc32_no_comp(uint32_t, const void *, unsigned int);
 int file_crc(char *filename, unsigned long start, unsigned long size,
 	     unsigned long *crc, unsigned long *total);

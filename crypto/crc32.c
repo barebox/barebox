@@ -187,6 +187,18 @@ STATIC uint32_t crc32_no_comp(uint32_t crc, const void *_buf, unsigned int len)
     return crc;
 }
 
+STATIC uint32_t crc32_be(uint32_t crc, const void *_buf, unsigned int len)
+{
+	const unsigned char *buf = _buf;
+	int i;
+	while (len--) {
+		crc ^= *buf++ << 24;
+		for (i = 0; i < 8; i++)
+			crc = (crc << 1) ^ ((crc & 0x80000000) ? 0x04c11db7 : 0);
+	}
+	return crc;
+}
+
 STATIC int file_crc(char *filename, ulong start, ulong size, ulong *crc,
 		    ulong *total)
 {

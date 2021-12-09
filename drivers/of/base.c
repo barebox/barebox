@@ -1968,13 +1968,14 @@ int of_property_read_string_helper(const struct device_node *np,
 	return i <= 0 ? -ENODATA : i;
 }
 
-static void __of_print_nodes(struct device_node *node, int indent, const char *prefix)
+static int __of_print_nodes(struct device_node *node, int indent, const char *prefix)
 {
 	struct device_node *n;
 	struct property *p;
+	int ret;
 
 	if (!node)
-		return;
+		return 0;
 
 	if (!prefix)
 		prefix = "";
@@ -1990,11 +1991,17 @@ static void __of_print_nodes(struct device_node *node, int indent, const char *p
 		printf(";\n");
 	}
 
+	if (ctrlc())
+		return -EINTR;
+
 	list_for_each_entry(n, &node->children, parent_list) {
-		__of_print_nodes(n, indent + 1, prefix);
+		ret = __of_print_nodes(n, indent + 1, prefix);
+		if (ret)
+			return ret;
 	}
 
 	printf("%s%*s};\n", prefix, indent * 8, "");
+	return 0;
 }
 
 void of_print_nodes(struct device_node *node, int indent)

@@ -784,6 +784,21 @@ u8 device_path_to_type(struct efi_device_path *dev_path)
 	return device_path_type(dev_path);
 }
 
+u8 device_path_to_subtype(struct efi_device_path *dev_path)
+{
+	struct efi_device_path *dev_path_next;
+
+	dev_path = unpack_device_path(dev_path);
+	dev_path_next = next_device_path_node(dev_path);
+
+	while (!is_device_path_end(dev_path_next)) {
+		dev_path = dev_path_next;
+		dev_path_next = next_device_path_node(dev_path);
+	}
+
+	return dev_path->sub_type;
+}
+
 char *device_path_to_partuuid(struct efi_device_path *dev_path)
 {
 	struct efi_device_path *dev_path_node;

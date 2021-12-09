@@ -18,6 +18,7 @@
 #include <efi.h>
 #include <efi/efi-payload.h>
 #include <efi/efi-device.h>
+#include <efi/device-path.h>
 #include <linux/err.h>
 
 static int efi_locate_handle(enum efi_locate_search_type search_type,
@@ -180,12 +181,23 @@ static struct efi_device *efi_add_device(efi_handle_t *handle, efi_guid_t **guid
 	return efidev;
 }
 
-
 static int efi_register_device(struct efi_device *efidev)
 {
 	char *dev_path_str;
 	struct efi_device *parent;
 	int ret;
+
+	/*
+	 * Some UEFI instances create IPv4 and IPv6 messaging devices as children
+	 * of the main MAC messaging device. Don't register these in barebox as
+	 * they would show up as duplicate ethernet devices.
+	 */
+	if (device_path_to_type(efidev->devpath) == MESSAGING_DEVICE_PATH) {
+		u8 subtype = device_path_to_subtype(efidev->devpath);
+
+		if (subtype == MSG_IPv4_DP || subtype == MSG_IPv6_DP)
+			return -EINVAL;
+	}
 
 	if (efi_find_device(efidev->handle))
 		return -EEXIST;

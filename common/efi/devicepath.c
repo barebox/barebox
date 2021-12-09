@@ -470,9 +470,10 @@ device_path_from_handle(efi_handle_t Handle)
 }
 
 static struct efi_device_path *
-unpack_device_path(struct efi_device_path *dev_path)
+unpack_device_path(const struct efi_device_path *dev_path)
 {
-	struct efi_device_path *Src, *Dest, *new_path;
+	const struct efi_device_path *Src;
+	struct efi_device_path *Dest, *new_path;
 	unsigned long Size;
 
 	/* Walk device path and round sizes to valid boundaries */

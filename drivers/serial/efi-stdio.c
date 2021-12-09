@@ -213,7 +213,7 @@ static int efi_process_square_bracket(struct efi_console_priv *priv, const char 
 	return 8;
 }
 
-static int efi_process_key(struct efi_console_priv *priv, const char *inp)
+static int efi_process_escape(struct efi_console_priv *priv, const char *inp)
 {
 	char c;
 
@@ -239,7 +239,7 @@ static int efi_console_puts(struct console_device *cdev, const char *s,
 			priv->out->output_string(priv->out,
 					priv->efi_console_buffer);
 			n = 0;
-			s += efi_process_key(priv, s);
+			s += efi_process_escape(priv, s);
 			continue;
 		}
 

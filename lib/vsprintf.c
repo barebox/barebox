@@ -321,6 +321,52 @@ char *uuid_string(char *buf, const char *end, const u8 *addr, int field_width,
 }
 
 static noinline_for_stack
+char *hex_string(char *buf, const char *end, const u8 *addr, int field_width,
+		 int precision, int flags, const char *fmt)
+{
+	char separator;
+	int i, len;
+
+	if (field_width == 0)
+		/* nothing to print */
+		return buf;
+
+	switch (fmt[1]) {
+	case 'C':
+		separator = ':';
+		break;
+	case 'D':
+		separator = '-';
+		break;
+	case 'N':
+		separator = 0;
+		break;
+	default:
+		separator = ' ';
+		break;
+	}
+
+	len = field_width > 0 ? field_width : 1;
+
+	for (i = 0; i < len; ++i) {
+		if (buf < end)
+			*buf = hex_asc_hi(addr[i]);
+		++buf;
+		if (buf < end)
+			*buf = hex_asc_lo(addr[i]);
+		++buf;
+
+		if (separator && i != len - 1) {
+			if (buf < end)
+				*buf = separator;
+			++buf;
+		}
+	}
+
+	return buf;
+}
+
+static noinline_for_stack
 char *address_val(char *buf, const char *end, const void *addr,
 		  int field_width, int precision, int flags, const char *fmt)
 {
@@ -406,6 +452,10 @@ static char *pointer(const char *fmt, char *buf, const char *end, const void *pt
 		break;
 	case 'e':
 		return error_string(buf, end, ptr, field_width, precision, flags, fmt);
+	case 'h':
+		if (IS_ENABLED(CONFIG_PRINTF_HEXSTR))
+			return hex_string(buf, end, ptr, field_width, precision, flags, fmt);
+		break;
 	}
 
 	return raw_pointer(buf, end, ptr, field_width, precision, flags);

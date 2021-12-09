@@ -166,6 +166,9 @@ config PRINTF_UUID
 config PRINTF_WCHAR
 	bool
 
+config PRINTF_HEXSTR
+	bool
+
 config GENERIC_LIB_ASHLDI3
 	bool
 

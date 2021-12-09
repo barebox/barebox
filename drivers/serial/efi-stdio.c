@@ -154,27 +154,27 @@ static int efi_process_square_bracket(struct efi_console_priv *priv, const char 
 		/* home */
 	case 'F':
 		/* end */
-		return 3;
+		return 2;
 	case 'K':
 		clear_to_eol(priv);
-		return 3;
+		return 2;
 	}
 
 	if (*inp == '2' && *(inp + 1) == 'J') {
 		priv->out->clear_screen(priv->out);
-		return 4;
+		return 3;
 	}
 
 	if (*inp == '0' && *(inp + 1) == 'm') {
 		priv->out->set_attribute(priv->out,
 				EFI_TEXT_ATTR(EFI_WHITE, EFI_BLACK));
-		return 4;
+		return 3;
 	}
 
 	if (*inp == '7' && *(inp + 1) == 'm') {
 		priv->out->set_attribute(priv->out,
 				EFI_TEXT_ATTR(EFI_BLACK, priv->current_color));
-		return 4;
+		return 3;
 	}
 
 	if (*inp == '1' &&
@@ -198,7 +198,7 @@ static int efi_process_square_bracket(struct efi_console_priv *priv, const char 
 
 		priv->out->set_attribute(priv->out,
 				EFI_TEXT_ATTR(color, EFI_BLACK));
-		return 7;
+		return 6;
 	}
 
 	y = simple_strtoul(inp, &endp, 10);
@@ -206,11 +206,11 @@ static int efi_process_square_bracket(struct efi_console_priv *priv, const char 
 		x = simple_strtoul(endp + 1, &endp, 10);
 		if (*endp == 'H') {
 			priv->out->set_cursor_position(priv->out, x - 1, y - 1);
-			return endp - inp + 3;
+			return endp - inp + 2;
 		}
 	}
 
-	return 8;
+	return 7;
 }
 
 static int efi_process_escape(struct efi_console_priv *priv, const char *inp)
@@ -222,7 +222,7 @@ static int efi_process_escape(struct efi_console_priv *priv, const char *inp)
 	inp++;
 
 	if (*inp == '[')
-		return efi_process_square_bracket(priv, inp);
+		return efi_process_square_bracket(priv, inp) + 1;
 
 	return 1;
 }

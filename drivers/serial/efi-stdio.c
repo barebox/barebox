@@ -138,10 +138,17 @@ static int efi_process_square_bracket(struct efi_console_priv *priv, const char 
 {
 	int x, y;
 	char *endp;
+	int retlen;
+
+	endp = strpbrk(inp, "ABCDEFGHJKmr");
+	if (!endp)
+		return 0;
+
+	retlen = endp - inp + 1;
 
 	inp++;
 
-	switch (*inp) {
+	switch (*endp) {
 	case 'A':
 		/* Cursor up */
 	case 'B':
@@ -154,27 +161,27 @@ static int efi_process_square_bracket(struct efi_console_priv *priv, const char 
 		/* home */
 	case 'F':
 		/* end */
-		return 2;
+		return retlen;
 	case 'K':
 		clear_to_eol(priv);
-		return 2;
+		return retlen;
 	}
 
 	if (*inp == '2' && *(inp + 1) == 'J') {
 		priv->out->clear_screen(priv->out);
-		return 3;
+		return retlen;
 	}
 
 	if (*inp == '0' && *(inp + 1) == 'm') {
 		priv->out->set_attribute(priv->out,
 				EFI_TEXT_ATTR(EFI_WHITE, EFI_BLACK));
-		return 3;
+		return retlen;
 	}
 
 	if (*inp == '7' && *(inp + 1) == 'm') {
 		priv->out->set_attribute(priv->out,
 				EFI_TEXT_ATTR(EFI_BLACK, priv->current_color));
-		return 3;
+		return retlen;
 	}
 
 	if (*inp == '1' &&
@@ -198,7 +205,7 @@ static int efi_process_square_bracket(struct efi_console_priv *priv, const char 
 
 		priv->out->set_attribute(priv->out,
 				EFI_TEXT_ATTR(color, EFI_BLACK));
-		return 6;
+		return retlen;
 	}
 
 	y = simple_strtoul(inp, &endp, 10);
@@ -206,11 +213,11 @@ static int efi_process_square_bracket(struct efi_console_priv *priv, const char 
 		x = simple_strtoul(endp + 1, &endp, 10);
 		if (*endp == 'H') {
 			priv->out->set_cursor_position(priv->out, x - 1, y - 1);
-			return endp - inp + 2;
+			return retlen;
 		}
 	}
 
-	return 7;
+	return retlen;
 }
 
 static int efi_process_escape(struct efi_console_priv *priv, const char *inp)

@@ -2011,12 +2011,7 @@ void of_print_nodes(struct device_node *node, int indent)
 
 static void __of_print_property(struct property *p, int indent)
 {
-	int i;
-
-	for (i = 0; i < indent; i++)
-		printf("\t");
-
-	printf("%s", p->name);
+	printf("%*s%s", indent * 8, "", p->name);
 	if (p->length) {
 		printf(" = ");
 		of_print_property(of_property_get_value(p), p->length);
@@ -2034,17 +2029,14 @@ void of_print_properties(struct device_node *node)
 
 static int __of_print_parents(struct device_node *node)
 {
-	int indent, i;
+	int indent;
 
 	if (!node->parent)
 		return 0;
 
 	indent = __of_print_parents(node->parent);
 
-	for (i = 0; i < indent; i++)
-		printf("\t");
-
-	printf("%s {\n", node->name);
+	printf("%*s%s {\n", indent * 8, "", node->name);
 
 	return indent + 1;
 }
@@ -2124,14 +2116,14 @@ void of_diff(struct device_node *a, struct device_node *b, int indent)
 			of_diff(ca, cb, indent + 1);
 		} else {
 			of_print_parents(a, &printed);
-			__of_print_nodes(ca, indent, "-");
+			__of_print_nodes(ca, indent, "- ");
 		}
 	}
 
 	for_each_child_of_node(b, cb) {
 		if (!of_get_child_by_name(a, cb->name)) {
 			of_print_parents(a, &printed);
-			__of_print_nodes(cb, indent, "+");
+			__of_print_nodes(cb, indent, "+ ");
 		}
 	}
 

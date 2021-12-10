@@ -14,6 +14,7 @@
 #include <readkey.h>
 #include <linux/ctype.h>
 #include <efi/efi-payload.h>
+#include <kfifo.h>
 #include <efi/efi-device.h>
 #include <efi/efi-stdio.h>
 
@@ -22,9 +23,10 @@ struct efi_console_priv {
 	struct efi_simple_input_interface *in;
 	struct efi_simple_text_input_ex_protocol *inex;
 	struct console_device cdev;
-	int lastkey;
 	u16 efi_console_buffer[CONFIG_CBSIZE + 1];
 	int pos;
+
+	struct kfifo *inputbuffer;
 
 	unsigned long columns, rows;
 
@@ -317,14 +319,14 @@ static int efi_console_tstc(struct console_device *cdev)
 	struct efi_console_priv *priv = to_efi(cdev);
 	int key;
 
-	if (priv->lastkey > 0)
+	if (kfifo_len(priv->inputbuffer))
 		return 1;
 
 	key = efi_read_key(priv, 0);
 	if (key < 0)
 		return 0;
 
-	priv->lastkey = key;
+	kfifo_putc(priv->inputbuffer, key);
 
 	return 1;
 }
@@ -332,13 +334,10 @@ static int efi_console_tstc(struct console_device *cdev)
 static int efi_console_getc(struct console_device *cdev)
 {
 	struct efi_console_priv *priv = to_efi(cdev);
-	int key;
+	unsigned char c;
 
-	if (priv->lastkey > 0) {
-		key = priv->lastkey;
-		priv->lastkey = -1;
-		return key;
-	}
+	if (!kfifo_getc(priv->inputbuffer, &c))
+		return c;
 
 	return efi_read_key(priv, 1);
 }
@@ -383,6 +382,10 @@ static int efi_console_probe(struct device_d *dev)
 	priv->out = efi_sys_table->con_out;
 	priv->in = efi_sys_table->con_in;
 
+	priv->inputbuffer = kfifo_alloc(128);
+	if (!priv->inputbuffer)
+		return -ENOMEM;
+
 	efiret = BS->open_protocol((void *)efi_sys_table->con_in_handle,
 			     &inex_guid,
 			     (void **)&inex,
@@ -412,8 +415,6 @@ static int efi_console_probe(struct device_d *dev)
 	cdev->getc = efi_console_getc;
 	cdev->putc = efi_console_putc;
 	cdev->puts = efi_console_puts;
-
-	priv->lastkey = -1;
 
 	return console_register(cdev);
 }

@@ -165,10 +165,11 @@ static void set_fg_bg_colors(struct efi_console_priv *priv)
 static int efi_process_square_bracket(struct efi_console_priv *priv, const char *inp)
 {
 	char *endp;
-	int retlen;
+	int n, retlen;
 	int arg0 = -1, arg1 = -1, arg2 = -1;
+	char *buf;
 
-	endp = strpbrk(inp, "ABCDEFGHJKmr");
+	endp = strpbrk(inp, "ABCDEFGHJKmrn");
 	if (!endp)
 		return 0;
 
@@ -232,6 +233,15 @@ static int efi_process_square_bracket(struct efi_console_priv *priv, const char 
 			break;
 		}
 		break;
+	case 'n':
+		switch (arg0) {
+		case 6:
+			n = asprintf(&buf, "\033[%d;%dR", priv->out->mode->cursor_row + 1,
+				priv->out->mode->cursor_column + 1);
+			kfifo_put(priv->inputbuffer, buf, n);
+			free(buf);
+			break;
+		}
 	}
 
 	return retlen;

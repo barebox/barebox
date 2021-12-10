@@ -119,17 +119,6 @@ static int efi_read_key(struct efi_console_priv *priv, bool wait)
 	return xlate_keypress(&kd.key);
 }
 
-static void efi_console_putc(struct console_device *cdev, char c)
-{
-	uint16_t str[2] = {};
-	struct efi_console_priv *priv = to_efi(cdev);
-	struct efi_simple_text_output_protocol *con_out = priv->out;
-
-	str[0] = c;
-
-	con_out->output_string(con_out, str);
-}
-
 static void clear_to_eol(struct efi_console_priv *priv)
 {
 	int pos = priv->out->mode->cursor_column;
@@ -309,6 +298,11 @@ static int efi_console_puts(struct console_device *cdev, const char *s,
 	efi_console_flush(priv);
 
 	return nbytes;
+}
+
+static void efi_console_putc(struct console_device *cdev, char c)
+{
+	efi_console_puts(cdev, &c, 1);
 }
 
 static int efi_console_tstc(struct console_device *cdev)

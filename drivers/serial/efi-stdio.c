@@ -27,7 +27,9 @@ struct efi_console_priv {
 
 	unsigned long columns, rows;
 
-	int current_color;
+	int fg;
+	int bg;
+	bool inverse;
 	s16 *blank_line;
 };
 
@@ -134,11 +136,45 @@ static void clear_to_eol(struct efi_console_priv *priv)
 	priv->out->output_string(priv->out, priv->blank_line + pos);
 }
 
+static int ansi_to_efi_color(int ansi)
+{
+	switch (ansi) {
+	case 30:
+		return EFI_BLACK;
+	case 31:
+		return EFI_RED;
+	case 32:
+		return EFI_GREEN;
+	case 33:
+		return EFI_YELLOW;
+	case 34:
+		return EFI_BLUE;
+	case 35:
+		return EFI_MAGENTA;
+	case 36:
+		return EFI_CYAN;
+	case 37:
+		return EFI_WHITE;
+	case 39:
+		return EFI_LIGHTGRAY;
+	}
+
+	return -1;
+}
+
+static void set_fg_bg_colors(struct efi_console_priv *priv)
+{
+	int fg = priv->inverse ? priv->bg : priv->fg;
+	int bg = priv->inverse ? priv->fg : priv->bg;
+
+	priv->out->set_attribute(priv->out, EFI_TEXT_ATTR(fg , bg));
+}
+
 static int efi_process_square_bracket(struct efi_console_priv *priv, const char *inp)
 {
-	int x, y;
 	char *endp;
 	int retlen;
+	int arg0 = -1, arg1 = -1, arg2 = -1;
 
 	endp = strpbrk(inp, "ABCDEFGHJKmr");
 	if (!endp)
@@ -148,73 +184,59 @@ static int efi_process_square_bracket(struct efi_console_priv *priv, const char 
 
 	inp++;
 
+	if (isdigit(*inp)) {
+		char *e;
+		arg0 = simple_strtoul(inp, &e, 10);
+		if (*e == ';') {
+			arg1 = simple_strtoul(e + 1, &e, 10);
+			if (*e == ';')
+				arg2 = simple_strtoul(e + 1, &e, 10);
+		}
+	}
+
 	switch (*endp) {
-	case 'A':
-		/* Cursor up */
-	case 'B':
-		/* Cursor down */
-	case 'C':
-		/* Cursor right */
-	case 'D':
-		/* Cursor left */
-	case 'H':
-		/* home */
-	case 'F':
-		/* end */
-		return retlen;
 	case 'K':
-		clear_to_eol(priv);
-		return retlen;
-	}
-
-	if (*inp == '2' && *(inp + 1) == 'J') {
-		priv->out->clear_screen(priv->out);
-		return retlen;
-	}
-
-	if (*inp == '0' && *(inp + 1) == 'm') {
-		priv->out->set_attribute(priv->out,
-				EFI_TEXT_ATTR(EFI_WHITE, EFI_BLACK));
-		return retlen;
-	}
-
-	if (*inp == '7' && *(inp + 1) == 'm') {
-		priv->out->set_attribute(priv->out,
-				EFI_TEXT_ATTR(EFI_BLACK, priv->current_color));
-		return retlen;
-	}
-
-	if (*inp == '1' &&
-			*(inp + 1) == ';' &&
-			*(inp + 2) == '3' &&
-			*(inp + 3) &&
-			*(inp + 4) == 'm') {
-		int color;
-		switch (*(inp + 3)) {
-		case '1': color = EFI_RED; break;
-		case '4': color = EFI_BLUE; break;
-		case '2': color = EFI_GREEN; break;
-		case '6': color = EFI_CYAN; break;
-		case '3': color = EFI_YELLOW; break;
-		case '5': color = EFI_MAGENTA; break;
-		case '7': color = EFI_WHITE; break;
-		default: color = EFI_WHITE; break;
+		switch (arg0) {
+		case 0:
+		case -1:
+			clear_to_eol(priv);
+			break;
 		}
-
-		priv->current_color = color;
-
-		priv->out->set_attribute(priv->out,
-				EFI_TEXT_ATTR(color, EFI_BLACK));
-		return retlen;
-	}
-
-	y = simple_strtoul(inp, &endp, 10);
-	if (*endp == ';') {
-		x = simple_strtoul(endp + 1, &endp, 10);
-		if (*endp == 'H') {
-			priv->out->set_cursor_position(priv->out, x - 1, y - 1);
-			return retlen;
+		break;
+	case 'J':
+		switch (arg0) {
+		case 2:
+			priv->out->clear_screen(priv->out);
+			break;
 		}
+		break;
+	case 'H':
+		if (arg0 >= 0 && arg1 >= 0)
+			priv->out->set_cursor_position(priv->out, arg1 - 1, arg0 - 1);
+		break;
+	case 'm':
+		switch (arg0) {
+		case 0:
+			priv->inverse = false;
+			priv->fg = EFI_LIGHTGRAY;
+			priv->bg = EFI_BLACK;
+			set_fg_bg_colors(priv);
+			break;
+		case 7:
+			priv->inverse = true;
+			set_fg_bg_colors(priv);
+			break;
+		case 1:
+			priv->fg = ansi_to_efi_color(arg1);
+			if (priv->fg < 0)
+				priv->fg = EFI_LIGHTGRAY;
+			priv->bg = ansi_to_efi_color(arg2);
+			if (priv->bg < 0)
+				priv->bg = EFI_BLACK;
+			set_fg_bg_colors(priv);
+			break;
+		}
+		break;
 	}
 
 	return retlen;
@@ -347,7 +369,8 @@ static int efi_console_probe(struct device_d *dev)
 		dev_dbg(dev, "Using simple_text_input_ex_protocol\n");
 	}
 
-	priv->current_color = EFI_WHITE;
+	priv->fg = EFI_LIGHTGRAY;
+	priv->bg = EFI_BLACK;
 
 	efi_set_mode(priv);
 

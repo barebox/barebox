@@ -279,7 +279,7 @@ static int efi_console_puts(struct console_device *cdev, const char *s,
 			    size_t nbytes)
 {
 	struct efi_console_priv *priv = to_efi(cdev);
-	int pos = 0;
+	int n, pos = 0;
 
 	while (pos < nbytes) {
 		switch (s[pos]) {
@@ -290,6 +290,13 @@ static int efi_console_puts(struct console_device *cdev, const char *s,
 		case '\n':
 			efi_console_add_char(priv, '\r');
 			efi_console_add_char(priv, '\n');
+			pos++;
+			break;
+		case '\t':
+			efi_console_flush(priv);
+			n = 8 - priv->out->mode->cursor_column % 8;
+			while (n--)
+				efi_console_add_char(priv, ' ');
 			pos++;
 			break;
 		default:

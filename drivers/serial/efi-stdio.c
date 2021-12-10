@@ -203,8 +203,11 @@ static int efi_process_square_bracket(struct efi_console_priv *priv, const char 
 		}
 		break;
 	case 'H':
-		if (arg0 >= 0 && arg1 >= 0)
-			priv->out->set_cursor_position(priv->out, arg1 - 1, arg0 - 1);
+		if (arg0 >= 0 && arg1 >= 0) {
+			int row = min_t(int, arg0, priv->rows);
+			int col = min_t(int, arg1, priv->columns);
+			priv->out->set_cursor_position(priv->out, col - 1, row - 1);
+		}
 		break;
 	case 'm':
 		switch (arg0) {

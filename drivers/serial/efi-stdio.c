@@ -23,7 +23,8 @@ struct efi_console_priv {
 	struct efi_simple_text_input_ex_protocol *inex;
 	struct console_device cdev;
 	int lastkey;
-	u16 efi_console_buffer[CONFIG_CBSIZE];
+	u16 efi_console_buffer[CONFIG_CBSIZE + 1];
+	int pos;
 
 	unsigned long columns, rows;
 
@@ -256,34 +257,51 @@ static int efi_process_escape(struct efi_console_priv *priv, const char *inp)
 	return 1;
 }
 
+static void efi_console_add_char(struct efi_console_priv *priv, int c)
+{
+	if (priv->pos >= CONFIG_CBSIZE)
+		return;
+
+	priv->efi_console_buffer[priv->pos] = c;
+	priv->pos++;
+}
+
+static void efi_console_flush(struct efi_console_priv *priv)
+{
+	priv->efi_console_buffer[priv->pos] = 0;
+
+	priv->out->output_string(priv->out, priv->efi_console_buffer);
+
+	priv->pos = 0;
+}
+
 static int efi_console_puts(struct console_device *cdev, const char *s,
 			    size_t nbytes)
 {
 	struct efi_console_priv *priv = to_efi(cdev);
-	int n = 0;
+	int pos = 0;
 
-	while (nbytes--) {
-		if (*s == 27) {
-			priv->efi_console_buffer[n] = 0;
-			priv->out->output_string(priv->out,
-					priv->efi_console_buffer);
-			n = 0;
-			s += efi_process_escape(priv, s);
-			continue;
+	while (pos < nbytes) {
+		switch (s[pos]) {
+		case 27:
+			efi_console_flush(priv);
+			pos += efi_process_escape(priv, s + pos);
+			break;
+		case '\n':
+			efi_console_add_char(priv, '\r');
+			efi_console_add_char(priv, '\n');
+			pos++;
+			break;
+		default:
+			efi_console_add_char(priv, s[pos]);
+			pos++;
+			break;
 		}
-
-		if (*s == '\n')
-			priv->efi_console_buffer[n++] = '\r';
-		priv->efi_console_buffer[n] = *s;
-		s++;
-		n++;
 	}
 
-	priv->efi_console_buffer[n] = 0;
+	efi_console_flush(priv);
 
-	priv->out->output_string(priv->out, priv->efi_console_buffer);
-
-	return n;
+	return nbytes;
 }
 
 static int efi_console_tstc(struct console_device *cdev)

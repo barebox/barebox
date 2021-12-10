@@ -610,7 +610,9 @@ static int do_edit(int argc, char *argv[])
 				argv[1]);
 	}
 
-	printf("\x1b[2;%dr", screenheight);
+	if (smartscroll)
+		printf("\x1b[2;%dr", screenheight);
+
 	pos(0, 0);
 
 	screenheight--; /* status line */

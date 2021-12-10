@@ -288,6 +288,13 @@ static int efi_console_puts(struct console_device *cdev, const char *s,
 				efi_console_add_char(priv, ' ');
 			pos++;
 			break;
+		case '\b':
+			n = priv->out->mode->cursor_column;
+			if (n > 0)
+				priv->out->set_cursor_position(priv->out,
+					n - 1, priv->out->mode->cursor_row);
+			pos++;
+			break;
 		default:
 			efi_console_add_char(priv, s[pos]);
 			pos++;

@@ -522,6 +522,25 @@ static int read_modal_key(bool is_modal)
 	return -EAGAIN;
 }
 
+static bool is_efi_console_active(void)
+{
+	struct console_device *cdev;
+
+	if (!IS_ENABLED(CONFIG_DRIVER_SERIAL_EFI_STDIO))
+		return false;
+
+	for_each_console(cdev) {
+		if (!(cdev->f_active & CONSOLE_STDIN))
+			continue;
+		if (!(cdev->f_active & CONSOLE_STDOUT))
+			continue;
+		if (!strcmp(dev_name(cdev->dev), "efi-stdio"))
+			return true;
+	}
+
+	return false;
+}
+
 static int do_edit(int argc, char *argv[])
 {
 	bool is_vi = false;
@@ -539,16 +558,7 @@ static int do_edit(int argc, char *argv[])
 		return 1;
 
 	screenwidth = 80;
-
-	/*
-	 * The EFI simple text output protocol wraps to the next line and scrolls
-	 * down when we write to the right bottom screen position. Reduce the number
-	 * of rows by one to work around this.
-	 */
-	if (IS_ENABLED(CONFIG_EFI_BOOTUP))
-		screenheight = 24;
-	else
-		screenheight = 25;
+	screenheight = 25;
 
 	/* check if we are not called as "edit" */
 	if (*argv[0] != 'e') {
@@ -558,6 +568,22 @@ static int do_edit(int argc, char *argv[])
 		/* check if we are called as "vi" */
 		if (*argv[0] == 'v')
 			is_vi = true;
+	}
+
+	if (is_efi_console_active()) {
+		/*
+		 * The EFI simple text output protocol wraps to the next line and
+		 * scrolls down when we write to the right bottom screen position.
+		 * Reduce the number of rows by one to work around this.
+		 */
+		screenheight--;
+
+		/*
+		 * Our console driver for the EFI simple text output protocol does
+		 * not implement the "\e[1S" sequence we use for scrolling the
+		 * screen.
+		 */
+		smartscroll = 0;
 	}
 
 	cursx  = 0;

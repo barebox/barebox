@@ -4,6 +4,7 @@
 
 #include <linux/list.h>
 #include <printk.h>
+#include <stdarg.h>
 
 #define MSG_EMERG      0    /* system is unusable */
 #define MSG_ALERT      1    /* action must be taken immediately */

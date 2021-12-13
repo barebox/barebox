@@ -34,6 +34,11 @@ struct efi_console_priv {
 	int bg;
 	bool inverse;
 	s16 *blank_line;
+
+	struct param_d *param_mode;
+	const char **mode_names;
+	int *mode_num;
+	unsigned int var_mode;
 };
 
 static inline struct efi_console_priv *to_efi(struct console_device *cdev)
@@ -366,29 +371,45 @@ static int efi_console_getc(struct console_device *cdev)
 	return efi_read_key(priv, 1);
 }
 
+static int efi_console_set_mode(struct param_d *param, void *p)
+{
+	struct efi_console_priv *priv = p;
+
+	priv->out->set_mode(priv->out, priv->mode_num[priv->var_mode]);
+
+	priv->out->query_mode(priv->out, priv->out->mode->mode,
+			      &priv->columns, &priv->rows);
+	return 0;
+}
+
 static void efi_set_mode(struct efi_console_priv *priv)
 {
-#if 0
 	int i;
-	unsigned long rows, columns, best = 0, mode = 0;
+	unsigned long rows, columns;
+	int n = 0;
 	efi_status_t efiret;
 
+	priv->mode_names = xzalloc(priv->out->mode->max_mode * sizeof(*priv->mode_names));
+	priv->mode_num = xzalloc(priv->out->mode->max_mode * sizeof(*priv->mode_num));
+
+	priv->out->query_mode(priv->out, priv->out->mode->mode, &priv->columns, &priv->rows);
+
 	for (i = 0; i < priv->out->mode->max_mode; i++) {
-		priv->out->query_mode(priv->out, i, &columns, &rows);
-		printf("%d: %ld %ld\n", i, columns, rows);
-		if (rows * columns > best) {
-			best = rows * columns;
-			mode = i;
-		}
+		efiret = priv->out->query_mode(priv->out, i, &columns, &rows);
+		if (EFI_ERROR(efiret))
+			continue;
+
+		if (columns == priv->columns && rows == priv->rows)
+			priv->var_mode = n;
+
+		priv->mode_names[n] = basprintf("%ldx%ld", columns, rows);
+		priv->mode_num[n] = i;
+		n++;
 	}
 
-	/*
-	 * Setting the mode doesn't work as expected. set_mode succeeds, but
-	 * the graphics resolution is not changed.
-	 */
-	priv->out->set_mode(priv->out, mode);
-#endif
-	priv->out->query_mode(priv->out, priv->out->mode->mode, &priv->columns, &priv->rows);
+	priv->param_mode = dev_add_param_enum(&priv->cdev.class_dev, "mode",
+					efi_console_set_mode, NULL, &priv->var_mode,
+				       priv->mode_names, n, priv);
 }
 
 static int efi_console_probe(struct device_d *dev)
@@ -398,8 +419,7 @@ static int efi_console_probe(struct device_d *dev)
 	struct console_device *cdev;
 	struct efi_console_priv *priv;
 	efi_status_t efiret;
-
-	int i;
+	int i, ret;
 
 	priv = xzalloc(sizeof(*priv));
 
@@ -425,8 +445,6 @@ static int efi_console_probe(struct device_d *dev)
 	priv->fg = EFI_LIGHTGRAY;
 	priv->bg = EFI_BLACK;
 
-	efi_set_mode(priv);
-
 	priv->out->enable_cursor(priv->out, 1);
 
 	priv->blank_line = xzalloc((priv->columns + 1) * sizeof(s16));
@@ -440,7 +458,13 @@ static int efi_console_probe(struct device_d *dev)
 	cdev->putc = efi_console_putc;
 	cdev->puts = efi_console_puts;
 
-	return console_register(cdev);
+	ret = console_register(cdev);
+	if (ret)
+		return ret;
+
+	efi_set_mode(priv);
+
+	return 0;
 }
 
 static struct driver_d efi_console_driver = {

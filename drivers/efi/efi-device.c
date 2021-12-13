@@ -466,6 +466,34 @@ static int efi_init_devices(void)
 }
 core_initcall(efi_init_devices);
 
+void efi_pause_devices(void)
+{
+	struct device_d *dev;
+
+	bus_for_each_device(&efi_bus, dev) {
+		struct driver_d *drv = dev->driver;
+		struct efi_device *efidev = to_efi_device(dev);
+		struct efi_driver *efidrv = to_efi_driver(drv);
+
+		if (efidrv->dev_pause)
+			efidrv->dev_pause(efidev);
+	}
+}
+
+void efi_continue_devices(void)
+{
+	struct device_d *dev;
+
+	bus_for_each_device(&efi_bus, dev) {
+		struct driver_d *drv = dev->driver;
+		struct efi_device *efidev = to_efi_device(dev);
+		struct efi_driver *efidrv = to_efi_driver(drv);
+
+		if (efidrv->dev_continue)
+			efidrv->dev_continue(efidev);
+	}
+}
+
 static void efi_devpath(efi_handle_t handle)
 {
 	efi_status_t efiret;

@@ -139,9 +139,13 @@ static int efi_execute_image(const char *file)
 		shutdown_barebox();
 	}
 
+	efi_pause_devices();
+
 	efiret = BS->start_image(handle, NULL, NULL);
 	if (EFI_ERROR(efiret))
 		pr_err("failed to StartImage: %s\n", efi_strerror(efiret));
+
+	efi_continue_devices();
 
 	if (!is_driver)
 		BS->unload_image(handle);

@@ -169,7 +169,7 @@ static int efi_process_square_bracket(struct efi_console_priv *priv, const char 
 	int arg0 = -1, arg1 = -1, arg2 = -1;
 	char *buf;
 
-	endp = strpbrk(inp, "ABCDEFGHJKmrn");
+	endp = strpbrk(inp, "ABCDEFGHJKmrnhl");
 	if (!endp)
 		return 0;
 
@@ -185,6 +185,8 @@ static int efi_process_square_bracket(struct efi_console_priv *priv, const char 
 			if (*e == ';')
 				arg2 = simple_strtoul(e + 1, &e, 10);
 		}
+	} else if (*inp == '?') {
+		arg0 = simple_strtoul(inp + 1, NULL, 10);
 	}
 
 	switch (*endp) {
@@ -242,6 +244,15 @@ static int efi_process_square_bracket(struct efi_console_priv *priv, const char 
 			free(buf);
 			break;
 		}
+		break;
+	case 'h':
+		if (*inp == '?' && arg0 == 25)
+			priv->out->enable_cursor(priv->out, true);
+		break;
+	case 'l':
+		if (*inp == '?' && arg0 == 25)
+			priv->out->enable_cursor(priv->out, false);
+		break;
 	}
 
 	return retlen;

@@ -134,6 +134,9 @@ static int efi_snp_eth_send(struct eth_device *edev, void *packet, int length)
 	void *txbuf;
 	uint64_t start;
 
+	if (!priv->snp->Mode->MediaPresent)
+		return -ENOMEDIUM;
+
 	efiret = priv->snp->transmit(priv->snp, 0, length, packet, NULL, NULL, NULL);
 	if (EFI_ERROR(efiret)) {
 		dev_err(priv->dev, "failed to send: %s\n", efi_strerror(efiret));

@@ -81,15 +81,6 @@
 	};
 };
 
-&fec {
-	/*
-	 * barebox doesn't have a driver for the PMIC providing the phy-supply
-	 * (dlg,da9063). So remove the phy-supply property and rely on the
-	 * PMIC's reset default which has this supply enabled.
-	 */
-	/delete-property/ phy-supply;
-};
-
 &gpmi {
 	partitions {
 		compatible = "fixed-partitions";
@@ -162,5 +153,8 @@
 		watchdog-priority = <500>;
 		restart-priority = <500>;
 		reset-source-priority = <500>;
+		regulators {
+			barebox,allow-dummy-supply;
+		};
 	};
 };

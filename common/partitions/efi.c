@@ -19,7 +19,7 @@
 #include <crc.h>
 #include <linux/ctype.h>
 
-#include "efi.h"
+#include <efi/partition.h>
 #include "parser.h"
 
 static const int force_gpt = IS_ENABLED(CONFIG_PARTITION_DISK_EFI_GPT_NO_FORCE);

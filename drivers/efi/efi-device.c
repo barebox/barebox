@@ -16,8 +16,9 @@
 #include <wchar.h>
 #include <init.h>
 #include <efi.h>
-#include <efi/efi.h>
+#include <efi/efi-payload.h>
 #include <efi/efi-device.h>
+#include <efi/device-path.h>
 #include <linux/err.h>
 
 static int efi_locate_handle(enum efi_locate_search_type search_type,
@@ -180,12 +181,23 @@ static struct efi_device *efi_add_device(efi_handle_t *handle, efi_guid_t **guid
 	return efidev;
 }
 
-
 static int efi_register_device(struct efi_device *efidev)
 {
 	char *dev_path_str;
 	struct efi_device *parent;
 	int ret;
+
+	/*
+	 * Some UEFI instances create IPv4 and IPv6 messaging devices as children
+	 * of the main MAC messaging device. Don't register these in barebox as
+	 * they would show up as duplicate ethernet devices.
+	 */
+	if (device_path_to_type(efidev->devpath) == MESSAGING_DEVICE_PATH) {
+		u8 subtype = device_path_to_subtype(efidev->devpath);
+
+		if (subtype == MSG_IPv4_DP || subtype == MSG_IPv6_DP)
+			return -EINVAL;
+	}
 
 	if (efi_find_device(efidev->handle))
 		return -EEXIST;
@@ -453,6 +465,34 @@ static int efi_init_devices(void)
 	return 0;
 }
 core_initcall(efi_init_devices);
+
+void efi_pause_devices(void)
+{
+	struct device_d *dev;
+
+	bus_for_each_device(&efi_bus, dev) {
+		struct driver_d *drv = dev->driver;
+		struct efi_device *efidev = to_efi_device(dev);
+		struct efi_driver *efidrv = to_efi_driver(drv);
+
+		if (efidrv->dev_pause)
+			efidrv->dev_pause(efidev);
+	}
+}
+
+void efi_continue_devices(void)
+{
+	struct device_d *dev;
+
+	bus_for_each_device(&efi_bus, dev) {
+		struct driver_d *drv = dev->driver;
+		struct efi_device *efidev = to_efi_device(dev);
+		struct efi_driver *efidrv = to_efi_driver(drv);
+
+		if (efidrv->dev_continue)
+			efidrv->dev_continue(efidev);
+	}
+}
 
 static void efi_devpath(efi_handle_t handle)
 {

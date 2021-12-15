@@ -1,6 +1,0 @@
-# SPDX-License-Identifier: GPL-2.0
-config EFI_BOOTUP
-	bool
-	select BLOCK
-	select PARTITION_DISK
-	select HW_HAS_PCI

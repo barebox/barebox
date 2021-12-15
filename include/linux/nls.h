@@ -2,6 +2,8 @@
 #ifndef _LINUX_NLS_H
 #define _LINUX_NLS_H
 
+#include <linux/stddef.h>
+
 /* Unicode has changed over the years.  Unicode code points no longer
  * fit into 16 bits; as of Unicode 5 valid code points range from 0
  * to 0x10ffff (17 planes, where each plane holds 65536 code points).
@@ -14,7 +16,6 @@
  */
 
 /* Plane-0 Unicode character */
-typedef u16 wchar_t;
 #define MAX_WCHAR_T	0xffff
 
 /* Arbitrary Unicode character */

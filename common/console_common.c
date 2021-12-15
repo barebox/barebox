@@ -23,12 +23,12 @@
 #ifndef CONFIG_CONSOLE_NONE
 
 static const char *colored_log_level[] = {
-	[MSG_EMERG] = "\033[31mEMERG:\033[0m ",		/* red */
-	[MSG_ALERT] = "\033[31mALERT:\033[0m ",		/* red */
-	[MSG_CRIT] = "\033[31mCRITICAL:\033[0m ",	/* red */
-	[MSG_ERR] = "\033[31mERROR:\033[0m ",		/* red */
-	[MSG_WARNING] = "\033[33mWARNING:\033[0m ",	/* yellow */
-	[MSG_NOTICE] = "\033[34mNOTICE:\033[0m ",	/* blue */
+	[MSG_EMERG] = "\033[1;31mEMERG:\033[0m ",	/* red */
+	[MSG_ALERT] = "\033[1;31mALERT:\033[0m ",	/* red */
+	[MSG_CRIT] = "\033[1;31mCRITICAL:\033[0m ",	/* red */
+	[MSG_ERR] = "\033[1;31mERROR:\033[0m ",		/* red */
+	[MSG_WARNING] = "\033[1;33mWARNING:\033[0m ",	/* yellow */
+	[MSG_NOTICE] = "\033[1;34mNOTICE:\033[0m ",	/* blue */
 };
 
 int barebox_loglevel = CONFIG_DEFAULT_LOGLEVEL;

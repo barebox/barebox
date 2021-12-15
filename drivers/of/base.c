@@ -2158,6 +2158,21 @@ struct device_node *of_new_node(struct device_node *parent, const char *name)
 	return node;
 }
 
+static struct property *__of_new_property(struct device_node *node, const char *name,
+		void *data, int len)
+{
+	struct property *prop;
+
+	prop = xzalloc(sizeof(*prop));
+	prop->name = xstrdup(name);
+	prop->length = len;
+	prop->value = data;
+
+	list_add_tail(&prop->list, &node->properties);
+
+	return prop;
+}
+
 /**
  * of_new_property - Add a new property to a node
  * @node:	device node to which the property is added
@@ -2173,19 +2188,13 @@ struct device_node *of_new_node(struct device_node *parent, const char *name)
 struct property *of_new_property(struct device_node *node, const char *name,
 		const void *data, int len)
 {
-	struct property *prop;
+	char *buf;
 
-	prop = xzalloc(sizeof(*prop));
-	prop->name = xstrdup(name);
-	prop->length = len;
-	prop->value = xzalloc(len);
-
+	buf = xzalloc(len);
 	if (data)
-		memcpy(prop->value, data, len);
+		memcpy(buf, data, len);
 
-	list_add_tail(&prop->list, &node->properties);
-
-	return prop;
+	return __of_new_property(node, name, buf, len);
 }
 
 /**
@@ -2255,6 +2264,34 @@ int of_set_property(struct device_node *np, const char *name, const void *val, i
 		return -ENOMEM;
 
 	return 0;
+}
+
+int of_property_sprintf(struct device_node *np,
+			const char *propname, const char *fmt, ...)
+{
+	struct property *pp;
+	struct va_format vaf;
+	char *buf = NULL;
+	va_list args;
+	int len;
+
+	if (!np)
+		return -ENOENT;
+
+	va_start(args, fmt);
+	vaf.fmt = fmt;
+	vaf.va = &args;
+	len = asprintf(&buf, "%pV", &vaf);
+	va_end(args);
+
+	if (len < 0)
+		return -ENOMEM;
+
+	pp = of_find_property(np, propname, NULL);
+	of_delete_property(pp);
+
+	__of_new_property(np, propname, buf, len);
+	return len;
 }
 
 static int mem_bank_num;

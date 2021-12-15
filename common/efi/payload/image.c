@@ -1,17 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0-only
 /*
- * efi-image.c - barebox EFI payload support
+ * image.c - barebox EFI payload support
  *
  * Copyright (c) 2014 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
  */
 
 #include <clock.h>
@@ -33,7 +24,7 @@
 #include <libfile.h>
 #include <binfmt.h>
 #include <wchar.h>
-#include <efi/efi.h>
+#include <efi/efi-payload.h>
 #include <efi/efi-device.h>
 
 struct linux_kernel_header {
@@ -115,7 +106,6 @@ static int efi_load_image(const char *file, efi_loaded_image_t **loaded_image,
 
 	*h = handle;
 out:
-	memset(exe, 0, size);
 	free(exe);
 	return -efi_errno(efiret);
 }
@@ -149,9 +139,13 @@ static int efi_execute_image(const char *file)
 		shutdown_barebox();
 	}
 
+	efi_pause_devices();
+
 	efiret = BS->start_image(handle, NULL, NULL);
 	if (EFI_ERROR(efiret))
 		pr_err("failed to StartImage: %s\n", efi_strerror(efiret));
+
+	efi_continue_devices();
 
 	if (!is_driver)
 		BS->unload_image(handle);

@@ -12,7 +12,7 @@
 #include <errno.h>
 #include <gui/graphic_utils.h>
 #include <efi.h>
-#include <efi/efi.h>
+#include <efi/efi-payload.h>
 #include <efi/efi-device.h>
 
 #define PIXEL_RGB_RESERVED_8BIT_PER_COLOR		0

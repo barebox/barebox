@@ -23,38 +23,41 @@
 
 struct efi_device_path;
 
-#define EFI_SUCCESS                             0
-#define EFI_LOAD_ERROR                  ( 1 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_INVALID_PARAMETER           ( 2 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_UNSUPPORTED                 ( 3 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_BAD_BUFFER_SIZE             ( 4 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_BUFFER_TOO_SMALL            ( 5 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_NOT_READY                   ( 6 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_DEVICE_ERROR                ( 7 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_WRITE_PROTECTED             ( 8 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_OUT_OF_RESOURCES            ( 9 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_VOLUME_CORRUPTED            ( 10 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_VOLUME_FULL                 ( 11 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_NO_MEDIA                    ( 12 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_MEDIA_CHANGED               ( 13 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_NOT_FOUND                   ( 14 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_ACCESS_DENIED               ( 15 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_NO_RESPONSE                 ( 16 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_NO_MAPPING                  ( 17 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_TIMEOUT                     ( 18 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_NOT_STARTED                 ( 19 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_ALREADY_STARTED             ( 20 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_ABORTED                     ( 21 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_ICMP_ERROR                  ( 22 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_TFTP_ERROR                  ( 23 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_PROTOCOL_ERROR              ( 24 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_INCOMPATIBLE_VERSION        ( 25 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_SECURITY_VIOLATION          ( 26 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_CRC_ERROR                   ( 27 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_END_OF_MEDIA                ( 28 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_END_OF_FILE                 ( 31 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_INVALID_LANGUAGE            ( 32 | (1UL << (BITS_PER_LONG-1)))
-#define EFI_COMPROMISED_DATA            ( 33 | (1UL << (BITS_PER_LONG-1)))
+/* Bit mask for EFI status code with error */
+#define EFI_ERROR_MASK (1UL << (BITS_PER_LONG-1))
+
+#define EFI_SUCCESS                       0
+#define EFI_LOAD_ERROR                  ( 1 | EFI_ERROR_MASK)
+#define EFI_INVALID_PARAMETER           ( 2 | EFI_ERROR_MASK)
+#define EFI_UNSUPPORTED                 ( 3 | EFI_ERROR_MASK)
+#define EFI_BAD_BUFFER_SIZE             ( 4 | EFI_ERROR_MASK)
+#define EFI_BUFFER_TOO_SMALL            ( 5 | EFI_ERROR_MASK)
+#define EFI_NOT_READY                   ( 6 | EFI_ERROR_MASK)
+#define EFI_DEVICE_ERROR                ( 7 | EFI_ERROR_MASK)
+#define EFI_WRITE_PROTECTED             ( 8 | EFI_ERROR_MASK)
+#define EFI_OUT_OF_RESOURCES            ( 9 | EFI_ERROR_MASK)
+#define EFI_VOLUME_CORRUPTED            (10 | EFI_ERROR_MASK)
+#define EFI_VOLUME_FULL                 (11 | EFI_ERROR_MASK)
+#define EFI_NO_MEDIA                    (12 | EFI_ERROR_MASK)
+#define EFI_MEDIA_CHANGED               (13 | EFI_ERROR_MASK)
+#define EFI_NOT_FOUND                   (14 | EFI_ERROR_MASK)
+#define EFI_ACCESS_DENIED               (15 | EFI_ERROR_MASK)
+#define EFI_NO_RESPONSE                 (16 | EFI_ERROR_MASK)
+#define EFI_NO_MAPPING                  (17 | EFI_ERROR_MASK)
+#define EFI_TIMEOUT                     (18 | EFI_ERROR_MASK)
+#define EFI_NOT_STARTED                 (19 | EFI_ERROR_MASK)
+#define EFI_ALREADY_STARTED             (20 | EFI_ERROR_MASK)
+#define EFI_ABORTED                     (21 | EFI_ERROR_MASK)
+#define EFI_ICMP_ERROR                  (22 | EFI_ERROR_MASK)
+#define EFI_TFTP_ERROR                  (23 | EFI_ERROR_MASK)
+#define EFI_PROTOCOL_ERROR              (24 | EFI_ERROR_MASK)
+#define EFI_INCOMPATIBLE_VERSION        (25 | EFI_ERROR_MASK)
+#define EFI_SECURITY_VIOLATION          (26 | EFI_ERROR_MASK)
+#define EFI_CRC_ERROR                   (27 | EFI_ERROR_MASK)
+#define EFI_END_OF_MEDIA                (28 | EFI_ERROR_MASK)
+#define EFI_END_OF_FILE                 (31 | EFI_ERROR_MASK)
+#define EFI_INVALID_LANGUAGE            (32 | EFI_ERROR_MASK)
+#define EFI_COMPROMISED_DATA            (33 | EFI_ERROR_MASK)
 
 #define EFI_ERROR(a)	(((signed long) a) < 0)
 
@@ -485,7 +488,7 @@ extern efi_runtime_services_t *RT;
 #define EFI_HII_CONFIG_ACCESS_PROTOCOL_GUID \
 	EFI_GUID(0x330d4706, 0xf2a0, 0x4e4f, 0xa3, 0x69, 0xb6, 0x6f, 0xa8, 0xd5, 0x43, 0x85)
 
-#define LOAD_FILE_PROTOCOL_GUID \
+#define EFI_LOAD_FILE_PROTOCOL_GUID \
 	EFI_GUID(0x56ec3091, 0x954c, 0x11d2, 0x8e, 0x3f, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b)
 
 #define EFI_COMPONENT_NAME2_PROTOCOL_GUID \
@@ -591,6 +594,8 @@ efi_guidcmp (efi_guid_t left, efi_guid_t right)
 	return memcmp(&left, &right, sizeof (efi_guid_t));
 }
 
+__attribute__((noreturn)) void efi_main(efi_handle_t, efi_system_table_t *);
+
 /*
  * Variable Attributes
  */
@@ -682,6 +687,7 @@ typedef union {
 struct efi_device_path *device_path_from_handle(efi_handle_t Handle);
 char *device_path_to_str(struct efi_device_path *dev_path);
 u8 device_path_to_type(struct efi_device_path *dev_path);
+u8 device_path_to_subtype(struct efi_device_path *dev_path);
 char *device_path_to_partuuid(struct efi_device_path *dev_path);
 
 const char *efi_guid_string(efi_guid_t *g);

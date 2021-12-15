@@ -11,7 +11,7 @@
 #include <net.h>
 #include <init.h>
 #include <efi.h>
-#include <efi/efi.h>
+#include <efi/efi-payload.h>
 #include <efi/efi-device.h>
 
 struct efi_network_statistics {
@@ -134,6 +134,9 @@ static int efi_snp_eth_send(struct eth_device *edev, void *packet, int length)
 	void *txbuf;
 	uint64_t start;
 
+	if (!priv->snp->Mode->MediaPresent)
+		return -ENOMEDIUM;
+
 	efiret = priv->snp->transmit(priv->snp, 0, length, packet, NULL, NULL, NULL);
 	if (EFI_ERROR(efiret)) {
 		dev_err(priv->dev, "failed to send: %s\n", efi_strerror(efiret));
@@ -172,6 +175,32 @@ static int efi_snp_eth_rx(struct eth_device *edev)
 	net_receive(edev, NetRxPackets[0], bufsize);
 
 	return 0;
+}
+
+static efi_guid_t snp_guid = EFI_SIMPLE_NETWORK_PROTOCOL_GUID;
+
+static int efi_snp_open_exclusive(struct efi_device *efidev)
+{
+	void *interface;
+	efi_status_t efiret;
+
+	/*
+	 * Try to re-open SNP exlusively to close any active MNP protocol instance
+	 * that may compete for packet polling
+	 */
+	efiret = BS->open_protocol(efidev->handle, &snp_guid,
+			&interface, efi_parent_image, NULL, EFI_OPEN_PROTOCOL_EXCLUSIVE);
+	if (EFI_ERROR(efiret)) {
+		dev_err(&efidev->dev, "failed to open exclusively: %s\n", efi_strerror(efiret));
+		return -efi_errno(efiret);
+	}
+
+	return 0;
+}
+
+static void efi_snp_close_exclusive(struct efi_device *efidev)
+{
+	BS->close_protocol(efidev->handle, &snp_guid, efi_parent_image, NULL);
 }
 
 static int efi_snp_eth_open(struct eth_device *edev)
@@ -231,6 +260,20 @@ static int efi_snp_set_ethaddr(struct eth_device *edev, const unsigned char *adr
 	return 0;
 }
 
+static int efi_snp_pause(struct efi_device *efidev)
+{
+	efi_snp_close_exclusive(efidev);
+
+	return 0;
+}
+
+static int efi_snp_continue(struct efi_device *efidev)
+{
+	efi_snp_open_exclusive(efidev);
+
+	return 0;
+}
+
 static int efi_snp_probe(struct efi_device *efidev)
 {
 	struct eth_device *edev;
@@ -269,16 +312,28 @@ static int efi_snp_probe(struct efi_device *efidev)
 	edev->get_ethaddr = efi_snp_get_ethaddr;
 	edev->set_ethaddr = efi_snp_set_ethaddr;
 
+	ret = efi_snp_open_exclusive(efidev);
+	if (ret)
+		return ret;
+
 	ret = eth_register(edev);
 
         return ret;
 }
 
+static void efi_snp_remove(struct efi_device *efidev)
+{
+	efi_snp_close_exclusive(efidev);
+}
+
 static struct efi_driver efi_snp_driver = {
-        .driver = {
+	.driver = {
 		.name  = "efi-snp",
 	},
-        .probe = efi_snp_probe,
+	.probe = efi_snp_probe,
+	.remove = efi_snp_remove,
+	.dev_pause = efi_snp_pause,
+	.dev_continue = efi_snp_continue,
 	.guid = EFI_SIMPLE_NETWORK_PROTOCOL_GUID,
 };
 device_efi_driver(efi_snp_driver);

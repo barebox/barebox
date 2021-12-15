@@ -13,63 +13,32 @@
 #include <efi.h>
 #include <readkey.h>
 #include <linux/ctype.h>
-#include <efi/efi.h>
+#include <efi/efi-payload.h>
+#include <kfifo.h>
 #include <efi/efi-device.h>
-#include "efi-stdio.h"
-
-#define EFI_SHIFT_STATE_VALID           0x80000000
-#define EFI_RIGHT_CONTROL_PRESSED       0x00000004
-#define EFI_LEFT_CONTROL_PRESSED        0x00000008
-#define EFI_RIGHT_ALT_PRESSED           0x00000010
-#define EFI_LEFT_ALT_PRESSED            0x00000020
-
-#define EFI_CONTROL_PRESSED             (EFI_RIGHT_CONTROL_PRESSED | EFI_LEFT_CONTROL_PRESSED)
-#define EFI_ALT_PRESSED                 (EFI_RIGHT_ALT_PRESSED | EFI_LEFT_ALT_PRESSED)
-#define KEYPRESS(keys, scan, uni) ((((uint64_t)keys) << 32) | ((scan) << 16) | (uni))
-#define KEYCHAR(k) ((k) & 0xffff)
-#define CHAR_CTRL(c) ((c) - 'a' + 1)
-
-#define EFI_BLACK   0x00
-#define EFI_BLUE    0x01
-#define EFI_GREEN   0x02
-#define EFI_CYAN            (EFI_BLUE | EFI_GREEN)
-#define EFI_RED     0x04
-#define EFI_MAGENTA         (EFI_BLUE | EFI_RED)
-#define EFI_BROWN           (EFI_GREEN | EFI_RED)
-#define EFI_LIGHTGRAY       (EFI_BLUE | EFI_GREEN | EFI_RED)
-#define EFI_BRIGHT  0x08
-#define EFI_DARKGRAY        (EFI_BRIGHT)
-#define EFI_LIGHTBLUE       (EFI_BLUE | EFI_BRIGHT)
-#define EFI_LIGHTGREEN      (EFI_GREEN | EFI_BRIGHT)
-#define EFI_LIGHTCYAN       (EFI_CYAN | EFI_BRIGHT)
-#define EFI_LIGHTRED        (EFI_RED | EFI_BRIGHT)
-#define EFI_LIGHTMAGENTA    (EFI_MAGENTA | EFI_BRIGHT)
-#define EFI_YELLOW          (EFI_BROWN | EFI_BRIGHT)
-#define EFI_WHITE           (EFI_BLUE | EFI_GREEN | EFI_RED | EFI_BRIGHT)
-
-#define EFI_TEXT_ATTR(f,b)  ((f) | ((b) << 4))
-
-#define EFI_BACKGROUND_BLACK        0x00
-#define EFI_BACKGROUND_BLUE         0x10
-#define EFI_BACKGROUND_GREEN        0x20
-#define EFI_BACKGROUND_CYAN         (EFI_BACKGROUND_BLUE | EFI_BACKGROUND_GREEN)
-#define EFI_BACKGROUND_RED          0x40
-#define EFI_BACKGROUND_MAGENTA      (EFI_BACKGROUND_BLUE | EFI_BACKGROUND_RED)
-#define EFI_BACKGROUND_BROWN        (EFI_BACKGROUND_GREEN | EFI_BACKGROUND_RED)
-#define EFI_BACKGROUND_LIGHTGRAY    (EFI_BACKGROUND_BLUE | EFI_BACKGROUND_GREEN | EFI_BACKGROUND_RED)
+#include <efi/efi-stdio.h>
 
 struct efi_console_priv {
 	struct efi_simple_text_output_protocol *out;
 	struct efi_simple_input_interface *in;
 	struct efi_simple_text_input_ex_protocol *inex;
 	struct console_device cdev;
-	int lastkey;
-	u16 efi_console_buffer[CONFIG_CBSIZE];
+	u16 efi_console_buffer[CONFIG_CBSIZE + 1];
+	int pos;
+
+	struct kfifo *inputbuffer;
 
 	unsigned long columns, rows;
 
-	int current_color;
+	int fg;
+	int bg;
+	bool inverse;
 	s16 *blank_line;
+
+	struct param_d *param_mode;
+	const char **mode_names;
+	int *mode_num;
+	unsigned int var_mode;
 };
 
 static inline struct efi_console_priv *to_efi(struct console_device *cdev)
@@ -157,17 +126,6 @@ static int efi_read_key(struct efi_console_priv *priv, bool wait)
 	return xlate_keypress(&kd.key);
 }
 
-static void efi_console_putc(struct console_device *cdev, char c)
-{
-	uint16_t str[2] = {};
-	struct efi_console_priv *priv = to_efi(cdev);
-	struct efi_simple_text_output_protocol *con_out = priv->out;
-
-	str[0] = c;
-
-	con_out->output_string(con_out, str);
-}
-
 static void clear_to_eol(struct efi_console_priv *priv)
 {
 	int pos = priv->out->mode->cursor_column;
@@ -175,130 +133,214 @@ static void clear_to_eol(struct efi_console_priv *priv)
 	priv->out->output_string(priv->out, priv->blank_line + pos);
 }
 
+static int ansi_to_efi_color(int ansi)
+{
+	switch (ansi) {
+	case 30:
+		return EFI_BLACK;
+	case 31:
+		return EFI_RED;
+	case 32:
+		return EFI_GREEN;
+	case 33:
+		return EFI_YELLOW;
+	case 34:
+		return EFI_BLUE;
+	case 35:
+		return EFI_MAGENTA;
+	case 36:
+		return EFI_CYAN;
+	case 37:
+		return EFI_WHITE;
+	case 39:
+		return EFI_LIGHTGRAY;
+	}
+
+	return -1;
+}
+
+static void set_fg_bg_colors(struct efi_console_priv *priv)
+{
+	int fg = priv->inverse ? priv->bg : priv->fg;
+	int bg = priv->inverse ? priv->fg : priv->bg;
+
+	priv->out->set_attribute(priv->out, EFI_TEXT_ATTR(fg , bg));
+}
+
 static int efi_process_square_bracket(struct efi_console_priv *priv, const char *inp)
 {
-	int x, y;
 	char *endp;
+	int n, retlen;
+	int arg0 = -1, arg1 = -1, arg2 = -1;
+	char *buf;
+
+	endp = strpbrk(inp, "ABCDEFGHJKmrnhl");
+	if (!endp)
+		return 0;
+
+	retlen = endp - inp + 1;
 
 	inp++;
 
-	switch (*inp) {
-	case 'A':
-		/* Cursor up */
-	case 'B':
-		/* Cursor down */
-	case 'C':
-		/* Cursor right */
-	case 'D':
-		/* Cursor left */
-	case 'H':
-		/* home */
-	case 'F':
-		/* end */
-		return 3;
+	if (isdigit(*inp)) {
+		char *e;
+		arg0 = simple_strtoul(inp, &e, 10);
+		if (*e == ';') {
+			arg1 = simple_strtoul(e + 1, &e, 10);
+			if (*e == ';')
+				arg2 = simple_strtoul(e + 1, &e, 10);
+		}
+	} else if (*inp == '?') {
+		arg0 = simple_strtoul(inp + 1, NULL, 10);
+	}
+
+	switch (*endp) {
 	case 'K':
-		clear_to_eol(priv);
-		return 3;
-	}
-
-	if (*inp == '2' && *(inp + 1) == 'J') {
-		priv->out->clear_screen(priv->out);
-		return 4;
-	}
-
-	if (*inp == '0' && *(inp + 1) == 'm') {
-		priv->out->set_attribute(priv->out,
-				EFI_TEXT_ATTR(EFI_WHITE, EFI_BLACK));
-		return 4;
-	}
-
-	if (*inp == '7' && *(inp + 1) == 'm') {
-		priv->out->set_attribute(priv->out,
-				EFI_TEXT_ATTR(EFI_BLACK, priv->current_color));
-		return 4;
-	}
-
-	if (*inp == '1' &&
-			*(inp + 1) == ';' &&
-			*(inp + 2) == '3' &&
-			*(inp + 3) &&
-			*(inp + 4) == 'm') {
-		int color;
-		switch (*(inp + 3)) {
-		case '1': color = EFI_RED; break;
-		case '4': color = EFI_BLUE; break;
-		case '2': color = EFI_GREEN; break;
-		case '6': color = EFI_CYAN; break;
-		case '3': color = EFI_YELLOW; break;
-		case '5': color = EFI_MAGENTA; break;
-		case '7': color = EFI_WHITE; break;
-		default: color = EFI_WHITE; break;
+		switch (arg0) {
+		case 0:
+		case -1:
+			clear_to_eol(priv);
+			break;
 		}
-
-		priv->current_color = color;
-
-		priv->out->set_attribute(priv->out,
-				EFI_TEXT_ATTR(color, EFI_BLACK));
-		return 7;
-	}
-
-	y = simple_strtoul(inp, &endp, 10);
-	if (*endp == ';') {
-		x = simple_strtoul(endp + 1, &endp, 10);
-		if (*endp == 'H') {
-			priv->out->set_cursor_position(priv->out, x - 1, y - 1);
-			return endp - inp + 3;
+		break;
+	case 'J':
+		switch (arg0) {
+		case 2:
+			priv->out->clear_screen(priv->out);
+			break;
 		}
+		break;
+	case 'H':
+		if (arg0 >= 0 && arg1 >= 0) {
+			int row = min_t(int, arg0, priv->rows);
+			int col = min_t(int, arg1, priv->columns);
+			priv->out->set_cursor_position(priv->out, col - 1, row - 1);
+		}
+		break;
+	case 'm':
+		switch (arg0) {
+		case 0:
+			priv->inverse = false;
+			priv->fg = EFI_LIGHTGRAY;
+			priv->bg = EFI_BLACK;
+			set_fg_bg_colors(priv);
+			break;
+		case 7:
+			priv->inverse = true;
+			set_fg_bg_colors(priv);
+			break;
+		case 1:
+			priv->fg = ansi_to_efi_color(arg1);
+			if (priv->fg < 0)
+				priv->fg = EFI_LIGHTGRAY;
+			priv->bg = ansi_to_efi_color(arg2);
+			if (priv->bg < 0)
+				priv->bg = EFI_BLACK;
+			set_fg_bg_colors(priv);
+			break;
+		}
+		break;
+	case 'n':
+		switch (arg0) {
+		case 6:
+			n = asprintf(&buf, "\033[%d;%dR", priv->out->mode->cursor_row + 1,
+				priv->out->mode->cursor_column + 1);
+			kfifo_put(priv->inputbuffer, buf, n);
+			free(buf);
+			break;
+		}
+		break;
+	case 'h':
+		if (*inp == '?' && arg0 == 25)
+			priv->out->enable_cursor(priv->out, true);
+		break;
+	case 'l':
+		if (*inp == '?' && arg0 == 25)
+			priv->out->enable_cursor(priv->out, false);
+		break;
 	}
 
-	return 8;
+	return retlen;
 }
 
-static int efi_process_key(struct efi_console_priv *priv, const char *inp)
+static int efi_process_escape(struct efi_console_priv *priv, const char *inp)
 {
 	char c;
 
 	c = *inp;
 
-	if (c != 27)
-		return 0;
-
 	inp++;
 
 	if (*inp == '[')
-		return efi_process_square_bracket(priv, inp);
+		return efi_process_square_bracket(priv, inp) + 1;
 
 	return 1;
+}
+
+static void efi_console_add_char(struct efi_console_priv *priv, int c)
+{
+	if (priv->pos >= CONFIG_CBSIZE)
+		return;
+
+	priv->efi_console_buffer[priv->pos] = c;
+	priv->pos++;
+}
+
+static void efi_console_flush(struct efi_console_priv *priv)
+{
+	priv->efi_console_buffer[priv->pos] = 0;
+
+	priv->out->output_string(priv->out, priv->efi_console_buffer);
+
+	priv->pos = 0;
 }
 
 static int efi_console_puts(struct console_device *cdev, const char *s,
 			    size_t nbytes)
 {
 	struct efi_console_priv *priv = to_efi(cdev);
-	int n = 0;
+	int n, pos = 0;
 
-	while (nbytes--) {
-		if (*s == 27) {
-			priv->efi_console_buffer[n] = 0;
-			priv->out->output_string(priv->out,
-					priv->efi_console_buffer);
-			n = 0;
-			s += efi_process_key(priv, s);
-			continue;
+	while (pos < nbytes) {
+		switch (s[pos]) {
+		case 27:
+			efi_console_flush(priv);
+			pos += efi_process_escape(priv, s + pos);
+			break;
+		case '\n':
+			efi_console_add_char(priv, '\r');
+			efi_console_add_char(priv, '\n');
+			pos++;
+			break;
+		case '\t':
+			efi_console_flush(priv);
+			n = 8 - priv->out->mode->cursor_column % 8;
+			while (n--)
+				efi_console_add_char(priv, ' ');
+			pos++;
+			break;
+		case '\b':
+			n = priv->out->mode->cursor_column;
+			if (n > 0)
+				priv->out->set_cursor_position(priv->out,
+					n - 1, priv->out->mode->cursor_row);
+			pos++;
+			break;
+		default:
+			efi_console_add_char(priv, s[pos]);
+			pos++;
+			break;
 		}
-
-		if (*s == '\n')
-			priv->efi_console_buffer[n++] = '\r';
-		priv->efi_console_buffer[n] = *s;
-		s++;
-		n++;
 	}
 
-	priv->efi_console_buffer[n] = 0;
+	efi_console_flush(priv);
 
-	priv->out->output_string(priv->out, priv->efi_console_buffer);
+	return nbytes;
+}
 
-	return n;
+static void efi_console_putc(struct console_device *cdev, char c)
+{
+	efi_console_puts(cdev, &c, 1);
 }
 
 static int efi_console_tstc(struct console_device *cdev)
@@ -306,14 +348,14 @@ static int efi_console_tstc(struct console_device *cdev)
 	struct efi_console_priv *priv = to_efi(cdev);
 	int key;
 
-	if (priv->lastkey > 0)
+	if (kfifo_len(priv->inputbuffer))
 		return 1;
 
 	key = efi_read_key(priv, 0);
 	if (key < 0)
 		return 0;
 
-	priv->lastkey = key;
+	kfifo_putc(priv->inputbuffer, key);
 
 	return 1;
 }
@@ -321,40 +363,53 @@ static int efi_console_tstc(struct console_device *cdev)
 static int efi_console_getc(struct console_device *cdev)
 {
 	struct efi_console_priv *priv = to_efi(cdev);
-	int key;
+	unsigned char c;
 
-	if (priv->lastkey > 0) {
-		key = priv->lastkey;
-		priv->lastkey = -1;
-		return key;
-	}
+	if (!kfifo_getc(priv->inputbuffer, &c))
+		return c;
 
 	return efi_read_key(priv, 1);
 }
 
+static int efi_console_set_mode(struct param_d *param, void *p)
+{
+	struct efi_console_priv *priv = p;
+
+	priv->out->set_mode(priv->out, priv->mode_num[priv->var_mode]);
+
+	priv->out->query_mode(priv->out, priv->out->mode->mode,
+			      &priv->columns, &priv->rows);
+	return 0;
+}
+
 static void efi_set_mode(struct efi_console_priv *priv)
 {
-#if 0
 	int i;
-	unsigned long rows, columns, best = 0, mode = 0;
+	unsigned long rows, columns;
+	int n = 0;
 	efi_status_t efiret;
 
+	priv->mode_names = xzalloc(priv->out->mode->max_mode * sizeof(*priv->mode_names));
+	priv->mode_num = xzalloc(priv->out->mode->max_mode * sizeof(*priv->mode_num));
+
+	priv->out->query_mode(priv->out, priv->out->mode->mode, &priv->columns, &priv->rows);
+
 	for (i = 0; i < priv->out->mode->max_mode; i++) {
-		priv->out->query_mode(priv->out, i, &columns, &rows);
-		printf("%d: %ld %ld\n", i, columns, rows);
-		if (rows * columns > best) {
-			best = rows * columns;
-			mode = i;
-		}
+		efiret = priv->out->query_mode(priv->out, i, &columns, &rows);
+		if (EFI_ERROR(efiret))
+			continue;
+
+		if (columns == priv->columns && rows == priv->rows)
+			priv->var_mode = n;
+
+		priv->mode_names[n] = basprintf("%ldx%ld", columns, rows);
+		priv->mode_num[n] = i;
+		n++;
 	}
 
-	/*
-	 * Setting the mode doesn't work as expected. set_mode succeeds, but
-	 * the graphics resolution is not changed.
-	 */
-	priv->out->set_mode(priv->out, mode);
-#endif
-	priv->out->query_mode(priv->out, priv->out->mode->mode, &priv->columns, &priv->rows);
+	priv->param_mode = dev_add_param_enum(&priv->cdev.class_dev, "mode",
+					efi_console_set_mode, NULL, &priv->var_mode,
+				       priv->mode_names, n, priv);
 }
 
 static int efi_console_probe(struct device_d *dev)
@@ -364,13 +419,16 @@ static int efi_console_probe(struct device_d *dev)
 	struct console_device *cdev;
 	struct efi_console_priv *priv;
 	efi_status_t efiret;
-
-	int i;
+	int i, ret;
 
 	priv = xzalloc(sizeof(*priv));
 
 	priv->out = efi_sys_table->con_out;
 	priv->in = efi_sys_table->con_in;
+
+	priv->inputbuffer = kfifo_alloc(128);
+	if (!priv->inputbuffer)
+		return -ENOMEM;
 
 	efiret = BS->open_protocol((void *)efi_sys_table->con_in_handle,
 			     &inex_guid,
@@ -384,9 +442,8 @@ static int efi_console_probe(struct device_d *dev)
 		dev_dbg(dev, "Using simple_text_input_ex_protocol\n");
 	}
 
-	priv->current_color = EFI_WHITE;
-
-	efi_set_mode(priv);
+	priv->fg = EFI_LIGHTGRAY;
+	priv->bg = EFI_BLACK;
 
 	priv->out->enable_cursor(priv->out, 1);
 
@@ -401,9 +458,13 @@ static int efi_console_probe(struct device_d *dev)
 	cdev->putc = efi_console_putc;
 	cdev->puts = efi_console_puts;
 
-	priv->lastkey = -1;
+	ret = console_register(cdev);
+	if (ret)
+		return ret;
 
-	return console_register(cdev);
+	efi_set_mode(priv);
+
+	return 0;
 }
 
 static struct driver_d efi_console_driver = {

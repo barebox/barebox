@@ -5,7 +5,7 @@
 #include <linux/linkage.h>
 #include <asm/sections.h>
 #include <asm/barebox-riscv.h>
-#include <asm/cacheflush.h>
+#include <asm/cache.h>
 #include <debug_ll.h>
 #include <asm-generic/module.h>
 

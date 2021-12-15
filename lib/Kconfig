@@ -162,6 +162,15 @@ config PROGRESS_NOTIFIER
 
 config PRINTF_UUID
 	bool
+	default y if PRINTF_FULL
+
+config PRINTF_WCHAR
+	bool
+	default y if PRINTF_FULL
+
+config PRINTF_HEXSTR
+	bool
+	default y if PRINTF_FULL
 
 config GENERIC_LIB_ASHLDI3
 	bool

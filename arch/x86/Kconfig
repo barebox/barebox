@@ -47,7 +47,4 @@ config MACH_EFI_GENERIC
 config X86_EFI
 	def_bool y
 	select EFI_BOOTUP
-	select EFI_GUID
-	select EFI_DEVICEPATH
-	select PRINTF_UUID
 	select CLOCKSOURCE_EFI_X86

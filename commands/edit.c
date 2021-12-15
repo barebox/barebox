@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <xfuncs.h>
 #include <linux/stat.h>
+#include <console.h>
 
 #define TABSPACE 8
 
@@ -347,19 +348,57 @@ static void merge_line(struct line *line)
 
 static void getwinsize(void)
 {
-	int i = 0, r;
-	char buf[100];
+	int n;
 	char *endp;
+	struct console_device *cdev;
+	const char esc[] = ESC "7" ESC "[r" ESC "[999;999H" ESC "[6n";
+	char buf[64];
 
-	printf(ESC "7" ESC "[r" ESC "[999;999H" ESC "[6n");
+	screenwidth = screenheight = 256;
 
-	while ((r = getchar()) != 'R') {
-		buf[i] = r;
-		i++;
+	for_each_console(cdev) {
+		int width, height;
+		uint64_t start;
+
+		if (!(cdev->f_active & CONSOLE_STDIN))
+			continue;
+		if (!(cdev->f_active & CONSOLE_STDOUT))
+			continue;
+
+		memset(buf, 0, sizeof(buf));
+
+		cdev->puts(cdev, esc, sizeof(esc));
+
+		n = 0;
+
+		start = get_time_ns();
+
+		while (1) {
+			if (is_timeout(start, 100 * MSECOND))
+				break;
+
+			if (!cdev->tstc(cdev))
+				continue;
+
+			buf[n] = cdev->getc(cdev);
+
+			if (buf[n] == 'R')
+				break;
+
+			n++;
+		}
+
+		if (buf[0] != 27)
+			continue;
+		if (buf[1] != '[')
+			continue;
+
+		height = simple_strtoul(buf + 2, &endp, 10);
+		width = simple_strtoul(endp + 1, NULL, 10);
+
+		screenwidth = min(screenwidth, width);
+		screenheight = min(screenheight, height);
 	}
-
-	screenheight = simple_strtoul(buf + 2, &endp, 10);
-	screenwidth = simple_strtoul(endp + 1, NULL, 10);
 
 	pos(0, 0);
 }
@@ -483,6 +522,25 @@ static int read_modal_key(bool is_modal)
 	return -EAGAIN;
 }
 
+static bool is_efi_console_active(void)
+{
+	struct console_device *cdev;
+
+	if (!IS_ENABLED(CONFIG_DRIVER_SERIAL_EFI_STDIO))
+		return false;
+
+	for_each_console(cdev) {
+		if (!(cdev->f_active & CONSOLE_STDIN))
+			continue;
+		if (!(cdev->f_active & CONSOLE_STDOUT))
+			continue;
+		if (!strcmp(dev_name(cdev->dev), "efi-stdio"))
+			return true;
+	}
+
+	return false;
+}
+
 static int do_edit(int argc, char *argv[])
 {
 	bool is_vi = false;
@@ -500,16 +558,7 @@ static int do_edit(int argc, char *argv[])
 		return 1;
 
 	screenwidth = 80;
-
-	/*
-	 * The EFI simple text output protocol wraps to the next line and scrolls
-	 * down when we write to the right bottom screen position. Reduce the number
-	 * of rows by one to work around this.
-	 */
-	if (IS_ENABLED(CONFIG_EFI_BOOTUP))
-		screenheight = 24;
-	else
-		screenheight = 25;
+	screenheight = 25;
 
 	/* check if we are not called as "edit" */
 	if (*argv[0] != 'e') {
@@ -519,6 +568,22 @@ static int do_edit(int argc, char *argv[])
 		/* check if we are called as "vi" */
 		if (*argv[0] == 'v')
 			is_vi = true;
+	}
+
+	if (is_efi_console_active()) {
+		/*
+		 * The EFI simple text output protocol wraps to the next line and
+		 * scrolls down when we write to the right bottom screen position.
+		 * Reduce the number of rows by one to work around this.
+		 */
+		screenheight--;
+
+		/*
+		 * Our console driver for the EFI simple text output protocol does
+		 * not implement the "\e[1S" sequence we use for scrolling the
+		 * screen.
+		 */
+		smartscroll = 0;
 	}
 
 	cursx  = 0;
@@ -545,7 +610,9 @@ static int do_edit(int argc, char *argv[])
 				argv[1]);
 	}
 
-	printf("\x1b[2;%dr", screenheight);
+	if (smartscroll)
+		printf("\x1b[2;%dr", screenheight);
+
 	pos(0, 0);
 
 	screenheight--; /* status line */

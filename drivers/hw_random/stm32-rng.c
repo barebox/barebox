@@ -51,7 +51,7 @@ static int stm32_rng_read(struct hwrng *hwrng, void *data, size_t len, bool wait
 		ret = readl_poll_timeout(rng->base + RNG_SR, sr,
 					 sr & RNG_SR_DRDY, 10 * USEC_PER_MSEC);
 		if (ret)
-			goto out;
+			return ret;
 
 		if (sr & (RNG_SR_SEIS | RNG_SR_SECS)) {
 			int i;
@@ -61,8 +61,7 @@ static int stm32_rng_read(struct hwrng *hwrng, void *data, size_t len, bool wait
 				readl(rng->base + RNG_DR);
 			if (readl(rng->base + RNG_SR) & RNG_SR_SEIS) {
 				pr_warn("RNG Noise");
-				ret = -EIO;
-				goto out;
+				return -EIO;
 			}
 
 			/* start again */
@@ -84,8 +83,7 @@ static int stm32_rng_read(struct hwrng *hwrng, void *data, size_t len, bool wait
 		}
 	}
 
-out:
-	return len ?: ret;
+	return len;
 }
 
 static int stm32_rng_init(struct hwrng *hwrng)

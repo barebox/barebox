@@ -16,8 +16,10 @@
 #include <linux/math64.h>
 #include <malloc.h>
 #include <kallsyms.h>
+#include <wchar.h>
 
 #include <common.h>
+#include <pbl.h>
 
 /* we use this so that we can do without the ctype library */
 #define is_digit(c)	((c) >= '0' && (c) <= '9')
@@ -147,6 +149,32 @@ static char *number(char *buf, const char *end, unsigned long long num, int base
 #define PAGE_SIZE 4096
 #endif
 
+static char *leading_spaces(char *buf, const char *end,
+			    int len, int *field_width, int flags)
+{
+	if (!(flags & LEFT)) {
+		while (len < (*field_width)--) {
+			if (buf < end)
+				*buf = ' ';
+			++buf;
+		}
+	}
+
+	return buf;
+}
+
+static char *trailing_spaces(char *buf, const char *end,
+			     int len, int *field_width, int flags)
+{
+	while (len < (*field_width)--) {
+		if (buf < end)
+			*buf = ' ';
+		++buf;
+	}
+
+	return buf;
+}
+
 static char *string(char *buf, const char *end, const char *s, int field_width,
 		    int precision, int flags)
 {
@@ -156,25 +184,35 @@ static char *string(char *buf, const char *end, const char *s, int field_width,
 		s = "<NULL>";
 
 	len = strnlen(s, precision);
+	buf = leading_spaces(buf, end, len, &field_width, flags);
 
-	if (!(flags & LEFT)) {
-		while (len < field_width--) {
-			if (buf < end)
-				*buf = ' ';
-			++buf;
-		}
-	}
 	for (i = 0; i < len; ++i) {
 		if (buf < end)
 			*buf = *s;
 		++buf; ++s;
 	}
-	while (len < field_width--) {
+
+	return trailing_spaces(buf, end, len, &field_width, flags);
+}
+
+static char *wstring(char *buf, const char *end, const wchar_t *s, int field_width,
+		     int precision, int flags)
+{
+	int len, i;
+
+	if ((unsigned long)s < PAGE_SIZE)
+		s = L"<NULL>";
+
+	len = wcsnlen(s, precision);
+	leading_spaces(buf, end, len, &field_width, flags);
+
+	for (i = 0; i < len; ++i) {
 		if (buf < end)
-			*buf = ' ';
-		++buf;
+			wctomb(buf, *s);
+		++buf; ++s;
 	}
-	return buf;
+
+	return trailing_spaces(buf, end, len, &field_width, flags);
 }
 
 static char *raw_pointer(char *buf, const char *end, const void *ptr, int field_width,
@@ -283,6 +321,52 @@ char *uuid_string(char *buf, const char *end, const u8 *addr, int field_width,
 }
 
 static noinline_for_stack
+char *hex_string(char *buf, const char *end, const u8 *addr, int field_width,
+		 int precision, int flags, const char *fmt)
+{
+	char separator;
+	int i, len;
+
+	if (field_width == 0)
+		/* nothing to print */
+		return buf;
+
+	switch (fmt[1]) {
+	case 'C':
+		separator = ':';
+		break;
+	case 'D':
+		separator = '-';
+		break;
+	case 'N':
+		separator = 0;
+		break;
+	default:
+		separator = ' ';
+		break;
+	}
+
+	len = field_width > 0 ? field_width : 1;
+
+	for (i = 0; i < len; ++i) {
+		if (buf < end)
+			*buf = hex_asc_hi(addr[i]);
+		++buf;
+		if (buf < end)
+			*buf = hex_asc_lo(addr[i]);
+		++buf;
+
+		if (separator && i != len - 1) {
+			if (buf < end)
+				*buf = separator;
+			++buf;
+		}
+	}
+
+	return buf;
+}
+
+static noinline_for_stack
 char *address_val(char *buf, const char *end, const void *addr,
 		  int field_width, int precision, int flags, const char *fmt)
 {
@@ -368,6 +452,10 @@ static char *pointer(const char *fmt, char *buf, const char *end, const void *pt
 		break;
 	case 'e':
 		return error_string(buf, end, ptr, field_width, precision, flags, fmt);
+	case 'h':
+		if (IS_ENABLED(CONFIG_PRINTF_HEXSTR))
+			return hex_string(buf, end, ptr, field_width, precision, flags, fmt);
+		break;
 	}
 
 	return raw_pointer(buf, end, ptr, field_width, precision, flags);
@@ -528,7 +616,12 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 				continue;
 
 			case 's':
-				str = string(str, end, va_arg(args, char *), field_width, precision, flags);
+				if (IS_ENABLED(CONFIG_PRINTF_WCHAR) && !IN_PBL && qualifier == 'l')
+					str = wstring(str, end, va_arg(args, wchar_t *),
+						      field_width, precision, flags);
+				else
+					str = string(str, end, va_arg(args, char *),
+						     field_width, precision, flags);
 				continue;
 
 			case 'p':

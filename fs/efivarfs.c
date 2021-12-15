@@ -28,7 +28,7 @@
 #include <wchar.h>
 #include <linux/err.h>
 #include <linux/ctype.h>
-#include <efi/efi.h>
+#include <efi/efi-payload.h>
 #include <efi/efi-device.h>
 
 struct efivarfs_inode {
@@ -46,82 +46,6 @@ struct efivarfs_dir {
 struct efivarfs_priv {
 	struct list_head inodes;
 };
-
-static int char_to_nibble(char c)
-{
-	int ret = tolower(c);
-
-	return ret <= '9' ? ret - '0' : ret - 'a' + 10;
-}
-
-static int read_byte_str(const char *str, u8 *out)
-{
-	if (!isxdigit(*str) || !isxdigit(*(str + 1)))
-		return -EINVAL;
-
-	*out = (char_to_nibble(*str) << 4) | char_to_nibble(*(str + 1));
-
-	return 0;
-}
-
-static int efi_guid_parse(const char *str, efi_guid_t *guid)
-{
-	int i, ret;
-	u8 idx[] = { 3, 2, 1, 0, 5, 4, 7, 6, 8, 9, 10, 11, 12, 13, 14, 15 };
-
-	for (i = 0; i < 16; i++) {
-		ret = read_byte_str(str, &guid->b[idx[i]]);
-		if (ret)
-			return ret;
-		str += 2;
-
-		switch (i) {
-		case 3:
-		case 5:
-		case 7:
-		case 9:
-			if (*str != '-')
-				return -EINVAL;
-			str++;
-			break;
-		}
-	}
-
-	return 0;
-}
-
-static int efivarfs_parse_filename(const char *filename, efi_guid_t *vendor, s16 **name)
-{
-	int len, ret;
-	const char *guidstr;
-	s16 *varname;
-	int i;
-
-	if (*filename == '/')
-		filename++;
-
-	len = strlen(filename);
-
-	if (len < sizeof("-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"))
-		return -EINVAL;
-
-	guidstr = filename + len - sizeof("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx");
-	if (*guidstr != '-')
-		return -EINVAL;
-
-	guidstr++;
-
-	ret = efi_guid_parse(guidstr, vendor);
-
-	varname = xzalloc((guidstr - filename) * sizeof(s16));
-
-	for (i = 0; i < guidstr - filename - 1; i++)
-		varname[i] = filename[i];
-
-	*name = varname;
-
-	return 0;
-}
 
 static int efivars_create(struct device_d *dev, const char *pathname, mode_t mode)
 {

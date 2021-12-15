@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef __EFI_EFI_DEVICE_H
 #define __EFI_EFI_DEVICE_H
 
@@ -15,6 +16,8 @@ struct efi_driver {
 	struct driver_d driver;
 	int (*probe)(struct efi_device *efidev);
 	void (*remove)(struct efi_device *efidev);
+	int (*dev_pause)(struct efi_device *efidev);
+	int (*dev_continue)(struct efi_device *efidev);
 	efi_guid_t guid;
 };
 
@@ -44,6 +47,9 @@ static inline int efi_driver_register(struct efi_driver *efidrv)
 int efi_connect_all(void);
 void efi_register_devices(void);
 struct efi_device *efi_get_bootsource(void);
+
+void efi_pause_devices(void);
+void efi_continue_devices(void);
 
 static inline bool efi_device_has_guid(struct efi_device *efidev, efi_guid_t guid)
 {

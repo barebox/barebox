@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * base.c - basic devicetree functions
  *
@@ -171,8 +171,7 @@ static int of_alias_id_parse(const char *start, int *len)
  * of_alias_scan - Scan all properties of 'aliases' node
  *
  * The function scans all the properties of 'aliases' node and populates
- * the global lookup table with the properties.  It returns the
- * number of alias_prop found, or error code in error case.
+ * the global lookup table with the properties.
  */
 void of_alias_scan(void)
 {
@@ -1969,13 +1968,14 @@ int of_property_read_string_helper(const struct device_node *np,
 	return i <= 0 ? -ENODATA : i;
 }
 
-static void __of_print_nodes(struct device_node *node, int indent, const char *prefix)
+static int __of_print_nodes(struct device_node *node, int indent, const char *prefix)
 {
 	struct device_node *n;
 	struct property *p;
+	int ret;
 
 	if (!node)
-		return;
+		return 0;
 
 	if (!prefix)
 		prefix = "";
@@ -1991,11 +1991,17 @@ static void __of_print_nodes(struct device_node *node, int indent, const char *p
 		printf(";\n");
 	}
 
+	if (ctrlc())
+		return -EINTR;
+
 	list_for_each_entry(n, &node->children, parent_list) {
-		__of_print_nodes(n, indent + 1, prefix);
+		ret = __of_print_nodes(n, indent + 1, prefix);
+		if (ret)
+			return ret;
 	}
 
 	printf("%s%*s};\n", prefix, indent * 8, "");
+	return 0;
 }
 
 void of_print_nodes(struct device_node *node, int indent)
@@ -2005,12 +2011,7 @@ void of_print_nodes(struct device_node *node, int indent)
 
 static void __of_print_property(struct property *p, int indent)
 {
-	int i;
-
-	for (i = 0; i < indent; i++)
-		printf("\t");
-
-	printf("%s", p->name);
+	printf("%*s%s", indent * 8, "", p->name);
 	if (p->length) {
 		printf(" = ");
 		of_print_property(of_property_get_value(p), p->length);
@@ -2028,17 +2029,14 @@ void of_print_properties(struct device_node *node)
 
 static int __of_print_parents(struct device_node *node)
 {
-	int indent, i;
+	int indent;
 
 	if (!node->parent)
 		return 0;
 
 	indent = __of_print_parents(node->parent);
 
-	for (i = 0; i < indent; i++)
-		printf("\t");
-
-	printf("%s {\n", node->name);
+	printf("%*s%s {\n", indent * 8, "", node->name);
 
 	return indent + 1;
 }
@@ -2118,14 +2116,14 @@ void of_diff(struct device_node *a, struct device_node *b, int indent)
 			of_diff(ca, cb, indent + 1);
 		} else {
 			of_print_parents(a, &printed);
-			__of_print_nodes(ca, indent, "-");
+			__of_print_nodes(ca, indent, "- ");
 		}
 	}
 
 	for_each_child_of_node(b, cb) {
 		if (!of_get_child_by_name(a, cb->name)) {
 			of_print_parents(a, &printed);
-			__of_print_nodes(cb, indent, "+");
+			__of_print_nodes(cb, indent, "+ ");
 		}
 	}
 
@@ -2370,8 +2368,11 @@ mem_initcall(of_probe_memory);
 
 static void of_platform_device_create_root(struct device_node *np)
 {
-	struct device_d *dev;
+	static struct device_d *dev;
 	int ret;
+
+	if (dev)
+		return;
 
 	dev = xzalloc(sizeof(*dev));
 	dev->id = DEVICE_ID_SINGLE;
@@ -2388,6 +2389,13 @@ static const struct of_device_id reserved_mem_matches[] = {
 	{}
 };
 
+/**
+ * of_probe - Probe unflattened device tree starting at of_get_root_node
+ *
+ * The function walks the device tree and creates devices as needed.
+ * With care, it can be called more than once, but if you really need that,
+ * consider first if deep probe would help instead.
+ */
 int of_probe(void)
 {
 	struct device_node *node;
@@ -2761,8 +2769,6 @@ struct device_node *of_find_node_by_reproducible_name(struct device_node *from,
  * of_graph_parse_endpoint() - parse common endpoint node properties
  * @node: pointer to endpoint device_node
  * @endpoint: pointer to the OF endpoint data structure
- *
- * The caller should hold a reference to @node.
  */
 int of_graph_parse_endpoint(const struct device_node *node,
 			    struct of_endpoint *endpoint)

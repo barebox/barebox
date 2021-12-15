@@ -1,3 +1,5 @@
+source "common/boards/Kconfig"
+
 config GREGORIAN_CALENDER
 	bool
 
@@ -1392,6 +1394,11 @@ config DEBUG_ERIZO
 config DEBUG_STARFIVE
 	bool "Starfive ns16550 serial0 port"
 	depends on SOC_STARFIVE
+	select DEBUG_LL_NS16550
+
+config DEBUG_RISCV_VIRT
+	bool "RISC-V Virt ns16550 port"
+	depends on SOC_VIRT
 	select DEBUG_LL_NS16550
 
 config DEBUG_SIFIVE

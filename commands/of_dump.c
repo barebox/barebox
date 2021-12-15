@@ -23,8 +23,11 @@ static void of_print_nodenames(struct device_node *node)
 
 	printf("%s\n", node->full_name);
 
-	list_for_each_entry(n, &node->children, parent_list)
+	list_for_each_entry(n, &node->children, parent_list) {
+		if (ctrlc())
+			return;
 		of_print_nodenames(n);
+	}
 }
 
 static int do_of_dump(int argc, char *argv[])

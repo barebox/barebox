@@ -276,6 +276,7 @@ config ARCH_ARM64_VIRT
 	select SYS_SUPPORTS_64BIT_KERNEL
 	select ARM_AMBA
 	select BOARD_ARM_VIRT
+	select HW_HAS_PCI
 
 endchoice
 
@@ -307,6 +308,7 @@ source "arch/arm/mach-zynqmp/Kconfig"
 config BOARD_ARM_VIRT
 	bool
 	select BOARD_ARM_GENERIC_DT
+	select BOARD_QEMU_VIRT
 	select OF_OVERLAY
 
 config BOARD_ARM_GENERIC_DT

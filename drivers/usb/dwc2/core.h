@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0+ */
+/* SPDX-License-Identifier: GPL-2.0-or-later */
 /* Maximum number of Endpoints/HostChannels */
 #define DWC2_MAX_EPS_CHANNELS	16
 

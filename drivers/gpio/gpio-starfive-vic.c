@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * COPYRIGHT 2020 Shanghai StarFive Technology Co., Ltd.
  */

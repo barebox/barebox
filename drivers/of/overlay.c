@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * Functions for working with device tree overlays
  *
@@ -198,6 +198,10 @@ int of_overlay_apply_tree(struct device_node *root,
 		if (err)
 			pr_warn("failed to apply %s\n", fragment->name);
 	}
+
+	/* We are patching the live tree, reload aliases */
+	if (root == of_get_root_node())
+		of_alias_scan();
 
 out_err:
 	of_delete_node(resolved);

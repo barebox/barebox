@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: GPL-2.0
+# SPDX-License-Identifier: GPL-2.0-only
 obj-y += mv88e6xxx.o
 
 mv88e6xxx-objs := chip.o

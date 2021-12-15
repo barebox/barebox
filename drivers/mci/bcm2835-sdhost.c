@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * This code is ported from U-Boot by Lucas Stach <l.stach@pengutronix.de> and
  * has the following contributors listed in the original license header:

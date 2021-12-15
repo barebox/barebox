@@ -4,6 +4,10 @@
 	};
 };
 
+&mmc {
+	reset-names = "reset";
+};
+
 &watchdog0 {
 	resets = <&rst L4WD0_RESET>;
 };

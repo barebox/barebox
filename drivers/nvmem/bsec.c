@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (C) 2018, STMicroelectronics - All Rights Reserved
  * Copyright (c) 2019 Ahmad Fatoum, Pengutronix
@@ -21,8 +21,10 @@
 #define BSEC_OTP_SERIAL	13
 
 struct bsec_priv {
+	struct device_d dev;
 	u32 svc_id;
 	struct regmap_config map_config;
+	int permanent_write_enable;
 };
 
 struct stm32_bsec_data {
@@ -59,13 +61,18 @@ static int stm32_bsec_read_shadow(void *ctx, unsigned reg, unsigned *val)
 	return bsec_smc(ctx, BSEC_SMC_READ_SHADOW, reg, 0, val);
 }
 
-static int stm32_bsec_reg_write_shadow(void *ctx, unsigned reg, unsigned val)
+static int stm32_bsec_reg_write(void *ctx, unsigned reg, unsigned val)
 {
-	return bsec_smc(ctx, BSEC_SMC_WRITE_SHADOW, reg, val, NULL);
+	struct bsec_priv *priv = ctx;
+
+	if (priv->permanent_write_enable)
+		return bsec_smc(ctx, BSEC_SMC_PROG_OTP, reg, val, NULL);
+	else
+		return bsec_smc(ctx, BSEC_SMC_WRITE_SHADOW, reg, val, NULL);
 }
 
 static struct regmap_bus stm32_bsec_regmap_bus = {
-	.reg_write = stm32_bsec_reg_write_shadow,
+	.reg_write = stm32_bsec_reg_write,
 	.reg_read = stm32_bsec_read_shadow,
 };
 
@@ -150,6 +157,10 @@ static int stm32_bsec_probe(struct device_d *dev)
 
 	priv->svc_id = data->svc_id;
 
+	dev_set_name(&priv->dev, "bsec");
+	priv->dev.parent = dev;
+	register_device(&priv->dev);
+
 	priv->map_config.reg_bits = 32;
 	priv->map_config.val_bits = 32;
 	priv->map_config.reg_stride = 4;
@@ -158,6 +169,11 @@ static int stm32_bsec_probe(struct device_d *dev)
 	map = regmap_init(dev, &stm32_bsec_regmap_bus, priv, &priv->map_config);
 	if (IS_ERR(map))
 		return PTR_ERR(map);
+
+	if (IS_ENABLED(CONFIG_STM32_BSEC_WRITE)) {
+		dev_add_param_bool(&priv->dev, "permanent_write_enable",
+				NULL, NULL, &priv->permanent_write_enable, NULL);
+	}
 
 	nvmem = nvmem_regmap_register(map, "stm32-bsec");
 	if (IS_ERR(nvmem))

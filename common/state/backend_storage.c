@@ -144,6 +144,7 @@ int state_storage_read(struct state_backend_storage *storage,
 		       enum state_flags flags)
 {
 	struct state_backend_storage_bucket *bucket, *bucket_used = NULL;
+	int zerobuckets = 0, totalbuckets = 0;
 	int ret;
 
 	dev_dbg(storage->dev, "Checking redundant buckets...\n");
@@ -152,6 +153,8 @@ int state_storage_read(struct state_backend_storage *storage,
 	 * one we want to use.
 	 */
 	list_for_each_entry(bucket, &storage->buckets, bucket_list) {
+		totalbuckets++;
+
 		ret = bucket->read(bucket, &bucket->buf, &bucket->len);
 		if (ret == -EUCLEAN)
 			bucket->needs_refresh = 1;
@@ -163,19 +166,19 @@ int state_storage_read(struct state_backend_storage *storage,
 		 * .verify overwrites it with the length actually used.
 		 */
 		ret = format->verify(format, magic, bucket->buf, &bucket->len, flags);
-		if (!ret && !bucket_used)
+		if (ret == -ENOMEDIUM)
+			zerobuckets++;
+		else if (!ret && !bucket_used)
 			bucket_used = bucket;
-		if (ret)
+		else if (ret)
 			dev_info(storage->dev, "Ignoring broken bucket %d@0x%08llx...\n", bucket->num, (long long) bucket->offset);
 	}
 
 	dev_dbg(storage->dev, "Checking redundant buckets finished.\n");
 
-	if (!bucket_used) {
-		dev_err(storage->dev, "Failed to find any valid state copy in any bucket\n");
-
-		return -ENOENT;
-	}
+	if (!bucket_used)
+		return dev_err_state_init(storage->dev, zerobuckets == totalbuckets ? -ENOMEDIUM : -ENOENT,
+					  "no valid state copy in any bucket\n");
 
 	dev_info(storage->dev, "Using bucket %d@0x%08llx\n", bucket_used->num, (long long) bucket_used->offset);
 

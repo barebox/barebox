@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0+
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Copyright (C) 2017, STMicroelectronics - All Rights Reserved
  * Copyright (C) 2019, Ahmad Fatoum, Pengutronix

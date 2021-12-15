@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: GPL-2.0
+# SPDX-License-Identifier: GPL-2.0-only
 menuconfig NVMEM
 	bool "NVMEM Support"
 	help
@@ -63,8 +63,18 @@ config STM32_BSEC
 	depends on ARCH_STM32MP
 	depends on OFDEVICE
 	help
-	  This adds support for the STM32 OTP controller. Reads and writes
-	  to will go to the shadow RAM, not the OTP fuses themselvers.
+	  This adds support for the STM32 OTP controller.
+
+config STM32_BSEC_WRITE
+	bool
+	prompt "Enable write support of STM32 CPUs OTP fuses"
+	depends on STM32_BSEC
+	help
+	  This adds write support to STM32 On-Chip OTP registers. Example of set
+	  MAC to 12:34:56:78:9A:BC:
+	    bsec0.permanent_write_enable=1
+	    mw -l -d /dev/stm32-bsec 0x000000e4+4 0x78563412
+	    mw -l -d /dev/stm32-bsec 0x000000e8+4 0x0000bc9a
 
 config STARFIVE_OTP
 	tristate "Starfive OTP Supprot"

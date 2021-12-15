@@ -43,7 +43,7 @@ static inline uint16_t debug_ll_ns16550_calc_divisor(unsigned long clk)
 static inline void debug_ll_ns16550_init(uint16_t divisor)
 {
 	debug_ll_write_reg(NS16550_LCR, 0x0); /* select ier reg */
-        debug_ll_write_reg(0x00, NS16550_IER);
+	debug_ll_write_reg(NS16550_IER, 0x0); /* disable interrupts */
 
 	debug_ll_write_reg(NS16550_LCR, NS16550_LCR_BKSE);
 	debug_ll_write_reg(NS16550_DLL, divisor & 0xff);

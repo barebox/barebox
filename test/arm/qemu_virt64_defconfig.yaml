@@ -3,7 +3,7 @@ targets:
     drivers:
       QEMUDriver:
         qemu_bin: qemu
-        machine: virt
+        machine: virt,highmem=off
         cpu: cortex-a57
         memory: 1024M
         kernel: barebox-dt-2nd.img

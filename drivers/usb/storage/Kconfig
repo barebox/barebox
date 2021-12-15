@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: GPL-2.0
+# SPDX-License-Identifier: GPL-2.0-only
 config USB_STORAGE
 	tristate "USB Mass Storage support"
 	select DISK

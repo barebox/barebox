@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * imx-iomux-v3.c - i.MX iomux-v3 pinctrl support
  *

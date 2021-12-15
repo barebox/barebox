@@ -1,5 +1,6 @@
 #include <linux/types.h>
 #include <linux/list.h>
+#include <linux/err.h>
 #include <driver.h>
 
 struct state;
@@ -266,3 +267,16 @@ static inline int state_string_copy_to_raw(struct state_string *string,
 
 	return 0;
 }
+
+#ifdef DEBUG
+#define MSG_STATE_ZERO_INIT	MSG_INFO
+#else
+#define MSG_STATE_ZERO_INIT	MSG_DEBUG
+#endif
+
+#define dev_err_state_init(dev, ret, fmt, ...) ({ \
+	int __ret = (ret); \
+	__dev_printf(__ret == -ENOMEDIUM ? MSG_STATE_ZERO_INIT : MSG_ERR, \
+		     (dev), "init error: %pe: " fmt, ERR_PTR(__ret), ##__VA_ARGS__); \
+	__ret; \
+})

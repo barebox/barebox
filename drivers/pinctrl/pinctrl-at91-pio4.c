@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * sama5d2 pin control and GPIO chip driver
  * Copyright (c) 2019 Ahmad Fatoum, Pengutronix

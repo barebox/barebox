@@ -75,6 +75,18 @@ static inline int pr_print(int level, const char *format, ...)
 #define dev_vdbg(dev, format, arg...)		\
 	__dev_printf(8, (dev) , format , ## arg)
 
+#if LOGLEVEL >= MSG_ERR
+int dev_err_probe(const struct device_d *dev, int err, const char *fmt, ...)
+	__attribute__ ((format(__printf__, 3, 4)));
+#elif !defined(dev_err_probe)
+static int dev_err_probe(const struct device_d *dev, int err, const char *fmt, ...)
+	__attribute__ ((format(__printf__, 3, 4)));
+static inline int dev_err_probe(const struct device_d *dev, int err, const char *fmt, ...)
+{
+	return err;
+}
+#endif
+
 #define __pr_printk(level, format, args...) \
 	({	\
 		(level) <= LOGLEVEL ? pr_print((level), (format), ##args) : 0; \

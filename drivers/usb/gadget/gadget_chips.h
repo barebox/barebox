@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+/* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * USB device controllers have lots of quirks.  Use these macros in
  * gadget drivers or other code that needs to deal with them, and which

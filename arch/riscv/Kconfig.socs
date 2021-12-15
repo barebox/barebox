@@ -18,9 +18,20 @@ config SOC_VIRT
 	select RISCV_S_MODE
 	select BOARD_RISCV_GENERIC_DT
 	select HAS_CACHE
+	select HAS_ASM_DEBUG_LL
 	help
 	  Generates an image tht can be be booted by QEMU. The image is called
 	  barebox-dt-2nd.img
+
+config BOARD_RISCV_VIRT
+	depends on SOC_VIRT
+	bool "QEMU Virt Machine"
+	select OF_OVERLAY
+	select BOARD_QEMU_VIRT
+	default y
+	help
+	  Enables environment and state on top of QEMU RISC-V Virt machine
+	  cfi-flash.
 
 config BOARD_RISCVEMU
 	depends on SOC_VIRT

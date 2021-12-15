@@ -26,24 +26,17 @@ static int sram_probe(struct device_d *dev)
 {
 	struct resource *iores;
 	struct sram *sram;
-	struct resource *res;
-	void __iomem *base;
 	int ret;
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
-	base = IOMEM(iores->start);
 
 	sram = xzalloc(sizeof(*sram));
 
 	sram->cdev.name = basprintf("sram%d", cdev_find_free_index("sram"));
 
-	res = dev_get_resource(dev, IORESOURCE_MEM, 0);
-	if (IS_ERR(res))
-		return PTR_ERR(res);
-
-	sram->cdev.size = (unsigned long)resource_size(res);
+	sram->cdev.size = (unsigned long)resource_size(iores);
 	sram->cdev.ops = &memops;
 	sram->cdev.dev = dev;
 

@@ -28,7 +28,9 @@ static int state_probe(struct device_d *dev)
 	}
 
 	ret = state_load(state);
-	if (ret)
+	if (ret == -ENOMEDIUM)
+		dev_info(dev, "Fresh state detected, continuing with defaults\n");
+	else if (ret)
 		dev_warn(dev, "Failed to load persistent state, continuing with defaults, %d\n",
 			 ret);
 

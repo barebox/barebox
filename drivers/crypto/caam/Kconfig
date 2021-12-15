@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: GPL-2.0
+# SPDX-License-Identifier: GPL-2.0-only
 config CRYPTO_DEV_FSL_CAAM
 	bool "Freescale CAAM-Multicore driver backend"
 	depends on ARCH_IMX6 || COMPILE_TEST

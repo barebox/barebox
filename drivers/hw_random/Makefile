@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: GPL-2.0
+# SPDX-License-Identifier: GPL-2.0-only
 obj-$(CONFIG_HWRNG)		+= core.o
 obj-$(CONFIG_HWRNG_MXC_RNGC) += mxc-rngc.o
 obj-$(CONFIG_HWRNG_STM32) += stm32-rng.o

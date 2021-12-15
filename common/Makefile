@@ -1,3 +1,4 @@
+obj-y				+= boards/
 obj-y				+= memory.o
 obj-y				+= memory_display.o
 pbl-$(CONFIG_PBL_CONSOLE)	+= memory_display.o

@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: GPL-2.0
+# SPDX-License-Identifier: GPL-2.0-only
 config HW_HAS_PCI
 	bool "Compile in PCI core" if COMPILE_TEST
 
@@ -59,6 +59,14 @@ config PCI_EFI
 	bool "EFI PCI protocol"
 	depends on EFI_BOOTUP
 	select PCI
+
+config PCI_ECAM_GENERIC
+	bool "Generic ECAM-based PCI host controller support"
+	select OF_PCI
+	select PCI
+	help
+	  Say Y here if you want to enable support for generic ECAM-based
+	  PCI host controllers, such as the one emulated by QEMU.
 
 endmenu
 

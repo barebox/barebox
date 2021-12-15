@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: GPL-2.0
+# SPDX-License-Identifier: GPL-2.0-only
 #
 # Makefile for the PCI bus specific drivers.
 #
@@ -12,3 +12,4 @@ obj-$(CONFIG_PCIE_DW) += pcie-designware.o pcie-designware-host.o
 obj-$(CONFIG_PCI_IMX6) += pci-imx6.o
 obj-$(CONFIG_PCI_LAYERSCAPE) += pci-layerscape.o
 obj-$(CONFIG_PCI_EFI) += pci-efi.o
+obj-$(CONFIG_PCI_ECAM_GENERIC) += pci-ecam-generic.o

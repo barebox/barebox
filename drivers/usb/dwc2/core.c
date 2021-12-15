@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0+
+// SPDX-License-Identifier: GPL-2.0-or-later
 #include "dwc2.h"
 
 /* Returns the controller's GHWCFG2.OTG_MODE. */

@@ -12,6 +12,8 @@
  * the default environment when building the barebox binary. So
  * do not add any new barebox related functions here!
  */
+#define pr_fmt(fmt) "envfs: " fmt
+
 #ifdef __BAREBOX__
 #include <common.h>
 #include <fs.h>
@@ -23,6 +25,8 @@
 #include <libfile.h>
 #else
 # define errno_str(x) ("void")
+#define pr_info(fmt, ...)	printf(pr_fmt(fmt), ##__VA_ARGS__)
+#define pr_warn(fmt, ...)	printf(pr_fmt(fmt), ##__VA_ARGS__)
 #endif
 
 static int dir_remove_action(const char *filename, struct stat *statbuf,
@@ -39,17 +43,17 @@ static int dir_remove_action(const char *filename, struct stat *statbuf,
 int envfs_check_super(struct envfs_super *super, size_t *size)
 {
 	if (ENVFS_32(super->magic) != ENVFS_MAGIC) {
-		printf("envfs: no envfs (magic mismatch) - envfs never written?\n");
+		pr_info("no envfs (magic mismatch) - envfs never written?\n");
 		return -EIO;
 	}
 
 	if (crc32(0, super, sizeof(*super) - 4) != ENVFS_32(super->sb_crc)) {
-		printf("wrong crc on env superblock\n");
+		pr_warn("wrong crc on env superblock\n");
 		return -EIO;
 	}
 
 	if (super->major < ENVFS_MAJOR)
-		printf("envfs version %d.%d loaded into %d.%d\n",
+		pr_info("version %d.%d loaded into %d.%d\n",
 			super->major, super->minor,
 			ENVFS_MAJOR, ENVFS_MINOR);
 
@@ -64,7 +68,7 @@ int envfs_check_data(struct envfs_super *super, const void *buf, size_t size)
 
 	crc = crc32(0, buf, size);
 	if (crc != ENVFS_32(super->crc)) {
-		printf("wrong crc on env\n");
+		pr_warn("wrong crc on env\n");
 		return -EIO;
 	}
 
@@ -93,7 +97,7 @@ int envfs_load_data(struct envfs_super *super, void *buf, size_t size,
 		buf += sizeof(struct envfs_inode);
 
 		if (ENVFS_32(inode->magic) != ENVFS_INODE_MAGIC) {
-			printf("envfs: wrong magic\n");
+			pr_warn("wrong magic\n");
 			ret = -EIO;
 			goto out;
 		}

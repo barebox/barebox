@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: GPL-2.0
+# SPDX-License-Identifier: GPL-2.0-only
 # drive types
 
 obj-$(CONFIG_DISK_IDE_SFF) += ide-sff.o

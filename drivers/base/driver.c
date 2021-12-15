@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * driver.c - barebox driver model
  *
@@ -9,6 +9,8 @@
  * @file
  * @brief barebox's driver model, and devinfo command
  */
+
+#define dev_err_probe dev_err_probe
 
 #include <common.h>
 #include <command.h>
@@ -535,3 +537,50 @@ const void *device_get_match_data(struct device_d *dev)
 
 	return NULL;
 }
+
+/**
+ * dev_err_probe - probe error check and log helper
+ * @loglevel: log level configured in source file
+ * @dev: the pointer to the struct device
+ * @err: error value to test
+ * @fmt: printf-style format string
+ * @...: arguments as specified in the format string
+ *
+ * This helper implements common pattern present in probe functions for error
+ * checking: print debug or error message depending if the error value is
+ * -EPROBE_DEFER and propagate error upwards.
+ * In case of -EPROBE_DEFER it sets also defer probe reason, which can be
+ * checked later by reading devices_deferred debugfs attribute.
+ * It replaces code sequence::
+ *
+ * 	if (err != -EPROBE_DEFER)
+ * 		dev_err(dev, ...);
+ * 	else
+ * 		dev_dbg(dev, ...);
+ * 	return err;
+ *
+ * with::
+ *
+ * 	return dev_err_probe(dev, err, ...);
+ *
+ * Returns @err.
+ *
+ */
+int dev_err_probe(const struct device_d *dev, int err, const char *fmt, ...);
+int dev_err_probe(const struct device_d *dev, int err, const char *fmt, ...)
+{
+	struct va_format vaf;
+	va_list args;
+
+	va_start(args, fmt);
+	vaf.fmt = fmt;
+	vaf.va = &args;
+
+	dev_printf(err == -EPROBE_DEFER ? MSG_DEBUG : MSG_ERR,
+		   dev, "error %pe: %pV", ERR_PTR(err), &vaf);
+
+	va_end(args);
+
+	return err;
+}
+EXPORT_SYMBOL_GPL(dev_err_probe);

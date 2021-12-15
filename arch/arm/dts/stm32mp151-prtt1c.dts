@@ -1,0 +1,89 @@
+// SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-3-Clause)
+// SPDX-FileCopyrightText: 2021 David Jander, Protonic Holland
+// SPDX-FileCopyrightText: 2021 Oleksij Rempel, Pengutronix
+/dts-v1/;
+
+#include "stm32mp151-prtt1l.dtsi"
+
+/ {
+	model = "Protonic PRTT1C";
+	compatible = "prt,prtt1c", "st,stm32mp151";
+
+	chosen {
+		environment-sd {
+			compatible = "barebox,environment";
+			device-path = &sdmmc1, "partname:barebox-environment";
+			status = "disabled";
+		};
+
+		environment-emmc {
+			compatible = "barebox,environment";
+			device-path = &sdmmc2, "partname:barebox-environment";
+			status = "disabled";
+		};
+	};
+};
+
+&ethernet0 {
+	pinctrl-0 = <&ethernet0_rmii_pins_a>;
+	pinctrl-names = "default";
+	phy-mode = "rmii";
+	phy-reset-gpios = <&gpioa 3 GPIO_ACTIVE_LOW>;
+	status = "okay";
+
+	fixed-link {
+		speed = <100>;
+		full-duplex;
+	};
+};
+
+&sdmmc2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&sdmmc2_b4_pins_a &sdmmc2_d47_pins_a>;
+	disable-wp;
+	disable-cd;
+	no-removable;
+	no-sd;
+	no-sdio;
+	no-1-8-v;
+	st,neg-edge;
+	bus-width = <8>;
+	vmmc-supply = <&v3v3>;
+	vqmmc-supply = <&v3v3>;
+	status = "okay";
+};
+
+&ethernet0_rmii_pins_a {
+	pins1 {
+		pinmux = <STM32_PINMUX('B', 12, AF11)>, /* ETH1_RMII_TXD0 */
+			 <STM32_PINMUX('B', 13, AF11)>, /* ETH1_RMII_TXD1 */
+			 <STM32_PINMUX('B', 11, AF11)>, /* ETH1_RMII_TX_EN */
+			 <STM32_PINMUX('A', 2, AF11)>,  /* ETH1_MDIO */
+			 <STM32_PINMUX('C', 1, AF11)>;  /* ETH1_MDC */
+	};
+	pins2 {
+		pinmux = <STM32_PINMUX('C', 4, AF11)>,  /* ETH1_RMII_RXD0 */
+			 <STM32_PINMUX('C', 5, AF11)>,  /* ETH1_RMII_RXD1 */
+			 <STM32_PINMUX('A', 1, AF11)>,  /* ETH1_RMII_REF_CLK input */
+			 <STM32_PINMUX('A', 7, AF11)>;  /* ETH1_RMII_CRS_DV */
+	};
+};
+
+&sdmmc2_b4_pins_a {
+	pins1 {
+		pinmux = <STM32_PINMUX('B', 14, AF9)>, /* SDMMC2_D0 */
+			 <STM32_PINMUX('B', 7, AF10)>, /* SDMMC2_D1 */
+			 <STM32_PINMUX('B', 3, AF9)>, /* SDMMC2_D2 */
+			 <STM32_PINMUX('B', 4, AF9)>, /* SDMMC2_D3 */
+			 <STM32_PINMUX('G', 6, AF10)>; /* SDMMC2_CMD */
+	};
+};
+
+&sdmmc2_d47_pins_a {
+	pins {
+		pinmux = <STM32_PINMUX('A', 8, AF9)>, /* SDMMC2_D4 */
+			 <STM32_PINMUX('A', 9, AF10)>, /* SDMMC2_D5 */
+			 <STM32_PINMUX('C', 6, AF10)>, /* SDMMC2_D6 */
+			 <STM32_PINMUX('C', 7, AF10)>; /* SDMMC2_D7 */
+	};
+};

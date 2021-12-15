@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * Author: Sebastian Block <basti@linux-source.de>
  * Copyright (c) 2014

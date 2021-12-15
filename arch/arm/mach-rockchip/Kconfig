@@ -50,6 +50,12 @@ config MACH_RK3568_EVB
 	help
 	  Say Y here if you are using a RK3568 EVB
 
+config MACH_PINE64_QUARTZ64
+	select ARCH_RK3568
+	bool "Pine64 Quartz64"
+	help
+	  Say Y here if you are using a Pine64 Quartz64
+
 comment "select board features:"
 
 config ARCH_RK3568_OPTEE

@@ -13,9 +13,16 @@ image-$(CONFIG_MACH_PHYTEC_SOM_RK3288) += barebox-rk3288-phycore-som.img
 pblb-$(CONFIG_MACH_RK3568_EVB) += start_rk3568_evb
 image-$(CONFIG_MACH_RK3568_EVB) += barebox-rk3568-evb.img
 
+pblb-$(CONFIG_MACH_PINE64_QUARTZ64) += start_quartz64a
+image-$(CONFIG_MACH_PINE64_QUARTZ64) += barebox-quartz64a.img
+
 quiet_cmd_rkimg_image = RK-IMG $@
       cmd_rkimg_image = $(objtree)/scripts/rkimage -o $@ $(word 2,$^) $(word 1,$^)
 
 $(obj)/barebox-rk3568-evb.img: $(obj)/start_rk3568_evb.pblb \
                 $(board)/rockchip-rk3568-evb/sdram-init.bin
+	$(call if_changed,rkimg_image)
+
+$(obj)/barebox-quartz64a.img: $(obj)/start_quartz64a.pblb \
+                $(board)/pine64-quartz64/sdram-init.bin
 	$(call if_changed,rkimg_image)

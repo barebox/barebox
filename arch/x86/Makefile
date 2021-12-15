@@ -28,7 +28,9 @@ endif
 
 ifndef CONFIG_MODULES
 # Add cleanup flags
-ifneq ($(CONFIG_X86_EFI),y)
+ifeq ($(CONFIG_X86_EFI),y)
+LDFLAGS_barebox += -shared -Bsymbolic -znocombreloc
+else
 KBUILD_CPPFLAGS += -fdata-sections -ffunction-sections
 LDFLAGS_barebox += -static --gc-sections
 endif
@@ -52,25 +54,16 @@ common-y += arch/x86/lib/
 lds-$(CONFIG_X86_32)   := arch/x86/mach-efi/elf_ia32_efi.lds
 lds-$(CONFIG_X86_64)   := arch/x86/mach-efi/elf_x86_64_efi.lds
 
-cmd_barebox__ ?= $(LD) $(KBUILD_LDFLAGS) $(LDFLAGS_barebox) -o $@	\
-		-T $(lds-y)					\
-		-shared -Bsymbolic -nostdlib -znocombreloc	\
-		--whole-archive $(BAREBOX_OBJS)			\
-		--no-whole-archive				\
-		$(filter-out $(BAREBOX_LDS) $(BAREBOX_OBJS) FORCE ,$^)
-
-quiet_cmd_efi_image = EFI-IMG $@
-      cmd_efi_image = $(OBJCOPY) -j .text -j .sdata -j .data -j .dynamic \
-		      -j .dynsym -j .rel -j .rela -j .reloc -j __barebox_initcalls \
-		      -j __barebox_exitcalls -j __barebox_cmd -j .barebox_magicvar \
-		      -j .bbenv.* -j .bblogo.* --target=$(TARGET) $< $@
-
 KBUILD_BINARY := barebox
 
 KBUILD_LDFLAGS := --no-undefined
 
+OBJCOPYFLAGS_barebox.efi = \
+	-j .text -j .sdata -j .data -j .dynamic -j .dynsym -j .rel -j .rela \
+	-j .reloc -j .bbenv.* -j .bblogo.* --target=$(TARGET)
+
 barebox.efi: $(KBUILD_BINARY) FORCE
-	$(call if_changed,efi_image)
+	$(call if_changed,objcopy)
 
 KBUILD_IMAGE := barebox.efi
 

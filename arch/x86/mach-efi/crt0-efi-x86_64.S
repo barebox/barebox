@@ -47,14 +47,10 @@ _start:
 	lea image_base(%rip), %rdi
 	lea _DYNAMIC(%rip), %rsi
 
-	popq %rcx
-	popq %rdx
-	pushq %rcx
-	pushq %rdx
 	call _relocate
 
-	popq %rdi
 	popq %rsi
+	popq %rdi
 
 	call efi_main
 	addq $8, %rsp

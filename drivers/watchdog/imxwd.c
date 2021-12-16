@@ -47,6 +47,7 @@ struct imx_wd {
 #define IMX21_WDOG_WSR	0x02 /* Watchdog Service Register */
 #define IMX21_WDOG_WSTR	0x04 /* Watchdog Status Register  */
 #define IMX21_WDOG_WMCR	0x08 /* Misc Register */
+#define IMX21_WDOG_WCR_WDZST	(1 << 0)
 #define IMX21_WDOG_WCR_WDE	(1 << 2)
 #define IMX21_WDOG_WCR_WDT	(1 << 3)
 #define IMX21_WDOG_WCR_SRS	(1 << 4)
@@ -124,6 +125,9 @@ static int imx21_watchdog_set_timeout(struct imx_wd *priv, unsigned timeout)
 
 	if (priv->ext_reset)
 		val |= IMX21_WDOG_WCR_WDT;
+
+	/* Suspend timer in low power mode */
+	val |= IMX21_WDOG_WCR_WDZST;
 
 	/*
 	 * set time and some write once bits first prior enabling the

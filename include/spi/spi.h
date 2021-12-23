@@ -515,9 +515,14 @@ static inline int spi_driver_register(struct driver_d *drv)
 	return register_driver(drv);
 }
 
+#ifdef CONFIG_SPI
 #define coredevice_spi_driver(drv)	\
 	register_driver_macro(coredevice,spi,drv)
 #define device_spi_driver(drv)	\
 	register_driver_macro(device,spi,drv)
+#else
+#define coredevice_spi_driver(drv)
+#define device_spi_driver(drv)
+#endif
 
 #endif /* __INCLUDE_SPI_H */

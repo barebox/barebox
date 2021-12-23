@@ -401,7 +401,7 @@ static int ssd1307fb_probe(struct device_d *dev)
 	int i, j;
 
 	if (!node) {
-		dev_err(&client->dev, "No device tree data found!\n");
+		dev_err(dev, "No device tree data found!\n");
 		return -EINVAL;
 	}
 
@@ -421,22 +421,22 @@ static int ssd1307fb_probe(struct device_d *dev)
 		goto fb_alloc_error;
 	}
 
-	par->vbat = regulator_get(&client->dev, "vbat");
+	par->vbat = regulator_get(dev, "vbat");
 	if (IS_ERR(par->vbat)) {
-		dev_info(&client->dev, "Will not use VBAT");
+		dev_info(dev, "Will not use VBAT");
 		par->vbat = NULL;
 	}
 
 	ret = of_property_read_u32(node, "solomon,width", &par->width);
 	if (ret) {
-		dev_err(&client->dev,
+		dev_err(dev,
 			"Couldn't find 'solomon,width' in device tree.\n");
 		goto panel_init_error;
 	}
 
 	ret = of_property_read_u32(node, "solomon,height", &par->height);
 	if (ret) {
-		dev_err(&client->dev,
+		dev_err(dev,
 			"Couldn't find 'solomon,height' in device tree.\n");
 		goto panel_init_error;
 	}
@@ -444,7 +444,7 @@ static int ssd1307fb_probe(struct device_d *dev)
 	ret = of_property_read_u32(node, "solomon,page-offset",
 				   &par->page_offset);
 	if (ret) {
-		dev_err(&client->dev,
+		dev_err(dev,
 			"Couldn't find 'solomon,page_offset' in device tree.\n");
 		goto panel_init_error;
 	}
@@ -477,7 +477,7 @@ static int ssd1307fb_probe(struct device_d *dev)
 
 	vmem = malloc(vmem_size);
 	if (!vmem) {
-		dev_err(&client->dev, "Couldn't allocate graphical memory.\n");
+		dev_err(dev, "Couldn't allocate graphical memory.\n");
 		ret = -ENOMEM;
 		goto fb_alloc_error;
 	}
@@ -508,7 +508,7 @@ static int ssd1307fb_probe(struct device_d *dev)
 
 		ret = gpio_request_one(par->reset, flags, "oled-reset");
 		if (ret) {
-			dev_err(&client->dev,
+			dev_err(dev,
 				"failed to request gpio %d: %d\n",
 				par->reset, ret);
 			goto reset_oled_error;
@@ -546,7 +546,7 @@ static int ssd1307fb_probe(struct device_d *dev)
 	info->dev.parent = dev;
 	ret = register_framebuffer(info);
 	if (ret) {
-		dev_err(&client->dev, "Couldn't register the framebuffer\n");
+		dev_err(dev, "Couldn't register the framebuffer\n");
 		goto panel_init_error;
 	}
 
@@ -568,7 +568,7 @@ static int ssd1307fb_probe(struct device_d *dev)
 	ssd1307fb_write_array(par, array, par->width * par->height / 8);
 	kfree(array);
 
-	dev_info(&client->dev,
+	dev_info(dev,
 		 "ssd1307 framebuffer device registered, using %d bytes of video memory\n",
 		 vmem_size);
 

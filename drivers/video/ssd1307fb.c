@@ -23,6 +23,7 @@
 #include <gpio.h>
 #include <of_gpio.h>
 #include <regulator.h>
+#include <spi/spi.h>
 
 #define SSD1307FB_DATA                          0x40
 #define SSD1307FB_COMMAND                       0x80
@@ -73,12 +74,14 @@ struct ssd1307fb_par {
 	u32 dclk_frq;
 	const struct ssd1307fb_deviceinfo *device_info;
 	struct i2c_client *client;
+	struct spi_device *spi;
 	u32 height;
 	struct fb_info *info;
 	u32 page_offset;
 	u32 prechargep1;
 	u32 prechargep2;
 	int reset;
+	int dc;
 	struct regulator *vbat;
 	u32 seg_remap;
 	u32 vcomh;
@@ -98,6 +101,27 @@ static struct ssd1307fb_array *ssd1307fb_alloc_array(u32 len, u8 type)
 	array->type = type;
 
 	return array;
+}
+
+static int ssd1307fb_spi_write_array(struct ssd1307fb_par *par,
+				     struct ssd1307fb_array *array, u32 len)
+{
+	struct spi_device *spi = par->spi;
+	int ret;
+
+	if (array->type == SSD1307FB_COMMAND)
+		gpio_direction_output(par->dc, 0);
+	else
+		gpio_direction_output(par->dc, 1);
+
+	ret = spi_write(spi, array->data, len);
+	if (ret)
+		dev_err(&spi->dev, "Couldn't send SPI command.\n");
+
+	/* Ensure that we remain in data mode. */
+	gpio_direction_output(par->dc, 1);
+
+	return ret;
 }
 
 static int ssd1307fb_i2c_write_array(struct ssd1307fb_par *par,
@@ -386,6 +410,14 @@ static const struct of_device_id ssd1307fb_of_match[] = {
 		.data = (void *)&ssd1307fb_ssd1306_deviceinfo,
 	},
 	{
+		/*
+		 * The compatible of the SPI connected ssd1306 is not
+		 * documented as device tree binding.
+		 */
+		.compatible = "solomon,ssd1306",
+		.data = (void *)&ssd1307fb_ssd1306_deviceinfo,
+	},
+	{
 		.compatible = "solomon,ssd1309fb-i2c",
 		.data = (void *)&ssd1307fb_ssd1309_deviceinfo,
 	},
@@ -419,9 +451,20 @@ static int ssd1307fb_probe(struct device_d *dev)
 
 	par->device_info = (struct ssd1307fb_deviceinfo *)match->data;
 
-	par->client = to_i2c_client(dev);
-	i2c_set_clientdata(par->client, par);
-	par->write_array = ssd1307fb_i2c_write_array;
+	if (IS_ENABLED(CONFIG_I2C) && dev->bus == &i2c_bus) {
+		par->client = to_i2c_client(dev);
+		i2c_set_clientdata(par->client, par);
+		par->write_array = ssd1307fb_i2c_write_array;
+	}
+	if (IS_ENABLED(CONFIG_SPI) && dev->bus == &spi_bus) {
+		par->spi = to_spi_device(dev);
+		par->dc = of_get_named_gpio(node, "dc-gpios", 0);
+		if (!gpio_is_valid(par->dc)) {
+			ret = par->dc;
+			goto fb_alloc_error;
+		}
+		par->write_array = ssd1307fb_spi_write_array;
+	}
 
 	par->reset = of_get_named_gpio_flags(node,
 					 "reset-gpios", 0, &of_flags);
@@ -591,9 +634,16 @@ fb_alloc_error:
 	return ret;
 }
 
-static struct driver_d ssd1307fb_driver = {
-	.name = "ssd1307fb",
+static __maybe_unused struct driver_d ssd1307fb_i2c_driver = {
+	.name = "ssd1307fb-i2c",
 	.probe = ssd1307fb_probe,
 	.of_compatible = DRV_OF_COMPAT(ssd1307fb_of_match),
 };
-device_i2c_driver(ssd1307fb_driver);
+device_i2c_driver(ssd1307fb_i2c_driver);
+
+static __maybe_unused struct driver_d ssd1307fb_spi_driver = {
+	.name = "ssd1307fb-spi",
+	.probe = ssd1307fb_probe,
+	.of_compatible = DRV_OF_COMPAT(ssd1307fb_of_match),
+};
+device_spi_driver(ssd1307fb_spi_driver);

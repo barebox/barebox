@@ -333,9 +333,14 @@ static inline int i2c_driver_register(struct driver_d *drv)
 	return register_driver(drv);
 }
 
+#ifdef CONFIG_I2C
 #define coredevice_i2c_driver(drv) \
 	register_driver_macro(coredevice, i2c, drv)
 #define device_i2c_driver(drv) \
 	register_driver_macro(device, i2c, drv)
+#else
+#define coredevice_i2c_driver(drv)
+#define device_i2c_driver(drv)
+#endif
 
 #endif /* I2C_I2C_H */

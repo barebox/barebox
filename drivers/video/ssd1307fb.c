@@ -387,7 +387,6 @@ static const struct of_device_id ssd1307fb_of_match[] = {
 
 static int ssd1307fb_probe(struct device_d *dev)
 {
-	struct i2c_client *client = to_i2c_client(dev);
 	struct fb_info *info;
 	struct device_node *node = dev->device_node;
 	const struct of_device_id *match =
@@ -410,9 +409,11 @@ static int ssd1307fb_probe(struct device_d *dev)
 
 	info->priv = par;
 	par->info = info;
-	par->client = client;
 
 	par->device_info = (struct ssd1307fb_deviceinfo *)match->data;
+
+	par->client = to_i2c_client(dev);
+	i2c_set_clientdata(par->client, par);
 
 	par->reset = of_get_named_gpio_flags(node,
 					 "reset-gpios", 0, &of_flags);
@@ -518,8 +519,6 @@ static int ssd1307fb_probe(struct device_d *dev)
 	ret = regulator_disable(par->vbat);
 	if (ret < 0)
 		goto reset_oled_error;
-
-	i2c_set_clientdata(client, info);
 
 	if (par->reset > 0) {
 		/* Reset the screen */

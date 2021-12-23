@@ -53,6 +53,16 @@ struct ssd1307fb_deviceinfo {
 	int need_chargepump;
 };
 
+struct ssd1307fb_array {
+	u8 type;
+	u8 data[0];
+};
+
+struct ssd1307fb_par;
+
+typedef int (*ssd1307fb_write_array)(struct ssd1307fb_par *par,
+				     struct ssd1307fb_array *array, u32 len);
+
 struct ssd1307fb_par {
 	u32 com_invdir;
 	u32 com_lrremap;
@@ -73,11 +83,8 @@ struct ssd1307fb_par {
 	u32 seg_remap;
 	u32 vcomh;
 	u32 width;
-};
 
-struct ssd1307fb_array {
-	u8 type;
-	u8 data[0];
+	ssd1307fb_write_array write_array;
 };
 
 static struct ssd1307fb_array *ssd1307fb_alloc_array(u32 len, u8 type)
@@ -93,8 +100,8 @@ static struct ssd1307fb_array *ssd1307fb_alloc_array(u32 len, u8 type)
 	return array;
 }
 
-static int ssd1307fb_write_array(struct ssd1307fb_par *par,
-				 struct ssd1307fb_array *array, u32 len)
+static int ssd1307fb_i2c_write_array(struct ssd1307fb_par *par,
+				     struct ssd1307fb_array *array, u32 len)
 {
 	struct i2c_client *client = par->client;
 	int ret;
@@ -121,7 +128,7 @@ static inline int ssd1307fb_write_cmd(struct ssd1307fb_par *par, u8 cmd)
 
 	array->data[0] = cmd;
 
-	ret = ssd1307fb_write_array(par, array, 1);
+	ret = par->write_array(par, array, 1);
 	kfree(array);
 
 	return ret;
@@ -182,7 +189,7 @@ static void ssd1307fb_update_display(struct ssd1307fb_par *par)
 		}
 	}
 
-	ssd1307fb_write_array(par, array, par->width * par->height / 8);
+	par->write_array(par, array, par->width * par->height / 8);
 	kfree(array);
 }
 
@@ -414,6 +421,7 @@ static int ssd1307fb_probe(struct device_d *dev)
 
 	par->client = to_i2c_client(dev);
 	i2c_set_clientdata(par->client, par);
+	par->write_array = ssd1307fb_i2c_write_array;
 
 	par->reset = of_get_named_gpio_flags(node,
 					 "reset-gpios", 0, &of_flags);
@@ -564,7 +572,7 @@ static int ssd1307fb_probe(struct device_d *dev)
 		}
 	}
 
-	ssd1307fb_write_array(par, array, par->width * par->height / 8);
+	par->write_array(par, array, par->width * par->height / 8);
 	kfree(array);
 
 	dev_info(dev,

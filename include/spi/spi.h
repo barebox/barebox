@@ -108,6 +108,11 @@ struct spi_device {
 	 */
 };
 
+static inline struct spi_device *to_spi_device(struct device_d *dev)
+{
+        return dev ? container_of(dev, struct spi_device, dev) : NULL;
+}
+
 struct spi_message;
 
 /**

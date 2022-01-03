@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * JFFS2 -- Journalling Flash File System, Version 2.
  *
@@ -7,9 +8,6 @@
  *		    University of Szeged, Hungary
  *
  * Created by Arjan van de Ven <arjan@infradead.org>
- *
- * For licensing information, see the file 'LICENCE' in this directory.
- *
  */
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 #include <common.h>

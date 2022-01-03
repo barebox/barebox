@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * JFFS2 -- Journalling Flash File System, Version 2.
  *
@@ -5,9 +6,6 @@
  * Copyright © 2004-2010 David Woodhouse <dwmw2@infradead.org>
  *
  * Created by David Woodhouse <dwmw2@infradead.org>
- *
- * For licensing information, see the file 'LICENCE' in this directory.
- *
  */
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 pblb-$(CONFIG_BOARD_CI20) += start_img_ci20
 FILE_barebox-img-ci20.img = start_img_ci20.pblb
 image-$(CONFIG_BOARD_CI20) += barebox-img-ci20.img

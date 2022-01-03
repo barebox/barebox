@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+#
 # %.mlo - convert into mlo image
 # ----------------------------------------------------------------
 quiet_cmd_omap3_mlo_image = MLO     $@

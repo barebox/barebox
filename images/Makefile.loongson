@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 pblb-$(CONFIG_BOARD_LOONGSON_TECH_LS1B) += start_loongson_ls1b
 FILE_barebox-loongson-ls1b.img = start_loongson_ls1b.pblb
 image-$(CONFIG_BOARD_LOONGSON_TECH_LS1B) += barebox-loongson-ls1b.img

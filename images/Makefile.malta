@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 quiet_cmd_bswap32_image = BSWAP4  $@
       cmd_bswap32_image = cp $< $@ && \
 			  truncate -s %4 $@ && \

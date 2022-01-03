@@ -1155,7 +1155,7 @@ static int imx_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *dat
 	enum filetype filetype;
 	unsigned num_blocks_fw, fw_size;
 	int used = 0;
-	int fw_orig_len;
+	int fw_orig_len = 0;
 	int used_refresh = 0, unused_refresh = 0;
 
 	if (data->image) {

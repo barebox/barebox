@@ -1,2 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 elf_x86_64_efi.lds
 elf_ia32_efi.lds

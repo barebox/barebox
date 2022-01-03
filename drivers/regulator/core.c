@@ -71,6 +71,11 @@ static int regulator_disable_internal(struct regulator_internal *ri)
 	if (!ri->enable_count)
 		return -EINVAL;
 
+	if (ri->enable_count > 1) {
+		ri->enable_count--;
+		return 0;
+	}
+
 	if (!ri->rdev->desc->ops->disable)
 		return -ENOSYS;
 

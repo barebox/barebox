@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 /*
  * based on mach-imx/include/mach/debug_ll.h
  */

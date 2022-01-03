@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 
 /* the EP93xx expects to find the pattern 'CRUS' at 0x1000 */
 

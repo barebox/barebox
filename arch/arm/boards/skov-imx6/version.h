@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __SKOV_VERSION_H
 #define __SKOV_VERSION_H
 

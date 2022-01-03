@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 /*
  * arch/arm/mach-pxa/include/mach/udc_pxa2xx.h
  *

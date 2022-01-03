@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __MACH_USB_H_
 #define __MACH_USB_H_
 

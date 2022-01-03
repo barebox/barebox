@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #include <linux/stringify.h>
 #include <mach/common.h>
 

@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __MACH_ESDCTL_V4_H
 #define __MACH_ESDCTL_V4_H
 

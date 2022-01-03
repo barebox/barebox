@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __MACH_SOCFPGA_REGS_H
 #define __MACH_SOCFPGA_REGS_H
 

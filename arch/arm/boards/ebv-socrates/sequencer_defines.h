@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef _SEQUENCER_DEFINES_H_
 #define _SEQUENCER_DEFINES_H_
 

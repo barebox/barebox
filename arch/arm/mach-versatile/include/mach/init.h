@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 
 #ifndef __VERSATILE_INIT_H__
 #define __VERSATILE_INIT_H__

@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __ASM_MACH_ATH79_PBL_LL_INIT_QCA4531_H
 #define __ASM_MACH_ATH79_PBL_LL_INIT_QCA4531_H
 

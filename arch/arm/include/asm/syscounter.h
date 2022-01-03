@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef _ASM_SYSCNT_H_
 #define _ASM_SYSCNT_H_
 

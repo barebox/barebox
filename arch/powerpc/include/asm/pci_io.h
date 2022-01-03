@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 /* originally from linux source (asm-ppc/io.h).
  * Sanity added by Rob Taylor, Flying Pig Systems, 2000
  */

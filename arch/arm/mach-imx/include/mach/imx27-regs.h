@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef _IMX27_REGS_H
 #define _IMX27_REGS_H
 

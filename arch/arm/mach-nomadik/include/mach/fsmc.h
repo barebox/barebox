@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 /* Definitions for the Nomadik FSMC "Flexible Static Memory controller" */
 
 #ifndef __ASM_ARCH_FSMC_H

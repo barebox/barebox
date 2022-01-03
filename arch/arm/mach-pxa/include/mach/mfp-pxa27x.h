@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __ASM_ARCH_MFP_PXA27X_H
 #define __ASM_ARCH_MFP_PXA27X_H
 

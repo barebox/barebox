@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __MACH_LAYERSCAPE_BBU_H
 #define __MACH_LAYERSCAPE_BBU_H
 

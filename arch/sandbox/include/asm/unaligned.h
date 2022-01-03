@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef _ASM_SANDBOX_UNALIGNED_H
 #define _ASM_SANDBOX_UNALIGNED_H
 

@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef _MACH_SOCFPGA_PRELOADER_PLL_CONFIG_H_
 #define _MACH_SOCFPGA_PRELOADER_PLL_CONFIG_H_
 

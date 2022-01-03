@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __INCLUDE_ASM_ARCH_IMX_PLL_H
 #define __INCLUDE_ASM_ARCH_IMX_PLL_H
 

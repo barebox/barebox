@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __ENTRY_H__
 #define __ENTRY_H__
 

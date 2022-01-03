@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __MACH_STM32MP1_DEBUG_LL_H
 #define __MACH_STM32MP1_DEBUG_LL_H
 

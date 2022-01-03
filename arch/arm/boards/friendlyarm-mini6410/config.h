@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 /* FriendlyARM Mini6410 specific global settings */
 
 #ifndef _MINI6410_CONFIG_H_

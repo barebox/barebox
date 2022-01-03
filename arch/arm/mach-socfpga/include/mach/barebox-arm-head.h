@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 static inline void __barebox_arm_head(void)
 {
 	__asm__ __volatile__ (

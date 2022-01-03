@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __ASM_SANDBOX_ELF_H__
 #define __ASM_SANDBOX_ELF_H__
 

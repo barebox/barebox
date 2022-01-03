@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __ASM_MACH_LOONGSON1_PBL_MACROS_H
 #define __ASM_MACH_LOONGSON1_PBL_MACROS_H
 

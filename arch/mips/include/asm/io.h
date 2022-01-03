@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 /*
  * Stolen from the linux-2.6/include/asm-generic/io.h
  */

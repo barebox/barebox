@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __MACH_OMAP4_GENERIC_H
 #define __MACH_OMAP4_GENERIC_H
 

@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __MACH_IMX8_CCM_REGS_H__
 #define __MACH_IMX8_CCM_REGS_H__
 

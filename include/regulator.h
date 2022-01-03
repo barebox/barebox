@@ -173,6 +173,7 @@ const char *rdev_get_name(struct regulator_dev *rdev);
 #ifdef CONFIG_REGULATOR
 
 struct regulator *regulator_get(struct device *, const char *);
+void regulator_put(struct regulator *r);
 struct regulator *regulator_get_name(const char *name);
 int regulator_enable(struct regulator *);
 int regulator_disable(struct regulator *);

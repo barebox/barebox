@@ -45,6 +45,10 @@ struct clk *clk_register_fixed_rate(const char *name,
 		if (!parent_names)
 			return ERR_PTR(-ENOMEM);
 
+		parent_names[0] = strdup(parent_name);
+		if (!parent_names[0])
+			return ERR_PTR(-ENOMEM);
+
 		fix->hw.clk.parent_names = parent_names;
 		fix->hw.clk.num_parents = 1;
 	}

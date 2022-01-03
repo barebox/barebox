@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include <common.h>
 #include <asm/sections.h>
 #include <linux/sizes.h>

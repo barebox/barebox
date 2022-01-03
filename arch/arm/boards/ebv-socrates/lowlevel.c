@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include "sdram_config.h"
 #include "pinmux_config.c"
 #include "pll_config.h"

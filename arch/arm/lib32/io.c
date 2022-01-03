@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include <module.h>
 #include <linux/types.h>
 #include <io.h>

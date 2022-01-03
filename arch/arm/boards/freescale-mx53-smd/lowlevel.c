@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include <common.h>
 #include <mach/imx53-regs.h>
 #include <mach/esdctl.h>

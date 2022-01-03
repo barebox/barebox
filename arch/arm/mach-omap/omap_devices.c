@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include <driver.h>
 #include <platform_data/serial-ns16550.h>
 #include <asm/armlinux.h>

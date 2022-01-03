@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include <bootm.h>
 #include <boot.h>
 #include <common.h>

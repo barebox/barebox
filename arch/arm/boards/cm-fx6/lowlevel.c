@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #define pr_fmt(fmt) "cm-fx6: " fmt
 
 #include <common.h>

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include <debug_ll.h>
 #include <mach/clock-imx51_53.h>
 #include <mach/iomux-mx51.h>

@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef _PICOPNG_H
 #define _PICOPNG_H
 

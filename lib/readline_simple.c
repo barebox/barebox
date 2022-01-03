@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include <common.h>
 
 static char erase_seq[] = "\b \b";		/* erase sequence	*/

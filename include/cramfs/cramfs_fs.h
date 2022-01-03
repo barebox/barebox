@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __CRAMFS_H
 #define __CRAMFS_H
 

@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __USB_GADGET_MULTI_H
 #define __USB_GADGET_MULTI_H
 

@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __VIDEO_FOURCC_H
 #define __VIDEO_FOURCC_H
 

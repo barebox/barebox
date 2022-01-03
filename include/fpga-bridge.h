@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #include <common.h>
 
 #ifndef _LINUX_FPGA_BRIDGE_H

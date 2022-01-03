@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef _MATRIX_KEYPAD_H
 #define _MATRIX_KEYPAD_H
 

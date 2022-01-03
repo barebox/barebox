@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 /*
  * $Id: mtd-abi.h,v 1.13 2005/11/07 11:14:56 gleixner Exp $
  *

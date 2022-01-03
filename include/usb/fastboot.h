@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef _USB_FASTBOOT_H
 #define _USB_FASTBOOT_H
 

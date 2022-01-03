@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __IMX_UART_H__
 #define __IMX_UART_H__
 

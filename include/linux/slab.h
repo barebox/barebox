@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef _LINUX_SLAB_H
 #define _LINUX_SLAB_H
 

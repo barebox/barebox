@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef _LINUX_PCA953X_H
 #define _LINUX_PCA953X_H
 

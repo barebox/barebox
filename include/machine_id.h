@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __MACHINE_ID_H__
 #define __MACHINE_ID_H__
 

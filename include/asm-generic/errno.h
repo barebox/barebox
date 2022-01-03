@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef _ARM_ERRNO_H
 #define _ARM_ERRNO_H
 

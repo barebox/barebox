@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef _LINUX_BUG_H
 #define _LINUX_BUG_H
 

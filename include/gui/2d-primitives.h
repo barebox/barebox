@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __2D_PRIMITIVES__
 #define __2D_PRIMITIVES__
 

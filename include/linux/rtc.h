@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 /*
  * Generic RTC interface.
  * This version contains the part of the user interface to the Real Time Clock

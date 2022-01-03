@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 /*
  * Device tables which are exported to userspace via
  * scripts/mod/file2alias.c.  You must keep that file in sync with this

@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __FSL_UDC_H
 #define __FSL_UDC_H
 

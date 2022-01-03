@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef _LINUX_WAIT_H
 #define _LINUX_WAIT_H
 /*

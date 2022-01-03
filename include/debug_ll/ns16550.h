@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __DEBUG_LL_NS16550_H
 #define __DEBUG_LL_NS16550_H
 

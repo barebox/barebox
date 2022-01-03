@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __SOC_IMX8M_CLK_EARLY_H
 #define __SOC_IMX8M_CLK_EARLY_H
 

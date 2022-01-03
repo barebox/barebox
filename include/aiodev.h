@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 /*
  * core.c - Code implementing core functionality of AIODEV susbsystem
  *

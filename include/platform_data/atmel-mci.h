@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef PLATFORM_DATA_ATMEL_MCI_H
 #define PLATFORM_DATA_ATMEL_MCI_H
 

@@ -84,7 +84,8 @@ struct regulator_desc {
 struct regulator_dev {
 	const struct regulator_desc *desc;
 	struct regmap *regmap;
-	int boot_on;
+	bool boot_on;
+	bool always_on;
 	/* the device this regulator device belongs to */
 	struct device_d *dev;
 };

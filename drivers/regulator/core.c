@@ -130,7 +130,7 @@ static struct regulator_internal * __regulator_register(struct regulator_dev *rd
 	if (name)
 		ri->name = xstrdup(name);
 
-	if (rd->boot_on) {
+	if (rd->boot_on && rd->always_on) {
 		ret = regulator_enable_internal(ri);
 		if (ret && ret != -ENOSYS)
 			goto err;
@@ -163,6 +163,7 @@ int of_regulator_register(struct regulator_dev *rd, struct device_node *node)
 		return -EINVAL;
 
 	rd->boot_on = of_property_read_bool(node, "regulator-boot-on");
+	rd->always_on = of_property_read_bool(node, "regulator-always-on");
 
 	name = of_get_property(node, "regulator-name", NULL);
 

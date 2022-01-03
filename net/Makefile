@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 obj-y			+= lib.o
 obj-$(CONFIG_NET)	+= eth.o
 obj-$(CONFIG_NET)	+= net.o

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 KBUILD_DEFCONFIG := generic_defconfig
 
 KBUILD_CPPFLAGS += -D__OR1K__ -ffixed-r10 -mhard-mul -mhard-div

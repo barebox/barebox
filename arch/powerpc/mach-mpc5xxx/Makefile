@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 obj-y 				+= cpu.o
 obj-y				+= cpu_init.o
 obj-y				+= loadtask.o

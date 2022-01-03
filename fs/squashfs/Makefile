@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 obj-y	+= squashfs.o
 obj-y	+= block.o
 obj-y	+= cache.o

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 config LZO_DECOMPRESS
 	bool "include lzo uncompression support"
 	select UNCOMPRESS

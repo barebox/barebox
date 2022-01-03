@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 machine-y := sandbox
 
 machdirs := $(patsubst %,arch/sandbox/mach-%/,$(machine-y))

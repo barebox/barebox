@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 menuconfig BAREBOX_LOGO
 	bool "include barebox logos in build"
 	help

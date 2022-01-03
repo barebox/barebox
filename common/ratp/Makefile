@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 obj-y += ratp.o
 obj-y += ping.o
 obj-y += getenv.o

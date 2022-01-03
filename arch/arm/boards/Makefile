@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 # keep sorted by CONFIG_* macro name.
 obj-$(CONFIG_MACH_ADVANTECH_ROM_742X)		+= advantech-mx6/
 obj-$(CONFIG_MACH_AFI_GF)			+= afi-gf/

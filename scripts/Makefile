@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 ###
 # scripts contains sources for various helper programs used throughout
 # barebox for the build process.

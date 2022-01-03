@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 obj-$(CONFIG_BOARD_8DEVICES_LIMA) += 8devices-lima/
 obj-$(CONFIG_BOARD_BLACK_SWIFT) += black-swift/
 obj-$(CONFIG_BOARD_CI20) += img-ci20/

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 KBUILD_DEFCONFIG := qemu_virt64_defconfig
 
 KBUILD_CPPFLAGS	+= -D__ARM__ -fno-strict-aliasing

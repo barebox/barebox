@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 obj-$(CONFIG_X86_64) += reloc_x86_64.o crt0-efi-x86_64.o
 obj-$(CONFIG_X86_32) += reloc_ia32.o crt0-efi-ia32.o
 obj-y += clocksource.o

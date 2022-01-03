@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 CFLAGS_tegra_avp_init.o := -mcpu=arm7tdmi -march=armv4t
 CFLAGS_tegra_avp_init.pbl.o := -mcpu=arm7tdmi -march=armv4t
 lwl-y += tegra_avp_init.o

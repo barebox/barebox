@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 menuconfig BOOTSTRAP
 	bool "Library bootstrap routines"
 	depends on SHELL_NONE

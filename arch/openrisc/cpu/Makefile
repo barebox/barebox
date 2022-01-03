@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 obj-y                 += start.o
 obj-y                 += cpu.o
 obj-y                 += exceptions.o

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 menuconfig FS_JFFS2
 	bool
 	select CRC32

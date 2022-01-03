@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 hostprogs-always-y	+= modpost mk_elfconfig
 always-y		+= empty.o
 

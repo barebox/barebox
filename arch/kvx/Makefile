@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 KBUILD_DEFCONFIG := generic_defconfig
 
 KBUILD_CPPFLAGS += -fno-strict-aliasing

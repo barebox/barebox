@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 obj-y += rockchip.o
 pbl-$(CONFIG_ARCH_RK3568) += atf.o
 obj-$(CONFIG_ARCH_RK3188) += rk3188.o

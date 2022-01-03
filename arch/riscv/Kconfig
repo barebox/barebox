@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 config RISCV
 	def_bool y
 	select GENERIC_FIND_NEXT_BIT

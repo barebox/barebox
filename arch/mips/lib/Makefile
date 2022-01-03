@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 extra-$(CONFIG_GENERIC_LINKER_SCRIPT) += barebox.lds
 obj-$(CONFIG_CSRC_R4K_LIB) += csrc-r4k.o
 obj-y += cpu-probe.o

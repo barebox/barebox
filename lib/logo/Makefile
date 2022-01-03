@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0-only
 
 OPTS_barebox-logo-w64.bblogo = -resize 64
 bblogo-$(CONFIG_BAREBOX_LOGO_64) += barebox-logo-w64

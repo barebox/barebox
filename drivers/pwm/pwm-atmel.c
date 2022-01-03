@@ -256,7 +256,7 @@ static int atmel_pwm_probe(struct device_d *dev)
 	if (IS_ERR(res))
 		return PTR_ERR(res);
 
-	atmel_pwm->base = IOMEM(res);
+	atmel_pwm->base = IOMEM(res->start);
 
 	for (i = 0; i < PWM_CHANNELS; i++) {
 		struct atmel_pwm_chip *chip = &atmel_pwm->atmel_pwm_chip[i];

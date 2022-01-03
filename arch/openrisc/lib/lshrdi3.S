@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 /*
  * (C) Copyright 2011 - Franck JULLIEN <elec4fun@gmail.com>
  *

@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #include <linux/linkage.h>
 #include <asm/ptrace.h>
 #include <asm-generic/memory_layout.h>

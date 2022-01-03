@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #include <linux/linkage.h>
 
 .section .text.ls1046a_init_l2_latency

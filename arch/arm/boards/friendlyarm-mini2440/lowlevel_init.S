@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 /*
  * Low level initialization for the FriendlyARM mini2440 board
  */

@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 /*
  * For clock initialization, see chapter 3 of the "MCIMX27 Multimedia
  * Applications Processor Reference Manual, Rev. 0.2".

@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 soc imx53
 loadaddr 0x70000000
 ivtofs 0x400

@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 
 #define SETUP_MDCFG0			\
 	wm 32 0x021B000C 0x676B52F3

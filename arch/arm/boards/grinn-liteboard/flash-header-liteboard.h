@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 
 loadaddr 0x80000000
 soc imx6

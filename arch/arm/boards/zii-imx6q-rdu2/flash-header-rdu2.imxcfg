@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 soc imx6
 loadaddr 0x00907000
 max_load_size 0x31000

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 soc imx8mm
 
 loadaddr 0x007e1000

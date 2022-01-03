@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 /* MDMISC	mirroring	interleaved (row/bank/col) */
 wm 32 MX6_MMDC_P0_MDMISC		0x00000742
 check 32 until_all_bits_set MX6_MMDC_P0_MDMISC 0x00000002

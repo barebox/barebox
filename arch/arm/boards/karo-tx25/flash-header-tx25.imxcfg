@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0-only
 #
 # currently unused in barebox, but useful to generate
 # a imx-image to use with imx-usb-loader

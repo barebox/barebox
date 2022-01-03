@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0-only
 
 #define SETUP_MDASP_MDCTL		\
 	wm 32 0x021B0040 0x0000004F;	\

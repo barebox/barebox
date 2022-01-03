@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 
 #include "flash-header-phytec-pcl063-512mb.h"
 #include <mach/habv4-imx6-gencsf.h>

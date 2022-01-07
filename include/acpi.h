@@ -10,6 +10,78 @@
 #include <linux/types.h>
 #include <driver.h>
 
+/* Names within the namespace are 4 bytes long */
+
+#define ACPI_NAMESEG_SIZE               4	/* Fixed by ACPI spec */
+#define ACPI_PATH_SEGMENT_LENGTH        5	/* 4 chars for name + 1 char for separator */
+#define ACPI_PATH_SEPARATOR             '.'
+
+/* Sizes for ACPI table headers */
+
+#define ACPI_OEM_ID_SIZE                6
+#define ACPI_OEM_TABLE_ID_SIZE          8
+
+/*
+ * Algorithm to obtain access bit or byte width.
+ * Can be used with access_width of struct acpi_generic_address and access_size of
+ * struct acpi_resource_generic_register.
+ */
+#define ACPI_ACCESS_BIT_WIDTH(size)     (1 << ((size) + 2))
+#define ACPI_ACCESS_BYTE_WIDTH(size)    (1 << ((size) - 1))
+
+/* Address Space (Operation Region) Types */
+
+typedef u8 acpi_adr_space_type;
+#define ACPI_ADR_SPACE_SYSTEM_MEMORY    (acpi_adr_space_type) 0
+#define ACPI_ADR_SPACE_SYSTEM_IO        (acpi_adr_space_type) 1
+#define ACPI_ADR_SPACE_PCI_CONFIG       (acpi_adr_space_type) 2
+#define ACPI_ADR_SPACE_EC               (acpi_adr_space_type) 3
+#define ACPI_ADR_SPACE_SMBUS            (acpi_adr_space_type) 4
+#define ACPI_ADR_SPACE_CMOS             (acpi_adr_space_type) 5
+#define ACPI_ADR_SPACE_PCI_BAR_TARGET   (acpi_adr_space_type) 6
+#define ACPI_ADR_SPACE_IPMI             (acpi_adr_space_type) 7
+#define ACPI_ADR_SPACE_GPIO             (acpi_adr_space_type) 8
+#define ACPI_ADR_SPACE_GSBUS            (acpi_adr_space_type) 9
+#define ACPI_ADR_SPACE_PLATFORM_COMM    (acpi_adr_space_type) 10
+#define ACPI_ADR_SPACE_PLATFORM_RT      (acpi_adr_space_type) 11
+
+/*******************************************************************************
+ *
+ * Master ACPI Table Header. This common header is used by all ACPI tables
+ * except the RSDP and FACS.
+ *
+ ******************************************************************************/
+
+struct __packed acpi_table_header {
+	char signature[ACPI_NAMESEG_SIZE];	/* ASCII table signature */
+	u32 length;		/* Length of table in bytes, including this header */
+	u8 revision;		/* ACPI Specification minor version number */
+	u8 checksum;		/* To make sum of entire table == 0 */
+	char oem_id[ACPI_OEM_ID_SIZE];	/* ASCII OEM identification */
+	char oem_table_id[ACPI_OEM_TABLE_ID_SIZE];	/* ASCII OEM table identification */
+	u32 oem_revision;	/* OEM revision number */
+	char asl_compiler_id[ACPI_NAMESEG_SIZE];	/* ASCII ASL compiler vendor ID */
+	u32 asl_compiler_revision;	/* ASL compiler version */
+};
+
+/*******************************************************************************
+ *
+ * GAS - Generic Address Structure (ACPI 2.0+)
+ *
+ * Note: Since this structure is used in the ACPI tables, it is byte aligned.
+ * If misaligned access is not supported by the hardware, accesses to the
+ * 64-bit Address field must be performed with care.
+ *
+ ******************************************************************************/
+
+struct __packed acpi_generic_address {
+	u8 space_id;		/* Address space where struct or register exists */
+	u8 bit_width;		/* Size in bits of given register */
+	u8 bit_offset;		/* Bit offset within the register */
+	u8 access_width;	/* Minimum Access size (ACPI 3.0) */
+	u64 address;		/* 64-bit address of struct or register */
+};
+
 typedef char acpi_sig_t[4];
 
 struct __packed acpi_rsdp { /* root system description pointer */

@@ -21,6 +21,9 @@ static void __noreturn riscvemu_restart(struct restart_handler *rst)
 {
 	struct riscvemu_priv *priv = container_of(rst, struct riscvemu_priv, rst);
 
+	/* clear screen on graphic console */
+	puts("\e[J");
+
 	/*
 	 * barebox PBL relocates itself to end of RAM early on, so unless
 	 * something explicitly scrubbed the initial PBL, we can jump back to

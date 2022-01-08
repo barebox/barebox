@@ -11,6 +11,10 @@
 #define HTIF_DEV_SYSCALL		0
 #define		HTIF_CMD_SYSCALL	0
 
+#define HTIF_DEV_CONSOLE		1 /* blocking character device */
+#define		HTIF_CMD_GETCHAR	0
+#define		HTIF_CMD_PUTCHAR	1
+
 #ifndef __ASSEMBLY__
 
 #include <linux/types.h>
@@ -24,6 +28,11 @@ static inline void __htif_tohost(void __iomem *htif, u8 device, u8 command, u64 
 static inline void htif_tohost(u8 device, u8 command, u64 arg)
 {
 	__htif_tohost(IOMEM(HTIF_DEFAULT_BASE_ADDR), device, command, arg);
+}
+
+static inline void htif_putc(void __iomem *base, int c)
+{
+	__htif_tohost(base, HTIF_DEV_CONSOLE, HTIF_CMD_PUTCHAR, c);
 }
 
 #endif

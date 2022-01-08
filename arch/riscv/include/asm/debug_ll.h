@@ -53,6 +53,17 @@ static inline void PUTC_LL(char ch)
 
 #include <asm/debug_ll_litex.h>
 
+#elif defined CONFIG_DEBUG_RISCVEMU_HTIF
+
+#include <asm/htif.h>
+
+#ifndef __ASSEMBLY__
+static inline void PUTC_LL(char ch)
+{
+	htif_putc(IOMEM(HTIF_DEFAULT_BASE_ADDR), ch);
+}
+#endif
+
 #endif
 
 #ifndef debug_ll_init

@@ -1401,6 +1401,15 @@ config DEBUG_RISCV_VIRT
 	depends on SOC_VIRT
 	select DEBUG_LL_NS16550
 
+config DEBUG_RISCVEMU_HTIF
+	bool "riscvemu HTIF port"
+	depends on SOC_VIRT
+	help
+	  When run without graphics support, tinyemu will expose access
+	  to the Virt I/O console as HTIF blocking console device as well.
+	  This is useful for low level debugging before Virt I/O DMA is
+	  initialized.
+
 config DEBUG_SIFIVE
 	bool "SiFive serial0 port"
 	depends on SOC_SIFIVE

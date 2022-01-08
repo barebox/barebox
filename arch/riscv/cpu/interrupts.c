@@ -14,6 +14,7 @@
 #include <asm/ptrace.h>
 #include <asm/irq.h>
 #include <asm/csr.h>
+#include <asm/unwind.h>
 #include <abort.h>
 #include <pbl.h>
 
@@ -81,6 +82,8 @@ static void report_trap(const struct pt_regs *regs)
 	       regs->epc, regs->ra, regs->badaddr);
 
 	show_regs(regs);
+
+	unwind_backtrace(regs);
 }
 
 

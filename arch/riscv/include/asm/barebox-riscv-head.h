@@ -23,6 +23,7 @@
 		".ascii \"" magic2 "\"\n"      /* magic 2 */                          \
 		".word 0\n"                    /* reserved (PE-COFF offset) */        \
 		"1:\n"                                                                \
+		"li fp, 0\n"                                                          \
 	)
 
 #define __barebox_riscv_header(instr, load_offset, version, magic1, magic2) \

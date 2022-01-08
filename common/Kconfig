@@ -1207,6 +1207,18 @@ config DEBUG_LL
 	  platform *will not work*, so this option should not be enabled
 	  for builds that are intended to be portable.
 
+config ARCH_WANT_FRAME_POINTERS
+	bool
+
+config FRAME_POINTER
+	bool "Compile barebox with frame pointers" if COMPILE_TEST
+	default y if ARCH_WANT_FRAME_POINTERS
+	help
+	  Selected by platforms that expect frame pointer usage, e.g.
+	  when stack unwinding is enabled. The resulting barebox image
+	  will be slightly larger and slower, but it can give precise
+	  debugging information when print stack traces.
+
 choice
 	prompt "Kernel low-level debugging port"
 	depends on DEBUG_LL

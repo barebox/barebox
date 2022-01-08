@@ -632,6 +632,11 @@ endif # need-config
 
 KBUILD_CFLAGS		+= -ggdb3
 
+ifdef CONFIG_FRAME_POINTER
+KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
+KBUILD_CFLAGS	+= $(call cc-disable-warning,frame-address,)
+endif
+
 # Force gcc to behave correct even for buggy distributions
 KBUILD_CFLAGS          += $(call cc-option, -fno-stack-protector)
 

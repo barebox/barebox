@@ -2,6 +2,8 @@
 #ifndef __PRINTK_H
 #define __PRINTK_H
 
+#include <linux/types.h>
+
 #define KERN_EMERG      ""   /* system is unusable                   */
 #define KERN_ALERT      ""   /* action must be taken immediately     */
 #define KERN_CRIT       ""   /* critical conditions                  */

@@ -116,4 +116,14 @@
 			};
 		};
 	};
+
+	fragment@4 {
+		target-path = "/htif";
+		#address-cells = <2>;
+		#size-cells = <2>;
+
+		__overlay__ {
+			reg = <0 0x40008000 0 0x8>;
+		};
+	};
 };

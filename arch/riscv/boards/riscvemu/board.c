@@ -7,6 +7,7 @@
 #include <driver.h>
 #include <poweroff.h>
 #include <restart.h>
+#include <deep-probe.h>
 #include <asm/system.h>
 #include <asm/barebox-riscv.h>
 
@@ -28,11 +29,18 @@ static void __noreturn riscvemu_restart(struct restart_handler *rst)
 	priv->restart(riscv_hartid(), barebox_riscv_boot_dtb());
 }
 
+extern char __dtb_overlay_of_sram_start[];
+
 static int riscvemu_probe(struct device_d *dev)
 {
 	struct device_node *of_chosen;
+	struct device_node *overlay;
 	struct riscvemu_priv *priv;
 	u64 start;
+
+	overlay = of_unflatten_dtb(__dtb_overlay_of_sram_start, INT_MAX);
+	of_overlay_apply_tree(dev->device_node, overlay);
+	/* of_probe() will happen later at of_populate_initcall */
 
 	of_chosen = of_find_node_by_path("/chosen");
 
@@ -52,6 +60,7 @@ static const struct of_device_id riscvemu_of_match[] = {
 	{ .compatible = "ucbbar,riscvemu-bar_dev" },
 	{ /* sentinel */ },
 };
+BAREBOX_DEEP_PROBE_ENABLE(riscvemu_of_match);
 
 static struct driver_d riscvemu_board_driver = {
 	.name = "board-riscvemu",

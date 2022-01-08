@@ -21,6 +21,13 @@ menu "Commands"
 
 menu "Information"
 
+config CMD_TUTORIAL
+	bool "barebox tutorial (next command)"
+	default SANDBOX
+	help
+	  Help navigate a barebox tutorial available
+	  in /env/data/tutorial/
+
 config CMD_AT91CLK
 	bool "at91clk"
 	default y

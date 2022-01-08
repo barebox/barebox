@@ -14,17 +14,18 @@
 #include <command.h>
 #include <environment.h>
 
-static int file_complete(struct string_list *sl, char *instr, int exec)
+static int file_complete(struct string_list *sl, char *instr,
+			 const char *dirn, int exec)
 {
 	char *path = strdup(instr);
 	struct stat s;
 	DIR *dir;
 	struct dirent *d;
 	char tmp[PATH_MAX];
-	char *base, *dirn;
+	char *base;
 
 	base = basename(instr);
-	dirn = dirname(path);
+	dirn = dirn ?: dirname(path);
 
 	dir = opendir(dirn);
 	if (!dir)
@@ -250,11 +251,19 @@ EXPORT_SYMBOL(devicetree_complete);
 int devicetree_file_complete(struct string_list *sl, char *instr)
 {
 	devicetree_complete(sl, instr);
-	file_complete(sl, instr, 0);
+	file_complete(sl, instr, NULL, 0);
 
 	return 0;
 }
 EXPORT_SYMBOL(devicetree_file_complete);
+
+int tutorial_complete(struct string_list *sl, char *instr)
+{
+	file_complete(sl, instr, "/env/data/tutorial", 0);
+
+	return 0;
+}
+EXPORT_SYMBOL(tutorial_complete);
 
 static int env_param_complete(struct string_list *sl, char *instr, int eval)
 {
@@ -392,11 +401,11 @@ int complete(char *instr, char **outstr)
 	if (!instr) {
 		instr = t;
 		if (t && (t[0] == '/' || !strncmp(t, "./", 2))) {
-			file_complete(&sl, t, 1);
+			file_complete(&sl, t, NULL, 1);
 			instr = t;
 		} else if ((t = strrchr(t, ' '))) {
 			t++;
-			file_complete(&sl, t, 0);
+			file_complete(&sl, t, NULL, 0);
 			instr = t;
 		} else {
 			command_complete(&sl, instr);

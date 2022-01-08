@@ -84,7 +84,7 @@ nmon_main:
 	debug_ll_getc
 
 	li	a0, 'q'
-	bne	s0, a0, 3f
+	bne	s1, a0, 3f
 
 	jal	a2, _nmon_outc_a0
 
@@ -92,13 +92,13 @@ nmon_main:
 
 3:
 	li	a0, 'd'
-	beq	s0, a0, nmon_cmd_d
+	beq	s1, a0, nmon_cmd_d
 
 	li	a0, 'w'
-	beq	s0, a0, nmon_cmd_w
+	beq	s1, a0, nmon_cmd_w
 
 	li	a0, 'g'
-	beq	s0, a0, nmon_cmd_g
+	beq	s1, a0, nmon_cmd_g
 
 	j	nmon_main_help
 
@@ -112,7 +112,7 @@ nmon_cmd_d:
 
 	nmon_outs	msg_nl
 
-	lw	a0, (s0)
+	lw	a0, (s1)
 	debug_ll_outhexw
 
 	j	nmon_main
@@ -124,13 +124,13 @@ nmon_cmd_w:
 	jal	a2, _nmon_outc_a0
 
 	jal	a2, _nmon_gethexw
-	move	s2, s0
+	move	s3, s1
 
 	li	a0, ' '
 	jal	a2, _nmon_outc_a0
 	jal	a2, _nmon_gethexw
 
-	sw	s0, 0(s2)
+	sw	s1, 0(s3)
 	j	nmon_main
 
 nmon_cmd_g:
@@ -140,11 +140,11 @@ nmon_cmd_g:
 	jal	a2, _nmon_outc_a0
 
 	jal	a2, _nmon_gethexw
-	move	s2, s0
+	move	s3, s1
 
 	nmon_outs	msg_nl
 
-	jalr	s2
+	jalr	s3
 	j	nmon_main
 
 _nmon_outc_a0:
@@ -169,37 +169,37 @@ _nmon_gethexw:
 _get_hex_digit:
 	debug_ll_getc
 
-	li	s1, CODE_ESC
-	beq	s0, s1, nmon_main
+	li	s2, CODE_ESC
+	beq	s1, s2, nmon_main
 
-	li	s1, '0'
-	bge	s0, s1, 0f
+	li	s2, '0'
+	bge	s1, s2, 0f
 	j	_get_hex_digit
 
 0:
-	li	s1, '9'
-	ble	s0, s1, 9f
+	li	s2, '9'
+	ble	s1, s2, 9f
 
-	li	s1, 'f'
-	ble	s0, s1, 1f
+	li	s2, 'f'
+	ble	s1, s2, 1f
 	j	_get_hex_digit
 
 1:
-	li	s1, 'a'
-	bge	s0, s1, 8f
+	li	s2, 'a'
+	bge	s1, s2, 8f
 
 	j	_get_hex_digit
 
-8: /* s0 \in {'a', 'b' ... 'f'} */
-	sub	a3, s0, s1
+8: /* s1 \in {'a', 'b' ... 'f'} */
+	sub	a3, s1, s2
 	addi	a3, a3, 0xa
 	j	0f
 
-9: /* s0 \in {'0', '1' ... '9'} */
+9: /* s1 \in {'0', '1' ... '9'} */
 	li	a3, '0'
-	sub	a3, s0, a3
+	sub	a3, s1, a3
 
-0:	move	a0, s0
+0:	move	a0, s1
 	debug_ll_outc_a0
 
 	sll	t2, t2, 4
@@ -212,7 +212,7 @@ _get_hex_digit:
 	j	_get_hex_digit
 
 0:
-	move	s0, t2
+	move	s1, t2
 
 _nmon_jr_ra_exit:
 	jr	a2

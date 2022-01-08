@@ -20,6 +20,8 @@ int rmdir (const char *pathname);
 int symlink(const char *pathname, const char *newpath);
 int readlink(const char *path, char *buf, size_t bufsiz);
 int chdir(const char *pathname);
+char *pushd(const char *dir);
+int popd(char *dir);
 const char *getcwd(void);
 int ftruncate(int fd, loff_t length);
 

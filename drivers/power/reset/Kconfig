@@ -54,3 +54,10 @@ config POWER_RESET_GPIO_RESTART
 	  This driver supports restarting your board via a GPIO line.
 	  If your board needs a GPIO high/low to restart, say Y and
 	  create a binding in your devicetree.
+
+config POWER_RESET_HTIF_POWEROFF
+	bool "HTIF poweroff driver"
+	depends on RISCV
+	help
+	  Adds poweroff support via the syscall device on systems
+	  supporting the UC Berkely Host/Target Interface (HTIF).

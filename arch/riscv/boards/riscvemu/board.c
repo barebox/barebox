@@ -16,18 +16,6 @@ struct riscvemu_priv {
 
 };
 
-#define HTIF_BASE_ADDR		IOMEM(0x40008000)
-#define HTIF_TOHOST_LOW		(HTIF_BASE_ADDR + 0)
-#define HTIF_TOHOST_HIGH	(HTIF_BASE_ADDR + 4)
-
-static void __noreturn riscvemu_poweroff(struct poweroff_handler *pwr)
-{
-	writel(1, HTIF_TOHOST_LOW);
-	writel(0, HTIF_TOHOST_HIGH);
-
-	__builtin_unreachable();
-}
-
 static void __noreturn riscvemu_restart(struct restart_handler *rst)
 {
 	struct riscvemu_priv *priv = container_of(rst, struct riscvemu_priv, rst);
@@ -45,9 +33,6 @@ static int riscvemu_probe(struct device_d *dev)
 	struct device_node *of_chosen;
 	struct riscvemu_priv *priv;
 	u64 start;
-
-	if (of_find_compatible_node(NULL, NULL, "ucb,htif0"))
-		poweroff_handler_register_fn(riscvemu_poweroff);
 
 	of_chosen = of_find_node_by_path("/chosen");
 

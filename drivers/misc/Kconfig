@@ -37,12 +37,6 @@ config UBOOTVAR
 	  While it can be used standalone, it is best when coupled
 	  with corresponding filesystem driver.
 
-config ACPI_TEST
-	bool "ACPI Test driver"
-	depends on ACPI
-	help
-	  This is a simple Test driver to test the ACPI bus.
-
 config STARFIVE_PWRSEQ
 	bool "StarFive power sequencing driver"
 	depends on SOC_STARFIVE

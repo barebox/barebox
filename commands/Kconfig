@@ -73,6 +73,18 @@ config CMD_DEVINFO
 	  If called with a device path being the argument, devinfo shows more
 	  default information about this device and its parameters.
 
+config CMD_DEVUNBIND
+	tristate
+	prompt "devunbind"
+	help
+	  Debugging aid to unbind device(s) from driver at runtime
+
+	  devunbind [-fl] DEVICES..
+
+	  Options:
+		-f   unbind driver and force removal of device and children
+		-l   list remove callbacks in shutdown order
+
 config CMD_DMESG
 	tristate
 	prompt "dmesg"

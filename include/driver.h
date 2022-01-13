@@ -328,6 +328,10 @@ extern struct list_head device_list;
  */
 extern struct list_head driver_list;
 
+/* linear list over all active devices
+ */
+extern struct list_head active_device_list;
+
 /* Iterate over all devices
  */
 #define for_each_device(dev) list_for_each_entry(dev, &device_list, list)

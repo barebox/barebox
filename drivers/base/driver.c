@@ -502,11 +502,15 @@ EXPORT_SYMBOL_GPL(dev_set_name);
 static void devices_shutdown(void)
 {
 	struct device_d *dev;
+	int depth = 0;
 
 	list_for_each_entry(dev, &active, active) {
 		if (dev->bus->remove) {
+			depth++;
+			pr_report_probe("%*sremove-> %s\n", depth * 4, "", dev_name(dev));
 			dev->bus->remove(dev);
 			dev->driver = NULL;
+			depth--;
 		}
 	}
 }

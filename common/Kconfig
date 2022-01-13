@@ -1501,9 +1501,15 @@ config DEBUG_INITCALLS
 	  If enabled this will print initcall traces.
 
 config DEBUG_PROBES
-	bool "Trace driver probes"
+	bool "Trace driver probes/removes"
 	help
-	  If enabled this will print driver probe traces.
+	  If enabled this will log driver probe and remove traces. If DEBUG_LL is enabled,
+	  probes will be printed even before registering consoles. If it's disabled, they
+	  will be collected in the log and written out once a console is active.
+
+	  Removes are written to the log and will be printed as long as consoles exist.
+	  Most consoles do not implement a remove callback to remain operable until
+	  the very end. Consoles using DMA, however, must be removed.
 
 config PBL_BREAK
 	bool "Execute software break on pbl start"

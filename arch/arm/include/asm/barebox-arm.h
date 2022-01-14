@@ -98,14 +98,13 @@ static inline void arm_fixup_vectors(void)
 
 void *barebox_arm_boot_dtb(void);
 
-static inline unsigned long arm_mem_stack_top(unsigned long membase,
-					      unsigned long endmem)
-{
-	if (IS_ENABLED(CONFIG_BOOTM_OPTEE) || IS_ENABLED(CONFIG_PBL_OPTEE))
-		endmem -= OPTEE_SIZE;
+#define __arm_mem_stack_top(membase, endmem) ((endmem) - SZ_64K)
 
-	return endmem - SZ_64K;
-}
+#if defined(CONFIG_BOOTM_OPTEE) || defined(CONFIG_PBL_OPTEE)
+#define arm_mem_stack_top(membase, endmem) (__arm_mem_stack_top(membase, endmem) - OPTEE_SIZE)
+#else
+#define arm_mem_stack_top(membase, endmem)  __arm_mem_stack_top(membase, endmem)
+#endif
 
 static inline unsigned long arm_mem_stack(unsigned long membase,
 					  unsigned long endmem)

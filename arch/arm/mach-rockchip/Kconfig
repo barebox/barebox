@@ -4,7 +4,7 @@ menu "Rockchip Features"
 config ARCH_TEXT_BASE
 	hex
 	default 0x68000000 if ARCH_RK3188
-	default 0x0 if ARCH_RK3288
+	default 0x0
 
 config RK_TIMER
 	hex
@@ -30,6 +30,15 @@ config ARCH_ROCKCHIP_V8
 	select CPU_V8
 	select SYS_SUPPORTS_64BIT_KERNEL
 	select ARM_ATF
+	select RELOCATABLE
+
+config ARCH_RK3399
+	bool
+	select ARCH_ROCKCHIP_V8
+
+config ARCH_RK3399PRO
+	bool
+	select ARCH_RK3399
 
 config ARCH_RK3568
 	bool
@@ -63,6 +72,13 @@ config MACH_PINE64_QUARTZ64
 	  Say Y here if you are using a Pine64 Quartz64
 
 comment "select board features:"
+
+config ARCH_RK3399_OPTEE
+	bool "Build rk3399 OP-TEE binary into barebox"
+	depends on ARCH_RK3399
+	help
+	  With this option enabled the RK3399 OP-TEE binary is compiled
+	  into barebox and started along with the BL31 trusted firmware.
 
 config ARCH_RK3568_OPTEE
 	bool "Build rk3568 OP-TEE binary into barebox"

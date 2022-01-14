@@ -1,0 +1,16 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+
+#ifndef __MACH_RK3399_REGS_H
+#define __MACH_RK3399_REGS_H
+
+/* UART */
+#define RK3399_UART0_BASE	0xff180000
+#define RK3399_UART1_BASE	0xff190000
+#define RK3399_UART2_BASE	0xff1a0000
+#define RK3399_UART3_BASE	0xff1b0000
+#define RK3399_UART4_BASE	0xff370000
+
+#define RK3399_IRAM_BASE	0xff8c0000
+#define RK3399_STIMER_BASE	0xff8680a0
+
+#endif

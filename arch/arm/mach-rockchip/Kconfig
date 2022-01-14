@@ -10,24 +10,30 @@ config RK_TIMER
 	hex
 	default 1
 
-config ARCH_RK3188
+config ARCH_ROCKCHIP_V7
 	bool
 	select CPU_V7
 	select ARM_SMP_TWD
 	select ARCH_HAS_L2X0
+
+config ARCH_RK3188
+	bool
+	select ARCH_ROCKCHIP_V7
 
 config ARCH_RK3288
 	bool
-	select CPU_V7
-	select ARM_SMP_TWD
-	select ARCH_HAS_L2X0
+	select ARCH_ROCKCHIP_V7
 	select CLOCKSOURCE_ROCKCHIP
+
+config ARCH_ROCKCHIP_V8
+	bool
+	select CPU_V8
+	select SYS_SUPPORTS_64BIT_KERNEL
+	select ARM_ATF
 
 config ARCH_RK3568
 	bool
-	select CPU_V8
-	select ARM_ATF
-	select SYS_SUPPORTS_64BIT_KERNEL
+	select ARCH_ROCKCHIP_V8
 
 comment "select Rockchip boards:"
 

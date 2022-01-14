@@ -2285,6 +2285,8 @@ int of_property_sprintf(struct device_node *np,
 	if (len < 0)
 		return -ENOMEM;
 
+	len++; /* trailing NUL */
+
 	pp = of_find_property(np, propname, NULL);
 	of_delete_property(pp);
 

@@ -432,12 +432,12 @@ struct clk_hw {
 
 static inline struct clk *clk_hw_to_clk(struct clk_hw *hw)
 {
-	return &hw->clk;
+	return IS_ERR(hw) ? ERR_CAST(hw) : &hw->clk;
 }
 
 static inline struct clk_hw *clk_to_clk_hw(struct clk *clk)
 {
-	return container_of(clk, struct clk_hw, clk);
+	return IS_ERR(clk) ? ERR_CAST(clk) : container_of(clk, struct clk_hw, clk);
 }
 
 struct clk_div_table {

@@ -44,14 +44,10 @@ static inline void __barebox_arm_head(void)
 		"1: b 1b\n"
 #endif
 #else
+		/* 5 instructions added by ENTRY_FUNCTION */
 		/* two instruction long function prologue */
 		/* only use if stack is initialized! */
 		"b 2f\n"
-		"nop\n"
-		"nop\n"
-		"nop\n"
-		"nop\n"
-		"nop\n"
 #endif
 		".asciz \"barebox\"\n"
 #ifdef CONFIG_CPU_32

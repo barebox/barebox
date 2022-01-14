@@ -334,6 +334,8 @@ static int rockchip_gpio_probe(struct device_d *dev)
 	int ret, bankno;
 
 	bankno = of_alias_get_id(dev->device_node, "gpio");
+	if (bankno >= ctrl->nr_banks)
+		bankno = -EINVAL;
 	if (bankno < 0)
 		return bankno;
 

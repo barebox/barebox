@@ -35,6 +35,7 @@ config ARCH_ROCKCHIP_V8
 config ARCH_RK3399
 	bool
 	select ARCH_ROCKCHIP_V8
+	select ARCH_HAS_RESET_CONTROLLER
 
 config ARCH_RK3399PRO
 	bool

@@ -218,6 +218,7 @@ static int imx_chipidea_probe(struct device_d *dev)
 	struct resource *iores;
 	struct imx_chipidea_data *imx_data;
 	struct imxusb_platformdata *pdata = dev->platform_data;
+	char const *phynode_name;
 	int ret;
 	void __iomem *base;
 	struct imx_chipidea *ci;
@@ -262,8 +263,19 @@ static int imx_chipidea_probe(struct device_d *dev)
 	if (!IS_ERR(ci->clk))
 		clk_enable(ci->clk);
 
-	if (of_property_read_bool(dev->device_node, "fsl,usbphy")) {
-		ci->phy = of_phy_get_by_phandle(dev, "fsl,usbphy", 0);
+	/* Device trees are using both "phys" and "fsl,usbphy".  Prefer the
+	 * more modern former one but fall back to the old one.
+	 *
+	 * Code should be removed when all devicetrees are using "phys" */
+	if (of_property_read_bool(dev->device_node, "phys"))
+		phynode_name = "phys";
+	else if (of_property_read_bool(dev->device_node, "fsl,usbphy"))
+		phynode_name = "fsl,usbphy";
+	else
+		phynode_name = NULL;
+
+	if (phynode_name) {
+		ci->phy = of_phy_get_by_phandle(dev, phynode_name, 0);
 		if (IS_ERR(ci->phy)) {
 			dev_err(dev, "Cannot get phy: %pe\n", ci->phy);
 			return PTR_ERR(ci->phy);

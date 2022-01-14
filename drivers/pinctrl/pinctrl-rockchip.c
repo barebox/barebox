@@ -877,18 +877,24 @@ static struct rockchip_pin_ctrl *rockchip_pinctrl_get_soc_data(
 	struct rockchip_pin_bank *bank;
 	char *name;
 	int grf_offs, pmu_offs, drv_grf_offs, drv_pmu_offs, i, j;
+	int gpio = 0;
 
 	match = of_match_node(rockchip_pinctrl_dt_match, node);
 	ctrl = (struct rockchip_pin_ctrl *)match->data;
 
 	for_each_child_of_node(node, np) {
+		int id;
+
 		if (!of_find_property(np, "gpio-controller", NULL))
 			continue;
 
+		id = of_alias_get_id(np, "gpio");
+		if (id < 0)
+			id = gpio++;
+
 		bank = ctrl->pin_banks;
 		for (i = 0; i < ctrl->nr_banks; ++i, ++bank) {
-			name = bank->name;
-			if (!strncmp(name, np->name, strlen(name))) {
+			if (bank->bank_num == id) {
 				bank->of_node = np;
 				if (!rockchip_get_bank_data(bank, dev))
 					bank->valid = true;

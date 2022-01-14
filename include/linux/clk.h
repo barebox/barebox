@@ -721,9 +721,9 @@ int of_clk_add_provider(struct device_node *np,
 						   void *data),
 			void *data);
 
-static inline unsigned int clk_get_num_parents(const struct clk *hw)
+static inline unsigned int clk_hw_get_num_parents(const struct clk_hw *hw)
 {
-	return hw->num_parents;
+	return hw->clk.num_parents;
 }
 
 #else

@@ -5,6 +5,7 @@
 
 #include <bootsource.h>
 #include <common.h>
+#include <deep-probe.h>
 #include <init.h>
 #include <mach/bbu.h>
 
@@ -31,6 +32,7 @@ static const struct of_device_id mnt_reform_of_match[] = {
 	{ .compatible = "mntre,reform2"},
 	{ /* sentinel */ },
 };
+BAREBOX_DEEP_PROBE_ENABLE(mnt_reform_of_match);
 
 static struct driver_d mnt_reform_board_driver = {
 	.name = "board-mnt-reform",

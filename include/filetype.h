@@ -28,6 +28,7 @@ enum filetype {
 	filetype_mbr,
 	filetype_bmp,
 	filetype_png,
+	filetype_qoi,
 	filetype_ext,
 	filetype_gpt,
 	filetype_ubifs,

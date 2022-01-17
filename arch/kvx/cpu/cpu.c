@@ -16,7 +16,7 @@ void kvx_lowlevel_setup(unsigned long r0, void *dtb_ptr)
 {
 	uint64_t ev_val = (uint64_t) &_exception_start | EXCEPTION_STRIDE;
 
-	if (r0 == FSBL_PARAM_MAGIC) {
+	if (r0 == FSBL_PARAM_MAGIC || r0 == LINUX_BOOT_PARAM_MAGIC) {
 		boot_dtb = dtb_ptr;
 		pr_info("Using DTB provided by FSBL\n");
 	}

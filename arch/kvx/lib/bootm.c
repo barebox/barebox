@@ -17,7 +17,6 @@
 #include <linux/kernel.h>
 
 #include <asm/cache.h>
-#include <asm/bootm.h>
 
 typedef void __noreturn (*boot_func_entry)(unsigned long, void *);
 

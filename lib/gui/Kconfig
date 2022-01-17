@@ -18,6 +18,11 @@ config PNG
 	bool "png"
 	select ZLIB
 
+config QOI
+	bool "qoi"
+	help
+	  Support for the Quite OK Image format
+
 if PNG
 
 choice

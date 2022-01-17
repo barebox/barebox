@@ -10,6 +10,7 @@ hostprogs-always-y					+= fix_size
 hostprogs-always-y					+= bareboxenv
 hostprogs-always-y					+= bareboxcrc32
 hostprogs-always-y					+= kernel-install
+hostprogs-always-$(CONFIG_QOICONV)			+= qoiconv
 hostprogs-always-$(CONFIG_CRYPTO_RSA_BUILTIN_KEYS)	+= rsatoc
 HOSTCFLAGS_rsatoc = `pkg-config --cflags openssl`
 HOSTLDLIBS_rsatoc = `pkg-config --libs openssl`

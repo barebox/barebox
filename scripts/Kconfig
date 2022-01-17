@@ -112,6 +112,11 @@ config RK_USB_LOADER
 
 	  You need libusb-1.0 to compile this tool.
 
+config QOICONV
+	bool "QOI image format conversion" if COMPILE_HOST_TOOLS
+	help
+	  This enable converting png to qoi images to generate boot logo.
+
 endmenu
 
 menu "Target Tools"

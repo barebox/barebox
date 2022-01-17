@@ -52,6 +52,12 @@ extra-y += $(patsubst %,%.bmp,$(bblogo-y))
 %.bblogo: %.bmp FORCE
 	$(call if_changed,logo)
 endif
+ifdef CONFIG_BAREBOX_LOGO_QOI
+extra-y += $(patsubst %,%.png,$(bblogo-y))
+extra-y += $(patsubst %,%.qoi,$(bblogo-y))
+%.bblogo: %.qoi FORCE
+	$(call if_changed,logo)
+endif
 
 CONVERTOPTS += -background none
 
@@ -67,4 +73,10 @@ quiet_cmd_png = PNG     $@
 %.png: $(srctree)/Documentation/barebox.svg FORCE
 	$(call if_changed,png)
 
-clean-files += *.png *.bmp *.bblogo *.bblogo.S
+quiet_cmd_qoi = QOI     $@
+      cmd_qoi =	$(objtree)/scripts/qoiconv $< $@
+
+%.qoi: %.png FORCE
+	$(call if_changed,qoi)
+
+clean-files += *.png *.qoi *.bmp *.bblogo *.bblogo.S

@@ -25,6 +25,13 @@ config BAREBOX_LOGO_BMP
 	help
 	  Encode logo with the BMP image format
 
+config BAREBOX_LOGO_QOI
+	bool "qoi"
+	select QOI
+	select QOICONV
+	help
+	  Encode logo with the QOI image format
+
 endchoice
 
 config BAREBOX_LOGO_64

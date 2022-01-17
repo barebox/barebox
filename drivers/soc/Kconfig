@@ -1,0 +1,5 @@
+menu "SoC drivers"
+
+source "drivers/soc/imx/Kconfig"
+
+endmenu

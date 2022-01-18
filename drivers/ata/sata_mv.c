@@ -40,6 +40,9 @@ static void ata_ioports_init(struct ata_ioports *io,
 #define EDMA_EN				(1 << 0)	/* enable EDMA */
 #define EDMA_DS				(1 << 1)	/* disable EDMA; self-negated */
 #define REG_EDMA_COMMAND__EATARST	0x00000004
+#define REG_EDMA_IORDY_TMOUT(n)		((n) * 0x2000 + 0x2034)
+#define REG_SATA_IFCFG(n)		((n) * 0x2000 + 0x2050)
+#define REG_SATA_IFCFG_GEN2EN		(1 << 7)
 
 #define REG_ATA_BASE			0x2100
 #define REG_SSTATUS(n)			((n) * 0x2000 + 0x2300)
@@ -123,6 +126,13 @@ static int mv_sata_probe(struct device_d *dev)
 			readl(base + REG_SSTATUS(0)));
 		return ret;
 	}
+
+	/* increase IORdy signal timeout */
+	writel(0x800, base + REG_EDMA_IORDY_TMOUT(0));
+	/* set GEN2i Speed */
+	tmp = readl(base + REG_SATA_IFCFG(0));
+	tmp |= REG_SATA_IFCFG_GEN2EN;
+	writel(tmp, base + REG_SATA_IFCFG(0));
 
 	mv_soc_65n_phy_errata(base);
 

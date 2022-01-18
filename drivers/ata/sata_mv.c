@@ -136,6 +136,8 @@ static int mv_sata_probe(struct device_d *dev)
 
 	mv_soc_65n_phy_errata(base);
 
+	/* strobe for hard-reset */
+	writel(REG_EDMA_COMMAND__EATARST, base + REG_EDMA_COMMAND(0));
 	writel(REG_EDMA_COMMAND__EATARST, base + REG_EDMA_COMMAND(0));
 	udelay(25);
 	writel(0x0, base + REG_EDMA_COMMAND(0));

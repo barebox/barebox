@@ -47,6 +47,7 @@ static void ata_ioports_init(struct ata_ioports *io,
 #define REG_ATA_BASE			0x2100
 #define REG_SSTATUS(n)			((n) * 0x2000 + 0x2300)
 #define REG_SERROR(n)			((n) * 0x2000 + 0x2304)
+#define REG_SERROR_MASK			0x03fe0000
 #define REG_SCONTROL(n)			((n) * 0x2000 + 0x2308)
 #define REG_SCONTROL__DET		0x0000000f
 #define REG_SCONTROL__DET__INIT		0x00000001
@@ -94,8 +95,10 @@ static int mv_sata_probe(struct device_d *dev)
 	struct resource *iores;
 	void __iomem *base;
 	struct ide_port *ide;
+	u32 try_again = 0;
 	u32 scontrol;
 	int ret, i;
+	u32 tmp;
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores)) {
@@ -114,6 +117,7 @@ static int mv_sata_probe(struct device_d *dev)
 	writel(0x7fff0e01, base + REG_WINDOW_CONTROL(0));
 	writel(0, base + REG_WINDOW_BASE(0));
 
+again:
 	/* Clear SError */
 	writel(0x0, base + REG_SERROR(0));
 	/* disable EDMA */
@@ -174,6 +178,32 @@ static int mv_sata_probe(struct device_d *dev)
 	ret = ide_port_register(ide);
 	if (ret)
 		free(ide);
+
+	/*
+	 * Under most conditions the above is enough and works as expected.
+	 * With some specific hardware combinations, the setup fails however
+	 * leading to an unusable SATA drive. From the error status bits it
+	 * was not obvious what exactly went wrong.
+	 * The ARMADA-XP datasheet advices to hard-reset the SATA core and
+	 * drive and try again.
+	 * When this happens, just try again multiple times, to give the drive
+	 * some time to reach a stable state. If after 5 (randomly chosen) tries,
+	 * the drive still doesn't work, just give up on it.
+	 */
+	tmp = readl(base + REG_SERROR(0));
+	if (tmp & REG_SERROR_MASK) {
+		try_again++;
+		if (try_again > 5)
+			return -ENODEV;
+		dev_dbg(dev, "PHY layer error. Try again. (serror=0x%08x)\n", tmp);
+		if (ide->port.initialized) {
+			blockdevice_unregister(&ide->port.blk);
+			unregister_device(&ide->port.class_dev);
+		}
+
+		mdelay(100);
+		goto again;
+	}
 
 	return ret;
 }

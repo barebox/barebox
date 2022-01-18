@@ -33,15 +33,15 @@ static void ata_ioports_init(struct ata_ioports *io,
 	/* io->alt_dev_addr is unused */
 }
 
-#define REG_WINDOW_CONTROL(n)	((n) * 0x10 + 0x30)
-#define REG_WINDOW_BASE(n)	((n) * 0x10 + 0x34)
+#define REG_WINDOW_CONTROL(n)		((n) * 0x10 + 0x30)
+#define REG_WINDOW_BASE(n)		((n) * 0x10 + 0x34)
 
-#define REG_EDMA_COMMAND(n)	((n) * 0x2000 + 0x2028)
+#define REG_EDMA_COMMAND(n)		((n) * 0x2000 + 0x2028)
 #define REG_EDMA_COMMAND__EATARST	0x00000004
 
-#define REG_ATA_BASE		0x2100
-#define REG_SSTATUS(n)		((n) * 0x2000 + 0x2300)
-#define REG_SCONTROL(n)		((n) * 0x2000 + 0x2308)
+#define REG_ATA_BASE			0x2100
+#define REG_SSTATUS(n)			((n) * 0x2000 + 0x2300)
+#define REG_SCONTROL(n)			((n) * 0x2000 + 0x2308)
 #define REG_SCONTROL__DET		0x0000000f
 #define REG_SCONTROL__DET__INIT		0x00000001
 #define REG_SCONTROL__DET__PHYOK	0x00000002

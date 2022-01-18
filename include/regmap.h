@@ -130,6 +130,18 @@ int regmap_write_bits(struct regmap *map, unsigned int reg,
 int regmap_update_bits(struct regmap *map, unsigned int reg,
 		       unsigned int mask, unsigned int val);
 
+static inline int regmap_set_bits(struct regmap *map,
+				  unsigned int reg, unsigned int bits)
+{
+	return regmap_update_bits(map, reg, bits, bits);
+}
+
+static inline int regmap_clear_bits(struct regmap *map,
+				    unsigned int reg, unsigned int bits)
+{
+	return regmap_update_bits(map, reg, bits, 0);
+}
+
 /**
  * regmap_read_poll_timeout - Poll until a condition is met or a timeout occurs
  *

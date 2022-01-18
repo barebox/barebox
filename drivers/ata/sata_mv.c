@@ -52,6 +52,40 @@ static void ata_ioports_init(struct ata_ioports *io,
 #define REG_SCONTROL__IPM__PARTIAL	0x00000100
 #define REG_SCONTROL__IPM__SLUMBER	0x00000200
 
+#define PHY_MODE3			0x310
+#define	PHY_MODE4			0x314	/* requires read-after-write */
+#define PHY_MODE9_GEN2			0x398
+#define	PHY_MODE9_GEN1			0x39c
+
+static void mv_soc_65n_phy_errata(void __iomem *base)
+{
+	u32 reg;
+
+	reg = readl(base + PHY_MODE3);
+	reg &= ~(0x3 << 27);	/* SELMUPF (bits 28:27) to 1 */
+	reg |= (0x1 << 27);
+	reg &= ~(0x3 << 29);	/* SELMUPI (bits 30:29) to 1 */
+	reg |= (0x1 << 29);
+	writel(reg, base + PHY_MODE3);
+
+	reg = readl(base + PHY_MODE4);
+	reg &= ~0x1;	/* SATU_OD8 (bit 0) to 0, reserved bit 16 must be set */
+	reg |= (0x1 << 16);
+	writel(reg, base + PHY_MODE4);
+
+	reg = readl(base + PHY_MODE9_GEN2);
+	reg &= ~0xf;	/* TXAMP[3:0] (bits 3:0) to 8 */
+	reg |= 0x8;
+	reg &= ~(0x1 << 14);	/* TXAMP[4] (bit 14) to 0 */
+	writel(reg, base + PHY_MODE9_GEN2);
+
+	reg = readl(base + PHY_MODE9_GEN1);
+	reg &= ~0xf;	/* TXAMP[3:0] (bits 3:0) to 8 */
+	reg |= 0x8;
+	reg &= ~(0x1 << 14);	/* TXAMP[4] (bit 14) to 0 */
+	writel(reg, base + PHY_MODE9_GEN1);
+}
+
 static int mv_sata_probe(struct device_d *dev)
 {
 	struct resource *iores;
@@ -89,6 +123,8 @@ static int mv_sata_probe(struct device_d *dev)
 			readl(base + REG_SSTATUS(0)));
 		return ret;
 	}
+
+	mv_soc_65n_phy_errata(base);
 
 	writel(REG_EDMA_COMMAND__EATARST, base + REG_EDMA_COMMAND(0));
 	udelay(25);

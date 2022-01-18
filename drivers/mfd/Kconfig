@@ -68,6 +68,12 @@ config MFD_STPMIC1
 	help
 	  Select this to support communication with the STPMIC1.
 
+config MFD_RN568PMIC
+	depends on I2C
+	bool "Ricoh RN5T568 MFD driver"
+	help
+	  Select this to support communication with the Ricoh RN5T568 PMIC.
+
 config MFD_SUPERIO
 	bool
 

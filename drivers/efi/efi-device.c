@@ -473,7 +473,12 @@ void efi_pause_devices(void)
 	bus_for_each_device(&efi_bus, dev) {
 		struct driver_d *drv = dev->driver;
 		struct efi_device *efidev = to_efi_device(dev);
-		struct efi_driver *efidrv = to_efi_driver(drv);
+		struct efi_driver *efidrv;
+
+		if (!drv)
+			continue;
+
+		efidrv = to_efi_driver(drv);
 
 		if (efidrv->dev_pause)
 			efidrv->dev_pause(efidev);
@@ -487,7 +492,12 @@ void efi_continue_devices(void)
 	bus_for_each_device(&efi_bus, dev) {
 		struct driver_d *drv = dev->driver;
 		struct efi_device *efidev = to_efi_device(dev);
-		struct efi_driver *efidrv = to_efi_driver(drv);
+		struct efi_driver *efidrv;
+
+		if (!drv)
+			continue;
+
+		efidrv = to_efi_driver(drv);
 
 		if (efidrv->dev_continue)
 			efidrv->dev_continue(efidev);

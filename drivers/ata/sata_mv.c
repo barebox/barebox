@@ -37,10 +37,13 @@ static void ata_ioports_init(struct ata_ioports *io,
 #define REG_WINDOW_BASE(n)		((n) * 0x10 + 0x34)
 
 #define REG_EDMA_COMMAND(n)		((n) * 0x2000 + 0x2028)
+#define EDMA_EN				(1 << 0)	/* enable EDMA */
+#define EDMA_DS				(1 << 1)	/* disable EDMA; self-negated */
 #define REG_EDMA_COMMAND__EATARST	0x00000004
 
 #define REG_ATA_BASE			0x2100
 #define REG_SSTATUS(n)			((n) * 0x2000 + 0x2300)
+#define REG_SERROR(n)			((n) * 0x2000 + 0x2304)
 #define REG_SCONTROL(n)			((n) * 0x2000 + 0x2308)
 #define REG_SCONTROL__DET		0x0000000f
 #define REG_SCONTROL__DET__INIT		0x00000001
@@ -74,6 +77,19 @@ static int mv_sata_probe(struct device_d *dev)
 	writel(0x7fff0e01, base + REG_WINDOW_CONTROL(0));
 	writel(0, base + REG_WINDOW_BASE(0));
 
+	/* Clear SError */
+	writel(0x0, base + REG_SERROR(0));
+	/* disable EDMA */
+	writel(EDMA_DS, base + REG_EDMA_COMMAND(0));
+	/* Wait for the chip to confirm eDMA is off. */
+	ret = wait_on_timeout(10 * MSECOND,
+				(readl(base + REG_EDMA_COMMAND(0)) & EDMA_EN) == 0);
+	if (ret) {
+		dev_err(dev, "Failed to wait for eDMA off (sstatus=0x%08x)\n",
+			readl(base + REG_SSTATUS(0)));
+		return ret;
+	}
+
 	writel(REG_EDMA_COMMAND__EATARST, base + REG_EDMA_COMMAND(0));
 	udelay(25);
 	writel(0x0, base + REG_EDMA_COMMAND(0));
@@ -103,6 +119,9 @@ static int mv_sata_probe(struct device_d *dev)
 			 NULL, 4);
 
 	dev->priv = ide;
+
+	/* enable EDMA */
+	writel(EDMA_EN, base + REG_EDMA_COMMAND(0));
 
 	ret = ide_port_register(ide);
 	if (ret)

@@ -2846,6 +2846,36 @@ out:
 }
 EXPORT_SYMBOL(chdir);
 
+char *pushd(const char *dir)
+{
+	char *oldcwd;
+	int ret;
+
+	oldcwd = strdup(getcwd());
+	if (!oldcwd)
+		return NULL;
+
+	ret = chdir(dir);
+	if (ret) {
+		free(oldcwd);
+		return NULL;
+	}
+
+	return oldcwd;
+}
+
+int popd(char *oldcwd)
+{
+	int ret;
+
+	if (!oldcwd)
+		return 0;
+
+	ret = chdir(oldcwd);
+	free(oldcwd);
+	return ret;
+}
+
 static char *get_linux_mmcblkdev(struct fs_device_d *fsdev)
 {
 	struct cdev *cdevm, *cdev;

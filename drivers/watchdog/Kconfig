@@ -149,4 +149,14 @@ config STARFIVE_WDT
 	  If you say yes here you get support for the watchdog device
 	  on StarFive SoCs.
 
+config WDAT_WDT
+	bool "ACPI Watchdog Action Table (WDAT)"
+	depends on X86
+	depends on ACPI
+	help
+	  This driver adds support for systems with ACPI Watchdog Action
+	  Table (WDAT) table. Servers typically have this but it can be
+	  found on some desktop machines as well. This driver will take
+	  over the native iTCO watchdog driver found on many Intel CPUs.
+
 endif

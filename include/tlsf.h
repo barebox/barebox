@@ -42,9 +42,12 @@
 extern "C" {
 #endif
 
+#include <printk.h>
+
 #define tlsf_assert(expr) do {                              \
         if (unlikely(!(expr))) {                            \
                 printf(#expr "%s %d\n", __FILE__, __LINE__); \
+                dump_stack();                               \
         }                                                   \
 } while (0)
 

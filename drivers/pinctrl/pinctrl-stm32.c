@@ -63,11 +63,11 @@ static inline u32 stm32_gpio_get_mode(u32 function)
 {
 	switch (function) {
 	case STM32_PIN_GPIO:
-		return 0;
+		return STM32_PINMODE_GPIO;
 	case STM32_PIN_AF(0) ... STM32_PIN_AF(15):
-		return 2;
+		return STM32_PINMODE_AF;
 	case STM32_PIN_ANALOG:
-		return 3;
+		return STM32_PINMODE_ANALOG;
 	}
 
 	return 0;

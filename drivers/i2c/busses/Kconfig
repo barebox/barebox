@@ -62,4 +62,12 @@ config I2C_STM32
 	depends on HAVE_CLK
 	depends on ARCH_STM32MP || COMPILE_TEST
 
+config I2C_RK3X
+	tristate "Rockchip RK3xxx I2C adapter"
+	depends on HAVE_CLK
+	depends on ARCH_ROCKCHIP || COMPILE_TEST
+	help
+	  Say Y here to include support for the I2C adapter in Rockchip RK3xxx
+	  SoCs.
+
 endmenu

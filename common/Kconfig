@@ -1344,6 +1344,13 @@ config DEBUG_ROCKCHIP_RK3568_UART
 	  Say Y here if you want kernel low-level debugging support
 	  on RK3568.
 
+config DEBUG_ROCKCHIP_RK3399_UART
+	bool "RK3399 Debug UART"
+	depends on ARCH_RK3399
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on RK3399.
+
 config DEBUG_SOCFPGA_UART0
 	bool "Use SOCFPGA UART0 for low-level debug"
 	depends on ARCH_SOCFPGA
@@ -1451,7 +1458,8 @@ config DEBUG_OMAP_UART_PORT
 config DEBUG_ROCKCHIP_UART_PORT
 	int "RK3xxx UART debug port" if DEBUG_ROCKCHIP_RK3188_UART || \
 				DEBUG_ROCKCHIP_RK3288_UART || \
-				DEBUG_ROCKCHIP_RK3568_UART
+				DEBUG_ROCKCHIP_RK3568_UART || \
+				DEBUG_ROCKCHIP_RK3399_UART
 	default 2
 	depends on ARCH_ROCKCHIP
 	help
@@ -1501,9 +1509,15 @@ config DEBUG_INITCALLS
 	  If enabled this will print initcall traces.
 
 config DEBUG_PROBES
-	bool "Trace driver probes"
+	bool "Trace driver probes/removes"
 	help
-	  If enabled this will print driver probe traces.
+	  If enabled this will log driver probe and remove traces. If DEBUG_LL is enabled,
+	  probes will be printed even before registering consoles. If it's disabled, they
+	  will be collected in the log and written out once a console is active.
+
+	  Removes are written to the log and will be printed as long as consoles exist.
+	  Most consoles do not implement a remove callback to remain operable until
+	  the very end. Consoles using DMA, however, must be removed.
 
 config PBL_BREAK
 	bool "Execute software break on pbl start"

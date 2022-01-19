@@ -374,7 +374,7 @@ static int rpi_console_clock_init(void)
 	clk = clk_fixed("apb_pclk", 0);
 	clk_register_clkdev(clk, "apb_pclk", NULL);
 
-	clk = clk_fixed("uart0-pl0110", 3 * 1000 * 1000);
+	clk = clk_fixed("uart0-pl0110", 48 * 1000 * 1000);
 	clk_register_clkdev(clk, NULL, "uart0-pl0110");
 	clkdev_add_physbase(clk, BCM2835_PL011_BASE, NULL);
 	clkdev_add_physbase(clk, BCM2836_PL011_BASE, NULL);

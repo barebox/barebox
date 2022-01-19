@@ -432,12 +432,12 @@ struct clk_hw {
 
 static inline struct clk *clk_hw_to_clk(struct clk_hw *hw)
 {
-	return &hw->clk;
+	return IS_ERR(hw) ? ERR_CAST(hw) : &hw->clk;
 }
 
 static inline struct clk_hw *clk_to_clk_hw(struct clk *clk)
 {
-	return container_of(clk, struct clk_hw, clk);
+	return IS_ERR(clk) ? ERR_CAST(clk) : container_of(clk, struct clk_hw, clk);
 }
 
 struct clk_div_table {
@@ -721,9 +721,9 @@ int of_clk_add_provider(struct device_node *np,
 						   void *data),
 			void *data);
 
-static inline unsigned int clk_get_num_parents(const struct clk *hw)
+static inline unsigned int clk_hw_get_num_parents(const struct clk_hw *hw)
 {
-	return hw->num_parents;
+	return hw->clk.num_parents;
 }
 
 #else

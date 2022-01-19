@@ -21,6 +21,13 @@ menu "Commands"
 
 menu "Information"
 
+config CMD_TUTORIAL
+	bool "barebox tutorial (next command)"
+	default SANDBOX
+	help
+	  Help navigate a barebox tutorial available
+	  in /env/data/tutorial/
+
 config CMD_AT91CLK
 	bool "at91clk"
 	default y
@@ -65,6 +72,18 @@ config CMD_DEVINFO
 
 	  If called with a device path being the argument, devinfo shows more
 	  default information about this device and its parameters.
+
+config CMD_DEVUNBIND
+	tristate
+	prompt "devunbind"
+	help
+	  Debugging aid to unbind device(s) from driver at runtime
+
+	  devunbind [-fl] DEVICES..
+
+	  Options:
+		-f   unbind driver and force removal of device and children
+		-l   list remove callbacks in shutdown order
 
 config CMD_DMESG
 	tristate

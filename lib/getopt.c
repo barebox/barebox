@@ -61,13 +61,24 @@ int getopt(int argc, char *argv[], const char *optstring)
 {
 	char curopt;   /* current option character */
 	const char *curoptp; /* pointer to the current option in optstring */
+	bool stop_nonopt = false;
+
+	if (*optstring == '+') {
+		stop_nonopt = true;
+		optstring++;
+	}
 
 	while(1) {
 		debug("optindex: %d nonopts: %d optind: %d\n", optindex, nonopts, optind);
 
-		if (optindex == 1 && argv[optind] && !strcmp(argv[optind], "--")) {
-			optind++;
-			return -1;
+		if (optindex == 1 && argv[optind]) {
+			if (!strcmp(argv[optind], "--")) {
+				optind++;
+				return -1;
+			}
+
+			if (stop_nonopt && *argv[optind] != '-')
+				return -1;
 		}
 
 		/* first put nonopts to the end */

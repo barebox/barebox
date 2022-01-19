@@ -54,6 +54,23 @@ to_amba_uart_port(struct console_device *uart)
 	return container_of(uart, struct amba_uart_port, uart);
 }
 
+static void pl011_rlcr(struct amba_uart_port *uart, u32 lcr)
+{
+	struct vendor_data	*vendor = uart->vendor;
+
+	writew(lcr, uart->base + vendor->lcrh_rx);
+	if (vendor->lcrh_tx != vendor->lcrh_rx) {
+		int i;
+		/*
+		 * Wait 10 PCLKs before writing LCRH_TX register,
+		 * to get this delay write read only register 10 times
+		 */
+		for (i = 0; i < 10; ++i)
+			writew(0xff, uart->base + UART011_MIS);
+		writew(lcr, uart->base +  vendor->lcrh_tx);
+	}
+}
+
 static int pl011_setbaudrate(struct console_device *cdev, int baudrate)
 {
 	struct amba_uart_port *uart = to_amba_uart_port(cdev);
@@ -61,6 +78,7 @@ static int pl011_setbaudrate(struct console_device *cdev, int baudrate)
 	unsigned int divider;
 	unsigned int remainder;
 	unsigned int fraction;
+	uint32_t cr;
 
 	/*
 	 ** Set baud rate
@@ -74,8 +92,14 @@ static int pl011_setbaudrate(struct console_device *cdev, int baudrate)
 	temp = (8 * remainder) / baudrate;
 	fraction = (temp >> 1) + (temp & 1);
 
+	cr = readl(uart->base + UART011_CR);
+	writel(0x0, uart->base + UART011_CR);
+
 	writel(divider, uart->base + UART011_IBRD);
 	writel(fraction, uart->base + UART011_FBRD);
+
+	pl011_rlcr(uart, UART01x_LCRH_WLEN_8 | UART01x_LCRH_FEN);
+	writel(cr, uart->base + UART011_CR);
 
 	return 0;
 }
@@ -116,23 +140,6 @@ static int pl011_tstc(struct console_device *cdev)
 	struct amba_uart_port *uart = to_amba_uart_port(cdev);
 
 	return !(readl(uart->base + UART01x_FR) & UART01x_FR_RXFE);
-}
-
-static void pl011_rlcr(struct amba_uart_port *uart, u32 lcr)
-{
-	struct vendor_data	*vendor = uart->vendor;
-
-	writew(lcr, uart->base + vendor->lcrh_rx);
-	if (vendor->lcrh_tx != vendor->lcrh_rx) {
-		int i;
-		/*
-		 * Wait 10 PCLKs before writing LCRH_TX register,
-		 * to get this delay write read only register 10 times
-		 */
-		for (i = 0; i < 10; ++i)
-			writew(0xff, uart->base + UART011_MIS);
-		writew(lcr, uart->base +  vendor->lcrh_tx);
-	}
 }
 
 static int pl011_init_port(struct console_device *cdev)

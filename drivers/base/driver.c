@@ -41,7 +41,8 @@ EXPORT_SYMBOL(device_list);
 LIST_HEAD(driver_list);
 EXPORT_SYMBOL(driver_list);
 
-static LIST_HEAD(active);
+LIST_HEAD(active_device_list);
+EXPORT_SYMBOL(active_device_list);
 static LIST_HEAD(deferred);
 
 struct device_d *get_device_by_name(const char *name)
@@ -91,7 +92,7 @@ int device_probe(struct device_d *dev)
 	pinctrl_select_state_default(dev);
 	of_clk_set_defaults(dev->device_node, false);
 
-	list_add(&dev->active, &active);
+	list_add(&dev->active, &active_device_list);
 
 	ret = dev->bus->probe(dev);
 	if (ret == 0)
@@ -502,11 +503,15 @@ EXPORT_SYMBOL_GPL(dev_set_name);
 static void devices_shutdown(void)
 {
 	struct device_d *dev;
+	int depth = 0;
 
-	list_for_each_entry(dev, &active, active) {
+	list_for_each_entry(dev, &active_device_list, active) {
 		if (dev->bus->remove) {
+			depth++;
+			pr_report_probe("%*sremove-> %s\n", depth * 4, "", dev_name(dev));
 			dev->bus->remove(dev);
 			dev->driver = NULL;
+			depth--;
 		}
 	}
 }

@@ -1,0 +1,10 @@
+menu "KVX SoC drivers"
+
+config KVX_SOCINFO
+        bool "KVX SoC Info driver"
+	depends on KVX
+	select NVMEM
+	select KVX_OTP_NV
+	default y
+
+endmenu

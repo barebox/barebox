@@ -101,15 +101,17 @@ static int elf_section_cmp(void *priv, struct list_head *a, struct list_head *b)
 static int load_elf_to_memory(struct elf_image *elf)
 {
 	void *dst;
-	int ret, fd;
+	int ret, fd = -1;
 	u64 p_filesz, p_memsz, p_offset;
 	struct elf_section *r;
 	struct list_head *list = &elf->list;
 
-	fd = open(elf->filename, O_RDONLY);
-	if (fd < 0) {
-		pr_err("could not open: %s\n", errno_str());
-		return -errno;
+	if (elf->filename) {
+		fd = open(elf->filename, O_RDONLY);
+		if (fd < 0) {
+			pr_err("could not open: %s\n", errno_str());
+			return -errno;
+		}
 	}
 
 	list_for_each_entry(r, list, list) {
@@ -118,21 +120,26 @@ static int load_elf_to_memory(struct elf_image *elf)
 		p_memsz = elf_phdr_p_memsz(elf, r->phdr);
 		dst = (void *) (phys_addr_t) elf_phdr_p_paddr(elf, r->phdr);
 
-		ret = lseek(fd, p_offset, SEEK_SET);
-		if (ret == -1) {
-			pr_err("lseek at offset 0x%llx failed\n", p_offset);
-			close(fd);
-			return ret;
-		}
-
 		pr_debug("Loading phdr offset 0x%llx to 0x%p (%llu bytes)\n",
 			 p_offset, dst, p_filesz);
 
-		if (read_full(fd, dst, p_filesz) < 0) {
-			pr_err("could not read elf segment: %s\n",
-			       errno_str());
-			close(fd);
-			return -errno;
+		if (fd >= 0) {
+			ret = lseek(fd, p_offset, SEEK_SET);
+			if (ret == -1) {
+				pr_err("lseek at offset 0x%llx failed\n",
+				       p_offset);
+				close(fd);
+				return ret;
+			}
+
+			if (read_full(fd, dst, p_filesz) < 0) {
+				pr_err("could not read elf segment: %s\n",
+				       errno_str());
+				close(fd);
+				return -errno;
+			}
+		} else {
+			memcpy(dst, elf->hdr_buf + p_offset, p_filesz);
 		}
 
 		if (p_filesz < p_memsz)
@@ -202,6 +209,37 @@ static int elf_check_image(struct elf_image *elf, void *buf)
 	return 0;
 }
 
+static void elf_init_struct(struct elf_image *elf)
+{
+	INIT_LIST_HEAD(&elf->list);
+	elf->low_addr = (void *) (unsigned long) -1;
+	elf->high_addr = 0;
+	elf->filename = NULL;
+}
+
+struct elf_image *elf_open_binary(void *buf)
+{
+	int ret;
+	struct elf_image *elf;
+
+	elf = calloc(1, sizeof(*elf));
+	if (!elf)
+		return ERR_PTR(-ENOMEM);
+
+	elf_init_struct(elf);
+
+	elf->hdr_buf = buf;
+	ret = elf_check_image(elf, buf);
+	if (ret) {
+		free(elf);
+		return ERR_PTR(-EINVAL);
+	}
+
+	elf->entry = elf_hdr_e_entry(elf, elf->hdr_buf);
+
+	return elf;
+}
+
 static struct elf_image *elf_check_init(const char *filename)
 {
 	int ret, fd;
@@ -213,9 +251,7 @@ static struct elf_image *elf_check_init(const char *filename)
 	if (!elf)
 		return ERR_PTR(-ENOMEM);
 
-	INIT_LIST_HEAD(&elf->list);
-	elf->low_addr = (void *) (unsigned long) -1;
-	elf->high_addr = 0;
+	elf_init_struct(elf);
 
 	/* First pass is to read elf header only */
 	fd = open(filename, O_RDONLY);
@@ -299,7 +335,10 @@ void elf_close(struct elf_image *elf)
 {
 	elf_release_regions(elf);
 
-	free(elf->hdr_buf);
-	free(elf->filename);
+	if (elf->filename) {
+		free(elf->hdr_buf);
+		free(elf->filename);
+	}
+
 	free(elf);
 }

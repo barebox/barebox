@@ -44,4 +44,8 @@ kvx_sfr_set_mask(unsigned char sfr, uint64_t mask, uint64_t value)
 #define kvx_sfr_set(_sfr, _val)	__builtin_kvx_set(KVX_SFR_ ## _sfr, _val)
 #define kvx_sfr_get(_sfr)	__builtin_kvx_get(KVX_SFR_ ## _sfr)
 
+#define kvx_sfr_field_val(_val, _sfr, _field) \
+			  (((_val) & KVX_SFR_ ## _sfr ## _ ## _field ## _MASK) \
+			  >> KVX_SFR_ ## _sfr ## _ ## _field ## _SHIFT)
+
 #endif	/* _ASM_KVX_SFR_DEFS_H */

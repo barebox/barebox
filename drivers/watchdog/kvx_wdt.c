@@ -73,10 +73,8 @@ static int kvx_wdt_drv_probe(struct device_d *dev)
 	wdd->hwdev = dev;
 	wdd->set_timeout = kvx_wdt_set_timeout;
 
-	/* Be sure that interrupt are disable */
+	/* Be sure that interrupt are disabled */
 	kvx_sfr_set_field(TCR, WIE, 0);
-
-	kvx_watchdog_disable();
 
 	return watchdog_register(wdd);
 }

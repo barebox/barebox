@@ -17,7 +17,6 @@
 #include <linux/kernel.h>
 
 #include <asm/cache.h>
-#include <asm/bootm.h>
 
 typedef void __noreturn (*boot_func_entry)(unsigned long, void *);
 
@@ -95,12 +94,33 @@ static int do_boot_elf(struct image_data *data, struct elf_image *elf)
 		goto err_free_fdt;
 	}
 
-	entry = (boot_func_entry) data->os_address;
+	entry = (boot_func_entry) elf->entry;
 
 	ret = do_boot_entry(data, entry, fdt);
 
 err_free_fdt:
 	free(fdt);
+
+	return ret;
+}
+
+static int do_bootm_fit(struct image_data *data)
+{
+	int ret;
+	struct elf_image *elf;
+
+	elf = elf_open_binary((void *) data->fit_kernel);
+	if (IS_ERR(elf))
+		return PTR_ERR(data->elf);
+
+	ret = elf_load(elf);
+	if (ret)
+		goto close_elf;
+
+	ret = do_boot_elf(data, elf);
+
+close_elf:
+	elf_close(elf);
 
 	return ret;
 }
@@ -122,6 +142,12 @@ static struct image_handler elf_handler = {
 	.filetype = filetype_elf,
 };
 
+static struct image_handler fit_handler = {
+	.name = "FIT",
+	.bootm = do_bootm_fit,
+	.filetype = filetype_oftree,
+};
+
 static struct binfmt_hook binfmt_elf_hook = {
 	.type = filetype_elf,
 	.exec = "bootm",
@@ -130,6 +156,9 @@ static struct binfmt_hook binfmt_elf_hook = {
 static int kvx_register_image_handler(void)
 {
 	register_image_handler(&elf_handler);
+
+	if (IS_ENABLED(CONFIG_FITIMAGE))
+		register_image_handler(&fit_handler);
 
 	binfmt_register(&binfmt_elf_hook);
 

@@ -108,6 +108,11 @@ struct spi_device {
 	 */
 };
 
+static inline struct spi_device *to_spi_device(struct device_d *dev)
+{
+        return dev ? container_of(dev, struct spi_device, dev) : NULL;
+}
+
 struct spi_message;
 
 /**
@@ -515,9 +520,14 @@ static inline int spi_driver_register(struct driver_d *drv)
 	return register_driver(drv);
 }
 
+#ifdef CONFIG_SPI
 #define coredevice_spi_driver(drv)	\
 	register_driver_macro(coredevice,spi,drv)
 #define device_spi_driver(drv)	\
 	register_driver_macro(device,spi,drv)
+#else
+#define coredevice_spi_driver(drv)
+#define device_spi_driver(drv)
+#endif
 
 #endif /* __INCLUDE_SPI_H */

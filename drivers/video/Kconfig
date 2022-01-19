@@ -15,7 +15,7 @@ config FRAMEBUFFER_CONSOLE
 
 config DRIVER_VIDEO_FB_SSD1307
 	bool "Solomon SSD1307 framebuffer support"
-	depends on I2C && GPIOLIB
+	depends on (I2C || SPI) && GPIOLIB
 
 config VIDEO_VPL
 	depends on OFTREE

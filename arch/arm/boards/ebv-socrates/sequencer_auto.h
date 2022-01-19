@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #define __RW_MGR_ac_mrs1 0x04
 #define __RW_MGR_ac_mrs3 0x06
 #define __RW_MGR_ac_write_bank_0_col_0_nodata_wl_1 0x1C

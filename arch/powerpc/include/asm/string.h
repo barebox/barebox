@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef _PPC_STRING_H_
 #define _PPC_STRING_H_
 

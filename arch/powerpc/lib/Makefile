@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 obj-y += bat_rw.o
 obj-y += board.o
 obj-y += extable.o

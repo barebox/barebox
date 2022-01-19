@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #define SETUP_512MIB_1GIB \
 	wm 32 0x63fd9018 0x00101740; \
 	wm 32 0x63fd9000 0x83190000

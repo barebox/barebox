@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __INCLUDE_PLATFORM_DATA_DW_MMC_H
 #define __INCLUDE_PLATFORM_DATA_DW_MMC_H
 

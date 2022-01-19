@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef _STM32MP_MACH_ENTRY_H_
 #define _STM32MP_MACH_ENTRY_H_
 

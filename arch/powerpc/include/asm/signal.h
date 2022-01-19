@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef _ASMPPC_SIGNAL_H
 #define _ASMPPC_SIGNAL_H
 

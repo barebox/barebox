@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 obj-y	+= p1010rdb.o
 obj-y	+= law.o
 obj-y	+= tlb.o

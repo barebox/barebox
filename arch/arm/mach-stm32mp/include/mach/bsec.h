@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __MACH_STM32_BSEC_H__
 #define __MACH_STM32_BSEC_H__
 

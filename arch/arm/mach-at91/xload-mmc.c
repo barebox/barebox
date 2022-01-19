@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include <common.h>
 #include <mach/xload.h>
 #include <mach/sama5_bootsource.h>

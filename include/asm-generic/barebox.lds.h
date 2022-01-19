@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 
 /*
  * Align to a 32 byte boundary equal to the

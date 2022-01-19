@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 obj-y += da923rc.o
 obj-y += tlb.o
 obj-y += law.o

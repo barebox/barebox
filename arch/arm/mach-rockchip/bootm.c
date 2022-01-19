@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #define pr_fmt(fmt) "rockchip-bootm-barebox: " fmt
 
 #include <bootm.h>

@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 
 #include <platform_data/eth-fec.h>
 #include <input/matrix_keypad.h>

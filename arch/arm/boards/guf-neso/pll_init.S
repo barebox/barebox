@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #include <config.h>
 #include <mach/imx27-regs.h>
 #include <mach/imx-pll.h>

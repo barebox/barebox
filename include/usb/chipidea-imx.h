@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __USB_CHIPIDEA_IMX_H
 #define __USB_CHIPIDEA_IMX_H
 

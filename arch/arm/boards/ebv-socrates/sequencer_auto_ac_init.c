@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 static const uint32_t ac_rom_init_size = 36;
 static const uint32_t ac_rom_init[36] =
 {

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 menu "Library gui routines"
 
 config IMAGE_RENDERER

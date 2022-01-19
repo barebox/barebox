@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __INCLUDE_PFUZE_H
 #define __INCLUDE_PFUZE_H
 

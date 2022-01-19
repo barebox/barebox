@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __ARCHOS_FEATURES_H
 #define __ARCHOS_FEATURES_H
 

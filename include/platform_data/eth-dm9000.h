@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 
 #ifndef __DM9000_H__
 #define __DM9000_H__

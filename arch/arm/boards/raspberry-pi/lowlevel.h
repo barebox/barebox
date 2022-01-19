@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __ARCH_ARM_BOARDS_LOWLEVEL_H__
 #define __ARCH_ARM_BOARDS_LOWLEVEL_H__
 

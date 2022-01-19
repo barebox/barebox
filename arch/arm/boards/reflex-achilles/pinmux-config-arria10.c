@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include <mach/arria10-pinmux.h>
 
 static uint32_t pinmux[] = {

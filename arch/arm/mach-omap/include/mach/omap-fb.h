@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef H_BAREBOX_ARCH_ARM_MACH_OMAP_MACH_FB4_H
 #define H_BAREBOX_ARCH_ARM_MACH_OMAP_MACH_FB4_H
 

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 obj-$(CONFIG_ARCH_MPC85XX) += cpu-85xx/
 obj-y += lib/
 obj-$(CONFIG_FSL_DDR2) += ddr-8xxx/

@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __ASM_GENERIC_MEMORY_LAYOUT_H
 #define __ASM_GENERIC_MEMORY_LAYOUT_H
 

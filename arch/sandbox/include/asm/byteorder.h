@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef _SANDBOX_BYTEORDER_H
 #define _SANDBOX_BYTEORDER_H
 

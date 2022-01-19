@@ -1,6 +1,5 @@
-#
-#
-#
+# SPDX-License-Identifier: GPL-2.0-only
+
 config MIPS
 	bool
 	select GENERIC_LIB_ASHLDI3

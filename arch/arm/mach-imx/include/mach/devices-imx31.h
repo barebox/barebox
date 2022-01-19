@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 
 #include <mach/imx31-regs.h>
 #include <mach/devices.h>

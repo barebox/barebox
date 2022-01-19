@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __OMAP_MCSPI_H
 #define  __OMAP_MCSPI_H
 

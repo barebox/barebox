@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 /*
  * JFFS2 -- Journalling Flash File System, Version 2.
  *

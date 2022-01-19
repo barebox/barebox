@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 KBUILD_DEFCONFIG := efi_defconfig
 
 KBUILD_CPPFLAGS += -D__X86__

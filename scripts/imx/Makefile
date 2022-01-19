@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 hostprogs-always-$(CONFIG_ARCH_IMX_IMXIMAGE)	+= imx-image
 hostprogs-always-$(CONFIG_ARCH_IMX_USBLOADER)	+= imx-usb-loader
 

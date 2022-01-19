@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __MACH_AT91SAM926X_H
 #define __MACH_AT91SAM926X_H
 

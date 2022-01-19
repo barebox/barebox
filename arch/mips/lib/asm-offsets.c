@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 /*
  * offset.c: Calculate pt_regs and task_struct offsets.
  *

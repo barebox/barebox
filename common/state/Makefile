@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 obj-y += state.o
 obj-y += state_variables.o
 obj-y += backend_format_dtb.o

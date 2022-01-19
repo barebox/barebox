@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 # DCD i.MX50 SoC setup using 256MiB LPDDR1
 # Copyright (C) 2017 Alexander Kurz <akurz@blala.de>
 #

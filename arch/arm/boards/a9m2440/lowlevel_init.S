@@ -1,6 +1,4 @@
-/*
- *
- */
+/* SPDX-License-Identifier: GPL-2.0-only */
 
 #include <config.h>
 #include <linux/sizes.h>

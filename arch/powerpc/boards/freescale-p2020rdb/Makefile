@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 obj-y	+= p2020rdb.o
 obj-y	+= law.o
 obj-y	+= tlb.o

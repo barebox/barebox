@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef _ASM_MIPS_CACHE_H
 #define _ASM_MIPS_CACHE_H
 

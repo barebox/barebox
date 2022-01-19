@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 /*
  * ioport.h	Definitions of routines for detecting, reserving and
  *		allocating system resources.

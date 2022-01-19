@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0-only
 
 obj-y += generic_report.o generic.o report.o common.o test_kasan.o
 KASAN_SANITIZE_generic_report.o := n

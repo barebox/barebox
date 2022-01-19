@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * JFFS2 -- Journalling Flash File System, Version 2.
  *
@@ -5,9 +6,6 @@
  *		     Zoltan Sogor <weth@inf.u-szeged.hu>,
  *		     Patrik Kluba <pajko@halom.u-szeged.hu>,
  *		     University of Szeged, Hungary
- *
- * For licensing information, see the file 'LICENCE' in this directory.
- *
  */
 
 #ifndef JFFS2_SUMMARY_H

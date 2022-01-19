@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 /*
  * by Du Huanpeng <u74147@gmail.com>
  */

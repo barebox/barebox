@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __IMX_HEADER_H__
 #define __IMX_HEADER_H__
 

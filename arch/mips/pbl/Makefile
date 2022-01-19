@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0-only
 
 suffix_$(CONFIG_IMAGE_COMPRESSION_GZIP) = gzip
 suffix_$(CONFIG_IMAGE_COMPRESSION_LZO)	= lzo

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 if ARCH_EP93XX
 
 config EP93XX_SDCE0_PHYS_OFFSET

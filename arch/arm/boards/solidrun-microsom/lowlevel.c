@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include <asm/barebox-arm.h>
 #include <common.h>
 #include <mach/esdctl.h>

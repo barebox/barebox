@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 /*
  * Copyright (C) 2011 Alexander Aring <a.aring@phytec.de>
  */

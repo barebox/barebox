@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __MACH_OMAP4_CLOCK_H
 #define __MACH_OMAP4_CLOCK_H
 

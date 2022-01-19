@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __INCLUDE_ARM_ASM_DEBUG_LL_PL011_H__
 #define __INCLUDE_ARM_ASM_DEBUG_LL_PL011_H__
 

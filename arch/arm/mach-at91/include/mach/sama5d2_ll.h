@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __MACH_SAMA5D2_LL__
 #define __MACH_SAMA5D2_LL__
 

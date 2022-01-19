@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __INCLUDE_ARCH_DEBUG_LL_H__
 #define __INCLUDE_ARCH_DEBUG_LL_H__
 

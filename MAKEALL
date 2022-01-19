@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+#
+# SPDX-License-Identifier: GPL-2.0-only
 
 # Print statistics when we exit
 trap exit 1 2 3 15

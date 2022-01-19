@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 KBUILD_DEFCONFIG := p2020rdb_defconfig
 
 KBUILD_CPPFLAGS += -ffixed-r14 -m32 	\

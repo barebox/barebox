@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include <mach/arria10-clock-manager.h>
 
 static struct arria10_mainpll_cfg mainpll_cfg = {

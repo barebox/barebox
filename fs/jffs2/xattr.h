@@ -1,12 +1,10 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * JFFS2 -- Journalling Flash File System, Version 2.
  *
  * Copyright © 2006  NEC Corporation
  *
  * Created by KaiGai Kohei <kaigai@ak.jp.nec.com>
- *
- * For licensing information, see the file 'LICENCE' in this directory.
- *
  */
 
 #ifndef _JFFS2_FS_XATTR_H_

@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __SYS_MOUNT_H
 #define __SYS_MOUNT_H
 

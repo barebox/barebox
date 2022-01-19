@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #ifndef __BAREBOX__
 #include <linux/kernel.h>
 #define EXPORT_SYMBOL(x)

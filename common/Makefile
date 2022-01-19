@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 obj-y				+= boards/
 obj-y				+= memory.o
 obj-y				+= memory_display.o

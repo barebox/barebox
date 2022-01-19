@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __IMX_CCM_H__
 
 /* 0 <= n <= 190 */

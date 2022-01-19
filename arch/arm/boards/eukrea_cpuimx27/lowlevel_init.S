@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #include <config.h>
 #include <asm-generic/memory_layout.h>
 #include <mach/imx27-regs.h>

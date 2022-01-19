@@ -1,6 +1,5 @@
-#
-#
-#
+# SPDX-License-Identifier: GPL-2.0-only
+
 config X86
 	bool
 	select HAS_KALLSYMS

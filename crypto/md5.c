@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * This file was transplanted with slight modifications from Linux sources
  * (fs/cifs/md5.c) into U-Boot by Bartlomiej Sieka <tur@semihalf.com>.

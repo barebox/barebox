@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 soc imx35
 loadaddr 0x87eff400
 ivtofs 0x400

@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef _LINUX_TYPES_H
 #define _LINUX_TYPES_H
 #ifndef __ASSEMBLY__

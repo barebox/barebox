@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __LINUX_MAGIC_H__
 #define __LINUX_MAGIC_H__
 

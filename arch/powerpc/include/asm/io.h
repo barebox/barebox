@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 /* originally from linux source.
  * removed the dependencies on CONFIG_ values
  * removed virt_to_phys stuff (and in fact everything surrounded by #if __KERNEL__)

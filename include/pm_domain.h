@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef _PM_DOMAIN_H
 #define _PM_DOMAIN_H
 

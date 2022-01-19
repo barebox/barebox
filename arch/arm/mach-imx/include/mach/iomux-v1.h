@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __MACH_IOMUX_V1_H__
 #define __MACH_IOMUX_V1_H__
 

@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __VIDEO_VPL_H
 #define __VIDEO_VPL_H
 

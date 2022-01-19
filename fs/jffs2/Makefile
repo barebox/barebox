@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 obj-y += compr.o dir.o nodelist.o malloc.o
 obj-y += read.o readinode.o scan.o
 obj-y += build.o fs.o

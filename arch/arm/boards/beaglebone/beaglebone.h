@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __BOARD_BEAGLEBONE_H
 #define __BOARD_BEAGLEBONE_H
 

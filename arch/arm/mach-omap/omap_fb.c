@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include <driver.h>
 #include <common.h>
 #include <linux/ioport.h>

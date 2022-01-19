@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 obj-$(CONFIG_BMP)	+= bmp.o
 obj-$(CONFIG_IMAGE_RENDERER)	+= image_renderer.o graphic_utils.o
 obj-$(CONFIG_PNG)	+= png.o

@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 /*
  * This snippet can be included from a i.MX flash header configuration
  * file for generating signed images. The necessary keys/certificates

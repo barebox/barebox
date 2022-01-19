@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
 #ifndef __ARM_MMU_COMMON_H
 #define __ARM_MMU_COMMON_H
 

@@ -31,6 +31,7 @@ SECTIONS
 	.text      :
 	{
 		_stext = .;
+		*(.text_head_prologue*)
 		*(.text_head_entry*)
 		__bare_init_start = .;
 		*(.text_bare_init*)

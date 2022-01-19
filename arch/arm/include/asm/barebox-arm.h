@@ -18,6 +18,7 @@
 #include <linux/types.h>
 #include <linux/compiler.h>
 #include <asm/barebox-arm-head.h>
+#include <asm/common.h>
 #include <asm/sections.h>
 
 /*
@@ -97,14 +98,13 @@ static inline void arm_fixup_vectors(void)
 
 void *barebox_arm_boot_dtb(void);
 
-static inline unsigned long arm_mem_stack_top(unsigned long membase,
-					      unsigned long endmem)
-{
-	if (IS_ENABLED(CONFIG_BOOTM_OPTEE) || IS_ENABLED(CONFIG_PBL_OPTEE))
-		endmem -= OPTEE_SIZE;
+#define __arm_mem_stack_top(membase, endmem) ((endmem) - SZ_64K)
 
-	return endmem - SZ_64K;
-}
+#if defined(CONFIG_BOOTM_OPTEE) || defined(CONFIG_PBL_OPTEE)
+#define arm_mem_stack_top(membase, endmem) (__arm_mem_stack_top(membase, endmem) - OPTEE_SIZE)
+#else
+#define arm_mem_stack_top(membase, endmem)  __arm_mem_stack_top(membase, endmem)
+#endif
 
 static inline unsigned long arm_mem_stack(unsigned long membase,
 					  unsigned long endmem)
@@ -161,6 +161,51 @@ static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 	}
 }
 
+#ifdef CONFIG_CPU_64
+
+#define ____emit_entry_prologue(instr, ...) do { \
+	static __attribute__ ((unused,section(".text_head_prologue"))) \
+		const u32 __entry_prologue[] = {(instr), ##__VA_ARGS__}; \
+	barrier_data(__entry_prologue); \
+} while(0)
+
+#define __emit_entry_prologue(instr1, instr2, instr3, instr4, instr5) \
+	____emit_entry_prologue(instr1, instr2, instr3, instr4, instr5)
+
+#define __ARM_SETUP_STACK(stack_top) \
+	__emit_entry_prologue(0x14000002	/* b pc+0x8 */,		\
+			      stack_top		/* 32-bit literal */,	\
+			      0x18ffffe9	/* ldr w9, top */,	\
+			      0xb4000049	/* cbz x9, pc+0x8 */,	\
+			      0x9100013f	/* mov sp, x9 */)
+#else
+#define __ARM_SETUP_STACK(stack_top) if (stack_top) arm_setup_stack(stack_top)
+#endif
+
+/*
+ * Unlike ENTRY_FUNCTION, this can be used to setup stack for a C entry
+ * point on both ARM32 and ARM64. ENTRY_FUNCTION on ARM64 can only be used
+ * if preceding boot stage has initialized the stack pointer.
+ *
+ * Stack top of 0 means stack is already set up. In that case, the follow-up
+ * code block will not be inlined and may spill to stack right away.
+ */
+#define ENTRY_FUNCTION_WITHSTACK(name, stack_top, arg0, arg1, arg2)	\
+	void name(ulong r0, ulong r1, ulong r2);			\
+									\
+	static void __##name(ulong, ulong, ulong);			\
+									\
+	void NAKED __section(.text_head_entry_##name)	name		\
+				(ulong r0, ulong r1, ulong r2)		\
+		{							\
+			__barebox_arm_head();				\
+			__ARM_SETUP_STACK(stack_top);			\
+			__##name(r0, r1, r2);				\
+		}							\
+		static void noinline __##name				\
+			(ulong arg0, ulong arg1, ulong arg2)
+
+
 #define ENTRY_FUNCTION(name, arg0, arg1, arg2)				\
 	void name(ulong r0, ulong r1, ulong r2);			\
 									\
@@ -170,6 +215,7 @@ static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 				(ulong r0, ulong r1, ulong r2)		\
 		{							\
 			__barebox_arm_head();				\
+			__ARM_SETUP_STACK(0);				\
 			__##name(r0, r1, r2);				\
 		}							\
 		static void NAKED noinline __##name			\

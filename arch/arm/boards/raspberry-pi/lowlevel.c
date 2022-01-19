@@ -31,52 +31,51 @@ static void copy_vc_fdt(void *dest, void *src, unsigned long max_size)
 	memmove(dest, src, size);
 }
 
+/* A pointer to the FDT created by VideoCore was passed to us in r2. We
+ * reserve some memory just above the region used for Barebox and copy
+ * this FDT there. We fetch it from there later in rpi_devices_init().
+ */
+#define rpi_stack_top(memsize) \
+	arm_mem_stack_top(BCM2835_SDRAM_BASE, BCM2835_SDRAM_BASE + memsize - VIDEOCORE_FDT_SZ)
+
 /* Must be inline since stack isn't setup yet. */
 static inline void start_raspberry_pi(unsigned long memsize, void *fdt,
 								void *vc_fdt)
 {
-	void *saved_vc_fdt;
-	unsigned long membase = BCM2835_SDRAM_BASE;
-
-	/* A pointer to the FDT created by VideoCore was passed to us in r2. We
-	 * reserve some memory just above the region used for Basebox and copy
-	 * this FDT there. We fetch it from there later in rpi_devices_init().*/
-	memsize -= VIDEOCORE_FDT_SZ;
+	unsigned long endmem = rpi_stack_top(memsize);
 
 	arm_cpu_lowlevel_init();
 
-	/* Copied from barebox_arm_entry(). We need stack here early
-	 * for normal function calls to work. */
-	arm_setup_stack(arm_mem_stack_top(membase, membase + memsize));
+	copy_vc_fdt((void *)endmem, vc_fdt, VIDEOCORE_FDT_SZ);
 
 	fdt += get_runtime_offset();
 
-	saved_vc_fdt = (void *)(membase + memsize);
-	copy_vc_fdt(saved_vc_fdt, vc_fdt, VIDEOCORE_FDT_SZ);
-
-	barebox_arm_entry(membase, memsize, fdt);
+	barebox_arm_entry(BCM2835_SDRAM_BASE, endmem - BCM2835_SDRAM_BASE, fdt);
 }
 
+#define RPI_ENTRY_FUNCTION(name, memsize, r2) \
+	ENTRY_FUNCTION_WITHSTACK(name, rpi_stack_top(memsize), __r0, __r1, r2)
+
 extern char __dtb_bcm2835_rpi_start[];
-ENTRY_FUNCTION(start_raspberry_pi1, r0, r1, r2)
+RPI_ENTRY_FUNCTION(start_raspberry_pi1, SZ_128M, r2)
 {
 	start_raspberry_pi(SZ_128M, __dtb_bcm2835_rpi_start, (void *)r2);
 }
 
 extern char __dtb_bcm2836_rpi_2_start[];
-ENTRY_FUNCTION(start_raspberry_pi2, r0, r1, r2)
+RPI_ENTRY_FUNCTION(start_raspberry_pi2, SZ_512M, r2)
 {
 	start_raspberry_pi(SZ_512M, __dtb_bcm2836_rpi_2_start, (void *)r2);
 }
 
 extern char __dtb_bcm2837_rpi_3_start[];
-ENTRY_FUNCTION(start_raspberry_pi3, r0, r1, r2)
+RPI_ENTRY_FUNCTION(start_raspberry_pi3, SZ_512M, r2)
 {
 	start_raspberry_pi(SZ_512M, __dtb_bcm2837_rpi_3_start, (void *)r2);
 }
 
 extern char __dtb_bcm2837_rpi_cm3_start[];
-ENTRY_FUNCTION(start_raspberry_pi_cm3, r0, r1, r2)
+RPI_ENTRY_FUNCTION(start_raspberry_pi_cm3, SZ_512M, r2)
 {
 	start_raspberry_pi(SZ_512M, __dtb_bcm2837_rpi_cm3_start, (void *)r2);
 }

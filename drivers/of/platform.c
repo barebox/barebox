@@ -365,13 +365,10 @@ int of_platform_populate(struct device_node *root,
 }
 EXPORT_SYMBOL_GPL(of_platform_populate);
 
-struct device_d *of_device_create_on_demand(struct device_node *np)
+static struct device_d *of_device_create_on_demand(struct device_node *np)
 {
 	struct device_node *parent;
 	struct device_d *parent_dev, *dev;
-
-	if (!deep_probe_is_supported())
-		return NULL;
 
 	parent = of_get_parent(np);
 	if (!parent)

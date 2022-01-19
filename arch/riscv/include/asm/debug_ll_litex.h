@@ -90,11 +90,11 @@ static inline void PUTC_LL(char ch)
 	li	t0, DEBUG_LL_UART_ADDR
 
 	/* get line status and check for data present */
-	lbu	s0, UART_RXEMPTY(t0)
-	bnez    s0, 243f
-	li	s0, 1
+	lbu	s1, UART_RXEMPTY(t0)
+	bnez    s1, 243f
+	li	s1, 1
 	j	244f
-243:	li	s0, 0
+243:	li	s1, 0
 244:	nop
 #endif /* CONFIG_DEBUG_LL */
 .endm
@@ -109,10 +109,10 @@ static inline void PUTC_LL(char ch)
 	debug_ll_tstc
 
 	/* try again */
-	beqz	s0, 204b
+	beqz	s1, 204b
 
 	/* read a character */
-	lb	s0, UART_RXTX(t0)
+	lb	s1, UART_RXTX(t0)
 	li      t1, UART_EV_RX
 	sb	t1, UART_EV_PENDING(t0)
 

@@ -4,6 +4,12 @@
 
 struct pt_regs;
 
-void unwind_backtrace(struct pt_regs *regs);
+#if defined CONFIG_RISCV_UNWIND && !defined __PBL__
+void unwind_backtrace(const struct pt_regs *regs);
+#else
+static inline void unwind_backtrace(const struct pt_regs *regs)
+{
+}
+#endif
 
 #endif

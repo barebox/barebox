@@ -143,8 +143,8 @@ static inline void debug_ll_ns16550_init(void)
 	li      t0, DEBUG_LL_UART_ADDR
 
 	/* get line status and check for data present */
-	UART_REG_L	s0, UART_LSR(DEBUG_LL_UART_SHIFT)(t0)
-	andi	s0, s0, UART_LSR_DR
+	UART_REG_L	s1, UART_LSR(DEBUG_LL_UART_SHIFT)(t0)
+	andi	s1, s1, UART_LSR_DR
 
 #endif /* CONFIG_DEBUG_LL */
 .endm
@@ -159,10 +159,10 @@ static inline void debug_ll_ns16550_init(void)
 	debug_ll_tstc
 
 	/* try again */
-	beqz	s0, 204b
+	beqz	s1, 204b
 
 	/* read a character */
-	UART_REG_L	s0, UART_RBR(DEBUG_LL_UART_SHIFT)(t0)
+	UART_REG_L	s1, UART_RBR(DEBUG_LL_UART_SHIFT)(t0)
 
 #endif /* CONFIG_DEBUG_LL */
 .endm

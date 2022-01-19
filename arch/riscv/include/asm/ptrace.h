@@ -61,7 +61,7 @@ struct pt_regs {
 #define MAX_REG_OFFSET offsetof(struct pt_regs, cause)
 
 /* Helpers for working with the instruction pointer */
-static inline unsigned long instruction_pointer(struct pt_regs *regs)
+static inline unsigned long instruction_pointer(const struct pt_regs *regs)
 {
 	return regs->epc;
 }
@@ -74,7 +74,7 @@ static inline void instruction_pointer_set(struct pt_regs *regs,
 #define profile_pc(regs) instruction_pointer(regs)
 
 /* Helpers for working with the user stack pointer */
-static inline unsigned long user_stack_pointer(struct pt_regs *regs)
+static inline unsigned long user_stack_pointer(const struct pt_regs *regs)
 {
 	return regs->sp;
 }
@@ -85,13 +85,13 @@ static inline void user_stack_pointer_set(struct pt_regs *regs,
 }
 
 /* Valid only for Kernel mode traps. */
-static inline unsigned long kernel_stack_pointer(struct pt_regs *regs)
+static inline unsigned long kernel_stack_pointer(const struct pt_regs *regs)
 {
 	return regs->sp;
 }
 
 /* Helpers for working with the frame pointer */
-static inline unsigned long frame_pointer(struct pt_regs *regs)
+static inline unsigned long frame_pointer(const struct pt_regs *regs)
 {
 	return regs->s0;
 }
@@ -101,7 +101,7 @@ static inline void frame_pointer_set(struct pt_regs *regs,
 	regs->s0 = val;
 }
 
-static inline unsigned long regs_return_value(struct pt_regs *regs)
+static inline unsigned long regs_return_value(const struct pt_regs *regs)
 {
 	return regs->a0;
 }

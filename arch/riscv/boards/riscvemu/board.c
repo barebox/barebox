@@ -7,6 +7,7 @@
 #include <driver.h>
 #include <poweroff.h>
 #include <restart.h>
+#include <deep-probe.h>
 #include <asm/system.h>
 #include <asm/barebox-riscv.h>
 
@@ -16,21 +17,12 @@ struct riscvemu_priv {
 
 };
 
-#define HTIF_BASE_ADDR		IOMEM(0x40008000)
-#define HTIF_TOHOST_LOW		(HTIF_BASE_ADDR + 0)
-#define HTIF_TOHOST_HIGH	(HTIF_BASE_ADDR + 4)
-
-static void __noreturn riscvemu_poweroff(struct poweroff_handler *pwr)
-{
-	writel(1, HTIF_TOHOST_LOW);
-	writel(0, HTIF_TOHOST_HIGH);
-
-	__builtin_unreachable();
-}
-
 static void __noreturn riscvemu_restart(struct restart_handler *rst)
 {
 	struct riscvemu_priv *priv = container_of(rst, struct riscvemu_priv, rst);
+
+	/* clear screen on graphic console */
+	puts("\e[J");
 
 	/*
 	 * barebox PBL relocates itself to end of RAM early on, so unless
@@ -40,14 +32,18 @@ static void __noreturn riscvemu_restart(struct restart_handler *rst)
 	priv->restart(riscv_hartid(), barebox_riscv_boot_dtb());
 }
 
+extern char __dtb_overlay_of_sram_start[];
+
 static int riscvemu_probe(struct device_d *dev)
 {
 	struct device_node *of_chosen;
+	struct device_node *overlay;
 	struct riscvemu_priv *priv;
 	u64 start;
 
-	if (of_find_compatible_node(NULL, NULL, "ucb,htif0"))
-		poweroff_handler_register_fn(riscvemu_poweroff);
+	overlay = of_unflatten_dtb(__dtb_overlay_of_sram_start, INT_MAX);
+	of_overlay_apply_tree(dev->device_node, overlay);
+	/* of_probe() will happen later at of_populate_initcall */
 
 	of_chosen = of_find_node_by_path("/chosen");
 
@@ -67,6 +63,7 @@ static const struct of_device_id riscvemu_of_match[] = {
 	{ .compatible = "ucbbar,riscvemu-bar_dev" },
 	{ /* sentinel */ },
 };
+BAREBOX_DEEP_PROBE_ENABLE(riscvemu_of_match);
 
 static struct driver_d riscvemu_board_driver = {
 	.name = "board-riscvemu",

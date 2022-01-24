@@ -22,7 +22,7 @@ Example of downloading and installing a toolchain::
   $ export PATH=$PATH:$PWD/or1k-elf/bin
 
 Running OpenRISC barebox on qemu
-------------------------------
+--------------------------------
 
 Running barebox on qemu is similar to running linux on qemu see more details on
 the qemu wiki site at https://wiki.qemu.org/Documentation/Platforms/OpenRISC

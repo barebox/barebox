@@ -3255,6 +3255,7 @@ static int do_lookup_dentry(int argc, char *argv[])
 
 BAREBOX_CMD_START(lookup_dentry)
         .cmd            = do_lookup_dentry,
+	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 BAREBOX_CMD_END
 
 static struct dentry *debug_follow_mount(struct dentry *dentry)
@@ -3309,5 +3310,6 @@ static int do_debug_fs_dump(int argc, char *argv[])
 
 BAREBOX_CMD_START(debug_fs_dump)
         .cmd            = do_debug_fs_dump,
+	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 BAREBOX_CMD_END
 #endif

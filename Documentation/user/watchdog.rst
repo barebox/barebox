@@ -10,6 +10,15 @@ the bootloader. For these scenarios barebox provides the watchdog framework
 with the following functionality and at least ``CONFIG_WATCHDOG`` should be
 enabled.
 
+Disabling for development
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The shorthand command ``wd -x`` will disable all watchdogs.
+If hardware (or driver) doesn't support turning off the watchdog,
+an autpoller will be registered to periodically feed watchdogs.
+This should only be needed for development.
+See :ref:`boot-watchdog-timeout` for how to use the watchdog in the field.
+
 Polling
 ~~~~~~~
 
@@ -97,6 +106,8 @@ The priority is initially set by drivers and can be overridden in the
 device tree or via the ``priority`` device parameter. Normally, watchdogs
 that have a wider effect should be given the higher priority (e.g.
 PMIC watchdog resetting the board vs. SoC's watchdog resetting only itself).
+
+.. _boot-watchdog-timeout:
 
 Boot Watchdog Timeout
 ~~~~~~~~~~~~~~~~~~~~~

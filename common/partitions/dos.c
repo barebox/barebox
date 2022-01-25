@@ -200,6 +200,8 @@ static void dos_partition(void *buf, struct block_device *blk,
 			pd->used_entries++;
 
 			if (is_extended_partition(&pentry)) {
+				pd->parts[n].size = 2;
+
 				if (!extended_partition)
 					extended_partition = &pd->parts[n];
 				else

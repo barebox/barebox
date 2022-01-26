@@ -302,11 +302,11 @@ static int at91_sdhci_set_bus_width(struct at91_sdhci *host, unsigned bus_width)
 		break;
 	case MMC_BUS_WIDTH_4:
 		reg &= ~SDHCI_CTRL_8BITBUS;
-		reg |= SDHCI_CTRL_8BITBUS;
+		reg |= SDHCI_CTRL_4BITBUS;
 		break;
 	default:
 		reg &= ~SDHCI_CTRL_8BITBUS;
-		reg &= ~SDHCI_CTRL_8BITBUS;
+		reg &= ~SDHCI_CTRL_4BITBUS;
 	}
 
 	sdhci_write8(sdhci, SDHCI_HOST_CONTROL, reg);

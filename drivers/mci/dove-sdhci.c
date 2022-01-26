@@ -181,13 +181,13 @@ static void dove_sdhci_mci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 
 	/* set bus width */
 	val = sdhci_read8(&host->sdhci, SDHCI_HOST_CONTROL) &
-		~(SDHCI_CTRL_8BITBUS | SDHCI_CTRL_8BITBUS);
+		~(SDHCI_CTRL_4BITBUS | SDHCI_CTRL_8BITBUS);
 	switch (ios->bus_width) {
 	case MMC_BUS_WIDTH_8:
 		val |= SDHCI_CTRL_8BITBUS;
 		break;
 	case MMC_BUS_WIDTH_4:
-		val |= SDHCI_CTRL_8BITBUS;
+		val |= SDHCI_CTRL_4BITBUS;
 		break;
 	}
 

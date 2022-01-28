@@ -203,8 +203,8 @@ ld_flags       = $(KBUILD_LDFLAGS) $(ldflags-y)
 dtc_cpp_flags  = -Wp,-MD,$(depfile).pre -nostdinc                        \
 		 -Wp,-MT,$(basename $(notdir $@)).o                      \
 		 -I$(srctree)/arch/$(SRCARCH)/dts/include		 \
-		 -I$(srctree)/dts/include                                \
 		 -I$(srctree)/include                                    \
+		 -I$(srctree)/dts/include                                \
 		 -I$(srctree)/dts/src/                                   \
 		 $(DTC_CPP_FLAGS_$(basetarget).dtb)                      \
 		 -undef -D__DTS__

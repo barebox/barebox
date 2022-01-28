@@ -105,24 +105,31 @@ int write_file(const char *filename, const void *buf, size_t size)
 {
 	int fd, ret = 0;
 	int now;
+	size_t left = size;
 
-	fd = open(filename, O_WRONLY | O_TRUNC | O_CREAT,
+	/* The same file may be mmapped currently, so can't use O_TRUNC here */
+	fd = open(filename, O_WRONLY | O_CREAT,
 		  S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 	if (fd < 0) {
 		fprintf(stderr, "Cannot open %s: %s\n", filename, strerror(errno));
 		return -errno;
 	}
 
-	while (size) {
-		now = write(fd, buf, size);
+	while (left) {
+		now = write(fd, buf, left);
 		if (now < 0) {
 			fprintf(stderr, "Cannot write to %s: %s\n", filename,
 				strerror(errno));
 			ret = -errno;
 			goto out;
 		}
-		size -= now;
+		left -= now;
 		buf += now;
+	}
+
+	if (ftruncate(fd, size) < 0) {
+		fprintf(stderr, "Cannot truncate file: %s", strerror(errno));
+		ret = -errno;
 	}
 
 out:

@@ -877,7 +877,6 @@ static struct rockchip_pin_ctrl *rockchip_pinctrl_get_soc_data(
 	struct device_node *np;
 	struct rockchip_pin_ctrl *ctrl;
 	struct rockchip_pin_bank *bank;
-	char *name;
 	int grf_offs, pmu_offs, drv_grf_offs, drv_pmu_offs, i, j;
 	int gpio = 0;
 

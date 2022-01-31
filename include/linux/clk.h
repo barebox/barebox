@@ -683,6 +683,11 @@ int clk_parent_set_rate(struct clk_hw *hw, unsigned long rate,
 int bclk_register(struct clk *clk);
 struct clk *clk_register(struct device_d *dev, struct clk_hw *hw);
 
+static inline int clk_hw_register(struct device_d *dev, struct clk_hw *hw)
+{
+	return PTR_ERR_OR_ZERO(clk_register(dev, hw));
+}
+
 struct clk *clk_lookup(const char *name);
 
 void clk_dump(int verbose);

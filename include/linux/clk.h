@@ -519,6 +519,17 @@ struct clk *clk_register_divider_table(struct device_d *dev, const char *name,
 		u8 clk_divider_flags, const struct clk_div_table *table,
 		spinlock_t *lock);
 
+struct clk_hw *clk_hw_register_divider_table(struct device_d *dev, const char *name,
+		const char *parent_name, unsigned long flags,
+		void __iomem *reg, u8 shift, u8 width,
+		u8 clk_divider_flags, const struct clk_div_table *table,
+		spinlock_t *lock);
+
+struct clk_hw *clk_hw_register_divider(struct device_d *dev, const char *name,
+		const char *parent_name, unsigned long flags,
+		void __iomem *reg, u8 shift, u8 width,
+		u8 clk_divider_flags, spinlock_t *lock);
+
 struct clk_fixed_factor {
 	struct clk_hw hw;
 	int mult;

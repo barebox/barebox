@@ -43,7 +43,7 @@ config RESET_STM32
 	bool "STM32 Reset Driver"
 	depends on ARCH_STM32MP || COMPILE_TEST
 	help
-	  This enables the reset controller driver for STM32MP and STM32 MCUs.
+	  This enables the reset controller driver for STM32MP1.
 
 config RESET_STARFIVE
 	bool "StarFive Controller Driver" if COMPILE_TEST

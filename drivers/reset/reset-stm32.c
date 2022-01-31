@@ -66,14 +66,6 @@ static void stm32mp_reset(void __iomem *reg, unsigned offset, bool assert)
 	writel(BIT(offset), reg);
 }
 
-static void stm32mcu_reset(void __iomem *reg, unsigned offset, bool assert)
-{
-	if (assert)
-		setbits_le32(reg, BIT(offset));
-	else
-		clrbits_le32(reg, BIT(offset));
-}
-
 static u32 stm32_reset_status(struct stm32_reset *priv, unsigned long bank)
 {
 	return readl(priv->base + bank);
@@ -195,18 +187,13 @@ static const struct stm32_reset_ops stm32mp1_reset_ops = {
 	.reset_reasons = stm32mp_reset_reasons,
 };
 
-static const struct stm32_reset_ops stm32mcu_reset_ops = {
-	.reset = stm32mcu_reset,
-};
-
 static const struct of_device_id stm32_rcc_reset_dt_ids[] = {
 	{ .compatible = "st,stm32mp1-rcc", .data = &stm32mp1_reset_ops },
-	{ .compatible = "st,stm32-rcc", .data = &stm32mcu_reset_ops },
 	{ /* sentinel */ },
 };
 
 static struct driver_d stm32_rcc_reset_driver = {
-	.name = "stm32_rcc_reset",
+	.name = "stm32mp_rcc_reset",
 	.probe = stm32_reset_probe,
 	.of_compatible = DRV_OF_COMPAT(stm32_rcc_reset_dt_ids),
 };

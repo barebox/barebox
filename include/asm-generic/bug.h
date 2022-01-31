@@ -50,4 +50,16 @@
 	}					\
 	unlikely(__ret_warn_once);		\
 })
+
+#define WARN_ON_ONCE(condition) ({			\
+	static int __warned;				\
+	int __ret_warn_once = !!(condition);		\
+							\
+	if (unlikely(__ret_warn_once && !__warned)) {	\
+		__warned = 1;				\
+		__WARN();				\
+	}						\
+	unlikely(__ret_warn_once);			\
+})
+
 #endif

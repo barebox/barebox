@@ -619,6 +619,7 @@ struct clk_mux {
 	int shift;
 	int width;
 	unsigned flags;
+	u32 *table;
 	spinlock_t *lock;
 };
 
@@ -640,6 +641,32 @@ struct clk *clk_register_mux(struct device_d *dev, const char *name,
 		unsigned long flags,
 		void __iomem *reg, u8 shift, u8 width,
 		u8 clk_mux_flags, spinlock_t *lock);
+
+struct clk_hw *__clk_hw_register_mux(struct device_d *dev,
+		const char *name, u8 num_parents,
+		const char * const *parent_names,
+		unsigned long flags, void __iomem *reg, u8 shift, u32 mask,
+		u8 clk_mux_flags, u32 *table, spinlock_t *lock);
+
+#define clk_hw_register_mux(dev, name, parent_names,                  \
+		num_parents, flags, reg, shift, mask,                 \
+		clk_mux_flags, lock)                                  \
+	__clk_hw_register_mux((dev), (name), (num_parents),           \
+				     (parent_names),                  \
+				     (flags), (reg), (shift), (mask), \
+				     (clk_mux_flags), NULL, (lock))
+
+#define clk_hw_register_mux_table(dev, name, parent_names, num_parents,	  \
+				  flags, reg, shift, mask, clk_mux_flags, \
+				  table, lock)				  \
+	__clk_hw_register_mux((dev), (name), (num_parents),	          \
+			      (parent_names), (flags), (reg),             \
+			      (shift), (mask), (clk_mux_flags), (table),  \
+			      (lock))
+
+int clk_mux_val_to_index(struct clk_hw *hw, u32 *table, unsigned int flags,
+			 unsigned int val);
+unsigned int clk_mux_index_to_val(u32 *table, unsigned int flags, u8 index);
 
 struct clk_gate {
 	struct clk_hw hw;

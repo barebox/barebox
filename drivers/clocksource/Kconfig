@@ -120,4 +120,8 @@ config ARMV7M_SYSTICK
 	help
 	  This option enables support for the ARMv7M system timer unit.
 
+config CLKSRC_STM32
+	bool "Clocksource for STM32 SoCs"
+	depends on OFDEVICE && (ARCH_STM32 || COMPILE_TEST)
+
 endmenu

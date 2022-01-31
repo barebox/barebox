@@ -13,6 +13,7 @@
 #include <linux/err.h>
 #include <linux/spinlock.h>
 #include <linux/stringify.h>
+#include <xfuncs.h>
 
 struct device_d;
 
@@ -700,6 +701,16 @@ struct clk *clk_register_gate(struct device_d *dev, const char *name,
 		const char *parent_name, unsigned long flags,
 		void __iomem *reg, u8 bit_idx,
 		u8 clk_gate_flags, spinlock_t *lock);
+
+static inline struct clk_hw *clk_hw_register_gate(struct device_d *dev,
+		const char *name, const char *parent_name,
+		unsigned long flags, void __iomem *reg, u8 bit_idx,
+		u8 clk_gate_flags, spinlock_t *lock)
+{
+	return clk_to_clk_hw(clk_register_gate(dev, xstrdup(name), xstrdup(parent_name),
+					       flags, reg, bit_idx,
+					       clk_gate_flags, lock));
+}
 
 int clk_is_enabled(struct clk *clk);
 int clk_hw_is_enabled(struct clk_hw *hw);

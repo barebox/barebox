@@ -551,6 +551,10 @@ struct clk *clk_register_fixed_factor(struct device_d *dev, const char *name,
 		const char *parent_name, unsigned long flags,
 		unsigned int mult, unsigned int div);
 
+struct clk_hw *clk_hw_register_fixed_factor(struct device_d *dev,
+		const char *name, const char *parent_name, unsigned long flags,
+		unsigned int mult, unsigned int div);
+
 /**
  * struct clk_fractional_divider - adjustable fractional divider clock
  *

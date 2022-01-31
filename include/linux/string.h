@@ -5,6 +5,7 @@
 
 #include <linux/types.h>	/* for size_t */
 #include <linux/stddef.h>	/* for NULL */
+#include <linux/overflow.h>	/* for array_size */
 
 #ifdef __cplusplus
 extern "C" {
@@ -132,6 +133,8 @@ static inline const char *kbasename(const char *path)
 #endif
 
 void *memdup(const void *, size_t);
+
+#define memdup_array(arr, count) memdup(arr, array_size(count, sizeof(*arr)));
 
 static inline void *kmemdup(const void *src, size_t len, gfp_t gfp)
 {

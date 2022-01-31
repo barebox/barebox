@@ -759,6 +759,11 @@ static inline unsigned int clk_hw_get_num_parents(const struct clk_hw *hw)
 	return hw->clk.num_parents;
 }
 
+static inline unsigned long clk_hw_get_flags(const struct clk_hw *hw)
+{
+	return hw->clk.flags;
+}
+
 int clk_name_set_parent(const char *clkname, const char *clkparentname);
 int clk_name_set_rate(const char *clkname, unsigned long rate);
 

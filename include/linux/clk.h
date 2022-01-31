@@ -449,6 +449,10 @@ struct clk *clk_register_fixed_rate(const char *name,
 				    const char *parent_name, unsigned long flags,
 				    unsigned long fixed_rate);
 
+struct clk_hw *clk_hw_register_fixed_rate(struct device_d *dev, const char *name,
+				    const char *parent_name, unsigned long flags,
+				    unsigned long rate);
+
 static inline struct clk *clk_fixed(const char *name, int rate)
 {
 	return clk_register_fixed_rate(name, NULL, 0, rate);

@@ -561,6 +561,7 @@ struct of_clk_provider {
 
 	struct device_node *node;
 	struct clk *(*get)(struct of_phandle_args *clkspec, void *data);
+	struct clk_hw *(*get_hw)(struct of_phandle_args *clkspec, void *data);
 	void *data;
 };
 
@@ -591,14 +592,10 @@ struct clk *of_clk_src_onecell_get(struct of_phandle_args *clkspec, void *data)
 }
 EXPORT_SYMBOL_GPL(of_clk_src_onecell_get);
 
-/**
- * of_clk_add_provider() - Register a clock provider for a node
- * @np: Device node pointer associated with clock provider
- * @clk_src_get: callback for decoding clock
- * @data: context pointer for @clk_src_get callback.
- */
-int of_clk_add_provider(struct device_node *np,
+static int __of_clk_add_provider(struct device_node *np,
 			struct clk *(*clk_src_get)(struct of_phandle_args *clkspec,
+						   void *data),
+			struct clk_hw *(*clk_hw_src_get)(struct of_phandle_args *clkspec,
 						   void *data),
 			void *data)
 {
@@ -611,6 +608,7 @@ int of_clk_add_provider(struct device_node *np,
 	cp->node = np;
 	cp->data = data;
 	cp->get = clk_src_get;
+	cp->get_hw = clk_hw_src_get;
 
 	list_add(&cp->link, &of_clk_providers);
 	pr_debug("Added clock from %s\n", np ? np->full_name : "<none>");
@@ -619,7 +617,30 @@ int of_clk_add_provider(struct device_node *np,
 
 	return 0;
 }
+
+/**
+ * of_clk_add_provider() - Register a clock provider for a node
+ * @np: Device node pointer associated with clock provider
+ * @clk_src_get: callback for decoding clock
+ * @data: context pointer for @clk_src_get callback.
+ */
+int of_clk_add_provider(struct device_node *np,
+			struct clk *(*clk_src_get)(struct of_phandle_args *clkspec,
+						   void *data),
+			void *data)
+{
+	return __of_clk_add_provider(np, clk_src_get, NULL, data);
+}
 EXPORT_SYMBOL_GPL(of_clk_add_provider);
+
+int of_clk_add_hw_provider(struct device_node *np,
+			struct clk_hw *(*clk_hw_src_get)(struct of_phandle_args *clkspec,
+							 void *data),
+			void *data)
+{
+	return __of_clk_add_provider(np, NULL, clk_hw_src_get, data);
+}
+EXPORT_SYMBOL_GPL(of_clk_add_hw_provider);
 
 /**
  * of_clk_del_provider() - Remove a previously registered clock provider
@@ -649,8 +670,12 @@ struct clk *of_clk_get_from_provider(struct of_phandle_args *clkspec)
 
 	/* Check if we have such a provider in our array */
 	list_for_each_entry(provider, &of_clk_providers, link) {
-		if (provider->node == clkspec->np)
-			clk = provider->get(clkspec, provider->data);
+		if (provider->node == clkspec->np) {
+			if (provider->get)
+				clk = provider->get(clkspec, provider->data);
+			else
+				clk = clk_hw_to_clk(provider->get_hw(clkspec, provider->data));
+		}
 		if (!IS_ERR(clk))
 			break;
 	}

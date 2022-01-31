@@ -17,7 +17,7 @@ config HWRNG_MXC_RNGC
 
 config HWRNG_STM32
 	tristate "STM32 Random Number Generator"
-	depends on ARCH_STM32MP || COMPILE_TEST
+	depends on ARCH_STM32 || COMPILE_TEST
 	help
 	  This driver provides barebox support for the Random Number
 	  Generator hardware found on the STM32 family of MPUs and MCUs.

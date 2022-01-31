@@ -39,8 +39,8 @@ config DRIVER_SERIAL_IMX
 	bool "i.MX serial driver"
 
 config DRIVER_SERIAL_STM32
-	depends on ARCH_STM32MP
-	bool "stm32mp serial driver"
+	depends on ARCH_STM32
+	bool "stm32 serial driver"
 
 config DRIVER_SERIAL_STM378X
 	depends on ARCH_MXS

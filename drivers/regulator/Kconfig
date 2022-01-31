@@ -31,7 +31,7 @@ config REGULATOR_STM32_PWR
 
 config REGULATOR_STM32_VREFBUF
 	tristate "STMicroelectronics STM32 VREFBUF"
-	depends on ARCH_STM32MP || COMPILE_TEST
+	depends on ARCH_STM32 || COMPILE_TEST
 	help
 	  This driver supports STMicroelectronics STM32 VREFBUF (voltage
 	  reference buffer) which can be used as voltage reference for

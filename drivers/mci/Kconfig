@@ -206,7 +206,7 @@ config MCI_STM32_SDMMC2
 	bool "STMicroelectronics STM32H7 SD/MMC Host Controller support"
 	depends on ARM_AMBA
 	depends on RESET_CONTROLLER
-	depends on ARCH_STM32MP || COMPILE_TEST
+	depends on ARCH_STM32 || COMPILE_TEST
 	help
 	  This selects support for the SD/MMC controller on STM32H7 SoCs.
 	  If you have a board based on such a SoC and with a SD/MMC slot,

@@ -60,7 +60,7 @@ config I2C_STM32
 	bool "STM32 I2C master driver"
 	select RESET_CONTROLLER
 	depends on HAVE_CLK
-	depends on ARCH_STM32MP || COMPILE_TEST
+	depends on ARCH_STM32 || COMPILE_TEST
 
 config I2C_RK3X
 	tristate "Rockchip RK3xxx I2C adapter"

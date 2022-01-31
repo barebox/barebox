@@ -676,6 +676,14 @@ struct clk *clk_register_composite(const char *name,
 			struct clk *gate_clk,
 			unsigned long flags);
 
+struct clk_hw *clk_hw_register_composite(struct device_d *dev,
+		const char *name, const char * const *parent_names,
+		int num_parents,
+		struct clk_hw *mux_hw, const struct clk_ops *mux_ops,
+		struct clk_hw *rate_hw, const struct clk_ops *rate_ops,
+		struct clk_hw *gate_hw, const struct clk_ops *gate_ops,
+		unsigned long flags);
+
 static inline const char *clk_hw_get_name(struct clk_hw *hw)
 {
 	return hw->clk.name;

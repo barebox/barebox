@@ -110,8 +110,8 @@ static struct clk *clk_mux_best_parent(struct clk *mux, unsigned long rate,
 	return bestparent;
 }
 
-static long clk_mux_round_rate(struct clk_hw *hw, unsigned long rate,
-			       unsigned long *prate)
+long clk_mux_round_rate(struct clk_hw *hw, unsigned long rate,
+			unsigned long *prate)
 {
 	struct clk *clk = clk_hw_to_clk(hw);
 	unsigned long rrate;
@@ -124,6 +124,7 @@ static long clk_mux_round_rate(struct clk_hw *hw, unsigned long rate,
 
 	return rrate;
 }
+EXPORT_SYMBOL_GPL(clk_mux_round_rate);
 
 static int clk_mux_set_rate(struct clk_hw *hw, unsigned long rate,
 			unsigned long parent_rate)

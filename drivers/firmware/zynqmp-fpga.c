@@ -252,13 +252,7 @@ static int fpgamgr_program_finish(struct firmware_handler *fh)
 				   body_length / sizeof(u32));
 	else
 		memcpy((u32 *)buf_aligned, body, body_length);
-
-	if (mgr->features & ZYNQMP_PM_FEATURE_SIZE_NOT_NEEDED) {
-		buf_size = body_length;
-	} else {
-		buf_aligned[body_length / sizeof(*buf_aligned)] = body_length;
-		buf_size = addr + body_length;
-	}
+	buf_aligned[body_length / sizeof(*buf_aligned)] = body_length;
 
 	addr = dma_map_single(&mgr->dev, buf_aligned,
 			      body_length + sizeof(buf_size), DMA_TO_DEVICE);
@@ -266,6 +260,11 @@ static int fpgamgr_program_finish(struct firmware_handler *fh)
 		status = -EFAULT;
 		goto err_free_dma;
 	}
+
+	if (mgr->features & ZYNQMP_PM_FEATURE_SIZE_NOT_NEEDED)
+		buf_size = body_length;
+	else
+		buf_size = addr + body_length;
 
 	status = mgr->eemi_ops->fpga_load((u64)addr, buf_size, flags);
 	dma_unmap_single(&mgr->dev, addr, body_length + sizeof(buf_size),

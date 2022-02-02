@@ -59,6 +59,14 @@ config DRIVER_VIDEO_STM
 	  Say 'Y' here to enable framebuffer and splash screen support for
 	  i.MX23 and i.MX28 based systems.
 
+config DRIVER_VIDEO_STM32_LTDC
+	bool "STM32 LTDC framebuffer driver"
+	select VIDEO_VPL
+	depends on ARCH_STM32 || COMPILE_TEST
+	help
+	  Say 'Y' here to enable framebuffer and splash screen support for
+	  STM32 and STM32MP1.
+
 config DRIVER_VIDEO_S3C24XX
 	bool "S3C244x framebuffer driver"
 	depends on ARCH_S3C24xx

@@ -231,6 +231,12 @@ static __maybe_unused struct of_device_id cadence_serial_dt_ids[] = {
 		.compatible = "xlnx,xuartps",
 		.data = &cadence_r1p08_data,
 	}, {
+		.compatible = "cdns,uart-r1p12",
+		.data = &cadence_r1p08_data,
+	}, {
+		.compatible = "xlnx,zynqmp-uart",
+		.data = &cadence_r1p08_data,
+	}, {
 		/* sentinel */
 	}
 };

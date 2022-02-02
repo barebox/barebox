@@ -409,6 +409,26 @@ spi_message_add_tail(struct spi_transfer *t, struct spi_message *m)
 	list_add_tail(&t->transfer_list, &m->transfers);
 }
 
+/**
+ * spi_message_init_with_transfers - Initialize spi_message and append transfers
+ * @m: spi_message to be initialized
+ * @xfers: An array of spi transfers
+ * @num_xfers: Number of items in the xfer array
+ *
+ * This function initializes the given spi_message and adds each spi_transfer in
+ * the given array to the message.
+ */
+static inline void
+spi_message_init_with_transfers(struct spi_message *m,
+struct spi_transfer *xfers, unsigned int num_xfers)
+{
+	unsigned int i;
+
+	spi_message_init(m);
+	for (i = 0; i < num_xfers; ++i)
+		spi_message_add_tail(&xfers[i], m);
+}
+
 static inline void
 spi_transfer_del(struct spi_transfer *t)
 {

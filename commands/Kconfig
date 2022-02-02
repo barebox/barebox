@@ -1969,6 +1969,21 @@ config CMD_SPI
 		  -w BIT	bits per word (default 8)
 		  -v		verbose
 
+config CMD_MIPI_DBI
+	bool
+	depends on DRIVER_VIDEO_MIPI_DBI && SPI
+	select PRINTF_HEXSTR
+	prompt "mipi_dbi command"
+	help
+	  write/read from MIPI DBI SPI device
+
+	  Usage: mipi_dbi [-wld] [REG] [DATA...]
+
+	  Options:
+		  -l		list all MIPI DBI devices
+		  -d DEVICE	select specific device (default is first registered)
+		  -w		issue write command
+
 config CMD_LED_TRIGGER
 	bool
 	depends on LED_TRIGGERS

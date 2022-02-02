@@ -129,6 +129,9 @@ config DRIVER_VIDEO_EDID
 	  This enabled support for reading and parsing EDID data from an attached
 	  monitor.
 
+config DRIVER_VIDEO_MIPI_DBI
+	bool
+
 config DRIVER_VIDEO_BACKLIGHT
 	bool "Add backlight support"
 	help

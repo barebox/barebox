@@ -60,8 +60,8 @@ static inline int cpu_mx6_is_plus(void)
 
 /* Audio/Video PLL post dividers don't work on i.MX6q revision 1.0 */
 static inline int cpu_has_working_video_pll_post_div(void) {
-	return !((cpu_is_mx6q() || cpu_is_mx6d()) &&
-		 imx_silicon_revision() == IMX_CHIP_REV_1_0);
+	return !((cpu_mx6_is_mx6q() || cpu_mx6_is_mx6d()) &&
+		 __imx6_cpu_revision() == IMX_CHIP_REV_1_0);
 }
 
 /* i.MX6 Quad/Dual/DualLite/Solo are all affected */

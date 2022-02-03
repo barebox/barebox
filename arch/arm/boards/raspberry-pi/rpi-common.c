@@ -511,7 +511,7 @@ static void rpi_vc_fdt(void)
 	}
 }
 
-static int rpi_devices_init(void)
+static int rpi_devices_probe(struct device_d *dev)
 {
 	struct regulator *reg;
 
@@ -529,4 +529,33 @@ static int rpi_devices_init(void)
 
 	return 0;
 }
-late_initcall(rpi_devices_init);
+
+static const struct of_device_id rpi_of_match[] = {
+	/* BCM2835 based Boards */
+	{ .compatible = "raspberrypi,model-a" },
+	{ .compatible = "raspberrypi,model-a-plus" },
+	{ .compatible = "raspberrypi,model-b" },
+	/* Raspberry Pi Model B (no P5) */
+	{ .compatible = "raspberrypi,model-b-i2c0" },
+	{ .compatible = "raspberrypi,model-b-rev2" },
+	{ .compatible = "raspberrypi,model-b-plus" },
+	{ .compatible = "raspberrypi,compute-module" },
+	{ .compatible = "raspberrypi,model-zero" },
+	{ .compatible = "raspberrypi,model-zero-w" },
+
+	/* BCM2836 based Boards */
+	{ .compatible = "raspberrypi,2-model-b" },
+
+	/* BCM2837 based Boards */
+	{ .compatible = "raspberrypi,3-model-a-plus" },
+	{ .compatible = "raspberrypi,3-model-b" },
+	{ .compatible = "raspberrypi,3-model-b-plus" },
+	{ /* sentinel */ },
+};
+
+static struct driver_d rpi_board_driver = {
+	.name = "board-rpi",
+	.probe = rpi_devices_probe,
+	.of_compatible = DRV_OF_COMPAT(rpi_of_match),
+};
+late_platform_driver(rpi_board_driver);

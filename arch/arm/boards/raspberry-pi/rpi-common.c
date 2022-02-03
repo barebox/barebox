@@ -378,6 +378,8 @@ static int rpi_devices_probe(struct device_d *dev)
 	const struct rpi_machine_data *dcfg;
 	struct regulator *reg;
 	struct rpi_priv *priv;
+	const char *name, *ptr;
+	char *hostname;
 	int ret;
 
 	priv = xzalloc(sizeof(*priv));
@@ -391,7 +393,12 @@ static int rpi_devices_probe(struct device_d *dev)
 	if (IS_ERR(dcfg))
 		goto free_priv;
 
-	barebox_set_hostname("rpi");
+	/* construct short recognizable host name */
+	name = of_device_get_match_compatible(priv->dev);
+	ptr = strchr(name, ',');
+	hostname = basprintf("rpi-%s", ptr ? ptr + 1 : name);
+	barebox_set_hostname(hostname);
+	free(hostname);
 
 	rpi_add_led();
 	bcm2835_register_fb();

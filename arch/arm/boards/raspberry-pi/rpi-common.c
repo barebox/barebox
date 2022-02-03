@@ -45,12 +45,6 @@ struct msg_get_arm_mem {
 	u32 end_tag;
 };
 
-struct msg_get_clock_rate {
-	struct bcm2835_mbox_hdr hdr;
-	struct bcm2835_mbox_tag_get_clock_rate get_clock_rate;
-	u32 end_tag;
-};
-
 struct msg_get_board_rev {
 	struct bcm2835_mbox_hdr hdr;
 	struct bcm2835_mbox_tag_get_board_rev get_board_rev;
@@ -78,22 +72,6 @@ static int rpi_get_arm_mem(u32 *size)
 	*size = msg->get_arm_mem.body.resp.mem_size;
 
 	return 0;
-}
-
-static struct clk *rpi_register_firmware_clock(u32 clock_id, const char *name)
-{
-	BCM2835_MBOX_STACK_ALIGN(struct msg_get_clock_rate, msg);
-	int ret;
-
-	BCM2835_MBOX_INIT_HDR(msg);
-	BCM2835_MBOX_INIT_TAG(&msg->get_clock_rate, GET_CLOCK_RATE);
-	msg->get_clock_rate.body.req.clock_id = clock_id;
-
-	ret = bcm2835_mbox_call_prop(BCM2835_MBOX_PROP_CHAN, &msg->hdr);
-	if (ret)
-		return ERR_PTR(ret);
-
-	return clk_fixed(name, msg->get_clock_rate.body.resp.rate_hz);
 }
 
 static void rpi_set_usbethaddr(void)
@@ -342,57 +320,6 @@ static int rpi_postcore_init(void)
 	return 0;
 }
 postcore_initcall(rpi_postcore_init);
-
-static int rpi_clock_init(void)
-{
-	struct clk *clk;
-
-	clk = rpi_register_firmware_clock(BCM2835_MBOX_CLOCK_ID_EMMC,
-					 "bcm2835_mci0");
-	if (IS_ERR(clk))
-		return PTR_ERR(clk);
-
-	clkdev_add_physbase(clk, 0x20300000, NULL);
-	clkdev_add_physbase(clk, 0x3f300000, NULL);
-
-	clk = rpi_register_firmware_clock(BCM2835_MBOX_CLOCK_ID_CORE,
-					  "bcm2835_sdhost");
-	if (IS_ERR(clk))
-		return PTR_ERR(clk);
-
-	clkdev_add_physbase(clk, 0x20202000, NULL);
-	clkdev_add_physbase(clk, 0x3f202000, NULL);
-
-	return 0;
-}
-postconsole_initcall(rpi_clock_init);
-
-static int rpi_console_clock_init(void)
-{
-	struct clk *clk;
-
-	clk = clk_fixed("apb_pclk", 0);
-	clk_register_clkdev(clk, "apb_pclk", NULL);
-
-	clk = clk_fixed("uart0-pl0110", 48 * 1000 * 1000);
-	clk_register_clkdev(clk, NULL, "uart0-pl0110");
-	clkdev_add_physbase(clk, BCM2835_PL011_BASE, NULL);
-	clkdev_add_physbase(clk, BCM2836_PL011_BASE, NULL);
-
-	clk = rpi_register_firmware_clock(BCM2835_MBOX_CLOCK_ID_CORE,
-					  "uart1-8250");
-	if (IS_ERR(clk))
-		return PTR_ERR(clk);
-
-	clkdev_add_physbase(clk, BCM2835_MINIUART_BASE, NULL);
-	clkdev_add_physbase(clk, BCM2836_MINIUART_BASE, NULL);
-
-	clk = clk_fixed("bcm2835-cs", 1 * 1000 * 1000);
-	clk_register_clkdev(clk, NULL, "bcm2835-cs");
-
-	return 0;
-}
-postcore_initcall(rpi_console_clock_init);
 
 static int rpi_env_init(void)
 {

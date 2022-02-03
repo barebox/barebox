@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: 2009 Carlo Caione <carlo@carlocaione.org>
 
 #include <common.h>
+#include <deep-probe.h>
 #include <init.h>
 #include <fs.h>
 #include <of.h>
@@ -607,6 +608,7 @@ static const struct of_device_id rpi_of_match[] = {
 	{ .compatible = "raspberrypi,3-model-b-plus", .data = rpi_3_model_b_plus },
 	{ /* sentinel */ },
 };
+BAREBOX_DEEP_PROBE_ENABLE(rpi_of_match);
 
 static struct driver_d rpi_board_driver = {
 	.name = "board-rpi",

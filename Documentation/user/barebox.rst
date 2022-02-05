@@ -203,9 +203,21 @@ Starting barebox
 Bringing barebox to a board for the first time is highly board specific, see your
 board documentation for initial bringup.
 
-barebox binaries are, where possible, designed to be startable second stage from another
-bootloader. For example, if you have U-Boot running on your board, you can start barebox
-with U-Boot's ``bootm`` command:
+For ARM and RISC-V, the barebox build can additionally generate a generic DT image
+(enable ``CONFIG_BOARD_ARM_GENERIC_DT`` or ``CONFIG_BOARD_RISCV_GENERIC_DT``,
+respectively). The resulting ``images/barebox-dt-2nd.img`` can be booted just
+like a Linux kernel that is passed an external device tree. For example:
+
+.. code-block:: console
+
+  U-Boot: tftp $kernel_addr barebox-dt-2nd.img
+  U-Boot: tftp $fdt_addr my-board.dtb
+  U-Boot: booti $kernel_addr - $fdt_addr
+
+For non-DT enabled-bootloaders or other architectures, often the normal barebox
+binaries can also be used as they are designed to be startable second stage
+from another bootloader, where possible. For example, if you have U-Boot running
+on your board, you can start barebox with U-Boot's ``bootm`` command:
 
 .. code-block:: console
 

@@ -13,8 +13,7 @@ PBL is available for ARM and MIPS. It can be enabled in ``make menuconfig`` with
 the ``[*] Pre-Bootloader image`` option.
 
 The user visible difference is that with PBL support ``barebox.bin`` is no longer
-the final binary image, but instead ``arch/$ARCH/pbl/zbarebox.bin``. Use the
-``barebox-flash-image`` link which always points to the correct image.
+the final binary image, but instead the images are placed in ``images/``.
 
 Technical background
 --------------------

@@ -220,10 +220,11 @@ another barebox. For instance, if you mounted a TFTP server to ``/mnt/tftp``
 
   bootm /mnt/tftp/barebox.bin
 
-At least ``barebox.bin`` (with :ref:`pbl` support enabled ``arch/$ARCH/pbl/zbarebox.bin``)
-should be startable second stage. The flash binary (``barebox-flash-image``) may or may not
+At least ``barebox.bin`` (with :ref:`pbl` support enabled ``images/*.pblb``)
+should be startable second stage. The final binaries (``images/*.img``) may or may not
 be startable second stage as it may have SoC specific headers which prevent running second
-stage.
+stage. barebox will usually have handlers in-place to skip these headers, so
+it can chainload itself regardless.
 
 First Steps
 -----------

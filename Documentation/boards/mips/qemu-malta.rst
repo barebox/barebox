@@ -35,7 +35,7 @@ Using GXemul
 GXemul supports MIPS Malta except PCI stuff.
 You can use GXemul to run little-endian barebox (use gxemul-malta_defconfig).
 
-N.B. There is no need to swap words in ``zbarebox.bin`` for little-endian GXemul!
+N.B. There is no need to swap words in the barebox binary for little-endian GXemul!
 
 GXemul run string:
 

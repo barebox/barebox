@@ -503,6 +503,11 @@ ssize_t cdev_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulo
 ssize_t cdev_write(struct cdev *cdev, const void *buf, size_t count, loff_t offset, ulong flags);
 int cdev_ioctl(struct cdev *cdev, int cmd, void *buf);
 int cdev_erase(struct cdev *cdev, loff_t count, loff_t offset);
+int cdev_lseek(struct cdev*, loff_t);
+int cdev_protect(struct cdev*, size_t count, loff_t offset, int prot);
+int cdev_discard_range(struct cdev*, loff_t count, loff_t offset);
+int cdev_memmap(struct cdev*, void **map, int flags);
+int cdev_truncate(struct cdev*, size_t size);
 loff_t cdev_unallocated_space(struct cdev *cdev);
 
 #define DEVFS_PARTITION_FIXED		(1U << 0)

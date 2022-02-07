@@ -239,6 +239,67 @@ int cdev_erase(struct cdev *cdev, loff_t count, loff_t offset)
 	return cdev->ops->erase(cdev, count, cdev->offset + offset);
 }
 
+int cdev_lseek(struct cdev *cdev, loff_t pos)
+{
+	int ret;
+
+	if (cdev->ops->lseek) {
+		ret = cdev->ops->lseek(cdev, pos + cdev->offset);
+		if (ret < 0)
+			return ret;
+	}
+
+	return 0;
+}
+
+int cdev_protect(struct cdev *cdev, size_t count, loff_t offset, int prot)
+{
+	if (!cdev->ops->protect)
+		return -ENOSYS;
+
+	return cdev->ops->protect(cdev, count, offset + cdev->offset, prot);
+}
+
+int cdev_discard_range(struct cdev *cdev, loff_t count, loff_t offset)
+{
+	if (!cdev->ops->discard_range)
+		return -ENOSYS;
+
+	if (cdev->flags & DEVFS_PARTITION_READONLY)
+		return -EPERM;
+
+	if (offset >= cdev->size)
+		return 0;
+
+	if (count + offset > cdev->size)
+		count = cdev->size - offset;
+
+	return cdev->ops->discard_range(cdev, count, offset + cdev->offset);
+}
+
+int cdev_memmap(struct cdev *cdev, void **map, int flags)
+{
+	int ret = -ENOSYS;
+
+	if (!cdev->ops->memmap)
+		return -EINVAL;
+
+	ret = cdev->ops->memmap(cdev, map, flags);
+
+	if (!ret)
+		*map = (void *)((unsigned long)*map + (unsigned long)cdev->offset);
+
+	return ret;
+}
+
+int cdev_truncate(struct cdev *cdev, size_t size)
+{
+	if (cdev->ops->truncate)
+		return cdev->ops->truncate(cdev, size);
+
+	return -EPERM;
+}
+
 int devfs_create(struct cdev *new)
 {
 	struct cdev *cdev;

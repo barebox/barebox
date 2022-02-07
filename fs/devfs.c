@@ -57,15 +57,8 @@ static int devfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t s
 static int devfs_lseek(struct device_d *_dev, FILE *f, loff_t pos)
 {
 	struct cdev *cdev = f->priv;
-	int ret;
 
-	if (cdev->ops->lseek) {
-		ret = cdev->ops->lseek(cdev, pos + cdev->offset);
-		if (ret < 0)
-			return ret;
-	}
-
-	return 0;
+	return cdev_lseek(cdev, pos);
 }
 
 static int devfs_erase(struct device_d *_dev, FILE *f, loff_t count, loff_t offset)
@@ -81,14 +74,11 @@ static int devfs_erase(struct device_d *_dev, FILE *f, loff_t count, loff_t offs
 	return cdev_erase(cdev, count, offset);
 }
 
-static int devfs_protect(struct device_d *_dev, FILE *f, size_t count, loff_t offset, int prot)
+static int devfs_protect(struct device_d *dev, FILE *f, size_t count, loff_t offset, int prot)
 {
 	struct cdev *cdev = f->priv;
 
-	if (!cdev->ops->protect)
-		return -ENOSYS;
-
-	return cdev->ops->protect(cdev, count, offset + cdev->offset, prot);
+	return cdev_protect(cdev, count, offset, prot);
 }
 
 static int devfs_discard_range(struct device_d *dev, FILE *f, loff_t count,
@@ -96,35 +86,14 @@ static int devfs_discard_range(struct device_d *dev, FILE *f, loff_t count,
 {
 	struct cdev *cdev = f->priv;
 
-	if (!cdev->ops->discard_range)
-		return -ENOSYS;
-
-	if (cdev->flags & DEVFS_PARTITION_READONLY)
-		return -EPERM;
-
-	if (offset >= cdev->size)
-		return 0;
-
-	if (count + offset > cdev->size)
-		count = cdev->size - offset;
-
-	return cdev->ops->discard_range(cdev, count, offset + cdev->offset);
+	return cdev_discard_range(cdev, count, offset);
 }
 
 static int devfs_memmap(struct device_d *_dev, FILE *f, void **map, int flags)
 {
 	struct cdev *cdev = f->priv;
-	int ret = -ENOSYS;
 
-	if (!cdev->ops->memmap)
-		return -EINVAL;
-
-	ret = cdev->ops->memmap(cdev, map, flags);
-
-	if (!ret)
-		*map = (void *)((unsigned long)*map + (unsigned long)cdev->offset);
-
-	return ret;
+	return cdev_memmap(cdev, map, flags);
 }
 
 static int devfs_open(struct device_d *_dev, FILE *f, const char *filename)
@@ -183,10 +152,7 @@ static int devfs_truncate(struct device_d *dev, FILE *f, loff_t size)
 {
 	struct cdev *cdev = f->priv;
 
-	if (cdev->ops->truncate)
-		return cdev->ops->truncate(cdev, size);
-
-	return -EPERM;
+	return cdev_truncate(cdev, size);
 }
 
 static struct inode *devfs_alloc_inode(struct super_block *sb)

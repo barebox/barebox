@@ -72,6 +72,9 @@ static int jffs2_get_block(struct jffs2_file *jf, unsigned int pos)
 	struct jffs2_inode_info *f = JFFS2_INODE_INFO(jf->inode);
 	int ret;
 
+	/* pos always has to be 4096 bytes aligned here */
+	WARN_ON(pos % JFFS2_BLOCK_SIZE != 0);
+
 	if (pos != jf->offset) {
 		ret = jffs2_read_inode_range(c, f, jf->buf, pos,
 					     JFFS2_BLOCK_SIZE);
@@ -96,12 +99,13 @@ static int jffs2_read(struct device_d *_dev, FILE *f, void *buf,
 	/* Read till end of current block */
 	ofs = f->pos % JFFS2_BLOCK_SIZE;
 	if (ofs) {
-		ret = jffs2_get_block(jf, pos);
+		ret = jffs2_get_block(jf, f->pos - ofs); /* Align down block */
 		if (ret)
 			return ret;
 
 		now = min(size, JFFS2_BLOCK_SIZE - ofs);
 
+		/* Complete block has been read, re-apply ofset now */
 		memcpy(buf, jf->buf + ofs, now);
 		size -= now;
 		pos += now;

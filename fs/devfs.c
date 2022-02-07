@@ -35,8 +35,6 @@ struct devfs_inode {
 	struct cdev *cdev;
 };
 
-extern struct list_head cdev_list;
-
 static int devfs_read(struct device_d *_dev, FILE *f, void *buf, size_t size)
 {
 	struct cdev *cdev = f->priv;
@@ -179,7 +177,7 @@ static int devfs_iterate(struct file *file, struct dir_context *ctx)
 
 	dir_emit_dots(file, ctx);
 
-	list_for_each_entry(cdev, &cdev_list, list) {
+	for_each_cdev(cdev) {
 		dir_emit(ctx, cdev->name, strlen(cdev->name),
 				1 /* FIXME */, DT_REG);
 	}

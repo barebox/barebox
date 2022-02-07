@@ -37,7 +37,7 @@ int devfs_partition_complete(struct string_list *sl, char *instr)
 
 	len = strlen(instr);
 
-	list_for_each_entry(cdev, &cdev_list, list) {
+	for_each_cdev(cdev) {
 		if (cdev->master &&
 		    !strncmp(instr, cdev->name, len)) {
 			string_list_add_asprintf(sl, "%s ", cdev->name);
@@ -62,7 +62,7 @@ struct cdev *lcdev_by_name(const char *filename)
 {
 	struct cdev *cdev;
 
-	list_for_each_entry(cdev, &cdev_list, list) {
+	for_each_cdev(cdev) {
 		if (!strcmp(cdev->name, filename))
 			return cdev;
 	}
@@ -84,7 +84,7 @@ struct cdev *cdev_by_device_node(struct device_node *node)
 {
 	struct cdev *cdev;
 
-	list_for_each_entry(cdev, &cdev_list, list) {
+	for_each_cdev(cdev) {
 		if (!cdev->device_node)
 			continue;
 		if (cdev->device_node == node)
@@ -100,7 +100,7 @@ struct cdev *cdev_by_partuuid(const char *partuuid)
 	if (!partuuid)
 		return NULL;
 
-	list_for_each_entry(cdev, &cdev_list, list) {
+	for_each_cdev(cdev) {
 		if (cdev->master && !strcasecmp(cdev->uuid, partuuid))
 			return cdev;
 	}
@@ -114,7 +114,7 @@ struct cdev *cdev_by_diskuuid(const char *diskuuid)
 	if (!diskuuid)
 		return NULL;
 
-	list_for_each_entry(cdev, &cdev_list, list) {
+	for_each_cdev(cdev) {
 		if (!cdev->master && !strcasecmp(cdev->uuid, diskuuid))
 			return cdev;
 	}

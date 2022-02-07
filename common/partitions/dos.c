@@ -182,6 +182,9 @@ static void dos_partition(void *buf, struct block_device *blk,
 	struct disk_signature_priv *dsp;
 	uint32_t signature = get_unaligned_le32(buf + 0x1b8);
 
+	if (signature)
+		sprintf(blk->cdev.uuid, "%08x", signature);
+
 	table = (struct partition_entry *)&buffer[446];
 
 	for (i = 0; i < 4; i++) {

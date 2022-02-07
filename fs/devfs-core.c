@@ -107,6 +107,20 @@ struct cdev *cdev_by_partuuid(const char *partuuid)
 	return NULL;
 }
 
+struct cdev *cdev_by_diskuuid(const char *diskuuid)
+{
+	struct cdev *cdev;
+
+	if (!diskuuid)
+		return NULL;
+
+	list_for_each_entry(cdev, &cdev_list, list) {
+		if (!cdev->master && !strcasecmp(cdev->uuid, diskuuid))
+			return cdev;
+	}
+	return NULL;
+}
+
 /**
  * device_find_partition - find a partition belonging to a physical device
  *

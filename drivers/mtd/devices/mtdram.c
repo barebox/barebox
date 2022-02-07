@@ -16,11 +16,6 @@
 #include <malloc.h>
 #include <of.h>
 
-struct mtdram_priv_data {
-	struct mtd_info mtd;
-	void *base;
-};
-
 static int ram_erase(struct mtd_info *mtd, struct erase_info *instr)
 {
 	memset((char *)mtd->priv + instr->addr, 0xff, instr->len);
@@ -44,10 +39,8 @@ static int ram_read(struct mtd_info *mtd, loff_t from, size_t len, size_t *retle
 static int mtdram_probe(struct device_d *dev)
 {
 	struct resource *iores;
-	void __iomem *base;
 	int device_id;
 	struct mtd_info *mtd;
-	struct resource *res;
 	loff_t size;
 	int ret = 0;
 
@@ -70,11 +63,9 @@ static int mtdram_probe(struct device_d *dev)
 		ret = PTR_ERR(iores);
 		goto nobase;
 	}
-	base = IOMEM(iores->start);
 
-	res = dev_get_resource(dev, IORESOURCE_MEM, 0);
-	size = (unsigned long) resource_size(res);
-	mtd->priv = base;
+	mtd->priv = IOMEM(iores->start);
+	size = (unsigned long) resource_size(iores);
 
 	mtd->type = MTD_RAM;
 	mtd->writesize = 1;

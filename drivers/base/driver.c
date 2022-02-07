@@ -270,6 +270,36 @@ int unregister_device(struct device_d *old_dev)
 }
 EXPORT_SYMBOL(unregister_device);
 
+/**
+ * free_device_res - free dynamically allocated device members
+ * @dev: The device
+ *
+ * This frees dynamically allocated resources allocated during device
+ * lifetime, but not the device itself.
+ */
+void free_device_res(struct device_d *dev)
+{
+	free(dev->name);
+	dev->name = NULL;
+	free(dev->unique_name);
+	dev->unique_name = NULL;
+}
+EXPORT_SYMBOL(free_device_res);
+
+/**
+ * free_device - free a device
+ * @dev: The device
+ *
+ * This frees dynamically allocated resources allocated during device
+ * lifetime and finally the device itself.
+ */
+void free_device(struct device_d *dev)
+{
+	free_device_res(dev);
+	free(dev);
+}
+EXPORT_SYMBOL(free_device);
+
 /*
  * Loop over list of deferred devices as long as at least one
  * device is successfully probed. Devices that again request

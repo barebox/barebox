@@ -155,7 +155,7 @@ struct device_d *of_platform_device_create(struct device_node *np,
 
 	np->dev = NULL;
 
-	free(dev);
+	free_device(dev);
 	if (num_reg)
 		free(res);
 	return NULL;
@@ -278,6 +278,7 @@ static struct device_d *of_amba_device_create(struct device_node *np)
 	return &dev->dev;
 
 amba_err_free:
+	free_device_res(&dev->dev);
 	free(dev);
 	return NULL;
 }

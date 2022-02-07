@@ -141,6 +141,10 @@ void device_detect_all(void);
  */
 int unregister_device(struct device_d *);
 
+void free_device_res(struct device_d *dev);
+void free_device(struct device_d *dev);
+
+
 /* Iterate over a devices children
  */
 #define device_for_each_child(dev, child) \

@@ -534,6 +534,7 @@ void usb_free_device(struct usb_device *usbdev)
 {
 	dma_free(usbdev->descriptor);
 	dma_free(usbdev->setup_packet);
+	free_device_res(&usbdev->dev);
 	free(usbdev);
 }
 

@@ -2383,7 +2383,7 @@ static void of_platform_device_create_root(struct device_node *np)
 
 	ret = platform_device_register(dev);
 	if (ret)
-		free(dev);
+		free_device(dev);
 }
 
 static const struct of_device_id reserved_mem_matches[] = {

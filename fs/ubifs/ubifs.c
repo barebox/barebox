@@ -19,6 +19,7 @@
 #include <magicvar.h>
 #include <linux/stat.h>
 #include <linux/zlib.h>
+#include <linux/zstd.h>
 #include <linux/mtd/mtd.h>
 
 #include "ubifs.h"
@@ -33,6 +34,7 @@ struct ubifs_priv {
 
 static struct z_stream_s ubifs_zlib_stream;
 
+static ZSTD_DCtx *ubifs_zstd_cctx;
 
 /* compress.c */
 
@@ -45,6 +47,22 @@ static int gzip_decompress(const unsigned char *in, size_t in_len,
 			   unsigned char *out, size_t *out_len)
 {
 	return deflate_decompress(&ubifs_zlib_stream, in, in_len, out, out_len);
+}
+#endif
+
+#if defined(CONFIG_ZSTD_DECOMPRESS)
+static int zstd_decompress(const unsigned char *in, size_t in_len,
+			   unsigned char *out, size_t *out_len)
+{
+	size_t olen;
+
+	olen = ZSTD_decompressDCtx(ubifs_zstd_cctx, out, *out_len, in, in_len);
+	if (ZSTD_isError(olen))
+		return -EINVAL;
+
+	*out_len = olen;
+
+	return 0;
 }
 #endif
 
@@ -71,6 +89,15 @@ static struct ubifs_compressor zlib_compr = {
 #ifdef CONFIG_ZLIB
 	.capi_name = "deflate",
 	.decompress = gzip_decompress,
+#endif
+};
+
+static struct ubifs_compressor zstd_compr = {
+	.compr_type = UBIFS_COMPR_ZSTD,
+	.name = "zstd",
+#ifdef CONFIG_ZSTD_DECOMPRESS
+	.capi_name = "zstd",
+	.decompress = zstd_decompress,
 #endif
 };
 
@@ -235,6 +262,10 @@ int __init ubifs_compressors_init(void)
 		return err;
 
 	err = compr_init(&zlib_compr);
+	if (err)
+		return err;
+
+	err = compr_init(&zstd_compr);
 	if (err)
 		return err;
 
@@ -492,6 +523,21 @@ static int zlib_decomp_init(void)
 	return 0;
 }
 
+static int zstd_decomp_init(void)
+{
+	const size_t wksp_size = ZSTD_DCtxWorkspaceBound();
+	void *wksp = malloc(wksp_size);
+
+	if (!wksp)
+		return -ENOMEM;
+
+	ubifs_zstd_cctx = ZSTD_initDCtx(wksp, wksp_size);
+	if (!ubifs_zstd_cctx)
+		return -EINVAL;
+
+	return 0;
+}
+
 int ubifs_allow_encrypted;
 int ubifs_allow_authenticated_unauthenticated;
 
@@ -501,6 +547,12 @@ static int ubifs_init(void)
 
 	if (IS_ENABLED(CONFIG_ZLIB)) {
 		ret = zlib_decomp_init();
+		if (ret)
+			return ret;
+	}
+
+	if (IS_ENABLED(CONFIG_ZSTD_DECOMPRESS)) {
+		ret = zstd_decomp_init();
 		if (ret)
 			return ret;
 	}

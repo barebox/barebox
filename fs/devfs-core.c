@@ -101,7 +101,7 @@ struct cdev *cdev_by_partuuid(const char *partuuid)
 		return NULL;
 
 	list_for_each_entry(cdev, &cdev_list, list) {
-		if (!strcasecmp(cdev->partuuid, partuuid))
+		if (cdev->master && !strcasecmp(cdev->uuid, partuuid))
 			return cdev;
 	}
 	return NULL;

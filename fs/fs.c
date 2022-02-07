@@ -2999,8 +2999,8 @@ int mount(const char *device, const char *fsname, const char *pathname,
 		    cdev_is_mci_main_part_dev(fsdev->cdev->master))
 			str = get_linux_mmcblkdev(fsdev);
 
-		if (!str && fsdev->cdev->partuuid[0] != 0)
-			str = basprintf("root=PARTUUID=%s", fsdev->cdev->partuuid);
+		if (!str && fsdev->cdev->uuid[0] != 0)
+			str = basprintf("root=PARTUUID=%s", fsdev->cdev->uuid);
 
 		if (str)
 			fsdev_set_linux_rootarg(fsdev, str);

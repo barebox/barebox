@@ -709,15 +709,15 @@ int bootm_boot(struct bootm_data *bootm_data)
 			const char *root_dev_name = devpath_to_name(bootm_data->root_dev);
 			const struct cdev *root_cdev = cdev_by_name(root_dev_name);
 
-			if (root_cdev && root_cdev->partuuid[0] != 0) {
-				rootarg = basprintf("root=PARTUUID=%s", root_cdev->partuuid);
+			if (root_cdev && root_cdev->uuid[0] != 0) {
+				rootarg = basprintf("root=PARTUUID=%s", root_cdev->uuid);
 			} else {
 				rootarg = ERR_PTR(-EINVAL);
 
 				if (!root_cdev)
 					pr_err("no cdev found for %s, cannot set root= option\n",
 						root_dev_name);
-				else if (!root_cdev->partuuid[0])
+				else if (!root_cdev->uuid[0])
 					pr_err("%s doesn't have a PARTUUID, cannot set root= option\n",
 						root_dev_name);
 			}

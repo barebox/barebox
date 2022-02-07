@@ -451,7 +451,7 @@ struct cdev_operations {
 	int (*truncate)(struct cdev*, size_t size);
 };
 
-#define MAX_PARTUUID_STR	sizeof("00112233-4455-6677-8899-AABBCCDDEEFF")
+#define MAX_UUID_STR	sizeof("00112233-4455-6677-8899-AABBCCDDEEFF")
 
 struct cdev {
 	const struct cdev_operations *ops;
@@ -464,7 +464,7 @@ struct cdev {
 	char *partname; /* the partition name, usually the above without the
 			 * device part, i.e. name = "nand0.barebox" -> partname = "barebox"
 			 */
-	char partuuid[MAX_PARTUUID_STR];
+	char uuid[MAX_UUID_STR];
 	loff_t offset;
 	loff_t size;
 	unsigned int flags;

@@ -492,7 +492,7 @@ struct cdev *cdev_by_diskuuid(const char *partuuid);
 struct cdev *cdev_open_by_name(const char *name, unsigned long flags);
 struct cdev *cdev_create_loop(const char *path, ulong flags, loff_t offset);
 void cdev_remove_loop(struct cdev *cdev);
-int cdev_do_open(struct cdev *, unsigned long flags);
+int cdev_open(struct cdev *, unsigned long flags);
 void cdev_close(struct cdev *cdev);
 int cdev_flush(struct cdev *cdev);
 ssize_t cdev_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags);

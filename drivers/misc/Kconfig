@@ -47,4 +47,27 @@ config STARFIVE_PWRSEQ
 	  be accessed over /dev/mem or used from kernels which still depend
 	  on bootloader for initialization.
 
+config STORAGE_BY_UUID
+	bool "storage by UUID"
+	depends on OFDEVICE
+	help
+	  This adds a driver which matches to a "barebox,storage-by-uuid"
+	  compatible node. The driver looks for a storage device matching the
+	  given UUID and when found registers a new cdev for the device.
+
+	  This driver solved a very specific problem. On EFI the storage devices
+	  are not connected to any device tree node. barebox-state however expects
+	  a node to use as its backend. The obvious solution would be to create
+	  a partition with a specific partuuid and use that for state, in our
+	  special usecase though the storage device is partitioned with a MBR
+	  which doesn't have any space left to create a new partition. As this
+	  driver parses the of partition binding we can use that to create
+	  a partition in an unallocated are of the disk which is then used for
+	  state.
+
+	  This driver has the problem that it depends on storage devices which
+	  are not described in the device tree. This means it cannot work with
+	  deep probe. This is not a problem on EFI though. It's a special purpose
+	  driver, it's not recommended for general use.
+
 endmenu

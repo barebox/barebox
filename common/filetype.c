@@ -438,7 +438,7 @@ enum filetype cdev_detect_type(const char *name)
 	struct cdev *cdev;
 	void *buf;
 
-	cdev = cdev_open(name, O_RDONLY);
+	cdev = cdev_open_by_name(name, O_RDONLY);
 	if (!cdev)
 		return type;
 

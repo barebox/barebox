@@ -169,7 +169,7 @@ int cdev_find_free_index(const char *basename)
 	return -EBUSY;	/* all indexes are used */
 }
 
-struct cdev *cdev_open(const char *name, unsigned long flags)
+struct cdev *cdev_open_by_name(const char *name, unsigned long flags)
 {
 	struct cdev *cdev;
 	int ret;

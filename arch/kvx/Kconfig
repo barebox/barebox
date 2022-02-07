@@ -38,13 +38,6 @@ config ARCH_TEXT_BASE
 	hex
 	default 0x110000000
 
-menu "Kalray specific"
-
-config ARCHINFO
-	string
-	default "coolidge"
-endmenu
-
 menu "Board configuration"
 
 config BUILTIN_DTB

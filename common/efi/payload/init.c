@@ -349,7 +349,9 @@ static int efi_late_init(void)
 		if (IS_ERR(root))
 			return PTR_ERR(root);
 
-		of_set_root_node(root);
+		ret = barebox_register_of(root);
+		if (ret)
+			pr_warn("Failed to register device-tree: %pe\n", ERR_PTR(ret));
 
 		np = of_find_node_by_alias(root, "state");
 

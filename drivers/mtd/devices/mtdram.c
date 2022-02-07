@@ -38,6 +38,7 @@ static int ram_read(struct mtd_info *mtd, loff_t from, size_t len, size_t *retle
 
 static int mtdram_probe(struct device_d *dev)
 {
+	long type;
 	struct resource *iores;
 	int device_id;
 	struct mtd_info *mtd;
@@ -53,9 +54,11 @@ static int mtdram_probe(struct device_d *dev)
 			mtd->name = xstrdup(alias);
 	}
 
+	type = (long)device_get_match_data(dev);
+
 	if (!mtd->name) {
 		device_id = DEVICE_ID_DYNAMIC;
-		mtd->name = "mtdram";
+		mtd->name = type == MTD_RAM ? "mtdram" : "mtdrom";
 	}
 
 	iores = dev_request_mem_resource(dev, 0);
@@ -67,16 +70,19 @@ static int mtdram_probe(struct device_d *dev)
 	mtd->priv = IOMEM(iores->start);
 	size = (unsigned long) resource_size(iores);
 
-	mtd->type = MTD_RAM;
+	mtd->type = type;
 	mtd->writesize = 1;
 	mtd->writebufsize = 64;
-	mtd->flags = MTD_CAP_RAM;
 	mtd->size = size;
 
 	mtd->_read = ram_read;
-	mtd->_write = ram_write;
-	mtd->_erase = ram_erase;
-	mtd->erasesize = 1;
+
+	if (type == MTD_RAM) {
+		mtd->flags = MTD_CAP_RAM;
+		mtd->_write = ram_write;
+		mtd->_erase = ram_erase;
+		mtd->erasesize = 1;
+	}
 
 	mtd->dev.parent = dev;
 
@@ -92,6 +98,10 @@ nobase:
 static __maybe_unused struct of_device_id mtdram_dt_ids[] = {
 	{
 		.compatible	= "mtd-ram",
+		.data		= (void *)MTD_RAM
+	}, {
+		.compatible	= "mtd-rom",
+		.data		= (void *)MTD_ROM
 	}, {
 		/*  sentinel */
 	}

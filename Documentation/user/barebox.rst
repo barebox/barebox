@@ -217,7 +217,18 @@ like a Linux kernel that is passed an external device tree. For example:
 For non-DT enabled-bootloaders or other architectures, often the normal barebox
 binaries can also be used as they are designed to be startable second stage
 from another bootloader, where possible. For example, if you have U-Boot running
-on your board, you can start barebox with U-Boot's ``bootm`` command:
+on your board, you can start barebox with U-Boot's ``bootm`` command. The bootm
+command doesn't support the barebox binaries directly, they first have to be
+converted to uImage format using the mkimage tool provided with U-Boot:
+
+.. code-block:: console
+  sh: mkimage -n barebox -A arm -T kernel -C none -a 0x80000000 -d \
+      build/images/barebox-freescale-imx53-loco.img image
+
+U-Boot expects the start address of the binary to be given in the image using the
+``-a`` option. The address depends on the board and must be an address which isn't
+used by U-Boot. You can pick the same address you would use for generating a kernel
+image for that board. The image can then be started with ``bootm``:
 
 .. code-block:: console
 

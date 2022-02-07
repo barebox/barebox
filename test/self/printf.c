@@ -278,6 +278,23 @@ errptr(void)
 }
 
 static void __init
+test_hexstr(void)
+{
+	u8 buf[4] = { 0, 1, 2, 3 };
+
+	if (!IS_ENABLED(CONFIG_PRINTF_HEXSTR)) {
+		pr_info("skipping hexstr tests: disabled in config\n");
+		skipped_tests += 4;
+		return;
+	}
+
+	test("[00 01 02 03]", "[%*ph]",  (int)sizeof(buf), buf);
+	test("[00:01:02:03]", "[%*phC]", (int)sizeof(buf), buf);
+	test("[00-01-02-03]", "[%*phD]", (int)sizeof(buf), buf);
+	test("[00010203]",    "[%*phN]", (int)sizeof(buf), buf);
+}
+
+static void __init
 test_pointer(void)
 {
 	null_pointer();
@@ -299,6 +316,7 @@ static void __init test_printf(void)
 	test_number();
 	test_string();
 	test_pointer();
+	test_hexstr();
 
 	free(alloced_buffer);
 }

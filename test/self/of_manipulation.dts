@@ -1,0 +1,30 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
+/dts-v1/;
+
+/ {
+	node1 {
+		property1;
+		node21 { };
+	};
+
+	node2 {
+		property1;
+		node21 { };
+	};
+
+	np1 {
+		property-single = "ayy";
+		property-multi = [61 79 79 00 62 65 65 00 73 65 61];
+	};
+
+	np2 {
+		property-single = "ayy";
+		property-multi = "ayy", "bee", "sea";
+	};
+
+	np3 {
+		property-single = "ayy";
+		property-multi = "ayy", "bee", "sea";
+	};
+};

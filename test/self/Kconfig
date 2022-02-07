@@ -37,6 +37,12 @@ config SELFTEST_PRINTF
 	help
 	  Tests barebox vsnprintf() functionality
 
+config SELFTEST_OF_MANIPULATION
+	bool "OF manipulation selftest"
+	select OFTREE
+	help
+	  Tests barebox device tree manipulation functionality
+
 config SELFTEST_PROGRESS_NOTIFIER
 	bool "progress notifier selftest"
 

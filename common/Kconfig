@@ -1044,7 +1044,7 @@ config RESET_SOURCE
 config MACHINE_ID
 	bool "compute unique machine-id"
 	depends on FLEXIBLE_BOOTARGS
-	depends on SHA1
+	depends on HAVE_DIGEST_SHA1
 	help
 	  Compute a persistent machine-specific id and store it to $global.machine_id.
 	  The id is a hash of device-specific information added via

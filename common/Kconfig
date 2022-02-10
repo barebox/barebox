@@ -730,6 +730,12 @@ config IMD
 	select CRC32
 	bool "barebox metadata support"
 
+config IMD_ENDIANNESS
+	bool "add endianness record to metadata"
+	depends on IMD
+	depends on SYS_SUPPORTS_LITTLE_ENDIAN && SYS_SUPPORTS_BIG_ENDIAN
+	default y
+
 choice
 	prompt "console support"
 	default CONSOLE_FULL

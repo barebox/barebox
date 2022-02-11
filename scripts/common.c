@@ -17,7 +17,7 @@
 int read_file_2(const char *filename, size_t *size, void **outbuf, size_t max_size)
 {
 	off_t fsize;
-	ssize_t rsize;
+	ssize_t read_size, now;
 	int ret, fd;
 	void *buf;
 
@@ -37,8 +37,10 @@ int read_file_2(const char *filename, size_t *size, void **outbuf, size_t max_si
 		goto close;
 	}
 
-	if (fsize < max_size)
-		max_size = fsize;
+	if (max_size < fsize)
+		read_size = max_size;
+	else
+		read_size = fsize;
 
 	if (lseek(fd, 0, SEEK_SET) == -1) {
 		fprintf(stderr, "Cannot seek to start %s: %s\n", filename, strerror(errno));
@@ -46,35 +48,30 @@ int read_file_2(const char *filename, size_t *size, void **outbuf, size_t max_si
 		goto close;
 	}
 
-	buf = mmap(NULL, max_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
-	if (buf == MAP_FAILED ) {
-		buf = malloc(max_size);
-		if (!buf) {
-			fprintf(stderr, "Cannot allocate memory\n");
-			ret = -ENOMEM;
-			goto close;
+	buf = malloc(read_size);
+	if (!buf) {
+		fprintf(stderr, "Cannot allocate memory\n");
+		ret = -ENOMEM;
+		goto close;
+	}
+
+	*outbuf = buf;
+
+	while (read_size) {
+		now = read(fd, buf, read_size);
+		if (now == 0) {
+			ret = -EIO;
+			goto free;
 		}
 
-		*outbuf = buf;
-
-		while (*size < max_size) {
-			rsize = read(fd, buf, max_size - *size);
-			if (rsize == 0) {
-				ret = -EIO;
-				goto free;
-			}
-
-			if (rsize < 0) {
-				ret = -errno;
-				goto free;
-			}
-
-			buf += rsize;
-			*size += rsize;
+		if (now < 0) {
+			ret = -errno;
+			goto free;
 		}
-	} else {
-		*outbuf = buf;
-		*size = max_size;
+
+		buf += now;
+		*size += now;
+		read_size -= now;
 	}
 
 	ret = 0;

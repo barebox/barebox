@@ -21,6 +21,11 @@ static inline void read_file_2_free(void *buf)
 {
 	free(buf);
 }
+
+static int imd_read_file(const char *filename, size_t *size, void **outbuf)
+{
+	return read_file_2(filename, size, outbuf, 0x100000);
+}
 #endif
 
 /*
@@ -473,7 +478,7 @@ int imd_command(int argc, char *argv[])
 
 	filename = argv[optind];
 
-	ret = read_file_2(filename, &size, &buf, 0x100000);
+	ret = imd_read_file(filename, &size, &buf);
 	if (ret && ret != -EFBIG)
 		return -errno;
 

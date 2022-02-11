@@ -150,6 +150,7 @@ obj-$(CONFIG_MACH_KINDLE_MX50)			+= kindle-mx50/
 obj-$(CONFIG_MACH_TORADEX_COLIBRI_T20)		+= toradex-colibri-t20/
 obj-$(CONFIG_MACH_TOSHIBA_AC100)		+= toshiba-ac100/
 obj-$(CONFIG_MACH_TQMA53)			+= tqma53/
+obj-$(CONFIG_MACH_TQMA6UL)			+= tqma6ulx/
 obj-$(CONFIG_MACH_TQMA6X)			+= tqma6x/
 obj-$(CONFIG_MACH_TURRIS_OMNIA)			+= turris-omnia/
 obj-$(CONFIG_MACH_TX25)				+= karo-tx25/

@@ -1,0 +1,102 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
+loadaddr 0x80000000
+soc imx6
+ivtofs 0x400
+
+/* Enable all clocks */
+wm 32 0x020c4068 0xffffffff
+wm 32 0x020c406c 0xffffffff
+wm 32 0x020c4070 0xffffffff
+wm 32 0x020c4074 0xffffffff
+wm 32 0x020c4078 0xffffffff
+wm 32 0x020c407c 0xffffffff
+wm 32 0x020c4080 0xffffffff
+
+/* This flash header contains support for the LGA Variant */
+/*
+ * =====================================================================
+ * IOMUX
+ * =====================================================================
+ */
+/* DDR IO TYPE: */
+wm 32 0x020E04B4 0x000C0000	/* IOMUXC_SW_PAD_CTL_GRP_DDR_TYPE */
+wm 32 0x020E04AC 0x00000000	/* IOMUXC_SW_PAD_CTL_GRP_DDRPKE */
+/* CLOCK: */
+wm 32 0x020E027C 0x00000030	/* IOMUXC_SW_PAD_CTL_PAD_DRAM_SDCLK0_P */
+/* Control: */
+wm 32 0x020E0250 0x00000030	/* IOMUXC_SW_PAD_CTL_PAD_DRAM_CAS */
+wm 32 0x020E024C 0x00000030	/* IOMUXC_SW_PAD_CTL_PAD_DRAM_RAS */
+wm 32 0x020E0490 0x00000030	/* IOMUXC_SW_PAD_CTL_GRP_ADDDS */
+wm 32 0x020E0288 0x00000030	/* IOMUXC_SW_PAD_CTL_PAD_DRAM_RESET */
+wm 32 0x020E0270 0x00000000	/* IOMUXC_SW_PAD_CTL_PAD_DRAM_SDBA2 - DSE can be configured using Group Control Register: IOMUXC_SW_PAD_CTL_GRP_CTLDS */
+wm 32 0x020E0260 0x00000030	/* IOMUXC_SW_PAD_CTL_PAD_DRAM_ODT0 */
+wm 32 0x020E0264 0x00000030	/* IOMUXC_SW_PAD_CTL_PAD_DRAM_ODT1 */
+wm 32 0x020E04A0 0x00000030	/* IOMUXC_SW_PAD_CTL_GRP_CTLDS */
+/* Data Strobes: */
+wm 32 0x020E0494 0x00020000	/* IOMUXC_SW_PAD_CTL_GRP_DDRMODE_CTL */
+wm 32 0x020E0280 0x00000030	/* IOMUXC_SW_PAD_CTL_PAD_DRAM_SDQS0_P */
+wm 32 0x020E0284 0x00000030	/* IOMUXC_SW_PAD_CTL_PAD_DRAM_SDQS1_P */
+/* Data: */
+wm 32 0x020E04B0 0x00020000	/* IOMUXC_SW_PAD_CTL_GRP_DDRMODE */
+wm 32 0x020E0498 0x00000030	/* IOMUXC_SW_PAD_CTL_GRP_B0DS */
+wm 32 0x020E04A4 0x00000030	/* IOMUXC_SW_PAD_CTL_GRP_B1DS */
+wm 32 0x020E0244 0x00000030	/* IOMUXC_SW_PAD_CTL_PAD_DRAM_DQM0 */
+wm 32 0x020E0248 0x00000030	/* IOMUXC_SW_PAD_CTL_PAD_DRAM_DQM1 */
+/*
+ * =====================================================================
+ * DDR Controller Registers
+ * =====================================================================
+ */
+wm 32 0x021B001C 0x00008000	/* MMDC_MDSCR - MMDC Core Special Command Register */
+/*
+ * ======================================================
+ * Calibrations:
+ * ======================================================
+ */
+wm 32 0x021B0800 0xA1390003	/* DDR_PHY_P0_MPZQHWCTRL , enable both one-time & periodic HW ZQ calibration. */
+
+wm 32 0x021B080C 0x00130003	/* MMDC_MPWLDECTRL0 */
+wm 32 0x021B083C 0x41540154	/* MMDC_MPDGCTRL0 */
+wm 32 0x021B0848 0x40405050	/* MMDC_MPRDDLCTL */
+wm 32 0x021B0850 0x40404E4C	/* MMDC_MPWRDLCTL */
+wm 32 0x021B081C 0x33333333	/* MMDC_MPRDDQBY0DL */
+wm 32 0x021B0820 0x33333333	/* MMDC_MPRDDQBY1DL */
+wm 32 0x021B082C 0xf3333333	/* MMDC_MPWRDQBY0DL */
+wm 32 0x021B0830 0xf3333333	/* MMDC_MPWRDQBY1DL */
+wm 32 0x021B08C0 0x00921012	/* MMDC_MPDCCR */
+
+/* Complete calibration by forced measurement: */
+wm 32 0x021B08b8 0x00000800	/* DDR_PHY_P0_MPMUR0, frc_msr */
+
+/*
+ * =====================================================================
+ * MMDC init:
+ * =====================================================================
+ */
+wm 32 0x021B0004 0x0002002D	/* MMDC0_MDPDC */
+wm 32 0x021B0008 0x00333030	/* MMDC0_MDOTC */
+wm 32 0x021B000C 0x676B52F3	/* MMDC0_MDCFG0 */
+wm 32 0x021B0010 0xB66D8B63	/* MMDC0_MDCFG1 */
+wm 32 0x021B0014 0x01FF00DB	/* MMDC0_MDCFG2 */
+wm 32 0x021B0018 0x00201740	/* MMDC0_MDMISC */
+/* TODO: set configuration request again, also done by NXP */
+wm 32 0x021B001C 0x00008000	/* MMDC_MDSCR */
+wm 32 0x021B002C 0x000026D2	/* MMDC0_MDRWD; recommend to maintain the default values */
+wm 32 0x021B0030 0x006B1023	/* MMDC0_MDOR */
+wm 32 0x021B0040 0x00000047	/* CS0_END */
+wm 32 0x021B0000 0x83180000	/* MMDC0_MDCTL */
+/* Mode register writes for CS0 */
+wm 32 0x021B001C 0x02008032	/* MMDC0_MDSCR, MR2 write, CS0 */
+wm 32 0x021B001C 0x00008033	/* MMDC0_MDSCR, MR3 write, CS0 */
+wm 32 0x021B001C 0x00048031	/* MMDC0_MDSCR, MR1 write, CS0 */
+wm 32 0x021B001C 0x15208030	/* MMDC0_MDSCR, MR0 write, CS0 */
+wm 32 0x021B001C 0x04008040	/* MMDC0_MDSCR, ZQ calibration command sent to device on CS0 */
+/* Mode register writes for CS1, not used / needed */
+/* final DDR setup, before operation start: */
+wm 32 0x021B0020 0x00000800	/* MMDC0_MDREF */
+wm 32 0x021B0818 0x00000227	/* DDR_PHY_P0_MPODTCTRL */
+wm 32 0x021B0004 0x0002552D	/* MMDC0_MDPDC now SDCTL power down enabled */
+wm 32 0x021B0404 0x00011006	/* MMDC0_MAPSR ADOPT power down enabled */
+wm 32 0x021B001C 0x00000000	/* MMDC0_MDSCR, clear this register (especially the configuration bit as initialization is complete) */
+
+#include <mach/habv4-imx6-gencsf.h>

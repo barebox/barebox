@@ -180,6 +180,8 @@ $(call build_imx_habv4img, CONFIG_MACH_TQMA6X, start_imx6dl_mba6x, tqma6x/flash-
 
 $(call build_imx_habv4img, CONFIG_MACH_TQMA6X, start_imx6q_mba6x, tqma6x/flash-header-tqma6q, tq-tqma6q-mba6x)
 
+$(call build_imx_habv4img, CONFIG_MACH_TQMA6UL, start_imx6ul_mba6ulx, tqma6ulx/flash-header-imx6ul-tqma6ulx, tq-tqma6ul-mba6ulx)
+
 $(call build_imx_habv4img, CONFIG_MACH_PHYTEC_SOM_IMX6, start_phytec_pbab01_4gib, phytec-som-imx6/flash-header-phytec-pfla02-4gib, phytec-pbab01-4gib)
 
 $(call build_imx_habv4img, CONFIG_MACH_PHYTEC_SOM_IMX6, start_phytec_pbab01_2gib, phytec-som-imx6/flash-header-phytec-pfla02-2gib, phytec-pbab01-2gib)

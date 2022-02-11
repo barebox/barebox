@@ -391,6 +391,11 @@ config MACH_TQMA6X
 	bool "TQ tqma6x on mba6x"
 	select ARCH_IMX6
 
+config MACH_TQMA6UL
+	bool "TQ tqma6ul on mba6ulx"
+	select ARCH_IMX6UL
+	select ARM_USE_COMPRESSED_DTB
+
 config MACH_TX6X
 	bool "Karo TX6x"
 	select ARCH_IMX6

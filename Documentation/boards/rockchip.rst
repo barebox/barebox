@@ -57,6 +57,7 @@ Supported Boards
 ----------------
 
 - Rockchip RK3568 EVB
+- Rockchip RK3568 Bananapi R2 Pro
 - Pine64 Quartz64 Model A
 
 The steps described in the following target the RK3568 and the RK3568 EVB but

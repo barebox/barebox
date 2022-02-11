@@ -68,6 +68,12 @@ config MACH_RK3568_EVB
 	help
 	  Say Y here if you are using a RK3568 EVB
 
+config MACH_RK3568_BPI_R2PRO
+	select ARCH_RK3568
+	bool "RK3568 BPI R2PRO"
+	help
+	  Say Y here if you are using a RK3568 Bananpi R2 Pro
+
 config MACH_PINE64_QUARTZ64
 	select ARCH_RK3568
 	bool "Pine64 Quartz64"

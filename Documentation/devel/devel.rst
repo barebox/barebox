@@ -10,6 +10,7 @@ Contents:
 
    porting
    background-execution
+   project-ideas
 
 * :ref:`search`
 * :ref:`genindex`

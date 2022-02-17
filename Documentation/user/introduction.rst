@@ -15,6 +15,8 @@ development binary as well as for lean production systems.
 Just like busybox is the Swiss Army Knife for embedded Linux,
 barebox is the Swiss Army Knife for bare metal, hence the name.
 
+.. _feedback:
+
 Feedback
 --------
 

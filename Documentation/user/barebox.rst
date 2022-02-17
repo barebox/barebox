@@ -222,6 +222,7 @@ command doesn't support the barebox binaries directly, they first have to be
 converted to uImage format using the mkimage tool provided with U-Boot:
 
 .. code-block:: console
+
   sh: mkimage -n barebox -A arm -T kernel -C none -a 0x80000000 -d \
       build/images/barebox-freescale-imx53-loco.img image
 

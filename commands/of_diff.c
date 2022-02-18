@@ -77,9 +77,7 @@ static int do_of_diff(int argc, char *argv[])
 		goto out;
 	}
 
-	of_diff(a, b, 0);
-
-	ret = 0;
+	ret = of_diff(a, b, 0) ? COMMAND_ERROR : COMMAND_SUCCESS;
 out:
 	if (a && a != root)
 		of_delete_node(a);

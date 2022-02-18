@@ -247,8 +247,11 @@ uuid(void)
 	const char uuid[16] = {0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7,
 			       0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf};
 
-	if (!IS_ENABLED(CONFIG_PRINTF_UUID))
+	if (!IS_ENABLED(CONFIG_PRINTF_UUID)) {
+		pr_info("skipping UUID tests: disabled in config\n");
+		skipped_tests += 4;
 		return;
+	}
 
 	test("00010203-0405-0607-0809-0a0b0c0d0e0f", "%pUb", uuid);
 	test("00010203-0405-0607-0809-0A0B0C0D0E0F", "%pUB", uuid);
@@ -265,10 +268,30 @@ errptr(void)
 	/* Check that %pe with a non-ERR_PTR gets treated as ordinary %p. */
 	BUILD_BUG_ON(IS_ERR(PTR));
 
-	if (!IS_ENABLED(CONFIG_ERRNO_MESSAGES))
+	if (!IS_ENABLED(CONFIG_ERRNO_MESSAGES)) {
+		pr_info("skipping errno messages tests: disabled in config\n");
+		skipped_tests += 2;
 		return;
+	}
 	test("(Operation not permitted)", "(%pe)", ERR_PTR(-EPERM));
 	test("Requested probe deferral", "%pe", ERR_PTR(-EPROBE_DEFER));
+}
+
+static void __init
+test_hexstr(void)
+{
+	u8 buf[4] = { 0, 1, 2, 3 };
+
+	if (!IS_ENABLED(CONFIG_PRINTF_HEXSTR)) {
+		pr_info("skipping hexstr tests: disabled in config\n");
+		skipped_tests += 4;
+		return;
+	}
+
+	test("[00 01 02 03]", "[%*ph]",  (int)sizeof(buf), buf);
+	test("[00:01:02:03]", "[%*phC]", (int)sizeof(buf), buf);
+	test("[00-01-02-03]", "[%*phD]", (int)sizeof(buf), buf);
+	test("[00010203]",    "[%*phN]", (int)sizeof(buf), buf);
 }
 
 static void __init
@@ -293,6 +316,7 @@ static void __init test_printf(void)
 	test_number();
 	test_string();
 	test_pointer();
+	test_hexstr();
 
 	free(alloced_buffer);
 }

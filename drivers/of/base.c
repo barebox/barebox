@@ -2077,15 +2077,19 @@ static void of_print_close(struct device_node *node, int *printed)
  * This function compares two device trees against each other and prints
  * a diff-like result.
  */
-void of_diff(struct device_node *a, struct device_node *b, int indent)
+int of_diff(struct device_node *a, struct device_node *b, int indent)
 {
 	struct property *ap, *bp;
 	struct device_node *ca, *cb;
-	int printed = 0;
+	int printed = 0, diff = 0;
+	bool silent = indent < 0;
 
 	list_for_each_entry(ap, &a->properties, list) {
 		bp = of_find_property(b, ap->name, NULL);
 		if (!bp) {
+			diff++;
+			if (silent)
+				continue;
 			of_print_parents(a, &printed);
 			printf("- ");
 			__of_print_property(ap, indent);
@@ -2093,6 +2097,9 @@ void of_diff(struct device_node *a, struct device_node *b, int indent)
 		}
 
 		if (ap->length != bp->length || memcmp(of_property_get_value(ap), of_property_get_value(bp), bp->length)) {
+			diff++;
+			if (silent)
+				continue;
 			of_print_parents(a, &printed);
 			printf("- ");
 			__of_print_property(ap, indent);
@@ -2104,6 +2111,9 @@ void of_diff(struct device_node *a, struct device_node *b, int indent)
 	list_for_each_entry(bp, &b->properties, list) {
 		ap = of_find_property(a, bp->name, NULL);
 		if (!ap) {
+			diff++;
+			if (silent)
+				continue;
 			of_print_parents(a, &printed);
 			printf("+ ");
 			__of_print_property(bp, indent);
@@ -2113,8 +2123,11 @@ void of_diff(struct device_node *a, struct device_node *b, int indent)
 	for_each_child_of_node(a, ca) {
 		cb = of_get_child_by_name(b, ca->name);
 		if (cb) {
-			of_diff(ca, cb, indent + 1);
+			diff += of_diff(ca, cb, silent ? indent : indent + 1);
 		} else {
+			diff++;
+			if (silent)
+				continue;
 			of_print_parents(a, &printed);
 			__of_print_nodes(ca, indent, "- ");
 		}
@@ -2122,12 +2135,18 @@ void of_diff(struct device_node *a, struct device_node *b, int indent)
 
 	for_each_child_of_node(b, cb) {
 		if (!of_get_child_by_name(a, cb->name)) {
+			diff++;
+			if (silent)
+				continue;
 			of_print_parents(a, &printed);
 			__of_print_nodes(cb, indent, "+ ");
 		}
 	}
 
-	of_print_close(a, &printed);
+	if (!silent)
+		of_print_close(a, &printed);
+
+	return diff;
 }
 
 struct device_node *of_new_node(struct device_node *parent, const char *name)

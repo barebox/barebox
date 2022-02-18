@@ -10,12 +10,36 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 
+int clk_mux_val_to_index(struct clk_hw *hw, u32 *table, unsigned int flags,
+			 unsigned int val)
+{
+	int num_parents = clk_hw_get_num_parents(hw);
+
+	if (table) {
+		int i;
+
+		for (i = 0; i < num_parents; i++)
+			if (table[i] == val)
+				return i;
+		return -EINVAL;
+	}
+
+	return val;
+}
+EXPORT_SYMBOL_GPL(clk_mux_val_to_index);
+
+unsigned int clk_mux_index_to_val(u32 *table, unsigned int flags, u8 index)
+{
+	return table ? table[index] : index;
+}
+EXPORT_SYMBOL_GPL(clk_mux_index_to_val);
+
 static int clk_mux_get_parent(struct clk_hw *hw)
 {
 	struct clk_mux *m = to_clk_mux(hw);
 	int idx = readl(m->reg) >> m->shift & ((1 << m->width) - 1);
 
-	return idx;
+	return clk_mux_val_to_index(hw, m->table, m->flags, idx);
 }
 
 static int clk_mux_set_parent(struct clk_hw *hw, u8 idx)
@@ -29,6 +53,8 @@ static int clk_mux_set_parent(struct clk_hw *hw, u8 idx)
 		else
 			return 0;
 	}
+
+	idx = clk_mux_index_to_val(m->table, m->flags, idx);
 
 	val = readl(m->reg);
 	val &= ~(((1 << m->width) - 1) << m->shift);
@@ -84,8 +110,8 @@ static struct clk *clk_mux_best_parent(struct clk *mux, unsigned long rate,
 	return bestparent;
 }
 
-static long clk_mux_round_rate(struct clk_hw *hw, unsigned long rate,
-			       unsigned long *prate)
+long clk_mux_round_rate(struct clk_hw *hw, unsigned long rate,
+			unsigned long *prate)
 {
 	struct clk *clk = clk_hw_to_clk(hw);
 	unsigned long rrate;
@@ -98,6 +124,7 @@ static long clk_mux_round_rate(struct clk_hw *hw, unsigned long rate,
 
 	return rrate;
 }
+EXPORT_SYMBOL_GPL(clk_mux_round_rate);
 
 static int clk_mux_set_rate(struct clk_hw *hw, unsigned long rate,
 			unsigned long parent_rate)
@@ -185,4 +212,58 @@ struct clk *clk_register_mux(struct device_d *dev, const char *name,
 {
 	return clk_mux(name, flags, reg, shift, width, parent_names,
 		       num_parents, clk_mux_flags);
+}
+
+struct clk_hw *__clk_hw_register_mux(struct device_d *dev,
+		const char *name, u8 num_parents,
+		const char * const *parent_names,
+		unsigned long flags, void __iomem *reg, u8 shift, u32 mask,
+		u8 clk_mux_flags, u32 *table, spinlock_t *lock)
+{
+	struct clk_mux *mux;
+	struct clk_hw *hw;
+	struct clk_init_data init = {};
+	u8 width = 0;
+	int ret = -EINVAL;
+
+	width = fls(mask) - ffs(mask) + 1;
+
+	if (clk_mux_flags & CLK_MUX_HIWORD_MASK) {
+		if (width + shift > 16) {
+			pr_err("mux value exceeds LOWORD field\n");
+			return ERR_PTR(-EINVAL);
+		}
+	}
+
+	/* allocate the mux */
+	mux = kzalloc(sizeof(*mux), GFP_KERNEL);
+	if (!mux)
+		return ERR_PTR(-ENOMEM);
+
+	init.name = name;
+	if (clk_mux_flags & CLK_MUX_READ_ONLY)
+		init.ops = &clk_mux_ro_ops;
+	else
+		init.ops = &clk_mux_ops;
+	init.flags = flags;
+	init.parent_names = parent_names;
+	init.num_parents = num_parents;
+
+	/* struct clk_mux assignments */
+	mux->reg = reg;
+	mux->shift = shift;
+	mux->width = width;
+	mux->flags = clk_mux_flags;
+	mux->lock = lock;
+	mux->table = table;
+	mux->hw.init = &init;
+
+	hw = &mux->hw;
+	ret = clk_hw_register(dev, hw);
+	if (ret) {
+		kfree(mux);
+		hw = ERR_PTR(ret);
+	}
+
+	return hw;
 }

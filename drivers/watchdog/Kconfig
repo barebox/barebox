@@ -97,7 +97,7 @@ config RAVE_SP_WATCHDOG
 
 config STM32_IWDG_WATCHDOG
 	bool "STM32 IWDG"
-	depends on ARCH_STM32MP || COMPILE_TEST
+	depends on ARCH_STM32 || COMPILE_TEST
 	select MFD_SYSCON
 	help
 	  Enable to support configuration of the STM32's on-SoC IWDG watchdog.

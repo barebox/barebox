@@ -171,3 +171,28 @@ err:
 	kfree(composite);
 	return 0;
 }
+
+struct clk_hw *clk_hw_register_composite(struct device_d *dev,
+		const char *name, const char * const *parent_names,
+		int num_parents,
+		struct clk_hw *mux_hw, const struct clk_ops *mux_ops,
+		struct clk_hw *rate_hw, const struct clk_ops *rate_ops,
+		struct clk_hw *gate_hw, const struct clk_ops *gate_ops,
+		unsigned long flags)
+{
+	struct clk *clk;
+	mux_hw->clk.ops = mux_ops;
+	rate_hw->clk.ops = rate_ops;
+	gate_hw->clk.ops = gate_ops;
+
+	parent_names = memdup_array(parent_names, num_parents);
+	if (!parent_names)
+		return ERR_PTR(-ENOMEM);
+
+	clk = clk_register_composite(xstrdup(name), parent_names, num_parents,
+				      mux_hw ? &mux_hw->clk : NULL,
+				      rate_hw ? &rate_hw->clk : NULL,
+				      gate_hw ? &gate_hw->clk : NULL,
+				      flags);
+	return clk_to_clk_hw(clk);
+}

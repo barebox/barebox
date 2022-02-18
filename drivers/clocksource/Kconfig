@@ -115,4 +115,13 @@ config CLINT_TIMER
 	  This option enables the CLINT timer for RISC-V systems.  The CLINT
 	  driver is usually used for NoMMU RISC-V systems.
 
+config ARMV7M_SYSTICK
+	bool "Support for the ARMv7M system timer" if COMPILE_TEST
+	help
+	  This option enables support for the ARMv7M system timer unit.
+
+config CLKSRC_STM32
+	bool "Clocksource for STM32 SoCs"
+	depends on OFDEVICE && (ARCH_STM32 || COMPILE_TEST)
+
 endmenu

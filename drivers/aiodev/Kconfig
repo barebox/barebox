@@ -46,7 +46,7 @@ config AM335X_ADC
 
 config STM32_ADC
 	tristate "STM32 ADC driver"
-	depends on ARCH_STM32MP || COMPILE_TEST
+	depends on ARCH_STM32 || COMPILE_TEST
 	help
 	  Support for ADC on STM32.  Supports simple one-shot readings
 	  rather than continuous sampling with DMA, etc.  ADC channels should be

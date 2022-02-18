@@ -13,6 +13,7 @@
 #include <linux/err.h>
 #include <linux/spinlock.h>
 #include <linux/stringify.h>
+#include <xfuncs.h>
 
 struct device_d;
 
@@ -449,6 +450,10 @@ struct clk *clk_register_fixed_rate(const char *name,
 				    const char *parent_name, unsigned long flags,
 				    unsigned long fixed_rate);
 
+struct clk_hw *clk_hw_register_fixed_rate(struct device_d *dev, const char *name,
+				    const char *parent_name, unsigned long flags,
+				    unsigned long rate);
+
 static inline struct clk *clk_fixed(const char *name, int rate)
 {
 	return clk_register_fixed_rate(name, NULL, 0, rate);
@@ -519,6 +524,17 @@ struct clk *clk_register_divider_table(struct device_d *dev, const char *name,
 		u8 clk_divider_flags, const struct clk_div_table *table,
 		spinlock_t *lock);
 
+struct clk_hw *clk_hw_register_divider_table(struct device_d *dev, const char *name,
+		const char *parent_name, unsigned long flags,
+		void __iomem *reg, u8 shift, u8 width,
+		u8 clk_divider_flags, const struct clk_div_table *table,
+		spinlock_t *lock);
+
+struct clk_hw *clk_hw_register_divider(struct device_d *dev, const char *name,
+		const char *parent_name, unsigned long flags,
+		void __iomem *reg, u8 shift, u8 width,
+		u8 clk_divider_flags, spinlock_t *lock);
+
 struct clk_fixed_factor {
 	struct clk_hw hw;
 	int mult;
@@ -538,6 +554,10 @@ struct clk *clk_fixed_factor(const char *name,
 		unsigned flags);
 struct clk *clk_register_fixed_factor(struct device_d *dev, const char *name,
 		const char *parent_name, unsigned long flags,
+		unsigned int mult, unsigned int div);
+
+struct clk_hw *clk_hw_register_fixed_factor(struct device_d *dev,
+		const char *name, const char *parent_name, unsigned long flags,
 		unsigned int mult, unsigned int div);
 
 /**
@@ -600,6 +620,7 @@ struct clk_mux {
 	int shift;
 	int width;
 	unsigned flags;
+	u32 *table;
 	spinlock_t *lock;
 };
 
@@ -621,6 +642,35 @@ struct clk *clk_register_mux(struct device_d *dev, const char *name,
 		unsigned long flags,
 		void __iomem *reg, u8 shift, u8 width,
 		u8 clk_mux_flags, spinlock_t *lock);
+
+struct clk_hw *__clk_hw_register_mux(struct device_d *dev,
+		const char *name, u8 num_parents,
+		const char * const *parent_names,
+		unsigned long flags, void __iomem *reg, u8 shift, u32 mask,
+		u8 clk_mux_flags, u32 *table, spinlock_t *lock);
+
+#define clk_hw_register_mux(dev, name, parent_names,                  \
+		num_parents, flags, reg, shift, mask,                 \
+		clk_mux_flags, lock)                                  \
+	__clk_hw_register_mux((dev), (name), (num_parents),           \
+				     (parent_names),                  \
+				     (flags), (reg), (shift), (mask), \
+				     (clk_mux_flags), NULL, (lock))
+
+#define clk_hw_register_mux_table(dev, name, parent_names, num_parents,	  \
+				  flags, reg, shift, mask, clk_mux_flags, \
+				  table, lock)				  \
+	__clk_hw_register_mux((dev), (name), (num_parents),	          \
+			      (parent_names), (flags), (reg),             \
+			      (shift), (mask), (clk_mux_flags), (table),  \
+			      (lock))
+
+int clk_mux_val_to_index(struct clk_hw *hw, u32 *table, unsigned int flags,
+			 unsigned int val);
+unsigned int clk_mux_index_to_val(u32 *table, unsigned int flags, u8 index);
+
+long clk_mux_round_rate(struct clk_hw *hw, unsigned long rate,
+			unsigned long *prate);
 
 struct clk_gate {
 	struct clk_hw hw;
@@ -652,6 +702,16 @@ struct clk *clk_register_gate(struct device_d *dev, const char *name,
 		void __iomem *reg, u8 bit_idx,
 		u8 clk_gate_flags, spinlock_t *lock);
 
+static inline struct clk_hw *clk_hw_register_gate(struct device_d *dev,
+		const char *name, const char *parent_name,
+		unsigned long flags, void __iomem *reg, u8 bit_idx,
+		u8 clk_gate_flags, spinlock_t *lock)
+{
+	return clk_to_clk_hw(clk_register_gate(dev, xstrdup(name), xstrdup(parent_name),
+					       flags, reg, bit_idx,
+					       clk_gate_flags, lock));
+}
+
 int clk_is_enabled(struct clk *clk);
 int clk_hw_is_enabled(struct clk_hw *hw);
 
@@ -663,6 +723,11 @@ int clk_parent_set_rate(struct clk_hw *hw, unsigned long rate,
 
 int bclk_register(struct clk *clk);
 struct clk *clk_register(struct device_d *dev, struct clk_hw *hw);
+
+static inline int clk_hw_register(struct device_d *dev, struct clk_hw *hw)
+{
+	return PTR_ERR_OR_ZERO(clk_register(dev, hw));
+}
 
 struct clk *clk_lookup(const char *name);
 
@@ -676,9 +741,27 @@ struct clk *clk_register_composite(const char *name,
 			struct clk *gate_clk,
 			unsigned long flags);
 
+struct clk_hw *clk_hw_register_composite(struct device_d *dev,
+		const char *name, const char * const *parent_names,
+		int num_parents,
+		struct clk_hw *mux_hw, const struct clk_ops *mux_ops,
+		struct clk_hw *rate_hw, const struct clk_ops *rate_ops,
+		struct clk_hw *gate_hw, const struct clk_ops *gate_ops,
+		unsigned long flags);
+
 static inline const char *clk_hw_get_name(struct clk_hw *hw)
 {
 	return hw->clk.name;
+}
+
+static inline unsigned int clk_hw_get_num_parents(const struct clk_hw *hw)
+{
+	return hw->clk.num_parents;
+}
+
+static inline unsigned long clk_hw_get_flags(const struct clk_hw *hw)
+{
+	return hw->clk.flags;
 }
 
 int clk_name_set_parent(const char *clkname, const char *clkparentname);
@@ -721,10 +804,10 @@ int of_clk_add_provider(struct device_node *np,
 						   void *data),
 			void *data);
 
-static inline unsigned int clk_hw_get_num_parents(const struct clk_hw *hw)
-{
-	return hw->clk.num_parents;
-}
+int of_clk_add_hw_provider(struct device_node *np,
+			struct clk_hw *(*clk_hw_src_get)(struct of_phandle_args *clkspec,
+							 void *data),
+			void *data);
 
 #else
 
@@ -769,6 +852,14 @@ static inline int of_clk_init(struct device_node *root,
 static inline int of_clk_add_provider(struct device_node *np,
 			struct clk *(*clk_src_get)(struct of_phandle_args *args,
 						   void *data),
+			void *data)
+{
+	return 0;
+}
+
+static inline int of_clk_add_hw_provider(struct device_node *np,
+			struct clk_hw *(*clk_hw_src_get)(struct of_phandle_args *clkspec,
+							 void *data),
 			void *data)
 {
 	return 0;

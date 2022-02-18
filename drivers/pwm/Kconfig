@@ -38,7 +38,7 @@ config PWM_MXS
 
 config PWM_STM32
 	bool "STM32 PWM Support"
-	depends on ARCH_STM32MP || COMPILE_TEST
+	depends on ARCH_STM32 || COMPILE_TEST
 	help
 	  This enables PWM support for STM32 MCUs and MPUs.
 

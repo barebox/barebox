@@ -63,6 +63,14 @@ struct clk *clk_register_fixed_rate(const char *name,
 	return &fix->hw.clk;
 }
 
+struct clk_hw *clk_hw_register_fixed_rate(struct device_d *dev,
+					  const char *name, const char *parent_name,
+					  unsigned long flags, unsigned long rate)
+{
+	return clk_to_clk_hw(clk_register_fixed_rate(xstrdup(name), parent_name,
+						     flags, rate));
+}
+
 /**
  * of_fixed_clk_setup() - Setup function for simple fixed rate clock
  */

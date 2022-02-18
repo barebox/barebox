@@ -24,3 +24,5 @@ obj-$(CONFIG_CLOCKSOURCE_TI_DM) += timer-ti-dm.o
 obj-$(CONFIG_CLOCKSOURCE_TI_32K) += timer-ti-32k.o
 obj-$(CONFIG_CLINT_TIMER) += timer-clint.o
 obj-$(CONFIG_RISCV_TIMER) += timer-riscv.o
+obj-$(CONFIG_ARMV7M_SYSTICK) += armv7m_systick.o
+obj-$(CONFIG_CLKSRC_STM32) += timer-stm32.o

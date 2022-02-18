@@ -13,6 +13,7 @@
 #include <dma.h>
 #include <init.h>
 #include <io.h>
+#include <of_address.h>
 
 #include <mach/mbox.h>
 
@@ -108,12 +109,33 @@ static void dump_buf(struct bcm2835_mbox_hdr *buffer)
 }
 #endif
 
+static int bcm2835_mbox_probe(void)
+{
+	struct device_node *mbox_node;
+
+	mbox_node = of_find_compatible_node(NULL, NULL, "brcm,bcm2835-mbox");
+	if (!mbox_node) {
+		pr_err("Missing mbox node\n");
+		return -ENOENT;
+	}
+
+	mbox_base = of_iomap(mbox_node, 0);
+
+	return 0;
+}
+
 int bcm2835_mbox_call_prop(u32 chan, struct bcm2835_mbox_hdr *buffer)
 {
 	int ret;
 	u32 rbuffer;
 	struct bcm2835_mbox_tag_hdr *tag;
 	int tag_index;
+
+	if (!mbox_base) {
+		ret = bcm2835_mbox_probe();
+		if (ret)
+			return ret;
+	}
 
 	pr_debug("mbox: TX buffer\n");
 	dump_buf(buffer);
@@ -150,33 +172,3 @@ int bcm2835_mbox_call_prop(u32 chan, struct bcm2835_mbox_hdr *buffer)
 
 	return 0;
 }
-
-static int bcm2835_mbox_probe(struct device_d *dev)
-{
-	struct resource *iores;
-
-	iores = dev_request_mem_resource(dev, 0);
-	if (IS_ERR(iores)) {
-		dev_err(dev, "could not get memory region\n");
-		return PTR_ERR(iores);
-	}
-	mbox_base = IOMEM(iores->start);
-
-	return 0;
-}
-
-static __maybe_unused struct of_device_id bcm2835_mbox_dt_ids[] = {
-	{
-		.compatible = "brcm,bcm2835-mbox",
-	}, {
-		/* sentinel */
-	},
-};
-
-static struct driver_d bcm2835_mbox_driver = {
-	.name		= "bcm2835_mbox",
-	.of_compatible	= DRV_OF_COMPAT(bcm2835_mbox_dt_ids),
-	.probe		= bcm2835_mbox_probe,
-};
-
-core_platform_driver(bcm2835_mbox_driver);

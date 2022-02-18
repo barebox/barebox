@@ -17,4 +17,9 @@ config FS_UBIFS_COMPRESSION_ZLIB
 	select ZLIB
 	prompt "ZLIB compression support"
 
+config FS_UBIFS_COMPRESSION_ZSTD
+	bool
+	select ZSTD_DECOMPRESS
+	prompt "ZSTD compression support"
+
 endif

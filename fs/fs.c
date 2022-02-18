@@ -800,7 +800,7 @@ int fsdev_open_cdev(struct fs_device_d *fsdev)
 
 		fsdev->cdev = cdev_create_loop(fsdev->backingstore, O_RDWR, offset);
 	} else {
-		fsdev->cdev = cdev_open(fsdev->backingstore, O_RDWR);
+		fsdev->cdev = cdev_open_by_name(fsdev->backingstore, O_RDWR);
 	}
 	if (!fsdev->cdev) {
 		path_put(&path);
@@ -2999,8 +2999,8 @@ int mount(const char *device, const char *fsname, const char *pathname,
 		    cdev_is_mci_main_part_dev(fsdev->cdev->master))
 			str = get_linux_mmcblkdev(fsdev);
 
-		if (!str && fsdev->cdev->partuuid[0] != 0)
-			str = basprintf("root=PARTUUID=%s", fsdev->cdev->partuuid);
+		if (!str && fsdev->cdev->uuid[0] != 0)
+			str = basprintf("root=PARTUUID=%s", fsdev->cdev->uuid);
 
 		if (str)
 			fsdev_set_linux_rootarg(fsdev, str);
@@ -3048,7 +3048,7 @@ int umount(const char *pathname)
 	path_put(&path);
 
 	if (!fsdev) {
-		struct cdev *cdev = cdev_open(pathname, O_RDWR);
+		struct cdev *cdev = cdev_open_by_name(pathname, O_RDWR);
 
 		if (cdev) {
 			cdev_close(cdev);

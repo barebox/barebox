@@ -37,7 +37,7 @@ int devfs_partition_complete(struct string_list *sl, char *instr)
 
 	len = strlen(instr);
 
-	list_for_each_entry(cdev, &cdev_list, list) {
+	for_each_cdev(cdev) {
 		if (cdev->master &&
 		    !strncmp(instr, cdev->name, len)) {
 			string_list_add_asprintf(sl, "%s ", cdev->name);
@@ -62,7 +62,7 @@ struct cdev *lcdev_by_name(const char *filename)
 {
 	struct cdev *cdev;
 
-	list_for_each_entry(cdev, &cdev_list, list) {
+	for_each_cdev(cdev) {
 		if (!strcmp(cdev->name, filename))
 			return cdev;
 	}
@@ -84,7 +84,7 @@ struct cdev *cdev_by_device_node(struct device_node *node)
 {
 	struct cdev *cdev;
 
-	list_for_each_entry(cdev, &cdev_list, list) {
+	for_each_cdev(cdev) {
 		if (!cdev->device_node)
 			continue;
 		if (cdev->device_node == node)
@@ -100,8 +100,22 @@ struct cdev *cdev_by_partuuid(const char *partuuid)
 	if (!partuuid)
 		return NULL;
 
-	list_for_each_entry(cdev, &cdev_list, list) {
-		if (!strcasecmp(cdev->partuuid, partuuid))
+	for_each_cdev(cdev) {
+		if (cdev->master && !strcasecmp(cdev->uuid, partuuid))
+			return cdev;
+	}
+	return NULL;
+}
+
+struct cdev *cdev_by_diskuuid(const char *diskuuid)
+{
+	struct cdev *cdev;
+
+	if (!diskuuid)
+		return NULL;
+
+	for_each_cdev(cdev) {
+		if (!cdev->master && !strcasecmp(cdev->uuid, diskuuid))
 			return cdev;
 	}
 	return NULL;
@@ -155,7 +169,15 @@ int cdev_find_free_index(const char *basename)
 	return -EBUSY;	/* all indexes are used */
 }
 
-struct cdev *cdev_open(const char *name, unsigned long flags)
+int cdev_open(struct cdev *cdev, unsigned long flags)
+{
+	if (cdev->ops->open)
+		return cdev->ops->open(cdev, flags);
+
+	return 0;
+}
+
+struct cdev *cdev_open_by_name(const char *name, unsigned long flags)
 {
 	struct cdev *cdev;
 	int ret;
@@ -164,11 +186,9 @@ struct cdev *cdev_open(const char *name, unsigned long flags)
 	if (!cdev)
 		return NULL;
 
-	if (cdev->ops->open) {
-		ret = cdev->ops->open(cdev, flags);
-		if (ret)
-			return NULL;
-	}
+	ret = cdev_open(cdev, flags);
+	if (ret)
+		return NULL;
 
 	return cdev;
 }
@@ -217,6 +237,67 @@ int cdev_erase(struct cdev *cdev, loff_t count, loff_t offset)
 		return -ENOSYS;
 
 	return cdev->ops->erase(cdev, count, cdev->offset + offset);
+}
+
+int cdev_lseek(struct cdev *cdev, loff_t pos)
+{
+	int ret;
+
+	if (cdev->ops->lseek) {
+		ret = cdev->ops->lseek(cdev, pos + cdev->offset);
+		if (ret < 0)
+			return ret;
+	}
+
+	return 0;
+}
+
+int cdev_protect(struct cdev *cdev, size_t count, loff_t offset, int prot)
+{
+	if (!cdev->ops->protect)
+		return -ENOSYS;
+
+	return cdev->ops->protect(cdev, count, offset + cdev->offset, prot);
+}
+
+int cdev_discard_range(struct cdev *cdev, loff_t count, loff_t offset)
+{
+	if (!cdev->ops->discard_range)
+		return -ENOSYS;
+
+	if (cdev->flags & DEVFS_PARTITION_READONLY)
+		return -EPERM;
+
+	if (offset >= cdev->size)
+		return 0;
+
+	if (count + offset > cdev->size)
+		count = cdev->size - offset;
+
+	return cdev->ops->discard_range(cdev, count, offset + cdev->offset);
+}
+
+int cdev_memmap(struct cdev *cdev, void **map, int flags)
+{
+	int ret = -ENOSYS;
+
+	if (!cdev->ops->memmap)
+		return -EINVAL;
+
+	ret = cdev->ops->memmap(cdev, map, flags);
+
+	if (!ret)
+		*map = (void *)((unsigned long)*map + (unsigned long)cdev->offset);
+
+	return ret;
+}
+
+int cdev_truncate(struct cdev *cdev, size_t size)
+{
+	if (cdev->ops->truncate)
+		return cdev->ops->truncate(cdev, size);
+
+	return -EPERM;
 }
 
 int devfs_create(struct cdev *new)

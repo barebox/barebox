@@ -32,7 +32,7 @@ static void *read_image_head(const char *name)
 	struct cdev *cdev;
 	int ret;
 
-	cdev = cdev_open(name, O_RDONLY);
+	cdev = cdev_open_by_name(name, O_RDONLY);
 	if (!cdev) {
 		bootstrap_err("failed to open partition\n");
 		goto free_header;
@@ -124,7 +124,7 @@ void* bootstrap_read_devfs(char *devname, bool use_bb, int offset,
 
 	to = xmalloc(size);
 
-	cdev = cdev_open(partname, O_RDONLY);
+	cdev = cdev_open_by_name(partname, O_RDONLY);
 	if (!cdev) {
 		bootstrap_err("%s: failed to open %s\n", devname, partname);
 		goto free_memory;

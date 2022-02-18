@@ -141,6 +141,10 @@ void device_detect_all(void);
  */
 int unregister_device(struct device_d *);
 
+void free_device_res(struct device_d *dev);
+void free_device(struct device_d *dev);
+
+
 /* Iterate over a devices children
  */
 #define device_for_each_child(dev, child) \
@@ -451,7 +455,7 @@ struct cdev_operations {
 	int (*truncate)(struct cdev*, size_t size);
 };
 
-#define MAX_PARTUUID_STR	sizeof("00112233-4455-6677-8899-AABBCCDDEEFF")
+#define MAX_UUID_STR	sizeof("00112233-4455-6677-8899-AABBCCDDEEFF")
 
 struct cdev {
 	const struct cdev_operations *ops;
@@ -464,7 +468,7 @@ struct cdev {
 	char *partname; /* the partition name, usually the above without the
 			 * device part, i.e. name = "nand0.barebox" -> partname = "barebox"
 			 */
-	char partuuid[MAX_PARTUUID_STR];
+	char uuid[MAX_UUID_STR];
 	loff_t offset;
 	loff_t size;
 	unsigned int flags;
@@ -488,17 +492,27 @@ struct cdev *lcdev_by_name(const char *filename);
 struct cdev *cdev_readlink(struct cdev *cdev);
 struct cdev *cdev_by_device_node(struct device_node *node);
 struct cdev *cdev_by_partuuid(const char *partuuid);
-struct cdev *cdev_open(const char *name, unsigned long flags);
+struct cdev *cdev_by_diskuuid(const char *partuuid);
+struct cdev *cdev_open_by_name(const char *name, unsigned long flags);
 struct cdev *cdev_create_loop(const char *path, ulong flags, loff_t offset);
 void cdev_remove_loop(struct cdev *cdev);
-int cdev_do_open(struct cdev *, unsigned long flags);
+int cdev_open(struct cdev *, unsigned long flags);
 void cdev_close(struct cdev *cdev);
 int cdev_flush(struct cdev *cdev);
 ssize_t cdev_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags);
 ssize_t cdev_write(struct cdev *cdev, const void *buf, size_t count, loff_t offset, ulong flags);
 int cdev_ioctl(struct cdev *cdev, int cmd, void *buf);
 int cdev_erase(struct cdev *cdev, loff_t count, loff_t offset);
+int cdev_lseek(struct cdev*, loff_t);
+int cdev_protect(struct cdev*, size_t count, loff_t offset, int prot);
+int cdev_discard_range(struct cdev*, loff_t count, loff_t offset);
+int cdev_memmap(struct cdev*, void **map, int flags);
+int cdev_truncate(struct cdev*, size_t size);
 loff_t cdev_unallocated_space(struct cdev *cdev);
+
+extern struct list_head cdev_list;
+#define for_each_cdev(c) \
+	list_for_each_entry(cdev, &cdev_list, list)
 
 #define DEVFS_PARTITION_FIXED		(1U << 0)
 #define DEVFS_PARTITION_READONLY	(1U << 1)

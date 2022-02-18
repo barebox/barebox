@@ -229,7 +229,7 @@ int mxs_ocotp_read(void *buf, int count, int offset)
 	struct cdev *cdev;
 	int ret;
 
-	cdev = cdev_open(DRIVERNAME, O_RDONLY);
+	cdev = cdev_open_by_name(DRIVERNAME, O_RDONLY);
 	if (!cdev)
 		return -ENODEV;
 

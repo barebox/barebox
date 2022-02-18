@@ -38,7 +38,7 @@ static void *read_image_head(const char *name)
 	struct cdev *cdev;
 	int ret;
 
-	cdev = cdev_open(name, O_RDONLY);
+	cdev = cdev_open_by_name(name, O_RDONLY);
 	if (!cdev) {
 		printf("failed to open %s\n", name);
 		return NULL;
@@ -86,7 +86,7 @@ static void *read_mtd_barebox(const char *partition)
 
 	to = xmalloc(size);
 
-	cdev = cdev_open(partition, O_RDONLY);
+	cdev = cdev_open_by_name(partition, O_RDONLY);
 	if (!cdev) {
 		printf("failed to open partition\n");
 		return NULL;

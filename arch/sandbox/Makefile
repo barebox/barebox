@@ -74,6 +74,12 @@ cmd_barebox__ = $(CC) -o $@ $(BAREBOX_LDFLAGS)
 
 common-y += $(BOARD) arch/sandbox/os/ arch/sandbox/lib/
 
+stickypage.bin:
+	@$(kecho) "  LN      stickypage.bin"
+	@ln -fs arch/sandbox/board/stickypage.bin stickypage.bin
+
+KBUILD_IMAGE := barebox stickypage.bin
+
 common-$(CONFIG_OFTREE) += arch/sandbox/dts/
 
 CLEAN_FILES += $(BOARD)/barebox.lds

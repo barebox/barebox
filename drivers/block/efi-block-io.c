@@ -52,6 +52,7 @@ struct efi_bio_priv {
 	struct device_d *dev;
 	struct block_device blk;
 	u32 media_id;
+	void (*efi_info)(struct device_d *);
 };
 
 static int efi_bio_read(struct block_device *blk, void *buffer, sector_t block,
@@ -101,35 +102,40 @@ static struct block_device_ops efi_bio_ops = {
 	.flush = efi_bio_flush,
 };
 
-static void efi_bio_print_info(struct efi_bio_priv *priv)
+static void efi_bio_print_info(struct device_d *dev)
 {
+	struct efi_bio_priv *priv = dev->priv;
 	struct efi_block_io_media *media = priv->protocol->media;
 	u64 revision = priv->protocol->revision;
 
-	dev_dbg(priv->dev, "revision: 0x%016llx\n", revision);
-	dev_dbg(priv->dev, "media_id: 0x%08x\n", media->media_id);
-	dev_dbg(priv->dev, "removable_media: %d\n", media->removable_media);
-	dev_dbg(priv->dev, "media_present: %d\n", media->media_present);
-	dev_dbg(priv->dev, "logical_partition: %d\n", media->logical_partition);
-	dev_dbg(priv->dev, "read_only: %d\n", media->read_only);
-	dev_dbg(priv->dev, "write_caching: %d\n", media->write_caching);
-	dev_dbg(priv->dev, "block_size: 0x%08x\n", media->block_size);
-	dev_dbg(priv->dev, "io_align: 0x%08x\n", media->io_align);
-	dev_dbg(priv->dev, "last_block: 0x%016llx\n", media->last_block);
+	printf("Block I/O Media:\n");
+	printf("  revision: 0x%016llx\n", revision);
+	printf("  media_id: 0x%08x\n", media->media_id);
+	printf("  removable_media: %d\n", media->removable_media);
+	printf("  media_present: %d\n", media->media_present);
+	printf("  logical_partition: %d\n", media->logical_partition);
+	printf("  read_only: %d\n", media->read_only);
+	printf("  write_caching: %d\n", media->write_caching);
+	printf("  block_size: 0x%08x\n", media->block_size);
+	printf("  io_align: 0x%08x\n", media->io_align);
+	printf("  last_block: 0x%016llx\n", media->last_block);
 
 	if (revision < EFI_BLOCK_IO_PROTOCOL_REVISION2)
 		return;
 
-	dev_dbg(priv->dev, "u64 lowest_aligned_lba: 0x%08llx\n",
+	printf("  lowest_aligned_lba: 0x%08llx\n",
 			media->lowest_aligned_lba);
-	dev_dbg(priv->dev, "logical_blocks_per_physical_block: 0x%08x\n",
+	printf("  logical_blocks_per_physical_block: 0x%08x\n",
 			media->logical_blocks_per_physical_block);
 
 	if (revision < EFI_BLOCK_IO_PROTOCOL_REVISION3)
 		return;
 
-	dev_dbg(priv->dev, "optimal_transfer_length_granularity: 0x%08x\n",
+	printf("  optimal_transfer_length_granularity: 0x%08x\n",
 			media->optimal_transfer_length_granularity);
+
+	if (priv->efi_info)
+		priv->efi_info(dev);
 }
 
 static bool is_bio_usbdev(struct efi_device *efidev)
@@ -143,6 +149,7 @@ static int efi_bio_probe(struct efi_device *efidev)
 	int instance;
 	struct efi_bio_priv *priv;
 	struct efi_block_io_media *media;
+	struct device_d *dev = &efidev->dev;
 
 	priv = xzalloc(sizeof(*priv));
 
@@ -151,8 +158,13 @@ static int efi_bio_probe(struct efi_device *efidev)
 	if (!priv->protocol)
 		return -ENODEV;
 
+	dev->priv = priv;
+	priv->efi_info = dev->info;
+	dev->info = efi_bio_print_info;
+
 	media = priv->protocol->media;
-	efi_bio_print_info(priv);
+	if (__is_defined(DEBUG))
+		efi_bio_print_info(dev);
 	priv->dev = &efidev->dev;
 
 	if (is_bio_usbdev(efidev)) {

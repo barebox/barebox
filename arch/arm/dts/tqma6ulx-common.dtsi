@@ -1,0 +1,28 @@
+// SPDX-License-Identifier: (GPL-2.0-or-later OR MIT)
+/*
+ * Copyright 2018 TQ Systems GmbH
+ * Author: Markus Niebel <Markus.Niebel@tq-group.com>
+ */
+
+&iomuxc {
+	pinctrl_qspi: qspigrp {
+		fsl,pins = <
+			MX6UL_PAD_NAND_WP_B__QSPI_A_SCLK      0x70b9
+			MX6UL_PAD_NAND_READY_B__QSPI_A_DATA00 0x70b9
+			MX6UL_PAD_NAND_CE0_B__QSPI_A_DATA01   0x70b9
+			MX6UL_PAD_NAND_CE1_B__QSPI_A_DATA02   0x70b9
+			MX6UL_PAD_NAND_CLE__QSPI_A_DATA03     0x70b9
+			MX6UL_PAD_NAND_DQS__QSPI_A_SS0_B      0x70a1
+		>;
+	};
+};
+
+&reg_sw2 {
+	regulator-always-on;
+};
+
+/* eMMC */
+&usdhc2 {
+	vmmc-supply = <&reg_sw2>;
+	vqmmc-supply = <&reg_vldo4>;
+};

@@ -730,6 +730,12 @@ config IMD
 	select CRC32
 	bool "barebox metadata support"
 
+config IMD_ENDIANNESS
+	bool "add endianness record to metadata"
+	depends on IMD
+	depends on SYS_SUPPORTS_LITTLE_ENDIAN && SYS_SUPPORTS_BIG_ENDIAN
+	default y
+
 choice
 	prompt "console support"
 	default CONSOLE_FULL
@@ -1044,7 +1050,7 @@ config RESET_SOURCE
 config MACHINE_ID
 	bool "compute unique machine-id"
 	depends on FLEXIBLE_BOOTARGS
-	depends on SHA1
+	depends on HAVE_DIGEST_SHA1
 	help
 	  Compute a persistent machine-specific id and store it to $global.machine_id.
 	  The id is a hash of device-specific information added via

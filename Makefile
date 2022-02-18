@@ -247,7 +247,7 @@ version_h := include/generated/version.h
 clean-targets := %clean mrproper cleandocs
 no-dot-config-targets := $(clean-targets) \
 			 cscope gtags TAGS tags help% %docs \
-			 $(version_h) kernelversion outputmakefile
+			 $(version_h) bareboxversion outputmakefile
 no-sync-config-targets := $(no-dot-config-targets) install %install \
 			   kernelrelease
 
@@ -1277,6 +1277,9 @@ docs: FORCE
 	@$(srctree)/Documentation/gen_commands.py $(srctree) $(srctree)/Documentation/commands
 	@$(SPHINXBUILD) -b html -d $(objtree)/doctrees $(srctree)/Documentation \
 		$(objtree)/Documentation/html
+
+bareboxversion:
+	@echo $(KERNELVERSION)
 
 # Single targets
 # ---------------------------------------------------------------------------

@@ -29,9 +29,10 @@ User API
 Devices registered with the reboot mode API gain two parameters:
 
  - ``$dev_of_reboot_mode.prev`` (read-only): The reboot mode that was
-   set previous to barebox startup
+   set previously to barebox startup.
  - ``$dev_of_reboot_mode.next``: The next reboot mode, for when the
-   system is reset
+   system is reset. Its initial value after startup is 0 which corresponds
+   to ``normal`` by default.
 
 The reboot mode driver core use the alias name if available to name
 the device. By convention, this should end with ``.reboot_mode``, e.g.::

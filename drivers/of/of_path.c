@@ -31,7 +31,7 @@ struct device_d *of_find_device_by_node_path(const char *path)
  *
  * @node: The node to find the cdev for, can be the device or a
  *        partition in the device
- * @part: Optionally, a description of a parition of @node.  See of_find_path
+ * @part: Optionally, a description of a partition of @node.  See of_find_path
  * @outpath: if this function returns 0 outpath will contain the path belonging
  *           to the input path description. Must be freed with free().
  * @flags: use OF_FIND_PATH_FLAGS_BB to return the .bb device if available

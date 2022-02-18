@@ -18,11 +18,13 @@ static int do_wd(int argc, char *argv[])
 	int opt;
 	int rc;
 
-	while ((opt = getopt(argc, argv, "d:")) > 0) {
+	while ((opt = getopt(argc, argv, "d:x")) > 0) {
 		switch (opt) {
 		case 'd':
 			wd = watchdog_get_by_name(optarg);
 			break;
+		case 'x':
+			return watchdog_inhibit_all();
 		default:
 			return COMMAND_ERROR_USAGE;
 		}
@@ -66,12 +68,13 @@ BAREBOX_CMD_HELP_TEXT("When TIME is 0, the watchdog gets disabled,")
 BAREBOX_CMD_HELP_TEXT("Without a parameter the watchdog will be re-triggered.")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT("-d DEVICE\t", "watchdog name (default is highest priority watchdog)")
+BAREBOX_CMD_HELP_OPT("-x\t", "inhibit all watchdogs (i.e. disable or autopoll if possible)")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(wd)
 	.cmd = do_wd,
 	BAREBOX_CMD_DESC("enable/disable/trigger the watchdog")
-	BAREBOX_CMD_OPTS("[-d DEVICE] [TIME]")
+	BAREBOX_CMD_OPTS("[-d DEVICE] [-x] [TIME]")
 	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_wd_help)
 	BAREBOX_CMD_COMPLETE(device_complete)

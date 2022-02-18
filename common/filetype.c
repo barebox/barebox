@@ -45,6 +45,7 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_mbr] = { "MBR sector", "mbr" },
 	[filetype_bmp] = { "BMP image", "bmp" },
 	[filetype_png] = { "PNG image", "png" },
+	[filetype_qoi] = { "QOI image", "qoi" },
 	[filetype_ext] = { "EXT filesystem", "ext" },
 	[filetype_gpt] = { "GUID Partition Table", "gpt" },
 	[filetype_ubifs] = { "UBIFS image", "ubifs" },
@@ -300,6 +301,8 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 		return filetype_aimage;
 	if (buf64[0] == le64_to_cpu(0x0a1a0a0d474e5089ull))
 		return filetype_png;
+	if (strncmp(buf8, "qoif", 4) == 0)
+		return filetype_qoi;
 	if (is_barebox_mips_head(_buf))
 		return filetype_mips_barebox;
 	if (buf[0] == be32_to_cpu(0x534F4659))

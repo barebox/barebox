@@ -1,18 +1,18 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-OPTS_barebox-logo-w64.bblogo = -resize 64
+OPTS_barebox-logo-w64 = -resize 64
 bblogo-$(CONFIG_BAREBOX_LOGO_64) += barebox-logo-w64
 
-OPTS_barebox-logo-w240.bblogo = -resize 240
+OPTS_barebox-logo-w240 = -resize 240
 bblogo-$(CONFIG_BAREBOX_LOGO_240) += barebox-logo-w240
 
-OPTS_barebox-logo-w320.bblogo = -resize 320
+OPTS_barebox-logo-w320 = -resize 320
 bblogo-$(CONFIG_BAREBOX_LOGO_320) += barebox-logo-w320
 
-OPTS_barebox-logo-w400.bblogo = -resize 400
+OPTS_barebox-logo-w400 = -resize 400
 bblogo-$(CONFIG_BAREBOX_LOGO_400) += barebox-logo-w400
 
-OPTS_barebox-logo-w640.bblogo = -resize 640
+OPTS_barebox-logo-w640 = -resize 640
 bblogo-$(CONFIG_BAREBOX_LOGO_640) += barebox-logo-w640
 
 obj-y += $(patsubst %,%.bblogo.o,$(bblogo-y))
@@ -39,15 +39,44 @@ cmd_logo_S =							\
 %.bblogo.S: %.bblogo FORCE
 	$(call if_changed,logo_S)
 
+quiet_cmd_logo = LOGO     $@
+      cmd_logo = cp $< $@
+
+ifdef CONFIG_BAREBOX_LOGO_PNG
+extra-y += $(patsubst %,%.png,$(bblogo-y))
+%.bblogo: %.png FORCE
+	$(call if_changed,logo)
+endif
+ifdef CONFIG_BAREBOX_LOGO_BMP
+extra-y += $(patsubst %,%.bmp,$(bblogo-y))
+%.bblogo: %.bmp FORCE
+	$(call if_changed,logo)
+endif
+ifdef CONFIG_BAREBOX_LOGO_QOI
+extra-y += $(patsubst %,%.png,$(bblogo-y))
+extra-y += $(patsubst %,%.qoi,$(bblogo-y))
+%.bblogo: %.qoi FORCE
+	$(call if_changed,logo)
+endif
+
 CONVERTOPTS += -background none
 
-quiet_cmd_logo = PNG     $@
-cmd_logo =							\
-(								\
-	convert $(OPTS_$(@F)) $(CONVERTOPTS) $< png:$@; \
-)
+quiet_cmd_bmp = BMP     $@
+      cmd_bmp = convert $(OPTS_$(@F:.bmp=)) $(CONVERTOPTS) $< bmp:$@
 
-%.bblogo: $(srctree)/Documentation/barebox.svg FORCE
-	$(call if_changed,logo)
+%.bmp: $(srctree)/Documentation/barebox.svg FORCE
+	$(call if_changed,bmp)
 
-clean-files += *.bblogo *.bblogo.S
+quiet_cmd_png = PNG     $@
+      cmd_png =	convert $(OPTS_$(@F:.png=)) $(CONVERTOPTS) $< png:$@
+
+%.png: $(srctree)/Documentation/barebox.svg FORCE
+	$(call if_changed,png)
+
+quiet_cmd_qoi = QOI     $@
+      cmd_qoi =	$(objtree)/scripts/qoiconv $< $@
+
+%.qoi: %.png FORCE
+	$(call if_changed,qoi)
+
+clean-files += *.png *.qoi *.bmp *.bblogo *.bblogo.S

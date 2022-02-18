@@ -5,9 +5,34 @@ menuconfig BAREBOX_LOGO
 	help
 	  Say yes here to build the barebox logos. This adds ImageMagick's
 	  convert tool to the build dependencies. The logo can be found under
-	  /logo/barebox-logo-<width>.png in the running barebox.
+	  /logo/barebox-logo-<width>.<ext> in the running barebox.
 
 if BAREBOX_LOGO
+
+choice
+	prompt "Logo image encoding format to be used"
+	default BAREBOX_LOGO_PNG
+
+config BAREBOX_LOGO_PNG
+	bool "png"
+	select PNG
+	help
+	  Encode logo with the PNG image format
+
+config BAREBOX_LOGO_BMP
+	bool "bmp"
+	select BMP
+	help
+	  Encode logo with the BMP image format
+
+config BAREBOX_LOGO_QOI
+	bool "qoi"
+	select QOI
+	select QOICONV
+	help
+	  Encode logo with the QOI image format
+
+endchoice
 
 config BAREBOX_LOGO_64
 	bool "include 64x32 pixel logo"

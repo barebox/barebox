@@ -20,6 +20,7 @@ Contents:
    glossary
    devicetree/*
    devel/devel.rst
+   talks
 
 * :ref:`search`
 * :ref:`genindex`

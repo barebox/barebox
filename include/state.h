@@ -12,7 +12,8 @@ struct state *state_new_from_node(struct device_node *node, bool readonly);
 void state_release(struct state *state);
 
 struct state *state_by_name(const char *name);
-struct state *state_by_node(const struct device_node *node);
+struct state *state_by_node(struct device_node *node);
+struct state *state_by_alias(const char *alias);
 
 int state_load_no_auth(struct state *state);
 int state_load(struct state *state);
@@ -34,10 +35,15 @@ static inline struct state *state_by_name(const char *name)
 	return NULL;
 }
 
-static inline struct state *state_by_node(const struct device_node *node)
+static inline struct state *state_by_node(struct device_node *node)
 {
 	return NULL;
-};
+}
+
+static inline struct state *state_by_alias(const char *alias)
+{
+	return NULL;
+}
 
 static inline int state_load(struct state *state)
 {

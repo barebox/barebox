@@ -704,9 +704,11 @@ struct state *state_by_name(const char *name)
  *
  * @node	The of node of the state instance
  */
-struct state *state_by_node(const struct device_node *node)
+struct state *state_by_node(struct device_node *node)
 {
 	struct state *state;
+
+	of_device_ensure_probed(node);
 
 	list_for_each_entry(state, &state_list, list) {
 		if (!strcmp(state->of_path, node->full_name))
@@ -714,6 +716,22 @@ struct state *state_by_node(const struct device_node *node)
 	}
 
 	return NULL;
+}
+
+/*
+ * state_by_alias - find a state instance by alias
+ *
+ * @name	The DT alias of the state instance
+ */
+struct state *state_by_alias(const char *alias)
+{
+	struct device_node *node;
+
+	node = of_find_node_by_alias(NULL, alias);
+	if (!node)
+		return NULL;
+
+	return state_by_node(node);
 }
 
 int state_read_mac(struct state *state, const char *name, u8 *buf)

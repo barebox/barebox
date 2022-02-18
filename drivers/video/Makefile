@@ -9,10 +9,13 @@ obj-$(CONFIG_VIDEO_VPL) += vpl.o
 obj-$(CONFIG_DRIVER_VIDEO_MTL017) += mtl017.o
 obj-$(CONFIG_DRIVER_VIDEO_TC358767) += tc358767.o
 obj-$(CONFIG_DRIVER_VIDEO_SIMPLE_PANEL) += simple-panel.o
+obj-$(CONFIG_DRIVER_VIDEO_MIPI_DBI) += mipi_dbi.o
+obj-$(CONFIG_DRIVER_VIDEO_PANEL_ILITEK_ILI9341) += panel-ilitek-ili9341.o
 
 obj-$(CONFIG_DRIVER_VIDEO_ATMEL) += atmel_lcdfb.o atmel_lcdfb_core.o
 obj-$(CONFIG_DRIVER_VIDEO_ATMEL_HLCD) += atmel_hlcdfb.o atmel_lcdfb_core.o
 obj-$(CONFIG_DRIVER_VIDEO_STM) += stm.o
+obj-$(CONFIG_DRIVER_VIDEO_STM32_LTDC) += stm32_ltdc.o
 obj-$(CONFIG_DRIVER_VIDEO_IMX) += imx.o
 obj-$(CONFIG_DRIVER_VIDEO_IMX_IPU) += imx-ipu-fb.o
 obj-$(CONFIG_DRIVER_VIDEO_S3C24XX) += s3c24xx.o

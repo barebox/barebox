@@ -33,15 +33,22 @@ static void ata_ioports_init(struct ata_ioports *io,
 	/* io->alt_dev_addr is unused */
 }
 
-#define REG_WINDOW_CONTROL(n)	((n) * 0x10 + 0x30)
-#define REG_WINDOW_BASE(n)	((n) * 0x10 + 0x34)
+#define REG_WINDOW_CONTROL(n)		((n) * 0x10 + 0x30)
+#define REG_WINDOW_BASE(n)		((n) * 0x10 + 0x34)
 
-#define REG_EDMA_COMMAND(n)	((n) * 0x2000 + 0x2028)
+#define REG_EDMA_COMMAND(n)		((n) * 0x2000 + 0x2028)
+#define EDMA_EN				(1 << 0)	/* enable EDMA */
+#define EDMA_DS				(1 << 1)	/* disable EDMA; self-negated */
 #define REG_EDMA_COMMAND__EATARST	0x00000004
+#define REG_EDMA_IORDY_TMOUT(n)		((n) * 0x2000 + 0x2034)
+#define REG_SATA_IFCFG(n)		((n) * 0x2000 + 0x2050)
+#define REG_SATA_IFCFG_GEN2EN		(1 << 7)
 
-#define REG_ATA_BASE		0x2100
-#define REG_SSTATUS(n)		((n) * 0x2000 + 0x2300)
-#define REG_SCONTROL(n)		((n) * 0x2000 + 0x2308)
+#define REG_ATA_BASE			0x2100
+#define REG_SSTATUS(n)			((n) * 0x2000 + 0x2300)
+#define REG_SERROR(n)			((n) * 0x2000 + 0x2304)
+#define REG_SERROR_MASK			0x03fe0000
+#define REG_SCONTROL(n)			((n) * 0x2000 + 0x2308)
 #define REG_SCONTROL__DET		0x0000000f
 #define REG_SCONTROL__DET__INIT		0x00000001
 #define REG_SCONTROL__DET__PHYOK	0x00000002
@@ -49,13 +56,49 @@ static void ata_ioports_init(struct ata_ioports *io,
 #define REG_SCONTROL__IPM__PARTIAL	0x00000100
 #define REG_SCONTROL__IPM__SLUMBER	0x00000200
 
+#define PHY_MODE3			0x310
+#define	PHY_MODE4			0x314	/* requires read-after-write */
+#define PHY_MODE9_GEN2			0x398
+#define	PHY_MODE9_GEN1			0x39c
+
+static void mv_soc_65n_phy_errata(void __iomem *base)
+{
+	u32 reg;
+
+	reg = readl(base + PHY_MODE3);
+	reg &= ~(0x3 << 27);	/* SELMUPF (bits 28:27) to 1 */
+	reg |= (0x1 << 27);
+	reg &= ~(0x3 << 29);	/* SELMUPI (bits 30:29) to 1 */
+	reg |= (0x1 << 29);
+	writel(reg, base + PHY_MODE3);
+
+	reg = readl(base + PHY_MODE4);
+	reg &= ~0x1;	/* SATU_OD8 (bit 0) to 0, reserved bit 16 must be set */
+	reg |= (0x1 << 16);
+	writel(reg, base + PHY_MODE4);
+
+	reg = readl(base + PHY_MODE9_GEN2);
+	reg &= ~0xf;	/* TXAMP[3:0] (bits 3:0) to 8 */
+	reg |= 0x8;
+	reg &= ~(0x1 << 14);	/* TXAMP[4] (bit 14) to 0 */
+	writel(reg, base + PHY_MODE9_GEN2);
+
+	reg = readl(base + PHY_MODE9_GEN1);
+	reg &= ~0xf;	/* TXAMP[3:0] (bits 3:0) to 8 */
+	reg |= 0x8;
+	reg &= ~(0x1 << 14);	/* TXAMP[4] (bit 14) to 0 */
+	writel(reg, base + PHY_MODE9_GEN1);
+}
+
 static int mv_sata_probe(struct device_d *dev)
 {
 	struct resource *iores;
 	void __iomem *base;
 	struct ide_port *ide;
+	u32 try_again = 0;
 	u32 scontrol;
 	int ret, i;
+	u32 tmp;
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores)) {
@@ -74,6 +117,31 @@ static int mv_sata_probe(struct device_d *dev)
 	writel(0x7fff0e01, base + REG_WINDOW_CONTROL(0));
 	writel(0, base + REG_WINDOW_BASE(0));
 
+again:
+	/* Clear SError */
+	writel(0x0, base + REG_SERROR(0));
+	/* disable EDMA */
+	writel(EDMA_DS, base + REG_EDMA_COMMAND(0));
+	/* Wait for the chip to confirm eDMA is off. */
+	ret = wait_on_timeout(10 * MSECOND,
+				(readl(base + REG_EDMA_COMMAND(0)) & EDMA_EN) == 0);
+	if (ret) {
+		dev_err(dev, "Failed to wait for eDMA off (sstatus=0x%08x)\n",
+			readl(base + REG_SSTATUS(0)));
+		return ret;
+	}
+
+	/* increase IORdy signal timeout */
+	writel(0x800, base + REG_EDMA_IORDY_TMOUT(0));
+	/* set GEN2i Speed */
+	tmp = readl(base + REG_SATA_IFCFG(0));
+	tmp |= REG_SATA_IFCFG_GEN2EN;
+	writel(tmp, base + REG_SATA_IFCFG(0));
+
+	mv_soc_65n_phy_errata(base);
+
+	/* strobe for hard-reset */
+	writel(REG_EDMA_COMMAND__EATARST, base + REG_EDMA_COMMAND(0));
 	writel(REG_EDMA_COMMAND__EATARST, base + REG_EDMA_COMMAND(0));
 	udelay(25);
 	writel(0x0, base + REG_EDMA_COMMAND(0));
@@ -104,9 +172,38 @@ static int mv_sata_probe(struct device_d *dev)
 
 	dev->priv = ide;
 
+	/* enable EDMA */
+	writel(EDMA_EN, base + REG_EDMA_COMMAND(0));
+
 	ret = ide_port_register(ide);
 	if (ret)
 		free(ide);
+
+	/*
+	 * Under most conditions the above is enough and works as expected.
+	 * With some specific hardware combinations, the setup fails however
+	 * leading to an unusable SATA drive. From the error status bits it
+	 * was not obvious what exactly went wrong.
+	 * The ARMADA-XP datasheet advices to hard-reset the SATA core and
+	 * drive and try again.
+	 * When this happens, just try again multiple times, to give the drive
+	 * some time to reach a stable state. If after 5 (randomly chosen) tries,
+	 * the drive still doesn't work, just give up on it.
+	 */
+	tmp = readl(base + REG_SERROR(0));
+	if (tmp & REG_SERROR_MASK) {
+		try_again++;
+		if (try_again > 5)
+			return -ENODEV;
+		dev_dbg(dev, "PHY layer error. Try again. (serror=0x%08x)\n", tmp);
+		if (ide->port.initialized) {
+			blockdevice_unregister(&ide->port.blk);
+			unregister_device(&ide->port.class_dev);
+		}
+
+		mdelay(100);
+		goto again;
+	}
 
 	return ret;
 }

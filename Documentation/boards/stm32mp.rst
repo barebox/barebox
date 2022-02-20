@@ -10,7 +10,7 @@ The first stage boot loader (FSBL) is loaded by the ROM code into the built-in
 SYSRAM and executed. The FSBL sets up the SDRAM, install a secure monitor and
 then the second stage boot loader (SSBL) is loaded into DRAM.
 
-When building barebox, the resulting ``barebox-${board}.img`` file has the STM32
+When building barebox, the resulting ``barebox-${board}.stm32`` file has the STM32
 header preprended, so it can be loaded directly as SSBL by the ARM TF-A
 (https://github.com/ARM-software/arm-trusted-firmware). Each entry point has a
 header-less image ending in ``*.pblb`` as well.
@@ -25,18 +25,23 @@ as sole defconfig for all STM32MP boards::
 
   make ARCH=arm stm32mp_defconfig
 
-The resulting images will be placed under ``images/``:
+The resulting images will be placed under ``images/``::
 
-::
+  barebox-stm32mp15xx-dkx.stm32
+  barebox-stm32mp15x-ev1.stm32
+  barebox-stm32mp157c-lxa-mc1.stm32
+  barebox-prtt1a.stm32
+  barebox-prtt1s.stm32
+  barebox-prtt1c.stm32
+  barebox-stm32mp157c-seeed-odyssey.stm32
+  barebox-dt-2nd.img
 
-  barebox-stm32mp15xx-dkx.img # both DK1 and DK2
-  barebox-stm32mp157c-lxa-mc1.img
-  barebox-stm32mp157c-seeed-odyssey.img
-  barebox-stm32mp15x-ev1.img # stm32mp157c-ev1 and friends
+In the above output, images with a ``.stm32`` extension feature the (legacy)
+stm32image header. ``barebox-dt-2nd.img`` is a generic barebox image that
+received an external device tree.
 
-
-Flashing barebox
-----------------
+Flashing barebox (legacy stm32image)
+------------------------------------
 
 An appropriate image for a SD-Card can be generated with following
 ``genimage(1)`` config::
@@ -55,7 +60,7 @@ An appropriate image for a SD-Card can be generated with following
           size = 256K
       }
       partition ssbl {
-          image = "barebox-@STM32MP_BOARD@.img"
+          image = "barebox-@STM32MP_BOARD@.stm32"
           size = 1M
       }
       partition barebox-environment {
@@ -69,7 +74,7 @@ partitions may look like this::
 
   image @STM32MP_BOARD@.img {
       partition ssbl {
-          image = "barebox-@STM32MP_BOARD@.img"
+          image = "barebox-@STM32MP_BOARD@.stm32"
           size = 1M
       }
       partition barebox-environment {

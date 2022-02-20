@@ -6,16 +6,19 @@
 # %.stm32 - convert into STM32MP image
 # --------------------------------------
 
-$(obj)/%.stm32: $(obj)/% FORCE
+.SECONDEXPANSION:
+$(obj)/%.stm32: $(obj)/$$(FILE_$$(@F)) FORCE
+	$(Q)if [ -z $(FILE_$(@F)) ]; then echo "FILE_$(@F) empty!"; false; fi
+	@(cd $(obj) && ln -fs $(notdir $@) $(basename $(notdir $@)).img)
 	$(call if_changed,stm32_image)
 
 define build_stm32mp_image =
 $(eval
 ifeq ($($(strip $(1))), y)
 	pblb-y += $(strip $(2))
-	FILE_barebox-$(strip $(3)).img    = $(strip $(2)).pblb.stm32
-	OPTS_$(strip $(2)).pblb.stm32 = -a 0xc0100000 -e 0xc0100000 -v1
-	image-y += barebox-$(strip $(3)).img
+	FILE_barebox-$(strip $(3)).stm32  = $(strip $(2)).pblb
+	OPTS_barebox-$(strip $(3)).stm32 = -a 0xc0100000 -e 0xc0100000 -v1
+	image-y += barebox-$(strip $(3)).stm32
 endif
 )
 endef

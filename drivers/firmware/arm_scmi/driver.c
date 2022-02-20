@@ -1259,6 +1259,8 @@ static int __init scmi_bus_driver_init(void)
 
 	scmi_base_register();
 
+	scmi_reset_register();
+
 	return 0;
 }
 pure_initcall(scmi_bus_driver_init);

@@ -232,6 +232,7 @@ void __exit scmi_bus_exit(void);
 #define DECLARE_SCMI_REGISTER(func)		\
 	int __init scmi_##func##_register(void);
 DECLARE_SCMI_REGISTER(base);
+DECLARE_SCMI_REGISTER(reset);
 
 #define DEFINE_SCMI_PROTOCOL_REGISTER(name, proto)	\
 static const struct scmi_protocol *__this_proto = &(proto);	\

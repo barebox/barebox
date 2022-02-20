@@ -1260,6 +1260,7 @@ static int __init scmi_bus_driver_init(void)
 	scmi_base_register();
 
 	scmi_reset_register();
+	scmi_clock_register();
 
 	return 0;
 }

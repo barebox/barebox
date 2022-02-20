@@ -64,7 +64,8 @@ config POWER_RESET_HTIF_POWEROFF
 	  supporting the UC Berkely Host/Target Interface (HTIF).
 
 config RESET_STM32
-	bool "STM32 Reset Driver"
+	bool "STM32 restart Driver"
 	depends on ARCH_STM32MP || COMPILE_TEST
 	help
-	  This enables the reset controller driver for STM32MP1.
+	  This enables support for restarting and reset source
+	  computation on the STM32MP1.

@@ -6,12 +6,11 @@
  */
 
 #include <common.h>
-#include <init.h>
 #include <linux/err.h>
-#include <linux/reset-controller.h>
 #include <restart.h>
 #include <reset_source.h>
 #include <asm/io.h>
+#include <soc/stm32/reboot.h>
 
 #define RCC_CL 0x4
 
@@ -42,14 +41,8 @@ struct stm32_reset_reason {
 
 struct stm32_reset {
 	void __iomem *base;
-	struct reset_controller_dev rcdev;
 	struct restart_handler restart;
 };
-
-static struct stm32_reset *to_stm32_reset(struct reset_controller_dev *rcdev)
-{
-	return container_of(rcdev, struct stm32_reset, rcdev);
-}
 
 static u32 stm32_reset_status(struct stm32_reset *priv, unsigned long bank)
 {
@@ -115,64 +108,19 @@ static void stm32_set_reset_reason(struct stm32_reset *priv,
 		reset_source_to_string(type), reg);
 }
 
-static int stm32_reset_assert(struct reset_controller_dev *rcdev,
-			      unsigned long id)
-{
-	stm32_reset(to_stm32_reset(rcdev), id, true);
-	return 0;
-}
-
-static int stm32_reset_deassert(struct reset_controller_dev *rcdev,
-				unsigned long id)
-{
-	stm32_reset(to_stm32_reset(rcdev), id, false);
-	return 0;
-}
-
-static const struct reset_control_ops stm32_reset_ops = {
-	.assert		= stm32_reset_assert,
-	.deassert	= stm32_reset_deassert,
-};
-
-static int stm32_reset_probe(struct device_d *dev)
+void stm32mp_system_restart_init(void __iomem *base)
 {
 	struct stm32_reset *priv;
-	struct resource *iores;
-	int ret;
 
 	priv = xzalloc(sizeof(*priv));
 
-	iores = dev_request_mem_resource(dev, 0);
-	if (IS_ERR(iores))
-		return PTR_ERR(iores);
-
-	priv->base = IOMEM(iores->start);
-	priv->rcdev.nr_resets = (iores->end - iores->start) * BITS_PER_BYTE;
-	priv->rcdev.ops = &stm32_reset_ops;
-	priv->rcdev.of_node = dev->device_node;
+	priv->base = base;
 
 	priv->restart.name = "stm32-rcc";
 	priv->restart.restart = stm32mp_rcc_restart_handler;
 	priv->restart.priority = 200;
 
-	ret = restart_handler_register(&priv->restart);
-	if (ret)
-		dev_warn(dev, "Cannot register restart handler\n");
+	restart_handler_register(&priv->restart);
 
 	stm32_set_reset_reason(priv, stm32mp_reset_reasons);
-
-	return reset_controller_register(&priv->rcdev);
 }
-
-static const struct of_device_id stm32_rcc_reset_dt_ids[] = {
-	{ .compatible = "st,stm32mp1-rcc" },
-	{ /* sentinel */ },
-};
-
-static struct driver_d stm32_rcc_reset_driver = {
-	.name = "stm32mp_rcc_reset",
-	.probe = stm32_reset_probe,
-	.of_compatible = DRV_OF_COMPAT(stm32_rcc_reset_dt_ids),
-};
-
-postcore_platform_driver(stm32_rcc_reset_driver);

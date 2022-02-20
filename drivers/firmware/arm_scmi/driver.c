@@ -1261,6 +1261,7 @@ static int __init scmi_bus_driver_init(void)
 
 	scmi_reset_register();
 	scmi_clock_register();
+	scmi_voltage_register();
 
 	return 0;
 }

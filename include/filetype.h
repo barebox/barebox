@@ -56,6 +56,7 @@ enum filetype {
 	filetype_zynq_image,
 	filetype_mxs_sd_image,
 	filetype_rockchip_rkns_image,
+	filetype_fip,
 	filetype_max,
 };
 

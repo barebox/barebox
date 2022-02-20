@@ -3,12 +3,24 @@
 #include <pbl.h>
 #include <linux/printk.h>
 
+static const __be32 *fdt_parse_reg(const __be32 *reg, uint32_t n,
+				   uint64_t *val)
+{
+	int i;
+
+	*val = 0;
+	for (i = 0; i < n; i++)
+		*val = (*val << 32) | fdt32_to_cpu(*reg++);
+
+	return reg;
+}
+
 void fdt_find_mem(const void *fdt, unsigned long *membase, unsigned long *memsize)
 {
 	const __be32 *nap, *nsp, *reg;
 	uint32_t na, ns;
 	uint64_t memsize64, membase64;
-	int node, size, i;
+	int node, size;
 
 	/* Make sure FDT blob is sane */
 	if (fdt_check_header(fdt) != 0) {
@@ -51,14 +63,9 @@ void fdt_find_mem(const void *fdt, unsigned long *membase, unsigned long *memsiz
 		goto err;
 	}
 
-	membase64 = 0;
-	for (i = 0; i < na; i++)
-		membase64 = (membase64 << 32) | fdt32_to_cpu(*reg++);
-
 	/* get the memsize and truncate it to under 4G on 32 bit machines */
-	memsize64 = 0;
-	for (i = 0; i < ns; i++)
-		memsize64 = (memsize64 << 32) | fdt32_to_cpu(*reg++);
+	reg = fdt_parse_reg(reg, na, &membase64);
+	reg = fdt_parse_reg(reg, ns, &memsize64);
 
 	*membase = membase64;
 	*memsize = memsize64;

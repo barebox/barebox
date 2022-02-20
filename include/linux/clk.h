@@ -431,14 +431,14 @@ struct clk_hw {
 	const struct clk_init_data *init;
 };
 
-static inline struct clk *clk_hw_to_clk(struct clk_hw *hw)
+static inline struct clk *clk_hw_to_clk(const struct clk_hw *hw)
 {
-	return IS_ERR(hw) ? ERR_CAST(hw) : &hw->clk;
+	return IS_ERR(hw) ? ERR_CAST(hw) : (struct clk *)&hw->clk;
 }
 
-static inline struct clk_hw *clk_to_clk_hw(struct clk *clk)
+static inline struct clk_hw *clk_to_clk_hw(const struct clk *clk)
 {
-	return IS_ERR(clk) ? ERR_CAST(clk) : container_of(clk, struct clk_hw, clk);
+	return IS_ERR(clk) ? ERR_CAST(clk) : (struct clk_hw *)container_of(clk, struct clk_hw, clk);
 }
 
 struct clk_div_table {

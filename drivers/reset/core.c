@@ -82,6 +82,27 @@ void reset_controller_unregister(struct reset_controller_dev *rcdev)
 EXPORT_SYMBOL_GPL(reset_controller_unregister);
 
 /**
+ * reset_control_status - returns a negative errno if not supported, a
+ * positive value if the reset line is asserted, or zero if the reset
+ * line is not asserted or if the desc is NULL (optional reset).
+ * @rstc: reset controller
+ */
+int reset_control_status(struct reset_control *rstc)
+{
+	if (!rstc)
+		return 0;
+
+	if (WARN_ON(IS_ERR(rstc)))
+		return -EINVAL;
+
+	if (rstc->rcdev->ops->status)
+		return rstc->rcdev->ops->status(rstc->rcdev, rstc->id);
+
+	return -ENOTSUPP;
+}
+EXPORT_SYMBOL_GPL(reset_control_status);
+
+/**
  * reset_control_reset - reset the controlled device
  * @rstc: reset controller
  */

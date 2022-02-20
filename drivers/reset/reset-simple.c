@@ -75,7 +75,7 @@ static int reset_simple_reset(struct reset_controller_dev *rcdev,
 	return reset_simple_deassert(rcdev, id);
 }
 
-static int __maybe_unused reset_simple_status(struct reset_controller_dev *rcdev,
+static int reset_simple_status(struct reset_controller_dev *rcdev,
 					      unsigned long id)
 {
 	struct reset_simple_data *data = to_reset_simple_data(rcdev);
@@ -93,6 +93,7 @@ const struct reset_control_ops reset_simple_ops = {
 	.assert		= reset_simple_assert,
 	.deassert	= reset_simple_deassert,
 	.reset		= reset_simple_reset,
+	.status		= reset_simple_status,
 };
 EXPORT_SYMBOL_GPL(reset_simple_ops);
 

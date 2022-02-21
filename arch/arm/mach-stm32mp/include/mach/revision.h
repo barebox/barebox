@@ -32,6 +32,14 @@
 #define CPU_STM32MP151Fxx	0x050000AE
 #define CPU_STM32MP151Dxx	0x050000AF
 
+#define cpu_stm32_is(mask, val) ({ \
+	u32 type; \
+	__stm32mp_get_cpu_type(&type) == 0 ? (type & mask) == val : 0; \
+})
+
+#define cpu_stm32_is_stm32mp15() cpu_stm32_is(0xFFFF0000, 0x05000000)
+#define cpu_stm32_is_stm32mp13() cpu_stm32_is(0xFFFF0000, 0x05010000)
+
 /* silicon revisions */
 #define CPU_REV_A	0x1000
 #define CPU_REV_B	0x2000

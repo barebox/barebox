@@ -33,6 +33,7 @@ There's a single ``stm32mp_defconfig`` for all STM32MP boards::
 The resulting images will be placed under ``images/``::
 
   barebox-stm32mp-generic-bl33.img
+  barebox-stm32mp13xx-dk.stm32
   barebox-stm32mp15xx-dkx.stm32
   barebox-stm32mp15x-ev1.stm32
   barebox-stm32mp157c-lxa-mc1.stm32

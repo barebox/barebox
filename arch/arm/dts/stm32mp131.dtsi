@@ -1,0 +1,14 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+
+/ {
+	aliases {
+		mmc0 = &sdmmc1;
+	};
+};
+
+&{/soc} {
+	memory-controller@5a003000 {
+		compatible = "st,stm32mp13-ddr";
+		reg = <0x5a003000 0x1000>;
+	};
+};

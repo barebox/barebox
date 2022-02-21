@@ -1,0 +1,12 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+
+#include <arm/stm32mp135f-dk.dts>
+#include "stm32mp131.dtsi"
+
+/ {
+	model = "STM32MP153F-DK";
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+};

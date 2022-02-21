@@ -6,9 +6,17 @@ config ARCH_NR_GPIO
 	int
 	default 416
 
+config ARCH_STM32MP13
+	select ARM_PSCI_CLIENT
+	bool
+
 config ARCH_STM32MP157
 	select ARM_PSCI_CLIENT
 	bool
+
+config MACH_STM32MP13XX_DK
+	select ARCH_STM32MP13
+	bool "STM32MP137F DK board"
 
 config MACH_STM32MP15XX_DKX
 	select ARCH_STM32MP157

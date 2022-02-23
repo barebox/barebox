@@ -101,7 +101,8 @@ static unsigned long ddrctrl_addrmap_ramsize(struct stm32mp1_ddrctl __iomem *d,
 	if (LINE_UNUSED(reg, ADDRMAP6_ROW_B13)) rows--;
 	if (LINE_UNUSED(reg, ADDRMAP6_ROW_B12)) rows--;
 
-	return memory_sdram_size(cols, rows, BIT(banks), nb_bytes / BIT(buswidth));
+	return memory_sdram_size(cols, rows, BIT(banks),
+				 DIV_ROUND_UP(nb_bytes, BIT(buswidth)));
 }
 
 static inline unsigned ddrctrl_ramsize(void __iomem *base, unsigned nb_bytes)

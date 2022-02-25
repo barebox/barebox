@@ -39,6 +39,18 @@ hab Engine = SETUP_HABV4_ENGINE
 hab Features = SETUP_HABV4_FEATURES
 #endif
 
+/*
+// allow fusing FIELD_RETURN
+// # ocotp0.permanent_write_enable=1
+// # mw -l -d /dev/imx-ocotp 0xb8 0x1
+hab [Unlock]
+hab Engine = OCOTP
+hab Features = FIELD RETURN
+// device-specific UID:
+// $ dd if=/sys/bus/nvmem/devices/imx-ocotp0/nvmem bs=4 skip=1 count=2 status=none | hexdump -ve '1/1 "0x%.2x, "' | sed 's/, $//'
+hab UID = 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08
+*/
+
 hab [Install Key]
 /* verification key index in key store (0, 2...4) */
 hab Verification index = 0

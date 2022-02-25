@@ -346,6 +346,9 @@ static int vf610_ddrmc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
 #define DDRC_ADDRMAP7_ROW_B17			GENMASK(11,  8)
 #define DDRC_ADDRMAP7_ROW_B16			GENMASK( 3,  0)
 
+#define DDRC_ADDRMAP8_BG_B1			GENMASK(13,  8)
+#define DDRC_ADDRMAP8_BG_B0			GENMASK(4,  0)
+
 static unsigned int
 imx_ddrc_count_bits(unsigned int bits, const u8 config[],
 		     unsigned int config_num)
@@ -408,6 +411,13 @@ imx_ddrc_sdram_size(void __iomem *ddrc, const u32 addrmap[],
 
 	if (FIELD_GET(DDRC_ADDRMAP1_BANK_B2, addrmap[1]) != 0b11111)
 		banks++;
+
+	if (addrmap[8]) {
+		if (FIELD_GET(DDRC_ADDRMAP8_BG_B0, addrmap[8]) != 0b11111)
+			banks++;
+		if (FIELD_GET(DDRC_ADDRMAP8_BG_B1, addrmap[8]) != 0b111111)
+			banks++;
+	}
 
 	columns = imx_ddrc_count_bits(col_max, col_b, col_b_num);
 	rows    = imx_ddrc_count_bits(row_max, row_b, row_b_num);

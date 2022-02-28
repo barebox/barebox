@@ -55,9 +55,10 @@ static unsigned long simple_strtoul(const char *cp, char **endp, unsigned int ba
 	return strtoul(cp, endp, base);
 }
 
-static int imd_read_file(const char *filename, size_t *size, void **outbuf)
+static int imd_read_file(const char *filename, size_t *size, void **outbuf,
+			 bool allow_mmap)
 {
-	void *buf;
+	void *buf = MAP_FAILED;
 	int fd, ret;
 	size_t fsize;
 
@@ -74,7 +75,9 @@ static int imd_read_file(const char *filename, size_t *size, void **outbuf)
 		goto close;
 	}
 
-	buf = mmap(NULL, fsize, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+	if (allow_mmap)
+		buf = mmap(NULL, fsize, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+
 	if (buf == MAP_FAILED) {
 		close(fd);
 		return read_file_2(filename, size, outbuf, 0x100000);

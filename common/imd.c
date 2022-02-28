@@ -22,7 +22,8 @@ static inline void read_file_2_free(void *buf)
 	free(buf);
 }
 
-static int imd_read_file(const char *filename, size_t *size, void **outbuf)
+static int imd_read_file(const char *filename, size_t *size, void **outbuf,
+			 bool allow_mmap)
 {
 	return read_file_2(filename, size, outbuf, 0x100000);
 }
@@ -439,6 +440,7 @@ int imd_command(int argc, char *argv[])
 	char *str;
 	uint32_t checksum = 0;
 	uint32_t verify = 0;
+	bool allow_mmap = true;
 
 	imd_command_verbose = 0;
 
@@ -462,6 +464,7 @@ int imd_command(int argc, char *argv[])
 			break;
 		case 'c':
 			checksum = 1;
+			allow_mmap = false;
 			break;
 		case 'V':
 			verify = 1;
@@ -478,7 +481,7 @@ int imd_command(int argc, char *argv[])
 
 	filename = argv[optind];
 
-	ret = imd_read_file(filename, &size, &buf);
+	ret = imd_read_file(filename, &size, &buf, allow_mmap);
 	if (ret && ret != -EFBIG)
 		return -errno;
 

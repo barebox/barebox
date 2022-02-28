@@ -130,7 +130,7 @@ static struct regulator_internal * __regulator_register(struct regulator_dev *rd
 	if (name)
 		ri->name = xstrdup(name);
 
-	if (rd->boot_on && rd->always_on) {
+	if (rd->boot_on || rd->always_on) {
 		ret = regulator_enable_internal(ri);
 		if (ret && ret != -ENOSYS)
 			goto err;

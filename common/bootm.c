@@ -113,7 +113,7 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
 				load_address, kernel_size);
 		if (!data->os_res) {
 			pr_err("unable to request SDRAM region for kernel at"
-					"0x%08llx-0x%08llx\n",
+					" 0x%08llx-0x%08llx\n",
 				(unsigned long long)load_address,
 				(unsigned long long)load_address + kernel_size - 1);
 			return -ENOMEM;

@@ -114,6 +114,16 @@ config DRIVER_SPI_STM32
 	  Enable the STM32 Serial Peripheral Interface (SPI) driver for STM32MP
 	  SoCs.
 
+config SPI_NXP_FLEXSPI
+	tristate "NXP Flex SPI controller"
+	depends on ARCH_IMX8M || COMPILE_TEST
+	help
+	  This enables support for the Flex SPI controller in master mode.
+	  Up to four slave devices can be connected on two buses with two
+	  chipselects each.
+	  This controller does not support generic SPI messages and only
+	  supports the high-level SPI memory interface.
+
 endif
 
 endmenu

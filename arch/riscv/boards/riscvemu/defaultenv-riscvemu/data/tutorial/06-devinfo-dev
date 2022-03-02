@@ -1,0 +1,6 @@
+
+Let's pick another device out of the list: HTIF. We can display some extra
+info with `devinfo`. (Use the tab completion to avoid writing it all out!)
+```
+devinfo 40008000.htif.of
+```

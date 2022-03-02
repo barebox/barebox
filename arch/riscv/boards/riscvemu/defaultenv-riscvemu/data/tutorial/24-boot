@@ -1,0 +1,12 @@
+
+You should now know enough about barebox' architecture, that
+we could talk about barebox' actual function without it
+seeming too magical: Booting.
+
+We still need to add that part to the tutorial though, but you
+can check out `help boot`, `help bootm` as well as the barebox
+documentation linked below. Also give the graphical mode a
+try!
+
+Tutorial to be continued..
+

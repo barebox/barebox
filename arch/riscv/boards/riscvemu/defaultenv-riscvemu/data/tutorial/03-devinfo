@@ -1,0 +1,5 @@
+
+This node tells barebox enough information to instantiate a device and
+to try match it with existing drivers. Type `devinfo` to see the tree of
+devices known to barebox.
+

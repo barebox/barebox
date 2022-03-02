@@ -1,0 +1,8 @@
+
+Not all of the 64K is used, so the barebox board support here uses
+the unused mtd-ram space for saving modified environment and state.
+The barebox environment is a file system which contains scripts, variables
+and data:
+```
+ls -R /env
+```

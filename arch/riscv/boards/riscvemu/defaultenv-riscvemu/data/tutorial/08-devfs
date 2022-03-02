@@ -1,0 +1,8 @@
+
+`mw` is complemented by `md` for memory display. There are further commands
+like `mm` (memory modify), `memcpy` and `memcmp` (copy/compare ranges).
+These commands operate on `/dev/mem` by default, but any seekable device
+or file can be used instead. Let's see what device files we got here:
+```
+ls /dev
+```

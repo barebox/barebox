@@ -1,0 +1,7 @@
+
+The interactive shell, its commands and the nodes in the virtual
+file system they operate on enable quick UNIX-like prototyping
+and debugging. Let's give it a try, shall we?
+Type `of_dump` to list the open firmware (OF) device tree barebox
+used to discover the hardware and `next` to continue the tutorial.
+

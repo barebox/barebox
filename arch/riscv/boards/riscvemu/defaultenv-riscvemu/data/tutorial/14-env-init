@@ -1,0 +1,8 @@
+
+We could have added the last script anywhere in `/env`. But `/env/bin` is
+already in the executable search `PATH`, so you don't have to write out
+the full path when invoking the script. Another special directory is
+`/env/init`. Anything there will be sourced on shell startup.
+Let's poke the HTIF a bit every time we start: Open a new file with
+`edit /env/init/99-percent` and type into it `putc 0x40`.
+

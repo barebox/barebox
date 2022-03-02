@@ -1,0 +1,11 @@
+
+You'll note most file systems in barebox are read-only. While those that aren't
+could be used with `saveenv` to store a packed environment for Linux use, that's
+murky waters: atomicity, limiting scope, authentication and journal handling
+complicate things. barebox state is the mechanism how barebox stores variables
+(and only variables) in a power-fail safe manner that's also accessible to Linux.
+
+Check the `state` device:
+```
+devinfo state
+```

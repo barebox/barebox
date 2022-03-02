@@ -1,0 +1,6 @@
+
+That's a lot of output, so let's restrict ourselves to just part
+of the tree:
+```
+  of_dump /soc/virtio@40010000
+```

@@ -1,0 +1,6 @@
+source /env/data/ansi-colors
+
+echo -e $YELLOW
+echo -e This is the barebox shell. See ${RED}help${YELLOW} for a listing of commands.
+echo -e Type ${RED}next${YELLOW} for the next tutorial tip.
+echo -e $NC

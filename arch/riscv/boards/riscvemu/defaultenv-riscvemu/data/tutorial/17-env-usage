@@ -1,0 +1,5 @@
+
+Welcome back! You have successfully saved the environment. Make sure
+to reset your environment with `saveenv -z` when you are done. You wouldn't
+want to chase ghosts, because you changed an init script and forgot about it. :)
+

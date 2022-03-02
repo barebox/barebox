@@ -1,0 +1,9 @@
+
+We see that the device has a memory mapped I/O region of 8 bytes that
+can be used for communication. Poking 0x010100000000002e in little-
+endian into that region should print a period '.'.
+Let's do that quad-word memory write (`mw -q`) 80 times by having a shell
+local variable keep count:
+```
+i=0; while [ $i -lt 80 ]; do mw -q 0x40008000 0x010100000000002e; let i=$i+1; done
+```

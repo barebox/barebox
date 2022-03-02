@@ -1,0 +1,12 @@
+
+Now that you know that $global.tutorial.step holds the next step, you
+will want to initialize it on the next reset. We could write an init shell
+script for that, but there is something much more convenient:
+
+On startup, barebox needs to assign initial values for each
+$global.variable; if a suitably named non-volatile $nv.variable already
+exists, it will be used as initial value. Let's see what global variables
+we got (leading asterisk '*' means it was initialized from NV):
+```
+global
+```

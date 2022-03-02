@@ -1,0 +1,11 @@
+
+In this tree, you will find 40010000.virtio@40010000.of, the
+device corresponding to the device tree node we've just seen.
+Devices can have child devices themselves. This device's
+grandchild is `cs0`, the virtual console device that prints
+you this very text.
+
+See for yourself:
+```
+  echo -a /dev/cs0 Append this text to virtio console
+```

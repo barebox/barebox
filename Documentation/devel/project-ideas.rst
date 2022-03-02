@@ -13,16 +13,26 @@ If you find a project interesting and would like to work on it, reach out
 to the :ref:`mailing list <feedback>` and we can together
 try to figure out whether you are a good match for the project.
 
+For GSoC, following barebox developers are mentoring:
+
+  - Ahmad Fatoum (IRC: ``a3f``)
+  - Sascha Hauer (IRC: ``_sha_``)
+  - Rouven Czerwinski (IRC: ``Emantor``)
+
 This list can be edited and extended by sending patches to the mailing list.
 Other interesting ideas: Support for new file systems (EROFS, extfat, btrfs).
 Switch device framework (currently scripts write into a ``/dev/switch`` file
 to configure passthrough), Improvements for barebox-efi (e.g. as a coreboot
 payload), ... etc.
 
+Ideas listed below should contain a title, description, expected outcomes,
+skills (and HW if any) required and a difficulty rating.
+Projects are meant to be about 175 hours of effort, unless otherwise noted.
+
 Address static analyzer feedback for barebox
 ============================================
 
-Skills: C
+Skills: C. Difficulty: Lowest
 
 barebox is automatically tested using Synopsys' free "Coverity Scan" service.
 The static analyzer has so far identified 191 possible defects at
@@ -36,13 +46,15 @@ To make this service more useful, the project would involve categorizing
 reported issues and handling them as appropriate: Mark them as not applicable
 if false positive or provide patches to fix real issues.
 
+Expected outcome is that barebox is coverity-clean.
+
 This project does not require dedicated hardware. QEMU or barebox built
 to run under Linux (sandbox) may be used.
 
 Update barebox networking stack for IPv6 support
 ================================================
 
-Skills: C, Networking
+Skills: C, Networking. Difficulty: Medium
 
 The barebox network stack is mainly used for TFTP and NFSv3 (over UDP) boot.
 Most embedded systems barebox runs on aren't deployed to IPv6 networks yet,
@@ -55,13 +67,15 @@ makes it possible to integrate an IPv6 stack, e.g. lwIP.
 There are also community patches to integrate a TCP stack into barebox.
 These can be evaluated as time allows.
 
+Expected outcome is that barebox can TFTP/NFS boot over IPv6.
+
 This project does not require dedicated hardware. QEMU or barebox built
 to run under Linux (sandbox) may be used.
 
 Improving barebox test coverage
 ===============================
 
-Skills: C
+Skills: C. Difficulty: Lowest
 
 barebox is normally tested end-to-end as part of a deployed system.
 More selftests/emulated tests would reduce the round trip time for testing
@@ -78,13 +92,16 @@ tests for barebox functionality and by fuzzing the parsers available in
 barebox, with special consideration to the FIT parser, which is used in
 secure booting setups.
 
+Expected outcome is a richer test suite for barebox and an automated
+setup for fuzzing security-critical parsers.
+
 This project does not require dedicated hardware. QEMU or barebox built
 to run under Linux (sandbox) may be used.
 
 Porting barebox to new hardware
 ===============================
 
-Skills: C, low-level affinity
+Skills: C, low-level affinity. Difficulty: Medium
 
 While Linux and Linux userspace can be quite generic with respect to the
 hardware it runs on, the bucket needs to stop somewhere: barebox needs
@@ -102,6 +119,9 @@ If time allows (because most drivers are already available in barebox),
 new drivers can be ported to enable not only running Linux on the board,
 but bareDOOM as well.
 
+Expected outcome is upstreamed barebox drivers and board support to
+enable running on previously unsupported hardware.
+
 This project requires embedded hardware with preferably an ARM SoC, as
 these have the widest barebox support, but other architectures are ok
 as well.
@@ -109,7 +129,7 @@ as well.
 Improve barebox RISC-V support
 ==============================
 
-Skills: C, RISC-V interest, low-level affinity
+Skills: C, RISC-V interest, low-level affinity. Difficulty: Medium
 
 barebox supports a number of both soft and hardRISC-V targets,
 e.g.: BeagleV, HiFive, LiteX and the QEMU/TinyEMU Virt machine.
@@ -121,12 +141,16 @@ stage, so much opportunity in implementing the gritty details:
     - MMU support in S-Mode to trap access violations
     - Improve barebox support for multiple harts (hardware threads)
 
+Expected outcome is better RISC-V support: Access violations are
+trapped in both S- and M-Mode. Virtual memory is implemented and
+Linux can be booted on multiple harts.
+
 This project does not require dedicated hardware. QEMU can be used.
 
 Improve barebox I/O performance
 ===============================
 
-Skills: C, low-level affinity
+Skills: C, low-level affinity. Difficulty: Medium
 
 On a normal modern system, booting may involve mounting and traversing
 a file system, which employs caching for directory entries and sits
@@ -145,13 +169,15 @@ possible to increase throughput of barebox I/O:
       and write performance. This may not be optimal for all devices
       and can be revisited.
 
+Expected outcome is faster read/write/erasure of MMC block devices.
+
 This project requires embedded hardware with SD/eMMC that is supported
 by a barebox media card interface (MCI) driver.
 
 Improve JSBarebox, the barebox web demo
 =======================================
 
-Skills: C (Basics), Javascript/Web-assembly, Browser-Profiling
+Skills: C (Basics), Javascript/Web-assembly, Browser-Profiling. Difficulty: Medium
 
 While Linux and Linux userspace can be quite generic with respect to the
 hardware it runs on, the bucket needs to stop somewhere: barebox needs
@@ -169,6 +195,10 @@ didn't help. This needs to be analyzed with the profiling tools
 provided with modern browsers. The remainder of the project can then
 focus on improving the jsbarebox tutorial. e.g. by adding new
 peripherals to the virtual machine.
+
+Expected outcome is snappier and less CPU-intensive barebox demo.
+TinyEMU is extended, so the RISC-V machine is more like real
+hardware and tutorial is extended to make use of the new pripherals.
 
 This project does not require dedicated hardware. The development
 machine need only support a recent browser.

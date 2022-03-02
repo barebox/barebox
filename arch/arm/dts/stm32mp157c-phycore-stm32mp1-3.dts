@@ -1,0 +1,41 @@
+// SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-3-Clause)
+/*
+ * Copyright (C) Phytec GmbH 2019-2020 - All Rights Reserved
+ * Author: Dom VOVARD <dom.vovard@linrt.com>.
+ */
+
+/dts-v1/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <arm/stm32mp157.dtsi>
+#include <arm/stm32mp15xc.dtsi>
+#include <arm/stm32mp15-pinctrl.dtsi>
+#include <arm/stm32mp15xxac-pinctrl.dtsi>
+#include "stm32mp157c-phycore-stm32mp15-som.dtsi"
+
+/ {
+	model = "PHYTEC phyCORE-STM32MP1-3 SoM";
+	compatible = "phytec,phycore-stm32mp1-3", "st,stm32mp157";
+
+	chosen {
+		environment-sd {
+			compatible = "barebox,environment";
+			device-path = &sdmmc1, "partname:barebox-environment";
+			status = "disabled";
+		};
+
+		environment-emmc {
+			compatible = "barebox,environment";
+			device-path = &sdmmc2, "partname:barebox-environment";
+			status = "disabled";
+		};
+	};
+};
+
+&sdmmc1 {
+        status = "okay";
+};
+
+&sdmmc2 {
+        status = "okay";
+};

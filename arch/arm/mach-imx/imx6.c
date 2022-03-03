@@ -56,6 +56,9 @@ static void imx6_init_lowlevel(void)
 {
 	bool is_imx6q = __imx6_cpu_type() == IMX6_CPUTYPE_IMX6Q;
 	bool is_imx6d = __imx6_cpu_type() == IMX6_CPUTYPE_IMX6D;
+	bool is_imx6ull = __imx6_cpu_type() == IMX6_CPUTYPE_IMX6ULL;
+	bool is_imx6sx = __imx6_cpu_type() == IMX6_CPUTYPE_IMX6SX;
+
 	uint32_t val_480;
 	uint32_t val_528;
 	uint32_t periph_sel_1;
@@ -72,6 +75,8 @@ static void imx6_init_lowlevel(void)
 
 	imx6_configure_aips(IOMEM(MX6_AIPS1_ON_BASE_ADDR));
 	imx6_configure_aips(IOMEM(MX6_AIPS2_ON_BASE_ADDR));
+	if (is_imx6ull || is_imx6sx)
+		imx6_configure_aips(IOMEM(MX6_AIPS3_ON_BASE_ADDR));
 
 	/* Due to hardware limitation, on MX6Q we need to gate/ungate all PFDs
 	 * to make sure PFD is working right, otherwise, PFDs may

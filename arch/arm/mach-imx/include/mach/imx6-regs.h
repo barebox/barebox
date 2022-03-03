@@ -11,9 +11,13 @@
 #define MX6_AIPS1_ARB_BASE_ADDR		0x02000000
 #define MX6_AIPS2_ARB_BASE_ADDR		0x02100000
 
+#define MX6_AIPS3_ARB_BASE_ADDR		0x02200000
+#define MX6_AIPS3_ARB_END_ADDR		0x022FFFFF
+
 /* Defines for Blocks connected via AIPS (SkyBlue) */
 #define MX6_ATZ1_BASE_ADDR              MX6_AIPS1_ARB_BASE_ADDR
 #define MX6_ATZ2_BASE_ADDR              MX6_AIPS2_ARB_BASE_ADDR
+#define MX6_ATZ3_BASE_ADDR              MX6_AIPS3_ARB_BASE_ADDR
 
 /* slots 0,7 of SDMA reserved, therefore left unused in IPMUX3 */
 #define MX6_SPDIF_BASE_ADDR             (MX6_ATZ1_BASE_ADDR + 0x04000)
@@ -80,6 +84,12 @@
 /* ATZ#2  - Global enable (0) */
 #define MX6_CAAM_BASE_ADDR              (MX6_ATZ2_BASE_ADDR)
 #define MX6_ARM_BASE_ADDR		(MX6_ATZ2_BASE_ADDR + 0x40000)
+
+/* ATZ#3- On Platform */
+#define MX6_AIPS3_ON_BASE_ADDR          (MX6_ATZ3_BASE_ADDR + 0x7C000)
+
+/* ATZ#2- Off Platform */
+#define MX6_AIPS3_OFF_BASE_ADDR         (MX6_ATZ3_BASE_ADDR + 0x80000)
 
 #define MX6_USBOH3_PL301_BASE_ADDR      (MX6_AIPS2_OFF_BASE_ADDR + 0x0000)
 #define MX6_USBOH3_USB_BASE_ADDR        (MX6_AIPS2_OFF_BASE_ADDR + 0x4000)

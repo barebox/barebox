@@ -31,10 +31,29 @@
 #define MX6_OCOTP_CFG0			0x410
 #define MX6_OCOTP_CFG1			0x420
 
+static void imx6_configure_aips(void __iomem *aips)
+{
+	/*
+	 * Set all MPROTx to be non-bufferable, trusted for R/W,
+	 * not forced to user-mode.
+	 */
+	writel(0x77777777, aips);
+	writel(0x77777777, aips + 0x4);
+
+	/*
+	 * Set all OPACRx to be non-bufferable, not require
+	 * supervisor privilege level for access,allow for
+	 * write access and untrusted master access.
+	 */
+	writel(0, aips + 0x40);
+	writel(0, aips + 0x44);
+	writel(0, aips + 0x48);
+	writel(0, aips + 0x4c);
+	writel(0, aips + 0x50);
+}
+
 static void imx6_init_lowlevel(void)
 {
-	void __iomem *aips1 = (void *)MX6_AIPS1_ON_BASE_ADDR;
-	void __iomem *aips2 = (void *)MX6_AIPS2_ON_BASE_ADDR;
 	bool is_imx6q = __imx6_cpu_type() == IMX6_CPUTYPE_IMX6Q;
 	bool is_imx6d = __imx6_cpu_type() == IMX6_CPUTYPE_IMX6D;
 	uint32_t val_480;
@@ -51,25 +70,8 @@ static void imx6_init_lowlevel(void)
 	if ((readl(MXC_CCM_CCGR6) & 0x3))
 		imx_reset_otg_controller(IOMEM(MX6_OTG_BASE_ADDR));
 
-	/*
-	 * Set all MPROTx to be non-bufferable, trusted for R/W,
-	 * not forced to user-mode.
-	 */
-	writel(0x77777777, aips1);
-	writel(0x77777777, aips1 + 0x4);
-	writel(0, aips1 + 0x40);
-	writel(0, aips1 + 0x44);
-	writel(0, aips1 + 0x48);
-	writel(0, aips1 + 0x4c);
-	writel(0, aips1 + 0x50);
-
-	writel(0x77777777, aips2);
-	writel(0x77777777, aips2 + 0x4);
-	writel(0, aips2 + 0x40);
-	writel(0, aips2 + 0x44);
-	writel(0, aips2 + 0x48);
-	writel(0, aips2 + 0x4c);
-	writel(0, aips2 + 0x50);
+	imx6_configure_aips(IOMEM(MX6_AIPS1_ON_BASE_ADDR));
+	imx6_configure_aips(IOMEM(MX6_AIPS2_ON_BASE_ADDR));
 
 	/* Due to hardware limitation, on MX6Q we need to gate/ungate all PFDs
 	 * to make sure PFD is working right, otherwise, PFDs may

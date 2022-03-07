@@ -120,6 +120,7 @@ extern int of_bus_n_addr_cells(struct device_node *np);
 extern int of_n_addr_cells(struct device_node *np);
 extern int of_bus_n_size_cells(struct device_node *np);
 extern int of_n_size_cells(struct device_node *np);
+extern bool of_node_name_eq(const struct device_node *np, const char *name);
 
 extern struct property *of_find_property(const struct device_node *np,
 					const char *name, int *lenp);
@@ -136,6 +137,8 @@ extern struct property *of_new_property_const(struct device_node *node,
 					      const void *data, int len);
 extern void of_delete_property(struct property *pp);
 
+extern struct device_node *of_find_node_by_name(struct device_node *from,
+	const char *name);
 extern struct device_node *of_find_node_by_name_address(struct device_node *from,
 	const char *name);
 extern struct device_node *of_find_node_by_path_from(struct device_node *from,
@@ -313,6 +316,11 @@ struct device_node *of_find_node_by_path_or_alias(struct device_node *root,
 int of_autoenable_device_by_path(char *path);
 int of_autoenable_i2c_by_component(char *path);
 #else
+static inline bool of_node_name_eq(const struct device_node *np, const char *name)
+{
+	return false;
+}
+
 static inline int of_parse_partitions(struct cdev *cdev,
 					  struct device_node *node)
 {
@@ -653,6 +661,12 @@ static inline struct device_node *of_find_node_by_path(const char *path)
 	return NULL;
 }
 
+static inline struct device_node *of_find_node_by_name(struct device_node *from,
+	const char *name)
+{
+	return NULL;
+}
+
 static inline struct device_node *of_find_node_by_name_address(struct device_node *from,
 	const char *name)
 {
@@ -824,12 +838,18 @@ static inline int of_autoenable_i2c_by_component(char *path)
 
 #define for_each_property_of_node(dn, pp) \
 	list_for_each_entry(pp, &dn->properties, list)
+#define for_each_node_by_name(dn, name) \
+	for (dn = of_find_node_by_name(NULL, name); dn; \
+	     dn = of_find_node_by_name(dn, name))
 #define for_each_node_by_name_address(dn, name) \
 	for (dn = of_find_node_by_name_address(NULL, name); dn; \
 	     dn = of_find_node_by_name_address(dn, name))
 #define for_each_node_by_type(dn, type) \
 	for (dn = of_find_node_by_type(NULL, type); dn; \
 	     dn = of_find_node_by_type(dn, type))
+#define for_each_node_by_name_from(dn, root, name) \
+	for (dn = of_find_node_by_name(root, name); dn; \
+	     dn = of_find_node_by_name(dn, name))
 #define for_each_node_by_name_address_from(dn, root, name) \
 	for (dn = of_find_node_by_name_address(root, name); dn; \
 	     dn = of_find_node_by_name_address(dn, name))

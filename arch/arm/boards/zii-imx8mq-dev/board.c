@@ -106,7 +106,7 @@ static int zii_imx8mq_dev_fixup_deb_internal(void)
 
 	unregister_device(dev);
 
-	np = of_find_node_by_name(NULL, "i210@0");
+	np = of_find_node_by_name_address(NULL, "i210@0");
 	if (!np)
 		return -ENODEV;
 

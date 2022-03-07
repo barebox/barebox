@@ -174,7 +174,7 @@ static void ccxmx51_power_init(struct mc13xxx *mc13xxx)
 
 static void ccxmx51_disable_device(struct device_node *root, const char *label)
 {
-	struct device_node *np = of_find_node_by_name(root, label);
+	struct device_node *np = of_find_node_by_name_address(root, label);
 	if (np)
 		of_device_disable(np);
 }

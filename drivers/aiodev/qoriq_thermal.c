@@ -118,7 +118,7 @@ static int qoriq_tmu_get_sensor_id(void)
 	struct of_phandle_args sensor_specs;
 	struct device_node *np, *sensor_np;
 
-	np = of_find_node_by_name(NULL, "thermal-zones");
+	np = of_find_node_by_name_address(NULL, "thermal-zones");
 	if (!np)
 		return -ENODEV;
 

@@ -496,7 +496,7 @@ static void skov_init_board(const struct board_description *variant)
 	char *environment_path, *envdev;
 	int ret;
 
-	gpio_np = of_find_node_by_name(NULL, "gpio@20b4000");
+	gpio_np = of_find_node_by_name_address(NULL, "gpio@20b4000");
 	if (gpio_np) {
 		ret = of_device_ensure_probed(gpio_np);
 		if (ret)
@@ -568,7 +568,7 @@ static void skov_init_board(const struct board_description *variant)
 			pr_err("Cannot find \"fsl,imx6q-ldb\" node\n");
 
 		/* ... as well as its channel 0 */
-		np = of_find_node_by_name(np, "lvds-channel@0");
+		np = of_find_node_by_name_address(np, "lvds-channel@0");
 		if (np)
 			of_device_enable(np);
 		else

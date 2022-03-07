@@ -538,7 +538,7 @@ int of_device_is_compatible(const struct device_node *device,
 EXPORT_SYMBOL(of_device_is_compatible);
 
 /**
- *	of_find_node_by_name - Find a node by its "name" property
+ *	of_find_node_by_name_address - Find a node by its full name
  *	@from:	The node to start searching from or NULL, the node
  *		you pass will not be searched, only the next one
  *		will; typically, you pass what the previous call
@@ -547,7 +547,7 @@ EXPORT_SYMBOL(of_device_is_compatible);
  *
  *	Returns a pointer to the node found or NULL.
  */
-struct device_node *of_find_node_by_name(struct device_node *from,
+struct device_node *of_find_node_by_name_address(struct device_node *from,
 	const char *name)
 {
 	struct device_node *np;
@@ -558,7 +558,7 @@ struct device_node *of_find_node_by_name(struct device_node *from,
 
 	return NULL;
 }
-EXPORT_SYMBOL(of_find_node_by_name);
+EXPORT_SYMBOL(of_find_node_by_name_address);
 
 /**
  *	of_find_node_by_type - Find a node by its "device_type" property

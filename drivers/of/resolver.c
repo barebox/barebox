@@ -214,7 +214,7 @@ struct device_node *of_resolve_phandles(struct device_node *root,
 	 * to a phandle defined in the overlay. We must update the references,
 	 * because we just adjusted the definitions.
 	 */
-	local_fixups = of_find_node_by_name(result, "__local_fixups__");
+	local_fixups = of_find_node_by_name_address(result, "__local_fixups__");
 	err = adjust_local_phandle_references(local_fixups, result, delta);
 	if (err) {
 		pr_err("failed to fix phandles in overlay\n");
@@ -227,7 +227,7 @@ struct device_node *of_resolve_phandles(struct device_node *root,
 	 * the base device tree. We must update the references, because they
 	 * are otherwise undefined.
 	 */
-	overlay_fixups = of_find_node_by_name(result, "__fixups__");
+	overlay_fixups = of_find_node_by_name_address(result, "__fixups__");
 	if (!overlay_fixups) {
 		pr_debug("overlay does not contain phandles to base devicetree\n");
 		goto out;

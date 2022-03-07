@@ -405,7 +405,7 @@ int of_autoenable_device_by_path(char *path)
 	struct device_node *node;
 	int ret;
 
-	node = of_find_node_by_name(NULL, path);
+	node = of_find_node_by_name_address(NULL, path);
 	if (!node)
 		node = of_find_node_by_path(path);
 
@@ -442,7 +442,7 @@ int of_autoenable_i2c_by_component(char *path)
 	if (!IS_ENABLED(CONFIG_I2C))
 		return -ENODEV;
 
-	node = of_find_node_by_name(NULL, path);
+	node = of_find_node_by_name_address(NULL, path);
 	if (!node)
 		node = of_find_node_by_path(path);
 	if (!node)

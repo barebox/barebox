@@ -11,7 +11,7 @@ char *zii_read_part_number(const char *cell_name, size_t cell_size)
 {
 	struct device_node *np;
 
-	np = of_find_node_by_name(NULL, "device-info");
+	np = of_find_node_by_name_address(NULL, "device-info");
 	if (!np) {
 		pr_warn("No device information found\n");
 		return ERR_PTR(-ENOENT);

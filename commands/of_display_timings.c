@@ -98,7 +98,7 @@ static int do_of_display_timings(int argc, char *argv[])
 		int found = 0;
 		const char *node = "display-timings";
 
-		for_each_node_by_name_from(display, root, node) {
+		for_each_node_by_name_address_from(display, root, node) {
 			for_each_child_of_node(display, timings) {
 				printf("%s\n", timings->full_name);
 				found = 1;
@@ -113,7 +113,7 @@ static int do_of_display_timings(int argc, char *argv[])
 		int found = 0;
 		const char *node = "display-timings";
 
-		for_each_node_by_name_from(display, root, node) {
+		for_each_node_by_name_address_from(display, root, node) {
 			timings = of_parse_phandle_from(display, root,
 							"native-mode", 0);
 			if (!timings)

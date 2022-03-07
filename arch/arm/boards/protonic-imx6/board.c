@@ -736,7 +736,7 @@ static int prt_imx6_get_id(struct prt_imx6_priv *priv)
 	struct device_node *gpio_np = NULL;
 	int ret;
 
-	gpio_np = of_find_node_by_name(NULL, "gpio@20a0000");
+	gpio_np = of_find_node_by_name_address(NULL, "gpio@20a0000");
 	if (!gpio_np)
 		return -ENODEV;
 

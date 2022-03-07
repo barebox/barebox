@@ -202,7 +202,7 @@ struct device_d *of_device_enable_and_register_by_name(const char *name)
 {
 	struct device_node *node;
 
-	node = of_find_node_by_name(NULL, name);
+	node = of_find_node_by_name_address(NULL, name);
 	if (!node)
 		node = of_find_node_by_path(name);
 

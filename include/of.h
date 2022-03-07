@@ -136,7 +136,7 @@ extern struct property *of_new_property_const(struct device_node *node,
 					      const void *data, int len);
 extern void of_delete_property(struct property *pp);
 
-extern struct device_node *of_find_node_by_name(struct device_node *from,
+extern struct device_node *of_find_node_by_name_address(struct device_node *from,
 	const char *name);
 extern struct device_node *of_find_node_by_path_from(struct device_node *from,
 						const char *path);
@@ -653,7 +653,7 @@ static inline struct device_node *of_find_node_by_path(const char *path)
 	return NULL;
 }
 
-static inline struct device_node *of_find_node_by_name(struct device_node *from,
+static inline struct device_node *of_find_node_by_name_address(struct device_node *from,
 	const char *name)
 {
 	return NULL;
@@ -824,15 +824,15 @@ static inline int of_autoenable_i2c_by_component(char *path)
 
 #define for_each_property_of_node(dn, pp) \
 	list_for_each_entry(pp, &dn->properties, list)
-#define for_each_node_by_name(dn, name) \
-	for (dn = of_find_node_by_name(NULL, name); dn; \
-	     dn = of_find_node_by_name(dn, name))
+#define for_each_node_by_name_address(dn, name) \
+	for (dn = of_find_node_by_name_address(NULL, name); dn; \
+	     dn = of_find_node_by_name_address(dn, name))
 #define for_each_node_by_type(dn, type) \
 	for (dn = of_find_node_by_type(NULL, type); dn; \
 	     dn = of_find_node_by_type(dn, type))
-#define for_each_node_by_name_from(dn, root, name) \
-	for (dn = of_find_node_by_name(root, name); dn; \
-	     dn = of_find_node_by_name(dn, name))
+#define for_each_node_by_name_address_from(dn, root, name) \
+	for (dn = of_find_node_by_name_address(root, name); dn; \
+	     dn = of_find_node_by_name_address(dn, name))
 /* Iterate over compatible nodes starting from given root */
 #define for_each_compatible_node_from(dn, root, type, compatible) \
 	for (dn = of_find_compatible_node(root, type, compatible); dn; \

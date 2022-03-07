@@ -514,16 +514,15 @@ EXPORT_SYMBOL_GPL(of_devices_ensure_probed_by_dev_id);
 int of_devices_ensure_probed_by_property(const char *property_name)
 {
 	struct device_node *node;
+	int err, ret = 0;
 
 	if (!deep_probe_is_supported())
 		return 0;
 
 	for_each_node_with_property(node, property_name) {
-		int ret;
-
 		ret = of_device_ensure_probed(node);
-		if (ret)
-			return ret;
+		if (err)
+			ret = err;
 	}
 
 	return 0;

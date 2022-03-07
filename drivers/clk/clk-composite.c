@@ -181,9 +181,13 @@ struct clk_hw *clk_hw_register_composite(struct device_d *dev,
 		unsigned long flags)
 {
 	struct clk *clk;
-	mux_hw->clk.ops = mux_ops;
-	rate_hw->clk.ops = rate_ops;
-	gate_hw->clk.ops = gate_ops;
+
+	if (mux_hw)
+		mux_hw->clk.ops = mux_ops;
+	if (rate_hw)
+		rate_hw->clk.ops = rate_ops;
+	if (gate_hw)
+		gate_hw->clk.ops = gate_ops;
 
 	parent_names = memdup_array(parent_names, num_parents);
 	if (!parent_names)

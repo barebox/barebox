@@ -287,6 +287,7 @@ extern struct device_d *of_device_enable_and_register_by_alias(
 extern int of_device_ensure_probed(struct device_node *np);
 extern int of_device_ensure_probed_by_alias(const char *alias);
 extern int of_devices_ensure_probed_by_property(const char *property_name);
+extern int of_devices_ensure_probed_by_name(const char *name);
 extern int of_devices_ensure_probed_by_dev_id(const struct of_device_id *ids);
 extern int of_partition_ensure_probed(struct device_node *np);
 

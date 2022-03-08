@@ -166,7 +166,7 @@ static const char *cko1_sels[] = {
 	"pll3_usb_otg",
 	"pll2_bus",
 	"pll1_sys",
-	"pll5_video",
+	"pll5_video_div",
 	"video_27m",
 	"axi",
 	"enfc",
@@ -178,7 +178,7 @@ static const char *cko1_sels[] = {
 	"ipg",
 	"ipg_per",
 	"ckil",
-	"pll4_audio",
+	"pll4_audio_div",
 };
 
 static const char *cko2_sels[] = {

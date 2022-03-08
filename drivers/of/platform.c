@@ -455,6 +455,9 @@ int of_device_ensure_probed_by_alias(const char *alias)
 {
 	struct device_node *dev_node;
 
+	if (!deep_probe_is_supported())
+		return 0;
+
 	dev_node = of_find_node_by_alias(NULL, alias);
 	if (!dev_node)
 		return -EINVAL;
@@ -479,6 +482,9 @@ int of_devices_ensure_probed_by_dev_id(const struct of_device_id *ids)
 {
 	struct device_node *np;
 	int err, ret = 0;
+
+	if (!deep_probe_is_supported())
+		return 0;
 
 	for_each_matching_node(np, ids) {
 		if (!of_device_is_available(np))
@@ -508,6 +514,9 @@ EXPORT_SYMBOL_GPL(of_devices_ensure_probed_by_dev_id);
 int of_devices_ensure_probed_by_property(const char *property_name)
 {
 	struct device_node *node;
+
+	if (!deep_probe_is_supported())
+		return 0;
 
 	for_each_node_with_property(node, property_name) {
 		int ret;

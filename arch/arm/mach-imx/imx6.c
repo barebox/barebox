@@ -54,16 +54,8 @@ static void imx6_configure_aips(void __iomem *aips)
 
 static void imx6_init_lowlevel(void)
 {
-	bool is_imx6q = __imx6_cpu_type() == IMX6_CPUTYPE_IMX6Q;
-	bool is_imx6d = __imx6_cpu_type() == IMX6_CPUTYPE_IMX6D;
 	bool is_imx6ull = __imx6_cpu_type() == IMX6_CPUTYPE_IMX6ULL;
 	bool is_imx6sx = __imx6_cpu_type() == IMX6_CPUTYPE_IMX6SX;
-
-	uint32_t val_480;
-	uint32_t val_528;
-	uint32_t periph_sel_1;
-	uint32_t periph_sel_2;
-	uint32_t reg;
 
 	/*
 	 * Before reset the controller imx6_boot_save_loc() must be called to
@@ -77,42 +69,6 @@ static void imx6_init_lowlevel(void)
 	imx6_configure_aips(IOMEM(MX6_AIPS2_ON_BASE_ADDR));
 	if (is_imx6ull || is_imx6sx)
 		imx6_configure_aips(IOMEM(MX6_AIPS3_ON_BASE_ADDR));
-
-	/* Due to hardware limitation, on MX6Q we need to gate/ungate all PFDs
-	 * to make sure PFD is working right, otherwise, PFDs may
-	 * not output clock after reset, MX6DL and MX6SL have added 396M pfd
-	 * workaround in ROM code, as bus clock need it.
-	 * Don't reset PLL2 PFD0 / PLL2 PFD2 if is's used by periph_clk.
-	 */
-	if (is_imx6q || is_imx6d) {
-		val_480 = BM_ANADIG_PFD_480_PFD3_CLKGATE |
-			   BM_ANADIG_PFD_480_PFD2_CLKGATE |
-			   BM_ANADIG_PFD_480_PFD1_CLKGATE |
-			   BM_ANADIG_PFD_480_PFD0_CLKGATE;
-
-		val_528 = BM_ANADIG_PFD_528_PFD3_CLKGATE |
-			   BM_ANADIG_PFD_528_PFD1_CLKGATE;
-
-		reg = readl(MXC_CCM_CBCMR);
-		periph_sel_1 = (reg & MXC_CCM_CBCMR_PRE_PERIPH_CLK_SEL_MASK)
-			>> MXC_CCM_CBCMR_PRE_PERIPH_CLK_SEL_OFFSET;
-
-		periph_sel_2 = (reg & MXC_CCM_CBCMR_PRE_PERIPH2_CLK_SEL_MASK)
-			>> MXC_CCM_CBCMR_PRE_PERIPH2_CLK_SEL_OFFSET;
-
-		if ((periph_sel_1 != 0x2) && (periph_sel_2 != 0x2))
-			val_528 |= BM_ANADIG_PFD_528_PFD0_CLKGATE;
-
-		if ((periph_sel_1 != 0x1) && (periph_sel_2 != 0x1)
-		    && (periph_sel_1 != 0x3) && (periph_sel_2 != 0x3))
-			val_528 |= BM_ANADIG_PFD_528_PFD2_CLKGATE;
-
-		writel(val_480, MX6_ANATOP_BASE_ADDR + HW_ANADIG_PFD_480_SET);
-		writel(val_528, MX6_ANATOP_BASE_ADDR + HW_ANADIG_PFD_528_SET);
-
-		writel(val_480, MX6_ANATOP_BASE_ADDR + HW_ANADIG_PFD_480_CLR);
-		writel(val_528, MX6_ANATOP_BASE_ADDR + HW_ANADIG_PFD_528_CLR);
-	}
 }
 
 static bool imx6_has_ipu(void)

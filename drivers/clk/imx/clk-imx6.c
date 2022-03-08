@@ -588,10 +588,6 @@ static void imx6_add_video_clks(void __iomem *anab, void __iomem *cb, struct dev
 	clks[IMX6QDL_CLK_IPU1_SEL]         = imx_clk_mux("ipu1_sel",         cb + 0x3c, 9,  2, ipu_sels,          ARRAY_SIZE(ipu_sels));
 	clks[IMX6QDL_CLK_IPU2_SEL]         = imx_clk_mux("ipu2_sel",         cb + 0x3c, 14, 2, ipu_sels,          ARRAY_SIZE(ipu_sels));
 
-	disable_anatop_clocks(anab);
-
-	imx6q_mmdc_ch1_mask_handshake(cb);
-
 	if (cpu_mx6_has_err009219()) {
 		/*
 		 * The LDB_DI0/1_SEL muxes should be read-only due to a hardware
@@ -806,6 +802,10 @@ static int imx6_ccm_probe(struct device_d *dev)
 	clks[IMX6QDL_CLK_CKO2]         = imx_clk_gate("cko2",           "cko2_podf",         base + 0x60, 24);
 
 	clkdev_add_physbase(clks[IMX6QDL_CLK_IPG], MX6_OCOTP_BASE_ADDR, NULL);
+
+	disable_anatop_clocks(anatop_base);
+
+	imx6q_mmdc_ch1_mask_handshake(ccm_base);
 
 	if (IS_ENABLED(CONFIG_DRIVER_VIDEO_IMX_IPUV3))
 		imx6_add_video_clks(anatop_base, ccm_base, dev->device_node);

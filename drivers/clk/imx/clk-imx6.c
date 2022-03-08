@@ -106,6 +106,7 @@ static const char *periph2_sels[] = {
 static const char *axi_sels[] = {
 	"periph",
 	"pll2_pfd2_396m",
+	"periph",
 	"pll3_pfd1_540m",
 };
 

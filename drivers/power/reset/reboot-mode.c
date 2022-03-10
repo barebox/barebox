@@ -127,7 +127,7 @@ int reboot_mode_register(struct reboot_mode_driver *reboot,
 	const char *alias;
 	size_t nmodes = 0;
 	int i = 0;
-	int ret;
+	int ret, normal = -1;
 
 	for_each_property_of_node(np, prop) {
 		u32 magic;
@@ -171,6 +171,9 @@ int reboot_mode_register(struct reboot_mode_driver *reboot,
 			goto error;
 		}
 
+		if (!strcmp(*mode, "normal"))
+			normal = i;
+
 		reboot_mode_print(reboot, *mode, magic);
 
 		i++;
@@ -187,7 +190,8 @@ int reboot_mode_register(struct reboot_mode_driver *reboot,
 	reboot_mode_add_param(reboot->dev, "", reboot);
 
 	/* clear mode for next reboot */
-	reboot->write(reboot, &(u32) { 0 });
+	if (normal >= 0)
+		reboot->write(reboot, &reboot->magics[normal]);
 
 	if (!reboot->priority)
 		reboot->priority = REBOOT_MODE_DEFAULT_PRIORITY;

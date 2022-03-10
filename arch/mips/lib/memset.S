@@ -34,8 +34,8 @@
  */
 
 LEAF(memset)
-	beqz		a1, 1f
 	move		v0, a0			/* result */
+	beqz		a1, 1f
 
 	andi		a1, 0xff		/* spread fillword */
 	LONG_SLL		t1, a1, 8

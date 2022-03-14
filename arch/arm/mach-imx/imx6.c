@@ -31,17 +31,31 @@
 #define MX6_OCOTP_CFG0			0x410
 #define MX6_OCOTP_CFG1			0x420
 
+static void imx6_configure_aips(void __iomem *aips)
+{
+	/*
+	 * Set all MPROTx to be non-bufferable, trusted for R/W,
+	 * not forced to user-mode.
+	 */
+	writel(0x77777777, aips);
+	writel(0x77777777, aips + 0x4);
+
+	/*
+	 * Set all OPACRx to be non-bufferable, not require
+	 * supervisor privilege level for access,allow for
+	 * write access and untrusted master access.
+	 */
+	writel(0, aips + 0x40);
+	writel(0, aips + 0x44);
+	writel(0, aips + 0x48);
+	writel(0, aips + 0x4c);
+	writel(0, aips + 0x50);
+}
+
 static void imx6_init_lowlevel(void)
 {
-	void __iomem *aips1 = (void *)MX6_AIPS1_ON_BASE_ADDR;
-	void __iomem *aips2 = (void *)MX6_AIPS2_ON_BASE_ADDR;
-	bool is_imx6q = __imx6_cpu_type() == IMX6_CPUTYPE_IMX6Q;
-	bool is_imx6d = __imx6_cpu_type() == IMX6_CPUTYPE_IMX6D;
-	uint32_t val_480;
-	uint32_t val_528;
-	uint32_t periph_sel_1;
-	uint32_t periph_sel_2;
-	uint32_t reg;
+	bool is_imx6ull = __imx6_cpu_type() == IMX6_CPUTYPE_IMX6ULL;
+	bool is_imx6sx = __imx6_cpu_type() == IMX6_CPUTYPE_IMX6SX;
 
 	/*
 	 * Before reset the controller imx6_boot_save_loc() must be called to
@@ -51,61 +65,10 @@ static void imx6_init_lowlevel(void)
 	if ((readl(MXC_CCM_CCGR6) & 0x3))
 		imx_reset_otg_controller(IOMEM(MX6_OTG_BASE_ADDR));
 
-	/*
-	 * Set all MPROTx to be non-bufferable, trusted for R/W,
-	 * not forced to user-mode.
-	 */
-	writel(0x77777777, aips1);
-	writel(0x77777777, aips1 + 0x4);
-	writel(0, aips1 + 0x40);
-	writel(0, aips1 + 0x44);
-	writel(0, aips1 + 0x48);
-	writel(0, aips1 + 0x4c);
-	writel(0, aips1 + 0x50);
-
-	writel(0x77777777, aips2);
-	writel(0x77777777, aips2 + 0x4);
-	writel(0, aips2 + 0x40);
-	writel(0, aips2 + 0x44);
-	writel(0, aips2 + 0x48);
-	writel(0, aips2 + 0x4c);
-	writel(0, aips2 + 0x50);
-
-	/* Due to hardware limitation, on MX6Q we need to gate/ungate all PFDs
-	 * to make sure PFD is working right, otherwise, PFDs may
-	 * not output clock after reset, MX6DL and MX6SL have added 396M pfd
-	 * workaround in ROM code, as bus clock need it.
-	 * Don't reset PLL2 PFD0 / PLL2 PFD2 if is's used by periph_clk.
-	 */
-	if (is_imx6q || is_imx6d) {
-		val_480 = BM_ANADIG_PFD_480_PFD3_CLKGATE |
-			   BM_ANADIG_PFD_480_PFD2_CLKGATE |
-			   BM_ANADIG_PFD_480_PFD1_CLKGATE |
-			   BM_ANADIG_PFD_480_PFD0_CLKGATE;
-
-		val_528 = BM_ANADIG_PFD_528_PFD3_CLKGATE |
-			   BM_ANADIG_PFD_528_PFD1_CLKGATE;
-
-		reg = readl(MXC_CCM_CBCMR);
-		periph_sel_1 = (reg & MXC_CCM_CBCMR_PRE_PERIPH_CLK_SEL_MASK)
-			>> MXC_CCM_CBCMR_PRE_PERIPH_CLK_SEL_OFFSET;
-
-		periph_sel_2 = (reg & MXC_CCM_CBCMR_PRE_PERIPH2_CLK_SEL_MASK)
-			>> MXC_CCM_CBCMR_PRE_PERIPH2_CLK_SEL_OFFSET;
-
-		if ((periph_sel_1 != 0x2) && (periph_sel_2 != 0x2))
-			val_528 |= BM_ANADIG_PFD_528_PFD0_CLKGATE;
-
-		if ((periph_sel_1 != 0x1) && (periph_sel_2 != 0x1)
-		    && (periph_sel_1 != 0x3) && (periph_sel_2 != 0x3))
-			val_528 |= BM_ANADIG_PFD_528_PFD2_CLKGATE;
-
-		writel(val_480, MX6_ANATOP_BASE_ADDR + HW_ANADIG_PFD_480_SET);
-		writel(val_528, MX6_ANATOP_BASE_ADDR + HW_ANADIG_PFD_528_SET);
-
-		writel(val_480, MX6_ANATOP_BASE_ADDR + HW_ANADIG_PFD_480_CLR);
-		writel(val_528, MX6_ANATOP_BASE_ADDR + HW_ANADIG_PFD_528_CLR);
-	}
+	imx6_configure_aips(IOMEM(MX6_AIPS1_ON_BASE_ADDR));
+	imx6_configure_aips(IOMEM(MX6_AIPS2_ON_BASE_ADDR));
+	if (is_imx6ull || is_imx6sx)
+		imx6_configure_aips(IOMEM(MX6_AIPS3_ON_BASE_ADDR));
 }
 
 static bool imx6_has_ipu(void)

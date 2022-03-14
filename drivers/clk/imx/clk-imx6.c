@@ -91,6 +91,13 @@ static const char *periph_pre_sels[] = {
 static const char *periph_clk2_sels[] = {
 	"pll3_usb_otg",
 	"osc",
+	"osc",
+	"dummy",
+};
+
+static const char *periph2_clk2_sels[] = {
+	"pll3_usb_otg",
+	"pll2_bus",
 };
 
 static const char *periph_sels[] = {
@@ -106,6 +113,7 @@ static const char *periph2_sels[] = {
 static const char *axi_sels[] = {
 	"periph",
 	"pll2_pfd2_396m",
+	"periph",
 	"pll3_pfd1_540m",
 };
 
@@ -131,6 +139,13 @@ static const char *enfc_sels_plus[] = {
 };
 
 static const char *eim_sels[] = {
+	"pll2_pfd2_396m",
+	"pll3_usb_otg",
+	"axi",
+	"pll2_pfd0_352m",
+};
+
+static const char *eim_slow_sels[] = {
 	"axi",
 	"pll3_usb_otg",
 	"pll2_pfd2_396m",
@@ -151,8 +166,8 @@ static const char *cko1_sels[] = {
 	"pll3_usb_otg",
 	"pll2_bus",
 	"pll1_sys",
-	"pll5_video",
-	"dummy",
+	"pll5_video_div",
+	"video_27m",
 	"axi",
 	"enfc",
 	"ipu1_di0",
@@ -163,7 +178,7 @@ static const char *cko1_sels[] = {
 	"ipg",
 	"ipg_per",
 	"ckil",
-	"pll4_audio",
+	"pll4_audio_div",
 };
 
 static const char *cko2_sels[] = {
@@ -573,10 +588,6 @@ static void imx6_add_video_clks(void __iomem *anab, void __iomem *cb, struct dev
 	clks[IMX6QDL_CLK_IPU1_SEL]         = imx_clk_mux("ipu1_sel",         cb + 0x3c, 9,  2, ipu_sels,          ARRAY_SIZE(ipu_sels));
 	clks[IMX6QDL_CLK_IPU2_SEL]         = imx_clk_mux("ipu2_sel",         cb + 0x3c, 14, 2, ipu_sels,          ARRAY_SIZE(ipu_sels));
 
-	disable_anatop_clocks(anab);
-
-	imx6q_mmdc_ch1_mask_handshake(cb);
-
 	if (cpu_mx6_has_err009219()) {
 		/*
 		 * The LDB_DI0/1_SEL muxes should be read-only due to a hardware
@@ -612,6 +623,8 @@ static void imx6_add_video_clks(void __iomem *anab, void __iomem *cb, struct dev
 	clks[IMX6QDL_CLK_IPU2_DI0_PRE]     = imx_clk_divider("ipu2_di0_pre",     "ipu2_di0_pre_sel",  cb + 0x38, 3,  3);
 	clks[IMX6QDL_CLK_IPU2_DI1_PRE]     = imx_clk_divider("ipu2_di1_pre",     "ipu2_di1_pre_sel",  cb + 0x38, 12, 3);
 
+	clks[IMX6QDL_CLK_HDMI_IAHB]    = imx_clk_gate2("hdmi_iahb",     "ahb",               cb + 0x70, 0);
+	clks[IMX6QDL_CLK_HDMI_ISFR]    = imx_clk_gate2("hdmi_isfr",     "mipi_core_cfg",     cb + 0x70, 4);
 	clks[IMX6QDL_CLK_IPU1]         = imx_clk_gate2("ipu1",          "ipu1_podf",         cb + 0x74, 0);
 	clks[IMX6QDL_CLK_IPU1_DI0]     = imx_clk_gate2("ipu1_di0",      "ipu1_di0_sel",      cb + 0x74, 2);
 	clks[IMX6QDL_CLK_IPU1_DI1]     = imx_clk_gate2("ipu1_di1",      "ipu1_di1_sel",      cb + 0x74, 4);
@@ -620,6 +633,8 @@ static void imx6_add_video_clks(void __iomem *anab, void __iomem *cb, struct dev
 	clks[IMX6QDL_CLK_LDB_DI0]      = imx_clk_gate2("ldb_di0",       "ldb_di0_podf",      cb + 0x74, 12);
 	clks[IMX6QDL_CLK_LDB_DI1]      = imx_clk_gate2("ldb_di1",       "ldb_di1_podf",      cb + 0x74, 14);
 	clks[IMX6QDL_CLK_IPU2_DI1]     = imx_clk_gate2("ipu2_di1",      "ipu2_di1_sel",      cb + 0x74, 10);
+	clks[IMX6QDL_CLK_MIPI_CORE_CFG] = imx_clk_gate2("mipi_core_cfg", "video_27m", cb + 0x74, 16);
+	clks[IMX6QDL_CLK_VIDEO_27M]    = imx_clk_fixed_factor("video_27m", "pll3_pfd1_540m", 1, 20);
 
 	clk_set_parent(clks[IMX6QDL_CLK_IPU1_DI0_SEL], clks[IMX6QDL_CLK_IPU1_DI0_PRE]);
 	clk_set_parent(clks[IMX6QDL_CLK_IPU1_DI1_SEL], clks[IMX6QDL_CLK_IPU1_DI1_PRE]);
@@ -695,7 +710,7 @@ static int imx6_ccm_probe(struct device_d *dev)
 	clks[IMX6QDL_CLK_PERIPH_PRE]       = imx_clk_mux("periph_pre",       base + 0x18, 18, 2, periph_pre_sels,   ARRAY_SIZE(periph_pre_sels));
 	clks[IMX6QDL_CLK_PERIPH2_PRE]      = imx_clk_mux("periph2_pre",      base + 0x18, 21, 2, periph_pre_sels,   ARRAY_SIZE(periph_pre_sels));
 	clks[IMX6QDL_CLK_PERIPH_CLK2_SEL]  = imx_clk_mux("periph_clk2_sel",  base + 0x18, 12, 1, periph_clk2_sels,  ARRAY_SIZE(periph_clk2_sels));
-	clks[IMX6QDL_CLK_PERIPH2_CLK2_SEL] = imx_clk_mux("periph2_clk2_sel", base + 0x18, 20, 1, periph_clk2_sels,  ARRAY_SIZE(periph_clk2_sels));
+	clks[IMX6QDL_CLK_PERIPH2_CLK2_SEL] = imx_clk_mux("periph2_clk2_sel", base + 0x18, 20, 1, periph2_clk2_sels,  ARRAY_SIZE(periph2_clk2_sels));
 	clks[IMX6QDL_CLK_AXI_SEL]          = imx_clk_mux("axi_sel",          base + 0x14, 6,  2, axi_sels,          ARRAY_SIZE(axi_sels));
 	clks[IMX6QDL_CLK_USDHC1_SEL]       = imx_clk_mux("usdhc1_sel",       base + 0x1c, 16, 1, usdhc_sels,        ARRAY_SIZE(usdhc_sels));
 	clks[IMX6QDL_CLK_USDHC2_SEL]       = imx_clk_mux("usdhc2_sel",       base + 0x1c, 17, 1, usdhc_sels,        ARRAY_SIZE(usdhc_sels));
@@ -706,7 +721,7 @@ static int imx6_ccm_probe(struct device_d *dev)
 	else
 		clks[IMX6QDL_CLK_ENFC_SEL]         = imx_clk_mux("enfc_sel",         base + 0x2c, 16, 2, enfc_sels,         ARRAY_SIZE(enfc_sels));
 	clks[IMX6QDL_CLK_EIM_SEL]          = imx_clk_mux("eim_sel",          base + 0x1c, 27, 2, eim_sels,          ARRAY_SIZE(eim_sels));
-	clks[IMX6QDL_CLK_EIM_SLOW_SEL]     = imx_clk_mux("eim_slow_sel",     base + 0x1c, 29, 2, eim_sels,          ARRAY_SIZE(eim_sels));
+	clks[IMX6QDL_CLK_EIM_SLOW_SEL]     = imx_clk_mux("eim_slow_sel",     base + 0x1c, 29, 2, eim_sels,          ARRAY_SIZE(eim_slow_sels));
 	clks[IMX6QDL_CLK_VDO_AXI_SEL]      = imx_clk_mux("vdo_axi_sel",      base + 0x18, 11, 1, vdo_axi_sels,      ARRAY_SIZE(vdo_axi_sels));
 	clks[IMX6QDL_CLK_CKO1_SEL]         = imx_clk_mux("cko1_sel",         base + 0x60, 0,  4, cko1_sels,         ARRAY_SIZE(cko1_sels));
 	clks[IMX6QDL_CLK_CKO2_SEL]         = imx_clk_mux("cko2_sel",         base + 0x60, 16, 5, cko2_sels,         ARRAY_SIZE(cko2_sels));
@@ -787,6 +802,10 @@ static int imx6_ccm_probe(struct device_d *dev)
 	clks[IMX6QDL_CLK_CKO2]         = imx_clk_gate("cko2",           "cko2_podf",         base + 0x60, 24);
 
 	clkdev_add_physbase(clks[IMX6QDL_CLK_IPG], MX6_OCOTP_BASE_ADDR, NULL);
+
+	disable_anatop_clocks(anatop_base);
+
+	imx6q_mmdc_ch1_mask_handshake(ccm_base);
 
 	if (IS_ENABLED(CONFIG_DRIVER_VIDEO_IMX_IPUV3))
 		imx6_add_video_clks(anatop_base, ccm_base, dev->device_node);

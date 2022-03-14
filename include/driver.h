@@ -595,4 +595,12 @@ const void *device_get_match_data(struct device_d *dev);
 
 int device_match_of_modalias(struct device_d *dev, struct driver_d *drv);
 
+struct device_d *device_find_child(struct device_d *parent, void *data,
+				 int (*match)(struct device_d *dev, void *data));
+
+static inline struct device_node *dev_of_node(struct device_d *dev)
+{
+	return IS_ENABLED(CONFIG_OFDEVICE) ? dev->device_node : NULL;
+}
+
 #endif /* DRIVER_H */

@@ -39,16 +39,21 @@ config RESET_IMX7
 	help
 	  This enables the reset controller driver for i.MX7 SoCs.
 
-config RESET_STM32
-	bool "STM32 Reset Driver"
-	depends on ARCH_STM32MP || COMPILE_TEST
-	help
-	  This enables the reset controller driver for STM32MP1.
-
 config RESET_STARFIVE
 	bool "StarFive Controller Driver" if COMPILE_TEST
 	default SOC_STARFIVE
 	help
 	  This enables the reset controller driver for the StarFive JH7100.
+
+config RESET_SCMI
+	tristate "Reset driver controlled via ARM SCMI interface"
+	depends on ARM_SCMI_PROTOCOL || COMPILE_TEST
+	default ARM_SCMI_PROTOCOL
+	help
+	  This driver provides support for reset signal/domains that are
+	  controlled by firmware that implements the SCMI interface.
+
+	  This driver uses SCMI Message Protocol to interact with the
+	  firmware controlling all the reset signals.
 
 endif

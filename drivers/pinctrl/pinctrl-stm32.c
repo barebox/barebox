@@ -303,7 +303,7 @@ static int stm32_gpiochip_add(struct stm32_gpio_bank *bank,
 	enum { PINCTRL_PHANDLE, GPIOCTRL_OFFSET, PINCTRL_OFFSET, PINCOUNT, GPIO_RANGE_NCELLS };
 	const __be32 *gpio_ranges;
 	u32 ngpios;
-	int id, ret, size;
+	int ret, size;
 
 	dev = of_platform_device_create(np, parent);
 	if (!dev)
@@ -347,17 +347,7 @@ static int stm32_gpiochip_add(struct stm32_gpio_bank *bank,
 
 	bank->base = IOMEM(iores->start);
 
-	if (dev->id >= 0) {
-		id = dev->id;
-	} else {
-		id = of_alias_get_id(np, "gpio");
-		if (id < 0) {
-			dev_err(dev, "Failed to get GPIO alias\n");
-			return id;
-		}
-	}
-
-	bank->chip.base = id * STM32_GPIO_PINS_PER_BANK;
+	bank->chip.base = be32_to_cpu(gpio_ranges[PINCTRL_OFFSET]);
 	bank->chip.ops  = &stm32_gpio_ops;
 	bank->chip.dev  = dev;
 	bank->clk = clk_get(dev, NULL);

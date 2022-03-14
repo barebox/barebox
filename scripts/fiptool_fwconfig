@@ -1,0 +1,39 @@
+#!/bin/sh
+
+set -e
+
+# adjust bl33 load address in existing FIP
+
+FDTGET=${FDTGET:-fdtget}
+FDTPUT=${FDTPUT:-fdtput}
+
+if [ "$1" != "-l" ] || [ "$#" -ne 3 ]; then
+	echo "USAGE: $0 -l NT_LOAD_ADDR FIP" 1>&2
+	exit 1
+fi
+
+NEW_LOAD_ADDR=$(($2))
+FIP=$3
+FWCONFIG=".$FIP.fw-config.bin"
+
+fiptool unpack --fw-config "$FWCONFIG" --force "$FIP"
+
+MAX_SIZE="$($FDTGET -t u $FWCONFIG /dtb-registry/nt_fw max-size)"
+set $($FDTGET -t u $FWCONFIG /dtb-registry/nt_fw load-address)
+ENTRY=$1
+OLD_LOAD_ADDR=$2
+
+if [ $NEW_LOAD_ADDR -lt $OLD_LOAD_ADDR ] ||
+   [ $NEW_LOAD_ADDR -ge $((OLD_LOAD_ADDR + MAX_SIZE)) ]; then
+	printf "New load address 0x%08x out of bounds [0x%08x-0x%08x)\n" \
+		$NEW_LOAD_ADDR $OLD_LOAD_ADDR $((OLD_LOAD_ADDR + MAX_SIZE)) 1>&2
+	exit 1
+fi
+
+$FDTPUT -t u $FWCONFIG /dtb-registry/nt_fw load-address $ENTRY $NEW_LOAD_ADDR
+$FDTPUT -t u $FWCONFIG /dtb-registry/nt_fw max-size \
+	$((MAX_SIZE + OLD_LOAD_ADDR - NEW_LOAD_ADDR))
+
+fiptool update $FIP --fw-config $FWCONFIG
+
+rm $FWCONFIG

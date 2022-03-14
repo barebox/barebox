@@ -41,6 +41,8 @@ static int stm32_serial_setbaudrate(struct console_device *cdev, int baudrate)
 	unsigned long clock_rate;
 
 	clock_rate = clk_get_rate(stm32->clk);
+	if (!clock_rate)
+		return -EINVAL;
 
 	int_div = DIV_ROUND_CLOSEST(clock_rate, baudrate);
 

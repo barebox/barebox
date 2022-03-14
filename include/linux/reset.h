@@ -8,6 +8,7 @@ struct reset_control;
 
 #ifdef CONFIG_RESET_CONTROLLER
 
+int reset_control_status(struct reset_control *rstc);
 int reset_control_reset(struct reset_control *rstc);
 int reset_control_assert(struct reset_control *rstc);
 int reset_control_deassert(struct reset_control *rstc);
@@ -24,6 +25,11 @@ int __must_check device_reset_us(struct device_d *dev, int us);
 int __must_check device_reset_all(struct device_d *dev);
 
 #else
+
+static inline int reset_control_status(struct reset_control *rstc)
+{
+	return 0;
+}
 
 static inline int reset_control_reset(struct reset_control *rstc)
 {

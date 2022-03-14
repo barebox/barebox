@@ -1,18 +1,6 @@
 
 / {
 	aliases {
-		gpio0 = &gpioa;
-		gpio1 = &gpiob;
-		gpio2 = &gpioc;
-		gpio3 = &gpiod;
-		gpio4 = &gpioe;
-		gpio5 = &gpiof;
-		gpio6 = &gpiog;
-		gpio7 = &gpioh;
-		gpio8 = &gpioi;
-		gpio9 = &gpioj;
-		gpio10 = &gpiok;
-		gpio25 = &gpioz;
 		mmc0 = &sdmmc1;
 		mmc1 = &sdmmc2;
 		mmc2 = &sdmmc3;
@@ -61,10 +49,6 @@
 
 &bsec {
 	barebox,provide-mac-address = <&ethernet0 0x39>;
-};
-
-&vrefbuf {
-	regulator-name = "vref";
 };
 
 &usbphyc {

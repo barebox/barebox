@@ -166,6 +166,8 @@ int of_regulator_register(struct regulator_dev *rd, struct device_node *node)
 	rd->always_on = of_property_read_bool(node, "regulator-always-on");
 
 	name = of_get_property(node, "regulator-name", NULL);
+	if (!name)
+		name = node->name;
 
 	ri = __regulator_register(rd, name);
 	if (IS_ERR(ri))

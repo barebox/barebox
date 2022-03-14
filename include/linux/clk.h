@@ -287,14 +287,14 @@ struct clk_hw {
 	const struct clk_init_data *init;
 };
 
-static inline struct clk *clk_hw_to_clk(struct clk_hw *hw)
+static inline struct clk *clk_hw_to_clk(const struct clk_hw *hw)
 {
-	return IS_ERR(hw) ? ERR_CAST(hw) : &hw->clk;
+	return IS_ERR(hw) ? ERR_CAST(hw) : (struct clk *)&hw->clk;
 }
 
-static inline struct clk_hw *clk_to_clk_hw(struct clk *clk)
+static inline struct clk_hw *clk_to_clk_hw(const struct clk *clk)
 {
-	return IS_ERR(clk) ? ERR_CAST(clk) : container_of(clk, struct clk_hw, clk);
+	return IS_ERR(clk) ? ERR_CAST(clk) : (struct clk_hw *)container_of(clk, struct clk_hw, clk);
 }
 
 struct clk_div_table {
@@ -634,6 +634,11 @@ struct clk_onecell_data {
 	unsigned int clk_num;
 };
 
+struct clk_hw_onecell_data {
+	unsigned int num;
+	struct clk_hw *hws[];
+};
+
 #if defined(CONFIG_COMMON_CLK_OF_PROVIDER)
 
 #define CLK_OF_DECLARE(name, compat, fn)				\
@@ -647,6 +652,8 @@ typedef int (*of_clk_init_cb_t)(struct device_node *);
 
 struct clk *of_clk_src_onecell_get(struct of_phandle_args *clkspec, void *data);
 struct clk *of_clk_src_simple_get(struct of_phandle_args *clkspec, void *data);
+struct clk_hw *of_clk_hw_onecell_get(struct of_phandle_args *clkspec, void *data);
+struct clk_hw *of_clk_hw_simple_get(struct of_phandle_args *clkspec, void *data);
 
 struct clk *of_clk_get(struct device_node *np, int index);
 struct clk *of_clk_get_by_name(struct device_node *np, const char *name);
@@ -682,8 +689,18 @@ static inline struct clk *of_clk_src_onecell_get(struct of_phandle_args *clkspec
 {
 	return ERR_PTR(-ENOENT);
 }
+static inline struct clk_hw *of_clk_hw_onecell_get(struct of_phandle_args *clkspec,
+						 void *data)
+{
+	return ERR_PTR(-ENOENT);
+}
 static inline struct clk *
 of_clk_src_simple_get(struct of_phandle_args *clkspec, void *data)
+{
+	return ERR_PTR(-ENOENT);
+}
+static inline struct clk *
+of_clk_hw_simple_get(struct of_phandle_args *clkspec, void *data)
 {
 	return ERR_PTR(-ENOENT);
 }

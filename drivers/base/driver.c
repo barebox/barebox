@@ -619,3 +619,31 @@ int dev_err_probe(const struct device_d *dev, int err, const char *fmt, ...)
 	return err;
 }
 EXPORT_SYMBOL_GPL(dev_err_probe);
+
+/*
+ * device_find_child - device iterator for locating a particular device.
+ * @parent: parent struct device_d
+ * @match: Callback function to check device
+ * @data: Data to pass to match function
+ *
+ * The callback should return 0 if the device doesn't match and non-zero
+ * if it does.  If the callback returns non-zero and a reference to the
+ * current device can be obtained, this function will return to the caller
+ * and not iterate over any more devices.
+ */
+struct device_d *device_find_child(struct device_d *parent, void *data,
+				 int (*match)(struct device_d *dev, void *data))
+{
+	struct device_d *child;
+
+	if (!parent)
+		return NULL;
+
+	list_for_each_entry(child, &parent->children, sibling) {
+		if (match(child, data))
+			return child;
+	}
+
+	return NULL;
+}
+EXPORT_SYMBOL_GPL(device_find_child);

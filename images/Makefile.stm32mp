@@ -6,38 +6,40 @@
 # %.stm32 - convert into STM32MP image
 # --------------------------------------
 
-$(obj)/%.stm32: $(obj)/% FORCE
+.SECONDEXPANSION:
+$(obj)/%.stm32: $(obj)/$$(FILE_$$(@F)) FORCE
+	$(Q)if [ -z $(FILE_$(@F)) ]; then echo "FILE_$(@F) empty!"; false; fi
+	@(cd $(obj) && ln -fs $(notdir $@) $(basename $(notdir $@)).img)
 	$(call if_changed,stm32_image)
 
-STM32MP1_OPTS = -a 0xc0100000 -e 0xc0100000 -v1
+define build_stm32mp_image =
+$(eval
+ifeq ($($(strip $(1))), y)
+	pblb-y += $(strip $(2))
+	FILE_barebox-$(strip $(3)).stm32  = $(strip $(2)).pblb
+	OPTS_barebox-$(strip $(3)).stm32 = -a 0xc0100000 -e 0xc0100000 -v1
+	image-y += barebox-$(strip $(3)).stm32
+endif
+)
+endef
 
 # --------------------------------------
 
-pblb-$(CONFIG_MACH_STM32MP15XX_DKX) += start_stm32mp15xx_dkx
-FILE_barebox-stm32mp15xx-dkx.img = start_stm32mp15xx_dkx.pblb.stm32
-OPTS_start_stm32mp15xx_dkx.pblb.stm32 = $(STM32MP1_OPTS)
-image-$(CONFIG_MACH_STM32MP15XX_DKX) += barebox-stm32mp15xx-dkx.img
+# For use as --nt-fw (BL33) in FIP images
+pblb-$(CONFIG_ARCH_STM32MP) += start_stm32mp_bl33
+FILE_barebox-stm32mp-generic-bl33.img  = start_stm32mp_bl33.pblb
+image-$(CONFIG_ARCH_STM32MP) += barebox-stm32mp-generic-bl33.img
 
-pblb-$(CONFIG_MACH_LXA_MC1) += start_stm32mp157c_lxa_mc1
-FILE_barebox-stm32mp157c-lxa-mc1.img = start_stm32mp157c_lxa_mc1.pblb.stm32
-OPTS_start_stm32mp157c_lxa_mc1.pblb.stm32 = $(STM32MP1_OPTS)
-image-$(CONFIG_MACH_LXA_MC1) += barebox-stm32mp157c-lxa-mc1.img
+$(call build_stm32mp_image, CONFIG_MACH_STM32MP13XX_DK, start_stm32mp13xx_dk, stm32mp13xx-dk)
+$(call build_stm32mp_image, CONFIG_MACH_STM32MP15XX_DKX, start_stm32mp15xx_dkx, stm32mp15xx-dkx)
+$(call build_stm32mp_image, CONFIG_MACH_STM32MP15X_EV1, start_stm32mp15x_ev1, stm32mp15x-ev1)
 
-pblb-$(CONFIG_MACH_PROTONIC_STM32MP1) += start_prtt1a start_prtt1s start_prtt1c
-FILE_barebox-prtt1a.img = start_prtt1a.pblb.stm32
-FILE_barebox-prtt1c.img = start_prtt1c.pblb.stm32
-FILE_barebox-prtt1s.img = start_prtt1s.pblb.stm32
-OPTS_start_prtt1a.pblb.stm32 = $(STM32MP1_OPTS)
-OPTS_start_prtt1c.pblb.stm32 = $(STM32MP1_OPTS)
-OPTS_start_prtt1s.pblb.stm32 = $(STM32MP1_OPTS)
-image-$(CONFIG_MACH_PROTONIC_STM32MP1) += barebox-prtt1a.img barebox-prtt1s.img barebox-prtt1c.img
+$(call build_stm32mp_image, CONFIG_MACH_LXA_MC1, start_stm32mp157c_lxa_mc1, stm32mp157c-lxa-mc1)
 
-pblb-$(CONFIG_MACH_SEEED_ODYSSEY) += start_stm32mp157c_seeed_odyssey
-FILE_barebox-stm32mp157c-seeed-odyssey.img = start_stm32mp157c_seeed_odyssey.pblb.stm32
-OPTS_start_stm32mp157c_seeed_odyssey.pblb.stm32 = $(STM32MP1_OPTS)
-image-$(CONFIG_MACH_SEEED_ODYSSEY) += barebox-stm32mp157c-seeed-odyssey.img
+$(call build_stm32mp_image, CONFIG_MACH_PROTONIC_STM32MP1, start_prtt1a, prtt1a)
+$(call build_stm32mp_image, CONFIG_MACH_PROTONIC_STM32MP1, start_prtt1s, prtt1s)
+$(call build_stm32mp_image, CONFIG_MACH_PROTONIC_STM32MP1, start_prtt1c, prtt1c)
 
-pblb-$(CONFIG_MACH_STM32MP15X_EV1) += start_stm32mp15x_ev1
-FILE_barebox-stm32mp15x-ev1.img = start_stm32mp15x_ev1.pblb.stm32
-OPTS_start_stm32mp15x_ev1.pblb.stm32 = $(STM32MP1_OPTS)
-image-$(CONFIG_MACH_STM32MP15X_EV1) += barebox-stm32mp15x-ev1.img
+$(call build_stm32mp_image, CONFIG_MACH_SEEED_ODYSSEY, start_stm32mp157c_seeed_odyssey, stm32mp157c-seeed-odyssey)
+
+$(call build_stm32mp_image, CONFIG_MACH_PHYTEC_PHYCORE_STM32MP1, start_phycore_stm32mp1_3, phycore-stm32mp1)

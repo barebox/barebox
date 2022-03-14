@@ -9,6 +9,7 @@
 #include <mach/ddr_regs.h>
 #include <mach/entry.h>
 #include <mach/stm32.h>
+#include <mach/revision.h>
 #include <asm/barebox-arm.h>
 #include <asm/memory.h>
 #include <pbl.h>
@@ -24,12 +25,12 @@
 #define ADDRMAP2_COL_B5		GENMASK(27, 24)
 
 #define ADDRMAP3_COL_B6		GENMASK( 3,  0)
-#define ADDRMAP3_COL_B7		GENMASK(12,  8)
-#define ADDRMAP3_COL_B8		GENMASK(20, 16)
-#define ADDRMAP3_COL_B9		GENMASK(28, 24)
+#define ADDRMAP3_COL_B7		GENMASK(11,  8)
+#define ADDRMAP3_COL_B8		GENMASK(19, 16)
+#define ADDRMAP3_COL_B9		GENMASK(27, 24)
 
-#define ADDRMAP4_COL_B10	GENMASK( 4,  0)
-#define ADDRMAP4_COL_B11	GENMASK(12,  8)
+#define ADDRMAP4_COL_B10	GENMASK( 3,  0)
+#define ADDRMAP4_COL_B11	GENMASK(11,  8)
 
 #define ADDRMAP5_ROW_B0		GENMASK( 3,  0)
 #define ADDRMAP5_ROW_B1		GENMASK(11,  8)
@@ -62,7 +63,8 @@ enum ddrctrl_buswidth {
 };
 
 static unsigned long ddrctrl_addrmap_ramsize(struct stm32mp1_ddrctl __iomem *d,
-					     enum ddrctrl_buswidth buswidth)
+					     enum ddrctrl_buswidth buswidth,
+					     unsigned nb_bytes)
 {
 	unsigned banks = 3, cols = 12, rows = 16;
 	u32 reg;
@@ -99,21 +101,27 @@ static unsigned long ddrctrl_addrmap_ramsize(struct stm32mp1_ddrctl __iomem *d,
 	if (LINE_UNUSED(reg, ADDRMAP6_ROW_B13)) rows--;
 	if (LINE_UNUSED(reg, ADDRMAP6_ROW_B12)) rows--;
 
-	return memory_sdram_size(cols, rows, BIT(banks), 4 / BIT(buswidth));
+	return memory_sdram_size(cols, rows, BIT(banks),
+				 DIV_ROUND_UP(nb_bytes, BIT(buswidth)));
 }
 
-static inline unsigned ddrctrl_ramsize(void __iomem *base)
+static inline unsigned ddrctrl_ramsize(void __iomem *base, unsigned nb_bytes)
 {
 	struct stm32mp1_ddrctl __iomem *ddrctl = base;
 	unsigned buswidth = readl(&ddrctl->mstr) & DDRCTRL_MSTR_DATA_BUS_WIDTH_MASK;
 	buswidth >>= DDRCTRL_MSTR_DATA_BUS_WIDTH_SHIFT;
 
-	return ddrctrl_addrmap_ramsize(ddrctl, buswidth);
+	return ddrctrl_addrmap_ramsize(ddrctl, buswidth, nb_bytes);
 }
 
 static inline unsigned stm32mp1_ddrctrl_ramsize(void)
 {
-	return ddrctrl_ramsize(IOMEM(STM32_DDRCTL_BASE));
+	u32 nb_bytes = 4;
+
+	if (cpu_stm32_is_stm32mp13())
+		nb_bytes /= 2;
+
+	return ddrctrl_ramsize(IOMEM(STM32_DDRCTL_BASE), nb_bytes);
 }
 
 void __noreturn stm32mp1_barebox_entry(void *boarddata)
@@ -126,17 +134,22 @@ static int stm32mp1_ddr_probe(struct device_d *dev)
 {
 	struct resource *iores;
 	void __iomem *base;
+	unsigned long nb_bytes;
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
 	base = IOMEM(iores->start);
 
-	return arm_add_mem_device("ram0", STM32_DDR_BASE, ddrctrl_ramsize(base));
+	nb_bytes = (unsigned long)device_get_match_data(dev);
+
+	return arm_add_mem_device("ram0", STM32_DDR_BASE,
+				  ddrctrl_ramsize(base, nb_bytes));
 }
 
 static __maybe_unused struct of_device_id stm32mp1_ddr_dt_ids[] = {
-	{ .compatible = "st,stm32mp1-ddr" },
+	{ .compatible = "st,stm32mp1-ddr", .data = (void *)4 },
+	{ .compatible = "st,stm32mp13-ddr", .data = (void *)2 },
 	{ /* sentinel */ }
 };
 

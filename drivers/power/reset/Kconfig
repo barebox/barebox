@@ -62,3 +62,10 @@ config POWER_RESET_HTIF_POWEROFF
 	help
 	  Adds poweroff support via the syscall device on systems
 	  supporting the UC Berkely Host/Target Interface (HTIF).
+
+config RESET_STM32
+	bool "STM32 restart Driver"
+	depends on ARCH_STM32MP || COMPILE_TEST
+	help
+	  This enables support for restarting and reset source
+	  computation on the STM32MP1.

@@ -99,7 +99,7 @@ static int zii_rdu1_load_config(void)
 			file = "shadow copy in RAVE SP EEPROM";
 
 			root = of_get_root_node();
-			np   = of_find_node_by_name(root, "eeprom@a4");
+			np   = of_find_node_by_name_address(root, "eeprom@a4");
 			if (!np)
 				return -ENODEV;
 

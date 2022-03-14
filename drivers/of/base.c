@@ -23,6 +23,21 @@
 
 static struct device_node *root_node;
 
+bool of_node_name_eq(const struct device_node *np, const char *name)
+{
+	const char *node_name;
+	size_t len;
+
+	if (!np)
+		return false;
+
+	node_name = kbasename(np->full_name);
+		len = strchrnul(node_name, '@') - node_name;
+
+	return (strlen(name) == len) && (strncmp(node_name, name, len) == 0);
+}
+EXPORT_SYMBOL(of_node_name_eq);
+
 /*
  * Iterate over all nodes of a tree. As a devicetree does not
  * have a dedicated list head, the start node (usually the root
@@ -538,6 +553,29 @@ int of_device_is_compatible(const struct device_node *device,
 EXPORT_SYMBOL(of_device_is_compatible);
 
 /**
+ *	of_find_node_by_name_address - Find a node by its full name
+ *	@from:	The node to start searching from or NULL, the node
+ *		you pass will not be searched, only the next one
+ *		will; typically, you pass what the previous call
+ *		returned.
+ *	@name:	The name string to match against
+ *
+ *	Returns a pointer to the node found or NULL.
+ */
+struct device_node *of_find_node_by_name_address(struct device_node *from,
+	const char *name)
+{
+	struct device_node *np;
+
+	of_tree_for_each_node_from(np, from)
+		if (np->name && !of_node_cmp(np->name, name))
+			return np;
+
+	return NULL;
+}
+EXPORT_SYMBOL(of_find_node_by_name_address);
+
+/**
  *	of_find_node_by_name - Find a node by its "name" property
  *	@from:	The node to start searching from or NULL, the node
  *		you pass will not be searched, only the next one
@@ -553,7 +591,7 @@ struct device_node *of_find_node_by_name(struct device_node *from,
 	struct device_node *np;
 
 	of_tree_for_each_node_from(np, from)
-		if (np->name && !of_node_cmp(np->name, name))
+		if (np->name && of_node_name_eq(np, name))
 			return np;
 
 	return NULL;

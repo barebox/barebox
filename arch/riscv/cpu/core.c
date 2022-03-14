@@ -43,7 +43,7 @@ static int riscv_fixup_cpus(struct device_node *root, void *context)
 {
 	struct device_node *cpus_node, *np, *tmp;
 
-	cpus_node = of_find_node_by_name(root, "cpus");
+	cpus_node = of_find_node_by_name_address(root, "cpus");
 	if (!cpus_node)
 		return 0;
 

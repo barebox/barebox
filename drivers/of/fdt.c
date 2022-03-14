@@ -486,7 +486,7 @@ void *of_flatten_dtb(struct device_node *node)
 	if (ret)
 		goto out_free;
 
-	memreserve = of_find_node_by_name(node, "memreserve");
+	memreserve = of_find_node_by_name_address(node, "memreserve");
 	if (memreserve) {
 		const void *entries = of_get_property(memreserve, "reg", &len);
 

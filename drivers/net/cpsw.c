@@ -1224,7 +1224,7 @@ static void cpsw_add_slave(struct cpsw_slave *slave, struct device_node *child, 
 	uint32_t phy_id[2] = {-1, -1};
 	int ret;
 
-	if (!of_find_node_by_name(child, "fixed-link")) {
+	if (!of_find_node_by_name_address(child, "fixed-link")) {
 		ret = of_property_read_u32_array(child, "phy_id", phy_id, 2);
 		if (!ret)
 			dev_warn(slave->cpsw->dev, "phy_id is deprecated, use phy-handle\n");

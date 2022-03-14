@@ -558,7 +558,7 @@ int mv88e6xxx_port_probe(struct mv88e6xxx_chip *chip)
 	struct device_node *port_nodes[DSA_MAX_PORTS] = { NULL };
 	int err, i;
 
-	switch_node = of_find_node_by_name(np, "ports");
+	switch_node = of_find_node_by_name_address(np, "ports");
 	if (!switch_node)
 		return -EINVAL;
 

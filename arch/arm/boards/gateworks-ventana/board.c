@@ -19,9 +19,9 @@ static int gw54xx_wdog_of_fixup(struct device_node *root, void *context)
 	struct device_node *np;
 
 	/* switch to the watchdog with internal reset capabilities */
-	np = of_find_node_by_name(root, "wdog@020c0000");
+	np = of_find_node_by_name_address(root, "wdog@020c0000");
 	of_device_disable(np);
-	np = of_find_node_by_name(root, "wdog@020bc000");
+	np = of_find_node_by_name_address(root, "wdog@020bc000");
 	of_device_enable(np);
 
 	return 0;

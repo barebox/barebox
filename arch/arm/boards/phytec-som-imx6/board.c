@@ -107,7 +107,7 @@ static int phycore_da9062_setup_buck_mode(void)
 	unsigned char value;
 	int ret;
 
-	pmic_np = of_find_node_by_name(NULL, "pmic@58");
+	pmic_np = of_find_node_by_name_address(NULL, "pmic@58");
 	if (!pmic_np)
 		return -ENODEV;
 

@@ -326,7 +326,7 @@ static int imx6_fixup_cpus(struct device_node *root, void *context)
 	unsigned long scu_phys_base;
 	unsigned int max_core_index;
 
-	cpus_node = of_find_node_by_name(root, "cpus");
+	cpus_node = of_find_node_by_name_address(root, "cpus");
 	if (!cpus_node)
 		return 0;
 

@@ -202,7 +202,7 @@ struct device_d *of_device_enable_and_register_by_name(const char *name)
 {
 	struct device_node *node;
 
-	node = of_find_node_by_name(NULL, name);
+	node = of_find_node_by_name_address(NULL, name);
 	if (!node)
 		node = of_find_node_by_path(name);
 
@@ -457,6 +457,9 @@ int of_device_ensure_probed_by_alias(const char *alias)
 {
 	struct device_node *dev_node;
 
+	if (!deep_probe_is_supported())
+		return 0;
+
 	dev_node = of_find_node_by_alias(NULL, alias);
 	if (!dev_node)
 		return -EINVAL;
@@ -481,6 +484,9 @@ int of_devices_ensure_probed_by_dev_id(const struct of_device_id *ids)
 {
 	struct device_node *np;
 	int err, ret = 0;
+
+	if (!deep_probe_is_supported())
+		return 0;
 
 	for_each_matching_node(np, ids) {
 		if (!of_device_is_available(np))
@@ -510,18 +516,38 @@ EXPORT_SYMBOL_GPL(of_devices_ensure_probed_by_dev_id);
 int of_devices_ensure_probed_by_property(const char *property_name)
 {
 	struct device_node *node;
+	int err, ret = 0;
+
+	if (!deep_probe_is_supported())
+		return 0;
 
 	for_each_node_with_property(node, property_name) {
-		int ret;
-
 		ret = of_device_ensure_probed(node);
-		if (ret)
-			return ret;
+		if (err)
+			ret = err;
 	}
 
 	return 0;
 }
 EXPORT_SYMBOL_GPL(of_devices_ensure_probed_by_property);
+
+int of_devices_ensure_probed_by_name(const char *name)
+{
+	struct device_node *node;
+	int err, ret = 0;
+
+	if (!deep_probe_is_supported())
+		return 0;
+
+	for_each_node_by_name(node, name) {
+		ret = of_device_ensure_probed(node);
+		if (err)
+			ret = err;
+	}
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(of_devices_ensure_probed_by_name);
 
 static int of_stdoutpath_init(void)
 {
@@ -539,3 +565,11 @@ static int of_stdoutpath_init(void)
 	return of_device_ensure_probed(np);
 }
 postconsole_initcall(of_stdoutpath_init);
+
+static int of_timer_init(void)
+{
+	of_devices_ensure_probed_by_name("timer");
+
+	return 0;
+}
+postcore_initcall(of_timer_init);

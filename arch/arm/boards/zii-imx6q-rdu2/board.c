@@ -199,19 +199,19 @@ static int rdu2_fixup_dsa(struct device_node *root, void *context)
 	if (!switch_np)
 		return -ENODEV;
 
-	np = of_find_node_by_name(switch_np, "port@2");
+	np = of_find_node_by_name_address(switch_np, "port@2");
 	if (!np)
 		return -ENODEV;
 
 	of_delete_node(np);
 
-	np = of_find_node_by_name(root, "i210@0");
+	np = of_find_node_by_name_address(root, "i210@0");
 	if (!np)
 		return -ENODEV;
 
 	i210_handle = of_node_create_phandle(np);
 
-	np = of_find_node_by_name(switch_np, "port@0");
+	np = of_find_node_by_name_address(switch_np, "port@0");
 	if (!np)
 		return -ENODEV;
 
@@ -265,7 +265,7 @@ static int rdu2_fixup_lvds(struct device_node *root,
 	/*
 	 * LVDS panels need the correct timings
 	 */
-	np = of_find_node_by_name(root, "panel");
+	np = of_find_node_by_name_address(root, "panel");
 	if (!np)
 		return -ENODEV;
 
@@ -280,7 +280,7 @@ static int rdu2_fixup_lvds(struct device_node *root,
 		 * Delete all mode entries, which aren't suited for the
 		 * current display
 		 */
-		np = of_find_node_by_name(np, "display-timings");
+		np = of_find_node_by_name_address(np, "display-timings");
 		if (!np)
 			return -ENODEV;
 
@@ -305,7 +305,7 @@ static int rdu2_fixup_lvds(struct device_node *root,
 	if (fixup->type == IT_DUAL_LVDS)
 		of_set_property(np, "fsl,dual-channel", NULL, 0, 1);
 
-	np = of_find_node_by_name(np, "lvds-channel@0");
+	np = of_find_node_by_name_address(np, "lvds-channel@0");
 	if (!np)
 		return -ENODEV;
 

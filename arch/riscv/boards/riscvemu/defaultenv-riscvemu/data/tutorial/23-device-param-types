@@ -1,0 +1,8 @@
+
+Many device parameters are simple strings, some have specific types
+and run actions on read/write or accept only specific values.
+`devinfo` will show you what type a variable has and writing an
+invalid value will give you an error:
+```
+global.tutorial.step=non-existent
+```

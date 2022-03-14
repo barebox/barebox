@@ -1,0 +1,12 @@
+
+The environment you see here is the built-in environment barebox was
+compiled with. It contains default values for non-volatile variables,
+(init) scripts and data. It's generated from directories on the host
+system specified during build and stored as an archive within
+barebox. This environment may also be compressed allowing shipping
+larger files and even binaries. For example, this barebox binary
+has the option CONFIG_DEFAULT_ENVIRONMENT_GENERIC_NEW_IKCONFIG=y,
+which ships a copy of the used barebox configuration. See for yourself:
+```
+cat /env/data/config
+```

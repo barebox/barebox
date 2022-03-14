@@ -1,0 +1,11 @@
+
+The state driver parses the device tree to learn the state layout
+and how it's (redundantly) placed. The information it learns are
+registered with the device as device parameters. Device Parameters
+make it easy to interact with the shell. For example, the MAC address
+of a network adapter is a device parameter. We already saw some other
+device parameters before. Those of the global and nv device:
+```
+devinfo global
+devinfo nv
+```

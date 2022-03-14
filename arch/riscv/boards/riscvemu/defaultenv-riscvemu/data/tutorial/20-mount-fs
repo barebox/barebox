@@ -1,0 +1,11 @@
+
+`/mnt/virtioblk0` is an interesting one. Block device partitions
+automatically get automount entries created. On first access,
+barebox will determine what file system is located in the partition
+and mount it. Thus you can just use `/mnt/virtioblk0/DOOM1.WAD` in
+your script and not incur the overhead of mounting unless it's accessed:
+```
+mount
+ll /mnt/virtioblk0/DOOM1.WAD
+mount
+```

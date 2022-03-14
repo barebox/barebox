@@ -1,0 +1,11 @@
+
+Let's modify the environment to add a new script (Remember
+`help` can show you the usage, e.g. `help mw`):
+```
+cd /env/bin
+echo -o putc '#!/bin/sh'
+echo -a putc 'mw -l 0x40008000 $1'
+echo -a putc 'mw -l 0x40008004 0x01010000'
+cd /
+putc 0x40 # Print an @ character
+```

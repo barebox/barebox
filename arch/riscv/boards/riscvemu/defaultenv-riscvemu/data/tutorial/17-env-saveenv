@@ -1,0 +1,7 @@
+
+Now that we have written a normal script and an init script, add a
+nv variable to the mix, save the environment and reset to see them
+all in action:
+```
+nv tutorial.step=$global.tutorial.step; saveenv; reset
+```

@@ -1421,20 +1421,6 @@ static int ehci_probe(struct device_d *dev)
 		 */
 		data.flags = EHCI_HAS_TT;
 
-	iores = dev_request_mem_resource(dev, 0);
-	if (IS_ERR(iores))
-		return PTR_ERR(iores);
-	data.hccr = IOMEM(iores->start);
-
-	if (dev->num_resources > 1) {
-		iores = dev_request_mem_resource(dev, 1);
-		if (IS_ERR(iores))
-			return PTR_ERR(iores);
-		data.hcor = IOMEM(iores->start);
-	}
-	else
-		data.hcor = NULL;
-
 	usb2_generic_phy = phy_optional_get(dev, "usb");
 	if (IS_ERR(usb2_generic_phy))
 		return PTR_ERR(usb2_generic_phy);
@@ -1455,6 +1441,20 @@ static int ehci_probe(struct device_d *dev)
 	ret = clk_bulk_enable(num_clocks, clks);
 	if (ret)
 		return ret;
+
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	data.hccr = IOMEM(iores->start);
+
+	if (dev->num_resources > 1) {
+		iores = dev_request_mem_resource(dev, 1);
+		if (IS_ERR(iores))
+			return PTR_ERR(iores);
+		data.hcor = IOMEM(iores->start);
+	}
+	else
+		data.hcor = NULL;
 
 	ehci = ehci_register(dev, &data);
 	if (IS_ERR(ehci))

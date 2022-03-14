@@ -1,0 +1,9 @@
+
+Strangely, nothing inside `/mnt` is seen in the `mount` output. Why you
+ask? Because these are automounts that are deferred until first access.
+So when you `bootm /mnt/nfs/boot/Image.gz` the first time, barebox will
+bring up the network and mount the network file system (provided you do
+have network). We can list what automounts there are:
+```
+automount -l
+```

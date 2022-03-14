@@ -422,7 +422,9 @@ int of_device_ensure_probed(struct device_node *np)
 	if (IS_ERR(dev))
 		return PTR_ERR(dev);
 
-	BUG_ON(!dev);
+	if (!dev)
+		panic("deep-probe: device for '%s' couldn't be created\n",
+			 np->full_name);
 
 	/*
 	 * The deep-probe mechanism relies on the fact that all necessary

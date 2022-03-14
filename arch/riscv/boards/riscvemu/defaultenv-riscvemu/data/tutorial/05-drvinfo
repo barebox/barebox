@@ -1,0 +1,4 @@
+
+Let's look at more devices. Type `drvinfo` to see what drivers are
+available and what devices they were successfully matched with.
+

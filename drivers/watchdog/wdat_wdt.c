@@ -48,12 +48,12 @@ enum acpi_wdat_instructions {
 /* WDAT Instruction Entries (actions) */
 
 struct __packed acpi_wdat_entry {
-	u8 				action;
-	u8 				instruction;
-	u16 				reserved;
-	struct acpi_generic_address 	register_region;
-	u32 				value;		/* Value used with Read/Write register */
-	u32 				mask;		/* Bitmask required for this register instruction */
+	u8				action;
+	u8				instruction;
+	u16				reserved;
+	struct acpi_generic_address	register_region;
+	u32				value;		/* Value used with Read/Write register */
+	u32				mask;		/* Bitmask required for this register instruction */
 };
 
 /**
@@ -82,7 +82,7 @@ struct wdat_instruction {
 struct wdat_wdt {
 	struct watchdog		wdd;
 	unsigned int		period;
-	bool 			stopped_in_sleep;
+	bool			stopped_in_sleep;
 	bool			stopped;
 	struct list_head	*instructions[MAX_WDAT_ACTIONS];
 };
@@ -90,17 +90,17 @@ struct wdat_wdt {
 struct __packed acpi_table_wdat {
 	struct acpi_table_header header;	/* Common ACPI table header */
 	u32			 header_length;	/* Watchdog Header Length */
-	u16 			 pci_segment;	/* PCI Segment number */
-	u8 			 pci_bus;	/* PCI Bus number */
-	u8 			 pci_device;	/* PCI Device number */
-	u8 			 pci_function;	/* PCI Function number */
-	u8 			 reserved[3];
-	u32 			 timer_period;	/* Period of one timer count (msec) */
-	u32 			 max_count;	/* Maximum counter value supported */
-	u32 			 min_count;	/* Minimum counter value */
-	u8 			 flags;
-	u8 			 reserved2[3];
-	u32 			 nr_entries;	/* Number of watchdog entries that follow */
+	u16			 pci_segment;	/* PCI Segment number */
+	u8			 pci_bus;	/* PCI Bus number */
+	u8			 pci_device;	/* PCI Device number */
+	u8			 pci_function;	/* PCI Function number */
+	u8			 reserved[3];
+	u32			 timer_period;	/* Period of one timer count (msec) */
+	u32			 max_count;	/* Maximum counter value supported */
+	u32			 min_count;	/* Minimum counter value */
+	u8			 flags;
+	u8			 reserved2[3];
+	u32			 nr_entries;	/* Number of watchdog entries that follow */
 	struct acpi_wdat_entry   entries[];
 };
 

@@ -1,0 +1,12 @@
+
+You are using Hush, barebox' default shell. You are currently using it
+interactively, but it can execute scripts as part of the startup and boot
+procedure as well. See for yourself:
+```
+  cat /env/init/90-tutorial-intro
+```
+Look around as you like. When you are ready to continue the tutorial,
+type `next` again. The `prev` command does the inverse and shows previous
+tutorial steps. The `help` command will show help usage text,
+e.g. `help next`.
+

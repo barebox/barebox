@@ -1,0 +1,10 @@
+
+As init scripts only run on initialization, we'll have to do a reset to
+see them in action. But first, we'll want to save our tutorial progress.
+This happens via $global.variables.  Many parts of barebox monitor reads
+and writes to such variables to make information available to the shell.
+
+The `next` command also does it. How would you know?
+```
+magicvar
+```

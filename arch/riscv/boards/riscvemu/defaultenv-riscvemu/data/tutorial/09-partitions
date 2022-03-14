@@ -1,0 +1,9 @@
+
+The `mtdram0` looks interesting. That's the 64K SRAM at the start of the
+address space. The virtual machine places the boot "rom" there as well
+as the flattened (compiled) device tree (FDT). barebox can be informed
+about partitioning and will create extra devices for each partition.
+This allows you to reference them from commands easily:
+```
+of_dump -f /dev/mtdram0.fdt
+```

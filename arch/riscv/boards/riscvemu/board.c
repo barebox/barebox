@@ -5,6 +5,7 @@
 
 #include <common.h>
 #include <driver.h>
+#include <envfs.h>
 #include <poweroff.h>
 #include <restart.h>
 #include <deep-probe.h>
@@ -44,6 +45,9 @@ static int riscvemu_probe(struct device_d *dev)
 	overlay = of_unflatten_dtb(__dtb_overlay_of_sram_start, INT_MAX);
 	of_overlay_apply_tree(dev->device_node, overlay);
 	/* of_probe() will happen later at of_populate_initcall */
+
+	if (IS_ENABLED(CONFIG_CMD_TUTORIAL))
+		defaultenv_append_directory(defaultenv_riscvemu);
 
 	of_chosen = of_find_node_by_path("/chosen");
 

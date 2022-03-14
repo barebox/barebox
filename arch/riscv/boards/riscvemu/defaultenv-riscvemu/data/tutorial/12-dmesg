@@ -1,0 +1,9 @@
+
+In the field, you will probably want to depend exclusively on the built-in
+environment, but it can be very handy to persist environment changes during
+development. You may recall that barebox told us at first boot that the
+environment was never written?  If you don't, no problem, log messages are,
+you guessed it, logged:
+```
+dmesg
+```

@@ -1,0 +1,11 @@
+
+We now have seen `/dev`, which holds the devfs, and `/env` which holds the
+active environment. `/tmp` is as you have guessed it a directory where temporary
+files can be placed. `/pstore` is short for persistent storage, a Linux
+mechanism to store and retrieve error records even after a kernel panic.
+
+This leaves `/mnt`. Let's take a peek at it as well at our active mounts:
+```
+mount
+ls /mnt
+```

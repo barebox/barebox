@@ -152,7 +152,7 @@ static __maybe_unused const char *const prev_alias[] = { "prev", NULL};
 BAREBOX_CMD_START(next)
 	.cmd		= do_tutorial_next,
 	.aliases	= prev_alias,
-	BAREBOX_CMD_DESC("print next tip for barebox tutorial")
+	BAREBOX_CMD_DESC("navigate the barebox tutorial")
 	BAREBOX_CMD_OPTS("[-hr] [STEP]")
 	BAREBOX_CMD_HELP(cmd_next_help)
 	BAREBOX_CMD_GROUP(CMD_GRP_INFO)

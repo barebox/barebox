@@ -2,6 +2,7 @@
 #ifndef SYSTEM_PARTITIONS_H_
 #define SYSTEM_PARTITIONS_H_
 
+#include <linux/types.h>
 #include <file-list.h>
 
 #ifdef CONFIG_SYSTEM_PARTITIONS
@@ -36,5 +37,12 @@ static inline bool system_partitions_empty(void)
  */
 
 #endif
+
+static inline struct file_list *system_partitions_get_null(void)
+{
+	if (system_partitions_empty())
+		return NULL;
+	return system_partitions_get();
+}
 
 #endif

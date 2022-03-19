@@ -920,9 +920,7 @@ struct file_list *get_fastboot_partitions(void)
 {
 	if (fastboot_partitions && *fastboot_partitions)
 		return file_list_parse_null(fastboot_partitions);
-	if (!system_partitions_empty())
-		return system_partitions_get();
-	return NULL;
+	return system_partitions_get_null();
 }
 
 static int fastboot_globalvars_init(void)

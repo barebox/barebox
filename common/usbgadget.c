@@ -27,9 +27,7 @@ static inline struct file_list *get_dfu_function(void)
 {
 	if (dfu_function && *dfu_function)
 		return file_list_parse_null(dfu_function);
-	if (!system_partitions_empty())
-		return system_partitions_get();
-	return NULL;
+	return system_partitions_get_null();
 }
 
 int usbgadget_register(const struct usbgadget_funcs *funcs)

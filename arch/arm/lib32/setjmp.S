@@ -33,6 +33,7 @@ ENTRY(longjmp)
 1:
 	bx   lr
 ENDPROC(longjmp)
+.popsection
 
 .pushsection .text.initjmp, "ax"
 ENTRY(initjmp)

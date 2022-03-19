@@ -169,6 +169,11 @@ static int multi_unbind(struct usb_composite_dev *cdev)
 		usb_put_function_instance(fi_acm);
 	}
 
+	if (gadget_multi_opts->ums_opts.files) {
+		usb_put_function(f_ums);
+		usb_put_function_instance(fi_ums);
+	}
+
 	if (gadget_multi_opts->dfu_opts.files) {
 		usb_put_function(f_dfu);
 		usb_put_function_instance(fi_dfu);

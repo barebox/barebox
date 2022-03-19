@@ -263,8 +263,6 @@ static struct usb_gadget_strings	fsg_stringtab = {
 
 struct bthread *thread_task;
 
-struct kref {int x; };
-
 struct fsg_dev;
 
 static struct file_list *ums_files;
@@ -281,6 +279,8 @@ struct fsg_common {
 	struct fsg_buffhd	*next_buffhd_to_fill;
 	struct fsg_buffhd	*next_buffhd_to_drain;
 	struct fsg_buffhd	buffhds[FSG_NUM_BUFFERS];
+
+	struct f_ums_opts	*opts;
 
 	int			cmnd_size;
 	u8			cmnd[MAX_COMMAND_SIZE];
@@ -322,6 +322,20 @@ struct fsg_common {
 	char inquiry_string[8 + 16 + 4 + 1];
 };
 
+static struct f_ums_opts *f_ums_opts_get(struct f_ums_opts *opts)
+{
+	opts->refcnt++;
+	return opts;
+}
+
+static void f_ums_opts_put(struct f_ums_opts *opts)
+{
+	if (--opts->refcnt == 0) {
+		kfree(opts->common);
+		kfree(opts);
+	}
+}
+
 struct fsg_config {
 	unsigned nluns;
 	struct fsg_lun_config {
@@ -348,6 +362,8 @@ struct fsg_dev {
 	struct usb_gadget	*gadget;	/* Copy of cdev->gadget */
 	struct fsg_common	*common;
 
+	int			refcnt;
+
 	u16			interface_number;
 
 	unsigned int		bulk_in_enabled:1;
@@ -360,6 +376,17 @@ struct fsg_dev {
 	struct usb_ep		*bulk_out;
 };
 
+static struct fsg_dev *fsg_dev_get(struct fsg_dev *fsg)
+{
+	fsg->refcnt++;
+	return fsg;
+}
+
+static void fsg_dev_put(struct fsg_dev *fsg)
+{
+	if (--fsg->refcnt == 0)
+		kfree(fsg);
+}
 
 static inline int __fsg_is_set(struct fsg_common *common,
 			       const char *func, unsigned line)
@@ -2337,11 +2364,13 @@ static void handle_exception(struct fsg_common *common)
 
 static void fsg_main_thread(void *fsg_)
 {
-	struct fsg_dev *fsg = fsg_;
+	struct fsg_dev *fsg = fsg_dev_get(fsg_);
 	struct fsg_common *common = fsg->common;
+	struct f_ums_opts *opts = f_ums_opts_get(common->opts);
 	struct fsg_buffhd *bh;
 	unsigned i;
 	int ret = 0;
+
 
 	/* The main loop */
 	while (common->state != FSG_STATE_TERMINATED) {
@@ -2394,11 +2423,14 @@ static void fsg_main_thread(void *fsg_)
 
 	ums_count = 0;
 	ums_files = NULL;
+
+	f_ums_opts_put(opts);
+	fsg_dev_put(fsg);
 }
 
 static void fsg_common_release(struct fsg_common *common);
 
-static struct fsg_common *fsg_common_setup(void)
+static struct fsg_common *fsg_common_setup(struct f_ums_opts *opts)
 {
 	struct fsg_common *common;
 
@@ -2409,6 +2441,7 @@ static struct fsg_common *fsg_common_setup(void)
 
 	common->ops = NULL;
 	common->private_data = NULL;
+	common->opts = opts;
 
 	return common;
 }
@@ -2659,7 +2692,7 @@ static void fsg_free(struct usb_function *f)
 
 	fsg = container_of(f, struct fsg_dev, function);
 
-	kfree(fsg);
+	fsg_dev_put(fsg);
 }
 
 static struct usb_function *fsg_alloc(struct usb_function_instance *fi)
@@ -2683,7 +2716,7 @@ static struct usb_function *fsg_alloc(struct usb_function_instance *fi)
 	fsg->function.free_func = fsg_free;
 
 	fsg->common = common;
-	common->fsg = fsg;
+	common->fsg = fsg_dev_get(fsg);
 
 	return &fsg->function;
 }
@@ -2692,8 +2725,7 @@ static void fsg_free_instance(struct usb_function_instance *fi)
 {
 	struct f_ums_opts *opts = fsg_opts_from_func_inst(fi);
 
-	kfree(opts->common);
-	kfree(opts);
+	f_ums_opts_put(opts);
 }
 
 static struct usb_function_instance *fsg_alloc_inst(void)
@@ -2706,11 +2738,13 @@ static struct usb_function_instance *fsg_alloc_inst(void)
 
 	opts->func_inst.free_func_inst = fsg_free_instance;
 
-	opts->common = fsg_common_setup();
+	opts->common = fsg_common_setup(opts);
 	if (!opts->common) {
 		free(opts);
 		return ERR_PTR(-ENOMEM);
 	}
+
+	f_ums_opts_get(opts);
 
 	return &opts->func_inst;
 }

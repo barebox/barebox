@@ -20,6 +20,7 @@ struct f_ums_opts {
 	struct file_list *files;
 	unsigned int num_sectors;
 	int fd;
+	int refcnt;
 	char name[16];
 };
 

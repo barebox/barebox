@@ -52,7 +52,7 @@ int usbgadget_register(const struct usbgadget_funcs *funcs)
 		opts->ums_opts.files = file_list_parse_null(funcs->ums_opts);
 		if (IS_ENABLED(CONFIG_USB_GADGET_MASS_STORAGE) && file_list_empty(opts->ums_opts.files)) {
 			file_list_free(opts->ums_opts.files);
-			opts->ums_opts.files = system_partitions_get();
+			opts->ums_opts.files = system_partitions_get_null();
 		}
 	}
 

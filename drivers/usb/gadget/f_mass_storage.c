@@ -2419,7 +2419,7 @@ static int fsg_common_init(struct fsg_common *common,
 	struct usb_gadget *gadget = cdev->gadget;
 	struct file_list_entry *fentry;
 	struct fsg_buffhd *bh;
-	int nluns, i, fd = -1, rc;
+	int nluns, i, rc;
 
 	ums_count = 0;
 
@@ -2436,17 +2436,20 @@ static int fsg_common_init(struct fsg_common *common,
 	file_list_for_each_entry(ums_files, fentry) {
 		unsigned flags = O_RDWR;
 		struct stat st;
+		int fd;
 
 		if (fentry->flags) {
 			pr_err("flags not supported\n");
-			return -ENOSYS;
+			rc = -ENOSYS;
+			goto close;
 		}
 
 		fd = open(fentry->filename, flags);
 		if (fd < 0) {
 			pr_err("open('%s') failed: %pe\n",
 			       fentry->filename, ERR_PTR(fd));
-			return fd;
+			rc = fd;
+			goto close;
 		}
 
 		rc = fstat(fd, &st);
@@ -2543,7 +2546,8 @@ error_release:
 	common->state = FSG_STATE_TERMINATED;	/* The thread is dead */
 	fsg_common_release(common);
 close:
-	close(fd);
+	for (i = 0; i < ums_count; i++)
+		close(ums[i].fd);
 	return rc;
 }
 

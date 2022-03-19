@@ -218,28 +218,28 @@ static int multi_bind(struct usb_composite_dev *cdev)
 		printf("%s: creating Fastboot function\n", __func__);
 		ret = multi_bind_fastboot(cdev);
 		if (ret)
-			goto out;
+			return ret;
 	}
 
 	if (gadget_multi_opts->dfu_opts.files) {
 		printf("%s: creating DFU function\n", __func__);
 		ret = multi_bind_dfu(cdev);
 		if (ret)
-			goto out;
+			goto unbind_fastboot;
 	}
 
 	if (gadget_multi_opts->ums_opts.files) {
 		printf("%s: creating USB Mass Storage function\n", __func__);
 		ret = multi_bind_ums(cdev);
 		if (ret)
-			goto out;
+			goto unbind_dfu;
 	}
 
 	if (gadget_multi_opts->create_acm) {
 		printf("%s: creating ACM function\n", __func__);
 		ret = multi_bind_acm(cdev);
 		if (ret)
-			goto out;
+			goto unbind_ums;
 	}
 
 	usb_ep_autoconfig_reset(cdev->gadget);
@@ -247,8 +247,15 @@ static int multi_bind(struct usb_composite_dev *cdev)
 	dev_info(&gadget->dev, DRIVER_DESC "\n");
 
 	return 0;
-out:
-	multi_unbind(cdev);
+unbind_ums:
+	if (gadget_multi_opts->ums_opts.files)
+		usb_put_function_instance(fi_ums);
+unbind_dfu:
+	if (gadget_multi_opts->dfu_opts.files)
+		usb_put_function_instance(fi_dfu);
+unbind_fastboot:
+	if (gadget_multi_opts->fastboot_opts.files)
+		usb_put_function_instance(fi_fastboot);
 
 	return ret;
 }

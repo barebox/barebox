@@ -654,6 +654,18 @@ static int prt_imx6_init_prtvt7(struct prt_imx6_priv *priv)
 	return 0;
 }
 
+static int prt_imx6_init_prtwd3(struct prt_imx6_priv *priv)
+{
+	void __iomem *iomux = (void *)MX6_IOMUXC_BASE_ADDR;
+	uint32_t val;
+
+	val = readl(iomux + IOMUXC_GPR1);
+	val |= IMX6Q_GPR1_ENET_CLK_SEL_ANATOP;
+	writel(val, iomux + IOMUXC_GPR1);
+
+	return 0;
+}
+
 static int prt_imx6_rfid_fixup(struct prt_imx6_priv *priv,
 			       struct device_node *root)
 {
@@ -1116,6 +1128,7 @@ static const struct prt_machine_data prt_imx6_cfg_prtwd3[] = {
 		.i2c_adapter = 0,
 		.emmc_usdhc = 2,
 		.sd_usdhc = 0,
+		.init = prt_imx6_init_prtwd3,
 		.flags = PRT_IMX6_BOOTSRC_EMMC,
 	}, {
 		.hw_id = UINT_MAX

@@ -36,6 +36,7 @@ enum mv88e6xxx_model {
 	MV88E6190X,
 	MV88E6191,
 	MV88E6240,
+	MV88E6250,
 	MV88E6290,
 	MV88E6320,
 	MV88E6321,
@@ -222,6 +223,18 @@ static const struct mv88e6xxx_ops mv88e6240_ops = {
 	.port_set_rgmii_delay = mv88e6352_port_set_rgmii_delay,
 	.port_set_speed = mv88e6352_port_set_speed,
 	.port_link_state = mv88e6352_port_link_state,
+};
+
+static const struct mv88e6xxx_ops mv88e6250_ops = {
+	/* MV88E6XXX_FAMILY_6250 */
+	.get_eeprom = mv88e6xxx_g2_get_eeprom16,
+	.set_eeprom = mv88e6xxx_g2_set_eeprom16,
+	.phy_read = mv88e6xxx_g2_smi_phy_read,
+	.phy_write = mv88e6xxx_g2_smi_phy_write,
+	.port_set_link = mv88e6xxx_port_set_link,
+	.port_set_duplex = mv88e6xxx_port_set_duplex,
+	.port_set_rgmii_delay = mv88e6352_port_set_rgmii_delay,
+	.port_set_speed = mv88e6250_port_set_speed,
 };
 
 static const struct mv88e6xxx_ops mv88e6290_ops = {
@@ -523,6 +536,17 @@ static const struct mv88e6xxx_info mv88e6xxx_table[] = {
 		.global1_addr = 0x1b,
 		.global2_addr = 0x1c,
 		.ops = &mv88e6240_ops,
+	},
+
+	[MV88E6250] = {
+		.prod_num = MV88E6XXX_PORT_SWITCH_ID_PROD_6250,
+		.family = MV88E6XXX_FAMILY_6250,
+		.name = "Marvell 88E6250",
+		.num_ports = 7,
+		.port_base_addr = 0x08,
+		.global1_addr = 0xf,
+		.global2_addr = 0x7,
+		.ops = &mv88e6250_ops,
 	},
 
 	[MV88E6290] = {
@@ -930,6 +954,10 @@ static const struct of_device_id mv88e6xxx_of_match[] = {
 	{
 		.compatible = "marvell,mv88e6085",
 		.data = &mv88e6xxx_table[MV88E6085],
+	},
+	{
+		.compatible = "marvell,mv88e6250",
+		.data = &mv88e6xxx_table[MV88E6250],
 	},
 	{
 		.compatible = "marvell,mv88e6190",

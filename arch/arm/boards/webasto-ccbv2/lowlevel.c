@@ -32,7 +32,7 @@ static void configure_uart(void)
 
 }
 
-static void noinline start_ccbv2(u32 r0)
+static void noinline start_ccbv2(u32 r0, unsigned long mem_size)
 {
 	int tee_size;
 	void *tee;
@@ -48,7 +48,7 @@ static void noinline start_ccbv2(u32 r0)
 	 */
 	if(IS_ENABLED(CONFIG_FIRMWARE_CCBV2_OPTEE)
 	   && !(r0 > MX6_MMDC_P0_BASE_ADDR
-	        &&  r0 < MX6_MMDC_P0_BASE_ADDR + SZ_512M)) {
+	        &&  r0 < MX6_MMDC_P0_BASE_ADDR + mem_size)) {
 		get_builtin_firmware(ccbv2_optee_bin, &tee, &tee_size);
 
 		memset((void *)OPTEE_OVERLAY_LOCATION, 0, 0x1000);
@@ -70,7 +70,7 @@ ENTRY_FUNCTION(start_imx6ul_ccbv2_256m, r0, r1, r2)
 	setup_c();
 	barrier();
 
-	start_ccbv2(r0);
+	start_ccbv2(r0, SZ_256M);
 }
 
 ENTRY_FUNCTION(start_imx6ul_ccbv2_512m, r0, r1, r2)
@@ -84,5 +84,5 @@ ENTRY_FUNCTION(start_imx6ul_ccbv2_512m, r0, r1, r2)
 	setup_c();
 	barrier();
 
-	start_ccbv2(r0);
+	start_ccbv2(r0, SZ_512M);
 }

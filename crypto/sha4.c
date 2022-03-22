@@ -258,7 +258,7 @@ static struct digest_algo m384 = {
 
 static int sha384_digest_register(void)
 {
-	if (!IS_ENABLED(CONFIG_SHA384))
+	if (!IS_ENABLED(CONFIG_HAVE_DIGEST_SHA384))
 		return 0;
 
 	return digest_algo_register(&m384);
@@ -284,7 +284,7 @@ static struct digest_algo m512 = {
 
 static int sha512_digest_register(void)
 {
-	if (!IS_ENABLED(CONFIG_SHA512))
+	if (!IS_ENABLED(CONFIG_HAVE_DIGEST_SHA512))
 		return 0;
 
 	return digest_algo_register(&m512);

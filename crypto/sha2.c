@@ -338,7 +338,7 @@ static struct digest_algo m224 = {
 
 static int sha224_digest_register(void)
 {
-	if (!IS_ENABLED(CONFIG_SHA224))
+	if (!IS_ENABLED(CONFIG_HAVE_DIGEST_SHA224))
 		return 0;
 
 	return digest_algo_register(&m224);
@@ -365,7 +365,7 @@ struct digest_algo m256 = {
 #ifndef __PBL__
 static int sha256_digest_register(void)
 {
-	if (!IS_ENABLED(CONFIG_SHA256))
+	if (!IS_ENABLED(CONFIG_HAVE_DIGEST_SHA256))
 		return 0;
 
 	return digest_algo_register(&m256);

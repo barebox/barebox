@@ -181,17 +181,17 @@ static int digest_hmac_register(char *name, unsigned int pad_length)
 
 static int digest_hmac_initcall(void)
 {
-	if (IS_ENABLED(CONFIG_MD5))
+	if (IS_ENABLED(CONFIG_HAVE_DIGEST_MD5))
 		digest_hmac_register("md5", 64);
-	if (IS_ENABLED(CONFIG_SHA1))
+	if (IS_ENABLED(CONFIG_HAVE_DIGEST_SHA1))
 		digest_hmac_register("sha1", 64);
-	if (IS_ENABLED(CONFIG_SHA224))
+	if (IS_ENABLED(CONFIG_HAVE_DIGEST_SHA224))
 		digest_hmac_register("sha224", 64);
-	if (IS_ENABLED(CONFIG_SHA256))
+	if (IS_ENABLED(CONFIG_HAVE_DIGEST_SHA256))
 		digest_hmac_register("sha256", 64);
-	if (IS_ENABLED(CONFIG_SHA384))
+	if (IS_ENABLED(CONFIG_HAVE_DIGEST_SHA384))
 		digest_hmac_register("sha384", 128);
-	if (IS_ENABLED(CONFIG_SHA512))
+	if (IS_ENABLED(CONFIG_HAVE_DIGEST_SHA512))
 		digest_hmac_register("sha512", 128);
 
 	return 0;

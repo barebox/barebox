@@ -50,8 +50,3 @@
 &bsec {
 	barebox,provide-mac-address = <&ethernet0 0x39>;
 };
-
-&usbphyc {
-	vdda1v1-supply = <&reg11>;
-	vdda1v8-supply = <&reg18>;
-};

@@ -21,6 +21,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <usb/usb.h>
+#include <work.h>
 
 #define GPIO_HW_REV_ID  {\
 	{IMX_GPIO_NR(2, 8), GPIOF_DIR_IN | GPIOF_ACTIVE_LOW, "rev_id0"}, \
@@ -85,9 +86,10 @@ struct prt_imx6_priv {
 	unsigned int hw_id;
 	unsigned int hw_rev;
 	const char *name;
-	struct poller_async poller;
 	unsigned int usb_delay;
 	unsigned int no_usb_check;
+	struct work_queue wq;
+	struct work_struct work;
 };
 
 struct prti6q_rfid_contents {
@@ -290,9 +292,9 @@ exit_usb_mount:
 
 #define OTG_PORTSC1 (MX6_OTG_BASE_ADDR+0x184)
 
-static void prt_imx6_check_usb_boot(void *data)
+static void prt_imx6_check_usb_boot_do_work(struct work_struct *w)
 {
-	struct prt_imx6_priv *priv = data;
+	struct prt_imx6_priv *priv = container_of(w, struct prt_imx6_priv, work);
 	struct device_d *dev = priv->dev;
 	char *second_word, *bootsrc, *usbdisk;
 	char buf[sizeof("vicut1q recovery")] = {};
@@ -462,7 +464,6 @@ exit_bbu:
 static int prt_imx6_devices_init(void)
 {
 	struct prt_imx6_priv *priv = prt_priv;
-	int ret;
 
 	if (!priv)
 		return 0;
@@ -477,14 +478,12 @@ static int prt_imx6_devices_init(void)
 	prt_imx6_env_init(priv);
 
 	if (!priv->no_usb_check) {
-		ret = poller_async_register(&priv->poller, "usb-boot");
-		if (ret) {
-			dev_err(priv->dev, "can't setup poller\n");
-			return ret;
-		}
+		priv->wq.fn = prt_imx6_check_usb_boot_do_work;
 
-		poller_call_async(&priv->poller, priv->usb_delay * SECOND,
-				  &prt_imx6_check_usb_boot, priv);
+		wq_register(&priv->wq);
+
+		wq_queue_delayed_work(&priv->wq, &priv->work,
+				      priv->usb_delay * SECOND);
 	}
 
 	return 0;

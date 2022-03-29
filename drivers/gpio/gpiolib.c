@@ -414,22 +414,19 @@ free_array:
 }
 EXPORT_SYMBOL(gpio_array_to_id);
 
-static int gpiochip_find_base(int start, int ngpio)
+static int gpiochip_find_base(int ngpio)
 {
 	int i;
 	int spare = 0;
 	int base = -ENOSPC;
 
-	if (start < 0)
-		start = 0;
-
-	for (i = start; i < ARCH_NR_GPIOS; i++) {
+	for (i = ARCH_NR_GPIOS - 1; i >= 0; i--) {
 		struct gpio_chip *chip = gpio_desc[i].chip;
 
 		if (!chip) {
 			spare++;
 			if (spare == ngpio) {
-				base = i + 1 - ngpio;
+				base = i;
 				break;
 			}
 		} else {
@@ -614,14 +611,17 @@ int gpiochip_add(struct gpio_chip *chip)
 {
 	int base, i;
 
-	base = gpiochip_find_base(chip->base, chip->ngpio);
-	if (base < 0)
-		return base;
+	if (chip->base >= 0) {
+		for (i = 0; i < chip->ngpio; i++) {
+			if (gpio_desc[chip->base + i].chip)
+				return -EBUSY;
+		}
+	} else {
+		chip->base = gpiochip_find_base(chip->ngpio);
+		if (chip->base < 0)
+			return -ENOSPC;
+	}
 
-	if (chip->base >= 0 && chip->base != base)
-		return -EBUSY;
-
-	chip->base = base;
 
 	list_add_tail(&chip->list, &chip_list);
 

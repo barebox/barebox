@@ -417,9 +417,11 @@ static int eqos_start(struct eth_device *edev)
 	/* Before we reset the mac, we must insure the PHY is not powered down
 	 * as the dw controller needs all clock domains to be running, including
 	 * the PHY clock, to come out of a mac reset.  */
-	ret = phy_resume(edev->phydev);
-	if (ret)
-		return ret;
+	if (edev->phydev) {
+		ret = phy_resume(edev->phydev);
+		if (ret)
+			return ret;
+	}
 
 	/* Configure MTL */
 

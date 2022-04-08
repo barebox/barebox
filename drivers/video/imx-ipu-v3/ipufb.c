@@ -107,10 +107,8 @@ static int ipu_crtc_mode_set(struct ipufb_info *fbi,
 	struct ipu_di_mode di_mode = {};
 	u32 bus_format = 0;
 
-	dev_info(fbi->dev, "%s: mode->xres: %d\n", __func__,
-			mode->xres);
-	dev_info(fbi->dev, "%s: mode->yres: %d\n", __func__,
-			mode->yres);
+	dev_info(fbi->dev, "%s: mode->xres: %d mode->yres: %d\n", __func__,
+		 mode->xres, mode->yres);
 
 	vpl_ioctl(&fbi->vpl, 2 + fbi->dino, IMX_IPU_VPL_DI_MODE, &di_mode);
 	vpl_ioctl(&fbi->vpl, 2 + fbi->dino, VPL_GET_BUS_FORMAT, &bus_format);

@@ -506,6 +506,22 @@ void led_trigger_network(enum led_trigger trigger)
 	led_trigger(LED_TRIGGER_NET_TXRX, TRIGGER_FLASH);
 }
 
+struct eth_device *of_find_eth_device_by_node(struct device_node *np)
+{
+	struct eth_device *edev;
+	int ret;
+
+	ret = of_device_ensure_probed(np);
+	if (ret)
+		return NULL;
+
+	list_for_each_entry(edev, &netdev_list, list)
+		if (edev->parent->device_node == np)
+			return edev;
+	return NULL;
+}
+EXPORT_SYMBOL(of_find_eth_device_by_node);
+
 static int of_populate_ethaddr(void)
 {
 	char str[sizeof("xx:xx:xx:xx:xx:xx")];

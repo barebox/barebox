@@ -4,6 +4,7 @@
  */
 
 #include <common.h>
+#include <driver.h>
 #include <linux/types.h>
 #include <linux/ctype.h>
 #include <linux/log2.h>
@@ -235,13 +236,16 @@ EXPORT_SYMBOL(hex_dump_to_buffer);
  * Example output using %DUMP_PREFIX_ADDRESS and 4-byte mode:
  * ffffffff88089af0: 73727170 77767574 7b7a7978 7f7e7d7c  pqrstuvwxyz{|}~.
  */
-void print_hex_dump(const char *level, const char *prefix_str, int prefix_type,
-		    int rowsize, int groupsize,
-		    const void *buf, size_t len, bool ascii)
+void dev_print_hex_dump(struct device_d *dev, const char *level,
+			const char *prefix_str, int prefix_type, int rowsize,
+			int groupsize, const void *buf, size_t len, bool ascii)
 {
 	const u8 *ptr = buf;
 	int i, linelen, remaining = len;
 	unsigned char linebuf[32 * 3 + 2 + 32 + 1];
+	char *name;
+
+	name = basprintf("%s%s", dev ? dev_name(dev) : "", dev ? ": " : "");
 
 	if (rowsize != 16 && rowsize != 32)
 		rowsize = 16;
@@ -255,16 +259,20 @@ void print_hex_dump(const char *level, const char *prefix_str, int prefix_type,
 
 		switch (prefix_type) {
 		case DUMP_PREFIX_ADDRESS:
-			printk("%s%s%p: %s\n",
-			       level, prefix_str, ptr + i, linebuf);
+			printk("%s%s%s%p: %s\n", level, name, prefix_str,
+			       ptr + i, linebuf);
 			break;
 		case DUMP_PREFIX_OFFSET:
-			printk("%s%s%.8x: %s\n", level, prefix_str, i, linebuf);
+			printk("%s%s%s%.8x: %s\n", level, name, prefix_str,
+			       i, linebuf);
 			break;
 		default:
-			printk("%s%s%s\n", level, prefix_str, linebuf);
+			printk("%s%s%s%s\n", level, name, prefix_str,
+			       linebuf);
 			break;
 		}
 	}
+
+	free(name);
 }
-EXPORT_SYMBOL(print_hex_dump);
+EXPORT_SYMBOL(dev_print_hex_dump);

@@ -442,6 +442,30 @@ spi_transfer_del(struct spi_transfer *t)
 
 int spi_sync(struct spi_device *spi, struct spi_message *message);
 
+/**
+ * spi_sync_transfer - synchronous SPI data transfer
+ * @spi: device with which data will be exchanged
+ * @xfers: An array of spi_transfers
+ * @num_xfers: Number of items in the xfer array
+ * Context: can sleep
+ *
+ * Does a synchronous SPI data transfer of the given spi_transfer array.
+ *
+ * For more specific semantics see spi_sync().
+ *
+ * Return: zero on success, else a negative error code.
+ */
+static inline int
+spi_sync_transfer(struct spi_device *spi, struct spi_transfer *xfers,
+	unsigned int num_xfers)
+{
+	struct spi_message msg;
+
+	spi_message_init_with_transfers(&msg, xfers, num_xfers);
+
+	return spi_sync(spi, &msg);
+}
+
 struct spi_device *spi_new_device(struct spi_controller *ctrl,
 				  struct spi_board_info *chip);
 int spi_register_controller(struct spi_controller *ctrl);

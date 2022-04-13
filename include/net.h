@@ -46,6 +46,8 @@ struct eth_device {
 	int  (*set_ethaddr) (struct eth_device*, const unsigned char *adr);
 	int  (*rx_preprocessor) (struct eth_device*, unsigned char **packet,
 				 int *length);
+	void (*rx_monitor) (struct eth_device*, void *packet, int length);
+	void (*tx_monitor) (struct eth_device*, void *packet, int length);
 
 	struct eth_device *next;
 	void *priv;
@@ -88,6 +90,15 @@ static inline struct slice *eth_device_slice(struct eth_device *edev)
 static inline const char *eth_name(struct eth_device *edev)
 {
 	return edev->devname;
+}
+
+static inline int eth_send_raw(struct eth_device *edev, void *packet,
+			       int length)
+{
+	if (edev->tx_monitor)
+		edev->tx_monitor(edev, packet, length);
+
+	return edev->send(edev, packet, length);
 }
 
 int eth_register(struct eth_device* dev);    /* Register network device		*/

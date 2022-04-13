@@ -1272,6 +1272,14 @@ config CMD_IP_ROUTE_GET
 	  be shown on the command line or alternatively a variable is set to
 	  the result.
 
+config CMD_ETHLOG
+	tristate
+	prompt "ethlog"
+	help
+	  log ethernet traffic.
+
+	  Usage: ethlog [-r] [DEVICENAME]
+
 # end Network commands
 endmenu
 

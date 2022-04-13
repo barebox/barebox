@@ -245,7 +245,7 @@ int eth_send(struct eth_device *edev, void *packet, int length)
 
 	led_trigger_network(LED_TRIGGER_NET_TX);
 
-	ret = edev->send(edev, packet, length);
+	ret = eth_send_raw(edev, packet, length);
 
 	slice_release(eth_device_slice(edev));
 
@@ -272,7 +272,7 @@ static void eth_do_work(struct eth_device *edev)
 
 	list_for_each_entry_safe(q, tmp, &edev->send_queue, list) {
 		led_trigger_network(LED_TRIGGER_NET_TX);
-		edev->send(edev, q->data, q->length);
+		eth_send_raw(edev, q->data, q->length);
 		list_del(&q->list);
 		free(q->data);
 		free(q);

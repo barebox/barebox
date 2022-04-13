@@ -708,6 +708,9 @@ int net_receive(struct eth_device *edev, unsigned char *pkt, int len)
 		goto out;
 	}
 
+	if (edev->rx_monitor)
+		edev->rx_monitor(edev, pkt, len);
+
 	if (edev->rx_preprocessor) {
 		ret = edev->rx_preprocessor(edev, &pkt, &len);
 		if (ret == -ENOMSG)

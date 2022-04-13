@@ -306,6 +306,13 @@ menuconfig DSA
 
 if DSA
 
+config DRIVER_NET_KSZ9477
+	bool "KSZ9477 switch driver"
+	depends on SPI
+	help
+	  This option enables support for the Microchip KSZ9477
+	  switch chip.
+
 config DRIVER_NET_SJA1105
 	bool "NXP SJA1105 Ethernet switch family driver"
 	depends on SPI

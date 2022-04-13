@@ -300,5 +300,13 @@ config DRIVER_NET_LITEETH
 source "drivers/net/phy/Kconfig"
 source "drivers/net/usb/Kconfig"
 
+menuconfig DSA
+	bool "Distributed Switch Architecture (DSA)"
+	select PHYLIB
+
+if DSA
+
+endif
+
 endmenu
 

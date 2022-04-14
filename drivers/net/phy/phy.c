@@ -54,6 +54,13 @@ int phy_update_status(struct phy_device *phydev)
 			return ret;
 	}
 
+	/*
+	 * If the phy is a fixed-link, set it to active state to trigger
+	 * MAC configuration
+	 */
+	if (!phydev->bus && !phydev->link)
+		phydev->link = 1;
+
 	if (phydev->speed == oldspeed && phydev->duplex == oldduplex &&
 	    phydev->link == oldlink)
 		return 0;
@@ -311,7 +318,7 @@ static struct phy_device *of_phy_register_fixed_link(struct device_node *np,
 
 	phydev->dev.parent = &edev->dev;
 	phydev->registered = 1;
-	phydev->link = 1;
+	phydev->link = 0;
 
 	if (of_property_read_u32(np, "speed", &phydev->speed))
 		return NULL;
@@ -399,10 +406,6 @@ static int phy_device_attach(struct phy_device *phy, struct eth_device *edev,
 	phy_config_aneg(edev->phydev);
 
 	phy->adjust_link = adjust_link;
-
-	/* If the phy is a fixed-link, then call adjust_link directly */
-	if (!phy->bus && adjust_link)
-		adjust_link(edev);
 
 	return 0;
 }

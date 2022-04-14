@@ -29,6 +29,12 @@ config DP83867_PHY
 	help
 	  Currently supports the DP83867 PHY.
 
+config DP83TD510_PHY
+	tristate "Texas Instruments DP83TD510 Ethernet 10Base-T1L PHY"
+	help
+	  Support for the DP83TD510 Ethernet 10Base-T1L PHY. This PHY supports
+	  a 10M single pair Ethernet connection for up to 1000 meter cable.
+
 config LXT_PHY
 	bool "Driver for the Intel LXT PHYs"
 	help

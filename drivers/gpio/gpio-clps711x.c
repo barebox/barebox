@@ -25,17 +25,15 @@ static int clps711x_gpio_probe(struct device_d *dev)
 		return PTR_ERR(iores);
 	dat = IOMEM(iores->start);
 
+	iores = dev_request_mem_resource(dev, 1);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+
 	switch (id) {
 	case 3:
-		iores = dev_request_mem_resource(dev, 1);
-		if (IS_ERR(iores))
-			return PTR_ERR(iores);
 		dir_inv = IOMEM(iores->start);
 		break;
 	default:
-		iores = dev_request_mem_resource(dev, 1);
-		if (IS_ERR(iores))
-			return PTR_ERR(iores);
 		dir = IOMEM(iores->start);
 		break;
 	}

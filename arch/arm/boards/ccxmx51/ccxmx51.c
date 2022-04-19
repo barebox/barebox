@@ -245,8 +245,6 @@ static __init int ccxmx51_init(void)
 		hang();
 	}
 
-	ccxmx_id = &ccxmx51_ids[hwid[0]];
-
 	switch (hwid[2] & 0xc0) {
 	case 0x00:
 		manloc = 'B';

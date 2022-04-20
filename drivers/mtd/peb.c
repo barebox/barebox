@@ -509,6 +509,51 @@ out:
 }
 
 /**
+ * mtd_peb_read_file - read data from a mtd device
+ * @mtd: mtd device
+ * @peb_start: The first PEB where to start reading
+ * @peb_last: last PEB where to read from
+ * @buf: buffer to read to
+ * @len: how many bytes to read
+ *
+ * This function reads @len bytes of data to buffer @buf from the mtd device
+ * @mtd starting at @peb_start. Reading will stop at @peb_last. This function
+ * skips all bad blocks and returns 0 on success or a negative error code
+ * otherwise.
+ */
+int mtd_peb_read_file(struct mtd_info *mtd, unsigned int peb_start,
+		      unsigned int peb_last, void *buf, size_t len)
+{
+	int ret, pnum;
+
+	pnum = peb_start;
+
+	while (len) {
+		size_t now = min_t(size_t, mtd->erasesize, len);
+
+		if (pnum > peb_last)
+			return -EIO;
+
+		if (mtd_peb_is_bad(mtd, pnum)) {
+			pnum++;
+			continue;
+		}
+
+		ret = mtd_peb_read(mtd, buf, pnum, 0, now);
+		if (ret)
+			goto out;
+
+		len -= now;
+		pnum++;
+		buf += now;
+	}
+
+	ret = 0;
+out:
+	return ret;
+}
+
+/**
  * mtd_peb_erase - erase a physical eraseblock.
  * @mtd: mtd device
  * @pnum: physical eraseblock number to erase

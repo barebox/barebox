@@ -20,6 +20,7 @@
 #include <net.h>
 #include <environment.h>
 #include <dhcp.h>
+#include <mtd/mtd-peb.h>
 
 struct omap_barebox_part *barebox_part;
 
@@ -31,29 +32,6 @@ static struct omap_barebox_part default_part = {
 	.nor_offset = SZ_128K,
 	.nor_size = SZ_1M,
 };
-
-static void *read_image_head(const char *name)
-{
-	void *header = xmalloc(ARM_HEAD_SIZE);
-	struct cdev *cdev;
-	int ret;
-
-	cdev = cdev_open_by_name(name, O_RDONLY);
-	if (!cdev) {
-		printf("failed to open %s\n", name);
-		return NULL;
-	}
-
-	ret = cdev_read(cdev, header, ARM_HEAD_SIZE, 0, 0);
-	cdev_close(cdev);
-
-	if (ret != ARM_HEAD_SIZE) {
-		printf("failed to read from %s\n", name);
-		return NULL;
-	}
-
-	return header;
-}
 
 static unsigned int get_image_size(void *head)
 {
@@ -67,57 +45,62 @@ static unsigned int get_image_size(void *head)
 	return ret;
 }
 
-static void *read_mtd_barebox(const char *partition)
+static void *read_mtd_barebox(const char *part, unsigned int start, unsigned int size)
 {
 	int ret;
-	int size;
-	void *to, *header;
+	void *to;
 	struct cdev *cdev;
+	struct mtd_info *mtd;
+	unsigned int ps, pe;
 
-	header = read_image_head(partition);
-	if (header == NULL)
-		return NULL;
-
-	size = get_image_size(header);
-	if (!size) {
-		printf("failed to get image size\n");
-		return NULL;
-	}
-
-	to = xmalloc(size);
-
-	cdev = cdev_open_by_name(partition, O_RDONLY);
+	cdev = cdev_open_by_name(part, O_RDONLY);
 	if (!cdev) {
 		printf("failed to open partition\n");
 		return NULL;
 	}
 
-	ret = cdev_read(cdev, to, size, 0, 0);
-	if (ret != size) {
-		printf("failed to read from partition\n");
+	mtd = cdev->mtd;
+	if (!mtd)
+		return NULL;
+
+	if (mtd_mod_by_eb(start, mtd) != 0) {
+		printf("Start must be eraseblock aligned\n");
 		return NULL;
 	}
 
+	to = xmalloc(size);
+
+	ps = mtd_div_by_eb(start, mtd);
+	pe = mtd_div_by_eb(start + size, mtd);
+	ret = mtd_peb_read_file(mtd, ps, pe, to, size);
+	if (ret) {
+		printf("Can't read image from %s: %d\n", part, ret);
+		goto err;
+	}
+
+	size = get_image_size(to);
+	if (!size) {
+		printf("failed to get image size\n");
+		goto err;
+	}
+
 	return to;
+
+err:
+	free(to);
+	return NULL;
 }
 
 static void *omap_xload_boot_nand(struct omap_barebox_part *part)
 {
 	void *to;
 
-	devfs_add_partition("nand0", part->nand_offset, part->nand_size,
-					DEVFS_PARTITION_FIXED, "x");
-	dev_add_bb_dev("x", "bbx");
-
-	to = read_mtd_barebox("bbx");
+	to = read_mtd_barebox("nand0", part->nand_offset, part->nand_size);
 	if (to == NULL && part->nand_bkup_size != 0) {
 		printf("trying to load image from backup partition.\n");
-		devfs_add_partition("nand0", part->nand_bkup_offset,
-				part->nand_bkup_size,
-				DEVFS_PARTITION_FIXED, "x_bkup");
-		dev_add_bb_dev("x_bkup", "bbx_bkup");
 
-		to = read_mtd_barebox("bbx_bkup");
+		to = read_mtd_barebox("nand0", part->nand_bkup_offset,
+				part->nand_bkup_size);
 	}
 
 	return to;
@@ -162,10 +145,7 @@ static void *omap_xload_boot_mmc(void)
 
 static void *omap_xload_boot_spi(struct omap_barebox_part *part)
 {
-	devfs_add_partition("m25p0", part->nor_offset, part->nor_size,
-					DEVFS_PARTITION_FIXED, "x");
-
-	return read_mtd_barebox("x");
+	return read_mtd_barebox("m25p0", part->nor_offset, part->nor_size);
 }
 
 static void *omap4_xload_boot_usb(void){

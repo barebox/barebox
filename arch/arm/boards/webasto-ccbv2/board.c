@@ -22,7 +22,10 @@ static int ccbv2_probe(struct device_d *dev)
 	imx6_bbu_internal_mmcboot_register_handler("emmc", "/dev/mmc1",
 			BBU_HANDLER_FLAG_DEFAULT);
 
-	barebox_set_hostname("weabsto-ccbv2");
+	if (of_machine_is_compatible("webasto,imx6ul-marvel"))
+		barebox_set_hostname("webasto-marvel");
+	else
+		barebox_set_hostname("webasto-ccbv2");
 
 	if(!IS_ENABLED(CONFIG_FIRMWARE_CCBV2_OPTEE))
 		return 0;
@@ -48,6 +51,7 @@ err:
 
 static const struct of_device_id ccbv2_of_match[] = {
 	{ .compatible = "webasto,imx6ul-ccbv2" },
+	{ .compatible = "webasto,imx6ul-marvel" },
 	{ /* sentinel */ },
 };
 

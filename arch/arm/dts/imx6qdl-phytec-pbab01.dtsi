@@ -15,6 +15,10 @@
 	status = "okay";
 };
 
+&usbotg {
+	dr_mode = "otg";
+};
+
 #ifdef USE_STATE_EXAMPLE
 #include "state-example.dtsi"
 #endif

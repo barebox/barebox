@@ -53,6 +53,11 @@ static void *read_mtd_barebox(const char *part, unsigned int start, unsigned int
 	struct mtd_info *mtd;
 	unsigned int ps, pe;
 
+	if (!IS_ENABLED(CONFIG_MTD)) {
+		printf("Cannot load from nand/nor: MTD support is disabled\n");
+		return NULL;
+	}
+
 	cdev = cdev_open_by_name(part, O_RDONLY);
 	if (!cdev) {
 		printf("failed to open partition\n");

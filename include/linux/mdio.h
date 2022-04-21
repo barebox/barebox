@@ -324,4 +324,6 @@ static inline __u16 mdio_phy_id_c45(int prtad, int devad)
 	return MDIO_PHY_ID_C45 | (prtad << 5) | devad;
 }
 
+#define MDIO_DEVAD_NONE			(-1)
+
 #endif /* _UAPI__LINUX_MDIO_H__ */

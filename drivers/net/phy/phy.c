@@ -302,8 +302,8 @@ void phy_unregister_device(struct phy_device *phydev)
 	phydev->registered = 0;
 }
 
-static struct phy_device *of_phy_register_fixed_link(struct device_node *np,
-						struct eth_device *edev)
+struct phy_device *of_phy_register_fixed_link(struct device_node *np,
+		                              struct eth_device *edev)
 {
 	struct phy_device *phydev;
 
@@ -350,6 +350,7 @@ static struct phy_device *of_mdio_find_phy(struct eth_device *edev)
 		return NULL;
 
 	if (!of_property_read_u32(phy_node, "reg", &addr)) {
+		of_device_ensure_probed(phy_node->parent);
 		for_each_mii_bus(bus) {
 			if (bus->parent->device_node == phy_node->parent) {
 				struct phy_device *phy = mdiobus_scan(bus, addr);

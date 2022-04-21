@@ -708,6 +708,20 @@ int net_receive(struct eth_device *edev, unsigned char *pkt, int len)
 		goto out;
 	}
 
+	if (edev->rx_monitor)
+		edev->rx_monitor(edev, pkt, len);
+
+	if (edev->rx_preprocessor) {
+		ret = edev->rx_preprocessor(edev, &pkt, &len);
+		if (ret == -ENOMSG)
+			return 0;
+		if (ret) {
+			pr_debug("%s: rx_preprocessor failed %pe\n", __func__,
+				 ERR_PTR(ret));
+			return ret;
+		}
+	}
+
 	switch (et_protlen) {
 	case PROT_ARP:
 		ret = net_handle_arp(edev, pkt, len);

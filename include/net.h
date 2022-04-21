@@ -44,9 +44,14 @@ struct eth_device {
 	void (*halt) (struct eth_device*);
 	int  (*get_ethaddr) (struct eth_device*, u8 adr[6]);
 	int  (*set_ethaddr) (struct eth_device*, const unsigned char *adr);
+	int  (*rx_preprocessor) (struct eth_device*, unsigned char **packet,
+				 int *length);
+	void (*rx_monitor) (struct eth_device*, void *packet, int length);
+	void (*tx_monitor) (struct eth_device*, void *packet, int length);
 
 	struct eth_device *next;
 	void *priv;
+	void *rx_preprocessor_priv;
 
 	/* phy device may attach itself for hardware timestamping */
 	struct phy_device *phydev;
@@ -87,6 +92,15 @@ static inline const char *eth_name(struct eth_device *edev)
 	return edev->devname;
 }
 
+static inline int eth_send_raw(struct eth_device *edev, void *packet,
+			       int length)
+{
+	if (edev->tx_monitor)
+		edev->tx_monitor(edev, packet, length);
+
+	return edev->send(edev, packet, length);
+}
+
 int eth_register(struct eth_device* dev);    /* Register network device		*/
 void eth_unregister(struct eth_device* dev); /* Unregister network device	*/
 int eth_set_ethaddr(struct eth_device *edev, const char *ethaddr);
@@ -94,6 +108,7 @@ int eth_open(struct eth_device *edev);
 void eth_close(struct eth_device *edev);
 int eth_send(struct eth_device *edev, void *packet, int length);	   /* Send a packet		*/
 int eth_rx(void);			/* Check for received packets	*/
+struct eth_device *of_find_eth_device_by_node(struct device_node *np);
 
 /* associate a MAC address to a ethernet device. Should be called by
  * board code for boards which store their MAC address at some unusual

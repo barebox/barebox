@@ -300,5 +300,36 @@ config DRIVER_NET_LITEETH
 source "drivers/net/phy/Kconfig"
 source "drivers/net/usb/Kconfig"
 
+menuconfig DSA
+	bool "Distributed Switch Architecture (DSA)"
+	select PHYLIB
+
+if DSA
+
+config DRIVER_NET_KSZ9477
+	bool "KSZ9477 switch driver"
+	depends on SPI
+	help
+	  This option enables support for the Microchip KSZ9477
+	  switch chip.
+
+config DRIVER_NET_SJA1105
+	bool "NXP SJA1105 Ethernet switch family driver"
+	depends on SPI
+	select BITREV
+	help
+	  This is the driver for the NXP SJA1105 automotive Ethernet switch
+	  family. These are 5-port devices and are managed over an SPI
+	  interface. Probing is handled based on OF bindings. The driver
+	  supports the following revisions:
+	    - SJA1105E (Gen. 1, No TT-Ethernet)
+	    - SJA1105T (Gen. 1, TT-Ethernet)
+	    - SJA1105P (Gen. 2, No SGMII, No TT-Ethernet)
+	    - SJA1105Q (Gen. 2, No SGMII, TT-Ethernet)
+	    - SJA1105R (Gen. 2, SGMII, No TT-Ethernet)
+	    - SJA1105S (Gen. 2, SGMII, TT-Ethernet)
+
+endif
+
 endmenu
 

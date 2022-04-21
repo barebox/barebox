@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
+obj-$(CONFIG_DSA)			+= dsa.o
 obj-$(CONFIG_PHYLIB)			+= phy/
 obj-$(CONFIG_NET_USB)			+= usb/
 
@@ -25,6 +26,7 @@ obj-$(CONFIG_DRIVER_NET_FEC_IMX)	+= fec_imx.o
 obj-$(CONFIG_DRIVER_NET_FSL_FMAN)	+= fsl-fman.o
 obj-$(CONFIG_DRIVER_NET_GIANFAR)	+= gianfar.o
 obj-$(CONFIG_DRIVER_NET_KS8851_MLL)	+= ks8851_mll.o
+obj-$(CONFIG_DRIVER_NET_KSZ9477)	+= ksz9477.o
 obj-$(CONFIG_DRIVER_NET_MACB)		+= macb.o
 obj-$(CONFIG_DRIVER_NET_MICREL)		+= ksz8864rmn.o
 obj-$(CONFIG_DRIVER_NET_MPC5200)	+= fec_mpc5200.o
@@ -32,6 +34,7 @@ obj-$(CONFIG_DRIVER_NET_MVNETA)		+= mvneta.o
 obj-$(CONFIG_DRIVER_NET_ORION)		+= orion-gbe.o
 obj-$(CONFIG_DRIVER_NET_RTL8139)	+= rtl8139.o
 obj-$(CONFIG_DRIVER_NET_RTL8169)	+= rtl8169.o
+obj-$(CONFIG_DRIVER_NET_SJA1105)	+= sja1105.o
 obj-$(CONFIG_DRIVER_NET_SMC911X)	+= smc911x.o
 obj-$(CONFIG_DRIVER_NET_SMC91111)	+= smc91111.o
 obj-$(CONFIG_DRIVER_NET_TAP)		+= tap.o

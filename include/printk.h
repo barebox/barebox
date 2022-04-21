@@ -4,6 +4,8 @@
 
 #include <linux/types.h>
 
+struct device_d;
+
 #define KERN_EMERG      ""   /* system is unusable                   */
 #define KERN_ALERT      ""   /* action must be taken immediately     */
 #define KERN_CRIT       ""   /* critical conditions                  */
@@ -45,9 +47,15 @@ enum {
 extern int hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
 			      int groupsize, char *linebuf, size_t linebuflen,
 			      bool ascii);
-extern void print_hex_dump(const char *level, const char *prefix_str,
-			   int prefix_type, int rowsize, int groupsize,
-			   const void *buf, size_t len, bool ascii);
+extern void dev_print_hex_dump(struct device_d *dev, const char *level,
+			       const char *prefix_str, int prefix_type,
+			       int rowsize, int groupsize, const void *buf,
+			       size_t len, bool ascii);
+
+#define print_hex_dump(level, prefix_str, prefix_type, rowsize,		       \
+			     groupsize, buf, len, ascii)		       \
+	dev_print_hex_dump(NULL, level, prefix_str, prefix_type, rowsize,      \
+		       groupsize, buf, len, ascii)
 
 #ifdef CONFIG_ARCH_HAS_STACK_DUMP
 void dump_stack(void);

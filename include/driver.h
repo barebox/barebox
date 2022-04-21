@@ -603,4 +603,9 @@ static inline struct device_node *dev_of_node(struct device_d *dev)
 	return IS_ENABLED(CONFIG_OFDEVICE) ? dev->device_node : NULL;
 }
 
+static inline void *dev_get_priv(struct device_d *dev)
+{
+	return dev->priv;
+}
+
 #endif /* DRIVER_H */

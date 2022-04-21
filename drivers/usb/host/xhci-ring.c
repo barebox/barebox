@@ -436,7 +436,8 @@ static int event_ready(struct xhci_ctrl *ctrl)
  * @param expected	TRB type expected from Event TRB
  * @return pointer to event trb
  */
-union xhci_trb *xhci_wait_for_event(struct xhci_ctrl *ctrl, trb_type expected)
+union xhci_trb *xhci_wait_for_event(struct xhci_ctrl *ctrl, trb_type expected,
+				    unsigned int timeout_ms)
 {
 	trb_type type;
 	uint64_t start = get_time_ns();
@@ -460,16 +461,8 @@ union xhci_trb *xhci_wait_for_event(struct xhci_ctrl *ctrl, trb_type expected)
 			BUG_ON(GET_COMP_CODE(
 				le32_to_cpu(event->generic.field[2])) !=
 								COMP_SUCCESS);
-		else
-			dev_err(ctrl->dev, "Unexpected XHCI event TRB, skipping... "
-				"(%08x %08x %08x %08x)\n",
-				le32_to_cpu(event->generic.field[0]),
-				le32_to_cpu(event->generic.field[1]),
-				le32_to_cpu(event->generic.field[2]),
-				le32_to_cpu(event->generic.field[3]));
-
 		xhci_acknowledge_event(ctrl);
-	} while (!is_timeout_non_interruptible(start, 5 * SECOND));
+	} while (!is_timeout_non_interruptible(start, timeout_ms * MSECOND));
 
 	if (expected == TRB_TRANSFER)
 		return NULL;
@@ -495,7 +488,7 @@ static void abort_td(struct usb_device *udev, int ep_index)
 
 	xhci_queue_command(ctrl, NULL, udev->slot_id, ep_index, TRB_STOP_RING);
 
-	event = xhci_wait_for_event(ctrl, TRB_TRANSFER);
+	event = xhci_wait_for_event(ctrl, TRB_TRANSFER, XHCI_TIMEOUT_DEFAULT);
 	field = le32_to_cpu(event->trans_event.flags);
 	BUG_ON(TRB_TO_SLOT_ID(field) != udev->slot_id);
 	BUG_ON(TRB_TO_EP_INDEX(field) != ep_index);
@@ -503,7 +496,7 @@ static void abort_td(struct usb_device *udev, int ep_index)
 		!= COMP_STOP)));
 	xhci_acknowledge_event(ctrl);
 
-	event = xhci_wait_for_event(ctrl, TRB_COMPLETION);
+	event = xhci_wait_for_event(ctrl, TRB_COMPLETION, XHCI_TIMEOUT_DEFAULT);
 	BUG_ON(TRB_TO_SLOT_ID(le32_to_cpu(event->event_cmd.flags))
 		!= udev->slot_id || GET_COMP_CODE(le32_to_cpu(
 		event->event_cmd.status)) != COMP_SUCCESS);
@@ -511,7 +504,7 @@ static void abort_td(struct usb_device *udev, int ep_index)
 
 	xhci_queue_command(ctrl, (void *)((uintptr_t)ring->enqueue |
 		ring->cycle_state), udev->slot_id, ep_index, TRB_SET_DEQ);
-	event = xhci_wait_for_event(ctrl, TRB_COMPLETION);
+	event = xhci_wait_for_event(ctrl, TRB_COMPLETION, XHCI_TIMEOUT_DEFAULT);
 	BUG_ON(TRB_TO_SLOT_ID(le32_to_cpu(event->event_cmd.flags))
 		!= udev->slot_id || GET_COMP_CODE(le32_to_cpu(
 		event->event_cmd.status)) != COMP_SUCCESS);
@@ -557,7 +550,7 @@ static void record_transfer_result(struct usb_device *udev,
  * @return returns 0 if successful else -1 on failure
  */
 int xhci_bulk_tx(struct usb_device *udev, unsigned long pipe,
-			int length, void *buffer)
+			int length, void *buffer, unsigned int timeout_ms)
 {
 	int num_trbs = 0;
 	struct xhci_generic_trb *start_trb;
@@ -726,7 +719,7 @@ int xhci_bulk_tx(struct usb_device *udev, unsigned long pipe,
 
 	giveback_first_trb(udev, ep_index, start_cycle, start_trb);
 
-	event = xhci_wait_for_event(ctrl, TRB_TRANSFER);
+	event = xhci_wait_for_event(ctrl, TRB_TRANSFER, timeout_ms);
 	if (!event) {
 		dev_dbg(&udev->dev, "XHCI bulk transfer timed out, aborting...\n");
 		abort_td(udev, ep_index);
@@ -767,7 +760,7 @@ int xhci_bulk_tx(struct usb_device *udev, unsigned long pipe,
  */
 int xhci_ctrl_tx(struct usb_device *udev, unsigned long pipe,
 			struct devrequest *req,	int length,
-			void *buffer)
+			void *buffer, unsigned int timeout_ms)
 {
 	int ret;
 	int start_cycle;
@@ -936,7 +929,7 @@ int xhci_ctrl_tx(struct usb_device *udev, unsigned long pipe,
 
 	giveback_first_trb(udev, ep_index, start_cycle, start_trb);
 
-	event = xhci_wait_for_event(ctrl, TRB_TRANSFER);
+	event = xhci_wait_for_event(ctrl, TRB_TRANSFER, timeout_ms);
 	if (!event)
 		goto abort;
 	field = le32_to_cpu(event->trans_event.flags);
@@ -959,7 +952,7 @@ int xhci_ctrl_tx(struct usb_device *udev, unsigned long pipe,
 	if (GET_COMP_CODE(le32_to_cpu(event->trans_event.transfer_len))
 			== COMP_SHORT_TX) {
 		/* Short data stage, clear up additional status stage event */
-		event = xhci_wait_for_event(ctrl, TRB_TRANSFER);
+		event = xhci_wait_for_event(ctrl, TRB_TRANSFER, timeout_ms);
 		if (!event)
 			goto abort;
 		BUG_ON(TRB_TO_SLOT_ID(field) != slot_id);

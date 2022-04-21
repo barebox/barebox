@@ -154,8 +154,8 @@ static int is_gpt_valid(struct block_device *blk, u64 lba,
 
 	/* Check the GPT header signature */
 	if (le64_to_cpu((*gpt)->signature) != GPT_HEADER_SIGNATURE) {
-		dev_dbg(blk->dev, "GUID Partition Table Header signature is wrong:"
-			"0x%llX != 0x%llX\n",
+		dev_dbg(blk->dev, "GUID Partition Table Header signature at LBA"
+			"%llu is wrong: 0x%llX != 0x%llX\n", lba,
 			(unsigned long long)le64_to_cpu((*gpt)->signature),
 			(unsigned long long)GPT_HEADER_SIGNATURE);
 		goto fail;

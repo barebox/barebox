@@ -90,6 +90,7 @@
 #define MV88E6XXX_PORT_SWITCH_ID_PROD_6191	0x1910
 #define MV88E6XXX_PORT_SWITCH_ID_PROD_6185	0x1a70
 #define MV88E6XXX_PORT_SWITCH_ID_PROD_6240	0x2400
+#define MV88E6XXX_PORT_SWITCH_ID_PROD_6250	0x2500
 #define MV88E6XXX_PORT_SWITCH_ID_PROD_6290	0x2900
 #define MV88E6XXX_PORT_SWITCH_ID_PROD_6321	0x3100
 #define MV88E6XXX_PORT_SWITCH_ID_PROD_6141	0x3400
@@ -121,6 +122,7 @@ int mv88e6xxx_port_set_link(struct mv88e6xxx_chip *chip, int port, int link);
 int mv88e6xxx_port_set_duplex(struct mv88e6xxx_chip *chip, int port, int dup);
 int mv88e6065_port_set_speed(struct mv88e6xxx_chip *chip, int port, int speed);
 int mv88e6185_port_set_speed(struct mv88e6xxx_chip *chip, int port, int speed);
+int mv88e6250_port_set_speed(struct mv88e6xxx_chip *chip, int port, int speed);
 int mv88e6352_port_set_speed(struct mv88e6xxx_chip *chip, int port, int speed);
 int mv88e6390_port_set_speed(struct mv88e6xxx_chip *chip, int port, int speed);
 int mv88e6390x_port_set_speed(struct mv88e6xxx_chip *chip, int port, int speed);

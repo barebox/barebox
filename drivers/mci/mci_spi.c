@@ -18,6 +18,8 @@
 #include <mci.h>
 #include <crc.h>
 #include <crc7.h>
+#include <of.h>
+#include <gpiod.h>
 
 #define to_spi_host(mci) container_of(mci, struct mmc_spi_host, mci)
 #define spi_setup(spi) spi->master->setup(spi)
@@ -47,6 +49,7 @@ struct mmc_spi_host {
 	struct mci_host	mci;
 	struct spi_device	*spi;
 	struct device_d	*dev;
+	int detect_pin;
 
 	/* for bulk data transfers */
 	struct spi_transfer	t_tx;
@@ -351,8 +354,23 @@ static int mmc_spi_init(struct mci_host *mci, struct device_d *mci_dev)
 	return 0;
 }
 
+static int spi_mci_card_present(struct mci_host *mci)
+{
+	struct mmc_spi_host	*host = to_spi_host(mci);
+	int			ret;
+
+	/* No gpio, assume card is present */
+	if (!gpio_is_valid(host->detect_pin))
+		return 1;
+
+	ret = gpio_get_value(host->detect_pin);
+
+	return ret == 0 ? 1 : 0;
+}
+
 static int spi_mci_probe(struct device_d *dev)
 {
+	struct device_node	*np = dev_of_node(dev);
 	struct spi_device	*spi = (struct spi_device *)dev->type_data;
 	struct mmc_spi_host	*host;
 	void			*ones;
@@ -362,6 +380,7 @@ static int spi_mci_probe(struct device_d *dev)
 	host->mci.send_cmd = mmc_spi_request;
 	host->mci.set_ios = mmc_spi_set_ios;
 	host->mci.init = mmc_spi_init;
+	host->mci.card_present = spi_mci_card_present;
 	host->mci.hw_dev = dev;
 
 	/* MMC and SD specs only seem to care that sampling is on the
@@ -415,14 +434,26 @@ static int spi_mci_probe(struct device_d *dev)
 
 	host->mci.voltages = MMC_VDD_32_33 | MMC_VDD_33_34;
 	host->mci.host_caps = MMC_CAP_SPI;
+	host->detect_pin = -EINVAL;
+
+	if (np) {
+		host->mci.devname = xstrdup(of_alias_get(np));
+		host->detect_pin = gpiod_get(dev, NULL, GPIOD_IN);
+	}
 
 	mci_register(&host->mci);
 
 	return 0;
 }
 
+static __maybe_unused struct of_device_id spi_mci_compatible[] = {
+	{ .compatible = "mmc-spi-slot" },
+	{ /* sentinel */ }
+};
+
 static struct driver_d spi_mci_driver = {
 	.name	= "spi_mci",
 	.probe	= spi_mci_probe,
+	.of_compatible = DRV_OF_COMPAT(spi_mci_compatible),
 };
 device_spi_driver(spi_mci_driver);

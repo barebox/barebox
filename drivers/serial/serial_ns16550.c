@@ -366,11 +366,6 @@ static __maybe_unused struct ns16550_drvdata jz_drvdata = {
 	.init_port = ns16550_jz_init_port,
 };
 
-static __maybe_unused struct ns16550_drvdata tegra_drvdata = {
-	.init_port = ns16550_serial_init_port,
-	.linux_console_name = "ttyS",
-};
-
 static __maybe_unused struct ns16550_drvdata rpi_drvdata = {
 	.init_port = rpi_init_port,
 	.linux_console_name = "ttyS",
@@ -528,6 +523,9 @@ static struct of_device_id ns16550_serial_dt_ids[] = {
 	}, {
 		.compatible = "marvell,armada-38x-uart",
 		.data = &ns16550_drvdata,
+	}, {
+		.compatible = "nvidia,tegra20-uart",
+		.data = &ns16550_drvdata,
 	},
 #if IS_ENABLED(CONFIG_ARCH_OMAP)
 	{
@@ -539,12 +537,6 @@ static struct of_device_id ns16550_serial_dt_ids[] = {
 	}, {
 		.compatible = "ti,omap4-uart",
 		.data = &omap_drvdata,
-	},
-#endif
-#if IS_ENABLED(CONFIG_ARCH_TEGRA)
-	{
-		.compatible = "nvidia,tegra20-uart",
-		.data = &tegra_drvdata,
 	},
 #endif
 #if IS_ENABLED(CONFIG_MACH_MIPS_XBURST)

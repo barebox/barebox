@@ -11,7 +11,7 @@ Not including booting via serial, the device can boot from either SD or eMMC.
 Downloading DDR PHY firmware
 ----------------------------
 
-As a part of DDR intialization routine NXP i.MX8MQ EVK requires and
+As a part of DDR intialization routine NXP i.MX8MP EVK requires and
 uses several binary firmware blobs that are distributed under a
 separate EULA and cannot be included in Barebox. In order to obtain
 them do the following::

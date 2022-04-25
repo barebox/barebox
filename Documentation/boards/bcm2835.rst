@@ -14,9 +14,15 @@ Raspberry Pi
      - ``images/barebox-raspberry-pi-1.img`` for the BCM2835/ARM1176JZF-S (Raspberry Pi 1, Raspberry Pi Zero)
      - ``images/barebox-raspberry-pi-2.img`` for the BCM2836/CORTEX-A7 (Raspberry Pi 2)
      - ``images/barebox-raspberry-pi-3.img`` for the BCM2837/CORTEX-A53 (Raspberry Pi 3)
+     - ``images/barebox-raspberry-pi-cm3.img`` for the BCM2837/CORTEX-A53 (Raspberry Pi CM3)
 
      Copy the respective image for your model to your SD card and name it
      ``barebox.img``.
+
+     Alternatively, ``images/barebox-dt-2nd.img`` can be used as single bootloader for all
+     supported 32-bit boards. In this case the device tree supplied by the video core
+     is directly used by barebox to probe. The device trees in ``arch/arm/dts/*.dtb``
+     will need to be renamed for alignment with the naming scheme expected by the videocore.
 
   4. Create a text file ``config.txt`` on the SD card with the following content::
 

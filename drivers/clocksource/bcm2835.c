@@ -28,6 +28,7 @@ static uint64_t stc_read_cycles(void)
 static struct clocksource bcm2835_stc = {
 	.read = stc_read_cycles,
 	.mask = CLOCKSOURCE_MASK(32),
+	.priority = 80,
 };
 
 static int bcm2835_cs_probe(struct device_d *dev)

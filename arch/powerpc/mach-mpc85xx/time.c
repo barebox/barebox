@@ -28,6 +28,7 @@ static uint64_t ppc_clocksource_read(void)
 static struct clocksource cs = {
 	.read	= ppc_clocksource_read,
 	.mask	= CLOCKSOURCE_MASK(64),
+	.priority = 80,
 };
 
 static int clocksource_init(void)

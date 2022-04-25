@@ -34,6 +34,7 @@ static struct clocksource cs = {
 	.read	= imx23_clocksource_read,
 	.mask	= CLOCKSOURCE_MASK(16),
 	.shift	= 10,
+	.priority = 80,
 };
 
 static int imx23_clocksource_clock_change(struct notifier_block *nb, unsigned long event, void *data)

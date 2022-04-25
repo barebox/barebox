@@ -32,6 +32,7 @@ static struct clocksource rkcs = {
 	.read   = rockchip_get_ticks,
 	.mask   = CLOCKSOURCE_MASK(32),
 	.shift  = 10,
+	.priority = 80,
 };
 
 static int rockchip_timer_probe(struct device_d *dev)

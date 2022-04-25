@@ -36,6 +36,7 @@ static struct clocksource cs = {
 	.read	= at91sam9_clocksource_read,
 	.mask	= CLOCKSOURCE_MASK(32),
 	.shift	= 10,
+	.priority = 70,
 };
 
 static void at91_pit_stop(void)

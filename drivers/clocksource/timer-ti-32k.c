@@ -47,6 +47,7 @@ static struct clocksource s32k_cs = {
 	.read = s32k_clocksource_read,
 	.mask	= CLOCKSOURCE_MASK(32),
 	.shift = 10,
+	.priority = 70,
 };
 
 /**

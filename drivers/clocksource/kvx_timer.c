@@ -21,6 +21,7 @@ static struct clocksource kvx_clksrc = {
 	.read	= kvx_pm_read,
 	.mask	= CLOCKSOURCE_MASK(64),
 	.shift	= 0,
+	.priority = 70,
 };
 
 static int kvx_timer_probe(struct device_d *dev)

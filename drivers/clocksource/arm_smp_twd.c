@@ -35,6 +35,7 @@ static struct clocksource smp_twd_clksrc = {
 	.read	= smp_twd_read,
 	.shift	= 20,
 	.mask	= CLOCKSOURCE_MASK(32),
+	.priority = 60,
 };
 
 #define SMP_TWD_MAX_FREQ (25 *1000 * 1000)

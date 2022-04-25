@@ -26,6 +26,7 @@ static struct clocksource sp804_clksrc = {
 	.read	= sp804_read,
 	.shift	= 20,
 	.mask	= CLOCKSOURCE_MASK(32),
+	.priority = 60,
 };
 
 static int sp804_probe(struct amba_device *dev, const struct amba_id *id)

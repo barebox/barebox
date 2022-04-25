@@ -60,6 +60,7 @@ static struct clocksource cs = {
 	.read	= arm_global_clocksource_read,
 	.mask	= CLOCKSOURCE_MASK(64),
 	.shift	= 0,
+	.priority = 70,
 };
 
 static int arm_global_timer_probe(struct device_d *dev)

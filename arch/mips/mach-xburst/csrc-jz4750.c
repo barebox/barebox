@@ -23,6 +23,7 @@ static uint64_t jz4750_cs_read(void)
 static struct clocksource jz4750_cs = {
 	.read	= jz4750_cs_read,
 	.mask   = CLOCKSOURCE_MASK(32),
+	.priority = 80,
 };
 
 static int clocksource_init(void)

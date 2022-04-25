@@ -92,6 +92,7 @@ static struct clocksource vpb_cs = {
 	.read = vpb_clocksource_read,
 	.mask = CLOCKSOURCE_MASK(32),
 	.shift = 10,
+	.priority = 80,
 };
 
 /* From Linux v2.6.35

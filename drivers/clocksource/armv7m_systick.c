@@ -34,6 +34,7 @@ static struct clocksource cs = {
 	.read	= armv7m_systick_clocksource_read,
 	.mask	= CLOCKSOURCE_MASK(24),
 	.shift	= 0,
+	.priority = 70,
 };
 
 static int armv7m_systick_probe(struct device_d *dev)

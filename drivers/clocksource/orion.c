@@ -31,6 +31,7 @@ static struct clocksource clksrc = {
 	.read	= orion_clocksource_read,
 	.mask	= CLOCKSOURCE_MASK(32),
 	.shift	= 10,
+	.priority = 70,
 };
 
 static int orion_timer_probe(struct device_d *dev)

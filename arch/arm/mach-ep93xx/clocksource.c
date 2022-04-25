@@ -37,6 +37,7 @@ static struct clocksource cs = {
 	.read	= ep93xx_clocksource_read,
 	.mask	= CLOCKSOURCE_MASK(32),
 	.shift	= 10,
+	.priority = 80,
 };
 
 static int clocksource_init(void)

@@ -28,6 +28,7 @@ static struct clocksource cs = {
 	.read	= pxa_clocksource_read,
 	.mask	= 0xffffffff,
 	.shift	= 20,
+	.priority = 80,
 };
 
 static int clocksource_init(void)

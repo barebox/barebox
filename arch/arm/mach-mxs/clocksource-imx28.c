@@ -39,6 +39,7 @@ static struct clocksource imx28_cs = {
 	.read	= imx28_clocksource_read,
 	.mask	= CLOCKSOURCE_MASK(32),
 	.shift	= 17,
+	.priority = 80,
 };
 
 static int imx28_clocksource_init(void)

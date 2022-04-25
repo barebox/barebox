@@ -42,6 +42,7 @@ static struct clocksource cs = {
 	.read	= mvebu_clocksource_read,
 	.mask	= CLOCKSOURCE_MASK(32),
 	.shift	= 10,
+	.priority = 70,
 };
 
 static int mvebu_timer_probe(struct device_d *dev)

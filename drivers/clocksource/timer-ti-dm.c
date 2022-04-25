@@ -62,6 +62,7 @@ static struct clocksource dmtimer_cs = {
 	.read	= dmtimer_read,
 	.mask	= CLOCKSOURCE_MASK(32),
 	.shift	= 10,
+	.priority = 70,
 };
 
 static int omap_dmtimer_probe(struct device_d *dev)

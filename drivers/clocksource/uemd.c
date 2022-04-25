@@ -52,6 +52,7 @@ static uint64_t uemd_timer_cs_read(void)
 static struct clocksource uemd_cs = {
 	.read = uemd_timer_cs_read,
 	.mask = CLOCKSOURCE_MASK(32),
+	.priority = 60,
 };
 
 static int uemd_timer_probe(struct device_d *dev)

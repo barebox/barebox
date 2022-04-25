@@ -101,6 +101,7 @@ static struct clocksource cs = {
 	.read = s3c_clocksource_read,
 	.mask = CLOCKSOURCE_MASK(TIMER_WIDTH),
 	.shift = TIMER_SHIFT,
+	.priority = 80,
 };
 
 static int s3c_clk_src_init(void)

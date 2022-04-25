@@ -26,6 +26,7 @@ static uint64_t digic_cs_read(void)
 static struct clocksource digic_cs = {
 	.read	= digic_cs_read,
 	.mask   = CLOCKSOURCE_MASK(16),
+	.priority = 60,
 };
 
 static int digic_timer_probe(struct device_d *dev)

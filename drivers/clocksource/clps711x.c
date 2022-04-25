@@ -19,6 +19,7 @@ static uint64_t clps711x_cs_read(void)
 static struct clocksource clps711x_cs = {
 	.read = clps711x_cs_read,
 	.mask = CLOCKSOURCE_MASK(16),
+	.priority = 60,
 };
 
 static int clps711x_cs_probe(struct device_d *dev)

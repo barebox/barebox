@@ -35,6 +35,7 @@ static struct clocksource cs = {
 	.mask	= CLOCKSOURCE_MASK(20),
 	.read	= at91rm9200_clocksource_read,
 	.shift	= 10,
+	.priority = 80,
 };
 
 static int clocksource_init (void)

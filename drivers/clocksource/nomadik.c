@@ -71,6 +71,7 @@ static struct clocksource nmdk_clksrc = {
 	.read	= nmdk_read_timer,
 	.shift	= 20,
 	.mask	= CLOCKSOURCE_MASK(32),
+	.priority = 60,
 };
 
 static void nmdk_timer_reset(void)

@@ -28,6 +28,7 @@ static struct clocksource cs = {
 	.read	= openrisc_clocksource_read,
 	.mask	= 0xffffffff,
 	.shift	= 12,
+	.priority = 80,
 };
 
 static int clocksource_init(void)

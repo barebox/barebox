@@ -96,6 +96,7 @@ static uint64_t davinci_cs_read(void)
 static struct clocksource davinci_cs = {
 	.read	= davinci_cs_read,
 	.mask	= CLOCKSOURCE_MASK(32),
+	.priority = 80,
 };
 
 static int timer32_config(struct timer_s *t)

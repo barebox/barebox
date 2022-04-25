@@ -94,6 +94,7 @@ static struct clocksource dw_apb_clksrc = {
 	.read  = dw_apb_clocksource_read,
 	.mask  = CLOCKSOURCE_MASK(32),
 	.shift = 0,
+	.priority = 50,
 };
 
 static int dw_apb_timer_probe(struct device_d *dev)

@@ -93,6 +93,7 @@ static struct clocksource efi_cs = {
 	.mask   = CLOCKSOURCE_MASK(64),
 	.shift  = 0,
 	.init   = efi_cs_init,
+	.priority = 80,
 };
 
 static int efi_cs_probe(struct device_d *dev)

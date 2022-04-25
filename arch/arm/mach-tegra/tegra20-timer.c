@@ -41,6 +41,7 @@ static uint64_t tegra20_timer_cs_read(void)
 static struct clocksource cs = {
 	.read	= tegra20_timer_cs_read,
 	.mask	= CLOCKSOURCE_MASK(32),
+	.priority = 80,
 };
 
 static int tegra20_timer_probe(struct device_d *dev)

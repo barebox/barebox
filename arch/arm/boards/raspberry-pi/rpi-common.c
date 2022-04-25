@@ -328,10 +328,8 @@ static void rpi_vc_fdt(void)
 		return;
 	}
 
-	if (magic != FDT_MAGIC) {
-		pr_err("videocore fdt saved in pbl has invalid magic\n");
+	if (magic != FDT_MAGIC)
 		return;
-	}
 
 	size = be32_to_cpu(oftree->totalsize);
 	if (write_file("/vc.dtb", saved_vc_fdt, size)) {

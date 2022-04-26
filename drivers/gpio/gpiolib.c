@@ -609,7 +609,7 @@ int gpiod_get(struct device_d *dev, const char *_con_id, enum gpiod_flags flags)
 
 int gpiochip_add(struct gpio_chip *chip)
 {
-	int base, i;
+	int i;
 
 	if (chip->base >= 0) {
 		for (i = 0; i < chip->ngpio; i++) {

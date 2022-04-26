@@ -54,7 +54,7 @@ account via:
 
 .. code-block:: sh
 
-  pip install --user crcmod enum enum34
+  python2 -m pip install --user crcmod enum enum34
 
 configuring bbremote
 ^^^^^^^^^^^^^^^^^^^^

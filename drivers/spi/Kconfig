@@ -124,6 +124,12 @@ config SPI_NXP_FLEXSPI
 	  This controller does not support generic SPI messages and only
 	  supports the high-level SPI memory interface.
 
+config SPI_SIFIVE
+	tristate "SiFive SPI controller"
+	depends on SOC_SIFIVE || COMPILE_TEST
+	help
+	  This exposes the SPI controller IP from SiFive.
+
 endif
 
 endmenu

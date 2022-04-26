@@ -643,6 +643,11 @@ static struct amba_id stm32_sdmmc2_ids[] = {
 		.id     = 0x00253180,
 		.mask	= 0xf0ffffff,
 	},
+	/* ST Micro STM32MP13 */
+	{
+		.id     = 0x20253180,
+		.mask	= 0xf0ffffff,
+	},
 	{ 0, 0 },
 };
 

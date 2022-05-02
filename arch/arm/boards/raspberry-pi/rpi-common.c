@@ -352,8 +352,10 @@ static const struct rpi_machine_data *rpi_get_dcfg(struct rpi_priv *priv)
 	const struct rpi_machine_data *dcfg;
 
 	dcfg = of_device_get_match_data(priv->dev);
-	if (!dcfg)
-		return ERR_PTR(-EINVAL);
+	if (!dcfg) {
+		dev_err(priv->dev, "Unknown board. Not applying fixups\n");
+		return NULL;
+	}
 
 	for (; dcfg->hw_id != U8_MAX; dcfg++) {
 		if (priv->hw_id & 0x800000) {
@@ -369,7 +371,7 @@ static const struct rpi_machine_data *rpi_get_dcfg(struct rpi_priv *priv)
 		return dcfg;
 	}
 
-	dev_err(priv->dev, "Failed to get dcfg for board_id: 0x%x.\n",
+	dev_err(priv->dev, "dcfg 0x%x for board_id doesn't match DT compatible\n",
 		priv->hw_id);
 	return ERR_PTR(-ENODEV);
 }
@@ -407,7 +409,7 @@ static int rpi_devices_probe(struct device_d *dev)
 	rpi_env_init();
 	rpi_vc_fdt();
 
-	if (dcfg->init)
+	if (dcfg && dcfg->init)
 		dcfg->init(priv);
 
 	reg = regulator_get_name("bcm2835_usb");
@@ -586,6 +588,24 @@ static const struct rpi_machine_data rpi_3_model_b_plus[] = {
 	},
 };
 
+static const struct rpi_machine_data rpi_compute_module_3[] = {
+	{
+		.hw_id = BCM2837_BOARD_REV_CM3,
+	}, {
+		.hw_id = BCM2837B0_BOARD_REV_CM3_PLUS,
+	}, {
+		.hw_id = U8_MAX
+	},
+};
+
+static const struct rpi_machine_data rpi_model_zero_2_w[] = {
+	{
+		.hw_id = BCM2837B0_BOARD_REV_ZERO_2,
+	}, {
+		.hw_id = U8_MAX
+	},
+};
+
 static const struct of_device_id rpi_of_match[] = {
 	/* BCM2835 based Boards */
 	{ .compatible = "raspberrypi,model-a", .data = rpi_model_a },
@@ -606,6 +626,10 @@ static const struct of_device_id rpi_of_match[] = {
 	{ .compatible = "raspberrypi,3-model-a-plus", .data = rpi_3_model_a_plus },
 	{ .compatible = "raspberrypi,3-model-b", .data = rpi_3_model_b },
 	{ .compatible = "raspberrypi,3-model-b-plus", .data = rpi_3_model_b_plus },
+	{ .compatible = "raspberrypi,model-zero-2-w", .data = rpi_model_zero_2_w },
+	{ .compatible = "raspberrypi,3-compute-module", .data = rpi_compute_module_3 },
+	{ .compatible = "raspberrypi,3-compute-module-lite", .data = rpi_compute_module_3 },
+
 	{ /* sentinel */ },
 };
 BAREBOX_DEEP_PROBE_ENABLE(rpi_of_match);

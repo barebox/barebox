@@ -28,7 +28,9 @@ Building barebox
 
 There's a single ``stm32mp_defconfig`` for all STM32MP boards::
 
-  make ARCH=arm stm32mp_defconfig
+  export ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf-
+  make stm32mp_defconfig
+  make
 
 The resulting images will be placed under ``images/``::
 

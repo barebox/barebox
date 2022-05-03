@@ -126,6 +126,22 @@ static const struct gpio prt_imx6_kvg_gpios[] = {
 	},
 };
 
+static int prt_of_fixup_hwrev(struct prt_imx6_priv *priv)
+{
+	const char *compat;
+	char *buf;
+
+	compat = of_device_get_match_compatible(priv->dev);
+
+	buf = xasprintf("%s-m%u-r%u", compat, priv->hw_id,
+			priv->hw_rev);
+	barebox_set_of_machine_compatible(buf);
+
+	free(buf);
+
+	return 0;
+}
+
 static int prt_imx6_read_rfid(struct prt_imx6_priv *priv, void *buf,
 			      size_t size)
 {
@@ -797,7 +813,6 @@ exit_get_dcfg:
 static int prt_imx6_probe(struct device_d *dev)
 {
 	struct prt_imx6_priv *priv;
-	const char *name, *ptr;
 	struct param_d *p;
 	int ret;
 
@@ -806,9 +821,7 @@ static int prt_imx6_probe(struct device_d *dev)
 		return -ENOMEM;
 
 	priv->dev = dev;
-	name = of_device_get_match_compatible(priv->dev);
-	ptr = strchr(name, ',');
-	priv->name =  ptr ? ptr + 1 : name;
+	priv->name = of_get_machine_compatible();
 
 	pr_info("Detected machine type: %s\n", priv->name);
 
@@ -818,6 +831,7 @@ static int prt_imx6_probe(struct device_d *dev)
 
 	pr_info("  HW type:     %d\n", priv->hw_id);
 	pr_info("  HW revision: %d\n", priv->hw_rev);
+	prt_of_fixup_hwrev(priv);
 
 	ret = prt_imx6_get_dcfg(priv);
 	if (ret)

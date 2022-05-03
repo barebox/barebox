@@ -206,6 +206,11 @@ static int of_fixup_bootargs(struct device_node *root, void *unused)
 	int err;
 	int instance = reset_source_get_instance();
 	struct device_d *dev;
+	const char *serialno;
+
+	serialno = barebox_get_serial_number();
+	if (serialno)
+		of_property_write_string(root, "serial-number", serialno);
 
 	node = of_create_node(root, "/chosen");
 	if (!node)

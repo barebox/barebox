@@ -196,30 +196,12 @@ static int prt_imx6_set_mac(struct prt_imx6_priv *priv,
 	return 0;
 }
 
-static int prt_of_fixup_serial(struct device_node *dstroot, void *arg)
-{
-	struct device_node *srcroot = arg;
-	const char *ser;
-	int len;
-
-	ser = of_get_property(srcroot, "serial-number", &len);
-	return of_set_property(dstroot, "serial-number", ser, len, 1);
-}
-
-static void prt_oftree_fixup_serial(const char *serial)
-{
-	struct device_node *root = of_get_root_node();
-
-	of_set_property(root, "serial-number", serial, strlen(serial) + 1, 1);
-	of_register_fixup(prt_of_fixup_serial, root);
-}
-
 static int prt_imx6_set_serial(struct prt_imx6_priv *priv,
 			       struct prti6q_rfid_contents *rfid)
 {
 	rfid->serial[9] = 0; /* Failsafe */
 	dev_info(priv->dev, "Serial number: %s\n", rfid->serial);
-	prt_oftree_fixup_serial(rfid->serial);
+	barebox_set_serial_number(rfid->serial);
 
 	return 0;
 }

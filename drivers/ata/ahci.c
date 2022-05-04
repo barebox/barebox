@@ -596,7 +596,7 @@ int ahci_add_host(struct ahci_device *ahci)
 	 */
 	ret = wait_on_timeout(SECOND, (ahci_ioread(ahci, HOST_CTL) & HOST_RESET) == 0);
 	if (ret) {
-		ahci_debug(ahci,"controller reset failed (0x%x)\n", tmp);
+		ahci_debug(ahci, "controller reset failed (0x%x)\n", tmp);
 		return -ENODEV;
 	}
 

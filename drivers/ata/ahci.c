@@ -298,7 +298,8 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 		goto err_alloc;
 	}
 
-	ahci_port_debug(ahci_port, "cmd_slot = 0x%x\n", (unsigned)ahci_port->cmd_slot);
+	ahci_port_debug(ahci_port, "cmd_slot = 0x%p (0x%pa)\n",
+			ahci_port->cmd_slot, ahci_port->cmd_slot_dma);
 
 	/*
 	 * Second item: Received-FIS area
@@ -321,7 +322,8 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 		goto err_alloc2;
 	}
 
-	ahci_port_debug(ahci_port, "cmd_tbl_dma = 0x%p\n", ahci_port->cmd_tbl);
+	ahci_port_debug(ahci_port, "cmd_tbl = 0x%p (0x%pa)\n",
+			ahci_port->cmd_tbl, ahci_port->cmd_tbl_dma);
 
 	ahci_port->cmd_tbl_sg = ahci_port->cmd_tbl + AHCI_CMD_TBL_HDR_SZ;
 

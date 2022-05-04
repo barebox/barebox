@@ -184,8 +184,8 @@ cleanup:
 /*
  * rsa_get_params(): - Get the important parameters of an RSA public key
  */
-int rsa_get_params(RSA *key, uint64_t *exponent, uint32_t *n0_invp,
-		   BIGNUM **modulusp, BIGNUM **r_squaredp)
+static int rsa_get_params(RSA *key, uint64_t *exponent, uint32_t *n0_invp,
+			  BIGNUM **modulusp, BIGNUM **r_squaredp)
 {
 	BIGNUM *big1, *big2, *big32, *big2_32;
 	BIGNUM *n, *r, *r_squared, *tmp;
@@ -359,7 +359,7 @@ static int print_bignum(BIGNUM *num, int num_bits)
 static int gen_key(const char *keyname, const char *path)
 {
 	BIGNUM *modulus, *r_squared;
-	uint64_t exponent;
+	uint64_t exponent = 0;
 	uint32_t n0_inv;
 	int ret;
 	int bits;

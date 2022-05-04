@@ -139,6 +139,7 @@ static int ahci_fill_sg(struct ahci_port *ahci_port, const void *buf, int buf_le
 
 		buf_len -= now;
 		buf += now;
+		ahci_sg++;
 	}
 
 	return sg_count;

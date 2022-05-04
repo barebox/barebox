@@ -36,10 +36,32 @@
 #define HOST_CAP2		0x24 /* host capabilities, extended */
 
 /* HOST_CAP bits */
-#define HOST_SMPS		(1 << 28)   /* supports mechanical presence switch */
-#define HOST_SSS		(1 << 27)   /* supports staggered spin-up */
-#define HOST_SPM		(1 << 17)   /* supports port multiplier */
-#define HOST_NP			(0x1f << 0) /* number of ports */
+#define HOST_CAP_64		(1 << 31)   /* PCI DAC (64-bit DMA) support */
+#define HOST_CAP_NCQ		(1 << 30)   /* Native Command Queueing */
+#define HOST_CAP_SNTF		(1 << 29)   /* SNotification register */
+#define HOST_CAP_SMPS		(1 << 28)   /* Supports mechanical presence switch */
+#define HOST_CAP_SSS		(1 << 27)   /* Supports staggered spin-up */
+#define HOST_CAP_ALPM		(1 << 26)   /* Aggressive Link PM support */
+#define HOST_CAP_LED		(1 << 25)   /* Supports activity LED */
+#define HOST_CAP_CLO		(1 << 24)   /* Command List Override support */
+#define HOST_CAP_ISS		(0xf << 20) /* Interface Speed Support */
+#define HOST_CAP_RESERVED	(1 << 19)   /* Reserved bit */
+#define HOST_CAP_ONLY		(1 << 18)   /* Supports AHCI mode only */
+#define HOST_CAP_SPM		(1 << 17)   /* Supports port multiplier */
+#define HOST_CAP_FBS		(1 << 16)   /* FIS-based switching support */
+#define HOST_CAP_PIO_MULTI	(1 << 15)   /* PIO multiple DRQ support */
+#define HOST_CAP_SSC		(1 << 14)   /* Slumber state capable */
+#define HOST_CAP_PART		(1 << 13)   /* Partial state capable */
+#define HOST_CAP_NCS		(0x1f << 8) /* Number of Command Slots */
+#define HOST_CAP_CCC		(1 << 7)    /* Command Completion Coalescing */
+#define HOST_CAP_EMS		(1 << 6)    /* Enclosure Management support */
+#define HOST_CAP_SXS		(1 << 5)    /* Supports External SATA */
+#define HOST_CAP_NP		(0x1f << 0) /* Number of ports */
+
+/* HOST_CAP2 bits */
+#define HOST_CAP2_APST		(1 << 2)    /* Automatic partial to slumber */
+#define HOST_CAP2_NVMHCI	(1 << 1)    /* NVMHCI supported */
+#define HOST_CAP2_BOH		(1 << 0)    /* BIOS/OS handoff supported */
 
 /* HOST_CTL bits */
 #define HOST_RESET		(1 << 0)  /* reset controller; self-clear */

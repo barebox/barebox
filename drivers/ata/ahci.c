@@ -500,7 +500,7 @@ void ahci_print_info(struct ahci_device *ahci)
 	cap2 = ahci_ioread(ahci, HOST_CAP2);
 	impl = ahci->port_map;
 
-	speed = (cap >> 20) & 0xf;
+	speed = (cap & HOST_CAP_ISS) >> 20;
 	if (speed == 1)
 		speed_s = "1.5";
 	else if (speed == 2)
@@ -518,32 +518,33 @@ void ahci_print_info(struct ahci_device *ahci)
 	       (vers >> 16) & 0xff,
 	       (vers >> 8) & 0xff,
 	       vers & 0xff,
-	       ((cap >> 8) & 0x1f) + 1, (cap & 0x1f) + 1, speed_s, impl, scc_s);
+	       ((cap & HOST_CAP_NCS) >> 8) + 1,
+	       (cap & HOST_CAP_NP) + 1, speed_s, impl, scc_s);
 
 	printf("flags: "
 	       "%s%s%s%s%s%s%s"
 	       "%s%s%s%s%s%s%s"
 	       "%s%s%s%s%s%s\n",
-	       cap & (1 << 31) ? "64bit " : "",
-	       cap & (1 << 30) ? "ncq " : "",
-	       cap & (1 << 28) ? "ilck " : "",
-	       cap & (1 << 27) ? "stag " : "",
-	       cap & (1 << 26) ? "pm " : "",
-	       cap & (1 << 25) ? "led " : "",
-	       cap & (1 << 24) ? "clo " : "",
-	       cap & (1 << 19) ? "nz " : "",
-	       cap & (1 << 18) ? "only " : "",
-	       cap & (1 << 17) ? "pmp " : "",
-	       cap & (1 << 16) ? "fbss " : "",
-	       cap & (1 << 15) ? "pio " : "",
-	       cap & (1 << 14) ? "slum " : "",
-	       cap & (1 << 13) ? "part " : "",
-	       cap & (1 << 7) ? "ccc " : "",
-	       cap & (1 << 6) ? "ems " : "",
-	       cap & (1 << 5) ? "sxs " : "",
-	       cap2 & (1 << 2) ? "apst " : "",
-	       cap2 & (1 << 1) ? "nvmp " : "",
-	       cap2 & (1 << 0) ? "boh " : "");
+	       cap & HOST_CAP_64 ? "64bit " : "",
+	       cap & HOST_CAP_NCQ ? "ncq " : "",
+	       cap & HOST_CAP_SMPS ? "ilck " : "",
+	       cap & HOST_CAP_SSS ? "stag " : "",
+	       cap & HOST_CAP_ALPM ? "pm " : "",
+	       cap & HOST_CAP_LED ? "led " : "",
+	       cap & HOST_CAP_CLO ? "clo " : "",
+	       cap & HOST_CAP_RESERVED ? "nz " : "",
+	       cap & HOST_CAP_ONLY ? "only " : "",
+	       cap & HOST_CAP_SPM ? "pmp " : "",
+	       cap & HOST_CAP_FBS ? "fbss " : "",
+	       cap & HOST_CAP_PIO_MULTI ? "pio " : "",
+	       cap & HOST_CAP_SSC ? "slum " : "",
+	       cap & HOST_CAP_PART ? "part " : "",
+	       cap & HOST_CAP_CCC ? "ccc " : "",
+	       cap & HOST_CAP_EMS ? "ems " : "",
+	       cap & HOST_CAP_SXS ? "sxs " : "",
+	       cap2 & HOST_CAP2_APST ? "apst " : "",
+	       cap2 & HOST_CAP2_NVMHCI ? "nvmp " : "",
+	       cap2 & HOST_CAP2_BOH ? "boh " : "");
 }
 
 void ahci_info(struct device_d *dev)
@@ -583,8 +584,8 @@ int ahci_add_host(struct ahci_device *ahci)
 	ahci_debug(ahci, "ahci_host_init: start\n");
 
 	cap_save = ahci_ioread(ahci, HOST_CAP);
-	cap_save &= (HOST_SMPS | HOST_SPM);
-	cap_save |= HOST_SSS;  /* Staggered Spin-up. Not needed. */
+	cap_save &= (HOST_CAP_SMPS | HOST_CAP_SPM);
+	cap_save |= HOST_CAP_SSS;  /* Staggered Spin-up. Not needed. */
 
 	/* global controller reset */
 	tmp = ahci_ioread(ahci, HOST_CTL);
@@ -607,7 +608,7 @@ int ahci_add_host(struct ahci_device *ahci)
 
 	ahci->cap = ahci_ioread(ahci, HOST_CAP);
 	ahci->port_map = ahci_ioread(ahci, HOST_PORTS_IMPL);
-	ahci->n_ports = (ahci->cap & HOST_NP) + 1;
+	ahci->n_ports = (ahci->cap & HOST_CAP_NP) + 1;
 
 	ahci_debug(ahci, "cap 0x%x  port_map 0x%x  n_ports %d\n",
 	      ahci->cap, ahci->port_map, ahci->n_ports);

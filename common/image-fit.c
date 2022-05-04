@@ -256,7 +256,7 @@ static int fit_check_rsa_signature(struct device_node *sig_node,
 				   enum hash_algo algo, void *hash)
 {
 	const struct rsa_public_key *key;
-	const char *key_name;
+	const char *key_name = NULL;
 	int sig_len;
 	const char *sig_value;
 	int ret;
@@ -267,24 +267,32 @@ static int fit_check_rsa_signature(struct device_node *sig_node,
 		return -EINVAL;
 	}
 
-	if (of_property_read_string(sig_node, "key-name-hint", &key_name)) {
-		pr_err("key name not found in %s\n", sig_node->full_name);
-		return -EINVAL;
+	of_property_read_string(sig_node, "key-name-hint", &key_name);
+	if (key_name) {
+		key = rsa_get_key(key_name);
+		if (key) {
+			ret = rsa_verify(key, sig_value, sig_len, hash, algo);
+			if (!ret)
+				goto ok;
+		}
 	}
 
-	key = rsa_get_key(key_name);
-	if (!key) {
-		pr_err("No such key: %s\n", key_name);
-		return -ENOENT;
+	for_each_rsa_key(key) {
+		if (key_name && !strcmp(key->key_name_hint, key_name))
+			continue;
+
+		ret = rsa_verify(key, sig_value, sig_len, hash, algo);
+		if (!ret)
+			goto ok;
 	}
 
-	ret = rsa_verify(key, sig_value, sig_len, hash, algo);
-	if (ret)
-		pr_err("image signature BAD\n");
-	else
-		pr_info("image signature OK\n");
+	pr_err("image signature BAD\n");
 
-	return ret;
+	return -EBADMSG;
+ok:
+	pr_info("image signature OK\n");
+
+	return 0;
 }
 
 /*

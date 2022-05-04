@@ -5,6 +5,7 @@
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
+#define pr_fmt(fmt) "rsa: " fmt
 
 #include <common.h>
 #include <malloc.h>
@@ -184,8 +185,8 @@ static int pow_mod(const struct rsa_public_key *key, void *__inout)
 
 	/* Sanity check for stack size - key->len is in 32-bit words */
 	if (key->len > RSA_MAX_KEY_BITS / 32) {
-		debug("RSA key words %u exceeds maximum %d\n", key->len,
-		      RSA_MAX_KEY_BITS / 32);
+		pr_debug("RSA key words %u exceeds maximum %d\n", key->len,
+			 RSA_MAX_KEY_BITS / 32);
 		return -EINVAL;
 	}
 
@@ -199,13 +200,13 @@ static int pow_mod(const struct rsa_public_key *key, void *__inout)
 		return -EINVAL;
 
 	if (k < 2) {
-		debug("Public exponent is too short (%d bits, minimum 2)\n",
-		      k);
+		pr_debug("Public exponent is too short (%d bits, minimum 2)\n",
+			 k);
 		return -EINVAL;
 	}
 
 	if (!is_public_exponent_bit_set(key, 0)) {
-		debug("LSB of RSA public exponent must be set.\n");
+		pr_debug("LSB of RSA public exponent must be set.\n");
 		return -EINVAL;
 	}
 
@@ -317,7 +318,7 @@ int rsa_verify(const struct rsa_public_key *key, const uint8_t *sig,
 		return -EOPNOTSUPP;
 
 	if (sig_len != (key->len * sizeof(uint32_t))) {
-		debug("Signature is of incorrect length %u, should be %zu\n", sig_len,
+		pr_debug("Signature is of incorrect length %u, should be %zu\n", sig_len,
 				key->len * sizeof(uint32_t));
 		ret = -EINVAL;
 		goto out_free_digest;
@@ -325,8 +326,8 @@ int rsa_verify(const struct rsa_public_key *key, const uint8_t *sig,
 
 	/* Sanity check for stack size */
 	if (sig_len > RSA_MAX_SIG_BITS / 8) {
-		debug("Signature length %u exceeds maximum %d\n", sig_len,
-		      RSA_MAX_SIG_BITS / 8);
+		pr_debug("Signature length %u exceeds maximum %d\n", sig_len,
+			 RSA_MAX_SIG_BITS / 8);
 		ret = -EINVAL;
 		goto out_free_digest;
 	}
@@ -408,15 +409,15 @@ struct rsa_public_key *rsa_of_read_key(struct device_node *node)
 	rr = of_get_property(node, "rsa,r-squared", NULL);
 
 	if (!key->len || !modulus || !rr) {
-		debug("%s: Missing RSA key info", __func__);
+		pr_debug("%s: Missing RSA key info", __func__);
 		err = -EFAULT;
 		goto out;
 	}
 
 	/* Sanity check for stack size */
 	if (key->len > RSA_MAX_KEY_BITS || key->len < RSA_MIN_KEY_BITS) {
-		debug("RSA key bits %u outside allowed range %d..%d\n",
-		      key->len, RSA_MIN_KEY_BITS, RSA_MAX_KEY_BITS);
+		pr_debug("RSA key bits %u outside allowed range %d..%d\n",
+			 key->len, RSA_MIN_KEY_BITS, RSA_MAX_KEY_BITS);
 		err = -EFAULT;
 		goto out;
 	}

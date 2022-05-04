@@ -273,6 +273,8 @@ static int ahci_write(struct ata_port *ata, const void *buf, sector_t block,
 static int ahci_init_port(struct ahci_port *ahci_port)
 {
 	u32 val, cmd;
+	void *mem;
+	dma_addr_t mem_dma;
 	int ret;
 
 	/* make sure port is not active */
@@ -290,16 +292,17 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 		mdelay(500);
 	}
 
+	mem = dma_alloc_coherent(AHCI_PORT_PRIV_DMA_SZ, &mem_dma);
+	if (!mem) {
+		return -ENOMEM;
+	}
+
 	/*
 	 * First item in chunk of DMA memory: 32-slot command list,
 	 * 32 bytes each in size
 	 */
-	ahci_port->cmd_slot = dma_alloc_coherent(AHCI_CMD_LIST_SZ,
-						  &ahci_port->cmd_slot_dma);
-	if (!ahci_port->cmd_slot) {
-		ret = -ENOMEM;
-		goto err_alloc;
-	}
+	ahci_port->cmd_slot = mem;
+	ahci_port->cmd_slot_dma = mem_dma;
 
 	ahci_port_debug(ahci_port, "cmd_slot = 0x%p (0x%pa)\n",
 			ahci_port->cmd_slot, ahci_port->cmd_slot_dma);
@@ -307,22 +310,15 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 	/*
 	 * Second item: Received-FIS area
 	 */
-	ahci_port->rx_fis = dma_alloc_coherent(AHCI_RX_FIS_SZ, &ahci_port->rx_fis_dma);
-	if (!ahci_port->rx_fis) {
-		ret = -ENOMEM;
-		goto err_alloc1;
-	}
+	ahci_port->rx_fis = mem + AHCI_CMD_SLOT_SZ;
+	ahci_port->rx_fis_dma = mem_dma + AHCI_CMD_SLOT_SZ;
 
 	/*
 	 * Third item: data area for storing a single command
 	 * and its scatter-gather table
 	 */
-	ahci_port->cmd_tbl = dma_alloc_coherent(AHCI_CMD_TBL_SZ,
-						 &ahci_port->cmd_tbl_dma);
-	if (!ahci_port->cmd_tbl) {
-		ret = -ENOMEM;
-		goto err_alloc2;
-	}
+	ahci_port->cmd_tbl = mem + AHCI_CMD_SLOT_SZ + AHCI_RX_FIS_SZ;
+	ahci_port->cmd_tbl_dma = mem_dma + AHCI_CMD_SLOT_SZ + AHCI_RX_FIS_SZ;
 
 	ahci_port_debug(ahci_port, "cmd_tbl = 0x%p (0x%pa)\n",
 			ahci_port->cmd_tbl, ahci_port->cmd_tbl_dma);
@@ -418,15 +414,7 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 	ret = -ENODEV;
 
 err_init:
-	dma_free_coherent(ahci_port->cmd_tbl, ahci_port->cmd_tbl_dma,
-			  AHCI_CMD_TBL_SZ);
-err_alloc2:
-	dma_free_coherent(ahci_port->rx_fis, ahci_port->rx_fis_dma,
-			  AHCI_RX_FIS_SZ);
-err_alloc1:
-	dma_free_coherent(ahci_port->cmd_slot, ahci_port->cmd_slot_dma,
-			  AHCI_CMD_LIST_SZ);
-err_alloc:
+	dma_free_coherent(mem, mem_dma, AHCI_PORT_PRIV_DMA_SZ);
 	return ret;
 }
 

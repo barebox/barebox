@@ -288,10 +288,10 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 	}
 
 	/*
-	 * First item in chunk of DMA memory: 32-slot command table,
+	 * First item in chunk of DMA memory: 32-slot command list,
 	 * 32 bytes each in size
 	 */
-	ahci_port->cmd_slot = dma_alloc_coherent(AHCI_CMD_SLOT_SZ * 32,
+	ahci_port->cmd_slot = dma_alloc_coherent(AHCI_CMD_LIST_SZ,
 						  &ahci_port->cmd_slot_dma);
 	if (!ahci_port->cmd_slot) {
 		ret = -ENOMEM;
@@ -419,7 +419,7 @@ err_alloc2:
 			  AHCI_RX_FIS_SZ);
 err_alloc1:
 	dma_free_coherent(ahci_port->cmd_slot, ahci_port->cmd_slot_dma,
-			  AHCI_CMD_SLOT_SZ * 32);
+			  AHCI_CMD_LIST_SZ);
 err_alloc:
 	return ret;
 }

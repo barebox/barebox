@@ -179,7 +179,7 @@ struct ahci_port {
 	struct ahci_sg		*cmd_tbl_sg;
 	void			*cmd_tbl;
 	dma_addr_t		cmd_tbl_dma;
-	u32			rx_fis;
+	void			*rx_fis;
 	dma_addr_t		rx_fis_dma;
 };
 

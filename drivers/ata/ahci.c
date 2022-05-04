@@ -307,8 +307,7 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 	/*
 	 * Second item: Received-FIS area
 	 */
-	ahci_port->rx_fis = (unsigned long)dma_alloc_coherent(AHCI_RX_FIS_SZ,
-						&ahci_port->rx_fis_dma);
+	ahci_port->rx_fis = dma_alloc_coherent(AHCI_RX_FIS_SZ, &ahci_port->rx_fis_dma);
 	if (!ahci_port->rx_fis) {
 		ret = -ENOMEM;
 		goto err_alloc1;
@@ -422,7 +421,7 @@ err_init:
 	dma_free_coherent(ahci_port->cmd_tbl, ahci_port->cmd_tbl_dma,
 			  AHCI_CMD_TBL_SZ);
 err_alloc2:
-	dma_free_coherent((void *)ahci_port->rx_fis, ahci_port->rx_fis_dma,
+	dma_free_coherent(ahci_port->rx_fis, ahci_port->rx_fis_dma,
 			  AHCI_RX_FIS_SZ);
 err_alloc1:
 	dma_free_coherent(ahci_port->cmd_slot, ahci_port->cmd_slot_dma,

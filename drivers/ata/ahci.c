@@ -171,7 +171,7 @@ static int ahci_io(struct ahci_port *ahci_port, u8 *fis, int fis_len, void *rbuf
 
 	buf_dma = dma_map_single(ahci_port->ahci->dev, buf, buf_len, dma_dir);
 
-	memcpy((unsigned char *)ahci_port->cmd_tbl, fis, fis_len);
+	memcpy(ahci_port->cmd_tbl, fis, fis_len);
 
 	sg_count = ahci_fill_sg(ahci_port, buf_dma, buf_len);
 	opts = (fis_len >> 2) | (sg_count << 16);

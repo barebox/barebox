@@ -563,10 +563,14 @@ void ahci_info(struct device_d *dev)
 static int ahci_detect(struct device_d *dev)
 {
 	struct ahci_device *ahci = dev->priv;
+	int n_ports = max_t(int, ahci->n_ports, fls(ahci->port_map));
 	int i;
 
-	for (i = 0; i < ahci->n_ports; i++) {
+	for (i = 0; i < n_ports; i++) {
 		struct ahci_port *ahci_port = &ahci->ports[i];
+
+		if (!(ahci->port_map & (1 << i)))
+			continue;
 
 		ata_port_detect(&ahci_port->ata);
 	}
@@ -577,7 +581,7 @@ static int ahci_detect(struct device_d *dev)
 int ahci_add_host(struct ahci_device *ahci)
 {
 	u32 tmp, cap_save;
-	int i, ret;
+	int n_ports, i, ret;
 
 	ahci->host_flags = ATA_FLAG_SATA
 				| ATA_FLAG_NO_LEGACY
@@ -619,8 +623,13 @@ int ahci_add_host(struct ahci_device *ahci)
 	ahci_debug(ahci, "cap 0x%x  port_map 0x%x  n_ports %d\n",
 	      ahci->cap, ahci->port_map, ahci->n_ports);
 
-	for (i = 0; i < ahci->n_ports; i++) {
+	n_ports = max_t(int, ahci->n_ports, fls(ahci->port_map));
+
+	for (i = 0; i < n_ports; i++) {
 		struct ahci_port *ahci_port = &ahci->ports[i];
+
+		if (!(ahci->port_map & (1 << i)))
+			continue;
 
 		ahci_port->num = i;
 		ahci_port->ahci = ahci;

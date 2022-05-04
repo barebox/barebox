@@ -117,8 +117,10 @@ static void ahci_fill_cmd_slot(struct ahci_port *ahci_port, u32 opts)
 	ahci_port->cmd_slot->opts = cpu_to_le32(opts);
 	ahci_port->cmd_slot->status = 0;
 	ahci_port->cmd_slot->tbl_addr =
-		cpu_to_le32(ahci_port->cmd_tbl_dma & 0xffffffff);
-	ahci_port->cmd_slot->tbl_addr_hi = 0;
+		cpu_to_le32(lower_32_bits(ahci_port->cmd_tbl_dma));
+	if (ahci_port->ahci->cap & HOST_CAP_64)
+		ahci_port->cmd_slot->tbl_addr_hi =
+			cpu_to_le32(upper_32_bits(ahci_port->cmd_tbl_dma));
 }
 
 static int ahci_fill_sg(struct ahci_port *ahci_port, dma_addr_t buf_dma, int buf_len)
@@ -133,8 +135,9 @@ static int ahci_fill_sg(struct ahci_port *ahci_port, dma_addr_t buf_dma, int buf
 	while (buf_len) {
 		unsigned int now = min(AHCI_MAX_DATA_BYTE_COUNT, buf_len);
 
-		ahci_sg->addr = cpu_to_le32(buf_dma);
-		ahci_sg->addr_hi = 0;
+		ahci_sg->addr = cpu_to_le32(lower_32_bits(buf_dma));
+		if (ahci_port->ahci->cap & HOST_CAP_64)
+			ahci_sg->addr_hi = cpu_to_le32(upper_32_bits(buf_dma));
 		ahci_sg->flags_size = cpu_to_le32(now - 1);
 
 		buf_len -= now;
@@ -327,8 +330,12 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 
 	ahci_port->cmd_tbl_sg = ahci_port->cmd_tbl + AHCI_CMD_TBL_HDR_SZ;
 
-	ahci_port_write_f(ahci_port, PORT_LST_ADDR, ahci_port->cmd_slot_dma);
-	ahci_port_write_f(ahci_port, PORT_FIS_ADDR, ahci_port->rx_fis_dma);
+	ahci_port_write_f(ahci_port, PORT_LST_ADDR, lower_32_bits(ahci_port->cmd_slot_dma));
+	if (ahci_port->ahci->cap & HOST_CAP_64)
+		ahci_port_write_f(ahci_port, PORT_LST_ADDR_HI, upper_32_bits(ahci_port->cmd_slot_dma));
+	ahci_port_write_f(ahci_port, PORT_FIS_ADDR, lower_32_bits(ahci_port->rx_fis_dma));
+	if (ahci_port->ahci->cap & HOST_CAP_64)
+		ahci_port_write_f(ahci_port, PORT_FIS_ADDR_HI, upper_32_bits(ahci_port->rx_fis_dma));
 
 	/*
 	 * Add the spinup command to whatever mode bits may

@@ -121,7 +121,7 @@ static void ahci_fill_cmd_slot(struct ahci_port *ahci_port, u32 opts)
 	ahci_port->cmd_slot->tbl_addr_hi = 0;
 }
 
-static int ahci_fill_sg(struct ahci_port *ahci_port, const void *buf, int buf_len)
+static int ahci_fill_sg(struct ahci_port *ahci_port, dma_addr_t buf_dma, int buf_len)
 {
 	struct ahci_sg *ahci_sg = ahci_port->cmd_tbl_sg;
 	u32 sg_count;
@@ -133,12 +133,12 @@ static int ahci_fill_sg(struct ahci_port *ahci_port, const void *buf, int buf_le
 	while (buf_len) {
 		unsigned int now = min(AHCI_MAX_DATA_BYTE_COUNT, buf_len);
 
-		ahci_sg->addr = cpu_to_le32((u32)buf);
+		ahci_sg->addr = cpu_to_le32(buf_dma);
 		ahci_sg->addr_hi = 0;
 		ahci_sg->flags_size = cpu_to_le32(now - 1);
 
 		buf_len -= now;
-		buf += now;
+		buf_dma += now;
 		ahci_sg++;
 	}
 
@@ -151,20 +151,26 @@ static int ahci_io(struct ahci_port *ahci_port, u8 *fis, int fis_len, void *rbuf
 	u32 opts;
 	int sg_count;
 	int ret;
+	void *buf;
+	dma_addr_t buf_dma;
+	enum dma_data_direction dma_dir;
 
 	if (!ahci_link_ok(ahci_port, 1))
 		return -EIO;
 
-	if (wbuf)
-		dma_sync_single_for_device((unsigned long)wbuf, buf_len,
-					   DMA_TO_DEVICE);
-	if (rbuf)
-		dma_sync_single_for_device((unsigned long)rbuf, buf_len,
-					   DMA_FROM_DEVICE);
+	if (wbuf) {
+		buf = (void *)wbuf;
+		dma_dir = DMA_TO_DEVICE;
+	} else {
+		buf = rbuf;
+		dma_dir = DMA_FROM_DEVICE;
+	}
+
+	buf_dma = dma_map_single(ahci_port->ahci->dev, buf, buf_len, dma_dir);
 
 	memcpy((unsigned char *)ahci_port->cmd_tbl, fis, fis_len);
 
-	sg_count = ahci_fill_sg(ahci_port, rbuf ? rbuf : wbuf, buf_len);
+	sg_count = ahci_fill_sg(ahci_port, buf_dma, buf_len);
 	opts = (fis_len >> 2) | (sg_count << 16);
 	if (wbuf)
 		opts |= CMD_LIST_OPTS_WRITE;
@@ -174,17 +180,10 @@ static int ahci_io(struct ahci_port *ahci_port, u8 *fis, int fis_len, void *rbuf
 
 	ret = wait_on_timeout(WAIT_DATAIO,
 			(ahci_port_read(ahci_port, PORT_CMD_ISSUE) & 0x1) == 0);
-	if (ret)
-		return -ETIMEDOUT;
 
-	if (wbuf)
-		dma_sync_single_for_cpu((unsigned long)wbuf, buf_len,
-					DMA_TO_DEVICE);
-	if (rbuf)
-		dma_sync_single_for_cpu((unsigned long)rbuf, buf_len,
-					DMA_FROM_DEVICE);
+	dma_unmap_single(ahci_port->ahci->dev, buf_dma, buf_len, dma_dir);
 
-	return 0;
+	return ret;
 }
 
 /*

@@ -388,7 +388,12 @@ struct rsa_public_key *rsa_of_read_key(struct device_node *node)
 	struct rsa_public_key *key;
 	int err;
 
+	if (strncmp(node->name, "key-", 4))
+		return ERR_PTR(-EINVAL);
+
 	key = xzalloc(sizeof(*key));
+
+	key->key_name_hint = xstrdup(node->name + 4);
 
 	of_property_read_u32(node, "rsa,num-bits", &key->len);
 	of_property_read_u32(node, "rsa,n0-inverse", &key->n0inv);
@@ -439,35 +444,93 @@ void rsa_key_free(struct rsa_public_key *key)
 	free(key);
 }
 
-#ifdef CONFIG_CRYPTO_RSA_BUILTIN_KEYS
-#include "rsa-keys.h"
+static LIST_HEAD(rsa_keys);
 
-extern const struct rsa_public_key * const __rsa_keys_start;
-extern const struct rsa_public_key * const __rsa_keys_end;
-
-struct rsa_public_key *rsa_get_key(const char *name)
+const struct rsa_public_key *rsa_get_key(const char *name)
 {
 	const struct rsa_public_key *key;
-	struct rsa_public_key *new;
-	const struct rsa_public_key * const *iter;
 
-	for (iter = &__rsa_keys_start; iter != &__rsa_keys_end; iter++) {
-		key = *iter;
-		if (!strcmp(name, key->key_name_hint))
-			goto found;
+	list_for_each_entry(key, &rsa_keys, list) {
+		if (!strcmp(key->key_name_hint, name))
+			return key;
 	}
 
-	return ERR_PTR(-ENOENT);
-found:
+	return NULL;
+}
+
+static int rsa_key_add(struct rsa_public_key *key)
+{
+	if (rsa_get_key(key->key_name_hint))
+		return -EEXIST;
+
+	list_add_tail(&key->list, &rsa_keys);
+
+	return 0;
+}
+
+static struct rsa_public_key *rsa_key_dup(const struct rsa_public_key *key)
+{
+	struct rsa_public_key *new;
+
 	new = xmemdup(key, sizeof(*key));
 	new->modulus = xmemdup(key->modulus, key->len * sizeof(uint32_t));
 	new->rr = xmemdup(key->rr, key->len  * sizeof(uint32_t));
 
 	return new;
 }
-#else
-struct rsa_public_key *rsa_get_key(const char *name)
+
+extern const struct rsa_public_key * const __rsa_keys_start;
+extern const struct rsa_public_key * const __rsa_keys_end;
+
+static void rsa_init_keys_of(void)
 {
-	return ERR_PTR(-ENOENT);
+	struct device_node *sigs, *sig;
+	struct rsa_public_key *key;
+	int ret;
+
+	if (!IS_ENABLED(CONFIG_OFTREE))
+		return;
+
+	sigs = of_find_node_by_path("/signature");
+	if (!sigs)
+		return;
+
+	for_each_child_of_node(sigs, sig) {
+		key = rsa_of_read_key(sig);
+		if (IS_ERR(key)) {
+			pr_err("Cannot read rsa key from %s: %pe\n",
+			       sig->full_name, key);
+			continue;
+		}
+
+		ret = rsa_key_add(key);
+		if (ret)
+			pr_err("Cannot add rsa key %s: %s\n",
+				key->key_name_hint, strerror(-ret));
+	}
 }
+
+static int rsa_init_keys(void)
+{
+	const struct rsa_public_key * const *iter;
+	struct rsa_public_key *key;
+	int ret;
+
+	for (iter = &__rsa_keys_start; iter != &__rsa_keys_end; iter++) {
+		key = rsa_key_dup(*iter);
+		ret = rsa_key_add(key);
+		if (ret)
+			pr_err("Cannot add rsa key %s: %s\n",
+			       key->key_name_hint, strerror(-ret));
+	}
+
+	rsa_init_keys_of();
+
+	return 0;
+}
+
+device_initcall(rsa_init_keys);
+
+#ifdef CONFIG_CRYPTO_RSA_BUILTIN_KEYS
+#include "rsa-keys.h"
 #endif

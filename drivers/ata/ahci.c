@@ -192,14 +192,12 @@ static int ahci_io(struct ahci_port *ahci_port, u8 *fis, int fis_len, void *rbuf
 static int ahci_read_id(struct ata_port *ata, void *buf)
 {
 	struct ahci_port *ahci = container_of(ata, struct ahci_port, ata);
-	u8 fis[20];
 
-	memset(fis, 0, sizeof(fis));
-
-	/* Construct the FIS */
-	fis[0] = 0x27;			/* Host to device FIS. */
-	fis[1] = 1 << 7;		/* Command FIS. */
-	fis[2] = ATA_CMD_ID_ATA;	/* Command byte. */
+	u8 fis[20] = {
+		0x27,			/* Host to device FIS. */
+		1 << 7,			/* Command FIS. */
+		ATA_CMD_ID_ATA		/* Command byte. */
+	};
 
 	return ahci_io(ahci, fis, sizeof(fis), buf, NULL, SECTOR_SIZE);
 }
@@ -208,15 +206,12 @@ static int ahci_rw(struct ata_port *ata, void *rbuf, const void *wbuf,
 		sector_t block, blkcnt_t num_blocks)
 {
 	struct ahci_port *ahci = container_of(ata, struct ahci_port, ata);
-	u8 fis[20];
+	u8 fis[20] = {
+		0x27,			/* Host to device FIS. */
+		1 << 7			/* Command FIS. */
+	};
 	int ret;
 	int lba48 = ata_id_has_lba48(ata->id);
-
-	memset(fis, 0, sizeof(fis));
-
-	/* Construct the FIS */
-	fis[0] = 0x27;			/* Host to device FIS. */
-	fis[1] = 1 << 7;		/* Command FIS. */
 
 	/* Command byte. */
 	if (lba48)

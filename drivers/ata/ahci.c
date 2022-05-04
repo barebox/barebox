@@ -532,6 +532,7 @@ void ahci_print_info(struct ahci_device *ahci)
 	       "%s%s%s%s%s%s\n",
 	       cap & HOST_CAP_64 ? "64bit " : "",
 	       cap & HOST_CAP_NCQ ? "ncq " : "",
+	       cap & HOST_CAP_SNTF ? "sntf " : "",
 	       cap & HOST_CAP_SMPS ? "ilck " : "",
 	       cap & HOST_CAP_SSS ? "stag " : "",
 	       cap & HOST_CAP_ALPM ? "pm " : "",

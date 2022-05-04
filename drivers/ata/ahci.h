@@ -151,9 +151,12 @@ struct ahci_port {
 	unsigned		flags;
 	void __iomem		*port_mmio;
 	struct ahci_cmd_hdr	*cmd_slot;
+	dma_addr_t		cmd_slot_dma;
 	struct ahci_sg		*cmd_tbl_sg;
 	void			*cmd_tbl;
+	dma_addr_t		cmd_tbl_dma;
 	u32			rx_fis;
+	dma_addr_t		rx_fis_dma;
 };
 
 struct ahci_device {

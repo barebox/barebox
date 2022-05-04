@@ -117,7 +117,7 @@ static void ahci_fill_cmd_slot(struct ahci_port *ahci_port, u32 opts)
 	ahci_port->cmd_slot->opts = cpu_to_le32(opts);
 	ahci_port->cmd_slot->status = 0;
 	ahci_port->cmd_slot->tbl_addr =
-		cpu_to_le32((unsigned long)ahci_port->cmd_tbl & 0xffffffff);
+		cpu_to_le32(ahci_port->cmd_tbl_dma & 0xffffffff);
 	ahci_port->cmd_slot->tbl_addr_hi = 0;
 }
 
@@ -292,7 +292,7 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 	 * 32 bytes each in size
 	 */
 	ahci_port->cmd_slot = dma_alloc_coherent(AHCI_CMD_SLOT_SZ * 32,
-						 DMA_ADDRESS_BROKEN);
+						  &ahci_port->cmd_slot_dma);
 	if (!ahci_port->cmd_slot) {
 		ret = -ENOMEM;
 		goto err_alloc;
@@ -304,7 +304,7 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 	 * Second item: Received-FIS area
 	 */
 	ahci_port->rx_fis = (unsigned long)dma_alloc_coherent(AHCI_RX_FIS_SZ,
-							      DMA_ADDRESS_BROKEN);
+						&ahci_port->rx_fis_dma);
 	if (!ahci_port->rx_fis) {
 		ret = -ENOMEM;
 		goto err_alloc1;
@@ -315,7 +315,7 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 	 * and its scatter-gather table
 	 */
 	ahci_port->cmd_tbl = dma_alloc_coherent(AHCI_CMD_TBL_SZ,
-						DMA_ADDRESS_BROKEN);
+						 &ahci_port->cmd_tbl_dma);
 	if (!ahci_port->cmd_tbl) {
 		ret = -ENOMEM;
 		goto err_alloc2;
@@ -325,8 +325,8 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 
 	ahci_port->cmd_tbl_sg = ahci_port->cmd_tbl + AHCI_CMD_TBL_HDR_SZ;
 
-	ahci_port_write_f(ahci_port, PORT_LST_ADDR, (u32)ahci_port->cmd_slot);
-	ahci_port_write_f(ahci_port, PORT_FIS_ADDR, ahci_port->rx_fis);
+	ahci_port_write_f(ahci_port, PORT_LST_ADDR, ahci_port->cmd_slot_dma);
+	ahci_port_write_f(ahci_port, PORT_FIS_ADDR, ahci_port->rx_fis_dma);
 
 	/*
 	 * Add the spinup command to whatever mode bits may
@@ -410,11 +410,14 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 	ret = -ENODEV;
 
 err_init:
-	dma_free_coherent(ahci_port->cmd_tbl, 0, AHCI_CMD_TBL_SZ);
+	dma_free_coherent(ahci_port->cmd_tbl, ahci_port->cmd_tbl_dma,
+			  AHCI_CMD_TBL_SZ);
 err_alloc2:
-	dma_free_coherent((void *)ahci_port->rx_fis, 0, AHCI_RX_FIS_SZ);
+	dma_free_coherent((void *)ahci_port->rx_fis, ahci_port->rx_fis_dma,
+			  AHCI_RX_FIS_SZ);
 err_alloc1:
-	dma_free_coherent(ahci_port->cmd_slot, 0, AHCI_CMD_SLOT_SZ * 32);
+	dma_free_coherent(ahci_port->cmd_slot, ahci_port->cmd_slot_dma,
+			  AHCI_CMD_SLOT_SZ * 32);
 err_alloc:
 	return ret;
 }

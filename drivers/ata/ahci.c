@@ -172,7 +172,7 @@ static int ahci_io(struct ahci_port *ahci_port, u8 *fis, int fis_len, void *rbuf
 	ahci_port_write_f(ahci_port, PORT_CMD_ISSUE, 1);
 
 	ret = wait_on_timeout(WAIT_DATAIO,
-			(readl(ahci_port->port_mmio + PORT_CMD_ISSUE) & 0x1) == 0);
+			(ahci_port_read(ahci_port, PORT_CMD_ISSUE) & 0x1) == 0);
 	if (ret)
 		return -ETIMEDOUT;
 
@@ -274,11 +274,8 @@ static int ahci_write(struct ata_port *ata, const void *buf, sector_t block,
 
 static int ahci_init_port(struct ahci_port *ahci_port)
 {
-	void __iomem *port_mmio;
 	u32 val, cmd;
 	int ret;
-
-	port_mmio = ahci_port->port_mmio;
 
 	/* make sure port is not active */
 	val = ahci_port_read(ahci_port, PORT_CMD);
@@ -375,16 +372,16 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 	ahci_port_info(ahci_port, "Spinning up device...\n");
 
 	ret = wait_on_timeout(WAIT_SPINUP,
-			((readl(port_mmio + PORT_TFDATA) &
+			((ahci_port_read(ahci_port, PORT_TFDATA) &
 			 (ATA_STATUS_BUSY | ATA_STATUS_DRQ)) == 0)
-			|| ((readl(port_mmio + PORT_SCR_STAT) & 0xf) == 1));
+			|| ((ahci_port_read(ahci_port, PORT_SCR_STAT) & 0xf) == 1));
 	if (ret) {
 		ahci_port_info(ahci_port, "timeout.\n");
 		ret = -ENODEV;
 		goto err_init;
 	}
 
-	if ((readl(port_mmio + PORT_SCR_STAT) & 0xf) == 1) {
+	if ((ahci_port_read(ahci_port, PORT_SCR_STAT) & 0xf) == 1) {
 		ahci_port_info(ahci_port, "down.\n");
 		ret = -ENODEV;
 		goto err_init;
@@ -570,7 +567,6 @@ static int ahci_detect(struct device_d *dev)
 
 int ahci_add_host(struct ahci_device *ahci)
 {
-	u8 *mmio = (u8 *)ahci->mmio_base;
 	u32 tmp, cap_save;
 	int i, ret;
 
@@ -584,7 +580,7 @@ int ahci_add_host(struct ahci_device *ahci)
 
 	ahci_debug(ahci, "ahci_host_init: start\n");
 
-	cap_save = readl(mmio + HOST_CAP);
+	cap_save = ahci_ioread(ahci, HOST_CAP);
 	cap_save &= ((1 << 28) | (1 << 17));
 	cap_save |= (1 << 27);  /* Staggered Spin-up. Not needed. */
 
@@ -597,7 +593,7 @@ int ahci_add_host(struct ahci_device *ahci)
 	 * reset must complete within 1 second, or
 	 * the hardware should be considered fried.
 	 */
-	ret = wait_on_timeout(SECOND, (readl(mmio + HOST_CTL) & HOST_RESET) == 0);
+	ret = wait_on_timeout(SECOND, (ahci_ioread(ahci, HOST_CTL) & HOST_RESET) == 0);
 	if (ret) {
 		ahci_debug(ahci,"controller reset failed (0x%x)\n", tmp);
 		return -ENODEV;
@@ -620,7 +616,7 @@ int ahci_add_host(struct ahci_device *ahci)
 		ahci_port->num = i;
 		ahci_port->ahci = ahci;
 		ahci_port->ata.dev = ahci->dev;
-		ahci_port->port_mmio = ahci_port_base(mmio, i);
+		ahci_port->port_mmio = ahci_port_base(ahci->mmio_base, i);
 		ahci_port->ata.ops = &ahci_ops;
 		ata_port_register(&ahci_port->ata);
 	}

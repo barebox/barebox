@@ -101,7 +101,7 @@ static inline void __iomem *ahci_port_base(void __iomem *base, int port)
 
 static int ahci_link_ok(struct ahci_port *ahci_port, int verbose)
 {
-	u32 val = ahci_port_read(ahci_port, PORT_SCR_STAT) & 0xf;
+	u32 val = ahci_port_read(ahci_port, PORT_SCR_STAT) & PORT_SCR_STAT_DET;
 
 	if (val == 0x3)
 		return true;
@@ -166,7 +166,7 @@ static int ahci_io(struct ahci_port *ahci_port, u8 *fis, int fis_len, void *rbuf
 	sg_count = ahci_fill_sg(ahci_port, rbuf ? rbuf : wbuf, buf_len);
 	opts = (fis_len >> 2) | (sg_count << 16);
 	if (wbuf)
-		opts |= 1 << 6;
+		opts |= CMD_LIST_OPTS_WRITE;
 	ahci_fill_cmd_slot(ahci_port, opts);
 
 	ahci_port_write_f(ahci_port, PORT_CMD_ISSUE, 1);
@@ -355,7 +355,7 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 	 * rarely has it taken between 1-2 ms. Never seen it above 2 ms.
 	 */
 	ret = wait_on_timeout(WAIT_LINKUP,
-			(ahci_port_read(ahci_port, PORT_SCR_STAT) & 0xf) == 0x3);
+			(ahci_port_read(ahci_port, PORT_SCR_STAT) & PORT_SCR_STAT_DET) == 0x3);
 	if (ret) {
 		ahci_port_info(ahci_port, "SATA link timeout\n");
 		ret = -ETIMEDOUT;
@@ -373,15 +373,16 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 
 	ret = wait_on_timeout(WAIT_SPINUP,
 			((ahci_port_read(ahci_port, PORT_TFDATA) &
-			 (ATA_STATUS_BUSY | ATA_STATUS_DRQ)) == 0)
-			|| ((ahci_port_read(ahci_port, PORT_SCR_STAT) & 0xf) == 1));
+			 (ATA_STATUS_BUSY | ATA_STATUS_DRQ)) == 0) ||
+			((ahci_port_read(ahci_port, PORT_SCR_STAT) &
+			 PORT_SCR_STAT_DET) == 1));
 	if (ret) {
 		ahci_port_info(ahci_port, "timeout.\n");
 		ret = -ENODEV;
 		goto err_init;
 	}
 
-	if ((ahci_port_read(ahci_port, PORT_SCR_STAT) & 0xf) == 1) {
+	if ((ahci_port_read(ahci_port, PORT_SCR_STAT) & PORT_SCR_STAT_DET) == 1) {
 		ahci_port_info(ahci_port, "down.\n");
 		ret = -ENODEV;
 		goto err_init;
@@ -408,7 +409,7 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 
 	ahci_port_debug(ahci_port, "status: 0x%08x\n", val);
 
-	if ((val & 0xf) == 0x03)
+	if ((val & PORT_SCR_STAT_DET) == 0x3)
 		return 0;
 
 	ret = -ENODEV;
@@ -581,8 +582,8 @@ int ahci_add_host(struct ahci_device *ahci)
 	ahci_debug(ahci, "ahci_host_init: start\n");
 
 	cap_save = ahci_ioread(ahci, HOST_CAP);
-	cap_save &= ((1 << 28) | (1 << 17));
-	cap_save |= (1 << 27);  /* Staggered Spin-up. Not needed. */
+	cap_save &= (HOST_SMPS | HOST_SPM);
+	cap_save |= HOST_SSS;  /* Staggered Spin-up. Not needed. */
 
 	/* global controller reset */
 	tmp = ahci_ioread(ahci, HOST_CTL);
@@ -605,7 +606,7 @@ int ahci_add_host(struct ahci_device *ahci)
 
 	ahci->cap = ahci_ioread(ahci, HOST_CAP);
 	ahci->port_map = ahci_ioread(ahci, HOST_PORTS_IMPL);
-	ahci->n_ports = (ahci->cap & 0x1f) + 1;
+	ahci->n_ports = (ahci->cap & HOST_NP) + 1;
 
 	ahci_debug(ahci, "cap 0x%x  port_map 0x%x  n_ports %d\n",
 	      ahci->cap, ahci->port_map, ahci->n_ports);

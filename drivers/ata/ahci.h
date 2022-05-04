@@ -33,6 +33,12 @@
 #define HOST_VERSION		0x10 /* AHCI spec. version compliancy */
 #define HOST_CAP2		0x24 /* host capabilities, extended */
 
+/* HOST_CAP bits */
+#define HOST_SMPS		(1 << 28)   /* supports mechanical presence switch */
+#define HOST_SSS		(1 << 27)   /* supports staggered spin-up */
+#define HOST_SPM		(1 << 17)   /* supports port multiplier */
+#define HOST_NP			(0x1f << 0) /* number of ports */
+
 /* HOST_CTL bits */
 #define HOST_RESET		(1 << 0)  /* reset controller; self-clear */
 #define HOST_IRQ_EN		(1 << 1)  /* global IRQ enable */
@@ -98,6 +104,9 @@
 #define PORT_CMD_ICC_PARTIAL	(0x2 << 28) /* Put i/f in partial state */
 #define PORT_CMD_ICC_SLUMBER	(0x6 << 28) /* Put i/f in slumber state */
 
+/* PORT_SCR_STAT bits */
+#define PORT_SCR_STAT_DET	(0xf << 0) /* device detection */
+
 #define AHCI_MAX_PORTS		32
 
 /* SETFEATURES stuff */
@@ -129,6 +138,9 @@
 #define ATA_FLAG_SATA_RESET	(1 << 7) /* (obsolete) use COMRESET */
 #define ATA_FLAG_PIO_DMA	(1 << 8) /* PIO cmds via DMA */
 #define ATA_FLAG_NO_ATAPI	(1 << 11) /* No ATAPI support */
+
+/* Command list entry DW0 bits */
+#define CMD_LIST_OPTS_WRITE	(1 << 6) /* the direction is a device write */
 
 struct ahci_device;
 

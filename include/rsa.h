@@ -55,4 +55,8 @@ struct rsa_public_key *rsa_of_read_key(struct device_node *node);
 void rsa_key_free(struct rsa_public_key *key);
 const struct rsa_public_key *rsa_get_key(const char *name);
 
+const struct rsa_public_key *rsa_key_next(const struct rsa_public_key *prev);
+
+#define for_each_rsa_key(key) \
+		for (key = rsa_key_next(NULL); key; key = rsa_key_next(key))
 #endif

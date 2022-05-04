@@ -446,6 +446,15 @@ void rsa_key_free(struct rsa_public_key *key)
 
 static LIST_HEAD(rsa_keys);
 
+const struct rsa_public_key *rsa_key_next(const struct rsa_public_key *prev)
+{
+	prev = list_prepare_entry(prev, &rsa_keys, list);
+	list_for_each_entry_continue(prev, &rsa_keys, list)
+		return prev;
+
+	return NULL;
+}
+
 const struct rsa_public_key *rsa_get_key(const char *name)
 {
 	const struct rsa_public_key *key;

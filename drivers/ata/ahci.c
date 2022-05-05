@@ -310,15 +310,15 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 	/*
 	 * Second item: Received-FIS area
 	 */
-	ahci_port->rx_fis = mem + AHCI_CMD_SLOT_SZ;
-	ahci_port->rx_fis_dma = mem_dma + AHCI_CMD_SLOT_SZ;
+	ahci_port->rx_fis = mem + AHCI_CMD_LIST_SZ;
+	ahci_port->rx_fis_dma = mem_dma + AHCI_CMD_LIST_SZ;
 
 	/*
 	 * Third item: data area for storing a single command
 	 * and its scatter-gather table
 	 */
-	ahci_port->cmd_tbl = mem + AHCI_CMD_SLOT_SZ + AHCI_RX_FIS_SZ;
-	ahci_port->cmd_tbl_dma = mem_dma + AHCI_CMD_SLOT_SZ + AHCI_RX_FIS_SZ;
+	ahci_port->cmd_tbl = mem + AHCI_CMD_LIST_SZ + AHCI_RX_FIS_SZ;
+	ahci_port->cmd_tbl_dma = mem_dma + AHCI_CMD_LIST_SZ + AHCI_RX_FIS_SZ;
 
 	ahci_port_debug(ahci_port, "cmd_tbl = 0x%p (0x%pa)\n",
 			ahci_port->cmd_tbl, ahci_port->cmd_tbl_dma);

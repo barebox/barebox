@@ -433,38 +433,29 @@ unsigned int omap4_revision(void)
 		return OMAP4430_ES1_0;
 	case MIDR_CORTEX_A9_R1P2:
 		switch (readl(CONTROL_ID_CODE)) {
-		case OMAP4_CONTROL_ID_CODE_ES2_0:
-			return OMAP4430_ES2_0;
-			break;
 		case OMAP4_CONTROL_ID_CODE_ES2_1:
 			return OMAP4430_ES2_1;
-			break;
 		case OMAP4_CONTROL_ID_CODE_ES2_2:
 			return OMAP4430_ES2_2;
-			break;
 		default:
-			return OMAP4430_ES2_0;
 			break;
 		}
-		break;
+		return OMAP4430_ES2_0;
 	case MIDR_CORTEX_A9_R1P3:
 		return OMAP4430_ES2_3;
-		break;
 	case MIDR_CORTEX_A9_R2P10:
 		switch (readl(CONTROL_ID_CODE)) {
 		case OMAP4460_CONTROL_ID_CODE_ES1_1:
 			return OMAP4460_ES1_1;
-			break;
-		case OMAP4460_CONTROL_ID_CODE_ES1_0:
 		default:
-			return OMAP4460_ES1_0;
 			break;
 		}
-		break;
+		return OMAP4460_ES1_0;
 	default:
-		return OMAP4430_SILICON_ID_INVALID;
 		break;
 	}
+
+	return OMAP4430_SILICON_ID_INVALID;
 }
 
 /*

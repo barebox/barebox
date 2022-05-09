@@ -560,16 +560,13 @@
 	status = "okay";
 };
 
-&usbdrd_dwc3 {
+&usb_host0_xhci {
 	dr_mode = "host";
 	extcon = <&usb2phy0>;
-};
-
-&usbdrd30 {
 	status = "okay";
 };
 
-&usbhost30 {
+&usb_host1_xhci {
 	status = "okay";
 };
 

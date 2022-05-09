@@ -23,6 +23,11 @@
 
 #define DWC3_DEFAULT_AUTOSUSPEND_DELAY	5000 /* ms */
 
+struct dwc3_match_data {
+	const struct clk_bulk_data	*clks;
+	const int			num_clks;
+};
+
 /**
  * dwc3_get_dr_mode - Validates and sets dr_mode
  * @dwc: pointer to our context structure
@@ -325,12 +330,6 @@ err1:
 err0:
 	return ret;
 }
-
-static const struct clk_bulk_data dwc3_core_clks[] = {
-	{ .id = "ref" },
-	{ .id = "bus_early" },
-	{ .id = "suspend" },
-};
 
 /*
  * dwc3_frame_length_adjustment - Adjusts frame length if required
@@ -1098,20 +1097,23 @@ static void dwc3_coresoft_reset(struct dwc3 *dwc)
 
 static int dwc3_probe(struct device_d *dev)
 {
+	const struct dwc3_match_data *match;
 	struct dwc3		*dwc;
 	int			ret;
 
 	dwc = xzalloc(sizeof(*dwc));
 	dev->priv = dwc;
 
-	dwc->clks = xmemdup(dwc3_core_clks, sizeof(dwc3_core_clks));
+	match = device_get_match_data(dev);
+	dwc->clks = xmemdup(match->clks, match->num_clks *
+			    sizeof(struct clk_bulk_data));
 	dwc->dev = dev;
 	dwc->regs = dev_get_mem_region(dwc->dev, 0) + DWC3_GLOBALS_REGS_START;
 
 	dwc3_get_properties(dwc);
 
 	if (dev->device_node) {
-		dwc->num_clks = ARRAY_SIZE(dwc3_core_clks);
+		dwc->num_clks = match->num_clks;
 
 		if (of_find_property(dev->device_node, "clocks", NULL)) {
 			ret = clk_bulk_get(dev, dwc->num_clks, dwc->clks);
@@ -1176,12 +1178,40 @@ static void dwc3_remove(struct device_d *dev)
 	clk_bulk_put(dwc->num_clks, dwc->clks);
 }
 
+static const struct clk_bulk_data dwc3_core_clks[] = {
+	{ .id = "ref" },
+	{ .id = "bus_early" },
+	{ .id = "suspend" },
+};
+
+static const struct dwc3_match_data dwc3_default = {
+	.clks = dwc3_core_clks,
+	.num_clks = ARRAY_SIZE(dwc3_core_clks),
+};
+
+static const struct clk_bulk_data dwc3_core_clks_rk3568[] = {
+	{ .id = "ref_clk" },
+	{ .id = "bus_clk" },
+	{ .id = "suspend_clk" },
+};
+
+static const struct dwc3_match_data dwc3_rk3568 = {
+	.clks = dwc3_core_clks_rk3568,
+	.num_clks = ARRAY_SIZE(dwc3_core_clks_rk3568),
+};
+
 static const struct of_device_id of_dwc3_match[] = {
 	{
-		.compatible = "snps,dwc3"
+		.compatible = "snps,dwc3",
+		.data = &dwc3_default,
 	},
 	{
-		.compatible = "synopsys,dwc3"
+		.compatible = "synopsys,dwc3",
+		.data = &dwc3_default,
+	},
+	{
+		.compatible = "rockchip,rk3568-dwc3",
+		.data = &dwc3_rk3568,
 	},
 	{ },
 };

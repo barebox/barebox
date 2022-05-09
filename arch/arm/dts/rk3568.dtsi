@@ -367,11 +367,10 @@
 		#phy-cells = <1>;
 		clocks = <&pmucru CLK_PCIEPHY0_REF>, <&cru PCLK_PIPEPHY0>,
 			 <&cru PCLK_PIPE>;
-		clock-names = "refclk", "apbclk", "pipe_clk";
+		clock-names = "ref", "apb", "pipe";
 		assigned-clocks = <&pmucru CLK_PCIEPHY0_REF>;
 		assigned-clock-rates = <24000000>;
-		resets = <&cru SRST_P_PIPEPHY0>, <&cru SRST_PIPEPHY0>;
-		reset-names = "combphy-apb", "combphy";
+		resets = <&cru SRST_PIPEPHY0>;
 		rockchip,pipe-grf = <&pipegrf>;
 		rockchip,pipe-phy-grf = <&pipe_phy_grf0>;
 		status = "disabled";
@@ -383,11 +382,10 @@
 		#phy-cells = <1>;
 		clocks = <&pmucru CLK_PCIEPHY1_REF>, <&cru PCLK_PIPEPHY1>,
 			 <&cru PCLK_PIPE>;
-		clock-names = "refclk", "apbclk", "pipe_clk";
+		clock-names = "ref", "apb", "pipe";
 		assigned-clocks = <&pmucru CLK_PCIEPHY1_REF>;
 		assigned-clock-rates = <24000000>;
-		resets = <&cru SRST_P_PIPEPHY1>, <&cru SRST_PIPEPHY1>;
-		reset-names = "combphy-apb", "combphy";
+		resets = <&cru SRST_PIPEPHY1>;
 		rockchip,pipe-grf = <&pipegrf>;
 		rockchip,pipe-phy-grf = <&pipe_phy_grf1>;
 		status = "disabled";

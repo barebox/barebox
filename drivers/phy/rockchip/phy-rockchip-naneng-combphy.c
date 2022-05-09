@@ -83,7 +83,6 @@ struct rockchip_combphy_priv {
 	struct regmap *pipe_grf;
 	struct regmap *phy_grf;
 	struct phy *phy;
-	struct reset_control *apb_rst;
 	struct reset_control *phy_rst;
 	const struct rockchip_combphy_cfg *cfg;
 };
@@ -317,17 +316,7 @@ static int rockchip_combphy_parse_dt(struct device_d *dev,
 		param_write(priv->pipe_grf, &phy_cfg->grfcfg->pipe_sgmii_mac_sel,
 			    true);
 
-	priv->apb_rst = reset_control_get(dev, "combphy-apb");
-	if (IS_ERR(priv->apb_rst)) {
-		ret = PTR_ERR(priv->apb_rst);
-
-		if (ret != -EPROBE_DEFER)
-			dev_warn(dev, "failed to get apb reset\n");
-
-		return ret;
-	}
-
-	priv->phy_rst = reset_control_get(dev, "combphy");
+	priv->phy_rst = reset_control_get(dev, NULL);
 	if (IS_ERR(priv->phy_rst)) {
 		ret = PTR_ERR(priv->phy_rst);
 
@@ -579,9 +568,9 @@ static const struct rockchip_combphy_grfcfg rk3568_combphy_grfcfgs = {
 };
 
 static const struct clk_bulk_data rk3568_clks[] = {
-	{ .id = "refclk" },
-	{ .id = "apbclk" },
-	{ .id = "pipe_clk" },
+	{ .id = "ref" },
+	{ .id = "apb" },
+	{ .id = "pipe" },
 };
 
 static const struct rockchip_combphy_cfg rk3568_combphy_cfgs = {

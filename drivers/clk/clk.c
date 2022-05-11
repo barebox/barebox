@@ -230,7 +230,7 @@ int clk_set_parent(struct clk *clk, struct clk *newparent)
 {
 	struct clk_hw *hw;
 	int i, ret;
-	struct clk *curparent;
+	struct clk *curparent = clk_get_parent(clk);
 
 	if (!clk || !newparent)
 		return 0;
@@ -256,8 +256,6 @@ int clk_set_parent(struct clk *clk, struct clk *newparent)
 
 	if (i == clk->num_parents)
 		return -EINVAL;
-
-	curparent = clk_get_parent(clk);
 
 	if (clk->enable_count)
 		clk_enable(newparent);
@@ -292,7 +290,7 @@ struct clk *clk_get_parent(struct clk *clk)
 	struct clk_hw *hw;
 	int idx;
 
-	if (IS_ERR(clk))
+	if (IS_ERR_OR_NULL(clk))
 		return clk;
 
 	if (!clk->num_parents)

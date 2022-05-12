@@ -58,6 +58,7 @@ struct header {
 
 static struct net_connection *dns_con;
 static uint64_t dns_timer_start;
+static uint16_t dns_req_id;
 static int dns_state;
 static IPaddr_t dns_ip;
 
@@ -70,9 +71,12 @@ static int dns_send(const char *name)
 	unsigned char *p, *s, *fullname, *dotptr;
 	const unsigned char *domain;
 
+	/* generate "difficult" to predict transaction id */
+	dns_req_id = dns_timer_start + (dns_timer_start >> 16);
+
 	/* Prepare DNS packet header */
 	header           = (struct header *)packet;
-	header->tid      = 1;
+	header->tid      = htons(dns_req_id);
 	header->flags    = htons(0x100);	/* standard query */
 	header->nqueries = htons(1);		/* Just one query */
 	header->nanswers = 0;
@@ -126,6 +130,12 @@ static void dns_recv(struct header *header, unsigned len)
 	short tmp;
 
 	pr_debug("%s\n", __func__);
+
+	/* Only accept responses with the expected request id */
+	if (ntohs(header->tid) != dns_req_id) {
+		pr_debug("DNS response with incorrect id\n");
+		return;
+	}
 
 	/* We sent 1 query. We want to see more that 1 answer. */
 	if (ntohs(header->nqueries) != 1)

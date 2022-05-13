@@ -394,7 +394,7 @@ imx_ddrc_sdram_size(void __iomem *ddrc, const u32 addrmap[DDRC_ADDRMAP_LENGTH],
 	}
 
 	/* Bus width in bytes, 0 means half byte or 4-bit mode */
-	if (is_imx8)
+	if (is_imx8 && !(mstr & DDRC_MSTR_LPDDR4))
 		width = (1 << FIELD_GET(DDRC_MSTR_DEVICE_CONFIG, mstr)) >> 1;
 	else
 		width = 4;

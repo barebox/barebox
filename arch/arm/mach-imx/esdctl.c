@@ -350,6 +350,8 @@ static int vf610_ddrmc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
 #define DDRC_ADDRMAP8_BG_B1			GENMASK(13,  8)
 #define DDRC_ADDRMAP8_BG_B0			GENMASK(4,  0)
 
+#define DDRC_ADDRMAP_LENGTH			9
+
 static unsigned int
 imx_ddrc_count_bits(unsigned int bits, const u8 config[],
 		     unsigned int config_num)
@@ -365,7 +367,7 @@ imx_ddrc_count_bits(unsigned int bits, const u8 config[],
 }
 
 static resource_size_t
-imx_ddrc_sdram_size(void __iomem *ddrc, const u32 addrmap[],
+imx_ddrc_sdram_size(void __iomem *ddrc, const u32 addrmap[DDRC_ADDRMAP_LENGTH],
 		    u8 col_max, const u8 col_b[], unsigned int col_b_num,
 		    u8 row_max, const u8 row_b[], unsigned int row_b_num,
 		    bool reduced_adress_space, bool is_imx8)
@@ -446,7 +448,7 @@ imx_ddrc_sdram_size(void __iomem *ddrc, const u32 addrmap[],
 
 static resource_size_t imx8m_ddrc_sdram_size(void __iomem *ddrc)
 {
-	const u32 addrmap[] = {
+	const u32 addrmap[DDRC_ADDRMAP_LENGTH] = {
 		readl(ddrc + DDRC_ADDRMAP(0)),
 		readl(ddrc + DDRC_ADDRMAP(1)),
 		readl(ddrc + DDRC_ADDRMAP(2)),
@@ -498,7 +500,7 @@ static int imx8m_ddrc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
 
 static resource_size_t imx7d_ddrc_sdram_size(void __iomem *ddrc)
 {
-	const u32 addrmap[] = {
+	const u32 addrmap[DDRC_ADDRMAP_LENGTH] = {
 		readl(ddrc + DDRC_ADDRMAP(0)),
 		readl(ddrc + DDRC_ADDRMAP(1)),
 		readl(ddrc + DDRC_ADDRMAP(2)),

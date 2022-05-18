@@ -301,10 +301,13 @@ static int of_translate_one(struct device_node *parent, struct of_bus *bus,
 	 *
 	 * As far as we know, this damage only exists on Apple machines, so
 	 * This code is only enabled on powerpc. --gcl
+	 *
+	 * This quirk also applies for 'dma-ranges' which frequently exist in
+	 * child nodes without 'dma-ranges' in the parent nodes. --RobH
 	 */
 	ranges = of_get_property(parent, rprop, &rlen);
 #if !defined(CONFIG_PPC)
-	if (ranges == NULL) {
+	if (ranges == NULL && strcmp(rprop, "dma-ranges")) {
 		pr_vdebug("OF: no ranges; cannot translate\n");
 		return 1;
 	}

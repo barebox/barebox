@@ -111,6 +111,10 @@ static int dsa_port_start(struct eth_device *edev)
 
 	dsa_port_set_ethaddr(edev);
 
+	ret = phy_wait_aneg_done(dp->edev.phydev);
+	if (ret)
+		return ret;
+
 	if (ops->port_enable) {
 		ret = ops->port_enable(dp, dp->index, dp->edev.phydev);
 		if (ret)

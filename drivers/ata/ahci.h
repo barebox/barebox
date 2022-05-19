@@ -10,13 +10,15 @@
 #define AHCI_PCI_BAR		0x24
 #define AHCI_MAX_SG		56 /* hardware max is 64K */
 #define AHCI_CMD_SLOT_SZ	32
-#define AHCI_MAX_CMD_SLOT	32
+#define AHCI_MAX_CMDS		32
+#define AHCI_CMD_LIST_SZ	(AHCI_CMD_SLOT_SZ * AHCI_MAX_CMDS)
 #define AHCI_RX_FIS_SZ		256
 #define AHCI_CMD_TBL_HDR_SZ	0x80
 #define AHCI_CMD_TBL_CDB	0x40
-#define AHCI_CMD_TBL_SZ		AHCI_CMD_TBL_HDR_SZ + (AHCI_MAX_SG * 32)
-#define AHCI_PORT_PRIV_DMA_SZ	(AHCI_CMD_SLOT_SZ * AHCI_MAX_CMD_SLOT + \
-				AHCI_CMD_TBL_SZ	+ AHCI_RX_FIS_SZ)
+#define AHCI_CMD_TBL_ITM_SZ	16
+#define AHCI_CMD_TBL_SZ		(AHCI_CMD_TBL_HDR_SZ + (AHCI_MAX_SG * AHCI_CMD_TBL_ITM_SZ))
+#define AHCI_PORT_PRIV_DMA_SZ	(AHCI_CMD_LIST_SZ + AHCI_CMD_TBL_SZ + AHCI_RX_FIS_SZ)
+
 #define AHCI_CMD_ATAPI		(1 << 5)
 #define AHCI_CMD_WRITE		(1 << 6)
 #define AHCI_CMD_PREFETCH	(1 << 7)
@@ -32,6 +34,34 @@
 #define HOST_PORTS_IMPL		0x0c /* bitmap of implemented ports */
 #define HOST_VERSION		0x10 /* AHCI spec. version compliancy */
 #define HOST_CAP2		0x24 /* host capabilities, extended */
+
+/* HOST_CAP bits */
+#define HOST_CAP_64		(1 << 31)   /* PCI DAC (64-bit DMA) support */
+#define HOST_CAP_NCQ		(1 << 30)   /* Native Command Queueing */
+#define HOST_CAP_SNTF		(1 << 29)   /* SNotification register */
+#define HOST_CAP_SMPS		(1 << 28)   /* Supports mechanical presence switch */
+#define HOST_CAP_SSS		(1 << 27)   /* Supports staggered spin-up */
+#define HOST_CAP_ALPM		(1 << 26)   /* Aggressive Link PM support */
+#define HOST_CAP_LED		(1 << 25)   /* Supports activity LED */
+#define HOST_CAP_CLO		(1 << 24)   /* Command List Override support */
+#define HOST_CAP_ISS		(0xf << 20) /* Interface Speed Support */
+#define HOST_CAP_RESERVED	(1 << 19)   /* Reserved bit */
+#define HOST_CAP_ONLY		(1 << 18)   /* Supports AHCI mode only */
+#define HOST_CAP_SPM		(1 << 17)   /* Supports port multiplier */
+#define HOST_CAP_FBS		(1 << 16)   /* FIS-based switching support */
+#define HOST_CAP_PIO_MULTI	(1 << 15)   /* PIO multiple DRQ support */
+#define HOST_CAP_SSC		(1 << 14)   /* Slumber state capable */
+#define HOST_CAP_PART		(1 << 13)   /* Partial state capable */
+#define HOST_CAP_NCS		(0x1f << 8) /* Number of Command Slots */
+#define HOST_CAP_CCC		(1 << 7)    /* Command Completion Coalescing */
+#define HOST_CAP_EMS		(1 << 6)    /* Enclosure Management support */
+#define HOST_CAP_SXS		(1 << 5)    /* Supports External SATA */
+#define HOST_CAP_NP		(0x1f << 0) /* Number of ports */
+
+/* HOST_CAP2 bits */
+#define HOST_CAP2_APST		(1 << 2)    /* Automatic partial to slumber */
+#define HOST_CAP2_NVMHCI	(1 << 1)    /* NVMHCI supported */
+#define HOST_CAP2_BOH		(1 << 0)    /* BIOS/OS handoff supported */
 
 /* HOST_CTL bits */
 #define HOST_RESET		(1 << 0)  /* reset controller; self-clear */
@@ -98,6 +128,9 @@
 #define PORT_CMD_ICC_PARTIAL	(0x2 << 28) /* Put i/f in partial state */
 #define PORT_CMD_ICC_SLUMBER	(0x6 << 28) /* Put i/f in slumber state */
 
+/* PORT_SCR_STAT bits */
+#define PORT_SCR_STAT_DET	(0xf << 0) /* device detection */
+
 #define AHCI_MAX_PORTS		32
 
 /* SETFEATURES stuff */
@@ -130,6 +163,9 @@
 #define ATA_FLAG_PIO_DMA	(1 << 8) /* PIO cmds via DMA */
 #define ATA_FLAG_NO_ATAPI	(1 << 11) /* No ATAPI support */
 
+/* Command list entry DW0 bits */
+#define CMD_LIST_OPTS_WRITE	(1 << 6) /* the direction is a device write */
+
 struct ahci_device;
 
 struct ahci_port {
@@ -139,9 +175,12 @@ struct ahci_port {
 	unsigned		flags;
 	void __iomem		*port_mmio;
 	struct ahci_cmd_hdr	*cmd_slot;
+	dma_addr_t		cmd_slot_dma;
 	struct ahci_sg		*cmd_tbl_sg;
 	void			*cmd_tbl;
-	u32			rx_fis;
+	dma_addr_t		cmd_tbl_dma;
+	void			*rx_fis;
+	dma_addr_t		rx_fis_dma;
 };
 
 struct ahci_device {

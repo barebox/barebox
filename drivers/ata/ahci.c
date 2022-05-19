@@ -101,7 +101,7 @@ static inline void __iomem *ahci_port_base(void __iomem *base, int port)
 
 static int ahci_link_ok(struct ahci_port *ahci_port, int verbose)
 {
-	u32 val = ahci_port_read(ahci_port, PORT_SCR_STAT) & 0xf;
+	u32 val = ahci_port_read(ahci_port, PORT_SCR_STAT) & PORT_SCR_STAT_DET;
 
 	if (val == 0x3)
 		return true;
@@ -117,11 +117,13 @@ static void ahci_fill_cmd_slot(struct ahci_port *ahci_port, u32 opts)
 	ahci_port->cmd_slot->opts = cpu_to_le32(opts);
 	ahci_port->cmd_slot->status = 0;
 	ahci_port->cmd_slot->tbl_addr =
-		cpu_to_le32((unsigned long)ahci_port->cmd_tbl & 0xffffffff);
-	ahci_port->cmd_slot->tbl_addr_hi = 0;
+		cpu_to_le32(lower_32_bits(ahci_port->cmd_tbl_dma));
+	if (ahci_port->ahci->cap & HOST_CAP_64)
+		ahci_port->cmd_slot->tbl_addr_hi =
+			cpu_to_le32(upper_32_bits(ahci_port->cmd_tbl_dma));
 }
 
-static int ahci_fill_sg(struct ahci_port *ahci_port, const void *buf, int buf_len)
+static int ahci_fill_sg(struct ahci_port *ahci_port, dma_addr_t buf_dma, int buf_len)
 {
 	struct ahci_sg *ahci_sg = ahci_port->cmd_tbl_sg;
 	u32 sg_count;
@@ -133,12 +135,14 @@ static int ahci_fill_sg(struct ahci_port *ahci_port, const void *buf, int buf_le
 	while (buf_len) {
 		unsigned int now = min(AHCI_MAX_DATA_BYTE_COUNT, buf_len);
 
-		ahci_sg->addr = cpu_to_le32((u32)buf);
-		ahci_sg->addr_hi = 0;
+		ahci_sg->addr = cpu_to_le32(lower_32_bits(buf_dma));
+		if (ahci_port->ahci->cap & HOST_CAP_64)
+			ahci_sg->addr_hi = cpu_to_le32(upper_32_bits(buf_dma));
 		ahci_sg->flags_size = cpu_to_le32(now - 1);
 
 		buf_len -= now;
-		buf += now;
+		buf_dma += now;
+		ahci_sg++;
 	}
 
 	return sg_count;
@@ -150,40 +154,39 @@ static int ahci_io(struct ahci_port *ahci_port, u8 *fis, int fis_len, void *rbuf
 	u32 opts;
 	int sg_count;
 	int ret;
+	void *buf;
+	dma_addr_t buf_dma;
+	enum dma_data_direction dma_dir;
 
 	if (!ahci_link_ok(ahci_port, 1))
 		return -EIO;
 
-	if (wbuf)
-		dma_sync_single_for_device((unsigned long)wbuf, buf_len,
-					   DMA_TO_DEVICE);
-	if (rbuf)
-		dma_sync_single_for_device((unsigned long)rbuf, buf_len,
-					   DMA_FROM_DEVICE);
+	if (wbuf) {
+		buf = (void *)wbuf;
+		dma_dir = DMA_TO_DEVICE;
+	} else {
+		buf = rbuf;
+		dma_dir = DMA_FROM_DEVICE;
+	}
 
-	memcpy((unsigned char *)ahci_port->cmd_tbl, fis, fis_len);
+	buf_dma = dma_map_single(ahci_port->ahci->dev, buf, buf_len, dma_dir);
 
-	sg_count = ahci_fill_sg(ahci_port, rbuf ? rbuf : wbuf, buf_len);
+	memcpy(ahci_port->cmd_tbl, fis, fis_len);
+
+	sg_count = ahci_fill_sg(ahci_port, buf_dma, buf_len);
 	opts = (fis_len >> 2) | (sg_count << 16);
 	if (wbuf)
-		opts |= 1 << 6;
+		opts |= CMD_LIST_OPTS_WRITE;
 	ahci_fill_cmd_slot(ahci_port, opts);
 
 	ahci_port_write_f(ahci_port, PORT_CMD_ISSUE, 1);
 
 	ret = wait_on_timeout(WAIT_DATAIO,
-			(readl(ahci_port->port_mmio + PORT_CMD_ISSUE) & 0x1) == 0);
-	if (ret)
-		return -ETIMEDOUT;
+			(ahci_port_read(ahci_port, PORT_CMD_ISSUE) & 0x1) == 0);
 
-	if (wbuf)
-		dma_sync_single_for_cpu((unsigned long)wbuf, buf_len,
-					DMA_TO_DEVICE);
-	if (rbuf)
-		dma_sync_single_for_cpu((unsigned long)rbuf, buf_len,
-					DMA_FROM_DEVICE);
+	dma_unmap_single(ahci_port->ahci->dev, buf_dma, buf_len, dma_dir);
 
-	return 0;
+	return ret;
 }
 
 /*
@@ -192,14 +195,12 @@ static int ahci_io(struct ahci_port *ahci_port, u8 *fis, int fis_len, void *rbuf
 static int ahci_read_id(struct ata_port *ata, void *buf)
 {
 	struct ahci_port *ahci = container_of(ata, struct ahci_port, ata);
-	u8 fis[20];
 
-	memset(fis, 0, sizeof(fis));
-
-	/* Construct the FIS */
-	fis[0] = 0x27;			/* Host to device FIS. */
-	fis[1] = 1 << 7;		/* Command FIS. */
-	fis[2] = ATA_CMD_ID_ATA;	/* Command byte. */
+	u8 fis[20] = {
+		0x27,			/* Host to device FIS. */
+		1 << 7,			/* Command FIS. */
+		ATA_CMD_ID_ATA		/* Command byte. */
+	};
 
 	return ahci_io(ahci, fis, sizeof(fis), buf, NULL, SECTOR_SIZE);
 }
@@ -208,15 +209,12 @@ static int ahci_rw(struct ata_port *ata, void *rbuf, const void *wbuf,
 		sector_t block, blkcnt_t num_blocks)
 {
 	struct ahci_port *ahci = container_of(ata, struct ahci_port, ata);
-	u8 fis[20];
+	u8 fis[20] = {
+		0x27,			/* Host to device FIS. */
+		1 << 7			/* Command FIS. */
+	};
 	int ret;
 	int lba48 = ata_id_has_lba48(ata->id);
-
-	memset(fis, 0, sizeof(fis));
-
-	/* Construct the FIS */
-	fis[0] = 0x27;			/* Host to device FIS. */
-	fis[1] = 1 << 7;		/* Command FIS. */
 
 	/* Command byte. */
 	if (lba48)
@@ -274,11 +272,10 @@ static int ahci_write(struct ata_port *ata, const void *buf, sector_t block,
 
 static int ahci_init_port(struct ahci_port *ahci_port)
 {
-	void __iomem *port_mmio;
 	u32 val, cmd;
+	void *mem;
+	dma_addr_t mem_dma;
 	int ret;
-
-	port_mmio = ahci_port->port_mmio;
 
 	/* make sure port is not active */
 	val = ahci_port_read(ahci_port, PORT_CMD);
@@ -295,46 +292,45 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 		mdelay(500);
 	}
 
-	/*
-	 * First item in chunk of DMA memory: 32-slot command table,
-	 * 32 bytes each in size
-	 */
-	ahci_port->cmd_slot = dma_alloc_coherent(AHCI_CMD_SLOT_SZ * 32,
-						 DMA_ADDRESS_BROKEN);
-	if (!ahci_port->cmd_slot) {
-		ret = -ENOMEM;
-		goto err_alloc;
+	mem = dma_alloc_coherent(AHCI_PORT_PRIV_DMA_SZ, &mem_dma);
+	if (!mem) {
+		return -ENOMEM;
 	}
 
-	ahci_port_debug(ahci_port, "cmd_slot = 0x%x\n", (unsigned)ahci_port->cmd_slot);
+	/*
+	 * First item in chunk of DMA memory: 32-slot command list,
+	 * 32 bytes each in size
+	 */
+	ahci_port->cmd_slot = mem;
+	ahci_port->cmd_slot_dma = mem_dma;
+
+	ahci_port_debug(ahci_port, "cmd_slot = 0x%p (0x%pa)\n",
+			ahci_port->cmd_slot, ahci_port->cmd_slot_dma);
 
 	/*
 	 * Second item: Received-FIS area
 	 */
-	ahci_port->rx_fis = (unsigned long)dma_alloc_coherent(AHCI_RX_FIS_SZ,
-							      DMA_ADDRESS_BROKEN);
-	if (!ahci_port->rx_fis) {
-		ret = -ENOMEM;
-		goto err_alloc1;
-	}
+	ahci_port->rx_fis = mem + AHCI_CMD_LIST_SZ;
+	ahci_port->rx_fis_dma = mem_dma + AHCI_CMD_LIST_SZ;
 
 	/*
 	 * Third item: data area for storing a single command
 	 * and its scatter-gather table
 	 */
-	ahci_port->cmd_tbl = dma_alloc_coherent(AHCI_CMD_TBL_SZ,
-						DMA_ADDRESS_BROKEN);
-	if (!ahci_port->cmd_tbl) {
-		ret = -ENOMEM;
-		goto err_alloc2;
-	}
+	ahci_port->cmd_tbl = mem + AHCI_CMD_LIST_SZ + AHCI_RX_FIS_SZ;
+	ahci_port->cmd_tbl_dma = mem_dma + AHCI_CMD_LIST_SZ + AHCI_RX_FIS_SZ;
 
-	ahci_port_debug(ahci_port, "cmd_tbl_dma = 0x%p\n", ahci_port->cmd_tbl);
+	ahci_port_debug(ahci_port, "cmd_tbl = 0x%p (0x%pa)\n",
+			ahci_port->cmd_tbl, ahci_port->cmd_tbl_dma);
 
 	ahci_port->cmd_tbl_sg = ahci_port->cmd_tbl + AHCI_CMD_TBL_HDR_SZ;
 
-	ahci_port_write_f(ahci_port, PORT_LST_ADDR, (u32)ahci_port->cmd_slot);
-	ahci_port_write_f(ahci_port, PORT_FIS_ADDR, ahci_port->rx_fis);
+	ahci_port_write_f(ahci_port, PORT_LST_ADDR, lower_32_bits(ahci_port->cmd_slot_dma));
+	if (ahci_port->ahci->cap & HOST_CAP_64)
+		ahci_port_write_f(ahci_port, PORT_LST_ADDR_HI, upper_32_bits(ahci_port->cmd_slot_dma));
+	ahci_port_write_f(ahci_port, PORT_FIS_ADDR, lower_32_bits(ahci_port->rx_fis_dma));
+	if (ahci_port->ahci->cap & HOST_CAP_64)
+		ahci_port_write_f(ahci_port, PORT_FIS_ADDR_HI, upper_32_bits(ahci_port->rx_fis_dma));
 
 	/*
 	 * Add the spinup command to whatever mode bits may
@@ -358,7 +354,7 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 	 * rarely has it taken between 1-2 ms. Never seen it above 2 ms.
 	 */
 	ret = wait_on_timeout(WAIT_LINKUP,
-			(ahci_port_read(ahci_port, PORT_SCR_STAT) & 0xf) == 0x3);
+			(ahci_port_read(ahci_port, PORT_SCR_STAT) & PORT_SCR_STAT_DET) == 0x3);
 	if (ret) {
 		ahci_port_info(ahci_port, "SATA link timeout\n");
 		ret = -ETIMEDOUT;
@@ -375,16 +371,17 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 	ahci_port_info(ahci_port, "Spinning up device...\n");
 
 	ret = wait_on_timeout(WAIT_SPINUP,
-			((readl(port_mmio + PORT_TFDATA) &
-			 (ATA_STATUS_BUSY | ATA_STATUS_DRQ)) == 0)
-			|| ((readl(port_mmio + PORT_SCR_STAT) & 0xf) == 1));
+			((ahci_port_read(ahci_port, PORT_TFDATA) &
+			 (ATA_STATUS_BUSY | ATA_STATUS_DRQ)) == 0) ||
+			((ahci_port_read(ahci_port, PORT_SCR_STAT) &
+			 PORT_SCR_STAT_DET) == 1));
 	if (ret) {
 		ahci_port_info(ahci_port, "timeout.\n");
 		ret = -ENODEV;
 		goto err_init;
 	}
 
-	if ((readl(port_mmio + PORT_SCR_STAT) & 0xf) == 1) {
+	if ((ahci_port_read(ahci_port, PORT_SCR_STAT) & PORT_SCR_STAT_DET) == 1) {
 		ahci_port_info(ahci_port, "down.\n");
 		ret = -ENODEV;
 		goto err_init;
@@ -411,18 +408,13 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 
 	ahci_port_debug(ahci_port, "status: 0x%08x\n", val);
 
-	if ((val & 0xf) == 0x03)
+	if ((val & PORT_SCR_STAT_DET) == 0x3)
 		return 0;
 
 	ret = -ENODEV;
 
 err_init:
-	dma_free_coherent(ahci_port->cmd_tbl, 0, AHCI_CMD_TBL_SZ);
-err_alloc2:
-	dma_free_coherent((void *)ahci_port->rx_fis, 0, AHCI_RX_FIS_SZ);
-err_alloc1:
-	dma_free_coherent(ahci_port->cmd_slot, 0, AHCI_CMD_SLOT_SZ * 32);
-err_alloc:
+	dma_free_coherent(mem, mem_dma, AHCI_PORT_PRIV_DMA_SZ);
 	return ret;
 }
 
@@ -501,7 +493,7 @@ void ahci_print_info(struct ahci_device *ahci)
 	cap2 = ahci_ioread(ahci, HOST_CAP2);
 	impl = ahci->port_map;
 
-	speed = (cap >> 20) & 0xf;
+	speed = (cap & HOST_CAP_ISS) >> 20;
 	if (speed == 1)
 		speed_s = "1.5";
 	else if (speed == 2)
@@ -519,32 +511,34 @@ void ahci_print_info(struct ahci_device *ahci)
 	       (vers >> 16) & 0xff,
 	       (vers >> 8) & 0xff,
 	       vers & 0xff,
-	       ((cap >> 8) & 0x1f) + 1, (cap & 0x1f) + 1, speed_s, impl, scc_s);
+	       ((cap & HOST_CAP_NCS) >> 8) + 1,
+	       (cap & HOST_CAP_NP) + 1, speed_s, impl, scc_s);
 
 	printf("flags: "
 	       "%s%s%s%s%s%s%s"
 	       "%s%s%s%s%s%s%s"
 	       "%s%s%s%s%s%s\n",
-	       cap & (1 << 31) ? "64bit " : "",
-	       cap & (1 << 30) ? "ncq " : "",
-	       cap & (1 << 28) ? "ilck " : "",
-	       cap & (1 << 27) ? "stag " : "",
-	       cap & (1 << 26) ? "pm " : "",
-	       cap & (1 << 25) ? "led " : "",
-	       cap & (1 << 24) ? "clo " : "",
-	       cap & (1 << 19) ? "nz " : "",
-	       cap & (1 << 18) ? "only " : "",
-	       cap & (1 << 17) ? "pmp " : "",
-	       cap & (1 << 16) ? "fbss " : "",
-	       cap & (1 << 15) ? "pio " : "",
-	       cap & (1 << 14) ? "slum " : "",
-	       cap & (1 << 13) ? "part " : "",
-	       cap & (1 << 7) ? "ccc " : "",
-	       cap & (1 << 6) ? "ems " : "",
-	       cap & (1 << 5) ? "sxs " : "",
-	       cap2 & (1 << 2) ? "apst " : "",
-	       cap2 & (1 << 1) ? "nvmp " : "",
-	       cap2 & (1 << 0) ? "boh " : "");
+	       cap & HOST_CAP_64 ? "64bit " : "",
+	       cap & HOST_CAP_NCQ ? "ncq " : "",
+	       cap & HOST_CAP_SNTF ? "sntf " : "",
+	       cap & HOST_CAP_SMPS ? "ilck " : "",
+	       cap & HOST_CAP_SSS ? "stag " : "",
+	       cap & HOST_CAP_ALPM ? "pm " : "",
+	       cap & HOST_CAP_LED ? "led " : "",
+	       cap & HOST_CAP_CLO ? "clo " : "",
+	       cap & HOST_CAP_RESERVED ? "nz " : "",
+	       cap & HOST_CAP_ONLY ? "only " : "",
+	       cap & HOST_CAP_SPM ? "pmp " : "",
+	       cap & HOST_CAP_FBS ? "fbss " : "",
+	       cap & HOST_CAP_PIO_MULTI ? "pio " : "",
+	       cap & HOST_CAP_SSC ? "slum " : "",
+	       cap & HOST_CAP_PART ? "part " : "",
+	       cap & HOST_CAP_CCC ? "ccc " : "",
+	       cap & HOST_CAP_EMS ? "ems " : "",
+	       cap & HOST_CAP_SXS ? "sxs " : "",
+	       cap2 & HOST_CAP2_APST ? "apst " : "",
+	       cap2 & HOST_CAP2_NVMHCI ? "nvmp " : "",
+	       cap2 & HOST_CAP2_BOH ? "boh " : "");
 }
 
 void ahci_info(struct device_d *dev)
@@ -557,10 +551,14 @@ void ahci_info(struct device_d *dev)
 static int ahci_detect(struct device_d *dev)
 {
 	struct ahci_device *ahci = dev->priv;
+	int n_ports = max_t(int, ahci->n_ports, fls(ahci->port_map));
 	int i;
 
-	for (i = 0; i < ahci->n_ports; i++) {
+	for (i = 0; i < n_ports; i++) {
 		struct ahci_port *ahci_port = &ahci->ports[i];
+
+		if (!(ahci->port_map & (1 << i)))
+			continue;
 
 		ata_port_detect(&ahci_port->ata);
 	}
@@ -570,9 +568,8 @@ static int ahci_detect(struct device_d *dev)
 
 int ahci_add_host(struct ahci_device *ahci)
 {
-	u8 *mmio = (u8 *)ahci->mmio_base;
 	u32 tmp, cap_save;
-	int i, ret;
+	int n_ports, i, ret;
 
 	ahci->host_flags = ATA_FLAG_SATA
 				| ATA_FLAG_NO_LEGACY
@@ -584,9 +581,9 @@ int ahci_add_host(struct ahci_device *ahci)
 
 	ahci_debug(ahci, "ahci_host_init: start\n");
 
-	cap_save = readl(mmio + HOST_CAP);
-	cap_save &= ((1 << 28) | (1 << 17));
-	cap_save |= (1 << 27);  /* Staggered Spin-up. Not needed. */
+	cap_save = ahci_ioread(ahci, HOST_CAP);
+	cap_save &= (HOST_CAP_SMPS | HOST_CAP_SPM);
+	cap_save |= HOST_CAP_SSS;  /* Staggered Spin-up. Not needed. */
 
 	/* global controller reset */
 	tmp = ahci_ioread(ahci, HOST_CTL);
@@ -597,9 +594,9 @@ int ahci_add_host(struct ahci_device *ahci)
 	 * reset must complete within 1 second, or
 	 * the hardware should be considered fried.
 	 */
-	ret = wait_on_timeout(SECOND, (readl(mmio + HOST_CTL) & HOST_RESET) == 0);
+	ret = wait_on_timeout(SECOND, (ahci_ioread(ahci, HOST_CTL) & HOST_RESET) == 0);
 	if (ret) {
-		ahci_debug(ahci,"controller reset failed (0x%x)\n", tmp);
+		ahci_debug(ahci, "controller reset failed (0x%x)\n", tmp);
 		return -ENODEV;
 	}
 
@@ -609,18 +606,23 @@ int ahci_add_host(struct ahci_device *ahci)
 
 	ahci->cap = ahci_ioread(ahci, HOST_CAP);
 	ahci->port_map = ahci_ioread(ahci, HOST_PORTS_IMPL);
-	ahci->n_ports = (ahci->cap & 0x1f) + 1;
+	ahci->n_ports = (ahci->cap & HOST_CAP_NP) + 1;
 
 	ahci_debug(ahci, "cap 0x%x  port_map 0x%x  n_ports %d\n",
 	      ahci->cap, ahci->port_map, ahci->n_ports);
 
-	for (i = 0; i < ahci->n_ports; i++) {
+	n_ports = max_t(int, ahci->n_ports, fls(ahci->port_map));
+
+	for (i = 0; i < n_ports; i++) {
 		struct ahci_port *ahci_port = &ahci->ports[i];
+
+		if (!(ahci->port_map & (1 << i)))
+			continue;
 
 		ahci_port->num = i;
 		ahci_port->ahci = ahci;
 		ahci_port->ata.dev = ahci->dev;
-		ahci_port->port_mmio = ahci_port_base(mmio, i);
+		ahci_port->port_mmio = ahci_port_base(ahci->mmio_base, i);
 		ahci_port->ata.ops = &ahci_ops;
 		ata_port_register(&ahci_port->ata);
 	}

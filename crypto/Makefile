@@ -25,7 +25,13 @@ extra-$(CONFIG_CRYPTO_RSA_BUILTIN_KEYS) += rsa-keys.h
 ifdef CONFIG_CRYPTO_RSA_BUILTIN_KEYS
 
 $(obj)/rsa.o: $(obj)/rsa-keys.h
-$(eval $(call config_filename,CRYPTO_RSA_KEY))
-$(obj)/rsa-keys.h: FORCE
-	$(call cmd,rsa_keys,$(CONFIG_CRYPTO_RSA_KEY_NAME_HINT):$(CRYPTO_RSA_KEY_SRCPREFIX)$(CRYPTO_RSA_KEY_FILENAME))
+
+CONFIG_CRYPTO_RSA_KEY := $(CONFIG_CRYPTO_RSA_KEY:"%"=%)
+
+ifneq ($(filter-out pkcs11:%, $(CONFIG_CRYPTO_RSA_KEY)),)
+RSA_DEP := $(CONFIG_CRYPTO_RSA_KEY)
+endif
+
+$(obj)/rsa-keys.h: $(RSA_DEP) FORCE
+	$(call cmd,rsa_keys,$(CONFIG_CRYPTO_RSA_KEY_NAME_HINT):$(if $(RSA_DEP),$<,$(CONFIG_CRYPTO_RSA_KEY)))
 endif

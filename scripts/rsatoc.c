@@ -18,6 +18,8 @@
 #include <openssl/evp.h>
 #include <openssl/engine.h>
 
+static int dts;
+
 static int rsa_err(const char *msg)
 {
 	unsigned long sslErr = ERR_get_error();
@@ -184,8 +186,8 @@ cleanup:
 /*
  * rsa_get_params(): - Get the important parameters of an RSA public key
  */
-int rsa_get_params(RSA *key, uint64_t *exponent, uint32_t *n0_invp,
-		   BIGNUM **modulusp, BIGNUM **r_squaredp)
+static int rsa_get_params(RSA *key, uint64_t *exponent, uint32_t *n0_invp,
+			  BIGNUM **modulusp, BIGNUM **r_squaredp)
 {
 	BIGNUM *big1, *big2, *big32, *big2_32;
 	BIGNUM *n, *r, *r_squared, *tmp;
@@ -311,6 +313,7 @@ static int print_bignum(BIGNUM *num, int num_bits)
 	BIGNUM *tmp, *big2, *big32, *big2_32;
 	BN_CTX *ctx;
 	int i;
+	uint32_t *arr;
 
 	tmp = BN_new();
 	big2 = BN_new();
@@ -338,16 +341,35 @@ static int print_bignum(BIGNUM *num, int num_bits)
 	BN_set_word(big32, 32L);
 	BN_exp(big2_32, big2, big32, ctx); /* B = 2^32 */
 
+	arr = malloc(num_bits / 32 * sizeof(uint32_t));
+
 	for (i = 0; i < num_bits / 32; i++) {
 		BN_mod(tmp, num, big2_32, ctx); /* n = N mod B */
-		if (i % 4)
-			fprintf(outfilep, " ");
-		else
-			fprintf(outfilep, "\n\t");
-		fprintf(outfilep, "0x%08lx,", BN_get_word(tmp));
+		arr[i] = BN_get_word(tmp);
 		BN_rshift(num, num, 32); /*  N = N/B */
 	}
 
+	if (dts) {
+		for (i = 0; i < num_bits / 32; i++) {
+			if (i % 4)
+				fprintf(outfilep, " ");
+			else
+				fprintf(outfilep, "\n\t\t\t\t");
+			fprintf(outfilep, "0x%08x", arr[num_bits / 32 - 1 - i]);
+			BN_rshift(num, num, 32); /*  N = N/B */
+		}
+	} else {
+		for (i = 0; i < num_bits / 32; i++) {
+			if (i % 4)
+				fprintf(outfilep, " ");
+			else
+				fprintf(outfilep, "\n\t");
+			fprintf(outfilep, "0x%08x,", arr[i]);
+			BN_rshift(num, num, 32); /*  N = N/B */
+		}
+	}
+
+	free(arr);
 	BN_free(tmp);
 	BN_free(big2);
 	BN_free(big32);
@@ -359,7 +381,7 @@ static int print_bignum(BIGNUM *num, int num_bits)
 static int gen_key(const char *keyname, const char *path)
 {
 	BIGNUM *modulus, *r_squared;
-	uint64_t exponent;
+	uint64_t exponent = 0;
 	uint32_t n0_inv;
 	int ret;
 	int bits;
@@ -404,25 +426,42 @@ static int gen_key(const char *keyname, const char *path)
 
 	bits = BN_num_bits(modulus);
 
-	fprintf(outfilep, "\nstatic uint32_t %s_modulus[] = {", key_name_c);
-	print_bignum(modulus, bits);
-	fprintf(outfilep, "\n};\n\n");
+	if (dts) {
+		fprintf(outfilep, "\t\tkey-%s {\n", key_name_c);
+		fprintf(outfilep, "\t\t\trsa,r-squared = <");
+		print_bignum(r_squared, bits);
+		fprintf(outfilep, ">;\n");
+		fprintf(outfilep, "\t\t\trsa,modulus= <");
+		print_bignum(modulus, bits);
+		fprintf(outfilep, ">;\n");
+		fprintf(outfilep, "\t\t\trsa,exponent = <0x%0lx 0x%lx>;\n",
+			(exponent >> 32) & 0xffffffff,
+			exponent & 0xffffffff);
+		fprintf(outfilep, "\t\t\trsa,n0-inverse = <0x%0x>;\n", n0_inv);
+		fprintf(outfilep, "\t\t\trsa,num-bits = <0x%0x>;\n", bits);
+		fprintf(outfilep, "\t\t\tkey-name-hint = \"%s\";\n", key_name_c);
+		fprintf(outfilep, "\t\t};\n");
+	} else {
+		fprintf(outfilep, "\nstatic uint32_t %s_modulus[] = {", key_name_c);
+		print_bignum(modulus, bits);
+		fprintf(outfilep, "\n};\n\n");
 
-	fprintf(outfilep, "static uint32_t %s_rr[] = {", key_name_c);
-	print_bignum(r_squared, bits);
-	fprintf(outfilep, "\n};\n\n");
+		fprintf(outfilep, "static uint32_t %s_rr[] = {", key_name_c);
+		print_bignum(r_squared, bits);
+		fprintf(outfilep, "\n};\n\n");
 
-	fprintf(outfilep, "static struct rsa_public_key %s = {\n", key_name_c);
-	fprintf(outfilep, "\t.len = %d,\n", bits / 32);
-	fprintf(outfilep, "\t.n0inv = 0x%0x,\n", n0_inv);
-	fprintf(outfilep, "\t.modulus = %s_modulus,\n", key_name_c);
-	fprintf(outfilep, "\t.rr = %s_rr,\n", key_name_c);
-	fprintf(outfilep, "\t.exponent = 0x%0lx,\n", exponent);
-	fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", keyname);
-	fprintf(outfilep, "};\n\n");
+		fprintf(outfilep, "static struct rsa_public_key %s = {\n", key_name_c);
+		fprintf(outfilep, "\t.len = %d,\n", bits / 32);
+		fprintf(outfilep, "\t.n0inv = 0x%0x,\n", n0_inv);
+		fprintf(outfilep, "\t.modulus = %s_modulus,\n", key_name_c);
+		fprintf(outfilep, "\t.rr = %s_rr,\n", key_name_c);
+		fprintf(outfilep, "\t.exponent = 0x%0lx,\n", exponent);
+		fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", keyname);
+		fprintf(outfilep, "};\n\n");
 
-	fprintf(outfilep, "struct rsa_public_key *%sp __attribute__((section(\".rsa_keys.rodata.%s\"))) = &%s;\n",
-	       key_name_c, key_name_c, key_name_c);
+		fprintf(outfilep, "struct rsa_public_key *%sp __attribute__((section(\".rsa_keys.rodata.%s\"))) = &%s;\n",
+			key_name_c, key_name_c, key_name_c);
+	}
 
 	return 0;
 }
@@ -435,10 +474,13 @@ int main(int argc, char *argv[])
 
 	outfilep = stdout;
 
-	while ((opt = getopt(argc, argv, "o:")) > 0) {
+	while ((opt = getopt(argc, argv, "o:d")) > 0) {
 		switch (opt) {
 		case 'o':
 			outfile = optarg;
+			break;
+		case 'd':
+			dts = 1;
 			break;
 		}
 	}
@@ -455,6 +497,12 @@ int main(int argc, char *argv[])
 	if (optind == argc) {
 		fprintf(stderr, "Usage: %s <key_name_hint>:<crt> ...\n", argv[0]);
 		exit(1);
+	}
+
+	if (dts) {
+		fprintf(outfilep, "/dts-v1/;\n");
+		fprintf(outfilep, "/ {\n");
+		fprintf(outfilep, "\tsignature {\n");
 	}
 
 	for (i = optind; i < argc; i++) {
@@ -482,6 +530,11 @@ int main(int argc, char *argv[])
 		}
 
 		gen_key(keyname, path);
+	}
+
+	if (dts) {
+		fprintf(outfilep, "\t};\n");
+		fprintf(outfilep, "};\n");
 	}
 
 	exit(0);

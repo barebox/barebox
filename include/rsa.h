@@ -29,6 +29,7 @@ struct rsa_public_key {
 	uint32_t *rr;		/* R^2 as little endian array */
 	uint64_t exponent;	/* public exponent */
 	char *key_name_hint;
+	struct list_head list;
 };
 
 /**
@@ -52,6 +53,10 @@ int rsa_verify(const struct rsa_public_key *key, const uint8_t *sig,
 
 struct rsa_public_key *rsa_of_read_key(struct device_node *node);
 void rsa_key_free(struct rsa_public_key *key);
-struct rsa_public_key *rsa_get_key(const char *name);
+const struct rsa_public_key *rsa_get_key(const char *name);
 
+const struct rsa_public_key *rsa_key_next(const struct rsa_public_key *prev);
+
+#define for_each_rsa_key(key) \
+		for (key = rsa_key_next(NULL); key; key = rsa_key_next(key))
 #endif

@@ -5,6 +5,7 @@
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
+#define pr_fmt(fmt) "rsa: " fmt
 
 #include <common.h>
 #include <malloc.h>
@@ -184,8 +185,8 @@ static int pow_mod(const struct rsa_public_key *key, void *__inout)
 
 	/* Sanity check for stack size - key->len is in 32-bit words */
 	if (key->len > RSA_MAX_KEY_BITS / 32) {
-		debug("RSA key words %u exceeds maximum %d\n", key->len,
-		      RSA_MAX_KEY_BITS / 32);
+		pr_debug("RSA key words %u exceeds maximum %d\n", key->len,
+			 RSA_MAX_KEY_BITS / 32);
 		return -EINVAL;
 	}
 
@@ -199,13 +200,13 @@ static int pow_mod(const struct rsa_public_key *key, void *__inout)
 		return -EINVAL;
 
 	if (k < 2) {
-		debug("Public exponent is too short (%d bits, minimum 2)\n",
-		      k);
+		pr_debug("Public exponent is too short (%d bits, minimum 2)\n",
+			 k);
 		return -EINVAL;
 	}
 
 	if (!is_public_exponent_bit_set(key, 0)) {
-		debug("LSB of RSA public exponent must be set.\n");
+		pr_debug("LSB of RSA public exponent must be set.\n");
 		return -EINVAL;
 	}
 
@@ -317,7 +318,7 @@ int rsa_verify(const struct rsa_public_key *key, const uint8_t *sig,
 		return -EOPNOTSUPP;
 
 	if (sig_len != (key->len * sizeof(uint32_t))) {
-		debug("Signature is of incorrect length %u, should be %zu\n", sig_len,
+		pr_debug("Signature is of incorrect length %u, should be %zu\n", sig_len,
 				key->len * sizeof(uint32_t));
 		ret = -EINVAL;
 		goto out_free_digest;
@@ -325,8 +326,8 @@ int rsa_verify(const struct rsa_public_key *key, const uint8_t *sig,
 
 	/* Sanity check for stack size */
 	if (sig_len > RSA_MAX_SIG_BITS / 8) {
-		debug("Signature length %u exceeds maximum %d\n", sig_len,
-		      RSA_MAX_SIG_BITS / 8);
+		pr_debug("Signature length %u exceeds maximum %d\n", sig_len,
+			 RSA_MAX_SIG_BITS / 8);
 		ret = -EINVAL;
 		goto out_free_digest;
 	}
@@ -341,27 +342,27 @@ int rsa_verify(const struct rsa_public_key *key, const uint8_t *sig,
 
 	PS_end = T_offset - 1;
 	if (buf[PS_end] != 0x00) {
-		pr_err(" = -EBADMSG [EM[T-1] == %02u]\n", buf[PS_end]);
+		pr_debug(" = -EBADMSG [EM[T-1] == %02u]\n", buf[PS_end]);
 		ret = -EBADMSG;
 		goto out_free_digest;
 	}
 
 	for (i = 2; i < PS_end; i++) {
 		if (buf[i] != 0xff) {
-			pr_err(" = -EBADMSG [EM[PS%x] == %02u]\n", i - 2, buf[i]);
+			pr_debug(" = -EBADMSG [EM[PS%x] == %02u]\n", i - 2, buf[i]);
 			ret = -EBADMSG;
 			goto out_free_digest;
 		}
 	}
 
 	if (memcmp(asn1_template, buf + T_offset, asn1_size) != 0) {
-		pr_err(" = -EBADMSG [EM[T] ASN.1 mismatch]\n");
+		pr_debug(" = -EBADMSG [EM[T] ASN.1 mismatch]\n");
 		ret = -EBADMSG;
 		goto out_free_digest;
 	}
 
 	if (memcmp(hash, buf + T_offset + asn1_size, digest_length(d)) != 0) {
-		pr_err(" = -EKEYREJECTED [EM[T] hash mismatch]\n");
+		pr_debug(" = -EKEYREJECTED [EM[T] hash mismatch]\n");
 		ret = -EKEYREJECTED;
 		goto out_free_digest;
 	}
@@ -388,7 +389,12 @@ struct rsa_public_key *rsa_of_read_key(struct device_node *node)
 	struct rsa_public_key *key;
 	int err;
 
+	if (strncmp(node->name, "key-", 4))
+		return ERR_PTR(-EINVAL);
+
 	key = xzalloc(sizeof(*key));
+
+	key->key_name_hint = xstrdup(node->name + 4);
 
 	of_property_read_u32(node, "rsa,num-bits", &key->len);
 	of_property_read_u32(node, "rsa,n0-inverse", &key->n0inv);
@@ -403,15 +409,15 @@ struct rsa_public_key *rsa_of_read_key(struct device_node *node)
 	rr = of_get_property(node, "rsa,r-squared", NULL);
 
 	if (!key->len || !modulus || !rr) {
-		debug("%s: Missing RSA key info", __func__);
+		pr_debug("%s: Missing RSA key info", __func__);
 		err = -EFAULT;
 		goto out;
 	}
 
 	/* Sanity check for stack size */
 	if (key->len > RSA_MAX_KEY_BITS || key->len < RSA_MIN_KEY_BITS) {
-		debug("RSA key bits %u outside allowed range %d..%d\n",
-		      key->len, RSA_MIN_KEY_BITS, RSA_MAX_KEY_BITS);
+		pr_debug("RSA key bits %u outside allowed range %d..%d\n",
+			 key->len, RSA_MIN_KEY_BITS, RSA_MAX_KEY_BITS);
 		err = -EFAULT;
 		goto out;
 	}
@@ -439,35 +445,102 @@ void rsa_key_free(struct rsa_public_key *key)
 	free(key);
 }
 
-#ifdef CONFIG_CRYPTO_RSA_BUILTIN_KEYS
-#include "rsa-keys.h"
+static LIST_HEAD(rsa_keys);
 
-extern const struct rsa_public_key * const __rsa_keys_start;
-extern const struct rsa_public_key * const __rsa_keys_end;
+const struct rsa_public_key *rsa_key_next(const struct rsa_public_key *prev)
+{
+	prev = list_prepare_entry(prev, &rsa_keys, list);
+	list_for_each_entry_continue(prev, &rsa_keys, list)
+		return prev;
 
-struct rsa_public_key *rsa_get_key(const char *name)
+	return NULL;
+}
+
+const struct rsa_public_key *rsa_get_key(const char *name)
 {
 	const struct rsa_public_key *key;
-	struct rsa_public_key *new;
-	const struct rsa_public_key * const *iter;
 
-	for (iter = &__rsa_keys_start; iter != &__rsa_keys_end; iter++) {
-		key = *iter;
-		if (!strcmp(name, key->key_name_hint))
-			goto found;
+	list_for_each_entry(key, &rsa_keys, list) {
+		if (!strcmp(key->key_name_hint, name))
+			return key;
 	}
 
-	return ERR_PTR(-ENOENT);
-found:
+	return NULL;
+}
+
+static int rsa_key_add(struct rsa_public_key *key)
+{
+	if (rsa_get_key(key->key_name_hint))
+		return -EEXIST;
+
+	list_add_tail(&key->list, &rsa_keys);
+
+	return 0;
+}
+
+static struct rsa_public_key *rsa_key_dup(const struct rsa_public_key *key)
+{
+	struct rsa_public_key *new;
+
 	new = xmemdup(key, sizeof(*key));
 	new->modulus = xmemdup(key->modulus, key->len * sizeof(uint32_t));
 	new->rr = xmemdup(key->rr, key->len  * sizeof(uint32_t));
 
 	return new;
 }
-#else
-struct rsa_public_key *rsa_get_key(const char *name)
+
+extern const struct rsa_public_key * const __rsa_keys_start;
+extern const struct rsa_public_key * const __rsa_keys_end;
+
+static void rsa_init_keys_of(void)
 {
-	return ERR_PTR(-ENOENT);
+	struct device_node *sigs, *sig;
+	struct rsa_public_key *key;
+	int ret;
+
+	if (!IS_ENABLED(CONFIG_OFTREE))
+		return;
+
+	sigs = of_find_node_by_path("/signature");
+	if (!sigs)
+		return;
+
+	for_each_child_of_node(sigs, sig) {
+		key = rsa_of_read_key(sig);
+		if (IS_ERR(key)) {
+			pr_err("Cannot read rsa key from %s: %pe\n",
+			       sig->full_name, key);
+			continue;
+		}
+
+		ret = rsa_key_add(key);
+		if (ret)
+			pr_err("Cannot add rsa key %s: %s\n",
+				key->key_name_hint, strerror(-ret));
+	}
 }
+
+static int rsa_init_keys(void)
+{
+	const struct rsa_public_key * const *iter;
+	struct rsa_public_key *key;
+	int ret;
+
+	for (iter = &__rsa_keys_start; iter != &__rsa_keys_end; iter++) {
+		key = rsa_key_dup(*iter);
+		ret = rsa_key_add(key);
+		if (ret)
+			pr_err("Cannot add rsa key %s: %s\n",
+			       key->key_name_hint, strerror(-ret));
+	}
+
+	rsa_init_keys_of();
+
+	return 0;
+}
+
+device_initcall(rsa_init_keys);
+
+#ifdef CONFIG_CRYPTO_RSA_BUILTIN_KEYS
+#include "rsa-keys.h"
 #endif

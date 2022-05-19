@@ -312,55 +312,21 @@ static int skov_board_no = -1;
 static bool skov_have_switch = true;
 static const char *no_switch_suffix = "-noswitch";
 
-static void fixup_machine_compatible(const char *compat,
-				     struct device_node *root)
-{
-	int cclen = 0, clen = strlen(compat) + 1;
-	const char *curcompat;
-	void *buf;
-
-	if (!root) {
-		root = of_get_root_node();
-		if (!root)
-			return;
-	}
-
-	curcompat = of_get_property(root, "compatible", &cclen);
-
-	buf = xzalloc(cclen + clen);
-
-	memcpy(buf, compat, clen);
-	memcpy(buf + clen, curcompat, cclen);
-
-	/*
-	 * Prepend the compatible from board entry to the machine compatible.
-	 * Used to match bootspec entries against it.
-	 */
-	of_set_property(root, "compatible", buf, cclen + clen, true);
-
-	free(buf);
-}
-
 static void fixup_noswitch_machine_compatible(struct device_node *root)
 {
 	const char *compat = imx6_variants[skov_board_no].dts_compatible;
 	const char *generic = "skov,imx6";
-	size_t size, size_generic;
 	char *buf;
-
-	size = strlen(compat) + strlen(no_switch_suffix) + 1;
-	size_generic = strlen(generic) + strlen(no_switch_suffix) + 1;
-	size = max(size, size_generic);
 
 	/* add generic compatible, so systemd&co can make right decisions */
 	buf = xasprintf("%s%s", generic, no_switch_suffix);
-	fixup_machine_compatible(buf, root);
+	of_prepend_machine_compatible(root, buf);
 
 	/* add specific compatible as fallback, in case this board has new
 	 * challenges.
 	 */
 	buf = xasprintf("%s%s", compat, no_switch_suffix);
-	fixup_machine_compatible(buf, root);
+	of_prepend_machine_compatible(root, buf);
 
 	free(buf);
 }
@@ -648,7 +614,7 @@ static int skov_imx6_probe(struct device_d *dev)
 	globalvar_add_simple("board.dts", variant->dts_compatible);
 	globalvar_add_simple("board.display", variant->display ?: NULL);
 
-	fixup_machine_compatible(variant->dts_compatible, NULL);
+	of_prepend_machine_compatible(NULL, variant->dts_compatible);
 
 	skov_init_board(variant);
 

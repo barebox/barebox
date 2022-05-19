@@ -149,6 +149,8 @@ EXPORT_SYMBOL(barebox_get_model);
 BAREBOX_MAGICVAR(global.model, "Product name of this hardware");
 
 static char *hostname;
+static char *serial_number;
+static char *of_machine_compatible;
 
 /*
  * The hostname is supposed to be the shortname of a board. It should
@@ -178,6 +180,43 @@ EXPORT_SYMBOL(barebox_set_hostname_no_overwrite);
 
 BAREBOX_MAGICVAR(global.hostname,
 		"shortname of the board. Also used as hostname for DHCP requests");
+
+void barebox_set_serial_number(const char *__serial_number)
+{
+	globalvar_add_simple_string("serial_number", &serial_number);
+
+	free(serial_number);
+	serial_number = xstrdup(__serial_number);
+}
+
+const char *barebox_get_serial_number(void)
+{
+	return serial_number;
+}
+
+BAREBOX_MAGICVAR(global.serial_number, "Board serial number");
+
+void barebox_set_of_machine_compatible(const char *__compatible)
+{
+	free(of_machine_compatible);
+	of_machine_compatible = xstrdup(__compatible);
+}
+
+const char *barebox_get_of_machine_compatible(void)
+{
+	return of_machine_compatible;
+}
+
+static int of_kernel_init(void)
+{
+	globalvar_add_simple_string("of.kernel.add_machine_compatible",
+				    &of_machine_compatible);
+
+	return 0;
+}
+device_initcall(of_kernel_init);
+
+BAREBOX_MAGICVAR(global.of.kernel.add_machine_compatible, "Additional machine/board compatible");
 
 void __noreturn panic(const char *fmt, ...)
 {

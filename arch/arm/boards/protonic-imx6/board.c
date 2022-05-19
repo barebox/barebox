@@ -126,6 +126,22 @@ static const struct gpio prt_imx6_kvg_gpios[] = {
 	},
 };
 
+static int prt_of_fixup_hwrev(struct prt_imx6_priv *priv)
+{
+	const char *compat;
+	char *buf;
+
+	compat = of_device_get_match_compatible(priv->dev);
+
+	buf = xasprintf("%s-m%u-r%u", compat, priv->hw_id,
+			priv->hw_rev);
+	barebox_set_of_machine_compatible(buf);
+
+	free(buf);
+
+	return 0;
+}
+
 static int prt_imx6_read_rfid(struct prt_imx6_priv *priv, void *buf,
 			      size_t size)
 {
@@ -196,30 +212,12 @@ static int prt_imx6_set_mac(struct prt_imx6_priv *priv,
 	return 0;
 }
 
-static int prt_of_fixup_serial(struct device_node *dstroot, void *arg)
-{
-	struct device_node *srcroot = arg;
-	const char *ser;
-	int len;
-
-	ser = of_get_property(srcroot, "serial-number", &len);
-	return of_set_property(dstroot, "serial-number", ser, len, 1);
-}
-
-static void prt_oftree_fixup_serial(const char *serial)
-{
-	struct device_node *root = of_get_root_node();
-
-	of_set_property(root, "serial-number", serial, strlen(serial) + 1, 1);
-	of_register_fixup(prt_of_fixup_serial, root);
-}
-
 static int prt_imx6_set_serial(struct prt_imx6_priv *priv,
 			       struct prti6q_rfid_contents *rfid)
 {
 	rfid->serial[9] = 0; /* Failsafe */
 	dev_info(priv->dev, "Serial number: %s\n", rfid->serial);
-	prt_oftree_fixup_serial(rfid->serial);
+	barebox_set_serial_number(rfid->serial);
 
 	return 0;
 }
@@ -815,7 +813,6 @@ exit_get_dcfg:
 static int prt_imx6_probe(struct device_d *dev)
 {
 	struct prt_imx6_priv *priv;
-	const char *name, *ptr;
 	struct param_d *p;
 	int ret;
 
@@ -824,9 +821,7 @@ static int prt_imx6_probe(struct device_d *dev)
 		return -ENOMEM;
 
 	priv->dev = dev;
-	name = of_device_get_match_compatible(priv->dev);
-	ptr = strchr(name, ',');
-	priv->name =  ptr ? ptr + 1 : name;
+	priv->name = of_get_machine_compatible();
 
 	pr_info("Detected machine type: %s\n", priv->name);
 
@@ -836,6 +831,7 @@ static int prt_imx6_probe(struct device_d *dev)
 
 	pr_info("  HW type:     %d\n", priv->hw_id);
 	pr_info("  HW revision: %d\n", priv->hw_rev);
+	prt_of_fixup_hwrev(priv);
 
 	ret = prt_imx6_get_dcfg(priv);
 	if (ret)

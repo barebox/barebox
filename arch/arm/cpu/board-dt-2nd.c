@@ -21,6 +21,8 @@ void dt_2nd_aarch64(void *fdt)
 
 	/* entry point already set up stack */
 
+	arm_cpu_lowlevel_init();
+
 	relocate_to_current_adr();
 	setup_c();
 
@@ -49,6 +51,8 @@ static noinline void dt_2nd_continue(void *fdt)
 ENTRY_FUNCTION(start_dt_2nd, r0, r1, r2)
 {
 	unsigned long image_start = (unsigned long)_text + global_variable_offset();
+
+	arm_cpu_lowlevel_init();
 
 	arm_setup_stack(image_start);
 

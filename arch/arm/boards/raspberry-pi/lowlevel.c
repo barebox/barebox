@@ -40,7 +40,6 @@ static void copy_vc_fdt(void *dest, void *src, unsigned long max_size)
 #define rpi_stack_top(memsize) \
 	arm_mem_stack_top(BCM2835_SDRAM_BASE, BCM2835_SDRAM_BASE + memsize - VIDEOCORE_FDT_SZ)
 
-/* Must be inline since stack isn't setup yet. */
 static inline void start_raspberry_pi(unsigned long memsize, void *fdt,
 								void *vc_fdt)
 {

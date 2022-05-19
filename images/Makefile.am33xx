@@ -26,6 +26,14 @@ FILE_barebox-am33xx-afi-gf-mlo.spi.img = start_am33xx_afi_gf_sram.pblb.mlospi
 am33xx-mlo-$(CONFIG_MACH_AFI_GF) += barebox-am33xx-afi-gf-mlo.img
 am33xx-mlospi-$(CONFIG_MACH_AFI_GF) += barebox-am33xx-afi-gf-mlo.spi.img
 
+pblb-$(CONFIG_MACH_MYIRTECH_X335X) += start_am33xx_myirtech_sdram
+FILE_barebox-am33xx-myirtech.img = start_am33xx_myirtech_sdram.pblb
+am33xx-barebox-$(CONFIG_MACH_MYIRTECH_X335X) += barebox-am33xx-myirtech.img
+
+pblb-$(CONFIG_MACH_MYIRTECH_X335X) += start_am33xx_myirtech_sram
+FILE_barebox-am33xx-myirtech-mlo.img = start_am33xx_myirtech_sram.pblb.mlo
+am33xx-mlo-$(CONFIG_MACH_MYIRTECH_X335X) += barebox-am33xx-myirtech-mlo.img
+
 pblb-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phycore_nand_sdram
 FILE_barebox-am33xx-phytec-phycore.img = start_am33xx_phytec_phycore_nand_sdram.pblb
 am33xx-barebox-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phycore.img

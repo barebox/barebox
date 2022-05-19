@@ -75,7 +75,7 @@ config DRIVER_VIDEO_S3C24XX
 
 config DRIVER_VIDEO_OMAP
 	bool "OMAP framebuffer driver"
-	depends on ARCH_OMAP4
+	depends on ARCH_OMAP4 || COMPILE_TEST
 	help
 	  Add support for OMAP Display Controller. Currently this
 	  driver only supports OMAP4 SoCs in DISPC parallel mode on

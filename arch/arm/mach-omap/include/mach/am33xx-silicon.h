@@ -201,6 +201,8 @@
 #define AM33XX_MAC_ID1_HI	(AM33XX_CTRL_BASE + 0x63c)
 #define AM33XX_MAC_MII_SEL	(AM33XX_CTRL_BASE + 0x650)
 
+#define AM33XX_EFUSE_SMA	(AM33XX_CTRL_BASE + 0x7fc)
+
 struct am33xx_cmd_control {
 	u32 slave_ratio0;
 	u32 dll_lock_diff0;

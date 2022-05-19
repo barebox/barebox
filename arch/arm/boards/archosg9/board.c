@@ -5,10 +5,10 @@
 #include <init.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
+#include <mach/devices.h>
 #include <mach/omap4-silicon.h>
 #include <mach/omap4-devices.h>
 #include <mach/omap4_rom_usb.h>
-#include <mach/omap-fb.h>
 #include <linux/sizes.h>
 #include <i2c/i2c.h>
 #include <gpio.h>

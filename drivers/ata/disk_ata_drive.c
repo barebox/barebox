@@ -80,9 +80,9 @@ static void __maybe_unused ata_dump_id(uint16_t *id)
 	ata_id_c_string(id, product, ATA_ID_PROD, sizeof(product));
 	printf("Product model number: %s\n\r", product);
 
-	/* Total sectors of device  */
+	/* Total sectors of device */
 	n_sectors = ata_id_n_sectors(id);
-	printf("Capablity: %lld sectors\n\r", n_sectors);
+	printf("Capacity: %lld sectors\n\r", n_sectors);
 
 	printf ("id[49]: capabilities = 0x%04x\n"
 		"id[53]: field valid = 0x%04x\n"
@@ -95,12 +95,14 @@ static void __maybe_unused ata_dump_id(uint16_t *id)
 		id[ATA_ID_PIO_MODES],
 		id[ATA_ID_QUEUE_DEPTH]);
 
-	printf ("id[76]: sata capablity = 0x%04x\n"
+	printf ("id[76]: sata capabilities 1 = 0x%04x\n"
+		"id[77]: sata capabilities 2 = 0x%04x\n"
 		"id[78]: sata features supported = 0x%04x\n"
-		"id[79]: sata features enable = 0x%04x\n",
-		id[76], /* FIXME */
-		id[78], /* FIXME */
-		id[79]); /* FIXME */
+		"id[79]: sata features enabled = 0x%04x\n",
+		id[ATA_ID_SATA_CAPAB_1],
+		id[ATA_ID_SATA_CAPAB_2],
+		id[ATA_ID_SATA_FEAT_SUPP],
+		id[ATA_ID_SATA_FEAT_ENABLE]);
 
 	printf ("id[80]: major version = 0x%04x\n"
 		"id[81]: minor version = 0x%04x\n"
@@ -108,12 +110,13 @@ static void __maybe_unused ata_dump_id(uint16_t *id)
 		"id[83]: command set supported 2 = 0x%04x\n"
 		"id[84]: command set extension = 0x%04x\n",
 		id[ATA_ID_MAJOR_VER],
-		id[81], /* FIXME */
+		id[ATA_ID_MINOR_VER],
 		id[ATA_ID_COMMAND_SET_1],
 		id[ATA_ID_COMMAND_SET_2],
 		id[ATA_ID_CFSSE]);
-	printf ("id[85]: command set enable 1 = 0x%04x\n"
-		"id[86]: command set enable 2 = 0x%04x\n"
+
+	printf ("id[85]: command set enabled 1 = 0x%04x\n"
+		"id[86]: command set enabled 2 = 0x%04x\n"
 		"id[87]: command set default = 0x%04x\n"
 		"id[88]: udma = 0x%04x\n"
 		"id[93]: hardware reset result = 0x%04x\n",

@@ -70,4 +70,12 @@ config I2C_RK3X
 	  Say Y here to include support for the I2C adapter in Rockchip RK3xxx
 	  SoCs.
 
+config I2C_CADENCE
+	bool "Cadence I2C adapter"
+	depends on HAVE_CLK
+	depends on ARCH_ZYNQMP || COMPILE_TEST
+	help
+	  Say Y here to include support for the Cadence I2C host controller found
+	  in Zynq UltraScale+ MPSoCs.
+
 endmenu

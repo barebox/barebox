@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#ifndef H_BAREBOX_ARCH_ARM_MACH_OMAP_MACH_FB4_H
-#define H_BAREBOX_ARCH_ARM_MACH_OMAP_MACH_FB4_H
+#ifndef OMAP_FB_H
+#define OMAP_FB_H
 
 #include <fb.h>
 
@@ -42,8 +42,4 @@ struct omapfb_platform_data {
 	void (*enable)(int p);
 };
 
-struct device_d;
-struct device_d *omap_add_display(struct omapfb_platform_data *o_pdata);
-
-
-#endif	/* H_BAREBOX_ARCH_ARM_MACH_OMAP_MACH_FB4_H */
+#endif /* OMAP_FB_H */

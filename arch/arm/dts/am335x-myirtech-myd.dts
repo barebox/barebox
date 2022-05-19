@@ -1,0 +1,47 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+/* SPDX-FileCopyrightText: Alexander Shiyan, <shc_work@mail.ru> */
+
+/dts-v1/;
+
+#include <arm/am335x-myirtech-myd.dts>
+
+/ {
+	chosen {
+		environment {
+			compatible = "barebox,environment";
+			device-path = &nand_environment;
+		};
+	};
+
+};
+
+&nand0 {
+	/delete-node/ partition@0;
+	/delete-node/ partition@20000;
+
+	nand_parts: partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		partition@0 {
+			label = "MLO";
+			reg = <0x00000 0x20000>;
+		};
+
+		partition@80000 {
+			label = "boot";
+			reg = <0x80000 0x100000>;
+		};
+
+		nand_environment: partition@180000 {
+			label = "env";
+			reg = <0x180000 0x40000>;
+		};
+
+		partition@1c0000 {
+			label = "system";
+			reg = <0x1c0000 0>;
+		};
+	};
+};

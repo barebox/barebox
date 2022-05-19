@@ -10,10 +10,10 @@
 #include <envfs.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
+#include <mach/devices.h>
 #include <mach/omap4-silicon.h>
 #include <mach/omap4-devices.h>
 #include <mach/omap4-clock.h>
-#include <mach/omap-fb.h>
 #include <mach/sdrc.h>
 #include <mach/sys_info.h>
 #include <mach/syslib.h>
@@ -292,8 +292,7 @@ static int pcm049_devices_init(void)
 
 	armlinux_set_architecture(MACH_TYPE_PCM049);
 
-	if (IS_ENABLED(CONFIG_DRIVER_VIDEO_OMAP))
-		omap_add_display(&pcm049_fb_data);
+	omap_add_display(&pcm049_fb_data);
 
 	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
 		defaultenv_append_directory(defaultenv_phytec_phycore_omap4460);

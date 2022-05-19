@@ -198,62 +198,38 @@
 		};
 	};
 
-	usbdrd30: usbdrd {
-		compatible = "rockchip,rk3568-dwc3", "rockchip,rk3399-dwc3";
+	usb_host0_xhci: usb@fcc00000 {
+		compatible = "rockchip,rk3568-dwc3", "snps,dwc3";
+		reg = <0x0 0xfcc00000 0x0 0x400000>;
+		interrupts = <GIC_SPI 169 IRQ_TYPE_LEVEL_HIGH>;
 		clocks = <&cru CLK_USB3OTG0_REF>, <&cru CLK_USB3OTG0_SUSPEND>,
-			 <&cru ACLK_USB3OTG0>, <&cru PCLK_PIPE>;
+			 <&cru ACLK_USB3OTG0>;
 		clock-names = "ref_clk", "suspend_clk",
-			      "bus_clk", "pipe_clk";
-		#address-cells = <2>;
-		#size-cells = <2>;
-		ranges;
+			      "bus_clk";
+		dr_mode = "otg";
+		phys = <&u2phy0_otg>, <&combphy0_us PHY_TYPE_USB3>;
+		phy-names = "usb2-phy", "usb3-phy";
+		phy_type = "utmi_wide";
+		resets = <&cru SRST_USB3OTG0>;
+		snps,dis_u2_susphy_quirk;
 		status = "disabled";
-
-		usbdrd_dwc3: dwc3@fcc00000 {
-			compatible = "snps,dwc3";
-			reg = <0x0 0xfcc00000 0x0 0x400000>;
-			interrupts = <GIC_SPI 169 IRQ_TYPE_LEVEL_HIGH>;
-			dr_mode = "otg";
-			phys = <&u2phy0_otg>, <&combphy0_us PHY_TYPE_USB3>;
-			phy-names = "usb2-phy", "usb3-phy";
-			phy_type = "utmi_wide";
-			resets = <&cru SRST_USB3OTG0>;
-			reset-names = "usb3-otg";
-			snps,dis_enblslpm_quirk;
-			snps,dis-u2-freeclk-exists-quirk;
-			snps,dis-del-phy-power-chg-quirk;
-			snps,dis-tx-ipgap-linecheck-quirk;
-			snps,xhci-trb-ent-quirk;
-		};
 	};
 
-	usbhost30: usbhost {
-		compatible = "rockchip,rk3568-dwc3", "rockchip,rk3399-dwc3";
+	usb_host1_xhci: usb@fd000000 {
+		compatible = "rockchip,rk3568-dwc3", "snps,dwc3";
+		reg = <0x0 0xfd000000 0x0 0x400000>;
+		interrupts = <GIC_SPI 170 IRQ_TYPE_LEVEL_HIGH>;
 		clocks = <&cru CLK_USB3OTG1_REF>, <&cru CLK_USB3OTG1_SUSPEND>,
-			 <&cru ACLK_USB3OTG1>, <&cru PCLK_PIPE>;
+			 <&cru ACLK_USB3OTG1>;
 		clock-names = "ref_clk", "suspend_clk",
-			      "bus_clk", "pipe_clk";
-		#address-cells = <2>;
-		#size-cells = <2>;
-		ranges;
+			      "bus_clk";
+		dr_mode = "host";
+		phys = <&u2phy0_host>, <&combphy1_usq PHY_TYPE_USB3>;
+		phy-names = "usb2-phy", "usb3-phy";
+		phy_type = "utmi_wide";
+		resets = <&cru SRST_USB3OTG1>;
+		snps,dis_u2_susphy_quirk;
 		status = "disabled";
-
-		usbhost_dwc3: dwc3@fd000000 {
-			compatible = "snps,dwc3";
-			reg = <0x0 0xfd000000 0x0 0x400000>;
-			interrupts = <GIC_SPI 170 IRQ_TYPE_LEVEL_HIGH>;
-			dr_mode = "host";
-			phys = <&u2phy0_host>, <&combphy1_usq PHY_TYPE_USB3>;
-			phy-names = "usb2-phy", "usb3-phy";
-			phy_type = "utmi_wide";
-			resets = <&cru SRST_USB3OTG1>;
-			reset-names = "usb3-host";
-			snps,dis_enblslpm_quirk;
-			snps,dis-u2-freeclk-exists-quirk;
-			snps,dis-del-phy-power-chg-quirk;
-			snps,dis-tx-ipgap-linecheck-quirk;
-			snps,xhci-trb-ent-quirk;
-		};
 	};
 
 	gic: interrupt-controller@fd400000 {
@@ -367,11 +343,10 @@
 		#phy-cells = <1>;
 		clocks = <&pmucru CLK_PCIEPHY0_REF>, <&cru PCLK_PIPEPHY0>,
 			 <&cru PCLK_PIPE>;
-		clock-names = "refclk", "apbclk", "pipe_clk";
+		clock-names = "ref", "apb", "pipe";
 		assigned-clocks = <&pmucru CLK_PCIEPHY0_REF>;
 		assigned-clock-rates = <24000000>;
-		resets = <&cru SRST_P_PIPEPHY0>, <&cru SRST_PIPEPHY0>;
-		reset-names = "combphy-apb", "combphy";
+		resets = <&cru SRST_PIPEPHY0>;
 		rockchip,pipe-grf = <&pipegrf>;
 		rockchip,pipe-phy-grf = <&pipe_phy_grf0>;
 		status = "disabled";
@@ -383,11 +358,10 @@
 		#phy-cells = <1>;
 		clocks = <&pmucru CLK_PCIEPHY1_REF>, <&cru PCLK_PIPEPHY1>,
 			 <&cru PCLK_PIPE>;
-		clock-names = "refclk", "apbclk", "pipe_clk";
+		clock-names = "ref", "apb", "pipe";
 		assigned-clocks = <&pmucru CLK_PCIEPHY1_REF>;
 		assigned-clock-rates = <24000000>;
-		resets = <&cru SRST_P_PIPEPHY1>, <&cru SRST_PIPEPHY1>;
-		reset-names = "combphy-apb", "combphy";
+		resets = <&cru SRST_PIPEPHY1>;
 		rockchip,pipe-grf = <&pipegrf>;
 		rockchip,pipe-phy-grf = <&pipe_phy_grf1>;
 		status = "disabled";

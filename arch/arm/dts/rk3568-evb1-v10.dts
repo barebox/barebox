@@ -547,6 +547,11 @@
 	status = "okay";
 };
 
+&usb_host0_xhci {
+	extcon = <&usb2phy0>;
+	status = "okay";
+};
+
 &usb_host1_ehci {
 	status = "okay";
 };
@@ -555,16 +560,7 @@
 	status = "okay";
 };
 
-&usbdrd_dwc3 {
-	dr_mode = "otg";
-	extcon = <&usb2phy0>;
-};
-
-&usbdrd30 {
-	status = "okay";
-};
-
-&usbhost30 {
+&usb_host1_xhci {
 	status = "okay";
 };
 

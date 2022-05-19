@@ -375,15 +375,17 @@ i2c_exit:
 	return err;
 }
 
-static int rockchip_i2c_xfer(struct i2c_adapter *adapter, struct i2c_msg *msg,
+static int rockchip_i2c_xfer(struct i2c_adapter *adapter, struct i2c_msg *msgs,
 			     int nmsgs)
 {
 	struct rk_i2c *i2c = to_rk_i2c(adapter);
 	struct device_d *dev = &adapter->dev;
-	int ret;
+	int i, ret = 0;
 
 	dev_dbg(dev, "i2c_xfer: %d messages\n", nmsgs);
-	for (; nmsgs > 0; nmsgs--, msg++) {
+	for (i = 0; i < nmsgs; i++) {
+		struct i2c_msg *msg = &msgs[i];
+
 		dev_dbg(dev, "i2c_xfer: chip=0x%x, len=0x%x\n", msg->addr, msg->len);
 		if (msg->flags & I2C_M_RD) {
 			ret = rk_i2c_read(i2c, msg->addr, 0, 0, msg->buf,
@@ -395,14 +397,15 @@ static int rockchip_i2c_xfer(struct i2c_adapter *adapter, struct i2c_msg *msg,
 		if (ret) {
 			dev_dbg(dev, "i2c_write: error sending: %pe\n",
 				ERR_PTR(ret));
-			return -EREMOTEIO;
+			ret = -EREMOTEIO;
+			break;
 		}
 	}
 
 	rk_i2c_send_stop_bit(i2c);
 	rk_i2c_disable(i2c);
 
-	return 0;
+	return ret < 0 ? ret : nmsgs;
 }
 
 static int rk_i2c_probe(struct device_d *dev)

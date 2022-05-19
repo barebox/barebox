@@ -7,6 +7,7 @@
 #include <init.h>
 #include <mach/bbu.h>
 #include <of_device.h>
+#include <deep-probe.h>
 
 /* board specific flags */
 #define PRT_STM32_BOOTSRC_SD		BIT(2)
@@ -118,6 +119,7 @@ static const struct of_device_id prt_stm32_of_match[] = {
 	{ .compatible = "prt,prtt1s", .data = &prt_stm32_prtt1a },
 	{ /* sentinel */ },
 };
+BAREBOX_DEEP_PROBE_ENABLE(prt_stm32_of_match);
 
 static struct driver_d prt_stm32_board_driver = {
 	.name = "board-protonic-stm32",

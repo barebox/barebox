@@ -13,8 +13,48 @@
 #include <driver.h>
 #include <linux/clk.h>
 #include <linux/reset.h>
+#include <of_device.h>
 
 #include "dwc2.h"
+
+static void dwc2_set_stm32mp15_fsotg_params(struct dwc2 *dwc2)
+{
+	struct dwc2_core_params *p = &dwc2->params;
+
+	p->otg_cap &= ~(DWC2_CAP_PARAM_HNP_SRP_CAPABLE
+			 | DWC2_CAP_PARAM_SRP_ONLY_CAPABLE);
+	p->otg_cap |= DWC2_CAP_PARAM_NO_HNP_SRP_CAPABLE;
+	p->speed = DWC2_SPEED_PARAM_FULL;
+	p->host_rx_fifo_size = 128;
+	p->host_nperio_tx_fifo_size = 96;
+	p->host_perio_tx_fifo_size = 96;
+	p->max_packet_count = 256;
+	p->phy_type = DWC2_PHY_TYPE_PARAM_FS;
+	p->i2c_enable = false;
+	p->activate_stm_fs_transceiver = true;
+	p->ahbcfg = GAHBCFG_HBSTLEN_INCR16 << GAHBCFG_HBSTLEN_SHIFT;
+	p->power_down = DWC2_POWER_DOWN_PARAM_NONE;
+	p->host_support_fs_ls_low_power = true;
+	p->host_ls_low_power_phy_clk = true;
+}
+
+static void dwc2_set_stm32mp15_hsotg_params(struct dwc2 *dwc2)
+{
+	struct dwc2_core_params *p = &dwc2->params;
+
+	p->otg_cap &= ~(DWC2_CAP_PARAM_HNP_SRP_CAPABLE
+			 | DWC2_CAP_PARAM_SRP_ONLY_CAPABLE);
+	p->otg_cap |= DWC2_CAP_PARAM_NO_HNP_SRP_CAPABLE;
+	p->host_rx_fifo_size = 440;
+	p->host_nperio_tx_fifo_size = 256;
+	p->host_perio_tx_fifo_size = 256;
+	p->ahbcfg = GAHBCFG_HBSTLEN_INCR16 << GAHBCFG_HBSTLEN_SHIFT;
+	p->power_down = DWC2_POWER_DOWN_PARAM_NONE;
+	p->lpm = false;
+	p->lpm_clock_gating = false;
+	p->besl = false;
+	p->hird_threshold_en = false;
+}
 
 static int dwc2_set_mode(void *ctx, enum usb_dr_mode mode)
 {
@@ -43,10 +83,13 @@ static int dwc2_set_mode(void *ctx, enum usb_dr_mode mode)
 	return ret;
 }
 
+typedef void (*set_params_cb)(struct dwc2 *dwc2);
+
 static int dwc2_probe(struct device_d *dev)
 {
 	struct resource *iores;
 	struct dwc2 *dwc2;
+	set_params_cb set_params;
 	int ret;
 
 	dwc2 = xzalloc(sizeof(*dwc2));
@@ -107,6 +150,10 @@ static int dwc2_probe(struct device_d *dev)
 
 	dwc2_set_default_params(dwc2);
 
+	set_params = of_device_get_match_data(dev);
+	if (set_params)
+		set_params(dwc2);
+
 	dma_set_mask(dev, DMA_BIT_MASK(32));
 	dev->priv = dwc2;
 
@@ -148,6 +195,10 @@ static const struct of_device_id dwc2_platform_dt_ids[] = {
 	{ .compatible = "brcm,bcm2835-usb", },
 	{ .compatible = "brcm,bcm2708-usb", },
 	{ .compatible = "snps,dwc2", },
+	{ .compatible = "st,stm32mp15-fsotg",
+	  .data = dwc2_set_stm32mp15_fsotg_params },
+	{ .compatible = "st,stm32mp15-hsotg",
+	  .data = dwc2_set_stm32mp15_hsotg_params },
 	{ }
 };
 

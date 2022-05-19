@@ -423,10 +423,17 @@ static int stm32_usbphyc_probe(struct device_d *dev)
 
 	for_each_child_of_node(np, child) {
 		struct stm32_usbphyc_phy *usbphyc_phy;
+		struct device_d *phydev;
 		struct phy *phy;
 		u32 index;
 
-		phy = phy_create(dev, child, &stm32_usbphyc_phy_ops);
+		phydev = of_platform_device_create(child, dev);
+		if (!phydev)
+			continue;
+
+		of_platform_device_dummy_drv(phydev);
+
+		phy = phy_create(phydev, child, &stm32_usbphyc_phy_ops);
 		if (IS_ERR(phy)) {
 			ret = PTR_ERR(phy);
 			if (ret != -EPROBE_DEFER)

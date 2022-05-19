@@ -431,7 +431,7 @@ static int gpiochip_find_base(int ngpio)
 			}
 		} else {
 			spare = 0;
-			i += chip->ngpio - 1;
+			i -= chip->ngpio - 1;
 		}
 	}
 

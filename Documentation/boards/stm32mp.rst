@@ -49,6 +49,8 @@ In the above output, images with a ``.stm32`` extension feature the (legacy)
 stm32image header. ``barebox-dt-2nd.img`` and ``barebox-stm32mp-generic-bl33.img``
 are board-generic barebox images that receive an external device tree.
 
+.. _stm32mp_fip:
+
 Flashing barebox (FIP)
 ----------------------
 
@@ -136,6 +138,34 @@ Assuming ``CONFIG_CMD_MMC_EXTCSD`` is enabled and the board shall boot from
 
 The STM32MP1 BootROM does *not* support booting from eMMC without fast boot
 acknowledge.
+
+USB Bootstrap (DFU)
+-------------------
+
+The STM32MP1 can be strapped to boot from USB. After Power-On reset, it
+should be detectable as ``STMicroelectronics STM Device in DFU Mode``
+and can be uploaded to with ``dfu-util(1)``::
+
+  dfu-util --alt 1 -D tf-a-stm32mp157c-my-board.stm32
+  dfu-util --alt 3 -D bl3-firmware.fip
+  dfu-util --alt 0 -e
+
+The first command will talk to the BootROM and upload the first stage
+bootloader (ARM Trusted Firmware-A) into on-chip SRAM.
+
+When compiled with ``STM32MP_USB_PROGRAMMER=1``, TF-A v2.6 or higher
+will seamlessly continue operation of the DFU gadget. The second
+command will talk to TF-A to upload a Firmware Image Package, which
+is a format bundling further firmware including barebox.
+
+The final command will instruct TF-A to boot the loaded images.
+This all happens in volatile memory. To persist images, use
+normal barebox functionality like creating a DFU-gadget in barebox,
+Fastboot/USB mass storage ... etc.
+
+The FIP image containing barebox can be generated as described in
+137::ref:`stm32mp_fip`. Upstream TF-A doesn't support DFU for
+SSBLs using the legacy stm32image format.
 
 Boot source selection
 ---------------------

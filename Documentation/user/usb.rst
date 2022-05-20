@@ -267,7 +267,7 @@ USB Gadget autostart Options
 ``global.system.partitions``
   Common function description for all of DFU, fastboot and USB mass storage
   gadgets. Both Fastboot and DFU partitions also have dedicated override
-  variables for backwards-compatibility::
+  variables for backwards-compatibility:
 
 ``global.usbgadget.dfu_function``
   Function description for DFU. See :ref:`command_usbgadget` -D [desc].

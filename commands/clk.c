@@ -99,12 +99,12 @@ static int do_clk_round_rate(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(clk_round_rate)
-BAREBOX_CMD_HELP_TEXT("Set clock CLK to RATE")
+BAREBOX_CMD_HELP_TEXT("Show clock CLK actual rate if set to HZ")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(clk_round_rate)
 	.cmd		= do_clk_round_rate,
-	BAREBOX_CMD_DESC("set a clocks rate")
+	BAREBOX_CMD_DESC("show a resulting clocks rate")
 	BAREBOX_CMD_OPTS("CLK HZ")
 	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_clk_round_rate_help)

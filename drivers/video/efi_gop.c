@@ -238,11 +238,23 @@ static int efi_gop_probe(struct efi_device *efidev)
 	priv->fb.current_mode = priv->mode;
 
 	ret = register_framebuffer(&priv->fb);
-	if (!ret) {
-		priv->dev->priv = &priv->fb;
-		return 0;
+	if (ret)
+		goto free_modes;
+
+	priv->dev->priv = &priv->fb;
+
+	if (IS_ENABLED(CONFIG_FRAMEBUFFER_CONSOLE)) {
+		struct console_device *cdev;
+
+		cdev = console_get_by_dev(&priv->fb.dev);
+		if (cdev)
+			dev_add_param_fixed(&cdev->class_dev, "linux.bootargs.earlycon",
+					    "earlycon=efifb");
 	}
 
+	return 0;
+
+free_modes:
 	if (priv->fb.modes.modes) {
 		int i;
 

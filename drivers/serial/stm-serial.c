@@ -149,12 +149,14 @@ static int stm_serial_probe(struct device_d *dev)
 	cdev->setbrg = stm_serial_setbaudrate;
 	cdev->dev = dev;
 	cdev->linux_console_name = "ttyAMA";
+	cdev->linux_earlycon_name = "pl011";
 
 	dev->priv = priv;
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
 	priv->base = IOMEM(iores->start);
+	cdev->phys_base = priv->base;
 	priv->clk = clk_get(dev, NULL);
 	if (IS_ERR(priv->clk))
 		return PTR_ERR(priv->clk);

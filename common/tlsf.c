@@ -313,7 +313,7 @@ static size_t adjust_request_size(size_t size, size_t align)
 		const size_t aligned = align_up(size, align);
 
 		/* aligned sized must not exceed block_size_max or we'll go out of bounds on sl_bitmap */
-		if (aligned < block_size_max)
+		if (aligned >= size && aligned < block_size_max)
 		{
 			adjust = tlsf_max(aligned, block_size_min);
 		}
@@ -942,7 +942,12 @@ void* tlsf_malloc(tlsf_t tlsf, size_t size)
 {
 	control_t* control = tlsf_cast(control_t*, tlsf);
 	const size_t adjust = adjust_request_size(size, ALIGN_SIZE);
-	block_header_t* block = block_locate_free(control, adjust);
+	block_header_t* block;
+
+	if (!adjust)
+		return NULL;
+
+	block = block_locate_free(control, adjust);
 
 	return block_prepare_used(control, block, adjust, size);
 }
@@ -969,7 +974,12 @@ void* tlsf_memalign(tlsf_t tlsf, size_t align, size_t size)
 	*/
 	const size_t aligned_size = (adjust && align > ALIGN_SIZE) ? size_with_gap : adjust;
 
-	block_header_t* block = block_locate_free(control, aligned_size);
+	block_header_t* block;
+
+	if (!adjust || !size_with_gap)
+		return NULL;
+
+	block = block_locate_free(control, aligned_size);
 
 	/* This can't be a static assert. */
 	tlsf_assert(sizeof(block_header_t) == block_size_min + block_header_overhead);
@@ -1058,6 +1068,9 @@ void* tlsf_realloc(tlsf_t tlsf, void* ptr, size_t size)
 		const size_t adjust = adjust_request_size(size, ALIGN_SIZE);
 
 		tlsf_assert(!block_is_free(block) && "block already marked as free");
+
+		if (!adjust)
+			return NULL;
 
 		/*
 		** If the next block is used, or when combined with the current

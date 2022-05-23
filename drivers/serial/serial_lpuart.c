@@ -160,6 +160,8 @@ static int lpuart_serial_probe(struct device_d *dev)
 	}
 
 	cdev->linux_console_name = "ttyLP";
+	cdev->linux_earlycon_name = "lpuart";
+	cdev->phys_base = lpuart->base;
 
 	lpuart_setup(lpuart->base, clk_get_rate(lpuart->clk));
 

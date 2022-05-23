@@ -234,6 +234,8 @@ static int imx_serial_probe(struct device_d *dev)
 	cdev->flush = imx_serial_flush;
 	cdev->setbrg = imx_serial_setbaudrate;
 	cdev->linux_console_name = "ttymxc";
+	cdev->linux_earlycon_name = "ec_imx6q";
+	cdev->phys_base = priv->regs;
 	if (dev->device_node) {
 		devname = of_alias_get(dev->device_node);
 		if (devname) {

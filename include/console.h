@@ -53,6 +53,8 @@ struct console_device {
 	unsigned int baudrate_param;
 
 	const char *linux_console_name;
+	const char *linux_earlycon_name;
+	void __iomem *phys_base;
 
 	struct cdev devfs;
 	struct cdev_operations fops;

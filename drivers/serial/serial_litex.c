@@ -74,6 +74,9 @@ static int litex_serial_probe(struct device_d *dev)
 	cdev->putc = &litex_serial_putc;
 	cdev->getc = &litex_serial_getc;
 	cdev->setbrg = NULL;
+	cdev->linux_console_name = "ttyLXU";
+	cdev->linux_earlycon_name = "liteuart";
+	cdev->phys_base = IOMEM(iores->start);
 
 	console_register(cdev);
 

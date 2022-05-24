@@ -6,6 +6,13 @@
 #include <arm/am335x-myirtech-myd.dts>
 
 / {
+	aliases {
+		gpio0 = &gpio0;
+		gpio1 = &gpio1;
+		gpio2 = &gpio2;
+		gpio3 = &gpio3;
+	};
+
 	chosen {
 		environment {
 			compatible = "barebox,environment";

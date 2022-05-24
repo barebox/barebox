@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 /* SPDX-FileCopyrightText: Alexander Shiyan <shc_work@mail.ru> */
 
+#include <common.h>
 #include <io.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
@@ -41,12 +42,13 @@ static const struct am33xx_cmd_control ddr3_cmd_ctrl = {
 /* CPU module contains 512MB (2*256MB) DDR3 SDRAM (2*128MB compatible),
  * so we configure EMIF for 512MB then detect real size of memory.
  */
-static const struct am33xx_emif_regs ddr3_regs = {
+static struct am33xx_emif_regs ddr3_regs = {
 	.emif_read_latency	= 0x00100007,
 	.emif_tim1		= 0x0aaad4db,
 	.emif_tim2		= 0x266b7fda,
 	.emif_tim3		= 0x501f867f,
 	.zq_config		= 0x50074be4,
+	/* MT41K256M8DA */
 	.sdram_config		= 0x61c05332,
 	.sdram_config2		= 0x00,
 	.sdram_ref_ctrl		= 0xc30,
@@ -87,6 +89,12 @@ ENTRY_FUNCTION(start_am33xx_myirtech_sram, bootinfo, r1, r2)
 
 	am335x_sdram_init(0x18b, &ddr3_cmd_ctrl, &ddr3_regs, &ddr3_data);
 
+	if (get_ram_size((void *)AM33XX_DRAM_ADDR_SPACE_START, SZ_512M) < SZ_512M) {
+		/* MT41K128M8DA */
+		ddr3_regs.sdram_config = 0x61c04ab2;
+		am335x_sdram_init(0x18b, &ddr3_cmd_ctrl, &ddr3_regs, &ddr3_data);
+	}
+
 	if (IS_ENABLED(CONFIG_DEBUG_LL)) {
 		am33xx_uart_soft_reset(IOMEM(AM33XX_UART0_BASE));
 		am33xx_enable_uart0_pin_mux();
@@ -94,22 +102,16 @@ ENTRY_FUNCTION(start_am33xx_myirtech_sram, bootinfo, r1, r2)
 		putc_ll('>');
 	}
 
-	barebox_arm_entry(AM33XX_DRAM_ADDR_SPACE_START, SZ_256M, fdt);
+	am335x_barebox_entry(fdt);
 }
 
 ENTRY_FUNCTION(start_am33xx_myirtech_sdram, r0, r1, r2)
 {
 	void *fdt;
-	u32 sdram_size;
 
 	fdt = __dtb_z_am335x_myirtech_myd_start;
 
 	fdt += get_runtime_offset();
 
-	/* Detect 256M/512M module variant */
-	__raw_writel(SZ_512M, AM33XX_DRAM_ADDR_SPACE_START + SZ_256M);
-	__raw_writel(SZ_256M, AM33XX_DRAM_ADDR_SPACE_START + 0);
-	sdram_size = __raw_readl(AM33XX_DRAM_ADDR_SPACE_START + SZ_256M);
-
-	barebox_arm_entry(AM33XX_DRAM_ADDR_SPACE_START, sdram_size, fdt);
+	am335x_barebox_entry(fdt);
 }

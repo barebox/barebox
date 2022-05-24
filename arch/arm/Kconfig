@@ -66,9 +66,13 @@ config ARCH_CLPS711X
 	select CLKDEV_LOOKUP
 	select CLOCKSOURCE_CLPS711X
 	select COMMON_CLK
+	select COMMON_CLK_OF_PROVIDER
 	select CPU_32v4T
 	select GPIOLIB
+	select HAS_DEBUG_LL
+	select HAVE_PBL_MULTI_IMAGES
 	select MFD_SYSCON
+	select RELOCATABLE
 
 config ARCH_DAVINCI
 	bool "TI Davinci"

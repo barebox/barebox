@@ -1,22 +1,21 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-// SPDX-FileCopyrightText: 2012 Alexander Shiyan <shc_work@mail.ru>
+// SPDX-FileCopyrightText: Alexander Shiyan <shc_work@mail.ru>
 
 #include <common.h>
-#include <init.h>
-
-#include <asm/barebox-arm-head.h>
-
+#include <asm/barebox-arm.h>
+#include <linux/sizes.h>
 #include <mach/clps711x.h>
 
-#ifdef CONFIG_CLPS711X_RAISE_CPUFREQ
-# define CLPS711X_CPU_PLL_MULT	50
-#else
-# define CLPS711X_CPU_PLL_MULT	40
-#endif
+extern char __dtb_ep7212_clep7212_start[];
 
-void __naked __bare_init barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2)
+ENTRY_FUNCTION_WITHSTACK(start_ep7212_clep7212,
+			 CS6_BASE + 48 * SZ_1K, r0, r1, r2)
 {
+	void *fdt;
+
 	arm_cpu_lowlevel_init();
 
-	clps711x_barebox_entry(CLPS711X_CPU_PLL_MULT, NULL);
+	fdt = __dtb_ep7212_clep7212_start;
+
+	clps711x_start(fdt + get_runtime_offset());
 }

@@ -27,6 +27,11 @@ static int clps711x_cs_probe(struct device_d *dev)
 	struct resource *iores;
 	u32 rate;
 	struct clk *timer_clk;
+	int id;
+
+	id = of_alias_get_id(dev->device_node, "timer");
+	if (id != 1)
+		return 0;
 
 	timer_clk = clk_get(dev, NULL);
 	if (IS_ERR(timer_clk))
@@ -46,7 +51,7 @@ static int clps711x_cs_probe(struct device_d *dev)
 	return init_clock(&clps711x_cs);
 }
 
-static __maybe_unused struct of_device_id clps711x_timer_dt_ids[] = {
+static const struct of_device_id __maybe_unused clps711x_timer_dt_ids[] = {
 	{ .compatible = "cirrus,ep7209-timer", },
 	{ }
 };

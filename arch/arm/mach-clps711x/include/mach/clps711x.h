@@ -1,13 +1,7 @@
+/* SPDX-License-Identifier: GPL-2.0+ */
 /*
- *  Hardware definitions for Cirrus Logic CLPS711X
- *
- *  Copyright (C) 2000 Deep Blue Solutions Ltd.
- *  Copyright (C) 2012 Alexander Shiyan <shc_work@mail.ru>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2000 Deep Blue Solutions Ltd.
+ * Copyright (C) 2012-2022 Alexander Shiyan <shc_work@mail.ru>
  */
 
 #ifndef __MACH_CLPS711X_H
@@ -159,6 +153,10 @@
 #define SYSCON2_CLKENSL		(1 << 13)
 #define SYSCON2_BUZFREQ		(1 << 14)
 
+#define SYSCON_UARTEN		(1 << 8)
+#define SYSFLG_UBUSY		(1 << 11)
+#define SYSFLG_UTXFF		(1 << 23)
+
 #define SYNCIO_FRMLEN(x)	(((x) & 0x1f) << 8)
 #define SYNCIO_SMCKEN		(1 << 13)
 #define SYNCIO_TXFRMEN		(1 << 14)
@@ -247,6 +245,16 @@
 #define MEMCFG_WAITSTATE_2_0	(14 << 2)
 #define MEMCFG_WAITSTATE_1_0	(15 << 2)
 
-void clps711x_barebox_entry(u32, void *);
+#define UBRLCR_BREAK		(1 << 12)
+#define UBRLCR_PRTEN		(1 << 13)
+#define UBRLCR_EVENPRT		(1 << 14)
+#define UBRLCR_XSTOP		(1 << 15)
+#define UBRLCR_FIFOEN		(1 << 16)
+#define UBRLCR_WRDLEN5		(0 << 17)
+#define UBRLCR_WRDLEN6		(1 << 17)
+#define UBRLCR_WRDLEN7		(2 << 17)
+#define UBRLCR_WRDLEN8		(3 << 17)
+
+void clps711x_start(void *);
 
 #endif

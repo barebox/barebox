@@ -60,6 +60,8 @@ Module.symvers
 # Generated files
 Documentation/commands/*.rst
 doctrees/
+log/
+makeall_builddir/
 
 # stgit generated dirs
 patches-*

@@ -423,7 +423,7 @@ free_priv:
 	return ret;
 }
 
-static const struct rpi_machine_data rpi_model_a[] = {
+static const struct rpi_machine_data rpi_1_ids[] = {
 	{
 		.hw_id = BCM2835_BOARD_REV_A_7,
 		.flags = RPI_OLD_SCHEMA,
@@ -436,12 +436,6 @@ static const struct rpi_machine_data rpi_model_a[] = {
 	}, {
 		.hw_id = BCM2835_BOARD_REV_A,
 	}, {
-		.hw_id = U8_MAX
-	},
-};
-
-static const struct rpi_machine_data rpi_model_a_plus[] = {
-	{
 		.hw_id = BCM2835_BOARD_REV_A_PLUS_12,
 		.flags = RPI_OLD_SCHEMA,
 	}, {
@@ -450,12 +444,6 @@ static const struct rpi_machine_data rpi_model_a_plus[] = {
 	}, {
 		.hw_id = BCM2835_BOARD_REV_A_PLUS,
 	}, {
-		.hw_id = U8_MAX
-	},
-};
-
-static const struct rpi_machine_data rpi_model_b[] = {
-	{
 		.hw_id = BCM2835_BOARD_REV_B_I2C1_4,
 		.flags = RPI_OLD_SCHEMA,
 	}, {
@@ -467,24 +455,12 @@ static const struct rpi_machine_data rpi_model_b[] = {
 	}, {
 		.hw_id = BCM2835_BOARD_REV_B,
 	}, {
-		.hw_id = U8_MAX
-	},
-};
-
-static const struct rpi_machine_data rpi_model_b_i2c0[] = {
-	{
 		.hw_id = BCM2835_BOARD_REV_B_I2C0_2,
 		.flags = RPI_OLD_SCHEMA,
 	}, {
 		.hw_id = BCM2835_BOARD_REV_B_I2C0_3,
 		.flags = RPI_OLD_SCHEMA,
 	}, {
-		.hw_id = U8_MAX
-	},
-};
-
-static const struct rpi_machine_data rpi_model_b_rev2[] = {
-	{
 		.hw_id = BCM2835_BOARD_REV_B_REV2_d,
 		.flags = RPI_OLD_SCHEMA,
 		.init = rpi_b_init,
@@ -497,12 +473,6 @@ static const struct rpi_machine_data rpi_model_b_rev2[] = {
 		.flags = RPI_OLD_SCHEMA,
 		.init = rpi_b_init,
 	}, {
-		.hw_id = U8_MAX
-	},
-};
-
-static const struct rpi_machine_data rpi_model_b_plus[] = {
-	{
 		.hw_id = BCM2835_BOARD_REV_B_PLUS_10,
 		.flags = RPI_OLD_SCHEMA,
 		.init = rpi_b_plus_init,
@@ -514,12 +484,6 @@ static const struct rpi_machine_data rpi_model_b_plus[] = {
 		.hw_id = BCM2835_BOARD_REV_B_PLUS,
 		.init = rpi_b_plus_init,
 	}, {
-		.hw_id = U8_MAX
-	},
-};
-
-static const struct rpi_machine_data rpi_compute_module[] = {
-	{
 		.hw_id = BCM2835_BOARD_REV_CM_11,
 		.flags = RPI_OLD_SCHEMA,
 	}, {
@@ -528,21 +492,9 @@ static const struct rpi_machine_data rpi_compute_module[] = {
 	}, {
 		.hw_id = BCM2835_BOARD_REV_CM1,
 	}, {
-		.hw_id = U8_MAX
-	},
-};
-
-static const struct rpi_machine_data rpi_model_zero[] = {
-	{
 		.hw_id = BCM2835_BOARD_REV_ZERO,
 		.init = rpi_0_init,
 	}, {
-		.hw_id = U8_MAX
-	},
-};
-
-static const struct rpi_machine_data rpi_model_zero_w[] = {
-	{
 		.hw_id = BCM2835_BOARD_REV_ZERO_W,
 		.init = rpi_0_w_init,
 	}, {
@@ -550,7 +502,7 @@ static const struct rpi_machine_data rpi_model_zero_w[] = {
 	},
 };
 
-static const struct rpi_machine_data rpi_2_model_b[] = {
+static const struct rpi_machine_data rpi_2_ids[] = {
 	{
 		.hw_id = BCM2836_BOARD_REV_2_B,
 		.init = rpi_b_plus_init,
@@ -559,45 +511,21 @@ static const struct rpi_machine_data rpi_2_model_b[] = {
 	},
 };
 
-static const struct rpi_machine_data rpi_3_model_a_plus[] = {
+static const struct rpi_machine_data rpi_3_ids[] = {
 	{
 		.hw_id = BCM2837B0_BOARD_REV_3A_PLUS,
 		.init = rpi_b_plus_init,
 	}, {
-		.hw_id = U8_MAX
-	},
-};
-
-static const struct rpi_machine_data rpi_3_model_b[] = {
-	{
 		.hw_id = BCM2837_BOARD_REV_3_B,
 		.init = rpi_b_init,
 	}, {
-		.hw_id = U8_MAX
-	},
-};
-
-static const struct rpi_machine_data rpi_3_model_b_plus[] = {
-	{
 		.hw_id = BCM2837B0_BOARD_REV_3B_PLUS,
 		.init = rpi_b_plus_init,
 	}, {
-		.hw_id = U8_MAX
-	},
-};
-
-static const struct rpi_machine_data rpi_compute_module_3[] = {
-	{
 		.hw_id = BCM2837_BOARD_REV_CM3,
 	}, {
 		.hw_id = BCM2837B0_BOARD_REV_CM3_PLUS,
 	}, {
-		.hw_id = U8_MAX
-	},
-};
-
-static const struct rpi_machine_data rpi_model_zero_2_w[] = {
-	{
 		.hw_id = BCM2837B0_BOARD_REV_ZERO_2,
 	}, {
 		.hw_id = U8_MAX
@@ -606,27 +534,27 @@ static const struct rpi_machine_data rpi_model_zero_2_w[] = {
 
 static const struct of_device_id rpi_of_match[] = {
 	/* BCM2835 based Boards */
-	{ .compatible = "raspberrypi,model-a", .data = rpi_model_a },
-	{ .compatible = "raspberrypi,model-a-plus", .data = rpi_model_a_plus },
-	{ .compatible = "raspberrypi,model-b", .data = rpi_model_b },
+	{ .compatible = "raspberrypi,model-a", .data = rpi_1_ids },
+	{ .compatible = "raspberrypi,model-a-plus", .data = rpi_1_ids },
+	{ .compatible = "raspberrypi,model-b", .data = rpi_1_ids },
 	/* Raspberry Pi Model B (no P5) */
-	{ .compatible = "raspberrypi,model-b-i2c0", .data = rpi_model_b_i2c0 },
-	{ .compatible = "raspberrypi,model-b-rev2", .data = rpi_model_b_rev2 },
-	{ .compatible = "raspberrypi,model-b-plus", .data = rpi_model_b_plus },
-	{ .compatible = "raspberrypi,compute-module", .data = rpi_compute_module },
-	{ .compatible = "raspberrypi,model-zero", .data = rpi_model_zero },
-	{ .compatible = "raspberrypi,model-zero-w", .data = rpi_model_zero_w },
+	{ .compatible = "raspberrypi,model-b-i2c0", .data = rpi_1_ids },
+	{ .compatible = "raspberrypi,model-b-rev2", .data = rpi_1_ids },
+	{ .compatible = "raspberrypi,model-b-plus", .data = rpi_1_ids },
+	{ .compatible = "raspberrypi,compute-module", .data = rpi_1_ids },
+	{ .compatible = "raspberrypi,model-zero", .data = rpi_1_ids },
+	{ .compatible = "raspberrypi,model-zero-w", .data = rpi_1_ids },
 
 	/* BCM2836 based Boards */
-	{ .compatible = "raspberrypi,2-model-b", .data = rpi_2_model_b },
+	{ .compatible = "raspberrypi,2-model-b", .data = rpi_2_ids },
 
 	/* BCM2837 based Boards */
-	{ .compatible = "raspberrypi,3-model-a-plus", .data = rpi_3_model_a_plus },
-	{ .compatible = "raspberrypi,3-model-b", .data = rpi_3_model_b },
-	{ .compatible = "raspberrypi,3-model-b-plus", .data = rpi_3_model_b_plus },
-	{ .compatible = "raspberrypi,model-zero-2-w", .data = rpi_model_zero_2_w },
-	{ .compatible = "raspberrypi,3-compute-module", .data = rpi_compute_module_3 },
-	{ .compatible = "raspberrypi,3-compute-module-lite", .data = rpi_compute_module_3 },
+	{ .compatible = "raspberrypi,3-model-a-plus", .data = rpi_3_ids },
+	{ .compatible = "raspberrypi,3-model-b", .data = rpi_3_ids },
+	{ .compatible = "raspberrypi,3-model-b-plus", .data = rpi_3_ids },
+	{ .compatible = "raspberrypi,model-zero-2-w", .data = rpi_3_ids },
+	{ .compatible = "raspberrypi,3-compute-module", .data = rpi_3_ids },
+	{ .compatible = "raspberrypi,3-compute-module-lite", .data = rpi_3_ids },
 
 	{ /* sentinel */ },
 };

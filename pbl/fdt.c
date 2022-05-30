@@ -47,7 +47,7 @@ void fdt_find_mem(const void *fdt, unsigned long *membase, unsigned long *memsiz
 		pr_err("Cannot find #size-cells property");
 		goto err;
 	}
-	ns = fdt32_to_cpu(*nap);
+	ns = fdt32_to_cpu(*nsp);
 
 	/* Find the memory range */
 	node = fdt_node_offset_by_prop_value(fdt, -1, "device_type",

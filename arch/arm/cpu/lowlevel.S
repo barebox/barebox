@@ -9,6 +9,8 @@
 ENTRY(arm_cpu_lowlevel_init)
 	/* save lr, since it may be banked away with a processor mode change */
 	mov	r2, lr
+	/* save sp, because possible HYP -> SVC transition below clobbers it */
+	mov	r3, sp
 
 #ifdef CONFIG_CPU_32v7
 	/* careful: the hyp install corrupts r0 and r1 */
@@ -77,6 +79,7 @@ THUMB(	orr	r12, r12, #PSR_T_BIT	)
 
 	mcr	p15, 0, r12, c1, c0, 0		/* SCTLR */
 
+	mov	sp, r3
 	mov	pc, r2
 ENDPROC(arm_cpu_lowlevel_init)
 

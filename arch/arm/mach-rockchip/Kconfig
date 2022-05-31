@@ -80,6 +80,12 @@ config MACH_PINE64_QUARTZ64
 	help
 	  Say Y here if you are using a Pine64 Quartz64
 
+config MACH_RADXA_ROCK3
+       select ARCH_RK3568
+       bool "Radxa ROCK3"
+       help
+	  Say Y here if you are using a Radxa ROCK3
+
 comment "select board features:"
 
 config ARCH_RK3399_OPTEE

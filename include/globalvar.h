@@ -101,6 +101,8 @@ static inline char *globalvar_get_match(const char *match, const char *separator
 
 static inline void globalvar_set_match(const char *match, const char *val) {}
 
+static inline void globalvar_set(const char *name, const char *val) {}
+
 static inline int nvvar_load(void)
 {
 	return 0;

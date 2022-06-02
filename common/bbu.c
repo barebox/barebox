@@ -310,9 +310,8 @@ int bbu_mmcboot_handler(struct bbu_handler *handler, struct bbu_data *data,
 {
 	struct bbu_data _data = *data;
 	int ret;
-	char *bootpartvar;
+	char *devicefile = NULL, *bootpartvar = NULL;
 	const char *bootpart;
-	char *devicefile;
 	const char *devname = devpath_to_name(data->devicefile);
 
 	ret = device_detect_by_name(devname);
@@ -328,7 +327,7 @@ int bbu_mmcboot_handler(struct bbu_handler *handler, struct bbu_data *data,
 	bootpart = getenv(bootpartvar);
 	if (!bootpart) {
 		ret = -ENOENT;
-		goto free_bootpartvar;
+		goto out;
 	}
 
 	if (!strcmp(bootpart, "boot0")) {
@@ -339,21 +338,19 @@ int bbu_mmcboot_handler(struct bbu_handler *handler, struct bbu_data *data,
 
 	ret = asprintf(&devicefile, "/dev/%s.%s", devname, bootpart);
 	if (ret < 0)
-		goto free_bootpartvar;
+		goto out;
 
 	_data.devicefile = devicefile;
 
 	ret = chained_handler(handler, &_data);
 	if (ret < 0)
-		goto free_devicefile;
+		goto out;
 
 	/* on success switch boot source */
 	ret = setenv(bootpartvar, bootpart);
 
-free_devicefile:
+out:
 	free(devicefile);
-
-free_bootpartvar:
 	free(bootpartvar);
 
 	return ret;

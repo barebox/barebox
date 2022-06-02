@@ -310,7 +310,7 @@ int bbu_mmcboot_handler(struct bbu_handler *handler, struct bbu_data *data,
 {
 	struct bbu_data _data = *data;
 	int ret;
-	char *devicefile = NULL, *bootpartvar = NULL;
+	char *devicefile = NULL, *bootpartvar = NULL, *bootackvar = NULL;
 	const char *bootpart;
 	const char *devname = devpath_to_name(data->devicefile);
 
@@ -346,10 +346,25 @@ int bbu_mmcboot_handler(struct bbu_handler *handler, struct bbu_data *data,
 	if (ret < 0)
 		goto out;
 
+	/*
+	 * This flag can be set in the chained handler or by
+	 * bbu_mmcboot_handler's caller
+	 */
+	if ((_data.flags | data->flags) & BBU_FLAG_MMC_BOOT_ACK) {
+		ret = asprintf(&bootackvar, "%s.boot_ack", devname);
+		if (ret < 0)
+			goto out;
+
+		ret = setenv(bootackvar, "1");
+		if (ret)
+			goto out;
+	}
+
 	/* on success switch boot source */
 	ret = setenv(bootpartvar, bootpart);
 
 out:
+	free(bootackvar);
 	free(devicefile);
 	free(bootpartvar);
 

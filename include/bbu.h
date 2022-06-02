@@ -10,6 +10,7 @@
 struct bbu_data {
 #define BBU_FLAG_FORCE	(1 << 0)
 #define BBU_FLAG_YES	(1 << 1)
+#define BBU_FLAG_MMC_BOOT_ACK	(1 << 2)
 	unsigned long flags;
 	int force;
 	const void *image;

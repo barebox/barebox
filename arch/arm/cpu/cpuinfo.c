@@ -222,6 +222,10 @@ static int do_cpuinfo(int argc, char *argv[])
 		printf("core: %s r%up%u\n", part, major, minor);
 	}
 
+#ifdef CONFIG_CPU_64v8
+	printf("exception level: %u\n", current_el());
+#endif
+
 	if (cache & (1 << 24)) {
 		/* separate I/D cache */
 		printf("I-cache: ");

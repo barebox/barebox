@@ -371,22 +371,12 @@ out:
 	return ret;
 }
 
-static int bbu_std_file_handler(struct bbu_handler *handler,
-					struct bbu_data *data)
+int bbu_std_file_handler(struct bbu_handler *handler,
+			 struct bbu_data *data)
 {
-	struct bbu_std *std = container_of(handler, struct bbu_std, handler);
 	int fd, ret;
-	enum filetype filetype;
 	struct stat s;
 	unsigned oflags = O_WRONLY;
-
-	filetype = file_detect_type(data->image, data->len);
-	if (filetype != std->filetype) {
-		if (!bbu_force(data, "incorrect image type. Expected: %s, got %s",
-				file_type_to_string(std->filetype),
-				file_type_to_string(filetype)))
-			return -EINVAL;
-	}
 
 	device_detect_by_name(devpath_to_name(data->devicefile));
 
@@ -436,6 +426,23 @@ err_close:
 	return ret;
 }
 
+static int bbu_std_file_handler_checked(struct bbu_handler *handler,
+					struct bbu_data *data)
+{
+	struct bbu_std *std = container_of(handler, struct bbu_std, handler);
+	enum filetype filetype;
+
+	filetype = file_detect_type(data->image, data->len);
+	if (filetype != std->filetype) {
+		if (!bbu_force(data, "incorrect image type. Expected: %s, got %s",
+				file_type_to_string(std->filetype),
+				file_type_to_string(filetype)))
+			return -EINVAL;
+	}
+
+	return bbu_std_file_handler(handler, data);
+}
+
 /**
  * bbu_register_std_file_update() - register a barebox update handler for a
  *                                  standard file-to-device-copy operation
@@ -466,7 +473,7 @@ int bbu_register_std_file_update(const char *name, unsigned long flags,
 	handler->flags = flags;
 	handler->devicefile = devicefile;
 	handler->name = name;
-	handler->handler = bbu_std_file_handler;
+	handler->handler = bbu_std_file_handler_checked;
 
 	ret = bbu_register_handler(handler);
 	if (ret)

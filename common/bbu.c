@@ -19,6 +19,7 @@
 #include <malloc.h>
 #include <linux/stat.h>
 #include <image-metadata.h>
+#include <environment.h>
 #include <file-list.h>
 
 static LIST_HEAD(bbu_image_handlers);
@@ -303,6 +304,60 @@ struct bbu_std {
 	struct bbu_handler handler;
 	enum filetype filetype;
 };
+
+int bbu_mmcboot_handler(struct bbu_handler *handler, struct bbu_data *data,
+			int (*chained_handler)(struct bbu_handler *, struct bbu_data *))
+{
+	struct bbu_data _data = *data;
+	int ret;
+	char *bootpartvar;
+	const char *bootpart;
+	char *devicefile;
+	const char *devname = devpath_to_name(data->devicefile);
+
+	ret = device_detect_by_name(devname);
+	if (ret) {
+		pr_err("Couldn't detect device '%s'\n", devname);
+		return ret;
+	}
+
+	ret = asprintf(&bootpartvar, "%s.boot", devname);
+	if (ret < 0)
+		return ret;
+
+	bootpart = getenv(bootpartvar);
+	if (!bootpart) {
+		ret = -ENOENT;
+		goto free_bootpartvar;
+	}
+
+	if (!strcmp(bootpart, "boot0")) {
+		bootpart = "boot1";
+	} else {
+		bootpart = "boot0";
+	}
+
+	ret = asprintf(&devicefile, "/dev/%s.%s", devname, bootpart);
+	if (ret < 0)
+		goto free_bootpartvar;
+
+	_data.devicefile = devicefile;
+
+	ret = chained_handler(handler, &_data);
+	if (ret < 0)
+		goto free_devicefile;
+
+	/* on success switch boot source */
+	ret = setenv(bootpartvar, bootpart);
+
+free_devicefile:
+	free(devicefile);
+
+free_bootpartvar:
+	free(bootpartvar);
+
+	return ret;
+}
 
 static int bbu_std_file_handler(struct bbu_handler *handler,
 					struct bbu_data *data)

@@ -50,6 +50,9 @@ void bbu_handlers_list(void);
 
 struct file_list;
 
+int bbu_mmcboot_handler(struct bbu_handler *, struct bbu_data *,
+			int (*chained_handler)(struct bbu_handler *, struct bbu_data *));
+
 #ifdef CONFIG_BAREBOX_UPDATE
 
 int bbu_register_handler(struct bbu_handler *);

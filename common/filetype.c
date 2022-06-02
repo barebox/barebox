@@ -484,6 +484,8 @@ bool filetype_is_barebox_image(enum filetype ft)
 	case filetype_ch_image_be:
 	case filetype_layerscape_image:
 	case filetype_layerscape_qspi_image:
+	case filetype_stm32_image_fsbl_v1:
+	case filetype_fip:
 		return true;
 	default:
 		return false;

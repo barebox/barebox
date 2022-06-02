@@ -288,6 +288,7 @@ static struct inode *legacy_get_inode(struct super_block *sb, const struct inode
 		return NULL;
 	case S_IFREG:
 	case S_IFCHR:
+	case S_IFBLK:
 		inode->i_op = &legacy_file_inode_operations;
 		break;
 	case S_IFDIR:

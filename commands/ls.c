@@ -63,10 +63,10 @@ int ls(const char *path, ulong flags)
 	if (stat(path, &s))
 		return -errno;
 
-	if (flags & LS_SHOWARG && s.st_mode & S_IFDIR)
+	if (flags & LS_SHOWARG && S_ISDIR(s.st_mode))
 		printf("%s:\n", path);
 
-	if (!(s.st_mode & S_IFDIR)) {
+	if (!S_ISDIR(s.st_mode)) {
 		ls_one(path, path);
 		return 0;
 	}
@@ -112,7 +112,7 @@ int ls(const char *path, ulong flags)
 			continue;
 		}
 
-		if (s.st_mode & S_IFDIR)
+		if (S_ISDIR(s.st_mode))
 			ls(tmp, flags);
 	}
 
@@ -171,7 +171,7 @@ static int do_ls(int argc, char *argv[])
 			continue;
 		}
 
-		if (!(s.st_mode & S_IFDIR)) {
+		if (!S_ISDIR(s.st_mode)) {
 			if (flags & LS_COLUMN)
 				string_list_add_sorted(&sl, argv[o]);
 			else
@@ -197,7 +197,7 @@ static int do_ls(int argc, char *argv[])
 			continue;
 		}
 
-		if (s.st_mode & S_IFDIR) {
+		if (S_ISDIR(s.st_mode)) {
 			ret = ls(argv[o], flags);
 			if (ret) {
 				perror("ls");

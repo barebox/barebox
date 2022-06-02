@@ -40,7 +40,7 @@ static int do_bootm_stm32image(struct image_data *data)
 static struct image_handler image_handler_stm32_image_v1_handler = {
 	.name = "STM32 image (v1)",
 	.bootm = do_bootm_stm32image,
-	.filetype = filetype_stm32_image_v1,
+	.filetype = filetype_stm32_image_ssbl_v1,
 };
 
 static int stm32mp_register_stm32image_image_handler(void)

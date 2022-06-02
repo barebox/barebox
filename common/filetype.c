@@ -71,7 +71,8 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_layerscape_qspi_image] = { "Layerscape QSPI image", "layerscape-qspi-PBL" },
 	[filetype_ubootvar] = { "U-Boot environmemnt variable data",
 				"ubootvar" },
-	[filetype_stm32_image_v1] = { "STM32 image (v1)", "stm32-image-v1" },
+	[filetype_stm32_image_fsbl_v1] = { "STM32MP FSBL image (v1)", "stm32-fsbl-v1" },
+	[filetype_stm32_image_ssbl_v1] = { "STM32MP SSBL image (v1)", "stm32-ssbl-v1" },
 	[filetype_zynq_image] = { "Zynq image", "zynq-image" },
 	[filetype_mxs_sd_image] = { "i.MX23/28 SD card image", "mxs-sd-image" },
 	[filetype_rockchip_rkns_image] = { "Rockchip boot image", "rk-image" },
@@ -372,8 +373,14 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 		return filetype_unknown;
 
 	if (strncmp(buf8, "STM\x32", 4) == 0) {
-		if (buf8[74] == 0x01)
-			return filetype_stm32_image_v1;
+		if (buf8[74] == 0x01) {
+			switch(le32_to_cpu(buf[63])) {
+			case 0x00000000:
+				return filetype_stm32_image_ssbl_v1;
+			case 0x10000000:
+				return filetype_stm32_image_fsbl_v1;
+			}
+		}
 	}
 
 	if (bufsize < 512)

@@ -23,6 +23,7 @@
 #include <asm/barebox-arm.h>
 #include <mach/am33xx-silicon.h>
 #include <mach/am33xx-clock.h>
+#include <mach/emif4.h>
 #include <mach/generic.h>
 #include <mach/sys_info.h>
 #include <mach/am33xx-generic.h>

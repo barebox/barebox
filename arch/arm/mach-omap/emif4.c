@@ -65,6 +65,56 @@
 #define EMIF4_DDR1_PWRDN_EN	(0x1 << 6)
 #define EMIF4_DDR1_READ_LAT	(0x6 << 0)
 
+/**
+ * emif4_sdram_size - read back SDRAM size from sdram_config register
+ *
+ * @return: The SDRAM size
+ */
+unsigned long emif4_sdram_size(const void __iomem *emif4)
+{
+	uint32_t sdram_config = readl(emif4 + EMIF4_SDRAM_CONFIG);
+	int rows, cols, width, banks;
+	unsigned long size;
+
+	rows = ((sdram_config >> 7) & 0x7) + 9;
+	cols = (sdram_config & 0x7) + 8;
+
+	switch ((sdram_config >> 14) & 0x3) {
+	case 0:
+		width = 4;
+		break;
+	case 1:
+		width = 2;
+		break;
+	default:
+		return 0;
+	}
+
+	switch ((sdram_config >> 4) & 0x7) {
+	case 0:
+		banks = 1;
+		break;
+	case 1:
+		banks = 2;
+		break;
+	case 2:
+		banks = 4;
+		break;
+	case 3:
+		banks = 8;
+		break;
+	default:
+		return 0;
+	}
+
+	size = (1 << rows) * (1 << cols) * banks * width;
+
+	debug("SDRAM_CONFIG: 0x%08x, cols: %2d, rows: %2d, width: %2d, banks: %2d, size: 0x%08lx\n",
+	      sdram_config, cols, rows, width, banks, size);
+
+	return size;
+}
+
 /*
  *  - Init the emif4 module for DDR access
  *  - Early init routines, called from flash or SRAM.

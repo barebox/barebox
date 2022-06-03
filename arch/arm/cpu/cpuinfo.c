@@ -191,7 +191,7 @@ static int do_cpuinfo(int argc, char *argv[])
 
 	if (cpu_arch >= CPU_ARCH_ARMv7) {
 		unsigned int major, minor;
-		char *part;
+		const char *part = NULL;
 		major = (mainid >> 20) & 0xf;
 		minor = mainid & 0xf;
 		switch (mainid & 0xfff0) {
@@ -217,9 +217,13 @@ static int do_cpuinfo(int argc, char *argv[])
 			part = "Cortex-A57";
 			break;
 		default:
-			part = "unknown";
+			printf("core: unknown (0x%08lx) r%up%u\n",
+			       mainid, major, minor);
+			break;
 		}
-		printf("core: %s r%up%u\n", part, major, minor);
+
+		if (part)
+			printf("core: %s r%up%u\n", part, major, minor);
 	}
 
 #ifdef CONFIG_CPU_64v8

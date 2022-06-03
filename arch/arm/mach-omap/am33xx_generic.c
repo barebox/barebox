@@ -349,9 +349,9 @@ void am33xx_config_sdram(const struct am33xx_emif_regs *regs)
  */
 unsigned long am335x_sdram_size(void)
 {
+	uint32_t sdram_config = readl(IOMEM(AM33XX_EMIF4_BASE + EMIF4_SDRAM_CONFIG));
 	int rows, cols, width, banks;
 	unsigned long size;
-	uint32_t sdram_config = readl(CM_EMIF_SDRAM_CONFIG);
 
 	rows = ((sdram_config >> 7) & 0x7) + 9;
 	cols = (sdram_config & 0x7) + 8;

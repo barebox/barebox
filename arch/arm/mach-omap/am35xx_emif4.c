@@ -12,7 +12,6 @@
 #include <common.h>
 #include <io.h>
 #include <mach/emif4.h>
-#include <mach/omap3-silicon.h>
 
 /*
  * AM35xx configuration values
@@ -70,9 +69,8 @@
  *  - Init the emif4 module for DDR access
  *  - Early init routines, called from flash or SRAM.
  */
-void am35xx_emif4_init(void)
+void am35xx_emif4_init(const void __iomem *emif4)
 {
-	const void __iomem *emif4 = IOMEM(OMAP3_SDRC_BASE);
 	unsigned int regval;
 
 	/* Set the DDR PHY parameters in PHY ctrl registers */

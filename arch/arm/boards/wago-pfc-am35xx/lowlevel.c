@@ -200,7 +200,7 @@ static noinline void pfc200_board_init(void)
 
 	/* Dont reconfigure SDRAM while running in SDRAM */
 	if (!in_sdram)
-		am35xx_emif4_init();
+		am35xx_emif4_init(IOMEM(OMAP3_SDRC_BASE));
 
 	barebox_arm_entry(0x80000000, SZ_256M, NULL);
 }

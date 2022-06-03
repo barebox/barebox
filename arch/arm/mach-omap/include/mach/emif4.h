@@ -45,6 +45,6 @@
 #define EMIF4_DDR_PHY_CTRL_2					0xec
 #define EMIF4_IODFT_TLGC					0x60
 
-void am35xx_emif4_init(void);
+void am35xx_emif4_init(const void __iomem *emif4);
 
 #endif /* endif _EMIF_H_ */

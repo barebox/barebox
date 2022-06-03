@@ -130,34 +130,35 @@ static void board_config_vtp(void)
 
 static void board_config_emif_ddr(void)
 {
+	const void __iomem *emif4 = IOMEM(AM33XX_EMIF4_BASE);
 	u32 i;
 
 	/*Program EMIF0 CFG Registers*/
-	__raw_writel(EMIF_READ_LATENCY, AM33XX_EMIF4_0_REG(DDR_PHY_CTRL_1));
-	__raw_writel(EMIF_READ_LATENCY, AM33XX_EMIF4_0_REG(DDR_PHY_CTRL_1_SHADOW));
-	__raw_writel(EMIF_READ_LATENCY, AM33XX_EMIF4_0_REG(DDR_PHY_CTRL_2));
-	__raw_writel(EMIF_TIM1, AM33XX_EMIF4_0_REG(SDRAM_TIM_1));
-	__raw_writel(EMIF_TIM1, AM33XX_EMIF4_0_REG(SDRAM_TIM_1_SHADOW));
-	__raw_writel(EMIF_TIM2, AM33XX_EMIF4_0_REG(SDRAM_TIM_2));
-	__raw_writel(EMIF_TIM2, AM33XX_EMIF4_0_REG(SDRAM_TIM_2_SHADOW));
-	__raw_writel(EMIF_TIM3, AM33XX_EMIF4_0_REG(SDRAM_TIM_3));
-	__raw_writel(EMIF_TIM3, AM33XX_EMIF4_0_REG(SDRAM_TIM_3_SHADOW));
+	__raw_writel(EMIF_READ_LATENCY, emif4 + EMIF4_DDR_PHY_CTRL_1);
+	__raw_writel(EMIF_READ_LATENCY, emif4 + EMIF4_DDR_PHY_CTRL_1_SHADOW);
+	__raw_writel(EMIF_READ_LATENCY, emif4 + EMIF4_DDR_PHY_CTRL_2);
+	__raw_writel(EMIF_TIM1, emif4 + EMIF4_SDRAM_TIM_1);
+	__raw_writel(EMIF_TIM1, emif4 + EMIF4_SDRAM_TIM_1_SHADOW);
+	__raw_writel(EMIF_TIM2, emif4 + EMIF4_SDRAM_TIM_2);
+	__raw_writel(EMIF_TIM2, emif4 + EMIF4_SDRAM_TIM_2_SHADOW);
+	__raw_writel(EMIF_TIM3, emif4 + EMIF4_SDRAM_TIM_3);
+	__raw_writel(EMIF_TIM3, emif4 + EMIF4_SDRAM_TIM_3_SHADOW);
 
-	__raw_writel(EMIF_SDCFG, AM33XX_EMIF4_0_REG(SDRAM_CONFIG));
-	__raw_writel(EMIF_SDCFG, AM33XX_EMIF4_0_REG(SDRAM_CONFIG2));
+	__raw_writel(EMIF_SDCFG, emif4 + EMIF4_SDRAM_CONFIG);
+	__raw_writel(EMIF_SDCFG, emif4 + EMIF4_SDRAM_CONFIG2);
 
-	__raw_writel(0x00004650, AM33XX_EMIF4_0_REG(SDRAM_REF_CTRL));
-	__raw_writel(0x00004650, AM33XX_EMIF4_0_REG(SDRAM_REF_CTRL_SHADOW));
+	__raw_writel(0x00004650, emif4 + EMIF4_SDRAM_REF_CTRL);
+	__raw_writel(0x00004650, emif4 + EMIF4_SDRAM_REF_CTRL_SHADOW);
 
 	for (i = 0; i < 5000; i++) {
 
 	}
 
-	__raw_writel(EMIF_SDREF, AM33XX_EMIF4_0_REG(SDRAM_REF_CTRL));
-	__raw_writel(EMIF_SDREF, AM33XX_EMIF4_0_REG(SDRAM_REF_CTRL_SHADOW));
+	__raw_writel(EMIF_SDREF, emif4 + EMIF4_SDRAM_REF_CTRL);
+	__raw_writel(EMIF_SDREF, emif4 + EMIF4_SDRAM_REF_CTRL_SHADOW);
 
-	__raw_writel(EMIF_SDCFG, AM33XX_EMIF4_0_REG(SDRAM_CONFIG));
-	__raw_writel(EMIF_SDCFG, AM33XX_EMIF4_0_REG(SDRAM_CONFIG2));
+	__raw_writel(EMIF_SDCFG, emif4 + EMIF4_SDRAM_CONFIG);
+	__raw_writel(EMIF_SDCFG, emif4 + EMIF4_SDRAM_CONFIG2);
 }
 
 static void board_config_ddr(void)

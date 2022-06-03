@@ -21,58 +21,58 @@
  */
 void am35xx_emif4_init(void)
 {
+	const void __iomem *emif4 = IOMEM(OMAP3_SDRC_BASE);
 	unsigned int regval;
-	struct emif4 *emif4_base = IOMEM(OMAP3_SDRC_BASE);
 
 	/* Set the DDR PHY parameters in PHY ctrl registers */
 	regval = (EMIF4_DDR1_READ_LAT | EMIF4_DDR1_PWRDN_DIS |
 		EMIF4_DDR1_EXT_STRB_DIS);
-	writel(regval, &emif4_base->ddr_phyctrl1);
-	writel(regval, &emif4_base->ddr_phyctrl1_shdw);
-	writel(0, &emif4_base->ddr_phyctrl2);
+	writel(regval, emif4 + EMIF4_DDR_PHY_CTRL_1);
+	writel(regval, emif4 + EMIF4_DDR_PHY_CTRL_1_SHADOW);
+	writel(0, emif4 + EMIF4_DDR_PHY_CTRL_2);
 
 	/* Reset the DDR PHY and wait till completed */
-	regval = readl(&emif4_base->sdram_iodft_tlgc);
+	regval = readl(emif4 + EMIF4_IODFT_TLGC);
 	regval |= (1 << 10);
-	writel(regval, &emif4_base->sdram_iodft_tlgc);
+	writel(regval, emif4 + EMIF4_IODFT_TLGC);
 
 	/* Wait till that bit clears*/
-	while (readl(&emif4_base->sdram_iodft_tlgc) & (1 << 10));
+	while (readl(emif4 + EMIF4_IODFT_TLGC) & (1 << 10));
 
 	/* Re-verify the DDR PHY status*/
-	while ((readl(&emif4_base->sdram_sts) & (1 << 2)) == 0x0);
+	while ((readl(emif4 + EMIF4_STATUS) & (1 << 2)) == 0x0);
 
 	regval |= (1 << 0);
-	writel(regval, &emif4_base->sdram_iodft_tlgc);
+	writel(regval, emif4 + EMIF4_IODFT_TLGC);
 
 	/* Set SDR timing registers */
 	regval = (EMIF4_TIM1_T_WTR | EMIF4_TIM1_T_RRD |
 		EMIF4_TIM1_T_RC | EMIF4_TIM1_T_RAS |
 		EMIF4_TIM1_T_WR | EMIF4_TIM1_T_RCD |
 		EMIF4_TIM1_T_RP);
-	writel(regval, &emif4_base->sdram_time1);
-	writel(regval, &emif4_base->sdram_time1_shdw);
+	writel(regval, emif4 + EMIF4_SDRAM_TIM_1);
+	writel(regval, emif4 + EMIF4_SDRAM_TIM_1_SHADOW);
 
 	regval = (EMIF4_TIM2_T_CKE | EMIF4_TIM2_T_RTP |
 		EMIF4_TIM2_T_XSRD | EMIF4_TIM2_T_XSNR |
 		EMIF4_TIM2_T_ODT | EMIF4_TIM2_T_XP);
-	writel(regval, &emif4_base->sdram_time2);
-	writel(regval, &emif4_base->sdram_time2_shdw);
+	writel(regval, emif4 + EMIF4_SDRAM_TIM_2);
+	writel(regval, emif4 + EMIF4_SDRAM_TIM_2_SHADOW);
 
 	regval = (EMIF4_TIM3_T_RAS_MAX | EMIF4_TIM3_T_RFC);
-	writel(regval, &emif4_base->sdram_time3);
-	writel(regval, &emif4_base->sdram_time3_shdw);
+	writel(regval, emif4 + EMIF4_SDRAM_TIM_3);
+	writel(regval, emif4 + EMIF4_SDRAM_TIM_3_SHADOW);
 
 	/* Set the PWR control register */
 	regval = (EMIF4_PWR_PM_TIM | EMIF4_PWR_LP_MODE |
 		EMIF4_PWR_DPD_DIS | EMIF4_PWR_IDLE_MODE);
-	writel(regval, &emif4_base->sdram_pwr_mgmt);
-	writel(regval, &emif4_base->sdram_pwr_mgmt_shdw);
+	writel(regval, emif4 + EMIF4_POWER_MANAGEMENT_CTRL);
+	writel(regval, emif4 + EMIF4_POWER_MANAGEMENT_CTRL_SHADOW);
 
 	/* Set the DDR refresh rate control register */
 	regval = (EMIF4_REFRESH_RATE | EMIF4_INITREF_DIS);
-	writel(regval, &emif4_base->sdram_refresh_ctrl);
-	writel(regval, &emif4_base->sdram_refresh_ctrl_shdw);
+	writel(regval, emif4 + EMIF4_SDRAM_REF_CTRL);
+	writel(regval, emif4 + EMIF4_SDRAM_REF_CTRL_SHADOW);
 
 	/* set the SDRAM configuration register */
 	regval = (EMIF4_CFG_PGSIZE | EMIF4_CFG_EBANK |
@@ -81,5 +81,5 @@ void am35xx_emif4_init(void)
 		EMIF4_CFG_SDR_DRV | EMIF4_CFG_DDR_DIS_DLL |
 		EMIF4_CFG_DDR2_DDQS | EMIF4_CFG_DDR_TERM |
 		EMIF4_CFG_IBANK_POS | EMIF4_CFG_SDRAM_TYP);
-	writel(regval, &emif4_base->sdram_config);
+	writel(regval, emif4 + EMIF4_SDRAM_CONFIG);
 }

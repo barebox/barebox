@@ -97,30 +97,6 @@
 #define EMIF4_DDR1_PWRDN_EN	(0x1 << 6)
 #define EMIF4_DDR1_READ_LAT	(0x6 << 0)
 
-struct emif4 {
-	unsigned int emif_mod_id_rev;
-	unsigned int sdram_sts;
-	unsigned int sdram_config;
-	unsigned int res1;
-	unsigned int sdram_refresh_ctrl;
-	unsigned int sdram_refresh_ctrl_shdw;
-	unsigned int sdram_time1;
-	unsigned int sdram_time1_shdw;
-	unsigned int sdram_time2;
-	unsigned int sdram_time2_shdw;
-	unsigned int sdram_time3;
-	unsigned int sdram_time3_shdw;
-	unsigned char res2[8];
-	unsigned int sdram_pwr_mgmt;
-	unsigned int sdram_pwr_mgmt_shdw;
-	unsigned char res3[32];
-	unsigned int sdram_iodft_tlgc;
-	unsigned char res4[128];
-	unsigned int ddr_phyctrl1;
-	unsigned int ddr_phyctrl1_shdw;
-	unsigned int ddr_phyctrl2;
-};
-
 void am35xx_emif4_init(void);
 
 #endif /* endif _EMIF_H_ */

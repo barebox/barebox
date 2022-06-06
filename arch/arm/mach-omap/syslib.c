@@ -52,19 +52,16 @@ void sdelay(unsigned long loops)
  * @param[in] read_addr  address to read from
  * @param[in] bound max iterations
  *
- * @return 1 if match_value is found, else if bound iterations reached,
+ * @return non zero if match_value is found, else if bound iterations reached,
  *         returns 0
  */
 u32 wait_on_value(u32 read_bit_mask, u32 match_value, u32 read_addr, u32 bound)
 {
-	u32 i = 0, val;
 	do {
-		++i;
-		val = readl(read_addr) & read_bit_mask;
+		u32 val = readl(read_addr) & read_bit_mask;
 		if (val == match_value)
-			return 1;
-		if (i == bound)
-			return 0;
-	} while (1);
-}
+			break;
+	} while (--bound);
 
+	return bound;
+}

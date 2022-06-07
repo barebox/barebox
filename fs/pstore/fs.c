@@ -21,7 +21,6 @@
 #include <fs.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <fs.h>
 #include <malloc.h>
 #include <init.h>
 #include <linux/stat.h>
@@ -30,7 +29,6 @@
 #include <libbb.h>
 #include <rtc.h>
 #include <libfile.h>
-#include <linux/pstore.h>
 #include "internal.h"
 
 struct list_head allpstore = LIST_HEAD_INIT(allpstore);

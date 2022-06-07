@@ -17,7 +17,6 @@
 #include <string.h>
 #include <driver.h>
 #include <init.h>
-#include <globalvar.h>
 #include <magicvar.h>
 #include <linux/stat.h>
 

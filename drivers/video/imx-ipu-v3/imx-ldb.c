@@ -19,7 +19,6 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <linux/math64.h>
-#include <linux/clk.h>
 #include <mach/imx6-regs.h>
 #include <mach/imx53-regs.h>
 

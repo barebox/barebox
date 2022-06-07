@@ -31,7 +31,6 @@
 #include <binfmt.h>
 #include <wchar.h>
 #include <envfs.h>
-#include <efi.h>
 #include <efi/efi-payload.h>
 #include <efi/efi-device.h>
 #include <libfile.h>

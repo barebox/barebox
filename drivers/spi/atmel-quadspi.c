@@ -27,8 +27,6 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 
-#include <linux/clk.h>
-#include <linux/err.h>
 #include <linux/kernel.h>
 #include <linux/spi/spi-mem.h>
 #include <of_device.h>

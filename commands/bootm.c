@@ -17,7 +17,6 @@
 #include <fs.h>
 #include <errno.h>
 #include <bootm.h>
-#include <of.h>
 #include <rtc.h>
 #include <init.h>
 #include <of.h>

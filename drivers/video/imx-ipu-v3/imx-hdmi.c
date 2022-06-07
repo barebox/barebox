@@ -15,7 +15,6 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <linux/math64.h>
-#include <linux/clk.h>
 #include <i2c/i2c.h>
 #include <video/media-bus-format.h>
 #include <video/vpl.h>

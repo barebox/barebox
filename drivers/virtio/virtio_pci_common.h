@@ -17,7 +17,6 @@
  */
 
 #include <linux/list.h>
-#include <linux/list.h>
 #include <linux/pci.h>
 #include <linux/slab.h>
 #include <linux/virtio.h>

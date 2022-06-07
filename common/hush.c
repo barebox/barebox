@@ -112,7 +112,6 @@
 #include <slice.h>
 #include <getopt.h>
 #include <libfile.h>
-#include <libbb.h>
 #include <magicvar.h>
 #include <linux/list.h>
 #include <binfmt.h>

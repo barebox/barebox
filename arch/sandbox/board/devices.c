@@ -6,7 +6,6 @@
 
 #include <common.h>
 #include <driver.h>
-#include <mach/linux.h>
 #include <init.h>
 #include <mach/linux.h>
 #include <asm/io.h>

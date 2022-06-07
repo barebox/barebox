@@ -10,8 +10,6 @@
 #include <driver.h>
 #include <of.h>
 #include <spi/spi.h>
-#include <of.h>
-#include <spi/spi.h>
 #include <malloc.h>
 #include <gpio.h>
 #include <of_gpio.h>

@@ -10,7 +10,6 @@
 #include <mach/imx7-regs.h>
 #include <mach/imx8mq-regs.h>
 #include <mach/imx8m-ccm-regs.h>
-#include <common.h>
 #include <io.h>
 #include <asm/syscounter.h>
 #include <asm/system.h>

@@ -27,8 +27,6 @@
 #include <linux/sizes.h>
 #include <linux/nvmem-consumer.h>
 
-#include <envfs.h>
-
 static int zii_rdu1_init(void)
 {
 	const char *hostname;

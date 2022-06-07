@@ -9,7 +9,6 @@
 #include <malloc.h>
 #include <net.h>
 #include <init.h>
-#include <net.h>
 #include <linux/virtio.h>
 #include <linux/virtio_ring.h>
 #include <uapi/linux/virtio_net.h>

@@ -26,7 +26,6 @@
 #include <errno.h>
 #include <libgen.h>
 #include <fcntl.h>
-#include <fs.h>
 #include <init.h>
 #include <linux/stat.h>
 #include <linux/err.h>

@@ -526,16 +526,12 @@ static struct of_device_id ns16550_serial_dt_ids[] = {
 		.data = &ns16450_drvdata,
 	}, {
 		.compatible = "ns16550a",
-		.data = &ns16550_drvdata,
 	}, {
 		.compatible = "snps,dw-apb-uart",
-		.data = &ns16550_drvdata,
 	}, {
 		.compatible = "marvell,armada-38x-uart",
-		.data = &ns16550_drvdata,
 	}, {
 		.compatible = "nvidia,tegra20-uart",
-		.data = &ns16550_drvdata,
 	},
 #if IS_ENABLED(CONFIG_ARCH_OMAP)
 	{

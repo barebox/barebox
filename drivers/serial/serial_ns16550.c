@@ -42,8 +42,9 @@ struct ns16550_priv {
 };
 
 struct ns16550_drvdata {
-        void (*init_port)(struct console_device *cdev);
-        const char *linux_console_name;
+	void (*init_port)(struct console_device *cdev);
+	const char *linux_console_name;
+	unsigned int clk_default;
 };
 
 static inline struct ns16550_priv *to_ns16550_priv(struct console_device *cdev)
@@ -362,6 +363,12 @@ static __maybe_unused struct ns16550_drvdata omap_drvdata = {
 	.linux_console_name = "ttyO",
 };
 
+static __maybe_unused struct ns16550_drvdata am43xx_drvdata = {
+	.init_port = ns16550_omap_init_port,
+	.linux_console_name = "ttyO",
+	.clk_default = 48000000,
+};
+
 static __maybe_unused struct ns16550_drvdata jz_drvdata = {
 	.init_port = ns16550_jz_init_port,
 };
@@ -472,6 +479,9 @@ static int ns16550_probe(struct device_d *dev)
 	else
 		ns16550_probe_dt(dev, priv);
 
+	if (devtype->clk_default && !priv->plat.clock)
+		priv->plat.clock = devtype->clk_default;
+
 	if (!priv->plat.clock) {
 		priv->clk = clk_get(dev, NULL);
 		if (IS_ERR(priv->clk)) {
@@ -537,6 +547,9 @@ static struct of_device_id ns16550_serial_dt_ids[] = {
 	}, {
 		.compatible = "ti,omap4-uart",
 		.data = &omap_drvdata,
+	}, {
+		.compatible = "ti,am4372-uart",
+		.data = &am43xx_drvdata,
 	},
 #endif
 #if IS_ENABLED(CONFIG_MACH_MIPS_XBURST)

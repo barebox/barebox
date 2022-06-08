@@ -835,7 +835,7 @@ static inline int of_autoenable_i2c_by_component(char *path)
 	return -ENODEV;
 }
 
-static int of_prepend_machine_compatible(struct device_node *root,
+static inline int of_prepend_machine_compatible(struct device_node *root,
 					 const char *compat)
 {
 	return -ENODEV;

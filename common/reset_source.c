@@ -76,7 +76,9 @@ EXPORT_SYMBOL(reset_source_set_prinst);
 
 void reset_source_set_device(struct device_d *dev, enum reset_src_type st)
 {
-	int priority = of_get_reset_source_priority(dev->device_node);
+	unsigned int priority = RESET_SOURCE_DEFAULT_PRIORITY;
+
+	of_property_read_u32(dev->device_node, "reset-source-priority", &priority);
 
 	__reset_source_set(dev, st, priority, -1);
 }
@@ -92,19 +94,3 @@ static int reset_source_init(void)
 	return 0;
 }
 coredevice_initcall(reset_source_init);
-
-/**
- * of_get_reset_source_priority() - get the desired reset source priority from
- *                                  device tree
- * @node:	The device_node to read the property from
- *
- * return: The priority
- */
-unsigned int of_get_reset_source_priority(struct device_node *node)
-{
-	unsigned int priority = RESET_SOURCE_DEFAULT_PRIORITY;
-
-	of_property_read_u32(node, "reset-source-priority", &priority);
-
-	return priority;
-}

@@ -40,7 +40,7 @@ As a last step of this process those files need to be placed in
 	   lpddr4_pmu_train_2d_dmem.bin  \
 	   lpddr4_pmu_train_2d_imem.bin; \
   do \
-	   cp firmware-imx-8.0/firmware/ddr/synopsys/${f} \
+	   cp firmware-imx-8.12/firmware/ddr/synopsys/${f} \
 	      firmware/${f}; \
   done
 
@@ -49,7 +49,7 @@ As a last step of this process those files need to be placed in
            ddr4_dmem_2d_201810.bin  \
            ddr4_imem_2d_201810.bin; \
   do \
-	   cp firmware-imx-8.0/firmware/ddr/synopsys/${f} \
+	   cp firmware-imx-8.12/firmware/ddr/synopsys/${f} \
 	      firmware/${f%_201810.bin}.bin; \
   done
 

@@ -221,8 +221,10 @@ static int rpi_mem_init(void)
 	int ret;
 
 	ret = rpi_get_arm_mem(&size);
-	if (ret)
+	if (ret) {
 		printf("could not query ARM memory size\n");
+		size = get_ram_size((ulong *) BCM2835_SDRAM_BASE, SZ_128M);
+	}
 
 	bcm2835_add_device_sdram(size);
 

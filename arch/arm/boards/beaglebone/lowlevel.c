@@ -15,7 +15,6 @@
 #include <mach/syslib.h>
 #include <mach/am33xx-mux.h>
 #include <mach/am33xx-generic.h>
-#include <mach/wdt.h>
 
 #include "beaglebone.h"
 
@@ -118,13 +117,7 @@ static noinline int beaglebone_sram_init(void)
 	else
 		sdram_size = SZ_256M;
 
-	/* WDT1 is already running when the bootloader gets control
-	 * Disable it to avoid "random" resets
-	 */
-	__raw_writel(WDT_DISABLE_CODE1, AM33XX_WDT_REG(WSPR));
-	while(__raw_readl(AM33XX_WDT_REG(WWPS)) != 0x0);
-	__raw_writel(WDT_DISABLE_CODE2, AM33XX_WDT_REG(WSPR));
-	while(__raw_readl(AM33XX_WDT_REG(WWPS)) != 0x0);
+	omap_watchdog_disable(IOMEM(AM33XX_WDT_BASE));
 
 	/* Setup the PLLs and the clocks for the peripherals */
 	if (is_beaglebone_black()) {

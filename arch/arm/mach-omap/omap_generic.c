@@ -70,6 +70,24 @@ void __noreturn omap_start_barebox(void *barebox)
 	hang();
 }
 
+#define OMAP_WDT_WWPS		0x34
+#define OMAP_WDT_WSPR		0x48
+#define WDT_DISABLE_CODE1	0xaaaa
+#define WDT_DISABLE_CODE2	0x5555
+
+void omap_watchdog_disable(const void __iomem *wdt)
+{
+	/* WDT is already running when the bootloader gets control
+	 * Disable it to avoid "random" resets
+	 */
+	__raw_writel(WDT_DISABLE_CODE1, wdt + OMAP_WDT_WSPR);
+
+	do {
+	} while (__raw_readl(wdt + OMAP_WDT_WWPS));
+
+	__raw_writel(WDT_DISABLE_CODE2, wdt + OMAP_WDT_WSPR);
+}
+
 #ifdef CONFIG_BOOTM
 static int do_bootm_omap_barebox(struct image_data *data)
 {

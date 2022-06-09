@@ -40,7 +40,6 @@
 #include <mach/omap3-smx.h>
 #include <mach/clocks.h>
 #include <mach/omap3-clock.h>
-#include <mach/wdt.h>
 #include <mach/sys_info.h>
 #include <mach/syslib.h>
 #include <mach/omap3-generic.h>
@@ -379,19 +378,10 @@ static void secureworld_exit(void)
  */
 static void watchdog_init(void)
 {
-	int pending = 1;
-
 	sr32(OMAP3_CM_REG(FCLKEN_WKUP), 5, 1, 1);
 	sr32(OMAP3_CM_REG(ICLKEN_WKUP), 5, 1, 1);
-	wait_on_value((0x1 << 5), 0x20, OMAP3_CM_REG(IDLEST_WKUP), 5);
 
-	writel(WDT_DISABLE_CODE1, OMAP3_WDT_REG(WSPR));
-
-	do {
-		pending = readl(OMAP3_WDT_REG(WWPS));
-	} while (pending);
-
-	writel(WDT_DISABLE_CODE2, OMAP3_WDT_REG(WSPR));
+	omap_watchdog_disable(IOMEM(OMAP3_MPU_WDTIMER_BASE));
 }
 
 /**

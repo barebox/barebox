@@ -65,18 +65,6 @@ void omap4_set_warmboot_order(u32 *device_list)
 	writel(OMAP44XX_SAR_CH_START, OMAP44XX_SAR_CH_ADDRESS);
 }
 
-#define WATCHDOG_WSPR	0x48
-#define WATCHDOG_WWPS	0x34
-
-static void wait_for_command_complete(void)
-{
-	int pending = 1;
-
-	do {
-		pending = readl(OMAP44XX_WDT2_BASE + WATCHDOG_WWPS);
-	} while (pending);
-}
-
 /* EMIF */
 #define EMIF_MOD_ID_REV			0x0000
 #define EMIF_STATUS			0x0004
@@ -463,14 +451,8 @@ unsigned int omap4_revision(void)
  */
 static int watchdog_init(void)
 {
-	void __iomem *wd2_base = (void *)OMAP44XX_WDT2_BASE;
-
-	if (!cpu_is_omap4())
-		return 0;
-
-	writel(WD_UNLOCK1, wd2_base + WATCHDOG_WSPR);
-	wait_for_command_complete();
-	writel(WD_UNLOCK2, wd2_base + WATCHDOG_WSPR);
+	if (cpu_is_omap4())
+		omap_watchdog_disable(IOMEM(OMAP44XX_WDT2_BASE));
 
 	return 0;
 }

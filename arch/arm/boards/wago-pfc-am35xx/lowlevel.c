@@ -16,7 +16,6 @@
 #include <mach/sdrc.h>
 #include <mach/sys_info.h>
 #include <mach/syslib.h>
-#include <mach/wdt.h>
 #include <mach/omap3-mux.h>
 #include <mach/omap3-silicon.h>
 #include <mach/omap3-generic.h>

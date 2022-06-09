@@ -79,6 +79,8 @@ static inline int omap_set_mmc_dev(const char *mmcdev)
 
 void __noreturn omap_start_barebox(void *barebox);
 
+void omap_watchdog_disable(const void __iomem *wdt);
+
 void omap_set_bootmmc_devname(const char *devname);
 const char *omap_get_bootmmc_devname(void);
 

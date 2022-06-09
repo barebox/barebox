@@ -16,7 +16,7 @@
 #
 #
 obj-$(CONFIG_ARCH_OMAP) += syslib.o omap_devices.o omap_generic.o
-pbl-$(CONFIG_ARCH_OMAP) += syslib.o
+pbl-$(CONFIG_ARCH_OMAP) += syslib.o omap_generic.o
 obj-$(CONFIG_ARCH_OMAP3) += omap3_generic.o auxcr.o
 pbl-$(CONFIG_ARCH_OMAP3) += omap3_generic.o auxcr.o
 obj-$(CONFIG_ARCH_OMAP4) += omap4_generic.o omap4_clock.o

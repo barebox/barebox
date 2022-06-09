@@ -11,7 +11,7 @@ used in the Raspberry Pi 4, only basic support is currently available
 
   1. Prepare an SD or microSD card with a FAT filesystem of at least 30 MB in size.
 
-  2. Download the `Raspberry Pi firmware`_ (120 MB), unzip it, and copy the
+  2. Download the `Raspberry Pi firmware`_ (195 MB), unzip it, and copy the
      contents of the ``boot/`` folder to your card.
 
   3. Use ``make rpi_defconfig; make`` to build barebox. This will create the following images:
@@ -58,5 +58,5 @@ The original command-line from VideoCore device tree is available to the Barebox
 
     global linux.bootargs.vc="$global.vc.bootargs"
 
-.. _Raspberry Pi firmware: https://codeload.github.com/raspberrypi/firmware/zip/80e1fbeb78f9df06701d28c0ed3a3060a3f557ef
+.. _Raspberry Pi firmware: https://github.com/raspberrypi/firmware/archive/refs/tags/1.20220331.zip
 .. _documentation for config.txt: https://www.raspberrypi.org/documentation/configuration/config-txt/

@@ -3,6 +3,8 @@
  * Copyright (c) 2011 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  */
 
+#define pr_fmt(fmt) "memory: " fmt
+
 #include <common.h>
 #include <memory.h>
 #include <of.h>
@@ -12,6 +14,7 @@
 #include <asm-generic/memory_layout.h>
 #include <asm/sections.h>
 #include <malloc.h>
+#include <of.h>
 
 /*
  * Begin and End of memory area for malloc(), and current "brk"
@@ -53,9 +56,20 @@ void mem_malloc_init(void *start, void *end)
 	mem_malloc_initialized = 1;
 }
 
-#if !defined __SANDBOX__
+static int request_reservation(const struct resource *res)
+{
+	if (!(res->flags & IORESOURCE_EXCLUSIVE))
+		return 0;
+
+	pr_debug("region %s %pa-%pa\n", res->name, &res->start, &res->end);
+
+	request_sdram_region(res->name, res->start, resource_size(res));
+	return 0;
+}
+
 static int mem_malloc_resource(void)
 {
+#if !defined __SANDBOX__
 	/*
 	 * Normally it's a bug when one of these fails,
 	 * but we have some setups where some of these
@@ -77,13 +91,14 @@ static int mem_malloc_resource(void)
 			(unsigned long)&__bss_start,
 			(unsigned long)&__bss_stop -
 			(unsigned long)&__bss_start);
+#endif
 #ifdef STACK_BASE
 	request_sdram_region("stack", STACK_BASE, STACK_SIZE);
 #endif
-	return 0;
+
+	return of_reserved_mem_walk(request_reservation);
 }
 coredevice_initcall(mem_malloc_resource);
-#endif
 
 static void *sbrk_no_zero(ptrdiff_t increment)
 {

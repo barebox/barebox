@@ -36,7 +36,7 @@ static void copy_vc_fdt(void *dest, void *src, unsigned long max_size)
 	memmove(dest, src, size);
 }
 
-/* A pointer to the FDT created by VideoCore was passed to us in r2. We
+/* A pointer to the FDT created by VideoCore was passed to us in x0/r2. We
  * reserve some memory just above the region used for Barebox and copy
  * this FDT there. We fetch it from there later in rpi_devices_init().
  */
@@ -55,40 +55,45 @@ static inline void start_raspberry_pi(unsigned long memsize, void *fdt,
 	barebox_arm_entry(BCM2835_SDRAM_BASE, endmem - BCM2835_SDRAM_BASE, fdt);
 }
 
-#define RPI_ENTRY_FUNCTION(name, memsize, r2) \
-	ENTRY_FUNCTION_WITHSTACK(name, rpi_stack_top(memsize), __r0, __r1, r2)
+#ifdef CONFIG_CPU_V8
+#define RPI_ENTRY_FUNCTION(name, memsize, fdt) \
+	ENTRY_FUNCTION_WITHSTACK(name, rpi_stack_top(memsize), fdt, __x1, __x2)
+#else
+#define RPI_ENTRY_FUNCTION(name, memsize, fdt) \
+	ENTRY_FUNCTION_WITHSTACK(name, rpi_stack_top(memsize), __r0, __r1, fdt)
+#endif
 
 extern char __dtb_z_bcm2835_rpi_start[];
 extern char __dtb_z_bcm2836_rpi_2_start[];
 extern char __dtb_z_bcm2837_rpi_3_start[];
 extern char __dtb_z_bcm2837_rpi_cm3_start[];
 
-RPI_ENTRY_FUNCTION(start_raspberry_pi1, SZ_128M, r2)
+RPI_ENTRY_FUNCTION(start_raspberry_pi1, SZ_128M, fdt)
 {
 	arm_cpu_lowlevel_init();
 
-	start_raspberry_pi(SZ_128M, __dtb_z_bcm2835_rpi_start, (void *)r2);
+	start_raspberry_pi(SZ_128M, __dtb_z_bcm2835_rpi_start, (void *)fdt);
 }
 
-RPI_ENTRY_FUNCTION(start_raspberry_pi2, SZ_512M, r2)
+RPI_ENTRY_FUNCTION(start_raspberry_pi2, SZ_512M, fdt)
 {
 	arm_cpu_lowlevel_init();
 
-	start_raspberry_pi(SZ_512M, __dtb_z_bcm2836_rpi_2_start, (void *)r2);
+	start_raspberry_pi(SZ_512M, __dtb_z_bcm2836_rpi_2_start, (void *)fdt);
 }
 
-RPI_ENTRY_FUNCTION(start_raspberry_pi3, SZ_512M, r2)
+RPI_ENTRY_FUNCTION(start_raspberry_pi3, SZ_512M, fdt)
 {
 	arm_cpu_lowlevel_init();
 
-	start_raspberry_pi(SZ_512M, __dtb_z_bcm2837_rpi_3_start, (void *)r2);
+	start_raspberry_pi(SZ_512M, __dtb_z_bcm2837_rpi_3_start, (void *)fdt);
 }
 
-RPI_ENTRY_FUNCTION(start_raspberry_pi_cm3, SZ_512M, r2)
+RPI_ENTRY_FUNCTION(start_raspberry_pi_cm3, SZ_512M, fdt)
 {
 	arm_cpu_lowlevel_init();
 
-	start_raspberry_pi(SZ_512M, __dtb_z_bcm2837_rpi_cm3_start, (void *)r2);
+	start_raspberry_pi(SZ_512M, __dtb_z_bcm2837_rpi_cm3_start, (void *)fdt);
 }
 
 #define DT_IF_ENABLED(dt, cfg) \

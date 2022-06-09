@@ -49,6 +49,11 @@ config MACH_RPI_CM3
 	select MACH_RPI_COMMON
 	depends on 32BIT || (64BIT && !MMU_EARLY)
 
+config MACH_RPI4
+	bool "RaspberryPi 4 (BCM2711/CORTEX-A72)"
+	select MACH_RPI_AARCH_32_64
+	select MACH_RPI_COMMON
+
 endmenu
 
 endif

@@ -474,6 +474,18 @@ static const struct rpi_machine_data rpi_3_ids[] = {
 	},
 };
 
+static const struct rpi_machine_data rpi_4_ids[] = {
+	{
+		.hw_id = BCM2711_BOARD_REV_4_B,
+	}, {
+		.hw_id = BCM2711_BOARD_REV_400,
+	}, {
+		.hw_id = BCM2711_BOARD_REV_CM4,
+	}, {
+		.hw_id = U8_MAX
+	},
+};
+
 static const struct of_device_id rpi_of_match[] = {
 	/* BCM2835 based Boards */
 	{ .compatible = "raspberrypi,model-a", .data = rpi_1_ids },
@@ -497,6 +509,11 @@ static const struct of_device_id rpi_of_match[] = {
 	{ .compatible = "raspberrypi,model-zero-2-w", .data = rpi_3_ids },
 	{ .compatible = "raspberrypi,3-compute-module", .data = rpi_3_ids },
 	{ .compatible = "raspberrypi,3-compute-module-lite", .data = rpi_3_ids },
+
+	/* BCM2711 based Boards */
+	{ .compatible = "raspberrypi,4-model-b", .data = rpi_4_ids },
+	{ .compatible = "raspberrypi,4-compute-module", .data = rpi_4_ids },
+	{ .compatible = "raspberrypi,400", .data = rpi_4_ids },
 
 	{ /* sentinel */ },
 };

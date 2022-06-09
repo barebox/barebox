@@ -171,7 +171,10 @@ struct bcm2835_mbox_tag_hdr {
 #define BCM2837B0_BOARD_REV_3B_PLUS   	0x0d
 #define BCM2837B0_BOARD_REV_3A_PLUS   	0x0e
 #define BCM2837B0_BOARD_REV_CM3_PLUS	0x10
+#define BCM2711_BOARD_REV_4_B		0x11
 #define BCM2837B0_BOARD_REV_ZERO_2	0x12
+#define BCM2711_BOARD_REV_400		0x13
+#define BCM2711_BOARD_REV_CM4		0x14
 
 struct bcm2835_mbox_tag_get_board_rev {
 	struct bcm2835_mbox_tag_hdr tag_hdr;

@@ -324,7 +324,7 @@ static int bcm2835_mci_reset(struct mci_host *mci, struct device_d *mci_dev)
 
 	sdhci_write32(&host->sdhci,
 			SDHCI_HOST_CONTROL__POWER_CONTROL__BLOCK_GAP_CONTROL,
-			0x00);
+			(SDHCI_BUS_VOLTAGE_330 | SDHCI_BUS_POWER_EN) << 8);
 	sdhci_write32(&host->sdhci, SDHCI_ACMD12_ERR__HOST_CONTROL2,
 			0x00);
 	sdhci_write32(&host->sdhci,
@@ -423,6 +423,8 @@ static int bcm2835_mci_probe(struct device_d *hw_dev)
 static __maybe_unused struct of_device_id bcm2835_mci_compatible[] = {
 	{
 		.compatible = "brcm,bcm2835-sdhci",
+	}, {
+		.compatible = "brcm,bcm2711-emmc2",
 	}, {
 		/* sentinel */
 	}

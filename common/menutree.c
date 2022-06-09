@@ -87,7 +87,6 @@ int menutree(const char *path, int toplevel)
 	glob_t g = {};
 	int i;
 	char *globpath, *display;
-	size_t size;
 
 	menu = menu_alloc();
 
@@ -100,7 +99,7 @@ int menutree(const char *path, int toplevel)
 	}
 
 	globpath = basprintf("%s/title", path);
-	display = read_file(globpath, &size);
+	display = read_file(globpath, NULL);
 	free(globpath);
 	if (!display) {
 		eprintf("no title found in %s/title\n", path);

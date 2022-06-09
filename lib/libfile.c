@@ -162,7 +162,6 @@ char *read_file_line(const char *fmt, ...)
 	va_list args;
 	char *filename;
 	char *buf, *line = NULL;
-	size_t size;
 	int ret;
 	struct stat s;
 
@@ -177,7 +176,7 @@ char *read_file_line(const char *fmt, ...)
 	if (s.st_size > 1024)
 		goto out;
 
-	buf = read_file(filename, &size);
+	buf = read_file(filename, NULL);
 	if (!buf)
 		goto out;
 

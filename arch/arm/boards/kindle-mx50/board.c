@@ -84,10 +84,9 @@ static char *mac;
 static void kindle_rev_init(void)
 {
 	int ret;
-	size_t size;
 	void *buf;
 	const char userdata[] = "/dev/mmc2.boot0.userdata";
-	ret = read_file_2(userdata, &size, &buf, 128);
+	ret = read_file_2(userdata, NULL, &buf, 128);
 	if (ret && ret != -EFBIG) {
 		pr_err("Could not read board info from %s\n", userdata);
 		return;

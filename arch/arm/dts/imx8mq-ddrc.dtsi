@@ -8,3 +8,7 @@
 	/delete-node/ memory@40000000;
 };
 
+&ddrc {
+	status = "okay";
+};
+

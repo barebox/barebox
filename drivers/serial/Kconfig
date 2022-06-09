@@ -92,13 +92,6 @@ config DRIVER_SERIAL_ATMEL
 	default y
 	bool "Atmel serial driver"
 
-config DRIVER_SERIAL_NS16550_OMAP_EXTENSIONS
-	bool "OMAP Extensions for NS16550"
-	depends on DRIVER_SERIAL_NS16550
-	depends on ARCH_OMAP
-	help
-	  Say Y here if you are using OMAP extensions to NS16550
-
 config DRIVER_SERIAL_NS16550_PCI
 	depends on DRIVER_SERIAL_NS16550
 	depends on PCI

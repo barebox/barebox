@@ -31,7 +31,6 @@ config ARCH_ROCKCHIP_V8
 	bool
 	select CPU_V8
 	select CPU_SUPPORTS_64BIT_KERNEL
-	select SYS_SUPPORTS_64BIT_KERNEL
 	select ARM_ATF
 	select RELOCATABLE
 

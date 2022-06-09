@@ -273,7 +273,6 @@ config ARCH_ZYNQMP
 	select OFTREE
 	select RELOCATABLE
 	select CPU_SUPPORTS_64BIT_KERNEL
-	select SYS_SUPPORTS_64BIT_KERNEL
 	select HAS_MACB
 
 config ARCH_ARM64_VIRT
@@ -284,7 +283,6 @@ config ARCH_ARM64_VIRT
 	select OFTREE
 	select RELOCATABLE
 	select CPU_SUPPORTS_64BIT_KERNEL
-	select SYS_SUPPORTS_64BIT_KERNEL
 	select ARM_AMBA
 	select BOARD_ARM_VIRT
 	select HW_HAS_PCI
@@ -401,7 +399,7 @@ config 32BIT
 
 config 64BIT
 	bool "64-bit barebox"
-	depends on CPU_SUPPORTS_64BIT_KERNEL && SYS_SUPPORTS_64BIT_KERNEL
+	depends on CPU_SUPPORTS_64BIT_KERNEL
 	select ARCH_DMA_ADDR_T_64BIT
 	help
 	  Select this option if you want to build a 64-bit barebox.

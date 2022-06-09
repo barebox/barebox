@@ -57,26 +57,27 @@ static inline void start_raspberry_pi(unsigned long memsize, void *fdt,
 #define RPI_ENTRY_FUNCTION(name, memsize, r2) \
 	ENTRY_FUNCTION_WITHSTACK(name, rpi_stack_top(memsize), __r0, __r1, r2)
 
-extern char __dtb_bcm2835_rpi_start[];
+extern char __dtb_z_bcm2835_rpi_start[];
+extern char __dtb_z_bcm2836_rpi_2_start[];
+extern char __dtb_z_bcm2837_rpi_3_start[];
+extern char __dtb_z_bcm2837_rpi_cm3_start[];
+
 RPI_ENTRY_FUNCTION(start_raspberry_pi1, SZ_128M, r2)
 {
-	start_raspberry_pi(SZ_128M, __dtb_bcm2835_rpi_start, (void *)r2);
+	start_raspberry_pi(SZ_128M, __dtb_z_bcm2835_rpi_start, (void *)r2);
 }
 
-extern char __dtb_bcm2836_rpi_2_start[];
 RPI_ENTRY_FUNCTION(start_raspberry_pi2, SZ_512M, r2)
 {
-	start_raspberry_pi(SZ_512M, __dtb_bcm2836_rpi_2_start, (void *)r2);
+	start_raspberry_pi(SZ_512M, __dtb_z_bcm2836_rpi_2_start, (void *)r2);
 }
 
-extern char __dtb_bcm2837_rpi_3_start[];
 RPI_ENTRY_FUNCTION(start_raspberry_pi3, SZ_512M, r2)
 {
-	start_raspberry_pi(SZ_512M, __dtb_bcm2837_rpi_3_start, (void *)r2);
+	start_raspberry_pi(SZ_512M, __dtb_z_bcm2837_rpi_3_start, (void *)r2);
 }
 
-extern char __dtb_bcm2837_rpi_cm3_start[];
 RPI_ENTRY_FUNCTION(start_raspberry_pi_cm3, SZ_512M, r2)
 {
-	start_raspberry_pi(SZ_512M, __dtb_bcm2837_rpi_cm3_start, (void *)r2);
+	start_raspberry_pi(SZ_512M, __dtb_z_bcm2837_rpi_cm3_start, (void *)r2);
 }

@@ -8,6 +8,7 @@ config ARCH_TEXT_BASE
 
 config MACH_RPI_COMMON
 	bool
+	select ARM_USE_COMPRESSED_DTB
 
 menu "select Broadcom BCM283X boards to be built"
 

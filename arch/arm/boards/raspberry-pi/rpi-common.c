@@ -225,7 +225,7 @@ static int rpi_vc_fdt_bootargs(void *fdt)
 		globalvar_add_simple("vc.kernel", "kernel7.img");
 		break;
 	case CPU_ARCH_ARMv8:
-		globalvar_add_simple("vc.kernel", "kernel7l.img");
+		globalvar_add_simple("vc.kernel", "kernel8.img");
 		break;
 	}
 

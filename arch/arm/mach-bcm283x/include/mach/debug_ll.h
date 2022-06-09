@@ -66,6 +66,12 @@ static inline void debug_ll_init(void)
 	debug_ll_ns16550_init(divisor);
 }
 
+#else
+
+static inline void debug_ll_init(void)
+{
+}
+
 #endif
 
 #endif /* __MACH_BCM2835_DEBUG_LL_H__ */

@@ -87,7 +87,6 @@ config CPU_V7
 config CPU_V8
 	bool
 	select CPU_64v8
-	select CPU_SUPPORTS_64BIT_KERNEL
 	select ARM_EXCEPTIONS
 	select GENERIC_FIND_NEXT_BIT
 	select ARCH_HAS_STACK_DUMP

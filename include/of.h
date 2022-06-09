@@ -58,7 +58,6 @@ struct of_reserve_map {
 };
 
 int of_add_reserve_entry(resource_size_t start, resource_size_t end);
-struct of_reserve_map *of_get_reserve_map(void);
 void of_clean_reserve_map(void);
 void fdt_add_reserve_map(void *fdt);
 
@@ -116,6 +115,7 @@ struct device_node *of_unflatten_dtb_const(const void *infdt, int size);
 struct cdev;
 
 #ifdef CONFIG_OFTREE
+extern struct of_reserve_map *of_get_reserve_map(void);
 extern int of_bus_n_addr_cells(struct device_node *np);
 extern int of_n_addr_cells(struct device_node *np);
 extern int of_bus_n_size_cells(struct device_node *np);
@@ -318,6 +318,11 @@ int of_autoenable_device_by_path(char *path);
 int of_autoenable_i2c_by_component(char *path);
 int of_prepend_machine_compatible(struct device_node *root, const char *compat);
 #else
+static inline struct of_reserve_map *of_get_reserve_map(void)
+{
+	return NULL;
+}
+
 static inline bool of_node_name_eq(const struct device_node *np, const char *name)
 {
 	return false;

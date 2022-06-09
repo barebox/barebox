@@ -1004,6 +1004,11 @@ config STATE
 	select ENVIRONMENT_VARIABLES
 	select OFTREE
 	select PARAMETER
+	help
+	  barebox state is a generic framework for atomic power fail-safe
+	  variable storage and retrieval. It can be used to safely maintain
+	  data over reboots and to exchange information with Linux, e.g.
+	  for redundant boot with bootchooser.
 
 config STATE_CRYPTO
 	bool "HMAC based authentication support"

@@ -10,29 +10,42 @@ config MACH_RPI_COMMON
 	bool
 	select ARM_USE_COMPRESSED_DTB
 
+config MACH_RPI_AARCH_32_64
+	select MACH_RPI_COMMON
+	select CPU_V7 if 32BIT
+	select ARM_SECURE_MONITOR if 32BIT
+	select CPU_V8 if 64BIT
+	select BOARD_ARM_GENERIC_DT if 64BIT
+	bool
+	help
+	  Select this from CPUs that support both AArch32 and AArch64
+	  execution modes. barebox can be compiled for only one of
+	  these states, depending on the value of
+	  CONFIG_32BIT/CONFIG_64BIT.
+
 menu "select Broadcom BCM283X boards to be built"
 
 config MACH_RPI
 	bool "RaspberryPi (BCM2835/ARM1176JZF-S)"
+	depends on 32BIT
 	select CPU_V6
 	select MACH_RPI_COMMON
 
 config MACH_RPI2
 	bool "RaspberryPi 2 (BCM2836/CORTEX-A7)"
+	depends on 32BIT
 	select CPU_V7
 	select MACH_RPI_COMMON
 
 config MACH_RPI3
 	bool "RaspberryPi 3 (BCM2837/CORTEX-A53)"
-	select CPU_V7
+	select MACH_RPI_AARCH_32_64
 	select MACH_RPI_COMMON
-	select ARM_SECURE_MONITOR
 
 config MACH_RPI_CM3
 	bool "RaspberryPi Compute Module 3 (BCM2837/CORTEX-A53)"
-	select CPU_V7
+	select MACH_RPI_AARCH_32_64
 	select MACH_RPI_COMMON
-	select ARM_SECURE_MONITOR
 
 endmenu
 

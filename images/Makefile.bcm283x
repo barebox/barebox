@@ -3,6 +3,10 @@
 # barebox image generation Makefile for BCM283x images
 #
 
+# New boards use board-dt-2nd.img as common binary
+# and have the videocore pass the correct DT.
+ifeq ($(CONFIG_32BIT),y)
+
 pblb-$(CONFIG_MACH_RPI) += start_raspberry_pi1
 FILE_barebox-raspberry-pi-1.img = start_raspberry_pi1.pblb
 image-$(CONFIG_MACH_RPI) += barebox-raspberry-pi-1.img
@@ -18,6 +22,8 @@ image-$(CONFIG_MACH_RPI3) += barebox-raspberry-pi-3.img
 pblb-$(CONFIG_MACH_RPI_CM3) += start_raspberry_pi_cm3
 FILE_barebox-raspberry-pi-cm3.img = start_raspberry_pi_cm3.pblb
 image-$(CONFIG_MACH_RPI_CM3) += barebox-raspberry-pi-cm3.img
+
+endif
 
 pblb-$(CONFIG_MACH_RPI_COMMON) += start_raspberry_pi_generic
 FILE_barebox-raspberry-pi.img = start_raspberry_pi_generic.pblb

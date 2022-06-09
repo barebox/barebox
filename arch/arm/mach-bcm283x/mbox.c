@@ -151,7 +151,7 @@ int bcm2835_mbox_call_prop(u32 chan, struct bcm2835_mbox_hdr *buffer)
 	ret = bcm2835_mbox_call_raw(chan, buffer, &rbuffer);
 	if (ret)
 		return ret;
-	if (rbuffer != (u32)buffer) {
+	if (rbuffer != (uintptr_t)buffer) {
 		pr_err("mbox: Response buffer mismatch\n");
 		return -EIO;
 	}

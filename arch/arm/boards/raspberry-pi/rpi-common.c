@@ -45,57 +45,14 @@ struct rpi_priv {
 	const char *name;
 };
 
-struct msg_get_arm_mem {
-	struct bcm2835_mbox_hdr hdr;
-	struct bcm2835_mbox_tag_get_arm_mem get_arm_mem;
-	u32 end_tag;
-};
-
-struct msg_get_board_rev {
-	struct bcm2835_mbox_hdr hdr;
-	struct bcm2835_mbox_tag_get_board_rev get_board_rev;
-	u32 end_tag;
-};
-
-struct msg_get_mac_address {
-	struct bcm2835_mbox_hdr hdr;
-	struct bcm2835_mbox_tag_get_mac_address get_mac_address;
-	u32 end_tag;
-};
-
-static int rpi_get_arm_mem(u32 *size)
-{
-	BCM2835_MBOX_STACK_ALIGN(struct msg_get_arm_mem, msg);
-	int ret;
-
-	BCM2835_MBOX_INIT_HDR(msg);
-	BCM2835_MBOX_INIT_TAG(&msg->get_arm_mem, GET_ARM_MEMORY);
-
-	ret = bcm2835_mbox_call_prop(BCM2835_MBOX_PROP_CHAN, &msg->hdr);
-	if (ret)
-		return ret;
-
-	*size = msg->get_arm_mem.body.resp.mem_size;
-
-	return 0;
-}
-
 static void rpi_set_usbethaddr(void)
 {
-	BCM2835_MBOX_STACK_ALIGN(struct msg_get_mac_address, msg);
-	int ret;
+	u8 mac[ETH_ALEN];
 
-	BCM2835_MBOX_INIT_HDR(msg);
-	BCM2835_MBOX_INIT_TAG(&msg->get_mac_address, GET_MAC_ADDRESS);
+	if (rpi_get_usbethaddr(mac))
+		return; /* Ignore error; not critical */
 
-	ret = bcm2835_mbox_call_prop(BCM2835_MBOX_PROP_CHAN, &msg->hdr);
-	if (ret) {
-		printf("bcm2835: Could not query MAC address\n");
-		/* Ignore error; not critical */
-		return;
-	}
-
-	eth_register_ethaddr(0, msg->get_mac_address.body.resp.mac);
+	eth_register_ethaddr(0, mac);
 }
 
 static void rpi_set_usbotg(const char *alias)
@@ -185,50 +142,19 @@ static int rpi_0_w_init(struct rpi_priv *priv)
 	return of_device_disable_by_alias("serial0");
 }
 
-static int rpi_get_board_rev(struct rpi_priv *priv)
-{
-	int ret;
-
-	BCM2835_MBOX_STACK_ALIGN(struct msg_get_board_rev, msg);
-	BCM2835_MBOX_INIT_HDR(msg);
-	BCM2835_MBOX_INIT_TAG(&msg->get_board_rev, GET_BOARD_REV);
-
-	ret = bcm2835_mbox_call_prop(BCM2835_MBOX_PROP_CHAN, &msg->hdr);
-	if (ret) {
-		dev_err(priv->dev, "Could not query board revision\n");
-		return ret;
-	}
-
-	/* Comments from u-boot:
-	 * For details of old-vs-new scheme, see:
-	 * https://github.com/pimoroni/RPi.version/blob/master/RPi/version.py
-	 * http://www.raspberrypi.org/forums/viewtopic.php?f=63&t=99293&p=690282
-	 * (a few posts down)
-	 *
-	 * For the RPi 1, bit 24 is the "warranty bit", so we mask off just the
-	 * lower byte to use as the board rev:
-	 * http://www.raspberrypi.org/forums/viewtopic.php?f=63&t=98367&start=250
-	 * http://www.raspberrypi.org/forums/viewtopic.php?f=31&t=20594
-	 */
-	priv->hw_id = msg->get_board_rev.body.resp.rev;
-
-	return 0;
-}
-
 static int rpi_mem_init(void)
 {
-	u32 size = 0;
-	int ret;
+	ssize_t size;
 
-	ret = rpi_get_arm_mem(&size);
-	if (ret) {
+	size = rpi_get_arm_mem();
+	if (size < 0) {
 		printf("could not query ARM memory size\n");
 		size = get_ram_size((ulong *) BCM2835_SDRAM_BASE, SZ_128M);
 	}
 
 	bcm2835_add_device_sdram(size);
 
-	return ret;
+	return 0;
 }
 mem_initcall(rpi_mem_init);
 
@@ -357,6 +283,18 @@ static const struct rpi_machine_data *rpi_get_dcfg(struct rpi_priv *priv)
 		return NULL;
 	}
 
+	/* Comments from u-boot:
+	 * For details of old-vs-new scheme, see:
+	 * https://github.com/pimoroni/RPi.version/blob/master/RPi/version.py
+	 * http://www.raspberrypi.org/forums/viewtopic.php?f=63&t=99293&p=690282
+	 * (a few posts down)
+	 *
+	 * For the RPi 1, bit 24 is the "warranty bit", so we mask off just the
+	 * lower byte to use as the board rev:
+	 * http://www.raspberrypi.org/forums/viewtopic.php?f=63&t=98367&start=250
+	 * http://www.raspberrypi.org/forums/viewtopic.php?f=31&t=20594
+	 */
+
 	for (; dcfg->hw_id != U8_MAX; dcfg++) {
 		if (priv->hw_id & 0x800000) {
 			if (dcfg->hw_id != ((priv->hw_id >> 4) & 0xff))
@@ -388,9 +326,11 @@ static int rpi_devices_probe(struct device_d *dev)
 	priv = xzalloc(sizeof(*priv));
 	priv->dev = dev;
 
-	ret = rpi_get_board_rev(priv);
-	if (ret)
+	ret = rpi_get_board_rev();
+	if (ret < 0)
 		goto free_priv;
+
+	priv->hw_id = ret;
 
 	dcfg = rpi_get_dcfg(priv);
 	if (IS_ERR(dcfg))

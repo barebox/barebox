@@ -1,3 +1,3 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-obj-y += mbox.o
+obj-pbl-y += mbox.o core.o

@@ -44,6 +44,12 @@
 #define CPU_IS_CORTEX_A15	0x410fc0f0
 #define CPU_IS_CORTEX_A15_MASK	0xff0ffff0
 
+#define CPU_IS_CORTEX_A53	0x410fd030
+#define CPU_IS_CORTEX_A53_MASK	0xff0ffff0
+
+#define CPU_IS_CORTEX_A72	0x410fd080
+#define CPU_IS_CORTEX_A72_MASK	0xff0ffff0
+
 #define CPU_IS_PXA250		0x69052100
 #define CPU_IS_PXA250_MASK	0xfffff7f0
 

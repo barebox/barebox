@@ -22,4 +22,6 @@ static void inline bcm2835_register_fb(void)
 	add_generic_device("bcm2835_fb", 0, NULL, 0, 0, 0, NULL);
 }
 
+void __iomem *bcm2835_get_mmio_base_by_cpuid(void);
+
 #endif

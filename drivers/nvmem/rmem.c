@@ -31,7 +31,7 @@ static int rmem_probe(struct device_d *dev)
 	struct resource *mem;
 	struct rmem *priv;
 
-	mem = dev_request_mem_resource(dev, 0);
+	mem = dev_get_resource(dev, IORESOURCE_MEM, 0);
 	if (IS_ERR(mem))
 		return PTR_ERR(mem);
 

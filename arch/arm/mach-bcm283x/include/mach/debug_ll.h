@@ -18,6 +18,7 @@
 #define __MACH_BCM2835_DEBUG_LL_H__
 
 #include <mach/platform.h>
+#include <io.h>
 
 #ifdef CONFIG_DEBUG_RPI1_UART
 
@@ -64,6 +65,25 @@ static inline void debug_ll_init(void)
 
 	divisor = debug_ll_ns16550_calc_divisor(250000000 * 2);
 	debug_ll_ns16550_init(divisor);
+}
+
+#elif defined CONFIG_DEBUG_RPI4_MINI_UART
+
+static inline uint8_t debug_ll_read_reg(int reg)
+{
+	return readb(BCM2711_MINIUART_BASE + (reg << 2));
+}
+
+static inline void debug_ll_write_reg(int reg, uint8_t val)
+{
+	writeb(val, BCM2711_MINIUART_BASE + (reg << 2));
+}
+
+#include <debug_ll/ns16550.h>
+
+static inline void debug_ll_init(void)
+{
+	/* Configured by ROM */
 }
 
 #else

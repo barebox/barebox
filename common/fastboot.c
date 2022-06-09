@@ -673,7 +673,8 @@ static void cb_flash(struct fastboot *fb, const char *cmd)
 		goto out;
 	}
 
-	if (IS_ENABLED(CONFIG_BAREBOX_UPDATE) && filetype_is_barebox_image(filetype)) {
+	if (IS_ENABLED(CONFIG_BAREBOX_UPDATE) &&
+	    (filetype_is_barebox_image(filetype) || strstarts(fentry->name, "bbu-"))) {
 		void *buf;
 		struct bbu_handler *handler;
 		struct bbu_data data = {

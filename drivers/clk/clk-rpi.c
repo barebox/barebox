@@ -40,9 +40,28 @@ static struct clk *rpi_register_firmware_clock(u32 clock_id, const char *name)
 	return clk_fixed(name, msg->get_clock_rate.body.resp.rate_hz);
 }
 
-static int bcm2835_cprman_probe(struct device_d *dev)
+static int bcm2835_cprman_init(struct device_d *dev)
 {
 	struct clk *clk_cs;
+
+	clk_cs = clk_fixed("bcm2835-cs", 1 * 1000 * 1000);
+	clk_register_clkdev(clk_cs, NULL, "bcm2835-cs");
+
+	return 0;
+}
+
+static int rpi_cprman_probe(struct device_d *dev)
+{
+	int (*init)(struct device_d *dev);
+
+	init = device_get_match_data(dev);
+	if (init) {
+		int ret;
+
+		ret = init(dev);
+		if (ret)
+			return ret;
+	}
 
 	clks[BCM2835_CLOCK_EMMC] =
 		rpi_register_firmware_clock(BCM2835_MBOX_CLOCK_ID_EMMC,
@@ -56,11 +75,14 @@ static int bcm2835_cprman_probe(struct device_d *dev)
 	if (IS_ERR(clks[BCM2835_CLOCK_VPU]))
 		return PTR_ERR(clks[BCM2835_CLOCK_VPU]);
 
+	clks[BCM2711_CLOCK_EMMC2] =
+		rpi_register_firmware_clock(BCM2835_MBOX_CLOCK_ID_EMMC2,
+					 "bcm2711_emmc2");
+	if (IS_ERR(clks[BCM2711_CLOCK_EMMC2]))
+		return PTR_ERR(clks[BCM2711_CLOCK_EMMC2]);
+
 	clks[BCM2835_CLOCK_UART] = clk_fixed("uart0-pl0110", 48 * 1000 * 1000);
 	clk_register_clkdev(clks[BCM2835_CLOCK_UART], NULL, "uart0-pl0110");
-
-	clk_cs = clk_fixed("bcm2835-cs", 1 * 1000 * 1000);
-	clk_register_clkdev(clk_cs, NULL, "bcm2835-cs");
 
 	clk_data.clks = clks;
 	clk_data.clk_num = BCM2711_CLOCK_END;
@@ -70,16 +92,14 @@ static int bcm2835_cprman_probe(struct device_d *dev)
 }
 
 static __maybe_unused struct of_device_id bcm2835_cprman_dt_ids[] = {
-	{
-		.compatible = "brcm,bcm2835-cprman",
-	}, {
-		/* sentinel */
-	}
+	{ .compatible = "brcm,bcm2835-cprman", .data = bcm2835_cprman_init },
+	{ .compatible = "brcm,bcm2711-cprman" },
+	{ /* sentinel */ }
 };
 
 static struct driver_d bcm2835_cprman_driver = {
-	.probe	= bcm2835_cprman_probe,
-	.name	= "bcm2835-cprman",
+	.probe	= rpi_cprman_probe,
+	.name	= "raspberrypi-cprman",
 	.of_compatible = DRV_OF_COMPAT(bcm2835_cprman_dt_ids),
 };
 core_platform_driver(bcm2835_cprman_driver);

@@ -9,6 +9,7 @@
 #include <asm/setjmp.h>
 #include <tee/optee.h>
 #include <debug_ll.h>
+#include <string.h>
 
 static jmp_buf tee_buf;
 

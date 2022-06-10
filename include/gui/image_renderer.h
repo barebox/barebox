@@ -53,7 +53,10 @@ static inline struct image *image_renderer_open(const char* file)
 
 static inline void image_renderer_close(struct image *img) {}
 
-int image_renderer_image(struct surface *s, struct image *img);
+static inline int image_renderer_image(struct screen *sc, struct surface *s, struct image *img)
+{
+	return -EINVAL;
+}
 #endif
 
 static inline int image_renderer_file(struct screen *sc, struct surface *s, const char* file)

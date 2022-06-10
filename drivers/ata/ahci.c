@@ -304,8 +304,8 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 	ahci_port->cmd_slot = mem;
 	ahci_port->cmd_slot_dma = mem_dma;
 
-	ahci_port_debug(ahci_port, "cmd_slot = 0x%p (0x%pa)\n",
-			ahci_port->cmd_slot, ahci_port->cmd_slot_dma);
+	ahci_port_debug(ahci_port, "cmd_slot = 0x%p (0x%pad)\n",
+			ahci_port->cmd_slot, &ahci_port->cmd_slot_dma);
 
 	/*
 	 * Second item: Received-FIS area
@@ -320,8 +320,8 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 	ahci_port->cmd_tbl = mem + AHCI_CMD_LIST_SZ + AHCI_RX_FIS_SZ;
 	ahci_port->cmd_tbl_dma = mem_dma + AHCI_CMD_LIST_SZ + AHCI_RX_FIS_SZ;
 
-	ahci_port_debug(ahci_port, "cmd_tbl = 0x%p (0x%pa)\n",
-			ahci_port->cmd_tbl, ahci_port->cmd_tbl_dma);
+	ahci_port_debug(ahci_port, "cmd_tbl = 0x%p (0x%pad)\n",
+			ahci_port->cmd_tbl, &ahci_port->cmd_tbl_dma);
 
 	ahci_port->cmd_tbl_sg = ahci_port->cmd_tbl + AHCI_CMD_TBL_HDR_SZ;
 
@@ -517,7 +517,7 @@ void ahci_print_info(struct ahci_device *ahci)
 	printf("flags: "
 	       "%s%s%s%s%s%s%s"
 	       "%s%s%s%s%s%s%s"
-	       "%s%s%s%s%s%s\n",
+	       "%s%s%s%s%s%s%s\n",
 	       cap & HOST_CAP_64 ? "64bit " : "",
 	       cap & HOST_CAP_NCQ ? "ncq " : "",
 	       cap & HOST_CAP_SNTF ? "sntf " : "",

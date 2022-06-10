@@ -285,6 +285,8 @@ void imx53_get_boot_source(enum bootsource *src, int *instance)
 	default:
 		if (imx53_bootsource_nand(cfg1))
 			*src = BOOTSOURCE_NAND;
+		else
+			*src = BOOTSOURCE_UNKNOWN;
 		break;
 	}
 
@@ -464,6 +466,8 @@ void imx6_get_boot_source(enum bootsource *src, int *instance)
 	default:
 		if (imx53_bootsource_nand(bootmode))
 			*src = BOOTSOURCE_NAND;
+		else
+			*src = BOOTSOURCE_UNKNOWN;
 		break;
 	}
 }
@@ -527,6 +531,7 @@ static void __imx7_get_boot_source(enum bootsource *src, int *instance,
 		*src = BOOTSOURCE_SERIAL;
 		break;
 	default:
+		*src = BOOTSOURCE_UNKNOWN;
 		break;
 	}
 }
@@ -630,6 +635,8 @@ void vf610_get_boot_source(enum bootsource *src, int *instance)
 	default:
 		if (imx53_bootsource_nand(sbmr1))
 			*src = BOOTSOURCE_NAND;
+		else
+			*src = BOOTSOURCE_UNKNOWN;
 		break;
 	}
 }

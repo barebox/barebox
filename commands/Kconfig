@@ -1327,6 +1327,7 @@ config CMD_ECHO_E
 
 config CMD_EDIT
 	tristate
+	depends on CONSOLE_FULL || CONSOLE_SIMPLE
 	prompt "edit"
 	help
 	  A  small fill-screen editor.

@@ -14,7 +14,7 @@
 
 void __iomem *v2m_wdt_base;
 
-static void vexpress_reset_soc(struct restart_handler *rst)
+static void __noreturn vexpress_reset_soc(struct restart_handler *rst)
 {
 	writel(LOAD_MIN, v2m_wdt_base + WDTLOAD);
 	writeb(RESET_ENABLE, v2m_wdt_base + WDTCONTROL);

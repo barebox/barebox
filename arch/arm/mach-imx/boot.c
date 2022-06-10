@@ -522,7 +522,8 @@ static void __imx7_get_boot_source(enum bootsource *src, int *instance,
 	case 5:
 		*src = BOOTSOURCE_NOR;
 		break;
-	case 15:
+	case 14: /* observed on i.MX8MP for USB "serial" booting */
+	case 15: /* observed on i.MX8MM for USB "serial" booting */
 		*src = BOOTSOURCE_SERIAL;
 		break;
 	default:

@@ -2,6 +2,7 @@
 #include <bootsource.h>
 #include <common.h>
 #include <init.h>
+#include <mach/bbu.h>
 
 struct rock3_model {
 	const char *name;
@@ -23,6 +24,9 @@ static int rock3_probe(struct device_d *dev)
 		of_device_enable_path("/chosen/environment-sd");
 	else
 		of_device_enable_path("/chosen/environment-emmc");
+
+	rk3568_bbu_mmc_register("emmc", BBU_HANDLER_FLAG_DEFAULT,
+				"/dev/mmc1");
 
 	return 0;
 }

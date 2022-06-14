@@ -57,14 +57,26 @@ static inline int dma_mapping_error(struct device_d *dev, dma_addr_t dma_addr)
 }
 
 /* streaming DMA - implement the below calls to support HAS_DMA */
+#ifndef dma_sync_single_for_cpu
 void dma_sync_single_for_cpu(dma_addr_t address, size_t size,
 			     enum dma_data_direction dir);
+#endif
 
+#ifndef dma_sync_single_for_device
 void dma_sync_single_for_device(dma_addr_t address, size_t size,
 				enum dma_data_direction dir);
+#endif
 
+#ifndef dma_alloc_coherent
 void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle);
+#endif
+
+#ifndef dma_free_coherent
 void dma_free_coherent(void *mem, dma_addr_t dma_handle, size_t size);
+#endif
+
+#ifndef dma_alloc_writecombine
 void *dma_alloc_writecombine(size_t size, dma_addr_t *dma_handle);
+#endif
 
 #endif /* __DMA_H */

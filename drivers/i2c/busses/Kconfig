@@ -17,6 +17,10 @@ config I2C_AT91
 	bool "AT91 I2C Master driver"
 	depends on ARCH_AT91
 
+config I2C_BCM283X
+	bool "BCM283X I2C Master driver"
+	depends on ARCH_BCM283X || COMPILE_TEST
+
 config I2C_IMX
 	bool "MPC85xx/MPC5200/i.MX I2C Master driver"
 	depends on ARCH_IMX || ARCH_MPC85XX || ARCH_MPC5200 || ARCH_LAYERSCAPE

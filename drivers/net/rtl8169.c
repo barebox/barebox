@@ -230,13 +230,13 @@ static void rtl8169_init_ring(struct rtl8169_priv *priv)
 	for (i = 0; i < NUM_RX_DESC; i++) {
 		if (i == (NUM_RX_DESC - 1))
 			priv->rx_desc[i].status =
-				BD_STAT_OWN | BD_STAT_EOR | PKT_BUF_SIZE;
+				cpu_to_le32(BD_STAT_OWN | BD_STAT_EOR | PKT_BUF_SIZE);
 		else
 			priv->rx_desc[i].status =
-				BD_STAT_OWN | PKT_BUF_SIZE;
+				cpu_to_le32(BD_STAT_OWN | PKT_BUF_SIZE);
 
 		priv->rx_desc[i].buf_addr =
-				virt_to_phys(priv->rx_buf + i * PKT_BUF_SIZE);
+				cpu_to_le32(virt_to_phys(priv->rx_buf + i * PKT_BUF_SIZE));
 	}
 }
 
@@ -358,21 +358,21 @@ static int rtl8169_eth_send(struct eth_device *edev, void *packet,
 
 	priv->tx_desc[entry].buf_Haddr = 0;
 	priv->tx_desc[entry].buf_addr =
-		virt_to_phys(priv->tx_buf + entry * PKT_BUF_SIZE);
+		cpu_to_le32(virt_to_phys(priv->tx_buf + entry * PKT_BUF_SIZE));
 
 	if (entry != (NUM_TX_DESC - 1)) {
 		priv->tx_desc[entry].status =
-			BD_STAT_OWN | BD_STAT_FS | BD_STAT_LS |
-			((packet_length > ETH_ZLEN) ? packet_length : ETH_ZLEN);
+			cpu_to_le32(BD_STAT_OWN | BD_STAT_FS | BD_STAT_LS |
+			((packet_length > ETH_ZLEN) ? packet_length : ETH_ZLEN));
 	} else {
 		priv->tx_desc[entry].status =
-			BD_STAT_OWN | BD_STAT_EOR | BD_STAT_FS | BD_STAT_LS |
-			((packet_length > ETH_ZLEN) ? packet_length : ETH_ZLEN);
+			cpu_to_le32(BD_STAT_OWN | BD_STAT_EOR | BD_STAT_FS | BD_STAT_LS |
+			((packet_length > ETH_ZLEN) ? packet_length : ETH_ZLEN));
 	}
 
 	RTL_W8(priv, TxPoll, 0x40);
 
-	while (priv->tx_desc[entry].status & BD_STAT_OWN)
+	while (le32_to_cpu(priv->tx_desc[entry].status) & BD_STAT_OWN)
 		;
 
 	dma_sync_single_for_cpu((unsigned long)priv->tx_buf + entry *
@@ -391,9 +391,9 @@ static int rtl8169_eth_rx(struct eth_device *edev)
 
 	entry = priv->cur_rx % NUM_RX_DESC;
 
-	if ((priv->rx_desc[entry].status & BD_STAT_OWN) == 0) {
-		if (!(priv->rx_desc[entry].status & BD_STAT_RX_RES)) {
-			pkt_size = (priv->rx_desc[entry].status & 0x1fff) - 4;
+	if ((le32_to_cpu(priv->rx_desc[entry].status) & BD_STAT_OWN) == 0) {
+		if (!(le32_to_cpu(priv->rx_desc[entry].status) & BD_STAT_RX_RES)) {
+			pkt_size = (le32_to_cpu(priv->rx_desc[entry].status) & 0x1fff) - 4;
 
 			dma_sync_single_for_cpu((unsigned long)priv->rx_buf
 						+ entry * PKT_BUF_SIZE,
@@ -407,14 +407,14 @@ static int rtl8169_eth_rx(struct eth_device *edev)
 						   pkt_size, DMA_FROM_DEVICE);
 
 			if (entry == NUM_RX_DESC - 1)
-				priv->rx_desc[entry].status = BD_STAT_OWN |
-					BD_STAT_EOR | PKT_BUF_SIZE;
+				priv->rx_desc[entry].status = cpu_to_le32(BD_STAT_OWN |
+					BD_STAT_EOR | PKT_BUF_SIZE);
 			else
 				priv->rx_desc[entry].status =
-					BD_STAT_OWN | PKT_BUF_SIZE;
+					cpu_to_le32(BD_STAT_OWN | PKT_BUF_SIZE);
 			priv->rx_desc[entry].buf_addr =
-				virt_to_phys(priv->rx_buf +
-				             entry * PKT_BUF_SIZE);
+				cpu_to_le32(virt_to_phys(priv->rx_buf +
+							 entry * PKT_BUF_SIZE));
 		} else {
 			dev_err(&edev->dev, "rx error\n");
 		}

@@ -24,6 +24,10 @@
 	};
 };
 
+&reg_usdhc2_vmmc {
+	off-on-delay-us = <20000>;
+};
+
 &usdhc2 {
 	#address-cells = <1>;
 	#size-cells = <1>;

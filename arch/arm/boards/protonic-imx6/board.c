@@ -88,7 +88,6 @@ struct prt_imx6_priv {
 	unsigned int hw_id;
 	unsigned int hw_rev;
 	const char *name;
-	unsigned int usb_delay;
 	unsigned int no_usb_check;
 };
 
@@ -423,6 +422,7 @@ static int prt_imx6_env_init(struct prt_imx6_priv *priv)
 	const struct prt_machine_data *dcfg = priv->dcfg;
 	struct device_d *dev = priv->dev;
 	char *delay, *bootsrc, *boot_targets;
+	unsigned int autoboot_timeout;
 	int ret;
 
 	ret = setenv("global.linux.bootargs.base", "consoleblank=0 vt.color=0x00");
@@ -433,12 +433,12 @@ static int prt_imx6_env_init(struct prt_imx6_priv *priv)
 		set_autoboot_state(AUTOBOOT_BOOT);
 	} else {
 		if (dcfg->flags & PRT_IMX6_USB_LONG_DELAY)
-			priv->usb_delay = 4;
+			autoboot_timeout = 4;
 		else
-			priv->usb_delay = 1;
+			autoboot_timeout = 1;
 
 		/* the usb_delay value is used for poller_call_async() */
-		delay = basprintf("%d", priv->usb_delay);
+		delay = basprintf("%d", autoboot_timeout);
 		ret = setenv("global.autoboot_timeout", delay);
 		free(delay);
 		if (ret)

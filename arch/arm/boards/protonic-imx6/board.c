@@ -15,6 +15,7 @@
 #include <i2c/i2c.h>
 #include <mach/bbu.h>
 #include <mach/imx6.h>
+#include <mach/ocotp-fusemap.h>
 #include <mfd/imx6q-iomuxc-gpr.h>
 #include <mfd/syscon.h>
 #include <net.h>
@@ -211,12 +212,11 @@ static int prt_imx6_set_mac(struct prt_imx6_priv *priv,
 	return 0;
 }
 
-static int prt_imx6_set_serial(struct prt_imx6_priv *priv,
-			       struct prti6q_rfid_contents *rfid)
+static int prt_imx6_set_serial(struct prt_imx6_priv *priv, char *serial)
 {
-	rfid->serial[9] = 0; /* Failsafe */
-	dev_info(priv->dev, "Serial number: %s\n", rfid->serial);
-	barebox_set_serial_number(rfid->serial);
+	serial[9] = 0; /* Failsafe */
+	dev_info(priv->dev, "Serial number: %s\n", serial);
+	barebox_set_serial_number(serial);
 
 	return 0;
 }
@@ -240,11 +240,34 @@ static int prt_imx6_read_i2c_mac_serial(struct prt_imx6_priv *priv)
 	if (ret)
 		return ret;
 
-	ret = prt_imx6_set_serial(priv, &rfid);
+	ret = prt_imx6_set_serial(priv, rfid.serial);
 	if (ret)
 		return ret;
 
 	return 0;
+}
+
+#define PRT_IMX6_GP1_FMT_DEC		BIT(31)
+
+static int prt_imx6_read_ocotp_serial(struct prt_imx6_priv *priv)
+{
+	int ret;
+	char serial[11];
+	unsigned val;
+
+	ret = imx_ocotp_read_field(OCOTP_GP1, &val);
+	if (ret) {
+		dev_err(priv->dev, "Failed to read ocotp serial (%i)\n", ret);
+		return ret;
+	}
+
+	if (!(val & PRT_IMX6_GP1_FMT_DEC))
+		return -EINVAL;
+	val &= PRT_IMX6_GP1_FMT_DEC - 1;
+
+	snprintf(serial, sizeof(serial), "%u", val);
+
+	return prt_imx6_set_serial(priv, serial);
 }
 
 static int prt_imx6_usb_mount(struct prt_imx6_priv *priv)
@@ -523,7 +546,14 @@ static int prt_imx6_devices_init(void)
 
 	prt_imx6_bbu(priv);
 
-	prt_imx6_read_i2c_mac_serial(priv);
+	/*
+	 * Read serial number from fuses. On success we'll assume the imx_ocotp
+	 * driver takes care of providing the mac address if needed. On
+	 * failure we'll fallback to reading and setting serial and mac from an
+	 * attached RFID eeprom.
+	 */
+	if (prt_imx6_read_ocotp_serial(priv) != 0)
+		prt_imx6_read_i2c_mac_serial(priv);
 
 	bootentry_register_provider(prt_imx6_bootentry_provider);
 

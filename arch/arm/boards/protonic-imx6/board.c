@@ -90,6 +90,7 @@ struct prt_imx6_priv {
 	unsigned int hw_rev;
 	const char *name;
 	unsigned int no_usb_check;
+	char *ocotp_serial;
 };
 
 struct prti6q_rfid_contents {
@@ -252,7 +253,6 @@ static int prt_imx6_read_i2c_mac_serial(struct prt_imx6_priv *priv)
 static int prt_imx6_read_ocotp_serial(struct prt_imx6_priv *priv)
 {
 	int ret;
-	char serial[11];
 	unsigned val;
 
 	ret = imx_ocotp_read_field(OCOTP_GP1, &val);
@@ -265,9 +265,31 @@ static int prt_imx6_read_ocotp_serial(struct prt_imx6_priv *priv)
 		return -EINVAL;
 	val &= PRT_IMX6_GP1_FMT_DEC - 1;
 
-	snprintf(serial, sizeof(serial), "%u", val);
+	priv->ocotp_serial = xasprintf("%u", val);
 
-	return prt_imx6_set_serial(priv, serial);
+	return prt_imx6_set_serial(priv, priv->ocotp_serial);
+}
+
+static int prt_imx6_set_ocotp_serial(struct param_d *param, void *driver_priv)
+{
+	struct prt_imx6_priv *priv = driver_priv;
+	int ret;
+	unsigned val;
+
+	ret = kstrtouint(priv->ocotp_serial, 10, &val);
+	if (ret)
+		return ret;
+
+	if (val & PRT_IMX6_GP1_FMT_DEC)
+		return -ERANGE;
+	val |= PRT_IMX6_GP1_FMT_DEC;
+
+	ret = imx_ocotp_write_field(OCOTP_GP1, val);
+	if (ret)
+		return ret;
+
+	barebox_set_serial_number(priv->ocotp_serial);
+	return 0;
 }
 
 static int prt_imx6_usb_mount(struct prt_imx6_priv *priv)
@@ -537,6 +559,8 @@ exit_bbu:
 static int prt_imx6_devices_init(void)
 {
 	struct prt_imx6_priv *priv = prt_priv;
+	struct device_d *ocotp_dev;
+	struct param_d *p;
 
 	if (!priv)
 		return 0;
@@ -558,6 +582,15 @@ static int prt_imx6_devices_init(void)
 	bootentry_register_provider(prt_imx6_bootentry_provider);
 
 	prt_imx6_env_init(priv);
+
+	ocotp_dev = get_device_by_name("ocotp0");
+	if (ocotp_dev) {
+		p = dev_add_param_string(ocotp_dev, "serial_number",
+				 prt_imx6_set_ocotp_serial, NULL,
+				 &priv->ocotp_serial, priv);
+		if (IS_ERR(p))
+			return PTR_ERR(p);
+	}
 
 	return 0;
 }

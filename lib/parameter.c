@@ -262,8 +262,10 @@ static int param_string_set(struct device_d *dev, struct param_d *p, const char 
 	strim(value_new);
 	*ps->value = value_new;
 
-	if (!ps->set)
+	if (!ps->set) {
+		free(value_save);
 		return 0;
+	}
 
 	ret = ps->set(p, p->driver_priv);
 	if (ret) {

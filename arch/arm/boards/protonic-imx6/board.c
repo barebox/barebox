@@ -248,7 +248,7 @@ static int prt_imx6_read_i2c_mac_serial(struct prt_imx6_priv *priv)
 	return 0;
 }
 
-static int prt_imx6_usb_mount(struct prt_imx6_priv *priv, char **usbdisk)
+static int prt_imx6_usb_mount(struct prt_imx6_priv *priv)
 {
 	struct device_d *dev = priv->dev;
 	const char *path;
@@ -267,8 +267,6 @@ static int prt_imx6_usb_mount(struct prt_imx6_priv *priv, char **usbdisk)
 		ret = mount(path, NULL, "usb", NULL);
 		if (ret)
 			goto exit_usb_mount;
-
-		*usbdisk = strdup("disk0.0");
 		return 0;
 	}
 
@@ -278,8 +276,6 @@ static int prt_imx6_usb_mount(struct prt_imx6_priv *priv, char **usbdisk)
 		ret = mount(path, NULL, "usb", NULL);
 		if (ret)
 			goto exit_usb_mount;
-
-		*usbdisk = strdup("disk0");
 		return 0;
 	}
 
@@ -294,7 +290,7 @@ static void prt_imx6_check_usb_boot_do_work(struct work_struct *w)
 {
 	struct prt_imx6_priv *priv = container_of(w, struct prt_imx6_priv, work);
 	struct device_d *dev = priv->dev;
-	char *second_word, *bootsrc, *usbdisk;
+	char *second_word, *bootsrc;
 	char buf[sizeof("vicut1q recovery")] = {};
 	unsigned int v;
 	ssize_t size;
@@ -306,7 +302,7 @@ static void prt_imx6_check_usb_boot_do_work(struct work_struct *w)
 
 	usb_rescan();
 
-	ret = prt_imx6_usb_mount(priv, &usbdisk);
+	ret = prt_imx6_usb_mount(priv);
 	if (ret)
 		return;
 
@@ -363,12 +359,10 @@ static void prt_imx6_check_usb_boot_do_work(struct work_struct *w)
 	if (ret)
 		goto exit_usb_boot;
 
-	free(usbdisk);
 	return;
 
 exit_usb_boot:
 	dev_err(dev, "Failed to run usb boot: %s\n", strerror(-ret));
-	free(usbdisk);
 
 	return;
 }

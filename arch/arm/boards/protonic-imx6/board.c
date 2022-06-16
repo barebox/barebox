@@ -4,10 +4,13 @@
 // SPDX-FileCopyrightText: 2020 Oleksij Rempel, Pengutronix
 
 #include <bbu.h>
+#include <boot.h>
+#include <bootm.h>
 #include <common.h>
 #include <deep-probe.h>
 #include <environment.h>
 #include <fcntl.h>
+#include <globalvar.h>
 #include <gpio.h>
 #include <i2c/i2c.h>
 #include <mach/bbu.h>
@@ -21,7 +24,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <usb/usb.h>
-#include <work.h>
 
 #define GPIO_HW_REV_ID  {\
 	{IMX_GPIO_NR(2, 8), GPIOF_DIR_IN | GPIOF_ACTIVE_LOW, "rev_id0"}, \
@@ -88,8 +90,6 @@ struct prt_imx6_priv {
 	const char *name;
 	unsigned int usb_delay;
 	unsigned int no_usb_check;
-	struct work_queue wq;
-	struct work_struct work;
 };
 
 struct prti6q_rfid_contents {
@@ -286,25 +286,21 @@ exit_usb_mount:
 
 #define OTG_PORTSC1 (MX6_OTG_BASE_ADDR+0x184)
 
-static void prt_imx6_check_usb_boot_do_work(struct work_struct *w)
+static int prt_imx6_usb_boot(struct bootentry *entry, int verbose, int dryrun)
 {
-	struct prt_imx6_priv *priv = container_of(w, struct prt_imx6_priv, work);
+	struct prt_imx6_priv *priv = prt_priv;
 	struct device_d *dev = priv->dev;
-	char *second_word, *bootsrc;
+	char *second_word;
 	char buf[sizeof("vicut1q recovery")] = {};
-	unsigned int v;
+	struct bootm_data bootm_data = {};
 	ssize_t size;
 	int fd, ret;
-
-	v = readl(OTG_PORTSC1);
-	if ((v & 0x0c00) == 0) /* LS == SE0 ==> nothing connected */
-		return;
 
 	usb_rescan();
 
 	ret = prt_imx6_usb_mount(priv);
 	if (ret)
-		return;
+		return ret;
 
 	fd = open("/usb/boot_target", O_RDONLY);
 	if (fd < 0) {
@@ -343,35 +339,90 @@ static void prt_imx6_check_usb_boot_do_work(struct work_struct *w)
 		goto exit_usb_boot;
 	}
 
+	bootm_data_init_defaults(&bootm_data);
+
 	second_word++;
 	if (strncmp(second_word, "usb", 3) == 0) {
-		bootsrc = "usb";
+		dev_info(dev, "Booting from USB drive\n");
+		bootm_data.os_file = "/usb/linuximage.fit";
 	} else if (strncmp(second_word, "recovery", 8) == 0) {
-		bootsrc = "recovery";
+		dev_info(dev, "Booting internal recovery OS\n");
+		bootm_data.os_file = "/dev/mmc2.5";
 	} else {
 		dev_err(dev, "Unknown boot target!\n");
 		ret = -ENODEV;
 		goto exit_usb_boot;
 	}
 
-	dev_info(dev, "detected valid usb boot target file, overwriting boot to: %s\n", bootsrc);
-	ret = setenv("global.boot.default", bootsrc);
+	ret = globalvar_add_simple("linux.bootargs.root",
+		"root=/dev/ram rw rootwait ramdisk_size=196608");
 	if (ret)
 		goto exit_usb_boot;
 
-	return;
+	if (verbose)
+		bootm_data.verbose = verbose;
+	if (dryrun)
+		bootm_data.dryrun = dryrun;
+
+	ret = bootm_boot(&bootm_data);
+	if (ret)
+		goto exit_usb_boot;
+
+	return 0;
 
 exit_usb_boot:
 	dev_err(dev, "Failed to run usb boot: %s\n", strerror(-ret));
 
-	return;
+	return ret;
+}
+
+static void prt_imx6_bootentry_release(struct bootentry *entry)
+{
+	free(entry);
+}
+
+static int prt_imx6_bootentry_create(struct bootentries *bootentries, const char *name)
+{
+	struct bootentry *entry;
+
+	entry = xzalloc(sizeof(*entry));
+	if (!entry)
+		return -ENOMEM;
+
+	entry->me.type = MENU_ENTRY_NORMAL;
+	entry->release = prt_imx6_bootentry_release;
+	entry->boot = prt_imx6_usb_boot;
+	entry->title = xstrdup(name);
+	entry->description = xstrdup("Boot FIT image of a USB drive");
+	bootentries_add_entry(bootentries, entry);
+
+	return 0;
+}
+
+static int prt_imx6_bootentry_provider(struct bootentries *bootentries,
+				     const char *name)
+{
+	int found = 0;
+	unsigned int v;
+
+	if (strncmp(name, "prt-usb", 7))
+		return found;
+
+	v = readl(OTG_PORTSC1);
+	if ((v & 0x0c00) == 0)	/* No usb device detected */
+		return found;
+
+	if (!prt_imx6_bootentry_create(bootentries, name))
+		found = 1;
+
+	return found;
 }
 
 static int prt_imx6_env_init(struct prt_imx6_priv *priv)
 {
 	const struct prt_machine_data *dcfg = priv->dcfg;
 	struct device_d *dev = priv->dev;
-	char *delay, *bootsrc;
+	char *delay, *bootsrc, *boot_targets;
 	int ret;
 
 	ret = setenv("global.linux.bootargs.base", "consoleblank=0 vt.color=0x00");
@@ -399,7 +450,13 @@ static int prt_imx6_env_init(struct prt_imx6_priv *priv)
 	else
 		bootsrc = "mmc2";
 
-	ret = setenv("global.boot.default", bootsrc);
+	if (!priv->no_usb_check)
+		boot_targets = xasprintf("prt-usb %s", bootsrc);
+	else
+		boot_targets = xstrdup(bootsrc);
+
+	ret = setenv("global.boot.default", boot_targets);
+	free(boot_targets);
 	if (ret)
 		goto exit_env_init;
 
@@ -468,16 +525,9 @@ static int prt_imx6_devices_init(void)
 
 	prt_imx6_read_i2c_mac_serial(priv);
 
+	bootentry_register_provider(prt_imx6_bootentry_provider);
+
 	prt_imx6_env_init(priv);
-
-	if (!priv->no_usb_check) {
-		priv->wq.fn = prt_imx6_check_usb_boot_do_work;
-
-		wq_register(&priv->wq);
-
-		wq_queue_delayed_work(&priv->wq, &priv->work,
-				      priv->usb_delay * SECOND);
-	}
 
 	return 0;
 }

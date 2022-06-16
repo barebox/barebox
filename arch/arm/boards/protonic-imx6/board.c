@@ -395,6 +395,7 @@ static int prt_imx6_env_init(struct prt_imx6_priv *priv)
 		/* the usb_delay value is used for poller_call_async() */
 		delay = basprintf("%d", priv->usb_delay);
 		ret = setenv("global.autoboot_timeout", delay);
+		free(delay);
 		if (ret)
 			goto exit_env_init;
 	}

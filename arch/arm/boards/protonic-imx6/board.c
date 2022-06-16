@@ -681,24 +681,22 @@ static int prt_imx6_rfid_fixup(struct prt_imx6_priv *priv,
 	}
 
 	i2c_node = of_find_node_by_alias(root, alias);
+	kfree(alias);
 	if (!i2c_node) {
 		dev_err(priv->dev, "Unsupported i2c adapter\n");
-		ret = -ENODEV;
-		goto free_alias;
+		return -ENODEV;
 	}
 
 	eeprom_node_name = basprintf("/eeprom@%x", dcfg->i2c_addr);
 	if (!eeprom_node_name) {
-		ret = -ENOMEM;
-		goto free_alias;
+		return -ENOMEM;
 	}
 
 	node = of_create_node(i2c_node, eeprom_node_name);
 	if (!node) {
 		dev_err(priv->dev, "Failed to create node %s\n",
 			eeprom_node_name);
-		ret = -ENOMEM;
-		goto free_eeprom;
+		return -ENOMEM;
 	}
 
 	ret = of_property_write_string(node, "compatible", "atmel,24c256");
@@ -722,8 +720,6 @@ static int prt_imx6_rfid_fixup(struct prt_imx6_priv *priv,
 	return 0;
 free_eeprom:
 	kfree(eeprom_node_name);
-free_alias:
-	kfree(alias);
 exit_error:
 	dev_err(priv->dev, "Failed to apply fixup: %pe\n", ERR_PTR(ret));
 	return ret;

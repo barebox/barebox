@@ -52,6 +52,7 @@ static int regulator_fixed_probe(struct device_d *dev)
 {
 	struct device_node *np = dev->device_node;
 	struct regulator_fixed *fix;
+	u32 delay;
 	int ret;
 
 	if (!dev->device_node)
@@ -71,6 +72,9 @@ static int regulator_fixed_probe(struct device_d *dev)
 	fix->rdesc.ops = &fixed_ops;
 	fix->rdev.desc = &fix->rdesc;
 	fix->rdev.dev = dev;
+
+	if (!of_property_read_u32(np, "off-on-delay-us", &delay))
+		fix->rdesc.off_on_delay = delay;
 
 	if (of_find_property(np, "regulator-always-on", NULL) ||
 	    of_find_property(np, "regulator-boot-on", NULL)) {

@@ -24,10 +24,6 @@
 	};
 };
 
-&fec1 {
-	phy-reset-gpios = <&gpio4 22 GPIO_ACTIVE_LOW>;
-};
-
 &usdhc2 {
 	#address-cells = <1>;
 	#size-cells = <1>;

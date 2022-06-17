@@ -139,13 +139,9 @@ static int do_clk_get_rate(int argc, char *argv[])
 
 	rate = clk_get_rate(clk);
 
-	if (variable_name) {
-		char *t;
-
-		t = basprintf("%lu", rate);
-		setenv(variable_name, t);
-		free(t);
-	} else
+	if (variable_name)
+		pr_setenv(variable_name, "%lu", rate);
+	else
 		printf("%lu\n", rate);
 
 	return COMMAND_SUCCESS;

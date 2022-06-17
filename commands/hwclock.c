@@ -153,11 +153,9 @@ static int do_hwclock(int argc, char *argv[])
 
 	if (env_name) {
 		unsigned long time;
-		char t[12];
 
 		rtc_tm_to_time(&tm, &time);
-		snprintf(t, 12, "%lu", time);
-		setenv(env_name, t);
+		pr_setenv(env_name, "%lu", time);
 	} else {
 		printf("%s\n", time_str(&tm));
 	}

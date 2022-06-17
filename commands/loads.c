@@ -65,7 +65,6 @@ static ulong load_serial(ulong offset)
 	int	type;				/* return code for record type	*/
 	ulong	addr;				/* load address from S-Record	*/
 	ulong	size;				/* number of bytes transferred	*/
-	char	buf[32];
 	ulong	store_addr;
 	ulong	start_addr = ~0;
 	ulong	end_addr   =  0;
@@ -100,8 +99,7 @@ static ulong load_serial(ulong offset)
 			    "## Total Size      = 0x%08lX = %ld Bytes\n",
 			    start_addr, end_addr, size, size
 			    );
-			sprintf(buf, "%lX", size);
-			setenv("filesize", buf);
+			pr_setenv("filesize", "%lX", size);
 			return addr;
 		case SREC_START:
 			break;

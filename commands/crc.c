@@ -83,17 +83,11 @@ static int do_crc(int argc, char *argv[])
 	printf("CRC32 for %s 0x%08lx ... 0x%08lx ==> 0x%08lx",
 			filename, (ulong)start, (ulong)start + total - 1, crc);
 
-	if (crcvarname) {
-		char *crcstr = basprintf("0x%lx", crc);
-		setenv(crcvarname, crcstr);
-		kfree(crcstr);
-	}
+	if (crcvarname)
+		pr_setenv(crcvarname, "0x%lx", crc);
 
-	if (sizevarname) {
-		char *sizestr = basprintf("0x%lx", total);
-		setenv(sizevarname, sizestr);
-		kfree(sizestr);
-	}
+	if (sizevarname)
+		pr_setenv(sizevarname, "0x%lx", total);
 
 #ifdef CONFIG_CMD_CRC_CMP
 	if (vfilename) {

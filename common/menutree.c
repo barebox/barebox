@@ -34,14 +34,7 @@ static void menutree_action(struct menu *m, struct menu_entry *me)
 
 static void setenv_bool(const char *var, bool val)
 {
-	const char *str;
-
-	if (val)
-		str = "1";
-	else
-		str = "0";
-
-	setenv(var, str);
+	pr_setenv(var, "%d", val);
 }
 
 static void menutree_box(struct menu *m, struct menu_entry *me)

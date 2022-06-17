@@ -542,7 +542,6 @@ packet_error:
 static ulong load_serial_bin(void)
 {
 	int size, i;
-	char buf[32];
 
 	/* Try to allocate the buffer we shall write to files */
 	write_buffer = malloc(MAX_WRITE_BUFFER);
@@ -576,8 +575,7 @@ static ulong load_serial_bin(void)
 		write_idx = 0;
 	}
 	printf("## Total Size      = 0x%08x = %d Bytes\n", size, size);
-	sprintf(buf, "%X", size);
-	setenv("filesize", buf);
+	pr_setenv("filesize", "%X", size);
 
 err_quit:
 	free(write_buffer);

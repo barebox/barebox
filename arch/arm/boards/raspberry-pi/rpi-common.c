@@ -23,12 +23,27 @@
 #include <linux/sizes.h>
 #include <globalvar.h>
 #include <asm/system_info.h>
+#include <reset_source.h>
 
 #include <mach/core.h>
 #include <mach/mbox.h>
 #include <mach/platform.h>
 
+#include <soc/bcm283x/wdt.h>
+
 #include "lowlevel.h"
+
+//https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#BOOT_ORDER
+static const char * const boot_mode_names[] = {
+	[0x0] = "unknown",
+	[0x1] = "sd",
+	[0x2] = "net",
+	[0x3] = "rpiboot",
+	[0x4] = "usbmsd",
+	[0x5] = "usbc",
+	[0x6] = "nvme",
+	[0x7] = "http",
+};
 
 struct rpi_priv;
 struct rpi_machine_data {
@@ -186,54 +201,133 @@ static int rpi_env_init(void)
 	return 0;
 }
 
-/* Extract /chosen/bootargs from the VideoCore FDT into vc.bootargs
- * global variable. */
-static int rpi_vc_fdt_bootargs(void *fdt)
+/* Some string properties in fdt passed to us from vc may be
+ * malformed by not being null terminated, so just create and
+ * return a fixed copy.
+ */
+static char *of_read_vc_string(struct device_node *node,
+			       const char *prop_name)
 {
-	int ret = 0;
-	struct device_node *root = NULL, *node;
-	const char *cmdline;
+	int len;
+	const char *str;
+
+	str = of_get_property(node, prop_name, &len);
+	if (!str) {
+		pr_warn("no property '%s' found in vc fdt's '%s' node\n",
+			prop_name, node->full_name);
+		return NULL;
+	}
+	return xstrndup(str, len);
+}
+
+static enum reset_src_type rpi_decode_pm_rsts(struct device_node *chosen,
+					      struct device_node *bootloader)
+{
+	u32 pm_rsts;
+	int ret;
+
+	ret = of_property_read_u32(chosen, "pm_rsts", &pm_rsts);
+	if (ret && bootloader)
+		 ret = of_property_read_u32(bootloader, "rsts", &pm_rsts);
+
+	if (ret) {
+		pr_warn("'pm_rsts' value not found in vc fdt\n");
+		return RESET_UKWN;
+	}
+	/*
+	 * https://github.com/raspberrypi/linux/issues/932#issuecomment-93989581
+	 */
+
+	if (pm_rsts & PM_RSTS_HADPOR_SET)
+		return RESET_POR;
+	if (pm_rsts & PM_RSTS_HADDR_SET)
+		return RESET_JTAG;
+	if (pm_rsts & PM_RSTS_HADWR_SET)
+		return RESET_WDG;
+	if (pm_rsts & PM_RSTS_HADSR_SET)
+		return RESET_RST;
+
+	return RESET_UKWN;
+}
+
+static u32 rpi_boot_mode, rpi_boot_part;
+/* Extract useful information from the VideoCore FDT we got.
+ * Some parameters are defined here:
+ * https://www.raspberrypi.com/documentation/computers/configuration.html#part4
+ */
+static void rpi_vc_fdt_parse(void *fdt)
+{
+	int ret;
+	struct device_node *root, *chosen, *bootloader;
+	char *str;
 
 	root = of_unflatten_dtb(fdt, INT_MAX);
-	if (IS_ERR(root)) {
-		ret = PTR_ERR(root);
-		root = NULL;
+	if (IS_ERR(root))
+		return;
+
+	str = of_read_vc_string(root, "serial-number");
+	if (str) {
+		barebox_set_serial_number(str);
+		free(str);
+	}
+
+	str = of_read_vc_string(root, "model");
+	if (str) {
+		barebox_set_model(str);
+		free(str);
+	}
+
+	chosen = of_find_node_by_path_from(root, "/chosen");
+	if (!chosen) {
+		pr_err("no '/chosen' node found in vc fdt\n");
 		goto out;
 	}
 
-	node = of_find_node_by_path_from(root, "/chosen");
-	if (!node) {
-		pr_err("no /chosen node\n");
-		ret = -ENOENT;
-		goto out;
+	bootloader = of_find_node_by_name(chosen, "bootloader");
+
+	str = of_read_vc_string(chosen, "bootargs");
+	if (str) {
+		globalvar_add_simple("vc.bootargs", str);
+		free(str);
 	}
 
-	cmdline = of_get_property(node, "bootargs", NULL);
-	if (!cmdline) {
-		pr_err("no bootargs property in the /chosen node\n");
-		ret = -ENOENT;
-		goto out;
+	str = of_read_vc_string(chosen, "overlay_prefix");
+	if (str) {
+		globalvar_add_simple("vc.overlay_prefix", str);
+		free(str);
 	}
 
-	globalvar_add_simple("vc.bootargs", cmdline);
-
-	switch(cpu_architecture()) {
-	case CPU_ARCH_ARMv6:
-		globalvar_add_simple("vc.kernel", "kernel.img");
-		break;
-	case CPU_ARCH_ARMv7:
-		globalvar_add_simple("vc.kernel", "kernel7.img");
-		break;
-	case CPU_ARCH_ARMv8:
-		globalvar_add_simple("vc.kernel", "kernel8.img");
-		break;
+	str = of_read_vc_string(chosen, "os_prefix");
+	if (str) {
+		globalvar_add_simple("vc.os_prefix", str);
+		free(str);
 	}
+
+	ret = of_property_read_u32(chosen, "boot-mode", &rpi_boot_mode);
+	if (ret && bootloader)
+		ret = of_property_read_u32(bootloader, "boot-mode", &rpi_boot_mode);
+	if (ret)
+		pr_debug("'boot-mode' property not found in vc fdt\n");
+	else
+		globalvar_add_simple_enum("vc.boot_mode", &rpi_boot_mode,
+					  boot_mode_names,
+					  ARRAY_SIZE(boot_mode_names));
+
+	ret = of_property_read_u32(chosen, "partition", &rpi_boot_part);
+	if (ret && bootloader)
+		ret = of_property_read_u32(bootloader, "partition", &rpi_boot_part);
+	if (ret)
+		pr_debug("'partition' property not found in vc fdt\n");
+	else
+		globalvar_add_simple_int("vc.boot_partition", &rpi_boot_part, "%u");
+
+	if (IS_ENABLED(CONFIG_RESET_SOURCE))
+		reset_source_set(rpi_decode_pm_rsts(chosen, bootloader));
 
 out:
 	if (root)
 		of_delete_node(root);
-
-	return ret;
+	return;
 }
 
 static void rpi_vc_fdt(void)
@@ -241,7 +335,6 @@ static void rpi_vc_fdt(void)
 	void *saved_vc_fdt;
 	struct fdt_header *oftree;
 	unsigned long magic, size;
-	int ret;
 
 	/* VideoCore FDT was copied in PBL just above Barebox memory */
 	saved_vc_fdt = (void *)(arm_mem_endmem_get());
@@ -260,16 +353,23 @@ static void rpi_vc_fdt(void)
 		return;
 
 	size = be32_to_cpu(oftree->totalsize);
-	if (write_file("/vc.dtb", saved_vc_fdt, size)) {
+	if (write_file("/vc.dtb", saved_vc_fdt, size))
 		pr_err("failed to save videocore fdt to a file\n");
-		return;
-	}
 
-	ret = rpi_vc_fdt_bootargs(saved_vc_fdt);
-	if (ret) {
-		pr_err("failed to extract bootargs from videocore fdt: %d\n",
-									ret);
-		return;
+	rpi_vc_fdt_parse(saved_vc_fdt);
+}
+
+static void rpi_set_kernel_name(void) {
+	switch(cpu_architecture()) {
+	case CPU_ARCH_ARMv6:
+		globalvar_add_simple("vc.kernel", "kernel.img");
+		break;
+	case CPU_ARCH_ARMv7:
+		globalvar_add_simple("vc.kernel", "kernel7.img");
+		break;
+	case CPU_ARCH_ARMv8:
+		globalvar_add_simple("vc.kernel", "kernel8.img");
+		break;
 	}
 }
 
@@ -348,6 +448,7 @@ static int rpi_devices_probe(struct device_d *dev)
 	armlinux_set_architecture(MACH_TYPE_BCM2708);
 	rpi_env_init();
 	rpi_vc_fdt();
+	rpi_set_kernel_name();
 
 	if (dcfg && dcfg->init)
 		dcfg->init(priv);

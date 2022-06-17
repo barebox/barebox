@@ -244,13 +244,12 @@ static int dev_setenv(const char *name, const char *val)
 
 /**
  * setenv - set environment variables
- * @_name - Variable name
+ * @name - Variable name
  * @value - the value to set, empty string not handled specially
  *
  * Returns 0 for success and a negative error code otherwise
  * Use unsetenv() to unset.
  */
-
 int setenv(const char *_name, const char *value)
 {
 	char *name = strdup(_name);
@@ -276,6 +275,35 @@ out:
 	return ret;
 }
 EXPORT_SYMBOL(setenv);
+
+/**
+ * pr_setenv - set environment variables
+ * @name - Variable name
+ * @fmt - the format string to use
+ *
+ * Returns 0 for success and a negative error code otherwise
+ * Use unsetenv() to unset.
+ */
+int pr_setenv(const char *name, const char *fmt, ...)
+{
+	va_list ap;
+	int ret = 0;
+	char *value;
+	int len;
+
+	va_start(ap, fmt);
+	len = vasprintf(&value, fmt, ap);
+	va_end(ap);
+
+	if (len < 0)
+		return -ENOMEM;
+
+	ret = setenv(name, value);
+	free(value);
+
+	return ret;
+}
+EXPORT_SYMBOL(pr_setenv);
 
 int export(const char *varname)
 {

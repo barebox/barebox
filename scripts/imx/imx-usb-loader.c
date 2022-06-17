@@ -1213,7 +1213,7 @@ static int perform_dcd(unsigned char *p, const unsigned char *file_start,
 }
 
 static int get_dl_start(const unsigned char *p, const unsigned char *file_start,
-		unsigned cnt, unsigned *max_length, unsigned *plugin,
+		unsigned cnt, size_t *firststage_len, unsigned *plugin,
 		unsigned *header_addr)
 {
 	const unsigned char *file_end = file_start + cnt;
@@ -1228,7 +1228,7 @@ static int get_dl_start(const unsigned char *p, const unsigned char *file_start,
 		*header_addr = ohdr->dcd_ptr_ptr - offsetof(struct imx_flash_header, dcd);
 		*plugin = 0;
 		if (err >= 0)
-			*max_length = dcd_end[0] | (dcd_end[1] << 8) | (dcd_end[2] << 16) | (dcd_end[3] << 24);
+			*firststage_len = dcd_end[0] | (dcd_end[1] << 8) | (dcd_end[2] << 16) | (dcd_end[3] << 24);
 
 		break;
 	}
@@ -1244,7 +1244,7 @@ static int get_dl_start(const unsigned char *p, const unsigned char *file_start,
 			return -1;
 		}
 
-		*max_length = ((struct imx_boot_data *)bd)->size;
+		*firststage_len = ((struct imx_boot_data *)bd)->size;
 		*plugin = ((struct imx_boot_data *)bd)->plugin;
 		((struct imx_boot_data *)bd)->plugin = 0;
 
@@ -1271,7 +1271,7 @@ static int get_payload_start(const unsigned char *p, uint32_t *ofs)
 }
 
 static int process_header(struct usb_work *curr, unsigned char *buf, int cnt,
-		unsigned *p_max_length, unsigned *p_plugin,
+		size_t *p_firststage_len, unsigned *p_plugin,
 		unsigned *p_header_addr)
 {
 	int ret;
@@ -1286,7 +1286,7 @@ static int process_header(struct usb_work *curr, unsigned char *buf, int cnt,
 		if (!is_header(p))
 			continue;
 
-		ret = get_dl_start(p, buf, cnt, p_max_length, p_plugin, p_header_addr);
+		ret = get_dl_start(p, buf, cnt, p_firststage_len, p_plugin, p_header_addr);
 		if (ret < 0) {
 			printf("!!get_dl_start returned %i\n", ret);
 			return ret;
@@ -1303,7 +1303,7 @@ static int process_header(struct usb_work *curr, unsigned char *buf, int cnt,
 
 		if (*p_plugin && (!curr->plug) && (!header_cnt)) {
 			header_cnt++;
-			header_max = header_offset + *p_max_length + 0x400;
+			header_max = header_offset + *p_firststage_len + 0x400;
 			if (header_max > cnt - 32)
 				header_max = cnt - 32;
 			printf("header_max=%x\n", header_max);
@@ -1329,18 +1329,17 @@ static int do_irom_download(struct usb_work *curr, int verify)
 	unsigned char *buf = NULL;
 	unsigned char *image;
 	unsigned char *verify_buffer = NULL;
-	unsigned max_length;
+	size_t firststage_len;
 	unsigned plugin = 0;
 	unsigned header_addr = 0;
-	unsigned total_size = 0;
 
 	buf = read_file(curr->filename, &fsize);
 	if (!buf)
 		return -errno;
 
-	max_length = fsize;
+	firststage_len = fsize;
 
-	ret = process_header(curr, buf, fsize, &max_length, &plugin, &header_addr);
+	ret = process_header(curr, buf, fsize, &firststage_len, &plugin, &header_addr);
 	if (ret < 0)
 		goto cleanup;
 
@@ -1352,13 +1351,9 @@ static int do_irom_download(struct usb_work *curr, int verify)
 		goto cleanup;
 	}
 
+	/* skip over the imx-image-part */
 	image = buf + header_offset;
 	fsize -= header_offset;
-
-	if (fsize > max_length) {
-		total_size = fsize;
-		fsize = max_length;
-	}
 
 	type = FT_APP;
 
@@ -1379,10 +1374,10 @@ static int do_irom_download(struct usb_work *curr, int verify)
 		}
 	}
 
-	printf("loading binary file(%s) to 0x%08x, fsize=%zu type=%d...\n",
-			curr->filename, header_addr, fsize, type);
+	printf("loading binary file(%s) to 0x%08x, firststage_len=%zu type=%d, hdroffset=%u...\n",
+			curr->filename, header_addr, firststage_len, type, header_offset);
 
-	ret = load_file(image, fsize, header_addr, type, false);
+	ret = load_file(image, firststage_len, header_addr, type, false);
 	if (ret < 0)
 		goto cleanup;
 
@@ -1420,7 +1415,7 @@ static int do_irom_download(struct usb_work *curr, int verify)
 			return ret;
 	}
 
-	if (total_size) {
+	if (firststage_len < fsize) {
 		uint32_t ofs;
 
 		ret = get_payload_start(image, &ofs);
@@ -1428,9 +1423,9 @@ static int do_irom_download(struct usb_work *curr, int verify)
 			printf("Cannot get offset of payload\n");
 			goto cleanup;
 		}
-		printf("Loading full image\n");
+		printf("Loading full image from offset %u\n", ofs);
 		printf("Note: This needs board support on the other end\n");
-		load_file(image + ofs, total_size - ofs, 0, 0, true);
+		load_file(image + ofs, fsize - ofs, 0, 0, true);
 	}
 
 	ret = 0;

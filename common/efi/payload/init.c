@@ -359,7 +359,7 @@ static int efi_late_init(void)
 			return PTR_ERR(state);
 
 		ret = state_load(state);
-		if (ret)
+		if (ret != -ENOMEDIUM)
 			pr_warn("Failed to load persistent state, continuing with defaults, %d\n",
 				ret);
 

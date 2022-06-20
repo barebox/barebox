@@ -128,7 +128,7 @@ static void pr_target(struct bootchooser_target *target)
 		printf("    disabled due to %s\n", reason);
 }
 
-static int pr_setenv(struct bootchooser *bc, const char *fmt, ...)
+static int bc_setenv(struct bootchooser *bc, const char *fmt, ...)
 {
 	va_list ap;
 	int ret = 0;
@@ -162,7 +162,7 @@ err:
 	return ret;
 }
 
-static const char *pr_getenv(const char *fmt, ...)
+static const char *bc_getenv(const char *fmt, ...)
 {
 	va_list ap;
 	char *str;
@@ -258,7 +258,7 @@ static struct bootchooser_target *bootchooser_target_new(struct bootchooser *bc,
 		target->remaining_attempts = 0;
 	}
 
-	val = pr_getenv("%s.boot", target->prefix);
+	val = bc_getenv("%s.boot", target->prefix);
 	if (!val)
 		val = target->name;
 	target->boot = xstrdup(val);
@@ -497,17 +497,17 @@ int bootchooser_save(struct bootchooser *bc)
 	int ret;
 
 	if (bc->last_chosen)
-		pr_setenv(bc, "%s.last_chosen=%d", bc->state_prefix,
+		bc_setenv(bc, "%s.last_chosen=%d", bc->state_prefix,
 			  bc->last_chosen->id);
 
 	list_for_each_entry(target, &bc->targets, list) {
-		ret = pr_setenv(bc, "%s.remaining_attempts=%d",
+		ret = bc_setenv(bc, "%s.remaining_attempts=%d",
 				target->state_prefix,
 				target->remaining_attempts);
 		if (ret)
 			return ret;
 
-		ret = pr_setenv(bc, "%s.priority=%d",
+		ret = bc_setenv(bc, "%s.priority=%d",
 				target->state_prefix, target->priority);
 		if (ret)
 			return ret;

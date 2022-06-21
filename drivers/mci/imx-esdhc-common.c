@@ -176,7 +176,6 @@ int __esdhc_send_cmd(struct fsl_esdhc_host *host, struct mci_cmd *cmd,
 	}
 
 	irqstat = sdhci_read32(&host->sdhci, SDHCI_INT_STATUS);
-	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, irqstat);
 
 	if (irqstat & CMD_ERR)
 		return -EIO;

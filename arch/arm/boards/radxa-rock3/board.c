@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 #include <bootsource.h>
 #include <common.h>
+#include <deep-probe.h>
 #include <init.h>
 #include <mach/bbu.h>
 
@@ -50,3 +51,5 @@ static struct driver_d rock3_board_driver = {
 	.of_compatible = rock3_of_match,
 };
 coredevice_platform_driver(rock3_board_driver);
+
+BAREBOX_DEEP_PROBE_ENABLE(rock3_of_match);

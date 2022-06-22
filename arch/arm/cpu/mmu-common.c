@@ -9,6 +9,7 @@
 #include <dma.h>
 #include <mmu.h>
 #include <asm/system.h>
+#include <asm/barebox-arm.h>
 #include <memory.h>
 #include "mmu.h"
 
@@ -58,14 +59,24 @@ void dma_free_coherent(void *mem, dma_addr_t dma_handle, size_t size)
 
 static int mmu_init(void)
 {
-	if (list_empty(&memory_banks))
+	if (list_empty(&memory_banks)) {
+		resource_size_t start;
+		int ret;
+
 		/*
 		 * If you see this it means you have no memory registered.
 		 * This can be done either with arm_add_mem_device() in an
 		 * initcall prior to mmu_initcall or via devicetree in the
 		 * memory node.
 		 */
-		panic("MMU: No memory bank found! Cannot continue\n");
+		pr_emerg("No memory bank registered. Limping along with initial memory\n");
+
+		start = arm_mem_membase_get();
+		ret = barebox_add_memory_bank("initmem", start,
+					      arm_mem_endmem_get() - start);
+		if (ret)
+			panic("");
+	}
 
 	__mmu_init(get_cr() & CR_M);
 

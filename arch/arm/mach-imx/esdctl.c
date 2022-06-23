@@ -510,6 +510,12 @@ static int imx8m_ddrc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
 			   imx8m_ddrc_sdram_size(mmdcbase, 32));
 }
 
+static int imx8mn_ddrc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
+{
+	return arm_add_mem_device("ram0", data->base0,
+			   imx8m_ddrc_sdram_size(mmdcbase, 16));
+}
+
 static resource_size_t imx7d_ddrc_sdram_size(void __iomem *ddrc)
 {
 	const u32 addrmap[DDRC_ADDRMAP_LENGTH] = {
@@ -645,6 +651,11 @@ static __maybe_unused struct imx_esdctl_data imx8mq_data = {
 	.add_mem = imx8m_ddrc_add_mem,
 };
 
+static __maybe_unused struct imx_esdctl_data imx8mn_data = {
+	.base0 = MX8M_DDR_CSD1_BASE_ADDR,
+	.add_mem = imx8mn_ddrc_add_mem,
+};
+
 static __maybe_unused struct imx_esdctl_data imx7d_data = {
 	.base0 = MX7_DDR_BASE_ADDR,
 	.add_mem = imx7d_ddrc_add_mem,
@@ -719,7 +730,7 @@ static __maybe_unused struct of_device_id imx_esdctl_dt_ids[] = {
 		.data = &imx8mq_data
 	}, {
 		.compatible = "fsl,imx8mn-ddrc",
-		.data = &imx8mq_data
+		.data = &imx8mn_data
 	}, {
 		.compatible = "fsl,imx8mq-ddrc",
 		.data = &imx8mq_data
@@ -931,7 +942,7 @@ void __noreturn imx8mm_barebox_entry(void *boarddata)
 
 void __noreturn imx8mn_barebox_entry(void *boarddata)
 {
-	imx8m_barebox_entry(boarddata, 32);
+	imx8m_barebox_entry(boarddata, 16);
 }
 
 void __noreturn imx8mp_barebox_entry(void *boarddata)

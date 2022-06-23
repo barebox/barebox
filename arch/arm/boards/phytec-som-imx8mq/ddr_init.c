@@ -84,6 +84,7 @@ void ddr_init(void)
 	reg32_write(0x3d400204,0x80808);
 	reg32_write(0x3d400214,0x7070707);
 	reg32_write(0x3d400218,0xf070707);
+	reg32_write(0x3d40021c,0xf0f);
 	reg32_write(0x3d402020,0x1);
 	reg32_write(0x3d402024,0x518b00);
 	reg32_write(0x3d402050,0x20d040);

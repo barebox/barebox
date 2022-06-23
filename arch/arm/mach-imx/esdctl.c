@@ -370,9 +370,8 @@ static resource_size_t
 imx_ddrc_sdram_size(void __iomem *ddrc, const u32 addrmap[DDRC_ADDRMAP_LENGTH],
 		    u8 col_max, const u8 col_b[], unsigned int col_b_num,
 		    u8 row_max, const u8 row_b[], unsigned int row_b_num,
-		    bool reduced_adress_space, bool is_imx8)
+		    bool reduced_adress_space, unsigned int mstr)
 {
-	const u32 mstr = readl(ddrc + DDRC_MSTR);
 	unsigned int banks, ranks, columns, rows, active_ranks, width;
 	resource_size_t size;
 
@@ -393,11 +392,13 @@ imx_ddrc_sdram_size(void __iomem *ddrc, const u32 addrmap[DDRC_ADDRMAP_LENGTH],
 		BUG();
 	}
 
-	/* Bus width in bytes, 0 means half byte or 4-bit mode */
-	if (is_imx8 && !(mstr & DDRC_MSTR_LPDDR4))
-		width = (1 << FIELD_GET(DDRC_MSTR_DEVICE_CONFIG, mstr)) >> 1;
-	else
-		width = 4;
+	/*
+	 * mstr is ignored for some SoCs/RAM types and may yield wrong
+	 * results when used for calculation. Callers of this function
+	 * are expected to fix it up as necessary.
+	 * Bus width in bytes, 0 means half byte or 4-bit mode
+	 */
+	width = (1 << FIELD_GET(DDRC_MSTR_DEVICE_CONFIG, mstr)) >> 1;
 
 	switch (FIELD_GET(DDRC_MSTR_DATA_BUS_WIDTH, mstr)) {
 	case 0b00:	/* Full DQ bus  */
@@ -446,7 +447,13 @@ imx_ddrc_sdram_size(void __iomem *ddrc, const u32 addrmap[DDRC_ADDRMAP_LENGTH],
 	return reduced_adress_space ? size * 3 / 4 : size;
 }
 
-static resource_size_t imx8m_ddrc_sdram_size(void __iomem *ddrc)
+static void imx_ddrc_set_mstr_device_config(u32 *mstr, unsigned bits)
+{
+	*mstr &= ~DDRC_MSTR_DEVICE_CONFIG;
+	*mstr |= FIELD_PREP(DDRC_MSTR_DEVICE_CONFIG, fls(bits / 8));
+}
+
+static resource_size_t imx8m_ddrc_sdram_size(void __iomem *ddrc, unsigned buswidth)
 {
 	const u32 addrmap[DDRC_ADDRMAP_LENGTH] = {
 		readl(ddrc + DDRC_ADDRMAP(0)),
@@ -485,17 +492,22 @@ static resource_size_t imx8m_ddrc_sdram_size(void __iomem *ddrc)
 	};
 	const bool reduced_adress_space =
 		FIELD_GET(DDRC_ADDRMAP6_LPDDR4_6GB_12GB_24GB, addrmap[6]);
+	u32 mstr = readl(ddrc + DDRC_MSTR);
+
+	/* Device config is ignored and taken as 32-bit for LPDDR4 */
+	if (mstr & DDRC_MSTR_LPDDR4)
+		imx_ddrc_set_mstr_device_config(&mstr, buswidth);
 
 	return imx_ddrc_sdram_size(ddrc, addrmap,
 				   12, ARRAY_AND_SIZE(col_b),
 				   18, ARRAY_AND_SIZE(row_b),
-				   reduced_adress_space, true);
+				   reduced_adress_space, mstr);
 }
 
 static int imx8m_ddrc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
 {
 	return arm_add_mem_device("ram0", data->base0,
-			   imx8m_ddrc_sdram_size(mmdcbase));
+			   imx8m_ddrc_sdram_size(mmdcbase, 32));
 }
 
 static resource_size_t imx7d_ddrc_sdram_size(void __iomem *ddrc)
@@ -527,11 +539,15 @@ static resource_size_t imx7d_ddrc_sdram_size(void __iomem *ddrc)
 	};
 	const bool reduced_adress_space =
 		FIELD_GET(DDRC_ADDRMAP6_LPDDR3_6GB_12GB, addrmap[6]);
+	u32 mstr = readl(ddrc + DDRC_MSTR);
+
+	/* Device config is unused on i.MX7, so rewrite it as 32-bit wide */
+	imx_ddrc_set_mstr_device_config(&mstr, 32);
 
 	return imx_ddrc_sdram_size(ddrc, addrmap,
 				   11, ARRAY_AND_SIZE(col_b),
 				   15, ARRAY_AND_SIZE(row_b),
-				   reduced_adress_space, false);
+				   reduced_adress_space, mstr);
 }
 
 static int imx7d_ddrc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
@@ -890,11 +906,11 @@ void __noreturn vf610_barebox_entry(void *boarddata)
 			  boarddata);
 }
 
-static void __noreturn imx8m_barebox_entry(void *boarddata)
+static void __noreturn imx8m_barebox_entry(void *boarddata, unsigned buswidth)
 {
 	resource_size_t size;
 
-	size = imx8m_ddrc_sdram_size(IOMEM(MX8M_DDRC_CTL_BASE_ADDR));
+	size = imx8m_ddrc_sdram_size(IOMEM(MX8M_DDRC_CTL_BASE_ADDR), buswidth);
 	/*
 	 * We artificially limit detected memory size to force malloc
 	 * pool placement to be within 4GiB address space, so as to
@@ -910,22 +926,22 @@ static void __noreturn imx8m_barebox_entry(void *boarddata)
 
 void __noreturn imx8mm_barebox_entry(void *boarddata)
 {
-	imx8m_barebox_entry(boarddata);
+	imx8m_barebox_entry(boarddata, 32);
 }
 
 void __noreturn imx8mn_barebox_entry(void *boarddata)
 {
-	imx8m_barebox_entry(boarddata);
+	imx8m_barebox_entry(boarddata, 32);
 }
 
 void __noreturn imx8mp_barebox_entry(void *boarddata)
 {
-	imx8m_barebox_entry(boarddata);
+	imx8m_barebox_entry(boarddata, 32);
 }
 
 void __noreturn imx8mq_barebox_entry(void *boarddata)
 {
-	imx8m_barebox_entry(boarddata);
+	imx8m_barebox_entry(boarddata, 32);
 }
 
 void __noreturn imx7d_barebox_entry(void *boarddata)

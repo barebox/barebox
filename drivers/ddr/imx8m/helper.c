@@ -62,6 +62,12 @@ void dram_config_save(struct dram_timing_info *timing_info,
 		cfg++;
 	}
 
+	if (imx8m_ddr_old_spreadsheet) {
+		cfg->reg = DDRC_ADDRMAP7(0);
+		cfg->val = 0xf0f;
+		cfg++;
+	}
+
 	/* save ddrphy config */
 	saved_timing->ddrphy_cfg = cfg;
 	for (i = 0; i < timing_info->ddrphy_cfg_num; i++) {

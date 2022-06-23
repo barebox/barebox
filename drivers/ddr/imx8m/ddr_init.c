@@ -13,13 +13,31 @@
 #include <mach/imx8m-regs.h>
 #include <mach/imx8m-ccm-regs.h>
 
+bool imx8m_ddr_old_spreadsheet = true;
+
 static void ddr_cfg_umctl2(struct dram_cfg_param *ddrc_cfg, int num)
 {
 	int i = 0;
 
 	for (i = 0; i < num; i++) {
+		if (ddrc_cfg->reg == DDRC_ADDRMAP7(0))
+		    imx8m_ddr_old_spreadsheet = false;
 		reg32_write((unsigned long)ddrc_cfg->reg, ddrc_cfg->val);
 		ddrc_cfg++;
+	}
+
+	/*
+	 * Older NXP DDR configuration spreadsheets don't initialize ADDRMAP7,
+	 * which falsifies the memory size read back from the controller
+	 * in barebox proper.
+	 */
+	if (imx8m_ddr_old_spreadsheet) {
+		pr_warn("Working around old spreadsheet. Please regenerate\n");
+		/*
+		 * Alternatively, stick { DDRC_ADDRMAP7(0), 0xf0f } into
+		 * struct dram_timing_info::ddrc_cfg of your old timing file
+		 */
+		reg32_write(DDRC_ADDRMAP7(0), 0xf0f);
 	}
 }
 

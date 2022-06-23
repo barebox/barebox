@@ -317,6 +317,7 @@ static int vf610_ddrmc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
 #define DDRC_ADDRMAP0_CS_BIT0			GENMASK(4, 0)
 
 #define DDRC_MSTR				0x0000
+#define DDRC_MSTR_DDR4				BIT(4)
 #define DDRC_MSTR_LPDDR4			BIT(5)
 #define DDRC_MSTR_DATA_BUS_WIDTH		GENMASK(13, 12)
 #define DDRC_MSTR_ACTIVE_RANKS			GENMASK(27, 24)
@@ -424,7 +425,12 @@ imx_ddrc_sdram_size(void __iomem *ddrc, const u32 addrmap[DDRC_ADDRMAP_LENGTH],
 	if (FIELD_GET(DDRC_ADDRMAP1_BANK_B2, addrmap[1]) != 0b11111)
 		banks++;
 
-	if (addrmap[8]) {
+	if (mstr & DDRC_MSTR_DDR4) {
+		/* FIXME: DDR register spreasheet claims this to be
+		 * 6-bit and 63 meaning bank group address bit 0 is 0,
+		 * but reference manual claims 5-bit without 'neutral' value
+		 * See MX8M_Mini_DDR4_RPA_v17, MX8M_Nano_DDR4_RPA_v8
+		 */
 		if (FIELD_GET(DDRC_ADDRMAP8_BG_B0, addrmap[8]) != 0b11111)
 			banks++;
 		if (FIELD_GET(DDRC_ADDRMAP8_BG_B1, addrmap[8]) != 0b111111)

@@ -143,6 +143,9 @@ static int imx25_ccm_probe(struct device_d *dev)
 	clks[rngb_ipg] = imx_clk_gate("rngb_ipg", "ipg", base + CCM_CGCR2, 3);
 	clks[dryice_ipg] = imx_clk_gate("dryice_ipg", "ipg", base + CCM_CGCR1, 8);
 
+	/* reserved in datasheet, but used as wdt in FSL kernel */
+	clks[wdt_ipg] = imx_clk_gate("wdt_ipg", "ipg", base + CCM_CGCR2, 19);
+
 	clkdev_add_physbase(clks[per15], MX25_UART1_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[per15], MX25_UART2_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[per15], MX25_UART3_BASE_ADDR, NULL);
@@ -168,6 +171,7 @@ static int imx25_ccm_probe(struct device_d *dev)
 	clkdev_add_physbase(clks[scc_ipg], MX25_SCC_BASE_ADDR, "ipg");
 	clkdev_add_physbase(clks[rngb_ipg], MX25_RNGB_BASE_ADDR, "ipg");
 	clkdev_add_physbase(clks[dryice_ipg], MX25_DRYICE_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[wdt_ipg], MX25_WATCHDOG_BASE_ADDR, NULL);
 
 	return 0;
 }

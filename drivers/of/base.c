@@ -17,8 +17,8 @@
 #include <linux/sizes.h>
 #include <of_graph.h>
 #include <string.h>
+#include <linux/clk.h>
 #include <linux/ctype.h>
-#include <linux/amba/bus.h>
 #include <linux/err.h>
 
 static struct device_node *root_node;

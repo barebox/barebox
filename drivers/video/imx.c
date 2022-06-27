@@ -401,7 +401,7 @@ static int imxfb_allocate_fbbuffer(const struct device_d *dev,
 		 * allocation as necessary, but in the absense of a better
 		 * function just use it.
 		 */
-		info->screen_base = memalign(fbsize, SZ_4M);
+		info->screen_base = memalign(SZ_4M, fbsize);
 		if (!info->screen_base)
 			return -ENOMEM;
 		memset(info->screen_base, 0, fbsize);

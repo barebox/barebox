@@ -85,6 +85,18 @@
 #include <mach/at91sam9261.h>
 #include <mach/at91sam9263.h>
 
+struct at91sam9_sdramc_config {
+	void __iomem *sdramc;
+	unsigned int mr;
+	unsigned int tr;
+	unsigned int cr;
+	unsigned int lpr;
+	unsigned int mdr;
+};
+
+int at91sam9_sdramc_initialize(const struct at91sam9_sdramc_config *config,
+			       unsigned int sdram_address);
+
 static inline u32 at91_get_sdram_size(void *base)
 {
 	u32 val;

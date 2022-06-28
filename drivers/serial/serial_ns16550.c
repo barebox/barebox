@@ -309,11 +309,11 @@ static void ns16550_flush(struct console_device *cdev)
 
 static void ns16550_probe_dt(struct device_d *dev, struct ns16550_priv *priv)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev_of_node(dev);
 	u32 offset;
 	u32 width = 1;
 
-	if (!IS_ENABLED(CONFIG_OFDEVICE))
+	if (!np)
 		return;
 
 	of_property_read_u32(np, "clock-frequency", &priv->plat.clock);
@@ -368,7 +368,7 @@ static __maybe_unused struct ns16550_drvdata omap_drvdata = {
 	.linux_earlycon_name = "omap8250",
 };
 
-static __maybe_unused struct ns16550_drvdata am43xx_drvdata = {
+static __maybe_unused struct ns16550_drvdata omap_clk48m_drvdata = {
 	.init_port = ns16550_omap_init_port,
 	.linux_console_name = "ttyO",
 	.clk_default = 48000000,
@@ -561,7 +561,7 @@ static struct of_device_id ns16550_serial_dt_ids[] = {
 		.data = &omap_drvdata,
 	}, {
 		.compatible = "ti,am4372-uart",
-		.data = &am43xx_drvdata,
+		.data = &omap_clk48m_drvdata,
 	},
 #endif
 #if IS_ENABLED(CONFIG_MACH_MIPS_XBURST)
@@ -584,7 +584,7 @@ static struct of_device_id ns16550_serial_dt_ids[] = {
 static __maybe_unused struct platform_device_id ns16550_serial_ids[] = {
 	{
 		.name = "omap-uart",
-		.driver_data = (unsigned long)&omap_drvdata,
+		.driver_data = (unsigned long)&omap_clk48m_drvdata,
 	}, {
 		/* sentinel */
 	},

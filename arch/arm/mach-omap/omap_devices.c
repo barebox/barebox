@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <driver.h>
-#include <platform_data/serial-ns16550.h>
 #include <asm/armlinux.h>
 
 #include <mach/omap3-devices.h>
@@ -16,15 +15,10 @@ void omap_add_sram0(resource_size_t base, resource_size_t size)
 	add_mem_device("sram0", base, size, IORESOURCE_MEM_WRITEABLE);
 }
 
-static struct NS16550_plat serial_plat = {
-	.clock = 48000000,      /* 48MHz (APLL96/2) */
-	.shift = 2,
-};
-
 struct device_d *omap_add_uart(int id, unsigned long base)
 {
 	return add_generic_device("omap-uart", id, NULL, base, 1024,
-				  IORESOURCE_MEM | IORESOURCE_MEM_8BIT, &serial_plat);
+				  IORESOURCE_MEM | IORESOURCE_MEM_8BIT, NULL);
 }
 
 #if defined(CONFIG_DRIVER_VIDEO_OMAP)

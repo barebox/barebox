@@ -114,3 +114,8 @@ int at91_mci_bio_init(struct pbl_bio *bio, void __iomem *base,
 
 	return 0;
 }
+
+void at91_mci_bio_set_highcapacity(bool highcapacity_card)
+{
+	atmci_sdcard.highcapacity_card = highcapacity_card;
+}

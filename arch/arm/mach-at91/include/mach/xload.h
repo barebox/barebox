@@ -15,4 +15,8 @@ int at91_mci_bio_init(struct pbl_bio *bio, void __iomem *base,
 		      unsigned int clock, unsigned int slot);
 void at91_mci_bio_set_highcapacity(bool highcapacity_card);
 
+void __noreturn sam9263_atmci_start_image(u32 mmc_id, unsigned int clock,
+					  bool slot_b);
+
+
 #endif /* __MACH_XLOAD_H */

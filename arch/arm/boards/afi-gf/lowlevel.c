@@ -10,11 +10,12 @@
 #include <mach/am33xx-generic.h>
 #include <mach/am33xx-silicon.h>
 #include <mach/am33xx-clock.h>
+#include <mach/emif4.h>
+#include <mach/generic.h>
 #include <mach/sdrc.h>
 #include <mach/sys_info.h>
 #include <mach/syslib.h>
 #include <mach/am33xx-mux.h>
-#include <mach/wdt.h>
 #include <debug_ll.h>
 
 /* AM335X EMIF Register values */
@@ -130,34 +131,35 @@ static void board_config_vtp(void)
 
 static void board_config_emif_ddr(void)
 {
+	const void __iomem *emif4 = IOMEM(AM33XX_EMIF4_BASE);
 	u32 i;
 
 	/*Program EMIF0 CFG Registers*/
-	__raw_writel(EMIF_READ_LATENCY, AM33XX_EMIF4_0_REG(DDR_PHY_CTRL_1));
-	__raw_writel(EMIF_READ_LATENCY, AM33XX_EMIF4_0_REG(DDR_PHY_CTRL_1_SHADOW));
-	__raw_writel(EMIF_READ_LATENCY, AM33XX_EMIF4_0_REG(DDR_PHY_CTRL_2));
-	__raw_writel(EMIF_TIM1, AM33XX_EMIF4_0_REG(SDRAM_TIM_1));
-	__raw_writel(EMIF_TIM1, AM33XX_EMIF4_0_REG(SDRAM_TIM_1_SHADOW));
-	__raw_writel(EMIF_TIM2, AM33XX_EMIF4_0_REG(SDRAM_TIM_2));
-	__raw_writel(EMIF_TIM2, AM33XX_EMIF4_0_REG(SDRAM_TIM_2_SHADOW));
-	__raw_writel(EMIF_TIM3, AM33XX_EMIF4_0_REG(SDRAM_TIM_3));
-	__raw_writel(EMIF_TIM3, AM33XX_EMIF4_0_REG(SDRAM_TIM_3_SHADOW));
+	__raw_writel(EMIF_READ_LATENCY, emif4 + EMIF4_DDR_PHY_CTRL_1);
+	__raw_writel(EMIF_READ_LATENCY, emif4 + EMIF4_DDR_PHY_CTRL_1_SHADOW);
+	__raw_writel(EMIF_READ_LATENCY, emif4 + EMIF4_DDR_PHY_CTRL_2);
+	__raw_writel(EMIF_TIM1, emif4 + EMIF4_SDRAM_TIM_1);
+	__raw_writel(EMIF_TIM1, emif4 + EMIF4_SDRAM_TIM_1_SHADOW);
+	__raw_writel(EMIF_TIM2, emif4 + EMIF4_SDRAM_TIM_2);
+	__raw_writel(EMIF_TIM2, emif4 + EMIF4_SDRAM_TIM_2_SHADOW);
+	__raw_writel(EMIF_TIM3, emif4 + EMIF4_SDRAM_TIM_3);
+	__raw_writel(EMIF_TIM3, emif4 + EMIF4_SDRAM_TIM_3_SHADOW);
 
-	__raw_writel(EMIF_SDCFG, AM33XX_EMIF4_0_REG(SDRAM_CONFIG));
-	__raw_writel(EMIF_SDCFG, AM33XX_EMIF4_0_REG(SDRAM_CONFIG2));
+	__raw_writel(EMIF_SDCFG, emif4 + EMIF4_SDRAM_CONFIG);
+	__raw_writel(EMIF_SDCFG, emif4 + EMIF4_SDRAM_CONFIG2);
 
-	__raw_writel(0x00004650, AM33XX_EMIF4_0_REG(SDRAM_REF_CTRL));
-	__raw_writel(0x00004650, AM33XX_EMIF4_0_REG(SDRAM_REF_CTRL_SHADOW));
+	__raw_writel(0x00004650, emif4 + EMIF4_SDRAM_REF_CTRL);
+	__raw_writel(0x00004650, emif4 + EMIF4_SDRAM_REF_CTRL_SHADOW);
 
 	for (i = 0; i < 5000; i++) {
 
 	}
 
-	__raw_writel(EMIF_SDREF, AM33XX_EMIF4_0_REG(SDRAM_REF_CTRL));
-	__raw_writel(EMIF_SDREF, AM33XX_EMIF4_0_REG(SDRAM_REF_CTRL_SHADOW));
+	__raw_writel(EMIF_SDREF, emif4 + EMIF4_SDRAM_REF_CTRL);
+	__raw_writel(EMIF_SDREF, emif4 + EMIF4_SDRAM_REF_CTRL_SHADOW);
 
-	__raw_writel(EMIF_SDCFG, AM33XX_EMIF4_0_REG(SDRAM_CONFIG));
-	__raw_writel(EMIF_SDCFG, AM33XX_EMIF4_0_REG(SDRAM_CONFIG2));
+	__raw_writel(EMIF_SDCFG, emif4 + EMIF4_SDRAM_CONFIG);
+	__raw_writel(EMIF_SDCFG, emif4 + EMIF4_SDRAM_CONFIG2);
 }
 
 static void board_config_ddr(void)
@@ -209,13 +211,7 @@ static noinline int gf_sram_init(void)
 
 	fdt = __dtb_z_am335x_afi_gf_start;
 
-	/* WDT1 is already running when the bootloader gets control
-	 * Disable it to avoid "random" resets
-	 */
-	__raw_writel(WDT_DISABLE_CODE1, AM33XX_WDT_REG(WSPR));
-	while(__raw_readl(AM33XX_WDT_REG(WWPS)) != 0x0);
-	__raw_writel(WDT_DISABLE_CODE2, AM33XX_WDT_REG(WSPR));
-	while(__raw_readl(AM33XX_WDT_REG(WWPS)) != 0x0);
+	omap_watchdog_disable(IOMEM(AM33XX_WDT_BASE));
 
 	/* Setup the PLLs and the clocks for the peripherals */
 	am33xx_pll_init(MPUPLL_M_500, DDRPLL_M_200);

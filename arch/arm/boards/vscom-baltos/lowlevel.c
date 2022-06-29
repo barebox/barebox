@@ -16,7 +16,6 @@
 #include <mach/syslib.h>
 #include <mach/am33xx-mux.h>
 #include <mach/am33xx-generic.h>
-#include <mach/wdt.h>
 
 static const struct am33xx_ddr_data ddr3_data = {
 	.rd_slave_ratio0        = 0x38,
@@ -86,13 +85,7 @@ static noinline void baltos_sram_init(void)
 
 	fdt = __dtb_z_am335x_baltos_minimal_start;
 
-	/* WDT1 is already running when the bootloader gets control
-	 * Disable it to avoid "random" resets
-	 */
-	__raw_writel(WDT_DISABLE_CODE1, AM33XX_WDT_REG(WSPR));
-	while (__raw_readl(AM33XX_WDT_REG(WWPS)) != 0x0);
-	__raw_writel(WDT_DISABLE_CODE2, AM33XX_WDT_REG(WSPR));
-	while (__raw_readl(AM33XX_WDT_REG(WWPS)) != 0x0);
+	omap_watchdog_disable(IOMEM(AM33XX_WDT_BASE));
 
 	/* Setup the PLLs and the clocks for the peripherals */
 	am33xx_pll_init(MPUPLL_M_600, DDRPLL_M_400);

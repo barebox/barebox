@@ -37,9 +37,6 @@
 #define AM33XX_GPIO2_BASE		(AM33XX_L4_PER_BASE + 0x1AC000 + 0x100)
 #define AM33XX_GPIO3_BASE		(AM33XX_L4_PER_BASE + 0x1AE000 + 0x100)
 
-/* EMFI Registers */
-#define AM33XX_EMFI0_BASE		0x4C000000
-
 #define AM33XX_DRAM_ADDR_SPACE_START	0x80000000
 #define AM33XX_DRAM_ADDR_SPACE_END	0xC0000000
 
@@ -83,8 +80,8 @@
 #define AM33XX_WDT_BASE			0x44E35000
 
 /* EMIF Base address */
-#define AM33XX_EMIF4_0_CFG_BASE		0x4C000000
-#define AM33XX_EMIF4_1_CFG_BASE		0x4D000000
+#define AM33XX_EMIF4_BASE		0x4c000000
+
 #define AM33XX_DMM_BASE			0x4E000000
 
 #define AM335X_CPSW_BASE		0x4A100000
@@ -96,30 +93,6 @@
 #define AM33XX_DMM_LISA_MAP__2		(AM33XX_DMM_BASE + 0x48)
 #define AM33XX_DMM_LISA_MAP__3		(AM33XX_DMM_BASE + 0x4C)
 #define AM33XX_DMM_PAT_BASE_ADDR	(AM33XX_DMM_BASE + 0x460)
-
-#define AM33XX_EMIF4_0_REG(REGNAME)	(AM33XX_EMIF4_0_CFG_BASE + EMIF4_##REGNAME)
-#define AM33XX_EMIF4_1_REG(REGNAME)	(AM33XX_EMIF4_1_CFG_BASE + EMIF4_##REGNAME)
-
-#define EMIF4_MOD_ID_REV		0x0
-#define EMIF4_SDRAM_STATUS		0x04
-#define EMIF4_SDRAM_CONFIG		0x08
-#define EMIF4_SDRAM_CONFIG2		0x0C
-#define EMIF4_SDRAM_REF_CTRL		0x10
-#define EMIF4_SDRAM_REF_CTRL_SHADOW	0x14
-#define EMIF4_SDRAM_TIM_1		0x18
-#define EMIF4_SDRAM_TIM_1_SHADOW	0x1C
-#define EMIF4_SDRAM_TIM_2		0x20
-#define EMIF4_SDRAM_TIM_2_SHADOW	0x24
-#define EMIF4_SDRAM_TIM_3		0x28
-#define EMIF4_SDRAM_TIM_3_SHADOW	0x2C
-#define EMIF0_SDRAM_MGMT_CTRL		0x38
-#define EMIF0_SDRAM_MGMT_CTRL_SHD	0x3C
-#define EMIF4_OCP_CONFIG		0x54
-#define EMIF4_ZQ_CONFIG			0xC8
-#define EMIF4_DDR_PHY_CTRL_1		0xE4
-#define EMIF4_DDR_PHY_CTRL_1_SHADOW	0xE8
-#define EMIF4_DDR_PHY_CTRL_2		0xEC
-#define EMIF4_IODFT_TLGC		0x60
 
 #define AM33XX_VTP0_CTRL_REG		0x44E10E0C
 #define AM33XX_VTP1_CTRL_REG		0x48140E10
@@ -247,7 +220,6 @@ void am33xx_config_ddr_data(const struct am33xx_ddr_data *data, int macronr);
 void am335x_sdram_init(int ioctrl, const struct am33xx_cmd_control *cmd_ctrl,
 			const struct am33xx_emif_regs *emif_regs,
 			const struct am33xx_ddr_data *ddr_data);
-unsigned long am335x_sdram_size(void);
 void am335x_barebox_entry(void *boarddata);
 
 #endif

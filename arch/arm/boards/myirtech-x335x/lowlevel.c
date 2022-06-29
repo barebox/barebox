@@ -14,7 +14,6 @@
 #include <mach/generic.h>
 #include <mach/sdrc.h>
 #include <mach/sys_info.h>
-#include <mach/wdt.h>
 
 #define AM335X_ZCZ_1000		0x1c2f
 
@@ -70,13 +69,7 @@ ENTRY_FUNCTION(start_am33xx_myirtech_sram, bootinfo, r1, r2)
 
 	fdt = __dtb_z_am335x_myirtech_myd_start;
 
-	/* WDT1 is already running when the bootloader gets control
-	 * Disable it to avoid "random" resets
-	 */
-	__raw_writel(WDT_DISABLE_CODE1, AM33XX_WDT_REG(WSPR));
-	while (__raw_readl(AM33XX_WDT_REG(WWPS)) != 0x0);
-	__raw_writel(WDT_DISABLE_CODE2, AM33XX_WDT_REG(WSPR));
-	while (__raw_readl(AM33XX_WDT_REG(WWPS)) != 0x0);
+	omap_watchdog_disable(IOMEM(AM33XX_WDT_BASE));
 
 	mpupll = MPUPLL_M_800;
 	if (am33xx_get_cpu_rev() == AM335X_ES2_1) {

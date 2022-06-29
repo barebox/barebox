@@ -24,82 +24,29 @@
 #ifndef _EMIF_H_
 #define _EMIF_H_
 
-/*
- * Configuration values
- */
-#define EMIF4_TIM1_T_RP		(0x3 << 25)
-#define EMIF4_TIM1_T_RCD	(0x3 << 21)
-#define EMIF4_TIM1_T_WR		(0x3 << 17)
-#define EMIF4_TIM1_T_RAS	(0x7 << 12) /* 8->7 */
-#define EMIF4_TIM1_T_RC		(0xA << 6)
-#define EMIF4_TIM1_T_RRD	(0x2 << 3)
-#define EMIF4_TIM1_T_WTR	(0x2)
+#define EMIF4_MOD_ID_REV					0x0
+#define EMIF4_STATUS						0x04
+#define EMIF4_SDRAM_CONFIG					0x08
+#define EMIF4_SDRAM_CONFIG2					0x0c
+#define EMIF4_SDRAM_REF_CTRL					0x10
+#define EMIF4_SDRAM_REF_CTRL_SHADOW				0x14
+#define EMIF4_SDRAM_TIM_1					0x18
+#define EMIF4_SDRAM_TIM_1_SHADOW				0x1c
+#define EMIF4_SDRAM_TIM_2					0x20
+#define EMIF4_SDRAM_TIM_2_SHADOW				0x24
+#define EMIF4_SDRAM_TIM_3					0x28
+#define EMIF4_SDRAM_TIM_3_SHADOW				0x2c
+#define EMIF4_POWER_MANAGEMENT_CTRL				0x38
+#define EMIF4_POWER_MANAGEMENT_CTRL_SHADOW			0x3c
+#define EMIF4_OCP_CONFIG					0x54
+#define EMIF4_ZQ_CONFIG						0xc8
+#define EMIF4_DDR_PHY_CTRL_1					0xe4
+#define EMIF4_DDR_PHY_CTRL_1_SHADOW				0xe8
+#define EMIF4_DDR_PHY_CTRL_2					0xec
+#define EMIF4_IODFT_TLGC					0x60
 
-#define EMIF4_TIM2_T_XP		(0x2 << 28)
-#define EMIF4_TIM2_T_ODT	(0x0 << 25) /* 2? */
-#define EMIF4_TIM2_T_XSNR	(0x1C << 16)
-#define EMIF4_TIM2_T_XSRD	(0xC8 << 6)
-#define EMIF4_TIM2_T_RTP	(0x1 << 3)
-#define EMIF4_TIM2_T_CKE	(0x2)
+unsigned long emif4_sdram_size(const void __iomem *emif4);
 
-#define EMIF4_TIM3_T_RFC	(0x15 << 4) /* 25->15 */
-#define EMIF4_TIM3_T_RAS_MAX	(0xf)	    /* 7->f */
-
-#define EMIF4_PWR_IDLE_MODE	(0x2 << 30)
-#define EMIF4_PWR_DPD_DIS	(0x0 << 10)
-#define EMIF4_PWR_DPD_EN	(0x1 << 10)
-#define EMIF4_PWR_LP_MODE	(0x0 << 8)
-#define EMIF4_PWR_PM_TIM	(0x0)
-
-#define EMIF4_INITREF_DIS	(0x0 << 31)
-#define EMIF4_REFRESH_RATE	(0x257) /* 50f->257 */
-
-#define EMIF4_CFG_SDRAM_TYP	(0x2 << 29)
-#define EMIF4_CFG_IBANK_POS	(0x0 << 27)
-#define EMIF4_CFG_DDR_TERM	(0x3 << 24) /* --> 0x3 */
-#define EMIF4_CFG_DDR2_DDQS	(0x1 << 23)
-#define EMIF4_CFG_DDR_DIS_DLL	(0x0 << 20)
-#define EMIF4_CFG_SDR_DRV	(0x0 << 18)
-#define EMIF4_CFG_NARROW_MD	(0x0 << 14)
-#define EMIF4_CFG_CL		(0x5 << 10)
-#define EMIF4_CFG_ROWSIZE	(0x0 << 7) /* --> 0x4: a0..a12 */
-#define EMIF4_CFG_IBANK		(0x3 << 4)
-#define EMIF4_CFG_EBANK		(0x0 << 3)
-#define EMIF4_CFG_PGSIZE	(0x2)      /* 10 columns */
-
-/*
- * EMIF4 PHY Control 1 register configuration
- */
-#define EMIF4_DDR1_EXT_STRB_EN	(0x1 << 7)
-#define EMIF4_DDR1_EXT_STRB_DIS	(0x0 << 7)
-#define EMIF4_DDR1_PWRDN_DIS	(0x0 << 6)
-#define EMIF4_DDR1_PWRDN_EN	(0x1 << 6)
-#define EMIF4_DDR1_READ_LAT	(0x6 << 0)
-
-struct emif4 {
-	unsigned int emif_mod_id_rev;
-	unsigned int sdram_sts;
-	unsigned int sdram_config;
-	unsigned int res1;
-	unsigned int sdram_refresh_ctrl;
-	unsigned int sdram_refresh_ctrl_shdw;
-	unsigned int sdram_time1;
-	unsigned int sdram_time1_shdw;
-	unsigned int sdram_time2;
-	unsigned int sdram_time2_shdw;
-	unsigned int sdram_time3;
-	unsigned int sdram_time3_shdw;
-	unsigned char res2[8];
-	unsigned int sdram_pwr_mgmt;
-	unsigned int sdram_pwr_mgmt_shdw;
-	unsigned char res3[32];
-	unsigned int sdram_iodft_tlgc;
-	unsigned char res4[128];
-	unsigned int ddr_phyctrl1;
-	unsigned int ddr_phyctrl1_shdw;
-	unsigned int ddr_phyctrl2;
-};
-
-void am35xx_emif4_init(void);
+void am35xx_emif4_init(const void __iomem *emif4);
 
 #endif /* endif _EMIF_H_ */

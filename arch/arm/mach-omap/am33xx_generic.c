@@ -23,6 +23,7 @@
 #include <asm/barebox-arm.h>
 #include <mach/am33xx-silicon.h>
 #include <mach/am33xx-clock.h>
+#include <mach/emif4.h>
 #include <mach/generic.h>
 #include <mach/sys_info.h>
 #include <mach/am33xx-generic.h>
@@ -307,18 +308,20 @@ void am33xx_ddr_phydata_cmd_macro(const struct am33xx_cmd_control *cmd_ctrl)
 
 void am33xx_config_sdram(const struct am33xx_emif_regs *regs)
 {
-	writel(regs->emif_read_latency, AM33XX_EMIF4_0_REG(DDR_PHY_CTRL_1));
-	writel(regs->emif_read_latency, AM33XX_EMIF4_0_REG(DDR_PHY_CTRL_1_SHADOW));
-	writel(regs->emif_read_latency, AM33XX_EMIF4_0_REG(DDR_PHY_CTRL_2));
-	writel(regs->emif_tim1, AM33XX_EMIF4_0_REG(SDRAM_TIM_1));
-	writel(regs->emif_tim1, AM33XX_EMIF4_0_REG(SDRAM_TIM_1_SHADOW));
-	writel(regs->emif_tim2, AM33XX_EMIF4_0_REG(SDRAM_TIM_2));
-	writel(regs->emif_tim2, AM33XX_EMIF4_0_REG(SDRAM_TIM_2_SHADOW));
-	writel(regs->emif_tim3, AM33XX_EMIF4_0_REG(SDRAM_TIM_3));
-	writel(regs->emif_tim3, AM33XX_EMIF4_0_REG(SDRAM_TIM_3_SHADOW));
+	const void __iomem *emif4 = IOMEM(AM33XX_EMIF4_BASE);
+
+	writel(regs->emif_read_latency, emif4 + EMIF4_DDR_PHY_CTRL_1);
+	writel(regs->emif_read_latency, emif4 + EMIF4_DDR_PHY_CTRL_1_SHADOW);
+	writel(regs->emif_read_latency, emif4 + EMIF4_DDR_PHY_CTRL_2);
+	writel(regs->emif_tim1, emif4 + EMIF4_SDRAM_TIM_1);
+	writel(regs->emif_tim1, emif4 + EMIF4_SDRAM_TIM_1_SHADOW);
+	writel(regs->emif_tim2, emif4 + EMIF4_SDRAM_TIM_2);
+	writel(regs->emif_tim2, emif4 + EMIF4_SDRAM_TIM_2_SHADOW);
+	writel(regs->emif_tim3, emif4 + EMIF4_SDRAM_TIM_3);
+	writel(regs->emif_tim3, emif4 + EMIF4_SDRAM_TIM_3_SHADOW);
 
 	if (regs->ocp_config)
-		writel(regs->ocp_config, AM33XX_EMIF4_0_REG(OCP_CONFIG));
+		writel(regs->ocp_config, emif4 + EMIF4_OCP_CONFIG);
 
 	if (regs->zq_config) {
 		/*
@@ -326,75 +329,23 @@ void am33xx_config_sdram(const struct am33xx_emif_regs *regs)
 		 * about 570us for a delay, which will be long enough
 		 * to configure things.
 		 */
-		writel(0x2800, AM33XX_EMIF4_0_REG(SDRAM_REF_CTRL));
-		writel(regs->zq_config, AM33XX_EMIF4_0_REG(ZQ_CONFIG));
+		writel(0x2800, emif4 + EMIF4_SDRAM_REF_CTRL);
+		writel(regs->zq_config, emif4 + EMIF4_ZQ_CONFIG);
 		writel(regs->sdram_config, CM_EMIF_SDRAM_CONFIG);
-		writel(regs->sdram_config, AM33XX_EMIF4_0_REG(SDRAM_CONFIG));
-		writel(regs->sdram_ref_ctrl,
-				AM33XX_EMIF4_0_REG(SDRAM_REF_CTRL));
-		writel(regs->sdram_ref_ctrl,
-			AM33XX_EMIF4_0_REG(SDRAM_REF_CTRL_SHADOW));
-
+		writel(regs->sdram_config, emif4 + EMIF4_SDRAM_CONFIG);
+		writel(regs->sdram_ref_ctrl, emif4 + EMIF4_SDRAM_REF_CTRL);
+		writel(regs->sdram_ref_ctrl, emif4 + EMIF4_SDRAM_REF_CTRL_SHADOW);
 	}
 
-	writel(regs->sdram_ref_ctrl, AM33XX_EMIF4_0_REG(SDRAM_REF_CTRL));
-	writel(regs->sdram_ref_ctrl, AM33XX_EMIF4_0_REG(SDRAM_REF_CTRL_SHADOW));
-	writel(regs->sdram_config, AM33XX_EMIF4_0_REG(SDRAM_CONFIG));
-}
-
-/**
- * am335x_sdram_size - read back SDRAM size from sdram_config register
- *
- * @return: The SDRAM size
- */
-unsigned long am335x_sdram_size(void)
-{
-	int rows, cols, width, banks;
-	unsigned long size;
-	uint32_t sdram_config = readl(CM_EMIF_SDRAM_CONFIG);
-
-	rows = ((sdram_config >> 7) & 0x7) + 9;
-	cols = (sdram_config & 0x7) + 8;
-
-	switch ((sdram_config >> 14) & 0x3) {
-	case 0:
-		width = 4;
-		break;
-	case 1:
-		width = 2;
-		break;
-	default:
-		return 0;
-	}
-
-	switch ((sdram_config >> 4) & 0x7) {
-	case 0:
-		banks = 1;
-		break;
-	case 1:
-		banks = 2;
-		break;
-	case 2:
-		banks = 4;
-		break;
-	case 3:
-		banks = 8;
-		break;
-	default:
-		return 0;
-	}
-
-	size = (1 << rows) * (1 << cols) * banks * width;
-
-	debug("%s: sdram_config: 0x%08x cols: %2d rows: %2d width: %2d banks: %2d size: 0x%08lx\n",
-			__func__, sdram_config, cols, rows, width, banks, size);
-
-	return size;
+	writel(regs->sdram_ref_ctrl, emif4 + EMIF4_SDRAM_REF_CTRL);
+	writel(regs->sdram_ref_ctrl, emif4 + EMIF4_SDRAM_REF_CTRL_SHADOW);
+	writel(regs->sdram_config, emif4 + EMIF4_SDRAM_CONFIG);
 }
 
 void __noreturn am335x_barebox_entry(void *boarddata)
 {
-	barebox_arm_entry(0x80000000, am335x_sdram_size(), boarddata);
+	barebox_arm_entry(0x80000000,
+			  emif4_sdram_size(IOMEM(AM33XX_EMIF4_BASE)), boarddata);
 }
 
 void am33xx_config_io_ctrl(int ioctrl)

@@ -21,10 +21,12 @@
 #include <asm/barebox-arm.h>
 #include <asm/memory.h>
 #include <mach/am33xx-silicon.h>
+#include <mach/emif4.h>
 
 static int am33xx_scrm_probe(struct device_d *dev)
 {
-	return arm_add_mem_device("ram0", 0x80000000, am335x_sdram_size());
+	return arm_add_mem_device("ram0", 0x80000000,
+				  emif4_sdram_size(IOMEM(AM33XX_EMIF4_BASE)));
 }
 
 static __maybe_unused struct of_device_id am33xx_scrm_dt_ids[] = {

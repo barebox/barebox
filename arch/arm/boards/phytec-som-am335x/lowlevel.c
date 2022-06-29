@@ -15,7 +15,6 @@
 #include <mach/syslib.h>
 #include <mach/am33xx-mux.h>
 #include <mach/am33xx-generic.h>
-#include <mach/wdt.h>
 #include <debug_ll.h>
 
 #include "ram-timings.h"
@@ -136,15 +135,7 @@ static noinline void physom_board_init(void *fdt, int sdram, int module_family)
 	struct am335x_sdram_timings *timing = NULL;
 	u32 ramsize;
 
-	/*
-	 * WDT1 is already running when the bootloader gets control
-	 * Disable it to avoid "random" resets
-	 */
-	writel(WDT_DISABLE_CODE1, AM33XX_WDT_REG(WSPR));
-	while (readl(AM33XX_WDT_REG(WWPS)) != 0x0);
-
-	writel(WDT_DISABLE_CODE2, AM33XX_WDT_REG(WSPR));
-	while (readl(AM33XX_WDT_REG(WWPS)) != 0x0);
+	omap_watchdog_disable(IOMEM(AM33XX_WDT_BASE));
 
 	am33xx_pll_init(MPUPLL_M_600, DDRPLL_M_400);
 

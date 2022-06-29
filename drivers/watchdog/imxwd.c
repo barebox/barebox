@@ -245,11 +245,11 @@ static int imx_wd_probe(struct device_d *dev)
 
 	clk = clk_get(dev, NULL);
 	if (IS_ERR(clk))
-		return PTR_ERR(clk);
+		return dev_err_probe(dev, PTR_ERR(clk), "Failed to get clk\n");
 
 	ret = clk_enable(clk);
 	if (ret)
-		return ret;
+		return dev_err_probe(dev, ret, "Failed to enable clk\n");
 
 	priv->base = IOMEM(iores->start);
 	priv->ops = ops;
@@ -271,8 +271,10 @@ static int imx_wd_probe(struct device_d *dev)
 		}
 
 		ret = watchdog_register(&priv->wd);
-		if (ret)
+		if (ret) {
+			dev_err_probe(dev, ret, "Failed to register watchdog device\n");
 			goto on_error;
+		}
 	}
 
 	if (priv->ops->init) {

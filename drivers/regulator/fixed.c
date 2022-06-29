@@ -84,7 +84,7 @@ static int regulator_fixed_probe(struct device_d *dev)
 
 	ret = of_regulator_register(&fix->rdev, np);
 	if (ret)
-		return ret;
+		goto err;
 
 	return 0;
 err:

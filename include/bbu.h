@@ -10,6 +10,7 @@
 struct bbu_data {
 #define BBU_FLAG_FORCE	(1 << 0)
 #define BBU_FLAG_YES	(1 << 1)
+#define BBU_FLAG_MMC_BOOT_ACK	(1 << 2)
 	unsigned long flags;
 	int force;
 	const void *image;
@@ -49,6 +50,12 @@ struct bbu_handler *bbu_find_handler_by_device(const char *devicepath);
 void bbu_handlers_list(void);
 
 struct file_list;
+
+int bbu_mmcboot_handler(struct bbu_handler *, struct bbu_data *,
+			int (*chained_handler)(struct bbu_handler *, struct bbu_data *));
+
+int bbu_std_file_handler(struct bbu_handler *handler,
+			 struct bbu_data *data);
 
 #ifdef CONFIG_BAREBOX_UPDATE
 

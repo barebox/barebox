@@ -422,54 +422,12 @@ static int imx_bbu_update(struct bbu_handler *handler, struct bbu_data *data)
 static int imx_bbu_internal_mmcboot_update(struct bbu_handler *handler,
 					   struct bbu_data *data)
 {
-	struct bbu_data _data = *data;
 	int ret;
-	char *bootpartvar;
-	const char *bootpart;
-	char *devicefile;
-	const char *devname = devpath_to_name(data->devicefile);
 
-	ret = device_detect_by_name(devname);
-	if (ret) {
-		pr_err("Couldn't detect device '%s'\n", devname);
-		return ret;
-	}
+	ret = bbu_mmcboot_handler(handler, data, imx_bbu_update);
 
-	ret = asprintf(&bootpartvar, "%s.boot", devname);
-	if (ret < 0)
-		return ret;
-
-	bootpart = getenv(bootpartvar);
-	if (!bootpart) {
-		pr_err("Couldn't read the value of '%s'\n", bootpartvar);
-		ret = -ENOENT;
-		goto free_bootpartvar;
-	}
-
-	if (!strcmp(bootpart, "boot0")) {
-		bootpart = "boot1";
-	} else {
-		bootpart = "boot0";
-	}
-
-	ret = asprintf(&devicefile, "/dev/%s.%s", devname, bootpart);
-	if (ret < 0)
-		goto free_bootpartvar;
-
-	_data.devicefile = devicefile;
-
-	ret = imx_bbu_update(handler, &_data);
-	if (ret)
-		goto free_devicefile;
-
-	/* on success switch boot source */
-	ret = setenv(bootpartvar, bootpart);
-
-free_devicefile:
-	free(devicefile);
-
-free_bootpartvar:
-	free(bootpartvar);
+	if (ret == -ENOENT)
+		pr_err("Couldn't read the value of .boot parameter\n");
 
 	return ret;
 }

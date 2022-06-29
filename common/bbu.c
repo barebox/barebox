@@ -19,6 +19,7 @@
 #include <malloc.h>
 #include <linux/stat.h>
 #include <image-metadata.h>
+#include <environment.h>
 #include <file-list.h>
 
 static LIST_HEAD(bbu_image_handlers);
@@ -304,22 +305,78 @@ struct bbu_std {
 	enum filetype filetype;
 };
 
-static int bbu_std_file_handler(struct bbu_handler *handler,
-					struct bbu_data *data)
+int bbu_mmcboot_handler(struct bbu_handler *handler, struct bbu_data *data,
+			int (*chained_handler)(struct bbu_handler *, struct bbu_data *))
 {
-	struct bbu_std *std = container_of(handler, struct bbu_std, handler);
+	struct bbu_data _data = *data;
+	int ret;
+	char *devicefile = NULL, *bootpartvar = NULL, *bootackvar = NULL;
+	const char *bootpart;
+	const char *devname = devpath_to_name(data->devicefile);
+
+	ret = device_detect_by_name(devname);
+	if (ret) {
+		pr_err("Couldn't detect device '%s'\n", devname);
+		return ret;
+	}
+
+	ret = asprintf(&bootpartvar, "%s.boot", devname);
+	if (ret < 0)
+		return ret;
+
+	bootpart = getenv(bootpartvar);
+	if (!bootpart) {
+		ret = -ENOENT;
+		goto out;
+	}
+
+	if (!strcmp(bootpart, "boot0")) {
+		bootpart = "boot1";
+	} else {
+		bootpart = "boot0";
+	}
+
+	ret = asprintf(&devicefile, "/dev/%s.%s", devname, bootpart);
+	if (ret < 0)
+		goto out;
+
+	_data.devicefile = devicefile;
+
+	ret = chained_handler(handler, &_data);
+	if (ret < 0)
+		goto out;
+
+	/*
+	 * This flag can be set in the chained handler or by
+	 * bbu_mmcboot_handler's caller
+	 */
+	if ((_data.flags | data->flags) & BBU_FLAG_MMC_BOOT_ACK) {
+		ret = asprintf(&bootackvar, "%s.boot_ack", devname);
+		if (ret < 0)
+			goto out;
+
+		ret = setenv(bootackvar, "1");
+		if (ret)
+			goto out;
+	}
+
+	/* on success switch boot source */
+	ret = setenv(bootpartvar, bootpart);
+
+out:
+	free(bootackvar);
+	free(devicefile);
+	free(bootpartvar);
+
+	return ret;
+}
+
+int bbu_std_file_handler(struct bbu_handler *handler,
+			 struct bbu_data *data)
+{
 	int fd, ret;
-	enum filetype filetype;
 	struct stat s;
 	unsigned oflags = O_WRONLY;
-
-	filetype = file_detect_type(data->image, data->len);
-	if (filetype != std->filetype) {
-		if (!bbu_force(data, "incorrect image type. Expected: %s, got %s",
-				file_type_to_string(std->filetype),
-				file_type_to_string(filetype)))
-			return -EINVAL;
-	}
 
 	device_detect_by_name(devpath_to_name(data->devicefile));
 
@@ -369,6 +426,23 @@ err_close:
 	return ret;
 }
 
+static int bbu_std_file_handler_checked(struct bbu_handler *handler,
+					struct bbu_data *data)
+{
+	struct bbu_std *std = container_of(handler, struct bbu_std, handler);
+	enum filetype filetype;
+
+	filetype = file_detect_type(data->image, data->len);
+	if (filetype != std->filetype) {
+		if (!bbu_force(data, "incorrect image type. Expected: %s, got %s",
+				file_type_to_string(std->filetype),
+				file_type_to_string(filetype)))
+			return -EINVAL;
+	}
+
+	return bbu_std_file_handler(handler, data);
+}
+
 /**
  * bbu_register_std_file_update() - register a barebox update handler for a
  *                                  standard file-to-device-copy operation
@@ -399,7 +473,7 @@ int bbu_register_std_file_update(const char *name, unsigned long flags,
 	handler->flags = flags;
 	handler->devicefile = devicefile;
 	handler->name = name;
-	handler->handler = bbu_std_file_handler;
+	handler->handler = bbu_std_file_handler_checked;
 
 	ret = bbu_register_handler(handler);
 	if (ret)

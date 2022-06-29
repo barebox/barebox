@@ -6,11 +6,31 @@
 #include <bootm.h>
 #include <linux/sizes.h>
 
+static unsigned long get_kernel_address(unsigned long os_address,
+					unsigned long text_offset)
+{
+	resource_size_t start, end;
+	int ret;
+
+	if (os_address == UIMAGE_SOME_ADDRESS ||
+	    os_address == UIMAGE_INVALID_ADDRESS) {
+		ret = memory_bank_first_find_space(&start, &end);
+		if (ret)
+			return UIMAGE_INVALID_ADDRESS;
+
+		return ALIGN(start, SZ_2M) + text_offset;
+	}
+
+	if (os_address >= text_offset && IS_ALIGNED(os_address - text_offset, SZ_2M))
+		return os_address;
+
+	return ALIGN(os_address, SZ_2M) + text_offset;
+}
+
 void *booti_load_image(struct image_data *data, phys_addr_t *oftree)
 {
 	const void *kernel_header =
 			data->os_fit ? data->fit_kernel : data->os_header;
-	resource_size_t start, end;
 	unsigned long text_offset, image_size, devicetree, kernel;
 	unsigned long image_end;
 	int ret;
@@ -19,11 +39,9 @@ void *booti_load_image(struct image_data *data, phys_addr_t *oftree)
 	text_offset = le64_to_cpup(kernel_header + 8);
 	image_size = le64_to_cpup(kernel_header + 16);
 
-	ret = memory_bank_first_find_space(&start, &end);
-	if (ret)
-		return ERR_PTR(ret);
-
-	kernel = ALIGN(start, SZ_2M) + text_offset;
+	kernel = get_kernel_address(data->os_address, text_offset);
+	if (kernel == UIMAGE_INVALID_ADDRESS)
+		return ERR_PTR(-ENOENT);
 
 	ret = bootm_load_os(data, kernel);
 	if (ret)

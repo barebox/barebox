@@ -27,6 +27,7 @@
 #define ARM_CPU_PART_CORTEX_A15     0xC0F0
 #define ARM_CPU_PART_CORTEX_A53	    0xD030
 #define ARM_CPU_PART_CORTEX_A57	    0xD070
+#define ARM_CPU_PART_CORTEX_A72	    0xD080
 
 static void decode_cache(unsigned long size)
 {
@@ -191,7 +192,7 @@ static int do_cpuinfo(int argc, char *argv[])
 
 	if (cpu_arch >= CPU_ARCH_ARMv7) {
 		unsigned int major, minor;
-		char *part;
+		const char *part = NULL;
 		major = (mainid >> 20) & 0xf;
 		minor = mainid & 0xf;
 		switch (mainid & 0xfff0) {
@@ -216,11 +217,22 @@ static int do_cpuinfo(int argc, char *argv[])
 		case ARM_CPU_PART_CORTEX_A57:
 			part = "Cortex-A57";
 			break;
+		case ARM_CPU_PART_CORTEX_A72:
+			part = "Cortex-A72";
+			break;
 		default:
-			part = "unknown";
+			printf("core: unknown (0x%08lx) r%up%u\n",
+			       mainid, major, minor);
+			break;
 		}
-		printf("core: %s r%up%u\n", part, major, minor);
+
+		if (part)
+			printf("core: %s r%up%u\n", part, major, minor);
 	}
+
+#ifdef CONFIG_CPU_64v8
+	printf("exception level: %u\n", current_el());
+#endif
 
 	if (cache & (1 << 24)) {
 		/* separate I/D cache */

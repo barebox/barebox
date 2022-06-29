@@ -84,6 +84,7 @@ static inline void boarddata_create(void *adr, u32 machine)
 u32 barebox_arm_machine(void);
 
 unsigned long arm_mem_ramoops_get(void);
+unsigned long arm_mem_membase_get(void);
 unsigned long arm_mem_endmem_get(void);
 
 struct barebox_arm_boarddata *barebox_arm_get_boarddata(void);

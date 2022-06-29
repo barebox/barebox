@@ -55,7 +55,7 @@
 
 int verbose;
 static struct libusb_device_handle *usb_dev_handle;
-static struct usb_id *usb_id;
+static const struct mach_id *mach_id;
 
 struct mach_id {
 	struct mach_id * next;
@@ -80,11 +80,6 @@ struct usb_work {
 	char filename[256];
 	unsigned char do_dcd_once;
 	unsigned char plug;
-};
-
-struct usb_id {
-	const struct mach_id *mach_id;
-	struct usb_work *work;
 };
 
 static const struct mach_id imx_ids[] = {
@@ -455,8 +450,8 @@ static void dump_bytes(const void *src, unsigned cnt, unsigned addr)
 static int transfer(int report, unsigned char *p, unsigned cnt, int *last_trans)
 {
 	int err;
-	if (cnt > usb_id->mach_id->max_transfer)
-		cnt = usb_id->mach_id->max_transfer;
+	if (cnt > mach_id->max_transfer)
+		cnt = mach_id->max_transfer;
 
 	if (verbose > 4) {
 		printf("report=%i\n", report);
@@ -464,7 +459,7 @@ static int transfer(int report, unsigned char *p, unsigned cnt, int *last_trans)
 			dump_bytes(p, cnt, 0);
 	}
 
-	if (usb_id->mach_id->mode == MODE_BULK) {
+	if (mach_id->mode == MODE_BULK) {
 		*last_trans = 0;
 		err = libusb_bulk_transfer(usb_dev_handle,
 					   (report < 3) ? 1 : 2 + EP_IN, p, cnt, last_trans, 1000);
@@ -550,7 +545,7 @@ static int do_status(void)
 			break;
 	}
 
-	if (usb_id->mach_id->mode == MODE_HID) {
+	if (mach_id->mode == MODE_HID) {
 		err = transfer(4, tmp, sizeof(tmp), &last_trans);
 		if (err)
 			printf("4 in err=%i, last_trans=%i  %02x %02x %02x %02x\n",
@@ -758,7 +753,7 @@ static int load_file(void *buf, unsigned len, unsigned dladdr,
 
 	retry = 0;
 
-	if (usb_id->mach_id->mode == MODE_BULK) {
+	if (mach_id->mode == MODE_BULK) {
 		err = transfer(3, tmp, sizeof(tmp), &last_trans);
 		if (err)
 			printf("in err=%i, last_trans=%i  %02x %02x %02x %02x\n",
@@ -769,7 +764,7 @@ static int load_file(void *buf, unsigned len, unsigned dladdr,
 	cnt = len;
 
 	while (1) {
-		int now = get_min(cnt, usb_id->mach_id->max_transfer);
+		int now = get_min(cnt, mach_id->max_transfer);
 
 		if (!now)
 			break;
@@ -787,7 +782,7 @@ static int load_file(void *buf, unsigned len, unsigned dladdr,
 	if (mode_barebox)
 		return transfer_size;
 
-	if (usb_id->mach_id->mode == MODE_HID) {
+	if (mach_id->mode == MODE_HID) {
 		err = transfer(3, tmp, sizeof(tmp), &last_trans);
 		if (err)
 			printf("3 in err=%i, last_trans=%i  %02x %02x %02x %02x\n",
@@ -1181,7 +1176,7 @@ static int is_header(const unsigned char *p)
 	const struct imx_flash_header_v2 *hdr =
 		(const struct imx_flash_header_v2 *)p;
 
-	switch (usb_id->mach_id->header_type) {
+	switch (mach_id->header_type) {
 	case HDR_MX51:
 		if (ohdr->app_code_barker == 0xb1)
 			return 1;
@@ -1201,7 +1196,7 @@ static int perform_dcd(unsigned char *p, const unsigned char *file_start,
 	struct imx_flash_header_v2 *hdr = (struct imx_flash_header_v2 *)p;
 	int ret = 0;
 
-	switch (usb_id->mach_id->header_type) {
+	switch (mach_id->header_type) {
 	case HDR_MX51:
 		ret = write_dcd_table_old(ohdr, file_start, cnt);
 		ohdr->dcd_block_len = 0;
@@ -1218,11 +1213,11 @@ static int perform_dcd(unsigned char *p, const unsigned char *file_start,
 }
 
 static int get_dl_start(const unsigned char *p, const unsigned char *file_start,
-		unsigned cnt, unsigned *max_length, unsigned *plugin,
+		unsigned cnt, size_t *firststage_len, unsigned *plugin,
 		unsigned *header_addr)
 {
 	const unsigned char *file_end = file_start + cnt;
-	switch (usb_id->mach_id->header_type) {
+	switch (mach_id->header_type) {
 	case HDR_MX51:
 	{
 		struct imx_flash_header *ohdr = (struct imx_flash_header *)p;
@@ -1233,7 +1228,7 @@ static int get_dl_start(const unsigned char *p, const unsigned char *file_start,
 		*header_addr = ohdr->dcd_ptr_ptr - offsetof(struct imx_flash_header, dcd);
 		*plugin = 0;
 		if (err >= 0)
-			*max_length = dcd_end[0] | (dcd_end[1] << 8) | (dcd_end[2] << 16) | (dcd_end[3] << 24);
+			*firststage_len = dcd_end[0] | (dcd_end[1] << 8) | (dcd_end[2] << 16) | (dcd_end[3] << 24);
 
 		break;
 	}
@@ -1249,7 +1244,7 @@ static int get_dl_start(const unsigned char *p, const unsigned char *file_start,
 			return -1;
 		}
 
-		*max_length = ((struct imx_boot_data *)bd)->size;
+		*firststage_len = ((struct imx_boot_data *)bd)->size;
 		*plugin = ((struct imx_boot_data *)bd)->plugin;
 		((struct imx_boot_data *)bd)->plugin = 0;
 
@@ -1263,7 +1258,7 @@ static int get_payload_start(const unsigned char *p, uint32_t *ofs)
 {
 	struct imx_flash_header_v2 *hdr = (struct imx_flash_header_v2 *)p;
 
-	switch (usb_id->mach_id->header_type) {
+	switch (mach_id->header_type) {
 	case HDR_MX51:
 		return -EINVAL;
 
@@ -1276,7 +1271,7 @@ static int get_payload_start(const unsigned char *p, uint32_t *ofs)
 }
 
 static int process_header(struct usb_work *curr, unsigned char *buf, int cnt,
-		unsigned *p_max_length, unsigned *p_plugin,
+		size_t *p_firststage_len, unsigned *p_plugin,
 		unsigned *p_header_addr)
 {
 	int ret;
@@ -1291,7 +1286,7 @@ static int process_header(struct usb_work *curr, unsigned char *buf, int cnt,
 		if (!is_header(p))
 			continue;
 
-		ret = get_dl_start(p, buf, cnt, p_max_length, p_plugin, p_header_addr);
+		ret = get_dl_start(p, buf, cnt, p_firststage_len, p_plugin, p_header_addr);
 		if (ret < 0) {
 			printf("!!get_dl_start returned %i\n", ret);
 			return ret;
@@ -1308,7 +1303,7 @@ static int process_header(struct usb_work *curr, unsigned char *buf, int cnt,
 
 		if (*p_plugin && (!curr->plug) && (!header_cnt)) {
 			header_cnt++;
-			header_max = header_offset + *p_max_length + 0x400;
+			header_max = header_offset + *p_firststage_len + 0x400;
 			if (header_max > cnt - 32)
 				header_max = cnt - 32;
 			printf("header_max=%x\n", header_max);
@@ -1334,18 +1329,17 @@ static int do_irom_download(struct usb_work *curr, int verify)
 	unsigned char *buf = NULL;
 	unsigned char *image;
 	unsigned char *verify_buffer = NULL;
-	unsigned max_length;
+	size_t firststage_len;
 	unsigned plugin = 0;
 	unsigned header_addr = 0;
-	unsigned total_size = 0;
 
 	buf = read_file(curr->filename, &fsize);
 	if (!buf)
 		return -errno;
 
-	max_length = fsize;
+	firststage_len = fsize;
 
-	ret = process_header(curr, buf, fsize, &max_length, &plugin, &header_addr);
+	ret = process_header(curr, buf, fsize, &firststage_len, &plugin, &header_addr);
 	if (ret < 0)
 		goto cleanup;
 
@@ -1357,13 +1351,9 @@ static int do_irom_download(struct usb_work *curr, int verify)
 		goto cleanup;
 	}
 
+	/* skip over the imx-image-part */
 	image = buf + header_offset;
 	fsize -= header_offset;
-
-	if (fsize > max_length) {
-		total_size = fsize;
-		fsize = max_length;
-	}
 
 	type = FT_APP;
 
@@ -1378,16 +1368,16 @@ static int do_irom_download(struct usb_work *curr, int verify)
 
 		memcpy(verify_buffer, image, 64);
 
-		if ((type == FT_APP) && (usb_id->mach_id->mode != MODE_HID)) {
+		if ((type == FT_APP) && (mach_id->mode != MODE_HID)) {
 			type = FT_LOAD_ONLY;
 			verify = 2;
 		}
 	}
 
-	printf("loading binary file(%s) to 0x%08x, fsize=%zu type=%d...\n",
-			curr->filename, header_addr, fsize, type);
+	printf("loading binary file(%s) to 0x%08x, firststage_len=%zu type=%d, hdroffset=%u...\n",
+			curr->filename, header_addr, firststage_len, type, header_offset);
 
-	ret = load_file(image, fsize, header_addr, type, false);
+	ret = load_file(image, firststage_len, header_addr, type, false);
 	if (ret < 0)
 		goto cleanup;
 
@@ -1417,7 +1407,7 @@ static int do_irom_download(struct usb_work *curr, int verify)
 		}
 	}
 
-	if (usb_id->mach_id->mode == MODE_HID && type == FT_APP) {
+	if (mach_id->mode == MODE_HID && type == FT_APP) {
 		printf("jumping to 0x%08x\n", header_addr);
 
 		ret = sdp_jump_address(header_addr);
@@ -1425,7 +1415,7 @@ static int do_irom_download(struct usb_work *curr, int verify)
 			return ret;
 	}
 
-	if (total_size) {
+	if (firststage_len < fsize) {
 		uint32_t ofs;
 
 		ret = get_payload_start(image, &ofs);
@@ -1433,9 +1423,9 @@ static int do_irom_download(struct usb_work *curr, int verify)
 			printf("Cannot get offset of payload\n");
 			goto cleanup;
 		}
-		printf("Loading full image\n");
+		printf("Loading full image from offset %u\n", ofs);
 		printf("Note: This needs board support on the other end\n");
-		load_file(image + ofs, total_size - ofs, 0, 0, true);
+		load_file(image + ofs, fsize - ofs, 0, 0, true);
 	}
 
 	ret = 0;
@@ -1480,7 +1470,7 @@ static int mxs_load_file(libusb_device_handle *dev, uint8_t *data, int size)
 	cnt = size;
 
 	while (1) {
-		int now = get_min(cnt, usb_id->mach_id->max_transfer);
+		int now = get_min(cnt, mach_id->max_transfer);
 
 		if (!now)
 			break;
@@ -1538,7 +1528,6 @@ static void usage(const char *prgname)
 
 int main(int argc, char *argv[])
 {
-	const struct mach_id *mach;
 	libusb_device **devs;
 	libusb_device *dev;
 	int r;
@@ -1610,7 +1599,7 @@ int main(int argc, char *argv[])
 		goto out;
 	}
 
-	dev = find_imx_dev(devs, &mach, devpath, devtype);
+	dev = find_imx_dev(devs, &mach_id, devpath, devtype);
 	if (!dev) {
 		fprintf(stderr, "no supported device found\n");
 		goto out;
@@ -1629,15 +1618,7 @@ int main(int argc, char *argv[])
 		goto out;
 	}
 
-	usb_id = malloc(sizeof(*usb_id));
-	if (!usb_id) {
-		perror("malloc");
-		exit(1);
-	}
-
-	usb_id->mach_id = mach;
-
-	if (mach->dev_type == DEV_MXS) {
+	if (mach_id->dev_type == DEV_MXS) {
 		ret = mxs_work(&w);
 		goto out;
 	}
@@ -1662,9 +1643,6 @@ int main(int argc, char *argv[])
 
 	ret = 0;
 out:
-	if (usb_id)
-		free(usb_id);
-
 	if (usb_dev_handle)
 		libusb_close(usb_dev_handle);
 

@@ -24,8 +24,8 @@
 	};
 };
 
-&fec1 {
-	phy-reset-gpios = <&gpio4 22 GPIO_ACTIVE_LOW>;
+&reg_usdhc2_vmmc {
+	off-on-delay-us = <20000>;
 };
 
 &usdhc2 {

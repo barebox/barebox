@@ -56,15 +56,49 @@ static inline int dma_mapping_error(struct device_d *dev, dma_addr_t dma_addr)
 		(dev->dma_mask && dma_addr > dev->dma_mask);
 }
 
+#ifndef __PBL__
 /* streaming DMA - implement the below calls to support HAS_DMA */
+#ifndef dma_sync_single_for_cpu
 void dma_sync_single_for_cpu(dma_addr_t address, size_t size,
 			     enum dma_data_direction dir);
+#endif
 
+#ifndef dma_sync_single_for_device
 void dma_sync_single_for_device(dma_addr_t address, size_t size,
 				enum dma_data_direction dir);
+#endif
+#else
+#ifndef dma_sync_single_for_cpu
+/*
+ * assumes buffers are in coherent/uncached memory, e.g. because
+ * MMU is only enabled in barebox_arm_entry which hasn't run yet.
+ */
+static inline void dma_sync_single_for_cpu(dma_addr_t address, size_t size,
+			     enum dma_data_direction dir)
+{
+	barrier_data((void *)address);
+}
+#endif
 
+#ifndef dma_sync_single_for_device
+static inline void dma_sync_single_for_device(dma_addr_t address, size_t size,
+				enum dma_data_direction dir)
+{
+	barrier_data((void *)address);
+}
+#endif
+#endif
+
+#ifndef dma_alloc_coherent
 void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle);
+#endif
+
+#ifndef dma_free_coherent
 void dma_free_coherent(void *mem, dma_addr_t dma_handle, size_t size);
+#endif
+
+#ifndef dma_alloc_writecombine
 void *dma_alloc_writecombine(size_t size, dma_addr_t *dma_handle);
+#endif
 
 #endif /* __DMA_H */

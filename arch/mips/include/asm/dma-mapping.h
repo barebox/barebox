@@ -10,6 +10,7 @@
 #include <malloc.h>
 #include <asm/io.h>
 
+#define dma_alloc_coherent dma_alloc_coherent
 static inline void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
 {
 	void *ret;
@@ -26,6 +27,7 @@ static inline void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
 	return (void *)CKSEG1ADDR(ret);
 }
 
+#define dma_free_coherent dma_free_coherent
 static inline void dma_free_coherent(void *vaddr, dma_addr_t dma_handle,
 				     size_t size)
 {

@@ -30,7 +30,7 @@ config ARCH_RK3288
 config ARCH_ROCKCHIP_V8
 	bool
 	select CPU_V8
-	select SYS_SUPPORTS_64BIT_KERNEL
+	select CPU_SUPPORTS_64BIT_KERNEL
 	select ARM_ATF
 	select RELOCATABLE
 

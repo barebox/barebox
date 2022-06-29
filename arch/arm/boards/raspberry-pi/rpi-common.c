@@ -23,12 +23,27 @@
 #include <linux/sizes.h>
 #include <globalvar.h>
 #include <asm/system_info.h>
+#include <reset_source.h>
 
 #include <mach/core.h>
 #include <mach/mbox.h>
 #include <mach/platform.h>
 
+#include <soc/bcm283x/wdt.h>
+
 #include "lowlevel.h"
+
+//https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#BOOT_ORDER
+static const char * const boot_mode_names[] = {
+	[0x0] = "unknown",
+	[0x1] = "sd",
+	[0x2] = "net",
+	[0x3] = "rpiboot",
+	[0x4] = "usbmsd",
+	[0x5] = "usbc",
+	[0x6] = "nvme",
+	[0x7] = "http",
+};
 
 struct rpi_priv;
 struct rpi_machine_data {
@@ -45,57 +60,14 @@ struct rpi_priv {
 	const char *name;
 };
 
-struct msg_get_arm_mem {
-	struct bcm2835_mbox_hdr hdr;
-	struct bcm2835_mbox_tag_get_arm_mem get_arm_mem;
-	u32 end_tag;
-};
-
-struct msg_get_board_rev {
-	struct bcm2835_mbox_hdr hdr;
-	struct bcm2835_mbox_tag_get_board_rev get_board_rev;
-	u32 end_tag;
-};
-
-struct msg_get_mac_address {
-	struct bcm2835_mbox_hdr hdr;
-	struct bcm2835_mbox_tag_get_mac_address get_mac_address;
-	u32 end_tag;
-};
-
-static int rpi_get_arm_mem(u32 *size)
-{
-	BCM2835_MBOX_STACK_ALIGN(struct msg_get_arm_mem, msg);
-	int ret;
-
-	BCM2835_MBOX_INIT_HDR(msg);
-	BCM2835_MBOX_INIT_TAG(&msg->get_arm_mem, GET_ARM_MEMORY);
-
-	ret = bcm2835_mbox_call_prop(BCM2835_MBOX_PROP_CHAN, &msg->hdr);
-	if (ret)
-		return ret;
-
-	*size = msg->get_arm_mem.body.resp.mem_size;
-
-	return 0;
-}
-
 static void rpi_set_usbethaddr(void)
 {
-	BCM2835_MBOX_STACK_ALIGN(struct msg_get_mac_address, msg);
-	int ret;
+	u8 mac[ETH_ALEN];
 
-	BCM2835_MBOX_INIT_HDR(msg);
-	BCM2835_MBOX_INIT_TAG(&msg->get_mac_address, GET_MAC_ADDRESS);
+	if (rpi_get_usbethaddr(mac))
+		return; /* Ignore error; not critical */
 
-	ret = bcm2835_mbox_call_prop(BCM2835_MBOX_PROP_CHAN, &msg->hdr);
-	if (ret) {
-		printf("bcm2835: Could not query MAC address\n");
-		/* Ignore error; not critical */
-		return;
-	}
-
-	eth_register_ethaddr(0, msg->get_mac_address.body.resp.mac);
+	eth_register_ethaddr(0, mac);
 }
 
 static void rpi_set_usbotg(const char *alias)
@@ -185,48 +157,19 @@ static int rpi_0_w_init(struct rpi_priv *priv)
 	return of_device_disable_by_alias("serial0");
 }
 
-static int rpi_get_board_rev(struct rpi_priv *priv)
-{
-	int ret;
-
-	BCM2835_MBOX_STACK_ALIGN(struct msg_get_board_rev, msg);
-	BCM2835_MBOX_INIT_HDR(msg);
-	BCM2835_MBOX_INIT_TAG(&msg->get_board_rev, GET_BOARD_REV);
-
-	ret = bcm2835_mbox_call_prop(BCM2835_MBOX_PROP_CHAN, &msg->hdr);
-	if (ret) {
-		dev_err(priv->dev, "Could not query board revision\n");
-		return ret;
-	}
-
-	/* Comments from u-boot:
-	 * For details of old-vs-new scheme, see:
-	 * https://github.com/pimoroni/RPi.version/blob/master/RPi/version.py
-	 * http://www.raspberrypi.org/forums/viewtopic.php?f=63&t=99293&p=690282
-	 * (a few posts down)
-	 *
-	 * For the RPi 1, bit 24 is the "warranty bit", so we mask off just the
-	 * lower byte to use as the board rev:
-	 * http://www.raspberrypi.org/forums/viewtopic.php?f=63&t=98367&start=250
-	 * http://www.raspberrypi.org/forums/viewtopic.php?f=31&t=20594
-	 */
-	priv->hw_id = msg->get_board_rev.body.resp.rev;
-
-	return 0;
-}
-
 static int rpi_mem_init(void)
 {
-	u32 size = 0;
-	int ret;
+	ssize_t size;
 
-	ret = rpi_get_arm_mem(&size);
-	if (ret)
+	size = rpi_get_arm_mem();
+	if (size < 0) {
 		printf("could not query ARM memory size\n");
+		size = get_ram_size((ulong *) BCM2835_SDRAM_BASE, SZ_128M);
+	}
 
 	bcm2835_add_device_sdram(size);
 
-	return ret;
+	return 0;
 }
 mem_initcall(rpi_mem_init);
 
@@ -258,54 +201,133 @@ static int rpi_env_init(void)
 	return 0;
 }
 
-/* Extract /chosen/bootargs from the VideoCore FDT into vc.bootargs
- * global variable. */
-static int rpi_vc_fdt_bootargs(void *fdt)
+/* Some string properties in fdt passed to us from vc may be
+ * malformed by not being null terminated, so just create and
+ * return a fixed copy.
+ */
+static char *of_read_vc_string(struct device_node *node,
+			       const char *prop_name)
 {
-	int ret = 0;
-	struct device_node *root = NULL, *node;
-	const char *cmdline;
+	int len;
+	const char *str;
+
+	str = of_get_property(node, prop_name, &len);
+	if (!str) {
+		pr_warn("no property '%s' found in vc fdt's '%s' node\n",
+			prop_name, node->full_name);
+		return NULL;
+	}
+	return xstrndup(str, len);
+}
+
+static enum reset_src_type rpi_decode_pm_rsts(struct device_node *chosen,
+					      struct device_node *bootloader)
+{
+	u32 pm_rsts;
+	int ret;
+
+	ret = of_property_read_u32(chosen, "pm_rsts", &pm_rsts);
+	if (ret && bootloader)
+		 ret = of_property_read_u32(bootloader, "rsts", &pm_rsts);
+
+	if (ret) {
+		pr_warn("'pm_rsts' value not found in vc fdt\n");
+		return RESET_UKWN;
+	}
+	/*
+	 * https://github.com/raspberrypi/linux/issues/932#issuecomment-93989581
+	 */
+
+	if (pm_rsts & PM_RSTS_HADPOR_SET)
+		return RESET_POR;
+	if (pm_rsts & PM_RSTS_HADDR_SET)
+		return RESET_JTAG;
+	if (pm_rsts & PM_RSTS_HADWR_SET)
+		return RESET_WDG;
+	if (pm_rsts & PM_RSTS_HADSR_SET)
+		return RESET_RST;
+
+	return RESET_UKWN;
+}
+
+static u32 rpi_boot_mode, rpi_boot_part;
+/* Extract useful information from the VideoCore FDT we got.
+ * Some parameters are defined here:
+ * https://www.raspberrypi.com/documentation/computers/configuration.html#part4
+ */
+static void rpi_vc_fdt_parse(void *fdt)
+{
+	int ret;
+	struct device_node *root, *chosen, *bootloader;
+	char *str;
 
 	root = of_unflatten_dtb(fdt, INT_MAX);
-	if (IS_ERR(root)) {
-		ret = PTR_ERR(root);
-		root = NULL;
+	if (IS_ERR(root))
+		return;
+
+	str = of_read_vc_string(root, "serial-number");
+	if (str) {
+		barebox_set_serial_number(str);
+		free(str);
+	}
+
+	str = of_read_vc_string(root, "model");
+	if (str) {
+		barebox_set_model(str);
+		free(str);
+	}
+
+	chosen = of_find_node_by_path_from(root, "/chosen");
+	if (!chosen) {
+		pr_err("no '/chosen' node found in vc fdt\n");
 		goto out;
 	}
 
-	node = of_find_node_by_path_from(root, "/chosen");
-	if (!node) {
-		pr_err("no /chosen node\n");
-		ret = -ENOENT;
-		goto out;
+	bootloader = of_find_node_by_name(chosen, "bootloader");
+
+	str = of_read_vc_string(chosen, "bootargs");
+	if (str) {
+		globalvar_add_simple("vc.bootargs", str);
+		free(str);
 	}
 
-	cmdline = of_get_property(node, "bootargs", NULL);
-	if (!cmdline) {
-		pr_err("no bootargs property in the /chosen node\n");
-		ret = -ENOENT;
-		goto out;
+	str = of_read_vc_string(chosen, "overlay_prefix");
+	if (str) {
+		globalvar_add_simple("vc.overlay_prefix", str);
+		free(str);
 	}
 
-	globalvar_add_simple("vc.bootargs", cmdline);
-
-	switch(cpu_architecture()) {
-	case CPU_ARCH_ARMv6:
-		globalvar_add_simple("vc.kernel", "kernel.img");
-		break;
-	case CPU_ARCH_ARMv7:
-		globalvar_add_simple("vc.kernel", "kernel7.img");
-		break;
-	case CPU_ARCH_ARMv8:
-		globalvar_add_simple("vc.kernel", "kernel7l.img");
-		break;
+	str = of_read_vc_string(chosen, "os_prefix");
+	if (str) {
+		globalvar_add_simple("vc.os_prefix", str);
+		free(str);
 	}
+
+	ret = of_property_read_u32(chosen, "boot-mode", &rpi_boot_mode);
+	if (ret && bootloader)
+		ret = of_property_read_u32(bootloader, "boot-mode", &rpi_boot_mode);
+	if (ret)
+		pr_debug("'boot-mode' property not found in vc fdt\n");
+	else
+		globalvar_add_simple_enum("vc.boot_mode", &rpi_boot_mode,
+					  boot_mode_names,
+					  ARRAY_SIZE(boot_mode_names));
+
+	ret = of_property_read_u32(chosen, "partition", &rpi_boot_part);
+	if (ret && bootloader)
+		ret = of_property_read_u32(bootloader, "partition", &rpi_boot_part);
+	if (ret)
+		pr_debug("'partition' property not found in vc fdt\n");
+	else
+		globalvar_add_simple_int("vc.boot_partition", &rpi_boot_part, "%u");
+
+	if (IS_ENABLED(CONFIG_RESET_SOURCE))
+		reset_source_set(rpi_decode_pm_rsts(chosen, bootloader));
 
 out:
 	if (root)
 		of_delete_node(root);
-
-	return ret;
+	return;
 }
 
 static void rpi_vc_fdt(void)
@@ -313,7 +335,6 @@ static void rpi_vc_fdt(void)
 	void *saved_vc_fdt;
 	struct fdt_header *oftree;
 	unsigned long magic, size;
-	int ret;
 
 	/* VideoCore FDT was copied in PBL just above Barebox memory */
 	saved_vc_fdt = (void *)(arm_mem_endmem_get());
@@ -332,16 +353,23 @@ static void rpi_vc_fdt(void)
 		return;
 
 	size = be32_to_cpu(oftree->totalsize);
-	if (write_file("/vc.dtb", saved_vc_fdt, size)) {
+	if (write_file("/vc.dtb", saved_vc_fdt, size))
 		pr_err("failed to save videocore fdt to a file\n");
-		return;
-	}
 
-	ret = rpi_vc_fdt_bootargs(saved_vc_fdt);
-	if (ret) {
-		pr_err("failed to extract bootargs from videocore fdt: %d\n",
-									ret);
-		return;
+	rpi_vc_fdt_parse(saved_vc_fdt);
+}
+
+static void rpi_set_kernel_name(void) {
+	switch(cpu_architecture()) {
+	case CPU_ARCH_ARMv6:
+		globalvar_add_simple("vc.kernel", "kernel.img");
+		break;
+	case CPU_ARCH_ARMv7:
+		globalvar_add_simple("vc.kernel", "kernel7.img");
+		break;
+	case CPU_ARCH_ARMv8:
+		globalvar_add_simple("vc.kernel", "kernel8.img");
+		break;
 	}
 }
 
@@ -354,6 +382,18 @@ static const struct rpi_machine_data *rpi_get_dcfg(struct rpi_priv *priv)
 		dev_err(priv->dev, "Unknown board. Not applying fixups\n");
 		return NULL;
 	}
+
+	/* Comments from u-boot:
+	 * For details of old-vs-new scheme, see:
+	 * https://github.com/pimoroni/RPi.version/blob/master/RPi/version.py
+	 * http://www.raspberrypi.org/forums/viewtopic.php?f=63&t=99293&p=690282
+	 * (a few posts down)
+	 *
+	 * For the RPi 1, bit 24 is the "warranty bit", so we mask off just the
+	 * lower byte to use as the board rev:
+	 * http://www.raspberrypi.org/forums/viewtopic.php?f=63&t=98367&start=250
+	 * http://www.raspberrypi.org/forums/viewtopic.php?f=31&t=20594
+	 */
 
 	for (; dcfg->hw_id != U8_MAX; dcfg++) {
 		if (priv->hw_id & 0x800000) {
@@ -386,9 +426,11 @@ static int rpi_devices_probe(struct device_d *dev)
 	priv = xzalloc(sizeof(*priv));
 	priv->dev = dev;
 
-	ret = rpi_get_board_rev(priv);
-	if (ret)
+	ret = rpi_get_board_rev();
+	if (ret < 0)
 		goto free_priv;
+
+	priv->hw_id = ret;
 
 	dcfg = rpi_get_dcfg(priv);
 	if (IS_ERR(dcfg))
@@ -406,6 +448,7 @@ static int rpi_devices_probe(struct device_d *dev)
 	armlinux_set_architecture(MACH_TYPE_BCM2708);
 	rpi_env_init();
 	rpi_vc_fdt();
+	rpi_set_kernel_name();
 
 	if (dcfg && dcfg->init)
 		dcfg->init(priv);
@@ -532,6 +575,18 @@ static const struct rpi_machine_data rpi_3_ids[] = {
 	},
 };
 
+static const struct rpi_machine_data rpi_4_ids[] = {
+	{
+		.hw_id = BCM2711_BOARD_REV_4_B,
+	}, {
+		.hw_id = BCM2711_BOARD_REV_400,
+	}, {
+		.hw_id = BCM2711_BOARD_REV_CM4,
+	}, {
+		.hw_id = U8_MAX
+	},
+};
+
 static const struct of_device_id rpi_of_match[] = {
 	/* BCM2835 based Boards */
 	{ .compatible = "raspberrypi,model-a", .data = rpi_1_ids },
@@ -555,6 +610,11 @@ static const struct of_device_id rpi_of_match[] = {
 	{ .compatible = "raspberrypi,model-zero-2-w", .data = rpi_3_ids },
 	{ .compatible = "raspberrypi,3-compute-module", .data = rpi_3_ids },
 	{ .compatible = "raspberrypi,3-compute-module-lite", .data = rpi_3_ids },
+
+	/* BCM2711 based Boards */
+	{ .compatible = "raspberrypi,4-model-b", .data = rpi_4_ids },
+	{ .compatible = "raspberrypi,4-compute-module", .data = rpi_4_ids },
+	{ .compatible = "raspberrypi,400", .data = rpi_4_ids },
 
 	{ /* sentinel */ },
 };

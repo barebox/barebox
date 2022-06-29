@@ -13,6 +13,7 @@
  * x86 is cache coherent, so we need not do anything special here
  */
 
+#define dma_alloc_coherent dma_alloc_coherent
 static inline void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
 {
 	void *ret = xmemalign(4096, size);
@@ -24,17 +25,20 @@ static inline void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
 	return ret;
 }
 
+#define dma_free_coherent dma_free_coherent
 static inline void dma_free_coherent(void *mem, dma_addr_t dma_handle,
 				     size_t size)
 {
 	free(mem);
 }
 
+#define dma_sync_single_for_cpu dma_sync_single_for_cpu
 static inline void dma_sync_single_for_cpu(dma_addr_t address, size_t size,
 					   enum dma_data_direction dir)
 {
 }
 
+#define dma_sync_single_for_device dma_sync_single_for_device
 static inline void dma_sync_single_for_device(dma_addr_t address, size_t size,
 					      enum dma_data_direction dir)
 {

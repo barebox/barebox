@@ -4,9 +4,14 @@ Broadcom BCM283x
 Raspberry Pi
 ------------
 
+barebox supports has support for BCM283x-based Raspberry Pi single board
+computers. Support is most extensive for BCM283[567]. For the newer BCM2711
+used in the Raspberry Pi 4, only basic support is currently available
+(Serial Port, Pinctrl/GPIO, SD-Card).
+
   1. Prepare an SD or microSD card with a FAT filesystem of at least 30 MB in size.
 
-  2. Download the `Raspberry Pi firmware`_ (120 MB), unzip it, and copy the
+  2. Download the `Raspberry Pi firmware`_ (195 MB), unzip it, and copy the
      contents of the ``boot/`` folder to your card.
 
   3. Use ``make rpi_defconfig; make`` to build barebox. This will create the following images:
@@ -15,14 +20,14 @@ Raspberry Pi
      - ``images/barebox-raspberry-pi-2.img`` for the BCM2836/CORTEX-A7 (Raspberry Pi 2)
      - ``images/barebox-raspberry-pi-3.img`` for the BCM2837/CORTEX-A53 (Raspberry Pi 3)
      - ``images/barebox-raspberry-pi-cm3.img`` for the BCM2837/CORTEX-A53 (Raspberry Pi CM3)
+     - ``images/barebox-raspberry-pi.img``, which is a super set of all the other images
 
      Copy the respective image for your model to your SD card and name it
      ``barebox.img``.
 
-     Alternatively, ``images/barebox-dt-2nd.img`` can be used as single bootloader for all
-     supported 32-bit boards. In this case the device tree supplied by the video core
-     is directly used by barebox to probe. The device trees in ``arch/arm/dts/*.dtb``
-     will need to be renamed for alignment with the naming scheme expected by the videocore.
+     The ``images/barebox-raspberry-pi.img`` is expected to replace the other images
+     in the future. It contains the device trees of all supported (and enabled) variants
+     and determines at runtime what board it runs on and does the right thing.
 
   4. Create a text file ``config.txt`` on the SD card with the following content::
 
@@ -53,5 +58,5 @@ The original command-line from VideoCore device tree is available to the Barebox
 
     global linux.bootargs.vc="$global.vc.bootargs"
 
-.. _Raspberry Pi firmware: https://codeload.github.com/raspberrypi/firmware/zip/80e1fbeb78f9df06701d28c0ed3a3060a3f557ef
+.. _Raspberry Pi firmware: https://github.com/raspberrypi/firmware/archive/refs/tags/1.20220331.zip
 .. _documentation for config.txt: https://www.raspberrypi.org/documentation/configuration/config-txt/

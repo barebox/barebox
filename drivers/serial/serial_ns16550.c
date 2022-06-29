@@ -242,14 +242,10 @@ static void ns16550_jz_init_port(struct console_device *cdev)
 	ns16550_serial_init_port(cdev);
 }
 
-#define BCM2836_AUX_CLOCK_ENB 0x3f215004 /* BCM2835 AUX Clock enable register */
-#define BCM2836_AUX_CLOCK_EN_UART BIT(0) /* Bit 0 enables the Miniuart */
-
 static void rpi_init_port(struct console_device *cdev)
 {
 	struct ns16550_priv *priv = to_ns16550_priv(cdev);
 
-	writeb(BCM2836_AUX_CLOCK_EN_UART, BCM2836_AUX_CLOCK_ENB);
 	priv->plat.shift = 2;
 	/*
 	 * We double the clock rate since the 16550 will divide by 16

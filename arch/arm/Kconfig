@@ -60,6 +60,8 @@ config ARCH_BCM283X
 	select OFTREE
 	select OFDEVICE
 	select HAVE_PBL_MULTI_IMAGES
+	select CPU_SUPPORTS_32BIT_KERNEL
+	select CPU_SUPPORTS_64BIT_KERNEL
 
 config ARCH_CLPS711X
 	bool "Cirrus Logic EP711x/EP721x/EP731x"
@@ -276,7 +278,7 @@ config ARCH_ZYNQMP
 	select OFDEVICE
 	select OFTREE
 	select RELOCATABLE
-	select SYS_SUPPORTS_64BIT_KERNEL
+	select CPU_SUPPORTS_64BIT_KERNEL
 	select HAS_MACB
 
 config ARCH_ARM64_VIRT
@@ -286,7 +288,7 @@ config ARCH_ARM64_VIRT
 	select OFDEVICE
 	select OFTREE
 	select RELOCATABLE
-	select SYS_SUPPORTS_64BIT_KERNEL
+	select CPU_SUPPORTS_64BIT_KERNEL
 	select ARM_AMBA
 	select BOARD_ARM_VIRT
 	select HW_HAS_PCI
@@ -397,13 +399,13 @@ choice
 
 config 32BIT
 	bool "32-bit barebox"
-	depends on CPU_SUPPORTS_32BIT_KERNEL && SYS_SUPPORTS_32BIT_KERNEL
+	depends on CPU_SUPPORTS_32BIT_KERNEL
 	help
 	  Select this option if you want to build a 32-bit barebox.
 
 config 64BIT
 	bool "64-bit barebox"
-	depends on CPU_SUPPORTS_64BIT_KERNEL && SYS_SUPPORTS_64BIT_KERNEL
+	depends on CPU_SUPPORTS_64BIT_KERNEL
 	select ARCH_DMA_ADDR_T_64BIT
 	help
 	  Select this option if you want to build a 64-bit barebox.

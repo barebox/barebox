@@ -20,6 +20,9 @@ image-$(CONFIG_MACH_RK3568_BPI_R2PRO) += barebox-rk3568-bpi-r2pro.img
 pblb-$(CONFIG_MACH_PINE64_QUARTZ64) += start_quartz64a
 image-$(CONFIG_MACH_PINE64_QUARTZ64) += barebox-quartz64a.img
 
+pblb-$(CONFIG_MACH_RADXA_ROCK3) += start_rock3a
+image-$(CONFIG_MACH_RADXA_ROCK3) += barebox-rock3a.img
+
 quiet_cmd_rkimg_image = RK-IMG $@
       cmd_rkimg_image = $(objtree)/scripts/rkimage -o $@ $(word 2,$^) $(word 1,$^)
 
@@ -33,4 +36,8 @@ $(obj)/barebox-rk3568-bpi-r2pro.img: $(obj)/start_rk3568_bpi_r2pro.pblb \
 
 $(obj)/barebox-quartz64a.img: $(obj)/start_quartz64a.pblb \
                 $(board)/pine64-quartz64/sdram-init.bin
+	$(call if_changed,rkimg_image)
+
+$(obj)/barebox-rock3a.img: $(obj)/start_rock3a.pblb \
+                $(board)/radxa-rock3/sdram-init.bin
 	$(call if_changed,rkimg_image)

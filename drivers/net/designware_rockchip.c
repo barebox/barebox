@@ -21,7 +21,7 @@ struct rk_gmac_ops {
 	void (*set_rmii_speed)(struct eqos *eqos, int speed);
 	void (*set_rgmii_speed)(struct eqos *eqos, int speed);
 	void (*integrated_phy_powerup)(struct eqos *eqos);
-	u32 regs[];
+	const u32 *regs;
 };
 
 struct eqos_rk_gmac {
@@ -175,7 +175,7 @@ static const struct rk_gmac_ops rk3568_ops = {
 	.set_to_rmii = rk3568_set_to_rmii,
 	.set_rmii_speed = rk3568_set_gmac_speed,
 	.set_rgmii_speed = rk3568_set_gmac_speed,
-	.regs = {
+	.regs = (u32 []) {
 		0xfe2a0000, /* gmac0 */
 		0xfe010000, /* gmac1 */
 		0x0, /* sentinel */
@@ -253,7 +253,7 @@ static int eqos_init_rk_gmac(struct device_d *dev, struct eqos *eqos)
 
 	priv->ops = device_get_match_data(dev);
 
-	if (dev->num_resources > 0) {
+	if (dev->num_resources > 0 && priv->ops->regs) {
 		while (priv->ops->regs[i]) {
 			if (priv->ops->regs[i] == dev->resource[0].start) {
 				priv->bus_id = i;

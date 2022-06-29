@@ -1,12 +1,8 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR MIT)
-/*
- * Copyright (c) 2021 Rockchip Electronics Co., Ltd.
- *
- */
 
 /dts-v1/;
 
-#include <arm64/rockchip/rk3568-evb1-v10.dts>
+#include <arm64/rockchip/rk3568-rock-3a.dts>
 
 / {
 	chosen: chosen {

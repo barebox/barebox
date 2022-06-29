@@ -131,7 +131,6 @@ static int pcf85363_probe(struct device_d *dev)
 	struct i2c_client *client = to_i2c_client(dev);
 	struct pcf85363 *pcf85363;
 	struct regmap *regmap;
-	int ret;
 
 	regmap = regmap_init_i2c(client,
 				&pcf85363_regmap_i2c_config);
@@ -147,9 +146,7 @@ static int pcf85363_probe(struct device_d *dev)
 	pcf85363->rtc.ops = &rtc_ops;
 	pcf85363->rtc.dev = dev;
 
-	ret = rtc_register(&pcf85363->rtc);
-
-	return ret;
+	return rtc_register(&pcf85363->rtc);
 }
 
 static struct platform_device_id dev_ids[] = {

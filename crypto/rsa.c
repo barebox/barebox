@@ -15,7 +15,6 @@
 #include <asm/byteorder.h>
 #include <errno.h>
 #include <rsa.h>
-#include <asm/types.h>
 #include <asm/unaligned.h>
 
 #define UINT64_MULT32(v, multby)  (((uint64_t)(v)) * ((uint32_t)(multby)))

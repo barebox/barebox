@@ -10,7 +10,6 @@
 
 #ifdef STATIC
 #define PREBOOT
-#include <linux/decompress/mm.h>
 #include "lz4/lz4_decompress.c"
 #else
 #include <linux/decompress/unlz4.h>

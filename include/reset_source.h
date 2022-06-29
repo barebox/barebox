@@ -32,8 +32,6 @@ void reset_source_set_device(struct device_d *dev, enum reset_src_type st);
 void reset_source_set_prinst(enum reset_src_type,
 			     unsigned int priority, int instance);
 
-unsigned int of_get_reset_source_priority(struct device_node *node);
-
 #else
 
 static inline enum reset_src_type reset_source_get(void)
@@ -68,11 +66,6 @@ static inline void reset_source_set_prinst(enum reset_src_type type,
 
 static inline void reset_source_set_instance(enum reset_src_type type, int instance)
 {
-}
-
-static inline unsigned int of_get_reset_source_priority(struct device_node *node)
-{
-	return 0;
 }
 #endif
 

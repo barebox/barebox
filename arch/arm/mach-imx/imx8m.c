@@ -13,7 +13,6 @@
 #include <mach/ocotp.h>
 #include <mach/imx8mp-regs.h>
 #include <mach/imx8mq-regs.h>
-#include <mach/imx8m-ccm-regs.h>
 #include <soc/imx8m/clk-early.h>
 
 #include <linux/iopoll.h>

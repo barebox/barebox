@@ -53,6 +53,9 @@ static int do_state(int argc, char *argv[])
 		ret = state_save(state);
 	}
 
+	if (ret == -ENOMEDIUM)
+		ret = 0;
+
 	return ret;
 }
 

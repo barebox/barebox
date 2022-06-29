@@ -26,8 +26,6 @@
 #include <mach/hostfile.h>
 #include <xfuncs.h>
 
-#include <linux/err.h>
-
 struct hf_priv {
 	union {
 		struct block_device blk;

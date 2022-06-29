@@ -31,7 +31,6 @@
 #include <binfmt.h>
 #include <wchar.h>
 #include <envfs.h>
-#include <efi.h>
 #include <efi/efi-payload.h>
 #include <efi/efi-device.h>
 #include <libfile.h>
@@ -360,7 +359,7 @@ static int efi_late_init(void)
 			return PTR_ERR(state);
 
 		ret = state_load(state);
-		if (ret)
+		if (ret != -ENOMEDIUM)
 			pr_warn("Failed to load persistent state, continuing with defaults, %d\n",
 				ret);
 

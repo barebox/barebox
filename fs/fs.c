@@ -3215,7 +3215,6 @@ static int automount_mount(struct dentry *dentry)
 /*
  * Some debug commands, helpful to debug the dcache implementation
  */
-#include <command.h>
 
 static int do_lookup_dentry(int argc, char *argv[])
 {

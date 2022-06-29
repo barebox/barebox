@@ -16,13 +16,12 @@
 static int do_spd_decode(int argc, char *argv[])
 {
 	int ret;
-	size_t size;
 	void *data;
 
 	if (argc != 2)
 		return COMMAND_ERROR_USAGE;
 
-	ret = read_file_2(argv[1], &size, &data, 256);
+	ret = read_file_2(argv[1], NULL, &data, 256);
 	if (ret && ret != -EFBIG) {
 		printf("unable to read %s: %s\n", argv[1], strerror(-ret));
 		return COMMAND_ERROR;

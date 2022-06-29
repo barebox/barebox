@@ -1,25 +1,31 @@
-/*
- * Copyright (C) 2012 Alexander Shiyan <shc_work@mail.ru>
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- */
-
-#include <common.h>
-#include <init.h>
-#include <linux/sizes.h>
+// SPDX-License-Identifier: GPL-2.0-or-later
+// SPDX-FileCopyrightText: Alexander Shiyan <shc_work@mail.ru>
 
 #include <asm/io.h>
 #include <asm/barebox-arm.h>
-#include <asm/barebox-arm-head.h>
-
+#include <common.h>
+#include <debug_ll.h>
+#include <linux/sizes.h>
 #include <mach/clps711x.h>
 
-void __naked __bare_init clps711x_barebox_entry(u32 pllmult, void *data)
+#define DEBUG_LL_BAUDRATE	(57600)
+
+static inline void setup_uart(const u32 bus_speed)
 {
-	u32 cpu, bus;
+	u32 baud_base = DIV_ROUND_CLOSEST(bus_speed, 10);
+	u32 baud_divisor =
+		DIV_ROUND_CLOSEST(baud_base, DEBUG_LL_BAUDRATE * 16) - 1;
+
+	writel(baud_divisor | UBRLCR_FIFOEN | UBRLCR_WRDLEN8, UBRLCR1);
+	writel(0, STFCLR);
+	writel(SYSCON_UARTEN, SYSCON1);
+
+	putc_ll('>');
+}
+
+void clps711x_start(void *fdt)
+{
+	u32 bus, pll;
 
 	/* Check if we running from external 13 MHz clock */
 	if (!(readl(SYSFLG2) & SYSFLG2_CKMODE)) {
@@ -27,30 +33,30 @@ void __naked __bare_init clps711x_barebox_entry(u32 pllmult, void *data)
 		writel(SYSCON3_CLKCTL0 | SYSCON3_CLKCTL1, SYSCON3);
 		asm("nop");
 
-		/* Check valid multiplier, default to 74 MHz */
-		if ((pllmult < 20) || (pllmult > 50))
-			pllmult = 40;
+		if (IS_ENABLED(CONFIG_CLPS711X_RAISE_CPUFREQ)) {
+			/* Setup PLL to 92160000 Hz */
+			writel(50 << 24, PLLW);
+			asm("nop");
+		}
 
-		/* Setup PLL */
-		writel(pllmult << 24, PLLW);
-		asm("nop");
-
-		/* Check for old CPUs without PLL */
-		if ((readl(PLLR) >> 24) != pllmult)
-			cpu = 73728000;
+		pll = readl(PLLR) >> 24;
+		if (pll)
+			bus = (pll * 3686400) / 4;
 		else
-			cpu = pllmult * 3686400;
-
-		if (cpu >= 36864000)
-			bus = cpu / 2;
-		else
-			bus = 36864000 / 2;
+			bus = 73728000 / 4;
 	} else {
 		bus = 13000000;
 		/* Setup bus wait state scaling factor to 1  */
 		writel(0, SYSCON3);
 		asm("nop");
 	}
+
+
+	/* Disable UART, IrDa, LCD */
+	writel(0, SYSCON1);
+
+	if (IS_ENABLED(CONFIG_DEBUG_LL))
+		setup_uart(bus);
 
 	/* CLKEN select, SDRAM width=32 */
 	writel(SYSCON2_CLKENSL, SYSCON2);
@@ -62,12 +68,10 @@ void __naked __bare_init clps711x_barebox_entry(u32 pllmult, void *data)
 	/* Setup Refresh Rate (64ms 8K Blocks) */
 	writel((64 * bus) / (8192 * 1000), SDRFPR);
 
-	/* Disable UART, IrDa, LCD */
-	writel(0, SYSCON1);
 	/* Disable PWM */
 	writew(0, PMPCON);
 	/* Disable LED flasher */
 	writew(0, LEDFLSH);
 
-	barebox_arm_entry(SDRAM0_BASE, SZ_8M, data);
+	barebox_arm_entry(SDRAM0_BASE, SZ_8M, fdt);
 }

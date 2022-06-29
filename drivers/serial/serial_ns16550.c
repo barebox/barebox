@@ -171,7 +171,6 @@ static inline unsigned int ns16550_calc_divisor(struct console_device *cdev,
 	unsigned int clk = plat->clock;
 
 	return (clk / MODE_X_DIV / baudrate);
-
 }
 
 /**

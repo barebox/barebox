@@ -18,7 +18,6 @@
 #include <net.h>
 #include <malloc.h>
 #include <linux/phy.h>
-#include <linux/phy.h>
 #include <linux/err.h>
 
 #define PHY_AN_TIMEOUT	10

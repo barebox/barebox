@@ -50,7 +50,9 @@ const static struct regulator_ops fixed_ops = {
 
 static int regulator_fixed_probe(struct device_d *dev)
 {
+	struct device_node *np = dev->device_node;
 	struct regulator_fixed *fix;
+	u32 delay;
 	int ret;
 
 	if (!dev->device_node)
@@ -59,7 +61,7 @@ static int regulator_fixed_probe(struct device_d *dev)
 	fix = xzalloc(sizeof(*fix));
 	fix->gpio = -EINVAL;
 
-	if (of_get_property(dev->device_node, "gpio", NULL)) {
+	if (of_get_property(np, "gpio", NULL)) {
 		fix->gpio = gpiod_get(dev, NULL, GPIOD_ASIS);
 		if (fix->gpio < 0) {
 			ret = fix->gpio;
@@ -71,13 +73,16 @@ static int regulator_fixed_probe(struct device_d *dev)
 	fix->rdev.desc = &fix->rdesc;
 	fix->rdev.dev = dev;
 
-	if (of_find_property(dev->device_node, "regulator-always-on", NULL) ||
-	    of_find_property(dev->device_node, "regulator-boot-on", NULL)) {
+	if (!of_property_read_u32(np, "off-on-delay-us", &delay))
+		fix->rdesc.off_on_delay = delay;
+
+	if (of_find_property(np, "regulator-always-on", NULL) ||
+	    of_find_property(np, "regulator-boot-on", NULL)) {
 		fix->always_on = 1;
 		regulator_fixed_enable(&fix->rdev);
 	}
 
-	ret = of_regulator_register(&fix->rdev, dev->device_node);
+	ret = of_regulator_register(&fix->rdev, np);
 	if (ret)
 		return ret;
 

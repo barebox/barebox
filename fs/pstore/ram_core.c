@@ -20,7 +20,6 @@
 #include <linux/rslib.h>
 #include <linux/pstore_ram.h>
 #include <linux/string.h>
-#include <linux/rslib.h>
 #include <stdio.h>
 #include <malloc.h>
 #include <memory.h>

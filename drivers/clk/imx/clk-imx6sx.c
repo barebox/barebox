@@ -7,7 +7,6 @@
 #include <common.h>
 #include <init.h>
 #include <driver.h>
-#include <linux/clk.h>
 #include <io.h>
 #include <of.h>
 #include <linux/clkdev.h>

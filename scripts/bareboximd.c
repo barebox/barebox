@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <stdint.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdlib.h>
@@ -15,7 +14,6 @@
 #include <stdarg.h>
 #include <linux/err.h>
 #include <linux/kernel.h>
-#include <sys/mman.h>
 
 #include "common.h"
 #include "common.c"

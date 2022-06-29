@@ -9,7 +9,6 @@
 
 #include <command.h>
 #include <dma.h>
-#include <net.h>
 #include <malloc.h>
 #include <net.h>
 #include <linux/phy.h>

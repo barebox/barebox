@@ -5,7 +5,6 @@
 
 #include <common.h>
 #include <init.h>
-#include <mach/stm32.h>
 #include <mach/ddr_regs.h>
 #include <mach/entry.h>
 #include <mach/stm32.h>

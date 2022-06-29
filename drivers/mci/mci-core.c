@@ -571,6 +571,7 @@ static int mmc_change_freq(struct mci *mci)
 
 		mci->ext_csd_part_config = mci->ext_csd[EXT_CSD_PARTITION_CONFIG];
 		mci->bootpart = (mci->ext_csd_part_config >> 3) & 0x7;
+		mci->boot_ack_enable = (mci->ext_csd_part_config >> 6) & 0x1;
 	}
 
 	if (IS_ENABLED(CONFIG_MCI_MMC_GPP_PARTITIONS))
@@ -1654,6 +1655,17 @@ static int mci_set_boot(struct param_d *param, void *priv)
 			  EXT_CSD_PARTITION_CONFIG, mci->ext_csd_part_config);
 }
 
+static int mci_set_boot_ack(struct param_d *param, void *priv)
+{
+	struct mci *mci = priv;
+
+	mci->ext_csd_part_config &= ~(0x1 << 6);
+	mci->ext_csd_part_config |= mci->boot_ack_enable << 6;
+
+	return mci_switch(mci,
+			  EXT_CSD_PARTITION_CONFIG, mci->ext_csd_part_config);
+}
+
 static const char *mci_boot_names[] = {
 	"disabled",
 	"boot0",
@@ -1736,6 +1748,7 @@ static int mci_card_probe(struct mci *mci)
 {
 	struct mci_host *host = mci->host;
 	int i, rc, disknum, ret;
+	bool has_bootpart = false;
 
 	if (host->card_present && !host->card_present(host) &&
 	    !host->non_removable) {
@@ -1810,12 +1823,20 @@ static int mci_card_probe(struct mci *mci)
 		rc = mci_register_partition(part);
 
 		if (IS_ENABLED(CONFIG_MCI_MMC_BOOT_PARTITIONS) &&
-				part->area_type == MMC_BLK_DATA_AREA_BOOT &&
-				!mci->param_boot) {
-			mci->param_boot = dev_add_param_enum(&mci->dev, "boot",
-					mci_set_boot, NULL, &mci->bootpart,
-					mci_boot_names, ARRAY_SIZE(mci_boot_names), mci);
-		}
+		    part->area_type == MMC_BLK_DATA_AREA_BOOT)
+			has_bootpart = true;
+	}
+
+	if (has_bootpart) {
+		mci->param_boot =
+			dev_add_param_enum(&mci->dev, "boot", mci_set_boot,
+					   NULL, &mci->bootpart, mci_boot_names,
+					   ARRAY_SIZE(mci_boot_names), mci);
+
+		mci->param_boot_ack =
+			dev_add_param_bool(&mci->dev, "boot_ack",
+					   mci_set_boot_ack, NULL,
+					   &mci->boot_ack_enable, mci);
 	}
 
 	dev_dbg(&mci->dev, "SD Card successfully added\n");

@@ -10,12 +10,9 @@
 static int clps711x_gpio_probe(struct device_d *dev)
 {
 	struct resource *iores;
-	int err, id = dev->id;
+	int err, id = of_alias_get_id(dev->device_node, "gpio");
 	void __iomem *dat, *dir = NULL, *dir_inv = NULL;
 	struct bgpio_chip *bgc;
-
-	if (dev->device_node)
-		id = of_alias_get_id(dev->device_node, "gpio");
 
 	if (id < 0 || id > 4)
 		return -ENODEV;
@@ -62,7 +59,7 @@ out_err:
 	return err;
 }
 
-static struct of_device_id __maybe_unused clps711x_gpio_dt_ids[] = {
+static const struct of_device_id __maybe_unused clps711x_gpio_dt_ids[] = {
 	{ .compatible = "cirrus,ep7209-gpio", },
 	{ /* sentinel */ }
 };

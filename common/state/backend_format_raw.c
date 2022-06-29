@@ -16,14 +16,12 @@
  */
 
 #include <common.h>
-#include <common.h>
 #include <crypto/keystore.h>
 #include <digest.h>
 #include <linux/kernel.h>
 #include <malloc.h>
 #include <crc.h>
 #include <of.h>
-#include <crc.h>
 
 #include "state.h"
 

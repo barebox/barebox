@@ -8,7 +8,6 @@
 
 #include <io.h>
 #include <asm/types.h>
-#include <soc/imx8m/ddr.h>
 
 #define DDRC_DDR_SS_GPR0		0x3d000000
 #define DDRC_IPS_BASE_ADDR_0		0x3f400000

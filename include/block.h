@@ -49,4 +49,13 @@ static inline int block_flush(struct block_device *blk)
 	return cdev_flush(&blk->cdev);
 }
 
+#ifdef CONFIG_BLOCK
+struct block_device *cdev_get_block_device(struct cdev *cdev);
+#else
+static inline struct block_device *cdev_get_block_device(struct cdev *cdev)
+{
+	return NULL;
+}
+#endif
+
 #endif /* __BLOCK_H */

@@ -29,6 +29,7 @@
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/mtd-abi.h>
 #include <partition.h>
+#include <block.h>
 
 struct devfs_inode {
 	struct inode inode;
@@ -231,6 +232,7 @@ static struct inode *devfs_get_inode(struct super_block *sb, const struct inode 
 	default:
 		return NULL;
 	case S_IFCHR:
+	case S_IFBLK:
 		inode->i_op = &devfs_file_inode_operations;
 		inode->i_fop = &devfs_file_operations;
 		break;
@@ -250,12 +252,15 @@ static struct dentry *devfs_lookup(struct inode *dir, struct dentry *dentry,
 	struct devfs_inode *dinode;
 	struct inode *inode;
 	struct cdev *cdev;
+	umode_t mode;
 
 	cdev = cdev_by_name(dentry->name);
 	if (!cdev)
 		return ERR_PTR(-ENOENT);
 
-	inode = devfs_get_inode(dir->i_sb, dir, S_IFCHR);
+	mode = cdev_get_block_device(cdev) ? S_IFBLK : S_IFCHR;
+
+	inode = devfs_get_inode(dir->i_sb, dir, mode);
 	if (!inode)
 		return ERR_PTR(-ENOMEM);
 

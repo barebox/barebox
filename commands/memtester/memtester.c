@@ -113,7 +113,7 @@ static int do_memtester(int argc, char **argv) {
                             strerror(errno));
                     return COMMAND_ERROR_USAGE;
                 } else {
-                    if (!S_ISCHR(statbuf.st_mode)) {
+                    if (!S_ISCHR(statbuf.st_mode) && !S_ISBLK(statbuf.st_mode)) {
                         printf("can not mmap non-char device %s\n",
                                 optarg);
                         return COMMAND_ERROR_USAGE;

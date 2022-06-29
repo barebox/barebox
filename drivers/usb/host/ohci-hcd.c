@@ -27,7 +27,6 @@
  *     to activate workaround for bug #41 or this driver will NOT work!
  */
 #include <common.h>
-#include <dma.h>
 #include <clock.h>
 #include <dma.h>
 #include <malloc.h>

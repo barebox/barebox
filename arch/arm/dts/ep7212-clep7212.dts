@@ -1,0 +1,64 @@
+// SPDX-License-Identifier: GPL-2.0+
+/* Author: Alexander Shiyan <shc_work@mail.ru> */
+
+#include <arm/ep7211.dtsi>
+
+/ {
+	model = "Cirrus Logic EP7212";
+	compatible = "cirrus,clep7212", "cirrus,ep7212", "cirrus,ep7209";
+
+	memory@c0000000 {
+		device_type = "memory";
+		reg = <0xc0000000 0x02000000>;
+	};
+
+	chosen {
+		stdout-path = &uart1;
+
+		environment {
+			compatible = "barebox,environment";
+			device-path = &flash, "partname:env";
+		};
+	};
+};
+
+&bus {
+	/* Setup Memory Timings */
+	/* CS0 = WAITSTATE_6_1 | BUS_WIDTH_16 */
+	/* CS1 = WAITSTATE_6_1 | BUS_WIDTH_8 */
+	/* CS2 = WAITSTATE_8_3 | BUS_WIDTH_16 | CLKENB */
+	/* CS3 = WAITSTATE_7_1 | BUS_WIDTH_32 */
+	barebox,ep7209-memcfg1 = <0x25802b28>;
+
+	flash: nor@0,0 {
+		compatible = "cfi-flash";
+		reg = <0 0x00000000 0x02000000>;
+		bank-width = <2>;
+
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			partition@0 {
+				label = "boot";
+				reg = <0x00000 0x80000>;
+			};
+
+			partition@80000 {
+				label = "env";
+				reg = <0x80000 0x40000>;
+			};
+
+			partition@c0000 {
+				label = "kernel";
+				reg = <0xc0000 0x340000>;
+			};
+
+			partition@400000 {
+				label = "root";
+				reg = <0x400000 0>;
+			};
+		};
+	};
+};

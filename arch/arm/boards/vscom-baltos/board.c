@@ -85,7 +85,6 @@ static uint8_t get_dip_switch(uint16_t id, uint32_t rev)
 static int baltos_read_eeprom(void)
 {
 	struct bsp_vs_hwparam hw_param;
-	size_t size;
 	char *buf, var_buf[32];
 	int rc;
 	unsigned char mac_addr[6];
@@ -95,7 +94,7 @@ static int baltos_read_eeprom(void)
 		return 0;
 
 	rc = read_file_2("/dev/eeprom0",
-			 &size,
+			 NULL,
 			 (void *)&buf,
 			 sizeof(hw_param));
 	if (rc && rc != -EFBIG)

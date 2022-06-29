@@ -16,20 +16,11 @@ menu "CLPS711X specific settings"
 
 config CLPS711X_RAISE_CPUFREQ
 	bool "Raise CPU frequency to 90 MHz"
-	depends on MACH_CLEP7212
 	help
 	  Raise CPU frequency to 90 MHz. This operation can be performed
 	  only for devices which allow to operate at 90 MHz.
 	  If option is not selected, CPU frequency will set to default 73 MHz.
 
 endmenu
-
-config ARCH_TEXT_BASE
-	hex
-	default 0xc0740000 if MACH_CLEP7212
-
-config BAREBOX_MAX_IMAGE_SIZE
-	hex
-	default 0x00080000 if MACH_CLEP7212
 
 endif

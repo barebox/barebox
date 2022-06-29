@@ -34,14 +34,7 @@ static void menutree_action(struct menu *m, struct menu_entry *me)
 
 static void setenv_bool(const char *var, bool val)
 {
-	const char *str;
-
-	if (val)
-		str = "1";
-	else
-		str = "0";
-
-	setenv(var, str);
+	pr_setenv(var, "%d", val);
 }
 
 static void menutree_box(struct menu *m, struct menu_entry *me)
@@ -87,7 +80,6 @@ int menutree(const char *path, int toplevel)
 	glob_t g = {};
 	int i;
 	char *globpath, *display;
-	size_t size;
 
 	menu = menu_alloc();
 
@@ -100,7 +92,7 @@ int menutree(const char *path, int toplevel)
 	}
 
 	globpath = basprintf("%s/title", path);
-	display = read_file(globpath, &size);
+	display = read_file(globpath, NULL);
 	free(globpath);
 	if (!display) {
 		eprintf("no title found in %s/title\n", path);

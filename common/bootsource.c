@@ -113,16 +113,12 @@ void bootsource_set(enum bootsource src)
 
 void bootsource_set_instance(int instance)
 {
-	char buf[32];
-
 	bootsource_instance = instance;
 
 	if (instance < 0)
-		sprintf(buf, "unknown");
+		setenv("bootsource_instance","unknown");
 	else
-		snprintf(buf, sizeof(buf), "%d", instance);
-
-	setenv("bootsource_instance", buf);
+		pr_setenv("bootsource_instance", "%d", instance);
 }
 
 enum bootsource bootsource_get(void)

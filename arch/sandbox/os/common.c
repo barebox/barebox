@@ -40,7 +40,6 @@
 #include <sys/ioctl.h>
 #include <linux/fs.h>
 #include <sys/time.h>
-#include <signal.h>
 /*
  * ...except the ones needed to connect with barebox
  */

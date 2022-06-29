@@ -115,7 +115,6 @@ static void *omap_xload_boot_mmc(void)
 {
 	int ret;
 	void *buf;
-	int len;
 	const char *diskdev;
 	char *partname;
 
@@ -137,9 +136,9 @@ static void *omap_xload_boot_mmc(void)
 
 	free(partname);
 
-	buf = read_file("/barebox.bin", &len);
+	buf = read_file("/barebox.bin", NULL);
 	if (!buf)
-		buf = read_file("/boot/barebox.bin", &len);
+		buf = read_file("/boot/barebox.bin", NULL);
 	if (!buf) {
 		printf("could not read barebox.bin from sd card\n");
 		return NULL;
@@ -156,7 +155,6 @@ static void *omap_xload_boot_spi(struct omap_barebox_part *part)
 static void *omap4_xload_boot_usb(void){
 	int ret;
 	void *buf;
-	int len;
 
 	ret = mount("omap4_usbboot", "omap4_usbbootfs", "/", NULL);
 	if (ret) {
@@ -164,7 +162,7 @@ static void *omap4_xload_boot_usb(void){
 		return NULL;
 	}
 
-	buf = read_file("/barebox.bin", &len);
+	buf = read_file("/barebox.bin", NULL);
 	if (!buf)
 		printf("could not read barebox.bin from omap4_usbbootfs\n");
 
@@ -175,7 +173,6 @@ static void *omap_serial_boot(void){
 	struct console_device *cdev;
 	int ret;
 	void *buf;
-	int len;
 	int fd;
 
 	/* need temporary place to store file */
@@ -203,7 +200,7 @@ static void *omap_serial_boot(void){
 		return NULL;
 	}
 
-	buf = read_file("/barebox.bin", &len);
+	buf = read_file("/barebox.bin", NULL);
 	if (!buf)
 		printf("could not read barebox.bin from serial\n");
 
@@ -216,7 +213,6 @@ static void *am33xx_net_boot(void)
 {
 	void *buf = NULL;
 	int err;
-	int len;
 	struct dhcp_req_param dhcp_param;
 	const char *bootfile;
 	IPaddr_t ip;
@@ -276,7 +272,7 @@ static void *am33xx_net_boot(void)
 
 	file = basprintf("%s/%s", TFTP_MOUNT, bootfile);
 
-	buf = read_file(file, &len);
+	buf = read_file(file, NULL);
 	if (!buf)
 		printf("could not read %s.\n", bootfile);
 

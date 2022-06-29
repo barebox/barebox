@@ -220,6 +220,21 @@ static void console_init_early(void)
 	initialized = CONSOLE_INITIALIZED_BUFFER;
 }
 
+static void console_add_earlycon_param(struct console_device *cdev, unsigned baudrate)
+{
+	char *str;
+
+	if (!cdev->linux_earlycon_name)
+		return;
+
+	str = basprintf("earlycon=%s,0x%lx,%dn8", cdev->linux_earlycon_name,
+			(ulong)cdev->phys_base, baudrate);
+
+	dev_add_param_fixed(&cdev->class_dev, "linux.bootargs.earlycon", str);
+
+	free(str);
+}
+
 static void console_set_stdoutpath(struct console_device *cdev, unsigned baudrate)
 {
 	int id;
@@ -331,6 +346,8 @@ int console_register(struct console_device *newcdev)
 		activate = CONSOLE_STDIOE;
 		console_set_stdoutpath(newcdev, baudrate);
 	}
+
+	console_add_earlycon_param(newcdev, baudrate);
 
 	if (newcdev->setbrg) {
 		ret = newcdev->setbrg(newcdev, baudrate);

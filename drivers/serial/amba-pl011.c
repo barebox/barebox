@@ -202,6 +202,8 @@ static int pl011_probe(struct amba_device *dev, const struct amba_id *id)
 	cdev->getc = pl011_getc;
 	cdev->setbrg = pl011_setbaudrate;
 	cdev->linux_console_name = "ttyAMA";
+	cdev->linux_earlycon_name = "pl011";
+	cdev->phys_base = uart->base;
 
 	pl011_init_port(cdev);
 

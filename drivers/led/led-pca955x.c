@@ -387,11 +387,10 @@ static int led_pca955x_probe(struct device_d *dev)
 	err = pca955x_write_psc(client, 0, 0);
 	if (err)
 		return err;
-	err = pca955x_write_psc(client, 1, 0);
-	if (err)
-		return err;
 
-	return 0;
+	err = pca955x_write_psc(client, 1, 0);
+
+	return err;
 }
 
 static struct driver_d led_pca955x_driver = {

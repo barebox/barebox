@@ -37,29 +37,18 @@
 	};
 };
 
-&ecspi5 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_ecspi_5_1>;
-	fsl,spi-num-chipselects = <1>;
-	cs-gpios = <&gpio1 12 0>;
-	status = "okay";
+&flash {
+	#address-cells = <1>;
+	#size-cells = <1>;
 
-	flash: m25p80@0 {
-		compatible = "m25p80";
-		spi-max-frequency = <40000000>;
-		reg = <0>;
-		#address-cells = <1>;
-		#size-cells = <1>;
+	partition@0 {
+		label = "barebox";
+		reg = <0x0 0xe0000>;
+	};
 
-		partition@0 {
-			label = "barebox";
-			reg = <0x0 0xe0000>;
-		};
-
-		partition@e0000 {
-			label = "barebox-environment";
-			reg = <0xe0000 0x20000>;
-		};
+	partition@e0000 {
+		label = "barebox-environment";
+		reg = <0xe0000 0x20000>;
 	};
 };
 
@@ -68,17 +57,6 @@
 		pinctrl_pfuze_1: pfuze100grp1 {
 			fsl,pins = <
 				MX6QDL_PAD_EIM_D20__GPIO3_IO20 0x198c0
-			>;
-		};
-	};
-
-	ecspi5 {
-		pinctrl_ecspi_5_1: ecspi5rp-1 {
-			fsl,pins = <
-				MX6QDL_PAD_SD1_DAT0__ECSPI5_MISO 0x80000000
-				MX6QDL_PAD_SD1_CMD__ECSPI5_MOSI  0x80000000
-				MX6QDL_PAD_SD1_CLK__ECSPI5_SCLK  0x80000000
-				MX6QDL_PAD_SD2_DAT3__GPIO1_IO12  0x80000000
 			>;
 		};
 	};

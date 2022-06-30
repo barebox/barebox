@@ -5,3 +5,24 @@ config VIRTIO_BLK
         help
           This is the virtual block driver for virtio.  It can be used with
           QEMU based VMMs (like KVM or Xen).
+
+config EFI_BLK
+	bool "EFI block I/O driver"
+	default y
+	depends on EFI_BOOTUP
+
+config EFI_BLK_SEPARATE_USBDISK
+	bool "rename USB devices to /dev/usbdiskX"
+	default y
+	depends on EFI_BLK
+	help
+	  EFI block devices will be normally called /dev/diskX. Setting this
+	  option will cause block devices instantiated from handles with a
+	  EFI_USB_IO protocol to be called /dev/usbdiskX instead. Note that
+	  some buggy UEFI implementations have been observed to not do this
+	  consistently for all USB mass storage. If you need to absolutely
+	  be sure your boot device is a USB mass storage device and you can't
+	  fix your UEFI, consider disabling this options and setting a GUID
+	  for your disk and checking against it with
+
+	    devlookup -v $bootguid /dev/disk$bootsource_instance guid

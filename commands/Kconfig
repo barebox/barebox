@@ -75,6 +75,19 @@ config CMD_DEVINFO
 	  If called with a device path being the argument, devinfo shows more
 	  default information about this device and its parameters.
 
+config CMD_DEVLOOKUP
+	tristate
+	prompt "devlookup"
+	help
+	  Look up device behind device file and its parameters
+
+	  devlookup [-v VAR] /dev/DEVICE [parameter]
+
+          Detects the device behind a device file and outputs it,
+          unless a second argument is given. In that case the device
+          parameter with that name is looked up. Specifying -v VARIABLE
+          will write output to VARIABLE instead of printing it.
+
 config CMD_DEVUNBIND
 	tristate
 	prompt "devunbind"

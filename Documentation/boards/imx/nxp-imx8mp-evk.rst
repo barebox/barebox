@@ -40,14 +40,17 @@ As a last step of this process those files need to be placed in
 	      firmware/${f}; \
   done
 
-Get and Build the ARM Trusted firmware
---------------------------------------
+Get and Build the Trusted Firmware A
+------------------------------------
 
-Get ATF from https://source.codeaurora.org/external/imx/imx-atf, branch
-imx_5.4.3_2.0.0::
+Get TF-A from https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/ and
+checkout version v2.7::
 
   make PLAT=imx8mp bl31
   cp build/imx8mp/release/bl31.bin ${barebox_srctree}/imx8mp-bl31.bin
+
+.. warning:: It is important to use a version >= v2.7 else your system
+   might not boot.
 
 Build Barebox
 -------------

@@ -18,7 +18,7 @@
 #include <mach/xload.h>
 #include <soc/imx8m/ddr.h>
 
-extern char __dtb_imx8mq_mnt_reform2_start[];
+extern char __dtb_z_imx8mq_mnt_reform2_start[];
 
 #define UART_PAD_CTRL	MUX_PAD_CTRL(MX8MQ_PAD_CTL_DSE_65R)
 
@@ -173,7 +173,7 @@ static __noreturn noinline void mnt_reform_start(void)
 	/*
 	 * Standard entry we hit once we initialized both DDR and ATF
 	 */
-	imx8mq_barebox_entry(__dtb_imx8mq_mnt_reform2_start);
+	imx8mq_barebox_entry(__dtb_z_imx8mq_mnt_reform2_start);
 }
 
 ENTRY_FUNCTION(start_mnt_reform, r0, r1, r2)

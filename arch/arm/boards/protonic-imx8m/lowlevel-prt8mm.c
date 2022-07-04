@@ -15,7 +15,7 @@
 #include <soc/fsl/fsl_udc.h>
 #include <soc/imx8m/ddr.h>
 
-extern char __dtb_imx8mm_prt8mm_start[];
+extern char __dtb_z_imx8mm_prt8mm_start[];
 
 #define UART_PAD_CTRL	MUX_PAD_CTRL(PAD_CTL_DSE_3P3V_45_OHM)
 
@@ -109,7 +109,7 @@ static __noreturn noinline void prt_prt8mm_start(void)
 	/*
 	 * Standard entry we hit once we initialized both DDR and ATF
 	 */
-	imx8mm_barebox_entry(__dtb_imx8mm_prt8mm_start);
+	imx8mm_barebox_entry(__dtb_z_imx8mm_prt8mm_start);
 }
 
 ENTRY_FUNCTION(start_prt_prt8mm, r0, r1, r2)

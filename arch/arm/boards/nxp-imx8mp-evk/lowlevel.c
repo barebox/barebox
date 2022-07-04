@@ -23,7 +23,7 @@
 #include <soc/imx8m/ddr.h>
 #include <soc/fsl/fsl_udc.h>
 
-extern char __dtb_imx8mp_evk_start[];
+extern char __dtb_z_imx8mp_evk_start[];
 
 #define UART_PAD_CTRL   MUX_PAD_CTRL(MX8MP_PAD_CTL_DSE6 | \
 				     MX8MP_PAD_CTL_FSEL)
@@ -175,7 +175,7 @@ static __noreturn noinline void nxp_imx8mp_evk_start(void)
 	/*
 	 * Standard entry we hit once we initialized both DDR and ATF
 	 */
-	imx8mp_barebox_entry(__dtb_imx8mp_evk_start);
+	imx8mp_barebox_entry(__dtb_z_imx8mp_evk_start);
 }
 
 ENTRY_FUNCTION(start_nxp_imx8mp_evk, r0, r1, r2)

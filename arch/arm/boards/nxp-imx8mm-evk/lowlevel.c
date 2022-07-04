@@ -23,7 +23,7 @@
 #include <soc/fsl/fsl_udc.h>
 #include <image-metadata.h>
 
-extern char __dtb_imx8mm_evk_start[];
+extern char __dtb_z_imx8mm_evk_start[];
 
 #define UART_PAD_CTRL	MUX_PAD_CTRL(PAD_CTL_DSE_3P3V_45_OHM)
 
@@ -168,7 +168,7 @@ static __noreturn noinline void nxp_imx8mm_evk_start(void)
 	/*
 	 * Standard entry we hit once we initialized both DDR and ATF
 	 */
-	imx8mm_barebox_entry(__dtb_imx8mm_evk_start);
+	imx8mm_barebox_entry(__dtb_z_imx8mm_evk_start);
 }
 
 ENTRY_FUNCTION(start_nxp_imx8mm_evk, r0, r1, r2)

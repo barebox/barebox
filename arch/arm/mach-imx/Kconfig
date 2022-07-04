@@ -183,6 +183,7 @@ config ARCH_IMX8M
 	select HW_HAS_PCI
 	select IMX8M_DRAM
 	select PBL_VERIFY_PIGGY if HABV4
+	select ARM_USE_COMPRESSED_DTB
 
 config ARCH_IMX8MM
 	select ARCH_IMX8M
@@ -515,7 +516,6 @@ config MACH_ZII_IMX8MQ_DEV
 	select ARM_SMCCC
 	select MCI_IMX_ESDHC_PBL
 	select MACH_ZII_COMMON
-	select ARM_USE_COMPRESSED_DTB
 
 config MACH_ZII_VF610_DEV
 	bool "ZII VF610 Dev Family"
@@ -575,7 +575,6 @@ config MACH_NXP_IMX8MN_EVK
 	select MCI_IMX_ESDHC_PBL
 	select IMX8M_DRAM
 	select I2C_IMX_EARLY
-	select ARM_USE_COMPRESSED_DTB
 
 config MACH_NXP_IMX8MP_EVK
 	bool "NXP i.MX8MP EVK Board"

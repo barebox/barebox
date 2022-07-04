@@ -725,7 +725,10 @@ int bootm_boot(struct bootm_data *bootm_data)
 		} else {
 			rootarg = path_get_linux_rootarg(data->os_file);
 		}
-		if (!IS_ERR(rootarg)) {
+
+		if (IS_ERR(rootarg)) {
+			pr_err("Failed to append kernel cmdline parameter 'root='\n");
+		} else {
 			pr_info("Adding \"%s\" to Kernel commandline\n", rootarg);
 			globalvar_add_simple("linux.bootargs.bootm.appendroot",
 					     rootarg);

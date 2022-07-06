@@ -220,6 +220,11 @@ static struct phy_provider *of_phy_provider_lookup(struct device_node *node)
 {
 	struct phy_provider *phy_provider;
 	struct device_node *child;
+	int ret;
+
+	ret = of_device_ensure_probed(node);
+	if (ret)
+		return ERR_PTR(ret);
 
 	list_for_each_entry(phy_provider, &phy_provider_list, list) {
 		if (phy_provider->dev->device_node == node)
@@ -254,10 +259,6 @@ static struct phy *_of_phy_get(struct device_node *np, int index)
 		index, &args);
 	if (ret)
 		return ERR_PTR(-ENODEV);
-
-	ret = of_device_ensure_probed(args.np);
-	if (ret)
-		return ERR_PTR(ret);
 
 	phy_provider = of_phy_provider_lookup(args.np);
 	if (IS_ERR(phy_provider)) {

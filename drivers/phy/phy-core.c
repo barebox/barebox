@@ -317,7 +317,7 @@ struct phy *of_phy_get_by_phandle(struct device_d *dev, const char *phandle,
 
 	phy_provider = of_phy_provider_lookup(np);
 	if (IS_ERR(phy_provider)) {
-		return ERR_PTR(-ENODEV);
+		return ERR_CAST(phy_provider);
 	}
 
 	return phy_provider->of_xlate(phy_provider->dev, NULL);

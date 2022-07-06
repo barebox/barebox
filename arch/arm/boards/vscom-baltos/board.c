@@ -140,10 +140,15 @@ static int baltos_read_eeprom(void)
 
 	/* configure output signals of the external GPIO controller */
 	if (hw_param.SystemId == 210 || hw_param.SystemId == 211) {
-		gpio_direction_output(132, 0);
-		gpio_direction_output(133, 0);
-		gpio_direction_output(134, 0);
-		gpio_direction_output(135, 0);
+		int outs[4];
+		outs[0] = gpio_find_by_name("GP_OUT0");
+		outs[1] = gpio_find_by_name("GP_OUT1");
+		outs[2] = gpio_find_by_name("GP_OUT2");
+		outs[3] = gpio_find_by_name("GP_OUT3");
+		gpio_direction_output(outs[0], 0);
+		gpio_direction_output(outs[1], 0);
+		gpio_direction_output(outs[2], 0);
+		gpio_direction_output(outs[3], 0);
 	}
 
 	dip = get_dip_switch(hw_param.SystemId, hw_param.HwRev);

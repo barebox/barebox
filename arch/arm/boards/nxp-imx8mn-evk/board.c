@@ -5,6 +5,7 @@
 
 #include <bootsource.h>
 #include <common.h>
+#include <deep-probe.h>
 #include <init.h>
 #include <linux/phy.h>
 #include <linux/sizes.h>
@@ -30,13 +31,10 @@ static int ar8031_phy_fixup(struct phy_device *phydev)
 	return 0;
 }
 
-static int nxp_imx8mn_evk_init(void)
+static int imx8mn_evk_probe(struct device_d *dev)
 {
 	int emmc_bbu_flag = 0;
 	int sd_bbu_flag = 0;
-
-	if (!of_machine_is_compatible("fsl,imx8mn-evk"))
-		return 0;
 
 	if (bootsource_get() == BOOTSOURCE_MMC) {
 		if (bootsource_get_instance() == 2) {
@@ -59,4 +57,17 @@ static int nxp_imx8mn_evk_init(void)
 
 	return 0;
 }
-coredevice_initcall(nxp_imx8mn_evk_init);
+
+static const struct of_device_id imx8mn_evk_of_match[] = {
+	{ .compatible = "fsl,imx8mn-evk" },
+	{ .compatible = "fsl,imx8mn-ddr4-evk" },
+	{ /* sentinel */ },
+};
+BAREBOX_DEEP_PROBE_ENABLE(imx8mn_evk_of_match);
+
+static struct driver_d imx8mn_evkboard_driver = {
+	.name = "board-imx8mn-evk",
+	.probe = imx8mn_evk_probe,
+	.of_compatible = DRV_OF_COMPAT(imx8mn_evk_of_match),
+};
+coredevice_platform_driver(imx8mn_evkboard_driver);

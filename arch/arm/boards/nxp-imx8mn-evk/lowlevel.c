@@ -22,8 +22,6 @@
 #include <mfd/bd71837.h>
 #include <soc/imx8m/ddr.h>
 
-extern char __dtb_z_imx8mn_evk_start[];
-
 static void setup_uart(void)
 {
 	void __iomem *uart = IOMEM(MX8M_UART2_BASE_ADDR);
@@ -211,14 +209,23 @@ static void start_atf(void)
  */
 static __noreturn noinline void nxp_imx8mn_evk_start(void)
 {
+	extern char __dtb_z_imx8mn_evk_start[], __dtb_z_imx8mn_ddr4_evk_start[];
+	void *fdt;
+
 	setup_uart();
 
 	start_atf();
 
+	/* Check if we configured DDR4 in EL3 */
+	if (readl(MX8M_DDRC_CTL_BASE_ADDR) & BIT(4))
+		fdt = __dtb_z_imx8mn_ddr4_evk_start;
+	else
+		fdt = __dtb_z_imx8mn_evk_start;
+
 	/*
 	 * Standard entry we hit once we initialized both DDR and ATF
 	 */
-	imx8mn_barebox_entry(__dtb_z_imx8mn_evk_start);
+	imx8mn_barebox_entry(fdt);
 }
 
 ENTRY_FUNCTION(start_nxp_imx8mn_evk, r0, r1, r2)

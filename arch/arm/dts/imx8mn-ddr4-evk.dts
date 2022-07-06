@@ -2,5 +2,5 @@
 
 /dts-v1/;
 
-#include <arm64/freescale/imx8mn-evk.dts>
+#include <arm64/freescale/imx8mn-ddr4-evk.dts>
 #include "imx8mn-evk.dtsi"

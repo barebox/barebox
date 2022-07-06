@@ -260,8 +260,6 @@ static int imx_chipidea_probe(struct device_d *dev)
 	 * devices which have only one.
 	 */
 	ci->clk = clk_get(dev, NULL);
-	if (!IS_ERR(ci->clk))
-		clk_enable(ci->clk);
 
 	/* Device trees are using both "phys" and "fsl,usbphy".  Prefer the
 	 * more modern former one but fall back to the old one.
@@ -301,6 +299,14 @@ static int imx_chipidea_probe(struct device_d *dev)
 	ci->data.post_init = imx_chipidea_port_post_init;
 	ci->data.drvdata = ci;
 	ci->data.usbphy = ci->usbphy;
+
+	/*
+	 * Enable the clock after we ensured that all resources are available.
+	 * This is crucial since the phy can be missing which and so the
+	 * usb-controller <-> usb-phy communication is only partly initialized.
+	 * This can trigger strange system hangs at least on i.MX8M SoCs.
+	 */
+	clk_enable(ci->clk);
 
 	if ((ci->flags & MXC_EHCI_PORTSC_MASK) == MXC_EHCI_MODE_HSIC)
 		imx_chipidea_port_init(ci);

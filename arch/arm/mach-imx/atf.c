@@ -1,7 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
+#include <asm/sections.h>
 #include <common.h>
+#include <firmware.h>
 #include <mach/atf.h>
+#include <mach/generic.h>
+#include <mach/xload.h>
+#include <soc/imx8m.h>
+#include <soc/fsl/fsl_udc.h>
 
 /**
  * imx8m_atf_load_bl31 - Load ATF BL31 blob and transfer control to it
@@ -62,4 +68,42 @@ void imx8mp_atf_load_bl31(const void *fw, size_t fw_size)
 void imx8mq_atf_load_bl31(const void *fw, size_t fw_size)
 {
 	imx8m_atf_load_bl31(fw, fw_size, (void *)MX8MQ_ATF_BL31_BASE_ADDR);
+}
+
+void imx8mm_load_and_start_image_via_tfa(void)
+{
+	size_t bl31_size;
+	const u8 *bl31;
+	enum bootsource src;
+	int instance;
+
+	imx8mm_get_boot_source(&src, &instance);
+	switch (src) {
+	case BOOTSOURCE_MMC:
+		imx8m_esdhc_load_image(instance, false);
+		break;
+	case BOOTSOURCE_SERIAL:
+		imx8mm_barebox_load_usb((void *)MX8M_ATF_BL33_BASE_ADDR);
+		break;
+	default:
+		printf("Unhandled bootsource BOOTSOURCE_%d\n", src);
+		hang();
+	}
+
+	/*
+	 * On completion the TF-A will jump to MX8M_ATF_BL33_BASE_ADDR
+	 * in EL2. Copy the image there, but replace the PBL part of
+	 * that image with ourselves. On a high assurance boot only the
+	 * currently running code is validated and contains the checksum
+	 * for the piggy data, so we need to ensure that we are running
+	 * the same code in DRAM.
+	 */
+	memcpy((void *)MX8M_ATF_BL33_BASE_ADDR,
+	       __image_start, barebox_pbl_size);
+
+	get_builtin_firmware(imx8mm_bl31_bin, &bl31, &bl31_size);
+
+	imx8mm_atf_load_bl31(bl31, bl31_size);
+
+	/* not reached */
 }

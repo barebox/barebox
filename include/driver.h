@@ -88,6 +88,11 @@ struct device_d {
 	 * when the driver should actually detect client devices
 	 */
 	int     (*detect) (struct device_d *);
+
+	/*
+	 * if a driver probe is deferred, this stores the last error
+	 */
+	char *deferred_probe_reason;
 };
 
 /** @brief Describes a driver present in the system */

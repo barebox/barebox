@@ -66,6 +66,7 @@ static int regulator_enable_internal(struct regulator_internal *ri)
 
 static int regulator_disable_internal(struct regulator_internal *ri)
 {
+	struct regulator_dev *rdev = ri->rdev;
 	int ret;
 
 	if (!ri->enable_count)
@@ -76,10 +77,14 @@ static int regulator_disable_internal(struct regulator_internal *ri)
 		return 0;
 	}
 
-	if (!ri->rdev->desc->ops->disable)
+	/* Crisis averted, be loud about the unbalanced regulator use */
+	if (WARN_ON(rdev->always_on))
+		return -EPERM;
+
+	if (!rdev->desc->ops->disable)
 		return -ENOSYS;
 
-	ret = ri->rdev->desc->ops->disable(ri->rdev);
+	ret = rdev->desc->ops->disable(rdev);
 	if (ret)
 		return ret;
 

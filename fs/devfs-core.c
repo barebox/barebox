@@ -418,7 +418,7 @@ static int check_overlap(struct cdev *cdev, const char *name, loff_t offset, lof
 conflict:
 	pr_err("New partition %s (0x%08llx-0x%08llx) on %s "
 		"overlaps with partition %s (0x%08llx-0x%08llx), not creating it\n",
-		name, offset, offset + size - 1, cpart->name,
+		name, offset, offset + size - 1, cdev->name,
 		cpart->name, cpart_offset, cpart_offset + cpart->size - 1);
 
 	return -EINVAL;

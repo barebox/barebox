@@ -26,6 +26,7 @@ lwl-$(CONFIG_MACH_CCMX53) += imx53-ccxmx53.dtb.o
 lwl-$(CONFIG_MACH_DIGI_CCIMX6ULSBCPRO) += imx6ul-ccimx6ulsbcpro.dtb.o
 lwl-$(CONFIG_MACH_FREESCALE_MX53_VMX53) += imx53-voipac-bsb.dtb.o
 lwl-$(CONFIG_MACH_FREESCALE_MX7_SABRESD) += imx7d-sdb.dtb.o
+lwl-$(CONFIG_MACH_MEERKAT96) += imx7d-meerkat96.dtb.o
 lwl-$(CONFIG_MACH_GK802) += imx6q-gk802.dtb.o
 lwl-$(CONFIG_MACH_GLOBALSCALE_GURUPLUG) += kirkwood-guruplug-server-plus-bb.dtb.o
 lwl-$(CONFIG_MACH_GLOBALSCALE_MIRABOX) += armada-370-mirabox-bb.dtb.o

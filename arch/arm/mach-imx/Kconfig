@@ -486,6 +486,11 @@ config MACH_AC_SXB
 	select MCI_IMX_ESDHC_PBL
 	select ARM_USE_COMPRESSED_DTB
 
+config MACH_MEERKAT96
+	bool "96Boards: i.MX7 Meerkat96"
+	select ARCH_IMX7
+	select ARM_USE_COMPRESSED_DTB
+
 config MACH_VF610_TWR
 	bool "Freescale VF610 Tower Board"
 	select ARCH_VF610

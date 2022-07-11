@@ -395,9 +395,20 @@ static bool region_overlap(loff_t starta, loff_t lena,
 static int check_overlap(struct cdev *cdev, const char *name, loff_t offset, loff_t size)
 {
 	struct cdev *cpart;
+	loff_t cpart_offset;
 
 	list_for_each_entry(cpart, &cdev->partitions, partition_entry) {
-		if (region_overlap(cpart->offset, cpart->size,
+		cpart_offset = cpart->offset;
+
+		/*
+		 * An mtd partition is represented by a separate cdev and its
+		 * cpart is relative to this one. So its .offset is 0 and we
+		 * have to consult .master_offset to get its offset.
+		 */
+		if (cpart->mtd)
+			cpart_offset = cpart->mtd->master_offset;
+
+		if (region_overlap(cpart_offset, cpart->size,
 				   offset, size))
 			goto conflict;
 	}
@@ -408,7 +419,7 @@ conflict:
 	pr_err("New partition %s (0x%08llx-0x%08llx) on %s "
 		"overlaps with partition %s (0x%08llx-0x%08llx), not creating it\n",
 		name, offset, offset + size - 1, cpart->name,
-		cpart->name, cpart->offset, cpart->offset + cpart->size - 1);
+		cpart->name, cpart_offset, cpart_offset + cpart->size - 1);
 
 	return -EINVAL;
 }

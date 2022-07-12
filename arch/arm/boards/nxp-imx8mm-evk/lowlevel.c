@@ -101,7 +101,7 @@ static void start_atf(void)
 		return;
 
 	power_init_board();
-	imx8mm_ddr_init(&imx8mm_evk_dram_timing);
+	imx8mm_ddr_init(&imx8mm_evk_dram_timing, DRAM_TYPE_LPDDR4);
 
 	imx8mm_load_and_start_image_via_tfa();
 }

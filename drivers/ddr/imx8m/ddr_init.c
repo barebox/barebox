@@ -49,8 +49,8 @@ static void ddr_cfg_umctl2(struct dram_cfg_param *ddrc_cfg, int num)
  */
 #define IMX8M_SAVED_DRAM_TIMING_BASE		0x180000
 
-static int imx8m_ddr_init(struct dram_timing_info *dram_timing,
-			  enum ddrc_type type)
+int imx8m_ddr_init(struct dram_timing_info *dram_timing,
+		   enum ddrc_type type)
 {
 	unsigned long src_ddrc_rcr = MX8M_SRC_DDRC_RCR_ADDR;
 	unsigned int tmp, initial_drate, target_freq;
@@ -209,24 +209,4 @@ static int imx8m_ddr_init(struct dram_timing_info *dram_timing,
 	dram_config_save(dram_timing, IMX8M_SAVED_DRAM_TIMING_BASE);
 
 	return 0;
-}
-
-int imx8mm_ddr_init(struct dram_timing_info *dram_timing)
-{
-	return imx8m_ddr_init(dram_timing, DDRC_TYPE_MM);
-}
-
-int imx8mn_ddr_init(struct dram_timing_info *dram_timing)
-{
-	return imx8m_ddr_init(dram_timing, DDRC_TYPE_MN);
-}
-
-int imx8mq_ddr_init(struct dram_timing_info *dram_timing)
-{
-	return imx8m_ddr_init(dram_timing, DDRC_TYPE_MQ);
-}
-
-int imx8mp_ddr_init(struct dram_timing_info *dram_timing)
-{
-	return imx8m_ddr_init(dram_timing, DDRC_TYPE_MP);
 }

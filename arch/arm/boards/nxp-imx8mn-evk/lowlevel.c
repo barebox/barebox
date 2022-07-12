@@ -161,7 +161,7 @@ static void start_atf(void)
 		dram_timing = &imx8mn_evk_ddr4_timing;
 	}
 
-	imx8mn_ddr_init(dram_timing);
+	imx8mn_ddr_init(dram_timing, dram_timing->dram_type);
 
 	imx8mn_get_boot_source(&src, &instance);
 	switch (src) {

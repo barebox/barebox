@@ -48,7 +48,7 @@ static void start_atf(void)
 
 	imx8mm_early_clock_init();
 
-	imx8mm_ddr_init(&prt8mm_dram_timing);
+	imx8mm_ddr_init(&prt8mm_dram_timing, DRAM_TYPE_LPDDR4);
 
 	imx8mm_load_and_start_image_via_tfa();
 }

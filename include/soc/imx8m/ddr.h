@@ -375,10 +375,52 @@ enum ddrc_type {
 	DDRC_TYPE_MP,
 };
 
-int imx8mm_ddr_init(struct dram_timing_info *timing_info);
-int imx8mn_ddr_init(struct dram_timing_info *timing_info);
-int imx8mq_ddr_init(struct dram_timing_info *timing_info);
-int imx8mp_ddr_init(struct dram_timing_info *timing_info);
+void ddr_get_firmware_lpddr4(void);
+void ddr_get_firmware_ddr(void);
+
+static void ddr_get_firmware(enum dram_type type)
+{
+	if (type == DRAM_TYPE_LPDDR4)
+		ddr_get_firmware_lpddr4();
+	else
+		ddr_get_firmware_ddr();
+}
+
+int imx8m_ddr_init(struct dram_timing_info *dram_timing,
+		   enum ddrc_type type);
+
+static inline int imx8mm_ddr_init(struct dram_timing_info *dram_timing,
+				  enum dram_type type)
+{
+	ddr_get_firmware(type);
+
+	return imx8m_ddr_init(dram_timing, DDRC_TYPE_MM);
+}
+
+static inline int imx8mn_ddr_init(struct dram_timing_info *dram_timing,
+				  enum dram_type type)
+{
+	ddr_get_firmware(type);
+
+	return imx8m_ddr_init(dram_timing, DDRC_TYPE_MN);
+}
+
+static inline int imx8mq_ddr_init(struct dram_timing_info *dram_timing,
+				  enum dram_type type)
+{
+	ddr_get_firmware(type);
+
+	return imx8m_ddr_init(dram_timing, DDRC_TYPE_MQ);
+}
+
+static inline int imx8mp_ddr_init(struct dram_timing_info *dram_timing,
+				  enum dram_type type)
+{
+	ddr_get_firmware(type);
+
+	return imx8m_ddr_init(dram_timing, DDRC_TYPE_MP);
+}
+
 int ddr_cfg_phy(struct dram_timing_info *timing_info, enum ddrc_type type);
 void load_lpddr4_phy_pie(void);
 void ddrphy_trained_csr_save(struct dram_cfg_param *param, unsigned int num);

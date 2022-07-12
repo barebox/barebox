@@ -11,6 +11,48 @@
 #include <firmware.h>
 #include <mach/imx8m-regs.h>
 
+static const u16 *lpddr4_imem_1d;
+static size_t lpddr4_imem_1d_size;
+static const u16 *lpddr4_dmem_1d;
+static size_t lpddr4_dmem_1d_size;
+static const u16 *lpddr4_imem_2d;
+static size_t lpddr4_imem_2d_size;
+static const u16 *lpddr4_dmem_2d;
+static size_t lpddr4_dmem_2d_size;
+
+void ddr_get_firmware_lpddr4(void)
+{
+	get_builtin_firmware(lpddr4_pmu_train_1d_imem_bin, &lpddr4_imem_1d,
+			     &lpddr4_imem_1d_size);
+	get_builtin_firmware(lpddr4_pmu_train_1d_dmem_bin, &lpddr4_dmem_1d,
+			     &lpddr4_dmem_1d_size);
+	get_builtin_firmware(lpddr4_pmu_train_2d_imem_bin, &lpddr4_imem_2d,
+			     &lpddr4_imem_2d_size);
+	get_builtin_firmware(lpddr4_pmu_train_2d_dmem_bin, &lpddr4_dmem_2d,
+			     &lpddr4_dmem_2d_size);
+}
+
+static const u16 *ddr4_imem_1d;
+static size_t ddr4_imem_1d_size;
+static const u16 *ddr4_dmem_1d;
+static size_t ddr4_dmem_1d_size;
+static const u16 *ddr4_imem_2d;
+static size_t ddr4_imem_2d_size;
+static const u16 *ddr4_dmem_2d;
+static size_t ddr4_dmem_2d_size;
+
+void ddr_get_firmware_ddr(void)
+{
+	get_builtin_firmware(ddr4_imem_1d_bin, &ddr4_imem_1d,
+			     &ddr4_imem_1d_size);
+	get_builtin_firmware(ddr4_dmem_1d_bin, &ddr4_dmem_1d,
+			     &ddr4_dmem_1d_size);
+	get_builtin_firmware(ddr4_imem_2d_bin, &ddr4_imem_2d,
+			     &ddr4_imem_2d_size);
+	get_builtin_firmware(ddr4_dmem_2d_bin, &ddr4_dmem_2d,
+			     &ddr4_dmem_2d_size);
+}
+
 void ddr_load_train_code(enum dram_type dram_type, enum fw_type fw_type)
 {
 	const u16 *imem, *dmem;
@@ -18,19 +60,27 @@ void ddr_load_train_code(enum dram_type dram_type, enum fw_type fw_type)
 
 	if (dram_is_lpddr4(dram_type)) {
 		if (fw_type == FW_1D_IMAGE) {
-			get_builtin_firmware(lpddr4_pmu_train_1d_imem_bin, &imem, &isize);
-			get_builtin_firmware(lpddr4_pmu_train_1d_dmem_bin, &dmem, &dsize);
+			imem = lpddr4_imem_1d;
+			isize = lpddr4_imem_1d_size;
+			dmem = lpddr4_dmem_1d;
+			dsize = lpddr4_dmem_1d_size;
 		} else {
-			get_builtin_firmware(lpddr4_pmu_train_2d_imem_bin, &imem, &isize);
-			get_builtin_firmware(lpddr4_pmu_train_2d_dmem_bin, &dmem, &dsize);
+			imem = lpddr4_imem_2d;
+			isize = lpddr4_imem_2d_size;
+			dmem = lpddr4_dmem_2d;
+			dsize = lpddr4_dmem_2d_size;
 		}
 	} else if (dram_is_ddr4(dram_type)) {
 		if (fw_type == FW_1D_IMAGE) {
-			get_builtin_firmware(ddr4_imem_1d_bin, &imem, &isize);
-			get_builtin_firmware(ddr4_dmem_1d_bin, &dmem, &dsize);
+			imem = ddr4_imem_1d;
+			isize = ddr4_imem_1d_size;
+			dmem = ddr4_dmem_1d;
+			dsize = ddr4_dmem_1d_size;
 		} else {
-			get_builtin_firmware(ddr4_imem_2d_bin, &imem, &isize);
-			get_builtin_firmware(ddr4_dmem_2d_bin, &dmem, &dsize);
+			imem = ddr4_imem_2d;
+			isize = ddr4_imem_2d_size;
+			dmem = ddr4_dmem_2d;
+			dsize = ddr4_dmem_2d_size;
 		}
 	} else {
 		panic("No matching DDR PHY firmware found");

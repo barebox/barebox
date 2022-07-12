@@ -139,7 +139,7 @@ static __noreturn noinline void mnt_reform_start(void)
 
 		mnt_reform_init_power();
 
-		imx8mq_ddr_init(&mnt_reform_dram_timing);
+		imx8mq_ddr_init(&mnt_reform_dram_timing, DRAM_TYPE_LPDDR4);
 
 		imx8mq_get_boot_source(&src, &instance);
 		switch (src) {

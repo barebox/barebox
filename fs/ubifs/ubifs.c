@@ -125,7 +125,8 @@ static inline struct crypto_comp
 			i++;
 			continue;
 		}
-		if (strncmp(alg_name, comp->capi_name, strlen(alg_name)) == 0) {
+		if (comp->capi_name &&
+		    strncmp(alg_name, comp->capi_name, strlen(alg_name)) == 0) {
 			ptr->compressor = i;
 			return ptr;
 		}

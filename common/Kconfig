@@ -860,29 +860,30 @@ choice
 	default DEFAULT_COMPRESSION_LZ4 if LZ4_DECOMPRESS
 	default DEFAULT_COMPRESSION_BZIP2 if BZLIB
 	help
-	  Select the default compression for in-barebox binary files. Files
-	  compiled into barebox like for example the default environment will
-	  be compressed with this compression type.
+	  For barebox builds without a prebootloader, select here the default
+	  compression for in-barebox binary files. barebox itself can't be
+	  compressed without a prebootloader, but for example the default
+	  environment will be compressed with this compression type.
 
 config DEFAULT_COMPRESSION_GZIP
 	bool "gzip"
-	depends on ZLIB
+	depends on !PBL_IMAGE && ZLIB
 
 config DEFAULT_COMPRESSION_BZIP2
 	bool "bzip2"
-	depends on BZLIB
+	depends on !PBL_IMAGE && BZLIB
 
 config DEFAULT_COMPRESSION_LZO
 	bool "lzo"
-	depends on LZO_DECOMPRESS
+	depends on !PBL_IMAGE && LZO_DECOMPRESS
 
 config DEFAULT_COMPRESSION_LZ4
 	bool "lz4"
-	depends on LZ4_DECOMPRESS
+	depends on !PBL_IMAGE && LZ4_DECOMPRESS
 
 config DEFAULT_COMPRESSION_XZ
 	bool "xz"
-	depends on XZ_DECOMPRESS
+	depends on !PBL_IMAGE && XZ_DECOMPRESS
 
 config DEFAULT_COMPRESSION_NONE
 	bool "no compression"

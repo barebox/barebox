@@ -28,6 +28,12 @@ config PBL_SINGLE_IMAGE
 
 if PBL_IMAGE
 
+config USE_COMPRESSED_DTB
+	bool
+	depends on ARM || RISCV
+	select UNCOMPRESS
+	select LZO_DECOMPRESS
+
 config PBL_RELOCATABLE
 	depends on ARM || MIPS || RISCV
 	bool "relocatable pbl image"

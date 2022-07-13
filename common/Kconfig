@@ -41,12 +41,6 @@ config BLOCK
 config BLOCK_WRITE
 	bool
 
-config USE_COMPRESSED_DTB
-	bool
-	depends on ARM || RISCV
-	select UNCOMPRESS
-	select LZO_DECOMPRESS
-
 config FILETYPE
 	bool
 

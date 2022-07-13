@@ -58,7 +58,7 @@ fi
 compressed=$(${CONFIG_SHELL} "${srctree}/scripts/file-size.sh" $dtb.lzo)
 uncompressed=$(${CONFIG_SHELL} "${srctree}/scripts/file-size.sh" $dtb)
 
-echo "#ifdef CONFIG_USE_COMPRESSED_DTB"
+echo "#if defined(CONFIG_USE_COMPRESSED_DTB) && defined(__PBL__)"
 echo ".section .dtbz.rodata.${name},\"a\""
 echo ".balign STRUCT_ALIGNMENT"
 echo ".global __dtb_z_${name}_start"

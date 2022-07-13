@@ -272,6 +272,16 @@ cmd_ld = $(LD) $(KBUILD_LDFLAGS) $(EXTRA_LDFLAGS) $(LDFLAGS_$(@F)) \
 quiet_cmd_objcopy = OBJCOPY $@
 cmd_objcopy = $(OBJCOPY) $(OBJCOPYFLAGS) $(OBJCOPYFLAGS_$(@F)) $< $@
 
+# Decompressor for barebox proper binary when using PBL
+# ---------------------------------------------------------------------------
+
+suffix_y = comp_copy
+suffix_$(CONFIG_IMAGE_COMPRESSION_GZIP) = gzip
+suffix_$(CONFIG_IMAGE_COMPRESSION_LZO)  = lzo
+suffix_$(CONFIG_IMAGE_COMPRESSION_LZ4)	= lz4
+suffix_$(CONFIG_IMAGE_COMPRESSION_XZKERN) = xzkern
+suffix_$(CONFIG_IMAGE_COMPRESSION_NONE) = comp_copy
+
 # Gzip
 # ---------------------------------------------------------------------------
 
@@ -337,7 +347,7 @@ $(obj)/%.dtb.S: $(obj)/%.dtb $(obj)/%.dtb.z $(srctree)/scripts/gen-dtb-s FORCE
 	$(call if_changed,dt_S_dtb)
 
 $(obj)/%.dtb.z: $(obj)/%.dtb FORCE
-	$(call if_changed,lzo)
+	$(call if_changed,$(suffix_y))
 
 dts-frags = $(subst $(quote),,$(CONFIG_EXTERNAL_DTS_FRAGMENTS))
 quiet_cmd_dtc = DTC     $@

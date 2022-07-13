@@ -31,7 +31,6 @@ if PBL_IMAGE
 config USE_COMPRESSED_DTB
 	bool
 	depends on ARM || RISCV
-	select UNCOMPRESS
 	select LZO_DECOMPRESS
 
 config PBL_RELOCATABLE

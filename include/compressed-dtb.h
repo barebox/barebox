@@ -10,6 +10,7 @@ struct barebox_boarddata_compressed_dtb {
 	u32 magic;
 	u32 datalen;
 	u32 datalen_uncompressed;
+	u8 data[];
 };
 
 static inline bool blob_is_compressed_fdt(const void *blob)

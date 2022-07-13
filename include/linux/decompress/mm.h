@@ -66,8 +66,17 @@ static __maybe_unused void simple_free(void *where)
 #define MALLOC simple_malloc
 #define FREE simple_free
 
-#define INIT
+#else
+
+#define large_malloc(a) malloc(a)
+#define large_free(a) free(a)
 
 #endif /* STATIC */
+
+#ifndef STATIC
+#define STATIC
+#endif
+
+#define INIT
 
 #endif /* DECOMPR_MM_H */

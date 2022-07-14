@@ -456,7 +456,7 @@ static void dump_bytes(const void *src, unsigned cnt, unsigned addr)
  * EP2IN - bulk in
  * (max packet size of 512 bytes)
  */
-static int transfer(int report, unsigned char *p, unsigned cnt, int *last_trans)
+static int transfer(int report, void *p, unsigned cnt, int *last_trans)
 {
 	int err;
 	if (cnt > mach_id->max_transfer)
@@ -527,7 +527,7 @@ static int do_status(void)
 	unsigned char tmp[64];
 	int retry = 0;
 	int err;
-	static const struct sdp_command status_command = {
+	static struct sdp_command status_command = {
 		.cmd = SDP_ERROR_STATUS,
 		.addr = 0,
 		.format = 0,
@@ -537,8 +537,7 @@ static int do_status(void)
 	};
 
 	for (;;) {
-		err = transfer(1, (unsigned char *) &status_command, 16,
-			       &last_trans);
+		err = transfer(1, &status_command, 16, &last_trans);
 
 		if (verbose > 2)
 			printf("report 1, wrote %i bytes, err=%i\n", last_trans, err);
@@ -591,8 +590,7 @@ static int read_memory(unsigned addr, void *dest, unsigned cnt)
 	read_reg_command.cnt = htonl(cnt);
 
 	for (;;) {
-		err = transfer(1, (unsigned char *) &read_reg_command, 16,
-			       &last_trans);
+		err = transfer(1, &read_reg_command, 16, &last_trans);
 		if (!err)
 			break;
 		printf("read_reg_command err=%i, last_trans=%i\n", err, last_trans);
@@ -668,8 +666,7 @@ static int write_memory(unsigned addr, unsigned val, int width)
 	write_reg_command.data = htonl(val);
 
 	for (;;) {
-		err = transfer(1, (unsigned char *) &write_reg_command, 16,
-			       &last_trans);
+		err = transfer(1, &write_reg_command, 16, &last_trans);
 		if (!err)
 			break;
 		printf("write_reg_command err=%i, last_trans=%i\n", err, last_trans);
@@ -771,8 +768,7 @@ static int load_file(void *buf, unsigned len, unsigned dladdr,
 	dl_command.rsvd = type;
 
 	for (;;) {
-		err = transfer(1, (unsigned char *) &dl_command, 16,
-			       &last_trans);
+		err = transfer(1, &dl_command, 16, &last_trans);
 		if (!err)
 			break;
 
@@ -832,8 +828,7 @@ static int sdp_jump_address(unsigned addr)
 	jump_command.addr = htonl(addr);
 
 	for (;;) {
-		err = transfer(1, (unsigned char *) &jump_command, 16,
-			       &last_trans);
+		err = transfer(1, &jump_command, 16, &last_trans);
 		if (!err)
 			break;
 
@@ -1479,7 +1474,7 @@ static int mxs_load_buf(uint8_t *data, int size)
 	dl_command.cmd = MXS_CMD_FW_DOWNLOAD;
 	dl_command.dw_size = htonl(size);
 
-	err = transfer(1, (unsigned char *) &dl_command, 20, &last_trans);
+	err = transfer(1, &dl_command, 20, &last_trans);
 	if (err) {
 		printf("transfer error at init step: err=%i, last_trans=%i\n",
 		       err, last_trans);

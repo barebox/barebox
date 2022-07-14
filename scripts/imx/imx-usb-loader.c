@@ -1258,19 +1258,22 @@ static int get_dl_start(const unsigned char *p, const unsigned char *file_start,
 	}
 	case HDR_MX53:
 	{
-		unsigned char *bd;
+		unsigned char *_bd;
 		struct imx_flash_header_v2 *hdr = (struct imx_flash_header_v2 *)p;
+		struct imx_boot_data *bd;
 
 		*header_addr = hdr->self;
-		bd = hdr->boot_data_ptr + cvt_dest_to_src;
-		if ((bd < file_start) || ((bd + 4) > file_end)) {
+		_bd = hdr->boot_data_ptr + cvt_dest_to_src;
+		if ((_bd < file_start) || ((_bd + 4) > file_end)) {
 			printf("bad boot_data_ptr %08x\n", hdr->boot_data_ptr);
 			return -1;
 		}
 
-		*firststage_len = ((struct imx_boot_data *)bd)->size;
-		*plugin = ((struct imx_boot_data *)bd)->plugin;
-		((struct imx_boot_data *)bd)->plugin = 0;
+		bd = (void *)_bd;
+
+		*firststage_len = bd->size;
+		*plugin = bd->plugin;
+		bd->plugin = 0;
 
 		break;
 	}

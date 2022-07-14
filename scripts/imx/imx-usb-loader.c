@@ -74,6 +74,7 @@ struct mach_id {
 #define DEV_IMX		0
 #define DEV_MXS		1
 	unsigned char dev_type;
+	unsigned char hid_endpoint;
 };
 
 struct usb_work {
@@ -180,6 +181,14 @@ static const struct mach_id imx_ids[] = {
 		.header_type = HDR_MX53,
 		.mode = MODE_HID,
 		.max_transfer = 1024,
+	}, {
+		.vid = 0x1fc9,
+		.pid = 0x0146,
+		.name = "i.MX8MP",
+		.header_type = HDR_MX53,
+		.max_transfer = 1020,
+		.mode = MODE_HID,
+		.hid_endpoint = 1,
 	}, {
 		.vid = 0x1fc9,
 		.pid = 0x012b,
@@ -470,15 +479,22 @@ static int transfer(int report, unsigned char *p, unsigned cnt, int *last_trans)
 
 		if (report < 3) {
 			memcpy(&tmp[1], p, cnt);
-			err = libusb_control_transfer(usb_dev_handle,
-					CTRL_OUT,
-					HID_SET_REPORT,
-					(HID_REPORT_TYPE_OUTPUT << 8) | report,
-					0,
-					tmp, cnt + 1, 1000);
-			*last_trans = (err > 0) ? err - 1 : 0;
-			if (err > 0)
-				err = 0;
+			if (mach_id->hid_endpoint) {
+				int trans;
+				err = libusb_interrupt_transfer(usb_dev_handle,
+						mach_id->hid_endpoint, tmp, cnt + 1, &trans, 1000);
+				*last_trans = trans - 1;
+			} else {
+				err = libusb_control_transfer(usb_dev_handle,
+						CTRL_OUT,
+						HID_SET_REPORT,
+						(HID_REPORT_TYPE_OUTPUT << 8) | report,
+						0,
+						tmp, cnt + 1, 1000);
+				*last_trans = (err > 0) ? err - 1 : 0;
+				if (err > 0)
+					err = 0;
+			}
 		} else {
 			*last_trans = 0;
 			memset(&tmp[1], 0, cnt);
@@ -1352,6 +1368,9 @@ static int do_irom_download(struct usb_work *curr, int verify)
 		goto cleanup;
 
 	header_offset = ret;
+
+	if (mach_id->hid_endpoint)
+		return send_buf(buf + header_offset, fsize - header_offset);
 
 	if (plugin && (!curr->plug)) {
 		printf("Only plugin header found\n");

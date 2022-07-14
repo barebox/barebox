@@ -1409,7 +1409,7 @@ static int do_irom_download(struct usb_work *curr, int verify)
 	if (verify) {
 		printf("verifying file...\n");
 
-		ret = verify_memory(image, fsize, header_addr);
+		ret = verify_memory(image, firststage_len, header_addr);
 		if (ret < 0) {
 			printf("verifying failed\n");
 			goto cleanup;

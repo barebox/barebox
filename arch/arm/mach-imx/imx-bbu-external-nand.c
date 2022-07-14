@@ -29,7 +29,7 @@ static int imx_bbu_external_nand_update(struct bbu_handler *handler, struct bbu_
 	int size_available, size_need;
 	int ret;
 	uint32_t num_bb = 0, bbt = 0;
-	loff_t nand_offset = 0;
+	loff_t nand_offset = 0, image_offset = 0;
 	int block = 0, len, now, blocksize;
 	void *image = NULL;
 
@@ -157,12 +157,12 @@ static int imx_bbu_external_nand_update(struct bbu_handler *handler, struct bbu_
 		if (ret)
 			goto out;
 
-		ret = write(fd, image, now);
+		ret = write(fd, image + image_offset, now);
 		if (ret < 0)
 			goto out;
 
 		len -= now;
-		image += now;
+		image_offset += now;
 		nand_offset += now;
 	}
 

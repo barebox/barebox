@@ -1271,7 +1271,7 @@ static int get_dl_start(const unsigned char *p, const unsigned char *file_start,
 
 		bd = (void *)_bd;
 
-		*firststage_len = bd->size;
+		*firststage_len = bd->size - (hdr->self - bd->start);
 		*plugin = bd->plugin;
 		bd->plugin = 0;
 

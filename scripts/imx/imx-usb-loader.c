@@ -619,17 +619,10 @@ static int read_memory(unsigned addr, void *dest, unsigned cnt)
 					err, last_trans, tmp[0], tmp[1], tmp[2], tmp[3], cnt, rem);
 			break;
 		}
-		if ((last_trans > rem) || (last_trans > 64)) {
-			if ((last_trans == 64) && (rem < 64)) {
-				/* Last transfer is expected to be too large for HID */
-			} else {
-				printf("err: %02x %02x %02x %02x cnt=%u rem=%d last_trans=%i\n",
-						tmp[0], tmp[1], tmp[2], tmp[3], cnt, rem, last_trans);
-			}
+
+		if (last_trans > rem)
 			last_trans = rem;
-			if (last_trans > 64)
-				last_trans = 64;
-		}
+
 		memcpy(dest, tmp, last_trans);
 		dest += last_trans;
 		rem -= last_trans;

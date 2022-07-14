@@ -29,7 +29,7 @@ static int imx_bbu_external_nand_update(struct bbu_handler *handler, struct bbu_
 	int size_available, size_need;
 	int ret;
 	uint32_t num_bb = 0, bbt = 0;
-	loff_t offset = 0;
+	loff_t nand_offset = 0;
 	int block = 0, len, now, blocksize;
 	void *image = NULL;
 
@@ -61,27 +61,27 @@ static int imx_bbu_external_nand_update(struct bbu_handler *handler, struct bbu_
 	 * Collect bad blocks and construct BBT
 	 */
 	while (size_need > 0) {
-		ret = ioctl(fd, MEMGETBADBLOCK, &offset);
+		ret = ioctl(fd, MEMGETBADBLOCK, &nand_offset);
 		if (ret < 0)
 			goto out;
 
 		if (ret) {
-			if (!offset) {
+			if (!nand_offset) {
 				printf("1st block is bad. This is not supported\n");
 				ret = -EINVAL;
 				goto out;
 			}
 
-			debug("bad block at 0x%08llx\n", offset);
+			debug("bad block at 0x%08llx\n", nand_offset);
 			num_bb++;
 			bbt |= (1 << block);
-			offset += blocksize;
+			nand_offset += blocksize;
 			block++;
 			continue;
 		}
 		size_need -= blocksize;
 		size_available -= blocksize;
-		offset += blocksize;
+		nand_offset += blocksize;
 		block++;
 
 		if (size_available < 0) {
@@ -124,7 +124,7 @@ static int imx_bbu_external_nand_update(struct bbu_handler *handler, struct bbu_
 	}
 
 	len = data->len;
-	offset = 0;
+	nand_offset = 0;
 
 	/* last chance before erasing the flash */
 	ret = bbu_confirm(data);
@@ -137,13 +137,13 @@ static int imx_bbu_external_nand_update(struct bbu_handler *handler, struct bbu_
 	while (len > 0) {
 		now = min(len, blocksize);
 
-		ret = ioctl(fd, MEMGETBADBLOCK, &offset);
+		ret = ioctl(fd, MEMGETBADBLOCK, &nand_offset);
 		if (ret < 0)
 			goto out;
 
 		if (ret) {
-			offset += blocksize;
-			if (lseek(fd, offset, SEEK_SET) != offset) {
+			nand_offset += blocksize;
+			if (lseek(fd, nand_offset, SEEK_SET) != nand_offset) {
 				ret = -errno;
 				goto out;
 			}
@@ -151,9 +151,9 @@ static int imx_bbu_external_nand_update(struct bbu_handler *handler, struct bbu_
 			continue;
 		}
 
-		debug("writing %d bytes at 0x%08llx\n", now, offset);
+		debug("writing %d bytes at 0x%08llx\n", now, nand_offset);
 
-		ret = erase(fd, blocksize, offset);
+		ret = erase(fd, blocksize, nand_offset);
 		if (ret)
 			goto out;
 
@@ -163,7 +163,7 @@ static int imx_bbu_external_nand_update(struct bbu_handler *handler, struct bbu_
 
 		len -= now;
 		image += now;
-		offset += now;
+		nand_offset += now;
 	}
 
 	ret = 0;

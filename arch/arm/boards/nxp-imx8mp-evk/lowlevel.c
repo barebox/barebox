@@ -22,6 +22,7 @@
 #include <mfd/pca9450.h>
 #include <soc/imx8m/ddr.h>
 #include <soc/fsl/fsl_udc.h>
+#include <soc/imx8m.h>
 
 extern char __dtb_z_imx8mp_evk_start[];
 
@@ -104,11 +105,6 @@ extern struct dram_timing_info imx8mp_evk_dram_timing;
 
 static void start_atf(void)
 {
-	size_t bl31_size;
-	const u8 *bl31;
-	enum bootsource src;
-	int instance;
-
 	/*
 	 * If we are in EL3 we are running for the first time and need to
 	 * initialize the DRAM and run TF-A (BL31). The TF-A will then jump
@@ -121,33 +117,7 @@ static void start_atf(void)
 
 	imx8mp_ddr_init(&imx8mp_evk_dram_timing, DRAM_TYPE_LPDDR4);
 
-	imx8mp_get_boot_source(&src, &instance);
-	switch (src) {
-	case BOOTSOURCE_MMC:
-		imx8mp_esdhc_load_image(instance, false);
-		break;
-	default:
-		printf("Unhandled bootsource BOOTSOURCE_%d\n", src);
-		hang();
-	}
-
-
-	/*
-	 * On completion the TF-A will jump to MX8M_ATF_BL33_BASE_ADDR
-	 * in EL2. Copy the image there, but replace the PBL part of
-	 * that image with ourselves. On a high assurance boot only the
-	 * currently running code is validated and contains the checksum
-	 * for the piggy data, so we need to ensure that we are running
-	 * the same code in DRAM.
-	 */
-	memcpy((void *)MX8M_ATF_BL33_BASE_ADDR,
-	       __image_start, barebox_pbl_size);
-
-	get_builtin_firmware(imx8mp_bl31_bin, &bl31, &bl31_size);
-
-	imx8mp_atf_load_bl31(bl31, bl31_size);
-
-	/* not reached */
+	imx8mp_load_and_start_image_via_tfa();
 }
 
 /*

@@ -1450,8 +1450,7 @@ static int write_mem(const struct config_data *data, uint32_t addr,
 	return modify_memory(addr, val, width, set_bits, clear_bits);
 }
 
-/* MXS section */
-static int mxs_load_file(libusb_device_handle *dev, uint8_t *data, int size)
+static int mxs_load_buf(uint8_t *data, int size)
 {
 	static struct mxs_command dl_command;
 	int last_trans, err;
@@ -1477,7 +1476,7 @@ static int mxs_load_file(libusb_device_handle *dev, uint8_t *data, int size)
 	return err;
 }
 
-static int mxs_work(struct usb_work *curr)
+static int mxs_load_file(struct usb_work *curr)
 {
 	size_t fsize = 0;
 	unsigned char *buf = NULL;
@@ -1486,9 +1485,8 @@ static int mxs_work(struct usb_work *curr)
 	if (!buf)
 		return -errno;
 
-	return mxs_load_file(usb_dev_handle, buf, fsize);
+	return mxs_load_buf(buf, fsize);
 }
-/* end of mxs section */
 
 static int parse_initfile(const char *filename)
 {
@@ -1608,7 +1606,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (mach_id->dev_type == DEV_MXS) {
-		ret = mxs_work(&w);
+		ret = mxs_load_file(&w);
 		goto out;
 	}
 

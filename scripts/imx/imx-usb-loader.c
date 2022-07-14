@@ -713,6 +713,31 @@ static int modify_memory(unsigned addr, unsigned val, int width, int set_bits, i
 	return write_memory(addr, val, 4);
 }
 
+static int send_buf(void *buf, unsigned len)
+{
+	void *p = buf;
+	int cnt = len;
+	int err;
+
+	while (1) {
+		int now = get_min(cnt, mach_id->max_transfer);
+
+		if (!now)
+			break;
+
+		err = transfer(2, p, now, &now);
+		if (err) {
+			printf("dl_command err=%i, last_trans=%i\n", err, now);
+			return err;
+		}
+
+		p += now;
+		cnt -= now;
+	}
+
+	return 0;
+}
+
 static int load_file(void *buf, unsigned len, unsigned dladdr,
 		     unsigned char type, bool mode_barebox)
 {
@@ -729,8 +754,6 @@ static int load_file(void *buf, unsigned len, unsigned dladdr,
 	int retry = 0;
 	unsigned transfer_size = 0;
 	unsigned char tmp[64];
-	void *p;
-	int cnt;
 
 	len = ALIGN(len, 4);
 
@@ -760,24 +783,9 @@ static int load_file(void *buf, unsigned len, unsigned dladdr,
 					err, last_trans, tmp[0], tmp[1], tmp[2], tmp[3]);
 	}
 
-	p = buf;
-	cnt = len;
-
-	while (1) {
-		int now = get_min(cnt, mach_id->max_transfer);
-
-		if (!now)
-			break;
-
-		err = transfer(2, p, now, &now);
-		if (err) {
-			printf("dl_command err=%i, last_trans=%i\n", err, last_trans);
-			return err;
-		}
-
-		p += now;
-		cnt -= now;
-	}
+	err = send_buf(buf, len);
+	if (err)
+		return err;
 
 	if (mode_barebox)
 		return transfer_size;
@@ -1447,8 +1455,6 @@ static int mxs_load_file(libusb_device_handle *dev, uint8_t *data, int size)
 {
 	static struct mxs_command dl_command;
 	int last_trans, err;
-	void *p;
-	int cnt;
 
 	dl_command.sign = htonl(0x424c5443); /* Signature: BLTC */
 	dl_command.tag = htonl(0x1);
@@ -1466,24 +1472,7 @@ static int mxs_load_file(libusb_device_handle *dev, uint8_t *data, int size)
 		return err;
 	}
 
-	p = data;
-	cnt = size;
-
-	while (1) {
-		int now = get_min(cnt, mach_id->max_transfer);
-
-		if (!now)
-			break;
-
-		err = transfer(2, p, now, &now);
-		if (err) {
-			printf("dl_command err=%i, last_trans=%i\n", err, now);
-			return err;
-		}
-
-		p += now;
-		cnt -= now;
-	}
+	err = send_buf(data, size);
 
 	return err;
 }

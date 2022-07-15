@@ -28,6 +28,7 @@ static int rock3_probe(struct device_d *dev)
 
 	rk3568_bbu_mmc_register("emmc", BBU_HANDLER_FLAG_DEFAULT,
 				"/dev/mmc1");
+	rk3568_bbu_mmc_register("sd", 0, "/dev/mmc0");
 
 	return 0;
 }

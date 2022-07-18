@@ -191,6 +191,8 @@ void barebox_set_serial_number(const char *__serial_number)
 
 const char *barebox_get_serial_number(void)
 {
+	if (!serial_number || *serial_number == '\0')
+		return NULL;
 	return serial_number;
 }
 
@@ -204,6 +206,8 @@ void barebox_set_of_machine_compatible(const char *__compatible)
 
 const char *barebox_get_of_machine_compatible(void)
 {
+	if (!of_machine_compatible || *of_machine_compatible == '\0')
+		return NULL;
 	return of_machine_compatible;
 }
 

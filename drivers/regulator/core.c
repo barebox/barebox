@@ -569,8 +569,13 @@ EXPORT_SYMBOL_GPL(regulator_bulk_free);
 
 int regulator_get_voltage(struct regulator *regulator)
 {
-	struct regulator_dev *rdev = regulator->ri->rdev;
+	struct regulator_dev *rdev;
 	int sel, ret;
+
+	if (!regulator)
+		return -EINVAL;
+
+	rdev = regulator->ri->rdev;
 
 	if (rdev->desc->ops->get_voltage_sel) {
 		sel = rdev->desc->ops->get_voltage_sel(rdev);

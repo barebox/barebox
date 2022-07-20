@@ -9,6 +9,7 @@
 #include <dt-bindings/leds/common.h>
 #include <dt-bindings/pinctrl/rockchip.h>
 #include "rk3568.dtsi"
+#include "rk356x.dtsi"
 
 / {
 	model = "Bananapi-R2 Pro (RK3568) DDR4 Board";

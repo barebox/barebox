@@ -3,6 +3,7 @@
 /dts-v1/;
 
 #include <arm64/rockchip/rk3568-rock-3a.dts>
+#include "rk356x.dtsi"
 
 / {
 	chosen: chosen {

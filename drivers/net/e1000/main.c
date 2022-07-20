@@ -62,7 +62,9 @@ static int32_t e1000_phy_hw_reset(struct e1000_hw *hw);
 static int e1000_phy_reset(struct e1000_hw *hw);
 static int e1000_detect_gig_phy(struct e1000_hw *hw);
 static void e1000_set_media_type(struct e1000_hw *hw);
-
+static void e1000_configure_tx(struct e1000_hw *hw);
+static void e1000_configure_rx(struct e1000_hw *hw);
+static void e1000_setup_rctl(struct e1000_hw *hw);
 
 static int32_t e1000_check_phy_reset_block(struct e1000_hw *hw);
 
@@ -810,6 +812,10 @@ static int e1000_open(struct eth_device *edev)
 		ctrl_ext |= E1000_CTRL_EXT_RO_DIS;
 		e1000_write_reg(hw, E1000_CTRL_EXT, ctrl_ext);
 	}
+
+	e1000_configure_tx(hw);
+	e1000_configure_rx(hw);
+	e1000_setup_rctl(hw);
 
 	return 0;
 }
@@ -3574,10 +3580,6 @@ static int e1000_init(struct eth_device *edev)
 		mdelay(15);
 	if (hw->mac_type == e1000_igb)
 		mdelay(15);
-
-	e1000_configure_tx(hw);
-	e1000_configure_rx(hw);
-	e1000_setup_rctl(hw);
 
 	return 0;
 }

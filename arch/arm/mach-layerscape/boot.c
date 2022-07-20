@@ -32,7 +32,7 @@ static int ls1046a_bootsource_init(void)
 	if (!of_machine_is_compatible("fsl,ls1046a"))
 		return 0;
 
-	bootsource_set(ls1046_bootsource_get());
+	bootsource_set_raw(ls1046_bootsource_get(), BOOTSOURCE_INSTANCE_UNKNOWN);
 
 	return 0;
 }

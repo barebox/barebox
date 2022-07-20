@@ -101,7 +101,7 @@ void bootsource_set_alias_name(const char *name)
 	bootsource_alias_name = name;
 }
 
-void bootsource_set(enum bootsource src)
+void bootsource_set_raw(enum bootsource src, int instance)
 {
 	if (src >= ARRAY_SIZE(bootsource_str))
 		src = BOOTSOURCE_UNKNOWN;
@@ -109,9 +109,11 @@ void bootsource_set(enum bootsource src)
 	bootsource = src;
 
 	setenv("bootsource", bootsource_str[src]);
+
+	bootsource_set_raw_instance(instance);
 }
 
-void bootsource_set_instance(int instance)
+void bootsource_set_raw_instance(int instance)
 {
 	bootsource_instance = instance;
 
@@ -137,8 +139,7 @@ BAREBOX_MAGICVAR(bootsource_instance, "The instance of the source barebox has be
 
 static int bootsource_init(void)
 {
-	bootsource_set(bootsource);
-	bootsource_set_instance(bootsource_instance);
+	bootsource_set_raw(bootsource, bootsource_instance);
 	export("bootsource");
 	export("bootsource_instance");
 

@@ -426,8 +426,7 @@ static void efi_set_bootsource(void)
 
 out:
 
-	bootsource_set(src);
-	bootsource_set_instance(instance);
+	bootsource_set_raw(src, instance);
 }
 
 static int efi_init_devices(void)

@@ -148,8 +148,7 @@ static int zynqmp_init(void)
 	int boot_instance;
 
 	zynqmp_get_bootsource(&boot_src, &boot_instance);
-	bootsource_set(boot_src);
-	bootsource_set_instance(boot_instance);
+	bootsource_set_raw(boot_src, boot_instance);
 
 	reset_source_set(zynqmp_get_reset_src());
 

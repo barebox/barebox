@@ -98,8 +98,7 @@ static void setup_boot_mode(void)
 	pr_debug("[boot_ctx=0x%x] => mode=0x%x, instance=%d\n",
 		 boot_ctx, boot_mode, instance);
 
-	bootsource_set(src);
-	bootsource_set_instance(instance);
+	bootsource_set_raw(src, instance);
 }
 
 static int __stm32mp_cputype;

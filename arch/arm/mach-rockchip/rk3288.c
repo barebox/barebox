@@ -69,8 +69,7 @@ static int rk3288_env_init(void)
 	const char *envpath = "/chosen/environment-emmc";
 	int ret;
 
-	bootsource_set(BOOTSOURCE_MMC);
-	bootsource_set_instance(0);
+	bootsource_set_raw(BOOTSOURCE_MMC, 0);
 
 	ret = of_device_enable_path(envpath);
 	if (ret < 0)

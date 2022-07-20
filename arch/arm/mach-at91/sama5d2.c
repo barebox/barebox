@@ -62,8 +62,8 @@ static int sama5d2_bootsource_init(void)
 
 	at91_bootsource = __sama5d2_stashed_bootrom_r4;
 
-	bootsource_set(sama5_bootsource(at91_bootsource));
-	bootsource_set_instance(sama5_bootsource_instance(at91_bootsource));
+	bootsource_set_raw(sama5_bootsource(at91_bootsource),
+			   sama5_bootsource_instance(at91_bootsource));
 
 	return 0;
 }

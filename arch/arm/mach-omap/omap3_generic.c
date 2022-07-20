@@ -475,8 +475,7 @@ static int omap3_bootsource(void)
 		src = BOOTSOURCE_UNKNOWN;
 	}
 
-	bootsource_set(src);
-	bootsource_set_instance(0);
+	bootsource_set_raw(src, 0);
 
 	return 0;
 }

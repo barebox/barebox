@@ -187,7 +187,7 @@ static int efi_bio_probe(struct efi_device *efidev)
 		return ret;
 
 	if (efi_get_bootsource() == efidev)
-		bootsource_set_instance(instance);
+		bootsource_set_raw_instance(instance);
 
 	parse_partition_table(&priv->blk);
 

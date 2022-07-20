@@ -160,8 +160,7 @@ static enum bootsource rk3568_bootsource(void)
 	if (v >= ARRAY_SIZE(bootdev_map))
 		return BOOTSOURCE_UNKNOWN;
 
-	bootsource_set(bootdev_map[v].src);
-	bootsource_set_instance(bootdev_map[v].instance);
+	bootsource_set_raw(bootdev_map[v].src, bootdev_map[v].instance);
 
 	return bootdev_map[v].src;
 }

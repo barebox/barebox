@@ -42,11 +42,13 @@ struct rtl8169_priv {
 	volatile struct bufdesc	*tx_desc;
 	dma_addr_t		tx_desc_phys;
 	void			*tx_buf;
+	dma_addr_t		tx_buf_phys;
 	unsigned int		cur_tx;
 
 	volatile struct bufdesc	*rx_desc;
 	dma_addr_t		rx_desc_phys;
 	void			*rx_buf;
+	dma_addr_t		rx_buf_phys;
 	unsigned int		cur_rx;
 
 	struct mii_bus miibus;
@@ -218,14 +220,17 @@ static void rtl8169_init_ring(struct rtl8169_priv *priv)
 
 	priv->cur_rx = priv->cur_tx = 0;
 
-	priv->tx_desc = dma_alloc_coherent(NUM_TX_DESC *
-				sizeof(struct bufdesc), &priv->tx_desc_phys);
+	priv->tx_desc = dma_alloc_coherent(NUM_TX_DESC * sizeof(struct bufdesc),
+					   &priv->tx_desc_phys);
 	priv->tx_buf = malloc(NUM_TX_DESC * PKT_BUF_SIZE);
-	priv->rx_desc = dma_alloc_coherent(NUM_RX_DESC *
-				sizeof(struct bufdesc), &priv->rx_desc_phys);
+	priv->tx_buf_phys = dma_map_single(&priv->edev.dev, priv->tx_buf,
+					   NUM_TX_DESC * PKT_BUF_SIZE, DMA_TO_DEVICE);
+
+	priv->rx_desc = dma_alloc_coherent(NUM_RX_DESC * sizeof(struct bufdesc),
+					   &priv->rx_desc_phys);
 	priv->rx_buf = malloc(NUM_RX_DESC * PKT_BUF_SIZE);
-	dma_sync_single_for_device((unsigned long)priv->rx_buf,
-				   NUM_RX_DESC * PKT_BUF_SIZE, DMA_FROM_DEVICE);
+	priv->rx_buf_phys = dma_map_single(&priv->edev.dev, priv->rx_buf,
+					   NUM_RX_DESC * PKT_BUF_SIZE, DMA_FROM_DEVICE);
 
 	for (i = 0; i < NUM_RX_DESC; i++) {
 		if (i == (NUM_RX_DESC - 1))
@@ -236,7 +241,7 @@ static void rtl8169_init_ring(struct rtl8169_priv *priv)
 				cpu_to_le32(BD_STAT_OWN | PKT_BUF_SIZE);
 
 		priv->rx_desc[i].buf_addr =
-				cpu_to_le32(virt_to_phys(priv->rx_buf + i * PKT_BUF_SIZE));
+				cpu_to_le32(priv->rx_buf_phys + i * PKT_BUF_SIZE);
 	}
 }
 
@@ -353,12 +358,12 @@ static int rtl8169_eth_send(struct eth_device *edev, void *packet,
 	if (packet_length < ETH_ZLEN)
 		memset(priv->tx_buf + entry * PKT_BUF_SIZE, 0, ETH_ZLEN);
 	memcpy(priv->tx_buf + entry * PKT_BUF_SIZE, packet, packet_length);
-	dma_sync_single_for_device((unsigned long)priv->tx_buf + entry *
+	dma_sync_single_for_device(priv->tx_buf_phys + entry *
 				   PKT_BUF_SIZE, PKT_BUF_SIZE, DMA_TO_DEVICE);
 
 	priv->tx_desc[entry].buf_Haddr = 0;
 	priv->tx_desc[entry].buf_addr =
-		cpu_to_le32(virt_to_phys(priv->tx_buf + entry * PKT_BUF_SIZE));
+		cpu_to_le32(priv->tx_buf_phys + entry * PKT_BUF_SIZE);
 
 	if (entry != (NUM_TX_DESC - 1)) {
 		priv->tx_desc[entry].status =
@@ -375,8 +380,8 @@ static int rtl8169_eth_send(struct eth_device *edev, void *packet,
 	while (le32_to_cpu(priv->tx_desc[entry].status) & BD_STAT_OWN)
 		;
 
-	dma_sync_single_for_cpu((unsigned long)priv->tx_buf + entry *
-				PKT_BUF_SIZE, PKT_BUF_SIZE, DMA_TO_DEVICE);
+	dma_sync_single_for_cpu(priv->tx_buf_phys + entry * PKT_BUF_SIZE,
+				PKT_BUF_SIZE, DMA_TO_DEVICE);
 
 	priv->cur_tx++;
 
@@ -395,15 +400,13 @@ static int rtl8169_eth_rx(struct eth_device *edev)
 		if (!(le32_to_cpu(priv->rx_desc[entry].status) & BD_STAT_RX_RES)) {
 			pkt_size = (le32_to_cpu(priv->rx_desc[entry].status) & 0x1fff) - 4;
 
-			dma_sync_single_for_cpu((unsigned long)priv->rx_buf
-						+ entry * PKT_BUF_SIZE,
+			dma_sync_single_for_cpu(priv->rx_buf_phys + entry * PKT_BUF_SIZE,
 						pkt_size, DMA_FROM_DEVICE);
 
 			net_receive(edev, priv->rx_buf + entry * PKT_BUF_SIZE,
 			            pkt_size);
 
-			dma_sync_single_for_device((unsigned long)priv->rx_buf
-						   + entry * PKT_BUF_SIZE,
+			dma_sync_single_for_device(priv->rx_buf_phys + entry * PKT_BUF_SIZE,
 						   pkt_size, DMA_FROM_DEVICE);
 
 			if (entry == NUM_RX_DESC - 1)
@@ -413,8 +416,8 @@ static int rtl8169_eth_rx(struct eth_device *edev)
 				priv->rx_desc[entry].status =
 					cpu_to_le32(BD_STAT_OWN | PKT_BUF_SIZE);
 			priv->rx_desc[entry].buf_addr =
-				cpu_to_le32(virt_to_phys(priv->rx_buf +
-							 entry * PKT_BUF_SIZE));
+				cpu_to_le32(priv->rx_buf_phys +
+					    entry * PKT_BUF_SIZE);
 		} else {
 			dev_err(&edev->dev, "rx error\n");
 		}

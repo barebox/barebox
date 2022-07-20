@@ -3575,9 +3575,6 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 	edev->priv = hw;
 
 	hw->packet = dma_alloc(PAGE_SIZE);
-	if (!hw->packet)
-		return -ENOMEM;
-
 	hw->packet_dma = dma_map_single(hw->dev, hw->packet, PAGE_SIZE,
 					DMA_FROM_DEVICE);
 	if (dma_mapping_error(hw->dev, hw->packet_dma))

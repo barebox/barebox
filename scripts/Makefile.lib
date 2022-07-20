@@ -519,6 +519,11 @@ overwrite-hab-env = $(shell set -e; \
       test -n "$$$(1)"; \
       echo -D$(1)=\\\"$(shell echo $$$(1))\\\")
 
+overwrite-fit-env = $(shell set -e; \
+      test -n "$(CONFIG_BOOTM_FITIMAGE_PUBKEY_ENV)"; \
+      test -n "$$$(1)"; \
+      echo -D$(1)=\\\"$(shell echo $$$(1))\\\")
+
 imxcfg_cpp_flags  = -Wp,-MD,$(depfile) -nostdinc -x assembler-with-cpp \
       -I $(srctree)/include -I $(srctree)/arch/arm/mach-imx/include \
       -include include/generated/autoconf.h \
@@ -527,7 +532,8 @@ imxcfg_cpp_flags  = -Wp,-MD,$(depfile) -nostdinc -x assembler-with-cpp \
       $(call overwrite-hab-env,CONFIG_HABV3_IMG_CRT_DER) \
       $(call overwrite-hab-env,CONFIG_HABV4_TABLE_BIN) \
       $(call overwrite-hab-env,CONFIG_HABV4_CSF_CRT_PEM) \
-      $(call overwrite-hab-env,CONFIG_HABV4_IMG_CRT_PEM)
+      $(call overwrite-hab-env,CONFIG_HABV4_IMG_CRT_PEM) \
+      $(call overwrite-fit-env,CONFIG_BOOTM_FITIMAGE_PUBKEY) \
 
 dcd-tmp = $(subst $(comma),_,$(dot-target).dcd.tmp)
 

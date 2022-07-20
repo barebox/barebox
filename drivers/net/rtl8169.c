@@ -478,6 +478,18 @@ static void rtl8169_eth_halt(struct eth_device *edev)
 	RTL_W32(priv, RxMissed, 0);
 
 	pci_clear_master(priv->pci_dev);
+
+	dma_unmap_single(&edev->dev, priv->tx_buf_phys, NUM_TX_DESC * PKT_BUF_SIZE,
+			 DMA_TO_DEVICE);
+	free(priv->tx_buf);
+	dma_free_coherent((void *)priv->tx_desc, priv->tx_desc_phys,
+			  NUM_TX_DESC * sizeof(struct bufdesc));
+
+	dma_unmap_single(&edev->dev, priv->rx_buf_phys, NUM_RX_DESC * PKT_BUF_SIZE,
+			 DMA_FROM_DEVICE);
+	free(priv->rx_buf);
+	dma_free_coherent((void *)priv->rx_desc, priv->rx_desc_phys,
+			  NUM_RX_DESC * sizeof(struct bufdesc));
 }
 
 static int rtl8169_probe(struct pci_dev *pdev, const struct pci_device_id *id)

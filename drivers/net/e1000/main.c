@@ -245,6 +245,10 @@ int32_t e1000_swfw_sync_acquire(struct e1000_hw *hw, uint16_t mask)
 	int32_t timeout = 200;
 
 	DEBUGFUNC();
+
+	if (hw->mac_type <= e1000_82547_rev_2)
+		return E1000_SUCCESS;
+
 	while (timeout) {
 		if (e1000_get_hw_eeprom_semaphore(hw))
 			return -E1000_ERR_SWFW_SYNC;
@@ -275,6 +279,9 @@ int32_t e1000_swfw_sync_acquire(struct e1000_hw *hw, uint16_t mask)
 int32_t e1000_swfw_sync_release(struct e1000_hw *hw, uint16_t mask)
 {
 	uint32_t swfw_sync;
+
+	if (hw->mac_type <= e1000_82547_rev_2)
+		return E1000_SUCCESS;
 
 	if (e1000_get_hw_eeprom_semaphore(hw))
 		return -E1000_ERR_SWFW_SYNC;

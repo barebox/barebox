@@ -1388,6 +1388,9 @@ struct e1000_eeprom_info {
 #define PHY_1000T_STATUS		0x0A	/* 1000Base-T Status Reg */
 #define PHY_EXT_STATUS			0x0F	/* Extended Status Reg */
 
+#define MAX_PHY_REG_ADDRESS		0x1F	/* 5 bit address bus (0-0x1F) */
+#define MAX_PHY_MULTI_PAGE_REG		0xF	/* Registers equal on all pages */
+
 /* M88E1000 Specific Registers */
 #define M88E1000_PHY_SPEC_CTRL		0x10	/* PHY Specific Control Register */
 #define M88E1000_PHY_SPEC_STATUS	0x11	/* PHY Specific Status Register */

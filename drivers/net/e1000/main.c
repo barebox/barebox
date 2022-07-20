@@ -54,6 +54,8 @@ static int e1000_get_speed_and_duplex(struct e1000_hw *hw, uint16_t *speed,
 				       uint16_t *duplex);
 static int e1000_read_phy_reg(struct e1000_hw *hw, uint32_t reg_addr,
 			      uint16_t *phy_data);
+static int e1000_phy_write(struct mii_bus *bus, int phy_addr, int reg_addr,
+			   u16 phy_data);
 static int e1000_write_phy_reg(struct e1000_hw *hw, uint32_t reg_addr,
 			       uint16_t phy_data);
 static int32_t e1000_phy_hw_reset(struct e1000_hw *hw);
@@ -2627,6 +2629,15 @@ static int e1000_read_phy_reg(struct e1000_hw *hw, uint32_t reg_addr,
 {
 	int ret;
 
+	if ((hw->phy_type == e1000_phy_igp) && (reg_addr > MAX_PHY_MULTI_PAGE_REG)) {
+		ret = e1000_phy_write(&hw->miibus, 1, IGP01E1000_PHY_PAGE_SELECT,
+				      (u16)reg_addr);
+		if (ret)
+			return ret;
+
+		reg_addr &= MAX_PHY_REG_ADDRESS;
+	}
+
 	ret = e1000_phy_read(&hw->miibus, 1, reg_addr);
 	if (ret < 0)
 		return ret;
@@ -2702,6 +2713,17 @@ static int e1000_phy_write(struct mii_bus *bus, int phy_addr,
  ******************************************************************************/
 static int e1000_write_phy_reg(struct e1000_hw *hw, uint32_t reg_addr, uint16_t phy_data)
 {
+	int ret;
+
+	if ((hw->phy_type == e1000_phy_igp) && (reg_addr > MAX_PHY_MULTI_PAGE_REG)) {
+		ret = e1000_phy_write(&hw->miibus, 1, IGP01E1000_PHY_PAGE_SELECT,
+				      (u16)reg_addr);
+		if (ret)
+			return ret;
+
+		reg_addr &= MAX_PHY_REG_ADDRESS;
+	}
+
 	return e1000_phy_write(&hw->miibus, 1, reg_addr, phy_data);
 }
 

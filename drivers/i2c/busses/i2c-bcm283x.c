@@ -147,7 +147,7 @@ static int bcm283x_i2c_msg_xfer(struct bcm283x_i2c *bcm_i2c,
 
 		if (ret) {
 			dev_err(dev, "timeout: 10bit read initilization\n");
-			return ret;
+			goto out;
 		}
 		if (reg_s & BSC_S_ERR)
 			goto nack;
@@ -178,7 +178,7 @@ static int bcm283x_i2c_msg_xfer(struct bcm283x_i2c *bcm_i2c,
 
 			if (ret) {
 				dev_err(dev, "timeout: waiting for data in FIFO\n");
-				return ret;
+				goto out;
 			}
 			if (reg_s & BSC_S_ERR)
 				goto nack;
@@ -197,7 +197,7 @@ static int bcm283x_i2c_msg_xfer(struct bcm283x_i2c *bcm_i2c,
 
 			if (ret) {
 				dev_err(dev, "timeout: waiting for space in FIFO\n");
-				return ret;
+				goto out;
 			}
 			if (reg_s & BSC_S_ERR)
 				goto nack;
@@ -216,16 +216,23 @@ static int bcm283x_i2c_msg_xfer(struct bcm283x_i2c *bcm_i2c,
 
 	if (ret) {
 		dev_err(dev, "timeout: waiting for transfer to end\n");
-		return ret;
+		goto out;
 	}
 	if (reg_s & BSC_S_ERR)
 		goto nack;
-	writel(BSC_S_DONE | BSC_S_ERR | BSC_S_CLKT, &bcm_i2c->regs->s);
-	writel(BSC_C_CLEAR1 | BSC_C_I2CEN, &bcm_i2c->regs->c);
-	return 0;
+	goto out;
 nack:
 	dev_dbg(dev, "device with addr %x didn't ACK\n", msg->addr);
-	return -EREMOTEIO;
+	writel(BSC_S_ERR, &bcm_i2c->regs->s);
+	timeout = calc_byte_timeout_us(bcm_i2c->bitrate);
+	// Wait for end of transfer so BSC has time to send STOP condition
+	readl_poll_timeout(&bcm_i2c->regs->s, reg_s, ~reg_s & BSC_S_TA, timeout);
+	ret = -EREMOTEIO;
+out:
+	// Return to default state for next xfer
+	writel(BSC_S_DONE | BSC_S_ERR | BSC_S_CLKT, &bcm_i2c->regs->s);
+	writel(BSC_C_CLEAR1 | BSC_C_I2CEN, &bcm_i2c->regs->c);
+	return ret;
 }
 
 static int bcm283x_i2c_xfer(struct i2c_adapter *adapter,

@@ -26,9 +26,45 @@ enum bootsource {
 
 enum bootsource bootsource_get(void);
 int bootsource_get_instance(void);
-void bootsource_set_raw(enum bootsource src, int instance);
-void bootsource_set_raw_instance(int instance);
 void bootsource_set_alias_name(const char *name);
 char *bootsource_get_alias_name(void);
+const char *bootsource_get_alias_stem(enum bootsource bs);
+int bootsource_of_alias_xlate(enum bootsource bs, int instance);
+
+/**
+ * bootsource_set - set bootsource with optional DT mapping table
+ * @bs:	bootrom reported bootsource
+ * @instance: bootrom reported instance
+ *
+ * Returns computed bootsource instace
+ *
+ * Normal bootsource_set_raw_instance() expects numbering used by
+ * bootrom for instance to align with DT aliases, e.g.
+ * $bootsource = "mmc" && $bootsource_instance = 1 -> /aliases/mmc1
+ * bootsource_set() will instead consult
+ * /aliases/barebox,bootsource-mmc1 which may point at a different
+ * device than mmc1. In absence of appropriate barebox,bootsource-*
+ * alias, instance is set without translation.
+ */
+int bootsource_set(enum bootsource bs, int instance);
+
+/**
+ * bootsource_set_raw - set bootsource as-is
+ * @bs:	bootsource to report
+ * @instance: bootsource instance to report
+ *
+ * This sets bootsource and bootsource_instance directly.
+ * Preferably, use bootsource_set in new code.
+ */
+void bootsource_set_raw(enum bootsource src, int instance);
+
+/**
+ * bootsource_set_raw_instance - set bootsource_instance as-is
+ * @bs:	bootrom reported bootsource
+ * @instance: bootrom reported instance
+ *
+ * This directly sets bootsource_instance without changing bootsource.
+ */
+void bootsource_set_raw_instance(int instance);
 
 #endif	/* __BOOTSOURCE_H__ */

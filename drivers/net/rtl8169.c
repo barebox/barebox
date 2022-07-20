@@ -293,6 +293,8 @@ static int rtl8169_eth_open(struct eth_device *edev)
 	struct rtl8169_priv *priv = edev->priv;
 	int ret;
 
+	pci_set_master(priv->pci_dev);
+
 	rtl8169_init_ring(priv);
 	rtl8169_hw_start(priv);
 

@@ -83,7 +83,7 @@ The bootchooser algorithm aborts when all enabled targets (priority > 0) have
 no remaining attempts left.
 
 To prevent ending up in an unbootable system after a number of failed boot
-attempts, there is a also a built-in mechanism to reset the counters to their defaults,
+attempts, there is also a built-in mechanism to reset the counters to their defaults,
 controlled by the ``global.bootchooser.reset_attempts`` variable. It holds a
 list of space-separated flags. Possible values are:
 

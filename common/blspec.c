@@ -527,6 +527,7 @@ int blspec_scan_file(struct bootentries *bootentries, const char *root,
 	if (IS_ERR(entry))
 		return PTR_ERR(entry);
 
+	root = root ?: get_mounted_path(configname);
 	entry->rootpath = xstrdup(root);
 	entry->configpath = xstrdup(configname);
 	entry->cdev = get_cdev_by_mountpath(root);
@@ -813,6 +814,7 @@ int blspec_scan_devicename(struct bootentries *bootentries, const char *devname)
 static int blspec_bootentry_provider(struct bootentries *bootentries,
 				     const char *name)
 {
+	struct stat s;
 	int ret, found = 0;
 
 	ret = blspec_scan_devicename(bootentries, name);
@@ -825,7 +827,14 @@ static int blspec_bootentry_provider(struct bootentries *bootentries,
 		if (!IS_ERR(nfspath))
 			name = nfspath;
 
-		ret = blspec_scan_directory(bootentries, name);
+		ret = stat(name, &s);
+		if (ret)
+			return found;
+
+		if (S_ISDIR(s.st_mode))
+			ret = blspec_scan_directory(bootentries, name);
+		else if (S_ISREG(s.st_mode) && strends(name, ".conf"))
+			ret = blspec_scan_file(bootentries, NULL, name);
 		if (ret > 0)
 			found += ret;
 

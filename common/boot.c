@@ -272,6 +272,7 @@ int bootentry_register_provider(int (*fn)(struct bootentries *bootentries, const
  * name can be:
  * - a name of a boot script under /env/boot
  * - a full path of a boot script
+ * - a full path of a bootloader spec entry
  * - a device name
  * - a cdev name
  * - a full path of a directory containing bootloader spec entries

@@ -569,13 +569,15 @@ EXPORT_SYMBOL_GPL(regulator_bulk_free);
 
 int regulator_get_voltage(struct regulator *regulator)
 {
+	struct regulator_internal *ri;
 	struct regulator_dev *rdev;
 	int sel, ret;
 
 	if (!regulator)
 		return -EINVAL;
 
-	rdev = regulator->ri->rdev;
+	ri = regulator->ri;
+	rdev = ri->rdev;
 
 	if (rdev->desc->ops->get_voltage_sel) {
 		sel = rdev->desc->ops->get_voltage_sel(rdev);
@@ -588,6 +590,8 @@ int regulator_get_voltage(struct regulator *regulator)
 		ret = rdev->desc->ops->list_voltage(rdev, 0);
 	} else if (rdev->desc->fixed_uV && (rdev->desc->n_voltages == 1)) {
 		ret = rdev->desc->fixed_uV;
+	} else if (ri->min_uv && ri->min_uv == ri->max_uv) {
+		ret = ri->min_uv;
 	} else {
 		return -EINVAL;
 	}

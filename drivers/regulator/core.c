@@ -9,6 +9,7 @@
 #include <of.h>
 #include <malloc.h>
 #include <linux/err.h>
+#include <deep-probe.h>
 
 static LIST_HEAD(regulator_list);
 
@@ -42,6 +43,7 @@ static int regulator_map_voltage(struct regulator_dev *rdev, int min_uV,
 
 static int regulator_enable_internal(struct regulator_internal *ri)
 {
+	struct regulator_dev *rdev = ri->rdev;
 	int ret;
 
 	if (ri->enable_count) {
@@ -49,12 +51,19 @@ static int regulator_enable_internal(struct regulator_internal *ri)
 		return 0;
 	}
 
-	if (!ri->rdev->desc->ops->enable)
+	if (!rdev->desc->ops->enable)
 		return -ENOSYS;
 
-	ret = ri->rdev->desc->ops->enable(ri->rdev);
+	/* turn on parent regulator */
+	ret = regulator_enable(rdev->supply);
 	if (ret)
 		return ret;
+
+	ret = rdev->desc->ops->enable(ri->rdev);
+	if (ret) {
+		regulator_disable(rdev->supply);
+		return ret;
+	}
 
 	if (ri->enable_time_us)
 		udelay(ri->enable_time_us);
@@ -85,7 +94,7 @@ static int regulator_disable_internal(struct regulator_internal *ri)
 
 	ri->enable_count--;
 
-	return 0;
+	return regulator_disable(ri->rdev->supply);
 }
 
 static int regulator_set_voltage_internal(struct regulator_internal *ri,
@@ -115,6 +124,41 @@ static int regulator_set_voltage_internal(struct regulator_internal *ri,
 	return -ENOSYS;
 }
 
+static int regulator_resolve_supply(struct regulator_dev *rdev)
+{
+	struct regulator *supply;
+	const char *supply_name;
+
+	if (!rdev || rdev->supply)
+		return 0;
+
+	supply_name = rdev->desc->supply_name;
+	if (!supply_name)
+		return 0;
+
+	supply = regulator_get(rdev->dev, supply_name);
+	if (IS_ERR(supply)) {
+		if (deep_probe_is_supported())
+			return PTR_ERR(supply);
+
+		/* For historic reasons, some regulator consumers don't handle
+		 * -EPROBE_DEFER (e.g. vmmc-supply). If we now start propagating
+		 * parent EPROBE_DEFER, previously requested vmmc-supply with
+		 * always-on parent that worked before will end up not being
+		 * requested breaking MMC use. So for non-deep probe systems,
+		 * just make best effort to resolve, but don't fail the get if
+		 * we couldn't. If you want to get rid of this warning, consider
+		 * migrating your platform to have deep probe support.
+		 */
+		dev_warn(rdev->dev, "Failed to get '%s' regulator (ignored).\n",
+			 supply_name);
+		return 0;
+	}
+
+	rdev->supply = supply;
+	return 0;
+}
+
 static struct regulator_internal * __regulator_register(struct regulator_dev *rd, const char *name)
 {
 	struct regulator_internal *ri;
@@ -131,6 +175,10 @@ static struct regulator_internal * __regulator_register(struct regulator_dev *rd
 		ri->name = xstrdup(name);
 
 	if (rd->boot_on || rd->always_on) {
+		ret = regulator_resolve_supply(ri->rdev);
+		if (ret < 0)
+			goto err;
+
 		ret = regulator_enable_internal(ri);
 		if (ret && ret != -ENOSYS)
 			goto err;
@@ -333,6 +381,7 @@ struct regulator *regulator_get(struct device_d *dev, const char *supply)
 {
 	struct regulator_internal *ri = NULL;
 	struct regulator *r;
+	int ret;
 
 	if (dev->device_node) {
 		ri = of_regulator_get(dev, supply);
@@ -348,6 +397,10 @@ struct regulator *regulator_get(struct device_d *dev, const char *supply)
 
 	if (!ri)
 		return NULL;
+
+	ret = regulator_resolve_supply(ri->rdev);
+	if (ret < 0)
+		return ERR_PTR(ret);
 
 	r = xzalloc(sizeof(*r));
 	r->ri = ri;
@@ -592,6 +645,8 @@ int regulator_get_voltage(struct regulator *regulator)
 		ret = rdev->desc->fixed_uV;
 	} else if (ri->min_uv && ri->min_uv == ri->max_uv) {
 		ret = ri->min_uv;
+	} else if (rdev->supply) {
+		ret = regulator_get_voltage(rdev->supply);
 	} else {
 		return -EINVAL;
 	}

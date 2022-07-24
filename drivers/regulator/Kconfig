@@ -55,6 +55,7 @@ config REGULATOR_ANATOP
 	  regulators. It is recommended that this option be
 	  enabled on i.MX6 platform.
 
+
 config REGULATOR_ARM_SCMI
 	tristate "SCMI based regulator driver"
 	depends on ARM_SCMI_PROTOCOL && OFDEVICE
@@ -63,5 +64,15 @@ config REGULATOR_ARM_SCMI
 	  protocol for device voltage management.
 	  This driver uses SCMI Message Protocol driver to interact with the
 	  firmware providing the device Voltage functionality.
+
+config REGULATOR_RK808
+	tristate "Rockchip RK805/RK808/RK809/RK817/RK818 Power regulators"
+	depends on MFD_RK808
+	help
+	  Select this option to enable the power regulator of ROCKCHIP
+	  PMIC RK805,RK809&RK817,RK808 and RK818.
+	  This driver supports the control of different power rails of device
+	  through regulator interface. The device supports multiple DCDC/LDO
+	  outputs which can be controlled by i2c communication.
 
 endif

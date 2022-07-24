@@ -1941,6 +1941,16 @@ int mci_register(struct mci_host *host)
 
 	host->supply = regulator_get(hw_dev, "vmmc");
 	if (IS_ERR(host->supply)) {
+		/*
+		 * If you know your regulator to be always online on boot, but
+		 * can't easily add a barebox driver for it, you may use
+		 * barebox,allow-dummy-supply in your board's regulator device
+		 * tree node to side step this warning.
+		 *
+		 * If you run into this warning, because your regulator driver
+		 * hasn't probed the device yet, consider enabling deep probe
+		 * for your board, to probe dependencies on demand.
+		 */
 		dev_warn(hw_dev, "Failed to get 'vmmc' regulator (ignored).\n");
 		host->supply = NULL;
 	}

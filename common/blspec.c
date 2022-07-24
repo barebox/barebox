@@ -513,6 +513,54 @@ static bool entry_is_match_machine_id(struct blspec_entry *entry)
 	return ret;
 }
 
+int blspec_scan_file(struct bootentries *bootentries, const char *root,
+		     const char *configname)
+{
+	char *devname = NULL, *hwdevname = NULL;
+	struct blspec_entry *entry;
+
+	if (blspec_have_entry(bootentries, configname))
+		return -EEXIST;
+
+	entry = blspec_entry_open(bootentries, configname);
+	if (IS_ERR(entry))
+		return PTR_ERR(entry);
+
+	entry->rootpath = xstrdup(root);
+	entry->configpath = xstrdup(configname);
+	entry->cdev = get_cdev_by_mountpath(root);
+
+	if (!entry_is_of_compatible(entry)) {
+		blspec_entry_free(&entry->entry);
+		return -ENODEV;
+	}
+
+	if (!entry_is_match_machine_id(entry)) {
+		blspec_entry_free(&entry->entry);
+		return -ENODEV;
+	}
+
+	if (entry->cdev && entry->cdev->dev) {
+		devname = xstrdup(dev_name(entry->cdev->dev));
+		if (entry->cdev->dev->parent)
+			hwdevname = xstrdup(dev_name(entry->cdev->dev->parent));
+	}
+
+	entry->entry.title = xasprintf("%s (%s)", blspec_entry_var_get(entry, "title"),
+				       configname);
+	entry->entry.description = basprintf("blspec entry, device: %s hwdevice: %s",
+					    devname ? devname : "none",
+					    hwdevname ? hwdevname : "none");
+	free(devname);
+	free(hwdevname);
+
+	entry->entry.me.type = MENU_ENTRY_NORMAL;
+	entry->entry.release = blspec_entry_free;
+
+	bootentries_add_entry(bootentries, &entry->entry);
+	return 1;
+}
+
 /*
  * blspec_scan_directory - scan over a directory
  *
@@ -522,17 +570,11 @@ static bool entry_is_match_machine_id(struct blspec_entry *entry)
  */
 int blspec_scan_directory(struct bootentries *bootentries, const char *root)
 {
-	struct blspec_entry *entry;
 	DIR *dir;
 	struct dirent *d;
 	char *abspath;
 	int ret, found = 0;
 	const char *dirname = "loader/entries";
-	char *nfspath = NULL;
-
-	nfspath = parse_nfs_url(root);
-	if (!IS_ERR(nfspath))
-		root = nfspath;
 
 	pr_debug("%s: %s %s\n", __func__, root, dirname);
 
@@ -549,7 +591,6 @@ int blspec_scan_directory(struct bootentries *bootentries, const char *root)
 		char *configname;
 		struct stat s;
 		char *dot;
-		char *devname = NULL, *hwdevname = NULL;
 
 		if (*d->d_name == '.')
 			continue;
@@ -578,59 +619,15 @@ int blspec_scan_directory(struct bootentries *bootentries, const char *root)
 			continue;
 		}
 
-		if (blspec_have_entry(bootentries, configname)) {
-			free(configname);
-			continue;
-		}
-
-		entry = blspec_entry_open(bootentries, configname);
-		if (IS_ERR(entry)) {
-			free(configname);
-			continue;
-		}
-
-		entry->rootpath = xstrdup(root);
-		entry->configpath = configname;
-		entry->cdev = get_cdev_by_mountpath(root);
-
-		if (!entry_is_of_compatible(entry)) {
-			blspec_entry_free(&entry->entry);
-			continue;
-		}
-
-		if (!entry_is_match_machine_id(entry)) {
-			blspec_entry_free(&entry->entry);
-			continue;
-		}
-
-		found++;
-
-		if (entry->cdev && entry->cdev->dev) {
-			devname = xstrdup(dev_name(entry->cdev->dev));
-			if (entry->cdev->dev->parent)
-				hwdevname = xstrdup(dev_name(entry->cdev->dev->parent));
-		}
-
-		entry->entry.title = xasprintf("%s (%s)", blspec_entry_var_get(entry, "title"),
-					       configname);
-		entry->entry.description = basprintf("blspec entry, device: %s hwdevice: %s",
-						    devname ? devname : "none",
-						    hwdevname ? hwdevname : "none");
-		free(devname);
-		free(hwdevname);
-
-		entry->entry.me.type = MENU_ENTRY_NORMAL;
-		entry->entry.release = blspec_entry_free;
-
-		bootentries_add_entry(bootentries, &entry->entry);
+		ret = blspec_scan_file(bootentries, root, configname);
+		if (ret > 0)
+			found += ret;
 	}
 
 	ret = found;
 
 	closedir(dir);
 err_out:
-	if (!IS_ERR(nfspath))
-		free(nfspath);
 	free(abspath);
 
 	return ret;
@@ -846,9 +843,17 @@ static int blspec_bootentry_provider(struct bootentries *bootentries,
 		found += ret;
 
 	if (*name == '/' || !strncmp(name, "nfs://", 6)) {
+		char *nfspath = parse_nfs_url(name);
+
+		if (!IS_ERR(nfspath))
+			name = nfspath;
+
 		ret = blspec_scan_directory(bootentries, name);
 		if (ret > 0)
 			found += ret;
+
+		if (!IS_ERR(nfspath))
+			free(nfspath);
 	}
 
 	return found;

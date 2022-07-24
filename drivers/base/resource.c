@@ -20,7 +20,7 @@ struct device_d *device_alloc(const char *devname, int id)
 	return dev;
 }
 
-int device_add_data(struct device_d *dev, void *data, size_t size)
+int device_add_data(struct device_d *dev, const void *data, size_t size)
 {
 	free(dev->platform_data);
 

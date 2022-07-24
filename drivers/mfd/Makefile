@@ -1,4 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-only
+obj-y				+= core.o
+
 obj-$(CONFIG_MFD_ACT8846)	+= act8846.o
 obj-$(CONFIG_MFD_DA9053)	+= da9053.o
 obj-$(CONFIG_MFD_DA9063)	+= da9063.o

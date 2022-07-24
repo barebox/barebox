@@ -82,6 +82,9 @@ static int regulator_fixed_probe(struct device_d *dev)
 		regulator_fixed_enable(&fix->rdev);
 	}
 
+	if (of_find_property(np, "vin-supply", NULL))
+		fix->rdesc.supply_name = "vin";
+
 	ret = of_regulator_register(&fix->rdev, np);
 	if (ret)
 		return ret;

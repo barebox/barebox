@@ -15,6 +15,7 @@
 #include <libbb.h>
 #include <init.h>
 #include <bootm.h>
+#include <glob.h>
 #include <net.h>
 #include <fs.h>
 #include <of.h>
@@ -570,54 +571,30 @@ int blspec_scan_file(struct bootentries *bootentries, const char *root,
  */
 int blspec_scan_directory(struct bootentries *bootentries, const char *root)
 {
-	DIR *dir;
-	struct dirent *d;
+	glob_t globb;
 	char *abspath;
 	int ret, found = 0;
 	const char *dirname = "loader/entries";
+	int i;
 
 	pr_debug("%s: %s %s\n", __func__, root, dirname);
 
-	abspath = basprintf("%s/%s", root, dirname);
+	abspath = basprintf("%s/%s/*.conf", root, dirname);
 
-	dir = opendir(abspath);
-	if (!dir) {
+	ret = glob(abspath, 0, NULL, &globb);
+	if (ret) {
 		pr_debug("%s: %s: %s\n", __func__, abspath, strerror(errno));
 		ret = -errno;
 		goto err_out;
 	}
 
-	while ((d = readdir(dir))) {
-		char *configname;
+	for (i = 0; i < globb.gl_pathc; i++) {
+		const char *configname = globb.gl_pathv[i];
 		struct stat s;
-		char *dot;
-
-		if (*d->d_name == '.')
-			continue;
-
-		configname = basprintf("%s/%s", abspath, d->d_name);
-
-		dot = strrchr(configname, '.');
-		if (!dot) {
-			free(configname);
-			continue;
-		}
-
-		if (strcmp(dot, ".conf")) {
-			free(configname);
-			continue;
-		}
 
 		ret = stat(configname, &s);
-		if (ret) {
-			free(configname);
+		if (ret || !S_ISREG(s.st_mode))
 			continue;
-		}
-
-		if (!S_ISREG(s.st_mode)) {
-			free(configname);
-			continue;
-		}
 
 		ret = blspec_scan_file(bootentries, root, configname);
 		if (ret > 0)
@@ -626,7 +603,7 @@ int blspec_scan_directory(struct bootentries *bootentries, const char *root)
 
 	ret = found;
 
-	closedir(dir);
+	globfree(&globb);
 err_out:
 	free(abspath);
 

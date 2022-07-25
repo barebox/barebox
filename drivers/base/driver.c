@@ -265,6 +265,8 @@ int unregister_device(struct device_d *old_dev)
 	/* remove device from parents child list */
 	if (old_dev->parent)
 		list_del(&old_dev->sibling);
+	if (dev_of_node(old_dev))
+		old_dev->device_node->dev = NULL;
 
 	return 0;
 }

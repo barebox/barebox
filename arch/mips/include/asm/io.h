@@ -27,6 +27,7 @@ void dma_inv_range(unsigned long, unsigned long);
  *     The returned physical address is the physical (CPU) mapping for
  *     the memory address given.
  */
+#define virt_to_phys virt_to_phys
 static inline unsigned long virt_to_phys(const void *address)
 {
 	return (unsigned long)CPHYSADDR(address);
@@ -39,6 +40,7 @@ static inline unsigned long virt_to_phys(const void *address)
  *     The returned virtual address is a current CPU mapping for
  *     the memory address given.
  */
+#define phys_to_virt phys_to_virt
 static inline void *phys_to_virt(unsigned long address)
 {
 	if (IS_ENABLED(CONFIG_MMU)) {

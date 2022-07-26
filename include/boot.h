@@ -50,7 +50,7 @@ struct bootentries *bootentries_alloc(void);
 void bootentries_free(struct bootentries *bootentries);
 int bootentry_create_from_name(struct bootentries *bootentries,
 				      const char *name);
-void bootsources_menu(struct bootentries *bootentries, int timeout);
+void bootsources_menu(struct bootentries *bootentries, unsigned default_entry, int timeout);
 void bootsources_list(struct bootentries *bootentries);
 int boot_entry(struct bootentry *be, int verbose, int dryrun);
 

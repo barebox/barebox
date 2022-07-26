@@ -313,10 +313,12 @@ int bootentry_create_from_name(struct bootentries *bootentries,
 /*
  * bootsources_menu - show a menu from an array of names
  */
-void bootsources_menu(struct bootentries *bootentries, int timeout)
+void bootsources_menu(struct bootentries *bootentries,
+		      unsigned default_entry, int timeout)
 {
 	struct bootentry *entry;
 	struct menu_entry *back_entry;
+	int i = 1;
 
 	if (!IS_ENABLED(CONFIG_MENU)) {
 		pr_warn("no menu support available\n");
@@ -328,6 +330,9 @@ void bootsources_menu(struct bootentries *bootentries, int timeout)
 			entry->me.display = xstrdup(entry->title);
 		entry->me.action = bootsource_action;
 		menu_add_entry(bootentries->menu, &entry->me);
+
+		if (i++ == default_entry)
+			bootentries->menu->selected = &entry->me;
 	}
 
 	back_entry = xzalloc(sizeof(*back_entry));
@@ -335,6 +340,9 @@ void bootsources_menu(struct bootentries *bootentries, int timeout)
 	back_entry->type = MENU_ENTRY_NORMAL;
 	back_entry->non_re_ent = 1;
 	menu_add_entry(bootentries->menu, back_entry);
+
+	if (i == default_entry)
+		bootentries->menu->selected = back_entry;
 
 	if (timeout >= 0)
 		bootentries->menu->auto_select = timeout;

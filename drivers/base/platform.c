@@ -17,7 +17,7 @@ static int platform_probe(struct device_d *dev)
 
 	ret = genpd_dev_pm_attach(dev);
 	if (ret < 0)
-		return ret;
+		return dev_err_probe(dev, ret, "power domain attach failed\n");
 
 	return dev->driver->probe(dev);
 }

@@ -137,6 +137,12 @@ static int multi_bind_fastboot(struct usb_composite_dev *cdev)
 	return usb_add_function(&config, f_fastboot);
 }
 
+static bool fastboot_has_exports(struct f_multi_opts *opts)
+{
+	return !file_list_empty(opts->fastboot_opts.files) ||
+		opts->fastboot_opts.export_bbu;
+}
+
 static int multi_bind_ums(struct usb_composite_dev *cdev)
 {
 	int ret;
@@ -179,7 +185,7 @@ static int multi_unbind(struct usb_composite_dev *cdev)
 		usb_put_function_instance(fi_dfu);
 	}
 
-	if (gadget_multi_opts->fastboot_opts.files) {
+	if (fastboot_has_exports(gadget_multi_opts)) {
 		usb_put_function(f_fastboot);
 		usb_put_function_instance(fi_fastboot);
 	}
@@ -219,7 +225,7 @@ static int multi_bind(struct usb_composite_dev *cdev)
 	if (ret)
 		return ret;
 
-	if (gadget_multi_opts->fastboot_opts.files) {
+	if (fastboot_has_exports(gadget_multi_opts)) {
 		printf("%s: creating Fastboot function\n", __func__);
 		ret = multi_bind_fastboot(cdev);
 		if (ret)
@@ -259,7 +265,7 @@ unbind_dfu:
 	if (gadget_multi_opts->dfu_opts.files)
 		usb_put_function_instance(fi_dfu);
 unbind_fastboot:
-	if (gadget_multi_opts->fastboot_opts.files)
+	if (fastboot_has_exports(gadget_multi_opts))
 		usb_put_function_instance(fi_fastboot);
 
 	return ret;
@@ -312,8 +318,7 @@ unsigned usb_multi_count_functions(struct f_multi_opts *opts)
 {
 	unsigned count = 0;
 
-	count += !file_list_empty(opts->fastboot_opts.files) ||
-		opts->fastboot_opts.export_bbu;
+	count += fastboot_has_exports(opts);
 	count += !file_list_empty(opts->dfu_opts.files);
 	count += !file_list_empty(opts->ums_opts.files);
 	count += opts->create_acm;

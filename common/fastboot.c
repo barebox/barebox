@@ -171,6 +171,8 @@ int fastboot_generic_init(struct fastboot *fb, bool export_bbu)
 	if (!fb->tempname)
 		return -ENOMEM;
 
+	if (!fb->files)
+		fb->files = file_list_new();
 	if (export_bbu)
 		bbu_append_handlers_to_file_list(fb->files);
 

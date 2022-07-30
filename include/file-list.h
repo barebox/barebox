@@ -29,6 +29,7 @@ void file_list_free(struct file_list *);
 int file_list_add_entry(struct file_list *files, const char *name, const char *filename,
 			unsigned long flags);
 
+struct file_list *file_list_new(void);
 struct file_list *file_list_dup(struct file_list *old);
 
 int file_list_detect_all(const struct file_list *files);

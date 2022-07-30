@@ -130,15 +130,24 @@ static const char *flags_to_str(int flags)
 	return str;
 }
 
+struct file_list *file_list_new(void)
+{
+	struct file_list *files;
+
+	files = xzalloc(sizeof(*files));
+
+	INIT_LIST_HEAD(&files->list);
+
+	return files;
+}
+
 struct file_list *file_list_parse(const char *str)
 {
 	struct file_list *files;
 	int ret;
 	const char *endptr;
 
-	files = xzalloc(sizeof(*files));
-
-	INIT_LIST_HEAD(&files->list);
+	files = file_list_new();
 
 	while (*str) {
 		ret = file_list_parse_one(files, str, &endptr);
@@ -195,9 +204,7 @@ struct file_list *file_list_dup(struct file_list *old)
 	struct file_list_entry *old_entry;
 	struct file_list *new;
 
-	new = xzalloc(sizeof(*new));
-
-	INIT_LIST_HEAD(&new->list);
+	new = file_list_new();
 
 	list_for_each_entry(old_entry, &old->list, list) {
 		(void)file_list_add_entry(new, old_entry->name, old_entry->filename,

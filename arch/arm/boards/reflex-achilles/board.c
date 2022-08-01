@@ -4,6 +4,7 @@
 #include <init.h>
 #include <io.h>
 #include <bbu.h>
+#include <mach/arria10-system-manager.h>
 
 static int achilles_init(void)
 {
@@ -14,7 +15,7 @@ static int achilles_init(void)
 	if (!of_machine_is_compatible("reflex,achilles"))
 		return 0;
 
-	pbl_index = readl(0xFFD06210);
+	pbl_index = readl(ARRIA10_SYSMGR_ROM_INITSWLASTLD);
 
 	pr_debug("Current barebox instance %d\n", pbl_index);
 

@@ -29,7 +29,7 @@
 #define BITSTREAM1_OFFSET  0x0
 #define BITSTREAM2_OFFSET  BITSTREAM1_OFFSET + SZ_32M
 
-extern char __dtb_socfpga_arria10_achilles_start[];
+extern char __dtb_z_socfpga_arria10_achilles_start[];
 
 static noinline void achilles_start(void)
 {
@@ -86,7 +86,7 @@ ENTRY_FUNCTION(start_socfpga_achilles, r0, r1, r2)
 {
 	void *fdt;
 
-	fdt = __dtb_socfpga_arria10_achilles_start + get_runtime_offset();
+	fdt = __dtb_z_socfpga_arria10_achilles_start + get_runtime_offset();
 
 	barebox_arm_entry(0x0, SZ_2G + SZ_1G, fdt);
 }
@@ -111,7 +111,7 @@ ENTRY_FUNCTION(start_socfpga_achilles_bringup, r0, r1, r2)
 
 	arria10_ddr_calibration_sequence();
 
-	fdt = __dtb_socfpga_arria10_achilles_start + get_runtime_offset();
+	fdt = __dtb_z_socfpga_arria10_achilles_start + get_runtime_offset();
 
 	barebox_arm_entry(0x0, SZ_2G + SZ_1G, fdt);
 }

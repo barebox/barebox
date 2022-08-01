@@ -1,0 +1,85 @@
+// SPDX-License-Identifier: GPL-2.0
+#include <arm/socfpga_arria10_mercury_aa1.dts>
+
+/ {
+	aliases {
+		mmc0 = &mmc;
+	};
+
+	chosen {
+		stdout-path = &uart1;
+
+		environment {
+			compatible = "barebox,environment";
+			device-path = &environment_mmc;
+		};
+	};
+};
+
+// provide reset-names until fixed in the upstream dts. Binding prescribes this property.
+&{/soc/dwmmc0@ff808000} {
+	reset-names = "reset";
+};
+
+// This clock is unused, but fixed-clocks need to have a clock-frequency set
+&{/soc/clkmgr@ffd04000/clocks/cb_intosc_hs_div2_clk} {
+	clock-frequency = <0>;
+};
+
+&{/soc/clkmgr@ffd04000/clocks/cb_intosc_ls_clk} {
+	clock-frequency = <60000000>;
+};
+
+&{/soc/clkmgr@ffd04000/clocks/f2s_free_clk} {
+	clock-frequency = <200000000>;
+};
+
+&mmc {
+	bus-width = <8>;
+	non-removable;
+	disable-wp;
+	no-sd;
+
+	partitions {
+		compatible = "fixed-partitions";
+		#size-cells = <1>;
+		#address-cells = <1>;
+
+		// This must be marked as an "A2" partition in the partition table
+		barebox1_xload: partition@100000 {
+			label = "barebox1-xload";
+			reg = <0x100000 0x40000>;
+		};
+
+		barebox2_xload: partition@140000 {
+			label = "barebox2-xload";
+			reg = <0x140000 0x40000>;
+		};
+
+		barebox1: partition@200000 {
+			label = "barebox1";
+			reg = <0x200000 0x100000>;
+		};
+
+		barebox2: partition@300000 {
+			label = "barebox2";
+			reg = <0x300000 0x100000>;
+		};
+
+		environment_mmc: partition@400000 {
+			label = "environment";
+			reg = <0x400000 0x8000>;
+		};
+
+		// This is actually the second partition on the mmc. It has no filesystem.
+		bitstream1: partition@700000 {
+			label = "bitstream1";
+			reg = <0x700000 0x2000000>;
+		};
+
+		bitstream2: partition@2700000 {
+			label = "bitstream2";
+			reg = <0x2700000 0x2000000>;
+		};
+	};
+};

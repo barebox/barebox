@@ -37,6 +37,10 @@ config MACH_SOCFPGA_EBV_SOCRATES
 	select ARCH_SOCFPGA_CYCLONE5
 	bool "EBV Socrates"
 
+config MACH_SOCFPGA_ENCLUSTRA_AA1
+	select ARCH_SOCFPGA_ARRIA10
+	bool "Enclustra AA1"
+
 config MACH_SOCFPGA_REFLEX_ACHILLES
 	select ARCH_SOCFPGA_ARRIA10
 	bool "Reflex Achilles"

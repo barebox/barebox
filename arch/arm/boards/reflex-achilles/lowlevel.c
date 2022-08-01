@@ -31,12 +31,15 @@
 
 extern char __dtb_z_socfpga_arria10_achilles_start[];
 
-static noinline void achilles_start(void)
+#define ARRIA10_STACKTOP	ARRIA10_OCRAM_ADDR + SZ_256K
+
+ENTRY_FUNCTION_WITHSTACK(start_socfpga_achilles_xload, ARRIA10_STACKTOP, r0, r1, r2)
 {
 	int pbl_index = 0;
 	int barebox = 0;
 	int bitstream = 0;
 
+	arm_cpu_lowlevel_init();
 
 	relocate_to_current_adr();
 	setup_c();
@@ -75,13 +78,6 @@ static noinline void achilles_start(void)
 	arria10_start_image(barebox);
 }
 
-ENTRY_FUNCTION(start_socfpga_achilles_xload, r0, r1, r2)
-{
-	arm_cpu_lowlevel_init();
-	arm_setup_stack(ARRIA10_OCRAM_ADDR + SZ_256K);
-	achilles_start();
-}
-
 ENTRY_FUNCTION(start_socfpga_achilles, r0, r1, r2)
 {
 	void *fdt;
@@ -91,7 +87,7 @@ ENTRY_FUNCTION(start_socfpga_achilles, r0, r1, r2)
 	barebox_arm_entry(0x0, SZ_2G + SZ_1G, fdt);
 }
 
-ENTRY_FUNCTION(start_socfpga_achilles_bringup, r0, r1, r2)
+ENTRY_FUNCTION_WITHSTACK(start_socfpga_achilles_bringup, ARRIA10_STACKTOP, r0, r1, r2)
 {
 	void *fdt;
 

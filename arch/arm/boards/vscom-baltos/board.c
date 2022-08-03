@@ -49,6 +49,7 @@ static uint8_t get_dip_switch(uint16_t id, uint32_t rev)
 {
 	uint16_t maj, min;
 	uint8_t dip = 0;
+	int inputs[4];
 
 	maj = rev >> 16;
 	min = rev & 0xffff;
@@ -59,10 +60,14 @@ static uint8_t get_dip_switch(uint16_t id, uint32_t rev)
 	switch(id) {
 		case 214:
 		case 215:
-			dip = !gpio_get_value(44);
-			dip += !gpio_get_value(45) << 1;
-			dip += !gpio_get_value(46) << 2;
-			dip += !gpio_get_value(47) << 3;
+			inputs[0] = gpio_find_by_name("SW2_0_alt");
+			inputs[1] = gpio_find_by_name("SW2_1_alt");
+			inputs[2] = gpio_find_by_name("SW2_2_alt");
+			inputs[3] = gpio_find_by_name("SW2_3_alt");
+			dip = !gpio_get_value(inputs[0]);
+			dip += !gpio_get_value(inputs[1]) << 1;
+			dip += !gpio_get_value(inputs[2]) << 2;
+			dip += !gpio_get_value(inputs[3]) << 3;
 			break;
 		case 212:
 		case 221:
@@ -72,10 +77,14 @@ static uint8_t get_dip_switch(uint16_t id, uint32_t rev)
 		case 226:
 		case 227:
 		case 230:
-			dip = !gpio_get_value(82);
-			dip += !gpio_get_value(83) << 1;
-			dip += !gpio_get_value(105) << 2;
-			dip += !gpio_get_value(106) << 3;
+			inputs[0] = gpio_find_by_name("SW2_0");
+			inputs[1] = gpio_find_by_name("SW2_1");
+			inputs[2] = gpio_find_by_name("SW2_2");
+			inputs[3] = gpio_find_by_name("SW2_3");
+			dip = !gpio_get_value(inputs[0]);
+			dip += !gpio_get_value(inputs[1]) << 1;
+			dip += !gpio_get_value(inputs[2]) << 2;
+			dip += !gpio_get_value(inputs[3]) << 3;
 			break;
 	}
 

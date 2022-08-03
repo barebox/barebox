@@ -98,6 +98,7 @@ static int baltos_read_eeprom(void)
 	int rc;
 	unsigned char mac_addr[6];
 	uint8_t dip;
+	int mpcie_pwr_pin;
 
 	if (!of_machine_is_compatible("vscom,onrisc"))
 		return 0;
@@ -145,7 +146,8 @@ static int baltos_read_eeprom(void)
 	globalvar_add_simple("board.id", var_buf);
 
 	/* enable mPCIe slot */
-	gpio_direction_output(100, 1);
+	mpcie_pwr_pin = gpio_find_by_name("3G_PWR_EN");
+	gpio_direction_output(mpcie_pwr_pin, 1);
 
 	/* configure output signals of the external GPIO controller */
 	if (hw_param.SystemId == 210 || hw_param.SystemId == 211) {

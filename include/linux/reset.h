@@ -73,4 +73,10 @@ static inline int device_reset_all(struct device_d *dev)
 
 #endif /* CONFIG_RESET_CONTROLLER */
 
+static inline struct reset_control *reset_control_get_optional(struct device_d *dev, const char *id)
+{
+	struct reset_control *rstc = reset_control_get(dev, id);
+	return rstc == ERR_PTR(-ENOENT) ? NULL : rstc;
+}
+
 #endif

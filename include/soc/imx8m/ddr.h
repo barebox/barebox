@@ -329,16 +329,28 @@ enum fw_type {
 };
 
 enum dram_type {
-	DRAM_TYPE_LPDDR4,
-	DRAM_TYPE_DDR4,
+#define DRAM_TYPE_MASK	0x00ff
+	DRAM_TYPE_LPDDR4	= 0 << 0,
+	DRAM_TYPE_DDR4		= 1 << 0,
 };
 
+static inline enum dram_type get_dram_type(unsigned type)
+{
+	return type & DRAM_TYPE_MASK;
+}
+
 enum ddrc_type {
-	DDRC_TYPE_MM,
-	DDRC_TYPE_MN,
-	DDRC_TYPE_MQ,
-	DDRC_TYPE_MP,
+#define DDRC_TYPE_MASK	0xff00
+	DDRC_TYPE_MM = 0 << 8,
+	DDRC_TYPE_MN = 1 << 8,
+	DDRC_TYPE_MQ = 2 << 8,
+	DDRC_TYPE_MP = 3 << 8,
 };
+
+static inline enum ddrc_type get_ddrc_type(unsigned type)
+{
+	return type & DDRC_TYPE_MASK;
+}
 
 struct dram_cfg_param {
 	unsigned int reg;
@@ -353,7 +365,6 @@ struct dram_fsp_msg {
 };
 
 struct dram_timing_info {
-	enum dram_type dram_type;
 	/* umctl2 config */
 	struct dram_cfg_param *ddrc_cfg;
 	unsigned int ddrc_cfg_num;
@@ -387,14 +398,14 @@ static void ddr_get_firmware(enum dram_type dram_type)
 }
 
 int imx8m_ddr_init(struct dram_timing_info *dram_timing,
-		   enum ddrc_type ddrc_type);
+		   unsigned type);
 
 static inline int imx8mm_ddr_init(struct dram_timing_info *dram_timing,
 				  enum dram_type dram_type)
 {
 	ddr_get_firmware(dram_type);
 
-	return imx8m_ddr_init(dram_timing, DDRC_TYPE_MM);
+	return imx8m_ddr_init(dram_timing, DDRC_TYPE_MM | dram_type);
 }
 
 static inline int imx8mn_ddr_init(struct dram_timing_info *dram_timing,
@@ -402,7 +413,7 @@ static inline int imx8mn_ddr_init(struct dram_timing_info *dram_timing,
 {
 	ddr_get_firmware(dram_type);
 
-	return imx8m_ddr_init(dram_timing, DDRC_TYPE_MN);
+	return imx8m_ddr_init(dram_timing, DDRC_TYPE_MN | dram_type);
 }
 
 static inline int imx8mq_ddr_init(struct dram_timing_info *dram_timing,
@@ -410,7 +421,7 @@ static inline int imx8mq_ddr_init(struct dram_timing_info *dram_timing,
 {
 	ddr_get_firmware(dram_type);
 
-	return imx8m_ddr_init(dram_timing, DDRC_TYPE_MQ);
+	return imx8m_ddr_init(dram_timing, DDRC_TYPE_MQ | dram_type);
 }
 
 static inline int imx8mp_ddr_init(struct dram_timing_info *dram_timing,
@@ -418,7 +429,7 @@ static inline int imx8mp_ddr_init(struct dram_timing_info *dram_timing,
 {
 	ddr_get_firmware(dram_type);
 
-	return imx8m_ddr_init(dram_timing, DDRC_TYPE_MP);
+	return imx8m_ddr_init(dram_timing, DDRC_TYPE_MP | dram_type);
 }
 
 int ddr_cfg_phy(struct dram_timing_info *timing_info, enum ddrc_type ddrc_type);

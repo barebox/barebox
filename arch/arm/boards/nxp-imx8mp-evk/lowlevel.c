@@ -11,6 +11,7 @@
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
 #include <pbl/i2c.h>
+#include <pbl/pmic.h>
 #include <linux/sizes.h>
 #include <mach/atf.h>
 #include <mach/xload.h>
@@ -48,28 +49,23 @@ static void setup_uart(void)
 	putc_ll('>');
 }
 
-static void pmic_reg_write(struct pbl_i2c *i2c, int reg, uint8_t val)
-{
-	int ret;
-	u8 buf[32];
-	struct i2c_msg msgs[] = {
-		{
-			.addr = 0x25,
-			.buf = buf,
-		},
-	};
+static struct pmic_config pca9450_cfg[] = {
+	/* BUCKxOUT_DVS0/1 control BUCK123 output */
+	{ PCA9450_BUCK123_DVS, 0x29 },
+	/*
+	 * increase VDD_SOC to typical value 0.95V before first
+	 * DRAM access, set DVS1 to 0.85v for suspend.
+	 * Enable DVS control through PMIC_STBY_REQ and
+	 * set B1_ENMODE=1 (ON by PMIC_ON_REQ=H)
+	 */
+	{ PCA9450_BUCK1OUT_DVS0, 0x1C },
+	{ PCA9450_BUCK1OUT_DVS1, 0x14 },
+	{ PCA9450_BUCK1CTRL, 0x59 },
+	/* set WDOG_B_CFG to cold reset */
+	{ PCA9450_RESET_CTRL, 0xA1 },
+};
 
-	buf[0] = reg;
-	buf[1] = val;
-
-	msgs[0].len = 2;
-
-	ret = pbl_i2c_xfer(i2c, msgs, ARRAY_SIZE(msgs));
-	if (ret != 1)
-		pr_err("Failed to write to pmic\n");
-}
-
-static int power_init_board(void)
+static void power_init_board(void)
 {
 	struct pbl_i2c *i2c;
 
@@ -81,23 +77,7 @@ static int power_init_board(void)
 
 	i2c = imx8m_i2c_early_init(IOMEM(MX8MP_I2C1_BASE_ADDR));
 
-	/* BUCKxOUT_DVS0/1 control BUCK123 output */
-	pmic_reg_write(i2c, PCA9450_BUCK123_DVS, 0x29);
-
-	/*
-	 * increase VDD_SOC to typical value 0.95V before first
-	 * DRAM access, set DVS1 to 0.85v for suspend.
-	 * Enable DVS control through PMIC_STBY_REQ and
-	 * set B1_ENMODE=1 (ON by PMIC_ON_REQ=H)
-	 */
-	pmic_reg_write(i2c, PCA9450_BUCK1OUT_DVS0, 0x1C);
-	pmic_reg_write(i2c, PCA9450_BUCK1OUT_DVS1, 0x14);
-	pmic_reg_write(i2c, PCA9450_BUCK1CTRL, 0x59);
-
-	/* set WDOG_B_CFG to cold reset */
-	pmic_reg_write(i2c, PCA9450_RESET_CTRL, 0xA1);
-
-	return 0;
+	pmic_configure(i2c, 0x25, pca9450_cfg, ARRAY_SIZE(pca9450_cfg));
 }
 
 extern struct dram_timing_info imx8mp_evk_dram_timing;

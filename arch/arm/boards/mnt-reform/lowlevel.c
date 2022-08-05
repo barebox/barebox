@@ -8,6 +8,7 @@
 #include <debug_ll.h>
 #include <firmware.h>
 #include <pbl/i2c.h>
+#include <pbl/pmic.h>
 #include <mach/atf.h>
 #include <mach/esdctl.h>
 #include <mach/generic.h>
@@ -57,22 +58,7 @@ static void i2c_mux_set(struct pbl_i2c *i2c, u8 channel)
 
 static void i2c_regulator_set_voltage(struct pbl_i2c *i2c, u8 reg, u8 voffs)
 {
-	int ret;
-	u8 buf[2];
-	struct i2c_msg msgs[] = {
-		{
-			.addr = 0x60,
-			.buf = buf,
-			.len = 2,
-		},
-	};
-
-	buf[0] = reg;
-	buf[1] = 0x80 + voffs;
-
-	ret = pbl_i2c_xfer(i2c, msgs, ARRAY_SIZE(msgs));
-	if (ret != 1)
-		pr_err("failed to set voltage\n");
+	pmic_reg_write(i2c, 0x60, reg, 0x80 + voffs);
 }
 
 #define I2C_PAD_CTRL	MUX_PAD_CTRL(MX8MQ_PAD_CTL_DSE_45R | \

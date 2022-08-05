@@ -8,6 +8,7 @@
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
 #include <pbl/i2c.h>
+#include <pbl/pmic.h>
 #include <linux/sizes.h>
 #include <mach/esdctl.h>
 #include <mach/generic.h>
@@ -37,28 +38,20 @@ static void setup_uart(void)
 	putc_ll('>');
 }
 
-static void pmic_reg_write(struct pbl_i2c *i2c, int reg, uint8_t val)
-{
-	int ret;
-	u8 buf[32];
-	struct i2c_msg msgs[] = {
-		{
-			.addr = 0x4b,
-			.buf = buf,
-		},
-	};
+static struct pmic_config bd71837_cfg[] = {
+	/* decrease RESET key long push time from the default 10s to 10ms */
+	{ BD718XX_PWRONCONFIG1, 0x0 },
+	/* unlock the PMIC regs */
+	{ BD718XX_REGLOCK, 0x1 },
+	/* increase VDD_SOC to typical value 0.85v before first DRAM access */
+	{ BD718XX_BUCK1_VOLT_RUN, 0x0f },
+	/* increase VDD_DRAM to 0.975v for 3Ghz DDR */
+	{ BD718XX_1ST_NODVS_BUCK_VOLT, 0x83 },
+	/* lock the PMIC regs */
+	{ BD718XX_REGLOCK, 0x11 },
+};
 
-	buf[0] = reg;
-	buf[1] = val;
-
-	msgs[0].len = 2;
-
-	ret = pbl_i2c_xfer(i2c, msgs, ARRAY_SIZE(msgs));
-	if (ret != 1)
-		pr_err("Failed to write to pmic\n");
-}
-
-static int power_init_board(void)
+static void power_init_board(void)
 {
 	struct pbl_i2c *i2c;
 
@@ -70,22 +63,7 @@ static int power_init_board(void)
 
 	i2c = imx8m_i2c_early_init(IOMEM(MX8MQ_I2C1_BASE_ADDR));
 
-	/* decrease RESET key long push time from the default 10s to 10ms */
-	pmic_reg_write(i2c, BD718XX_PWRONCONFIG1, 0x0);
-
-	/* unlock the PMIC regs */
-	pmic_reg_write(i2c, BD718XX_REGLOCK, 0x1);
-
-	/* increase VDD_SOC to typical value 0.85v before first DRAM access */
-	pmic_reg_write(i2c, BD718XX_BUCK1_VOLT_RUN, 0x0f);
-
-	/* increase VDD_DRAM to 0.975v for 3Ghz DDR */
-	pmic_reg_write(i2c, BD718XX_1ST_NODVS_BUCK_VOLT, 0x83);
-
-	/* lock the PMIC regs */
-	pmic_reg_write(i2c, BD718XX_REGLOCK, 0x11);
-
-	return 0;
+	pmic_configure(i2c, 0x4b, bd71837_cfg, ARRAY_SIZE(bd71837_cfg));
 }
 
 extern struct dram_timing_info imx8mm_evk_dram_timing;

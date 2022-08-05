@@ -157,14 +157,14 @@ int reset_control_deassert(struct reset_control *rstc)
 EXPORT_SYMBOL_GPL(reset_control_deassert);
 
 /**
- * of_reset_control_count - Count reset lines
- * @node: device node
+ * reset_control_get_count - Count reset lines
+ * @dev: device
  *
  * Returns number of resets, 0 if none specified
  */
-static int of_reset_control_count(struct device_node *node)
+int reset_control_get_count(struct device_d *dev)
 {
-	return of_count_phandle_with_args(node, "resets", "#reset-cells");
+	return of_count_phandle_with_args(dev->device_node, "resets", "#reset-cells");
 }
 
 /**
@@ -357,7 +357,7 @@ int device_reset_all(struct device_d *dev)
 	struct reset_control *rstc;
 	int ret, i;
 
-	for (i = 0; i < of_reset_control_count(dev->device_node); i++) {
+	for (i = 0; i < reset_control_get_count(dev); i++) {
 		int ret;
 
 		rstc = of_reset_control_get_by_index(dev->device_node, i);

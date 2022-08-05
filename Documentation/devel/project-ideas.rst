@@ -20,10 +20,8 @@ For GSoC, following barebox developers are mentoring:
   - Rouven Czerwinski (IRC: ``Emantor``)
 
 This list can be edited and extended by sending patches to the mailing list.
-Other interesting ideas: Support for new file systems (EROFS, extfat, btrfs).
-Switch device framework (currently scripts write into a ``/dev/switch`` file
-to configure passthrough), Improvements for barebox-efi (e.g. as a coreboot
-payload), ... etc.
+Other interesting ideas: Support for new file systems (EROFS, extfat, btrfs),
+improvements for barebox-efi (e.g. as a coreboot payload), ... etc.
 
 Ideas listed below should contain a title, description, expected outcomes,
 skills (and HW if any) required and a difficulty rating.

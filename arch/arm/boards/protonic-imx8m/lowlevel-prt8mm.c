@@ -14,7 +14,6 @@
 #include <mach/xload.h>
 #include <soc/fsl/fsl_udc.h>
 #include <soc/imx8m/ddr.h>
-#include <soc/imx8m.h>
 
 extern char __dtb_z_imx8mm_prt8mm_start[];
 

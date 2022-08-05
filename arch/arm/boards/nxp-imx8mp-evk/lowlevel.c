@@ -22,7 +22,6 @@
 #include <mfd/pca9450.h>
 #include <soc/imx8m/ddr.h>
 #include <soc/fsl/fsl_udc.h>
-#include <soc/imx8m.h>
 
 extern char __dtb_z_imx8mp_evk_start[];
 

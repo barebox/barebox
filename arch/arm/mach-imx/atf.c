@@ -7,7 +7,6 @@
 #include <mach/generic.h>
 #include <mach/xload.h>
 #include <mach/romapi.h>
-#include <soc/imx8m.h>
 #include <soc/fsl/fsl_udc.h>
 
 /**

@@ -15,7 +15,7 @@
 #include <mach/iomux-mx8mm.h>
 #include <mach/imx8m-ccm-regs.h>
 #include <mfd/bd71837.h>
-#include <soc/imx8m.h>
+#include <mach/xload.h>
 #include <soc/imx8m/ddr.h>
 #include <image-metadata.h>
 

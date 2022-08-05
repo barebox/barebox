@@ -168,3 +168,39 @@ void imx8mp_load_and_start_image_via_tfa(void)
 
 	/* not reached */
 }
+
+void imx8mn_load_and_start_image_via_tfa(void)
+{
+	size_t bl31_size;
+	const u8 *bl31;
+	enum bootsource src;
+	int instance;
+
+	imx8mn_get_boot_source(&src, &instance);
+	switch (src) {
+	case BOOTSOURCE_MMC:
+		imx8mn_esdhc_load_image(instance, false);
+		break;
+	default:
+		printf("Unhandled bootsource BOOTSOURCE_%d\n", src);
+		hang();
+	}
+
+
+	/*
+	 * On completion the TF-A will jump to MX8M_ATF_BL33_BASE_ADDR
+	 * in EL2. Copy the image there, but replace the PBL part of
+	 * that image with ourselves. On a high assurance boot only the
+	 * currently running code is validated and contains the checksum
+	 * for the piggy data, so we need to ensure that we are running
+	 * the same code in DRAM.
+	 */
+	memcpy((void *)MX8M_ATF_BL33_BASE_ADDR,
+	       __image_start, barebox_pbl_size);
+
+	get_builtin_firmware(imx8mn_bl31_bin, &bl31, &bl31_size);
+
+	imx8mn_atf_load_bl31(bl31, bl31_size);
+
+	/* not reached */
+}

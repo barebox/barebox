@@ -57,7 +57,7 @@ static void pmic_reg_write(void *i2c, int addr, int reg, uint8_t val)
 		pr_err("Failed to write to pmic@%x: %d\n", addr, ret);
 }
 
-static int power_init_board_pca9450(void *i2c, int addr)
+static int i2c_dev_detect(void *i2c, int addr)
 {
 	u8 buf[1];
 	struct i2c_msg msgs[] = {
@@ -69,9 +69,11 @@ static int power_init_board_pca9450(void *i2c, int addr)
 		},
 	};
 
-	if (i2c_fsl_xfer(i2c, msgs, 1) != 1)
-		return -ENODEV;
+	return i2c_fsl_xfer(i2c, msgs, 1) == 1 ? 0 : -ENODEV;
+}
 
+static void power_init_board_pca9450(void *i2c, int addr)
+{
 	/* BUCKxOUT_DVS0/1 control BUCK123 output */
 	pmic_reg_write(i2c, addr, PCA9450_BUCK123_DVS, 0x29);
 
@@ -96,11 +98,9 @@ static int power_init_board_pca9450(void *i2c, int addr)
 
 	/* set WDOG_B_CFG to cold reset */
 	pmic_reg_write(i2c, addr, PCA9450_RESET_CTRL, 0xA1);
-
-	return 0;
 }
 
-static int power_init_board_bd71837(void *i2c, int addr)
+static void power_init_board_bd71837(void *i2c, int addr)
 {
 	/* decrease RESET key long push time from the default 10s to 10ms */
 	pmic_reg_write(i2c, addr, BD718XX_PWRONCONFIG1, 0x0);
@@ -123,17 +123,13 @@ static int power_init_board_bd71837(void *i2c, int addr)
 
 	/* lock the PMIC regs */
 	pmic_reg_write(i2c, addr, BD718XX_REGLOCK, 0x11);
-
-	return 0;
 }
 
 extern struct dram_timing_info imx8mn_evk_ddr4_timing, imx8mn_evk_lpddr4_timing;
 
 static void start_atf(void)
 {
-	struct dram_timing_info *dram_timing = &imx8mn_evk_lpddr4_timing;
 	void *i2c;
-	int ret;
 
 	/*
 	 * If we are in EL3 we are running for the first time and need to
@@ -151,13 +147,13 @@ static void start_atf(void)
 
 	i2c = imx8m_i2c_early_init(IOMEM(MX8MN_I2C1_BASE_ADDR));
 
-	ret = power_init_board_pca9450(i2c, 0x25);
-	if (ret) {
+	if (i2c_dev_detect(i2c, 0x25) == 0) {
+		power_init_board_pca9450(i2c, 0x25);
+		imx8mn_ddr_init(&imx8mn_evk_lpddr4_timing, DRAM_TYPE_LPDDR4);
+	} else {
 		power_init_board_bd71837(i2c, 0x4b);
-		dram_timing = &imx8mn_evk_ddr4_timing;
+		imx8mn_ddr_init(&imx8mn_evk_ddr4_timing, DRAM_TYPE_DDR4);
 	}
-
-	imx8mn_ddr_init(dram_timing, dram_timing->dram_type);
 
 	imx8mn_load_and_start_image_via_tfa();
 }

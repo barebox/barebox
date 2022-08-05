@@ -181,6 +181,9 @@ void imx8mn_load_and_start_image_via_tfa(void)
 	case BOOTSOURCE_MMC:
 		imx8mn_esdhc_load_image(instance, false);
 		break;
+	case BOOTSOURCE_SERIAL:
+		imx8mn_bootrom_load_image();
+		break;
 	default:
 		printf("Unhandled bootsource BOOTSOURCE_%d\n", src);
 		hang();

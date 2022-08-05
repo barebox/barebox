@@ -81,9 +81,9 @@ barebox images
 ==============
 
 In a typical build, the barebox build process generates multiple images
-(:ref:`multi_image`).  All enabled PBLs are linked with the same barebox
-proper binary and then the resulting image are processed to be in the
-format expected by the loader.
+(:ref:`multi_image`).  All enabled PBLs are each linked with the same
+barebox proper binary and then the resulting images are processed to be
+in the format expected by the loader.
 
 The loader is often a BootROM, but maybe another first stage bootloader
 or a hardware debugger.
@@ -110,10 +110,10 @@ Entry point
 
 The PBL's entry point is the first of your code that's run. What happens
 there depends on the previously running code. If a previous stage has already
-set up a stack and initialized the DRAM, the only thing you need to do
-is to call the common PBL code with a memory region and your device tree blob::
+initialized the DRAM, the only thing you need to do is to set up a stack and
+call the common PBL code with a memory region and your device tree blob::
 
-  ENTRY_FUNCTION(start_my_board, r0, r1, r2)
+  ENTRY_FUNCTION_WITHSTACK(start_my_board, MY_STACK_TOP, r0, r1, r2)
   {
   	extern char __dtb_my_board_start[];
   	void *fdt;
@@ -128,11 +128,15 @@ is to call the common PBL code with a memory region and your device tree blob::
 
 Lets look at this line by line:
 
- - ``ENTRY_FUNCTION(start_my_board, r0, r1, r2)``
+ - ``ENTRY_FUNCTION_WITHSTACK(start_my_board, STACK_TOP, r0, r1, r2)``
    The entry point is special: It needs to be located at the beginning of the
    image, it does not return and may run before a stack is set up.
-   The ``ENTRY_POINT()`` macro takes care of these details and passes along
-   a number of registers, in case the Boot ROM has placed something interesting there.
+   To make it possible to write this entry point in C, the macro places
+   a machine code prologue that uses ``STACK_TOP`` as the initial stack
+   pointer. If the stack is already set up, you may pass 0 here.
+
+   Additionally, the macro passes along a number of registers, in case the
+   Boot ROM has placed something interesting there.
 
  - ``extern char __dtb_my_board_start[];``
    When a device tree is built as part of the PBL, ``__dtb_*_start`` and
@@ -171,14 +175,17 @@ Looking at other boards you might see some different patterns:
 
  - ``__naked``: All functions called before stack is correctly initialized must be
    marked with this attribute. Otherwise, function prologue and epilogue may access
-   the uninitialized stack. If the compiler for the target architecture doesn't
-   support the attribute, stack must be set up in non-inline assembly:
-   Either a barebox assembly entry point or in earlier firmware.
-   The compiler may still spill excess local C variables used in a naked function
-   to the stack before it was initialized.
-   A naked function should thus preferably only contain inline assembly, set up a
-   stack and jump directly after to a ``noinline`` non naked function where the
-   stack is then normally usable.
+   the uninitialized stack. Note that even with ``__naked``, the compiler may still
+   spill excess local C variables used in a naked function to the stack before it
+   was initialized. A naked function should thus preferably only contain inline
+   assembly, set up a stack and jump directly after to a ``noinline`` non naked
+   function where the stack is then normally usable. This pattern is often seen
+   together with ``ENTRY_FUNCTION``. Modern boards better avoid this footgun
+   by using ``ENTRY_FUNCTION_WITHSTACK``, which will take care to initialize the
+   stack beforehand. If either a barebox assembly entry point,
+   ``ENTRY_FUNCTION_WITHSTACK`` or earlier firmware has set up the stack, there is
+   no reason to use ``__naked``, just use ``ENTRY_FNCTION_WITHSTACK`` with a zero
+   stack top.
 
  - ``noinline``: Compiler code inlining is oblivious to stack manipulation in
    inline assembly. If you want to ensure a new function has its own stack frame
@@ -186,8 +193,9 @@ Looking at other boards you might see some different patterns:
    a ``__noreturn noinline`` function.
 
  - ``arm_setup_stack``: For 32-bit ARM, ``arm_setup_stack`` initializes the stack
-   top when called from a naked C function, which allows to write the entry point
-   directly in C. The stack pointer will be decremented before pushing values.
+   top when called from a naked C function, which allowed to write the entry point
+   directly in C. Modern code should use ``ENTRY_FUNCTION_WITHSTACK`` instead.
+   Note that in both cases the stack pointer will be decremented before pushing values.
    Avoid interleaving with C-code. See ``__naked`` above for more details.
 
  - ``__dtb_z_my_board_start[];``: Because the PBL normally doesn't parse anything out
@@ -362,12 +370,11 @@ Considerations when writing Linux drivers also apply to barebox:
 Miscellaneous Linux porting advice:
 
   * Branches dependent on ``system_state``: Take the ``SYSTEM_BOOTING`` branch
-  * ``struct of_clk_hw_simple_get``: rename to ``struct of_clk_src_simple_get``
   * ``usleep`` and co.: use ``[mud]elay``
-  * ``.of_node``: use ``.device_node``
+  * ``.of_node``: use ``.device_node`` or ``dev_of_node``
   * ``jiffies``: use ``get_time_ns()``
   * ``time_before``: use ``!is_timeout()``
-  * ``clk_hw_register_fixed_rate_with_accuracy``: use ``clk_register_fixed_rate`` without accuracy
+  * ``clk_hw_register_fixed_rate_with_accuracy``: use ``clk_hw_register_fixed_rate`` without accuracy
   * ``CLK_SET_RATE_GATE`` can be ignored
   * ``clk_prepare``: is for the non-atomic code preparing for clk enablement. Merge it into ``clk_enable``
 
@@ -503,6 +510,10 @@ This can be done by implementing three functions:
    and resumes execution at the new location. This can be omitted
    if barebox won't initially execute out of ROM.
 
+ - ``relocate_to_adr_full()``: This function does what
+   ``relocate_to_adr()`` does and in addition moves the piggy data
+   (the usually compressed barebox appended to the prebootloader).
+
 Of course, for these functions to work. The linker script needs
 to ensure that the ELF relocation records are included in the
 final image and define start and end markers so code can iterate
@@ -511,7 +522,7 @@ over them.
 To ease debugging, even when relocation has no yet happened,
 barebox supports ``DEBUG_LL``, which acts similarly to the
 PBL console, but does not require relocation. This is incompatible
-with multi-image, function mso this should only be considered while debugging.
+with multi-image, so this should only be considered while debugging.
 
 Linker scripts
 ==============
@@ -526,4 +537,7 @@ Generic DT image
 It's a good idea to have the architecture generate an image that
 looks like and can be booted just like a Linux kernel. This allows
 easy testing with QEMU or booting from barebox or other bootloaders.
-Refer to ``BOARD_GENERIC_DT`` for examples.
+Refer to ``BOARD_GENERIC_DT`` for examples. If not possible, the
+(sub-)architecture making use of the image should
+``register_image_handler`` that can chain-boot the format from
+a running barebox. This allows for quick debugging iterations.

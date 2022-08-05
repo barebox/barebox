@@ -236,8 +236,11 @@ struct reset_control *of_reset_control_get(struct device_node *node,
 {
 	int index = 0;
 
-	if (id)
+	if (id) {
 		index = of_property_match_string(node, "reset-names", id);
+		if (index < 0)
+			return ERR_PTR(-ENOENT);
+	}
 
 	return of_reset_control_get_by_index(node, index);
 }

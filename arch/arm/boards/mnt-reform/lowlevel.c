@@ -7,7 +7,7 @@
 #include <common.h>
 #include <debug_ll.h>
 #include <firmware.h>
-#include <i2c/i2c-early.h>
+#include <pbl/i2c.h>
 #include <mach/atf.h>
 #include <mach/esdctl.h>
 #include <mach/generic.h>
@@ -36,7 +36,7 @@ static void mnt_reform_setup_uart(void)
 	putc_ll('>');
 }
 
-static void i2c_mux_set(void *i2c, u8 channel)
+static void i2c_mux_set(struct pbl_i2c *i2c, u8 channel)
 {
 	int ret;
 	u8 buf[1];
@@ -50,12 +50,12 @@ static void i2c_mux_set(void *i2c, u8 channel)
 
 	buf[0] = 1 << channel;
 
-	ret = i2c_fsl_xfer(i2c, msgs, ARRAY_SIZE(msgs));
+	ret = pbl_i2c_xfer(i2c, msgs, ARRAY_SIZE(msgs));
 	if (ret != 1)
 		pr_err("failed to set i2c mux\n");
 }
 
-static void i2c_regulator_set_voltage(void *i2c, u8 reg, u8 voffs)
+static void i2c_regulator_set_voltage(struct pbl_i2c *i2c, u8 reg, u8 voffs)
 {
 	int ret;
 	u8 buf[2];
@@ -70,7 +70,7 @@ static void i2c_regulator_set_voltage(void *i2c, u8 reg, u8 voffs)
 	buf[0] = reg;
 	buf[1] = 0x80 + voffs;
 
-	ret = i2c_fsl_xfer(i2c, msgs, ARRAY_SIZE(msgs));
+	ret = pbl_i2c_xfer(i2c, msgs, ARRAY_SIZE(msgs));
 	if (ret != 1)
 		pr_err("failed to set voltage\n");
 }
@@ -81,7 +81,7 @@ static void i2c_regulator_set_voltage(void *i2c, u8 reg, u8 voffs)
 
 static void mnt_reform_init_power(void)
 {
-	void *i2c;
+	struct pbl_i2c *i2c;
 
 	imx8mq_setup_pad(IMX8MQ_PAD_I2C1_SCL__I2C1_SCL | I2C_PAD_CTRL);
 	imx8mq_setup_pad(IMX8MQ_PAD_I2C1_SDA__I2C1_SDA | I2C_PAD_CTRL);

@@ -10,7 +10,7 @@
 #include <asm/sections.h>
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
-#include <i2c/i2c-early.h>
+#include <pbl/i2c.h>
 #include <linux/sizes.h>
 #include <mach/atf.h>
 #include <mach/xload.h>
@@ -48,7 +48,7 @@ static void setup_uart(void)
 	putc_ll('>');
 }
 
-static void pmic_reg_write(void *i2c, int reg, uint8_t val)
+static void pmic_reg_write(struct pbl_i2c *i2c, int reg, uint8_t val)
 {
 	int ret;
 	u8 buf[32];
@@ -64,14 +64,14 @@ static void pmic_reg_write(void *i2c, int reg, uint8_t val)
 
 	msgs[0].len = 2;
 
-	ret = i2c_fsl_xfer(i2c, msgs, ARRAY_SIZE(msgs));
+	ret = pbl_i2c_xfer(i2c, msgs, ARRAY_SIZE(msgs));
 	if (ret != 1)
 		pr_err("Failed to write to pmic\n");
 }
 
 static int power_init_board(void)
 {
-	void *i2c;
+	struct pbl_i2c *i2c;
 
 	imx8mp_setup_pad(MX8MP_PAD_I2C1_SCL__I2C1_SCL | I2C_PAD_CTRL);
 	imx8mp_setup_pad(MX8MP_PAD_I2C1_SDA__I2C1_SDA | I2C_PAD_CTRL);

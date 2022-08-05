@@ -9,7 +9,7 @@
 #include <asm/sections.h>
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
-#include <i2c/i2c-early.h>
+#include <pbl/i2c.h>
 #include <linux/sizes.h>
 #include <mach/atf.h>
 #include <mach/xload.h>
@@ -36,7 +36,7 @@ static void setup_uart(void)
 	putc_ll('>');
 }
 
-static void pmic_reg_write(void *i2c, int addr, int reg, uint8_t val)
+static void pmic_reg_write(struct pbl_i2c *i2c, int addr, int reg, uint8_t val)
 {
 	int ret;
 	u8 buf[32];
@@ -52,12 +52,12 @@ static void pmic_reg_write(void *i2c, int addr, int reg, uint8_t val)
 
 	msgs[0].len = 2;
 
-	ret = i2c_fsl_xfer(i2c, msgs, ARRAY_SIZE(msgs));
+	ret = pbl_i2c_xfer(i2c, msgs, ARRAY_SIZE(msgs));
 	if (ret != 1)
 		pr_err("Failed to write to pmic@%x: %d\n", addr, ret);
 }
 
-static int i2c_dev_detect(void *i2c, int addr)
+static int i2c_dev_detect(struct pbl_i2c *i2c, int addr)
 {
 	u8 buf[1];
 	struct i2c_msg msgs[] = {
@@ -69,10 +69,10 @@ static int i2c_dev_detect(void *i2c, int addr)
 		},
 	};
 
-	return i2c_fsl_xfer(i2c, msgs, 1) == 1 ? 0 : -ENODEV;
+	return pbl_i2c_xfer(i2c, msgs, 1) == 1 ? 0 : -ENODEV;
 }
 
-static void power_init_board_pca9450(void *i2c, int addr)
+static void power_init_board_pca9450(struct pbl_i2c *i2c, int addr)
 {
 	/* BUCKxOUT_DVS0/1 control BUCK123 output */
 	pmic_reg_write(i2c, addr, PCA9450_BUCK123_DVS, 0x29);
@@ -100,7 +100,7 @@ static void power_init_board_pca9450(void *i2c, int addr)
 	pmic_reg_write(i2c, addr, PCA9450_RESET_CTRL, 0xA1);
 }
 
-static void power_init_board_bd71837(void *i2c, int addr)
+static void power_init_board_bd71837(struct pbl_i2c *i2c, int addr)
 {
 	/* decrease RESET key long push time from the default 10s to 10ms */
 	pmic_reg_write(i2c, addr, BD718XX_PWRONCONFIG1, 0x0);
@@ -129,7 +129,7 @@ extern struct dram_timing_info imx8mn_evk_ddr4_timing, imx8mn_evk_lpddr4_timing;
 
 static void start_atf(void)
 {
-	void *i2c;
+	struct pbl_i2c *i2c;
 
 	/*
 	 * If we are in EL3 we are running for the first time and need to

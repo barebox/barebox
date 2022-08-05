@@ -9,11 +9,12 @@
  */
 #include <common.h>
 #include <i2c/i2c.h>
-#include <i2c/i2c-early.h>
+#include <pbl/i2c.h>
 
 #include "i2c-imx.h"
 
 struct fsl_i2c {
+	struct pbl_i2c i2c;
 	void __iomem *regs;
 	unsigned int i2cr_ien_opcode;
 	unsigned int i2sr_clr_opcode;
@@ -170,7 +171,7 @@ static int i2c_fsl_write(struct fsl_i2c *fsl_i2c, struct i2c_msg *msg)
 	/* write data */
 	for (i = 0; i < msg->len; i++) {
 		ret = i2c_fsl_send(fsl_i2c, msg->buf[i]);
-		if (ret)
+	if (ret)
 			return ret;
 	}
 
@@ -229,9 +230,9 @@ static int i2c_fsl_read(struct fsl_i2c *fsl_i2c, struct i2c_msg *msg)
  * If successful returns the number of messages transferred, otherwise a negative
  * error code is returned.
  */
-int i2c_fsl_xfer(void *ctx, struct i2c_msg *msgs, int num)
+static int i2c_fsl_xfer(struct pbl_i2c *i2c, struct i2c_msg *msgs, int num)
 {
-	struct fsl_i2c *fsl_i2c = ctx;
+	struct fsl_i2c *fsl_i2c = container_of(i2c, struct fsl_i2c, i2c);
 	unsigned int i, temp;
 	int ret;
 
@@ -288,7 +289,7 @@ static struct fsl_i2c fsl_i2c;
  * This function returns a context pointer suitable to transfer I2C messages
  * using i2c_fsl_xfer.
  */
-void *ls1046_i2c_init(void __iomem *regs)
+struct pbl_i2c *ls1046_i2c_init(void __iomem *regs)
 {
 	fsl_i2c.regs = regs;
 	fsl_i2c.regshift = 0;
@@ -297,10 +298,12 @@ void *ls1046_i2c_init(void __iomem *regs)
 	/* Divider for ~100kHz when coming from the ROM */
 	fsl_i2c.ifdr = 0x3e;
 
-	return &fsl_i2c;
+	fsl_i2c.i2c.xfer = i2c_fsl_xfer;
+
+	return &fsl_i2c.i2c;
 }
 
-void *imx8m_i2c_early_init(void __iomem *regs)
+struct pbl_i2c *imx8m_i2c_early_init(void __iomem *regs)
 {
 	fsl_i2c.regs = regs;
 	fsl_i2c.regshift = 2;
@@ -309,5 +312,7 @@ void *imx8m_i2c_early_init(void __iomem *regs)
 	/* Divider for ~100kHz when coming from the ROM */
 	fsl_i2c.ifdr = 0x0f;
 
-	return &fsl_i2c;
+	fsl_i2c.i2c.xfer = i2c_fsl_xfer;
+
+	return &fsl_i2c.i2c;
 }

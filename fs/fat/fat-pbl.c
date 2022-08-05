@@ -8,10 +8,10 @@
 #define pr_fmt(fmt) "fat-pbl: " fmt
 
 #include <common.h>
+#include <pbl/bio.h>
 #include "integer.h"
 #include "ff.h"
 #include "diskio.h"
-#include "pbl.h"
 
 DRESULT disk_read(FATFS *fat, BYTE *buf, DWORD sector, BYTE count)
 {

@@ -9,7 +9,7 @@
 #include <mach/gpio.h>
 #include <linux/sizes.h>
 #include <asm/cache.h>
-#include <pbl.h>
+#include <pbl/bio.h>
 
 static void at91_fat_start_image(struct pbl_bio *bio,
 				 void *buf, unsigned int len,

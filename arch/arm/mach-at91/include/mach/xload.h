@@ -4,7 +4,7 @@
 #define __MACH_XLOAD_H
 
 #include <linux/compiler.h>
-#include <pbl.h>
+#include <pbl/bio.h>
 
 void __noreturn sama5d2_sdhci_start_image(u32 r4);
 void __noreturn sama5d3_atmci_start_image(u32 r4, unsigned int clock,

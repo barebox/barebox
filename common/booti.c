@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-only
 // SPDX-FileCopyrightText: 2018 Sascha Hauer <s.hauer@pengutronix.de>
 
+#define pr_fmt(fmt) "booti: " fmt
+
 #include <common.h>
 #include <memory.h>
 #include <bootm.h>
@@ -40,6 +42,11 @@ void *booti_load_image(struct image_data *data, phys_addr_t *oftree)
 	image_size = le64_to_cpup(kernel_header + 16);
 
 	kernel = get_kernel_address(data->os_address, text_offset);
+
+	print_hex_dump_bytes("header ", DUMP_PREFIX_OFFSET,
+			     kernel_header, 80);
+	pr_debug("Kernel to be loaded to %lx+%lx\n", kernel, image_size);
+
 	if (kernel == UIMAGE_INVALID_ADDRESS)
 		return ERR_PTR(-ENOENT);
 

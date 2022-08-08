@@ -2006,6 +2006,22 @@ int of_property_read_string_helper(const struct device_node *np,
 	return i <= 0 ? -ENODATA : i;
 }
 
+static void __of_print_property_prefixed(const struct property *p, int indent,
+					 const char *prefix)
+{
+	unsigned length;
+
+	printf("%s%*s%s", prefix, indent * 8, "", p->name);
+
+	length = p->length;
+	if (length) {
+		printf(" = ");
+		of_print_property(of_property_get_value(p), length);
+	}
+
+	printf(";\n");
+}
+
 static int __of_print_nodes(struct device_node *node, int indent, const char *prefix)
 {
 	struct device_node *n;
@@ -2020,14 +2036,8 @@ static int __of_print_nodes(struct device_node *node, int indent, const char *pr
 
 	printf("%s%*s%s%s\n", prefix, indent * 8, "", node->name, node->name ? " {" : "{");
 
-	list_for_each_entry(p, &node->properties, list) {
-		printf("%s%*s%s", prefix, (indent + 1) * 8, "", p->name);
-		if (p->length) {
-			printf(" = ");
-			of_print_property(of_property_get_value(p), p->length);
-		}
-		printf(";\n");
-	}
+	list_for_each_entry(p, &node->properties, list)
+		__of_print_property_prefixed(p, indent + 1, prefix);
 
 	if (ctrlc())
 		return -EINTR;
@@ -2049,12 +2059,7 @@ void of_print_nodes(struct device_node *node, int indent)
 
 static void __of_print_property(struct property *p, int indent)
 {
-	printf("%*s%s", indent * 8, "", p->name);
-	if (p->length) {
-		printf(" = ");
-		of_print_property(of_property_get_value(p), p->length);
-	}
-	printf(";\n");
+	__of_print_property_prefixed(p, indent, "");
 }
 
 void of_print_properties(struct device_node *node)

@@ -139,14 +139,32 @@ static struct generic_pm_domain *genpd_get_from_provider(
 					struct of_phandle_args *genpdspec)
 {
 	struct generic_pm_domain *genpd = ERR_PTR(-ENOENT);
+	struct device_node *node = genpdspec->np;
 	struct of_genpd_provider *provider;
+	int ret;
 
 	if (!genpdspec)
 		return ERR_PTR(-EINVAL);
 
+	ret = of_device_ensure_probed(node);
+	if (ret) {
+		struct device_node *parent;
+
+		/*
+		 * If "barebox,allow-dummy" property is set for power domain
+		 * provider, assume it's turned on.
+		 */
+		parent = of_get_parent(node);
+		if (of_get_property(node, "barebox,allow-dummy", NULL) ||
+		    of_get_property(parent, "barebox,allow-dummy", NULL))
+			return NULL;
+
+		return ERR_PTR(ret);
+	}
+
 	/* Check if we have such a provider in our array */
 	list_for_each_entry(provider, &of_genpd_providers, link) {
-		if (provider->node == genpdspec->np)
+		if (provider->node == node)
 			genpd = provider->xlate(genpdspec, provider->data);
 		if (!IS_ERR(genpd))
 			break;
@@ -175,7 +193,7 @@ static int genpd_power_on(struct generic_pm_domain *genpd, unsigned int depth)
 {
 	int ret;
 
-	if (genpd_status_on(genpd))
+	if (!genpd || genpd_status_on(genpd))
 		return 0;
 
 	ret = _genpd_power_on(genpd, true);
@@ -211,7 +229,7 @@ static int __genpd_dev_pm_attach(struct device_d *dev, struct device_node *np,
 		return (ret == -ENOENT) ? -EPROBE_DEFER : ret;
 	}
 
-	dev_dbg(dev, "adding to PM domain %s\n", pd->name);
+	dev_dbg(dev, "adding to PM domain %s\n", pd ? pd->name : "dummy");
 
 	if (power_on)
 		ret = genpd_power_on(pd, 0);

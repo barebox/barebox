@@ -37,6 +37,11 @@ static int machine_id_set_globalvar(void)
 		return 0;
 
 	digest = digest_alloc_by_algo(HASH_ALGO_SHA1);
+	if (!digest) {
+		ret = -EOPNOTSUPP;
+		goto out;
+	}
+
 	ret = digest_init(digest);
 	if (ret)
 		goto out;

@@ -483,10 +483,10 @@ again:
 
 		pd_dev = xzalloc(sizeof(*pd_dev));
 		pd_dev->device_node = np;
+		pd_dev->device_node->dev = pd_dev;
 		pd_dev->id = domain_index;
 		pd_dev->parent = dev;
 		pd_dev->priv = domain;
-		pd_dev->device_node = np;
 		dev_set_name(pd_dev, imx_pgc_domain_id[0].name);
 
 		ret = platform_device_register(pd_dev);

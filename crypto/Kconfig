@@ -71,7 +71,7 @@ config DIGEST_HMAC_GENERIC
 
 config DIGEST_SHA1_ARM
 	tristate "SHA1 digest algorithm (ARM-asm)"
-	depends on ARM
+	depends on ARM && !CPU_V8
 	select HAVE_DIGEST_SHA1
 	help
 	  SHA-1 secure hash standard (FIPS 180-1/DFIPS 180-2) implemented
@@ -79,7 +79,7 @@ config DIGEST_SHA1_ARM
 
 config DIGEST_SHA256_ARM
 	tristate "SHA-224/256 digest algorithm (ARM-asm and NEON)"
-	depends on ARM
+	depends on ARM && !CPU_V8
 	select HAVE_DIGEST_SHA256
 	select HAVE_DIGEST_SHA224
 	help

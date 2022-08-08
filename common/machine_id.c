@@ -30,11 +30,11 @@ static int machine_id_set_globalvar(void)
 	unsigned char machine_id[SHA1_DIGEST_SIZE];
 	char hex_machine_id[MACHINE_ID_LENGTH];
 	char *env_machine_id;
-	int ret = 0;
+	int ret;
 
 	/* nothing to do if no hashable information provided */
 	if (!__machine_id_hashable)
-		goto out;
+		return 0;
 
 	digest = digest_alloc_by_algo(HASH_ALGO_SHA1);
 	ret = digest_init(digest);
@@ -58,8 +58,6 @@ static int machine_id_set_globalvar(void)
 	free(env_machine_id);
 
 out:
-	globalvar_add_simple("machine_id", NULL);
-
 	digest_free(digest);
 	return ret;
 

@@ -105,8 +105,8 @@ static inline const void *of_property_get_value(const struct property *pp)
 void of_print_property(const void *data, int len);
 void of_print_cmdline(struct device_node *root);
 
-void of_print_nodes(struct device_node *node, int indent);
-void of_print_properties(struct device_node *node);
+void of_print_nodes(struct device_node *node, int indent, unsigned maxpropsize);
+void of_print_properties(struct device_node *node, unsigned maxpropsize);
 int of_diff(struct device_node *a, struct device_node *b, int indent);
 int of_probe(void);
 int of_parse_dtb(struct fdt_header *fdt);

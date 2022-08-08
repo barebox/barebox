@@ -2007,22 +2007,25 @@ int of_property_read_string_helper(const struct device_node *np,
 }
 
 static void __of_print_property_prefixed(const struct property *p, int indent,
-					 const char *prefix)
+					 unsigned maxpropsize, const char *prefix)
 {
 	unsigned length;
 
 	printf("%s%*s%s", prefix, indent * 8, "", p->name);
 
-	length = p->length;
+	length = min_t(unsigned, p->length, maxpropsize);
 	if (length) {
 		printf(" = ");
 		of_print_property(of_property_get_value(p), length);
 	}
+	if (length != p->length)
+		printf(" /* %u more bytes omitted */", p->length - length);
 
 	printf(";\n");
 }
 
-static int __of_print_nodes(struct device_node *node, int indent, const char *prefix)
+static int __of_print_nodes(struct device_node *node, int indent,
+			    unsigned maxpropsize, const char *prefix)
 {
 	struct device_node *n;
 	struct property *p;
@@ -2037,13 +2040,13 @@ static int __of_print_nodes(struct device_node *node, int indent, const char *pr
 	printf("%s%*s%s%s\n", prefix, indent * 8, "", node->name, node->name ? " {" : "{");
 
 	list_for_each_entry(p, &node->properties, list)
-		__of_print_property_prefixed(p, indent + 1, prefix);
+		__of_print_property_prefixed(p, indent + 1, maxpropsize, prefix);
 
 	if (ctrlc())
 		return -EINTR;
 
 	list_for_each_entry(n, &node->children, parent_list) {
-		ret = __of_print_nodes(n, indent + 1, prefix);
+		ret = __of_print_nodes(n, indent + 1, maxpropsize, prefix);
 		if (ret)
 			return ret;
 	}
@@ -2052,22 +2055,22 @@ static int __of_print_nodes(struct device_node *node, int indent, const char *pr
 	return 0;
 }
 
-void of_print_nodes(struct device_node *node, int indent)
+void of_print_nodes(struct device_node *node, int indent, unsigned maxpropsize)
 {
-	__of_print_nodes(node, indent, NULL);
+	__of_print_nodes(node, indent, maxpropsize, NULL);
 }
 
-static void __of_print_property(struct property *p, int indent)
+static void __of_print_property(struct property *p, int indent, unsigned maxpropsize)
 {
-	__of_print_property_prefixed(p, indent, "");
+	__of_print_property_prefixed(p, indent, maxpropsize, "");
 }
 
-void of_print_properties(struct device_node *node)
+void of_print_properties(struct device_node *node, unsigned maxpropsize)
 {
 	struct property *prop;
 
 	list_for_each_entry(prop, &node->properties, list)
-		__of_print_property(prop, 0);
+		__of_print_property(prop, 0, maxpropsize);
 }
 
 static int __of_print_parents(struct device_node *node)
@@ -2135,7 +2138,7 @@ int of_diff(struct device_node *a, struct device_node *b, int indent)
 				continue;
 			of_print_parents(a, &printed);
 			printf("- ");
-			__of_print_property(ap, indent);
+			__of_print_property(ap, indent, ~0);
 			continue;
 		}
 
@@ -2145,9 +2148,9 @@ int of_diff(struct device_node *a, struct device_node *b, int indent)
 				continue;
 			of_print_parents(a, &printed);
 			printf("- ");
-			__of_print_property(ap, indent);
+			__of_print_property(ap, indent, ~0);
 			printf("+ ");
-			__of_print_property(bp, indent);
+			__of_print_property(bp, indent, ~0);
 		}
 	}
 
@@ -2159,7 +2162,7 @@ int of_diff(struct device_node *a, struct device_node *b, int indent)
 				continue;
 			of_print_parents(a, &printed);
 			printf("+ ");
-			__of_print_property(bp, indent);
+			__of_print_property(bp, indent, ~0);
 		}
 	}
 
@@ -2172,7 +2175,7 @@ int of_diff(struct device_node *a, struct device_node *b, int indent)
 			if (silent)
 				continue;
 			of_print_parents(a, &printed);
-			__of_print_nodes(ca, indent, "- ");
+			__of_print_nodes(ca, indent, ~0, "- ");
 		}
 	}
 
@@ -2182,7 +2185,7 @@ int of_diff(struct device_node *a, struct device_node *b, int indent)
 			if (silent)
 				continue;
 			of_print_parents(a, &printed);
-			__of_print_nodes(cb, indent, "+ ");
+			__of_print_nodes(cb, indent, ~0, "+ ");
 		}
 	}
 

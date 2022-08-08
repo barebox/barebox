@@ -461,7 +461,7 @@ int bootm_load_devicetree(struct image_data *data, void *fdt,
 
 	of_print_cmdline(data->of_root_node);
 	if (bootm_verbose(data) > 1)
-		of_print_nodes(data->of_root_node, 0);
+		of_print_nodes(data->of_root_node, 0, ~0);
 
 	return 0;
 }

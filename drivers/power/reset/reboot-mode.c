@@ -115,6 +115,8 @@ static const char *get_mode_name(const struct property *prop)
 
 	prefix_len = str_has_prefix(prop->name, "mode-");
 	if (!prefix_len)
+		prefix_len = str_has_prefix(prop->name, "barebox,mode-");
+	if (!prefix_len)
 		return NULL;
 
 	return prop->name + prefix_len;

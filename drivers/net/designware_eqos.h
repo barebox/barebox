@@ -60,7 +60,6 @@ struct eqos {
 
 	const struct eqos_ops *ops;
 	void *priv;
-	bool started;
 };
 
 struct device_d;

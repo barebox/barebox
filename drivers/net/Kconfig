@@ -55,71 +55,75 @@ config DRIVER_NET_DAVINCI_EMAC
 	select PHYLIB
 
 config DRIVER_NET_DESIGNWARE
-	bool "Designware Universal MAC1000 ethernet platform support"
+	bool "Designware DWMAC1000 Ethernet driver support" if COMPILE_TEST
 	depends on HAS_DMA
 	select PHYLIB
 	help
-	  This option enables support for the Synopsys
-	  Designware Core Univesal MAC 10M/100M/1G ethernet IP.
-
-if DRIVER_NET_DESIGNWARE
+	  This option is selected by platform glue drivers that contain
+	  a DWMAC1000-compatible Ethernet IP.
 
 config DRIVER_NET_DESIGNWARE_GENERIC
-	bool "Designware Universal MAC ethernet generic driver"
+	bool "Generic Synopsis Designware Ethernet driver"
+	select DRIVER_NET_DESIGNWARE
+	depends on HAS_DMA
 	help
-	  This option enables support for the Synopsys
-	  Designware Core Univesal MAC 10M/100M/1G ethernet IP on SoCFPGA.
+	  This option enables support for the generic Synopsys
+	  Designware Core Universal MAC 10M/100M/1G binding. Supported
+	  are 3.70a and 3.72. Most integrations additionally require
+	  access to platform-specific registers, e.g. for clocking.
+	  If you are on such a platform, use the platform specific
+	  driver instead.
 
 config DRIVER_NET_DESIGNWARE_SOCFPGA
-	bool "Designware Universal MAC ethernet driver for SoCFPGA platforms"
-	depends on ARCH_SOCFPGA || COMPILE_TEST
+	bool "SOCFPGA Designware Ethernet driver"
+	depends on HAS_DMA && (ARCH_SOCFPGA || COMPILE_TEST)
+	select DRIVER_NET_DESIGNWARE
 	select MFD_SYSCON
 	select RESET_CONTROLLER
 	help
 	  This option enables support for the Synopsys
-	  Designware Core Univesal MAC 10M/100M/1G ethernet IP on SoCFPGA.
+	  Designware Core Universal MAC 10M/100M/1G Ethernet IP on SoCFPGA.
 
 config DRIVER_NET_DESIGNWARE_STARFIVE
-	bool "Designware Universal MAC ethernet driver for StarFive platforms"
-	depends on SOC_STARFIVE || COMPILE_TEST
+	bool "StarFive Designware Ethernet driver"
+	depends on HAS_DMA && (SOC_STARFIVE || COMPILE_TEST)
+	select DRIVER_NET_DESIGNWARE
 	select MFD_SYSCON
 	help
 	  This option enables support for the Synopsys
-	  Designware Core Univesal MAC 10M/100M/1G ethernet IP on StarFive.
-
-endif
+	  Designware Core Universal MAC 10M/100M/1G Ethernet IP on StarFive.
 
 config DRIVER_NET_DESIGNWARE_EQOS
-	bool "Designware Designware Ethernet QoS support"
-	depends on HAS_DMA
-	depends on COMMON_CLK
-	depends on OFTREE
+	bool "Designware EQOS (GMAC4) Ethernet driver support" if COMPILE_TEST
+	depends on HAS_DMA && OFTREE
 	select PHYLIB
 	help
 	  This option enables support for the Synopsys
 	  Designware Ethernet Quality-of-Service (GMAC4).
 
-if DRIVER_NET_DESIGNWARE_EQOS
-
 config DRIVER_NET_DESIGNWARE_STM32
-	bool "Designware EQOS STM32 driver"
+	bool "STM32 Designware Ethernet driver"
+	depends on HAS_DMA && COMMON_CLK && OFTREE && (ARCH_STM32MP || COMPILE_TEST)
+	select DRIVER_NET_DESIGNWARE_EQOS
 	select MFD_SYSCON
 	help
-	  This option enables support for the ethernet MAC on the STM32MP platforms.
+	  This option enables support for the Ethernet MAC on the STM32MP platforms.
 
 config DRIVER_NET_DESIGNWARE_TEGRA186
-	bool "Designware Universal MAC ethernet driver for Tegra 186 platforms"
+	bool "Tegra 186/194 Designware Ethernet driver"
+	depends on HAS_DMA && COMMON_CLK && OFTREE && (ARCH_TEGRA || COMPILE_TEST)
+	select DRIVER_NET_DESIGNWARE_EQOS
 	select RESET_CONTROLLER
 	help
-	  This option enables support for the ethernet MAC on the Tegra186 & 194.
+	  This option enables support for the Ethernet MAC on the Tegra186 & 194.
 
 config DRIVER_NET_DESIGNWARE_ROCKCHIP
-	bool "Designware Universal MAC ethernet driver for Rockchip platforms"
+	bool "Rockchip Designware Ethernet driver"
+	select DRIVER_NET_DESIGNWARE_EQOS
+	depends on HAS_DMA && COMMON_CLK && OFTREE && (ARCH_ROCKCHIP || COMPILE_TEST)
 	select MFD_SYSCON
 	help
-	  This option enables support for the ethernet MAC on different Rockchip SoCs
-
-endif
+	  This option enables support for the Ethernet MAC on different Rockchip SoCs
 
 config DRIVER_NET_DM9K
 	bool "Davicom dm9k[E|A|B] ethernet driver"

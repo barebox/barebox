@@ -65,7 +65,6 @@ struct eqos {
 struct device_d;
 int eqos_probe(struct device_d *dev, const struct eqos_ops *ops, void *priv);
 void eqos_remove(struct device_d *dev);
-int eqos_reset(struct eqos *priv);
 
 int eqos_get_ethaddr(struct eth_device *edev, unsigned char *mac);
 int eqos_set_ethaddr(struct eth_device *edev, const unsigned char *mac);

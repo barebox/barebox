@@ -2329,6 +2329,39 @@ int of_set_property(struct device_node *np, const char *name, const void *val, i
 	return 0;
 }
 
+int of_append_property(struct device_node *np, const char *name, const void *val, int len)
+{
+	struct property *pp;
+	int orig_len;
+	void *buf;
+
+	if (!np)
+		return -ENOENT;
+
+	pp = of_find_property(np, name, NULL);
+	if (!pp) {
+		of_new_property(np, name, val, len);
+		return 0;
+	}
+
+	orig_len = pp->length;
+	buf = realloc(pp->value, orig_len + len);
+	if (!buf)
+		return -ENOMEM;
+
+	memcpy(buf + orig_len, val, len);
+
+	pp->value = buf;
+	pp->length += len;
+
+	if (pp->value_const) {
+		memcpy(buf, pp->value_const, orig_len);
+		pp->value_const = NULL;
+	}
+
+	return 0;
+}
+
 int of_property_sprintf(struct device_node *np,
 			const char *propname, const char *fmt, ...)
 {

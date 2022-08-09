@@ -21,6 +21,7 @@
 #include <linux/err.h>
 #include <stringlist.h>
 #include <rsa.h>
+#include <uncompress.h>
 #include <image-fit.h>
 
 #define FDT_MAX_DEPTH 32
@@ -559,6 +560,11 @@ int fit_get_image_address(struct fit_handle *handle, void *configuration,
 	return ret;
 }
 
+static void fit_uncompress_error_fn(char *x)
+{
+	pr_err("%s\n", x);
+}
+
 /**
  * fit_open_image - Open an image in a FIT image
  * @handle: The FIT image handle
@@ -581,7 +587,8 @@ int fit_open_image(struct fit_handle *handle, void *configuration,
 		   unsigned long *outsize)
 {
 	struct device_node *image;
-	const char *unit = name, *type = NULL, *desc= "(no description)";
+	const char *unit = name, *type = NULL, *compression = NULL,
+	      *desc= "(no description)";
 	const void *data;
 	int data_len;
 	int ret = 0;
@@ -612,6 +619,29 @@ int fit_open_image(struct fit_handle *handle, void *configuration,
 
 	if (ret < 0)
 		return ret;
+
+	of_property_read_string(image, "compression", &compression);
+	if (compression && strcmp(compression, "none") != 0) {
+		void *uc_data;
+
+		if (!IS_ENABLED(CONFIG_UNCOMPRESS)) {
+			pr_err("image has compression = \"%s\", but support not compiled in\n",
+			       compression);
+			return -ENOSYS;
+		}
+
+		data_len = uncompress_buf_to_buf(data, data_len, &uc_data,
+					    fit_uncompress_error_fn);
+		if (data_len < 0) {
+			pr_err("data couldn't be decompressed\n");
+			return data_len;
+		}
+
+		data = uc_data;
+
+		/* associate buffer with FIT, so it's not leaked */
+		__of_new_property(image, "uncompressed-data", uc_data, data_len);
+	}
 
 	*outdata = data;
 	*outsize = data_len;

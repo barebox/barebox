@@ -2221,8 +2221,8 @@ struct device_node *of_new_node(struct device_node *parent, const char *name)
 	return node;
 }
 
-static struct property *__of_new_property(struct device_node *node, const char *name,
-		void *data, int len)
+struct property *__of_new_property(struct device_node *node, const char *name,
+				   void *data, int len)
 {
 	struct property *prop;
 

@@ -136,6 +136,8 @@ extern struct property *of_new_property(struct device_node *node,
 extern struct property *of_new_property_const(struct device_node *node,
 					      const char *name,
 					      const void *data, int len);
+extern struct property *__of_new_property(struct device_node *node,
+					  const char *name, void *data, int len);
 extern void of_delete_property(struct property *pp);
 
 extern struct device_node *of_find_node_by_name(struct device_node *from,
@@ -516,6 +518,12 @@ static inline int of_set_property(struct device_node *node, const char *p,
 
 static inline struct property *of_new_property(struct device_node *node,
 				const char *name, const void *data, int len)
+{
+	return NULL;
+}
+
+static inline struct property *__of_new_property(struct device_node *node,
+					  const char *name, void *data, int len)
 {
 	return NULL;
 }

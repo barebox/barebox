@@ -172,3 +172,43 @@ int uncompress_fd_to_buf(int infd, void *output,
 
 	return uncompress(NULL, 0, fill_fd, NULL, output, NULL, error_fn);
 }
+
+int uncompress_buf_to_fd(const void *input, size_t input_len,
+			 int outfd, void(*error_fn)(char *x))
+{
+	uncompress_outfd = outfd;
+
+	return uncompress((void *)input, input_len, NULL, flush_fd,
+			  NULL, NULL, error_fn);
+}
+
+ssize_t uncompress_buf_to_buf(const void *input, size_t input_len,
+			      void **buf, void(*error_fn)(char *x))
+{
+	char *dstpath;
+	size_t size;
+	int outfd, ret;
+
+	dstpath = make_temp("data-uncompressed");
+	if (!dstpath)
+		return -ENOMEM;
+
+	outfd = open(dstpath, O_CREAT | O_WRONLY);
+	if (outfd < 0) {
+		ret = -ENODEV;
+		goto free_temp;
+	}
+
+	ret = uncompress_buf_to_fd(input, input_len, outfd, uncompress_err_stdout);
+	if (ret)
+		goto close_outfd;
+
+	*buf = read_file(dstpath, &size);
+close_outfd:
+	close(outfd);
+	unlink(dstpath);
+free_temp:
+	free(dstpath);
+
+	return ret ?: size;
+}

@@ -41,9 +41,10 @@
 	reboot_mode_tamp: reboot-mode {
 		compatible = "syscon-reboot-mode";
 		offset = <0x150>; /* reg20 */
-		mask = <0xff>;
+		mask = <0xffff>;
 		mode-normal = <0>;
 		mode-loader = <0xBB>;
 		mode-recovery = <0xBC>;
+		barebox,mode-serial = <0xFF>;
 	};
 };

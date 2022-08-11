@@ -54,13 +54,17 @@ static int e1000_get_speed_and_duplex(struct e1000_hw *hw, uint16_t *speed,
 				       uint16_t *duplex);
 static int e1000_read_phy_reg(struct e1000_hw *hw, uint32_t reg_addr,
 			      uint16_t *phy_data);
+static int e1000_phy_write(struct mii_bus *bus, int phy_addr, int reg_addr,
+			   u16 phy_data);
 static int e1000_write_phy_reg(struct e1000_hw *hw, uint32_t reg_addr,
 			       uint16_t phy_data);
 static int32_t e1000_phy_hw_reset(struct e1000_hw *hw);
 static int e1000_phy_reset(struct e1000_hw *hw);
 static int e1000_detect_gig_phy(struct e1000_hw *hw);
 static void e1000_set_media_type(struct e1000_hw *hw);
-
+static void e1000_configure_tx(struct e1000_hw *hw);
+static void e1000_configure_rx(struct e1000_hw *hw);
+static void e1000_setup_rctl(struct e1000_hw *hw);
 
 static int32_t e1000_check_phy_reset_block(struct e1000_hw *hw);
 
@@ -243,6 +247,10 @@ int32_t e1000_swfw_sync_acquire(struct e1000_hw *hw, uint16_t mask)
 	int32_t timeout = 200;
 
 	DEBUGFUNC();
+
+	if (hw->mac_type <= e1000_82547_rev_2)
+		return E1000_SUCCESS;
+
 	while (timeout) {
 		if (e1000_get_hw_eeprom_semaphore(hw))
 			return -E1000_ERR_SWFW_SYNC;
@@ -273,6 +281,9 @@ int32_t e1000_swfw_sync_acquire(struct e1000_hw *hw, uint16_t mask)
 int32_t e1000_swfw_sync_release(struct e1000_hw *hw, uint16_t mask)
 {
 	uint32_t swfw_sync;
+
+	if (hw->mac_type <= e1000_82547_rev_2)
+		return E1000_SUCCESS;
 
 	if (e1000_get_hw_eeprom_semaphore(hw))
 		return -E1000_ERR_SWFW_SYNC;
@@ -801,6 +812,10 @@ static int e1000_open(struct eth_device *edev)
 		ctrl_ext |= E1000_CTRL_EXT_RO_DIS;
 		e1000_write_reg(hw, E1000_CTRL_EXT, ctrl_ext);
 	}
+
+	e1000_configure_tx(hw);
+	e1000_configure_rx(hw);
+	e1000_setup_rctl(hw);
 
 	return 0;
 }
@@ -2627,6 +2642,15 @@ static int e1000_read_phy_reg(struct e1000_hw *hw, uint32_t reg_addr,
 {
 	int ret;
 
+	if ((hw->phy_type == e1000_phy_igp) && (reg_addr > MAX_PHY_MULTI_PAGE_REG)) {
+		ret = e1000_phy_write(&hw->miibus, 1, IGP01E1000_PHY_PAGE_SELECT,
+				      (u16)reg_addr);
+		if (ret)
+			return ret;
+
+		reg_addr &= MAX_PHY_REG_ADDRESS;
+	}
+
 	ret = e1000_phy_read(&hw->miibus, 1, reg_addr);
 	if (ret < 0)
 		return ret;
@@ -2702,6 +2726,17 @@ static int e1000_phy_write(struct mii_bus *bus, int phy_addr,
  ******************************************************************************/
 static int e1000_write_phy_reg(struct e1000_hw *hw, uint32_t reg_addr, uint16_t phy_data)
 {
+	int ret;
+
+	if ((hw->phy_type == e1000_phy_igp) && (reg_addr > MAX_PHY_MULTI_PAGE_REG)) {
+		ret = e1000_phy_write(&hw->miibus, 1, IGP01E1000_PHY_PAGE_SELECT,
+				      (u16)reg_addr);
+		if (ret)
+			return ret;
+
+		reg_addr &= MAX_PHY_REG_ADDRESS;
+	}
+
 	return e1000_phy_write(&hw->miibus, 1, reg_addr, phy_data);
 }
 
@@ -3546,10 +3581,6 @@ static int e1000_init(struct eth_device *edev)
 	if (hw->mac_type == e1000_igb)
 		mdelay(15);
 
-	e1000_configure_tx(hw);
-	e1000_configure_rx(hw);
-	e1000_setup_rctl(hw);
-
 	return 0;
 }
 
@@ -3575,9 +3606,6 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 	edev->priv = hw;
 
 	hw->packet = dma_alloc(PAGE_SIZE);
-	if (!hw->packet)
-		return -ENOMEM;
-
 	hw->packet_dma = dma_map_single(hw->dev, hw->packet, PAGE_SIZE,
 					DMA_FROM_DEVICE);
 	if (dma_mapping_error(hw->dev, hw->packet_dma))

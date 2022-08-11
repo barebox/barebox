@@ -108,12 +108,6 @@ $(obj)/%.pblb: $(obj)/%.pbl FORCE
 $(obj)/%.s: $(obj)/% FORCE
 	$(call if_changed,disasm)
 
-suffix_$(CONFIG_IMAGE_COMPRESSION_GZIP) = gzip
-suffix_$(CONFIG_IMAGE_COMPRESSION_LZO)  = lzo
-suffix_$(CONFIG_IMAGE_COMPRESSION_LZ4)	= lz4
-suffix_$(CONFIG_IMAGE_COMPRESSION_XZKERN) = xzkern
-suffix_$(CONFIG_IMAGE_COMPRESSION_NONE) = comp_copy
-
 $(obj)/piggy.o: $(obj)/barebox.z FORCE
 
 $(obj)/sha_sum.o: $(obj)/barebox.sha.bin FORCE

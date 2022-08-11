@@ -32,7 +32,6 @@ unsigned barebox_riscv_pbl_flags;
 void *barebox_riscv_boot_dtb(void)
 {
 	void *dtb;
-	void *data;
 	int ret;
 	struct barebox_boarddata_compressed_dtb *compressed_dtb;
 	static void *boot_dtb;
@@ -56,9 +55,8 @@ void *barebox_riscv_boot_dtb(void)
 	if (!dtb)
 		return NULL;
 
-	data = compressed_dtb + 1;
-
-	ret = uncompress(data, compressed_dtb->datalen, NULL, NULL, dtb, NULL, NULL);
+	ret = uncompress(compressed_dtb->data, compressed_dtb->datalen,
+			 NULL, NULL, dtb, NULL, NULL);
 	if (ret) {
 		pr_err("uncompressing dtb failed\n");
 		free(dtb);

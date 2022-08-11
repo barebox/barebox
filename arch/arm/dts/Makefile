@@ -198,4 +198,4 @@ lwl-$(CONFIG_MACH_TQMLS1046A) += fsl-tqmls1046a-mbls10xxa.dtb.o
 lwl-$(CONFIG_MACH_ZEDBOARD) += zynq-zed.dtb.o
 lwl-$(CONFIG_MACH_MNT_REFORM) += imx8mq-mnt-reform2.dtb.o
 
-clean-files := *.dtb *.dtb.S .*.dtc .*.pre .*.dts *.dtb.lzo
+clean-files := *.dtb *.dtb.S .*.dtc .*.pre .*.dts *.dtb.z

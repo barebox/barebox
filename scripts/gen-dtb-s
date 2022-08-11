@@ -51,14 +51,10 @@ echo "__dtb_${name}_end:"
 echo ".global __dtb_${name}_end"
 echo ".balign STRUCT_ALIGNMENT"
 
-lzop -f -9 $dtb -o $dtb.lzo
-if [ $? != 0 ]; then
-	exit 1
-fi
-compressed=$(${CONFIG_SHELL} "${srctree}/scripts/file-size.sh" $dtb.lzo)
+compressed=$(${CONFIG_SHELL} "${srctree}/scripts/file-size.sh" $dtb.z)
 uncompressed=$(${CONFIG_SHELL} "${srctree}/scripts/file-size.sh" $dtb)
 
-echo "#ifdef CONFIG_USE_COMPRESSED_DTB"
+echo "#if defined(CONFIG_USE_COMPRESSED_DTB) && defined(__PBL__)"
 echo ".section .dtbz.rodata.${name},\"a\""
 echo ".balign STRUCT_ALIGNMENT"
 echo ".global __dtb_z_${name}_start"
@@ -66,7 +62,7 @@ echo "__dtb_z_${name}_start:"
 printf ".int 0x%08x\n"  0x7b66bcbd
 printf ".int 0x%08x\n"  $compressed
 printf ".int 0x%08x\n"  $uncompressed
-echo ".incbin \"$dtb.lzo\""
+echo ".incbin \"$dtb.z\""
 echo "__dtb_z_${name}_end:"
 echo ".global __dtb_z_${name}_end"
 echo ".balign STRUCT_ALIGNMENT"

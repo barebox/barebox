@@ -23,7 +23,7 @@
 
 #include "ddr.h"
 
-extern char __dtb_imx8mq_phytec_phycore_som_start[];
+extern char __dtb_z_imx8mq_phytec_phycore_som_start[];
 
 #define UART_PAD_CTRL	MUX_PAD_CTRL(PAD_CTL_DSE_3P3V_45_OHM)
 
@@ -90,7 +90,7 @@ static __noreturn noinline void phytec_phycore_imx8mq_start(void)
 	/*
 	 * Standard entry we hit once we initialized both DDR and ATF
 	 */
-	imx8mq_barebox_entry(__dtb_imx8mq_phytec_phycore_som_start);
+	imx8mq_barebox_entry(__dtb_z_imx8mq_phytec_phycore_som_start);
 }
 
 /*

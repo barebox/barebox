@@ -9,7 +9,8 @@
 #include <asm/sections.h>
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
-#include <i2c/i2c-early.h>
+#include <pbl/i2c.h>
+#include <pbl/pmic.h>
 #include <linux/sizes.h>
 #include <mach/atf.h>
 #include <mach/xload.h>
@@ -21,8 +22,6 @@
 #include <mfd/pca9450.h>
 #include <mfd/bd71837.h>
 #include <soc/imx8m/ddr.h>
-
-extern char __dtb_z_imx8mn_evk_start[];
 
 static void setup_uart(void)
 {
@@ -38,108 +37,50 @@ static void setup_uart(void)
 	putc_ll('>');
 }
 
-static void pmic_reg_write(void *i2c, int addr, int reg, uint8_t val)
-{
-	int ret;
-	u8 buf[32];
-	struct i2c_msg msgs[] = {
-		{
-			.addr = addr,
-			.buf = buf,
-		},
-	};
-
-	buf[0] = reg;
-	buf[1] = val;
-
-	msgs[0].len = 2;
-
-	ret = i2c_fsl_xfer(i2c, msgs, ARRAY_SIZE(msgs));
-	if (ret != 1)
-		pr_err("Failed to write to pmic@%x: %d\n", addr, ret);
-}
-
-static int power_init_board_pca9450(void *i2c, int addr)
-{
-	u8 buf[1];
-	struct i2c_msg msgs[] = {
-		{
-			.addr = addr,
-			.buf = buf,
-			.flags = I2C_M_RD,
-			.len = 1,
-		},
-	};
-
-	if (i2c_fsl_xfer(i2c, msgs, 1) != 1)
-		return -ENODEV;
-
+static struct pmic_config pca9450_cfg[] = {
 	/* BUCKxOUT_DVS0/1 control BUCK123 output */
-	pmic_reg_write(i2c, addr, PCA9450_BUCK123_DVS, 0x29);
-
+	{ PCA9450_BUCK123_DVS, 0x29 },
 	/*
 	 * increase VDD_SOC to typical value 0.95V before first
 	 * DRAM access, set DVS1 to 0.85v for suspend.
 	 * Enable DVS control through PMIC_STBY_REQ and
 	 * set B1_ENMODE=1 (ON by PMIC_ON_REQ=H)
 	 */
-	pmic_reg_write(i2c, addr, PCA9450_BUCK1OUT_DVS0, 0x1C);
-
+	{ PCA9450_BUCK1OUT_DVS0, 0x1C },
 	/* Set DVS1 to 0.85v for suspend */
 	/* Enable DVS control through PMIC_STBY_REQ and set B1_ENMODE=1 (ON by PMIC_ON_REQ=H) */
-	pmic_reg_write(i2c, addr, PCA9450_BUCK1OUT_DVS1, 0x14);
-	pmic_reg_write(i2c, addr, PCA9450_BUCK1CTRL, 0x59);
-
+	{ PCA9450_BUCK1OUT_DVS1, 0x14 },
+	{ PCA9450_BUCK1CTRL, 0x59 },
 	/* set VDD_SNVS_0V8 from default 0.85V */
-	pmic_reg_write(i2c, addr, PCA9450_LDO2CTRL, 0xC0);
-
+	{ PCA9450_LDO2CTRL, 0xC0 },
 	/* enable LDO4 to 1.2v */
-	pmic_reg_write(i2c, addr, PCA9450_LDO4CTRL, 0x44);
-
+	{ PCA9450_LDO4CTRL, 0x44 },
 	/* set WDOG_B_CFG to cold reset */
-	pmic_reg_write(i2c, addr, PCA9450_RESET_CTRL, 0xA1);
+	{ PCA9450_RESET_CTRL, 0xA1 },
+};
 
-	return 0;
-}
-
-static int power_init_board_bd71837(void *i2c, int addr)
-{
+static struct pmic_config bd71837_cfg[] = {
 	/* decrease RESET key long push time from the default 10s to 10ms */
-	pmic_reg_write(i2c, addr, BD718XX_PWRONCONFIG1, 0x0);
-
+	{ BD718XX_PWRONCONFIG1, 0x0 },
 	/* unlock the PMIC regs */
-	pmic_reg_write(i2c, addr, BD718XX_REGLOCK, 0x1);
-
+	{ BD718XX_REGLOCK, 0x1 },
 	/* Set VDD_ARM to typical value 0.85v for 1.2Ghz */
-	pmic_reg_write(i2c, addr, BD718XX_BUCK2_VOLT_RUN, 0xf);
-
+	{ BD718XX_BUCK2_VOLT_RUN, 0xf },
 	/* Set VDD_SOC/VDD_DRAM to typical value 0.85v for nominal mode */
-	pmic_reg_write(i2c, addr, BD718XX_BUCK1_VOLT_RUN, 0xf);
-
+	{ BD718XX_BUCK1_VOLT_RUN, 0xf },
 	/* Set VDD_SOC 0.85v for suspend */
-	pmic_reg_write(i2c, addr, BD718XX_BUCK1_VOLT_SUSP, 0xf);
-
-	/* increase NVCC_DRAM_1V2 to 1.2v for DDR4
-	 * */
-	pmic_reg_write(i2c, addr, BD718XX_4TH_NODVS_BUCK_CTRL, 0x28);
-
+	{ BD718XX_BUCK1_VOLT_SUSP, 0xf },
+	/* increase NVCC_DRAM_1V2 to 1.2v for DDR4 */
+	{ BD718XX_4TH_NODVS_BUCK_CTRL, 0x28 },
 	/* lock the PMIC regs */
-	pmic_reg_write(i2c, addr, BD718XX_REGLOCK, 0x11);
-
-	return 0;
-}
+	{ BD718XX_REGLOCK, 0x11 },
+};
 
 extern struct dram_timing_info imx8mn_evk_ddr4_timing, imx8mn_evk_lpddr4_timing;
 
 static void start_atf(void)
 {
-	struct dram_timing_info *dram_timing = &imx8mn_evk_lpddr4_timing;
-	size_t bl31_size;
-	const u8 *bl31;
-	enum bootsource src;
-	void *i2c;
-	int instance;
-	int ret;
+	struct pbl_i2c *i2c;
 
 	/*
 	 * If we are in EL3 we are running for the first time and need to
@@ -157,40 +98,15 @@ static void start_atf(void)
 
 	i2c = imx8m_i2c_early_init(IOMEM(MX8MN_I2C1_BASE_ADDR));
 
-	ret = power_init_board_pca9450(i2c, 0x25);
-	if (ret) {
-		power_init_board_bd71837(i2c, 0x4b);
-		dram_timing = &imx8mn_evk_ddr4_timing;
+	if (i2c_dev_probe(i2c, 0x25, true) == 0) {
+		pmic_configure(i2c, 0x25, pca9450_cfg, ARRAY_SIZE(pca9450_cfg));
+		imx8mn_ddr_init(&imx8mn_evk_lpddr4_timing, DRAM_TYPE_LPDDR4);
+	} else {
+		pmic_configure(i2c, 0x4b, bd71837_cfg, ARRAY_SIZE(bd71837_cfg));
+		imx8mn_ddr_init(&imx8mn_evk_ddr4_timing, DRAM_TYPE_DDR4);
 	}
 
-	imx8mn_ddr_init(dram_timing);
-
-	imx8mn_get_boot_source(&src, &instance);
-	switch (src) {
-	case BOOTSOURCE_MMC:
-		imx8mn_esdhc_load_image(instance, false);
-		break;
-	default:
-		printf("Unhandled bootsource BOOTSOURCE_%d\n", src);
-		hang();
-	}
-
-	/*
-	 * On completion the TF-A will jump to MX8M_ATF_BL33_BASE_ADDR
-	 * in EL2. Copy the image there, but replace the PBL part of
-	 * that image with ourselves. On a high assurance boot only the
-	 * currently running code is validated and contains the checksum
-	 * for the piggy data, so we need to ensure that we are running
-	 * the same code in DRAM.
-	 */
-	memcpy((void *)MX8M_ATF_BL33_BASE_ADDR,
-	       __image_start, barebox_pbl_size);
-
-	get_builtin_firmware(imx8mn_bl31_bin, &bl31, &bl31_size);
-
-	imx8mn_atf_load_bl31(bl31, bl31_size);
-
-	/* not reached */
+	imx8mn_load_and_start_image_via_tfa();
 }
 
 /*
@@ -211,14 +127,23 @@ static void start_atf(void)
  */
 static __noreturn noinline void nxp_imx8mn_evk_start(void)
 {
+	extern char __dtb_z_imx8mn_evk_start[], __dtb_z_imx8mn_ddr4_evk_start[];
+	void *fdt;
+
 	setup_uart();
 
 	start_atf();
 
+	/* Check if we configured DDR4 in EL3 */
+	if (readl(MX8M_DDRC_CTL_BASE_ADDR) & BIT(4))
+		fdt = __dtb_z_imx8mn_ddr4_evk_start;
+	else
+		fdt = __dtb_z_imx8mn_evk_start;
+
 	/*
 	 * Standard entry we hit once we initialized both DDR and ATF
 	 */
-	imx8mn_barebox_entry(__dtb_z_imx8mn_evk_start);
+	imx8mn_barebox_entry(fdt);
 }
 
 ENTRY_FUNCTION(start_nxp_imx8mn_evk, r0, r1, r2)

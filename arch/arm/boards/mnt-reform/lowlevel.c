@@ -7,7 +7,8 @@
 #include <common.h>
 #include <debug_ll.h>
 #include <firmware.h>
-#include <i2c/i2c-early.h>
+#include <pbl/i2c.h>
+#include <pbl/pmic.h>
 #include <mach/atf.h>
 #include <mach/esdctl.h>
 #include <mach/generic.h>
@@ -18,7 +19,7 @@
 #include <mach/xload.h>
 #include <soc/imx8m/ddr.h>
 
-extern char __dtb_imx8mq_mnt_reform2_start[];
+extern char __dtb_z_imx8mq_mnt_reform2_start[];
 
 #define UART_PAD_CTRL	MUX_PAD_CTRL(MX8MQ_PAD_CTL_DSE_65R)
 
@@ -36,7 +37,7 @@ static void mnt_reform_setup_uart(void)
 	putc_ll('>');
 }
 
-static void i2c_mux_set(void *i2c, u8 channel)
+static void i2c_mux_set(struct pbl_i2c *i2c, u8 channel)
 {
 	int ret;
 	u8 buf[1];
@@ -50,29 +51,14 @@ static void i2c_mux_set(void *i2c, u8 channel)
 
 	buf[0] = 1 << channel;
 
-	ret = i2c_fsl_xfer(i2c, msgs, ARRAY_SIZE(msgs));
+	ret = pbl_i2c_xfer(i2c, msgs, ARRAY_SIZE(msgs));
 	if (ret != 1)
 		pr_err("failed to set i2c mux\n");
 }
 
-static void i2c_regulator_set_voltage(void *i2c, u8 reg, u8 voffs)
+static void i2c_regulator_set_voltage(struct pbl_i2c *i2c, u8 reg, u8 voffs)
 {
-	int ret;
-	u8 buf[2];
-	struct i2c_msg msgs[] = {
-		{
-			.addr = 0x60,
-			.buf = buf,
-			.len = 2,
-		},
-	};
-
-	buf[0] = reg;
-	buf[1] = 0x80 + voffs;
-
-	ret = i2c_fsl_xfer(i2c, msgs, ARRAY_SIZE(msgs));
-	if (ret != 1)
-		pr_err("failed to set voltage\n");
+	pmic_reg_write(i2c, 0x60, reg, 0x80 + voffs);
 }
 
 #define I2C_PAD_CTRL	MUX_PAD_CTRL(MX8MQ_PAD_CTL_DSE_45R | \
@@ -81,7 +67,7 @@ static void i2c_regulator_set_voltage(void *i2c, u8 reg, u8 voffs)
 
 static void mnt_reform_init_power(void)
 {
-	void *i2c;
+	struct pbl_i2c *i2c;
 
 	imx8mq_setup_pad(IMX8MQ_PAD_I2C1_SCL__I2C1_SCL | I2C_PAD_CTRL);
 	imx8mq_setup_pad(IMX8MQ_PAD_I2C1_SDA__I2C1_SDA | I2C_PAD_CTRL);
@@ -139,7 +125,7 @@ static __noreturn noinline void mnt_reform_start(void)
 
 		mnt_reform_init_power();
 
-		imx8mq_ddr_init(&mnt_reform_dram_timing);
+		imx8mq_ddr_init(&mnt_reform_dram_timing, DRAM_TYPE_LPDDR4);
 
 		imx8mq_get_boot_source(&src, &instance);
 		switch (src) {
@@ -173,7 +159,7 @@ static __noreturn noinline void mnt_reform_start(void)
 	/*
 	 * Standard entry we hit once we initialized both DDR and ATF
 	 */
-	imx8mq_barebox_entry(__dtb_imx8mq_mnt_reform2_start);
+	imx8mq_barebox_entry(__dtb_z_imx8mq_mnt_reform2_start);
 }
 
 ENTRY_FUNCTION(start_mnt_reform, r0, r1, r2)

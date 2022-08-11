@@ -6,6 +6,7 @@
 #include <common.h>
 #include <crc.h>
 #include <ddr_spd.h>
+#include <pbl/i2c.h>
 
 /* used for ddr1 and ddr2 spd */
 static int spd_check(const u8 *buf, u8 spd_rev, u8 spd_cksum)
@@ -430,9 +431,7 @@ void ddr_spd_print(uint8_t *record)
 #define SPD_SPA0_ADDRESS        0x36
 #define SPD_SPA1_ADDRESS        0x37
 
-static int select_page(void *ctx,
-		       int (*xfer)(void *ctx, struct i2c_msg *msgs, int num),
-		       uint8_t addr)
+static int select_page(struct pbl_i2c *i2c, uint8_t addr)
 {
 	struct i2c_msg msg = {
 		.addr = addr,
@@ -440,15 +439,14 @@ static int select_page(void *ctx,
 	};
 	int ret;
 
-	ret = xfer(ctx, &msg, 1);
+	ret = pbl_i2c_xfer(i2c, &msg, 1);
 	if (ret < 0)
 		return ret;
 
 	return 0;
 }
 
-static int read_buf(void *ctx,
-		    int (*xfer)(void *ctx, struct i2c_msg *msgs, int num),
+static int read_buf(struct pbl_i2c *i2c,
 		    uint8_t addr, int page, void *buf)
 {
 	uint8_t pos = 0;
@@ -466,11 +464,11 @@ static int read_buf(void *ctx,
 		}
 	};
 
-	ret = select_page(ctx, xfer, page);
+	ret = select_page(i2c, page);
 	if (ret < 0)
 		return ret;
 
-	ret = xfer(ctx, msg, 2);
+	ret = pbl_i2c_xfer(i2c, msg, 2);
 	if (ret < 0)
 		return ret;
 
@@ -479,8 +477,7 @@ static int read_buf(void *ctx,
 
 /**
  * spd_read_eeprom - Read contents of a SPD EEPROM
- * @ctx: Context pointer for the xfer function
- * @xfer: I2C message transfer function
+ * @i2c: I2C controller handle
  * @addr: I2C bus address for the EEPROM
  * @buf: buffer to read the SPD data to
  *
@@ -489,19 +486,18 @@ static int read_buf(void *ctx,
  * have a size of 512 bytes. Returns 0 for success or a negative error code
  * otherwise.
  */
-int spd_read_eeprom(void *ctx,
-		    int (*xfer)(void *ctx, struct i2c_msg *msgs, int num),
+int spd_read_eeprom(struct pbl_i2c *i2c,
 		    uint8_t addr, void *buf)
 {
 	unsigned char *buf8 = buf;
 	int ret;
 
-	ret = read_buf(ctx, xfer, addr, SPD_SPA0_ADDRESS, buf);
+	ret = read_buf(i2c, addr, SPD_SPA0_ADDRESS, buf);
 	if (ret < 0)
 		return ret;
 
 	if (buf8[2] == SPD_MEMTYPE_DDR4) {
-		ret = read_buf(ctx, xfer, addr, SPD_SPA1_ADDRESS, buf + 256);
+		ret = read_buf(i2c, addr, SPD_SPA1_ADDRESS, buf + 256);
 		if (ret < 0)
 			return ret;
 	}

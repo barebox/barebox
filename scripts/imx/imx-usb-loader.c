@@ -74,6 +74,7 @@ struct mach_id {
 #define DEV_IMX		0
 #define DEV_MXS		1
 	unsigned char dev_type;
+	unsigned char hid_endpoint;
 };
 
 struct usb_work {
@@ -180,6 +181,22 @@ static const struct mach_id imx_ids[] = {
 		.header_type = HDR_MX53,
 		.mode = MODE_HID,
 		.max_transfer = 1024,
+	}, {
+		.vid = 0x1fc9,
+		.pid = 0x0146,
+		.name = "i.MX8MP",
+		.header_type = HDR_MX53,
+		.max_transfer = 1020,
+		.mode = MODE_HID,
+		.hid_endpoint = 1,
+	}, {
+		.vid = 0x1fc9,
+		.pid = 0x013e,
+		.name = "i.MX8MN",
+		.header_type = HDR_MX53,
+		.max_transfer = 1020,
+		.dev_type = MODE_HID,
+		.hid_endpoint = 1,
 	}, {
 		.vid = 0x1fc9,
 		.pid = 0x012b,
@@ -447,7 +464,7 @@ static void dump_bytes(const void *src, unsigned cnt, unsigned addr)
  * EP2IN - bulk in
  * (max packet size of 512 bytes)
  */
-static int transfer(int report, unsigned char *p, unsigned cnt, int *last_trans)
+static int transfer(int report, void *p, unsigned cnt, int *last_trans)
 {
 	int err;
 	if (cnt > mach_id->max_transfer)
@@ -470,15 +487,22 @@ static int transfer(int report, unsigned char *p, unsigned cnt, int *last_trans)
 
 		if (report < 3) {
 			memcpy(&tmp[1], p, cnt);
-			err = libusb_control_transfer(usb_dev_handle,
-					CTRL_OUT,
-					HID_SET_REPORT,
-					(HID_REPORT_TYPE_OUTPUT << 8) | report,
-					0,
-					tmp, cnt + 1, 1000);
-			*last_trans = (err > 0) ? err - 1 : 0;
-			if (err > 0)
-				err = 0;
+			if (mach_id->hid_endpoint) {
+				int trans;
+				err = libusb_interrupt_transfer(usb_dev_handle,
+						mach_id->hid_endpoint, tmp, cnt + 1, &trans, 1000);
+				*last_trans = trans - 1;
+			} else {
+				err = libusb_control_transfer(usb_dev_handle,
+						CTRL_OUT,
+						HID_SET_REPORT,
+						(HID_REPORT_TYPE_OUTPUT << 8) | report,
+						0,
+						tmp, cnt + 1, 1000);
+				*last_trans = (err > 0) ? err - 1 : 0;
+				if (err > 0)
+					err = 0;
+			}
 		} else {
 			*last_trans = 0;
 			memset(&tmp[1], 0, cnt);
@@ -511,7 +535,7 @@ static int do_status(void)
 	unsigned char tmp[64];
 	int retry = 0;
 	int err;
-	static const struct sdp_command status_command = {
+	static struct sdp_command status_command = {
 		.cmd = SDP_ERROR_STATUS,
 		.addr = 0,
 		.format = 0,
@@ -521,8 +545,7 @@ static int do_status(void)
 	};
 
 	for (;;) {
-		err = transfer(1, (unsigned char *) &status_command, 16,
-			       &last_trans);
+		err = transfer(1, &status_command, 16, &last_trans);
 
 		if (verbose > 2)
 			printf("report 1, wrote %i bytes, err=%i\n", last_trans, err);
@@ -575,8 +598,7 @@ static int read_memory(unsigned addr, void *dest, unsigned cnt)
 	read_reg_command.cnt = htonl(cnt);
 
 	for (;;) {
-		err = transfer(1, (unsigned char *) &read_reg_command, 16,
-			       &last_trans);
+		err = transfer(1, &read_reg_command, 16, &last_trans);
 		if (!err)
 			break;
 		printf("read_reg_command err=%i, last_trans=%i\n", err, last_trans);
@@ -603,17 +625,10 @@ static int read_memory(unsigned addr, void *dest, unsigned cnt)
 					err, last_trans, tmp[0], tmp[1], tmp[2], tmp[3], cnt, rem);
 			break;
 		}
-		if ((last_trans > rem) || (last_trans > 64)) {
-			if ((last_trans == 64) && (rem < 64)) {
-				/* Last transfer is expected to be too large for HID */
-			} else {
-				printf("err: %02x %02x %02x %02x cnt=%u rem=%d last_trans=%i\n",
-						tmp[0], tmp[1], tmp[2], tmp[3], cnt, rem, last_trans);
-			}
+
+		if (last_trans > rem)
 			last_trans = rem;
-			if (last_trans > 64)
-				last_trans = 64;
-		}
+
 		memcpy(dest, tmp, last_trans);
 		dest += last_trans;
 		rem -= last_trans;
@@ -659,8 +674,7 @@ static int write_memory(unsigned addr, unsigned val, int width)
 	write_reg_command.data = htonl(val);
 
 	for (;;) {
-		err = transfer(1, (unsigned char *) &write_reg_command, 16,
-			       &last_trans);
+		err = transfer(1, &write_reg_command, 16, &last_trans);
 		if (!err)
 			break;
 		printf("write_reg_command err=%i, last_trans=%i\n", err, last_trans);
@@ -713,6 +727,31 @@ static int modify_memory(unsigned addr, unsigned val, int width, int set_bits, i
 	return write_memory(addr, val, 4);
 }
 
+static int send_buf(void *buf, unsigned len)
+{
+	void *p = buf;
+	int cnt = len;
+	int err;
+
+	while (1) {
+		int now = get_min(cnt, mach_id->max_transfer);
+
+		if (!now)
+			break;
+
+		err = transfer(2, p, now, &now);
+		if (err) {
+			printf("dl_command err=%i, last_trans=%i\n", err, now);
+			return err;
+		}
+
+		p += now;
+		cnt -= now;
+	}
+
+	return 0;
+}
+
 static int load_file(void *buf, unsigned len, unsigned dladdr,
 		     unsigned char type, bool mode_barebox)
 {
@@ -729,8 +768,6 @@ static int load_file(void *buf, unsigned len, unsigned dladdr,
 	int retry = 0;
 	unsigned transfer_size = 0;
 	unsigned char tmp[64];
-	void *p;
-	int cnt;
 
 	len = ALIGN(len, 4);
 
@@ -739,8 +776,7 @@ static int load_file(void *buf, unsigned len, unsigned dladdr,
 	dl_command.rsvd = type;
 
 	for (;;) {
-		err = transfer(1, (unsigned char *) &dl_command, 16,
-			       &last_trans);
+		err = transfer(1, &dl_command, 16, &last_trans);
 		if (!err)
 			break;
 
@@ -760,24 +796,9 @@ static int load_file(void *buf, unsigned len, unsigned dladdr,
 					err, last_trans, tmp[0], tmp[1], tmp[2], tmp[3]);
 	}
 
-	p = buf;
-	cnt = len;
-
-	while (1) {
-		int now = get_min(cnt, mach_id->max_transfer);
-
-		if (!now)
-			break;
-
-		err = transfer(2, p, now, &now);
-		if (err) {
-			printf("dl_command err=%i, last_trans=%i\n", err, last_trans);
-			return err;
-		}
-
-		p += now;
-		cnt -= now;
-	}
+	err = send_buf(buf, len);
+	if (err)
+		return err;
 
 	if (mode_barebox)
 		return transfer_size;
@@ -815,8 +836,7 @@ static int sdp_jump_address(unsigned addr)
 	jump_command.addr = htonl(addr);
 
 	for (;;) {
-		err = transfer(1, (unsigned char *) &jump_command, 16,
-			       &last_trans);
+		err = transfer(1, &jump_command, 16, &last_trans);
 		if (!err)
 			break;
 
@@ -1234,19 +1254,22 @@ static int get_dl_start(const unsigned char *p, const unsigned char *file_start,
 	}
 	case HDR_MX53:
 	{
-		unsigned char *bd;
+		unsigned char *_bd;
 		struct imx_flash_header_v2 *hdr = (struct imx_flash_header_v2 *)p;
+		struct imx_boot_data *bd;
 
 		*header_addr = hdr->self;
-		bd = hdr->boot_data_ptr + cvt_dest_to_src;
-		if ((bd < file_start) || ((bd + 4) > file_end)) {
+		_bd = hdr->boot_data_ptr + cvt_dest_to_src;
+		if ((_bd < file_start) || ((_bd + 4) > file_end)) {
 			printf("bad boot_data_ptr %08x\n", hdr->boot_data_ptr);
 			return -1;
 		}
 
-		*firststage_len = ((struct imx_boot_data *)bd)->size;
-		*plugin = ((struct imx_boot_data *)bd)->plugin;
-		((struct imx_boot_data *)bd)->plugin = 0;
+		bd = (void *)_bd;
+
+		*firststage_len = bd->size - (hdr->self - bd->start);
+		*plugin = bd->plugin;
+		bd->plugin = 0;
 
 		break;
 	}
@@ -1345,6 +1368,9 @@ static int do_irom_download(struct usb_work *curr, int verify)
 
 	header_offset = ret;
 
+	if (mach_id->hid_endpoint)
+		return send_buf(buf + header_offset, fsize - header_offset);
+
 	if (plugin && (!curr->plug)) {
 		printf("Only plugin header found\n");
 		ret = -1;
@@ -1386,7 +1412,7 @@ static int do_irom_download(struct usb_work *curr, int verify)
 	if (verify) {
 		printf("verifying file...\n");
 
-		ret = verify_memory(image, fsize, header_addr);
+		ret = verify_memory(image, firststage_len, header_addr);
 		if (ret < 0) {
 			printf("verifying failed\n");
 			goto cleanup;
@@ -1442,13 +1468,10 @@ static int write_mem(const struct config_data *data, uint32_t addr,
 	return modify_memory(addr, val, width, set_bits, clear_bits);
 }
 
-/* MXS section */
-static int mxs_load_file(libusb_device_handle *dev, uint8_t *data, int size)
+static int mxs_load_buf(uint8_t *data, int size)
 {
 	static struct mxs_command dl_command;
 	int last_trans, err;
-	void *p;
-	int cnt;
 
 	dl_command.sign = htonl(0x424c5443); /* Signature: BLTC */
 	dl_command.tag = htonl(0x1);
@@ -1459,36 +1482,19 @@ static int mxs_load_file(libusb_device_handle *dev, uint8_t *data, int size)
 	dl_command.cmd = MXS_CMD_FW_DOWNLOAD;
 	dl_command.dw_size = htonl(size);
 
-	err = transfer(1, (unsigned char *) &dl_command, 20, &last_trans);
+	err = transfer(1, &dl_command, 20, &last_trans);
 	if (err) {
 		printf("transfer error at init step: err=%i, last_trans=%i\n",
 		       err, last_trans);
 		return err;
 	}
 
-	p = data;
-	cnt = size;
-
-	while (1) {
-		int now = get_min(cnt, mach_id->max_transfer);
-
-		if (!now)
-			break;
-
-		err = transfer(2, p, now, &now);
-		if (err) {
-			printf("dl_command err=%i, last_trans=%i\n", err, now);
-			return err;
-		}
-
-		p += now;
-		cnt -= now;
-	}
+	err = send_buf(data, size);
 
 	return err;
 }
 
-static int mxs_work(struct usb_work *curr)
+static int mxs_load_file(struct usb_work *curr)
 {
 	size_t fsize = 0;
 	unsigned char *buf = NULL;
@@ -1497,9 +1503,8 @@ static int mxs_work(struct usb_work *curr)
 	if (!buf)
 		return -errno;
 
-	return mxs_load_file(usb_dev_handle, buf, fsize);
+	return mxs_load_buf(buf, fsize);
 }
-/* end of mxs section */
 
 static int parse_initfile(const char *filename)
 {
@@ -1619,7 +1624,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (mach_id->dev_type == DEV_MXS) {
-		ret = mxs_work(&w);
+		ret = mxs_load_file(&w);
 		goto out;
 	}
 

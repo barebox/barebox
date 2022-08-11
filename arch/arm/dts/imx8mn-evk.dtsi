@@ -1,10 +1,8 @@
 // SPDX-License-Identifier: (GPL-2.0 OR MIT)
-
-/dts-v1/;
-
-#include <arm64/freescale/imx8mn-evk.dts>
-#include "imx8mn-evk.dtsi"
-#include "imx8mn.dtsi"
+/*
+ * Copyright 2017 NXP
+ * Copyright (C) 2017 Pengutronix, Lucas Stach <kernel@pengutronix.de>
+ */
 
 / {
 	chosen {
@@ -19,10 +17,6 @@
 			status = "disabled";
 		};
 	};
-};
-
-&fec1 {
-	phy-reset-gpios = <&gpio4 22 GPIO_ACTIVE_LOW>;
 };
 
 &usdhc2 {

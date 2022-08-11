@@ -239,18 +239,17 @@ static int imx_wd_probe(struct device_d *dev)
 
 	priv = xzalloc(sizeof(struct imx_wd));
 	iores = dev_request_mem_resource(dev, 0);
-	if (IS_ERR(iores)) {
-		dev_err(dev, "could not get memory region\n");
-		return PTR_ERR(iores);
-	}
+	if (IS_ERR(iores))
+		return dev_err_probe(dev, PTR_ERR(iores),
+				     "could not get memory region\n");
 
 	clk = clk_get(dev, NULL);
 	if (IS_ERR(clk))
-		return PTR_ERR(clk);
+		return dev_err_probe(dev, PTR_ERR(clk), "Failed to get clk\n");
 
 	ret = clk_enable(clk);
 	if (ret)
-		return ret;
+		return dev_err_probe(dev, ret, "Failed to enable clk\n");
 
 	priv->base = IOMEM(iores->start);
 	priv->ops = ops;
@@ -272,14 +271,17 @@ static int imx_wd_probe(struct device_d *dev)
 		}
 
 		ret = watchdog_register(&priv->wd);
-		if (ret)
+		if (ret) {
+			dev_err_probe(dev, ret, "Failed to register watchdog device\n");
 			goto on_error;
+		}
 	}
 
 	if (priv->ops->init) {
 		ret = priv->ops->init(priv);
 		if (ret) {
-			dev_err(dev, "Failed to init watchdog device %d\n", ret);
+			dev_err_probe(dev, ret,
+				      "Failed to init watchdog device\n");
 			goto error_unregister;
 		}
 	}

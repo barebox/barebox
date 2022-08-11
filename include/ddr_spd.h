@@ -6,7 +6,7 @@
 #ifndef _DDR_SPD_H_
 #define _DDR_SPD_H_
 
-#include <i2c/i2c.h>
+#include <pbl/i2c.h>
 
 /*
  * Format from "JEDEC Standard No. 21-C,
@@ -574,8 +574,7 @@ void ddr2_spd_dump(const struct ddr2_spd_eeprom *spd);
 int ddr3_spd_check(const struct ddr3_spd_eeprom *spd);
 int ddr4_spd_check(const struct ddr4_spd_eeprom *spd);
 
-int spd_read_eeprom(void *ctx,
-		    int (*xfer)(void *ctx, struct i2c_msg *msgs, int num),
+int spd_read_eeprom(struct pbl_i2c *i2c,
 		    uint8_t addr, void *buf);
 
 #endif /* _DDR_SPD_H_ */

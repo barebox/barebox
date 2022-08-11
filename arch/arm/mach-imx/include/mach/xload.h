@@ -13,6 +13,10 @@ int imx8m_esdhc_load_image(int instance, bool start);
 int imx8mn_esdhc_load_image(int instance, bool start);
 int imx8mp_esdhc_load_image(int instance, bool start);
 
+void imx8mm_load_and_start_image_via_tfa(void);
+void imx8mn_load_and_start_image_via_tfa(void);
+void imx8mp_load_and_start_image_via_tfa(void);
+
 int imx_image_size(void);
 int piggydata_size(void);
 

@@ -329,9 +329,28 @@ enum fw_type {
 };
 
 enum dram_type {
-	DRAM_TYPE_LPDDR4,
-	DRAM_TYPE_DDR4,
+#define DRAM_TYPE_MASK	0x00ff
+	DRAM_TYPE_LPDDR4	= 0 << 0,
+	DRAM_TYPE_DDR4		= 1 << 0,
 };
+
+static inline enum dram_type get_dram_type(unsigned type)
+{
+	return type & DRAM_TYPE_MASK;
+}
+
+enum ddrc_type {
+#define DDRC_TYPE_MASK	0xff00
+	DDRC_TYPE_MM = 0 << 8,
+	DDRC_TYPE_MN = 1 << 8,
+	DDRC_TYPE_MQ = 2 << 8,
+	DDRC_TYPE_MP = 3 << 8,
+};
+
+static inline enum ddrc_type get_ddrc_type(unsigned type)
+{
+	return type & DDRC_TYPE_MASK;
+}
 
 struct dram_cfg_param {
 	unsigned int reg;
@@ -346,7 +365,6 @@ struct dram_fsp_msg {
 };
 
 struct dram_timing_info {
-	enum dram_type dram_type;
 	/* umctl2 config */
 	struct dram_cfg_param *ddrc_cfg;
 	unsigned int ddrc_cfg_num;
@@ -368,29 +386,64 @@ struct dram_timing_info {
 
 extern struct dram_timing_info dram_timing;
 
-enum ddrc_type {
-	DDRC_TYPE_MM,
-	DDRC_TYPE_MN,
-	DDRC_TYPE_MQ,
-	DDRC_TYPE_MP,
-};
+void ddr_get_firmware_lpddr4(void);
+void ddr_get_firmware_ddr(void);
 
-int imx8mm_ddr_init(struct dram_timing_info *timing_info);
-int imx8mn_ddr_init(struct dram_timing_info *timing_info);
-int imx8mq_ddr_init(struct dram_timing_info *timing_info);
-int imx8mp_ddr_init(struct dram_timing_info *timing_info);
-int ddr_cfg_phy(struct dram_timing_info *timing_info, enum ddrc_type type);
+static void ddr_get_firmware(enum dram_type dram_type)
+{
+	if (dram_type == DRAM_TYPE_LPDDR4)
+		ddr_get_firmware_lpddr4();
+	else
+		ddr_get_firmware_ddr();
+}
+
+int imx8m_ddr_init(struct dram_timing_info *dram_timing,
+		   unsigned type);
+
+static inline int imx8mm_ddr_init(struct dram_timing_info *dram_timing,
+				  enum dram_type dram_type)
+{
+	ddr_get_firmware(dram_type);
+
+	return imx8m_ddr_init(dram_timing, DDRC_TYPE_MM | dram_type);
+}
+
+static inline int imx8mn_ddr_init(struct dram_timing_info *dram_timing,
+				  enum dram_type dram_type)
+{
+	ddr_get_firmware(dram_type);
+
+	return imx8m_ddr_init(dram_timing, DDRC_TYPE_MN | dram_type);
+}
+
+static inline int imx8mq_ddr_init(struct dram_timing_info *dram_timing,
+				  enum dram_type dram_type)
+{
+	ddr_get_firmware(dram_type);
+
+	return imx8m_ddr_init(dram_timing, DDRC_TYPE_MQ | dram_type);
+}
+
+static inline int imx8mp_ddr_init(struct dram_timing_info *dram_timing,
+				  enum dram_type dram_type)
+{
+	ddr_get_firmware(dram_type);
+
+	return imx8m_ddr_init(dram_timing, DDRC_TYPE_MP | dram_type);
+}
+
+int ddr_cfg_phy(struct dram_timing_info *timing_info, enum ddrc_type ddrc_type);
 void load_lpddr4_phy_pie(void);
 void ddrphy_trained_csr_save(struct dram_cfg_param *param, unsigned int num);
 void dram_config_save(struct dram_timing_info *info, unsigned long base);
 
 /* utils function for ddr phy training */
 int wait_ddrphy_training_complete(void);
-void ddrphy_init_set_dfi_clk(unsigned int drate, enum ddrc_type type);
-void ddrphy_init_read_msg_block(enum fw_type type);
+void ddrphy_init_set_dfi_clk(unsigned int drate, enum ddrc_type ddrc_type);
+void ddrphy_init_read_msg_block(enum fw_type fw_type);
 
 void update_umctl2_rank_space_setting(unsigned int pstat_num,
-				      enum ddrc_type type);
+				      enum ddrc_type ddrc_type);
 void get_trained_CDD(unsigned int fsp);
 
 #define reg32_write(a, v)	writel(v, a)
@@ -415,22 +468,22 @@ enum ddrc_phy_firmware_offset {
 	DDRC_PHY_DMEM = 0x00054000U,
 };
 
-void ddr_load_train_code(enum dram_type dram_type, enum fw_type type);
+void ddr_load_train_code(enum dram_type dram_type, enum fw_type fw_type);
 
 void ddrc_phy_load_firmware(void __iomem *,
 			    enum ddrc_phy_firmware_offset,
 			    const u16 *, size_t);
 
-static inline bool dram_is_lpddr4(enum dram_type type)
+static inline bool dram_is_lpddr4(enum dram_type dram_type)
 {
 	return IS_ENABLED(CONFIG_FIRMWARE_IMX_LPDDR4_PMU_TRAIN) &&
-		type == DRAM_TYPE_LPDDR4;
+		dram_type == DRAM_TYPE_LPDDR4;
 }
 
-static inline bool dram_is_ddr4(enum dram_type type)
+static inline bool dram_is_ddr4(enum dram_type dram_type)
 {
 	return IS_ENABLED(CONFIG_FIRMWARE_IMX_DDR4_PMU_TRAIN) &&
-		type == DRAM_TYPE_DDR4;
+		dram_type == DRAM_TYPE_DDR4;
 }
 
 #define DDRC_PHY_REG(x)	((x) * 4)

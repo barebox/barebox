@@ -1576,7 +1576,6 @@ static struct dram_fsp_msg ddr_dram_fsp_msg[] = {
 
 /* ddr timing config params */
 struct dram_timing_info imx8mn_evk_lpddr4_timing = {
-	.dram_type = DRAM_TYPE_LPDDR4,
 	.ddrc_cfg = ddr_ddrc_cfg,
 	.ddrc_cfg_num = ARRAY_SIZE(ddr_ddrc_cfg),
 	.ddrphy_cfg = ddr_ddrphy_cfg,

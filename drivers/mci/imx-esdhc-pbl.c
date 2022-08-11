@@ -44,7 +44,7 @@ static int esdhc_send_ext_csd(struct fsl_esdhc_host *host)
 	return esdhc_send_cmd(host, &cmd, &data);
 }
 
-static bool esdhc_bootpart_active(struct fsl_esdhc_host *host)
+static bool __maybe_unused esdhc_bootpart_active(struct fsl_esdhc_host *host)
 {
 	unsigned bootpart;
 

@@ -5,7 +5,7 @@
 #include <ddr_spd.h>
 #include <image-metadata.h>
 #include <platform_data/mmc-esdhc-imx.h>
-#include <i2c/i2c-early.h>
+#include <pbl/i2c.h>
 #include <soc/fsl/fsl_ddr_sdram.h>
 #include <soc/fsl/immap_lsch2.h>
 #include <asm/barebox-arm-head.h>
@@ -187,7 +187,7 @@ static struct fsl_ddr_info ls1046a_info = {
 static noinline __noreturn void ls1046ardb_r_entry(unsigned long memsize)
 {
 	unsigned long membase = LS1046A_DDR_SDRAM_BASE;
-	struct fsl_i2c *i2c;
+	struct pbl_i2c *i2c;
 	int ret;
 
 	if (get_pc() >= membase) {
@@ -205,7 +205,7 @@ static noinline __noreturn void ls1046ardb_r_entry(unsigned long memsize)
 	IMD_USED_OF(fsl_ls1046a_rdb);
 
 	i2c = ls1046_i2c_init(IOMEM(LSCH2_I2C1_BASE_ADDR));
-	ret = spd_read_eeprom(i2c, i2c_fsl_xfer, 0x51, &spd_eeprom);
+	ret = spd_read_eeprom(i2c, 0x51, &spd_eeprom);
 	if (ret) {
 		pr_err("Cannot read SPD EEPROM: %d\n", ret);
 		goto err;

@@ -418,6 +418,11 @@ CFG_start_zii_imx7d_dev.pblb.imximg = $(board)/zii-imx7d-dev/flash-header-zii-im
 FILE_barebox-zii-imx7d-dev.img = start_zii_imx7d_dev.pblb.imximg
 image-$(CONFIG_MACH_ZII_IMX7D_DEV) += barebox-zii-imx7d-dev.img
 
+pblb-$(CONFIG_MACH_MEERKAT96) += start_imx7d_meerkat96
+CFG_start_imx7d_meerkat96.pblb.imximg = $(board)/meerkat96/flash-header-mx7-meerkat96.imxcfg
+FILE_barebox-meerkat96.img = start_imx7d_meerkat96.pblb.imximg
+image-$(CONFIG_MACH_MEERKAT96) += barebox-meerkat96.img
+
 pblb-$(CONFIG_MACH_KAMSTRUP_MX7_CONCENTRATOR) += start_kamstrup_mx7_concentrator
 CFG_start_kamstrup_mx7_concentrator.pblb.imximg = $(board)/kamstrup-mx7-concentrator/flash-header-tqma7d.imxcfg
 FILE_barebox-kamstrup-mx7-concentrator.img = start_kamstrup_mx7_concentrator.pblb.imximg

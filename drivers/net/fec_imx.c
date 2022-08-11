@@ -320,6 +320,10 @@ static int fec_init(struct eth_device *dev)
 	/* size of each buffer */
 	writel(FEC_MAX_PKT_SIZE, fec->regs + FEC_EMRBR);
 
+	/* set rx and tx buffer descriptor base address */
+	writel(virt_to_phys(fec->tbd_base), fec->regs + FEC_ETDSR);
+	writel(virt_to_phys(fec->rbd_base), fec->regs + FEC_ERDSR);
+
 	return 0;
 }
 
@@ -358,6 +362,8 @@ static int fec_open(struct eth_device *edev)
 
 	if (fec->phy_init)
 		fec->phy_init(edev->phydev);
+
+	fec_init(edev);
 
 	/*
 	 * Initialize RxBD/TxBD rings
@@ -839,9 +845,6 @@ static int fec_probe(struct device_d *dev)
 	base += FEC_RBD_NUM * sizeof(struct buffer_descriptor);
 	fec->tbd_base = base;
 
-	writel(virt_to_phys(fec->tbd_base), fec->regs + FEC_ETDSR);
-	writel(virt_to_phys(fec->rbd_base), fec->regs + FEC_ERDSR);
-
 	ret = fec_alloc_receive_packets(fec, FEC_RBD_NUM, FEC_MAX_PKT_SIZE);
 	if (ret < 0)
 		goto free_xbd;
@@ -860,8 +863,6 @@ static int fec_probe(struct device_d *dev)
 
 	if (ret)
 		goto free_receive_packets;
-
-	fec_init(edev);
 
 	fec->miibus.read = fec_miibus_read;
 	fec->miibus.write = fec_miibus_write;

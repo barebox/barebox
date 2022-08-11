@@ -55,8 +55,7 @@ static int arria10_boot_save_loc(void)
 
 	src = arria10_get_bootsource();
 
-	bootsource_set(src);
-	bootsource_set_instance(0);
+	bootsource_set_raw(src, 0);
 
 	return 0;
 }

@@ -21,7 +21,7 @@ static int rock3_probe(struct device_d *dev)
 	barebox_set_model(model->name);
 	barebox_set_hostname(model->shortname);
 
-	if (bootsource == BOOTSOURCE_MMC && instance == 1)
+	if (bootsource == BOOTSOURCE_MMC && instance == 0)
 		of_device_enable_path("/chosen/environment-sd");
 	else
 		of_device_enable_path("/chosen/environment-emmc");

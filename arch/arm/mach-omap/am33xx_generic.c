@@ -153,8 +153,7 @@ static int am33xx_bootsource(void)
 	default:
 		src = BOOTSOURCE_UNKNOWN;
 	}
-	bootsource_set(src);
-	bootsource_set_instance(instance);
+	bootsource_set_raw(src, instance);
 	return 0;
 }
 

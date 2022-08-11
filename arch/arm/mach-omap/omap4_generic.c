@@ -498,8 +498,7 @@ static int omap4_bootsource(void)
 		src = BOOTSOURCE_UNKNOWN;
 	}
 
-	bootsource_set(src);
-	bootsource_set_instance(0);
+	bootsource_set_raw(src, 0);
 
 	omap_vector_init();
 

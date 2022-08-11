@@ -151,19 +151,16 @@ static struct rk_bootsource bootdev_map[] = {
 	[0xa] = { .src = BOOTSOURCE_USB, .instance = 0 },
 };
 
-static enum bootsource rk3568_bootsource(void)
+static void rk3568_bootsource(void)
 {
 	u32 v;
 
 	v = readl(RK3568_IRAM_BASE + 0x10);
 
 	if (v >= ARRAY_SIZE(bootdev_map))
-		return BOOTSOURCE_UNKNOWN;
+		return;
 
-	bootsource_set(bootdev_map[v].src);
-	bootsource_set_instance(bootdev_map[v].instance);
-
-	return bootdev_map[v].src;
+	bootsource_set(bootdev_map[v].src, bootdev_map[v].instance);
 }
 
 int rk3568_init(void)

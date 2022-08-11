@@ -23,7 +23,7 @@ static int rk3568_evb_probe(struct device_d *dev)
 	barebox_set_hostname("rk3568-evb");
 	machine_is_rk3568_evb = true;
 
-	if (bootsource == BOOTSOURCE_MMC && instance == 1)
+	if (bootsource == BOOTSOURCE_MMC && instance == 0)
 		of_device_enable_path("/chosen/environment-sd");
 	else
 		of_device_enable_path("/chosen/environment-emmc");

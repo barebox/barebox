@@ -50,8 +50,7 @@ static int cyclone5_boot_save_loc(void)
 		break;
 	}
 
-	bootsource_set(src);
-	bootsource_set_instance(0);
+	bootsource_set_raw(src, 0);
 
 	return 0;
 }
@@ -84,8 +83,7 @@ static int arria10_boot_save_loc(void)
 		break;
 	}
 
-	bootsource_set(src);
-	bootsource_set_instance(0);
+	bootsource_set_raw(src, 0);
 
 	return 0;
 }

@@ -158,8 +158,7 @@ static void mxs_boot_save_loc(void)
 	case 0x9: src = BOOTSOURCE_MMC; break;		/* "SSP SD/MMC #0" */
 	}
 
-	bootsource_set(src);
-	bootsource_set_instance(instance);
+	bootsource_set_raw(src, instance);
 }
 
 static int mxs_init(void)

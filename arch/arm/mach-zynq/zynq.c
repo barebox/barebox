@@ -71,7 +71,7 @@ static int zynq_init(void)
 
 	restart_handler_register_fn("soc", zynq_restart_soc);
 
-	bootsource_set(zynq_bootsource_get());
+	bootsource_set_raw(zynq_bootsource_get(), BOOTSOURCE_INSTANCE_UNKNOWN);
 
 	return 0;
 }

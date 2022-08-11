@@ -3,6 +3,7 @@
 /dts-v1/;
 
 #include <arm64/rockchip/rk3566-quartz64-a.dts>
+#include "rk356x.dtsi"
 
 / {
 	memory@a00000 {

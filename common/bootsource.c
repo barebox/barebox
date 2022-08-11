@@ -33,6 +33,34 @@ static enum bootsource bootsource = BOOTSOURCE_UNKNOWN;
 static int bootsource_instance = BOOTSOURCE_INSTANCE_UNKNOWN;
 const char *bootsource_alias_name = NULL;
 
+const char *bootsource_get_alias_stem(enum bootsource src)
+{
+	switch (src) {
+		/*
+		 * For I2C and SPI EEPROMs we set the stem to be 'i2c'
+		 * and 'spi' correspondingly. The resulting alias will
+		 * be pointing at the controller said EEPROM is
+		 * attached to.
+		 *
+		 * NOTE: This code assumes single bootable EEPROM per
+		 * controller
+		 */
+	case BOOTSOURCE_I2C_EEPROM:
+		return bootsource_str[BOOTSOURCE_I2C];
+	case BOOTSOURCE_SPI_EEPROM:
+	case BOOTSOURCE_SPI_NOR:
+		return bootsource_str[BOOTSOURCE_SPI];
+	case BOOTSOURCE_SERIAL:	/* FALLTHROUGH */
+	case BOOTSOURCE_I2C:	/* FALLTHROUGH */
+	case BOOTSOURCE_MMC:	/* FALLTHROUGH */
+	case BOOTSOURCE_SPI:	/* FALLTHROUGH */
+	case BOOTSOURCE_CAN:
+		return bootsource_str[src];
+	default:
+		return NULL;
+	}
+}
+
 /**
  * bootsource_get_alias_name() - Get the name of the bootsource alias
  *
@@ -58,33 +86,9 @@ char *bootsource_get_alias_name(void)
 	if (bootsource_alias_name)
 		return strdup(bootsource_alias_name);
 
-	switch (bootsource) {
-		/*
-		 * For I2C and SPI EEPROMs we set the stem to be 'i2c'
-		 * and 'spi' correspondingly. The resulting alias will
-		 * be pointing at the controller said EEPROM is
-		 * attached to.
-		 *
-		 * NOTE: This code assumes single bootable EEPROM per
-		 * controller
-		 */
-	case BOOTSOURCE_I2C_EEPROM:
-		stem = bootsource_str[BOOTSOURCE_I2C];
-		break;
-	case BOOTSOURCE_SPI_EEPROM:
-	case BOOTSOURCE_SPI_NOR:
-		stem = bootsource_str[BOOTSOURCE_SPI];
-		break;
-	case BOOTSOURCE_SERIAL:	/* FALLTHROUGH */
-	case BOOTSOURCE_I2C:	/* FALLTHROUGH */
-	case BOOTSOURCE_MMC:	/* FALLTHROUGH */
-	case BOOTSOURCE_SPI:	/* FALLTHROUGH */
-	case BOOTSOURCE_CAN:
-		stem = bootsource_str[bootsource];
-		break;
-	default:
+	stem = bootsource_get_alias_stem(bootsource);
+	if (!stem)
 		return NULL;
-	}
 
 	/*
 	 * We expect SoC specific bootsource detection code to properly
@@ -101,7 +105,7 @@ void bootsource_set_alias_name(const char *name)
 	bootsource_alias_name = name;
 }
 
-void bootsource_set(enum bootsource src)
+void bootsource_set_raw(enum bootsource src, int instance)
 {
 	if (src >= ARRAY_SIZE(bootsource_str))
 		src = BOOTSOURCE_UNKNOWN;
@@ -109,9 +113,11 @@ void bootsource_set(enum bootsource src)
 	bootsource = src;
 
 	setenv("bootsource", bootsource_str[src]);
+
+	bootsource_set_raw_instance(instance);
 }
 
-void bootsource_set_instance(int instance)
+void bootsource_set_raw_instance(int instance)
 {
 	bootsource_instance = instance;
 
@@ -119,6 +125,51 @@ void bootsource_set_instance(int instance)
 		setenv("bootsource_instance","unknown");
 	else
 		pr_setenv("bootsource_instance", "%d", instance);
+}
+
+int bootsource_of_alias_xlate(enum bootsource src, int instance)
+{
+	char alias[sizeof("barebox,bootsource-harddisk4294967295")];
+	const char *bootsource_stem;
+	struct device_node *np;
+	int alias_id;
+
+	if (!IS_ENABLED(CONFIG_OFDEVICE))
+		return BOOTSOURCE_INSTANCE_UNKNOWN;
+
+	if (src == BOOTSOURCE_UNKNOWN ||
+	    instance == BOOTSOURCE_INSTANCE_UNKNOWN)
+		return BOOTSOURCE_INSTANCE_UNKNOWN;
+
+	bootsource_stem = bootsource_get_alias_stem(src);
+	if (!bootsource_stem)
+		return BOOTSOURCE_INSTANCE_UNKNOWN;
+
+	scnprintf(alias, sizeof(alias), "barebox,bootsource-%s%u",
+		  bootsource_stem, instance);
+
+	np = of_find_node_by_alias(NULL, alias);
+	if (!np)
+		return BOOTSOURCE_INSTANCE_UNKNOWN;
+
+	alias_id = of_alias_get_id(np, bootsource_stem);
+	if (alias_id < 0)
+		return BOOTSOURCE_INSTANCE_UNKNOWN;
+
+	return alias_id;
+}
+
+int bootsource_set(enum bootsource src, int instance)
+{
+	int alias_id;
+
+	alias_id = bootsource_of_alias_xlate(src, instance);
+	if (alias_id == BOOTSOURCE_INSTANCE_UNKNOWN)
+		alias_id = instance;
+
+	bootsource_set_raw(src, alias_id);
+
+	return alias_id;
 }
 
 enum bootsource bootsource_get(void)
@@ -137,8 +188,7 @@ BAREBOX_MAGICVAR(bootsource_instance, "The instance of the source barebox has be
 
 static int bootsource_init(void)
 {
-	bootsource_set(bootsource);
-	bootsource_set_instance(bootsource_instance);
+	bootsource_set_raw(bootsource, bootsource_instance);
 	export("bootsource");
 	export("bootsource_instance");
 

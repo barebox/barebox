@@ -23,7 +23,7 @@ static int rk3568_bpi_r2pro_probe(struct device_d *dev)
 	barebox_set_hostname("bpi-r2pro");
 	machine_is_bpi_r2pro = true;
 
-	if (bootsource == BOOTSOURCE_MMC && instance == 1)
+	if (bootsource == BOOTSOURCE_MMC && instance == 0)
 		of_device_enable_path("/chosen/environment-sd");
 	else
 		of_device_enable_path("/chosen/environment-emmc");

@@ -243,7 +243,7 @@ int device_add_resources(struct device_d *dev, const struct resource *res, int n
 int device_add_resource(struct device_d *dev, const char *resname,
 		resource_size_t start, resource_size_t size, unsigned int flags);
 
-int device_add_data(struct device_d *dev, void *data, size_t size);
+int device_add_data(struct device_d *dev, const void *data, size_t size);
 
 /*
  * register a generic device

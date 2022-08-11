@@ -9,3 +9,4 @@ obj-$(CONFIG_REGULATOR_ANATOP) += anatop-regulator.o
 obj-$(CONFIG_REGULATOR_STM32_PWR) += stm32-pwr.o
 obj-$(CONFIG_REGULATOR_STM32_VREFBUF) += stm32-vrefbuf.o
 obj-$(CONFIG_REGULATOR_ARM_SCMI) += scmi-regulator.o
+obj-$(CONFIG_REGULATOR_RK808)   += rk808-regulator.o

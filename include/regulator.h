@@ -32,6 +32,8 @@ struct regulator_bulk_data {
  * structure contains the non-varying parts of the regulator
  * description.
  *
+ * @supply_name: Identifying the supply of this regulator
+ *
  * @n_voltages: Number of selectors available for ops.list_voltage().
  * @ops: Regulator operations table.
  *
@@ -57,6 +59,7 @@ struct regulator_bulk_data {
  */
 
 struct regulator_desc {
+	const char *supply_name;
 	unsigned n_voltages;
 	const struct regulator_ops *ops;
 
@@ -88,6 +91,8 @@ struct regulator_dev {
 	bool always_on;
 	/* the device this regulator device belongs to */
 	struct device_d *dev;
+	/* The regulator powering this device */
+	struct regulator *supply;
 };
 
 struct regulator_ops {

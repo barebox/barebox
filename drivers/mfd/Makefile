@@ -1,4 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-only
+obj-y				+= core.o
+
 obj-$(CONFIG_MFD_ACT8846)	+= act8846.o
 obj-$(CONFIG_MFD_DA9053)	+= da9053.o
 obj-$(CONFIG_MFD_DA9063)	+= da9063.o
@@ -19,3 +21,4 @@ obj-$(CONFIG_FINTEK_SUPERIO)	+= fintek-superio.o
 obj-$(CONFIG_SMSC_SUPERIO)	+= smsc-superio.o
 obj-$(CONFIG_MFD_STM32_TIMERS)	+= stm32-timers.o
 obj-$(CONFIG_MFD_ATMEL_FLEXCOM)	+= atmel-flexcom.o
+obj-$(CONFIG_MFD_RK808)		+= rk808.o

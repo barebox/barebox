@@ -21,12 +21,7 @@
 #include <asm/barebox-riscv-head.h>
 #include <asm/system.h>
 #include <asm/cache.h>
-
-unsigned long get_runtime_offset(void);
-
-void setup_c(void);
-void relocate_to_current_adr(void);
-void relocate_to_adr(unsigned long target);
+#include <asm/reloc.h>
 
 void __noreturn __naked barebox_riscv_entry(unsigned long membase, unsigned long memsize,
 					    void *boarddata, unsigned int flags);

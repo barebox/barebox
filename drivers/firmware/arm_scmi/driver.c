@@ -1247,11 +1247,12 @@ static const struct of_device_id scmi_of_match[] = {
 	{ /* Sentinel */ },
 };
 
-static struct driver_d scmi_driver = {
+static struct driver_d arm_scmi_driver = {
 	.name = "arm-scmi",
 	.of_compatible = scmi_of_match,
 	.probe = scmi_probe,
 };
+core_platform_driver(arm_scmi_driver);
 
 static int __init scmi_bus_driver_init(void)
 {
@@ -1266,12 +1267,6 @@ static int __init scmi_bus_driver_init(void)
 	return 0;
 }
 pure_initcall(scmi_bus_driver_init);
-
-static int __init scmi_platform_driver_init(void)
-{
-	return platform_driver_register(&scmi_driver);
-}
-core_initcall(scmi_platform_driver_init);
 
 MODULE_ALIAS("platform: arm-scmi");
 MODULE_AUTHOR("Sudeep Holla <sudeep.holla@arm.com>");

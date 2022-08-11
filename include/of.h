@@ -105,8 +105,8 @@ static inline const void *of_property_get_value(const struct property *pp)
 void of_print_property(const void *data, int len);
 void of_print_cmdline(struct device_node *root);
 
-void of_print_nodes(struct device_node *node, int indent);
-void of_print_properties(struct device_node *node);
+void of_print_nodes(struct device_node *node, int indent, unsigned maxpropsize);
+void of_print_properties(struct device_node *node, unsigned maxpropsize);
 int of_diff(struct device_node *a, struct device_node *b, int indent);
 int of_probe(void);
 int of_parse_dtb(struct fdt_header *fdt);
@@ -131,11 +131,15 @@ extern struct device_node *of_get_cpu_node(int cpu, unsigned int *thread);
 
 extern int of_set_property(struct device_node *node, const char *p,
 			const void *val, int len, int create);
+extern int of_append_property(struct device_node *np, const char *p,
+			      const void *val, int len);
 extern struct property *of_new_property(struct device_node *node,
 				const char *name, const void *data, int len);
 extern struct property *of_new_property_const(struct device_node *node,
 					      const char *name,
 					      const void *data, int len);
+extern struct property *__of_new_property(struct device_node *node,
+					  const char *name, void *data, int len);
 extern void of_delete_property(struct property *pp);
 
 extern struct device_node *of_find_node_by_name(struct device_node *from,
@@ -514,8 +518,20 @@ static inline int of_set_property(struct device_node *node, const char *p,
 	return -ENOSYS;
 }
 
+static inline int of_append_property(struct device_node *np, const char *p,
+				      const void *val, int len)
+{
+	return -ENOSYS;
+}
+
 static inline struct property *of_new_property(struct device_node *node,
 				const char *name, const void *data, int len)
+{
+	return NULL;
+}
+
+static inline struct property *__of_new_property(struct device_node *node,
+					  const char *name, void *data, int len)
 {
 	return NULL;
 }

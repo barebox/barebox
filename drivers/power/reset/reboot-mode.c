@@ -12,8 +12,6 @@
 #include <globalvar.h>
 #include <magicvar.h>
 
-#define PREFIX "mode-"
-
 static int __priority;
 static struct reboot_mode_driver *__boot_mode;
 
@@ -111,6 +109,19 @@ static void reboot_mode_print(struct reboot_mode_driver *reboot,
 	__pr_printk(7, "\n");
 }
 
+static const char *get_mode_name(const struct property *prop)
+{
+	unsigned prefix_len;
+
+	prefix_len = str_has_prefix(prop->name, "mode-");
+	if (!prefix_len)
+		prefix_len = str_has_prefix(prop->name, "barebox,mode-");
+	if (!prefix_len)
+		return NULL;
+
+	return prop->name + prefix_len;
+}
+
 /**
  * reboot_mode_register - register a reboot mode driver
  * @reboot: reboot mode driver
@@ -123,7 +134,6 @@ int reboot_mode_register(struct reboot_mode_driver *reboot,
 {
 	struct property *prop;
 	struct device_node *np = reboot->dev->device_node;
-	size_t len = strlen(PREFIX);
 	const char *alias;
 	size_t nmodes = 0;
 	int i = 0;
@@ -132,7 +142,7 @@ int reboot_mode_register(struct reboot_mode_driver *reboot,
 	for_each_property_of_node(np, prop) {
 		u32 magic;
 
-		if (strncmp(prop->name, PREFIX, len))
+		if (!get_mode_name(prop))
 			continue;
 		if (of_property_read_u32(np, prop->name, &magic))
 			continue;
@@ -154,16 +164,9 @@ int reboot_mode_register(struct reboot_mode_driver *reboot,
 		magic = &reboot->magics[i * nelems];
 		mode = &reboot->modes[i];
 
-		if (strncmp(prop->name, PREFIX, len))
+		*mode = get_mode_name(prop);
+		if (!*mode)
 			continue;
-
-		if (of_property_read_u32_array(np, prop->name, magic, nelems)) {
-			dev_err(reboot->dev, "reboot mode %s without magic number\n",
-				*mode);
-			continue;
-		}
-
-		*mode = prop->name + len;
 		if (*mode[0] == '\0') {
 			ret = -EINVAL;
 			dev_err(reboot->dev, "invalid mode name(%s): too short!\n",
@@ -173,6 +176,12 @@ int reboot_mode_register(struct reboot_mode_driver *reboot,
 
 		if (!strcmp(*mode, "normal"))
 			normal = i;
+
+		if (of_property_read_u32_array(np, prop->name, magic, nelems)) {
+			dev_err(reboot->dev, "reboot mode %s without magic number\n",
+				*mode);
+			continue;
+		}
 
 		reboot_mode_print(reboot, *mode, magic);
 

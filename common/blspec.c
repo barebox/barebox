@@ -15,6 +15,7 @@
 #include <libbb.h>
 #include <init.h>
 #include <bootm.h>
+#include <glob.h>
 #include <net.h>
 #include <fs.h>
 #include <of.h>
@@ -513,6 +514,55 @@ static bool entry_is_match_machine_id(struct blspec_entry *entry)
 	return ret;
 }
 
+int blspec_scan_file(struct bootentries *bootentries, const char *root,
+		     const char *configname)
+{
+	char *devname = NULL, *hwdevname = NULL;
+	struct blspec_entry *entry;
+
+	if (blspec_have_entry(bootentries, configname))
+		return -EEXIST;
+
+	entry = blspec_entry_open(bootentries, configname);
+	if (IS_ERR(entry))
+		return PTR_ERR(entry);
+
+	root = root ?: get_mounted_path(configname);
+	entry->rootpath = xstrdup(root);
+	entry->configpath = xstrdup(configname);
+	entry->cdev = get_cdev_by_mountpath(root);
+
+	if (!entry_is_of_compatible(entry)) {
+		blspec_entry_free(&entry->entry);
+		return -ENODEV;
+	}
+
+	if (!entry_is_match_machine_id(entry)) {
+		blspec_entry_free(&entry->entry);
+		return -ENODEV;
+	}
+
+	if (entry->cdev && entry->cdev->dev) {
+		devname = xstrdup(dev_name(entry->cdev->dev));
+		if (entry->cdev->dev->parent)
+			hwdevname = xstrdup(dev_name(entry->cdev->dev->parent));
+	}
+
+	entry->entry.title = xasprintf("%s (%s)", blspec_entry_var_get(entry, "title"),
+				       configname);
+	entry->entry.description = basprintf("blspec entry, device: %s hwdevice: %s",
+					    devname ? devname : "none",
+					    hwdevname ? hwdevname : "none");
+	free(devname);
+	free(hwdevname);
+
+	entry->entry.me.type = MENU_ENTRY_NORMAL;
+	entry->entry.release = blspec_entry_free;
+
+	bootentries_add_entry(bootentries, &entry->entry);
+	return 1;
+}
+
 /*
  * blspec_scan_directory - scan over a directory
  *
@@ -522,115 +572,40 @@ static bool entry_is_match_machine_id(struct blspec_entry *entry)
  */
 int blspec_scan_directory(struct bootentries *bootentries, const char *root)
 {
-	struct blspec_entry *entry;
-	DIR *dir;
-	struct dirent *d;
+	glob_t globb;
 	char *abspath;
 	int ret, found = 0;
 	const char *dirname = "loader/entries";
-	char *nfspath = NULL;
-
-	nfspath = parse_nfs_url(root);
-	if (!IS_ERR(nfspath))
-		root = nfspath;
+	int i;
 
 	pr_debug("%s: %s %s\n", __func__, root, dirname);
 
-	abspath = basprintf("%s/%s", root, dirname);
+	abspath = basprintf("%s/%s/*.conf", root, dirname);
 
-	dir = opendir(abspath);
-	if (!dir) {
+	ret = glob(abspath, 0, NULL, &globb);
+	if (ret) {
 		pr_debug("%s: %s: %s\n", __func__, abspath, strerror(errno));
 		ret = -errno;
 		goto err_out;
 	}
 
-	while ((d = readdir(dir))) {
-		char *configname;
+	for (i = 0; i < globb.gl_pathc; i++) {
+		const char *configname = globb.gl_pathv[i];
 		struct stat s;
-		char *dot;
-		char *devname = NULL, *hwdevname = NULL;
-
-		if (*d->d_name == '.')
-			continue;
-
-		configname = basprintf("%s/%s", abspath, d->d_name);
-
-		dot = strrchr(configname, '.');
-		if (!dot) {
-			free(configname);
-			continue;
-		}
-
-		if (strcmp(dot, ".conf")) {
-			free(configname);
-			continue;
-		}
 
 		ret = stat(configname, &s);
-		if (ret) {
-			free(configname);
+		if (ret || !S_ISREG(s.st_mode))
 			continue;
-		}
 
-		if (!S_ISREG(s.st_mode)) {
-			free(configname);
-			continue;
-		}
-
-		if (blspec_have_entry(bootentries, configname)) {
-			free(configname);
-			continue;
-		}
-
-		entry = blspec_entry_open(bootentries, configname);
-		if (IS_ERR(entry)) {
-			free(configname);
-			continue;
-		}
-
-		entry->rootpath = xstrdup(root);
-		entry->configpath = configname;
-		entry->cdev = get_cdev_by_mountpath(root);
-
-		if (!entry_is_of_compatible(entry)) {
-			blspec_entry_free(&entry->entry);
-			continue;
-		}
-
-		if (!entry_is_match_machine_id(entry)) {
-			blspec_entry_free(&entry->entry);
-			continue;
-		}
-
-		found++;
-
-		if (entry->cdev && entry->cdev->dev) {
-			devname = xstrdup(dev_name(entry->cdev->dev));
-			if (entry->cdev->dev->parent)
-				hwdevname = xstrdup(dev_name(entry->cdev->dev->parent));
-		}
-
-		entry->entry.title = xasprintf("%s (%s)", blspec_entry_var_get(entry, "title"),
-					       configname);
-		entry->entry.description = basprintf("blspec entry, device: %s hwdevice: %s",
-						    devname ? devname : "none",
-						    hwdevname ? hwdevname : "none");
-		free(devname);
-		free(hwdevname);
-
-		entry->entry.me.type = MENU_ENTRY_NORMAL;
-		entry->entry.release = blspec_entry_free;
-
-		bootentries_add_entry(bootentries, &entry->entry);
+		ret = blspec_scan_file(bootentries, root, configname);
+		if (ret > 0)
+			found += ret;
 	}
 
 	ret = found;
 
-	closedir(dir);
+	globfree(&globb);
 err_out:
-	if (!IS_ERR(nfspath))
-		free(nfspath);
 	free(abspath);
 
 	return ret;
@@ -839,6 +814,7 @@ int blspec_scan_devicename(struct bootentries *bootentries, const char *devname)
 static int blspec_bootentry_provider(struct bootentries *bootentries,
 				     const char *name)
 {
+	struct stat s;
 	int ret, found = 0;
 
 	ret = blspec_scan_devicename(bootentries, name);
@@ -846,9 +822,24 @@ static int blspec_bootentry_provider(struct bootentries *bootentries,
 		found += ret;
 
 	if (*name == '/' || !strncmp(name, "nfs://", 6)) {
-		ret = blspec_scan_directory(bootentries, name);
+		char *nfspath = parse_nfs_url(name);
+
+		if (!IS_ERR(nfspath))
+			name = nfspath;
+
+		ret = stat(name, &s);
+		if (ret)
+			return found;
+
+		if (S_ISDIR(s.st_mode))
+			ret = blspec_scan_directory(bootentries, name);
+		else if (S_ISREG(s.st_mode) && strends(name, ".conf"))
+			ret = blspec_scan_file(bootentries, NULL, name);
 		if (ret > 0)
 			found += ret;
+
+		if (!IS_ERR(nfspath))
+			free(nfspath);
 	}
 
 	return found;

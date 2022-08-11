@@ -84,16 +84,6 @@ static inline void io_delay(void)
 	inb(0x80);
 }
 
-static inline void *phys_to_virt(unsigned long phys)
-{
-	return (void *)phys;
-}
-
-static inline unsigned long virt_to_phys(volatile void *mem)
-{
-	return (unsigned long)mem;
-}
-
 #include <asm-generic/io.h>
 
 #endif	/* __ASM_X86_IO_H */

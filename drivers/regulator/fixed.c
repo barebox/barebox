@@ -15,7 +15,6 @@
 
 struct regulator_fixed {
 	int gpio;
-	int always_on;
 	struct regulator_dev rdev;
 	struct regulator_desc rdesc;
 };
@@ -33,9 +32,6 @@ static int regulator_fixed_enable(struct regulator_dev *rdev)
 static int regulator_fixed_disable(struct regulator_dev *rdev)
 {
 	struct regulator_fixed *fix = container_of(rdev, struct regulator_fixed, rdev);
-
-	if (fix->always_on)
-		return 0;
 
 	if (!gpio_is_valid(fix->gpio))
 		return 0;
@@ -76,15 +72,9 @@ static int regulator_fixed_probe(struct device_d *dev)
 	if (!of_property_read_u32(np, "off-on-delay-us", &delay))
 		fix->rdesc.off_on_delay = delay;
 
-	if (of_find_property(np, "regulator-always-on", NULL) ||
-	    of_find_property(np, "regulator-boot-on", NULL)) {
-		fix->always_on = 1;
-		regulator_fixed_enable(&fix->rdev);
-	}
-
 	ret = of_regulator_register(&fix->rdev, np);
 	if (ret)
-		return ret;
+		goto err;
 
 	return 0;
 err:

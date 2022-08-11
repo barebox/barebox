@@ -84,7 +84,6 @@ static int abracon_probe(struct device_d *dev)
 {
 	struct i2c_client *client = to_i2c_client(dev);
 	struct abracon *abracon;
-	int ret;
 
 	abracon = xzalloc(sizeof(*abracon));
 
@@ -93,9 +92,7 @@ static int abracon_probe(struct device_d *dev)
 	abracon->rtc.ops = &ds13xx_rtc_ops;
 	abracon->rtc.dev = dev;
 
-	ret = rtc_register(&abracon->rtc);
-
-	return ret;
+	return rtc_register(&abracon->rtc);
 };
 
 static struct platform_device_id abracon_id[] = {

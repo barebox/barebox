@@ -28,13 +28,14 @@ static int do_boot(int argc, char *argv[])
 	char *freep = NULL;
 	int opt, ret = 0, do_list = 0, do_menu = 0;
 	int dryrun = 0, verbose = 0, timeout = -1;
+	unsigned default_menu_entry = 0;
 	struct bootentries *entries;
 	struct bootentry *entry;
 	void *handle;
 	const char *name;
 	char *(*next)(void *);
 
-	while ((opt = getopt(argc, argv, "vldmt:w:")) > 0) {
+	while ((opt = getopt(argc, argv, "vldmM:t:w:")) > 0) {
 		switch (opt) {
 		case 'v':
 			verbose++;
@@ -45,6 +46,16 @@ static int do_boot(int argc, char *argv[])
 		case 'd':
 			dryrun = 1;
 			break;
+		case 'M':
+			/* To simplify scripting, an empty string is treated as 1 */
+			if (*optarg == '\0') {
+				default_menu_entry = 1;
+			} else {
+				ret = kstrtouint(optarg, 0, &default_menu_entry);
+				if (ret)
+					return ret;
+			}
+			fallthrough;
 		case 'm':
 			do_menu = 1;
 			break;
@@ -104,7 +115,7 @@ static int do_boot(int argc, char *argv[])
 	if (do_list)
 		bootsources_list(entries);
 	else if (do_menu)
-		bootsources_menu(entries, timeout);
+		bootsources_menu(entries, default_menu_entry, timeout);
 
 	ret = 0;
 out:
@@ -122,6 +133,7 @@ BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("BOOTSRC can be:")
 BAREBOX_CMD_HELP_TEXT("- a filename under /env/boot/")
 BAREBOX_CMD_HELP_TEXT("- a full path to a boot script")
+BAREBOX_CMD_HELP_TEXT("- a full path to a bootspec entry")
 BAREBOX_CMD_HELP_TEXT("- a device name")
 BAREBOX_CMD_HELP_TEXT("- a partition name under /dev/")
 BAREBOX_CMD_HELP_TEXT("- a full path to a directory which")
@@ -136,6 +148,7 @@ BAREBOX_CMD_HELP_OPT ("-v","Increase verbosity")
 BAREBOX_CMD_HELP_OPT ("-d","Dryrun. See what happens but do no actually boot")
 BAREBOX_CMD_HELP_OPT ("-l","List available boot sources")
 BAREBOX_CMD_HELP_OPT ("-m","Show a menu with boot options")
+BAREBOX_CMD_HELP_OPT ("-M INDEX","Show a menu with boot options with entry INDEX preselected")
 BAREBOX_CMD_HELP_OPT ("-w SECS","Start watchdog with timeout SECS before booting")
 BAREBOX_CMD_HELP_OPT ("-t SECS","specify timeout in SECS")
 BAREBOX_CMD_HELP_END
@@ -143,7 +156,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(boot)
 	.cmd	= do_boot,
 	BAREBOX_CMD_DESC("boot from script, device, ...")
-	BAREBOX_CMD_OPTS("[-vdlmwt] [BOOTSRC...]")
+	BAREBOX_CMD_OPTS("[-vdlmMwt] [BOOTSRC...]")
 	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 	BAREBOX_CMD_HELP(cmd_boot_help)
 BAREBOX_CMD_END

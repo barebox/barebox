@@ -285,6 +285,7 @@ void free_device_res(struct device_d *dev)
 	dev->name = NULL;
 	free(dev->unique_name);
 	dev->unique_name = NULL;
+	free(dev->deferred_probe_reason);
 }
 EXPORT_SYMBOL(free_device_res);
 
@@ -335,9 +336,13 @@ static int device_probe_deferred(void)
 		}
 	} while (success);
 
-	list_for_each_entry(dev, &deferred, active)
-		dev_err(dev, "probe permanently deferred\n");
-
+	list_for_each_entry(dev, &deferred, active) {
+		if (dev->deferred_probe_reason)
+			dev_err(dev, "probe permanently deferred (%s)\n",
+				dev->deferred_probe_reason);
+		else
+			dev_err(dev, "probe permanently deferred\n");
+	}
 	return 0;
 }
 late_initcall(device_probe_deferred);
@@ -575,6 +580,24 @@ const void *device_get_match_data(struct device_d *dev)
 	return NULL;
 }
 
+static void device_set_deferred_probe_reason(struct device_d *dev, const struct va_format *vaf)
+{
+	char *reason;
+	char *last_char;
+
+	free(dev->deferred_probe_reason);
+
+	reason = xasprintf("%pV", vaf);
+
+	/* drop newline char at end of reason string */
+	last_char = reason + strlen(reason) - 1;
+
+	if (*last_char == '\n')
+		*last_char = '\0';
+
+	dev->deferred_probe_reason = reason;
+}
+
 /**
  * dev_err_probe - probe error check and log helper
  * @loglevel: log level configured in source file
@@ -586,8 +609,12 @@ const void *device_get_match_data(struct device_d *dev)
  * This helper implements common pattern present in probe functions for error
  * checking: print debug or error message depending if the error value is
  * -EPROBE_DEFER and propagate error upwards.
- * In case of -EPROBE_DEFER it sets also defer probe reason, which can be
- * checked later by reading devices_deferred debugfs attribute.
+ *
+ * In case of -EPROBE_DEFER it sets the device's deferred_probe_reason attribute,
+ * but does not report an error. The error is recorded and displayed later, if
+ * (and only if) the probe is permanently deferred. For all other error codes,
+ * it just outputs the error along with the formatted message.
+ *
  * It replaces code sequence::
  *
  * 	if (err != -EPROBE_DEFER)
@@ -603,8 +630,8 @@ const void *device_get_match_data(struct device_d *dev)
  * Returns @err.
  *
  */
-int dev_err_probe(const struct device_d *dev, int err, const char *fmt, ...);
-int dev_err_probe(const struct device_d *dev, int err, const char *fmt, ...)
+int dev_err_probe(struct device_d *dev, int err, const char *fmt, ...);
+int dev_err_probe(struct device_d *dev, int err, const char *fmt, ...)
 {
 	struct va_format vaf;
 	va_list args;
@@ -612,6 +639,9 @@ int dev_err_probe(const struct device_d *dev, int err, const char *fmt, ...)
 	va_start(args, fmt);
 	vaf.fmt = fmt;
 	vaf.va = &args;
+
+	if (err == -EPROBE_DEFER)
+		device_set_deferred_probe_reason(dev, &vaf);
 
 	dev_printf(err == -EPROBE_DEFER ? MSG_DEBUG : MSG_ERR,
 		   dev, "error %pe: %pV", ERR_PTR(err), &vaf);

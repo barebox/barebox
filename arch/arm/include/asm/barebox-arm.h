@@ -20,6 +20,7 @@
 #include <asm/barebox-arm-head.h>
 #include <asm/common.h>
 #include <asm/sections.h>
+#include <asm/reloc.h>
 
 /*
  * We have a 4GiB address space split into 1MiB sections, with each
@@ -27,34 +28,6 @@
  */
 #define ARM_TTB_SIZE	(SZ_4G / SZ_1M * sizeof(u32))
 
-unsigned long get_runtime_offset(void);
-
-/* global_variable_offset() - Access global variables when not running at link address
- *
- * Get the offset of global variables when not running at the address we are
- * linked at.
- */
-static inline unsigned long global_variable_offset(void)
-{
-#ifdef CONFIG_CPU_V8
-	unsigned long text;
-
-	__asm__ __volatile__(
-		"adr    %0, _text\n"
-		: "=r" (text)
-		:
-		: "memory");
-	return text - (unsigned long)_text;
-#else
-	return get_runtime_offset();
-#endif
-}
-
-void setup_c(void);
-void pbl_barebox_break(void);
-void relocate_to_current_adr(void);
-void relocate_to_adr(unsigned long target);
-void relocate_to_adr_full(unsigned long target);
 void __noreturn barebox_arm_entry(unsigned long membase, unsigned long memsize, void *boarddata);
 
 struct barebox_arm_boarddata {

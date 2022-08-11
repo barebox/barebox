@@ -98,7 +98,7 @@ static void ltdc_set_mode(struct ltdc_fb *priv,
 		val |= GCR_HSPOL;
 	if (mode->sync & FB_SYNC_VERT_HIGH_ACT)
 		val |= GCR_VSPOL;
-	if (mode->display_flags & DISPLAY_FLAGS_DE_HIGH)
+	if (mode->display_flags & DISPLAY_FLAGS_DE_LOW)
 		val |= GCR_DEPOL;
 	if (mode->display_flags & DISPLAY_FLAGS_PIXDATA_NEGEDGE)
 		val |= GCR_PCPOL;

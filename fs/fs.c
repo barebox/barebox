@@ -3191,6 +3191,10 @@ static int automount_mount(struct dentry *dentry)
 			printf("running automount command '%s' failed\n",
 					am->cmd);
 			ret = -ENODEV;
+		} else if (!(dentry->d_flags & DCACHE_MOUNTED)) {
+			printf("automount command '%s' didn't mount anything\n",
+					am->cmd);
+			ret = -ENODEV;
 		}
 
 		break;

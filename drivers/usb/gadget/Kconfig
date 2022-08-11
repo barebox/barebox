@@ -4,6 +4,9 @@ menuconfig USB_GADGET
 	select POLLER
 	bool "USB gadget support"
 
+config USB_GADGET_DRIVER_ARC_PBL
+	bool
+
 if USB_GADGET
 
 config USB_GADGET_DUALSPEED
@@ -15,9 +18,6 @@ config USB_GADGET_DRIVER_ARC
 	depends on ARCH_IMX || ARCH_MXS
 	default y
 	select USB_GADGET_DUALSPEED
-
-config USB_GADGET_DRIVER_ARC_PBL
-	bool
 
 config USB_GADGET_DRIVER_AT91
 	bool
@@ -37,6 +37,7 @@ config USB_GADGET_AUTOSTART
 	bool
 	default y
 	prompt "Automatically start usbgadget on boot"
+	depends on GLOBALVAR
 	select SYSTEM_PARTITIONS if USB_GADGET_MASS_STORAGE
 	help
 	  Enabling this option allows to automatically start a dfu or

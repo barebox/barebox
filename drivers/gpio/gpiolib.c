@@ -444,44 +444,27 @@ static int of_hog_gpio(struct device_node *np, struct gpio_chip *chip,
 		       unsigned int idx)
 {
 	struct device_node *chip_np = chip->dev->device_node;
+	struct of_phandle_args gpiospec;
 	unsigned long flags = 0;
-	u32 gpio_cells, gpio_num, gpio_flags;
+	u32 gpio_flags;
 	int ret, gpio;
 	const char *name = NULL;
 
-	ret = of_property_read_u32(chip_np, "#gpio-cells", &gpio_cells);
+	ret = of_parse_phandle_with_args(chip_np, "gpios", "#gpio-cells", idx,
+					&gpiospec);
 	if (ret)
 		return ret;
 
-	/*
-	 * Support for GPIOs that don't have #gpio-cells set to 2 is
-	 * not implemented
-	 */
-	if (WARN_ON(gpio_cells != 2))
-		return -ENOTSUPP;
-
-	ret = of_property_read_u32_index(np, "gpios", idx * gpio_cells,
-					 &gpio_num);
-	if (ret)
-		return ret;
-
-	ret = of_property_read_u32_index(np, "gpios", idx * gpio_cells + 1,
-					 &gpio_flags);
-	if (ret)
-		return ret;
-
-	if (gpio_flags & OF_GPIO_ACTIVE_LOW)
-		flags |= GPIOF_ACTIVE_LOW;
-
-	gpio = gpio_get_num(chip->dev, gpio_num);
+	gpio = gpio_of_xlate(chip->dev, &gpiospec, &gpio_flags);
 	if (gpio == -EPROBE_DEFER)
 		return gpio;
-
 	if (gpio < 0) {
-		dev_err(chip->dev, "unable to get gpio %u\n", gpio_num);
+		dev_err(chip->dev, "unable to get gpio: %d\n", gpio);
 		return gpio;
 	}
 
+	if (gpio_flags & OF_GPIO_ACTIVE_LOW)
+		flags |= GPIOF_ACTIVE_LOW;
 
 	/*
 	 * Note that, in order to be compatible with Linux, the code
@@ -636,7 +619,24 @@ void gpiochip_remove(struct gpio_chip *chip)
 	list_del(&chip->list);
 }
 
-int gpio_get_num(struct device_d *dev, int gpio)
+static int of_gpio_simple_xlate(struct gpio_chip *chip,
+				const struct of_phandle_args *gpiospec,
+				u32 *flags)
+{
+	/*
+	 * Support for GPIOs that don't have #gpio-cells set to 2 is
+	 * not implemented
+	 */
+	if (WARN_ON(gpiospec->args_count != 2))
+		return -ENOTSUPP;
+
+	if (flags)
+		*flags = gpiospec->args[1];
+
+	return chip->base + gpiospec->args[0];
+}
+
+int gpio_of_xlate(struct device_d *dev, struct of_phandle_args *gpiospec, int *flags)
 {
 	struct gpio_chip *chip;
 
@@ -644,8 +644,12 @@ int gpio_get_num(struct device_d *dev, int gpio)
 		return -ENODEV;
 
 	list_for_each_entry(chip, &chip_list, list) {
-		if (chip->dev == dev)
-			return chip->base + gpio;
+		if (chip->dev != dev)
+			continue;
+		if (chip->ops->of_xlate)
+			return chip->ops->of_xlate(chip, gpiospec, flags);
+		else
+			return of_gpio_simple_xlate(chip, gpiospec, flags);
 	}
 
 	return -EPROBE_DEFER;

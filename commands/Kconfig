@@ -367,6 +367,7 @@ config CMD_BOOT
 	  BOOTSRC can be:
 	  - a filename under /env/boot/
 	  - a full path to a boot script
+	  - a full path to a bootspec entry
 	  - a device name
 	  - a partition name under /dev/
 	  - a full path to a directory which

@@ -79,6 +79,7 @@ config MACH_DUCKBILL
 config MACH_CFA10036
 	bool "cfa-10036"
 	select MXS_OCOTP
+	select I2C
 	select I2C_GPIO
 	select EEPROM_AT24
 	help

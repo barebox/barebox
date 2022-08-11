@@ -24,6 +24,8 @@ int __must_check device_reset_us(struct device_d *dev, int us);
 
 int __must_check device_reset_all(struct device_d *dev);
 
+int reset_control_get_count(struct device_d *dev);
+
 #else
 
 static inline int reset_control_status(struct reset_control *rstc)
@@ -71,6 +73,17 @@ static inline int device_reset_all(struct device_d *dev)
 	return 0;
 }
 
+static inline int reset_control_get_count(struct device_d *dev)
+{
+	return 0;
+}
+
 #endif /* CONFIG_RESET_CONTROLLER */
+
+static inline struct reset_control *reset_control_get_optional(struct device_d *dev, const char *id)
+{
+	struct reset_control *rstc = reset_control_get(dev, id);
+	return rstc == ERR_PTR(-ENOENT) ? NULL : rstc;
+}
 
 #endif

@@ -15,6 +15,12 @@ int uncompress_fd_to_fd(int infd, int outfd,
 int uncompress_fd_to_buf(int infd, void *output,
 	   void(*error_fn)(char *x));
 
+int uncompress_buf_to_fd(const void *input, size_t input_len,
+			 int outfd, void(*error_fn)(char *x));
+
+ssize_t uncompress_buf_to_buf(const void *input, size_t input_len,
+			      void **buf, void(*error_fn)(char *x));
+
 void uncompress_err_stdout(char *);
 
 #endif /* __UNCOMPRESS_H */

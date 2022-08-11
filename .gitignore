@@ -35,6 +35,8 @@
 *.symtypes
 *.tab.[ch]
 Module.symvers
+*.dtb
+*.dtb.*
 
 #
 # Top-level generic files

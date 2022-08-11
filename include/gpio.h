@@ -171,6 +171,7 @@ struct gpio_ops {
 	int (*get_direction)(struct gpio_chip *chip, unsigned offset);
 	int (*get)(struct gpio_chip *chip, unsigned offset);
 	void (*set)(struct gpio_chip *chip, unsigned offset, int value);
+	int (*of_xlate)(struct gpio_chip *chip, const struct of_phandle_args *gpiospec, u32 *flags);
 };
 
 struct gpio_chip {
@@ -187,7 +188,7 @@ struct gpio_chip {
 int gpiochip_add(struct gpio_chip *chip);
 void gpiochip_remove(struct gpio_chip *chip);
 
-int gpio_get_num(struct device_d *dev, int gpio);
+int gpio_of_xlate(struct device_d *dev, struct of_phandle_args *gpiospec, int *flags);
 struct gpio_chip *gpio_get_chip(int gpio);
 
 #endif /* __GPIO_H */

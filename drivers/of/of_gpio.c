@@ -62,6 +62,7 @@ int of_get_named_gpio_flags(struct device_node *np, const char *propname,
 {
 	struct of_phandle_args out_args;
 	struct device_d *dev;
+	int of_flags;
 	int ret;
 
 	ret = of_parse_phandle_with_args(np, propname, "#gpio-cells",
@@ -79,7 +80,7 @@ int of_get_named_gpio_flags(struct device_node *np, const char *propname,
 		return -EPROBE_DEFER;
 	}
 
-	ret = gpio_get_num(dev, out_args.args[0]);
+	ret = gpio_of_xlate(dev, &out_args, &of_flags);
 	if (ret == -EPROBE_DEFER)
 		return ret;
 	if (ret < 0) {
@@ -89,7 +90,7 @@ int of_get_named_gpio_flags(struct device_node *np, const char *propname,
 	}
 
 	if (flags) {
-		*flags = out_args.args[1];
+		*flags = of_flags;
 		of_gpio_flags_quirks(np, propname, flags, index);
 	}
 

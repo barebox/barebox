@@ -219,11 +219,7 @@ static int pcf857x_probe(struct device_d *dev)
 	 */
 	gpio->out = ~n_latch;
 
-	ret = gpiochip_add(&gpio->chip);
-	if (ret)
-		return ret;
-
-	return ret;
+	return gpiochip_add(&gpio->chip);
 }
 
 static const struct of_device_id pcf857x_dt_ids[] = {

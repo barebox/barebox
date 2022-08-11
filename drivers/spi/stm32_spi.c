@@ -11,6 +11,7 @@
 #include <init.h>
 #include <errno.h>
 #include <linux/reset.h>
+#include <linux/spi/spi-mem.h>
 #include <spi/spi.h>
 #include <linux/bitops.h>
 #include <clock.h>
@@ -474,6 +475,24 @@ out:
 	return ret;
 }
 
+static int stm32_spi_adjust_op_size(struct spi_mem *mem, struct spi_mem_op *op)
+{
+	if (op->data.nbytes > SPI_CR2_TSIZE)
+		op->data.nbytes = SPI_CR2_TSIZE;
+
+	return 0;
+}
+
+static int stm32_spi_exec_op(struct spi_mem *mem, const struct spi_mem_op *op)
+{
+	return -ENOTSUPP;
+}
+
+static const struct spi_controller_mem_ops stm32_spi_mem_ops = {
+	.adjust_op_size = stm32_spi_adjust_op_size,
+	.exec_op = stm32_spi_exec_op,
+};
+
 static int stm32_spi_get_fifo_size(struct stm32_spi_priv *priv)
 {
 	u32 count = 0;
@@ -522,6 +541,7 @@ static int stm32_spi_probe(struct device_d *dev)
 
 	master->setup = stm32_spi_setup;
 	master->transfer = stm32_spi_transfer;
+	master->mem_ops = &stm32_spi_mem_ops;
 
 	master->bus_num = -1;
 	stm32_spi_dt_probe(priv);

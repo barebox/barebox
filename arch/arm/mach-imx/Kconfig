@@ -278,7 +278,6 @@ config MACH_CCMX51
 	select SPI
 	select DRIVER_SPI_IMX
 	select MFD_MC13XXX
-	select RELOCATABLE
 	help
 	  Say Y here if you are using Digi ConnectCore (W)i-i.MX51
 	  equipped with a Freescale i.MX51 Processor

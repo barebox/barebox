@@ -206,7 +206,7 @@ static int imx_pwm_probe(struct device_d *dev)
 	struct resource *iores;
 	const struct imx_pwm_data *data;
 	struct imx_chip *imx;
-	int ret = 0;
+	int ret;
 
 	ret = dev_get_drvdata(dev, (const void **)&data);
 	if (ret)
@@ -236,11 +236,7 @@ static int imx_pwm_probe(struct device_d *dev)
 	imx->config = data->config;
 	imx->set_enable = data->set_enable;
 
-	ret = pwmchip_add(&imx->chip, dev);
-	if (ret < 0)
-		return ret;
-
-	return 0;
+	return pwmchip_add(&imx->chip, dev);;
 }
 
 static struct driver_d imx_pwm_driver = {

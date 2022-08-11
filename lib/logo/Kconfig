@@ -2,6 +2,7 @@
 
 menuconfig BAREBOX_LOGO
 	bool "include barebox logos in build"
+	depends on IMAGE_RENDERER
 	help
 	  Say yes here to build the barebox logos. This adds ImageMagick's
 	  convert tool to the build dependencies. The logo can be found under

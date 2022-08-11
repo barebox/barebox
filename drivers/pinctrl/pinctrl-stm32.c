@@ -24,7 +24,6 @@
 struct stm32_gpio_bank {
 	void __iomem *base;
 	struct gpio_chip chip;
-	struct clk *clk;
 	const char *name;
 };
 
@@ -154,8 +153,6 @@ static int __stm32_pinctrl_set_state(struct device_d *dev, struct device_node *p
 			"fn %u, mode %u, alt %u\n",
 			bank->name, offset, func, mode, alt);
 
-		clk_enable(bank->clk);
-
 		__stm32_pmx_set_mode(bank->base, offset, mode, alt);
 
 		if (adjust_slew_rate)
@@ -173,8 +170,6 @@ static int __stm32_pinctrl_set_state(struct device_d *dev, struct device_node *p
 			__stm32_pmx_gpio_output(bank->base, offset, 0);
 		else if (dir == PIN_OUTPUT_HIGH)
 			__stm32_pmx_gpio_output(bank->base, offset, 1);
-
-		clk_disable(bank->clk);
 	}
 
 	return 0;
@@ -219,8 +214,6 @@ static int stm32_gpio_get_direction(struct gpio_chip *chip, unsigned int gpio)
 	int ret;
 	u32 mode, alt;
 
-	clk_enable(bank->clk);
-
 	__stm32_pmx_get_mode(bank->base, stm32_gpio_pin(gpio, NULL), &mode, &alt);
 	if ((alt == 0) && (mode == 0))
 		ret = 1;
@@ -229,8 +222,6 @@ static int stm32_gpio_get_direction(struct gpio_chip *chip, unsigned int gpio)
 	else
 		ret = -EINVAL;
 
-	clk_disable(bank->clk);
-
 	return ret;
 }
 
@@ -238,36 +229,21 @@ static void stm32_gpio_set(struct gpio_chip *chip, unsigned gpio, int value)
 {
 	struct stm32_gpio_bank *bank = to_stm32_gpio_bank(chip);
 
-	clk_enable(bank->clk);
-
 	__stm32_pmx_gpio_set(bank->base, stm32_gpio_pin(gpio, NULL), value);
-
-	clk_disable(bank->clk);
 }
 
 static int stm32_gpio_get(struct gpio_chip *chip, unsigned gpio)
 {
 	struct stm32_gpio_bank *bank = to_stm32_gpio_bank(chip);
-	int ret;
 
-	clk_enable(bank->clk);
-
-	ret = __stm32_pmx_gpio_get(bank->base, stm32_gpio_pin(gpio, NULL));
-
-	clk_disable(bank->clk);
-
-	return ret;
+	return __stm32_pmx_gpio_get(bank->base, stm32_gpio_pin(gpio, NULL));
 }
 
 static int stm32_gpio_direction_input(struct gpio_chip *chip, unsigned gpio)
 {
 	struct stm32_gpio_bank *bank = to_stm32_gpio_bank(chip);
 
-	clk_enable(bank->clk);
-
 	__stm32_pmx_gpio_input(bank->base, stm32_gpio_pin(gpio, NULL));
-
-	clk_disable(bank->clk);
 
 	return 0;
 }
@@ -277,11 +253,7 @@ static int stm32_gpio_direction_output(struct gpio_chip *chip,
 {
 	struct stm32_gpio_bank *bank = to_stm32_gpio_bank(chip);
 
-	clk_enable(bank->clk);
-
 	__stm32_pmx_gpio_output(bank->base, stm32_gpio_pin(gpio, NULL), value);
-
-	clk_disable(bank->clk);
 
 	return 0;
 }
@@ -302,6 +274,7 @@ static int stm32_gpiochip_add(struct stm32_gpio_bank *bank,
 	struct resource *iores;
 	enum { PINCTRL_PHANDLE, GPIOCTRL_OFFSET, PINCTRL_OFFSET, PINCOUNT, GPIO_RANGE_NCELLS };
 	const __be32 *gpio_ranges;
+	struct clk *clk;
 	u32 ngpios;
 	int ret, size;
 
@@ -350,11 +323,14 @@ static int stm32_gpiochip_add(struct stm32_gpio_bank *bank,
 	bank->chip.base = be32_to_cpu(gpio_ranges[PINCTRL_OFFSET]);
 	bank->chip.ops  = &stm32_gpio_ops;
 	bank->chip.dev  = dev;
-	bank->clk = clk_get(dev, NULL);
-	if (IS_ERR(bank->clk)) {
-		dev_err(dev, "failed to get clk (%ld)\n", PTR_ERR(bank->clk));
-		return PTR_ERR(bank->clk);
+
+	clk = clk_get(dev, NULL);
+	if (IS_ERR(clk)) {
+		dev_err(dev, "failed to get clk (%ld)\n", PTR_ERR(clk));
+		return PTR_ERR(clk);
 	}
+
+	clk_enable(clk);
 
 	return gpiochip_add(&bank->chip);
 }

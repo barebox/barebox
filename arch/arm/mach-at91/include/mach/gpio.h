@@ -151,6 +151,31 @@ static inline int at91_mux_gpio_get(void __iomem *pio, unsigned mask)
 	return (pdsr & mask) != 0;
 }
 
+static inline void at91_mux_pio_pin(void __iomem *pio, unsigned mask,
+				    enum at91_mux mux, int gpio_state)
+{
+	at91_mux_disable_interrupt(pio, mask);
+
+	switch(mux) {
+	case AT91_MUX_GPIO:
+		at91_mux_gpio_enable(pio, mask);
+		break;
+	case AT91_MUX_PERIPH_A:
+		at91_mux_set_A_periph(pio, mask);
+		break;
+	case AT91_MUX_PERIPH_B:
+		at91_mux_set_B_periph(pio, mask);
+		break;
+	default:
+		/* ignore everything else */
+		break;
+	}
+	if (mux != AT91_MUX_GPIO)
+		at91_mux_gpio_disable(pio, mask);
+
+	at91_mux_set_pullup(pio, mask, gpio_state & GPIO_PULL_UP);
+}
+
 static inline void at91_mux_pio3_pin(void __iomem *pio, unsigned mask,
 				     enum at91_mux mux, int gpio_state)
 {

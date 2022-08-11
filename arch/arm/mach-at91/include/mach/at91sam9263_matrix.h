@@ -25,7 +25,7 @@
 #define			AT91SAM9263_MATRIX_ULBT_SINGLE		(1 << 0)
 #define			AT91SAM9263_MATRIX_ULBT_FOUR		(2 << 0)
 #define			AT91SAM9263_MATRIX_ULBT_EIGHT		(3 << 0)
-#define			AT91SAM9263_MATRIX_ULBT_SIXTEEN	(4 << 0)
+#define			AT91SAM9263_MATRIX_ULBT_SIXTEEN		(4 << 0)
 
 #define AT91SAM9263_MATRIX_SCFG0	(0x40)	/* Slave Configuration Register 0 */
 #define AT91SAM9263_MATRIX_SCFG1	(0x44)	/* Slave Configuration Register 1 */
@@ -35,12 +35,22 @@
 #define AT91SAM9263_MATRIX_SCFG5	(0x54)	/* Slave Configuration Register 5 */
 #define AT91SAM9263_MATRIX_SCFG6	(0x58)	/* Slave Configuration Register 6 */
 #define AT91SAM9263_MATRIX_SCFG7	(0x5C)	/* Slave Configuration Register 7 */
-#define		AT91SAM9263_MATRIX_SLOT_CYCLE		(0xff << 0)	/* Maximum Number of Allowed Cycles for a Burst */
+#define		AT91SAM9263_MATRIX_SLOT_CYCLE	(0xff << 0)	/* Maximum Number of Allowed Cycles for a Burst */
+#define		AT91SAM9263_MATRIX_SLOT_CYCLE_(x)	(x << 0)
 #define		AT91SAM9263_MATRIX_DEFMSTR_TYPE	(3    << 16)	/* Default Master Type */
 #define			AT91SAM9263_MATRIX_DEFMSTR_TYPE_NONE	(0 << 16)
 #define			AT91SAM9263_MATRIX_DEFMSTR_TYPE_LAST	(1 << 16)
 #define			AT91SAM9263_MATRIX_DEFMSTR_TYPE_FIXED	(2 << 16)
 #define		AT91SAM9263_MATRIX_FIXED_DEFMSTR	(0xf  << 18)	/* Fixed Index of Default Master */
+#define			AT91SAM9263_MATRIX_FIXED_DEFMSTR_ARM926I	(0x0 << 18)
+#define			AT91SAM9263_MATRIX_FIXED_DEFMSTR_ARM926D	(0x1 << 18)
+#define			AT91SAM9263_MATRIX_FIXED_DEFMSTR_PDC		(0x2 << 18)
+#define			AT91SAM9263_MATRIX_FIXED_DEFMSTR_LCDC		(0x3 << 18)
+#define			AT91SAM9263_MATRIX_FIXED_DEFMSTR_2DGC		(0x4 << 18)
+#define			AT91SAM9263_MATRIX_FIXED_DEFMSTR_ISI		(0x5 << 18)
+#define			AT91SAM9263_MATRIX_FIXED_DEFMSTR_DMA		(0x6 << 18)
+#define			AT91SAM9263_MATRIX_FIXED_DEFMSTR_EMAC		(0x7 << 18)
+#define			AT91SAM9263_MATRIX_FIXED_DEFMSTR_USB		(0x8 << 18)
 #define		AT91SAM9263_MATRIX_ARBT		(3    << 24)	/* Arbitration Type */
 #define			AT91SAM9263_MATRIX_ARBT_ROUND_ROBIN	(0 << 24)
 #define			AT91SAM9263_MATRIX_ARBT_FIXED_PRIORITY	(1 << 24)
@@ -62,14 +72,23 @@
 #define AT91SAM9263_MATRIX_PRAS7	(0xB8)	/* Priority Register A for Slave 7 */
 #define AT91SAM9263_MATRIX_PRBS7	(0xBC)	/* Priority Register B for Slave 7 */
 #define		AT91SAM9263_MATRIX_M0PR		(3 << 0)	/* Master 0 Priority */
+#define		AT91SAM9263_MATRIX_M0PR_(x)	(x << 0)	/* ARM926EJ-S Instruction priority */
 #define		AT91SAM9263_MATRIX_M1PR		(3 << 4)	/* Master 1 Priority */
+#define		AT91SAM9263_MATRIX_M1PR_(x)	(x << 4)	/* ARM926EJ-S Data priority */
 #define		AT91SAM9263_MATRIX_M2PR		(3 << 8)	/* Master 2 Priority */
+#define		AT91SAM9263_MATRIX_M2PR_(x)	(x << 8)	/* PDC priority */
 #define		AT91SAM9263_MATRIX_M3PR		(3 << 12)	/* Master 3 Priority */
+#define		AT91SAM9263_MATRIX_M3PR_(x)	(x << 12)	/* LCDC priority */
 #define		AT91SAM9263_MATRIX_M4PR		(3 << 16)	/* Master 4 Priority */
+#define		AT91SAM9263_MATRIX_M4PR_(x)	(x << 16)	/* 2DGC priority */
 #define		AT91SAM9263_MATRIX_M5PR		(3 << 20)	/* Master 5 Priority */
+#define		AT91SAM9263_MATRIX_M5PR_(x)	(x << 20)	/* ISI priority */
 #define		AT91SAM9263_MATRIX_M6PR		(3 << 24)	/* Master 6 Priority */
+#define		AT91SAM9263_MATRIX_M6PR_(x)	(x << 24)	/* DMA priority */
 #define		AT91SAM9263_MATRIX_M7PR		(3 << 28)	/* Master 7 Priority */
+#define		AT91SAM9263_MATRIX_M7PR_(x)	(x << 28)	/* EMAC priority */
 #define		AT91SAM9263_MATRIX_M8PR		(3 << 0)	/* Master 8 Priority (in Register B) */
+#define		AT91SAM9263_MATRIX_M8PR_(x)	(x << 0)	/* USB Priority */
 
 #define AT91SAM9263_MATRIX_MRCR	(0x100)	/* Master Remap Control Register */
 #define		AT91SAM9263_MATRIX_RCB0		(1 << 0)	/* Remap Command for AHB Master 0 (ARM926EJ-S Instruction Master) */

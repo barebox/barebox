@@ -8,7 +8,7 @@
  */
 
 #include <common.h>
-#include <pbl.h>
+#include <pbl/bio.h>
 #include <mci.h>
 #include <debug_ll.h>
 #include <mach/xload.h>

@@ -170,6 +170,8 @@
 #define			AT91_PMC_IPLLA_1		(1 <<  8)
 #define			AT91_PMC_IPLLA_2		(2 <<  8)
 #define			AT91_PMC_IPLLA_3		(3 <<  8)
+#define		AT91SAM9_PMC_ICPPLLA	(1 << 0)
+#define		AT91SAM9_PMC_ICPPLLB	(1 << 16)
 
 
 #define AT91_PMC_PROT		0xe4			/* Write Protect Mode Register [some SAM9] */

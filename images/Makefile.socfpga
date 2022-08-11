@@ -39,6 +39,18 @@ pblb-$(CONFIG_MACH_SOCFPGA_TERASIC_DE10_NANO) += start_socfpga_de10_nano
 FILE_barebox-socfpga-de10_nano.img = start_socfpga_de10_nano.pblb
 socfpga-barebox-$(CONFIG_MACH_SOCFPGA_TERASIC_DE10_NANO) += barebox-socfpga-de10_nano.img
 
+pblb-$(CONFIG_MACH_SOCFPGA_ENCLUSTRA_AA1) += start_socfpga_aa1_xload
+FILE_barebox-socfpga-aa1-xload.img = start_socfpga_aa1_xload.pblb.socfpgaimg
+socfpga-barebox-$(CONFIG_MACH_SOCFPGA_ENCLUSTRA_AA1) += barebox-socfpga-aa1-xload.img
+
+pblb-$(CONFIG_MACH_SOCFPGA_ENCLUSTRA_AA1) += start_socfpga_aa1
+FILE_barebox-socfpga-aa1.img = start_socfpga_aa1.pblb
+socfpga-barebox-$(CONFIG_MACH_SOCFPGA_ENCLUSTRA_AA1) += barebox-socfpga-aa1.img
+
+pblb-$(CONFIG_MACH_SOCFPGA_ENCLUSTRA_AA1) += start_socfpga_aa1_bringup
+FILE_barebox-socfpga-aa1-bringup.img = start_socfpga_aa1_bringup.pblb
+socfpga-barebox-$(CONFIG_MACH_SOCFPGA_ENCLUSTRA_AA1) += barebox-socfpga-aa1-bringup.img
+
 pblb-$(CONFIG_MACH_SOCFPGA_REFLEX_ACHILLES) += start_socfpga_achilles_xload
 FILE_barebox-socfpga-achilles-xload.img = start_socfpga_achilles_xload.pblb.socfpgaimg
 socfpga-barebox-$(CONFIG_MACH_SOCFPGA_REFLEX_ACHILLES) += barebox-socfpga-achilles-xload.img

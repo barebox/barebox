@@ -6,13 +6,13 @@
 #include <bbu.h>
 #include <mach/arria10-system-manager.h>
 
-static int achilles_init(void)
+static int aa1_init(void)
 {
 	int pbl_index = 0;
 	uint32_t flag_barebox1 = 0;
 	uint32_t flag_barebox2 = 0;
 
-	if (!of_machine_is_compatible("reflex,achilles"))
+	if (!of_machine_is_compatible("enclustra,mercury-aa1"))
 		return 0;
 
 	pbl_index = readl(ARRIA10_SYSMGR_ROM_INITSWLASTLD);
@@ -29,20 +29,20 @@ static int achilles_init(void)
 	};
 
 	bbu_register_std_file_update("emmc-barebox1-xload", flag_barebox1,
-					"/dev/disk0.barebox1-xload",
+					"/dev/mmc0.barebox1-xload",
 					filetype_socfpga_xload);
 
 	bbu_register_std_file_update("emmc-barebox1", 0,
-					"/dev/disk0.barebox1",
+					"/dev/mmc0.barebox1",
 					filetype_arm_barebox);
 
 	bbu_register_std_file_update("emmc-barebox2-xload", flag_barebox2,
-					"/dev/disk0.barebox2-xload",
+					"/dev/mmc0.barebox2-xload",
 					filetype_socfpga_xload);
 
 	bbu_register_std_file_update("emmc-barebox2", 0,
-					"/dev/disk0.barebox2",
+					"/dev/mmc0.barebox2",
 					filetype_arm_barebox);
 	return 0;
 }
-postcore_initcall(achilles_init);
+postcore_initcall(aa1_init);

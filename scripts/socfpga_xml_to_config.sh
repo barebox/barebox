@@ -74,6 +74,14 @@ pinmux_config() {
     # FIXME: Either find solution how to parse these values too or replace
     # script with something that goes more in the direction of a programming
     # language
+    # 21:19 RTRIM
+    # 18:17 INPUT_BUF_EN
+    #    16 WK_PU_EN
+    #    13 PU_SLW_RT
+    #  12:8 PU_DRV_STRG
+    #     5 PD_SLW_RT
+    #   4:0 PD_DRV_STRG
+
     DEDICATED_FIXME="[arria10_pincfg_dedicated_io_bank] = FIXME,
     [arria10_pincfg_dedicated_io_1] = FIXME,
     [arria10_pincfg_dedicated_io_2] = FIXME,

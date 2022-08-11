@@ -86,11 +86,6 @@ static int validate_inode(struct ubifs_info *c, const struct inode *inode)
 		return 1;
 	}
 
-	if (ui->compr_type >= UBIFS_COMPR_TYPES_CNT) {
-		ubifs_err(c, "unknown compression type %d", ui->compr_type);
-		return 2;
-	}
-
 	if (ui->xattr_names + ui->xattr_cnt > XATTR_LIST_MAX)
 		return 3;
 

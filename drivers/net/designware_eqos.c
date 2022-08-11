@@ -623,10 +623,6 @@ static int eqos_start(struct eth_device *edev)
 	last_rx_desc = (ulong)&eqos->rx_descs[(EQOS_DESCRIPTORS_RX - 1)];
 	writel(last_rx_desc, &eqos->dma_regs->ch0_rxdesc_tail_pointer);
 
-	barrier();
-
-	eqos->started = true;
-
 	return 0;
 }
 
@@ -634,13 +630,6 @@ static void eqos_stop(struct eth_device *edev)
 {
 	struct eqos *eqos = edev->priv;
 	int i;
-
-	if (!eqos->started)
-		return;
-
-	eqos->started = false;
-
-	barrier();
 
 	/* Disable TX DMA */
 	clrbits_le32(&eqos->dma_regs->ch0_tx_control,

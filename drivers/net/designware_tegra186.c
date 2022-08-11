@@ -195,7 +195,7 @@ static int eqos_set_ethaddr_tegra186(struct eth_device *edev, const unsigned cha
 	 * ported to some system where the expectation above is true.
 	 */
 
-	if (!eqos->started) {
+	if (!edev->active) {
 		memcpy(eqos->macaddr, mac, 6);
 		return 0;
 	}

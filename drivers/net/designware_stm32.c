@@ -163,14 +163,7 @@ static int eqos_init_stm32(struct device_d *dev, struct eqos *eqos)
 		dev_dbg(dev, "No phy clock provided. Continuing without.\n");
 	}
 
-	ret = clk_bulk_enable(priv->num_clks, priv->clks);
-	if (ret < 0) {
-		eqos_err(eqos, "clk_bulk_enable() failed: %s\n",
-			 strerror(-ret));
-		return ret;
-	}
-
-	return 0;
+	return clk_bulk_enable(priv->num_clks, priv->clks);
 }
 
 static struct eqos_ops stm32_ops = {

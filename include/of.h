@@ -113,6 +113,8 @@ int of_parse_dtb(struct fdt_header *fdt);
 struct device_node *of_unflatten_dtb(const void *fdt, int size);
 struct device_node *of_unflatten_dtb_const(const void *infdt, int size);
 
+int of_fixup_reserved_memory(struct device_node *node, void *data);
+
 struct cdev;
 
 #ifdef CONFIG_OFTREE

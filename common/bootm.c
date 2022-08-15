@@ -710,9 +710,8 @@ int bootm_boot(struct bootm_data *bootm_data)
 			const char *root_dev_name = devpath_to_name(bootm_data->root_dev);
 			const struct cdev *root_cdev = cdev_by_name(root_dev_name);
 
-			if (root_cdev && root_cdev->uuid[0] != 0) {
-				rootarg = basprintf("root=PARTUUID=%s", root_cdev->uuid);
-			} else {
+			rootarg = cdev_get_linux_rootarg(root_cdev);
+			if (!rootarg) {
 				rootarg = ERR_PTR(-EINVAL);
 
 				if (!root_cdev)

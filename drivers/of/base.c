@@ -2865,6 +2865,19 @@ struct device_node *of_find_node_by_reproducible_name(struct device_node *from,
 	return NULL;
 }
 
+struct device_node *of_get_node_by_reproducible_name(struct device_node *dstroot,
+						     struct device_node *srcnp)
+{
+	struct device_node *dstnp;
+	char *name;
+
+	name = of_get_reproducible_name(srcnp);
+	dstnp = of_find_node_by_reproducible_name(dstroot, name);
+	free(name);
+
+	return dstnp;
+}
+
 /**
  * of_graph_parse_endpoint() - parse common endpoint node properties
  * @node: pointer to endpoint device_node

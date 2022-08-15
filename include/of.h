@@ -195,6 +195,9 @@ extern struct device_node *of_get_compatible_child(const struct device_node *par
 extern struct device_node *of_get_child_by_name(const struct device_node *node,
 					const char *name);
 extern char *of_get_reproducible_name(struct device_node *node);
+extern struct device_node *of_get_node_by_reproducible_name(struct device_node *dstroot,
+							    struct device_node *srcnp);
+
 extern struct device_node *of_find_node_by_reproducible_name(struct device_node
 							     *from,
 							     const char *name);
@@ -491,6 +494,13 @@ static inline char *of_get_reproducible_name(struct device_node *node)
 
 static inline struct device_node *
 of_find_node_by_reproducible_name(struct device_node *from, const char *name)
+{
+	return NULL;
+}
+
+
+static inline struct device_node *of_get_node_by_reproducible_name(struct device_node *dstroot,
+								  struct device_node *srcnp)
 {
 	return NULL;
 }

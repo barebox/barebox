@@ -2876,12 +2876,23 @@ int popd(char *oldcwd)
 	return ret;
 }
 
-static char *get_linux_mmcblkdev(struct fs_device_d *fsdev)
+static bool cdev_partname_equal(const struct cdev *a,
+				const struct cdev *b)
 {
-	struct cdev *cdevm, *cdev;
+	return a->partname && b->partname &&
+		!strcmp(a->partname, b->partname);
+}
+
+static char *get_linux_mmcblkdev(const struct cdev *root_cdev)
+{
+	struct cdev *cdevm = root_cdev->master, *cdev;
 	int id, partnum;
 
-	cdevm = fsdev->cdev->master;
+	if (!IS_ENABLED(CONFIG_MMCBLKDEV_ROOTARG))
+		return NULL;
+	if (!cdevm || !cdev_is_mci_main_part_dev(cdevm))
+		return NULL;
+
 	id = of_alias_get_id(cdevm->device_node, "mmc");
 	if (id < 0)
 		return NULL;
@@ -2894,11 +2905,27 @@ static char *get_linux_mmcblkdev(struct fs_device_d *fsdev)
 		 * in the partitions list so we need to count it instead of
 		 * skipping it.
 		 */
-		if (cdev->partname &&
-		    !strcmp(cdev->partname, fsdev->cdev->partname))
+		if (cdev_partname_equal(root_cdev, cdev))
 			return basprintf("root=/dev/mmcblk%dp%d", id, partnum);
 		partnum++;
 	}
+
+	return NULL;
+}
+
+char *cdev_get_linux_rootarg(const struct cdev *cdev)
+{
+	char *str;
+
+	if (!cdev)
+		return NULL;
+
+	str = get_linux_mmcblkdev(cdev);
+	if (str)
+		return str;
+
+	if (cdev->uuid[0] != 0)
+		return basprintf("root=PARTUUID=%s", cdev->uuid);
 
 	return NULL;
 }
@@ -2991,17 +3018,10 @@ int mount(const char *device, const char *fsname, const char *pathname,
 
 	fsdev->vfsmount.mnt_root = fsdev->sb.s_root;
 
-	if (!fsdev->linux_rootarg && fsdev->cdev) {
-		char *str = NULL;
+	if (!fsdev->linux_rootarg) {
+		char *str;
 
-		if (IS_ENABLED(CONFIG_MMCBLKDEV_ROOTARG) &&
-		    fsdev->cdev->master &&
-		    cdev_is_mci_main_part_dev(fsdev->cdev->master))
-			str = get_linux_mmcblkdev(fsdev);
-
-		if (!str && fsdev->cdev->uuid[0] != 0)
-			str = basprintf("root=PARTUUID=%s", fsdev->cdev->uuid);
-
+		str = cdev_get_linux_rootarg(fsdev->cdev);
 		if (str)
 			fsdev_set_linux_rootarg(fsdev, str);
 	}

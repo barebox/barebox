@@ -35,7 +35,7 @@
  *
  */
 
-static __noreturn void imx8m_atf_load_bl31(const void *fw, size_t fw_size, void *atf_dest)
+static __noreturn void imx8m_atf_start_bl31(const void *fw, size_t fw_size, void *atf_dest)
 {
 	void __noreturn (*bl31)(void) = atf_dest;
 
@@ -52,22 +52,22 @@ static __noreturn void imx8m_atf_load_bl31(const void *fw, size_t fw_size, void 
 
 __noreturn void imx8mm_atf_load_bl31(const void *fw, size_t fw_size)
 {
-	imx8m_atf_load_bl31(fw, fw_size, (void *)MX8MM_ATF_BL31_BASE_ADDR);
+	imx8m_atf_start_bl31(fw, fw_size, (void *)MX8MM_ATF_BL31_BASE_ADDR);
 }
 
 __noreturn void imx8mn_atf_load_bl31(const void *fw, size_t fw_size)
 {
-	imx8m_atf_load_bl31(fw, fw_size, (void *)MX8MN_ATF_BL31_BASE_ADDR);
+	imx8m_atf_start_bl31(fw, fw_size, (void *)MX8MN_ATF_BL31_BASE_ADDR);
 }
 
 __noreturn void imx8mp_atf_load_bl31(const void *fw, size_t fw_size)
 {
-	imx8m_atf_load_bl31(fw, fw_size, (void *)MX8MP_ATF_BL31_BASE_ADDR);
+	imx8m_atf_start_bl31(fw, fw_size, (void *)MX8MP_ATF_BL31_BASE_ADDR);
 }
 
 __noreturn void imx8mq_atf_load_bl31(const void *fw, size_t fw_size)
 {
-	imx8m_atf_load_bl31(fw, fw_size, (void *)MX8MQ_ATF_BL31_BASE_ADDR);
+	imx8m_atf_start_bl31(fw, fw_size, (void *)MX8MQ_ATF_BL31_BASE_ADDR);
 }
 
 __noreturn void imx8mm_load_and_start_image_via_tfa(void)

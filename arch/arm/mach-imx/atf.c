@@ -70,13 +70,10 @@ __noreturn void imx8mq_atf_load_bl31(const void *fw, size_t fw_size)
 	imx8m_atf_start_bl31(fw, fw_size, (void *)MX8MQ_ATF_BL31_BASE_ADDR);
 }
 
-__noreturn void imx8mm_load_and_start_image_via_tfa(void)
+void imx8mm_load_bl33(void *bl33)
 {
-	size_t bl31_size;
-	const u8 *bl31;
 	enum bootsource src;
 	int instance;
-	void *bl33 = (void *)MX8M_ATF_BL33_BASE_ADDR;
 
 	imx8mm_get_boot_source(&src, &instance);
 	switch (src) {
@@ -122,16 +119,16 @@ __noreturn void imx8mm_load_and_start_image_via_tfa(void)
 	 * the same code in DRAM.
 	 */
 	memcpy(bl33, __image_start, barebox_pbl_size);
-
-	get_builtin_firmware(imx8mm_bl31_bin, &bl31, &bl31_size);
-
-	imx8mm_atf_load_bl31(bl31, bl31_size);
 }
 
-__noreturn void imx8mp_load_and_start_image_via_tfa(void)
+__noreturn void imx8mm_load_and_start_image_via_tfa(void)
 {
-	size_t bl31_size;
-	const u8 *bl31;
+	imx8mm_load_bl33((void *)MX8M_ATF_BL33_BASE_ADDR);
+	imx8mm_load_and_start_tfa(imx8mm_bl31_bin);
+}
+
+void imx8mp_load_bl33(void *bl33)
+{
 	enum bootsource src;
 	int instance;
 
@@ -157,18 +154,17 @@ __noreturn void imx8mp_load_and_start_image_via_tfa(void)
 	 * for the piggy data, so we need to ensure that we are running
 	 * the same code in DRAM.
 	 */
-	memcpy((void *)MX8M_ATF_BL33_BASE_ADDR,
-	       __image_start, barebox_pbl_size);
-
-	get_builtin_firmware(imx8mp_bl31_bin, &bl31, &bl31_size);
-
-	imx8mp_atf_load_bl31(bl31, bl31_size);
+	memcpy(bl33, __image_start, barebox_pbl_size);
 }
 
-__noreturn void imx8mn_load_and_start_image_via_tfa(void)
+void imx8mp_load_and_start_image_via_tfa(void)
 {
-	size_t bl31_size;
-	const u8 *bl31;
+	imx8mp_load_bl33((void *)MX8M_ATF_BL33_BASE_ADDR);
+	imx8mp_load_and_start_tfa(imx8mp_bl31_bin);
+}
+
+void imx8mn_load_bl33(void *bl33)
+{
 	enum bootsource src;
 	int instance;
 
@@ -194,10 +190,11 @@ __noreturn void imx8mn_load_and_start_image_via_tfa(void)
 	 * for the piggy data, so we need to ensure that we are running
 	 * the same code in DRAM.
 	 */
-	memcpy((void *)MX8M_ATF_BL33_BASE_ADDR,
-	       __image_start, barebox_pbl_size);
+	memcpy(bl33, __image_start, barebox_pbl_size);
+}
 
-	get_builtin_firmware(imx8mn_bl31_bin, &bl31, &bl31_size);
-
-	imx8mn_atf_load_bl31(bl31, bl31_size);
+void imx8mn_load_and_start_image_via_tfa(void)
+{
+	imx8mn_load_bl33((void *)MX8M_ATF_BL33_BASE_ADDR);
+	imx8mn_load_and_start_tfa(imx8mn_bl31_bin);
 }

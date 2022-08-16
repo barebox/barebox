@@ -35,12 +35,11 @@
  *
  */
 
-static void imx8m_atf_load_bl31(const void *fw, size_t fw_size, void *atf_dest)
+static __noreturn void imx8m_atf_load_bl31(const void *fw, size_t fw_size, void *atf_dest)
 {
 	void __noreturn (*bl31)(void) = atf_dest;
 
-	if (WARN_ON(fw_size > MX8M_ATF_BL31_SIZE_LIMIT))
-		return;
+	BUG_ON(fw_size > MX8M_ATF_BL31_SIZE_LIMIT);
 
 	memcpy(bl31, fw, fw_size);
 
@@ -48,29 +47,30 @@ static void imx8m_atf_load_bl31(const void *fw, size_t fw_size, void *atf_dest)
 		     "r" (atf_dest - 16) :
 		     "cc");
 	bl31();
+	__builtin_unreachable();
 }
 
-void imx8mm_atf_load_bl31(const void *fw, size_t fw_size)
+__noreturn void imx8mm_atf_load_bl31(const void *fw, size_t fw_size)
 {
 	imx8m_atf_load_bl31(fw, fw_size, (void *)MX8MM_ATF_BL31_BASE_ADDR);
 }
 
-void imx8mn_atf_load_bl31(const void *fw, size_t fw_size)
+__noreturn void imx8mn_atf_load_bl31(const void *fw, size_t fw_size)
 {
 	imx8m_atf_load_bl31(fw, fw_size, (void *)MX8MN_ATF_BL31_BASE_ADDR);
 }
 
-void imx8mp_atf_load_bl31(const void *fw, size_t fw_size)
+__noreturn void imx8mp_atf_load_bl31(const void *fw, size_t fw_size)
 {
 	imx8m_atf_load_bl31(fw, fw_size, (void *)MX8MP_ATF_BL31_BASE_ADDR);
 }
 
-void imx8mq_atf_load_bl31(const void *fw, size_t fw_size)
+__noreturn void imx8mq_atf_load_bl31(const void *fw, size_t fw_size)
 {
 	imx8m_atf_load_bl31(fw, fw_size, (void *)MX8MQ_ATF_BL31_BASE_ADDR);
 }
 
-void imx8mm_load_and_start_image_via_tfa(void)
+__noreturn void imx8mm_load_and_start_image_via_tfa(void)
 {
 	size_t bl31_size;
 	const u8 *bl31;
@@ -126,11 +126,9 @@ void imx8mm_load_and_start_image_via_tfa(void)
 	get_builtin_firmware(imx8mm_bl31_bin, &bl31, &bl31_size);
 
 	imx8mm_atf_load_bl31(bl31, bl31_size);
-
-	/* not reached */
 }
 
-void imx8mp_load_and_start_image_via_tfa(void)
+__noreturn void imx8mp_load_and_start_image_via_tfa(void)
 {
 	size_t bl31_size;
 	const u8 *bl31;
@@ -165,11 +163,9 @@ void imx8mp_load_and_start_image_via_tfa(void)
 	get_builtin_firmware(imx8mp_bl31_bin, &bl31, &bl31_size);
 
 	imx8mp_atf_load_bl31(bl31, bl31_size);
-
-	/* not reached */
 }
 
-void imx8mn_load_and_start_image_via_tfa(void)
+__noreturn void imx8mn_load_and_start_image_via_tfa(void)
 {
 	size_t bl31_size;
 	const u8 *bl31;
@@ -204,6 +200,4 @@ void imx8mn_load_and_start_image_via_tfa(void)
 	get_builtin_firmware(imx8mn_bl31_bin, &bl31, &bl31_size);
 
 	imx8mn_atf_load_bl31(bl31, bl31_size);
-
-	/* not reached */
 }

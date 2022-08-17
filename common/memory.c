@@ -56,17 +56,6 @@ void mem_malloc_init(void *start, void *end)
 	mem_malloc_initialized = 1;
 }
 
-static int request_reservation(const struct resource *res)
-{
-	if (!(res->flags & IORESOURCE_EXCLUSIVE))
-		return 0;
-
-	pr_debug("region %s %pa-%pa\n", res->name, &res->start, &res->end);
-
-	request_sdram_region(res->name, res->start, resource_size(res));
-	return 0;
-}
-
 static int mem_malloc_resource(void)
 {
 #if !defined __SANDBOX__
@@ -96,7 +85,7 @@ static int mem_malloc_resource(void)
 	request_sdram_region("stack", STACK_BASE, STACK_SIZE);
 #endif
 
-	return of_reserved_mem_walk(request_reservation);
+	return 0;
 }
 coredevice_initcall(mem_malloc_resource);
 
@@ -172,6 +161,8 @@ int barebox_add_memory_bank(const char *name, resource_size_t start,
 	res = request_iomem_region(name, start, start + size - 1);
 	if (IS_ERR(res))
 		return PTR_ERR(res);
+
+	res->flags = IORESOURCE_MEM;
 
 	bank = xzalloc(sizeof(*bank));
 

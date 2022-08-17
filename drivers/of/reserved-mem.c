@@ -4,16 +4,31 @@
 #include <stdio.h>
 #include <of.h>
 #include <of_address.h>
+#include <memory.h>
+#include <linux/ioport.h>
 
 #define MEMRESERVE_NCELLS	2
-#define MEMRESERVE_FLAGS	(IORESOURCE_MEM | IORESOURCE_EXCLUSIVE)
 
-int of_reserved_mem_walk(int (*handler)(const struct resource *res))
+static void request_region(struct resource *r)
+{
+	struct memory_bank *bank;
+
+	for_each_memory_bank(bank) {
+		if (!resource_contains(bank->res, r))
+			continue;
+
+		if (!reserve_sdram_region(r->name, r->start, resource_size(r)))
+			pr_warn("couldn't request reserved sdram region %pa-%pa\n",
+				&r->start, &r->end);
+		break;
+	}
+}
+
+static int of_reserved_mem_walk(void)
 {
 	struct device_node *node, *child;
 	int ncells = 0;
 	const __be32 *reg;
-	int ret;
 
 	node = of_find_node_by_path("/reserved-memory");
 	if (node) {
@@ -27,11 +42,9 @@ int of_reserved_mem_walk(int (*handler)(const struct resource *res))
 			of_address_to_resource(child, 0, &resource);
 
 			resource.name = child->name;
-			resource.flags = MEMRESERVE_FLAGS;
+			resource.flags = IORESOURCE_MEM;
 
-			ret = handler(&resource);
-			if (ret)
-				return ret;
+			request_region(&resource);
 		}
 	}
 
@@ -48,7 +61,7 @@ int of_reserved_mem_walk(int (*handler)(const struct resource *res))
 
 			snprintf(name, sizeof(name), "fdt-memreserve-%u", n++);
 			resource.name = name;
-			resource.flags = MEMRESERVE_FLAGS;
+			resource.flags = IORESOURCE_MEM;
 
 			resource.start = of_read_number(reg + i, MEMRESERVE_NCELLS);
 			i += MEMRESERVE_NCELLS;
@@ -61,11 +74,10 @@ int of_reserved_mem_walk(int (*handler)(const struct resource *res))
 
 			resource.end = resource.start + size - 1;
 
-			ret = handler(&resource);
-			if (ret)
-				return ret;
+			request_region(&resource);
 		}
 	}
 
 	return 0;
 }
+postmem_initcall(of_reserved_mem_walk);

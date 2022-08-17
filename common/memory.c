@@ -195,7 +195,7 @@ static int add_mem_devices(void)
 
 	return 0;
 }
-mmu_initcall(add_mem_devices);
+postmem_initcall(add_mem_devices);
 
 /*
  * Request a region from the registered sdram

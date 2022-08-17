@@ -208,8 +208,8 @@ struct resource *request_sdram_region(const char *name, resource_size_t start,
 	for_each_memory_bank(bank) {
 		struct resource *res;
 
-		res = __request_region(bank->res, name, start,
-				       start + size - 1);
+		res = __request_region(bank->res, start, start + size - 1,
+				       name, 0);
 		if (!IS_ERR(res))
 			return res;
 	}

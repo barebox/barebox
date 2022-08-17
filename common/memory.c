@@ -200,16 +200,18 @@ mmu_initcall(add_mem_devices);
 /*
  * Request a region from the registered sdram
  */
-struct resource *request_sdram_region(const char *name, resource_size_t start,
-		resource_size_t size)
+struct resource *__request_sdram_region(const char *name, unsigned flags,
+					resource_size_t start, resource_size_t size)
 {
 	struct memory_bank *bank;
+
+	flags |= IORESOURCE_MEM;
 
 	for_each_memory_bank(bank) {
 		struct resource *res;
 
 		res = __request_region(bank->res, start, start + size - 1,
-				       name, 0);
+				       name, flags);
 		if (!IS_ERR(res))
 			return res;
 	}

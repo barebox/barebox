@@ -73,15 +73,20 @@ create_sections(uint32_t *ttb, unsigned long first,
 #define PMD_SECT_DEF_UNCACHED (PMD_SECT_AP_WRITE | PMD_SECT_AP_READ | PMD_TYPE_SECT)
 #define PMD_SECT_DEF_CACHED (PMD_SECT_WB | PMD_SECT_DEF_UNCACHED)
 
-static inline void create_flat_mapping(uint32_t *ttb)
+static inline unsigned long attrs_uncached_mem(void)
 {
 	unsigned int flags = PMD_SECT_DEF_UNCACHED;
 
 	if (cpu_architecture() >= CPU_ARCH_ARMv7)
 		flags |= PMD_SECT_XN;
 
+	return flags;
+}
+
+static inline void create_flat_mapping(uint32_t *ttb)
+{
 	/* create a flat mapping using 1MiB sections */
-	create_sections(ttb, 0, 0xffffffff, flags);
+	create_sections(ttb, 0, 0xffffffff, attrs_uncached_mem());
 }
 
 #endif /* __ARM_MMU_H */

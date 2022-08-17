@@ -16,11 +16,14 @@ static void __print_resources(struct resource *res, int indent)
 	for (i = 0; i < indent; i++)
 		printf("  ");
 
-	printf("%pa - %pa (size %pa) %s\n",
-			&res->start, &res->end, &size, res->name);
+	printf("%pa - %pa (size %pa) %s%s\n",
+			&res->start, &res->end, &size,
+			res->flags & IORESOURCE_BUSY ? "[R] " : "",
+			res->name);
 
-	list_for_each_entry(r, &res->children, sibling)
+	list_for_each_entry(r, &res->children, sibling) {
 		__print_resources(r, indent + 1);
+	}
 }
 
 static void print_resources(struct resource *res)

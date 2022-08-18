@@ -74,8 +74,6 @@ SECTIONS
 	.piggydata : {
 		*(.piggydata)
 	}
-	__piggydata_end = .;
-
 	.image_end : { KEEP(*(.__image_end)) }
 
 	pbl_image_size =  .;

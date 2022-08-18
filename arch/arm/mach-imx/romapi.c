@@ -28,7 +28,7 @@ static int imx8m_bootrom_load_image(struct rom_api *rom_api)
 {
 	return imx8m_bootrom_load(rom_api,
 				  (void *)MX8M_ATF_BL33_BASE_ADDR + barebox_pbl_size,
-				  __piggydata_end - __piggydata_start);
+				  __image_end - __piggydata_start);
 }
 
 int imx8mp_bootrom_load_image(void)

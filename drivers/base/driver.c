@@ -27,6 +27,7 @@
 #include <linux/err.h>
 #include <complete.h>
 #include <pinctrl.h>
+#include <featctrl.h>
 #include <linux/clk/clk-conf.h>
 
 #ifdef CONFIG_DEBUG_PROBES
@@ -84,6 +85,14 @@ int device_probe(struct device_d *dev)
 {
 	static int depth = 0;
 	int ret;
+
+	ret = of_feature_controller_check(dev->device_node);
+	if (ret < 0)
+		return ret;
+	if (ret == FEATCTRL_GATED) {
+		dev_dbg(dev, "feature gated, skipping probe\n");
+		return -ENODEV;
+	}
 
 	depth++;
 

@@ -34,6 +34,8 @@ void nvmem_cell_put(struct nvmem_cell *cell);
 void *nvmem_cell_read(struct nvmem_cell *cell, size_t *len);
 void *nvmem_cell_get_and_read(struct device_node *np, const char *cell_name,
 			      size_t bytes);
+int nvmem_cell_read_variable_le_u32(struct device_d *dev, const char *cell_id,
+				    u32 *val);
 
 int nvmem_cell_write(struct nvmem_cell *cell, void *buf, size_t len);
 
@@ -73,6 +75,13 @@ static inline void *nvmem_cell_get_and_read(struct device_node *np,
 					    size_t bytes)
 {
 	return ERR_PTR(-EOPNOTSUPP);
+}
+
+static inline int nvmem_cell_read_variable_le_u32(struct device_d *dev,
+						  const char *cell_id,
+						  u32 *val)
+{
+	return -EOPNOTSUPP;
 }
 
 static inline int nvmem_cell_write(struct nvmem_cell *cell,

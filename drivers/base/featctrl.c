@@ -118,3 +118,43 @@ int of_feature_controller_check(struct device_node *np)
 	return err ?: FEATCTRL_GATED;
 }
 EXPORT_SYMBOL_GPL(of_feature_controller_check);
+
+static int of_featctrl_fixup(struct device_node *root, void *context)
+{
+	struct device_node *srcnp, *dstnp;
+	int err = 0;
+
+	for_each_node_with_property(srcnp, "barebox,feature-gates") {
+		int ret;
+
+		ret = of_feature_controller_check(srcnp);
+		if (ret < 0)
+			err = ret;
+		if (ret != FEATCTRL_GATED)
+			continue;
+
+		dstnp = of_get_node_by_reproducible_name(root, srcnp);
+		if (!dstnp) {
+			pr_debug("gated node %s not in fixup DT\n",
+				 srcnp->full_name);
+			continue;
+		}
+
+		pr_debug("fixing up gating of node %s\n", dstnp->full_name);
+		/* Convention is deleting non-existing CPUs, not disable them. */
+		if (of_property_match_string(srcnp, "device_type", "cpu") >= 0)
+			of_delete_node(dstnp);
+		else
+			of_device_disable(dstnp);
+	}
+
+	return err;
+}
+
+static __maybe_unused int of_featctrl_fixup_register(void)
+{
+	return of_register_fixup(of_featctrl_fixup, NULL);
+}
+#ifdef CONFIG_FEATURE_CONTROLLER_FIXUP
+device_initcall(of_featctrl_fixup_register);
+#endif

@@ -76,7 +76,7 @@ struct digest {
 /*
  * digest functions
  */
-#ifdef CONFIG_DIGEST
+#if defined(CONFIG_DIGEST) || defined(__PBL__)
 int digest_algo_register(struct digest_algo *d);
 void digest_algo_unregister(struct digest_algo *d);
 void digest_algo_prints(const char *prefix);

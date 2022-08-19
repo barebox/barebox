@@ -259,6 +259,7 @@ static int ubootvarfs_unlink(struct inode *dir, struct dentry *dentry)
 
 		list_del(&var->list);
 		free(var);
+		node->var = NULL;
 	}
 
 	return simple_unlink(dir, dentry);

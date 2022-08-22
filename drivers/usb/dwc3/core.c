@@ -1001,6 +1001,8 @@ static void dwc3_get_properties(struct dwc3 *dwc)
 	dwc->dr_mode = of_usb_get_dr_mode(dev->device_node, NULL);
 	dwc->hsphy_mode = of_usb_get_phy_mode(dev->device_node, NULL);
 
+	dwc->dis_u2_freeclk_exists_quirk = of_property_read_bool(dev->device_node,
+		"snps,dis-u2-freeclk-exists-quirk");
 	dwc->lpm_nyet_threshold = lpm_nyet_threshold;
 	dwc->tx_de_emphasis = tx_de_emphasis;
 

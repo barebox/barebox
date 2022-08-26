@@ -94,8 +94,6 @@ ENTRY_FUNCTION_WITHSTACK(start_socfpga_achilles_bringup, ARRIA10_STACKTOP, r0, r
 
 	arm_cpu_lowlevel_init();
 
-	arm_setup_stack(ARRIA10_OCRAM_ADDR + SZ_256K);
-
 	relocate_to_current_adr();
 	setup_c();
 

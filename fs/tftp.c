@@ -321,14 +321,6 @@ static void tftp_recv(struct file_priv *priv,
 			priv->state = STATE_RDATA;
 			priv->tftp_con->udp->uh_dport = uh_sport;
 			priv->last_block = 0;
-
-			if (priv->block != 1) {	/* Assertion */
-				pr_err("error: First block is not block 1 (%d)\n",
-					priv->block);
-				priv->err = -EINVAL;
-				priv->state = STATE_DONE;
-				break;
-			}
 		}
 
 		if (priv->block == priv->last_block)

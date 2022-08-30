@@ -429,7 +429,7 @@ static void tftp_recv(struct file_priv *priv,
 
 	case TFTP_DATA:
 		len -= 2;
-		priv->block = ntohs(*(uint16_t *)pkt);
+		block = ntohs(*(uint16_t *)pkt);
 
 		if (priv->state == STATE_RRQ) {
 			/* first block received; entered only with non rfc
@@ -444,11 +444,11 @@ static void tftp_recv(struct file_priv *priv,
 				break;
 		}
 
-		if (priv->block != (uint16_t)(priv->last_block + 1))
+		if (block != (uint16_t)(priv->last_block + 1))
 			break;
 
 		tftp_timer_reset(priv);
-		tftp_put_data(priv, priv->block, pkt + 2, len);
+		tftp_put_data(priv, block, pkt + 2, len);
 
 		break;
 

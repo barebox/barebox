@@ -301,6 +301,8 @@ err:
 static void tftp_put_data(struct file_priv *priv, uint16_t block,
 			  void const *pkt, size_t len)
 {
+	unsigned int sz;
+
 	if (len > priv->blocksize) {
 		pr_warn("tftp: oversized packet (%zu > %d) received\n",
 			len, priv->blocksize);
@@ -309,9 +311,14 @@ static void tftp_put_data(struct file_priv *priv, uint16_t block,
 
 	priv->last_block = block;
 
-	kfifo_put(priv->fifo, pkt, len);
+	sz = kfifo_put(priv->fifo, pkt, len);
 
-	if (len < priv->blocksize) {
+	if (sz != len) {
+		pr_err("tftp: not enough room in kfifo (only %u out of %zu written)\n",
+		       sz, len);
+		priv->err = -ENOMEM;
+		priv->state = STATE_DONE;
+	} else if (len < priv->blocksize) {
 		tftp_send(priv);
 		priv->err = 0;
 		priv->state = STATE_DONE;

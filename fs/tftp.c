@@ -36,6 +36,8 @@
 #include <parseopt.h>
 #include <linux/sizes.h>
 
+#include "tftp-selftest.h"
+
 #define TFTP_PORT	69	/* Well known TFTP port number */
 
 /* Seconds to wait before remote server is allowed to resend a lost packet */
@@ -84,7 +86,7 @@
 
 #define TFTP_ERR_RESEND	1
 
-#ifdef DEBUG
+#if defined(DEBUG) || IS_ENABLED(CONFIG_SELFTEST_TFTP)
 #  define debug_assert(_cond)	BUG_ON(!(_cond))
 #else
 #  define debug_assert(_cond) do {			\
@@ -1217,3 +1219,105 @@ static int tftp_init(void)
 	return register_fs_driver(&tftp_driver);
 }
 coredevice_initcall(tftp_init);
+
+
+BSELFTEST_GLOBALS();
+
+static int __maybe_unused tftp_window_cache_selftest(void)
+{
+	struct tftp_cache	*cache = malloc(sizeof *cache);
+
+	if (!cache)
+		return -ENOMEM;
+
+	(void)skipped_tests;
+
+	expect_it( is_block_before(0, 1));
+	expect_it(!is_block_before(1, 0));
+	expect_it( is_block_before(65535, 0));
+	expect_it(!is_block_before(0, 65535));
+
+	expect_eq(get_block_delta(0, 1),     1);
+	expect_eq(get_block_delta(65535, 0), 1);
+	expect_eq(get_block_delta(65535, 1), 2);
+
+	expect_it(!in_window(0, 1, 3));
+	expect_it( in_window(1, 1, 3));
+	expect_it( in_window(2, 1, 3));
+	expect_it( in_window(3, 1, 3));
+	expect_it(!in_window(4, 1, 3));
+
+	expect_it(!in_window(65534, 65535, 1));
+	expect_it( in_window(65535, 65535, 1));
+	expect_it( in_window(    0, 65535, 1));
+	expect_it( in_window(    1, 65535, 1));
+	expect_it(!in_window(    2, 65535, 1));
+
+
+	tftp_window_cache_init(cache, 512, 5);
+
+	if (tftp_window_cache_size(cache) < 4)
+		goto out;
+
+	expect_eq(tftp_window_cache_size(cache), 4);
+
+	/* sequence 1 */
+	expect_ok (tftp_window_cache_insert(cache, 20, "20", 2));
+	expect_ok (tftp_window_cache_insert(cache, 22, "22", 2));
+	expect_ok (tftp_window_cache_insert(cache, 21, "21", 2));
+	expect_ok (tftp_window_cache_insert(cache, 23, "23", 2));
+	expect_err(tftp_window_cache_insert(cache, 24, "24", 2));
+	expect_err(tftp_window_cache_insert(cache, 19, "19", 2));
+	expect_ok (tftp_window_cache_insert(cache, 22, "22", 2));
+	expect_ok (tftp_window_cache_insert(cache, 20, "20", 2));
+
+	expect_eq(tftp_window_cache_pop(cache)->id, 20);
+	expect_eq(tftp_window_cache_pop(cache)->id, 21);
+	expect_eq(tftp_window_cache_pop(cache)->id, 22);
+	expect_eq(tftp_window_cache_pop(cache)->id, 23);
+	expect_eq(cache->id, TFTP_CACHE_NO_ID);
+
+	/* sequence 2 */
+	expect_ok (tftp_window_cache_insert(cache, 30, "30", 2));
+	expect_ok (tftp_window_cache_insert(cache, 32, "32", 2));
+	expect_err(tftp_window_cache_insert(cache, 34, "34", 2));
+
+	expect_it(tftp_window_cache_starts_with(cache, 30));
+	expect_eq(tftp_window_cache_pop(cache)->id, 30);
+
+	expect_ok (tftp_window_cache_insert(cache, 34, "34", 2));
+	expect_err(tftp_window_cache_insert(cache, 35, "35", 2));
+
+	expect_it(!tftp_window_cache_starts_with(cache, 30));
+	expect_it(!tftp_window_cache_starts_with(cache, 31));
+	expect_it(!tftp_window_cache_starts_with(cache, 32));
+	expect_NULL(tftp_window_cache_pop(cache));
+
+	expect_it(tftp_window_cache_starts_with(cache, 32));
+	expect_eq(tftp_window_cache_pop(cache)->id, 32);
+
+	expect_NULL(tftp_window_cache_pop(cache));
+	expect_eq(tftp_window_cache_pop(cache)->id, 34);
+
+	expect_eq(cache->id, TFTP_CACHE_NO_ID);
+
+	/* sequence 3 */
+	expect_ok(tftp_window_cache_insert(cache, 40, "40", 2));
+	expect_ok(tftp_window_cache_insert(cache, 42, "42", 2));
+	expect_ok(tftp_window_cache_insert(cache, 43, "43", 2));
+
+	expect_it(!tftp_window_cache_remove_id(cache, 30));
+	expect_it(!tftp_window_cache_remove_id(cache, 41));
+	expect_it(!tftp_window_cache_remove_id(cache, 44));
+
+	expect_it( tftp_window_cache_remove_id(cache, 42));
+	expect_it(!tftp_window_cache_remove_id(cache, 42));
+
+out:
+	tftp_window_cache_free(cache);
+
+	return 0;
+}
+#ifdef CONFIG_SELFTEST_TFTP
+bselftest(core, tftp_window_cache_selftest);
+#endif

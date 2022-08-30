@@ -151,7 +151,9 @@ static int tftp_send(struct file_priv *priv)
 				'\0',	/* "timeout" */
 				TIMEOUT, '\0',
 				'\0',	/* "blksize" */
-				TFTP_MTU_SIZE);
+				/* use only a minimal blksize for getattr
+				   operations, */
+				priv->is_getattr ? TFTP_BLOCK_SIZE : TFTP_MTU_SIZE);
 		pkt++;
 
 		if (!priv->push)

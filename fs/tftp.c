@@ -59,14 +59,15 @@
 #define STATE_WRQ	2
 #define STATE_RDATA	3
 #define STATE_WDATA	4
-#define STATE_OACK	5
+/* OACK from server has been received and we can begin to sent either the ACK
+   (for RRQ) or data (for WRQ) */
+#define STATE_START	5
 #define STATE_WAITACK	6
 #define STATE_LAST	7
 #define STATE_DONE	8
 
 #define TFTP_BLOCK_SIZE		512	/* default TFTP block size */
 #define TFTP_MTU_SIZE		1432	/* MTU based block size */
-#define TFTP_FIFO_SIZE		4096
 
 #define TFTP_ERR_RESEND	1
 
@@ -111,10 +112,10 @@ static char const * const tftp_states[] = {
 	[STATE_WRQ] = "WRQ",
 	[STATE_RDATA] = "RDATA",
 	[STATE_WDATA] = "WDATA",
-	[STATE_OACK] = "OACK",
 	[STATE_WAITACK] = "WAITACK",
 	[STATE_LAST] = "LAST",
 	[STATE_DONE] = "DONE",
+	[STATE_START] = "START",
 };
 
 static int tftp_send(struct file_priv *priv)
@@ -166,7 +167,6 @@ static int tftp_send(struct file_priv *priv)
 	case STATE_RDATA:
 		if (priv->block == priv->block_requested)
 			return 0;
-	case STATE_OACK:
 		xp = pkt;
 		s = (uint16_t *)pkt;
 		*s++ = htons(TFTP_ACK);
@@ -261,11 +261,39 @@ static void tftp_timer_reset(struct file_priv *priv)
 	priv->progress_timeout = priv->resend_timeout = get_time_ns();
 }
 
+static int tftp_allocate_transfer(struct file_priv *priv)
+{
+	debug_assert(!priv->fifo);
+	debug_assert(!priv->buf);
+
+	priv->fifo = kfifo_alloc(priv->blocksize);
+	if (!priv->fifo)
+		goto err;
+
+	if (priv->push) {
+		priv->buf = xmalloc(priv->blocksize);
+		if (!priv->buf) {
+			kfifo_free(priv->fifo);
+			priv->fifo = NULL;
+			goto err;
+		}
+	}
+
+	return 0;
+
+err:
+	priv->err = -ENOMEM;
+	priv->state = STATE_DONE;
+
+	return priv->err;
+}
+
 static void tftp_recv(struct file_priv *priv,
 			uint8_t *pkt, unsigned len, uint16_t uh_sport)
 {
 	uint16_t opcode;
 	uint16_t block;
+	int rc;
 
 	/* according to RFC1350 minimal tftp packet length is 4 bytes */
 	if (len < 4)
@@ -294,47 +322,63 @@ static void tftp_recv(struct file_priv *priv,
 			break;
 		}
 
+		switch (priv->state) {
+		case STATE_WRQ:
+			priv->tftp_con->udp->uh_dport = uh_sport;
+			priv->state = STATE_START;
+			break;
+
+		case STATE_WAITACK:
+			priv->state = STATE_WDATA;
+			break;
+
+		case STATE_LAST:
+			priv->state = STATE_DONE;
+			break;
+
+		default:
+			pr_warn("ACK packet in %s state\n",
+				tftp_states[priv->state]);
+			goto ack_out;
+		}
+
 		priv->block = block + 1;
 		tftp_timer_reset(priv);
 
-		if (priv->state == STATE_LAST) {
-			priv->state = STATE_DONE;
-			break;
-		}
-		priv->tftp_con->udp->uh_dport = uh_sport;
-		priv->state = STATE_WDATA;
+	ack_out:
 		break;
 
 	case TFTP_OACK:
 		tftp_parse_oack(priv, pkt, len);
 		priv->tftp_con->udp->uh_dport = uh_sport;
-
-		if (priv->push) {
-			/* send first block */
-			priv->state = STATE_WDATA;
-			priv->block = 1;
-		} else {
-			/* send ACK */
-			priv->state = STATE_OACK;
-			priv->block = 0;
-			tftp_send(priv);
-		}
-
+		priv->state = STATE_START;
 		break;
+
 	case TFTP_DATA:
 		len -= 2;
 		priv->block = ntohs(*(uint16_t *)pkt);
 
-		if (priv->state == STATE_RRQ || priv->state == STATE_OACK) {
-			/* first block received */
-			priv->state = STATE_RDATA;
+		if (priv->state == STATE_RRQ) {
+			/* first block received; entered only with non rfc
+			   2347 (TFTP Option extension) compliant servers */
 			priv->tftp_con->udp->uh_dport = uh_sport;
+			priv->state = STATE_RDATA;
 			priv->last_block = 0;
+
+			rc = tftp_allocate_transfer(priv);
+			if (rc < 0)
+				break;
 		}
 
 		if (priv->block == priv->last_block)
 			/* Same block again; ignore it. */
 			break;
+
+		if (len > priv->blocksize) {
+			pr_warn("tftp: oversized packet (%u > %d) received\n",
+				len, priv->blocksize);
+			break;
+		}
 
 		priv->last_block = priv->block;
 
@@ -378,6 +422,30 @@ static void tftp_handler(void *ctx, char *packet, unsigned len)
 	tftp_recv(priv, pkt, net_eth_to_udplen(packet), udp->uh_sport);
 }
 
+static int tftp_start_transfer(struct file_priv *priv)
+{
+	int rc;
+
+	rc = tftp_allocate_transfer(priv);
+	if (rc < 0)
+		/* function sets 'priv->state = STATE_DONE' and 'priv->err' in
+		   error case */
+		return rc;
+
+	if (priv->push) {
+		/* send first block */
+		priv->state = STATE_WDATA;
+		priv->block = 1;
+	} else {
+		/* send ACK */
+		priv->state = STATE_RDATA;
+		priv->block = 0;
+		tftp_send(priv);
+	}
+
+	return 0;
+}
+
 static struct file_priv *tftp_do_open(struct device_d *dev,
 		int accmode, struct dentry *dentry)
 {
@@ -409,48 +477,74 @@ static struct file_priv *tftp_do_open(struct device_d *dev,
 	priv->blocksize = TFTP_BLOCK_SIZE;
 	priv->block_requested = -1;
 
-	priv->fifo = kfifo_alloc(TFTP_FIFO_SIZE);
-	if (!priv->fifo) {
-		ret = -ENOMEM;
-		goto out;
-	}
-
 	parseopt_hu(fsdev->options, "port", &port);
 
 	priv->tftp_con = net_udp_new(tpriv->server, port, tftp_handler, priv);
 	if (IS_ERR(priv->tftp_con)) {
 		ret = PTR_ERR(priv->tftp_con);
-		goto out1;
+		goto out;
 	}
 
 	ret = tftp_send(priv);
 	if (ret)
-		goto out2;
+		goto out1;
 
 	tftp_timer_reset(priv);
-	while (priv->state != STATE_RDATA &&
-			priv->state != STATE_DONE &&
-			priv->state != STATE_WDATA) {
-		ret = tftp_poll(priv);
-		if (ret == TFTP_ERR_RESEND)
-			tftp_send(priv);
-		if (ret < 0)
-			goto out2;
-	}
 
-	if (priv->state == STATE_DONE && priv->err) {
-		ret = priv->err;
-		goto out2;
-	}
+	/* - 'ret < 0'  ... error
+	   - 'ret == 0' ... further tftp_poll() required
+	   - 'ret == 1' ... startup finished */
+	do {
+		switch (priv->state) {
+		case STATE_DONE:
+			/* branch is entered in two situations:
+			   - non rfc 2347 compliant servers finished the
+			     transfer by sending a small file
+			   - some error occurred */
+			if (priv->err < 0)
+				ret = priv->err;
+			else
+				ret = 1;
+			break;
 
-	priv->buf = xmalloc(priv->blocksize);
+		case STATE_START:
+			ret = tftp_start_transfer(priv);
+			if (!ret)
+				ret = 1;
+			break;
+
+		case STATE_RDATA:
+			/* first data block of non rfc 2347 servers */
+			ret = 1;
+			break;
+
+		case STATE_RRQ:
+		case STATE_WRQ:
+			ret = tftp_poll(priv);
+			if (ret == TFTP_ERR_RESEND) {
+				tftp_send(priv);
+				ret = 0;
+			}
+			break;
+
+		default:
+			debug_assert(false);
+			break;
+		}
+	} while (ret == 0);
+
+	if (ret < 0)
+		goto out1;
 
 	return priv;
-out2:
-	net_unregister(priv->tftp_con);
 out1:
-	kfifo_free(priv->fifo);
+	net_unregister(priv->tftp_con);
 out:
+	if (priv->fifo)
+		kfifo_free(priv->fifo);
+
+	free(priv->filename);
+	free(priv->buf);
 	free(priv);
 
 	return ERR_PTR(ret);
@@ -567,7 +661,7 @@ static int tftp_read(struct device_d *dev, FILE *f, void *buf, size_t insize)
 		if (priv->state == STATE_DONE)
 			return outsize;
 
-		if (TFTP_FIFO_SIZE - kfifo_len(priv->fifo) >= priv->blocksize)
+		if (kfifo_len(priv->fifo) == 0)
 			tftp_send(priv);
 
 		ret = tftp_poll(priv);

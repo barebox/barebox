@@ -298,6 +298,26 @@ err:
 	return priv->err;
 }
 
+static void tftp_put_data(struct file_priv *priv, uint16_t block,
+			  void const *pkt, size_t len)
+{
+	if (len > priv->blocksize) {
+		pr_warn("tftp: oversized packet (%zu > %d) received\n",
+			len, priv->blocksize);
+		return;
+	}
+
+	priv->last_block = block;
+
+	kfifo_put(priv->fifo, pkt, len);
+
+	if (len < priv->blocksize) {
+		tftp_send(priv);
+		priv->err = 0;
+		priv->state = STATE_DONE;
+	}
+}
+
 static void tftp_recv(struct file_priv *priv,
 			uint8_t *pkt, unsigned len, uint16_t uh_sport)
 {
@@ -390,23 +410,8 @@ static void tftp_recv(struct file_priv *priv,
 			/* Same block again; ignore it. */
 			break;
 
-		if (len > priv->blocksize) {
-			pr_warn("tftp: oversized packet (%u > %d) received\n",
-				len, priv->blocksize);
-			break;
-		}
-
-		priv->last_block = priv->block;
-
 		tftp_timer_reset(priv);
-
-		kfifo_put(priv->fifo, pkt + 2, len);
-
-		if (len < priv->blocksize) {
-			tftp_send(priv);
-			priv->err = 0;
-			priv->state = STATE_DONE;
-		}
+		tftp_put_data(priv, priv->block, pkt + 2, len);
 
 		break;
 

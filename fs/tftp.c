@@ -132,18 +132,23 @@ static int tftp_send(struct file_priv *priv)
 				"octet%c"
 				"timeout%c"
 				"%d%c"
-				"tsize%c"
-				"%lld%c"
 				"blksize%c"
 				"1432",
 				priv->filename + 1, 0,
 				0,
 				0,
 				TIMEOUT, 0,
-				0,
-				priv->filesize, 0,
 				0);
 		pkt++;
+
+		if (!priv->push)
+			/* we do not know the filesize in WRQ requests and
+			   'priv->filesize' will always be zero */
+			pkt += sprintf((unsigned char *)pkt,
+				       "tsize%c%lld%c",
+				       '\0', priv->filesize,
+				       '\0');
+
 		len = pkt - xp;
 		break;
 

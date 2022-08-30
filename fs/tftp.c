@@ -70,6 +70,15 @@
 
 #define TFTP_ERR_RESEND	1
 
+#ifdef DEBUG
+#  define debug_assert(_cond)	BUG_ON(!(_cond))
+#else
+#  define debug_assert(_cond) do {			\
+		if (!(_cond))				\
+			__builtin_unreachable();	\
+	} while (0)
+#endif
+
 struct file_priv {
 	struct net_connection *tftp_con;
 	int push;

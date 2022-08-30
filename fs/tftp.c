@@ -65,6 +65,7 @@
 #define STATE_DONE	8
 
 #define TFTP_BLOCK_SIZE		512	/* default TFTP block size */
+#define TFTP_MTU_SIZE		1432	/* MTU based block size */
 #define TFTP_FIFO_SIZE		4096
 
 #define TFTP_ERR_RESEND	1
@@ -133,12 +134,13 @@ static int tftp_send(struct file_priv *priv)
 				"timeout%c"
 				"%d%c"
 				"blksize%c"
-				"1432",
+				"%u",
 				priv->filename + 1, '\0',
 				'\0',	/* "octet" */
 				'\0',	/* "timeout" */
 				TIMEOUT, '\0',
-				'\0');	/* "blksize" */
+				'\0',	/* "blksize" */
+				TFTP_MTU_SIZE);
 		pkt++;
 
 		if (!priv->push)

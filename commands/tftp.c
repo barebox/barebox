@@ -21,14 +21,23 @@ static int do_tftpb(int argc, char *argv[])
 	char *source, *dest, *freep;
 	int opt;
 	int tftp_push = 0;
+	int port = -1;
 	int ret;
 	IPaddr_t ip;
 	char ip4_str[sizeof("255.255.255.255")];
+	char mount_opts[sizeof("port=12345")];
 
-	while ((opt = getopt(argc, argv, "p")) > 0) {
+	while ((opt = getopt(argc, argv, "pP:")) > 0) {
 		switch(opt) {
 		case 'p':
 			tftp_push = 1;
+			break;
+		case 'P':
+			port = simple_strtoul(optarg, NULL, 0);
+			if (port <= 0 || port > 0xffff) {
+				pr_err("invalid port '%s'\n", optarg);
+				return COMMAND_ERROR_USAGE;
+			}
 			break;
 		default:
 			return COMMAND_ERROR_USAGE;
@@ -59,7 +68,13 @@ static int do_tftpb(int argc, char *argv[])
 
 	ip = net_get_serverip();
 	sprintf(ip4_str, "%pI4", &ip);
-	ret = mount(ip4_str, "tftp", TFTP_MOUNT_PATH, NULL);
+
+	if (port >= 0)
+		sprintf(mount_opts, "port=%u", port);
+	else
+		mount_opts[0] = '\0';
+
+	ret = mount(ip4_str, "tftp", TFTP_MOUNT_PATH, mount_opts);
 	if (ret)
 		goto err_rmdir;
 
@@ -84,12 +99,13 @@ BAREBOX_CMD_HELP_TEXT("server address is taken from the environment (ethX.server
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-p", "push to TFTP server")
+BAREBOX_CMD_HELP_OPT ("-P PORT", "tftp server port number")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(tftp)
 	.cmd		= do_tftpb,
 	BAREBOX_CMD_DESC("load (or save) a file using TFTP")
-	BAREBOX_CMD_OPTS("[-p] SOURCE [DEST]")
+	BAREBOX_CMD_OPTS("[-p] [-P <port>] SOURCE [DEST]")
 	BAREBOX_CMD_GROUP(CMD_GRP_NET)
 	BAREBOX_CMD_HELP(cmd_tftp_help)
 BAREBOX_CMD_END

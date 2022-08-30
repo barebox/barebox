@@ -3,7 +3,7 @@ menu "DMA support"
 
 config MXS_APBH_DMA
 	tristate "MXS APBH DMA ENGINE"
-	depends on ARCH_IMX23 || ARCH_IMX28 || ARCH_IMX6
+	depends on ARCH_IMX23 || ARCH_IMX28 || ARCH_IMX6 || ARCH_IMX7
 	select STMP_DEVICE
 	help
 	  Experimental!

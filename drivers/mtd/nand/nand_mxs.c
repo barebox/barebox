@@ -2272,6 +2272,9 @@ static __maybe_unused struct of_device_id gpmi_dt_ids[] = {
 		.compatible = "fsl,imx6q-gpmi-nand",
 		.data = (void *)GPMI_IMX6,
 	}, {
+		.compatible = "fsl,imx7d-gpmi-nand",
+		.data = (void *)GPMI_IMX6,
+	}, {
 		/* sentinel */
 	}
 };

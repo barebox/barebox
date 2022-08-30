@@ -94,7 +94,7 @@ static int tftp_truncate(struct device_d *dev, FILE *f, loff_t size)
 	return 0;
 }
 
-static char *tftp_states[] = {
+static char const * const tftp_states[] = {
 	[STATE_INVALID] = "INVALID",
 	[STATE_RRQ] = "RRQ",
 	[STATE_WRQ] = "WRQ",

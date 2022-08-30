@@ -28,6 +28,7 @@
 #include <getopt.h>
 #include <globalvar.h>
 #include <init.h>
+#include <linux/bitmap.h>
 #include <linux/stat.h>
 #include <linux/err.h>
 #include <linux/kernel.h>
@@ -75,6 +76,12 @@
 /* allocate this number of blocks more than needed in the fifo */
 #define TFTP_EXTRA_BLOCKS	2
 
+/* size of cache which deals with udp reordering */
+#define TFTP_WINDOW_CACHE_NUM	CONFIG_FS_TFTP_REORDER_CACHE_SIZE
+
+/* marker for an emtpy 'tftp_cache' */
+#define TFTP_CACHE_NO_ID	(-1)
+
 #define TFTP_ERR_RESEND	1
 
 #ifdef DEBUG
@@ -87,6 +94,30 @@
 #endif
 
 static int g_tftp_window_size = DIV_ROUND_UP(TFTP_MAX_WINDOW_SIZE, 2);
+
+struct tftp_block {
+	uint16_t id;
+	uint16_t len;
+
+	struct list_head head;
+	uint8_t data[];
+};
+
+struct tftp_cache {
+	/* The id located at @pos or TFTP_CACHE_NO_ID when cache is empty.  It
+	   is possible that the corresponding bit in @used is NOT set. */
+	unsigned int		id;
+	unsigned int		pos;
+
+	/* bitmask */
+	unsigned long		used[BITS_TO_LONGS(TFTP_WINDOW_CACHE_NUM)];
+
+	/* size of the cache; is limited by TFTP_WINDOW_CACHE_NUM and the
+	   actual window size */
+	unsigned int		size;
+	unsigned int		block_len;
+	struct tftp_block	*blocks[TFTP_WINDOW_CACHE_NUM];
+};
 
 struct file_priv {
 	struct net_connection *tftp_con;
@@ -105,11 +136,221 @@ struct file_priv {
 	int blocksize;
 	unsigned int windowsize;
 	bool is_getattr;
+	struct tftp_cache cache;
 };
 
 struct tftp_priv {
 	IPaddr_t server;
 };
+
+static inline bool is_block_before(uint16_t a, uint16_t b)
+{
+	return (int16_t)(b - a) > 0;
+}
+
+static inline uint16_t get_block_delta(uint16_t a, uint16_t b)
+{
+	debug_assert(!is_block_before(b, a));
+
+	return b - a;
+}
+
+static bool in_window(uint16_t block, uint16_t start, uint16_t end)
+{
+	/* handle the three cases:
+	   - [ ......... | start | .. | BLOCK | .. | end | ......... ]
+	   - [ ..| BLOCK | .. | end | ................. | start | .. ]
+	   - [ ..| end | ................. | start | .. | BLOCK | .. ]
+	*/
+	return ((start <= block && block <= end) ||
+		(block <= end   && end   <= start) ||
+		(end   <= start && start <= block));
+}
+
+static inline size_t tftp_window_cache_size(struct tftp_cache const *cache)
+{
+	/* allows to optimize away the cache code when TFTP_WINDOW_CACHE_SIZE
+	   is 0 */
+	return TFTP_WINDOW_CACHE_NUM == 0 ? 0 : cache->size;
+}
+
+static void tftp_window_cache_init(struct tftp_cache *cache,
+				   uint16_t block_len, uint16_t window_size)
+{
+	debug_assert(window_size > 0);
+
+	*cache = (struct tftp_cache) {
+		.id		= TFTP_CACHE_NO_ID,
+		.block_len	= block_len,
+		.size		= min_t(uint16_t, window_size - 1,
+					ARRAY_SIZE(cache->blocks)),
+	};
+}
+
+static void tftp_window_cache_free(struct tftp_cache *cache)
+{
+	size_t	cache_size = tftp_window_cache_size(cache);
+	size_t	i;
+
+	for (i = 0; i < cache_size; ++i) {
+		free(cache->blocks[i]);
+		cache->blocks[i] = NULL;
+	}
+}
+
+static void tftp_window_cache_reset(struct tftp_cache *cache)
+{
+	cache->id = TFTP_CACHE_NO_ID;
+	memset(cache->used, 0, sizeof cache->used);
+}
+
+static int tftp_window_cache_get_pos(struct tftp_cache const *cache, uint16_t id)
+{
+	size_t		cache_size = tftp_window_cache_size(cache);
+	unsigned int	pos;
+
+	if (cache_size == 0)
+		return -1;
+
+	if (cache->id == TFTP_CACHE_NO_ID)
+		return -1;
+
+	if (!in_window(id, cache->id, cache->id + cache_size - 1))
+		return -1;
+
+	pos  = cache->pos + get_block_delta(cache->id, id);
+	pos %= cache_size;
+
+	return pos;
+}
+
+/* returns whether the first cached element has the given @id */
+static bool tftp_window_cache_starts_with(struct tftp_cache const *cache,
+					  uint16_t id)
+{
+	return (TFTP_WINDOW_CACHE_NUM > 0 &&
+		cache->id != TFTP_CACHE_NO_ID &&
+		cache->id == id &&
+		test_bit(cache->pos, cache->used));
+}
+
+static bool tftp_window_cache_is_empty(struct tftp_cache const *cache)
+{
+	/* use this indirection to avoid warnings about a '0 < 0' comparison
+	   in the loop condition when TFTP_WINDOW_CACHE_NUM is zero */
+	size_t	cache_size = ARRAY_SIZE(cache->used);
+	size_t	i;
+
+	for (i = 0; i < cache_size; ++i) {
+		if (cache->used[i] != 0)
+			return false;
+	}
+
+	return true;
+}
+
+static int tftp_window_cache_insert(struct tftp_cache *cache, uint16_t id,
+				    void const *data, size_t len)
+{
+	size_t const		cache_size = tftp_window_cache_size(cache);
+	int			pos;
+	struct tftp_block	*block;
+
+	if (cache_size == 0)
+		return -ENOSPC;
+
+	if (cache->id == TFTP_CACHE_NO_ID) {
+		/* initialize cache when it does not contain elements yet */
+		cache->id = id;
+		cache->pos = 0;
+
+		/* sanity check; cache is expected to be empty */
+		debug_assert(tftp_window_cache_is_empty(cache));
+	}
+
+	pos = tftp_window_cache_get_pos(cache, id);
+	if (pos < 0)
+		return -ENOSPC;
+
+	debug_assert(pos < cache_size);
+
+	if (test_bit(pos, cache->used))
+		/* block already cached */
+		return 0;
+
+	block = cache->blocks[pos];
+	if (!block) {
+		/* allocate space for the block; after being released, this
+		   memory can be reused for other blocks during the same tftp
+		   transfer */
+		block = malloc(sizeof *block + cache->block_len);
+		if (!block)
+			return -ENOMEM;
+
+		cache->blocks[pos] = block;
+	}
+
+	__set_bit(pos, cache->used);
+	memcpy(block->data, data, len);
+	block->id = id;
+	block->len = len;
+
+	return 0;
+}
+
+/* Marks the element at 'pos' as unused and updates internal cache information.
+   Returns true iff element at pos was valid. */
+static bool tftp_window_cache_remove(struct tftp_cache *cache, unsigned int pos)
+{
+	size_t const	cache_size = tftp_window_cache_size(cache);
+	bool		res;
+
+	if (cache_size == 0)
+		return 0;
+
+	res = __test_and_clear_bit(pos, cache->used);
+
+	if (tftp_window_cache_is_empty(cache)) {
+		/* cache has been cleared; reset pointers */
+		cache->id = TFTP_CACHE_NO_ID;
+	} else if (pos != cache->pos) {
+		/* noop; elements has been removed from the middle of cache */
+	} else {
+		/* first element of cache has been removed; proceed to the
+		   next one */
+		cache->id  += 1;
+		cache->pos += 1;
+		cache->pos %= cache_size;
+	}
+
+	return res;
+}
+
+/* Releases the first element from the cache and returns its content.
+ *
+ * Function can return NULL when the element is not cached
+ */
+static struct tftp_block *tftp_window_cache_pop(struct tftp_cache *cache)
+{
+	unsigned int	pos = cache->pos;
+
+	debug_assert(cache->id != TFTP_CACHE_NO_ID);
+
+	if (!tftp_window_cache_remove(cache, pos))
+		return NULL;
+
+	return cache->blocks[pos];
+}
+
+static bool tftp_window_cache_remove_id(struct tftp_cache *cache, uint16_t id)
+{
+	int		pos = tftp_window_cache_get_pos(cache, id);
+
+	if (pos < 0)
+		return false;
+
+	return tftp_window_cache_remove(cache, pos);
+}
 
 static int tftp_truncate(struct device_d *dev, FILE *f, loff_t size)
 {
@@ -201,6 +442,7 @@ static int tftp_send(struct file_priv *priv)
 		priv->ack_block += priv->windowsize;
 		pkt = (unsigned char *)s;
 		len = pkt - xp;
+		tftp_window_cache_reset(&priv->cache);
 		break;
 	}
 
@@ -317,6 +559,9 @@ static int tftp_allocate_transfer(struct file_priv *priv)
 			priv->fifo = NULL;
 			goto err;
 		}
+	} else {
+		tftp_window_cache_init(&priv->cache,
+				       priv->blocksize, priv->windowsize);
 	}
 
 	return 0;
@@ -352,6 +597,60 @@ static void tftp_put_data(struct file_priv *priv, uint16_t block,
 		tftp_send(priv);
 		priv->err = 0;
 		priv->state = STATE_DONE;
+	}
+}
+
+static void tftp_apply_window_cache(struct file_priv *priv)
+{
+	struct tftp_cache *cache = &priv->cache;
+
+	while (tftp_window_cache_starts_with(cache, priv->last_block + 1)) {
+		struct tftp_block *block;
+
+		/* can be changed by tftp_put_data() below and must be
+		   checked in each loop */
+		if (priv->state != STATE_RDATA)
+			return;
+
+		block = tftp_window_cache_pop(cache);
+
+		debug_assert(block);
+		debug_assert(block->id == (uint16_t)(priv->last_block + 1));
+
+		tftp_put_data(priv, block->id, block->data, block->len);
+	}
+}
+
+static void tftp_handle_data(struct file_priv *priv, uint16_t block,
+			     void const *data, size_t len)
+{
+	uint16_t exp_block;
+	int rc;
+
+	exp_block = priv->last_block + 1;
+
+	if (exp_block == block) {
+		/* datagram over network is the expected one; put it in the
+		   fifo directly and try to apply cached items then */
+		tftp_timer_reset(priv);
+		tftp_put_data(priv, block, data, len);
+		tftp_window_cache_remove_id(&priv->cache, block);
+		tftp_apply_window_cache(priv);
+	} else if (!in_window(block, exp_block, priv->ack_block)) {
+		/* completely unexpected and unrelated to actual window;
+		   ignore the packet. */
+		printf("B");
+	} else {
+		/* The 'rc < 0' below happens e.g. when datagrams in the first
+		   part of the transfer window are dropped.
+
+		   TODO: this will usually result in a timeout
+		   (TFTP_RESEND_TIMEOUT).  It should be possible to bypass
+		   this timeout by acknowledging the last packet (e.g. by
+		   doing 'priv->ack_block = priv->last_block' here). */
+		rc = tftp_window_cache_insert(&priv->cache, block, data, len);
+		if (rc < 0)
+			printf("M");
 	}
 }
 
@@ -444,12 +743,7 @@ static void tftp_recv(struct file_priv *priv,
 				break;
 		}
 
-		if (block != (uint16_t)(priv->last_block + 1))
-			break;
-
-		tftp_timer_reset(priv);
-		tftp_put_data(priv, block, pkt + 2, len);
-
+		tftp_handle_data(priv, block, pkt + 2, len);
 		break;
 
 	case TFTP_ERROR:
@@ -653,6 +947,7 @@ static int tftp_do_close(struct file_priv *priv)
 	}
 
 	net_unregister(priv->tftp_con);
+	tftp_window_cache_free(&priv->cache);
 	kfifo_free(priv->fifo);
 	free(priv->filename);
 	free(priv->buf);

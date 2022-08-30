@@ -95,6 +95,7 @@ struct file_priv {
 	void *buf;
 	int blocksize;
 	int block_requested;
+	bool is_getattr;
 };
 
 struct tftp_priv {
@@ -460,7 +461,7 @@ static int tftp_start_transfer(struct file_priv *priv)
 }
 
 static struct file_priv *tftp_do_open(struct device_d *dev,
-		int accmode, struct dentry *dentry)
+		int accmode, struct dentry *dentry, bool is_getattr)
 {
 	struct fs_device_d *fsdev = dev_to_fs_device(dev);
 	struct file_priv *priv;
@@ -489,6 +490,7 @@ static struct file_priv *tftp_do_open(struct device_d *dev,
 	priv->filename = dpath(dentry, fsdev->vfsmount.mnt_root);
 	priv->blocksize = TFTP_BLOCK_SIZE;
 	priv->block_requested = -1;
+	priv->is_getattr = is_getattr;
 
 	parseopt_hu(fsdev->options, "port", &port);
 
@@ -567,7 +569,7 @@ static int tftp_open(struct device_d *dev, FILE *file, const char *filename)
 {
 	struct file_priv *priv;
 
-	priv = tftp_do_open(dev, file->flags, file->dentry);
+	priv = tftp_do_open(dev, file->flags, file->dentry, false);
 	if (IS_ERR(priv))
 		return PTR_ERR(priv);
 
@@ -783,7 +785,7 @@ static struct dentry *tftp_lookup(struct inode *dir, struct dentry *dentry,
 	struct file_priv *priv;
 	loff_t filesize;
 
-	priv = tftp_do_open(&fsdev->dev, O_RDONLY, dentry);
+	priv = tftp_do_open(&fsdev->dev, O_RDONLY, dentry, true);
 	if (IS_ERR(priv))
 		return NULL;
 

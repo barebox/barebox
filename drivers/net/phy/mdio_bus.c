@@ -22,6 +22,7 @@
 #include <linux/phy.h>
 #include <linux/err.h>
 #include <of_device.h>
+#include <pinctrl.h>
 
 #define DEFAULT_GPIO_RESET_ASSERT       1000      /* us */
 #define DEFAULT_GPIO_RESET_DEASSERT     1000      /* us */
@@ -202,6 +203,7 @@ static int of_mdiobus_register(struct mii_bus *mdio, struct device_node *np)
 			continue;
 		}
 
+		of_pinctrl_select_state_default(child);
 		of_mdiobus_reset_phy(mdio, child);
 		of_mdiobus_register_phy(mdio, child, addr);
 	}

@@ -229,7 +229,7 @@ static int tftp_poll(struct file_priv *priv)
 	return 0;
 }
 
-static void tftp_parse_oack(struct file_priv *priv, unsigned char *pkt, int len)
+static int tftp_parse_oack(struct file_priv *priv, unsigned char *pkt, int len)
 {
 	unsigned char *opt, *val, *s;
 
@@ -246,7 +246,7 @@ static void tftp_parse_oack(struct file_priv *priv, unsigned char *pkt, int len)
 		opt = s;
 		val = s + strlen(s) + 1;
 		if (val > s + len)
-			return;
+			break;
 		if (!strcmp(opt, "tsize"))
 			priv->filesize = simple_strtoull(val, NULL, 10);
 		if (!strcmp(opt, "blksize"))
@@ -254,6 +254,13 @@ static void tftp_parse_oack(struct file_priv *priv, unsigned char *pkt, int len)
 		pr_debug("OACK opt: %s val: %s\n", opt, val);
 		s = val + strlen(val) + 1;
 	}
+
+	if (priv->blocksize > TFTP_MTU_SIZE) {
+		pr_warn("tftp: invalid oack response\n");
+		return -EINVAL;
+	}
+
+	return 0;
 }
 
 static void tftp_timer_reset(struct file_priv *priv)
@@ -349,8 +356,14 @@ static void tftp_recv(struct file_priv *priv,
 		break;
 
 	case TFTP_OACK:
-		tftp_parse_oack(priv, pkt, len);
 		priv->tftp_con->udp->uh_dport = uh_sport;
+
+		if (tftp_parse_oack(priv, pkt, len) < 0) {
+			priv->err = -EINVAL;
+			priv->state = STATE_DONE;
+			break;
+		}
+
 		priv->state = STATE_START;
 		break;
 

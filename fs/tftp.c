@@ -717,6 +717,12 @@ static void tftp_recv(struct file_priv *priv,
 		break;
 
 	case TFTP_OACK:
+		if (priv->state != STATE_RRQ && priv->state != STATE_WRQ) {
+			pr_warn("OACK packet in %s state\n",
+				tftp_states[priv->state]);
+			break;
+		}
+
 		priv->tftp_con->udp->uh_dport = uh_sport;
 
 		if (tftp_parse_oack(priv, pkt, len) < 0) {
@@ -743,6 +749,12 @@ static void tftp_recv(struct file_priv *priv,
 			rc = tftp_allocate_transfer(priv);
 			if (rc < 0)
 				break;
+		}
+
+		if (priv->state != STATE_RDATA) {
+			pr_warn("DATA packet in %s state\n",
+				tftp_states[priv->state]);
+			break;
 		}
 
 		tftp_handle_data(priv, block, pkt + 2, len);

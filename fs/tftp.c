@@ -26,9 +26,11 @@
 #include <libgen.h>
 #include <fcntl.h>
 #include <getopt.h>
+#include <globalvar.h>
 #include <init.h>
 #include <linux/stat.h>
 #include <linux/err.h>
+#include <linux/kernel.h>
 #include <kfifo.h>
 #include <parseopt.h>
 #include <linux/sizes.h>
@@ -68,6 +70,10 @@
 
 #define TFTP_BLOCK_SIZE		512	/* default TFTP block size */
 #define TFTP_MTU_SIZE		1432	/* MTU based block size */
+#define TFTP_MAX_WINDOW_SIZE	CONFIG_FS_TFTP_MAX_WINDOW_SIZE
+
+/* allocate this number of blocks more than needed in the fifo */
+#define TFTP_EXTRA_BLOCKS	2
 
 #define TFTP_ERR_RESEND	1
 
@@ -80,11 +86,14 @@
 	} while (0)
 #endif
 
+static int g_tftp_window_size = DIV_ROUND_UP(TFTP_MAX_WINDOW_SIZE, 2);
+
 struct file_priv {
 	struct net_connection *tftp_con;
 	int push;
 	uint16_t block;
 	uint16_t last_block;
+	uint16_t ack_block;
 	int state;
 	int err;
 	char *filename;
@@ -94,7 +103,7 @@ struct file_priv {
 	struct kfifo *fifo;
 	void *buf;
 	int blocksize;
-	int block_requested;
+	unsigned int windowsize;
 	bool is_getattr;
 };
 
@@ -125,6 +134,7 @@ static int tftp_send(struct file_priv *priv)
 	int len = 0;
 	uint16_t *s;
 	unsigned char *pkt = net_udp_get_payload(priv->tftp_con);
+	unsigned int window_size;
 	int ret;
 
 	pr_vdebug("%s: state %s\n", __func__, tftp_states[priv->state]);
@@ -132,6 +142,15 @@ static int tftp_send(struct file_priv *priv)
 	switch (priv->state) {
 	case STATE_RRQ:
 	case STATE_WRQ:
+		if (priv->push || priv->is_getattr)
+			/* atm, windowsize is supported only for RRQ and there
+			   is no need to request a full window when we are
+			   just looking up file attributes */
+			window_size = 1;
+		else
+			window_size = min_t(unsigned int, g_tftp_window_size,
+					    TFTP_MAX_WINDOW_SIZE);
+
 		xp = pkt;
 		s = (uint16_t *)pkt;
 		if (priv->state == STATE_RRQ)
@@ -164,17 +183,22 @@ static int tftp_send(struct file_priv *priv)
 				       '\0', priv->filesize,
 				       '\0');
 
+		if (window_size > 1)
+			pkt += sprintf((unsigned char *)pkt,
+				       "windowsize%c%u%c",
+				       '\0', window_size,
+				       '\0');
+
 		len = pkt - xp;
 		break;
 
 	case STATE_RDATA:
-		if (priv->block == priv->block_requested)
-			return 0;
 		xp = pkt;
 		s = (uint16_t *)pkt;
 		*s++ = htons(TFTP_ACK);
-		*s++ = htons(priv->block);
-		priv->block_requested = priv->block;
+		*s++ = htons(priv->last_block);
+		priv->ack_block  = priv->last_block;
+		priv->ack_block += priv->windowsize;
 		pkt = (unsigned char *)s;
 		len = pkt - xp;
 		break;
@@ -217,7 +241,6 @@ static int tftp_poll(struct file_priv *priv)
 	if (is_timeout(priv->resend_timeout, TFTP_RESEND_TIMEOUT)) {
 		printf("T ");
 		priv->resend_timeout = get_time_ns();
-		priv->block_requested = -1;
 		return TFTP_ERR_RESEND;
 	}
 
@@ -254,11 +277,15 @@ static int tftp_parse_oack(struct file_priv *priv, unsigned char *pkt, int len)
 			priv->filesize = simple_strtoull(val, NULL, 10);
 		if (!strcmp(opt, "blksize"))
 			priv->blocksize = simple_strtoul(val, NULL, 10);
+		if (!strcmp(opt, "windowsize"))
+			priv->windowsize = simple_strtoul(val, NULL, 10);
 		pr_debug("OACK opt: %s val: %s\n", opt, val);
 		s = val + strlen(val) + 1;
 	}
 
-	if (priv->blocksize > TFTP_MTU_SIZE) {
+	if (priv->blocksize > TFTP_MTU_SIZE ||
+	    priv->windowsize > TFTP_MAX_WINDOW_SIZE ||
+	    priv->windowsize == 0) {
 		pr_warn("tftp: invalid oack response\n");
 		return -EINVAL;
 	}
@@ -276,7 +303,10 @@ static int tftp_allocate_transfer(struct file_priv *priv)
 	debug_assert(!priv->fifo);
 	debug_assert(!priv->buf);
 
-	priv->fifo = kfifo_alloc(priv->blocksize);
+	/* multiplication is safe; both operands were checked in tftp_parse_oack()
+	   and are small integers */
+	priv->fifo = kfifo_alloc(priv->blocksize *
+				 (priv->windowsize + TFTP_EXTRA_BLOCKS));
 	if (!priv->fifo)
 		goto err;
 
@@ -407,14 +437,14 @@ static void tftp_recv(struct file_priv *priv,
 			priv->tftp_con->udp->uh_dport = uh_sport;
 			priv->state = STATE_RDATA;
 			priv->last_block = 0;
+			priv->ack_block = priv->windowsize;
 
 			rc = tftp_allocate_transfer(priv);
 			if (rc < 0)
 				break;
 		}
 
-		if (priv->block == priv->last_block)
-			/* Same block again; ignore it. */
+		if (priv->block != (uint16_t)(priv->last_block + 1))
 			break;
 
 		tftp_timer_reset(priv);
@@ -467,7 +497,7 @@ static int tftp_start_transfer(struct file_priv *priv)
 	} else {
 		/* send ACK */
 		priv->state = STATE_RDATA;
-		priv->block = 0;
+		priv->last_block = 0;
 		tftp_send(priv);
 	}
 
@@ -503,7 +533,7 @@ static struct file_priv *tftp_do_open(struct device_d *dev,
 	priv->err = -EINVAL;
 	priv->filename = dpath(dentry, fsdev->vfsmount.mnt_root);
 	priv->blocksize = TFTP_BLOCK_SIZE;
-	priv->block_requested = -1;
+	priv->windowsize = 1;
 	priv->is_getattr = is_getattr;
 
 	parseopt_hu(fsdev->options, "port", &port);
@@ -690,7 +720,12 @@ static int tftp_read(struct device_d *dev, FILE *f, void *buf, size_t insize)
 		if (priv->state == STATE_DONE)
 			return outsize;
 
-		if (kfifo_len(priv->fifo) == 0)
+		/* send the ACK only when fifo has been nearly depleted; else,
+		   when tftp_read() is called with small 'insize' values, it
+		   is possible that there is read more data from the network
+		   than consumed by kfifo_get() and the fifo overflows */
+		if (priv->last_block == priv->ack_block &&
+		    kfifo_len(priv->fifo) <= TFTP_EXTRA_BLOCKS * priv->blocksize)
 			tftp_send(priv);
 
 		ret = tftp_poll(priv);
@@ -882,6 +917,8 @@ static struct fs_driver_d tftp_driver = {
 
 static int tftp_init(void)
 {
+	globalvar_add_simple_int("tftp.windowsize", &g_tftp_window_size, "%u");
+
 	return register_fs_driver(&tftp_driver);
 }
 coredevice_initcall(tftp_init);

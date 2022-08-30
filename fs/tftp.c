@@ -30,6 +30,7 @@
 #include <linux/stat.h>
 #include <linux/err.h>
 #include <kfifo.h>
+#include <parseopt.h>
 #include <linux/sizes.h>
 
 #define TFTP_PORT	69	/* Well known TFTP port number */
@@ -376,6 +377,7 @@ static struct file_priv *tftp_do_open(struct device_d *dev,
 	struct file_priv *priv;
 	struct tftp_priv *tpriv = dev->priv;
 	int ret;
+	unsigned short port = TFTP_PORT;
 
 	priv = xzalloc(sizeof(*priv));
 
@@ -405,8 +407,9 @@ static struct file_priv *tftp_do_open(struct device_d *dev,
 		goto out;
 	}
 
-	priv->tftp_con = net_udp_new(tpriv->server, TFTP_PORT, tftp_handler,
-			priv);
+	parseopt_hu(fsdev->options, "port", &port);
+
+	priv->tftp_con = net_udp_new(tpriv->server, port, tftp_handler, priv);
 	if (IS_ERR(priv->tftp_con)) {
 		ret = PTR_ERR(priv->tftp_con);
 		goto out1;

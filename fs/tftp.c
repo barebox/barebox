@@ -254,6 +254,7 @@ static void tftp_recv(struct file_priv *priv,
 			uint8_t *pkt, unsigned len, uint16_t uh_sport)
 {
 	uint16_t opcode;
+	uint16_t block;
 
 	/* according to RFC1350 minimal tftp packet length is 4 bytes */
 	if (len < 4)
@@ -276,14 +277,13 @@ static void tftp_recv(struct file_priv *priv,
 		if (!priv->push)
 			break;
 
-		priv->block = ntohs(*(uint16_t *)pkt);
-		if (priv->block != priv->last_block) {
-			pr_vdebug("ack %d != %d\n", priv->block, priv->last_block);
+		block = ntohs(*(uint16_t *)pkt);
+		if (block != priv->last_block) {
+			pr_vdebug("ack %d != %d\n", block, priv->last_block);
 			break;
 		}
 
-		priv->block++;
-
+		priv->block = block + 1;
 		tftp_timer_reset(priv);
 
 		if (priv->state == STATE_LAST) {

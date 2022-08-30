@@ -134,11 +134,11 @@ static int tftp_send(struct file_priv *priv)
 				"%d%c"
 				"blksize%c"
 				"1432",
-				priv->filename + 1, 0,
-				0,
-				0,
-				TIMEOUT, 0,
-				0);
+				priv->filename + 1, '\0',
+				'\0',	/* "octet" */
+				'\0',	/* "timeout" */
+				TIMEOUT, '\0',
+				'\0');	/* "blksize" */
 		pkt++;
 
 		if (!priv->push)

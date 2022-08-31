@@ -123,12 +123,16 @@ struct imx_pgc_domain_data {
        size_t domains_num;
 };
 
-static int imx_gpc_pu_pgc_sw_pxx_req(struct generic_pm_domain *genpd,
-				      bool on)
+static inline struct imx_pgc_domain *
+to_imx_pgc_domain(struct generic_pm_domain *genpd)
 {
-	struct imx_pgc_domain *domain = container_of(genpd,
-						     struct imx_pgc_domain,
-						     genpd);
+	return container_of(genpd, struct imx_pgc_domain, genpd);
+}
+
+static int imx_pgc_power_up(struct generic_pm_domain *genpd)
+{
+	struct imx_pgc_domain *domain = to_imx_pgc_domain(genpd);
+	bool on = true;
 	unsigned int offset = on ?
 		GPC_PU_PGC_SW_PUP_REQ : GPC_PU_PGC_SW_PDN_REQ;
 	const bool enable_power_control = !on;
@@ -197,14 +201,76 @@ unmap:
 	return ret;
 }
 
-static int imx_gpc_pu_pgc_sw_pup_req(struct generic_pm_domain *genpd)
+static int imx_pgc_power_down(struct generic_pm_domain *genpd)
 {
-	return imx_gpc_pu_pgc_sw_pxx_req(genpd, true);
-}
+	struct imx_pgc_domain *domain = to_imx_pgc_domain(genpd);
+	bool on = false;
+	unsigned int offset = on ?
+		GPC_PU_PGC_SW_PUP_REQ : GPC_PU_PGC_SW_PDN_REQ;
+	const bool enable_power_control = !on;
+	const bool has_regulator = !IS_ERR(domain->regulator);
+	u32 reg_val;
+	int ret = 0;
 
-static int imx_gpc_pu_pgc_sw_pdn_req(struct generic_pm_domain *genpd)
-{
-	return imx_gpc_pu_pgc_sw_pxx_req(genpd, false);
+	regmap_update_bits(domain->regmap, GPC_PGC_CPU_MAPPING,
+			   domain->bits.map, domain->bits.map);
+
+	if (has_regulator && on) {
+		ret = regulator_enable(domain->regulator);
+		if (ret) {
+			dev_err(domain->dev, "failed to enable regulator\n");
+			goto unmap;
+		}
+	}
+
+	if (enable_power_control) {
+		regmap_update_bits(domain->regmap, GPC_PGC_CTRL(domain->pgc),
+				   GPC_PGC_CTRL_PCR, GPC_PGC_CTRL_PCR);
+	}
+
+	regmap_update_bits(domain->regmap, offset,
+			   domain->bits.pxx, domain->bits.pxx);
+
+	/*
+	 * As per "5.5.9.4 Example Code 4" in IMX7DRM.pdf wait
+	 * for PUP_REQ/PDN_REQ bit to be cleared
+	 */
+	ret = regmap_read_poll_timeout(domain->regmap,
+				       offset, reg_val,
+				       !(reg_val & domain->bits.pxx),
+				       MSECOND);
+	if (ret < 0) {
+		dev_err(domain->dev, "falied to command PGC\n");
+		/*
+		 * If we were in a process of enabling a
+		 * domain and failed we might as well disable
+		 * the regulator we just enabled. And if it
+		 * was the opposite situation and we failed to
+		 * power down -- keep the regulator on
+		 */
+		on = !on;
+	}
+
+	if (enable_power_control) {
+		regmap_update_bits(domain->regmap, GPC_PGC_CTRL(domain->pgc),
+				   GPC_PGC_CTRL_PCR, GPC_PGC_CTRL_PCR);
+	}
+
+	if (has_regulator && !on) {
+		int err;
+
+		err = regulator_disable(domain->regulator);
+		if (err)
+			dev_err(domain->dev,
+				"failed to disable regulator: %d\n", ret);
+		/* Preserve earlier error code */
+		ret = ret ?: err;
+	}
+unmap:
+	regmap_update_bits(domain->regmap, GPC_PGC_CPU_MAPPING,
+			   domain->bits.map, 0);
+
+	return ret;
 }
 
 static const struct imx_pgc_domain imx7_pgc_domains[] = {
@@ -487,8 +553,8 @@ again:
 		domain = xmemdup(&domain_data->domains[domain_index],
 				 sizeof(domain_data->domains[domain_index]));
 		domain->regmap = regmap;
-		domain->genpd.power_on = imx_gpc_pu_pgc_sw_pup_req;
-		domain->genpd.power_off = imx_gpc_pu_pgc_sw_pdn_req;
+		domain->genpd.power_on = imx_pgc_power_up;
+		domain->genpd.power_off = imx_pgc_power_down;
 
 		pd_dev = xzalloc(sizeof(*pd_dev));
 		pd_dev->device_node = np;

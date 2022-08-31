@@ -5,14 +5,6 @@
 	};
 };
 
-&pgc_otg1 {
-	barebox,allow-dummy;
-};
-
-&pgc_otg2 {
-	barebox,allow-dummy;
-};
-
 &src {
 	compatible = "fsl,imx8mm-src", "fsl,imx8mq-src", "syscon", "simple-mfd";
 

@@ -10,12 +10,14 @@
 
 #include <of_device.h>
 #include <common.h>
+#include <regmap.h>
 #include <clock.h>
 #include <abort.h>
 #include <malloc.h>
 #include <io.h>
 #include <init.h>
 #include <linux/iopoll.h>
+#include <linux/sizes.h>
 
 #include <pm_domain.h>
 #include <regulator.h>
@@ -102,7 +104,7 @@
 
 struct imx_pgc_domain {
 	struct generic_pm_domain genpd;
-	void __iomem *base;
+	struct regmap *regmap;
 	struct regulator *regulator;
 
 	unsigned int pgc;
@@ -131,12 +133,11 @@ static int imx_gpc_pu_pgc_sw_pxx_req(struct generic_pm_domain *genpd,
 		GPC_PU_PGC_SW_PUP_REQ : GPC_PU_PGC_SW_PDN_REQ;
 	const bool enable_power_control = !on;
 	const bool has_regulator = !IS_ERR(domain->regulator);
+	u32 reg_val;
 	int ret = 0;
-	unsigned int mapping, ctrl = 0, pxx;
 
-	mapping = readl(domain->base + GPC_PGC_CPU_MAPPING);
-	mapping |= domain->bits.map;
-	writel(mapping, domain->base + GPC_PGC_CPU_MAPPING);
+	regmap_update_bits(domain->regmap, GPC_PGC_CPU_MAPPING,
+			   domain->bits.map, domain->bits.map);
 
 	if (has_regulator && on) {
 		ret = regulator_enable(domain->regulator);
@@ -147,21 +148,21 @@ static int imx_gpc_pu_pgc_sw_pxx_req(struct generic_pm_domain *genpd,
 	}
 
 	if (enable_power_control) {
-		ctrl = readl(domain->base + GPC_PGC_CTRL(domain->pgc));
-		ctrl |= GPC_PGC_CTRL_PCR;
-		writel(ctrl, domain->base + GPC_PGC_CTRL(domain->pgc));
+		regmap_update_bits(domain->regmap, GPC_PGC_CTRL(domain->pgc),
+				   GPC_PGC_CTRL_PCR, GPC_PGC_CTRL_PCR);
 	}
 
-	pxx = readl(domain->base + offset);
-	pxx |= domain->bits.pxx;
-	writel(pxx, domain->base + offset);
+	regmap_update_bits(domain->regmap, offset,
+			   domain->bits.pxx, domain->bits.pxx);
 
 	/*
 	 * As per "5.5.9.4 Example Code 4" in IMX7DRM.pdf wait
 	 * for PUP_REQ/PDN_REQ bit to be cleared
 	 */
-	ret = readl_poll_timeout(domain->base + offset, pxx,
-				 !(pxx & domain->bits.pxx), MSECOND);
+	ret = regmap_read_poll_timeout(domain->regmap,
+				       offset, reg_val,
+				       !(reg_val & domain->bits.pxx),
+				       MSECOND);
 	if (ret < 0) {
 		dev_err(domain->dev, "falied to command PGC\n");
 		/*
@@ -175,8 +176,8 @@ static int imx_gpc_pu_pgc_sw_pxx_req(struct generic_pm_domain *genpd,
 	}
 
 	if (enable_power_control) {
-		ctrl &= ~GPC_PGC_CTRL_PCR;
-		writel(ctrl, domain->base + GPC_PGC_CTRL(domain->pgc));
+		regmap_update_bits(domain->regmap, GPC_PGC_CTRL(domain->pgc),
+				   GPC_PGC_CTRL_PCR, GPC_PGC_CTRL_PCR);
 	}
 
 	if (has_regulator && !on) {
@@ -190,8 +191,8 @@ static int imx_gpc_pu_pgc_sw_pxx_req(struct generic_pm_domain *genpd,
 		ret = ret ?: err;
 	}
 unmap:
-	mapping &= ~domain->bits.map;
-	writel(mapping, domain->base + GPC_PGC_CPU_MAPPING);
+	regmap_update_bits(domain->regmap, GPC_PGC_CPU_MAPPING,
+			   domain->bits.map, 0);
 
 	return ret;
 }
@@ -425,10 +426,18 @@ coredevice_platform_driver(imx_pgc_domain_driver);
 
 static int imx_gpcv2_probe(struct device_d *dev)
 {
-	static const struct imx_pgc_domain_data *domain_data;
+	const struct imx_pgc_domain_data *domain_data =
+			of_device_get_match_data(dev);
+
+	struct regmap_config regmap_config = {
+		.reg_bits	= 32,
+		.val_bits	= 32,
+		.reg_stride	= 4,
+		.max_register   = SZ_4K,
+	};
 	struct device_node *pgc_np, *np;
 	struct resource *res;
-	void __iomem *base;
+	struct regmap *regmap;
 	int ret, pass = 0;
 
 	pgc_np = of_get_child_by_name(dev->device_node, "pgc");
@@ -441,9 +450,9 @@ static int imx_gpcv2_probe(struct device_d *dev)
 	if (IS_ERR(res))
 		return PTR_ERR(res);
 
-	base = IOMEM(res->start);
-
-	domain_data = of_device_get_match_data(dev);
+	regmap = regmap_init_mmio(dev, IOMEM(res->start), &regmap_config);
+	if (IS_ERR(regmap))
+		return dev_err_probe(dev, PTR_ERR(regmap), "failed to init regmap\n");
 
 	/*
 	 * Run two passes for the registration of the PGC domain platform
@@ -477,7 +486,7 @@ again:
 
 		domain = xmemdup(&domain_data->domains[domain_index],
 				 sizeof(domain_data->domains[domain_index]));
-		domain->base = base;
+		domain->regmap = regmap;
 		domain->genpd.power_on = imx_gpc_pu_pgc_sw_pup_req;
 		domain->genpd.power_off = imx_gpc_pu_pgc_sw_pdn_req;
 

@@ -23,6 +23,12 @@
  */
 void sync_caches_for_execution(void)
 {
+	/* if caches are disabled, don't do data cache maintenance */
+	if (!(get_cr() & CR_C)) {
+		icache_invalidate();
+		return;
+	}
+
 	/*
 	 * Despite the name arm_early_mmu_cache_flush not only flushes the
 	 * data cache, but also invalidates the instruction cache.

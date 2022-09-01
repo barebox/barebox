@@ -999,49 +999,44 @@ static int read_firmware(struct mxs_nand_info *info, int startpage,
 	return 0;
 }
 
-static int __maybe_unused imx6_nand_load_image(void *cmdbuf, void *descs,
-	void *databuf, void *dest, int len)
+struct imx_nand_params {
+	struct mxs_nand_info info;
+	struct apbh_dma apbh;
+	void *sdram;
+};
+
+static int __maybe_unused imx6_nand_load_image(struct imx_nand_params *params,
+					       void *databuf, void *dest, int len)
 {
-	struct mxs_nand_info info = {
-		.io_base = (void *)0x00112000,
-		.bch_base = (void *)0x00114000,
-	};
-	struct apbh_dma apbh = {
-		.id = IMX28_DMA,
-		.regs = (void *)0x00110000,
-	};
+	struct mxs_nand_info *info = &params->info;
 	struct mxs_dma_chan pchan = {
 		.channel = 0, /* MXS: MXS_DMA_CHANNEL_AHB_APBH_GPMI0 */
-		.apbh = &apbh,
+		.apbh = &params->apbh,
 	};
 	int ret;
 	struct fcb_block *fcb;
 
-	info.dma_channel = &pchan;
+	info->dma_channel = &pchan;
 
 	pr_debug("cmdbuf: 0x%p descs: 0x%p databuf: 0x%p dest: 0x%p\n",
-			cmdbuf, descs, databuf, dest);
+			info->cmd_buf, info->desc, databuf, dest);
 
-	/* Command buffers */
-	info.cmd_buf = cmdbuf;
-	info.desc = descs;
-
-	ret = mxs_nand_get_info(&info, databuf);
+	ret = mxs_nand_get_info(info, databuf);
 	if (ret)
 		return ret;
 
-	ret = get_fcb(&info, databuf);
+	ret = get_fcb(info, databuf);
 	if (ret)
 		return ret;
 
-	fcb = &info.fcb;
+	fcb = &info->fcb;
 
-	get_dbbt(&info, databuf);
+	get_dbbt(info, databuf);
 
-	ret = read_firmware(&info, fcb->Firmware1_startingPage, dest, len);
+	ret = read_firmware(info, fcb->Firmware1_startingPage, dest, len);
 	if (ret) {
 		pr_err("Failed to read firmware1, trying firmware2\n");
-		ret = read_firmware(&info, fcb->Firmware2_startingPage,
+		ret = read_firmware(info, fcb->Firmware2_startingPage,
 			dest, len);
 		if (ret) {
 			pr_err("Failed to also read firmware2\n");
@@ -1052,24 +1047,21 @@ static int __maybe_unused imx6_nand_load_image(void *cmdbuf, void *descs,
 	return 0;
 }
 
-int imx6_nand_start_image(void)
+static int imx_nand_start_image(struct imx_nand_params *params)
 {
+	struct mxs_nand_info *info = &params->info;
 	int ret;
-	void *sdram = (void *)0x10000000;
 	void __noreturn (*bb)(void);
-	void *cmdbuf, *databuf, *descs;
+	void *databuf;
 
-	cmdbuf = sdram;
-	descs = sdram + MXS_NAND_COMMAND_BUFFER_SIZE;
-	databuf = descs +
+	/* Command buffers */
+	info->cmd_buf = params->sdram;
+	info->desc = params->sdram + MXS_NAND_COMMAND_BUFFER_SIZE;
+	databuf = info->desc +
 		sizeof(struct mxs_dma_cmd) * MXS_NAND_DMA_DESCRIPTOR_COUNT;
 	bb = (void *)PAGE_ALIGN((unsigned long)databuf + SZ_8K);
 
-	/* Apply ERR007117 workaround */
-	imx6_errata_007117_enable();
-
-	ret = imx6_nand_load_image(cmdbuf, descs, databuf,
-		bb, imx_image_size());
+	ret = imx6_nand_load_image(params, databuf, bb, imx_image_size());
 	if (ret) {
 		pr_err("Loading image failed: %d\n", ret);
 		return ret;
@@ -1081,4 +1073,20 @@ int imx6_nand_start_image(void)
 	barrier();
 
 	bb();
+}
+
+int imx6_nand_start_image(void)
+{
+	static struct imx_nand_params params = {
+		.info.io_base = IOMEM(MX6_GPMI_BASE_ADDR),
+		.info.bch_base = IOMEM(MX6_BCH_BASE_ADDR),
+		.apbh.regs = IOMEM(MX6_APBH_BASE_ADDR),
+		.apbh.id = IMX28_DMA,
+		.sdram = (void *)MX6_MMDC_PORT01_BASE_ADDR,
+	};
+
+	/* Apply ERR007117 workaround */
+	imx6_errata_007117_enable();
+
+	return imx_nand_start_image(&params);
 }

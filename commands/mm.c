@@ -16,7 +16,7 @@
 
 static int do_mem_mm(int argc, char *argv[])
 {
-	int ret = 0;
+	int ret;
 	int fd;
 	char *filename = "/dev/mem";
 	int mode = O_RWSIZE_4;
@@ -65,9 +65,9 @@ static int do_mem_mm(int argc, char *argv[])
 			goto out_write;
 		break;
 	case O_RWSIZE_4:
+		ret = pread(fd, &val32, 4, adr);
 		if (ret < 0)
 			goto out_read;
-		ret = pread(fd, &val32, 4, adr);
 		val32 &= ~mask;
 		val32 |= (value & mask);
 		ret = pwrite(fd, &val32, 4, adr);
@@ -75,9 +75,9 @@ static int do_mem_mm(int argc, char *argv[])
 			goto out_write;
 		break;
 	case O_RWSIZE_8:
+		ret = pread(fd, &val64, 8, adr);
 		if (ret < 0)
 			goto out_read;
-		ret = pread(fd, &val64, 8, adr);
 		val64 &= ~mask;
 		val64 |= (value & mask);
 		ret = pwrite(fd, &val64, 8, adr);

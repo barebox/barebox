@@ -240,6 +240,14 @@ config CMD_REGULATOR
 	  the regulator command lists the currently registered regulators and
 	  their current state.
 
+config CMD_PM_DOMAIN
+	bool
+	depends on PM_GENERIC_DOMAINS
+	prompt "pm_domain command"
+	help
+	  The pm_domain command lists the currently registered power domains and
+	  their current state.
+
 config CMD_NVMEM
 	bool
 	depends on NVMEM

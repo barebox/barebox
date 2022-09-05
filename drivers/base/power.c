@@ -266,3 +266,13 @@ int genpd_dev_pm_attach(struct device_d *dev)
 	return __genpd_dev_pm_attach(dev, dev->device_node, 0, true);
 }
 EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
+
+void pm_genpd_print(void)
+{
+	struct generic_pm_domain *genpd;
+
+	printf("%-20s %6s\n", "name", "active");
+	list_for_each_entry(genpd, &gpd_list, gpd_list_node)
+		printf("%-20s %6s\n", genpd->name,
+		       genpd->status == GPD_STATE_ACTIVE ? "on" : "off");
+}

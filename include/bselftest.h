@@ -15,6 +15,7 @@ struct selftest {
 	const char *name;
 	int (*func)(void);
 	struct list_head list;
+	bool running;
 };
 
 static inline int selftest_report(unsigned int total_tests, unsigned int failed_tests,
@@ -70,5 +71,9 @@ static inline void selftests_run(void)
 		return 0;					\
 	}							\
 	__bselftest_initcall(_func##_bselftest_register);
+
+
+int selftest_run(struct selftest *test);
+bool selftest_is_running(struct selftest *test);
 
 #endif

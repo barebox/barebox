@@ -148,8 +148,7 @@ static unsigned char to_hexa(unsigned char c)
 
 static int read_default_passwd(unsigned char *sum, size_t length)
 {
-	int i = 0;
-	int len = strlen(default_passwd);
+	int len, i = 0;
 	unsigned char *buf = (unsigned char *)default_passwd;
 	unsigned char c;
 
@@ -159,6 +158,7 @@ static int read_default_passwd(unsigned char *sum, size_t length)
 	if (!sum || length < 1)
 		return -EINVAL;
 
+	len = strlen(default_passwd);
 	for (i = 0; i < len && length > 0; i++) {
 		c = buf[i];
 		i++;

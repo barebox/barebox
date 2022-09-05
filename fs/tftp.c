@@ -1017,7 +1017,7 @@ static int tftp_read(struct device_d *dev, FILE *f, void *buf, size_t insize)
 {
 	struct file_priv *priv = f->priv;
 	size_t outsize = 0, now;
-	int ret;
+	int ret = 0;
 
 	pr_vdebug("%s %zu\n", __func__, insize);
 
@@ -1026,8 +1026,11 @@ static int tftp_read(struct device_d *dev, FILE *f, void *buf, size_t insize)
 		outsize += now;
 		buf += now;
 		insize -= now;
-		if (priv->state == STATE_DONE)
-			return outsize;
+
+		if (priv->state == STATE_DONE) {
+			ret = priv->err;
+			break;
+		}
 
 		/* send the ACK only when fifo has been nearly depleted; else,
 		   when tftp_read() is called with small 'insize' values, it
@@ -1041,8 +1044,11 @@ static int tftp_read(struct device_d *dev, FILE *f, void *buf, size_t insize)
 		if (ret == TFTP_ERR_RESEND)
 			tftp_send(priv);
 		if (ret < 0)
-			return ret;
+			break;
 	}
+
+	if (ret < 0)
+		return ret;
 
 	return outsize;
 }

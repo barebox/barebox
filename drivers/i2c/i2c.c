@@ -427,6 +427,12 @@ static void of_i2c_register_devices(struct i2c_adapter *adap)
 		const __be32 *addr;
 		int len;
 
+		if (n->dev) {
+			dev_dbg(&adap->dev, "of_i2c: skipping already registered %s\n",
+				dev_name(n->dev));
+			continue;
+		}
+
 		of_modalias_node(n, info.type, I2C_NAME_SIZE);
 
 		info.of_node = n;
@@ -450,6 +456,20 @@ static void of_i2c_register_devices(struct i2c_adapter *adap)
 			dev_err(&adap->dev, "of_i2c: Failure registering %s\n",
 			        n->full_name);
 	}
+}
+
+int of_i2c_register_devices_by_node(struct device_node *node)
+{
+	struct i2c_adapter *adap;
+
+	adap = of_find_i2c_adapter_by_node(node);
+	if (!adap)
+		return -ENODEV;
+	if (IS_ERR(adap))
+		return PTR_ERR(adap);
+
+	of_i2c_register_devices(adap);
+	return 0;
 }
 
 /**

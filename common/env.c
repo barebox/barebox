@@ -80,7 +80,7 @@ int env_push_context(void)
  */
 int env_pop_context(void)
 {
-	struct env_context *c = context;
+	struct env_context *c;
 
 	if (context->parent) {
 		c = context->parent;

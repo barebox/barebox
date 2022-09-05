@@ -591,6 +591,9 @@ static inline void *nvmem_cell_prepare_write_buffer(struct nvmem_cell *cell,
 
 		/* setup the first byte with lsb bits from nvmem */
 		rc = nvmem->bus->read(nvmem->priv, cell->offset, &v, 1);
+		if (IS_ERR_VALUE(rc))
+			return ERR_PTR(rc);
+
 		*b++ |= GENMASK(bit_offset - 1, 0) & v;
 
 		/* setup rest of the byte if any */
@@ -609,6 +612,9 @@ static inline void *nvmem_cell_prepare_write_buffer(struct nvmem_cell *cell,
 		/* setup the last byte with msb bits from nvmem */
 		rc = nvmem->bus->read(nvmem->priv, cell->offset + cell->bytes - 1,
 				      &v, 1);
+		if (IS_ERR_VALUE(rc))
+			return ERR_PTR(rc);
+
 		*p |= GENMASK(7, (nbits + bit_offset) % BITS_PER_BYTE) & v;
 
 	}

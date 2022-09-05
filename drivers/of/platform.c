@@ -28,6 +28,9 @@ struct device_d *of_find_device_by_node(struct device_node *np)
 	if (ret)
 		return NULL;
 
+	if (deep_probe_is_supported())
+		return np->dev;
+
 	for_each_device(dev)
 		if (dev->device_node == np)
 			return dev;

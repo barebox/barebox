@@ -16,7 +16,7 @@
 
 static int do_trigger(int argc, char *argv[])
 {
-	struct led *led = NULL;
+	struct led *led;
 	int opt, ret = 0;
 	int cmd = LED_COMMAND_SHOW_INFO;
 	enum led_trigger trigger;
@@ -34,9 +34,6 @@ static int do_trigger(int argc, char *argv[])
 			cmd = LED_COMMAND_DISABLE_TRIGGER;
 		}
 	}
-
-	if (optind < argc)
-		led = led_by_name_or_number(argv[optind]);
 
 	switch (cmd) {
 	case LED_COMMAND_SHOW_INFO:

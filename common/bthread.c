@@ -70,6 +70,8 @@ bool bthread_is_main(struct bthread *bthread)
 
 static void bthread_free(struct bthread *bthread)
 {
+	if (!bthread)
+		return;
 	free(bthread->stack);
 	free(bthread->name);
 	free(bthread);

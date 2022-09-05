@@ -102,8 +102,10 @@ static char *of_overlay_fix_path(struct device_node *root,
 		if (of_get_child_by_name(fragment, "__overlay__"))
 			break;
 	}
-	if (!fragment)
+	if (!fragment) {
+		pr_info("could not find __overlay__ node\n");
 		return NULL;
+	}
 
 	target = find_target(root, fragment);
 	if (!target)
@@ -143,6 +145,8 @@ static int of_overlay_apply_symbols(struct device_node *root,
 
 		old_path = of_property_get_value(prop);
 		new_path = of_overlay_fix_path(root, overlay, old_path);
+		if (!new_path)
+			return -EINVAL;
 
 		pr_debug("add symbol %s with new path %s\n",
 			 prop->name, new_path);

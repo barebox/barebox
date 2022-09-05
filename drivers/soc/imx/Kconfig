@@ -2,9 +2,9 @@
 menu "i.MX SoC drivers"
 
 config IMX_GPCV2_PM_DOMAINS
-        bool "i.MX GPCv2 PM domains"
-	depends on ARCH_IMX7 || ARCH_IMX8MQ
+	bool "i.MX GPCv2 PM domains"
+	depends on ARCH_IMX7 || ARCH_IMX8M
 	select PM_GENERIC_DOMAINS
-	default y if ARCH_IMX7 || ARCH_IMX8MQ
+	default y if ARCH_IMX7 || ARCH_IMX8M
 
 endmenu

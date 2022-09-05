@@ -196,6 +196,11 @@ static int fat_open(struct device_d *dev, FILE *file, const char *filename)
 
 	if (file->flags & O_APPEND) {
 		ret = f_lseek(f_file, f_file->fsize);
+		if (ret) {
+			f_close(f_file);
+			free(f_file);
+			return -EINVAL;
+		}
 	}
 
 	file->priv = f_file;

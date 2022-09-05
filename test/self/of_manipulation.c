@@ -57,6 +57,16 @@ static void test_of_basics(struct device_node *root)
 	of_property_write_bool(node1, "property1", true);
 
 	assert_equal(node1, node2);
+
+	of_property_write_bool(node2, "property1", false);
+	of_property_write_u32(node2, "property1", 1);
+	of_property_write_u32(node2, "property2", 2);
+
+	of_property_write_u32(node1, "property3", 1);
+	of_property_write_u32(node1, "property2", 2);
+	of_rename_property(node1, "property3", "property1");
+
+	assert_equal(node1, node2);
 }
 
 static void test_of_property_strings(struct device_node *root)

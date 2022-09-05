@@ -143,6 +143,8 @@ extern struct property *of_new_property_const(struct device_node *node,
 extern struct property *__of_new_property(struct device_node *node,
 					  const char *name, void *data, int len);
 extern void of_delete_property(struct property *pp);
+extern struct property *of_rename_property(struct device_node *np,
+					   const char *old_name, const char *new_name);
 
 extern struct device_node *of_find_node_by_name(struct device_node *from,
 	const char *name);
@@ -550,6 +552,12 @@ static inline struct property *__of_new_property(struct device_node *node,
 
 static inline void of_delete_property(struct property *pp)
 {
+}
+
+static inline struct property *of_rename_property(struct device_node *np,
+						  const char *old_name, const char *new_name)
+{
+	return NULL;
 }
 
 static inline int of_property_read_u32_index(const struct device_node *np,

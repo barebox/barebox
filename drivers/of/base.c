@@ -2301,6 +2301,22 @@ void of_delete_property(struct property *pp)
 	free(pp);
 }
 
+struct property *of_rename_property(struct device_node *np,
+				    const char *old_name, const char *new_name)
+{
+	struct property *pp;
+
+	pp = of_find_property(np, old_name, NULL);
+	if (!pp)
+		return NULL;
+
+	of_property_write_bool(np, new_name, false);
+
+	free(pp->name);
+	pp->name = xstrdup(new_name);
+	return pp;
+}
+
 /**
  * of_set_property - create a property for a given node
  * @node - the node

@@ -42,6 +42,22 @@ static const char *otg_mode_names[] = {
 	[USB_DR_MODE_OTG] = "otg",
 };
 
+static int register_otg_device(struct device_d *dev, struct otg_mode *otg)
+{
+	struct param_d *param_mode;
+	int ret;
+
+	ret = register_device(dev);
+	if (ret)
+		return ret;
+
+	param_mode = dev_add_param_enum(dev, "mode",
+			otg_set_mode, NULL, &otg->var_mode,
+			otg_mode_names, ARRAY_SIZE(otg_mode_names), otg);
+
+	return PTR_ERR_OR_ZERO(param_mode);
+}
+
 static struct device_d otg_device = {
 	.name = "otg",
 	.id = DEVICE_ID_SINGLE,
@@ -51,7 +67,6 @@ int usb_register_otg_device(struct device_d *parent,
 			    int (*set_mode)(void *ctx, enum usb_dr_mode mode), void *ctx)
 {
 	int ret;
-	struct param_d *param_mode;
 	struct otg_mode *otg;
 
 	otg = xzalloc(sizeof(*otg));
@@ -68,22 +83,10 @@ int usb_register_otg_device(struct device_d *parent,
 	/* register otg.mode as an alias of otg0.mode */
 	if (otg_device.parent == NULL) {
 		otg_device.parent = parent;
-		ret = register_device(&otg_device);
+		ret = register_otg_device(&otg_device, otg);
 		if (ret)
 			return ret;
-
-		param_mode = dev_add_param_enum(&otg_device, "mode",
-				otg_set_mode, NULL, &otg->var_mode,
-				otg_mode_names, ARRAY_SIZE(otg_mode_names), otg);
 	}
 
-	ret = register_device(&otg->dev);
-	if (ret)
-		return ret;
-
-	param_mode = dev_add_param_enum(&otg->dev, "mode",
-			otg_set_mode, NULL, &otg->var_mode,
-			otg_mode_names, ARRAY_SIZE(otg_mode_names), otg);
-
-	return PTR_ERR_OR_ZERO(param_mode);
+	return register_otg_device(&otg->dev, otg);
 }

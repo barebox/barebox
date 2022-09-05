@@ -31,7 +31,6 @@ struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node)
 	struct cdev *new;
 	const __be32 *reg;
 	u64 offset, size;
-	const char *name;
 	int len;
 	unsigned long flags = 0;
 	int na, ns;
@@ -59,8 +58,6 @@ struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node)
 		partname = of_get_property(node, "name", NULL);
 	if (!partname)
 		return NULL;
-
-	name = (char *)partname;
 
 	debug("add partition: %s.%s 0x%08llx 0x%08llx\n", cdev->name, partname, offset, size);
 

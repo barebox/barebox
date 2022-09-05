@@ -136,7 +136,7 @@ static struct nvmem_cell *nvmem_find_cell(const char *cell_id)
 	struct nvmem_cell *p;
 
 	list_for_each_entry(p, &nvmem_cells, node)
-		if (p && !strcmp(p->name, cell_id))
+		if (!strcmp(p->name, cell_id))
 			return p;
 
 	return NULL;

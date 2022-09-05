@@ -1722,8 +1722,8 @@ static int mci_register_partition(struct mci_part *part)
 
 	rc = parse_partition_table(&part->blk);
 	if (rc != 0) {
+		/* Lack of partition table is unusual, but not a failure */
 		dev_warn(&mci->dev, "No partition table found\n");
-		rc = 0; /* it's not a failure */
 	}
 
 	if (np) {

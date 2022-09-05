@@ -2550,6 +2550,12 @@ int of_probe(void)
 		return -ENODEV;
 
 	/*
+	 * We do this first thing, so board drivers can patch the device
+	 * tree prior to device creation if needed.
+	 */
+	of_platform_device_create_root(root_node);
+
+	/*
 	 * Handle certain compatibles explicitly, since we don't want to create
 	 * platform_devices for every node in /reserved-memory with a
 	 * "compatible",
@@ -2560,8 +2566,6 @@ int of_probe(void)
 	node = of_find_node_by_path("/firmware");
 	if (node)
 		of_platform_populate(node, NULL, NULL);
-
-	of_platform_device_create_root(root_node);
 
 	of_platform_populate(root_node, of_default_bus_match_table, NULL);
 

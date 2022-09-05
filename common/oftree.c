@@ -292,8 +292,10 @@ int of_fixup_reserved_memory(struct device_node *root, void *_res)
 	if (ret)
 		of_property_write_u32(node, "#size-cells", size_n_cells);
 
-	pp = of_find_property(node, "ranges", &rangelen) ?: of_new_property(node, "ranges", NULL, 0);
-	if (rangelen) {
+	pp = of_find_property(node, "ranges", &rangelen);
+	if (!pp) {
+		of_new_property(node, "ranges", NULL, 0);
+	} else if (rangelen) {
 		pr_warn("reserved-memory ranges not 1:1 mapped. Aborting fixup\n");
 		return -EINVAL;
 	}

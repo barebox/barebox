@@ -1014,7 +1014,7 @@ void mount_all(void)
 		device_detect(dev);
 
 	for_each_block_device(bdev) {
-		struct cdev *cdev = &bdev->cdev;
+		struct cdev *cdev;
 
 		list_for_each_entry(cdev, &bdev->dev->cdevs, devices_list)
 			cdev_mount_default(cdev, NULL);

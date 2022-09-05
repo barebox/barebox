@@ -297,6 +297,7 @@ struct i2c_adapter *i2c_get_adapter(int busnum);
 struct i2c_adapter *of_find_i2c_adapter_by_node(struct device_node *node);
 int of_i2c_register_devices_by_node(struct device_node *node);
 struct i2c_client *of_find_i2c_device_by_node(struct device_node *node);
+int of_i2c_device_enable_and_register_by_alias(const char *alias);
 
 void i2c_parse_fw_timings(struct device_d *dev, struct i2c_timings *t, bool use_defaults);
 

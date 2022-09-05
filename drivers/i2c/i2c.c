@@ -597,6 +597,19 @@ struct i2c_client *of_find_i2c_device_by_node(struct device_node *node)
 	return to_i2c_client(dev);
 }
 
+int of_i2c_device_enable_and_register_by_alias(const char *alias)
+{
+	struct device_node *np;
+
+	np = of_find_node_by_alias(NULL, alias);
+	if (!np)
+		return -ENODEV;
+
+	of_device_enable(np);
+	return of_i2c_register_devices_by_node(np->parent);
+}
+
+
 static void i2c_parse_timing(struct device_d *dev, char *prop_name, u32 *cur_val_p,
 			    u32 def_val, bool use_def)
 {

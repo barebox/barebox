@@ -159,6 +159,8 @@ int mem_parse_options(int argc, char *argv[], char *optstr, int *mode,
 			*destfile = optarg;
 			break;
 		case 'x':
+			if (!swab)
+				return -EINVAL;
 			*swab = 1;
 			break;
 		default:

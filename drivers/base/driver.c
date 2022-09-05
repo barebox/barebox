@@ -46,6 +46,22 @@ LIST_HEAD(active_device_list);
 EXPORT_SYMBOL(active_device_list);
 static LIST_HEAD(deferred);
 
+struct device_d *find_device(const char *str)
+{
+	struct device_d *dev;
+	struct device_node *np;
+
+	dev = get_device_by_name(str);
+	if (dev)
+		return dev;
+
+	np = of_find_node_by_path_or_alias(NULL, str);
+	if (np)
+		return of_find_device_by_node(np);
+
+	return NULL;
+}
+
 struct device_d *get_device_by_name(const char *name)
 {
 	struct device_d *dev;

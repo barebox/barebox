@@ -636,6 +636,18 @@ static int of_gpio_simple_xlate(struct gpio_chip *chip,
 	return chip->base + gpiospec->args[0];
 }
 
+struct gpio_chip *gpio_get_chip_by_dev(struct device_d *dev)
+{
+	struct gpio_chip *chip;
+
+	list_for_each_entry(chip, &chip_list, list) {
+		if (chip->dev == dev)
+			return chip;
+	}
+
+	return NULL;
+}
+
 int gpio_of_xlate(struct device_d *dev, struct of_phandle_args *gpiospec, int *flags)
 {
 	struct gpio_chip *chip;
@@ -643,16 +655,14 @@ int gpio_of_xlate(struct device_d *dev, struct of_phandle_args *gpiospec, int *f
 	if (!dev)
 		return -ENODEV;
 
-	list_for_each_entry(chip, &chip_list, list) {
-		if (chip->dev != dev)
-			continue;
-		if (chip->ops->of_xlate)
-			return chip->ops->of_xlate(chip, gpiospec, flags);
-		else
-			return of_gpio_simple_xlate(chip, gpiospec, flags);
-	}
+	chip = gpio_get_chip_by_dev(dev);
+	if (!chip)
+		return -EPROBE_DEFER;
 
-	return -EPROBE_DEFER;
+	if (chip->ops->of_xlate)
+		return chip->ops->of_xlate(chip, gpiospec, flags);
+	else
+		return of_gpio_simple_xlate(chip, gpiospec, flags);
 }
 
 struct gpio_chip *gpio_get_chip(int gpio)

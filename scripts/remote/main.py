@@ -206,6 +206,7 @@ parser.add_argument('--port', type=str, default=os.environ.get('BBREMOTE_PORT', 
 parser.add_argument('--baudrate', type=int, default=os.environ.get('BBREMOTE_BAUDRATE', 115200))
 parser.add_argument('--export', type=str, default=os.environ.get('BBREMOTE_EXPORT', None))
 parser.add_argument('-w', '--wait', action='count', default=0)
+parser.set_defaults(func=None)
 subparsers = parser.add_subparsers(help='sub-command help')
 
 parser_run = subparsers.add_parser('run', help="run a barebox command")
@@ -277,6 +278,11 @@ parser_console.set_defaults(func=handle_console)
 args = parser.parse_args()
 logging.basicConfig(level=VERBOSITY[args.verbose],
                     format='%(levelname)-8s %(module)-8s %(funcName)-16s %(message)s')
+
+if args.func is None:
+    parser.print_help()
+    exit(1)
+
 try:
     res = args.func(args)
     exit(res)

@@ -32,6 +32,9 @@ static int ratp_cmd_getenv(const struct ratp_bb *req, int req_len,
 	value = getenv(varname);
 	free(varname);
 
+	if (!value)
+		value = "";
+
 	dlen = strlen(value);
 
 	*rsp_len = sizeof(struct ratp_bb) + dlen;

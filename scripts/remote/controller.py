@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import, division, print_function
@@ -8,7 +8,7 @@ import logging
 import sys
 import os
 from threading import Thread
-from Queue import Queue, Empty
+from queue import Queue, Empty
 from .ratpfs import RatpFSServer
 from .messages import *
 from .ratp import RatpError
@@ -105,7 +105,7 @@ class Controller(Thread):
         self.rxq = None
         self.conn.connect(timeout=5.0)
         self._txq = Queue()
-        self._stop = False
+        self._stopit = False
         self.fsserver = RatpFSServer()
 
     def _send(self, bbpkt):
@@ -147,24 +147,24 @@ class Controller(Thread):
             return 0
 
     def command(self, cmd):
-        self._send(BBPacketCommand(cmd=cmd))
+        self._send(BBPacketCommand(cmd=cmd.encode()))
         r = self._expect(BBPacketCommandReturn, timeout=None)
         logging.info("Command: %r", r)
         return r.exit_code
 
     def getenv(self, varname):
-        self._send(BBPacketGetenv(varname=varname))
+        self._send(BBPacketGetenv(varname=varname.encode()))
         r = self._expect(BBPacketGetenvReturn)
         return r.text
 
     def md(self, path, addr, size):
-        self._send(BBPacketMd(path=path, addr=addr, size=size))
+        self._send(BBPacketMd(path=path.encode(), addr=addr, size=size))
         r = self._expect(BBPacketMdReturn)
         logging.info("Md return: %r", r)
         return (r.exit_code,r.data)
 
     def mw(self, path, addr, data):
-        self._send(BBPacketMw(path=path, addr=addr, data=data))
+        self._send(BBPacketMw(path=path.encode(), addr=addr, data=data))
         r = self._expect(BBPacketMwReturn)
         logging.info("Mw return: %r", r)
         return (r.exit_code,r.written)
@@ -208,7 +208,7 @@ class Controller(Thread):
     def run(self):
         assert self.rxq is not None
         try:
-            while not self._stop:
+            while not self._stopit:
                 # receive
                 pkt = self.conn.recv()
                 if pkt:
@@ -235,15 +235,16 @@ class Controller(Thread):
         Thread.start(self)
 
     def stop(self):
-        self._stop = True
+        self._stopit = True
         self.join()
-        self._stop = False
+        self._stopit = False
         self.rxq = None
 
     def send_async(self, pkt):
         self._txq.put(pkt)
 
     def send_async_console(self, text):
+        assert isinstance(text, bytes)
         self._txq.put(BBPacketConsoleMsg(text=text))
 
     def send_async_ping(self):

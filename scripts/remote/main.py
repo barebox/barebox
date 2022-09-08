@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 from __future__ import absolute_import, division, print_function
 
@@ -7,7 +7,7 @@ import os
 import argparse
 import binascii
 import logging
-from Queue import Queue
+from queue import Queue
 from .ratp import RatpError
 
 try:
@@ -48,7 +48,7 @@ def get_controller(args):
 
 def handle_run(args):
     ctrl = get_controller(args)
-    ctrl.export(args.export)
+    ctrl.export(args.export.encode())
     res = ctrl.command(' '.join(args.arg))
     if res:
         res = 1
@@ -160,10 +160,10 @@ def handle_listen(args):
 def handle_console(args):
     queue = Queue()
     ctrl = get_controller(args)
-    ctrl.export(args.export)
+    ctrl.export(args.export.encode())
     ctrl.start(queue)
-    ctrl.send_async_console('\r')
-    cons = ConsoleInput(queue, exit='\x14')  # CTRL-T
+    ctrl.send_async_console(b'\r')
+    cons = ConsoleInput(queue, exit=b'\x14')  # CTRL-T
     cons.start()
     try:
         while True:

@@ -35,17 +35,15 @@ can also be enabled.
 Running the bbremote tool
 -------------------------
 
-The bbremote host tool is written in python. To run it python2 has to be
+The bbremote host tool is written in python. To run it python3 has to be
 installed with the following additional packages:
 
 +----------------+---------------------+
 | python package | Debian package name |
 +================+=====================+
-| crcmod         | python-crcmod       |
+| crcmod         | python3-crcmod      |
 +----------------+---------------------+
-| enum           | python-enum         |
-+----------------+---------------------+
-| enum34         | python-enum34       |
+| pyserial       | python3-serial      |
 +----------------+---------------------+
 
 If your distribution does not provide aforementioned packages, you can
@@ -54,7 +52,7 @@ account via:
 
 .. code-block:: sh
 
-  python2 -m pip install --user crcmod enum enum34
+  python -m pip install --user crcmod pyserial
 
 configuring bbremote
 ^^^^^^^^^^^^^^^^^^^^

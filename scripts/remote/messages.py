@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import, division, print_function
@@ -47,6 +47,7 @@ class BBPacket(object):
         return "BBPacket(%i, %i)" % (self.p_type, self.p_flags)
 
     def _unpack_payload(self, data):
+        assert isinstance(data, bytes)
         self.payload = data
 
     def _pack_payload(self):
@@ -63,6 +64,7 @@ class BBPacket(object):
 
 class BBPacketCommand(BBPacket):
     def __init__(self, raw=None, cmd=None):
+        assert isinstance(cmd, bytes)
         self.cmd = cmd
         super(BBPacketCommand, self).__init__(BBType.command, raw=raw)
 
@@ -70,6 +72,7 @@ class BBPacketCommand(BBPacket):
         return "BBPacketCommand(cmd=%r)" % self.cmd
 
     def _unpack_payload(self, payload):
+        assert isinstance(payload, bytes)
         self.cmd = payload
 
     def _pack_payload(self):
@@ -94,6 +97,8 @@ class BBPacketCommandReturn(BBPacket):
 
 class BBPacketConsoleMsg(BBPacket):
     def __init__(self, raw=None, text=None):
+        if text is not None:
+            assert isinstance(text, bytes)
         self.text = text
         super(BBPacketConsoleMsg, self).__init__(BBType.consolemsg, raw=raw)
 
@@ -101,6 +106,7 @@ class BBPacketConsoleMsg(BBPacket):
         return "BBPacketConsoleMsg(text=%r)" % self.text
 
     def _unpack_payload(self, payload):
+        assert isinstance(payload, bytes)
         self.text = payload
 
     def _pack_payload(self):
@@ -125,6 +131,7 @@ class BBPacketPong(BBPacket):
 
 class BBPacketGetenv(BBPacket):
     def __init__(self, raw=None, varname=None):
+        assert isinstance(varname, bytes)
         self.varname = varname
         super(BBPacketGetenv, self).__init__(BBType.getenv, raw=raw)
 
@@ -132,6 +139,7 @@ class BBPacketGetenv(BBPacket):
         return "BBPacketGetenv(varname=%r)" % self.varname
 
     def _unpack_payload(self, payload):
+        assert isinstance(payload, bytes)
         self.varname = payload
 
     def _pack_payload(self):
@@ -148,6 +156,7 @@ class BBPacketGetenvReturn(BBPacket):
         return "BBPacketGetenvReturn(varvalue=%s)" % self.text
 
     def _unpack_payload(self, payload):
+        assert isinstance(payload, bytes)
         self.text = payload
 
     def _pack_payload(self):
@@ -172,6 +181,7 @@ class BBPacketFSReturn(BBPacket):
 
 class BBPacketMd(BBPacket):
     def __init__(self, raw=None, path=None, addr=None, size=None):
+        assert isinstance(path, bytes)
         self.path = path
         self.addr = addr
         self.size = size
@@ -214,6 +224,7 @@ class BBPacketMdReturn(BBPacket):
 
 class BBPacketMw(BBPacket):
     def __init__(self, raw=None, path=None, addr=None, data=None):
+        assert isinstance(path, bytes)
         self.path = path
         self.addr = addr
         self.data = data

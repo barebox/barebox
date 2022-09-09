@@ -6,6 +6,7 @@ obj-$(CONFIG_NET_USB)			+= usb/
 obj-$(CONFIG_DRIVER_NET_AR231X)		+= ar231x.o
 obj-$(CONFIG_DRIVER_NET_ARC_EMAC)	+= arc_emac.o
 obj-$(CONFIG_DRIVER_NET_AT91_ETHER)	+= at91_ether.o
+obj-$(CONFIG_DRIVER_NET_BCMGENET)	+= bcmgenet.o
 obj-$(CONFIG_DRIVER_NET_CS8900)		+= cs8900.o
 obj-$(CONFIG_DRIVER_NET_CPSW)		+= cpsw.o
 obj-$(CONFIG_DRIVER_NET_DAVINCI_EMAC)	+= davinci_emac.o

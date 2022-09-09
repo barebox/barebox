@@ -25,7 +25,7 @@ static inline u32 imx23_get_memsize(void)
 	cs0 = FIELD_GET(DRAM_CTL14_CS0_EN, ctl14);
 	cs1 = FIELD_GET(DRAM_CTL14_CS1_EN, ctl14);
 
-	return (1 << columns) * (1 << rows) * banks * (cs0 + cs1);
+	return 2 * (1 << columns) * (1 << rows) * banks * (cs0 + cs1);
 }
 
 #endif /* __MACH_IMX23_H */

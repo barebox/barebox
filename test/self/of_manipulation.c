@@ -103,9 +103,9 @@ static void test_of_property_strings(struct device_node *root)
 
 	of_append_property(np4, "property-single", "ayy", 4);
 
-	of_append_property(np4, "property-multi", "ayy", 4);
 	of_append_property(np4, "property-multi", "bee", 4);
 	of_append_property(np4, "property-multi", "sea", 4);
+	of_prepend_property(np4, "property-multi", "ayy", 4);
 
 	assert_equal(np3, np4);
 }

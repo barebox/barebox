@@ -135,6 +135,8 @@ extern int of_set_property(struct device_node *node, const char *p,
 			const void *val, int len, int create);
 extern int of_append_property(struct device_node *np, const char *p,
 			      const void *val, int len);
+extern int of_prepend_property(struct device_node *np, const char *name,
+			       const void *val, int len);
 extern struct property *of_new_property(struct device_node *node,
 				const char *name, const void *data, int len);
 extern struct property *of_new_property_const(struct device_node *node,
@@ -533,6 +535,12 @@ static inline int of_set_property(struct device_node *node, const char *p,
 }
 
 static inline int of_append_property(struct device_node *np, const char *p,
+				      const void *val, int len)
+{
+	return -ENOSYS;
+}
+
+static inline int of_prepend_property(struct device_node *np, const char *name,
 				      const void *val, int len)
 {
 	return -ENOSYS;

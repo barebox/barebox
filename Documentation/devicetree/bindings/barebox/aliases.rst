@@ -2,9 +2,10 @@ barebox DT aliases
 ==================
 
 barebox can use the properties in the ``/aliases`` node to arrive
-at deterministic names for devices, e.g.::
+at deterministic names for devices, e.g.:
 
 .. code-block:: none
+
    / {
    	aliases {
    		mmc0 = &sdhci;

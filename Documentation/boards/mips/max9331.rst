@@ -126,7 +126,7 @@ it jump to 0x9f020000 where the first instruction of barebox.
 This is usefull when debug with jtag or choosing different bootloaders.
 or even boot kernel without bootloader.
 
-.. code-block:: assembly
+.. code-block:: asm
 
  lui  ra, 0x9f02
  jr   ra

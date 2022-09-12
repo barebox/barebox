@@ -6,6 +6,7 @@ passive serial mode. This is used to upload the firmware and
 to start the FPGA.
 
 Required properties:
+
 - ``compatible``: shall be ``"altr,fpga-passive-serial"`` or
   ``"altr,fpga-arria10-passive-serial"`` for Arria 10
 - ``reg``: SPI chip select

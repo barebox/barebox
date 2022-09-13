@@ -243,10 +243,6 @@
 	};
 };
 
-&ipu1_di0_disp0 {
-	remote-endpoint = <&tc358767_in>;
-};
-
 &ldb {
 	lvds-channel@0 {
 		fsl,data-width = <24>;

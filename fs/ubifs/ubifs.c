@@ -46,7 +46,14 @@ static ZSTD_DCtx *ubifs_zstd_cctx;
 static int gzip_decompress(const unsigned char *in, size_t in_len,
 			   unsigned char *out, size_t *out_len)
 {
-	return deflate_decompress(&ubifs_zlib_stream, in, in_len, out, out_len);
+	unsigned int olen;
+	int ret;
+
+	ret = deflate_decompress(&ubifs_zlib_stream, in, in_len, out, &olen);
+
+	*out_len = olen;
+
+	return ret;
 }
 #endif
 

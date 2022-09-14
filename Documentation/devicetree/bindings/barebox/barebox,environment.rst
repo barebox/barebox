@@ -9,6 +9,7 @@ Required properties:
 * ``device-path``: path to the device environment is on
 
 Optional properties:
+
 * ``file-path``: path to a file in the device named by device-path
 
 The device-path is a multistring property. The first string should contain

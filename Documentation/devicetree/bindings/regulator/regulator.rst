@@ -4,6 +4,7 @@ Voltage/Current Regulators
 In addition to the upstream bindings, another property is added:
 
 Optional properties:
+
 - ``barebox,allow-dummy-supply`` : A property to allow usage of dummy power
   regulator. This can be added to regulator nodes, whose drivers are not yet
   supported. It will rely on regulator reset defaults and use of dummy regulator

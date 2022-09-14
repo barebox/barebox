@@ -16,6 +16,18 @@ config OFDEVICE
 	select DTC
 	bool "Enable probing of devices from the devicetree"
 
+config FEATURE_CONTROLLER_FIXUP
+	bool "Fix up DT nodes gated by feature controller"
+	depends on FEATURE_CONTROLLER
+	default y
+	help
+	  When specified, barebox feature controller drivers are consulted
+	  prior to probing nodes to detect whether the device may not
+	  be available (e.g. because support is fused out).
+	  This option additionally fixes up the kernel device tree,
+	  so it doesn't attempt probing these devices either.
+	  If unsure, say y.
+
 config OF_ADDRESS_PCI
 	bool
 

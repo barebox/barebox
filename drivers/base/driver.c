@@ -27,6 +27,7 @@
 #include <linux/err.h>
 #include <complete.h>
 #include <pinctrl.h>
+#include <featctrl.h>
 #include <linux/clk/clk-conf.h>
 
 #ifdef CONFIG_DEBUG_PROBES
@@ -44,6 +45,22 @@ EXPORT_SYMBOL(driver_list);
 LIST_HEAD(active_device_list);
 EXPORT_SYMBOL(active_device_list);
 static LIST_HEAD(deferred);
+
+struct device_d *find_device(const char *str)
+{
+	struct device_d *dev;
+	struct device_node *np;
+
+	dev = get_device_by_name(str);
+	if (dev)
+		return dev;
+
+	np = of_find_node_by_path_or_alias(NULL, str);
+	if (np)
+		return of_find_device_by_node(np);
+
+	return NULL;
+}
 
 struct device_d *get_device_by_name(const char *name)
 {
@@ -84,6 +101,14 @@ int device_probe(struct device_d *dev)
 {
 	static int depth = 0;
 	int ret;
+
+	ret = of_feature_controller_check(dev->device_node);
+	if (ret < 0)
+		return ret;
+	if (ret == FEATCTRL_GATED) {
+		dev_dbg(dev, "feature gated, skipping probe\n");
+		return -ENODEV;
+	}
 
 	depth++;
 

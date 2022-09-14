@@ -6,3 +6,4 @@ obj-y	+= resource.o
 obj-y	+= regmap/
 
 obj-$(CONFIG_PM_GENERIC_DOMAINS) += power.o
+obj-$(CONFIG_FEATURE_CONTROLLER) += featctrl.o

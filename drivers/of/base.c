@@ -2301,6 +2301,22 @@ void of_delete_property(struct property *pp)
 	free(pp);
 }
 
+struct property *of_rename_property(struct device_node *np,
+				    const char *old_name, const char *new_name)
+{
+	struct property *pp;
+
+	pp = of_find_property(np, old_name, NULL);
+	if (!pp)
+		return NULL;
+
+	of_property_write_bool(np, new_name, false);
+
+	free(pp->name);
+	pp->name = xstrdup(new_name);
+	return pp;
+}
+
 /**
  * of_set_property - create a property for a given node
  * @node - the node
@@ -2358,6 +2374,36 @@ int of_append_property(struct device_node *np, const char *name, const void *val
 		memcpy(buf, pp->value_const, orig_len);
 		pp->value_const = NULL;
 	}
+
+	return 0;
+}
+
+int of_prepend_property(struct device_node *np, const char *name, const void *val, int len)
+{
+	struct property *pp;
+	const void *oldval;
+	void *buf;
+	int oldlen;
+
+	pp = of_find_property(np, name, &oldlen);
+	if (!pp) {
+		of_new_property(np, name, val, len);
+		return 0;
+	}
+
+	oldval = of_property_get_value(pp);
+
+	buf = malloc(len + oldlen);
+	if (!buf)
+		return -ENOMEM;
+
+	memcpy(buf, val, len);
+	memcpy(buf + len, oldval, oldlen);
+
+	free(pp->value);
+	pp->value = buf;
+	pp->length = len + oldlen;
+	pp->value_const = NULL;
 
 	return 0;
 }
@@ -2504,6 +2550,12 @@ int of_probe(void)
 		return -ENODEV;
 
 	/*
+	 * We do this first thing, so board drivers can patch the device
+	 * tree prior to device creation if needed.
+	 */
+	of_platform_device_create_root(root_node);
+
+	/*
 	 * Handle certain compatibles explicitly, since we don't want to create
 	 * platform_devices for every node in /reserved-memory with a
 	 * "compatible",
@@ -2514,8 +2566,6 @@ int of_probe(void)
 	node = of_find_node_by_path("/firmware");
 	if (node)
 		of_platform_populate(node, NULL, NULL);
-
-	of_platform_device_create_root(root_node);
 
 	of_platform_populate(root_node, of_default_bus_match_table, NULL);
 
@@ -2863,6 +2913,19 @@ struct device_node *of_find_node_by_reproducible_name(struct device_node *from,
 			return np;
 	}
 	return NULL;
+}
+
+struct device_node *of_get_node_by_reproducible_name(struct device_node *dstroot,
+						     struct device_node *srcnp)
+{
+	struct device_node *dstnp;
+	char *name;
+
+	name = of_get_reproducible_name(srcnp);
+	dstnp = of_find_node_by_reproducible_name(dstroot, name);
+	free(name);
+
+	return dstnp;
 }
 
 /**

@@ -4,27 +4,58 @@
 #include <command.h>
 #include <errno.h>
 #include <gpio.h>
+#include <getopt.h>
 
 static int get_gpio_and_value(int argc, char *argv[],
 			      int *gpio, int *value)
 {
-	const int count = value ? 3 : 2;
+	struct gpio_chip *chip = NULL;
+	struct device_d *dev;
+	int count = 2;
 	int ret = 0;
+	int opt;
 
-	if (argc < count)
-		return COMMAND_ERROR_USAGE;
+	while ((opt = getopt(argc, argv, "d:")) > 0) {
+		switch (opt) {
+		case 'd':
+			dev = find_device(optarg);
+			if (!dev)
+				return -ENODEV;
 
-	*gpio = gpio_find_by_name(argv[1]);
-	if (*gpio < 0)
-		*gpio = gpio_find_by_label(argv[1]);
-	if (*gpio < 0) {
-		ret = kstrtoint(argv[1], 0, gpio);
-		if (ret < 0)
-			return ret;
+			chip = gpio_get_chip_by_dev(dev);
+			if (!chip)
+				return -EINVAL;
+			break;
+		default:
+			return COMMAND_ERROR_USAGE;
+		}
 	}
 
 	if (value)
-		ret = kstrtoint(argv[2], 0, value);
+		count++;
+
+	if (optind < count)
+		return COMMAND_ERROR_USAGE;
+
+	*gpio = gpio_find_by_name(argv[optind]);
+	if (*gpio < 0)
+		*gpio = gpio_find_by_label(argv[optind]);
+	if (*gpio < 0) {
+		ret = kstrtoint(argv[optind], 0, gpio);
+		if (ret < 0)
+			return ret;
+
+		if (chip)
+			*gpio += chip->base;
+	} else if (chip) {
+		if (gpio_get_chip(*gpio) != chip) {
+			printf("%s: not exporting pin %u\n", dev_name(chip->dev), *gpio);
+			return -EINVAL;
+		}
+	}
+
+	if (value)
+		ret = kstrtoint(argv[optind + 1], 0, value);
 
 	return ret;
 }
@@ -47,7 +78,7 @@ static int do_gpio_get_value(int argc, char *argv[])
 BAREBOX_CMD_START(gpio_get_value)
 	.cmd		= do_gpio_get_value,
 	BAREBOX_CMD_DESC("return value of a GPIO pin")
-	BAREBOX_CMD_OPTS("GPIO")
+	BAREBOX_CMD_OPTS("[-d CONTROLLER] GPIO")
 	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 BAREBOX_CMD_END
 
@@ -67,7 +98,7 @@ static int do_gpio_set_value(int argc, char *argv[])
 BAREBOX_CMD_START(gpio_set_value)
 	.cmd		= do_gpio_set_value,
 	BAREBOX_CMD_DESC("set a GPIO's output value")
-	BAREBOX_CMD_OPTS("GPIO VALUE")
+	BAREBOX_CMD_OPTS("[-d CONTROLLER] GPIO VALUE")
 	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 BAREBOX_CMD_END
 
@@ -89,7 +120,7 @@ static int do_gpio_direction_input(int argc, char *argv[])
 BAREBOX_CMD_START(gpio_direction_input)
 	.cmd		= do_gpio_direction_input,
 	BAREBOX_CMD_DESC("set direction of a GPIO pin to input")
-	BAREBOX_CMD_OPTS("GPIO")
+	BAREBOX_CMD_OPTS("[-d CONTROLLER] GPIO")
 	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 BAREBOX_CMD_END
 
@@ -111,6 +142,6 @@ static int do_gpio_direction_output(int argc, char *argv[])
 BAREBOX_CMD_START(gpio_direction_output)
 	.cmd		= do_gpio_direction_output,
 	BAREBOX_CMD_DESC("set direction of a GPIO pin to output")
-	BAREBOX_CMD_OPTS("GPIO VALUE")
+	BAREBOX_CMD_OPTS("[-d CONTROLLER] GPIO VALUE")
 	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 BAREBOX_CMD_END

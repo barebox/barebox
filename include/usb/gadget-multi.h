@@ -3,6 +3,7 @@
 #ifndef __USB_GADGET_MULTI_H
 #define __USB_GADGET_MULTI_H
 
+#include <linux/types.h>
 #include <usb/fastboot.h>
 #include <usb/dfu.h>
 #include <usb/usbserial.h>
@@ -35,5 +36,7 @@ struct usbgadget_funcs {
 };
 
 int usbgadget_register(const struct usbgadget_funcs *funcs);
+
+void usbgadget_autostart(bool enable);
 
 #endif /* __USB_GADGET_MULTI_H */

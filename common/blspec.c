@@ -341,10 +341,10 @@ static char *parse_nfs_url(const char *url)
 	int ret;
 
 	if (!IS_ENABLED(CONFIG_FS_NFS))
-		return ERR_PTR(-ENOSYS);
+		return NULL;
 
 	if (strncmp(url, "nfs://", 6))
-		return ERR_PTR(-EINVAL);
+		return NULL;
 
 	url += 6;
 
@@ -413,7 +413,7 @@ out:
 	if (ret)
 		free(mountpath);
 
-	return ret ? ERR_PTR(ret) : mountpath;
+	return ret ? NULL : mountpath;
 }
 
 /*
@@ -824,12 +824,12 @@ static int blspec_bootentry_provider(struct bootentries *bootentries,
 	if (*name == '/' || !strncmp(name, "nfs://", 6)) {
 		char *nfspath = parse_nfs_url(name);
 
-		if (!IS_ERR(nfspath))
+		if (nfspath)
 			name = nfspath;
 
 		ret = stat(name, &s);
 		if (ret)
-			return found;
+			goto out;
 
 		if (S_ISDIR(s.st_mode))
 			ret = blspec_scan_directory(bootentries, name);
@@ -838,8 +838,8 @@ static int blspec_bootentry_provider(struct bootentries *bootentries,
 		if (ret > 0)
 			found += ret;
 
-		if (!IS_ERR(nfspath))
-			free(nfspath);
+out:
+		free(nfspath);
 	}
 
 	return found;

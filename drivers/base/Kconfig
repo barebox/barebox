@@ -2,3 +2,6 @@
 
 config PM_GENERIC_DOMAINS
 	bool
+
+config FEATURE_CONTROLLER
+	bool "Feature controller support" if COMPILE_TEST

@@ -1,8 +1,16 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+
+#include <dt-bindings/features/imx8m.h>
+
 / {
 	aliases {
 		gpr.reboot_mode = &reboot_mode_gpr;
 	};
+};
+
+feat: &ocotp {
+	#feature-cells = <1>;
+	barebox,feature-controller;
 };
 
 &src {
@@ -15,4 +23,48 @@
 		mode-normal = <0>, <0>;
 		mode-serial = <0x00000010>, <0x40000000>;
 	};
+};
+
+&A53_1 {
+	barebox,feature-gates = <&feat IMX8M_FEAT_CPU_DUAL>;
+};
+
+&A53_2 {
+	barebox,feature-gates = <&feat IMX8M_FEAT_CPU_QUAD>;
+};
+
+&A53_3 {
+	barebox,feature-gates = <&feat IMX8M_FEAT_CPU_QUAD>;
+};
+
+&gpc {
+	barebox,feature-gates = <&feat 0>;
+};
+
+&vpu_g1 {
+	barebox,feature-gates = <&feat IMX8M_FEAT_VPU>;
+};
+
+&vpu_g2 {
+	barebox,feature-gates = <&feat IMX8M_FEAT_VPU>;
+};
+
+&vpu_blk_ctrl {
+	barebox,feature-gates = <&feat IMX8M_FEAT_VPU>;
+};
+
+&pgc_vpumix {
+	barebox,feature-gates = <&feat IMX8M_FEAT_VPU>;
+};
+
+&pgc_vpu_g1 {
+	barebox,feature-gates = <&feat IMX8M_FEAT_VPU>;
+};
+
+&pgc_vpu_g2 {
+	barebox,feature-gates = <&feat IMX8M_FEAT_VPU>;
+};
+
+&pgc_vpu_h1 {
+	barebox,feature-gates = <&feat IMX8M_FEAT_VPU>;
 };

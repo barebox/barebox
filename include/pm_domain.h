@@ -54,6 +54,8 @@ int pm_genpd_init(struct generic_pm_domain *genpd, void *gov, bool is_off);
 int of_genpd_add_provider_simple(struct device_node *np,
 				 struct generic_pm_domain *genpd);
 
+void pm_genpd_print(void);
+
 #else
 
 static inline int pm_genpd_init(struct generic_pm_domain *genpd,

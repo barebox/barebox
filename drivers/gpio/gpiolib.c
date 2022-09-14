@@ -636,6 +636,18 @@ static int of_gpio_simple_xlate(struct gpio_chip *chip,
 	return chip->base + gpiospec->args[0];
 }
 
+struct gpio_chip *gpio_get_chip_by_dev(struct device_d *dev)
+{
+	struct gpio_chip *chip;
+
+	list_for_each_entry(chip, &chip_list, list) {
+		if (chip->dev == dev)
+			return chip;
+	}
+
+	return NULL;
+}
+
 int gpio_of_xlate(struct device_d *dev, struct of_phandle_args *gpiospec, int *flags)
 {
 	struct gpio_chip *chip;
@@ -643,16 +655,14 @@ int gpio_of_xlate(struct device_d *dev, struct of_phandle_args *gpiospec, int *f
 	if (!dev)
 		return -ENODEV;
 
-	list_for_each_entry(chip, &chip_list, list) {
-		if (chip->dev != dev)
-			continue;
-		if (chip->ops->of_xlate)
-			return chip->ops->of_xlate(chip, gpiospec, flags);
-		else
-			return of_gpio_simple_xlate(chip, gpiospec, flags);
-	}
+	chip = gpio_get_chip_by_dev(dev);
+	if (!chip)
+		return -EPROBE_DEFER;
 
-	return -EPROBE_DEFER;
+	if (chip->ops->of_xlate)
+		return chip->ops->of_xlate(chip, gpiospec, flags);
+	else
+		return of_gpio_simple_xlate(chip, gpiospec, flags);
 }
 
 struct gpio_chip *gpio_get_chip(int gpio)
@@ -665,13 +675,33 @@ struct gpio_chip *gpio_get_chip(int gpio)
 #ifdef CONFIG_CMD_GPIO
 static int do_gpiolib(int argc, char *argv[])
 {
+	struct gpio_chip *chip = NULL;
 	int i;
+
+	if (argc > 2)
+		return COMMAND_ERROR_USAGE;
+
+	if (argc == 1) {
+		struct device_d *dev;
+
+		dev = find_device(argv[1]);
+		if (!dev)
+			return -ENODEV;
+
+		chip = gpio_get_chip_by_dev(dev);
+		if (!chip)
+			return -EINVAL;
+	}
 
 	for (i = 0; i < ARCH_NR_GPIOS; i++) {
 		struct gpio_info *gi = &gpio_desc[i];
 		int val = -1, dir = -1;
+		int idx;
 
 		if (!gi->chip)
+			continue;
+
+		if (chip && chip != gi->chip)
 			continue;
 
 		/* print chip information and header on first gpio */
@@ -683,14 +713,14 @@ static int do_gpiolib(int argc, char *argv[])
 			printf("             %-3s %-3s %-9s %-20s %-20s\n", "dir", "val", "requested", "name", "label");
 		}
 
-		if (gi->chip->ops->get_direction)
-			dir = gi->chip->ops->get_direction(gi->chip,
-						i - gi->chip->base);
-		if (gi->chip->ops->get)
-			val = gi->chip->ops->get(gi->chip,
-						i - gi->chip->base);
+		idx = i - gi->chip->base;
 
-		printf("  GPIO %4d: %-3s %-3s %-9s %-20s %-20s\n", i,
+		if (gi->chip->ops->get_direction)
+			dir = gi->chip->ops->get_direction(gi->chip, idx);
+		if (gi->chip->ops->get)
+			val = gi->chip->ops->get(gi->chip, idx);
+
+		printf("  GPIO %4d: %-3s %-3s %-9s %-20s %-20s\n", chip ? idx : i,
 			(dir < 0) ? "unk" : ((dir == GPIOF_DIR_IN) ? "in" : "out"),
 			(val < 0) ? "unk" : ((val == 0) ? "lo" : "hi"),
 		        gi->requested ? (gi->active_low ? "active low" : "true") : "false",
@@ -704,6 +734,7 @@ static int do_gpiolib(int argc, char *argv[])
 BAREBOX_CMD_START(gpioinfo)
 	.cmd		= do_gpiolib,
 	BAREBOX_CMD_DESC("list registered GPIOs")
+	BAREBOX_CMD_OPTS("[CONTROLLER]")
 	BAREBOX_CMD_GROUP(CMD_GRP_INFO)
 	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END

@@ -4,12 +4,14 @@
 
 / {
 	node1 {
-		property1;
+		property1 = <1>;
+		property2 = <2>;
 		node21 { };
 	};
 
 	node2 {
-		property1;
+		property1 = <1>;
+		property2 = <2>;
 		node21 { };
 	};
 

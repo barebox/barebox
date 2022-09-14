@@ -28,6 +28,7 @@
 #include <mach/ocotp.h>
 #include <machine_id.h>
 #include <mach/ocotp-fusemap.h>
+#include <soc/imx8m/featctrl.h>
 #include <linux/nvmem-provider.h>
 
 /*
@@ -108,6 +109,7 @@ struct imx_ocotp_data {
 	int (*fuse_blow)(struct ocotp_priv *priv, u32 addr, u32 value);
 	u8  mac_offsets[MAX_MAC_OFFSETS];
 	u8  mac_offsets_num;
+	struct imx8m_featctrl_data *feat;
 };
 
 struct ocotp_priv_ethaddr {
@@ -638,19 +640,20 @@ static struct regmap_bus imx_ocotp_regmap_bus = {
 	.reg_read = imx_ocotp_reg_read,
 };
 
-static void imx_ocotp_init_dt(struct ocotp_priv *priv)
+static int imx_ocotp_init_dt(struct ocotp_priv *priv)
 {
 	char mac[MAC_BYTES];
 	const __be32 *prop;
 	struct device_node *node = priv->dev.parent->device_node;
-	int len;
+	u32 tester4;
+	int ret, len;
 
 	if (!node)
-		return;
+		return 0;
 
 	prop = of_get_property(node, "barebox,provide-mac-address", &len);
 	if (!prop)
-		return;
+		return 0;
 
 	for (; len >= MAC_ADDRESS_PROPLEN; len -= MAC_ADDRESS_PROPLEN) {
 		struct device_node *rnode;
@@ -668,6 +671,15 @@ static void imx_ocotp_init_dt(struct ocotp_priv *priv)
 
 		of_eth_register_ethaddr(rnode, mac);
 	}
+
+	if (!of_property_read_bool(node, "barebox,feature-controller"))
+		return 0;
+
+	ret = regmap_read(priv->map, OCOTP_OFFSET_TO_ADDR(0x450), &tester4);
+	if (ret != 0)
+		return ret;
+
+	return imx8m_feat_ctrl_init(priv->dev.parent, tester4, priv->data->feat);
 }
 
 static int imx_ocotp_write(void *ctx, unsigned offset, const void *val, size_t bytes)
@@ -785,10 +797,12 @@ static int imx_ocotp_probe(struct device_d *dev)
 	if (IS_ENABLED(CONFIG_MACHINE_ID))
 		imx_ocotp_set_unique_machine_id();
 
-	imx_ocotp_init_dt(priv);
+	ret = imx_ocotp_init_dt(priv);
+	if (ret)
+		dev_warn(dev, "feature controller registration failed: %pe\n",
+			 ERR_PTR(ret));
 
 	dev_add_param_bool(&(priv->dev), "sense_enable", NULL, NULL, &priv->sense_enable, priv);
-
 	return 0;
 }
 
@@ -895,6 +909,38 @@ static struct imx_ocotp_data imx8mq_ocotp_data = {
 	.fuse_read = imx6_fuse_read_addr,
 };
 
+static struct imx8m_featctrl_data imx8mm_featctrl_data = {
+	.vpu_bitmask = 0x1c0000,
+};
+
+static struct imx_ocotp_data imx8mm_ocotp_data = {
+	.num_regs = 2048,
+	.addr_to_offset = imx6sl_addr_to_offset,
+	.mac_offsets_num = 1,
+	.mac_offsets = { 0x90 },
+	.format_mac = imx_ocotp_format_mac,
+	.set_timing = imx6_ocotp_set_timing,
+	.fuse_blow = imx6_fuse_blow_addr,
+	.fuse_read = imx6_fuse_read_addr,
+	.feat = &imx8mm_featctrl_data,
+};
+
+static struct imx8m_featctrl_data imx8mn_featctrl_data = {
+	.gpu_bitmask = 0x1000000,
+};
+
+static struct imx_ocotp_data imx8mn_ocotp_data = {
+	.num_regs = 2048,
+	.addr_to_offset = imx6sl_addr_to_offset,
+	.mac_offsets_num = 1,
+	.mac_offsets = { 0x90 },
+	.format_mac = imx_ocotp_format_mac,
+	.set_timing = imx6_ocotp_set_timing,
+	.fuse_blow = imx6_fuse_blow_addr,
+	.fuse_read = imx6_fuse_read_addr,
+	.feat = &imx8mn_featctrl_data,
+};
+
 static struct imx_ocotp_data imx7d_ocotp_data = {
 	.num_regs = 2048,
 	.addr_to_offset = imx6sl_addr_to_offset,
@@ -933,10 +979,10 @@ static __maybe_unused struct of_device_id imx_ocotp_dt_ids[] = {
 		.data = &imx8mq_ocotp_data,
 	}, {
 		.compatible = "fsl,imx8mm-ocotp",
-		.data = &imx8mq_ocotp_data,
+		.data = &imx8mm_ocotp_data,
 	}, {
 		.compatible = "fsl,imx8mn-ocotp",
-		.data = &imx8mq_ocotp_data,
+		.data = &imx8mn_ocotp_data,
 	}, {
 		.compatible = "fsl,vf610-ocotp",
 		.data = &vf610_ocotp_data,

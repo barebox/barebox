@@ -34,6 +34,7 @@ static inline int gpio_direction_input(unsigned gpio)
 void gpio_set_active(unsigned gpio, bool state);
 int gpio_is_active(unsigned gpio);
 int gpio_direction_active(unsigned gpio, bool state);
+struct gpio_chip *gpio_get_chip_by_dev(struct device_d *);
 
 /**
  * gpio_poll_timeout_us - Poll till GPIO reaches requested active state
@@ -60,6 +61,11 @@ static inline int gpio_is_active(unsigned gpio)
 static inline int gpio_direction_active(unsigned gpio, int value)
 {
 	return -EINVAL;
+}
+
+static inline struct gpio_chip *gpio_get_chip_by_dev(struct device_d *dev)
+{
+	return NULL;
 }
 
 #define gpio_poll_timeout_us(gpio, val, timeout_us) (-ENOSYS)

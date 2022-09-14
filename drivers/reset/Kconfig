@@ -41,6 +41,7 @@ config RESET_IMX7
 
 config RESET_STARFIVE
 	bool "StarFive Controller Driver" if COMPILE_TEST
+	depends on COMMON_CLK
 	default SOC_STARFIVE
 	help
 	  This enables the reset controller driver for the StarFive JH7100.

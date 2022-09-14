@@ -20,6 +20,7 @@
 #include <system-partitions.h>
 
 static int autostart;
+static int nv_loaded;
 static int acm;
 static char *dfu_function;
 
@@ -98,13 +99,20 @@ err:
 	return ret;
 }
 
-static int usbgadget_autostart_set(struct param_d *param, void *ctx)
+static int usbgadget_do_autostart(void)
 {
 	struct usbgadget_funcs funcs = {};
 	static bool started;
 	int err;
 
-	if (!autostart || started)
+	if (!IS_ENABLED(CONFIG_USB_GADGET_AUTOSTART))
+		return 0;
+
+	/*
+	 * We want to run this function exactly once when the
+	 * environment is loaded and autostart is requested
+	 */
+	if (!nv_loaded || !autostart || started)
 		return 0;
 
 	if (get_fastboot_bbu())
@@ -121,19 +129,38 @@ static int usbgadget_autostart_set(struct param_d *param, void *ctx)
 	return err;
 }
 
+static int usbgadget_autostart_set(struct param_d *param, void *ctx)
+{
+	usbgadget_do_autostart();
+
+	return 0;
+}
+
+void usbgadget_autostart(bool enable)
+{
+	autostart = enable;
+
+	usbgadget_do_autostart();
+}
+
 static int usbgadget_globalvars_init(void)
 {
 	globalvar_add_simple_bool("usbgadget.acm", &acm);
 	globalvar_add_simple_string("usbgadget.dfu_function", &dfu_function);
+	if (IS_ENABLED(CONFIG_USB_GADGET_AUTOSTART))
+		globalvar_add_bool("usbgadget.autostart", usbgadget_autostart_set,
+				   &autostart, NULL);
 
 	return 0;
 }
-device_initcall(usbgadget_globalvars_init);
+coredevice_initcall(usbgadget_globalvars_init);
 
 static int usbgadget_autostart_init(void)
 {
-	if (IS_ENABLED(CONFIG_USB_GADGET_AUTOSTART))
-		globalvar_add_bool("usbgadget.autostart", usbgadget_autostart_set, &autostart, NULL);
+	nv_loaded = true;
+
+	usbgadget_do_autostart();
+
 	return 0;
 }
 postenvironment_initcall(usbgadget_autostart_init);

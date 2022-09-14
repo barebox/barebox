@@ -28,6 +28,9 @@ struct device_d *of_find_device_by_node(struct device_node *np)
 	if (ret)
 		return NULL;
 
+	if (deep_probe_is_supported())
+		return np->dev;
+
 	for_each_device(dev)
 		if (dev->device_node == np)
 			return dev;
@@ -522,12 +525,15 @@ int of_devices_ensure_probed_by_property(const char *property_name)
 		return 0;
 
 	for_each_node_with_property(node, property_name) {
-		ret = of_device_ensure_probed(node);
+		if (!of_device_is_available(node))
+			continue;
+
+		err = of_device_ensure_probed(node);
 		if (err)
 			ret = err;
 	}
 
-	return 0;
+	return ret;
 }
 EXPORT_SYMBOL_GPL(of_devices_ensure_probed_by_property);
 
@@ -540,12 +546,15 @@ int of_devices_ensure_probed_by_name(const char *name)
 		return 0;
 
 	for_each_node_by_name(node, name) {
-		ret = of_device_ensure_probed(node);
+		if (!of_device_is_available(node))
+			continue;
+
+		err = of_device_ensure_probed(node);
 		if (err)
 			ret = err;
 	}
 
-	return 0;
+	return ret;
 }
 EXPORT_SYMBOL_GPL(of_devices_ensure_probed_by_name);
 

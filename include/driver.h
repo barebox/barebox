@@ -169,6 +169,11 @@ struct device_d *get_device_by_type(ulong type, struct device_d *last);
 struct device_d *get_device_by_id(const char *id);
 struct device_d *get_device_by_name(const char *name);
 
+/* Find a device by name and if not found look up by device tree path
+ * or alias
+ */
+struct device_d *find_device(const char *str);
+
 /* Find a free device id from the given template. This is archieved by
  * appending a number to the template. Dynamically created devices should
  * use this function rather than filling the id field themselves.

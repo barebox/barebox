@@ -48,19 +48,6 @@ static int reboot_mode_add_param(struct device_d *dev,
 	return PTR_ERR_OR_ZERO(param);
 }
 
-static struct device_node *of_get_node_by_reproducible_name(struct device_node *dstroot,
-							    struct device_node *srcnp)
-{
-	struct device_node *dstnp;
-	char *name;
-
-	name = of_get_reproducible_name(srcnp);
-	dstnp = of_find_node_by_reproducible_name(dstroot, name);
-	free(name);
-
-	return dstnp;
-}
-
 static int of_reboot_mode_fixup(struct device_node *root, void *ctx)
 {
 	struct reboot_mode_driver *reboot = ctx;

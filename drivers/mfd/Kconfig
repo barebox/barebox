@@ -117,4 +117,12 @@ config MFD_RK808
 	  This driver provides common support for accessing the device
 	  through I2C interface.
 
+config MFD_AXP20X_I2C
+	tristate "X-Powers AXP series PMICs with I2C"
+	depends on I2C && OFDEVICE
+	help
+	  If you say Y here you get support for the X-Powers AXP series power
+	  management ICs (PMICs) controlled with I2C.
+	  This driver currently only provide a character device in /dev.
+
 endmenu

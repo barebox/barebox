@@ -113,6 +113,8 @@ int of_parse_dtb(struct fdt_header *fdt);
 struct device_node *of_unflatten_dtb(const void *fdt, int size);
 struct device_node *of_unflatten_dtb_const(const void *infdt, int size);
 
+int of_fixup_reserved_memory(struct device_node *node, void *data);
+
 struct cdev;
 
 #ifdef CONFIG_OFTREE
@@ -133,6 +135,8 @@ extern int of_set_property(struct device_node *node, const char *p,
 			const void *val, int len, int create);
 extern int of_append_property(struct device_node *np, const char *p,
 			      const void *val, int len);
+extern int of_prepend_property(struct device_node *np, const char *name,
+			       const void *val, int len);
 extern struct property *of_new_property(struct device_node *node,
 				const char *name, const void *data, int len);
 extern struct property *of_new_property_const(struct device_node *node,
@@ -141,6 +145,8 @@ extern struct property *of_new_property_const(struct device_node *node,
 extern struct property *__of_new_property(struct device_node *node,
 					  const char *name, void *data, int len);
 extern void of_delete_property(struct property *pp);
+extern struct property *of_rename_property(struct device_node *np,
+					   const char *old_name, const char *new_name);
 
 extern struct device_node *of_find_node_by_name(struct device_node *from,
 	const char *name);
@@ -193,6 +199,9 @@ extern struct device_node *of_get_compatible_child(const struct device_node *par
 extern struct device_node *of_get_child_by_name(const struct device_node *node,
 					const char *name);
 extern char *of_get_reproducible_name(struct device_node *node);
+extern struct device_node *of_get_node_by_reproducible_name(struct device_node *dstroot,
+							    struct device_node *srcnp);
+
 extern struct device_node *of_find_node_by_reproducible_name(struct device_node
 							     *from,
 							     const char *name);
@@ -491,6 +500,13 @@ of_find_node_by_reproducible_name(struct device_node *from, const char *name)
 	return NULL;
 }
 
+
+static inline struct device_node *of_get_node_by_reproducible_name(struct device_node *dstroot,
+								  struct device_node *srcnp)
+{
+	return NULL;
+}
+
 static inline struct property *of_find_property(const struct device_node *np,
 						const char *name,
 						int *lenp)
@@ -522,6 +538,12 @@ static inline int of_append_property(struct device_node *np, const char *p,
 	return -ENOSYS;
 }
 
+static inline int of_prepend_property(struct device_node *np, const char *name,
+				      const void *val, int len)
+{
+	return -ENOSYS;
+}
+
 static inline struct property *of_new_property(struct device_node *node,
 				const char *name, const void *data, int len)
 {
@@ -536,6 +558,12 @@ static inline struct property *__of_new_property(struct device_node *node,
 
 static inline void of_delete_property(struct property *pp)
 {
+}
+
+static inline struct property *of_rename_property(struct device_node *np,
+						  const char *old_name, const char *new_name)
+{
+	return NULL;
 }
 
 static inline int of_property_read_u32_index(const struct device_node *np,

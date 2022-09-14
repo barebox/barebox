@@ -24,7 +24,7 @@ static int run_selftest(const char *match, bool list)
 		if (match && strcmp(test->name, match))
 			continue;
 
-		err |= test->func();
+		err |= selftest_run(test);
 		matches++;
 	}
 

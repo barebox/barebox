@@ -102,8 +102,10 @@ static char *of_overlay_fix_path(struct device_node *root,
 		if (of_get_child_by_name(fragment, "__overlay__"))
 			break;
 	}
-	if (!fragment)
+	if (!fragment) {
+		pr_info("could not find __overlay__ node\n");
 		return NULL;
+	}
 
 	target = find_target(root, fragment);
 	if (!target)
@@ -115,8 +117,8 @@ static char *of_overlay_fix_path(struct device_node *root,
 	return basprintf("%s%s", target->full_name, path_tail);
 }
 
-static void of_overlay_apply_symbols(struct device_node *root,
-				     struct device_node *overlay)
+static int of_overlay_apply_symbols(struct device_node *root,
+				    struct device_node *overlay)
 {
 	const char *old_path;
 	char *new_path;
@@ -129,12 +131,12 @@ static void of_overlay_apply_symbols(struct device_node *root,
 
 	if (!overlay_symbols) {
 		pr_debug("overlay doesn't have a __symbols__ node\n");
-		return;
+		return -EINVAL;
 	}
 
 	if (!root_symbols) {
 		pr_info("root doesn't have a __symbols__ node\n");
-		return;
+		return -EINVAL;
 	}
 
 	list_for_each_entry(prop, &overlay_symbols->properties, list) {
@@ -143,11 +145,15 @@ static void of_overlay_apply_symbols(struct device_node *root,
 
 		old_path = of_property_get_value(prop);
 		new_path = of_overlay_fix_path(root, overlay, old_path);
+		if (!new_path)
+			return -EINVAL;
 
 		pr_debug("add symbol %s with new path %s\n",
 			 prop->name, new_path);
 		of_property_write_string(root_symbols, prop->name, new_path);
 	}
+
+	return 0;
 }
 
 static int of_overlay_apply_fragment(struct device_node *root,
@@ -190,7 +196,9 @@ int of_overlay_apply_tree(struct device_node *root,
 		goto out_err;
 
 	/* Copy symbols from resolved overlay to base device tree */
-	of_overlay_apply_symbols(root, resolved);
+	err = of_overlay_apply_symbols(root, resolved);
+	if (err)
+		goto out_err;
 
 	/* Copy nodes and properties from resolved overlay to root */
 	for_each_child_of_node(resolved, fragment) {

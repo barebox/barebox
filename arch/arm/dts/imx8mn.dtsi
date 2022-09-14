@@ -1,1 +1,32 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+
+#include <dt-bindings/features/imx8m.h>
+
+feat: &ocotp {
+	#feature-cells = <1>;
+	barebox,feature-controller;
+};
+
+&A53_1 {
+	barebox,feature-gates = <&feat IMX8M_FEAT_CPU_DUAL>;
+};
+
+&A53_2 {
+	barebox,feature-gates = <&feat IMX8M_FEAT_CPU_QUAD>;
+};
+
+&A53_3 {
+	barebox,feature-gates = <&feat IMX8M_FEAT_CPU_QUAD>;
+};
+
+&gpc {
+	barebox,feature-gates = <&feat 0>;
+};
+
+&gpu {
+	barebox,feature-gates = <&feat IMX8M_FEAT_GPU>;
+};
+
+&pgc_gpumix {
+	barebox,feature-gates = <&feat IMX8M_FEAT_GPU>;
+};

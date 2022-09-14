@@ -271,6 +271,49 @@ static int of_register_bootargs_fixup(void)
 }
 late_initcall(of_register_bootargs_fixup);
 
+int of_fixup_reserved_memory(struct device_node *root, void *_res)
+{
+	struct resource *res = _res;
+	struct device_node *node, *child;
+	struct property *pp;
+	unsigned addr_n_cells = sizeof(void *) / sizeof(__be32),
+		 size_n_cells = sizeof(void *) / sizeof(__be32);
+	unsigned rangelen = 0;
+	__be32 reg[4];
+	int ret;
+
+	node = of_get_child_by_name(root, "reserved-memory") ?: of_new_node(root, "reserved-memory");
+
+	ret = of_property_read_u32(node, "#address-cells", &addr_n_cells);
+	if (ret)
+		of_property_write_u32(node, "#address-cells", addr_n_cells);
+
+	ret = of_property_read_u32(node, "#size-cells", &size_n_cells);
+	if (ret)
+		of_property_write_u32(node, "#size-cells", size_n_cells);
+
+	pp = of_find_property(node, "ranges", &rangelen);
+	if (!pp) {
+		of_new_property(node, "ranges", NULL, 0);
+	} else if (rangelen) {
+		pr_warn("reserved-memory ranges not 1:1 mapped. Aborting fixup\n");
+		return -EINVAL;
+	}
+
+	child = of_get_child_by_name(node, res->name) ?: of_new_node(node, res->name);
+
+	if (res->flags & IORESOURCE_BUSY)
+		of_property_write_bool(child, "no-map", true);
+
+	of_write_number(reg, res->start, addr_n_cells);
+	of_write_number(reg + addr_n_cells, resource_size(res), size_n_cells);
+
+	of_new_property(child, "reg", reg,
+			(addr_n_cells + size_n_cells) * sizeof(*reg));
+
+	return 0;
+}
+
 struct of_fixup_status_data {
 	const char *path;
 	bool status;

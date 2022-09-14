@@ -474,35 +474,22 @@ static int ramoops_of_fixup(struct device_node *root, void *data)
 {
 	struct ramoops_platform_data *pdata = data;
 	struct device_node *node;
-	u32 reg[2];
+	struct resource res = {};
 	int ret;
 
-	node = of_get_child_by_name(root, "reserved-memory");
-	if (!node) {
-		pr_info("Adding reserved-memory node\n");
-		node = of_create_node(root, "/reserved-memory");
-		if (!node)
-			return -ENOMEM;
+	res.start = pdata->mem_address;
+	res.end = res.start + pdata->mem_size;
+	res.name = "ramoops";
 
-		of_property_write_u32(node, "#address-cells", 1);
-		of_property_write_u32(node, "#size-cells", 1);
-		of_new_property(node, "ranges", NULL, 0);
-	}
-
-	node = of_get_child_by_name(node, "ramoops");
-	if (!node) {
-		pr_info("Adding ramoops node\n");
-		node = of_create_node(root, "/reserved-memory/ramoops");
-		if (!node)
-			return -ENOMEM;
-	}
-
-	ret = of_property_write_string(node, "compatible", "ramoops");
+	ret = of_fixup_reserved_memory(root, &res);
 	if (ret)
 		return ret;
-	reg[0] = pdata->mem_address;
-	reg[1] = pdata->mem_size;
-	ret = of_property_write_u32_array(node, "reg", reg, 2);
+
+	node = of_find_node_by_path_from(root, "/reserved-memory/ramoops");
+	if (!node)
+		return -ENOMEM;
+
+	ret = of_property_write_string(node, "compatible", "ramoops");
 	if (ret)
 		return ret;
 
@@ -639,7 +626,6 @@ static int ramoops_probe(struct device_d *dev)
 			  ramoops_ecc);
 		globalvar_add_simple("linux.bootargs.ramoops", kernelargs);
 	} else {
-		of_add_reserve_entry(cxt->phys_addr, cxt->phys_addr + mem_size);
 		of_register_fixup(ramoops_of_fixup, pdata);
 	}
 

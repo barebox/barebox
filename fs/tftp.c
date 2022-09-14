@@ -26,11 +26,17 @@
 #include <libgen.h>
 #include <fcntl.h>
 #include <getopt.h>
+#include <globalvar.h>
 #include <init.h>
+#include <linux/bitmap.h>
 #include <linux/stat.h>
 #include <linux/err.h>
+#include <linux/kernel.h>
 #include <kfifo.h>
+#include <parseopt.h>
 #include <linux/sizes.h>
+
+#include "tftp-selftest.h"
 
 #define TFTP_PORT	69	/* Well known TFTP port number */
 
@@ -58,21 +64,69 @@
 #define STATE_WRQ	2
 #define STATE_RDATA	3
 #define STATE_WDATA	4
-#define STATE_OACK	5
+/* OACK from server has been received and we can begin to sent either the ACK
+   (for RRQ) or data (for WRQ) */
+#define STATE_START	5
 #define STATE_WAITACK	6
 #define STATE_LAST	7
 #define STATE_DONE	8
 
 #define TFTP_BLOCK_SIZE		512	/* default TFTP block size */
-#define TFTP_FIFO_SIZE		4096
+#define TFTP_MTU_SIZE		1432	/* MTU based block size */
+#define TFTP_MAX_WINDOW_SIZE	CONFIG_FS_TFTP_MAX_WINDOW_SIZE
+
+/* allocate this number of blocks more than needed in the fifo */
+#define TFTP_EXTRA_BLOCKS	2
+
+/* size of cache which deals with udp reordering */
+#define TFTP_WINDOW_CACHE_NUM	CONFIG_FS_TFTP_REORDER_CACHE_SIZE
+
+/* marker for an emtpy 'tftp_cache' */
+#define TFTP_CACHE_NO_ID	(-1)
 
 #define TFTP_ERR_RESEND	1
+
+#if defined(DEBUG) || IS_ENABLED(CONFIG_SELFTEST_TFTP)
+#  define debug_assert(_cond)	BUG_ON(!(_cond))
+#else
+#  define debug_assert(_cond) do {			\
+		if (!(_cond))				\
+			__builtin_unreachable();	\
+	} while (0)
+#endif
+
+static int g_tftp_window_size = DIV_ROUND_UP(TFTP_MAX_WINDOW_SIZE, 2);
+
+struct tftp_block {
+	uint16_t id;
+	uint16_t len;
+
+	struct list_head head;
+	uint8_t data[];
+};
+
+struct tftp_cache {
+	/* The id located at @pos or TFTP_CACHE_NO_ID when cache is empty.  It
+	   is possible that the corresponding bit in @used is NOT set. */
+	unsigned int		id;
+	unsigned int		pos;
+
+	/* bitmask */
+	unsigned long		used[BITS_TO_LONGS(TFTP_WINDOW_CACHE_NUM)];
+
+	/* size of the cache; is limited by TFTP_WINDOW_CACHE_NUM and the
+	   actual window size */
+	unsigned int		size;
+	unsigned int		block_len;
+	struct tftp_block	*blocks[TFTP_WINDOW_CACHE_NUM];
+};
 
 struct file_priv {
 	struct net_connection *tftp_con;
 	int push;
 	uint16_t block;
 	uint16_t last_block;
+	uint16_t ack_block;
 	int state;
 	int err;
 	char *filename;
@@ -82,28 +136,239 @@ struct file_priv {
 	struct kfifo *fifo;
 	void *buf;
 	int blocksize;
-	int block_requested;
+	unsigned int windowsize;
+	bool is_getattr;
+	struct tftp_cache cache;
 };
 
 struct tftp_priv {
 	IPaddr_t server;
 };
 
+static inline bool is_block_before(uint16_t a, uint16_t b)
+{
+	return (int16_t)(b - a) > 0;
+}
+
+static inline uint16_t get_block_delta(uint16_t a, uint16_t b)
+{
+	debug_assert(!is_block_before(b, a));
+
+	return b - a;
+}
+
+static bool in_window(uint16_t block, uint16_t start, uint16_t end)
+{
+	/* handle the three cases:
+	   - [ ......... | start | .. | BLOCK | .. | end | ......... ]
+	   - [ ..| BLOCK | .. | end | ................. | start | .. ]
+	   - [ ..| end | ................. | start | .. | BLOCK | .. ]
+	*/
+	return ((start <= block && block <= end) ||
+		(block <= end   && end   <= start) ||
+		(end   <= start && start <= block));
+}
+
+static inline size_t tftp_window_cache_size(struct tftp_cache const *cache)
+{
+	/* allows to optimize away the cache code when TFTP_WINDOW_CACHE_SIZE
+	   is 0 */
+	return TFTP_WINDOW_CACHE_NUM == 0 ? 0 : cache->size;
+}
+
+static void tftp_window_cache_init(struct tftp_cache *cache,
+				   uint16_t block_len, uint16_t window_size)
+{
+	debug_assert(window_size > 0);
+
+	*cache = (struct tftp_cache) {
+		.id		= TFTP_CACHE_NO_ID,
+		.block_len	= block_len,
+		.size		= min_t(uint16_t, window_size - 1,
+					ARRAY_SIZE(cache->blocks)),
+	};
+}
+
+static void tftp_window_cache_free(struct tftp_cache *cache)
+{
+	size_t	cache_size = tftp_window_cache_size(cache);
+	size_t	i;
+
+	for (i = 0; i < cache_size; ++i) {
+		free(cache->blocks[i]);
+		cache->blocks[i] = NULL;
+	}
+}
+
+static void tftp_window_cache_reset(struct tftp_cache *cache)
+{
+	cache->id = TFTP_CACHE_NO_ID;
+	memset(cache->used, 0, sizeof cache->used);
+}
+
+static int tftp_window_cache_get_pos(struct tftp_cache const *cache, uint16_t id)
+{
+	size_t		cache_size = tftp_window_cache_size(cache);
+	unsigned int	pos;
+
+	if (cache_size == 0)
+		return -1;
+
+	if (cache->id == TFTP_CACHE_NO_ID)
+		return -1;
+
+	if (!in_window(id, cache->id, cache->id + cache_size - 1))
+		return -1;
+
+	pos  = cache->pos + get_block_delta(cache->id, id);
+	pos %= cache_size;
+
+	return pos;
+}
+
+/* returns whether the first cached element has the given @id */
+static bool tftp_window_cache_starts_with(struct tftp_cache const *cache,
+					  uint16_t id)
+{
+	return (TFTP_WINDOW_CACHE_NUM > 0 &&
+		cache->id != TFTP_CACHE_NO_ID &&
+		cache->id == id &&
+		test_bit(cache->pos, cache->used));
+}
+
+static bool tftp_window_cache_is_empty(struct tftp_cache const *cache)
+{
+	/* use this indirection to avoid warnings about a '0 < 0' comparison
+	   in the loop condition when TFTP_WINDOW_CACHE_NUM is zero */
+	size_t	cache_size = ARRAY_SIZE(cache->used);
+	size_t	i;
+
+	for (i = 0; i < cache_size; ++i) {
+		if (cache->used[i] != 0)
+			return false;
+	}
+
+	return true;
+}
+
+static int tftp_window_cache_insert(struct tftp_cache *cache, uint16_t id,
+				    void const *data, size_t len)
+{
+	size_t const		cache_size = tftp_window_cache_size(cache);
+	int			pos;
+	struct tftp_block	*block;
+
+	if (cache_size == 0)
+		return -ENOSPC;
+
+	if (cache->id == TFTP_CACHE_NO_ID) {
+		/* initialize cache when it does not contain elements yet */
+		cache->id = id;
+		cache->pos = 0;
+
+		/* sanity check; cache is expected to be empty */
+		debug_assert(tftp_window_cache_is_empty(cache));
+	}
+
+	pos = tftp_window_cache_get_pos(cache, id);
+	if (pos < 0)
+		return -ENOSPC;
+
+	debug_assert(pos < cache_size);
+
+	if (test_bit(pos, cache->used))
+		/* block already cached */
+		return 0;
+
+	block = cache->blocks[pos];
+	if (!block) {
+		/* allocate space for the block; after being released, this
+		   memory can be reused for other blocks during the same tftp
+		   transfer */
+		block = malloc(sizeof *block + cache->block_len);
+		if (!block)
+			return -ENOMEM;
+
+		cache->blocks[pos] = block;
+	}
+
+	__set_bit(pos, cache->used);
+	memcpy(block->data, data, len);
+	block->id = id;
+	block->len = len;
+
+	return 0;
+}
+
+/* Marks the element at 'pos' as unused and updates internal cache information.
+   Returns true iff element at pos was valid. */
+static bool tftp_window_cache_remove(struct tftp_cache *cache, unsigned int pos)
+{
+	size_t const	cache_size = tftp_window_cache_size(cache);
+	bool		res;
+
+	if (cache_size == 0)
+		return 0;
+
+	res = __test_and_clear_bit(pos, cache->used);
+
+	if (tftp_window_cache_is_empty(cache)) {
+		/* cache has been cleared; reset pointers */
+		cache->id = TFTP_CACHE_NO_ID;
+	} else if (pos != cache->pos) {
+		/* noop; elements has been removed from the middle of cache */
+	} else {
+		/* first element of cache has been removed; proceed to the
+		   next one */
+		cache->id  += 1;
+		cache->pos += 1;
+		cache->pos %= cache_size;
+	}
+
+	return res;
+}
+
+/* Releases the first element from the cache and returns its content.
+ *
+ * Function can return NULL when the element is not cached
+ */
+static struct tftp_block *tftp_window_cache_pop(struct tftp_cache *cache)
+{
+	unsigned int	pos = cache->pos;
+
+	debug_assert(cache->id != TFTP_CACHE_NO_ID);
+
+	if (!tftp_window_cache_remove(cache, pos))
+		return NULL;
+
+	return cache->blocks[pos];
+}
+
+static bool tftp_window_cache_remove_id(struct tftp_cache *cache, uint16_t id)
+{
+	int		pos = tftp_window_cache_get_pos(cache, id);
+
+	if (pos < 0)
+		return false;
+
+	return tftp_window_cache_remove(cache, pos);
+}
+
 static int tftp_truncate(struct device_d *dev, FILE *f, loff_t size)
 {
 	return 0;
 }
 
-static char *tftp_states[] = {
+static char const * const tftp_states[] = {
 	[STATE_INVALID] = "INVALID",
 	[STATE_RRQ] = "RRQ",
 	[STATE_WRQ] = "WRQ",
 	[STATE_RDATA] = "RDATA",
 	[STATE_WDATA] = "WDATA",
-	[STATE_OACK] = "OACK",
 	[STATE_WAITACK] = "WAITACK",
 	[STATE_LAST] = "LAST",
 	[STATE_DONE] = "DONE",
+	[STATE_START] = "START",
 };
 
 static int tftp_send(struct file_priv *priv)
@@ -112,6 +377,7 @@ static int tftp_send(struct file_priv *priv)
 	int len = 0;
 	uint16_t *s;
 	unsigned char *pkt = net_udp_get_payload(priv->tftp_con);
+	unsigned int window_size;
 	int ret;
 
 	pr_vdebug("%s: state %s\n", __func__, tftp_states[priv->state]);
@@ -119,6 +385,15 @@ static int tftp_send(struct file_priv *priv)
 	switch (priv->state) {
 	case STATE_RRQ:
 	case STATE_WRQ:
+		if (priv->push || priv->is_getattr)
+			/* atm, windowsize is supported only for RRQ and there
+			   is no need to request a full window when we are
+			   just looking up file attributes */
+			window_size = 1;
+		else
+			window_size = min_t(unsigned int, g_tftp_window_size,
+					    TFTP_MAX_WINDOW_SIZE);
+
 		xp = pkt;
 		s = (uint16_t *)pkt;
 		if (priv->state == STATE_RRQ)
@@ -131,32 +406,45 @@ static int tftp_send(struct file_priv *priv)
 				"octet%c"
 				"timeout%c"
 				"%d%c"
-				"tsize%c"
-				"%lld%c"
 				"blksize%c"
-				"1432",
-				priv->filename + 1, 0,
-				0,
-				0,
-				TIMEOUT, 0,
-				0,
-				priv->filesize, 0,
-				0);
+				"%u",
+				priv->filename + 1, '\0',
+				'\0',	/* "octet" */
+				'\0',	/* "timeout" */
+				TIMEOUT, '\0',
+				'\0',	/* "blksize" */
+				/* use only a minimal blksize for getattr
+				   operations, */
+				priv->is_getattr ? TFTP_BLOCK_SIZE : TFTP_MTU_SIZE);
 		pkt++;
+
+		if (!priv->push)
+			/* we do not know the filesize in WRQ requests and
+			   'priv->filesize' will always be zero */
+			pkt += sprintf((unsigned char *)pkt,
+				       "tsize%c%lld%c",
+				       '\0', priv->filesize,
+				       '\0');
+
+		if (window_size > 1)
+			pkt += sprintf((unsigned char *)pkt,
+				       "windowsize%c%u%c",
+				       '\0', window_size,
+				       '\0');
+
 		len = pkt - xp;
 		break;
 
 	case STATE_RDATA:
-		if (priv->block == priv->block_requested)
-			return 0;
-	case STATE_OACK:
 		xp = pkt;
 		s = (uint16_t *)pkt;
 		*s++ = htons(TFTP_ACK);
-		*s++ = htons(priv->block);
-		priv->block_requested = priv->block;
+		*s++ = htons(priv->last_block);
+		priv->ack_block  = priv->last_block;
+		priv->ack_block += priv->windowsize;
 		pkt = (unsigned char *)s;
 		len = pkt - xp;
+		tftp_window_cache_reset(&priv->cache);
 		break;
 	}
 
@@ -197,7 +485,6 @@ static int tftp_poll(struct file_priv *priv)
 	if (is_timeout(priv->resend_timeout, TFTP_RESEND_TIMEOUT)) {
 		printf("T ");
 		priv->resend_timeout = get_time_ns();
-		priv->block_requested = -1;
 		return TFTP_ERR_RESEND;
 	}
 
@@ -212,7 +499,7 @@ static int tftp_poll(struct file_priv *priv)
 	return 0;
 }
 
-static void tftp_parse_oack(struct file_priv *priv, unsigned char *pkt, int len)
+static int tftp_parse_oack(struct file_priv *priv, unsigned char *pkt, int len)
 {
 	unsigned char *opt, *val, *s;
 
@@ -229,14 +516,25 @@ static void tftp_parse_oack(struct file_priv *priv, unsigned char *pkt, int len)
 		opt = s;
 		val = s + strlen(s) + 1;
 		if (val > s + len)
-			return;
+			break;
 		if (!strcmp(opt, "tsize"))
 			priv->filesize = simple_strtoull(val, NULL, 10);
 		if (!strcmp(opt, "blksize"))
 			priv->blocksize = simple_strtoul(val, NULL, 10);
+		if (!strcmp(opt, "windowsize"))
+			priv->windowsize = simple_strtoul(val, NULL, 10);
 		pr_debug("OACK opt: %s val: %s\n", opt, val);
 		s = val + strlen(val) + 1;
 	}
+
+	if (priv->blocksize > TFTP_MTU_SIZE ||
+	    priv->windowsize > TFTP_MAX_WINDOW_SIZE ||
+	    priv->windowsize == 0) {
+		pr_warn("tftp: invalid oack response\n");
+		return -EINVAL;
+	}
+
+	return 0;
 }
 
 static void tftp_timer_reset(struct file_priv *priv)
@@ -244,10 +542,126 @@ static void tftp_timer_reset(struct file_priv *priv)
 	priv->progress_timeout = priv->resend_timeout = get_time_ns();
 }
 
+static int tftp_allocate_transfer(struct file_priv *priv)
+{
+	debug_assert(!priv->fifo);
+	debug_assert(!priv->buf);
+
+	/* multiplication is safe; both operands were checked in tftp_parse_oack()
+	   and are small integers */
+	priv->fifo = kfifo_alloc(priv->blocksize *
+				 (priv->windowsize + TFTP_EXTRA_BLOCKS));
+	if (!priv->fifo)
+		goto err;
+
+	if (priv->push) {
+		priv->buf = xmalloc(priv->blocksize);
+		if (!priv->buf) {
+			kfifo_free(priv->fifo);
+			priv->fifo = NULL;
+			goto err;
+		}
+	} else {
+		tftp_window_cache_init(&priv->cache,
+				       priv->blocksize, priv->windowsize);
+	}
+
+	return 0;
+
+err:
+	priv->err = -ENOMEM;
+	priv->state = STATE_DONE;
+
+	return priv->err;
+}
+
+static void tftp_put_data(struct file_priv *priv, uint16_t block,
+			  void const *pkt, size_t len)
+{
+	unsigned int sz;
+
+	if (len > priv->blocksize) {
+		pr_warn("tftp: oversized packet (%zu > %d) received\n",
+			len, priv->blocksize);
+		return;
+	}
+
+	priv->last_block = block;
+
+	sz = kfifo_put(priv->fifo, pkt, len);
+
+	if (sz != len) {
+		pr_err("tftp: not enough room in kfifo (only %u out of %zu written)\n",
+		       sz, len);
+		priv->err = -ENOMEM;
+		priv->state = STATE_DONE;
+	} else if (len < priv->blocksize) {
+		tftp_send(priv);
+		priv->err = 0;
+		priv->state = STATE_DONE;
+	}
+}
+
+static void tftp_apply_window_cache(struct file_priv *priv)
+{
+	struct tftp_cache *cache = &priv->cache;
+
+	while (tftp_window_cache_starts_with(cache, priv->last_block + 1)) {
+		struct tftp_block *block;
+
+		/* can be changed by tftp_put_data() below and must be
+		   checked in each loop */
+		if (priv->state != STATE_RDATA)
+			return;
+
+		block = tftp_window_cache_pop(cache);
+
+		debug_assert(block);
+		debug_assert(block->id == (uint16_t)(priv->last_block + 1));
+
+		tftp_put_data(priv, block->id, block->data, block->len);
+	}
+}
+
+static void tftp_handle_data(struct file_priv *priv, uint16_t block,
+			     void const *data, size_t len)
+{
+	uint16_t exp_block;
+	int rc;
+
+	exp_block = priv->last_block + 1;
+
+	if (exp_block == block) {
+		/* datagram over network is the expected one; put it in the
+		   fifo directly and try to apply cached items then */
+		tftp_timer_reset(priv);
+		tftp_put_data(priv, block, data, len);
+		tftp_window_cache_remove_id(&priv->cache, block);
+		tftp_apply_window_cache(priv);
+	} else if (!in_window(block, exp_block, priv->ack_block)) {
+		/* completely unexpected and unrelated to actual window;
+		   ignore the packet. */
+		printf("B");
+	} else {
+		/* The 'rc < 0' below happens e.g. when datagrams in the first
+		   part of the transfer window are dropped.
+
+		   TODO: this will usually result in a timeout
+		   (TFTP_RESEND_TIMEOUT).  It should be possible to bypass
+		   this timeout by acknowledging the last packet (e.g. by
+		   doing 'priv->ack_block = priv->last_block' here). */
+		rc = tftp_window_cache_insert(&priv->cache, block, data, len);
+		if (rc < 0)
+			printf("M");
+	}
+}
+
 static void tftp_recv(struct file_priv *priv,
 			uint8_t *pkt, unsigned len, uint16_t uh_sport)
 {
 	uint16_t opcode;
+	uint16_t block;
+	int rc;
 
 	/* according to RFC1350 minimal tftp packet length is 4 bytes */
 	if (len < 4)
@@ -270,75 +684,80 @@ static void tftp_recv(struct file_priv *priv,
 		if (!priv->push)
 			break;
 
-		priv->block = ntohs(*(uint16_t *)pkt);
-		if (priv->block != priv->last_block) {
-			pr_vdebug("ack %d != %d\n", priv->block, priv->last_block);
+		block = ntohs(*(uint16_t *)pkt);
+		if (block != priv->last_block) {
+			pr_vdebug("ack %d != %d\n", block, priv->last_block);
 			break;
 		}
 
-		priv->block++;
+		switch (priv->state) {
+		case STATE_WRQ:
+			priv->tftp_con->udp->uh_dport = uh_sport;
+			priv->state = STATE_START;
+			break;
 
-		tftp_timer_reset(priv);
+		case STATE_WAITACK:
+			priv->state = STATE_WDATA;
+			break;
 
-		if (priv->state == STATE_LAST) {
+		case STATE_LAST:
 			priv->state = STATE_DONE;
 			break;
+
+		default:
+			pr_warn("ACK packet in %s state\n",
+				tftp_states[priv->state]);
+			goto ack_out;
 		}
-		priv->tftp_con->udp->uh_dport = uh_sport;
-		priv->state = STATE_WDATA;
+
+		priv->block = block + 1;
+		tftp_timer_reset(priv);
+
+	ack_out:
 		break;
 
 	case TFTP_OACK:
-		tftp_parse_oack(priv, pkt, len);
+		if (priv->state != STATE_RRQ && priv->state != STATE_WRQ) {
+			pr_warn("OACK packet in %s state\n",
+				tftp_states[priv->state]);
+			break;
+		}
+
 		priv->tftp_con->udp->uh_dport = uh_sport;
 
-		if (priv->push) {
-			/* send first block */
-			priv->state = STATE_WDATA;
-			priv->block = 1;
-		} else {
-			/* send ACK */
-			priv->state = STATE_OACK;
-			priv->block = 0;
-			tftp_send(priv);
+		if (tftp_parse_oack(priv, pkt, len) < 0) {
+			priv->err = -EINVAL;
+			priv->state = STATE_DONE;
+			break;
 		}
 
+		priv->state = STATE_START;
 		break;
+
 	case TFTP_DATA:
 		len -= 2;
-		priv->block = ntohs(*(uint16_t *)pkt);
+		block = ntohs(*(uint16_t *)pkt);
 
-		if (priv->state == STATE_RRQ || priv->state == STATE_OACK) {
-			/* first block received */
-			priv->state = STATE_RDATA;
+		if (priv->state == STATE_RRQ) {
+			/* first block received; entered only with non rfc
+			   2347 (TFTP Option extension) compliant servers */
 			priv->tftp_con->udp->uh_dport = uh_sport;
+			priv->state = STATE_RDATA;
 			priv->last_block = 0;
+			priv->ack_block = priv->windowsize;
 
-			if (priv->block != 1) {	/* Assertion */
-				pr_err("error: First block is not block 1 (%d)\n",
-					priv->block);
-				priv->err = -EINVAL;
-				priv->state = STATE_DONE;
+			rc = tftp_allocate_transfer(priv);
+			if (rc < 0)
 				break;
-			}
 		}
 
-		if (priv->block == priv->last_block)
-			/* Same block again; ignore it. */
+		if (priv->state != STATE_RDATA) {
+			pr_warn("DATA packet in %s state\n",
+				tftp_states[priv->state]);
 			break;
-
-		priv->last_block = priv->block;
-
-		tftp_timer_reset(priv);
-
-		kfifo_put(priv->fifo, pkt + 2, len);
-
-		if (len < priv->blocksize) {
-			tftp_send(priv);
-			priv->err = 0;
-			priv->state = STATE_DONE;
 		}
 
+		tftp_handle_data(priv, block, pkt + 2, len);
 		break;
 
 	case TFTP_ERROR:
@@ -369,13 +788,38 @@ static void tftp_handler(void *ctx, char *packet, unsigned len)
 	tftp_recv(priv, pkt, net_eth_to_udplen(packet), udp->uh_sport);
 }
 
+static int tftp_start_transfer(struct file_priv *priv)
+{
+	int rc;
+
+	rc = tftp_allocate_transfer(priv);
+	if (rc < 0)
+		/* function sets 'priv->state = STATE_DONE' and 'priv->err' in
+		   error case */
+		return rc;
+
+	if (priv->push) {
+		/* send first block */
+		priv->state = STATE_WDATA;
+		priv->block = 1;
+	} else {
+		/* send ACK */
+		priv->state = STATE_RDATA;
+		priv->last_block = 0;
+		tftp_send(priv);
+	}
+
+	return 0;
+}
+
 static struct file_priv *tftp_do_open(struct device_d *dev,
-		int accmode, struct dentry *dentry)
+		int accmode, struct dentry *dentry, bool is_getattr)
 {
 	struct fs_device_d *fsdev = dev_to_fs_device(dev);
 	struct file_priv *priv;
 	struct tftp_priv *tpriv = dev->priv;
 	int ret;
+	unsigned short port = TFTP_PORT;
 
 	priv = xzalloc(sizeof(*priv));
 
@@ -397,49 +841,77 @@ static struct file_priv *tftp_do_open(struct device_d *dev,
 	priv->err = -EINVAL;
 	priv->filename = dpath(dentry, fsdev->vfsmount.mnt_root);
 	priv->blocksize = TFTP_BLOCK_SIZE;
-	priv->block_requested = -1;
+	priv->windowsize = 1;
+	priv->is_getattr = is_getattr;
 
-	priv->fifo = kfifo_alloc(TFTP_FIFO_SIZE);
-	if (!priv->fifo) {
-		ret = -ENOMEM;
-		goto out;
-	}
+	parseopt_hu(fsdev->options, "port", &port);
 
-	priv->tftp_con = net_udp_new(tpriv->server, TFTP_PORT, tftp_handler,
-			priv);
+	priv->tftp_con = net_udp_new(tpriv->server, port, tftp_handler, priv);
 	if (IS_ERR(priv->tftp_con)) {
 		ret = PTR_ERR(priv->tftp_con);
-		goto out1;
+		goto out;
 	}
 
 	ret = tftp_send(priv);
 	if (ret)
-		goto out2;
+		goto out1;
 
 	tftp_timer_reset(priv);
-	while (priv->state != STATE_RDATA &&
-			priv->state != STATE_DONE &&
-			priv->state != STATE_WDATA) {
-		ret = tftp_poll(priv);
-		if (ret == TFTP_ERR_RESEND)
-			tftp_send(priv);
-		if (ret < 0)
-			goto out2;
-	}
 
-	if (priv->state == STATE_DONE && priv->err) {
-		ret = priv->err;
-		goto out2;
-	}
+	/* - 'ret < 0'  ... error
+	   - 'ret == 0' ... further tftp_poll() required
+	   - 'ret == 1' ... startup finished */
+	do {
+		switch (priv->state) {
+		case STATE_DONE:
+			/* branch is entered in two situations:
+			   - non rfc 2347 compliant servers finished the
+			     transfer by sending a small file
+			   - some error occurred */
+			if (priv->err < 0)
+				ret = priv->err;
+			else
+				ret = 1;
+			break;
 
-	priv->buf = xmalloc(priv->blocksize);
+		case STATE_START:
+			ret = tftp_start_transfer(priv);
+			if (!ret)
+				ret = 1;
+			break;
+
+		case STATE_RDATA:
+			/* first data block of non rfc 2347 servers */
+			ret = 1;
+			break;
+
+		case STATE_RRQ:
+		case STATE_WRQ:
+			ret = tftp_poll(priv);
+			if (ret == TFTP_ERR_RESEND) {
+				tftp_send(priv);
+				ret = 0;
+			}
+			break;
+
+		default:
+			debug_assert(false);
+			break;
+		}
+	} while (ret == 0);
+
+	if (ret < 0)
+		goto out1;
 
 	return priv;
-out2:
-	net_unregister(priv->tftp_con);
 out1:
-	kfifo_free(priv->fifo);
+	net_unregister(priv->tftp_con);
 out:
+	if (priv->fifo)
+		kfifo_free(priv->fifo);
+
+	free(priv->filename);
+	free(priv->buf);
 	free(priv);
 
 	return ERR_PTR(ret);
@@ -449,7 +921,7 @@ static int tftp_open(struct device_d *dev, FILE *file, const char *filename)
 {
 	struct file_priv *priv;
 
-	priv = tftp_do_open(dev, file->flags, file->dentry);
+	priv = tftp_do_open(dev, file->flags, file->dentry, false);
 	if (IS_ERR(priv))
 		return PTR_ERR(priv);
 
@@ -489,6 +961,7 @@ static int tftp_do_close(struct file_priv *priv)
 	}
 
 	net_unregister(priv->tftp_con);
+	tftp_window_cache_free(&priv->cache);
 	kfifo_free(priv->fifo);
 	free(priv->filename);
 	free(priv->buf);
@@ -544,7 +1017,7 @@ static int tftp_read(struct device_d *dev, FILE *f, void *buf, size_t insize)
 {
 	struct file_priv *priv = f->priv;
 	size_t outsize = 0, now;
-	int ret;
+	int ret = 0;
 
 	pr_vdebug("%s %zu\n", __func__, insize);
 
@@ -553,18 +1026,29 @@ static int tftp_read(struct device_d *dev, FILE *f, void *buf, size_t insize)
 		outsize += now;
 		buf += now;
 		insize -= now;
-		if (priv->state == STATE_DONE)
-			return outsize;
 
-		if (TFTP_FIFO_SIZE - kfifo_len(priv->fifo) >= priv->blocksize)
+		if (priv->state == STATE_DONE) {
+			ret = priv->err;
+			break;
+		}
+
+		/* send the ACK only when fifo has been nearly depleted; else,
+		   when tftp_read() is called with small 'insize' values, it
+		   is possible that there is read more data from the network
+		   than consumed by kfifo_get() and the fifo overflows */
+		if (priv->last_block == priv->ack_block &&
+		    kfifo_len(priv->fifo) <= TFTP_EXTRA_BLOCKS * priv->blocksize)
 			tftp_send(priv);
 
 		ret = tftp_poll(priv);
 		if (ret == TFTP_ERR_RESEND)
 			tftp_send(priv);
 		if (ret < 0)
-			return ret;
+			break;
 	}
+
+	if (ret < 0)
+		return ret;
 
 	return outsize;
 }
@@ -665,7 +1149,7 @@ static struct dentry *tftp_lookup(struct inode *dir, struct dentry *dentry,
 	struct file_priv *priv;
 	loff_t filesize;
 
-	priv = tftp_do_open(&fsdev->dev, O_RDONLY, dentry);
+	priv = tftp_do_open(&fsdev->dev, O_RDONLY, dentry, true);
 	if (IS_ERR(priv))
 		return NULL;
 
@@ -748,6 +1232,110 @@ static struct fs_driver_d tftp_driver = {
 
 static int tftp_init(void)
 {
+	globalvar_add_simple_int("tftp.windowsize", &g_tftp_window_size, "%u");
+
 	return register_fs_driver(&tftp_driver);
 }
 coredevice_initcall(tftp_init);
+
+
+BSELFTEST_GLOBALS();
+
+static int __maybe_unused tftp_window_cache_selftest(void)
+{
+	struct tftp_cache	*cache = malloc(sizeof *cache);
+
+	if (!cache)
+		return -ENOMEM;
+
+	(void)skipped_tests;
+
+	expect_it( is_block_before(0, 1));
+	expect_it(!is_block_before(1, 0));
+	expect_it( is_block_before(65535, 0));
+	expect_it(!is_block_before(0, 65535));
+
+	expect_eq(get_block_delta(0, 1),     1);
+	expect_eq(get_block_delta(65535, 0), 1);
+	expect_eq(get_block_delta(65535, 1), 2);
+
+	expect_it(!in_window(0, 1, 3));
+	expect_it( in_window(1, 1, 3));
+	expect_it( in_window(2, 1, 3));
+	expect_it( in_window(3, 1, 3));
+	expect_it(!in_window(4, 1, 3));
+
+	expect_it(!in_window(65534, 65535, 1));
+	expect_it( in_window(65535, 65535, 1));
+	expect_it( in_window(    0, 65535, 1));
+	expect_it( in_window(    1, 65535, 1));
+	expect_it(!in_window(    2, 65535, 1));
+
+
+	tftp_window_cache_init(cache, 512, 5);
+
+	if (tftp_window_cache_size(cache) < 4)
+		goto out;
+
+	expect_eq(tftp_window_cache_size(cache), 4);
+
+	/* sequence 1 */
+	expect_ok (tftp_window_cache_insert(cache, 20, "20", 2));
+	expect_ok (tftp_window_cache_insert(cache, 22, "22", 2));
+	expect_ok (tftp_window_cache_insert(cache, 21, "21", 2));
+	expect_ok (tftp_window_cache_insert(cache, 23, "23", 2));
+	expect_err(tftp_window_cache_insert(cache, 24, "24", 2));
+	expect_err(tftp_window_cache_insert(cache, 19, "19", 2));
+	expect_ok (tftp_window_cache_insert(cache, 22, "22", 2));
+	expect_ok (tftp_window_cache_insert(cache, 20, "20", 2));
+
+	expect_eq(tftp_window_cache_pop(cache)->id, 20);
+	expect_eq(tftp_window_cache_pop(cache)->id, 21);
+	expect_eq(tftp_window_cache_pop(cache)->id, 22);
+	expect_eq(tftp_window_cache_pop(cache)->id, 23);
+	expect_eq(cache->id, TFTP_CACHE_NO_ID);
+
+	/* sequence 2 */
+	expect_ok (tftp_window_cache_insert(cache, 30, "30", 2));
+	expect_ok (tftp_window_cache_insert(cache, 32, "32", 2));
+	expect_err(tftp_window_cache_insert(cache, 34, "34", 2));
+
+	expect_it(tftp_window_cache_starts_with(cache, 30));
+	expect_eq(tftp_window_cache_pop(cache)->id, 30);
+
+	expect_ok (tftp_window_cache_insert(cache, 34, "34", 2));
+	expect_err(tftp_window_cache_insert(cache, 35, "35", 2));
+
+	expect_it(!tftp_window_cache_starts_with(cache, 30));
+	expect_it(!tftp_window_cache_starts_with(cache, 31));
+	expect_it(!tftp_window_cache_starts_with(cache, 32));
+	expect_NULL(tftp_window_cache_pop(cache));
+
+	expect_it(tftp_window_cache_starts_with(cache, 32));
+	expect_eq(tftp_window_cache_pop(cache)->id, 32);
+
+	expect_NULL(tftp_window_cache_pop(cache));
+	expect_eq(tftp_window_cache_pop(cache)->id, 34);
+
+	expect_eq(cache->id, TFTP_CACHE_NO_ID);
+
+	/* sequence 3 */
+	expect_ok(tftp_window_cache_insert(cache, 40, "40", 2));
+	expect_ok(tftp_window_cache_insert(cache, 42, "42", 2));
+	expect_ok(tftp_window_cache_insert(cache, 43, "43", 2));
+
+	expect_it(!tftp_window_cache_remove_id(cache, 30));
+	expect_it(!tftp_window_cache_remove_id(cache, 41));
+	expect_it(!tftp_window_cache_remove_id(cache, 44));
+
+	expect_it( tftp_window_cache_remove_id(cache, 42));
+	expect_it(!tftp_window_cache_remove_id(cache, 42));
+
+out:
+	tftp_window_cache_free(cache);
+
+	return 0;
+}
+#ifdef CONFIG_SELFTEST_TFTP
+bselftest(core, tftp_window_cache_selftest);
+#endif

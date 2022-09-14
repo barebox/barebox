@@ -32,6 +32,7 @@ config SELFTEST_ENABLE_ALL
 	select SELFTEST_PROGRESS_NOTIFIER
 	select SELFTEST_OF_MANIPULATION
 	select SELFTEST_ENVIRONMENT_VARIABLES if ENVIRONMENT_VARIABLES
+	imply SELFTEST_TFTP
 	help
 	  Selects all self-tests compatible with current configuration
 
@@ -56,5 +57,11 @@ config SELFTEST_PROGRESS_NOTIFIER
 
 config SELFTEST_ENVIRONMENT_VARIABLES
 	bool "environment variable selftest"
+
+config SELFTEST_TFTP
+	bool "tftp selftest"
+	depends on FS_TFTP
+	help
+	  Tests tftp functionality
 
 endif

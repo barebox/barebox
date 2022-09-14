@@ -40,6 +40,12 @@ config DRIVER_NET_AT91_ETHER
 	depends on HAS_AT91_ETHER
 	select PHYLIB
 
+config DRIVER_NET_BCMGENET
+        bool "BCMGENET V5 support"
+        select PHYLIB
+        help
+          This driver supports the BCMGENET Ethernet MAC.
+
 config DRIVER_NET_CS8900
 	bool "cs8900 ethernet driver"
 	depends on HAS_CS8900 || COMPILE_TEST

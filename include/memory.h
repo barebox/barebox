@@ -4,6 +4,7 @@
 
 #include <linux/types.h>
 #include <linux/list.h>
+#include <linux/ioport.h>
 
 void mem_malloc_init(void *start, void *end);
 ulong mem_malloc_start(void);
@@ -22,9 +23,29 @@ int barebox_add_memory_bank(const char *name, resource_size_t start,
 				    resource_size_t size);
 
 #define for_each_memory_bank(mem)	list_for_each_entry(mem, &memory_banks, list)
+#define for_each_reserved_region(mem, rsv) \
+	list_for_each_entry(rsv, &(mem)->res->children, sibling) \
+	if (((rsv)->flags & IORESOURCE_BUSY))
 
-struct resource *request_sdram_region(const char *name, resource_size_t start,
-		resource_size_t size);
+struct resource *__request_sdram_region(const char *name, unsigned flags,
+					resource_size_t start, resource_size_t size);
+
+static inline struct resource *request_sdram_region(const char *name,
+						    resource_size_t start,
+						    resource_size_t size)
+{
+	/* IORESOURCE_MEM is implicit for all SDRAM regions */
+	return __request_sdram_region(name, 0, start, size);
+}
+
+/* use for secure firmware to inhibit speculation */
+static inline struct resource *reserve_sdram_region(const char *name,
+						    resource_size_t start,
+						    resource_size_t size)
+{
+	return __request_sdram_region(name, IORESOURCE_BUSY, start, size);
+}
+
 int release_sdram_region(struct resource *res);
 
 void memory_bank_find_space(struct memory_bank *bank, resource_size_t *retstart,

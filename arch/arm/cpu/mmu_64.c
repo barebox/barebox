@@ -201,8 +201,16 @@ void __mmu_init(bool mmu_on)
 	create_sections(0, 0, 1UL << (BITS_PER_VA - 1), attrs_uncached_mem());
 
 	/* Map sdram cached. */
-	for_each_memory_bank(bank)
+	for_each_memory_bank(bank) {
+		struct resource *rsv;
+
 		create_sections(bank->start, bank->start, bank->size, CACHED_MEM);
+
+		for_each_reserved_region(bank, rsv) {
+			create_sections(resource_first_page(rsv), resource_first_page(rsv),
+					resource_count_pages(rsv), attrs_uncached_mem());
+		}
+	}
 
 	/* Make zero page faulting to catch NULL pointer derefs */
 	zero_page_faulting();

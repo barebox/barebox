@@ -28,8 +28,8 @@ static int init_resource(struct resource *res, const char *name)
  * resources.
  */
 struct resource *__request_region(struct resource *parent,
-		const char *name, resource_size_t start,
-		resource_size_t end)
+				  resource_size_t start, resource_size_t end,
+				  const char *name, unsigned flags)
 {
 	struct resource *r, *new;
 
@@ -73,15 +73,16 @@ struct resource *__request_region(struct resource *parent,
 	}
 
 ok:
-	debug("%s ok: 0x%08llx:0x%08llx\n", __func__,
+	debug("%s ok: 0x%08llx:0x%08llx flags=0x%x\n", __func__,
 			(unsigned long long)start,
-			(unsigned long long)end);
+			(unsigned long long)end, flags);
 
 	new = xzalloc(sizeof(*new));
 	init_resource(new, name);
 	new->start = start;
 	new->end = end;
 	new->parent = parent;
+	new->flags = flags;
 	list_add_tail(&new->sibling, &r->sibling);
 
 	return new;
@@ -138,7 +139,7 @@ struct resource iomem_resource = {
 struct resource *request_iomem_region(const char *name,
 		resource_size_t start, resource_size_t end)
 {
-	return __request_region(&iomem_resource, name, start, end);
+	return __request_region(&iomem_resource, start, end, name, 0);
 }
 
 /* The root resource for the whole io-mapped io space */
@@ -157,7 +158,7 @@ struct resource *request_ioport_region(const char *name,
 {
 	struct resource *res;
 
-	res = __request_region(&ioport_resource, name, start, end);
+	res = __request_region(&ioport_resource, start, end, name, 0);
 	if (IS_ERR(res))
 		return ERR_CAST(res);
 

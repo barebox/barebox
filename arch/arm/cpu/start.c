@@ -171,7 +171,7 @@ __noreturn __no_sanitize_address void barebox_non_pbl_start(unsigned long membas
 		} else {
 			pr_debug("enabling MMU, ttb @ 0x%08lx\n", ttb);
 			arm_early_mmu_cache_invalidate();
-			mmu_early_enable(membase, memsize, ttb);
+			mmu_early_enable(membase, memsize - OPTEE_SIZE, ttb);
 		}
 	}
 

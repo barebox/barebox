@@ -56,17 +56,6 @@ void mem_malloc_init(void *start, void *end)
 	mem_malloc_initialized = 1;
 }
 
-static int request_reservation(const struct resource *res)
-{
-	if (!(res->flags & IORESOURCE_EXCLUSIVE))
-		return 0;
-
-	pr_debug("region %s %pa-%pa\n", res->name, &res->start, &res->end);
-
-	request_sdram_region(res->name, res->start, resource_size(res));
-	return 0;
-}
-
 static int mem_malloc_resource(void)
 {
 #if !defined __SANDBOX__
@@ -96,7 +85,7 @@ static int mem_malloc_resource(void)
 	request_sdram_region("stack", STACK_BASE, STACK_SIZE);
 #endif
 
-	return of_reserved_mem_walk(request_reservation);
+	return 0;
 }
 coredevice_initcall(mem_malloc_resource);
 
@@ -173,6 +162,8 @@ int barebox_add_memory_bank(const char *name, resource_size_t start,
 	if (IS_ERR(res))
 		return PTR_ERR(res);
 
+	res->flags = IORESOURCE_MEM;
+
 	bank = xzalloc(sizeof(*bank));
 
 	bank->res = res;
@@ -195,21 +186,23 @@ static int add_mem_devices(void)
 
 	return 0;
 }
-mmu_initcall(add_mem_devices);
+postmem_initcall(add_mem_devices);
 
 /*
  * Request a region from the registered sdram
  */
-struct resource *request_sdram_region(const char *name, resource_size_t start,
-		resource_size_t size)
+struct resource *__request_sdram_region(const char *name, unsigned flags,
+					resource_size_t start, resource_size_t size)
 {
 	struct memory_bank *bank;
+
+	flags |= IORESOURCE_MEM;
 
 	for_each_memory_bank(bank) {
 		struct resource *res;
 
-		res = __request_region(bank->res, name, start,
-				       start + size - 1);
+		res = __request_region(bank->res, start, start + size - 1,
+				       name, flags);
 		if (!IS_ERR(res))
 			return res;
 	}

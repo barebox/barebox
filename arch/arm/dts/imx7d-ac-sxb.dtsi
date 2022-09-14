@@ -41,9 +41,15 @@
 	keep-power-in-suspend;
 	status = "okay";
 
-	usdhc1_sdcard: state@4100000 {
-		reg = <0x4100000 0xffffff>;
-		label = "state-sdcard";
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <2>;
+		#size-cells = <2>;
+
+		usdhc1_sdcard: state@4100000 {
+			reg = <0x0 0x4100000 0x0 0xffffff>;
+			label = "state-sdcard";
+		};
 	};
 };
 
@@ -56,11 +62,16 @@
 	non-removable;
 	status = "okay";
 
-	usdhc3_emmc: usdhc3_emmc@1e800000 {
-		reg = <0x1e800000 0xffffff>;
-		label = "state-emmc";
-	};
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <2>;
+		#size-cells = <2>;
 
+		usdhc3_emmc: usdhc3_emmc@1e800000 {
+			reg = <0x0 0x1e800000 0x0 0xffffff>;
+			label = "state-emmc";
+		};
+	};
 };
 
 &wdog1 {

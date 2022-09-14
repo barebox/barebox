@@ -234,16 +234,6 @@
 &i2c1 {
 	edp-bridge@68 {
 		pinctrl-0 = <&pinctrl_tc358767>, <&pinctrl_disp0>;
-
-		ports {
-			port@1 {
-				reg = <1>;
-
-				tc358767_in: endpoint {
-					remote-endpoint = <&disp0_out>;
-				};
-			};
-		};
 	};
 };
 
@@ -251,10 +241,6 @@
 	temp-sense@48 {
 		barebox,sensor-name = "Temp Sensor 1";
 	};
-};
-
-&ipu1_di0_disp0 {
-	remote-endpoint = <&tc358767_in>;
 };
 
 &ldb {

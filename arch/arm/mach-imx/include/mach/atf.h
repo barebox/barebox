@@ -4,6 +4,8 @@
 #define __IMX_ATF_H__
 
 #include <linux/sizes.h>
+#include <linux/compiler.h>
+#include <linux/types.h>
 #include <asm/system.h>
 
 #define MX8M_ATF_BL31_SIZE_LIMIT	SZ_64K
@@ -16,9 +18,20 @@
 #define MX8MM_ATF_BL33_BASE_ADDR	MX8M_ATF_BL33_BASE_ADDR
 #define MX8MQ_ATF_BL33_BASE_ADDR	MX8M_ATF_BL33_BASE_ADDR
 
-void imx8mm_atf_load_bl31(const void *fw, size_t fw_size);
-void imx8mn_atf_load_bl31(const void *fw, size_t fw_size);
-void imx8mp_atf_load_bl31(const void *fw, size_t fw_size);
-void imx8mq_atf_load_bl31(const void *fw, size_t fw_size);
+void __noreturn imx8mm_atf_load_bl31(const void *fw, size_t fw_size);
+void __noreturn imx8mn_atf_load_bl31(const void *fw, size_t fw_size);
+void __noreturn imx8mp_atf_load_bl31(const void *fw, size_t fw_size);
+void __noreturn imx8mq_atf_load_bl31(const void *fw, size_t fw_size);
+
+#define imx8m_load_and_start_tfa(soc,fw_name) do { \
+	size_t __bl31_size; \
+	const u8 *__bl31; \
+	get_builtin_firmware(fw_name, &__bl31, &__bl31_size); \
+	soc##_atf_load_bl31(__bl31, __bl31_size); \
+} while (0)
+
+#define imx8mm_load_and_start_tfa(fw_name) imx8m_load_and_start_tfa(imx8mm, fw_name)
+#define imx8mn_load_and_start_tfa(fw_name) imx8m_load_and_start_tfa(imx8mn, fw_name)
+#define imx8mp_load_and_start_tfa(fw_name) imx8m_load_and_start_tfa(imx8mp, fw_name)
 
 #endif

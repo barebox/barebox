@@ -1,0 +1,60 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+
+/dts-v1/;
+
+#include "imx8mm-innocomm-wb15-evk-upstream.dts"
+
+/ {
+	chosen {
+		environment-emmc {
+			compatible = "barebox,environment";
+			device-path = &usdhc1, "partname:barebox-environment";
+			status = "disabled";
+		};
+		environment-sd {
+			compatible = "barebox,environment";
+			device-path = &usdhc2, "partname:barebox-environment";
+			status = "disabled";
+		};
+	};
+};
+
+&ocotp {
+	barebox,provide-mac-address = <&fec1 0x640>;
+};
+
+&usdhc1 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <2>;
+		#size-cells = <2>;
+
+		partition@0 {
+			label = "barebox";
+			reg = <0x0 0x0 0x0 0x100000>;
+		};
+
+		partition@e0000 {
+			label = "barebox-environment";
+			reg = <0x0 0x100000 0x0 0x100000>;
+		};
+	};
+};
+
+&usdhc2 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <2>;
+		#size-cells = <2>;
+
+		partition@0 {
+			label = "barebox";
+			reg = <0x0 0x0 0x0 0x100000>;
+		};
+
+		partition@e0000 {
+			label = "barebox-environment";
+			reg = <0x0 0x100000 0x0 0x100000>;
+		};
+	};
+};

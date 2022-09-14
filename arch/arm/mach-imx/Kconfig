@@ -361,6 +361,17 @@ config MACH_PROTONIC_IMX8M
 	select IMX8M_DRAM
 	select USB_GADGET_DRIVER_ARC_PBL
 
+config MACH_INNOCOMM_WB15
+	bool "InnoComm WB15 (i.MX8MM) EVK"
+	select ARCH_IMX8MM
+	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
+	select FIRMWARE_IMX8MM_ATF
+	select ARM_SMCCC
+	select MCI_IMX_ESDHC_PBL
+	select IMX8M_DRAM
+	select I2C_IMX_EARLY
+	select USB_GADGET_DRIVER_ARC_PBL
+
 config MACH_KONTRON_SAMX6I
         bool "Kontron sAMX6i"
         select ARCH_IMX6

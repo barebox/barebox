@@ -439,6 +439,11 @@ CFG_start_prt_prt8mm.pblb.imximg = $(board)/protonic-imx8m/flash-header-prt8mm.i
 FILE_barebox-prt-prt8mm.img = start_prt_prt8mm.pblb.pimximg
 image-$(CONFIG_MACH_PROTONIC_IMX8M) += barebox-prt-prt8mm.img
 
+pblb-$(CONFIG_MACH_INNOCOMM_WB15) += start_innocomm_wb15_evk
+CFG_start_innocomm_wb15_evk.pblb.imximg = $(board)/innocomm-imx8mm-wb15/flash-header-imx8mm-wb15.imxcfg
+FILE_barebox-innocomm-imx8mm-wb15-evk.img = start_innocomm_wb15_evk.pblb.pimximg
+image-$(CONFIG_MACH_INNOCOMM_WB15) += barebox-innocomm-imx8mm-wb15-evk.img
+
 # ----------------------- i.MX8mn based boards --------------------------
 pblb-$(CONFIG_MACH_NXP_IMX8MN_EVK) += start_nxp_imx8mn_evk
 CFG_start_nxp_imx8mn_evk.pblb.imximg = $(board)/nxp-imx8mn-evk/flash-header-imx8mn-evk.imxcfg

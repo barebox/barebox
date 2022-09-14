@@ -127,8 +127,8 @@ static struct dentry *ext_lookup(struct inode *dir, struct dentry *dentry,
 
 	if (ino) {
 		inode = ext_get_inode(dir->i_sb, ino);
-
-		d_add(dentry, inode);
+		if (inode)
+			d_add(dentry, inode);
 	}
 
 	return NULL;
@@ -218,6 +218,8 @@ struct inode *ext_get_inode(struct super_block *sb, int ino)
 	node = container_of(inode, struct ext2fs_node, i);
 
 	ret = ext4fs_read_inode(fs->data, ino, &node->inode);
+	if (ret)
+		return NULL;
 
 	inode->i_ino = ino;
 	inode->i_mode = le16_to_cpu(node->inode.mode);
@@ -262,23 +264,27 @@ static int ext_probe(struct device_d *dev)
 
 	ret = fsdev_open_cdev(fsdev);
 	if (ret)
-		goto err_open;
+		goto err;
 
 	fs->cdev = fsdev->cdev;
 
 	ret = ext4fs_mount(fs);
 	if (ret)
-		goto err_mount;
+		goto err;
 
 	sb->s_op = &ext_ops;
 
 	inode = ext_get_inode(sb, 2);
+	if (!inode) {
+		ret = -EINVAL;
+		goto err;
+	}
+
 	sb->s_root = d_make_root(inode);
 
 	return 0;
 
-err_mount:
-err_open:
+err:
 	free(fs);
 
 	return ret;

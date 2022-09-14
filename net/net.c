@@ -634,7 +634,7 @@ static int ping_reply(struct eth_device *edev, unsigned char *pkt, int len)
 
 	free(packet);
 
-	return 0;
+	return ret;
 }
 
 static int net_handle_icmp(struct eth_device *edev, unsigned char *pkt, int len)

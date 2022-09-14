@@ -180,6 +180,8 @@ static int state_enum32_export(struct state_variable *var,
 		str += sprintf(str, "%s", enum32->names[i]) + 1;
 
 	ret = of_set_property(node, "names", prop, len, 1);
+	if (ret)
+		return ret;
 
 	free(prop);
 

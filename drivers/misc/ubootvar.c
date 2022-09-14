@@ -181,7 +181,7 @@ static int ubootenv_probe(struct device_d *dev)
 	unsigned int crc_ok = 0;
 	int ret, i, current, count = 0;
 	uint32_t crc[2];
-	uint8_t flag[2];
+	uint8_t flag[2] = { FLAG_NONE, FLAG_NONE };
 	size_t size[2];
 	void *blob[2] = { NULL, NULL };
 	uint8_t *data[2];

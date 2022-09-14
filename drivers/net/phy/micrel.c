@@ -554,7 +554,7 @@ static int ksz8873mll_read_status(struct phy_device *phydev)
 	int regval;
 
 	/* dummy read */
-	regval = phy_read(phydev, KSZ8873MLL_GLOBAL_CONTROL_4);
+	(void)phy_read(phydev, KSZ8873MLL_GLOBAL_CONTROL_4);
 
 	regval = phy_read(phydev, KSZ8873MLL_GLOBAL_CONTROL_4);
 

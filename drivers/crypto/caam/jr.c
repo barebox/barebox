@@ -289,7 +289,6 @@ static int caam_jr_init(struct device_d *dev)
  */
 int caam_jr_probe(struct device_d *dev)
 {
-	struct device_node *nprop;
 	struct caam_job_ring __iomem *ctrl;
 	struct caam_drv_private_jr *jrpriv;
 	static int total_jobrs;
@@ -303,7 +302,6 @@ int caam_jr_probe(struct device_d *dev)
 	/* save ring identity relative to detection */
 	jrpriv->ridx = total_jobrs++;
 
-	nprop = dev->device_node;
 	/* Get configuration properties from device tree */
 	/* First, get register page */
 	ctrl = dev_get_mem_region(dev, 0);

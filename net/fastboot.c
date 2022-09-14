@@ -126,6 +126,8 @@ static void fastboot_send(struct fastboot_net *fbn,
 
 	if (error_msg)
 		header.id = FASTBOOT_ERROR;
+	else
+		error_msg = "no error";
 
 	/* send header */
 	memcpy(packet, &header, sizeof(header));

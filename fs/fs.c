@@ -1014,7 +1014,7 @@ void mount_all(void)
 		device_detect(dev);
 
 	for_each_block_device(bdev) {
-		struct cdev *cdev = &bdev->cdev;
+		struct cdev *cdev;
 
 		list_for_each_entry(cdev, &bdev->dev->cdevs, devices_list)
 			cdev_mount_default(cdev, NULL);
@@ -1838,16 +1838,9 @@ static int walk_component(struct nameidata *nd, int flags)
 	if (err < 0)
 		return err;
 
-	if (err == 0) {
-		path.mnt = nd->path.mnt;
-		err = follow_managed(&path, nd);
-		if (err < 0)
-			return err;
-
-		if (d_is_negative(path.dentry)) {
-			path_to_nameidata(&path, nd);
-			return -ENOENT;
-		}
+	if (err == 0 && d_is_negative(path.dentry)) {
+		path_to_nameidata(&path, nd);
+		return -ENOENT;
 	}
 
 	return step_into(nd, &path, flags, d_inode(path.dentry));

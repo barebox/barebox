@@ -418,7 +418,6 @@ void of_overlay_set_basedir(const char *path)
 static int of_overlay_apply_dir(struct device_node *root, const char *dirname,
 				bool filter)
 {
-	char *p, *path;
 	int ret = 0;
 	DIR *dir;
 
@@ -430,8 +429,6 @@ static int of_overlay_apply_dir(struct device_node *root, const char *dirname,
 	dir = opendir(dirname);
 	if (!dir)
 		return -errno;
-
-	p = path = strdup(of_overlay_filepattern);
 
 	while (1) {
 		struct dirent *ent;

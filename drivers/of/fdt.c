@@ -212,7 +212,7 @@ static struct device_node *__of_unflatten_dtb(const void *infdt, int size,
 			nodep = fdt_prop->data;
 
 			name = dt_string(&f, dt_strings, fdt32_to_cpu(fdt_prop->nameoff));
-			if (!name) {
+			if (!name || !node) {
 				ret = -ESPIPE;
 				goto err;
 			}

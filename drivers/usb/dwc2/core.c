@@ -61,6 +61,9 @@ static void dwc2_set_param_phy_type(struct dwc2 *dwc2)
 	case GHWCFG2_HS_PHY_TYPE_ULPI:
 		val = DWC2_PHY_TYPE_PARAM_ULPI;
 		break;
+	default:
+		dwc2_warn(dwc2, "Unhandled HS PHY type\n");
+		fallthrough;
 	case GHWCFG2_HS_PHY_TYPE_NOT_SUPPORTED:
 		val = DWC2_PHY_TYPE_PARAM_FS;
 		break;

@@ -84,7 +84,6 @@ out:
 static int do_tutorial_next(int argc, char *argv[])
 {
 	int opt, i;
-	char *step = NULL;
 	char *oldcwd;
 	ssize_t ret = 0;
 	bool is_prev = *argv[0] == 'p';
@@ -121,14 +120,12 @@ static int do_tutorial_next(int argc, char *argv[])
 		next_step = next_step > 0 ? next_step - 1 : 0;
 
 	if (optind == argc) {
-		step = steps.gl_pathv[next_step];
-		ret = print_tutorial_step(step);
+		ret = print_tutorial_step(steps.gl_pathv[next_step]);
 		if (ret == 0 && !is_prev)
 			next_step = (next_step + 1) % steps.gl_pathc;
 	} else {
 		for (i = optind; i < argc; i++) {
-			step = strdup(argv[i]);
-			ret = print_tutorial_step(step);
+			ret = print_tutorial_step(argv[i]);
 			if (ret)
 				break;
 		}

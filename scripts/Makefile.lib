@@ -272,6 +272,17 @@ cmd_ld = $(LD) $(KBUILD_LDFLAGS) $(EXTRA_LDFLAGS) $(LDFLAGS_$(@F)) \
 quiet_cmd_objcopy = OBJCOPY $@
 cmd_objcopy = $(OBJCOPY) $(OBJCOPYFLAGS) $(OBJCOPYFLAGS_$(@F)) $< $@
 
+# Hashing
+# ---------------------------------------------------------------------------
+# POSIX printf (e.g. dash's) doesn't support \xHH, but octal sequences are fine
+
+quiet_cmd_sha256bin ?= SHA-BIN $@
+      cmd_sha256bin = printf "$(shell sed 's/ .*$$//;s/../0x&\n/g;s/\n$$//' $< | \
+			while read -r byte; do printf '\%o' $$byte; done)" > $@
+
+quiet_cmd_sha256sum ?= SHA     $@
+      cmd_sha256sum ?= sha256sum $< > $@
+
 # Decompressor for barebox proper binary when using PBL
 # ---------------------------------------------------------------------------
 

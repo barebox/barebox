@@ -99,7 +99,13 @@ SECTIONS
 	.piggydata : {
 		*(.piggydata)
 	}
-	__piggydata_end = .;
+
+	. = ALIGN(4);
+	__pblext_start = .;
+	.pblext : {
+		*(.pblext.*)
+	}
+	__pblext_end = .;
 
 	.image_end : { KEEP(*(.__image_end)) }
 

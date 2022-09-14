@@ -29,7 +29,7 @@ ENDPROC(setup_c)
 					/* x0: target address */
 #ifdef __PBL__
 ENTRY(relocate_to_adr_full)
-	ldr	x2, =__piggydata_end
+	ldr	x2, =__image_end
 	b	1f
 #endif
 

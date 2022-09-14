@@ -6,8 +6,11 @@
 #ifndef FIRMWARE_H
 #define FIRMWARE_H
 
+#include <pbl.h>
 #include <types.h>
 #include <driver.h>
+#include <debug_ll.h>
+#include <linux/kernel.h>
 
 struct firmware_handler {
 	char *id; /* unique identifier for this firmware device */
@@ -57,12 +60,39 @@ static inline void firmware_set_searchpath(const char *path)
 
 void firmwaremgr_list_handlers(void);
 
-#define get_builtin_firmware(name, start, size) \
-	{							\
-		extern char _fw_##name##_start[];		\
-		extern char _fw_##name##_end[];			\
-		*start = (typeof(*start)) _fw_##name##_start;	\
-		*size = _fw_##name##_end - _fw_##name##_start;	\
+static inline void firmware_ext_verify(const void *data_start, size_t data_size,
+				       const void *hash_start, size_t hash_size)
+{
+	if (pbl_barebox_verify(data_start, data_size,
+			       hash_start, hash_size) != 0) {
+		putc_ll('!');
+		panic("hash mismatch, refusing to decompress");
 	}
+}
+
+#define __get_builtin_firmware(name, offset, start, size)		\
+	do {								\
+		extern char _fw_##name##_start[];			\
+		extern char _fw_##name##_end[];				\
+		extern char _fw_##name##_sha_start[];			\
+		extern char _fw_##name##_sha_end[];			\
+		*start = (typeof(*start)) _fw_##name##_start;		\
+		*size = _fw_##name##_end - _fw_##name##_start;		\
+		if (!(offset))						\
+			break;						\
+		*start += (offset);					\
+		firmware_ext_verify(					\
+			*start, *size,					\
+			_fw_##name##_sha_start,				\
+			_fw_##name##_sha_end - _fw_##name##_sha_start	\
+		);							\
+	} while (0)
+
+
+#define get_builtin_firmware(name, start, size) \
+	__get_builtin_firmware(name, 0, start, size)
+
+#define get_builtin_firmware_ext(name, base, start, size)		\
+	__get_builtin_firmware(name, (long)base - (long)_text, start, size)
 
 #endif /* FIRMWARE_H */

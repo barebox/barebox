@@ -30,4 +30,7 @@ const void *
 fdt_device_get_match_data(const void *fdt, const char *nodepath,
 			  const struct fdt_device_id ids[]);
 
+int pbl_barebox_verify(const void *compressed_start, unsigned int len,
+		       const void *hash, unsigned int hash_len);
+
 #endif /* __PBL_H__ */

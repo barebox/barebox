@@ -54,14 +54,14 @@ static void noinline errorfn(char *error)
 extern unsigned char sha_sum[];
 extern unsigned char sha_sum_end[];
 
-static int pbl_barebox_verify(void *compressed_start, unsigned int len, void *hash,
-			      unsigned int hash_len)
+int pbl_barebox_verify(const void *compressed_start, unsigned int len,
+		       const void *hash, unsigned int hash_len)
 {
 	struct sha256_state sha_state = { 0 };
 	struct digest d = { .ctx = &sha_state };
 	char computed_hash[SHA256_DIGEST_SIZE];
 	int i;
-	char *char_hash = hash;
+	const char *char_hash = hash;
 
 	if (hash_len != SHA256_DIGEST_SIZE)
 		return -1;

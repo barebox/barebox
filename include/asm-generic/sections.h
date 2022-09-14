@@ -11,7 +11,6 @@ extern char _end[];
 extern char __image_start[];
 extern char __image_end[];
 extern char __piggydata_start[];
-extern char __piggydata_end[];
 extern void *_barebox_image_size;
 extern void *_barebox_bare_init_size;
 extern void *_barebox_pbl_size;

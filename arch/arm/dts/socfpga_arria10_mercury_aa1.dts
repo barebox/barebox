@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0
-#include <arm/socfpga_arria10_mercury_aa1.dts>
+
+/dts-v1/;
+
+#include <arm/socfpga_arria10_mercury_aa1.dtsi>
 
 / {
 	aliases {

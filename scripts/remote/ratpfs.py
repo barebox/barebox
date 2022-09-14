@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import, division, print_function
@@ -36,7 +36,9 @@ class RatpFSError(ValueError):
 
 
 class RatpFSPacket(object):
-    def __init__(self, type=RatpFSType.invalid, payload="", raw=None):
+    def __init__(self, type=RatpFSType.invalid, payload=b'', raw=None):
+        if payload is not None:
+            assert isinstance(payload, bytes)
         if raw is not None:
             type, = struct.unpack('!B', raw[:1])
             self.type = RatpFSType(type)
@@ -57,9 +59,11 @@ class RatpFSPacket(object):
 
 class RatpFSServer(object):
     def __init__(self, path=None):
-        self.path = path
         if path:
+            assert isinstance(path, bytes)
             self.path = os.path.abspath(os.path.expanduser(path))
+        else:
+            self.path = path
         self.next_handle = 1  # 0 is invalid
         self.files = {}
         self.mounted = False
@@ -71,11 +75,13 @@ class RatpFSServer(object):
         return handle
 
     def _resolve(self, path):
-        components = path.split('/')
+        assert isinstance(path, bytes)
+        components = path.split(b'/')
         components = [x for x in components if x and x != '..']
         return os.path.join(self.path, *components)
 
     def handle_stat(self, path):
+        assert isinstance(path, bytes)
 
         try:
             logging.info("path: %r", path)
@@ -97,7 +103,7 @@ class RatpFSServer(object):
                          os.O_TRUNC)
         path = params[4:]
         try:
-            f = os.open(self._resolve(path), flags, 0666)
+            f = os.open(self._resolve(path), flags, 0o666)
         except OSError as e:
             return struct.pack('!II', 0, e.errno)
         h = self._alloc_handle()
@@ -118,24 +124,25 @@ class RatpFSServer(object):
         f = self.files[h]
         pos = os.lseek(f, pos, os.SEEK_SET)
         assert os.write(f, payload) == len(payload)
-        return ""
+        return b""
 
     def handle_readdir(self, path):
-        res = ""
+        assert isinstance(path, bytes)
+        res = b""
         for x in os.listdir(self._resolve(path)):
-            res += x+'\0'
+            res += x+b'\0'
         return res
 
     def handle_close(self, params):
         h, = struct.unpack('!I', params[:4])
         os.close(self.files.pop(h))
-        return ""
+        return b""
 
     def handle_truncate(self, params):
         h, size = struct.unpack('!II', params)
         f = self.files[h]
         os.ftruncate(f, size)
-        return ""
+        return b""
 
     def handle(self, bbcall):
         assert isinstance(bbcall, BBPacketFS)

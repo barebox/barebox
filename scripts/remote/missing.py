@@ -25,4 +25,4 @@ def monotonic():
     return t.tv_sec + t.tv_nsec * 1e-9
 
 if __name__ == "__main__":
-    print monotonic()
+    print(monotonic())

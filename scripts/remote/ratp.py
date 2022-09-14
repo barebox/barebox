@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import, division, print_function
@@ -593,7 +593,7 @@ class RatpConnection(object):
         # reassemble
         if r.c_eor:
             logging.info("Reassembling %i frames", len(self._rx_buf))
-            self._rx_queue.append(''.join(self._rx_buf))
+            self._rx_queue.append(b''.join(self._rx_buf))
             self._rx_buf = []
 
         s = RatpPacket(flags='A')

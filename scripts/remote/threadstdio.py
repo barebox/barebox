@@ -1,11 +1,11 @@
-#!/usr/bin/python2
+#!/usr/bin/env python3
 
 import os
 import sys
 import termios
 import atexit
 from threading import Thread
-from Queue import Queue, Empty
+from queue import Queue, Empty
 
 class ConsoleInput(Thread):
     def __init__(self, queue, exit='\x14'):

@@ -162,7 +162,7 @@ out:
 	*rsp = (struct ratp_bb *)i2c_read_rsp;
 	*rsp_len = i2c_read_rsp_len;
 
-	return ret;
+	return 0;
 }
 
 BAREBOX_RATP_CMD_START(I2C_READ)
@@ -271,7 +271,7 @@ out:
 	*rsp = (struct ratp_bb *)i2c_write_rsp;
 	*rsp_len = sizeof(*i2c_write_rsp);
 
-	return ret;
+	return 0;
 }
 
 BAREBOX_RATP_CMD_START(I2C_WRITE)

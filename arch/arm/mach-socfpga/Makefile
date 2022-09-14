@@ -3,6 +3,7 @@
 pbl-$(CONFIG_ARCH_SOCFPGA_CYCLONE5) += cyclone5-init.o cyclone5-freeze-controller.o cyclone5-scan-manager.o cyclone5-system-manager.o
 pbl-$(CONFIG_ARCH_SOCFPGA_CYCLONE5) += cyclone5-clock-manager.o
 obj-$(CONFIG_ARCH_SOCFPGA_CYCLONE5) += cyclone5-generic.o nic301.o cyclone5-bootsource.o cyclone5-reset-manager.o
+lwl-y += cpu_init.o
 
 pbl-$(CONFIG_ARCH_SOCFPGA_ARRIA10) += arria10-xload.o \
 				      arria10-xload-emmc.o

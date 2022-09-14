@@ -16,9 +16,11 @@
 #include <mach/arria10-clock-manager.h>
 #include <mach/arria10-pinmux.h>
 #include <mach/arria10-fpga.h>
+#include <mach/init.h>
 #include "pll-config-arria10.c"
 #include "pinmux-config-arria10.c"
 #include <mach/generic.h>
+#include <mach/init.h>
 
 #define BAREBOX_PART 0
 // the bitstream is located in the second partition in the partition table
@@ -40,6 +42,7 @@ ENTRY_FUNCTION_WITHSTACK(start_socfpga_aa1_xload, ARRIA10_STACKTOP, r0, r1, r2)
 	int bitstream = 0;
 
 	arm_cpu_lowlevel_init();
+	arria10_cpu_lowlevel_init();
 
 	relocate_to_current_adr();
 
@@ -101,6 +104,7 @@ ENTRY_FUNCTION_WITHSTACK(start_socfpga_aa1_bringup, ARRIA10_STACKTOP, r0, r1, r2
 	void *fdt;
 
 	arm_cpu_lowlevel_init();
+	arria10_cpu_lowlevel_init();
 
 	relocate_to_current_adr();
 	setup_c();

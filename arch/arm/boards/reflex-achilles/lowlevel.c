@@ -16,6 +16,7 @@
 #include <mach/arria10-clock-manager.h>
 #include <mach/arria10-pinmux.h>
 #include <mach/arria10-fpga.h>
+#include <mach/init.h>
 #include "pll-config-arria10.c"
 #include "pinmux-config-arria10.c"
 #include <mach/generic.h>
@@ -41,6 +42,7 @@ ENTRY_FUNCTION_WITHSTACK(start_socfpga_achilles_xload, ARRIA10_STACKTOP, r0, r1,
 	int bitstream = 0;
 
 	arm_cpu_lowlevel_init();
+	arria10_cpu_lowlevel_init();
 
 	relocate_to_current_adr();
 	setup_c();
@@ -93,8 +95,7 @@ ENTRY_FUNCTION_WITHSTACK(start_socfpga_achilles_bringup, ARRIA10_STACKTOP, r0, r
 	void *fdt;
 
 	arm_cpu_lowlevel_init();
-
-	arm_setup_stack(ARRIA10_OCRAM_ADDR + SZ_256K);
+	arria10_cpu_lowlevel_init();
 
 	relocate_to_current_adr();
 	setup_c();

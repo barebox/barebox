@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <clock.h>
 #include <led.h>
+#include <dma.h>
 #include <slice.h>
 #include <xfuncs.h>
 #include <linux/phy.h>
@@ -470,7 +471,7 @@ struct net_connection {
 
 static inline char *net_alloc_packet(void)
 {
-	return xmemalign(32, PKTSIZE);
+	return dma_alloc(PKTSIZE);
 }
 
 struct net_connection *net_udp_new(IPaddr_t dest, uint16_t dport,

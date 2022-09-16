@@ -57,28 +57,6 @@ config FS_TFTP_MAX_WINDOW_SIZE
 	  Requires tftp "windowsize" (RFC 7440) support on server side
 	  to have an effect.
 
-config FS_TFTP_REORDER_CACHE_SIZE
-	int
-	prompt "number of out-of-order tftp packets to be cached"
-	depends on FS_TFTP
-	default 16 if FS_TFTP_MAX_WINDOW_SIZE > 16
-	default  0 if FS_TFTP_MAX_WINDOW_SIZE = 1
-        ## TODO: it should be 'FS_TFTP_MAX_WINDOW_SIZE - 1' but this
-        ## is not supported by Kconfig
-	default FS_TFTP_MAX_WINDOW_SIZE
-	range 0 FS_TFTP_MAX_WINDOW_SIZE
-	help
-	  UDP allows reordering of datagrams; with this option,
-	  unexpected tftp packets will be cached and later
-	  reassembled.  This increases stability of the tftp download
-	  with the cost of memory (around 1440 bytes per cache
-	  element) and barebox binary size (around 700 bytes).
-
-	  A value of 0 disables caching.
-
-	  Requires tftp "windowsize" (RFC 7440) support on server side
-	  to have an effect.
-
 config FS_OMAP4_USBBOOT
 	bool
 	prompt "Filesystem over usb boot"

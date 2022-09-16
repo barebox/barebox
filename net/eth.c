@@ -20,8 +20,6 @@
 #include <linux/ctype.h>
 #include <linux/stat.h>
 
-static uint64_t last_link_check;
-
 LIST_HEAD(netdev_list);
 
 struct eth_ethaddr {
@@ -173,7 +171,7 @@ int eth_complete(struct string_list *sl, char *instr)
 /*
  * Check for link if we haven't done so for longer.
  */
-static int eth_carrier_check(struct eth_device *edev, int force)
+static int eth_carrier_check(struct eth_device *edev, bool may_wait)
 {
 	int ret;
 
@@ -183,15 +181,17 @@ static int eth_carrier_check(struct eth_device *edev, int force)
 	if (!edev->phydev)
 		return 0;
 
-	if (force)
-		phy_wait_aneg_done(edev->phydev);
-
-	if (force || is_timeout(last_link_check, 5 * SECOND) ||
-			!edev->phydev->link) {
+	if (!edev->last_link_check ||
+	    is_timeout(edev->last_link_check, 5 * SECOND)) {
 		ret = phy_update_status(edev->phydev);
 		if (ret)
 			return ret;
-		last_link_check = get_time_ns();
+		edev->last_link_check = get_time_ns();
+	}
+
+	if (may_wait && !edev->phydev->link) {
+		phy_wait_aneg_done(edev->phydev);
+		edev->last_link_check = get_time_ns();
 	}
 
 	return edev->phydev->link ? 0 : -ENETDOWN;
@@ -237,7 +237,7 @@ int eth_send(struct eth_device *edev, void *packet, int length)
 	if (slice_acquired(eth_device_slice(edev)))
 		return eth_queue(edev, packet, length);
 
-	ret = eth_carrier_check(edev, 0);
+	ret = eth_carrier_check(edev, true);
 	if (ret)
 		return ret;
 
@@ -258,7 +258,7 @@ static void eth_do_work(struct eth_device *edev)
 	int ret;
 
 	if (!phy_acquired(edev->phydev)) {
-		ret = eth_carrier_check(edev, 0);
+		ret = eth_carrier_check(edev, false);
 		if (ret)
 			return;
 	}
@@ -455,11 +455,11 @@ int eth_open(struct eth_device *edev)
 	if (edev->active)
 		return 0;
 
+	edev->last_link_check = 0;
+
 	ret = edev->open(edev);
 	if (!ret)
 		edev->active = 1;
-
-	eth_carrier_check(edev, 1);
 
 	return ret;
 }
@@ -521,6 +521,14 @@ struct eth_device *of_find_eth_device_by_node(struct device_node *np)
 	return NULL;
 }
 EXPORT_SYMBOL(of_find_eth_device_by_node);
+
+void eth_open_all(void)
+{
+	struct eth_device *edev;
+
+	list_for_each_entry(edev, &netdev_list, list)
+		eth_open(edev);
+}
 
 static int of_populate_ethaddr(void)
 {

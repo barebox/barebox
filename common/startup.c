@@ -37,6 +37,7 @@
 #include <linux/ctype.h>
 #include <watchdog.h>
 #include <glob.h>
+#include <net.h>
 #include <bselftest.h>
 
 extern initcall_t __barebox_initcalls_start[], __barebox_early_initcalls_end[],
@@ -306,6 +307,9 @@ static int run_init(void)
 
 	if (autoboot == AUTOBOOT_BOOT)
 		run_command("boot");
+
+	if (IS_ENABLED(CONFIG_NET))
+		eth_open_all();
 
 	if (autoboot == AUTOBOOT_MENU)
 		run_command(MENUFILE);

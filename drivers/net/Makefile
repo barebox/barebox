@@ -39,7 +39,6 @@ obj-$(CONFIG_DRIVER_NET_SJA1105)	+= sja1105.o
 obj-$(CONFIG_DRIVER_NET_SMC911X)	+= smc911x.o
 obj-$(CONFIG_DRIVER_NET_SMC91111)	+= smc91111.o
 obj-$(CONFIG_DRIVER_NET_TAP)		+= tap.o
-obj-$(CONFIG_DRIVER_NET_TSE)		+= altera_tse.o
 obj-$(CONFIG_DRIVER_NET_EFI_SNP)	+= efi-snp.o
 obj-$(CONFIG_DRIVER_NET_VIRTIO)		+= virtio.o
 obj-$(CONFIG_DRIVER_NET_AG71XX)		+= ag71xx.o

@@ -366,6 +366,7 @@ struct ks_net {
 	void __iomem		*hw_addr_cmd;
 	struct platform_device	*pdev;
 	int			bus_width;
+	void			*rx_buf;
 };
 
 #define BE3             0x8000      /* Byte Enable 3 */
@@ -659,7 +660,6 @@ static void ks_setup(struct ks_net *ks)
 static int ks8851_rx_frame(struct ks_net *ks)
 {
 	struct device_d *dev = &ks->edev.dev;
-	u16 *rdptr = (u16 *) NetRxPackets[0];
 	u16 RxStatus, RxLen = 0;
 	u16 tmp_rxqcr;
 
@@ -679,14 +679,14 @@ static int ks8851_rx_frame(struct ks_net *ks)
 	tmp_rxqcr = ks_rdreg16(ks, KS_RXQCR);
 	ks_wrreg16(ks, KS_RXQCR, tmp_rxqcr | RXQCR_SDA);
 	/* read 2 bytes for dummy, 2 for status, 2 for len*/
-	ks_inblk(ks, rdptr, 2 + 2 + 2);
-	ks_inblk(ks, rdptr, ALIGN(RxLen, 4));
+	ks_inblk(ks, ks->rx_buf, 2 + 2 + 2);
+	ks_inblk(ks, ks->rx_buf, ALIGN(RxLen, 4));
 	ks_wrreg16(ks, KS_RXQCR, tmp_rxqcr);
 
 	if (RxStatus & RXFSHR_RXFV) {
 		/* Pass to upper layer */
 		dev_dbg(dev, "passing packet to upper layer\n\n");
-		net_receive(&ks->edev, NetRxPackets[0], RxLen);
+		net_receive(&ks->edev, ks->rx_buf, RxLen);
 		return RxLen;
 	} else if (RxStatus & RXFSHR_ERR) {
 		dev_err(dev, "RxStatus error 0x%04x\n", RxStatus & RXFSHR_ERR);
@@ -827,6 +827,7 @@ static int ks8851_probe(struct device_d *dev)
 	ks->hw_addr_cmd = IOMEM(iores->start);
 
 	ks->bus_width = dev->resource[0].flags & IORESOURCE_MEM_TYPE_MASK;
+	ks->rx_buf = xmalloc(PKTSIZE);
 
 	edev->init = ks8851_init_dev;
 	edev->open = ks8851_eth_open;

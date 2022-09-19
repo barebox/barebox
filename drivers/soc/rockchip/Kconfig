@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+if ARCH_ROCKCHIP || COMPILE_TEST
+
+menu "Rockchip SoC drivers"
+
+config ROCKCHIP_IODOMAIN
+	tristate "Rockchip IO domain support"
+	depends on OFDEVICE
+	help
+	  Say y here to enable support io domains on Rockchip SoCs. It is
+	  necessary for the io domain setting of the SoC to match the
+	  voltage supplied by the regulators.
+
+endmenu
+
+endif

@@ -64,6 +64,7 @@ struct macb_device {
 
 	void			*rx_buffer;
 	void			*tx_buffer;
+	void			*rx_packet_buf;
 	struct macb_dma_desc	*rx_ring;
 	struct macb_dma_desc	*tx_ring;
 	struct macb_dma_desc	*gem_q1_descs;
@@ -230,16 +231,15 @@ static int macb_recv(struct eth_device *edev)
 				taillen = length - headlen;
 				dma_sync_single_for_cpu((unsigned long)buffer,
 							headlen, DMA_FROM_DEVICE);
-				memcpy((void *)NetRxPackets[0], buffer, headlen);
+				memcpy(macb->rx_packet_buf, buffer, headlen);
 				dma_sync_single_for_cpu((unsigned long)macb->rx_buffer,
 							taillen, DMA_FROM_DEVICE);
-				memcpy((void *)NetRxPackets[0] + headlen,
-					macb->rx_buffer, taillen);
+				memcpy(macb->rx_packet_buf + headlen, macb->rx_buffer, taillen);
 				dma_sync_single_for_device((unsigned long)buffer,
 							headlen, DMA_FROM_DEVICE);
 				dma_sync_single_for_device((unsigned long)macb->rx_buffer,
 							taillen, DMA_FROM_DEVICE);
-				net_receive(edev, NetRxPackets[0], length);
+				net_receive(edev, macb->rx_packet_buf, length);
 			} else {
 				dma_sync_single_for_cpu((unsigned long)buffer, length,
 							DMA_FROM_DEVICE);
@@ -898,6 +898,8 @@ static int macb_probe(struct device_d *dev)
 		macb->gem_q1_descs = dma_alloc_coherent(GEM_Q1_DESC_BYTES,
 				DMA_ADDRESS_BROKEN);
 
+	macb->rx_packet_buf = xmalloc(PKTSIZE);
+
 	macb_reset_hw(macb);
 	ncfgr = macb_mdc_clk_div(macb);
 	ncfgr |= MACB_BIT(PAE);		/* PAuse Enable */
@@ -921,6 +923,8 @@ static void macb_remove(struct device_d *dev)
 	struct macb_device *macb = dev->priv;
 
 	macb_halt(&macb->netdev);
+
+	free(macb->rx_packet_buf);
 }
 
 static const struct macb_config fu540_c000_config = {

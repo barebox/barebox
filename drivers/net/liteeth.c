@@ -73,6 +73,8 @@ struct liteeth {
 	int rx_slot;
 	int num_rx_slots;
 	void __iomem *rx_base;
+
+	void *rx_buf;
 };
 
 static inline void litex_write8(void __iomem *addr, u8 val)
@@ -230,9 +232,9 @@ static int liteeth_eth_rx(struct eth_device *edev)
 
 	rx_slot = litex_read8(priv->base + LITEETH_WRITER_SLOT);
 
-	memcpy(NetRxPackets[0], priv->rx_base + rx_slot * LITEETH_BUFFER_SIZE, len);
+	memcpy(priv->rx_buf, priv->rx_base + rx_slot * LITEETH_BUFFER_SIZE, len);
 
-	net_receive(edev, NetRxPackets[0], len);
+	net_receive(edev, priv->rx_buf, len);
 
 	litex_write8(priv->base + LITEETH_WRITER_EV_PENDING, reg);
 
@@ -322,6 +324,8 @@ static int liteeth_probe(struct device_d *dev)
 	/* Tx slots come after Rx slots */
 	priv->tx_base = buf_base + priv->num_rx_slots * LITEETH_BUFFER_SIZE;
 	priv->tx_slot = 0;
+
+	priv->rx_buf = xmalloc(PKTSIZE);
 
 	edev->init = liteeth_init_dev;
 	edev->open = liteeth_eth_open;

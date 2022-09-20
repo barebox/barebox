@@ -316,6 +316,12 @@ menuconfig DSA
 
 if DSA
 
+config DRIVER_NET_KSZ8873
+	bool "KSZ8873 switch driver"
+	help
+	  This option enables support for the Microchip KSZ8873
+	  switch chip.
+
 config DRIVER_NET_KSZ9477
 	bool "KSZ9477 switch driver"
 	depends on SPI

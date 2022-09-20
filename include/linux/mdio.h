@@ -326,4 +326,18 @@ static inline __u16 mdio_phy_id_c45(int prtad, int devad)
 
 #define MDIO_DEVAD_NONE			(-1)
 
+struct phy_driver;
+
+int mdio_driver_register(struct phy_driver *drv);
+
+#define mdio_register_driver_macro(level, drv)		\
+        static int __init drv##_register(void)		\
+        {						\
+                return mdio_driver_register(&drv);	\
+        }						\
+        level##_initcall(drv##_register)
+
+#define device_mdio_driver(drv)	\
+        mdio_register_driver_macro(device, drv)
+
 #endif /* _UAPI__LINUX_MDIO_H__ */

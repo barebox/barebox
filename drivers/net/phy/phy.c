@@ -933,6 +933,8 @@ int phy_driver_register(struct phy_driver *phydrv)
 {
 	phydrv->drv.bus = &mdio_bus_type;
 
+	phydrv->is_phy = true;
+
 	if (!phydrv->config_init)
 		phydrv->config_init = genphy_config_init;
 

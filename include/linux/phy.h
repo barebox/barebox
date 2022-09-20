@@ -223,6 +223,7 @@ struct phy_driver {
 	unsigned int phy_id_mask;
 	u32 features;
 	const void *driver_data;
+	bool is_phy;
 
 	/*
 	 * Called to initialize the PHY,

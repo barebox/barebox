@@ -193,6 +193,13 @@ static int mdio_gpio_probe(struct device_d *dev)
 		goto free_mdo;
 	}
 
+	if (np &&
+	    of_device_is_compatible(np, "microchip,mdio-smi0")) {
+		info->ctrl.op_c22_read = 0;
+		info->ctrl.op_c22_write = 0;
+		info->ctrl.override_op_c22 = 1;
+	}
+
 	bus = alloc_mdio_bitbang(&info->ctrl);
 	bus->parent = dev;
 	bus->dev.device_node = np;
@@ -217,6 +224,7 @@ free_info:
 
 static const struct of_device_id gpio_mdio_dt_ids[] = {
 	{ .compatible = "virtual,mdio-gpio", },
+	{ .compatible = "microchip,mdio-smi0" },
 	{ /* sentinel */ }
 };
 

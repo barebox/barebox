@@ -10,18 +10,9 @@
 
 extern char __dtb_rk3566_quartz64_a_start[];
 
-static noinline void start_quartz64(void *fdt)
+static noinline void start_quartz64(void)
 {
-	/*
-	 * Image execution starts at 0x0, but this is used for ATF and
-	 * OP-TEE later, so move away from here.
-	 */
-	if (current_el() == 3)
-		relocate_to_adr_full(RK3568_BAREBOX_LOAD_ADDRESS);
-	else
-		relocate_to_current_adr();
-
-	setup_c();
+	void *fdt = __dtb_rk3566_quartz64_a_start;
 
 	if (current_el() == 3) {
 		rk3568_lowlevel_init();
@@ -35,5 +26,16 @@ static noinline void start_quartz64(void *fdt)
 
 ENTRY_FUNCTION(start_quartz64a, r0, r1, r2)
 {
-	start_quartz64(__dtb_rk3566_quartz64_a_start);
+	/*
+	 * Image execution starts at 0x0, but this is used for ATF and
+	 * OP-TEE later, so move away from here.
+	 */
+	if (current_el() == 3)
+		relocate_to_adr_full(RK3568_BAREBOX_LOAD_ADDRESS);
+	else
+		relocate_to_current_adr();
+
+	setup_c();
+
+	start_quartz64();
 }

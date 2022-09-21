@@ -10,18 +10,9 @@
 
 extern char __dtb_rk3568_rock_3a_start[];
 
-static noinline void rk3568_start(void *fdt)
+static noinline void rk3568_start(void)
 {
-	/*
-	 * Image execution starts at 0x0, but this is used for ATF and
-	 * OP-TEE later, so move away from here.
-	 */
-	if (current_el() == 3)
-		relocate_to_adr_full(RK3568_BAREBOX_LOAD_ADDRESS);
-	else
-		relocate_to_current_adr();
-
-	setup_c();
+	void *fdt = __dtb_rk3568_rock_3a_start;
 
 	/*
 	 * Enable vccio4 1.8V and vccio6 1.8V
@@ -40,5 +31,16 @@ static noinline void rk3568_start(void *fdt)
 
 ENTRY_FUNCTION(start_rock3a, r0, r1, r2)
 {
-	rk3568_start(__dtb_rk3568_rock_3a_start);
+	/*
+	 * Image execution starts at 0x0, but this is used for ATF and
+	 * OP-TEE later, so move away from here.
+	 */
+	if (current_el() == 3)
+		relocate_to_adr_full(RK3568_BAREBOX_LOAD_ADDRESS);
+	else
+		relocate_to_current_adr();
+
+	setup_c();
+
+	rk3568_start();
 }

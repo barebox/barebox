@@ -17,6 +17,10 @@ static noinline void rk3568_start(void)
 	/*
 	 * Enable vccio4 1.8V and vccio6 1.8V
 	 * Needed for GMAC to work.
+	 * FIXME: This is done by the io-domain driver as well, but there
+	 * currently is no mechanism to make sure the driver gets probed
+	 * before its consumers. Remove this setup once this issue is
+	 * resolved.
 	 */
 	writel(RK_SETBITS(0x50), 0xfdc20140);
 

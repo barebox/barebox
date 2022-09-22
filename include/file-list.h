@@ -8,6 +8,7 @@
 #define FILE_LIST_FLAG_READBACK	(1 << 1)
 #define FILE_LIST_FLAG_CREATE	(1 << 2)
 #define FILE_LIST_FLAG_UBI	(1 << 3)
+#define FILE_LIST_FLAG_OPTIONAL (1 << 4)
 
 struct file_list_entry {
 	char *name;

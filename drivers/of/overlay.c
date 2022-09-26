@@ -131,12 +131,12 @@ static int of_overlay_apply_symbols(struct device_node *root,
 
 	if (!overlay_symbols) {
 		pr_debug("overlay doesn't have a __symbols__ node\n");
-		return -EINVAL;
+		return 0;
 	}
 
 	if (!root_symbols) {
 		pr_info("root doesn't have a __symbols__ node\n");
-		return -EINVAL;
+		return 0;
 	}
 
 	list_for_each_entry(prop, &overlay_symbols->properties, list) {

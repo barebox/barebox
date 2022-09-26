@@ -10,6 +10,11 @@
 #include <of_device.h>
 #include <regmap.h>
 
+#define KSZ8873_CHIP_ID0		0x00
+#define KSZ8873_CHIP_ID1		0x01
+#define KSZ88_CHIP_ID_M			GENMASK(7, 4)
+#define KSZ88_REV_ID_M			GENMASK(3, 1)
+
 #define KSZ8873_GLOBAL_CTRL_1		0x03
 #define KSZ8873_PASS_ALL_FRAMES		BIT(7)
 #define KSZ8873_P3_TAIL_TAG_EN		BIT(6)
@@ -52,6 +57,8 @@
 struct ksz8873_dcfg {
 	unsigned int num_ports;
 	unsigned int phy_port_cnt;
+	u8 id0;
+	u8 id1;
 };
 
 struct ksz8873_switch {
@@ -363,6 +370,7 @@ static int ksz8873_probe_mdio(struct phy_device *mdiodev)
 	struct ksz8873_switch *priv;
 	struct dsa_switch *ds;
 	int ret, gpio;
+	u8 id0, id1;
 
 	priv = xzalloc(sizeof(*priv));
 
@@ -387,6 +395,18 @@ static int ksz8873_probe_mdio(struct phy_device *mdiodev)
 		gpio_set_active(gpio, false);
 	}
 
+	ret = ksz_read8(priv, KSZ8873_CHIP_ID0, &id0);
+	if (ret)
+		return ret;
+
+	ret = ksz_read8(priv, KSZ8873_CHIP_ID1, &id1);
+	if (ret)
+		return ret;
+
+	if (id0 != dcfg->id0 ||
+	    (id1 & (KSZ88_CHIP_ID_M | KSZ88_REV_ID_M)) != dcfg->id1)
+		return -ENODEV;
+
 	ds = &priv->ds;
 	ds->dev = dev;
 	ds->num_ports = dcfg->num_ports;
@@ -407,6 +427,8 @@ static int ksz8873_probe_mdio(struct phy_device *mdiodev)
 static const struct ksz8873_dcfg ksz8873_dcfg = {
 	.num_ports = 3,
 	.phy_port_cnt = 2,
+	.id0 = 0x88,
+	.id1 = 0x30,
 };
 
 static const struct of_device_id ksz8873_dt_ids[] = {

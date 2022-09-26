@@ -501,11 +501,13 @@ static void skov_init_board(const struct board_description *variant)
 		 */
 		gpio_request(24, "must_be_low");
 		gpio_direction_output(24, 0);
+		gpio_free(24);
 	}
 
 	/* SD card handling */
 	gpio_request(205, "mmc io supply");
 	gpio_direction_output(205, 0); /* select 3.3 V IO voltage */
+	gpio_free(205);
 
 	if (variant->flags & SKOV_ENABLE_MMC_POWER) {
 		/*
@@ -516,6 +518,7 @@ static void skov_init_board(const struct board_description *variant)
 		gpio_direction_output(200, 0); /* switch on */
 		mdelay(1);
 		gpio_direction_output(200, 1); /* switch on */
+		gpio_free(200);
 	}
 
 	if (variant->flags & SKOV_DISPLAY_PARALLEL) {

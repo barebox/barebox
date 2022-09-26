@@ -618,4 +618,9 @@ static inline void *dev_get_priv(struct device_d *dev)
 	return dev->priv;
 }
 
+static inline bool dev_is_probed(struct device_d *dev)
+{
+	return dev->driver ? true : false;
+}
+
 #endif /* DRIVER_H */

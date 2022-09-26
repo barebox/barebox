@@ -9,7 +9,7 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-#include <dt-bindings/gpio/gpio.h>
+#include <arm/imx6qdl-skov-cpu.dtsi>
 
 / {
 	aliases {
@@ -27,29 +27,6 @@
 			compatible = "barebox,environment";
 			device-path = &barebox_env;
 			status = "disabled";
-		};
-	};
-
-	leds {
-		compatible = "gpio-leds";
-
-		led0: D1 {
-			label = "D1";
-			gpios = <&gpio1 2 0>;
-			default-state = "on";
-			linux,default-trigger = "heartbeat";
-		};
-
-		led1: D2 {
-			label = "D2";
-			gpios = <&gpio1 0 0>;
-			default-state = "off";
-		};
-
-		led2: D3 {
-			label = "D3";
-			gpios = <&gpio1 4 0>;
-			default-state = "on";
 		};
 	};
 
@@ -241,20 +218,6 @@
 	};
 };
 
-&pwm2 {
-	/* used for backlight brightness */
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_pwm2_2>;
-	status = "okay";
-};
-
-&pwm3 {
-	/* used for LCD contrast control */
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_pwm3_2>;
-	status = "okay";
-};
-
 &i2c2 {
 	clock-frequency = <100000>;
 	pinctrl-names = "default";
@@ -278,21 +241,6 @@
 	status = "okay";
 };
 
-/* no usbh2 */
-&usbphynop1 {
-	status = "disabled";
-};
-
-/* no usbh3 */
-&usbphynop2 {
-	status = "disabled";
-};
-
-&usbotg {
-	disable-over-current;
-	status = "okay";
-};
-
 &iomuxc {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_hog>;
@@ -300,80 +248,12 @@
 	pinctrl_hog: hoggrp {
 		/* we need a few pins as GPIOs */
 		fsl,pins = <
-			/* MMC IO voltage select */
-			MX6QDL_PAD_GPIO_18__GPIO7_IO13 0x40000058
-			/* MMC Power Supply Switch (since revision C)
-			MX6QDL_PAD_SD3_RST__GPIO7_IO08 0x40000058
 			/* Backlight Power Supply Switch (since revision B)
 			MX6QDL_PAD_RGMII_TD3__GPIO6_IO23 0x40000058
 			/* Backlight Brightness */
 			MX6QDL_PAD_GPIO_1__GPIO1_IO01 0x40000058
 			/* must be high */
 			MX6QDL_PAD_ENET_RX_ER__GPIO1_IO24 0x40000058
-		>;
-	};
-
-	pinctrl_uart2: uart2grp {
-		fsl,pins = <
-			MX6QDL_PAD_EIM_D26__UART2_TX_DATA 0x1b0b1
-			MX6QDL_PAD_EIM_D27__UART2_RX_DATA 0x1b0b1
-		>;
-	};
-
-	pinctrl_ecspi1: ecspi1grp {
-		fsl,pins = <
-			MX6QDL_PAD_EIM_D17__ECSPI1_MISO 0x100b1
-			MX6QDL_PAD_EIM_D18__ECSPI1_MOSI 0x100b1
-			MX6QDL_PAD_EIM_D16__ECSPI1_SCLK 0x100b1
-			MX6QDL_PAD_EIM_D24__GPIO3_IO24 0x40000058 /* CS# signal */
-		>;
-	};
-
-	/* pins for eth0 */
-	pinctrl_enet: enetgrp {
-		fsl,pins = <
-			MX6QDL_PAD_ENET_MDIO__ENET_MDIO 0x100b0
-			MX6QDL_PAD_ENET_MDC__ENET_MDC 0x100b0
-			MX6QDL_PAD_ENET_CRS_DV__ENET_RX_EN 0x100b0
-			MX6QDL_PAD_ENET_TX_EN__ENET_TX_EN 0x100b0
-			MX6QDL_PAD_ENET_RXD0__ENET_RX_DATA0 0x100b0
-			MX6QDL_PAD_ENET_RXD1__ENET_RX_DATA1 0x100b0
-			MX6QDL_PAD_ENET_TXD0__ENET_TX_DATA0 0x100b0
-			MX6QDL_PAD_ENET_TXD1__ENET_TX_DATA1 0x100b0
-			MX6QDL_PAD_GPIO_16__ENET_REF_CLK 0x400000c0
-		>;
-	};
-
-	pinctrl_usdhc3: usdhc3grp {
-		fsl,pins = <
-			MX6QDL_PAD_SD3_CMD__SD3_CMD 0x17059
-			MX6QDL_PAD_SD3_CLK__SD3_CLK 0x10059
-			MX6QDL_PAD_SD3_DAT0__SD3_DATA0 0x17059
-			MX6QDL_PAD_SD3_DAT1__SD3_DATA1 0x17059
-			MX6QDL_PAD_SD3_DAT2__SD3_DATA2 0x17059
-			MX6QDL_PAD_SD3_DAT3__SD3_DATA3 0x17059
-			MX6QDL_PAD_SD3_DAT4__GPIO7_IO01 0x1b040 /* WP */
-			MX6QDL_PAD_SD3_DAT5__GPIO7_IO00 0x1b040 /* CD */
-		>;
-	};
-
-	pinctrl_gpmi_nand: gpminandgrp {
-		fsl,pins = <
-			MX6QDL_PAD_NANDF_CLE__NAND_CLE 0xb0b1
-			MX6QDL_PAD_NANDF_ALE__NAND_ALE 0xb0b1
-			MX6QDL_PAD_NANDF_RB0__NAND_READY_B 0xb000
-			MX6QDL_PAD_NANDF_CS0__NAND_CE0_B 0xb0b1
-			MX6QDL_PAD_NANDF_CS1__NAND_CE1_B 0xb0b1
-			MX6QDL_PAD_SD4_CMD__NAND_RE_B 0xb0b1
-			MX6QDL_PAD_SD4_CLK__NAND_WE_B 0xb0b1
-			MX6QDL_PAD_NANDF_D0__NAND_DATA00 0xb0b1
-			MX6QDL_PAD_NANDF_D1__NAND_DATA01 0xb0b1
-			MX6QDL_PAD_NANDF_D2__NAND_DATA02 0xb0b1
-			MX6QDL_PAD_NANDF_D3__NAND_DATA03 0xb0b1
-			MX6QDL_PAD_NANDF_D4__NAND_DATA04 0xb0b1
-			MX6QDL_PAD_NANDF_D5__NAND_DATA05 0xb0b1
-			MX6QDL_PAD_NANDF_D6__NAND_DATA06 0xb0b1
-			MX6QDL_PAD_NANDF_D7__NAND_DATA07 0xb0b1
 		>;
 	};
 
@@ -424,18 +304,6 @@
 			MX6QDL_PAD_RGMII_TD3__GPIO6_IO23	0x40000058
 		>;
 	};
-
-	pinctrl_pwm2_2: pwm2grp-2 {
-		fsl,pins = <
-			MX6QDL_PAD_GPIO_1__PWM2_OUT		0x00058
-		>;
-	};
-
-	pinctrl_pwm3_2: pwm3grp-2 {
-		fsl,pins = <
-			MX6QDL_PAD_SD1_DAT1__PWM3_OUT		0x00058
-		>;
-	};
 };
 
 &clks {
@@ -445,43 +313,34 @@
 				 <&clks IMX6QDL_CLK_PLL5_VIDEO_DIV>;
 };
 
-/* console */
-&uart2 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_uart2>;
-	status = "okay";
-};
-
 /* spi */
 &ecspi1 {
-	fsl,spi-num-chipselects = <1>;
-	cs-gpios = <&gpio3 24 0>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_ecspi1>;
-	status = "okay";
+	flash@0 {
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
 
-	norflash: m25p80@0 {
-		#address-cells = <1>;
-		#size-cells = <1>;
-		compatible = "jedec,spi-nor";
-		spi-max-frequency = <54000000>;
-		reg = <0>;
-	};
-};
+			partition@0 {
+				label = "barebox";
+				reg = <0x0 0x100000>;
+			};
 
-/* eth0 */
-&fec {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_enet>;
-	phy-mode = "rmii";
-	status = "okay";
-	phy-reset-gpios = <&gpio1 5 0>;
-	phy-reset-duration = <100>;
-	#address-cells = <0>;
-	#size-cells = <1>;
-	fixed-link {
-		speed = <100>;
-		full-duplex;
+			/* space left to let barebox grow */
+
+			/* placed near the end of the NOR memory */
+			barebox_env: partition@780000 {
+				label = "barebox-environment";
+				reg = <0x780000 0x40000>;
+			};
+
+			/* placed at the end of the NOR memory */
+			state_storage: partition@7C0000 {
+				label = "barebox-state";
+				/* four times mirrored */
+				reg = <0x7C0000 0x40000>;
+			};
+		};
 	};
 };
 
@@ -506,21 +365,7 @@
 	status = "okay";
 };
 
-&usdhc3 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_usdhc3>;
-	wp-gpios = <&gpio7 1 0>;
-	cd-gpios = <&gpio7 0 0>;
-	status = "okay";
-	fsl,delay-line;
-};
-
 &gpmi {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_gpmi_nand>;
-	nand-on-flash-bbt;
-	status = "okay";
-
 	partitions {
 		compatible = "fixed-partitions";
 		#address-cells = <1>;
@@ -529,34 +374,6 @@
 		partition@0 {
 			label = "firmware";
 			reg = <0x00000000 0x000000000>; /* keep zero sized to enable autodetection */
-		};
-	};
-};
-
-/* define the SPI based 8 MiB NOR flash layout */
-&norflash {
-	partitions {
-		compatible = "fixed-partitions";
-		#address-cells = <1>;
-		#size-cells = <1>;
-
-		partition@0 {
-			label = "barebox";
-			reg = <0x0 0x100000>;
-		};
-
-		/* space left to let barebox grow */
-
-		/* placed near the end of the NOR memory */
-		barebox_env: partition@780000 {
-			label = "barebox-environment";
-			reg = <0x780000 0x40000>;
-		};
-
-		/* placed at the end of the NOR memory */
-		state_storage: partition@7C0000 {
-			label = "barebox-state";
-			reg = <0x7C0000 0x40000>; /* four times mirrored */
 		};
 	};
 };

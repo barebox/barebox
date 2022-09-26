@@ -263,12 +263,13 @@ static int of_mdiobus_register(struct mii_bus *mdio, struct device_node *np)
 		}
 
 		of_pinctrl_select_state_default(child);
-		of_mdiobus_reset_phy(mdio, child);
 
-		if (of_mdiobus_child_is_phy(child))
+		if (of_mdiobus_child_is_phy(child)) {
+			of_mdiobus_reset_phy(mdio, child);
 			of_mdiobus_register_phy(mdio, child, addr);
-		else
+		} else {
 			of_mdiobus_register_device(mdio, child, addr);
+		}
 	}
 
 	return 0;

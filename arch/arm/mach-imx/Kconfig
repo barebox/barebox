@@ -646,6 +646,8 @@ config MACH_SKOV_IMX6
 	select ARCH_IMX6
 	select ARM_USE_COMPRESSED_DTB
 	select MCI_IMX_ESDHC_PBL
+	select DSA
+	select DRIVER_NET_KSZ8873
 
 endif
 

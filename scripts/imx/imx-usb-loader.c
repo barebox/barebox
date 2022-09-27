@@ -1628,10 +1628,12 @@ int main(int argc, char *argv[])
 		goto out;
 	}
 
-	err = do_status();
-	if (err) {
-		printf("status failed\n");
-		goto out;
+	if (!mach_id->hid_endpoint) {
+		err = do_status();
+		if (err) {
+			printf("status failed\n");
+			goto out;
+		}
 	}
 
 	if (initfile) {

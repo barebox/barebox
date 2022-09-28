@@ -141,6 +141,9 @@ static const struct mfd_cell axp152_cells[] = {
 	{
 		.name		= "axp20x-pek",
 	},
+	{
+		.name		= "axp20x-regulator",
+	},
 };
 
 static const struct mfd_cell axp288_cells[] = {
@@ -336,6 +339,8 @@ int axp20x_device_probe(struct axp20x_dev *axp20x)
 			regmap_write(axp20x->regmap, AXP806_REG_ADDR_EXT,
 				     AXP806_REG_ADDR_EXT_ADDR_SLAVE_MODE);
 	}
+
+	axp20x->dev->priv = axp20x;
 
 	ret = mfd_add_devices(axp20x->dev, axp20x->cells, axp20x->nr_cells);
 	if (ret)

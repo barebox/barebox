@@ -681,7 +681,7 @@ static int do_gpiolib(int argc, char *argv[])
 	if (argc > 2)
 		return COMMAND_ERROR_USAGE;
 
-	if (argc == 1) {
+	if (argc > 1) {
 		struct device_d *dev;
 
 		dev = find_device(argv[1]);

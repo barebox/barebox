@@ -24,30 +24,18 @@
 
 static LIST_HEAD(bbu_image_handlers);
 
-static void append_bbu_entry(struct bbu_handler *handler, struct file_list *files)
+static void append_bbu_entry(const char *_name,
+			     const char *devicefile,
+			     struct file_list *files)
 {
 	char *name;
 
-	name = basprintf("bbu-%s", handler->name);
+	name = basprintf("bbu-%s", _name);
 
-	if (file_list_add_entry(files, name, handler->devicefile, 0))
+	if (file_list_add_entry(files, name, devicefile, 0))
 		pr_warn("duplicate partition name %s\n", name);
 
 	free(name);
-}
-
-static bool bbu_handler_is_available(struct bbu_handler *handler)
-{
-	struct stat s;
-	int ret;
-
-	device_detect_by_name(devpath_to_name(handler->devicefile));
-
-	ret = stat(handler->devicefile, &s);
-	if (ret)
-		return false;
-
-	return true;
 }
 
 void bbu_append_handlers_to_file_list(struct file_list *files)
@@ -55,12 +43,23 @@ void bbu_append_handlers_to_file_list(struct file_list *files)
 	struct bbu_handler *handler;
 
 	list_for_each_entry(handler, &bbu_image_handlers, list) {
-		if (bbu_handler_is_available(handler)) {
-			append_bbu_entry(handler, files);
+		const char *cdevname;
+		struct stat s;
+		char *devpath;
+
+		cdevname = devpath_to_name(handler->devicefile);
+		device_detect_by_name(cdevname);
+
+		devpath = basprintf("/dev/%s", cdevname);
+
+		if (stat(devpath, &s) == 0) {
+			append_bbu_entry(handler->name, devpath, files);
 		} else {
 			pr_info("Skipping unavailable handler bbu-%s\n",
 				handler->name);
 		}
+
+		free(devpath);
 	}
 }
 

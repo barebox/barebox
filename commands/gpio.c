@@ -11,7 +11,7 @@ static int get_gpio_and_value(int argc, char *argv[],
 {
 	struct gpio_chip *chip = NULL;
 	struct device_d *dev;
-	int count = 2;
+	int count = 1;
 	int ret = 0;
 	int opt;
 
@@ -34,7 +34,7 @@ static int get_gpio_and_value(int argc, char *argv[],
 	if (value)
 		count++;
 
-	if (optind < count)
+	if (argc < optind + count)
 		return COMMAND_ERROR_USAGE;
 
 	*gpio = gpio_find_by_name(argv[optind]);

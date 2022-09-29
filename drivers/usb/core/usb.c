@@ -599,7 +599,7 @@ int usb_host_detect(struct usb_host *host)
 	return 0;
 }
 
-void usb_rescan(void)
+int usb_rescan(void)
 {
 	struct usb_host *host;
 	int ret;
@@ -613,6 +613,8 @@ void usb_rescan(void)
 	}
 
 	pr_info("%d USB Device(s) found\n", dev_count);
+
+	return dev_count;
 }
 
 /*-------------------------------------------------------------------

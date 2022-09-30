@@ -27,16 +27,16 @@
 #include <mtd/mtd-peb.h>
 #include <soc/imx/imx-nand-bcb.h>
 
-#ifdef CONFIG_ARCH_IMX6
+#ifdef CONFIG_ARCH_IMX28
+static inline int fcb_is_bch_encoded(void)
+{
+       return 0;
+}
+#else
 #include <mach/imx6.h>
 static inline int fcb_is_bch_encoded(void)
 {
        return cpu_is_mx6ul() || cpu_is_mx6ull();
-}
-#else
-static inline int fcb_is_bch_encoded(void)
-{
-       return 0;
 }
 #endif
 
@@ -516,6 +516,9 @@ static int fcb_create(struct imx_nand_fcb_bbu_handler *imx_handler,
 	fcb->BBMarkerPhysicalOffset = mtd->writesize;
 
 	imx_handler->fcb_create(imx_handler, fcb, mtd);
+
+	fcb->DISBBM = 0;
+	fcb->disbbm_search = 0;
 
 	fcb->Checksum = calc_chksum((void *)fcb + 4, sizeof(*fcb) - 4);
 
@@ -1482,9 +1485,11 @@ int imx6_bbu_nand_register_handler(const char *name, unsigned long flags)
 #define	MX28_BCH_FLASHLAYOUT0_ECC0_OFFSET		12
 #define	BCH_FLASHLAYOUT0_ECC0_MASK			(0x1f << 11)
 #define	BCH_FLASHLAYOUT0_ECC0_OFFSET			11
+#define	BCH_FLASHLAYOUT0_GF13_0_GF14_1_MASK		BIT(10)
+#define	BCH_FLASHLAYOUT0_GF13_0_GF14_1_OFFSET		10
 #define	BCH_FLASHLAYOUT0_DATA0_SIZE_MASK		0x3ff
-#define	MX28_BCH_FLASHLAYOUT0_DATA0_SIZE_MASK		0xfff
 #define	BCH_FLASHLAYOUT0_DATA0_SIZE_OFFSET		0
+#define	MX28_BCH_FLASHLAYOUT0_DATA0_SIZE_MASK		0xfff
 
 #define BCH_FLASH0LAYOUT1			0x00000090
 #define	BCH_FLASHLAYOUT1_PAGE_SIZE_MASK			(0xffff << 16)
@@ -1493,9 +1498,11 @@ int imx6_bbu_nand_register_handler(const char *name, unsigned long flags)
 #define	BCH_FLASHLAYOUT1_ECCN_OFFSET			11
 #define	MX28_BCH_FLASHLAYOUT1_ECCN_MASK			(0xf << 12)
 #define	MX28_BCH_FLASHLAYOUT1_ECCN_OFFSET		12
+#define	BCH_FLASHLAYOUT1_GF13_0_GF14_1_MASK		BIT(10)
+#define	BCH_FLASHLAYOUT1_GF13_0_GF14_1_OFFSET		10
+#define	BCH_FLASHLAYOUT1_DATAN_SIZE_OFFSET		0
 #define	BCH_FLASHLAYOUT1_DATAN_SIZE_MASK		0x3ff
 #define	MX28_BCH_FLASHLAYOUT1_DATAN_SIZE_MASK		0xfff
-#define	BCH_FLASHLAYOUT1_DATAN_SIZE_OFFSET		0
 
 #ifdef CONFIG_ARCH_IMX28
 #include <mach/imx28-regs.h>
@@ -1532,6 +1539,78 @@ int imx28_bbu_nand_register_handler(const char *name, unsigned long flags)
 	imx_handler->fcb_write = fcb_write_hamming_13_8;
 
 	imx_handler->filetype = filetype_mxs_bootstream;
+
+	handler = &imx_handler->handler;
+	handler->devicefile = "nand0.barebox";
+	handler->name = name;
+	handler->flags = flags | BBU_HANDLER_CAN_REFRESH;
+	handler->handler = imx_bbu_nand_update;
+
+	ret = bbu_register_handler(handler);
+	if (ret)
+		free(handler);
+
+	return ret;
+}
+#endif
+
+#ifdef CONFIG_ARCH_IMX7
+#include <mach/imx7-regs.h>
+
+static void imx7_fcb_create(struct imx_nand_fcb_bbu_handler *imx_handler,
+		struct fcb_block *fcb, struct mtd_info *mtd)
+{
+	void __iomem *bch_regs = IOMEM(MX7_BCH_BASE);
+	u32 fl0, fl1;
+
+	/* Also hardcoded in kobs-ng */
+	fcb->DataSetup = 10;
+	fcb->DataHold = 7;
+	fcb->AddressSetup = 15;
+	fcb->DSAMPLE_TIME = 6;
+
+	fl0 = readl(bch_regs + BCH_FLASH0LAYOUT0);
+	fcb->MetadataBytes = BF_VAL(fl0, BCH_FLASHLAYOUT0_META_SIZE);
+	fcb->NumEccBlocksPerPage = BF_VAL(fl0, BCH_FLASHLAYOUT0_NBLOCKS);
+
+	fl1 = readl(bch_regs + BCH_FLASH0LAYOUT1);
+	fcb->EccBlock0Size = 4 * BF_VAL(fl1, BCH_FLASHLAYOUT0_DATA0_SIZE);
+	fcb->EccBlock0EccType = BF_VAL(fl1, BCH_FLASHLAYOUT0_ECC0);
+	fcb->EccBlockNSize = 4 * BF_VAL(fl1, BCH_FLASHLAYOUT1_DATAN_SIZE);
+	fcb->EccBlockNEccType = BF_VAL(fl1, BCH_FLASHLAYOUT1_ECCN);
+	fcb->BCHType = BF_VAL(fl1, BCH_FLASHLAYOUT1_GF13_0_GF14_1);
+}
+
+static int imx7_fcb_read(struct mtd_info *mtd, int block, struct fcb_block **retfcb)
+{
+	struct fcb_block *fcb = xzalloc(mtd->writesize);
+	int ret;
+
+	ret = mxs_nand_read_fcb_bch62(block, fcb, sizeof(*fcb));
+	if (ret)
+		free(fcb);
+	else
+		*retfcb = fcb;
+
+	return ret;
+}
+
+static int imx7_fcb_write(struct mtd_info *mtd, int block, struct fcb_block *fcb)
+{
+	return mxs_nand_write_fcb_bch62(block, fcb, sizeof(*fcb));
+}
+
+int imx7_bbu_nand_register_handler(const char *name, unsigned long flags)
+{
+	struct imx_nand_fcb_bbu_handler *imx_handler;
+	struct bbu_handler *handler;
+	int ret;
+
+	imx_handler = xzalloc(sizeof(*imx_handler));
+	imx_handler->fcb_create = imx7_fcb_create;
+	imx_handler->fcb_read = imx7_fcb_read;
+	imx_handler->fcb_write = imx7_fcb_write;
+	imx_handler->filetype = filetype_arm_barebox;
 
 	handler = &imx_handler->handler;
 	handler->devicefile = "nand0.barebox";

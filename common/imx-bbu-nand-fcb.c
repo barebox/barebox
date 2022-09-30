@@ -45,6 +45,8 @@ struct imx_nand_fcb_bbu_handler {
 
 	void (*fcb_create)(struct imx_nand_fcb_bbu_handler *imx_handler,
 		struct fcb_block *fcb, struct mtd_info *mtd);
+	int (*fcb_read)(struct mtd_info *mtd, int block, struct fcb_block **retfcb);
+	int (*fcb_write)(struct mtd_info *mtd, int block, struct fcb_block *fcb);
 	enum filetype filetype;
 };
 
@@ -123,7 +125,7 @@ static void encode_bch_ecc(void *buf, struct fcb_block *fcb, int eccbits)
 	free_bch(bch);
 }
 
-static struct fcb_block *read_fcb_bch(void *rawpage, int eccbits)
+static struct fcb_block *fcb_decode_bch(void *rawpage, int eccbits)
 {
 	int i, j, ret, errbit, m = 13;
 	int blocksize = 128;
@@ -227,7 +229,7 @@ static uint32_t calc_chksum(void *buf, size_t size)
 	return ~chksum;
 }
 
-static struct fcb_block *read_fcb_hamming_13_8(void *rawpage)
+static struct fcb_block *fcb_decode_hamming_13_8(void *rawpage)
 {
 	int i;
 	int bitflips = 0, bit_to_flip;
@@ -367,7 +369,7 @@ static ssize_t raw_write_page(struct mtd_info *mtd, void *buf, loff_t offset)
         return ret;
 }
 
-static int read_fcb(struct mtd_info *mtd, int num, struct fcb_block **retfcb)
+static int fcb_read_hamming_13_8(struct mtd_info *mtd, int block, struct fcb_block **retfcb)
 {
 	int ret;
 	struct fcb_block *fcb;
@@ -377,19 +379,15 @@ static int read_fcb(struct mtd_info *mtd, int num, struct fcb_block **retfcb)
 
 	rawpage = xmalloc(mtd->writesize + mtd->oobsize);
 
-	ret = raw_read_page(mtd, rawpage, mtd->erasesize * num);
+	ret = raw_read_page(mtd, rawpage, mtd->erasesize * block);
 	if (ret) {
-		pr_err("Cannot read block %d\n", num);
+		pr_err("Cannot read block %d\n", block);
 		goto err;
 	}
 
-	if (fcb_is_bch_encoded())
-		fcb = read_fcb_bch(rawpage, 40);
-	else
-		fcb = read_fcb_hamming_13_8(rawpage);
-
+	fcb = fcb_decode_hamming_13_8(rawpage);
 	if (IS_ERR(fcb)) {
-		pr_err("Cannot read fcb on block %d\n", num);
+		pr_err("Cannot decode fcb on block %d\n", block);
 		ret = PTR_ERR(fcb);
 		goto err;
 	}
@@ -401,6 +399,87 @@ err:
 
 	return ret;
 }
+
+static int fcb_write_hamming_13_8(struct mtd_info *mtd, int block, struct fcb_block *fcb)
+{
+	void *fcb_raw_page = xzalloc(mtd->writesize + mtd->oobsize);
+	int ret;
+
+	memcpy(fcb_raw_page + 12, fcb, sizeof(struct fcb_block));
+
+	/*
+	 * Set the first and second byte of OOB data to 0xFF, not 0x00. These
+	 * bytes are used as the Manufacturers Bad Block Marker (MBBM). Since
+	 * the FCB is mostly written to the first page in a block, a scan for
+	 * factory bad blocks will detect these blocks as bad, e.g. when
+	 * function nand_scan_bbt() is executed to build a new bad block table.
+	 */
+	memset(fcb_raw_page + mtd->writesize, 0xFF, 2);
+
+	encode_hamming_13_8(fcb_raw_page + 12, fcb_raw_page + 12 + 512, 512);
+
+	ret = raw_write_page(mtd, fcb_raw_page, block * mtd->erasesize);
+
+	free(fcb_raw_page);
+
+	return ret;
+}
+
+static int fcb_read_bch(struct mtd_info *mtd, int block, struct fcb_block **retfcb)
+{
+	int ret;
+	struct fcb_block *fcb;
+	void *rawpage;
+
+	*retfcb = NULL;
+
+	rawpage = xmalloc(mtd->writesize + mtd->oobsize);
+
+	ret = raw_read_page(mtd, rawpage, mtd->erasesize * block);
+	if (ret) {
+		pr_err("Cannot read block %d\n", block);
+		goto err;
+	}
+
+	fcb = fcb_decode_bch(rawpage, 40);
+	if (IS_ERR(fcb)) {
+		pr_err("Cannot decode fcb on block %d\n", block);
+		ret = PTR_ERR(fcb);
+		goto err;
+	}
+
+	*retfcb = fcb;
+	ret = 0;
+err:
+	free(rawpage);
+
+	return ret;
+}
+
+static int fcb_write_bch(struct mtd_info *mtd, int block, struct fcb_block *fcb)
+{
+	void *fcb_raw_page = xzalloc(mtd->writesize + mtd->oobsize);
+	int ret;
+
+	/* 40 bit BCH, for i.MX6UL(L) */
+	encode_bch_ecc(fcb_raw_page + 32, fcb, 40);
+
+	/*
+	 * Set the first and second byte of OOB data to 0xFF, not 0x00. These
+	 * bytes are used as the Manufacturers Bad Block Marker (MBBM). Since
+	 * the FCB is mostly written to the first page in a block, a scan for
+	 * factory bad blocks will detect these blocks as bad, e.g. when
+	 * function nand_scan_bbt() is executed to build a new bad block table.
+	 */
+	memset(fcb_raw_page + mtd->writesize, 0xFF, 2);
+
+	ret = raw_write_page(mtd, fcb_raw_page, block * mtd->erasesize);
+
+	free(fcb_raw_page);
+
+	return ret;
+}
+
 
 static int fcb_create(struct imx_nand_fcb_bbu_handler *imx_handler,
 		struct fcb_block *fcb, struct mtd_info *mtd)
@@ -651,7 +730,7 @@ static void imx28_dbbt_create(struct dbbt_block *dbbt, int num_bad_blocks)
  * imx_bbu_write_fcb - Write FCB and DBBT raw data to the device
  * @mtd: The mtd Nand device
  * @block: The block to write to
- * @fcb_raw_page: The raw FCB data
+ * @fcb: FCB
  * @dbbt_data_page: The DBBT data
  *
  * This function writes the FCB/DBBT data to the block given in @block
@@ -660,7 +739,8 @@ static void imx28_dbbt_create(struct dbbt_block *dbbt, int num_bad_blocks)
  *
  * return: 0 on success or a negative error code otherwise.
  */
-static int imx_bbu_write_fcb(struct mtd_info *mtd, int block, void *fcb_raw_page,
+static int imx_bbu_write_fcb(struct imx_nand_fcb_bbu_handler *imx_handler,
+			     struct mtd_info *mtd, int block, struct fcb_block *fcb,
 			     void *dbbt_data_page)
 {
 	struct dbbt_block *dbbt;
@@ -682,7 +762,7 @@ again:
 	if (ret)
 		return ret;
 
-	ret = raw_write_page(mtd, fcb_raw_page, block * mtd->erasesize);
+	ret = imx_handler->fcb_write(mtd, block, fcb);
 	if (ret) {
 		pr_err("Writing FCB on block %d failed with %s\n",
 		       block, strerror(-ret));
@@ -850,7 +930,7 @@ static int fcb_dbbt_check(struct imx_nand_fcb_bbu_handler *imx_handler,
 	struct fcb_block *f;
 	int pages_per_block = mtd->erasesize / mtd->writesize;
 
-	ret = read_fcb(mtd, num, &f);
+	ret = imx_handler->fcb_read(mtd, num, &f);
 	if (ret)
 		return ret;
 
@@ -891,7 +971,6 @@ static int imx_bbu_write_fcbs_dbbts(struct imx_nand_fcb_bbu_handler *imx_handler
 {
 	void *dbbt = NULL;
 	int i, ret, valid = 0;
-	void *fcb_raw_page;
 
 	/*
 	 * The DBBT search start page is configurable in the FCB block.
@@ -901,27 +980,7 @@ static int imx_bbu_write_fcbs_dbbts(struct imx_nand_fcb_bbu_handler *imx_handler
 	if (fcb->DBBTSearchAreaStartAddress != 1)
 		return -EINVAL;
 
-	fcb_raw_page = xzalloc(mtd->writesize + mtd->oobsize);
-
-	if (fcb_is_bch_encoded()) {
-		/* 40 bit BCH, for i.MX6UL(L) */
-		encode_bch_ecc(fcb_raw_page + 32, fcb, 40);
-	} else {
-		memcpy(fcb_raw_page + 12, fcb, sizeof(struct fcb_block));
-		encode_hamming_13_8(fcb_raw_page + 12,
-				    fcb_raw_page + 12 + 512, 512);
-	}
-
 	dbbt = dbbt_data_create(mtd);
-
-	/*
-	 * Set the first and second byte of OOB data to 0xFF, not 0x00. These
-	 * bytes are used as the Manufacturers Bad Block Marker (MBBM). Since
-	 * the FCB is mostly written to the first page in a block, a scan for
-	 * factory bad blocks will detect these blocks as bad, e.g. when
-	 * function nand_scan_bbt() is executed to build a new bad block table.
-	 */
-	memset(fcb_raw_page + mtd->writesize, 0xFF, 2);
 
 	pr_info("Writing FCBs/DBBTs with primary/secondary Firmwares at pages %d/%d\n",
 		fcb->Firmware1_startingPage, fcb->Firmware2_startingPage);
@@ -938,14 +997,13 @@ static int imx_bbu_write_fcbs_dbbts(struct imx_nand_fcb_bbu_handler *imx_handler
 
 		pr_info("Writing FCB/DBBT on block %d\n", i);
 
-		ret = imx_bbu_write_fcb(mtd, i, fcb_raw_page, dbbt);
+		ret = imx_bbu_write_fcb(imx_handler, mtd, i, fcb, dbbt);
 		if (ret)
 			pr_err("Writing FCB/DBBT %d failed with: %s\n", i, strerror(-ret));
 		else
 			valid++;
 	}
 
-	free(fcb_raw_page);
 	free(dbbt);
 
 	if (!valid)
@@ -1185,7 +1243,7 @@ static int imx_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *dat
 	}
 
 	for (i = 0; i < 4; i++) {
-		read_fcb(mtd, i, &fcb);
+		imx_handler->fcb_read(mtd, i, &fcb);
 		if (fcb)
 			break;
 	}
@@ -1382,6 +1440,14 @@ int imx6_bbu_nand_register_handler(const char *name, unsigned long flags)
 	imx_handler->fcb_create = imx6_fcb_create;
 	imx_handler->filetype = filetype_arm_barebox;
 
+	if (fcb_is_bch_encoded()) {
+		imx_handler->fcb_read = fcb_read_bch;
+		imx_handler->fcb_write = fcb_write_bch;
+	} else {
+		imx_handler->fcb_read = fcb_read_hamming_13_8;
+		imx_handler->fcb_write = fcb_write_hamming_13_8;
+	}
+
 	handler = &imx_handler->handler;
 	handler->devicefile = "nand0.barebox";
 	handler->name = name;
@@ -1462,6 +1528,8 @@ int imx28_bbu_nand_register_handler(const char *name, unsigned long flags)
 
 	imx_handler = xzalloc(sizeof(*imx_handler));
 	imx_handler->fcb_create = imx28_fcb_create;
+	imx_handler->fcb_read = fcb_read_hamming_13_8;
+	imx_handler->fcb_write = fcb_write_hamming_13_8;
 
 	imx_handler->filetype = filetype_mxs_bootstream;
 

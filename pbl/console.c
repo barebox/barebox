@@ -39,9 +39,9 @@ int console_puts(unsigned int ch, const char *str)
 
 	while (*str) {
 		if (*str == '\n')
-			console_putc(CONSOLE_STDOUT, '\r');
+			console_putc(ch, '\r');
 
-		console_putc(CONSOLE_STDOUT, *str);
+		console_putc(ch, *str);
 		str++;
 		n++;
 	}
@@ -74,7 +74,7 @@ int pr_print(int level, const char *fmt, ...)
 	i = vsnprintf(printbuffer, sizeof(printbuffer), fmt, args);
 	va_end(args);
 
-	console_puts(CONSOLE_STDOUT, printbuffer);
+	console_puts(CONSOLE_STDERR, printbuffer);
 
 	return i;
 }

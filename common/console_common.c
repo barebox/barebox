@@ -68,7 +68,7 @@ void log_clean(unsigned int limit)
 	}
 }
 
-static void print_colored_log_level(const int level)
+static void print_colored_log_level(unsigned int ch, const int level)
 {
 	if (!console_allow_color())
 		return;
@@ -77,7 +77,7 @@ static void print_colored_log_level(const int level)
 	if (!colored_log_level[level])
 		return;
 
-	puts(colored_log_level[level]);
+	console_puts(ch, colored_log_level[level]);
 }
 
 static void pr_puts(int level, const char *str)
@@ -112,8 +112,8 @@ nolog:
 	if (level > barebox_loglevel)
 		return;
 
-	print_colored_log_level(level);
-	puts(str);
+	print_colored_log_level(CONSOLE_STDERR, level);
+	console_puts(CONSOLE_STDERR, str);
 }
 
 int pr_print(int level, const char *fmt, ...)
@@ -217,7 +217,7 @@ void log_print(unsigned flags, unsigned levels)
 
 		if (!(flags & (BAREBOX_LOG_PRINT_RAW | BAREBOX_LOG_PRINT_TIME
 			       | BAREBOX_LOG_DIFF_TIME)))
-			print_colored_log_level(log->level);
+			print_colored_log_level(CONSOLE_STDOUT, log->level);
 
 		if (flags & BAREBOX_LOG_PRINT_RAW)
 			printf("<%i>", log->level);

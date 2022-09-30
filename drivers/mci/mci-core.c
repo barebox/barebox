@@ -1750,10 +1750,13 @@ static int mci_card_probe(struct mci *mci)
 	int i, rc, disknum, ret;
 	bool has_bootpart = false;
 
-	if (host->card_present && !host->card_present(host) &&
-	    !host->non_removable) {
-		dev_err(&mci->dev, "no card inserted\n");
-		return -ENODEV;
+	if (host->card_present && !host->card_present(host) && !host->non_removable) {
+		if (!host->broken_cd) {
+			dev_err(&mci->dev, "no card inserted\n");
+			return -ENODEV;
+		}
+
+		dev_info(&mci->dev, "no card inserted (ignoring)\n");
 	}
 
 	ret = regulator_enable(host->supply);
@@ -2043,6 +2046,7 @@ void mci_of_parse_node(struct mci_host *host,
 		}
 	}
 
+	host->broken_cd = of_property_read_bool(np, "broken-cd");
 	host->non_removable = of_property_read_bool(np, "non-removable");
 	host->no_sd = of_property_read_bool(np, "no-sd");
 	host->disable_wp = of_property_read_bool(np, "disable-wp");

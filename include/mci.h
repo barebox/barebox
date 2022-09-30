@@ -404,6 +404,7 @@ struct mci_host {
 	unsigned max_req_size;
 	unsigned dsr_val;	/**< optional dsr value */
 	int use_dsr;		/**< optional dsr usage flag */
+	int broken_cd;		/**< card detect is broken */
 	bool non_removable;	/**< device is non removable */
 	bool no_sd;		/**< do not send SD commands during initialization */
 	bool disable_wp;	/**< ignore write-protect detection logic */

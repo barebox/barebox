@@ -1393,9 +1393,6 @@ int imx6_bbu_nand_register_handler(const char *name, unsigned long flags)
 	return ret;
 }
 
-#ifdef CONFIG_ARCH_IMX28
-#include <mach/imx28-regs.h>
-
 #define GPMI_TIMING0				0x00000070
 #define	GPMI_TIMING0_ADDRESS_SETUP_MASK			(0xff << 16)
 #define	GPMI_TIMING0_ADDRESS_SETUP_OFFSET		16
@@ -1413,18 +1410,27 @@ int imx6_bbu_nand_register_handler(const char *name, unsigned long flags)
 #define	BCH_FLASHLAYOUT0_NBLOCKS_OFFSET			24
 #define	BCH_FLASHLAYOUT0_META_SIZE_MASK			(0xff << 16)
 #define	BCH_FLASHLAYOUT0_META_SIZE_OFFSET		16
-#define	BCH_FLASHLAYOUT0_ECC0_MASK			(0xf << 12)
-#define	BCH_FLASHLAYOUT0_ECC0_OFFSET			12
-#define	BCH_FLASHLAYOUT0_DATA0_SIZE_MASK		0xfff
+#define	MX28_BCH_FLASHLAYOUT0_ECC0_MASK			(0xf << 12)
+#define	MX28_BCH_FLASHLAYOUT0_ECC0_OFFSET		12
+#define	BCH_FLASHLAYOUT0_ECC0_MASK			(0x1f << 11)
+#define	BCH_FLASHLAYOUT0_ECC0_OFFSET			11
+#define	BCH_FLASHLAYOUT0_DATA0_SIZE_MASK		0x3ff
+#define	MX28_BCH_FLASHLAYOUT0_DATA0_SIZE_MASK		0xfff
 #define	BCH_FLASHLAYOUT0_DATA0_SIZE_OFFSET		0
 
 #define BCH_FLASH0LAYOUT1			0x00000090
 #define	BCH_FLASHLAYOUT1_PAGE_SIZE_MASK			(0xffff << 16)
 #define	BCH_FLASHLAYOUT1_PAGE_SIZE_OFFSET		16
-#define	BCH_FLASHLAYOUT1_ECCN_MASK			(0xf << 12)
-#define	BCH_FLASHLAYOUT1_ECCN_OFFSET			12
-#define	BCH_FLASHLAYOUT1_DATAN_SIZE_MASK		0xfff
+#define	BCH_FLASHLAYOUT1_ECCN_MASK			(0x1f << 11)
+#define	BCH_FLASHLAYOUT1_ECCN_OFFSET			11
+#define	MX28_BCH_FLASHLAYOUT1_ECCN_MASK			(0xf << 12)
+#define	MX28_BCH_FLASHLAYOUT1_ECCN_OFFSET		12
+#define	BCH_FLASHLAYOUT1_DATAN_SIZE_MASK		0x3ff
+#define	MX28_BCH_FLASHLAYOUT1_DATAN_SIZE_MASK		0xfff
 #define	BCH_FLASHLAYOUT1_DATAN_SIZE_OFFSET		0
+
+#ifdef CONFIG_ARCH_IMX28
+#include <mach/imx28-regs.h>
 
 static void imx28_fcb_create(struct imx_nand_fcb_bbu_handler *imx_handler,
 		struct fcb_block *fcb, struct mtd_info *mtd)

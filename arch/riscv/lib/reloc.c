@@ -66,7 +66,7 @@ void relocate_to_current_adr(void)
 			putc_ll(' ');
 			puthex_ll(rela->r_addend);
 			putc_ll('\n');
-			panic("");
+			__hang();
 		}
 	}
 

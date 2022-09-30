@@ -752,31 +752,11 @@ static void mxs_nand_config_bch(struct nand_chip *chip, int readlen)
 	writel(fl1, bch_regs + BCH_FLASH0LAYOUT1);
 }
 
-/*
- * Read a page from NAND.
- */
-static int __mxs_nand_ecc_read_page(struct nand_chip *chip,
-					uint8_t *buf, int oob_required, int page,
-					int readlen)
+static int mxs_nand_do_bch_read(struct nand_chip *chip, int channel, int readtotal)
 {
-	struct mtd_info *mtd = nand_to_mtd(chip);
 	struct mxs_nand_info *nand_info = chip->priv;
 	struct mxs_dma_desc *d;
-	uint32_t channel = nand_info->dma_channel_base + nand_info->cur_chip;
-	uint32_t corrected = 0, failed = 0;
-	uint8_t	*status;
-	unsigned int  max_bitflips = 0;
-	int i, ret, readtotal, nchunks;
-
-	nand_read_page_op(chip, page, 0, NULL, 0);
-
-	readlen = roundup(readlen, MXS_NAND_CHUNK_DATA_CHUNK_SIZE);
-	nchunks = mxs_nand_ecc_chunk_cnt(readlen);
-	readtotal =  MXS_NAND_METADATA_SIZE;
-	readtotal += MXS_NAND_CHUNK_DATA_CHUNK_SIZE * nchunks;
-	readtotal += DIV_ROUND_UP(13 * chip->ecc.strength * nchunks, 8);
-
-	mxs_nand_config_bch(chip, readtotal);
+	int ret;
 
 	/* Compile the DMA descriptor - wait for ready. */
 	d = mxs_nand_get_dma_desc(nand_info);
@@ -853,15 +833,48 @@ static int __mxs_nand_ecc_read_page(struct nand_chip *chip,
 	/* Execute the DMA chain. */
 	ret = mxs_dma_go(channel);
 	if (ret) {
-		printf("MXS NAND: DMA read error (ecc)\n");
-		goto rtn;
+		dev_err(nand_info->dev, "MXS NAND: DMA read error (ecc)\n");
+		goto out;
 	}
 
 	ret = mxs_nand_wait_for_bch_complete(nand_info);
 	if (ret) {
-		printf("MXS NAND: BCH read timeout\n");
-		goto rtn;
+		dev_err(nand_info->dev, "MXS NAND: BCH read timeout\n");
+		goto out;
 	}
+
+out:
+	mxs_nand_return_dma_descs(nand_info);
+
+	return ret;
+}
+
+/*
+ * Read a page from NAND.
+ */
+static int __mxs_nand_ecc_read_page(struct nand_chip *chip,
+					uint8_t *buf, int oob_required, int page,
+					int readlen)
+{
+	struct mtd_info *mtd = nand_to_mtd(chip);
+	struct mxs_nand_info *nand_info = chip->priv;
+	uint32_t channel = nand_info->dma_channel_base + nand_info->cur_chip;
+	uint32_t corrected = 0, failed = 0;
+	uint8_t	*status;
+	unsigned int  max_bitflips = 0;
+	int i, ret, readtotal, nchunks;
+
+	nand_read_page_op(chip, page, 0, NULL, 0);
+
+	readlen = roundup(readlen, MXS_NAND_CHUNK_DATA_CHUNK_SIZE);
+	nchunks = mxs_nand_ecc_chunk_cnt(readlen);
+	readtotal =  MXS_NAND_METADATA_SIZE;
+	readtotal += MXS_NAND_CHUNK_DATA_CHUNK_SIZE * nchunks;
+	readtotal += DIV_ROUND_UP(13 * chip->ecc.strength * nchunks, 8);
+
+	mxs_nand_config_bch(chip, readtotal);
+
+	mxs_nand_do_bch_read(chip, channel, readtotal);
 
 	/* Read DMA completed, now do the mark swapping. */
 	mxs_nand_swap_block_mark(chip, nand_info->data_buf, nand_info->oob_buf);
@@ -942,7 +955,7 @@ static int __mxs_nand_ecc_read_page(struct nand_chip *chip,
 	chip->oob_poi[0] = nand_info->oob_buf[0];
 
 	ret = 0;
-rtn:
+
 	mxs_nand_return_dma_descs(nand_info);
 
 	mxs_nand_config_bch(chip, mtd->writesize + mtd->oobsize);

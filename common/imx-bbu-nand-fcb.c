@@ -843,7 +843,8 @@ out:
  *
  * return: 0 if the FCB/DBBT are valid, a negative error code otherwise
  */
-static int fcb_dbbt_check(struct mtd_info *mtd, int num, struct fcb_block *fcb)
+static int fcb_dbbt_check(struct imx_nand_fcb_bbu_handler *imx_handler,
+			  struct mtd_info *mtd, int num, struct fcb_block *fcb)
 {
 	int ret;
 	struct fcb_block *f;
@@ -885,7 +886,8 @@ out:
  *
  * return: 0 for success or a negative error code otherwise.
  */
-static int imx_bbu_write_fcbs_dbbts(struct mtd_info *mtd, struct fcb_block *fcb)
+static int imx_bbu_write_fcbs_dbbts(struct imx_nand_fcb_bbu_handler *imx_handler,
+				    struct mtd_info *mtd, struct fcb_block *fcb)
 {
 	void *dbbt = NULL;
 	int i, ret, valid = 0;
@@ -928,7 +930,7 @@ static int imx_bbu_write_fcbs_dbbts(struct mtd_info *mtd, struct fcb_block *fcb)
 		if (mtd_peb_is_bad(mtd, i))
 			continue;
 
-		if (!fcb_dbbt_check(mtd, i, fcb)) {
+		if (!fcb_dbbt_check(imx_handler, mtd, i, fcb)) {
 			valid++;
 			pr_info("FCB/DBBT on block %d still valid\n", i);
 			continue;
@@ -1326,7 +1328,7 @@ static int imx_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *dat
 	 * just written as primary firmware. From now on the new
 	 * firmware will be booted.
 	 */
-	ret = imx_bbu_write_fcbs_dbbts(mtd, fcb);
+	ret = imx_bbu_write_fcbs_dbbts(imx_handler, mtd, fcb);
 	if (ret < 0)
 		goto out;
 
@@ -1347,7 +1349,7 @@ static int imx_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *dat
 	 */
 	if (ret > 0) {
 		pr_info("New bad blocks detected, writing FCBs/DBBTs again\n");
-		ret = imx_bbu_write_fcbs_dbbts(mtd, fcb);
+		ret = imx_bbu_write_fcbs_dbbts(imx_handler, mtd, fcb);
 		if (ret < 0)
 			goto out;
 	}

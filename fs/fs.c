@@ -1000,6 +1000,25 @@ const char *cdev_mount_default(struct cdev *cdev, const char *fsoptions)
 }
 
 /*
+ * cdev_mount - return existing mount or mount a cdev to the default path
+ *
+ * If a cdev is already mounted anywhere return the path
+ * it's mounted on.
+ * Otherwise mount it to /mnt/<cdevname> and return the path. Returns an
+ * error pointer on failure.
+ */
+const char *cdev_mount(struct cdev *cdev)
+{
+	const char *path;
+
+	path = cdev_get_mount_path(cdev);
+	if (path)
+		return path;
+
+	return cdev_mount_default(cdev, NULL);
+}
+
+/*
  * mount_all - iterate over block devices and mount all devices we are able to
  */
 void mount_all(void)

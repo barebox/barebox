@@ -533,13 +533,13 @@ static int zlib_decomp_init(void)
 
 static int zstd_decomp_init(void)
 {
-	const size_t wksp_size = zstd_dctx_workspace_bound();
+	const size_t wksp_size = ZSTD_DCtxWorkspaceBound();
 	void *wksp = malloc(wksp_size);
 
 	if (!wksp)
 		return -ENOMEM;
 
-	ubifs_zstd_cctx = zstd_init_dctx(wksp, wksp_size);
+	ubifs_zstd_cctx = ZSTD_initDCtx(wksp, wksp_size);
 	if (!ubifs_zstd_cctx)
 		return -EINVAL;
 

@@ -39,7 +39,7 @@ static void *zstd_init(struct squashfs_sb_info *msblk, void *buff)
 		goto failed;
 	wksp->window_size = max_t(size_t,
 			msblk->block_size, SQUASHFS_METADATA_SIZE);
-	wksp->mem_size = zstd_dstream_workspace_bound(wksp->window_size);
+	wksp->mem_size = ZSTD_DStreamWorkspaceBound(wksp->window_size);
 	wksp->mem = vmalloc(wksp->mem_size);
 	if (wksp->mem == NULL)
 		goto failed;
@@ -75,7 +75,7 @@ static int zstd_uncompress(struct squashfs_sb_info *msblk, void *strm,
 	ZSTD_inBuffer in_buf = { NULL, 0, 0 };
 	ZSTD_outBuffer out_buf = { NULL, 0, 0 };
 
-	stream = zstd_init_dstream(wksp->window_size, wksp->mem, wksp->mem_size);
+	stream = ZSTD_initDStream(wksp->window_size, wksp->mem, wksp->mem_size);
 
 	if (!stream) {
 		ERROR("Failed to initialize zstd decompressor\n");

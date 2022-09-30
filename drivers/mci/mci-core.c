@@ -1739,6 +1739,31 @@ static int mci_register_partition(struct mci_part *part)
 	return 0;
 }
 
+static int of_broken_cd_fixup(struct device_node *root, void *ctx)
+{
+	struct mci_host *host = ctx;
+	struct device_d *hw_dev = host->hw_dev;
+	struct device_node *np;
+	char *name;
+
+	if (!host->broken_cd)
+		return 0;
+
+	name = of_get_reproducible_name(hw_dev->device_node);
+	np = of_find_node_by_reproducible_name(root, name);
+	free(name);
+	if (!np) {
+		dev_warn(hw_dev, "Cannot find nodepath %s, cannot fixup\n",
+			 hw_dev->device_node->full_name);
+		return -EINVAL;
+	}
+
+	of_property_write_bool(np, "cd-gpios", false);
+	of_property_write_bool(np, "broken-cd", true);
+
+	return 0;
+}
+
 /**
  * Probe an MCI card at the given host interface
  * @param mci MCI device instance
@@ -1988,6 +2013,9 @@ int mci_register(struct mci_host *host)
 	/* if enabled, probe the attached card immediately */
 	if (IS_ENABLED(CONFIG_MCI_STARTUP))
 		mci_card_probe(mci);
+
+	if (!host->no_sd && dev_of_node(host->hw_dev))
+		of_register_fixup(of_broken_cd_fixup, host);
 
 	list_add_tail(&mci->list, &mci_list);
 

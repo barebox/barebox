@@ -77,6 +77,17 @@ struct fcb_block {
 
 	uint32_t DISBBM;	/* the flag to enable (1)/disable(0) bi swap */
 	uint32_t BBMarkerPhysicalOffsetInSpareData; /* The swap position of main area in spare area */
+
+	/* iMX7 only */
+	uint32_t onfi_sync_enable; /* enable Onfi nand sync support */
+	uint32_t onfi_sync_speed;  /* Speed for Onfi nand sync mode */
+	uint32_t onfi_sync_nand_data; /* parameters for Onfi nand sync mode timing */
+	uint32_t reserved[6];
+	uint32_t disbbm_search; /* disable bad block search function when reading the firmware, only using DBBT */
+	uint32_t disbbm_search_limit; /* ???randomizer type 2 enable ???*/
+	uint32_t reserved1[15]; /* reserved for future use */
+	uint32_t read_retry_enable; /* enable read retry for DBBT and firmware */
+	uint32_t reserved2[1]; /*reserved, keep at 0 */
 };
 
 #endif /* __MACH_IMX_NAND_BCB_H */

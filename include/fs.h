@@ -179,4 +179,6 @@ static inline const char *devpath_to_name(const char *devpath)
 	return devpath;
 }
 
+const char *fs_detect(const char *filename, const char *fsoptions);
+
 #endif /* __FS_H */

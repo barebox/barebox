@@ -756,7 +756,7 @@ int register_fs_driver(struct fs_driver_d *fsdrv)
 }
 EXPORT_SYMBOL(register_fs_driver);
 
-static const char *detect_fs(const char *filename, const char *fsoptions)
+const char *fs_detect(const char *filename, const char *fsoptions)
 {
 	enum filetype type;
 	struct driver_d *drv;
@@ -2980,7 +2980,7 @@ int mount(const char *device, const char *fsname, const char *pathname,
 			device, pathname, fsname, fsoptions);
 
 	if (!fsname)
-		fsname = detect_fs(device, fsoptions);
+		fsname = fs_detect(device, fsoptions);
 
 	if (!fsname) {
 		ret = -ENOENT;

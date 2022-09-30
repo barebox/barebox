@@ -732,25 +732,24 @@ static void mxs_nand_config_bch(struct nand_chip *chip, int readlen)
 	struct mxs_nand_info *nand_info = chip->priv;
 	int chunk_size;
 	void __iomem *bch_regs = nand_info->bch_base;
+	u32 fl0, fl1;
 
 	if (mxs_nand_is_imx6(nand_info))
 		chunk_size = MXS_NAND_CHUNK_DATA_CHUNK_SIZE >> 2;
 	else
 		chunk_size = MXS_NAND_CHUNK_DATA_CHUNK_SIZE;
 
-	writel((mxs_nand_ecc_chunk_cnt(readlen) - 1)
-			<< BCH_FLASHLAYOUT0_NBLOCKS_OFFSET |
-		MXS_NAND_METADATA_SIZE << BCH_FLASHLAYOUT0_META_SIZE_OFFSET |
-		(chip->ecc.strength >> 1)
-			<< IMX6_BCH_FLASHLAYOUT0_ECC0_OFFSET |
-		chunk_size,
-		bch_regs + BCH_FLASH0LAYOUT0);
+	fl0 = (mxs_nand_ecc_chunk_cnt(readlen) - 1)
+			<< BCH_FLASHLAYOUT0_NBLOCKS_OFFSET;
+	fl0 |= MXS_NAND_METADATA_SIZE << BCH_FLASHLAYOUT0_META_SIZE_OFFSET;
+	fl0 |= (chip->ecc.strength >> 1) << IMX6_BCH_FLASHLAYOUT0_ECC0_OFFSET;
+	fl0 |= chunk_size;
+	writel(fl0, bch_regs + BCH_FLASH0LAYOUT0);
 
-	writel(readlen	<< BCH_FLASHLAYOUT1_PAGE_SIZE_OFFSET |
-		(chip->ecc.strength >> 1)
-			<< IMX6_BCH_FLASHLAYOUT1_ECCN_OFFSET |
-		chunk_size,
-		bch_regs + BCH_FLASH0LAYOUT1);
+	fl1 = readlen << BCH_FLASHLAYOUT1_PAGE_SIZE_OFFSET;
+	fl1 |= (chip->ecc.strength >> 1) << IMX6_BCH_FLASHLAYOUT1_ECCN_OFFSET;
+	fl1 |= chunk_size;
+	writel(fl1, bch_regs + BCH_FLASH0LAYOUT1);
 }
 
 /*

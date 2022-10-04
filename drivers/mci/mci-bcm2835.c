@@ -385,8 +385,6 @@ static int bcm2835_mci_probe(struct device_d *hw_dev)
 	host->sdhci.read32 = bcm2835_sdhci_read32;
 	host->sdhci.write32 = bcm2835_sdhci_write32;
 
-	hw_dev->priv = host;
-
 	mci_of_parse(&host->mci);
 
 	iores = dev_request_mem_resource(hw_dev, 0);
@@ -422,15 +420,6 @@ static int bcm2835_mci_probe(struct device_d *hw_dev)
 	return mci_register(&host->mci);
 }
 
-static void bcm2835_mci_remove(struct device_d *dev)
-{
-	struct bcm2835_mci_host *host = dev->priv;
-
-	sdhci_write32(&host->sdhci,
-		      SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET,
-		      0x00);
-}
-
 static __maybe_unused struct of_device_id bcm2835_mci_compatible[] = {
 	{
 		.compatible = "brcm,bcm2835-sdhci",
@@ -444,7 +433,6 @@ static __maybe_unused struct of_device_id bcm2835_mci_compatible[] = {
 static struct driver_d bcm2835_mci_driver = {
 	.name = "bcm2835_mci",
 	.probe = bcm2835_mci_probe,
-	.remove = bcm2835_mci_remove,
 	.of_compatible = DRV_OF_COMPAT(bcm2835_mci_compatible),
 };
 

@@ -6,10 +6,10 @@ QEMU Virt
 
 barebox supports both the qemu riscv32 and riscv64 ``-M virt`` boards::
 
-  make ARCH=riscv virt64_defconfig
+  make ARCH=riscv rv64i_defconfig
   qemu-system-riscv64 -M virt -serial stdio -kernel build/images/barebox-dt-2nd.img
 
-Replace ``64`` by ``32`` for 32-bit build. :ref:`virtio_sect` over MMIO is supported and
+For 32-bit builds use ``virt32_defconfig``. :ref:`virtio_sect` over MMIO is supported and
 can be used for e.g. an extra console or to pass in a virtio-blk device::
 
   qemu-system-riscv64 -M virt -serial stdio                                \
@@ -65,7 +65,7 @@ BeagleV
 
 barebox has second-stage support for the BeagleV Starlight::
 
-  make ARCH=riscv starfive_defconfig
+  make ARCH=riscv rv64i_defconfig
   make
 
 Thie resulting ``./images/barebox-beaglev-starlight.img`` can be used as payload

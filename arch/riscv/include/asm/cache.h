@@ -8,7 +8,7 @@
 
 static inline void local_flush_icache_all(void)
 {
-#ifdef HAS_CACHE
+#ifdef CONFIG_HAS_CACHE
 	asm volatile ("fence.i" ::: "memory");
 #endif
 }

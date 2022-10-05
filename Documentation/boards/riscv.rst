@@ -188,3 +188,105 @@ Next, start barebox from DRAM::
   running /env/bin/init...
   /env/bin/init not found
   barebox:/
+
+Allwinner D1 Nezha
+------------------
+
+Barebox has limited second-stage support for the Allwinner D1 Nezha (sun20i)::
+
+  ARCH=riscv make rv64i_defconfig
+  ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- make
+
+The resulting ``./images/barebox-allwinner-d1.img`` can be used as 2nd stage
+image which gets called by opensbi::
+
+  git clone https://github.com/tekkamanninja/opensbi -b allwinner_d1
+  cd opensbi
+  CROSS_COMPILE=riscv64-linux-gnu- PLATFORM=generic FW_PIC=y make
+
+The resulting ``./build/platform/generic/firmware/fw_dynamic.bin`` is loaded
+by the 1st stage (spl) loader, which is basically a u-boot spl::
+
+  git clone https://github.com/smaeul/sun20i_d1_spl -b mainline
+  cd sun20i_d1_spl
+  CROSS_COMPILE=riscv64-linux-gnu- make p=sun20iw1p1 mmc
+
+The resulting ``./nboot/boot0_sdcard_sun20iw1p1.bin`` image used as 1st stage
+bootloader which loads all necessary binaries: dtb, opensbi and barebox to the
+dedicated places in DRAM. After loading it jumps to the opensbi image.  The
+initial dtb can be taken from u-boot::
+
+  git clone https://github.com/smaeul/u-boot.git -b d1-wip
+  cd u-boot
+  ARCH=riscv make nezha_defconfig
+  ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- make
+
+Make will print two warnings at the end of this command but those can be ignored
+since we only want the devicetree blob which can be found under ``./u-boot.dtb``.
+
+The final image is build by mkimage. It is some sort of a self-defined toc1
+format. So we need to compile the mkimage with the toc1 format support as
+first::
+
+  cd u-boot
+  make tools-only
+
+The resulting ``tools/mkimage`` is used to build the toc1 image which is loaded
+by the 1st stage bootloader from the mmc interface. To build the final toc1 image
+we need to specify a toc1.cfg like::
+
+  [opensbi]
+  file = <ABSOLUT_PATH_TO>/opensbi/build/platform/generic/firmware/fw_dynamic.bin
+  addr = 0x40000000
+  [dtb]
+  file = <ABSOLUT_PATH_TO>/u-boot/u-boot.dtb
+  addr = 0x44000000
+  [u-boot]
+  file = <ABSOLUT_PATH_TO>/barebox/images/barebox-allwinner-d1.img
+  addr = 0x4a000000
+
+Then we need to call::
+
+  mkimage -T sunxi_toc1 -d toc1.cfg boot.toc1
+
+The last part is to place the 1st stage bootloader and the ``boot.toc1`` image
+onto the correct places. So the ROM loader can find the 1st stage bootloader
+and the 1st bootloader can find the ``boot.toc1`` image. This is done by::
+
+  dd if=boot0_sdcard_sun20iw1p1.bin of=/dev/sd<X> bs=512 seek=16
+  dd if=boot.toc1 of=/dev/sd<X> bs=512 seek=32800
+
+Now plug in the sdcard and power device and you will see::
+
+  [309]HELLO! BOOT0 is starting!
+  [312]BOOT0 commit : 882671f-dirty
+  [315]set pll start
+  [317]periph0 has been enabled
+  [320]set pll end
+  [322]board init ok
+
+  ...
+
+  OpenSBI v0.9-204-gc9024b5
+     ____                    _____ ____ _____
+    / __ \                  / ____|  _ \_   _|
+   | |  | |_ __   ___ _ __ | (___ | |_) || |
+   | |  | | '_ \ / _ \ '_ \ \___ \|  _ < | |
+   | |__| | |_) |  __/ | | |____) | |_) || |_
+    \____/| .__/ \___|_| |_|_____/|____/_____|
+          | |
+          |_|
+
+  Platform Name             : Allwinner D1 Nezha
+  Platform Features         : medeleg
+
+  ...
+
+  barebox 2022.08.0-00262-g38678340903b #1 Tue Sep 13 12:54:29 CEST 2022
+
+
+  Board: Allwinner D1 Nezha
+
+  ...
+
+  barebox@Allwinner D1 Nezha:/

@@ -6,6 +6,7 @@
 #include <common.h>
 #include <init.h>
 #include <driver.h>
+#include <deep-probe.h>
 #include <linux/clk.h>
 #include <io.h>
 #include <of.h>
@@ -358,7 +359,9 @@ static int const clks_init_on[] __initconst = {
 
 static struct clk_onecell_data clk_data;
 
-static int imx7_clk_initialized;
+static struct device_node *ccm_np;
+
+static int imx7_clk_setup(void);
 
 static int imx7_ccm_probe(struct device_d *dev)
 {
@@ -806,19 +809,35 @@ static int imx7_ccm_probe(struct device_d *dev)
 	clk_data.clk_num = ARRAY_SIZE(clks);
 	of_clk_add_provider(dev->device_node, of_clk_src_onecell_get, &clk_data);
 
-	imx7_clk_initialized = 1;
+	ccm_np = dev->device_node;
+
+	/*
+	 * imx7_clk_setup() requires both the CCM and fixed-clock osc devices
+	 * to be available.
+	 * With deep probe enabled, we can instead just directly call
+	 * imx7_clk_setup because the osc fixed-clock will just be probed
+	 * on demand if not yet available. Otherwise, the imx7_clk_setup
+	 * will run at postcore_initcall level.
+	 */
+	if (deep_probe_is_supported())
+		return imx7_clk_setup();
 
 	return 0;
 }
 
 static int imx7_clk_setup(void)
 {
+	struct clk *clk;
 	int i;
 
-	if (!imx7_clk_initialized)
+	if (!ccm_np)
 		return 0;
 
-	clks[IMX7D_OSC_24M_CLK] = clk_lookup("osc");
+	clk = of_clk_get_by_name(ccm_np, "osc");
+	if (IS_ERR(clk))
+		return PTR_ERR(clk);
+
+	clks[IMX7D_OSC_24M_CLK] = clk;
 
 	for (i = 0; i < ARRAY_SIZE(clks_init_on); i++)
 		clk_enable(clks[clks_init_on[i]]);
@@ -839,6 +858,8 @@ static int imx7_clk_setup(void)
 	clk_set_rate(clks[IMX7D_ENET_AXI_ROOT_CLK], 197000000);
 	clk_set_rate(clks[IMX7D_ENET1_TIME_ROOT_CLK], 25000000);
 	clk_set_rate(clks[IMX7D_ENET2_TIME_ROOT_CLK], 25000000);
+
+	ccm_np = NULL;
 
 	return 0;
 }

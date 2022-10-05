@@ -444,7 +444,7 @@ static int format(struct ubiformat_args *args, struct mtd_info *mtd,
 	}
 
 	if (!args->quiet && !args->verbose)
-		printf("\n");
+		printf("\rubiformat: formatted all eraseblocks -- 100 %% complete\n");
 
 	if (!novtbl) {
 		if (eb1 == -1 || eb2 == -1) {

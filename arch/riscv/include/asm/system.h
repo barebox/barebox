@@ -5,6 +5,8 @@
 
 #ifndef __ASSEMBLY__
 
+#include <asm/sbi.h>
+
 #define RISCV_MODE_MASK 0x3
 enum riscv_mode {
     RISCV_U_MODE	= 0,
@@ -42,6 +44,30 @@ static inline long __riscv_hartid(u32 flags)
 	return hartid;
 }
 
+static inline long __riscv_vendor_id(u32 flags)
+{
+	struct sbiret ret;
+	long id;
+
+	switch (__riscv_mode(flags)) {
+	case RISCV_M_MODE:
+		__asm__ volatile("csrr %0, mvendorid\n" : "=r"(id));
+		return id;
+	case RISCV_S_MODE:
+		/*
+		 * We need to use the sbi_ecall() since it can be that we got
+		 * called without a working stack
+		 */
+		ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_MVENDORID,
+				0, 0, 0, 0, 0, 0);
+		if (!ret.error)
+			return ret.value;
+		return -1;
+	default:
+		return -1;
+	}
+}
+
 #ifndef __PBL__
 extern unsigned barebox_riscv_pbl_flags;
 
@@ -53,6 +79,11 @@ static inline enum riscv_mode riscv_mode(void)
 static inline long riscv_hartid(void)
 {
 	return __riscv_hartid(barebox_riscv_pbl_flags);
+}
+
+static inline long riscv_vendor_id(void)
+{
+	return __riscv_vendor_id(barebox_riscv_pbl_flags);
 }
 #endif
 

@@ -15,7 +15,39 @@ enum riscv_mode {
     RISCV_M_MODE	= 3,
 };
 
-static inline enum riscv_mode __riscv_mode(u32 flags)
+static inline void riscv_set_flags(unsigned flags)
+{
+	switch (flags & RISCV_MODE_MASK) {
+	case RISCV_S_MODE:
+		__asm__ volatile("csrw sscratch, %0" : : "r"(flags));
+		break;
+	case RISCV_M_MODE:
+		__asm__ volatile("csrw mscratch, %0" : : "r"(flags));
+		break;
+	default:
+		/* Other modes are not implemented yet */
+		break;
+	}
+}
+
+static inline u32 riscv_get_flags(void)
+{
+	u32 flags = 0;
+
+	if (IS_ENABLED(CONFIG_RISCV_S_MODE))
+		__asm__ volatile("csrr %0, sscratch" : "=r"(flags));
+
+	/*
+	 * Since we always set the scratch register on the very beginning, a
+	 * empty flags indicates that we are running in M-mode.
+	 */
+	if (!flags)
+		__asm__ volatile("csrr %0, mscratch" : "=r"(flags));
+
+	return flags;
+}
+
+static inline enum riscv_mode riscv_mode(void)
 {
 	/* allow non-LTO builds to discard code for unused modes */
 	if (!IS_ENABLED(CONFIG_RISCV_MULTI_MODE)) {
@@ -25,14 +57,14 @@ static inline enum riscv_mode __riscv_mode(u32 flags)
 			return RISCV_S_MODE;
 	}
 
-	return flags & RISCV_MODE_MASK;
+	return riscv_get_flags() & RISCV_MODE_MASK;
 }
 
-static inline long __riscv_hartid(u32 flags)
+static inline long riscv_hartid(void)
 {
 	long hartid = -1;
 
-	switch (__riscv_mode(flags)) {
+	switch (riscv_mode()) {
 	case RISCV_S_MODE:
 		__asm__ volatile("mv %0, tp\n" : "=r"(hartid) :);
 		break;
@@ -44,12 +76,12 @@ static inline long __riscv_hartid(u32 flags)
 	return hartid;
 }
 
-static inline long __riscv_vendor_id(u32 flags)
+static inline long riscv_vendor_id(void)
 {
 	struct sbiret ret;
 	long id;
 
-	switch (__riscv_mode(flags)) {
+	switch (riscv_mode()) {
 	case RISCV_M_MODE:
 		__asm__ volatile("csrr %0, mvendorid\n" : "=r"(id));
 		return id;
@@ -67,25 +99,6 @@ static inline long __riscv_vendor_id(u32 flags)
 		return -1;
 	}
 }
-
-#ifndef __PBL__
-extern unsigned barebox_riscv_pbl_flags;
-
-static inline enum riscv_mode riscv_mode(void)
-{
-	return __riscv_mode(barebox_riscv_pbl_flags);
-}
-
-static inline long riscv_hartid(void)
-{
-	return __riscv_hartid(barebox_riscv_pbl_flags);
-}
-
-static inline long riscv_vendor_id(void)
-{
-	return __riscv_vendor_id(barebox_riscv_pbl_flags);
-}
-#endif
 
 #endif
 

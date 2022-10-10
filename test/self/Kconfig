@@ -10,6 +10,7 @@ if SELFTEST
 config CMD_SELFTEST
 	bool "selftest command"
 	depends on COMMAND_SUPPORT
+	default y
 	help
 	  Command to run enabled barebox self-tests.
 	  If run without arguments, all tests are run

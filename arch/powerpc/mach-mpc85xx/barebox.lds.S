@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  */
 
-#include <asm-generic/barebox.lds.h>
+#include <asm/barebox.lds.h>
 
 #ifdef CONFIG_RESET_VECTOR_ADDRESS
 #define RESET_VECTOR_ADDRESS    CONFIG_RESET_VECTOR_ADDRESS

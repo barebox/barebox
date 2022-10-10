@@ -15,7 +15,7 @@
  *
  */
 
-#include <asm-generic/barebox.lds.h>
+#include <asm/barebox.lds.h>
 
 SECTIONS
 {

@@ -14,7 +14,7 @@
  *
  */
 
-#include <asm-generic/barebox.lds.h>
+#include <asm/barebox.lds.h>
 
 OUTPUT_ARCH("powerpc")
 ENTRY(_start)

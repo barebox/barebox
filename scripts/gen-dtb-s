@@ -4,7 +4,7 @@ name=$1
 dtb=$2
 imd=$3
 
-echo "#include <asm-generic/barebox.lds.h>"
+echo "#include <asm/barebox.lds.h>"
 
 le32() {
 	printf ".byte 0x%02x, 0x%02x, 0x%02x, 0x%02x\n" \

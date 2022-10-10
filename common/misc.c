@@ -105,12 +105,6 @@ const char *strerror(int errnum)
 }
 EXPORT_SYMBOL(strerror);
 
-const char *errno_str(void)
-{
-	return strerror(errno);
-}
-EXPORT_SYMBOL(errno_str);
-
 void perror(const char *s)
 {
 #ifdef CONFIG_ERRNO_MESSAGES

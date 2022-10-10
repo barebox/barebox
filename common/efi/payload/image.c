@@ -133,9 +133,11 @@ static int efi_execute_image(const char *file)
 		pr_debug("Linux kernel detected. Adding bootargs.");
 		options = linux_bootargs_get();
 		pr_err("add linux options '%s'\n", options);
-		loaded_image->load_options = xstrdup_char_to_wchar(options);
-		loaded_image->load_options_size =
-			(strlen(options) + 1) * sizeof(wchar_t);
+		if (options) {
+			loaded_image->load_options = xstrdup_char_to_wchar(options);
+			loaded_image->load_options_size =
+				(strlen(options) + 1) * sizeof(wchar_t);
+		}
 		shutdown_barebox();
 	}
 
@@ -227,8 +229,10 @@ static int do_bootm_efi(struct image_data *data)
 	}
 
 	options = linux_bootargs_get();
-	boot_header->cmd_line_ptr = (uint64_t)options;
-	boot_header->cmdline_size = strlen(options);
+	if (options) {
+		boot_header->cmd_line_ptr = (uint64_t)options;
+		boot_header->cmdline_size = strlen(options);
+	}
 
 	boot_header->code32_start = (uint64_t)loaded_image->image_base +
 			(image_header->setup_sects+1) * 512;

@@ -44,4 +44,11 @@ config HW_RANDOM_STARFIVE
 	  This driver provides barebox support for the Random Number
 	  Generator hardware found on the StarFive family of SoCs.
 
+config HW_RANDOM_EFI
+	tristate "EFI Random Number Generator"
+	depends on EFI
+	help
+	  This driver provides barebox support for the Random Number
+	  Generator Protocol offered by EFI firmware
+
 endif

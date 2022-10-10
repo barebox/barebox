@@ -538,6 +538,7 @@ extern efi_guid_t efi_unknown_device_guid;
 extern efi_guid_t efi_null_guid;
 extern efi_guid_t efi_global_variable_guid;
 extern efi_guid_t efi_block_io_protocol_guid;
+extern efi_guid_t efi_rng_protocol_guid;
 extern efi_guid_t efi_barebox_vendor_guid;
 extern efi_guid_t efi_systemd_vendor_guid;
 
@@ -690,5 +691,22 @@ u8 device_path_to_subtype(struct efi_device_path *dev_path);
 char *device_path_to_partuuid(struct efi_device_path *dev_path);
 
 const char *efi_guid_string(efi_guid_t *g);
+
+#define EFI_RNG_PROTOCOL_GUID \
+	EFI_GUID(0x3152bca5, 0xeade, 0x433d, 0x86, 0x2e, \
+		 0xc0, 0x1c, 0xdc, 0x29, 0x1f, 0x44)
+
+#define EFI_RNG_ALGORITHM_RAW \
+	EFI_GUID(0xe43176d7, 0xb6e8, 0x4827, 0xb7, 0x84, \
+		 0x7f, 0xfd, 0xc4, 0xb6, 0x85, 0x61)
+
+struct efi_rng_protocol {
+	efi_status_t (EFIAPI *get_info)(struct efi_rng_protocol *protocol,
+					size_t *rng_algorithm_list_size,
+					efi_guid_t *rng_algorithm_list);
+	efi_status_t (EFIAPI *get_rng)(struct efi_rng_protocol *protocol,
+				       efi_guid_t *rng_algorithm,
+				       size_t rng_value_length, uint8_t *rng_value);
+};
 
 #endif /* _LINUX_EFI_H */

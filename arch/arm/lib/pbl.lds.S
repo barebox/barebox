@@ -58,17 +58,7 @@ SECTIONS
 	}
 	__shasum_end = .;
 
-	.rel_dyn_start : { *(.__rel_dyn_start) }
-#ifdef CONFIG_CPU_32
-	.rel.dyn : { *(.rel*) }
-#else
-	.rela.dyn : { *(.rela*) }
-#endif
-	.rel_dyn_end : { *(.__rel_dyn_end) }
-
-	.__dynsym_start :  { *(.__dynsym_start) }
-	.dynsym : { *(.dynsym) }
-	.__dynsym_end : { *(.__dynsym_end) }
+	BAREBOX_RELOCATION_TABLE
 
 	pbl_code_size =  . - BASE;
 

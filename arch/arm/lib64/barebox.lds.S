@@ -49,13 +49,7 @@ SECTIONS
 
 	.barebox_imd : { BAREBOX_IMD }
 
-	.rel_dyn_start : { *(.__rel_dyn_start) }
-	.rela.dyn : { *(.rela*) }
-	.rel_dyn_end : { *(.__rel_dyn_end) }
-
-	.__dynsym_start :  { *(.__dynsym_start) }
-	.dynsym : { *(.dynsym) }
-	.__dynsym_end : { *(.__dynsym_end) }
+	BAREBOX_RELOCATION_TABLE
 
 	_edata = .;
 

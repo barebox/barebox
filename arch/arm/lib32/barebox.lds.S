@@ -71,13 +71,7 @@ SECTIONS
 
 	. = .;
 
-	.rel_dyn_start : { *(.__rel_dyn_start) }
-	.rel.dyn : { *(.rel*) }
-	.rel_dyn_end : { *(.__rel_dyn_end) }
-
-	.__dynsym_start :  { *(.__dynsym_start) }
-	.dynsym : { *(.dynsym) }
-	.__dynsym_end : { *(.__dynsym_end) }
+	BAREBOX_RELOCATION_TABLE
 
 	_edata = .;
 	.image_end : { *(.__image_end) }

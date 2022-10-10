@@ -577,16 +577,19 @@ static int bootm_open_fit(struct image_data *data)
 
 static int bootm_open_elf(struct image_data *data)
 {
+	struct elf_image *elf;
+
 	if (!IS_ENABLED(CONFIG_ELF))
 		return -ENOSYS;
 
-	data->elf = elf_open(data->os_file);
-	if (IS_ERR(data->elf))
-		return PTR_ERR(data->elf);
+	elf = elf_open(data->os_file);
+	if (IS_ERR(elf))
+		return PTR_ERR(elf);
 
-	pr_info("Entry Point:  %08llx\n", data->elf->entry);
+	pr_info("Entry Point:  %08llx\n", elf->entry);
 
-	data->os_address = data->elf->entry;
+	data->os_address = elf->entry;
+	data->elf = elf;
 
 	return 0;
 }
@@ -689,29 +692,25 @@ int bootm_boot(struct bootm_data *bootm_data)
 		}
 	}
 
-	if (os_type == filetype_oftree) {
+	switch (os_type) {
+	case filetype_oftree:
 		ret = bootm_open_fit(data);
-		if (ret)
-			return ret;
-	}
-
-	if (os_type == filetype_uimage) {
+		break;
+	case filetype_uimage:
 		ret = bootm_open_os_uimage(data);
-		if (ret) {
-			pr_err("Loading OS image failed with: %s\n",
-			       strerror(-ret));
-			goto err_out;
-		}
+		break;
+	case filetype_elf:
+		ret = bootm_open_elf(data);
+		break;
+	default:
+		ret = 0;
+		break;
 	}
 
-	if (os_type == filetype_elf) {
-		ret = bootm_open_elf(data);
-		if (ret) {
-			pr_err("Loading ELF image failed with: %s\n",
-			       strerror(-ret));
-			data->elf = NULL;
-			goto err_out;
-		}
+	if (ret) {
+		pr_err("Loading %s image failed with: %pe\n",
+		       file_type_to_short_string(os_type), ERR_PTR(ret));
+		goto err_out;
 	}
 
 	if (bootm_data->appendroot) {

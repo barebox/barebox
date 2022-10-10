@@ -253,6 +253,8 @@ sub emulate {
 		} else {
 		    die "--blk unsupported for target\n";
 		}
+
+		$i++;
 	    }
 
 	    # note that barebox doesn't yet support multiple virtio consoles

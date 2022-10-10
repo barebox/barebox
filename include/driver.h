@@ -184,6 +184,8 @@ char *deviceid_from_spec_str(const char *str, char **endp);
 
 static inline const char *dev_id(const struct device_d *dev)
 {
+	if (!dev)
+		return NULL;
 	return (dev->id != DEVICE_ID_SINGLE) ? dev->unique_name : dev->name;
 }
 

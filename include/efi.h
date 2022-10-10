@@ -541,6 +541,7 @@ extern efi_guid_t efi_block_io_protocol_guid;
 extern efi_guid_t efi_rng_protocol_guid;
 extern efi_guid_t efi_barebox_vendor_guid;
 extern efi_guid_t efi_systemd_vendor_guid;
+extern efi_guid_t efi_fdt_guid;
 
 typedef struct {
 	efi_guid_t guid;

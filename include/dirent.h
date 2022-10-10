@@ -18,6 +18,7 @@ typedef struct dir {
 
 DIR *opendir(const char *pathname);
 struct dirent *readdir(DIR *dir);
+int unreaddir(DIR *dir, const struct dirent *d);
 int closedir(DIR *dir);
 
 #endif /* __DIRENT_H */

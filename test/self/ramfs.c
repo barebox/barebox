@@ -44,6 +44,7 @@ static inline int get_file_count(int i)
 
 static void test_ramfs(void)
 {
+	int files[] = { 1, 3, 5, 7, 11, 13, 17 };
 	char fname[128];
 	char *content = NULL;
 	char *oldpwd = NULL;
@@ -127,6 +128,7 @@ static void test_ramfs(void)
 		goto out;
 
 	i = 1;
+	j = 0;
 
 	while ((d = readdir(dir))) {
 		size_t size = 0;
@@ -150,7 +152,20 @@ static void test_ramfs(void)
 
 		free(buf);
 
-		i++;
+		/*
+		 * For select files, we test unreaddir once and check if
+		 * we read back same element on repeated readdir
+		 */
+		for (j = 0; j < ARRAY_SIZE(files); j++) {
+			if (size == files[j]) {
+				ret = unreaddir(dir, d);
+				expect_success(ret, "unreaddir");
+				files[j] = -1;
+				break;
+			}
+		}
+		if (j == ARRAY_SIZE(files))
+			i++;
 	}
 
 	expect_success(i == 90 ? 0 : -EINVAL,

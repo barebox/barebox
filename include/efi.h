@@ -62,7 +62,6 @@ struct efi_device_path;
 #define EFI_ERROR(a)	(((signed long) a) < 0)
 
 typedef unsigned long efi_status_t;
-typedef u8 efi_bool_t;
 typedef u16 efi_char16_t;		/* UNICODE character */
 typedef u64 efi_physical_addr_t;
 typedef void *efi_handle_t;

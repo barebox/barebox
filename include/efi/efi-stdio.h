@@ -8,7 +8,7 @@ struct efi_simple_text_input_ex_protocol;
 
 typedef efi_status_t (EFIAPI *efi_input_reset_ex)(
 	struct efi_simple_text_input_ex_protocol *this,
-	efi_bool_t extended_verification
+	bool extended_verification
 );
 
 struct efi_key_state {

@@ -49,6 +49,7 @@ void imx6ul_cpu_lowlevel_init(void)
 
 void imx7_cpu_lowlevel_init(void)
 {
+	cortex_a7_lowlevel_init();
 	arm_cpu_lowlevel_init();
 	imx_cpu_timer_init(IOMEM(MX7_SYSCNT_CTRL_BASE_ADDR));
 }

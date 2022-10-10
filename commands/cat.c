@@ -40,7 +40,7 @@ static int do_cat(int argc, char *argv[])
 		fd = open(argv[args], O_RDONLY);
 		if (fd < 0) {
 			err = 1;
-			printf("could not open %s: %s\n", argv[args], errno_str());
+			printf("could not open %s: %m\n", argv[args]);
 			goto out;
 		}
 

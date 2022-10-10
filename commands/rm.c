@@ -37,7 +37,7 @@ static int do_rm(int argc, char *argv[])
 		else
 			ret = unlink(argv[i]);
 		if (ret) {
-			printf("could not remove %s: %s\n", argv[i], errno_str());
+			printf("could not remove %s: %m\n", argv[i]);
 			return 1;
 		}
 		i++;

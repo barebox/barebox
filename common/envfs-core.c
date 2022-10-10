@@ -24,7 +24,6 @@
 #include <environment.h>
 #include <libfile.h>
 #else
-# define errno_str(x) ("void")
 #define pr_info(fmt, ...)	printf(pr_fmt(fmt), ##__VA_ARGS__)
 #define pr_warn(fmt, ...)	printf(pr_fmt(fmt), ##__VA_ARGS__)
 #endif
@@ -151,7 +150,7 @@ int envfs_load_data(struct envfs_super *super, void *buf, size_t size,
 			fd = open(str, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 			free(str);
 			if (fd < 0) {
-				printf("Open %s\n", errno_str());
+				printf("Open %m\n");
 				ret = fd;
 				goto out;
 			}

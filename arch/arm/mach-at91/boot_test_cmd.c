@@ -57,7 +57,7 @@ static int do_at91_boot_test(int argc, char *argv[])
 
 	fd = open(sram, O_WRONLY);
 	if (fd < 0) {
-		printf("could not open %s: %s\n", sram, errno_str());
+		printf("could not open %s: %m\n", sram);
 		ret = fd;
 		goto err;
 	}

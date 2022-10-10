@@ -98,7 +98,7 @@ struct uimage_handle *uimage_open(const char *filename)
 
 	fd = open(filename, O_RDONLY);
 	if (fd < 0) {
-		printf("could not open: %s\n", errno_str());
+		printf("could not open: %m\n");
 		free(copy);
 		return NULL;
 	}
@@ -109,7 +109,7 @@ struct uimage_handle *uimage_open(const char *filename)
 	handle->copy = copy;
 
 	if (read(fd, header, sizeof(*header)) < 0) {
-		printf("could not read: %s\n", errno_str());
+		printf("could not read: %m\n");
 		goto err_out;
 	}
 

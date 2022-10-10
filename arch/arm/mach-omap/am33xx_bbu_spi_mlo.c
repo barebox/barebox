@@ -51,7 +51,7 @@ static int spi_nor_mlo_handler(struct bbu_handler *handler,
 
 	ret = stat(data->devicefile, &s);
 	if (ret) {
-		printf("could not open %s: %s", data->devicefile, errno_str());
+		printf("could not open %s: %m", data->devicefile);
 		return ret;
 	}
 
@@ -66,14 +66,14 @@ static int spi_nor_mlo_handler(struct bbu_handler *handler,
 
 	dstfd = open(data->devicefile, O_WRONLY);
 	if (dstfd < 0) {
-		printf("could not open %s: %s", data->devicefile, errno_str());
+		printf("could not open %s: %m", data->devicefile);
 		ret = dstfd;
 		goto out;
 	}
 
 	ret = erase(dstfd, ERASE_SIZE_ALL, 0);
 	if (ret < 0) {
-		printf("could not erase %s: %s", data->devicefile, errno_str());
+		printf("could not erase %s: %m", data->devicefile);
 		goto out1;
 	}
 

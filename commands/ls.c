@@ -164,8 +164,7 @@ static int do_ls(int argc, char *argv[])
 	while (o < argc) {
 		ret = stat(argv[o], &s);
 		if (ret) {
-			printf("%s: %s: %s\n", argv[0],
-					argv[o], errno_str());
+			printf("%s: %s: %m\n", argv[0], argv[o]);
 			o++;
 			exitcode = COMMAND_ERROR;
 			continue;

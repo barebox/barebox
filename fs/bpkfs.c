@@ -381,7 +381,7 @@ static int bpkfs_probe(struct device_d *dev)
 
 	ret = read(fd, header, sizeof(*header));
 	if (ret < 0) {
-		dev_err(dev, "could not read: %s (ret = %d)\n", errno_str(), ret);
+		dev_err(dev, "could not read: %m\n");
 		goto err;
 	}
 
@@ -407,7 +407,7 @@ static int bpkfs_probe(struct device_d *dev)
 
 		ret = read(fd, &data_header, sizeof(data_header));
 		if (ret < 0) {
-			dev_err(dev, "could not read: %s\n", errno_str());
+			dev_err(dev, "could not read: %m\n");
 			goto err;
 		} else if (ret == 0) {
 			dev_err(dev, "EOF: to_read %llu\n", size);
@@ -456,7 +456,7 @@ static int bpkfs_probe(struct device_d *dev)
 		priv->nb_data_entries++;
 
 		if (lseek(fd, d->size, SEEK_CUR) != d->size) {
-			dev_err(dev, "could not seek: %s\n", errno_str());
+			dev_err(dev, "could not seek: %m\n");
 			ret = -errno;
 			goto err;
 		}

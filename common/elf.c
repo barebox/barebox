@@ -109,7 +109,7 @@ static int load_elf_to_memory(struct elf_image *elf)
 	if (elf->filename) {
 		fd = open(elf->filename, O_RDONLY);
 		if (fd < 0) {
-			pr_err("could not open: %s\n", errno_str());
+			pr_err("could not open: %m\n");
 			return -errno;
 		}
 	}
@@ -133,8 +133,7 @@ static int load_elf_to_memory(struct elf_image *elf)
 			}
 
 			if (read_full(fd, dst, p_filesz) < 0) {
-				pr_err("could not read elf segment: %s\n",
-				       errno_str());
+				pr_err("could not read elf segment: %m\n");
 				close(fd);
 				return -errno;
 			}
@@ -256,13 +255,13 @@ static struct elf_image *elf_check_init(const char *filename)
 	/* First pass is to read elf header only */
 	fd = open(filename, O_RDONLY);
 	if (fd < 0) {
-		pr_err("could not open: %s\n", errno_str());
+		pr_err("could not open: %m\n");
 		ret = -errno;
 		goto err_free_elf;
 	}
 
 	if (read_full(fd, &hdr, sizeof(hdr)) < 0) {
-		pr_err("could not read elf header: %s\n", errno_str());
+		pr_err("could not read elf header: %m\n");
 		close(fd);
 		ret = -errno;
 		goto err_free_elf;
@@ -290,13 +289,13 @@ static struct elf_image *elf_check_init(const char *filename)
 	 */
 	fd = open(filename, O_RDONLY);
 	if (fd < 0) {
-		pr_err("could not open: %s\n", errno_str());
+		pr_err("could not open: %m\n");
 		ret = -errno;
 		goto err_free_hdr_buf;
 	}
 
 	if (read_full(fd, elf->hdr_buf, hdr_size) < 0) {
-		pr_err("could not read elf program headers: %s\n", errno_str());
+		pr_err("could not read elf program headers: %m\n");
 		ret = -errno;
 		close(fd);
 		goto err_free_hdr_buf;

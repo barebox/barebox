@@ -11,13 +11,9 @@
 #define BASE	(TEXT_BASE - SZ_2M)
 #endif
 
-#ifdef CONFIG_CPU_32
-OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
-OUTPUT_ARCH(arm)
-#else
-OUTPUT_FORMAT("elf64-littleaarch64", "elf64-littleaarch64", "elf64-littleaarch64")
-OUTPUT_ARCH(aarch64)
-#endif
+OUTPUT_FORMAT(BAREBOX_OUTPUT_FORMAT)
+OUTPUT_ARCH(BAREBOX_OUTPUT_ARCH)
+
 SECTIONS
 {
 	. = BASE;

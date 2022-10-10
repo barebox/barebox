@@ -3,8 +3,8 @@
 
 #include <asm/barebox.lds.h>
 
-OUTPUT_FORMAT("elf64-littleaarch64", "elf64-littleaarch64", "elf64-littleaarch64")
-OUTPUT_ARCH(aarch64)
+OUTPUT_FORMAT(BAREBOX_OUTPUT_FORMAT)
+OUTPUT_ARCH(BAREBOX_OUTPUT_ARCH)
 ENTRY(start)
 SECTIONS
 {

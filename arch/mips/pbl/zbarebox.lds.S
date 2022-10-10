@@ -6,7 +6,7 @@
 #include <asm/barebox.lds.h>
 #include <asm-generic/memory_layout.h>
 
-OUTPUT_ARCH("mips")
+OUTPUT_ARCH(BAREBOX_OUTPUT_ARCH)
 ENTRY(pbl_start)
 SECTIONS
 {

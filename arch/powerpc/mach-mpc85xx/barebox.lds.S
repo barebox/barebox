@@ -21,7 +21,7 @@
 #define RESET_VECTOR_ADDRESS    0xfffffffc
 #endif
 
-OUTPUT_ARCH("powerpc")
+OUTPUT_ARCH(BAREBOX_OUTPUT_ARCH)
 ENTRY(_start_e500)
 
 PHDRS

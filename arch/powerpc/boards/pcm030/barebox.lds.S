@@ -16,7 +16,7 @@
 
 #include <asm/barebox.lds.h>
 
-OUTPUT_ARCH("powerpc")
+OUTPUT_ARCH(BAREBOX_OUTPUT_ARCH)
 ENTRY(_start)
 /* Do we need any of these for elf?
    __DYNAMIC = 0;    */

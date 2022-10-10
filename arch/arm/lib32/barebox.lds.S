@@ -4,8 +4,8 @@
 #include <asm/barebox.lds.h>
 #include <asm/secure.h>
 
-OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
-OUTPUT_ARCH(arm)
+OUTPUT_FORMAT(BAREBOX_OUTPUT_FORMAT)
+OUTPUT_ARCH(BAREBOX_OUTPUT_ARCH)
 ENTRY(start)
 SECTIONS
 {

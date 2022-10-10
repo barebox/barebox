@@ -175,9 +175,9 @@ typedef struct {
 } efi_time_cap_t;
 
 enum efi_locate_search_type {
-	all_handles,
-	by_register_notify,
-	by_protocol
+	ALL_HANDLES,
+	BY_REGISTER_NOTIFY,
+	BY_PROTOCOL
 };
 
 struct efi_open_protocol_information_entry {

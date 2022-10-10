@@ -547,6 +547,11 @@ typedef struct {
 	unsigned long table;
 } efi_config_table_t;
 
+#define for_each_efi_config_table(t) \
+	for (t = efi_sys_table->tables; \
+	     t - efi_sys_table->tables < efi_sys_table->nr_tables; \
+	     t++)
+
 #define EFI_SYSTEM_TABLE_SIGNATURE ((u64)0x5453595320494249ULL)
 
 #define EFI_2_30_SYSTEM_TABLE_REVISION  ((2 << 16) | (30))

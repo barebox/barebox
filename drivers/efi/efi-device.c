@@ -347,13 +347,12 @@ struct bus_type efi_bus = {
 
 static void efi_businfo(struct device_d *dev)
 {
-	int i;
+	efi_config_table_t *t;
+	int i = 0;
 
 	printf("Tables:\n");
-	for (i = 0; i < efi_sys_table->nr_tables; i++) {
-		efi_config_table_t *t = &efi_sys_table->tables[i];
-
-		printf("  %d: %pUl: %s\n", i, &t->guid,
+	for_each_efi_config_table(t) {
+		printf("  %d: %pUl: %s\n", i++, &t->guid,
 					efi_guid_string(&t->guid));
 	}
 }

@@ -519,6 +519,62 @@ static int bootm_open_os_uimage(struct image_data *data)
 	return 0;
 }
 
+static int bootm_open_fit(struct image_data *data)
+{
+	struct fit_handle *fit;
+	static const char *kernel_img = "kernel";
+	int ret;
+
+	if (!IS_ENABLED(CONFIG_FITIMAGE))
+		return 0;
+
+	fit = fit_open(data->os_file, data->verbose, data->verify);
+	if (IS_ERR(fit)) {
+		pr_err("Loading FIT image %s failed with: %pe\n", data->os_file, fit);
+		return PTR_ERR(fit);
+	}
+
+	data->os_fit = fit;
+
+	data->fit_config = fit_open_configuration(data->os_fit,
+						  data->os_part);
+	if (IS_ERR(data->fit_config)) {
+		pr_err("Cannot open FIT image configuration '%s'\n",
+		       data->os_part ? data->os_part : "default");
+		return PTR_ERR(data->fit_config);
+	}
+
+	ret = fit_open_image(data->os_fit, data->fit_config, kernel_img,
+			     &data->fit_kernel, &data->fit_kernel_size);
+	if (ret)
+		return ret;
+	if (data->os_address == UIMAGE_SOME_ADDRESS) {
+		ret = fit_get_image_address(data->os_fit,
+					    data->fit_config,
+					    kernel_img,
+					    "load", &data->os_address);
+		if (!ret)
+			pr_info("Load address from FIT '%s': 0x%lx\n",
+				kernel_img, data->os_address);
+		/* Note: Error case uses default value. */
+	}
+	if (data->os_entry == UIMAGE_SOME_ADDRESS) {
+		unsigned long entry;
+		ret = fit_get_image_address(data->os_fit,
+					    data->fit_config,
+					    kernel_img,
+					    "entry", &entry);
+		if (!ret) {
+			data->os_entry = entry - data->os_address;
+			pr_info("Entry address from FIT '%s': 0x%lx\n",
+				kernel_img, entry);
+		}
+		/* Note: Error case uses default value. */
+	}
+
+	return 0;
+}
+
 static int bootm_open_elf(struct image_data *data)
 {
 	if (!IS_ENABLED(CONFIG_ELF))
@@ -633,55 +689,10 @@ int bootm_boot(struct bootm_data *bootm_data)
 		}
 	}
 
-	if (IS_ENABLED(CONFIG_FITIMAGE) && os_type == filetype_oftree) {
-		struct fit_handle *fit;
-		static const char *kernel_img = "kernel";
-
-		fit = fit_open(data->os_file, data->verbose, data->verify);
-		if (IS_ERR(fit)) {
-			pr_err("Loading FIT image %s failed with: %pe\n", data->os_file, fit);
-			ret = PTR_ERR(fit);
-			goto err_out;
-		}
-
-		data->os_fit = fit;
-
-		data->fit_config = fit_open_configuration(data->os_fit,
-							  data->os_part);
-		if (IS_ERR(data->fit_config)) {
-			pr_err("Cannot open FIT image configuration '%s'\n",
-			       data->os_part ? data->os_part : "default");
-			ret = PTR_ERR(data->fit_config);
-			goto err_out;
-		}
-
-		ret = fit_open_image(data->os_fit, data->fit_config, kernel_img,
-				     &data->fit_kernel, &data->fit_kernel_size);
+	if (os_type == filetype_oftree) {
+		ret = bootm_open_fit(data);
 		if (ret)
-			goto err_out;
-		if (data->os_address == UIMAGE_SOME_ADDRESS) {
-			ret = fit_get_image_address(data->os_fit,
-						    data->fit_config,
-						    kernel_img,
-						    "load", &data->os_address);
-			if (!ret)
-				pr_info("Load address from FIT '%s': 0x%lx\n",
-					kernel_img, data->os_address);
-			/* Note: Error case uses default value. */
-		}
-		if (data->os_entry == UIMAGE_SOME_ADDRESS) {
-			unsigned long entry;
-			ret = fit_get_image_address(data->os_fit,
-						    data->fit_config,
-						    kernel_img,
-						    "entry", &entry);
-			if (!ret) {
-				data->os_entry = entry - data->os_address;
-				pr_info("Entry address from FIT '%s': 0x%lx\n",
-					kernel_img, entry);
-			}
-			/* Note: Error case uses default value. */
-		}
+			return ret;
 	}
 
 	if (os_type == filetype_uimage) {

@@ -36,12 +36,16 @@ struct hwrng {
 
 /* Register a new Hardware Random Number Generator driver. */
 int hwrng_register(struct device_d *dev, struct hwrng *rng);
-int hwrng_get_data(struct hwrng *rng, void *buffer, size_t size, int wait);
 
 #ifdef CONFIG_HWRNG
 struct hwrng *hwrng_get_first(void);
+int hwrng_get_data(struct hwrng *rng, void *buffer, size_t size, int wait);
 #else
 static inline struct hwrng *hwrng_get_first(void) { return ERR_PTR(-ENODEV); };
+static inline int hwrng_get_data(struct hwrng *rng, void *buffer, size_t size, int wait)
+{
+	return -ENODEV;
+}
 #endif
 
 void hwrng_unregister(struct hwrng *rng);

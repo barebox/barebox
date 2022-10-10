@@ -15,6 +15,8 @@ void srand(unsigned int seed);
 /* fill a buffer with pseudo-random data */
 void get_random_bytes(void *buf, int len);
 int get_crypto_bytes(void *buf, int len);
+struct hwrng;
+int hwrng_get_crypto_bytes(struct hwrng *rng, void *buf, int len);
 
 static inline u32 random32(void)
 {

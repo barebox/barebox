@@ -366,7 +366,7 @@ struct block_device *cdev_get_block_device(struct cdev *cdev)
 	if (!cdev || cdev->ops != &block_ops)
 		return NULL;
 
-	return container_of(cdev, struct block_device, cdev);
+	return cdev->priv;
 }
 
 int blockdevice_register(struct block_device *blk)

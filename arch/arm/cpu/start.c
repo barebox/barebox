@@ -189,18 +189,6 @@ __noreturn __no_sanitize_address void barebox_non_pbl_start(unsigned long membas
 		} else if (blob_is_arm_boarddata(boarddata)) {
 			totalsize = sizeof(struct barebox_arm_boarddata);
 			name = "machine type";
-		} else if ((unsigned long)boarddata < 8192) {
-			struct barebox_arm_boarddata *bd;
-			uint32_t machine_type = (unsigned long)boarddata;
-			unsigned long mem = arm_mem_boarddata(membase, endmem,
-							      sizeof(*bd));
-			pr_debug("found machine type %d in boarddata\n",
-				 machine_type);
-			bd = barebox_boarddata = (void *)mem;
-			barebox_boarddata_size = sizeof(*bd);
-			bd->magic = BAREBOX_ARM_BOARDDATA_MAGIC;
-			bd->machine = machine_type;
-			malloc_end = mem;
 		}
 
 		if (totalsize) {

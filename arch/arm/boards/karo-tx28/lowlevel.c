@@ -15,9 +15,22 @@
 #include <stmp-device.h>
 #include <generated/mach-types.h>
 
+static noinline void continue_imx_entry(size_t size)
+{
+	static struct barebox_arm_boarddata boarddata = {
+		.magic = BAREBOX_ARM_BOARDDATA_MAGIC,
+		.machine = MACH_TYPE_TX28,
+	};
+
+	barebox_arm_entry(IMX_MEMORY_BASE, size, &boarddata);
+}
+
 ENTRY_FUNCTION(start_barebox_karo_tx28, r0, r1, r2)
 {
-	barebox_arm_entry(IMX_MEMORY_BASE, SZ_128M, (void *)MACH_TYPE_TX28);
+	relocate_to_current_adr();
+	setup_c();
+
+	continue_imx_entry(SZ_128M);
 }
 
 static const uint32_t iomux_pads[] = {

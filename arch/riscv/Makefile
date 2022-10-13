@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-KBUILD_DEFCONFIG := virt64_defconfig
+KBUILD_DEFCONFIG := rv64i_defconfig
 
 KBUILD_CPPFLAGS += -fno-strict-aliasing
 

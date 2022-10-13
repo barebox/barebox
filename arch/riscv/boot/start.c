@@ -27,7 +27,6 @@ static unsigned long riscv_barebox_size;
 static unsigned long riscv_endmem;
 static void *barebox_boarddata;
 static unsigned long barebox_boarddata_size;
-unsigned barebox_riscv_pbl_flags;
 
 void *barebox_riscv_boot_dtb(void)
 {
@@ -108,7 +107,7 @@ device_initcall(barebox_memory_areas_init);
  */
 __noreturn __no_sanitize_address __section(.text_entry)
 void barebox_non_pbl_start(unsigned long membase, unsigned long memsize,
-			   void *boarddata, unsigned flags)
+			   void *boarddata)
 {
 	unsigned long endmem = membase + memsize;
 	unsigned long malloc_start, malloc_end;
@@ -121,7 +120,7 @@ void barebox_non_pbl_start(unsigned long membase, unsigned long memsize,
 
 	barrier();
 
-	irq_init_vector(__riscv_mode(flags));
+	irq_init_vector(riscv_mode());
 
 	pr_debug("memory at 0x%08lx, size 0x%08lx\n", membase, memsize);
 
@@ -171,20 +170,18 @@ void barebox_non_pbl_start(unsigned long membase, unsigned long memsize,
 
 	mem_malloc_init((void *)malloc_start, (void *)malloc_end - 1);
 
-	barebox_riscv_pbl_flags = flags;
-
 	pr_debug("starting barebox...\n");
 
 	start_barebox();
 }
 
-void start(unsigned long membase, unsigned long memsize, void *boarddata, unsigned flags);
+void start(unsigned long membase, unsigned long memsize, void *boarddata);
 /*
  * First function in the uncompressed image. We get here from
  * the pbl. The stack already has been set up by the pbl.
  */
 void __no_sanitize_address __section(.text_entry) start(unsigned long membase,
-		unsigned long memsize, void *boarddata, unsigned flags)
+		unsigned long memsize, void *boarddata)
 {
-	barebox_non_pbl_start(membase, memsize, boarddata, flags);
+	barebox_non_pbl_start(membase, memsize, boarddata);
 }

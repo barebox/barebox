@@ -24,16 +24,16 @@ unsigned long free_mem_ptr;
 unsigned long free_mem_end_ptr;
 
 void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
-				  void *fdt, unsigned flags)
+				  void *fdt)
 {
 	uint32_t pg_len, uncompressed_len;
-	void __noreturn (*barebox)(unsigned long, unsigned long, void *, unsigned);
+	void __noreturn (*barebox)(unsigned long, unsigned long, void *);
 	unsigned long endmem = membase + memsize;
 	unsigned long barebox_base;
 	void *pg_start, *pg_end;
 	unsigned long pc = get_pc();
 
-	irq_init_vector(__riscv_mode(flags));
+	irq_init_vector(riscv_mode());
 
 	/* piggy data is not relocated, so determine the bounds now */
 	pg_start = input_data + get_runtime_offset();
@@ -72,5 +72,5 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 
 	pr_debug("jumping to uncompressed image at 0x%p. dtb=0x%p\n", barebox, fdt);
 
-	barebox(membase, memsize, fdt, flags);
+	barebox(membase, memsize, fdt);
 }

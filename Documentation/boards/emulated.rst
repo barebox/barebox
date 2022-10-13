@@ -64,12 +64,12 @@ The script can also be used with a precompiled barebox tree::
 ``emulate.pl`` also has some knowledge on paravirtualized devices::
 
   # Run target and pass a block device (here /dev/virtioblk0)
-  ARCH=riscv ./test/emulate.pl --blk=rootfs.ext4 virt64_defconfig
+  ARCH=riscv ./test/emulate.pl --blk=rootfs.ext4 rv64i_defconfig
 
 Needed command line options can be passed directly to the
 emulator/``pytest`` as well by placing them behind ``--``::
 
   # appends -device ? to the command line. Add -n to see the final result
-  ARCH=riscv ./test/emulate.pl virt64_defconfig -- -device ?
+  ARCH=riscv ./test/emulate.pl rv64i_defconfig -- -device ?
 
 For a complete listing of options run ``./test/emulate.pl -h``.

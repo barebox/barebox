@@ -1469,6 +1469,11 @@ config DEBUG_LITEX
 	bool "LiteX serial port"
 	depends on SOC_LITEX
 
+config DEBUG_SUN20I
+	bool "Allwinner Sun20i ns16550 serial0 port"
+	depends on SOC_ALLWINNER_SUN20I
+	select DEBUG_LL_NS16550
+
 endchoice
 
 config DEBUG_LL_NS16550

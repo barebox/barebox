@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0
+obj-$(CONFIG_BOARD_ALLWINNER_D1)	+= allwinner-d1/
 obj-$(CONFIG_BOARD_ERIZO_GENERIC)	+= erizo/
 obj-$(CONFIG_BOARD_HIFIVE)		+= hifive/
 obj-$(CONFIG_BOARD_BEAGLEV)		+= beaglev/

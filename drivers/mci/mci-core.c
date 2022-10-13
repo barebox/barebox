@@ -1739,6 +1739,31 @@ static int mci_register_partition(struct mci_part *part)
 	return 0;
 }
 
+static int of_broken_cd_fixup(struct device_node *root, void *ctx)
+{
+	struct mci_host *host = ctx;
+	struct device_d *hw_dev = host->hw_dev;
+	struct device_node *np;
+	char *name;
+
+	if (!host->broken_cd)
+		return 0;
+
+	name = of_get_reproducible_name(hw_dev->device_node);
+	np = of_find_node_by_reproducible_name(root, name);
+	free(name);
+	if (!np) {
+		dev_warn(hw_dev, "Cannot find nodepath %s, cannot fixup\n",
+			 hw_dev->device_node->full_name);
+		return -EINVAL;
+	}
+
+	of_property_write_bool(np, "cd-gpios", false);
+	of_property_write_bool(np, "broken-cd", true);
+
+	return 0;
+}
+
 /**
  * Probe an MCI card at the given host interface
  * @param mci MCI device instance
@@ -1750,10 +1775,13 @@ static int mci_card_probe(struct mci *mci)
 	int i, rc, disknum, ret;
 	bool has_bootpart = false;
 
-	if (host->card_present && !host->card_present(host) &&
-	    !host->non_removable) {
-		dev_err(&mci->dev, "no card inserted\n");
-		return -ENODEV;
+	if (host->card_present && !host->card_present(host) && !host->non_removable) {
+		if (!host->broken_cd) {
+			dev_err(&mci->dev, "no card inserted\n");
+			return -ENODEV;
+		}
+
+		dev_info(&mci->dev, "no card inserted (ignoring)\n");
 	}
 
 	ret = regulator_enable(host->supply);
@@ -1916,7 +1944,7 @@ int mci_register(struct mci_host *host)
 {
 	struct mci *mci;
 	struct device_d *hw_dev;
-	struct param_d *param_probe;
+	struct param_d *param_probe, *param_broken_cd;
 	int ret;
 
 	mci = xzalloc(sizeof(*mci));
@@ -1970,12 +1998,24 @@ int mci_register(struct mci_host *host)
 		goto err_unregister;
 	}
 
+	param_broken_cd = dev_add_param_bool(&mci->dev, "broken_cd",
+					     NULL, NULL, &host->broken_cd, mci);
+
+	if (IS_ERR(param_broken_cd) && PTR_ERR(param_broken_cd) != -ENOSYS) {
+		ret = PTR_ERR(param_broken_cd);
+		dev_dbg(&mci->dev, "Failed to add 'broken_cd' parameter to the MCI device\n");
+		goto err_unregister;
+	}
+
 	if (IS_ENABLED(CONFIG_MCI_INFO))
 		mci->dev.info = mci_info;
 
 	/* if enabled, probe the attached card immediately */
 	if (IS_ENABLED(CONFIG_MCI_STARTUP))
 		mci_card_probe(mci);
+
+	if (!host->no_sd && dev_of_node(host->hw_dev))
+		of_register_fixup(of_broken_cd_fixup, host);
 
 	list_add_tail(&mci->list, &mci_list);
 
@@ -2043,6 +2083,7 @@ void mci_of_parse_node(struct mci_host *host,
 		}
 	}
 
+	host->broken_cd = of_property_read_bool(np, "broken-cd");
 	host->non_removable = of_property_read_bool(np, "non-removable");
 	host->no_sd = of_property_read_bool(np, "no-sd");
 	host->disable_wp = of_property_read_bool(np, "disable-wp");

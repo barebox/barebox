@@ -50,9 +50,9 @@ static inline int block_flush(struct block_device *blk)
 }
 
 #ifdef CONFIG_BLOCK
-struct block_device *cdev_get_block_device(struct cdev *cdev);
+struct block_device *cdev_get_block_device(const struct cdev *cdev);
 #else
-static inline struct block_device *cdev_get_block_device(struct cdev *cdev)
+static inline struct block_device *cdev_get_block_device(const struct cdev *cdev)
 {
 	return NULL;
 }

@@ -1,11 +1,11 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#include <asm-generic/barebox.lds.h>
+#include <asm/barebox.lds.h>
 
 /* Same as elf_x86_64_fbsd_efi.lds, except for OUTPUT_FORMAT below - KEEP IN SYNC */
 
-OUTPUT_FORMAT("elf64-x86-64", "elf64-x86-64", "elf64-x86-64")
-OUTPUT_ARCH(i386:x86-64)
+OUTPUT_FORMAT(BAREBOX_OUTPUT_FORMAT)
+OUTPUT_ARCH(BAREBOX_OUTPUT_ARCH)
 ENTRY(_start)
 SECTIONS
 {

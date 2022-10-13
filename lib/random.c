@@ -34,17 +34,8 @@ void get_random_bytes(void *_buf, int len)
 		*buf++ = rand() % 256;
 }
 
-/**
- * get_crypto_bytes - get random numbers suitable for cryptographic needs.
- */
-static int _get_crypto_bytes(void *buf, int len)
+int hwrng_get_crypto_bytes(struct hwrng *rng, void *buf, int len)
 {
-	struct hwrng *rng;
-
-	rng = hwrng_get_first();
-	if (IS_ERR(rng))
-		return PTR_ERR(rng);
-
 	while (len) {
 		int bytes = hwrng_get_data(rng, buf, len, true);
 		if (!bytes)
@@ -60,13 +51,21 @@ static int _get_crypto_bytes(void *buf, int len)
 	return 0;
 }
 
+/**
+ * get_crypto_bytes - get random numbers suitable for cryptographic needs.
+ */
 int get_crypto_bytes(void *buf, int len)
 {
+	struct hwrng *rng;
 	int err;
 
-	err = _get_crypto_bytes(buf, len);
-	if (!err)
-		return 0;
+	rng = hwrng_get_first();
+	err = PTR_ERR_OR_ZERO(rng);
+	if (!err) {
+		err = hwrng_get_crypto_bytes(rng, buf, len);
+		if (!err)
+			return 0;
+	}
 
 	if (!IS_ENABLED(CONFIG_ALLOW_PRNG_FALLBACK)) {
 		pr_err("error: no HWRNG available!\n");

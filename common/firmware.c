@@ -272,8 +272,7 @@ int firmwaremgr_load_file(struct firmware_mgr *mgr, const char *firmware)
 
 	firmwarefd = open(firmware, O_RDONLY);
 	if (firmwarefd < 0) {
-		printf("could not open %s: %s\n", firmware,
-		       errno_str());
+		printf("could not open %s: %m\n", firmware);
 		ret = firmwarefd;
 		goto out;
 	}
@@ -282,7 +281,7 @@ int firmwaremgr_load_file(struct firmware_mgr *mgr, const char *firmware)
 
 	devicefd = open(dst, O_WRONLY);
 	if (devicefd < 0) {
-		printf("could not open %s: %s\n", dst, errno_str());
+		printf("could not open %s: %m\n", dst);
 		ret = devicefd;
 		goto out;
 	}

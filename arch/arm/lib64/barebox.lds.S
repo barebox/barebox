@@ -1,10 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /* SPDX-FileCopyrightText: 2000-2004 Wolfgang Denk <wd@denx.de>, DENX Software Engineering */
 
-#include <asm-generic/barebox.lds.h>
+#include <asm/barebox.lds.h>
 
-OUTPUT_FORMAT("elf64-littleaarch64", "elf64-littleaarch64", "elf64-littleaarch64")
-OUTPUT_ARCH(aarch64)
+OUTPUT_FORMAT(BAREBOX_OUTPUT_FORMAT)
+OUTPUT_ARCH(BAREBOX_OUTPUT_ARCH)
 ENTRY(start)
 SECTIONS
 {
@@ -49,13 +49,7 @@ SECTIONS
 
 	.barebox_imd : { BAREBOX_IMD }
 
-	.rel_dyn_start : { *(.__rel_dyn_start) }
-	.rela.dyn : { *(.rela*) }
-	.rel_dyn_end : { *(.__rel_dyn_end) }
-
-	.__dynsym_start :  { *(.__dynsym_start) }
-	.dynsym : { *(.dynsym) }
-	.__dynsym_end : { *(.__dynsym_end) }
+	BAREBOX_RELOCATION_TABLE
 
 	_edata = .;
 

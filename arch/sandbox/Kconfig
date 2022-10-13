@@ -16,6 +16,7 @@ config SANDBOX
 	select ARCH_HAS_STACK_DUMP if ASAN
 	select GENERIC_FIND_NEXT_BIT
 	select HAS_ARCH_SJLJ
+	select HAS_ASM_DEBUG_LL
 	default y
 
 config ARCH_TEXT_BASE

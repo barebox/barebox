@@ -361,7 +361,7 @@ static struct cdev_operations block_ops = {
 	.discard_range = block_op_discard_range,
 };
 
-struct block_device *cdev_get_block_device(struct cdev *cdev)
+struct block_device *cdev_get_block_device(const struct cdev *cdev)
 {
 	if (!cdev || cdev->ops != &block_ops)
 		return NULL;

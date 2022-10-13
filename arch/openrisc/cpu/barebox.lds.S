@@ -14,9 +14,9 @@
  */
 
 #include <config.h>
-#include <asm-generic/barebox.lds.h>
+#include <asm/barebox.lds.h>
 
-OUTPUT_FORMAT("elf32-or1k", "elf32-or1k", "elf32-or1k")
+OUTPUT_FORMAT(BAREBOX_OUTPUT_FORMAT)
 ENTRY(__reset)
 __DYNAMIC  =  0;
 

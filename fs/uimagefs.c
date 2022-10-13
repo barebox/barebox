@@ -373,7 +373,7 @@ static int __uimage_open(struct uimagefs_handle *priv)
 
 	fd = open(filename, O_RDONLY);
 	if (fd < 0) {
-		printf("could not open: %s\n", errno_str());
+		printf("could not open: %m\n");
 		return fd;
 	}
 
@@ -381,7 +381,7 @@ static int __uimage_open(struct uimagefs_handle *priv)
 
 	ret = read(fd, header, sizeof(*header));
 	if (ret < 0) {
-		printf("could not read: %s\n", errno_str());
+		printf("could not read: %m\n");
 		goto err_out;
 	}
 	offset += sizeof(*header);

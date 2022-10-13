@@ -387,7 +387,7 @@ int copy_file(const char *src, const char *dst, int verbose)
 
 	srcfd = open(src, O_RDONLY);
 	if (srcfd < 0) {
-		printf("could not open %s: %s\n", src, errno_str());
+		printf("could not open %s: %m\n", src);
 		ret = srcfd;
 		goto out;
 	}
@@ -396,7 +396,7 @@ int copy_file(const char *src, const char *dst, int verbose)
 
 	s = stat(dst, &dststat);
 	if (s && s != -ENOENT) {
-		printf("could not stat %s: %s\n", dst, errno_str());
+		printf("could not stat %s: %m\n", dst);
 		ret = s;
 		goto out;
 	}
@@ -407,7 +407,7 @@ int copy_file(const char *src, const char *dst, int verbose)
 
 	dstfd = open(dst, mode);
 	if (dstfd < 0) {
-		printf("could not open %s: %s\n", dst, errno_str());
+		printf("could not open %s: %m\n", dst);
 		ret = dstfd;
 		goto out;
 	}

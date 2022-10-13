@@ -8,10 +8,6 @@
 #define STRUCT_ALIGNMENT 32
 #define STRUCT_ALIGN() . = ALIGN(STRUCT_ALIGNMENT)
 
-#if defined CONFIG_ARCH_EP93XX
-#include <mach/barebox.lds.h>
-#endif
-
 #ifndef PRE_IMAGE
 #define PRE_IMAGE
 #endif

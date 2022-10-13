@@ -185,7 +185,7 @@ static int edit_read_file(const char *path)
 	if (!stat(path, &s)) {
 		filebuffer = read_file(path, NULL);
 		if (!filebuffer) {
-			printf("could not read %s: %s\n", path, errno_str());
+			printf("could not read %s: %m\n", path);
 			return -1;
 		}
 
@@ -249,7 +249,7 @@ static int save_file(const char *path)
 
 	fd = open(path, O_WRONLY | O_TRUNC | O_CREAT);
 	if (fd < 0) {
-		printf("could not open file for writing: %s\n", errno_str());
+		printf("could not open file for writing: %m\n");
 		return fd;
 	}
 

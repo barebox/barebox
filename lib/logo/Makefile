@@ -25,7 +25,7 @@ obj-$(CONFIG_BAREBOX_LOGO) += logo.o
 quiet_cmd_logo_S = LOGO.S  $@
 cmd_logo_S =							\
 (								\
-	echo '\#include <asm-generic/barebox.lds.h>';		\
+	echo '\#include <asm/barebox.lds.h>';			\
 	echo '.section .bblogo.rodata.$(subst -,_,$(*F)),"a"';	\
 	echo '.balign STRUCT_ALIGNMENT';			\
 	echo '.global __bblogo_$(subst -,_,$(*F))_start';	\

@@ -42,16 +42,15 @@ static int emmc_mlo_handler(struct bbu_handler *handler, struct bbu_data *data)
 
 	fd = open(handler->devicefile, O_RDWR);
 	if (fd < 0) {
-		pr_err("could not open %s: %s\n", handler->devicefile,
-			errno_str());
+		pr_err("could not open %s: %m\n", handler->devicefile);
 		return fd;
 	}
 
 	/* save the partition table */
 	ret = pread(fd, part_table, PART_TABLE_SIZE, PART_TABLE_OFFSET);
 	if (ret < 0) {
-		pr_err("could not read partition table from fd %s: %s\n",
-			handler->devicefile, errno_str());
+		pr_err("could not read partition table from fd %s: %m\n",
+			handler->devicefile);
 		goto error;
 	}
 
@@ -59,8 +58,8 @@ static int emmc_mlo_handler(struct bbu_handler *handler, struct bbu_data *data)
 	for (i = 0; i < 4; i++) {
 		ret = pwrite(fd, image, size, i * 0x20000);
 		if (ret < 0) {
-			pr_err("could not write MLO %i/4 to fd %s: %s\n",
-				i + 1, handler->devicefile, errno_str());
+			pr_err("could not write MLO %i/4 to fd %s: %m\n",
+				i + 1, handler->devicefile);
 			goto error_save_part_table;
 		}
 	}
@@ -69,8 +68,8 @@ error_save_part_table:
 	/* write the partition table back */
 	ret = pwrite(fd, part_table, PART_TABLE_SIZE, PART_TABLE_OFFSET);
 	if (ret < 0)
-		pr_err("could not write partition table to fd %s: %s\n",
-			handler->devicefile, errno_str());
+		pr_err("could not write partition table to fd %s: %m\n",
+			handler->devicefile);
 
 error:
 	close(fd);

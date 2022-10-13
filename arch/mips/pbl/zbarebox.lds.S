@@ -3,10 +3,10 @@
  * (C) Copyright 2012 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  */
 
-#include <asm-generic/barebox.lds.h>
+#include <asm/barebox.lds.h>
 #include <asm-generic/memory_layout.h>
 
-OUTPUT_ARCH("mips")
+OUTPUT_ARCH(BAREBOX_OUTPUT_ARCH)
 ENTRY(pbl_start)
 SECTIONS
 {

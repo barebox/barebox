@@ -519,18 +519,77 @@ static int bootm_open_os_uimage(struct image_data *data)
 	return 0;
 }
 
+static int bootm_open_fit(struct image_data *data)
+{
+	struct fit_handle *fit;
+	static const char *kernel_img = "kernel";
+	int ret;
+
+	if (!IS_ENABLED(CONFIG_FITIMAGE))
+		return 0;
+
+	fit = fit_open(data->os_file, data->verbose, data->verify);
+	if (IS_ERR(fit)) {
+		pr_err("Loading FIT image %s failed with: %pe\n", data->os_file, fit);
+		return PTR_ERR(fit);
+	}
+
+	data->os_fit = fit;
+
+	data->fit_config = fit_open_configuration(data->os_fit,
+						  data->os_part);
+	if (IS_ERR(data->fit_config)) {
+		pr_err("Cannot open FIT image configuration '%s'\n",
+		       data->os_part ? data->os_part : "default");
+		return PTR_ERR(data->fit_config);
+	}
+
+	ret = fit_open_image(data->os_fit, data->fit_config, kernel_img,
+			     &data->fit_kernel, &data->fit_kernel_size);
+	if (ret)
+		return ret;
+	if (data->os_address == UIMAGE_SOME_ADDRESS) {
+		ret = fit_get_image_address(data->os_fit,
+					    data->fit_config,
+					    kernel_img,
+					    "load", &data->os_address);
+		if (!ret)
+			pr_info("Load address from FIT '%s': 0x%lx\n",
+				kernel_img, data->os_address);
+		/* Note: Error case uses default value. */
+	}
+	if (data->os_entry == UIMAGE_SOME_ADDRESS) {
+		unsigned long entry;
+		ret = fit_get_image_address(data->os_fit,
+					    data->fit_config,
+					    kernel_img,
+					    "entry", &entry);
+		if (!ret) {
+			data->os_entry = entry - data->os_address;
+			pr_info("Entry address from FIT '%s': 0x%lx\n",
+				kernel_img, entry);
+		}
+		/* Note: Error case uses default value. */
+	}
+
+	return 0;
+}
+
 static int bootm_open_elf(struct image_data *data)
 {
+	struct elf_image *elf;
+
 	if (!IS_ENABLED(CONFIG_ELF))
 		return -ENOSYS;
 
-	data->elf = elf_open(data->os_file);
-	if (IS_ERR(data->elf))
-		return PTR_ERR(data->elf);
+	elf = elf_open(data->os_file);
+	if (IS_ERR(elf))
+		return PTR_ERR(elf);
 
-	pr_info("Entry Point:  %08llx\n", data->elf->entry);
+	pr_info("Entry Point:  %08llx\n", elf->entry);
 
-	data->os_address = data->elf->entry;
+	data->os_address = elf->entry;
+	data->elf = elf;
 
 	return 0;
 }
@@ -633,74 +692,25 @@ int bootm_boot(struct bootm_data *bootm_data)
 		}
 	}
 
-	if (IS_ENABLED(CONFIG_FITIMAGE) && os_type == filetype_oftree) {
-		struct fit_handle *fit;
-		static const char *kernel_img = "kernel";
-
-		fit = fit_open(data->os_file, data->verbose, data->verify);
-		if (IS_ERR(fit)) {
-			pr_err("Loading FIT image %s failed with: %pe\n", data->os_file, fit);
-			ret = PTR_ERR(fit);
-			goto err_out;
-		}
-
-		data->os_fit = fit;
-
-		data->fit_config = fit_open_configuration(data->os_fit,
-							  data->os_part);
-		if (IS_ERR(data->fit_config)) {
-			pr_err("Cannot open FIT image configuration '%s'\n",
-			       data->os_part ? data->os_part : "default");
-			ret = PTR_ERR(data->fit_config);
-			goto err_out;
-		}
-
-		ret = fit_open_image(data->os_fit, data->fit_config, kernel_img,
-				     &data->fit_kernel, &data->fit_kernel_size);
-		if (ret)
-			goto err_out;
-		if (data->os_address == UIMAGE_SOME_ADDRESS) {
-			ret = fit_get_image_address(data->os_fit,
-						    data->fit_config,
-						    kernel_img,
-						    "load", &data->os_address);
-			if (!ret)
-				pr_info("Load address from FIT '%s': 0x%lx\n",
-					kernel_img, data->os_address);
-			/* Note: Error case uses default value. */
-		}
-		if (data->os_entry == UIMAGE_SOME_ADDRESS) {
-			unsigned long entry;
-			ret = fit_get_image_address(data->os_fit,
-						    data->fit_config,
-						    kernel_img,
-						    "entry", &entry);
-			if (!ret) {
-				data->os_entry = entry - data->os_address;
-				pr_info("Entry address from FIT '%s': 0x%lx\n",
-					kernel_img, entry);
-			}
-			/* Note: Error case uses default value. */
-		}
-	}
-
-	if (os_type == filetype_uimage) {
+	switch (os_type) {
+	case filetype_oftree:
+		ret = bootm_open_fit(data);
+		break;
+	case filetype_uimage:
 		ret = bootm_open_os_uimage(data);
-		if (ret) {
-			pr_err("Loading OS image failed with: %s\n",
-			       strerror(-ret));
-			goto err_out;
-		}
+		break;
+	case filetype_elf:
+		ret = bootm_open_elf(data);
+		break;
+	default:
+		ret = 0;
+		break;
 	}
 
-	if (os_type == filetype_elf) {
-		ret = bootm_open_elf(data);
-		if (ret) {
-			pr_err("Loading ELF image failed with: %s\n",
-			       strerror(-ret));
-			data->elf = NULL;
-			goto err_out;
-		}
+	if (ret) {
+		pr_err("Loading %s image failed with: %pe\n",
+		       file_type_to_short_string(os_type), ERR_PTR(ret));
+		goto err_out;
 	}
 
 	if (bootm_data->appendroot) {

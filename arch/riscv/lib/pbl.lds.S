@@ -2,15 +2,11 @@
 /* SPDX-FileCopyrightText: 2012 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix */
 
 #include <linux/sizes.h>
-#include <asm-generic/barebox.lds.h>
+#include <asm/barebox.lds.h>
 #include <asm-generic/memory_layout.h>
 
-OUTPUT_ARCH(riscv)
-#ifdef CONFIG_64BIT
-OUTPUT_FORMAT("elf64-littleriscv")
-#else
-OUTPUT_FORMAT("elf32-littleriscv")
-#endif
+OUTPUT_ARCH(BAREBOX_OUTPUT_ARCH)
+OUTPUT_FORMAT(BAREBOX_OUTPUT_FORMAT)
 SECTIONS
 {
 	. = 0x0;

@@ -11,15 +11,11 @@
  *
  */
 
-#include <asm-generic/barebox.lds.h>
+#include <asm/barebox.lds.h>
 
-OUTPUT_ARCH(riscv)
+OUTPUT_ARCH(BAREBOX_OUTPUT_ARCH)
 ENTRY(start)
-#ifdef CONFIG_64BIT
-OUTPUT_FORMAT("elf64-littleriscv")
-#else
-OUTPUT_FORMAT("elf32-littleriscv")
-#endif
+OUTPUT_FORMAT(BAREBOX_OUTPUT_FORMAT)
 SECTIONS
 {
 	. = 0x0;

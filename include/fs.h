@@ -164,6 +164,7 @@ int fs_init_legacy(struct fs_device_d *fsdev);
 int fsdev_open_cdev(struct fs_device_d *fsdev);
 const char *cdev_get_mount_path(struct cdev *cdev);
 const char *cdev_mount_default(struct cdev *cdev, const char *fsoptions);
+const char *cdev_mount(struct cdev *cdev);
 void mount_all(void);
 
 void fsdev_set_linux_rootarg(struct fs_device_d *fsdev, const char *str);
@@ -177,5 +178,7 @@ static inline const char *devpath_to_name(const char *devpath)
 
 	return devpath;
 }
+
+const char *fs_detect(const char *filename, const char *fsoptions);
 
 #endif /* __FS_H */

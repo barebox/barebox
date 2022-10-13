@@ -27,7 +27,6 @@
 #include <globalvar.h>
 #include <libfile.h>
 #else
-# define errno_str(x) ("void")
 #define EXPORT_SYMBOL(x)
 #endif
 
@@ -297,7 +296,7 @@ int envfs_save(const char *filename, const char *dirname, unsigned flags)
 
 	envfd = open(filename, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
 	if (envfd < 0) {
-		printf("could not open %s: %s\n", filename, errno_str());
+		printf("could not open %s: %m\n", filename);
 		ret = -errno;
 		goto out1;
 	}
@@ -306,7 +305,7 @@ int envfs_save(const char *filename, const char *dirname, unsigned flags)
 
 	/* ENOSYS and EOPNOTSUPP aren't errors here, many devices don't need it */
 	if (ret && errno != ENOSYS && errno != EOPNOTSUPP) {
-		printf("could not unprotect %s: %s\n", filename, errno_str());
+		printf("could not unprotect %s: %m\n", filename);
 		goto out;
 	}
 
@@ -314,7 +313,7 @@ int envfs_save(const char *filename, const char *dirname, unsigned flags)
 
 	/* ENOSYS and EOPNOTSUPP aren't errors here, many devices don't need it */
 	if (ret && errno != ENOSYS && errno != EOPNOTSUPP) {
-		printf("could not erase %s: %s\n", filename, errno_str());
+		printf("could not erase %s: %m\n", filename);
 		goto out;
 	}
 
@@ -337,7 +336,7 @@ int envfs_save(const char *filename, const char *dirname, unsigned flags)
 
 	/* ENOSYS and EOPNOTSUPP aren't errors here, many devices don't need it */
 	if (ret && errno != ENOSYS && errno != EOPNOTSUPP) {
-		printf("could not protect %s: %s\n", filename, errno_str());
+		printf("could not protect %s: %m\n", filename);
 		goto out;
 	}
 
@@ -385,7 +384,7 @@ int envfs_load(const char *filename, const char *dir, unsigned flags)
 
 	envfd = open(filename, O_RDONLY);
 	if (envfd < 0) {
-		printf("environment load %s: %s\n", filename, errno_str());
+		printf("environment load %s: %m\n", filename);
 		if (errno == ENOENT)
 			printf("Maybe you have to create the partition.\n");
 		return -1;

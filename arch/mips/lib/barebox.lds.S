@@ -4,9 +4,9 @@
  */
 
 
-#include <asm-generic/barebox.lds.h>
+#include <asm/barebox.lds.h>
 
-OUTPUT_ARCH(mips)
+OUTPUT_ARCH(BAREBOX_OUTPUT_ARCH)
 ENTRY(_start)
 SECTIONS
 {

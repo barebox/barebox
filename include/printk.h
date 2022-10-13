@@ -27,6 +27,8 @@ static inline int printf(const char *fmt, ...)
 }
 #endif
 
+void __attribute__((noreturn)) panic(const char *fmt, ...);
+
 #define printk			printf
 
 #define printk_once(fmt, ...)					\

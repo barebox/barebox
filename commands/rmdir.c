@@ -14,7 +14,7 @@ static int do_rmdir(int argc, char *argv[])
 
 	while (i < argc) {
 		if (rmdir(argv[i])) {
-			printf("could not remove %s: %s\n", argv[i], errno_str());
+			printf("could not remove %s: %m\n", argv[i]);
 			return 1;
 		}
 		i++;

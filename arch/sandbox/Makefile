@@ -30,7 +30,8 @@ KBUILD_CFLAGS += -Dmalloc=barebox_malloc -Dcalloc=barebox_calloc \
 		-Dopendir=barebox_opendir -Dreaddir=barebox_readdir \
 		-Dclosedir=barebox_closedir -Dreadlink=barebox_readlink \
 		-Doptarg=barebox_optarg -Doptind=barebox_optind \
-		-Dsetjmp=barebox_setjmp -Dlongjmp=barebox_longjmp
+		-Dsetjmp=barebox_setjmp -Dlongjmp=barebox_longjmp \
+		-Dputchar=barebox_putchar
 
 machdirs := $(patsubst %,arch/sandbox/mach-%/,$(machine-y))
 

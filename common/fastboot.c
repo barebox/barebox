@@ -95,6 +95,14 @@ static int fastboot_add_partition_variables(struct fastboot *fb,
 	}
 
 	if (ret) {
+		if (fentry->flags & FILE_LIST_FLAG_OPTIONAL) {
+			pr_info("skipping unavailable optional partition %s for fastboot gadget\n",
+				fentry->filename);
+			ret = 0;
+			type = "unavailable";
+			goto out;
+		}
+
 		if (fentry->flags & FILE_LIST_FLAG_CREATE) {
 			ret = 0;
 			type = "file";

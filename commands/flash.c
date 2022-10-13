@@ -25,7 +25,7 @@ static int do_flerase(int argc, char *argv[])
 	filename = argv[1];
 
 	if (stat(filename, &s)) {
-		printf("stat %s: %s\n", filename, errno_str());
+		printf("stat %s: %m\n", filename);
 		return 1;
 	}
 
@@ -33,7 +33,7 @@ static int do_flerase(int argc, char *argv[])
 
 	fd = open(filename, O_WRONLY);
 	if (fd < 0) {
-		printf("open %s: %s\n", filename, errno_str());
+		printf("open %s: %m\n", filename);
 		return 1;
 	}
 
@@ -89,7 +89,7 @@ static int do_protect(int argc, char *argv[])
 		prot = 0;
 
 	if (stat(filename, &s)) {
-		printf("stat %s: %s\n", filename, errno_str());
+		printf("stat %s: %m\n", filename);
 		return 1;
 	}
 
@@ -97,7 +97,7 @@ static int do_protect(int argc, char *argv[])
 
 	fd = open(filename, O_WRONLY);
 	if (fd < 0) {
-		printf("open %s: %s\n", filename, errno_str());
+		printf("open %s: %m\n", filename);
 		return 1;
 	}
 

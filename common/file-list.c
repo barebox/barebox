@@ -88,6 +88,9 @@ static int file_list_parse_one(struct file_list *files, const char *partstr, con
 			case 'u':
 				flags |= FILE_LIST_FLAG_UBI;
 				break;
+			case 'o':
+				flags |= FILE_LIST_FLAG_OPTIONAL;
+				break;
 			default:
 				pr_err("Unknown flag '%c'\n", *partstr);
 				return -EINVAL;
@@ -113,7 +116,7 @@ static int file_list_parse_one(struct file_list *files, const char *partstr, con
 
 static const char *flags_to_str(int flags)
 {
-	static char str[sizeof "srcu"];
+	static char str[sizeof "srcuo"];
 	char *s = str;;
 
 	if (flags & FILE_LIST_FLAG_SAFE)
@@ -124,6 +127,8 @@ static const char *flags_to_str(int flags)
 		*s++ = 'c';
 	if (flags & FILE_LIST_FLAG_UBI)
 		*s++ = 'u';
+	if (flags & FILE_LIST_FLAG_OPTIONAL)
+		*s++ = 'o';
 
 	*s = '\0';
 

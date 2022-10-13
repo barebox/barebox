@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  */
 
-#include <asm-generic/barebox.lds.h>
+#include <asm/barebox.lds.h>
 
 #ifdef CONFIG_RESET_VECTOR_ADDRESS
 #define RESET_VECTOR_ADDRESS    CONFIG_RESET_VECTOR_ADDRESS
@@ -21,7 +21,7 @@
 #define RESET_VECTOR_ADDRESS    0xfffffffc
 #endif
 
-OUTPUT_ARCH("powerpc")
+OUTPUT_ARCH(BAREBOX_OUTPUT_ARCH)
 ENTRY(_start_e500)
 
 PHDRS

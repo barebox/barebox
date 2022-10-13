@@ -2,7 +2,7 @@
 /* SPDX-FileCopyrightText: 2012 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix */
 
 #include <linux/sizes.h>
-#include <asm-generic/barebox.lds.h>
+#include <asm/barebox.lds.h>
 #include <asm-generic/memory_layout.h>
 
 #ifdef CONFIG_PBL_RELOCATABLE
@@ -11,13 +11,9 @@
 #define BASE	(TEXT_BASE - SZ_2M)
 #endif
 
-#ifdef CONFIG_CPU_32
-OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
-OUTPUT_ARCH(arm)
-#else
-OUTPUT_FORMAT("elf64-littleaarch64", "elf64-littleaarch64", "elf64-littleaarch64")
-OUTPUT_ARCH(aarch64)
-#endif
+OUTPUT_FORMAT(BAREBOX_OUTPUT_FORMAT)
+OUTPUT_ARCH(BAREBOX_OUTPUT_ARCH)
+
 SECTIONS
 {
 	. = BASE;
@@ -62,17 +58,7 @@ SECTIONS
 	}
 	__shasum_end = .;
 
-	.rel_dyn_start : { *(.__rel_dyn_start) }
-#ifdef CONFIG_CPU_32
-	.rel.dyn : { *(.rel*) }
-#else
-	.rela.dyn : { *(.rela*) }
-#endif
-	.rel_dyn_end : { *(.__rel_dyn_end) }
-
-	.__dynsym_start :  { *(.__dynsym_start) }
-	.dynsym : { *(.dynsym) }
-	.__dynsym_end : { *(.__dynsym_end) }
+	BAREBOX_RELOCATION_TABLE
 
 	pbl_code_size =  . - BASE;
 

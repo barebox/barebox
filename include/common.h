@@ -43,6 +43,12 @@
  */
 void reginfo(void);
 
+/* For use when unrelocated */
+static inline void __hang(void)
+{
+	while (1);
+}
+
 void __noreturn hang (void);
 
 char *size_human_readable(unsigned long long size);

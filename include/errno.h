@@ -8,7 +8,6 @@
 extern int errno;
 
 void perror(const char *s);
-const char *errno_str(void);
 const char *strerror(int errnum);
 
 #endif /* __ERRNO_H */

@@ -91,7 +91,7 @@ static efi_handle_t *efi_find_parent(efi_handle_t *handle)
 	struct efi_open_protocol_information_entry *entry_buffer;
 	unsigned long entry_count;
 
-	ret = efi_locate_handle(by_protocol, &efi_device_path_protocol_guid,
+	ret = efi_locate_handle(BY_PROTOCOL, &efi_device_path_protocol_guid,
 			NULL, &handle_count, &handles);
 	if (ret)
 		return NULL;
@@ -245,7 +245,7 @@ void efi_register_devices(void)
 	struct efi_device **efidevs;
 	int registered;
 
-	ret = efi_locate_handle(by_protocol, &efi_device_path_protocol_guid,
+	ret = efi_locate_handle(BY_PROTOCOL, &efi_device_path_protocol_guid,
 			NULL, &handle_count, &handles);
 	if (ret)
 		return;
@@ -290,7 +290,7 @@ int efi_connect_all(void)
 	efi_handle_t *handle_buffer;
 	int i;
 
-	efiret = BS->locate_handle_buffer(all_handles, NULL, NULL, &handle_count,
+	efiret = BS->locate_handle_buffer(ALL_HANDLES, NULL, NULL, &handle_count,
 			&handle_buffer);
 	if (EFI_ERROR(efiret))
 		return -efi_errno(efiret);
@@ -347,13 +347,12 @@ struct bus_type efi_bus = {
 
 static void efi_businfo(struct device_d *dev)
 {
-	int i;
+	efi_config_table_t *t;
+	int i = 0;
 
 	printf("Tables:\n");
-	for (i = 0; i < efi_sys_table->nr_tables; i++) {
-		efi_config_table_t *t = &efi_sys_table->tables[i];
-
-		printf("  %d: %pUl: %s\n", i, &t->guid,
+	for_each_efi_config_table(t) {
+		printf("  %d: %pUl: %s\n", i++, &t->guid,
 					efi_guid_string(&t->guid));
 	}
 }
@@ -637,7 +636,7 @@ static int do_efi_protocol_dump(int argc, char **argv)
 	printf("Searching for:\n");
 	printf("  %pUl: %s\n", &guid, efi_guid_string(&guid));
 
-	ret = efi_locate_handle(by_protocol, &guid, NULL, &handle_count, &handles);
+	ret = efi_locate_handle(BY_PROTOCOL, &guid, NULL, &handle_count, &handles);
 	if (!ret)
 		efi_dump(handles, handle_count);
 
@@ -653,7 +652,7 @@ static int do_efi_handle_dump(int argc, char *argv[])
 	if (argc > 1)
 		return do_efi_protocol_dump(--argc, ++argv);
 
-	ret = efi_locate_handle(all_handles, NULL, NULL, &handle_count, &handles);
+	ret = efi_locate_handle(ALL_HANDLES, NULL, NULL, &handle_count, &handles);
 	if (!ret)
 		efi_dump(handles, handle_count);
 

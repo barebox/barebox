@@ -19,6 +19,7 @@
 #include <clock.h>
 #include <net.h>
 #include <errno.h>
+#include <linux/mdio.h>
 #include <linux/phy.h>
 #include <linux/err.h>
 #include <of_device.h>
@@ -28,6 +29,56 @@
 #define DEFAULT_GPIO_RESET_DEASSERT     1000      /* us */
 
 LIST_HEAD(mii_bus_list);
+
+static struct phy_device *mdio_device_create(struct mii_bus *bus, int addr)
+{
+	struct phy_device *phydev;
+
+	phydev = xzalloc(sizeof(*phydev));
+
+	phydev->addr = addr;
+	phydev->bus = bus;
+	phydev->dev.bus = &mdio_bus_type;
+
+	dev_set_name(&phydev->dev, "mdio%d-dev%02x", phydev->bus->dev.id,
+		     phydev->addr);
+	phydev->dev.id = DEVICE_ID_SINGLE;
+
+	return phydev;
+}
+
+static int mdio_register_device(struct phy_device *phydev)
+{
+	int ret;
+
+	if (phydev->registered)
+		return -EBUSY;
+
+	if (!phydev->dev.parent)
+		phydev->dev.parent = &phydev->bus->dev;
+
+	ret = register_device(&phydev->dev);
+	if (ret)
+		return ret;
+
+	if (phydev->bus)
+		phydev->bus->phy_map[phydev->addr] = phydev;
+
+	phydev->registered = 1;
+
+	if (phydev->dev.driver)
+		return 0;
+
+	return ret;
+}
+
+int mdio_driver_register(struct phy_driver *phydrv)
+{
+	phydrv->drv.bus = &mdio_bus_type;
+	phydrv->is_phy = false;
+
+	return register_driver(&phydrv->drv);
+}
 
 int mdiobus_detect(struct device_d *dev)
 {
@@ -79,6 +130,28 @@ static int of_mdiobus_register_phy(struct mii_bus *mdio, struct device_node *chi
 		return ret;
 
 	dev_dbg(&mdio->dev, "registered phy %s at address %i\n",
+		child->name, addr);
+
+	return 0;
+}
+
+static int of_mdiobus_register_device(struct mii_bus *mdio,
+				      struct device_node *child, u32 addr)
+{
+	struct phy_device *mdiodev;
+	int ret;
+
+	mdiodev = mdio_device_create(mdio, addr);
+	if (IS_ERR(mdiodev))
+		return PTR_ERR(mdiodev);
+
+	mdiodev->dev.device_node = child;
+
+	ret = mdio_register_device(mdiodev);
+	if (ret)
+		return ret;
+
+	dev_dbg(&mdio->dev, "registered mdio device %s at address %i\n",
 		child->name, addr);
 
 	return 0;
@@ -176,20 +249,6 @@ static int of_mdiobus_register(struct mii_bus *mdio, struct device_node *np)
 
 	/* Loop over the child nodes and register a phy_device for each one */
 	for_each_available_child_of_node(np, child) {
-		if (!of_mdiobus_child_is_phy(child)) {
-			if (of_get_property(child, "compatible", NULL)) {
-				if (!of_platform_device_create(child,
-							       &mdio->dev)) {
-					dev_err(&mdio->dev,
-						"Failed to create device "
-						"for %s\n",
-						child->full_name);
-				}
-			}
-
-			continue;
-		}
-
 		ret = of_property_read_u32(child, "reg", &addr);
 		if (ret) {
 			dev_dbg(&mdio->dev, "%s has invalid PHY address\n",
@@ -204,8 +263,13 @@ static int of_mdiobus_register(struct mii_bus *mdio, struct device_node *np)
 		}
 
 		of_pinctrl_select_state_default(child);
-		of_mdiobus_reset_phy(mdio, child);
-		of_mdiobus_register_phy(mdio, child, addr);
+
+		if (of_mdiobus_child_is_phy(child)) {
+			of_mdiobus_reset_phy(mdio, child);
+			of_mdiobus_register_phy(mdio, child, addr);
+		} else {
+			of_mdiobus_register_device(mdio, child, addr);
+		}
 	}
 
 	return 0;
@@ -356,9 +420,13 @@ static int mdio_bus_match(struct device_d *dev, struct driver_d *drv)
 	struct phy_device *phydev = to_phy_device(dev);
 	struct phy_driver *phydrv = to_phy_driver(drv);
 
-	if ((phydrv->phy_id & phydrv->phy_id_mask) ==
-	    (phydev->phy_id & phydrv->phy_id_mask))
+	if (phydrv->is_phy) {
+		if ((phydrv->phy_id & phydrv->phy_id_mask) ==
+		    (phydev->phy_id & phydrv->phy_id_mask))
 		return 0;
+	} else {
+		return device_match(dev, drv);
+	}
 
 	return 1;
 }

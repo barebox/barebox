@@ -36,6 +36,9 @@ struct mdiobb_ctrl {
 	const struct mdiobb_ops *ops;
 	/* reset callback */
 	int (*reset)(struct mii_bus *bus);
+	unsigned int override_op_c22;
+	u8 op_c22_read;
+	u8 op_c22_write;
 };
 
 /* The returned bus is not yet registered with the phy layer. */

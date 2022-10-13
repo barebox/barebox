@@ -133,9 +133,6 @@ copy_mac_from_eth0:
 	return eth_of_fixup_node_from_eth_device(root, node_path, ethname);
 }
 
-#define SKOV_GPIO_MDIO_BUS	0
-#define SKOV_LAN1_PHY_ADDR	1
-
 #define MAX_V_GPIO 8
 
 struct board_description {
@@ -501,11 +498,13 @@ static void skov_init_board(const struct board_description *variant)
 		 */
 		gpio_request(24, "must_be_low");
 		gpio_direction_output(24, 0);
+		gpio_free(24);
 	}
 
 	/* SD card handling */
 	gpio_request(205, "mmc io supply");
 	gpio_direction_output(205, 0); /* select 3.3 V IO voltage */
+	gpio_free(205);
 
 	if (variant->flags & SKOV_ENABLE_MMC_POWER) {
 		/*
@@ -516,6 +515,7 @@ static void skov_init_board(const struct board_description *variant)
 		gpio_direction_output(200, 0); /* switch on */
 		mdelay(1);
 		gpio_direction_output(200, 1); /* switch on */
+		gpio_free(200);
 	}
 
 	if (variant->flags & SKOV_DISPLAY_PARALLEL) {
@@ -544,29 +544,25 @@ static void skov_init_board(const struct board_description *variant)
 
 static int skov_switch_test(void)
 {
-	struct phy_device *phydev;
+	struct device_d *sw_dev;
 	struct device_d *eth0;
-	struct mii_bus *mii;
 	int ret;
 
 	if (skov_board_no < 0)
 		return 0;
 
-	/* On this boards, we have only one MDIO bus. So, it is enough to take
-	 * the first one.
+	/* Driver should be able to detect if device do actually
+	 * exist. So, we need only to detect if driver is actually
+	 * probed.
 	 */
-	mii = mdiobus_get_bus(SKOV_GPIO_MDIO_BUS);
-	/* We can't read the switch ID, but we get get ID of the first PHY,
-	 * which is enough to test if the switch is attached.
-	 */
-	phydev = get_phy_device(mii, SKOV_LAN1_PHY_ADDR);
-	if (IS_ERR(phydev))
+	sw_dev = of_find_device_by_node_path("/mdio/switch@0");
+	if (!sw_dev) {
+		pr_err("switch@0 device was not created!\n");
 		goto no_switch;
+	}
 
-	if (phydev->phy_id != PHY_ID_KSZ886X)
-		goto no_switch;
-
-	return 0;
+	if (dev_is_probed(sw_dev))
+		return 0;
 
 no_switch:
 	skov_have_switch = false;

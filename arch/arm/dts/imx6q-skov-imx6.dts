@@ -17,10 +17,6 @@
 / {
 	model = "Skov IMX6";
 	compatible = "skov,imx6", "fsl,imx6q";
-
-	chosen {
-		stdout-path = &uart2;
-	};
 };
 
 &i2c2 {

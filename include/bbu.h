@@ -88,9 +88,14 @@ static inline void bbu_append_handlers_to_file_list(struct file_list *files)
 
 #if defined(CONFIG_BAREBOX_UPDATE_IMX_NAND_FCB)
 int imx6_bbu_nand_register_handler(const char *name, unsigned long flags);
+int imx7_bbu_nand_register_handler(const char *name, unsigned long flags);
 int imx28_bbu_nand_register_handler(const char *name, unsigned long flags);
 #else
 static inline int imx6_bbu_nand_register_handler(const char *name, unsigned long flags)
+{
+	return -ENOSYS;
+}
+static inline int imx7_bbu_nand_register_handler(const char *name, unsigned long flags)
 {
 	return -ENOSYS;
 }

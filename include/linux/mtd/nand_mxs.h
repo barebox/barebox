@@ -28,5 +28,9 @@
  */
 
 int mxs_nand_get_geo(int *ecc_strength, int *bb_mark_bit_offset);
+int mxs_nand_read_fcb_bch62(unsigned int block, void *buf, size_t size);
+int mxs_nand_write_fcb_bch62(unsigned int block, void *buf, size_t size);
+
+struct mtd_info;
 
 #endif /* __NAND_MXS_H */

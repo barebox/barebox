@@ -108,6 +108,10 @@
 #define	GPMI_ECCCTRL_ECC_CMD_OFFSET			13
 #define	GPMI_ECCCTRL_ECC_CMD_DECODE			(0x0 << 13)
 #define	GPMI_ECCCTRL_ECC_CMD_ENCODE			(0x1 << 13)
+#define GPMI_ECCCTRL_RANDOMIZER_ENABLE                  (1 << 11)
+#define GPMI_ECCCTRL_RANDOMIZER_TYPE0                   0
+#define GPMI_ECCCTRL_RANDOMIZER_TYPE1                   (1 << 9)
+#define GPMI_ECCCTRL_RANDOMIZER_TYPE2                   (2 << 9)
 #define	GPMI_ECCCTRL_ENABLE_ECC				(1 << 12)
 #define	GPMI_ECCCTRL_BUFFER_MASK_MASK			0x1ff
 #define	GPMI_ECCCTRL_BUFFER_MASK_OFFSET			0
@@ -138,6 +142,9 @@
 #define	BCH_FLASHLAYOUT0_ECC0_MASK			(0xf << 12)
 #define	BCH_FLASHLAYOUT0_ECC0_OFFSET			12
 #define	IMX6_BCH_FLASHLAYOUT0_ECC0_OFFSET		11
+#define	BCH_FLASHLAYOUT0_DATA0_SIZE_OFFSET		0
+#define	BCH_FLASHLAYOUT0_GF13_0_GF14_1_MASK		BIT(10)
+#define	BCH_FLASHLAYOUT0_GF13_0_GF14_1_OFFSET		10
 
 #define BCH_FLASH0LAYOUT1			0x00000090
 #define	BCH_FLASHLAYOUT1_PAGE_SIZE_MASK			(0xffff << 16)
@@ -145,6 +152,9 @@
 #define	BCH_FLASHLAYOUT1_ECCN_MASK			(0xf << 12)
 #define	BCH_FLASHLAYOUT1_ECCN_OFFSET			12
 #define	IMX6_BCH_FLASHLAYOUT1_ECCN_OFFSET		11
+#define	BCH_FLASHLAYOUT1_GF13_0_GF14_1_MASK		BIT(10)
+#define	BCH_FLASHLAYOUT1_GF13_0_GF14_1_OFFSET		10
+#define	BCH_FLASHLAYOUT1_DATAN_SIZE_OFFSET		0
 
 #define	MXS_NAND_DMA_DESCRIPTOR_COUNT		4
 
@@ -732,52 +742,32 @@ static void mxs_nand_config_bch(struct nand_chip *chip, int readlen)
 	struct mxs_nand_info *nand_info = chip->priv;
 	int chunk_size;
 	void __iomem *bch_regs = nand_info->bch_base;
+	u32 fl0, fl1;
 
 	if (mxs_nand_is_imx6(nand_info))
 		chunk_size = MXS_NAND_CHUNK_DATA_CHUNK_SIZE >> 2;
 	else
 		chunk_size = MXS_NAND_CHUNK_DATA_CHUNK_SIZE;
 
-	writel((mxs_nand_ecc_chunk_cnt(readlen) - 1)
-			<< BCH_FLASHLAYOUT0_NBLOCKS_OFFSET |
-		MXS_NAND_METADATA_SIZE << BCH_FLASHLAYOUT0_META_SIZE_OFFSET |
-		(chip->ecc.strength >> 1)
-			<< IMX6_BCH_FLASHLAYOUT0_ECC0_OFFSET |
-		chunk_size,
-		bch_regs + BCH_FLASH0LAYOUT0);
+	fl0 = (mxs_nand_ecc_chunk_cnt(readlen) - 1)
+			<< BCH_FLASHLAYOUT0_NBLOCKS_OFFSET;
+	fl0 |= MXS_NAND_METADATA_SIZE << BCH_FLASHLAYOUT0_META_SIZE_OFFSET;
+	fl0 |= (chip->ecc.strength >> 1) << IMX6_BCH_FLASHLAYOUT0_ECC0_OFFSET;
+	fl0 |= chunk_size;
+	writel(fl0, bch_regs + BCH_FLASH0LAYOUT0);
 
-	writel(readlen	<< BCH_FLASHLAYOUT1_PAGE_SIZE_OFFSET |
-		(chip->ecc.strength >> 1)
-			<< IMX6_BCH_FLASHLAYOUT1_ECCN_OFFSET |
-		chunk_size,
-		bch_regs + BCH_FLASH0LAYOUT1);
+	fl1 = readlen << BCH_FLASHLAYOUT1_PAGE_SIZE_OFFSET;
+	fl1 |= (chip->ecc.strength >> 1) << IMX6_BCH_FLASHLAYOUT1_ECCN_OFFSET;
+	fl1 |= chunk_size;
+	writel(fl1, bch_regs + BCH_FLASH0LAYOUT1);
 }
 
-/*
- * Read a page from NAND.
- */
-static int __mxs_nand_ecc_read_page(struct nand_chip *chip,
-					uint8_t *buf, int oob_required, int page,
-					int readlen)
+static int mxs_nand_do_bch_read(struct nand_chip *chip, int channel, int readtotal,
+				bool randomizer, int page)
 {
-	struct mtd_info *mtd = nand_to_mtd(chip);
 	struct mxs_nand_info *nand_info = chip->priv;
 	struct mxs_dma_desc *d;
-	uint32_t channel = nand_info->dma_channel_base + nand_info->cur_chip;
-	uint32_t corrected = 0, failed = 0;
-	uint8_t	*status;
-	unsigned int  max_bitflips = 0;
-	int i, ret, readtotal, nchunks;
-
-	nand_read_page_op(chip, page, 0, NULL, 0);
-
-	readlen = roundup(readlen, MXS_NAND_CHUNK_DATA_CHUNK_SIZE);
-	nchunks = mxs_nand_ecc_chunk_cnt(readlen);
-	readtotal =  MXS_NAND_METADATA_SIZE;
-	readtotal += MXS_NAND_CHUNK_DATA_CHUNK_SIZE * nchunks;
-	readtotal += DIV_ROUND_UP(13 * chip->ecc.strength * nchunks, 8);
-
-	mxs_nand_config_bch(chip, readtotal);
+	int ret;
 
 	/* Compile the DMA descriptor - wait for ready. */
 	d = mxs_nand_get_dma_desc(nand_info);
@@ -819,6 +809,12 @@ static int __mxs_nand_ecc_read_page(struct nand_chip *chip,
 	d->cmd.pio_words[4] = (dma_addr_t)nand_info->data_buf;
 	d->cmd.pio_words[5] = (dma_addr_t)nand_info->oob_buf;
 
+	if (randomizer) {
+		d->cmd.pio_words[2] |= GPMI_ECCCTRL_RANDOMIZER_ENABLE |
+				       GPMI_ECCCTRL_RANDOMIZER_TYPE2;
+		d->cmd.pio_words[3] |= (page % 256) << 16;
+	}
+
 	mxs_dma_desc_append(channel, d);
 
 	/* Compile the DMA descriptor - disable the BCH block. */
@@ -854,15 +850,48 @@ static int __mxs_nand_ecc_read_page(struct nand_chip *chip,
 	/* Execute the DMA chain. */
 	ret = mxs_dma_go(channel);
 	if (ret) {
-		printf("MXS NAND: DMA read error (ecc)\n");
-		goto rtn;
+		dev_err(nand_info->dev, "MXS NAND: DMA read error (ecc)\n");
+		goto out;
 	}
 
 	ret = mxs_nand_wait_for_bch_complete(nand_info);
 	if (ret) {
-		printf("MXS NAND: BCH read timeout\n");
-		goto rtn;
+		dev_err(nand_info->dev, "MXS NAND: BCH read timeout\n");
+		goto out;
 	}
+
+out:
+	mxs_nand_return_dma_descs(nand_info);
+
+	return ret;
+}
+
+/*
+ * Read a page from NAND.
+ */
+static int __mxs_nand_ecc_read_page(struct nand_chip *chip,
+					uint8_t *buf, int oob_required, int page,
+					int readlen)
+{
+	struct mtd_info *mtd = nand_to_mtd(chip);
+	struct mxs_nand_info *nand_info = chip->priv;
+	uint32_t channel = nand_info->dma_channel_base + nand_info->cur_chip;
+	uint32_t corrected = 0, failed = 0;
+	uint8_t	*status;
+	unsigned int  max_bitflips = 0;
+	int i, ret, readtotal, nchunks;
+
+	nand_read_page_op(chip, page, 0, NULL, 0);
+
+	readlen = roundup(readlen, MXS_NAND_CHUNK_DATA_CHUNK_SIZE);
+	nchunks = mxs_nand_ecc_chunk_cnt(readlen);
+	readtotal =  MXS_NAND_METADATA_SIZE;
+	readtotal += MXS_NAND_CHUNK_DATA_CHUNK_SIZE * nchunks;
+	readtotal += DIV_ROUND_UP(13 * chip->ecc.strength * nchunks, 8);
+
+	mxs_nand_config_bch(chip, readtotal);
+
+	mxs_nand_do_bch_read(chip, channel, readtotal, false, page);
 
 	/* Read DMA completed, now do the mark swapping. */
 	mxs_nand_swap_block_mark(chip, nand_info->data_buf, nand_info->oob_buf);
@@ -943,7 +972,7 @@ static int __mxs_nand_ecc_read_page(struct nand_chip *chip,
 	chip->oob_poi[0] = nand_info->oob_buf[0];
 
 	ret = 0;
-rtn:
+
 	mxs_nand_return_dma_descs(nand_info);
 
 	mxs_nand_config_bch(chip, mtd->writesize + mtd->oobsize);
@@ -1233,6 +1262,194 @@ static int mxs_nand_block_markbad(struct nand_chip *chip , loff_t ofs)
 		return -EIO;
 
 	return 0;
+}
+
+#define BCH62_WRITESIZE		1024
+#define BCH62_OOBSIZE		838
+#define BCH62_PAGESIZE		(BCH62_WRITESIZE + BCH62_OOBSIZE)
+
+static void mxs_nand_mode_fcb_62bit(struct mxs_nand_info *nand_info)
+{
+	void __iomem *bch_regs;
+	u32 fl0, fl1;
+
+	bch_regs = nand_info->bch_base;
+
+	/* 8 ecc_chunks */
+	fl0 = 7 << BCH_FLASHLAYOUT0_NBLOCKS_OFFSET;
+	/* 32 bytes for metadata */
+	fl0 |= 32 << BCH_FLASHLAYOUT0_META_SIZE_OFFSET;
+	/* using ECC62 level to be performed */
+	fl0 |= 0x1F << IMX6_BCH_FLASHLAYOUT0_ECC0_OFFSET;
+	/* 0x20 * 4 bytes of the data0 block */
+	fl0 |= 0x20 << BCH_FLASHLAYOUT0_DATA0_SIZE_OFFSET;
+	fl0 |= 0 << BCH_FLASHLAYOUT0_GF13_0_GF14_1_OFFSET;
+	writel(fl0, bch_regs + BCH_FLASH0LAYOUT0);
+
+	/* 1024 for data + 838 for OOB */
+	fl1 = BCH62_PAGESIZE << BCH_FLASHLAYOUT1_PAGE_SIZE_OFFSET;
+	/* using ECC62 level to be performed */
+	fl1 |= 0x1f << IMX6_BCH_FLASHLAYOUT1_ECCN_OFFSET;
+	/* 0x20 * 4 bytes of the data0 block */
+	fl1 |= 0x20 << BCH_FLASHLAYOUT1_DATAN_SIZE_OFFSET;
+	fl1 |= 0 << BCH_FLASHLAYOUT1_GF13_0_GF14_1_OFFSET;
+	writel(fl1, bch_regs + BCH_FLASH0LAYOUT1);
+}
+
+int mxs_nand_read_fcb_bch62(unsigned int block, void *buf, size_t size)
+{
+	struct nand_chip *chip;
+	struct mxs_nand_info *nand_info;
+	struct mtd_info *mtd = mxs_nand_mtd;
+	int ret;
+	int page;
+	int flips = 0;
+	uint8_t	*status;
+	int i;
+
+	if (!mtd)
+		return -ENODEV;
+
+	chip = mtd_to_nand(mtd);
+	nand_info = chip->priv;
+
+	nand_select_target(chip, 0);
+
+	page = block * (mtd->erasesize / mtd->writesize);
+
+	mxs_nand_mode_fcb_62bit(nand_info);
+
+	nand_read_page_op(chip, page, 0, NULL, 0);
+
+	ret = mxs_nand_do_bch_read(chip, 0, BCH62_PAGESIZE, true, page);
+	if (ret)
+		goto out;
+
+	/* Read DMA completed, now do the mark swapping. */
+	mxs_nand_swap_block_mark(chip, nand_info->data_buf, nand_info->oob_buf);
+
+	/* Loop over status bytes, accumulating ECC status. */
+	status = nand_info->oob_buf + 32;
+
+	for (i = 0; i < 8; i++) {
+		switch (status[i]) {
+		case 0x0:
+			break;
+		case 0xff:
+			/*
+			 * A status of 0xff means the chunk is erased, but due to
+			 * the randomizer we see this as random data. Explicitly
+			 * memset it.
+			 */
+			memset(nand_info->data_buf + 0x80 * i, 0xff, 0x80);
+			break;
+		case 0xfe:
+			ret = -EBADMSG;
+			goto out;
+		default:
+			flips += status[0];
+			break;
+		}
+	}
+
+	memcpy(buf, nand_info->data_buf, size);
+
+out:
+	mxs_nand_config_bch(chip, mtd->writesize + mtd->oobsize);
+	nand_deselect_target(chip);
+
+	return ret;
+}
+
+int mxs_nand_write_fcb_bch62(unsigned int block, void *buf, size_t size)
+{
+	struct nand_chip *chip;
+	struct mtd_info *mtd = mxs_nand_mtd;
+	struct mxs_nand_info *nand_info;
+	struct mxs_dma_desc *d;
+	uint32_t channel;
+	int ret = 0;
+	int page;
+
+	if (!mtd)
+		return -ENODEV;
+
+	if (size > BCH62_WRITESIZE)
+		return -EINVAL;
+
+	chip = mtd_to_nand(mtd);
+	nand_info = chip->priv;
+	channel = nand_info->dma_channel_base;
+
+	mxs_nand_mode_fcb_62bit(nand_info);
+
+	nand_select_target(chip, 0);
+
+	page = block * (mtd->erasesize / mtd->writesize);
+
+	nand_prog_page_begin_op(chip, page, 0, NULL, 0);
+
+	memset(nand_info->data_buf, 0x0, BCH62_WRITESIZE);
+	memcpy(nand_info->data_buf, buf, size);
+
+	/* Handle block mark swapping. */
+	mxs_nand_swap_block_mark(chip, nand_info->data_buf, nand_info->oob_buf);
+
+	/* Compile the DMA descriptor - write data. */
+	d = mxs_nand_get_dma_desc(nand_info);
+	d->cmd.data = MXS_DMA_DESC_COMMAND_NO_DMAXFER | MXS_DMA_DESC_IRQ |
+		      MXS_DMA_DESC_DEC_SEM | MXS_DMA_DESC_WAIT4END |
+		      (6 << MXS_DMA_DESC_PIO_WORDS_OFFSET);
+
+	d->cmd.address = 0;
+
+	d->cmd.pio_words[0] = GPMI_CTRL0_COMMAND_MODE_WRITE |
+			      GPMI_CTRL0_WORD_LENGTH |
+			      GPMI_CTRL0_ADDRESS_NAND_DATA;
+	d->cmd.pio_words[1] = 0;
+	d->cmd.pio_words[2] = GPMI_ECCCTRL_ENABLE_ECC |
+			      GPMI_ECCCTRL_ECC_CMD_ENCODE |
+			      GPMI_ECCCTRL_BUFFER_MASK_BCH_PAGE;
+	d->cmd.pio_words[3] = BCH62_PAGESIZE;
+	d->cmd.pio_words[4] = (dma_addr_t)nand_info->data_buf;
+	d->cmd.pio_words[5] = (dma_addr_t)nand_info->oob_buf;
+
+	d->cmd.pio_words[2] |= GPMI_ECCCTRL_RANDOMIZER_ENABLE |
+			       GPMI_ECCCTRL_RANDOMIZER_TYPE2;
+	/*
+	 * Write NAND page number needed to be randomized
+	 * to GPMI_ECCCOUNT register.
+	 *
+	 * The value is between 0-255. For additional details
+	 * check 9.6.6.4 of i.MX7D Applications Processor reference
+	 */
+	d->cmd.pio_words[3] |= (page % 256) << 16;
+
+	mxs_dma_desc_append(channel, d);
+
+	/* Execute the DMA chain. */
+	ret = mxs_dma_go(channel);
+	if (ret) {
+		dev_err(nand_info->dev, "MXS NAND: DMA write error: %d\n", ret);
+		goto out;
+	}
+
+	ret = mxs_nand_wait_for_bch_complete(nand_info);
+	if (ret) {
+		dev_err(nand_info->dev, "MXS NAND: BCH write timeout\n");
+		goto out;
+	}
+
+out:
+	mxs_nand_return_dma_descs(nand_info);
+
+	if (!ret)
+		ret = nand_prog_page_end_op(chip);
+
+	mxs_nand_config_bch(chip, mtd->writesize + mtd->oobsize);
+	nand_deselect_target(chip);
+
+	return ret;
 }
 
 /*

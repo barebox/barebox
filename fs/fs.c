@@ -890,6 +890,21 @@ static int fillonedir(struct dir_context *ctx, const char *name, int namlen,
 	return 0;
 }
 
+int unreaddir(DIR *dir, const struct dirent *d)
+{
+	struct readdir_entry *entry;
+
+	if (d != &dir->d)
+		return -EINVAL;
+
+	entry = xzalloc(sizeof(*entry));
+	entry->d = *d;
+	list_add_tail(&entry->list, &dir->entries);
+
+	return 0;
+}
+EXPORT_SYMBOL(unreaddir);
+
 struct dirent *readdir(DIR *dir)
 {
 	struct readdir_entry *entry;

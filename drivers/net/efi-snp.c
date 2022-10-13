@@ -120,6 +120,7 @@ struct efi_snp_priv {
 	struct device_d *dev;
 	struct eth_device edev;
 	struct efi_simple_network *snp;
+	void *rx_buf;
 };
 
 static inline struct efi_snp_priv *to_priv(struct eth_device *edev)
@@ -163,7 +164,7 @@ static int efi_snp_eth_rx(struct eth_device *edev)
 	long bufsize = PKTSIZE;
 	efi_status_t efiret;
 
-	efiret = priv->snp->receive(priv->snp, NULL, &bufsize, NetRxPackets[0], NULL, NULL, NULL);
+	efiret = priv->snp->receive(priv->snp, NULL, &bufsize, priv->rx_buf, NULL, NULL, NULL);
 	if (efiret == EFI_NOT_READY)
 		return 0;
 
@@ -172,7 +173,7 @@ static int efi_snp_eth_rx(struct eth_device *edev)
 		return -efi_errno(efiret);
 	}
 
-	net_receive(edev, NetRxPackets[0], bufsize);
+	net_receive(edev, priv->rx_buf, bufsize);
 
 	return 0;
 }
@@ -285,6 +286,7 @@ static int efi_snp_probe(struct efi_device *efidev)
 	priv = xzalloc(sizeof(struct efi_snp_priv));
 	priv->snp = efidev->protocol;
 	priv->dev = &efidev->dev;
+	priv->rx_buf = xmalloc(PKTSIZE);
 
 	dev_dbg(&efidev->dev, "perm: %02x:%02x:%02x:%02x:%02x:%02x\n",
 			priv->snp->Mode->PermanentAddress.Addr[0],

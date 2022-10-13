@@ -180,6 +180,7 @@ struct cs8900_priv {
 	void *regs;
 	struct cs89x0_product *product;
 	struct cs89x0_chip *chip;
+	void *rx_buf;
 };
 
 /* Read a 16-bit value from PacketPage Memory using I/O Space operation */
@@ -294,13 +295,13 @@ static int cs8900_recv(struct eth_device *dev)
 	status = readw(priv->regs + CS8900_RTDATA0);
 	len = readw(priv->regs + CS8900_RTDATA0);
 
-	for (addr = (u16 *) NetRxPackets[0], i = len >> 1; i > 0; i--) {
+	for (addr = (u16 *)priv->rx_buf, i = len >> 1; i > 0; i--) {
 		*addr++ = readw(priv->regs + CS8900_RTDATA0);
 	}
 	if (len & 1) {
 		*addr++ = readw(priv->regs + CS8900_RTDATA0);
 	}
-	net_receive(dev, NetRxPackets[0], len);
+	net_receive(dev, priv->rx_buf, len);
 
 	return len;
 }
@@ -441,6 +442,8 @@ static int cs8900_probe(struct device_d *dev)
 		free(priv);
 		return -1;
 	}
+
+	priv->rx_buf = xmalloc(PKTSIZE);
 
 	edev = (struct eth_device *)xmalloc(sizeof(struct eth_device));
 	edev->priv = priv;

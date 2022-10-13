@@ -32,6 +32,8 @@ struct smc911x_priv {
 	unsigned int using_extphy;
 	unsigned int phy_mask;
 
+	void *rx_buf;
+
 	u32 (*reg_read)(struct smc911x_priv *priv, u32 reg);
 	void (*reg_write)(struct smc911x_priv *priv, u32 reg, u32 val);
 };
@@ -447,7 +449,7 @@ static void smc911x_eth_halt(struct eth_device *edev)
 static int smc911x_eth_rx(struct eth_device *edev)
 {
 	struct smc911x_priv *priv = (struct smc911x_priv *)edev->priv;
-	u32 *data = (u32 *)NetRxPackets[0];
+	u32 *data = priv->rx_buf;
 	u32 pktlen, tmplen;
 	u32 status;
 
@@ -465,7 +467,7 @@ static int smc911x_eth_rx(struct eth_device *edev)
 			dev_err(&edev->dev, "dropped bad packet. Status: 0x%08x\n",
 				status);
 		else
-			net_receive(edev, NetRxPackets[0], pktlen);
+			net_receive(edev, priv->rx_buf, pktlen);
 	}
 
 	return 0;
@@ -607,6 +609,8 @@ static int smc911x_probe(struct device_d *dev)
 
 	dev_info(dev, "LAN911x identified, idrev: 0x%08X, generation: %d\n",
 		   val, priv->generation);
+
+	priv->rx_buf = xmalloc(PKTSIZE);
 
 	edev = &priv->edev;
 	edev->priv = priv;

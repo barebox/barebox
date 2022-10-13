@@ -15,6 +15,7 @@
 struct tap_priv {
 	int fd;
 	char *name;
+	char *rx_buf;
 };
 
 static int tap_eth_send(struct eth_device *edev, void *packet, int length)
@@ -30,10 +31,10 @@ static int tap_eth_rx(struct eth_device *edev)
 	struct tap_priv *priv = edev->priv;
 	int length;
 
-	length = linux_read_nonblock(priv->fd, NetRxPackets[0], PKTSIZE);
+	length = linux_read_nonblock(priv->fd, priv->rx_buf, PKTSIZE);
 
 	if (length > 0)
-		net_receive(edev, NetRxPackets[0], length);
+		net_receive(edev, priv->rx_buf, length);
 
 	return 0;
 }
@@ -72,6 +73,8 @@ static int tap_probe(struct device_d *dev)
 		ret = priv->fd;
 		goto out;
 	}
+
+	priv->rx_buf = xmalloc(PKTSIZE);
 
 	edev = xzalloc(sizeof(struct eth_device));
 	edev->priv = priv;

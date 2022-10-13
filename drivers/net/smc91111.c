@@ -446,6 +446,7 @@ struct smc91c111_priv {
 	int revision;
 	unsigned int control_setup;
 	unsigned int config_setup;
+	void *rx_buf;
 };
 
 #if (SMC_DEBUG > 2 )
@@ -1302,14 +1303,14 @@ static int smc91c111_eth_rx(struct eth_device *edev)
 		   to send the DWORDs or the bytes first, or some
 		   mixture.  A mixture might improve already slow PIO
 		   performance	*/
-		SMC_insl(priv, SMC91111_DATA_REG , NetRxPackets[0],
+		SMC_insl(priv, SMC91111_DATA_REG , priv->rx_buf,
 				packet_length >> 2);
 		/* read the left over bytes */
 		if (packet_length & 3) {
 			int i;
 
 			unsigned char *tail =
-					(unsigned char *)(NetRxPackets[0] +
+					(unsigned char *)(priv->rx_buf +
 					(packet_length & ~3));
 			unsigned long leftover = SMC_inl(priv,
 					SMC91111_DATA_REG);
@@ -1320,7 +1321,7 @@ static int smc91c111_eth_rx(struct eth_device *edev)
 
 #if	SMC_DEBUG > 2
 		printf("Receiving Packet\n");
-		print_packet( NetRxPackets[0], packet_length );
+		print_packet(priv->rx_buf, packet_length );
 #endif
 	} else {
 		/* error ... */
@@ -1343,7 +1344,7 @@ static int smc91c111_eth_rx(struct eth_device *edev)
 
 	if (!is_error) {
 		/* Pass the packet up to the protocol layers. */
-		net_receive(edev, NetRxPackets[0], packet_length);
+		net_receive(edev, priv->rx_buf, packet_length);
 		return 0;
 	}
 
@@ -1445,6 +1446,7 @@ static int smc91c111_probe(struct device_d *dev)
 
 	priv = edev->priv;
 	priv->a = access_via_32bit;
+	priv->rx_buf = xmalloc(PKTSIZE);
 
 	if (dev->platform_data) {
 		struct smc91c111_pdata *pdata = dev->platform_data;

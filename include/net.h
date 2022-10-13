@@ -79,6 +79,8 @@ struct eth_device {
 #define ETH_MODE_STATIC 1
 #define ETH_MODE_DISABLED 2
 	unsigned int global_mode;
+
+	uint64_t last_link_check;
 };
 
 #define dev_to_edev(d) container_of(d, struct eth_device, dev)
@@ -109,6 +111,7 @@ int eth_open(struct eth_device *edev);
 void eth_close(struct eth_device *edev);
 int eth_send(struct eth_device *edev, void *packet, int length);	   /* Send a packet		*/
 int eth_rx(void);			/* Check for received packets	*/
+void eth_open_all(void);
 struct eth_device *of_find_eth_device_by_node(struct device_node *np);
 
 /* associate a MAC address to a ethernet device. Should be called by

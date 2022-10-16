@@ -7,3 +7,23 @@
 		syscon = <&src>;
 	};
 };
+
+&flexspi {
+	clock-names = "fspi_en", "fspi";
+};
+
+&usb3_0 {
+	power-domains = <&pgc_hsiomix>;
+};
+
+&usb3_1 {
+	power-domains = <&pgc_hsiomix>;
+};
+
+&usb3_phy0 {
+	power-domains = <&pgc_usb1_phy>;
+};
+
+&usb3_phy1 {
+	power-domains = <&pgc_usb2_phy>;
+};

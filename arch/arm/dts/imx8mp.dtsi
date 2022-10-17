@@ -1,9 +1,52 @@
 // SPDX-License-Identifier: (GPL-2.0 OR MIT)
 
+#include <dt-bindings/features/imx8m.h>
+
 / {
 	remoteproc_cm7: remoteproc-cm7 {
 		compatible = "fsl,imx8mp-cm7";
 		clocks = <&clk IMX8MP_CLK_M7_CORE>;
 		syscon = <&src>;
 	};
+};
+
+feat: &ocotp {
+	#feature-cells = <1>;
+	barebox,feature-controller;
+};
+
+&pgc_mipi_phy1 {
+	barebox,feature-gates = <&feat IMX8M_FEAT_MIPI_DSI>;
+};
+
+&pgc_gpu2d {
+	barebox,feature-gates = <&feat IMX8M_FEAT_GPU>;
+};
+
+&pgc_gpu3d {
+	barebox,feature-gates = <&feat IMX8M_FEAT_GPU>;
+};
+
+&pgc_gpumix {
+	barebox,feature-gates = <&feat IMX8M_FEAT_GPU>;
+};
+
+&pgc_mediamix {
+	barebox,feature-gates = <&feat IMX8M_FEAT_ISP>;
+};
+
+&pgc_mipi_phy2 {
+	barebox,feature-gates = <&feat IMX8M_FEAT_MIPI_DSI>;
+};
+
+&pgc_ispdwp {
+	barebox,feature-gates = <&feat IMX8M_FEAT_ISP>;
+};
+
+&gpu3d {
+	barebox,feature-gates = <&feat IMX8M_FEAT_GPU>;
+};
+
+&gpu2d {
+	barebox,feature-gates = <&feat IMX8M_FEAT_GPU>;
 };

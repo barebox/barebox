@@ -890,12 +890,19 @@ static struct imx_ocotp_data vf610_ocotp_data = {
 	.fuse_read = imx6_fuse_read_addr,
 };
 
+static struct imx8m_featctrl_data imx8mp_featctrl_data = {
+	.gpu_bitmask = 0xc0,
+	.mipi_dsi_bitmask = 0x60000,
+	.isp_bitmask = 0x3,
+};
+
 static struct imx_ocotp_data imx8mp_ocotp_data = {
 	.num_regs = 1024,
 	.addr_to_offset = imx6sl_addr_to_offset,
 	.mac_offsets_num = 2,
 	.mac_offsets = { 0x90, 0x96 },
 	.format_mac = imx_ocotp_format_mac,
+	.feat = &imx8mp_featctrl_data,
 };
 
 static struct imx_ocotp_data imx8mq_ocotp_data = {
@@ -911,6 +918,7 @@ static struct imx_ocotp_data imx8mq_ocotp_data = {
 
 static struct imx8m_featctrl_data imx8mm_featctrl_data = {
 	.vpu_bitmask = 0x1c0000,
+	.check_cpus = true,
 };
 
 static struct imx_ocotp_data imx8mm_ocotp_data = {
@@ -927,6 +935,7 @@ static struct imx_ocotp_data imx8mm_ocotp_data = {
 
 static struct imx8m_featctrl_data imx8mn_featctrl_data = {
 	.gpu_bitmask = 0x1000000,
+	.check_cpus = true,
 };
 
 static struct imx_ocotp_data imx8mn_ocotp_data = {

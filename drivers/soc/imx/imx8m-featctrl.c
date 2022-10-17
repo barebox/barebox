@@ -53,13 +53,19 @@ int imx8m_feat_ctrl_init(struct device_d *dev, u32 tester4,
 		clear_bit(IMX8M_FEAT_VPU, features);
 	if (is_fused(tester4, data->gpu_bitmask))
 		clear_bit(IMX8M_FEAT_GPU, features);
+	if (is_fused(tester4, data->mipi_dsi_bitmask))
+		clear_bit(IMX8M_FEAT_MIPI_DSI, features);
+	if (is_fused(tester4, data->isp_bitmask))
+		clear_bit(IMX8M_FEAT_ISP, features);
 
-	switch (tester4 & 3) {
-	case 0b11:
-		clear_bit(IMX8M_FEAT_CPU_DUAL, features);
-		fallthrough;
-	case 0b10:
-		clear_bit(IMX8M_FEAT_CPU_QUAD, features);
+	if (data->check_cpus) {
+		switch (tester4 & 3) {
+		case 0b11:
+			clear_bit(IMX8M_FEAT_CPU_DUAL, features);
+			fallthrough;
+		case 0b10:
+			clear_bit(IMX8M_FEAT_CPU_QUAD, features);
+		}
 	}
 
 	priv->feat.dev = dev;

@@ -9,6 +9,9 @@
 struct imx8m_featctrl_data {
 	u32 vpu_bitmask;
 	u32 gpu_bitmask;
+	u32 mipi_dsi_bitmask;
+	u32 isp_bitmask;
+	bool check_cpus;
 };
 
 #ifdef CONFIG_IMX8M_FEATCTRL

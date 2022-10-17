@@ -385,6 +385,9 @@ int imx_barebox_start_usb(void __iomem *dr, void *dest);
 int imx6_barebox_load_usb(void *dest);
 int imx6_barebox_start_usb(void *dest);
 
+int imx7_barebox_load_usb(void *dest);
+int imx7_barebox_start_usb(void *dest);
+
 int imx8mm_barebox_load_usb(void *dest);
 int imx8mm_barebox_start_usb(void *dest);
 

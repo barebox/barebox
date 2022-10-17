@@ -164,8 +164,12 @@ normal barebox functionality like creating a DFU-gadget in barebox,
 Fastboot/USB mass storage ... etc.
 
 The FIP image containing barebox can be generated as described in
-137::ref:`stm32mp_fip`. Upstream TF-A doesn't support DFU for
+:ref:`stm32mp_fip`. Upstream TF-A doesn't support DFU for
 SSBLs using the legacy stm32image format.
+
+DFU mode can be forced via :ref:`reboot_mode` from a booted system with::
+
+  tamp.reboot_mode.next=serial reset -w
 
 Boot source selection
 ---------------------

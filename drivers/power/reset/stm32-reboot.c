@@ -9,6 +9,7 @@
 #include <linux/err.h>
 #include <restart.h>
 #include <reset_source.h>
+#include <of_address.h>
 #include <asm/io.h>
 #include <soc/stm32/reboot.h>
 
@@ -108,17 +109,19 @@ static void stm32_set_reset_reason(struct stm32_reset *priv,
 		reset_source_to_string(type), reg);
 }
 
-void stm32mp_system_restart_init(void __iomem *base)
+void stm32mp_system_restart_init(struct device_d *dev)
 {
 	struct stm32_reset *priv;
+	struct device_node *np = dev_of_node(dev);
 
 	priv = xzalloc(sizeof(*priv));
 
-	priv->base = base;
+	priv->base = of_iomap(np, 0);
 
 	priv->restart.name = "stm32-rcc";
 	priv->restart.restart = stm32mp_rcc_restart_handler;
 	priv->restart.priority = 200;
+	priv->restart.of_node = np;
 
 	restart_handler_register(&priv->restart);
 

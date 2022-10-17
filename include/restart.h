@@ -2,6 +2,11 @@
 #ifndef __INCLUDE_RESTART_H
 #define __INCLUDE_RESTART_H
 
+#include <linux/compiler.h>
+#include <linux/types.h>
+
+struct device_node;
+
 void restart_handlers_print(void);
 void __noreturn restart_machine(void);
 struct restart_handler *restart_handler_get_by_name(const char *name);

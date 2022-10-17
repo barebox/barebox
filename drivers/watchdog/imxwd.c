@@ -213,7 +213,7 @@ static void imx_watchdog_detect_reset_source(struct imx_wd *priv)
 	/* else keep the default 'unknown' state */
 }
 
-static int imx21_wd_init(struct imx_wd *priv)
+static int imx21_wd_init_no_warm_reset(struct imx_wd *priv)
 {
 	imx_watchdog_detect_reset_source(priv);
 
@@ -223,6 +223,17 @@ static int imx21_wd_init(struct imx_wd *priv)
 	imxwd_write(priv, IMX21_WDOG_WMCR, 0x0);
 
 	return 0;
+}
+
+static int imx21_wd_init(struct imx_wd *priv)
+{
+	priv->restart_warm.name = "imxwd-warm";
+	priv->restart_warm.restart = imxwd_force_soc_reset_internal;
+	priv->restart_warm.priority = RESTART_DEFAULT_PRIORITY - 10;
+
+	restart_handler_register(&priv->restart_warm);
+
+	return imx21_wd_init_no_warm_reset(priv);
 }
 
 static int imx_wd_probe(struct device_d *dev)
@@ -294,12 +305,6 @@ static int imx_wd_probe(struct device_d *dev)
 
 	restart_handler_register(&priv->restart);
 
-	priv->restart_warm.name = "imxwd-warm";
-	priv->restart_warm.restart = imxwd_force_soc_reset_internal;
-	priv->restart_warm.priority = RESTART_DEFAULT_PRIORITY - 10;
-
-	restart_handler_register(&priv->restart_warm);
-
 	return 0;
 
 error_unregister:
@@ -309,6 +314,14 @@ on_error:
 	free(priv);
 	return ret;
 }
+
+static const struct imx_wd_ops imx7d_wd_ops = {
+	.set_timeout = imx21_watchdog_set_timeout,
+	.soc_reset = imx21_soc_reset,
+	.init = imx21_wd_init_no_warm_reset,
+	.is_running = imx21_watchdog_is_running,
+	.timeout_max = 128,
+};
 
 static const struct imx_wd_ops imx21_wd_ops = {
 	.set_timeout = imx21_watchdog_set_timeout,
@@ -331,6 +344,9 @@ static __maybe_unused struct of_device_id imx_wdt_dt_ids[] = {
 	}, {
 		.compatible = "fsl,imx21-wdt",
 		.data = &imx21_wd_ops,
+	}, {
+		.compatible = "fsl,imx7d-wdt",
+		.data = &imx7d_wd_ops,
 	}, {
 		/* sentinel */
 	}

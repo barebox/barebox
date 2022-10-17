@@ -6,6 +6,7 @@
 #include <asm/memory.h>
 #include <bootsource.h>
 #include <common.h>
+#include <deep-probe.h>
 #include <init.h>
 #include <linux/phy.h>
 #include <linux/sizes.h>
@@ -14,14 +15,11 @@
 #include <gpio.h>
 #include <envfs.h>
 
-static int nxp_imx8mp_evk_init(void)
+static int nxp_imx8mp_evk_probe(struct device_d *dev)
 {
 	int emmc_bbu_flag = 0;
 	int sd_bbu_flag = 0;
 	u32 val;
-
-	if (!of_machine_is_compatible("fsl,imx8mp-evk"))
-		return 0;
 
 	if (bootsource_get() == BOOTSOURCE_MMC) {
 		if (bootsource_get_instance() == 2) {
@@ -39,10 +37,23 @@ static int nxp_imx8mp_evk_init(void)
 	imx8m_bbu_internal_mmc_register_handler("SD", "/dev/mmc1.barebox", sd_bbu_flag);
 	imx8m_bbu_internal_mmcboot_register_handler("eMMC", "/dev/mmc2", emmc_bbu_flag);
 
+	/* Enable RGMII TX clk output */
 	val = readl(MX8MP_IOMUXC_GPR_BASE_ADDR + MX8MP_IOMUXC_GPR1);
 	val |= MX8MP_IOMUXC_GPR1_ENET1_RGMII_EN;
 	writel(val, MX8MP_IOMUXC_GPR_BASE_ADDR + MX8MP_IOMUXC_GPR1);
 
 	return 0;
 }
-coredevice_initcall(nxp_imx8mp_evk_init);
+
+static const struct of_device_id nxp_imx8mp_evk_of_match[] = {
+	{ .compatible = "fsl,imx8mp-evk" },
+	{ /* Sentinel */ }
+};
+BAREBOX_DEEP_PROBE_ENABLE(nxp_imx8mp_evk_of_match);
+
+static struct driver_d nxp_imx8mp_evk_board_driver = {
+	.name = "board-nxp-imx8mp-evk",
+	.probe = nxp_imx8mp_evk_probe,
+	.of_compatible = nxp_imx8mp_evk_of_match,
+};
+coredevice_platform_driver(nxp_imx8mp_evk_board_driver);

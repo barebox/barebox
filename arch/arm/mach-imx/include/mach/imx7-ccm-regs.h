@@ -3,6 +3,9 @@
 #ifndef __MACH_IMX7_CCM_REGS_H__
 #define __MACH_IMX7_CCM_REGS_H__
 
+#include <io.h>
+#include <linux/build_bug.h>
+
 #define IMX7_CLOCK_ROOT_INDEX(x)	(((x) - 0x8000) / 128)
 
 /*
@@ -34,16 +37,21 @@
 
 /* UART counting starts for 1, like in the datasheet/dt-bindings */
 
-static inline void imx7_early_setup_uart_clock(void)
+static inline void __imx7_early_setup_uart_clock(int uart)
 {
 	void __iomem *ccm   = IOMEM(MX7_CCM_BASE_ADDR);
 
 	writel(IMX7_CCM_CCGR_SETTINGn_NEEDED(0),
-	       ccm + IMX7_CCM_CCGRn_CLR(IMX7_CCM_CCGR_UART(1)));
+	       ccm + IMX7_CCM_CCGRn_CLR(IMX7_CCM_CCGR_UART(uart)));
 	writel(IMX7_CCM_TARGET_ROOTn_ENABLE | IMX7_UART_CLK_ROOT__OSC_24M,
-	       ccm + IMX7_CCM_TARGET_ROOTn(IMX7_UART_CLK_ROOT(1)));
+	       ccm + IMX7_CCM_TARGET_ROOTn(IMX7_UART_CLK_ROOT(uart)));
 	writel(IMX7_CCM_CCGR_SETTINGn_NEEDED(0),
-	       ccm + IMX7_CCM_CCGRn_SET(IMX7_CCM_CCGR_UART(1)));
+	       ccm + IMX7_CCM_CCGRn_SET(IMX7_CCM_CCGR_UART(uart)));
 }
+
+#define imx7_early_setup_uart_clock(uart) do {	\
+	static_assert(1 <= (uart) && (uart) <= 6, "ID out of UART1-6 range"); \
+	__imx7_early_setup_uart_clock(uart); \
+} while (0)
 
 #endif

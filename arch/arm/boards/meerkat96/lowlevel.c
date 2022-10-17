@@ -14,7 +14,8 @@ extern char __dtb_z_imx7d_meerkat96_start[];
 
 static void setup_uart(void)
 {
-	imx7_early_setup_uart_clock();
+	/* FIXME: Below UART6 is muxed, not UART1 */
+	imx7_early_setup_uart_clock(1);
 	imx7_setup_pad(MX7D_PAD_SD1_WP__UART6_DCE_TX);
 	imx7_uart_setup_ll();
 	putc_ll('>');

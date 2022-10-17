@@ -93,7 +93,7 @@ extern char __dtb_z_ac_sxb_start[];
 
 static inline void setup_uart(void)
 {
-	imx7_early_setup_uart_clock();
+	imx7_early_setup_uart_clock(1);
 
 	imx7_setup_pad(MX7D_PAD_UART1_TX_DATA__UART1_DCE_TX);
 

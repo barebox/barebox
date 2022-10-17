@@ -12,12 +12,12 @@
 static int cmd_reset(int argc, char *argv[])
 {
 	struct restart_handler *rst;
-	int opt, shutdown_flag;
+	int opt, shutdown_flag, flags = 0;
 	const char *name = NULL;
 
 	shutdown_flag = 1;
 
-	while ((opt = getopt(argc, argv, "flr:")) > 0) {
+	while ((opt = getopt(argc, argv, "flwr:")) > 0) {
 		switch (opt) {
 		case 'f':
 			shutdown_flag = 0;
@@ -25,6 +25,9 @@ static int cmd_reset(int argc, char *argv[])
 		case 'l':
 			restart_handlers_print();
 			return 0;
+		case 'w':
+			flags |= RESTART_FLAG_WARM_BOOTROM;
+			break;
 		case 'r':
 			name = optarg;
 			break;
@@ -33,9 +36,9 @@ static int cmd_reset(int argc, char *argv[])
 		}
 	}
 
-	rst = restart_handler_get_by_name(name);
-	if (!rst && name) {
-		printf("reset '%s' does not exist\n", name);
+	rst = restart_handler_get_by_name(name, flags);
+	if (!rst && (name || flags)) {
+		printf("No matching restart handler found\n");
 		return COMMAND_ERROR;
 	}
 
@@ -57,13 +60,14 @@ BAREBOX_CMD_HELP_START(reset)
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT("-f",  "force RESET, don't call shutdown")
 BAREBOX_CMD_HELP_OPT("-l",  "list reset handlers")
+BAREBOX_CMD_HELP_OPT("-w",  "only consider warm BootROM reboot-mode-preserving resets")
 BAREBOX_CMD_HELP_OPT("-r RESET",  "use reset handler named RESET")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(reset)
 	.cmd		= cmd_reset,
 	BAREBOX_CMD_DESC("perform RESET of the CPU")
-	BAREBOX_CMD_OPTS("[-flr]")
+	BAREBOX_CMD_OPTS("[-flrw]")
 	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 	BAREBOX_CMD_HELP(cmd_reset_help)
 	BAREBOX_CMD_COMPLETE(empty_complete)

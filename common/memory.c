@@ -149,6 +149,7 @@ int barebox_add_memory_bank(const char *name, resource_size_t start,
 	struct resource newres = {
 		.start = start,
 		.end = start + size - 1,
+		.flags = IORESOURCE_MEM,
 	};
 
 	for_each_memory_bank(bank) {

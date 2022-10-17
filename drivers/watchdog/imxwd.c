@@ -230,6 +230,7 @@ static int imx21_wd_init(struct imx_wd *priv)
 	priv->restart_warm.name = "imxwd-warm";
 	priv->restart_warm.restart = imxwd_force_soc_reset_internal;
 	priv->restart_warm.priority = RESTART_DEFAULT_PRIORITY - 10;
+	priv->restart_warm.flags = RESTART_FLAG_WARM_BOOTROM;
 
 	restart_handler_register(&priv->restart_warm);
 

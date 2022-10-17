@@ -18,8 +18,8 @@
 #include <linux/iopoll.h>
 #include <linux/arm-smccc.h>
 
-#define FSL_SIP_BUILDINFO			0xC2000003
-#define FSL_SIP_BUILDINFO_GET_COMMITHASH	0x00
+#define IMX_SIP_BUILDINFO			0xC2000003
+#define IMX_SIP_BUILDINFO_GET_COMMITHASH	0x00
 
 void imx8m_clock_set_target_val(int clock_id, u32 val)
 {
@@ -62,10 +62,12 @@ static int imx8m_init(const char *cputypestr)
 
 	if (IS_ENABLED(CONFIG_ARM_SMCCC) &&
 	    IS_ENABLED(CONFIG_FIRMWARE_IMX8MQ_ATF)) {
-		arm_smccc_smc(FSL_SIP_BUILDINFO,
-			      FSL_SIP_BUILDINFO_GET_COMMITHASH,
+		arm_smccc_smc(IMX_SIP_BUILDINFO,
+			      IMX_SIP_BUILDINFO_GET_COMMITHASH,
 			      0, 0, 0, 0, 0, 0, &res);
-		pr_info("i.MX ARM Trusted Firmware: %s\n", (char *)&res.a0);
+
+		if (res.a0 > 0)
+			pr_info("i.MX ARM Trusted Firmware: %s\n", (char *)&res.a0);
 	}
 
 	return 0;

@@ -27,6 +27,11 @@ int restart_handler_register(struct restart_handler *rst)
 	if (!rst->priority)
 		rst->priority = RESTART_DEFAULT_PRIORITY;
 
+	if (rst->of_node) {
+		of_property_read_u32(rst->of_node, "restart-priority",
+				     &rst->priority);
+	}
+
 	list_add_tail(&rst->list, &restart_handler_list);
 
 	pr_debug("registering restart handler \"%s\" with priority %d\n",
@@ -100,21 +105,6 @@ void __noreturn restart_machine(void)
 	}
 
 	hang();
-}
-
-/**
- * of_get_restart_priority() - get the desired restart priority from device tree
- * @node:	The device_node to read the property from
- *
- * return: The priority
- */
-unsigned int of_get_restart_priority(struct device_node *node)
-{
-	unsigned int priority = RESTART_DEFAULT_PRIORITY;
-
-	of_property_read_u32(node, "restart-priority", &priority);
-
-	return priority;
 }
 
 /*

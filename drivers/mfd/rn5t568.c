@@ -138,7 +138,7 @@ static int __init rn5t568_i2c_probe(struct device_d *dev)
 	regmap_write(pmic_instance->regmap, RN5T568_REPCNT, RN5T568_REPCNT_OFF_RESETO_16MS |
 		     RN5T568_REPCNT_OFF_REPWRTIM_1000MS | RN5T568_REPCNT_OFF_REPWRON);
 
-	pmic_instance->restart.priority = of_get_restart_priority(dev->device_node);
+	pmic_instance->restart.of_node = dev->device_node;
 	pmic_instance->restart.name = "RN5T568";
 	pmic_instance->restart.restart = &rn5t568_restart;
 	restart_handler_register(&pmic_instance->restart);

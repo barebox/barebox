@@ -383,7 +383,7 @@ static int da9063_probe(struct device_d *dev)
 
 	da9063_detect_reset_source(priv);
 
-	priv->restart.priority = of_get_restart_priority(dev->device_node);
+	priv->restart.of_node = dev->device_node;
 	priv->restart.name = "da9063";
 	priv->restart.restart = &da9063_restart;
 

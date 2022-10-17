@@ -71,6 +71,7 @@ static int syscon_reboot_probe(struct device_d *dev)
 	ctx->restart_handler.name = "syscon-reboot";
 	ctx->restart_handler.restart = syscon_restart_handle;
 	ctx->restart_handler.priority = 192;
+	ctx->restart_handler.of_node = dev->device_node;
 
 	err = restart_handler_register(&ctx->restart_handler);
 	if (err)

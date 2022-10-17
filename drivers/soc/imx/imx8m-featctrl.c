@@ -28,6 +28,11 @@ static int imx8m_feat_check(struct feature_controller *feat, int idx)
 	return test_bit(idx, priv->features) ? FEATCTRL_OKAY : FEATCTRL_GATED;
 }
 
+static inline bool is_fused(u32 val, u32 bitmask)
+{
+	return bitmask && (val & bitmask) == bitmask;
+}
+
 int imx8m_feat_ctrl_init(struct device_d *dev, u32 tester4,
 			 const struct imx8m_featctrl_data *data)
 {
@@ -44,9 +49,9 @@ int imx8m_feat_ctrl_init(struct device_d *dev, u32 tester4,
 
 	bitmap_fill(features, IMX8M_FEAT_END);
 
-	if (tester4 & data->vpu_bitmask)
+	if (is_fused(tester4, data->vpu_bitmask))
 		clear_bit(IMX8M_FEAT_VPU, features);
-	if (tester4 & data->gpu_bitmask)
+	if (is_fused(tester4, data->gpu_bitmask))
 		clear_bit(IMX8M_FEAT_GPU, features);
 
 	switch (tester4 & 3) {

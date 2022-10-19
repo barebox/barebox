@@ -25,27 +25,9 @@
 			status = "disabled";
 		};
 
-		environment-sd1 {
-			compatible = "barebox,environment";
-			device-path = &usdhc1, "partname:barebox-environment";
-			status = "disabled";
-		};
-
-		environment-sd2 {
-			compatible = "barebox,environment";
-			device-path = &usdhc2, "partname:barebox-environment";
-			status = "disabled";
-		};
-
 		environment-sd3 {
 			compatible = "barebox,environment";
 			device-path = &usdhc3, "partname:barebox-environment";
-			status = "disabled";
-		};
-
-		environment-sd4 {
-			compatible = "barebox,environment";
-			device-path = &usdhc4, "partname:barebox-environment";
 			status = "disabled";
 		};
 	};

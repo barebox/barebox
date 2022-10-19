@@ -4,7 +4,7 @@ Representing flash partitions in devicetree
 In addition to the upstream binding, another property is added:
 
 Optional properties:
-- ``partuuid`` : The partition UUID for this partition.
+- ``partuuid`` : The global partition UUID for this partition.
 
 Additionally, barebox also supports partitioning the eMMC boot partitions if
 the partition table node is named appropriately:
@@ -16,7 +16,7 @@ Examples:
 
 .. code-block:: none
 
-  flash@0 {
+  / {
   	partitions {
   		compatible = "fixed-partitions";
   		#address-cells = <1>;

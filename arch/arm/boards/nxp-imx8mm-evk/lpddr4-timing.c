@@ -1975,4 +1975,5 @@ struct dram_timing_info imx8mm_evk_dram_timing = {
 	.ddrphy_trained_csr_num = ARRAY_SIZE(lpddr4_ddrphy_trained_csr),
 	.ddrphy_pie = lpddr4_phy_pie,
 	.ddrphy_pie_num = ARRAY_SIZE(lpddr4_phy_pie),
+	.fsp_table = { 4000, 400, 100, },
 };

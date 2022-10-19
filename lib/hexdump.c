@@ -10,6 +10,7 @@
 #include <linux/log2.h>
 #include <linux/printk.h>
 #include <asm/unaligned.h>
+#include <pbl.h>
 
 const char hex_asc[] = "0123456789abcdef";
 EXPORT_SYMBOL(hex_asc);
@@ -243,9 +244,13 @@ void dev_print_hex_dump(struct device_d *dev, const char *level,
 	const u8 *ptr = buf;
 	int i, linelen, remaining = len;
 	unsigned char linebuf[32 * 3 + 2 + 32 + 1];
-	char *name;
+	char *name = "";
 
-	name = basprintf("%s%s", dev ? dev_name(dev) : "", dev ? ": " : "");
+	if (IN_PBL)
+		dev = NULL;
+
+	if (dev)
+		name = basprintf("%s: ", dev_name(dev));
 
 	if (rowsize != 16 && rowsize != 32)
 		rowsize = 16;
@@ -273,6 +278,7 @@ void dev_print_hex_dump(struct device_d *dev, const char *level,
 		}
 	}
 
-	free(name);
+	if (dev)
+		free(name);
 }
 EXPORT_SYMBOL(dev_print_hex_dump);

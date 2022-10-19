@@ -70,20 +70,20 @@ int pbl_barebox_verify(const void *compressed_start, unsigned int len,
 	sha256_update(&d, compressed_start, len);
 	sha256_final(&d, computed_hash);
 	if (IS_ENABLED(CONFIG_DEBUG_LL)) {
-		putc_ll('C');
-		putc_ll('H');
+		puts_ll("CH ");
+
+		for (i = 0; i < SHA256_DIGEST_SIZE; i++)
+			puthexc_ll(computed_hash[i]);
+
+		puts_ll("\nIH ");
+
+		for (i = 0; i < SHA256_DIGEST_SIZE; i++)
+			puthexc_ll(char_hash[i]);
+
 		putc_ll('\n');
-		for (i = 0; i < SHA256_DIGEST_SIZE; i++) {
-			puthex_ll(computed_hash[i]);
-			putc_ll('\n');
-		}
-		putc_ll('I');
-		putc_ll('H');
-		putc_ll('\n');
-		for (i = 0; i < SHA256_DIGEST_SIZE; i++) {
-			puthex_ll(char_hash[i]);
-			putc_ll('\n');
-		}
+
+		pr_debug("Hexdump of first 64 bytes of %u\n", len);
+		print_hex_dump_bytes("", DUMP_PREFIX_ADDRESS, compressed_start, 64);
 	}
 
 	return memcmp(hash, computed_hash, SHA256_DIGEST_SIZE);

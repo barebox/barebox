@@ -8,6 +8,7 @@
 #include <linux/phy.h>
 #include <linux/sizes.h>
 #include <mach/bbu.h>
+#include <deep-probe.h>
 
 #include <envfs.h>
 
@@ -30,13 +31,10 @@ static int ar8031_phy_fixup(struct phy_device *phydev)
 	return 0;
 }
 
-static int nxp_imx8mm_evk_init(void)
+static int imx8mm_evk_probe(struct device_d *dev)
 {
 	int emmc_bbu_flag = 0;
 	int sd_bbu_flag = 0;
-
-	if (!of_machine_is_compatible("fsl,imx8mm-evk"))
-		return 0;
 
 	barebox_set_hostname("imx8mm-evk");
 
@@ -60,4 +58,19 @@ static int nxp_imx8mm_evk_init(void)
 				   ar8031_phy_fixup);
 	return 0;
 }
-device_initcall(nxp_imx8mm_evk_init);
+
+static const struct of_device_id imx8mm_evk_of_match[] = {
+	{
+		.compatible = "fsl,imx8mm-evk",
+	},
+	{ /* sentinel */ }
+};
+
+static struct driver_d imx8mm_evk_board_driver = {
+	.name = "board-imx8mm-evk",
+	.probe = imx8mm_evk_probe,
+	.of_compatible = imx8mm_evk_of_match,
+};
+coredevice_platform_driver(imx8mm_evk_board_driver);
+
+BAREBOX_DEEP_PROBE_ENABLE(imx8mm_evk_of_match);

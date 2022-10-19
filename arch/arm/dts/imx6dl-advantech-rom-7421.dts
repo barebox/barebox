@@ -24,19 +24,19 @@
 
 		environment-sd2 {			/* Micro SD */
 			compatible = "barebox,environment";
-			device-path = &usdhc2, "partname:barebox-environment";
+			device-path = &env_sd2;
 			status = "disabled";
 		};
 
 		environment-sd4 {			/* eMMC */
 			compatible = "barebox,environment";
-			device-path = &usdhc4, "partname:barebox-environment";
+			device-path = &env_sd4;
 			status = "disabled";
 		};
 
 		environment-spi {			/* spi nor */
 			compatible = "barebox,environment";
-			device-path = &ecspi1, "partname:barebox-environment";
+			device-path = &env_nor;
 			status = "disabled";
 		};
 	};
@@ -63,7 +63,7 @@
 			reg = <0x0 0xe0000>;
 		};
 
-		partition@e0000 {
+		env_nor: partition@e0000 {
 			label = "barebox-environment";
 			reg = <0xe0000 0x20000>;
 		};
@@ -115,7 +115,7 @@
 		reg = <0x0 0xe0000>;
 	};
 
-	partition@e0000 {
+	env_sd2: partition@e0000 {
 		label = "barebox-environment";
 		reg = <0xe0000 0x20000>;
 	};
@@ -147,7 +147,7 @@
 		reg = <0x0 0xe0000>;
 	};
 
-	partition@e0000 {
+	env_sd4: partition@e0000 {
 		label = "barebox-environment";
 		reg = <0xe0000 0x20000>;
 	};

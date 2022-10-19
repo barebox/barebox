@@ -49,13 +49,13 @@
 
 		environment-emmc {
 			compatible = "barebox,environment";
-			device-path = &emmc, "partname:barebox-environment";
+			device-path = &env_emmc;
 			status = "disabled";
 		};
 
 		environment-sdmmc {
 			compatible = "barebox,environment";
-			device-path = &sdmmc, "partname:barebox-environment";
+			device-path = &env_sdmmc;
 			status = "disabled";
 		};
 	};
@@ -100,7 +100,7 @@
 		reg = <0x20000 0x80000>;
 	};
 
-	partition@a0000 {
+	env_emmc: partition@a0000 {
 		label = "barebox-environment";
 		reg = <0xa0000 0x20000>;
 	};
@@ -131,7 +131,7 @@
 		reg = <0x20000 0x80000>;
 	};
 
-	partition@a0000 {
+	env_sdmmc: partition@a0000 {
 		label = "barebox-environment";
 		reg = <0xa0000 0x20000>;
 	};

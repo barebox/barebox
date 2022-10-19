@@ -10,7 +10,7 @@
 
 		environment@0 {
 			compatible = "barebox,environment";
-			device-path = &usdhc3, "partname:barebox-environment";
+			device-path = &env_sd3;
 		};
 	};
 
@@ -105,7 +105,7 @@
 	#address-cells = <1>;
 	#size-cells = <1>;
 
-	partition@40000 {
+	env_sd3: partition@40000 {
 		label = "barebox-environment";
 		reg = <0x40000 0x80000>;
 	};

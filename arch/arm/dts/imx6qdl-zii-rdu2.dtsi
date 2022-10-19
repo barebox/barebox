@@ -45,7 +45,7 @@
 	chosen {
 		environment {
 			compatible = "barebox,environment";
-			device-path = &nor_flash, "partname:barebox-environment";
+			device-path = &env_nor;
 		};
 
 		ubootenv {
@@ -219,7 +219,7 @@
 			reg = <0x0 0xc0000>;
 		};
 
-		partition@c0000 {
+		env_nor: partition@c0000 {
 			label = "barebox-environment";
 			reg = <0xc0000 0x40000>;
 		};

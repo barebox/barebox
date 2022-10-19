@@ -21,7 +21,7 @@
 
 		environment {
 			compatible = "barebox,environment";
-			device-path = &spiflash, "partname:barebox-environment";
+			device-path = &env_nor;
 		};
 
 		art@0 {
@@ -120,7 +120,7 @@
 		reg = <0 0x10000>;
 	};
 
-	partition@10000 {
+	env_nor: partition@10000 {
 		label = "barebox-environment";
 		reg = <0x10000 0x10000>;
 	};

@@ -13,12 +13,12 @@
 	chosen {
 		environment-sd {
 			compatible = "barebox,environment";
-			device-path = &usdhc2, "partname:barebox-environment";
+			device-path = &env_sd2;
 			status = "disabled";
 		};
 		environment-emmc {
 			compatible = "barebox,environment";
-			device-path = &usdhc3, "partname:barebox-environment";
+			device-path = &env_sd3;
 			status = "disabled";
 		};
 	};
@@ -44,7 +44,7 @@
 		reg = <0x0 0xe0000>;
 	};
 
-	partition@e0000 {
+	env_sd2: partition@e0000 {
 		label = "barebox-environment";
 		reg = <0xe0000 0x20000>;
 	};
@@ -59,7 +59,7 @@
 		reg = <0x0 0xe0000>;
 	};
 
-	partition@e0000 {
+	env_sd3: partition@e0000 {
 		label = "barebox-environment";
 		reg = <0xe0000 0x20000>;
 	};

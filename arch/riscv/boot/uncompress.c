@@ -36,8 +36,8 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 	irq_init_vector(riscv_mode());
 
 	/* piggy data is not relocated, so determine the bounds now */
-	pg_start = input_data + get_runtime_offset();
-	pg_end = input_data_end + get_runtime_offset();
+	pg_start = runtime_address(input_data);
+	pg_end = runtime_address(input_data_end);
 	pg_len = pg_end - pg_start;
 	uncompressed_len = input_data_len();
 

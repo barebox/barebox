@@ -61,16 +61,19 @@ void pbl_barebox_break(void)
  */
 void relocate_to_current_adr(void)
 {
-	unsigned long offset, offset_var;
+	unsigned long offset;
 	unsigned long __maybe_unused *dynsym, *dynend;
 	void *dstart, *dend;
 
 	/* Get offset between linked address and runtime address */
 	offset = get_runtime_offset();
-	offset_var = global_variable_offset();
 
-	dstart = (void *)__rel_dyn_start + offset_var;
-	dend = (void *)__rel_dyn_end + offset_var;
+	/*
+	 * We have yet to relocate, so using runtime_address
+	 * to compute the relocated address
+	 */
+	dstart = runtime_address(__rel_dyn_start);
+	dend = runtime_address(__rel_dyn_end);
 
 #if defined(CONFIG_CPU_64)
 	while (dstart < dend) {
@@ -96,8 +99,8 @@ void relocate_to_current_adr(void)
 		dstart += sizeof(*rel);
 	}
 #elif defined(CONFIG_CPU_32)
-	dynsym = (void *)__dynsym_start + offset_var;
-	dynend = (void *)__dynsym_end + offset_var;
+	dynsym = runtime_address(__dynsym_start);
+	dynend = runtime_address(__dynsym_end);
 
 	while (dstart < dend) {
 		struct elf32_rel *rel = dstart;

@@ -53,8 +53,8 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 	unsigned long pc = get_pc();
 
 	/* piggy data is not relocated, so determine the bounds now */
-	pg_start = input_data + global_variable_offset();
-	pg_end = input_data_end + global_variable_offset();
+	pg_start = runtime_address(input_data);
+	pg_end = runtime_address(input_data_end);
 
 	if (IS_ENABLED(CONFIG_PBL_RELOCATABLE)) {
 		/*

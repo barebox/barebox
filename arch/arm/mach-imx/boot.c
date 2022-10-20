@@ -497,11 +497,6 @@ static void __imx7_get_boot_source(enum bootsource *src, int *instance,
 {
 	const struct imx_boot_sw_info *info;
 
-	if (imx6_bootsource_serial(sbmr2)) {
-		*src = BOOTSOURCE_SERIAL;
-		return;
-	}
-
 	info = (const void *)(unsigned long)
 		readl(boot_sw_info_pointer_addr);
 
@@ -538,6 +533,11 @@ void imx7_get_boot_source(enum bootsource *src, int *instance)
 {
 	void __iomem *src_base = IOMEM(MX7_SRC_BASE_ADDR);
 	uint32_t sbmr2 = readl(src_base + 0x70);
+
+	if (imx6_bootsource_serial(sbmr2)) {
+		*src = BOOTSOURCE_SERIAL;
+		return;
+	}
 
 	__imx7_get_boot_source(src, instance, IMX7_BOOT_SW_INFO_POINTER_ADDR,
 			       sbmr2);
@@ -654,6 +654,11 @@ void imx8mq_get_boot_source(enum bootsource *src, int *instance)
 		IMX8M_BOOT_SW_INFO_POINTER_ADDR_A0 :
 		IMX8M_BOOT_SW_INFO_POINTER_ADDR_B0;
 
+	if (imx6_bootsource_serial(sbmr2)) {
+		*src = BOOTSOURCE_SERIAL;
+		return;
+	}
+
 	__imx7_get_boot_source(src, instance, addr, sbmr2);
 }
 
@@ -667,6 +672,11 @@ void imx8mm_get_boot_source(enum bootsource *src, int *instance)
 	unsigned long addr;
 	void __iomem *src_base = IOMEM(MX8MM_SRC_BASE_ADDR);
 	uint32_t sbmr2 = readl(src_base + 0x70);
+
+	if (imx6_bootsource_serial(sbmr2)) {
+		*src = BOOTSOURCE_SERIAL;
+		return;
+	}
 
 	addr = IMX8M_BOOT_SW_INFO_POINTER_ADDR_A0;
 
@@ -683,6 +693,11 @@ void imx8mp_get_boot_source(enum bootsource *src, int *instance)
 	unsigned long addr;
 	void __iomem *src_base = IOMEM(MX8MP_SRC_BASE_ADDR);
 	uint32_t sbmr2 = readl(src_base + 0x70);
+
+	if (imx6_bootsource_serial(sbmr2)) {
+		*src = BOOTSOURCE_SERIAL;
+		return;
+	}
 
 	addr = IMX8M_BOOT_SW_INFO_POINTER_ADDR_A0;
 

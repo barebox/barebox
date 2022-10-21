@@ -662,6 +662,10 @@ static __maybe_unused struct of_device_id imx_spi_dt_ids[] = {
 		.compatible = "fsl,imx51-ecspi",
 		.data = &spi_imx_devtype_data_2_3,
 	},
+	{
+		.compatible = "fsl,imx6ul-ecspi",
+		.data = &spi_imx_devtype_data_2_3,
+	},
 #endif
 	{
 		/* sentinel */

@@ -113,6 +113,9 @@ there depends on the previously running code. If a previous stage has already
 initialized the DRAM, the only thing you need to do is to set up a stack and
 call the common PBL code with a memory region and your device tree blob::
 
+  #include <asm/barebox-arm.h>
+  #include <console.h>
+
   ENTRY_FUNCTION_WITHSTACK(start_my_board, MY_STACK_TOP, r0, r1, r2)
   {
   	extern char __dtb_my_board_start[];
@@ -128,22 +131,24 @@ call the common PBL code with a memory region and your device tree blob::
 
 Lets look at this line by line:
 
- - ``ENTRY_FUNCTION_WITHSTACK(start_my_board, STACK_TOP, r0, r1, r2)``
+``ENTRY_FUNCTION_WITHSTACK(start_my_board, MY_STACK_TOP, r0, r1, r2)``
    The entry point is special: It needs to be located at the beginning of the
    image, it does not return and may run before a stack is set up.
    To make it possible to write this entry point in C, the macro places
-   a machine code prologue that uses ``STACK_TOP`` as the initial stack
+   a machine code prologue that uses ``MY_STACK_TOP`` as the initial stack
    pointer. If the stack is already set up, you may pass 0 here.
 
    Additionally, the macro passes along a number of registers, in case the
    Boot ROM has placed something interesting there.
 
- - ``extern char __dtb_my_board_start[];``
+``extern char __dtb_my_board_start[];``
    When a device tree is built as part of the PBL, ``__dtb_*_start`` and
-   ``__dtb_*_end`` will be defined for it. Declare the start variable, so
-   you can pass along the address of the device tree.
+   ``__dtb_*_end`` will be defined for it by the build system;
+   its name is determined by the name of the device tree source file.
+   Declare the start variable, so you can pass along the address of the device
+   tree.
 
- - ``relocate_to_current_adr();``
+``relocate_to_current_adr();``
    Machine code contains a mixture of relative and absolute addressing.
    Because the PBL doesn't know in advance which address it's loaded to,
    the link address of global variables may not be correct. To correct
@@ -152,28 +157,34 @@ Lets look at this line by line:
    by this function. Note that this is self-modifying code, so it's not
    safe to call this when executing in-place from flash or ROM.
 
- - ``setup_c();``
+``setup_c();``
    As a size optimization, zero-initialized variables of static storage
    duration are not written to the executable. Instead only the region
    where they should be located is described and at runtime that region
    is zeroed. This is what ``setup_c()`` does.
 
- - ``pbl_set_putc(my_serial_putc, (void *)BASE_ADDR);``
+``pbl_set_putc(my_serial_putc, (void *)BASE_ADDR);``
    Now that we have a C environment set up, lets set our first global
-   variable. ``pbl_set_putc`` saves a function pointer that can be used
-   to output a single character. This can be used for the early PBL
-   console to output messages even before any drivers are initialized.
+   variable. ``pbl_set_putc`` saves a pointer to a function
+   (``my_serial_putc``) that is called by the ``pr_*`` functions to output a
+   single character. This can be used for the early PBL console to output
+   messages even before any drivers are initialized.
+   The second parameter (UART register base address in this instance) is passed
+   as a user parameter when the provided function is called.
 
- - ``barebox_arm_entry`` will compute a new stack top from the supplied memory
-   region and uncompress barebox proper and pass along its arguments.
+``barebox_arm_entry(...)``
+   This will compute a new stack top from the supplied memory
+   region, uncompress barebox proper and pass along its arguments.
 
 Looking at other boards you might see some different patterns:
 
- - ``*_cpu_lowlevel_init();``: Often some common initialization and quirk handling
+``*_cpu_lowlevel_init();``
+   Often some common initialization and quirk handling
    needs to be done at start. If a board similar to yours does this, you probably
    want to do likewise.
 
- - ``__naked``: All functions called before stack is correctly initialized must be
+``__naked``
+   All functions called before stack is correctly initialized must be
    marked with this attribute. Otherwise, function prologue and epilogue may access
    the uninitialized stack. Note that even with ``__naked``, the compiler may still
    spill excess local C variables used in a naked function to the stack before it
@@ -187,34 +198,39 @@ Looking at other boards you might see some different patterns:
    no reason to use ``__naked``, just use ``ENTRY_FNCTION_WITHSTACK`` with a zero
    stack top.
 
- - ``noinline``: Compiler code inlining is oblivious to stack manipulation in
+``noinline``
+   Compiler code inlining is oblivious to stack manipulation in
    inline assembly. If you want to ensure a new function has its own stack frame
    (e.g. after setting up the stack in a ``__naked`` function), you must jump to
    a ``__noreturn noinline`` function.
 
- - ``arm_setup_stack``: For 32-bit ARM, ``arm_setup_stack`` initializes the stack
+``arm_setup_stack``
+   For 32-bit ARM, ``arm_setup_stack`` initializes the stack
    top when called from a naked C function, which allowed to write the entry point
    directly in C. Modern code should use ``ENTRY_FUNCTION_WITHSTACK`` instead.
    Note that in both cases the stack pointer will be decremented before pushing values.
    Avoid interleaving with C-code. See ``__naked`` above for more details.
 
- - ``__dtb_z_my_board_start[];``: Because the PBL normally doesn't parse anything out
+``__dtb_z_my_board_start[];``
+   Because the PBL normally doesn't parse anything out
    of the device tree blob, boards can benefit from keeping the device tree blob
    compressed and only unpack it in barebox proper. Such LZO-compressed device trees
    are prefixed with ``__dtb_z_``. It's usually a good idea to use this.
 
- - ``imx6q_barebox_entry(...);`` Sometimes it's possible to query the memory
+``imx6q_barebox_entry(...);``
+   Sometimes it's possible to query the memory
    controller for the size of RAM. If there are SoC-specific helpers to achieve
    this, you should use them.
 
- - ``get_runtime_offset()/global_variable_offset()`` returns the difference
+``get_runtime_offset()/global_variable_offset()``
+   This functions return the difference
    between the link and load address. This is zero after relocation, but the
    function can be useful to pass along the correct address of a variable when
    relocation has not yet occurred. If you need to use this for anything more
    then passing along the FDT address, you should reconsider and probably rather
    call ``relocate_to_current_adr();``.
 
- - ``*_start_image(...)/*_load_image(...)/*_xload_*(...)``:
+``*_start_image(...)/*_load_image(...)/*_xload_*(...)``
    If the SRAM couldn't fit both PBL and the compressed barebox proper, PBL
    will need to chainload full barebox binary from disk.
 

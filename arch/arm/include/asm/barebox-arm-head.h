@@ -18,13 +18,13 @@ void barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2);
 #define ARM_HEAD_SPARE_OFS	0x30
 #define ARM_HEAD_SPARE_MARKER	0x55555555
 
+#ifdef CONFIG_CPU_32
 #ifdef CONFIG_HAVE_MACH_ARM_HEAD
 #include <mach/barebox-arm-head.h>
 #else
 static inline void __barebox_arm_head(void)
 {
 	__asm__ __volatile__ (
-#ifdef CONFIG_CPU_32
 #ifdef CONFIG_THUMB2_BAREBOX
 		".arm\n"
 		"adr r9, 1f + 1\n"
@@ -45,31 +45,17 @@ static inline void __barebox_arm_head(void)
 		"1: b 1b\n"
 		"1: b 1b\n"
 #endif
-#else
-		/* 5 instructions added by ENTRY_FUNCTION */
-		/* two instruction long function prologue */
-		/* only use if stack is initialized! */
-		"b 2f\n"
-#endif
 		".asciz \"barebox\"\n"
-#ifdef CONFIG_CPU_32
 		".word _text\n"				/* text base. If copied there,
 							 * barebox can skip relocation
 							 */
-#else
-		".word 0xffffffff\n"
-#endif
 		".word _barebox_image_size\n"		/* image size to copy */
 		".rept 8\n"
 		".word 0x55555555\n"
 		".endr\n"
 		"2:\n"
 #ifdef CONFIG_PBL_BREAK
-#ifdef CONFIG_CPU_V8
-		"brk #17\n"
-#else
 		"bkpt #17\n"
-#endif
 		"nop\n"
 #else
 		"nop\n"
@@ -84,6 +70,7 @@ static inline void barebox_arm_head(void)
 		"b barebox_arm_reset_vector\n"
 	);
 }
+#endif
 #endif
 
 #endif /* __ASSEMBLY__ */

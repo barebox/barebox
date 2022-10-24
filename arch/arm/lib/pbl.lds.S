@@ -44,6 +44,15 @@ SECTIONS
 	. = ALIGN(4);
 	.rodata : { *(.rodata*) }
 
+	. = ALIGN(4);
+	__pbl_board_stack_top = .;
+	.rodata.pbl_board_stack_top : {
+		*(.pbl_board_stack_top_*)
+		/* Dummy for when BootROM sets up usable stack */
+		LONG(0x00000000);
+	}
+	ASSERT(. - __pbl_board_stack_top <= 8, "Only One PBL per Image allowed")
+
 	.barebox_imd : { BAREBOX_IMD }
 
 	_etext = .;			/* End of text and rodata section */

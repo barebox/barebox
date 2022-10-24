@@ -136,24 +136,7 @@ static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 	}
 }
 
-#ifdef CONFIG_CPU_64
-
-#define ____emit_entry_prologue(name, instr, ...) do { \
-	static __attribute__ ((unused,section(".text_head_prologue_" __stringify(name)))) \
-		const u32 __entry_prologue[] = {(instr), ##__VA_ARGS__}; \
-	__keep_symbolref(__entry_prologue); \
-} while(0)
-
-#define __emit_entry_prologue(name, instr1, instr2, instr3, instr4, instr5) \
-	____emit_entry_prologue(name, instr1, instr2, instr3, instr4, instr5)
-
-#define __ARM_SETUP_STACK(name, stack_top) \
-	__emit_entry_prologue(name, 0x14000002	/* b pc+0x8 */,		\
-			      stack_top		/* 32-bit literal */,	\
-			      0x18ffffe9	/* ldr w9, top */,	\
-			      0xb4000049	/* cbz x9, pc+0x8 */,	\
-			      0x9100013f	/* mov sp, x9 */)
-#else
+#ifndef CONFIG_CPU_64
 #define __ARM_SETUP_STACK(name, stack_top) if (stack_top) arm_setup_stack(stack_top)
 #endif
 
@@ -166,6 +149,9 @@ static inline unsigned long arm_mem_barebox_image(unsigned long membase,
  * code block will not be inlined and may spill to stack right away.
  */
 #ifdef CONFIG_CPU_64
+
+void __barebox_arm64_head(ulong x0, ulong x1, ulong x2);
+
 #define ENTRY_FUNCTION_WITHSTACK(name, stack_top, arg0, arg1, arg2)	\
 	void name(ulong r0, ulong r1, ulong r2);			\
 									\
@@ -174,8 +160,10 @@ static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 	void __section(.text_head_entry_##name)	name			\
 				(ulong r0, ulong r1, ulong r2)		\
 		{							\
-			__barebox_arm_head();				\
-			__ARM_SETUP_STACK(name, stack_top);		\
+			static __section(.pbl_board_stack_top_##name)	\
+				const u32 __stack_top = (stack_top);	\
+			__keep_symbolref(__barebox_arm64_head);		\
+			__keep_symbolref(__stack_top);			\
 			__##name(r0, r1, r2);				\
 		}							\
 		static void noinline __##name				\

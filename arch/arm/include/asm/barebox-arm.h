@@ -177,7 +177,8 @@ void __barebox_arm64_head(ulong x0, ulong x1, ulong x2);
 	static void ____##name(ulong, ulong, ulong);			\
 	ENTRY_FUNCTION(name, arg0, arg1, arg2)				\
 	{								\
-		__ARM_SETUP_STACK(name, stack_top);			\
+		if (stack_top)						\
+			arm_setup_stack(stack_top);			\
 		____##name(arg0, arg1, arg2);				\
 	}								\
 	static void noinline ____##name					\
@@ -188,15 +189,14 @@ void __barebox_arm64_head(ulong x0, ulong x1, ulong x2);
 									\
 	static void __##name(ulong, ulong, ulong);			\
 									\
-	void NAKED __section(.text_head_entry_##name)	name		\
+	void __naked __section(.text_head_entry_##name)	name		\
 				(ulong r0, ulong r1, ulong r2)		\
 		{							\
 			__barebox_arm_head();				\
-			__ARM_SETUP_STACK(name, 0);			\
 			__##name(r0, r1, r2);				\
 		}							\
-		static void NAKED noinline __##name			\
-			(ulong arg0, ulong arg1, ulong arg2)
+	static void __naked noinline __##name				\
+		(ulong arg0, ulong arg1, ulong arg2)
 #endif
 
 /*

@@ -195,14 +195,15 @@ Looking at other boards you might see some different patterns:
    by using ``ENTRY_FUNCTION_WITHSTACK``, which will take care to initialize the
    stack beforehand. If either a barebox assembly entry point,
    ``ENTRY_FUNCTION_WITHSTACK`` or earlier firmware has set up the stack, there is
-   no reason to use ``__naked``, just use ``ENTRY_FNCTION_WITHSTACK`` with a zero
+   no reason to use ``__naked``, just use ``ENTRY_FUNCTION_WITHSTACK`` with a zero
    stack top.
 
 ``noinline``
    Compiler code inlining is oblivious to stack manipulation in
    inline assembly. If you want to ensure a new function has its own stack frame
    (e.g. after setting up the stack in a ``__naked`` function), you must jump to
-   a ``__noreturn noinline`` function.
+   a ``__noreturn noinline`` function. This is already handled by
+   ``ENTRY_FUNCTION_WITHSTACK``.
 
 ``arm_setup_stack``
    For 32-bit ARM, ``arm_setup_stack`` initializes the stack
@@ -214,7 +215,7 @@ Looking at other boards you might see some different patterns:
 ``__dtb_z_my_board_start[];``
    Because the PBL normally doesn't parse anything out
    of the device tree blob, boards can benefit from keeping the device tree blob
-   compressed and only unpack it in barebox proper. Such LZO-compressed device trees
+   compressed and only unpack it in barebox proper. Such compressed device trees
    are prefixed with ``__dtb_z_``. It's usually a good idea to use this.
 
 ``imx6q_barebox_entry(...);``
@@ -232,7 +233,7 @@ Looking at other boards you might see some different patterns:
 
 ``*_start_image(...)/*_load_image(...)/*_xload_*(...)``
    If the SRAM couldn't fit both PBL and the compressed barebox proper, PBL
-   will need to chainload full barebox binary from disk.
+   will need to chainload full barebox binary from the boot medium.
 
 Repeating previous advice: The specifics about how different SoCs handle
 things can vary widely. You're best served by mimicking a similar recently
@@ -404,9 +405,18 @@ New header format
 =================
 
 Your loader may require a specific header or format. If the header is meant
-to be executable, it should preferably be added as inline assembly to
-the start of the PBL entry points. See ``__barebox_arm_head`` and
-``__barebox_riscv_header``. Otherwise, add a new tool to ``scripts/``
+to be executable, it should be written in assembly.
+If the C compiler for that platform supports ``__attribute__((naked))``, it
+can be written in inline assembly inside such a naked function. See for
+example ``__barebox_arm_head`` for ARM32 or ``__barebox_riscv_header`` for RISC-V.
+
+For platforms, without naked function support, inline assembly may not be used
+and the entry point should be written in a dedicated assembly file.
+This is the case with ARM64, see for example ``__barebox_arm64_head`` and the
+``ENTRY_PROC`` macro.
+
+Another way, which is often used for non-executable headers with extra
+meta-information like a checksum, is adding a new tool to ``scripts/``
 and have it run as part the image build process. ``images/`` contains
 various examples.
 
@@ -434,7 +444,7 @@ well as its prerequisites like clocks, resets or pin multiplexers.
 
 Examples for this are the i.MX xload functions. Some BootROMs boot from
 a FAT file system. There is vfat support in the PBL. Refer to the sama5d2
-baord support for an example.
+board support for an example.
 
 Core drivers
 ============

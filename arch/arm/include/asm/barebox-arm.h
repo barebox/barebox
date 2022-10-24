@@ -141,7 +141,7 @@ static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 #define ____emit_entry_prologue(name, instr, ...) do { \
 	static __attribute__ ((unused,section(".text_head_prologue_" __stringify(name)))) \
 		const u32 __entry_prologue[] = {(instr), ##__VA_ARGS__}; \
-	barrier_data(__entry_prologue); \
+	__keep_symbolref(__entry_prologue); \
 } while(0)
 
 #define __emit_entry_prologue(name, instr1, instr2, instr3, instr4, instr5) \

@@ -205,6 +205,8 @@ static void __init mx5_clocks_common_init(struct device_d *dev, void __iomem *ba
 	writel(0xffffffff, base + CCM_CCGR6);
 	writel(0xffffffff, base + CCM_CCGR7);
 
+	clks[IMX5_CLK_DUMMY] = clk_fixed("dummy", 0);
+
 	if (!IS_ENABLED(CONFIG_COMMON_CLK_OF_PROVIDER) || !dev->device_node) {
 		clks[IMX5_CLK_CKIL] = clk_fixed("ckil", 32768);
 		clks[IMX5_CLK_OSC] = clk_fixed("osc", 24000000);
@@ -312,6 +314,7 @@ static int __init mx50_clocks_init(struct device_d *dev, void __iomem *regs)
 	clkdev_add_physbase(clks[IMX5_CLK_PER_ROOT], MX50_PWM1_BASE_ADDR, "per");
 	clkdev_add_physbase(clks[IMX5_CLK_PER_ROOT], MX50_PWM2_BASE_ADDR, "per");
 	clkdev_add_physbase(clks[IMX5_CLK_AHB], MX50_OTG_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[IMX5_CLK_DUMMY], MX50_WDOG1_BASE_ADDR, NULL);
 
 	return 0;
 }
@@ -392,6 +395,8 @@ static int __init mx51_clocks_init(struct device_d *dev, void __iomem *regs)
 	clkdev_add_physbase(clks[IMX5_CLK_IPG], MX51_ATA_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[IMX5_CLK_PER_ROOT], MX51_PWM1_BASE_ADDR, "per");
 	clkdev_add_physbase(clks[IMX5_CLK_PER_ROOT], MX51_PWM2_BASE_ADDR, "per");
+	clkdev_add_physbase(clks[IMX5_CLK_DUMMY], MX51_WDOG_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[IMX5_CLK_DUMMY], MX51_WDOG2_BASE_ADDR, NULL);
 
 	if (IS_ENABLED(CONFIG_DRIVER_VIDEO_IMX_IPUV3))
 		mx51_clocks_ipu_init(regs);
@@ -488,6 +493,8 @@ static int __init mx53_clocks_init(struct device_d *dev, void __iomem *regs)
 	clkdev_add_physbase(clks[IMX5_CLK_AHB], MX53_SATA_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[IMX5_CLK_PER_ROOT], MX53_PWM1_BASE_ADDR, "per");
 	clkdev_add_physbase(clks[IMX5_CLK_PER_ROOT], MX53_PWM2_BASE_ADDR, "per");
+	clkdev_add_physbase(clks[IMX5_CLK_DUMMY], MX53_WDOG1_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[IMX5_CLK_DUMMY], MX53_WDOG2_BASE_ADDR, NULL);
 
 	if (IS_ENABLED(CONFIG_DRIVER_VIDEO_IMX_IPUV3))
 		mx53_clocks_ipu_init(regs);

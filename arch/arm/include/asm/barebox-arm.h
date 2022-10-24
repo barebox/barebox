@@ -180,6 +180,10 @@ static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 		}							\
 		static void noinline __##name				\
 			(ulong arg0, ulong arg1, ulong arg2)
+
+#define ENTRY_FUNCTION(name, arg0, arg1, arg2)				\
+	ENTRY_FUNCTION_WITHSTACK(name, 0, arg0, arg1, arg2)
+
 #else
 #define ENTRY_FUNCTION_WITHSTACK(name, stack_top, arg0, arg1, arg2)	\
 	static void ____##name(ulong, ulong, ulong);			\
@@ -190,8 +194,6 @@ static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 	}								\
 	static void noinline ____##name					\
 		(ulong arg0, ulong arg1, ulong arg2)
-#endif
-
 
 #define ENTRY_FUNCTION(name, arg0, arg1, arg2)				\
 	void name(ulong r0, ulong r1, ulong r2);			\
@@ -207,6 +209,7 @@ static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 		}							\
 		static void NAKED noinline __##name			\
 			(ulong arg0, ulong arg1, ulong arg2)
+#endif
 
 /*
  * When using compressed images in conjunction with relocatable images

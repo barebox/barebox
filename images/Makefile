@@ -59,6 +59,7 @@ $(pbl-lds): $(obj)/../arch/$(SRCARCH)/lib/pbl.lds.S FORCE
 quiet_cmd_elf__ ?= LD      $@
       cmd_elf__ ?= $(LD) $(LDFLAGS_pbl) --gc-sections		\
 		-e $(2) -Map $@.map $(LDFLAGS_$(@F)) -o $@		\
+		--defsym=__pbl_board_entry=$(2)  			\
 		-T $(pbl-lds)						\
 		--whole-archive $(BAREBOX_PBL_OBJS) $(obj)/piggy.o	\
 		$(obj)/sha_sum.o

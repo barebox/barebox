@@ -371,6 +371,7 @@ config MACH_INNOCOMM_WB15
 	select IMX8M_DRAM
 	select I2C_IMX_EARLY
 	select USB_GADGET_DRIVER_ARC_PBL
+	imply AT803X_PHY
 
 config MACH_KONTRON_SAMX6I
         bool "Kontron sAMX6i"

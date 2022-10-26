@@ -456,6 +456,11 @@ CFG_start_nxp_imx8mp_evk.pblb.imximg = $(board)/nxp-imx8mp-evk/flash-header-imx8
 FILE_barebox-nxp-imx8mp-evk.img = start_nxp_imx8mp_evk.pblb.pimximg
 image-$(CONFIG_MACH_NXP_IMX8MP_EVK) += barebox-nxp-imx8mp-evk.img
 
+pblb-$(CONFIG_MACH_TQ_MBA8MPXL) += start_tqma8mpxl
+CFG_start_tqma8mpxl.pblb.imximg = $(board)/tqma8mpxl/flash-header-tqma8mpxl.imxcfg
+FILE_barebox-tqma8mpxl.img = start_tqma8mpxl.pblb.pimximg
+image-$(CONFIG_MACH_TQ_MBA8MPXL) += barebox-tqma8mpxl.img
+
 # ----------------------- i.MX8mq based boards --------------------------
 pblb-$(CONFIG_MACH_NXP_IMX8MQ_EVK) += start_nxp_imx8mq_evk
 CFG_start_nxp_imx8mq_evk.pblb.imximg = $(board)/nxp-imx8mq-evk/flash-header-imx8mq-evk.imxcfg

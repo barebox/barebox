@@ -174,7 +174,7 @@ void arria10_init(struct arria10_mainpll_cfg *mainpll,
 	 * Enable address filtering (Bit[0])
 	 */
 	writel(0x00000001, ARRIA10_MPUL2_ADRFLTR_START);
-	writel(0x00000002, ARRIA10_SYSMGR_NOC_ADDR_REMAP_VALUE);
+	writel(0x00000000, ARRIA10_SYSMGR_NOC_ADDR_REMAP_VALUE);
 
 	arria10_reset_peripherals();
 

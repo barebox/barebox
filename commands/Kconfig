@@ -947,6 +947,20 @@ config CMD_LS
 		  -C	column format (opposite of long format)
 		  -R	list subdirectories recursively
 
+config CMD_STAT
+	tristate
+	prompt "stat"
+	select PRINTF_UUID
+	help
+	  Display file status
+
+	  Usage: stat [-L] [FILEDIR...]
+
+	  Display status information about the specified files or directories.
+
+	  Options:
+		  -L	follow symlinks
+
 config CMD_MD5SUM
 	tristate
 	select COMPILE_HASH

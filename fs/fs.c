@@ -67,6 +67,110 @@ char *mkmodestr(unsigned long mode, char *str)
 }
 EXPORT_SYMBOL(mkmodestr);
 
+void cdev_print(const struct cdev *cdev)
+{
+	bool uuid_set;
+
+	if (cdev->dev || cdev->master || cdev->partname) {
+		printf("Origin: %s", dev_name(cdev->dev) ?: "None");
+		if (cdev->master)
+			printf("\tMaster: %s", cdev->master->name);
+		if (cdev->partname)
+			printf("\tPartition: %s", cdev->partname);
+		printf("\n");
+	}
+	printf("Ocount: %d\tFlags: 0x%02x", cdev->open, cdev->flags);
+	if (cdev->flags) {
+		printf(" (");
+		if (cdev->flags & DEVFS_IS_CHARACTER_DEV)
+			printf(" cdev");
+		if (cdev->flags & DEVFS_PARTITION_FIXED)
+			printf(" fixed-partition");
+		if (cdev->flags & DEVFS_PARTITION_READONLY)
+			printf(" readonly-partition");
+		if (cdev->flags & DEVFS_PARTITION_FROM_TABLE)
+			printf(" table-partition");
+		if (cdev->flags & DEVFS_IS_MCI_MAIN_PART_DEV)
+			printf(" mci-main-partition");
+		if (cdev->mtd)
+			printf(" mtd");
+		printf(" )");
+	}
+	printf("\n");
+
+	uuid_set = memchr_inv(cdev->uuid, 0x00 ,sizeof(cdev->uuid));
+	if (cdev->filetype || cdev->dos_partition_type || uuid_set) {
+		if (cdev->filetype)
+			printf("Filetype: %s\t", file_type_to_string(cdev->filetype));
+		if (cdev->dos_partition_type)
+			printf("DOS parttype: 0x%02x\t", cdev->dos_partition_type);
+		if (uuid_set)
+			printf("UUID: %pUl", cdev->uuid);
+		printf("\n");
+	}
+}
+EXPORT_SYMBOL(cdev_print);
+
+static struct fs_device_d *get_fsdevice_by_path(const char *path);
+
+void stat_print(const char *filename, const struct stat *st)
+{
+	struct block_device *bdev = NULL;
+	struct fs_device_d *fdev;
+	struct cdev *cdev = NULL;
+	const char *type = NULL;
+	char modestr[11];
+
+	mkmodestr(st->st_mode, modestr);
+
+	switch (st->st_mode & S_IFMT) {
+		case S_IFDIR:    type = "directory"; break;
+		case S_IFBLK:    type = "block special file"; break;
+		case S_IFCHR:    type = "character special file"; break;
+		case S_IFIFO:    type = "fifo"; break;
+		case S_IFLNK:    type = "symbolic link"; break;
+		case S_IFSOCK:   type = "socket"; break;
+		case S_IFREG:    type = "regular file"; break;
+	}
+
+	printf("  File: %s\n", filename);
+
+	if (st->st_mode & S_IFCHR) {
+		char *path;
+
+		path = canonicalize_path(filename);
+		if (path) {
+			const char *devicefile = devpath_to_name(path);
+
+			cdev = cdev_by_name(devicefile);
+			if (cdev)
+				bdev = cdev_get_block_device(cdev);
+
+			free(path);
+		}
+	}
+
+	printf("  Size: %-20llu", st->st_size);
+	if (bdev)
+		printf("Blocks: %llu\tIO Block: %u\t",
+		       (u64)bdev->num_blocks, 1 << bdev->blockbits);
+
+	if (type)
+		printf("  %s", type);
+
+	fdev = get_fsdevice_by_path(filename);
+
+	printf("\nDevice: %s\tInode: %lu\tLinks: %u\n",
+	       fdev ? dev_name(&fdev->dev) : "<unknown>",
+	       st->st_ino, st->st_nlink);
+	printf("Access: (%04o/%s)\tUid: (%u)\tGid: (%u)\n",
+	       st->st_mode & 07777, modestr, st->st_uid, st->st_gid);
+
+	if (cdev)
+		cdev_print(cdev);
+}
+EXPORT_SYMBOL(stat_print);
+
 static char *cwd;
 static struct dentry *cwd_dentry;
 static struct vfsmount *cwd_mnt;
@@ -91,7 +195,6 @@ postcore_initcall(init_fs);
 
 struct filename;
 
-static struct fs_device_d *get_fsdevice_by_path(const char *path);
 static int filename_lookup(struct filename *name, unsigned flags,
 			   struct path *path);;
 static struct filename *getname(const char *filename);

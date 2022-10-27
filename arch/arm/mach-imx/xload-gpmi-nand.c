@@ -869,17 +869,6 @@ static int get_fcb(struct mxs_nand_info *info, void *databuf)
 			continue;
 		}
 
-		pr_debug("Found FCB:\n");
-		pr_debug("PageDataSize:     0x%08x\n", fcb->PageDataSize);
-		pr_debug("TotalPageSize:    0x%08x\n", fcb->TotalPageSize);
-		pr_debug("SectorsPerBlock:  0x%08x\n", fcb->SectorsPerBlock);
-		pr_debug("FW1_startingPage: 0x%08x\n",
-			fcb->Firmware1_startingPage);
-		pr_debug("PagesInFW1:       0x%08x\n", fcb->PagesInFirmware1);
-		pr_debug("FW2_startingPage: 0x%08x\n",
-			fcb->Firmware2_startingPage);
-		pr_debug("PagesInFW2:       0x%08x\n", fcb->PagesInFirmware2);
-
 		return 0;
 	}
 
@@ -1030,6 +1019,17 @@ static int __maybe_unused imx6_nand_load_image(struct imx_nand_params *params,
 		return ret;
 
 	fcb = &info->fcb;
+
+	pr_debug("Found FCB:\n");
+	pr_debug("PageDataSize:     0x%08x\n", fcb->PageDataSize);
+	pr_debug("TotalPageSize:    0x%08x\n", fcb->TotalPageSize);
+	pr_debug("SectorsPerBlock:  0x%08x\n", fcb->SectorsPerBlock);
+	pr_debug("FW1_startingPage: 0x%08x\n",
+		fcb->Firmware1_startingPage);
+	pr_debug("PagesInFW1:       0x%08x\n", fcb->PagesInFirmware1);
+	pr_debug("FW2_startingPage: 0x%08x\n",
+		fcb->Firmware2_startingPage);
+	pr_debug("PagesInFW2:       0x%08x\n", fcb->PagesInFirmware2);
 
 	get_dbbt(info, databuf);
 

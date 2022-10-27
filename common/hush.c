@@ -617,6 +617,7 @@ static int builtin_exit(struct p_context *ctx, struct child_prog *child,
 static void remove_quotes_in_str(char *src)
 {
 	char *trg = src;
+	bool in_double_quotes = false;
 
 	while (*src) {
 		if (*src == '\'') {
@@ -629,6 +630,7 @@ static void remove_quotes_in_str(char *src)
 
 		/* drop quotes */
 		if (*src == '"') {
+			in_double_quotes = !in_double_quotes;
 			src++;
 			continue;
 		}
@@ -650,6 +652,13 @@ static void remove_quotes_in_str(char *src)
 		/* replace \\ with \ */
 		if (*src == '\\' && *(src + 1) == '\\') {
 			*trg++ = '\\';
+			src += 2;
+			continue;
+		}
+
+		/* replace '\ ' with ' ' */
+		if (!in_double_quotes && *src == '\\' && *(src + 1) == ' ') {
+			*trg++ = ' ';
 			src += 2;
 			continue;
 		}

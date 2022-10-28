@@ -7,10 +7,12 @@
 #include <asm-generic/io.h>
 #include <linux/sizes.h>
 #include <linux/mtd/nand.h>
+#include <linux/bitfield.h>
 #include <asm/cache.h>
 #include <mach/xload.h>
 #include <soc/imx/imx-nand-bcb.h>
 #include <linux/mtd/rawnand.h>
+#include <soc/imx/gpmi-nand.h>
 #include <mach/imx6-regs.h>
 #include <mach/clock-imx6.h>
 
@@ -203,39 +205,6 @@ static int mxs_dma_run(struct mxs_dma_chan *pchan, struct mxs_dma_cmd *pdesc,
 
 /* ----------------------------- NAND driver part -------------------------- */
 
-#define	GPMI_CTRL0					0x00000000
-#define	GPMI_CTRL0_RUN					(1 << 29)
-#define	GPMI_CTRL0_DEV_IRQ_EN				(1 << 28)
-#define	GPMI_CTRL0_UDMA					(1 << 26)
-#define	GPMI_CTRL0_COMMAND_MODE_MASK			(0x3 << 24)
-#define	GPMI_CTRL0_COMMAND_MODE_OFFSET			24
-#define	GPMI_CTRL0_COMMAND_MODE_WRITE			(0x0 << 24)
-#define	GPMI_CTRL0_COMMAND_MODE_READ			(0x1 << 24)
-#define	GPMI_CTRL0_COMMAND_MODE_READ_AND_COMPARE	(0x2 << 24)
-#define	GPMI_CTRL0_COMMAND_MODE_WAIT_FOR_READY		(0x3 << 24)
-#define	GPMI_CTRL0_WORD_LENGTH				(1 << 23)
-#define	GPMI_CTRL0_CS(cs)				((cs) << 20)
-#define	GPMI_CTRL0_ADDRESS_MASK				(0x7 << 17)
-#define	GPMI_CTRL0_ADDRESS_OFFSET			17
-#define	GPMI_CTRL0_ADDRESS_NAND_DATA			(0x0 << 17)
-#define	GPMI_CTRL0_ADDRESS_NAND_CLE			(0x1 << 17)
-#define	GPMI_CTRL0_ADDRESS_NAND_ALE			(0x2 << 17)
-#define	GPMI_CTRL0_ADDRESS_INCREMENT			(1 << 16)
-#define	GPMI_CTRL0_XFER_COUNT_MASK			0xffff
-#define	GPMI_CTRL0_XFER_COUNT_OFFSET			0
-
-#define	GPMI_ECCCTRL_ECC_CMD_DECODE			(0x0 << 13)
-#define	GPMI_ECCCTRL_ENABLE_ECC				(1 << 12)
-#define	GPMI_ECCCTRL_BUFFER_MASK_BCH_PAGE		0x1ff
-
-#define	BCH_CTRL					0x00000000
-#define	BCH_CTRL_COMPLETE_IRQ				(1 << 0)
-
-#define	MXS_NAND_DMA_DESCRIPTOR_COUNT			6
-#define	MXS_NAND_CHUNK_DATA_CHUNK_SIZE			512
-#define	MXS_NAND_METADATA_SIZE				10
-#define	MXS_NAND_COMMAND_BUFFER_SIZE			128
-
 struct mxs_nand_info {
 	void __iomem *io_base;
 	void __iomem *bch_base;
@@ -352,7 +321,7 @@ static int mxs_nand_read_page(struct mxs_nand_info *info, int writesize,
 
 	d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_WRITE |
 		GPMI_CTRL0_WORD_LENGTH |
-		GPMI_CTRL0_CS(info->cs) |
+		FIELD_PREP(GPMI_CTRL0_CS, info->cs) |
 		GPMI_CTRL0_ADDRESS_NAND_CLE |
 		GPMI_CTRL0_ADDRESS_INCREMENT |
 		cmd_queue_len;
@@ -372,7 +341,7 @@ static int mxs_nand_read_page(struct mxs_nand_info *info, int writesize,
 
 	d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_WRITE |
 		GPMI_CTRL0_WORD_LENGTH |
-		GPMI_CTRL0_CS(info->cs) |
+		FIELD_PREP(GPMI_CTRL0_CS, info->cs) |
 		GPMI_CTRL0_ADDRESS_NAND_CLE |
 		GPMI_CTRL0_ADDRESS_INCREMENT |
 		cmd_queue_len;
@@ -386,7 +355,7 @@ static int mxs_nand_read_page(struct mxs_nand_info *info, int writesize,
 
 	d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_WAIT_FOR_READY |
 		GPMI_CTRL0_WORD_LENGTH |
-		GPMI_CTRL0_CS(info->cs) |
+		FIELD_PREP(GPMI_CTRL0_CS, info->cs) |
 		GPMI_CTRL0_ADDRESS_NAND_DATA;
 
 	if (raw) {
@@ -398,7 +367,7 @@ static int mxs_nand_read_page(struct mxs_nand_info *info, int writesize,
 			DMACMD_COMMAND_DMA_WRITE;
 		d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_READ |
 			GPMI_CTRL0_WORD_LENGTH |
-			GPMI_CTRL0_CS(info->cs) |
+			FIELD_PREP(GPMI_CTRL0_CS, info->cs) |
 			GPMI_CTRL0_ADDRESS_NAND_DATA |
 			(writesize + oobsize);
 		d->address = (dma_addr_t)databuf;
@@ -408,7 +377,7 @@ static int mxs_nand_read_page(struct mxs_nand_info *info, int writesize,
 		d->data = DMACMD_WAIT4END | DMACMD_PIO_WORDS(6);
 		d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_READ |
 			GPMI_CTRL0_WORD_LENGTH |
-			GPMI_CTRL0_CS(info->cs) |
+			FIELD_PREP(GPMI_CTRL0_CS, info->cs) |
 			GPMI_CTRL0_ADDRESS_NAND_DATA |
 			(writesize + oobsize);
 		d->pio_words[1] = 0;
@@ -426,7 +395,7 @@ static int mxs_nand_read_page(struct mxs_nand_info *info, int writesize,
 			DMACMD_PIO_WORDS(3);
 		d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_WAIT_FOR_READY |
 			GPMI_CTRL0_WORD_LENGTH |
-			GPMI_CTRL0_CS(info->cs) |
+			FIELD_PREP(GPMI_CTRL0_CS, info->cs) |
 			GPMI_CTRL0_ADDRESS_NAND_DATA |
 			(writesize + oobsize);
 	}
@@ -499,7 +468,7 @@ static int mxs_nand_get_read_status(struct mxs_nand_info *info, void *databuf)
 
 	d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_WRITE |
 		GPMI_CTRL0_WORD_LENGTH |
-		GPMI_CTRL0_CS(info->cs) |
+		FIELD_PREP(GPMI_CTRL0_CS, info->cs) |
 		GPMI_CTRL0_ADDRESS_NAND_CLE |
 		GPMI_CTRL0_ADDRESS_INCREMENT |
 		cmd_queue_len;
@@ -512,7 +481,7 @@ static int mxs_nand_get_read_status(struct mxs_nand_info *info, void *databuf)
 		DMACMD_COMMAND_DMA_WRITE;
 	d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_READ |
 		GPMI_CTRL0_WORD_LENGTH |
-		GPMI_CTRL0_CS(info->cs) |
+		FIELD_PREP(GPMI_CTRL0_CS, info->cs) |
 		GPMI_CTRL0_ADDRESS_NAND_DATA |
 		(1);
 	d->address = (dma_addr_t)databuf;
@@ -557,7 +526,7 @@ static int mxs_nand_reset(struct mxs_nand_info *info, void *databuf)
 
 	d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_WRITE |
 		GPMI_CTRL0_WORD_LENGTH |
-		GPMI_CTRL0_CS(info->cs) |
+		FIELD_PREP(GPMI_CTRL0_CS, info->cs) |
 		GPMI_CTRL0_ADDRESS_NAND_CLE |
 		GPMI_CTRL0_ADDRESS_INCREMENT |
 		cmd_queue_len;
@@ -629,7 +598,7 @@ static int mxs_nand_get_onfi(struct mxs_nand_info *info, void *databuf)
 
 	d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_WRITE |
 		GPMI_CTRL0_WORD_LENGTH |
-		GPMI_CTRL0_CS(info->cs) |
+		FIELD_PREP(GPMI_CTRL0_CS, info->cs) |
 		GPMI_CTRL0_ADDRESS_NAND_CLE |
 		GPMI_CTRL0_ADDRESS_INCREMENT |
 		cmd_queue_len;
@@ -643,7 +612,7 @@ static int mxs_nand_get_onfi(struct mxs_nand_info *info, void *databuf)
 
 	d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_WAIT_FOR_READY |
 		GPMI_CTRL0_WORD_LENGTH |
-		GPMI_CTRL0_CS(info->cs) |
+		FIELD_PREP(GPMI_CTRL0_CS, info->cs) |
 		GPMI_CTRL0_ADDRESS_NAND_DATA;
 
 	/* Compile DMA descriptor - read. */
@@ -654,7 +623,7 @@ static int mxs_nand_get_onfi(struct mxs_nand_info *info, void *databuf)
 		DMACMD_COMMAND_DMA_WRITE;
 	d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_READ |
 		GPMI_CTRL0_WORD_LENGTH |
-		GPMI_CTRL0_CS(info->cs) |
+		FIELD_PREP(GPMI_CTRL0_CS, info->cs) |
 		GPMI_CTRL0_ADDRESS_NAND_DATA |
 		(sizeof(struct nand_onfi_params));
 	d->address = (dma_addr_t)databuf;
@@ -733,7 +702,7 @@ static int mxs_nand_check_onfi(struct mxs_nand_info *info, void *databuf)
 
 	d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_WRITE |
 		GPMI_CTRL0_WORD_LENGTH |
-		GPMI_CTRL0_CS(info->cs) |
+		FIELD_PREP(GPMI_CTRL0_CS, info->cs) |
 		GPMI_CTRL0_ADDRESS_NAND_CLE |
 		GPMI_CTRL0_ADDRESS_INCREMENT |
 		cmd_queue_len;
@@ -746,7 +715,7 @@ static int mxs_nand_check_onfi(struct mxs_nand_info *info, void *databuf)
 		DMACMD_COMMAND_DMA_WRITE;
 	d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_READ |
 		GPMI_CTRL0_WORD_LENGTH |
-		GPMI_CTRL0_CS(info->cs) |
+		FIELD_PREP(GPMI_CTRL0_CS, info->cs) |
 		GPMI_CTRL0_ADDRESS_NAND_DATA |
 		(sizeof(struct onfi_header));
 	d->address = (dma_addr_t)databuf;
@@ -811,7 +780,7 @@ static int mxs_nand_get_readid(struct mxs_nand_info *info, void *databuf)
 
 	d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_WRITE |
 		GPMI_CTRL0_WORD_LENGTH |
-		GPMI_CTRL0_CS(info->cs) |
+		FIELD_PREP(GPMI_CTRL0_CS, info->cs) |
 		GPMI_CTRL0_ADDRESS_NAND_CLE |
 		GPMI_CTRL0_ADDRESS_INCREMENT |
 		cmd_queue_len;
@@ -824,7 +793,7 @@ static int mxs_nand_get_readid(struct mxs_nand_info *info, void *databuf)
 		DMACMD_COMMAND_DMA_WRITE;
 	d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_READ |
 		GPMI_CTRL0_WORD_LENGTH |
-		GPMI_CTRL0_CS(info->cs) |
+		FIELD_PREP(GPMI_CTRL0_CS, info->cs) |
 		GPMI_CTRL0_ADDRESS_NAND_DATA |
 		(sizeof(struct readid_data));
 	d->address = (dma_addr_t)databuf;

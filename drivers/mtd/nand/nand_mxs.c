@@ -102,7 +102,7 @@ struct mxs_nand_info {
 				loff_t to, struct mtd_oob_ops *ops);
 
 	/* DMA descriptors */
-	struct mxs_dma_desc	**desc;
+	struct mxs_dma_cmd	*desc;
 	uint32_t		desc_index;
 
 #define GPMI_ASYNC_EDO_ENABLED	(1 << 0)
@@ -118,16 +118,16 @@ static inline int mxs_nand_is_imx6(struct mxs_nand_info *info)
 	return info->type == GPMI_IMX6;
 }
 
-static struct mxs_dma_desc *mxs_nand_get_dma_desc(struct mxs_nand_info *info)
+static struct mxs_dma_cmd *mxs_nand_get_dma_desc(struct mxs_nand_info *info)
 {
-	struct mxs_dma_desc *desc;
+	struct mxs_dma_cmd *desc;
 
 	if (info->desc_index >= MXS_NAND_DMA_DESCRIPTOR_COUNT) {
 		printf("MXS NAND: Too many DMA descriptors requested\n");
 		return NULL;
 	}
 
-	desc = info->desc[info->desc_index];
+	desc = &info->desc[info->desc_index];
 	info->desc_index++;
 
 	return desc;
@@ -136,12 +136,11 @@ static struct mxs_dma_desc *mxs_nand_get_dma_desc(struct mxs_nand_info *info)
 static void mxs_nand_return_dma_descs(struct mxs_nand_info *info)
 {
 	int i;
-	struct mxs_dma_desc *desc;
+	struct mxs_dma_cmd *desc;
 
 	for (i = 0; i < info->desc_index; i++) {
-		desc = info->desc[i];
-		memset(desc, 0, sizeof(struct mxs_dma_desc));
-		desc->address = (dma_addr_t)desc;
+		desc = &info->desc[i];
+		memset(desc, 0, sizeof(struct mxs_dma_cmd));
 	}
 
 	info->desc_index = 0;
@@ -324,7 +323,7 @@ static int mxs_nand_wait_for_bch_complete(struct mxs_nand_info *nand_info)
 static void mxs_nand_cmd_ctrl(struct nand_chip *chip, int data, unsigned int ctrl)
 {
 	struct mxs_nand_info *nand_info = chip->priv;
-	struct mxs_dma_desc *d;
+	struct mxs_dma_cmd *d;
 	uint32_t channel = nand_info->dma_channel_base + nand_info->cur_chip;
 	int ret;
 
@@ -364,15 +363,15 @@ static void mxs_nand_cmd_ctrl(struct nand_chip *chip, int data, unsigned int ctr
 
 	/* Compile the DMA descriptor -- a descriptor that sends command. */
 	d = mxs_nand_get_dma_desc(nand_info);
-	d->cmd.data =
+	d->data =
 		MXS_DMA_DESC_COMMAND_DMA_READ | MXS_DMA_DESC_IRQ |
 		MXS_DMA_DESC_CHAIN | MXS_DMA_DESC_DEC_SEM |
 		MXS_DMA_DESC_WAIT4END | (3 << MXS_DMA_DESC_PIO_WORDS_OFFSET) |
 		(nand_info->cmd_queue_len << MXS_DMA_DESC_BYTES_OFFSET);
 
-	d->cmd.address = (dma_addr_t)nand_info->cmd_buf;
+	d->address = (dma_addr_t)nand_info->cmd_buf;
 
-	d->cmd.pio_words[0] =
+	d->pio_words[0] =
 		GPMI_CTRL0_COMMAND_MODE_WRITE |
 		GPMI_CTRL0_WORD_LENGTH |
 		FIELD_PREP(GPMI_CTRL0_CS, nand_info->cur_chip) |
@@ -380,10 +379,8 @@ static void mxs_nand_cmd_ctrl(struct nand_chip *chip, int data, unsigned int ctr
 		GPMI_CTRL0_ADDRESS_INCREMENT |
 		nand_info->cmd_queue_len;
 
-	mxs_dma_desc_append(channel, d);
-
 	/* Execute the DMA chain. */
-	ret = mxs_dma_go(channel);
+	ret = mxs_dma_go(channel, nand_info->desc, nand_info->desc_index);
 	if (ret)
 		printf("MXS NAND: Error sending command (%d)\n", ret);
 
@@ -479,7 +476,7 @@ static void mxs_nand_swap_block_mark(struct nand_chip *chip,
 static void mxs_nand_read_buf(struct nand_chip *chip, uint8_t *buf, int length)
 {
 	struct mxs_nand_info *nand_info = chip->priv;
-	struct mxs_dma_desc *d;
+	struct mxs_dma_cmd *d;
 	uint32_t channel = nand_info->dma_channel_base + nand_info->cur_chip;
 	int ret;
 
@@ -495,22 +492,20 @@ static void mxs_nand_read_buf(struct nand_chip *chip, uint8_t *buf, int length)
 
 	/* Compile the DMA descriptor - a descriptor that reads data. */
 	d = mxs_nand_get_dma_desc(nand_info);
-	d->cmd.data =
+	d->data =
 		MXS_DMA_DESC_COMMAND_DMA_WRITE | MXS_DMA_DESC_IRQ |
 		MXS_DMA_DESC_DEC_SEM | MXS_DMA_DESC_WAIT4END |
 		(1 << MXS_DMA_DESC_PIO_WORDS_OFFSET) |
 		(length << MXS_DMA_DESC_BYTES_OFFSET);
 
-	d->cmd.address = (dma_addr_t)nand_info->data_buf;
+	d->address = (dma_addr_t)nand_info->data_buf;
 
-	d->cmd.pio_words[0] =
+	d->pio_words[0] =
 		GPMI_CTRL0_COMMAND_MODE_READ |
 		GPMI_CTRL0_WORD_LENGTH |
 		FIELD_PREP(GPMI_CTRL0_CS, nand_info->cur_chip) |
 		GPMI_CTRL0_ADDRESS_NAND_DATA |
 		length;
-
-	mxs_dma_desc_append(channel, d);
 
 	/*
 	 * A DMA descriptor that waits for the command to end and the chip to
@@ -521,23 +516,21 @@ static void mxs_nand_read_buf(struct nand_chip *chip, uint8_t *buf, int length)
 	 * did that and no one has re-thought it yet.
 	 */
 	d = mxs_nand_get_dma_desc(nand_info);
-	d->cmd.data =
+	d->data =
 		MXS_DMA_DESC_COMMAND_NO_DMAXFER | MXS_DMA_DESC_IRQ |
 		MXS_DMA_DESC_NAND_WAIT_4_READY | MXS_DMA_DESC_DEC_SEM |
 		MXS_DMA_DESC_WAIT4END | (4 << MXS_DMA_DESC_PIO_WORDS_OFFSET);
 
-	d->cmd.address = 0;
+	d->address = 0;
 
-	d->cmd.pio_words[0] =
+	d->pio_words[0] =
 		GPMI_CTRL0_COMMAND_MODE_WAIT_FOR_READY |
 		GPMI_CTRL0_WORD_LENGTH |
 		FIELD_PREP(GPMI_CTRL0_CS, nand_info->cur_chip) |
 		GPMI_CTRL0_ADDRESS_NAND_DATA;
 
-	mxs_dma_desc_append(channel, d);
-
 	/* Execute the DMA chain. */
-	ret = mxs_dma_go(channel);
+	ret = mxs_dma_go(channel, nand_info->desc, nand_info->desc_index);
 	if (ret) {
 		printf("MXS NAND: DMA read error\n");
 		goto rtn;
@@ -556,7 +549,7 @@ static void mxs_nand_write_buf(struct nand_chip *chip, const uint8_t *buf,
 				int length)
 {
 	struct mxs_nand_info *nand_info = chip->priv;
-	struct mxs_dma_desc *d;
+	struct mxs_dma_cmd *d;
 	uint32_t channel = nand_info->dma_channel_base + nand_info->cur_chip;
 	int ret;
 
@@ -574,25 +567,23 @@ static void mxs_nand_write_buf(struct nand_chip *chip, const uint8_t *buf,
 
 	/* Compile the DMA descriptor - a descriptor that writes data. */
 	d = mxs_nand_get_dma_desc(nand_info);
-	d->cmd.data =
+	d->data =
 		MXS_DMA_DESC_COMMAND_DMA_READ | MXS_DMA_DESC_IRQ |
 		MXS_DMA_DESC_DEC_SEM | MXS_DMA_DESC_WAIT4END |
 		(4 << MXS_DMA_DESC_PIO_WORDS_OFFSET) |
 		(length << MXS_DMA_DESC_BYTES_OFFSET);
 
-	d->cmd.address = (dma_addr_t)nand_info->data_buf;
+	d->address = (dma_addr_t)nand_info->data_buf;
 
-	d->cmd.pio_words[0] =
+	d->pio_words[0] =
 		GPMI_CTRL0_COMMAND_MODE_WRITE |
 		GPMI_CTRL0_WORD_LENGTH |
 		FIELD_PREP(GPMI_CTRL0_CS, nand_info->cur_chip) |
 		GPMI_CTRL0_ADDRESS_NAND_DATA |
 		length;
 
-	mxs_dma_desc_append(channel, d);
-
 	/* Execute the DMA chain. */
-	ret = mxs_dma_go(channel);
+	ret = mxs_dma_go(channel, nand_info->desc, nand_info->desc_index);
 	if (ret)
 		printf("MXS NAND: DMA write error\n");
 
@@ -644,89 +635,81 @@ static int mxs_nand_do_bch_read(struct nand_chip *chip, int channel, int readtot
 				bool randomizer, int page)
 {
 	struct mxs_nand_info *nand_info = chip->priv;
-	struct mxs_dma_desc *d;
+	struct mxs_dma_cmd *d;
 	int ret;
 
 	/* Compile the DMA descriptor - wait for ready. */
 	d = mxs_nand_get_dma_desc(nand_info);
-	d->cmd.data =
+	d->data =
 		MXS_DMA_DESC_COMMAND_NO_DMAXFER | MXS_DMA_DESC_CHAIN |
 		MXS_DMA_DESC_NAND_WAIT_4_READY | MXS_DMA_DESC_WAIT4END |
 		(1 << MXS_DMA_DESC_PIO_WORDS_OFFSET);
 
-	d->cmd.address = 0;
+	d->address = 0;
 
-	d->cmd.pio_words[0] =
+	d->pio_words[0] =
 		GPMI_CTRL0_COMMAND_MODE_WAIT_FOR_READY |
 		GPMI_CTRL0_WORD_LENGTH |
 		FIELD_PREP(GPMI_CTRL0_CS, nand_info->cur_chip) |
 		GPMI_CTRL0_ADDRESS_NAND_DATA;
 
-	mxs_dma_desc_append(channel, d);
-
 	/* Compile the DMA descriptor - enable the BCH block and read. */
 	d = mxs_nand_get_dma_desc(nand_info);
-	d->cmd.data =
+	d->data =
 		MXS_DMA_DESC_COMMAND_NO_DMAXFER | MXS_DMA_DESC_CHAIN |
 		MXS_DMA_DESC_WAIT4END |	(6 << MXS_DMA_DESC_PIO_WORDS_OFFSET);
 
-	d->cmd.address = 0;
+	d->address = 0;
 
-	d->cmd.pio_words[0] =
+	d->pio_words[0] =
 		GPMI_CTRL0_COMMAND_MODE_READ |
 		GPMI_CTRL0_WORD_LENGTH |
 		FIELD_PREP(GPMI_CTRL0_CS, nand_info->cur_chip) |
 		GPMI_CTRL0_ADDRESS_NAND_DATA |
 		readtotal;
-	d->cmd.pio_words[1] = 0;
-	d->cmd.pio_words[2] =
+	d->pio_words[1] = 0;
+	d->pio_words[2] =
 		GPMI_ECCCTRL_ENABLE_ECC |
 		GPMI_ECCCTRL_ECC_CMD_DECODE |
 		GPMI_ECCCTRL_BUFFER_MASK_BCH_PAGE;
-	d->cmd.pio_words[3] = readtotal;
-	d->cmd.pio_words[4] = (dma_addr_t)nand_info->data_buf;
-	d->cmd.pio_words[5] = (dma_addr_t)nand_info->oob_buf;
+	d->pio_words[3] = readtotal;
+	d->pio_words[4] = (dma_addr_t)nand_info->data_buf;
+	d->pio_words[5] = (dma_addr_t)nand_info->oob_buf;
 
 	if (randomizer) {
-		d->cmd.pio_words[2] |= GPMI_ECCCTRL_RANDOMIZER_ENABLE |
+		d->pio_words[2] |= GPMI_ECCCTRL_RANDOMIZER_ENABLE |
 				       GPMI_ECCCTRL_RANDOMIZER_TYPE2;
-		d->cmd.pio_words[3] |= (page % 256) << 16;
+		d->pio_words[3] |= (page % 256) << 16;
 	}
-
-	mxs_dma_desc_append(channel, d);
 
 	/* Compile the DMA descriptor - disable the BCH block. */
 	d = mxs_nand_get_dma_desc(nand_info);
-	d->cmd.data =
+	d->data =
 		MXS_DMA_DESC_COMMAND_NO_DMAXFER | MXS_DMA_DESC_CHAIN |
 		MXS_DMA_DESC_NAND_WAIT_4_READY | MXS_DMA_DESC_WAIT4END |
 		(3 << MXS_DMA_DESC_PIO_WORDS_OFFSET);
 
-	d->cmd.address = 0;
+	d->address = 0;
 
-	d->cmd.pio_words[0] =
+	d->pio_words[0] =
 		GPMI_CTRL0_COMMAND_MODE_WAIT_FOR_READY |
 		GPMI_CTRL0_WORD_LENGTH |
 		FIELD_PREP(GPMI_CTRL0_CS, nand_info->cur_chip) |
 		GPMI_CTRL0_ADDRESS_NAND_DATA |
 		readtotal;
-	d->cmd.pio_words[1] = 0;
-	d->cmd.pio_words[2] = 0;
-
-	mxs_dma_desc_append(channel, d);
+	d->pio_words[1] = 0;
+	d->pio_words[2] = 0;
 
 	/* Compile the DMA descriptor - deassert the NAND lock and interrupt. */
 	d = mxs_nand_get_dma_desc(nand_info);
-	d->cmd.data =
+	d->data =
 		MXS_DMA_DESC_COMMAND_NO_DMAXFER | MXS_DMA_DESC_IRQ |
 		MXS_DMA_DESC_DEC_SEM;
 
-	d->cmd.address = 0;
-
-	mxs_dma_desc_append(channel, d);
+	d->address = 0;
 
 	/* Execute the DMA chain. */
-	ret = mxs_dma_go(channel);
+	ret = mxs_dma_go(channel, nand_info->desc, nand_info->desc_index);
 	if (ret) {
 		dev_err(nand_info->dev, "MXS NAND: DMA read error (ecc)\n");
 		goto out;
@@ -891,7 +874,7 @@ static int mxs_nand_ecc_write_page(struct nand_chip *chip, const uint8_t *buf,
 {
 	struct mtd_info *mtd = nand_to_mtd(chip);
 	struct mxs_nand_info *nand_info = chip->priv;
-	struct mxs_dma_desc *d;
+	struct mxs_dma_cmd *d;
 	uint32_t channel = nand_info->dma_channel_base + nand_info->cur_chip;
 	int ret = 0;
 
@@ -905,31 +888,29 @@ static int mxs_nand_ecc_write_page(struct nand_chip *chip, const uint8_t *buf,
 
 	/* Compile the DMA descriptor - write data. */
 	d = mxs_nand_get_dma_desc(nand_info);
-	d->cmd.data =
+	d->data =
 		MXS_DMA_DESC_COMMAND_NO_DMAXFER | MXS_DMA_DESC_IRQ |
 		MXS_DMA_DESC_DEC_SEM | MXS_DMA_DESC_WAIT4END |
 		(6 << MXS_DMA_DESC_PIO_WORDS_OFFSET);
 
-	d->cmd.address = 0;
+	d->address = 0;
 
-	d->cmd.pio_words[0] =
+	d->pio_words[0] =
 		GPMI_CTRL0_COMMAND_MODE_WRITE |
 		GPMI_CTRL0_WORD_LENGTH |
 		FIELD_PREP(GPMI_CTRL0_CS, nand_info->cur_chip) |
 		GPMI_CTRL0_ADDRESS_NAND_DATA;
-	d->cmd.pio_words[1] = 0;
-	d->cmd.pio_words[2] =
+	d->pio_words[1] = 0;
+	d->pio_words[2] =
 		GPMI_ECCCTRL_ENABLE_ECC |
 		GPMI_ECCCTRL_ECC_CMD_ENCODE |
 		GPMI_ECCCTRL_BUFFER_MASK_BCH_PAGE;
-	d->cmd.pio_words[3] = (mtd->writesize + mtd->oobsize);
-	d->cmd.pio_words[4] = (dma_addr_t)nand_info->data_buf;
-	d->cmd.pio_words[5] = (dma_addr_t)nand_info->oob_buf;
-
-	mxs_dma_desc_append(channel, d);
+	d->pio_words[3] = (mtd->writesize + mtd->oobsize);
+	d->pio_words[4] = (dma_addr_t)nand_info->data_buf;
+	d->pio_words[5] = (dma_addr_t)nand_info->oob_buf;
 
 	/* Execute the DMA chain. */
-	ret = mxs_dma_go(channel);
+	ret = mxs_dma_go(channel, nand_info->desc, nand_info->desc_index);
 	if (ret) {
 		printf("MXS NAND: DMA write error\n");
 		goto rtn;
@@ -1242,7 +1223,7 @@ int mxs_nand_write_fcb_bch62(unsigned int block, void *buf, size_t size)
 	struct nand_chip *chip;
 	struct mtd_info *mtd = mxs_nand_mtd;
 	struct mxs_nand_info *nand_info;
-	struct mxs_dma_desc *d;
+	struct mxs_dma_cmd *d;
 	uint32_t channel;
 	int ret = 0;
 	int page;
@@ -1273,24 +1254,24 @@ int mxs_nand_write_fcb_bch62(unsigned int block, void *buf, size_t size)
 
 	/* Compile the DMA descriptor - write data. */
 	d = mxs_nand_get_dma_desc(nand_info);
-	d->cmd.data = MXS_DMA_DESC_COMMAND_NO_DMAXFER | MXS_DMA_DESC_IRQ |
+	d->data = MXS_DMA_DESC_COMMAND_NO_DMAXFER | MXS_DMA_DESC_IRQ |
 		      MXS_DMA_DESC_DEC_SEM | MXS_DMA_DESC_WAIT4END |
 		      (6 << MXS_DMA_DESC_PIO_WORDS_OFFSET);
 
-	d->cmd.address = 0;
+	d->address = 0;
 
-	d->cmd.pio_words[0] = GPMI_CTRL0_COMMAND_MODE_WRITE |
+	d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_WRITE |
 			      GPMI_CTRL0_WORD_LENGTH |
 			      GPMI_CTRL0_ADDRESS_NAND_DATA;
-	d->cmd.pio_words[1] = 0;
-	d->cmd.pio_words[2] = GPMI_ECCCTRL_ENABLE_ECC |
+	d->pio_words[1] = 0;
+	d->pio_words[2] = GPMI_ECCCTRL_ENABLE_ECC |
 			      GPMI_ECCCTRL_ECC_CMD_ENCODE |
 			      GPMI_ECCCTRL_BUFFER_MASK_BCH_PAGE;
-	d->cmd.pio_words[3] = BCH62_PAGESIZE;
-	d->cmd.pio_words[4] = (dma_addr_t)nand_info->data_buf;
-	d->cmd.pio_words[5] = (dma_addr_t)nand_info->oob_buf;
+	d->pio_words[3] = BCH62_PAGESIZE;
+	d->pio_words[4] = (dma_addr_t)nand_info->data_buf;
+	d->pio_words[5] = (dma_addr_t)nand_info->oob_buf;
 
-	d->cmd.pio_words[2] |= GPMI_ECCCTRL_RANDOMIZER_ENABLE |
+	d->pio_words[2] |= GPMI_ECCCTRL_RANDOMIZER_ENABLE |
 			       GPMI_ECCCTRL_RANDOMIZER_TYPE2;
 	/*
 	 * Write NAND page number needed to be randomized
@@ -1299,12 +1280,10 @@ int mxs_nand_write_fcb_bch62(unsigned int block, void *buf, size_t size)
 	 * The value is between 0-255. For additional details
 	 * check 9.6.6.4 of i.MX7D Applications Processor reference
 	 */
-	d->cmd.pio_words[3] |= (page % 256) << 16;
-
-	mxs_dma_desc_append(channel, d);
+	d->pio_words[3] |= (page % 256) << 16;
 
 	/* Execute the DMA chain. */
-	ret = mxs_dma_go(channel);
+	ret = mxs_dma_go(channel, nand_info->desc, nand_info->desc_index);
 	if (ret) {
 		dev_err(nand_info->dev, "MXS NAND: DMA write error: %d\n", ret);
 		goto out;
@@ -1416,20 +1395,13 @@ static int mxs_nand_hw_init(struct mxs_nand_info *info)
 {
 	void __iomem *gpmi_regs = info->io_base;
 	void __iomem *bch_regs = info->bch_base;
-	int i = 0, ret;
+	int ret;
 	u32 val;
 
-	info->desc = malloc(sizeof(struct mxs_dma_desc *) *
-				MXS_NAND_DMA_DESCRIPTOR_COUNT);
+	info->desc = dma_alloc_coherent(sizeof(struct mxs_dma_cmd) * MXS_NAND_DMA_DESCRIPTOR_COUNT,
+				   DMA_ADDRESS_BROKEN);
 	if (!info->desc)
-		goto err1;
-
-	/* Allocate the DMA descriptors. */
-	for (i = 0; i < MXS_NAND_DMA_DESCRIPTOR_COUNT; i++) {
-		info->desc[i] = mxs_dma_desc_alloc();
-		if (!info->desc[i])
-			goto err2;
-	}
+		return -ENOMEM;
 
 	/* Reset the GPMI block. */
 	ret = stmp_reset_block(gpmi_regs + GPMI_CTRL0, 0);
@@ -1456,14 +1428,6 @@ static int mxs_nand_hw_init(struct mxs_nand_info *info)
 	writel(val, gpmi_regs + GPMI_CTRL1);
 
 	return 0;
-
-err2:
-	free(info->desc);
-err1:
-	for (--i; i >= 0; i--)
-		mxs_dma_desc_free(info->desc[i]);
-	printf("MXS NAND: Unable to allocate DMA descriptors\n");
-	return -ENOMEM;
 }
 
 static void mxs_nand_probe_dt(struct device_d *dev, struct mxs_nand_info *nand_info)

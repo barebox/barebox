@@ -88,53 +88,7 @@ struct mxs_dma_cmd {
 	unsigned long		pio_words[APBH_DMA_PIO_WORDS];
 };
 
-/*
- * MXS DMA command descriptor.
- *
- * This structure incorporates an MXS DMA hardware command structure, along
- * with metadata.
- */
-#define	MXS_DMA_DESC_FIRST	(1 << 0)
-#define	MXS_DMA_DESC_LAST	(1 << 1)
-#define	MXS_DMA_DESC_READY	(1 << 31)
-
-struct mxs_dma_desc {
-	struct mxs_dma_cmd	cmd;
-	unsigned int		flags;
-	dma_addr_t		address;
-	void			*buffer;
-	struct list_head	node;
-};
-
-/**
- * MXS DMA channel
- *
- * This structure represents a single DMA channel. The MXS platform code
- * maintains an array of these structures to represent every DMA channel in the
- * system (see mxs_dma_channels).
- */
-#define	MXS_DMA_FLAGS_IDLE	0
-#define	MXS_DMA_FLAGS_BUSY	(1 << 0)
-#define	MXS_DMA_FLAGS_FREE	0
-#define	MXS_DMA_FLAGS_ALLOCATED	(1 << 16)
-#define	MXS_DMA_FLAGS_VALID	(1 << 31)
-
-struct mxs_dma_chan {
-	const char *name;
-	unsigned long dev;
-	struct mxs_dma_device *dma;
-	unsigned int flags;
-	unsigned int active_num;
-	unsigned int pending_num;
-	struct list_head active;
-	struct list_head done;
-};
-
-struct mxs_dma_desc *mxs_dma_desc_alloc(void);
-void mxs_dma_desc_free(struct mxs_dma_desc *);
-int mxs_dma_desc_append(int channel, struct mxs_dma_desc *pdesc);
-
-int mxs_dma_go(int chan);
+int mxs_dma_go(int chan, struct mxs_dma_cmd *cmd, int ncmds);
 int mxs_dma_init(void);
 
 #endif	/* __DMA_H__ */

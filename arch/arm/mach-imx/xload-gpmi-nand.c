@@ -669,20 +669,13 @@ static int mxs_nand_get_onfi(struct mxs_nand_info *info, void *databuf)
 	return ret;
 }
 
-static int mxs_nand_check_onfi(struct mxs_nand_info *info, void *databuf)
+static int mxs_nand_read_id(struct mxs_nand_info *info, u8 adr, void *databuf, size_t len)
 {
 	int ret;
 	u8 *cmd_buf;
 	struct mxs_dma_cmd *d;
 	int descnum = 0;
 	int cmd_queue_len;
-
-	struct onfi_header {
-		u8 byte0;
-		u8 byte1;
-		u8 byte2;
-		u8 byte3;
-	} onfi_head;
 
 	memset(info->desc, 0,
 		sizeof(*info->desc) * MXS_NAND_DMA_DESCRIPTOR_COUNT);
@@ -693,7 +686,7 @@ static int mxs_nand_check_onfi(struct mxs_nand_info *info, void *databuf)
 	d = &info->desc[descnum++];
 	d->address = (dma_addr_t)(cmd_buf);
 	cmd_buf[cmd_queue_len++] = NAND_CMD_READID;
-	cmd_buf[cmd_queue_len++] = 0x20;
+	cmd_buf[cmd_queue_len++] = adr;
 
 	d->data = DMACMD_COMMAND_DMA_READ |
 		DMACMD_WAIT4END |
@@ -711,13 +704,13 @@ static int mxs_nand_check_onfi(struct mxs_nand_info *info, void *databuf)
 	d = &info->desc[descnum++];
 	d->data = DMACMD_WAIT4END |
 		DMACMD_PIO_WORDS(1) |
-		DMACMD_XFER_COUNT(sizeof(struct onfi_header)) |
+		DMACMD_XFER_COUNT(len) |
 		DMACMD_COMMAND_DMA_WRITE;
 	d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_READ |
 		GPMI_CTRL0_WORD_LENGTH |
 		FIELD_PREP(GPMI_CTRL0_CS, info->cs) |
 		GPMI_CTRL0_ADDRESS_NAND_DATA |
-		(sizeof(struct onfi_header));
+		len;
 	d->address = (dma_addr_t)databuf;
 
 	/* Compile DMA descriptor - de-assert the NAND lock and interrupt. */
@@ -726,119 +719,85 @@ static int mxs_nand_check_onfi(struct mxs_nand_info *info, void *databuf)
 
 	/* Execute the DMA chain. */
 	ret = mxs_dma_run(info->dma_channel, info->desc, descnum);
-	if (ret) {
+	if (ret)
 		pr_err("DMA read error\n");
+
+	return ret;
+}
+
+struct onfi_header {
+	u8 byte0;
+	u8 byte1;
+	u8 byte2;
+	u8 byte3;
+};
+
+static int mxs_nand_check_onfi(struct mxs_nand_info *info, void *databuf)
+{
+	int ret;
+	struct onfi_header *onfi_head = databuf;
+
+	ret = mxs_nand_read_id(info, 0x20, databuf, sizeof(struct onfi_header));
+	if (ret)
 		return ret;
-	}
 
-	memcpy(&onfi_head, databuf, sizeof(struct onfi_header));
+	pr_debug("ONFI Byte0: 0x%x\n", onfi_head->byte0);
+	pr_debug("ONFI Byte1: 0x%x\n", onfi_head->byte1);
+	pr_debug("ONFI Byte2: 0x%x\n", onfi_head->byte2);
+	pr_debug("ONFI Byte3: 0x%x\n", onfi_head->byte3);
 
-	pr_debug("ONFI Byte0: 0x%x\n", onfi_head.byte0);
-	pr_debug("ONFI Byte1: 0x%x\n", onfi_head.byte1);
-	pr_debug("ONFI Byte2: 0x%x\n", onfi_head.byte2);
-	pr_debug("ONFI Byte3: 0x%x\n", onfi_head.byte3);
-
-	/* check if returned values correspond to ascii characters "ONFI" */
-	if (onfi_head.byte0 != 0x4f || onfi_head.byte1 != 0x4e ||
-		onfi_head.byte2 != 0x46 || onfi_head.byte3 != 0x49)
+	if (onfi_head->byte0 != 'O' || onfi_head->byte1 != 'N' ||
+		onfi_head->byte2 != 'F' || onfi_head->byte3 != 'I')
 		return 1;
 
 	return 0;
 }
 
+struct readid_data {
+	u8 byte0;
+	u8 byte1;
+	u8 byte2;
+	u8 byte3;
+	u8 byte4;
+};
+
 static int mxs_nand_get_readid(struct mxs_nand_info *info, void *databuf)
 {
 	int ret;
-	u8 *cmd_buf;
-	struct mxs_dma_cmd *d;
-	int descnum = 0;
-	int cmd_queue_len;
+	struct readid_data *id_data = databuf;
 
-	struct readid_data {
-		u8 byte0;
-		u8 byte1;
-		u8 byte2;
-		u8 byte3;
-		u8 byte4;
-	} id_data;
-
-	memset(info->desc, 0,
-		sizeof(*info->desc) * MXS_NAND_DMA_DESCRIPTOR_COUNT);
-
-	/* Compile DMA descriptor - READID */
-	cmd_buf = info->cmd_buf;
-	cmd_queue_len = 0;
-	d = &info->desc[descnum++];
-	d->address = (dma_addr_t)(cmd_buf);
-	cmd_buf[cmd_queue_len++] = NAND_CMD_READID;
-	cmd_buf[cmd_queue_len++] = 0x00;
-
-	d->data = DMACMD_COMMAND_DMA_READ |
-		DMACMD_WAIT4END |
-		DMACMD_PIO_WORDS(1) |
-		DMACMD_XFER_COUNT(cmd_queue_len);
-
-	d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_WRITE |
-		GPMI_CTRL0_WORD_LENGTH |
-		FIELD_PREP(GPMI_CTRL0_CS, info->cs) |
-		GPMI_CTRL0_ADDRESS_NAND_CLE |
-		GPMI_CTRL0_ADDRESS_INCREMENT |
-		cmd_queue_len;
-
-	/* Compile DMA descriptor - read. */
-	d = &info->desc[descnum++];
-	d->data = DMACMD_WAIT4END |
-		DMACMD_PIO_WORDS(1) |
-		DMACMD_XFER_COUNT(sizeof(struct readid_data)) |
-		DMACMD_COMMAND_DMA_WRITE;
-	d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_READ |
-		GPMI_CTRL0_WORD_LENGTH |
-		FIELD_PREP(GPMI_CTRL0_CS, info->cs) |
-		GPMI_CTRL0_ADDRESS_NAND_DATA |
-		(sizeof(struct readid_data));
-	d->address = (dma_addr_t)databuf;
-
-	/* Compile DMA descriptor - de-assert the NAND lock and interrupt. */
-	d = &info->desc[descnum++];
-	d->data = DMACMD_IRQ | DMACMD_DEC_SEM;
-
-	/* Execute the DMA chain. */
-	ret = mxs_dma_run(info->dma_channel, info->desc, descnum);
-	if (ret) {
-		pr_err("DMA read error\n");
+	ret = mxs_nand_read_id(info, 0x0, databuf, sizeof(struct readid_data));
+	if (ret)
 		return ret;
-	}
 
-	memcpy(&id_data, databuf, sizeof(struct readid_data));
+	pr_debug("NAND Byte0: 0x%x\n", id_data->byte0);
+	pr_debug("NAND Byte1: 0x%x\n", id_data->byte1);
+	pr_debug("NAND Byte2: 0x%x\n", id_data->byte2);
+	pr_debug("NAND Byte3: 0x%x\n", id_data->byte3);
+	pr_debug("NAND Byte4: 0x%x\n", id_data->byte4);
 
-	pr_debug("NAND Byte0: 0x%x\n", id_data.byte0);
-	pr_debug("NAND Byte1: 0x%x\n", id_data.byte1);
-	pr_debug("NAND Byte2: 0x%x\n", id_data.byte2);
-	pr_debug("NAND Byte3: 0x%x\n", id_data.byte3);
-	pr_debug("NAND Byte4: 0x%x\n", id_data.byte4);
-
-	if (id_data.byte0 == 0xff || id_data.byte1 == 0xff ||
-		id_data.byte2 == 0xff || id_data.byte3 == 0xff ||
-		id_data.byte4 == 0xff) {
+	if (id_data->byte0 == 0xff || id_data->byte1 == 0xff ||
+		id_data->byte2 == 0xff || id_data->byte3 == 0xff ||
+		id_data->byte4 == 0xff) {
 		pr_err("\"READ ID\" returned 0xff, possible error!\n");
 		return -EOVERFLOW;
 	}
 
 	/* Fill the NAND organization struct with data */
 	info->organization.bits_per_cell =
-		(1 << ((id_data.byte2 >> 2) & 0x3)) * 2;
+		(1 << ((id_data->byte2 >> 2) & 0x3)) * 2;
 	info->organization.pagesize =
-		(1 << (id_data.byte3 & 0x3)) * SZ_1K;
-	info->organization.oobsize = id_data.byte3 & 0x4 ?
+		(1 << (id_data->byte3 & 0x3)) * SZ_1K;
+	info->organization.oobsize = id_data->byte3 & 0x4 ?
 		info->organization.pagesize / 512 * 16 :
 		info->organization.pagesize / 512 * 8;
 	info->organization.pages_per_eraseblock =
-		(1 << ((id_data.byte3 >> 4) & 0x3)) * SZ_64K /
+		(1 << ((id_data->byte3 >> 4) & 0x3)) * SZ_64K /
 		info->organization.pagesize;
 	info->organization.planes_per_lun =
-		1 << ((id_data.byte4 >> 2) & 0x3);
+		1 << ((id_data->byte4 >> 2) & 0x3);
 	info->nand_size = info->organization.planes_per_lun *
-		(1 << ((id_data.byte4 >> 4) & 0x7)) * SZ_8M;
+		(1 << ((id_data->byte4 >> 4) & 0x7)) * SZ_8M;
 	info->organization.eraseblocks_per_lun = info->nand_size /
 		(info->organization.pages_per_eraseblock *
 		info->organization.pagesize);

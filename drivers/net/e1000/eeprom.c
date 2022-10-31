@@ -800,7 +800,7 @@ int e1000_validate_eeprom_checksum(struct e1000_hw *hw)
 
 	/* Read the EEPROM */
 	if (e1000_read_eeprom(hw, 0, EEPROM_CHECKSUM_REG + 1, buf) < 0) {
-		dev_err(&hw->edev.dev, "Unable to read EEPROM!\n");
+		dev_err(hw->dev, "Unable to read EEPROM!\n");
 		return -E1000_ERR_EEPROM;
 	}
 
@@ -816,8 +816,8 @@ int e1000_validate_eeprom_checksum(struct e1000_hw *hw)
 		return 0;
 
 	/* Hrm, verification failed, print an error */
-	dev_err(&hw->edev.dev, "EEPROM checksum is incorrect!\n");
-	dev_err(&hw->edev.dev, "  ...register was 0x%04hx, calculated 0x%04hx\n",
+	dev_err(hw->dev, "EEPROM checksum is incorrect!\n");
+	dev_err(hw->dev, "  ...register was 0x%04hx, calculated 0x%04hx\n",
 			checksum_reg, checksum);
 
 	return -E1000_ERR_EEPROM;

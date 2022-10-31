@@ -3226,7 +3226,7 @@ static int e1000_sw_init(struct eth_device *edev)
 	/* identify the MAC */
 	result = e1000_set_mac_type(hw);
 	if (result) {
-		dev_err(&hw->edev.dev, "Unknown MAC Type\n");
+		dev_err(hw->dev, "Unknown MAC Type\n");
 		return result;
 	}
 

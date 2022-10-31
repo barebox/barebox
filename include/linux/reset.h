@@ -49,6 +49,12 @@ static inline int reset_control_deassert(struct reset_control *rstc)
 }
 
 static inline struct reset_control *
+of_reset_control_get(struct device_node *node, const char *id)
+{
+	return NULL;
+}
+
+static inline struct reset_control *
 reset_control_get(struct device_d *dev, const char *id)
 {
 	return NULL;

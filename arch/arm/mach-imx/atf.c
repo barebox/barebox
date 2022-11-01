@@ -123,6 +123,7 @@ void imx8mm_load_bl33(void *bl33)
 
 __noreturn void imx8mm_load_and_start_image_via_tfa(void)
 {
+	imx8mm_save_bootrom_log();
 	imx8mm_load_bl33((void *)MX8M_ATF_BL33_BASE_ADDR);
 	imx8mm_load_and_start_tfa(imx8mm_bl31_bin);
 }
@@ -159,6 +160,7 @@ void imx8mp_load_bl33(void *bl33)
 
 void imx8mp_load_and_start_image_via_tfa(void)
 {
+	imx8mp_save_bootrom_log();
 	imx8mp_load_bl33((void *)MX8M_ATF_BL33_BASE_ADDR);
 	imx8mp_load_and_start_tfa(imx8mp_bl31_bin);
 }
@@ -195,6 +197,7 @@ void imx8mn_load_bl33(void *bl33)
 
 void imx8mn_load_and_start_image_via_tfa(void)
 {
+	imx8mn_save_bootrom_log();
 	imx8mn_load_bl33((void *)MX8M_ATF_BL33_BASE_ADDR);
 	imx8mn_load_and_start_tfa(imx8mn_bl31_bin);
 }

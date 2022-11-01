@@ -1123,36 +1123,6 @@ static int mxs_nand_block_markbad(struct nand_chip *chip , loff_t ofs)
 	return 0;
 }
 
-#define BCH62_WRITESIZE		1024
-#define BCH62_OOBSIZE		838
-#define BCH62_PAGESIZE		(BCH62_WRITESIZE + BCH62_OOBSIZE)
-
-static void mxs_nand_mode_fcb_62bit(struct mxs_nand_info *nand_info)
-{
-	void __iomem *bch_regs;
-	u32 fl0, fl1;
-
-	bch_regs = nand_info->bch_base;
-
-	/* 8 ecc_chunks */
-	fl0 = FIELD_PREP(BCH_FLASHLAYOUT0_NBLOCKS, 7);
-	/* 32 bytes for metadata */
-	fl0 |= FIELD_PREP(BCH_FLASHLAYOUT0_META_SIZE, 32);
-	/* using ECC62 level to be performed */
-	fl0 |= FIELD_PREP(IMX6_BCH_FLASHLAYOUT0_ECC0, 0x1f);
-	/* 0x20 * 4 bytes of the data0 block */
-	fl0 |= FIELD_PREP(BCH_FLASHLAYOUT0_DATA0_SIZE, 0x20);
-	writel(fl0, bch_regs + BCH_FLASH0LAYOUT0);
-
-	/* 1024 for data + 838 for OOB */
-	fl1 = FIELD_PREP(BCH_FLASHLAYOUT1_PAGE_SIZE, BCH62_PAGESIZE);
-	/* using ECC62 level to be performed */
-	fl1 |= FIELD_PREP(IMX6_BCH_FLASHLAYOUT1_ECCN, 0x1f);
-	/* 0x20 * 4 bytes of the data0 block */
-	fl1 |= FIELD_PREP(BCH_FLASHLAYOUT1_DATAN_SIZE, 0x20);
-	writel(fl1, bch_regs + BCH_FLASH0LAYOUT1);
-}
-
 int mxs_nand_read_fcb_bch62(unsigned int block, void *buf, size_t size)
 {
 	struct nand_chip *chip;
@@ -1174,7 +1144,7 @@ int mxs_nand_read_fcb_bch62(unsigned int block, void *buf, size_t size)
 
 	page = block * (mtd->erasesize / mtd->writesize);
 
-	mxs_nand_mode_fcb_62bit(nand_info);
+	mxs_nand_mode_fcb_62bit(nand_info->bch_base);
 
 	nand_read_page_op(chip, page, 0, NULL, 0);
 
@@ -1238,7 +1208,7 @@ int mxs_nand_write_fcb_bch62(unsigned int block, void *buf, size_t size)
 	nand_info = chip->priv;
 	channel = nand_info->dma_channel_base;
 
-	mxs_nand_mode_fcb_62bit(nand_info);
+	mxs_nand_mode_fcb_62bit(nand_info->bch_base);
 
 	nand_select_target(chip, 0);
 

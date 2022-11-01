@@ -2289,6 +2289,19 @@ config CMD_TIME
 	  Note: This command depends on COMMAND being interruptible,
 	  otherwise the timer may overrun resulting in incorrect results
 
+config CMD_UPTIME
+	bool "uptime"
+	help
+	  uptime - Tell how long barebox has been running
+
+	  Usage: uptime [-n]
+
+	  This command formats the number of elapsed nanoseconds
+	  as measured with the current clocksource.
+
+	  Options:
+	    -n		output elapsed time in nanoseconds
+
 config CMD_STATE
 	tristate
 	depends on STATE

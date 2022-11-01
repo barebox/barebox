@@ -73,6 +73,13 @@ static inline void arm_fixup_vectors(void)
 
 void *barebox_arm_boot_dtb(void);
 
+#define __arm_mem_scratch(endmem) ((endmem) - SZ_32K)
+
+static inline const void *arm_mem_scratch_get(void)
+{
+	return (const void *)__arm_mem_scratch(arm_mem_endmem_get());
+}
+
 #define __arm_mem_stack_top(membase, endmem) ((endmem) - SZ_64K)
 
 #if defined(CONFIG_BOOTM_OPTEE) || defined(CONFIG_PBL_OPTEE)

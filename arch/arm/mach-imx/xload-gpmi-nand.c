@@ -14,6 +14,7 @@
 #include <linux/mtd/rawnand.h>
 #include <soc/imx/gpmi-nand.h>
 #include <mach/imx6-regs.h>
+#include <mach/imx7-regs.h>
 #include <mach/clock-imx6.h>
 #include <dma/apbh-dma.h>
 
@@ -229,7 +230,7 @@ static uint32_t mxs_nand_aux_status_offset(void)
 }
 
 static int mxs_nand_read_page(struct mxs_nand_info *info, int writesize,
-		int oobsize, int pagenum, void *databuf, int raw)
+		int oobsize, int pagenum, void *databuf, int raw, bool randomizer)
 {
 	void __iomem *bch_regs = info->bch_base;
 	unsigned column = 0;
@@ -332,6 +333,12 @@ static int mxs_nand_read_page(struct mxs_nand_info *info, int writesize,
 		d->pio_words[3] = writesize + oobsize;
 		d->pio_words[4] = (dma_addr_t)databuf;
 		d->pio_words[5] = (dma_addr_t)(databuf + writesize);
+
+		if (randomizer) {
+			d->pio_words[2] |= GPMI_ECCCTRL_RANDOMIZER_ENABLE |
+					   GPMI_ECCCTRL_RANDOMIZER_TYPE2;
+			d->pio_words[3] |= (pagenum % 256) << 16;
+		}
 
 		/* Compile DMA descriptor - disable the BCH block. */
 		d = &info->desc[descnum++];
@@ -841,7 +848,7 @@ static uint32_t calc_chksum(void *buf, size_t size)
 	return ~chksum;
 }
 
-static int get_fcb(struct mxs_nand_info *info, void *databuf)
+static int imx6_get_fcb(struct mxs_nand_info *info, void *databuf)
 {
 	int i, pagenum, ret;
 	uint32_t checksum;
@@ -849,13 +856,13 @@ static int get_fcb(struct mxs_nand_info *info, void *databuf)
 
 	/* First page read fails, this shouldn't be necessary */
 	mxs_nand_read_page(info, info->organization.pagesize,
-		info->organization.oobsize, 0, databuf, 1);
+		info->organization.oobsize, 0, databuf, 1, false);
 
 	for (i = 0; i < 4; i++) {
 		pagenum = info->organization.pages_per_eraseblock * i;
 
 		ret = mxs_nand_read_page(info, info->organization.pagesize,
-			info->organization.oobsize, pagenum, databuf, 1);
+			info->organization.oobsize, pagenum, databuf, 1, false);
 		if (ret)
 			continue;
 
@@ -887,6 +894,66 @@ static int get_fcb(struct mxs_nand_info *info, void *databuf)
 	return -EINVAL;
 }
 
+static int imx7_get_fcb_n(struct mxs_nand_info *info, void *databuf, int num)
+{
+	int ret;
+	int flips = 0;
+	uint8_t	*status;
+	int i;
+
+	ret = mxs_nand_read_page(info, BCH62_WRITESIZE, BCH62_OOBSIZE,
+				 info->organization.pages_per_eraseblock * num, databuf, 0, true);
+	if (ret)
+		return ret;
+
+	/* Loop over status bytes, accumulating ECC status. */
+	status = databuf + BCH62_WRITESIZE + 32;
+
+	for (i = 0; i < 8; i++) {
+		switch (status[i]) {
+		case 0x0:
+			break;
+		case 0xff:
+			/*
+			 * A status of 0xff means the chunk is erased, but due to
+			 * the randomizer we see this as random data. Explicitly
+			 * memset it.
+			 */
+			memset(databuf + 0x80 * i, 0xff, 0x80);
+			break;
+		case 0xfe:
+			return -EBADMSG;
+		default:
+			flips += status[0];
+			break;
+		}
+	}
+
+	return ret;
+}
+
+static int imx7_get_fcb(struct mxs_nand_info *info, void *databuf)
+{
+	int i, ret;
+	struct fcb_block *fcb = &info->fcb;
+
+	mxs_nand_mode_fcb_62bit(info->bch_base);
+
+	for (i = 0; i < 4; i++) {
+		ret = imx7_get_fcb_n(info, databuf, i);
+		if (!ret)
+			break;
+	}
+
+	if (ret) {
+		pr_err("Cannot find FCB\n");
+	} else {
+		memcpy(fcb, databuf, sizeof(*fcb));
+	}
+
+	return ret;
+}
+
 static int get_dbbt(struct mxs_nand_info *info, void *databuf)
 {
 	int i, ret;
@@ -898,7 +965,7 @@ static int get_dbbt(struct mxs_nand_info *info, void *databuf)
 		page = startpage + i * info->organization.pages_per_eraseblock;
 
 		ret = mxs_nand_read_page(info, info->organization.pagesize,
-			info->organization.oobsize, page, databuf, 0);
+			info->organization.oobsize, page, databuf, 0, false);
 		if (ret)
 			continue;
 
@@ -916,7 +983,7 @@ static int get_dbbt(struct mxs_nand_info *info, void *databuf)
 			return -ENOENT;
 
 		ret = mxs_nand_read_page(info, info->organization.pagesize,
-			info->organization.oobsize, page + 4, databuf, 0);
+			info->organization.oobsize, page + 4, databuf, 0, false);
 		if (ret)
 			continue;
 
@@ -991,7 +1058,7 @@ static int read_firmware(struct mxs_nand_info *info, int startpage,
 		}
 
 		ret = mxs_nand_read_page(info, pagesize, oobsize,
-			curpage, dest, 0);
+			curpage, dest, 0, false);
 		if (ret) {
 			pr_debug("Failed to read page %d\n", curpage);
 			return ret;
@@ -1012,6 +1079,7 @@ struct imx_nand_params {
 	struct mxs_nand_info info;
 	struct apbh_dma apbh;
 	void *sdram;
+	int (*get_fcb)(struct mxs_nand_info *info, void *databuf);
 };
 
 static int __maybe_unused imx6_nand_load_image(struct imx_nand_params *params,
@@ -1036,7 +1104,7 @@ static int __maybe_unused imx6_nand_load_image(struct imx_nand_params *params,
 	if (ret)
 		return ret;
 
-	ret = get_fcb(info, databuf);
+	ret = params->get_fcb(info, databuf);
 	if (ret)
 		return ret;
 
@@ -1120,10 +1188,25 @@ int imx6_nand_start_image(void)
 		.apbh.regs = IOMEM(MX6_APBH_BASE_ADDR),
 		.apbh.id = IMX28_DMA,
 		.sdram = (void *)MX6_MMDC_PORT01_BASE_ADDR,
+		.get_fcb = imx6_get_fcb,
 	};
 
 	/* Apply ERR007117 workaround */
 	imx6_errata_007117_enable();
+
+	return imx_nand_start_image(&params);
+}
+
+int imx7_nand_start_image(void)
+{
+	static struct imx_nand_params params = {
+		.info.io_base = IOMEM(MX7_GPMI_BASE),
+		.info.bch_base = IOMEM(MX7_BCH_BASE),
+		.apbh.regs = IOMEM(MX7_APBH_BASE),
+		.apbh.id = IMX28_DMA,
+		.sdram = (void *)MX7_DDR_BASE_ADDR,
+		.get_fcb = imx7_get_fcb,
+	};
 
 	return imx_nand_start_image(&params);
 }

@@ -603,6 +603,11 @@ void *__memcpy(void * dest, const void *src, size_t count)
 	__alias(__default_memcpy);
 #endif
 
+void *mempcpy(void *dest, const void *src, size_t count)
+{
+	return memcpy(dest, src, count) + count;
+}
+EXPORT_SYMBOL(mempcpy);
 
 #ifndef __HAVE_ARCH_MEMMOVE
 /**

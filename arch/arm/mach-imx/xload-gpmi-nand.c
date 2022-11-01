@@ -15,41 +15,7 @@
 #include <soc/imx/gpmi-nand.h>
 #include <mach/imx6-regs.h>
 #include <mach/clock-imx6.h>
-
-/*
- * MXS DMA hardware command.
- *
- * This structure describes the in-memory layout of an entire DMA command,
- * including space for the maximum number of PIO accesses. See the appropriate
- * reference manual for a detailed description of what these fields mean to the
- * DMA hardware.
- */
-#define	DMACMD_COMMAND_DMA_WRITE	0x1
-#define	DMACMD_COMMAND_DMA_READ		0x2
-#define	DMACMD_COMMAND_DMA_SENSE	0x3
-#define	DMACMD_CHAIN			(1 << 2)
-#define	DMACMD_IRQ			(1 << 3)
-#define	DMACMD_NAND_LOCK		(1 << 4)
-#define	DMACMD_NAND_WAIT_4_READY	(1 << 5)
-#define	DMACMD_DEC_SEM			(1 << 6)
-#define	DMACMD_WAIT4END			(1 << 7)
-#define	DMACMD_HALT_ON_TERMINATE	(1 << 8)
-#define	DMACMD_TERMINATE_FLUSH		(1 << 9)
-#define	DMACMD_PIO_WORDS(words)		((words) << 12)
-#define	DMACMD_XFER_COUNT(x)		((x) << 16)
-
-struct mxs_dma_cmd {
-	unsigned long		next;
-	unsigned long		data;
-	unsigned long		address;
-#define	APBH_DMA_PIO_WORDS	6
-	unsigned long		pio_words[APBH_DMA_PIO_WORDS];
-};
-
-enum mxs_dma_id {
-	IMX23_DMA,
-	IMX28_DMA,
-};
+#include <dma/apbh-dma.h>
 
 struct apbh_dma {
 	void __iomem *regs;
@@ -61,25 +27,6 @@ struct mxs_dma_chan {
 	int channel;
 	struct apbh_dma *apbh;
 };
-
-#define	HW_APBHX_CTRL0				0x000
-#define	BM_APBH_CTRL0_APB_BURST8_EN		(1 << 29)
-#define	BM_APBH_CTRL0_APB_BURST_EN		(1 << 28)
-#define	BP_APBH_CTRL0_CLKGATE_CHANNEL		8
-#define	BP_APBH_CTRL0_RESET_CHANNEL		16
-#define	HW_APBHX_CTRL1				0x010
-#define	BP_APBHX_CTRL1_CH_CMDCMPLT_IRQ_EN	16
-#define	HW_APBHX_CTRL2				0x020
-#define	HW_APBHX_CHANNEL_CTRL			0x030
-#define	BP_APBHX_CHANNEL_CTRL_RESET_CHANNEL	16
-#define	BP_APBHX_VERSION_MAJOR			24
-#define	HW_APBHX_CHn_NXTCMDAR_MX23(n)		(0x050 + (n) * 0x70)
-#define	HW_APBHX_CHn_NXTCMDAR_MX28(n)		(0x110 + (n) * 0x70)
-#define	HW_APBHX_CHn_SEMA_MX23(n)		(0x080 + (n) * 0x70)
-#define	HW_APBHX_CHn_SEMA_MX28(n)		(0x140 + (n) * 0x70)
-#define	NAND_ONFI_CRC_BASE			0x4f4e
-
-#define apbh_dma_is_imx23(aphb) ((apbh)->id == IMX23_DMA)
 
 /* udelay() is not available in PBL, need to improvise */
 static void __udelay(int us)
@@ -169,7 +116,7 @@ static int mxs_dma_run(struct mxs_dma_chan *pchan, struct mxs_dma_cmd *pdesc,
 	/* chain descriptors */
 	for (i = 0; i < num - 1; i++) {
 		pdesc[i].next = (unsigned long)(&pdesc[i + 1]);
-		pdesc[i].data |= DMACMD_CHAIN;
+		pdesc[i].data |= MXS_DMA_DESC_CHAIN;
 	}
 
 	writel(1 << (pchan->channel + BP_APBHX_CTRL1_CH_CMDCMPLT_IRQ_EN),
@@ -314,10 +261,10 @@ static int mxs_nand_read_page(struct mxs_nand_info *info, int writesize,
 	if ((max_pagenum - 1) >= SZ_64K)
 		cmd_buf[cmd_queue_len++] = pagenum >> 16;
 
-	d->data = DMACMD_COMMAND_DMA_READ |
-		DMACMD_WAIT4END |
-		DMACMD_PIO_WORDS(1) |
-		DMACMD_XFER_COUNT(cmd_queue_len);
+	d->data = MXS_DMA_DESC_COMMAND_DMA_READ |
+		MXS_DMA_DESC_WAIT4END |
+		MXS_DMA_DESC_PIO_WORDS(1) |
+		MXS_DMA_DESC_XFER_COUNT(cmd_queue_len);
 
 	d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_WRITE |
 		GPMI_CTRL0_WORD_LENGTH |
@@ -334,10 +281,10 @@ static int mxs_nand_read_page(struct mxs_nand_info *info, int writesize,
 
 	cmd_buf[cmd_queue_len++] = NAND_CMD_READSTART;
 
-	d->data = DMACMD_COMMAND_DMA_READ |
-		DMACMD_WAIT4END |
-		DMACMD_PIO_WORDS(1) |
-		DMACMD_XFER_COUNT(cmd_queue_len);
+	d->data = MXS_DMA_DESC_COMMAND_DMA_READ |
+		MXS_DMA_DESC_WAIT4END |
+		MXS_DMA_DESC_PIO_WORDS(1) |
+		MXS_DMA_DESC_XFER_COUNT(cmd_queue_len);
 
 	d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_WRITE |
 		GPMI_CTRL0_WORD_LENGTH |
@@ -348,10 +295,10 @@ static int mxs_nand_read_page(struct mxs_nand_info *info, int writesize,
 
 	/* Compile DMA descriptor - wait for ready. */
 	d = &info->desc[descnum++];
-	d->data = DMACMD_CHAIN |
-		DMACMD_NAND_WAIT_4_READY |
-		DMACMD_WAIT4END |
-		DMACMD_PIO_WORDS(2);
+	d->data = MXS_DMA_DESC_CHAIN |
+		MXS_DMA_DESC_NAND_WAIT_4_READY |
+		MXS_DMA_DESC_WAIT4END |
+		MXS_DMA_DESC_PIO_WORDS(2);
 
 	d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_WAIT_FOR_READY |
 		GPMI_CTRL0_WORD_LENGTH |
@@ -361,10 +308,10 @@ static int mxs_nand_read_page(struct mxs_nand_info *info, int writesize,
 	if (raw) {
 		/* Compile DMA descriptor - read. */
 		d = &info->desc[descnum++];
-		d->data = DMACMD_WAIT4END |
-			DMACMD_PIO_WORDS(1) |
-			DMACMD_XFER_COUNT(writesize + oobsize) |
-			DMACMD_COMMAND_DMA_WRITE;
+		d->data = MXS_DMA_DESC_WAIT4END |
+			MXS_DMA_DESC_PIO_WORDS(1) |
+			MXS_DMA_DESC_XFER_COUNT(writesize + oobsize) |
+			MXS_DMA_DESC_COMMAND_DMA_WRITE;
 		d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_READ |
 			GPMI_CTRL0_WORD_LENGTH |
 			FIELD_PREP(GPMI_CTRL0_CS, info->cs) |
@@ -374,7 +321,7 @@ static int mxs_nand_read_page(struct mxs_nand_info *info, int writesize,
 	} else {
 		/* Compile DMA descriptor - enable the BCH block and read. */
 		d = &info->desc[descnum++];
-		d->data = DMACMD_WAIT4END | DMACMD_PIO_WORDS(6);
+		d->data = MXS_DMA_DESC_WAIT4END | MXS_DMA_DESC_PIO_WORDS(6);
 		d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_READ |
 			GPMI_CTRL0_WORD_LENGTH |
 			FIELD_PREP(GPMI_CTRL0_CS, info->cs) |
@@ -390,9 +337,9 @@ static int mxs_nand_read_page(struct mxs_nand_info *info, int writesize,
 
 		/* Compile DMA descriptor - disable the BCH block. */
 		d = &info->desc[descnum++];
-		d->data = DMACMD_NAND_WAIT_4_READY |
-			DMACMD_WAIT4END |
-			DMACMD_PIO_WORDS(3);
+		d->data = MXS_DMA_DESC_NAND_WAIT_4_READY |
+			MXS_DMA_DESC_WAIT4END |
+			MXS_DMA_DESC_PIO_WORDS(3);
 		d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_WAIT_FOR_READY |
 			GPMI_CTRL0_WORD_LENGTH |
 			FIELD_PREP(GPMI_CTRL0_CS, info->cs) |
@@ -402,7 +349,7 @@ static int mxs_nand_read_page(struct mxs_nand_info *info, int writesize,
 
 	/* Compile DMA descriptor - de-assert the NAND lock and interrupt. */
 	d = &info->desc[descnum++];
-	d->data = DMACMD_IRQ | DMACMD_DEC_SEM;
+	d->data = MXS_DMA_DESC_IRQ | MXS_DMA_DESC_DEC_SEM;
 
 	/* Execute the DMA chain. */
 	ret = mxs_dma_run(info->dma_channel, info->desc, descnum);
@@ -461,10 +408,10 @@ static int mxs_nand_get_read_status(struct mxs_nand_info *info, void *databuf)
 	d->address = (dma_addr_t)(cmd_buf);
 	cmd_buf[cmd_queue_len++] = NAND_CMD_STATUS;
 
-	d->data = DMACMD_COMMAND_DMA_READ |
-		DMACMD_WAIT4END |
-		DMACMD_PIO_WORDS(1) |
-		DMACMD_XFER_COUNT(cmd_queue_len);
+	d->data = MXS_DMA_DESC_COMMAND_DMA_READ |
+		MXS_DMA_DESC_WAIT4END |
+		MXS_DMA_DESC_PIO_WORDS(1) |
+		MXS_DMA_DESC_XFER_COUNT(cmd_queue_len);
 
 	d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_WRITE |
 		GPMI_CTRL0_WORD_LENGTH |
@@ -475,10 +422,10 @@ static int mxs_nand_get_read_status(struct mxs_nand_info *info, void *databuf)
 
 	/* Compile DMA descriptor - read. */
 	d = &info->desc[descnum++];
-	d->data = DMACMD_WAIT4END |
-		DMACMD_PIO_WORDS(1) |
-		DMACMD_XFER_COUNT(1) |
-		DMACMD_COMMAND_DMA_WRITE;
+	d->data = MXS_DMA_DESC_WAIT4END |
+		MXS_DMA_DESC_PIO_WORDS(1) |
+		MXS_DMA_DESC_XFER_COUNT(1) |
+		MXS_DMA_DESC_COMMAND_DMA_WRITE;
 	d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_READ |
 		GPMI_CTRL0_WORD_LENGTH |
 		FIELD_PREP(GPMI_CTRL0_CS, info->cs) |
@@ -488,7 +435,7 @@ static int mxs_nand_get_read_status(struct mxs_nand_info *info, void *databuf)
 
 	/* Compile DMA descriptor - de-assert the NAND lock and interrupt. */
 	d = &info->desc[descnum++];
-	d->data = DMACMD_IRQ | DMACMD_DEC_SEM;
+	d->data = MXS_DMA_DESC_IRQ | MXS_DMA_DESC_DEC_SEM;
 
 	/* Execute the DMA chain. */
 	ret = mxs_dma_run(info->dma_channel, info->desc, descnum);
@@ -519,10 +466,10 @@ static int mxs_nand_reset(struct mxs_nand_info *info, void *databuf)
 	d->address = (dma_addr_t)(cmd_buf);
 	cmd_buf[cmd_queue_len++] = NAND_CMD_RESET;
 
-	d->data = DMACMD_COMMAND_DMA_READ |
-		DMACMD_WAIT4END |
-		DMACMD_PIO_WORDS(1) |
-		DMACMD_XFER_COUNT(cmd_queue_len);
+	d->data = MXS_DMA_DESC_COMMAND_DMA_READ |
+		MXS_DMA_DESC_WAIT4END |
+		MXS_DMA_DESC_PIO_WORDS(1) |
+		MXS_DMA_DESC_XFER_COUNT(cmd_queue_len);
 
 	d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_WRITE |
 		GPMI_CTRL0_WORD_LENGTH |
@@ -533,7 +480,7 @@ static int mxs_nand_reset(struct mxs_nand_info *info, void *databuf)
 
 	/* Compile DMA descriptor - de-assert the NAND lock and interrupt. */
 	d = &info->desc[descnum++];
-	d->data = DMACMD_IRQ | DMACMD_DEC_SEM;
+	d->data = MXS_DMA_DESC_IRQ | MXS_DMA_DESC_DEC_SEM;
 
 	/* Execute the DMA chain. */
 	ret = mxs_dma_run(info->dma_channel, info->desc, descnum);
@@ -591,10 +538,10 @@ static int mxs_nand_get_onfi(struct mxs_nand_info *info, void *databuf)
 	cmd_buf[cmd_queue_len++] = NAND_CMD_PARAM;
 	cmd_buf[cmd_queue_len++] = 0x00;
 
-	d->data = DMACMD_COMMAND_DMA_READ |
-		DMACMD_WAIT4END |
-		DMACMD_PIO_WORDS(1) |
-		DMACMD_XFER_COUNT(cmd_queue_len);
+	d->data = MXS_DMA_DESC_COMMAND_DMA_READ |
+		MXS_DMA_DESC_WAIT4END |
+		MXS_DMA_DESC_PIO_WORDS(1) |
+		MXS_DMA_DESC_XFER_COUNT(cmd_queue_len);
 
 	d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_WRITE |
 		GPMI_CTRL0_WORD_LENGTH |
@@ -605,10 +552,10 @@ static int mxs_nand_get_onfi(struct mxs_nand_info *info, void *databuf)
 
 	/* Compile DMA descriptor - wait for ready. */
 	d = &info->desc[descnum++];
-	d->data = DMACMD_CHAIN |
-		DMACMD_NAND_WAIT_4_READY |
-		DMACMD_WAIT4END |
-		DMACMD_PIO_WORDS(2);
+	d->data = MXS_DMA_DESC_CHAIN |
+		MXS_DMA_DESC_NAND_WAIT_4_READY |
+		MXS_DMA_DESC_WAIT4END |
+		MXS_DMA_DESC_PIO_WORDS(2);
 
 	d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_WAIT_FOR_READY |
 		GPMI_CTRL0_WORD_LENGTH |
@@ -617,10 +564,10 @@ static int mxs_nand_get_onfi(struct mxs_nand_info *info, void *databuf)
 
 	/* Compile DMA descriptor - read. */
 	d = &info->desc[descnum++];
-	d->data = DMACMD_WAIT4END |
-		DMACMD_PIO_WORDS(1) |
-		DMACMD_XFER_COUNT(sizeof(struct nand_onfi_params)) |
-		DMACMD_COMMAND_DMA_WRITE;
+	d->data = MXS_DMA_DESC_WAIT4END |
+		MXS_DMA_DESC_PIO_WORDS(1) |
+		MXS_DMA_DESC_XFER_COUNT(sizeof(struct nand_onfi_params)) |
+		MXS_DMA_DESC_COMMAND_DMA_WRITE;
 	d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_READ |
 		GPMI_CTRL0_WORD_LENGTH |
 		FIELD_PREP(GPMI_CTRL0_CS, info->cs) |
@@ -630,7 +577,7 @@ static int mxs_nand_get_onfi(struct mxs_nand_info *info, void *databuf)
 
 	/* Compile DMA descriptor - de-assert the NAND lock and interrupt. */
 	d = &info->desc[descnum++];
-	d->data = DMACMD_IRQ | DMACMD_DEC_SEM;
+	d->data = MXS_DMA_DESC_IRQ | MXS_DMA_DESC_DEC_SEM;
 
 	/* Execute the DMA chain. */
 	ret = mxs_dma_run(info->dma_channel, info->desc, descnum);
@@ -688,10 +635,10 @@ static int mxs_nand_read_id(struct mxs_nand_info *info, u8 adr, void *databuf, s
 	cmd_buf[cmd_queue_len++] = NAND_CMD_READID;
 	cmd_buf[cmd_queue_len++] = adr;
 
-	d->data = DMACMD_COMMAND_DMA_READ |
-		DMACMD_WAIT4END |
-		DMACMD_PIO_WORDS(1) |
-		DMACMD_XFER_COUNT(cmd_queue_len);
+	d->data = MXS_DMA_DESC_COMMAND_DMA_READ |
+		MXS_DMA_DESC_WAIT4END |
+		MXS_DMA_DESC_PIO_WORDS(1) |
+		MXS_DMA_DESC_XFER_COUNT(cmd_queue_len);
 
 	d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_WRITE |
 		GPMI_CTRL0_WORD_LENGTH |
@@ -702,10 +649,10 @@ static int mxs_nand_read_id(struct mxs_nand_info *info, u8 adr, void *databuf, s
 
 	/* Compile DMA descriptor - read. */
 	d = &info->desc[descnum++];
-	d->data = DMACMD_WAIT4END |
-		DMACMD_PIO_WORDS(1) |
-		DMACMD_XFER_COUNT(len) |
-		DMACMD_COMMAND_DMA_WRITE;
+	d->data = MXS_DMA_DESC_WAIT4END |
+		MXS_DMA_DESC_PIO_WORDS(1) |
+		MXS_DMA_DESC_XFER_COUNT(len) |
+		MXS_DMA_DESC_COMMAND_DMA_WRITE;
 	d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_READ |
 		GPMI_CTRL0_WORD_LENGTH |
 		FIELD_PREP(GPMI_CTRL0_CS, info->cs) |
@@ -715,7 +662,7 @@ static int mxs_nand_read_id(struct mxs_nand_info *info, u8 adr, void *databuf, s
 
 	/* Compile DMA descriptor - de-assert the NAND lock and interrupt. */
 	d = &info->desc[descnum++];
-	d->data = DMACMD_IRQ | DMACMD_DEC_SEM;
+	d->data = MXS_DMA_DESC_IRQ | MXS_DMA_DESC_DEC_SEM;
 
 	/* Execute the DMA chain. */
 	ret = mxs_dma_run(info->dma_channel, info->desc, descnum);

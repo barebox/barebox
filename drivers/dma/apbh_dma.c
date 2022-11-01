@@ -24,38 +24,11 @@
 #include <init.h>
 #include <io.h>
 
-
-#define HW_APBHX_CTRL0				0x000
-#define BM_APBH_CTRL0_APB_BURST8_EN		(1 << 29)
-#define BM_APBH_CTRL0_APB_BURST_EN		(1 << 28)
-#define BP_APBH_CTRL0_CLKGATE_CHANNEL		8
-#define BP_APBH_CTRL0_RESET_CHANNEL		16
-#define HW_APBHX_CTRL1				0x010
-#define	BP_APBHX_CTRL1_CH_CMDCMPLT_IRQ_EN	16
-#define HW_APBHX_CTRL2				0x020
-#define HW_APBHX_CHANNEL_CTRL			0x030
-#define BP_APBHX_CHANNEL_CTRL_RESET_CHANNEL	16
-#define BP_APBHX_VERSION_MAJOR			24
-#define HW_APBHX_CHn_NXTCMDAR_MX23(n)		(0x050 + (n) * 0x70)
-#define HW_APBHX_CHn_NXTCMDAR_MX28(n)		(0x110 + (n) * 0x70)
-#define HW_APBHX_CHn_SEMA_MX23(n)		(0x080 + (n) * 0x70)
-#define HW_APBHX_CHn_SEMA_MX28(n)		(0x140 + (n) * 0x70)
-#define	BM_APBHX_CHn_SEMA_PHORE			(0xff << 16)
-#define	BP_APBHX_CHn_SEMA_PHORE			16
-
-enum mxs_dma_id {
-	UNKNOWN_DMA_ID,
-	IMX23_DMA,
-	IMX28_DMA,
-};
-
 struct apbh_dma {
 	void __iomem *regs;
 	struct clk *clk;
 	enum mxs_dma_id id;
 };
-
-#define apbh_dma_is_imx23(aphb) ((apbh)->id == IMX23_DMA)
 
 static struct apbh_dma *apbh_dma;
 

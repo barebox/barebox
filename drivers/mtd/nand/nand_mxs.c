@@ -366,8 +366,8 @@ static void mxs_nand_cmd_ctrl(struct nand_chip *chip, int data, unsigned int ctr
 	d->data =
 		MXS_DMA_DESC_COMMAND_DMA_READ | MXS_DMA_DESC_IRQ |
 		MXS_DMA_DESC_CHAIN | MXS_DMA_DESC_DEC_SEM |
-		MXS_DMA_DESC_WAIT4END | (3 << MXS_DMA_DESC_PIO_WORDS_OFFSET) |
-		(nand_info->cmd_queue_len << MXS_DMA_DESC_BYTES_OFFSET);
+		MXS_DMA_DESC_WAIT4END | MXS_DMA_DESC_PIO_WORDS(3) |
+		MXS_DMA_DESC_XFER_COUNT(nand_info->cmd_queue_len);
 
 	d->address = (dma_addr_t)nand_info->cmd_buf;
 
@@ -495,8 +495,8 @@ static void mxs_nand_read_buf(struct nand_chip *chip, uint8_t *buf, int length)
 	d->data =
 		MXS_DMA_DESC_COMMAND_DMA_WRITE | MXS_DMA_DESC_IRQ |
 		MXS_DMA_DESC_DEC_SEM | MXS_DMA_DESC_WAIT4END |
-		(1 << MXS_DMA_DESC_PIO_WORDS_OFFSET) |
-		(length << MXS_DMA_DESC_BYTES_OFFSET);
+		MXS_DMA_DESC_PIO_WORDS(1) |
+		MXS_DMA_DESC_XFER_COUNT(length);
 
 	d->address = (dma_addr_t)nand_info->data_buf;
 
@@ -519,7 +519,7 @@ static void mxs_nand_read_buf(struct nand_chip *chip, uint8_t *buf, int length)
 	d->data =
 		MXS_DMA_DESC_COMMAND_NO_DMAXFER | MXS_DMA_DESC_IRQ |
 		MXS_DMA_DESC_NAND_WAIT_4_READY | MXS_DMA_DESC_DEC_SEM |
-		MXS_DMA_DESC_WAIT4END | (4 << MXS_DMA_DESC_PIO_WORDS_OFFSET);
+		MXS_DMA_DESC_WAIT4END | MXS_DMA_DESC_PIO_WORDS(4);
 
 	d->address = 0;
 
@@ -570,8 +570,8 @@ static void mxs_nand_write_buf(struct nand_chip *chip, const uint8_t *buf,
 	d->data =
 		MXS_DMA_DESC_COMMAND_DMA_READ | MXS_DMA_DESC_IRQ |
 		MXS_DMA_DESC_DEC_SEM | MXS_DMA_DESC_WAIT4END |
-		(4 << MXS_DMA_DESC_PIO_WORDS_OFFSET) |
-		(length << MXS_DMA_DESC_BYTES_OFFSET);
+		MXS_DMA_DESC_PIO_WORDS(4) |
+		MXS_DMA_DESC_XFER_COUNT(length);
 
 	d->address = (dma_addr_t)nand_info->data_buf;
 
@@ -643,7 +643,7 @@ static int mxs_nand_do_bch_read(struct nand_chip *chip, int channel, int readtot
 	d->data =
 		MXS_DMA_DESC_COMMAND_NO_DMAXFER | MXS_DMA_DESC_CHAIN |
 		MXS_DMA_DESC_NAND_WAIT_4_READY | MXS_DMA_DESC_WAIT4END |
-		(1 << MXS_DMA_DESC_PIO_WORDS_OFFSET);
+		MXS_DMA_DESC_PIO_WORDS(1);
 
 	d->address = 0;
 
@@ -657,7 +657,7 @@ static int mxs_nand_do_bch_read(struct nand_chip *chip, int channel, int readtot
 	d = mxs_nand_get_dma_desc(nand_info);
 	d->data =
 		MXS_DMA_DESC_COMMAND_NO_DMAXFER | MXS_DMA_DESC_CHAIN |
-		MXS_DMA_DESC_WAIT4END |	(6 << MXS_DMA_DESC_PIO_WORDS_OFFSET);
+		MXS_DMA_DESC_WAIT4END |	MXS_DMA_DESC_PIO_WORDS(6);
 
 	d->address = 0;
 
@@ -687,7 +687,7 @@ static int mxs_nand_do_bch_read(struct nand_chip *chip, int channel, int readtot
 	d->data =
 		MXS_DMA_DESC_COMMAND_NO_DMAXFER | MXS_DMA_DESC_CHAIN |
 		MXS_DMA_DESC_NAND_WAIT_4_READY | MXS_DMA_DESC_WAIT4END |
-		(3 << MXS_DMA_DESC_PIO_WORDS_OFFSET);
+		MXS_DMA_DESC_PIO_WORDS(3);
 
 	d->address = 0;
 
@@ -891,7 +891,7 @@ static int mxs_nand_ecc_write_page(struct nand_chip *chip, const uint8_t *buf,
 	d->data =
 		MXS_DMA_DESC_COMMAND_NO_DMAXFER | MXS_DMA_DESC_IRQ |
 		MXS_DMA_DESC_DEC_SEM | MXS_DMA_DESC_WAIT4END |
-		(6 << MXS_DMA_DESC_PIO_WORDS_OFFSET);
+		MXS_DMA_DESC_PIO_WORDS(6);
 
 	d->address = 0;
 
@@ -1256,7 +1256,7 @@ int mxs_nand_write_fcb_bch62(unsigned int block, void *buf, size_t size)
 	d = mxs_nand_get_dma_desc(nand_info);
 	d->data = MXS_DMA_DESC_COMMAND_NO_DMAXFER | MXS_DMA_DESC_IRQ |
 		      MXS_DMA_DESC_DEC_SEM | MXS_DMA_DESC_WAIT4END |
-		      (6 << MXS_DMA_DESC_PIO_WORDS_OFFSET);
+		      MXS_DMA_DESC_PIO_WORDS(6);
 
 	d->address = 0;
 

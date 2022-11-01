@@ -1020,6 +1020,8 @@ static int __maybe_unused imx6_nand_load_image(struct imx_nand_params *params,
 	};
 	int ret;
 	struct fcb_block *fcb;
+	void __iomem *bch_regs = info->bch_base;
+	u32 fl0, fl1;
 
 	info->dma_channel = &pchan;
 
@@ -1046,6 +1048,21 @@ static int __maybe_unused imx6_nand_load_image(struct imx_nand_params *params,
 	pr_debug("FW2_startingPage: 0x%08x\n",
 		fcb->Firmware2_startingPage);
 	pr_debug("PagesInFW2:       0x%08x\n", fcb->PagesInFirmware2);
+
+	info->organization.oobsize = fcb->TotalPageSize - fcb->PageDataSize;
+	info->organization.pagesize = fcb->PageDataSize;
+
+	fl0 = FIELD_PREP(BCH_FLASHLAYOUT0_NBLOCKS, fcb->NumEccBlocksPerPage) |
+		FIELD_PREP(BCH_FLASHLAYOUT0_META_SIZE, fcb->MetadataBytes) |
+		FIELD_PREP(IMX6_BCH_FLASHLAYOUT0_ECC0, fcb->EccBlock0EccType) |
+		(fcb->BCHType ? BCH_FLASHLAYOUT0_GF13_0_GF14_1 : 0) |
+		FIELD_PREP(BCH_FLASHLAYOUT0_DATA0_SIZE, fcb->EccBlock0Size / 4);
+	fl1 = FIELD_PREP(BCH_FLASHLAYOUT1_PAGE_SIZE, fcb->TotalPageSize) |
+		FIELD_PREP(IMX6_BCH_FLASHLAYOUT1_ECCN, fcb->EccBlockNEccType) |
+		(fcb->BCHType ? BCH_FLASHLAYOUT1_GF13_0_GF14_1 : 0) |
+		FIELD_PREP(BCH_FLASHLAYOUT1_DATAN_SIZE, fcb->EccBlockNSize / 4);
+	writel(fl0, bch_regs + BCH_FLASH0LAYOUT0);
+	writel(fl1, bch_regs + BCH_FLASH0LAYOUT1);
 
 	get_dbbt(info, databuf);
 

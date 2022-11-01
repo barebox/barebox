@@ -760,6 +760,10 @@ static int mxs_nand_get_info(struct mxs_nand_info *info, void *databuf)
 {
 	int ret, i;
 
+	ret = mxs_nand_reset(info, databuf);
+	if (ret)
+		return ret;
+
 	ret = mxs_nand_check_onfi(info, databuf);
 	if (ret) {
 		if (ret != 1)

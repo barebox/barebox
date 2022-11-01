@@ -923,7 +923,7 @@ void __noreturn vf610_barebox_entry(void *boarddata)
 			  boarddata);
 }
 
-static void __noreturn imx8m_barebox_entry(void *boarddata, unsigned buswidth)
+resource_size_t imx8m_barebox_earlymem_size(unsigned buswidth)
 {
 	resource_size_t size;
 
@@ -937,8 +937,13 @@ static void __noreturn imx8m_barebox_entry(void *boarddata, unsigned buswidth)
 	 * pool placement. The rest of the system should be able to
 	 * detect and utilize full amount of memory.
 	 */
-	size = min_t(resource_size_t, SZ_4G - MX8M_DDR_CSD1_BASE_ADDR, size);
-	barebox_arm_entry(MX8M_DDR_CSD1_BASE_ADDR, size, boarddata);
+	return min_t(resource_size_t, SZ_4G - MX8M_DDR_CSD1_BASE_ADDR, size);
+}
+
+static void __noreturn imx8m_barebox_entry(void *boarddata, unsigned buswidth)
+{
+	barebox_arm_entry(MX8M_DDR_CSD1_BASE_ADDR,
+			  imx8m_barebox_earlymem_size(buswidth), boarddata);
 }
 
 void __noreturn imx8mm_barebox_entry(void *boarddata)

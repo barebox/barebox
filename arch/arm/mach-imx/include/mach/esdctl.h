@@ -131,6 +131,8 @@
 #define ESDCFGx_tRC_16			0x0000000f
 
 #ifndef __ASSEMBLY__
+#include <linux/types.h>
+
 void __noreturn imx1_barebox_entry(void *boarddata);
 void __noreturn imx25_barebox_entry(void *boarddata);
 void __noreturn imx27_barebox_entry(void *boarddata);
@@ -148,6 +150,7 @@ void __noreturn imx8mq_barebox_entry(void *boarddata);
 void __noreturn imx7d_barebox_entry(void *boarddata);
 #define imx6sx_barebox_entry(boarddata) imx6ul_barebox_entry(boarddata)
 void imx_esdctl_disable(void);
+resource_size_t imx8m_barebox_earlymem_size(unsigned buswidth);
 #endif
 
 #endif /* __MACH_ESDCTL_V2_H */

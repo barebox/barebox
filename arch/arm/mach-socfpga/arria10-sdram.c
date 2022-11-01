@@ -468,6 +468,18 @@ static void arria10_sdram_mmr_init(void)
 	}
 }
 
+static void arria10_f2sdram_bridges_reset(void)
+{
+	uint32_t val;
+
+	/* Release F2SDRAM bridges from reset */
+	val = readl(ARRIA10_RSTMGR_ADDR + ARRIA10_RSTMGR_BRGMODRST);
+	val &= ~(ARRIA10_RSTMGR_BRGMODRST_F2SSDRAM0 |
+		ARRIA10_RSTMGR_BRGMODRST_F2SSDRAM1 |
+		ARRIA10_RSTMGR_BRGMODRST_F2SSDRAM2);
+	writel(val, ARRIA10_RSTMGR_ADDR + ARRIA10_RSTMGR_BRGMODRST);
+}
+
 static int arria10_sdram_firewall_setup(void)
 {
 	uint32_t mpu_en = 0;
@@ -511,6 +523,8 @@ static int arria10_sdram_firewall_setup(void)
 
 	writel(0xffff0000, ARRIA10_NOC_FW_DDR_L3_HPSREGION0ADDR);
 	writel(ARRIA10_NOC_FW_DDR_L3_HPSREG0EN, ARRIA10_NOC_FW_DDR_L3_EN);
+
+	arria10_f2sdram_bridges_reset();
 
 	return 0;
 }

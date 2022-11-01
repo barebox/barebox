@@ -60,6 +60,14 @@ config CMD_RISCV_CPUINFO
 	help
 	  Show info about RISC-V CPU
 
+config CMD_BOOTROM
+	bool "bootrom command"
+	depends on ARCH_IMX8M
+	help
+	  Interact with bootrom on i.MX8M
+
+	  bootrom [-la]
+
 config CMD_DEVINFO
 	tristate
 	default y

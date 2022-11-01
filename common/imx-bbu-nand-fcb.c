@@ -1572,10 +1572,10 @@ static void imx7_fcb_create(struct imx_nand_fcb_bbu_handler *imx_handler,
 	fl0 = readl(bch_regs + BCH_FLASH0LAYOUT0);
 	fcb->MetadataBytes = BF_VAL(fl0, BCH_FLASHLAYOUT0_META_SIZE);
 	fcb->NumEccBlocksPerPage = BF_VAL(fl0, BCH_FLASHLAYOUT0_NBLOCKS);
+	fcb->EccBlock0Size = 4 * BF_VAL(fl0, BCH_FLASHLAYOUT0_DATA0_SIZE);
+	fcb->EccBlock0EccType = BF_VAL(fl0, BCH_FLASHLAYOUT0_ECC0);
 
 	fl1 = readl(bch_regs + BCH_FLASH0LAYOUT1);
-	fcb->EccBlock0Size = 4 * BF_VAL(fl1, BCH_FLASHLAYOUT0_DATA0_SIZE);
-	fcb->EccBlock0EccType = BF_VAL(fl1, BCH_FLASHLAYOUT0_ECC0);
 	fcb->EccBlockNSize = 4 * BF_VAL(fl1, BCH_FLASHLAYOUT1_DATAN_SIZE);
 	fcb->EccBlockNEccType = BF_VAL(fl1, BCH_FLASHLAYOUT1_ECCN);
 	fcb->BCHType = BF_VAL(fl1, BCH_FLASHLAYOUT1_GF13_0_GF14_1);

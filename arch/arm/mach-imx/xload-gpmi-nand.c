@@ -237,8 +237,6 @@ static int mxs_nand_read_page(struct mxs_nand_info *info, int writesize,
 	int cmd_queue_len;
 	u8 *cmd_buf;
 	int ret;
-	uint8_t	*status;
-	int i;
 	int timeout;
 	int descnum = 0;
 	int max_pagenum = info->nand_size /
@@ -376,18 +374,24 @@ static int mxs_nand_read_page(struct mxs_nand_info *info, int writesize,
 	writel(BCH_CTRL_COMPLETE_IRQ,
 		bch_regs + BCH_CTRL + STMP_OFFSET_REG_CLR);
 
-	/* Loop over status bytes, accumulating ECC status. */
-	status = databuf + writesize + mxs_nand_aux_status_offset();
-	for (i = 0; i < writesize / MXS_NAND_CHUNK_DATA_CHUNK_SIZE; i++) {
-		if (status[i] == 0xfe) {
-			ret = -EBADMSG;
-			goto err;
-		}
-	}
-
 	ret = 0;
 err:
 	return ret;
+}
+
+static int mxs_nand_get_ecc_status(struct mxs_nand_info *info, void *databuf)
+{
+	uint8_t	*status;
+	int i;
+
+	/* Loop over status bytes, accumulating ECC status. */
+	status = databuf + info->organization.pagesize + mxs_nand_aux_status_offset();
+	for (i = 0; i < info->organization.pagesize / MXS_NAND_CHUNK_DATA_CHUNK_SIZE; i++) {
+		if (status[i] == 0xfe)
+			return -EBADMSG;
+	}
+
+	return 0;
 }
 
 static int mxs_nand_get_read_status(struct mxs_nand_info *info, void *databuf)
@@ -851,6 +855,10 @@ static int get_fcb(struct mxs_nand_info *info, void *databuf)
 		if (ret)
 			continue;
 
+		ret = mxs_nand_get_ecc_status(info, databuf);
+		if (ret)
+			continue;
+
 		memcpy(fcb, databuf + mxs_nand_aux_status_offset(),
 			sizeof(*fcb));
 
@@ -890,6 +898,10 @@ static int get_dbbt(struct mxs_nand_info *info, void *databuf)
 		if (ret)
 			continue;
 
+		ret = mxs_nand_get_ecc_status(info, databuf);
+		if (ret)
+			continue;
+
 		memcpy(&dbbt, databuf, sizeof(struct dbbt_block));
 
 		if (*(u32 *)(databuf + sizeof(u32)) != DBBT_FINGERPRINT)
@@ -901,6 +913,10 @@ static int get_dbbt(struct mxs_nand_info *info, void *databuf)
 
 		ret = mxs_nand_read_page(info, info->organization.pagesize,
 			info->organization.oobsize, page + 4, databuf, 0);
+		if (ret)
+			continue;
+
+		ret = mxs_nand_get_ecc_status(info, databuf);
 		if (ret)
 			continue;
 

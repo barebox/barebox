@@ -17,8 +17,7 @@ extern char __dtb_z_imx7d_flex_concentrator_mfg_start[];
 
 static inline void setup_uart(void)
 {
-	/* FIXME: Below UART4 is muxed, not UART1 */
-	imx7_early_setup_uart_clock(1);
+	imx7_early_setup_uart_clock(4);
 
 	imx7_setup_pad(MX7D_PAD_SAI2_TX_BCLK__UART4_DCE_TX);
 

@@ -26,19 +26,14 @@
 #include <mach/generic.h>
 #include <mtd/mtd-peb.h>
 #include <soc/imx/imx-nand-bcb.h>
-
-#ifdef CONFIG_ARCH_IMX28
-static inline int fcb_is_bch_encoded(void)
-{
-       return 0;
-}
-#else
+#ifdef CONFIG_ARCH_IMX
 #include <mach/imx6.h>
+#endif
+
 static inline int fcb_is_bch_encoded(void)
 {
        return cpu_is_mx6ul() || cpu_is_mx6ull();
 }
-#endif
 
 struct imx_nand_fcb_bbu_handler {
 	struct bbu_handler handler;

@@ -22,3 +22,6 @@
 #define cpu_is_mx51()	(0)
 #define cpu_is_mx53()	(0)
 #define cpu_is_mx6()	(0)
+#define cpu_is_mx7()	(0)
+#define cpu_is_mx6ul()	(0)
+#define cpu_is_mx6ull()	(0)

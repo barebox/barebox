@@ -94,7 +94,7 @@ static int rk3568_evb_detect_hwid(void)
 	return 0;
 
 err_hwid:
-	pr_err("couldn't retrieve hardware ID");
+	pr_err("couldn't retrieve hardware ID\n");
 	return ret;
 }
 late_initcall(rk3568_evb_detect_hwid);

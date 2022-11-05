@@ -108,9 +108,9 @@ static u32 invoke_psci_fn_smc(ulong function, ulong arg0, ulong arg1, ulong arg2
 	return res.a0;
 }
 
-static int of_psci_do_fixup(struct device_node *root, void *context)
+static int of_psci_do_fixup(struct device_node *root, void *method)
 {
-	return of_psci_fixup(root, *(u32 *)context, "smc");
+	return of_psci_fixup(root, version, (const void *)method);
 }
 
 static int __init psci_probe(struct device_d *dev)
@@ -156,7 +156,7 @@ static int __init psci_probe(struct device_d *dev)
 		 version >> 16, version & 0xffff);
 
 	if (actual_version != of_version)
-		of_register_fixup(of_psci_do_fixup, &version);
+		of_register_fixup(of_psci_do_fixup, (void *)method);
 
 	ret = poweroff_handler_register_fn(psci_poweroff);
 	if (ret)

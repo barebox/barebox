@@ -110,7 +110,7 @@ static u32 invoke_psci_fn_smc(ulong function, ulong arg0, ulong arg1, ulong arg2
 
 static int of_psci_do_fixup(struct device_node *root, void *context)
 {
-	return of_psci_fixup(root, *(u32 *)context);
+	return of_psci_fixup(root, *(u32 *)context, "smc");
 }
 
 static int __init psci_probe(struct device_d *dev)

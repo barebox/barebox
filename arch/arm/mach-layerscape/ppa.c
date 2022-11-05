@@ -46,7 +46,7 @@ static int of_psci_do_fixup(struct device_node *root, void *unused)
 		break;
 	}
 
-	return of_psci_fixup(root, psci_version);
+	return of_psci_fixup(root, psci_version, "smc");
 }
 
 static int ppa_init(void *ppa, size_t ppa_size, void *sec_firmware_addr)

@@ -189,7 +189,7 @@ static int of_psci_do_fixup(struct device_node *root, void *unused)
 	if (bootm_arm_security_state() < ARM_STATE_NONSECURE)
 		return 0;
 
-	return of_psci_fixup(root, ARM_PSCI_VER_1_0);
+	return of_psci_fixup(root, ARM_PSCI_VER_1_0, "smc");
 }
 
 int psci_cpu_entry_c(void)

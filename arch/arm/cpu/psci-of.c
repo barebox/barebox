@@ -7,7 +7,8 @@
 #include <asm/psci.h>
 #include <linux/arm-smccc.h>
 
-int of_psci_fixup(struct device_node *root, unsigned long psci_version)
+int of_psci_fixup(struct device_node *root, unsigned long psci_version,
+		  const char *method)
 {
 	struct device_node *psci;
 	int ret;
@@ -46,7 +47,7 @@ int of_psci_fixup(struct device_node *root, unsigned long psci_version)
 	if (ret)
 		return ret;
 
-	ret = of_property_write_string(psci, "method", "smc");
+	ret = of_property_write_string(psci, "method", method);
 	if (ret)
 		return ret;
 

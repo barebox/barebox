@@ -837,3 +837,13 @@ void bitmap_copy_le(void *dst, const unsigned long *src, int nbits)
 	}
 }
 EXPORT_SYMBOL(bitmap_copy_le);
+
+unsigned long *bitmap_zalloc(unsigned int nbits)
+{
+	return calloc(BITS_TO_LONGS(nbits), sizeof(unsigned long));
+}
+
+unsigned long *bitmap_xzalloc(unsigned int nbits)
+{
+	return xzalloc(BITS_TO_LONGS(nbits) * sizeof(unsigned long));
+}

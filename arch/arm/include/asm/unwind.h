@@ -16,14 +16,15 @@ enum unwind_reason_code {
 };
 
 struct unwind_idx {
-	unsigned long addr;
+	unsigned long addr_offset;
 	unsigned long insn;
 };
 
 struct unwind_table {
 	struct list_head list;
-	struct unwind_idx *start;
-	struct unwind_idx *stop;
+	const struct unwind_idx *start;
+	const struct unwind_idx *origin;
+	const struct unwind_idx *stop;
 	unsigned long begin_addr;
 	unsigned long end_addr;
 };

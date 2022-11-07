@@ -15,6 +15,7 @@
 #define VF610_CPUTYPE_VF510	0x510
 #define VF610_CPUTYPE_VF500	0x500
 
+#define VF610_ROM_BASE_ADDR		0x0
 #define VF610_ROM_VERSION_OFFSET	0x80
 
 static inline int __vf610_cpu_type(void)
@@ -39,6 +40,10 @@ static inline int vf610_cpu_type(void)
 
 static inline int vf610_cpu_revision(void)
 {
+	void __iomem *rom = IOMEM(VF610_ROM_BASE_ADDR);
+
+	OPTIMIZER_HIDE_VAR(rom);
+
 	if (!cpu_is_vf610())
 		return IMX_CHIP_REV_UNKNOWN;
 
@@ -47,7 +52,7 @@ static inline int vf610_cpu_revision(void)
 	 * silicon revision on VFxxx cpus, so we just report Mask ROM
 	 * version instead
 	 */
-	return readl(VF610_ROM_VERSION_OFFSET) & 0xff;
+	return readl(rom + VF610_ROM_VERSION_OFFSET) & 0xff;
 }
 
 u64 vf610_uid(void);

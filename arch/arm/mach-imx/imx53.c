@@ -21,6 +21,8 @@ static int imx53_silicon_revision(void)
 	u32 rev;
 	u32 mx53_silicon_revision;
 
+	OPTIMIZER_HIDE_VAR(rom);
+
 	rev = readl(rom + SI_REV);
 	switch (rev) {
 	case 0x10:

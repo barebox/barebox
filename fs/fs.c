@@ -1956,7 +1956,7 @@ static inline int step_into(struct nameidata *nd, struct path *path,
 
 static int walk_component(struct nameidata *nd, int flags)
 {
-	struct path path;
+	struct path path = {};
 	int err;
 
 	/*

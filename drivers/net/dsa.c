@@ -59,7 +59,7 @@ static int dsa_port_probe(struct eth_device *edev)
 	int ret;
 
 	if (ops->port_probe) {
-		interface = of_get_phy_mode(dp->dev.device_node);
+		interface = of_get_phy_mode(dp->dev->device_node);
 		ret = ops->port_probe(dp, dp->index, interface);
 		if (ret)
 			return ret;
@@ -93,7 +93,7 @@ static int dsa_port_start(struct eth_device *edev)
 	if (dp->enabled)
 		return -EBUSY;
 
-	interface = of_get_phy_mode(dp->dev.device_node);
+	interface = of_get_phy_mode(dp->dev->device_node);
 
 	if (ops->port_pre_enable) {
 		/* In case of RMII interface we need to enable RMII clock
@@ -241,21 +241,13 @@ static int dsa_switch_register_edev(struct dsa_switch *ds,
 	struct eth_device *edev;
 	struct device_d *dev;
 	struct dsa_port *dp;
-	int ret;
 
 	ds->dp[port] = xzalloc(sizeof(*dp));
-
 	dp = ds->dp[port];
-	dev = &dp->dev;
 
-	dev_set_name(dev, "dsa_port");
-	dev->id = DEVICE_ID_DYNAMIC;
-	dev->parent = ds->dev;
-	dev->device_node = dn;
-
-	ret = register_device(dev);
-	if (ret)
-		return ret;
+	dev = of_platform_device_create(dn, ds->dev);
+	of_platform_device_dummy_drv(dev);
+	dp->dev = dev;
 
 	dp->rx_buf = xmalloc(DSA_PKTSIZE);
 	dp->ds = ds;

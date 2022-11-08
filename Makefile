@@ -454,6 +454,10 @@ LDFLAGS_barebox	:= -Map barebox.map
 
 # Avoid 'Not enough room for program headers' error on binutils 2.28 onwards.
 LDFLAGS_common += $(call ld-option, --no-dynamic-linker)
+# Avoid 'missing .note.GNU-stack section implies executable stack' warnings on binutils 2.39+
+LDFLAGS_common += -z noexecstack
+# Avoid '... has a LOAD segment with RWX permissions' warnings on binutils 2.39+
+LDFLAGS_common += $(call ld-option,--no-warn-rwx-segments)
 
 LDFLAGS_barebox += $(LDFLAGS_common)
 LDFLAGS_pbl += $(LDFLAGS_common)

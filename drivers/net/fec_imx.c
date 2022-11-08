@@ -274,6 +274,8 @@ static int fec_init(struct eth_device *dev)
 	writel(0x00000000, fec->regs + FEC_IMASK);
 
 	rcntl = readl(fec->regs + FEC_R_CNTRL);
+
+	/* Keep promisc setting */
 	rcntl &= FEC_R_CNTRL_PROMISC;
 
 	/*

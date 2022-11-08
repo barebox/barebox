@@ -129,6 +129,11 @@ static int dsa_port_start(struct eth_device *edev)
 				return ret;
 		}
 
+		ret = eth_set_promisc(ds->edev_master, true);
+		if (ret)
+			dev_warn(ds->dev, "Failed to set promisc mode. Using different eth addresses may not work. %pe\n",
+				 ERR_PTR(ret));
+
 		eth_open(ds->edev_master);
 	}
 
@@ -160,6 +165,7 @@ static void dsa_port_stop(struct eth_device *edev)
 			ops->port_disable(dpc, ds->cpu_port,
 					ds->cpu_port_fixed_phy);
 
+		eth_set_promisc(ds->edev_master, false);
 		eth_close(ds->edev_master);
 	}
 }

@@ -548,6 +548,33 @@ static void skov_init_board(const struct board_description *variant)
 	}
 }
 
+static int skov_set_switch_lan2_mac(struct skov_imx6_priv *priv)
+{
+	const char *state = "/state/ethaddr/eth2";
+	struct device_node *lan2_np;
+	u8 ethaddr[ETH_ALEN];
+	int ret;
+
+	ret = get_mac_address_from_env_variable("state.ethaddr.eth2", ethaddr);
+	if (ret || !is_valid_ether_addr(ethaddr)) {
+		ret = get_default_mac_address_from_state_node(state, ethaddr);
+		if (ret || !is_valid_ether_addr(ethaddr)) {
+			dev_err(priv->dev, "can't get MAC for LAN2\n");
+			return -ENODEV;
+		}
+	}
+
+	lan2_np = of_find_node_by_path("/mdio/switch@0/ports/ports@1");
+	if (!lan2_np) {
+		dev_err(priv->dev, "LAN2 node not found\n");
+		return -ENODEV;
+	}
+
+	of_eth_register_ethaddr(lan2_np, ethaddr);
+
+	return 0;
+}
+
 static int skov_switch_test(void)
 {
 	struct device_d *sw_dev;
@@ -567,8 +594,11 @@ static int skov_switch_test(void)
 		goto no_switch;
 	}
 
-	if (dev_is_probed(sw_dev))
+	if (dev_is_probed(sw_dev)) {
+		skov_set_switch_lan2_mac(skov_priv);
+		/* even if we fail, continue to boot as good as possible */
 		return 0;
+	}
 
 no_switch:
 	skov_have_switch = false;

@@ -58,6 +58,7 @@
 #define FEC_R_CNTRL_RMII_10T		(1 << 9) /* i.MX28 specific */
 #define FEC_R_CNTRL_RMII_MODE		(1 << 8) /* i.MX28 specific */
 #define FEC_R_CNTRL_FCE			(1 << 5)
+#define FEC_R_CNTRL_PROMISC		(1 << 3)
 #define FEC_R_CNTRL_MII_MODE		(1 << 2)
 
 #define FEC_IEVENT_HBERR                0x80000000 /* Note: Not on i.MX28 */

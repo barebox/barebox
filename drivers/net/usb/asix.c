@@ -427,6 +427,25 @@ static int asix_set_ethaddr(struct eth_device *edev, const unsigned char *adr)
 	return 0;
 }
 
+static int asix_set_promisc(struct eth_device *edev, bool enable)
+{
+	struct usbnet *dev = container_of(edev, struct usbnet, edev);
+	u16 rx_ctl;
+	int ret;
+
+	rx_ctl = asix_read_rx_ctl(dev);
+
+	if (enable)
+		rx_ctl |= AX_RX_CTL_PRO;
+	else
+		rx_ctl &= ~AX_RX_CTL_PRO;
+
+	if ((ret = asix_write_rx_ctl(dev, rx_ctl)) < 0)
+		return ret;
+
+	return 0;
+}
+
 static int ax88172_get_ethaddr(struct eth_device *edev, unsigned char *adr)
 {
 	struct usbnet *udev = container_of(edev, struct usbnet, edev);
@@ -664,6 +683,7 @@ static int ax88772_bind(struct usbnet *dev)
 
 	dev->edev.get_ethaddr = asix_get_ethaddr;
 	dev->edev.set_ethaddr = asix_set_ethaddr;
+	dev->edev.set_promisc = asix_set_promisc;
 	asix_init_mii(dev);
 
 	if ((ret = asix_sw_reset(dev, AX_SWRESET_PRL)) < 0)

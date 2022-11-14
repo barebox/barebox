@@ -49,6 +49,8 @@ struct eth_device {
 				 int *length);
 	void (*rx_monitor) (struct eth_device*, void *packet, int length);
 	void (*tx_monitor) (struct eth_device*, void *packet, int length);
+	/* Set promiscuous mode */
+	int  (*set_promisc) (struct eth_device*, bool enable);
 
 	struct eth_device *next;
 	void *priv;
@@ -113,6 +115,7 @@ int eth_send(struct eth_device *edev, void *packet, int length);	   /* Send a pa
 int eth_rx(void);			/* Check for received packets	*/
 void eth_open_all(void);
 struct eth_device *of_find_eth_device_by_node(struct device_node *np);
+int eth_set_promisc(struct eth_device *edev, bool enable);
 
 /* associate a MAC address to a ethernet device. Should be called by
  * board code for boards which store their MAC address at some unusual

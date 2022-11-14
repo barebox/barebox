@@ -25,6 +25,22 @@
 
 #include "fec_imx.h"
 
+static int fec_set_promisc(struct eth_device *edev, bool enable)
+{
+	struct fec_priv *fec = (struct fec_priv *)edev->priv;
+	u32 rcntl;
+
+	rcntl = readl(fec->regs + FEC_R_CNTRL);
+
+	if (enable)
+		rcntl |= FEC_R_CNTRL_PROMISC;
+	else
+		rcntl &= ~FEC_R_CNTRL_PROMISC;
+
+	writel(rcntl, fec->regs + FEC_R_CNTRL);
+
+	return 0;
+}
 
 /*
  * MII-interface related functions
@@ -257,10 +273,15 @@ static int fec_init(struct eth_device *dev)
 	 */
 	writel(0x00000000, fec->regs + FEC_IMASK);
 
+	rcntl = readl(fec->regs + FEC_R_CNTRL);
+
+	/* Keep promisc setting */
+	rcntl &= FEC_R_CNTRL_PROMISC;
+
 	/*
 	 * Set FEC-Lite receive control register(R_CNTRL):
 	 */
-	rcntl = FEC_R_CNTRL_MAX_FL(1518);
+	rcntl |= FEC_R_CNTRL_MAX_FL(1518);
 
 	rcntl |= FEC_R_CNTRL_MII_MODE;
 	/*
@@ -768,6 +789,7 @@ static int fec_probe(struct device_d *dev)
 	edev->halt = fec_halt;
 	edev->get_ethaddr = fec_get_hwaddr;
 	edev->set_ethaddr = fec_set_hwaddr;
+	edev->set_promisc = fec_set_promisc;
 	edev->parent = dev;
 
 	dma_set_mask(dev, DMA_BIT_MASK(32));
@@ -833,6 +855,8 @@ static int fec_probe(struct device_d *dev)
 				 !(reg & FEC_ECNTRL_RESET), USEC_PER_SEC);
 	if (ret)
 		goto free_gpio;
+
+	fec_set_promisc(edev, false);
 
 	/*
 	 * reserve memory for both buffer descriptor chains at once

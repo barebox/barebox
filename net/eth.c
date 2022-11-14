@@ -31,6 +31,14 @@ struct eth_ethaddr {
 
 static LIST_HEAD(ethaddr_list);
 
+int eth_set_promisc(struct eth_device *edev, bool enable)
+{
+	if (!edev->set_promisc)
+		return -EOPNOTSUPP;
+
+	return edev->set_promisc(edev, enable);
+}
+
 int eth_set_ethaddr(struct eth_device *edev, const char *ethaddr)
 {
 	int ret;

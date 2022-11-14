@@ -17,6 +17,12 @@
 
 #include "version.h"
 
+struct skov_imx6_priv {
+	struct device_d *dev;
+};
+
+static struct skov_imx6_priv *skov_priv;
+
 static int eth_of_fixup_node(struct device_node *root, const char *node_path,
 			     const u8 *ethaddr)
 {
@@ -27,21 +33,21 @@ static int eth_of_fixup_node(struct device_node *root, const char *node_path,
 		unsigned char ethaddr_str[sizeof("xx:xx:xx:xx:xx:xx")];
 
 		ethaddr_to_string(ethaddr, ethaddr_str);
-		pr_err("The mac-address %s is invalid.\n", ethaddr_str);
+		dev_err(skov_priv->dev, "The mac-address %s is invalid.\n", ethaddr_str);
 		return -EINVAL;
 	}
 
 	node = of_find_node_by_path_from(root, node_path);
 	if (!node) {
-		pr_err("Did not find node %s to fix up with stored mac-address.\n",
-		       node_path);
+		dev_err(skov_priv->dev, "Did not find node %s to fix up with stored mac-address.\n",
+		        node_path);
 		return -ENOENT;
 	}
 
 	ret = of_set_property(node, "mac-address", ethaddr, ETH_ALEN, 1);
 	if (ret)
-		pr_err("Setting mac-address property of %s failed with: %s.\n",
-		       node->full_name, strerror(-ret));
+		dev_err(skov_priv->dev, "Setting mac-address property of %s failed with: %s.\n",
+		        node->full_name, strerror(-ret));
 
 	return ret;
 }
@@ -54,7 +60,7 @@ static int eth_of_fixup_node_from_eth_device(struct device_node *root,
 
 	edev = eth_get_byname(ethname);
 	if (!edev) {
-		pr_err("Did not find eth device \"%s\" to copy mac-address from.\n", ethname);
+		dev_err(skov_priv->dev, "Did not find eth device \"%s\" to copy mac-address from.\n", ethname);
 		return -ENOENT;
 	}
 
@@ -68,14 +74,14 @@ static int get_mac_address_from_env_variable(const char *env, u8 ethaddr[ETH_ALE
 
 	ethaddr_str = getenv(env);
 	if (!ethaddr_str) {
-		pr_err("State variable %s storing the mac-address not found.\n", env);
+		dev_err(skov_priv->dev, "State variable %s storing the mac-address not found.\n", env);
 		return -ENOENT;
 	}
 
 	ret = string_to_ethaddr(ethaddr_str, ethaddr);
 	if (ret < 0) {
-		pr_err("Could not convert \"%s\" in state variable %s into mac-address.\n",
-		       ethaddr_str, env);
+		dev_err(skov_priv->dev, "Could not convert \"%s\" in state variable %s into mac-address.\n",
+		        ethaddr_str, env);
 		return -EINVAL;
 	}
 
@@ -90,13 +96,13 @@ static int get_default_mac_address_from_state_node(const char *state_node_path,
 
 	node = of_find_node_by_path(state_node_path);
 	if (!node) {
-		pr_err("Node %s defining the state variable not found.\n", state_node_path);
+		dev_err(skov_priv->dev, "Node %s defining the state variable not found.\n", state_node_path);
 		return -ENOENT;
 	}
 
 	ret = of_property_read_u8_array(node, "default", ethaddr, ETH_ALEN);
 	if (ret) {
-		pr_err("Node %s has no property \"default\" of proper type.\n", state_node_path);
+		dev_err(skov_priv->dev, "Node %s has no property \"default\" of proper type.\n", state_node_path);
 		return -ENOENT;
 	}
 
@@ -340,18 +346,18 @@ static void skov_imx6_no_switch(struct device_node *root)
 	if (node) {
 		ret = of_device_disable(node);
 		if (ret)
-			pr_warn("Can't disable %s\n", fec_alias);
+			dev_warn(skov_priv->dev, "Can't disable %s\n", fec_alias);
 	} else {
-		pr_warn("Can't find node by alias: %s\n", fec_alias);
+		dev_warn(skov_priv->dev, "Can't find node by alias: %s\n", fec_alias);
 	}
 
 	node = of_find_node_by_alias(root, "mdio-gpio0");
 	if (node) {
 		ret = of_device_disable(node);
 		if (ret)
-			pr_warn("Can't disable mdio-gpio0 node\n");
+			dev_warn(skov_priv->dev, "Can't disable mdio-gpio0 node\n");
 	} else {
-		pr_warn("Can't find mdio-gpio0 node\n");
+		dev_warn(skov_priv->dev, "Can't find mdio-gpio0 node\n");
 	}
 }
 
@@ -398,7 +404,7 @@ static void skov_imx6_switch(struct device_node *root)
 	if (ret) {
 		ret = skov_imx6_switch_port(root, old);
 		if (ret)
-			pr_err("Filed to set mac address\n");
+			dev_err(skov_priv->dev, "Filed to set mac address\n");
 	}
 }
 
@@ -423,7 +429,7 @@ static int skov_imx6_fixup(struct device_node *root, void *unused)
 	default:
 		val = getenv("state.display.brightness");
 		if (!val) {
-			pr_err("could not get default display brightness\n");
+			dev_err(skov_priv->dev, "could not get default display brightness\n");
 			return 0;
 		}
 
@@ -434,7 +440,7 @@ static int skov_imx6_fixup(struct device_node *root, void *unused)
 	for_each_compatible_node_from(node, root, NULL, "pwm-backlight") {
 		ret = of_property_write_u32(node, "default-brightness-level", brightness);
 		if (ret)
-			pr_err("error %d while setting default-brightness-level property on node %s to %d\n",
+			dev_err(skov_priv->dev, "error %d while setting default-brightness-level property on node %s to %d\n",
 				ret, node->name, brightness);
 	}
 
@@ -463,9 +469,9 @@ static void skov_init_board(const struct board_description *variant)
 	if (gpio_np) {
 		ret = of_device_ensure_probed(gpio_np);
 		if (ret)
-			pr_warn("Can't probe GPIO node\n");
+			dev_warn(skov_priv->dev, "Can't probe GPIO node\n");
 	} else {
-		pr_warn("Can't get GPIO node\n");
+		dev_warn(skov_priv->dev, "Can't get GPIO node\n");
 	}
 
 	imx6_bbu_internal_spi_i2c_register_handler("spiflash", "/dev/m25p0.barebox",
@@ -484,12 +490,12 @@ static void skov_init_board(const struct board_description *variant)
 		break;
 	}
 
-	pr_notice("Using environment in %s\n", envdev);
+	dev_notice(skov_priv->dev, "Using environment in %s\n", envdev);
 
 	ret = of_device_enable_path(environment_path);
 	if (ret < 0)
-		pr_warn("Failed to enable environment partition '%s' (%d)\n",
-			environment_path, ret);
+		dev_warn(skov_priv->dev, "Failed to enable environment partition '%s' (%d)\n",
+			 environment_path, ret);
 
 	if (variant->flags & SKOV_NEED_ENABLE_RMII) {
 		/*
@@ -523,7 +529,7 @@ static void skov_init_board(const struct board_description *variant)
 		if (np)
 			of_device_enable_and_register(np);
 		else
-			pr_err("Cannot find \"fsl,imx-parallel-display\" node\n");
+			dev_err(skov_priv->dev, "Cannot find \"fsl,imx-parallel-display\" node\n");
 	}
 
 	if (variant->flags & SKOV_DISPLAY_LVDS) {
@@ -531,15 +537,42 @@ static void skov_init_board(const struct board_description *variant)
 		if (np)
 			of_device_enable_and_register(np);
 		else
-			pr_err("Cannot find \"fsl,imx6q-ldb\" node\n");
+			dev_err(skov_priv->dev, "Cannot find \"fsl,imx6q-ldb\" node\n");
 
 		/* ... as well as its channel 0 */
 		np = of_find_node_by_name_address(np, "lvds-channel@0");
 		if (np)
 			of_device_enable(np);
 		else
-			pr_err("Cannot find \"lvds-channel@0\" node\n");
+			dev_err(skov_priv->dev, "Cannot find \"lvds-channel@0\" node\n");
 	}
+}
+
+static int skov_set_switch_lan2_mac(struct skov_imx6_priv *priv)
+{
+	const char *state = "/state/ethaddr/eth2";
+	struct device_node *lan2_np;
+	u8 ethaddr[ETH_ALEN];
+	int ret;
+
+	ret = get_mac_address_from_env_variable("state.ethaddr.eth2", ethaddr);
+	if (ret || !is_valid_ether_addr(ethaddr)) {
+		ret = get_default_mac_address_from_state_node(state, ethaddr);
+		if (ret || !is_valid_ether_addr(ethaddr)) {
+			dev_err(priv->dev, "can't get MAC for LAN2\n");
+			return -ENODEV;
+		}
+	}
+
+	lan2_np = of_find_node_by_path("/mdio/switch@0/ports/ports@1");
+	if (!lan2_np) {
+		dev_err(priv->dev, "LAN2 node not found\n");
+		return -ENODEV;
+	}
+
+	of_eth_register_ethaddr(lan2_np, ethaddr);
+
+	return 0;
 }
 
 static int skov_switch_test(void)
@@ -557,25 +590,28 @@ static int skov_switch_test(void)
 	 */
 	sw_dev = of_find_device_by_node_path("/mdio/switch@0");
 	if (!sw_dev) {
-		pr_err("switch@0 device was not created!\n");
+		dev_err(skov_priv->dev, "switch@0 device was not created!\n");
 		goto no_switch;
 	}
 
-	if (dev_is_probed(sw_dev))
+	if (dev_is_probed(sw_dev)) {
+		skov_set_switch_lan2_mac(skov_priv);
+		/* even if we fail, continue to boot as good as possible */
 		return 0;
+	}
 
 no_switch:
 	skov_have_switch = false;
 
-	pr_notice("No-switch variant is detected\n");
+	dev_notice(skov_priv->dev, "No-switch variant is detected\n");
 
 	eth0 = get_device_by_name("eth0");
 	if (eth0) {
 		ret = dev_set_param(eth0, "mode", "disabled");
 		if (ret)
-			pr_warn("Can't set eth0 mode\n");
+			dev_warn(skov_priv->dev, "Can't set eth0 mode\n");
 	} else {
-		pr_warn("Can't disable eth0\n");
+		dev_warn(skov_priv->dev, "Can't disable eth0\n");
 	}
 
 	return 0;
@@ -584,6 +620,7 @@ late_initcall(skov_switch_test);
 
 static int skov_imx6_probe(struct device_d *dev)
 {
+	struct skov_imx6_priv *priv;
 	unsigned v = 0;
 	const struct board_description *variant;
 
@@ -602,6 +639,10 @@ static int skov_imx6_probe(struct device_d *dev)
 	}
 
 	skov_board_no = v;
+
+	priv = xzalloc(sizeof(*priv));
+	priv->dev = dev;
+	skov_priv = priv;
 
 	globalvar_add_simple_int("board.no", &skov_board_no, "%u");
 	globalvar_add_simple("board.variant", variant->variant);
@@ -644,7 +685,7 @@ static void skov_imx6_devices_shutdown(void)
 
 	external = getenv("state.display.external");
 	if (!external) {
-		pr_err("could not get state variable display.external\n");
+		dev_err(skov_priv->dev, "could not get state variable display.external\n");
 		return;
 	}
 

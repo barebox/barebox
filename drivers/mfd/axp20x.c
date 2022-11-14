@@ -354,8 +354,6 @@ int axp20x_device_probe(struct axp20x_dev *axp20x)
 	if (axp20x->variant != AXP288_ID)
 		poweroff_handler_register(&axp20x->poweroff);
 
-	dev_info(axp20x->dev, "AXP20X driver loaded\n");
-
 	return 0;
 }
 EXPORT_SYMBOL(axp20x_device_probe);

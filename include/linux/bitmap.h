@@ -81,6 +81,13 @@
  */
 
 /*
+ * Allocation and deallocation of bitmap.
+ * Provided in lib/bitmap.c to avoid circular dependency.
+ */
+unsigned long *bitmap_zalloc(unsigned int nbits);
+unsigned long *bitmap_xzalloc(unsigned int nbits);
+
+/*
  * lib/bitmap.c provides these functions:
  */
 

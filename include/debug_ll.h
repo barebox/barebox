@@ -33,15 +33,23 @@ static inline void putc_ll(char value)
 	PUTC_LL(value);
 }
 
-static inline void puthex_ll(unsigned long value)
+static inline void puthexc_ll(unsigned char value)
 {
 	int i; unsigned char ch;
 
-	for (i = sizeof(unsigned long) * 2; i--; ) {
+	for (i = 2; i--; ) {
 		ch = ((value >> (i * 4)) & 0xf);
 		ch += (ch >= 10) ? 'a' - 10 : '0';
 		putc_ll(ch);
 	}
+}
+
+static inline void puthex_ll(unsigned long value)
+{
+	int i;
+
+	for (i = sizeof(unsigned long); i--; )
+		puthexc_ll(value >> (i * 8));
 }
 
 /*
@@ -63,6 +71,10 @@ static inline void puts_ll(const char * str)
 #else
 
 static inline void putc_ll(char value)
+{
+}
+
+static inline void puthexc_ll(unsigned char value)
 {
 }
 

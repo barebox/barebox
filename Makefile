@@ -453,8 +453,14 @@ KBUILD_CFLAGS_MODULE := -DMODULE
 LDFLAGS_barebox	:= -Map barebox.map
 
 # Avoid 'Not enough room for program headers' error on binutils 2.28 onwards.
-LDFLAGS_barebox += $(call ld-option, --no-dynamic-linker)
-LDFLAGS_pbl += $(call ld-option, --no-dynamic-linker)
+LDFLAGS_common += $(call ld-option, --no-dynamic-linker)
+# Avoid 'missing .note.GNU-stack section implies executable stack' warnings on binutils 2.39+
+LDFLAGS_common += -z noexecstack
+# Avoid '... has a LOAD segment with RWX permissions' warnings on binutils 2.39+
+LDFLAGS_common += $(call ld-option,--no-warn-rwx-segments)
+
+LDFLAGS_barebox += $(LDFLAGS_common)
+LDFLAGS_pbl += $(LDFLAGS_common)
 
 export ARCH SRCARCH CONFIG_SHELL BASH HOSTCC KBUILD_HOSTCFLAGS CROSS_COMPILE LD CC
 export CPP AR NM STRIP OBJCOPY OBJDUMP MAKE AWK GENKSYMS PERL PYTHON3 UTS_MACHINE

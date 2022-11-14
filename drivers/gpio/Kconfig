@@ -205,6 +205,12 @@ config GPIO_ZYNQ
 	help
 	  Say yes here to support Xilinx Zynq GPIO controller.
 
+config GPIO_LATCH
+	tristate "GPIO latch driver"
+	help
+	  Say yes here to enable a driver for GPIO multiplexers based on latches
+	  connected to other GPIOs.
+
 endmenu
 
 endif

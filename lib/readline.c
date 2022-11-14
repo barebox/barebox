@@ -230,9 +230,14 @@ int readline(const char *prompt, char *buf, int len)
 			}
 
 			i = 0;
-			while (completestr[i])
+			while (completestr[i]) {
+				if (completestr[i] == ' ' && completestr[i + 1])
+					cread_add_char('\\', insert, &num,
+						&eol_num, buf, len);
+
 				cread_add_char(completestr[i++], insert, &num,
 						&eol_num, buf, len);
+			}
 #endif
 			break;
 

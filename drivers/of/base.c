@@ -32,7 +32,7 @@ bool of_node_name_eq(const struct device_node *np, const char *name)
 		return false;
 
 	node_name = kbasename(np->full_name);
-		len = strchrnul(node_name, '@') - node_name;
+	len = strchrnul(node_name, '@') - node_name;
 
 	return (strlen(name) == len) && (strncmp(node_name, name, len) == 0);
 }

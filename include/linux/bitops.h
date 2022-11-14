@@ -2,7 +2,7 @@
 
 #ifndef _LINUX_BITOPS_H
 #define _LINUX_BITOPS_H
-#include <asm/types.h>
+#include <linux/types.h>
 
 #ifdef	__KERNEL__
 #define BIT(nr)			(1UL << (nr))
@@ -192,6 +192,20 @@ static inline unsigned long __ffs64(u64 word)
 #error BITS_PER_LONG not 32 or 64
 #endif
 	return __ffs((unsigned long)word);
+}
+
+/**
+ * assign_bit - Assign value to a bit in memory
+ * @nr: the bit to set
+ * @addr: the address to start counting from
+ * @value: the value to assign
+ */
+static inline void assign_bit(long nr, volatile unsigned long *addr, bool value)
+{
+	if (value)
+		set_bit(nr, addr);
+	else
+		clear_bit(nr, addr);
 }
 
 #ifdef __KERNEL__

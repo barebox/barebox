@@ -35,6 +35,8 @@ int imx8mp_bootrom_load_image(void)
 {
 	struct rom_api *rom_api = (void *)0x980;
 
+	OPTIMIZER_HIDE_VAR(rom_api);
+
 	return imx8m_bootrom_load_image(rom_api);
 }
 

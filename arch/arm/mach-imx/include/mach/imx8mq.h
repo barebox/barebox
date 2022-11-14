@@ -58,9 +58,12 @@ static inline int imx8mq_cpu_revision(void)
 {
 	void __iomem *anatop = IOMEM(MX8MQ_ANATOP_BASE_ADDR);
 	void __iomem *ocotp = IOMEM(MX8MQ_OCOTP_BASE_ADDR);
+	void __iomem *rom = IOMEM(0x0);
 	uint32_t revision = FIELD_GET(DIGPROG_MINOR,
 				      readl(anatop + MX8MQ_ANATOP_DIGPROG));
 	uint32_t rom_version;
+
+	OPTIMIZER_HIDE_VAR(rom);
 
 	if (revision != IMX_CHIP_REV_1_0)
 		return revision;
@@ -74,9 +77,9 @@ static inline int imx8mq_cpu_revision(void)
 	 * For B0 chip, the DIGPROG is not updated, still TO1.0.
 	 * we have to check ROM version further
 	 */
-	rom_version = readb(IOMEM(IMX8MQ_ROM_VERSION_A0));
+	rom_version = readb(IOMEM(rom + IMX8MQ_ROM_VERSION_A0));
 	if (rom_version != IMX_CHIP_REV_1_0) {
-		rom_version = readb(IOMEM(IMX8MQ_ROM_VERSION_B0));
+		rom_version = readb(IOMEM(rom + IMX8MQ_ROM_VERSION_B0));
 		if (rom_version >= IMX_CHIP_REV_2_0)
 			revision = IMX_CHIP_REV_2_0;
 	}

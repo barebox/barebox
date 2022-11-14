@@ -4,7 +4,7 @@
 
 		environment-nand {
 			compatible = "barebox,environment";
-			device-path = &nand, "partname:bareboxenv";
+			device-path = &env_nand;
 			status = "disabled";
 		};
 	};
@@ -211,7 +211,7 @@
 			reg = <0x100000 0x80000>;
 		};
 
-		partition@180000 {
+		env_nand: partition@180000 {
 			label = "bareboxenv";
 			reg = <0x180000 0x40000>;
 		};

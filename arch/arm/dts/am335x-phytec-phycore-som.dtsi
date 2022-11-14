@@ -4,13 +4,13 @@
 
 		environment-spi {
 			compatible = "barebox,environment";
-			device-path = &flash, "partname:bareboxenv";
+			device-path = &env_nor;
 			status = "disabled";
 		};
 
 		environment-nand {
 			compatible = "barebox,environment";
-			device-path = &nand, "partname:bareboxenv";
+			device-path = &env_nand;
 			status = "disabled";
 		};
 	};
@@ -217,7 +217,7 @@
 			reg = <0x20000 0x80000>;
 		};
 
-		partition@a0000 {
+		env_nor: partition@a0000 {
 			label = "bareboxenv";
 			reg = <0xa0000 0x20000>;
 		};
@@ -333,7 +333,7 @@
 			reg = <0x100000 0x80000>;
 		};
 
-		partition@180000 {
+		env_nand: partition@180000 {
 			label = "bareboxenv";
 			reg = <0x180000 0x40000>;
 		};

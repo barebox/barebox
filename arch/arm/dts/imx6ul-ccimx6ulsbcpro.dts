@@ -6,7 +6,7 @@
 
 		environment-nand {
 			compatible = "barebox,environment";
-			device-path = &gpmi, "partname:barebox-environment";
+			device-path = &env_nand;
 			status = "okay";
 		};
 	};
@@ -28,7 +28,7 @@
 			reg = <0x0 0x400000>;
 		};
 
-		partition@400000 {
+		env_nand: partition@400000 {
 			label = "barebox-environment";
 			reg = <0x400000 0x100000>;
 		};

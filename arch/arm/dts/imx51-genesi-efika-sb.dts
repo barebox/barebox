@@ -24,13 +24,13 @@
 
 		environment-sd {
 			compatible = "barebox,environment";
-			device-path = &esdhc2, "partname:barebox-environment";
+			device-path = &env_sd2;
 			status = "disabled";
 		};
 
 		environment-spi {
 			compatible = "barebox,environment";
-			device-path = &flash, "partname:barebox-environment";
+			device-path = &env_nor;
 			status = "disabled";
 		};
 	};
@@ -416,7 +416,7 @@
 	#address-cells = <1>;
 	#size-cells = <1>;
 
-	partition@e0000 {
+	env_sd2: partition@e0000 {
 		label = "barebox-environment";
 		reg = <0xe0000 0x20000>;
 	};
@@ -534,7 +534,7 @@
 		#address-cells = <1>;
 		#size-cells = <1>;
 
-		partition@e0000 {
+		env_nor: partition@e0000 {
 			label = "barebox-environment";
 			reg = <0xe0000 0x20000>;
 		};

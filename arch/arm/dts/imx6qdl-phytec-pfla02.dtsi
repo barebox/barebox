@@ -15,37 +15,19 @@
 	chosen {
 		environment-nand {
 			compatible = "barebox,environment";
-			device-path = &gpmi, "partname:barebox-environment";
+			device-path = &env_nand;
 			status = "disabled";
 		};
 
 		environment-spinor {
 			compatible = "barebox,environment";
-			device-path = &som_flash, "partname:barebox-environment";
-			status = "disabled";
-		};
-
-		environment-sd1 {
-			compatible = "barebox,environment";
-			device-path = &usdhc1, "partname:barebox-environment";
-			status = "disabled";
-		};
-
-		environment-sd2 {
-			compatible = "barebox,environment";
-			device-path = &usdhc2, "partname:barebox-environment";
+			device-path = &env_nor;
 			status = "disabled";
 		};
 
 		environment-sd3 {
 			compatible = "barebox,environment";
-			device-path = &usdhc3, "partname:barebox-environment";
-			status = "disabled";
-		};
-
-		environment-sd4 {
-			compatible = "barebox,environment";
-			device-path = &usdhc4, "partname:barebox-environment";
+			device-path = &env_sd3;
 			status = "disabled";
 		};
 	};
@@ -64,7 +46,7 @@
 			reg = <0x0 0x100000>;
 		};
 
-		partition@100000 {
+		env_nor: partition@100000 {
 			label = "barebox-environment";
 			reg = <0x100000 0x20000>;
 		};
@@ -92,7 +74,7 @@
 			reg = <0x0 0x1000000>;
 		};
 
-		partition@1000000 {
+		env_nand: partition@1000000 {
 			label = "barebox-environment";
 			reg = <0x1000000 0x100000>;
 		};
@@ -138,7 +120,7 @@
 		reg = <0x0 0xe0000>;
 	};
 
-	partition@e0000 {
+	env_sd3: partition@e0000 {
 		label = "barebox-environment";
 		reg = <0xe0000 0x20000>;
 	};

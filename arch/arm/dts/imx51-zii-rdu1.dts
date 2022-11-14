@@ -21,7 +21,7 @@
 
 		environment-spi {
 			compatible = "barebox,environment";
-			device-path = &spinor, "partname:barebox-environment";
+			device-path = &env_spinor;
 		};
 
 		ubootenv {
@@ -76,7 +76,7 @@
 			reg = <0x400 0xdfc00>;
 		};
 
-		partition@e0000 {
+		env_spinor: partition@e0000 {
 			label = "barebox-environment";
 			reg = <0xe0000 0x20000>;
 		};

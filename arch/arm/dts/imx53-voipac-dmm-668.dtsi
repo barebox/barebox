@@ -4,7 +4,7 @@
 
 		environment {
 			compatible = "barebox,environment";
-			device-path = &nfc, "partname:environment";
+			device-path = &env_nand;
 		};
 	};
 };
@@ -18,7 +18,7 @@
 		reg = <0x0 0xe0000>;
 	};
 
-	partition@e0000 {
+	env_nand: partition@e0000 {
 		label = "environment";
 		reg = <0xe0000 0x20000>;
 	};

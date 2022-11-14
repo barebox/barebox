@@ -20,8 +20,7 @@
 
 		environment {
 			compatible = "barebox,environment";
-			device-path = &mmc0, "partname:barebox-environment";
-			status = "okay";
+			device-path = &env_mmc0;
 		};
 	};
 };
@@ -34,7 +33,8 @@
 		label = "barebox";
 		reg = <0x0 0x80000>;
 	};
-	partition@80000 {
+
+	env_mmc0: partition@80000 {
 		label = "barebox-environment";
 		reg = <0x80000 0x80000>;
 	};

@@ -5,6 +5,7 @@
 #include <soc/fsl/fsl_udc.h>
 #include <mach/imx8mm-regs.h>
 #include <mach/imx6-regs.h>
+#include <mach/imx7-regs.h>
 
 static void fsl_queue_td(struct usb_dr_device *dr, struct ep_td_struct *dtd,
 			 int ep_is_in)
@@ -208,6 +209,16 @@ int imx6_barebox_load_usb(void *dest)
 int imx6_barebox_start_usb(void *dest)
 {
 	return imx_barebox_start_usb(IOMEM(MX6_OTG_BASE_ADDR), dest);
+}
+
+int imx7_barebox_load_usb(void *dest)
+{
+	return imx_barebox_load_usb(IOMEM(MX7_OTG1_BASE_ADDR), dest);
+}
+
+int imx7_barebox_start_usb(void *dest)
+{
+	return imx_barebox_start_usb(IOMEM(MX7_OTG1_BASE_ADDR), dest);
 }
 
 int imx8mm_barebox_load_usb(void *dest)

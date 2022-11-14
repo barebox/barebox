@@ -47,7 +47,9 @@ Reboot mode providers have priorities. The provider with the highest
 priority has its parameters aliased as ``$global.system.reboot_mode.prev``
 and ``$global.system.reboot_mode.next``. After executing the init scripts,
 barebox startup will ``source /env/bmode/${global.system.reboot_mode.prev}``
-if available.
+if available. Example usage::
+
+	gpr.reboot_mode=serial reset -w
 
 Reset
 =====
@@ -59,6 +61,9 @@ power management IC, the registers may lose their value.
 If such reboot mode storage is used, users must take care to use the correct
 reset provider. In barebox, multiple reset providers may co-exist. The
 ``reset`` command allows listing and choosing a specific reboot mode.
+
+For communication with the SoC's BootROM, a warm reset can be triggered
+with ``reset -w`` if a suitable reset handler has been registered.
 
 Disambiguation
 ==============

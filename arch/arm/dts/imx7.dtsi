@@ -1,0 +1,37 @@
+/* SPDX-License-Identifier: GPL-2.0-only OR MIT */
+
+#include "imx7d-ddrc.dtsi"
+
+/ {
+	aliases {
+		gpr.reboot_mode = &reboot_mode_gpr;
+	};
+};
+
+&src {
+	compatible = "fsl,imx7d-src", "syscon", "simple-mfd";
+
+	reboot_mode_gpr: reboot-mode {
+		compatible = "barebox,syscon-reboot-mode";
+		offset = <0x94>, <0x98>; /* SRC_GPR{9,10} */
+		mask = <0xffffffff>, <0x40000000>;
+		mode-normal = <0>, <0>;
+		mode-serial = <0x00000010>, <0x40000000>;
+	};
+
+	ca7_reset: cortex-a7-reboot {
+		compatible = "syscon-reboot";
+		regmap = <&src>;
+		offset = <0x4>;
+		mask = <1>;
+		value = <1>;
+		/* This is not fit for use as general purpose reset */
+		restart-priority = <5>;
+		/*
+		 * Can't use imxwd-warm due to errata e10574:
+		 * Watchdog: A watchdog timeout or software trigger will
+		 * not reset the SOC
+		 */
+		barebox,restart-warm-bootrom;
+	};
+};

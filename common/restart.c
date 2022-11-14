@@ -27,6 +27,14 @@ int restart_handler_register(struct restart_handler *rst)
 	if (!rst->priority)
 		rst->priority = RESTART_DEFAULT_PRIORITY;
 
+	if (rst->of_node) {
+		of_property_read_u32(rst->of_node, "restart-priority",
+				     &rst->priority);
+		if (of_property_read_bool(rst->of_node,
+					  "barebox,restart-warm-bootrom"))
+			rst->flags |= RESTART_FLAG_WARM_BOOTROM;
+	}
+
 	list_add_tail(&rst->list, &restart_handler_list);
 
 	pr_debug("registering restart handler \"%s\" with priority %d\n",
@@ -68,13 +76,15 @@ int restart_handler_register_fn(const char *name,
 /**
  * restart_handler_get_by_name() - reset the whole system
  */
-struct restart_handler *restart_handler_get_by_name(const char *name)
+struct restart_handler *restart_handler_get_by_name(const char *name, int flags)
 {
 	struct restart_handler *rst = NULL, *tmp;
 	unsigned int priority = 0;
 
 	list_for_each_entry(tmp, &restart_handler_list, list) {
 		if (name && tmp->name && strcmp(name, tmp->name))
+			continue;
+		if (flags && (tmp->flags & flags) != flags)
 			continue;
 		if (tmp->priority > priority) {
 			priority = tmp->priority;
@@ -92,7 +102,7 @@ void __noreturn restart_machine(void)
 {
 	struct restart_handler *rst;
 
-	rst = restart_handler_get_by_name(NULL);
+	rst = restart_handler_get_by_name(NULL, 0);
 	if (rst) {
 		pr_debug("%s: using restart handler %s\n", __func__, rst->name);
 		console_flush();
@@ -102,21 +112,6 @@ void __noreturn restart_machine(void)
 	hang();
 }
 
-/**
- * of_get_restart_priority() - get the desired restart priority from device tree
- * @node:	The device_node to read the property from
- *
- * return: The priority
- */
-unsigned int of_get_restart_priority(struct device_node *node)
-{
-	unsigned int priority = RESTART_DEFAULT_PRIORITY;
-
-	of_property_read_u32(node, "restart-priority", &priority);
-
-	return priority;
-}
-
 /*
  * restart_handlers_print - print informations about all restart handlers
  */
@@ -124,6 +119,10 @@ void restart_handlers_print(void)
 {
 	struct restart_handler *tmp;
 
-	list_for_each_entry(tmp, &restart_handler_list, list)
-		printf("%-20s %6d\n", tmp->name, tmp->priority);
+	list_for_each_entry(tmp, &restart_handler_list, list) {
+		printf("%-20s %6d ", tmp->name, tmp->priority);
+		if (tmp->flags & RESTART_FLAG_WARM_BOOTROM)
+			putchar('W');
+		putchar('\n');
+	}
 }

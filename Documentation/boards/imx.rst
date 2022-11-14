@@ -105,7 +105,7 @@ that BootROM should select after a warm reset::
           mode-serial = <0x10 0x40000000>;
   };
 
-  barebox@FSL i.MX8MM EVK board:/ gpr.reboot_mode.next=serial reset -r imxwd-warm
+  barebox@FSL i.MX8MM EVK board:/ gpr.reboot_mode.next=serial reset -w
 
 This will cause barebox to fall into serial download mode on an i.MX8MM.
 

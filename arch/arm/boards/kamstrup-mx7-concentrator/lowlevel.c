@@ -17,7 +17,7 @@ extern char __dtb_z_imx7d_flex_concentrator_mfg_start[];
 
 static inline void setup_uart(void)
 {
-	imx7_early_setup_uart_clock();
+	imx7_early_setup_uart_clock(4);
 
 	imx7_setup_pad(MX7D_PAD_SAI2_TX_BCLK__UART4_DCE_TX);
 

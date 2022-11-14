@@ -37,6 +37,10 @@
 	barebox,provide-mac-address = <&ethernet0 0x39>;
 };
 
+&iwdg2 {
+	barebox,restart-warm-bootrom;
+};
+
 &tamp {
 	reboot_mode_tamp: reboot-mode {
 		compatible = "syscon-reboot-mode";

@@ -23,7 +23,8 @@ extern char __dtb_z_imx7d_zii_rmu2_start[];
 
 static inline void setup_uart(void)
 {
-	imx7_early_setup_uart_clock();
+	/* FIXME: Below UART2 is muxed, not UART1 */
+	imx7_early_setup_uart_clock(1);
 
 	imx7_setup_pad(MX7D_PAD_UART2_TX_DATA__UART2_DCE_TX);
 

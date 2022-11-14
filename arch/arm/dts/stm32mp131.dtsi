@@ -12,3 +12,7 @@
 		reg = <0x5a003000 0x1000>;
 	};
 };
+
+&iwdg2 {
+	barebox,restart-warm-bootrom;
+};

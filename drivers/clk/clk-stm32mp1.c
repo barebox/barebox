@@ -2280,7 +2280,7 @@ static int stm32mp1_rcc_init(struct device_d *dev)
 	if (ret)
 		return ret;
 
-	stm32mp_system_restart_init(base);
+	stm32mp_system_restart_init(dev);
 	return 0;
 }
 

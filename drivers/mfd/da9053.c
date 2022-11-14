@@ -272,7 +272,7 @@ static int da9053_probe(struct device_d *dev)
 
 	da9053_detect_reset_source(da9053);
 
-	da9053->restart.priority = of_get_restart_priority(dev->device_node);
+	da9053->restart.of_node = dev->device_node;
 	da9053->restart.name = "da9063";
 	da9053->restart.restart = &da9053_force_system_reset;
 

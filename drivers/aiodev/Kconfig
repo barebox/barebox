@@ -65,4 +65,12 @@ config ROCKCHIP_SARADC
 	help
 	  Support for Successive Approximation Register (SAR) ADC in Rockchip
 	  SoCs.
+
+config IMX7D_ADC
+	tristate "Freescale IMX7D ADC driver"
+	depends on ARCH_IMX7 || COMPILE_TEST
+	depends on OFDEVICE
+	help
+	  Say yes here to build support for IMX7D ADC.
+
 endif

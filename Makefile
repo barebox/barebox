@@ -660,8 +660,7 @@ KBUILD_CFLAGS  += $(call cc-option,-fno-stack-check)
 KBUILD_CFLAGS += $(call cc-option,-fcf-protection=none)
 
 # We don't have the necessary infrastructure to benefit from ARMv8.3+ pointer
-# authentication. On older CPUs, they are interpreted as NOPs and blot the
-# code and break less portable code that expects a very specific code layout
+# authentication. On older CPUs, they are interpreted as NOPs bloating the code
 KBUILD_CFLAGS += $(call cc-option,-mbranch-protection=none)
 
 KBUILD_CFLAGS   += $(call cc-disable-warning, address-of-packed-member)

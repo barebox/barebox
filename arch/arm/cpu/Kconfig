@@ -16,6 +16,7 @@ config CPU_64
 	bool
 	select PHYS_ADDR_T_64BIT
 	select HAVE_PBL_IMAGE
+	select HAVE_PBL_MULTI_IMAGES
 	select HAS_DMA
 
 # Select CPU types depending on the architecture selected. This selects

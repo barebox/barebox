@@ -23,4 +23,11 @@
 #define MALLOC_SIZE CONFIG_MALLOC_SIZE
 #define STACK_SIZE  CONFIG_STACK_SIZE
 
+/*
+ * This generates a useless load from the specified symbol
+ * to ensure linker garbage collection doesn't delete it
+ */
+#define __keep_symbolref(sym)	\
+	__asm__ __volatile__("": :"r"(&sym) :)
+
 #endif /* __ASM_GENERIC_MEMORY_LAYOUT_H */

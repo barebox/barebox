@@ -6,7 +6,6 @@
 #include <environment.h>
 #include <fs.h>
 #include <init.h>
-#include <partition.h>
 #include <led.h>
 #include <gpio.h>
 #include <pwm.h>

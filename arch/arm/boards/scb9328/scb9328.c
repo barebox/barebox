@@ -10,7 +10,6 @@
 #include <asm/armlinux.h>
 #include <mach/weim.h>
 #include <io.h>
-#include <partition.h>
 #include <fs.h>
 #include <envfs.h>
 #include <mach/iomux-mx1.h>

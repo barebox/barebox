@@ -10,7 +10,6 @@
 #include <driver.h>
 #include <param.h>
 #include <magicvar.h>
-#include <partition.h>
 #include <libfile.h>
 #include <globalvar.h>
 #include <asm/armlinux.h>

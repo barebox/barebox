@@ -11,7 +11,6 @@
 #include <gpio.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
-#include <partition.h>
 #include <fs.h>
 #include <envfs.h>
 #include <fcntl.h>

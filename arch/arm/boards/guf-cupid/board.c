@@ -15,7 +15,6 @@
 #include <asm/armlinux.h>
 #include <io.h>
 #include <gpio.h>
-#include <partition.h>
 #include <nand.h>
 #include <generated/mach-types.h>
 #include <mach/imx-nand.h>

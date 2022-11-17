@@ -20,7 +20,6 @@
 #include <mach/control.h>
 #include <linux/err.h>
 #include <linux/sizes.h>
-#include <partition.h>
 #include <nand.h>
 #include <asm/mmu.h>
 #include <mach/gpmc.h>

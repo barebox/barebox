@@ -21,7 +21,6 @@
 #include <net.h>
 #include <types.h>
 #include <i2c/i2c.h>
-#include <partition.h>
 #include <memory.h>
 #include <envfs.h>
 #include <asm/cache.h>

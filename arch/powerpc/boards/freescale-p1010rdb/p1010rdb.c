@@ -23,7 +23,6 @@
 #include <i2c/i2c.h>
 #include <gpio.h>
 #include <envfs.h>
-#include <partition.h>
 #include <memory.h>
 #include <asm/cache.h>
 #include <asm/fsl_ddr_sdram.h>

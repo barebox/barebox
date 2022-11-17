@@ -11,7 +11,6 @@
 #include <io.h>
 #include <of.h>
 #include <malloc.h>
-#include <partition.h>
 #include <envfs.h>
 #include <fs.h>
 #include <libfile.h>

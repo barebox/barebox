@@ -17,7 +17,6 @@
 #include <mach/init.h>
 #include <mach/platform.h>
 #include <environment.h>
-#include <partition.h>
 #include <linux/sizes.h>
 #include <platform_data/eth-smc91111.h>
 

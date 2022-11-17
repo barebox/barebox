@@ -4,7 +4,6 @@
 #define pr_fmt(fmt) "imx6sx-sdb: " fmt
 
 #include <environment.h>
-#include <partition.h>
 #include <common.h>
 #include <linux/sizes.h>
 #include <gpio.h>

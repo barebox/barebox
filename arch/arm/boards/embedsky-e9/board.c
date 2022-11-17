@@ -16,7 +16,6 @@
 #include <mach/imx6-regs.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
-#include <partition.h>
 #include <linux/phy.h>
 #include <asm/io.h>
 #include <asm/mmu.h>

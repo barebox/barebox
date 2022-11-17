@@ -7,7 +7,6 @@
 #include <mach/bbu.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
-#include <partition.h>
 #include <mach/generic.h>
 #include <linux/sizes.h>
 #include <asm/psci.h>

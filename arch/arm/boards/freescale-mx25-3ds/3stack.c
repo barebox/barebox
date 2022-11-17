@@ -12,7 +12,6 @@
 #include <asm/barebox-arm.h>
 #include <io.h>
 #include <envfs.h>
-#include <partition.h>
 #include <generated/mach-types.h>
 #include <mach/imx-nand.h>
 #include <platform_data/eth-fec.h>

@@ -3,7 +3,6 @@
 
 #include <environment.h>
 #include <bootsource.h>
-#include <partition.h>
 #include <common.h>
 #include <envfs.h>
 #include <fcntl.h>

@@ -11,7 +11,6 @@
 #include <asm/armlinux.h>
 #include <asm/sections.h>
 #include <generated/mach-types.h>
-#include <partition.h>
 #include <fs.h>
 #include <fcntl.h>
 #include <nand.h>

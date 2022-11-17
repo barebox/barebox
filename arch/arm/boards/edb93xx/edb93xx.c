@@ -6,7 +6,6 @@
 #include <environment.h>
 #include <fs.h>
 #include <init.h>
-#include <partition.h>
 #include <asm/armlinux.h>
 #include <io.h>
 #include <malloc.h>

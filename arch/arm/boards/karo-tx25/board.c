@@ -14,7 +14,6 @@
 #include <asm/sections.h>
 #include <asm/barebox-arm.h>
 #include <io.h>
-#include <partition.h>
 #include <generated/mach-types.h>
 #include <mach/imx-nand.h>
 #include <mach/iomux-mx25.h>

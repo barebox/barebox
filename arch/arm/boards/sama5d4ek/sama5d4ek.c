@@ -12,7 +12,6 @@
 #include <init.h>
 #include <environment.h>
 #include <asm/armlinux.h>
-#include <partition.h>
 #include <fs.h>
 #include <fcntl.h>
 #include <io.h>

@@ -10,7 +10,6 @@
 #include <init.h>
 #include <nand.h>
 #include <net.h>
-#include <partition.h>
 #include <linux/sizes.h>
 #include <gpio.h>
 #include <mci.h>

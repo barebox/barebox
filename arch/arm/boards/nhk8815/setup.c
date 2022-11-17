@@ -5,7 +5,6 @@
 #include <init.h>
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
-#include <partition.h>
 #include <nand.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>

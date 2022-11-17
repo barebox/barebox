@@ -4,7 +4,6 @@
 #include <generated/mach-types.h>
 #include <environment.h>
 #include <bootsource.h>
-#include <partition.h>
 #include <common.h>
 #include <envfs.h>
 #include <linux/sizes.h>

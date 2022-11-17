@@ -10,7 +10,6 @@
 #include <driver.h>
 #include <init.h>
 #include <generated/mach-types.h>
-#include <partition.h>
 #include <platform_data/eth-dm9000.h>
 #include <nand.h>
 #include <mci.h>

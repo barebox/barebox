@@ -15,7 +15,7 @@
 #include <mach/imx8mm-regs.h>
 #include <mach/iomux-mx8mm.h>
 #include <mach/imx8m-ccm-regs.h>
-#include <mfd/bd71837.h>
+#include <mfd/pca9450.h>
 #include <mach/xload.h>
 #include <soc/imx8m/ddr.h>
 #include <image-metadata.h>
@@ -38,17 +38,22 @@ static void setup_uart(void)
 	putc_ll('>');
 }
 
-static struct pmic_config bd71837_cfg[] = {
-	/* decrease RESET key long push time from the default 10s to 10ms */
-	{ BD718XX_PWRONCONFIG1, 0x0 },
-	/* unlock the PMIC regs */
-	{ BD718XX_REGLOCK, 0x1 },
-	/* increase VDD_SOC to typical value 0.85v before first DRAM access */
-	{ BD718XX_BUCK1_VOLT_RUN, 0x0f },
-	/* increase VDD_DRAM to 0.975v for 3Ghz DDR */
-	{ BD718XX_1ST_NODVS_BUCK_VOLT, 0x83 },
-	/* lock the PMIC regs */
-	{ BD718XX_REGLOCK, 0x11 },
+static struct pmic_config pca9450_cfg[] = {
+	/* BUCKxOUT_DVS0/1 control BUCK123 output */
+	{ PCA9450_BUCK123_DVS, 0x29 },
+
+	/*
+	 * increase VDD_SOC to typical value 0.95V before first
+	 * DRAM access, set DVS1 to 0.85v for suspend.
+	 * Enable DVS control through PMIC_STBY_REQ and
+	 * set B1_ENMODE=1 (ON by PMIC_ON_REQ=H)
+	 */
+	{ PCA9450_BUCK1OUT_DVS0, 0x1C },
+	{ PCA9450_BUCK1OUT_DVS1, 0x14 },
+	{ PCA9450_BUCK1CTRL, 0x59 },
+
+	/* set WDOG_B_CFG to cold reset */
+	{ PCA9450_RESET_CTRL, 0xA1 },
 };
 
 static void power_init_board(void)
@@ -63,7 +68,7 @@ static void power_init_board(void)
 
 	i2c = imx8m_i2c_early_init(IOMEM(MX8MQ_I2C1_BASE_ADDR));
 
-	pmic_configure(i2c, 0x4b, bd71837_cfg, ARRAY_SIZE(bd71837_cfg));
+	pmic_configure(i2c, 0x25, pca9450_cfg, ARRAY_SIZE(pca9450_cfg));
 }
 
 extern struct dram_timing_info imx8mm_evk_dram_timing;

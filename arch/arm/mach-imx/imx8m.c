@@ -61,7 +61,7 @@ static int imx8m_init(const char *cputypestr)
 	pr_info("%s unique ID: %llx\n", cputypestr, imx8m_uid());
 
 	if (IS_ENABLED(CONFIG_ARM_SMCCC) &&
-	    IS_ENABLED(CONFIG_FIRMWARE_IMX8MQ_ATF)) {
+	    IS_ENABLED(CONFIG_FIRMWARE_IMX8MM_ATF)) {
 		arm_smccc_smc(IMX_SIP_BUILDINFO,
 			      IMX_SIP_BUILDINFO_GET_COMMITHASH,
 			      0, 0, 0, 0, 0, 0, &res);

@@ -745,6 +745,7 @@ int ubiformat_write(struct mtd_info *mtd, const void *buf, size_t count,
 
 	while (count) {
 		size_t now = mtd->erasesize - offset_in_peb;
+		int new_len;
 
 		if (now > count)
 			now = count;
@@ -780,7 +781,8 @@ int ubiformat_write(struct mtd_info *mtd, const void *buf, size_t count,
 			}
 		}
 
-		ret = mtd_peb_write(mtd, buf, peb, offset_in_peb, now);
+		new_len = drop_ffs(mtd, buf, now);
+		ret = mtd_peb_write(mtd, buf, peb, offset_in_peb, new_len);
 		if (ret < 0)
 			return ret;
 

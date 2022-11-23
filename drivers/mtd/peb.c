@@ -205,10 +205,12 @@ int mtd_peb_read(struct mtd_info *mtd, void *buf, int pnum, int offset,
 		return -EINVAL;
 	if (offset < 0 || offset + len > mtd->erasesize)
 		return -EINVAL;
-	if (len <= 0)
+	if (len < 0)
 		return -EINVAL;
 	if (mtd_peb_is_bad(mtd, pnum))
 		return -EINVAL;
+	if (!len)
+		return 0;
 
 	/* Deliberately corrupt the buffer */
 	*((uint8_t *)buf) ^= 0xFF;
@@ -388,12 +390,14 @@ int mtd_peb_write(struct mtd_info *mtd, const void *buf, int pnum, int offset,
 		return -EINVAL;
 	if (offset < 0 || offset + len > mtd->erasesize)
 		return -EINVAL;
-	if (len <= 0)
+	if (len < 0)
 		return -EINVAL;
 	if (len % (mtd->writesize >> mtd->subpage_sft))
 		return -EINVAL;
 	if (mtd_peb_is_bad(mtd, pnum))
 		return -EINVAL;
+	if (!len)
+		return 0;
 
 	if (mtd_peb_emulate_write_failure()) {
 		dev_err(&mtd->dev, "Cannot write %d bytes to PEB %d:%d (emulated)\n",

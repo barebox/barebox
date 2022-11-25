@@ -30,4 +30,4 @@ ENTRY(__barebox_arm64_head)
 	.rept 8
 	.word 0x55555555
 	.endr
-END(__barebox_arm64_head)
+ENDPROC(__barebox_arm64_head)

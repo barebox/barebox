@@ -577,6 +577,8 @@ static int bcmgenet_probe(struct device_d *dev)
 
 	priv->miibus.priv = priv;
 	priv->miibus.parent = dev;
+	priv->miibus.dev.device_node
+		= of_get_compatible_child(dev->device_node, "brcm,genet-mdio-v5");
 
 	ret = mdiobus_register(&priv->miibus);
 	if (ret)

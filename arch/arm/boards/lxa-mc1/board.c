@@ -5,6 +5,7 @@
 #include <asm/memory.h>
 #include <mach/bbu.h>
 #include <bootsource.h>
+#include <deep-probe.h>
 #include <of.h>
 
 static int of_fixup_regulator_supply_disable(struct device_node *root, void *path)
@@ -58,6 +59,7 @@ static const struct of_device_id mc1_of_match[] = {
 	{ .compatible = "lxa,stm32mp157c-mc1" },
 	{ /* sentinel */ },
 };
+BAREBOX_DEEP_PROBE_ENABLE(mc1_of_match);
 
 static struct driver_d mc1_board_driver = {
 	.name = "board-lxa-mc1",

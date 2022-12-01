@@ -388,7 +388,7 @@ struct regulator *regulator_get(struct device_d *dev, const char *supply)
 	struct regulator *r;
 	int ret;
 
-	if (dev->device_node) {
+	if (dev->device_node && supply) {
 		ri = of_regulator_get(dev, supply);
 		if (IS_ERR(ri))
 			return ERR_CAST(ri);

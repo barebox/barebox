@@ -215,15 +215,6 @@ static void bcmgenet_umac_reset(struct bcmgenet_eth_priv *priv)
 	writel(1, (priv->mac_reg + RBUF_TBUF_SIZE_CTRL));
 }
 
-static int bcmgenet_set_hwaddr(struct eth_device *dev, const unsigned char *addr)
-{
-	struct bcmgenet_eth_priv *priv = dev->priv;
-
-	memcpy(priv->addr, addr, 6);
-
-	return 0;
-}
-
 static int __bcmgenet_set_hwaddr(struct bcmgenet_eth_priv *priv)
 {
 	const unsigned char *addr = priv->addr;
@@ -234,6 +225,17 @@ static int __bcmgenet_set_hwaddr(struct bcmgenet_eth_priv *priv)
 
 	reg = addr[4] << 8 | addr[5];
 	writel_relaxed(reg, priv->mac_reg + UMAC_MAC1);
+
+	return 0;
+}
+
+static int bcmgenet_set_hwaddr(struct eth_device *dev, const unsigned char *addr)
+{
+	struct bcmgenet_eth_priv *priv = dev->priv;
+
+	memcpy(priv->addr, addr, 6);
+
+	__bcmgenet_set_hwaddr(priv);
 
 	return 0;
 }

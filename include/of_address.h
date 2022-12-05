@@ -60,6 +60,8 @@ extern void __iomem *of_iomap(struct device_node *np, int index);
 extern int of_dma_get_range(struct device_node *np, u64 *dma_addr, u64 *paddr,
 			    u64 *size);
 
+extern bool of_dma_is_coherent(struct device_node *np);
+
 #else /* CONFIG_OFTREE */
 
 static inline u64 of_translate_address(struct device_node *dev,
@@ -109,6 +111,10 @@ static inline int of_dma_get_range(struct device_node *np, u64 *dma_addr,
 	return -ENOSYS;
 }
 
+static inline bool of_dma_is_coherent(struct device_node *np)
+{
+	return false;
+}
 #endif /* CONFIG_OFTREE */
 
 #ifdef CONFIG_OF_PCI

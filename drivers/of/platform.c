@@ -73,6 +73,47 @@ static void of_device_make_bus_id(struct device_d *dev)
 	}
 }
 
+static struct device_node *of_get_next_dma_parent(const struct device_node *np)
+{
+	struct of_phandle_args args;
+	int ret, index;
+
+	index = of_property_match_string(np, "interconnect-names", "dma-mem");
+	if (index < 0)
+		return of_get_parent(np);
+
+	ret = of_parse_phandle_with_args(np, "interconnects",
+					 "#interconnect-cells",
+					 index, &args);
+	if (ret < 0)
+		return of_get_parent(np);
+
+	return args.np;
+}
+
+/**
+ * of_dma_is_coherent - Check if device is coherent
+ * @np:	device node
+ *
+ * It returns true if "dma-coherent" property was found
+ * for this device in the DT, or if DMA is coherent by
+ * default for OF devices on the current platform and no
+ * "dma-noncoherent" property was found for this device.
+ */
+bool of_dma_is_coherent(struct device_node *node)
+{
+	while (node) {
+		if (of_property_read_bool(node, "dma-coherent"))
+			return true;
+		if (of_property_read_bool(node, "dma-noncoherent"))
+			return false;
+		node = of_get_next_dma_parent(node);
+	}
+
+	return IS_ENABLED(CONFIG_OF_DMA_DEFAULT_COHERENT);
+}
+EXPORT_SYMBOL_GPL(of_dma_is_coherent);
+
 static void of_dma_configure(struct device_d *dev, struct device_node *np)
 {
 	u64 dma_addr, paddr, size = 0;

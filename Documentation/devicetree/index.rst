@@ -114,5 +114,7 @@ Contents:
    bindings/leds/*
    bindings/misc/*
    bindings/mtd/*
+   bindings/power/*
    bindings/regulator/*
    bindings/rtc/*
+   bindings/watchdog/*

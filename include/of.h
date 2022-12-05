@@ -229,7 +229,7 @@ extern int of_property_read_variable_u64_array(const struct device_node *np,
 extern int of_property_read_string(struct device_node *np,
 				   const char *propname,
 				   const char **out_string);
-extern int of_property_match_string(struct device_node *np,
+extern int of_property_match_string(const struct device_node *np,
 				    const char *propname,
 				    const char *string);
 extern int of_property_read_string_helper(const struct device_node *np,
@@ -616,7 +616,7 @@ static inline int of_property_read_string(struct device_node *np,
 	return -ENOSYS;
 }
 
-static inline int of_property_match_string(struct device_node *np,
+static inline int of_property_match_string(const struct device_node *np,
 				const char *propname, const char *string)
 {
 	return -ENOSYS;

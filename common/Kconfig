@@ -27,7 +27,7 @@ config HAS_DMA
 	  Drivers that depend on a DMA implementation can depend on this
 	  config, so that you don't get a compilation error.
 
-config HAS_ARCH_SJLJ
+config ARCH_HAS_SJLJ
 	bool
 	help
 	  Architecture has support implemented for setjmp()/longjmp()/initjmp()
@@ -1004,7 +1004,7 @@ config POLLER
 config BTHREAD
 	bool "barebox co-operative (green) thread infrastructure"
 	select HAS_SCHED
-	depends on HAS_ARCH_SJLJ
+	depends on ARCH_HAS_SJLJ
 	help
 	  barebox threads are lightweight cooperative (green) threads that are
 	  scheduled within delay loops and the console idle to asynchronously

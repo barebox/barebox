@@ -6,7 +6,7 @@ config OPENRISC
 	select HAS_CACHE
 	select HAVE_CONFIGURABLE_MEMORY_LAYOUT
 	select GENERIC_FIND_NEXT_BIT
-	select HAS_ARCH_SJLJ
+	select ARCH_HAS_SJLJ
 	default y
 
 # not used

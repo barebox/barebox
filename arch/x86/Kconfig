@@ -26,12 +26,12 @@ config 64BIT
 config X86_32
 	def_bool y
 	depends on !64BIT
-	select HAS_ARCH_SJLJ
+	select ARCH_HAS_SJLJ
 
 config X86_64
 	def_bool y
 	depends on 64BIT
-	select HAS_ARCH_SJLJ
+	select ARCH_HAS_SJLJ
 
 endmenu
 

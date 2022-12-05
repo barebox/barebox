@@ -344,6 +344,7 @@ void ddrphy_init_set_dfi_clk(unsigned int drate_mhz, enum ddrc_type type)
 	case 400: drate = DDR_400; break;
 	case 100: drate = DDR_100; break;
 	default:
+		pr_warn("Unsupported frequency %u\n", drate_mhz);
 		return;
 	}
 

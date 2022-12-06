@@ -63,7 +63,7 @@ if IMAGE_COMPRESSION
 
 choice
 	prompt "Compression"
-	default IMAGE_COMPRESSION_LZO
+	default IMAGE_COMPRESSION_LZ4
 
 config IMAGE_COMPRESSION_LZ4
 	bool "lz4"

@@ -526,7 +526,7 @@ static int __nvmem_cell_read(struct nvmem_device *nvmem,
 	int rc;
 
 	rc = nvmem->bus->read(nvmem->priv, cell->offset, buf, cell->bytes);
-	if (rc)
+	if (rc < 0)
 		return rc;
 
 	/* shift bits in-place */
@@ -561,7 +561,7 @@ void *nvmem_cell_read(struct nvmem_cell *cell, size_t *len)
 		return ERR_PTR(-ENOMEM);
 
 	rc = __nvmem_cell_read(nvmem, cell, buf, len);
-	if (rc) {
+	if (rc < 0) {
 		kfree(buf);
 		return ERR_PTR(rc);
 	}
@@ -591,7 +591,7 @@ static inline void *nvmem_cell_prepare_write_buffer(struct nvmem_cell *cell,
 
 		/* setup the first byte with lsb bits from nvmem */
 		rc = nvmem->bus->read(nvmem->priv, cell->offset, &v, 1);
-		if (rc)
+		if (rc < 0)
 			return ERR_PTR(rc);
 
 		*b++ |= GENMASK(bit_offset - 1, 0) & v;
@@ -612,7 +612,7 @@ static inline void *nvmem_cell_prepare_write_buffer(struct nvmem_cell *cell,
 		/* setup the last byte with msb bits from nvmem */
 		rc = nvmem->bus->read(nvmem->priv, cell->offset + cell->bytes - 1,
 				      &v, 1);
-		if (rc)
+		if (rc < 0)
 			return ERR_PTR(rc);
 
 		*p |= GENMASK(7, (nbits + bit_offset) % BITS_PER_BYTE) & v;
@@ -652,7 +652,7 @@ int nvmem_cell_write(struct nvmem_cell *cell, void *buf, size_t len)
 	if (cell->bit_offset || cell->nbits)
 		kfree(buf);
 
-	if (rc)
+	if (rc < 0)
 		return rc;
 
 	return len;
@@ -680,11 +680,11 @@ ssize_t nvmem_device_cell_read(struct nvmem_device *nvmem,
 		return -EINVAL;
 
 	rc = nvmem_cell_info_to_nvmem_cell(nvmem, info, &cell);
-	if (rc)
+	if (rc < 0)
 		return rc;
 
 	rc = __nvmem_cell_read(nvmem, &cell, buf, &len);
-	if (rc)
+	if (rc < 0)
 		return rc;
 
 	return len;
@@ -710,7 +710,7 @@ int nvmem_device_cell_write(struct nvmem_device *nvmem,
 		return -EINVAL;
 
 	rc = nvmem_cell_info_to_nvmem_cell(nvmem, info, &cell);
-	if (rc)
+	if (rc < 0)
 		return rc;
 
 	return nvmem_cell_write(&cell, buf, cell.bytes);
@@ -744,7 +744,7 @@ int nvmem_device_read(struct nvmem_device *nvmem,
 		return 0;
 
 	rc = nvmem->bus->read(nvmem->priv, offset, buf, bytes);
-	if (rc)
+	if (rc < 0)
 		return rc;
 
 	return bytes;
@@ -777,7 +777,7 @@ int nvmem_device_write(struct nvmem_device *nvmem,
 		return 0;
 
 	rc = nvmem->bus->write(nvmem->priv, offset, buf, bytes);
-	if (rc)
+	if (rc < 0)
 		return rc;
 
 

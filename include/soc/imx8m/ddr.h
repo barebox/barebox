@@ -389,7 +389,7 @@ extern struct dram_timing_info dram_timing;
 void ddr_get_firmware_lpddr4(void);
 void ddr_get_firmware_ddr(void);
 
-static void ddr_get_firmware(enum dram_type dram_type)
+static inline void ddr_get_firmware(enum dram_type dram_type)
 {
 	if (dram_type == DRAM_TYPE_LPDDR4)
 		ddr_get_firmware_lpddr4();

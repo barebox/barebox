@@ -11,6 +11,8 @@
 void ddr_cfg_phy(void) {
 	unsigned int tmp, tmp_t;
 
+	ddr_get_firmware(DRAM_TYPE_LPDDR4);
+
 	//Init DDRPHY register...
 	reg32_write(0x3c080440,0x2);
 	reg32_write(0x3c080444,0x3);

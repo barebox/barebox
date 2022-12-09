@@ -20,6 +20,7 @@ enum bootsource {
 	BOOTSOURCE_NET,
 	BOOTSOURCE_CAN,
 	BOOTSOURCE_JTAG,
+	BOOTSOURCE_MAX,
 };
 
 #define BOOTSOURCE_INSTANCE_UNKNOWN	-1
@@ -28,6 +29,7 @@ enum bootsource bootsource_get(void);
 int bootsource_get_instance(void);
 void bootsource_set_alias_name(const char *name);
 char *bootsource_get_alias_name(void);
+const char *bootsource_to_string(enum bootsource src);
 const char *bootsource_get_alias_stem(enum bootsource bs);
 int bootsource_of_alias_xlate(enum bootsource bs, int instance);
 

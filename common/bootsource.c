@@ -10,7 +10,7 @@
 #include <magicvar.h>
 #include <init.h>
 
-static const char *bootsource_str[] = {
+static const char *bootsource_str[BOOTSOURCE_MAX] = {
 	[BOOTSOURCE_UNKNOWN] = "unknown",
 	[BOOTSOURCE_NAND] = "nand",
 	[BOOTSOURCE_NOR] = "nor",
@@ -32,6 +32,14 @@ static const char *bootsource_str[] = {
 static enum bootsource bootsource = BOOTSOURCE_UNKNOWN;
 static int bootsource_instance = BOOTSOURCE_INSTANCE_UNKNOWN;
 const char *bootsource_alias_name = NULL;
+
+const char *bootsource_to_string(enum bootsource src)
+{
+	if (src >= ARRAY_SIZE(bootsource_str))
+		return NULL;
+
+	return bootsource_str[src];
+}
 
 const char *bootsource_get_alias_stem(enum bootsource src)
 {
@@ -107,12 +115,12 @@ void bootsource_set_alias_name(const char *name)
 
 void bootsource_set_raw(enum bootsource src, int instance)
 {
-	if (src >= ARRAY_SIZE(bootsource_str))
+	if (src >= BOOTSOURCE_MAX)
 		src = BOOTSOURCE_UNKNOWN;
 
 	bootsource = src;
 
-	setenv("bootsource", bootsource_str[src]);
+	setenv("bootsource", bootsource_to_string(src));
 
 	bootsource_set_raw_instance(instance);
 }

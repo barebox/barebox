@@ -156,6 +156,10 @@ _c_flags       += $(if $(patsubst n%,, \
 PBL_CPPFLAGS   += $(call cc-option,-fno-sanitize=all)
 endif
 
+ifeq ($(CONFIG_DEBUG_PBL),y)
+PBL_CPPFLAGS   += -DDEBUG
+endif
+
 # If building barebox in a separate objtree expand all occurrences
 # of -Idir to -I$(srctree)/dir except for absolute paths (starting with '/').
 

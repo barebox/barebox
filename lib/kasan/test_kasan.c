@@ -290,6 +290,8 @@ static noinline void kasan_alloca_oob_left(void)
 	char alloca_array[i];
 	char *p = alloca_array - 1;
 
+	OPTIMIZER_HIDE_VAR(p);
+
 	pr_info("out-of-bounds to left on alloca\n");
 	*(volatile char *)p;
 }

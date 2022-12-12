@@ -30,6 +30,31 @@
 
 #define MXS_DMA_ALIGNMENT	32
 
+#define	HW_APBHX_CTRL0				0x000
+#define	BM_APBH_CTRL0_APB_BURST8_EN		BIT(29)
+#define	BM_APBH_CTRL0_APB_BURST_EN		BIT(28)
+#define	BP_APBH_CTRL0_CLKGATE_CHANNEL		8
+#define	BP_APBH_CTRL0_RESET_CHANNEL		16
+#define	HW_APBHX_CTRL1				0x010
+#define	BP_APBHX_CTRL1_CH_CMDCMPLT_IRQ_EN	16
+#define	HW_APBHX_CTRL2				0x020
+#define	HW_APBHX_CHANNEL_CTRL			0x030
+#define	BP_APBHX_CHANNEL_CTRL_RESET_CHANNEL	16
+#define	BP_APBHX_VERSION_MAJOR			24
+#define	HW_APBHX_CHn_NXTCMDAR_MX23(n)		(0x050 + (n) * 0x70)
+#define	HW_APBHX_CHn_NXTCMDAR_MX28(n)		(0x110 + (n) * 0x70)
+#define	HW_APBHX_CHn_SEMA_MX23(n)		(0x080 + (n) * 0x70)
+#define	HW_APBHX_CHn_SEMA_MX28(n)		(0x140 + (n) * 0x70)
+#define	NAND_ONFI_CRC_BASE			0x4f4e
+
+enum mxs_dma_id {
+	UNKNOWN_DMA_ID,
+	IMX23_DMA,
+	IMX28_DMA,
+};
+
+#define apbh_dma_is_imx23(aphb) ((apbh)->id == IMX23_DMA)
+
 /*
  * MXS DMA channels
  */
@@ -64,18 +89,16 @@ enum {
 #define	MXS_DMA_DESC_COMMAND_DMA_WRITE	0x1
 #define	MXS_DMA_DESC_COMMAND_DMA_READ	0x2
 #define	MXS_DMA_DESC_COMMAND_DMA_SENSE	0x3
-#define	MXS_DMA_DESC_CHAIN		(1 << 2)
-#define	MXS_DMA_DESC_IRQ		(1 << 3)
-#define	MXS_DMA_DESC_NAND_LOCK		(1 << 4)
-#define	MXS_DMA_DESC_NAND_WAIT_4_READY	(1 << 5)
-#define	MXS_DMA_DESC_DEC_SEM		(1 << 6)
-#define	MXS_DMA_DESC_WAIT4END		(1 << 7)
-#define	MXS_DMA_DESC_HALT_ON_TERMINATE	(1 << 8)
-#define	MXS_DMA_DESC_TERMINATE_FLUSH	(1 << 9)
-#define	MXS_DMA_DESC_PIO_WORDS_MASK	(0xf << 12)
-#define	MXS_DMA_DESC_PIO_WORDS_OFFSET	12
-#define	MXS_DMA_DESC_BYTES_MASK		(0xffff << 16)
-#define	MXS_DMA_DESC_BYTES_OFFSET	16
+#define	MXS_DMA_DESC_CHAIN		BIT(2)
+#define	MXS_DMA_DESC_IRQ		BIT(3)
+#define	MXS_DMA_DESC_NAND_LOCK		BIT(4)
+#define	MXS_DMA_DESC_NAND_WAIT_4_READY	BIT(5)
+#define	MXS_DMA_DESC_DEC_SEM		BIT(6)
+#define	MXS_DMA_DESC_WAIT4END		BIT(7)
+#define	MXS_DMA_DESC_HALT_ON_TERMINATE	BIT(8)
+#define	MXS_DMA_DESC_TERMINATE_FLUSH	BIT(9)
+#define	MXS_DMA_DESC_PIO_WORDS(words)	((words) << 12)
+#define	MXS_DMA_DESC_XFER_COUNT(x)	((x) << 16)
 
 struct mxs_dma_cmd {
 	unsigned long		next;
@@ -88,53 +111,7 @@ struct mxs_dma_cmd {
 	unsigned long		pio_words[APBH_DMA_PIO_WORDS];
 };
 
-/*
- * MXS DMA command descriptor.
- *
- * This structure incorporates an MXS DMA hardware command structure, along
- * with metadata.
- */
-#define	MXS_DMA_DESC_FIRST	(1 << 0)
-#define	MXS_DMA_DESC_LAST	(1 << 1)
-#define	MXS_DMA_DESC_READY	(1 << 31)
-
-struct mxs_dma_desc {
-	struct mxs_dma_cmd	cmd;
-	unsigned int		flags;
-	dma_addr_t		address;
-	void			*buffer;
-	struct list_head	node;
-};
-
-/**
- * MXS DMA channel
- *
- * This structure represents a single DMA channel. The MXS platform code
- * maintains an array of these structures to represent every DMA channel in the
- * system (see mxs_dma_channels).
- */
-#define	MXS_DMA_FLAGS_IDLE	0
-#define	MXS_DMA_FLAGS_BUSY	(1 << 0)
-#define	MXS_DMA_FLAGS_FREE	0
-#define	MXS_DMA_FLAGS_ALLOCATED	(1 << 16)
-#define	MXS_DMA_FLAGS_VALID	(1 << 31)
-
-struct mxs_dma_chan {
-	const char *name;
-	unsigned long dev;
-	struct mxs_dma_device *dma;
-	unsigned int flags;
-	unsigned int active_num;
-	unsigned int pending_num;
-	struct list_head active;
-	struct list_head done;
-};
-
-struct mxs_dma_desc *mxs_dma_desc_alloc(void);
-void mxs_dma_desc_free(struct mxs_dma_desc *);
-int mxs_dma_desc_append(int channel, struct mxs_dma_desc *pdesc);
-
-int mxs_dma_go(int chan);
+int mxs_dma_go(int chan, struct mxs_dma_cmd *cmd, int ncmds);
 int mxs_dma_init(void);
 
 #endif	/* __DMA_H__ */

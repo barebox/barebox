@@ -14,6 +14,8 @@
 #include <linux/sizes.h>
 #include <bbu.h>
 #include <fs.h>
+#include <command.h>
+#include <complete.h>
 #include <linux/mtd/mtd-abi.h>
 #include <linux/mtd/nand_mxs.h>
 #include <linux/mtd/mtd.h>
@@ -26,19 +28,14 @@
 #include <mach/generic.h>
 #include <mtd/mtd-peb.h>
 #include <soc/imx/imx-nand-bcb.h>
-
-#ifdef CONFIG_ARCH_IMX28
-static inline int fcb_is_bch_encoded(void)
-{
-       return 0;
-}
-#else
+#ifdef CONFIG_ARCH_IMX
 #include <mach/imx6.h>
+#endif
+
 static inline int fcb_is_bch_encoded(void)
 {
        return cpu_is_mx6ul() || cpu_is_mx6ull();
 }
-#endif
 
 struct imx_nand_fcb_bbu_handler {
 	struct bbu_handler handler;
@@ -284,57 +281,57 @@ static __maybe_unused void dump_fcb(void *buf)
 {
 	struct fcb_block *fcb = buf;
 
-	pr_debug("Checksum:                   0x%08x\n", fcb->Checksum);
-	pr_debug("FingerPrint:                0x%08x\n", fcb->FingerPrint);
-	pr_debug("Version:                    0x%08x\n", fcb->Version);
-	pr_debug("DataSetup:                  0x%02x\n", fcb->DataSetup);
-	pr_debug("DataHold:                   0x%02x\n", fcb->DataHold);
-	pr_debug("AddressSetup:               0x%02x\n", fcb->AddressSetup);
-	pr_debug("DSAMPLE_TIME:               0x%02x\n", fcb->DSAMPLE_TIME);
-	pr_debug("NandTimingState:            0x%02x\n", fcb->NandTimingState);
-	pr_debug("REA:                        0x%02x\n", fcb->REA);
-	pr_debug("RLOH:                       0x%02x\n", fcb->RLOH);
-	pr_debug("RHOH:                       0x%02x\n", fcb->RHOH);
-	pr_debug("PageDataSize:               0x%08x\n", fcb->PageDataSize);
-	pr_debug("TotalPageSize:              0x%08x\n", fcb->TotalPageSize);
-	pr_debug("SectorsPerBlock:            0x%08x\n", fcb->SectorsPerBlock);
-	pr_debug("NumberOfNANDs:              0x%08x\n", fcb->NumberOfNANDs);
-	pr_debug("TotalInternalDie:           0x%08x\n", fcb->TotalInternalDie);
-	pr_debug("CellType:                   0x%08x\n", fcb->CellType);
-	pr_debug("EccBlockNEccType:           0x%08x\n", fcb->EccBlockNEccType);
-	pr_debug("EccBlock0Size:              0x%08x\n", fcb->EccBlock0Size);
-	pr_debug("EccBlockNSize:              0x%08x\n", fcb->EccBlockNSize);
-	pr_debug("EccBlock0EccType:           0x%08x\n", fcb->EccBlock0EccType);
-	pr_debug("MetadataBytes:              0x%08x\n", fcb->MetadataBytes);
-	pr_debug("NumEccBlocksPerPage:        0x%08x\n", fcb->NumEccBlocksPerPage);
-	pr_debug("EccBlockNEccLevelSDK:       0x%08x\n", fcb->EccBlockNEccLevelSDK);
-	pr_debug("EccBlock0SizeSDK:           0x%08x\n", fcb->EccBlock0SizeSDK);
-	pr_debug("EccBlockNSizeSDK:           0x%08x\n", fcb->EccBlockNSizeSDK);
-	pr_debug("EccBlock0EccLevelSDK:       0x%08x\n", fcb->EccBlock0EccLevelSDK);
-	pr_debug("NumEccBlocksPerPageSDK:     0x%08x\n", fcb->NumEccBlocksPerPageSDK);
-	pr_debug("MetadataBytesSDK:           0x%08x\n", fcb->MetadataBytesSDK);
-	pr_debug("EraseThreshold:             0x%08x\n", fcb->EraseThreshold);
-	pr_debug("BootPatch:                  0x%08x\n", fcb->BootPatch);
-	pr_debug("PatchSectors:               0x%08x\n", fcb->PatchSectors);
-	pr_debug("Firmware1_startingPage:     0x%08x\n", fcb->Firmware1_startingPage);
-	pr_debug("Firmware2_startingPage:     0x%08x\n", fcb->Firmware2_startingPage);
-	pr_debug("PagesInFirmware1:           0x%08x\n", fcb->PagesInFirmware1);
-	pr_debug("PagesInFirmware2:           0x%08x\n", fcb->PagesInFirmware2);
-	pr_debug("DBBTSearchAreaStartAddress: 0x%08x\n", fcb->DBBTSearchAreaStartAddress);
-	pr_debug("BadBlockMarkerByte:         0x%08x\n", fcb->BadBlockMarkerByte);
-	pr_debug("BadBlockMarkerStartBit:     0x%08x\n", fcb->BadBlockMarkerStartBit);
-	pr_debug("BBMarkerPhysicalOffset:     0x%08x\n", fcb->BBMarkerPhysicalOffset);
-	pr_debug("BCHType:                    0x%08x\n", fcb->BCHType);
-	pr_debug("TMTiming2_ReadLatency:      0x%08x\n", fcb->TMTiming2_ReadLatency);
-	pr_debug("TMTiming2_PreambleDelay:    0x%08x\n", fcb->TMTiming2_PreambleDelay);
-	pr_debug("TMTiming2_CEDelay:          0x%08x\n", fcb->TMTiming2_CEDelay);
-	pr_debug("TMTiming2_PostambleDelay:   0x%08x\n", fcb->TMTiming2_PostambleDelay);
-	pr_debug("TMTiming2_CmdAddPause:      0x%08x\n", fcb->TMTiming2_CmdAddPause);
-	pr_debug("TMTiming2_DataPause:        0x%08x\n", fcb->TMTiming2_DataPause);
-	pr_debug("TMSpeed:                    0x%08x\n", fcb->TMSpeed);
-	pr_debug("TMTiming1_BusyTimeout:      0x%08x\n", fcb->TMTiming1_BusyTimeout);
-	pr_debug("DISBBM:                     0x%08x\n", fcb->DISBBM);
-	pr_debug("BBMarkerPhysOfsInSpareData: 0x%08x\n", fcb->BBMarkerPhysicalOffsetInSpareData);
+	printf("Checksum:                   0x%08x\n", fcb->Checksum);
+	printf("FingerPrint:                0x%08x\n", fcb->FingerPrint);
+	printf("Version:                    0x%08x\n", fcb->Version);
+	printf("DataSetup:                  0x%02x\n", fcb->DataSetup);
+	printf("DataHold:                   0x%02x\n", fcb->DataHold);
+	printf("AddressSetup:               0x%02x\n", fcb->AddressSetup);
+	printf("DSAMPLE_TIME:               0x%02x\n", fcb->DSAMPLE_TIME);
+	printf("NandTimingState:            0x%02x\n", fcb->NandTimingState);
+	printf("REA:                        0x%02x\n", fcb->REA);
+	printf("RLOH:                       0x%02x\n", fcb->RLOH);
+	printf("RHOH:                       0x%02x\n", fcb->RHOH);
+	printf("PageDataSize:               0x%08x\n", fcb->PageDataSize);
+	printf("TotalPageSize:              0x%08x\n", fcb->TotalPageSize);
+	printf("SectorsPerBlock:            0x%08x\n", fcb->SectorsPerBlock);
+	printf("NumberOfNANDs:              0x%08x\n", fcb->NumberOfNANDs);
+	printf("TotalInternalDie:           0x%08x\n", fcb->TotalInternalDie);
+	printf("CellType:                   0x%08x\n", fcb->CellType);
+	printf("EccBlockNEccType:           0x%08x\n", fcb->EccBlockNEccType);
+	printf("EccBlock0Size:              0x%08x\n", fcb->EccBlock0Size);
+	printf("EccBlockNSize:              0x%08x\n", fcb->EccBlockNSize);
+	printf("EccBlock0EccType:           0x%08x\n", fcb->EccBlock0EccType);
+	printf("MetadataBytes:              0x%08x\n", fcb->MetadataBytes);
+	printf("NumEccBlocksPerPage:        0x%08x\n", fcb->NumEccBlocksPerPage);
+	printf("EccBlockNEccLevelSDK:       0x%08x\n", fcb->EccBlockNEccLevelSDK);
+	printf("EccBlock0SizeSDK:           0x%08x\n", fcb->EccBlock0SizeSDK);
+	printf("EccBlockNSizeSDK:           0x%08x\n", fcb->EccBlockNSizeSDK);
+	printf("EccBlock0EccLevelSDK:       0x%08x\n", fcb->EccBlock0EccLevelSDK);
+	printf("NumEccBlocksPerPageSDK:     0x%08x\n", fcb->NumEccBlocksPerPageSDK);
+	printf("MetadataBytesSDK:           0x%08x\n", fcb->MetadataBytesSDK);
+	printf("EraseThreshold:             0x%08x\n", fcb->EraseThreshold);
+	printf("BootPatch:                  0x%08x\n", fcb->BootPatch);
+	printf("PatchSectors:               0x%08x\n", fcb->PatchSectors);
+	printf("Firmware1_startingPage:     0x%08x\n", fcb->Firmware1_startingPage);
+	printf("Firmware2_startingPage:     0x%08x\n", fcb->Firmware2_startingPage);
+	printf("PagesInFirmware1:           0x%08x\n", fcb->PagesInFirmware1);
+	printf("PagesInFirmware2:           0x%08x\n", fcb->PagesInFirmware2);
+	printf("DBBTSearchAreaStartAddress: 0x%08x\n", fcb->DBBTSearchAreaStartAddress);
+	printf("BadBlockMarkerByte:         0x%08x\n", fcb->BadBlockMarkerByte);
+	printf("BadBlockMarkerStartBit:     0x%08x\n", fcb->BadBlockMarkerStartBit);
+	printf("BBMarkerPhysicalOffset:     0x%08x\n", fcb->BBMarkerPhysicalOffset);
+	printf("BCHType:                    0x%08x\n", fcb->BCHType);
+	printf("TMTiming2_ReadLatency:      0x%08x\n", fcb->TMTiming2_ReadLatency);
+	printf("TMTiming2_PreambleDelay:    0x%08x\n", fcb->TMTiming2_PreambleDelay);
+	printf("TMTiming2_CEDelay:          0x%08x\n", fcb->TMTiming2_CEDelay);
+	printf("TMTiming2_PostambleDelay:   0x%08x\n", fcb->TMTiming2_PostambleDelay);
+	printf("TMTiming2_CmdAddPause:      0x%08x\n", fcb->TMTiming2_CmdAddPause);
+	printf("TMTiming2_DataPause:        0x%08x\n", fcb->TMTiming2_DataPause);
+	printf("TMSpeed:                    0x%08x\n", fcb->TMSpeed);
+	printf("TMTiming1_BusyTimeout:      0x%08x\n", fcb->TMTiming1_BusyTimeout);
+	printf("DISBBM:                     0x%08x\n", fcb->DISBBM);
+	printf("BBMarkerPhysOfsInSpareData: 0x%08x\n", fcb->BBMarkerPhysicalOffsetInSpareData);
 }
 
 static __maybe_unused ssize_t raw_read_page(struct mtd_info *mtd, void *dst, loff_t offset)
@@ -1554,6 +1551,20 @@ int imx28_bbu_nand_register_handler(const char *name, unsigned long flags)
 }
 #endif
 
+static int imx7_fcb_read(struct mtd_info *mtd, int block, struct fcb_block **retfcb)
+{
+	struct fcb_block *fcb = xzalloc(mtd->writesize);
+	int ret;
+
+	ret = mxs_nand_read_fcb_bch62(block, fcb, sizeof(*fcb));
+	if (ret)
+		free(fcb);
+	else
+		*retfcb = fcb;
+
+	return ret;
+}
+
 #ifdef CONFIG_ARCH_IMX7
 #include <mach/imx7-regs.h>
 
@@ -1572,27 +1583,13 @@ static void imx7_fcb_create(struct imx_nand_fcb_bbu_handler *imx_handler,
 	fl0 = readl(bch_regs + BCH_FLASH0LAYOUT0);
 	fcb->MetadataBytes = BF_VAL(fl0, BCH_FLASHLAYOUT0_META_SIZE);
 	fcb->NumEccBlocksPerPage = BF_VAL(fl0, BCH_FLASHLAYOUT0_NBLOCKS);
+	fcb->EccBlock0Size = 4 * BF_VAL(fl0, BCH_FLASHLAYOUT0_DATA0_SIZE);
+	fcb->EccBlock0EccType = BF_VAL(fl0, BCH_FLASHLAYOUT0_ECC0);
 
 	fl1 = readl(bch_regs + BCH_FLASH0LAYOUT1);
-	fcb->EccBlock0Size = 4 * BF_VAL(fl1, BCH_FLASHLAYOUT0_DATA0_SIZE);
-	fcb->EccBlock0EccType = BF_VAL(fl1, BCH_FLASHLAYOUT0_ECC0);
 	fcb->EccBlockNSize = 4 * BF_VAL(fl1, BCH_FLASHLAYOUT1_DATAN_SIZE);
 	fcb->EccBlockNEccType = BF_VAL(fl1, BCH_FLASHLAYOUT1_ECCN);
 	fcb->BCHType = BF_VAL(fl1, BCH_FLASHLAYOUT1_GF13_0_GF14_1);
-}
-
-static int imx7_fcb_read(struct mtd_info *mtd, int block, struct fcb_block **retfcb)
-{
-	struct fcb_block *fcb = xzalloc(mtd->writesize);
-	int ret;
-
-	ret = mxs_nand_read_fcb_bch62(block, fcb, sizeof(*fcb));
-	if (ret)
-		free(fcb);
-	else
-		*retfcb = fcb;
-
-	return ret;
 }
 
 static int imx7_fcb_write(struct mtd_info *mtd, int block, struct fcb_block *fcb)
@@ -1625,3 +1622,87 @@ int imx7_bbu_nand_register_handler(const char *name, unsigned long flags)
 	return ret;
 }
 #endif
+
+static void dump_fcb_n(struct fcb_block **fcbs, int n)
+{
+	int i;
+
+	if (!n || !fcbs[n])
+		goto skip_compare;
+
+	for (i = 0; i < n; i++) {
+		if (!fcbs[i] || !fcbs[n])
+			continue;
+
+		if (!memcmp(fcbs[i], fcbs[n], sizeof(struct fcb_block))) {
+			printf("FCB block#%d: same as FCB block#%d\n", n, i);
+			return;
+		}
+	}
+
+skip_compare:
+	if (fcbs[n]) {
+		printf("FCB block#%d:\n", n);
+		dump_fcb(fcbs[n]);
+	} else {
+		printf("FCB block#%d: NULL\n", n);
+	}
+}
+
+static int fcb_read(struct mtd_info *mtd, int block, struct fcb_block **retfcb)
+{
+	if (cpu_is_mx7())
+		return imx7_fcb_read(mtd, block, retfcb);
+	else if (fcb_is_bch_encoded())
+		return fcb_read_bch(mtd, block, retfcb);
+	else
+		return fcb_read_hamming_13_8(mtd, block, retfcb);
+}
+
+static int cmd_fcb(int argc, char *argv[])
+{
+	struct cdev *cdev;
+	struct mtd_info *mtd;
+	struct fcb_block *fcb[4] = {};
+	int i, ret;
+
+	cdev = cdev_open_by_name("nand0", O_RDONLY);
+	if (!cdev) {
+		printf("Cannot open nand0\n");
+		return COMMAND_ERROR;
+	}
+
+	mtd = cdev->mtd;
+	if (!mtd) {
+		ret = COMMAND_ERROR;
+		goto out;
+	}
+
+	for (i = 0; i < 4; i++)
+		fcb_read(mtd, i, &fcb[i]);
+
+	for (i = 0; i < 4; i++)
+		dump_fcb_n(fcb, i);
+
+	for (i = 0; i < 4; i++)
+		free(fcb[i]);
+
+	ret = 0;
+
+out:
+	cdev_close(cdev);
+
+	return ret;
+}
+
+BAREBOX_CMD_HELP_START(fcb)
+BAREBOX_CMD_HELP_TEXT("Dump FCB as found on /dev/nand0")
+BAREBOX_CMD_HELP_END
+
+BAREBOX_CMD_START(fcb)
+	.cmd = cmd_fcb,
+	BAREBOX_CMD_DESC("Dump Flash Control Block (FCB)")
+	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
+	BAREBOX_CMD_HELP(cmd_fcb_help)
+	BAREBOX_CMD_COMPLETE(empty_complete)
+BAREBOX_CMD_END

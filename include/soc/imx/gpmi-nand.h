@@ -1,0 +1,147 @@
+#ifndef __SOC_IMX_GPMI_NAND_H
+#define __SOC_IMX_GPMI_NAND_H
+
+#include <linux/bitfield.h>
+
+#define GPMI_CTRL0				0x00000000
+#define GPMI_CTRL0_SFTRST				BIT(31)
+#define	GPMI_CTRL0_RUN					BIT(29)
+#define	GPMI_CTRL0_DEV_IRQ_EN				BIT(28)
+#define	GPMI_CTRL0_UDMA					BIT(26)
+#define	GPMI_CTRL0_COMMAND_MODE				GENMASK(25, 24)
+#define	GPMI_CTRL0_COMMAND_MODE_WRITE			(0x0 << 24)
+#define	GPMI_CTRL0_COMMAND_MODE_READ			(0x1 << 24)
+#define	GPMI_CTRL0_COMMAND_MODE_READ_AND_COMPARE	(0x2 << 24)
+#define	GPMI_CTRL0_COMMAND_MODE_WAIT_FOR_READY		(0x3 << 24)
+#define	GPMI_CTRL0_WORD_LENGTH				(1 << 23)
+#define	GPMI_CTRL0_CS					GENMASK(22, 20)
+#define	GPMI_CTRL0_ADDRESS				GENMASK(19, 17)
+#define	GPMI_CTRL0_ADDRESS_NAND_DATA			(0x0 << 17)
+#define	GPMI_CTRL0_ADDRESS_NAND_CLE			(0x1 << 17)
+#define	GPMI_CTRL0_ADDRESS_NAND_ALE			(0x2 << 17)
+#define	GPMI_CTRL0_ADDRESS_INCREMENT			BIT(16)
+#define	GPMI_CTRL0_XFER_COUNT				GENMASK(15, 0)
+
+#define GPMI_CTRL1				0x00000060
+#define GPMI_CTRL1_SET				0x00000064
+#define GPMI_CTRL1_CLR				0x00000068
+#define	GPMI_CTRL1_DECOUPLE_CS				BIT(24)
+#define	GPMI_CTRL1_WRN_DLY(d)				(((d) & 0x3) << 22)
+#define	GPMI_CTRL1_TIMEOUT_IRQ_EN			BIT(20)
+#define	GPMI_CTRL1_GANGED_RDYBUSY			BIT(19)
+#define	GPMI_CTRL1_BCH_MODE				BIT(18)
+#define	GPMI_CTRL1_DLL_ENABLE				BIT(17)
+#define	GPMI_CTRL1_HALF_PERIOD				BIT(16)
+#define	GPMI_CTRL1_RDN_DELAY(d)				(((d) & 0xf) << 12)
+#define	GPMI_CTRL1_DMA2ECC_MODE				BIT(11)
+#define	GPMI_CTRL1_DEV_IRQ				BIT(10)
+#define	GPMI_CTRL1_TIMEOUT_IRQ				BIT(9)
+#define	GPMI_CTRL1_BURST_EN				BIT(8)
+#define	GPMI_CTRL1_ABORT_WAIT_REQUEST			BIT(7)
+#define	GPMI_CTRL1_ABORT_WAIT_FOR_READY			GENMASK(6, 4)
+#define	GPMI_CTRL1_DEV_RESET				BIT(3)
+#define	GPMI_CTRL1_ATA_IRQRDY_POLARITY			BIT(2)
+#define	GPMI_CTRL1_CAMERA_MODE				BIT(1)
+#define	GPMI_CTRL1_GPMI_MODE				BIT(0)
+
+#define BV_GPMI_CTRL1_WRN_DLY_SEL_4_TO_8NS		0x0
+#define BV_GPMI_CTRL1_WRN_DLY_SEL_6_TO_10NS		0x1
+#define BV_GPMI_CTRL1_WRN_DLY_SEL_7_TO_12NS		0x2
+#define BV_GPMI_CTRL1_WRN_DLY_SEL_NO_DELAY		0x3
+
+#define GPMI_TIMING0				0x00000070
+
+#define	GPMI_TIMING0_ADDRESS_SETUP(d)			(((d) & 0xff) << 16)
+#define	GPMI_TIMING0_DATA_HOLD(d)			(((d) & 0xff) << 8)
+#define	GPMI_TIMING0_DATA_SETUP(d)			(((d) & 0xff) << 0)
+
+#define GPMI_TIMING1				0x00000080
+#define	GPMI_TIMING1_BUSY_TIMEOUT(d)			(((d) & 0xffff) << 16)
+
+#define	GPMI_ECCCTRL_HANDLE				GENMASK(31, 16)
+#define	GPMI_ECCCTRL_ECC_CMD				GENMASK(14, 13)
+#define	GPMI_ECCCTRL_ECC_CMD_DECODE			(0x0 << 13)
+#define	GPMI_ECCCTRL_ECC_CMD_ENCODE			(0x1 << 13)
+#define GPMI_ECCCTRL_RANDOMIZER_ENABLE                  BIT(11)
+#define GPMI_ECCCTRL_RANDOMIZER_TYPE0                   0
+#define GPMI_ECCCTRL_RANDOMIZER_TYPE1                   (1 << 9)
+#define GPMI_ECCCTRL_RANDOMIZER_TYPE2                   (2 << 9)
+#define	GPMI_ECCCTRL_ENABLE_ECC				BIT(12)
+#define	GPMI_ECCCTRL_BUFFER_MASK			GENMASK(8, 0)
+#define	GPMI_ECCCTRL_BUFFER_MASK_BCH_AUXONLY		0x100
+#define	GPMI_ECCCTRL_BUFFER_MASK_BCH_PAGE		0x1ff
+
+#define GPMI_STAT				0x000000b0
+#define	GPMI_STAT_READY_BUSY_OFFSET			24
+
+#define GPMI_DEBUG				0x000000c0
+#define GPMI_DEBUG_READY0_OFFSET			28
+
+#define GPMI_VERSION				0x000000d0
+#define GPMI_VERSION_MINOR_OFFSET			16
+#define GPMI_VERSION_TYPE_MX23				0x0300
+
+#define BCH_CTRL				0x00000000
+#define	BCH_CTRL_COMPLETE_IRQ				BIT(0)
+#define	BCH_CTRL_COMPLETE_IRQ_EN			BIT(8)
+
+#define BCH_LAYOUTSELECT			0x00000070
+
+#define BCH_FLASH0LAYOUT0			0x00000080
+#define	BCH_FLASHLAYOUT0_NBLOCKS			GENMASK(31, 24)
+#define	BCH_FLASHLAYOUT0_META_SIZE			GENMASK(23, 16)
+#define	BCH_FLASHLAYOUT0_ECC0				GENMASK(15, 12)
+#define	IMX6_BCH_FLASHLAYOUT0_ECC0			GENMASK(15, 11)
+#define	BCH_FLASHLAYOUT0_DATA0_SIZE			GENMASK(9, 0)
+#define	BCH_FLASHLAYOUT0_GF13_0_GF14_1			BIT(10)
+
+#define BCH_FLASH0LAYOUT1			0x00000090
+#define	BCH_FLASHLAYOUT1_PAGE_SIZE			GENMASK(31, 16)
+#define	BCH_FLASHLAYOUT1_ECCN				GENMASK(15, 12)
+#define	IMX6_BCH_FLASHLAYOUT1_ECCN			GENMASK(15, 11)
+#define	BCH_FLASHLAYOUT1_GF13_0_GF14_1			BIT(10)
+#define	BCH_FLASHLAYOUT1_DATAN_SIZE			GENMASK(9, 0)
+
+#define	MXS_NAND_DMA_DESCRIPTOR_COUNT		4
+
+#define	MXS_NAND_CHUNK_DATA_CHUNK_SIZE		512
+#define	MXS_NAND_METADATA_SIZE			10
+
+#define	MXS_NAND_COMMAND_BUFFER_SIZE		32
+
+#define	MXS_NAND_BCH_TIMEOUT			10000
+
+#define BCH62_WRITESIZE		1024
+#define BCH62_OOBSIZE		838
+#define BCH62_PAGESIZE		(BCH62_WRITESIZE + BCH62_OOBSIZE)
+
+/*
+ * Some SoCs like the i.MX7 use a special layout in the FCB block.
+ * We can read/write that by adjusting the BCH engine to that layout.
+ * Particularly we have pages consisting of 8 chunks with 128 bytes
+ * of data and 100.75 bytes of ECC data each.
+ */
+static void mxs_nand_mode_fcb_62bit(void __iomem *bch_regs)
+{
+	u32 fl0, fl1;
+
+	/* 8 ecc_chunks */
+	fl0 = FIELD_PREP(BCH_FLASHLAYOUT0_NBLOCKS, 7);
+	/* 32 bytes for metadata */
+	fl0 |= FIELD_PREP(BCH_FLASHLAYOUT0_META_SIZE, 32);
+	/* using ECC62 level to be performed */
+	fl0 |= FIELD_PREP(IMX6_BCH_FLASHLAYOUT0_ECC0, 0x1f);
+	/* 0x20 * 4 bytes of the data0 block */
+	fl0 |= FIELD_PREP(BCH_FLASHLAYOUT0_DATA0_SIZE, 0x20);
+	writel(fl0, bch_regs + BCH_FLASH0LAYOUT0);
+
+	/* 1024 for data + 838 for OOB */
+	fl1 = FIELD_PREP(BCH_FLASHLAYOUT1_PAGE_SIZE, BCH62_PAGESIZE);
+	/* using ECC62 level to be performed */
+	fl1 |= FIELD_PREP(IMX6_BCH_FLASHLAYOUT1_ECCN, 0x1f);
+	/* 0x20 * 4 bytes of the data0 block */
+	fl1 |= FIELD_PREP(BCH_FLASHLAYOUT1_DATAN_SIZE, 0x20);
+	writel(fl1, bch_regs + BCH_FLASH0LAYOUT1);
+}
+
+#endif /* __SOC_IMX_GPMI_NAND_H */

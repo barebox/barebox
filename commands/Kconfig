@@ -334,6 +334,15 @@ config CMD_SLICE
 	  command can be used to print informations about slices and also to manipulate
 	  them on the command line for debugging purposes.
 
+config CMD_FCB
+	depends on BAREBOX_UPDATE_IMX_NAND_FCB
+	tristate
+	prompt "fcb"
+	help
+	  Several i.MX SoCs booting from NAND flash need a so called Flash Control Block
+	  at the beginning of the NAND device. The fcb command prints information about
+	  the FCB.
+
 # end Information commands
 endmenu
 

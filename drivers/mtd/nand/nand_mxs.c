@@ -21,6 +21,7 @@
 #include <linux/types.h>
 #include <linux/clk.h>
 #include <linux/err.h>
+#include <linux/bitfield.h>
 #include <of_mtd.h>
 #include <common.h>
 #include <dma.h>
@@ -32,138 +33,9 @@
 #include <dma/apbh-dma.h>
 #include <stmp-device.h>
 #include <mach/generic.h>
+#include <soc/imx/gpmi-nand.h>
 
 #include "internals.h"
-
-#define	MX28_BLOCK_SFTRST				(1 << 31)
-#define	MX28_BLOCK_CLKGATE				(1 << 30)
-
-#define GPMI_CTRL0					0x00000000
-#define	GPMI_CTRL0_RUN					(1 << 29)
-#define	GPMI_CTRL0_DEV_IRQ_EN				(1 << 28)
-/* Disable for now since we don't need it and it is different on MX23.
-#define	GPMI_CTRL0_LOCK_CS				(1 << 27)
-*/
-#define	GPMI_CTRL0_UDMA					(1 << 26)
-#define	GPMI_CTRL0_COMMAND_MODE_MASK			(0x3 << 24)
-#define	GPMI_CTRL0_COMMAND_MODE_OFFSET			24
-#define	GPMI_CTRL0_COMMAND_MODE_WRITE			(0x0 << 24)
-#define	GPMI_CTRL0_COMMAND_MODE_READ			(0x1 << 24)
-#define	GPMI_CTRL0_COMMAND_MODE_READ_AND_COMPARE	(0x2 << 24)
-#define	GPMI_CTRL0_COMMAND_MODE_WAIT_FOR_READY		(0x3 << 24)
-#define	GPMI_CTRL0_WORD_LENGTH				(1 << 23)
-/* Careful: Is 0x3 on MX23
-#define	GPMI_CTRL0_CS_MASK				(0x7 << 20)
-*/
-#define	GPMI_CTRL0_CS_OFFSET				20
-#define	GPMI_CTRL0_ADDRESS_MASK				(0x7 << 17)
-#define	GPMI_CTRL0_ADDRESS_OFFSET			17
-#define	GPMI_CTRL0_ADDRESS_NAND_DATA			(0x0 << 17)
-#define	GPMI_CTRL0_ADDRESS_NAND_CLE			(0x1 << 17)
-#define	GPMI_CTRL0_ADDRESS_NAND_ALE			(0x2 << 17)
-#define	GPMI_CTRL0_ADDRESS_INCREMENT			(1 << 16)
-#define	GPMI_CTRL0_XFER_COUNT_MASK			0xffff
-#define	GPMI_CTRL0_XFER_COUNT_OFFSET			0
-
-#define GPMI_CTRL1					0x00000060
-#define GPMI_CTRL1_SET					0x00000064
-#define GPMI_CTRL1_CLR					0x00000068
-#define	GPMI_CTRL1_DECOUPLE_CS				(1 << 24)
-#define	GPMI_CTRL1_WRN_DLY(d)				(((d) & 0x3) << 22)
-#define	GPMI_CTRL1_TIMEOUT_IRQ_EN			(1 << 20)
-#define	GPMI_CTRL1_GANGED_RDYBUSY			(1 << 19)
-#define	GPMI_CTRL1_BCH_MODE				(1 << 18)
-#define	GPMI_CTRL1_DLL_ENABLE				(1 << 17)
-#define	GPMI_CTRL1_HALF_PERIOD				(1 << 16)
-#define	GPMI_CTRL1_RDN_DELAY(d)				(((d) & 0xf) << 12)
-#define	GPMI_CTRL1_DMA2ECC_MODE				(1 << 11)
-#define	GPMI_CTRL1_DEV_IRQ				(1 << 10)
-#define	GPMI_CTRL1_TIMEOUT_IRQ				(1 << 9)
-#define	GPMI_CTRL1_BURST_EN				(1 << 8)
-#define	GPMI_CTRL1_ABORT_WAIT_REQUEST			(1 << 7)
-#define	GPMI_CTRL1_ABORT_WAIT_FOR_READY_CHANNEL_MASK	(0x7 << 4)
-#define	GPMI_CTRL1_ABORT_WAIT_FOR_READY_CHANNEL_OFFSET	4
-#define	GPMI_CTRL1_DEV_RESET				(1 << 3)
-#define	GPMI_CTRL1_ATA_IRQRDY_POLARITY			(1 << 2)
-#define	GPMI_CTRL1_CAMERA_MODE				(1 << 1)
-#define	GPMI_CTRL1_GPMI_MODE				(1 << 0)
-
-#define BV_GPMI_CTRL1_WRN_DLY_SEL_4_TO_8NS		0x0
-#define BV_GPMI_CTRL1_WRN_DLY_SEL_6_TO_10NS		0x1
-#define BV_GPMI_CTRL1_WRN_DLY_SEL_7_TO_12NS		0x2
-#define BV_GPMI_CTRL1_WRN_DLY_SEL_NO_DELAY		0x3
-
-#define GPMI_TIMING0					0x00000070
-
-#define	GPMI_TIMING0_ADDRESS_SETUP(d)			(((d) & 0xff) << 16)
-#define	GPMI_TIMING0_DATA_HOLD(d)			(((d) & 0xff) << 8)
-#define	GPMI_TIMING0_DATA_SETUP(d)			(((d) & 0xff) << 0)
-
-#define GPMI_TIMING1					0x00000080
-#define	GPMI_TIMING1_BUSY_TIMEOUT(d)			(((d) & 0xffff) << 16)
-
-#define	GPMI_ECCCTRL_HANDLE_MASK			(0xffff << 16)
-#define	GPMI_ECCCTRL_HANDLE_OFFSET			16
-#define	GPMI_ECCCTRL_ECC_CMD_MASK			(0x3 << 13)
-#define	GPMI_ECCCTRL_ECC_CMD_OFFSET			13
-#define	GPMI_ECCCTRL_ECC_CMD_DECODE			(0x0 << 13)
-#define	GPMI_ECCCTRL_ECC_CMD_ENCODE			(0x1 << 13)
-#define GPMI_ECCCTRL_RANDOMIZER_ENABLE                  (1 << 11)
-#define GPMI_ECCCTRL_RANDOMIZER_TYPE0                   0
-#define GPMI_ECCCTRL_RANDOMIZER_TYPE1                   (1 << 9)
-#define GPMI_ECCCTRL_RANDOMIZER_TYPE2                   (2 << 9)
-#define	GPMI_ECCCTRL_ENABLE_ECC				(1 << 12)
-#define	GPMI_ECCCTRL_BUFFER_MASK_MASK			0x1ff
-#define	GPMI_ECCCTRL_BUFFER_MASK_OFFSET			0
-#define	GPMI_ECCCTRL_BUFFER_MASK_BCH_AUXONLY		0x100
-#define	GPMI_ECCCTRL_BUFFER_MASK_BCH_PAGE		0x1ff
-
-#define GPMI_STAT				0x000000b0
-#define	GPMI_STAT_READY_BUSY_OFFSET			24
-
-#define GPMI_DEBUG				0x000000c0
-#define GPMI_DEBUG_READY0_OFFSET			28
-
-#define GPMI_VERSION				0x000000d0
-#define GPMI_VERSION_MINOR_OFFSET			16
-#define GPMI_VERSION_TYPE_MX23			0x0300
-
-#define BCH_CTRL				0x00000000
-#define	BCH_CTRL_COMPLETE_IRQ			(1 << 0)
-#define	BCH_CTRL_COMPLETE_IRQ_EN		(1 << 8)
-
-#define BCH_LAYOUTSELECT			0x00000070
-
-#define BCH_FLASH0LAYOUT0			0x00000080
-#define	BCH_FLASHLAYOUT0_NBLOCKS_MASK			(0xff << 24)
-#define	BCH_FLASHLAYOUT0_NBLOCKS_OFFSET			24
-#define	BCH_FLASHLAYOUT0_META_SIZE_MASK			(0xff << 16)
-#define	BCH_FLASHLAYOUT0_META_SIZE_OFFSET		16
-#define	BCH_FLASHLAYOUT0_ECC0_MASK			(0xf << 12)
-#define	BCH_FLASHLAYOUT0_ECC0_OFFSET			12
-#define	IMX6_BCH_FLASHLAYOUT0_ECC0_OFFSET		11
-#define	BCH_FLASHLAYOUT0_DATA0_SIZE_OFFSET		0
-#define	BCH_FLASHLAYOUT0_GF13_0_GF14_1_MASK		BIT(10)
-#define	BCH_FLASHLAYOUT0_GF13_0_GF14_1_OFFSET		10
-
-#define BCH_FLASH0LAYOUT1			0x00000090
-#define	BCH_FLASHLAYOUT1_PAGE_SIZE_MASK			(0xffff << 16)
-#define	BCH_FLASHLAYOUT1_PAGE_SIZE_OFFSET		16
-#define	BCH_FLASHLAYOUT1_ECCN_MASK			(0xf << 12)
-#define	BCH_FLASHLAYOUT1_ECCN_OFFSET			12
-#define	IMX6_BCH_FLASHLAYOUT1_ECCN_OFFSET		11
-#define	BCH_FLASHLAYOUT1_GF13_0_GF14_1_MASK		BIT(10)
-#define	BCH_FLASHLAYOUT1_GF13_0_GF14_1_OFFSET		10
-#define	BCH_FLASHLAYOUT1_DATAN_SIZE_OFFSET		0
-
-#define	MXS_NAND_DMA_DESCRIPTOR_COUNT		4
-
-#define	MXS_NAND_CHUNK_DATA_CHUNK_SIZE		512
-#define	MXS_NAND_METADATA_SIZE			10
-
-#define	MXS_NAND_COMMAND_BUFFER_SIZE		32
-
-#define	MXS_NAND_BCH_TIMEOUT			10000
 
 enum gpmi_type {
 	GPMI_MXS,
@@ -230,7 +102,7 @@ struct mxs_nand_info {
 				loff_t to, struct mtd_oob_ops *ops);
 
 	/* DMA descriptors */
-	struct mxs_dma_desc	**desc;
+	struct mxs_dma_cmd	*desc;
 	uint32_t		desc_index;
 
 #define GPMI_ASYNC_EDO_ENABLED	(1 << 0)
@@ -246,16 +118,16 @@ static inline int mxs_nand_is_imx6(struct mxs_nand_info *info)
 	return info->type == GPMI_IMX6;
 }
 
-static struct mxs_dma_desc *mxs_nand_get_dma_desc(struct mxs_nand_info *info)
+static struct mxs_dma_cmd *mxs_nand_get_dma_desc(struct mxs_nand_info *info)
 {
-	struct mxs_dma_desc *desc;
+	struct mxs_dma_cmd *desc;
 
 	if (info->desc_index >= MXS_NAND_DMA_DESCRIPTOR_COUNT) {
 		printf("MXS NAND: Too many DMA descriptors requested\n");
 		return NULL;
 	}
 
-	desc = info->desc[info->desc_index];
+	desc = &info->desc[info->desc_index];
 	info->desc_index++;
 
 	return desc;
@@ -264,12 +136,11 @@ static struct mxs_dma_desc *mxs_nand_get_dma_desc(struct mxs_nand_info *info)
 static void mxs_nand_return_dma_descs(struct mxs_nand_info *info)
 {
 	int i;
-	struct mxs_dma_desc *desc;
+	struct mxs_dma_cmd *desc;
 
 	for (i = 0; i < info->desc_index; i++) {
-		desc = info->desc[i];
-		memset(desc, 0, sizeof(struct mxs_dma_desc));
-		desc->address = (dma_addr_t)desc;
+		desc = &info->desc[i];
+		memset(desc, 0, sizeof(struct mxs_dma_cmd));
 	}
 
 	info->desc_index = 0;
@@ -452,7 +323,7 @@ static int mxs_nand_wait_for_bch_complete(struct mxs_nand_info *nand_info)
 static void mxs_nand_cmd_ctrl(struct nand_chip *chip, int data, unsigned int ctrl)
 {
 	struct mxs_nand_info *nand_info = chip->priv;
-	struct mxs_dma_desc *d;
+	struct mxs_dma_cmd *d;
 	uint32_t channel = nand_info->dma_channel_base + nand_info->cur_chip;
 	int ret;
 
@@ -492,26 +363,24 @@ static void mxs_nand_cmd_ctrl(struct nand_chip *chip, int data, unsigned int ctr
 
 	/* Compile the DMA descriptor -- a descriptor that sends command. */
 	d = mxs_nand_get_dma_desc(nand_info);
-	d->cmd.data =
+	d->data =
 		MXS_DMA_DESC_COMMAND_DMA_READ | MXS_DMA_DESC_IRQ |
 		MXS_DMA_DESC_CHAIN | MXS_DMA_DESC_DEC_SEM |
-		MXS_DMA_DESC_WAIT4END | (3 << MXS_DMA_DESC_PIO_WORDS_OFFSET) |
-		(nand_info->cmd_queue_len << MXS_DMA_DESC_BYTES_OFFSET);
+		MXS_DMA_DESC_WAIT4END | MXS_DMA_DESC_PIO_WORDS(3) |
+		MXS_DMA_DESC_XFER_COUNT(nand_info->cmd_queue_len);
 
-	d->cmd.address = (dma_addr_t)nand_info->cmd_buf;
+	d->address = (dma_addr_t)nand_info->cmd_buf;
 
-	d->cmd.pio_words[0] =
+	d->pio_words[0] =
 		GPMI_CTRL0_COMMAND_MODE_WRITE |
 		GPMI_CTRL0_WORD_LENGTH |
-		(nand_info->cur_chip << GPMI_CTRL0_CS_OFFSET) |
+		FIELD_PREP(GPMI_CTRL0_CS, nand_info->cur_chip) |
 		GPMI_CTRL0_ADDRESS_NAND_CLE |
 		GPMI_CTRL0_ADDRESS_INCREMENT |
 		nand_info->cmd_queue_len;
 
-	mxs_dma_desc_append(channel, d);
-
 	/* Execute the DMA chain. */
-	ret = mxs_dma_go(channel);
+	ret = mxs_dma_go(channel, nand_info->desc, nand_info->desc_index);
 	if (ret)
 		printf("MXS NAND: Error sending command (%d)\n", ret);
 
@@ -607,7 +476,7 @@ static void mxs_nand_swap_block_mark(struct nand_chip *chip,
 static void mxs_nand_read_buf(struct nand_chip *chip, uint8_t *buf, int length)
 {
 	struct mxs_nand_info *nand_info = chip->priv;
-	struct mxs_dma_desc *d;
+	struct mxs_dma_cmd *d;
 	uint32_t channel = nand_info->dma_channel_base + nand_info->cur_chip;
 	int ret;
 
@@ -623,22 +492,20 @@ static void mxs_nand_read_buf(struct nand_chip *chip, uint8_t *buf, int length)
 
 	/* Compile the DMA descriptor - a descriptor that reads data. */
 	d = mxs_nand_get_dma_desc(nand_info);
-	d->cmd.data =
+	d->data =
 		MXS_DMA_DESC_COMMAND_DMA_WRITE | MXS_DMA_DESC_IRQ |
 		MXS_DMA_DESC_DEC_SEM | MXS_DMA_DESC_WAIT4END |
-		(1 << MXS_DMA_DESC_PIO_WORDS_OFFSET) |
-		(length << MXS_DMA_DESC_BYTES_OFFSET);
+		MXS_DMA_DESC_PIO_WORDS(1) |
+		MXS_DMA_DESC_XFER_COUNT(length);
 
-	d->cmd.address = (dma_addr_t)nand_info->data_buf;
+	d->address = (dma_addr_t)nand_info->data_buf;
 
-	d->cmd.pio_words[0] =
+	d->pio_words[0] =
 		GPMI_CTRL0_COMMAND_MODE_READ |
 		GPMI_CTRL0_WORD_LENGTH |
-		(nand_info->cur_chip << GPMI_CTRL0_CS_OFFSET) |
+		FIELD_PREP(GPMI_CTRL0_CS, nand_info->cur_chip) |
 		GPMI_CTRL0_ADDRESS_NAND_DATA |
 		length;
-
-	mxs_dma_desc_append(channel, d);
 
 	/*
 	 * A DMA descriptor that waits for the command to end and the chip to
@@ -649,23 +516,21 @@ static void mxs_nand_read_buf(struct nand_chip *chip, uint8_t *buf, int length)
 	 * did that and no one has re-thought it yet.
 	 */
 	d = mxs_nand_get_dma_desc(nand_info);
-	d->cmd.data =
+	d->data =
 		MXS_DMA_DESC_COMMAND_NO_DMAXFER | MXS_DMA_DESC_IRQ |
 		MXS_DMA_DESC_NAND_WAIT_4_READY | MXS_DMA_DESC_DEC_SEM |
-		MXS_DMA_DESC_WAIT4END | (4 << MXS_DMA_DESC_PIO_WORDS_OFFSET);
+		MXS_DMA_DESC_WAIT4END | MXS_DMA_DESC_PIO_WORDS(4);
 
-	d->cmd.address = 0;
+	d->address = 0;
 
-	d->cmd.pio_words[0] =
+	d->pio_words[0] =
 		GPMI_CTRL0_COMMAND_MODE_WAIT_FOR_READY |
 		GPMI_CTRL0_WORD_LENGTH |
-		(nand_info->cur_chip << GPMI_CTRL0_CS_OFFSET) |
+		FIELD_PREP(GPMI_CTRL0_CS, nand_info->cur_chip) |
 		GPMI_CTRL0_ADDRESS_NAND_DATA;
 
-	mxs_dma_desc_append(channel, d);
-
 	/* Execute the DMA chain. */
-	ret = mxs_dma_go(channel);
+	ret = mxs_dma_go(channel, nand_info->desc, nand_info->desc_index);
 	if (ret) {
 		printf("MXS NAND: DMA read error\n");
 		goto rtn;
@@ -684,7 +549,7 @@ static void mxs_nand_write_buf(struct nand_chip *chip, const uint8_t *buf,
 				int length)
 {
 	struct mxs_nand_info *nand_info = chip->priv;
-	struct mxs_dma_desc *d;
+	struct mxs_dma_cmd *d;
 	uint32_t channel = nand_info->dma_channel_base + nand_info->cur_chip;
 	int ret;
 
@@ -702,25 +567,23 @@ static void mxs_nand_write_buf(struct nand_chip *chip, const uint8_t *buf,
 
 	/* Compile the DMA descriptor - a descriptor that writes data. */
 	d = mxs_nand_get_dma_desc(nand_info);
-	d->cmd.data =
+	d->data =
 		MXS_DMA_DESC_COMMAND_DMA_READ | MXS_DMA_DESC_IRQ |
 		MXS_DMA_DESC_DEC_SEM | MXS_DMA_DESC_WAIT4END |
-		(4 << MXS_DMA_DESC_PIO_WORDS_OFFSET) |
-		(length << MXS_DMA_DESC_BYTES_OFFSET);
+		MXS_DMA_DESC_PIO_WORDS(4) |
+		MXS_DMA_DESC_XFER_COUNT(length);
 
-	d->cmd.address = (dma_addr_t)nand_info->data_buf;
+	d->address = (dma_addr_t)nand_info->data_buf;
 
-	d->cmd.pio_words[0] =
+	d->pio_words[0] =
 		GPMI_CTRL0_COMMAND_MODE_WRITE |
 		GPMI_CTRL0_WORD_LENGTH |
-		(nand_info->cur_chip << GPMI_CTRL0_CS_OFFSET) |
+		FIELD_PREP(GPMI_CTRL0_CS, nand_info->cur_chip) |
 		GPMI_CTRL0_ADDRESS_NAND_DATA |
 		length;
 
-	mxs_dma_desc_append(channel, d);
-
 	/* Execute the DMA chain. */
-	ret = mxs_dma_go(channel);
+	ret = mxs_dma_go(channel, nand_info->desc, nand_info->desc_index);
 	if (ret)
 		printf("MXS NAND: DMA write error\n");
 
@@ -749,16 +612,22 @@ static void mxs_nand_config_bch(struct nand_chip *chip, int readlen)
 	else
 		chunk_size = MXS_NAND_CHUNK_DATA_CHUNK_SIZE;
 
-	fl0 = (mxs_nand_ecc_chunk_cnt(readlen) - 1)
-			<< BCH_FLASHLAYOUT0_NBLOCKS_OFFSET;
-	fl0 |= MXS_NAND_METADATA_SIZE << BCH_FLASHLAYOUT0_META_SIZE_OFFSET;
-	fl0 |= (chip->ecc.strength >> 1) << IMX6_BCH_FLASHLAYOUT0_ECC0_OFFSET;
-	fl0 |= chunk_size;
+	fl0 = FIELD_PREP(BCH_FLASHLAYOUT0_NBLOCKS, mxs_nand_ecc_chunk_cnt(readlen) - 1);
+	fl0 |= FIELD_PREP(BCH_FLASHLAYOUT0_META_SIZE, MXS_NAND_METADATA_SIZE);
+	if (mxs_nand_is_imx6(nand_info))
+		fl0 |= FIELD_PREP(IMX6_BCH_FLASHLAYOUT0_ECC0, chip->ecc.strength >> 1);
+	else
+		fl0 |= FIELD_PREP(BCH_FLASHLAYOUT0_ECC0, chip->ecc.strength >> 1);
+	fl0 |= FIELD_PREP(BCH_FLASHLAYOUT0_DATA0_SIZE, chunk_size);
 	writel(fl0, bch_regs + BCH_FLASH0LAYOUT0);
 
-	fl1 = readlen << BCH_FLASHLAYOUT1_PAGE_SIZE_OFFSET;
-	fl1 |= (chip->ecc.strength >> 1) << IMX6_BCH_FLASHLAYOUT1_ECCN_OFFSET;
-	fl1 |= chunk_size;
+	fl1 = FIELD_PREP(BCH_FLASHLAYOUT1_PAGE_SIZE, readlen);
+	if (mxs_nand_is_imx6(nand_info))
+		fl1 |= FIELD_PREP(IMX6_BCH_FLASHLAYOUT1_ECCN, chip->ecc.strength >> 1);
+	else
+		fl1 |= FIELD_PREP(BCH_FLASHLAYOUT1_ECCN, chip->ecc.strength >> 1);
+
+	fl1 |= FIELD_PREP(BCH_FLASHLAYOUT1_DATAN_SIZE, chunk_size);
 	writel(fl1, bch_regs + BCH_FLASH0LAYOUT1);
 }
 
@@ -766,89 +635,81 @@ static int mxs_nand_do_bch_read(struct nand_chip *chip, int channel, int readtot
 				bool randomizer, int page)
 {
 	struct mxs_nand_info *nand_info = chip->priv;
-	struct mxs_dma_desc *d;
+	struct mxs_dma_cmd *d;
 	int ret;
 
 	/* Compile the DMA descriptor - wait for ready. */
 	d = mxs_nand_get_dma_desc(nand_info);
-	d->cmd.data =
+	d->data =
 		MXS_DMA_DESC_COMMAND_NO_DMAXFER | MXS_DMA_DESC_CHAIN |
 		MXS_DMA_DESC_NAND_WAIT_4_READY | MXS_DMA_DESC_WAIT4END |
-		(1 << MXS_DMA_DESC_PIO_WORDS_OFFSET);
+		MXS_DMA_DESC_PIO_WORDS(1);
 
-	d->cmd.address = 0;
+	d->address = 0;
 
-	d->cmd.pio_words[0] =
+	d->pio_words[0] =
 		GPMI_CTRL0_COMMAND_MODE_WAIT_FOR_READY |
 		GPMI_CTRL0_WORD_LENGTH |
-		(nand_info->cur_chip << GPMI_CTRL0_CS_OFFSET) |
+		FIELD_PREP(GPMI_CTRL0_CS, nand_info->cur_chip) |
 		GPMI_CTRL0_ADDRESS_NAND_DATA;
-
-	mxs_dma_desc_append(channel, d);
 
 	/* Compile the DMA descriptor - enable the BCH block and read. */
 	d = mxs_nand_get_dma_desc(nand_info);
-	d->cmd.data =
+	d->data =
 		MXS_DMA_DESC_COMMAND_NO_DMAXFER | MXS_DMA_DESC_CHAIN |
-		MXS_DMA_DESC_WAIT4END |	(6 << MXS_DMA_DESC_PIO_WORDS_OFFSET);
+		MXS_DMA_DESC_WAIT4END |	MXS_DMA_DESC_PIO_WORDS(6);
 
-	d->cmd.address = 0;
+	d->address = 0;
 
-	d->cmd.pio_words[0] =
+	d->pio_words[0] =
 		GPMI_CTRL0_COMMAND_MODE_READ |
 		GPMI_CTRL0_WORD_LENGTH |
-		(nand_info->cur_chip << GPMI_CTRL0_CS_OFFSET) |
+		FIELD_PREP(GPMI_CTRL0_CS, nand_info->cur_chip) |
 		GPMI_CTRL0_ADDRESS_NAND_DATA |
 		readtotal;
-	d->cmd.pio_words[1] = 0;
-	d->cmd.pio_words[2] =
+	d->pio_words[1] = 0;
+	d->pio_words[2] =
 		GPMI_ECCCTRL_ENABLE_ECC |
 		GPMI_ECCCTRL_ECC_CMD_DECODE |
 		GPMI_ECCCTRL_BUFFER_MASK_BCH_PAGE;
-	d->cmd.pio_words[3] = readtotal;
-	d->cmd.pio_words[4] = (dma_addr_t)nand_info->data_buf;
-	d->cmd.pio_words[5] = (dma_addr_t)nand_info->oob_buf;
+	d->pio_words[3] = readtotal;
+	d->pio_words[4] = (dma_addr_t)nand_info->data_buf;
+	d->pio_words[5] = (dma_addr_t)nand_info->oob_buf;
 
 	if (randomizer) {
-		d->cmd.pio_words[2] |= GPMI_ECCCTRL_RANDOMIZER_ENABLE |
+		d->pio_words[2] |= GPMI_ECCCTRL_RANDOMIZER_ENABLE |
 				       GPMI_ECCCTRL_RANDOMIZER_TYPE2;
-		d->cmd.pio_words[3] |= (page % 256) << 16;
+		d->pio_words[3] |= (page % 256) << 16;
 	}
-
-	mxs_dma_desc_append(channel, d);
 
 	/* Compile the DMA descriptor - disable the BCH block. */
 	d = mxs_nand_get_dma_desc(nand_info);
-	d->cmd.data =
+	d->data =
 		MXS_DMA_DESC_COMMAND_NO_DMAXFER | MXS_DMA_DESC_CHAIN |
 		MXS_DMA_DESC_NAND_WAIT_4_READY | MXS_DMA_DESC_WAIT4END |
-		(3 << MXS_DMA_DESC_PIO_WORDS_OFFSET);
+		MXS_DMA_DESC_PIO_WORDS(3);
 
-	d->cmd.address = 0;
+	d->address = 0;
 
-	d->cmd.pio_words[0] =
+	d->pio_words[0] =
 		GPMI_CTRL0_COMMAND_MODE_WAIT_FOR_READY |
 		GPMI_CTRL0_WORD_LENGTH |
-		(nand_info->cur_chip << GPMI_CTRL0_CS_OFFSET) |
+		FIELD_PREP(GPMI_CTRL0_CS, nand_info->cur_chip) |
 		GPMI_CTRL0_ADDRESS_NAND_DATA |
 		readtotal;
-	d->cmd.pio_words[1] = 0;
-	d->cmd.pio_words[2] = 0;
-
-	mxs_dma_desc_append(channel, d);
+	d->pio_words[1] = 0;
+	d->pio_words[2] = 0;
 
 	/* Compile the DMA descriptor - deassert the NAND lock and interrupt. */
 	d = mxs_nand_get_dma_desc(nand_info);
-	d->cmd.data =
+	d->data =
 		MXS_DMA_DESC_COMMAND_NO_DMAXFER | MXS_DMA_DESC_IRQ |
 		MXS_DMA_DESC_DEC_SEM;
 
-	d->cmd.address = 0;
-
-	mxs_dma_desc_append(channel, d);
+	d->address = 0;
 
 	/* Execute the DMA chain. */
-	ret = mxs_dma_go(channel);
+	ret = mxs_dma_go(channel, nand_info->desc, nand_info->desc_index);
 	if (ret) {
 		dev_err(nand_info->dev, "MXS NAND: DMA read error (ecc)\n");
 		goto out;
@@ -1013,7 +874,7 @@ static int mxs_nand_ecc_write_page(struct nand_chip *chip, const uint8_t *buf,
 {
 	struct mtd_info *mtd = nand_to_mtd(chip);
 	struct mxs_nand_info *nand_info = chip->priv;
-	struct mxs_dma_desc *d;
+	struct mxs_dma_cmd *d;
 	uint32_t channel = nand_info->dma_channel_base + nand_info->cur_chip;
 	int ret = 0;
 
@@ -1027,31 +888,29 @@ static int mxs_nand_ecc_write_page(struct nand_chip *chip, const uint8_t *buf,
 
 	/* Compile the DMA descriptor - write data. */
 	d = mxs_nand_get_dma_desc(nand_info);
-	d->cmd.data =
+	d->data =
 		MXS_DMA_DESC_COMMAND_NO_DMAXFER | MXS_DMA_DESC_IRQ |
 		MXS_DMA_DESC_DEC_SEM | MXS_DMA_DESC_WAIT4END |
-		(6 << MXS_DMA_DESC_PIO_WORDS_OFFSET);
+		MXS_DMA_DESC_PIO_WORDS(6);
 
-	d->cmd.address = 0;
+	d->address = 0;
 
-	d->cmd.pio_words[0] =
+	d->pio_words[0] =
 		GPMI_CTRL0_COMMAND_MODE_WRITE |
 		GPMI_CTRL0_WORD_LENGTH |
-		(nand_info->cur_chip << GPMI_CTRL0_CS_OFFSET) |
+		FIELD_PREP(GPMI_CTRL0_CS, nand_info->cur_chip) |
 		GPMI_CTRL0_ADDRESS_NAND_DATA;
-	d->cmd.pio_words[1] = 0;
-	d->cmd.pio_words[2] =
+	d->pio_words[1] = 0;
+	d->pio_words[2] =
 		GPMI_ECCCTRL_ENABLE_ECC |
 		GPMI_ECCCTRL_ECC_CMD_ENCODE |
 		GPMI_ECCCTRL_BUFFER_MASK_BCH_PAGE;
-	d->cmd.pio_words[3] = (mtd->writesize + mtd->oobsize);
-	d->cmd.pio_words[4] = (dma_addr_t)nand_info->data_buf;
-	d->cmd.pio_words[5] = (dma_addr_t)nand_info->oob_buf;
-
-	mxs_dma_desc_append(channel, d);
+	d->pio_words[3] = (mtd->writesize + mtd->oobsize);
+	d->pio_words[4] = (dma_addr_t)nand_info->data_buf;
+	d->pio_words[5] = (dma_addr_t)nand_info->oob_buf;
 
 	/* Execute the DMA chain. */
-	ret = mxs_dma_go(channel);
+	ret = mxs_dma_go(channel, nand_info->desc, nand_info->desc_index);
 	if (ret) {
 		printf("MXS NAND: DMA write error\n");
 		goto rtn;
@@ -1264,38 +1123,6 @@ static int mxs_nand_block_markbad(struct nand_chip *chip , loff_t ofs)
 	return 0;
 }
 
-#define BCH62_WRITESIZE		1024
-#define BCH62_OOBSIZE		838
-#define BCH62_PAGESIZE		(BCH62_WRITESIZE + BCH62_OOBSIZE)
-
-static void mxs_nand_mode_fcb_62bit(struct mxs_nand_info *nand_info)
-{
-	void __iomem *bch_regs;
-	u32 fl0, fl1;
-
-	bch_regs = nand_info->bch_base;
-
-	/* 8 ecc_chunks */
-	fl0 = 7 << BCH_FLASHLAYOUT0_NBLOCKS_OFFSET;
-	/* 32 bytes for metadata */
-	fl0 |= 32 << BCH_FLASHLAYOUT0_META_SIZE_OFFSET;
-	/* using ECC62 level to be performed */
-	fl0 |= 0x1F << IMX6_BCH_FLASHLAYOUT0_ECC0_OFFSET;
-	/* 0x20 * 4 bytes of the data0 block */
-	fl0 |= 0x20 << BCH_FLASHLAYOUT0_DATA0_SIZE_OFFSET;
-	fl0 |= 0 << BCH_FLASHLAYOUT0_GF13_0_GF14_1_OFFSET;
-	writel(fl0, bch_regs + BCH_FLASH0LAYOUT0);
-
-	/* 1024 for data + 838 for OOB */
-	fl1 = BCH62_PAGESIZE << BCH_FLASHLAYOUT1_PAGE_SIZE_OFFSET;
-	/* using ECC62 level to be performed */
-	fl1 |= 0x1f << IMX6_BCH_FLASHLAYOUT1_ECCN_OFFSET;
-	/* 0x20 * 4 bytes of the data0 block */
-	fl1 |= 0x20 << BCH_FLASHLAYOUT1_DATAN_SIZE_OFFSET;
-	fl1 |= 0 << BCH_FLASHLAYOUT1_GF13_0_GF14_1_OFFSET;
-	writel(fl1, bch_regs + BCH_FLASH0LAYOUT1);
-}
-
 int mxs_nand_read_fcb_bch62(unsigned int block, void *buf, size_t size)
 {
 	struct nand_chip *chip;
@@ -1317,7 +1144,7 @@ int mxs_nand_read_fcb_bch62(unsigned int block, void *buf, size_t size)
 
 	page = block * (mtd->erasesize / mtd->writesize);
 
-	mxs_nand_mode_fcb_62bit(nand_info);
+	mxs_nand_mode_fcb_62bit(nand_info->bch_base);
 
 	nand_read_page_op(chip, page, 0, NULL, 0);
 
@@ -1366,7 +1193,7 @@ int mxs_nand_write_fcb_bch62(unsigned int block, void *buf, size_t size)
 	struct nand_chip *chip;
 	struct mtd_info *mtd = mxs_nand_mtd;
 	struct mxs_nand_info *nand_info;
-	struct mxs_dma_desc *d;
+	struct mxs_dma_cmd *d;
 	uint32_t channel;
 	int ret = 0;
 	int page;
@@ -1381,7 +1208,7 @@ int mxs_nand_write_fcb_bch62(unsigned int block, void *buf, size_t size)
 	nand_info = chip->priv;
 	channel = nand_info->dma_channel_base;
 
-	mxs_nand_mode_fcb_62bit(nand_info);
+	mxs_nand_mode_fcb_62bit(nand_info->bch_base);
 
 	nand_select_target(chip, 0);
 
@@ -1397,24 +1224,24 @@ int mxs_nand_write_fcb_bch62(unsigned int block, void *buf, size_t size)
 
 	/* Compile the DMA descriptor - write data. */
 	d = mxs_nand_get_dma_desc(nand_info);
-	d->cmd.data = MXS_DMA_DESC_COMMAND_NO_DMAXFER | MXS_DMA_DESC_IRQ |
+	d->data = MXS_DMA_DESC_COMMAND_NO_DMAXFER | MXS_DMA_DESC_IRQ |
 		      MXS_DMA_DESC_DEC_SEM | MXS_DMA_DESC_WAIT4END |
-		      (6 << MXS_DMA_DESC_PIO_WORDS_OFFSET);
+		      MXS_DMA_DESC_PIO_WORDS(6);
 
-	d->cmd.address = 0;
+	d->address = 0;
 
-	d->cmd.pio_words[0] = GPMI_CTRL0_COMMAND_MODE_WRITE |
+	d->pio_words[0] = GPMI_CTRL0_COMMAND_MODE_WRITE |
 			      GPMI_CTRL0_WORD_LENGTH |
 			      GPMI_CTRL0_ADDRESS_NAND_DATA;
-	d->cmd.pio_words[1] = 0;
-	d->cmd.pio_words[2] = GPMI_ECCCTRL_ENABLE_ECC |
+	d->pio_words[1] = 0;
+	d->pio_words[2] = GPMI_ECCCTRL_ENABLE_ECC |
 			      GPMI_ECCCTRL_ECC_CMD_ENCODE |
 			      GPMI_ECCCTRL_BUFFER_MASK_BCH_PAGE;
-	d->cmd.pio_words[3] = BCH62_PAGESIZE;
-	d->cmd.pio_words[4] = (dma_addr_t)nand_info->data_buf;
-	d->cmd.pio_words[5] = (dma_addr_t)nand_info->oob_buf;
+	d->pio_words[3] = BCH62_PAGESIZE;
+	d->pio_words[4] = (dma_addr_t)nand_info->data_buf;
+	d->pio_words[5] = (dma_addr_t)nand_info->oob_buf;
 
-	d->cmd.pio_words[2] |= GPMI_ECCCTRL_RANDOMIZER_ENABLE |
+	d->pio_words[2] |= GPMI_ECCCTRL_RANDOMIZER_ENABLE |
 			       GPMI_ECCCTRL_RANDOMIZER_TYPE2;
 	/*
 	 * Write NAND page number needed to be randomized
@@ -1423,12 +1250,10 @@ int mxs_nand_write_fcb_bch62(unsigned int block, void *buf, size_t size)
 	 * The value is between 0-255. For additional details
 	 * check 9.6.6.4 of i.MX7D Applications Processor reference
 	 */
-	d->cmd.pio_words[3] |= (page % 256) << 16;
-
-	mxs_dma_desc_append(channel, d);
+	d->pio_words[3] |= (page % 256) << 16;
 
 	/* Execute the DMA chain. */
-	ret = mxs_dma_go(channel);
+	ret = mxs_dma_go(channel, nand_info->desc, nand_info->desc_index);
 	if (ret) {
 		dev_err(nand_info->dev, "MXS NAND: DMA write error: %d\n", ret);
 		goto out;
@@ -1540,20 +1365,13 @@ static int mxs_nand_hw_init(struct mxs_nand_info *info)
 {
 	void __iomem *gpmi_regs = info->io_base;
 	void __iomem *bch_regs = info->bch_base;
-	int i = 0, ret;
+	int ret;
 	u32 val;
 
-	info->desc = malloc(sizeof(struct mxs_dma_desc *) *
-				MXS_NAND_DMA_DESCRIPTOR_COUNT);
+	info->desc = dma_alloc_coherent(sizeof(struct mxs_dma_cmd) * MXS_NAND_DMA_DESCRIPTOR_COUNT,
+				   DMA_ADDRESS_BROKEN);
 	if (!info->desc)
-		goto err1;
-
-	/* Allocate the DMA descriptors. */
-	for (i = 0; i < MXS_NAND_DMA_DESCRIPTOR_COUNT; i++) {
-		info->desc[i] = mxs_dma_desc_alloc();
-		if (!info->desc[i])
-			goto err2;
-	}
+		return -ENOMEM;
 
 	/* Reset the GPMI block. */
 	ret = stmp_reset_block(gpmi_regs + GPMI_CTRL0, 0);
@@ -1580,14 +1398,6 @@ static int mxs_nand_hw_init(struct mxs_nand_info *info)
 	writel(val, gpmi_regs + GPMI_CTRL1);
 
 	return 0;
-
-err2:
-	free(info->desc);
-err1:
-	for (--i; i >= 0; i--)
-		mxs_dma_desc_free(info->desc[i]);
-	printf("MXS NAND: Unable to allocate DMA descriptors\n");
-	return -ENOMEM;
 }
 
 static void mxs_nand_probe_dt(struct device_d *dev, struct mxs_nand_info *nand_info)

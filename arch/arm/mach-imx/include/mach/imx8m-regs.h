@@ -3,6 +3,14 @@
 #ifndef __MACH_IMX8M_REGS_H
 #define __MACH_IMX8M_REGS_H
 
+/*
+ * Actual addressable OCRAM size may differ from SoC to SoC, but all of
+ * i.MX8MQ/M/N/P have this region of MMIO address space set aside for
+ * OCRAM only.
+ */
+#define	MX8M_OCRAM_BASE_ADDR		0x00900000
+#define	MX8M_OCRAM_MAX_SIZE		0x00200000
+
 #define MX8M_GPIO1_BASE_ADDR		0X30200000
 #define MX8M_GPIO2_BASE_ADDR		0x30210000
 #define MX8M_GPIO3_BASE_ADDR		0x30220000

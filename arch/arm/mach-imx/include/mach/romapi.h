@@ -1,5 +1,8 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef __MACH_IMX_ROMAPI_H
 #define __MACH_IMX_ROMAPI_H
+
+#include <mach/xload.h>
 
 struct rom_api {
 	u16 ver;
@@ -33,5 +36,13 @@ enum boot_dev_type_e {
 
 int imx8mp_bootrom_load_image(void);
 int imx8mn_bootrom_load_image(void);
+
+/* only call after DRAM has been configured */
+void imx8m_save_bootrom_log(void *dst);
+
+#define imx8mq_save_bootrom_log() imx8m_save_bootrom_log(imx8mq_scratch_space())
+#define imx8mm_save_bootrom_log() imx8m_save_bootrom_log(imx8mm_scratch_space())
+#define imx8mn_save_bootrom_log() imx8m_save_bootrom_log(imx8mn_scratch_space())
+#define imx8mp_save_bootrom_log() imx8m_save_bootrom_log(imx8mp_scratch_space())
 
 #endif /* __MACH_IMX_ROMAPI_H */

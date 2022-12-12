@@ -4,6 +4,9 @@
 #include <asm/sections.h>
 #include <linux/sizes.h>
 #include <mach/xload.h>
+#include <mach/esdctl.h>
+#include <mach/imx8m-regs.h>
+#include <asm/barebox-arm.h>
 
 int imx_image_size(void)
 {
@@ -16,3 +19,10 @@ int piggydata_size(void)
 	return input_data_end - input_data;
 }
 
+struct imx_scratch_space *__imx8m_scratch_space(int ddr_buswidth)
+{
+	ulong endmem = MX8M_DDR_CSD1_BASE_ADDR +
+		imx8m_barebox_earlymem_size(ddr_buswidth);
+
+	return (void *)__arm_mem_scratch(endmem);
+}

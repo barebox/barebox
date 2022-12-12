@@ -908,6 +908,10 @@ config IMX_IIM_FUSE_BLOW
 	  enable it:
 	    imx_iim0.permanent_write_enable=1
 
+config IMX_SAVE_BOOTROM_LOG
+	bool
+	default CMD_BOOTROM
+
 config HAB
 	bool
 

@@ -22,6 +22,7 @@
 
 unsigned long kasan_shadow_start;
 unsigned long kasan_shadow_base;
+unsigned long kasan_shadowed_end;
 
 /*
  * All functions below always inlined so compiler could
@@ -160,6 +161,9 @@ static __always_inline bool check_memory_region_inline(unsigned long addr,
 	if (addr < kasan_shadow_start)
 		return true;
 
+	if (addr > kasan_shadowed_end)
+		return true;
+
 	if (unlikely(size == 0))
 		return true;
 
@@ -180,6 +184,7 @@ void kasan_init(unsigned long membase, unsigned long memsize,
 {
 	kasan_shadow_start = membase;
 	kasan_shadow_base = shadow_base;
+	kasan_shadowed_end = membase + memsize - 1;
 
 	kasan_unpoison_shadow((void *)membase, memsize);
 	kasan_initialized = true;

@@ -14,7 +14,7 @@ config KVX
 	select FLEXIBLE_BOOTARGS
 	select FITIMAGE
 	select GENERIC_FIND_NEXT_BIT
-	select HAS_ARCH_SJLJ
+	select ARCH_HAS_SJLJ
 	select HAS_CACHE
 	select HAS_DMA
 	select LIBFDT

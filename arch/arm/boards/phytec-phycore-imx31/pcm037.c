@@ -18,7 +18,6 @@
 #include <io.h>
 #include <platform_data/eth-smc911x.h>
 #include <asm/mmu.h>
-#include <partition.h>
 #include <generated/mach-types.h>
 #include <asm/barebox-arm.h>
 #include <mach/imx-nand.h>

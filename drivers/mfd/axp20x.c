@@ -38,6 +38,7 @@ static const char * const axp20x_model_names[] = {
 	"AXP221",
 	"AXP223",
 	"AXP288",
+	"AXP313A",
 	"AXP803",
 	"AXP806",
 	"AXP809",
@@ -66,6 +67,12 @@ static const struct regmap_config axp288_regmap_config = {
 	.reg_bits	= 8,
 	.val_bits	= 8,
 	.max_register	= AXP288_FG_TUNE5,
+};
+
+static const struct regmap_config axp313a_regmap_config = {
+	.reg_bits	= 8,
+	.val_bits	= 8,
+	.max_register	= AXP313A_POK_CONTROL,
 };
 
 static const struct regmap_config axp806_regmap_config = {
@@ -159,6 +166,13 @@ static const struct mfd_cell axp288_cells[] = {
 		.name		= "axp288_pmic_acpi",
 	},
 };
+
+static const struct mfd_cell axp313a_cells[] = {
+	{
+		.name		= "axp313a-regulator"
+	},
+};
+
 
 static const struct mfd_cell axp803_cells[] = {
 	{
@@ -271,6 +285,11 @@ int axp20x_match_device(struct axp20x_dev *axp20x)
 		axp20x->nr_cells = ARRAY_SIZE(axp288_cells);
 		axp20x->regmap_cfg = &axp288_regmap_config;
 		break;
+	case AXP313A_ID:
+		axp20x->cells = axp313a_cells;
+		axp20x->nr_cells = ARRAY_SIZE(axp313a_cells);
+		axp20x->regmap_cfg = &axp313a_regmap_config;
+		break;
 	case AXP803_ID:
 		axp20x->nr_cells = ARRAY_SIZE(axp803_cells);
 		axp20x->cells = axp803_cells;
@@ -351,7 +370,7 @@ int axp20x_device_probe(struct axp20x_dev *axp20x)
 	axp20x->poweroff.poweroff = axp20x_power_off;
 	axp20x->poweroff.priority = 200;
 
-	if (axp20x->variant != AXP288_ID)
+	if (!(axp20x->variant == AXP288_ID) || (axp20x->variant == AXP313A_ID))
 		poweroff_handler_register(&axp20x->poweroff);
 
 	return 0;

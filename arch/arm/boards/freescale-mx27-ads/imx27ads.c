@@ -11,7 +11,6 @@
 #include <platform_data/eth-fec.h>
 #include <gpio.h>
 #include <mach/weim.h>
-#include <partition.h>
 #include <fs.h>
 #include <fcntl.h>
 #include <generated/mach-types.h>

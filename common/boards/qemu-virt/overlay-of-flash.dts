@@ -4,8 +4,8 @@
 /plugin/;
 
 #ifdef RISCV_VIRT
-#define PARTS_TARGET_PATH	"/soc/flash@20000000"
-#define ENV_DEVICE_PATH		"/soc/flash@20000000/partitions/partition@3c00000"
+#define PARTS_TARGET_PATH	"/flash@20000000"
+#define ENV_DEVICE_PATH		"/flash@20000000/partitions/partition@3c00000"
 #else
 #define PARTS_TARGET_PATH	"/flash@0"
 #define ENV_DEVICE_PATH		"/flash@0/partitions/partition@3c00000"

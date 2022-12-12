@@ -16,7 +16,6 @@
 #include <complete.h>
 #include <driver.h>
 #include <malloc.h>
-#include <partition.h>
 #include <errno.h>
 #include <xfuncs.h>
 #include <fs.h>

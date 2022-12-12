@@ -15,7 +15,6 @@
 #include <mach/imx35-regs.h>
 #include <asm/armlinux.h>
 #include <io.h>
-#include <partition.h>
 #include <nand.h>
 #include <generated/mach-types.h>
 #include <mach/imx-nand.h>

@@ -18,6 +18,7 @@ enum axp20x_variants {
 	AXP221_ID,
 	AXP223_ID,
 	AXP288_ID,
+	AXP313A_ID,
 	AXP803_ID,
 	AXP806_ID,
 	AXP809_ID,
@@ -287,6 +288,24 @@ enum axp20x_variants {
 #define AXP288_FG_TUNE4             0xec
 #define AXP288_FG_TUNE5             0xed
 
+#define AXP313A_ON_INDICATE          0x00
+#define AXP313A_OFF_INDICATE         0x01
+#define AXP313A_IC_TYPE              0x03
+#define AXP313A_OUTPUT_CONTROL       0x10
+#define AXP313A_DCDC_DVM_PWM         0x12
+#define AXP313A_DCDC1_CONTROL        0x13
+#define AXP313A_DCDC2_CONTROL        0x14
+#define AXP313A_DCDC3_CONTROL        0x15
+#define AXP313A_ALDO1_CONTROL        0x16
+#define AXP313A_DLDO1_CONTROL        0x17
+#define AXP313A_POWER_STATUS         0x1A
+#define AXP313A_PWROK_SET            0x1B
+#define AXP313A_WAKEUP_CONRTOL       0x1C
+#define AXP313A_OUTOUT_MONITOR       0x1D
+#define AXP313A_POK_CONTROL          0x1E
+#define AXP313A_IRQ_ENABLE1          0x20
+#define AXP313A_IRQ_STATUS1          0x21
+
 /* Regulators IDs */
 enum {
 	AXP20X_LDO1 = 0,
@@ -321,6 +340,15 @@ enum {
 	AXP22X_LDO_IO0,
 	AXP22X_LDO_IO1,
 	AXP22X_REG_ID_MAX,
+};
+
+enum {
+	AXP313A_DCDC1 = 0,
+	AXP313A_DCDC2,
+	AXP313A_DCDC3,
+	AXP313A_LDO1,  /* RTCLDO */
+	AXP313A_LDO2,  /* RTCLDO1 */
+	AXP313A_REG_ID_MAX,
 };
 
 enum {

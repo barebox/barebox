@@ -7,7 +7,6 @@
 #include <environment.h>
 #include <platform_data/eth-fec.h>
 #include <notifier.h>
-#include <partition.h>
 #include <gpio.h>
 #include <fs.h>
 #include <envfs.h>

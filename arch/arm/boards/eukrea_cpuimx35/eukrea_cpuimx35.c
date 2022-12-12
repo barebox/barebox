@@ -22,7 +22,6 @@
 #include <init.h>
 #include <nand.h>
 #include <net.h>
-#include <partition.h>
 #include <gpio.h>
 #include <envfs.h>
 

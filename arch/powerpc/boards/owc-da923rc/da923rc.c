@@ -25,7 +25,6 @@
 #include <gpio.h>
 #include <envfs.h>
 #include <platform_data/serial-ns16550.h>
-#include <partition.h>
 #include <environment.h>
 #include <i2c/i2c.h>
 #include <asm/fsl_ddr_sdram.h>

@@ -2,7 +2,6 @@
 
 #include <common.h>
 #include <bootsource.h>
-#include <partition.h>
 #include <nand.h>
 #include <init.h>
 #include <driver.h>

@@ -74,7 +74,7 @@ static inline struct bcm283x_i2c *to_bcm283x_i2c(struct i2c_adapter *adapter)
 
 static inline int bcm283x_i2c_init(struct bcm283x_i2c *bcm_i2c)
 {
-	struct device_d *dev = &bcm_i2c->adapter.dev;
+	struct device_d *dev = bcm_i2c->adapter.dev.parent;
 	u32 mclk_rate, cdiv, redl, fedl;
 
 	/*

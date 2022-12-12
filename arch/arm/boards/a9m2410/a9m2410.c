@@ -7,7 +7,6 @@
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 #include <asm/sections.h>
-#include <partition.h>
 #include <nand.h>
 #include <io.h>
 #include <mach/devices-s3c24xx.h>

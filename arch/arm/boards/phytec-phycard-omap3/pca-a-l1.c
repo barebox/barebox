@@ -37,7 +37,6 @@
 #include <errno.h>
 #include <init.h>
 #include <nand.h>
-#include <partition.h>
 #include <linux/sizes.h>
 #include <asm/armlinux.h>
 #include <asm/io.h>

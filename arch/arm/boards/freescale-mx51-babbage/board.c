@@ -10,7 +10,6 @@
 #include <gpio.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
-#include <partition.h>
 #include <fs.h>
 #include <of.h>
 #include <fcntl.h>

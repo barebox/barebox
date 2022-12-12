@@ -8,7 +8,6 @@
 #include <fs.h>
 #include <gpio.h>
 #include <init.h>
-#include <partition.h>
 #include <led.h>
 #include <platform_data/eth-smc91111.h>
 #include <platform_data/mtd-nand-mrvl.h>

@@ -210,7 +210,7 @@ static void dram_enable_bypass(enum ddr_rate drate)
 	const struct imx8m_bypass_config *config = &imx8m_bypass_table[drate];
 
 	if (!config->valid) {
-		printf("No matched freq table entry %u\n", drate);
+		pr_warn("No matched freq table entry %u\n", drate);
 		return;
 	}
 
@@ -239,7 +239,7 @@ static int dram_frac_pll_init(enum ddr_rate drate)
 	const struct imx8mm_fracpll_config *config = &imx8mm_fracpll_table[drate];
 
 	if (!config->valid) {
-		printf("No matched freq table entry %u\n", drate);
+		pr_warn("No matched freq table entry %u\n", drate);
 		return -EINVAL;
 	}
 
@@ -284,7 +284,7 @@ static int dram_sscg_pll_init(enum ddr_rate drate)
 	const struct imx8mq_ssgcpll_config *config = &imx8mq_ssgcpll_table[drate];
 
 	if (!config->valid) {
-		printf("No matched freq table entry %u\n", drate);
+		pr_warn("No matched freq table entry %u\n", drate);
 		return -EINVAL;
 	}
 
@@ -344,6 +344,7 @@ void ddrphy_init_set_dfi_clk(unsigned int drate_mhz, enum ddrc_type type)
 	case 400: drate = DDR_400; break;
 	case 100: drate = DDR_100; break;
 	default:
+		pr_warn("Unsupported frequency %u\n", drate_mhz);
 		return;
 	}
 

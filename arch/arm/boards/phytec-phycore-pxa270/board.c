@@ -7,7 +7,6 @@
 #include <environment.h>
 #include <fs.h>
 #include <init.h>
-#include <partition.h>
 #include <linux/sizes.h>
 
 #include <gpio.h>

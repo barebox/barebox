@@ -15,7 +15,7 @@ config SANDBOX
 	select PARTITION_DISK
 	select ARCH_HAS_STACK_DUMP if ASAN
 	select GENERIC_FIND_NEXT_BIT
-	select HAS_ARCH_SJLJ
+	select ARCH_HAS_SJLJ
 	select HAS_ASM_DEBUG_LL
 	default y
 

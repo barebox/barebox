@@ -6,7 +6,6 @@
  */
 
 #include <common.h>
-#include <partition.h>
 #include <nand.h>
 #include <driver.h>
 #include <linux/mtd/mtd.h>

@@ -25,7 +25,6 @@
 #include <init.h>
 #include <platform_data/eth-fec.h>
 #include <types.h>
-#include <partition.h>
 #include <memory.h>
 #include <linux/sizes.h>
 #include <linux/stat.h>

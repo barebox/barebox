@@ -3,6 +3,10 @@
 
 #define pr_fmt(fmt) "start.c: " fmt
 
+#ifdef CONFIG_DEBUG_INITCALLS
+#define DEBUG
+#endif
+
 #include <common.h>
 #include <init.h>
 #include <linux/sizes.h>

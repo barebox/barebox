@@ -7,4 +7,4 @@ obj-$(CONFIG_OFTREE) += \
 # created.
 obj- += dummy.o
 
-clean-files := *.dtb *.dtb.S .*.dtc .*.pre .*.dts
+clean-files := *.dtb *.dtb.S .*.dtc .*.pre .*.dts *.dtb.z

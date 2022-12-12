@@ -18,7 +18,6 @@
 #include <io.h>
 #include <gpio.h>
 #include <mach/weim.h>
-#include <partition.h>
 #include <fs.h>
 #include <linux/sizes.h>
 #include <fcntl.h>

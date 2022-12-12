@@ -22,7 +22,6 @@
 #include <net.h>
 #include <envfs.h>
 #include <linux/sizes.h>
-#include <partition.h>
 #include <gpio.h>
 
 #include <asm/armlinux.h>

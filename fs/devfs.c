@@ -28,7 +28,6 @@
 #include <linux/err.h>
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/mtd-abi.h>
-#include <partition.h>
 #include <block.h>
 
 struct devfs_inode {

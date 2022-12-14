@@ -148,7 +148,7 @@ static __maybe_unused struct of_device_id orion_nand_compatible[] = {
 	{},
 };
 
-static struct driver_d orion_nand_driver = {
+static struct driver orion_nand_driver = {
 	.name  = "orion_nand",
 	.probe = orion_nand_probe,
 	.of_compatible = DRV_OF_COMPAT(orion_nand_compatible),

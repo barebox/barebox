@@ -670,7 +670,7 @@ static const struct platform_device_id usb251xb_id[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d usb251xb_i2c_driver = {
+static struct driver usb251xb_i2c_driver = {
 	.name = DRIVER_NAME,
 	.probe    = usb251xb_i2c_probe,
 	.id_table = usb251xb_id,

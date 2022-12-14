@@ -513,7 +513,7 @@ static const struct of_device_id sifive_spi_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d sifive_spi_driver = {
+static struct driver sifive_spi_driver = {
 	.name  = "sifive_spi",
 	.probe = sifive_spi_probe,
 	.of_compatible = sifive_spi_ids,

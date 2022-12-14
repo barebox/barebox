@@ -687,7 +687,7 @@ static void mpc5xxx_fec_remove(struct device *dev)
 	mpc5xxx_fec_halt(edev);
 }
 
-static struct driver_d mpc5xxx_driver = {
+static struct driver mpc5xxx_driver = {
         .name  = "fec_mpc5xxx",
         .probe = mpc5xxx_fec_probe,
 	.remove = mpc5xxx_fec_remove,

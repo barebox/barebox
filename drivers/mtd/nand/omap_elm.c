@@ -405,7 +405,7 @@ static struct of_device_id elm_compatible[] = {
 	}
 };
 
-static struct driver_d omap_elm_driver = {
+static struct driver omap_elm_driver = {
 	.name = "omap-elm",
 	.probe = elm_probe,
 	.of_compatible = DRV_OF_COMPAT(elm_compatible)

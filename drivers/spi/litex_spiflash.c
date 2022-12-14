@@ -232,7 +232,7 @@ static __maybe_unused struct of_device_id litex_spiflash_spi_dt_ids[] = {
 	}
 };
 
-static struct driver_d litex_spiflash_spi_driver = {
+static struct driver litex_spiflash_spi_driver = {
 	.name  = "litex-spiflash",
 	.probe = litex_spiflash_spi_probe,
 	.remove = litex_spiflash_spi_remove,

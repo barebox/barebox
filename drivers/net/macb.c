@@ -941,7 +941,7 @@ static const struct of_device_id macb_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d macb_driver = {
+static struct driver macb_driver = {
 	.name  = "macb",
 	.probe = macb_probe,
 	.remove = macb_remove,

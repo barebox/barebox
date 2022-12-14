@@ -137,7 +137,7 @@ struct usb_driver {
 
 	const struct usb_device_id *id_table;
 
-	struct driver_d driver;
+	struct driver driver;
 };
 
 extern struct bus_type usb_bus_type;

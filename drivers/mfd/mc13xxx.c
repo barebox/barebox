@@ -388,7 +388,7 @@ static __maybe_unused struct of_device_id mc13xxx_dt_ids[] = {
 	{ }
 };
 
-static __maybe_unused struct driver_d mc13xxx_i2c_driver = {
+static __maybe_unused struct driver mc13xxx_i2c_driver = {
 	.name		= "mc13xxx-i2c",
 	.probe		= mc13xxx_probe,
 	.id_table	= mc13xxx_ids,
@@ -399,7 +399,7 @@ static __maybe_unused struct driver_d mc13xxx_i2c_driver = {
 coredevice_i2c_driver(mc13xxx_i2c_driver);
 #endif
 
-static __maybe_unused struct driver_d mc13xxx_spi_driver = {
+static __maybe_unused struct driver mc13xxx_spi_driver = {
 	.name		= "mc13xxx-spi",
 	.probe		= mc13xxx_probe,
 	.id_table	= mc13xxx_ids,

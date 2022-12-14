@@ -99,7 +99,7 @@ static struct of_device_id riscv_dt_ids[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d riscv_driver = {
+static struct driver riscv_driver = {
 	.name = "riscv",
 	.probe = riscv_probe,
 	.of_compatible = riscv_dt_ids,

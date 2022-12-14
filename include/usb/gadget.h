@@ -881,7 +881,7 @@ struct usb_gadget_driver {
 	void			(*resume)(struct usb_gadget *);
 
 	/* FIXME support safe rmmod */
-	struct driver_d		driver;
+	struct driver		driver;
 };
 
 

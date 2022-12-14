@@ -98,7 +98,7 @@ static struct of_device_id starfive_wdt_of_match[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d starfive_wdt_driver = {
+static struct driver starfive_wdt_driver = {
 	.name		= "starfive-wdt",
 	.probe		= starfive_wdt_drv_probe,
 	.of_compatible	= starfive_wdt_of_match,

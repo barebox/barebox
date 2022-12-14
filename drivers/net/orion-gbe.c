@@ -539,7 +539,7 @@ static struct of_device_id orion_gbe_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d orion_gbe_driver = {
+static struct driver orion_gbe_driver = {
 	.name   = "orion-gbe",
 	.probe  = orion_gbe_probe,
 	.remove = orion_gbe_remove,

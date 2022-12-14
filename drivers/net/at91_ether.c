@@ -353,7 +353,7 @@ static int at91_ether_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d at91_ether_driver = {
+static struct driver at91_ether_driver = {
 	.name = "at91_ether",
 	.probe = at91_ether_probe,
 };

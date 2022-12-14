@@ -146,7 +146,7 @@ static int pxa_pwm_probe(struct device *dev)
 	return pwmchip_add(&chip->chip, dev);
 }
 
-static struct driver_d pxa_pwm_driver = {
+static struct driver pxa_pwm_driver = {
 	.name  = "pxa_pwm",
 	.probe = pxa_pwm_probe,
 };

@@ -85,7 +85,7 @@ static __maybe_unused struct of_device_id omap_32ktimer_dt_ids[] = {
 	}
 };
 
-static struct driver_d omap_32ktimer_driver = {
+static struct driver omap_32ktimer_driver = {
 	.name = "omap-32ktimer",
 	.probe = omap_32ktimer_probe,
 	.of_compatible = DRV_OF_COMPAT(omap_32ktimer_dt_ids),

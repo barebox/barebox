@@ -67,7 +67,7 @@ static const struct of_device_id syscon_poweroff_of_match[] = {
 	{}
 };
 
-static struct driver_d syscon_poweroff_driver = {
+static struct driver syscon_poweroff_driver = {
 	.name = "syscon-poweroff",
 	.of_compatible = syscon_poweroff_of_match,
 	.probe = syscon_poweroff_probe,

@@ -429,7 +429,7 @@ static __maybe_unused struct of_device_id musb_dsps_dt_ids[] = {
 	},
 };
 
-static struct driver_d dsps_usbss_driver = {
+static struct driver dsps_usbss_driver = {
 	.name   = "musb-dsps",
 	.probe  = dsps_probe,
 	.of_compatible = DRV_OF_COMPAT(musb_dsps_dt_ids),

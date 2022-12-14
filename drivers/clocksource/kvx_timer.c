@@ -50,7 +50,7 @@ static struct of_device_id kvx_timer_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d kvx_timer_driver = {
+static struct driver kvx_timer_driver = {
 	.name = "kvx-timer",
 	.probe = kvx_timer_probe,
 	.of_compatible = DRV_OF_COMPAT(kvx_timer_dt_ids),

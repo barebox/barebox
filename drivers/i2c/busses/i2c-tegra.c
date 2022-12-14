@@ -684,7 +684,7 @@ static __maybe_unused struct of_device_id tegra_i2c_compatible[] = {
 	}
 };
 
-static struct driver_d tegra_i2c_driver = {
+static struct driver tegra_i2c_driver = {
 	.name  = "tegra-i2c",
 	.probe   = tegra_i2c_probe,
 	.of_compatible = DRV_OF_COMPAT(tegra_i2c_compatible),

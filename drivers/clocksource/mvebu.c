@@ -90,7 +90,7 @@ static struct of_device_id mvebu_timer_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d mvebu_timer_driver = {
+static struct driver mvebu_timer_driver = {
 	.name = "mvebu-timer",
 	.probe = mvebu_timer_probe,
 	.of_compatible = DRV_OF_COMPAT(mvebu_timer_dt_ids),

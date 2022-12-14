@@ -304,7 +304,7 @@ int efi_connect_all(void)
 	return 0;
 }
 
-static int efi_bus_match(struct device *dev, struct driver_d *drv)
+static int efi_bus_match(struct device *dev, struct driver *drv)
 {
 	struct efi_driver *efidrv = to_efi_driver(drv);
 	struct efi_device *efidev = to_efi_device(dev);
@@ -469,7 +469,7 @@ void efi_pause_devices(void)
 	struct device *dev;
 
 	bus_for_each_device(&efi_bus, dev) {
-		struct driver_d *drv = dev->driver;
+		struct driver *drv = dev->driver;
 		struct efi_device *efidev = to_efi_device(dev);
 		struct efi_driver *efidrv;
 
@@ -488,7 +488,7 @@ void efi_continue_devices(void)
 	struct device *dev;
 
 	bus_for_each_device(&efi_bus, dev) {
-		struct driver_d *drv = dev->driver;
+		struct driver *drv = dev->driver;
 		struct efi_device *efidev = to_efi_device(dev);
 		struct efi_driver *efidrv;
 

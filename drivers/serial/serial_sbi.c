@@ -51,7 +51,7 @@ static int sbi_serial_probe(struct device *dev)
 	return console_register(&priv->cdev);
 }
 
-static struct driver_d serial_sbi_driver = {
+static struct driver serial_sbi_driver = {
 	.name   = "riscv-serial-sbi",
 	.probe  = sbi_serial_probe,
 };

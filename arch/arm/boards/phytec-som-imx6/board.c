@@ -360,7 +360,7 @@ static const struct of_device_id physom_imx6_match[] = {
 	{ /* Sentinel */ },
 };
 
-static struct driver_d physom_imx6_driver = {
+static struct driver physom_imx6_driver = {
 	.name = "physom-imx6",
 	.probe = physom_imx6_probe,
 	.of_compatible = physom_imx6_match,

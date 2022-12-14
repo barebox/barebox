@@ -432,7 +432,7 @@ static __maybe_unused const struct of_device_id stpmic1_regulator_of_match[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d stpmic1_regulator_driver = {
+static struct driver stpmic1_regulator_driver = {
 	.name = "stpmic1-regulator",
 	.probe = stpmic1_regulator_probe,
 	.of_compatible = DRV_OF_COMPAT(stpmic1_regulator_of_match),

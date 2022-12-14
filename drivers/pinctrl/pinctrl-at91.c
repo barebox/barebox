@@ -509,7 +509,7 @@ static struct platform_device_id at91_pinctrl_ids[] = {
 	},
 };
 
-static struct driver_d at91_pinctrl_driver = {
+static struct driver at91_pinctrl_driver = {
 	.name = "pinctrl-at91",
 	.probe = at91_pinctrl_probe,
 	.id_table = at91_pinctrl_ids,
@@ -685,7 +685,7 @@ static struct platform_device_id at91_gpio_ids[] = {
 	},
 };
 
-static struct driver_d at91_gpio_driver = {
+static struct driver at91_gpio_driver = {
 	.name = "gpio-at91",
 	.probe = at91_gpio_probe,
 	.id_table = at91_gpio_ids,

@@ -139,7 +139,7 @@ static const struct of_device_id simplefb_of_match[] = {
 	{ },
 };
 
-static struct driver_d simplefb_driver = {
+static struct driver simplefb_driver = {
 	.name = "simple-framebuffer",
 	.of_compatible = simplefb_of_match,
 	.probe = simplefb_probe,

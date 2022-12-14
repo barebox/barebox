@@ -92,7 +92,7 @@ static int altera_serial_jtag_probe(struct device *dev) {
 	return 0;
 }
 
-static struct driver_d altera_serial_jtag_driver = {
+static struct driver altera_serial_jtag_driver = {
 	.name = "altera_serial_jtag",
 	.probe = altera_serial_jtag_probe,
 };

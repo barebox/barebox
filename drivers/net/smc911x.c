@@ -643,7 +643,7 @@ static const struct of_device_id smsc911x_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d smc911x_driver = {
+static struct driver smc911x_driver = {
         .name  = "smc911x",
         .probe = smc911x_probe,
 	.of_compatible = DRV_OF_COMPAT(smsc911x_dt_ids),

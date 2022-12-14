@@ -283,7 +283,7 @@ static const struct of_device_id mxc_rngc_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d mxc_rngc_driver = {
+static struct driver mxc_rngc_driver = {
 	.name = "mxc_rngc",
 	.probe = mxc_rngc_probe,
 	.of_compatible = mxc_rngc_dt_ids,

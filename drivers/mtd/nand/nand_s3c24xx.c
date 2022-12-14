@@ -480,7 +480,7 @@ on_error:
 	return ret;
 }
 
-static struct driver_d s3c24x0_nand_driver = {
+static struct driver s3c24x0_nand_driver = {
 	.name  = "s3c24x0_nand",
 	.probe = s3c24x0_nand_probe,
 };

@@ -32,7 +32,7 @@ static const struct of_device_id odyssey_som_of_match[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d odyssey_som_driver = {
+static struct driver odyssey_som_driver = {
 	.name = "odyssey-som",
 	.probe = odyssey_som_probe,
 	.of_compatible = odyssey_som_of_match,

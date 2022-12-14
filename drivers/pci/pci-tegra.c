@@ -1277,7 +1277,7 @@ put_resources:
 	return err;
 }
 
-static struct driver_d tegra_pcie_driver = {
+static struct driver tegra_pcie_driver = {
 	.name = "tegra-pcie",
 	.of_compatible = DRV_OF_COMPAT(tegra_pcie_of_match),
 	.probe = tegra_pcie_probe,

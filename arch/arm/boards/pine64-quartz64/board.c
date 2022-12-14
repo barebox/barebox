@@ -32,7 +32,7 @@ static const struct of_device_id quartz64_of_match[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d quartz64_board_driver = {
+static struct driver quartz64_board_driver = {
 	.name = "board-quartz64",
 	.probe = quartz64_probe,
 	.of_compatible = quartz64_of_match,

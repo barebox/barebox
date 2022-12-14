@@ -536,7 +536,7 @@ static int gfar_probe(struct device *dev)
 	return eth_register(edev);
 }
 
-static struct driver_d gfar_eth_driver = {
+static struct driver gfar_eth_driver = {
 	.name  = "gfar",
 	.probe = gfar_probe,
 };
@@ -567,7 +567,7 @@ static int gfar_phy_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d gfar_phy_driver = {
+static struct driver gfar_phy_driver = {
 	.name  = "gfar-mdio",
 	.probe = gfar_phy_probe,
 };
@@ -597,7 +597,7 @@ static int gfar_tbiphy_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d gfar_tbiphy_driver = {
+static struct driver gfar_tbiphy_driver = {
 	.name  = "gfar-tbiphy",
 	.probe = gfar_tbiphy_probe,
 };

@@ -138,7 +138,7 @@ static int pl010_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d pl010_driver = {
+static struct driver pl010_driver = {
 	.name  = "pl010_serial",
 	.probe = pl010_probe,
 };

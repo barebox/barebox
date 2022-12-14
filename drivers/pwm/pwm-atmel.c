@@ -462,7 +462,7 @@ static int atmel_pwm_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d atmel_pwm_driver = {
+static struct driver atmel_pwm_driver = {
 	.name		= "atmel-pwm",
 	.of_compatible	= atmel_pwm_dt_ids,
 	.probe		= atmel_pwm_probe,

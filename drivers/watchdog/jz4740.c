@@ -90,7 +90,7 @@ static __maybe_unused struct of_device_id jz4740_wdt_dt_ids[] = {
 	}
 };
 
-static struct driver_d jz4740_wdt_driver = {
+static struct driver jz4740_wdt_driver = {
 	.name   = "jz4740-wdt",
 	.probe  = jz4740_wdt_probe,
 	.of_compatible = DRV_OF_COMPAT(jz4740_wdt_dt_ids),

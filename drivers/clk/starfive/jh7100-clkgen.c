@@ -355,7 +355,7 @@ static __maybe_unused struct of_device_id starfive_clkgen_clk_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d starfive_clkgen_clk_driver = {
+static struct driver starfive_clkgen_clk_driver = {
 	.probe	= starfive_clkgen_clk_probe,
 	.name	= "starfive-clkgen",
 	.of_compatible = starfive_clkgen_clk_dt_ids,

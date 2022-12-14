@@ -132,7 +132,7 @@ static __maybe_unused struct of_device_id ar933x_clk_dt_ids[] = {
 	}
 };
 
-static struct driver_d ar933x_clk_driver = {
+static struct driver ar933x_clk_driver = {
 	.probe	= ar933x_clk_probe,
 	.name	= "ar933x_clk",
 	.of_compatible = DRV_OF_COMPAT(ar933x_clk_dt_ids),

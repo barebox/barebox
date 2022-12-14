@@ -8,7 +8,7 @@
 
 static int do_drvinfo(int argc, char *argv[])
 {
-	struct driver_d *drv;
+	struct driver *drv;
 	struct device *dev;
 
 	printf("Driver\tDevice(s)\n");

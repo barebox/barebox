@@ -135,7 +135,7 @@ static int nmdk_mtu_probe(struct device *dev)
 	return init_clock(&nmdk_clksrc);
 }
 
-static struct driver_d nmdk_mtu_driver = {
+static struct driver nmdk_mtu_driver = {
 	.name = "nomadik_mtu",
 	.probe = nmdk_mtu_probe,
 };

@@ -392,7 +392,7 @@ static struct of_device_id altera_spi_id_table[] = {
 	{ }
 };
 
-static struct driver_d altera_spi_driver = {
+static struct driver altera_spi_driver = {
 	.name = "altera-fpga",
 	.of_compatible = DRV_OF_COMPAT(altera_spi_id_table),
 	.probe = altera_spi_probe,

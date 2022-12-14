@@ -1480,7 +1480,7 @@ static __maybe_unused struct of_device_id ehci_platform_dt_ids[] = {
 	}
 };
 
-static struct driver_d ehci_driver = {
+static struct driver ehci_driver = {
 	.name  = "ehci",
 	.probe = ehci_probe,
 	.remove = ehci_remove,

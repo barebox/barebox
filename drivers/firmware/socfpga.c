@@ -460,7 +460,7 @@ static struct of_device_id socfpga_fpgamgr_id_table[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d socfpga_fpgamgr_driver = {
+static struct driver socfpga_fpgamgr_driver = {
 	.name = "socfpa-fpgamgr",
 	.of_compatible = DRV_OF_COMPAT(socfpga_fpgamgr_id_table),
 	.probe = socfpga_fpgamgr_probe,

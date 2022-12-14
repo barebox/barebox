@@ -1422,7 +1422,7 @@ static void xhci_remove(struct device *dev)
 	xhci_deregister(ctrl);
 }
 
-static struct driver_d xhci_driver = {
+static struct driver xhci_driver = {
 	.name  = "xHCI",
 	.probe = xhci_probe,
 	.remove = xhci_remove,

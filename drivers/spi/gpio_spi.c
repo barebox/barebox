@@ -223,7 +223,7 @@ static struct of_device_id __maybe_unused gpio_spi_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d gpio_spi_driver = {
+static struct driver gpio_spi_driver = {
 	.name = "gpio-spi",
 	.probe = gpio_spi_probe,
 	.of_compatible = DRV_OF_COMPAT(gpio_spi_dt_ids),

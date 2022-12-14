@@ -54,7 +54,7 @@ static const struct of_device_id bcm2835_aux_clk_of_match[] = {
 	{},
 };
 
-static struct driver_d bcm2835_aux_clk_driver = {
+static struct driver bcm2835_aux_clk_driver = {
 	.name = "bcm2835-aux-clk",
 	.of_compatible = bcm2835_aux_clk_of_match,
 	.probe          = bcm2835_aux_clk_probe,

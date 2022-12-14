@@ -76,7 +76,7 @@ static __maybe_unused struct of_device_id skov_arm9_ids[] = {
 	}
 };
 
-static struct driver_d skov_arm9_driver = {
+static struct driver skov_arm9_driver = {
 	.name = "skov-arm9",
 	.probe = skov_arm9_probe,
 	.of_compatible = DRV_OF_COMPAT(skov_arm9_ids),

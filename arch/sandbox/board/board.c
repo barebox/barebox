@@ -68,7 +68,7 @@ static struct of_device_id sandbox_dt_ids[] = {
 };
 BAREBOX_DEEP_PROBE_ENABLE(sandbox_dt_ids);
 
-static struct driver_d sandbox_board_drv = {
+static struct driver sandbox_board_drv = {
 	.name  = "sandbox-board",
 	.of_compatible = sandbox_dt_ids,
 	.probe = devices_init,

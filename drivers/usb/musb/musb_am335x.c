@@ -22,7 +22,7 @@ static __maybe_unused struct of_device_id am335x_child_dt_ids[] = {
 	},
 };
 
-static struct driver_d am335x_child_driver = {
+static struct driver am335x_child_driver = {
 	.name   = "am335x_child_probe",
 	.probe  = am335x_child_probe,
 	.of_compatible = DRV_OF_COMPAT(am335x_child_dt_ids),

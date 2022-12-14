@@ -81,7 +81,7 @@ static struct of_device_id led_pwm_of_ids[] = {
 	{ }
 };
 
-static struct driver_d led_pwm_of_driver = {
+static struct driver led_pwm_of_driver = {
 	.name  = "pwm-leds",
 	.probe = led_pwm_of_probe,
 	.of_compatible = DRV_OF_COMPAT(led_pwm_of_ids),

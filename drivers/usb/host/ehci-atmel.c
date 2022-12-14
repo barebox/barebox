@@ -114,7 +114,7 @@ static const struct of_device_id atmel_ehci_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d atmel_ehci_driver = {
+static struct driver atmel_ehci_driver = {
 	.name = "atmel-ehci",
 	.probe = atmel_ehci_probe,
 	.remove = atmel_ehci_remove,

@@ -487,7 +487,7 @@ static __maybe_unused struct of_device_id imx_scc_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d imx_scc_driver = {
+static struct driver imx_scc_driver = {
 	.name		= "mxc-scc",
 	.probe		= imx_scc_probe,
 	.of_compatible	= imx_scc_dt_ids,

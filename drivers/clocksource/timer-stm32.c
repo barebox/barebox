@@ -114,7 +114,7 @@ static struct of_device_id stm32_timer_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d stm32_timer_driver = {
+static struct driver stm32_timer_driver = {
 	.name = "stm32-timer",
 	.probe = stm32_timer_probe,
 	.of_compatible = stm32_timer_dt_ids,

@@ -122,7 +122,7 @@ static int mc_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d mc_driver = {
+static struct driver mc_driver = {
 	.name  = DRIVERNAME,
 	.probe = mc_probe,
 };

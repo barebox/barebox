@@ -187,7 +187,7 @@ static struct of_device_id lpuart_serial_dt_ids[] = {
 	{}
 };
 
-static struct driver_d lpuart_serial_driver = {
+static struct driver lpuart_serial_driver = {
 	.name   = "lpuart-serial",
 	.probe  = lpuart_serial_probe,
 	.of_compatible = DRV_OF_COMPAT(lpuart_serial_dt_ids),

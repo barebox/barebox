@@ -229,7 +229,7 @@ static int altera_spi_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d altera_spi_driver = {
+static struct driver altera_spi_driver = {
 	.name  = "altera_spi",
 	.probe = altera_spi_probe,
 };

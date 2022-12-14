@@ -216,7 +216,7 @@ static const struct of_device_id mv_sata_dt_ids[] = {
 	}
 };
 
-static struct driver_d mv_sata_driver = {
+static struct driver mv_sata_driver = {
 	.name = "mv_sata",
 	.probe = mv_sata_probe,
 	.of_compatible = mv_sata_dt_ids,

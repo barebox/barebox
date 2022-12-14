@@ -326,7 +326,7 @@ static struct of_device_id bcm283x_i2c_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d bcm283x_i2c_driver = {
+static struct driver bcm283x_i2c_driver = {
 	.name		= "i2c-bcm283x",
 	.probe		= bcm283x_i2c_probe,
 	.of_compatible	= DRV_OF_COMPAT(bcm283x_i2c_dt_ids),

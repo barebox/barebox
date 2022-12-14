@@ -65,7 +65,7 @@ static const struct of_device_id atmel_flexcom_of_match[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d atmel_flexcom_driver = {
+static struct driver atmel_flexcom_driver = {
 	.probe		= atmel_flexcom_probe,
 	.name		= "atmel_flexcom",
 	.of_compatible	= atmel_flexcom_of_match,

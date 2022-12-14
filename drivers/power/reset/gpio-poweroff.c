@@ -80,7 +80,7 @@ static const struct of_device_id of_gpio_poweroff_match[] = {
 	{},
 };
 
-static struct driver_d gpio_poweroff_driver = {
+static struct driver gpio_poweroff_driver = {
 	.name = "poweroff-gpio",
 	.of_compatible = of_gpio_poweroff_match,
 	.probe = gpio_poweroff_probe,

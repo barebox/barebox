@@ -1959,7 +1959,7 @@ static void fsl_udc_remove(struct device *dev)
 	ci_udc_unregister(udc);
 }
 
-static struct driver_d fsl_udc_driver = {
+static struct driver fsl_udc_driver = {
         .name   = "fsl-udc",
         .probe  = fsl_udc_probe,
 	.remove = fsl_udc_remove,

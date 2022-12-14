@@ -422,7 +422,7 @@ static __maybe_unused struct of_device_id imx_keypad_dt_ids[] = {
         { }
 };
 
-static struct driver_d imx_keypad_driver = {
+static struct driver imx_keypad_driver = {
 	.name   = "imx-kpp",
 	.probe  = imx_keypad_probe,
 	.of_compatible = DRV_OF_COMPAT(imx_keypad_dt_ids),

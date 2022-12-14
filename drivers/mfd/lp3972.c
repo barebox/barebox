@@ -80,7 +80,7 @@ static int lp_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d lp_driver = {
+static struct driver lp_driver = {
 	.name  = DRIVERNAME,
 	.probe = lp_probe,
 };

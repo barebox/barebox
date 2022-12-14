@@ -32,7 +32,7 @@ static const struct of_device_id innocomm_wb15_evk_of_match[] = {
 };
 BAREBOX_DEEP_PROBE_ENABLE(innocomm_wb15_evk_of_match);
 
-static struct driver_d innocomm_wb15_evkboard_driver = {
+static struct driver innocomm_wb15_evkboard_driver = {
 	.name = "board-innocomm-wb15-evk",
 	.probe = innocomm_wb15_evk_probe,
 	.of_compatible = DRV_OF_COMPAT(innocomm_wb15_evk_of_match),

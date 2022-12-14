@@ -415,7 +415,7 @@ static int rave_sp_wdt_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d rave_sp_wdt_driver = {
+static struct driver rave_sp_wdt_driver = {
 	.name  = "rave-sp-wdt",
 	.probe = rave_sp_wdt_probe,
 	.of_compatible = DRV_OF_COMPAT(rave_sp_wdt_of_match),

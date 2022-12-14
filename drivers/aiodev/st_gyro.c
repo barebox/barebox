@@ -114,7 +114,7 @@ static const struct of_device_id st_gyro_match[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d st_gyro_driver = {
+static struct driver st_gyro_driver = {
 	.name  = "st_gyro",
 	.probe = st_gyro_probe,
 	.of_compatible = st_gyro_match,

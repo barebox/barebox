@@ -966,7 +966,7 @@ static const struct of_device_id mv88e6xxx_of_match[] = {
 	{},
 };
 
-static struct driver_d mv88e6xxx_driver = {
+static struct driver mv88e6xxx_driver = {
 	.name	       = "mv88e6085",
 	.probe         = mv88e6xxx_probe,
 	.of_compatible = mv88e6xxx_of_match,

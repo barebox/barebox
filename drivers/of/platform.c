@@ -205,7 +205,7 @@ struct device *of_platform_device_create(struct device_node *np,
 	return NULL;
 }
 
-struct driver_d dummy_driver = {
+struct driver dummy_driver = {
 	.name = "dummy-driver",
 };
 

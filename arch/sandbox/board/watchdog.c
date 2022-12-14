@@ -76,7 +76,7 @@ static __maybe_unused struct of_device_id sandbox_watchdog_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d sandbox_watchdog_drv = {
+static struct driver sandbox_watchdog_drv = {
 	.name  = "sandbox-watchdog",
 	.of_compatible = sandbox_watchdog_dt_ids,
 	.probe = sandbox_watchdog_probe,

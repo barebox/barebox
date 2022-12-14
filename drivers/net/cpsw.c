@@ -654,7 +654,7 @@ static __maybe_unused struct of_device_id cpsw_mdio_dt_ids[] = {
 	}
 };
 
-static struct driver_d cpsw_mdio_driver = {
+static struct driver cpsw_mdio_driver = {
 	.name   = "cpsw-mdio",
 	.probe  = cpsw_mdio_probe,
 	.of_compatible = DRV_OF_COMPAT(cpsw_mdio_dt_ids),
@@ -1434,7 +1434,7 @@ static __maybe_unused struct of_device_id cpsw_dt_ids[] = {
 	}
 };
 
-static struct driver_d cpsw_driver = {
+static struct driver cpsw_driver = {
 	.name   = "cpsw",
 	.probe  = cpsw_probe,
 	.remove = cpsw_remove,

@@ -728,7 +728,7 @@ static int dove_pinctrl_probe(struct device *dev)
 	return mvebu_pinctrl_probe(dev, soc);
 }
 
-static struct driver_d dove_pinctrl_driver = {
+static struct driver dove_pinctrl_driver = {
 	.name		= "pinctrl-dove",
 	.probe		= dove_pinctrl_probe,
 	.of_compatible	= dove_pinctrl_of_match,

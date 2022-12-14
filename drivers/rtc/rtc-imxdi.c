@@ -604,7 +604,7 @@ static __maybe_unused const struct of_device_id dryice_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d dryice_rtc_driver = {
+static struct driver dryice_rtc_driver = {
         .name   = "imx-di-rtc",
         .probe  = dryice_rtc_probe,
         .of_compatible = DRV_OF_COMPAT(dryice_dt_ids),

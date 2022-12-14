@@ -138,7 +138,7 @@ static __maybe_unused const struct of_device_id rn5t568_wdt_of_match[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d rn5t568_wdt_driver = {
+static struct driver rn5t568_wdt_driver = {
 	.name  = "rn5t568-wdt",
 	.probe = rn5t568_wdt_probe,
 	.of_compatible = DRV_OF_COMPAT(rn5t568_wdt_of_match),

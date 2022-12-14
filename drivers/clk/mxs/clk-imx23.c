@@ -135,7 +135,7 @@ static __maybe_unused struct of_device_id imx23_ccm_dt_ids[] = {
 	}
 };
 
-static struct driver_d imx23_ccm_driver = {
+static struct driver imx23_ccm_driver = {
 	.probe	= imx23_ccm_probe,
 	.name	= "imx23-clkctrl",
 	.of_compatible = DRV_OF_COMPAT(imx23_ccm_dt_ids),

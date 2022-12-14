@@ -1245,7 +1245,7 @@ static __maybe_unused struct of_device_id cqspi_dt_ids[] = {
 	{ /* end of table */ }
 };
 
-static struct driver_d cqspi_driver = {
+static struct driver cqspi_driver = {
 	.name = "cadence_qspi",
 	.probe = cqspi_probe,
 	.of_compatible = DRV_OF_COMPAT(cqspi_dt_ids),

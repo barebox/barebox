@@ -435,7 +435,7 @@ static struct platform_device_id omap_spi_ids[] = {
 	},
 };
 
-static struct driver_d omap3_spi_driver = {
+static struct driver omap3_spi_driver = {
 	.name = "omap-spi",
 	.probe = omap3_spi_probe,
 	.of_compatible = DRV_OF_COMPAT(omap_spi_dt_ids),

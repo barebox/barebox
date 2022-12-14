@@ -212,7 +212,7 @@ static __maybe_unused struct of_device_id denali_nand_compatible[] = {
 	}
 };
 
-static struct driver_d denali_dt_driver = {
+static struct driver denali_dt_driver = {
 	.name	= "denali-nand-dt",
 	.probe		= denali_dt_probe,
 	.of_compatible = DRV_OF_COMPAT(denali_nand_compatible)

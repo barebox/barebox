@@ -898,7 +898,7 @@ static __maybe_unused struct of_device_id dataflash_dt_ids[] = {
 	}
 };
 
-static struct driver_d dataflash_driver = {
+static struct driver dataflash_driver = {
 	.name  = "mtd_dataflash",
 	.probe = dataflash_probe,
 	.of_compatible = DRV_OF_COMPAT(dataflash_dt_ids),

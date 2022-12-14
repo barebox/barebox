@@ -345,7 +345,7 @@ static __maybe_unused const struct of_device_id rave_sp_eeprom_of_match[] = {
 	{}
 };
 
-static struct driver_d rave_sp_eeprom_driver = {
+static struct driver rave_sp_eeprom_driver = {
 	.name = "rave-sp-eeprom",
 	.probe = rave_sp_eeprom_probe,
 	.of_compatible = DRV_OF_COMPAT(rave_sp_eeprom_of_match),

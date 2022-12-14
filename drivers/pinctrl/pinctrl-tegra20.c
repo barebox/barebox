@@ -329,7 +329,7 @@ static __maybe_unused struct of_device_id pinctrl_tegra20_dt_ids[] = {
 	}
 };
 
-static struct driver_d pinctrl_tegra20_driver = {
+static struct driver pinctrl_tegra20_driver = {
 	.name		= "pinctrl-tegra20",
 	.probe		= pinctrl_tegra20_probe,
 	.of_compatible	= DRV_OF_COMPAT(pinctrl_tegra20_dt_ids),

@@ -365,7 +365,7 @@ static struct platform_device_id imx_wdt_ids[] = {
 	},
 };
 
-static struct driver_d imx_wd_driver = {
+static struct driver imx_wd_driver = {
 	.name   = "imx-watchdog",
 	.probe  = imx_wd_probe,
 	.of_compatible = DRV_OF_COMPAT(imx_wdt_dt_ids),

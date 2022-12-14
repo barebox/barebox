@@ -1347,7 +1347,7 @@ err_isfr:
 	return ret;
 }
 
-static struct driver_d dw_hdmi_driver = {
+static struct driver dw_hdmi_driver = {
 	.probe		= dw_hdmi_probe,
 	.of_compatible	= dw_hdmi_dt_ids,
 	.name		= "imx-hdmi",

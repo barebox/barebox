@@ -83,7 +83,7 @@ static const struct of_device_id nvmem_reboot_mode_of_match[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d nvmem_reboot_mode_driver = {
+static struct driver nvmem_reboot_mode_driver = {
 	.probe = nvmem_reboot_mode_probe,
 	.name = "nvmem-reboot-mode",
 	.of_compatible = nvmem_reboot_mode_of_match,

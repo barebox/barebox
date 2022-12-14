@@ -1102,7 +1102,7 @@ static const struct usb_device_id *usb_match_id(struct usb_device *usbdev,
 }
 EXPORT_SYMBOL(usb_match_id);
 
-static int usb_match(struct device *dev, struct driver_d *drv)
+static int usb_match(struct device *dev, struct driver *drv)
 {
 	struct usb_device *usbdev = container_of(dev, struct usb_device, dev);
 	struct usb_driver *usbdrv = container_of(dev->driver, struct usb_driver, driver);

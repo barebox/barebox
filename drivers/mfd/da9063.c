@@ -427,7 +427,7 @@ static struct of_device_id const	da906x_dt_ids[] = {
 	}
 };
 
-static struct driver_d da9063_driver = {
+static struct driver da9063_driver = {
 	.name = "da9063",
 	.probe = da9063_probe,
 	.id_table = da9063_id,

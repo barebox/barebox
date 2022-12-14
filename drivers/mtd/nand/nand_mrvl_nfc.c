@@ -1250,7 +1250,7 @@ static int mrvl_nand_probe(struct device *dev)
 	return ret;
 }
 
-static struct driver_d mrvl_nand_driver = {
+static struct driver mrvl_nand_driver = {
 	.name		= "mrvl_nand",
 	.probe		= mrvl_nand_probe,
 	.of_compatible	= DRV_OF_COMPAT(mrvl_nand_dt_ids),

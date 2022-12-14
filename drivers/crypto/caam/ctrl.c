@@ -690,7 +690,7 @@ static __maybe_unused struct of_device_id caam_match[] = {
 	{},
 };
 
-static struct driver_d caam_driver = {
+static struct driver caam_driver = {
 	.name	= "caam",
 	.probe	= caam_probe,
 	.of_compatible = DRV_OF_COMPAT(caam_match),

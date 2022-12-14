@@ -55,7 +55,7 @@ static const struct of_device_id rmem_match[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d rmem_driver = {
+static struct driver rmem_driver = {
 	.name = "rmem",
 	.of_compatible = rmem_match,
 	.probe = rmem_probe,

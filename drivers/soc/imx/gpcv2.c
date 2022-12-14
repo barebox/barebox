@@ -1199,7 +1199,7 @@ static const struct platform_device_id imx_pgc_domain_id[] = {
 	{ },
 };
 
-static struct driver_d imx_pgc_domain_driver = {
+static struct driver imx_pgc_domain_driver = {
 	.name = "imx-pgc",
 	.probe = imx_pgc_domain_probe,
 	.id_table = imx_pgc_domain_id,
@@ -1306,7 +1306,7 @@ static const struct of_device_id imx_gpcv2_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d imx_gpcv2_driver = {
+static struct driver imx_gpcv2_driver = {
 	.name = "imx-gpcv2",
 	.probe = imx_gpcv2_probe,
 	.of_compatible = DRV_OF_COMPAT(imx_gpcv2_dt_ids),

@@ -28,7 +28,7 @@ static void platform_remove(struct device *dev)
 		dev->driver->remove(dev);
 }
 
-int platform_driver_register(struct driver_d *drv)
+int platform_driver_register(struct driver *drv)
 {
 	drv->bus = &platform_bus;
 

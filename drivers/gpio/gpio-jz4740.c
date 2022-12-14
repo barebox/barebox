@@ -120,7 +120,7 @@ static __maybe_unused struct of_device_id jz4740_gpio_dt_ids[] = {
 	},
 };
 
-static struct driver_d jz4740_gpio_driver = {
+static struct driver jz4740_gpio_driver = {
 	.name = "jz4740-gpio",
 	.probe = jz4740_gpio_probe,
 	.of_compatible	= DRV_OF_COMPAT(jz4740_gpio_dt_ids),

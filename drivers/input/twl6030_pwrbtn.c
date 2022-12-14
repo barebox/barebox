@@ -90,7 +90,7 @@ static int __init twl6030_pwrbtn_probe(struct device *dev)
 	return poller_register(&idata->poller, dev_name(dev));
 }
 
-static struct driver_d twl6030_pwrbtn_driver = {
+static struct driver twl6030_pwrbtn_driver = {
 	.name	= "twl6030_pwrbtn",
 	.probe	= twl6030_pwrbtn_probe,
 };

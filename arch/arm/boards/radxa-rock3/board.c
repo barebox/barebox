@@ -46,7 +46,7 @@ static const struct of_device_id rock3_of_match[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d rock3_board_driver = {
+static struct driver rock3_board_driver = {
 	.name = "board-rock3",
 	.probe = rock3_probe,
 	.of_compatible = rock3_of_match,

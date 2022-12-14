@@ -13,7 +13,7 @@ struct efi_device {
 };
 
 struct efi_driver {
-	struct driver_d driver;
+	struct driver driver;
 	int (*probe)(struct efi_device *efidev);
 	void (*remove)(struct efi_device *efidev);
 	int (*dev_pause)(struct efi_device *efidev);
@@ -28,7 +28,7 @@ static inline struct efi_device *to_efi_device(struct device *dev)
 	return container_of(dev, struct efi_device, dev);
 }
 
-static inline struct efi_driver *to_efi_driver(struct driver_d *drv)
+static inline struct efi_driver *to_efi_driver(struct driver *drv)
 {
 	return container_of(drv, struct efi_driver, driver);
 }

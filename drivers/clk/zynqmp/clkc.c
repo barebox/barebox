@@ -574,7 +574,7 @@ static struct of_device_id zynqmp_clock_of_match[] = {
 	{},
 };
 
-static struct driver_d zynqmp_clock_driver = {
+static struct driver zynqmp_clock_driver = {
 	.probe	= zynqmp_clock_probe,
 	.name	= "zynqmp_clock",
 	.of_compatible = DRV_OF_COMPAT(zynqmp_clock_of_match),

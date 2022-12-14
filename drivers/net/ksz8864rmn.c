@@ -187,7 +187,7 @@ static const struct platform_device_id ksz_ids[] = {
 	{ }
 };
 
-static struct driver_d micrel_switch_driver = {
+static struct driver micrel_switch_driver = {
 	.name  = "ksz8864rmn",
 	.probe = micrel_switch_probe,
 	.id_table = ksz_ids,

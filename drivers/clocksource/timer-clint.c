@@ -86,7 +86,7 @@ static struct of_device_id timer_clint_dt_ids[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d clint_timer_driver = {
+static struct driver clint_timer_driver = {
 	.name = "clint-timer",
 	.probe = clint_timer_init_dt,
 	.of_compatible = timer_clint_dt_ids,

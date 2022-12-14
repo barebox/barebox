@@ -157,7 +157,7 @@ static __maybe_unused struct of_device_id digic_gpio_dt_ids[] = {
 	}
 };
 
-static struct driver_d digic_gpio_driver = {
+static struct driver digic_gpio_driver = {
 	.name = "digic-gpio",
 	.probe = digic_gpio_probe,
 	.of_compatible = DRV_OF_COMPAT(digic_gpio_dt_ids),

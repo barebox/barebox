@@ -617,7 +617,7 @@ static struct of_device_id bcmgenet_ids[] = {
         },
 };
 
-static struct driver_d bcmgenet_driver = {
+static struct driver bcmgenet_driver = {
         .name   = "brcm-genet",
         .probe  = bcmgenet_probe,
         .remove = bcmgenet_remove,

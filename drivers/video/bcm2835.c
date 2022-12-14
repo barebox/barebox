@@ -147,7 +147,7 @@ static int bcm2835fb_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d bcm2835fb_driver = {
+static struct driver bcm2835fb_driver = {
 	.name	= "bcm2835_fb",
 	.probe	= bcm2835fb_probe,
 };

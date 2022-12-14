@@ -484,7 +484,7 @@ static __maybe_unused struct of_device_id zynq_clock_dt_ids[] = {
 	}
 };
 
-static struct driver_d zynq_clock_driver = {
+static struct driver zynq_clock_driver = {
 	.probe  = zynq_clock_probe,
 	.name   = "zynq-clock",
 	.of_compatible = DRV_OF_COMPAT(zynq_clock_dt_ids),

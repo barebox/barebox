@@ -107,7 +107,7 @@ static struct of_device_id i2c_versatile_match[] = {
 	{},
 };
 
-static struct driver_d i2c_versatile_driver = {
+static struct driver i2c_versatile_driver = {
 	.name	= "versatile-i2c",
 	.probe	= i2c_versatile_probe,
 	.of_compatible = DRV_OF_COMPAT(i2c_versatile_match),

@@ -620,7 +620,7 @@ static const struct of_device_id rpi_of_match[] = {
 };
 BAREBOX_DEEP_PROBE_ENABLE(rpi_of_match);
 
-static struct driver_d rpi_board_driver = {
+static struct driver rpi_board_driver = {
 	.name = "board-rpi",
 	.probe = rpi_devices_probe,
 	.of_compatible = DRV_OF_COMPAT(rpi_of_match),

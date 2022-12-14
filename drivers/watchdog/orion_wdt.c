@@ -105,7 +105,7 @@ static const struct of_device_id orion_wdt_of_match[] = {
 	}, { /* sentinel */ }
 };
 
-static struct driver_d orion_wdt_driver = {
+static struct driver orion_wdt_driver = {
 	.probe = orion_wdt_probe,
 	.name = "orion_wdt",
 	.of_compatible = DRV_OF_COMPAT(orion_wdt_of_match),

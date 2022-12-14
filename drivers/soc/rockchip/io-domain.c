@@ -215,7 +215,7 @@ out:
 	return ret;
 }
 
-static struct driver_d rockchip_iodomain_driver = {
+static struct driver rockchip_iodomain_driver = {
 	.name = "rockchip-iodomain",
 	.probe = rockchip_iodomain_probe,
 	.of_compatible = rockchip_iodomain_match,

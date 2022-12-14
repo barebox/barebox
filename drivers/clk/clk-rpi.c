@@ -97,7 +97,7 @@ static __maybe_unused struct of_device_id bcm2835_cprman_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d bcm2835_cprman_driver = {
+static struct driver bcm2835_cprman_driver = {
 	.probe	= rpi_cprman_probe,
 	.name	= "raspberrypi-cprman",
 	.of_compatible = DRV_OF_COMPAT(bcm2835_cprman_dt_ids),

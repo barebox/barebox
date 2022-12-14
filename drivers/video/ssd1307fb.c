@@ -634,14 +634,14 @@ fb_alloc_error:
 	return ret;
 }
 
-static __maybe_unused struct driver_d ssd1307fb_i2c_driver = {
+static __maybe_unused struct driver ssd1307fb_i2c_driver = {
 	.name = "ssd1307fb-i2c",
 	.probe = ssd1307fb_probe,
 	.of_compatible = DRV_OF_COMPAT(ssd1307fb_of_match),
 };
 device_i2c_driver(ssd1307fb_i2c_driver);
 
-static __maybe_unused struct driver_d ssd1307fb_spi_driver = {
+static __maybe_unused struct driver ssd1307fb_spi_driver = {
 	.name = "ssd1307fb-spi",
 	.probe = ssd1307fb_probe,
 	.of_compatible = DRV_OF_COMPAT(ssd1307fb_of_match),

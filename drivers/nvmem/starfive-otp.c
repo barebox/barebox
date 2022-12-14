@@ -193,7 +193,7 @@ static struct of_device_id starfive_otp_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d starfive_otp_driver = {
+static struct driver starfive_otp_driver = {
 	.name	= "starfive_otp",
 	.probe	= starfive_otp_probe,
 	.of_compatible = starfive_otp_dt_ids,

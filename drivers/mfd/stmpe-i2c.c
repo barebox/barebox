@@ -156,7 +156,7 @@ static struct platform_device_id stmpe_i2c_id[] = {
 	{ }
 };
 
-static struct driver_d stmpe_driver = {
+static struct driver stmpe_driver = {
 	.name  = DRIVERNAME,
 	.probe = stmpe_probe,
 	.id_table = stmpe_i2c_id,

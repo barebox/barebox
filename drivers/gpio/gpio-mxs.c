@@ -163,7 +163,7 @@ static struct platform_device_id mxs_gpio_ids[] = {
 	},
 };
 
-static struct driver_d mxs_gpio_driver = {
+static struct driver mxs_gpio_driver = {
 	.name = "gpio-mxs",
 	.probe = mxs_gpio_probe,
 	.of_compatible = DRV_OF_COMPAT(mxs_gpio_dt_ids),

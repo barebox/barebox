@@ -577,7 +577,7 @@ static const struct of_device_id sifive_prci_of_match[] = {
 	{}
 };
 
-static struct driver_d sifive_prci_driver = {
+static struct driver sifive_prci_driver = {
 	.name = "sifive-clk-prci",
 	.of_compatible = sifive_prci_of_match,
 	.probe = sifive_prci_probe,

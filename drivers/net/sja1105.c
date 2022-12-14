@@ -2978,7 +2978,7 @@ static const struct of_device_id sja1105_ids[] = {
 	{ }
 };
 
-static struct driver_d sja1105_driver = {
+static struct driver sja1105_driver = {
 	.name		= "sja1105",
 	.probe		= sja1105_probe,
 	.of_compatible	= DRV_OF_COMPAT(sja1105_ids),

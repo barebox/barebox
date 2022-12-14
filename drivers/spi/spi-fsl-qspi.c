@@ -861,7 +861,7 @@ static const struct of_device_id fsl_qspi_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d fsl_qspi_driver = {
+static struct driver fsl_qspi_driver = {
 	.name		= "fsl-quadspi",
 	.probe          = fsl_qspi_probe,
 	.of_compatible	= DRV_OF_COMPAT(fsl_qspi_dt_ids),

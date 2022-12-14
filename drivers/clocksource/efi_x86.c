@@ -67,7 +67,7 @@ static int efi_x86_cs_probe(struct device *dev)
 	return init_clock(&efi_x86_cs);
 }
 
-static struct driver_d efi_x86_cs_driver = {
+static struct driver efi_x86_cs_driver = {
 	.name = "efi-cs-x86",
 	.probe = efi_x86_cs_probe,
 };

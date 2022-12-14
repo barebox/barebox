@@ -601,7 +601,7 @@ static const struct of_device_id bgpio_of_match[] = {
 	}
 };
 
-static struct driver_d bgpio_driver = {
+static struct driver bgpio_driver = {
 	.name		= "basic-mmio-gpio",
 	.of_compatible	= bgpio_of_match,
 	.probe		= bgpio_dev_probe,

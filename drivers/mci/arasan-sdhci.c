@@ -307,7 +307,7 @@ static __maybe_unused struct of_device_id arasan_sdhci_compatible[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d arasan_sdhci_driver = {
+static struct driver arasan_sdhci_driver = {
 	.name = "arasan-sdhci",
 	.probe = arasan_sdhci_probe,
 	.of_compatible = DRV_OF_COMPAT(arasan_sdhci_compatible),

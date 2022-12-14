@@ -872,7 +872,7 @@ static int ks8851_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d ks8851_driver = {
+static struct driver ks8851_driver = {
 	.name  = "ks8851_mll",
 	.probe = ks8851_probe,
 };

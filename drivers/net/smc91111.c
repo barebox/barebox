@@ -1489,7 +1489,7 @@ static int smc91c111_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d smc91c111_driver = {
+static struct driver smc91c111_driver = {
         .name  = "smc91c111",
         .probe = smc91c111_probe,
 };

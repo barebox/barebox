@@ -62,12 +62,12 @@ void of_clean_reserve_map(void);
 void fdt_add_reserve_map(void *fdt);
 
 struct device;
-struct driver_d;
+struct driver;
 struct resource;
 
 int of_fix_tree(struct device_node *);
 
-int of_match(struct device *dev, struct driver_d *drv);
+int of_match(struct device *dev, struct driver *drv);
 
 int of_add_initrd(struct device_node *root, resource_size_t start,
 		resource_size_t end);

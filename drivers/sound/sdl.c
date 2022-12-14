@@ -79,7 +79,7 @@ static __maybe_unused struct of_device_id sandbox_sound_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d sandbox_sound_drv = {
+static struct driver sandbox_sound_drv = {
 	.name  = "sandbox-sound",
 	.of_compatible = sandbox_sound_dt_ids,
 	.probe = sandbox_sound_probe,

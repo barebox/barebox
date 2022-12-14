@@ -557,7 +557,7 @@ static const struct of_device_id microchip_switch_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d microchip_switch_driver = {
+static struct driver microchip_switch_driver = {
 	.name		= "ksz9477",
 	.probe		= microchip_switch_probe,
 	.of_compatible	= DRV_OF_COMPAT(microchip_switch_dt_ids),

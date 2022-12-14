@@ -246,7 +246,7 @@ static const struct of_device_id qoriq_tmu_match[] = {
 	{},
 };
 
-static struct driver_d imx_thermal_driver = {
+static struct driver imx_thermal_driver = {
 	.name		= "qoriq_thermal",
 	.probe		= qoriq_tmu_probe,
 	.of_compatible	= DRV_OF_COMPAT(qoriq_tmu_match),

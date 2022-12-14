@@ -159,7 +159,7 @@ static const struct of_device_id sabrelite_match[] = {
 	{ /* Sentinel */ },
 };
 
-static struct driver_d sabrelite_driver = {
+static struct driver sabrelite_driver = {
 	.name = "physom-imx6",
 	.probe = sabrelite_probe,
 	.of_compatible = sabrelite_match,

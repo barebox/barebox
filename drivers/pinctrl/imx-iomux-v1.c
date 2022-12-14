@@ -297,7 +297,7 @@ static __maybe_unused struct of_device_id imx_iomux_v1_dt_ids[] = {
 	}
 };
 
-static struct driver_d imx_iomux_v1_driver = {
+static struct driver imx_iomux_v1_driver = {
 	.name		= "imx-iomuxv1",
 	.probe		= imx_iomux_v1_probe,
 	.of_compatible	= DRV_OF_COMPAT(imx_iomux_v1_dt_ids),

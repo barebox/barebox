@@ -951,7 +951,7 @@ static int rk808_regulator_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d rk808_regulator_driver = {
+static struct driver rk808_regulator_driver = {
 	.name = "rk808-regulator",
 	.probe = rk808_regulator_probe,
 };

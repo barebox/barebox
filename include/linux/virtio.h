@@ -101,7 +101,7 @@ size_t virtio_max_dma_size(struct virtio_device *vdev);
  * @restore: optional function to call on resume.
  */
 struct virtio_driver {
-	struct driver_d driver;
+	struct driver driver;
 	const struct virtio_device_id *id_table;
 	const unsigned int *feature_table;
 	unsigned int feature_table_size;
@@ -114,7 +114,7 @@ struct virtio_driver {
 	void (*config_changed)(struct virtio_device *dev);
 };
 
-static inline struct virtio_driver *drv_to_virtio(struct driver_d *drv)
+static inline struct virtio_driver *drv_to_virtio(struct driver *drv)
 {
 	return container_of(drv, struct virtio_driver, driver);
 }

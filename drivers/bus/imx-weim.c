@@ -163,7 +163,7 @@ weim_err:
 	return ret;
 }
 
-static struct driver_d weim_driver = {
+static struct driver weim_driver = {
 	.name = "imx-weim",
 	.of_compatible = DRV_OF_COMPAT(weim_id_table),
 	.probe   = weim_probe,

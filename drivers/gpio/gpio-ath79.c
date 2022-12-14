@@ -143,7 +143,7 @@ static int ath79_gpio_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d ath79_gpio_driver = {
+static struct driver ath79_gpio_driver = {
 	.name = "ath79-gpio",
 	.probe = ath79_gpio_probe,
 	.of_compatible = DRV_OF_COMPAT(ath79_gpio_of_match),

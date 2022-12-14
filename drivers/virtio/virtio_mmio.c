@@ -444,7 +444,7 @@ static const struct of_device_id virtio_mmio_match[] = {
 	{},
 };
 
-static struct driver_d virtio_mmio_driver = {
+static struct driver virtio_mmio_driver = {
 	.probe		= virtio_mmio_probe,
 	.remove		= virtio_mmio_remove,
 	.name		= "virtio-mmio",

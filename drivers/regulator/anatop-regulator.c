@@ -139,7 +139,7 @@ static const struct of_device_id of_anatop_regulator_match_tbl[] = {
 	{ /* end */ }
 };
 
-static struct driver_d anatop_regulator_driver = {
+static struct driver anatop_regulator_driver = {
 	.name = "anatop_regulator",
 	.probe = anatop_regulator_probe,
 	.of_compatible = DRV_OF_COMPAT(of_anatop_regulator_match_tbl),

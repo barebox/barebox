@@ -161,7 +161,7 @@ static __maybe_unused struct of_device_id davinci_wdt_of_match[] = {
 	{},
 };
 
-static struct driver_d platform_wdt_driver = {
+static struct driver platform_wdt_driver = {
 	.name = "davinci-wdt",
 	.of_compatible = DRV_OF_COMPAT(davinci_wdt_of_match),
 	.probe = davinci_wdt_probe,

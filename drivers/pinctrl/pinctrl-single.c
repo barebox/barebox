@@ -204,7 +204,7 @@ static __maybe_unused struct of_device_id pcs_dt_ids[] = {
 	}
 };
 
-static struct driver_d pcs_driver = {
+static struct driver pcs_driver = {
 	.name		= "pinctrl-single",
 	.probe		= pinctrl_single_probe,
 	.of_compatible	= DRV_OF_COMPAT(pcs_dt_ids),

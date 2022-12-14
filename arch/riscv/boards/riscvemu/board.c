@@ -69,7 +69,7 @@ static const struct of_device_id riscvemu_of_match[] = {
 };
 BAREBOX_DEEP_PROBE_ENABLE(riscvemu_of_match);
 
-static struct driver_d riscvemu_board_driver = {
+static struct driver riscvemu_board_driver = {
 	.name = "board-riscvemu",
 	.probe = riscvemu_probe,
 	.of_compatible = riscvemu_of_match,

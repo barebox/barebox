@@ -381,7 +381,7 @@ static const struct of_device_id rk808_of_match[] = {
 	{ },
 };
 
-static struct driver_d rk808_i2c_driver = {
+static struct driver rk808_i2c_driver = {
 	.name = "rk808",
 	.of_compatible = rk808_of_match,
 	.probe    = rk808_probe,

@@ -196,7 +196,7 @@ static const struct of_device_id vic_rng_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d vic_rng_driver = {
+static struct driver vic_rng_driver = {
 	.name		= "vic-rng",
 	.probe		= vic_rng_probe,
 	.of_compatible	= vic_rng_dt_ids,

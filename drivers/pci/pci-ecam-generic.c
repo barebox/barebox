@@ -199,7 +199,7 @@ static struct of_device_id pcie_ecam_dt_ids[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d pcie_ecam_driver = {
+static struct driver pcie_ecam_driver = {
 	.name = "pcie-generic-ecam",
 	.probe = pcie_ecam_probe,
 	.of_compatible = pcie_ecam_dt_ids,

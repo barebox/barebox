@@ -346,7 +346,7 @@ static void ipufb_remove(struct device *dev)
 {
 }
 
-static struct driver_d ipufb_driver = {
+static struct driver ipufb_driver = {
 	.name		= "imx-ipuv3-crtc",
 	.probe		= ipufb_probe,
 	.remove		= ipufb_remove,

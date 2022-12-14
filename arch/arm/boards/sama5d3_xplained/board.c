@@ -65,7 +65,7 @@ static const struct of_device_id sama5d3_xplained_of_match[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d sama5d3_xplained_board_driver = {
+static struct driver sama5d3_xplained_board_driver = {
 	.name = "board-sama5d3_xplained",
 	.probe = sama5d3_xplained_probe,
 	.of_compatible = sama5d3_xplained_of_match,

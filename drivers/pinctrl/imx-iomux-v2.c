@@ -132,7 +132,7 @@ static struct platform_device_id imx_iomux_ids[] = {
 	},
 };
 
-static struct driver_d imx_iomux_driver = {
+static struct driver imx_iomux_driver = {
 	.name = "imx-iomuxv2",
 	.probe = imx_iomux_probe,
 	.of_compatible = DRV_OF_COMPAT(imx_iomux_dt_ids),

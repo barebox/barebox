@@ -35,7 +35,7 @@ static struct of_device_id arm_arch_timer_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d arm_arch_timer_driver = {
+static struct driver arm_arch_timer_driver = {
 	.name = "arm-architected-timer",
 	.probe = arm_arch_timer_probe,
 	.of_compatible = DRV_OF_COMPAT(arm_arch_timer_dt_ids),

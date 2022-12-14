@@ -90,7 +90,7 @@ static int kvx_otp_nv_probe(struct device *dev)
 	return PTR_ERR_OR_ZERO(nvmem);
 }
 
-static struct driver_d kvx_otp_nv_driver = {
+static struct driver kvx_otp_nv_driver = {
 	.name	= "kvx-otp-nv",
 	.probe	= kvx_otp_nv_probe,
 	.of_compatible = DRV_OF_COMPAT(kvx_otp_nv_match),

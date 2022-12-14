@@ -114,7 +114,7 @@ static struct of_device_id orion_gpio_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d orion_gpio_driver = {
+static struct driver orion_gpio_driver = {
 	.name = "orion-gpio",
 	.probe = orion_gpio_probe,
 	.of_compatible = DRV_OF_COMPAT(orion_gpio_dt_ids),

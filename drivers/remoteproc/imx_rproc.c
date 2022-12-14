@@ -534,7 +534,7 @@ static const struct of_device_id imx_rproc_of_match[] = {
 	{},
 };
 
-static struct driver_d imx_rproc_driver = {
+static struct driver imx_rproc_driver = {
 	.name = "imx-rproc",
 	.probe = imx_rproc_probe,
 	.of_compatible = DRV_OF_COMPAT(imx_rproc_of_match),

@@ -257,7 +257,7 @@ static struct platform_device_id syscon_ids[] = {
 	{ }
 };
 
-static struct driver_d syscon_driver = {
+static struct driver syscon_driver = {
 	.name		= "syscon",
 	.probe		= syscon_probe,
 	.id_table	= syscon_ids,

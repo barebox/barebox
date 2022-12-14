@@ -188,7 +188,7 @@ static __maybe_unused struct of_device_id pfuze_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d pfuze_i2c_driver = {
+static struct driver pfuze_i2c_driver = {
 	.name		= "pfuze-i2c",
 	.probe		= pfuze_probe,
 	.id_table	= pfuze_ids,

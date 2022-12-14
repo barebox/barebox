@@ -55,7 +55,7 @@ struct device {
 	void *type_data;     /*! In case this device is a specific device, this pointer
 			      * points to the type specific device, i.e. eth_device
 			      */
-	struct driver_d *driver; /*! The driver for this device */
+	struct driver *driver; /*! The driver for this device */
 
 	struct list_head list;     /* The list of all devices */
 	struct list_head bus_list; /* our bus            */
@@ -99,7 +99,7 @@ struct device {
 };
 
 /** @brief Describes a driver present in the system */
-struct driver_d {
+struct driver {
 	/*! The name of this driver. Used to match to
 	 * the corresponding device. */
 	const char *name;
@@ -123,6 +123,7 @@ struct driver_d {
 
 /* Legacy naming for out-of-tree patches. Will be phased out in future. */
 #define device_d device
+#define driver_d driver
 
 #define RW_SIZE(x)      (x)
 #define RW_SIZE_MASK    0x7
@@ -134,7 +135,7 @@ struct driver_d {
 
 /* Register devices and drivers.
  */
-int register_driver(struct driver_d *);
+int register_driver(struct driver *);
 int register_device(struct device *);
 
 /* manualy probe a device
@@ -371,7 +372,7 @@ extern struct list_head active_device_list;
  * uses this to get the driver from the name the user specifies with the
  * mount command
  */
-struct driver_d *get_driver_by_name(const char *name);
+struct driver *get_driver_by_name(const char *name);
 
 struct cdev;
 
@@ -397,7 +398,7 @@ static inline int dev_close_default(struct device *dev, struct filep *f)
 
 struct bus_type {
 	char *name;
-	int (*match)(struct device *dev, struct driver_d *drv);
+	int (*match)(struct device *dev, struct driver *drv);
 	int (*probe)(struct device *dev);
 	void (*remove)(struct device *dev);
 
@@ -409,7 +410,7 @@ struct bus_type {
 };
 
 int bus_register(struct bus_type *bus);
-int device_match(struct device *dev, struct driver_d *drv);
+int device_match(struct device *dev, struct driver *drv);
 
 extern struct list_head bus_list;
 
@@ -427,7 +428,7 @@ extern struct list_head bus_list;
 
 extern struct bus_type platform_bus;
 
-int platform_driver_register(struct driver_d *drv);
+int platform_driver_register(struct driver *drv);
 
 /* register_driver_macro() - Helper macro for drivers that don't do
  * anything special in module registration. This eliminates a lot of
@@ -616,7 +617,7 @@ int dev_get_drvdata(struct device *dev, const void **data);
  */
 const void *device_get_match_data(struct device *dev);
 
-int device_match_of_modalias(struct device *dev, struct driver_d *drv);
+int device_match_of_modalias(struct device *dev, struct driver *drv);
 
 struct device *device_find_child(struct device *parent, void *data,
 				 int (*match)(struct device *dev, void *data));

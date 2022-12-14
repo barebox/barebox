@@ -392,7 +392,7 @@ static const struct of_device_id stm32_pwm_of_match[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d stm32_pwm_driver = {
+static struct driver stm32_pwm_driver = {
 	.name = "stm32-pwm",
 	.probe	= stm32_pwm_probe,
 	.of_compatible = stm32_pwm_of_match,

@@ -202,7 +202,7 @@ static const struct of_device_id dwc2_platform_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d dwc2_driver = {
+static struct driver dwc2_driver = {
 	.name	= "dwc2",
 	.probe	= dwc2_probe,
 	.remove = dwc2_remove,

@@ -121,7 +121,7 @@ static const struct of_device_id syscon_reboot_mode_of_match[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d syscon_reboot_mode_driver = {
+static struct driver syscon_reboot_mode_driver = {
 	.probe = syscon_reboot_mode_probe,
 	.name = "syscon-reboot-mode",
 	.of_compatible = syscon_reboot_mode_of_match,

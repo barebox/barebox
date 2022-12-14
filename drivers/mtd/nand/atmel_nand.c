@@ -1433,7 +1433,7 @@ static struct of_device_id atmel_nand_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d atmel_nand_driver = {
+static struct driver atmel_nand_driver = {
 	.name	= "atmel_nand",
 	.probe	= atmel_nand_probe,
 	.of_compatible	= DRV_OF_COMPAT(atmel_nand_dt_ids),

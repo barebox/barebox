@@ -97,7 +97,7 @@ static struct of_device_id art_dt_ids[] = {
 	}
 };
 
-static struct driver_d art_driver = {
+static struct driver art_driver = {
 	.name		= "qca-art",
 	.probe		= art_probe,
 	.of_compatible	= art_dt_ids,

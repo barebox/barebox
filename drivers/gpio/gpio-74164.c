@@ -121,7 +121,7 @@ static int gpio_74164_probe(struct device *dev)
 	return gpiochip_add(&priv->chip);
 }
 
-static struct driver_d gpio_74164_driver = {
+static struct driver gpio_74164_driver = {
 	.name = "gpio-74164",
 	.probe = gpio_74164_probe,
 	.id_table = gpio_74164_ids,

@@ -565,7 +565,7 @@ out_free:
 	return rc;
 }
 
-static struct driver_d at91_twi_driver = {
+static struct driver at91_twi_driver = {
 	.name		= "at91-twi",
 	.probe		= at91_twi_probe,
 	.id_table	= at91_twi_devtypes,

@@ -404,7 +404,7 @@ static __maybe_unused struct of_device_id stm32_pinctrl_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d stm32_pinctrl_driver = {
+static struct driver stm32_pinctrl_driver = {
 	.name		= "stm32-pinctrl",
 	.probe		= stm32_pinctrl_probe,
 	.of_compatible	= DRV_OF_COMPAT(stm32_pinctrl_dt_ids),

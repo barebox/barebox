@@ -844,7 +844,7 @@ out_failed_reset:
 	return ret;
 }
 
-static struct driver_d imx_ipu_driver = {
+static struct driver imx_ipu_driver = {
 	.name = "imx-ipuv3",
 	.of_compatible = imx_ipu_dt_ids,
 	.probe = ipu_probe,

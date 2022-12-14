@@ -529,7 +529,7 @@ static const struct of_device_id ili9341_of_match[] = {
 	{ }
 };
 
-static struct driver_d ili9341_driver = {
+static struct driver ili9341_driver = {
 	.name = "panel-ilitek-ili9341",
 	.of_compatible = ili9341_of_match,
 	.probe = ili9341_probe,

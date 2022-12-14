@@ -109,7 +109,7 @@ static struct of_device_id imx_pd_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d imx_pd_driver = {
+static struct driver imx_pd_driver = {
 	.probe			  = imx_pd_probe,
 	.of_compatible	= imx_pd_dt_ids,
 	.name				= "imx-parallel-display",

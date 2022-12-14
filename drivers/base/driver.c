@@ -191,7 +191,7 @@ void device_detect_all(void)
 		device_detect(dev);
 }
 
-static int match(struct driver_d *drv, struct device *dev)
+static int match(struct driver *drv, struct device *dev)
 {
 	int ret;
 
@@ -214,7 +214,7 @@ err_out:
 
 int register_device(struct device *new_device)
 {
-	struct driver_d *drv;
+	struct driver *drv;
 
 	if (new_device->id == DEVICE_ID_DYNAMIC) {
 		new_device->id = get_free_deviceid(new_device->name);
@@ -338,7 +338,7 @@ EXPORT_SYMBOL(free_device);
 static int device_probe_deferred(void)
 {
 	struct device *dev, *tmp;
-	struct driver_d *drv;
+	struct driver *drv;
 	bool success;
 
 	do {
@@ -372,9 +372,9 @@ static int device_probe_deferred(void)
 }
 late_initcall(device_probe_deferred);
 
-struct driver_d *get_driver_by_name(const char *name)
+struct driver *get_driver_by_name(const char *name)
 {
-	struct driver_d *drv;
+	struct driver *drv;
 
 	for_each_driver(drv) {
 		if(!strcmp(name, drv->name))
@@ -384,7 +384,7 @@ struct driver_d *get_driver_by_name(const char *name)
 	return NULL;
 }
 
-int register_driver(struct driver_d *drv)
+int register_driver(struct driver *drv)
 {
 	struct device *dev = NULL;
 

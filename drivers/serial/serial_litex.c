@@ -91,7 +91,7 @@ static __maybe_unused struct of_device_id litex_serial_dt_ids[] = {
 	}
 };
 
-static struct driver_d litex_serial_driver = {
+static struct driver litex_serial_driver = {
 	.name  = "litex-uart",
 	.probe = litex_serial_probe,
 	.of_compatible = DRV_OF_COMPAT(litex_serial_dt_ids),

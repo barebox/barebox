@@ -100,7 +100,7 @@ static struct platform_device_id abracon_id[] = {
 	{ }
 };
 
-static struct driver_d abracon_driver = {
+static struct driver abracon_driver = {
 	.name	= "rtc-abracon",
 	.probe		= abracon_probe,
 	.id_table	= abracon_id,

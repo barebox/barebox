@@ -94,7 +94,7 @@ static const __maybe_unused struct of_device_id at91sam9x_rst_dt_ids[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d at91sam9x_rst_driver = {
+static struct driver at91sam9x_rst_driver = {
 	.name		= "at91sam9x-rst",
 	.of_compatible	= DRV_OF_COMPAT(at91sam9x_rst_dt_ids),
 	.probe		= at91sam9x_rst_probe,

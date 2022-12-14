@@ -653,7 +653,7 @@ static struct of_device_id gpmc_id_table[] = {
 	{ }
 };
 
-static struct driver_d gpmc_driver = {
+static struct driver gpmc_driver = {
 	.name = "omap-gpmc",
 	.of_compatible = DRV_OF_COMPAT(gpmc_id_table),
 	.probe   = gpmc_probe,

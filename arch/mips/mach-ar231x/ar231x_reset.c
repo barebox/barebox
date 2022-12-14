@@ -61,7 +61,7 @@ static int ar231x_reset_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d ar231x_reset_driver = {
+static struct driver ar231x_reset_driver = {
 	.probe	= ar231x_reset_probe,
 	.name	= "ar231x_reset",
 };

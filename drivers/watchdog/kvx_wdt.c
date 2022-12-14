@@ -84,7 +84,7 @@ static struct of_device_id kvx_wdt_of_match[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d kvx_wdt_driver = {
+static struct driver kvx_wdt_driver = {
 	.name		= "kvx-wdt",
 	.probe		= kvx_wdt_drv_probe,
 	.of_compatible	= DRV_OF_COMPAT(kvx_wdt_of_match),

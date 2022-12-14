@@ -631,7 +631,7 @@ static struct of_device_id zynqmp_firmware_id_table[] = {
 	{}
 };
 
-static struct driver_d zynqmp_firmware_driver = {
+static struct driver zynqmp_firmware_driver = {
 	.name = "zynqmp_firmware",
 	.probe = zynqmp_firmware_probe,
 	.of_compatible = DRV_OF_COMPAT(zynqmp_firmware_id_table),

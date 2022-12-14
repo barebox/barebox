@@ -257,7 +257,7 @@ struct phy_driver {
 	int (*read_page)(struct phy_device *phydev);
 	int (*write_page)(struct phy_device *phydev, int page);
 
-	struct driver_d	 drv;
+	struct driver	 drv;
 };
 #define to_phy_driver(d) ((d) ? container_of(d, struct phy_driver, drv) : NULL)
 

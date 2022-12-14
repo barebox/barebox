@@ -125,7 +125,7 @@ static int arm_dcc_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d arm_dcc_driver = {
+static struct driver arm_dcc_driver = {
 	.name	= "arm_dcc",
 	.probe	= arm_dcc_probe,
 };

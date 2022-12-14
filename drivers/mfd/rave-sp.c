@@ -853,7 +853,7 @@ static int rave_sp_probe(struct device *dev)
 	return of_platform_populate(dev->of_node, NULL, dev);
 }
 
-static struct driver_d rave_sp_drv = {
+static struct driver rave_sp_drv = {
 	.name = "rave-sp",
 	.probe = rave_sp_probe,
 	.of_compatible = DRV_OF_COMPAT(rave_sp_dt_ids),

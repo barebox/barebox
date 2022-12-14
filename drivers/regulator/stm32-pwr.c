@@ -207,7 +207,7 @@ static const struct of_device_id stm32_pwr_of_match[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d stm32_pwr_driver = {
+static struct driver stm32_pwr_driver = {
 	.probe = stm32_pwr_regulator_probe,
 	.name  = "stm32-pwr-regulator",
 	.of_compatible = stm32_pwr_of_match,

@@ -1264,7 +1264,7 @@ static struct of_device_id rockchip_pinctrl_dt_match[] = {
 	}
 };
 
-static struct driver_d rockchip_pinctrl_driver = {
+static struct driver rockchip_pinctrl_driver = {
 	.name = "rockchip-pinctrl",
 	.probe = rockchip_pinctrl_probe,
 	.of_compatible = DRV_OF_COMPAT(rockchip_pinctrl_dt_match),
@@ -1281,7 +1281,7 @@ static struct of_device_id rockchip_gpio_dt_match[] = {
 	}
 };
 
-static struct driver_d rockchip_gpio_driver = {
+static struct driver rockchip_gpio_driver = {
 	.name = "rockchip-gpio",
 	.probe = rockchip_gpio_probe,
 	.of_compatible = DRV_OF_COMPAT(rockchip_gpio_dt_match),

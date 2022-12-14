@@ -145,7 +145,7 @@ static __maybe_unused struct of_device_id platform_ide_dt_ids[] = {
 	}
 };
 
-static struct driver_d platform_ide_driver = {
+static struct driver platform_ide_driver = {
 	.name   = "ide_intf",
 	.probe  = platform_ide_probe,
 	.of_compatible = DRV_OF_COMPAT(platform_ide_dt_ids),

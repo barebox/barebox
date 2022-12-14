@@ -191,7 +191,7 @@ static const struct of_device_id stm32_rproc_of_match[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d stm32_rproc_driver = {
+static struct driver stm32_rproc_driver = {
 	.name = "stm32-rproc",
 	.probe = stm32_rproc_probe,
 	.of_compatible = DRV_OF_COMPAT(stm32_rproc_of_match),

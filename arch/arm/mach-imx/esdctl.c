@@ -748,7 +748,7 @@ static __maybe_unused struct of_device_id imx_esdctl_dt_ids[] = {
 	}
 };
 
-static struct driver_d imx_esdctl_driver = {
+static struct driver imx_esdctl_driver = {
 	.name   = "imx-esdctl",
 	.probe  = imx_esdctl_probe,
 	.id_table = imx_esdctl_ids,

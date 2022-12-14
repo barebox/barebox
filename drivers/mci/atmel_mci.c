@@ -194,7 +194,7 @@ static __maybe_unused struct of_device_id atmci_compatible[] = {
 	}
 };
 
-static struct driver_d atmci_driver = {
+static struct driver atmci_driver = {
 	.name	= "atmel_mci",
 	.probe	= atmci_probe,
 	.of_compatible = DRV_OF_COMPAT(atmci_compatible),

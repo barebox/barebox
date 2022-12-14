@@ -427,7 +427,7 @@ fail:
 	return err;
 }
 
-static struct driver_d eeprom_93xx46_driver = {
+static struct driver eeprom_93xx46_driver = {
 	.name = "93xx46",
 	.probe = eeprom_93xx46_probe,
 	.of_compatible = DRV_OF_COMPAT(eeprom_93xx46_of_table),

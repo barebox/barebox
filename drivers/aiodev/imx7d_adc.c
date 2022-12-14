@@ -418,7 +418,7 @@ static void imx7d_adc_disable(struct device *dev)
 	regulator_disable(info->vref);
 }
 
-static struct driver_d imx7d_adc_driver = {
+static struct driver imx7d_adc_driver = {
 	.probe		= imx7d_adc_probe,
 	.name		= "imx7d_adc",
 	.of_compatible	= imx7d_adc_match,

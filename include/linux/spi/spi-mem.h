@@ -280,7 +280,7 @@ struct spi_controller_mem_ops {
  * useless fields to the spi_device object.
  */
 struct spi_mem_driver {
-	struct driver_d spidrv;
+	struct driver spidrv;
 	int (*probe)(struct spi_mem *mem);
 	int (*remove)(struct spi_mem *mem);
 };

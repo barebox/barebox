@@ -28,7 +28,7 @@ struct w1_driver {
 
 	int	(*probe) (struct w1_device *dev);
 	void	(*remove) (struct w1_device *dev);
-	struct driver_d drv;
+	struct driver drv;
 };
 
 int w1_driver_register(struct w1_driver *drv);

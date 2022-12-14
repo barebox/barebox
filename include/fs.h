@@ -79,7 +79,7 @@ struct fs_driver_d {
 	int (*closedir)(struct device *dev, DIR *dir);
 	int (*stat)(struct device *dev, const char *file, struct stat *stat);
 
-	struct driver_d drv;
+	struct driver drv;
 
 	enum filetype type;
 

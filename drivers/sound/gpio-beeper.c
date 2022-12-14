@@ -58,7 +58,7 @@ static const struct of_device_id gpio_beeper_match[] = {
 	{ },
 };
 
-static struct driver_d gpio_beeper_driver = {
+static struct driver gpio_beeper_driver = {
 	.name		= "gpio-beeper",
 	.probe		= gpio_beeper_probe,
 	.remove		= gpio_beeper_suspend,

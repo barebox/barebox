@@ -175,7 +175,7 @@ static __maybe_unused struct of_device_id hostfile_dt_ids[] = {
 	}
 };
 
-static struct driver_d hf_drv = {
+static struct driver hf_drv = {
 	.name  = "hostfile",
 	.of_compatible = DRV_OF_COMPAT(hostfile_dt_ids),
 	.probe = hf_probe,

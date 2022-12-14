@@ -593,7 +593,7 @@ static __maybe_unused struct platform_device_id ns16550_serial_ids[] = {
 /**
  * @brief Driver registration structure
  */
-static struct driver_d ns16550_serial_driver = {
+static struct driver ns16550_serial_driver = {
 	.name = "ns16550_serial",
 	.probe = ns16550_probe,
 	.of_compatible = DRV_OF_COMPAT(ns16550_serial_dt_ids),

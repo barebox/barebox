@@ -64,7 +64,7 @@ static const struct of_device_id __maybe_unused clps711x_gpio_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d clps711x_gpio_driver = {
+static struct driver clps711x_gpio_driver = {
 	.name		= "clps711x-gpio",
 	.probe		= clps711x_gpio_probe,
 	.of_compatible	= DRV_OF_COMPAT(clps711x_gpio_dt_ids),

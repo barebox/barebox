@@ -28,7 +28,7 @@ amba_lookup(const struct amba_id *table, struct amba_device *dev)
 	return ret ? table : NULL;
 }
 
-static int amba_match(struct device *dev, struct driver_d *drv)
+static int amba_match(struct device *dev, struct driver *drv)
 {
 	struct amba_device *pcdev = to_amba_device(dev);
 

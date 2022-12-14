@@ -393,7 +393,7 @@ static int led_pca955x_probe(struct device *dev)
 	return err;
 }
 
-static struct driver_d led_pca955x_driver = {
+static struct driver led_pca955x_driver = {
 	.name	= "led-pca955x",
 	.probe	= led_pca955x_probe,
 	.id_table = led_pca955x_id,

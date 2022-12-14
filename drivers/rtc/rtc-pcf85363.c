@@ -154,7 +154,7 @@ static struct platform_device_id dev_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d pcf85363_driver = {
+static struct driver pcf85363_driver = {
 	.name		= "pcf85363",
 	.probe		= pcf85363_probe,
 	.id_table	= dev_ids,

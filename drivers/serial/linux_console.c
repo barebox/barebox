@@ -67,7 +67,7 @@ static int linux_console_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d linux_console_driver = {
+static struct driver linux_console_driver = {
         .name  = "console",
         .probe = linux_console_probe,
 };

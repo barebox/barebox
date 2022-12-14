@@ -16,7 +16,7 @@ extern const struct of_device_id *of_match_device(
  * @dev: the device structure to match against
  */
 static inline int of_driver_match_device(struct device *dev,
-					 const struct driver_d *drv)
+					 const struct driver *drv)
 {
 	return of_match_device(drv->of_compatible, dev) != NULL;
 }

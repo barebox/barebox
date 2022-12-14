@@ -142,7 +142,7 @@ static struct of_device_id mvebu_mdio_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d mvebu_mdio_driver = {
+static struct driver mvebu_mdio_driver = {
 	.name   = "mvebu-mdio",
 	.probe  = mvebu_mdio_probe,
 	.remove = mvebu_mdio_remove,

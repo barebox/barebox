@@ -187,7 +187,7 @@ static int stm32_iwdg_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d stm32_iwdg_driver = {
+static struct driver stm32_iwdg_driver = {
 	.name  = "stm32-iwdg",
 	.probe = stm32_iwdg_probe,
 	.of_compatible = DRV_OF_COMPAT(stm32_iwdg_of_match),

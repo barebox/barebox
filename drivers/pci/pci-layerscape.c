@@ -532,7 +532,7 @@ static int __init ls_pcie_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d ls_pcie_driver = {
+static struct driver ls_pcie_driver = {
 	.name = "layerscape-pcie",
 	.of_compatible = DRV_OF_COMPAT(ls_pcie_of_match),
 	.probe = ls_pcie_probe,

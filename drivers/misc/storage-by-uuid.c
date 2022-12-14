@@ -190,7 +190,7 @@ static struct of_device_id storage_by_uuid_dt_ids[] = {
 	}
 };
 
-static struct driver_d storage_by_uuid_driver = {
+static struct driver storage_by_uuid_driver = {
 	.name		= "storage-by-uuid",
 	.probe		= storage_by_uuid_probe,
 	.of_compatible	= storage_by_uuid_dt_ids,

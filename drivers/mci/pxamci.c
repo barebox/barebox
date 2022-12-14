@@ -375,7 +375,7 @@ static int pxamci_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d pxamci_driver = {
+static struct driver pxamci_driver = {
 	.name  = DRIVER_NAME,
 	.probe = pxamci_probe,
 };

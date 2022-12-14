@@ -118,7 +118,7 @@ static void libftdi1_gpio_remove(struct device *dev)
 	barebox_libftdi1_close();
 }
 
-static struct driver_d libftdi1_gpio_driver = {
+static struct driver libftdi1_gpio_driver = {
 	.name = "libftdi1-gpio",
 	.probe = libftdi1_gpio_probe,
 	.remove = libftdi1_gpio_remove,

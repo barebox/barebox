@@ -13,7 +13,7 @@
 static int do_mount(int argc, char *argv[])
 {
 	int opt, verbose = 0;
-	struct driver_d *drv;
+	struct driver *drv;
 	const char *type = NULL;
 	const char *mountpoint, *devstr;
 	const char *fsoptions = NULL;

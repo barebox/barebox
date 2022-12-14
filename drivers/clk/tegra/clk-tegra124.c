@@ -362,7 +362,7 @@ static __maybe_unused struct of_device_id tegra124_car_dt_ids[] = {
 	}
 };
 
-static struct driver_d tegra124_car_driver = {
+static struct driver tegra124_car_driver = {
 	.probe	= tegra124_car_probe,
 	.name	= "tegra124-car",
 	.of_compatible = DRV_OF_COMPAT(tegra124_car_dt_ids),

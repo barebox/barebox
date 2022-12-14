@@ -76,7 +76,7 @@ static const struct of_device_id of_dwc3_simple_match[] = {
 	{.compatible = "allwinner,sun50i-h6-dwc3"},
 	{/* Sentinel */}};
 
-static struct driver_d dwc3_of_simple_driver = {
+static struct driver dwc3_of_simple_driver = {
 	.probe		= dwc3_of_simple_probe,
 	.remove		= dwc3_of_simple_remove,
 	.name		= "dwc3-of-simple",

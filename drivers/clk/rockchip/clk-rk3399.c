@@ -1644,7 +1644,7 @@ static int __init clk_rk3399_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d clk_rk3399_driver = {
+static struct driver clk_rk3399_driver = {
 	.probe  = clk_rk3399_probe,
 	.name   = "clk-rk3399",
 	.of_compatible = DRV_OF_COMPAT(clk_rk3399_match_table),

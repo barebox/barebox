@@ -670,7 +670,7 @@ static __maybe_unused struct of_device_id ahci_dt_ids[] = {
 	}
 };
 
-static struct driver_d ahci_driver = {
+static struct driver ahci_driver = {
 	.name   = "ahci",
 	.probe  = ahci_probe,
 	.of_compatible = DRV_OF_COMPAT(ahci_dt_ids),

@@ -528,7 +528,7 @@ static __maybe_unused struct of_device_id mxcmci_compatible[] = {
 	}
 };
 
-static struct driver_d mxcmci_driver = {
+static struct driver mxcmci_driver = {
         .name  = DRIVER_NAME,
         .probe = mxcmci_probe,
 	.of_compatible = DRV_OF_COMPAT(mxcmci_compatible),

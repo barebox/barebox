@@ -980,7 +980,7 @@ static struct platform_device_id imx_fec_ids[] = {
 /**
  * Driver description for registering
  */
-static struct driver_d fec_driver = {
+static struct driver fec_driver = {
 	.name   = "fec_imx",
 	.probe  = fec_probe,
 	.remove = fec_remove,

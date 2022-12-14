@@ -647,7 +647,7 @@ out_ctlr_put:
 	return ret;
 }
 
-static struct driver_d fsl_dspi_driver = {
+static struct driver fsl_dspi_driver = {
 	.name  = "fsl-dspi",
 	.probe = dspi_probe,
 	.of_compatible = DRV_OF_COMPAT(fsl_dspi_dt_ids),

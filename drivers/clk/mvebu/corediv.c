@@ -248,7 +248,7 @@ static int mvebu_corediv_clk_probe(struct device *dev)
 	return of_clk_add_provider(np, of_clk_src_onecell_get, &clk_data);
 }
 
-static struct driver_d mvebu_corediv_clk_driver = {
+static struct driver mvebu_corediv_clk_driver = {
 	.probe	= mvebu_corediv_clk_probe,
 	.name	= "mvebu-corediv-clk",
 	.of_compatible = DRV_OF_COMPAT(mvebu_corediv_clk_ids),

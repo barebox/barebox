@@ -175,7 +175,7 @@ static const struct of_device_id of_am335x_adc_match[] = {
 	{ /* end */ }
 };
 
-static struct driver_d am335x_adc_driver = {
+static struct driver am335x_adc_driver = {
 	.name		= "am335x_adc",
 	.probe		= am335x_adc_probe,
 	.of_compatible	= DRV_OF_COMPAT(of_am335x_adc_match),

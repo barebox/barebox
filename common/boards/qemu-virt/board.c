@@ -59,7 +59,7 @@ static const struct of_device_id virt_of_match[] = {
 };
 BAREBOX_DEEP_PROBE_ENABLE(virt_of_match);
 
-static struct driver_d virt_board_driver = {
+static struct driver virt_board_driver = {
 	.name = "board-qemu-virt",
 	.probe = virt_probe,
 	.of_compatible = virt_of_match,

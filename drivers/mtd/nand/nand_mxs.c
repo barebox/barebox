@@ -2307,7 +2307,7 @@ static __maybe_unused struct of_device_id gpmi_dt_ids[] = {
 	}
 };
 
-static struct driver_d mxs_nand_driver = {
+static struct driver mxs_nand_driver = {
 	.name  = "mxs_nand",
 	.probe = mxs_nand_probe,
 	.of_compatible = DRV_OF_COMPAT(gpmi_dt_ids),

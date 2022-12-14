@@ -151,7 +151,7 @@ static __maybe_unused const struct of_device_id w1_gpio_dt_ids[] = {
 	{}
 };
 
-static struct driver_d w1_gpio_driver = {
+static struct driver w1_gpio_driver = {
 	.name	= "w1-gpio",
 	.probe	= w1_gpio_probe,
 	.of_compatible = DRV_OF_COMPAT(w1_gpio_dt_ids),

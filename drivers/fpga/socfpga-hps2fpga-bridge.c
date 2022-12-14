@@ -160,7 +160,7 @@ static int alt_fpga_bridge_probe(struct device *dev)
 				    priv);
 }
 
-static struct driver_d alt_fpga_bridge_driver = {
+static struct driver alt_fpga_bridge_driver = {
 	.probe = alt_fpga_bridge_probe,
 	.name = "altera-hps2fpga-bridge",
 	.of_compatible = DRV_OF_COMPAT(altera_fpga_of_match),

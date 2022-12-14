@@ -53,7 +53,7 @@ static const struct of_device_id rave_sp_backlight_of_match[] = {
 	{}
 };
 
-static struct driver_d rave_sp_backlight_driver = {
+static struct driver rave_sp_backlight_driver = {
 	.name  = "rave-sp-backlight",
 	.probe = rave_sp_backlight_probe,
 	.of_compatible = DRV_OF_COMPAT(rave_sp_backlight_of_match),

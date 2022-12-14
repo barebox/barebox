@@ -182,7 +182,7 @@ static __maybe_unused struct of_device_id psci_dt_ids[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d psci_driver = {
+static struct driver psci_driver = {
 	.name = "psci",
 	.probe = psci_probe,
 	.of_compatible = DRV_OF_COMPAT(psci_dt_ids),

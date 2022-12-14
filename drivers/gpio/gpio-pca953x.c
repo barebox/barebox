@@ -497,7 +497,7 @@ static const struct of_device_id pca953x_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d pca953x_driver = {
+static struct driver pca953x_driver = {
 	.name	= "pca953x",
 	.probe		= pca953x_probe,
 	.of_compatible	= DRV_OF_COMPAT(pca953x_dt_ids),

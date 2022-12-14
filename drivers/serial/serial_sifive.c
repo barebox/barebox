@@ -164,7 +164,7 @@ static __maybe_unused struct of_device_id sifive_serial_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d serial_sifive_driver = {
+static struct driver serial_sifive_driver = {
 	.name   = "serial_sifive",
 	.probe  = sifive_serial_probe,
 	.of_compatible = sifive_serial_dt_ids,

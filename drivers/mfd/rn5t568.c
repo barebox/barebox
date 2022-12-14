@@ -157,7 +157,7 @@ static __maybe_unused const struct of_device_id rn5t568_of_match[] = {
 	{ }
 };
 
-static struct driver_d rn5t568_i2c_driver = {
+static struct driver rn5t568_i2c_driver = {
 	.name		= "rn5t568-i2c",
 	.probe		= rn5t568_i2c_probe,
 	.of_compatible	= DRV_OF_COMPAT(rn5t568_of_match),

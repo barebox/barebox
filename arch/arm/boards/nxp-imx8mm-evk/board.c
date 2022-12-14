@@ -66,7 +66,7 @@ static const struct of_device_id imx8mm_evk_of_match[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d imx8mm_evk_board_driver = {
+static struct driver imx8mm_evk_board_driver = {
 	.name = "board-imx8mm-evk",
 	.probe = imx8mm_evk_probe,
 	.of_compatible = imx8mm_evk_of_match,

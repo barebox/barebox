@@ -239,7 +239,7 @@ static const struct of_device_id pcf857x_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d pcf857x_driver = {
+static struct driver pcf857x_driver = {
 	.name	= "pcf857x",
 	.probe	= pcf857x_probe,
 	.of_compatible = DRV_OF_COMPAT(pcf857x_dt_ids),

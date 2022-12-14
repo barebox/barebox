@@ -696,7 +696,7 @@ static struct platform_device_id imx_spi_ids[] = {
 	}
 };
 
-static struct driver_d imx_spi_driver = {
+static struct driver imx_spi_driver = {
 	.name  = "imx_spi",
 	.probe = imx_spi_probe,
 	.of_compatible = DRV_OF_COMPAT(imx_spi_dt_ids),

@@ -1277,7 +1277,7 @@ static const struct of_device_id prt_imx6_of_match[] = {
 };
 BAREBOX_DEEP_PROBE_ENABLE(prt_imx6_of_match);
 
-static struct driver_d prt_imx6_board_driver = {
+static struct driver prt_imx6_board_driver = {
 	.name = "board-protonic-imx6",
 	.probe = prt_imx6_probe,
 	.of_compatible = DRV_OF_COMPAT(prt_imx6_of_match),

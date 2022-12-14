@@ -442,7 +442,7 @@ static int kirkwood_pinctrl_probe(struct device *dev)
 	return mvebu_pinctrl_probe(dev, soc);
 }
 
-static struct driver_d kirkwood_pinctrl_driver = {
+static struct driver kirkwood_pinctrl_driver = {
 	.name		= "pinctrl-kirkwood",
 	.probe		= kirkwood_pinctrl_probe,
 	.of_compatible	= kirkwood_pinctrl_of_match,

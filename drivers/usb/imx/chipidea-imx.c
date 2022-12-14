@@ -364,7 +364,7 @@ static __maybe_unused struct of_device_id imx_chipidea_dt_ids[] = {
 	},
 };
 
-static struct driver_d imx_chipidea_driver = {
+static struct driver imx_chipidea_driver = {
 	.name   = "imx-usb",
 	.probe  = imx_chipidea_probe,
 	.of_compatible = DRV_OF_COMPAT(imx_chipidea_dt_ids),

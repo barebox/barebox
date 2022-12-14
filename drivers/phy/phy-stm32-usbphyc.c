@@ -504,7 +504,7 @@ static const struct of_device_id stm32_usbphyc_of_match[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d stm32_usbphyc_driver = {
+static struct driver stm32_usbphyc_driver = {
 	.name = "stm32-usbphyc",
 	.probe = stm32_usbphyc_probe,
 	.remove = stm32_usbphyc_remove,

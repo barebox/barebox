@@ -275,7 +275,7 @@ static int mxs_spi_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d mxs_spi_driver = {
+static struct driver mxs_spi_driver = {
 	.name  = "mxs_spi",
 	.probe = mxs_spi_probe,
 };

@@ -1186,7 +1186,7 @@ nomem2:
 	return ret;
 }
 
-static struct driver_d  g3_driver = {
+static struct driver  g3_driver = {
 	.name	= "docg3",
 	.probe	= docg3_probe,
 };

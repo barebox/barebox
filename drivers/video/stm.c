@@ -582,7 +582,7 @@ static __maybe_unused struct of_device_id stmfb_compatible[] = {
 	}
 };
 
-static struct driver_d stmfb_driver = {
+static struct driver stmfb_driver = {
 	.name	= "stmfb",
 	.probe	= stmfb_probe,
 	.of_compatible = DRV_OF_COMPAT(stmfb_compatible),

@@ -190,7 +190,7 @@ static int at91sam9_smc_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d at91sam9_smc_driver = {
+static struct driver at91sam9_smc_driver = {
 	.name = "at91sam9-smc",
 	.probe = at91sam9_smc_probe,
 };

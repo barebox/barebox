@@ -755,7 +755,7 @@ static int s3c_mci_probe(struct device *hw_dev)
 	return mci_register(&s3c_host->host);
 }
 
-static struct driver_d s3c_mci_driver = {
+static struct driver s3c_mci_driver = {
         .name  = "s3c_mci",
         .probe = s3c_mci_probe,
 };

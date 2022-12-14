@@ -228,7 +228,7 @@ static const struct of_device_id gpio_mdio_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d mdio_gpio_driver = {
+static struct driver mdio_gpio_driver = {
 	.name = "mdio-gpio",
 	.probe = mdio_gpio_probe,
 	.of_compatible = DRV_OF_COMPAT(gpio_mdio_dt_ids),

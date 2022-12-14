@@ -40,7 +40,7 @@ static const struct of_device_id rk3568_evb_of_match[] = {
 	{ /* Sentinel */},
 };
 
-static struct driver_d rk3568_evb_board_driver = {
+static struct driver rk3568_evb_board_driver = {
 	.name = "board-rk3568-evb",
 	.probe = rk3568_evb_probe,
 	.of_compatible = rk3568_evb_of_match,

@@ -601,7 +601,7 @@ static const struct of_device_id stm32_spi_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d stm32_spi_driver = {
+static struct driver stm32_spi_driver = {
 	.name  = "stm32_spi",
 	.probe = stm32_spi_probe,
 	.remove = stm32_spi_remove,

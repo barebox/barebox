@@ -183,7 +183,7 @@ static int imx8mq_usb_phy_probe(struct device *dev)
 	return PTR_ERR_OR_ZERO(phy_provider);
 }
 
-static struct driver_d imx8mq_usb_phy_driver = {
+static struct driver imx8mq_usb_phy_driver = {
 	.name	= "imx8mq-usb-phy",
 	.probe	= imx8mq_usb_phy_probe,
 	.of_compatible = DRV_OF_COMPAT(imx8mq_usb_phy_of_match),

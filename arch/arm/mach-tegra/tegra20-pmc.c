@@ -238,7 +238,7 @@ static __maybe_unused struct of_device_id tegra20_pmc_dt_ids[] = {
 	}
 };
 
-static struct driver_d tegra20_pmc_driver = {
+static struct driver tegra20_pmc_driver = {
 	.probe	= tegra20_pmc_probe,
 	.name	= "tegra20-pmc",
 	.of_compatible = DRV_OF_COMPAT(tegra20_pmc_dt_ids),

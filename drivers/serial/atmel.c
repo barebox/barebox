@@ -448,7 +448,7 @@ static const struct of_device_id __maybe_unused atmel_serial_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d atmel_serial_driver = {
+static struct driver atmel_serial_driver = {
         .name  = "atmel_usart",
         .probe = atmel_serial_probe,
 	.of_compatible = DRV_OF_COMPAT(atmel_serial_dt_ids),

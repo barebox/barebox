@@ -97,7 +97,7 @@ out:
 	return ret;
 }
 
-static struct driver_d tap_driver = {
+static struct driver tap_driver = {
 	.name  = "tap",
 	.probe = tap_probe,
 };

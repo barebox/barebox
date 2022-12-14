@@ -87,7 +87,7 @@ static const struct of_device_id of_gpio_restart_match[] = {
 	{},
 };
 
-static struct driver_d gpio_restart_driver = {
+static struct driver gpio_restart_driver = {
 	.name = "restart-gpio",
 	.of_compatible = of_gpio_restart_match,
 	.probe = gpio_restart_probe,

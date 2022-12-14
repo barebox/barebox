@@ -499,7 +499,7 @@ out:
 	return rc;
 }
 
-static struct driver_d omapfb_driver = {
+static struct driver omapfb_driver = {
 	.name	= "omap_fb",
 	.probe	= omapfb_probe,
 };

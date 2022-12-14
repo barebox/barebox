@@ -22,7 +22,7 @@ static const struct of_device_id beaglev_of_match[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d beaglev_board_driver = {
+static struct driver beaglev_board_driver = {
 	.name = "board-beaglev",
 	.probe = beaglev_probe,
 	.of_compatible = beaglev_of_match,

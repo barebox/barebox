@@ -24,7 +24,7 @@ static const struct of_device_id dkx_of_match[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d dkx_board_driver = {
+static struct driver dkx_board_driver = {
 	.name = "board-stm32mp15xx-dkx",
 	.probe = dkx_probe,
 	.of_compatible = dkx_of_match,

@@ -255,7 +255,7 @@ err:
 	return ret;
 }
 
-static struct driver_d pca954x_driver = {
+static struct driver pca954x_driver = {
 	.name	= "pca954x",
 	.probe		= pca954x_probe,
 	.id_table	= pca954x_id,

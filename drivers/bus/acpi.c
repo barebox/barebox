@@ -197,7 +197,7 @@ static int acpi_register_devices(struct bus_type *bus)
 	return 0;
 }
 
-static int acpi_bus_match(struct device *dev, struct driver_d *drv)
+static int acpi_bus_match(struct device *dev, struct driver *drv)
 {
 	struct acpi_driver *acpidrv = to_acpi_driver(drv);
 	struct acpi_sdt *sdt = acpi_get_dev_sdt(dev);

@@ -177,7 +177,7 @@ static struct of_device_id key_gpio_of_ids[] = {
 	{ }
 };
 
-static struct driver_d gpio_keys_driver = {
+static struct driver gpio_keys_driver = {
 	.name	= "gpio_keys",
 	.probe	= gpio_keys_probe,
 	.of_compatible = DRV_OF_COMPAT(key_gpio_of_ids),

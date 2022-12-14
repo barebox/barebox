@@ -116,7 +116,7 @@ static const struct of_device_id pwm_beeper_match[] = {
 	{ },
 };
 
-static struct driver_d pwm_beeper_driver = {
+static struct driver pwm_beeper_driver = {
 	.name		= "pwm-beeper",
 	.probe		= pwm_beeper_probe,
 	.remove		= pwm_beeper_suspend,

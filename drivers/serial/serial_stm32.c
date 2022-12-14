@@ -241,7 +241,7 @@ static struct of_device_id stm32_serial_dt_ids[] = {
 	}
 };
 
-static struct driver_d stm32_serial_driver = {
+static struct driver stm32_serial_driver = {
 	.name   = "stm32-serial",
 	.probe  = stm32_serial_probe,
 	.of_compatible = DRV_OF_COMPAT(stm32_serial_dt_ids),

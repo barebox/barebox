@@ -128,7 +128,7 @@ static const struct of_device_id sifive_l2_ids[] = {
 	{ /* end of table */ },
 };
 
-static struct driver_d sifive_l2_driver = {
+static struct driver sifive_l2_driver = {
 	.name = "sfive-l2cache",
 	.probe = sifive_l2_probe,
 	.of_compatible = sifive_l2_ids,

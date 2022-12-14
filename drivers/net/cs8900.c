@@ -463,7 +463,7 @@ static int cs8900_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d cs8900_driver = {
+static struct driver cs8900_driver = {
 	.name = "cs8900",
 	.probe = cs8900_probe,
 };

@@ -309,7 +309,7 @@ static const struct of_device_id eqos_tegra186_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d eqos_tegra186_driver = {
+static struct driver eqos_tegra186_driver = {
 	.name = "eqos-tegra186",
 	.probe = eqos_probe_tegra186,
 	.remove	= eqos_remove_tegra186,

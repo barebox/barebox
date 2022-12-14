@@ -312,7 +312,7 @@ static struct platform_device_id imx_serial_ids[] = {
 	},
 };
 
-static struct driver_d imx_serial_driver = {
+static struct driver imx_serial_driver = {
 	.name   = "imx_serial",
 	.probe  = imx_serial_probe,
 	.of_compatible = DRV_OF_COMPAT(imx_serial_dt_ids),

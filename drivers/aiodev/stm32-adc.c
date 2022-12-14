@@ -368,7 +368,7 @@ static const struct of_device_id stm32_adc_match[] = {
 	{}
 };
 
-static struct driver_d stm32_adc_driver = {
+static struct driver stm32_adc_driver = {
 	.name		= "stm32-adc",
 	.probe		= stm32_adc_probe,
 	.of_compatible	= DRV_OF_COMPAT(stm32_adc_match),

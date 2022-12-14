@@ -204,7 +204,7 @@ static const struct of_device_id __maybe_unused stm32_vrefbuf_of_match[] = {
 	{},
 };
 
-static struct driver_d stm32_vrefbuf_driver = {
+static struct driver stm32_vrefbuf_driver = {
 	.probe = stm32_vrefbuf_probe,
 	.name  = "stm32-vrefbuf",
 	.remove = stm32_vrefbuf_remove,

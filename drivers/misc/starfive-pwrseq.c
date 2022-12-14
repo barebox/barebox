@@ -37,7 +37,7 @@ static struct of_device_id starfive_pwrseq_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d starfive_pwrseq_driver = {
+static struct driver starfive_pwrseq_driver = {
 	.name	= "starfive_pwrseq",
 	.probe	= starfive_pwrseq_probe,
 	.of_compatible = starfive_pwrseq_dt_ids,

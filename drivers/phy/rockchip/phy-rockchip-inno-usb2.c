@@ -988,7 +988,7 @@ static const struct of_device_id rockchip_usb2phy_dt_match[] = {
 	{ }
 };
 
-static struct driver_d rockchip_usb2phy_driver = {
+static struct driver rockchip_usb2phy_driver = {
 	.probe		= rockchip_usb2phy_probe,
 	.name	= "rockchip-usb2phy",
 	.of_compatible = rockchip_usb2phy_dt_match,

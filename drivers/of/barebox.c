@@ -81,7 +81,7 @@ static struct of_device_id environment_dt_ids[] = {
 	}
 };
 
-static struct driver_d environment_driver = {
+static struct driver environment_driver = {
 	.name		= "barebox-environment",
 	.probe		= environment_probe,
 	.of_compatible	= environment_dt_ids,

@@ -285,7 +285,7 @@ static __maybe_unused struct of_device_id ath79_spi_dt_ids[] = {
 	}
 };
 
-static struct driver_d ath79_spi_driver = {
+static struct driver ath79_spi_driver = {
 	.name  = "ath79-spi",
 	.probe = ath79_spi_probe,
 	.remove = ath79_spi_remove,

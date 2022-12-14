@@ -739,7 +739,7 @@ struct device_node *of_find_matching_node_and_match(struct device_node *from,
 }
 EXPORT_SYMBOL(of_find_matching_node_and_match);
 
-int of_match(struct device *dev, struct driver_d *drv)
+int of_match(struct device *dev, struct driver *drv)
 {
 	const struct of_device_id *id;
 

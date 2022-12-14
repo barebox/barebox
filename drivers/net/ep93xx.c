@@ -650,7 +650,7 @@ static int ep93xx_phy_write(struct mii_bus *bus, int phy_addr,
 	return 0;
 }
 
-static struct driver_d ep93xx_eth_driver = {
+static struct driver ep93xx_eth_driver = {
 	.name  = "ep93xx_eth",
 	.probe = ep93xx_eth_probe,
 };

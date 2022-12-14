@@ -375,7 +375,7 @@ static struct platform_device_id imx_esdhc_ids[] = {
 	}
 };
 
-static struct driver_d fsl_esdhc_driver = {
+static struct driver fsl_esdhc_driver = {
 	.name  = "imx-esdhc",
 	.probe = fsl_esdhc_probe,
 	.of_compatible = DRV_OF_COMPAT(fsl_esdhc_compatible),

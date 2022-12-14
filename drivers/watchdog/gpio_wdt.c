@@ -130,7 +130,7 @@ static const struct of_device_id gpio_wdt_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d gpio_wdt_driver = {
+static struct driver gpio_wdt_driver = {
 	.name		= "gpio-wdt",
 	.of_compatible	= gpio_wdt_dt_ids,
 	.probe	= gpio_wdt_probe,

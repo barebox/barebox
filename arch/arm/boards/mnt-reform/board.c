@@ -34,7 +34,7 @@ static const struct of_device_id mnt_reform_of_match[] = {
 };
 BAREBOX_DEEP_PROBE_ENABLE(mnt_reform_of_match);
 
-static struct driver_d mnt_reform_board_driver = {
+static struct driver mnt_reform_board_driver = {
 	.name = "board-mnt-reform",
 	.probe = mnt_reform_probe,
 	.of_compatible = DRV_OF_COMPAT(mnt_reform_of_match),

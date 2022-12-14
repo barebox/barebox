@@ -427,7 +427,7 @@ static const struct of_device_id zynq_gpio_of_match[] = {
 	{ /* end of table */ }
 };
 
-static struct driver_d zynqmp_gpio_driver = {
+static struct driver zynqmp_gpio_driver = {
 	.name = "zynqmp-gpio",
 	.of_compatible = zynq_gpio_of_match,
 	.probe = zynqmp_gpio_probe,

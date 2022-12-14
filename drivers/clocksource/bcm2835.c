@@ -81,7 +81,7 @@ static __maybe_unused struct of_device_id bcm2835_cs_dt_ids[] = {
 	}
 };
 
-static struct driver_d bcm2835_cs_driver = {
+static struct driver bcm2835_cs_driver = {
 	.name = "bcm2835-cs",
 	.probe = bcm2835_cs_probe,
 	.of_compatible = DRV_OF_COMPAT(bcm2835_cs_dt_ids),

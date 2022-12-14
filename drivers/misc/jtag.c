@@ -358,7 +358,7 @@ static void jtag_remove(struct device *pdev)
 	dev_notice(pdev, "Device removed\n");
 }
 
-static struct driver_d jtag_driver = {
+static struct driver jtag_driver = {
 	.name = JTAG_NAME,
 	.probe = jtag_probe,
 	.remove = jtag_remove,

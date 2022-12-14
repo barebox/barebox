@@ -28,7 +28,7 @@ static struct of_device_id ti_sysc_dt_ids[] = {
 	{ },
 };
 
-static struct driver_d ti_sysc_driver = {
+static struct driver ti_sysc_driver = {
 	.name = "ti-sysc",
 	.probe = ti_sysc_probe,
 	.of_compatible = DRV_OF_COMPAT(ti_sysc_dt_ids),

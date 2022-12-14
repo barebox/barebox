@@ -34,7 +34,7 @@ static __maybe_unused struct of_device_id kvx_scall_poweroff_id[] = {
 	}
 };
 
-static struct driver_d kvx_scall_poweroff = {
+static struct driver kvx_scall_poweroff = {
 	.name  = "kvx_scall_poweroff",
 	.probe = kvx_scall_poweroff_probe,
 	.of_compatible = DRV_OF_COMPAT(kvx_scall_poweroff_id),

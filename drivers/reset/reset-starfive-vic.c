@@ -226,7 +226,7 @@ static const struct of_device_id starfive_rstgen_reset_dt_ids[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d starfive_rstgen_reset_driver = {
+static struct driver starfive_rstgen_reset_driver = {
 	.name = "starfive_rstgen",
 	.probe = starfive_rstgen_probe,
 	.of_compatible = starfive_rstgen_reset_dt_ids,

@@ -189,7 +189,7 @@ static const struct of_device_id of_rockchip_saradc_match[] = {
 	{ /* end */ }
 };
 
-static struct driver_d rockchip_saradc_driver = {
+static struct driver rockchip_saradc_driver = {
 	.name = "rockchip_saradc",
 	.probe = rockchip_saradc_probe,
 	.of_compatible = DRV_OF_COMPAT(of_rockchip_saradc_match),

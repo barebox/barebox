@@ -84,7 +84,7 @@ static const struct of_device_id __maybe_unused clps711x_clk_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d clps711x_clk_driver = {
+static struct driver clps711x_clk_driver = {
 	.probe = clps711x_clk_probe,
 	.name = "clps711x-clk",
 	.of_compatible = DRV_OF_COMPAT(clps711x_clk_dt_ids),

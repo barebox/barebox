@@ -1472,7 +1472,7 @@ static int __init pxa_udc_probe(struct device *dev)
 
 #define pxa27x_clear_otgph()   do {} while (0)
 
-static struct driver_d udc_driver = {
+static struct driver udc_driver = {
 	.name		= "pxa27x-udc",
 	.probe		= pxa_udc_probe,
 };

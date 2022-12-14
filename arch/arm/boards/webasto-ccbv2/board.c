@@ -55,7 +55,7 @@ static const struct of_device_id ccbv2_of_match[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d ccbv2_board_driver = {
+static struct driver ccbv2_board_driver = {
 	.name = "board-imx6ul-ccbv2",
 	.probe = ccbv2_probe,
 	.of_compatible = ccbv2_of_match,

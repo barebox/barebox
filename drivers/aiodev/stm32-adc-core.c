@@ -203,7 +203,7 @@ static const struct of_device_id stm32_adc_core_ids[] = {
 	{}
 };
 
-static struct driver_d stm32_adc_core_driver = {
+static struct driver stm32_adc_core_driver = {
 	.name		= "stm32-adc-core",
 	.probe		= stm32_adc_core_probe,
 	.of_compatible	= DRV_OF_COMPAT(stm32_adc_core_ids),

@@ -153,7 +153,7 @@ static int mpc5xxx_serial_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d mpc5xxx_serial_driver = {
+static struct driver mpc5xxx_serial_driver = {
         .name  = "mpc5xxx_serial",
         .probe = mpc5xxx_serial_probe,
 };

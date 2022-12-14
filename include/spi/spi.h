@@ -558,7 +558,7 @@ extern struct bus_type spi_bus;
 
 struct spi_controller *spi_get_controller(int bus);
 
-static inline int spi_driver_register(struct driver_d *drv)
+static inline int spi_driver_register(struct driver *drv)
 {
 	drv->bus = &spi_bus;
 	return register_driver(drv);

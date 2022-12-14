@@ -136,7 +136,7 @@ static const struct of_device_id __maybe_unused clps711x_bus_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d clps711x_bus_driver = {
+static struct driver clps711x_bus_driver = {
 	.name = "clps711x-bus",
 	.probe = clps711x_bus_probe,
 	.of_compatible = DRV_OF_COMPAT(clps711x_bus_dt_ids),

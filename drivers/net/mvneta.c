@@ -756,7 +756,7 @@ static struct of_device_id mvneta_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d mvneta_driver = {
+static struct driver mvneta_driver = {
 	.name   = "mvneta",
 	.probe  = mvneta_probe,
 	.of_compatible = DRV_OF_COMPAT(mvneta_dt_ids),

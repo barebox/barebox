@@ -239,7 +239,7 @@ static int imx_pwm_probe(struct device *dev)
 	return pwmchip_add(&imx->chip, dev);;
 }
 
-static struct driver_d imx_pwm_driver = {
+static struct driver imx_pwm_driver = {
 	.name	= "imx-pwm",
 	.of_compatible	= imx_pwm_dt_ids,
 	.probe		= imx_pwm_probe,

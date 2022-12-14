@@ -588,7 +588,7 @@ static const struct of_device_id rockchip_combphy_of_match[] = {
 	{ },
 };
 
-static struct driver_d rockchip_combphy_driver = {
+static struct driver rockchip_combphy_driver = {
 	.probe	= rockchip_combphy_probe,
 	.name = "naneng-combphy",
 	.of_compatible = rockchip_combphy_of_match,

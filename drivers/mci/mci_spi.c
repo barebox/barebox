@@ -451,7 +451,7 @@ static __maybe_unused struct of_device_id spi_mci_compatible[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d spi_mci_driver = {
+static struct driver spi_mci_driver = {
 	.name	= "spi_mci",
 	.probe	= spi_mci_probe,
 	.of_compatible = DRV_OF_COMPAT(spi_mci_compatible),

@@ -534,7 +534,7 @@ static int pxafb_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d pxafb_driver = {
+static struct driver pxafb_driver = {
 	.name	= "pxafb",
 	.probe	= pxafb_probe,
 };

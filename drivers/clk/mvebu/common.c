@@ -96,7 +96,7 @@ static int mvebu_coreclk_probe(struct device *dev)
 	return of_clk_add_provider(np, of_clk_src_onecell_get, &clk_data);
 }
 
-static struct driver_d mvebu_coreclk_driver = {
+static struct driver mvebu_coreclk_driver = {
 	.probe	= mvebu_coreclk_probe,
 	.name	= "mvebu-core-clk",
 	.of_compatible = DRV_OF_COMPAT(mvebu_coreclk_ids),
@@ -197,7 +197,7 @@ static int mvebu_clk_gating_probe(struct device *dev)
 	return of_clk_add_provider(np, clk_gating_get_src, ctrl);
 }
 
-static struct driver_d mvebu_clk_gating_driver = {
+static struct driver mvebu_clk_gating_driver = {
 	.probe	= mvebu_clk_gating_probe,
 	.name	= "mvebu-clk-gating",
 	.of_compatible = DRV_OF_COMPAT(mvebu_clk_gating_ids),

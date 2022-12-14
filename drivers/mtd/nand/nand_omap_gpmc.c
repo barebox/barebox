@@ -1343,7 +1343,7 @@ out_release_mem:
 }
 
 /** GMPC nand driver -> device registered by platforms */
-static struct driver_d gpmc_nand_driver = {
+static struct driver gpmc_nand_driver = {
 	.name = "gpmc_nand",
 	.probe = gpmc_nand_probe,
 };

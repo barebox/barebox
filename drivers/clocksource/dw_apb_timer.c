@@ -136,7 +136,7 @@ static struct of_device_id dw_apb_timer_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d dw_apb_timer_driver = {
+static struct driver dw_apb_timer_driver = {
 	.name = "dw-apb-timer",
 	.probe = dw_apb_timer_probe,
 	.of_compatible = DRV_OF_COMPAT(dw_apb_timer_dt_ids),

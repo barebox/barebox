@@ -648,7 +648,7 @@ static __maybe_unused struct of_device_id omap_mmc_dt_ids[] = {
 	}
 };
 
-static struct driver_d omap_mmc_driver = {
+static struct driver omap_mmc_driver = {
 	.name  = "omap-hsmmc",
 	.probe = omap_mmc_probe,
 	.id_table = omap_mmc_ids,

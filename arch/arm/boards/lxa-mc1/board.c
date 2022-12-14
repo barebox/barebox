@@ -61,7 +61,7 @@ static const struct of_device_id mc1_of_match[] = {
 };
 BAREBOX_DEEP_PROBE_ENABLE(mc1_of_match);
 
-static struct driver_d mc1_board_driver = {
+static struct driver mc1_board_driver = {
 	.name = "board-lxa-mc1",
 	.probe = mc1_probe,
 	.of_compatible = mc1_of_match,

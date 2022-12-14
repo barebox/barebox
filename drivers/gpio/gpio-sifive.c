@@ -79,7 +79,7 @@ static const struct of_device_id sifive_gpio_match[] = {
 	{ },
 };
 
-static struct driver_d sifive_gpio_driver = {
+static struct driver sifive_gpio_driver = {
 	.name		= "sifive_gpio",
 	.of_compatible	= sifive_gpio_match,
 	.probe		= sifive_gpio_probe,

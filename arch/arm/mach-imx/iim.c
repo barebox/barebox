@@ -573,7 +573,7 @@ static __maybe_unused struct of_device_id imx_iim_dt_ids[] = {
 	}
 };
 
-static struct driver_d imx_iim_driver = {
+static struct driver imx_iim_driver = {
 	.name	= DRIVERNAME,
 	.probe	= imx_iim_probe,
 	.of_compatible = DRV_OF_COMPAT(imx_iim_dt_ids),

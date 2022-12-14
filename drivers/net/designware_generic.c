@@ -36,7 +36,7 @@ static __maybe_unused struct of_device_id dwc_ether_compatible[] = {
 	}
 };
 
-static struct driver_d dwc_ether_driver = {
+static struct driver dwc_ether_driver = {
 	.name = "designware_eth",
 	.probe = dwc_ether_probe,
 	.remove	= dwc_drv_remove,

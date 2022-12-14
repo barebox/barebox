@@ -58,7 +58,7 @@ static struct of_device_id sandbox_led_of_ids[] = {
 	{ }
 };
 
-static struct driver_d sandbox_led_of_driver = {
+static struct driver sandbox_led_of_driver = {
 	.name  = "sandbox-led",
 	.probe = sandbox_led_of_probe,
 	.remove = sandbox_led_of_remove,

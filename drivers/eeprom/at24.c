@@ -515,7 +515,7 @@ err_out:
 
 }
 
-static struct driver_d at24_driver = {
+static struct driver at24_driver = {
 	.name		= "at24",
 	.probe		= at24_probe,
 	.id_table	= at24_ids,

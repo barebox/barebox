@@ -194,7 +194,7 @@ static const struct of_device_id of_imx_thermal_match[] = {
 };
 
 
-static struct driver_d imx_thermal_driver = {
+static struct driver imx_thermal_driver = {
 	.name		= "imx_thermal",
 	.probe		= imx_thermal_probe,
 	.of_compatible	= DRV_OF_COMPAT(of_imx_thermal_match),

@@ -572,7 +572,7 @@ static struct of_device_id ethoc_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d ethoc_driver = {
+static struct driver ethoc_driver = {
 	.name  = "ethoc",
 	.probe = ethoc_probe,
 	.of_compatible = DRV_OF_COMPAT(ethoc_dt_ids),

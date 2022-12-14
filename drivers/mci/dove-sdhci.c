@@ -299,7 +299,7 @@ static struct of_device_id dove_sdhci_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d dove_sdhci_driver = {
+static struct driver dove_sdhci_driver = {
 	.name = "dove-sdhci",
 	.probe = dove_sdhci_probe,
 	.of_compatible = DRV_OF_COMPAT(dove_sdhci_dt_ids),

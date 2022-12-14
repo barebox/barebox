@@ -404,7 +404,7 @@ static struct of_device_id imx_ldb_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d imx_ldb_driver = {
+static struct driver imx_ldb_driver = {
 	.probe		= imx_ldb_probe,
 	.of_compatible	= imx_ldb_dt_ids,
 	.name		= "imx-ldb",

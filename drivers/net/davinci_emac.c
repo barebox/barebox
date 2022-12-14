@@ -603,7 +603,7 @@ static __maybe_unused struct of_device_id davinci_emac_dt_ids[] = {
 	}
 };
 
-static struct driver_d davinci_emac_driver = {
+static struct driver davinci_emac_driver = {
 	.name   = "davinci_emac",
 	.probe  = davinci_emac_probe,
 	.remove = davinci_emac_remove,
@@ -659,7 +659,7 @@ static __maybe_unused struct of_device_id davinci_mdio_dt_ids[] = {
 	}
 };
 
-static struct driver_d davinci_mdio_driver = {
+static struct driver davinci_mdio_driver = {
 	.name   = "davinci_mdio",
 	.probe  = davinci_mdio_probe,
 	.of_compatible = DRV_OF_COMPAT(davinci_mdio_dt_ids),

@@ -45,7 +45,7 @@ static __maybe_unused struct of_device_id state_ids[] = {
 	}
 };
 
-static struct driver_d state_driver = {
+static struct driver state_driver = {
 	.name = "state",
 	.probe = state_probe,
 	.of_compatible = DRV_OF_COMPAT(state_ids),

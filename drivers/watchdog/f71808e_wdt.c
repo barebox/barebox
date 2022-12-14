@@ -396,7 +396,7 @@ static int f71808e_probe(struct device *dev)
 	return f71808e_wdt_init(wd, dev);
 }
 
-static struct driver_d f71808e_wdt_driver = {
+static struct driver f71808e_wdt_driver = {
 	.probe	= f71808e_probe,
 	.name	= "f71808e_wdt",
 	.id_table = f71808e_wdt_ids,

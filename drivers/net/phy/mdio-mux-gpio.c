@@ -127,7 +127,7 @@ static const struct of_device_id mdio_mux_gpio_match[] = {
 	{},
 };
 
-static struct driver_d mdio_mux_gpio_driver = {
+static struct driver mdio_mux_gpio_driver = {
 	.name	       = "mdio-mux-gpio",
 	.probe         = mdio_mux_gpio_probe,
 	.of_compatible = mdio_mux_gpio_match,

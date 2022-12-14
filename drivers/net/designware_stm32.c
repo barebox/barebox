@@ -197,7 +197,7 @@ static const struct of_device_id eqos_stm32_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d eqos_stm32_driver = {
+static struct driver eqos_stm32_driver = {
 	.name = "eqos-stm32",
 	.probe = eqos_probe_stm32,
 	.remove	= eqos_remove_stm32,

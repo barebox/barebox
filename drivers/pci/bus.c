@@ -50,7 +50,7 @@ const struct pci_device_id *pci_match_id(const struct pci_device_id *ids,
 }
 EXPORT_SYMBOL(pci_match_id);
 
-static int pci_match(struct device *dev, struct driver_d *drv)
+static int pci_match(struct device *dev, struct driver *drv)
 {
 	struct pci_dev *pdev = to_pci_dev(dev);
 	struct pci_driver *pdrv = to_pci_driver(drv);
@@ -97,7 +97,7 @@ pure_initcall(pci_bus_init);
 
 int pci_register_driver(struct pci_driver *pdrv)
 {
-	struct driver_d *drv = &pdrv->driver;
+	struct driver *drv = &pdrv->driver;
 
 	if (!pdrv->id_table)
 		return -EIO;

@@ -227,7 +227,7 @@ err:
 	return ret;
 }
 
-static struct driver_d nomadik_nand_driver = {
+static struct driver nomadik_nand_driver = {
 	.probe = nomadik_nand_probe,
 	.name = "nomadik_nand",
 };

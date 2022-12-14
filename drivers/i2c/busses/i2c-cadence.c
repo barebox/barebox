@@ -445,7 +445,7 @@ static const struct of_device_id cdns_i2c_match[] = {
 	{},
 };
 
-static struct driver_d cdns_i2c_driver = {
+static struct driver cdns_i2c_driver = {
 	.name = "cdns-i2c",
 	.of_compatible = cdns_i2c_match,
 	.probe = cdns_i2c_probe,

@@ -452,7 +452,7 @@ static __maybe_unused struct of_device_id tegra_sdmmc_compatible[] = {
 	}
 };
 
-static struct driver_d tegra_sdmmc_driver = {
+static struct driver tegra_sdmmc_driver = {
 	.name  = "tegra-sdmmc",
 	.probe = tegra_sdmmc_probe,
 	.of_compatible = DRV_OF_COMPAT(tegra_sdmmc_compatible),

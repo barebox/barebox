@@ -127,7 +127,7 @@ static int act8846_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d act8846_driver = {
+static struct driver act8846_driver = {
 	.name  = DRIVERNAME,
 	.probe = act8846_probe,
 };

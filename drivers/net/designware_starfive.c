@@ -103,7 +103,7 @@ static struct of_device_id starfive_dwc_ether_compatible[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d starfive_dwc_ether_driver = {
+static struct driver starfive_dwc_ether_driver = {
 	.name = "starfive-designware_eth",
 	.probe = starfive_dwc_ether_probe,
 	.of_compatible = starfive_dwc_ether_compatible,

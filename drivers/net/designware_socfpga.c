@@ -262,7 +262,7 @@ static __maybe_unused struct of_device_id socfpga_dwc_ether_compatible[] = {
 	}
 };
 
-static struct driver_d socfpga_dwc_ether_driver = {
+static struct driver socfpga_dwc_ether_driver = {
 	.name = "socfpga_designware_eth",
 	.probe = socfpga_dwc_ether_probe,
 	.remove	= dwc_drv_remove,

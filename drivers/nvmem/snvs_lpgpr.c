@@ -129,7 +129,7 @@ static __maybe_unused struct of_device_id snvs_lpgpr_dt_ids[] = {
 	{ },
 };
 
-static struct driver_d snvs_lpgpr_driver = {
+static struct driver snvs_lpgpr_driver = {
 	.name	= "snvs_lpgpr",
 	.probe	= snvs_lpgpr_probe,
 	.of_compatible = DRV_OF_COMPAT(snvs_lpgpr_dt_ids),

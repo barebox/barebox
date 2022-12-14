@@ -58,7 +58,7 @@ on_error:
 	return ret;
 }
 
-static struct driver_d efi_wdt_driver = {
+static struct driver efi_wdt_driver = {
 	.name = "efi-wdt",
 	.probe = efi_wdt_probe,
 };

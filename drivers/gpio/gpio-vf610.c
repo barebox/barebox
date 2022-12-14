@@ -140,7 +140,7 @@ free_port:
 	return ret;
 }
 
-static struct driver_d vf610_gpio_driver = {
+static struct driver vf610_gpio_driver = {
 	.name	= "gpio-vf610",
 	.probe  = vf610_gpio_probe,
 	.of_compatible = DRV_OF_COMPAT(vf610_gpio_dt_ids),

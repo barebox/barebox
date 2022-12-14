@@ -673,7 +673,7 @@ static int imx_usbmisc_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d imx_usbmisc_driver = {
+static struct driver imx_usbmisc_driver = {
 	.name   = "imx-usbmisc",
 	.probe  = imx_usbmisc_probe,
 	.id_table = imx_usbmisc_ids,

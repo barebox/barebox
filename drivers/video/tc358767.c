@@ -1419,7 +1419,7 @@ err:
 	return ret;
 }
 
-static struct driver_d tc_driver = {
+static struct driver tc_driver = {
 	.name		= "tc358767",
 	.probe		= tc_probe,
 };

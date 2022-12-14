@@ -162,7 +162,7 @@ static __maybe_unused struct of_device_id omap_gpio_dt_ids[] = {
 	}
 };
 
-static struct driver_d omap_gpio_driver = {
+static struct driver omap_gpio_driver = {
 	.name = "omap-gpio",
 	.probe = omap_gpio_probe,
 	.of_compatible = DRV_OF_COMPAT(omap_gpio_dt_ids),

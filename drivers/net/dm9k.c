@@ -871,7 +871,7 @@ static struct of_device_id dm9000_of_matches[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d dm9k_driver = {
+static struct driver dm9k_driver = {
 	.name  = "dm9000",
 	.probe = dm9k_probe,
 	.of_compatible = DRV_OF_COMPAT(dm9000_of_matches),

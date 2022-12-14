@@ -391,7 +391,7 @@ err_free:
 	return ret;
 }
 
-static struct driver_d mvebu_spi_driver = {
+static struct driver mvebu_spi_driver = {
 	.name  = "mvebu-spi",
 	.probe = mvebu_spi_probe,
 	.of_compatible = DRV_OF_COMPAT(mvebu_spi_dt_ids),

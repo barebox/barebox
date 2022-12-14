@@ -264,7 +264,7 @@ static __maybe_unused struct of_device_id atmel_lcdfb_compatible[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d atmel_lcdc_driver = {
+static struct driver atmel_lcdc_driver = {
 	.name	= "atmel_lcdfb",
 	.probe	= atmel_lcdc_probe,
 	.of_compatible = DRV_OF_COMPAT(atmel_lcdfb_compatible),

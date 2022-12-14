@@ -91,7 +91,7 @@ static struct of_device_id regulator_fixed_of_ids[] = {
 	{ }
 };
 
-static struct driver_d regulator_fixed_driver = {
+static struct driver regulator_fixed_driver = {
 	.name  = "regulator-fixed",
 	.probe = regulator_fixed_probe,
 	.of_compatible = DRV_OF_COMPAT(regulator_fixed_of_ids),

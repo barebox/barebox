@@ -61,7 +61,7 @@ static int twl_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d twl_driver = {
+static struct driver twl_driver = {
 	.name  = DRIVERNAME,
 	.probe = twl_probe,
 };

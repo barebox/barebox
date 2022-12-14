@@ -230,7 +230,7 @@ static __maybe_unused struct of_device_id imx_usbphy_dt_ids[] = {
 	},
 };
 
-static struct driver_d imx_usbphy_driver = {
+static struct driver imx_usbphy_driver = {
 	.name   = "imx-usb-phy",
 	.probe  = imx_usbphy_probe,
 	.of_compatible = DRV_OF_COMPAT(imx_usbphy_dt_ids),

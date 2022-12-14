@@ -600,7 +600,7 @@ static __maybe_unused struct of_device_id i2c_dw_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d i2c_dw_driver = {
+static struct driver i2c_dw_driver = {
 	.probe = i2c_dw_probe,
 	.name = "i2c-designware",
 	.of_compatible = DRV_OF_COMPAT(i2c_dw_dt_ids),

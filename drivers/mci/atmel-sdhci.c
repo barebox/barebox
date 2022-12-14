@@ -163,7 +163,7 @@ static const struct of_device_id at91_sdhci_dt_match[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d at91_sdhci_driver = {
+static struct driver at91_sdhci_driver = {
 	.name		= "sdhci-at91",
 	.of_compatible	= DRV_OF_COMPAT(at91_sdhci_dt_match),
 	.probe		= at91_sdhci_probe,

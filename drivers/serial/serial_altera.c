@@ -87,7 +87,7 @@ static int altera_serial_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d altera_serial_driver = {
+static struct driver altera_serial_driver = {
 	.name = "altera_serial",
 	.probe = altera_serial_probe,
 };

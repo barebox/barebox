@@ -373,7 +373,7 @@ static __maybe_unused struct of_device_id at25_dt_ids[] = {
 	}
 };
 
-static struct driver_d at25_driver = {
+static struct driver at25_driver = {
 	.name  = DRIVERNAME,
 	.of_compatible = DRV_OF_COMPAT(at25_dt_ids),
 	.probe = at25_probe,

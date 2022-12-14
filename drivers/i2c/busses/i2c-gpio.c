@@ -229,7 +229,7 @@ static struct of_device_id i2c_gpio_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d i2c_gpio_driver = {
+static struct driver i2c_gpio_driver = {
 	.name	= "i2c-gpio",
 	.probe	= i2c_gpio_probe,
 	.of_compatible = DRV_OF_COMPAT(i2c_gpio_dt_ids),

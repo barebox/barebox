@@ -999,7 +999,7 @@ static __maybe_unused struct of_device_id enc28j60_dt_ids[] = {
 	}
 };
 
-static struct driver_d enc28j60_driver = {
+static struct driver enc28j60_driver = {
 	.name = DRV_NAME,
 	.probe = enc28j60_probe,
 	.of_compatible = DRV_OF_COMPAT(enc28j60_dt_ids),

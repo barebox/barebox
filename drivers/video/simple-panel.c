@@ -166,7 +166,7 @@ static struct of_device_id simple_panel_of_ids[] = {
 	{ }
 };
 
-static struct driver_d simple_panel_driver = {
+static struct driver simple_panel_driver = {
 	.name  = "simple-panel",
 	.probe = simple_panel_probe,
 	.of_compatible = DRV_OF_COMPAT(simple_panel_of_ids),

@@ -726,7 +726,7 @@ int close(int fd)
 }
 EXPORT_SYMBOL(close);
 
-static int fs_match(struct device *dev, struct driver_d *drv)
+static int fs_match(struct device *dev, struct driver *drv)
 {
 	return strcmp(dev->name, drv->name) ? -1 : 0;
 }
@@ -734,7 +734,7 @@ static int fs_match(struct device *dev, struct driver_d *drv)
 static int fs_probe(struct device *dev)
 {
 	struct fs_device_d *fsdev = dev_to_fs_device(dev);
-	struct driver_d *drv = dev->driver;
+	struct driver *drv = dev->driver;
 	struct fs_driver_d *fsdrv = container_of(drv, struct fs_driver_d, drv);
 	int ret;
 
@@ -862,7 +862,7 @@ EXPORT_SYMBOL(register_fs_driver);
 const char *fs_detect(const char *filename, const char *fsoptions)
 {
 	enum filetype type;
-	struct driver_d *drv;
+	struct driver *drv;
 	struct fs_driver_d *fdrv;
 	bool loop = false;
 	unsigned long long offset = 0;

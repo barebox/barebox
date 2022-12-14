@@ -369,7 +369,7 @@ static __maybe_unused struct of_device_id rk_sdhci_compatible[] = {
 	}
 };
 
-static struct driver_d rk_sdhci_driver = {
+static struct driver rk_sdhci_driver = {
 	.name = "rk3568-dwcmshc-sdhci",
 	.probe = rk_sdhci_probe,
 	.of_compatible = DRV_OF_COMPAT(rk_sdhci_compatible),

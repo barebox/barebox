@@ -320,7 +320,7 @@ static __maybe_unused struct of_device_id rk_gmac_compatible[] = {
 	}
 };
 
-static struct driver_d rk_gmac_driver = {
+static struct driver rk_gmac_driver = {
 	.name = "eqos-rockchip",
 	.probe = rk_gmac_probe,
 	.remove = eqos_remove,

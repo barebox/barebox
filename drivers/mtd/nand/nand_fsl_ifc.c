@@ -1026,7 +1026,7 @@ static __maybe_unused struct of_device_id fsl_nand_compatible[] = {
 	}
 };
 
-static struct driver_d fsl_ifc_driver = {
+static struct driver fsl_ifc_driver = {
 	.name = "fsl_nand",
 	.probe = fsl_ifc_nand_probe,
 	.of_compatible = DRV_OF_COMPAT(fsl_nand_compatible),

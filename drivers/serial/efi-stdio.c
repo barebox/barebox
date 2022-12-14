@@ -467,7 +467,7 @@ static int efi_console_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d efi_console_driver = {
+static struct driver efi_console_driver = {
         .name  = "efi-stdio",
         .probe = efi_console_probe,
 };

@@ -183,7 +183,7 @@ static const struct of_device_id gpio_latch_ids[] = {
 	}
 };
 
-static struct driver_d gpio_latch_driver = {
+static struct driver gpio_latch_driver = {
 	.name = "gpio-latch",
 	.probe = gpio_latch_probe,
 	.of_compatible = DRV_OF_COMPAT(gpio_latch_ids),

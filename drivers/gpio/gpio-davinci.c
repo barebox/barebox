@@ -193,7 +193,7 @@ static struct of_device_id davinci_gpio_ids[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d davinci_gpio_driver = {
+static struct driver davinci_gpio_driver = {
 	.name		= "davinci_gpio",
 	.probe		= davinci_gpio_probe,
 	.of_compatible	= DRV_OF_COMPAT(davinci_gpio_ids),

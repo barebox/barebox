@@ -265,7 +265,7 @@ static int atmel_hlcdc_probe(struct device *dev)
 	return atmel_lcdc_register(dev, &atmel_hlcdfb_data);
 }
 
-static struct driver_d atmel_hlcdc_driver = {
+static struct driver atmel_hlcdc_driver = {
 	.name	= "atmel_hlcdfb",
 	.probe	= atmel_hlcdc_probe,
 };

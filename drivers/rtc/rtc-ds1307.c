@@ -481,7 +481,7 @@ exit:
 	return err;
 }
 
-static struct driver_d ds1307_driver = {
+static struct driver ds1307_driver = {
 	.name	= "rtc-ds1307",
 	.probe		= ds1307_probe,
 	.id_table	= ds1307_id,

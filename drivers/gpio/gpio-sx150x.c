@@ -256,7 +256,7 @@ static __maybe_unused struct of_device_id sx150x_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d sx150x_driver = {
+static struct driver sx150x_driver = {
 	.name = "sx150x",
 	.probe = sx150x_probe,
 	.of_compatible = sx150x_dt_ids,

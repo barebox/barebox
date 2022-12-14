@@ -41,7 +41,7 @@ static int mem_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d mem_drv = {
+static struct driver mem_drv = {
 	.name  = "mem",
 	.probe = mem_probe,
 };

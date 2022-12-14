@@ -80,7 +80,7 @@ static struct of_device_id armv7m_systick_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d armv7m_systick_driver = {
+static struct driver armv7m_systick_driver = {
 	.name = "armv7m-systick-timer",
 	.probe = armv7m_systick_probe,
 	.of_compatible = DRV_OF_COMPAT(armv7m_systick_dt_ids),

@@ -1810,7 +1810,7 @@ static int ohci_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d ohci_driver = {
+static struct driver ohci_driver = {
 	.name  = "ohci",
 	.probe = ohci_probe,
 };

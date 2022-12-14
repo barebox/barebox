@@ -118,7 +118,7 @@ static __maybe_unused struct of_device_id digic_serial_dt_ids[] = {
 	}
 };
 
-static struct driver_d digic_serial_driver = {
+static struct driver digic_serial_driver = {
 	.name  = "digic-uart",
 	.probe = digic_serial_probe,
 	.of_compatible = DRV_OF_COMPAT(digic_serial_dt_ids),

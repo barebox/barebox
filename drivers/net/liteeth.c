@@ -370,7 +370,7 @@ static const struct of_device_id liteeth_dt_ids[] = {
 	}
 };
 
-static struct driver_d liteeth_driver = {
+static struct driver liteeth_driver = {
 	.name = DRV_NAME,
 	.probe = liteeth_probe,
 	.of_compatible = DRV_OF_COMPAT(liteeth_dt_ids),

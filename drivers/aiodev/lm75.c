@@ -237,7 +237,7 @@ static const struct platform_device_id lm75_ids[] = {
 	{ /* LIST END */ }
 };
 
-static struct driver_d lm75_driver = {
+static struct driver lm75_driver = {
 	.name  = "lm75",
 	.probe = lm75_probe,
 	.id_table = lm75_ids,

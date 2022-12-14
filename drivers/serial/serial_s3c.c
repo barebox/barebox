@@ -191,7 +191,7 @@ static int s3c_serial_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d s3c_serial_driver = {
+static struct driver s3c_serial_driver = {
 	.name   = "s3c_serial",
 	.probe  = s3c_serial_probe,
 };

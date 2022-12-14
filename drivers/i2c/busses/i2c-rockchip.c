@@ -453,7 +453,7 @@ static const struct of_device_id rk_i2c_match[] = {
 	{},
 };
 
-static struct driver_d rk_i2c_driver = {
+static struct driver rk_i2c_driver = {
 	.name  = "rk3x-i2c",
 	.of_compatible = rk_i2c_match,
 	.probe   = rk_i2c_probe,

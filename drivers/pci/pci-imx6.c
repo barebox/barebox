@@ -875,7 +875,7 @@ static struct of_device_id imx6_pcie_of_match[] = {
 	{},
 };
 
-static struct driver_d imx6_pcie_driver = {
+static struct driver imx6_pcie_driver = {
 	.name = "imx6-pcie",
 	.of_compatible = DRV_OF_COMPAT(imx6_pcie_of_match),
 	.probe = imx6_pcie_probe,

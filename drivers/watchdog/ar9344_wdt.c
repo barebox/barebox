@@ -125,7 +125,7 @@ static __maybe_unused struct of_device_id ar9344_wdt_dt_ids[] = {
 	}
 };
 
-static struct driver_d ar9344_wdt_driver = {
+static struct driver ar9344_wdt_driver = {
 	.name   = "ar9344-wdt",
 	.probe  = ar9344_wdt_probe,
 	.of_compatible = DRV_OF_COMPAT(ar9344_wdt_dt_ids),

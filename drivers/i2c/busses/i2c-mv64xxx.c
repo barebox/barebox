@@ -643,7 +643,7 @@ exit_clk:
 	return rc;
 }
 
-static struct driver_d mv64xxx_i2c_driver = {
+static struct driver mv64xxx_i2c_driver = {
 	.probe	= mv64xxx_i2c_probe,
 	.name = "mv64xxx_i2c",
 	.of_compatible = DRV_OF_COMPAT(mv64xxx_i2c_of_match_table),

@@ -153,7 +153,7 @@ static const struct of_device_id stm32_rng_dt_ids[] = {
 	{ /* sentinel */},
 };
 
-static struct driver_d stm32_rng_driver = {
+static struct driver stm32_rng_driver = {
 	.name = "stm32-rng",
 	.probe = stm32_rng_probe,
 	.remove = stm32_rng_remove,

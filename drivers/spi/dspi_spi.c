@@ -401,7 +401,7 @@ static const struct of_device_id dspi_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d dspi_spi_driver = {
+static struct driver dspi_spi_driver = {
 	.name  = "fsl-dspi",
 	.probe = dspi_probe,
 	.of_compatible = DRV_OF_COMPAT(dspi_dt_ids),

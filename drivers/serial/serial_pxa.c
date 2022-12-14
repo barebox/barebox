@@ -175,7 +175,7 @@ static int pxa_serial_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d pxa_serial_driver = {
+static struct driver pxa_serial_driver = {
 	.name = "pxa_serial",
 	.probe = pxa_serial_probe,
 };

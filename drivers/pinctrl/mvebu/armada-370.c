@@ -401,7 +401,7 @@ static int armada_370_pinctrl_probe(struct device *dev)
 	return mvebu_pinctrl_probe(dev, soc);
 }
 
-static struct driver_d armada_370_pinctrl_driver = {
+static struct driver armada_370_pinctrl_driver = {
 	.name		= "pinctrl-armada-370",
 	.probe		= armada_370_pinctrl_probe,
 	.of_compatible	= armada_370_pinctrl_of_match,

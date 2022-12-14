@@ -437,7 +437,7 @@ static int mvebu_pcie_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d mvebu_pcie_driver = {
+static struct driver mvebu_pcie_driver = {
 	.name = "mvebu-pcie",
 	.probe = mvebu_pcie_probe,
 	.of_compatible = mvebu_pcie_dt_ids,

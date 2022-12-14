@@ -672,7 +672,7 @@ static __maybe_unused struct of_device_id ag71xx_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d ag71xx_driver = {
+static struct driver ag71xx_driver = {
 	.name	= "ag71xx-gmac",
 	.probe		= ag71xx_probe,
 	.remove		= ag71xx_remove,

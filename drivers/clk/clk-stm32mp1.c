@@ -2332,7 +2332,7 @@ static void stm32mp1_rcc_clocks_remove(struct device *dev)
 		of_clk_del_provider(child);
 }
 
-static struct driver_d stm32mp1_rcc_clocks_driver = {
+static struct driver stm32mp1_rcc_clocks_driver = {
 	.name = "stm32mp1_rcc",
 	.of_compatible = stm32mp1_match_data,
 	.probe = stm32mp1_rcc_clocks_probe,

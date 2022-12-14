@@ -192,7 +192,7 @@ static const struct of_device_id omap_wdt_of_match[] = {
 	{},
 };
 
-static struct driver_d omap_wdt_driver = {
+static struct driver omap_wdt_driver = {
 	.probe		= omap_wdt_probe,
 	.name	= "omap_wdt",
 	.of_compatible = DRV_OF_COMPAT(omap_wdt_of_match),

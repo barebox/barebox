@@ -602,7 +602,7 @@ struct scmi_driver {
 	void (*remove)(struct scmi_device *sdev);
 	const struct scmi_device_id *id_table;
 
-	struct driver_d driver;
+	struct driver driver;
 };
 
 #define to_scmi_driver(d) container_of(d, struct scmi_driver, driver)

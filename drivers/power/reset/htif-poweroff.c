@@ -38,7 +38,7 @@ static const struct of_device_id htif_poweroff_of_match[] = {
 	{}
 };
 
-static struct driver_d htif_poweroff_driver = {
+static struct driver htif_poweroff_driver = {
 	.name = "htif-poweroff",
 	.of_compatible = htif_poweroff_of_match,
 	.probe = htif_poweroff_probe,

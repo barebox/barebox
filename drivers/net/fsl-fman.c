@@ -1241,7 +1241,7 @@ static struct of_device_id fsl_fman_mdio_dt_ids[] = {
 	}
 };
 
-static struct driver_d fman_mdio_driver = {
+static struct driver fman_mdio_driver = {
 	.name   = "fsl-fman-mdio",
 	.probe  = fsl_fman_mdio_probe,
 	.of_compatible = DRV_OF_COMPAT(fsl_fman_mdio_dt_ids),
@@ -1258,7 +1258,7 @@ static struct of_device_id fsl_fman_port_dt_ids[] = {
 	}
 };
 
-static struct driver_d fman_port_driver = {
+static struct driver fman_port_driver = {
 	.name   = "fsl-fman-port",
 	.probe  = fsl_fman_port_probe,
 	.of_compatible = DRV_OF_COMPAT(fsl_fman_port_dt_ids),
@@ -1271,7 +1271,7 @@ static struct of_device_id fsl_fman_memac_dt_ids[] = {
 	}
 };
 
-static struct driver_d fman_memac_driver = {
+static struct driver fman_memac_driver = {
 	.name   = "fsl-fman-memac",
 	.probe  = fsl_fman_memac_probe,
 	.remove = fsl_fman_memac_remove,
@@ -1285,7 +1285,7 @@ static struct of_device_id fsl_fman_muram_dt_ids[] = {
 	}
 };
 
-static struct driver_d fman_muram_driver = {
+static struct driver fman_muram_driver = {
 	.name   = "fsl-fman-muram",
 	.probe  = fsl_fman_muram_probe,
 	.of_compatible = DRV_OF_COMPAT(fsl_fman_muram_dt_ids),
@@ -1329,7 +1329,7 @@ static struct of_device_id fsl_fman_dt_ids[] = {
 	}
 };
 
-static struct driver_d fman_driver = {
+static struct driver fman_driver = {
 	.name   = "fsl-fman",
 	.probe  = fsl_fman_probe,
 	.of_compatible = DRV_OF_COMPAT(fsl_fman_dt_ids),

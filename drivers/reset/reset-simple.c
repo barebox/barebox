@@ -182,7 +182,7 @@ static int reset_simple_probe(struct device *dev)
 	return reset_controller_register(&data->rcdev);
 }
 
-static struct driver_d reset_simple_driver = {
+static struct driver reset_simple_driver = {
 	.probe	= reset_simple_probe,
 	.name		= "simple-reset",
 	.of_compatible	= reset_simple_dt_ids,

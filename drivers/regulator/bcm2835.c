@@ -130,7 +130,7 @@ static int regulator_bcm2835_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d regulator_bcm2835_driver = {
+static struct driver regulator_bcm2835_driver = {
 	.name  = "regulator-bcm2835",
 	.probe = regulator_bcm2835_probe,
 };

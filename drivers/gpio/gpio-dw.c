@@ -177,7 +177,7 @@ static __maybe_unused struct of_device_id dwgpio_match[] = {
 	},
 };
 
-static struct driver_d dwgpio_driver = {
+static struct driver dwgpio_driver = {
 	.name = "dw-apb-gpio",
 	.probe = dw_gpio_probe,
 	.of_compatible = DRV_OF_COMPAT(dwgpio_match),

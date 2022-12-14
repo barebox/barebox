@@ -465,7 +465,7 @@ static __maybe_unused struct of_device_id arc_emac_dt_ids[] = {
 	}
 };
 
-static struct driver_d arc_emac_driver = {
+static struct driver arc_emac_driver = {
 	.name = "arc-emac",
 	.probe = arc_emac_probe,
 	.of_compatible = DRV_OF_COMPAT(arc_emac_dt_ids),

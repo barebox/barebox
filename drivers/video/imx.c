@@ -602,7 +602,7 @@ static int imxfb_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d imxfb_driver = {
+static struct driver imxfb_driver = {
 	.name		= "imxfb",
 	.probe		= imxfb_probe,
 };

@@ -89,7 +89,7 @@ static void sdlfb_remove(struct device *dev)
 	kfree(fb);
 }
 
-static struct driver_d sdlfb_driver = {
+static struct driver sdlfb_driver = {
 	.name	= "sdlfb",
 	.probe	= sdlfb_probe,
 	.remove	= sdlfb_remove,

@@ -278,7 +278,7 @@ err:
 	return ret;
 }
 
-static struct driver_d qt1070_driver = {
+static struct driver qt1070_driver = {
 	.name	= "qt1070",
 	.probe	= qt1070_probe,
 };

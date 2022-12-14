@@ -351,7 +351,7 @@ static struct of_device_id ubootenv_dt_ids[] = {
 	}
 };
 
-static struct driver_d ubootenv_driver = {
+static struct driver ubootenv_driver = {
 	.name		= "uboot-environment",
 	.probe		= ubootenv_probe,
 	.of_compatible	= ubootenv_dt_ids,

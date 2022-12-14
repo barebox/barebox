@@ -279,7 +279,7 @@ static const struct of_device_id imx7_reset_dt_ids[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d imx7_reset_driver = {
+static struct driver imx7_reset_driver = {
 	.name = "imx7d-src",
 	.probe = imx7_reset_probe,
 	.of_compatible = DRV_OF_COMPAT(imx7_reset_dt_ids),

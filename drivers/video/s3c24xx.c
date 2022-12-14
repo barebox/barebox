@@ -394,7 +394,7 @@ static int s3cfb_probe(struct device *hw_dev)
 	return 0;
 }
 
-static struct driver_d s3cfb_driver = {
+static struct driver s3cfb_driver = {
 	.name	= "s3c_fb",
 	.probe	= s3cfb_probe,
 };

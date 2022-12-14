@@ -136,7 +136,7 @@ static int stmpe_gpio_probe(struct device *dev)
 	return 0;
 }
 
-static struct driver_d stmpe_gpio_driver = {
+static struct driver stmpe_gpio_driver = {
 	.name = "stmpe-gpio",
 	.probe = stmpe_gpio_probe,
 };

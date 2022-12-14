@@ -209,7 +209,7 @@ static __maybe_unused struct of_device_id bcm2835_gpio_dt_ids[] = {
 	}
 };
 
-static struct driver_d bcm2835_gpio_driver = {
+static struct driver bcm2835_gpio_driver = {
 	.name = "bcm2835-gpio",
 	.probe = bcm2835_gpio_probe,
 	.of_compatible = DRV_OF_COMPAT(bcm2835_gpio_dt_ids),

@@ -159,7 +159,7 @@ static __maybe_unused struct of_device_id imx_sata_dt_ids[] = {
 	}
 };
 
-static struct driver_d imx_sata_driver = {
+static struct driver imx_sata_driver = {
 	.name   = "imx-sata",
 	.probe  = imx_sata_probe,
 	.id_table = imx_sata_ids,

@@ -676,7 +676,7 @@ static const struct of_device_id ramoops_dt_ids[] = {
 	{ },
 };
 
-static struct driver_d ramoops_driver = {
+static struct driver ramoops_driver = {
 	.name = "ramoops",
 	.probe = ramoops_probe,
 	.of_compatible = DRV_OF_COMPAT(ramoops_dt_ids),

@@ -219,7 +219,7 @@ static const __maybe_unused struct of_device_id auart_serial_dt_ids[] = {
 	}
 };
 
-static struct driver_d auart_serial_driver = {
+static struct driver auart_serial_driver = {
 	.name = "auart_serial",
 	.probe = auart_serial_probe,
 	.of_compatible = DRV_OF_COMPAT(auart_serial_dt_ids),

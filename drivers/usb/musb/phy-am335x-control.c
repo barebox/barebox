@@ -169,7 +169,7 @@ free_ctrl:
 	return 0;
 };
 
-static struct driver_d am335x_control_driver = {
+static struct driver am335x_control_driver = {
 	.name   = "am335x-control-usb",
 	.probe  = am335x_control_usb_probe,
 	.of_compatible = DRV_OF_COMPAT(omap_control_usb_dt_ids),

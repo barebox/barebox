@@ -52,7 +52,7 @@ static struct of_device_id sama5_ddr_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d sama5_ddr_driver = {
+static struct driver sama5_ddr_driver = {
 	.name   = "sama5-ddramc",
 	.probe  = sama5_ddr_probe,
 	.of_compatible = sama5_ddr_dt_ids,

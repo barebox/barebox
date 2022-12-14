@@ -604,7 +604,7 @@ static const struct of_device_id zynq_qspi_of_match[] = {
 	{ /* end of table */ }
 };
 
-static struct driver_d zynq_qspi_driver = {
+static struct driver zynq_qspi_driver = {
 	.name  = "zynq-qspi",
 	.probe = zynq_qspi_probe,
 	.of_compatible = DRV_OF_COMPAT(zynq_qspi_of_match),

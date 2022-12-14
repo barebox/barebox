@@ -343,7 +343,7 @@ static __maybe_unused struct of_device_id imx50_ccm_dt_ids[] = {
 	}
 };
 
-static __maybe_unused struct driver_d imx50_ccm_driver = {
+static __maybe_unused struct driver imx50_ccm_driver = {
 	.probe	= imx50_ccm_probe,
 	.name	= "imx50-ccm",
 	.of_compatible = DRV_OF_COMPAT(imx50_ccm_dt_ids),
@@ -432,7 +432,7 @@ static __maybe_unused struct of_device_id imx51_ccm_dt_ids[] = {
 	}
 };
 
-static __maybe_unused struct driver_d imx51_ccm_driver = {
+static __maybe_unused struct driver imx51_ccm_driver = {
 	.probe	= imx51_ccm_probe,
 	.name	= "imx51-ccm",
 	.of_compatible = DRV_OF_COMPAT(imx51_ccm_dt_ids),
@@ -530,7 +530,7 @@ static __maybe_unused struct of_device_id imx53_ccm_dt_ids[] = {
 	}
 };
 
-static __maybe_unused struct driver_d imx53_ccm_driver = {
+static __maybe_unused struct driver imx53_ccm_driver = {
 	.probe	= imx53_ccm_probe,
 	.name	= "imx53-ccm",
 	.of_compatible = DRV_OF_COMPAT(imx53_ccm_dt_ids),

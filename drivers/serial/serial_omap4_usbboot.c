@@ -60,7 +60,7 @@ static int serial_omap4_usbboot_probe(struct device *dev)
 	return console_register(&priv->cdev);
 }
 
-static struct driver_d serial_omap4_usbboot_driver = {
+static struct driver serial_omap4_usbboot_driver = {
 	.name = "serial_omap4_usbboot",
 	.probe = serial_omap4_usbboot_probe,
 };

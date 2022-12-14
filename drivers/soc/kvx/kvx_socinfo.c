@@ -133,7 +133,7 @@ static const struct of_device_id kvx_socinfo_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d kvx_socinfo_driver = {
+static struct driver kvx_socinfo_driver = {
 	.name = "kvx-socinfo",
 	.probe = kvx_socinfo_probe,
 	.of_compatible = DRV_OF_COMPAT(kvx_socinfo_dt_ids),

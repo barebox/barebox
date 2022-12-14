@@ -47,7 +47,7 @@ static __maybe_unused struct of_device_id stpmic1_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d stpmic1_i2c_driver = {
+static struct driver stpmic1_i2c_driver = {
 	.name		= "stpmic1-i2c",
 	.probe		= stpmic1_probe,
 	.of_compatible	= DRV_OF_COMPAT(stpmic1_dt_ids),

@@ -53,7 +53,7 @@ static const struct of_device_id marsboard_of_match[] = {
 };
 BAREBOX_DEEP_PROBE_ENABLE(marsboard_of_match);
 
-static struct driver_d marsboard_driver = {
+static struct driver marsboard_driver = {
 	.name = "board-mars",
 	.probe = marsboard_device_init,
 	.of_compatible = marsboard_of_match,

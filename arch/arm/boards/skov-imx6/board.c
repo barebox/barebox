@@ -669,7 +669,7 @@ static __maybe_unused struct of_device_id skov_version_ids[] = {
 };
 BAREBOX_DEEP_PROBE_ENABLE(skov_version_ids);
 
-static struct driver_d skov_version_driver = {
+static struct driver skov_version_driver = {
 	.name = "skov-imx6",
 	.probe = skov_imx6_probe,
 	.of_compatible = DRV_OF_COMPAT(skov_version_ids),

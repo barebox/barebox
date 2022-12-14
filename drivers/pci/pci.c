@@ -341,7 +341,7 @@ static void postscan_setup_bridge(struct pci_dev *dev)
 }
 
 static struct device_node *
-pci_of_match_device(struct device_d *parent, unsigned int devfn)
+pci_of_match_device(struct device *parent, unsigned int devfn)
 {
 	struct device_node *np;
 	u32 reg;

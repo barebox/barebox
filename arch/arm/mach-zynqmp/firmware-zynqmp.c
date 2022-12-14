@@ -577,7 +577,7 @@ const struct zynqmp_eemi_ops *zynqmp_pm_get_eemi_ops(void)
 EXPORT_SYMBOL_GPL(zynqmp_pm_get_eemi_ops);
 
 
-static int zynqmp_firmware_probe(struct device_d *dev)
+static int zynqmp_firmware_probe(struct device *dev)
 {
 	int ret;
 

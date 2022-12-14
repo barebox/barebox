@@ -395,7 +395,7 @@ device_initcall(usb_a9260_devices_init);
 #ifndef CONFIG_CONSOLE_NONE
 static int usb_a9260_console_init(void)
 {
-	struct device_d *dev;
+	struct device *dev;
 
 	if (machine_is_usb_a9260()) {
 		barebox_set_model("Calao USB-A9260");

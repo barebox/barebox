@@ -23,7 +23,7 @@ static int reboot_mode_param_set(struct param_d *p, void *priv)
 	return reboot->write(reboot, &reboot->magics[i]);
 }
 
-static int reboot_mode_add_param(struct device_d *dev,
+static int reboot_mode_add_param(struct device *dev,
 				 const char *prefix,
 				 struct reboot_mode_driver *reboot)
 {

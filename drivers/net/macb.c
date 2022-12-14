@@ -53,7 +53,7 @@
 #define GEM_Q1_DESC_BYTES	(sizeof(struct macb_dma_desc) * GEM_Q1_DESCS)
 
 struct macb_config {
-	int (*txclk_init)(struct device_d *dev, struct clk **tx_clk);
+	int (*txclk_init)(struct device *dev, struct clk **tx_clk);
 };
 
 struct macb_device {
@@ -75,7 +75,7 @@ struct macb_device {
 	int			phy_addr;
 
 	struct clk		*pclk, *hclk, *txclk, *rxclk;
-	const struct device_d	*dev;
+	const struct device	*dev;
 	struct eth_device	netdev;
 
 	phy_interface_t		interface;
@@ -730,7 +730,7 @@ static const struct clk_ops fu540_c000_ops = {
 	.set_rate = fu540_macb_tx_set_rate,
 };
 
-static int fu540_c000_txclk_init(struct device_d *dev, struct clk **tx_clk)
+static int fu540_c000_txclk_init(struct device *dev, struct clk **tx_clk)
 {
 	struct clk *clk;
 	struct resource *res;
@@ -766,13 +766,13 @@ static int fu540_c000_txclk_init(struct device_d *dev, struct clk **tx_clk)
 	return 0;
 }
 #else
-static int fu540_c000_txclk_init(struct device_d *dev, struct clk **tx_clk)
+static int fu540_c000_txclk_init(struct device *dev, struct clk **tx_clk)
 {
 	return -ENOSYS;
 }
 #endif
 
-static int macb_probe(struct device_d *dev)
+static int macb_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct eth_device *edev;
@@ -918,7 +918,7 @@ static int macb_probe(struct device_d *dev)
 	return 0;
 }
 
-static void macb_remove(struct device_d *dev)
+static void macb_remove(struct device *dev)
 {
 	struct macb_device *macb = dev->priv;
 

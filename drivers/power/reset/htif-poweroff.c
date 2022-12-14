@@ -19,7 +19,7 @@ static void __noreturn riscvemu_poweroff(struct poweroff_handler *pwr)
 	__builtin_unreachable();
 }
 
-static int htif_poweroff_probe(struct device_d *dev)
+static int htif_poweroff_probe(struct device *dev)
 {
 	struct resource *iores;
 

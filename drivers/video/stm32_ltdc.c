@@ -21,7 +21,7 @@
 
 struct ltdc_hw {
 	void __iomem *regs;
-	struct device_d *dev;
+	struct device *dev;
 	struct clk *pclk;
 	bool claimed;
 };
@@ -252,7 +252,7 @@ static struct fb_ops ltdc_ops = {
 	.fb_disable		= ltdc_disable,
 };
 
-static int ltdc_probe(struct device_d *dev)
+static int ltdc_probe(struct device *dev)
 {
 	struct device_node *np;
 	struct resource *iores;

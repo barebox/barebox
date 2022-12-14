@@ -200,7 +200,7 @@ static void tegra20_pmc_detect_reset_cause(void)
 	}
 }
 
-static int tegra20_pmc_probe(struct device_d *dev)
+static int tegra20_pmc_probe(struct device *dev)
 {
 	struct resource *iores;
 	iores = dev_request_mem_resource(dev, 0);

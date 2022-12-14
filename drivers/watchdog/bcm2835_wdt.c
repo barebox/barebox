@@ -21,7 +21,7 @@
 struct bcm2835_wd {
 	struct watchdog wd;
 	void __iomem *base;
-	struct device_d *dev;
+	struct device *dev;
 	struct restart_handler restart;
 };
 
@@ -60,7 +60,7 @@ static int bcm2835_wd_set_timeout(struct watchdog *wd, unsigned timeout)
 	return 0;
 }
 
-static int bcm2835_wd_probe(struct device_d *dev)
+static int bcm2835_wd_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct bcm2835_wd *priv;

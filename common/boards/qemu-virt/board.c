@@ -36,7 +36,7 @@ static inline void arm_virt_init(void) {}
 
 extern char __dtb_overlay_of_flash_start[];
 
-static int virt_probe(struct device_d *dev)
+static int virt_probe(struct device *dev)
 {
 	struct device_node *overlay;
 	void (*init)(void);

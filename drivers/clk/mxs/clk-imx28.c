@@ -67,7 +67,7 @@ enum imx28_clk {
 static struct clk *clks[clk_max];
 static struct clk_onecell_data clk_data;
 
-static int __init mx28_clocks_init(struct device_d *dev, void __iomem *regs)
+static int __init mx28_clocks_init(struct device *dev, void __iomem *regs)
 {
 	struct device_node *dcnp;
 
@@ -175,7 +175,7 @@ static int __init mx28_clocks_init(struct device_d *dev, void __iomem *regs)
 	return 0;
 }
 
-static int imx28_ccm_probe(struct device_d *dev)
+static int imx28_ccm_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *regs;

@@ -335,7 +335,7 @@ static int stm32_pwm_detect_channels(struct stm32_pwm *priv)
 
 static int id = -1;
 
-static int stm32_pwm_probe(struct device_d *dev)
+static int stm32_pwm_probe(struct device *dev)
 {
 	struct device_node *np = dev->of_node;
 	struct stm32_timers *ddata = dev->parent->priv;

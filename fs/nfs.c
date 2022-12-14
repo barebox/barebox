@@ -1059,7 +1059,7 @@ static void nfs_handler(void *ctx, char *p, unsigned len)
 	list_add_tail(&packet->list, &npriv->packets);
 }
 
-static int nfs_truncate(struct device_d *dev, FILE *f, loff_t size)
+static int nfs_truncate(struct device *dev, FILE *f, loff_t size)
 {
 	return -ENOSYS;
 }
@@ -1150,7 +1150,7 @@ static const char *nfs_get_link(struct dentry *dentry, struct inode *inode)
 	return inode->i_link;
 }
 
-static int nfs_open(struct device_d *dev, FILE *file, const char *filename)
+static int nfs_open(struct device *dev, FILE *file, const char *filename)
 {
 	struct inode *inode = file->f_inode;
 	struct nfs_inode *ninode = nfsi(inode);
@@ -1172,7 +1172,7 @@ static int nfs_open(struct device_d *dev, FILE *file, const char *filename)
 	return 0;
 }
 
-static int nfs_close(struct device_d *dev, FILE *file)
+static int nfs_close(struct device *dev, FILE *file)
 {
 	struct file_priv *priv = file->priv;
 
@@ -1181,13 +1181,13 @@ static int nfs_close(struct device_d *dev, FILE *file)
 	return 0;
 }
 
-static int nfs_write(struct device_d *_dev, FILE *file, const void *inbuf,
-		size_t insize)
+static int nfs_write(struct device *_dev, FILE *file, const void *inbuf,
+		     size_t insize)
 {
 	return -ENOSYS;
 }
 
-static int nfs_read(struct device_d *dev, FILE *file, void *buf, size_t insize)
+static int nfs_read(struct device *dev, FILE *file, void *buf, size_t insize)
 {
 	struct file_priv *priv = file->priv;
 
@@ -1203,7 +1203,7 @@ static int nfs_read(struct device_d *dev, FILE *file, void *buf, size_t insize)
 	return kfifo_get(priv->fifo, buf, insize);
 }
 
-static int nfs_lseek(struct device_d *dev, FILE *file, loff_t pos)
+static int nfs_lseek(struct device *dev, FILE *file, loff_t pos)
 {
 	struct file_priv *priv = file->priv;
 
@@ -1419,7 +1419,7 @@ static void nfs_set_rootarg(struct nfs_priv *npriv, struct fs_device_d *fsdev)
 	free(str);
 }
 
-static int nfs_probe(struct device_d *dev)
+static int nfs_probe(struct device *dev)
 {
 	struct fs_device_d *fsdev = dev_to_fs_device(dev);
 	struct nfs_priv *npriv = xzalloc(sizeof(struct nfs_priv));
@@ -1519,7 +1519,7 @@ err:
 	return ret;
 }
 
-static void nfs_remove(struct device_d *dev)
+static void nfs_remove(struct device *dev)
 {
 	struct nfs_priv *npriv = dev->priv;
 

@@ -260,7 +260,7 @@ struct atmel_lcdfb_devdata atmel_hlcdfb_data = {
 	.dma_desc_size = sizeof(struct atmel_hlcd_dma_desc),
 };
 
-static int atmel_hlcdc_probe(struct device_d *dev)
+static int atmel_hlcdc_probe(struct device *dev)
 {
 	return atmel_lcdc_register(dev, &atmel_hlcdfb_data);
 }

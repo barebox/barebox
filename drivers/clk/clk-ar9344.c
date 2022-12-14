@@ -99,7 +99,7 @@ static void ar9344_pll_init(void __iomem *base)
 	clks[ATH79_CLK_CPU] = clk_ar9344("cpu", "ref", base);
 }
 
-static int ar9344_clk_probe(struct device_d *dev)
+static int ar9344_clk_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *base;

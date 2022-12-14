@@ -24,7 +24,7 @@ struct nop_usbphy {
 	int reset;
 };
 
-static struct phy *nop_usbphy_xlate(struct device_d *dev,
+static struct phy *nop_usbphy_xlate(struct device *dev,
 				    struct of_phandle_args *args)
 {
 	struct nop_usbphy *nopphy = dev->priv;
@@ -64,7 +64,7 @@ static const struct phy_ops nop_phy_ops = {
 	.init = nop_usbphy_init,
 };
 
-static int nop_usbphy_probe(struct device_d *dev)
+static int nop_usbphy_probe(struct device *dev)
 {
 	int ret;
 	struct nop_usbphy *nopphy;

@@ -75,7 +75,7 @@ static void build_instantiation_desc(u32 *desc, int handle, int do_sk)
  *	   - -ENODEV if the DECO couldn't be acquired
  *	   - -EAGAIN if an error occurred while executing the descriptor
  */
-static inline int run_descriptor_deco0(struct device_d *ctrldev, u32 *desc,
+static inline int run_descriptor_deco0(struct device *ctrldev, u32 *desc,
 					u32 *status)
 {
 	struct caam_drv_private *ctrlpriv = ctrldev->priv;
@@ -171,7 +171,7 @@ static inline int run_descriptor_deco0(struct device_d *ctrldev, u32 *desc,
  *	      f.i. there was a RNG hardware error due to not "good enough"
  *	      entropy being aquired.
  */
-static int instantiate_rng(struct device_d *ctrldev, int state_handle_mask,
+static int instantiate_rng(struct device *ctrldev, int state_handle_mask,
 			   int gen_sk)
 {
 	struct caam_drv_private *ctrlpriv = ctrldev->priv;
@@ -222,7 +222,7 @@ static int instantiate_rng(struct device_d *ctrldev, int state_handle_mask,
 	return ret;
 }
 
-static void caam_remove(struct device_d *dev)
+static void caam_remove(struct device *dev)
 {
 	struct caam_drv_private *ctrlpriv = dev->priv;
 
@@ -241,7 +241,7 @@ static void caam_remove(struct device_d *dev)
  * @pdev - pointer to the platform device
  * @ent_delay - Defines the length (in system clocks) of each entropy sample.
  */
-static void kick_trng(struct device_d *ctrldev, int ent_delay)
+static void kick_trng(struct device *ctrldev, int ent_delay)
 {
 	struct caam_drv_private *ctrlpriv = ctrldev->priv;
 	struct caam_ctrl __iomem *ctrl;
@@ -350,7 +350,7 @@ static int caam_get_era(struct caam_ctrl __iomem *ctrl)
 }
 
 /* Probe routine for CAAM top (controller) level */
-static int caam_probe(struct device_d *dev)
+static int caam_probe(struct device *dev)
 {
 	int ret, ring, rspec, gen_sk, ent_delay = RTSDCTL_ENT_DLY_MIN;
 	u64 caam_id;
@@ -525,14 +525,14 @@ static int caam_probe(struct device_d *dev)
 		    of_device_is_compatible(np, "fsl,sec4.0-job-ring"))
 			rspec++;
 
-	ctrlpriv->jrpdev = xzalloc(sizeof(struct device_d *) * rspec);
+	ctrlpriv->jrpdev = xzalloc(sizeof(struct device *) * rspec);
 
 	ring = 0;
 	ctrlpriv->total_jobrs = 0;
 	for_each_available_child_of_node(nprop, np) {
 		if (of_device_is_compatible(np, "fsl,sec-v4.0-job-ring") ||
 		    of_device_is_compatible(np, "fsl,sec4.0-job-ring")) {
-			struct device_d *jrdev;
+			struct device *jrdev;
 
 			jrdev = of_platform_device_create(np, dev);
 			if (!jrdev)

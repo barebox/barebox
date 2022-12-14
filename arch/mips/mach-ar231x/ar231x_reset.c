@@ -48,7 +48,7 @@ void ar231x_reset_bit(u32 val, enum reset_state state)
 }
 EXPORT_SYMBOL(ar231x_reset_bit);
 
-static int ar231x_reset_probe(struct device_d *dev)
+static int ar231x_reset_probe(struct device *dev)
 {
 	struct resource *iores;
 	iores = dev_request_mem_resource(dev, 0);

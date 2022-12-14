@@ -660,7 +660,7 @@ static int usb_hub_configure_ports(struct usb_device *dev)
 	return usb_device_list_scan();
 }
 
-static int usb_hub_detect(struct device_d *dev)
+static int usb_hub_detect(struct device *dev)
 {
 	struct usb_device *usbdev = container_of(dev, struct usb_device, dev);
 	int i;

@@ -35,7 +35,7 @@ struct dwc3_match_data {
 static int dwc3_get_dr_mode(struct dwc3 *dwc)
 {
 	enum usb_dr_mode mode;
-	struct device_d *dev = dwc->dev;
+	struct device *dev = dwc->dev;
 	unsigned int hw_mode;
 
 	if (dwc->dr_mode == USB_DR_MODE_UNKNOWN)
@@ -634,7 +634,7 @@ static int dwc3_core_get_phy(struct dwc3 *dwc);
 /* set global incr burst type configuration registers */
 static void dwc3_set_incr_burst_type(struct dwc3 *dwc)
 {
-	struct device_d *dev = dwc->dev;
+	struct device *dev = dwc->dev;
 	/* incrx_mode : for INCR burst type. */
 	bool incrx_mode;
 	/* incrx_size : for size of INCRX burst. */
@@ -904,7 +904,7 @@ err0:
 
 static int dwc3_core_get_phy(struct dwc3 *dwc)
 {
-	struct device_d		*dev = dwc->dev;
+	struct device		*dev = dwc->dev;
 	int ret;
 
 	dwc->usb2_generic_phy = phy_get(dev, "usb2-phy");
@@ -939,7 +939,7 @@ static int dwc3_core_get_phy(struct dwc3 *dwc)
 static int dwc3_set_mode(void *ctx, enum usb_dr_mode mode)
 {
 	struct dwc3 *dwc = ctx;
-	struct device_d *dev = dwc->dev;
+	struct device *dev = dwc->dev;
 	int ret;
 
 	switch (mode) {
@@ -980,7 +980,7 @@ static int dwc3_core_init_mode(struct dwc3 *dwc)
 
 static void dwc3_get_properties(struct dwc3 *dwc)
 {
-	struct device_d		*dev = dwc->dev;
+	struct device		*dev = dwc->dev;
 	u8			lpm_nyet_threshold;
 	u8			tx_de_emphasis;
 	u8			hird_threshold;
@@ -1031,7 +1031,7 @@ bool dwc3_has_imod(struct dwc3 *dwc)
 
 static void dwc3_check_params(struct dwc3 *dwc)
 {
-	struct device_d *dev = dwc->dev;
+	struct device *dev = dwc->dev;
 
 	/* Check for proper value of imod_interval */
 	if (dwc->imod_interval && !dwc3_has_imod(dwc)) {
@@ -1097,7 +1097,7 @@ static void dwc3_coresoft_reset(struct dwc3 *dwc)
 	dwc3_writel(dwc->regs, DWC3_GCTL, reg);
 }
 
-static int dwc3_probe(struct device_d *dev)
+static int dwc3_probe(struct device *dev)
 {
 	const struct dwc3_match_data *match;
 	struct dwc3		*dwc;
@@ -1172,7 +1172,7 @@ static int dwc3_probe(struct device_d *dev)
 	return 0;
 }
 
-static void dwc3_remove(struct device_d *dev)
+static void dwc3_remove(struct device *dev)
 {
 	struct dwc3 *dwc = dev->priv;
 

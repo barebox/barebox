@@ -58,7 +58,7 @@ static int litex_serial_tstc(struct console_device *cdev)
 	return !litex_serial_readb(cdev, UART_RXEMPTY);
 }
 
-static int litex_serial_probe(struct device_d *dev)
+static int litex_serial_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct console_device *cdev;

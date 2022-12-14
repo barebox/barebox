@@ -139,7 +139,7 @@ static int watchdog_register_dev(struct watchdog *wd, const char *name, int id)
  *
  * return: The priority
  */
-static unsigned int dev_get_watchdog_priority(struct device_d *dev)
+static unsigned int dev_get_watchdog_priority(struct device *dev)
 {
 	unsigned int priority = WATCHDOG_DEFAULT_PRIORITY;
 
@@ -329,7 +329,7 @@ EXPORT_SYMBOL(watchdog_get_alias_id_from);
 struct watchdog *watchdog_get_by_name(const char *name)
 {
 	struct watchdog *tmp;
-	struct device_d *dev = get_device_by_name(name);
+	struct device *dev = get_device_by_name(name);
 	if (!dev)
 		return NULL;
 

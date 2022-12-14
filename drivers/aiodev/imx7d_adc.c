@@ -80,11 +80,11 @@ struct imx7d_adc_feature {
 };
 
 struct imx7d_adc {
-	struct device_d *dev;
+	struct device *dev;
 	void __iomem *regs;
 	struct clk *clk;
 	struct aiodevice aiodev;
-	void (*aiodev_info)(struct device_d *);
+	void (*aiodev_info)(struct device *);
 
 	u32 vref_uv;
 	u32 pre_div_num;
@@ -309,7 +309,7 @@ static void imx7d_adc_power_down(struct imx7d_adc *info)
 
 static int imx7d_adc_enable(struct imx7d_adc *info)
 {
-	struct device_d *dev = info->dev;
+	struct device *dev = info->dev;
 	int ret;
 
 	ret = regulator_enable(info->vref);
@@ -345,7 +345,7 @@ static u32 imx7d_adc_get_sample_rate(struct imx7d_adc *info)
 	return analogue_core_clk / tmp;
 }
 
-static void imx7d_adc_devinfo(struct device_d *dev)
+static void imx7d_adc_devinfo(struct device *dev)
 {
 	struct imx7d_adc *info = dev->parent->priv;
 
@@ -355,7 +355,7 @@ static void imx7d_adc_devinfo(struct device_d *dev)
 	printf("Sample Rate: %u\n", imx7d_adc_get_sample_rate(info));
 }
 
-static int imx7d_adc_probe(struct device_d *dev)
+static int imx7d_adc_probe(struct device *dev)
 {
 	struct aiodevice *aiodev;
 	struct imx7d_adc *info;
@@ -408,7 +408,7 @@ static int imx7d_adc_probe(struct device_d *dev)
 	return 0;
 }
 
-static void imx7d_adc_disable(struct device_d *dev)
+static void imx7d_adc_disable(struct device *dev)
 {
 	struct imx7d_adc *info = dev->priv;
 

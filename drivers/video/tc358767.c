@@ -204,7 +204,7 @@ struct tc_edp_link {
 
 struct tc_data {
 	struct i2c_client	*client;
-	struct device_d		*dev;
+	struct device		*dev;
 	/* DP AUX channel */
 	struct i2c_adapter	adapter;
 	struct vpl		vpl;
@@ -880,7 +880,7 @@ err:
 
 static int tc_main_link_setup(struct tc_data *tc)
 {
-	struct device_d *dev = tc->dev;
+	struct device *dev = tc->dev;
 	unsigned int rate;
 	u32 dp_phy_ctrl;
 	int timeout;
@@ -1334,7 +1334,7 @@ static int tc_ioctl(struct vpl *vpl, unsigned int port,
 	return ret;
 }
 
-static int tc_probe(struct device_d *dev)
+static int tc_probe(struct device *dev)
 {
 	struct i2c_client *client = to_i2c_client(dev);
 	struct tc_data *tc;

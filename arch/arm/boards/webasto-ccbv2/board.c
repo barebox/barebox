@@ -12,7 +12,7 @@
 
 #include "ccbv2.h"
 
-static int ccbv2_probe(struct device_d *dev)
+static int ccbv2_probe(struct device *dev)
 {
 	struct device_node *overlay;
 	struct fdt_header *fdt;

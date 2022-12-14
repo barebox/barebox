@@ -11,7 +11,7 @@ static LIST_HEAD(sbu_list);
 
 struct sbu {
 	char *uuid;
-	struct device_d *dev;
+	struct device *dev;
 	struct cdev *rcdev;
 	struct cdev cdev;
 	struct list_head list;
@@ -147,7 +147,7 @@ static void check_exist(struct sbu *sbu)
 	}
 }
 
-static int sbu_detect(struct device_d *dev)
+static int sbu_detect(struct device *dev)
 {
 	struct sbu *sbu = dev->priv;
 
@@ -158,7 +158,7 @@ static int sbu_detect(struct device_d *dev)
 	return 0;
 }
 
-static int storage_by_uuid_probe(struct device_d *dev)
+static int storage_by_uuid_probe(struct device *dev)
 {
 	struct sbu *sbu;
 	int ret;

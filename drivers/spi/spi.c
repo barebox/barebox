@@ -383,12 +383,12 @@ int spi_write_then_read(struct spi_device *spi,
 }
 EXPORT_SYMBOL(spi_write_then_read);
 
-static int spi_probe(struct device_d *dev)
+static int spi_probe(struct device *dev)
 {
 	return dev->driver->probe(dev);
 }
 
-static void spi_remove(struct device_d *dev)
+static void spi_remove(struct device *dev)
 {
 	if (dev->driver->remove)
 		dev->driver->remove(dev);

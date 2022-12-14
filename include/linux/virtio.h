@@ -52,7 +52,7 @@ struct virtio_device {
 	bool failed;
 	bool config_enabled;
 	bool config_change_pending;
-	struct device_d dev;
+	struct device dev;
 	struct virtio_device_id id;
 	const struct virtio_config_ops *config;
 	struct list_head vqs;
@@ -61,7 +61,7 @@ struct virtio_device {
 	u32 status_param;
 };
 
-static inline struct virtio_device *dev_to_virtio(struct device_d *_dev)
+static inline struct virtio_device *dev_to_virtio(struct device *_dev)
 {
 	return container_of(_dev, struct virtio_device, dev);
 }
@@ -69,7 +69,7 @@ static inline struct virtio_device *dev_to_virtio(struct device_d *_dev)
 void virtio_add_status(struct virtio_device *dev, unsigned int status);
 int register_virtio_device(struct virtio_device *dev);
 void unregister_virtio_device(struct virtio_device *dev);
-bool is_virtio_device(struct device_d *dev);
+bool is_virtio_device(struct device *dev);
 
 void virtio_break_device(struct virtio_device *dev);
 

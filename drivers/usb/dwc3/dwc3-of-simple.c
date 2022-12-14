@@ -20,12 +20,12 @@
 #include <of.h>
 
 struct dwc3_of_simple {
-	struct device_d		*dev;
+	struct device		*dev;
 	struct clk_bulk_data	*clks;
 	int			num_clocks;
 };
 
-static int dwc3_of_simple_probe(struct device_d *dev)
+static int dwc3_of_simple_probe(struct device *dev)
 {
 	struct dwc3_of_simple	*simple;
 	struct device_node	*np = dev->of_node;
@@ -57,7 +57,7 @@ static int dwc3_of_simple_probe(struct device_d *dev)
 	return 0;
 }
 
-static void dwc3_of_simple_remove(struct device_d *dev)
+static void dwc3_of_simple_remove(struct device *dev)
 {
 	struct dwc3_of_simple	*simple = dev->priv;
 

@@ -127,7 +127,7 @@ static void clps711x_flush(struct console_device *cdev)
 	} while (tmp & SYSFLG_UBUSY);
 }
 
-static int clps711x_probe(struct device_d *dev)
+static int clps711x_probe(struct device *dev)
 {
 	struct device_node *syscon;
 	struct clps711x_uart *s;

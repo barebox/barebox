@@ -77,7 +77,7 @@
 struct da9053_priv {
 	struct watchdog		wd;
 	struct i2c_client	*client;
-	struct device_d		*dev;
+	struct device		*dev;
 	struct restart_handler	restart;
 };
 
@@ -137,7 +137,7 @@ static int da9053_enable_multiwrite(struct da9053_priv *da9053)
 static int da9053_set_timeout(struct watchdog *wd, unsigned timeout)
 {
 	struct da9053_priv *da9053 = wd_to_da9053_priv(wd);
-	struct device_d *dev = da9053->dev;
+	struct device *dev = da9053->dev;
 	unsigned scale = 0;
 	int ret;
 	u8 val;
@@ -251,7 +251,7 @@ static void __noreturn da9053_force_system_reset(struct restart_handler *rst)
 	hang();
 }
 
-static int da9053_probe(struct device_d *dev)
+static int da9053_probe(struct device *dev)
 {
 	struct da9053_priv *da9053;
 	int ret;

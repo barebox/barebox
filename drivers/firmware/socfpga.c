@@ -377,7 +377,7 @@ static int programmed_get(struct param_d *p, void *priv)
 	return 0;
 }
 
-static int socfpga_fpgamgr_probe(struct device_d *dev)
+static int socfpga_fpgamgr_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct fpgamgr *mgr;

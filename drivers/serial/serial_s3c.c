@@ -163,7 +163,7 @@ static void s3c_serial_flush(struct console_device *cdev)
 		;
 }
 
-static int s3c_serial_probe(struct device_d *dev)
+static int s3c_serial_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct s3c_uart *priv;

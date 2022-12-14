@@ -8,7 +8,7 @@
 #include <of.h>
 #include <linux/err.h>
 
-static int ti_sysc_probe(struct device_d *dev)
+static int ti_sysc_probe(struct device *dev)
 {
 	int ret;
 

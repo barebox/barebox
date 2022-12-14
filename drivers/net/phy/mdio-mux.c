@@ -56,7 +56,7 @@ static int mdio_mux_write(struct mii_bus *bus, int phy_id,
 	return mdio_mux_read_or_write(bus, phy_id, regnum, &val);
 }
 
-int mdio_mux_init(struct device_d *dev,
+int mdio_mux_init(struct device *dev,
 		  struct device_node *mux_node,
 		  int (*switch_fn)(int cur, int desired, void *data),
 		  void *data,

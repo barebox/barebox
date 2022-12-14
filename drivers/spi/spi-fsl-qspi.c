@@ -239,7 +239,7 @@ struct fsl_qspi {
 	void __iomem *ahb_addr;
 	u32 memmap_phy;
 	struct clk *clk, *clk_en;
-	struct device_d *dev;
+	struct device *dev;
 	struct spi_controller ctlr;
 	const struct fsl_qspi_devtype_data *devtype_data;
 	struct mutex lock;
@@ -743,7 +743,7 @@ static int fsl_qspi_setup(struct spi_device *spi)
 static const char *fsl_qspi_get_name(struct spi_mem *mem)
 {
 	struct fsl_qspi *q = spi_controller_get_devdata(mem->spi->controller);
-	struct device_d *dev = &mem->spi->dev;
+	struct device *dev = &mem->spi->dev;
 	const char *name;
 
 	/*
@@ -770,7 +770,7 @@ static const struct spi_controller_mem_ops fsl_qspi_mem_ops = {
 	.get_name = fsl_qspi_get_name,
 };
 
-static int fsl_qspi_probe(struct device_d *dev)
+static int fsl_qspi_probe(struct device *dev)
 {
 	struct spi_controller *ctlr;
 	struct resource *res;

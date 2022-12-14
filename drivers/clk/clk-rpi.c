@@ -40,7 +40,7 @@ static struct clk *rpi_register_firmware_clock(u32 clock_id, const char *name)
 	return clk_fixed(name, msg->get_clock_rate.body.resp.rate_hz);
 }
 
-static int bcm2835_cprman_init(struct device_d *dev)
+static int bcm2835_cprman_init(struct device *dev)
 {
 	struct clk *clk_cs;
 
@@ -50,9 +50,9 @@ static int bcm2835_cprman_init(struct device_d *dev)
 	return 0;
 }
 
-static int rpi_cprman_probe(struct device_d *dev)
+static int rpi_cprman_probe(struct device *dev)
 {
-	int (*init)(struct device_d *dev);
+	int (*init)(struct device *dev);
 
 	init = device_get_match_data(dev);
 	if (init) {

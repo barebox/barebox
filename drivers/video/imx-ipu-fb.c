@@ -29,7 +29,7 @@ struct ipu_fb_info {
 
 	struct fb_info		info;
 	struct fb_info		overlay;
-	struct device_d		*dev;
+	struct device		*dev;
 
 	unsigned int		alpha;
 	int			disable_fractional_divider;
@@ -974,7 +974,7 @@ static int sdc_fb_register_overlay(struct ipu_fb_info *fbi, void *fb)
 
 #endif
 
-static int imxfb_probe(struct device_d *dev)
+static int imxfb_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct ipu_fb_info *fbi;

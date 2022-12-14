@@ -326,7 +326,7 @@ static const struct of_device_id of_pca955x_match[] = {
 	{},
 };
 
-static int led_pca955x_probe(struct device_d *dev)
+static int led_pca955x_probe(struct device *dev)
 {
 	struct pca955x *pca955x;
 	struct pca955x_led *pca955x_led;

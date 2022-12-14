@@ -58,7 +58,7 @@ static const struct of_device_id kvx_otp_nv_match[] = {
 	{ /* sentinel */},
 };
 
-static int kvx_otp_nv_probe(struct device_d *dev)
+static int kvx_otp_nv_probe(struct device *dev)
 {
 	struct resource *res;
 	struct nvmem_device *nvmem;

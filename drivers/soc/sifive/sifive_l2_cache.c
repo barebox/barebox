@@ -48,7 +48,7 @@
 
 static void __iomem *l2_base = NULL;
 
-static void sifive_l2_config_read(struct device_d *dev)
+static void sifive_l2_config_read(struct device *dev)
 {
 	u32 regval, val;
 
@@ -101,7 +101,7 @@ static void sifive_l2_enable_ways(void)
 	mb();
 }
 
-static int sifive_l2_probe(struct device_d *dev)
+static int sifive_l2_probe(struct device *dev)
 {
 	struct resource *iores;
 

@@ -233,7 +233,7 @@ static struct cdev_operations at25_fops = {
 	.write	= at25_ee_write,
 };
 
-static int at25_np_to_chip(struct device_d *dev,
+static int at25_np_to_chip(struct device *dev,
 			   struct device_node *np,
 			   struct spi_eeprom *chip)
 {
@@ -291,7 +291,7 @@ static int at25_np_to_chip(struct device_d *dev,
 	return 0;
 }
 
-static int at25_probe(struct device_d *dev)
+static int at25_probe(struct device *dev)
 {
 	int err, sr;
 	int addrlen;

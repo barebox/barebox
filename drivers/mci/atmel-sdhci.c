@@ -40,7 +40,7 @@ static void at91_sdhci_mci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	at91_sdhci_set_ios(&to_priv(mci)->host, ios);
 }
 
-static int at91_sdhci_mci_init(struct mci_host *mci, struct device_d *dev)
+static int at91_sdhci_mci_init(struct mci_host *mci, struct device *dev)
 {
 	struct at91_sdhci_priv *priv = to_priv(mci);
 	struct sdhci *sdhci = &priv->host.sdhci;
@@ -99,7 +99,7 @@ static int at91_sdhci_card_present(struct mci_host *mci)
 	return at91_sdhci_is_card_inserted(&to_priv(mci)->host);
 }
 
-static int at91_sdhci_probe(struct device_d *dev)
+static int at91_sdhci_probe(struct device *dev)
 {
 	struct at91_sdhci_priv *priv;
 	struct resource *iores;

@@ -348,7 +348,7 @@ static struct of_device_id mvebu_spi_dt_ids[] = {
 	{ }
 };
 
-static int mvebu_spi_probe(struct device_d *dev)
+static int mvebu_spi_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct spi_master *master;

@@ -245,7 +245,7 @@ static int i2c_inb(struct i2c_adapter *i2c_adap)
 static int test_bus(struct i2c_adapter *i2c_adap)
 {
 	struct i2c_algo_bit_data *adap = i2c_adap->algo_data;
-	struct device_d *dev = &i2c_adap->dev;
+	struct device *dev = &i2c_adap->dev;
 	int scl, sda, ret;
 
 	if (adap->pre_xfer) {

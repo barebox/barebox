@@ -9,9 +9,9 @@
 #include <superio.h>
 #include <regmap.h>
 
-struct device_d *superio_func_add(struct superio_chip *siochip, const char *name)
+struct device *superio_func_add(struct superio_chip *siochip, const char *name)
 {
-	struct device_d *dev;
+	struct device *dev;
 	int ret;
 
 	dev = device_alloc(name, DEVICE_ID_DYNAMIC);

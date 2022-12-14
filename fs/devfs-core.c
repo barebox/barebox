@@ -127,10 +127,10 @@ struct cdev *cdev_by_diskuuid(const char *diskuuid)
  * @dev: the device which should be searched for partitions
  * @name: the partition name
  */
-struct cdev *device_find_partition(struct device_d *dev, const char *name)
+struct cdev *device_find_partition(struct device *dev, const char *name)
 {
 	struct cdev *cdev;
-	struct device_d *child;
+	struct device *child;
 
 	list_for_each_entry(cdev, &dev->cdevs, devices_list) {
 		struct cdev *cdevl;
@@ -655,7 +655,7 @@ void cdev_remove_loop(struct cdev *cdev)
 	free(cdev);
 }
 
-ssize_t mem_copy(struct device_d *dev, void *dst, const void *src,
+ssize_t mem_copy(struct device *dev, void *dst, const void *src,
 			resource_size_t count, resource_size_t offset,
 			unsigned long flags)
 {
@@ -706,7 +706,7 @@ out:
 ssize_t mem_read(struct cdev *cdev, void *buf, size_t count, loff_t offset,
 		 unsigned long flags)
 {
-	struct device_d *dev = cdev->dev;
+	struct device *dev = cdev->dev;
 
 	if (!dev)
 		return -1;
@@ -719,7 +719,7 @@ EXPORT_SYMBOL(mem_read);
 ssize_t mem_write(struct cdev *cdev, const void *buf, size_t count,
 		  loff_t offset, unsigned long flags)
 {
-	struct device_d *dev = cdev->dev;
+	struct device *dev = cdev->dev;
 
 	if (!dev)
 		return -1;

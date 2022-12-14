@@ -325,7 +325,7 @@ static struct tegra_clk_init_table init_table[] = {
 	{TEGRA20_CLK_CLK_MAX,		TEGRA20_CLK_CLK_MAX,	0,	0}, /* sentinel */
 };
 
-static int tegra20_car_probe(struct device_d *dev)
+static int tegra20_car_probe(struct device *dev)
 {
 	struct resource *iores;
 	iores = dev_request_mem_resource(dev, 0);

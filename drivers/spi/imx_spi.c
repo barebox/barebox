@@ -577,7 +577,7 @@ static int imx_spi_dt_probe(struct imx_spi *imx)
 	return 0;
 }
 
-static int imx_spi_probe(struct device_d *dev)
+static int imx_spi_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct spi_master *master;

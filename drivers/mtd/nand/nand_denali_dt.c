@@ -128,7 +128,7 @@ static int denali_dt_chip_init(struct denali_controller *denali,
 	return denali_chip_init(denali, dchip);
 }
 
-static int denali_dt_probe(struct device_d *ofdev)
+static int denali_dt_probe(struct device *ofdev)
 {
 	struct resource *iores;
 	struct denali_dt *dt;

@@ -105,7 +105,7 @@ int imx_iomux_setup_multiple_pins(const unsigned int *pin_list, unsigned count)
 	return 0;
 }
 
-static int imx_iomux_probe(struct device_d *dev)
+static int imx_iomux_probe(struct device *dev)
 {
 	struct resource *iores;
 	iores = dev_request_mem_resource(dev, 0);

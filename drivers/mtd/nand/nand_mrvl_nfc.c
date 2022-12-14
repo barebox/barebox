@@ -137,7 +137,7 @@ struct mrvl_nand_variant {
 struct mrvl_nand_host {
 	struct nand_chip	chip;
 	struct mtd_partition	*parts;
-	struct device_d		*dev;
+	struct device		*dev;
 	struct clk		*core_clk;
 
 	/* calculated from mrvl_nand_flash data */
@@ -1123,7 +1123,7 @@ static int mrvl_nand_scan(struct nand_chip *chip)
 	return nand_scan_tail(chip);
 }
 
-static struct mrvl_nand_host *alloc_nand_resource(struct device_d *dev)
+static struct mrvl_nand_host *alloc_nand_resource(struct device *dev)
 {
 	struct resource *iores;
 	struct mrvl_nand_platform_data *pdata;
@@ -1219,7 +1219,7 @@ static int mrvl_nand_probe_dt(struct mrvl_nand_host *host)
 	return 0;
 }
 
-static int mrvl_nand_probe(struct device_d *dev)
+static int mrvl_nand_probe(struct device *dev)
 {
 	struct mrvl_nand_host *host;
 	struct nand_chip *chip;

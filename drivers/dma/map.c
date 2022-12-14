@@ -3,7 +3,8 @@
 
 #include <dma.h>
 
-static inline dma_addr_t cpu_to_dma(struct device_d *dev, unsigned long cpu_addr)
+static inline dma_addr_t cpu_to_dma(struct device *dev,
+				    unsigned long cpu_addr)
 {
 	dma_addr_t dma_addr = cpu_addr;
 
@@ -13,7 +14,7 @@ static inline dma_addr_t cpu_to_dma(struct device_d *dev, unsigned long cpu_addr
 	return dma_addr;
 }
 
-static inline unsigned long dma_to_cpu(struct device_d *dev, dma_addr_t addr)
+static inline unsigned long dma_to_cpu(struct device *dev, dma_addr_t addr)
 {
 	unsigned long cpu_addr = addr;
 
@@ -23,7 +24,7 @@ static inline unsigned long dma_to_cpu(struct device_d *dev, dma_addr_t addr)
 	return cpu_addr;
 }
 
-dma_addr_t dma_map_single(struct device_d *dev, void *ptr, size_t size,
+dma_addr_t dma_map_single(struct device *dev, void *ptr, size_t size,
 			  enum dma_data_direction dir)
 {
 	unsigned long addr = (unsigned long)ptr;
@@ -33,7 +34,7 @@ dma_addr_t dma_map_single(struct device_d *dev, void *ptr, size_t size,
 	return cpu_to_dma(dev, addr);
 }
 
-void dma_unmap_single(struct device_d *dev, dma_addr_t dma_addr, size_t size,
+void dma_unmap_single(struct device *dev, dma_addr_t dma_addr, size_t size,
 		      enum dma_data_direction dir)
 {
 	unsigned long addr = dma_to_cpu(dev, dma_addr);

@@ -38,7 +38,7 @@ static void sandbox_rst_reexec(struct restart_handler *rst)
 	linux_reexec();
 }
 
-static int sandbox_power_probe(struct device_d *dev)
+static int sandbox_power_probe(struct device *dev)
 {
 	struct sandbox_power *power = xzalloc(sizeof(*power));
 	size_t len;

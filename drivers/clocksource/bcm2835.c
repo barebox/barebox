@@ -32,7 +32,7 @@ static struct clocksource bcm2835_stc = {
 	.priority = IS_ENABLED(CONFIG_CPU_V8) ? 60 : 80,
 };
 
-static int bcm2835_cs_probe(struct device_d *dev)
+static int bcm2835_cs_probe(struct device *dev)
 {
 	struct resource *iores;
 	static struct clk *stc_clk;

@@ -26,7 +26,7 @@ static void sandbox_led_set(struct led *led, unsigned int brightness)
 	sandbox_led.active = true;
 }
 
-static int sandbox_led_of_probe(struct device_d *dev)
+static int sandbox_led_of_probe(struct device *dev)
 {
 	struct device_node *np = dev->of_node;
 	int ret;
@@ -47,7 +47,7 @@ static int sandbox_led_of_probe(struct device_d *dev)
 	return 0;
 }
 
-static void sandbox_led_of_remove(struct device_d *dev)
+static void sandbox_led_of_remove(struct device *dev)
 {
 	if (sandbox_led.active)
 		sandbox_led_set(NULL, 0);

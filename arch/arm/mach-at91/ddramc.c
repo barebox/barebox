@@ -34,7 +34,7 @@ void __noreturn sama5d3_barebox_entry(unsigned int r4, void *boarddata)
 			  boarddata);
 }
 
-static int sama5_ddr_probe(struct device_d *dev)
+static int sama5_ddr_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *base;

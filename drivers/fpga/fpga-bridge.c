@@ -56,7 +56,7 @@ EXPORT_SYMBOL_GPL(fpga_bridge_disable);
 struct fpga_bridge *of_fpga_bridge_get(struct device_node *np)
 
 {
-	struct device_d *dev;
+	struct device *dev;
 	struct fpga_bridge *bridge;
 	int ret = -EPROBE_DEFER;
 
@@ -179,7 +179,7 @@ static int set_enable(struct param_d *p, void *priv)
  *
  * Return: 0 for success, error code otherwise.
  */
-int fpga_bridge_register(struct device_d *dev, const char *name,
+int fpga_bridge_register(struct device *dev, const char *name,
 			 const struct fpga_bridge_ops *br_ops, void *priv)
 {
 	struct fpga_bridge *bridge;

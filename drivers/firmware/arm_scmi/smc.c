@@ -29,15 +29,15 @@ struct scmi_smc {
 	u32 func_id;
 };
 
-static bool smc_chan_available(struct device_d *dev, int idx)
+static bool smc_chan_available(struct device *dev, int idx)
 {
 	return of_parse_phandle(dev->of_node, "shmem", 0) != NULL;
 }
 
-static int smc_chan_setup(struct scmi_chan_info *cinfo, struct device_d *dev,
+static int smc_chan_setup(struct scmi_chan_info *cinfo, struct device *dev,
 			  bool tx)
 {
-	struct device_d *cdev = cinfo->dev;
+	struct device *cdev = cinfo->dev;
 	struct scmi_smc *scmi_info;
 	resource_size_t size;
 	struct resource res;

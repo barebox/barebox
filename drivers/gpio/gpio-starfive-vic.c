@@ -111,7 +111,7 @@ static struct gpio_ops starfive_gpio_ops = {
 	.set = starfive_set_value,
 };
 
-static int starfive_gpio_probe(struct device_d *dev)
+static int starfive_gpio_probe(struct device *dev)
 {
 	struct starfive_gpio *chip;
 	struct resource *res;

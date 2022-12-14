@@ -120,7 +120,7 @@ static int mmio_74xx_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
 	return -ENOTSUPP;
 }
 
-static int mmio_74xx_gpio_probe(struct device_d *dev)
+static int mmio_74xx_gpio_probe(struct device *dev)
 {
 	struct mmio_74xx_gpio_priv *priv;
 	void __iomem *dat;

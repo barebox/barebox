@@ -44,7 +44,7 @@ static struct clocksource cs = {
 	.priority = 80,
 };
 
-static int tegra20_timer_probe(struct device_d *dev)
+static int tegra20_timer_probe(struct device *dev)
 {
 	struct resource *iores;
 	u32 reg;

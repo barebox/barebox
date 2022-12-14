@@ -22,7 +22,7 @@ static struct clocksource clps711x_cs = {
 	.priority = 60,
 };
 
-static int clps711x_cs_probe(struct device_d *dev)
+static int clps711x_cs_probe(struct device *dev)
 {
 	struct resource *iores;
 	u32 rate;

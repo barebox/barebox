@@ -141,7 +141,7 @@ struct gpmc_settings {
 };
 
 struct imx_gpmc {
-	struct device_d *dev;
+	struct device *dev;
 	void __iomem *base;
 	struct imx_gpmc_devtype *devtype;
 };
@@ -452,7 +452,7 @@ static struct dt_eccmode modes[] = {
 	},
 };
 
-static int gpmc_probe_nand_child(struct device_d *dev,
+static int gpmc_probe_nand_child(struct device *dev,
 				 struct device_node *child)
 {
 	u32 val;
@@ -537,8 +537,8 @@ static int gpmc_probe_nand_child(struct device_d *dev,
  * Allocates and configures a GPMC chip-select for a child device.
  * Returns 0 on success and appropriate negative error code on failure.
  */
-static int gpmc_probe_generic_child(struct device_d *dev,
-				struct device_node *child)
+static int gpmc_probe_generic_child(struct device *dev,
+				    struct device_node *child)
 {
 	struct gpmc_settings gpmc_s = {};
 	struct gpmc_timings gpmc_t = {};
@@ -600,7 +600,7 @@ err:
 	return ret;
 }
 
-static int gpmc_probe(struct device_d *dev)
+static int gpmc_probe(struct device *dev)
 {
 	struct device_node *child, *node = dev->of_node;
 	int ret;

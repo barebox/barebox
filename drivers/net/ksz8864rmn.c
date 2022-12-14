@@ -122,7 +122,7 @@ static struct cdev_operations micrel_switch_ops = {
 	.write = micel_switch_write,
 };
 
-static int micrel_switch_probe(struct device_d *dev)
+static int micrel_switch_probe(struct device *dev)
 {
 	struct micrel_switch_priv *priv;
 	int ret = 0;

@@ -27,13 +27,13 @@ struct imx_chipidea_data {
 };
 
 struct imx_chipidea {
-	struct device_d *dev;
+	struct device *dev;
 	void __iomem *base;
 	struct ehci_data data;
 	unsigned long flags;
 	enum usb_dr_mode mode;
 	int portno;
-	struct device_d *usbmisc;
+	struct device *usbmisc;
 	enum usb_phy_interface phymode;
 	struct param_d *param_mode;
 	struct regulator *vbus;
@@ -213,7 +213,7 @@ static int ci_set_mode(void *ctx, enum usb_dr_mode mode)
 	return 0;
 }
 
-static int imx_chipidea_probe(struct device_d *dev)
+static int imx_chipidea_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct imx_chipidea_data *imx_data;
@@ -330,7 +330,7 @@ static int imx_chipidea_probe(struct device_d *dev)
 	return ret;
 };
 
-static void imx_chipidea_remove(struct device_d *dev)
+static void imx_chipidea_remove(struct device *dev)
 {
 	struct imx_chipidea *ci = dev->priv;
 

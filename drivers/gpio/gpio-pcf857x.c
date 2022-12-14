@@ -145,7 +145,7 @@ static struct gpio_ops pcf857x_gpio_ops = {
 	.set = pcf857x_set,
 };
 
-static int pcf857x_probe(struct device_d *dev)
+static int pcf857x_probe(struct device *dev)
 {
 	struct i2c_client		*client = to_i2c_client(dev);
 	struct device_node		*np = dev->of_node;

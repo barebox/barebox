@@ -40,7 +40,7 @@ struct cqspi_flash_pdata {
 };
 
 struct cqspi_st {
-	struct device_d	*dev;
+	struct device	*dev;
 	struct clk	*l4_mp_clk;
 	struct clk	*qspi_clk;
 	unsigned int	sclk;
@@ -1001,7 +1001,7 @@ static int cqspi_write_reg(struct spi_nor *nor, u8 opcode, u8 *buf, int len)
 	return ret;
 }
 
-static int cqspi_of_get_flash_pdata(struct device_d *dev,
+static int cqspi_of_get_flash_pdata(struct device *dev,
 				    struct cqspi_flash_pdata *f_pdata,
 				    struct device_node *np)
 {
@@ -1059,7 +1059,7 @@ static int cqspi_of_get_flash_pdata(struct device_d *dev,
 static int cqspi_parse_dt(struct cqspi_st *cqspi)
 {
 	struct device_node *np = cqspi->dev->of_node;
-	struct device_d *dev = cqspi->dev;
+	struct device *dev = cqspi->dev;
 
 	cqspi->is_decoded_cs = of_property_read_bool(np, "cdns,is-decoded-cs");
 
@@ -1071,7 +1071,7 @@ static int cqspi_parse_dt(struct cqspi_st *cqspi)
 	return 0;
 }
 
-static int cqspi_setup_flash(struct device_d *dev,
+static int cqspi_setup_flash(struct device *dev,
 			     struct cqspi_flash_pdata *f_pdata,
 			     struct device_node *np)
 {
@@ -1152,7 +1152,7 @@ static void cqspi_controller_init(struct cqspi_st *cqspi)
 	cqspi_controller_enable(cqspi);
 }
 
-static int cqspi_probe(struct device_d *dev)
+static int cqspi_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct device_node *np = dev->of_node;

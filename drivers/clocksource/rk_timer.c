@@ -35,7 +35,7 @@ static struct clocksource rkcs = {
 	.priority = 80,
 };
 
-static int rockchip_timer_probe(struct device_d *dev)
+static int rockchip_timer_probe(struct device *dev)
 {
 	struct resource *iores;
 

@@ -48,25 +48,25 @@ struct ratpfs_dir {
 	DIR dir;
 };
 
-static int ratpfs_create(struct device_d __always_unused *dev,
-			const char __always_unused *pathname,
-			mode_t __always_unused mode)
+static int ratpfs_create(struct device __always_unused *dev,
+			 const char __always_unused *pathname,
+			 mode_t __always_unused mode)
 {
 	pr_debug("%s\n", __func__);
 
 	return 0;
 }
 
-static int ratpfs_mkdir(struct device_d __always_unused *dev,
-		       const char __always_unused *pathname)
+static int ratpfs_mkdir(struct device __always_unused *dev,
+			const char __always_unused *pathname)
 {
 	pr_debug("%s\n", __func__);
 
 	return -ENOSYS;
 }
 
-static int ratpfs_rm(struct device_d __always_unused *dev,
-		    const char *pathname)
+static int ratpfs_rm(struct device __always_unused *dev,
+		     const char *pathname)
 {
 	pr_debug("%s\n", __func__);
 
@@ -76,8 +76,8 @@ static int ratpfs_rm(struct device_d __always_unused *dev,
 	return 0;
 }
 
-static int ratpfs_truncate(struct device_d __always_unused *dev,
-			  FILE *f, loff_t size)
+static int ratpfs_truncate(struct device __always_unused *dev,
+			   FILE *f, loff_t size)
 {
 	int len_tx = 1 /* type */
 		+ 4 /* handle */
@@ -114,8 +114,8 @@ out:
 	return ret;
 }
 
-static int ratpfs_open(struct device_d __always_unused *dev,
-		      FILE *file, const char *filename)
+static int ratpfs_open(struct device __always_unused *dev,
+		       FILE *file, const char *filename)
 {
 	int len_name = strlen(filename);
 	int len_tx = 1 /* type */
@@ -163,7 +163,7 @@ out:
 	return ret;
 }
 
-static int ratpfs_close(struct device_d __always_unused *dev,
+static int ratpfs_close(struct device __always_unused *dev,
 			FILE *f)
 {
 	int len_tx = 1 /* type */
@@ -198,7 +198,7 @@ out:
 	return ret;
 }
 
-static int ratpfs_write(struct device_d __always_unused *dev,
+static int ratpfs_write(struct device __always_unused *dev,
 			FILE *f, const void *buf, size_t orig_size)
 {
 	int size = min((int)orig_size, 4096);
@@ -241,7 +241,7 @@ out:
 	return ret;
 }
 
-static int ratpfs_read(struct device_d __always_unused *dev,
+static int ratpfs_read(struct device __always_unused *dev,
 		       FILE *f, void *buf, size_t orig_size)
 {
 	int size = min((int)orig_size, 4096);
@@ -284,8 +284,8 @@ out:
 	return ret;
 }
 
-static DIR* ratpfs_opendir(struct device_d __always_unused *dev,
-			  const char *pathname)
+static DIR* ratpfs_opendir(struct device __always_unused *dev,
+			   const char *pathname)
 {
 	int len_name = strlen(pathname);
 	int len_tx = 1 /* type */
@@ -318,7 +318,7 @@ static DIR* ratpfs_opendir(struct device_d __always_unused *dev,
 	}
 }
 
-static struct dirent *ratpfs_readdir(struct device_d *dev, DIR *dir)
+static struct dirent *ratpfs_readdir(struct device *dev, DIR *dir)
 {
 	struct ratpfs_dir *rdir = container_of(dir, struct ratpfs_dir, dir);
 	int i;
@@ -338,7 +338,7 @@ static struct dirent *ratpfs_readdir(struct device_d *dev, DIR *dir)
 	return &dir->d;
 }
 
-static int ratpfs_closedir(struct device_d *dev, DIR *dir)
+static int ratpfs_closedir(struct device *dev, DIR *dir)
 {
 	struct ratpfs_dir *rdir = container_of(dir, struct ratpfs_dir, dir);
 
@@ -350,8 +350,8 @@ static int ratpfs_closedir(struct device_d *dev, DIR *dir)
 	return 0;
 }
 
-static int ratpfs_stat(struct device_d __always_unused *dev,
-		      const char *filename, struct stat *s)
+static int ratpfs_stat(struct device __always_unused *dev,
+		       const char *filename, struct stat *s)
 {
 	int len_name = strlen(filename);
 	int len_tx = 1 /* type */
@@ -395,7 +395,7 @@ out:
 	return ret;
 }
 
-static int ratpfs_probe(struct device_d *dev)
+static int ratpfs_probe(struct device *dev)
 {
 	int len_tx = 1; /* type */
 	struct ratp_bb_pkt *pkt_tx = xzalloc(sizeof(*pkt_tx) + len_tx);
@@ -431,7 +431,7 @@ out:
 	return ret;
 }
 
-static void ratpfs_remove(struct device_d __always_unused *dev)
+static void ratpfs_remove(struct device __always_unused *dev)
 {
 	pr_debug("%s\n", __func__);
 

@@ -72,7 +72,7 @@ static int am335x_adc_read(struct aiochannel *chan, int *val)
 	return 0;
 }
 
-static int am335x_adc_probe(struct device_d *dev)
+static int am335x_adc_probe(struct device *dev)
 {
 	struct device_node *node;
 	struct am335x_adc_data *data;

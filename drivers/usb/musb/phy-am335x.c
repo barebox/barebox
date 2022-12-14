@@ -22,7 +22,7 @@ static int am335x_init(struct usb_phy *phy)
 	return 0;
 }
 
-static int am335x_phy_probe(struct device_d *dev)
+static int am335x_phy_probe(struct device *dev)
 {
 	struct am335x_usbphy *am_usbphy;
 	struct resource *iores;

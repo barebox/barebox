@@ -141,7 +141,7 @@ static struct pinctrl_ops bcm2835_pinctrl_ops = {
 	.set_state = bcm2835_pinctrl_set_state,
 };
 
-static int bcm2835_gpio_probe(struct device_d *dev)
+static int bcm2835_gpio_probe(struct device *dev)
 {
 	const struct plat_data *plat_data;
 	struct resource *iores;

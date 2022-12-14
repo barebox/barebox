@@ -3,7 +3,7 @@
 #include <driver.h>
 #include <bootsource.h>
 
-static int phycore_stm32mp1_probe(struct device_d *dev)
+static int phycore_stm32mp1_probe(struct device *dev)
 {
 	if (bootsource_get_instance() == 0)
 		of_device_enable_path("/chosen/environment-sd");

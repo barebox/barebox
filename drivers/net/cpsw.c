@@ -175,7 +175,7 @@ struct cpsw_slave {
 	phy_interface_t			phy_if;
 	struct eth_device		edev;
 	struct cpsw_priv		*cpsw;
-	struct device_d			dev;
+	struct device			dev;
 };
 
 struct cpdma_desc {
@@ -195,7 +195,7 @@ struct cpdma_chan {
 };
 
 struct cpsw_priv {
-	struct device_d			*dev;
+	struct device			*dev;
 
 	u32				version;
 	struct cpsw_platform_data	data;
@@ -223,7 +223,7 @@ struct cpsw_priv {
 };
 
 struct cpsw_mdio_priv {
-	struct device_d			*dev;
+	struct device			*dev;
 	struct mii_bus			miibus;
 	struct cpsw_mdio_regs		*mdio_regs;
 };
@@ -581,7 +581,7 @@ static int cpsw_mdio_write(struct mii_bus *bus, int phy_id, int phy_reg, u16 val
 	return 0;
 }
 
-static int cpsw_mdio_probe(struct device_d *dev)
+static int cpsw_mdio_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct cpsw_mdio_priv *priv;
@@ -915,7 +915,7 @@ static int cpsw_open(struct eth_device *edev)
 	return 0;
 }
 
-static int cpsw_setup(struct device_d *dev)
+static int cpsw_setup(struct device *dev)
 {
 	struct cpsw_priv *priv = dev->priv;
 	int i, ret;
@@ -1062,7 +1062,7 @@ static int cpsw_slave_setup(struct cpsw_slave *slave, int slave_num,
 {
 	void			*regs = priv->regs;
 	struct eth_device	*edev = &slave->edev;
-	struct device_d		*dev = &slave->dev;
+	struct device		*dev = &slave->dev;
 	int ret;
 
 	edev->parent = dev;
@@ -1237,7 +1237,7 @@ static void cpsw_add_slave(struct cpsw_slave *slave, struct device_node *child, 
 
 static int cpsw_legacy_probe_dt(struct cpsw_priv *priv)
 {
-	struct device_d *dev = priv->dev;
+	struct device *dev = priv->dev;
 	struct device_node *np = dev->of_node, *child;
 	int ret, i = 0;
 
@@ -1265,7 +1265,7 @@ static int cpsw_legacy_probe_dt(struct cpsw_priv *priv)
 
 static int cpsw_switch_probe_dt(struct cpsw_priv *priv)
 {
-	struct device_d *dev = priv->dev;
+	struct device *dev = priv->dev;
 	struct device_node *np = dev->of_node, *child;
 	struct device_node *ports = NULL;
 	int ret, i = 0;
@@ -1298,7 +1298,7 @@ static int cpsw_switch_probe_dt(struct cpsw_priv *priv)
 
 static int cpsw_probe_dt(struct cpsw_priv *priv)
 {
-	struct device_d *dev = priv->dev;
+	struct device *dev = priv->dev;
 	struct device_node *physel;
 	int (*probe_slaves_dt)(struct cpsw_priv *priv);
 	int ret, i = 0;
@@ -1326,7 +1326,7 @@ static int cpsw_probe_dt(struct cpsw_priv *priv)
 	return 0;
 }
 
-static int cpsw_probe(struct device_d *dev)
+static int cpsw_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct cpsw_platform_data *data = (struct cpsw_platform_data *)dev->platform_data;
@@ -1410,7 +1410,7 @@ out:
 	return ret;
 }
 
-static void cpsw_remove(struct device_d *dev)
+static void cpsw_remove(struct device *dev)
 {
 	struct cpsw_priv	*priv = dev->priv;
 	int i;

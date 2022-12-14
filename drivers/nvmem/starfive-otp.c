@@ -138,7 +138,7 @@ static struct regmap_bus starfive_otp_regmap_bus = {
 	.reg_write = starfive_otp_write,
 };
 
-static int starfive_otp_probe(struct device_d *dev)
+static int starfive_otp_probe(struct device *dev)
 {
 	struct starfive_otp *priv;
 	struct regmap_config config = {};

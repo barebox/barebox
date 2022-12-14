@@ -81,7 +81,7 @@ static struct clk_div_table video_div_table[] = {
 	{ }
 };
 
-static int imx6sl_ccm_probe(struct device_d *dev)
+static int imx6sl_ccm_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *base, *anatop_base, *ccm_base;

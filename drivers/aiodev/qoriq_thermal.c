@@ -67,7 +67,7 @@ struct qoriq_tmu_regs {
  * Thermal zone data
  */
 struct qoriq_tmu_data {
-	struct device_d *dev;
+	struct device *dev;
 	struct clk *clk;
 	struct qoriq_tmu_regs __iomem *regs;
 	int sensor_id;
@@ -187,7 +187,7 @@ static void qoriq_tmu_init_device(struct qoriq_tmu_data *data)
 	tmu_write(data, TMR_DISABLE, &data->regs->tmr);
 }
 
-static int qoriq_tmu_probe(struct device_d *dev)
+static int qoriq_tmu_probe(struct device *dev)
 {
 	struct device_node *np = dev->of_node;
 	struct qoriq_tmu_data *data;

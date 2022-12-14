@@ -108,7 +108,7 @@ static int imx_usbphy_notify_disconnect(struct usb_phy *phy,
 	return 0;
 }
 
-static struct phy *imx_usbphy_xlate(struct device_d *dev,
+static struct phy *imx_usbphy_xlate(struct device *dev,
 				    struct of_phandle_args *args)
 {
 	struct imx_usbphy *imxphy = dev->priv;
@@ -143,7 +143,7 @@ static int imx_usbphy_get_vbus_state(struct param_d *p, void *priv)
 	return 0;
 }
 
-static int imx_usbphy_probe(struct device_d *dev)
+static int imx_usbphy_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct device_node *np = dev->of_node;

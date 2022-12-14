@@ -27,7 +27,7 @@
 struct imx_nand_host {
 	struct nand_chip	nand;
 	struct mtd_partition	*parts;
-	struct device_d		*dev;
+	struct device		*dev;
 
 	void			*spare0;
 	void			*main_area0;
@@ -1240,7 +1240,7 @@ out:
  * @return  The function always returns 0.
  */
 
-static int __init imxnd_probe(struct device_d *dev)
+static int __init imxnd_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct nand_chip *this;

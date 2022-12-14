@@ -91,7 +91,7 @@ struct fpga_image_info {
 
 struct fpgamgr {
 	struct firmware_handler fh;
-	struct device_d dev;
+	struct device dev;
 	void *priv;
 	void __iomem *regs;
 	void __iomem *regs_data;

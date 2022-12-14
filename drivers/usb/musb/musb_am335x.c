@@ -3,7 +3,7 @@
 #include <init.h>
 #include <linux/clk.h>
 
-static int am335x_child_probe(struct device_d *dev)
+static int am335x_child_probe(struct device *dev)
 {
 	int ret;
 

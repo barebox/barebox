@@ -193,7 +193,7 @@ static inline struct ds1307 *to_ds1307_priv(struct rtc_device *rtcdev)
 
 static int ds1307_get_time(struct rtc_device *rtcdev, struct rtc_time *t)
 {
-	struct device_d *dev = rtcdev->dev;
+	struct device *dev = rtcdev->dev;
 	struct ds1307 *ds1307 = to_ds1307_priv(rtcdev);
 	int		tmp;
 
@@ -231,7 +231,7 @@ static int ds1307_get_time(struct rtc_device *rtcdev, struct rtc_time *t)
 
 static int ds1307_set_time(struct rtc_device *rtcdev, struct rtc_time *t)
 {
-	struct device_d *dev = rtcdev->dev;
+	struct device *dev = rtcdev->dev;
 	struct ds1307 *ds1307 = to_ds1307_priv(rtcdev);
 	int		result;
 	int		tmp;
@@ -280,7 +280,7 @@ static const struct rtc_class_ops ds13xx_rtc_ops = {
 	.set_time	= ds1307_set_time,
 };
 
-static int ds1307_probe(struct device_d *dev)
+static int ds1307_probe(struct device *dev)
 {
 	struct i2c_client *client = to_i2c_client(dev);
 	struct ds1307		*ds1307;

@@ -9,7 +9,7 @@
 #include <init.h>
 
 struct rmem {
-	struct device_d *dev;
+	struct device *dev;
 	const struct resource *mem;
 };
 
@@ -25,7 +25,7 @@ static struct nvmem_bus rmem_nvmem_bus = {
 	.read = rmem_read,
 };
 
-static int rmem_probe(struct device_d *dev)
+static int rmem_probe(struct device *dev)
 {
 	struct nvmem_config config = { };
 	struct resource *mem;

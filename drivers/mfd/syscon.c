@@ -145,7 +145,7 @@ static void __iomem *syscon_node_to_base(struct device_node *np)
 void __iomem *syscon_base_lookup_by_pdevname(const char *s)
 {
 	struct syscon *syscon;
-	struct device_d *dev;
+	struct device *dev;
 
 	for_each_device(dev) {
 		if (!strcmp(dev_name(dev), s)) {
@@ -231,7 +231,7 @@ struct regmap *syscon_regmap_lookup_by_phandle(struct device_node *np,
 	return regmap;
 }
 
-static int syscon_probe(struct device_d *dev)
+static int syscon_probe(struct device *dev)
 {
 	struct syscon *syscon;
 	struct resource *res;

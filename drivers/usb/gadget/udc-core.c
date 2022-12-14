@@ -26,7 +26,7 @@
 struct usb_udc {
 	struct usb_gadget_driver	*driver;
 	struct usb_gadget		*gadget;
-	struct device_d			dev;
+	struct device			dev;
 	struct list_head		list;
 	struct poller_struct		poller;
 };
@@ -118,8 +118,9 @@ int usb_gadget_poll(void)
  *
  * Returns zero on success, negative errno otherwise.
  */
-int usb_add_gadget_udc_release(struct device_d *parent, struct usb_gadget *gadget,
-		void (*release)(struct device_d *dev))
+int usb_add_gadget_udc_release(struct device *parent,
+			       struct usb_gadget *gadget,
+			       void (*release)(struct device *dev))
 {
 	struct usb_udc		*udc;
 	int			ret = -ENOMEM;
@@ -178,7 +179,7 @@ EXPORT_SYMBOL_GPL(usb_add_gadget_udc_release);
  *
  * Returns zero on success, negative errno otherwise.
  */
-int usb_add_gadget_udc(struct device_d *parent, struct usb_gadget *gadget)
+int usb_add_gadget_udc(struct device *parent, struct usb_gadget *gadget)
 {
 	return usb_add_gadget_udc_release(parent, gadget, NULL);
 }

@@ -34,7 +34,7 @@ static int nvmem_reboot_mode_write(struct reboot_mode_driver *reboot,
 	return ret;
 }
 
-static int nvmem_reboot_mode_probe(struct device_d *dev)
+static int nvmem_reboot_mode_probe(struct device *dev)
 {
 	struct nvmem_reboot_mode *nvmem_rbm;
 	struct nvmem_cell *cell;

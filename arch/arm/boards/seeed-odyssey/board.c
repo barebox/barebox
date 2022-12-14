@@ -7,7 +7,7 @@
 #include <bootsource.h>
 #include <of.h>
 
-static int odyssey_som_probe(struct device_d *dev)
+static int odyssey_som_probe(struct device *dev)
 {
 	int flags;
 	int instance = bootsource_get_instance();

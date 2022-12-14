@@ -385,7 +385,7 @@ static struct of_device_id armada_370_pinctrl_of_match[] = {
 	{ },
 };
 
-static int armada_370_pinctrl_probe(struct device_d *dev)
+static int armada_370_pinctrl_probe(struct device *dev)
 {
 	struct resource *iores;
 	const struct of_device_id *match =

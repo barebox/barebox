@@ -40,7 +40,7 @@ static struct clocksource smp_twd_clksrc = {
 
 #define SMP_TWD_MAX_FREQ (25 *1000 * 1000)
 
-static int smp_twd_probe(struct device_d *dev)
+static int smp_twd_probe(struct device *dev)
 {
 	struct resource *iores;
 	u32 tick_rate;

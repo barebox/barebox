@@ -121,7 +121,7 @@ static int kvx_read_serial(struct device_node *socinfo)
 	return 0;
 }
 
-static int kvx_socinfo_probe(struct device_d *dev)
+static int kvx_socinfo_probe(struct device *dev)
 {
 	kvx_soc_info_read_revision();
 

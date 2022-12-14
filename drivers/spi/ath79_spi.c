@@ -126,7 +126,7 @@ static inline void ath79_spi_chipselect(struct ath79_spi *sp, int chipselect)
 static int ath79_spi_setup(struct spi_device *spi)
 {
 	struct spi_master *master = spi->master;
-	struct device_d spi_dev = spi->dev;
+	struct device spi_dev = spi->dev;
 
 	if (spi->bits_per_word != 8) {
 		dev_err(master->dev, "master doesn't support %d bits per word requested by %s\n",
@@ -220,7 +220,7 @@ static void ath79_spi_disable(struct ath79_spi *sp)
 	ath79_spi_wr(sp, 0, AR71XX_SPI_REG_FS);
 }
 
-static int ath79_spi_probe(struct device_d *dev)
+static int ath79_spi_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct spi_master *master;
@@ -269,7 +269,7 @@ static int ath79_spi_probe(struct device_d *dev)
 	return 0;
 }
 
-static void ath79_spi_remove(struct device_d *dev)
+static void ath79_spi_remove(struct device *dev)
 {
 	struct ath79_spi *sp = dev->priv;
 

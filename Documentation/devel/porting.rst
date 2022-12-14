@@ -247,7 +247,7 @@ If you need board-specific setup that's not covered by any upstream device
 tree binding, you can write a driver that matches against your board's
 ``/compatible``::
 
-  static int my_board_probe(struct device_d *dev)
+  static int my_board_probe(struct device *dev)
   {
   	/* Do some board-specific setup */
   	return 0;

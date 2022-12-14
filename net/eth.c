@@ -385,7 +385,7 @@ static const char * const eth_mode_names[] = {
 
 int eth_register(struct eth_device *edev)
 {
-	struct device_d *dev = &edev->dev;
+	struct device *dev = &edev->dev;
 	unsigned char ethaddr[ETH_ALEN];
 	int ret, found = 0;
 

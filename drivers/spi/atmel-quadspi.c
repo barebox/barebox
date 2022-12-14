@@ -414,7 +414,7 @@ static int atmel_qspi_init(struct atmel_qspi *aq)
 	return 0;
 }
 
-static int atmel_qspi_probe(struct device_d *dev)
+static int atmel_qspi_probe(struct device *dev)
 {
 	struct spi_controller *ctrl;
 	struct atmel_qspi *aq;

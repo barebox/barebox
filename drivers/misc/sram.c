@@ -22,7 +22,7 @@ static struct cdev_operations memops = {
 	.memmap = generic_memmap_rw,
 };
 
-static int sram_probe(struct device_d *dev)
+static int sram_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct sram *sram;

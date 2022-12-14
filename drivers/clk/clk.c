@@ -416,7 +416,7 @@ out:
 	return ret;
 }
 
-struct clk *clk_register(struct device_d *dev, struct clk_hw *hw)
+struct clk *clk_register(struct device *dev, struct clk_hw *hw)
 {
 	struct clk *clk;
 	const struct clk_init_data *init = hw->init;

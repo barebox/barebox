@@ -31,7 +31,7 @@ static int atmci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 	return atmci_common_request(host, cmd, data);
 }
 
-static void atmci_info(struct device_d *mci_dev)
+static void atmci_info(struct device *mci_dev)
 {
 	struct atmel_mci *host = mci_dev->priv;
 
@@ -67,7 +67,7 @@ static int atmci_card_present(struct mci_host *mci)
 	return ret == 0 ? 1 : 0;
 }
 
-static int atmci_probe(struct device_d *hw_dev)
+static int atmci_probe(struct device *hw_dev)
 {
 	struct resource *iores;
 	struct atmel_mci *host;

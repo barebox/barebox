@@ -192,7 +192,7 @@ void led_gpio_rgb_unregister(struct gpio_rgb_led *led)
 #endif /* CONFIG_LED_GPIO_RGB */
 
 #ifdef CONFIG_LED_GPIO_OF
-static int led_gpio_of_probe(struct device_d *dev)
+static int led_gpio_of_probe(struct device *dev)
 {
 	struct device_node *child;
 	struct gpio_led *leds;

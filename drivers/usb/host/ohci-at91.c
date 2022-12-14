@@ -23,7 +23,7 @@
 
 
 struct ohci_at91_priv {
-	struct device_d *dev;
+	struct device *dev;
 	struct clk *iclk;
 	struct clk *fclk;
 	struct ohci_regs __iomem *regs;
@@ -54,7 +54,7 @@ static void at91_stop_clock(struct ohci_at91_priv *ohci_at91)
 	clk_disable(ohci_at91->iclk);
 }
 
-static int at91_ohci_probe_dt(struct device_d *dev)
+static int at91_ohci_probe_dt(struct device *dev)
 {
 	u32 ports;
 	int i, ret, gpio;
@@ -107,7 +107,7 @@ static int at91_ohci_probe_dt(struct device_d *dev)
 	return 0;
 }
 
-static int at91_ohci_probe(struct device_d *dev)
+static int at91_ohci_probe(struct device *dev)
 {
 	int ret;
 	struct resource *io;
@@ -159,7 +159,7 @@ static int at91_ohci_probe(struct device_d *dev)
 	return 0;
 }
 
-static void at91_ohci_remove(struct device_d *dev)
+static void at91_ohci_remove(struct device *dev)
 {
 	struct at91_usbh_data *pdata = dev->platform_data;
 	struct ohci_at91_priv *ohci_at91 = dev->priv;

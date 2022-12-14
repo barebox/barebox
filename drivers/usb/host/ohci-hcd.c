@@ -1775,7 +1775,7 @@ static int ohci_init(struct usb_host *host)
 	return 0;
 }
 
-static int ohci_probe(struct device_d *dev)
+static int ohci_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct usb_host *host;

@@ -22,7 +22,7 @@ static struct clocksource cs = {
 	.priority = 70,
 };
 
-static int arm_arch_timer_probe(struct device_d *dev)
+static int arm_arch_timer_probe(struct device *dev)
 {
 	cs.mult = clocksource_hz2mult(get_cntfrq(), cs.shift);
 

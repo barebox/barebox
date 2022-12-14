@@ -185,7 +185,7 @@ struct rave_sp_variant {
  * @part_number_bootloader:	Bootloader version
  */
 struct rave_sp {
-	struct device_d dev;
+	struct device dev;
 	struct serdev_device *serdev;
 	struct rave_sp_deframer deframer;
 	unsigned int ackid;
@@ -310,7 +310,7 @@ int rave_sp_exec(struct rave_sp *sp,
 		 void *__data,  size_t data_size,
 		 void *reply_data, size_t reply_data_size)
 {
-	struct device_d *dev = sp->serdev->dev;
+	struct device *dev = sp->serdev->dev;
 	struct rave_sp_reply reply = {
 		.data     = reply_data,
 		.length   = reply_data_size,
@@ -366,7 +366,7 @@ static void rave_sp_receive_event(struct rave_sp *sp,
 static void rave_sp_receive_reply(struct rave_sp *sp,
 				  const unsigned char *data, size_t length)
 {
-	struct device_d *dev = sp->serdev->dev;
+	struct device *dev = sp->serdev->dev;
 	struct rave_sp_reply *reply;
 	const  size_t payload_length = length - 2;
 
@@ -402,7 +402,7 @@ static void rave_sp_receive_frame(struct rave_sp *sp,
 	const size_t checksum_length = sp->variant->checksum->length;
 	const size_t payload_length  = length - checksum_length;
 	const u8 *crc_reported       = &data[payload_length];
-	struct device_d *dev         = sp->serdev->dev;
+	struct device *dev         = sp->serdev->dev;
 	u8 crc_calculated[checksum_length];
 
 	print_hex_dump_debug("rave-sp rx: ", DUMP_PREFIX_NONE, 16, 1,
@@ -430,7 +430,7 @@ static void rave_sp_receive_frame(struct rave_sp *sp,
 static int rave_sp_receive_buf(struct serdev_device *serdev,
 			       const unsigned char *buf, size_t size)
 {
-	struct device_d *dev = serdev->dev;
+	struct device *dev = serdev->dev;
 	struct rave_sp *sp = dev->priv;
 	struct rave_sp_deframer *deframer = &sp->deframer;
 	const unsigned char *src = buf;
@@ -603,7 +603,7 @@ static int rave_sp_default_cmd_translate(enum rave_sp_command command)
 	}
 }
 
-static const char *devm_rave_sp_version(struct device_d *dev,
+static const char *devm_rave_sp_version(struct device *dev,
 					struct rave_sp_version *version)
 {
        /*
@@ -666,7 +666,7 @@ static int rave_sp_emulated_get_status(struct rave_sp *sp,
 
 static int rave_sp_get_status(struct rave_sp *sp)
 {
-	struct device_d *dev = sp->serdev->dev;
+	struct device *dev = sp->serdev->dev;
 	struct rave_sp_status status;
 	const char *mode;
 	int ret;
@@ -766,7 +766,7 @@ static int rave_sp_req_ip_addr(struct param_d *p, void *context)
 
 static int rave_sp_add_params(struct rave_sp *sp)
 {
-	struct device_d *dev = &sp->dev;
+	struct device *dev = &sp->dev;
 	struct param_d *p;
 	int ret;
 
@@ -788,7 +788,7 @@ static int rave_sp_add_params(struct rave_sp *sp)
 	return PTR_ERR_OR_ZERO(p);
 }
 
-static int rave_sp_probe(struct device_d *dev)
+static int rave_sp_probe(struct device *dev)
 {
 	struct serdev_device *serdev = to_serdev_device(dev->parent);
 	struct rave_sp *sp;

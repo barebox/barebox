@@ -29,7 +29,7 @@ static struct clocksource digic_cs = {
 	.priority = 60,
 };
 
-static int digic_timer_probe(struct device_d *dev)
+static int digic_timer_probe(struct device *dev)
 {
 	struct resource *iores;
 	/* use only one timer */

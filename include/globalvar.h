@@ -7,7 +7,7 @@
 #include <linux/err.h>
 #include <stringlist.h>
 
-extern struct device_d global_device;
+extern struct device global_device;
 
 #ifdef CONFIG_GLOBALVAR
 int globalvar_add_simple(const char *name, const char *value);
@@ -37,7 +37,7 @@ int nvvar_add(const char *name, const char *value);
 int nvvar_remove(const char *name);
 void globalvar_print(void);
 
-void dev_param_init_from_nv(struct device_d *dev, const char *name);
+void dev_param_init_from_nv(struct device *dev, const char *name);
 void globalvar_alias_deprecated(const char *newname, const char *oldname);
 
 #else
@@ -125,7 +125,8 @@ static inline int nvvar_save(void)
 	return 0;
 }
 
-static inline void dev_param_init_from_nv(struct device_d *dev, const char *name)
+static inline void dev_param_init_from_nv(struct device *dev,
+					  const char *name)
 {
 }
 

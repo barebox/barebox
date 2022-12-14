@@ -63,7 +63,7 @@ static int altera_serial_getc(struct console_device *cdev)
 	return readw(&uart->rxdata) & 0x000000FF;
 }
 
-static int altera_serial_probe(struct device_d *dev)
+static int altera_serial_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct console_device *cdev;

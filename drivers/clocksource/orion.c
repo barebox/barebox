@@ -34,7 +34,7 @@ static struct clocksource clksrc = {
 	.priority = 70,
 };
 
-static int orion_timer_probe(struct device_d *dev)
+static int orion_timer_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct clk *tclk;

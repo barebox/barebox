@@ -101,8 +101,8 @@ static int backlight_pwm_set(struct backlight_device *backlight,
 		return backlight_pwm_disable(pwm_backlight);
 }
 
-static int pwm_backlight_parse_dt(struct device_d *dev,
-		struct pwm_backlight *pwm_backlight)
+static int pwm_backlight_parse_dt(struct device *dev,
+				  struct pwm_backlight *pwm_backlight)
 {
 	struct device_node *node = dev->of_node;
 	struct property *prop;
@@ -164,7 +164,7 @@ static int pwm_backlight_parse_dt(struct device_d *dev,
 	return 0;
 }
 
-static int backlight_pwm_of_probe(struct device_d *dev)
+static int backlight_pwm_of_probe(struct device *dev)
 {
 	int ret;
 	struct pwm_backlight *pwm_backlight;

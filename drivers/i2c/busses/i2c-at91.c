@@ -82,7 +82,7 @@ struct at91_twi_pdata {
 };
 
 struct at91_twi_dev {
-	struct device_d *dev;
+	struct device *dev;
 	void __iomem *base;
 	struct clk *clk;
 	u8 *buf;
@@ -500,7 +500,7 @@ static struct of_device_id at91_twi_dt_ids[] = {
 	}
 };
 
-static int at91_twi_probe(struct device_d *dev)
+static int at91_twi_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct at91_twi_dev *i2c_at91;

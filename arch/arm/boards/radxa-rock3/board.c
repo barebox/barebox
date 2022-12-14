@@ -10,7 +10,7 @@ struct rock3_model {
 	const char *shortname;
 };
 
-static int rock3_probe(struct device_d *dev)
+static int rock3_probe(struct device *dev)
 {
 	enum bootsource bootsource = bootsource_get();
 	int instance = bootsource_get_instance();

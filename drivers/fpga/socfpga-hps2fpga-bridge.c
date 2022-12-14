@@ -39,7 +39,7 @@
 #define FPGA2HPS_BRIDGE_NAME			"fpga2hps"
 
 struct altera_hps2fpga_data {
-	struct device_d *dev;
+	struct device *dev;
 	const char *name;
 	struct reset_control *bridge_reset;
 	unsigned int remap_mask;
@@ -113,7 +113,7 @@ static struct of_device_id altera_fpga_of_match[] = {
 	{ /* sentinel */ },
 };
 
-static int alt_fpga_bridge_probe(struct device_d *dev)
+static int alt_fpga_bridge_probe(struct device *dev)
 {
 	struct altera_hps2fpga_data *priv;
 	const struct of_device_id *of_id;

@@ -208,7 +208,8 @@ static void s3c_mci_reset(struct s3c_mci_host *host_data)
  * @param hw_dev Host interface instance
  * @param mci_dev MCI device instance (might be NULL)
  */
-static int s3c_mci_initialize(struct s3c_mci_host *host_data, struct device_d *mci_dev)
+static int s3c_mci_initialize(struct s3c_mci_host *host_data,
+			      struct device *mci_dev)
 {
 	s3c_mci_reset(host_data);
 
@@ -612,7 +613,7 @@ static int s3c_mci_adtc(struct s3c_mci_host *host_data, struct mci_cmd *cmd,
  * @param mci_dev MCI device instance
  * @return 0 on success, negative value else
  */
-static int mci_reset(struct mci_host *host, struct device_d *mci_dev)
+static int mci_reset(struct mci_host *host, struct device *mci_dev)
 {
 	struct s3c_mci_host *host_data = to_s3c_host(host);
 
@@ -688,7 +689,7 @@ static void mci_set_ios(struct mci_host *host, struct mci_ios *ios)
 
 /* ----------------------------------------------------------------------- */
 
-static void s3c_info(struct device_d *hw_dev)
+static void s3c_info(struct device *hw_dev)
 {
 	struct s3c_mci_host *host = hw_dev->priv;
 	struct s3c_mci_platform_data *pd = hw_dev->platform_data;
@@ -708,7 +709,7 @@ static void s3c_info(struct device_d *hw_dev)
 		pd->gpio_detect != 0 ? "yes" : "no");
 }
 
-static int s3c_mci_probe(struct device_d *hw_dev)
+static int s3c_mci_probe(struct device *hw_dev)
 {
 	struct resource *iores;
 	struct s3c_mci_host *s3c_host;

@@ -64,7 +64,7 @@ struct spi_board_info {
  * information about how this particular board wires the chip's pins.
  */
 struct spi_device {
-	struct device_d		dev;
+	struct device		dev;
 	struct spi_controller	*controller;
 	struct spi_controller	*master;	/* compatibility layer */
 	struct spi_mem		*mem;
@@ -108,7 +108,7 @@ struct spi_device {
 	 */
 };
 
-static inline struct spi_device *to_spi_device(struct device_d *dev)
+static inline struct spi_device *to_spi_device(struct device *dev)
 {
         return dev ? container_of(dev, struct spi_device, dev) : NULL;
 }
@@ -153,7 +153,7 @@ struct spi_message;
  * message's completion function when the transaction completes.
  */
 struct spi_controller {
-	struct device_d *dev;
+	struct device *dev;
 
 	/* other than negative (== assign one dynamically), bus_num is fully
 	 * board-specific.  usually that simplifies to being SOC-specific.

@@ -18,7 +18,7 @@ static const struct regmap_config stpmic1_regmap_i2c_config = {
 	.max_register = 0xB3,
 };
 
-static int __init stpmic1_probe(struct device_d *dev)
+static int __init stpmic1_probe(struct device *dev)
 {
 	struct regmap *regmap;
 	u32 reg;

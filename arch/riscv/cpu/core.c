@@ -32,8 +32,8 @@ static int riscv_request_stack(void)
 }
 coredevice_initcall(riscv_request_stack);
 
-static struct device_d timer_dev;
-static struct device_d serial_sbi_dev;
+static struct device timer_dev;
+static struct device serial_sbi_dev;
 
 static s64 hartid;
 
@@ -60,7 +60,7 @@ static int riscv_fixup_cpus(struct device_node *root, void *context)
 	return 0;
 }
 
-static int riscv_probe(struct device_d *parent)
+static int riscv_probe(struct device *parent)
 {
 	int ret;
 

@@ -85,7 +85,7 @@ static const char *ipg_per_sel[] = {
 	"arm_per_div",
 };
 
-static int imx35_ccm_probe(struct device_d *dev)
+static int imx35_ccm_probe(struct device *dev)
 {
 	struct resource *iores;
 	u32 pdr0, consumer_sel, hsp_sel;

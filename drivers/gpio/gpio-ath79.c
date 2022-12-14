@@ -103,7 +103,7 @@ static const struct of_device_id ath79_gpio_of_match[] = {
 	{},
 };
 
-static int ath79_gpio_probe(struct device_d *dev)
+static int ath79_gpio_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct device_node *np = dev->of_node;

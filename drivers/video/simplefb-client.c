@@ -35,8 +35,8 @@ struct simplefb {
 	struct fb_videomode mode;
 };
 
-static int simplefb_parse_dt(struct device_d *dev,
-			   struct simplefb_params *params)
+static int simplefb_parse_dt(struct device *dev,
+			     struct simplefb_params *params)
 {
 	struct device_node *np = dev->of_node;
 	int ret;
@@ -81,7 +81,7 @@ static int simplefb_parse_dt(struct device_d *dev,
 	return 0;
 }
 
-static int simplefb_probe(struct device_d *dev)
+static int simplefb_probe(struct device *dev)
 {
 	int ret;
 	struct simplefb_params params;

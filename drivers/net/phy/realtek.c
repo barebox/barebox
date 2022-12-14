@@ -80,7 +80,7 @@ static int rtl8211c_config_init(struct phy_device *phydev)
 
 static int rtl8211f_config_init(struct phy_device *phydev)
 {
-	struct device_d *dev = &phydev->dev;
+	struct device *dev = &phydev->dev;
 	u16 val_txdly, val_rxdly;
 	int ret;
 

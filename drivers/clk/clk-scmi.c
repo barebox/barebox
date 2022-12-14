@@ -101,7 +101,7 @@ static const struct clk_ops scmi_clk_ops = {
 	.disable = scmi_clk_disable,
 };
 
-static int scmi_clk_ops_init(struct device_d *dev, struct scmi_clk *sclk)
+static int scmi_clk_ops_init(struct device *dev, struct scmi_clk *sclk)
 {
 	struct clk_init_data init = {
 		.flags = CLK_GET_RATE_NOCACHE,
@@ -119,7 +119,7 @@ static int scmi_clocks_probe(struct scmi_device *sdev)
 	int idx, count, err;
 	struct clk **clks;
 	struct clk_onecell_data *clk_data;
-	struct device_d *dev = &sdev->dev;
+	struct device *dev = &sdev->dev;
 	struct device_node *np = dev->of_node;
 	const struct scmi_handle *handle = sdev->handle;
 	struct scmi_protocol_handle *ph;

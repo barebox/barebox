@@ -70,7 +70,7 @@ static const char *per_sel_clks[] = {
 	"upll",
 };
 
-static int imx25_ccm_probe(struct device_d *dev)
+static int imx25_ccm_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *base;

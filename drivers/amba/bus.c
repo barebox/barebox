@@ -28,7 +28,7 @@ amba_lookup(const struct amba_id *table, struct amba_device *dev)
 	return ret ? table : NULL;
 }
 
-static int amba_match(struct device_d *dev, struct driver_d *drv)
+static int amba_match(struct device *dev, struct driver_d *drv)
 {
 	struct amba_device *pcdev = to_amba_device(dev);
 
@@ -55,7 +55,7 @@ static int amba_get_enable_pclk(struct amba_device *pcdev)
 	return ret;
 }
 
-static int amba_probe(struct device_d *dev)
+static int amba_probe(struct device *dev)
 {
 	struct amba_device *pcdev = to_amba_device(dev);
 	struct amba_driver *pcdrv = to_amba_driver(dev->driver);
@@ -64,7 +64,7 @@ static int amba_probe(struct device_d *dev)
 	return pcdrv->probe(pcdev, id);
 }
 
-static void amba_remove(struct device_d *dev)
+static void amba_remove(struct device *dev)
 {
 	struct amba_device *pcdev = to_amba_device(dev);
 	struct amba_driver *drv = to_amba_driver(dev->driver);
@@ -163,7 +163,7 @@ int amba_device_add(struct amba_device *dev)
 }
 
 struct amba_device *
-amba_aphb_device_add(struct device_d *parent, const char *name, int id,
+amba_aphb_device_add(struct device *parent, const char *name, int id,
 		     resource_size_t base, size_t size,
 		     void *pdata, unsigned int periphid)
 {

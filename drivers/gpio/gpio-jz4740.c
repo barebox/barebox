@@ -78,7 +78,7 @@ static struct gpio_ops jz4740_gpio_ops = {
 	.set = jz4740_gpio_set_value,
 };
 
-static int jz4740_gpio_probe(struct device_d *dev)
+static int jz4740_gpio_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *base;

@@ -13,7 +13,7 @@ struct starfive_pwrseq {
 	const char **names;
 };
 
-static int starfive_pwrseq_probe(struct device_d *dev)
+static int starfive_pwrseq_probe(struct device *dev)
 {
 	int ret;
 

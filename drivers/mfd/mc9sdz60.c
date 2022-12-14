@@ -105,7 +105,7 @@ static struct cdev_operations mc_fops = {
 	.write	= mc_write,
 };
 
-static int mc_probe(struct device_d *dev)
+static int mc_probe(struct device *dev)
 {
 	if (mc_dev)
 		return -EBUSY;

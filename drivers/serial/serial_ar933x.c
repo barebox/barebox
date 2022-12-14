@@ -141,7 +141,7 @@ static int ar933x_serial_getc(struct console_device *cdev)
 	return rdata & AR933X_UART_DATA_TX_RX_MASK;
 }
 
-static int ar933x_serial_probe(struct device_d *dev)
+static int ar933x_serial_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct console_device *cdev;

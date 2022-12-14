@@ -201,7 +201,7 @@ static const struct platform_device_id m25p_ids[] = {
  * matches what the READ command supports, at least until this driver
  * understands FAST_READ (for clocks over 25 MHz).
  */
-static int m25p_probe(struct device_d *dev)
+static int m25p_probe(struct device *dev)
 {
 	struct spi_device *spi = (struct spi_device *)dev->type_data;
 	struct spi_mem *spimem = spi->mem;

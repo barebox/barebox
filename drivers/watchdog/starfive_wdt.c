@@ -44,7 +44,7 @@ static int starfive_wdt_set_timeout(struct watchdog *wdd, unsigned int timeout)
 	return 0;
 }
 
-static int starfive_wdt_drv_probe(struct device_d *dev)
+static int starfive_wdt_drv_probe(struct device *dev)
 {
 	struct starfive_wdt *wd;
 	struct resource *iores;

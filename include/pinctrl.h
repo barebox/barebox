@@ -11,7 +11,7 @@ struct pinctrl_ops {
 };
 
 struct pinctrl_device {
-	struct device_d *dev;
+	struct device *dev;
 	struct pinctrl_ops *ops;
 	struct list_head list;
 	struct device_node *node;
@@ -22,21 +22,21 @@ int pinctrl_register(struct pinctrl_device *pdev);
 void pinctrl_unregister(struct pinctrl_device *pdev);
 
 #ifdef CONFIG_PINCTRL
-int pinctrl_select_state(struct device_d *dev, const char *state);
-int pinctrl_select_state_default(struct device_d *dev);
+int pinctrl_select_state(struct device *dev, const char *state);
+int pinctrl_select_state_default(struct device *dev);
 int of_pinctrl_select_state(struct device_node *np, const char *state);
 int of_pinctrl_select_state_default(struct device_node *np);
 int pinctrl_gpio_direction_input(unsigned pin);
 int pinctrl_gpio_direction_output(unsigned int pin);
 int pinctrl_gpio_get_direction(unsigned pin);
-int pinctrl_single_probe(struct device_d *dev);
+int pinctrl_single_probe(struct device *dev);
 #else
-static inline int pinctrl_select_state(struct device_d *dev, const char *state)
+static inline int pinctrl_select_state(struct device *dev, const char *state)
 {
 	return -ENODEV;
 }
 
-static inline int pinctrl_select_state_default(struct device_d *dev)
+static inline int pinctrl_select_state_default(struct device *dev)
 {
 	return -ENODEV;
 }
@@ -66,7 +66,7 @@ static inline int pinctrl_gpio_get_direction(unsigned pin)
 	return -ENOTSUPP;
 }
 
-static inline int pinctrl_single_probe(struct device_d *dev)
+static inline int pinctrl_single_probe(struct device *dev)
 {
 	return -ENOSYS;
 }

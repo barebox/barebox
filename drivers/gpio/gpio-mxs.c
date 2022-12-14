@@ -98,7 +98,7 @@ static struct gpio_ops mxs_gpio_ops = {
 	.get_direction = mxs_get_direction,
 };
 
-static int mxs_gpio_probe(struct device_d *dev)
+static int mxs_gpio_probe(struct device *dev)
 {
 	struct mxs_gpio_chip *mxsgpio;
 	struct mxs_gpio_regs *regs;

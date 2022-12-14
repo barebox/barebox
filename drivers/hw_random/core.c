@@ -64,7 +64,7 @@ static struct cdev_operations rng_chrdev_ops = {
 
 static int hwrng_register_cdev(struct hwrng *rng)
 {
-	struct device_d *dev = rng->dev;
+	struct device *dev = rng->dev;
 	const char *alias;
 	char *devname;
 	int err;
@@ -103,7 +103,7 @@ struct hwrng *hwrng_get_first(void)
 		return list_first_entry(&hwrngs, struct hwrng, list);
 }
 
-int hwrng_register(struct device_d *dev, struct hwrng *rng)
+int hwrng_register(struct device *dev, struct hwrng *rng)
 {
 	int err;
 

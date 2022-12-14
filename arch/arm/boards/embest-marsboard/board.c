@@ -33,7 +33,7 @@ static int ar8035_phy_fixup(struct phy_device *dev)
 	return 0;
 }
 
-static int marsboard_device_init(struct device_d *dev)
+static int marsboard_device_init(struct device *dev)
 {
 	barebox_set_hostname("marsboard");
 

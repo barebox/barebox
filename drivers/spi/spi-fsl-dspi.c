@@ -132,7 +132,7 @@ static const struct fsl_dspi_devtype_data ls2085a_data = {
 
 struct fsl_dspi {
 	struct spi_controller			ctlr;
-	struct device_d				*dev;
+	struct device				*dev;
 
 	struct regmap				*regmap;
 	struct regmap				*regmap_pushr;
@@ -553,7 +553,7 @@ static void dspi_init(struct fsl_dspi *dspi)
 			     SPI_CTARE_FMSZE(0) | SPI_CTARE_DTCP(1));
 }
 
-static int dspi_probe(struct device_d *dev)
+static int dspi_probe(struct device *dev)
 {
 	struct device_node *np = dev->of_node;
 	const struct regmap_config *regmap_config;

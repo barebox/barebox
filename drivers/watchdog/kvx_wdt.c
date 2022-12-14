@@ -48,7 +48,7 @@ static int kvx_wdt_set_timeout(struct watchdog *wdd, unsigned int timeout)
 
 static int count;
 
-static int kvx_wdt_drv_probe(struct device_d *dev)
+static int kvx_wdt_drv_probe(struct device *dev)
 {
 	struct watchdog *wdd;
 	struct clk *clk;

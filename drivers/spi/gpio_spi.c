@@ -126,7 +126,7 @@ static int gpio_spi_setup(struct spi_device *spi)
 	return 0;
 }
 
-static int gpio_spi_of_probe(struct device_d *dev)
+static int gpio_spi_of_probe(struct device *dev)
 {
 	struct device_node *np = dev->of_node;
 	struct gpio_spi_pdata *pdata;
@@ -166,7 +166,7 @@ static int gpio_spi_of_probe(struct device_d *dev)
 	return 0;
 }
 
-static int gpio_spi_probe(struct device_d *dev)
+static int gpio_spi_probe(struct device *dev)
 {
 	struct gpio_spi *priv;
 	struct gpio_spi_pdata *pdata;

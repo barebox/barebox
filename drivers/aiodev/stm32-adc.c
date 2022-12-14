@@ -91,7 +91,7 @@ static void stm32_adc_stop(struct stm32_adc *adc)
 
 static int stm32_adc_start_channel(struct stm32_adc *adc, int channel)
 {
-	struct device_d *dev = adc->aiodev.hwdev;
+	struct device *dev = adc->aiodev.hwdev;
 	struct stm32_adc_common *common = adc->common;
 	int ret;
 	u32 val;
@@ -153,7 +153,7 @@ static int stm32_adc_start_channel(struct stm32_adc *adc, int channel)
 static int stm32_adc_channel_data(struct stm32_adc *adc, int channel,
 				  int *data)
 {
-	struct device_d *dev = &adc->aiodev.dev;
+	struct device *dev = &adc->aiodev.dev;
 	int ret;
 	u32 val;
 
@@ -211,7 +211,7 @@ static void stm32_adc_smpr_init(struct stm32_adc *adc, int channel, u32 smp_ns)
 	adc->smpr_val[r] = (adc->smpr_val[r] & ~mask) | (smp << shift);
 }
 
-static int stm32_adc_chan_of_init(struct device_d *dev, struct stm32_adc *adc)
+static int stm32_adc_chan_of_init(struct device *dev, struct stm32_adc *adc)
 {
 	unsigned int i;
 	int num_channels = 0, num_times = 0;
@@ -290,7 +290,7 @@ static int stm32_adc_chan_of_init(struct device_d *dev, struct stm32_adc *adc)
 	return ret;
 }
 
-static int stm32_adc_probe(struct device_d *dev)
+static int stm32_adc_probe(struct device *dev)
 {
 	struct stm32_adc_common *common = dev->parent->priv;
 	struct stm32_adc *adc;

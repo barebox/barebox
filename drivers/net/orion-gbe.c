@@ -42,7 +42,7 @@ struct txdesc {
 };
 
 struct port_priv {
-	struct device_d dev;
+	struct device dev;
 	struct eth_device edev;
 	void __iomem *regs;
 	struct device_node *np;
@@ -387,10 +387,10 @@ static int port_open(struct eth_device *edev)
 	return 0;
 }
 
-static int port_probe(struct device_d *parent, struct port_priv *port)
+static int port_probe(struct device *parent, struct port_priv *port)
 {
 	struct orion_gbe *gbe = parent->priv;
-	struct device_d *dev = &port->dev;
+	struct device *dev = &port->dev;
 	u32 reg;
 	int ret;
 
@@ -473,7 +473,7 @@ static int port_probe(struct device_d *parent, struct port_priv *port)
 	return 0;
 }
 
-static int orion_gbe_probe(struct device_d *dev)
+static int orion_gbe_probe(struct device *dev)
 {
 	struct orion_gbe *gbe;
 	struct port_priv *ppriv;
@@ -518,7 +518,7 @@ static int orion_gbe_probe(struct device_d *dev)
 	return 0;
 }
 
-static void orion_gbe_remove(struct device_d *dev)
+static void orion_gbe_remove(struct device *dev)
 {
 	struct orion_gbe *gbe = dev->priv;
 	int n;

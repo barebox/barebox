@@ -115,7 +115,7 @@ static int pl010_tstc(struct console_device *cdev)
 	return !(readl(&pl010->flag) & UART_PL010_FR_RXFE);
 }
 
-static int pl010_probe(struct device_d *dev)
+static int pl010_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct console_device *cdev;

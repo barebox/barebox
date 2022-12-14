@@ -253,7 +253,7 @@ int i2c_get_sda_gpio_value(struct i2c_adapter *adap)
 static int i2c_get_gpios_for_recovery(struct i2c_adapter *adap)
 {
 	struct i2c_bus_recovery_info *bri = adap->bus_recovery_info;
-	struct device_d *dev = &adap->dev;
+	struct device *dev = &adap->dev;
 	int ret = 0;
 
 	ret = gpio_request_one(bri->scl_gpio, GPIOF_IN, "i2c-scl");
@@ -359,7 +359,7 @@ int i2c_recover_bus(struct i2c_adapter *adap)
 	return adap->bus_recovery_info->recover_bus(adap);
 }
 
-static void i2c_info(struct device_d *dev)
+static void i2c_info(struct device *dev)
 {
 	const struct i2c_client *client = to_i2c_client(dev);
 
@@ -586,7 +586,7 @@ struct i2c_adapter *of_find_i2c_adapter_by_node(struct device_node *node)
 
 struct i2c_client *of_find_i2c_device_by_node(struct device_node *node)
 {
-	struct device_d *dev = of_find_device_by_node(node);
+	struct device *dev = of_find_device_by_node(node);
 
 	if (!dev)
 		return NULL;
@@ -610,8 +610,9 @@ int of_i2c_device_enable_and_register_by_alias(const char *alias)
 }
 
 
-static void i2c_parse_timing(struct device_d *dev, char *prop_name, u32 *cur_val_p,
-			    u32 def_val, bool use_def)
+static void i2c_parse_timing(struct device *dev, char *prop_name,
+			     u32 *cur_val_p,
+			     u32 def_val, bool use_def)
 {
 	int ret;
 
@@ -638,7 +639,8 @@ static void i2c_parse_timing(struct device_d *dev, char *prop_name, u32 *cur_val
  * to switch to this function. New drivers almost always should use the defaults.
  */
 
-void i2c_parse_fw_timings(struct device_d *dev, struct i2c_timings *t, bool use_defaults)
+void i2c_parse_fw_timings(struct device *dev, struct i2c_timings *t,
+			  bool use_defaults)
 {
 	bool u = use_defaults;
 	u32 d;
@@ -714,12 +716,12 @@ int i2c_add_numbered_adapter(struct i2c_adapter *adapter)
 }
 EXPORT_SYMBOL(i2c_add_numbered_adapter);
 
-static int i2c_probe(struct device_d *dev)
+static int i2c_probe(struct device *dev)
 {
 	return dev->driver->probe(dev);
 }
 
-static void i2c_remove(struct device_d *dev)
+static void i2c_remove(struct device *dev)
 {
 	if (dev->driver->remove)
 		dev->driver->remove(dev);

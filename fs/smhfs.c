@@ -29,20 +29,20 @@ static int file_to_fd(const FILE *f)
 	return (int)f->priv;
 }
 
-static int smhfs_create(struct device_d __always_unused *dev,
+static int smhfs_create(struct device __always_unused *dev,
 			const char __always_unused *pathname,
 			mode_t __always_unused mode)
 {
 	return 0;
 }
 
-static int smhfs_mkdir(struct device_d __always_unused *dev,
+static int smhfs_mkdir(struct device __always_unused *dev,
 		       const char __always_unused *pathname)
 {
 	return -ENOSYS;
 }
 
-static int smhfs_rm(struct device_d __always_unused *dev,
+static int smhfs_rm(struct device __always_unused *dev,
 		    const char *pathname)
 {
 	/* Get rid of leading '/' */
@@ -54,14 +54,14 @@ static int smhfs_rm(struct device_d __always_unused *dev,
 		return 0;
 }
 
-static int smhfs_truncate(struct device_d __always_unused *dev,
+static int smhfs_truncate(struct device __always_unused *dev,
 			  FILE __always_unused *f,
 			  loff_t __always_unused size)
 {
 	return 0;
 }
 
-static int smhfs_open(struct device_d __always_unused *dev,
+static int smhfs_open(struct device __always_unused *dev,
 		      FILE *file, const char *filename)
 {
 	int fd;
@@ -82,7 +82,7 @@ error:
 	return -semihosting_errno();
 }
 
-static int smhfs_close(struct device_d __always_unused *dev,
+static int smhfs_close(struct device __always_unused *dev,
 		       FILE *f)
 {
 	if (semihosting_close(file_to_fd(f)))
@@ -91,7 +91,7 @@ static int smhfs_close(struct device_d __always_unused *dev,
 		return 0;
 }
 
-static int smhfs_write(struct device_d __always_unused *dev,
+static int smhfs_write(struct device __always_unused *dev,
 		       FILE *f, const void *inbuf, size_t insize)
 {
 	if (semihosting_write(file_to_fd(f), inbuf, insize))
@@ -100,7 +100,7 @@ static int smhfs_write(struct device_d __always_unused *dev,
 		return insize;
 }
 
-static int smhfs_read(struct device_d __always_unused *dev,
+static int smhfs_read(struct device __always_unused *dev,
 		      FILE *f, void *buf, size_t insize)
 {
 	if (!semihosting_read(file_to_fd(f), buf, insize))
@@ -109,7 +109,7 @@ static int smhfs_read(struct device_d __always_unused *dev,
 		return -semihosting_errno();
 }
 
-static int smhfs_lseek(struct device_d __always_unused *dev,
+static int smhfs_lseek(struct device __always_unused *dev,
 			  FILE *f, loff_t pos)
 {
 	if (semihosting_seek(file_to_fd(f), pos))
@@ -118,13 +118,13 @@ static int smhfs_lseek(struct device_d __always_unused *dev,
 	return 0;
 }
 
-static DIR* smhfs_opendir(struct device_d __always_unused *dev,
+static DIR* smhfs_opendir(struct device __always_unused *dev,
 			  const char __always_unused *pathname)
 {
 	return NULL;
 }
 
-static int smhfs_stat(struct device_d __always_unused *dev,
+static int smhfs_stat(struct device __always_unused *dev,
 		      const char *filename, struct stat *s)
 {
 	FILE file;
@@ -138,13 +138,13 @@ static int smhfs_stat(struct device_d __always_unused *dev,
 	return 0;
 }
 
-static int smhfs_probe(struct device_d __always_unused *dev)
+static int smhfs_probe(struct device __always_unused *dev)
 {
 	/* TODO: Add provisions to detect if debugger is connected */
 	return 0;
 }
 
-static void smhfs_remove(struct device_d __always_unused *dev)
+static void smhfs_remove(struct device __always_unused *dev)
 {
 }
 

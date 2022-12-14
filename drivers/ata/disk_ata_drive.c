@@ -199,7 +199,7 @@ static int ata_port_init(struct ata_port *port)
 {
 	int rc;
 	struct ata_port_operations *ops = port->ops;
-	struct device_d *dev = &port->class_dev;
+	struct device *dev = &port->class_dev;
 
 	if (ops->init) {
 		rc = ops->init(port);
@@ -293,14 +293,14 @@ static int ata_set_probe(struct param_d *param, void *priv)
 	return ata_port_detect(port);
 }
 
-static int ata_detect(struct device_d *dev)
+static int ata_detect(struct device *dev)
 {
 	struct ata_port *port = container_of(dev, struct ata_port, class_dev);
 
 	return ata_port_detect(port);
 }
 
-static void ata_info(struct device_d *dev)
+static void ata_info(struct device *dev)
 {
 	struct ata_port *port = container_of(dev, struct ata_port, class_dev);
 

@@ -45,7 +45,7 @@ static struct clocksource cs = {
 	.priority = 70,
 };
 
-static int mvebu_timer_probe(struct device_d *dev)
+static int mvebu_timer_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct clk *clk;

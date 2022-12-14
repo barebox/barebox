@@ -205,7 +205,7 @@ static int of_fixup_bootargs(struct device_node *root, void *unused)
 	struct device_node *node;
 	int err;
 	int instance = reset_source_get_instance();
-	struct device_d *dev;
+	struct device *dev;
 	const char *serialno;
 	const char *compat;
 

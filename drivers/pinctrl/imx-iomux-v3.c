@@ -156,7 +156,7 @@ static struct pinctrl_ops imx_iomux_v3_ops = {
 	.set_state = imx_iomux_v3_set_state,
 };
 
-static int imx_pinctrl_dt(struct device_d *dev, void __iomem *base)
+static int imx_pinctrl_dt(struct device *dev, void __iomem *base)
 {
 	struct imx_iomux_v3 *iomux;
 	const struct imx_iomux_v3_data *drvdata;
@@ -179,7 +179,7 @@ static int imx_pinctrl_dt(struct device_d *dev, void __iomem *base)
 	return ret;
 }
 
-static int imx_iomux_v3_probe(struct device_d *dev)
+static int imx_iomux_v3_probe(struct device *dev)
 {
 	void __iomem *base;
 	struct resource *iores;

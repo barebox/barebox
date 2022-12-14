@@ -24,7 +24,7 @@ static struct clocksource kvx_clksrc = {
 	.priority = 70,
 };
 
-static int kvx_timer_probe(struct device_d *dev)
+static int kvx_timer_probe(struct device *dev)
 {
 	struct clk *clk;
 	uint32_t clk_freq;

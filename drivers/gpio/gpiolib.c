@@ -543,7 +543,7 @@ static const char *gpio_suffixes[] = {
 };
 
 /* Linux compatibility helper: Get a GPIO descriptor from device tree */
-int gpiod_get(struct device_d *dev, const char *_con_id, enum gpiod_flags flags)
+int gpiod_get(struct device *dev, const char *_con_id, enum gpiod_flags flags)
 {
 	struct device_node *np = dev->of_node;
 	enum of_gpio_flags of_flags;
@@ -637,7 +637,7 @@ static int of_gpio_simple_xlate(struct gpio_chip *chip,
 	return chip->base + gpiospec->args[0];
 }
 
-struct gpio_chip *gpio_get_chip_by_dev(struct device_d *dev)
+struct gpio_chip *gpio_get_chip_by_dev(struct device *dev)
 {
 	struct gpio_chip *chip;
 
@@ -649,7 +649,8 @@ struct gpio_chip *gpio_get_chip_by_dev(struct device_d *dev)
 	return NULL;
 }
 
-int gpio_of_xlate(struct device_d *dev, struct of_phandle_args *gpiospec, int *flags)
+int gpio_of_xlate(struct device *dev, struct of_phandle_args *gpiospec,
+		  int *flags)
 {
 	struct gpio_chip *chip;
 
@@ -683,7 +684,7 @@ static int do_gpiolib(int argc, char *argv[])
 		return COMMAND_ERROR_USAGE;
 
 	if (argc > 1) {
-		struct device_d *dev;
+		struct device *dev;
 
 		dev = find_device(argv[1]);
 		if (!dev)

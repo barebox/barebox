@@ -529,7 +529,7 @@ static int ethoc_mdio_write(struct mii_bus *bus, int phy, int reg, u16 val)
 	return 0;
 }
 
-static int ethoc_probe(struct device_d *dev)
+static int ethoc_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct eth_device *edev;

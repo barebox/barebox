@@ -12,9 +12,9 @@
 
 #include <linux/mtd/mtd.h>
 
-struct device_d *of_find_device_by_node_path(const char *path)
+struct device *of_find_device_by_node_path(const char *path)
 {
-	struct device_d *dev;
+	struct device *dev;
 
 	for_each_device(dev) {
 		if (!dev->of_node)
@@ -39,7 +39,7 @@ struct device_d *of_find_device_by_node_path(const char *path)
  */
 static int __of_find_path(struct device_node *node, const char *part, char **outpath, unsigned flags)
 {
-	struct device_d *dev;
+	struct device *dev;
 	struct cdev *cdev;
 	bool add_bb = false;
 

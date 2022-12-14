@@ -40,7 +40,7 @@ static int sandbox_sound_beep(struct sound_card *card, unsigned freq, unsigned d
     return ret;
 }
 
-static int sandbox_sound_probe(struct device_d *dev)
+static int sandbox_sound_probe(struct device *dev)
 {
 	struct sandbox_sound *priv;
 	struct sound_card *card;

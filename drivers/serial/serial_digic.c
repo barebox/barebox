@@ -89,7 +89,7 @@ static int digic_serial_tstc(struct console_device *cdev)
 	*/
 }
 
-static int digic_serial_probe(struct device_d *dev)
+static int digic_serial_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct console_device *cdev;

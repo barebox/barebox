@@ -142,7 +142,7 @@ static const struct of_device_id imx8mq_usb_phy_of_match[] = {
 	{ }
 };
 
-static struct phy *imx8mq_usb_phy_xlate(struct device_d *dev,
+static struct phy *imx8mq_usb_phy_xlate(struct device *dev,
 					struct of_phandle_args *args)
 {
 	struct imx8mq_usb_phy *imx_phy = dev->priv;
@@ -150,7 +150,7 @@ static struct phy *imx8mq_usb_phy_xlate(struct device_d *dev,
 	return imx_phy->phy;
 }
 
-static int imx8mq_usb_phy_probe(struct device_d *dev)
+static int imx8mq_usb_phy_probe(struct device *dev)
 {
 	struct phy_provider *phy_provider;
 	struct imx8mq_usb_phy *imx_phy;

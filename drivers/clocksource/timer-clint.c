@@ -60,7 +60,7 @@ static struct clocksource clint_clocksource = {
 	.priority	= 200,
 };
 
-static int clint_timer_init_dt(struct device_d* dev)
+static int clint_timer_init_dt(struct device * dev)
 {
 	struct resource *iores;
 

@@ -94,7 +94,7 @@ static struct platform_device_id gpio_74164_ids[] = {
 	{ }
 };
 
-static int gpio_74164_probe(struct device_d *dev)
+static int gpio_74164_probe(struct device *dev)
 {
 	struct spi_device *spi = (struct spi_device *)dev->type_data;
 	struct gpio_74164 *priv;

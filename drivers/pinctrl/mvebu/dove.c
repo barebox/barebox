@@ -690,7 +690,7 @@ static struct of_device_id dove_pinctrl_of_match[] = {
 	{ }
 };
 
-static int dove_pinctrl_probe(struct device_d *dev)
+static int dove_pinctrl_probe(struct device *dev)
 {
 	struct resource *iores;
 	const struct of_device_id *match =

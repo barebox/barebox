@@ -66,7 +66,7 @@ static int st_gyro_read(struct aiochannel *chan, int *val)
 	return 0;
 }
 
-static int st_gyro_probe(struct device_d *dev)
+static int st_gyro_probe(struct device *dev)
 {
 	u8 tx[2], rx[2];
 	struct st_gyro *gyro;

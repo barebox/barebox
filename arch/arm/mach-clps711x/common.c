@@ -110,7 +110,7 @@ static int clps711x_bus_fixup(struct device_node *root, void *context)
 	return 0;
 }
 
-static int clps711x_bus_probe(struct device_d *dev)
+static int clps711x_bus_probe(struct device *dev)
 {
 	u32 mcfg;
 

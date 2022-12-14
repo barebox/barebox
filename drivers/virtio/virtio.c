@@ -47,7 +47,7 @@ static inline int virtio_id_match(const struct virtio_device *dev,
 
 /* This looks through all the IDs a driver claims to support.  If any of them
  * match, we return 1 and the kernel will call virtio_dev_probe(). */
-static int virtio_dev_match(struct device_d *_dv, struct driver_d *_dr)
+static int virtio_dev_match(struct device *_dv, struct driver_d *_dr)
 {
 	unsigned int i;
 	struct virtio_device *dev = dev_to_virtio(_dv);
@@ -166,7 +166,7 @@ int virtio_find_vqs(struct virtio_device *vdev, unsigned int nvqs,
 }
 EXPORT_SYMBOL_GPL(virtio_find_vqs);
 
-static int virtio_dev_probe(struct device_d *_d)
+static int virtio_dev_probe(struct device *_d)
 {
 	int err, i;
 	struct virtio_device *dev = dev_to_virtio(_d);
@@ -241,7 +241,7 @@ err:
 
 }
 
-static void virtio_dev_remove(struct device_d *_d)
+static void virtio_dev_remove(struct device *_d)
 {
 	struct virtio_device *dev = dev_to_virtio(_d);
 	struct virtio_driver *drv = drv_to_virtio(dev->dev.driver);
@@ -324,7 +324,7 @@ out:
 }
 EXPORT_SYMBOL_GPL(register_virtio_device);
 
-bool is_virtio_device(struct device_d *dev)
+bool is_virtio_device(struct device *dev)
 {
 	return dev->bus == &virtio_bus;
 }

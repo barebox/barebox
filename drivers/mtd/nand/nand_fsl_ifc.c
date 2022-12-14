@@ -46,7 +46,7 @@ struct fsl_ifc_ctrl {
 
 /* mtd information per set */
 struct fsl_ifc_mtd {
-	struct device_d *dev;
+	struct device *dev;
 	struct nand_chip chip;
 	struct fsl_ifc_ctrl *ctrl;
 	uint32_t cs;		/* On which chipsel NAND is connected    */
@@ -979,7 +979,7 @@ static int fsl_ifc_chip_init(struct fsl_ifc_mtd *priv)
 	return 0;
 }
 
-static int fsl_ifc_nand_probe(struct device_d *dev)
+static int fsl_ifc_nand_probe(struct device *dev)
 {
 	struct fsl_ifc_mtd *priv;
 	struct resource *iores;

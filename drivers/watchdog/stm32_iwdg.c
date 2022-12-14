@@ -126,7 +126,7 @@ static const struct of_device_id stm32_iwdg_of_match[] = {
 	{ /* sentinel */ }
 };
 
-static int stm32_iwdg_probe(struct device_d *dev)
+static int stm32_iwdg_probe(struct device *dev)
 {
 	struct stm32_iwdg_data *data;
 	struct stm32_iwdg *wd;

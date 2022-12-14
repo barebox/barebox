@@ -49,7 +49,7 @@ pwm_disable:
 	return error;
 }
 
-static int pwm_beeper_probe(struct device_d *dev)
+static int pwm_beeper_probe(struct device *dev)
 {
 	struct pwm_beeper *beeper;
 	struct sound_card *card;
@@ -104,7 +104,7 @@ static int pwm_beeper_probe(struct device_d *dev)
 	return sound_card_register(card);
 }
 
-static void pwm_beeper_suspend(struct device_d *dev)
+static void pwm_beeper_suspend(struct device *dev)
 {
 	struct pwm_beeper *beeper = dev->priv;
 

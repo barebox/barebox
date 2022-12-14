@@ -133,7 +133,7 @@ static struct gpio_ops davinci_gpio_ops = {
 	.set = davinci_gpio_set,
 };
 
-static int davinci_gpio_probe(struct device_d *dev)
+static int davinci_gpio_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *gpio_base;

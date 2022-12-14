@@ -15,7 +15,7 @@
 
 struct nvmem_device {
 	const char		*name;
-	struct device_d		dev;
+	struct device		dev;
 	const struct nvmem_bus	*bus;
 	struct list_head	node;
 	int			stride;
@@ -95,7 +95,7 @@ static struct cdev_operations nvmem_chrdev_ops = {
 
 static int nvmem_register_cdev(struct nvmem_device *nvmem, const char *name)
 {
-	struct device_d *dev = &nvmem->dev;
+	struct device *dev = &nvmem->dev;
 	struct cdev *cdev = &nvmem->cdev;
 	const char *alias;
 	int ret;
@@ -325,7 +325,8 @@ EXPORT_SYMBOL_GPL(of_nvmem_device_get);
  * Return: ERR_PTR() on error or a valid pointer to a struct nvmem_device
  * on success.
  */
-struct nvmem_device *nvmem_device_get(struct device_d *dev, const char *dev_name)
+struct nvmem_device *nvmem_device_get(struct device *dev,
+				      const char *dev_name)
 {
 	if (dev->of_node) { /* try dt first */
 		struct nvmem_device *nvmem;
@@ -463,7 +464,7 @@ EXPORT_SYMBOL_GPL(of_nvmem_cell_get);
  * to a struct nvmem_cell.  The nvmem_cell will be freed by the
  * nvmem_cell_put().
  */
-struct nvmem_cell *nvmem_cell_get(struct device_d *dev, const char *cell_id)
+struct nvmem_cell *nvmem_cell_get(struct device *dev, const char *cell_id)
 {
 	struct nvmem_cell *cell;
 
@@ -817,7 +818,7 @@ EXPORT_SYMBOL_GPL(nvmem_cell_get_and_read);
  *
  * Return: 0 on success or negative errno.
  */
-int nvmem_cell_read_variable_le_u32(struct device_d *dev, const char *cell_id,
+int nvmem_cell_read_variable_le_u32(struct device *dev, const char *cell_id,
 				    u32 *val)
 {
 	size_t len;

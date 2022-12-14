@@ -253,7 +253,7 @@ static const struct imx7_src_variant variant_imx8mq = {
 	},
 };
 
-static int imx7_reset_probe(struct device_d *dev)
+static int imx7_reset_probe(struct device *dev)
 {
 	struct imx7_src *imx7src;
 	const struct imx7_src_variant *variant = of_device_get_match_data(dev);

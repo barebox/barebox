@@ -13,7 +13,7 @@
 #define BCM2835_AUXIRQ		0x00
 #define BCM2835_AUXENB		0x04
 
-static int bcm2835_aux_clk_probe(struct device_d *dev)
+static int bcm2835_aux_clk_probe(struct device *dev)
 {
 	struct clk_hw_onecell_data *onecell;
 	const char *parent;

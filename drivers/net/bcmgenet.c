@@ -174,7 +174,7 @@ struct bcmgenet_eth_priv {
 	u32 interface;
 	struct mii_bus miibus;
 	struct eth_device edev;
-	struct device_d *dev;
+	struct device *dev;
 	unsigned char addr[6];
 };
 
@@ -518,7 +518,7 @@ static int bcmgenet_mdio_read(struct mii_bus *bus, int addr, int reg)
 	return val & 0xffff;
 }
 
-static int bcmgenet_probe(struct device_d *dev)
+static int bcmgenet_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct bcmgenet_eth_priv *priv;
@@ -600,7 +600,7 @@ static void bcmgenet_gmac_eth_stop(struct bcmgenet_eth_priv *priv)
 	bcmgenet_disable_dma(priv);
 }
 
-static void bcmgenet_remove(struct device_d *dev)
+static void bcmgenet_remove(struct device *dev)
 {
 	struct bcmgenet_eth_priv *priv = dev->priv;
 

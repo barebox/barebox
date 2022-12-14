@@ -77,7 +77,7 @@ static struct notifier_block imx_clock_notifier = {
 	.notifier_call = imx_clocksource_clock_change,
 };
 
-static int imx_gpt_probe(struct device_d *dev)
+static int imx_gpt_probe(struct device *dev)
 {
 	struct resource *iores;
 	int i;

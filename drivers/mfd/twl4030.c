@@ -26,7 +26,7 @@ struct twl4030 *twl4030_get(void)
 }
 EXPORT_SYMBOL(twl4030_get);
 
-static int twl_probe(struct device_d *dev)
+static int twl_probe(struct device *dev)
 {
 	if (twl_dev)
 		return -EBUSY;

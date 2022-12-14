@@ -652,7 +652,7 @@ static void fec_free_receive_packets(struct fec_priv *fec, int count, int size)
 }
 
 #ifdef CONFIG_OFDEVICE
-static int fec_probe_dt(struct device_d *dev, struct fec_priv *fec)
+static int fec_probe_dt(struct device *dev, struct fec_priv *fec)
 {
 	struct device_node *mdiobus;
 	int ret;
@@ -670,7 +670,7 @@ static int fec_probe_dt(struct device_d *dev, struct fec_priv *fec)
 	return 0;
 }
 #else
-static int fec_probe_dt(struct device_d *dev, struct fec_priv *fec)
+static int fec_probe_dt(struct device *dev, struct fec_priv *fec)
 {
 	return -ENODEV;
 }
@@ -757,7 +757,7 @@ static int fec_clk_get(struct fec_priv *fec)
 	return err;
 }
 
-static int fec_probe(struct device_d *dev)
+static int fec_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct fec_platform_data *pdata = (struct fec_platform_data *)dev->platform_data;
@@ -928,7 +928,7 @@ err_free:
 	return ret;
 }
 
-static void fec_remove(struct device_d *dev)
+static void fec_remove(struct device *dev)
 {
 	struct fec_priv *fec = dev->priv;
 

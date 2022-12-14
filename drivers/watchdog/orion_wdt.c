@@ -68,7 +68,7 @@ static int armada_xp_set_timeout(struct watchdog *wd, unsigned timeout)
 	return 0;
 }
 
-static int orion_wdt_probe(struct device_d *dev)
+static int orion_wdt_probe(struct device *dev)
 {
 	struct orion_wdt_ddata* ddata;
 	struct resource *res_timer, *res_rstout;

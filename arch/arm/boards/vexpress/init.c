@@ -42,7 +42,7 @@ static int of_fixup_virtio_mmio(struct device_node *root, void *unused)
 	return 0;
 }
 
-static int vexpress_probe(struct device_d *dev)
+static int vexpress_probe(struct device *dev)
 {
 	char *hostname = "vexpress-unknown";
 	int ret = 0;

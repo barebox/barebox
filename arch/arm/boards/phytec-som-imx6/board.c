@@ -157,7 +157,7 @@ struct board_data {
 	unsigned flags;
 };
 
-static int physom_imx6_probe(struct device_d *dev)
+static int physom_imx6_probe(struct device *dev)
 {
 	int ret;
 	char *environment_path, *default_environment_path;

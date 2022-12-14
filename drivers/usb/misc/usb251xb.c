@@ -116,7 +116,7 @@
 #define DRIVER_DESC	"Microchip USB 2.0 Hi-Speed Hub Controller"
 
 struct usb251xb {
-	struct device_d *dev;
+	struct device *dev;
 	struct i2c_client *i2c;
 	u8 skip_config;
 	int gpio_reset;
@@ -241,7 +241,7 @@ static void usb251xb_reset(struct usb251xb *hub, int state)
 
 static int usb251xb_connect(struct usb251xb *hub)
 {
-	struct device_d *dev = hub->dev;
+	struct device *dev = hub->dev;
 	int err, i;
 	char i2c_wb[USB251XB_I2C_REG_SZ];
 
@@ -337,7 +337,7 @@ out_err:
 static int usb251xb_get_ofdata(struct usb251xb *hub,
 			       struct usb251xb_data *data)
 {
-	struct device_d *dev = hub->dev;
+	struct device *dev = hub->dev;
 	struct device_node *np = dev->of_node;
 	int len, i;
 	u32 port, property_u32 = 0;
@@ -618,7 +618,7 @@ static int usb251xb_get_ofdata(struct usb251xb *hub,
 
 static int usb251xb_probe(struct usb251xb *hub)
 {
-	struct device_d *dev = hub->dev;
+	struct device *dev = hub->dev;
 	struct device_node *np = dev->of_node;
 	const struct of_device_id *of_id = of_match_device(usb251xb_of_match,
 							   dev);
@@ -644,7 +644,7 @@ static int usb251xb_probe(struct usb251xb *hub)
 	return 0;
 }
 
-static int usb251xb_i2c_probe(struct device_d *dev)
+static int usb251xb_i2c_probe(struct device *dev)
 {
 	struct i2c_client *i2c = to_i2c_client(dev);
 	struct usb251xb *hub;

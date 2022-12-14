@@ -28,7 +28,7 @@ static int __of_irq_count(struct device_node *np)
 	return npins / sizeof(__be32);
 }
 
-static int sifive_gpio_probe(struct device_d *dev)
+static int sifive_gpio_probe(struct device *dev)
 {
 	struct bgpio_chip *bgc;
 	struct resource *res;

@@ -25,7 +25,7 @@ static void bbu_register_handler_emmc(bool is_boot_source)
 {
 	int emmc_boot_flag = 0, emmc_flag = 0;
 	const char *bootpart;
-	struct device_d *dev;
+	struct device *dev;
 	int ret;
 
 	if (!is_boot_source)

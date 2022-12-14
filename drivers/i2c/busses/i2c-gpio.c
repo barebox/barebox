@@ -126,7 +126,7 @@ static int of_i2c_gpio_probe(struct device_node *np,
 	return 0;
 }
 
-static int i2c_gpio_probe(struct device_d *dev)
+static int i2c_gpio_probe(struct device *dev)
 {
 	struct i2c_gpio_private_data *priv;
 	struct i2c_gpio_platform_data *pdata;

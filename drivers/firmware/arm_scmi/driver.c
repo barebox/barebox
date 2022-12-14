@@ -117,7 +117,7 @@ struct scmi_protocol_instance {
  * @users: Number of users of this instance
  */
 struct scmi_info {
-	struct device_d *dev;
+	struct device *dev;
 	const struct scmi_desc *desc;
 	struct scmi_revision_info version;
 	struct scmi_handle handle;
@@ -163,7 +163,7 @@ static inline int scmi_to_linux_errno(int errno)
  * @dev: Device pointer corresponding to the SCMI entity
  * @hdr: pointer to header.
  */
-static inline void scmi_dump_header_dbg(struct device_d *dev,
+static inline void scmi_dump_header_dbg(struct device *dev,
 					struct scmi_msg_hdr *hdr)
 {
 	dev_dbg(dev, "Message ID: %x Sequence ID: %x Protocol: %x\n",
@@ -224,7 +224,7 @@ static void scmi_handle_response(struct scmi_chan_info *cinfo,
 				 u16 xfer_id, u8 msg_type)
 {
 	struct scmi_xfer *xfer;
-	struct device_d *dev = cinfo->dev;
+	struct device *dev = cinfo->dev;
 	struct scmi_info *info = handle_to_scmi_info(cinfo->handle);
 	struct scmi_xfers_info *minfo = &info->tx_minfo;
 
@@ -323,7 +323,7 @@ static int do_xfer(const struct scmi_protocol_handle *ph,
 	int ret;
 	const struct scmi_protocol_instance *pi = ph_to_pi(ph);
 	struct scmi_info *info = handle_to_scmi_info(pi->handle);
-	struct device_d *dev = info->dev;
+	struct device *dev = info->dev;
 	struct scmi_chan_info *cinfo;
 	u64 start;
 
@@ -437,7 +437,7 @@ static int xfer_get_init(const struct scmi_protocol_handle *ph,
 	const struct scmi_protocol_instance *pi = ph_to_pi(ph);
 	struct scmi_info *info = handle_to_scmi_info(pi->handle);
 	struct scmi_xfers_info *minfo = &info->tx_minfo;
-	struct device_d *dev = info->dev;
+	struct device *dev = info->dev;
 
 	/* Ensure we have sane transfer sizes */
 	if (rx_size > info->desc->max_msg_size ||
@@ -728,7 +728,7 @@ struct scmi_handle *scmi_handle_get_from_info_unlocked(struct scmi_info *info)
  *
  * Return: pointer to handle if successful, NULL on error
  */
-struct scmi_handle *scmi_handle_get(struct device_d *dev)
+struct scmi_handle *scmi_handle_get(struct device *dev)
 {
 	struct list_head *p;
 	struct scmi_info *info;
@@ -776,7 +776,7 @@ static int __scmi_xfer_info_init(struct scmi_info *sinfo,
 {
 	int i;
 	struct scmi_xfer *xfer;
-	struct device_d *dev = sinfo->dev;
+	struct device *dev = sinfo->dev;
 	const struct scmi_desc *desc = sinfo->desc;
 
 	/* Pre-allocated messages, no more than what hdr.seq can support */
@@ -819,7 +819,7 @@ static int scmi_xfer_info_init(struct scmi_info *sinfo)
 	return ret;
 }
 
-static int scmi_chan_setup(struct scmi_info *info, struct device_d *dev,
+static int scmi_chan_setup(struct scmi_info *info, struct device *dev,
 			   int prot_id, bool tx)
 {
 	int ret, idx;
@@ -864,7 +864,7 @@ idr_alloc:
 }
 
 static inline int
-scmi_txrx_setup(struct scmi_info *info, struct device_d *dev, int prot_id)
+scmi_txrx_setup(struct scmi_info *info, struct device *dev, int prot_id)
 {
 	int ret = scmi_chan_setup(info, dev, prot_id, true);
 
@@ -1133,7 +1133,7 @@ void scmi_protocol_device_unrequest(const struct scmi_device_id *id_table)
 	}
 }
 
-static void version_info(struct device_d *dev)
+static void version_info(struct device *dev)
 {
 	struct scmi_info *info = dev->priv;
 
@@ -1148,7 +1148,7 @@ static void version_info(struct device_d *dev)
 	       info->version.sub_vendor_id);
 }
 
-static int scmi_probe(struct device_d *dev)
+static int scmi_probe(struct device *dev)
 {
 	int ret;
 	struct scmi_handle *handle;

@@ -46,7 +46,7 @@ static int syscon_reboot_mode_write(struct reboot_mode_driver *reboot,
 	return ret;
 }
 
-static int syscon_reboot_mode_probe(struct device_d *dev)
+static int syscon_reboot_mode_probe(struct device *dev)
 {
 	int ret, i, nelems;
 	struct syscon_reboot_mode *syscon_rbm;

@@ -5,7 +5,7 @@
 #include <init.h>
 #include <mach/bbu.h>
 
-static int ed1_probe(struct device_d *dev)
+static int ed1_probe(struct device *dev)
 {
 	int flags;
 

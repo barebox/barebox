@@ -99,7 +99,7 @@ struct dsps_musb_wrapper {
  * DSPS glue structure.
  */
 struct dsps_glue {
-	struct device_d *dev;
+	struct device *dev;
 	void __iomem *base;
 	unsigned long flags;
 	enum musb_mode mode;
@@ -108,7 +108,7 @@ struct dsps_glue {
 	const struct dsps_musb_wrapper *wrp; /* wrapper register offsets */
 	struct poller_async timer;	/* otg_workaround timer */
 	uint64_t last_timer;    /* last timer data for each instance */
-	struct device_d otg_dev;
+	struct device otg_dev;
 	uint32_t otgmode;
 	struct musb_hdrc_platform_data pdata;
 };
@@ -260,7 +260,7 @@ static int get_int_prop(struct device_node *dn, const char *s)
 	return val;
 }
 
-static int get_musb_port_mode(struct device_d *dev)
+static int get_musb_port_mode(struct device *dev)
 {
 	enum usb_dr_mode mode;
 
@@ -297,7 +297,7 @@ static int dsps_set_mode(void *ctx, enum usb_dr_mode mode)
 	return musb_init_controller(&glue->musb, &glue->pdata);
 }
 
-static int dsps_probe(struct device_d *dev)
+static int dsps_probe(struct device *dev)
 {
 	struct resource *iores[2];
 	struct musb_hdrc_platform_data *pdata;
@@ -305,7 +305,7 @@ static int dsps_probe(struct device_d *dev)
 	struct device_node *dn = dev->of_node;
 	const struct dsps_musb_wrapper *wrp;
 	struct device_node *phy_node;
-	struct device_d *phy_dev;
+	struct device *phy_dev;
 	struct dsps_glue *glue;
 	int ret;
 

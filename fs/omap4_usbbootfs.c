@@ -30,8 +30,9 @@ struct file_priv {
 	u32 size;
 };
 
-static struct file_priv *omap4_usbbootfs_do_open(
-	struct device_d *dev, int accmode, const char *filename)
+static struct file_priv *omap4_usbbootfs_do_open(struct device *dev,
+						 int accmode,
+						 const char *filename)
 {
 	struct file_priv *priv;
 	u32 data;
@@ -60,8 +61,8 @@ static struct file_priv *omap4_usbbootfs_do_open(
 	return priv;
 }
 
-static int omap4_usbbootfs_open(
-	struct device_d *dev, FILE *file, const char *filename)
+static int omap4_usbbootfs_open(struct device *dev, FILE *file,
+				const char *filename)
 {
 	struct file_priv *priv;
 
@@ -86,14 +87,14 @@ static int omap4_usbbootfs_do_close(struct file_priv *priv)
 	return 0;
 }
 
-static int omap4_usbbootfs_close(struct device_d *dev, FILE *f)
+static int omap4_usbbootfs_close(struct device *dev, FILE *f)
 {
 	struct file_priv *priv = f->priv;
 	return omap4_usbbootfs_do_close(priv);
 }
 
-static int omap4_usbbootfs_read(
-	struct device_d *dev, FILE *f, void *buf, size_t size)
+static int omap4_usbbootfs_read(struct device *dev, FILE *f, void *buf,
+				size_t size)
 {
 	struct file_priv *priv = f->priv;
 	u32 data;
@@ -116,13 +117,13 @@ static int omap4_usbbootfs_read(
 	return size;
 }
 
-static DIR *omap4_usbbootfs_opendir(struct device_d *dev, const char *pathname)
+static DIR *omap4_usbbootfs_opendir(struct device *dev, const char *pathname)
 {
 	return NULL;
 }
 
-static int omap4_usbbootfs_stat(
-	struct device_d *dev, const char *filename, struct stat *s)
+static int omap4_usbbootfs_stat(struct device *dev, const char *filename,
+				struct stat *s)
 {
 	struct file_priv *priv;
 
@@ -140,11 +141,11 @@ static int omap4_usbbootfs_stat(
 	return 0;
 }
 
-static int omap4_usbbootfs_probe(struct device_d *dev)
+static int omap4_usbbootfs_probe(struct device *dev)
 {
 	return 0;
 }
-static void omap4_usbbootfs_remove(struct device_d *dev)
+static void omap4_usbbootfs_remove(struct device *dev)
 {
 }
 

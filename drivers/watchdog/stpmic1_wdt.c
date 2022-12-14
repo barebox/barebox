@@ -157,7 +157,7 @@ static int stpmic1_set_reset_reason(struct regmap *map)
 	return 0;
 }
 
-static int stpmic1_wdt_probe(struct device_d *dev)
+static int stpmic1_wdt_probe(struct device *dev)
 {
 	struct stpmic1_wdt *wdt;
 	struct watchdog *wdd;

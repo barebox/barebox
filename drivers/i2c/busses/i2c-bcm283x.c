@@ -74,7 +74,7 @@ static inline struct bcm283x_i2c *to_bcm283x_i2c(struct i2c_adapter *adapter)
 
 static inline int bcm283x_i2c_init(struct bcm283x_i2c *bcm_i2c)
 {
-	struct device_d *dev = bcm_i2c->adapter.dev.parent;
+	struct device *dev = bcm_i2c->adapter.dev.parent;
 	u32 mclk_rate, cdiv, redl, fedl;
 
 	/*
@@ -130,7 +130,7 @@ static int bcm283x_i2c_msg_xfer(struct bcm283x_i2c *bcm_i2c,
 {
 	int ret;
 	u32 reg_c, reg_s, reg_dlen, timeout;
-	struct device_d *dev = &bcm_i2c->adapter.dev;
+	struct device *dev = &bcm_i2c->adapter.dev;
 	bool msg_read = (msg->flags & I2C_M_RD) > 0;
 	bool msg_10bit = (msg->flags & I2C_M_TEN) > 0;
 	u16 buf_pos = 0;
@@ -266,7 +266,7 @@ out:
 	return ret;
 }
 
-static int bcm283x_i2c_probe(struct device_d *dev)
+static int bcm283x_i2c_probe(struct device *dev)
 {
 	int ret;
 	struct resource *iores;

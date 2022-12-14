@@ -149,7 +149,7 @@ static int pxa_serial_setbaudrate(struct console_device *cdev, int baudrate)
 	return 0;
 }
 
-static int pxa_serial_probe(struct device_d *dev)
+static int pxa_serial_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct console_device *cdev;

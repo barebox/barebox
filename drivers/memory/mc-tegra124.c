@@ -23,7 +23,7 @@ static int tegra124_mc_of_fixup(struct device_node *root, void *context)
 	return 0;
 }
 
-static int tegra124_mc_probe(struct device_d *dev)
+static int tegra124_mc_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *base;

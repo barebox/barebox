@@ -55,7 +55,7 @@ static struct clocksource uemd_cs = {
 	.priority = 60,
 };
 
-static int uemd_timer_probe(struct device_d *dev)
+static int uemd_timer_probe(struct device *dev)
 {
 	struct resource *iores;
 	int mode;

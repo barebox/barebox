@@ -45,7 +45,7 @@ struct ipufb_info {
 	struct fb_videomode	*mode;
 
 	struct fb_info		info;
-	struct device_d		*dev;
+	struct device		*dev;
 
 	/* plane[0] is the full plane, plane[1] is the partial plane */
 	struct ipu_plane	*plane[2];
@@ -269,7 +269,7 @@ err_out:
 	return ret;
 }
 
-static int ipufb_probe(struct device_d *dev)
+static int ipufb_probe(struct device *dev)
 {
 	struct ipufb_info *fbi;
 	struct fb_info *info;
@@ -342,7 +342,7 @@ static int ipufb_probe(struct device_d *dev)
 	return ret;
 }
 
-static void ipufb_remove(struct device_d *dev)
+static void ipufb_remove(struct device *dev)
 {
 }
 

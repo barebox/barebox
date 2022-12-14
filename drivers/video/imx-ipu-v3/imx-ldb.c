@@ -61,7 +61,7 @@ struct imx_ldb_data {
 };
 
 struct imx_ldb {
-	struct device_d *dev;
+	struct device *dev;
 	u32 bus_format;
 	int mode_valid;
 	struct imx_ldb_channel channel[2];
@@ -302,7 +302,7 @@ static int imx_ldb_ioctl(struct vpl *vpl, unsigned int port,
 	return 0;
 }
 
-static int imx_ldb_probe(struct device_d *dev)
+static int imx_ldb_probe(struct device *dev)
 {
 	struct device_node *np = dev->of_node;
 	struct device_node *child;

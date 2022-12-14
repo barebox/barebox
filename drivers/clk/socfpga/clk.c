@@ -367,7 +367,8 @@ static struct clk *socfpga_gate_clk(struct device_node *node)
 	return &cs->hw.clk;
 }
 
-static void socfpga_register_clocks(struct device_d *dev, struct device_node *node)
+static void socfpga_register_clocks(struct device *dev,
+				    struct device_node *node)
 {
 	struct device_node *child;
 	struct clk *clk;
@@ -394,7 +395,7 @@ static void socfpga_register_clocks(struct device_d *dev, struct device_node *no
 	of_clk_add_provider(node, of_clk_src_simple_get, clk);
 }
 
-static int socfpga_ccm_probe(struct device_d *dev)
+static int socfpga_ccm_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *regs;

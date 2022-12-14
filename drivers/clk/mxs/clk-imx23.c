@@ -112,7 +112,7 @@ static int __init mx23_clocks_init(void __iomem *regs)
 	return 0;
 }
 
-static int imx23_ccm_probe(struct device_d *dev)
+static int imx23_ccm_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *regs;

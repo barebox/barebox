@@ -218,7 +218,7 @@ static void dove_sdhci_mci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	sdhci_write16(&host->sdhci, SDHCI_CLOCK_CONTROL, val | SDHCI_CLOCK_CARD_EN);
 }
 
-static int dove_sdhci_mci_init(struct mci_host *mci, struct device_d *dev)
+static int dove_sdhci_mci_init(struct mci_host *mci, struct device *dev)
 {
 	u64 start;
 	struct dove_sdhci *host = priv_from_mci_host(mci);
@@ -271,7 +271,7 @@ static void dove_sdhci_set_mci_caps(struct dove_sdhci *host)
 		host->mci.host_caps &= ~MMC_CAP_8_BIT_DATA;
 }
 
-static int dove_sdhci_probe(struct device_d *dev)
+static int dove_sdhci_probe(struct device *dev)
 {
 	struct dove_sdhci *host;
 	int ret;

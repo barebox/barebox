@@ -138,7 +138,7 @@ static struct pstore_private *pstore_get_by_name(struct list_head *head,
 	return NULL;
 }
 
-static int pstore_open(struct device_d *dev, FILE *file, const char *filename)
+static int pstore_open(struct device *dev, FILE *file, const char *filename)
 {
 	struct list_head *head = dev->priv;
 	struct pstore_private *d;
@@ -157,12 +157,12 @@ static int pstore_open(struct device_d *dev, FILE *file, const char *filename)
 	return 0;
 }
 
-static int pstore_close(struct device_d *dev, FILE *file)
+static int pstore_close(struct device *dev, FILE *file)
 {
 	return 0;
 }
 
-static int pstore_read(struct device_d *dev, FILE *file, void *buf,
+static int pstore_read(struct device *dev, FILE *file, void *buf,
 		       size_t insize)
 {
 	struct pstore_private *d = file->priv;
@@ -173,7 +173,7 @@ static int pstore_read(struct device_d *dev, FILE *file, void *buf,
 	return insize;
 }
 
-static int pstore_lseek(struct device_d *dev, FILE *file, loff_t pos)
+static int pstore_lseek(struct device *dev, FILE *file, loff_t pos)
 {
 	struct pstore_private *d = file->priv;
 
@@ -182,7 +182,7 @@ static int pstore_lseek(struct device_d *dev, FILE *file, loff_t pos)
 	return 0;
 }
 
-static DIR *pstore_opendir(struct device_d *dev, const char *pathname)
+static DIR *pstore_opendir(struct device *dev, const char *pathname)
 {
 	DIR *dir;
 
@@ -196,7 +196,7 @@ static DIR *pstore_opendir(struct device_d *dev, const char *pathname)
 	return dir;
 }
 
-static struct dirent *pstore_readdir(struct device_d *dev, DIR *dir)
+static struct dirent *pstore_readdir(struct device *dev, DIR *dir)
 {
 	struct pstore_private *d = dir->priv;
 
@@ -209,14 +209,14 @@ static struct dirent *pstore_readdir(struct device_d *dev, DIR *dir)
 	return &dir->d;
 }
 
-static int pstore_closedir(struct device_d *dev, DIR *dir)
+static int pstore_closedir(struct device *dev, DIR *dir)
 {
 	free(dir);
 
 	return 0;
 }
 
-static int pstore_stat(struct device_d *dev, const char *filename,
+static int pstore_stat(struct device *dev, const char *filename,
 		       struct stat *s)
 {
 	struct pstore_private *d;
@@ -234,7 +234,7 @@ static int pstore_stat(struct device_d *dev, const char *filename,
 	return 0;
 }
 
-static void pstore_remove(struct device_d *dev)
+static void pstore_remove(struct device *dev)
 {
 	struct pstore_private *d, *tmp;
 
@@ -243,7 +243,7 @@ static void pstore_remove(struct device_d *dev)
 	}
 }
 
-static int pstore_probe(struct device_d *dev)
+static int pstore_probe(struct device *dev)
 {
 	struct list_head *priv = &allpstore;
 

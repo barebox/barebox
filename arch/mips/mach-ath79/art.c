@@ -18,7 +18,7 @@ struct ar9300_eeprom {
 	u8 mac_addr[6];
 };
 
-static int art_set_mac(struct device_d *dev, struct ar9300_eeprom *eeprom)
+static int art_set_mac(struct device *dev, struct ar9300_eeprom *eeprom)
 {
 	struct device_node *node = dev->of_node;
 	struct device_node *rnode;
@@ -36,7 +36,7 @@ static int art_set_mac(struct device_d *dev, struct ar9300_eeprom *eeprom)
 	return 0;
 }
 
-static int art_read_mac(struct device_d *dev, const char *file)
+static int art_read_mac(struct device *dev, const char *file)
 {
 	int fd, rbytes;
 	struct ar9300_eeprom eeprom;
@@ -73,7 +73,7 @@ static int art_read_mac(struct device_d *dev, const char *file)
 	return art_set_mac(dev, &eeprom);
 }
 
-static int art_probe(struct device_d *dev)
+static int art_probe(struct device *dev)
 {
 	char *path;
 	int ret;

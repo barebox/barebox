@@ -65,7 +65,7 @@ static void platform_ide_setup_port(void *reg_base, void *alt_base,
 	}
 }
 
-static int platform_ide_probe(struct device_d *dev)
+static int platform_ide_probe(struct device *dev)
 {
 	struct resource *iores;
 	int rc;

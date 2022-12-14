@@ -15,7 +15,7 @@
 #include <gpio.h>
 #include <envfs.h>
 
-static int nxp_imx8mp_evk_probe(struct device_d *dev)
+static int nxp_imx8mp_evk_probe(struct device *dev)
 {
 	int emmc_bbu_flag = 0;
 	int sd_bbu_flag = 0;

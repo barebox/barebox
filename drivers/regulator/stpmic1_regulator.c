@@ -376,7 +376,7 @@ static struct of_regulator_match stpmic1_matches[] = {
 	MATCH(pwr_sw2, SW_OUT),
 };
 
-static int stpmic1_regulator_register(struct device_d *dev, int id,
+static int stpmic1_regulator_register(struct device *dev, int id,
 				      struct of_regulator_match *match,
 				      struct stpmic1_regulator_cfg *cfg)
 {
@@ -404,7 +404,7 @@ static int stpmic1_regulator_register(struct device_d *dev, int id,
 	return 0;
 }
 
-static int stpmic1_regulator_probe(struct device_d *dev)
+static int stpmic1_regulator_probe(struct device *dev)
 {
 	int i, ret;
 

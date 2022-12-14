@@ -79,7 +79,7 @@ static const char *per_sel[] = {
 	"ipg",
 };
 
-static int imx31_ccm_probe(struct device_d *dev)
+static int imx31_ccm_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *base;

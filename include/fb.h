@@ -117,7 +117,7 @@ struct fb_info {
 	struct display_timings edid_modes;
 
 	struct fb_ops *fbops;
-	struct device_d dev;		/* This is this fb device */
+	struct device dev;		/* This is this fb device */
 
 	void *screen_base;
 	void *screen_base_shadow;

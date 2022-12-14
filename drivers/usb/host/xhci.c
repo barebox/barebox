@@ -1344,7 +1344,7 @@ static __maybe_unused int xhci_get_max_xfer_size(size_t *size)
 int xhci_register(struct xhci_ctrl *ctrl)
 {
 	struct usb_host *host;
-	struct device_d *dev = ctrl->dev;
+	struct device *dev = ctrl->dev;
 	int ret;
 
 	dev_dbg(dev, "%s: hccr=%p, hcor=%p\n", __func__, ctrl->hccr, ctrl->hcor);
@@ -1394,7 +1394,7 @@ int xhci_deregister(struct xhci_ctrl *ctrl)
  * xHCI platform driver
  */
 
-static int xhci_probe(struct device_d *dev)
+static int xhci_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct xhci_ctrl *ctrl;
@@ -1415,7 +1415,7 @@ static int xhci_probe(struct device_d *dev)
 	return xhci_register(ctrl);
 }
 
-static void xhci_remove(struct device_d *dev)
+static void xhci_remove(struct device *dev)
 {
 	struct xhci_ctrl *ctrl = dev->priv;
 

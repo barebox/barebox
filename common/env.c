@@ -127,7 +127,7 @@ static const char *dev_getenv(const char *name)
 {
 	const char *pos, *val, *dot, *varname;
 	char *devname;
-	struct device_d *dev;
+	struct device *dev;
 
 	pos = name;
 
@@ -215,7 +215,7 @@ static int dev_setenv(const char *name, const char *val)
 {
 	const char *pos, *dot, *varname;
 	char *devname;
-	struct device_d *dev;
+	struct device *dev;
 
 	pos = name;
 

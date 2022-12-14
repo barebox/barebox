@@ -29,7 +29,7 @@ struct regulator_internal {
 struct regulator {
 	struct regulator_internal *ri;
 	struct list_head list;
-	struct device_d *dev;
+	struct device *dev;
 };
 
 static int regulator_map_voltage(struct regulator_dev *rdev, int min_uV,
@@ -245,7 +245,8 @@ int of_regulator_register(struct regulator_dev *rd, struct device_node *node)
 	return 0;
 }
 
-static struct regulator_internal *of_regulator_get(struct device_d *dev, const char *supply)
+static struct regulator_internal *of_regulator_get(struct device *dev,
+						   const char *supply)
 {
 	char *propname;
 	struct regulator_internal *ri;
@@ -323,7 +324,8 @@ out:
 	return ri;
 }
 #else
-static struct regulator_internal *of_regulator_get(struct device_d *dev, const char *supply)
+static struct regulator_internal *of_regulator_get(struct device *dev,
+						   const char *supply)
 {
 	return NULL;
 }
@@ -340,7 +342,8 @@ int dev_regulator_register(struct regulator_dev *rd, const char * name, const ch
 	return 0;
 }
 
-static struct regulator_internal *dev_regulator_get(struct device_d *dev, const char *supply)
+static struct regulator_internal *dev_regulator_get(struct device *dev,
+						    const char *supply)
 {
 	struct regulator_internal *ri;
 	struct regulator_internal *ret = NULL;
@@ -382,7 +385,7 @@ static struct regulator_internal *dev_regulator_get(struct device_d *dev, const 
  *
  * Return: a regulator object or an error pointer
  */
-struct regulator *regulator_get(struct device_d *dev, const char *supply)
+struct regulator *regulator_get(struct device *dev, const char *supply)
 {
 	struct regulator_internal *ri = NULL;
 	struct regulator *r;
@@ -500,7 +503,7 @@ int regulator_set_voltage(struct regulator *r, int min_uV, int max_uV)
  * acquired then any regulators that were allocated will be freed
  * before returning to the caller.
  */
-int regulator_bulk_get(struct device_d *dev, int num_consumers,
+int regulator_bulk_get(struct device *dev, int num_consumers,
 		       struct regulator_bulk_data *consumers)
 {
 	int i;

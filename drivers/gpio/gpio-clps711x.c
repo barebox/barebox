@@ -7,7 +7,7 @@
 #include <linux/err.h>
 #include <linux/basic_mmio_gpio.h>
 
-static int clps711x_gpio_probe(struct device_d *dev)
+static int clps711x_gpio_probe(struct device *dev)
 {
 	struct resource *iores;
 	int err, id = of_alias_get_id(dev->of_node, "gpio");

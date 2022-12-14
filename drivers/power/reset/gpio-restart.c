@@ -43,7 +43,7 @@ static void __noreturn gpio_restart_handle(struct restart_handler *this)
 	panic("Unable to restart system\n");
 }
 
-static int gpio_restart_probe(struct device_d *dev)
+static int gpio_restart_probe(struct device *dev)
 {
 	struct device_node *np = dev->of_node;
 	struct gpio_restart *gpio_restart;

@@ -196,7 +196,7 @@ static const struct reset_control_ops starfive_rstgen_ops = {
 	.reset		= starfive_reset,
 };
 
-static int starfive_rstgen_probe(struct device_d *dev)
+static int starfive_rstgen_probe(struct device *dev)
 {
 	struct starfive_rstgen *priv;
 	struct resource *iores;

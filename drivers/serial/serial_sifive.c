@@ -116,7 +116,7 @@ static void sifive_serial_flush(struct console_device *cdev)
 		;
 }
 
-static int sifive_serial_probe(struct device_d *dev)
+static int sifive_serial_probe(struct device *dev)
 {
 	struct sifive_serial_priv *priv;
 	struct resource *iores;

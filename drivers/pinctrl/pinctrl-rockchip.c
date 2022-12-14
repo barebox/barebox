@@ -324,7 +324,7 @@ static struct gpio_ops rockchip_gpio_ops = {
 	.get_direction = rockchip_gpiov2_get_direction,
 };
 
-static int rockchip_gpio_probe(struct device_d *dev)
+static int rockchip_gpio_probe(struct device *dev)
 {
 	struct rockchip_pinctrl *info = dev->parent->priv;
 	struct rockchip_pin_ctrl *ctrl = info->ctrl;
@@ -836,7 +836,7 @@ static struct pinctrl_ops rockchip_pinctrl_ops = {
 };
 
 static int rockchip_get_bank_data(struct rockchip_pin_bank *bank,
-				  struct device_d *dev)
+				  struct device *dev)
 {
 	struct resource node_res, *res;
 
@@ -870,7 +870,7 @@ static int rockchip_get_bank_data(struct rockchip_pin_bank *bank,
 static struct of_device_id rockchip_pinctrl_dt_match[];
 
 static struct rockchip_pin_ctrl *rockchip_pinctrl_get_soc_data(
-	struct rockchip_pinctrl *d, struct device_d *dev)
+	struct rockchip_pinctrl *d, struct device *dev)
 {
 	const struct of_device_id *match;
 	struct device_node *node = dev->of_node;
@@ -995,7 +995,7 @@ static struct rockchip_pin_ctrl *rockchip_pinctrl_get_soc_data(
 	return ctrl;
 }
 
-static int rockchip_pinctrl_probe(struct device_d *dev)
+static int rockchip_pinctrl_probe(struct device *dev)
 {
 	struct rockchip_pinctrl *info;
 	struct rockchip_pin_ctrl *ctrl;

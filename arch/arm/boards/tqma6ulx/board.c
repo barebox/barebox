@@ -11,7 +11,7 @@
 #include <of.h>
 #include <string.h>
 
-static int mba6ulx_probe(struct device_d *dev)
+static int mba6ulx_probe(struct device *dev)
 {
 	int flags;
 

@@ -282,7 +282,7 @@ static struct pinctrl_ops pinctrl_tegra20_ops = {
 	.set_state = pinctrl_tegra20_set_state,
 };
 
-static int pinctrl_tegra20_probe(struct device_d *dev)
+static int pinctrl_tegra20_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct pinctrl_tegra20 *ctrl;

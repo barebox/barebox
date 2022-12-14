@@ -56,7 +56,7 @@ static const struct stm32h7_adc_ck_spec stm32h7_adc_ckmodes_spec[] = {
 	{ 3, 0, 4 },
 };
 
-static int stm32h7_adc_clk_sel(struct device_d *dev,
+static int stm32h7_adc_clk_sel(struct device *dev,
 			       struct stm32_adc_common *common)
 {
 	u32 ckmode, presc;
@@ -137,7 +137,7 @@ out:
 	return 0;
 }
 
-static int stm32_adc_core_probe(struct device_d *dev)
+static int stm32_adc_core_probe(struct device *dev)
 {
 	struct stm32_adc_common *common;
 	int ret;

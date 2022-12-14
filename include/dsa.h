@@ -58,7 +58,7 @@ struct dsa_ops {
 };
 
 struct dsa_port {
-	struct device_d *dev;
+	struct device *dev;
 	struct dsa_switch *ds;
 	unsigned int index;
 	struct eth_device edev;
@@ -68,7 +68,7 @@ struct dsa_port {
 };
 
 struct dsa_switch {
-	struct device_d *dev;
+	struct device *dev;
 	const struct dsa_ops *ops;
 	size_t num_ports;
 	u32 cpu_port;

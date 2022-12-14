@@ -129,7 +129,7 @@ void __noreturn stm32mp1_barebox_entry(void *boarddata)
 }
 
 
-static int stm32mp1_ddr_probe(struct device_d *dev)
+static int stm32mp1_ddr_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *base;

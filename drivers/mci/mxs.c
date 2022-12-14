@@ -433,7 +433,7 @@ static unsigned mxs_mci_setup_clock_speed(struct mxs_mci_host *mxs_mci, unsigned
  * @param mci_dev MCI device instance
  * @return 0 on success, negative value else
  */
-static int mxs_mci_initialize(struct mci_host *host, struct device_d *mci_dev)
+static int mxs_mci_initialize(struct mci_host *host, struct device *mci_dev)
 {
 	struct mxs_mci_host *mxs_mci = to_mxs_mci(host);
 
@@ -517,7 +517,7 @@ static void mxs_mci_set_ios(struct mci_host *host, struct mci_ios *ios)
 
 const unsigned char bus_width[3] = { 1, 4, 8 };
 
-static void mxs_mci_info(struct device_d *hw_dev)
+static void mxs_mci_info(struct device *hw_dev)
 {
 	struct mxs_mci_host *mxs_mci = hw_dev->priv;
 
@@ -529,7 +529,7 @@ static void mxs_mci_info(struct device_d *hw_dev)
 	printf("\n");
 }
 
-static int mxs_mci_probe(struct device_d *hw_dev)
+static int mxs_mci_probe(struct device *hw_dev)
 {
 	struct resource *iores;
 	struct mxs_mci_platform_data *pd = hw_dev->platform_data;

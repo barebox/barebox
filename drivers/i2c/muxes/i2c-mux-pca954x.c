@@ -180,7 +180,7 @@ static int pca954x_deselect_chan(struct i2c_adapter *adap,
 /*
  * I2C init/probing/exit functions
  */
-static int pca954x_probe(struct device_d *dev)
+static int pca954x_probe(struct device *dev)
 {
 	struct i2c_client *client = to_i2c_client(dev);
 	struct i2c_adapter *adap = to_i2c_adapter(client->dev.parent);

@@ -83,7 +83,7 @@ static int imx_sata_init_1ms(struct imx_ahci *imx_ahci)
 	return 0;
 }
 
-static int imx_sata_probe(struct device_d *dev)
+static int imx_sata_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct imx_ahci *imx_ahci;

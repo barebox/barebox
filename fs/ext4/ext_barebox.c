@@ -48,7 +48,7 @@ static inline struct ext2fs_node *to_ext2_node(struct inode *inode)
 	return container_of(inode, struct ext2fs_node, i);
 }
 
-static int ext_read(struct device_d *_dev, FILE *f, void *buf, size_t insize)
+static int ext_read(struct device *_dev, FILE *f, void *buf, size_t insize)
 {
 	struct inode *inode = f->f_inode;
 	struct ext2fs_node *node = to_ext2_node(inode);
@@ -249,7 +249,7 @@ struct inode *ext_get_inode(struct super_block *sb, int ino)
 	return inode;
 }
 
-static int ext_probe(struct device_d *dev)
+static int ext_probe(struct device *dev)
 {
 	struct fs_device_d *fsdev = dev_to_fs_device(dev);
 	int ret;
@@ -290,7 +290,7 @@ err:
 	return ret;
 }
 
-static void ext_remove(struct device_d *dev)
+static void ext_remove(struct device *dev)
 {
 	struct ext_filesystem *fs = dev->priv;
 

@@ -68,7 +68,7 @@ static int altera_serial_jtag_getc(struct console_device *cdev)
 	return val & 0xFF;
 }
 
-static int altera_serial_jtag_probe(struct device_d *dev) {
+static int altera_serial_jtag_probe(struct device *dev) {
 	struct resource *iores;
 
 	struct console_device *cdev;

@@ -311,7 +311,7 @@ int creat(const char *pathname, mode_t mode)
 }
 EXPORT_SYMBOL(creat);
 
-static int fsdev_truncate(struct device_d *dev, FILE *f, loff_t length)
+static int fsdev_truncate(struct device *dev, FILE *f, loff_t length)
 {
 	struct fs_driver_d *fsdrv = f->fsdev->driver;
 
@@ -726,12 +726,12 @@ int close(int fd)
 }
 EXPORT_SYMBOL(close);
 
-static int fs_match(struct device_d *dev, struct driver_d *drv)
+static int fs_match(struct device *dev, struct driver_d *drv)
 {
 	return strcmp(dev->name, drv->name) ? -1 : 0;
 }
 
-static int fs_probe(struct device_d *dev)
+static int fs_probe(struct device *dev)
 {
 	struct fs_device_d *fsdev = dev_to_fs_device(dev);
 	struct driver_d *drv = dev->driver;
@@ -791,7 +791,7 @@ static void destroy_inode(struct inode *inode)
 		free(inode);
 }
 
-static void fs_remove(struct device_d *dev)
+static void fs_remove(struct device *dev)
 {
 	struct fs_device_d *fsdev = dev_to_fs_device(dev);
 	struct super_block *sb = &fsdev->sb;
@@ -1141,7 +1141,7 @@ const char *cdev_mount(struct cdev *cdev)
  */
 void mount_all(void)
 {
-	struct device_d *dev;
+	struct device *dev;
 	struct block_device *bdev;
 
 	if (!IS_ENABLED(CONFIG_BLOCK))

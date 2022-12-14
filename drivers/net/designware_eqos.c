@@ -194,7 +194,7 @@ struct eqos_desc {
 
 #define MII_BUSY		(1 << 0)
 
-static int eqos_phy_reset(struct device_d *dev, struct eqos *eqos)
+static int eqos_phy_reset(struct device *dev, struct eqos *eqos)
 {
 	int phy_reset;
 	u32 delays[3] = { 0, 0, 0 };
@@ -668,7 +668,7 @@ static void eqos_stop(struct eth_device *edev)
 static int eqos_send(struct eth_device *edev, void *packet, int length)
 {
 	struct eqos *eqos = edev->priv;
-	struct device_d *dev = &eqos->netdev.dev;
+	struct device *dev = &eqos->netdev.dev;
 	struct eqos_desc *tx_desc;
 	dma_addr_t dma;
 	u32 des3;
@@ -745,7 +745,7 @@ static int eqos_recv(struct eth_device *edev)
 
 static int eqos_init_resources(struct eqos *eqos)
 {
-	struct device_d *dev = eqos->netdev.parent;
+	struct device *dev = eqos->netdev.parent;
 	int ret = -ENOMEM;
 	void *descs;
 	void *p;
@@ -788,7 +788,7 @@ err:
 	return ret;
 }
 
-static int eqos_init(struct device_d *dev, struct eqos *eqos)
+static int eqos_init(struct device *dev, struct eqos *eqos)
 {
 	int ret;
 
@@ -804,7 +804,7 @@ static int eqos_init(struct device_d *dev, struct eqos *eqos)
 	return ret;
 }
 
-static void eqos_probe_dt(struct device_d *dev, struct eqos *eqos)
+static void eqos_probe_dt(struct device *dev, struct eqos *eqos)
 {
 	struct device_node *child;
 
@@ -821,7 +821,7 @@ static void eqos_probe_dt(struct device_d *dev, struct eqos *eqos)
 	}
 }
 
-int eqos_probe(struct device_d *dev, const struct eqos_ops *ops, void *priv)
+int eqos_probe(struct device *dev, const struct eqos_ops *ops, void *priv)
 {
 	struct device_node *np = dev->of_node;
 	struct mii_bus *miibus;
@@ -882,7 +882,7 @@ int eqos_probe(struct device_d *dev, const struct eqos_ops *ops, void *priv)
 	return eth_register(edev);
 }
 
-void eqos_remove(struct device_d *dev)
+void eqos_remove(struct device *dev)
 {
 	struct eqos *eqos = dev->priv;
 

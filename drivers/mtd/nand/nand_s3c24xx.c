@@ -82,7 +82,7 @@
 struct s3c24x0_nand_host {
 	struct nand_chip	nand;
 	struct mtd_partition	*parts;
-	struct device_d		*dev;
+	struct device		*dev;
 
 	void __iomem		*base;
 };
@@ -390,7 +390,7 @@ static int s3c24x0_nand_inithw(struct s3c24x0_nand_host *host)
 	return 0;
 }
 
-static int s3c24x0_nand_probe(struct device_d *dev)
+static int s3c24x0_nand_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct nand_chip *chip;

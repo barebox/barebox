@@ -119,7 +119,7 @@ static struct pinctrl_ops pcs_ops = {
 	.set_state = pcs_set_state,
 };
 
-int pinctrl_single_probe(struct device_d *dev)
+int pinctrl_single_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct pinctrl_single *pcs;

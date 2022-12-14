@@ -424,7 +424,7 @@ static const struct of_device_id ssd1307fb_of_match[] = {
 	{},
 };
 
-static int ssd1307fb_probe(struct device_d *dev)
+static int ssd1307fb_probe(struct device *dev)
 {
 	struct fb_info *info;
 	struct device_node *node = dev->of_node;

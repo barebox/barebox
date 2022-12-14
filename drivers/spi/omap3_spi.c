@@ -332,7 +332,8 @@ static int omap3_spi_setup(struct spi_device *spi)
 	return 0;
 }
 
-static int omap3_spi_probe_dt(struct device_d *dev, struct omap3_spi_master *omap3_master)
+static int omap3_spi_probe_dt(struct device *dev,
+			      struct omap3_spi_master *omap3_master)
 {
 	if (!IS_ENABLED(CONFIG_OFDEVICE) || !dev->of_node)
 		return -ENODEV;
@@ -343,7 +344,7 @@ static int omap3_spi_probe_dt(struct device_d *dev, struct omap3_spi_master *oma
 	return 0;
 }
 
-static int omap3_spi_probe(struct device_d *dev)
+static int omap3_spi_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct spi_master *master;

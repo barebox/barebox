@@ -132,14 +132,14 @@ static void imx_pata_setup_port(void *reg_base, void *alt_base,
 	}
 }
 
-static int pata_imx_detect(struct device_d *dev)
+static int pata_imx_detect(struct device *dev)
 {
 	struct ide_port *ide = dev->priv;
 
 	return ata_port_detect(&ide->port);
 }
 
-static int imx_pata_probe(struct device_d *dev)
+static int imx_pata_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct ide_port *ide;

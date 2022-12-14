@@ -60,7 +60,7 @@ static void __noreturn jz4740_reset_soc(struct restart_handler *rst)
 	hang();
 }
 
-static int jz4740_wdt_probe(struct device_d *dev)
+static int jz4740_wdt_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct jz4740_wdt_drvdata *priv;

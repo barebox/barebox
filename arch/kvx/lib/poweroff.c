@@ -20,7 +20,7 @@ static void __noreturn kvx_poweroff(struct poweroff_handler *handler)
 	hang();
 }
 
-static int kvx_scall_poweroff_probe(struct device_d *dev)
+static int kvx_scall_poweroff_probe(struct device *dev)
 {
 	poweroff_handler_register_fn(kvx_poweroff);
 

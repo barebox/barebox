@@ -246,7 +246,7 @@ static void rk808_poweroff(struct poweroff_handler *handler)
 	hang();
 }
 
-static int rk808_probe(struct device_d *dev)
+static int rk808_probe(struct device *dev)
 {
 	struct i2c_client *client = to_i2c_client(dev);
 	struct device_node *np = dev->of_node;

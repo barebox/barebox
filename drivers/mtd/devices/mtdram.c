@@ -36,7 +36,7 @@ static int ram_read(struct mtd_info *mtd, loff_t from, size_t len, size_t *retle
 	return 0;
 }
 
-static int mtdram_probe(struct device_d *dev)
+static int mtdram_probe(struct device *dev)
 {
 	long type;
 	struct resource *iores;

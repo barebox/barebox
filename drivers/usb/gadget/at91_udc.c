@@ -1389,7 +1389,7 @@ static void __init at91udc_of_init(struct at91_udc *udc, struct device_node *np)
 
 /*-------------------------------------------------------------------------*/
 
-static int __init at91udc_probe(struct device_d *dev)
+static int __init at91udc_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct at91_udc	*udc = &controller;

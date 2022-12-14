@@ -112,7 +112,7 @@ static int eqos_set_mode_stm32(struct eqos_stm32 *priv, phy_interface_t interfac
 	return 0;
 }
 
-static int eqos_init_stm32(struct device_d *dev, struct eqos *eqos)
+static int eqos_init_stm32(struct device *dev, struct eqos *eqos)
 {
 	struct device_node *np = dev->of_node;
 	struct eqos_stm32 *priv = to_stm32(eqos);
@@ -177,12 +177,12 @@ static struct eqos_ops stm32_ops = {
 	.config_mac = EQOS_MAC_RXQ_CTRL0_RXQ0EN_ENABLED_AV,
 };
 
-static int eqos_probe_stm32(struct device_d *dev)
+static int eqos_probe_stm32(struct device *dev)
 {
 	return eqos_probe(dev, &stm32_ops, xzalloc(sizeof(struct eqos_stm32)));
 }
 
-static void eqos_remove_stm32(struct device_d *dev)
+static void eqos_remove_stm32(struct device *dev)
 {
 	struct eqos_stm32 *priv = to_stm32(dev->priv);
 

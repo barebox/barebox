@@ -93,7 +93,7 @@ static struct pwm_ops mxs_pwm_ops = {
 	.apply = mxs_pwm_apply,
 };
 
-static int mxs_pwm_probe(struct device_d *dev)
+static int mxs_pwm_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct device_node *np = dev->of_node;

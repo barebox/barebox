@@ -55,7 +55,7 @@ static inline struct pcf85363 *to_pcf85363_priv(struct rtc_device *rtcdev)
 static int pcf85363_rtc_read_time(struct rtc_device *rtcdev,
 					struct rtc_time *tm)
 {
-	struct device_d *dev = rtcdev->dev;
+	struct device *dev = rtcdev->dev;
 	struct pcf85363 *pcf85363 = to_pcf85363_priv(rtcdev);
 	unsigned char buf[DT_YEARS + 1];
 	int ret, len = sizeof(buf);
@@ -126,7 +126,7 @@ static const struct regmap_config pcf85363_regmap_i2c_config = {
 	.max_register = 0x7f,
 };
 
-static int pcf85363_probe(struct device_d *dev)
+static int pcf85363_probe(struct device *dev)
 {
 	struct i2c_client *client = to_i2c_client(dev);
 	struct pcf85363 *pcf85363;

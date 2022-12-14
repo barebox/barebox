@@ -84,7 +84,7 @@ struct prt_machine_data {
 };
 
 struct prt_imx6_priv {
-	struct device_d *dev;
+	struct device *dev;
 	const struct prt_machine_data *dcfg;
 	unsigned int hw_id;
 	unsigned int hw_rev;
@@ -147,7 +147,7 @@ static int prt_imx6_read_rfid(struct prt_imx6_priv *priv, void *buf,
 			      size_t size)
 {
 	const struct prt_machine_data *dcfg = priv->dcfg;
-	struct device_d *dev = priv->dev;
+	struct device *dev = priv->dev;
 	struct i2c_client cl;
 	int ret;
 
@@ -187,7 +187,7 @@ static u8 prt_imx6_calc_rfid_cs(void *buf, size_t size)
 static int prt_imx6_set_mac(struct prt_imx6_priv *priv,
 			    struct prti6q_rfid_contents *rfid)
 {
-	struct device_d *dev = priv->dev;
+	struct device *dev = priv->dev;
 	struct device_node *node;
 
 	node = of_find_node_by_alias(of_get_root_node(), "ethernet0");
@@ -224,7 +224,7 @@ static int prt_imx6_set_serial(struct prt_imx6_priv *priv, char *serial)
 
 static int prt_imx6_read_i2c_mac_serial(struct prt_imx6_priv *priv)
 {
-	struct device_d *dev = priv->dev;
+	struct device *dev = priv->dev;
 	struct prti6q_rfid_contents rfid;
 	int ret;
 
@@ -294,7 +294,7 @@ static int prt_imx6_set_ocotp_serial(struct param_d *param, void *driver_priv)
 
 static int prt_imx6_usb_mount(struct prt_imx6_priv *priv)
 {
-	struct device_d *dev = priv->dev;
+	struct device *dev = priv->dev;
 	const char *path;
 	struct stat s;
 	int ret;
@@ -333,7 +333,7 @@ exit_usb_mount:
 static int prt_imx6_usb_boot(struct bootentry *entry, int verbose, int dryrun)
 {
 	struct prt_imx6_priv *priv = prt_priv;
-	struct device_d *dev = priv->dev;
+	struct device *dev = priv->dev;
 	char *second_word;
 	char buf[sizeof("vicut1q recovery")] = {};
 	struct bootm_data bootm_data = {};
@@ -465,7 +465,7 @@ static int prt_imx6_bootentry_provider(struct bootentries *bootentries,
 static int prt_imx6_env_init(struct prt_imx6_priv *priv)
 {
 	const struct prt_machine_data *dcfg = priv->dcfg;
-	struct device_d *dev = priv->dev;
+	struct device *dev = priv->dev;
 	char *delay, *bootsrc, *boot_targets;
 	unsigned int autoboot_timeout;
 	int ret;
@@ -559,7 +559,7 @@ exit_bbu:
 static int prt_imx6_devices_init(void)
 {
 	struct prt_imx6_priv *priv = prt_priv;
-	struct device_d *ocotp_dev;
+	struct device *ocotp_dev;
 	struct param_d *p;
 
 	if (!priv)
@@ -615,7 +615,7 @@ static int prt_imx6_yaco_set_kvg_power_mode(struct prt_imx6_priv *priv,
 					    const char *serial)
 {
 	static const char command[] = "{\"command\":\"mode\",\"value\":\"kvg\",\"on2\":true}";
-	struct device_d *dev = priv->dev;
+	struct device *dev = priv->dev;
 	struct console_device *yccon;
 	int ret;
 
@@ -914,7 +914,7 @@ exit_get_dcfg:
 	return ret;
 }
 
-static int prt_imx6_probe(struct device_d *dev)
+static int prt_imx6_probe(struct device *dev)
 {
 	struct prt_imx6_priv *priv;
 	struct param_d *p;

@@ -466,7 +466,7 @@ static int ep93xx_eth_set_ethaddr(struct eth_device *edev,
 	return 0;
 }
 
-static int ep93xx_eth_probe(struct device_d *dev)
+static int ep93xx_eth_probe(struct device *dev)
 {
 	struct ep93xx_eth_platform_data *pdata = (struct ep93xx_eth_platform_data *)dev->platform_data;
 	struct eth_device *edev;

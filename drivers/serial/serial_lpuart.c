@@ -113,7 +113,7 @@ static int lpuart_clocksource_clock_change(struct notifier_block *nb,
 	return lpuart_serial_setbaudrate(&lpuart->cdev, lpuart->baudrate);
 }
 
-static int lpuart_serial_probe(struct device_d *dev)
+static int lpuart_serial_probe(struct device *dev)
 {
 	int ret;
 	struct console_device *cdev;

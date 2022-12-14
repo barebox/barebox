@@ -223,7 +223,7 @@ struct atmel_lcdfb_devdata atmel_lcdfb_data = {
 	.limit_screeninfo = atmel_lcdfb_limit_screeninfo,
 };
 
-static int atmel_lcdc_probe(struct device_d *dev)
+static int atmel_lcdc_probe(struct device *dev)
 {
 	return atmel_lcdc_register(dev, &atmel_lcdfb_data);
 }

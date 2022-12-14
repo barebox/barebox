@@ -57,7 +57,7 @@ static int twl6030_pwrbtn_getc(struct console_device *cdev)
 	return code;
 }
 
-static int __init twl6030_pwrbtn_probe(struct device_d *dev)
+static int __init twl6030_pwrbtn_probe(struct device *dev)
 {
 	struct twl6030_pwrbtn_internal_data *idata;
 	struct twl6030_pwrbtn_platform_data *pdata;

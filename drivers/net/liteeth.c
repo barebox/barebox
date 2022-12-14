@@ -53,7 +53,7 @@
 #define MAX_PKT_SIZE			LITEETH_BUFFER_SIZE
 
 struct liteeth {
-	struct device_d *dev;
+	struct device *dev;
 	struct eth_device edev;
 	void __iomem *base;
 	void __iomem *mdio_base;
@@ -272,7 +272,7 @@ static int liteeth_set_ethaddr(struct eth_device *edev,
 	return 0;
 }
 
-static int liteeth_probe(struct device_d *dev)
+static int liteeth_probe(struct device *dev)
 {
 	struct device_node *np = dev->of_node;
 	struct eth_device *edev;

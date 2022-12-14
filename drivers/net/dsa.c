@@ -239,7 +239,7 @@ static int dsa_switch_register_edev(struct dsa_switch *ds,
 				    struct device_node *dn, int port)
 {
 	struct eth_device *edev;
-	struct device_d *dev;
+	struct device *dev;
 	struct dsa_port *dp;
 
 	ds->dp[port] = xzalloc(sizeof(*dp));

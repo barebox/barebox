@@ -34,7 +34,7 @@ struct mpc8xxx_gpio_devtype {
 	int (*gpio_get)(struct bgpio_chip *, unsigned int);
 };
 
-static int mpc8xxx_probe(struct device_d *dev)
+static int mpc8xxx_probe(struct device *dev)
 {
 	struct device_node *np;
 	struct resource *iores;

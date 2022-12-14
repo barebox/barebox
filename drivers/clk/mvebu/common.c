@@ -39,7 +39,7 @@ static struct of_device_id mvebu_coreclk_ids[] = {
 	{ }
 };
 
-static int mvebu_coreclk_probe(struct device_d *dev)
+static int mvebu_coreclk_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct device_node *np = dev->of_node;
@@ -148,7 +148,7 @@ static struct of_device_id mvebu_clk_gating_ids[] = {
 	{ }
 };
 
-static int mvebu_clk_gating_probe(struct device_d *dev)
+static int mvebu_clk_gating_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct device_node *np = dev->of_node;

@@ -29,7 +29,7 @@ static int of_fixup_regulator_supply_disable(struct device_node *root, void *pat
 	return 0;
 }
 
-static int mc1_probe(struct device_d *dev)
+static int mc1_probe(struct device *dev)
 {
 	int flags;
 

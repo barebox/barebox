@@ -59,7 +59,7 @@ static struct clocksource s32k_cs = {
  *
  * @return result of @ref init_clock
  */
-static int omap_32ktimer_probe(struct device_d *dev)
+static int omap_32ktimer_probe(struct device *dev)
 {
 	struct resource *iores;
 

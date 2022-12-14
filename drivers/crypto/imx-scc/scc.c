@@ -115,7 +115,7 @@
 static char scc_block_padding[8] = { 0x80, 0, 0, 0, 0, 0, 0, 0 };
 
 struct imx_scc {
-	struct device_d	*dev;
+	struct device	*dev;
 	void __iomem		*base;
 	struct clk		*clk;
 	struct ablkcipher_request *req;
@@ -417,7 +417,7 @@ static int imx_scc_get_state(struct imx_scc *scc)
 	return ret;
 }
 
-static int imx_scc_probe(struct device_d *dev)
+static int imx_scc_probe(struct device *dev)
 {
 	struct imx_scc *scc;
 	int ret;

@@ -37,7 +37,7 @@ struct amba_id {
 struct clk;
 
 struct amba_device {
-	struct device_d		dev;
+	struct device		dev;
 	struct resource		res;
 	void __iomem		*base;
 	struct clk		*pclk;
@@ -75,12 +75,12 @@ int amba_device_add(struct amba_device *);
 int amba_device_register(struct amba_device *, struct resource *);
 
 struct amba_device *
-amba_aphb_device_add(struct device_d *parent, const char *name, int id,
+amba_aphb_device_add(struct device *parent, const char *name, int id,
 		     resource_size_t base, size_t size,
 		     void *pdata, unsigned int periphid);
 
 static inline struct amba_device *
-amba_apb_device_add(struct device_d *parent, const char *name, int id,
+amba_apb_device_add(struct device *parent, const char *name, int id,
 		    resource_size_t base, size_t size,
 		    void *pdata, unsigned int periphid)
 {
@@ -89,7 +89,7 @@ amba_apb_device_add(struct device_d *parent, const char *name, int id,
 }
 
 static inline struct amba_device *
-amba_ahb_device_add(struct device_d *parent, const char *name, int id,
+amba_ahb_device_add(struct device *parent, const char *name, int id,
 		    resource_size_t base, size_t size,
 		    void *pdata, unsigned int periphid)
 {

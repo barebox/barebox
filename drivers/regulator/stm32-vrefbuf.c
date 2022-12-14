@@ -27,7 +27,7 @@
 struct stm32_vrefbuf {
 	void __iomem *base;
 	struct clk *clk;
-	struct device_d *dev;
+	struct device *dev;
 	struct regulator_dev rdev;
 };
 
@@ -140,7 +140,7 @@ static const struct stm32_vrefbuf_desc stm32_vrefbuf_regu = {
 	.supply_name = "vdda",
 };
 
-static int stm32_vrefbuf_probe(struct device_d *dev)
+static int stm32_vrefbuf_probe(struct device *dev)
 {
 	struct stm32_vrefbuf *priv;
 	struct regulator_dev *rdev;
@@ -192,7 +192,7 @@ err_clk_dis:
 	return ret;
 }
 
-static void stm32_vrefbuf_remove(struct device_d *dev)
+static void stm32_vrefbuf_remove(struct device *dev)
 {
 	struct stm32_vrefbuf *priv = dev->priv;
 

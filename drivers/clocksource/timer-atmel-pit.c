@@ -56,7 +56,7 @@ static void at91sam926x_pit_reset(void)
 	pit_write(AT91_PIT_MR, 0xfffff | AT91_PIT_PITEN);
 }
 
-static int at91_pit_probe(struct device_d *dev)
+static int at91_pit_probe(struct device *dev)
 {
 	struct clk *clk;
 	u32 pit_rate;

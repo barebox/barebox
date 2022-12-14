@@ -528,7 +528,7 @@ mv64xxx_find_baud_factors(const u32 req_freq, const u32 tclk, u32 *best_n,
 
 static int
 mv64xxx_of_config(struct mv64xxx_i2c_data *drv_data,
-		  struct device_d *pd)
+		  struct device *pd)
 {
 	struct device_node *np = pd->of_node;
 	u32 bus_freq, tclk;
@@ -596,7 +596,7 @@ out:
 }
 
 static int
-mv64xxx_i2c_probe(struct device_d *pd)
+mv64xxx_i2c_probe(struct device *pd)
 {
 	struct resource *iores;
 	struct mv64xxx_i2c_data		*drv_data;

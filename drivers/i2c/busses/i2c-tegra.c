@@ -137,7 +137,7 @@ struct tegra_i2c_hw_feature {
  * @bus_clk_rate: current i2c bus clock rate
  */
 struct tegra_i2c_dev {
-	struct device_d *dev;
+	struct device *dev;
 	const struct tegra_i2c_hw_feature *hw;
 	struct i2c_adapter adapter;
 	struct clk *div_clk;
@@ -594,7 +594,7 @@ static const struct tegra_i2c_hw_feature tegra114_i2c_hw = {
 	.clk_divisor_std_fast_mode = 0x19,
 };
 
-static int tegra_i2c_probe(struct device_d *dev)
+static int tegra_i2c_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct tegra_i2c_dev *i2c_dev;

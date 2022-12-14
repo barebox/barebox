@@ -27,7 +27,7 @@ struct snvs_lpgpr_cfg {
 };
 
 struct snvs_lpgpr_priv {
-	struct device_d			*dev;
+	struct device			*dev;
 	struct regmap			*regmap;
 	struct nvmem_config		cfg;
 	const struct snvs_lpgpr_cfg	*dcfg;
@@ -78,7 +78,7 @@ static const struct nvmem_bus snvs_lpgpr_nvmem_bus = {
 	.read  = snvs_lpgpr_read,
 };
 
-static int snvs_lpgpr_probe(struct device_d *dev)
+static int snvs_lpgpr_probe(struct device *dev)
 {
 	struct device_node *node = dev->of_node;
 	struct device_node *syscon_node;

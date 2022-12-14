@@ -44,7 +44,7 @@ const static struct regulator_ops fixed_ops = {
 	.disable = regulator_fixed_disable,
 };
 
-static int regulator_fixed_probe(struct device_d *dev)
+static int regulator_fixed_probe(struct device *dev)
 {
 	struct device_node *np = dev->of_node;
 	struct regulator_fixed *fix;

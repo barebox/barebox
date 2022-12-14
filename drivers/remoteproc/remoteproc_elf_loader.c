@@ -23,7 +23,7 @@
 
 int rproc_elf_load_segments(struct rproc *rproc, const struct firmware *fw)
 {
-	struct device_d *dev = &rproc->dev;
+	struct device *dev = &rproc->dev;
 	struct elf32_hdr *ehdr;
 	struct elf32_phdr *phdr;
 	int i, ret = 0;

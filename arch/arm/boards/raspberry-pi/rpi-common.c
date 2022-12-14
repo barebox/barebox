@@ -54,7 +54,7 @@ struct rpi_machine_data {
 };
 
 struct rpi_priv {
-	struct device_d *dev;
+	struct device *dev;
 	const struct rpi_machine_data *dcfg;
 	unsigned int hw_id;
 	const char *name;
@@ -414,7 +414,7 @@ static const struct rpi_machine_data *rpi_get_dcfg(struct rpi_priv *priv)
 	return ERR_PTR(-ENODEV);
 }
 
-static int rpi_devices_probe(struct device_d *dev)
+static int rpi_devices_probe(struct device *dev)
 {
 	const struct rpi_machine_data *dcfg;
 	struct regulator *reg;

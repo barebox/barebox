@@ -282,7 +282,7 @@ static void tegra_sdmmc_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	sdhci_write32(&host->sdhci, TEGRA_SDMMC_PWR_CNTL, val);
 }
 
-static int tegra_sdmmc_init(struct mci_host *mci, struct device_d *dev)
+static int tegra_sdmmc_init(struct mci_host *mci, struct device *dev)
 {
 	struct tegra_sdmmc_host *host = to_tegra_sdmmc_host(mci);
 	void __iomem *regs = host->regs;
@@ -373,7 +373,7 @@ static void tegra_sdmmc_parse_dt(struct tegra_sdmmc_host *host)
 	mci_of_parse(&host->mci);
 }
 
-static int tegra_sdmmc_probe(struct device_d *dev)
+static int tegra_sdmmc_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct tegra_sdmmc_host *host;

@@ -164,7 +164,7 @@ static int dp83867_config_port_mirroring(struct phy_device *phydev)
 static int dp83867_of_init(struct phy_device *phydev)
 {
 	struct dp83867_private *dp83867 = phydev->priv;
-	struct device_d *dev = &phydev->dev;
+	struct device *dev = &phydev->dev;
 	struct device_node *of_node = dev->of_node;
 	int ret;
 

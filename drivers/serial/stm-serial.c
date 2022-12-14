@@ -132,7 +132,7 @@ static int stm_serial_init_port(struct stm_priv *priv)
 	return 0;
 }
 
-static int stm_serial_probe(struct device_d *dev)
+static int stm_serial_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct stm_priv *priv;

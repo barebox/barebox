@@ -42,7 +42,7 @@ struct mdio_gpio_info {
 	int mdc_active_low, mdio_active_low, mdo_active_low;
 };
 
-static struct mdio_gpio_info *mdio_gpio_of_get_info(struct device_d *dev)
+static struct mdio_gpio_info *mdio_gpio_of_get_info(struct device *dev)
 {
 	int ret;
 	enum of_gpio_flags flags;
@@ -142,7 +142,7 @@ static struct mdiobb_ops mdio_gpio_ops = {
 	.get_mdio_data = mdio_get,
 };
 
-static int mdio_gpio_probe(struct device_d *dev)
+static int mdio_gpio_probe(struct device *dev)
 {
 	int ret;
 	struct device_node *np = dev->of_node;

@@ -14,7 +14,7 @@
 
 static bool machine_is_rk3568_evb = false;
 
-static int rk3568_evb_probe(struct device_d *dev)
+static int rk3568_evb_probe(struct device *dev)
 {
 	enum bootsource bootsource = bootsource_get();
 	int instance = bootsource_get_instance();

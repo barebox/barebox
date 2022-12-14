@@ -22,7 +22,7 @@ static int gpio_beeper_beep(struct sound_card *card, unsigned freq, unsigned dur
 	return 0;
 }
 
-static int gpio_beeper_probe(struct device_d *dev)
+static int gpio_beeper_probe(struct device *dev)
 {
 	struct device_node *np = dev->of_node;
 	struct gpio_beeper *beeper;
@@ -46,7 +46,7 @@ static int gpio_beeper_probe(struct device_d *dev)
 	return sound_card_register(card);
 }
 
-static void gpio_beeper_suspend(struct device_d *dev)
+static void gpio_beeper_suspend(struct device *dev)
 {
 	struct gpio_beeper *beeper = dev->priv;
 

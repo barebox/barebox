@@ -168,7 +168,7 @@ void sama5_smc_configure(int id, int cs, struct sam9_smc_config *config)
         sam9_smc_cs_write_timings(AT91_SMC_CS(id, cs), config);
 }
 
-static int at91sam9_smc_probe(struct device_d *dev)
+static int at91sam9_smc_probe(struct device *dev)
 {
 	struct resource *iores;
 	int id = dev->id;

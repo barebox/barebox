@@ -127,7 +127,7 @@ static int davinci_wdt_set_timeout(struct watchdog *wd, unsigned timeout)
 	return 0;
 }
 
-static int davinci_wdt_probe(struct device_d *dev)
+static int davinci_wdt_probe(struct device *dev)
 {
 	struct resource *iores;
 	int ret = 0;

@@ -89,14 +89,14 @@ static struct block_device_ops hf_blk_ops = {
 	.write = hf_blk_write,
 };
 
-static void hf_info(struct device_d *dev)
+static void hf_info(struct device *dev)
 {
 	struct hf_priv *priv = dev->priv;
 
 	printf("file: %s\n", priv->filename);
 }
 
-static int hf_probe(struct device_d *dev)
+static int hf_probe(struct device *dev)
 {
 	struct device_node *np = dev->of_node;
 	struct hf_priv *priv = xzalloc(sizeof(*priv));

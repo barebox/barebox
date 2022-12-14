@@ -545,7 +545,7 @@ struct usb_gadget {
 	enum usb_device_speed		max_speed;
 	enum usb_device_state		state;
 	const char			*name;
-	struct device_d			dev;
+	struct device			dev;
 	unsigned			out_epnum;
 	unsigned			in_epnum;
 
@@ -575,7 +575,7 @@ static inline void *get_gadget_data(struct usb_gadget *gadget)
 	return gadget->dev.priv;
 }
 
-static inline struct usb_gadget *dev_to_usb_gadget(struct device_d *dev)
+static inline struct usb_gadget *dev_to_usb_gadget(struct device *dev)
 {
 	return container_of(dev, struct usb_gadget, dev);
 }
@@ -923,9 +923,11 @@ int usb_gadget_probe_driver(struct usb_gadget_driver *driver);
  */
 int usb_gadget_unregister_driver(struct usb_gadget_driver *driver);
 
-extern int usb_add_gadget_udc_release(struct device_d *parent,
-		struct usb_gadget *gadget, void (*release)(struct device_d *dev));
-extern int usb_add_gadget_udc(struct device_d *parent, struct usb_gadget *gadget);
+extern int usb_add_gadget_udc_release(struct device *parent,
+				      struct usb_gadget *gadget,
+				      void (*release)(struct device *dev));
+extern int usb_add_gadget_udc(struct device *parent,
+			      struct usb_gadget *gadget);
 extern void usb_del_gadget_udc(struct usb_gadget *gadget);
 extern int udc_attach_driver(const char *name,
 		struct usb_gadget_driver *driver);

@@ -119,7 +119,7 @@ static struct pinctrl_ops mxs_pinctrl_ops = {
 	.set_state = mxs_pinctrl_set_state,
 };
 
-static int mxs_pinctrl_probe(struct device_d *dev)
+static int mxs_pinctrl_probe(struct device *dev)
 {
 	struct mxs_pinctrl *iomux;
 	int ret = 0;

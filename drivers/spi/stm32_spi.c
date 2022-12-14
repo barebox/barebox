@@ -190,7 +190,7 @@ static void stm32_spi_disable(struct stm32_spi_priv *priv)
 
 static void stm32_spi_stopxfer(struct stm32_spi_priv *priv)
 {
-	struct device_d *dev = priv->master.dev;
+	struct device *dev = priv->master.dev;
 	u32 cr1, sr;
 	int ret;
 
@@ -339,7 +339,7 @@ out:
 static int stm32_spi_transfer_one(struct stm32_spi_priv *priv,
 				  struct spi_transfer *t)
 {
-	struct device_d *dev = priv->master.dev;
+	struct device *dev = priv->master.dev;
 	u32 sr;
 	u32 ifcr = 0;
 	u32 mode;
@@ -521,7 +521,7 @@ static void stm32_spi_dt_probe(struct stm32_spi_priv *priv)
 		priv->cs_gpios[i] = of_get_named_gpio(node, "cs-gpios", i);
 }
 
-static int stm32_spi_probe(struct device_d *dev)
+static int stm32_spi_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct spi_master *master;
@@ -588,7 +588,7 @@ static int stm32_spi_probe(struct device_d *dev)
 	return spi_register_master(master);
 }
 
-static void stm32_spi_remove(struct device_d *dev)
+static void stm32_spi_remove(struct device *dev)
 {
 	struct stm32_spi_priv *priv = dev->priv;
 

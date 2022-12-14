@@ -201,7 +201,7 @@ static struct of_device_id imx_pwm_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static int imx_pwm_probe(struct device_d *dev)
+static int imx_pwm_probe(struct device *dev)
 {
 	struct resource *iores;
 	const struct imx_pwm_data *data;

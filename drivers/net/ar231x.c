@@ -357,7 +357,7 @@ static int ar231x_mdiibus_reset(struct mii_bus *bus)
 	return 0;
 }
 
-static int ar231x_eth_probe(struct device_d *dev)
+static int ar231x_eth_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct ar231x_eth_priv *priv;

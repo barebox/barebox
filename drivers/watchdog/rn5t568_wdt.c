@@ -107,7 +107,7 @@ static int rn5t568_wdt_set_timeout(struct watchdog *wdd, unsigned int timeout)
 	return ret;
 }
 
-static int rn5t568_wdt_probe(struct device_d *dev)
+static int rn5t568_wdt_probe(struct device *dev)
 {
 	struct rn5t568_wdt *wdt;
 	struct watchdog *wdd;

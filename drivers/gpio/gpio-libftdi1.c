@@ -66,7 +66,7 @@ static struct gpio_ops libftdi1_gpio_ops = {
 	.set = libftdi1_gpio_set_value,
 };
 
-static int libftdi1_gpio_probe(struct device_d *dev)
+static int libftdi1_gpio_probe(struct device *dev)
 {
 	struct libftdi1_gpio_chip *gpio;
 	struct ft2232_bitbang *ftbb;
@@ -113,7 +113,7 @@ static __maybe_unused const struct of_device_id libftdi1_gpio_dt_ids[] = {
 	},
 };
 
-static void libftdi1_gpio_remove(struct device_d *dev)
+static void libftdi1_gpio_remove(struct device *dev)
 {
 	barebox_libftdi1_close();
 }

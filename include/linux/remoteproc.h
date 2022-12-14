@@ -37,13 +37,13 @@ struct rproc {
 	const char *name;
 	void *priv;
 	struct rproc_ops *ops;
-	struct device_d dev;
+	struct device dev;
 
 	void *fw_buf;
 	size_t fw_buf_ofs;
 };
 
-struct rproc *rproc_alloc(struct device_d *dev, const char *name,
+struct rproc *rproc_alloc(struct device *dev, const char *name,
 			  const struct rproc_ops *ops, int len);
 int rproc_add(struct rproc *rproc);
 

@@ -150,7 +150,7 @@ struct imxfb_info {
 				unused:30;
 
 	struct fb_info		info;
-	struct device_d		*dev;
+	struct device		*dev;
 
 	void			(*enable)(int enable);
 
@@ -378,7 +378,7 @@ static struct fb_ops imxfb_ops = {
 	.fb_activate_var = imxfb_activate_var,
 };
 
-static int imxfb_allocate_fbbuffer(const struct device_d *dev,
+static int imxfb_allocate_fbbuffer(const struct device *dev,
 				   struct fb_info *info, void *forcefb)
 {
 	size_t fbsize = info->xres * info->yres * (info->bits_per_pixel >> 3);
@@ -525,7 +525,7 @@ static int imxfb_register_overlay(struct imxfb_info *fbi, void *fb)
 }
 #endif
 
-static int imxfb_probe(struct device_d *dev)
+static int imxfb_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct imxfb_info *fbi;

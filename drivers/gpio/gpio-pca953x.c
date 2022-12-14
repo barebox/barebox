@@ -406,7 +406,7 @@ out:
 	return ret;
 }
 
-static int pca953x_probe(struct device_d *dev)
+static int pca953x_probe(struct device *dev)
 {
 	struct i2c_client *client = to_i2c_client(dev);
 	unsigned long driver_data;

@@ -93,7 +93,7 @@ static struct fsl_dspi *to_dspi(struct spi_master *master)
 	return container_of(master, struct fsl_dspi, master);
 }
 
-static void hz_to_spi_baud(struct device_d *dev,
+static void hz_to_spi_baud(struct device *dev,
 			   char *pbr, char *br, int speed_hz,
 			   unsigned long clkrate)
 {
@@ -132,7 +132,7 @@ static void hz_to_spi_baud(struct device_d *dev,
 	}
 }
 
-static void ns_delay_scale(struct device_d *dev,
+static void ns_delay_scale(struct device *dev,
 			   char *psc, char *sc, int delay_ns,
 			   unsigned long clkrate)
 {
@@ -314,7 +314,7 @@ static int dspi_setup(struct spi_device *spi)
 	return 0;
 }
 
-static int dspi_probe(struct device_d *dev)
+static int dspi_probe(struct device *dev)
 {
 	struct resource *io;
 	struct fsl_dspi *dspi;

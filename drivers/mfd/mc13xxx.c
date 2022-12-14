@@ -22,7 +22,7 @@
 #define MC13XXX_NUMREGS		0x3f
 
 struct mc13xxx {
-	struct device_d			*dev;
+	struct device			*dev;
 	struct regmap			*map;
 	union {
 		struct i2c_client	*client;
@@ -300,7 +300,7 @@ static const struct regmap_config mc13xxx_regmap_i2c_config = {
 };
 #endif
 
-static int __init mc13xxx_probe(struct device_d *dev)
+static int __init mc13xxx_probe(struct device *dev)
 {
 	struct mc13xxx_devtype *devtype;
 	int ret, rev;

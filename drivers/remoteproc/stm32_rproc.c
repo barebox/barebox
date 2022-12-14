@@ -37,7 +37,7 @@ struct stm32_rproc {
 static void *stm32_rproc_da_to_va(struct rproc *rproc, u64 da, int len)
 {
 	__be32 in_addr = cpu_to_be32(da);
-	struct device_d *dev = &rproc->dev;
+	struct device *dev = &rproc->dev;
 	u64 paddr;
 
 	paddr = of_translate_dma_address(dev->parent->of_node, &in_addr);
@@ -128,7 +128,7 @@ out:
 	return err;
 }
 
-static int stm32_rproc_parse_dt(struct device_d *dev, struct stm32_rproc *ddata)
+static int stm32_rproc_parse_dt(struct device *dev, struct stm32_rproc *ddata)
 {
 	struct device_node *np = dev->of_node;
 	struct stm32_syscon tz;
@@ -169,7 +169,7 @@ static int stm32_rproc_parse_dt(struct device_d *dev, struct stm32_rproc *ddata)
 	return 0;
 }
 
-static int stm32_rproc_probe(struct device_d *dev)
+static int stm32_rproc_probe(struct device *dev)
 {
 	struct rproc *rproc;
 	int ret;

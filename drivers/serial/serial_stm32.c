@@ -138,7 +138,7 @@ static void stm32_serial_init(struct console_device *cdev)
 	writel(cr1, base + CR1_OFFSET(stm32f4));
 }
 
-static int stm32_serial_probe(struct device_d *dev)
+static int stm32_serial_probe(struct device *dev)
 {
 	int ret;
 	struct console_device *cdev;

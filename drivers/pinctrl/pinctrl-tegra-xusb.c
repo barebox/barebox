@@ -62,7 +62,7 @@ struct tegra_xusb_padctl_lane {
 };
 
 struct tegra_xusb_padctl {
-	struct device_d *dev;
+	struct device *dev;
 	void __iomem *regs;
 	struct reset_control *rst;
 
@@ -268,7 +268,7 @@ static const struct phy_ops sata_phy_ops = {
 	.power_off = sata_phy_power_off,
 };
 
-static struct phy *tegra_xusb_padctl_xlate(struct device_d *dev,
+static struct phy *tegra_xusb_padctl_xlate(struct device *dev,
 					   struct of_phandle_args *args)
 {
 	struct tegra_xusb_padctl *padctl = dev->priv;
@@ -365,7 +365,7 @@ static struct pinctrl_ops pinctrl_tegra_xusb_ops = {
 	.set_state = pinctrl_tegra_xusb_set_state,
 };
 
-static int pinctrl_tegra_xusb_probe(struct device_d *dev)
+static int pinctrl_tegra_xusb_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct tegra_xusb_padctl *padctl;

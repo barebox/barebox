@@ -426,7 +426,7 @@ static struct of_device_id kirkwood_pinctrl_of_match[] = {
 	{ }
 };
 
-static int kirkwood_pinctrl_probe(struct device_d *dev)
+static int kirkwood_pinctrl_probe(struct device *dev)
 {
 	struct resource *iores;
 	const struct of_device_id *match =

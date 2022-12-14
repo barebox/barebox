@@ -356,7 +356,7 @@ struct denali_chip {
  */
 struct denali_controller {
 	struct nand_controller controller;
-	struct device_d *dev;
+	struct device *dev;
 	struct list_head chips;
 	unsigned long clk_rate;
 	unsigned long clk_x_rate;

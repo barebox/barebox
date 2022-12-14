@@ -302,7 +302,7 @@ struct imx_pgc_domain {
 
 	const int voltage;
 	const bool keep_clocks;
-	struct device_d *dev;
+	struct device *dev;
 
 	unsigned int pgc_sw_pup_reg;
 	unsigned int pgc_sw_pdn_reg;
@@ -1136,7 +1136,7 @@ static const struct imx_pgc_domain_data imx8mn_pgc_domain_data = {
 	.pgc_regs = &imx7_pgc_regs,
 };
 
-static int imx_pgc_domain_probe(struct device_d *dev)
+static int imx_pgc_domain_probe(struct device *dev)
 {
 	struct imx_pgc_domain *domain = dev->priv;
 	int ret;
@@ -1206,7 +1206,7 @@ static struct driver_d imx_pgc_domain_driver = {
 };
 coredevice_platform_driver(imx_pgc_domain_driver);
 
-static int imx_gpcv2_probe(struct device_d *dev)
+static int imx_gpcv2_probe(struct device *dev)
 {
 	const struct imx_pgc_domain_data *domain_data =
 			of_device_get_match_data(dev);
@@ -1247,7 +1247,7 @@ again:
 	for_each_child_of_node(pgc_np, np) {
 		bool child_domain = of_property_read_bool(np, "power-domains");
 		struct imx_pgc_domain *domain;
-		struct device_d *pd_dev;
+		struct device *pd_dev;
 		u32 domain_index;
 
 		if ((pass == 0 && child_domain) || (pass == 1 && !child_domain))

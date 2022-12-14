@@ -85,7 +85,7 @@ static int dwc2_set_mode(void *ctx, enum usb_dr_mode mode)
 
 typedef void (*set_params_cb)(struct dwc2 *dwc2);
 
-static int dwc2_probe(struct device_d *dev)
+static int dwc2_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct dwc2 *dwc2;
@@ -180,7 +180,7 @@ release_region:
 	return ret;
 }
 
-static void dwc2_remove(struct device_d *dev)
+static void dwc2_remove(struct device *dev)
 {
 	struct dwc2 *dwc2 = dev->priv;
 

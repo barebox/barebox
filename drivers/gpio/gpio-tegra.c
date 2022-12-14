@@ -125,7 +125,7 @@ static struct gpio_chip tegra_gpio_chip = {
 	.base	= 0,
 };
 
-static int tegra_gpio_probe(struct device_d *dev)
+static int tegra_gpio_probe(struct device *dev)
 {
 	struct resource *iores;
 	int i, j, ret;

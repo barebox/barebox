@@ -116,7 +116,7 @@ static struct gpio_ops malta_i2c_gpio_ops = {
 	.set = malta_i2c_gpio_set_value,
 };
 
-static int malta_i2c_gpio_probe(struct device_d *dev)
+static int malta_i2c_gpio_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *gpio_base;

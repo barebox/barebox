@@ -19,9 +19,9 @@
  *
  * Returns platform_device pointer, or NULL if not found
  */
-struct device_d *of_find_device_by_node(struct device_node *np)
+struct device *of_find_device_by_node(struct device_node *np)
 {
-	struct device_d *dev;
+	struct device *dev;
 	int ret;
 
 	ret = of_device_ensure_probed(np);
@@ -46,7 +46,7 @@ EXPORT_SYMBOL(of_find_device_by_node);
  * derive a unique name. If it cannot, then it will prepend names from
  * parent nodes until a unique name can be derived.
  */
-static void of_device_make_bus_id(struct device_d *dev)
+static void of_device_make_bus_id(struct device *dev)
 {
 	struct device_node *node = dev->of_node;
 	const __be32 *reg;
@@ -114,7 +114,7 @@ bool of_dma_is_coherent(struct device_node *node)
 }
 EXPORT_SYMBOL_GPL(of_dma_is_coherent);
 
-static void of_dma_configure(struct device_d *dev, struct device_node *np)
+static void of_dma_configure(struct device *dev, struct device_node *np)
 {
 	u64 dma_addr, paddr, size = 0;
 	unsigned long offset;
@@ -138,10 +138,10 @@ static void of_dma_configure(struct device_d *dev, struct device_node *np)
  * Returns pointer to created platform device, or NULL if a device was not
  * registered. Unavailable devices will not get registered.
  */
-struct device_d *of_platform_device_create(struct device_node *np,
-						struct device_d *parent)
+struct device *of_platform_device_create(struct device_node *np,
+						struct device *parent)
 {
-	struct device_d *dev;
+	struct device *dev;
 	struct resource *res = NULL, temp_res;
 	resource_size_t resinval;
 	int i, ret, num_reg = 0;
@@ -209,7 +209,7 @@ struct driver_d dummy_driver = {
 	.name = "dummy-driver",
 };
 
-void of_platform_device_dummy_drv(struct device_d *dev)
+void of_platform_device_dummy_drv(struct device *dev)
 {
 	dev->driver = &dummy_driver;
 }
@@ -221,9 +221,9 @@ void of_platform_device_dummy_drv(struct device_d *dev)
  * Returns pointer to created platform device, or NULL if a device was not
  * registered. Unavailable devices will not get registered.
  */
-struct device_d *of_device_enable_and_register(struct device_node *np)
+struct device *of_device_enable_and_register(struct device_node *np)
 {
-	struct device_d *dev;
+	struct device *dev;
 
 	of_device_enable(np);
 
@@ -242,7 +242,7 @@ EXPORT_SYMBOL(of_device_enable_and_register);
  * Returns pointer to created platform device, or NULL if a device was not
  * registered. Unavailable devices will not get registered.
  */
-struct device_d *of_device_enable_and_register_by_name(const char *name)
+struct device *of_device_enable_and_register_by_name(const char *name)
 {
 	struct device_node *node;
 
@@ -264,7 +264,7 @@ EXPORT_SYMBOL(of_device_enable_and_register_by_name);
  * Returns pointer to created platform device, or NULL if a device was not
  * registered. Unavailable devices will not get registered.
  */
-struct device_d *of_device_enable_and_register_by_alias(const char *alias)
+struct device *of_device_enable_and_register_by_alias(const char *alias)
 {
 	struct device_node *node;
 
@@ -277,7 +277,7 @@ struct device_d *of_device_enable_and_register_by_alias(const char *alias)
 EXPORT_SYMBOL(of_device_enable_and_register_by_alias);
 
 #ifdef CONFIG_ARM_AMBA
-static struct device_d *of_amba_device_create(struct device_node *np)
+static struct device *of_amba_device_create(struct device_node *np)
 {
 	struct amba_device *dev;
 	int ret;
@@ -327,7 +327,7 @@ amba_err_free:
 	return NULL;
 }
 #else /* CONFIG_ARM_AMBA */
-static inline struct device_d *of_amba_device_create(struct device_node *np)
+static inline struct device *of_amba_device_create(struct device_node *np)
 {
 	return NULL;
 }
@@ -344,10 +344,10 @@ static inline struct device_d *of_amba_device_create(struct device_node *np)
  */
 static int of_platform_bus_create(struct device_node *bus,
 				const struct of_device_id *matches,
-				struct device_d *parent)
+				struct device *parent)
 {
 	struct device_node *child;
-	struct device_d *dev;
+	struct device *dev;
 	int rc = 0;
 
 	/* Make sure it has a compatible property */
@@ -390,7 +390,7 @@ static int of_platform_bus_create(struct device_node *bus,
  */
 int of_platform_populate(struct device_node *root,
 			const struct of_device_id *matches,
-			struct device_d *parent)
+			struct device *parent)
 {
 	struct device_node *child;
 	int rc = 0;
@@ -410,10 +410,10 @@ int of_platform_populate(struct device_node *root,
 }
 EXPORT_SYMBOL_GPL(of_platform_populate);
 
-static struct device_d *of_device_create_on_demand(struct device_node *np)
+static struct device *of_device_create_on_demand(struct device_node *np)
 {
 	struct device_node *parent;
-	struct device_d *parent_dev, *dev;
+	struct device *parent_dev, *dev;
 
 	parent = of_get_parent(np);
 	if (!parent)
@@ -457,7 +457,7 @@ static struct device_d *of_device_create_on_demand(struct device_node *np)
  */
 int of_device_ensure_probed(struct device_node *np)
 {
-	struct device_d *dev;
+	struct device *dev;
 
 	if (!deep_probe_is_supported())
 		return 0;

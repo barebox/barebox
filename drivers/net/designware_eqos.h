@@ -10,7 +10,7 @@ struct eqos;
 struct eth_device;
 
 struct eqos_ops {
-	int (*init)(struct device_d *dev, struct eqos *priv);
+	int (*init)(struct device *dev, struct eqos *priv);
 	int (*get_ethaddr)(struct eth_device *dev, unsigned char *mac);
 	int (*set_ethaddr)(struct eth_device *edev, const unsigned char *mac);
 	void (*adjust_link)(struct eth_device *edev);
@@ -62,9 +62,9 @@ struct eqos {
 	void *priv;
 };
 
-struct device_d;
-int eqos_probe(struct device_d *dev, const struct eqos_ops *ops, void *priv);
-void eqos_remove(struct device_d *dev);
+struct device;
+int eqos_probe(struct device *dev, const struct eqos_ops *ops, void *priv);
+void eqos_remove(struct device *dev);
 
 int eqos_get_ethaddr(struct eth_device *edev, unsigned char *mac);
 int eqos_set_ethaddr(struct eth_device *edev, const unsigned char *mac);

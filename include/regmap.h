@@ -51,10 +51,10 @@ struct regmap_bus {
 	enum regmap_endian val_format_endian_default;
 };
 
-struct device_d;
+struct device;
 struct device_node;
 
-struct regmap *regmap_init(struct device_d *dev,
+struct regmap *regmap_init(struct device *dev,
 			     const struct regmap_bus *bus,
 			     void *bus_context,
 			     const struct regmap_config *config);
@@ -72,7 +72,7 @@ struct clk;
  * The return value will be an ERR_PTR() on error or a valid pointer to
  * a struct regmap.
  */
-struct regmap *regmap_init_mmio_clk(struct device_d *dev, const char *clk_id,
+struct regmap *regmap_init_mmio_clk(struct device *dev, const char *clk_id,
 				    void __iomem *regs,
 				    const struct regmap_config *config);
 
@@ -111,8 +111,8 @@ void regmap_mmio_detach_clk(struct regmap *map);
 
 void regmap_exit(struct regmap *map);
 
-struct regmap *dev_get_regmap(struct device_d *dev, const char *name);
-struct device_d *regmap_get_device(struct regmap *map);
+struct regmap *dev_get_regmap(struct device *dev, const char *name);
+struct device *regmap_get_device(struct regmap *map);
 
 int regmap_register_cdev(struct regmap *map, const char *name);
 

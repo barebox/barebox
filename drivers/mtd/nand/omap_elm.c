@@ -66,7 +66,7 @@ struct elm_registers {
 };
 
 struct elm_info {
-	struct device_d *dev;
+	struct device *dev;
 	void __iomem *elm_base;
 	struct list_head list;
 	enum bch_ecc bch_type;
@@ -376,7 +376,7 @@ int elm_decode_bch_error_page(u8 *ecc_calc, struct elm_errorvec *err_vec)
 	return 0;
 }
 
-static int elm_probe(struct device_d *dev)
+static int elm_probe(struct device *dev)
 {
 	struct resource *res;
 	struct elm_info *info;

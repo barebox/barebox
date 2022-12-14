@@ -36,7 +36,7 @@
 #define OCOTP_WORD_OFFSET		0x20
 
 struct ocotp_priv {
-	struct device_d dev;
+	struct device dev;
 	struct cdev cdev;
 	void __iomem *base;
 	unsigned int write_enable;
@@ -169,7 +169,7 @@ static struct cdev_operations mxs_ocotp_ops = {
 	.read	= mxs_ocotp_cdev_read,
 };
 
-static int mxs_ocotp_probe(struct device_d *dev)
+static int mxs_ocotp_probe(struct device *dev)
 {
 	struct resource *iores;
 	int err;

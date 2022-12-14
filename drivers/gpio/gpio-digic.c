@@ -106,7 +106,7 @@ static struct gpio_ops digic_gpio_ops = {
 	.set = digic_gpio_set_value,
 };
 
-static int digic_gpio_probe(struct device_d *dev)
+static int digic_gpio_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct digic_gpio_chip *chip;

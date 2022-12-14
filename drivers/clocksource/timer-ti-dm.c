@@ -65,7 +65,7 @@ static struct clocksource dmtimer_cs = {
 	.priority = 70,
 };
 
-static int omap_dmtimer_probe(struct device_d *dev)
+static int omap_dmtimer_probe(struct device *dev)
 {
 	struct resource *iores;
 	u64 clk_speed;

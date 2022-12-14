@@ -141,7 +141,7 @@ static const struct stm32_pwr_desc stm32_pwr_desc[] = {
 	PWR_REG(PWR_USB33, "usb33", 3300000, USB_3_3_EN, "vdd_3v3_usbfs"),
 };
 
-static int stm32_pwr_regulator_probe(struct device_d *dev)
+static int stm32_pwr_regulator_probe(struct device *dev)
 {
 	struct stm32_pwr_reg *priv;
 	struct device_node *child;

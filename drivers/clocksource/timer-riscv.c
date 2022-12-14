@@ -48,7 +48,7 @@ static struct clocksource riscv_clocksource = {
 	.priority	= 100,
 };
 
-static int riscv_timer_init(struct device_d* dev)
+static int riscv_timer_init(struct device * dev)
 {
 	struct device_node *cpu;
 

@@ -647,7 +647,7 @@ static void imx6_add_video_clks(void __iomem *anab, void __iomem *cb, struct dev
 	clk_set_parent(clks[IMX6QDL_CLK_IPU2_DI1_PRE_SEL], clks[IMX6QDL_CLK_PLL5_VIDEO_DIV]);
 }
 
-static int imx6_ccm_probe(struct device_d *dev)
+static int imx6_ccm_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *base, *anatop_base, *ccm_base;

@@ -226,7 +226,7 @@ static struct gpio_ops at91_gpio4_ops = {
 	.set = at91_gpio4_set,
 };
 
-static int pinctrl_at91_pio4_gpiochip_add(struct device_d *dev,
+static int pinctrl_at91_pio4_gpiochip_add(struct device *dev,
 					  struct pinctrl_at91_pio4 *pinctrl)
 {
 	const struct at91_pinctrl_data *drvdata;
@@ -269,7 +269,7 @@ static struct pinctrl_ops pinctrl_at91_pio4_ops = {
 	.set_state = pinctrl_at91_pio4_set_state,
 };
 
-static int pinctrl_at91_pio4_probe(struct device_d *dev)
+static int pinctrl_at91_pio4_probe(struct device *dev)
 {
 	struct device_node *np = dev->of_node;
 	struct pinctrl_at91_pio4 *pinctrl;

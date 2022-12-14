@@ -37,7 +37,7 @@ static struct clocksource cs = {
 	.priority = 70,
 };
 
-static int armv7m_systick_probe(struct device_d *dev)
+static int armv7m_systick_probe(struct device *dev)
 {
 	struct clk *clk = NULL;
 	u32 rate, cal;

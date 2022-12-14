@@ -12,7 +12,7 @@
 
 #include <linux/err.h>
 
-static int state_probe(struct device_d *dev)
+static int state_probe(struct device *dev)
 {
 	struct device_node *np = dev->of_node;
 	struct state *state;

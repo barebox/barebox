@@ -29,7 +29,7 @@ struct fpga_bridge_ops {
  * @priv: low level driver private date
  */
 struct fpga_bridge {
-	struct device_d dev;
+	struct device dev;
 	const struct fpga_bridge_ops *br_ops;
 	struct list_head node;
 	unsigned int enable;
@@ -69,7 +69,7 @@ static inline void fpga_bridges_put(struct list_head *bridge_list)
 };
 #endif
 
-int fpga_bridge_register(struct device_d *dev, const char *name,
+int fpga_bridge_register(struct device *dev, const char *name,
 			 const struct fpga_bridge_ops *br_ops, void *priv);
 
 #endif /* _LINUX_FPGA_BRIDGE_H */

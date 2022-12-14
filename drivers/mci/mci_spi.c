@@ -48,7 +48,7 @@
 struct mmc_spi_host {
 	struct mci_host	mci;
 	struct spi_device	*spi;
-	struct device_d	*dev;
+	struct device	*dev;
 	int detect_pin;
 
 	/* for bulk data transfers */
@@ -314,7 +314,7 @@ static void mmc_spi_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	}
 }
 
-static int mmc_spi_init(struct mci_host *mci, struct device_d *mci_dev)
+static int mmc_spi_init(struct mci_host *mci, struct device *mci_dev)
 {
 	struct mmc_spi_host	*host = to_spi_host(mci);
 	mmc_spi_readbytes(host, 10, NULL);
@@ -368,7 +368,7 @@ static int spi_mci_card_present(struct mci_host *mci)
 	return ret == 0 ? 1 : 0;
 }
 
-static int spi_mci_probe(struct device_d *dev)
+static int spi_mci_probe(struct device *dev)
 {
 	struct device_node	*np = dev_of_node(dev);
 	struct spi_device	*spi = (struct spi_device *)dev->type_data;

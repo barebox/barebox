@@ -63,7 +63,7 @@ static struct i2c_algo_bit_data i2c_versatile_algo = {
 	.timeout_ms = 100,
 };
 
-static int i2c_versatile_probe(struct device_d *dev)
+static int i2c_versatile_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct i2c_versatile *i2c;

@@ -47,7 +47,7 @@ int bus_register(struct bus_type *bus)
 	return 0;
 }
 
-int device_match(struct device_d *dev, struct driver_d *drv)
+int device_match(struct device *dev, struct driver_d *drv)
 {
 	if (IS_ENABLED(CONFIG_OFDEVICE) && dev->of_node &&
 	    drv->of_compatible)
@@ -70,7 +70,7 @@ int device_match(struct device_d *dev, struct driver_d *drv)
 	return -1;
 }
 
-int device_match_of_modalias(struct device_d *dev, struct driver_d *drv)
+int device_match_of_modalias(struct device *dev, struct driver_d *drv)
 {
 	const struct platform_device_id *id = drv->id_table;
 	const char *of_modalias = NULL, *p;

@@ -25,7 +25,7 @@ static int reasons[] = {
 	RESET_EXT, /* USER     NRST pin detected low */
 };
 
-static void at91sam9x_set_reset_reason(struct device_d *dev,
+static void at91sam9x_set_reset_reason(struct device *dev,
 				       void __iomem *base)
 {
 	enum reset_src_type type = RESET_UKWN;
@@ -56,7 +56,7 @@ static void __noreturn at91sam9x_restart_soc(struct restart_handler *rst)
 	hang();
 }
 
-static int at91sam9x_rst_probe(struct device_d *dev)
+static int at91sam9x_rst_probe(struct device *dev)
 {
 	struct at91sam9x_rst *priv;
 	struct resource *iores;

@@ -66,7 +66,7 @@ static struct of_device_id weim_id_table[] = {
 };
 
 struct imx_weim {
-	struct device_d *dev;
+	struct device *dev;
 	void __iomem *base;
 	struct imx_weim_devtype *devtype;
 };
@@ -125,7 +125,7 @@ static int weim_parse_dt(struct imx_weim *weim)
 	return ret;
 }
 
-static int weim_probe(struct device_d *dev)
+static int weim_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct imx_weim_devtype *devtype;

@@ -198,7 +198,7 @@ struct txdesc {
 
 struct mvneta_port {
 	void __iomem *reg;
-	struct device_d dev;
+	struct device dev;
 	struct eth_device edev;
 	struct clk *clk;
 
@@ -706,7 +706,7 @@ static int mvneta_port_config(struct mvneta_port *priv)
 	return 0;
 }
 
-static int mvneta_probe(struct device_d *dev)
+static int mvneta_probe(struct device *dev)
 {
 	struct mvneta_port *priv;
 	int ret;

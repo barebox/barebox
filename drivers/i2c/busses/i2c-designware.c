@@ -504,7 +504,7 @@ static int i2c_dw_xfer(struct i2c_adapter *adapter,
 }
 
 
-static int i2c_dw_probe(struct device_d *pdev)
+static int i2c_dw_probe(struct device *pdev)
 {
 	struct resource *iores;
 	struct dw_i2c_dev *dw;

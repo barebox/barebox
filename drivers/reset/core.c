@@ -29,7 +29,7 @@ struct reset_control {
 	int gpio;
 	int gpio_active_high;
 
-	struct device_d *dev;
+	struct device *dev;
 	unsigned int id;
 };
 
@@ -162,7 +162,7 @@ EXPORT_SYMBOL_GPL(reset_control_deassert);
  *
  * Returns number of resets, 0 if none specified
  */
-int reset_control_get_count(struct device_d *dev)
+int reset_control_get_count(struct device *dev)
 {
 	return of_count_phandle_with_args(dev->of_node, "resets",
 					  "#reset-cells");
@@ -246,7 +246,7 @@ struct reset_control *of_reset_control_get(struct device_node *node,
 }
 
 static struct reset_control *
-gpio_reset_control_get(struct device_d *dev, const char *id)
+gpio_reset_control_get(struct device *dev, const char *id)
 {
 	struct reset_control *rc;
 	int gpio;
@@ -278,7 +278,7 @@ gpio_reset_control_get(struct device_d *dev, const char *id)
  *
  * Use of id names is optional.
  */
-struct reset_control *reset_control_get(struct device_d *dev, const char *id)
+struct reset_control *reset_control_get(struct device *dev, const char *id)
 {
 	struct reset_control *rstc;
 
@@ -331,7 +331,7 @@ EXPORT_SYMBOL_GPL(reset_control_put);
  * This is useful for the common case of devices with single, dedicated reset
  * lines.
  */
-int device_reset(struct device_d *dev)
+int device_reset(struct device *dev)
 {
 	struct reset_control *rstc;
 	int ret;
@@ -352,7 +352,7 @@ int device_reset(struct device_d *dev)
 }
 EXPORT_SYMBOL_GPL(device_reset);
 
-int device_reset_all(struct device_d *dev)
+int device_reset_all(struct device *dev)
 {
 	struct reset_control *rstc;
 	int ret, i;
@@ -385,7 +385,7 @@ int device_reset_all(struct device_d *dev)
 }
 EXPORT_SYMBOL_GPL(device_reset_all);
 
-int device_reset_us(struct device_d *dev, int us)
+int device_reset_us(struct device *dev, int us)
 {
 	struct reset_control *rstc;
 	int ret;

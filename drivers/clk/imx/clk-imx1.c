@@ -73,7 +73,7 @@ static int __init mx1_clocks_init(void __iomem *regs, unsigned long fref)
 	return 0;
 }
 
-static int imx1_ccm_probe(struct device_d *dev)
+static int imx1_ccm_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *regs;

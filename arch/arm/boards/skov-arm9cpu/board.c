@@ -45,7 +45,7 @@ static int mem;
  * But is required before we start the other drives.
  * Use device_initcall() to maintain this order.
  */
-static int skov_arm9_probe(struct device_d *dev)
+static int skov_arm9_probe(struct device *dev)
 {
 	unsigned long csa;
 

@@ -383,7 +383,7 @@ static void atmel_get_caps(struct atmel_spi *as)
 	as->caps.is_spi2 = version > 0x121;
 }
 
-static int atmel_spi_probe(struct device_d *dev)
+static int atmel_spi_probe(struct device *dev)
 {
 	struct resource *iores;
 	int ret = 0;

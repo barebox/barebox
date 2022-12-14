@@ -26,7 +26,7 @@
 
 struct dwmci_host {
 	struct mci_host mci;
-	struct device_d *dev;
+	struct device *dev;
 	struct clk *clk_biu, *clk_ciu;
 	void *ioaddr;
 	unsigned int fifo_size_bytes;
@@ -496,7 +496,7 @@ static int dwmci_card_present(struct mci_host *mci)
 	return 1;
 }
 
-static int dwmci_init(struct mci_host *mci, struct device_d *dev)
+static int dwmci_init(struct mci_host *mci, struct device *dev)
 {
 	struct dwmci_host *host = to_dwmci_host(mci);
 	uint32_t fifo_size;
@@ -547,7 +547,7 @@ static int dwmci_init(struct mci_host *mci, struct device_d *dev)
 	return 0;
 }
 
-static int dw_mmc_probe(struct device_d *dev)
+static int dw_mmc_probe(struct device *dev)
 {
 	struct reset_control	*rst;
 	struct resource *iores;

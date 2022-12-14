@@ -465,7 +465,7 @@ static void mxcmci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	host->clock = ios->clock;
 }
 
-static int mxcmci_init(struct mci_host *mci, struct device_d *dev)
+static int mxcmci_init(struct mci_host *mci, struct device *dev)
 {
 	struct mxcmci_host *host = to_mxcmci(mci);
 
@@ -486,7 +486,7 @@ static int mxcmci_init(struct mci_host *mci, struct device_d *dev)
 	return 0;
 }
 
-static int mxcmci_probe(struct device_d *dev)
+static int mxcmci_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct mxcmci_host *host;

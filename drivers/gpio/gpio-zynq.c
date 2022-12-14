@@ -360,7 +360,7 @@ static struct gpio_ops zynq_gpio_ops = {
 	.get_direction = zynq_gpio_get_direction,
 };
 
-static int zynqmp_gpio_probe(struct device_d *dev)
+static int zynqmp_gpio_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct zynq_gpio *gpio;

@@ -26,7 +26,7 @@ static void syscon_poweroff(struct poweroff_handler *handler)
 	pr_emerg("Unable to poweroff system\n");
 }
 
-static int syscon_poweroff_probe(struct device_d *dev)
+static int syscon_poweroff_probe(struct device *dev)
 {
 	int mask_err, value_err;
 

@@ -137,7 +137,7 @@ int mxs_dma_go(int chan, struct mxs_dma_cmd *cmd, int ncmds)
 /*
  * Initialize the DMA hardware
  */
-static int apbh_dma_probe(struct device_d *dev)
+static int apbh_dma_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct apbh_dma *apbh;

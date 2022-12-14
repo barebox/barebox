@@ -40,43 +40,44 @@ typedef struct filep {
 #define FS_DRIVER_NO_DEV	1
 
 struct fs_driver_d {
-	int (*probe) (struct device_d *dev);
+	int (*probe) (struct device *dev);
 
 	/* create a file. The file is guaranteed to not exist */
-	int (*create)(struct device_d *dev, const char *pathname, mode_t mode);
-	int (*unlink)(struct device_d *dev, const char *pathname);
+	int (*create)(struct device *dev, const char *pathname, mode_t mode);
+	int (*unlink)(struct device *dev, const char *pathname);
 
 	/* Truncate a file to given size */
-	int (*truncate)(struct device_d *dev, FILE *f, loff_t size);
+	int (*truncate)(struct device *dev, FILE *f, loff_t size);
 
-	int (*open)(struct device_d *dev, FILE *f, const char *pathname);
-	int (*close)(struct device_d *dev, FILE *f);
-	int (*read)(struct device_d *dev, FILE *f, void *buf, size_t size);
-	int (*write)(struct device_d *dev, FILE *f, const void *buf, size_t size);
-	int (*flush)(struct device_d *dev, FILE *f);
-	int (*lseek)(struct device_d *dev, FILE *f, loff_t pos);
+	int (*open)(struct device *dev, FILE *f, const char *pathname);
+	int (*close)(struct device *dev, FILE *f);
+	int (*read)(struct device *dev, FILE *f, void *buf, size_t size);
+	int (*write)(struct device *dev, FILE *f, const void *buf,
+		     size_t size);
+	int (*flush)(struct device *dev, FILE *f);
+	int (*lseek)(struct device *dev, FILE *f, loff_t pos);
 
-	int (*ioctl)(struct device_d *dev, FILE *f, int request, void *buf);
-	int (*erase)(struct device_d *dev, FILE *f, loff_t count,
+	int (*ioctl)(struct device *dev, FILE *f, int request, void *buf);
+	int (*erase)(struct device *dev, FILE *f, loff_t count,
 			loff_t offset);
-	int (*protect)(struct device_d *dev, FILE *f, size_t count,
+	int (*protect)(struct device *dev, FILE *f, size_t count,
 			loff_t offset, int prot);
-	int (*discard_range)(struct device_d *dev, FILE *f, loff_t count,
-			loff_t offset);
+	int (*discard_range)(struct device *dev, FILE *f, loff_t count,
+			     loff_t offset);
 
-	int (*memmap)(struct device_d *dev, FILE *f, void **map, int flags);
+	int (*memmap)(struct device *dev, FILE *f, void **map, int flags);
 
 	/* legacy */
-	int (*mkdir)(struct device_d *dev, const char *pathname);
-	int (*rmdir)(struct device_d *dev, const char *pathname);
-	int (*symlink)(struct device_d *dev, const char *pathname,
+	int (*mkdir)(struct device *dev, const char *pathname);
+	int (*rmdir)(struct device *dev, const char *pathname);
+	int (*symlink)(struct device *dev, const char *pathname,
 		       const char *newpath);
-	int (*readlink)(struct device_d *dev, const char *pathname, char *name,
+	int (*readlink)(struct device *dev, const char *pathname, char *name,
 			size_t size);
-	struct dir* (*opendir)(struct device_d *dev, const char *pathname);
-	struct dirent* (*readdir)(struct device_d *dev, struct dir *dir);
-	int (*closedir)(struct device_d *dev, DIR *dir);
-	int (*stat)(struct device_d *dev, const char *file, struct stat *stat);
+	struct dir* (*opendir)(struct device *dev, const char *pathname);
+	struct dirent* (*readdir)(struct device *dev, struct dir *dir);
+	int (*closedir)(struct device *dev, DIR *dir);
+	int (*stat)(struct device *dev, const char *file, struct stat *stat);
 
 	struct driver_d drv;
 
@@ -94,7 +95,7 @@ extern struct bus_type fs_bus;
 
 struct fs_device_d {
 	char *backingstore; /* the device we are associated with */
-	struct device_d dev; /* our own device */
+	struct device dev; /* our own device */
 
 	struct fs_driver_d *driver;
 

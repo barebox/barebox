@@ -35,7 +35,7 @@ static struct sam9_smc_config sama5d3_xplained_nand_smc_config = {
 	.nfsel			= 1
 };
 
-static int sama5d3_xplained_probe(struct device_d *dev)
+static int sama5d3_xplained_probe(struct device *dev)
 {
 	struct clk *clk;
 

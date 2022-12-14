@@ -93,7 +93,7 @@ static int arasan_sdhci_reset(struct arasan_sdhci_host *host, u8 mask)
 	return 0;
 }
 
-static int arasan_sdhci_init(struct mci_host *mci, struct device_d *dev)
+static int arasan_sdhci_init(struct mci_host *mci, struct device *dev)
 {
 	struct arasan_sdhci_host *host = to_arasan_sdhci_host(mci);
 	int ret;
@@ -233,7 +233,7 @@ error:
 	return ret;
 }
 
-static int arasan_sdhci_probe(struct device_d *dev)
+static int arasan_sdhci_probe(struct device *dev)
 {
 	struct device_node *np = dev->of_node;
 	struct arasan_sdhci_host *arasan_sdhci;

@@ -16,7 +16,7 @@
 
 struct mtl017 {
 	struct vpl vpl;
-	struct device_d *dev;
+	struct device *dev;
 	struct i2c_client *client;
 	u8 *regs;
 	int enable_gpio;
@@ -218,7 +218,7 @@ forward:
 	return vpl_ioctl(&mtl017->vpl, 1, cmd, ptr);
 }
 
-static int mtl017_probe(struct device_d *dev)
+static int mtl017_probe(struct device *dev)
 {
 	struct mtl017 *mtl017;
 	int ret;

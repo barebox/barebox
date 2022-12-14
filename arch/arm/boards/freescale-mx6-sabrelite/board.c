@@ -124,7 +124,7 @@ static void sabrelite_ehci_init(void)
 	gpio_set_value(IMX_GPIO_NR(7, 12), 1);
 }
 
-static int sabrelite_probe(struct device_d *dev)
+static int sabrelite_probe(struct device *dev)
 {
 	int ret;
 

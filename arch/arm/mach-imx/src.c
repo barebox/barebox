@@ -10,7 +10,7 @@
 
 #define SCR_WARM_RESET_ENABLE	BIT(0)
 
-static int imx_src_reset_probe(struct device_d *dev)
+static int imx_src_reset_probe(struct device *dev)
 {
 	struct resource *res;
 	u32 val;

@@ -470,7 +470,7 @@ void sifive_prci_hfpclkpllsel_use_hfpclkpll(struct __prci_data *pd)
  *
  * Return: 0 upon success or a negative error code upon failure.
  */
-static int __prci_register_clocks(struct device_d *dev, struct __prci_data *pd,
+static int __prci_register_clocks(struct device *dev, struct __prci_data *pd,
 				  const struct prci_clk_desc *desc)
 {
 	struct clk_init_data init = { };
@@ -536,7 +536,7 @@ static int __prci_register_clocks(struct device_d *dev, struct __prci_data *pd,
  *
  * Return: 0 upon success or a negative error code upon failure.
  */
-static int sifive_prci_probe(struct device_d *dev)
+static int sifive_prci_probe(struct device *dev)
 {
 	struct resource *res;
 	struct __prci_data *pd;

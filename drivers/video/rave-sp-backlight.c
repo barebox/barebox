@@ -27,7 +27,7 @@ static int rave_sp_backlight_set(struct backlight_device *bd, int brightness)
 	return rave_sp_exec(sp, cmd, sizeof(cmd), NULL, 0);
 }
 
-static int rave_sp_backlight_probe(struct device_d *dev)
+static int rave_sp_backlight_probe(struct device *dev)
 {
 	struct backlight_device *bd;
 	int ret;

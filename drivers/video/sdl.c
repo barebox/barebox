@@ -38,7 +38,7 @@ static struct fb_ops sdlfb_ops = {
 	.fb_disable	= sdlfb_disable,
 };
 
-static int sdlfb_probe(struct device_d *dev)
+static int sdlfb_probe(struct device *dev)
 {
 	struct fb_info *fb;
 	int ret = -EIO;
@@ -81,7 +81,7 @@ static int sdlfb_probe(struct device_d *dev)
 	return ret;
 }
 
-static void sdlfb_remove(struct device_d *dev)
+static void sdlfb_remove(struct device *dev)
 {
 	struct fb_info *fb = dev->priv;
 

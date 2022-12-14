@@ -363,7 +363,7 @@ static struct device_node *ccm_np;
 
 static int imx7_clk_setup(void);
 
-static int imx7_ccm_probe(struct device_d *dev)
+static int imx7_ccm_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *base, *anatop_base, *ccm_base;

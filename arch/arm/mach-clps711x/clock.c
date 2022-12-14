@@ -23,7 +23,7 @@ static const struct clk_div_table tdiv_tbl[] = {
 	{ }
 };
 
-static int clps711x_clk_probe(struct device_d *dev)
+static int clps711x_clk_probe(struct device *dev)
 {
 	unsigned int f_cpu, f_bus, f_uart, f_timer_ref, pll;
 	u32 tmp;

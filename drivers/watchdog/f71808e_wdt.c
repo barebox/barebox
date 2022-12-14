@@ -239,7 +239,7 @@ static int f71808e_wdt_set_timeout(struct watchdog *wdd, unsigned int new_timeou
 	return 0;
 }
 
-static int f71808e_wdt_init(struct f71808e_wdt *wd, struct device_d *dev)
+static int f71808e_wdt_init(struct f71808e_wdt *wd, struct device *dev)
 {
 	struct watchdog *wdd = &wd->wdd;
 	const char * const *names = pulse_width_names;
@@ -376,7 +376,7 @@ static struct platform_device_id f71808e_wdt_ids[] = {
 	{ /* sentinel */ },
 };
 
-static int f71808e_probe(struct device_d *dev)
+static int f71808e_probe(struct device *dev)
 {
 	struct f71808e_wdt *wd;
 	struct resource *res;

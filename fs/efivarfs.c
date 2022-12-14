@@ -47,7 +47,8 @@ struct efivarfs_priv {
 	struct list_head inodes;
 };
 
-static int efivars_create(struct device_d *dev, const char *pathname, mode_t mode)
+static int efivars_create(struct device *dev, const char *pathname,
+			  mode_t mode)
 {
 	struct efivarfs_priv *priv = dev->priv;
 	struct efivarfs_inode *inode;
@@ -93,7 +94,7 @@ static int efivars_create(struct device_d *dev, const char *pathname, mode_t mod
 	return 0;
 }
 
-static int efivars_unlink(struct device_d *dev, const char *pathname)
+static int efivars_unlink(struct device *dev, const char *pathname)
 {
 	struct efivarfs_priv *priv = dev->priv;
 	struct efivarfs_inode *inode, *tmp;
@@ -124,7 +125,7 @@ struct efivars_file {
 	u32 attributes;
 };
 
-static int efivarfs_open(struct device_d *dev, FILE *f, const char *filename)
+static int efivarfs_open(struct device *dev, FILE *f, const char *filename)
 {
 	struct efivars_file *efile;
 	efi_status_t efiret;
@@ -169,7 +170,7 @@ out:
 	return ret;
 }
 
-static int efivarfs_close(struct device_d *dev, FILE *f)
+static int efivarfs_close(struct device *dev, FILE *f)
 {
 	struct efivars_file *efile = f->priv;
 
@@ -179,7 +180,8 @@ static int efivarfs_close(struct device_d *dev, FILE *f)
 	return 0;
 }
 
-static int efivarfs_read(struct device_d *_dev, FILE *f, void *buf, size_t insize)
+static int efivarfs_read(struct device *_dev, FILE *f, void *buf,
+			 size_t insize)
 {
 	struct efivars_file *efile = f->priv;
 
@@ -188,7 +190,8 @@ static int efivarfs_read(struct device_d *_dev, FILE *f, void *buf, size_t insiz
 	return insize;
 }
 
-static int efivarfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t insize)
+static int efivarfs_write(struct device *_dev, FILE *f, const void *buf,
+			  size_t insize)
 {
 	struct efivars_file *efile = f->priv;
 	efi_status_t efiret;
@@ -209,7 +212,7 @@ static int efivarfs_write(struct device_d *_dev, FILE *f, const void *buf, size_
 	return insize;
 }
 
-static int efivarfs_truncate(struct device_d *dev, FILE *f, loff_t size)
+static int efivarfs_truncate(struct device *dev, FILE *f, loff_t size)
 {
 	struct efivars_file *efile = f->priv;
 	efi_status_t efiret;
@@ -228,7 +231,7 @@ static int efivarfs_truncate(struct device_d *dev, FILE *f, loff_t size)
 	return 0;
 }
 
-static DIR *efivarfs_opendir(struct device_d *dev, const char *pathname)
+static DIR *efivarfs_opendir(struct device *dev, const char *pathname)
 {
 	struct efivarfs_priv *priv = dev->priv;
 	struct efivarfs_dir *edir;
@@ -239,7 +242,7 @@ static DIR *efivarfs_opendir(struct device_d *dev, const char *pathname)
 	return &edir->dir;
 }
 
-static struct dirent *efivarfs_readdir(struct device_d *dev, DIR *dir)
+static struct dirent *efivarfs_readdir(struct device *dev, DIR *dir)
 {
 	struct efivarfs_priv *priv = dev->priv;
 	struct efivarfs_dir *edir = container_of(dir, struct efivarfs_dir, dir);
@@ -257,7 +260,7 @@ static struct dirent *efivarfs_readdir(struct device_d *dev, DIR *dir)
 	return &dir->d;
 }
 
-static int efivarfs_closedir(struct device_d *dev, DIR *dir)
+static int efivarfs_closedir(struct device *dev, DIR *dir)
 {
 	struct efivarfs_dir *edir = container_of(dir, struct efivarfs_dir, dir);
 
@@ -266,7 +269,8 @@ static int efivarfs_closedir(struct device_d *dev, DIR *dir)
 	return 0;
 }
 
-static int efivarfs_stat(struct device_d *dev, const char *filename, struct stat *s)
+static int efivarfs_stat(struct device *dev, const char *filename,
+			 struct stat *s)
 {
 	efi_guid_t vendor;
 	s16 *name;
@@ -291,7 +295,7 @@ static int efivarfs_stat(struct device_d *dev, const char *filename, struct stat
 	return 0;
 }
 
-static int efivarfs_probe(struct device_d *dev)
+static int efivarfs_probe(struct device *dev)
 {
 	efi_status_t efiret;
 	efi_guid_t vendor;
@@ -330,7 +334,7 @@ static int efivarfs_probe(struct device_d *dev)
 	return 0;
 }
 
-static void efivarfs_remove(struct device_d *dev)
+static void efivarfs_remove(struct device *dev)
 {
 	struct efivarfs_priv *priv = dev->priv;
 	struct efivarfs_inode *inode, *tmp;

@@ -396,7 +396,7 @@ static int cdns_i2c_xfer(struct i2c_adapter *adapter, struct i2c_msg *msg,
 	return nmsgs;
 }
 
-static int cdns_i2c_probe(struct device_d *dev)
+static int cdns_i2c_probe(struct device *dev)
 {
 	struct device_node *np = dev->of_node;
 	struct resource *iores;

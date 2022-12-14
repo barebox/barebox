@@ -39,7 +39,7 @@ static int prt_prt8mm_init_power(void)
 	return 0;
 }
 
-static int prt_prt8mm_probe(struct device_d *dev)
+static int prt_prt8mm_probe(struct device *dev)
 {
 	int emmc_bbu_flag = 0;
 	int sd_bbu_flag = 0;

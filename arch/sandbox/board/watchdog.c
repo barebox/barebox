@@ -36,7 +36,7 @@ static int sandbox_watchdog_set_timeout(struct watchdog *wdd, unsigned int timeo
 	return 0;
 }
 
-static int sandbox_watchdog_probe(struct device_d *dev)
+static int sandbox_watchdog_probe(struct device *dev)
 {
 	struct device_node *np = dev->of_node;
 	struct sandbox_watchdog *wd;

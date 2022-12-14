@@ -35,7 +35,7 @@ void *rproc_da_to_va(struct rproc *rproc, u64 da, int len)
 
 static int rproc_start(struct rproc *rproc, const struct firmware *fw)
 {
-	struct device_d *dev = &rproc->dev;
+	struct device *dev = &rproc->dev;
 	int ret;
 
 	/* load the ELF segments to memory */
@@ -85,7 +85,7 @@ static int rproc_firmware_finish(struct firmware_handler *fh)
 {
 	struct rproc *rproc = container_of(fh, struct rproc, fh);
 	struct firmware fw;
-	struct device_d *dev;
+	struct device *dev;
 	int ret;
 
 	if (!rproc) {
@@ -122,7 +122,7 @@ static int rproc_register_dev(struct rproc *rproc, const char *alias)
 
 int rproc_add(struct rproc *rproc)
 {
-	struct device_d *dev = &rproc->dev;
+	struct device *dev = &rproc->dev;
 	struct firmware_handler *fh;
 	const char *alias = NULL;
 	int ret;
@@ -150,7 +150,7 @@ int rproc_add(struct rproc *rproc)
 	return ret;
 }
 
-struct rproc *rproc_alloc(struct device_d *dev, const char *name,
+struct rproc *rproc_alloc(struct device *dev, const char *name,
 			  const struct rproc_ops *ops, int len)
 {
 	struct rproc *rproc;

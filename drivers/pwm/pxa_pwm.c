@@ -128,7 +128,7 @@ static struct pwm_ops pxa_pwm_ops = {
 	.apply = pxa_pwm_apply,
 };
 
-static int pxa_pwm_probe(struct device_d *dev)
+static int pxa_pwm_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct pxa_pwm_chip *chip;

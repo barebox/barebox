@@ -113,7 +113,7 @@ static struct pinctrl_ops pinctrl_vf610_ops = {
 	.get_direction = pinctrl_vf610_get_direction,
 };
 
-static int pinctrl_vf610_probe(struct device_d *dev)
+static int pinctrl_vf610_probe(struct device *dev)
 {
 	int ret;
 	struct resource *io;

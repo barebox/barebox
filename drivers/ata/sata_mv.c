@@ -90,7 +90,7 @@ static void mv_soc_65n_phy_errata(void __iomem *base)
 	writel(reg, base + PHY_MODE9_GEN1);
 }
 
-static int mv_sata_probe(struct device_d *dev)
+static int mv_sata_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *base;

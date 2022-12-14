@@ -419,7 +419,7 @@ void am33xx_select_rmii2_crs_dv(void)
 
 int am33xx_of_register_bootdevice(void)
 {
-	struct device_d *dev;
+	struct device *dev;
 
 	switch (bootsource_get()) {
 	case BOOTSOURCE_MMC:

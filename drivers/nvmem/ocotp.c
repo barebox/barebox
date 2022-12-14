@@ -123,7 +123,7 @@ struct ocotp_priv {
 	struct regmap *map;
 	void __iomem *base;
 	struct clk *clk;
-	struct device_d dev;
+	struct device dev;
 	int permanent_write_enable;
 	int sense_enable;
 	struct ocotp_priv_ethaddr ethaddr[MAX_MAC_OFFSETS];
@@ -712,7 +712,7 @@ static const struct nvmem_bus imx_ocotp_nvmem_bus = {
 	.read  = imx_ocotp_read,
 };
 
-static int imx_ocotp_probe(struct device_d *dev)
+static int imx_ocotp_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct ocotp_priv *priv;

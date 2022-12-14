@@ -96,7 +96,7 @@ static struct variant_data variant_ux500v2 = {
 struct mmci_host {
 	struct mci_host		mci;
 	void __iomem		*base;
-	struct device_d		*hw_dev;
+	struct device		*hw_dev;
 	struct mmci_platform_data *plat;
 	struct clk		*clk;
 	unsigned long		mclk;
@@ -434,7 +434,7 @@ static int mci_request(struct mci_host *mci, struct mci_cmd *cmd, struct mci_dat
 }
 
 /* MMC uses open drain drivers in the enumeration phase */
-static int mci_reset(struct mci_host *mci, struct device_d *mci_dev)
+static int mci_reset(struct mci_host *mci, struct device *mci_dev)
 {
 	struct mmci_host *host = to_mci_host(mci);
 	struct variant_data *variant = host->variant;
@@ -551,7 +551,7 @@ static int mmci_of_parse(struct device_node *np,
 
 static int mmci_probe(struct amba_device *dev, const struct amba_id *id)
 {
-	struct device_d *hw_dev = &dev->dev;
+	struct device *hw_dev = &dev->dev;
 	struct device_node *np = hw_dev->of_node;
 	struct mmci_platform_data *plat = hw_dev->platform_data;
 	struct variant_data *variant = id->data;

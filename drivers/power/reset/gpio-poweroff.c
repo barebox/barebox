@@ -43,7 +43,7 @@ static void gpio_poweroff_do_poweroff(struct poweroff_handler *handler)
 
 static struct poweroff_handler handler;
 
-static int gpio_poweroff_probe(struct device_d *dev)
+static int gpio_poweroff_probe(struct device *dev)
 {
 	struct device_node *np = dev->of_node;
 	bool input = false;

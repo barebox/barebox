@@ -355,7 +355,7 @@ struct nxp_fspi {
 	u32 memmap_start;
 	u32 memmap_len;
 	struct clk *clk, *clk_en;
-	struct device_d *dev;
+	struct device *dev;
 	struct spi_controller ctlr;
 	const struct nxp_fspi_devtype_data *devtype_data;
 	struct mutex lock;
@@ -544,7 +544,7 @@ static void nxp_fspi_prepare_lut(struct nxp_fspi *f,
 	for (i = 0; i < ARRAY_SIZE(lutval); i++)
 		fspi_writel(f, lutval[i], base + FSPI_LUT_REG(i));
 
-	dev_dbg((const struct device_d *)f->dev,
+	dev_dbg((const struct device *)f->dev,
 		"CMD[%x] lutval[0:%x \t 1:%x \t 2:%x \t 3:%x], size: 0x%08x\n",
 		op->cmd.opcode, lutval[0], lutval[1], lutval[2], lutval[3],
 		op->data.nbytes);
@@ -642,7 +642,8 @@ static void nxp_fspi_select_mem(struct nxp_fspi *f, struct spi_device *spi)
 	fspi_writel(f, size_kb, f->iobase + FSPI_FLSHA1CR0 +
 		    4 * spi->chip_select);
 
-	dev_dbg((const struct device_d *)f->dev, "Slave device [CS:%x] selected\n",
+	dev_dbg((const struct device *)f->dev,
+			"Slave device [CS:%x] selected\n",
 			spi->chip_select);
 
 	nxp_fspi_clk_disable_unprep(f);
@@ -937,7 +938,7 @@ static int nxp_fspi_setup(struct spi_device *spi)
 static const char *nxp_fspi_get_name(struct spi_mem *mem)
 {
 	struct nxp_fspi *f = spi_controller_get_devdata(mem->spi->master);
-	struct device_d *dev = (struct device_d *)&mem->spi->dev;
+	struct device *dev = (struct device *)&mem->spi->dev;
 	const char *name;
 
 	/* Set custom name derived from the platform_device of the controller.
@@ -961,7 +962,7 @@ static const struct spi_controller_mem_ops nxp_fspi_mem_ops = {
 	.get_name = nxp_fspi_get_name,
 };
 
-static int nxp_fspi_probe(struct device_d *dev)
+static int nxp_fspi_probe(struct device *dev)
 {
 	struct spi_controller *ctlr;
 	struct resource *res;

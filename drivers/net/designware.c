@@ -410,7 +410,7 @@ static int dwc_ether_set_ethaddr(struct eth_device *dev, const unsigned char *ad
 	return 0;
 }
 
-static void dwc_version(struct device_d *dev, u32 hwid)
+static void dwc_version(struct device *dev, u32 hwid)
 {
 	u32 uid = ((hwid & 0x0000ff00) >> 8);
 	u32 synid = (hwid & 0x000000ff);
@@ -419,7 +419,7 @@ static void dwc_version(struct device_d *dev, u32 hwid)
 		uid, synid);
 }
 
-static int dwc_probe_dt(struct device_d *dev, struct dw_eth_dev *priv)
+static int dwc_probe_dt(struct device *dev, struct dw_eth_dev *priv)
 {
 	struct device_node *child;
 
@@ -440,7 +440,7 @@ static int dwc_probe_dt(struct device_d *dev, struct dw_eth_dev *priv)
 	return 0;
 }
 
-struct dw_eth_dev *dwc_drv_probe(struct device_d *dev)
+struct dw_eth_dev *dwc_drv_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct dw_eth_dev *priv;
@@ -526,7 +526,7 @@ struct dw_eth_dev *dwc_drv_probe(struct device_d *dev)
 	return priv;
 }
 
-void dwc_drv_remove(struct device_d *dev)
+void dwc_drv_remove(struct device *dev)
 {
 	struct eth_device *edev = dev->priv;
 

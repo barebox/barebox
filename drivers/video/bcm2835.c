@@ -54,7 +54,7 @@ static struct fb_ops bcm2835fb_ops = {
 	.fb_disable		= bcm2835fb_disable,
 };
 
-static int bcm2835fb_probe(struct device_d *dev)
+static int bcm2835fb_probe(struct device *dev)
 {
 	BCM2835_MBOX_STACK_ALIGN(struct msg_fb_query, msg_query);
 	BCM2835_MBOX_STACK_ALIGN(struct msg_fb_setup, msg_setup);

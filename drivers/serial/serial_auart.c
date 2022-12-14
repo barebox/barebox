@@ -168,7 +168,7 @@ static void auart_serial_init_port(struct auart_priv *priv)
 	writel(0x0, priv->base + HW_UARTAPP_INTR);
 }
 
-static int auart_serial_probe(struct device_d *dev)
+static int auart_serial_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct auart_priv *priv;

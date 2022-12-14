@@ -248,7 +248,7 @@ static void axp20x_power_off(struct poweroff_handler *handler)
 
 int axp20x_match_device(struct axp20x_dev *axp20x)
 {
-	struct device_d *dev = axp20x->dev;
+	struct device *dev = axp20x->dev;
 	const struct of_device_id *of_id;
 
 	of_id = of_match_device(dev->driver->of_compatible, dev);

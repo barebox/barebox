@@ -101,7 +101,7 @@ static int rk_sdhci_reset(struct rk_sdhci_host *host, u8 mask)
 	return 0;
 }
 
-static int rk_sdhci_init(struct mci_host *mci, struct device_d *dev)
+static int rk_sdhci_init(struct mci_host *mci, struct device *dev)
 {
 	struct rk_sdhci_host *host = to_rk_sdhci_host(mci);
 	int ret;
@@ -307,7 +307,7 @@ error:
 	return ret;
 }
 
-static int rk_sdhci_probe(struct device_d *dev)
+static int rk_sdhci_probe(struct device *dev)
 {
 	struct rk_sdhci_host *host;
 	struct resource *iores;

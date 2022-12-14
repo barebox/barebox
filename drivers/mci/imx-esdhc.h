@@ -100,7 +100,7 @@ struct esdhc_soc_data {
 struct fsl_esdhc_host {
 	struct mci_host		mci;
 	struct clk		*clk;
-	struct device_d		*dev;
+	struct device		*dev;
 	const struct esdhc_soc_data *socdata;
 	struct sdhci	sdhci;
 };

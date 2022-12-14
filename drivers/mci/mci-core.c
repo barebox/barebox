@@ -1570,7 +1570,7 @@ static void mci_print_caps(unsigned caps)
  * Output some valuable information when the user runs 'devinfo' on an MCI device
  * @param mci MCI device instance
  */
-static void mci_info(struct device_d *dev)
+static void mci_info(struct device *dev)
 {
 	struct mci *mci = container_of(dev, struct mci, dev);
 	struct mci_host *host = mci->host;
@@ -1742,7 +1742,7 @@ static int mci_register_partition(struct mci_part *part)
 static int of_broken_cd_fixup(struct device_node *root, void *ctx)
 {
 	struct mci_host *host = ctx;
-	struct device_d *hw_dev = host->hw_dev;
+	struct device *hw_dev = host->hw_dev;
 	struct device_node *np;
 	char *name;
 
@@ -1916,14 +1916,14 @@ int mci_detect_card(struct mci_host *host)
 	return mci_card_probe(host->mci);
 }
 
-static int mci_detect(struct device_d *dev)
+static int mci_detect(struct device *dev)
 {
 	struct mci *mci = container_of(dev, struct mci, dev);
 
 	return mci_detect_card(mci->host);
 }
 
-static int mci_hw_detect(struct device_d *dev)
+static int mci_hw_detect(struct device *dev)
 {
 	struct mci *mci;
 
@@ -1943,7 +1943,7 @@ static int mci_hw_detect(struct device_d *dev)
 int mci_register(struct mci_host *host)
 {
 	struct mci *mci;
-	struct device_d *hw_dev;
+	struct device *hw_dev;
 	struct param_d *param_probe, *param_broken_cd;
 	int ret;
 

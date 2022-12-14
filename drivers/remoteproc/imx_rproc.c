@@ -79,7 +79,7 @@ struct imx_rproc_dcfg {
 };
 
 struct imx_rproc {
-	struct device_d			*dev;
+	struct device			*dev;
 	struct regmap			*regmap;
 	struct regmap			*gpr;
 	struct rproc			*rproc;
@@ -384,7 +384,7 @@ static const struct rproc_ops imx_rproc_ops = {
 };
 
 static int imx_rproc_addr_init(struct imx_rproc *priv,
-			       struct device_d *dev)
+			       struct device *dev)
 {
 	const struct imx_rproc_dcfg *dcfg = priv->dcfg;
 	struct device_node *np = dev->of_node;
@@ -449,7 +449,7 @@ static int imx_rproc_addr_init(struct imx_rproc *priv,
 	return 0;
 }
 
-static int imx_rproc_probe(struct device_d *dev)
+static int imx_rproc_probe(struct device *dev)
 {
 	struct device_node *np = dev->of_node;
 	struct imx_rproc *priv;

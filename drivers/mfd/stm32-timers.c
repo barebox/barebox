@@ -34,7 +34,7 @@ static void stm32_timers_get_arr_size(struct stm32_timers *ddata)
 	regmap_write(ddata->regmap, TIM_ARR, 0x0);
 }
 
-static int stm32_timers_probe(struct device_d *dev)
+static int stm32_timers_probe(struct device *dev)
 {
 	struct stm32_timers *ddata;
 	struct resource *res;

@@ -332,7 +332,7 @@ static void starfive_clkgen_init(struct device_node *np, void __iomem *base)
 
 static struct clk_onecell_data clk_data;
 
-static int starfive_clkgen_clk_probe(struct device_d *dev)
+static int starfive_clkgen_clk_probe(struct device *dev)
 {
 	struct resource *iores;
 

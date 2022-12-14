@@ -23,7 +23,7 @@
 #include <mach/am33xx-silicon.h>
 #include <mach/emif4.h>
 
-static int am33xx_scrm_probe(struct device_d *dev)
+static int am33xx_scrm_probe(struct device *dev)
 {
 	return arm_add_mem_device("ram0", 0x80000000,
 				  emif4_sdram_size(IOMEM(AM33XX_EMIF4_BASE)));

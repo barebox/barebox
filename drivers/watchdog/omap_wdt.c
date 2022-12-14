@@ -150,7 +150,7 @@ static int omap_wdt_set_timeout(struct watchdog *wdog,
 	return 0;
 }
 
-static int omap_wdt_probe(struct device_d *dev)
+static int omap_wdt_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct omap_wdt_dev *wdev;

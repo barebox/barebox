@@ -349,7 +349,7 @@ static int dm9k_phy_read(struct mii_bus *bus, int addr, int reg)
 {
 	unsigned val;
 	struct dm9k *priv = bus->priv;
-	struct device_d *dev = &bus->dev;
+	struct device *dev = &bus->dev;
 
 	/* only internal phy supported by now, so show only one phy on miibus */
 	if (addr != 0) {
@@ -373,7 +373,7 @@ static int dm9k_phy_read(struct mii_bus *bus, int addr, int reg)
 static int dm9k_phy_write(struct mii_bus *bus, int addr, int reg, u16 val)
 {
 	struct dm9k *priv = bus->priv;
-	struct device_d *dev = &bus->dev;
+	struct device *dev = &bus->dev;
 
 	/* only internal phy supported by now, so show only one phy on miibus */
 	if (addr != 0) {
@@ -397,7 +397,7 @@ static int dm9k_phy_write(struct mii_bus *bus, int addr, int reg, u16 val)
 
 static int dm9k_check_id(struct dm9k *priv)
 {
-	struct device_d *dev = priv->miibus.parent;
+	struct device *dev = priv->miibus.parent;
 	u32 id;
 	char c;
 
@@ -461,7 +461,7 @@ static void dm9k_enable(struct dm9k *priv)
 
 static void dm9k_reset(struct dm9k *priv)
 {
-	struct device_d *dev = priv->miibus.parent;
+	struct device *dev = priv->miibus.parent;
 
 	dev_dbg(dev, "%s\n", __func__);
 
@@ -504,7 +504,7 @@ static void dm9k_write_length(struct dm9k *priv, unsigned length)
 
 static int dm9k_wait_for_trans_end(struct dm9k *priv)
 {
-	struct device_d *dev = priv->miibus.parent;
+	struct device *dev = priv->miibus.parent;
 	static const uint64_t toffs = 1 * SECOND;
 	uint8_t status;
 	uint64_t start = get_time_ns();
@@ -530,7 +530,7 @@ static int dm9k_wait_for_trans_end(struct dm9k *priv)
 static int dm9k_eth_send(struct eth_device *edev, void *packet, int length)
 {
 	struct dm9k *priv = (struct dm9k *)edev->priv;
-	struct device_d *dev = priv->miibus.parent;
+	struct device *dev = priv->miibus.parent;
 
 	dev_dbg(dev, "%s: %d bytes\n", __func__, length);
 
@@ -556,7 +556,7 @@ static int dm9k_eth_send(struct eth_device *edev, void *packet, int length)
 static int dm9k_check_for_rx_packet(struct dm9k *priv)
 {
 	uint8_t status;
-	struct device_d *dev = priv->miibus.parent;
+	struct device *dev = priv->miibus.parent;
 
 	status = dm9k_ior(priv, DM9K_ISR);
 	if (!(status & ISR_PR))
@@ -568,7 +568,7 @@ static int dm9k_check_for_rx_packet(struct dm9k *priv)
 
 static int dm9k_validate_entry(struct dm9k *priv)
 {
-	struct device_d *dev = priv->miibus.parent;
+	struct device *dev = priv->miibus.parent;
 
 	uint8_t p_stat;
 	/*
@@ -600,7 +600,7 @@ static int dm9k_validate_entry(struct dm9k *priv)
 static int dm9k_eth_rx(struct eth_device *edev)
 {
 	struct dm9k *priv = (struct dm9k *)edev->priv;
-	struct device_d *dev = edev->parent;
+	struct device *dev = edev->parent;
 	unsigned rx_stat = 0, rx_len = 0;
 	bool p_valid;
 
@@ -720,7 +720,7 @@ static int dm9k_init_dev(struct eth_device *edev)
 	return 0;
 }
 
-static int dm9000_parse_dt(struct device_d *dev, struct dm9k *priv)
+static int dm9000_parse_dt(struct device *dev, struct dm9k *priv)
 {
 	struct device_node *np = dev->of_node;
 	uint32_t prop;
@@ -757,7 +757,7 @@ static int dm9000_parse_dt(struct device_d *dev, struct dm9k *priv)
 	return 0;
 }
 
-static int dm9000_parse_pdata(struct device_d *dev, struct dm9k *priv)
+static int dm9000_parse_pdata(struct device *dev, struct dm9k *priv)
 {
 	struct dm9000_platform_data *pdata = dev->platform_data;
 
@@ -768,7 +768,7 @@ static int dm9000_parse_pdata(struct device_d *dev, struct dm9k *priv)
 	return 0;
 }
 
-static int dm9k_probe(struct device_d *dev)
+static int dm9k_probe(struct device *dev)
 {
 	struct resource *iores;
 	unsigned io_mode;

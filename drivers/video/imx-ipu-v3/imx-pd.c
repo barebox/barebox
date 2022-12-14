@@ -22,7 +22,7 @@
 #define IMX_PD_OUTPUT_PORT	1
 
 struct imx_pd {
-	struct device_d *dev;
+	struct device *dev;
 	struct display_timings *timings;
 	u32 bus_format;
 	struct vpl vpl;
@@ -61,7 +61,7 @@ static int imx_pd_ioctl(struct vpl *vpl, unsigned int port,
 	return 0;
 }
 
-static int imx_pd_probe(struct device_d *dev)
+static int imx_pd_probe(struct device *dev)
 {
 	struct device_node *node = dev->of_node;
 	struct imx_pd *imx_pd;

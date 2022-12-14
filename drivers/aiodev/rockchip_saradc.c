@@ -85,7 +85,7 @@ static int rockchip_saradc_read(struct aiochannel *chan, int *val)
 	return 0;
 }
 
-static int rockchip_saradc_probe(struct device_d *dev)
+static int rockchip_saradc_probe(struct device *dev)
 {
 	struct rockchip_saradc_data *data;
 	int i, ret;

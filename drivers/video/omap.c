@@ -27,7 +27,7 @@
 
 struct omapfb_device {
 	struct fb_info info;
-	struct device_d *dev;
+	struct device *dev;
 
 	struct omapfb_display const *cur_display;
 
@@ -410,7 +410,7 @@ static struct fb_ops omapfb_ops = {
 	.fb_activate_var	= omapfb_activate_var,
 };
 
-static int omapfb_probe(struct device_d *dev)
+static int omapfb_probe(struct device *dev)
 {
 	struct omapfb_platform_data const *pdata = dev->platform_data;
 	struct omapfb_device *fbi;

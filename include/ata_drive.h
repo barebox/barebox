@@ -128,8 +128,8 @@ struct ata_port_operations {
 
 struct ata_port {
 	struct ata_port_operations *ops;
-	struct device_d *dev;
-	struct device_d class_dev;
+	struct device *dev;
+	struct device class_dev;
 	const char *devname;
 	void *drvdata;
 	struct block_device blk;
@@ -148,7 +148,7 @@ int ide_port_register(struct ide_port *ide);
 int ata_port_register(struct ata_port *port);
 int ata_port_detect(struct ata_port *port);
 
-struct device_d;
+struct device;
 
 /**
  * @file

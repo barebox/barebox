@@ -446,7 +446,7 @@ static struct clk *zynqmp_register_clk_topology(char *clk_name,
 	return clk;
 }
 
-static int zynqmp_register_clocks(struct device_d *dev,
+static int zynqmp_register_clocks(struct device *dev,
 				  struct clk **clks, size_t num_clocks)
 {
 	unsigned int i;
@@ -518,7 +518,7 @@ static void zynqmp_fill_clock_info(struct zynqmp_clock_info *clock_info,
 	}
 }
 
-static int zynqmp_clock_probe(struct device_d *dev)
+static int zynqmp_clock_probe(struct device *dev)
 {
 	int err;
 	u32 api_version;

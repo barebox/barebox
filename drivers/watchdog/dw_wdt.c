@@ -128,7 +128,7 @@ static void __noreturn dw_wdt_restart_handle(struct restart_handler *rst)
 	hang();
 }
 
-static int dw_wdt_drv_probe(struct device_d *dev)
+static int dw_wdt_drv_probe(struct device *dev)
 {
 	struct watchdog *wdd;
 	struct dw_wdt *dw_wdt;

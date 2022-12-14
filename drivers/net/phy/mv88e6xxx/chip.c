@@ -837,7 +837,7 @@ static const struct nvmem_bus mv88e6xxx_eeprom_nvmem_bus = {
 	.read  = mv88e6xxx_eeprom_read,
 };
 
-static int mv88e6xxx_probe(struct device_d *dev)
+static int mv88e6xxx_probe(struct device *dev)
 {
 	struct device_node *np = dev->of_node;
 	struct device_node *mdio_node;

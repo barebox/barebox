@@ -410,7 +410,7 @@ static int ramoops_init_prz(const char *name,
 	return 0;
 }
 
-static int ramoops_parse_dt_size(struct device_d *dev,
+static int ramoops_parse_dt_size(struct device *dev,
 				 const char *propname, u32 *value)
 {
 	u32 val32 = 0;
@@ -432,7 +432,7 @@ static int ramoops_parse_dt_size(struct device_d *dev,
 	return 0;
 }
 
-static int ramoops_parse_dt(struct device_d *dev,
+static int ramoops_parse_dt(struct device *dev,
 			    struct ramoops_platform_data *pdata)
 {
 	struct device_node *of_node = dev->of_node;
@@ -517,7 +517,7 @@ static int ramoops_of_fixup(struct device_node *root, void *data)
 	return 0;
 }
 
-static int ramoops_probe(struct device_d *dev)
+static int ramoops_probe(struct device *dev)
 {
 	struct ramoops_platform_data *pdata = dummy_data;
 	struct ramoops_context *cxt = &oops_cxt;

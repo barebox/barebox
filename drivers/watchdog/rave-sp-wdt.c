@@ -302,7 +302,7 @@ static int rave_sp_wdt_add_params(struct rave_sp_wdt *sp_wd)
 	return PTR_ERR_OR_ZERO(p);
 }
 
-static int rave_sp_wdt_probe(struct device_d *dev)
+static int rave_sp_wdt_probe(struct device *dev)
 {
 	struct rave_sp_wdt *sp_wd;
 	const char *reset_reason;

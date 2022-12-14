@@ -367,7 +367,7 @@ static const struct nvmem_bus eeprom_93xx46_nvmem_bus = {
 	.read  = eeprom_93xx46_read,
 };
 
-static int eeprom_93xx46_probe(struct device_d *dev)
+static int eeprom_93xx46_probe(struct device *dev)
 {
 	struct spi_device *spi = (struct spi_device *)dev->type_data;
 	struct eeprom_93xx46_platform_data *pd;

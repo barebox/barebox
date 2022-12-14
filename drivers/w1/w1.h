@@ -19,7 +19,7 @@ struct w1_device {
 	u8	crc;
 
 	struct w1_bus	*bus;
-	struct device_d dev;
+	struct device dev;
 };
 
 struct w1_driver {
@@ -58,8 +58,8 @@ extern struct bus_type w1_bustype;
  */
 struct w1_bus
 {
-	struct device_d	dev;
-	struct device_d	*parent;
+	struct device	dev;
+	struct device	*parent;
 
 	/**
 	 * Sample the line level

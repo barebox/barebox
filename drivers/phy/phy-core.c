@@ -24,7 +24,7 @@ static int phy_ida;
  *
  * Called to create a phy using phy framework.
  */
-struct phy *phy_create(struct device_d *dev, struct device_node *node,
+struct phy *phy_create(struct device *dev, struct device_node *node,
 		       const struct phy_ops *ops)
 {
 	int ret;
@@ -79,9 +79,9 @@ free_ida:
  * This is used in the case of dt boot for finding the phy instance from
  * phy provider.
  */
-struct phy_provider *__of_phy_provider_register(struct device_d *dev,
-	struct phy * (*of_xlate)(struct device_d *dev,
-	struct of_phandle_args *args))
+struct phy_provider *__of_phy_provider_register(struct device *dev,
+						struct phy * (*of_xlate)(struct device *dev,
+									 struct of_phandle_args *args))
 {
 	struct phy_provider *phy_provider;
 
@@ -295,7 +295,7 @@ struct phy *of_phy_get(struct device_node *np, const char *con_id)
  * -ENODEV if there is no such phy. The caller is responsible for
  * calling phy_put() to release that count.
  */
-struct phy *of_phy_get_by_phandle(struct device_d *dev, const char *phandle,
+struct phy *of_phy_get_by_phandle(struct device *dev, const char *phandle,
 				  u8 index)
 {
 	struct device_node *np;
@@ -331,7 +331,7 @@ struct phy *of_phy_get_by_phandle(struct device_d *dev, const char *phandle,
  * -ENODEV if there is no such phy.  The caller is responsible for
  * calling phy_put() to release that count.
  */
-struct phy *phy_get(struct device_d *dev, const char *string)
+struct phy *phy_get(struct device *dev, const char *string)
 {
 	int index = 0;
 	struct phy *phy = ERR_PTR(-ENODEV);
@@ -360,7 +360,7 @@ struct phy *phy_get(struct device_d *dev, const char *string)
  * NULL if there is no such phy.  The caller is responsible for
  * calling phy_put() to release that count.
  */
-struct phy *phy_optional_get(struct device_d *dev, const char *string)
+struct phy *phy_optional_get(struct device *dev, const char *string)
 {
 	struct phy *phy = phy_get(dev, string);
 
@@ -377,7 +377,7 @@ struct phy *phy_optional_get(struct device_d *dev, const char *string)
  *
  * Gets the phy using _of_phy_get()
  */
-struct phy *phy_get_by_index(struct device_d *dev, int index)
+struct phy *phy_get_by_index(struct device *dev, int index)
 {
 	if (!dev->of_node)
 		return ERR_PTR(-ENODEV);

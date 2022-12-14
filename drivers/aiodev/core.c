@@ -31,7 +31,7 @@ struct aiochannel *aiochannel_by_name(const char *name)
 }
 EXPORT_SYMBOL(aiochannel_by_name);
 
-struct aiochannel *aiochannel_get(struct device_d *dev, int index)
+struct aiochannel *aiochannel_get(struct device *dev, int index)
 {
 	struct of_phandle_args spec;
 	struct aiodevice *aiodev;

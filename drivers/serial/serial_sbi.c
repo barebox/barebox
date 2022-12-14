@@ -36,7 +36,7 @@ static int sbi_serial_tstc(struct console_device *cdev)
 	return priv->head != priv->tail;
 }
 
-static int sbi_serial_probe(struct device_d *dev)
+static int sbi_serial_probe(struct device *dev)
 {
 	struct sbi_serial_priv *priv;
 

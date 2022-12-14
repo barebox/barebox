@@ -9,8 +9,8 @@
 #define JR_H
 
 /* Prototypes for backend-level services exposed to APIs */
-int caam_jr_enqueue(struct device_d *dev, u32 *desc,
-		    void (*cbk)(struct device_d *dev, u32 *desc, u32 status,
+int caam_jr_enqueue(struct device *dev, u32 *desc,
+		    void (*cbk)(struct device *dev, u32 *desc, u32 status,
 				void *areq),
 		    void *areq);
 

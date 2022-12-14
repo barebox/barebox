@@ -281,7 +281,7 @@ void dw_pcie_setup(struct dw_pcie *pci)
 	int ret;
 	u32 val;
 	u32 lanes;
-	struct device_d *dev = pci->dev;
+	struct device *dev = pci->dev;
 	struct device_node *np = dev->of_node;
 
 	if (pci->version >= 0x480A || (!pci->version &&

@@ -3,7 +3,7 @@
 #define __EFI_EFI_DEVICE_H
 
 struct efi_device {
-	struct device_d dev;
+	struct device dev;
 	efi_guid_t *guids;
 	int num_guids;
 	efi_handle_t handle;
@@ -23,7 +23,7 @@ struct efi_driver {
 
 extern struct bus_type efi_bus;
 
-static inline struct efi_device *to_efi_device(struct device_d *dev)
+static inline struct efi_device *to_efi_device(struct device *dev)
 {
 	return container_of(dev, struct efi_device, dev);
 }

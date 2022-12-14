@@ -27,7 +27,7 @@ struct imx_wd_ops {
 struct imx_wd {
 	struct watchdog wd;
 	void __iomem *base;
-	struct device_d *dev;
+	struct device *dev;
 	const struct imx_wd_ops *ops;
 	struct restart_handler restart;
 	struct restart_handler restart_warm;
@@ -237,7 +237,7 @@ static int imx21_wd_init(struct imx_wd *priv)
 	return imx21_wd_init_no_warm_reset(priv);
 }
 
-static int imx_wd_probe(struct device_d *dev)
+static int imx_wd_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct imx_wd *priv;

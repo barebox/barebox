@@ -177,7 +177,7 @@ static int qt1070_getc(struct console_device *cdev)
 	return code;
 }
 
-static int qt1070_pdata_init(struct device_d *dev, struct qt1070_data *data)
+static int qt1070_pdata_init(struct device *dev, struct qt1070_data *data)
 {
 	struct qt1070_platform_data *pdata = dev->platform_data;
 	int ret;
@@ -207,7 +207,7 @@ err:
 	return ret;
 }
 
-static int qt1070_probe(struct device_d *dev)
+static int qt1070_probe(struct device *dev)
 {
 	struct console_device *cdev;
 	struct qt1070_data *data;

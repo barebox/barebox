@@ -176,7 +176,7 @@
 struct stm32_sdmmc2_priv {
 	void __iomem *base;
 	struct mci_host mci;
-	struct device_d	*dev;
+	struct device	*dev;
 	struct clk *clk;
 	struct reset_control *reset_ctl;
 	u32 clk_reg_msk;
@@ -185,7 +185,7 @@ struct stm32_sdmmc2_priv {
 
 #define to_mci_host(mci)	container_of(mci, struct stm32_sdmmc2_priv, mci)
 
-static int stm32_sdmmc2_reset(struct mci_host *mci, struct device_d *mci_dev)
+static int stm32_sdmmc2_reset(struct mci_host *mci, struct device *mci_dev)
 {
 	struct stm32_sdmmc2_priv *priv = to_mci_host(mci);
 
@@ -574,7 +574,7 @@ static void stm32_sdmmc2_set_ios(struct mci_host *mci, struct mci_ios *ios)
 static int stm32_sdmmc2_probe(struct amba_device *adev,
 			      const struct amba_id *id)
 {
-	struct device_d *dev = &adev->dev;
+	struct device *dev = &adev->dev;
 	struct device_node *np = dev->of_node;
 	struct stm32_sdmmc2_priv *priv;
 	struct mci_host *mci;

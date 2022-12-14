@@ -104,7 +104,7 @@ static void ar933x_pll_init(void __iomem *base)
 		AR933X_PLL_CLOCK_CTRL_AHB_DIV_MASK);
 }
 
-static int ar933x_clk_probe(struct device_d *dev)
+static int ar933x_clk_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *base;

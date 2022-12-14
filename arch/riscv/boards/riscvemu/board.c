@@ -35,7 +35,7 @@ static void __noreturn riscvemu_restart(struct restart_handler *rst)
 
 extern char __dtb_overlay_of_sram_start[];
 
-static int riscvemu_probe(struct device_d *dev)
+static int riscvemu_probe(struct device *dev)
 {
 	struct device_node *of_chosen;
 	struct device_node *overlay;

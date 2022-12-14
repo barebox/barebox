@@ -113,7 +113,7 @@ static int of_psci_do_fixup(struct device_node *root, void *method)
 	return of_psci_fixup(root, version, (const void *)method);
 }
 
-static int __init psci_probe(struct device_d *dev)
+static int __init psci_probe(struct device *dev)
 {
 	const char *method;
 	ulong of_version, actual_version;

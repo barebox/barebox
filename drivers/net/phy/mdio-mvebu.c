@@ -103,7 +103,7 @@ static int mvebu_mdio_write(struct mii_bus *bus, int addr, int reg, u16 data)
 	return 0;
 }
 
-static int mvebu_mdio_probe(struct device_d *dev)
+static int mvebu_mdio_probe(struct device *dev)
 {
 	struct mdio_priv *priv;
 
@@ -128,7 +128,7 @@ static int mvebu_mdio_probe(struct device_d *dev)
 	return mdiobus_register(&priv->miibus);
 }
 
-static void mvebu_mdio_remove(struct device_d *dev)
+static void mvebu_mdio_remove(struct device *dev)
 {
 	struct mdio_priv *priv = dev->priv;
 

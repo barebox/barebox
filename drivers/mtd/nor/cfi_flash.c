@@ -758,7 +758,7 @@ static void cfi_info_one(struct flash_info *info)
 	return;
 }
 
-static void cfi_info(struct device_d *dev)
+static void cfi_info(struct device *dev)
 {
 	struct cfi_priv *priv = dev->priv;
 	int i;
@@ -984,7 +984,7 @@ static int cfi_probe_one(struct flash_info *info, int num)
 	return 0;
 }
 
-static int cfi_probe(struct device_d *dev)
+static int cfi_probe(struct device *dev)
 {
 	struct cfi_priv *priv;
 	int i, ret;

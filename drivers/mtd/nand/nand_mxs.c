@@ -76,7 +76,7 @@ struct nand_timing {
 };
 
 struct mxs_nand_info {
-	struct device_d		*dev;
+	struct device		*dev;
 	struct nand_chip	nand_chip;
 	void __iomem		*io_base;
 	void __iomem		*bch_base;
@@ -1400,7 +1400,8 @@ static int mxs_nand_hw_init(struct mxs_nand_info *info)
 	return 0;
 }
 
-static void mxs_nand_probe_dt(struct device_d *dev, struct mxs_nand_info *nand_info)
+static void mxs_nand_probe_dt(struct device *dev,
+		              struct mxs_nand_info *nand_info)
 {
 	struct nand_chip *chip = &nand_info->nand_chip;
 
@@ -2157,7 +2158,7 @@ static void mxs_nand_setup_timing(struct mxs_nand_info *info)
 	}
 }
 
-static int mxs_nand_probe(struct device_d *dev)
+static int mxs_nand_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct mxs_nand_info *nand_info;

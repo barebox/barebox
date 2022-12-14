@@ -1437,7 +1437,7 @@ static struct pxa_udc memory = {
 	}
 };
 
-static int __init pxa_udc_probe(struct device_d *dev)
+static int __init pxa_udc_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct pxa_udc *udc = &memory;

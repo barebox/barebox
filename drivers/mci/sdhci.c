@@ -136,7 +136,7 @@ void sdhci_setup_data_pio(struct sdhci *sdhci, struct mci_data *data)
 void sdhci_setup_data_dma(struct sdhci *sdhci, struct mci_data *data,
 			  dma_addr_t *dma)
 {
-	struct device_d *dev = sdhci->mci->hw_dev;
+	struct device *dev = sdhci->mci->hw_dev;
 	int nbytes;
 
 	if (!data)
@@ -167,7 +167,7 @@ void sdhci_setup_data_dma(struct sdhci *sdhci, struct mci_data *data,
 int sdhci_transfer_data_dma(struct sdhci *sdhci, struct mci_data *data,
 			    dma_addr_t dma)
 {
-	struct device_d *dev = sdhci->mci->hw_dev;
+	struct device *dev = sdhci->mci->hw_dev;
 	int nbytes;
 	u32 irqstat;
 	int ret;
@@ -263,7 +263,7 @@ int sdhci_transfer_data_pio(struct sdhci *sdhci, struct mci_data *data)
 
 int sdhci_transfer_data(struct sdhci *sdhci, struct mci_data *data, dma_addr_t dma)
 {
-	struct device_d *dev = sdhci->mci->hw_dev;
+	struct device *dev = sdhci->mci->hw_dev;
 
 	if (!data)
 		return 0;

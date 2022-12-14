@@ -139,7 +139,7 @@ struct imxfb_info {
 	void __iomem *base;
 	unsigned memory_size;
 	struct fb_info info;
-	struct device_d *hw_dev;
+	struct device *hw_dev;
 	struct clk *clk;
 	void *fixed_screen;
 	unsigned fixed_screen_size;
@@ -494,7 +494,7 @@ static struct imxfb_info fbi = {
 	},
 };
 
-static int stmfb_probe(struct device_d *hw_dev)
+static int stmfb_probe(struct device *hw_dev)
 {
 	struct resource *iores;
 	struct imx_fb_platformdata *pdata = hw_dev->platform_data;

@@ -96,7 +96,7 @@ static struct clocksource efi_cs = {
 	.priority = 80,
 };
 
-static int efi_cs_probe(struct device_d *dev)
+static int efi_cs_probe(struct device *dev)
 {
 	return init_clock(&efi_cs);
 }

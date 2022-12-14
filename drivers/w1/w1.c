@@ -362,7 +362,7 @@ int w1_reset_select_slave(struct w1_device *dev)
 #define to_w1_device(d)	container_of(d, struct w1_device, dev)
 #define to_w1_driver(d) container_of(d, struct w1_driver, drv)
 
-static int w1_bus_match(struct device_d *_dev, struct driver_d *_drv)
+static int w1_bus_match(struct device *_dev, struct driver_d *_drv)
 {
 	struct w1_device *dev = to_w1_device(_dev);
 	struct w1_driver *drv = to_w1_driver(_drv);
@@ -370,7 +370,7 @@ static int w1_bus_match(struct device_d *_dev, struct driver_d *_drv)
 	return !(drv->fid == dev->fid);
 }
 
-static int w1_bus_probe(struct device_d *_dev)
+static int w1_bus_probe(struct device *_dev)
 {
 	struct w1_driver *drv = to_w1_driver(_dev->driver);
 	struct w1_device *dev = to_w1_device(_dev);
@@ -378,7 +378,7 @@ static int w1_bus_probe(struct device_d *_dev)
 	return drv->probe(dev);
 }
 
-static void w1_bus_remove(struct device_d *_dev)
+static void w1_bus_remove(struct device *_dev)
 {
 	struct w1_driver *drv = to_w1_driver(_dev->driver);
 	struct w1_device *dev = to_w1_device(_dev);
@@ -396,7 +396,7 @@ struct bus_type w1_bustype= {
 
 static bool w1_is_registered(struct w1_bus *bus, u64 rn)
 {
-	struct device_d *dev = NULL;
+	struct device *dev = NULL;
 	struct w1_device *w1_dev;
 
 	bus_for_each_device(&w1_bustype, dev) {

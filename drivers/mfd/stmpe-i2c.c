@@ -95,7 +95,7 @@ static struct cdev_operations stmpe_fops = {
 	.write	= stmpe_write,
 };
 
-static struct stmpe_platform_data *stmpe_of_probe(struct device_d *dev)
+static struct stmpe_platform_data *stmpe_of_probe(struct device *dev)
 {
 	struct stmpe_platform_data *pdata;
 	struct device_node *node;
@@ -114,7 +114,7 @@ static struct stmpe_platform_data *stmpe_of_probe(struct device_d *dev)
 	return pdata;
 }
 
-static int stmpe_probe(struct device_d *dev)
+static int stmpe_probe(struct device *dev)
 {
 	struct stmpe_platform_data *pdata = dev->platform_data;
 	struct stmpe *stmpe_dev;

@@ -233,7 +233,7 @@ static struct gpio_ops rpi_exp_gpio_ops = {
 	.set = rpi_exp_gpio_set,
 };
 
-static int rpi_exp_gpio_probe(struct device_d *dev)
+static int rpi_exp_gpio_probe(struct device *dev)
 {
 	struct rpi_exp_gpio *rpi_gpio;
 	int ret;

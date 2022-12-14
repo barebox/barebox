@@ -94,7 +94,7 @@ static struct gpio_ops gpio_latch_gpio_ops = {
 	.get_direction = gpio_latch_get_direction,
 };
 
-static int gpio_latch_probe(struct device_d *dev)
+static int gpio_latch_probe(struct device *dev)
 {
 	struct gpio_latch_priv *priv;
 	int n_latches, i, ret;

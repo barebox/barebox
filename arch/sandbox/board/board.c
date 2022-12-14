@@ -29,23 +29,23 @@ struct fb_videomode mode = {
 	.yres = 480,
 };
 
-static struct device_d tap_device = {
+static struct device tap_device = {
 	.id	  = DEVICE_ID_DYNAMIC,
 	.name     = "tap",
 };
 
-static struct device_d sdl_device = {
+static struct device sdl_device = {
 	.id	  = DEVICE_ID_DYNAMIC,
 	.name     = "sdlfb",
 	.platform_data = &mode,
 };
 
-static struct device_d devrandom_device = {
+static struct device devrandom_device = {
 	.id	  = DEVICE_ID_DYNAMIC,
 	.name     = "devrandom",
 };
 
-static int devices_init(struct device_d *dev)
+static int devices_init(struct device *dev)
 {
 	platform_device_register(&tap_device);
 

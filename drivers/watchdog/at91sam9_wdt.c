@@ -54,7 +54,7 @@ static inline bool at91sam9x_wdt_is_disabled(struct at91sam9x_wdt *wdt)
 	return readl(wdt->base + AT91_WDT_MR) & AT91_WDT_WDDIS;
 }
 
-static int at91sam9x_wdt_probe(struct device_d *dev)
+static int at91sam9x_wdt_probe(struct device *dev)
 {
 	struct at91sam9x_wdt *wdt;
 	struct resource *iores;

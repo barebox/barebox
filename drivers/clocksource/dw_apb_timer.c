@@ -97,7 +97,7 @@ static struct clocksource dw_apb_clksrc = {
 	.priority = 50,
 };
 
-static int dw_apb_timer_probe(struct device_d *dev)
+static int dw_apb_timer_probe(struct device *dev)
 {
 	struct device_node *np = dev->of_node;
 	struct resource *iores;

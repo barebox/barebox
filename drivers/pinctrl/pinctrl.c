@@ -161,7 +161,7 @@ int of_pinctrl_select_state_default(struct device_node *np)
 	return of_pinctrl_select_state(np, "default");
 }
 
-int pinctrl_select_state(struct device_d *dev, const char *name)
+int pinctrl_select_state(struct device *dev, const char *name)
 {
 	struct device_node *np;
 
@@ -172,7 +172,7 @@ int pinctrl_select_state(struct device_d *dev, const char *name)
 	return of_pinctrl_select_state(np, name);
 }
 
-int pinctrl_select_state_default(struct device_d *dev)
+int pinctrl_select_state_default(struct device *dev)
 {
 	return pinctrl_select_state(dev, "default");
 }

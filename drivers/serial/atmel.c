@@ -384,7 +384,7 @@ static int atmel_serial_set_mode(struct console_device *cdev, enum console_mode 
  */
 static int atmel_serial_init_port(struct console_device *cdev)
 {
-	struct device_d *dev = cdev->dev;
+	struct device *dev = cdev->dev;
 	struct atmel_uart_port *uart = to_atmel_uart_port(cdev);
 
 	uart->base = dev_request_mem_region_err_null(dev, 0);
@@ -412,7 +412,7 @@ static int atmel_serial_init_port(struct console_device *cdev)
 	return 0;
 }
 
-static int atmel_serial_probe(struct device_d *dev)
+static int atmel_serial_probe(struct device *dev)
 {
 	struct atmel_uart_port *uart;
 	struct console_device *cdev;

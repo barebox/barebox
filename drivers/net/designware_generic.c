@@ -16,7 +16,7 @@ static struct dw_eth_drvdata dwmac_370a_drvdata = {
 	.enh_desc = 1,
 };
 
-static int dwc_ether_probe(struct device_d *dev)
+static int dwc_ether_probe(struct device *dev)
 {
 	struct dw_eth_dev *dwc;
 

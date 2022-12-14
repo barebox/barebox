@@ -12,7 +12,7 @@
 
 struct efi_wdt_priv {
 	struct watchdog		wd;
-	struct device_d		*dev;
+	struct device		*dev;
 };
 
 #define to_efi_wdt(h) container_of(h, struct efi_wdt_priv, wd)
@@ -31,7 +31,7 @@ static int efi_wdt_set_timeout(struct watchdog *wd, unsigned timeout)
 	return 0;
 }
 
-static int efi_wdt_probe(struct device_d *dev)
+static int efi_wdt_probe(struct device *dev)
 {
 	struct efi_wdt_priv *priv;
 	int ret;

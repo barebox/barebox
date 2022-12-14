@@ -52,7 +52,8 @@ static void rn5t568_restart(struct restart_handler *rst)
 	regmap_write(rn5t568->regmap, RN5T568_SLPCNT, RN5T568_SLPCNT_SWPPWROFF);
 }
 
-static int rn5t568_reset_reason_detect(struct device_d *dev, struct regmap *regmap)
+static int rn5t568_reset_reason_detect(struct device *dev,
+				       struct regmap *regmap)
 {
 	unsigned int reg;
 	int ret;
@@ -111,7 +112,7 @@ static const struct regmap_config rn5t568_regmap_config = {
 	.max_register	= RN5T568_MAX_REG,
 };
 
-static int __init rn5t568_i2c_probe(struct device_d *dev)
+static int __init rn5t568_i2c_probe(struct device *dev)
 {
 	struct rn5t568 *pmic_instance;
 	unsigned char reg[2];

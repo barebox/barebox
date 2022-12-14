@@ -110,11 +110,11 @@ struct scmi_perf_proto_ops {
 			 u32 level, bool poll);
 	int (*level_get)(const struct scmi_protocol_handle *ph, u32 domain,
 			 u32 *level, bool poll);
-	int (*device_domain_id)(struct device_d *dev);
+	int (*device_domain_id)(struct device *dev);
 	int (*transition_latency_get)(const struct scmi_protocol_handle *ph,
-				      struct device_d *dev);
+				      struct device *dev);
 	int (*device_opps_add)(const struct scmi_protocol_handle *ph,
-			       struct device_d *dev);
+			       struct device *dev);
 	int (*freq_set)(const struct scmi_protocol_handle *ph, u32 domain,
 			unsigned long rate, bool poll);
 	int (*freq_get)(const struct scmi_protocol_handle *ph, u32 domain,
@@ -122,7 +122,7 @@ struct scmi_perf_proto_ops {
 	int (*est_power_get)(const struct scmi_protocol_handle *ph, u32 domain,
 			     unsigned long *rate, unsigned long *power);
 	bool (*fast_switch_possible)(const struct scmi_protocol_handle *ph,
-				     struct device_d *dev);
+				     struct device *dev);
 	bool (*power_scale_mw_get)(const struct scmi_protocol_handle *ph);
 };
 
@@ -549,7 +549,7 @@ struct scmi_voltage_proto_ops {
  *		       operations and a dedicated protocol handler
  */
 struct scmi_handle {
-	struct device_d *dev;
+	struct device *dev;
 	struct scmi_revision_info *version;
 
 	const void __must_check *
@@ -580,14 +580,14 @@ enum scmi_system_events {
 struct scmi_device {
 	u8 protocol_id;
 	const char *name;
-	struct device_d dev;
+	struct device dev;
 	struct scmi_handle *handle;
 };
 
 #define to_scmi_dev(d) container_of(d, struct scmi_device, dev)
 
 struct scmi_device *
-scmi_device_alloc(struct device_node *np, struct device_d *parent, int protocol,
+scmi_device_alloc(struct device_node *np, struct device *parent, int protocol,
 		  const char *name);
 void scmi_device_destroy(struct scmi_device *scmi_dev);
 

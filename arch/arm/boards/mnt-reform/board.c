@@ -9,7 +9,7 @@
 #include <init.h>
 #include <mach/bbu.h>
 
-static int mnt_reform_probe(struct device_d *dev)
+static int mnt_reform_probe(struct device *dev)
 {
 	int emmc_bbu_flag = 0;
 	int sd_bbu_flag = 0;

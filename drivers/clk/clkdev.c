@@ -129,7 +129,7 @@ static struct clk *clk_find(const char *dev_id, const char *con_id)
 	return clk;
 }
 
-static struct clk *clk_find_physbase(struct device_d *dev, const char *con_id)
+static struct clk *clk_find_physbase(struct device *dev, const char *con_id)
 {
 	struct clk_lookup *p;
 	unsigned long start;
@@ -167,7 +167,7 @@ struct clk *clk_get_sys(const char *dev_id, const char *con_id)
 }
 EXPORT_SYMBOL(clk_get_sys);
 
-struct clk *clk_get(struct device_d *dev, const char *con_id)
+struct clk *clk_get(struct device *dev, const char *con_id)
 {
 	const char *dev_id = dev ? dev_name(dev) : NULL;
 	struct clk *clk;
@@ -265,7 +265,7 @@ int clk_register_clkdev(struct clk *clk, const char *con_id,
 }
 
 int clk_add_alias(const char *alias, const char *alias_dev_name, char *id,
-	struct device_d *dev)
+	struct device *dev)
 {
 	struct clk *r = clk_get(dev, id);
 	struct clk_lookup *l;

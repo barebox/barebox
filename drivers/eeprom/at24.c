@@ -366,7 +366,7 @@ static const struct nvmem_bus at24_nvmem_bus = {
 	.read  = at24_nvmem_read,
 };
 
-static int at24_probe(struct device_d *dev)
+static int at24_probe(struct device *dev)
 {
 	struct i2c_client *client = to_i2c_client(dev);
 	struct at24_platform_data chip;

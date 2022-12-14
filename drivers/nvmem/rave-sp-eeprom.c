@@ -285,7 +285,7 @@ static const struct nvmem_bus rave_sp_eeprom_nvmem_bus = {
 	.read  = rave_sp_eeprom_read,
 };
 
-static int rave_sp_eeprom_probe(struct device_d *dev)
+static int rave_sp_eeprom_probe(struct device *dev)
 {
 	struct rave_sp *sp = dev->parent->priv;
 	struct nvmem_config config = { 0 };

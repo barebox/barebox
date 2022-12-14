@@ -8,8 +8,8 @@
 #define VBE_DISPI_IOPORT_INDEX           0x01CE
 #define VBE_DISPI_IOPORT_DATA            0x01CF
 
-struct device_d;
+struct device;
 
-int bochs_hw_probe(struct device_d *dev, void *fb_map, void __iomem *mmio);
+int bochs_hw_probe(struct device *dev, void *fb_map, void __iomem *mmio);
 
 #endif

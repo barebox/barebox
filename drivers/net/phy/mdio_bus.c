@@ -80,7 +80,7 @@ int mdio_driver_register(struct phy_driver *phydrv)
 	return register_driver(&phydrv->drv);
 }
 
-int mdiobus_detect(struct device_d *dev)
+int mdiobus_detect(struct device *dev)
 {
 	struct mii_bus *mii = to_mii_bus(dev);
 	int i, ret;
@@ -415,7 +415,7 @@ EXPORT_SYMBOL(of_mdio_find_bus);
  * Description: Given a PHY device, and a PHY driver, return 0 if
  *   the driver supports the device.  Otherwise, return 1.
  */
-static int mdio_bus_match(struct device_d *dev, struct driver_d *drv)
+static int mdio_bus_match(struct device *dev, struct driver_d *drv)
 {
 	struct phy_device *phydev = to_phy_device(dev);
 	struct phy_driver *phydrv = to_phy_driver(drv);
@@ -540,7 +540,7 @@ static void of_set_phy_supported(struct phy_device *phydev)
 	}
 }
 
-static int mdio_bus_probe(struct device_d *_dev)
+static int mdio_bus_probe(struct device *_dev)
 {
 	struct phy_device *dev = to_phy_device(_dev);
 	struct phy_driver *drv = to_phy_driver(_dev->driver);
@@ -594,7 +594,7 @@ err:
 	return ret;
 }
 
-static void mdio_bus_remove(struct device_d *_dev)
+static void mdio_bus_remove(struct device *_dev)
 {
 	struct phy_device *dev = to_phy_device(_dev);
 	struct phy_driver *drv = to_phy_driver(_dev->driver);

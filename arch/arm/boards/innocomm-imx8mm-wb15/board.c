@@ -7,7 +7,7 @@
 #include <init.h>
 #include <mach/bbu.h>
 
-static int innocomm_wb15_evk_probe(struct device_d *dev)
+static int innocomm_wb15_evk_probe(struct device *dev)
 {
 	int emmc_bbu_flag = 0;
 	int sd_bbu_flag = 0;

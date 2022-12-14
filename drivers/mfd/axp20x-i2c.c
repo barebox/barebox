@@ -21,7 +21,7 @@
 #include <linux/mfd/axp20x.h>
 #include <regmap.h>
 
-static int axp20x_i2c_probe(struct device_d *dev)
+static int axp20x_i2c_probe(struct device *dev)
 {
 	struct i2c_client *client = to_i2c_client(dev);
 	struct axp20x_dev *axp20x;

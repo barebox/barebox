@@ -147,7 +147,7 @@ static const struct of_device_id reset_simple_dt_ids[] = {
 	{ /* sentinel */ },
 };
 
-static int reset_simple_probe(struct device_d *dev)
+static int reset_simple_probe(struct device *dev)
 {
 	const struct reset_simple_devdata *devdata;
 	struct reset_simple_data *data;

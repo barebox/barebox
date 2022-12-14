@@ -320,7 +320,7 @@ struct clock_config {
 	int num_parents;
 	unsigned long flags;
 	void *cfg;
-	struct clk_hw * (*func)(struct device_d *dev,
+	struct clk_hw * (*func)(struct device *dev,
 				struct clk_hw_onecell_data *clk_data,
 				void __iomem *base, spinlock_t *lock,
 				const struct clock_config *cfg);
@@ -380,7 +380,7 @@ struct stm32_composite_cfg {
 };
 
 static struct clk_hw *
-_clk_hw_register_gate(struct device_d *dev,
+_clk_hw_register_gate(struct device *dev,
 		      struct clk_hw_onecell_data *clk_data,
 		      void __iomem *base, spinlock_t *lock,
 		      const struct clock_config *cfg)
@@ -398,7 +398,7 @@ _clk_hw_register_gate(struct device_d *dev,
 }
 
 static struct clk_hw *
-_clk_hw_register_fixed_factor(struct device_d *dev,
+_clk_hw_register_fixed_factor(struct device *dev,
 			      struct clk_hw_onecell_data *clk_data,
 			      void __iomem *base, spinlock_t *lock,
 			      const struct clock_config *cfg)
@@ -411,7 +411,7 @@ _clk_hw_register_fixed_factor(struct device_d *dev,
 }
 
 static struct clk_hw *
-_clk_hw_register_divider_table(struct device_d *dev,
+_clk_hw_register_divider_table(struct device *dev,
 			       struct clk_hw_onecell_data *clk_data,
 			       void __iomem *base, spinlock_t *lock,
 			       const struct clock_config *cfg)
@@ -431,7 +431,7 @@ _clk_hw_register_divider_table(struct device_d *dev,
 }
 
 static struct clk_hw *
-_clk_hw_register_mux(struct device_d *dev,
+_clk_hw_register_mux(struct device *dev,
 		     struct clk_hw_onecell_data *clk_data,
 		     void __iomem *base, spinlock_t *lock,
 		     const struct clock_config *cfg)
@@ -472,7 +472,7 @@ static const struct clk_ops mp1_gate_clk_ops = {
 	.is_enabled	= clk_gate_is_enabled,
 };
 
-static struct clk_hw *_get_stm32_mux(struct device_d *dev, void __iomem *base,
+static struct clk_hw *_get_stm32_mux(struct device *dev, void __iomem *base,
 				     const struct stm32_mux_cfg *cfg,
 				     spinlock_t *lock)
 {
@@ -512,7 +512,7 @@ static struct clk_hw *_get_stm32_mux(struct device_d *dev, void __iomem *base,
 	return mux_hw;
 }
 
-static struct clk_hw *_get_stm32_div(struct device_d *dev, void __iomem *base,
+static struct clk_hw *_get_stm32_div(struct device *dev, void __iomem *base,
 				     const struct stm32_div_cfg *cfg,
 				     spinlock_t *lock)
 {
@@ -533,7 +533,7 @@ static struct clk_hw *_get_stm32_div(struct device_d *dev, void __iomem *base,
 	return &div->hw;
 }
 
-static struct clk_hw *_get_stm32_gate(struct device_d *dev, void __iomem *base,
+static struct clk_hw *_get_stm32_gate(struct device *dev, void __iomem *base,
 				      const struct stm32_gate_cfg *cfg,
 				      spinlock_t *lock)
 {
@@ -573,7 +573,7 @@ static struct clk_hw *_get_stm32_gate(struct device_d *dev, void __iomem *base,
 }
 
 static struct clk_hw *
-clk_stm32_register_gate_ops(struct device_d *dev,
+clk_stm32_register_gate_ops(struct device *dev,
 			    const char *name,
 			    const char *parent_name,
 			    unsigned long flags,
@@ -609,7 +609,7 @@ clk_stm32_register_gate_ops(struct device_d *dev,
 }
 
 static struct clk_hw *
-clk_stm32_register_composite(struct device_d *dev,
+clk_stm32_register_composite(struct device *dev,
 			     const char *name, const char * const *parent_names,
 			     int num_parents, void __iomem *base,
 			     const struct stm32_composite_cfg *cfg,
@@ -852,7 +852,7 @@ static const struct clk_ops pll_ops = {
 	.get_parent	= pll_get_parent,
 };
 
-static struct clk_hw *clk_register_pll(struct device_d *dev, const char *name,
+static struct clk_hw *clk_register_pll(struct device *dev, const char *name,
 				       const char * const *parent_names,
 				       int num_parents,
 				       void __iomem *reg,
@@ -989,7 +989,7 @@ static const struct clk_ops timer_ker_ops = {
 
 };
 
-static struct clk_hw *clk_register_cktim(struct device_d *dev, const char *name,
+static struct clk_hw *clk_register_cktim(struct device *dev, const char *name,
 					 const char *parent_name,
 					 unsigned long flags,
 					 void __iomem *apbdiv,
@@ -1030,7 +1030,7 @@ struct stm32_pll_cfg {
 	u32 muxoff;
 };
 
-static struct clk_hw *_clk_register_pll(struct device_d *dev,
+static struct clk_hw *_clk_register_pll(struct device *dev,
 					struct clk_hw_onecell_data *clk_data,
 					void __iomem *base, spinlock_t *lock,
 					const struct clock_config *cfg)
@@ -1049,7 +1049,7 @@ struct stm32_cktim_cfg {
 	u32 offset_timpre;
 };
 
-static struct clk_hw *_clk_register_cktim(struct device_d *dev,
+static struct clk_hw *_clk_register_cktim(struct device *dev,
 					  struct clk_hw_onecell_data *clk_data,
 					  void __iomem *base, spinlock_t *lock,
 					  const struct clock_config *cfg)
@@ -1062,7 +1062,7 @@ static struct clk_hw *_clk_register_cktim(struct device_d *dev,
 }
 
 static struct clk_hw *
-_clk_stm32_register_gate(struct device_d *dev,
+_clk_stm32_register_gate(struct device *dev,
 			 struct clk_hw_onecell_data *clk_data,
 			 void __iomem *base, spinlock_t *lock,
 			 const struct clock_config *cfg)
@@ -1077,7 +1077,7 @@ _clk_stm32_register_gate(struct device_d *dev,
 }
 
 static struct clk_hw *
-_clk_stm32_register_composite(struct device_d *dev,
+_clk_stm32_register_composite(struct device *dev,
 			      struct clk_hw_onecell_data *clk_data,
 			      void __iomem *base, spinlock_t *lock,
 			      const struct clock_config *cfg)
@@ -2068,7 +2068,7 @@ static const struct of_device_id stm32mp1_match_data[] = {
 	{ }
 };
 
-static int stm32_register_hw_clk(struct device_d *dev,
+static int stm32_register_hw_clk(struct device *dev,
 				 struct clk_hw_onecell_data *clk_data,
 				 void __iomem *base, spinlock_t *lock,
 				 const struct clock_config *cfg)
@@ -2178,7 +2178,7 @@ static const struct reset_control_ops stm32_reset_ops = {
 	.status		= stm32_reset_status,
 };
 
-static int stm32_rcc_reset_init(struct device_d *dev, void __iomem *base,
+static int stm32_rcc_reset_init(struct device *dev, void __iomem *base,
 				const struct of_device_id *match)
 {
 	const struct stm32_rcc_match_data *data = match->data;
@@ -2197,7 +2197,7 @@ static int stm32_rcc_reset_init(struct device_d *dev, void __iomem *base,
 	return reset_controller_register(&reset_data->rcdev);
 }
 
-static int stm32_rcc_clock_init(struct device_d *dev, void __iomem *base,
+static int stm32_rcc_clock_init(struct device *dev, void __iomem *base,
 				const struct of_device_id *match)
 {
 	const struct stm32_rcc_match_data *data = match->data;
@@ -2236,7 +2236,7 @@ static int stm32_rcc_clock_init(struct device_d *dev, void __iomem *base,
 	return of_clk_add_hw_provider(dev_of_node(dev), of_clk_hw_onecell_get, clk_data);
 }
 
-static int stm32_rcc_init(struct device_d *dev, void __iomem *base,
+static int stm32_rcc_init(struct device *dev, void __iomem *base,
 			  const struct of_device_id *match_data)
 {
 	const struct of_device_id *match;
@@ -2265,7 +2265,7 @@ static int stm32_rcc_init(struct device_d *dev, void __iomem *base,
 	return 0;
 }
 
-static int stm32mp1_rcc_init(struct device_d *dev)
+static int stm32mp1_rcc_init(struct device *dev)
 {
 	void __iomem *base;
 	int ret;
@@ -2284,7 +2284,7 @@ static int stm32mp1_rcc_init(struct device_d *dev)
 	return 0;
 }
 
-static int get_clock_deps(struct device_d *dev)
+static int get_clock_deps(struct device *dev)
 {
 	static const char * const clock_deps_name[] = {
 		"hsi", "hse", "csi", "lsi", "lse",
@@ -2314,7 +2314,7 @@ static int get_clock_deps(struct device_d *dev)
 	return 0;
 }
 
-static int stm32mp1_rcc_clocks_probe(struct device_d *dev)
+static int stm32mp1_rcc_clocks_probe(struct device *dev)
 {
 	int ret = get_clock_deps(dev);
 
@@ -2324,7 +2324,7 @@ static int stm32mp1_rcc_clocks_probe(struct device_d *dev)
 	return ret;
 }
 
-static void stm32mp1_rcc_clocks_remove(struct device_d *dev)
+static void stm32mp1_rcc_clocks_remove(struct device *dev)
 {
 	struct device_node *child, *np = dev_of_node(dev);
 

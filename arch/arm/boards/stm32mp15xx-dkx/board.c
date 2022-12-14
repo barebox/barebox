@@ -3,7 +3,7 @@
 #include <init.h>
 #include <mach/bbu.h>
 
-static int dkx_probe(struct device_d *dev)
+static int dkx_probe(struct device *dev)
 {
 	const void *model;
 

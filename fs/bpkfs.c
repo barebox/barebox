@@ -127,7 +127,7 @@ static struct bpkfs_handle_data *bpkfs_get_by_type(
 	return NULL;
 }
 
-static int bpkfs_open(struct device_d *dev, FILE *f, const char *filename)
+static int bpkfs_open(struct device *dev, FILE *f, const char *filename)
 {
 	struct bpkfs_handle *priv = dev->priv;
 	struct bpkfs_handle_data *d;
@@ -171,7 +171,7 @@ out:
 	return ret;
 }
 
-static int bpkfs_close(struct device_d *dev, FILE *file)
+static int bpkfs_close(struct device *dev, FILE *file)
 {
 	struct bpkfs_handle_data *d = file->priv;
 
@@ -180,7 +180,8 @@ static int bpkfs_close(struct device_d *dev, FILE *file)
 	return 0;
 }
 
-static int bpkfs_read(struct device_d *dev, FILE *file, void *buf, size_t insize)
+static int bpkfs_read(struct device *dev, FILE *file, void *buf,
+		      size_t insize)
 {
 	struct bpkfs_handle_data *d = file->priv;
 
@@ -192,7 +193,7 @@ static int bpkfs_read(struct device_d *dev, FILE *file, void *buf, size_t insize
 	}
 }
 
-static int bpkfs_lseek(struct device_d *dev, FILE *file, loff_t pos)
+static int bpkfs_lseek(struct device *dev, FILE *file, loff_t pos)
 {
 	struct bpkfs_handle_data *d = file->priv;
 
@@ -211,7 +212,7 @@ struct somfy_readdir {
 	DIR dir;
 };
 
-static DIR *bpkfs_opendir(struct device_d *dev, const char *pathname)
+static DIR *bpkfs_opendir(struct device *dev, const char *pathname)
 {
 	struct bpkfs_handle *priv = dev->priv;
 	struct somfy_readdir *sdir;
@@ -242,7 +243,7 @@ static DIR *bpkfs_opendir(struct device_d *dev, const char *pathname)
 	return dir;
 }
 
-static struct dirent *bpkfs_readdir(struct device_d *dev, DIR *dir)
+static struct dirent *bpkfs_readdir(struct device *dev, DIR *dir)
 {
 	struct bpkfs_handle *priv = dev->priv;
 	struct somfy_readdir *sdir = dir->priv;
@@ -269,7 +270,7 @@ static struct dirent *bpkfs_readdir(struct device_d *dev, DIR *dir)
 	return &dir->d;
 }
 
-static int bpkfs_closedir(struct device_d *dev, DIR *dir)
+static int bpkfs_closedir(struct device *dev, DIR *dir)
 {
 	struct somfy_readdir *sdir = dir->priv;
 
@@ -277,7 +278,8 @@ static int bpkfs_closedir(struct device_d *dev, DIR *dir)
 	return 0;
 }
 
-static int bpkfs_stat(struct device_d *dev, const char *filename, struct stat *s)
+static int bpkfs_stat(struct device *dev, const char *filename,
+		      struct stat *s)
 {
 	struct bpkfs_handle *priv = dev->priv;
 	struct bpkfs_handle_data *d;
@@ -335,7 +337,7 @@ static void bpkfs_remove_data(struct bpkfs_handle_hw *h)
 	}
 }
 
-static void bpkfs_remove(struct device_d *dev)
+static void bpkfs_remove(struct device *dev)
 {
 	struct bpkfs_handle *priv = dev->priv;
 	struct bpkfs_handle_hw *h, *tmp;
@@ -349,7 +351,7 @@ static void bpkfs_remove(struct device_d *dev)
 	free(priv);
 }
 
-static int bpkfs_probe(struct device_d *dev)
+static int bpkfs_probe(struct device *dev)
 {
 	struct fs_device_d *fsdev = dev_to_fs_device(dev);
 	struct bpkfs_handle *priv;

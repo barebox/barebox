@@ -175,7 +175,7 @@ static void __maybe_unused imx28_detect_reset_source(const struct imx28_wd *p)
 	reset_source_set(RESET_RST);
 }
 
-static int imx28_wd_probe(struct device_d *dev)
+static int imx28_wd_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct imx28_wd *priv;
@@ -213,7 +213,7 @@ on_error:
 	return rc;
 }
 
-static void imx28_wd_remove(struct device_d *dev)
+static void imx28_wd_remove(struct device *dev)
 {
 	struct imx28_wd *priv= dev->priv;
 	watchdog_deregister(&priv->wd);

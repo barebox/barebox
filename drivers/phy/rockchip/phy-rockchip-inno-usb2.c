@@ -166,7 +166,7 @@ struct rockchip_usb2phy {
 	struct phy_provider *provider;
 	struct clk *clk480m;
 	struct clk_hw clk480m_hw;
-	struct device_d *dev;
+	struct device *dev;
 	struct clk *clk;
 };
 
@@ -255,8 +255,8 @@ static int rockchip_usb2phy_power_off(struct phy *phy)
 	return 0;
 }
 
-static struct phy *rockchip_usb2phy_of_xlate(struct device_d *dev,
-				     struct of_phandle_args *args)
+static struct phy *rockchip_usb2phy_of_xlate(struct device *dev,
+					     struct of_phandle_args *args)
 {
 	struct rockchip_usb2phy *rphy = dev->priv;
 	struct device_node *phynode = args->np;
@@ -379,7 +379,7 @@ err_ret:
 	return ret;
 }
 
-static int rockchip_usb2phy_probe(struct device_d *dev)
+static int rockchip_usb2phy_probe(struct device *dev)
 {
 	const struct rockchip_usb2phy_cfg *phy_cfgs;
 	struct rockchip_usb2phy *rphy;
@@ -431,7 +431,7 @@ static int rockchip_usb2phy_probe(struct device_d *dev)
 	for_each_child_of_node(np, child) {
 		struct rockchip_usb2phy_phy *p;
 		struct phy *phy;
-		struct device_d *phydev;
+		struct device *phydev;
 
 		if (!strcmp(child->name, "host-port")) {
 			port = USB2PHY_PORT_OTG;

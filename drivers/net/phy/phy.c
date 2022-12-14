@@ -330,7 +330,7 @@ struct phy_device *of_phy_register_fixed_link(struct device_node *np,
 
 static struct phy_device *of_mdio_find_phy(struct eth_device *edev)
 {
-	struct device_d *dev;
+	struct device *dev;
 	struct device_node *phy_node;
 	struct mii_bus *bus;
 	int addr;

@@ -154,7 +154,8 @@ static int socfpga_gen10_set_phy_mode(struct socfpga_dwc_dev *dwc_dev)
 }
 
 
-static int socfpga_dwc_probe_dt(struct device_d *dev, struct socfpga_dwc_dev *priv)
+static int socfpga_dwc_probe_dt(struct device *dev,
+				struct socfpga_dwc_dev *priv)
 {
 	u32 reg_offset, reg_shift;
 	int ret;
@@ -186,7 +187,7 @@ static int socfpga_dwc_probe_dt(struct device_d *dev, struct socfpga_dwc_dev *pr
 	return 0;
 }
 
-static int socfpga_dwc_ether_probe(struct device_d *dev)
+static int socfpga_dwc_ether_probe(struct device *dev)
 {
 	struct socfpga_dwc_dev *dwc_dev;
 	struct dw_eth_dev *priv;

@@ -132,7 +132,7 @@ static int ar8327n_phy_is_link_alive(struct phy_device *phydev, int phy_addr)
 
 static int ar8327n_phy_setup(struct phy_device *phydev)
 {
-	struct device_d *dev = &phydev->dev;
+	struct device *dev = &phydev->dev;
 	int phy_addr;
 
 	/* start auto negotiation on each phy */
@@ -194,7 +194,7 @@ static int ar8327n_get_link(struct phy_device *phydev)
 
 static int ar8327n_config_init(struct phy_device *phydev)
 {
-	struct device_d *dev = &phydev->dev;
+	struct device *dev = &phydev->dev;
 	int phy_addr = 0;
 
 	if (phydev->interface != PHY_INTERFACE_MODE_RGMII_TXID)

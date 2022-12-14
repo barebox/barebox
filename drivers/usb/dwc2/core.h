@@ -460,7 +460,7 @@ enum dwc2_ep0_state {
 #define DWC2_CTRL_BUFF_SIZE 8
 
 struct dwc2 {
-	struct device_d *dev;
+	struct device *dev;
 	void __iomem *regs;
 	enum usb_dr_mode dr_mode;
 	struct dwc2_hw_params hw_params;

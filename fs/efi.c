@@ -128,7 +128,7 @@ static wchar_t *path_to_efi(const char *path)
 	return ret;
 }
 
-static int efifs_create(struct device_d *dev, const char *pathname, mode_t mode)
+static int efifs_create(struct device *dev, const char *pathname, mode_t mode)
 {
 	struct efifs_priv *priv = dev->priv;
 	wchar_t *efi_path = path_to_efi(pathname);
@@ -151,7 +151,7 @@ static int efifs_create(struct device_d *dev, const char *pathname, mode_t mode)
 	return 0;
 }
 
-static int efifs_unlink(struct device_d *dev, const char *pathname)
+static int efifs_unlink(struct device *dev, const char *pathname)
 {
 	struct efifs_priv *priv = dev->priv;
 	wchar_t *efi_path = path_to_efi(pathname);
@@ -173,7 +173,7 @@ static int efifs_unlink(struct device_d *dev, const char *pathname)
 	return 0;
 }
 
-static int efifs_mkdir(struct device_d *dev, const char *pathname)
+static int efifs_mkdir(struct device *dev, const char *pathname)
 {
 	struct efifs_priv *priv = dev->priv;
 	wchar_t *efi_path = path_to_efi(pathname);
@@ -196,12 +196,12 @@ static int efifs_mkdir(struct device_d *dev, const char *pathname)
 	return 0;
 }
 
-static int efifs_rmdir(struct device_d *dev, const char *pathname)
+static int efifs_rmdir(struct device *dev, const char *pathname)
 {
 	return efifs_unlink(dev, pathname);
 }
 
-static int efifs_open(struct device_d *dev, FILE *f, const char *filename)
+static int efifs_open(struct device *dev, FILE *f, const char *filename)
 {
 	struct efifs_priv *priv = dev->priv;
 	efi_status_t efiret;
@@ -249,7 +249,7 @@ out:
 	return ret;
 }
 
-static int efifs_close(struct device_d *dev, FILE *f)
+static int efifs_close(struct device *dev, FILE *f)
 {
 	struct efifs_file *ufile = f->priv;
 
@@ -260,7 +260,7 @@ static int efifs_close(struct device_d *dev, FILE *f)
 	return 0;
 }
 
-static int efifs_read(struct device_d *_dev, FILE *f, void *buf, size_t insize)
+static int efifs_read(struct device *_dev, FILE *f, void *buf, size_t insize)
 {
 	struct efifs_file *ufile = f->priv;
 	efi_status_t efiret;
@@ -274,7 +274,8 @@ static int efifs_read(struct device_d *_dev, FILE *f, void *buf, size_t insize)
 	return bufsize;
 }
 
-static int efifs_write(struct device_d *_dev, FILE *f, const void *buf, size_t insize)
+static int efifs_write(struct device *_dev, FILE *f, const void *buf,
+		       size_t insize)
 {
 	struct efifs_file *ufile = f->priv;
 	efi_status_t efiret;
@@ -289,7 +290,7 @@ static int efifs_write(struct device_d *_dev, FILE *f, const void *buf, size_t i
 	return bufsize;
 }
 
-static int efifs_lseek(struct device_d *dev, FILE *f, loff_t pos)
+static int efifs_lseek(struct device *dev, FILE *f, loff_t pos)
 {
 	struct efifs_file *ufile = f->priv;
 	efi_status_t efiret;
@@ -302,7 +303,7 @@ static int efifs_lseek(struct device_d *dev, FILE *f, loff_t pos)
 	return 0;
 }
 
-static int efifs_truncate(struct device_d *dev, FILE *f, loff_t size)
+static int efifs_truncate(struct device *dev, FILE *f, loff_t size)
 {
 	struct efifs_file *ufile = f->priv;
 	efi_status_t efiret;
@@ -336,7 +337,7 @@ out:
 	return ret;
 }
 
-static DIR *efifs_opendir(struct device_d *dev, const char *pathname)
+static DIR *efifs_opendir(struct device *dev, const char *pathname)
 {
 	struct efifs_priv *priv = dev->priv;
 	efi_status_t efiret;
@@ -356,7 +357,7 @@ static DIR *efifs_opendir(struct device_d *dev, const char *pathname)
 	return &udir->dir;
 }
 
-static struct dirent *efifs_readdir(struct device_d *dev, DIR *dir)
+static struct dirent *efifs_readdir(struct device *dev, DIR *dir)
 {
 	struct efifs_dir *udir = container_of(dir, struct efifs_dir, dir);
 	efi_status_t efiret;
@@ -375,7 +376,7 @@ static struct dirent *efifs_readdir(struct device_d *dev, DIR *dir)
 	return &dir->d;
 }
 
-static int efifs_closedir(struct device_d *dev, DIR *dir)
+static int efifs_closedir(struct device *dev, DIR *dir)
 {
 	struct efifs_dir *udir = container_of(dir, struct efifs_dir, dir);
 
@@ -386,7 +387,8 @@ static int efifs_closedir(struct device_d *dev, DIR *dir)
 	return 0;
 }
 
-static int efifs_stat(struct device_d *dev, const char *filename, struct stat *s)
+static int efifs_stat(struct device *dev, const char *filename,
+		      struct stat *s)
 {
 	struct efifs_priv *priv = dev->priv;
 	wchar_t *efi_path;
@@ -435,25 +437,25 @@ out_free:
 	return ret;
 }
 
-static int efifs_symlink(struct device_d *dev, const char *pathname,
-		       const char *newpath)
+static int efifs_symlink(struct device *dev, const char *pathname,
+			 const char *newpath)
 {
 	return -EROFS;
 }
 
-static int efifs_readlink(struct device_d *dev, const char *pathname,
-			char *buf, size_t bufsiz)
+static int efifs_readlink(struct device *dev, const char *pathname,
+			  char *buf, size_t bufsiz)
 {
 	return -ENOENT;
 }
 
-static int efifs_probe(struct device_d *dev)
+static int efifs_probe(struct device *dev)
 {
 	struct fs_device_d *fsdev = dev_to_fs_device(dev);
 	struct efifs_priv *priv;
 	efi_status_t efiret;
 	struct efi_file_handle *file;
-	struct device_d *efi = get_device_by_name(fsdev->backingstore);
+	struct device *efi = get_device_by_name(fsdev->backingstore);
 	struct efi_device *udev = container_of(efi, struct efi_device, dev);
 
 	priv = xzalloc(sizeof(struct efifs_priv));
@@ -472,7 +474,7 @@ static int efifs_probe(struct device_d *dev)
 	return 0;
 }
 
-static void efifs_remove(struct device_d *dev)
+static void efifs_remove(struct device *dev)
 {
 	free(dev->priv);
 }

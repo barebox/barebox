@@ -173,7 +173,7 @@ static int cadence_clocksource_clock_change(struct notifier_block *nb,
 	return 0;
 }
 
-static int cadence_serial_probe(struct device_d *dev)
+static int cadence_serial_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct console_device *cdev;

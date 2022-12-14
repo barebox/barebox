@@ -125,7 +125,7 @@
  */
 struct zynq_qspi {
 	struct spi_controller ctlr;
-	struct device_d *dev;
+	struct device *dev;
 	void __iomem *regs;
 	struct clk *refclk;
 	struct clk *pclk;
@@ -539,7 +539,7 @@ static const struct spi_controller_mem_ops zynq_qspi_mem_ops = {
 	.exec_op = zynq_qspi_exec_mem_op,
 };
 
-static int zynq_qspi_probe(struct device_d *dev)
+static int zynq_qspi_probe(struct device *dev)
 {
 	struct device_node *np = dev->of_node;
 	struct spi_controller *ctlr;

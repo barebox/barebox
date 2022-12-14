@@ -58,7 +58,7 @@ enum xilinx_byte_order {
 
 struct fpgamgr {
 	struct firmware_handler fh;
-	struct device_d dev;
+	struct device dev;
 	const struct zynqmp_eemi_ops *eemi_ops;
 	int programmed;
 	char *buf;
@@ -158,8 +158,8 @@ static int get_header_length(const char *header, size_t size)
 	return -EINVAL;
 }
 
-static void zynqmp_fpga_show_header(const struct device_d *dev,
-			 struct bs_header *header, size_t size)
+static void zynqmp_fpga_show_header(const struct device *dev,
+				    struct bs_header *header, size_t size)
 {
 	struct bs_header_entry *entry;
 	unsigned int i;
@@ -326,7 +326,7 @@ static int programmed_get(struct param_d *p, void *priv)
 	return 0;
 }
 
-static int zynqmp_fpga_probe(struct device_d *dev)
+static int zynqmp_fpga_probe(struct device *dev)
 {
 	struct fpgamgr *mgr;
 	struct firmware_handler *fh;

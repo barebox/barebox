@@ -481,7 +481,7 @@ static int smc911x_init_dev(struct eth_device *edev)
 	return 0;
 }
 
-static int smc911x_probe(struct device_d *dev)
+static int smc911x_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct eth_device *edev;

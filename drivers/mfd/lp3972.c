@@ -63,7 +63,7 @@ static struct cdev_operations lp_fops = {
 	.read	= lp_read,
 };
 
-static int lp_probe(struct device_d *dev)
+static int lp_probe(struct device *dev)
 {
 	if (lp_dev)
 		return -EBUSY;

@@ -214,7 +214,7 @@ struct tegra_pcie_soc_data {
 };
 
 struct tegra_pcie {
-	struct device_d *dev;
+	struct device *dev;
 	struct pci_controller pci;
 
 	void __iomem *pads;
@@ -827,7 +827,7 @@ static int tegra_pcie_resets_get(struct tegra_pcie *pcie)
 
 static int tegra_pcie_get_resources(struct tegra_pcie *pcie)
 {
-	struct device_d *dev = pcie->dev;
+	struct device *dev = pcie->dev;
 	int err;
 
 	err = tegra_pcie_clocks_get(pcie);
@@ -1231,7 +1231,7 @@ static __maybe_unused struct of_device_id tegra_pcie_of_match[] = {
 	},
 };
 
-static int tegra_pcie_probe(struct device_d *dev)
+static int tegra_pcie_probe(struct device *dev)
 {
 	struct tegra_pcie *pcie;
 	int err;

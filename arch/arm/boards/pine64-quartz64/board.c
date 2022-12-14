@@ -7,7 +7,7 @@ struct quartz64_model {
 	const char *shortname;
 };
 
-static int quartz64_probe(struct device_d *dev)
+static int quartz64_probe(struct device *dev)
 {
 	const struct quartz64_model *model;
 

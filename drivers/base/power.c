@@ -205,7 +205,7 @@ static int genpd_power_on(struct generic_pm_domain *genpd, unsigned int depth)
 	return 0;
 }
 
-static int __genpd_dev_pm_attach(struct device_d *dev, struct device_node *np,
+static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
 				 unsigned int index, bool power_on)
 {
 	struct of_phandle_args pd_args;
@@ -250,7 +250,7 @@ static int __genpd_dev_pm_attach(struct device_d *dev, struct device_node *np,
  * found or turned on, then return -EPROBE_DEFER to ensure that the device is
  * not probed and to re-try again later.
  */
-int genpd_dev_pm_attach(struct device_d *dev)
+int genpd_dev_pm_attach(struct device *dev)
 {
 	if (!dev->of_node)
 		return 0;

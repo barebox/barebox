@@ -73,7 +73,7 @@ static void orion_nand_read_buf(struct nand_chip *chip, uint8_t *buf, int len)
 		buf[i++] = readb(io_base);
 }
 
-static int orion_nand_probe(struct device_d *dev)
+static int orion_nand_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct device_node *dev_node = dev->of_node;

@@ -86,7 +86,8 @@ static inline u32 stm32_gpio_get_alt(u32 function)
 	return 0;
 }
 
-static int __stm32_pinctrl_set_state(struct device_d *dev, struct device_node *pins)
+static int __stm32_pinctrl_set_state(struct device *dev,
+				     struct device_node *pins)
 {
 	int ret;
 
@@ -178,7 +179,7 @@ static int __stm32_pinctrl_set_state(struct device_d *dev, struct device_node *p
 static int stm32_pinctrl_set_state(struct pinctrl_device *pdev, struct device_node *np)
 {
 	struct stm32_pinctrl *pinctrl = to_stm32_pinctrl(pdev);
-	struct device_d *dev = pdev->dev;
+	struct device *dev = pdev->dev;
 	struct device_node *pins;
 	void *prop;
 	int ret;
@@ -268,9 +269,9 @@ static struct gpio_ops stm32_gpio_ops = {
 
 static int stm32_gpiochip_add(struct stm32_gpio_bank *bank,
 			      struct device_node *np,
-			      struct device_d *parent)
+			      struct device *parent)
 {
-	struct device_d *dev;
+	struct device *dev;
 	struct resource *iores;
 	enum { PINCTRL_PHANDLE, GPIOCTRL_OFFSET, PINCTRL_OFFSET, PINCOUNT, GPIO_RANGE_NCELLS };
 	const __be32 *gpio_ranges;
@@ -339,7 +340,7 @@ static struct pinctrl_ops stm32_pinctrl_ops = {
 	.set_state = stm32_pinctrl_set_state,
 };
 
-static int stm32_pinctrl_probe(struct device_d *dev)
+static int stm32_pinctrl_probe(struct device *dev)
 {
 	struct stm32_pinctrl *pinctrl;
 	unsigned nbanks = 0;

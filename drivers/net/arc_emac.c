@@ -381,7 +381,7 @@ static int arc_emac_mdio_write(struct mii_bus *bus, int phy_addr, int reg_num,
 
 #define DEFAULT_EMAC_CLOCK_FREQUENCY 50000000UL;
 
-static int arc_emac_probe(struct device_d *dev)
+static int arc_emac_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct eth_device *edev;

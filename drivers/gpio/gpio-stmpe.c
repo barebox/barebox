@@ -105,7 +105,7 @@ static struct gpio_ops stmpe_gpio_ops = {
 	.set = stmpe_gpio_set_value,
 };
 
-static int stmpe_gpio_probe(struct device_d *dev)
+static int stmpe_gpio_probe(struct device *dev)
 {
 	struct stmpe_gpio_chip *stmpegpio;
 	struct stmpe_client_info *ci;

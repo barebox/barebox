@@ -33,7 +33,7 @@ static inline bool is_fused(u32 val, u32 bitmask)
 	return bitmask && (val & bitmask) == bitmask;
 }
 
-int imx8m_feat_ctrl_init(struct device_d *dev, u32 tester4,
+int imx8m_feat_ctrl_init(struct device *dev, u32 tester4,
 			 const struct imx8m_featctrl_data *data)
 {
 	unsigned long *features;

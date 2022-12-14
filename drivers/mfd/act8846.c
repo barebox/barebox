@@ -110,7 +110,7 @@ static struct cdev_operations act8846_fops = {
 	.write	= act8846_write,
 };
 
-static int act8846_probe(struct device_d *dev)
+static int act8846_probe(struct device *dev)
 {
 	if (act8846_dev)
 		return -EBUSY;

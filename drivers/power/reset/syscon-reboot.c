@@ -32,7 +32,7 @@ static void __noreturn syscon_restart_handle(struct restart_handler *this)
 	panic("Unable to restart system\n");
 }
 
-static int syscon_reboot_probe(struct device_d *dev)
+static int syscon_reboot_probe(struct device *dev)
 {
 	struct syscon_reboot_context *ctx;
 	int mask_err, value_err;

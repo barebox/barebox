@@ -106,7 +106,7 @@ static int imx_thermal_read(struct aiochannel *chan, int *val)
 	return 0;
 }
 
-static int imx_thermal_probe(struct device_d *dev)
+static int imx_thermal_probe(struct device *dev)
 {
 	uint32_t ocotp_ana1;
 	struct device_node *node;

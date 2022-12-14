@@ -284,7 +284,7 @@ static int at91_ether_init(struct eth_device *edev)
 	return 0;
 }
 
-static int at91_ether_probe(struct device_d *dev)
+static int at91_ether_probe(struct device *dev)
 {
 	unsigned int mac_cfg;
 	struct ether_device *ether_dev;

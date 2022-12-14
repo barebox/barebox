@@ -11,7 +11,7 @@
 #include <of.h>
 #include <pm_domain.h>
 
-static int platform_probe(struct device_d *dev)
+static int platform_probe(struct device *dev)
 {
 	int ret;
 
@@ -22,7 +22,7 @@ static int platform_probe(struct device_d *dev)
 	return dev->driver->probe(dev);
 }
 
-static void platform_remove(struct device_d *dev)
+static void platform_remove(struct device *dev)
 {
 	if (dev->driver->remove)
 		dev->driver->remove(dev);
@@ -35,7 +35,7 @@ int platform_driver_register(struct driver_d *drv)
 	return register_driver(drv);
 }
 
-int platform_device_register(struct device_d *new_device)
+int platform_device_register(struct device *new_device)
 {
 	new_device->bus = &platform_bus;
 

@@ -262,7 +262,7 @@ static int mvebu_get_target_attr(struct device_node *np, int devfn,
 	return -ENOENT;
 }
 
-static struct mvebu_pcie *mvebu_pcie_port_probe(struct device_d *dev,
+static struct mvebu_pcie *mvebu_pcie_port_probe(struct device *dev,
 						struct device_node *np)
 {
 	struct mvebu_pcie *pcie;
@@ -396,7 +396,7 @@ static struct of_device_id mvebu_pcie_dt_ids[] = {
 	{ },
 };
 
-static int mvebu_pcie_probe(struct device_d *dev)
+static int mvebu_pcie_probe(struct device *dev)
 {
 	struct device_node *np = dev->of_node;
 	const struct of_device_id *match = of_match_node(mvebu_pcie_dt_ids, np);

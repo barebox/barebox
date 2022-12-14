@@ -227,7 +227,7 @@ static struct gpio_ops sx150x_gpio_ops = {
 	.set		   = sx150x_gpio_set,
 };
 
-static int sx150x_probe(struct device_d *dev)
+static int sx150x_probe(struct device *dev)
 {
 	struct i2c_client *client = to_i2c_client(dev);
 	struct sx150x_gpio *sx150x;

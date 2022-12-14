@@ -1059,7 +1059,7 @@ static struct i2c_bus_recovery_info omap_i2c_bus_recovery_info = {
 };
 
 static int __init
-i2c_omap_probe(struct device_d *pdev)
+i2c_omap_probe(struct device *pdev)
 {
 	struct resource *iores;
 	struct omap_i2c_struct	*i2c_omap;

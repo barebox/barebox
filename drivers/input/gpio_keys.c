@@ -31,7 +31,7 @@ struct gpio_keys {
 
 	struct poller_struct poller;
 	struct input_device input;
-	struct device_d *dev;
+	struct device *dev;
 };
 
 static inline struct gpio_keys *
@@ -66,7 +66,7 @@ static void gpio_key_poller(struct poller_struct *poller)
 	}
 }
 
-static int gpio_keys_probe_pdata(struct gpio_keys *gk, struct device_d *dev)
+static int gpio_keys_probe_pdata(struct gpio_keys *gk, struct device *dev)
 {
 	struct gpio_keys_platform_data *pdata;
 	int i;
@@ -92,7 +92,7 @@ static int gpio_keys_probe_pdata(struct gpio_keys *gk, struct device_d *dev)
 	return 0;
 }
 
-static int gpio_keys_probe_dt(struct gpio_keys *gk, struct device_d *dev)
+static int gpio_keys_probe_dt(struct gpio_keys *gk, struct device *dev)
 {
 	struct device_node *npkey, *np = dev->of_node;
 	int i = 0, ret;
@@ -131,7 +131,7 @@ static int gpio_keys_probe_dt(struct gpio_keys *gk, struct device_d *dev)
 	return 0;
 }
 
-static int __init gpio_keys_probe(struct device_d *dev)
+static int __init gpio_keys_probe(struct device *dev)
 {
 	int ret, i, gpio;
 	struct gpio_keys *gk;

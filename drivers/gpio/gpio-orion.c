@@ -78,7 +78,7 @@ static struct gpio_ops orion_gpio_ops = {
 	.set = orion_gpio_set_value,
 };
 
-static int orion_gpio_probe(struct device_d *dev)
+static int orion_gpio_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct orion_gpio_chip *gpio;

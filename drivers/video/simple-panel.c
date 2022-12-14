@@ -17,7 +17,7 @@
 #include <i2c/i2c.h>
 
 struct simple_panel {
-	struct device_d *dev;
+	struct device *dev;
 	struct vpl vpl;
 	int enable_gpio;
 	int enable_active_high;
@@ -129,7 +129,7 @@ static int simple_panel_ioctl(struct vpl *vpl, unsigned int port,
 	}
 }
 
-static int simple_panel_probe(struct device_d *dev)
+static int simple_panel_probe(struct device *dev)
 {
 	struct simple_panel *panel;
 	struct device_node *node = dev->of_node;

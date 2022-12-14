@@ -412,7 +412,7 @@ static void efi_set_mode(struct efi_console_priv *priv)
 				       priv->mode_names, n, priv);
 }
 
-static int efi_console_probe(struct device_d *dev)
+static int efi_console_probe(struct device *dev)
 {
 	efi_guid_t inex_guid = EFI_SIMPLE_TEXT_INPUT_EX_PROTOCOL_GUID;
 	struct efi_simple_text_input_ex_protocol *inex;

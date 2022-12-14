@@ -56,7 +56,7 @@ static struct dw_eth_drvdata starfive_drvdata = {
 	.fix_mac_speed = dwmac_fixed_speed,
 };
 
-static int starfive_dwc_ether_probe(struct device_d *dev)
+static int starfive_dwc_ether_probe(struct device *dev)
 {
 	struct dw_eth_dev *dwc;
 	struct regmap *regmap;

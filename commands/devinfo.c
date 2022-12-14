@@ -6,9 +6,9 @@
 #include <complete.h>
 #include <driver.h>
 
-static int do_devinfo_subtree(struct device_d *dev, int depth)
+static int do_devinfo_subtree(struct device *dev, int depth)
 {
-	struct device_d *child;
+	struct device *child;
 	struct cdev *cdev, *cdevl;
 	int i;
 
@@ -46,7 +46,7 @@ static int do_devinfo_subtree(struct device_d *dev, int depth)
 
 static int do_devinfo(int argc, char *argv[])
 {
-	struct device_d *dev;
+	struct device *dev;
 	struct param_d *param;
 	int i;
 	int first;

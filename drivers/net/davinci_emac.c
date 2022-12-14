@@ -36,7 +36,7 @@
 #include "davinci_emac.h"
 
 struct davinci_emac_priv {
-	struct device_d *dev;
+	struct device *dev;
 	struct eth_device edev;
 
 	/* EMAC Addresses */
@@ -83,7 +83,7 @@ static inline void __iomem *HW_TO_BD(uint32_t x)
 #endif
 
 struct davinci_mdio_priv {
-	struct device_d *dev;
+	struct device *dev;
 	struct mii_bus miibus;
 	void __iomem *adap_mdio; /* = EMAC_MDIO_BASE_ADDR */
 };
@@ -533,7 +533,7 @@ out:
 	return ret;
 }
 
-static int davinci_emac_probe(struct device_d *dev)
+static int davinci_emac_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct davinci_emac_priv *priv;
@@ -588,7 +588,7 @@ static int davinci_emac_probe(struct device_d *dev)
 	return 0;
 }
 
-static void davinci_emac_remove(struct device_d *dev)
+static void davinci_emac_remove(struct device *dev)
 {
 	struct davinci_emac_priv *priv = dev->priv;
 
@@ -611,7 +611,7 @@ static struct driver_d davinci_emac_driver = {
 };
 device_platform_driver(davinci_emac_driver);
 
-static int davinci_mdio_probe(struct device_d *dev)
+static int davinci_mdio_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct davinci_mdio_priv *priv;

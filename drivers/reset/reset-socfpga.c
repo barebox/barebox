@@ -74,7 +74,7 @@ static const struct reset_control_ops socfpga_reset_ops = {
 	.deassert	= socfpga_reset_deassert,
 };
 
-static int socfpga_reset_probe(struct device_d *dev)
+static int socfpga_reset_probe(struct device *dev)
 {
 	struct socfpga_reset_data *data;
 	struct resource *res;

@@ -41,7 +41,7 @@
 #define PFUZE100_VGENxSTBY	BIT(5)
 
 struct pfuze {
-	struct device_d			*dev;
+	struct device			*dev;
 	struct regmap			*map;
 	struct i2c_client		*client;
 	int				revision;
@@ -144,7 +144,7 @@ static const struct regmap_config pfuze_regmap_i2c_config = {
 	.max_register = 127,
 };
 
-static int __init pfuze_probe(struct device_d *dev)
+static int __init pfuze_probe(struct device *dev)
 {
 	int ret;
 

@@ -96,7 +96,7 @@ struct s3cfb_info {
 	void __iomem *base;
 	unsigned memory_size;
 	struct fb_info info;
-	struct device_d *hw_dev;
+	struct device *hw_dev;
 	int passive_display;
 	void (*enable)(int enable);
 };
@@ -310,7 +310,7 @@ static int s3cfb_activate_var(struct fb_info *fb_info)
  * Print some information about the current hardware state
  * @param hw_dev S3C video device
  */
-static void s3cfb_info(struct device_d *hw_dev)
+static void s3cfb_info(struct device *hw_dev)
 {
 	uint32_t con1, addr1, addr2, addr3;
 	struct s3cfb_info *fbi = hw_dev->priv;
@@ -345,7 +345,7 @@ static struct s3cfb_info fbi = {
 	},
 };
 
-static int s3cfb_probe(struct device_d *hw_dev)
+static int s3cfb_probe(struct device *hw_dev)
 {
 	struct resource *iores;
 	struct s3c_fb_platform_data *pdata = hw_dev->platform_data;

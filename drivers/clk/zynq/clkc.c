@@ -364,7 +364,7 @@ static struct clk *zynq_cpu_subclk(const char *name,
 	return &subclk->hw.clk;
 }
 
-static int zynq_clock_probe(struct device_d *dev)
+static int zynq_clock_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *clk_base;

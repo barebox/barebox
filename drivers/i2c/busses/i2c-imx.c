@@ -525,7 +525,8 @@ static void i2c_fsl_unprepare_recovery(struct i2c_adapter *adapter)
 		dev_err(adapter->dev.parent, "pinctrl failed: %s\n", strerror(-ret));
 }
 
-static void i2c_fsl_init_recovery(struct fsl_i2c_struct *i2c_fsl, struct device_d *dev)
+static void i2c_fsl_init_recovery(struct fsl_i2c_struct *i2c_fsl,
+				  struct device *dev)
 {
 	if (!dev->of_node)
 		return;
@@ -552,7 +553,7 @@ static void i2c_fsl_init_recovery(struct fsl_i2c_struct *i2c_fsl, struct device_
 	dev_dbg(dev, "initialized recovery info\n");
 }
 
-static int __init i2c_fsl_probe(struct device_d *pdev)
+static int __init i2c_fsl_probe(struct device *pdev)
 {
 	struct resource *iores;
 	struct fsl_i2c_struct *i2c_fsl;

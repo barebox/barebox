@@ -88,7 +88,7 @@ static struct gpio_ops vf610_gpio_ops = {
 	.get_direction = vf610_gpio_get_direction,
 };
 
-static int vf610_gpio_probe(struct device_d *dev)
+static int vf610_gpio_probe(struct device *dev)
 {
 	int ret, size;
 	struct resource *iores;

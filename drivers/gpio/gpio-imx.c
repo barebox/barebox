@@ -117,7 +117,7 @@ static struct gpio_ops imx_gpio_ops = {
 	.get_direction = imx_get_direction,
 };
 
-static int imx_gpio_probe(struct device_d *dev)
+static int imx_gpio_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct imx_gpio_chip *imxgpio;

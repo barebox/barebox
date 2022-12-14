@@ -8,7 +8,7 @@
 #include <bbu.h>
 #include <envfs.h>
 
-static int beaglev_probe(struct device_d *dev)
+static int beaglev_probe(struct device *dev)
 {
 	barebox_set_hostname("beaglev-starlight");
 

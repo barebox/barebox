@@ -256,7 +256,7 @@ static struct cdev_operations jtag_operations = {
 	.ioctl = jtag_ioctl,
 };
 
-static void jtag_info(struct device_d *pdev)
+static void jtag_info(struct device *pdev)
 {
 	int dn, ret;
 	struct jtag_rd_id jid;
@@ -275,7 +275,7 @@ static void jtag_info(struct device_d *pdev)
 	}
 }
 
-static int jtag_probe(struct device_d *pdev)
+static int jtag_probe(struct device *pdev)
 {
 	int i, ret;
 	struct jtag_info *info;
@@ -348,7 +348,7 @@ fail_devfs_create:
 	return ret;
 }
 
-static void jtag_remove(struct device_d *pdev)
+static void jtag_remove(struct device *pdev)
 {
 	struct jtag_info *info = (struct jtag_info *) pdev->priv;
 

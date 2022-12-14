@@ -96,7 +96,7 @@ struct ipu_dc_priv {
 	void __iomem		*dc_reg;
 	void __iomem		*dc_tmpl_reg;
 	struct ipu_soc		*ipu;
-	struct device_d		*dev;
+	struct device		*dev;
 	struct ipu_dc		channels[IPU_DC_NUM_CHANNELS];
 };
 
@@ -312,7 +312,7 @@ void ipu_dc_put(struct ipu_dc *dc)
 }
 EXPORT_SYMBOL_GPL(ipu_dc_put);
 
-int ipu_dc_init(struct ipu_soc *ipu, struct device_d *dev,
+int ipu_dc_init(struct ipu_soc *ipu, struct device *dev,
 		void __iomem *base, void __iomem *template_base)
 {
 	struct ipu_dc_priv *priv;

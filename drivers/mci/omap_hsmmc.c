@@ -170,7 +170,7 @@ static struct omap_mmc_driver_data omap4_data = {
 
 struct omap_hsmmc {
 	struct mci_host		mci;
-	struct device_d		*dev;
+	struct device		*dev;
 	struct hsmmc		*base;
 	void __iomem		*iobase;
 };
@@ -207,7 +207,7 @@ static int mmc_init_stream(struct omap_hsmmc *hsmmc)
 	return 0;
 }
 
-static int mmc_init_setup(struct mci_host *mci, struct device_d *dev)
+static int mmc_init_setup(struct mci_host *mci, struct device *dev)
 {
 	struct omap_hsmmc *hsmmc = to_hsmmc(mci);
 	struct hsmmc *mmc_base = hsmmc->base;
@@ -568,7 +568,7 @@ static void mmc_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	writel(readl(&mmc_base->sysctl) | CEN_ENABLE, &mmc_base->sysctl);
 }
 
-static int omap_mmc_probe(struct device_d *dev)
+static int omap_mmc_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct omap_hsmmc *hsmmc;

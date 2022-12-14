@@ -63,7 +63,7 @@ struct efi_graphics_output_protocol {
 };
 
 struct efi_gop_priv {
-	struct device_d *dev;
+	struct device *dev;
 	struct fb_info fb;
 
 	uint32_t mode;

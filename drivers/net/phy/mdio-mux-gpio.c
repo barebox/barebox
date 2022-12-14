@@ -67,7 +67,7 @@ static int mdio_mux_gpio_switch_fn(int current_child, int desired_child,
 	return 0;
 }
 
-static int mdio_mux_gpio_probe(struct device_d *dev)
+static int mdio_mux_gpio_probe(struct device *dev)
 {
 	struct mdio_mux_gpio_state *s;
 	int i, r;

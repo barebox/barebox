@@ -18,7 +18,7 @@
 
 struct atmel_ehci_priv {
 	struct ehci_host *ehci;
-	struct device_d *dev;
+	struct device *dev;
 	struct clk *iclk;
 	struct clk *uclk;
 };
@@ -47,7 +47,7 @@ static void atmel_stop_clock(struct atmel_ehci_priv *atehci)
 	clk_disable(atehci->uclk);
 }
 
-static int atmel_ehci_probe(struct device_d *dev)
+static int atmel_ehci_probe(struct device *dev)
 {
 	int ret;
 	struct resource *iores;
@@ -97,7 +97,7 @@ static int atmel_ehci_probe(struct device_d *dev)
 	return 0;
 }
 
-static void atmel_ehci_remove(struct device_d *dev)
+static void atmel_ehci_remove(struct device *dev)
 {
 	struct atmel_ehci_priv *atehci = dev->priv;
 

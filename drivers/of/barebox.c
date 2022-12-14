@@ -18,7 +18,7 @@
 /* If dev describes a file on a fs, mount the fs and change devpath to
  * point to the file's path.  Otherwise leave devpath alone.  Does
  * nothing in env in a file support isn't enabled.  */
-static int environment_check_mount(struct device_d *dev, char **devpath)
+static int environment_check_mount(struct device *dev, char **devpath)
 {
 	const char *filepath;
 	int ret;
@@ -52,7 +52,7 @@ static int environment_check_mount(struct device_d *dev, char **devpath)
 	return 0;
 }
 
-static int environment_probe(struct device_d *dev)
+static int environment_probe(struct device *dev)
 {
 	char *path;
 	int ret;

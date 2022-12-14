@@ -158,7 +158,7 @@ static void nomadik_cmd_ctrl(struct nand_chip *nand, int cmd, unsigned int ctrl)
 		writeb(cmd, host->addr_va);
 }
 
-static int nomadik_nand_probe(struct device_d *dev)
+static int nomadik_nand_probe(struct device *dev)
 {
 	struct nomadik_nand_platform_data *pdata = dev->platform_data;
 	struct nomadik_nand_host *host;

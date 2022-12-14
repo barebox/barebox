@@ -114,7 +114,7 @@ static void ls1b200_pll_init(void __iomem *base)
 		10, 1, dc_mux,  ARRAY_SIZE(dc_mux), 0);
 }
 
-static int ls1b200_clk_probe(struct device_d *dev)
+static int ls1b200_clk_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *base;

@@ -194,7 +194,7 @@ static struct of_device_id mvebu_corediv_clk_ids[] = {
 	{ }
 };
 
-static int mvebu_corediv_clk_probe(struct device_d *dev)
+static int mvebu_corediv_clk_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct device_node *np = dev->of_node;

@@ -590,7 +590,7 @@ static int mtd_part_compare(struct list_head *a, struct list_head *b)
 	return 0;
 }
 
-static int mtd_detect(struct device_d *dev)
+static int mtd_detect(struct device *dev)
 {
 	struct mtd_info *mtd = container_of(dev, struct mtd_info, dev);
 	int bufsize = 512;

@@ -77,7 +77,7 @@ static inline void usb_host_release(struct usb_host *host)
 	slice_release(&host->slice);
 }
 
-static int usb_hw_detect(struct device_d *dev)
+static int usb_hw_detect(struct device *dev)
 {
 	struct usb_host *host;
 
@@ -1102,7 +1102,7 @@ static const struct usb_device_id *usb_match_id(struct usb_device *usbdev,
 }
 EXPORT_SYMBOL(usb_match_id);
 
-static int usb_match(struct device_d *dev, struct driver_d *drv)
+static int usb_match(struct device *dev, struct driver_d *drv)
 {
 	struct usb_device *usbdev = container_of(dev, struct usb_device, dev);
 	struct usb_driver *usbdrv = container_of(dev->driver, struct usb_driver, driver);
@@ -1119,7 +1119,7 @@ static int usb_match(struct device_d *dev, struct driver_d *drv)
 	return 1;
 }
 
-static int usb_probe(struct device_d *dev)
+static int usb_probe(struct device *dev)
 {
 	struct usb_device *usbdev = container_of(dev, struct usb_device, dev);
 	struct usb_driver *usbdrv = container_of(dev->driver, struct usb_driver, driver);
@@ -1130,7 +1130,7 @@ static int usb_probe(struct device_d *dev)
 	return usbdrv->probe(usbdev, id);
 }
 
-static void usb_remove(struct device_d *dev)
+static void usb_remove(struct device *dev)
 {
 	struct usb_device *usbdev = container_of(dev, struct usb_device, dev);
 	struct usb_driver *usbdrv = container_of(dev->driver, struct usb_driver, driver);

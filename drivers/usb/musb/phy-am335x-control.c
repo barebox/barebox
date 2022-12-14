@@ -8,7 +8,7 @@
 #include "am35x-phy-control.h"
 
 struct am335x_control_usb {
-	struct device_d *dev;
+	struct device *dev;
 	void __iomem *phy_reg;
 	void __iomem *wkup;
 	spinlock_t lock;
@@ -103,7 +103,7 @@ static __maybe_unused struct of_device_id omap_control_usb_dt_ids[] = {
 	},
 };
 
-struct phy_control *am335x_get_phy_control(struct device_d *dev)
+struct phy_control *am335x_get_phy_control(struct device *dev)
 {
 	struct device_node *node;
 	struct am335x_control_usb *ctrl_usb;
@@ -125,7 +125,7 @@ struct phy_control *am335x_get_phy_control(struct device_d *dev)
 EXPORT_SYMBOL(am335x_get_phy_control);
 
 
-static int am335x_control_usb_probe(struct device_d *dev)
+static int am335x_control_usb_probe(struct device *dev)
 {
 	struct resource *iores;
 	/*struct resource	*res;*/

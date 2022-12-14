@@ -59,7 +59,7 @@ static int tap_set_ethaddr(struct eth_device *edev, const unsigned char *adr)
 	return 0;
 }
 
-static int tap_probe(struct device_d *dev)
+static int tap_probe(struct device *dev)
 {
 	struct eth_device *edev;
 	struct tap_priv *priv;

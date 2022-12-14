@@ -115,7 +115,7 @@ static struct gpio_ops omap_gpio_ops = {
 	.set = omap_gpio_set_value,
 };
 
-static int omap_gpio_probe(struct device_d *dev)
+static int omap_gpio_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct omap_gpio_chip *omapgpio;

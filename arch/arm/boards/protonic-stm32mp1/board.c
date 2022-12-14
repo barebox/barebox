@@ -54,7 +54,7 @@ static const struct prt_stm32_boot_dev prt_stm32_boot_devs[] = {
 	},
 };
 
-static int prt_stm32_probe(struct device_d *dev)
+static int prt_stm32_probe(struct device *dev)
 {
 	const struct prt_stm32_machine_data *dcfg;
 	char *env_path_back = NULL, *env_path = NULL;

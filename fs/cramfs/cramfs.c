@@ -161,7 +161,7 @@ static int cramfs_read_file(struct inode *inode, unsigned long offset,
 	return outsize;
 }
 
-static int cramfs_read(struct device_d *_dev, FILE *f, void *buf, size_t size)
+static int cramfs_read(struct device *_dev, FILE *f, void *buf, size_t size)
 {
 	return cramfs_read_file(f->f_inode, f->pos, buf, size);
 }
@@ -439,7 +439,7 @@ static const struct super_operations cramfs_ops = {
 	.destroy_inode = cramfs_destroy_inode,
 };
 
-static int cramfs_probe(struct device_d *dev)
+static int cramfs_probe(struct device *dev)
 {
 	struct fs_device_d *fsdev;
 	struct cramfs_priv *priv;
@@ -485,7 +485,7 @@ err_out:
 	return ret;
 }
 
-static void cramfs_remove(struct device_d *dev)
+static void cramfs_remove(struct device *dev)
 {
 	struct cramfs_priv *priv = dev->priv;
 

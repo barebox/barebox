@@ -91,7 +91,7 @@ void squashfs_put_super(struct super_block *sb)
 static int squashfs_fill_super(struct super_block *sb, void *data, int silent)
 {
 	struct squashfs_sb_info *msblk;
-	struct fs_device_d *fsdev = (struct fs_device_d *)data;
+	struct fs_device *fsdev = (struct fs_device *)data;
 	struct squashfs_super_block *sblk = NULL;
 	struct inode *root;
 	long long root_inode;
@@ -321,7 +321,7 @@ failed_mount:
 }
 
 
-int squashfs_mount(struct fs_device_d *fsdev, int silent)
+int squashfs_mount(struct fs_device *fsdev, int silent)
 {
 	struct super_block *sb = &fsdev->sb;
 

@@ -435,7 +435,7 @@ static const struct super_operations ramfs_ops = {
 static int ramfs_probe(struct device *dev)
 {
 	struct inode *inode;
-	struct fs_device_d *fsdev = dev_to_fs_device(dev);
+	struct fs_device *fsdev = dev_to_fs_device(dev);
 	struct super_block *sb = &fsdev->sb;
 
 	sb->s_op = &ramfs_ops;

@@ -651,7 +651,7 @@ static struct file_priv *tftp_do_open(struct device *dev,
 				      int accmode, struct dentry *dentry,
 				      bool is_getattr)
 {
-	struct fs_device_d *fsdev = dev_to_fs_device(dev);
+	struct fs_device *fsdev = dev_to_fs_device(dev);
 	struct file_priv *priv;
 	struct tftp_priv *tpriv = dev->priv;
 	int ret;
@@ -980,7 +980,7 @@ static struct dentry *tftp_lookup(struct inode *dir, struct dentry *dentry,
 			    unsigned int flags)
 {
 	struct super_block *sb = dir->i_sb;
-	struct fs_device_d *fsdev = container_of(sb, struct fs_device_d, sb);
+	struct fs_device *fsdev = container_of(sb, struct fs_device, sb);
 	struct inode *inode;
 	struct file_priv *priv;
 	loff_t filesize;
@@ -1017,7 +1017,7 @@ static const struct super_operations tftp_ops;
 
 static int tftp_probe(struct device *dev)
 {
-	struct fs_device_d *fsdev = dev_to_fs_device(dev);
+	struct fs_device *fsdev = dev_to_fs_device(dev);
 	struct tftp_priv *priv = xzalloc(sizeof(struct tftp_priv));
 	struct super_block *sb = &fsdev->sb;
 	struct inode *inode;

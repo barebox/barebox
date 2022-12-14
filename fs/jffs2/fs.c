@@ -403,7 +403,7 @@ static int jffs2_probe_cnt;
 
 static int jffs2_probe(struct device *dev)
 {
-	struct fs_device_d *fsdev;
+	struct fs_device *fsdev;
 	struct super_block *sb;
 	struct jffs2_sb_info *ctx;
 	int ret;
@@ -450,7 +450,7 @@ err_out:
 
 static void jffs2_remove(struct device *dev)
 {
-	struct fs_device_d *fsdev;
+	struct fs_device *fsdev;
 	struct super_block *sb;
 
 	fsdev = dev_to_fs_device(dev);

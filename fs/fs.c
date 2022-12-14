@@ -111,12 +111,12 @@ void cdev_print(const struct cdev *cdev)
 }
 EXPORT_SYMBOL(cdev_print);
 
-static struct fs_device_d *get_fsdevice_by_path(const char *path);
+static struct fs_device *get_fsdevice_by_path(const char *path);
 
 void stat_print(const char *filename, const struct stat *st)
 {
 	struct block_device *bdev = NULL;
-	struct fs_device_d *fdev;
+	struct fs_device *fdev;
 	struct cdev *cdev = NULL;
 	const char *type = NULL;
 	char modestr[11];
@@ -222,7 +222,7 @@ static void mntput(struct vfsmount *mnt)
 
 static struct vfsmount *lookup_mnt(struct path *path)
 {
-	struct fs_device_d *fsdev;
+	struct fs_device *fsdev;
 
 	for_each_fs_device(fsdev) {
 		if (path->dentry == fsdev->vfsmount.mountpoint) {
@@ -240,7 +240,7 @@ static struct vfsmount *lookup_mnt(struct path *path)
  */
 struct cdev *get_cdev_by_mountpath(const char *path)
 {
-	struct fs_device_d *fsdev;
+	struct fs_device *fsdev;
 
 	fsdev = get_fsdevice_by_path(path);
 
@@ -249,7 +249,7 @@ struct cdev *get_cdev_by_mountpath(const char *path)
 
 char *get_mounted_path(const char *path)
 {
-	struct fs_device_d *fdev;
+	struct fs_device *fdev;
 
 	fdev = get_fsdevice_by_path(path);
 
@@ -733,7 +733,7 @@ static int fs_match(struct device *dev, struct driver *drv)
 
 static int fs_probe(struct device *dev)
 {
-	struct fs_device_d *fsdev = dev_to_fs_device(dev);
+	struct fs_device *fsdev = dev_to_fs_device(dev);
 	struct driver *drv = dev->driver;
 	struct fs_driver_d *fsdrv = container_of(drv, struct fs_driver_d, drv);
 	int ret;
@@ -793,7 +793,7 @@ static void destroy_inode(struct inode *inode)
 
 static void fs_remove(struct device *dev)
 {
-	struct fs_device_d *fsdev = dev_to_fs_device(dev);
+	struct fs_device *fsdev = dev_to_fs_device(dev);
 	struct super_block *sb = &fsdev->sb;
 	struct inode *inode, *tmp;
 	struct path path;
@@ -887,7 +887,7 @@ const char *fs_detect(const char *filename, const char *fsoptions)
 	return NULL;
 }
 
-int fsdev_open_cdev(struct fs_device_d *fsdev)
+int fsdev_open_cdev(struct fs_device *fsdev)
 {
 	unsigned long long offset = 0;
 	struct path path = {};
@@ -925,7 +925,7 @@ static void init_super(struct super_block *sb)
 	INIT_LIST_HEAD(&sb->s_inodes);
 }
 
-static int fsdev_umount(struct fs_device_d *fsdev)
+static int fsdev_umount(struct fs_device *fsdev)
 {
 	int ret;
 
@@ -948,8 +948,8 @@ static int fsdev_umount(struct fs_device_d *fsdev)
  */
 int umount_by_cdev(struct cdev *cdev)
 {
-	struct fs_device_d *fs;
-	struct fs_device_d *fs_tmp;
+	struct fs_device *fs;
+	struct fs_device *fs_tmp;
 	int first_error = 0;
 
 	for_each_fs_device_safe(fs_tmp, fs) {
@@ -1058,7 +1058,7 @@ EXPORT_SYMBOL(fstat);
  */
 const char *cdev_get_mount_path(struct cdev *cdev)
 {
-	struct fs_device_d *fsdev;
+	struct fs_device *fsdev;
 
 	for_each_fs_device(fsdev) {
 		if (fsdev->cdev && fsdev->cdev == cdev)
@@ -1158,7 +1158,7 @@ void mount_all(void)
 	}
 }
 
-void fsdev_set_linux_rootarg(struct fs_device_d *fsdev, const char *str)
+void fsdev_set_linux_rootarg(struct fs_device *fsdev, const char *str)
 {
 	fsdev->linux_rootarg = xstrdup(str);
 
@@ -1175,7 +1175,7 @@ void fsdev_set_linux_rootarg(struct fs_device_d *fsdev, const char *str)
  */
 char *path_get_linux_rootarg(const char *path)
 {
-	struct fs_device_d *fsdev;
+	struct fs_device *fsdev;
 	const char *str;
 
 	fsdev = get_fsdevice_by_path(path);
@@ -1199,7 +1199,7 @@ char *path_get_linux_rootarg(const char *path)
  */
 bool __is_tftp_fs(const char *path)
 {
-	struct fs_device_d *fsdev;
+	struct fs_device *fsdev;
 
 	fsdev = get_fsdevice_by_path(path);
 	if (!fsdev)
@@ -2026,18 +2026,18 @@ static void putname(struct filename *name)
 	free(name);
 }
 
-static struct fs_device_d *get_fsdevice_by_dentry(struct dentry *dentry)
+static struct fs_device *get_fsdevice_by_dentry(struct dentry *dentry)
 {
 	struct super_block *sb;
 
 	sb = dentry->d_sb;
 
-	return container_of(sb, struct fs_device_d, sb);
+	return container_of(sb, struct fs_device, sb);
 }
 
 static bool dentry_is_tftp(struct dentry *dentry)
 {
-	struct fs_device_d *fsdev;
+	struct fs_device *fsdev;
 
 	fsdev = get_fsdevice_by_dentry(dentry);
 	if (!fsdev)
@@ -2350,9 +2350,9 @@ static int filename_lookup(struct filename *name, unsigned flags,
 	return err;
 }
 
-static struct fs_device_d *get_fsdevice_by_path(const char *pathname)
+static struct fs_device *get_fsdevice_by_path(const char *pathname)
 {
-	struct fs_device_d *fsdev;
+	struct fs_device *fsdev;
 	struct path path;
 	int ret;
 
@@ -2490,7 +2490,7 @@ EXPORT_SYMBOL(rmdir);
 
 int open(const char *pathname, int flags, ...)
 {
-	struct fs_device_d *fsdev;
+	struct fs_device *fsdev;
 	struct fs_driver_d *fsdrv;
 	struct super_block *sb;
 	FILE *f;
@@ -2579,7 +2579,7 @@ int open(const char *pathname, int flags, ...)
 	f->size = inode->i_size;
 
 	sb = inode->i_sb;
-	fsdev = container_of(sb, struct fs_device_d, sb);
+	fsdev = container_of(sb, struct fs_device, sb);
 	fsdrv = fsdev->driver;
 
 	f->fsdev = fsdev;
@@ -2870,7 +2870,7 @@ static char *__dpath(struct dentry *dentry, struct dentry *root)
 		return NULL;
 
 	while (IS_ROOT(dentry)) {
-		struct fs_device_d *fsdev;
+		struct fs_device *fsdev;
 
 		for_each_fs_device(fsdev) {
 			if (dentry == fsdev->vfsmount.mnt_root) {
@@ -3068,7 +3068,7 @@ char *cdev_get_linux_rootarg(const struct cdev *cdev)
 int mount(const char *device, const char *fsname, const char *pathname,
 		const char *fsoptions)
 {
-	struct fs_device_d *fsdev;
+	struct fs_device *fsdev;
 	int ret;
 	struct path path = {};
 
@@ -3105,7 +3105,7 @@ int mount(const char *device, const char *fsname, const char *pathname,
 		goto out;
 	}
 
-	fsdev = xzalloc(sizeof(struct fs_device_d));
+	fsdev = xzalloc(sizeof(struct fs_device));
 	fsdev->backingstore = xstrdup(device);
 	dev_set_name(&fsdev->dev, fsname);
 	fsdev->dev.id = get_free_deviceid(fsdev->dev.name);
@@ -3175,7 +3175,7 @@ EXPORT_SYMBOL(mount);
 
 int umount(const char *pathname)
 {
-	struct fs_device_d *fsdev = NULL, *f;
+	struct fs_device *fsdev = NULL, *f;
 	struct path path = {};
 	int ret;
 
@@ -3413,7 +3413,7 @@ BAREBOX_CMD_END
 
 static struct dentry *debug_follow_mount(struct dentry *dentry)
 {
-	struct fs_device_d *fsdev;
+	struct fs_device *fsdev;
 	unsigned managed = dentry->d_flags;
 
 	if (managed & DCACHE_MOUNTED) {

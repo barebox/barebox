@@ -1386,7 +1386,7 @@ static const struct super_operations nfs_ops = {
 
 static char *rootnfsopts;
 
-static void nfs_set_rootarg(struct nfs_priv *npriv, struct fs_device_d *fsdev)
+static void nfs_set_rootarg(struct nfs_priv *npriv, struct fs_device *fsdev)
 {
 	char *str, *tmp;
 	const char *bootargs;
@@ -1421,7 +1421,7 @@ static void nfs_set_rootarg(struct nfs_priv *npriv, struct fs_device_d *fsdev)
 
 static int nfs_probe(struct device *dev)
 {
-	struct fs_device_d *fsdev = dev_to_fs_device(dev);
+	struct fs_device *fsdev = dev_to_fs_device(dev);
 	struct nfs_priv *npriv = xzalloc(sizeof(struct nfs_priv));
 	struct super_block *sb = &fsdev->sb;
 	char *tmp = xstrdup(fsdev->backingstore);

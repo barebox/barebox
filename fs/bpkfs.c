@@ -353,7 +353,7 @@ static void bpkfs_remove(struct device *dev)
 
 static int bpkfs_probe(struct device *dev)
 {
-	struct fs_device_d *fsdev = dev_to_fs_device(dev);
+	struct fs_device *fsdev = dev_to_fs_device(dev);
 	struct bpkfs_handle *priv;
 	struct bpkfs_header *header;
 	struct bpkfs_data_header data_header;

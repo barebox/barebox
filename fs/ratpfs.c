@@ -401,7 +401,7 @@ static int ratpfs_probe(struct device *dev)
 	struct ratp_bb_pkt *pkt_tx = xzalloc(sizeof(*pkt_tx) + len_tx);
 	struct ratp_bb_pkt *pkt_rx = NULL;
 	int ret;
-	struct fs_device_d *fsdev = dev_to_fs_device(dev);
+	struct fs_device *fsdev = dev_to_fs_device(dev);
 
 	pr_debug("%s\n", __func__);
 

@@ -497,7 +497,7 @@ err_out:
 
 static int uimagefs_probe(struct device *dev)
 {
-	struct fs_device_d *fsdev = dev_to_fs_device(dev);
+	struct fs_device *fsdev = dev_to_fs_device(dev);
 	struct uimagefs_handle *priv;
 	int ret = 0;
 

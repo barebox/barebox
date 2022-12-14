@@ -342,7 +342,7 @@ static int fat_stat(struct device *dev, const char *filename, struct stat *s)
 
 static int fat_probe(struct device *dev)
 {
-	struct fs_device_d *fsdev = dev_to_fs_device(dev);
+	struct fs_device *fsdev = dev_to_fs_device(dev);
 	struct fat_priv *priv = xzalloc(sizeof(struct fat_priv));
 	int ret;
 

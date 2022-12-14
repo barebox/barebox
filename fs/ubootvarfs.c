@@ -148,7 +148,7 @@ static struct dentry *ubootvarfs_lookup(struct inode *dir,
 					unsigned int flags)
 {
 	struct super_block *sb = dir->i_sb;
-	struct fs_device_d *fsdev = container_of(sb, struct fs_device_d, sb);
+	struct fs_device *fsdev = container_of(sb, struct fs_device, sb);
 	struct ubootvarfs_data *data = fsdev->dev.priv;
 	struct ubootvarfs_var *var;
 	struct inode *inode;
@@ -269,7 +269,7 @@ static int ubootvarfs_create(struct inode *dir, struct dentry *dentry,
 			     umode_t mode)
 {
 	struct super_block *sb = dir->i_sb;
-	struct fs_device_d *fsdev = container_of(sb, struct fs_device_d, sb);
+	struct fs_device *fsdev = container_of(sb, struct fs_device, sb);
 	struct ubootvarfs_data *data = fsdev->dev.priv;
 	struct inode *inode;
 	struct ubootvarfs_var *var;
@@ -311,7 +311,7 @@ static const struct inode_operations ubootvarfs_dir_inode_operations = {
 static struct inode *ubootvarfs_alloc_inode(struct super_block *sb)
 {
 	struct ubootvarfs_inode *node;
-	struct fs_device_d *fsdev = container_of(sb, struct fs_device_d, sb);
+	struct fs_device *fsdev = container_of(sb, struct fs_device, sb);
 	struct ubootvarfs_data *data = fsdev->dev.priv;
 
 	node = xzalloc(sizeof(*node));
@@ -427,7 +427,7 @@ static int ubootvarfs_probe(struct device *dev)
 {
 	struct inode *inode;
 	struct ubootvarfs_data *data = xzalloc(sizeof(*data));
-	struct fs_device_d *fsdev = dev_to_fs_device(dev);
+	struct fs_device *fsdev = dev_to_fs_device(dev);
 	struct super_block *sb = &fsdev->sb;
 	struct stat s;
 	void *map;

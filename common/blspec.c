@@ -316,7 +316,7 @@ static int blspec_have_entry(struct bootentries *bootentries, const char *path)
  */
 static const char *nfs_find_mountpath(const char *nfshostpath)
 {
-	struct fs_device_d *fsdev;
+	struct fs_device *fsdev;
 
 	for_each_fs_device(fsdev) {
 		if (fsdev->backingstore && !strcmp(fsdev->backingstore, nfshostpath))

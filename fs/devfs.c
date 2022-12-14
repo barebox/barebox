@@ -298,7 +298,7 @@ static const struct super_operations devfs_ops = {
 static int devfs_probe(struct device *dev)
 {
 	struct inode *inode;
-	struct fs_device_d *fsdev = dev_to_fs_device(dev);
+	struct fs_device *fsdev = dev_to_fs_device(dev);
 	struct super_block *sb = &fsdev->sb;
 
 	sb->s_op = &devfs_ops;

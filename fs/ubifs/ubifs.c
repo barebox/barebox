@@ -431,7 +431,8 @@ static int ubifs_read(struct device *_dev, FILE *f, void *buf, size_t insize)
 	return insize;
 }
 
-static void ubifs_set_rootarg(struct ubifs_priv *priv, struct fs_device_d *fsdev)
+static void ubifs_set_rootarg(struct ubifs_priv *priv,
+			      struct fs_device *fsdev)
 {
 	struct ubi_volume_info vi = {};
 	struct ubi_device_info di = {};
@@ -453,7 +454,7 @@ static void ubifs_set_rootarg(struct ubifs_priv *priv, struct fs_device_d *fsdev
 
 static int ubifs_probe(struct device *dev)
 {
-	struct fs_device_d *fsdev = dev_to_fs_device(dev);
+	struct fs_device *fsdev = dev_to_fs_device(dev);
 	struct ubifs_priv *priv = xzalloc(sizeof(struct ubifs_priv));
 	int ret;
 

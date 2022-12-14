@@ -36,7 +36,7 @@ static int do_mount(int argc, char *argv[])
 	}
 
 	if (argc == optind) {
-		struct fs_device_d *fsdev;
+		struct fs_device *fsdev;
 
 		for_each_fs_device(fsdev) {
 			printf("%s on %s type %s\n",

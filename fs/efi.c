@@ -451,7 +451,7 @@ static int efifs_readlink(struct device *dev, const char *pathname,
 
 static int efifs_probe(struct device *dev)
 {
-	struct fs_device_d *fsdev = dev_to_fs_device(dev);
+	struct fs_device *fsdev = dev_to_fs_device(dev);
 	struct efifs_priv *priv;
 	efi_status_t efiret;
 	struct efi_file_handle *file;

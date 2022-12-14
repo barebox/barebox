@@ -58,7 +58,7 @@ static int ext_read(struct device *_dev, FILE *f, void *buf, size_t insize)
 
 static struct inode *ext_alloc_inode(struct super_block *sb)
 {
-	struct fs_device_d *fsdev = container_of(sb, struct fs_device_d, sb);
+	struct fs_device *fsdev = container_of(sb, struct fs_device, sb);
 	struct ext_filesystem *fs = fsdev->dev.priv;
 	struct ext2fs_node *node;
 
@@ -209,7 +209,7 @@ struct inode *ext_get_inode(struct super_block *sb, int ino)
 {
 	struct inode *inode;
 	struct ext2fs_node *node;
-	struct fs_device_d *fsdev = container_of(sb, struct fs_device_d, sb);
+	struct fs_device *fsdev = container_of(sb, struct fs_device, sb);
 	struct ext_filesystem *fs = fsdev->dev.priv;
 	int ret;
 
@@ -251,7 +251,7 @@ struct inode *ext_get_inode(struct super_block *sb, int ino)
 
 static int ext_probe(struct device *dev)
 {
-	struct fs_device_d *fsdev = dev_to_fs_device(dev);
+	struct fs_device *fsdev = dev_to_fs_device(dev);
 	int ret;
 	struct ext_filesystem *fs;
 	struct super_block *sb = &fsdev->sb;

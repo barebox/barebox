@@ -41,7 +41,7 @@ char *squashfs_devread(struct squashfs_sb_info *fs, int byte_offset,
 	return buf;
 }
 
-static void squashfs_set_rootarg(struct fs_device_d *fsdev)
+static void squashfs_set_rootarg(struct fs_device *fsdev)
 {
 	struct ubi_volume_desc *ubi_vol;
 	struct ubi_volume_info vi = {};
@@ -92,7 +92,7 @@ static const struct super_operations squashfs_super_ops = {
 
 static int squashfs_probe(struct device *dev)
 {
-	struct fs_device_d *fsdev;
+	struct fs_device *fsdev;
 	int ret;
 	struct super_block *sb;
 
@@ -122,7 +122,7 @@ err_out:
 
 static void squashfs_remove(struct device *dev)
 {
-	struct fs_device_d *fsdev;
+	struct fs_device *fsdev;
 	struct super_block *sb;
 
 	fsdev = dev_to_fs_device(dev);

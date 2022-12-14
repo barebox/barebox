@@ -20,7 +20,7 @@ struct node_d;
 struct stat;
 
 typedef struct filep {
-	struct fs_device_d *fsdev; /* The device this FILE belongs to              */
+	struct fs_device *fsdev; /* The device this FILE belongs to              */
 	char *path;
 	loff_t pos;            /* current position in stream                   */
 #define FILE_SIZE_STREAM	((loff_t) -1)
@@ -86,14 +86,14 @@ struct fs_driver_d {
 	unsigned long flags;
 };
 
-#define dev_to_fs_device(d) container_of(d, struct fs_device_d, dev)
+#define dev_to_fs_device(d) container_of(d, struct fs_device, dev)
 
 extern struct list_head fs_device_list;
 #define for_each_fs_device(f) list_for_each_entry(f, &fs_device_list, list)
 #define for_each_fs_device_safe(tmp, f) list_for_each_entry_safe(f, tmp, &fs_device_list, list)
 extern struct bus_type fs_bus;
 
-struct fs_device_d {
+struct fs_device {
 	char *backingstore; /* the device we are associated with */
 	struct device dev; /* our own device */
 
@@ -164,14 +164,14 @@ void automount_remove(const char *_path);
 int automount_add(const char *path, const char *cmd);
 void automount_print(void);
 
-int fs_init_legacy(struct fs_device_d *fsdev);
-int fsdev_open_cdev(struct fs_device_d *fsdev);
+int fs_init_legacy(struct fs_device *fsdev);
+int fsdev_open_cdev(struct fs_device *fsdev);
 const char *cdev_get_mount_path(struct cdev *cdev);
 const char *cdev_mount_default(struct cdev *cdev, const char *fsoptions);
 const char *cdev_mount(struct cdev *cdev);
 void mount_all(void);
 
-void fsdev_set_linux_rootarg(struct fs_device_d *fsdev, const char *str);
+void fsdev_set_linux_rootarg(struct fs_device *fsdev, const char *str);
 char *path_get_linux_rootarg(const char *path);
 char *cdev_get_linux_rootarg(const struct cdev *cdev);
 

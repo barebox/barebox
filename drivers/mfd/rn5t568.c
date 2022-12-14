@@ -138,7 +138,7 @@ static int __init rn5t568_i2c_probe(struct device_d *dev)
 	regmap_write(pmic_instance->regmap, RN5T568_REPCNT, RN5T568_REPCNT_OFF_RESETO_16MS |
 		     RN5T568_REPCNT_OFF_REPWRTIM_1000MS | RN5T568_REPCNT_OFF_REPWRON);
 
-	pmic_instance->restart.of_node = dev->device_node;
+	pmic_instance->restart.of_node = dev->of_node;
 	pmic_instance->restart.name = "RN5T568";
 	pmic_instance->restart.restart = &rn5t568_restart;
 	restart_handler_register(&pmic_instance->restart);
@@ -148,7 +148,7 @@ static int __init rn5t568_i2c_probe(struct device_d *dev)
 	if (ret)
 		dev_warn(dev, "Failed to query reset reason\n");
 
-	return of_platform_populate(dev->device_node, NULL, dev);
+	return of_platform_populate(dev->of_node, NULL, dev);
 }
 
 static __maybe_unused const struct of_device_id rn5t568_of_match[] = {

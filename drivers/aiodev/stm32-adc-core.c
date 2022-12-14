@@ -186,7 +186,7 @@ static int stm32_adc_core_probe(struct device_d *dev)
 		goto err_bclk_disable;
 
 	dev->priv = common;
-	return of_platform_populate(dev->device_node, NULL, dev);
+	return of_platform_populate(dev->of_node, NULL, dev);
 
 err_bclk_disable:
 	clk_disable(common->bclk);

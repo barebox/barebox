@@ -301,8 +301,8 @@ static int at25_probe(struct device_d *dev)
 	at25 = xzalloc(sizeof(*at25));
 
 	/* Chip description */
-	if (dev->device_node) {
-		err = at25_np_to_chip(dev, dev->device_node, &at25->chip);
+	if (dev->of_node) {
+		err = at25_np_to_chip(dev, dev->of_node, &at25->chip);
 		if (err)
 			goto fail;
 	} else {
@@ -354,7 +354,7 @@ static int at25_probe(struct device_d *dev)
 		goto fail;
 
 	dev_dbg(dev, "%s probed\n", at25->cdev.name);
-	of_parse_partitions(&at25->cdev, dev->device_node);
+	of_parse_partitions(&at25->cdev, dev->of_node);
 	of_partitions_register_fixup(&at25->cdev);
 
 	return 0;

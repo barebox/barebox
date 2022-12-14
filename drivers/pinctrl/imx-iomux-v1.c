@@ -279,9 +279,9 @@ static int imx_iomux_v1_probe(struct device_d *dev)
 	if (IS_ERR(base))
 		return PTR_ERR(base);
 
-	ret = of_platform_populate(dev->device_node, NULL, NULL);
+	ret = of_platform_populate(dev->of_node, NULL, NULL);
 
-	if (IS_ENABLED(CONFIG_PINCTRL) && dev->device_node)
+	if (IS_ENABLED(CONFIG_PINCTRL) && dev->of_node)
 		ret = imx_pinctrl_dt(dev, base);
 
 	return ret;

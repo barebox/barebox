@@ -371,7 +371,7 @@ static int armada_xp_pinctrl_probe(struct device_d *dev)
 {
 	struct resource *iores;
 	const struct of_device_id *match =
-		of_match_node(armada_xp_pinctrl_of_match, dev->device_node);
+		of_match_node(armada_xp_pinctrl_of_match, dev->of_node);
 	struct mvebu_pinctrl_soc_info *soc = &armada_xp_pinctrl_info;
 
 	iores = dev_request_mem_resource(dev, 0);

@@ -243,7 +243,7 @@ static void console_set_stdoutpath(struct console_device *cdev, unsigned baudrat
 	if (!cdev->linux_console_name)
 		return;
 
-	id = of_alias_get_id(cdev->dev->device_node, "serial");
+	id = of_alias_get_id(cdev->dev->of_node, "serial");
 	if (id < 0)
 		return;
 

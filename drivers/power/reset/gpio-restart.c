@@ -45,7 +45,7 @@ static void __noreturn gpio_restart_handle(struct restart_handler *this)
 
 static int gpio_restart_probe(struct device_d *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct gpio_restart *gpio_restart;
 	bool open_source = false;
 	u32 property;
@@ -71,7 +71,7 @@ static int gpio_restart_probe(struct device_d *dev)
 	gpio_restart->inactive_delay_ms = 100;
 	gpio_restart->wait_delay_ms = 3000;
 
-	ret = of_property_read_u32(dev->device_node, "priority", &property);
+	ret = of_property_read_u32(dev->of_node, "priority", &property);
 	if (!ret)
 		gpio_restart->restart_handler.priority = property;
 

@@ -108,7 +108,7 @@ struct phy_control *am335x_get_phy_control(struct device_d *dev)
 	struct device_node *node;
 	struct am335x_control_usb *ctrl_usb;
 
-	node = of_parse_phandle(dev->device_node, "ti,ctrl_mod", 0);
+	node = of_parse_phandle(dev->of_node, "ti,ctrl_mod", 0);
 	if (!node)
 		return ERR_PTR(-ENOENT);
 

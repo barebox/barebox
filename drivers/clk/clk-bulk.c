@@ -143,7 +143,7 @@ EXPORT_SYMBOL(clk_bulk_put_all);
 int __must_check clk_bulk_get_all(struct device_d *dev,
 				  struct clk_bulk_data **clks)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 
 	if (!np)
 		return 0;

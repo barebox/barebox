@@ -67,7 +67,7 @@ static int riscv_probe(struct device_d *parent)
 	/* Each hart has a timer, but we only need one */
 	if (IS_ENABLED(CONFIG_RISCV_TIMER) && !timer_dev.parent) {
 		timer_dev.id = DEVICE_ID_SINGLE;
-		timer_dev.device_node = parent->device_node;
+		timer_dev.of_node = parent->of_node;
 		timer_dev.parent = parent;
 		dev_set_name(&timer_dev, "riscv-timer");
 
@@ -78,7 +78,7 @@ static int riscv_probe(struct device_d *parent)
 
 	if (IS_ENABLED(CONFIG_SERIAL_SBI) && !serial_sbi_dev.parent) {
 		serial_sbi_dev.id = DEVICE_ID_SINGLE;
-		serial_sbi_dev.device_node = 0;
+		serial_sbi_dev.of_node = 0;
 		serial_sbi_dev.parent = parent;
 		dev_set_name(&serial_sbi_dev, "riscv-serial-sbi");
 

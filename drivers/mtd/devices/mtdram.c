@@ -48,8 +48,8 @@ static int mtdram_probe(struct device_d *dev)
 	mtd = xzalloc(sizeof(struct mtd_info));
 
 	device_id = DEVICE_ID_SINGLE;
-	if (dev->device_node) {
-		const char *alias = of_alias_get(dev->device_node);
+	if (dev->of_node) {
+		const char *alias = of_alias_get(dev->of_node);
 		if (alias)
 			mtd->name = xstrdup(alias);
 	}

@@ -80,7 +80,7 @@ static const struct nvmem_bus snvs_lpgpr_nvmem_bus = {
 
 static int snvs_lpgpr_probe(struct device_d *dev)
 {
-	struct device_node *node = dev->device_node;
+	struct device_node *node = dev->of_node;
 	struct device_node *syscon_node;
 	struct snvs_lpgpr_priv *priv;
 	struct nvmem_config *cfg;

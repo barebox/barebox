@@ -394,7 +394,7 @@ static struct i2c_client *i2c_new_device(struct i2c_adapter *adapter,
 	client->dev.platform_data = chip->platform_data;
 	client->dev.id = DEVICE_ID_DYNAMIC;
 	client->dev.bus = &i2c_bus;
-	client->dev.device_node = chip->of_node;
+	client->dev.of_node = chip->of_node;
 	client->adapter = adapter;
 	client->addr = chip->addr;
 
@@ -418,10 +418,10 @@ static void of_i2c_register_devices(struct i2c_adapter *adap)
 	struct device_node *n;
 
 	/* Only register child devices if the adapter has a node pointer set */
-	if (!IS_ENABLED(CONFIG_OFDEVICE) || !adap->dev.device_node)
+	if (!IS_ENABLED(CONFIG_OFDEVICE) || !adap->dev.of_node)
 		return;
 
-	for_each_available_child_of_node(adap->dev.device_node, n) {
+	for_each_available_child_of_node(adap->dev.of_node, n) {
 		struct i2c_board_info info = {};
 		struct i2c_client *result;
 		const __be32 *addr;
@@ -578,7 +578,7 @@ struct i2c_adapter *of_find_i2c_adapter_by_node(struct device_node *node)
 		return ERR_PTR(ret);
 
 	for_each_i2c_adapter(adap)
-		if (adap->dev.device_node == node)
+		if (adap->dev.of_node == node)
 			return adap;
 
 	return NULL;
@@ -615,7 +615,7 @@ static void i2c_parse_timing(struct device_d *dev, char *prop_name, u32 *cur_val
 {
 	int ret;
 
-	ret = of_property_read_u32(dev->device_node, prop_name, cur_val_p);
+	ret = of_property_read_u32(dev->of_node, prop_name, cur_val_p);
 	if (ret && use_def)
 		*cur_val_p = def_val;
 

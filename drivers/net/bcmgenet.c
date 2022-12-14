@@ -561,7 +561,7 @@ static int bcmgenet_probe(struct device_d *dev)
 		return -ENODEV;
 	}
 
-	ret = of_get_phy_mode(dev->device_node);
+	ret = of_get_phy_mode(dev->of_node);
 	if (ret < 0)
 		priv->interface = PHY_INTERFACE_MODE_MII;
 	else
@@ -579,8 +579,8 @@ static int bcmgenet_probe(struct device_d *dev)
 
 	priv->miibus.priv = priv;
 	priv->miibus.parent = dev;
-	priv->miibus.dev.device_node
-		= of_get_compatible_child(dev->device_node, "brcm,genet-mdio-v5");
+	priv->miibus.dev.of_node
+		= of_get_compatible_child(dev->of_node, "brcm,genet-mdio-v5");
 
 	ret = mdiobus_register(&priv->miibus);
 	if (ret)

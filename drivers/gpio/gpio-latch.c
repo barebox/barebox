@@ -98,7 +98,7 @@ static int gpio_latch_probe(struct device_d *dev)
 {
 	struct gpio_latch_priv *priv;
 	int n_latches, i, ret;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	enum of_gpio_flags flags;
 
 	priv = xzalloc(sizeof(*priv));

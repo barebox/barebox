@@ -74,7 +74,10 @@ struct device_d {
 	struct list_head cdevs;
 
 	const struct platform_device_id *id_entry;
-	struct device_node *device_node;
+	union {
+		struct device_node *device_node;
+		struct device_node *of_node;
+	};
 
 	const struct of_device_id *of_id_entry;
 
@@ -614,7 +617,7 @@ struct device_d *device_find_child(struct device_d *parent, void *data,
 
 static inline struct device_node *dev_of_node(struct device_d *dev)
 {
-	return IS_ENABLED(CONFIG_OFDEVICE) ? dev->device_node : NULL;
+	return IS_ENABLED(CONFIG_OFDEVICE) ? dev->of_node : NULL;
 }
 
 static inline void *dev_get_priv(struct device_d *dev)

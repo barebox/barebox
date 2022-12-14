@@ -282,7 +282,7 @@ static int ipufb_probe(struct device_d *dev)
 	fbi = xzalloc(sizeof(*fbi));
 	info = &fbi->info;
 
-	ipuid = of_alias_get_id(dev->parent->device_node, "ipu");
+	ipuid = of_alias_get_id(dev->parent->of_node, "ipu");
 	fbi->name = basprintf("ipu%d-di%d", ipuid + 1, pdata->di);
 	fbi->id = ipuid * 2 + pdata->di;
 	fbi->dino = pdata->di;
@@ -305,11 +305,12 @@ static int ipufb_probe(struct device_d *dev)
 	if (ret)
 		return ret;
 
-	node = of_graph_get_port_by_id(dev->parent->device_node, 2 + pdata->di);
+	node = of_graph_get_port_by_id(dev->parent->of_node, 2 + pdata->di);
 	if (node && of_graph_port_is_available(node)) {
-		dev_dbg(fbi->dev, "register vpl for %s\n", dev->parent->device_node->full_name);
+		dev_dbg(fbi->dev, "register vpl for %s\n",
+			dev->parent->of_node->full_name);
 
-		fbi->vpl.node = dev->parent->device_node;
+		fbi->vpl.node = dev->parent->of_node;
 		ret = vpl_register(&fbi->vpl);
 		if (ret)
 			return ret;

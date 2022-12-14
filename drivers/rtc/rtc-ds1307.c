@@ -288,7 +288,7 @@ static int ds1307_probe(struct device_d *dev)
 	int			tmp;
 	unsigned char		*buf;
 	unsigned long driver_data;
-	const struct device_node *np = dev->device_node;
+	const struct device_node *np = dev->of_node;
 
 	ds1307 = xzalloc(sizeof(struct ds1307));
 

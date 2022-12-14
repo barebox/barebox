@@ -997,7 +997,7 @@ static int cfi_probe(struct device_d *dev)
 	priv->infos = xzalloc(sizeof(*priv->infos) * priv->num_devs);
 	priv->mtds = xzalloc(sizeof(*priv->mtds) * priv->num_devs);
 
-	of_property_read_string(dev->device_node, "linux,mtd-name", &mtd_name);
+	of_property_read_string(dev->of_node, "linux,mtd-name", &mtd_name);
 
 	if (!mtd_name)
 		mtd_name = dev_name(dev);

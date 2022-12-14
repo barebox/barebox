@@ -575,7 +575,7 @@ static int stm32_sdmmc2_probe(struct amba_device *adev,
 			      const struct amba_id *id)
 {
 	struct device_d *dev = &adev->dev;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct stm32_sdmmc2_priv *priv;
 	struct mci_host *mci;
 	int ret;

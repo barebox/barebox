@@ -17,9 +17,9 @@ struct device_d *of_find_device_by_node_path(const char *path)
 	struct device_d *dev;
 
 	for_each_device(dev) {
-		if (!dev->device_node)
+		if (!dev->of_node)
 			continue;
-		if (!strcmp(path, dev->device_node->full_name))
+		if (!strcmp(path, dev->of_node->full_name))
 			return dev;
 	}
 

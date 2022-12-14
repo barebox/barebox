@@ -255,7 +255,7 @@ static struct regulator_internal *of_regulator_get(struct device_d *dev, const c
 	/*
 	 * If the device does have a device node return the dummy regulator.
 	 */
-	if (!dev->device_node)
+	if (!dev->of_node)
 		return NULL;
 
 	propname = basprintf("%s-supply", supply);
@@ -264,7 +264,7 @@ static struct regulator_internal *of_regulator_get(struct device_d *dev, const c
 	 * If the device node does not contain a supply property, this device doesn't
 	 * need a regulator. Return the dummy regulator in this case.
 	 */
-	if (!of_get_property(dev->device_node, propname, NULL)) {
+	if (!of_get_property(dev->of_node, propname, NULL)) {
 		dev_dbg(dev, "No %s-supply node found, using dummy regulator\n",
 				supply);
 		ri = NULL;
@@ -275,7 +275,7 @@ static struct regulator_internal *of_regulator_get(struct device_d *dev, const c
 	 * The device node specifies a supply, so it's mandatory. Return an error when
 	 * something goes wrong below.
 	 */
-	node = of_parse_phandle(dev->device_node, propname, 0);
+	node = of_parse_phandle(dev->of_node, propname, 0);
 	if (!node) {
 		dev_dbg(dev, "No %s node found\n", propname);
 		ri = ERR_PTR(-EINVAL);
@@ -388,7 +388,7 @@ struct regulator *regulator_get(struct device_d *dev, const char *supply)
 	struct regulator *r;
 	int ret;
 
-	if (dev->device_node && supply) {
+	if (dev->of_node && supply) {
 		ri = of_regulator_get(dev, supply);
 		if (IS_ERR(ri))
 			return ERR_CAST(ri);

@@ -539,7 +539,7 @@ static int davinci_emac_probe(struct device_d *dev)
 	struct davinci_emac_priv *priv;
 	uint32_t ctrl_reg_offset;
 	uint32_t ctrl_ram_offset;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 
 	dev_dbg(dev, "+ emac_probe\n");
 

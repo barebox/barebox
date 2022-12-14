@@ -67,7 +67,8 @@ static int starfive_dwc_ether_probe(struct device_d *dev)
 		{ .id = "tx" },
 	};
 
-	regmap = syscon_regmap_lookup_by_phandle(dev->device_node, "starfive,sysmain");
+	regmap = syscon_regmap_lookup_by_phandle(dev->of_node,
+						 "starfive,sysmain");
 	if (IS_ERR(regmap)) {
 		dev_err(dev, "Could not get starfive,sysmain node\n");
 		return PTR_ERR(regmap);

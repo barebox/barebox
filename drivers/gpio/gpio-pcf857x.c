@@ -148,7 +148,7 @@ static struct gpio_ops pcf857x_gpio_ops = {
 static int pcf857x_probe(struct device_d *dev)
 {
 	struct i2c_client		*client = to_i2c_client(dev);
-	struct device_node		*np = dev->device_node;
+	struct device_node		*np = dev->of_node;
 	struct pcf857x			*gpio;
 	unsigned long			driver_data;
 	unsigned int			n_latch = 0;

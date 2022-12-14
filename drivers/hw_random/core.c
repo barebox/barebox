@@ -69,7 +69,7 @@ static int hwrng_register_cdev(struct hwrng *rng)
 	char *devname;
 	int err;
 
-	alias = of_alias_get(dev->device_node);
+	alias = of_alias_get(dev->of_node);
 	if (alias) {
 		devname = xstrdup(alias);
 	} else {

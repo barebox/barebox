@@ -315,7 +315,7 @@ static struct phy *stm32_usbphyc_of_xlate(struct device_d *dev,
 	int port = 0;
 
 	for (port = 0; port < usbphyc->nphys; port++) {
-		if (phynode == usbphyc->phys[port]->phy->dev.device_node) {
+		if (phynode == usbphyc->phys[port]->phy->dev.of_node) {
 			usbphyc_phy = usbphyc->phys[port];
 			break;
 		}
@@ -351,7 +351,7 @@ static struct phy *stm32_usbphyc_of_xlate(struct device_d *dev,
 static int stm32_usbphyc_probe(struct device_d *dev)
 {
 	struct stm32_usbphyc *usbphyc;
-	struct device_node *child, *np = dev->device_node;
+	struct device_node *child, *np = dev->of_node;
 	struct resource *iores;
 	struct phy_provider *phy_provider;
 	u32 pllen, version;

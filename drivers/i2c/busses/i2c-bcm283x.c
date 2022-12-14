@@ -271,7 +271,7 @@ static int bcm283x_i2c_probe(struct device_d *dev)
 	int ret;
 	struct resource *iores;
 	struct bcm283x_i2c *bcm_i2c;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 
 	bcm_i2c = xzalloc(sizeof(*bcm_i2c));
 
@@ -308,7 +308,7 @@ static int bcm283x_i2c_probe(struct device_d *dev)
 	bcm_i2c->adapter.master_xfer = bcm283x_i2c_xfer;
 	bcm_i2c->adapter.nr = dev->id;
 	bcm_i2c->adapter.dev.parent = dev;
-	bcm_i2c->adapter.dev.device_node = np;
+	bcm_i2c->adapter.dev.of_node = np;
 
 	ret = bcm283x_i2c_init(bcm_i2c);
 	if (ret)

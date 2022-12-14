@@ -102,9 +102,9 @@ static int do_devinfo(int argc, char *argv[])
 			printf("\n");
 		}
 #ifdef CONFIG_OFDEVICE
-		if (dev->device_node) {
-			printf("Device node: %s\n", dev->device_node->full_name);
-			of_print_nodes(dev->device_node, 0, ~0);
+		if (dev->of_node) {
+			printf("Device node: %s\n", dev->of_node->full_name);
+			of_print_nodes(dev->of_node, 0, ~0);
 		}
 #endif
 	}

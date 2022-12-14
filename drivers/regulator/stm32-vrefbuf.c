@@ -173,7 +173,7 @@ static int stm32_vrefbuf_probe(struct device_d *dev)
 	rdev->dev = dev;
 	rdev->desc = &stm32_vrefbuf_regu.desc;
 
-	ret = of_regulator_register(rdev, dev->device_node);
+	ret = of_regulator_register(rdev, dev->of_node);
 	if (ret) {
 		ret = PTR_ERR(rdev);
 		dev_err(dev, "register failed with error %d\n", ret);

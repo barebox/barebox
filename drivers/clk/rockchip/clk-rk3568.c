@@ -1721,7 +1721,7 @@ static const struct of_device_id clk_rk3568_match_table[] = {
 
 static int __init clk_rk3568_probe(struct device_d *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	const struct clk_rk3568_inits *init_data;
 
 	init_data = of_device_get_match_data(dev);

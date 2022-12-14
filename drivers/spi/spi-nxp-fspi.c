@@ -942,7 +942,7 @@ static const char *nxp_fspi_get_name(struct spi_mem *mem)
 
 	/* Set custom name derived from the platform_device of the controller.
 	 */
-	if (of_get_available_child_count(f->dev->device_node) == 1)
+	if (of_get_available_child_count(f->dev->of_node) == 1)
 		return dev_name(f->dev);
 
 	name = basprintf("%s-%d", dev_name(f->dev), mem->spi->chip_select);

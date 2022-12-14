@@ -505,18 +505,18 @@ static int smc911x_probe(struct device_d *dev)
 		priv->shift = pdata->shift;
 		priv->flags = pdata->flags;
 		priv->phy_mask = pdata->phy_mask;
-	} else if (IS_ENABLED(CONFIG_OFDEVICE) && dev->device_node) {
-		ret = of_property_read_u32(dev->device_node, "reg-io-width", &val);
+	} else if (IS_ENABLED(CONFIG_OFDEVICE) && dev->of_node) {
+		ret = of_property_read_u32(dev->of_node, "reg-io-width", &val);
 		if (ret)
 			return ret;
 		is_32bit = (val == 4);
 
-		of_property_read_u32(dev->device_node, "reg-shift", &priv->shift);
+		of_property_read_u32(dev->of_node, "reg-shift", &priv->shift);
 
-		if (of_property_read_bool(dev->device_node, "smsc,force-internal-phy"))
+		if (of_property_read_bool(dev->of_node, "smsc,force-internal-phy"))
 			priv->flags |= SMC911X_FORCE_INTERNAL_PHY;
 
-		if (of_property_read_bool(dev->device_node, "smsc,force-external-phy"))
+		if (of_property_read_bool(dev->of_node, "smsc,force-external-phy"))
 			priv->flags |= SMC911X_FORCE_EXTERNAL_PHY;
 	}
 

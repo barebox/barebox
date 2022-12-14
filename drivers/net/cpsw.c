@@ -1229,7 +1229,7 @@ static void cpsw_add_slave(struct cpsw_slave *slave, struct device_node *child, 
 			dev_warn(slave->cpsw->dev, "phy_id is deprecated, use phy-handle\n");
 	}
 
-	slave->dev.device_node = child;
+	slave->dev.of_node = child;
 	slave->phy_id = phy_id[1];
 	slave->phy_if = of_get_phy_mode(child);
 	slave->slave_num = i;
@@ -1238,7 +1238,7 @@ static void cpsw_add_slave(struct cpsw_slave *slave, struct device_node *child, 
 static int cpsw_legacy_probe_dt(struct cpsw_priv *priv)
 {
 	struct device_d *dev = priv->dev;
-	struct device_node *np = dev->device_node, *child;
+	struct device_node *np = dev->of_node, *child;
 	int ret, i = 0;
 
 	ret = of_property_read_u32(np, "slaves", &priv->num_slaves);
@@ -1266,7 +1266,7 @@ static int cpsw_legacy_probe_dt(struct cpsw_priv *priv)
 static int cpsw_switch_probe_dt(struct cpsw_priv *priv)
 {
 	struct device_d *dev = priv->dev;
-	struct device_node *np = dev->device_node, *child;
+	struct device_node *np = dev->of_node, *child;
 	struct device_node *ports = NULL;
 	int ret, i = 0;
 
@@ -1342,14 +1342,14 @@ static int cpsw_probe(struct device_d *dev)
 		return PTR_ERR(iores);
 	regs = IOMEM(iores->start);
 
-	ret = of_platform_populate(dev->device_node, NULL, dev);
+	ret = of_platform_populate(dev->of_node, NULL, dev);
 	if (ret)
 		return ret;
 
 	priv = xzalloc(sizeof(*priv));
 	priv->dev = dev;
 
-	if (dev->device_node) {
+	if (dev->of_node) {
 		ret = cpsw_probe_dt(priv);
 		if (ret)
 			goto out;

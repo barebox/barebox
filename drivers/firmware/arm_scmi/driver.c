@@ -1154,7 +1154,7 @@ static int scmi_probe(struct device_d *dev)
 	struct scmi_handle *handle;
 	const struct scmi_desc *desc;
 	struct scmi_info *info;
-	struct device_node *child, *np = dev->device_node;
+	struct device_node *child, *np = dev->of_node;
 
 	desc = of_device_get_match_data(dev);
 	if (!desc)

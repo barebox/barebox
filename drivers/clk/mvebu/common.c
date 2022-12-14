@@ -42,7 +42,7 @@ static struct of_device_id mvebu_coreclk_ids[] = {
 static int mvebu_coreclk_probe(struct device_d *dev)
 {
 	struct resource *iores;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	const struct of_device_id *match;
 	const struct coreclk_soc_desc *desc;
 	const char *tclk_name = "tclk";
@@ -151,7 +151,7 @@ static struct of_device_id mvebu_clk_gating_ids[] = {
 static int mvebu_clk_gating_probe(struct device_d *dev)
 {
 	struct resource *iores;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	const struct of_device_id *match;
 	const struct clk_gating_soc_desc *desc;
 	struct clk_gating_ctrl *ctrl;

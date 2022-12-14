@@ -851,7 +851,7 @@ static int fsl_ifc_chip_init(struct fsl_ifc_mtd *priv)
 	}
 	ctrl = priv->ctrl = ifc_ctrl;
 
-	if (priv->dev->device_node) {
+	if (priv->dev->of_node) {
 		int bank, banks;
 
 		 /* find which chip select it is connected to */

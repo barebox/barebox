@@ -581,7 +581,7 @@ static int zynqmp_firmware_probe(struct device_d *dev)
 {
 	int ret;
 
-	ret = get_set_conduit_method(dev->device_node);
+	ret = get_set_conduit_method(dev->of_node);
 	if (ret)
 		goto out;
 
@@ -619,7 +619,7 @@ static int zynqmp_firmware_probe(struct device_d *dev)
 	dev_dbg(dev, "Trustzone version v%d.%d\n",
 			pm_tz_version >> 16, pm_tz_version & 0xFFFF);
 
-	of_platform_populate(dev->device_node, NULL, dev);
+	of_platform_populate(dev->of_node, NULL, dev);
 out:
 	if (ret)
 		do_fw_call = do_fw_call_fail;

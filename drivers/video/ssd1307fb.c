@@ -427,9 +427,9 @@ static const struct of_device_id ssd1307fb_of_match[] = {
 static int ssd1307fb_probe(struct device_d *dev)
 {
 	struct fb_info *info;
-	struct device_node *node = dev->device_node;
+	struct device_node *node = dev->of_node;
 	const struct of_device_id *match =
-		of_match_node(ssd1307fb_of_match, dev->device_node);
+		of_match_node(ssd1307fb_of_match, dev->of_node);
 	u32 vmem_size;
 	struct ssd1307fb_par *par;
 	struct ssd1307fb_array *array;

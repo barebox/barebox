@@ -130,7 +130,8 @@ static int sifive_serial_probe(struct device_d *dev)
 	} else {
 		dev_dbg(dev, "failed to get clock. Fallback to device tree.\n");
 
-		ret = of_property_read_u32(dev->device_node, "clock-frequency", &freq);
+		ret = of_property_read_u32(dev->of_node, "clock-frequency",
+					   &freq);
 		if (ret) {
 			dev_warn(dev, "unknown clock frequency\n");
 			return ret;

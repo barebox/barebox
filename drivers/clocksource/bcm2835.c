@@ -41,7 +41,7 @@ static int bcm2835_cs_probe(struct device_d *dev)
 
 	/* try to read rate from DT property first */
 	if (IS_ENABLED(CONFIG_OFTREE))
-		of_property_read_u32(dev->device_node, "clock-frequency",
+		of_property_read_u32(dev->of_node, "clock-frequency",
 				     &rate);
 
 	/* if rate is still empty, try to get rate from clk */

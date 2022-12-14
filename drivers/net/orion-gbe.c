@@ -451,7 +451,7 @@ static int port_probe(struct device_d *parent, struct port_priv *port)
 	dev_set_name(dev, "%08x.ethernet-port", (u32)gbe->regs);
 	dev->id = port->portno;
 	dev->parent = parent;
-	dev->device_node = port->np;
+	dev->of_node = port->np;
 	ret = register_device(dev);
 	if (ret)
 		return ret;
@@ -499,13 +499,13 @@ static int orion_gbe_probe(struct device_d *dev)
 	 * Although untested, the driver should also be able to
 	 * deal with multi-port controllers.
 	 */
-	for_each_child_of_node(dev->device_node, pnp)
+	for_each_child_of_node(dev->of_node, pnp)
 		gbe->num_ports++;
 
 	gbe->ports = xzalloc(gbe->num_ports * sizeof(*gbe->ports));
 
 	ppriv = gbe->ports;
-	for_each_child_of_node(dev->device_node, pnp) {
+	for_each_child_of_node(dev->of_node, pnp) {
 		ppriv->np = pnp;
 
 		ret = port_probe(dev, ppriv);

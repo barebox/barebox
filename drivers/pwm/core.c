@@ -194,7 +194,7 @@ static struct pwm_device *of_node_to_pwm_device(struct device_node *np, int id)
 	struct pwm_device *pwm;
 
 	list_for_each_entry(pwm, &pwm_list, node) {
-		if (pwm->hwdev && pwm->hwdev->device_node == np &&
+		if (pwm->hwdev && pwm->hwdev->of_node == np &&
 				pwm->chip->id == id)
 			return pwm;
 	}

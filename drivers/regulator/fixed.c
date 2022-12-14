@@ -46,12 +46,12 @@ const static struct regulator_ops fixed_ops = {
 
 static int regulator_fixed_probe(struct device_d *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct regulator_fixed *fix;
 	u32 delay;
 	int ret;
 
-	if (!dev->device_node)
+	if (!dev->of_node)
 		return -EINVAL;
 
 	fix = xzalloc(sizeof(*fix));

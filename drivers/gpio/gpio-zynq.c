@@ -376,7 +376,7 @@ static int zynqmp_gpio_probe(struct device_d *dev)
 	}
 
 	gpio->base_addr = IOMEM(iores->start);
-	gpio->chip.base = of_alias_get_id(dev->device_node, "gpio");
+	gpio->chip.base = of_alias_get_id(dev->of_node, "gpio");
 	gpio->chip.ops = &zynq_gpio_ops;
 	gpio->chip.ngpio = p_data->ngpio;
 	gpio->chip.dev = dev;

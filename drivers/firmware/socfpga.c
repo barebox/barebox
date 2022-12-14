@@ -382,7 +382,7 @@ static int socfpga_fpgamgr_probe(struct device_d *dev)
 	struct resource *iores;
 	struct fpgamgr *mgr;
 	struct firmware_handler *fh;
-	const char *alias = of_alias_get(dev->device_node);
+	const char *alias = of_alias_get(dev->of_node);
 	const char *model = NULL;
 	struct param_d *p;
 	int ret;
@@ -414,7 +414,7 @@ static int socfpga_fpgamgr_probe(struct device_d *dev)
 	fh->open = socfpga_fpgamgr_program_start;
 	fh->write = socfpga_fpgamgr_program_write_buf;
 	fh->close = socfpga_fpgamgr_program_finish;
-	of_property_read_string(dev->device_node, "compatible", &model);
+	of_property_read_string(dev->of_node, "compatible", &model);
 	if (model)
 		fh->model = xstrdup(model);
 	fh->dev = dev;
@@ -435,7 +435,7 @@ static int socfpga_fpgamgr_probe(struct device_d *dev)
 	}
 
 	fh->dev = &mgr->dev;
-	fh->device_node = dev->device_node;
+	fh->device_node = dev->of_node;
 
 	ret = firmwaremgr_register(fh);
 	if (ret != 0) {

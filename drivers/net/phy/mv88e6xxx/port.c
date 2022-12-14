@@ -565,7 +565,7 @@ device_phy_driver(mv88e6xxx_port_driver);
 int mv88e6xxx_port_probe(struct mv88e6xxx_chip *chip)
 {
 	struct device_d *dev = chip->dev;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct device_node *port_node, *switch_node;
 	struct device_node *port_nodes[DSA_MAX_PORTS] = { NULL };
 	int err, i;
@@ -659,7 +659,7 @@ int mv88e6xxx_port_probe(struct mv88e6xxx_chip *chip)
  		phydev = phy_device_create(chip->parent_miibus,
 					   chip->info->port_base_addr + i,
 					   MV88E6XXX_SWITCH_PORT_PHY_ID);
-		phydev->dev.device_node = port_nodes[i];
+		phydev->dev.of_node = port_nodes[i];
 		phydev->dev.priv = chip;
 		phydev->duplex = DUPLEX_UNFORCED;
 

@@ -387,7 +387,7 @@ static int imx_rproc_addr_init(struct imx_rproc *priv,
 			       struct device_d *dev)
 {
 	const struct imx_rproc_dcfg *dcfg = priv->dcfg;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	int a, b = 0, err, nph;
 
 	/* remap required addresses */
@@ -451,7 +451,7 @@ static int imx_rproc_addr_init(struct imx_rproc *priv,
 
 static int imx_rproc_probe(struct device_d *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct imx_rproc *priv;
 	struct rproc *rproc;
 	const struct imx_rproc_dcfg *dcfg;

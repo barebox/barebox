@@ -45,7 +45,7 @@ static struct poweroff_handler handler;
 
 static int gpio_poweroff_probe(struct device_d *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	bool input = false;
 	enum gpiod_flags flags;
 

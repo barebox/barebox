@@ -63,7 +63,7 @@ static int imx_pd_ioctl(struct vpl *vpl, unsigned int port,
 
 static int imx_pd_probe(struct device_d *dev)
 {
-	struct device_node *node = dev->device_node;
+	struct device_node *node = dev->of_node;
 	struct imx_pd *imx_pd;
 	struct device_node *port;
 	const char *fmt;

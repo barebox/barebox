@@ -552,7 +552,7 @@ static int mmci_of_parse(struct device_node *np,
 static int mmci_probe(struct amba_device *dev, const struct amba_id *id)
 {
 	struct device_d *hw_dev = &dev->dev;
-	struct device_node *np = hw_dev->device_node;
+	struct device_node *np = hw_dev->of_node;
 	struct mmci_platform_data *plat = hw_dev->platform_data;
 	struct variant_data *variant = id->data;
 	u32 sdi_u32;

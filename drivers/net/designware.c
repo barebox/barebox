@@ -427,12 +427,12 @@ static int dwc_probe_dt(struct device_d *dev, struct dw_eth_dev *priv)
 		return -ENODEV;
 
 	priv->phy_addr = -1;
-	priv->interface = of_get_phy_mode(dev->device_node);
+	priv->interface = of_get_phy_mode(dev->of_node);
 
 	/* Set MDIO bus device node, if present. */
-	for_each_child_of_node(dev->device_node, child) {
+	for_each_child_of_node(dev->of_node, child) {
 		if (of_device_is_compatible(child, "snps,dwmac-mdio")) {
-			priv->miibus.dev.device_node = child;
+			priv->miibus.dev.of_node = child;
 			break;
 		}
 	}

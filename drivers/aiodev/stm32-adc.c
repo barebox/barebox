@@ -219,7 +219,7 @@ static int stm32_adc_chan_of_init(struct device_d *dev, struct stm32_adc *adc)
 	int ret;
 
 	/* Retrieve single ended channels listed in device tree */
-	of_get_property(dev->device_node, "st,adc-channels", &num_channels);
+	of_get_property(dev->of_node, "st,adc-channels", &num_channels);
 	num_channels /= sizeof(__be32);
 
 	if (num_channels > adc->cfg->max_channels) {
@@ -228,7 +228,7 @@ static int stm32_adc_chan_of_init(struct device_d *dev, struct stm32_adc *adc)
 	}
 
 	/* Optional sample time is provided either for each, or all channels */
-	of_get_property(dev->device_node, "st,min-sample-time-nsecs", &num_times);
+	of_get_property(dev->of_node, "st,min-sample-time-nsecs", &num_times);
 	num_times /= sizeof(__be32);
 	if (num_times > 1 && num_times != num_channels) {
 		dev_err(dev, "Invalid st,min-sample-time-nsecs\n");
@@ -252,7 +252,8 @@ static int stm32_adc_chan_of_init(struct device_d *dev, struct stm32_adc *adc)
 	for (i = 0; i < num_channels; i++) {
 		u32 chan;
 
-		ret = of_property_read_u32_index(dev->device_node, "st,adc-channels", i, &chan);
+		ret = of_property_read_u32_index(dev->of_node,
+						 "st,adc-channels", i, &chan);
 		if (ret)
 			return ret;
 
@@ -273,7 +274,8 @@ static int stm32_adc_chan_of_init(struct device_d *dev, struct stm32_adc *adc)
 		 * get either no value, 1 shared value for all indexes, or one
 		 * value per channel.
 		 */
-		of_property_read_u32_index(dev->device_node, "st,min-sample-time-nsecs",
+		of_property_read_u32_index(dev->of_node,
+					   "st,min-sample-time-nsecs",
 					   i, &smp);
 		/* Prepare sampling time settings */
 		stm32_adc_smpr_init(adc, chan, smp);
@@ -295,7 +297,7 @@ static int stm32_adc_probe(struct device_d *dev)
 	u32 offset;
 	int ret;
 
-	ret = of_property_read_u32(dev->device_node, "reg", &offset);
+	ret = of_property_read_u32(dev->of_node, "reg", &offset);
 	if (ret) {
 		dev_err(dev, "Can't read reg property\n");
 		return ret;

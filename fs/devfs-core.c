@@ -315,7 +315,7 @@ int devfs_create(struct cdev *new)
 	if (new->dev) {
 		list_add_tail(&new->devices_list, &new->dev->cdevs);
 		if (!new->device_node)
-			new->device_node = new->dev->device_node;
+			new->device_node = new->dev->of_node;
 	}
 
 	return 0;

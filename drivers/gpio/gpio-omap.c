@@ -134,7 +134,7 @@ static int omap_gpio_probe(struct device_d *dev)
 
 	omapgpio->chip.ops = &omap_gpio_ops;
 	if (dev->id < 0) {
-		omapgpio->chip.base = of_alias_get_id(dev->device_node, "gpio");
+		omapgpio->chip.base = of_alias_get_id(dev->of_node, "gpio");
 		if (omapgpio->chip.base < 0)
 			return omapgpio->chip.base;
 		omapgpio->chip.base *= 32;

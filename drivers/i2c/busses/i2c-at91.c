@@ -546,7 +546,7 @@ static int at91_twi_probe(struct device_d *dev)
 	i2c_at91->adapter.master_xfer = at91_twi_xfer;
 	i2c_at91->adapter.dev.parent = dev;
 	i2c_at91->adapter.nr = dev->id;
-	i2c_at91->adapter.dev.device_node = dev->device_node;
+	i2c_at91->adapter.dev.of_node = dev->of_node;
 
 	rc = i2c_add_numbered_adapter(&i2c_at91->adapter);
 	if (rc) {

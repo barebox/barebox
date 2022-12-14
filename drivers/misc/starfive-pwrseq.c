@@ -21,7 +21,7 @@ static int starfive_pwrseq_probe(struct device_d *dev)
 	if (ret)
 		return ret;
 
-	return of_platform_populate(dev->device_node, NULL, dev);
+	return of_platform_populate(dev->of_node, NULL, dev);
 }
 
 static struct of_device_id starfive_pwrseq_dt_ids[] = {

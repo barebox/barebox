@@ -58,7 +58,7 @@ static int mvebu_timer_probe(struct device_d *dev)
 
 	val = __raw_readl(timer_base + TIMER_CTRL_OFF);
 	val &= ~(TIMER0_25MHZ | TIMER0_DIV_MASK);
-	if (of_device_is_compatible(dev->device_node,
+	if (of_device_is_compatible(dev->of_node,
 				    "marvell,armada-370-timer")) {
 		clk = clk_get(dev, NULL);
 		div = TIMER_DIVIDER;

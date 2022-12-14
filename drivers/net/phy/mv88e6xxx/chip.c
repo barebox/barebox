@@ -839,7 +839,7 @@ static const struct nvmem_bus mv88e6xxx_eeprom_nvmem_bus = {
 
 static int mv88e6xxx_probe(struct device_d *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct device_node *mdio_node;
 	struct mv88e6xxx_chip *chip;
 	enum of_gpio_flags of_flags;
@@ -941,7 +941,7 @@ static int mv88e6xxx_probe(struct device_d *dev)
 
 	mdio_node = of_get_child_by_name(np, "mdio");
 	if (mdio_node)
-		chip->miibus.dev.device_node = mdio_node;
+		chip->miibus.dev.of_node = mdio_node;
 
 	err = mv88e6xxx_port_probe(chip);
 	if (err)

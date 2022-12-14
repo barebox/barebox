@@ -477,7 +477,7 @@ static int __prci_register_clocks(struct device_d *dev, struct __prci_data *pd,
 	struct __prci_clock *pic;
 	int parent_count, i, r;
 
-	parent_count = of_clk_get_parent_count(dev->device_node);
+	parent_count = of_clk_get_parent_count(dev->of_node);
 	if (parent_count != EXPECTED_CLK_PARENT_COUNT) {
 		dev_err(dev, "expected only two parent clocks, found %d\n",
 			parent_count);
@@ -520,7 +520,7 @@ static int __prci_register_clocks(struct device_d *dev, struct __prci_data *pd,
 
 	pd->hw_clks.clk_num = i;
 
-	r = of_clk_add_provider(dev->device_node, of_clk_src_onecell_get,
+	r = of_clk_add_provider(dev->of_node, of_clk_src_onecell_get,
 				&pd->hw_clks);
 	if (r) {
 		dev_err(dev, "could not add hw_provider: %d\n", r);

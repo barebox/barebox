@@ -80,7 +80,7 @@ static int nop_usbphy_probe(struct device_d *dev)
 	if (IS_ERR(nopphy->clk))
 		nopphy->clk = NULL;
 
-	nopphy->reset = of_get_named_gpio_flags(dev->device_node,
+	nopphy->reset = of_get_named_gpio_flags(dev->of_node,
 						"reset-gpios", 0, &of_flags);
 	if (gpio_is_valid(nopphy->reset)) {
 		/* assert reset */

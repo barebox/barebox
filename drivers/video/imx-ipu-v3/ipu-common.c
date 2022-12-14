@@ -714,7 +714,7 @@ static int ipu_add_subdevice_pdata(struct device_d *ipu_dev,
 	dev = device_alloc(reg->name, ipu_client_id++);
 	dev->parent = ipu_dev;
 	device_add_data(dev, &reg->pdata, sizeof(reg->pdata));
-	((struct ipu_client_platformdata *)dev->platform_data)->device_node = ipu_dev->device_node;
+	((struct ipu_client_platformdata *)dev->platform_data)->device_node = ipu_dev->of_node;
 
 	ret = platform_device_register(dev);
 

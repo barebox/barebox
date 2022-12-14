@@ -1178,7 +1178,7 @@ static int imx_pgc_domain_probe(struct device_d *dev)
 		goto out_domain_unmap;
 	}
 
-	ret = of_genpd_add_provider_simple(domain->dev->device_node,
+	ret = of_genpd_add_provider_simple(domain->dev->of_node,
 					   &domain->genpd);
 	if (ret) {
 		dev_err(domain->dev, "Failed to add genpd provider\n");
@@ -1222,7 +1222,7 @@ static int imx_gpcv2_probe(struct device_d *dev)
 	struct regmap *regmap;
 	int ret, pass = 0;
 
-	pgc_np = of_get_child_by_name(dev->device_node, "pgc");
+	pgc_np = of_get_child_by_name(dev->of_node, "pgc");
 	if (!pgc_np) {
 		dev_err(dev, "No power domains specified in DT\n");
 		return -EINVAL;
@@ -1277,8 +1277,8 @@ again:
 		domain->genpd.power_off = imx_pgc_power_down;
 
 		pd_dev = xzalloc(sizeof(*pd_dev));
-		pd_dev->device_node = np;
-		pd_dev->device_node->dev = pd_dev;
+		pd_dev->of_node = np;
+		pd_dev->of_node->dev = pd_dev;
 		pd_dev->id = domain_index;
 		pd_dev->parent = dev;
 		pd_dev->priv = domain;

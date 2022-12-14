@@ -334,10 +334,10 @@ static int omap3_spi_setup(struct spi_device *spi)
 
 static int omap3_spi_probe_dt(struct device_d *dev, struct omap3_spi_master *omap3_master)
 {
-	if (!IS_ENABLED(CONFIG_OFDEVICE) || !dev->device_node)
+	if (!IS_ENABLED(CONFIG_OFDEVICE) || !dev->of_node)
 		return -ENODEV;
 
-	if (of_property_read_bool(dev->device_node, "ti,pindir-d0-out-d1-in"))
+	if (of_property_read_bool(dev->of_node, "ti,pindir-d0-out-d1-in"))
 		omap3_master->swap_miso_mosi = 1;
 
 	return 0;

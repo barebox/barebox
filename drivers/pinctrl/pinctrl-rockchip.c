@@ -333,7 +333,7 @@ static int rockchip_gpio_probe(struct device_d *dev)
 	void __iomem *reg_base;
 	int ret, bankno;
 
-	bankno = of_alias_get_id(dev->device_node, "gpio");
+	bankno = of_alias_get_id(dev->of_node, "gpio");
 	if (bankno >= ctrl->nr_banks)
 		bankno = -EINVAL;
 	if (bankno < 0)
@@ -873,7 +873,7 @@ static struct rockchip_pin_ctrl *rockchip_pinctrl_get_soc_data(
 	struct rockchip_pinctrl *d, struct device_d *dev)
 {
 	const struct of_device_id *match;
-	struct device_node *node = dev->device_node;
+	struct device_node *node = dev->of_node;
 	struct device_node *np;
 	struct rockchip_pin_ctrl *ctrl;
 	struct rockchip_pin_bank *bank;
@@ -1010,14 +1010,14 @@ static int rockchip_pinctrl_probe(struct device_d *dev)
 	}
 	info->ctrl = ctrl;
 
-	info->reg_base = syscon_base_lookup_by_phandle(dev->device_node,
+	info->reg_base = syscon_base_lookup_by_phandle(dev->of_node,
 						       "rockchip,grf");
 	if (IS_ERR(info->reg_base)) {
 		dev_err(dev, "Could not get grf syscon address\n");
 		return -ENODEV;
 	}
 
-	info->reg_pmu = syscon_base_lookup_by_phandle(dev->device_node,
+	info->reg_pmu = syscon_base_lookup_by_phandle(dev->of_node,
 						      "rockchip,pmu");
 	if (IS_ERR(info->reg_pmu)) {
 		dev_err(dev, "Could not get pmu syscon address\n");
@@ -1029,7 +1029,7 @@ static int rockchip_pinctrl_probe(struct device_d *dev)
 
 	dev->priv = info;
 
-	of_platform_populate(dev->device_node, NULL, dev);
+	of_platform_populate(dev->of_node, NULL, dev);
 
 	if (!IS_ENABLED(CONFIG_PINCTRL))
 		return 0;

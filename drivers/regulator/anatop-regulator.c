@@ -35,7 +35,7 @@ static struct regulator_ops anatop_rops = {
 
 static int anatop_regulator_probe(struct device_d *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct device_node *anatop_np;
 	struct regulator_desc *rdesc;
 	struct regulator_dev *rdev;
@@ -131,7 +131,7 @@ static int anatop_regulator_probe(struct device_d *dev)
 		}
 	}
 
-	return of_regulator_register(rdev, dev->device_node);
+	return of_regulator_register(rdev, dev->of_node);
 }
 
 static const struct of_device_id of_anatop_regulator_match_tbl[] = {

@@ -808,7 +808,7 @@ static int imx6_ccm_probe(struct device_d *dev)
 	imx6q_mmdc_ch1_mask_handshake(ccm_base);
 
 	if (IS_ENABLED(CONFIG_DRIVER_VIDEO_IMX_IPUV3))
-		imx6_add_video_clks(anatop_base, ccm_base, dev->device_node);
+		imx6_add_video_clks(anatop_base, ccm_base, dev->of_node);
 
 	writel(0xffffffff, ccm_base + CCGR0);
 	writel(0xf0ffffff, ccm_base + CCGR1); /* gate GPU3D, GPU2D */
@@ -824,7 +824,7 @@ static int imx6_ccm_probe(struct device_d *dev)
 
 	clk_data.clks = clks;
 	clk_data.clk_num = IMX6QDL_CLK_END;
-	of_clk_add_provider(dev->device_node, of_clk_src_onecell_get, &clk_data);
+	of_clk_add_provider(dev->of_node, of_clk_src_onecell_get, &clk_data);
 
 	clk_enable(clks[IMX6QDL_CLK_MMDC_CH0_AXI_PODF]);
 	clk_enable(clks[IMX6QDL_CLK_PLL6_ENET]);

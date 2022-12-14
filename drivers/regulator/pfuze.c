@@ -165,7 +165,7 @@ static int __init pfuze_probe(struct device_d *dev)
 	if (pfuze_init_callback)
 		pfuze_init_callback(pfuze_dev->map);
 
-	if (of_property_read_bool(dev->device_node,
+	if (of_property_read_bool(dev->of_node,
 				  "fsl,pmic-stby-poweroff"))
 		return poweroff_handler_register_fn(pfuze_power_off_prepare);
 

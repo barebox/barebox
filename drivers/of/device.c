@@ -14,10 +14,10 @@
 const struct of_device_id *of_match_device(const struct of_device_id *matches,
 					   const struct device_d *dev)
 {
-	if ((!matches) || (!dev->device_node))
+	if ((!matches) || (!dev->of_node))
 		return NULL;
 
-	return of_match_node(matches, dev->device_node);
+	return of_match_node(matches, dev->of_node);
 }
 EXPORT_SYMBOL(of_match_device);
 

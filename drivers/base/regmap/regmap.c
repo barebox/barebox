@@ -35,8 +35,8 @@ enum regmap_endian regmap_get_val_endian(struct device_d *dev,
 		return endian;
 
 	/* If the dev and dev->device_node exist try to get endianness from DT */
-	if (dev && dev->device_node) {
-		np = dev->device_node;
+	if (dev && dev->of_node) {
+		np = dev->of_node;
 
 		/* Parse the device's DT node for an endianness specification */
 		if (of_property_read_bool(np, "big-endian"))

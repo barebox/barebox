@@ -95,16 +95,16 @@ struct i2c_adapter *i2c_add_mux_adapter(struct i2c_adapter *parent,
 	 * Try to populate the mux adapter's device_node, expands to
 	 * nothing if !CONFIG_OFDEVICE.
 	 */
-	if (mux_dev->device_node) {
+	if (mux_dev->of_node) {
 		struct device_node *child;
 		u32 reg;
 
-		for_each_child_of_node(mux_dev->device_node, child) {
+		for_each_child_of_node(mux_dev->of_node, child) {
 			ret = of_property_read_u32(child, "reg", &reg);
 			if (ret)
 				continue;
 			if (chan_id == reg) {
-				priv->adap.dev.device_node = child;
+				priv->adap.dev.of_node = child;
 				break;
 			}
 		}

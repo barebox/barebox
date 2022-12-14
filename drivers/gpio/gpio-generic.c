@@ -510,10 +510,10 @@ static struct bgpio_pdata *bgpio_parse_dt(struct device_d *dev,
 
 	pdata->base = -1;
 
-	if (of_device_is_big_endian(dev->device_node))
+	if (of_device_is_big_endian(dev->of_node))
 		*flags |= BGPIOF_BIG_ENDIAN_BYTE_ORDER;
 
-	if (of_property_read_bool(dev->device_node, "no-output"))
+	if (of_property_read_bool(dev->of_node, "no-output"))
 		*flags |= BGPIOF_NO_OUTPUT;
 
 	return pdata;

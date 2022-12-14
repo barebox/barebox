@@ -111,7 +111,7 @@ static int stm32_bsec_read_mac(struct bsec_priv *priv, int offset, u8 *mac)
 static void stm32_bsec_init_dt(struct bsec_priv *priv, struct device_d *dev,
 			       struct regmap *map)
 {
-	struct device_node *node = dev->device_node;
+	struct device_node *node = dev->of_node;
 	struct device_node *rnode;
 	u32 phandle, offset;
 	char mac[ETH_ALEN];

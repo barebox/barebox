@@ -135,7 +135,7 @@ static int at91_sdhci_probe(struct device_d *dev)
 	 * if SDCAL pin is wrongly connected, we must enable
 	 * the analog calibration cell permanently.
 	 */
-	priv->cal_always_on = of_property_read_bool(dev->device_node,
+	priv->cal_always_on = of_property_read_bool(dev->of_node,
 						    "microchip,sdcal-inverted");
 
 	at91_sdhci_mmio_init(&priv->host, IOMEM(iores->start));

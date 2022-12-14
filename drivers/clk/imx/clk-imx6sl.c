@@ -85,7 +85,7 @@ static int imx6sl_ccm_probe(struct device_d *dev)
 {
 	struct resource *iores;
 	void __iomem *base, *anatop_base, *ccm_base;
-	struct device_node *ccm_node = dev->device_node;
+	struct device_node *ccm_node = dev->of_node;
 
 	clks[IMX6SL_CLK_DUMMY] = clk_fixed("dummy", 0);
 

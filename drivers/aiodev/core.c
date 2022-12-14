@@ -37,10 +37,10 @@ struct aiochannel *aiochannel_get(struct device_d *dev, int index)
 	struct aiodevice *aiodev;
 	int ret, chnum = 0;
 
-	if (!dev->device_node)
+	if (!dev->of_node)
 		return ERR_PTR(-EINVAL);
 
-	ret = of_parse_phandle_with_args(dev->device_node,
+	ret = of_parse_phandle_with_args(dev->of_node,
 					 "io-channels",
 					 "#io-channel-cells",
 					 index, &spec);
@@ -48,7 +48,7 @@ struct aiochannel *aiochannel_get(struct device_d *dev, int index)
                 return ERR_PTR(ret);
 
 	list_for_each_entry(aiodev, &aiodevices, list) {
-		if (aiodev->hwdev->device_node == spec.np)
+		if (aiodev->hwdev->of_node == spec.np)
 			goto found;
 	}
 
@@ -91,10 +91,10 @@ int aiodevice_register(struct aiodevice *aiodev)
 	int i, ret;
 
 	if (!aiodev->name && aiodev->hwdev &&
-	    aiodev->hwdev->device_node) {
+	    aiodev->hwdev->of_node) {
 		aiodev->dev.id = DEVICE_ID_SINGLE;
 
-		aiodev->name = of_alias_get(aiodev->hwdev->device_node);
+		aiodev->name = of_alias_get(aiodev->hwdev->of_node);
 	}
 
 	if (!aiodev->name) {

@@ -44,7 +44,7 @@ static int sifive_gpio_probe(struct device_d *dev)
 	}
 	base = IOMEM(res->start);
 
-	ngpio = __of_irq_count(dev->device_node);
+	ngpio = __of_irq_count(dev->of_node);
 	if (ngpio > SIFIVE_GPIO_MAX) {
 		dev_err(dev, "Too many GPIO interrupts (max=%d)\n",
 			SIFIVE_GPIO_MAX);

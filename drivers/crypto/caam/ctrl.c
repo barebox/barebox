@@ -366,7 +366,7 @@ static int caam_probe(struct device_d *dev)
 
 	dev->priv = ctrlpriv;
 	ctrlpriv->pdev = dev;
-	nprop = dev->device_node;
+	nprop = dev->of_node;
 
 	ctrlpriv->caam_ipg = clk_get(dev, "ipg");
 	if (IS_ERR(ctrlpriv->caam_ipg)) {

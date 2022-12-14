@@ -443,7 +443,7 @@ static int gpiochip_find_base(int ngpio)
 static int of_hog_gpio(struct device_node *np, struct gpio_chip *chip,
 		       unsigned int idx)
 {
-	struct device_node *chip_np = chip->dev->device_node;
+	struct device_node *chip_np = chip->dev->of_node;
 	struct of_phandle_args gpiospec;
 	unsigned long flags = 0;
 	u32 gpio_flags;
@@ -500,15 +500,16 @@ static int of_gpiochip_scan_hogs(struct gpio_chip *chip)
 	struct device_node *np;
 	int ret, i, count;
 
-	if (!IS_ENABLED(CONFIG_OFDEVICE) || !chip->dev->device_node)
+	if (!IS_ENABLED(CONFIG_OFDEVICE) || !chip->dev->of_node)
 		return 0;
 
-	count = of_property_count_strings(chip->dev->device_node, "gpio-line-names");
+	count = of_property_count_strings(chip->dev->of_node,
+					  "gpio-line-names");
 
 	if (count > 0) {
 		const char **arr = xzalloc(count * sizeof(char *));
 
-		of_property_read_string_array(chip->dev->device_node,
+		of_property_read_string_array(chip->dev->of_node,
 					      "gpio-line-names", arr, count);
 
 		for (i = 0; i < chip->ngpio && i < count; i++)
@@ -517,7 +518,7 @@ static int of_gpiochip_scan_hogs(struct gpio_chip *chip)
 		free(arr);
 	}
 
-	for_each_available_child_of_node(chip->dev->device_node, np) {
+	for_each_available_child_of_node(chip->dev->of_node, np) {
 		if (!of_property_read_bool(np, "gpio-hog"))
 			continue;
 
@@ -544,14 +545,14 @@ static const char *gpio_suffixes[] = {
 /* Linux compatibility helper: Get a GPIO descriptor from device tree */
 int gpiod_get(struct device_d *dev, const char *_con_id, enum gpiod_flags flags)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	enum of_gpio_flags of_flags;
 	const char *label = dev_name(dev);
 	char *buf = NULL, *con_id;
 	int gpio;
 	int ret, i;
 
-	if (!IS_ENABLED(CONFIG_OFDEVICE) || !dev->device_node)
+	if (!IS_ENABLED(CONFIG_OFDEVICE) || !dev->of_node)
 		return -ENODEV;
 
 	for (i = 0; i < ARRAY_SIZE(gpio_suffixes); i++) {

@@ -1281,8 +1281,8 @@ static int __init atmel_nand_probe(struct device_d *dev)
 	host->board = pdata;
 	host->dev = dev;
 
-	if (dev->device_node) {
-		res = atmel_nand_of_init(host, dev->device_node);
+	if (dev->of_node) {
+		res = atmel_nand_of_init(host, dev->of_node);
 		if (res)
 			goto err_no_card;
 	} else {

@@ -288,15 +288,15 @@ int mtd_read_oob(struct mtd_info *mtd, loff_t from, struct mtd_oob_ops *ops);
 static inline void mtd_set_of_node(struct mtd_info *mtd,
 				   struct device_node *np)
 {
-	mtd->dev.device_node = np;
+	mtd->dev.of_node = np;
 }
 
 static inline struct device_node *mtd_get_of_node(struct mtd_info *mtd)
 {
-	if (mtd->dev.device_node)
-		return mtd->dev.device_node;
+	if (mtd->dev.of_node)
+		return mtd->dev.of_node;
 	if (mtd->dev.parent)
-		return mtd->dev.parent->device_node;
+		return mtd->dev.parent->of_node;
 	return NULL;
 }
 

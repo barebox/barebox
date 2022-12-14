@@ -720,7 +720,7 @@ static int mvneta_probe(struct device_d *dev)
 		return PTR_ERR(priv->clk);
 	clk_enable(priv->clk);
 
-	ret = of_get_phy_mode(dev->device_node);
+	ret = of_get_phy_mode(dev->of_node);
 	if (ret < 0)
 		return ret;
 	priv->intf = ret;

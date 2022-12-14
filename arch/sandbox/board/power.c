@@ -66,7 +66,8 @@ static int sandbox_power_probe(struct device_d *dev)
 	if (IS_ENABLED(CONFIG_SANDBOX_REEXEC))
 		restart_handler_register(&power->rst_reexec);
 
-	power->reset_source_cell = of_nvmem_cell_get(dev->device_node, "reset-source");
+	power->reset_source_cell = of_nvmem_cell_get(dev->of_node,
+						     "reset-source");
 	if (IS_ERR(power->reset_source_cell)) {
 		dev_warn(dev, "No reset source info available: %pe\n", power->reset_source_cell);
 		return 0;

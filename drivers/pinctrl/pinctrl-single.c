@@ -123,7 +123,7 @@ int pinctrl_single_probe(struct device_d *dev)
 {
 	struct resource *iores;
 	struct pinctrl_single *pcs;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	int ret = 0;
 
 	pcs = xzalloc(sizeof(*pcs));

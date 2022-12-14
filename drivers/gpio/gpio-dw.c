@@ -138,7 +138,7 @@ static int dw_gpio_add_port(struct device_d *dev, struct device_node *node,
 		return -ENODEV;
 	}
 
-	chip->chip.dev->device_node = node;
+	chip->chip.dev->of_node = node;
 
 	ret = gpiochip_add(&chip->chip);
 	if (ret)
@@ -163,7 +163,7 @@ static int dw_gpio_probe(struct device_d *dev)
 		return PTR_ERR(iores);
 	gpio->regs = IOMEM(iores->start);
 
-	for_each_child_of_node(dev->device_node, node)
+	for_each_child_of_node(dev->of_node, node)
 		dw_gpio_add_port(dev, node, gpio);
 
 	return 0;

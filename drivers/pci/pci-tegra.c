@@ -903,7 +903,7 @@ static int tegra_pcie_put_resources(struct tegra_pcie *pcie)
 static int tegra_pcie_get_xbar_config(struct tegra_pcie *pcie, u32 lanes,
 				      u32 *xbar)
 {
-	struct device_node *np = pcie->dev->device_node;
+	struct device_node *np = pcie->dev->of_node;
 
 	if (of_device_is_compatible(np, "nvidia,tegra124-pcie")) {
 		switch (lanes) {
@@ -954,7 +954,7 @@ static int tegra_pcie_get_xbar_config(struct tegra_pcie *pcie, u32 lanes,
 static int tegra_pcie_parse_dt(struct tegra_pcie *pcie)
 {
 	const struct tegra_pcie_soc_data *soc = pcie->soc_data;
-	struct device_node *np = pcie->dev->device_node, *port;
+	struct device_node *np = pcie->dev->of_node, *port;
 	struct of_pci_range_parser parser;
 	struct of_pci_range range;
 	struct resource *rp_res;

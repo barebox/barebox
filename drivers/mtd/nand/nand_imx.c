@@ -1106,7 +1106,7 @@ static struct nand_bbt_descr bbt_mirror_descr = {
 
 static int __init mxcnd_probe_dt(struct imx_nand_host *host)
 {
-	struct device_node *np = host->dev->device_node;
+	struct device_node *np = host->dev->of_node;
 	int buswidth;
 
 	if (!IS_ENABLED(CONFIG_OFDEVICE))

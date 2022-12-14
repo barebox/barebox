@@ -44,8 +44,8 @@ static int mpc8xxx_probe(struct device_d *dev)
 
 	mpc8xxx_gc = xzalloc(sizeof(*mpc8xxx_gc));
 
-	if (dev->device_node) {
-		np = dev->device_node;
+	if (dev->of_node) {
+		np = dev->of_node;
 	} else {
 		dev_err(dev, "no device_node\n");
 		return -ENODEV;

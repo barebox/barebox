@@ -657,15 +657,15 @@ static int fec_probe_dt(struct device_d *dev, struct fec_priv *fec)
 	struct device_node *mdiobus;
 	int ret;
 
-	ret = of_get_phy_mode(dev->device_node);
+	ret = of_get_phy_mode(dev->of_node);
 	if (ret < 0)
 		fec->interface = PHY_INTERFACE_MODE_MII;
 	else
 		fec->interface = ret;
 
-	mdiobus = of_get_child_by_name(dev->device_node, "mdio");
+	mdiobus = of_get_child_by_name(dev->of_node, "mdio");
 	if (mdiobus)
-		fec->miibus.dev.device_node = mdiobus;
+		fec->miibus.dev.of_node = mdiobus;
 
 	return 0;
 }
@@ -825,10 +825,11 @@ static int fec_probe(struct device_d *dev)
 		goto release_res;
 	}
 
-	phy_reset = of_get_named_gpio(dev->device_node, "phy-reset-gpios", 0);
+	phy_reset = of_get_named_gpio(dev->of_node, "phy-reset-gpios", 0);
 	if (gpio_is_valid(phy_reset)) {
-		of_property_read_u32(dev->device_node, "phy-reset-duration", &msec);
-		of_property_read_u32(dev->device_node, "phy-reset-post-delay",
+		of_property_read_u32(dev->of_node, "phy-reset-duration",
+				     &msec);
+		of_property_read_u32(dev->of_node, "phy-reset-post-delay",
 				     &phy_post_delay);
 		/* valid reset duration should be less than 1s */
 		if (phy_post_delay > 1000)
@@ -873,7 +874,7 @@ static int fec_probe(struct device_d *dev)
 	if (ret < 0)
 		goto free_xbd;
 
-	if (dev->device_node) {
+	if (dev->of_node) {
 		ret = fec_probe_dt(dev, fec);
 		fec->phy_addr = -1;
 	} else if (pdata) {

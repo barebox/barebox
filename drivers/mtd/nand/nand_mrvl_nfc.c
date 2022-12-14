@@ -1188,7 +1188,7 @@ static struct mrvl_nand_host *alloc_nand_resource(struct device_d *dev)
 
 static int mrvl_nand_probe_dt(struct mrvl_nand_host *host)
 {
-	struct device_node *np = host->dev->device_node;
+	struct device_node *np = host->dev->of_node;
 	const struct of_device_id *match;
 	const struct mrvl_nand_variant *variant;
 

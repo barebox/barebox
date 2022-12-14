@@ -44,7 +44,7 @@ static int led_pwm_of_probe(struct device_d *dev)
 	struct device_node *child;
 	int ret;
 
-	for_each_child_of_node(dev->device_node, child) {
+	for_each_child_of_node(dev->of_node, child) {
 		struct pwmled *pwmled;
 		struct pwm_device *pwm;
 

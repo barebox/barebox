@@ -12,11 +12,11 @@ static int ti_sysc_probe(struct device_d *dev)
 {
 	int ret;
 
-	ret = of_platform_populate(dev->device_node,
+	ret = of_platform_populate(dev->of_node,
 					of_default_bus_match_table, dev);
 	if (ret)
 		dev_err(dev, "%s fail to create devices.\n",
-					dev->device_node->full_name);
+					dev->of_node->full_name);
 	return ret;
 };
 

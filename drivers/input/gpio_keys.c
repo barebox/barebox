@@ -94,7 +94,7 @@ static int gpio_keys_probe_pdata(struct gpio_keys *gk, struct device_d *dev)
 
 static int gpio_keys_probe_dt(struct gpio_keys *gk, struct device_d *dev)
 {
-	struct device_node *npkey, *np = dev->device_node;
+	struct device_node *npkey, *np = dev->of_node;
 	int i = 0, ret;
 
 	if (!IS_ENABLED(CONFIG_OFDEVICE) || !IS_ENABLED(CONFIG_OF_GPIO))
@@ -140,7 +140,7 @@ static int __init gpio_keys_probe(struct device_d *dev)
 
 	gk->dev = dev;
 
-	if (dev->device_node)
+	if (dev->of_node)
 		ret = gpio_keys_probe_dt(gk, dev);
 	else
 		ret = gpio_keys_probe_pdata(gk, dev);

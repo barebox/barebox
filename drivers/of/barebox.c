@@ -26,7 +26,7 @@ static int environment_check_mount(struct device_d *dev, char **devpath)
 	if (!IS_ENABLED(CONFIG_OF_BAREBOX_ENV_IN_FS))
 		return 0;
 
-	ret = of_property_read_string(dev->device_node, "file-path", &filepath);
+	ret = of_property_read_string(dev->of_node, "file-path", &filepath);
 	if (ret == -EINVAL) {
 		/* No file-path so just use device-path */
 		return 0;
@@ -57,7 +57,8 @@ static int environment_probe(struct device_d *dev)
 	char *path;
 	int ret;
 
-	ret = of_find_path(dev->device_node, "device-path", &path, OF_FIND_PATH_FLAGS_BB);
+	ret = of_find_path(dev->of_node, "device-path", &path,
+			   OF_FIND_PATH_FLAGS_BB);
 	if (ret)
 		return ret;
 

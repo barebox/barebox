@@ -7,7 +7,7 @@ static int am335x_child_probe(struct device_d *dev)
 {
 	int ret;
 
-	ret = of_platform_populate(dev->device_node, NULL, dev);
+	ret = of_platform_populate(dev->of_node, NULL, dev);
 	if (ret)
 		return ret;
 

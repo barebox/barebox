@@ -24,7 +24,7 @@ static int gpio_beeper_beep(struct sound_card *card, unsigned freq, unsigned dur
 
 static int gpio_beeper_probe(struct device_d *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct gpio_beeper *beeper;
 	struct sound_card *card;
 	int gpio;

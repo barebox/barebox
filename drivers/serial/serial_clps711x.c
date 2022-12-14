@@ -148,7 +148,7 @@ static int clps711x_probe(struct device_d *dev)
 		goto out_err;
 	}
 
-	syscon = of_parse_phandle(dev->device_node, "syscon", 0);
+	syscon = of_parse_phandle(dev->of_node, "syscon", 0);
 	s->regmap = syscon_node_to_regmap(syscon);
 	if (IS_ERR(s->regmap)) {
 		err = PTR_ERR(s->regmap);
@@ -164,7 +164,7 @@ static int clps711x_probe(struct device_d *dev)
 	s->cdev.setbrg	= clps711x_setbaudrate;
 	s->cdev.linux_console_name = "ttyCL";
 
-	devname = of_alias_get(dev->device_node);
+	devname = of_alias_get(dev->of_node);
 	if (devname) {
 		s->cdev.devname = xstrdup(devname);
 		s->cdev.devid = DEVICE_ID_SINGLE;

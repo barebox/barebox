@@ -751,7 +751,7 @@ static const char *fsl_qspi_get_name(struct spi_mem *mem)
 	 * mtd/spi-nor/fsl-quadspi.c, we set a custom name derived from the
 	 * platform_device of the controller.
 	 */
-	if (of_get_available_child_count(q->dev->device_node) == 1)
+	if (of_get_available_child_count(q->dev->of_node) == 1)
 		return dev_name(q->dev);
 
 	name = basprintf("%s-%d", dev_name(q->dev), mem->spi->chip_select);

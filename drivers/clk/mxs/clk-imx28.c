@@ -147,10 +147,11 @@ static int __init mx28_clocks_init(struct device_d *dev, void __iomem *regs)
 	clk_set_parent(clks[lcdif_sel], clks[ref_pix]);
 	clk_set_parent(clks[gpmi_sel], clks[ref_gpmi]);
 
-	if (dev->device_node) {
+	if (dev->of_node) {
 		clk_data.clks = clks;
 		clk_data.clk_num = clk_max;
-		of_clk_add_provider(dev->device_node, of_clk_src_onecell_get, &clk_data);
+		of_clk_add_provider(dev->of_node, of_clk_src_onecell_get,
+				    &clk_data);
 	} else {
 		clkdev_add_physbase(clks[ssp0], IMX_SSP0_BASE, NULL);
 		clkdev_add_physbase(clks[ssp1], IMX_SSP1_BASE, NULL);

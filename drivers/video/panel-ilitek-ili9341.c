@@ -499,7 +499,7 @@ static int ili9341_dpi_probe(struct spi_device *spi, int dc, int reset)
 
 	ili->dev = dev;
 	ili->max_spi_speed = ili->conf->max_spi_speed;
-	ili->vpl.node = dev->device_node;
+	ili->vpl.node = dev->of_node;
 	ili->vpl.ioctl = ili9341_ioctl;
 
 	return vpl_register(&ili->vpl);

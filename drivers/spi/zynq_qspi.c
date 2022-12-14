@@ -541,7 +541,7 @@ static const struct spi_controller_mem_ops zynq_qspi_mem_ops = {
 
 static int zynq_qspi_probe(struct device_d *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct spi_controller *ctlr;
 	struct zynq_qspi *xqspi;
 	struct resource *iores;

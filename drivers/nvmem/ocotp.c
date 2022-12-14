@@ -644,7 +644,7 @@ static int imx_ocotp_init_dt(struct ocotp_priv *priv)
 {
 	char mac[MAC_BYTES];
 	const __be32 *prop;
-	struct device_node *node = priv->dev.parent->device_node;
+	struct device_node *node = priv->dev.parent->of_node;
 	u32 tester4;
 	int ret, len = 0;
 

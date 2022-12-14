@@ -408,7 +408,7 @@ static int stpmic1_regulator_probe(struct device_d *dev)
 {
 	int i, ret;
 
-	ret = of_regulator_match(dev, dev->device_node, stpmic1_matches,
+	ret = of_regulator_match(dev, dev->of_node, stpmic1_matches,
 				 ARRAY_SIZE(stpmic1_matches));
 	if (ret < 0) {
 		dev_err(dev, "Error in PMIC regulator device tree node");

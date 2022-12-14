@@ -42,18 +42,18 @@ static int syscon_reboot_probe(struct device_d *dev)
 	if (!ctx)
 		return -ENOMEM;
 
-	ctx->map = syscon_regmap_lookup_by_phandle(dev->device_node, "regmap");
+	ctx->map = syscon_regmap_lookup_by_phandle(dev->of_node, "regmap");
 	if (IS_ERR(ctx->map)) {
-		ctx->map = syscon_node_to_regmap(dev->parent->device_node);
+		ctx->map = syscon_node_to_regmap(dev->parent->of_node);
 		if (IS_ERR(ctx->map))
 			return PTR_ERR(ctx->map);
 	}
 
-	if (of_property_read_u32(dev->device_node, "offset", &ctx->offset))
+	if (of_property_read_u32(dev->of_node, "offset", &ctx->offset))
 		return -EINVAL;
 
-	value_err = of_property_read_u32(dev->device_node, "value", &ctx->value);
-	mask_err = of_property_read_u32(dev->device_node, "mask", &ctx->mask);
+	value_err = of_property_read_u32(dev->of_node, "value", &ctx->value);
+	mask_err = of_property_read_u32(dev->of_node, "mask", &ctx->mask);
 	if (value_err && mask_err) {
 		dev_err(dev, "unable to read 'value' and 'mask'");
 		return -EINVAL;
@@ -71,7 +71,7 @@ static int syscon_reboot_probe(struct device_d *dev)
 	ctx->restart_handler.name = "syscon-reboot";
 	ctx->restart_handler.restart = syscon_restart_handle;
 	ctx->restart_handler.priority = 192;
-	ctx->restart_handler.of_node = dev->device_node;
+	ctx->restart_handler.of_node = dev->of_node;
 
 	err = restart_handler_register(&ctx->restart_handler);
 	if (err)

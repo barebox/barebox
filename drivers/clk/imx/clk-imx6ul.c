@@ -97,7 +97,7 @@ static int imx6_ccm_probe(struct device_d *dev)
 	struct resource *iores;
 	void __iomem *base, *anatop_base, *ccm_base;
 	int i;
-	struct device_node *ccm_node = dev->device_node;
+	struct device_node *ccm_node = dev->of_node;
 	struct clk_hw *hw;
 
 	anatop_base = IOMEM(MX6_ANATOP_BASE_ADDR);

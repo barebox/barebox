@@ -416,7 +416,7 @@ static int ramoops_parse_dt_size(struct device_d *dev,
 	u32 val32 = 0;
 	int ret;
 
-	ret = of_property_read_u32(dev->device_node, propname, &val32);
+	ret = of_property_read_u32(dev->of_node, propname, &val32);
 	if (ret < 0 && ret != -EINVAL) {
 		dev_err(dev, "failed to parse property %s: %d\n",
 			propname, ret);
@@ -435,7 +435,7 @@ static int ramoops_parse_dt_size(struct device_d *dev,
 static int ramoops_parse_dt(struct device_d *dev,
 			    struct ramoops_platform_data *pdata)
 {
-	struct device_node *of_node = dev->device_node;
+	struct device_node *of_node = dev->of_node;
 	struct resource *res;
 	u32 value;
 	int ret;

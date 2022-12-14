@@ -189,7 +189,7 @@ static int denali_dt_probe(struct device_d *ofdev)
 	if (ret)
 		goto out_disable_clk;
 
-	for_each_child_of_node(ofdev->device_node, np) {
+	for_each_child_of_node(ofdev->of_node, np) {
 		ret = denali_dt_chip_init(denali, np);
 		if (ret)
 			goto out_disable_clk;

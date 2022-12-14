@@ -50,7 +50,7 @@ static struct mdio_gpio_info *mdio_gpio_of_get_info(struct device_d *dev)
 
 	info = xzalloc(sizeof(*info));
 
-	ret = of_get_gpio_flags(dev->device_node, 0, &flags);
+	ret = of_get_gpio_flags(dev->of_node, 0, &flags);
 	if (ret < 0) {
 		dev_dbg(dev, "failed to get MDC information from DT\n");
 		goto free_info;
@@ -59,7 +59,7 @@ static struct mdio_gpio_info *mdio_gpio_of_get_info(struct device_d *dev)
 	info->mdc = ret;
 	info->mdc_active_low = flags & OF_GPIO_ACTIVE_LOW;
 
-	ret = of_get_gpio_flags(dev->device_node, 1, &flags);
+	ret = of_get_gpio_flags(dev->of_node, 1, &flags);
 	if (ret < 0) {
 		dev_dbg(dev, "failed to get MDIO information from DT\n");
 		goto free_info;
@@ -68,7 +68,7 @@ static struct mdio_gpio_info *mdio_gpio_of_get_info(struct device_d *dev)
 	info->mdio = ret;
 	info->mdio_active_low = flags & OF_GPIO_ACTIVE_LOW;
 
-	ret = of_get_gpio_flags(dev->device_node, 2, &flags);
+	ret = of_get_gpio_flags(dev->of_node, 2, &flags);
 	if (ret > 0) {
 		dev_dbg(dev, "found MDO information in DT\n");
 		info->mdo = ret;
@@ -145,7 +145,7 @@ static struct mdiobb_ops mdio_gpio_ops = {
 static int mdio_gpio_probe(struct device_d *dev)
 {
 	int ret;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct mdio_gpio_info *info;
 	struct mii_bus *bus;
 
@@ -202,7 +202,7 @@ static int mdio_gpio_probe(struct device_d *dev)
 
 	bus = alloc_mdio_bitbang(&info->ctrl);
 	bus->parent = dev;
-	bus->dev.device_node = np;
+	bus->dev.of_node = np;
 
 	dev->priv = bus;
 

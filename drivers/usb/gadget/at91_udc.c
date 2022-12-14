@@ -1407,12 +1407,12 @@ static int __init at91udc_probe(struct device_d *dev)
 		iclk_name = "udc_clk";
 		fclk_name = "udpck";
 	} else {
-		if (!IS_ENABLED(CONFIG_OFDEVICE) || !dev->device_node) {
+		if (!IS_ENABLED(CONFIG_OFDEVICE) || !dev->of_node) {
 			dev_err(dev, "no DT and no platform_data\n");
 			return -ENODEV;
 		}
 
-		at91udc_of_init(udc, dev->device_node);
+		at91udc_of_init(udc, dev->of_node);
 		iclk_name = "pclk";
 		fclk_name = "hclk";
 	}

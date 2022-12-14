@@ -143,7 +143,7 @@ static int davinci_gpio_probe(struct device_d *dev)
 	unsigned ngpio;
 	struct davinci_gpio_controller *chips;
 
-	ret = of_property_read_u32(dev->device_node, "ti,ngpio", &val);
+	ret = of_property_read_u32(dev->of_node, "ti,ngpio", &val);
 	if (ret) {
 		dev_err(dev, "could not read 'ti,ngpio' property\n");
 		return -EINVAL;

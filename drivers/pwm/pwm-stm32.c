@@ -337,7 +337,7 @@ static int id = -1;
 
 static int stm32_pwm_probe(struct device_d *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct stm32_timers *ddata = dev->parent->priv;
 	struct stm32_pwm *priv;
 	const char *alias;
@@ -362,7 +362,7 @@ static int stm32_pwm_probe(struct device_d *dev)
 
 	npwms = stm32_pwm_detect_channels(priv);
 
-	alias = of_alias_get(dev->device_node);
+	alias = of_alias_get(dev->of_node);
 	if (!alias)
 		id++;
 

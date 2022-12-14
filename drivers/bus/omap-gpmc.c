@@ -523,7 +523,7 @@ static int gpmc_probe_nand_child(struct device_d *dev,
 	dev = device_alloc("gpmc_nand", DEVICE_ID_DYNAMIC);
 	device_add_resource(dev, NULL, (resource_size_t)gpmc_base, SZ_4K, IORESOURCE_MEM);
 	device_add_data(dev, &gpmc_nand_data, sizeof(gpmc_nand_data));
-	dev->device_node = child;
+	dev->of_node = child;
 	platform_device_register(dev);
 
 	return 0;
@@ -602,7 +602,7 @@ err:
 
 static int gpmc_probe(struct device_d *dev)
 {
-	struct device_node *child, *node = dev->device_node;
+	struct device_node *child, *node = dev->of_node;
 	int ret;
 
 	gpmc_generic_init(0x12);

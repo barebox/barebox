@@ -111,7 +111,7 @@ static int mxs_gpio_probe(struct device_d *dev)
 	mxsgpio = xzalloc(sizeof(*mxsgpio));
 	mxsgpio->chip.ops = &mxs_gpio_ops;
 	if (dev->id < 0) {
-		id = of_alias_get_id(dev->device_node, "gpio");
+		id = of_alias_get_id(dev->of_node, "gpio");
 		if (id < 0)
 			return id;
 		mxsgpio->base = dev_get_mem_region(dev->parent, 0);

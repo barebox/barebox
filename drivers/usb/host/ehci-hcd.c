@@ -1403,7 +1403,7 @@ static int ehci_probe(struct device_d *dev)
 	struct resource *iores;
 	struct ehci_data data = {};
 	struct ehci_platform_data *pdata = dev->platform_data;
-	struct device_node *dn = dev->device_node;
+	struct device_node *dn = dev->of_node;
 	struct ehci_host *ehci;
 	struct clk_bulk_data *clks;
 	int num_clocks, ret;

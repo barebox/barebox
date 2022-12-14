@@ -72,7 +72,7 @@ int __init dw_pcie_host_init(struct pcie_port *pp)
 {
 	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
 	struct device_d *dev = pci->dev;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct of_pci_range range;
 	struct of_pci_range_parser parser;
 	struct resource *cfg_res;

@@ -9,7 +9,7 @@ static int matrix_keypad_parse_of_keymap(struct device_d *dev,
 {
 	unsigned int proplen, i, size;
 	const __be32 *prop;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	const char *propname = "linux,keymap";
 
 	prop = of_get_property(np, propname, &proplen);
@@ -61,7 +61,7 @@ int matrix_keypad_build_keymap(struct device_d *dev, const struct matrix_keymap_
 {
 	int i;
 
-	if (IS_ENABLED(CONFIG_OFDEVICE) && dev->device_node)
+	if (IS_ENABLED(CONFIG_OFDEVICE) && dev->of_node)
 		return matrix_keypad_parse_of_keymap(dev, row_shift, keymap);
 
 	if (!keymap_data)

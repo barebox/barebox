@@ -408,7 +408,7 @@ static void imx_iim_init_dt(struct device_d *dev, struct iim_priv *iim)
 {
 	char mac[6];
 	const __be32 *prop;
-	struct device_node *node = dev->device_node;
+	struct device_node *node = dev->of_node;
 	int len, ret, macnum = 0;
 
 	if (!node)

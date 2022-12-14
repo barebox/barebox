@@ -511,7 +511,7 @@ static int stm32_spi_get_fifo_size(struct stm32_spi_priv *priv)
 
 static void stm32_spi_dt_probe(struct stm32_spi_priv *priv)
 {
-	struct device_node *node = priv->master.dev->device_node;
+	struct device_node *node = priv->master.dev->of_node;
 	int i;
 
 	priv->master.num_chipselect = of_gpio_named_count(node, "cs-gpios");

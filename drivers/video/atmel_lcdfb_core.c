@@ -328,7 +328,7 @@ static int lcdfb_of_init(struct device_d *dev, struct atmel_lcdfb_info *sinfo)
 	}
 
 	/* Required properties */
-	display = of_parse_phandle(dev->device_node, "display", 0);
+	display = of_parse_phandle(dev->of_node, "display", 0);
 	if (!display) {
 		dev_err(dev, "no display phandle\n");
 		return -ENOENT;
@@ -450,7 +450,7 @@ int atmel_lcdc_register(struct device_d *dev, struct atmel_lcdfb_devdata *data)
 		}
 		bus_clk_name = "hck1";
 	} else {
-		if (!IS_ENABLED(CONFIG_OFDEVICE) || !dev->device_node)
+		if (!IS_ENABLED(CONFIG_OFDEVICE) || !dev->of_node)
 			return -EINVAL;
 
 		ret = lcdfb_of_init(dev, sinfo);

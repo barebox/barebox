@@ -71,7 +71,7 @@ static int atmci_probe(struct device_d *hw_dev)
 {
 	struct resource *iores;
 	struct atmel_mci *host;
-	struct device_node *np = hw_dev->device_node;
+	struct device_node *np = hw_dev->of_node;
 	struct atmel_mci_platform_data *pd = hw_dev->platform_data;
 	int ret;
 

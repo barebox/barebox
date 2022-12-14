@@ -129,7 +129,7 @@ static inline bool is_64bit(const struct resource *res)
 static int pcie_ecam_parse_dt(struct generic_ecam_pcie *ecam)
 {
 	struct device_d *dev = ecam->pci.parent;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct of_pci_range_parser parser;
 	struct of_pci_range range;
 	struct resource res;

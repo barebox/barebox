@@ -151,8 +151,8 @@ static int lpuart_serial_probe(struct device_d *dev)
 	cdev->flush  = lpuart_serial_flush;
 	cdev->setbrg = lpuart_serial_setbaudrate;
 
-	if (dev->device_node) {
-		devname = of_alias_get(dev->device_node);
+	if (dev->of_node) {
+		devname = of_alias_get(dev->of_node);
 		if (devname) {
 			cdev->devname = xstrdup(devname);
 			cdev->devid   = DEVICE_ID_SINGLE;

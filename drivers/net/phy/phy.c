@@ -338,16 +338,18 @@ static struct phy_device *of_mdio_find_phy(struct eth_device *edev)
 	if (!IS_ENABLED(CONFIG_OFDEVICE))
 		return NULL;
 
-	if (!edev->parent || !edev->parent->device_node)
+	if (!edev->parent || !edev->parent->of_node)
 		return NULL;
 
-	phy_node = of_parse_phandle(edev->parent->device_node, "phy-handle", 0);
+	phy_node = of_parse_phandle(edev->parent->of_node, "phy-handle", 0);
 	if (!phy_node)
-		phy_node = of_parse_phandle(edev->parent->device_node, "phy", 0);
+		phy_node = of_parse_phandle(edev->parent->of_node, "phy", 0);
 	if (!phy_node)
-		phy_node = of_parse_phandle(edev->parent->device_node, "phy-device", 0);
+		phy_node = of_parse_phandle(edev->parent->of_node,
+					    "phy-device", 0);
 	if (!phy_node) {
-		phy_node = of_get_child_by_name(edev->parent->device_node, "fixed-link");
+		phy_node = of_get_child_by_name(edev->parent->of_node,
+						"fixed-link");
 		if (phy_node)
 			return of_phy_register_fixed_link(phy_node, edev);
 	}
@@ -358,7 +360,7 @@ static struct phy_device *of_mdio_find_phy(struct eth_device *edev)
 	if (!of_property_read_u32(phy_node, "reg", &addr)) {
 		of_device_ensure_probed(phy_node->parent);
 		for_each_mii_bus(bus) {
-			if (bus->parent->device_node == phy_node->parent) {
+			if (bus->parent->of_node == phy_node->parent) {
 				struct phy_device *phy = mdiobus_scan(bus, addr);
 				if (!IS_ERR(phy))
 					return phy;
@@ -367,7 +369,7 @@ static struct phy_device *of_mdio_find_phy(struct eth_device *edev)
 	}
 
 	bus_for_each_device(&mdio_bus_type, dev) {
-		if (dev->device_node == phy_node)
+		if (dev->of_node == phy_node)
 			return container_of(dev, struct phy_device, dev);
 	}
 

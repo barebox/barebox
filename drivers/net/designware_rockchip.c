@@ -232,7 +232,7 @@ static void eqos_rk_adjust_link(struct eth_device *edev)
 
 static int eqos_init_rk_gmac(struct device_d *dev, struct eqos *eqos)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct eqos_rk_gmac *priv = to_rk_gmac(eqos);
 	int i = 0, ret;
 	const char *strings;

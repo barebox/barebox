@@ -162,7 +162,7 @@ static int starfive_otp_probe(struct device_d *dev)
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
 
-	ret = of_property_read_u32(dev->device_node, "fuse-count", &total_fuses);
+	ret = of_property_read_u32(dev->of_node, "fuse-count", &total_fuses);
 	if (ret < 0) {
 		dev_err(dev, "missing required fuse-count property\n");
 		return ret;

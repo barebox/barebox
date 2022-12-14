@@ -25,7 +25,7 @@ static int bcm2835_aux_clk_probe(struct device_d *dev)
 		return PTR_ERR(parent_clk);
 	parent = __clk_get_name(parent_clk);
 
-	reg = of_iomap(dev->device_node, 0);
+	reg = of_iomap(dev->of_node, 0);
 	if (!reg)
 		return -ENOMEM;
 
@@ -45,7 +45,7 @@ static int bcm2835_aux_clk_probe(struct device_d *dev)
 	onecell->hws[BCM2835_AUX_CLOCK_SPI2] =
 		clk_hw_register_gate(dev, "aux_spi2", parent, 0, gate, 2, 0, NULL);
 
-	return of_clk_add_hw_provider(dev->device_node, of_clk_hw_onecell_get,
+	return of_clk_add_hw_provider(dev->of_node, of_clk_hw_onecell_get,
 				      onecell);
 }
 

@@ -224,8 +224,8 @@ static int imx_pwm_probe(struct device_d *dev)
 	imx->mmio_base = IOMEM(iores->start);
 
 	imx->chip.ops = &imx_pwm_ops;
-	if (dev->device_node) {
-		imx->chip.devname = of_alias_get(dev->device_node);
+	if (dev->of_node) {
+		imx->chip.devname = of_alias_get(dev->of_node);
 		if (!imx->chip.devname)
 			imx->chip.devname = basprintf("pwm_%p",
 							imx->mmio_base);

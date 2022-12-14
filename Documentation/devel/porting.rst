@@ -388,7 +388,6 @@ Miscellaneous Linux porting advice:
 
   * Branches dependent on ``system_state``: Take the ``SYSTEM_BOOTING`` branch
   * ``usleep`` and co.: use ``[mud]elay``
-  * ``.of_node``: use ``.device_node`` or ``dev_of_node``
   * ``jiffies``: use ``get_time_ns()``
   * ``time_before``: use ``!is_timeout()``
   * ``clk_hw_register_fixed_rate_with_accuracy``: use ``clk_hw_register_fixed_rate`` without accuracy

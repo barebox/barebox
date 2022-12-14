@@ -389,7 +389,7 @@ static int atmel_spi_probe(struct device_d *dev)
 	int ret = 0;
 	int i;
 	struct spi_master *master;
-	struct device_node *node = dev->device_node;
+	struct device_node *node = dev->of_node;
 	struct atmel_spi *as;
 	struct at91_spi_platform_data *pdata = dev->platform_data;
 

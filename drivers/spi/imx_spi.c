@@ -562,7 +562,7 @@ static __maybe_unused struct spi_imx_devtype_data spi_imx_devtype_data_2_3 = {
 
 static int imx_spi_dt_probe(struct imx_spi *imx)
 {
-	struct device_node *node = imx->master.dev->device_node;
+	struct device_node *node = imx->master.dev->of_node;
 	int i;
 
 	if (!node)
@@ -603,7 +603,7 @@ static int imx_spi_probe(struct device_d *dev)
 		master->num_chipselect = pdata->num_chipselect;
 		imx->cs_array = pdata->chipselect;
 	} else if (IS_ENABLED(CONFIG_OFDEVICE)) {
-		ret = of_alias_get_id(dev->device_node, "spi");
+		ret = of_alias_get_id(dev->of_node, "spi");
 		if (ret < 0)
 			goto err_free;
 		master->bus_num = ret;

@@ -430,7 +430,7 @@ static int kirkwood_pinctrl_probe(struct device_d *dev)
 {
 	struct resource *iores;
 	const struct of_device_id *match =
-		of_match_node(kirkwood_pinctrl_of_match, dev->device_node);
+		of_match_node(kirkwood_pinctrl_of_match, dev->of_node);
 	struct mvebu_pinctrl_soc_info *soc =
 		(struct mvebu_pinctrl_soc_info *)match->data;
 

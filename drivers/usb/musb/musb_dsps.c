@@ -264,7 +264,7 @@ static int get_musb_port_mode(struct device_d *dev)
 {
 	enum usb_dr_mode mode;
 
-	mode = of_usb_get_dr_mode(dev->device_node, NULL);
+	mode = of_usb_get_dr_mode(dev->of_node, NULL);
 	switch (mode) {
 	case USB_DR_MODE_HOST:
 		return MUSB_PORT_MODE_HOST;
@@ -302,7 +302,7 @@ static int dsps_probe(struct device_d *dev)
 	struct resource *iores[2];
 	struct musb_hdrc_platform_data *pdata;
 	struct musb_hdrc_config	*config;
-	struct device_node *dn = dev->device_node;
+	struct device_node *dn = dev->of_node;
 	const struct dsps_musb_wrapper *wrp;
 	struct device_node *phy_node;
 	struct device_d *phy_dev;

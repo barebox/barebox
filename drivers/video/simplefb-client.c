@@ -38,7 +38,7 @@ struct simplefb {
 static int simplefb_parse_dt(struct device_d *dev,
 			   struct simplefb_params *params)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	int ret;
 	const char *format;
 	int i;
@@ -90,7 +90,7 @@ static int simplefb_probe(struct device_d *dev)
 	struct resource *mem;
 
 	ret = -ENODEV;
-	if (dev->device_node)
+	if (dev->of_node)
 		ret = simplefb_parse_dt(dev, &params);
 
 	if (ret)

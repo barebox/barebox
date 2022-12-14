@@ -356,7 +356,7 @@ static int mvebu_spi_probe(struct device_d *dev)
 	const struct of_device_id *match;
 	int ret = 0;
 
-	match = of_match_node(mvebu_spi_dt_ids, dev->device_node);
+	match = of_match_node(mvebu_spi_dt_ids, dev->of_node);
 	if (!match)
 		return -EINVAL;
 

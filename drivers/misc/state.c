@@ -14,7 +14,7 @@
 
 static int state_probe(struct device_d *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct state *state;
 	bool readonly = false;
 	int ret;

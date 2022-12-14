@@ -257,16 +257,16 @@ static int m25p_probe(struct device_d *dev)
 	else
 		flash_name = NULL; /* auto-detect */
 
-	use_large_blocks = of_property_read_bool(dev->device_node,
-			"use-large-blocks");
+	use_large_blocks = of_property_read_bool(dev->of_node,
+						 "use-large-blocks");
 
 	ret = spi_nor_scan(nor, flash_name, &hwcaps, use_large_blocks);
 	if (ret)
 		return ret;
 
 	device_id = DEVICE_ID_SINGLE;
-	if (dev->device_node)
-		flash_name = of_alias_get(dev->device_node);
+	if (dev->of_node)
+		flash_name = of_alias_get(dev->of_node);
 	else if (data && data->name)
 		flash_name = data->name;
 

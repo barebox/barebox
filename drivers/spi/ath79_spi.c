@@ -238,7 +238,7 @@ static int ath79_spi_probe(struct device_d *dev)
 	master->num_chipselect = 3;
 
 	if (IS_ENABLED(CONFIG_OFDEVICE)) {
-		struct device_node *node = dev->device_node;
+		struct device_node *node = dev->of_node;
 		u32 num_cs;
 		int ret;
 

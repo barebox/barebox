@@ -20,7 +20,7 @@ struct ar9300_eeprom {
 
 static int art_set_mac(struct device_d *dev, struct ar9300_eeprom *eeprom)
 {
-	struct device_node *node = dev->device_node;
+	struct device_node *node = dev->of_node;
 	struct device_node *rnode;
 
 	if (!node)
@@ -80,7 +80,7 @@ static int art_probe(struct device_d *dev)
 
 	dev_dbg(dev, "found ART partition\n");
 
-	ret = of_find_path(dev->device_node, "device-path", &path, 0);
+	ret = of_find_path(dev->of_node, "device-path", &path, 0);
 	if (ret) {
 		dev_err(dev, "can't find path\n");
 		return ret;

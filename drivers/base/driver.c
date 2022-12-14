@@ -102,7 +102,7 @@ int device_probe(struct device_d *dev)
 	static int depth = 0;
 	int ret;
 
-	ret = of_feature_controller_check(dev->device_node);
+	ret = of_feature_controller_check(dev->of_node);
 	if (ret < 0)
 		return ret;
 	if (ret == FEATCTRL_GATED) {
@@ -115,7 +115,7 @@ int device_probe(struct device_d *dev)
 	pr_report_probe("%*sprobe-> %s\n", depth * 4, "", dev_name(dev));
 
 	pinctrl_select_state_default(dev);
-	of_clk_set_defaults(dev->device_node, false);
+	of_clk_set_defaults(dev->of_node, false);
 
 	list_add(&dev->active, &active_device_list);
 
@@ -291,7 +291,7 @@ int unregister_device(struct device_d *old_dev)
 	if (old_dev->parent)
 		list_del(&old_dev->sibling);
 	if (dev_of_node(old_dev))
-		old_dev->device_node->dev = NULL;
+		old_dev->of_node->dev = NULL;
 
 	return 0;
 }

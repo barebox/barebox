@@ -1629,7 +1629,7 @@ static const struct of_device_id clk_rk3399_match_table[] = {
 
 static int __init clk_rk3399_probe(struct device_d *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	const struct of_device_id *match;
 	const struct clk_rk3399_inits *init_data;
 

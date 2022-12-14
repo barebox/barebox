@@ -76,7 +76,7 @@ static void orion_nand_read_buf(struct nand_chip *chip, uint8_t *buf, int len)
 static int orion_nand_probe(struct device_d *dev)
 {
 	struct resource *iores;
-	struct device_node *dev_node = dev->device_node;
+	struct device_node *dev_node = dev->of_node;
 	struct orion_nand *priv;
 	struct mtd_info *mtd;
 	struct nand_chip *chip;

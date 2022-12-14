@@ -43,7 +43,7 @@ static int am335x_phy_probe(struct device_d *dev)
 		goto err_release;
 	}
 
-	am_usbphy->id = of_alias_get_id(dev->device_node, "phy");
+	am_usbphy->id = of_alias_get_id(dev->of_node, "phy");
 	if (am_usbphy->id < 0) {
 		dev_err(dev, "Missing PHY id: %d\n", am_usbphy->id);
 		ret = am_usbphy->id;

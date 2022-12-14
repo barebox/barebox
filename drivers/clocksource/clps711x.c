@@ -29,7 +29,7 @@ static int clps711x_cs_probe(struct device_d *dev)
 	struct clk *timer_clk;
 	int id;
 
-	id = of_alias_get_id(dev->device_node, "timer");
+	id = of_alias_get_id(dev->of_node, "timer");
 	if (id != 1)
 		return 0;
 

@@ -86,7 +86,7 @@ static int i2c_versatile_probe(struct device_d *dev)
 
 	i2c->adap.algo_data = &i2c->algo;
 	i2c->adap.dev.parent = dev;
-	i2c->adap.dev.device_node = dev->device_node;
+	i2c->adap.dev.of_node = dev->of_node;
 	i2c->algo = i2c_versatile_algo;
 	i2c->algo.data = i2c;
 

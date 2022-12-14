@@ -83,7 +83,7 @@ static int gpio_wdt_set_timeout(struct watchdog *wdd, unsigned int new_timeout)
 
 static int gpio_wdt_probe(struct device_d *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct gpio_wdt_priv *priv;
 	enum gpiod_flags gflags;
 	unsigned int hw_margin;

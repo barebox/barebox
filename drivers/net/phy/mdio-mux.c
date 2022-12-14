@@ -117,7 +117,7 @@ int mdio_mux_init(struct device_d *dev,
 		cb->mii_bus.parent = dev;
 		cb->mii_bus.read   = mdio_mux_read;
 		cb->mii_bus.write  = mdio_mux_write;
-		cb->mii_bus.dev.device_node = child_bus_node;
+		cb->mii_bus.dev.of_node = child_bus_node;
 
 		r = mdiobus_register(&cb->mii_bus);
 		if (r) {

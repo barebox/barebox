@@ -78,7 +78,7 @@ void reset_source_set_device(struct device_d *dev, enum reset_src_type st)
 {
 	unsigned int priority = RESET_SOURCE_DEFAULT_PRIORITY;
 
-	of_property_read_u32(dev->device_node, "reset-source-priority", &priority);
+	of_property_read_u32(dev->of_node, "reset-source-priority", &priority);
 
 	__reset_source_set(dev, st, priority, -1);
 }

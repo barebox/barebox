@@ -807,9 +807,9 @@ static int imx7_ccm_probe(struct device_d *dev)
 
 	clk_data.clks = clks;
 	clk_data.clk_num = ARRAY_SIZE(clks);
-	of_clk_add_provider(dev->device_node, of_clk_src_onecell_get, &clk_data);
+	of_clk_add_provider(dev->of_node, of_clk_src_onecell_get, &clk_data);
 
-	ccm_np = dev->device_node;
+	ccm_np = dev->of_node;
 
 	/*
 	 * imx7_clk_setup() requires both the CCM and fixed-clock osc devices

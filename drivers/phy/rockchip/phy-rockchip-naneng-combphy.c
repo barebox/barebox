@@ -287,7 +287,7 @@ static struct phy *rockchip_combphy_xlate(struct device_d *dev,
 static int rockchip_combphy_parse_dt(struct device_d *dev,
 				     struct rockchip_combphy_priv *priv)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	const struct rockchip_combphy_cfg *phy_cfg = priv->cfg;
 	int ret, mac_id;
 
@@ -386,7 +386,7 @@ static int rockchip_combphy_probe(struct device_d *dev)
 
 static int rk3568_combphy_cfg(struct rockchip_combphy_priv *priv)
 {
-	struct device_node *np = priv->dev->device_node;
+	struct device_node *np = priv->dev->of_node;
 	const struct rockchip_combphy_grfcfg *cfg = priv->cfg->grfcfg;
 	struct clk *refclk = NULL;
 	unsigned long rate;

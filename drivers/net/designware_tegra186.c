@@ -217,7 +217,7 @@ static int eqos_init_tegra186(struct device_d *dev, struct eqos *eqos)
 		return PTR_ERR(priv->rst);
 	}
 
-	phy_reset = of_get_named_gpio(dev->device_node, "phy-reset-gpios", 0);
+	phy_reset = of_get_named_gpio(dev->of_node, "phy-reset-gpios", 0);
 	if (gpio_is_valid(phy_reset)) {
 		ret = gpio_request(phy_reset, "phy-reset");
 		if (ret)

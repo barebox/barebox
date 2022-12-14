@@ -795,7 +795,7 @@ static int rave_sp_probe(struct device_d *dev)
 	u32 baud;
 	int ret;
 
-	if (of_property_read_u32(dev->device_node, "current-speed", &baud)) {
+	if (of_property_read_u32(dev->of_node, "current-speed", &baud)) {
 		dev_err(dev,
 			"'current-speed' is not specified in device node\n");
 		return -EINVAL;
@@ -850,7 +850,7 @@ static int rave_sp_probe(struct device_d *dev)
 		return ret;
 	}
 
-	return of_platform_populate(dev->device_node, NULL, dev);
+	return of_platform_populate(dev->of_node, NULL, dev);
 }
 
 static struct driver_d rave_sp_drv = {

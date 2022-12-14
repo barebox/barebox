@@ -267,7 +267,7 @@ static struct phy *rockchip_usb2phy_of_xlate(struct device_d *dev,
 		if (!rphy->phys[port].phy)
 			continue;
 
-		if (phynode == rphy->phys[port].phy->dev.device_node) {
+		if (phynode == rphy->phys[port].phy->dev.of_node) {
 			p = &rphy->phys[port];
 			return p->phy;
 		}
@@ -338,7 +338,7 @@ static const struct clk_ops rockchip_usb2phy_clkout_ops = {
 
 static int rockchip_usb2phy_clk480m_register(struct rockchip_usb2phy *rphy)
 {
-	struct device_node *node = rphy->dev->device_node;
+	struct device_node *node = rphy->dev->of_node;
 	struct clk_init_data init = {};
 	const char *clk_name;
 	int ret;
@@ -385,7 +385,7 @@ static int rockchip_usb2phy_probe(struct device_d *dev)
 	struct rockchip_usb2phy *rphy;
 	u32 reg, index;
 	int ret, port = 0;
-	struct device_node *child, *np = dev->device_node;
+	struct device_node *child, *np = dev->of_node;
 	struct resource *iores;
 
 	rphy = xzalloc(sizeof(*rphy));
@@ -396,7 +396,7 @@ static int rockchip_usb2phy_probe(struct device_d *dev)
 	    of_device_is_compatible(np, "rockchip,rk3568-usb2phy"))
 		rphy->grf_base = syscon_regmap_lookup_by_phandle(np, "rockchip,usbgrf");
 	else
-		rphy->grf_base = syscon_node_to_regmap(dev->parent->device_node);
+		rphy->grf_base = syscon_node_to_regmap(dev->parent->of_node);
 
 	if (IS_ERR(rphy->grf_base))
 		return PTR_ERR(rphy->grf_base);

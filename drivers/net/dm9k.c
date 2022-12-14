@@ -722,7 +722,7 @@ static int dm9k_init_dev(struct eth_device *edev)
 
 static int dm9000_parse_dt(struct device_d *dev, struct dm9k *priv)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	uint32_t prop;
 
 	if (!IS_ENABLED(CONFIG_OFDEVICE) || !np)

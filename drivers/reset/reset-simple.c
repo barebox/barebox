@@ -167,7 +167,7 @@ static int reset_simple_probe(struct device_d *dev)
 	data->membase = IOMEM(res->start);
 	data->rcdev.nr_resets = resource_size(res) * BITS_PER_BYTE;
 	data->rcdev.ops = &reset_simple_ops;
-	data->rcdev.of_node = dev->device_node;
+	data->rcdev.of_node = dev->of_node;
 
 	if (devdata) {
 		reg_offset = devdata->reg_offset;

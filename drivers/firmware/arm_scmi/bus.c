@@ -159,7 +159,7 @@ scmi_device_alloc(struct device_node *np, struct device_d *parent, int protocol,
 	scmi_dev->dev.id = DEVICE_ID_DYNAMIC;
 	scmi_dev->protocol_id = protocol;
 	scmi_dev->dev.parent = parent;
-	scmi_dev->dev.device_node = np;
+	scmi_dev->dev.of_node = np;
 	scmi_dev->dev.bus = &scmi_bus_type;
 	dev_set_name(&scmi_dev->dev, "scmi_dev");
 

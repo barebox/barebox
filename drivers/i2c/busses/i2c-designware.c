@@ -245,7 +245,7 @@ static void i2c_dw_setup_timings(struct dw_i2c_dev *dw)
 		u32 ht;
 		int ret;
 
-		ret = of_property_read_u32(dw->adapter.dev.device_node,
+		ret = of_property_read_u32(dw->adapter.dev.of_node,
 					   "i2c-sda-hold-time-ns", &ht);
 		if (ret) {
 			/* Keep previous hold time setting if no one set it */
@@ -527,7 +527,7 @@ static int i2c_dw_probe(struct device_d *pdev)
 	dw->adapter.master_xfer = i2c_dw_xfer;
 	dw->adapter.nr = pdev->id;
 	dw->adapter.dev.parent = pdev;
-	dw->adapter.dev.device_node = pdev->device_node;
+	dw->adapter.dev.of_node = pdev->of_node;
 
 	iores = dev_request_mem_resource(pdev, 0);
 	if (IS_ERR(iores)) {

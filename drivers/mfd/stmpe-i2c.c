@@ -100,12 +100,12 @@ static struct stmpe_platform_data *stmpe_of_probe(struct device_d *dev)
 	struct stmpe_platform_data *pdata;
 	struct device_node *node;
 
-	if (!IS_ENABLED(CONFIG_OFDEVICE) || !dev->device_node)
+	if (!IS_ENABLED(CONFIG_OFDEVICE) || !dev->of_node)
 		return NULL;
 
 	pdata = xzalloc(sizeof(*pdata));
 
-	for_each_child_of_node(dev->device_node, node) {
+	for_each_child_of_node(dev->of_node, node) {
 		if (!strcmp(node->name, "stmpe_gpio")) {
 			pdata->blocks |= STMPE_BLOCK_GPIO;
 		}

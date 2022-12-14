@@ -97,10 +97,10 @@ static int vf610_gpio_probe(struct device_d *dev)
 
 	port = xzalloc(sizeof(*port));
 
-	gpio_ranges = of_get_property(dev->device_node, "gpio-ranges", &size);
+	gpio_ranges = of_get_property(dev->of_node, "gpio-ranges", &size);
 	if (!gpio_ranges) {
 		dev_err(dev, "Couldn't read 'gpio-ranges' propery of %s\n",
-			dev->device_node->full_name);
+			dev->of_node->full_name);
 		ret = -EINVAL;
 		goto free_port;
 	}
@@ -119,7 +119,7 @@ static int vf610_gpio_probe(struct device_d *dev)
 
 	port->chip.ops  = &vf610_gpio_ops;
 	if (dev->id < 0) {
-		port->chip.base = of_alias_get_id(dev->device_node, "gpio");
+		port->chip.base = of_alias_get_id(dev->of_node, "gpio");
 		if (port->chip.base < 0) {
 			ret = port->chip.base;
 			dev_dbg(dev, "Failed to get GPIO alias\n");

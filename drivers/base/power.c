@@ -252,18 +252,18 @@ static int __genpd_dev_pm_attach(struct device_d *dev, struct device_node *np,
  */
 int genpd_dev_pm_attach(struct device_d *dev)
 {
-	if (!dev->device_node)
+	if (!dev->of_node)
 		return 0;
 
 	/*
 	 * Devices with multiple PM domains must be attached separately, as we
 	 * can only attach one PM domain per device.
 	 */
-	if (of_count_phandle_with_args(dev->device_node, "power-domains",
+	if (of_count_phandle_with_args(dev->of_node, "power-domains",
 				       "#power-domain-cells") != 1)
 		return 0;
 
-	return __genpd_dev_pm_attach(dev, dev->device_node, 0, true);
+	return __genpd_dev_pm_attach(dev, dev->of_node, 0, true);
 }
 EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
 

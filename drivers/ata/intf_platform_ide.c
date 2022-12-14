@@ -74,7 +74,7 @@ static int platform_ide_probe(struct device_d *dev)
 	void *reg_base, *alt_base = NULL;
 	struct resource *reg, *alt;
 	int mmio = 0;
-	struct device_node *dn = dev->device_node;
+	struct device_node *dn = dev->of_node;
 	u32 ioport_shift = 0;
 	int dataif_be = 0;
 	void (*reset)(int) = NULL;

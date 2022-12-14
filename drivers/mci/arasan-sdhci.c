@@ -235,7 +235,7 @@ error:
 
 static int arasan_sdhci_probe(struct device_d *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct arasan_sdhci_host *arasan_sdhci;
 	struct clk *clk_xin, *clk_ahb;
 	struct resource *iores;

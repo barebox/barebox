@@ -74,13 +74,13 @@ static int libftdi1_gpio_probe(struct device_d *dev)
 	uint32_t id_vendor, id_product;
 	const char *i_serial_number = NULL;
 
-	of_property_read_u32(dev->device_node, "usb,id_vendor",
+	of_property_read_u32(dev->of_node, "usb,id_vendor",
 				&id_vendor);
 
-	of_property_read_u32(dev->device_node, "usb,id_product",
+	of_property_read_u32(dev->of_node, "usb,id_product",
 				&id_product);
 
-	of_property_read_string(dev->device_node, "usb,i_serial_number",
+	of_property_read_string(dev->of_node, "usb,i_serial_number",
 				&i_serial_number);
 
 	ftbb = barebox_libftdi1_open(id_vendor, id_product,

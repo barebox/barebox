@@ -46,7 +46,7 @@ static int virt_probe(struct device_d *dev)
 		init();
 
 	overlay = of_unflatten_dtb(__dtb_overlay_of_flash_start, INT_MAX);
-	of_overlay_apply_tree(dev->device_node, overlay);
+	of_overlay_apply_tree(dev->of_node, overlay);
 	/* of_probe() will happen later at of_populate_initcall */
 
 	return 0;

@@ -90,7 +90,7 @@ static int scmi_reset_probe(struct scmi_device *sdev)
 {
 	struct scmi_reset_data *data;
 	struct device_d *dev = &sdev->dev;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	const struct scmi_handle *handle = sdev->handle;
 	struct scmi_protocol_handle *ph;
 

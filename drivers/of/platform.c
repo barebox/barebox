@@ -32,7 +32,7 @@ struct device_d *of_find_device_by_node(struct device_node *np)
 		return np->dev;
 
 	for_each_device(dev)
-		if (dev->device_node == np)
+		if (dev->of_node == np)
 			return dev;
 	return NULL;
 }
@@ -48,7 +48,7 @@ EXPORT_SYMBOL(of_find_device_by_node);
  */
 static void of_device_make_bus_id(struct device_d *dev)
 {
-	struct device_node *node = dev->device_node;
+	struct device_node *node = dev->of_node;
 	const __be32 *reg;
 	u64 addr;
 
@@ -176,7 +176,7 @@ struct device_d *of_platform_device_create(struct device_node *np,
 	/* setup generic device info */
 	dev = xzalloc(sizeof(*dev));
 	dev->id = DEVICE_ID_SINGLE;
-	dev->device_node = np;
+	dev->of_node = np;
 	dev->parent = parent;
 	dev->resource = res;
 	dev->num_resources = num_reg;
@@ -298,7 +298,7 @@ static struct device_d *of_amba_device_create(struct device_node *np)
 
 	/* setup generic device info */
 	dev->dev.id = DEVICE_ID_SINGLE;
-	dev->dev.device_node = np;
+	dev->dev.of_node = np;
 	of_device_make_bus_id(&dev->dev);
 
 	ret = of_address_to_resource(np, 0, &dev->res);

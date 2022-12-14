@@ -1121,7 +1121,7 @@ static int fsl_fman_port_probe(struct device_d *dev)
 
 static int fsl_fman_memac_port_bind(struct fm_eth *fm_eth, enum fman_port_type type)
 {
-	struct device_node *macnp = fm_eth->dev->device_node;
+	struct device_node *macnp = fm_eth->dev->of_node;
 	struct device_node *portnp;
 	struct device_d *portdev;
 	struct fsl_fman_port *port;
@@ -1178,7 +1178,7 @@ static int fsl_fman_memac_probe(struct device_d *dev)
 	if (ret)
 		return ret;
 
-	phy_mode = of_get_phy_mode(dev->device_node);
+	phy_mode = of_get_phy_mode(dev->of_node);
 	if (phy_mode < 0)
 		return phy_mode;
 
@@ -1306,7 +1306,7 @@ static int fsl_fman_probe(struct device_d *dev)
 	reg = IOMEM(iores->start);
 	dev->priv = reg;
 
-	ret = of_platform_populate(dev->device_node, NULL, dev);
+	ret = of_platform_populate(dev->of_node, NULL, dev);
 	if (ret)
 		return ret;
 

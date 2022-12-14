@@ -43,7 +43,7 @@ static int riscvemu_probe(struct device_d *dev)
 	u64 start;
 
 	overlay = of_unflatten_dtb(__dtb_overlay_of_sram_start, INT_MAX);
-	of_overlay_apply_tree(dev->device_node, overlay);
+	of_overlay_apply_tree(dev->of_node, overlay);
 	/* of_probe() will happen later at of_populate_initcall */
 
 	if (IS_ENABLED(CONFIG_CMD_TUTORIAL))

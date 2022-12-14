@@ -99,7 +99,7 @@ static struct clocksource dw_apb_clksrc = {
 
 static int dw_apb_timer_probe(struct device_d *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct resource *iores;
 	struct clk *clk;
 	uint32_t clk_freq;

@@ -271,7 +271,7 @@ static struct pinctrl_ops pinctrl_at91_pio4_ops = {
 
 static int pinctrl_at91_pio4_probe(struct device_d *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct pinctrl_at91_pio4 *pinctrl;
 	struct resource *io;
 	int ret;

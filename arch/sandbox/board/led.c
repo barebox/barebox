@@ -28,7 +28,7 @@ static void sandbox_led_set(struct led *led, unsigned int brightness)
 
 static int sandbox_led_of_probe(struct device_d *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	int ret;
 
 	if (sandbox_led.led.set)

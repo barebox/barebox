@@ -114,7 +114,7 @@ static int eqos_set_mode_stm32(struct eqos_stm32 *priv, phy_interface_t interfac
 
 static int eqos_init_stm32(struct device_d *dev, struct eqos *eqos)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct eqos_stm32 *priv = to_stm32(eqos);
 	struct clk_bulk_data *eth_ck;
 	int ret;
@@ -126,14 +126,14 @@ static int eqos_init_stm32(struct device_d *dev, struct eqos *eqos)
 	priv->eth_ref_clk_sel_reg =
 		of_property_read_bool(np, "st,eth-ref-clk-sel");
 
-	priv->regmap = syscon_regmap_lookup_by_phandle(dev->device_node,
+	priv->regmap = syscon_regmap_lookup_by_phandle(dev->of_node,
 						       "st,syscon");
 	if (IS_ERR(priv->regmap)) {
 		dev_err(dev, "Could not get st,syscon node\n");
 		return PTR_ERR(priv->regmap);
 	}
 
-	ret = of_property_read_u32_index(dev->device_node, "st,syscon",
+	ret = of_property_read_u32_index(dev->of_node, "st,syscon",
 					 1, &priv->mode_reg);
 	if (ret) {
 		dev_err(dev, "Can't get sysconfig mode offset (%s)\n",

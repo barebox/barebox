@@ -335,7 +335,7 @@ static int scmi_regulator_probe(struct scmi_device *sdev)
 	 * plausible SCMI Voltage Domain number, all belonging to this SCMI
 	 * platform instance node (handle->dev->of_node).
 	 */
-	np = of_find_node_by_name(handle->dev->device_node, "regulators");
+	np = of_find_node_by_name(handle->dev->of_node, "regulators");
 	for_each_child_of_node(np, child) {
 		ret = process_scmi_regulator_of_node(sdev, ph, child, rinfo);
 		/* abort on any mem issue */

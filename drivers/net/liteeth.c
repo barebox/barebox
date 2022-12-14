@@ -274,7 +274,7 @@ static int liteeth_set_ethaddr(struct eth_device *edev,
 
 static int liteeth_probe(struct device_d *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct eth_device *edev;
 	void __iomem *buf_base;
 	struct liteeth *priv;

@@ -197,7 +197,7 @@ static struct of_device_id mvebu_corediv_clk_ids[] = {
 static int mvebu_corediv_clk_probe(struct device_d *dev)
 {
 	struct resource *iores;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	const struct of_device_id *match;
 	const struct clk_corediv_soc_desc *soc_desc;
 	struct clk_corediv *corediv;

@@ -113,7 +113,7 @@ static int ar9344_clk_probe(struct device_d *dev)
 
 	clk_data.clks = clks;
 	clk_data.clk_num = ARRAY_SIZE(clks);
-	of_clk_add_provider(dev->device_node, of_clk_src_onecell_get,
+	of_clk_add_provider(dev->of_node, of_clk_src_onecell_get,
 			    &clk_data);
 
 	return 0;

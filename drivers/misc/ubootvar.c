@@ -195,11 +195,11 @@ static int ubootenv_probe(struct device_d *dev)
 
 	ubdata = xzalloc(sizeof(*ubdata));
 
-	ret = of_find_path(dev->device_node, "device-path-0",
+	ret = of_find_path(dev->of_node, "device-path-0",
 			   &ubdata->path[0],
 			   OF_FIND_PATH_FLAGS_BB);
 	if (ret)
-		ret = of_find_path(dev->device_node, "device-path",
+		ret = of_find_path(dev->of_node, "device-path",
 				   &ubdata->path[0],
 				   OF_FIND_PATH_FLAGS_BB);
 
@@ -210,7 +210,7 @@ static int ubootenv_probe(struct device_d *dev)
 
 	count++;
 
-	if (!of_find_path(dev->device_node, "device-path-1",
+	if (!of_find_path(dev->of_node, "device-path-1",
 			  &ubdata->path[1],
 			  OF_FIND_PATH_FLAGS_BB)) {
 		count++;

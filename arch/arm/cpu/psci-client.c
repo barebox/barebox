@@ -123,7 +123,7 @@ static int __init psci_probe(struct device_d *dev)
 	if (ret)
 		return -ENODEV;
 
-	ret = of_property_read_string(dev->device_node, "method", &method);
+	ret = of_property_read_string(dev->of_node, "method", &method);
 	if (ret) {
 		dev_warn(dev, "missing \"method\" property\n");
 		return -ENXIO;

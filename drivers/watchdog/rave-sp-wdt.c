@@ -286,7 +286,7 @@ static int rave_sp_wdt_get_boot_source(struct param_d *param, void *priv)
 static int rave_sp_wdt_add_params(struct rave_sp_wdt *sp_wd)
 {
 	struct watchdog *wdd = &sp_wd->wdd;
-	struct device_node *np = wdd->hwdev->device_node;
+	struct device_node *np = wdd->hwdev->of_node;
 	struct param_d *p;
 
 	sp_wd->boot_source_cell = of_nvmem_cell_get(np, "boot-source");

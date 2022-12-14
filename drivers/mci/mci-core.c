@@ -428,7 +428,7 @@ static void mci_part_add(struct mci *mci, uint64_t size,
 	part->idx = idx;
 
 	if (area_type == MMC_BLK_DATA_AREA_MAIN) {
-		part->blk.cdev.device_node = mci->host->hw_dev->device_node;
+		part->blk.cdev.device_node = mci->host->hw_dev->of_node;
 		part->blk.cdev.flags |= DEVFS_IS_MCI_MAIN_PART_DEV;
 	}
 
@@ -1699,7 +1699,7 @@ static int mci_register_partition(struct mci_part *part)
 	}
 	dev_info(&mci->dev, "registered %s\n", part->blk.cdev.name);
 
-	np = host->hw_dev->device_node;
+	np = host->hw_dev->of_node;
 
 	/* create partitions on demand */
 	switch (part->area_type) {
@@ -1709,7 +1709,7 @@ static int mci_register_partition(struct mci_part *part)
 		else
 			partnodename = "boot1-partitions";
 
-		np = of_get_child_by_name(host->hw_dev->device_node,
+		np = of_get_child_by_name(host->hw_dev->of_node,
 					  partnodename);
 		break;
 	case MMC_BLK_DATA_AREA_MAIN:
@@ -1749,12 +1749,12 @@ static int of_broken_cd_fixup(struct device_node *root, void *ctx)
 	if (!host->broken_cd)
 		return 0;
 
-	name = of_get_reproducible_name(hw_dev->device_node);
+	name = of_get_reproducible_name(hw_dev->of_node);
 	np = of_find_node_by_reproducible_name(root, name);
 	free(name);
 	if (!np) {
 		dev_warn(hw_dev, "Cannot find nodepath %s, cannot fixup\n",
-			 hw_dev->device_node->full_name);
+			 hw_dev->of_node->full_name);
 		return -EINVAL;
 	}
 
@@ -2091,7 +2091,7 @@ void mci_of_parse_node(struct mci_host *host,
 
 void mci_of_parse(struct mci_host *host)
 {
-	return mci_of_parse_node(host, host->hw_dev->device_node);
+	return mci_of_parse_node(host, host->hw_dev->of_node);
 }
 
 struct mci *mci_get_device_by_name(const char *name)

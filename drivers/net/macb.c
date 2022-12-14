@@ -815,19 +815,19 @@ static int macb_probe(struct device_d *dev)
 		macb->phy_flags = pdata->phy_flags;
 		pclk_name = "macb_clk";
 		hclk_name = NULL;
-	} else if (IS_ENABLED(CONFIG_OFDEVICE) && dev->device_node) {
+	} else if (IS_ENABLED(CONFIG_OFDEVICE) && dev->of_node) {
 		int ret;
 		struct device_node *mdiobus;
 
-		ret = of_get_phy_mode(dev->device_node);
+		ret = of_get_phy_mode(dev->of_node);
 		if (ret < 0)
 			macb->interface = PHY_INTERFACE_MODE_MII;
 		else
 			macb->interface = ret;
 
-		mdiobus = of_get_child_by_name(dev->device_node, "mdio");
+		mdiobus = of_get_child_by_name(dev->of_node, "mdio");
 		if (mdiobus)
-			macb->miibus.dev.device_node = mdiobus;
+			macb->miibus.dev.of_node = mdiobus;
 
 		macb->phy_addr = -1;
 		pclk_name = "pclk";

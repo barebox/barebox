@@ -128,7 +128,7 @@ static const struct of_device_id rockchip_iodomain_match[] = {
 
 static int rockchip_iodomain_probe(struct device_d *dev)
 {
-	struct device_node *np = dev->device_node, *parent;
+	struct device_node *np = dev->of_node, *parent;
 	struct rockchip_iodomain *iod;
 	int i, ret = 0;
 

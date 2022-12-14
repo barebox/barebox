@@ -56,7 +56,7 @@ static int atmel_ehci_probe(struct device_d *dev)
 	const char *uclk_name;
 	struct ehci_host *ehci;
 
-	uclk_name = (dev->device_node) ? "usb_clk" : "uhpck";
+	uclk_name = (dev->of_node) ? "usb_clk" : "uhpck";
 
 	atehci = xzalloc(sizeof(*atehci));
 	atehci->dev = dev;

@@ -152,7 +152,7 @@ static int stm32_pwr_regulator_probe(struct device_d *dev)
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
 
-	for_each_child_of_node(dev->device_node, child) {
+	for_each_child_of_node(dev->of_node, child) {
 		const struct stm32_pwr_desc *desc = NULL;
 
 		for (i = 0; i < STM32PWR_REG_NUM_REGS; i++) {

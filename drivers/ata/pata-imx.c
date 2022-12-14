@@ -171,7 +171,7 @@ static int imx_pata_probe(struct device_d *dev)
 
 
 	ide->port.dev = dev;
-	ide->port.devname = xstrdup(of_alias_get(dev->device_node));
+	ide->port.devname = xstrdup(of_alias_get(dev->of_node));
 
 	dev->priv = ide;
 	dev->detect = pata_imx_detect;

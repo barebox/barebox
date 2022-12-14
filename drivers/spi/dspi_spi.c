@@ -319,7 +319,7 @@ static int dspi_probe(struct device_d *dev)
 	struct resource *io;
 	struct fsl_dspi *dspi;
 	struct spi_master *master;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 
 	int ret = 0;
 	uint32_t bus_num = 0;
@@ -351,9 +351,9 @@ static int dspi_probe(struct device_d *dev)
 	else
 		master->bus_num = dev->id;
 
-	of_property_read_u32(dev->device_node, "fsl,spi-cs-sck-delay",
+	of_property_read_u32(dev->of_node, "fsl,spi-cs-sck-delay",
 			     &dspi->cs_sck_delay);
-	of_property_read_u32(dev->device_node, "fsl,spi-sck-cs-delay",
+	of_property_read_u32(dev->of_node, "fsl,spi-sck-cs-delay",
 			     &dspi->sck_cs_delay);
 
 	io = dev_request_mem_resource(dev, 0);

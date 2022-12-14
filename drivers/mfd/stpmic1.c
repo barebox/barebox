@@ -39,7 +39,7 @@ static int __init stpmic1_probe(struct device_d *dev)
 	}
 	dev_info(dev, "PMIC Chip Version: 0x%x\n", reg);
 
-	return of_platform_populate(dev->device_node, NULL, dev);
+	return of_platform_populate(dev->of_node, NULL, dev);
 }
 
 static __maybe_unused struct of_device_id stpmic1_dt_ids[] = {

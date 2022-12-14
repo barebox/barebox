@@ -273,7 +273,7 @@ static int ltdc_probe(struct device_d *dev)
 		return PTR_ERR(hw->pclk);
 	}
 
-	for_each_available_child_of_node(dev->device_node, np) {
+	for_each_available_child_of_node(dev->of_node, np) {
 		struct ltdc_fb *priv;
 		struct of_endpoint ep;
 		struct fb_info *info;
@@ -290,7 +290,7 @@ static int ltdc_probe(struct device_d *dev)
 		priv = xzalloc(sizeof(*priv));
 		priv->hw = hw;
 		priv->id = ep.id;
-		priv->vpl.node = dev->device_node;
+		priv->vpl.node = dev->of_node;
 
 		ret = vpl_register(&priv->vpl);
 		if (ret)

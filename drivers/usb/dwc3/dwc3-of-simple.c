@@ -28,7 +28,7 @@ struct dwc3_of_simple {
 static int dwc3_of_simple_probe(struct device_d *dev)
 {
 	struct dwc3_of_simple	*simple;
-	struct device_node	*np = dev->device_node;
+	struct device_node	*np = dev->of_node;
 
 	int			ret;
 

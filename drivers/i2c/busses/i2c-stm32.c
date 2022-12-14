@@ -823,7 +823,7 @@ static int __init stm32_i2c_probe(struct device_d *dev)
 	stm32_i2c->adapter.master_xfer = stm32_i2c_xfer;
 	stm32_i2c->adapter.nr = dev->id;
 	stm32_i2c->adapter.dev.parent = dev;
-	stm32_i2c->adapter.dev.device_node = dev->device_node;
+	stm32_i2c->adapter.dev.of_node = dev->of_node;
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);

@@ -282,7 +282,7 @@ void dw_pcie_setup(struct dw_pcie *pci)
 	u32 val;
 	u32 lanes;
 	struct device_d *dev = pci->dev;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 
 	if (pci->version >= 0x480A || (!pci->version &&
 				       dw_pcie_iatu_unroll_enabled(pci))) {

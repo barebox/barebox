@@ -376,9 +376,9 @@ static struct at91_pinctrl_mux_ops *at91_pinctrl_get_driver_data(struct device_d
 	struct at91_pinctrl_mux_ops *ops_data = NULL;
 	int rc;
 
-	if (dev->device_node) {
+	if (dev->of_node) {
 		const struct of_device_id *match;
-		match = of_match_node(at91_pinctrl_dt_ids, dev->device_node);
+		match = of_match_node(at91_pinctrl_dt_ids, dev->of_node);
 		if (!match)
 			ops_data = NULL;
 		else
@@ -623,8 +623,8 @@ static int at91_gpio_probe(struct device_d *dev)
 	int ret;
 	int alias_idx;
 
-	if (dev->device_node)
-		alias_idx = of_alias_get_id(dev->device_node, "gpio");
+	if (dev->of_node)
+		alias_idx = of_alias_get_id(dev->of_node, "gpio");
 	else
 		alias_idx = dev->id;
 

@@ -201,7 +201,7 @@ int fpga_bridge_register(struct device_d *dev, const char *name,
 	bridge->priv = priv;
 
 	bridge->dev.parent = dev;
-	bridge->dev.device_node = dev->device_node;
+	bridge->dev.of_node = dev->of_node;
 	bridge->dev.id = DEVICE_ID_DYNAMIC;
 
 	bridge->dev.name = xstrdup(name);
@@ -218,7 +218,7 @@ int fpga_bridge_register(struct device_d *dev, const char *name,
 	if (IS_ERR(p))
 		return PTR_ERR(p);
 
-	of_platform_populate(dev->device_node, NULL, dev);
+	of_platform_populate(dev->of_node, NULL, dev);
 
 	dev_info(bridge->dev.parent, "fpga bridge [%s] registered\n",
 		 bridge->dev.name);

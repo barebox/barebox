@@ -132,7 +132,7 @@ static void storage_by_uuid_add_partitions(struct sbu *sbu, struct cdev *rcdev)
 		return;
 	}
 
-	of_parse_partitions(&sbu->cdev, sbu->dev->device_node);
+	of_parse_partitions(&sbu->cdev, sbu->dev->of_node);
 }
 
 static void check_exist(struct sbu *sbu)
@@ -166,7 +166,7 @@ static int storage_by_uuid_probe(struct device_d *dev)
 
 	sbu = xzalloc(sizeof(*sbu));
 
-	ret = of_property_read_string(dev->device_node, "uuid", &uuid);
+	ret = of_property_read_string(dev->of_node, "uuid", &uuid);
 	if (ret)
 		return ret;
 

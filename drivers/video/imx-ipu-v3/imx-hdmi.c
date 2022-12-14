@@ -1251,7 +1251,7 @@ static int dw_hdmi_ioctl(struct vpl *vpl, unsigned int port,
 static int dw_hdmi_probe(struct device_d *dev)
 {
 	struct resource *iores;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct dw_hdmi *hdmi;
 	int ret;
 

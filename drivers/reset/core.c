@@ -164,7 +164,8 @@ EXPORT_SYMBOL_GPL(reset_control_deassert);
  */
 int reset_control_get_count(struct device_d *dev)
 {
-	return of_count_phandle_with_args(dev->device_node, "resets", "#reset-cells");
+	return of_count_phandle_with_args(dev->of_node, "resets",
+					  "#reset-cells");
 }
 
 /**
@@ -254,10 +255,10 @@ gpio_reset_control_get(struct device_d *dev, const char *id)
 	if (id)
 		return ERR_PTR(-EINVAL);
 
-	if (!of_get_property(dev->device_node, "reset-gpios", NULL))
+	if (!of_get_property(dev->of_node, "reset-gpios", NULL))
 		return NULL;
 
-	gpio = of_get_named_gpio_flags(dev->device_node, "reset-gpios", 0, &flags);
+	gpio = of_get_named_gpio_flags(dev->of_node, "reset-gpios", 0, &flags);
 	if (gpio < 0)
 		return ERR_PTR(gpio);
 
@@ -284,7 +285,7 @@ struct reset_control *reset_control_get(struct device_d *dev, const char *id)
 	if (!dev)
 		return ERR_PTR(-EINVAL);
 
-	rstc = of_reset_control_get(dev->device_node, id);
+	rstc = of_reset_control_get(dev->of_node, id);
 	if (IS_ERR(rstc))
 		return ERR_CAST(rstc);
 
@@ -359,7 +360,7 @@ int device_reset_all(struct device_d *dev)
 	for (i = 0; i < reset_control_get_count(dev); i++) {
 		int ret;
 
-		rstc = of_reset_control_get_by_index(dev->device_node, i);
+		rstc = of_reset_control_get_by_index(dev->of_node, i);
 		if (IS_ERR(rstc))
 			return PTR_ERR(rstc);
 

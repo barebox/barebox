@@ -100,7 +100,7 @@ static int nvmem_register_cdev(struct nvmem_device *nvmem, const char *name)
 	const char *alias;
 	int ret;
 
-	alias = of_alias_get(dev->device_node);
+	alias = of_alias_get(dev->of_node);
 
 	cdev->name = xstrdup(alias ?: name);
 	cdev->ops = &nvmem_chrdev_ops;
@@ -111,7 +111,7 @@ static int nvmem_register_cdev(struct nvmem_device *nvmem, const char *name)
 	if (ret)
 		return ret;
 
-	of_parse_partitions(cdev, dev->device_node);
+	of_parse_partitions(cdev, dev->of_node);
 	of_partitions_register_fixup(cdev);
 
 	return 0;
@@ -125,7 +125,7 @@ static struct nvmem_device *of_nvmem_find(struct device_node *nvmem_np)
 		return NULL;
 
 	list_for_each_entry(dev, &nvmem_devs, node)
-		if (dev->dev.device_node == nvmem_np)
+		if (dev->dev.of_node == nvmem_np)
 			return dev;
 
 	return NULL;
@@ -206,8 +206,8 @@ struct nvmem_device *nvmem_register(const struct nvmem_config *config)
 	nvmem->size = config->size;
 	nvmem->dev.parent = config->dev;
 	nvmem->bus = config->bus;
-	np = config->cdev ? config->cdev->device_node : config->dev->device_node;
-	nvmem->dev.device_node = np;
+	np = config->cdev ? config->cdev->device_node : config->dev->of_node;
+	nvmem->dev.of_node = np;
 	nvmem->priv = config->priv;
 
 	if (config->read_only || !config->bus->write || of_property_read_bool(np, "read-only"))
@@ -327,10 +327,10 @@ EXPORT_SYMBOL_GPL(of_nvmem_device_get);
  */
 struct nvmem_device *nvmem_device_get(struct device_d *dev, const char *dev_name)
 {
-	if (dev->device_node) { /* try dt first */
+	if (dev->of_node) { /* try dt first */
 		struct nvmem_device *nvmem;
 
-		nvmem = of_nvmem_device_get(dev->device_node, dev_name);
+		nvmem = of_nvmem_device_get(dev->of_node, dev_name);
 
 		if (!IS_ERR(nvmem) || PTR_ERR(nvmem) == -EPROBE_DEFER)
 			return nvmem;
@@ -467,8 +467,8 @@ struct nvmem_cell *nvmem_cell_get(struct device_d *dev, const char *cell_id)
 {
 	struct nvmem_cell *cell;
 
-	if (dev->device_node) { /* try dt first */
-		cell = of_nvmem_cell_get(dev->device_node, cell_id);
+	if (dev->of_node) { /* try dt first */
+		cell = of_nvmem_cell_get(dev->of_node, cell_id);
 		if (!IS_ERR(cell) || PTR_ERR(cell) == -EPROBE_DEFER)
 			return cell;
 	}
@@ -826,7 +826,7 @@ int nvmem_cell_read_variable_le_u32(struct device_d *dev, const char *cell_id,
 
 	len = sizeof(*val);
 
-	buf = nvmem_cell_get_and_read(dev->device_node, cell_id, len);
+	buf = nvmem_cell_get_and_read(dev->of_node, cell_id, len);
 	if (IS_ERR(buf))
 		return PTR_ERR(buf);
 

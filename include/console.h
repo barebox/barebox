@@ -79,9 +79,9 @@ static inline struct device_node *
 console_is_serdev_node(struct console_device *cdev)
 {
 	struct device_d *dev = cdev->dev;
-	if (dev && dev->device_node &&
-	    of_get_child_count(dev->device_node))
-		return dev->device_node;
+	if (dev && dev->of_node &&
+	    of_get_child_count(dev->of_node))
+		return dev->of_node;
 
 	return NULL;
 }

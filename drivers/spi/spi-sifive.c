@@ -457,7 +457,7 @@ static const struct spi_controller_mem_ops sifive_spi_mem_ops = {
 
 static void sifive_spi_dt_probe(struct sifive_spi *spi)
 {
-	struct device_node *node = spi->ctlr.dev->device_node;
+	struct device_node *node = spi->ctlr.dev->of_node;
 
 	spi->fifo_depth = SIFIVE_SPI_DEFAULT_DEPTH;
 	of_property_read_u32(node, "sifive,fifo-depth", &spi->fifo_depth);

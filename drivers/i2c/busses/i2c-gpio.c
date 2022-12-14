@@ -140,8 +140,8 @@ static int i2c_gpio_probe(struct device_d *dev)
 	bit_data = &priv->bit_data;
 	pdata = &priv->pdata;
 
-	if (dev->device_node) {
-		ret = of_i2c_gpio_probe(dev->device_node, pdata);
+	if (dev->of_node) {
+		ret = of_i2c_gpio_probe(dev->of_node, pdata);
 		if (ret)
 			return ret;
 	} else {
@@ -193,7 +193,7 @@ static int i2c_gpio_probe(struct device_d *dev)
 
 	adap->algo_data = bit_data;
 	adap->dev.parent = dev;
-	adap->dev.device_node = dev->device_node;
+	adap->dev.of_node = dev->of_node;
 	adap->bus_recovery_info = xzalloc(sizeof(*adap->bus_recovery_info));
 	adap->bus_recovery_info->scl_gpio = pdata->scl_pin;
 	adap->bus_recovery_info->sda_gpio = pdata->sda_pin;

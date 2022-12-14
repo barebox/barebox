@@ -199,7 +199,7 @@ static int pca954x_probe(struct device_d *dev)
 
 	i2c_set_clientdata(client, data);
 
-	gpio = of_get_named_gpio(dev->device_node, "reset-gpios", 0);
+	gpio = of_get_named_gpio(dev->of_node, "reset-gpios", 0);
 	if (gpio_is_valid(gpio))
 		gpio_direction_output(gpio, 1);
 
@@ -215,7 +215,7 @@ static int pca954x_probe(struct device_d *dev)
 	if (ret)
 		goto exit_free;
 
-	idle_disconnect = of_property_read_bool(dev->device_node,
+	idle_disconnect = of_property_read_bool(dev->of_node,
 						"i2c-mux-idle-disconnect");
 
 	data->last_chan = 0;		   /* force the first selection */

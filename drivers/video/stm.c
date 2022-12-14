@@ -532,10 +532,10 @@ static int stmfb_probe(struct device_d *hw_dev)
 		struct display_timings *modes;
 		struct device_node *display;
 
-		if (!IS_ENABLED(CONFIG_OFDEVICE) || !hw_dev->device_node)
+		if (!IS_ENABLED(CONFIG_OFDEVICE) || !hw_dev->of_node)
 			return -EINVAL;
 
-		display = of_parse_phandle(hw_dev->device_node, "display", 0);
+		display = of_parse_phandle(hw_dev->of_node, "display", 0);
 		if (!display) {
 			dev_err(hw_dev, "no display phandle\n");
 			return -EINVAL;

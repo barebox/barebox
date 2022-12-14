@@ -304,7 +304,7 @@ static int imx_ldb_ioctl(struct vpl *vpl, unsigned int port,
 
 static int imx_ldb_probe(struct device_d *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct device_node *child;
 	struct imx_ldb *imx_ldb;
 	int ret, i;

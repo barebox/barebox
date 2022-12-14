@@ -128,7 +128,7 @@ static int gpio_spi_setup(struct spi_device *spi)
 
 static int gpio_spi_of_probe(struct device_d *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct gpio_spi_pdata *pdata;
 	int n, sck;
 

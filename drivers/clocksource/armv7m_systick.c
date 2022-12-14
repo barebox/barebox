@@ -47,7 +47,7 @@ static int armv7m_systick_probe(struct device_d *dev)
 	if (!systick_base)
 		return -ENOENT;
 
-	ret = of_property_read_u32(dev->device_node, "clock-frequency", &rate);
+	ret = of_property_read_u32(dev->of_node, "clock-frequency", &rate);
 	if (ret) {
 		clk = clk_get(dev, NULL);
 		if (IS_ERR(clk))

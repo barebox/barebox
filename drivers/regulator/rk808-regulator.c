@@ -889,7 +889,7 @@ static int rk808_regulator_dt_parse(struct device_d *dev,
 				    struct of_regulator_match *matches,
 				    int nregulators)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 
 	np = of_get_child_by_name(np, "regulators");
 	if (!np)

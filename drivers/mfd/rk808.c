@@ -249,7 +249,7 @@ static void rk808_poweroff(struct poweroff_handler *handler)
 static int rk808_probe(struct device_d *dev)
 {
 	struct i2c_client *client = to_i2c_client(dev);
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct rk808 *rk808;
 	const struct rk808_reg_data *pre_init_reg;
 	const struct mfd_cell *cells;

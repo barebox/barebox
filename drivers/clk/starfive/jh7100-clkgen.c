@@ -340,11 +340,11 @@ static int starfive_clkgen_clk_probe(struct device_d *dev)
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
 
-	starfive_clkgen_init(dev->device_node, IOMEM(iores->start));
+	starfive_clkgen_init(dev->of_node, IOMEM(iores->start));
 
 	clk_data.clks = clks;
 	clk_data.clk_num = ARRAY_SIZE(clks);
-	of_clk_add_provider(dev->device_node, of_clk_src_onecell_get,
+	of_clk_add_provider(dev->of_node, of_clk_src_onecell_get,
 			    &clk_data);
 
 	return 0;

@@ -27,7 +27,7 @@ static int atmel_flexcom_probe(struct device_d *dev)
 	u32 opmode;
 	int err;
 
-	err = of_property_read_u32(dev->device_node,
+	err = of_property_read_u32(dev->of_node,
 				   "atmel,flexcom-mode", &opmode);
 	if (err)
 		return err;
@@ -57,7 +57,7 @@ static int atmel_flexcom_probe(struct device_d *dev)
 
 	clk_disable(clk);
 
-	return of_platform_populate(dev->device_node, NULL, dev);
+	return of_platform_populate(dev->of_node, NULL, dev);
 }
 
 static const struct of_device_id atmel_flexcom_of_match[] = {

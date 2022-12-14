@@ -49,7 +49,7 @@ int bus_register(struct bus_type *bus)
 
 int device_match(struct device_d *dev, struct driver_d *drv)
 {
-	if (IS_ENABLED(CONFIG_OFDEVICE) && dev->device_node &&
+	if (IS_ENABLED(CONFIG_OFDEVICE) && dev->of_node &&
 	    drv->of_compatible)
 		return of_match(dev, drv);
 
@@ -80,10 +80,10 @@ int device_match_of_modalias(struct device_d *dev, struct driver_d *drv)
 	if (!device_match(dev, drv))
 		return 0;
 
-	if (!id || !IS_ENABLED(CONFIG_OFDEVICE) || !dev->device_node)
+	if (!id || !IS_ENABLED(CONFIG_OFDEVICE) || !dev->of_node)
 		return -1;
 
-	of_property_for_each_string(dev->device_node, "compatible", prop, compat) {
+	of_property_for_each_string(dev->of_node, "compatible", prop, compat) {
 		p = strchr(compat, ',');
 		of_modalias = p ? p + 1 : compat;
 

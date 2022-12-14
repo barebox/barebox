@@ -376,10 +376,10 @@ static int tegra30_car_probe(struct device_d *dev)
 
 	clk_data.clks = clks;
 	clk_data.clk_num = ARRAY_SIZE(clks);
-	of_clk_add_provider(dev->device_node, of_clk_src_onecell_get,
+	of_clk_add_provider(dev->of_node, of_clk_src_onecell_get,
 			    &clk_data);
 
-	tegra_clk_init_rst_controller(car_base, dev->device_node, 6 * 32);
+	tegra_clk_init_rst_controller(car_base, dev->of_node, 6 * 32);
 	tegra_clk_reset_uarts();
 
 	return 0;

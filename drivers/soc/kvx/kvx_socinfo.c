@@ -125,7 +125,7 @@ static int kvx_socinfo_probe(struct device_d *dev)
 {
 	kvx_soc_info_read_revision();
 
-	return kvx_read_serial(dev->device_node);
+	return kvx_read_serial(dev->of_node);
 }
 
 static const struct of_device_id kvx_socinfo_dt_ids[] = {

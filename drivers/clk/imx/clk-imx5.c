@@ -207,7 +207,7 @@ static void __init mx5_clocks_common_init(struct device_d *dev, void __iomem *ba
 
 	clks[IMX5_CLK_DUMMY] = clk_fixed("dummy", 0);
 
-	if (!IS_ENABLED(CONFIG_COMMON_CLK_OF_PROVIDER) || !dev->device_node) {
+	if (!IS_ENABLED(CONFIG_COMMON_CLK_OF_PROVIDER) || !dev->of_node) {
 		clks[IMX5_CLK_CKIL] = clk_fixed("ckil", 32768);
 		clks[IMX5_CLK_OSC] = clk_fixed("osc", 24000000);
 	}
@@ -418,7 +418,7 @@ static int imx51_ccm_probe(struct device_d *dev)
 
 	clk_data.clks = clks;
 	clk_data.clk_num = IMX5_CLK_END;
-	of_clk_add_provider(dev->device_node, of_clk_src_onecell_get, &clk_data);
+	of_clk_add_provider(dev->of_node, of_clk_src_onecell_get, &clk_data);
 
 	return 0;
 }
@@ -516,7 +516,7 @@ static int imx53_ccm_probe(struct device_d *dev)
 
 	clk_data.clks = clks;
 	clk_data.clk_num = IMX5_CLK_END;
-	of_clk_add_provider(dev->device_node, of_clk_src_onecell_get, &clk_data);
+	of_clk_add_provider(dev->of_node, of_clk_src_onecell_get, &clk_data);
 
 	return 0;
 }

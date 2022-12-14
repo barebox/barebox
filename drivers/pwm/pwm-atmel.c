@@ -438,7 +438,7 @@ static int atmel_pwm_probe(struct device_d *dev)
 		return PTR_ERR(iores);
 
 	atmel_pwm->base = IOMEM(iores->start);
-	alias = of_alias_get(dev->device_node);
+	alias = of_alias_get(dev->of_node);
 	if (!alias)
 		id++;
 

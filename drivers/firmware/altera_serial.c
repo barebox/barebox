@@ -267,7 +267,7 @@ static int altera_spi_close(struct firmware_handler *fh)
 
 static int altera_spi_of(struct device_d *dev, struct fpga_spi *this)
 {
-	struct device_node *n = dev->device_node;
+	struct device_node *n = dev->of_node;
 	const char *name;
 	int ret;
 
@@ -334,7 +334,7 @@ static int altera_spi_probe(struct device_d *dev)
 	int rc;
 	struct fpga_spi *this;
 	struct firmware_handler *fh;
-	const char *alias = of_alias_get(dev->device_node);
+	const char *alias = of_alias_get(dev->of_node);
 	const char *model = NULL;
 	const struct altera_ps_data *data;
 
@@ -359,11 +359,11 @@ static int altera_spi_probe(struct device_d *dev)
 	fh->open = altera_spi_open;
 	fh->write = altera_spi_write;
 	fh->close = altera_spi_close;
-	of_property_read_string(dev->device_node, "compatible", &model);
+	of_property_read_string(dev->of_node, "compatible", &model);
 	if (model)
 		fh->model = xstrdup(model);
 	fh->dev = dev;
-	fh->device_node = dev->device_node;
+	fh->device_node = dev->of_node;
 
 	this->spi = (struct spi_device *)dev->type_data;
 	this->data = data;

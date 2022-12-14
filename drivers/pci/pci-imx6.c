@@ -691,7 +691,7 @@ static int imx6_pcie_probe(struct device_d *dev)
 	struct resource *iores;
 	struct dw_pcie *pci;
 	struct imx6_pcie *imx6_pcie;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	int ret;
 
 	imx6_pcie = xzalloc(sizeof(*imx6_pcie));

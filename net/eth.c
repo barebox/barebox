@@ -69,7 +69,7 @@ static int eth_get_registered_ethaddr(struct eth_device *edev, void *buf)
 	struct device_node *node = NULL;
 
 	if (edev->parent)
-		node = edev->parent->device_node;
+		node = edev->parent->of_node;
 
 	list_for_each_entry(addr, &ethaddr_list, list) {
 		if ((node && node == addr->node) ||
@@ -121,9 +121,9 @@ static struct eth_device *eth_get_by_node(struct device_node *node)
 	for_each_netdev(edev) {
 		if (!edev->parent)
 			continue;
-		if (!edev->parent->device_node)
+		if (!edev->parent->of_node)
 			continue;
-		if (edev->parent->device_node == node)
+		if (edev->parent->of_node == node)
 			return edev;
 	}
 	return NULL;
@@ -399,8 +399,9 @@ int eth_register(struct eth_device *edev)
 	if (edev->parent)
 		edev->dev.parent = edev->parent;
 
-	if (edev->dev.parent && edev->dev.parent->device_node) {
-		edev->dev.id = of_alias_get_id(edev->dev.parent->device_node, "ethernet");
+	if (edev->dev.parent && edev->dev.parent->of_node) {
+		edev->dev.id = of_alias_get_id(edev->dev.parent->of_node,
+					       "ethernet");
 		if (edev->dev.id < 0)
 			edev->dev.id = DEVICE_ID_DYNAMIC;
 	} else {
@@ -450,8 +451,8 @@ int eth_register(struct eth_device *edev)
 		register_preset_mac_address(edev, ethaddr);
 
 	if (IS_ENABLED(CONFIG_OFDEVICE) && edev->parent &&
-			edev->parent->device_node)
-		edev->nodepath = xstrdup(edev->parent->device_node->full_name);
+			edev->parent->of_node)
+		edev->nodepath = xstrdup(edev->parent->of_node->full_name);
 
 	return 0;
 }
@@ -524,7 +525,7 @@ struct eth_device *of_find_eth_device_by_node(struct device_node *np)
 		return NULL;
 
 	list_for_each_entry(edev, &netdev_list, list)
-		if (edev->parent->device_node == np)
+		if (edev->parent->of_node == np)
 			return edev;
 	return NULL;
 }
@@ -548,7 +549,8 @@ static int of_populate_ethaddr(void)
 		if (!edev->parent || is_valid_ether_addr(edev->ethaddr))
 			continue;
 
-		ret = of_get_mac_addr_nvmem(edev->parent->device_node, edev->ethaddr);
+		ret = of_get_mac_addr_nvmem(edev->parent->of_node,
+					    edev->ethaddr);
 		if (ret)
 			continue;
 

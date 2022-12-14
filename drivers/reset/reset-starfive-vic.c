@@ -216,7 +216,7 @@ static int starfive_rstgen_probe(struct device_d *dev)
 	priv->base = IOMEM(iores->start);
 	priv->rcdev.nr_resets = RSTN_END;
 	priv->rcdev.ops = &starfive_rstgen_ops;
-	priv->rcdev.of_node = dev->device_node;
+	priv->rcdev.of_node = dev->of_node;
 
 	return reset_controller_register(&priv->rcdev);
 }

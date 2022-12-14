@@ -146,7 +146,7 @@ static int imx_usbphy_get_vbus_state(struct param_d *p, void *priv)
 static int imx_usbphy_probe(struct device_d *dev)
 {
 	struct resource *iores;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	int ret;
 	struct imx_usbphy *imxphy;
 

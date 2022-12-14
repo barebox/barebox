@@ -407,7 +407,7 @@ static int socfpga_ccm_probe(struct device_d *dev)
 
 	clk_mgr_base_addr = regs;
 
-	clknode = of_get_child_by_name(dev->device_node, "clocks");
+	clknode = of_get_child_by_name(dev->of_node, "clocks");
 	if (!clknode)
 		return -EINVAL;
 

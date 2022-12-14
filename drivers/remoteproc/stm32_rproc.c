@@ -40,7 +40,7 @@ static void *stm32_rproc_da_to_va(struct rproc *rproc, u64 da, int len)
 	struct device_d *dev = &rproc->dev;
 	u64 paddr;
 
-	paddr = of_translate_dma_address(dev->parent->device_node, &in_addr);
+	paddr = of_translate_dma_address(dev->parent->of_node, &in_addr);
 	if (paddr == OF_BAD_ADDR)
 		return NULL;
 
@@ -130,7 +130,7 @@ out:
 
 static int stm32_rproc_parse_dt(struct device_d *dev, struct stm32_rproc *ddata)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct stm32_syscon tz;
 	unsigned int tzen;
 	int err;

@@ -98,7 +98,7 @@ static void hf_info(struct device_d *dev)
 
 static int hf_probe(struct device_d *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct hf_priv *priv = xzalloc(sizeof(*priv));
 	struct cdev *cdev;
 	bool is_blockdev;

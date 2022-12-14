@@ -99,7 +99,7 @@ static int simple_panel_get_modes(struct simple_panel *panel, struct display_tim
 		}
 	}
 
-	modes = of_get_display_timings(panel->dev->device_node);
+	modes = of_get_display_timings(panel->dev->of_node);
 	if (modes) {
 		timings->modes = modes->modes;
 		timings->num_modes = modes->num_modes;
@@ -132,7 +132,7 @@ static int simple_panel_ioctl(struct vpl *vpl, unsigned int port,
 static int simple_panel_probe(struct device_d *dev)
 {
 	struct simple_panel *panel;
-	struct device_node *node = dev->device_node;
+	struct device_node *node = dev->of_node;
 	enum of_gpio_flags flags;
 	int ret;
 

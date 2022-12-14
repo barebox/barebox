@@ -78,7 +78,7 @@ static int socfpga_reset_probe(struct device_d *dev)
 {
 	struct socfpga_reset_data *data;
 	struct resource *res;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	u32 modrst_offset;
 
 	data = xzalloc(sizeof(*data));

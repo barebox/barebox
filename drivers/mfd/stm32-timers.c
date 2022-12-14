@@ -58,7 +58,7 @@ static int stm32_timers_probe(struct device_d *dev)
 
 	dev->priv = ddata;
 
-	return of_platform_populate(dev->device_node, NULL, dev);
+	return of_platform_populate(dev->of_node, NULL, dev);
 }
 
 static const struct of_device_id stm32_timers_of_match[] = {

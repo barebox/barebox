@@ -346,10 +346,10 @@ pci_of_match_device(struct device_d *parent, unsigned int devfn)
 	struct device_node *np;
 	u32 reg;
 
-	if (!IS_ENABLED(CONFIG_OFTREE) || !parent || !parent->device_node)
+	if (!IS_ENABLED(CONFIG_OFTREE) || !parent || !parent->of_node)
 		return NULL;
 
-	for_each_child_of_node(parent->device_node, np) {
+	for_each_child_of_node(parent->of_node, np) {
 		if (!of_property_read_u32_array(np, "reg", &reg, 1)) {
 			/*
 			 * Only match device/function pair of the device
@@ -399,10 +399,10 @@ static unsigned int pci_scan_bus(struct pci_bus *bus)
 		dev->vendor = l & 0xffff;
 		dev->device = (l >> 16) & 0xffff;
 		dev->dev.parent = bus->parent;
-		dev->dev.device_node = pci_of_match_device(bus->parent, devfn);
-		if (dev->dev.device_node)
+		dev->dev.of_node = pci_of_match_device(bus->parent, devfn);
+		if (dev->dev.of_node)
 			pr_debug("found DT node %s for device %04x:%04x\n",
-				 dev->dev.device_node->full_name,
+				 dev->dev.of_node->full_name,
 				 dev->vendor, dev->device);
 
 		/* non-destructively determine if device can be a master: */

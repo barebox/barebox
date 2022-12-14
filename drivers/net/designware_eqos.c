@@ -204,7 +204,7 @@ static int eqos_phy_reset(struct device_d *dev, struct eqos *eqos)
 	if (!gpio_is_valid(phy_reset))
 		return 0;
 
-	of_property_read_u32_array(dev->device_node,
+	of_property_read_u32_array(dev->of_node,
 				   "snps,reset-delays-us",
 				   delays, ARRAY_SIZE(delays));
 
@@ -808,14 +808,14 @@ static void eqos_probe_dt(struct device_d *dev, struct eqos *eqos)
 {
 	struct device_node *child;
 
-	eqos->interface = of_get_phy_mode(dev->device_node);
+	eqos->interface = of_get_phy_mode(dev->of_node);
 	eqos->phy_addr = -1;
 
 	/* Set MDIO bus device node, if present. */
-	for_each_child_of_node(dev->device_node, child) {
+	for_each_child_of_node(dev->of_node, child) {
 		if (of_device_is_compatible(child, "snps,dwmac-mdio") ||
 		    (child->name && !of_node_cmp(child->name, "mdio"))) {
-			eqos->miibus.dev.device_node = child;
+			eqos->miibus.dev.of_node = child;
 			break;
 		}
 	}
@@ -823,7 +823,7 @@ static void eqos_probe_dt(struct device_d *dev, struct eqos *eqos)
 
 int eqos_probe(struct device_d *dev, const struct eqos_ops *ops, void *priv)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct mii_bus *miibus;
 	struct resource *iores;
 	struct eqos *eqos;
@@ -863,9 +863,9 @@ int eqos_probe(struct device_d *dev, const struct eqos_ops *ops, void *priv)
 	miibus->write = eqos_mdio_write;
 	miibus->priv = eqos;
 
-	miibus->dev.device_node = of_get_compatible_child(np, "snps,dwmac-mdio");
-	if (!miibus->dev.device_node)
-		miibus->dev.device_node = of_get_child_by_name(np, "mdio");
+	miibus->dev.of_node = of_get_compatible_child(np, "snps,dwmac-mdio");
+	if (!miibus->dev.of_node)
+		miibus->dev.of_node = of_get_child_by_name(np, "mdio");
 
 	ret = eqos_init(dev, eqos);
 	if (ret)

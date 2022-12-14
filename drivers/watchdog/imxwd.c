@@ -269,9 +269,9 @@ static int imx_wd_probe(struct device_d *dev)
 	priv->wd.timeout_max = priv->ops->timeout_max;
 	priv->wd.hwdev = dev;
 	priv->dev = dev;
-	priv->bigendian = of_device_is_big_endian(dev->device_node);
+	priv->bigendian = of_device_is_big_endian(dev->of_node);
 
-	priv->ext_reset = of_property_read_bool(dev->device_node,
+	priv->ext_reset = of_property_read_bool(dev->of_node,
 						"fsl,ext-reset-output");
 
 	if (IS_ENABLED(CONFIG_WATCHDOG_IMX)) {

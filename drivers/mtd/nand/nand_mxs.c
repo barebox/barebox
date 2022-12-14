@@ -1407,7 +1407,7 @@ static void mxs_nand_probe_dt(struct device_d *dev, struct mxs_nand_info *nand_i
 	if (!IS_ENABLED(CONFIG_OFTREE))
 		return;
 
-	if (of_get_nand_on_flash_bbt(dev->device_node))
+	if (of_get_nand_on_flash_bbt(dev->of_node))
 		chip->bbt_options |= NAND_BBT_USE_FLASH | NAND_BBT_NO_OOB;
 }
 

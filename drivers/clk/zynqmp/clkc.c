@@ -452,7 +452,7 @@ static int zynqmp_register_clocks(struct device_d *dev,
 	unsigned int i;
 	const char *parent_names[MAX_PARENT];
 	char *name;
-	struct device_node *node = dev->device_node;
+	struct device_node *node = dev->of_node;
 	int num_parents;
 
 	for (i = 0; i < num_clocks; i++) {
@@ -558,7 +558,7 @@ static int zynqmp_clock_probe(struct device_d *dev)
 
 	zynqmp_register_clocks(dev, clk_data->clks, num_clocks);
 	clk_data->clk_num = num_clocks;
-	of_clk_add_provider(dev->device_node, of_clk_src_onecell_get, clk_data);
+	of_clk_add_provider(dev->of_node, of_clk_src_onecell_get, clk_data);
 
 	/*
 	 * We can free clock_info now, as is only used to store clock info

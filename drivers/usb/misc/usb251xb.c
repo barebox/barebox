@@ -338,7 +338,7 @@ static int usb251xb_get_ofdata(struct usb251xb *hub,
 			       struct usb251xb_data *data)
 {
 	struct device_d *dev = hub->dev;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	int len, i;
 	u32 port, property_u32 = 0;
 	const u32 *cproperty_u32;
@@ -619,7 +619,7 @@ static int usb251xb_get_ofdata(struct usb251xb *hub,
 static int usb251xb_probe(struct usb251xb *hub)
 {
 	struct device_d *dev = hub->dev;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	const struct of_device_id *of_id = of_match_device(usb251xb_of_match,
 							   dev);
 	int err;

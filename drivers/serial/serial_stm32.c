@@ -186,8 +186,8 @@ static int stm32_serial_probe(struct device_d *dev)
 	cdev->setbrg = stm32_serial_setbaudrate;
 	cdev->linux_console_name = "ttySTM";
 
-	if (dev->device_node) {
-		devname = of_alias_get(dev->device_node);
+	if (dev->of_node) {
+		devname = of_alias_get(dev->of_node);
 		if (devname) {
 			cdev->devname = xstrdup(devname);
 			cdev->devid   = DEVICE_ID_SINGLE;

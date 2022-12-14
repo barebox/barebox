@@ -383,7 +383,7 @@ static int da9063_probe(struct device_d *dev)
 
 	da9063_detect_reset_source(priv);
 
-	priv->restart.of_node = dev->device_node;
+	priv->restart.of_node = dev->of_node;
 	priv->restart.name = "da9063";
 	priv->restart.restart = &da9063_restart;
 
@@ -399,8 +399,8 @@ static int da9063_probe(struct device_d *dev)
 			goto on_error;
 	}
 
-	if (IS_ENABLED(CONFIG_OFDEVICE) && dev->device_node)
-		return of_platform_populate(dev->device_node, NULL, dev);
+	if (IS_ENABLED(CONFIG_OFDEVICE) && dev->of_node)
+		return of_platform_populate(dev->of_node, NULL, dev);
 
 	return 0;
 

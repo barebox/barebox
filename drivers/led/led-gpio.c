@@ -199,13 +199,13 @@ static int led_gpio_of_probe(struct device_d *dev)
 	int num_leds;
 	int ret = 0, n = 0;
 
-	num_leds = of_get_child_count(dev->device_node);
+	num_leds = of_get_child_count(dev->of_node);
 	if (num_leds <= 0)
 		return num_leds;
 
 	leds = xzalloc(num_leds * sizeof(struct gpio_led));
 
-	for_each_child_of_node(dev->device_node, child) {
+	for_each_child_of_node(dev->of_node, child) {
 		struct gpio_led *gled = &leds[n];
 		const char *default_state;
 		enum of_gpio_flags flags;

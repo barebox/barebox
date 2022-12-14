@@ -308,8 +308,8 @@ static int tegra_sdmmc_init(struct mci_host *mci, struct device_d *dev)
 	sdhci_write32(&host->sdhci, TEGRA_SDMMC_PWR_CNTL, val);
 
 	/* sdmmc1 and sdmmc3 on T30 need a bit of padctrl init */
-	if (of_device_is_compatible(mci->hw_dev->device_node,
-			"nvidia,tegra30-sdhci") &&
+	if (of_device_is_compatible(mci->hw_dev->of_node,
+				    "nvidia,tegra30-sdhci") &&
 			((u32)regs == 0x78000000 || (u32)regs == 78000400)) {
 		val = readl(regs + TEGRA_SDMMC_SDMEMCOMPPADCTRL);
 		val &= 0xfffffff0;
@@ -366,7 +366,7 @@ static int tegra_sdmmc_card_present(struct mci_host *mci)
 
 static void tegra_sdmmc_parse_dt(struct tegra_sdmmc_host *host)
 {
-	struct device_node *np = host->mci.hw_dev->device_node;
+	struct device_node *np = host->mci.hw_dev->of_node;
 
 	host->gpio_cd = of_get_named_gpio(np, "cd-gpios", 0);
 	host->gpio_pwr = of_get_named_gpio(np, "power-gpios", 0);

@@ -293,7 +293,7 @@ static int rave_sp_eeprom_probe(struct device_d *dev)
 	struct nvmem_device *nvmem;
 	u32 reg[2], size;
 
-	if (of_property_read_u32_array(dev->device_node,
+	if (of_property_read_u32_array(dev->of_node,
 				       "reg", reg, ARRAY_SIZE(reg))) {
 		dev_err(dev, "Failed to parse \"reg\" property\n");
 		return -EINVAL;
@@ -322,7 +322,7 @@ static int rave_sp_eeprom_probe(struct device_d *dev)
 	/*
 	 * If a name is specified via DT, override the above with it.
 	 */
-	of_property_read_string(dev->device_node, "zii,eeprom-name",
+	of_property_read_string(dev->of_node, "zii,eeprom-name",
 				&config.name);
 	config.dev       = dev;
 	config.priv      = eeprom;

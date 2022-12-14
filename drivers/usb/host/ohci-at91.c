@@ -60,7 +60,7 @@ static int at91_ohci_probe_dt(struct device_d *dev)
 	int i, ret, gpio;
 	enum of_gpio_flags flags;
 	struct at91_usbh_data *pdata;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 
 	pdata = xzalloc(sizeof(*pdata));
 	dev->platform_data = pdata;
@@ -116,7 +116,7 @@ static int at91_ohci_probe(struct device_d *dev)
 	dev->priv = ohci_at91;
 	ohci_at91->dev = dev;
 
-	if (dev->device_node) {
+	if (dev->of_node) {
 		ret = at91_ohci_probe_dt(dev);
 		if (ret < 0)
 			return ret;

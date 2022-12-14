@@ -365,7 +365,7 @@ static int led_pca955x_probe(struct device_d *dev)
 	pca955x->client = client;
 	pca955x->chipdef = chip;
 
-	pdata =	led_pca955x_pdata_of_init(dev->device_node, pca955x);
+	pdata =	led_pca955x_pdata_of_init(dev->of_node, pca955x);
 	if (IS_ERR(pdata))
 		return PTR_ERR(pdata);
 

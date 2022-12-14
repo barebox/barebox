@@ -127,8 +127,8 @@ int rproc_add(struct rproc *rproc)
 	const char *alias = NULL;
 	int ret;
 
-	if (dev->device_node)
-		alias = of_alias_get(dev->device_node);
+	if (dev->of_node)
+		alias = of_alias_get(dev->of_node);
 
 	ret = rproc_register_dev(rproc, alias);
 	if (ret)

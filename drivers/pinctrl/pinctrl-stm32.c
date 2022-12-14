@@ -344,7 +344,7 @@ static int stm32_pinctrl_probe(struct device_d *dev)
 	struct stm32_pinctrl *pinctrl;
 	unsigned nbanks = 0;
 	struct stm32_gpio_bank *gpio_bank;
-	struct device_node *np = dev->device_node, *child;
+	struct device_node *np = dev->of_node, *child;
 	int ret;
 
 	if (!of_find_property(np, "pins-are-numbered", NULL)) {

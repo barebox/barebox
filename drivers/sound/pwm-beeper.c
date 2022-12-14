@@ -60,7 +60,7 @@ static int pwm_beeper_probe(struct device_d *dev)
 	beeper = xzalloc(sizeof(*beeper));
 	dev->priv = beeper;
 
-	beeper->pwm = of_pwm_request(dev->device_node, NULL);
+	beeper->pwm = of_pwm_request(dev->of_node, NULL);
 	if (IS_ERR(beeper->pwm)) {
 		error = PTR_ERR(beeper->pwm);
 		if (error != -EPROBE_DEFER)
@@ -88,7 +88,8 @@ static int pwm_beeper_probe(struct device_d *dev)
 		return error;
 	}
 
-	error = of_property_read_u32(dev->device_node, "beeper-hz", &bell_frequency);
+	error = of_property_read_u32(dev->of_node, "beeper-hz",
+				     &bell_frequency);
 	if (error) {
 		bell_frequency = 1000;
 		dev_dbg(dev, "failed to parse 'beeper-hz' property, using default: %uHz\n",
@@ -96,7 +97,7 @@ static int pwm_beeper_probe(struct device_d *dev)
 	}
 
 	card = &beeper->card;
-	card->name = dev->device_node->full_name;
+	card->name = dev->of_node->full_name;
 	card->bell_frequency = bell_frequency;
 	card->beep = pwm_beeper_beep;
 

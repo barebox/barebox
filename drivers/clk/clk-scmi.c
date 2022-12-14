@@ -120,7 +120,7 @@ static int scmi_clocks_probe(struct scmi_device *sdev)
 	struct clk **clks;
 	struct clk_onecell_data *clk_data;
 	struct device_d *dev = &sdev->dev;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	const struct scmi_handle *handle = sdev->handle;
 	struct scmi_protocol_handle *ph;
 
@@ -172,7 +172,8 @@ static int scmi_clocks_probe(struct scmi_device *sdev)
 		}
 	}
 
-	return of_clk_add_provider(dev->device_node, of_clk_src_onecell_get, clk_data);
+	return of_clk_add_provider(dev->of_node, of_clk_src_onecell_get,
+				   clk_data);
 }
 
 static const struct scmi_device_id scmi_id_table[] = {

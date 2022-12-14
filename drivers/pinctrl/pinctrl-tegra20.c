@@ -316,7 +316,7 @@ static int pinctrl_tegra20_probe(struct device_d *dev)
 		return ret;
 	}
 
-	of_pinctrl_select_state(dev->device_node, "boot");
+	of_pinctrl_select_state(dev->of_node, "boot");
 
 	return 0;
 }

@@ -459,7 +459,7 @@ void __sdhci_read_caps(struct sdhci *host, const u16 *ver,
 	u16 v;
 	u64 dt_caps_mask = 0;
 	u64 dt_caps = 0;
-	struct device_node *np = host->mci->hw_dev->device_node;
+	struct device_node *np = host->mci->hw_dev->of_node;
 
 	BUG_ON(!host->mci); /* Call sdhci_setup_host() before using this */
 

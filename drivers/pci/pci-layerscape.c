@@ -221,7 +221,7 @@ static int ls1021_pcie_host_init(struct pcie_port *pp)
 	u32 index[2];
 	int ret;
 
-	pcie->scfg = syscon_regmap_lookup_by_phandle(dev->device_node,
+	pcie->scfg = syscon_regmap_lookup_by_phandle(dev->of_node,
 						     "fsl,pcie-scfg");
 	if (IS_ERR(pcie->scfg)) {
 		ret = PTR_ERR(pcie->scfg);
@@ -230,7 +230,7 @@ static int ls1021_pcie_host_init(struct pcie_port *pp)
 		return ret;
 	}
 
-	if (of_property_read_u32_array(dev->device_node,
+	if (of_property_read_u32_array(dev->of_node,
 				       "fsl,pcie-scfg", index, 2)) {
 		pcie->scfg = NULL;
 		return -EINVAL;
@@ -378,7 +378,7 @@ static int ls_pcie_of_fixup(struct device_node *root, void *ctx)
 	int ret, i;
 	u32 devid, stream_id;
 
-	name = of_get_reproducible_name(dev->device_node);
+	name = of_get_reproducible_name(dev->of_node);
 
 	np = root;
 	do {

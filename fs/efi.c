@@ -479,7 +479,7 @@ static void efifs_remove(struct device *dev)
 	free(dev->priv);
 }
 
-static struct fs_driver_d efifs_driver = {
+static struct fs_driver efifs_driver = {
 	.create    = efifs_create,
 	.unlink    = efifs_unlink,
 	.open      = efifs_open,

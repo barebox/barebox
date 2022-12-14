@@ -347,7 +347,7 @@ static void efivarfs_remove(struct device *dev)
 	free(priv);
 }
 
-static struct fs_driver_d efivarfs_driver = {
+static struct fs_driver efivarfs_driver = {
 	.create    = efivars_create,
 	.unlink    = efivars_unlink,
 	.open      = efivarfs_open,

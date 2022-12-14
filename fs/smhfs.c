@@ -148,7 +148,7 @@ static void smhfs_remove(struct device __always_unused *dev)
 {
 }
 
-static struct fs_driver_d smhfs_driver = {
+static struct fs_driver smhfs_driver = {
 	.open      = smhfs_open,
 	.close     = smhfs_close,
 	.read      = smhfs_read,

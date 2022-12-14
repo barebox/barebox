@@ -298,7 +298,7 @@ static void ext_remove(struct device *dev)
 	free(fs);
 }
 
-static struct fs_driver_d ext_driver = {
+static struct fs_driver ext_driver = {
 	.read      = ext_read,
 	.type      = filetype_ext,
 	.flags     = 0,

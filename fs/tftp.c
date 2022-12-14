@@ -1051,7 +1051,7 @@ static void tftp_remove(struct device *dev)
 	free(priv);
 }
 
-static struct fs_driver_d tftp_driver = {
+static struct fs_driver tftp_driver = {
 	.open      = tftp_open,
 	.close     = tftp_close,
 	.read      = tftp_read,

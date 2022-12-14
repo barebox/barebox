@@ -481,7 +481,7 @@ static void ubootvarfs_remove(struct device *dev)
 	free(data);
 }
 
-static struct fs_driver_d ubootvarfs_driver = {
+static struct fs_driver ubootvarfs_driver = {
 	.truncate = ubootvarfs_truncate,
 	.read = ubootvarfs_read,
 	.write = ubootvarfs_write,

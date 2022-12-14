@@ -1530,7 +1530,7 @@ static void nfs_remove(struct device *dev)
 	free(npriv);
 }
 
-static struct fs_driver_d nfs_driver = {
+static struct fs_driver nfs_driver = {
 	.open      = nfs_open,
 	.close     = nfs_close,
 	.read      = nfs_read,

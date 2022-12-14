@@ -314,7 +314,7 @@ static void devfs_delete(struct device *dev)
 {
 }
 
-static struct fs_driver_d devfs_driver = {
+static struct fs_driver devfs_driver = {
 	.read      = devfs_read,
 	.write     = devfs_write,
 	.lseek     = devfs_lseek,

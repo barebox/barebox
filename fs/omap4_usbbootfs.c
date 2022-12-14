@@ -149,7 +149,7 @@ static void omap4_usbbootfs_remove(struct device *dev)
 {
 }
 
-static struct fs_driver_d omap4_usbbootfs_driver = {
+static struct fs_driver omap4_usbbootfs_driver = {
 	.open    = omap4_usbbootfs_open,
 	.close   = omap4_usbbootfs_close,
 	.read    = omap4_usbbootfs_read,

@@ -496,7 +496,7 @@ static void cramfs_remove(struct device *dev)
 	free(priv);
 }
 
-static struct fs_driver_d cramfs_driver = {
+static struct fs_driver cramfs_driver = {
 	.read		= cramfs_read,
 	.drv = {
 		.probe = cramfs_probe,

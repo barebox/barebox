@@ -251,7 +251,7 @@ struct squashfs_dir {
 	char root_d_name[256];
 };
 
-static struct fs_driver_d squashfs_driver = {
+static struct fs_driver squashfs_driver = {
 	.open		= squashfs_open,
 	.close		= squashfs_close,
 	.read		= squashfs_read,

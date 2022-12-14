@@ -466,7 +466,7 @@ static void jffs2_remove(struct device *dev)
 }
 
 
-static struct fs_driver_d jffs2_driver = {
+static struct fs_driver jffs2_driver = {
 	.open = jffs2_open,
 	.close = jffs2_close,
 	.read = jffs2_read,

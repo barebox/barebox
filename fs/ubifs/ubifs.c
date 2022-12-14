@@ -503,7 +503,7 @@ static void ubifs_remove(struct device *dev)
 	free(priv);
 }
 
-static struct fs_driver_d ubifs_driver = {
+static struct fs_driver ubifs_driver = {
 	.open      = ubifs_open,
 	.close     = ubifs_close,
 	.read      = ubifs_read,

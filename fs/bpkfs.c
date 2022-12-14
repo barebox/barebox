@@ -491,7 +491,7 @@ err:
 	return ret;
 }
 
-static struct fs_driver_d bpkfs_driver = {
+static struct fs_driver bpkfs_driver = {
 	.open      = bpkfs_open,
 	.close     = bpkfs_close,
 	.read      = bpkfs_read,

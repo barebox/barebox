@@ -39,7 +39,7 @@ typedef struct filep {
 
 #define FS_DRIVER_NO_DEV	1
 
-struct fs_driver_d {
+struct fs_driver {
 	int (*probe) (struct device *dev);
 
 	/* create a file. The file is guaranteed to not exist */
@@ -97,7 +97,7 @@ struct fs_device {
 	char *backingstore; /* the device we are associated with */
 	struct device dev; /* our own device */
 
-	struct fs_driver_d *driver;
+	struct fs_driver *driver;
 
 	struct cdev *cdev;
 	bool loop;
@@ -121,7 +121,7 @@ static inline bool is_tftp_fs(const char *path)
 	return __is_tftp_fs(path);
 }
 
-#define drv_to_fs_driver(d) container_of(d, struct fs_driver_d, drv)
+#define drv_to_fs_driver(d) container_of(d, struct fs_driver, drv)
 
 int flush(int fd);
 int umount_by_cdev(struct cdev *cdev);
@@ -158,7 +158,7 @@ char *get_mounted_path(const char *path);
 struct cdev *get_cdev_by_mountpath(const char *path);
 
 /* Register a new filesystem driver */
-int register_fs_driver(struct fs_driver_d *fsdrv);
+int register_fs_driver(struct fs_driver *fsdrv);
 
 void automount_remove(const char *_path);
 int automount_add(const char *path, const char *cmd);

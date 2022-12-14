@@ -450,7 +450,7 @@ static void ramfs_remove(struct device *dev)
 {
 }
 
-static struct fs_driver_d ramfs_driver = {
+static struct fs_driver ramfs_driver = {
 	.read      = ramfs_read,
 	.write     = ramfs_write,
 	.memmap    = ramfs_memmap,

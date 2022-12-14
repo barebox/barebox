@@ -48,7 +48,7 @@ static int do_mount(int argc, char *argv[])
 		if (verbose) {
 			printf("\nSupported filesystems:\n\n");
 			bus_for_each_driver(&fs_bus, drv) {
-				struct fs_driver_d * fsdrv = drv_to_fs_driver(drv);
+				struct fs_driver * fsdrv = drv_to_fs_driver(drv);
 				printf("%s\n", fsdrv->drv.name);
 			}
 		}

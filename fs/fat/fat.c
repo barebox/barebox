@@ -373,7 +373,7 @@ static void fat_remove(struct device *dev)
 	free(dev->priv);
 }
 
-static struct fs_driver_d fat_driver = {
+static struct fs_driver fat_driver = {
 	.open      = fat_open,
 	.close     = fat_close,
 	.read      = fat_read,

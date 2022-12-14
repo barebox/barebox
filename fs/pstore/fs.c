@@ -254,7 +254,7 @@ static int pstore_probe(struct device *dev)
 	return 0;
 }
 
-static struct fs_driver_d pstore_driver = {
+static struct fs_driver pstore_driver = {
 	.open      = pstore_open,
 	.close     = pstore_close,
 	.read      = pstore_read,

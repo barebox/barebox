@@ -179,7 +179,7 @@ static FILE *files;
 static struct dentry *d_root;
 static struct vfsmount *mnt_root;
 
-static struct fs_driver_d *ramfs_driver;
+static struct fs_driver *ramfs_driver;
 
 static int init_fs(void)
 {
@@ -313,7 +313,7 @@ EXPORT_SYMBOL(creat);
 
 static int fsdev_truncate(struct device *dev, FILE *f, loff_t length)
 {
-	struct fs_driver_d *fsdrv = f->fsdev->driver;
+	struct fs_driver *fsdrv = f->fsdev->driver;
 
 	return fsdrv->truncate ? fsdrv->truncate(dev, f, length) : -EROFS;
 }
@@ -343,7 +343,7 @@ int ftruncate(int fd, loff_t length)
 
 int ioctl(int fd, int request, void *buf)
 {
-	struct fs_driver_d *fsdrv;
+	struct fs_driver *fsdrv;
 	FILE *f = fd_to_file(fd);
 	int ret;
 
@@ -363,7 +363,7 @@ int ioctl(int fd, int request, void *buf)
 
 static ssize_t __read(FILE *f, void *buf, size_t count)
 {
-	struct fs_driver_d *fsdrv;
+	struct fs_driver *fsdrv;
 	int ret;
 
 	if ((f->flags & O_ACCMODE) == O_WRONLY) {
@@ -425,7 +425,7 @@ EXPORT_SYMBOL(read);
 
 static ssize_t __write(FILE *f, const void *buf, size_t count)
 {
-	struct fs_driver_d *fsdrv;
+	struct fs_driver *fsdrv;
 	int ret;
 
 	fsdrv = f->fsdev->driver;
@@ -494,7 +494,7 @@ EXPORT_SYMBOL(write);
 
 int flush(int fd)
 {
-	struct fs_driver_d *fsdrv;
+	struct fs_driver *fsdrv;
 	FILE *f = fd_to_file(fd);
 	int ret;
 
@@ -515,7 +515,7 @@ int flush(int fd)
 
 loff_t lseek(int fd, loff_t offset, int whence)
 {
-	struct fs_driver_d *fsdrv;
+	struct fs_driver *fsdrv;
 	FILE *f = fd_to_file(fd);
 	loff_t pos;
 	int ret;
@@ -569,7 +569,7 @@ EXPORT_SYMBOL(lseek);
 
 int erase(int fd, loff_t count, loff_t offset)
 {
-	struct fs_driver_d *fsdrv;
+	struct fs_driver *fsdrv;
 	FILE *f = fd_to_file(fd);
 	int ret;
 
@@ -601,7 +601,7 @@ EXPORT_SYMBOL(erase);
 
 int protect(int fd, size_t count, loff_t offset, int prot)
 {
-	struct fs_driver_d *fsdrv;
+	struct fs_driver *fsdrv;
 	FILE *f = fd_to_file(fd);
 	int ret;
 
@@ -631,7 +631,7 @@ EXPORT_SYMBOL(protect);
 
 int discard_range(int fd, loff_t count, loff_t offset)
 {
-	struct fs_driver_d *fsdrv;
+	struct fs_driver *fsdrv;
 	FILE *f = fd_to_file(fd);
 	int ret;
 
@@ -675,7 +675,7 @@ int protect_file(const char *file, int prot)
 
 void *memmap(int fd, int flags)
 {
-	struct fs_driver_d *fsdrv;
+	struct fs_driver *fsdrv;
 	FILE *f = fd_to_file(fd);
 	void *retp = MAP_FAILED;
 	int ret;
@@ -702,7 +702,7 @@ EXPORT_SYMBOL(memmap);
 
 int close(int fd)
 {
-	struct fs_driver_d *fsdrv;
+	struct fs_driver *fsdrv;
 	FILE *f = fd_to_file(fd);
 	int ret = 0;
 
@@ -735,7 +735,7 @@ static int fs_probe(struct device *dev)
 {
 	struct fs_device *fsdev = dev_to_fs_device(dev);
 	struct driver *drv = dev->driver;
-	struct fs_driver_d *fsdrv = container_of(drv, struct fs_driver_d, drv);
+	struct fs_driver *fsdrv = container_of(drv, struct fs_driver, drv);
 	int ret;
 
 	ret = dev->driver->probe(dev);
@@ -847,7 +847,7 @@ static int fs_bus_init(void)
 }
 pure_initcall(fs_bus_init);
 
-int register_fs_driver(struct fs_driver_d *fsdrv)
+int register_fs_driver(struct fs_driver *fsdrv)
 {
 	fsdrv->drv.bus = &fs_bus;
 	register_driver(&fsdrv->drv);
@@ -863,7 +863,7 @@ const char *fs_detect(const char *filename, const char *fsoptions)
 {
 	enum filetype type;
 	struct driver *drv;
-	struct fs_driver_d *fdrv;
+	struct fs_driver *fdrv;
 	bool loop = false;
 	unsigned long long offset = 0;
 
@@ -2491,7 +2491,7 @@ EXPORT_SYMBOL(rmdir);
 int open(const char *pathname, int flags, ...)
 {
 	struct fs_device *fsdev;
-	struct fs_driver_d *fsdrv;
+	struct fs_driver *fsdrv;
 	struct super_block *sb;
 	FILE *f;
 	int error = 0;

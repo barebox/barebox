@@ -438,7 +438,7 @@ static void ratpfs_remove(struct device __always_unused *dev)
 	barebox_ratp_fs_mount(NULL);
 }
 
-static struct fs_driver_d ratpfs_driver = {
+static struct fs_driver ratpfs_driver = {
 	.open      = ratpfs_open,
 	.close     = ratpfs_close,
 	.read      = ratpfs_read,

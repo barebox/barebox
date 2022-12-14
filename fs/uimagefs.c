@@ -520,7 +520,7 @@ err:
 	return ret;
 }
 
-static struct fs_driver_d uimagefs_driver = {
+static struct fs_driver uimagefs_driver = {
 	.open      = uimagefs_open,
 	.close     = uimagefs_close,
 	.read      = uimagefs_read,

@@ -75,6 +75,28 @@ static int mci_send_cmd(struct mci *mci, struct mci_cmd *cmd, struct mci_data *d
 }
 
 /**
+ * mci_send_cmd_retry() - send a command to the mmc device, retrying on error
+ *
+ * @dev:	device to receive the command
+ * @cmd:	command to send
+ * @data:	additional data to send/receive
+ * @retries:	how many times to retry; mci_send_cmd is always called at least
+ *              once
+ * Return: 0 if ok, -ve on error
+ */
+static int mci_send_cmd_retry(struct mci *mci, struct mci_cmd *cmd,
+			      struct mci_data *data, unsigned retries)
+{
+	int ret;
+
+	do
+		ret = mci_send_cmd(mci, cmd, data);
+	while (ret && retries--);
+
+	return ret;
+}
+
+/**
  * @param p Command definition to setup
  * @param cmd Valid SD/MMC command (refer MMC_CMD_* / SD_CMD_*)
  * @param arg Argument for the command (optional)
@@ -119,6 +141,67 @@ static int mci_set_blocklen(struct mci *mci, unsigned len)
 
 static void *sector_buf;
 
+static int mci_send_status(struct mci *mci, unsigned int *status)
+{
+	struct mci_host *host = mci->host;
+	struct mci_cmd cmd;
+	int ret;
+
+	/*
+	 * While CMD13 is defined for SPI mode, the reported status bits have
+	 * different layout that SD/MMC. We skip supporting this for now.
+	 */
+	if (mmc_host_is_spi(host))
+		return -ENOSYS;
+
+	cmd.cmdidx = MMC_CMD_SEND_STATUS;
+	cmd.resp_type = MMC_RSP_R1;
+	cmd.cmdarg = mci->rca << 16;
+
+	ret = mci_send_cmd_retry(mci, &cmd, NULL, 4);
+	if (!ret)
+		*status = cmd.response[0];
+
+	return ret;
+}
+
+static int mci_poll_until_ready(struct mci *mci, int timeout_ms)
+{
+	unsigned int status;
+	int err, retries = 0;
+
+	while (1) {
+		err = mci_send_status(mci, &status);
+		if (err)
+			return err;
+
+		/*
+		 * Some cards mishandle the status bits, so make sure to
+		 * check both the busy indication and the card state.
+		 */
+		if ((status & R1_READY_FOR_DATA) &&
+		    R1_CURRENT_STATE(status) != R1_STATE_PRG)
+			break;
+
+		if (status & R1_STATUS_MASK) {
+			dev_err(&mci->dev, "Status Error: 0x%08x\n", status);
+			return -EIO;
+		}
+
+		if (retries++ == timeout_ms) {
+			dev_err(&mci->dev, "Timeout awaiting card ready\n");
+			return -ETIMEDOUT;
+		}
+
+		udelay(1000);
+	}
+
+	dev_dbg(&mci->dev, "Ready polling took %ums\n", retries);
+
+	return 0;
+}
+
+
 /**
  * Write one or several blocks of data to the card
  * @param mci_dev MCI instance
@@ -135,6 +218,17 @@ static int mci_block_write(struct mci *mci, const void *src, int blocknum,
 	const void *buf;
 	unsigned mmccmd;
 	int ret;
+
+	/*
+	 * Quoting eMMC Spec v5.1 (JEDEC Standard No. 84-B51):
+	 * Due to legacy reasons, a Device may still treat CMD24/25 during
+	 * prg-state (while busy is active) as a legal or illegal command.
+	 * A host should not send CMD24/25 while the Device is in the prg
+	 * state and busy is active.
+	 */
+	ret = mci_poll_until_ready(mci, 1000 /* ms */);
+	if (ret && ret != -ENOSYS)
+		return ret;
 
 	if (blocks > 1)
 		mmccmd = MMC_CMD_WRITE_MULTIPLE_BLOCK;

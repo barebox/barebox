@@ -308,7 +308,22 @@
 #define EXT_CSD_DDR_BUS_WIDTH_8	6	/* Card is in 8 bit DDR mode */
 
 #define R1_ILLEGAL_COMMAND		(1 << 22)
+#define R1_STATUS(x)			(x & 0xFFF9A000)
+#define R1_CURRENT_STATE(x)		((x & 0x00001E00) >> 9)	/* sx, b (4 bits) */
+#define R1_READY_FOR_DATA 		(1 << 8)		/* sx, a */
 #define R1_APP_CMD			(1 << 5)
+
+#define R1_STATUS_MASK			(~0x0206BF7F)
+
+#define	R1_STATE_IDLE	0
+#define	R1_STATE_READY	1
+#define	R1_STATE_IDENT	2
+#define	R1_STATE_STBY	3
+#define	R1_STATE_TRAN	4
+#define	R1_STATE_DATA	5
+#define	R1_STATE_RCV	6
+#define	R1_STATE_PRG	7
+#define	R1_STATE_DIS	8
 
 #define R1_SPI_IDLE		(1 << 0)
 #define R1_SPI_ERASE_RESET	(1 << 1)

@@ -14,7 +14,7 @@
 #define PLL_DDR_LOCK	(1 << 1)
 #define PLL_IO_LOCK	(1 << 2)
 
-extern char __dtb_zynq_zed_start[];
+extern char __dtb_z_zynq_zed_start[];
 
 static void avnet_zedboard_ps7_init(void)
 {
@@ -289,7 +289,7 @@ static void avnet_zedboard_pbl_console_init(void)
 ENTRY_FUNCTION(start_avnet_zedboard, r0, r1, r2)
 {
 
-	void *fdt = __dtb_zynq_zed_start + get_runtime_offset();
+	void *fdt = __dtb_z_zynq_zed_start + get_runtime_offset();
 
 	/* MIO_07 in GPIO Mode 3.3V VIO, can be uncomented because it is the default value */
 	writel(0x0000DF0D, ZYNQ_SLCR_UNLOCK);

@@ -146,7 +146,7 @@
 		};
 
 		display-timings {
-			native-mode = &l2rt;
+			native-mode = <&l2rt>;
 
 			l2rt: l2rt {
 				native-mode;
@@ -190,7 +190,7 @@
 		/* power-supply = <&reg_3p3v>; */
 
 		display-timings {
-			native-mode = &mi1010ait_1cp1;
+			native-mode = <&mi1010ait_1cp1>;
 
 			mi1010ait_1cp1: mi1010ait-1cp1 {
 				native-mode;

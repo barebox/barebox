@@ -118,7 +118,7 @@ long clk_mux_round_rate(struct clk_hw *hw, unsigned long rate,
 	struct clk *bestparent;
 
 	if (clk->flags & CLK_SET_RATE_NO_REPARENT)
-		return *prate;
+		return clk_parent_round_rate(hw, rate, prate);
 
 	bestparent = clk_mux_best_parent(clk, rate, &rrate);
 
@@ -135,7 +135,7 @@ static int clk_mux_set_rate(struct clk_hw *hw, unsigned long rate,
 	int ret;
 
 	if (clk->flags & CLK_SET_RATE_NO_REPARENT)
-		return 0;
+		return clk_parent_set_rate(hw, rate, parent_rate);
 
 	parent = clk_mux_best_parent(clk, rate, &rrate);
 

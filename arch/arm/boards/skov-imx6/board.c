@@ -474,14 +474,15 @@ static void skov_init_ldb(void)
 		return;
 	}
 
-	of_device_enable_and_register(ldb);
-
-	/* ... as well as its channel 0 */
+	/* First enable channel 0, prior to enabling parent */
 	chan = of_find_node_by_name_address(ldb, "lvds-channel@0");
 	if (chan)
 		of_device_enable(chan);
 	else
 		dev_err(skov_priv->dev, "Cannot find \"lvds-channel@0\" node\n");
+
+	/* Now probe will see the expected device tree */
+	of_device_enable_and_register(ldb);
 }
 
 /*

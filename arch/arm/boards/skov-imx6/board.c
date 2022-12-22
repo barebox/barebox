@@ -451,6 +451,39 @@ static int skov_imx6_fixup(struct device_node *root, void *unused)
 	return 0;
 }
 
+static void skov_init_parallel_lcd(void)
+{
+	struct device_node *lcd;
+
+	lcd = of_find_compatible_node(NULL, NULL, "fsl,imx-parallel-display");
+	if (!lcd) {
+		dev_err(skov_priv->dev, "Cannot find \"fsl,imx-parallel-display\" node\n");
+		return;
+	}
+
+	of_device_enable_and_register(lcd);
+}
+
+static void skov_init_ldb(void)
+{
+	struct device_node *ldb, *chan;
+
+	ldb = of_find_compatible_node(NULL, NULL, "fsl,imx6q-ldb");
+	if (!ldb) {
+		dev_err(skov_priv->dev, "Cannot find \"fsl,imx6q-ldb\" node\n");
+		return;
+	}
+
+	of_device_enable_and_register(ldb);
+
+	/* ... as well as its channel 0 */
+	chan = of_find_node_by_name_address(ldb, "lvds-channel@0");
+	if (chan)
+		of_device_enable(chan);
+	else
+		dev_err(skov_priv->dev, "Cannot find \"lvds-channel@0\" node\n");
+}
+
 /*
  * Some variants need tweaks to make them work
  *
@@ -461,7 +494,6 @@ static int skov_imx6_fixup(struct device_node *root, void *unused)
 static void skov_init_board(const struct board_description *variant)
 {
 	struct device_node *gpio_np = NULL;
-	struct device_node *np;
 	char *environment_path, *envdev;
 	int ret;
 
@@ -524,28 +556,11 @@ static void skov_init_board(const struct board_description *variant)
 		gpio_free(200);
 	}
 
-	if (variant->flags & SKOV_DISPLAY_PARALLEL) {
-		np = of_find_compatible_node(NULL, NULL, "fsl,imx-parallel-display");
-		if (np)
-			of_device_enable_and_register(np);
-		else
-			dev_err(skov_priv->dev, "Cannot find \"fsl,imx-parallel-display\" node\n");
-	}
+	if (variant->flags & SKOV_DISPLAY_PARALLEL)
+		skov_init_parallel_lcd();
 
-	if (variant->flags & SKOV_DISPLAY_LVDS) {
-		np = of_find_compatible_node(NULL, NULL, "fsl,imx6q-ldb");
-		if (np)
-			of_device_enable_and_register(np);
-		else
-			dev_err(skov_priv->dev, "Cannot find \"fsl,imx6q-ldb\" node\n");
-
-		/* ... as well as its channel 0 */
-		np = of_find_node_by_name_address(np, "lvds-channel@0");
-		if (np)
-			of_device_enable(np);
-		else
-			dev_err(skov_priv->dev, "Cannot find \"lvds-channel@0\" node\n");
-	}
+	if (variant->flags & SKOV_DISPLAY_LVDS)
+		skov_init_ldb();
 }
 
 static int skov_set_switch_lan2_mac(struct skov_imx6_priv *priv)

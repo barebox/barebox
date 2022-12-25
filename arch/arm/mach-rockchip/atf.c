@@ -8,6 +8,8 @@
 #include <asm/barebox-arm.h>
 #include <mach/rockchip/dmc.h>
 #include <mach/rockchip/rockchip.h>
+#include <mach/rockchip/bootrom.h>
+#include <mach/rockchip/rk3568-regs.h>
 
 static unsigned long load_elf64_image_phdr(const void *elf)
 {
@@ -82,6 +84,7 @@ void __noreturn rk3568_barebox_entry(void *fdt)
 
 	if (current_el() == 3) {
 		rk3568_lowlevel_init();
+		rockchip_store_bootrom_iram(membase, memsize, IOMEM(RK3568_IRAM_BASE));
 		rk3568_atf_load_bl31(fdt);
 		/* not reached when CONFIG_ARCH_ROCKCHIP_ATF */
 	}

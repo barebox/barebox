@@ -26,6 +26,7 @@ enum bootsource {
 #define BOOTSOURCE_INSTANCE_UNKNOWN	-1
 
 enum bootsource bootsource_get(void);
+enum bootsource bootsource_get_device(void);
 int bootsource_get_instance(void);
 void bootsource_set_alias_name(const char *name);
 char *bootsource_get_alias_name(void);

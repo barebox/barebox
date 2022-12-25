@@ -2,6 +2,7 @@
 #include <common.h>
 #include <io.h>
 #include <bootsource.h>
+#include <mach/rockchip/bootrom.h>
 #include <mach/rockchip/rk3568-regs.h>
 #include <mach/rockchip/rockchip.h>
 
@@ -137,35 +138,9 @@ void rk3568_lowlevel_init(void)
 	qos_priority_init();
 }
 
-struct rk_bootsource {
-	enum bootsource src;
-	int instance;
-};
-
-static struct rk_bootsource bootdev_map[] = {
-	[0x1] = { .src = BOOTSOURCE_NAND, .instance = 0 },
-	[0x2] = { .src = BOOTSOURCE_MMC, .instance = 0 },
-	[0x3] = { .src = BOOTSOURCE_SPI_NOR, .instance = 0 },
-	[0x4] = { .src = BOOTSOURCE_SPI_NAND, .instance = 0 },
-	[0x5] = { .src = BOOTSOURCE_MMC, .instance = 1 },
-	[0xa] = { .src = BOOTSOURCE_USB, .instance = 0 },
-};
-
-static void rk3568_bootsource(void)
-{
-	u32 v;
-
-	v = readl(RK3568_IRAM_BASE + 0x10);
-
-	if (v >= ARRAY_SIZE(bootdev_map))
-		return;
-
-	bootsource_set(bootdev_map[v].src, bootdev_map[v].instance);
-}
-
 int rk3568_init(void)
 {
-	rk3568_bootsource();
+	rockchip_parse_bootrom_iram(rockchip_scratch_space());
 
 	return 0;
 }

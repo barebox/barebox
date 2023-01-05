@@ -16,5 +16,6 @@
 #define RK3568_UART9_BASE	0xfe6d0000
 
 #define RK3568_IRAM_BASE	0xfdcc0000
+#define RK3568_PMUGRF_BASE	0xfdc20000
 
 #endif /* __MACH_RK3568_REGS_H */

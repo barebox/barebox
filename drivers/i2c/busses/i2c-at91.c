@@ -78,7 +78,6 @@ struct at91_twi_pdata {
 	bool has_dig_filtr;
 	bool has_adv_dig_filtr;
 	bool has_ana_filtr;
-	bool has_clear_cmd;
 };
 
 struct at91_twi_dev {
@@ -438,6 +437,13 @@ static struct at91_twi_pdata at91sam9x5_config = {
 	.has_unre_flag = false,
 };
 
+static struct at91_twi_pdata sama5d4_config = {
+	.clk_max_div = 7,
+	.clk_offset = 4,
+	.has_hold_field = true,
+	.has_dig_filtr = true,
+};
+
 static struct at91_twi_pdata sama5d2_config = {
 	.clk_max_div = 7,
 	.clk_offset = 3,
@@ -493,7 +499,13 @@ static struct of_device_id at91_twi_dt_ids[] = {
 		.compatible = "atmel,at91sam9x5-i2c",
 		.data = &at91sam9x5_config,
 	}, {
+		.compatible = "atmel,sama5d4-i2c",
+		.data = &sama5d4_config,
+	}, {
 		.compatible = "atmel,sama5d2-i2c",
+		.data = &sama5d2_config,
+	}, {
+		.compatible = "microchip,sam9x60-i2c",
 		.data = &sama5d2_config,
 	}, {
 		/* sentinel */

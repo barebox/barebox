@@ -19,8 +19,13 @@
 #define RK3568_BAREBOX_LOAD_ADDRESS	(RK3568_DRAM_BOTTOM + 1024*1024)
 
 #ifndef __ASSEMBLY__
+#ifdef CONFIG_ARCH_ROCKCHIP_ATF
 void rk3399_atf_load_bl31(void *fdt);
 void rk3568_atf_load_bl31(void *fdt);
+#else
+static inline void rk3399_atf_load_bl31(void *fdt) { }
+static inline void rk3568_atf_load_bl31(void *fdt) { }
+#endif
 #endif
 
 #endif /* __MACH_ATF_H */

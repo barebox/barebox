@@ -88,16 +88,25 @@ config MACH_RADXA_ROCK3
 
 comment "select board features:"
 
+config ARCH_ROCKCHIP_ATF
+	bool "Build rockchip ATF binaries into barebox"
+	depends on ARCH_ROCKCHIP_V8
+	default y
+	help
+	  When deselected, barebox proper will run in EL3. This can be
+	  useful for debugging early startup, but for all other cases,
+	  say y here.
+
 config ARCH_RK3399_OPTEE
 	bool "Build rk3399 OP-TEE binary into barebox"
-	depends on ARCH_RK3399
+	depends on ARCH_ROCKCHIP_ATF && ARCH_RK3399
 	help
 	  With this option enabled the RK3399 OP-TEE binary is compiled
 	  into barebox and started along with the BL31 trusted firmware.
 
 config ARCH_RK3568_OPTEE
 	bool "Build rk3568 OP-TEE binary into barebox"
-	depends on ARCH_RK3568
+	depends on ARCH_ROCKCHIP_ATF && ARCH_RK3568
 	help
 	  With this option enabled the RK3568 OP-TEE binary is compiled
 	  into barebox and started along with the BL31 trusted firmware.

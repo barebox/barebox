@@ -442,7 +442,11 @@ static inline void *phys_to_virt(unsigned long phys)
 #endif
 
 #ifndef IOMEM
+#ifndef __ASSEMBLY__
 #define IOMEM(addr)	((void __force __iomem *)(addr))
+#else
+#define IOMEM(addr)	addr
+#endif
 #endif
 
 #define __io_virt(x) ((void __force *)(x))

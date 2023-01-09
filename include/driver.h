@@ -191,7 +191,9 @@ static inline const char *dev_id(const struct device_d *dev)
 
 static inline const char *dev_name(const struct device_d *dev)
 {
-	return dev_id(dev);
+	if (!dev)
+		return NULL;
+	return dev_id(dev) ?: dev->name;
 }
 
 int dev_set_name(struct device_d *dev, const char *fmt, ...);

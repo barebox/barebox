@@ -3,6 +3,9 @@
 #ifndef _LINUX_SLAB_H
 #define _LINUX_SLAB_H
 
+#include <malloc.h>
+#include <linux/string.h>
+
 #define SLAB_CONSISTENCY_CHECKS	0
 #define SLAB_RED_ZONE		0
 #define SLAB_POISON		0
@@ -101,6 +104,16 @@ static inline void *kmalloc_array(size_t n, size_t size, gfp_t flags)
 static inline void *kcalloc(size_t n, size_t size, gfp_t flags)
 {
 	return calloc(n, size);
+}
+
+static inline void *krealloc(void *ptr, size_t size, gfp_t flags)
+{
+	return realloc(ptr, size);
+}
+
+static inline char *kstrdup(const char *str, gfp_t flags)
+{
+	return strdup(str);
 }
 
 #define kstrdup_const(str, flags) strdup(str)

@@ -332,6 +332,11 @@ int of_autoenable_device_by_path(char *path);
 int of_autoenable_i2c_by_component(char *path);
 int of_prepend_machine_compatible(struct device_node *root, const char *compat);
 
+static inline const char *of_node_full_name(const struct device_node *np)
+{
+	return np ? np->full_name : "<no-node>";
+}
+
 #else
 static inline struct of_reserve_map *of_get_reserve_map(void)
 {
@@ -891,6 +896,11 @@ static inline int of_prepend_machine_compatible(struct device_node *root,
 					 const char *compat)
 {
 	return -ENODEV;
+}
+
+static inline const char *of_node_full_name(const struct device_node *np)
+{
+	return "<no-node>";
 }
 
 #endif

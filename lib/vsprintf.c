@@ -19,6 +19,7 @@
 #include <malloc.h>
 #include <kallsyms.h>
 #include <wchar.h>
+#include <of.h>
 
 #include <common.h>
 #include <pbl.h>
@@ -391,6 +392,14 @@ char *address_val(char *buf, const char *end, const void *addr,
 	return number(buf, end, num, 16, field_width, precision, flags);
 }
 
+static noinline_for_stack
+char *device_node_string(char *buf, const char *end, const struct device_node *np,
+			 int field_width, int precision, int flags, const char *fmt)
+{
+	return string(buf, end, of_node_full_name(np), field_width,
+		      precision, flags);
+}
+
 /*
  * Show a '%p' thing.  A kernel extension is that the '%p' is followed
  * by an extra set of alphanumeric characters that are extended format
@@ -454,6 +463,10 @@ static char *pointer(const char *fmt, char *buf, const char *end, const void *pt
 		break;
 	case 'e':
 		return error_string(buf, end, ptr, field_width, precision, flags, fmt);
+	case 'O':
+		if (IS_ENABLED(CONFIG_OFTREE))
+			return device_node_string(buf, end, ptr, field_width, precision, flags, fmt + 1);
+		break;
 	case 'h':
 		if (IS_ENABLED(CONFIG_PRINTF_HEXSTR))
 			return hex_string(buf, end, ptr, field_width, precision, flags, fmt);

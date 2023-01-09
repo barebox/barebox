@@ -935,6 +935,7 @@ static const struct of_device_id macb_dt_ids[] = {
 	{ .compatible = "cdns,at91sam9260-macb",},
 	{ .compatible = "atmel,sama5d2-gem",},
 	{ .compatible = "atmel,sama5d3-gem",},
+	{ .compatible = "atmel,sama5d4-gem",},
 	{ .compatible = "cdns,zynq-gem",},
 	{ .compatible = "cdns,zynqmp-gem",},
 	{ .compatible = "sifive,fu540-c000-gem", .data = &fu540_c000_config },

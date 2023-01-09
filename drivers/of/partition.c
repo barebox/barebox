@@ -67,11 +67,13 @@ struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node)
 	filename = basprintf("%s.%s", cdev->name, partname);
 
 	new = devfs_add_partition(cdev->name, offset, size, flags, filename);
-	if (IS_ERR(new))
+	if (IS_ERR(new)) {
+		pr_err("Adding partition %s failed: %pe\n", filename, new);
 		new = NULL;
+	}
 
 	if (new)
-		new->device_node = node;;
+		new->device_node = node;
 
 	if (IS_ENABLED(CONFIG_NVMEM) && of_device_is_compatible(node, "nvmem-cells")) {
 		struct nvmem_device *nvmem = nvmem_partition_register(new);

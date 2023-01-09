@@ -116,7 +116,10 @@ struct driver {
 	struct bus_type *bus;
 
 	const struct platform_device_id *id_table;
-	const struct of_device_id *of_compatible;
+	union {
+		const struct of_device_id *of_compatible;
+		const struct of_device_id *of_match_table;
+	};
 };
 
 /*@}*/	/* do not delete, doxygen relevant */

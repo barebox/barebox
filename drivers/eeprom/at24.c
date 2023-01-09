@@ -99,6 +99,8 @@ static struct platform_device_id at24_ids[] = {
 	/* old variants can't be handled with this generic entry! */
 	{ "24c01", AT24_DEVICE_MAGIC(1024 / 8, 0) },
 	{ "24c02", AT24_DEVICE_MAGIC(2048 / 8, 0) },
+	{ "24mac402",	AT24_DEVICE_MAGIC(2048 / 8, AT24_FLAG_READONLY) },
+	{ "24mac602",	AT24_DEVICE_MAGIC(2048 / 8, AT24_FLAG_READONLY) },
 	/* spd is a 24c02 in memory DIMMs */
 	{ "spd", AT24_DEVICE_MAGIC(2048 / 8,
 		AT24_FLAG_READONLY | AT24_FLAG_IRUGO) },

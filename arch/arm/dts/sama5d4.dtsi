@@ -1,0 +1,9 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+/ {
+	aliases {
+		mmc0 = &mmc0;
+		mmc1 = &mmc1;
+	};
+};
+
+/delete-node/ &{/memory@20000000};

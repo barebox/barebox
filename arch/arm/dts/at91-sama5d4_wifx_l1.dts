@@ -1,0 +1,358 @@
+// SPDX-License-Identifier: (GPL-2.0-or-later OR MIT)
+// SPDX-FileCopyrightText: 2021 Wifx
+// SPDX-FileCopyrightText: 2021 Yannick Lanz <yannick.lanz@wifx.net>
+// SPDX-FileCopyrightText: 2022 Ahmad Fatoum, Pengutronix
+
+/dts-v1/;
+
+#include <arm/sama5d4.dtsi>
+#include "sama5d4.dtsi"
+#include <dt-bindings/gpio/gpio.h>
+
+/ {
+	model = "Wifx L1";
+	compatible = "wifx,l1", "atmel,sama5d4", "atmel,sama5";
+
+	chosen {
+		stdout-path = &usart3;
+
+		environment-microsd {
+			compatible = "barebox,environment";
+			device-path = &mmc1;
+			file-path = "barebox.env";
+			status = "disabled";
+		};
+
+		environment-nand {
+			compatible = "barebox,environment";
+			device-path = &env_nand;
+			status = "disabled";
+		};
+	};
+
+	aliases {
+		rtc0 = &ds1339;
+		rtc1 = &rtc_internal;
+		serial1 = &usart1;
+		serial4 = &usart4;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		status = "okay";
+
+		status_internal {
+			gpios = <&pioE 15 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "heartbeat";
+		};
+	};
+
+	pps {
+	      compatible = "pps-gpio";
+	      pinctrl-names = "default";
+	      pinctrl-0 = <&pinctrl_gnss_pps>;
+
+	      gpios = <&pioC 24 GPIO_ACTIVE_HIGH>;
+	      /* assert-falling-edge; */
+	};
+
+	vddbu_2v_reg: regulator-vddbu-2v {
+		compatible = "regulator-fixed";
+		regulator-name = "VDDBU_2V";
+		regulator-min-microvolt = <2000000>;
+		regulator-max-microvolt = <2000000>;
+		regulator-boot-on;
+		regulator-always-on;
+	};
+};
+
+&slow_xtal {
+	clock-frequency = <32768>;
+};
+
+&main_xtal {
+	clock-frequency = <12000000>;
+};
+
+&spi0 {
+	status = "okay";
+	cs-gpios = <&pioC 3 GPIO_ACTIVE_HIGH>;
+
+	sx1302@0 {
+		compatible = "semtech,sx1301";
+		spi-max-frequency = <10000000>;
+		reg = <0>;
+	};
+};
+
+&i2c0 {
+	status = "okay";
+	clock-frequency = <100000>;
+	i2c-digital-filter;
+	i2c-analog-filter;
+};
+
+&i2c1 {
+	status = "okay";
+	clock-frequency = <400000>;
+	i2c-digital-filter;
+	i2c-analog-filter;
+
+	stts751: temp_sensor@38 {
+		compatible = "stts751";
+		reg = <0x38>;
+	};
+
+	m24c08: eeprom@54 {
+		compatible = "atmel,24c08";
+		reg = <0x54>;
+		pagesize = <16>;
+	};
+
+	mac_at24mac402: eeprom@58 {
+		compatible = "atmel,24mac402";
+		reg = <0x58>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		ethaddr: mac-address@9a {
+			reg = <0x9a 6>;
+		};
+	};
+
+	ds1339: rtc@68 {
+		compatible = "dallas,ds1339";
+		reg = <0x68>;
+		trickle-resistor-ohms = <250>;
+	};
+};
+
+&i2c2 {
+	status = "okay";
+	clock-frequency = <400000>;
+	i2c-digital-filter;
+	i2c-analog-filter;
+
+	ec@2a {
+		compatible = "wifx,wgw-ec-i2c";
+		reg = <0x2a>;
+
+		interrupt-parent = <&pioE>;
+		interrupts = <27 IRQ_TYPE_EDGE_RISING>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_mcu_irq &pinctrl_mcu_cpu_state>;
+
+		cpu-state-gpios = <&pioA 19 0>;
+
+		usb_typec: usbc {
+			compatible = "wifx,wgw-ec-usbc";
+			#trigger-source-cells = <0>;
+		};
+
+		leds {
+			compatible = "wifx,wgw-ec-leds";
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			statusled {
+				reg = <0>;
+				label = "status";
+				max-brightness = <255>;
+				linux,default-trigger = "heartbeat";
+			};
+
+			serviceled {
+				reg = <1>;
+				label = "service";
+				max-brightness = <255>;
+				linux,default-trigger = "wgw-usbc-data-mode";
+				trigger-sources = <&usb_typec>;
+			};
+		};
+	};
+};
+
+&macb0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_macb0_rmii &pinctrl_macb0_phy_irq>;
+	phy-mode = "rmii";
+	phy-handle = <&phy0>;
+	nvmem-cells = <&ethaddr>;
+	nvmem-cell-names = "mac-address";
+	status = "okay";
+
+	phy0: ethernet-phy@1 {
+		interrupt-parent = <&pioA>;
+		interrupts = <4 IRQ_TYPE_LEVEL_LOW>;
+		reg = <1>;
+	};
+};
+
+&mmc1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_mmc1_clk_cmd_dat0 &pinctrl_mmc1_dat1_3 &pinctrl_mmc1_cd>;
+	status = "okay";
+
+	slot@0 {
+		reg = <0>;
+		bus-width = <4>;
+		cd-gpios = <&pioE 3 0>;
+	};
+};
+
+&usart1 {
+	atmel,use-dma-rx;
+	atmel,use-dma-tx;
+	pinctrl-0 = <&pinctrl_usart1>;
+	status = "okay";
+};
+
+&usart3 {
+	atmel,use-dma-rx;
+	atmel,use-dma-tx;
+	status = "okay";
+};
+
+&tcb0 {
+	timer@0 {
+		compatible = "atmel,tcb-timer";
+		reg = <0>;
+	};
+
+	timer@1 {
+		compatible = "atmel,tcb-timer";
+		reg = <1>;
+	};
+};
+
+/* disable unused TCBs */
+&tcb1 {
+	status = "disabled";
+};
+
+&tcb2 {
+	status = "disabled";
+};
+
+&watchdog {
+	status = "okay";
+};
+
+rtc_internal: &{/ahb/apb/rtc@fc0686b0} {
+	status = "okay";
+};
+
+&usb0 {
+	atmel,vbus-gpio = <&pioE 31 GPIO_ACTIVE_HIGH>;
+	atmel,id-gpio = <&pioD 11 GPIO_ACTIVE_HIGH>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usb_vbus>;
+	status = "okay";
+};
+
+&usb1 {
+	num-ports = <3>;
+	atmel,vbus-gpio = <0 0 0 >;
+	atmel,id-gpio = <&pioD 11 GPIO_ACTIVE_HIGH 0 0>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usb_id>;
+	status = "okay";
+};
+
+&usb2 {
+	status = "okay";
+};
+
+&ebi {
+	pinctrl-0 = <&pinctrl_ebi_cs3 &pinctrl_ebi_nrd_nandoe
+			&pinctrl_ebi_nwe_nandwe &pinctrl_ebi_nandrdy
+			&pinctrl_ebi_data_0_7 &pinctrl_ebi_nand_addr>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&nand_controller {
+	status = "okay";
+	atmel,pmecc-cap = <4>;
+	atmel,pmecc-sector-size = <512>;
+
+	nand@3 {
+		reg = <0x3 0x0 0x2>;
+		atmel,rb = <0>;
+		nand-bus-width = <8>;
+		nand-ecc-mode = "hw";
+		nand-on-flash-bbt;
+		label = "atmel_nand";
+
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			at91bootstrap@0 {
+				label = "at91bootstrap";
+				reg = <0x0 0x40000>;
+			};
+
+			uboot@40000 {
+				label = "uboot";
+				reg = <0x40000 0xC0000>;
+			};
+
+			env_nand: uboot-env@100000 {
+				label = "uboot-env";
+				reg = <0x100000 0x80000>;
+			};
+
+			ubi@180000 {
+				label = "ubi";
+				reg = <0x180000 0x3FE00000>;
+			};
+		};
+	};
+};
+
+&pinctrl {
+	board {
+		pinctrl_mmc1_cd: mmc1_cd {
+			atmel,pins = <AT91_PIOE 3 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP_DEGLITCH>;
+		};
+		pinctrl_usb_vbus: usb_vbus {
+			atmel,pins = <AT91_PIOE 31 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP_DEGLITCH>;
+		};
+		pinctrl_usb_id: usb_id {
+			atmel,pins = <AT91_PIOD 11 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP_DEGLITCH>;
+		};
+		pinctrl_mcu_irq: mcu_irq_0 {
+			atmel,pins = <AT91_PIOE 27 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP_DEGLITCH>;
+		};
+		pinctrl_mcu_cpu_state: mcu_cpu_state {
+			atmel,pins = <AT91_PIOA 19 AT91_PERIPH_GPIO (AT91_PINCTRL_OUTPUT | AT91_PINCTRL_OUTPUT_VAL(1))>;
+		};
+		pinctrl_macb0_phy_irq: macb0_phy_irq_0 {
+			atmel,pins = <AT91_PIOA 4 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP_DEGLITCH>;
+		};
+		pinctrl_sx130x_rst: sx130x_rst {
+			atmel,pins = <AT91_PIOA 1 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP_DEGLITCH>;
+		};
+		pinctrl_rf_front_pwr_en: rf_front_pwr_en {
+			atmel,pins = <AT91_PIOA 1 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP_DEGLITCH>;
+		};
+
+		pinctrl_ext_rst: ext_rst {
+			atmel,pins = <AT91_PIOA 17 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP_DEGLITCH>;
+		};
+		pinctrl_ext_pwr_en: ext_pwr_en {
+			atmel,pins = <AT91_PIOD 18 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_DOWN>;
+		};
+		pinctrl_ext_boot_n: ext_boot_n {
+			atmel,pins = <AT91_PIOD 19 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP_DEGLITCH>;
+		};
+		pinctrl_ext_wake: ext_wake {
+			atmel,pins = <AT91_PIOA 5 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP_DEGLITCH>;
+		};
+		pinctrl_gnss_pps: gnss_pps {
+			atmel,pins = <AT91_PIOC 24 AT91_PERIPH_GPIO AT91_PINCTRL_DEGLITCH>;
+		};
+	};
+};

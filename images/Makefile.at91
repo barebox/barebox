@@ -51,3 +51,7 @@ pblb-$(CONFIG_MACH_SKOV_ARM9CPU) += start_skov_arm9cpu
 FILE_barebox-skov-arm9cpu.img = start_skov_arm9cpu.pblb
 MAX_PBL_MEMORY_SIZE_start_skov_arm9cpu = 0x12000
 image-$(CONFIG_MACH_SKOV_ARM9CPU) += barebox-skov-arm9cpu.img
+
+pblb-$(CONFIG_MACH_SAMA5D4_WIFX) += start_sama5d4_wifx_l1
+FILE_barebox-wifx-l1.img = start_sama5d4_wifx_l1.pblb
+image-$(CONFIG_MACH_SAMA5D4_WIFX) += barebox-wifx-l1.img

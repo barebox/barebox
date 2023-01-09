@@ -44,7 +44,7 @@ struct scmi_regulator {
 	struct scmi_device *sdev;
 	struct scmi_protocol_handle *ph;
 	struct regulator_dev rdev;
-	struct device_node *device_node;
+	struct device_node *of_node;
 	struct scmi_reg_desc sdesc;
 };
 
@@ -232,7 +232,7 @@ static int scmi_regulator_common_init(struct scmi_regulator *sreg)
 	 */
 	if (vinfo->negative_volts_allowed) {
 		dev_warn(dev, "Negative voltages NOT supported...skip %s\n",
-			 sreg->device_node->full_name);
+			 sreg->of_node->full_name);
 		return -EOPNOTSUPP;
 	}
 
@@ -278,7 +278,7 @@ static int process_scmi_regulator_of_node(struct scmi_device *sdev,
 	rinfo->sregv[dom]->ph = ph;
 
 	/* get hold of good nodes */
-	rinfo->sregv[dom]->device_node = np;
+	rinfo->sregv[dom]->of_node = np;
 
 	dev_dbg(&sdev->dev,
 		"Found SCMI Regulator entry -- OF node [%d] -> %s\n",

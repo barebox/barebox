@@ -630,12 +630,12 @@ static inline struct device_node *dev_of_node(struct device *dev)
 	return IS_ENABLED(CONFIG_OFDEVICE) ? dev->of_node : NULL;
 }
 
-static inline void *dev_get_priv(struct device *dev)
+static inline void *dev_get_priv(const struct device *dev)
 {
 	return dev->priv;
 }
 
-static inline bool dev_is_probed(struct device *dev)
+static inline bool dev_is_probed(const struct device *dev)
 {
 	return dev->driver ? true : false;
 }

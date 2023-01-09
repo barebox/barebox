@@ -63,4 +63,12 @@ static inline void gpiod_set_value(int gpio, bool value)
 		gpio_direction_active(gpio, value);
 }
 
+static inline int gpiod_get_value(int gpio)
+{
+	if (gpio < 0)
+		return gpio;
+
+	return gpio_is_active(gpio);
+}
+
 #endif

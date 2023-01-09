@@ -32,7 +32,7 @@ static void dbgu_init(void)
 	putc_ll('>');
 }
 
-SAMA5_ENTRY_FUNCTION(start_sama5d3_xplained_ung8071_xload_mmc, r4)
+SAMA5D3_ENTRY_FUNCTION(start_sama5d3_xplained_ung8071_xload_mmc, r4)
 {
 	sama5d3_lowlevel_init();
 
@@ -49,11 +49,9 @@ SAMA5_ENTRY_FUNCTION(start_sama5d3_xplained_ung8071_xload_mmc, r4)
 
 extern char __dtb_z_at91_microchip_ksz9477_evb_start[];
 
-SAMA5_ENTRY_FUNCTION(start_sama5d3_xplained_ung8071, r4)
+SAMA5D3_ENTRY_FUNCTION(start_sama5d3_xplained_ung8071, r4)
 {
 	void *fdt;
-
-	arm_setup_stack(SAMA5D3_SRAM_BASE + SAMA5D3_SRAM_SIZE);
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		dbgu_init();

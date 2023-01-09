@@ -39,7 +39,7 @@ static void ek_turn_led(unsigned color)
 	}
 }
 
-SAMA5_ENTRY_FUNCTION(start_sama5d27_som1_ek_xload_mmc, r4)
+SAMA5D2_ENTRY_FUNCTION(start_sama5d27_som1_ek_xload_mmc, r4)
 {
 	void __iomem *dbgu_base;
 	sama5d2_lowlevel_init();
@@ -60,7 +60,7 @@ SAMA5_ENTRY_FUNCTION(start_sama5d27_som1_ek_xload_mmc, r4)
 
 extern char __dtb_z_at91_sama5d27_som1_ek_start[];
 
-SAMA5_ENTRY_FUNCTION(start_sama5d27_som1_ek, r4)
+SAMA5D2_ENTRY_FUNCTION(start_sama5d27_som1_ek, r4)
 {
 	void *fdt;
 

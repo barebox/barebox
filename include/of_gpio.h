@@ -8,6 +8,8 @@
 #ifndef __OF_GPIO_H
 #define __OF_GPIO_H
 
+#include <of.h>
+
 /*
  * This is Linux-specific flags. By default controllers' and Linux' mapping
  * match, but GPIO controllers are free to translate their own flags to

@@ -5,6 +5,7 @@
 #include <asm/barebox-arm.h>
 #include <asm/common.h>
 #include <mach/sama5d3.h>
+#include <mach/sama5d4.h>
 
 #define SAMA5_ENTRY_FUNCTION(name, stack_top, r4)				\
 	void name (u32 r0, u32 r1, u32 r2, u32 r3);				\
@@ -28,5 +29,8 @@
 
 #define SAMA5D3_ENTRY_FUNCTION(name, r4)					\
 	SAMA5_ENTRY_FUNCTION(name, SAMA5D3_SRAM_BASE + SAMA5D3_SRAM_SIZE, r4)
+
+#define SAMA5D4_ENTRY_FUNCTION(name, r4)					\
+	SAMA5_ENTRY_FUNCTION(name, SAMA5D4_SRAM_BASE + SAMA5D4_SRAM_SIZE, r4)
 
 #endif

@@ -122,18 +122,12 @@ static void acpi_devinfo(struct device_d *dev)
 
 static int acpi_register_device(struct device_d *dev, struct acpi_sdt *sdt)
 {
-	int ret;
-
-	ret = register_device(dev);
-	if (ret)
-		return ret;
-
 	device_add_resource(dev, "SDT", (resource_size_t)sdt, sdt->len,
 		IORESOURCE_MEM | IORESOURCE_ROM_COPY | IORESOURCE_ROM_BIOS_COPY);
 
-	dev_dbg(dev, "registered as ACPI device\n");
+	dev_dbg(dev, "registering as ACPI device\n");
 
-	return 0;
+	return register_device(dev);
 }
 
 static struct device_d *acpi_add_device(struct bus_type *bus,

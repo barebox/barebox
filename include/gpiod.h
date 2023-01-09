@@ -23,7 +23,7 @@ enum gpiod_flags {
 /* returned gpio descriptor can be passed to any normal gpio_* function */
 int gpiod_get(struct device *dev, const char *_con_id, enum gpiod_flags flags);
 
-static inline void gpiod_set_value(unsigned gpio, bool value)
+static inline void gpiod_set_value(int gpio, bool value)
 {
 	if (gpio != -ENOENT)
 		gpio_direction_active(gpio, value);

@@ -16,6 +16,7 @@
 #include <init.h>
 #include <driver.h>
 #include <getopt.h>
+#include <deep-probe.h>
 
 #include <mach/at91_pio.h>
 #include <mach/gpio.h>
@@ -47,17 +48,25 @@ struct at91_gpio_chip {
 #define DEBOUNCE_VAL_SHIFT      17
 #define DEBOUNCE_VAL    (0x3fff << DEBOUNCE_VAL_SHIFT)
 
-static int gpio_banks;
-
 static struct at91_gpio_chip gpio_chip[MAX_GPIO_BANKS];
 
 static inline struct at91_gpio_chip *pin_to_controller(unsigned pin)
 {
-	pin /= MAX_NB_GPIO_PER_BANK;
-	if (likely(pin < gpio_banks))
-		return &gpio_chip[pin];
+	struct at91_gpio_chip *chip;
 
-	return NULL;
+	pin /= MAX_NB_GPIO_PER_BANK;
+	if (unlikely(pin >= MAX_GPIO_BANKS))
+		return NULL;
+
+	chip = &gpio_chip[pin];
+
+	if (!chip->regbase && deep_probe_is_supported()) {
+		char alias[] = "gpioX";
+		scnprintf(alias, sizeof(alias), "gpio%u", pin);
+		of_device_ensure_probed_by_alias(alias);
+	}
+
+	return chip;
 }
 
 /**
@@ -652,7 +661,6 @@ static int at91_gpio_probe(struct device *dev)
 		return ret;
 	}
 
-	gpio_banks = max(gpio_banks, alias_idx + 1);
 	at91_gpio->regbase = dev_request_mem_region_err_null(dev, 0);
 	if (!at91_gpio->regbase)
 		return -ENOENT;

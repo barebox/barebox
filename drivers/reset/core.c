@@ -191,9 +191,8 @@ static struct reset_control *of_reset_control_get_by_index(struct device_node *n
 	if (ret)
 		return ERR_PTR(ret);
 
-	ret = of_device_ensure_probed(args.np);
-	if (ret)
-		return ERR_PTR(ret);
+	/* Ignore error, as CLK_OF_DECLARE resets have no proper driver. */
+	of_device_ensure_probed(args.np);
 
 	rcdev = NULL;
 	list_for_each_entry(r, &reset_controller_list, list) {

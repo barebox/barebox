@@ -454,12 +454,21 @@ int platform_driver_register(struct driver *drv);
 	register_driver_macro(device,platform,drv)
 #define console_platform_driver(drv)	\
 	register_driver_macro(console,platform,drv)
-#define mem_platform_driver(drv)	\
-	register_driver_macro(mem,platform,drv)
 #define fs_platform_driver(drv)	\
 	register_driver_macro(fs,platform,drv)
 #define late_platform_driver(drv)	\
 	register_driver_macro(late,platform,drv)
+
+#define mem_platform_driver(drv)						\
+	static int __init drv##_init(void)					\
+	{									\
+		int ret;							\
+		ret = platform_driver_register(&drv);				\
+		if (ret)							\
+			return ret;						\
+		return of_devices_ensure_probed_by_dev_id(drv.of_compatible);	\
+	}									\
+	mem_initcall(drv##_init);
 
 int platform_device_register(struct device *new_device);
 

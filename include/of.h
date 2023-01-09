@@ -101,6 +101,11 @@ static inline const void *of_property_get_value(const struct property *pp)
 	return pp->value ? pp->value : pp->value_const;
 }
 
+static inline struct device_node *of_node_get(struct device_node *node)
+{
+	return node;
+}
+static inline void of_node_put(struct device_node *node) { }
 
 void of_print_property(const void *data, int len);
 void of_print_cmdline(struct device_node *root);

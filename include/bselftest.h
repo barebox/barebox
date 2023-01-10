@@ -7,7 +7,8 @@
 #include <init.h>
 
 enum bselftest_group {
-	BSELFTEST_core
+	BSELFTEST_core,
+	BSELFTEST_parser,
 };
 
 struct selftest {

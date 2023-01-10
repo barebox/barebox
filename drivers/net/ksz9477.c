@@ -552,6 +552,7 @@ static int microchip_switch_probe(struct device_d *dev)
 }
 
 static const struct of_device_id microchip_switch_dt_ids[] = {
+	{ .compatible = "microchip,ksz8563" },
 	{ .compatible = "microchip,ksz9477" },
 	{ .compatible = "microchip,ksz9563" },
 	{ }

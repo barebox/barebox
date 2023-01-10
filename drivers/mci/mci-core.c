@@ -326,6 +326,15 @@ static int mci_go_idle(struct mci *mci)
 	return 0;
 }
 
+static int sdio_send_op_cond(struct mci *mci)
+{
+	struct mci_cmd cmd;
+
+	mci_setup_cmd(&cmd, SD_IO_SEND_OP_COND, 0, MMC_RSP_SPI_R4 | MMC_RSP_R4 | MMC_CMD_BCR);
+
+	return mci_send_cmd(mci, &cmd, NULL);
+}
+
 /**
  * FIXME
  * @param mci MCI instance
@@ -1690,7 +1699,9 @@ static void mci_info(struct device_d *dev)
 	mci_print_caps(host->host_caps);
 
 	printf("Card information:\n");
-	printf("  Attached is a %s card\n", IS_SD(mci) ? "SD" : "MMC");
+	printf("  Card type: %s\n", mci->sdio ? "SDIO" : IS_SD(mci) ? "SD" : "MMC");
+	if (mci->sdio)
+		return;
 	printf("  Version: %s\n", mci_version_string(mci));
 	printf("  Capacity: %u MiB\n", (unsigned)(mci->capacity >> 20));
 
@@ -1901,6 +1912,16 @@ static int mci_card_probe(struct mci *mci)
 	if (rc) {
 		dev_warn(&mci->dev, "Cannot reset the SD/MMC card\n");
 		goto on_error;
+	}
+
+	if (!host->no_sdio) {
+		rc = sdio_send_op_cond(mci);
+		if (!rc) {
+			mci->ready_for_use = true;
+			mci->sdio = true;
+			dev_info(&mci->dev, "SDIO card detected, ignoring\n");
+			return 0;
+		}
 	}
 
 	/* Check if this card can handle the "SD Card Physical Layer Specification 2.0" */
@@ -2180,6 +2201,7 @@ void mci_of_parse_node(struct mci_host *host,
 	host->broken_cd = of_property_read_bool(np, "broken-cd");
 	host->non_removable = of_property_read_bool(np, "non-removable");
 	host->no_sd = of_property_read_bool(np, "no-sd");
+	host->no_sdio = of_property_read_bool(np, "no-sdio");
 	host->disable_wp = of_property_read_bool(np, "disable-wp");
 }
 

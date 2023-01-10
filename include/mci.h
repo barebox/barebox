@@ -91,6 +91,8 @@
 #define SD_CMD_APP_SEND_OP_COND		41
 #define SD_CMD_APP_SEND_SCR		51
 
+#define SD_IO_SEND_OP_COND		5 /* bcr  [23:0] OCR         R4  */
+
 /* SCR definitions in different words */
 #define SD_HIGHSPEED_BUSY	0x00020000
 #define SD_HIGHSPEED_SUPPORTED	0x00020000
@@ -446,6 +448,7 @@ struct mci_host {
 	int broken_cd;		/**< card detect is broken */
 	bool non_removable;	/**< device is non removable */
 	bool no_sd;		/**< do not send SD commands during initialization */
+	bool no_sdio;		/**< do not send SDIO commands during initialization */
 	bool disable_wp;	/**< ignore write-protect detection logic */
 	struct regulator *supply;
 
@@ -484,6 +487,7 @@ struct mci {
 	struct mci_host *host;		/**< the host for this card */
 	struct device_d dev;		/**< the device for our disk (mcix) */
 	unsigned version;
+	bool sdio;		/**< card is a SDIO card */
 	/** != 0 when a high capacity card is connected (OCR -> OCR_HCS) */
 	int high_capacity;
 	unsigned card_caps;	/**< Card's capabilities */

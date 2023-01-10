@@ -314,8 +314,8 @@ static int bcmgenet_gmac_eth_recv(struct eth_device *edev)
 	struct bcmgenet_eth_priv *priv = edev->priv;
 	void *desc_base = priv->mac_reg + GENET_RX_OFF + priv->rx_index * DMA_DESC_SIZE;
 	u32 prod_index = readl(priv->mac_reg + RDMA_PROD_INDEX);
-	u32 length;
-	unsigned long addr_lo, addr_hi, addr;
+	u32 length, addr_lo, addr_hi;
+	dma_addr_t addr;
 
 	if (prod_index == priv->c_index)
 		return -EAGAIN;
@@ -324,7 +324,7 @@ static int bcmgenet_gmac_eth_recv(struct eth_device *edev)
 	length = (length >> DMA_BUFLENGTH_SHIFT) & DMA_BUFLENGTH_MASK;
 	addr_lo = readl(desc_base + DMA_DESC_ADDRESS_LO);
 	addr_hi = readl(desc_base + DMA_DESC_ADDRESS_HI);
-	addr = addr_hi << 32 | addr_lo;
+	addr = (u64)addr_hi << 32 | addr_lo;
 
 	dma_sync_single_for_cpu(addr, length, DMA_FROM_DEVICE);
 

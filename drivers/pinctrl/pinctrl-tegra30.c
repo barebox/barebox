@@ -857,7 +857,7 @@ static struct pinctrl_ops pinctrl_tegra30_ops = {
 	.set_state = pinctrl_tegra30_set_state,
 };
 
-static int pinctrl_tegra30_probe(struct device_d *dev)
+static int pinctrl_tegra30_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct pinctrl_tegra30 *ctrl;
@@ -893,7 +893,7 @@ static int pinctrl_tegra30_probe(struct device_d *dev)
 		return ret;
 	}
 
-	of_pinctrl_select_state(dev->device_node, "boot");
+	of_pinctrl_select_state(dev->of_node, "boot");
 
 	return 0;
 }
@@ -914,7 +914,7 @@ static __maybe_unused struct of_device_id pinctrl_tegra30_dt_ids[] = {
 	}
 };
 
-static struct driver_d pinctrl_tegra30_driver = {
+static struct driver pinctrl_tegra30_driver = {
 	.name		= "pinctrl-tegra30",
 	.probe		= pinctrl_tegra30_probe,
 	.of_compatible	= DRV_OF_COMPAT(pinctrl_tegra30_dt_ids),

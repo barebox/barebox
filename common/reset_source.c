@@ -25,7 +25,7 @@ static const char * const reset_src_names[] = {
 static enum reset_src_type reset_source;
 static unsigned int reset_source_priority;
 static int reset_source_instance;
-static struct device_d *reset_source_device;
+static struct device *reset_source_device;
 
 enum reset_src_type reset_source_get(void)
 {
@@ -45,13 +45,13 @@ int reset_source_get_instance(void)
 }
 EXPORT_SYMBOL(reset_source_get_instance);
 
-struct device_d *reset_source_get_device(void)
+struct device *reset_source_get_device(void)
 {
 	return reset_source_device;
 }
 EXPORT_SYMBOL(reset_source_get_device);
 
-static void __reset_source_set(struct device_d *dev,
+static void __reset_source_set(struct device *dev,
 			       enum reset_src_type st,
 			       unsigned int priority, int instance)
 {
@@ -74,11 +74,11 @@ void reset_source_set_prinst(enum reset_src_type st,
 }
 EXPORT_SYMBOL(reset_source_set_prinst);
 
-void reset_source_set_device(struct device_d *dev, enum reset_src_type st)
+void reset_source_set_device(struct device *dev, enum reset_src_type st)
 {
 	unsigned int priority = RESET_SOURCE_DEFAULT_PRIORITY;
 
-	of_property_read_u32(dev->device_node, "reset-source-priority", &priority);
+	of_property_read_u32(dev->of_node, "reset-source-priority", &priority);
 
 	__reset_source_set(dev, st, priority, -1);
 }

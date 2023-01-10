@@ -128,7 +128,7 @@ static void __noreturn dw_wdt_restart_handle(struct restart_handler *rst)
 	hang();
 }
 
-static int dw_wdt_drv_probe(struct device_d *dev)
+static int dw_wdt_drv_probe(struct device *dev)
 {
 	struct watchdog *wdd;
 	struct dw_wdt *dw_wdt;
@@ -197,7 +197,7 @@ static struct of_device_id dw_wdt_of_match[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d dw_wdt_driver = {
+static struct driver dw_wdt_driver = {
 	.name		= "dw-wdt",
 	.probe		= dw_wdt_drv_probe,
 	.of_compatible	= DRV_OF_COMPAT(dw_wdt_of_match),

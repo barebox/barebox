@@ -239,7 +239,7 @@ struct fsl_qspi {
 	void __iomem *ahb_addr;
 	u32 memmap_phy;
 	struct clk *clk, *clk_en;
-	struct device_d *dev;
+	struct device *dev;
 	struct spi_controller ctlr;
 	const struct fsl_qspi_devtype_data *devtype_data;
 	struct mutex lock;
@@ -743,7 +743,7 @@ static int fsl_qspi_setup(struct spi_device *spi)
 static const char *fsl_qspi_get_name(struct spi_mem *mem)
 {
 	struct fsl_qspi *q = spi_controller_get_devdata(mem->spi->controller);
-	struct device_d *dev = &mem->spi->dev;
+	struct device *dev = &mem->spi->dev;
 	const char *name;
 
 	/*
@@ -751,7 +751,7 @@ static const char *fsl_qspi_get_name(struct spi_mem *mem)
 	 * mtd/spi-nor/fsl-quadspi.c, we set a custom name derived from the
 	 * platform_device of the controller.
 	 */
-	if (of_get_available_child_count(q->dev->device_node) == 1)
+	if (of_get_available_child_count(q->dev->of_node) == 1)
 		return dev_name(q->dev);
 
 	name = basprintf("%s-%d", dev_name(q->dev), mem->spi->chip_select);
@@ -770,7 +770,7 @@ static const struct spi_controller_mem_ops fsl_qspi_mem_ops = {
 	.get_name = fsl_qspi_get_name,
 };
 
-static int fsl_qspi_probe(struct device_d *dev)
+static int fsl_qspi_probe(struct device *dev)
 {
 	struct spi_controller *ctlr;
 	struct resource *res;
@@ -861,7 +861,7 @@ static const struct of_device_id fsl_qspi_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d fsl_qspi_driver = {
+static struct driver fsl_qspi_driver = {
 	.name		= "fsl-quadspi",
 	.probe          = fsl_qspi_probe,
 	.of_compatible	= DRV_OF_COMPAT(fsl_qspi_dt_ids),

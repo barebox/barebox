@@ -55,7 +55,7 @@ static struct clocksource uemd_cs = {
 	.priority = 60,
 };
 
-static int uemd_timer_probe(struct device_d *dev)
+static int uemd_timer_probe(struct device *dev)
 {
 	struct resource *iores;
 	int mode;
@@ -109,7 +109,7 @@ static __maybe_unused struct of_device_id uemd_timer_dt_ids[] = {
 	}
 };
 
-static struct driver_d uemd_timer_driver = {
+static struct driver uemd_timer_driver = {
 	.probe	= uemd_timer_probe,
 	.name	= "uemd-timer",
 	.of_compatible = DRV_OF_COMPAT(uemd_timer_dt_ids),

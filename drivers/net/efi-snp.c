@@ -117,7 +117,7 @@ struct efi_simple_network {
 };
 
 struct efi_snp_priv {
-	struct device_d *dev;
+	struct device *dev;
 	struct eth_device edev;
 	struct efi_simple_network *snp;
 	void *rx_buf;

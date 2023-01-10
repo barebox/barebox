@@ -9,9 +9,9 @@
 #include <xfuncs.h>
 #include <malloc.h>
 
-struct device_d *device_alloc(const char *devname, int id)
+struct device *device_alloc(const char *devname, int id)
 {
-	struct device_d *dev;
+	struct device *dev;
 
 	dev = xzalloc(sizeof(*dev));
 	dev_set_name(dev, devname);
@@ -20,7 +20,7 @@ struct device_d *device_alloc(const char *devname, int id)
 	return dev;
 }
 
-int device_add_data(struct device_d *dev, const void *data, size_t size)
+int device_add_data(struct device *dev, const void *data, size_t size)
 {
 	free(dev->platform_data);
 
@@ -32,7 +32,8 @@ int device_add_data(struct device_d *dev, const void *data, size_t size)
 	return 0;
 }
 
-int device_add_resources(struct device_d *dev, const struct resource *res, int num)
+int device_add_resources(struct device *dev, const struct resource *res,
+			 int num)
 {
 	dev->resource = xmemdup(res, sizeof(*res) * num);
 	dev->num_resources = num;
@@ -40,8 +41,9 @@ int device_add_resources(struct device_d *dev, const struct resource *res, int n
 	return 0;
 }
 
-int device_add_resource(struct device_d *dev, const char *resname,
-		resource_size_t start, resource_size_t size, unsigned int flags)
+int device_add_resource(struct device *dev, const char *resname,
+			resource_size_t start, resource_size_t size,
+			unsigned int flags)
 {
 	struct resource res = {
 		.start = start,
@@ -55,11 +57,11 @@ int device_add_resource(struct device_d *dev, const char *resname,
 	return device_add_resources(dev, &res, 1);
 }
 
-struct device_d *add_generic_device(const char* devname, int id, const char *resname,
+struct device *add_generic_device(const char* devname, int id, const char *resname,
 		resource_size_t start, resource_size_t size, unsigned int flags,
 		void *pdata)
 {
-	struct device_d *dev;
+	struct device *dev;
 
 	dev = device_alloc(devname, id);
 	dev->platform_data = pdata;
@@ -71,10 +73,10 @@ struct device_d *add_generic_device(const char* devname, int id, const char *res
 }
 EXPORT_SYMBOL(add_generic_device);
 
-struct device_d *add_generic_device_res(const char* devname, int id,
+struct device *add_generic_device_res(const char* devname, int id,
 		struct resource *res, int nb, void *pdata)
 {
-	struct device_d *dev;
+	struct device *dev;
 
 	dev = device_alloc(devname, id);
 	dev->platform_data = pdata;
@@ -87,7 +89,7 @@ struct device_d *add_generic_device_res(const char* devname, int id,
 EXPORT_SYMBOL(add_generic_device_res);
 
 #ifdef CONFIG_DRIVER_NET_DM9K
-struct device_d *add_dm9000_device(int id, resource_size_t base,
+struct device *add_dm9000_device(int id, resource_size_t base,
 		resource_size_t data, int flags, void *pdata)
 {
 	struct resource *res;
@@ -123,7 +125,7 @@ EXPORT_SYMBOL(add_dm9000_device);
 #endif
 
 #ifdef CONFIG_USB_EHCI
-struct device_d *add_usb_ehci_device(int id, resource_size_t hccr,
+struct device *add_usb_ehci_device(int id, resource_size_t hccr,
 		resource_size_t hcor, void *pdata)
 {
 	struct resource *res;
@@ -142,7 +144,7 @@ EXPORT_SYMBOL(add_usb_ehci_device);
 #endif
 
 #ifdef CONFIG_DRIVER_NET_KS8851_MLL
-struct device_d *add_ks8851_device(int id, resource_size_t addr,
+struct device *add_ks8851_device(int id, resource_size_t addr,
 		resource_size_t addr_cmd, int flags, void *pdata)
 {
 	struct resource *res;

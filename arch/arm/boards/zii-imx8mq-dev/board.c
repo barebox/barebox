@@ -81,7 +81,7 @@ static int zii_imx8mq_dev_fixup_egalax_ts(struct device_node *root, void *ctx)
 static int zii_imx8mq_dev_fixup_deb_internal(void)
 {
 	struct device_node *np, *aliases;
-	struct device_d *dev;
+	struct device *dev;
 
 	/*
 	 * In the internal DT remove the complete FEC hierarchy and move the

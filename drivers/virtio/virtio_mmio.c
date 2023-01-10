@@ -378,7 +378,7 @@ static const struct virtio_config_ops virtio_mmio_config_ops = {
 
 /* Platform device */
 
-static int virtio_mmio_probe(struct device_d *dev)
+static int virtio_mmio_probe(struct device *dev)
 {
 	struct virtio_mmio_device *vm_dev;
 	struct resource *res;
@@ -430,7 +430,7 @@ static int virtio_mmio_probe(struct device_d *dev)
 	return register_virtio_device(&vm_dev->vdev);
 }
 
-static void virtio_mmio_remove(struct device_d *dev)
+static void virtio_mmio_remove(struct device *dev)
 {
 	struct virtio_mmio_device *vm_dev = dev->priv;
 	unregister_virtio_device(&vm_dev->vdev);
@@ -444,7 +444,7 @@ static const struct of_device_id virtio_mmio_match[] = {
 	{},
 };
 
-static struct driver_d virtio_mmio_driver = {
+static struct driver virtio_mmio_driver = {
 	.probe		= virtio_mmio_probe,
 	.remove		= virtio_mmio_remove,
 	.name		= "virtio-mmio",

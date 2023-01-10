@@ -178,7 +178,7 @@ static int tftp_window_cache_insert(struct tftp_cache *cache, uint16_t id,
 	return 0;
 }
 
-static int tftp_truncate(struct device_d *dev, FILE *f, loff_t size)
+static int tftp_truncate(struct device *dev, FILE *f, loff_t size)
 {
 	return 0;
 }
@@ -647,10 +647,11 @@ static int tftp_start_transfer(struct file_priv *priv)
 	return 0;
 }
 
-static struct file_priv *tftp_do_open(struct device_d *dev,
-		int accmode, struct dentry *dentry, bool is_getattr)
+static struct file_priv *tftp_do_open(struct device *dev,
+				      int accmode, struct dentry *dentry,
+				      bool is_getattr)
 {
-	struct fs_device_d *fsdev = dev_to_fs_device(dev);
+	struct fs_device *fsdev = dev_to_fs_device(dev);
 	struct file_priv *priv;
 	struct tftp_priv *tpriv = dev->priv;
 	int ret;
@@ -752,7 +753,7 @@ out:
 	return ERR_PTR(ret);
 }
 
-static int tftp_open(struct device_d *dev, FILE *file, const char *filename)
+static int tftp_open(struct device *dev, FILE *file, const char *filename)
 {
 	struct file_priv *priv;
 
@@ -805,15 +806,15 @@ static int tftp_do_close(struct file_priv *priv)
 	return 0;
 }
 
-static int tftp_close(struct device_d *dev, FILE *f)
+static int tftp_close(struct device *dev, FILE *f)
 {
 	struct file_priv *priv = f->priv;
 
 	return tftp_do_close(priv);
 }
 
-static int tftp_write(struct device_d *_dev, FILE *f, const void *inbuf,
-		size_t insize)
+static int tftp_write(struct device *_dev, FILE *f, const void *inbuf,
+		      size_t insize)
 {
 	struct file_priv *priv = f->priv;
 	size_t size, now;
@@ -848,7 +849,7 @@ static int tftp_write(struct device_d *_dev, FILE *f, const void *inbuf,
 	return insize;
 }
 
-static int tftp_read(struct device_d *dev, FILE *f, void *buf, size_t insize)
+static int tftp_read(struct device *dev, FILE *f, void *buf, size_t insize)
 {
 	struct file_priv *priv = f->priv;
 	size_t outsize = 0, now;
@@ -888,7 +889,7 @@ static int tftp_read(struct device_d *dev, FILE *f, void *buf, size_t insize)
 	return outsize;
 }
 
-static int tftp_lseek(struct device_d *dev, FILE *f, loff_t pos)
+static int tftp_lseek(struct device *dev, FILE *f, loff_t pos)
 {
 	/* We cannot seek backwards without reloading or caching the file */
 	loff_t f_pos = f->pos;
@@ -979,7 +980,7 @@ static struct dentry *tftp_lookup(struct inode *dir, struct dentry *dentry,
 			    unsigned int flags)
 {
 	struct super_block *sb = dir->i_sb;
-	struct fs_device_d *fsdev = container_of(sb, struct fs_device_d, sb);
+	struct fs_device *fsdev = container_of(sb, struct fs_device, sb);
 	struct inode *inode;
 	struct file_priv *priv;
 	loff_t filesize;
@@ -1014,9 +1015,9 @@ static const struct inode_operations tftp_dir_inode_operations =
 
 static const struct super_operations tftp_ops;
 
-static int tftp_probe(struct device_d *dev)
+static int tftp_probe(struct device *dev)
 {
-	struct fs_device_d *fsdev = dev_to_fs_device(dev);
+	struct fs_device *fsdev = dev_to_fs_device(dev);
 	struct tftp_priv *priv = xzalloc(sizeof(struct tftp_priv));
 	struct super_block *sb = &fsdev->sb;
 	struct inode *inode;
@@ -1043,14 +1044,14 @@ err:
 	return ret;
 }
 
-static void tftp_remove(struct device_d *dev)
+static void tftp_remove(struct device *dev)
 {
 	struct tftp_priv *priv = dev->priv;
 
 	free(priv);
 }
 
-static struct fs_driver_d tftp_driver = {
+static struct fs_driver tftp_driver = {
 	.open      = tftp_open,
 	.close     = tftp_close,
 	.read      = tftp_read,

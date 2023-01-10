@@ -71,7 +71,7 @@ struct spi_device *spi_new_device(struct spi_controller *ctrl,
 	/* allocate a free id for this chip */
 	proxy->dev.id = DEVICE_ID_DYNAMIC;
 	proxy->dev.type_data = proxy;
-	proxy->dev.device_node = chip->device_node;
+	proxy->dev.of_node = chip->device_node;
 	proxy->dev.parent = ctrl->dev;
 	proxy->master = proxy->controller = ctrl;
 
@@ -110,7 +110,7 @@ static void spi_of_register_slaves(struct spi_controller *ctrl)
 	struct device_node *n;
 	struct spi_board_info chip;
 	struct property *reg;
-	struct device_node *node = ctrl->dev->device_node;
+	struct device_node *node = ctrl->dev->of_node;
 
 	if (!IS_ENABLED(CONFIG_OFDEVICE))
 		return;
@@ -259,8 +259,8 @@ int spi_register_controller(struct spi_controller *ctrl)
 	if (ctrl->num_chipselect == 0)
 		return -EINVAL;
 
-	if ((ctrl->bus_num < 0) && ctrl->dev->device_node)
-		ctrl->bus_num = of_alias_get_id(ctrl->dev->device_node, "spi");
+	if ((ctrl->bus_num < 0) && ctrl->dev->of_node)
+		ctrl->bus_num = of_alias_get_id(ctrl->dev->of_node, "spi");
 
 	/* convention:  dynamically assigned bus IDs count down from the max */
 	if (ctrl->bus_num < 0)
@@ -383,12 +383,12 @@ int spi_write_then_read(struct spi_device *spi,
 }
 EXPORT_SYMBOL(spi_write_then_read);
 
-static int spi_probe(struct device_d *dev)
+static int spi_probe(struct device *dev)
 {
 	return dev->driver->probe(dev);
 }
 
-static void spi_remove(struct device_d *dev)
+static void spi_remove(struct device *dev)
 {
 	if (dev->driver->remove)
 		dev->driver->remove(dev);

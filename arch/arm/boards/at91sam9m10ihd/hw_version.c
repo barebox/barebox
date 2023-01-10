@@ -133,7 +133,7 @@ static void at91sam9m10ihd_devices_detect_one(const char *name)
 	struct one_wire_info info;
 	struct board_info* binfo;
 	struct vendor_info* vinfo;
-	struct device_d *dev = NULL;
+	struct device *dev = NULL;
 	char str[16];
 	u8 vendor_id = 0;
 

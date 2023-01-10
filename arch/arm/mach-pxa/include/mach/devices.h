@@ -15,9 +15,9 @@
 #include <i2c/i2c.h>
 #include <mach/pxafb.h>
 
-struct device_d *pxa_add_i2c(void *base, int id,
+struct device *pxa_add_i2c(void *base, int id,
 			     struct i2c_platform_data *pdata);
-struct device_d *pxa_add_uart(void *base, int id);
-struct device_d *pxa_add_fb(void *base, struct pxafb_platform_data *pdata);
-struct device_d *pxa_add_mmc(void *base, int id, void *pdata);
-struct device_d *pxa_add_pwm(void *base, int id);
+struct device *pxa_add_uart(void *base, int id);
+struct device *pxa_add_fb(void *base, struct pxafb_platform_data *pdata);
+struct device *pxa_add_mmc(void *base, int id, void *pdata);
+struct device *pxa_add_pwm(void *base, int id);

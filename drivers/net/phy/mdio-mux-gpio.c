@@ -67,14 +67,14 @@ static int mdio_mux_gpio_switch_fn(int current_child, int desired_child,
 	return 0;
 }
 
-static int mdio_mux_gpio_probe(struct device_d *dev)
+static int mdio_mux_gpio_probe(struct device *dev)
 {
 	struct mdio_mux_gpio_state *s;
 	int i, r;
 
 	s = xzalloc(sizeof(*s));
 
-	s->gpios_num = of_gpio_count(dev->device_node);
+	s->gpios_num = of_gpio_count(dev->of_node);
 	if (s->gpios_num <= 0) {
 		dev_err(dev, "No GPIOs specified\n");
 		r = -EINVAL;
@@ -86,7 +86,7 @@ static int mdio_mux_gpio_probe(struct device_d *dev)
 	for (i = 0; i < s->gpios_num; i++) {
 		enum of_gpio_flags flags;
 
-		r = of_get_gpio_flags(dev->device_node, i, &flags);
+		r = of_get_gpio_flags(dev->of_node, i, &flags);
 		if (!gpio_is_valid(r)) {
 			r = (r < 0) ? r : -EINVAL;
 			goto free_mem;
@@ -105,7 +105,7 @@ static int mdio_mux_gpio_probe(struct device_d *dev)
 		goto free_gpios;
 
 
-	r = mdio_mux_init(dev, dev->device_node,
+	r = mdio_mux_init(dev, dev->of_node,
 			  mdio_mux_gpio_switch_fn, s, NULL);
 	if (r < 0)
 		goto free_gpios;
@@ -127,7 +127,7 @@ static const struct of_device_id mdio_mux_gpio_match[] = {
 	{},
 };
 
-static struct driver_d mdio_mux_gpio_driver = {
+static struct driver mdio_mux_gpio_driver = {
 	.name	       = "mdio-mux-gpio",
 	.probe         = mdio_mux_gpio_probe,
 	.of_compatible = mdio_mux_gpio_match,

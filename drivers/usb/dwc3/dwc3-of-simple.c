@@ -20,15 +20,15 @@
 #include <of.h>
 
 struct dwc3_of_simple {
-	struct device_d		*dev;
+	struct device		*dev;
 	struct clk_bulk_data	*clks;
 	int			num_clocks;
 };
 
-static int dwc3_of_simple_probe(struct device_d *dev)
+static int dwc3_of_simple_probe(struct device *dev)
 {
 	struct dwc3_of_simple	*simple;
-	struct device_node	*np = dev->device_node;
+	struct device_node	*np = dev->of_node;
 
 	int			ret;
 
@@ -57,7 +57,7 @@ static int dwc3_of_simple_probe(struct device_d *dev)
 	return 0;
 }
 
-static void dwc3_of_simple_remove(struct device_d *dev)
+static void dwc3_of_simple_remove(struct device *dev)
 {
 	struct dwc3_of_simple	*simple = dev->priv;
 
@@ -76,7 +76,7 @@ static const struct of_device_id of_dwc3_simple_match[] = {
 	{.compatible = "allwinner,sun50i-h6-dwc3"},
 	{/* Sentinel */}};
 
-static struct driver_d dwc3_of_simple_driver = {
+static struct driver dwc3_of_simple_driver = {
 	.probe		= dwc3_of_simple_probe,
 	.remove		= dwc3_of_simple_remove,
 	.name		= "dwc3-of-simple",

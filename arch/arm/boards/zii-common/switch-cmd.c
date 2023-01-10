@@ -61,7 +61,7 @@ static int do_rdu2_switch_reset(void)
 
 static int do_rdu1_switch_reset(void)
 {
-	struct device_d *sp_dev = get_device_by_name("sp");
+	struct device *sp_dev = get_device_by_name("sp");
 	struct rave_sp *sp = sp_dev->parent->priv;
 	u8 cmd[] = {
 		[0] = RAVE_SP_CMD_RESET_ETH_SWITCH,

@@ -297,7 +297,7 @@ static unsigned int imx6_pcie_grp_offset(const struct imx6_pcie *imx6_pcie)
 
 static int imx6_pcie_enable_ref_clk(struct imx6_pcie *imx6_pcie)
 {
-	struct device_d *dev = imx6_pcie->pci->dev;
+	struct device *dev = imx6_pcie->pci->dev;
 	u32 gpr1, gpr1x;
 	unsigned int offset;
 	int ret;
@@ -351,7 +351,7 @@ static void imx7d_pcie_wait_for_phy_pll_lock(struct imx6_pcie *imx6_pcie)
 {
 	u32 val;
 	unsigned int retries;
-	struct device_d *dev = imx6_pcie->pci->dev;
+	struct device *dev = imx6_pcie->pci->dev;
 
 	for (retries = 0; retries < PHY_PLL_LOCK_WAIT_MAX_RETRIES; retries++) {
 		val = readl(imx6_pcie->iomuxc_gpr + IOMUXC_GPR22);
@@ -367,7 +367,7 @@ static void imx7d_pcie_wait_for_phy_pll_lock(struct imx6_pcie *imx6_pcie)
 
 static void imx6_pcie_deassert_core_reset(struct imx6_pcie *imx6_pcie)
 {
-	struct device_d *dev = imx6_pcie->pci->dev;
+	struct device *dev = imx6_pcie->pci->dev;
 	int ret;
 	u32 gpr1;
 
@@ -525,7 +525,7 @@ static int imx6_pcie_wait_for_link(struct imx6_pcie *imx6_pcie)
 static int imx6_pcie_wait_for_speed_change(struct imx6_pcie *imx6_pcie)
 {
 	struct dw_pcie *pci = imx6_pcie->pci;
-	struct device_d *dev = pci->dev;
+	struct device *dev = pci->dev;
 	uint32_t tmp;
 	uint64_t start = get_time_ns();
 
@@ -540,7 +540,7 @@ static int imx6_pcie_wait_for_speed_change(struct imx6_pcie *imx6_pcie)
 	return -EINVAL;
 }
 
-static void imx6_pcie_ltssm_enable(struct device_d *dev)
+static void imx6_pcie_ltssm_enable(struct device *dev)
 {
 	struct imx6_pcie *imx6_pcie = dev->priv;
 	u32 gpr12;
@@ -562,7 +562,7 @@ static void imx6_pcie_ltssm_enable(struct device_d *dev)
 static int imx6_pcie_establish_link(struct imx6_pcie *imx6_pcie)
 {
 	struct dw_pcie *pci = imx6_pcie->pci;
-	struct device_d *dev = pci->dev;
+	struct device *dev = pci->dev;
 	uint32_t tmp;
 	int ret;
 
@@ -669,7 +669,7 @@ static const struct dw_pcie_host_ops imx6_pcie_host_ops = {
 };
 
 static int imx6_add_pcie_port(struct imx6_pcie *imx6_pcie,
-			      struct device_d *dev)
+			      struct device *dev)
 {
 	struct dw_pcie *pci = imx6_pcie->pci;
 	struct pcie_port *pp = &pci->pp;
@@ -686,12 +686,12 @@ static int imx6_add_pcie_port(struct imx6_pcie *imx6_pcie,
 	return 0;
 }
 
-static int imx6_pcie_probe(struct device_d *dev)
+static int imx6_pcie_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct dw_pcie *pci;
 	struct imx6_pcie *imx6_pcie;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	int ret;
 
 	imx6_pcie = xzalloc(sizeof(*imx6_pcie));
@@ -814,7 +814,7 @@ static int imx6_pcie_probe(struct device_d *dev)
 	return 0;
 }
 
-static void imx6_pcie_remove(struct device_d *dev)
+static void imx6_pcie_remove(struct device *dev)
 {
 	struct imx6_pcie *imx6_pcie = dev->priv;
 
@@ -875,7 +875,7 @@ static struct of_device_id imx6_pcie_of_match[] = {
 	{},
 };
 
-static struct driver_d imx6_pcie_driver = {
+static struct driver imx6_pcie_driver = {
 	.name = "imx6-pcie",
 	.of_compatible = DRV_OF_COMPAT(imx6_pcie_of_match),
 	.probe = imx6_pcie_probe,

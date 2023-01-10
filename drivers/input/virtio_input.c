@@ -32,7 +32,7 @@ static void virtinput_queue_evtbuf(struct virtio_input *vi,
 
 static int virtinput_recv_events(struct virtio_input *vi)
 {
-	struct device_d *dev = &vi->vdev->dev;
+	struct device *dev = &vi->vdev->dev;
 	struct virtio_input_event *event;
 	unsigned int len;
 	int i = 0;

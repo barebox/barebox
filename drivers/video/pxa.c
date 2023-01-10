@@ -74,7 +74,7 @@ struct pxafb_info {
 
 	struct pxafb_videomode	*mode;
 	struct fb_info		info;
-	struct device_d		*dev;
+	struct device		*dev;
 
 	void			(*lcd_power)(int);
 	void			(*backlight_power)(int);
@@ -476,7 +476,7 @@ static struct fb_ops pxafb_ops = {
 	.fb_disable	= pxafb_disable_controller,
 };
 
-static int pxafb_probe(struct device_d *dev)
+static int pxafb_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct pxafb_platform_data *pdata = dev->platform_data;
@@ -534,7 +534,7 @@ static int pxafb_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d pxafb_driver = {
+static struct driver pxafb_driver = {
 	.name	= "pxafb",
 	.probe	= pxafb_probe,
 };

@@ -286,7 +286,7 @@ static int rave_sp_wdt_get_boot_source(struct param_d *param, void *priv)
 static int rave_sp_wdt_add_params(struct rave_sp_wdt *sp_wd)
 {
 	struct watchdog *wdd = &sp_wd->wdd;
-	struct device_node *np = wdd->hwdev->device_node;
+	struct device_node *np = wdd->hwdev->of_node;
 	struct param_d *p;
 
 	sp_wd->boot_source_cell = of_nvmem_cell_get(np, "boot-source");
@@ -302,7 +302,7 @@ static int rave_sp_wdt_add_params(struct rave_sp_wdt *sp_wd)
 	return PTR_ERR_OR_ZERO(p);
 }
 
-static int rave_sp_wdt_probe(struct device_d *dev)
+static int rave_sp_wdt_probe(struct device *dev)
 {
 	struct rave_sp_wdt *sp_wd;
 	const char *reset_reason;
@@ -415,7 +415,7 @@ static int rave_sp_wdt_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d rave_sp_wdt_driver = {
+static struct driver rave_sp_wdt_driver = {
 	.name  = "rave-sp-wdt",
 	.probe = rave_sp_wdt_probe,
 	.of_compatible = DRV_OF_COMPAT(rave_sp_wdt_of_match),

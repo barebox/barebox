@@ -36,7 +36,7 @@ static int sbi_serial_tstc(struct console_device *cdev)
 	return priv->head != priv->tail;
 }
 
-static int sbi_serial_probe(struct device_d *dev)
+static int sbi_serial_probe(struct device *dev)
 {
 	struct sbi_serial_priv *priv;
 
@@ -51,7 +51,7 @@ static int sbi_serial_probe(struct device_d *dev)
 	return console_register(&priv->cdev);
 }
 
-static struct driver_d serial_sbi_driver = {
+static struct driver serial_sbi_driver = {
 	.name   = "riscv-serial-sbi",
 	.probe  = sbi_serial_probe,
 };

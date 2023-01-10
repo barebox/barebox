@@ -98,7 +98,7 @@ static struct gpio_ops mxs_gpio_ops = {
 	.get_direction = mxs_get_direction,
 };
 
-static int mxs_gpio_probe(struct device_d *dev)
+static int mxs_gpio_probe(struct device *dev)
 {
 	struct mxs_gpio_chip *mxsgpio;
 	struct mxs_gpio_regs *regs;
@@ -111,7 +111,7 @@ static int mxs_gpio_probe(struct device_d *dev)
 	mxsgpio = xzalloc(sizeof(*mxsgpio));
 	mxsgpio->chip.ops = &mxs_gpio_ops;
 	if (dev->id < 0) {
-		id = of_alias_get_id(dev->device_node, "gpio");
+		id = of_alias_get_id(dev->of_node, "gpio");
 		if (id < 0)
 			return id;
 		mxsgpio->base = dev_get_mem_region(dev->parent, 0);
@@ -163,7 +163,7 @@ static struct platform_device_id mxs_gpio_ids[] = {
 	},
 };
 
-static struct driver_d mxs_gpio_driver = {
+static struct driver mxs_gpio_driver = {
 	.name = "gpio-mxs",
 	.probe = mxs_gpio_probe,
 	.of_compatible = DRV_OF_COMPAT(mxs_gpio_dt_ids),

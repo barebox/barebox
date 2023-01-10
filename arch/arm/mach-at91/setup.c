@@ -371,7 +371,7 @@ postcore_initcall(at91_detect);
 
 static int at91_soc_device(void)
 {
-	struct device_d *dev;
+	struct device *dev;
 
 	dev = add_generic_device_res("soc", DEVICE_ID_SINGLE, NULL, 0, NULL);
 	dev_add_param_fixed(dev, "name", (char*)at91_get_soc_type(&at91_soc_initdata));

@@ -157,7 +157,7 @@ static int stpmic1_set_reset_reason(struct regmap *map)
 	return 0;
 }
 
-static int stpmic1_wdt_probe(struct device_d *dev)
+static int stpmic1_wdt_probe(struct device *dev)
 {
 	struct stpmic1_wdt *wdt;
 	struct watchdog *wdd;
@@ -209,7 +209,7 @@ static __maybe_unused const struct of_device_id stpmic1_wdt_of_match[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d stpmic1_wdt_driver = {
+static struct driver stpmic1_wdt_driver = {
 	.name  = "stpmic1-wdt",
 	.probe = stpmic1_wdt_probe,
 	.of_compatible = DRV_OF_COMPAT(stpmic1_wdt_of_match),

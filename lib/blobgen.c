@@ -29,7 +29,7 @@ static struct blobgen *bg_default;
  * This registers a blob device. Returns 0 for success or a negative error
  * code otherwise.
  */
-int blob_gen_register(struct device_d *dev, struct blobgen *bg)
+int blob_gen_register(struct device *dev, struct blobgen *bg)
 {
 	int ret;
 
@@ -56,7 +56,7 @@ int blob_gen_register(struct device_d *dev, struct blobgen *bg)
  */
 struct blobgen *blobgen_get(const char *name)
 {
-	struct device_d *dev;
+	struct device *dev;
 	struct blobgen *bg;
 
 	if (!name)

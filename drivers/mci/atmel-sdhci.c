@@ -40,7 +40,7 @@ static void at91_sdhci_mci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	at91_sdhci_set_ios(&to_priv(mci)->host, ios);
 }
 
-static int at91_sdhci_mci_init(struct mci_host *mci, struct device_d *dev)
+static int at91_sdhci_mci_init(struct mci_host *mci, struct device *dev)
 {
 	struct at91_sdhci_priv *priv = to_priv(mci);
 	struct sdhci *sdhci = &priv->host.sdhci;
@@ -99,7 +99,7 @@ static int at91_sdhci_card_present(struct mci_host *mci)
 	return at91_sdhci_is_card_inserted(&to_priv(mci)->host);
 }
 
-static int at91_sdhci_probe(struct device_d *dev)
+static int at91_sdhci_probe(struct device *dev)
 {
 	struct at91_sdhci_priv *priv;
 	struct resource *iores;
@@ -135,7 +135,7 @@ static int at91_sdhci_probe(struct device_d *dev)
 	 * if SDCAL pin is wrongly connected, we must enable
 	 * the analog calibration cell permanently.
 	 */
-	priv->cal_always_on = of_property_read_bool(dev->device_node,
+	priv->cal_always_on = of_property_read_bool(dev->of_node,
 						    "microchip,sdcal-inverted");
 
 	at91_sdhci_mmio_init(&priv->host, IOMEM(iores->start));
@@ -163,7 +163,7 @@ static const struct of_device_id at91_sdhci_dt_match[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d at91_sdhci_driver = {
+static struct driver at91_sdhci_driver = {
 	.name		= "sdhci-at91",
 	.of_compatible	= DRV_OF_COMPAT(at91_sdhci_dt_match),
 	.probe		= at91_sdhci_probe,

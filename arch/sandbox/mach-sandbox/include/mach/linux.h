@@ -5,9 +5,9 @@
 
 struct hf_info;
 
-struct device_d;
+struct device;
 
-int sandbox_add_device(struct device_d *dev);
+int sandbox_add_device(struct device *dev);
 
 struct fb_bitfield;
 

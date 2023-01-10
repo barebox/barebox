@@ -348,7 +348,7 @@ static struct of_device_id mvebu_spi_dt_ids[] = {
 	{ }
 };
 
-static int mvebu_spi_probe(struct device_d *dev)
+static int mvebu_spi_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct spi_master *master;
@@ -356,7 +356,7 @@ static int mvebu_spi_probe(struct device_d *dev)
 	const struct of_device_id *match;
 	int ret = 0;
 
-	match = of_match_node(mvebu_spi_dt_ids, dev->device_node);
+	match = of_match_node(mvebu_spi_dt_ids, dev->of_node);
 	if (!match)
 		return -EINVAL;
 
@@ -391,7 +391,7 @@ err_free:
 	return ret;
 }
 
-static struct driver_d mvebu_spi_driver = {
+static struct driver mvebu_spi_driver = {
 	.name  = "mvebu-spi",
 	.probe = mvebu_spi_probe,
 	.of_compatible = DRV_OF_COMPAT(mvebu_spi_dt_ids),

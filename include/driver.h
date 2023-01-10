@@ -24,7 +24,7 @@ struct platform_device_id {
 };
 
 /** @brief Describes a particular device present in the system */
-struct device_d {
+struct device {
 	/*! This member (and 'type' described below) is used to match
 	 * with a driver. This is a descriptive name and could be
 	 * MPC5XXX_ether or imx_serial. Unless absolutely necessary,
@@ -55,7 +55,7 @@ struct device_d {
 	void *type_data;     /*! In case this device is a specific device, this pointer
 			      * points to the type specific device, i.e. eth_device
 			      */
-	struct driver_d *driver; /*! The driver for this device */
+	struct driver *driver; /*! The driver for this device */
 
 	struct list_head list;     /* The list of all devices */
 	struct list_head bus_list; /* our bus            */
@@ -63,7 +63,7 @@ struct device_d {
 	struct list_head sibling;
 	struct list_head active;   /* The list of all devices which have a driver */
 
-	struct device_d *parent;   /* our parent, NULL if not present */
+	struct device *parent;   /* our parent, NULL if not present */
 
 	struct bus_type *bus;
 
@@ -74,7 +74,10 @@ struct device_d {
 	struct list_head cdevs;
 
 	const struct platform_device_id *id_entry;
-	struct device_node *device_node;
+	union {
+		struct device_node *device_node;
+		struct device_node *of_node;
+	};
 
 	const struct of_device_id *of_id_entry;
 
@@ -82,12 +85,12 @@ struct device_d {
 
 	unsigned long dma_offset;
 
-	void    (*info) (struct device_d *);
+	void    (*info) (struct device *);
 	/*
 	 * For devices which take longer to probe this is called
 	 * when the driver should actually detect client devices
 	 */
-	int     (*detect) (struct device_d *);
+	int     (*detect) (struct device *);
 
 	/*
 	 * if a driver probe is deferred, this stores the last error
@@ -96,7 +99,7 @@ struct device_d {
 };
 
 /** @brief Describes a driver present in the system */
-struct driver_d {
+struct driver {
 	/*! The name of this driver. Used to match to
 	 * the corresponding device. */
 	const char *name;
@@ -105,10 +108,10 @@ struct driver_d {
 	struct list_head bus_list; /* our bus            */
 
 	/*! Called if an instance of a device is found */
-	int     (*probe) (struct device_d *);
+	int     (*probe) (struct device *);
 
 	/*! Called if an instance of a device is gone. */
-	void     (*remove)(struct device_d *);
+	void     (*remove)(struct device *);
 
 	struct bus_type *bus;
 
@@ -117,6 +120,10 @@ struct driver_d {
 };
 
 /*@}*/	/* do not delete, doxygen relevant */
+
+/* Legacy naming for out-of-tree patches. Will be phased out in future. */
+#define device_d device
+#define driver_d driver
 
 #define RW_SIZE(x)      (x)
 #define RW_SIZE_MASK    0x7
@@ -128,26 +135,26 @@ struct driver_d {
 
 /* Register devices and drivers.
  */
-int register_driver(struct driver_d *);
-int register_device(struct device_d *);
+int register_driver(struct driver *);
+int register_device(struct device *);
 
 /* manualy probe a device
  * the driver need to be specified
  */
-int device_probe(struct device_d *dev);
+int device_probe(struct device *dev);
 
 /* detect devices attached to this device (cards, disks,...) */
-int device_detect(struct device_d *dev);
+int device_detect(struct device *dev);
 int device_detect_by_name(const char *devname);
 void device_detect_all(void);
 
 /* Unregister a device. This function can fail, e.g. when the device
  * has children.
  */
-int unregister_device(struct device_d *);
+int unregister_device(struct device *);
 
-void free_device_res(struct device_d *dev);
-void free_device(struct device_d *dev);
+void free_device_res(struct device *dev);
+void free_device(struct device *dev);
 
 
 /* Iterate over a devices children
@@ -165,14 +172,14 @@ void free_device(struct device_d *dev);
  * 'last' to get the next device. This functions returns NULL if no
  * more devices are found.
  */
-struct device_d *get_device_by_type(ulong type, struct device_d *last);
-struct device_d *get_device_by_id(const char *id);
-struct device_d *get_device_by_name(const char *name);
+struct device *get_device_by_type(ulong type, struct device *last);
+struct device *get_device_by_id(const char *id);
+struct device *get_device_by_name(const char *name);
 
 /* Find a device by name and if not found look up by device tree path
  * or alias
  */
-struct device_d *find_device(const char *str);
+struct device *find_device(const char *str);
 
 /* Find a free device id from the given template. This is archieved by
  * appending a number to the template. Dynamically created devices should
@@ -182,60 +189,61 @@ int get_free_deviceid(const char *name_template);
 
 char *deviceid_from_spec_str(const char *str, char **endp);
 
-static inline const char *dev_id(const struct device_d *dev)
+static inline const char *dev_id(const struct device *dev)
 {
 	if (!dev)
 		return NULL;
 	return (dev->id != DEVICE_ID_SINGLE) ? dev->unique_name : dev->name;
 }
 
-static inline const char *dev_name(const struct device_d *dev)
+static inline const char *dev_name(const struct device *dev)
 {
 	if (!dev)
 		return NULL;
 	return dev_id(dev) ?: dev->name;
 }
 
-int dev_set_name(struct device_d *dev, const char *fmt, ...);
+int dev_set_name(struct device *dev, const char *fmt, ...);
 
 /*
  * get resource 'num' for a device
  */
-struct resource *dev_get_resource(struct device_d *dev, unsigned long type,
+struct resource *dev_get_resource(struct device *dev, unsigned long type,
 				  int num);
 /*
  * get resource base 'name' for a device
  */
-struct resource *dev_get_resource_by_name(struct device_d *dev,
+struct resource *dev_get_resource_by_name(struct device *dev,
 					  unsigned long type,
 					  const char *name);
 
 /*
  * exlusively request register base 'name' for a device
  */
-void __iomem *dev_request_mem_region_by_name(struct device_d *dev,
+void __iomem *dev_request_mem_region_by_name(struct device *dev,
 					     const char *name);
 
 /*
  * get register base 'num' for a device
  */
-void *dev_get_mem_region(struct device_d *dev, int num);
+void *dev_get_mem_region(struct device *dev, int num);
 
 /*
  * exlusively request register base 'num' for a device
  * deprecated, use dev_request_mem_resource instead
  */
-void __iomem *dev_request_mem_region(struct device_d *dev, int num);
+void __iomem *dev_request_mem_region(struct device *dev, int num);
 
 /*
  * exlusively request resource 'num' for a device
  */
-struct resource *dev_request_mem_resource(struct device_d *dev, int num);
+struct resource *dev_request_mem_resource(struct device *dev, int num);
 
 /*
  * exlusively request resource 'name' for a device
  */
-struct resource *dev_request_mem_resource_by_name(struct device_d *dev, const char *name);
+struct resource *dev_request_mem_resource_by_name(struct device *dev,
+						  const char *name);
 
 /*
  * exlusively request register base 'num' for a device
@@ -243,22 +251,24 @@ struct resource *dev_request_mem_resource_by_name(struct device_d *dev, const ch
  * only used on platform like at91 where the Ressource address collision with
  * PTR errno
  */
-void __iomem *dev_request_mem_region_err_null(struct device_d *dev, int num);
+void __iomem *dev_request_mem_region_err_null(struct device *dev, int num);
 
-struct device_d *device_alloc(const char *devname, int id);
+struct device *device_alloc(const char *devname, int id);
 
-int device_add_resources(struct device_d *dev, const struct resource *res, int num);
+int device_add_resources(struct device *dev, const struct resource *res,
+			 int num);
 
-int device_add_resource(struct device_d *dev, const char *resname,
-		resource_size_t start, resource_size_t size, unsigned int flags);
+int device_add_resource(struct device *dev, const char *resname,
+			resource_size_t start, resource_size_t size,
+			unsigned int flags);
 
-int device_add_data(struct device_d *dev, const void *data, size_t size);
+int device_add_data(struct device *dev, const void *data, size_t size);
 
 /*
  * register a generic device
  * with only one resource
  */
-struct device_d *add_generic_device(const char* devname, int id, const char *resname,
+struct device *add_generic_device(const char* devname, int id, const char *resname,
 		resource_size_t start, resource_size_t size, unsigned int flags,
 		void *pdata);
 
@@ -266,20 +276,20 @@ struct device_d *add_generic_device(const char* devname, int id, const char *res
  * register a generic device
  * with multiple resources
  */
-struct device_d *add_generic_device_res(const char* devname, int id,
+struct device *add_generic_device_res(const char* devname, int id,
 		struct resource *res, int nb, void *pdata);
 
 /*
  * register a memory device
  */
-static inline struct device_d *add_mem_device(const char *name, resource_size_t start,
+static inline struct device *add_mem_device(const char *name, resource_size_t start,
 		resource_size_t size, unsigned int flags)
 {
 	return add_generic_device("mem", DEVICE_ID_DYNAMIC, name, start, size,
 				  IORESOURCE_MEM | flags, NULL);
 }
 
-static inline struct device_d *add_cfi_flash_device(int id, resource_size_t start,
+static inline struct device *add_cfi_flash_device(int id, resource_size_t start,
 		resource_size_t size, unsigned int flags)
 {
 	return add_generic_device("cfi_flash", id, NULL, start, size,
@@ -287,7 +297,7 @@ static inline struct device_d *add_cfi_flash_device(int id, resource_size_t star
 }
 
 struct NS16550_plat;
-static inline struct device_d *add_ns16550_device(int id, resource_size_t start,
+static inline struct device *add_ns16550_device(int id, resource_size_t start,
 		resource_size_t size, int flags, struct NS16550_plat *pdata)
 {
 	return add_generic_device("ns16550_serial", id, NULL, start, size,
@@ -295,10 +305,10 @@ static inline struct device_d *add_ns16550_device(int id, resource_size_t start,
 }
 
 #ifdef CONFIG_DRIVER_NET_DM9K
-struct device_d *add_dm9000_device(int id, resource_size_t base,
+struct device *add_dm9000_device(int id, resource_size_t base,
 		resource_size_t data, int flags, void *pdata);
 #else
-static inline struct device_d *add_dm9000_device(int id, resource_size_t base,
+static inline struct device *add_dm9000_device(int id, resource_size_t base,
 		resource_size_t data, int flags, void *pdata)
 {
 	return NULL;
@@ -306,10 +316,10 @@ static inline struct device_d *add_dm9000_device(int id, resource_size_t base,
 #endif
 
 #ifdef CONFIG_USB_EHCI
-struct device_d *add_usb_ehci_device(int id, resource_size_t hccr,
+struct device *add_usb_ehci_device(int id, resource_size_t hccr,
 		resource_size_t hcor, void *pdata);
 #else
-static inline struct device_d *add_usb_ehci_device(int id, resource_size_t hccr,
+static inline struct device *add_usb_ehci_device(int id, resource_size_t hccr,
 		resource_size_t hcor, void *pdata)
 {
 	return NULL;
@@ -317,23 +327,23 @@ static inline struct device_d *add_usb_ehci_device(int id, resource_size_t hccr,
 #endif
 
 #ifdef CONFIG_DRIVER_NET_KS8851_MLL
-struct device_d *add_ks8851_device(int id, resource_size_t addr,
+struct device *add_ks8851_device(int id, resource_size_t addr,
 		resource_size_t addr_cmd, int flags, void *pdata);
 #else
-static inline struct device_d *add_ks8851_device(int id, resource_size_t addr,
+static inline struct device *add_ks8851_device(int id, resource_size_t addr,
 		resource_size_t addr_cmd, int flags, void *pdata)
 {
 	return NULL;
 }
 #endif
 
-static inline struct device_d *add_generic_usb_ehci_device(int id,
+static inline struct device *add_generic_usb_ehci_device(int id,
 		resource_size_t base, void *pdata)
 {
 	return add_usb_ehci_device(id, base + 0x100, base + 0x140, pdata);
 }
 
-static inline struct device_d *add_gpio_keys_device(int id, void *pdata)
+static inline struct device *add_gpio_keys_device(int id, void *pdata)
 {
 	return add_generic_device_res("gpio_keys", id, 0, 0, pdata);
 }
@@ -362,37 +372,37 @@ extern struct list_head active_device_list;
  * uses this to get the driver from the name the user specifies with the
  * mount command
  */
-struct driver_d *get_driver_by_name(const char *name);
+struct driver *get_driver_by_name(const char *name);
 
 struct cdev;
 
 /* These are used by drivers which work with direct memory accesses */
 ssize_t mem_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags);
 ssize_t mem_write(struct cdev *cdev, const void *buf, size_t count, loff_t offset, ulong flags);
-ssize_t mem_copy(struct device_d *dev, void *dst, const void *src,
+ssize_t mem_copy(struct device *dev, void *dst, const void *src,
 		 resource_size_t count, resource_size_t offset,
 		 unsigned long flags);
 
 int generic_memmap_ro(struct cdev *dev, void **map, int flags);
 int generic_memmap_rw(struct cdev *dev, void **map, int flags);
 
-static inline int dev_open_default(struct device_d *dev, struct filep *f)
+static inline int dev_open_default(struct device *dev, struct filep *f)
 {
 	return 0;
 }
 
-static inline int dev_close_default(struct device_d *dev, struct filep *f)
+static inline int dev_close_default(struct device *dev, struct filep *f)
 {
 	return 0;
 }
 
 struct bus_type {
 	char *name;
-	int (*match)(struct device_d *dev, struct driver_d *drv);
-	int (*probe)(struct device_d *dev);
-	void (*remove)(struct device_d *dev);
+	int (*match)(struct device *dev, struct driver *drv);
+	int (*probe)(struct device *dev);
+	void (*remove)(struct device *dev);
 
-	struct device_d *dev;
+	struct device *dev;
 
 	struct list_head list;
 	struct list_head device_list;
@@ -400,7 +410,7 @@ struct bus_type {
 };
 
 int bus_register(struct bus_type *bus);
-int device_match(struct device_d *dev, struct driver_d *drv);
+int device_match(struct device *dev, struct driver *drv);
 
 extern struct list_head bus_list;
 
@@ -418,7 +428,7 @@ extern struct list_head bus_list;
 
 extern struct bus_type platform_bus;
 
-int platform_driver_register(struct driver_d *drv);
+int platform_driver_register(struct driver *drv);
 
 /* register_driver_macro() - Helper macro for drivers that don't do
  * anything special in module registration. This eliminates a lot of
@@ -448,7 +458,7 @@ int platform_driver_register(struct driver_d *drv);
 #define late_platform_driver(drv)	\
 	register_driver_macro(late,platform,drv)
 
-int platform_device_register(struct device_d *new_device);
+int platform_device_register(struct device *new_device);
 
 struct cdev_operations {
 	/*! Called in response of reading from this device. Required */
@@ -474,7 +484,7 @@ struct cdev_operations {
 struct cdev {
 	const struct cdev_operations *ops;
 	void *priv;
-	struct device_d *dev;
+	struct device *dev;
 	struct device_node *device_node;
 	struct list_head list;
 	struct list_head devices_list;
@@ -500,7 +510,7 @@ int devfs_create(struct cdev *);
 int devfs_create_link(struct cdev *, const char *name);
 int devfs_remove(struct cdev *);
 int cdev_find_free_index(const char *);
-struct cdev *device_find_partition(struct device_d *dev, const char *name);
+struct cdev *device_find_partition(struct device *dev, const char *name);
 struct cdev *cdev_by_name(const char *filename);
 struct cdev *lcdev_by_name(const char *filename);
 struct cdev *cdev_readlink(struct cdev *cdev);
@@ -597,7 +607,7 @@ int devfs_create_partitions(const char *devname,
  * DEPRECATED: use device_get_match_data instead, which avoids
  * common pitfalls due to explicit pointer casts
  */
-int dev_get_drvdata(struct device_d *dev, const void **data);
+int dev_get_drvdata(struct device *dev, const void **data);
 
 /**
  * device_get_match_data - get driver match data associated with device
@@ -605,24 +615,24 @@ int dev_get_drvdata(struct device_d *dev, const void **data);
  *
  * Returns match data on success and NULL otherwise
  */
-const void *device_get_match_data(struct device_d *dev);
+const void *device_get_match_data(struct device *dev);
 
-int device_match_of_modalias(struct device_d *dev, struct driver_d *drv);
+int device_match_of_modalias(struct device *dev, struct driver *drv);
 
-struct device_d *device_find_child(struct device_d *parent, void *data,
-				 int (*match)(struct device_d *dev, void *data));
+struct device *device_find_child(struct device *parent, void *data,
+				 int (*match)(struct device *dev, void *data));
 
-static inline struct device_node *dev_of_node(struct device_d *dev)
+static inline struct device_node *dev_of_node(struct device *dev)
 {
-	return IS_ENABLED(CONFIG_OFDEVICE) ? dev->device_node : NULL;
+	return IS_ENABLED(CONFIG_OFDEVICE) ? dev->of_node : NULL;
 }
 
-static inline void *dev_get_priv(struct device_d *dev)
+static inline void *dev_get_priv(struct device *dev)
 {
 	return dev->priv;
 }
 
-static inline bool dev_is_probed(struct device_d *dev)
+static inline bool dev_is_probed(struct device *dev)
 {
 	return dev->driver ? true : false;
 }

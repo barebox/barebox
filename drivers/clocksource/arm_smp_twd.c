@@ -40,7 +40,7 @@ static struct clocksource smp_twd_clksrc = {
 
 #define SMP_TWD_MAX_FREQ (25 *1000 * 1000)
 
-static int smp_twd_probe(struct device_d *dev)
+static int smp_twd_probe(struct device *dev)
 {
 	struct resource *iores;
 	u32 tick_rate;
@@ -99,7 +99,7 @@ static __maybe_unused struct of_device_id smp_twd_compatible[] = {
 	}
 };
 
-static struct driver_d smp_twd_driver = {
+static struct driver smp_twd_driver = {
 	.name = "smp_twd",
 	.probe = smp_twd_probe,
 	.of_compatible = DRV_OF_COMPAT(smp_twd_compatible),

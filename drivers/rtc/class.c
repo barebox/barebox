@@ -51,7 +51,7 @@ EXPORT_SYMBOL(rtc_set_time);
 
 int rtc_register(struct rtc_device *rtcdev)
 {
-	struct device_d *dev = &rtcdev->class_dev;
+	struct device *dev = &rtcdev->class_dev;
 
 	if (!rtcdev->ops)
 		return -EINVAL;

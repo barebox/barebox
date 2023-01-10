@@ -26,7 +26,7 @@
 
 struct dwmci_host {
 	struct mci_host mci;
-	struct device_d *dev;
+	struct device *dev;
 	struct clk *clk_biu, *clk_ciu;
 	void *ioaddr;
 	unsigned int fifo_size_bytes;
@@ -496,7 +496,7 @@ static int dwmci_card_present(struct mci_host *mci)
 	return 1;
 }
 
-static int dwmci_init(struct mci_host *mci, struct device_d *dev)
+static int dwmci_init(struct mci_host *mci, struct device *dev)
 {
 	struct dwmci_host *host = to_dwmci_host(mci);
 	uint32_t fifo_size;
@@ -528,8 +528,8 @@ static int dwmci_init(struct mci_host *mci, struct device_d *dev)
 	/*
 	 * If fifo-depth property is set, use this value
 	 */
-	if (!of_property_read_u32(host->mci.hw_dev->device_node,
-		    "fifo-depth", &fifo_size)) {
+	if (!of_property_read_u32(host->mci.hw_dev->of_node,
+				  "fifo-depth", &fifo_size)) {
 		host->fifo_size_bytes = fifo_size;
 		dev_dbg(host->mci.hw_dev, "Using fifo-depth=%u\n",
 		    host->fifo_size_bytes);
@@ -547,7 +547,7 @@ static int dwmci_init(struct mci_host *mci, struct device_d *dev)
 	return 0;
 }
 
-static int dw_mmc_probe(struct device_d *dev)
+static int dw_mmc_probe(struct device *dev)
 {
 	struct reset_control	*rst;
 	struct resource *iores;
@@ -603,22 +603,23 @@ static int dw_mmc_probe(struct device_d *dev)
 		host->ciu_div = pdata->ciu_div;
 		host->mci.host_caps &= ~MMC_CAP_BIT_DATA_MASK;
 		host->mci.host_caps |= pdata->bus_width_caps;
-	} else if (dev->device_node) {
-		of_property_read_u32(dev->device_node, "dw-mshc-ciu-div",
-				&host->ciu_div);
+	} else if (dev->of_node) {
+		of_property_read_u32(dev->of_node, "dw-mshc-ciu-div",
+				     &host->ciu_div);
 	}
 
 	/* divider is 0 based in pdata and 1 based in our private struct */
 	host->ciu_div++;
 
-	if (of_device_is_compatible(dev->device_node,
-	    "rockchip,rk2928-dw-mshc"))
+	if (of_device_is_compatible(dev->of_node,
+				    "rockchip,rk2928-dw-mshc"))
 		host->pwren_value = 0;
 	else
 		host->pwren_value = 1;
 
-	if (of_device_is_compatible(dev->device_node, "starfive,jh7100-dw-mshc"))
-		of_property_read_u32(dev->device_node, "clock-frequency", &host->clkrate);
+	if (of_device_is_compatible(dev->of_node, "starfive,jh7100-dw-mshc"))
+		of_property_read_u32(dev->of_node, "clock-frequency",
+				     &host->clkrate);
 	if (!host->clkrate)
 		host->clkrate = clk_get_rate(host->clk_ciu);
 
@@ -648,7 +649,7 @@ static __maybe_unused struct of_device_id dw_mmc_compatible[] = {
 	}
 };
 
-static struct driver_d dw_mmc_driver = {
+static struct driver dw_mmc_driver = {
 	.name  = "dw_mmc",
 	.probe = dw_mmc_probe,
 	.of_compatible = DRV_OF_COMPAT(dw_mmc_compatible),

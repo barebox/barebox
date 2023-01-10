@@ -61,7 +61,7 @@ static struct clocksource cs = {
 	.priority = 100,
 };
 
-static int stm32_timer_probe(struct device_d *dev)
+static int stm32_timer_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct clk *clk;
@@ -114,7 +114,7 @@ static struct of_device_id stm32_timer_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d stm32_timer_driver = {
+static struct driver stm32_timer_driver = {
 	.name = "stm32-timer",
 	.probe = stm32_timer_probe,
 	.of_compatible = stm32_timer_dt_ids,

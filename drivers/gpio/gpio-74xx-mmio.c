@@ -120,7 +120,7 @@ static int mmio_74xx_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
 	return -ENOTSUPP;
 }
 
-static int mmio_74xx_gpio_probe(struct device_d *dev)
+static int mmio_74xx_gpio_probe(struct device *dev)
 {
 	struct mmio_74xx_gpio_priv *priv;
 	void __iomem *dat;
@@ -152,7 +152,7 @@ static int mmio_74xx_gpio_probe(struct device_d *dev)
 	return gpiochip_add(gc);
 }
 
-static struct driver_d mmio_74xx_gpio_driver = {
+static struct driver mmio_74xx_gpio_driver = {
 	.name = "74xx-mmio-gpio",
 	.of_compatible	= DRV_OF_COMPAT(mmio_74xx_gpio_ids),
 	.probe = mmio_74xx_gpio_probe,

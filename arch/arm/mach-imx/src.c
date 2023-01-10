@@ -10,7 +10,7 @@
 
 #define SCR_WARM_RESET_ENABLE	BIT(0)
 
-static int imx_src_reset_probe(struct device_d *dev)
+static int imx_src_reset_probe(struct device *dev)
 {
 	struct resource *res;
 	u32 val;
@@ -38,7 +38,7 @@ static const struct of_device_id imx_src_dt_ids[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d imx_src_reset_driver = {
+static struct driver imx_src_reset_driver = {
 	.name = "imx-src",
 	.probe	= imx_src_reset_probe,
 	.of_compatible	= DRV_OF_COMPAT(imx_src_dt_ids),

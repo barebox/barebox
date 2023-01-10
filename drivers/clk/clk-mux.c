@@ -204,21 +204,23 @@ struct clk *clk_mux(const char *name, unsigned clk_flags, void __iomem *reg,
 	return m;
 }
 
-struct clk *clk_register_mux(struct device_d *dev, const char *name,
-		const char * const *parent_names, u8 num_parents,
-		unsigned long flags,
-		void __iomem *reg, u8 shift, u8 width,
-		u8 clk_mux_flags, spinlock_t *lock)
+struct clk *clk_register_mux(struct device *dev, const char *name,
+			     const char * const *parent_names, u8 num_parents,
+			     unsigned long flags,
+			     void __iomem *reg, u8 shift, u8 width,
+			     u8 clk_mux_flags, spinlock_t *lock)
 {
 	return clk_mux(name, flags, reg, shift, width, parent_names,
 		       num_parents, clk_mux_flags);
 }
 
-struct clk_hw *__clk_hw_register_mux(struct device_d *dev,
-		const char *name, u8 num_parents,
-		const char * const *parent_names,
-		unsigned long flags, void __iomem *reg, u8 shift, u32 mask,
-		u8 clk_mux_flags, u32 *table, spinlock_t *lock)
+struct clk_hw *__clk_hw_register_mux(struct device *dev,
+				     const char *name, u8 num_parents,
+				     const char * const *parent_names,
+				     unsigned long flags, void __iomem *reg,
+				     u8 shift, u32 mask,
+				     u8 clk_mux_flags, u32 *table,
+				     spinlock_t *lock)
 {
 	struct clk_mux *mux;
 	struct clk_hw *hw;

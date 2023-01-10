@@ -134,7 +134,7 @@ int pr_print(int level, const char *fmt, ...)
 	return i;
 }
 
-int dev_printf(int level, const struct device_d *dev, const char *format, ...)
+int dev_printf(int level, const struct device *dev, const char *format, ...)
 {
 	va_list args;
 	int ret = 0;
@@ -284,7 +284,7 @@ int vprintf(const char *fmt, va_list args)
 }
 EXPORT_SYMBOL(vprintf);
 
-struct console_device *console_get_by_dev(struct device_d *dev)
+struct console_device *console_get_by_dev(struct device *dev)
 {
 	struct console_device *cdev;
 
@@ -336,7 +336,7 @@ EXPORT_SYMBOL(console_get_first_active);
 struct console_device *of_console_get_by_alias(const char *alias)
 {
 	struct device_node *node;
-	struct device_d *dev;
+	struct device *dev;
 
 	node = of_find_node_by_alias(NULL, alias);
 	if (!node)

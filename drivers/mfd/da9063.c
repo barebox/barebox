@@ -22,7 +22,7 @@ struct da9063 {
 	struct i2c_client	*client;
 	/* dummy client for accessing bank #1 */
 	struct i2c_client	*client1;
-	struct device_d		*dev;
+	struct device		*dev;
 	unsigned int		timeout;
 	uint64_t		last_ping;
 };
@@ -253,7 +253,7 @@ static int da9063_watchdog_ping(struct da9063 *priv)
 static int da9063_watchdog_set_timeout(struct watchdog *wd, unsigned timeout)
 {
 	struct da9063 *priv = container_of(wd, struct da9063, wd);
-	struct device_d *dev = priv->dev;
+	struct device *dev = priv->dev;
 	unsigned int scale = 0;
 	int ret;
 
@@ -356,7 +356,7 @@ static struct da906x_device_data const	da9062_device_data = {
 	.init	= da9062_device_init,
 };
 
-static int da9063_probe(struct device_d *dev)
+static int da9063_probe(struct device *dev)
 {
 	struct da9063 *priv = NULL;
 	struct da906x_device_data const *dev_data;
@@ -383,7 +383,7 @@ static int da9063_probe(struct device_d *dev)
 
 	da9063_detect_reset_source(priv);
 
-	priv->restart.of_node = dev->device_node;
+	priv->restart.of_node = dev->of_node;
 	priv->restart.name = "da9063";
 	priv->restart.restart = &da9063_restart;
 
@@ -399,8 +399,8 @@ static int da9063_probe(struct device_d *dev)
 			goto on_error;
 	}
 
-	if (IS_ENABLED(CONFIG_OFDEVICE) && dev->device_node)
-		return of_platform_populate(dev->device_node, NULL, dev);
+	if (IS_ENABLED(CONFIG_OFDEVICE) && dev->of_node)
+		return of_platform_populate(dev->of_node, NULL, dev);
 
 	return 0;
 
@@ -427,7 +427,7 @@ static struct of_device_id const	da906x_dt_ids[] = {
 	}
 };
 
-static struct driver_d da9063_driver = {
+static struct driver da9063_driver = {
 	.name = "da9063",
 	.probe = da9063_probe,
 	.id_table = da9063_id,

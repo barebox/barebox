@@ -17,7 +17,7 @@
 
 struct efi_pci_priv {
 	struct efi_pci_root_bridge_io_protocol *protocol;
-	struct device_d *dev;
+	struct device *dev;
 	struct pci_controller pci;
 	struct resource mem;
 	struct resource mem_pref;
@@ -34,7 +34,7 @@ struct pci_child_id {
 
 struct pci_child {
 	struct efi_pci_io_protocol *protocol;
-	struct device_d *dev;
+	struct device *dev;
 	struct list_head list;
 	struct pci_child_id id;
 };
@@ -268,7 +268,7 @@ DECLARE_PCI_FIXUP_EARLY(PCI_ANY_ID, PCI_ANY_ID, efi_pci_fixup_dev_parent);
 
 static int efi_pci_probe(struct efi_device *efidev)
 {
-	struct device_d *child;
+	struct device *child;
 	struct efi_pci_priv *priv;
 	efi_status_t efiret;
 	void *resources;

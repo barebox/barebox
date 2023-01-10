@@ -36,7 +36,7 @@
 #define OCOTP_WORD_OFFSET		0x20
 
 struct ocotp_priv {
-	struct device_d dev;
+	struct device dev;
 	struct cdev cdev;
 	void __iomem *base;
 	unsigned int write_enable;
@@ -169,7 +169,7 @@ static struct cdev_operations mxs_ocotp_ops = {
 	.read	= mxs_ocotp_cdev_read,
 };
 
-static int mxs_ocotp_probe(struct device_d *dev)
+static int mxs_ocotp_probe(struct device *dev)
 {
 	struct resource *iores;
 	int err;
@@ -216,7 +216,7 @@ static __maybe_unused struct of_device_id mxs_ocotp_compatible[] = {
 	}
 };
 
-static struct driver_d mxs_ocotp_driver = {
+static struct driver mxs_ocotp_driver = {
 	.name	= DRIVERNAME,
 	.probe	= mxs_ocotp_probe,
 	.of_compatible = DRV_OF_COMPAT(mxs_ocotp_compatible),

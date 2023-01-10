@@ -149,7 +149,8 @@ static int bochs_hw_read_version(struct bochs *bochs)
 	return ver & 0xF;
 }
 
-int bochs_hw_probe(struct device_d *dev, void __iomem *fb_map, void __iomem *mmio)
+int bochs_hw_probe(struct device *dev, void __iomem *fb_map,
+		   void __iomem *mmio)
 {
 	struct bochs *bochs;
 	struct fb_info *fb;

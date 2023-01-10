@@ -308,7 +308,7 @@ struct musb {
 
 	struct dma_controller	*dma_controller;
 
-	struct device_d		*controller;
+	struct device		*controller;
 	void __iomem		*ctrl_base;
 	void __iomem		*mregs;
 

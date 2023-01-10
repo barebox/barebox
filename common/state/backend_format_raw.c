@@ -32,7 +32,7 @@ struct state_backend_format_raw {
 	unsigned int digest_length;
 
 	/* For outputs */
-	struct device_d *dev;
+	struct device *dev;
 
 	char *secret_name;
 	int needs_secret;
@@ -299,7 +299,7 @@ static int backend_format_raw_init_digest(struct state_backend_format_raw *raw,
 
 int backend_format_raw_create(struct state_backend_format **format,
 			      struct device_node *node, const char *secret_name,
-			      struct device_d *dev)
+			      struct device *dev)
 {
 	struct state_backend_format_raw *raw;
 	int ret;

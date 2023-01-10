@@ -33,7 +33,7 @@ static int devrandom_rnd_init(struct hwrng *hwrng)
 	return 0;
 }
 
-static int devrandom_rnd_probe(struct device_d *dev)
+static int devrandom_rnd_probe(struct device *dev)
 {
 	struct devrandom_rnd *rnd;
 	int ret;
@@ -56,7 +56,7 @@ static int devrandom_rnd_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d devrandom_rnd_driver = {
+static struct driver devrandom_rnd_driver = {
 	.name	= "devrandom",
 	.probe	= devrandom_rnd_probe,
 };

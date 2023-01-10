@@ -57,7 +57,7 @@ static const u8 LM75_REG_TEMP[3] = {
 /* Each client has this additional data */
 struct lm75_data {
 	struct i2c_client	*client;
-	struct device_d		dev;
+	struct device		dev;
 	u8			resolution;	/* In bits, between 9 and 12 */
 	struct aiochannel	aiochan;
 	struct aiodevice	aiodev;
@@ -102,7 +102,7 @@ static int lm75_get_temp(struct aiochannel *chan, int *val)
 	return 0;
 }
 
-static int lm75_probe(struct device_d *dev)
+static int lm75_probe(struct device *dev)
 {
 	struct lm75_data *data;
 	int status;
@@ -237,7 +237,7 @@ static const struct platform_device_id lm75_ids[] = {
 	{ /* LIST END */ }
 };
 
-static struct driver_d lm75_driver = {
+static struct driver lm75_driver = {
 	.name  = "lm75",
 	.probe = lm75_probe,
 	.id_table = lm75_ids,

@@ -35,10 +35,10 @@ struct simplefb {
 	struct fb_videomode mode;
 };
 
-static int simplefb_parse_dt(struct device_d *dev,
-			   struct simplefb_params *params)
+static int simplefb_parse_dt(struct device *dev,
+			     struct simplefb_params *params)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	int ret;
 	const char *format;
 	int i;
@@ -81,7 +81,7 @@ static int simplefb_parse_dt(struct device_d *dev,
 	return 0;
 }
 
-static int simplefb_probe(struct device_d *dev)
+static int simplefb_probe(struct device *dev)
 {
 	int ret;
 	struct simplefb_params params;
@@ -90,7 +90,7 @@ static int simplefb_probe(struct device_d *dev)
 	struct resource *mem;
 
 	ret = -ENODEV;
-	if (dev->device_node)
+	if (dev->of_node)
 		ret = simplefb_parse_dt(dev, &params);
 
 	if (ret)
@@ -139,7 +139,7 @@ static const struct of_device_id simplefb_of_match[] = {
 	{ },
 };
 
-static struct driver_d simplefb_driver = {
+static struct driver simplefb_driver = {
 	.name = "simple-framebuffer",
 	.of_compatible = simplefb_of_match,
 	.probe = simplefb_probe,

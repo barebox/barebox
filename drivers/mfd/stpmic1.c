@@ -18,7 +18,7 @@ static const struct regmap_config stpmic1_regmap_i2c_config = {
 	.max_register = 0xB3,
 };
 
-static int __init stpmic1_probe(struct device_d *dev)
+static int __init stpmic1_probe(struct device *dev)
 {
 	struct regmap *regmap;
 	u32 reg;
@@ -39,7 +39,7 @@ static int __init stpmic1_probe(struct device_d *dev)
 	}
 	dev_info(dev, "PMIC Chip Version: 0x%x\n", reg);
 
-	return of_platform_populate(dev->device_node, NULL, dev);
+	return of_platform_populate(dev->of_node, NULL, dev);
 }
 
 static __maybe_unused struct of_device_id stpmic1_dt_ids[] = {
@@ -47,7 +47,7 @@ static __maybe_unused struct of_device_id stpmic1_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d stpmic1_i2c_driver = {
+static struct driver stpmic1_i2c_driver = {
 	.name		= "stpmic1-i2c",
 	.probe		= stpmic1_probe,
 	.of_compatible	= DRV_OF_COMPAT(stpmic1_dt_ids),

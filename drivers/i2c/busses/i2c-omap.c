@@ -1059,7 +1059,7 @@ static struct i2c_bus_recovery_info omap_i2c_bus_recovery_info = {
 };
 
 static int __init
-i2c_omap_probe(struct device_d *pdev)
+i2c_omap_probe(struct device *pdev)
 {
 	struct resource *iores;
 	struct omap_i2c_struct	*i2c_omap;
@@ -1091,8 +1091,8 @@ i2c_omap_probe(struct device_d *pdev)
 	if (pdev->platform_data != NULL) {
 		speed = *(u32 *)pdev->platform_data;
 	} else {
-		of_property_read_u32(pdev->device_node, "clock-frequency",
-			&speed);
+		of_property_read_u32(pdev->of_node, "clock-frequency",
+				     &speed);
 		/* convert DT freq value in Hz into kHz for speed */
 		speed /= 1000;
 	}
@@ -1170,7 +1170,7 @@ i2c_omap_probe(struct device_d *pdev)
 	i2c_omap->adapter.master_xfer = omap_i2c_xfer;
 	i2c_omap->adapter.nr = pdev->id;
 	i2c_omap->adapter.dev.parent = pdev;
-	i2c_omap->adapter.dev.device_node = pdev->device_node;
+	i2c_omap->adapter.dev.of_node = pdev->of_node;
 	i2c_omap->adapter.bus_recovery_info = &omap_i2c_bus_recovery_info;
 
 	/* i2c device drivers may be active on return from add_adapter() */
@@ -1220,7 +1220,7 @@ static __maybe_unused struct of_device_id omap_i2c_dt_ids[] = {
 	}
 };
 
-static struct driver_d omap_i2c_driver = {
+static struct driver omap_i2c_driver = {
 	.probe		= i2c_omap_probe,
 	.name		= DRIVER_NAME,
 	.id_table	= omap_i2c_ids,

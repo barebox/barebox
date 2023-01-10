@@ -54,8 +54,8 @@ static inline struct squashfs_page *squashfs_page(struct page *page)
 
 char *squashfs_devread(struct squashfs_sb_info *fs, int byte_offset,
 		int byte_len);
-extern int squashfs_mount(struct fs_device_d *fsdev,
-		int silent);
+extern int squashfs_mount(struct fs_device *fsdev,
+			  int silent);
 extern void squashfs_put_super(struct super_block *sb);
 
 /* block.c */

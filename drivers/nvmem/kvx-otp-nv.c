@@ -58,7 +58,7 @@ static const struct of_device_id kvx_otp_nv_match[] = {
 	{ /* sentinel */},
 };
 
-static int kvx_otp_nv_probe(struct device_d *dev)
+static int kvx_otp_nv_probe(struct device *dev)
 {
 	struct resource *res;
 	struct nvmem_device *nvmem;
@@ -90,7 +90,7 @@ static int kvx_otp_nv_probe(struct device_d *dev)
 	return PTR_ERR_OR_ZERO(nvmem);
 }
 
-static struct driver_d kvx_otp_nv_driver = {
+static struct driver kvx_otp_nv_driver = {
 	.name	= "kvx-otp-nv",
 	.probe	= kvx_otp_nv_probe,
 	.of_compatible = DRV_OF_COMPAT(kvx_otp_nv_match),

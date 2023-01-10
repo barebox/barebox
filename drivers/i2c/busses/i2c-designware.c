@@ -245,7 +245,7 @@ static void i2c_dw_setup_timings(struct dw_i2c_dev *dw)
 		u32 ht;
 		int ret;
 
-		ret = of_property_read_u32(dw->adapter.dev.device_node,
+		ret = of_property_read_u32(dw->adapter.dev.of_node,
 					   "i2c-sda-hold-time-ns", &ht);
 		if (ret) {
 			/* Keep previous hold time setting if no one set it */
@@ -504,7 +504,7 @@ static int i2c_dw_xfer(struct i2c_adapter *adapter,
 }
 
 
-static int i2c_dw_probe(struct device_d *pdev)
+static int i2c_dw_probe(struct device *pdev)
 {
 	struct resource *iores;
 	struct dw_i2c_dev *dw;
@@ -527,7 +527,7 @@ static int i2c_dw_probe(struct device_d *pdev)
 	dw->adapter.master_xfer = i2c_dw_xfer;
 	dw->adapter.nr = pdev->id;
 	dw->adapter.dev.parent = pdev;
-	dw->adapter.dev.device_node = pdev->device_node;
+	dw->adapter.dev.of_node = pdev->of_node;
 
 	iores = dev_request_mem_resource(pdev, 0);
 	if (IS_ERR(iores)) {
@@ -600,7 +600,7 @@ static __maybe_unused struct of_device_id i2c_dw_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d i2c_dw_driver = {
+static struct driver i2c_dw_driver = {
 	.probe = i2c_dw_probe,
 	.name = "i2c-designware",
 	.of_compatible = DRV_OF_COMPAT(i2c_dw_dt_ids),

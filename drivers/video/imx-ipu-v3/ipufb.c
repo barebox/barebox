@@ -45,7 +45,7 @@ struct ipufb_info {
 	struct fb_videomode	*mode;
 
 	struct fb_info		info;
-	struct device_d		*dev;
+	struct device		*dev;
 
 	/* plane[0] is the full plane, plane[1] is the partial plane */
 	struct ipu_plane	*plane[2];
@@ -269,7 +269,7 @@ err_out:
 	return ret;
 }
 
-static int ipufb_probe(struct device_d *dev)
+static int ipufb_probe(struct device *dev)
 {
 	struct ipufb_info *fbi;
 	struct fb_info *info;
@@ -282,7 +282,7 @@ static int ipufb_probe(struct device_d *dev)
 	fbi = xzalloc(sizeof(*fbi));
 	info = &fbi->info;
 
-	ipuid = of_alias_get_id(dev->parent->device_node, "ipu");
+	ipuid = of_alias_get_id(dev->parent->of_node, "ipu");
 	fbi->name = basprintf("ipu%d-di%d", ipuid + 1, pdata->di);
 	fbi->id = ipuid * 2 + pdata->di;
 	fbi->dino = pdata->di;
@@ -305,11 +305,12 @@ static int ipufb_probe(struct device_d *dev)
 	if (ret)
 		return ret;
 
-	node = of_graph_get_port_by_id(dev->parent->device_node, 2 + pdata->di);
+	node = of_graph_get_port_by_id(dev->parent->of_node, 2 + pdata->di);
 	if (node && of_graph_port_is_available(node)) {
-		dev_dbg(fbi->dev, "register vpl for %s\n", dev->parent->device_node->full_name);
+		dev_dbg(fbi->dev, "register vpl for %s\n",
+			dev->parent->of_node->full_name);
 
-		fbi->vpl.node = dev->parent->device_node;
+		fbi->vpl.node = dev->parent->of_node;
 		ret = vpl_register(&fbi->vpl);
 		if (ret)
 			return ret;
@@ -341,11 +342,11 @@ static int ipufb_probe(struct device_d *dev)
 	return ret;
 }
 
-static void ipufb_remove(struct device_d *dev)
+static void ipufb_remove(struct device *dev)
 {
 }
 
-static struct driver_d ipufb_driver = {
+static struct driver ipufb_driver = {
 	.name		= "imx-ipuv3-crtc",
 	.probe		= ipufb_probe,
 	.remove		= ipufb_remove,

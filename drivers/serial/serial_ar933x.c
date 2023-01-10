@@ -141,7 +141,7 @@ static int ar933x_serial_getc(struct console_device *cdev)
 	return rdata & AR933X_UART_DATA_TX_RX_MASK;
 }
 
-static int ar933x_serial_probe(struct device_d *dev)
+static int ar933x_serial_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct console_device *cdev;
@@ -189,7 +189,7 @@ static struct of_device_id ar933x_serial_dt_ids[] = {
 	},
 };
 
-static struct driver_d ar933x_serial_driver = {
+static struct driver ar933x_serial_driver = {
 	.name  = "ar933x_serial",
 	.probe = ar933x_serial_probe,
 	.of_compatible = DRV_OF_COMPAT(ar933x_serial_dt_ids),

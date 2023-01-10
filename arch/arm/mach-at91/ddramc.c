@@ -34,7 +34,7 @@ void __noreturn sama5d3_barebox_entry(unsigned int r4, void *boarddata)
 			  boarddata);
 }
 
-static int sama5_ddr_probe(struct device_d *dev)
+static int sama5_ddr_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *base;
@@ -52,7 +52,7 @@ static struct of_device_id sama5_ddr_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d sama5_ddr_driver = {
+static struct driver sama5_ddr_driver = {
 	.name   = "sama5-ddramc",
 	.probe  = sama5_ddr_probe,
 	.of_compatible = sama5_ddr_dt_ids,

@@ -197,7 +197,7 @@ static int imx_clocksource_clock_change(struct notifier_block *nb,
         return 0;
 }
 
-static int imx_serial_probe(struct device_d *dev)
+static int imx_serial_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct console_device *cdev;
@@ -236,19 +236,19 @@ static int imx_serial_probe(struct device_d *dev)
 	cdev->linux_console_name = "ttymxc";
 	cdev->linux_earlycon_name = "ec_imx6q";
 	cdev->phys_base = priv->regs;
-	if (dev->device_node) {
-		devname = of_alias_get(dev->device_node);
+	if (dev->of_node) {
+		devname = of_alias_get(dev->of_node);
 		if (devname) {
 			cdev->devname = xstrdup(devname);
 			cdev->devid = DEVICE_ID_SINGLE;
 		}
 	}
 
-	if (of_property_read_bool(dev->device_node, "fsl,dte-mode"))
+	if (of_property_read_bool(dev->of_node, "fsl,dte-mode"))
 		priv->dte_mode = 1;
 
-	if (of_property_read_bool(dev->device_node, "linux,rs485-enabled-at-boot-time") &&
-	    !of_property_read_bool(dev->device_node, "rs485-rts-active-low"))
+	if (of_property_read_bool(dev->of_node, "linux,rs485-enabled-at-boot-time") &&
+	    !of_property_read_bool(dev->of_node, "rs485-rts-active-low"))
 		priv->rs485_mode = 1;
 
 	imx_serial_init_port(cdev);
@@ -312,7 +312,7 @@ static struct platform_device_id imx_serial_ids[] = {
 	},
 };
 
-static struct driver_d imx_serial_driver = {
+static struct driver imx_serial_driver = {
 	.name   = "imx_serial",
 	.probe  = imx_serial_probe,
 	.of_compatible = DRV_OF_COMPAT(imx_serial_dt_ids),

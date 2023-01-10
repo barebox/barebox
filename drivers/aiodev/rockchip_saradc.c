@@ -85,7 +85,7 @@ static int rockchip_saradc_read(struct aiochannel *chan, int *val)
 	return 0;
 }
 
-static int rockchip_saradc_probe(struct device_d *dev)
+static int rockchip_saradc_probe(struct device *dev)
 {
 	struct rockchip_saradc_data *data;
 	int i, ret;
@@ -189,7 +189,7 @@ static const struct of_device_id of_rockchip_saradc_match[] = {
 	{ /* end */ }
 };
 
-static struct driver_d rockchip_saradc_driver = {
+static struct driver rockchip_saradc_driver = {
 	.name = "rockchip_saradc",
 	.probe = rockchip_saradc_probe,
 	.of_compatible = DRV_OF_COMPAT(of_rockchip_saradc_match),

@@ -106,7 +106,7 @@ static struct rtc_class_ops jz4740_rtc_ops = {
 	.set_time	= jz4740_rtc_set_time,
 };
 
-static int jz4740_rtc_probe(struct device_d *dev)
+static int jz4740_rtc_probe(struct device *dev)
 {
 	struct resource *iores;
 	int ret;
@@ -154,7 +154,7 @@ static __maybe_unused struct of_device_id jz4740_rtc_dt_ids[] = {
 	}
 };
 
-static struct driver_d jz4740_rtc_driver = {
+static struct driver jz4740_rtc_driver = {
 	.name  = "jz4740-rtc",
 	.probe	 = jz4740_rtc_probe,
 	.of_compatible = DRV_OF_COMPAT(jz4740_rtc_dt_ids),

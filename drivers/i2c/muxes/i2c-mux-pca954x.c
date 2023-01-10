@@ -180,7 +180,7 @@ static int pca954x_deselect_chan(struct i2c_adapter *adap,
 /*
  * I2C init/probing/exit functions
  */
-static int pca954x_probe(struct device_d *dev)
+static int pca954x_probe(struct device *dev)
 {
 	struct i2c_client *client = to_i2c_client(dev);
 	struct i2c_adapter *adap = to_i2c_adapter(client->dev.parent);
@@ -199,7 +199,7 @@ static int pca954x_probe(struct device_d *dev)
 
 	i2c_set_clientdata(client, data);
 
-	gpio = of_get_named_gpio(dev->device_node, "reset-gpios", 0);
+	gpio = of_get_named_gpio(dev->of_node, "reset-gpios", 0);
 	if (gpio_is_valid(gpio))
 		gpio_direction_output(gpio, 1);
 
@@ -215,7 +215,7 @@ static int pca954x_probe(struct device_d *dev)
 	if (ret)
 		goto exit_free;
 
-	idle_disconnect = of_property_read_bool(dev->device_node,
+	idle_disconnect = of_property_read_bool(dev->of_node,
 						"i2c-mux-idle-disconnect");
 
 	data->last_chan = 0;		   /* force the first selection */
@@ -255,7 +255,7 @@ err:
 	return ret;
 }
 
-static struct driver_d pca954x_driver = {
+static struct driver pca954x_driver = {
 	.name	= "pca954x",
 	.probe		= pca954x_probe,
 	.id_table	= pca954x_id,

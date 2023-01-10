@@ -27,13 +27,13 @@ struct imx_chipidea_data {
 };
 
 struct imx_chipidea {
-	struct device_d *dev;
+	struct device *dev;
 	void __iomem *base;
 	struct ehci_data data;
 	unsigned long flags;
 	enum usb_dr_mode mode;
 	int portno;
-	struct device_d *usbmisc;
+	struct device *usbmisc;
 	enum usb_phy_interface phymode;
 	struct param_d *param_mode;
 	struct regulator *vbus;
@@ -104,7 +104,7 @@ static int imx_chipidea_probe_dt(struct imx_chipidea *ci)
 	struct of_phandle_args out_args;
 
 	if (ci->have_usb_misc) {
-		if (of_parse_phandle_with_args(ci->dev->device_node, "fsl,usbmisc",
+		if (of_parse_phandle_with_args(ci->dev->of_node, "fsl,usbmisc",
 						"#index-cells", 0, &out_args))
 			return -ENODEV;
 
@@ -117,7 +117,7 @@ static int imx_chipidea_probe_dt(struct imx_chipidea *ci)
 
 	ci->flags = MXC_EHCI_MODE_UTMI_8BIT;
 
-	ci->mode = of_usb_get_dr_mode(ci->dev->device_node, NULL);
+	ci->mode = of_usb_get_dr_mode(ci->dev->of_node, NULL);
 
 	if (ci->mode == USB_DR_MODE_UNKNOWN) {
 		/*
@@ -130,7 +130,7 @@ static int imx_chipidea_probe_dt(struct imx_chipidea *ci)
 			ci->mode = USB_DR_MODE_HOST;
 	}
 
-	ci->phymode = of_usb_get_phy_mode(ci->dev->device_node, NULL);
+	ci->phymode = of_usb_get_phy_mode(ci->dev->of_node, NULL);
 	switch (ci->phymode) {
 	case USBPHY_INTERFACE_MODE_UTMI:
 		ci->flags = MXC_EHCI_MODE_UTMI_8BIT;
@@ -151,18 +151,18 @@ static int imx_chipidea_probe_dt(struct imx_chipidea *ci)
 		dev_dbg(ci->dev, "no phy_type setting. Relying on reset default\n");
 	}
 
-	if (of_find_property(ci->dev->device_node,
+	if (of_find_property(ci->dev->of_node,
 				"disable-over-current", NULL))
 		ci->flags |= MXC_EHCI_DISABLE_OVERCURRENT;
 
-	else if (!of_find_property(ci->dev->device_node,
+	else if (!of_find_property(ci->dev->of_node,
 				   "over-current-active-high", NULL))
 		ci->flags |= MXC_EHCI_OC_PIN_ACTIVE_LOW;
 
-	if (of_find_property(ci->dev->device_node, "power-active-high", NULL))
+	if (of_find_property(ci->dev->of_node, "power-active-high", NULL))
 		ci->flags |= MXC_EHCI_PWR_PIN_ACTIVE_HIGH;
 
-	if (of_usb_get_maximum_speed(ci->dev->device_node, NULL) ==
+	if (of_usb_get_maximum_speed(ci->dev->of_node, NULL) ==
 			USB_SPEED_FULL)
 		ci->flags |= MXC_EHCI_PFSC;
 
@@ -213,7 +213,7 @@ static int ci_set_mode(void *ctx, enum usb_dr_mode mode)
 	return 0;
 }
 
-static int imx_chipidea_probe(struct device_d *dev)
+static int imx_chipidea_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct imx_chipidea_data *imx_data;
@@ -232,7 +232,7 @@ static int imx_chipidea_probe(struct device_d *dev)
 	if (!ret)
 		ci->have_usb_misc = imx_data->have_usb_misc;
 
-	if (IS_ENABLED(CONFIG_OFDEVICE) && dev->device_node) {
+	if (IS_ENABLED(CONFIG_OFDEVICE) && dev->of_node) {
 		ret = imx_chipidea_probe_dt(ci);
 		if (ret)
 			return ret;
@@ -265,9 +265,9 @@ static int imx_chipidea_probe(struct device_d *dev)
 	 * more modern former one but fall back to the old one.
 	 *
 	 * Code should be removed when all devicetrees are using "phys" */
-	if (of_property_read_bool(dev->device_node, "phys"))
+	if (of_property_read_bool(dev->of_node, "phys"))
 		phynode_name = "phys";
-	else if (of_property_read_bool(dev->device_node, "fsl,usbphy"))
+	else if (of_property_read_bool(dev->of_node, "fsl,usbphy"))
 		phynode_name = "fsl,usbphy";
 	else
 		phynode_name = NULL;
@@ -330,7 +330,7 @@ static int imx_chipidea_probe(struct device_d *dev)
 	return ret;
 };
 
-static void imx_chipidea_remove(struct device_d *dev)
+static void imx_chipidea_remove(struct device *dev)
 {
 	struct imx_chipidea *ci = dev->priv;
 
@@ -364,7 +364,7 @@ static __maybe_unused struct of_device_id imx_chipidea_dt_ids[] = {
 	},
 };
 
-static struct driver_d imx_chipidea_driver = {
+static struct driver imx_chipidea_driver = {
 	.name   = "imx-usb",
 	.probe  = imx_chipidea_probe,
 	.of_compatible = DRV_OF_COMPAT(imx_chipidea_dt_ids),

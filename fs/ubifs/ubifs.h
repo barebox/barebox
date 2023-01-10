@@ -1512,7 +1512,7 @@ struct ubifs_info {
 	struct rb_root size_tree;
 	struct ubifs_mount_opts mount_opts;
 
-	struct device_d *dev;
+	struct device *dev;
 	struct ubifs_debug_info *dbg;
 };
 
@@ -2060,7 +2060,8 @@ int ubifs_decompress(const struct ubifs_info *c, const void *buf, int len,
 /* barebox specific */
 void ubifs_umount(struct ubifs_info *c);
 /* barebox specific */
-int ubifs_get_super(struct device_d *dev, struct ubi_volume_desc *ubi, int silent);
+int ubifs_get_super(struct device *dev, struct ubi_volume_desc *ubi,
+		    int silent);
 
 #ifndef CONFIG_UBIFS_FS_ENCRYPTION
 static inline int ubifs_encrypt(const struct inode *inode,

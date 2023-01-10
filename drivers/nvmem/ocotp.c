@@ -123,7 +123,7 @@ struct ocotp_priv {
 	struct regmap *map;
 	void __iomem *base;
 	struct clk *clk;
-	struct device_d dev;
+	struct device dev;
 	int permanent_write_enable;
 	int sense_enable;
 	struct ocotp_priv_ethaddr ethaddr[MAX_MAC_OFFSETS];
@@ -644,7 +644,7 @@ static int imx_ocotp_init_dt(struct ocotp_priv *priv)
 {
 	char mac[MAC_BYTES];
 	const __be32 *prop;
-	struct device_node *node = priv->dev.parent->device_node;
+	struct device_node *node = priv->dev.parent->of_node;
 	u32 tester4;
 	int ret, len = 0;
 
@@ -712,7 +712,7 @@ static const struct nvmem_bus imx_ocotp_nvmem_bus = {
 	.read  = imx_ocotp_read,
 };
 
-static int imx_ocotp_probe(struct device_d *dev)
+static int imx_ocotp_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct ocotp_priv *priv;
@@ -998,7 +998,7 @@ static __maybe_unused struct of_device_id imx_ocotp_dt_ids[] = {
 	}
 };
 
-static struct driver_d imx_ocotp_driver = {
+static struct driver imx_ocotp_driver = {
 	.name	= "imx_ocotp",
 	.probe	= imx_ocotp_probe,
 	.of_compatible = DRV_OF_COMPAT(imx_ocotp_dt_ids),

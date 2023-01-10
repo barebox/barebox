@@ -41,7 +41,7 @@ char *squashfs_devread(struct squashfs_sb_info *fs, int byte_offset,
 	return buf;
 }
 
-static void squashfs_set_rootarg(struct fs_device_d *fsdev)
+static void squashfs_set_rootarg(struct fs_device *fsdev)
 {
 	struct ubi_volume_desc *ubi_vol;
 	struct ubi_volume_info vi = {};
@@ -90,9 +90,9 @@ static const struct super_operations squashfs_super_ops = {
 	.destroy_inode = squashfs_destroy_inode,
 };
 
-static int squashfs_probe(struct device_d *dev)
+static int squashfs_probe(struct device *dev)
 {
-	struct fs_device_d *fsdev;
+	struct fs_device *fsdev;
 	int ret;
 	struct super_block *sb;
 
@@ -120,9 +120,9 @@ err_out:
 	return ret;
 }
 
-static void squashfs_remove(struct device_d *dev)
+static void squashfs_remove(struct device *dev)
 {
-	struct fs_device_d *fsdev;
+	struct fs_device *fsdev;
 	struct super_block *sb;
 
 	fsdev = dev_to_fs_device(dev);
@@ -131,7 +131,7 @@ static void squashfs_remove(struct device_d *dev)
 	squashfs_put_super(sb);
 }
 
-static int squashfs_open(struct device_d *dev, FILE *file, const char *filename)
+static int squashfs_open(struct device *dev, FILE *file, const char *filename)
 {
 	struct inode *inode = file->f_inode;
 	struct squashfs_page *page;
@@ -165,7 +165,7 @@ error:
 	return -ENOMEM;
 }
 
-static int squashfs_close(struct device_d *dev, FILE *f)
+static int squashfs_close(struct device *dev, FILE *f)
 {
 	struct squashfs_page *page = f->priv;
 	int i;
@@ -197,8 +197,8 @@ static int squashfs_read_buf(struct squashfs_page *page, int pos, void **buf)
 	return 0;
 }
 
-static int squashfs_read(struct device_d *_dev, FILE *f, void *buf,
-		size_t insize)
+static int squashfs_read(struct device *_dev, FILE *f, void *buf,
+			 size_t insize)
 {
 	unsigned int size = insize;
 	unsigned int pos = f->pos;
@@ -251,7 +251,7 @@ struct squashfs_dir {
 	char root_d_name[256];
 };
 
-static struct fs_driver_d squashfs_driver = {
+static struct fs_driver squashfs_driver = {
 	.open		= squashfs_open,
 	.close		= squashfs_close,
 	.read		= squashfs_read,

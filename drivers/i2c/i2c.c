@@ -253,7 +253,7 @@ int i2c_get_sda_gpio_value(struct i2c_adapter *adap)
 static int i2c_get_gpios_for_recovery(struct i2c_adapter *adap)
 {
 	struct i2c_bus_recovery_info *bri = adap->bus_recovery_info;
-	struct device_d *dev = &adap->dev;
+	struct device *dev = &adap->dev;
 	int ret = 0;
 
 	ret = gpio_request_one(bri->scl_gpio, GPIOF_IN, "i2c-scl");
@@ -359,7 +359,7 @@ int i2c_recover_bus(struct i2c_adapter *adap)
 	return adap->bus_recovery_info->recover_bus(adap);
 }
 
-static void i2c_info(struct device_d *dev)
+static void i2c_info(struct device *dev)
 {
 	const struct i2c_client *client = to_i2c_client(dev);
 
@@ -394,7 +394,7 @@ static struct i2c_client *i2c_new_device(struct i2c_adapter *adapter,
 	client->dev.platform_data = chip->platform_data;
 	client->dev.id = DEVICE_ID_DYNAMIC;
 	client->dev.bus = &i2c_bus;
-	client->dev.device_node = chip->of_node;
+	client->dev.of_node = chip->of_node;
 	client->adapter = adapter;
 	client->addr = chip->addr;
 
@@ -418,10 +418,10 @@ static void of_i2c_register_devices(struct i2c_adapter *adap)
 	struct device_node *n;
 
 	/* Only register child devices if the adapter has a node pointer set */
-	if (!IS_ENABLED(CONFIG_OFDEVICE) || !adap->dev.device_node)
+	if (!IS_ENABLED(CONFIG_OFDEVICE) || !adap->dev.of_node)
 		return;
 
-	for_each_available_child_of_node(adap->dev.device_node, n) {
+	for_each_available_child_of_node(adap->dev.of_node, n) {
 		struct i2c_board_info info = {};
 		struct i2c_client *result;
 		const __be32 *addr;
@@ -578,7 +578,7 @@ struct i2c_adapter *of_find_i2c_adapter_by_node(struct device_node *node)
 		return ERR_PTR(ret);
 
 	for_each_i2c_adapter(adap)
-		if (adap->dev.device_node == node)
+		if (adap->dev.of_node == node)
 			return adap;
 
 	return NULL;
@@ -586,7 +586,7 @@ struct i2c_adapter *of_find_i2c_adapter_by_node(struct device_node *node)
 
 struct i2c_client *of_find_i2c_device_by_node(struct device_node *node)
 {
-	struct device_d *dev = of_find_device_by_node(node);
+	struct device *dev = of_find_device_by_node(node);
 
 	if (!dev)
 		return NULL;
@@ -610,12 +610,13 @@ int of_i2c_device_enable_and_register_by_alias(const char *alias)
 }
 
 
-static void i2c_parse_timing(struct device_d *dev, char *prop_name, u32 *cur_val_p,
-			    u32 def_val, bool use_def)
+static void i2c_parse_timing(struct device *dev, char *prop_name,
+			     u32 *cur_val_p,
+			     u32 def_val, bool use_def)
 {
 	int ret;
 
-	ret = of_property_read_u32(dev->device_node, prop_name, cur_val_p);
+	ret = of_property_read_u32(dev->of_node, prop_name, cur_val_p);
 	if (ret && use_def)
 		*cur_val_p = def_val;
 
@@ -638,7 +639,8 @@ static void i2c_parse_timing(struct device_d *dev, char *prop_name, u32 *cur_val
  * to switch to this function. New drivers almost always should use the defaults.
  */
 
-void i2c_parse_fw_timings(struct device_d *dev, struct i2c_timings *t, bool use_defaults)
+void i2c_parse_fw_timings(struct device *dev, struct i2c_timings *t,
+			  bool use_defaults)
 {
 	bool u = use_defaults;
 	u32 d;
@@ -714,12 +716,12 @@ int i2c_add_numbered_adapter(struct i2c_adapter *adapter)
 }
 EXPORT_SYMBOL(i2c_add_numbered_adapter);
 
-static int i2c_probe(struct device_d *dev)
+static int i2c_probe(struct device *dev)
 {
 	return dev->driver->probe(dev);
 }
 
-static void i2c_remove(struct device_d *dev)
+static void i2c_remove(struct device *dev)
 {
 	if (dev->driver->remove)
 		dev->driver->remove(dev);

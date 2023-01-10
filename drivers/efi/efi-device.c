@@ -55,7 +55,7 @@ static int efi_locate_handle(enum efi_locate_search_type search_type,
 
 static struct efi_device *efi_find_device(efi_handle_t *handle)
 {
-	struct device_d *dev;
+	struct device *dev;
 	struct efi_device *efidev;
 
 	bus_for_each_device(&efi_bus, dev) {
@@ -68,7 +68,7 @@ static struct efi_device *efi_find_device(efi_handle_t *handle)
 	return NULL;
 }
 
-static void efi_devinfo(struct device_d *dev)
+static void efi_devinfo(struct device *dev)
 {
 	struct efi_device *efidev = to_efi_device(dev);
 	int i;
@@ -304,7 +304,7 @@ int efi_connect_all(void)
 	return 0;
 }
 
-static int efi_bus_match(struct device_d *dev, struct driver_d *drv)
+static int efi_bus_match(struct device *dev, struct driver *drv)
 {
 	struct efi_driver *efidrv = to_efi_driver(drv);
 	struct efi_device *efidev = to_efi_device(dev);
@@ -321,7 +321,7 @@ static int efi_bus_match(struct device_d *dev, struct driver_d *drv)
 	return 1;
 }
 
-static int efi_bus_probe(struct device_d *dev)
+static int efi_bus_probe(struct device *dev)
 {
 	struct efi_driver *efidrv = to_efi_driver(dev->driver);
 	struct efi_device *efidev = to_efi_device(dev);
@@ -329,7 +329,7 @@ static int efi_bus_probe(struct device_d *dev)
 	return efidrv->probe(efidev);
 }
 
-static void efi_bus_remove(struct device_d *dev)
+static void efi_bus_remove(struct device *dev)
 {
 	struct efi_driver *efidrv = to_efi_driver(dev->driver);
 	struct efi_device *efidev = to_efi_device(dev);
@@ -345,7 +345,7 @@ struct bus_type efi_bus = {
 	.remove = efi_bus_remove,
 };
 
-static void efi_businfo(struct device_d *dev)
+static void efi_businfo(struct device *dev)
 {
 	efi_config_table_t *t;
 	int i = 0;
@@ -466,10 +466,10 @@ core_initcall(efi_init_devices);
 
 void efi_pause_devices(void)
 {
-	struct device_d *dev;
+	struct device *dev;
 
 	bus_for_each_device(&efi_bus, dev) {
-		struct driver_d *drv = dev->driver;
+		struct driver *drv = dev->driver;
 		struct efi_device *efidev = to_efi_device(dev);
 		struct efi_driver *efidrv;
 
@@ -485,10 +485,10 @@ void efi_pause_devices(void)
 
 void efi_continue_devices(void)
 {
-	struct device_d *dev;
+	struct device *dev;
 
 	bus_for_each_device(&efi_bus, dev) {
-		struct driver_d *drv = dev->driver;
+		struct driver *drv = dev->driver;
 		struct efi_device *efidev = to_efi_device(dev);
 		struct efi_driver *efidrv;
 

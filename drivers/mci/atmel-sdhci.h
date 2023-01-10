@@ -11,7 +11,7 @@
 
 struct at91_sdhci {
 	struct sdhci	sdhci;
-	struct device_d *dev;
+	struct device *dev;
 	void __iomem	*base;
 	u32		caps_max_clock;
 };

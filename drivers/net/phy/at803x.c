@@ -138,8 +138,8 @@ static bool at803x_match_phy_id(struct phy_device *phydev, u32 phy_id)
 
 static int at803x_parse_dt(struct phy_device *phydev)
 {
-	const struct device_d *dev = &phydev->dev;
-	const struct device_node *node = dev->device_node;
+	const struct device *dev = &phydev->dev;
+	const struct device_node *node = dev->of_node;
 	struct at803x_priv *priv = phydev->priv;
 	unsigned int sel;
 	u32 freq, strength;

@@ -568,7 +568,7 @@ static int imx7d_ddrc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
 			   imx7d_ddrc_sdram_size(mmdcbase));
 }
 
-static int imx_esdctl_probe(struct device_d *dev)
+static int imx_esdctl_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct imx_esdctl_data *data;
@@ -748,7 +748,7 @@ static __maybe_unused struct of_device_id imx_esdctl_dt_ids[] = {
 	}
 };
 
-static struct driver_d imx_esdctl_driver = {
+static struct driver imx_esdctl_driver = {
 	.name   = "imx-esdctl",
 	.probe  = imx_esdctl_probe,
 	.id_table = imx_esdctl_ids,

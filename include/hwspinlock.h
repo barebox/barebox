@@ -8,7 +8,7 @@
 
 struct hwspinlock { /* TODO to be implemented */ };
 
-static inline int hwspinlock_get_by_index(struct device_d *dev,
+static inline int hwspinlock_get_by_index(struct device *dev,
 					  int index,
 					  struct hwspinlock *hws)
 {

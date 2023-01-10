@@ -85,7 +85,7 @@ static const char *ipg_per_sel[] = {
 	"arm_per_div",
 };
 
-static int imx35_ccm_probe(struct device_d *dev)
+static int imx35_ccm_probe(struct device *dev)
 {
 	struct resource *iores;
 	u32 pdr0, consumer_sel, hsp_sel;
@@ -202,7 +202,7 @@ static __maybe_unused struct of_device_id imx35_ccm_dt_ids[] = {
 	}
 };
 
-static struct driver_d imx35_ccm_driver = {
+static struct driver imx35_ccm_driver = {
 	.probe	= imx35_ccm_probe,
 	.name	= "imx35-ccm",
 	.of_compatible = DRV_OF_COMPAT(imx35_ccm_dt_ids),

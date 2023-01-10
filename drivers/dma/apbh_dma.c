@@ -137,7 +137,7 @@ int mxs_dma_go(int chan, struct mxs_dma_cmd *cmd, int ncmds)
 /*
  * Initialize the DMA hardware
  */
-static int apbh_dma_probe(struct device_d *dev)
+static int apbh_dma_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct apbh_dma *apbh;
@@ -209,7 +209,7 @@ static __maybe_unused struct of_device_id apbh_dt_ids[] = {
 	}
 };
 
-static struct driver_d apbh_dma_driver = {
+static struct driver apbh_dma_driver = {
 	.name  = "dma-apbh",
 	.id_table = apbh_ids,
 	.of_compatible = DRV_OF_COMPAT(apbh_dt_ids),

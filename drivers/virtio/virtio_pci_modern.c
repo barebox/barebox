@@ -355,7 +355,7 @@ static const struct virtio_config_ops virtio_pci_config_ops = {
 int virtio_pci_modern_probe(struct virtio_pci_device *vp_dev)
 {
 	struct pci_dev *pci_dev = vp_dev->pci_dev;
-	struct device_d *dev = &pci_dev->dev;
+	struct device *dev = &pci_dev->dev;
 	int common, notify, device;
 	int offset;
 

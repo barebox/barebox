@@ -2150,7 +2150,7 @@ struct e1000_hw {
 	struct eth_device edev;
 
 	struct pci_dev *pdev;
-	struct device_d *dev;
+	struct device *dev;
 
 	void __iomem *hw_addr;
 
@@ -2163,7 +2163,7 @@ struct e1000_hw {
 
 	struct {
 		struct cdev cdev;
-		struct device_d dev;
+		struct device dev;
 		int line;
 	} invm;
 

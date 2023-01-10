@@ -43,9 +43,9 @@ static void __noreturn gpio_restart_handle(struct restart_handler *this)
 	panic("Unable to restart system\n");
 }
 
-static int gpio_restart_probe(struct device_d *dev)
+static int gpio_restart_probe(struct device *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct gpio_restart *gpio_restart;
 	bool open_source = false;
 	u32 property;
@@ -71,7 +71,7 @@ static int gpio_restart_probe(struct device_d *dev)
 	gpio_restart->inactive_delay_ms = 100;
 	gpio_restart->wait_delay_ms = 3000;
 
-	ret = of_property_read_u32(dev->device_node, "priority", &property);
+	ret = of_property_read_u32(dev->of_node, "priority", &property);
 	if (!ret)
 		gpio_restart->restart_handler.priority = property;
 
@@ -87,7 +87,7 @@ static const struct of_device_id of_gpio_restart_match[] = {
 	{},
 };
 
-static struct driver_d gpio_restart_driver = {
+static struct driver gpio_restart_driver = {
 	.name = "restart-gpio",
 	.of_compatible = of_gpio_restart_match,
 	.probe = gpio_restart_probe,

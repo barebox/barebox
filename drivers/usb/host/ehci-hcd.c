@@ -29,7 +29,7 @@
 
 struct ehci_host {
 	int rootdev;
-	struct device_d *dev;
+	struct device *dev;
 	struct ehci_hccr *hccr;
 	struct ehci_hcor *hcor;
 	struct usb_host host;
@@ -242,7 +242,7 @@ static int ehci_td_buffer(struct qTD *td, dma_addr_t addr, size_t sz)
 	return 0;
 }
 
-static int ehci_prepare_qtd(struct device_d *dev,
+static int ehci_prepare_qtd(struct device *dev,
 			    struct qTD *td, uint32_t token,
 			    void *buffer, size_t length,
 			    dma_addr_t *buffer_dma,
@@ -1341,7 +1341,7 @@ submit_int_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
 	return result;
 }
 
-struct ehci_host *ehci_register(struct device_d *dev, struct ehci_data *data)
+struct ehci_host *ehci_register(struct device *dev, struct ehci_data *data)
 {
 	struct usb_host *host;
 	struct ehci_host *ehci;
@@ -1398,12 +1398,12 @@ void ehci_unregister(struct ehci_host *ehci)
 	free(ehci);
 }
 
-static int ehci_probe(struct device_d *dev)
+static int ehci_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct ehci_data data = {};
 	struct ehci_platform_data *pdata = dev->platform_data;
-	struct device_node *dn = dev->device_node;
+	struct device_node *dn = dev->of_node;
 	struct ehci_host *ehci;
 	struct clk_bulk_data *clks;
 	int num_clocks, ret;
@@ -1465,7 +1465,7 @@ static int ehci_probe(struct device_d *dev)
 	return 0;
 }
 
-static void ehci_remove(struct device_d *dev)
+static void ehci_remove(struct device *dev)
 {
 	struct ehci_host *ehci = dev->priv;
 
@@ -1480,7 +1480,7 @@ static __maybe_unused struct of_device_id ehci_platform_dt_ids[] = {
 	}
 };
 
-static struct driver_d ehci_driver = {
+static struct driver ehci_driver = {
 	.name  = "ehci",
 	.probe = ehci_probe,
 	.remove = ehci_remove,

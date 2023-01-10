@@ -22,7 +22,7 @@
 #define MC13XXX_NUMREGS		0x3f
 
 struct mc13xxx {
-	struct device_d			*dev;
+	struct device			*dev;
 	struct regmap			*map;
 	union {
 		struct i2c_client	*client;
@@ -300,7 +300,7 @@ static const struct regmap_config mc13xxx_regmap_i2c_config = {
 };
 #endif
 
-static int __init mc13xxx_probe(struct device_d *dev)
+static int __init mc13xxx_probe(struct device *dev)
 {
 	struct mc13xxx_devtype *devtype;
 	int ret, rev;
@@ -353,7 +353,7 @@ static int __init mc13xxx_probe(struct device_d *dev)
 	if (mc13xxx_init_callback)
 		mc13xxx_init_callback(mc_dev);
 
-	if (of_property_read_bool(dev->device_node, "fsl,mc13xxx-uses-adc"))
+	if (of_property_read_bool(dev->of_node, "fsl,mc13xxx-uses-adc"))
 		mc13xxx_adc_probe(dev, mc_dev);
 
 	return 0;
@@ -388,7 +388,7 @@ static __maybe_unused struct of_device_id mc13xxx_dt_ids[] = {
 	{ }
 };
 
-static __maybe_unused struct driver_d mc13xxx_i2c_driver = {
+static __maybe_unused struct driver mc13xxx_i2c_driver = {
 	.name		= "mc13xxx-i2c",
 	.probe		= mc13xxx_probe,
 	.id_table	= mc13xxx_ids,
@@ -399,7 +399,7 @@ static __maybe_unused struct driver_d mc13xxx_i2c_driver = {
 coredevice_i2c_driver(mc13xxx_i2c_driver);
 #endif
 
-static __maybe_unused struct driver_d mc13xxx_spi_driver = {
+static __maybe_unused struct driver mc13xxx_spi_driver = {
 	.name		= "mc13xxx-spi",
 	.probe		= mc13xxx_probe,
 	.id_table	= mc13xxx_ids,

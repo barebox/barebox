@@ -297,7 +297,7 @@ struct sja1105_private {
 	u16 pvid[SJA1105_MAX_NUM_PORTS];
 	struct sja1105_xpcs_cfg xpcs_cfg[SJA1105_MAX_NUM_PORTS];
 	const struct sja1105_dcfg *dcfg;
-	struct device_d *dev;
+	struct device *dev;
 	struct dsa_switch ds;
 	struct spi_device *spidev;
 	size_t max_xfer_len;
@@ -1963,7 +1963,7 @@ static int sja1105_rgmii_clocking_setup(struct sja1105_private *priv, int port,
 					enum sja1105_mii_role role)
 {
 	struct sja1105_mac_config_entry *mac;
-	struct device_d *dev = priv->dev;
+	struct device *dev = priv->dev;
 	u64 speed;
 	int rc = -EINVAL;
 
@@ -2660,7 +2660,7 @@ static int sja1105_static_config_reload(struct sja1105_private *priv)
 static int sja1105_port_set_mode(struct dsa_port *dp, int port,
 				 phy_interface_t phy_mode)
 {
-	struct device_d *dev = dp->ds->dev;
+	struct device *dev = dp->ds->dev;
 	struct sja1105_private *priv = dev_get_priv(dev);
 	struct sja1105_xmii_params_entry *mii;
 
@@ -2716,7 +2716,7 @@ unsupported:
 static int sja1105_port_pre_enable(struct dsa_port *dp, int port,
 				   phy_interface_t phy_mode)
 {
-	struct device_d *dev = dp->ds->dev;
+	struct device *dev = dp->ds->dev;
 	struct sja1105_private *priv = dev_get_priv(dev);
 	int ret;
 
@@ -2730,7 +2730,7 @@ static int sja1105_port_pre_enable(struct dsa_port *dp, int port,
 static int sja1105_port_enable(struct dsa_port *dp, int port,
 			       struct phy_device *phy)
 {
-	struct device_d *dev = dp->ds->dev;
+	struct device *dev = dp->ds->dev;
 	struct sja1105_private *priv = dev_get_priv(dev);
 	phy_interface_t phy_mode = phy->interface;
 	struct sja1105_xmii_params_entry *mii;
@@ -2871,7 +2871,7 @@ static int sja1105_check_device_id(struct sja1105_private *priv)
 }
 
 /* Configure the optional reset pin and bring up switch */
-static int sja1105_hw_reset(struct device_d *dev, unsigned int pulse_len,
+static int sja1105_hw_reset(struct device *dev, unsigned int pulse_len,
 			    unsigned int startup_delay)
 {
 	int gpio;
@@ -2890,7 +2890,7 @@ static int sja1105_hw_reset(struct device_d *dev, unsigned int pulse_len,
 	return 0;
 }
 
-static int sja1105_probe(struct device_d *dev)
+static int sja1105_probe(struct device *dev)
 {
 	struct spi_device *spi = dev->type_data;
 	const struct sja1105_dcfg *dcfg;
@@ -2978,7 +2978,7 @@ static const struct of_device_id sja1105_ids[] = {
 	{ }
 };
 
-static struct driver_d sja1105_driver = {
+static struct driver sja1105_driver = {
 	.name		= "sja1105",
 	.probe		= sja1105_probe,
 	.of_compatible	= DRV_OF_COMPAT(sja1105_ids),

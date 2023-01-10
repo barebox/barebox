@@ -20,7 +20,7 @@
 
 static LIST_HEAD(regmaps);
 
-enum regmap_endian regmap_get_val_endian(struct device_d *dev,
+enum regmap_endian regmap_get_val_endian(struct device *dev,
 					 const struct regmap_bus *bus,
 					 const struct regmap_config *config)
 {
@@ -35,8 +35,8 @@ enum regmap_endian regmap_get_val_endian(struct device_d *dev,
 		return endian;
 
 	/* If the dev and dev->device_node exist try to get endianness from DT */
-	if (dev && dev->device_node) {
-		np = dev->device_node;
+	if (dev && dev->of_node) {
+		np = dev->of_node;
 
 		/* Parse the device's DT node for an endianness specification */
 		if (of_property_read_bool(np, "big-endian"))
@@ -74,7 +74,7 @@ EXPORT_SYMBOL_GPL(regmap_get_val_endian);
  *
  * Returns a pointer to the new map or a ERR_PTR value on failure
  */
-struct regmap *regmap_init(struct device_d *dev,
+struct regmap *regmap_init(struct device *dev,
 			     const struct regmap_bus *bus,
 			     void *bus_context,
 			     const struct regmap_config *config)
@@ -108,7 +108,7 @@ struct regmap *regmap_init(struct device_d *dev,
  *
  * Returns a pointer to the regmap or a ERR_PTR value on failure
  */
-struct regmap *dev_get_regmap(struct device_d *dev, const char *name)
+struct regmap *dev_get_regmap(struct device *dev, const char *name)
 {
 	struct regmap *map;
 
@@ -124,7 +124,7 @@ struct regmap *dev_get_regmap(struct device_d *dev, const char *name)
 	return ERR_PTR(-ENOENT);
 }
 
-struct device_d *regmap_get_device(struct regmap *map)
+struct device *regmap_get_device(struct regmap *map)
 {
 	return map->dev;
 }

@@ -4,11 +4,11 @@
 
 #include <linux/types.h>
 
-struct device_d;
+struct device;
 
 #ifdef CONFIG_REBOOT_MODE
 struct reboot_mode_driver {
-	struct device_d *dev;
+	struct device *dev;
 	int (*write)(struct reboot_mode_driver *reboot, const u32 *magic);
 	int priority;
 	bool no_fixup;

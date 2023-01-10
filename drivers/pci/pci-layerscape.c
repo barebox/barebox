@@ -217,11 +217,11 @@ static int ls1021_pcie_host_init(struct pcie_port *pp)
 {
 	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
 	struct ls_pcie *pcie = to_ls_pcie(pci);
-	struct device_d *dev = pci->dev;
+	struct device *dev = pci->dev;
 	u32 index[2];
 	int ret;
 
-	pcie->scfg = syscon_regmap_lookup_by_phandle(dev->device_node,
+	pcie->scfg = syscon_regmap_lookup_by_phandle(dev->of_node,
 						     "fsl,pcie-scfg");
 	if (IS_ERR(pcie->scfg)) {
 		ret = PTR_ERR(pcie->scfg);
@@ -230,7 +230,7 @@ static int ls1021_pcie_host_init(struct pcie_port *pp)
 		return ret;
 	}
 
-	if (of_property_read_u32_array(dev->device_node,
+	if (of_property_read_u32_array(dev->of_node,
 				       "fsl,pcie-scfg", index, 2)) {
 		pcie->scfg = NULL;
 		return -EINVAL;
@@ -317,7 +317,7 @@ static int __init ls_add_pcie_port(struct ls_pcie *pcie)
 {
 	struct dw_pcie *pci = &pcie->pci;
 	struct pcie_port *pp = &pci->pp;
-	struct device_d *dev = pci->dev;
+	struct device *dev = pci->dev;
 	int ret;
 
 	pp->ops = pcie->drvdata->ops;
@@ -369,7 +369,7 @@ BAREBOX_MAGICVAR(global.layerscape_pcie.share_stream_ids,
 static int ls_pcie_of_fixup(struct device_node *root, void *ctx)
 {
 	struct ls_pcie *pcie = ctx;
-	struct device_d *dev = pcie->pci.dev;
+	struct device *dev = pcie->pci.dev;
 	struct device_node *np;
 	phandle iommu_handle = 0;
 	char *name;
@@ -378,7 +378,7 @@ static int ls_pcie_of_fixup(struct device_node *root, void *ctx)
 	int ret, i;
 	u32 devid, stream_id;
 
-	name = of_get_reproducible_name(dev->device_node);
+	name = of_get_reproducible_name(dev->of_node);
 
 	np = root;
 	do {
@@ -479,7 +479,7 @@ out:
 	return ret;
 }
 
-static int __init ls_pcie_probe(struct device_d *dev)
+static int __init ls_pcie_probe(struct device *dev)
 {
 	struct dw_pcie *pci;
 	struct ls_pcie *pcie;
@@ -532,7 +532,7 @@ static int __init ls_pcie_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d ls_pcie_driver = {
+static struct driver ls_pcie_driver = {
 	.name = "layerscape-pcie",
 	.of_compatible = DRV_OF_COMPAT(ls_pcie_of_match),
 	.probe = ls_pcie_probe,

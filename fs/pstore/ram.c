@@ -410,13 +410,13 @@ static int ramoops_init_prz(const char *name,
 	return 0;
 }
 
-static int ramoops_parse_dt_size(struct device_d *dev,
+static int ramoops_parse_dt_size(struct device *dev,
 				 const char *propname, u32 *value)
 {
 	u32 val32 = 0;
 	int ret;
 
-	ret = of_property_read_u32(dev->device_node, propname, &val32);
+	ret = of_property_read_u32(dev->of_node, propname, &val32);
 	if (ret < 0 && ret != -EINVAL) {
 		dev_err(dev, "failed to parse property %s: %d\n",
 			propname, ret);
@@ -432,10 +432,10 @@ static int ramoops_parse_dt_size(struct device_d *dev,
 	return 0;
 }
 
-static int ramoops_parse_dt(struct device_d *dev,
+static int ramoops_parse_dt(struct device *dev,
 			    struct ramoops_platform_data *pdata)
 {
-	struct device_node *of_node = dev->device_node;
+	struct device_node *of_node = dev->of_node;
 	struct resource *res;
 	u32 value;
 	int ret;
@@ -517,7 +517,7 @@ static int ramoops_of_fixup(struct device_node *root, void *data)
 	return 0;
 }
 
-static int ramoops_probe(struct device_d *dev)
+static int ramoops_probe(struct device *dev)
 {
 	struct ramoops_platform_data *pdata = dummy_data;
 	struct ramoops_context *cxt = &oops_cxt;
@@ -676,7 +676,7 @@ static const struct of_device_id ramoops_dt_ids[] = {
 	{ },
 };
 
-static struct driver_d ramoops_driver = {
+static struct driver ramoops_driver = {
 	.name = "ramoops",
 	.probe = ramoops_probe,
 	.of_compatible = DRV_OF_COMPAT(ramoops_dt_ids),

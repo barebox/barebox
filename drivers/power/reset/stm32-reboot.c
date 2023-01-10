@@ -109,7 +109,7 @@ static void stm32_set_reset_reason(struct stm32_reset *priv,
 		reset_source_to_string(type), reg);
 }
 
-void stm32mp_system_restart_init(struct device_d *dev)
+void stm32mp_system_restart_init(struct device *dev)
 {
 	struct stm32_reset *priv;
 	struct device_node *np = dev_of_node(dev);

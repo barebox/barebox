@@ -222,7 +222,7 @@ enum spi_nor_option_flags {
 struct spi_nor {
 	struct mtd_info		*mtd;
 	struct mutex		lock;
-	struct device_d		*dev;
+	struct device		*dev;
 	const struct flash_info	*info;
 	u32			page_size;
 	u8			addr_width;

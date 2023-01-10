@@ -350,7 +350,7 @@ static const char *yesno_str(int v)
 	return v ? "yes" : "no";
 }
 
-static void cs8900_info(struct device_d *dev)
+static void cs8900_info(struct device *dev)
 {
 	struct eth_device *edev = dev_to_edev(dev);
 	struct cs8900_priv *priv = (struct cs8900_priv *)edev->priv;
@@ -425,7 +425,7 @@ static int cs8900_check_id(struct cs8900_priv *priv)
 	return result;
 }
 
-static int cs8900_probe(struct device_d *dev)
+static int cs8900_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct eth_device *edev;
@@ -463,7 +463,7 @@ static int cs8900_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d cs8900_driver = {
+static struct driver cs8900_driver = {
 	.name = "cs8900",
 	.probe = cs8900_probe,
 };

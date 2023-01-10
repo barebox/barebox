@@ -670,7 +670,7 @@ static void enc28j60_hw_disable(struct enc28j60_net *priv)
 static inline void enc28j60_dump_rsv(struct enc28j60_net *priv, const char *msg,
 			      u16 pk_ptr, int len, u16 sts)
 {
-	struct device_d *dev = &priv->edev.dev;
+	struct device *dev = &priv->edev.dev;
 
 	dev_dbg(dev, "%s - NextPk: 0x%04x - RSV:\n",
 		msg, pk_ptr);
@@ -922,7 +922,7 @@ static void enc28j60_eth_halt(struct eth_device *edev)
 	enc28j60_lowpower(priv, true);
 }
 
-static int enc28j60_probe(struct device_d *dev)
+static int enc28j60_probe(struct device *dev)
 {
 	struct eth_device *edev;
 	struct enc28j60_net *priv;
@@ -999,7 +999,7 @@ static __maybe_unused struct of_device_id enc28j60_dt_ids[] = {
 	}
 };
 
-static struct driver_d enc28j60_driver = {
+static struct driver enc28j60_driver = {
 	.name = DRV_NAME,
 	.probe = enc28j60_probe,
 	.of_compatible = DRV_OF_COMPAT(enc28j60_dt_ids),

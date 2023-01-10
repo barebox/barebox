@@ -353,7 +353,7 @@ static struct tegra_clk_init_table init_table[] = {
 	{TEGRA30_CLK_CLK_MAX,		TEGRA30_CLK_CLK_MAX,	0,	0}, /* sentinel */
 };
 
-static int tegra30_car_probe(struct device_d *dev)
+static int tegra30_car_probe(struct device *dev)
 {
 	struct resource *iores;
 	iores = dev_request_mem_resource(dev, 0);
@@ -376,10 +376,10 @@ static int tegra30_car_probe(struct device_d *dev)
 
 	clk_data.clks = clks;
 	clk_data.clk_num = ARRAY_SIZE(clks);
-	of_clk_add_provider(dev->device_node, of_clk_src_onecell_get,
+	of_clk_add_provider(dev->of_node, of_clk_src_onecell_get,
 			    &clk_data);
 
-	tegra_clk_init_rst_controller(car_base, dev->device_node, 6 * 32);
+	tegra_clk_init_rst_controller(car_base, dev->of_node, 6 * 32);
 	tegra_clk_reset_uarts();
 
 	return 0;
@@ -393,7 +393,7 @@ static __maybe_unused struct of_device_id tegra30_car_dt_ids[] = {
 	}
 };
 
-static struct driver_d tegra30_car_driver = {
+static struct driver tegra30_car_driver = {
 	.probe	= tegra30_car_probe,
 	.name	= "tegra30-car",
 	.of_compatible = DRV_OF_COMPAT(tegra30_car_dt_ids),

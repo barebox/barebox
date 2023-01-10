@@ -173,7 +173,7 @@ static int cadence_clocksource_clock_change(struct notifier_block *nb,
 	return 0;
 }
 
-static int cadence_serial_probe(struct device_d *dev)
+static int cadence_serial_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct console_device *cdev;
@@ -250,7 +250,7 @@ static struct platform_device_id cadence_serial_ids[] = {
 	},
 };
 
-static struct driver_d cadence_serial_driver = {
+static struct driver cadence_serial_driver = {
 	.name   = "cadence_serial",
 	.probe  = cadence_serial_probe,
 	.of_compatible = DRV_OF_COMPAT(cadence_serial_dt_ids),

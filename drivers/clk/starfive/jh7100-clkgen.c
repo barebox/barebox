@@ -332,7 +332,7 @@ static void starfive_clkgen_init(struct device_node *np, void __iomem *base)
 
 static struct clk_onecell_data clk_data;
 
-static int starfive_clkgen_clk_probe(struct device_d *dev)
+static int starfive_clkgen_clk_probe(struct device *dev)
 {
 	struct resource *iores;
 
@@ -340,11 +340,11 @@ static int starfive_clkgen_clk_probe(struct device_d *dev)
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
 
-	starfive_clkgen_init(dev->device_node, IOMEM(iores->start));
+	starfive_clkgen_init(dev->of_node, IOMEM(iores->start));
 
 	clk_data.clks = clks;
 	clk_data.clk_num = ARRAY_SIZE(clks);
-	of_clk_add_provider(dev->device_node, of_clk_src_onecell_get,
+	of_clk_add_provider(dev->of_node, of_clk_src_onecell_get,
 			    &clk_data);
 
 	return 0;
@@ -355,7 +355,7 @@ static __maybe_unused struct of_device_id starfive_clkgen_clk_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d starfive_clkgen_clk_driver = {
+static struct driver starfive_clkgen_clk_driver = {
 	.probe	= starfive_clkgen_clk_probe,
 	.name	= "starfive-clkgen",
 	.of_compatible = starfive_clkgen_clk_dt_ids,

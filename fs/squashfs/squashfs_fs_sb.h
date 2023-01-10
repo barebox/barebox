@@ -77,6 +77,6 @@ struct squashfs_sb_info {
 	unsigned int				inodes;
 	int					xattr_ids;
 	struct cdev				*cdev;
-	struct device_d				*dev;
+	struct device				*dev;
 };
 #endif

@@ -85,7 +85,7 @@ static int dwc2_set_mode(void *ctx, enum usb_dr_mode mode)
 
 typedef void (*set_params_cb)(struct dwc2 *dwc2);
 
-static int dwc2_probe(struct device_d *dev)
+static int dwc2_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct dwc2 *dwc2;
@@ -180,7 +180,7 @@ release_region:
 	return ret;
 }
 
-static void dwc2_remove(struct device_d *dev)
+static void dwc2_remove(struct device *dev)
 {
 	struct dwc2 *dwc2 = dev->priv;
 
@@ -202,7 +202,7 @@ static const struct of_device_id dwc2_platform_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d dwc2_driver = {
+static struct driver dwc2_driver = {
 	.name	= "dwc2",
 	.probe	= dwc2_probe,
 	.remove = dwc2_remove,

@@ -110,23 +110,23 @@ static int clps711x_bus_fixup(struct device_node *root, void *context)
 	return 0;
 }
 
-static int clps711x_bus_probe(struct device_d *dev)
+static int clps711x_bus_probe(struct device *dev)
 {
 	u32 mcfg;
 
 	/* Setup bus timings */
-	if (!of_property_read_u32(dev->device_node,
+	if (!of_property_read_u32(dev->of_node,
 				  "barebox,ep7209-memcfg1", &mcfg))
 		writel(mcfg, MEMCFG1);
-	if (!of_property_read_u32(dev->device_node,
+	if (!of_property_read_u32(dev->of_node,
 				  "barebox,ep7209-memcfg2", &mcfg))
 		writel(mcfg, MEMCFG2);
 
-	clps711x_bus_patch(dev->device_node, 0, CLPS711X_MAP_ADDR);
+	clps711x_bus_patch(dev->of_node, 0, CLPS711X_MAP_ADDR);
 
-	of_platform_populate(dev->device_node, NULL, dev);
+	of_platform_populate(dev->of_node, NULL, dev);
 
-	of_register_fixup(clps711x_bus_fixup, dev->device_node);
+	of_register_fixup(clps711x_bus_fixup, dev->of_node);
 
 	return 0;
 }
@@ -136,7 +136,7 @@ static const struct of_device_id __maybe_unused clps711x_bus_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d clps711x_bus_driver = {
+static struct driver clps711x_bus_driver = {
 	.name = "clps711x-bus",
 	.probe = clps711x_bus_probe,
 	.of_compatible = DRV_OF_COMPAT(clps711x_bus_dt_ids),

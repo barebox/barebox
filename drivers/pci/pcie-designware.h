@@ -180,7 +180,7 @@ struct dw_pcie_ops {
 };
 
 struct dw_pcie {
-	struct device_d         *dev;
+	struct device         *dev;
 	void __iomem            *dbi_base;
 	/* Used when iatu_unroll_enabled is true */
 	void __iomem            *atu_base;

@@ -36,7 +36,7 @@ static inline void arm_virt_init(void) {}
 
 extern char __dtb_overlay_of_flash_start[];
 
-static int virt_probe(struct device_d *dev)
+static int virt_probe(struct device *dev)
 {
 	struct device_node *overlay;
 	void (*init)(void);
@@ -46,7 +46,7 @@ static int virt_probe(struct device_d *dev)
 		init();
 
 	overlay = of_unflatten_dtb(__dtb_overlay_of_flash_start, INT_MAX);
-	of_overlay_apply_tree(dev->device_node, overlay);
+	of_overlay_apply_tree(dev->of_node, overlay);
 	/* of_probe() will happen later at of_populate_initcall */
 
 	return 0;
@@ -59,7 +59,7 @@ static const struct of_device_id virt_of_match[] = {
 };
 BAREBOX_DEEP_PROBE_ENABLE(virt_of_match);
 
-static struct driver_d virt_board_driver = {
+static struct driver virt_board_driver = {
 	.name = "board-qemu-virt",
 	.probe = virt_probe,
 	.of_compatible = virt_of_match,

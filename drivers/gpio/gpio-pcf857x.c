@@ -145,10 +145,10 @@ static struct gpio_ops pcf857x_gpio_ops = {
 	.set = pcf857x_set,
 };
 
-static int pcf857x_probe(struct device_d *dev)
+static int pcf857x_probe(struct device *dev)
 {
 	struct i2c_client		*client = to_i2c_client(dev);
-	struct device_node		*np = dev->device_node;
+	struct device_node		*np = dev->of_node;
 	struct pcf857x			*gpio;
 	unsigned long			driver_data;
 	unsigned int			n_latch = 0;
@@ -239,7 +239,7 @@ static const struct of_device_id pcf857x_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d pcf857x_driver = {
+static struct driver pcf857x_driver = {
 	.name	= "pcf857x",
 	.probe	= pcf857x_probe,
 	.of_compatible = DRV_OF_COMPAT(pcf857x_dt_ids),

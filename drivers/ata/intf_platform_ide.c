@@ -65,7 +65,7 @@ static void platform_ide_setup_port(void *reg_base, void *alt_base,
 	}
 }
 
-static int platform_ide_probe(struct device_d *dev)
+static int platform_ide_probe(struct device *dev)
 {
 	struct resource *iores;
 	int rc;
@@ -74,7 +74,7 @@ static int platform_ide_probe(struct device_d *dev)
 	void *reg_base, *alt_base = NULL;
 	struct resource *reg, *alt;
 	int mmio = 0;
-	struct device_node *dn = dev->device_node;
+	struct device_node *dn = dev->of_node;
 	u32 ioport_shift = 0;
 	int dataif_be = 0;
 	void (*reset)(int) = NULL;
@@ -145,7 +145,7 @@ static __maybe_unused struct of_device_id platform_ide_dt_ids[] = {
 	}
 };
 
-static struct driver_d platform_ide_driver = {
+static struct driver platform_ide_driver = {
 	.name   = "ide_intf",
 	.probe  = platform_ide_probe,
 	.of_compatible = DRV_OF_COMPAT(platform_ide_dt_ids),

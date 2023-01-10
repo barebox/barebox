@@ -248,7 +248,7 @@ static void axp20x_power_off(struct poweroff_handler *handler)
 
 int axp20x_match_device(struct axp20x_dev *axp20x)
 {
-	struct device_d *dev = axp20x->dev;
+	struct device *dev = axp20x->dev;
 	const struct of_device_id *of_id;
 
 	of_id = of_match_device(dev->driver->of_compatible, dev);
@@ -348,9 +348,9 @@ int axp20x_device_probe(struct axp20x_dev *axp20x)
 	 * property "x-powers,master-mode" to override the default.
 	 */
 	if (axp20x->variant == AXP806_ID) {
-		if (of_property_read_bool(axp20x->dev->device_node,
+		if (of_property_read_bool(axp20x->dev->of_node,
 					  "x-powers,master-mode") ||
-		    of_property_read_bool(axp20x->dev->device_node,
+		    of_property_read_bool(axp20x->dev->of_node,
 					  "x-powers,self-working-mode"))
 			regmap_write(axp20x->regmap, AXP806_REG_ADDR_EXT,
 				     AXP806_REG_ADDR_EXT_ADDR_MASTER_MODE);

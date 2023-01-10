@@ -55,7 +55,7 @@ int ipu_plane_mode_set(struct ipu_plane *ipu_plane,
 		       uint32_t src_w, uint32_t src_h)
 {
 	struct ipu_ch_param __iomem *cpmem;
-	struct device_d *dev = &info->dev;
+	struct device *dev = &info->dev;
 	int ret;
 
 	/* no scaling */

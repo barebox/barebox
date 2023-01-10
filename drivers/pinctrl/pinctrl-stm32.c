@@ -367,12 +367,6 @@ static int stm32_pinctrl_probe(struct device_d *dev)
 		dev_dbg(dev, "proceeding without hw spinlock support: (%d)\n",
 			ret);
 
-	ret = pinctrl_register(&pinctrl->pdev);
-	if (ret) {
-		dev_dbg(dev, "pinctrl_register failed: (%d)\n", ret);
-		return ret;
-	}
-
 	gpio_bank = pinctrl->gpio_banks;
 	for_each_available_child_of_node(np, child) {
 		if (!of_property_read_bool(child, "gpio-controller"))
@@ -388,9 +382,7 @@ static int stm32_pinctrl_probe(struct device_d *dev)
 		gpio_bank++;
 	}
 
-	dev_dbg(dev, "pinctrl/gpio driver registered\n");
-
-	return 0;
+	return pinctrl_register(&pinctrl->pdev);
 }
 
 static __maybe_unused struct of_device_id stm32_pinctrl_dt_ids[] = {

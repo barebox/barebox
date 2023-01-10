@@ -201,7 +201,7 @@ static int i2c_fsl_trx_complete(struct i2c_adapter *adapter)
 
 static int i2c_fsl_acked(struct i2c_adapter *adapter)
 {
-	return i2c_fsl_poll_status(adapter, 1, 0, I2SR_RXAK);
+	return i2c_fsl_poll_status(adapter, 5, 0, I2SR_RXAK);
 }
 
 static int i2c_fsl_start(struct i2c_adapter *adapter)

@@ -646,14 +646,12 @@ static int imx_ocotp_init_dt(struct ocotp_priv *priv)
 	const __be32 *prop;
 	struct device_node *node = priv->dev.parent->device_node;
 	u32 tester4;
-	int ret, len;
+	int ret, len = 0;
 
 	if (!node)
 		return 0;
 
 	prop = of_get_property(node, "barebox,provide-mac-address", &len);
-	if (!prop)
-		return 0;
 
 	for (; len >= MAC_ADDRESS_PROPLEN; len -= MAC_ADDRESS_PROPLEN) {
 		struct device_node *rnode;

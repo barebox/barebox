@@ -201,7 +201,7 @@ static struct of_device_id imx_pwm_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static int imx_pwm_probe(struct device_d *dev)
+static int imx_pwm_probe(struct device *dev)
 {
 	struct resource *iores;
 	const struct imx_pwm_data *data;
@@ -224,8 +224,8 @@ static int imx_pwm_probe(struct device_d *dev)
 	imx->mmio_base = IOMEM(iores->start);
 
 	imx->chip.ops = &imx_pwm_ops;
-	if (dev->device_node) {
-		imx->chip.devname = of_alias_get(dev->device_node);
+	if (dev->of_node) {
+		imx->chip.devname = of_alias_get(dev->of_node);
 		if (!imx->chip.devname)
 			imx->chip.devname = basprintf("pwm_%p",
 							imx->mmio_base);
@@ -239,7 +239,7 @@ static int imx_pwm_probe(struct device_d *dev)
 	return pwmchip_add(&imx->chip, dev);;
 }
 
-static struct driver_d imx_pwm_driver = {
+static struct driver imx_pwm_driver = {
 	.name	= "imx-pwm",
 	.of_compatible	= imx_pwm_dt_ids,
 	.probe		= imx_pwm_probe,

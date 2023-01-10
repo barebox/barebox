@@ -9,7 +9,7 @@
 #include <driver.h>
 #include <mach/imx-regs.h>
 
-static inline struct device_d *mxs_add_nand(unsigned long gpmi_base, unsigned long bch_base)
+static inline struct device *mxs_add_nand(unsigned long gpmi_base, unsigned long bch_base)
 {
 	struct resource res[] = {
 		{
@@ -23,7 +23,7 @@ static inline struct device_d *mxs_add_nand(unsigned long gpmi_base, unsigned lo
 		},
 	};
 
-	struct device_d *dev = xzalloc(sizeof(*dev));
+	struct device *dev = xzalloc(sizeof(*dev));
 
 	dev->resource = xzalloc(sizeof(struct resource) * ARRAY_SIZE(res));
 	memcpy(dev->resource, res, sizeof(struct resource) * ARRAY_SIZE(res));
@@ -36,12 +36,12 @@ static inline struct device_d *mxs_add_nand(unsigned long gpmi_base, unsigned lo
 	return dev;
 };
 
-static inline struct device_d *imx23_add_nand(void)
+static inline struct device *imx23_add_nand(void)
 {
 	return mxs_add_nand(MXS_GPMI_BASE, MXS_BCH_BASE);
 }
 
-static inline struct device_d *imx28_add_nand(void)
+static inline struct device *imx28_add_nand(void)
 {
 	return mxs_add_nand(MXS_GPMI_BASE, MXS_BCH_BASE);
 }

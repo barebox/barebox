@@ -93,7 +93,7 @@ static struct fsl_dspi *to_dspi(struct spi_master *master)
 	return container_of(master, struct fsl_dspi, master);
 }
 
-static void hz_to_spi_baud(struct device_d *dev,
+static void hz_to_spi_baud(struct device *dev,
 			   char *pbr, char *br, int speed_hz,
 			   unsigned long clkrate)
 {
@@ -132,7 +132,7 @@ static void hz_to_spi_baud(struct device_d *dev,
 	}
 }
 
-static void ns_delay_scale(struct device_d *dev,
+static void ns_delay_scale(struct device *dev,
 			   char *psc, char *sc, int delay_ns,
 			   unsigned long clkrate)
 {
@@ -314,12 +314,12 @@ static int dspi_setup(struct spi_device *spi)
 	return 0;
 }
 
-static int dspi_probe(struct device_d *dev)
+static int dspi_probe(struct device *dev)
 {
 	struct resource *io;
 	struct fsl_dspi *dspi;
 	struct spi_master *master;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 
 	int ret = 0;
 	uint32_t bus_num = 0;
@@ -351,9 +351,9 @@ static int dspi_probe(struct device_d *dev)
 	else
 		master->bus_num = dev->id;
 
-	of_property_read_u32(dev->device_node, "fsl,spi-cs-sck-delay",
+	of_property_read_u32(dev->of_node, "fsl,spi-cs-sck-delay",
 			     &dspi->cs_sck_delay);
-	of_property_read_u32(dev->device_node, "fsl,spi-sck-cs-delay",
+	of_property_read_u32(dev->of_node, "fsl,spi-sck-cs-delay",
 			     &dspi->sck_cs_delay);
 
 	io = dev_request_mem_resource(dev, 0);
@@ -401,7 +401,7 @@ static const struct of_device_id dspi_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d dspi_spi_driver = {
+static struct driver dspi_spi_driver = {
 	.name  = "fsl-dspi",
 	.probe = dspi_probe,
 	.of_compatible = DRV_OF_COMPAT(dspi_dt_ids),

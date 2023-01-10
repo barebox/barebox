@@ -103,7 +103,7 @@ static int mvebu_mdio_write(struct mii_bus *bus, int addr, int reg, u16 data)
 	return 0;
 }
 
-static int mvebu_mdio_probe(struct device_d *dev)
+static int mvebu_mdio_probe(struct device *dev)
 {
 	struct mdio_priv *priv;
 
@@ -119,7 +119,7 @@ static int mvebu_mdio_probe(struct device_d *dev)
 		return PTR_ERR(priv->clk);
 	clk_enable(priv->clk);
 
-	priv->miibus.dev.device_node = dev->device_node;
+	priv->miibus.dev.of_node = dev->of_node;
 	priv->miibus.priv = priv;
 	priv->miibus.parent = dev;
 	priv->miibus.read = mvebu_mdio_read;
@@ -128,7 +128,7 @@ static int mvebu_mdio_probe(struct device_d *dev)
 	return mdiobus_register(&priv->miibus);
 }
 
-static void mvebu_mdio_remove(struct device_d *dev)
+static void mvebu_mdio_remove(struct device *dev)
 {
 	struct mdio_priv *priv = dev->priv;
 
@@ -142,7 +142,7 @@ static struct of_device_id mvebu_mdio_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d mvebu_mdio_driver = {
+static struct driver mvebu_mdio_driver = {
 	.name   = "mvebu-mdio",
 	.probe  = mvebu_mdio_probe,
 	.remove = mvebu_mdio_remove,

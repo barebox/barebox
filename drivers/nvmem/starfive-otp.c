@@ -138,7 +138,7 @@ static struct regmap_bus starfive_otp_regmap_bus = {
 	.reg_write = starfive_otp_write,
 };
 
-static int starfive_otp_probe(struct device_d *dev)
+static int starfive_otp_probe(struct device *dev)
 {
 	struct starfive_otp *priv;
 	struct regmap_config config = {};
@@ -162,7 +162,7 @@ static int starfive_otp_probe(struct device_d *dev)
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
 
-	ret = of_property_read_u32(dev->device_node, "fuse-count", &total_fuses);
+	ret = of_property_read_u32(dev->of_node, "fuse-count", &total_fuses);
 	if (ret < 0) {
 		dev_err(dev, "missing required fuse-count property\n");
 		return ret;
@@ -193,7 +193,7 @@ static struct of_device_id starfive_otp_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d starfive_otp_driver = {
+static struct driver starfive_otp_driver = {
 	.name	= "starfive_otp",
 	.probe	= starfive_otp_probe,
 	.of_compatible = starfive_otp_dt_ids,

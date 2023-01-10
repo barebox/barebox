@@ -1071,7 +1071,7 @@ static void __init doc_set_driver_info(int chip_id, struct mtd_info *mtd)
 }
 
 static struct mtd_info *doc_probe_device(void __iomem *base, int floor,
-					 struct device_d *dev)
+					 struct device *dev)
 {
 	int ret, bbt_nbpages;
 	u16 chip_id, chip_id_inv;
@@ -1131,7 +1131,7 @@ nomem1:
 	return ERR_PTR(ret);
 }
 
-static int __init docg3_probe(struct device_d *dev)
+static int __init docg3_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct mtd_info *mtd;
@@ -1186,7 +1186,7 @@ nomem2:
 	return ret;
 }
 
-static struct driver_d  g3_driver = {
+static struct driver  g3_driver = {
 	.name	= "docg3",
 	.probe	= docg3_probe,
 };

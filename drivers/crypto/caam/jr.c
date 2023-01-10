@@ -22,7 +22,7 @@
 #include "desc.h"
 #include "intern.h"
 
-static int caam_reset_hw_jr(struct device_d *dev)
+static int caam_reset_hw_jr(struct device *dev)
 {
 	struct caam_drv_private_jr *jrp = dev->priv;
 	uint64_t start;
@@ -59,7 +59,7 @@ static int caam_reset_hw_jr(struct device_d *dev)
 static int caam_jr_dequeue(struct caam_drv_private_jr *jrp)
 {
 	int hw_idx, sw_idx, i, head, tail;
-	void (*usercall)(struct device_d *dev, u32 *desc, u32 status, void *arg);
+	void (*usercall)(struct device *dev, u32 *desc, u32 status, void *arg);
 	u32 *userdesc, userstatus;
 	void *userarg;
 	int found;
@@ -183,8 +183,8 @@ static int caam_jr_interrupt(struct caam_drv_private_jr *jrp)
  * @areq: optional pointer to a user argument for use at callback
  *        time.
  **/
-int caam_jr_enqueue(struct device_d *dev, u32 *desc,
-		    void (*cbk)(struct device_d *dev, u32 *desc,
+int caam_jr_enqueue(struct device *dev, u32 *desc,
+		    void (*cbk)(struct device *dev, u32 *desc,
 				u32 status, void *areq),
 		    void *areq)
 {
@@ -237,7 +237,7 @@ EXPORT_SYMBOL(caam_jr_enqueue);
 /*
  * Init JobR independent of platform property detection
  */
-static int caam_jr_init(struct device_d *dev)
+static int caam_jr_init(struct device *dev)
 {
 	struct caam_drv_private_jr *jrp;
 	dma_addr_t dma_inpring;
@@ -287,7 +287,7 @@ static int caam_jr_init(struct device_d *dev)
 /*
  * Probe routine for each detected JobR subsystem.
  */
-int caam_jr_probe(struct device_d *dev)
+int caam_jr_probe(struct device *dev)
 {
 	struct caam_job_ring __iomem *ctrl;
 	struct caam_drv_private_jr *jrpriv;

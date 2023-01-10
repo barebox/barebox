@@ -93,7 +93,7 @@ static int arasan_sdhci_reset(struct arasan_sdhci_host *host, u8 mask)
 	return 0;
 }
 
-static int arasan_sdhci_init(struct mci_host *mci, struct device_d *dev)
+static int arasan_sdhci_init(struct mci_host *mci, struct device *dev)
 {
 	struct arasan_sdhci_host *host = to_arasan_sdhci_host(mci);
 	int ret;
@@ -233,9 +233,9 @@ error:
 	return ret;
 }
 
-static int arasan_sdhci_probe(struct device_d *dev)
+static int arasan_sdhci_probe(struct device *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct arasan_sdhci_host *arasan_sdhci;
 	struct clk *clk_xin, *clk_ahb;
 	struct resource *iores;
@@ -307,7 +307,7 @@ static __maybe_unused struct of_device_id arasan_sdhci_compatible[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d arasan_sdhci_driver = {
+static struct driver arasan_sdhci_driver = {
 	.name = "arasan-sdhci",
 	.probe = arasan_sdhci_probe,
 	.of_compatible = DRV_OF_COMPAT(arasan_sdhci_compatible),

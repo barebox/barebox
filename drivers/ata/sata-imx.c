@@ -83,7 +83,7 @@ static int imx_sata_init_1ms(struct imx_ahci *imx_ahci)
 	return 0;
 }
 
-static int imx_sata_probe(struct device_d *dev)
+static int imx_sata_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct imx_ahci *imx_ahci;
@@ -159,7 +159,7 @@ static __maybe_unused struct of_device_id imx_sata_dt_ids[] = {
 	}
 };
 
-static struct driver_d imx_sata_driver = {
+static struct driver imx_sata_driver = {
 	.name   = "imx-sata",
 	.probe  = imx_sata_probe,
 	.id_table = imx_sata_ids,

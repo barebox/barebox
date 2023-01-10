@@ -184,7 +184,7 @@ struct ahci_port {
 };
 
 struct ahci_device {
-	struct device_d		*dev;
+	struct device		*dev;
 	struct ahci_port	ports[AHCI_MAX_PORTS];
 	u32			n_ports;
 	void __iomem		*mmio_base;
@@ -197,6 +197,6 @@ struct ahci_device {
 
 int ahci_add_host(struct ahci_device *ahci);
 void ahci_print_info(struct ahci_device *ahci);
-void ahci_info(struct device_d *dev);
+void ahci_info(struct device *dev);
 
 #endif

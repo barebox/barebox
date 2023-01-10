@@ -23,8 +23,8 @@ struct aiochannel {
 struct aiodevice {
 	const char *name;
 	int (*read)(struct aiochannel *, int *val);
-	struct device_d dev;
-	struct device_d *hwdev;
+	struct device dev;
+	struct device *hwdev;
 	struct aiochannel **channels;
 	int num_channels;
 	struct list_head list;
@@ -32,7 +32,7 @@ struct aiodevice {
 
 int aiodevice_register(struct aiodevice *aiodev);
 
-struct aiochannel *aiochannel_get(struct device_d *dev, int index);
+struct aiochannel *aiochannel_get(struct device *dev, int index);
 /* Find aiochannel by channel name, e.g. "aiodev0.in_value0_mV" */
 struct aiochannel *aiochannel_by_name(const char *name);
 

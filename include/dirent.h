@@ -9,8 +9,8 @@ struct dirent {
 };
 
 typedef struct dir {
-	struct device_d *dev;
-	struct fs_driver_d *fsdrv;
+	struct device *dev;
+	struct fs_driver *fsdrv;
 	struct dirent d;
 	void *priv; /* private data for the fs driver */
 	struct list_head entries;

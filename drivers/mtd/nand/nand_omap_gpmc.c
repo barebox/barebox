@@ -109,7 +109,7 @@ static const char *ecc_mode_strings[] = {
 
 /** internal structure maintained for nand information */
 struct gpmc_nand_info {
-	struct device_d *pdev;
+	struct device *pdev;
 	struct gpmc_nand_platform_data *pdata;
 	struct nand_chip nand;
 	int gpmc_cs;
@@ -1184,7 +1184,7 @@ static int gpmc_set_buswidth(struct nand_chip *chip, int buswidth)
  *
  * @return -failure reason or give 0
  */
-static int gpmc_nand_probe(struct device_d *pdev)
+static int gpmc_nand_probe(struct device *pdev)
 {
 	struct resource *iores;
 	struct gpmc_nand_info *oinfo;
@@ -1343,7 +1343,7 @@ out_release_mem:
 }
 
 /** GMPC nand driver -> device registered by platforms */
-static struct driver_d gpmc_nand_driver = {
+static struct driver gpmc_nand_driver = {
 	.name = "gpmc_nand",
 	.probe = gpmc_nand_probe,
 };

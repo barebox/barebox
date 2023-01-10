@@ -19,7 +19,7 @@ static int legacy_iterate(struct file *file, struct dir_context *ctx)
 	struct dentry *dentry = file->f_path.dentry;
 	struct inode *dir = d_inode(dentry);
 	struct super_block *sb = dir->i_sb;
-	struct fs_device_d *fsdev = container_of(sb, struct fs_device_d, sb);
+	struct fs_device *fsdev = container_of(sb, struct fs_device, sb);
 	struct dir *d;
 	struct dirent *dirent;
 	char *pathname;
@@ -48,7 +48,7 @@ static struct dentry *legacy_lookup(struct inode *dir, struct dentry *dentry,
 				    unsigned int flags)
 {
 	struct super_block *sb = dir->i_sb;
-	struct fs_device_d *fsdev = container_of(sb, struct fs_device_d, sb);
+	struct fs_device *fsdev = container_of(sb, struct fs_device, sb);
 	struct inode *inode;
 	char *pathname;
 	struct stat s;
@@ -72,7 +72,7 @@ static struct dentry *legacy_lookup(struct inode *dir, struct dentry *dentry,
 static int legacy_create(struct inode *dir, struct dentry *dentry, umode_t mode)
 {
 	struct super_block *sb = dir->i_sb;
-	struct fs_device_d *fsdev = container_of(sb, struct fs_device_d, sb);
+	struct fs_device *fsdev = container_of(sb, struct fs_device, sb);
 	struct inode *inode;
 	char *pathname;
 	int ret;
@@ -99,7 +99,7 @@ static int legacy_create(struct inode *dir, struct dentry *dentry, umode_t mode)
 static int legacy_mkdir(struct inode *dir, struct dentry *dentry, umode_t mode)
 {
 	struct super_block *sb = dir->i_sb;
-	struct fs_device_d *fsdev = container_of(sb, struct fs_device_d, sb);
+	struct fs_device *fsdev = container_of(sb, struct fs_device, sb);
 	struct inode *inode;
 	char *pathname;
 	int ret;
@@ -127,7 +127,7 @@ static int legacy_dir_is_empty(struct dentry *dentry)
 {
 	struct inode *dir = d_inode(dentry);
 	struct super_block *sb = dir->i_sb;
-	struct fs_device_d *fsdev = container_of(sb, struct fs_device_d, sb);
+	struct fs_device *fsdev = container_of(sb, struct fs_device, sb);
 	struct dir *d;
 	struct dirent *dirent;
 	char *pathname;
@@ -147,7 +147,7 @@ static int legacy_dir_is_empty(struct dentry *dentry)
 static int legacy_rmdir(struct inode *dir, struct dentry *dentry)
 {
 	struct super_block *sb = dir->i_sb;
-	struct fs_device_d *fsdev = container_of(sb, struct fs_device_d, sb);
+	struct fs_device *fsdev = container_of(sb, struct fs_device, sb);
 	char *pathname;
 	int ret;
 
@@ -176,7 +176,7 @@ static int legacy_rmdir(struct inode *dir, struct dentry *dentry)
 static int legacy_unlink(struct inode *dir, struct dentry *dentry)
 {
 	struct super_block *sb = dir->i_sb;
-	struct fs_device_d *fsdev = container_of(sb, struct fs_device_d, sb);
+	struct fs_device *fsdev = container_of(sb, struct fs_device, sb);
 	char *pathname;
 	int ret;
 
@@ -202,7 +202,7 @@ static int legacy_symlink(struct inode *dir, struct dentry *dentry,
 			  const char *dest)
 {
 	struct super_block *sb = dir->i_sb;
-	struct fs_device_d *fsdev = container_of(sb, struct fs_device_d, sb);
+	struct fs_device *fsdev = container_of(sb, struct fs_device, sb);
 	struct inode *inode;
 	char *pathname;
 	int ret;
@@ -230,7 +230,7 @@ static int legacy_symlink(struct inode *dir, struct dentry *dentry,
 static const char *legacy_get_link(struct dentry *dentry, struct inode *inode)
 {
 	struct super_block *sb = inode->i_sb;
-	struct fs_device_d *fsdev = container_of(sb, struct fs_device_d, sb);
+	struct fs_device *fsdev = container_of(sb, struct fs_device, sb);
 	char *pathname;
 	int ret;
 	char link[PATH_MAX] = {};
@@ -304,7 +304,7 @@ static struct inode *legacy_get_inode(struct super_block *sb, const struct inode
 	return inode;
 }
 
-int fs_init_legacy(struct fs_device_d *fsdev)
+int fs_init_legacy(struct fs_device *fsdev)
 {
 	struct inode *inode;
 

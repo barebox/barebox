@@ -21,10 +21,10 @@
 
 int barebox_register_console(int stdinfd, int stdoutfd)
 {
-	struct device_d *dev;
+	struct device *dev;
 	struct linux_console_data *data;
 
-	dev = xzalloc(sizeof(struct device_d) + sizeof(struct linux_console_data));
+	dev = xzalloc(sizeof(struct device) + sizeof(struct linux_console_data));
 
 	data = (struct linux_console_data *)(dev + 1);
 

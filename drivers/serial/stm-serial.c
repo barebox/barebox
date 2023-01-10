@@ -132,7 +132,7 @@ static int stm_serial_init_port(struct stm_priv *priv)
 	return 0;
 }
 
-static int stm_serial_probe(struct device_d *dev)
+static int stm_serial_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct stm_priv *priv;
@@ -182,7 +182,7 @@ static __maybe_unused struct of_device_id stm_serial_dt_ids[] = {
 	}
 };
 
-static struct driver_d stm_serial_driver = {
+static struct driver stm_serial_driver = {
         .name   = "stm_serial",
         .probe  = stm_serial_probe,
 	.of_compatible = DRV_OF_COMPAT(stm_serial_dt_ids),

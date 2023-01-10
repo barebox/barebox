@@ -1434,7 +1434,7 @@ static int smc91c111_init_dev(struct eth_device *edev)
 	return 0;
 }
 
-static int smc91c111_probe(struct device_d *dev)
+static int smc91c111_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct eth_device *edev;
@@ -1489,7 +1489,7 @@ static int smc91c111_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d smc91c111_driver = {
+static struct driver smc91c111_driver = {
         .name  = "smc91c111",
         .probe = smc91c111_probe,
 };

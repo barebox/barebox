@@ -62,7 +62,7 @@ static struct cadence_qspi_platform_data qspi_pdata = {
 static void add_cadence_qspi_device(int id, resource_size_t ctrl,
 				    resource_size_t data, void *pdata)
 {
-	struct device_d *dev;
+	struct device *dev;
 	struct resource *res;
 
 	res = xzalloc(sizeof(struct resource) * 2);
@@ -102,7 +102,7 @@ static struct NS16550_plat uart_pdata = {
 
 void socfpga_cyclone5_uart_init(void)
 {
-	struct device_d *dev;
+	struct device *dev;
 
 	clks[uart] = clk_fixed("uart", 100000000);
 	clkdev_add_physbase(clks[uart], CYCLONE5_UART0_ADDRESS, NULL);
@@ -115,7 +115,7 @@ void socfpga_cyclone5_uart_init(void)
 
 void socfpga_cyclone5_timer_init(void)
 {
-	struct device_d *dev;
+	struct device *dev;
 
 	clks[timer] = clk_fixed("timer", 200000000);
 	clkdev_add_physbase(clks[timer], CYCLONE5_SMP_TWD_ADDRESS, NULL);

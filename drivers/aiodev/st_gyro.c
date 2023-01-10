@@ -66,7 +66,7 @@ static int st_gyro_read(struct aiochannel *chan, int *val)
 	return 0;
 }
 
-static int st_gyro_probe(struct device_d *dev)
+static int st_gyro_probe(struct device *dev)
 {
 	u8 tx[2], rx[2];
 	struct st_gyro *gyro;
@@ -114,7 +114,7 @@ static const struct of_device_id st_gyro_match[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d st_gyro_driver = {
+static struct driver st_gyro_driver = {
 	.name  = "st_gyro",
 	.probe = st_gyro_probe,
 	.of_compatible = st_gyro_match,

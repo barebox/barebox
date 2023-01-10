@@ -44,14 +44,14 @@ const static struct regulator_ops fixed_ops = {
 	.disable = regulator_fixed_disable,
 };
 
-static int regulator_fixed_probe(struct device_d *dev)
+static int regulator_fixed_probe(struct device *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct regulator_fixed *fix;
 	u32 delay;
 	int ret;
 
-	if (!dev->device_node)
+	if (!dev->of_node)
 		return -EINVAL;
 
 	fix = xzalloc(sizeof(*fix));
@@ -91,7 +91,7 @@ static struct of_device_id regulator_fixed_of_ids[] = {
 	{ }
 };
 
-static struct driver_d regulator_fixed_driver = {
+static struct driver regulator_fixed_driver = {
 	.name  = "regulator-fixed",
 	.probe = regulator_fixed_probe,
 	.of_compatible = DRV_OF_COMPAT(regulator_fixed_of_ids),

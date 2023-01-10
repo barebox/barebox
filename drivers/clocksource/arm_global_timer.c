@@ -63,7 +63,7 @@ static struct clocksource cs = {
 	.priority = 70,
 };
 
-static int arm_global_timer_probe(struct device_d *dev)
+static int arm_global_timer_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct clk *clk;
@@ -104,7 +104,7 @@ static struct of_device_id arm_global_timer_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d arm_global_timer_driver = {
+static struct driver arm_global_timer_driver = {
 	.name = "arm-global-timer",
 	.probe = arm_global_timer_probe,
 	.of_compatible = DRV_OF_COMPAT(arm_global_timer_dt_ids),

@@ -49,7 +49,7 @@ static int usb_stor_Bulk_clear_endpt_stall(struct us_data *us, unsigned int pipe
 /* Determine what the maximum LUN supported is */
 int usb_stor_Bulk_max_lun(struct us_data *us)
 {
-	struct device_d *dev = &us->pusb_dev->dev;
+	struct device *dev = &us->pusb_dev->dev;
 	int len, ret = 0;
 	unsigned char *iobuf = dma_alloc(1);
 
@@ -85,7 +85,7 @@ int usb_stor_Bulk_transport(struct us_blk_dev *usb_blkdev,
 			    void *data, u32 datalen)
 {
 	struct us_data *us = usb_blkdev->us;
-	struct device_d *dev = &us->pusb_dev->dev;
+	struct device *dev = &us->pusb_dev->dev;
 	struct bulk_cb_wrap cbw;
 	struct bulk_cs_wrap csw;
 	int actlen, data_actlen;
@@ -203,7 +203,7 @@ int usb_stor_Bulk_transport(struct us_blk_dev *usb_blkdev,
  */
 int usb_stor_Bulk_reset(struct us_data *us)
 {
-	struct device_d *dev = &us->pusb_dev->dev;
+	struct device *dev = &us->pusb_dev->dev;
 	int result;
 	int result2;
 	unsigned int pipe;

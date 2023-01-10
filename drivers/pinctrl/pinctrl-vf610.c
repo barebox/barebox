@@ -113,7 +113,7 @@ static struct pinctrl_ops pinctrl_vf610_ops = {
 	.get_direction = pinctrl_vf610_get_direction,
 };
 
-static int pinctrl_vf610_probe(struct device_d *dev)
+static int pinctrl_vf610_probe(struct device *dev)
 {
 	int ret;
 	struct resource *io;
@@ -143,7 +143,7 @@ static __maybe_unused struct of_device_id pinctrl_vf610_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d pinctrl_vf610_driver = {
+static struct driver pinctrl_vf610_driver = {
 	.name		= "vf610-pinctrl",
 	.probe		= pinctrl_vf610_probe,
 	.of_compatible	= DRV_OF_COMPAT(pinctrl_vf610_dt_ids),

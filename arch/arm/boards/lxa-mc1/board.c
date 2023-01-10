@@ -29,7 +29,7 @@ static int of_fixup_regulator_supply_disable(struct device_node *root, void *pat
 	return 0;
 }
 
-static int mc1_probe(struct device_d *dev)
+static int mc1_probe(struct device *dev)
 {
 	int flags;
 
@@ -61,7 +61,7 @@ static const struct of_device_id mc1_of_match[] = {
 };
 BAREBOX_DEEP_PROBE_ENABLE(mc1_of_match);
 
-static struct driver_d mc1_board_driver = {
+static struct driver mc1_board_driver = {
 	.name = "board-lxa-mc1",
 	.probe = mc1_probe,
 	.of_compatible = mc1_of_match,

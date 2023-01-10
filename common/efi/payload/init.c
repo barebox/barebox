@@ -271,7 +271,7 @@ void efi_main(efi_handle_t image, efi_system_table_t *sys_table)
 
 static int efi_core_init(void)
 {
-	struct device_d *dev;
+	struct device *dev;
 	int ret;
 
 	dev = device_alloc("efi-cs", DEVICE_ID_SINGLE);

@@ -1203,7 +1203,7 @@ void xhci_hcd_stop(int index);
 
 struct xhci_ctrl {
 	struct usb_host host;
-	struct device_d *dev;
+	struct device *dev;
 	struct xhci_hccr *hccr;	/* R/O registers, not need for volatile */
 	struct xhci_hcor *hcor;
 	struct xhci_doorbell_array *dba;

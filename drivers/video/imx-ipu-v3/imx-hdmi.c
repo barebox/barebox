@@ -113,7 +113,7 @@ struct hdmi_data_info {
 
 struct dw_hdmi {
 	enum dw_hdmi_devtype dev_type;
-	struct device_d *dev;
+	struct device *dev;
 	struct clk *isfr_clk;
 	struct clk *iahb_clk;
 
@@ -1248,10 +1248,10 @@ static int dw_hdmi_ioctl(struct vpl *vpl, unsigned int port,
 	return 0;
 }
 
-static int dw_hdmi_probe(struct device_d *dev)
+static int dw_hdmi_probe(struct device *dev)
 {
 	struct resource *iores;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct dw_hdmi *hdmi;
 	int ret;
 
@@ -1347,7 +1347,7 @@ err_isfr:
 	return ret;
 }
 
-static struct driver_d dw_hdmi_driver = {
+static struct driver dw_hdmi_driver = {
 	.probe		= dw_hdmi_probe,
 	.of_compatible	= dw_hdmi_dt_ids,
 	.name		= "imx-hdmi",

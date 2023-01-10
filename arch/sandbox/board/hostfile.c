@@ -89,16 +89,16 @@ static struct block_device_ops hf_blk_ops = {
 	.write = hf_blk_write,
 };
 
-static void hf_info(struct device_d *dev)
+static void hf_info(struct device *dev)
 {
 	struct hf_priv *priv = dev->priv;
 
 	printf("file: %s\n", priv->filename);
 }
 
-static int hf_probe(struct device_d *dev)
+static int hf_probe(struct device *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct hf_priv *priv = xzalloc(sizeof(*priv));
 	struct cdev *cdev;
 	bool is_blockdev;
@@ -175,7 +175,7 @@ static __maybe_unused struct of_device_id hostfile_dt_ids[] = {
 	}
 };
 
-static struct driver_d hf_drv = {
+static struct driver hf_drv = {
 	.name  = "hostfile",
 	.of_compatible = DRV_OF_COMPAT(hostfile_dt_ids),
 	.probe = hf_probe,

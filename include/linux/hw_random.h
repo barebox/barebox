@@ -30,12 +30,12 @@ struct hwrng {
 	struct list_head list;
 
 	struct cdev cdev;
-	struct device_d *dev;
+	struct device *dev;
 	void *buf;
 };
 
 /* Register a new Hardware Random Number Generator driver. */
-int hwrng_register(struct device_d *dev, struct hwrng *rng);
+int hwrng_register(struct device *dev, struct hwrng *rng);
 
 #ifdef CONFIG_HWRNG
 struct hwrng *hwrng_get_first(void);

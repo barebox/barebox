@@ -96,7 +96,7 @@ int at91_mux_pin(unsigned pin, enum at91_mux mux, int use_pullup)
 {
 	struct at91_gpio_chip *at91_gpio = pin_to_controller(pin);
 	void __iomem *pio;
-	struct device_d *dev;
+	struct device *dev;
 	unsigned mask = pin_to_mask(pin);
 	int bank = pin_to_bank(pin);
 
@@ -371,14 +371,14 @@ static struct of_device_id at91_pinctrl_dt_ids[] = {
 	}
 };
 
-static struct at91_pinctrl_mux_ops *at91_pinctrl_get_driver_data(struct device_d *dev)
+static struct at91_pinctrl_mux_ops *at91_pinctrl_get_driver_data(struct device *dev)
 {
 	struct at91_pinctrl_mux_ops *ops_data = NULL;
 	int rc;
 
-	if (dev->device_node) {
+	if (dev->of_node) {
 		const struct of_device_id *match;
-		match = of_match_node(at91_pinctrl_dt_ids, dev->device_node);
+		match = of_match_node(at91_pinctrl_dt_ids, dev->of_node);
 		if (!match)
 			ops_data = NULL;
 		else
@@ -469,7 +469,7 @@ static struct pinctrl_ops at91_pinctrl_ops = {
 	.set_state = at91_pinctrl_set_state,
 };
 
-static int at91_pinctrl_probe(struct device_d *dev)
+static int at91_pinctrl_probe(struct device *dev)
 {
 	struct at91_pinctrl *info;
 	int ret;
@@ -509,7 +509,7 @@ static struct platform_device_id at91_pinctrl_ids[] = {
 	},
 };
 
-static struct driver_d at91_pinctrl_driver = {
+static struct driver at91_pinctrl_driver = {
 	.name = "pinctrl-at91",
 	.probe = at91_pinctrl_probe,
 	.id_table = at91_pinctrl_ids,
@@ -616,15 +616,15 @@ static struct of_device_id at91_gpio_dt_ids[] = {
 	},
 };
 
-static int at91_gpio_probe(struct device_d *dev)
+static int at91_gpio_probe(struct device *dev)
 {
 	struct at91_gpio_chip *at91_gpio;
 	struct clk *clk;
 	int ret;
 	int alias_idx;
 
-	if (dev->device_node)
-		alias_idx = of_alias_get_id(dev->device_node, "gpio");
+	if (dev->of_node)
+		alias_idx = of_alias_get_id(dev->of_node, "gpio");
 	else
 		alias_idx = dev->id;
 
@@ -685,7 +685,7 @@ static struct platform_device_id at91_gpio_ids[] = {
 	},
 };
 
-static struct driver_d at91_gpio_driver = {
+static struct driver at91_gpio_driver = {
 	.name = "gpio-at91",
 	.probe = at91_gpio_probe,
 	.id_table = at91_gpio_ids,

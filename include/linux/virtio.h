@@ -52,7 +52,7 @@ struct virtio_device {
 	bool failed;
 	bool config_enabled;
 	bool config_change_pending;
-	struct device_d dev;
+	struct device dev;
 	struct virtio_device_id id;
 	const struct virtio_config_ops *config;
 	struct list_head vqs;
@@ -61,7 +61,7 @@ struct virtio_device {
 	u32 status_param;
 };
 
-static inline struct virtio_device *dev_to_virtio(struct device_d *_dev)
+static inline struct virtio_device *dev_to_virtio(struct device *_dev)
 {
 	return container_of(_dev, struct virtio_device, dev);
 }
@@ -69,7 +69,7 @@ static inline struct virtio_device *dev_to_virtio(struct device_d *_dev)
 void virtio_add_status(struct virtio_device *dev, unsigned int status);
 int register_virtio_device(struct virtio_device *dev);
 void unregister_virtio_device(struct virtio_device *dev);
-bool is_virtio_device(struct device_d *dev);
+bool is_virtio_device(struct device *dev);
 
 void virtio_break_device(struct virtio_device *dev);
 
@@ -101,7 +101,7 @@ size_t virtio_max_dma_size(struct virtio_device *vdev);
  * @restore: optional function to call on resume.
  */
 struct virtio_driver {
-	struct driver_d driver;
+	struct driver driver;
 	const struct virtio_device_id *id_table;
 	const unsigned int *feature_table;
 	unsigned int feature_table_size;
@@ -114,7 +114,7 @@ struct virtio_driver {
 	void (*config_changed)(struct virtio_device *dev);
 };
 
-static inline struct virtio_driver *drv_to_virtio(struct driver_d *drv)
+static inline struct virtio_driver *drv_to_virtio(struct driver *drv)
 {
 	return container_of(drv, struct virtio_driver, driver);
 }

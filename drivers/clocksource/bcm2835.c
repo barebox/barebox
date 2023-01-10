@@ -32,7 +32,7 @@ static struct clocksource bcm2835_stc = {
 	.priority = IS_ENABLED(CONFIG_CPU_V8) ? 60 : 80,
 };
 
-static int bcm2835_cs_probe(struct device_d *dev)
+static int bcm2835_cs_probe(struct device *dev)
 {
 	struct resource *iores;
 	static struct clk *stc_clk;
@@ -41,7 +41,7 @@ static int bcm2835_cs_probe(struct device_d *dev)
 
 	/* try to read rate from DT property first */
 	if (IS_ENABLED(CONFIG_OFTREE))
-		of_property_read_u32(dev->device_node, "clock-frequency",
+		of_property_read_u32(dev->of_node, "clock-frequency",
 				     &rate);
 
 	/* if rate is still empty, try to get rate from clk */
@@ -81,7 +81,7 @@ static __maybe_unused struct of_device_id bcm2835_cs_dt_ids[] = {
 	}
 };
 
-static struct driver_d bcm2835_cs_driver = {
+static struct driver bcm2835_cs_driver = {
 	.name = "bcm2835-cs",
 	.probe = bcm2835_cs_probe,
 	.of_compatible = DRV_OF_COMPAT(bcm2835_cs_dt_ids),

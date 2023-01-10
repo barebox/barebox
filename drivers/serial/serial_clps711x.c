@@ -127,7 +127,7 @@ static void clps711x_flush(struct console_device *cdev)
 	} while (tmp & SYSFLG_UBUSY);
 }
 
-static int clps711x_probe(struct device_d *dev)
+static int clps711x_probe(struct device *dev)
 {
 	struct device_node *syscon;
 	struct clps711x_uart *s;
@@ -148,7 +148,7 @@ static int clps711x_probe(struct device_d *dev)
 		goto out_err;
 	}
 
-	syscon = of_parse_phandle(dev->device_node, "syscon", 0);
+	syscon = of_parse_phandle(dev->of_node, "syscon", 0);
 	s->regmap = syscon_node_to_regmap(syscon);
 	if (IS_ERR(s->regmap)) {
 		err = PTR_ERR(s->regmap);
@@ -164,7 +164,7 @@ static int clps711x_probe(struct device_d *dev)
 	s->cdev.setbrg	= clps711x_setbaudrate;
 	s->cdev.linux_console_name = "ttyCL";
 
-	devname = of_alias_get(dev->device_node);
+	devname = of_alias_get(dev->of_node);
 	if (devname) {
 		s->cdev.devname = xstrdup(devname);
 		s->cdev.devid = DEVICE_ID_SINGLE;
@@ -186,7 +186,7 @@ static const struct of_device_id __maybe_unused clps711x_uart_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d clps711x_driver = {
+static struct driver clps711x_driver = {
 	.name		= "clps711x-uart",
 	.probe		= clps711x_probe,
 	.of_compatible	= DRV_OF_COMPAT(clps711x_uart_dt_ids),

@@ -35,7 +35,7 @@ struct dwc3_match_data {
 static int dwc3_get_dr_mode(struct dwc3 *dwc)
 {
 	enum usb_dr_mode mode;
-	struct device_d *dev = dwc->dev;
+	struct device *dev = dwc->dev;
 	unsigned int hw_mode;
 
 	if (dwc->dr_mode == USB_DR_MODE_UNKNOWN)
@@ -634,7 +634,7 @@ static int dwc3_core_get_phy(struct dwc3 *dwc);
 /* set global incr burst type configuration registers */
 static void dwc3_set_incr_burst_type(struct dwc3 *dwc)
 {
-	struct device_d *dev = dwc->dev;
+	struct device *dev = dwc->dev;
 	/* incrx_mode : for INCR burst type. */
 	bool incrx_mode;
 	/* incrx_size : for size of INCRX burst. */
@@ -654,7 +654,7 @@ static void dwc3_set_incr_burst_type(struct dwc3 *dwc)
 	 * result = 1, means INCRx burst mode supported.
 	 * result > 1, means undefined length burst mode supported.
 	 */
-	of_find_property(dev->device_node, "snps,incr-burst-type-adjustment",
+	of_find_property(dev->of_node, "snps,incr-burst-type-adjustment",
 			       &ntype);
 
 	ntype /= sizeof(u32);
@@ -669,7 +669,7 @@ static void dwc3_set_incr_burst_type(struct dwc3 *dwc)
 	}
 
 	/* Get INCR burst type, and parse it */
-	ret = of_property_read_u32_array(dev->device_node,
+	ret = of_property_read_u32_array(dev->of_node,
 					 "snps,incr-burst-type-adjustment",
 					 vals, ntype);
 	if (ret) {
@@ -904,7 +904,7 @@ err0:
 
 static int dwc3_core_get_phy(struct dwc3 *dwc)
 {
-	struct device_d		*dev = dwc->dev;
+	struct device		*dev = dwc->dev;
 	int ret;
 
 	dwc->usb2_generic_phy = phy_get(dev, "usb2-phy");
@@ -939,7 +939,7 @@ static int dwc3_core_get_phy(struct dwc3 *dwc)
 static int dwc3_set_mode(void *ctx, enum usb_dr_mode mode)
 {
 	struct dwc3 *dwc = ctx;
-	struct device_d *dev = dwc->dev;
+	struct device *dev = dwc->dev;
 	int ret;
 
 	switch (mode) {
@@ -980,7 +980,7 @@ static int dwc3_core_init_mode(struct dwc3 *dwc)
 
 static void dwc3_get_properties(struct dwc3 *dwc)
 {
-	struct device_d		*dev = dwc->dev;
+	struct device		*dev = dwc->dev;
 	u8			lpm_nyet_threshold;
 	u8			tx_de_emphasis;
 	u8			hird_threshold;
@@ -997,20 +997,20 @@ static void dwc3_get_properties(struct dwc3 *dwc)
 	 */
 	hird_threshold = 12;
 
-	dwc->maximum_speed = of_usb_get_maximum_speed(dev->device_node, NULL);
-	dwc->dr_mode = of_usb_get_dr_mode(dev->device_node, NULL);
-	dwc->hsphy_mode = of_usb_get_phy_mode(dev->device_node, NULL);
+	dwc->maximum_speed = of_usb_get_maximum_speed(dev->of_node, NULL);
+	dwc->dr_mode = of_usb_get_dr_mode(dev->of_node, NULL);
+	dwc->hsphy_mode = of_usb_get_phy_mode(dev->of_node, NULL);
 
-	dwc->dis_u2_freeclk_exists_quirk = of_property_read_bool(dev->device_node,
-		"snps,dis-u2-freeclk-exists-quirk");
+	dwc->dis_u2_freeclk_exists_quirk = of_property_read_bool(dev->of_node,
+								 "snps,dis-u2-freeclk-exists-quirk");
 	dwc->lpm_nyet_threshold = lpm_nyet_threshold;
 	dwc->tx_de_emphasis = tx_de_emphasis;
 
-	if (of_get_property(dev->device_node, "snps,dis_rxdet_inp3_quirk",
+	if (of_get_property(dev->of_node, "snps,dis_rxdet_inp3_quirk",
 			    NULL))
 		dwc->dis_rxdet_inp3_quirk = 1;
 
-	of_property_read_u32_array(dev->device_node,
+	of_property_read_u32_array(dev->of_node,
 				   "snps,quirk-frame-length-adjustment",
 				   &dwc->fladj, 1);
 
@@ -1031,7 +1031,7 @@ bool dwc3_has_imod(struct dwc3 *dwc)
 
 static void dwc3_check_params(struct dwc3 *dwc)
 {
-	struct device_d *dev = dwc->dev;
+	struct device *dev = dwc->dev;
 
 	/* Check for proper value of imod_interval */
 	if (dwc->imod_interval && !dwc3_has_imod(dwc)) {
@@ -1097,7 +1097,7 @@ static void dwc3_coresoft_reset(struct dwc3 *dwc)
 	dwc3_writel(dwc->regs, DWC3_GCTL, reg);
 }
 
-static int dwc3_probe(struct device_d *dev)
+static int dwc3_probe(struct device *dev)
 {
 	const struct dwc3_match_data *match;
 	struct dwc3		*dwc;
@@ -1114,10 +1114,10 @@ static int dwc3_probe(struct device_d *dev)
 
 	dwc3_get_properties(dwc);
 
-	if (dev->device_node) {
+	if (dev->of_node) {
 		dwc->num_clks = match->num_clks;
 
-		if (of_find_property(dev->device_node, "clocks", NULL)) {
+		if (of_find_property(dev->of_node, "clocks", NULL)) {
 			ret = clk_bulk_get(dev, dwc->num_clks, dwc->clks);
 			if (ret)
 				return ret;
@@ -1172,7 +1172,7 @@ static int dwc3_probe(struct device_d *dev)
 	return 0;
 }
 
-static void dwc3_remove(struct device_d *dev)
+static void dwc3_remove(struct device *dev)
 {
 	struct dwc3 *dwc = dev->priv;
 
@@ -1218,7 +1218,7 @@ static const struct of_device_id of_dwc3_match[] = {
 	{ },
 };
 
-static struct driver_d dwc3_driver = {
+static struct driver dwc3_driver = {
 	.probe = dwc3_probe,
 	.remove	= dwc3_remove,
 	.name = "dwc3",

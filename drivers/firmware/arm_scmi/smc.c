@@ -29,15 +29,15 @@ struct scmi_smc {
 	u32 func_id;
 };
 
-static bool smc_chan_available(struct device_d *dev, int idx)
+static bool smc_chan_available(struct device *dev, int idx)
 {
-	return of_parse_phandle(dev->device_node, "shmem", 0) != NULL;
+	return of_parse_phandle(dev->of_node, "shmem", 0) != NULL;
 }
 
-static int smc_chan_setup(struct scmi_chan_info *cinfo, struct device_d *dev,
+static int smc_chan_setup(struct scmi_chan_info *cinfo, struct device *dev,
 			  bool tx)
 {
-	struct device_d *cdev = cinfo->dev;
+	struct device *cdev = cinfo->dev;
 	struct scmi_smc *scmi_info;
 	resource_size_t size;
 	struct resource res;
@@ -52,7 +52,7 @@ static int smc_chan_setup(struct scmi_chan_info *cinfo, struct device_d *dev,
 	if (!scmi_info)
 		return -ENOMEM;
 
-	np = of_parse_phandle(cdev->device_node, "shmem", 0);
+	np = of_parse_phandle(cdev->of_node, "shmem", 0);
 	ret = of_address_to_resource(np, 0, &res);
 	if (ret) {
 		dev_err(cdev, "failed to get SCMI Tx shared memory\n");
@@ -62,7 +62,7 @@ static int smc_chan_setup(struct scmi_chan_info *cinfo, struct device_d *dev,
 	size = resource_size(&res);
 	scmi_info->shmem = IOMEM(res.start);
 
-	ret = of_property_read_u32(dev->device_node, "arm,smc-id", &func_id);
+	ret = of_property_read_u32(dev->of_node, "arm,smc-id", &func_id);
 	if (ret < 0)
 		return ret;
 

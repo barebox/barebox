@@ -161,18 +161,18 @@ int of_pinctrl_select_state_default(struct device_node *np)
 	return of_pinctrl_select_state(np, "default");
 }
 
-int pinctrl_select_state(struct device_d *dev, const char *name)
+int pinctrl_select_state(struct device *dev, const char *name)
 {
 	struct device_node *np;
 
-	np = dev->device_node;
+	np = dev->of_node;
 	if (!np)
 		return 0;
 
 	return of_pinctrl_select_state(np, name);
 }
 
-int pinctrl_select_state_default(struct device_d *dev)
+int pinctrl_select_state_default(struct device *dev)
 {
 	return pinctrl_select_state(dev, "default");
 }
@@ -182,11 +182,11 @@ int pinctrl_register(struct pinctrl_device *pdev)
 	if (!IS_ENABLED(CONFIG_PINCTRL))
 		return -ENOSYS;
 
-	BUG_ON(!pdev->dev->device_node);
+	BUG_ON(!pdev->dev->of_node);
 
 	list_add_tail(&pdev->list, &pinctrl_list);
 
-	pdev->node = pdev->dev->device_node;
+	pdev->node = pdev->dev->of_node;
 
 	pinctrl_select_state_default(pdev->dev);
 

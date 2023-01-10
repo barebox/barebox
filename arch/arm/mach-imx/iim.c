@@ -43,7 +43,7 @@ struct iim_bank {
 };
 
 struct iim_priv {
-	struct device_d dev;
+	struct device dev;
 	void __iomem *base;
 	void __iomem *bankbase;
 	struct iim_bank *bank[IIM_NUM_BANKS];
@@ -404,11 +404,11 @@ static void imx_iim_add_mac_param(struct iim_priv *iim, int macnum, int bank, in
  */
 #define MAC_ADDRESS_PROPLEN	(3 * sizeof(__be32))
 
-static void imx_iim_init_dt(struct device_d *dev, struct iim_priv *iim)
+static void imx_iim_init_dt(struct device *dev, struct iim_priv *iim)
 {
 	char mac[6];
 	const __be32 *prop;
-	struct device_node *node = dev->device_node;
+	struct device_node *node = dev->of_node;
 	int len, ret, macnum = 0;
 
 	if (!node)
@@ -442,12 +442,12 @@ static void imx_iim_init_dt(struct device_d *dev, struct iim_priv *iim)
 	}
 }
 #else
-static inline void imx_iim_init_dt(struct device_d *dev, struct iim_priv *iim)
+static inline void imx_iim_init_dt(struct device *dev, struct iim_priv *iim)
 {
 }
 #endif
 
-static int imx_iim_probe(struct device_d *dev)
+static int imx_iim_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct iim_priv *iim;
@@ -573,7 +573,7 @@ static __maybe_unused struct of_device_id imx_iim_dt_ids[] = {
 	}
 };
 
-static struct driver_d imx_iim_driver = {
+static struct driver imx_iim_driver = {
 	.name	= DRIVERNAME,
 	.probe	= imx_iim_probe,
 	.of_compatible = DRV_OF_COMPAT(imx_iim_dt_ids),

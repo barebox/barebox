@@ -178,7 +178,7 @@ err:
 	return ret;
 }
 
-int mc13xxx_adc_probe(struct device_d *dev, struct mc13xxx *mc_dev)
+int mc13xxx_adc_probe(struct device *dev, struct mc13xxx *mc_dev)
 {
 	int i;
 	int ret;

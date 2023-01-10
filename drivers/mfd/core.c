@@ -3,9 +3,10 @@
 #include <linux/mfd/core.h>
 #include <driver.h>
 
-int mfd_add_devices(struct device_d *parent, const struct mfd_cell *cells, int n_devs)
+int mfd_add_devices(struct device *parent, const struct mfd_cell *cells,
+		    int n_devs)
 {
-	struct device_d *dev;
+	struct device *dev;
 	int ret, i;
 
 	for (i = 0; i < n_devs; i++) {

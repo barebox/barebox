@@ -31,7 +31,7 @@ struct i2c_mux_priv {
 	struct i2c_adapter adap;
 
 	struct i2c_adapter *parent;
-	struct device_d *mux_dev;
+	struct device *mux_dev;
 	void *mux_priv;
 	u32 chan_id;
 
@@ -58,7 +58,7 @@ static int i2c_mux_master_xfer(struct i2c_adapter *adap,
 }
 
 struct i2c_adapter *i2c_add_mux_adapter(struct i2c_adapter *parent,
-				struct device_d *mux_dev,
+				struct device *mux_dev,
 				void *mux_priv, u32 force_nr, u32 chan_id,
 				int (*select) (struct i2c_adapter *,
 					       void *, u32),
@@ -95,16 +95,16 @@ struct i2c_adapter *i2c_add_mux_adapter(struct i2c_adapter *parent,
 	 * Try to populate the mux adapter's device_node, expands to
 	 * nothing if !CONFIG_OFDEVICE.
 	 */
-	if (mux_dev->device_node) {
+	if (mux_dev->of_node) {
 		struct device_node *child;
 		u32 reg;
 
-		for_each_child_of_node(mux_dev->device_node, child) {
+		for_each_child_of_node(mux_dev->of_node, child) {
 			ret = of_property_read_u32(child, "reg", &reg);
 			if (ret)
 				continue;
 			if (chan_id == reg) {
-				priv->adap.dev.device_node = child;
+				priv->adap.dev.of_node = child;
 				break;
 			}
 		}

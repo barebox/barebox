@@ -3,7 +3,7 @@
 #include <driver.h>
 #include <bootsource.h>
 
-static int phycore_stm32mp1_probe(struct device_d *dev)
+static int phycore_stm32mp1_probe(struct device *dev)
 {
 	if (bootsource_get_instance() == 0)
 		of_device_enable_path("/chosen/environment-sd");
@@ -20,7 +20,7 @@ static const struct of_device_id phycore_stm32mp1_of_match[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d phycore_stm32mp1_board_driver = {
+static struct driver phycore_stm32mp1_board_driver = {
 	.name = "board-phycore-stm32mp1",
 	.probe = phycore_stm32mp1_probe,
 	.of_compatible = phycore_stm32mp1_of_match,

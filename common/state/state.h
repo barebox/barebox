@@ -90,7 +90,7 @@ struct state_backend_storage {
 	struct list_head buckets;
 
 	/* For outputs */
-	struct device_d *dev;
+	struct device *dev;
 
 	const char *name;
 
@@ -105,7 +105,7 @@ struct state_backend_storage {
 struct state {
 	struct list_head list; /* Entry to enqueue on list of states */
 
-	struct device_d dev;
+	struct device dev;
 	char *of_path;
 	const char *name;
 	uint32_t magic;
@@ -202,21 +202,21 @@ struct device_node *state_to_node(struct state *state,
 				  enum state_convert conv);
 int backend_format_raw_create(struct state_backend_format **format,
 			      struct device_node *node, const char *secret_name,
-			      struct device_d *dev);
+			      struct device *dev);
 int backend_format_dtb_create(struct state_backend_format **format,
-			      struct device_d *dev);
+			      struct device *dev);
 int state_storage_init(struct state *state, const char *path,
 		       off_t offset, size_t max_size, uint32_t stridesize,
 		       const char *storagetype);
 void state_storage_set_readonly(struct state_backend_storage *storage);
 void state_add_var(struct state *state, struct state_variable *var);
 struct variable_type *state_find_type_by_name(const char *name);
-int state_backend_bucket_circular_create(struct device_d *dev, const char *path,
+int state_backend_bucket_circular_create(struct device *dev, const char *path,
 					 struct state_backend_storage_bucket **bucket,
 					 unsigned int eraseblock,
 					 ssize_t writesize,
 					 struct mtd_info_user *mtd_uinfo);
-int state_backend_bucket_cached_create(struct device_d *dev,
+int state_backend_bucket_cached_create(struct device *dev,
 				       struct state_backend_storage_bucket *raw,
 				       struct state_backend_storage_bucket **out);
 struct state_variable *state_find_var(struct state *state, const char *name);
@@ -224,7 +224,7 @@ struct digest *state_backend_format_raw_get_digest(struct state_backend_format
 						   *format);
 void state_backend_set_readonly(struct state *state);
 void state_storage_free(struct state_backend_storage *storage);
-int state_backend_bucket_direct_create(struct device_d *dev, const char *path,
+int state_backend_bucket_direct_create(struct device *dev, const char *path,
 				       struct state_backend_storage_bucket **bucket,
 				       off_t offset, ssize_t max_size);
 int state_storage_write(struct state_backend_storage *storage,

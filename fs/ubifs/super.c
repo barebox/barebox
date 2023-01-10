@@ -1207,9 +1207,10 @@ out_shrinker:
 /* late_initcall to let compressors initialize first */
 late_initcall(ubifs_init);
 
-int ubifs_get_super(struct device_d *dev, struct ubi_volume_desc *ubi, int silent)
+int ubifs_get_super(struct device *dev, struct ubi_volume_desc *ubi,
+		    int silent)
 {
-	struct fs_device_d *fsdev = dev_to_fs_device(dev);
+	struct fs_device *fsdev = dev_to_fs_device(dev);
 	struct super_block *sb;
 	struct ubifs_info *c;
 	int err;

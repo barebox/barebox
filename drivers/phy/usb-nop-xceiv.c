@@ -24,7 +24,7 @@ struct nop_usbphy {
 	int reset;
 };
 
-static struct phy *nop_usbphy_xlate(struct device_d *dev,
+static struct phy *nop_usbphy_xlate(struct device *dev,
 				    struct of_phandle_args *args)
 {
 	struct nop_usbphy *nopphy = dev->priv;
@@ -64,7 +64,7 @@ static const struct phy_ops nop_phy_ops = {
 	.init = nop_usbphy_init,
 };
 
-static int nop_usbphy_probe(struct device_d *dev)
+static int nop_usbphy_probe(struct device *dev)
 {
 	int ret;
 	struct nop_usbphy *nopphy;
@@ -80,7 +80,7 @@ static int nop_usbphy_probe(struct device_d *dev)
 	if (IS_ERR(nopphy->clk))
 		nopphy->clk = NULL;
 
-	nopphy->reset = of_get_named_gpio_flags(dev->device_node,
+	nopphy->reset = of_get_named_gpio_flags(dev->of_node,
 						"reset-gpios", 0, &of_flags);
 	if (gpio_is_valid(nopphy->reset)) {
 		/* assert reset */
@@ -131,7 +131,7 @@ static __maybe_unused struct of_device_id nop_usbphy_dt_ids[] = {
 	},
 };
 
-static struct driver_d nop_usbphy_driver = {
+static struct driver nop_usbphy_driver = {
 	.name   = "usb-nop-xceiv",
 	.probe  = nop_usbphy_probe,
 	.of_compatible = DRV_OF_COMPAT(nop_usbphy_dt_ids),

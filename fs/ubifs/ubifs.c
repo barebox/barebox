@@ -340,7 +340,7 @@ struct ubifs_file {
 	struct ubifs_data_node *dn;
 };
 
-static int ubifs_open(struct device_d *dev, FILE *file, const char *filename)
+static int ubifs_open(struct device *dev, FILE *file, const char *filename)
 {
 	struct inode *inode = file->f_inode;
 	struct ubifs_file *uf;
@@ -358,7 +358,7 @@ static int ubifs_open(struct device_d *dev, FILE *file, const char *filename)
 	return 0;
 }
 
-static int ubifs_close(struct device_d *dev, FILE *f)
+static int ubifs_close(struct device *dev, FILE *f)
 {
 	struct ubifs_file *uf = f->priv;
 
@@ -384,7 +384,7 @@ static int ubifs_get_block(struct ubifs_file *uf, unsigned int pos)
 	return 0;
 }
 
-static int ubifs_read(struct device_d *_dev, FILE *f, void *buf, size_t insize)
+static int ubifs_read(struct device *_dev, FILE *f, void *buf, size_t insize)
 {
 	struct ubifs_file *uf = f->priv;
 	unsigned int pos = f->pos;
@@ -431,7 +431,8 @@ static int ubifs_read(struct device_d *_dev, FILE *f, void *buf, size_t insize)
 	return insize;
 }
 
-static void ubifs_set_rootarg(struct ubifs_priv *priv, struct fs_device_d *fsdev)
+static void ubifs_set_rootarg(struct ubifs_priv *priv,
+			      struct fs_device *fsdev)
 {
 	struct ubi_volume_info vi = {};
 	struct ubi_device_info di = {};
@@ -451,9 +452,9 @@ static void ubifs_set_rootarg(struct ubifs_priv *priv, struct fs_device_d *fsdev
 	free(str);
 }
 
-static int ubifs_probe(struct device_d *dev)
+static int ubifs_probe(struct device *dev)
 {
-	struct fs_device_d *fsdev = dev_to_fs_device(dev);
+	struct fs_device *fsdev = dev_to_fs_device(dev);
 	struct ubifs_priv *priv = xzalloc(sizeof(struct ubifs_priv));
 	int ret;
 
@@ -488,7 +489,7 @@ err_free:
 	return ret;
 }
 
-static void ubifs_remove(struct device_d *dev)
+static void ubifs_remove(struct device *dev)
 {
 	struct ubifs_priv *priv = dev->priv;
 	struct super_block *sb = priv->sb;
@@ -502,7 +503,7 @@ static void ubifs_remove(struct device_d *dev)
 	free(priv);
 }
 
-static struct fs_driver_d ubifs_driver = {
+static struct fs_driver ubifs_driver = {
 	.open      = ubifs_open,
 	.close     = ubifs_close,
 	.read      = ubifs_read,

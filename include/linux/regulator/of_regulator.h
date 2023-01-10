@@ -8,7 +8,7 @@
 
 #include <linux/types.h>
 
-struct device_d;
+struct device;
 struct regulator_desc;
 
 struct of_regulator_match {
@@ -19,11 +19,11 @@ struct of_regulator_match {
 };
 
 #if defined(CONFIG_OFDEVICE)
-extern int of_regulator_match(struct device_d *dev, struct device_node *node,
+extern int of_regulator_match(struct device *dev, struct device_node *node,
 			      struct of_regulator_match *matches,
 			      unsigned int num_matches);
 #else
-static inline int of_regulator_match(struct device_d *dev,
+static inline int of_regulator_match(struct device *dev,
 				     struct device_node *node,
 				     struct of_regulator_match *matches,
 				     unsigned int num_matches)

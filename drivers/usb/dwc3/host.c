@@ -16,7 +16,7 @@
 int dwc3_host_init(struct dwc3 *dwc)
 {
 	struct resource *io;
-	struct device_d *dev = dwc->dev;
+	struct device *dev = dwc->dev;
 
 	io = dev_get_resource(dev, IORESOURCE_MEM, 0);
 	if (IS_ERR(io)) {

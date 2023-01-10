@@ -35,8 +35,8 @@ struct pwm_device {
 	unsigned long		flags;
 #define FLAG_REQUESTED	0
 	struct list_head	node;
-	struct device_d		*hwdev;
-	struct device_d		dev;
+	struct device		*hwdev;
+	struct device		dev;
 
 	struct pwm_state	params;
 	struct pwm_args		args;
@@ -82,7 +82,7 @@ static int set_enable(struct param_d *p, void *priv)
  * register a new pwm. pwm->devname must be initialized, usually
  * from dev_name(dev) from the hardware driver.
  */
-int pwmchip_add(struct pwm_chip *chip, struct device_d *dev)
+int pwmchip_add(struct pwm_chip *chip, struct device *dev)
 {
 	struct pwm_device *pwm;
 	struct param_d *p;
@@ -194,7 +194,7 @@ static struct pwm_device *of_node_to_pwm_device(struct device_node *np, int id)
 	struct pwm_device *pwm;
 
 	list_for_each_entry(pwm, &pwm_list, node) {
-		if (pwm->hwdev && pwm->hwdev->device_node == np &&
+		if (pwm->hwdev && pwm->hwdev->of_node == np &&
 				pwm->chip->id == id)
 			return pwm;
 	}

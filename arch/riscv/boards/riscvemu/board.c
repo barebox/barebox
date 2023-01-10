@@ -35,7 +35,7 @@ static void __noreturn riscvemu_restart(struct restart_handler *rst)
 
 extern char __dtb_overlay_of_sram_start[];
 
-static int riscvemu_probe(struct device_d *dev)
+static int riscvemu_probe(struct device *dev)
 {
 	struct device_node *of_chosen;
 	struct device_node *overlay;
@@ -43,7 +43,7 @@ static int riscvemu_probe(struct device_d *dev)
 	u64 start;
 
 	overlay = of_unflatten_dtb(__dtb_overlay_of_sram_start, INT_MAX);
-	of_overlay_apply_tree(dev->device_node, overlay);
+	of_overlay_apply_tree(dev->of_node, overlay);
 	/* of_probe() will happen later at of_populate_initcall */
 
 	if (IS_ENABLED(CONFIG_CMD_TUTORIAL))
@@ -69,7 +69,7 @@ static const struct of_device_id riscvemu_of_match[] = {
 };
 BAREBOX_DEEP_PROBE_ENABLE(riscvemu_of_match);
 
-static struct driver_d riscvemu_board_driver = {
+static struct driver riscvemu_board_driver = {
 	.name = "board-riscvemu",
 	.probe = riscvemu_probe,
 	.of_compatible = riscvemu_of_match,

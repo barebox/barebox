@@ -132,7 +132,7 @@ static const struct fsl_dspi_devtype_data ls2085a_data = {
 
 struct fsl_dspi {
 	struct spi_controller			ctlr;
-	struct device_d				*dev;
+	struct device				*dev;
 
 	struct regmap				*regmap;
 	struct regmap				*regmap_pushr;
@@ -462,10 +462,10 @@ static int dspi_setup(struct spi_device *spi)
 			return -ENOMEM;
 	}
 
-	of_property_read_u32(spi->dev.device_node, "fsl,spi-cs-sck-delay",
+	of_property_read_u32(spi->dev.of_node, "fsl,spi-cs-sck-delay",
 			     &cs_sck_delay);
 
-	of_property_read_u32(spi->dev.device_node, "fsl,spi-sck-cs-delay",
+	of_property_read_u32(spi->dev.of_node, "fsl,spi-sck-cs-delay",
 			     &sck_cs_delay);
 
 	chip->void_write_data = 0;
@@ -553,9 +553,9 @@ static void dspi_init(struct fsl_dspi *dspi)
 			     SPI_CTARE_FMSZE(0) | SPI_CTARE_DTCP(1));
 }
 
-static int dspi_probe(struct device_d *dev)
+static int dspi_probe(struct device *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	const struct regmap_config *regmap_config;
 	struct spi_master *master;
 	int ret, cs_num, bus_num = -1;
@@ -647,7 +647,7 @@ out_ctlr_put:
 	return ret;
 }
 
-static struct driver_d fsl_dspi_driver = {
+static struct driver fsl_dspi_driver = {
 	.name  = "fsl-dspi",
 	.probe = dspi_probe,
 	.of_compatible = DRV_OF_COMPAT(fsl_dspi_dt_ids),

@@ -1775,7 +1775,7 @@ static int ohci_init(struct usb_host *host)
 	return 0;
 }
 
-static int ohci_probe(struct device_d *dev)
+static int ohci_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct usb_host *host;
@@ -1810,7 +1810,7 @@ static int ohci_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d ohci_driver = {
+static struct driver ohci_driver = {
 	.name  = "ohci",
 	.probe = ohci_probe,
 };

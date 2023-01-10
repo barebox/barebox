@@ -154,7 +154,8 @@ static int socfpga_gen10_set_phy_mode(struct socfpga_dwc_dev *dwc_dev)
 }
 
 
-static int socfpga_dwc_probe_dt(struct device_d *dev, struct socfpga_dwc_dev *priv)
+static int socfpga_dwc_probe_dt(struct device *dev,
+				struct socfpga_dwc_dev *priv)
 {
 	u32 reg_offset, reg_shift;
 	int ret;
@@ -162,7 +163,7 @@ static int socfpga_dwc_probe_dt(struct device_d *dev, struct socfpga_dwc_dev *pr
 	if (!IS_ENABLED(CONFIG_OFTREE))
 		return -ENODEV;
 
-	ret = of_property_read_u32_index(dev->device_node, "altr,sysmgr-syscon",
+	ret = of_property_read_u32_index(dev->of_node, "altr,sysmgr-syscon",
 					 1, &reg_offset);
 	if (ret) {
 		dev_err(dev, "Could not read reg_offset from sysmgr-syscon! Please update the devicetree.\n");
@@ -170,14 +171,15 @@ static int socfpga_dwc_probe_dt(struct device_d *dev, struct socfpga_dwc_dev *pr
 		return -EINVAL;
 	}
 
-	ret = of_property_read_u32_index(dev->device_node, "altr,sysmgr-syscon",
+	ret = of_property_read_u32_index(dev->of_node, "altr,sysmgr-syscon",
 					 2, &reg_shift);
 	if (ret) {
 		dev_err(dev, "Could not read reg_shift from sysmgr-syscon! Please update the devicetree.\n");
 		return -EINVAL;
 	}
 
-	priv->f2h_ptp_ref_clk = of_property_read_bool(dev->device_node, "altr,f2h_ptp_ref_clk");
+	priv->f2h_ptp_ref_clk = of_property_read_bool(dev->of_node,
+						      "altr,f2h_ptp_ref_clk");
 
 	priv->reg_offset = reg_offset;
 	priv->reg_shift = reg_shift;
@@ -185,7 +187,7 @@ static int socfpga_dwc_probe_dt(struct device_d *dev, struct socfpga_dwc_dev *pr
 	return 0;
 }
 
-static int socfpga_dwc_ether_probe(struct device_d *dev)
+static int socfpga_dwc_ether_probe(struct device *dev)
 {
 	struct socfpga_dwc_dev *dwc_dev;
 	struct dw_eth_dev *priv;
@@ -215,7 +217,7 @@ static int socfpga_dwc_ether_probe(struct device_d *dev)
 
 	dwc_dev->priv = priv;
 
-	dwc_dev->sys_mgr_base = syscon_base_lookup_by_phandle(dev->device_node,
+	dwc_dev->sys_mgr_base = syscon_base_lookup_by_phandle(dev->of_node,
 							      "altr,sysmgr-syscon");
 	if (IS_ERR(dwc_dev->sys_mgr_base)) {
 		dev_err(dev, "Could not get sysmgr-syscon node\n");
@@ -260,7 +262,7 @@ static __maybe_unused struct of_device_id socfpga_dwc_ether_compatible[] = {
 	}
 };
 
-static struct driver_d socfpga_dwc_ether_driver = {
+static struct driver socfpga_dwc_ether_driver = {
 	.name = "socfpga_designware_eth",
 	.probe = socfpga_dwc_ether_probe,
 	.remove	= dwc_drv_remove,

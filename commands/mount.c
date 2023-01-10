@@ -13,7 +13,7 @@
 static int do_mount(int argc, char *argv[])
 {
 	int opt, verbose = 0;
-	struct driver_d *drv;
+	struct driver *drv;
 	const char *type = NULL;
 	const char *mountpoint, *devstr;
 	const char *fsoptions = NULL;
@@ -36,7 +36,7 @@ static int do_mount(int argc, char *argv[])
 	}
 
 	if (argc == optind) {
-		struct fs_device_d *fsdev;
+		struct fs_device *fsdev;
 
 		for_each_fs_device(fsdev) {
 			printf("%s on %s type %s\n",
@@ -48,7 +48,7 @@ static int do_mount(int argc, char *argv[])
 		if (verbose) {
 			printf("\nSupported filesystems:\n\n");
 			bus_for_each_driver(&fs_bus, drv) {
-				struct fs_driver_d * fsdrv = drv_to_fs_driver(drv);
+				struct fs_driver * fsdrv = drv_to_fs_driver(drv);
 				printf("%s\n", fsdrv->drv.name);
 			}
 		}

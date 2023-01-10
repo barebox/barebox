@@ -24,8 +24,8 @@ extern void rtc_time_to_tm(unsigned long time, struct rtc_time *tm);
 struct rtc_class_ops;
 
 struct rtc_device {
-	struct device_d *dev;
-	struct device_d class_dev;
+	struct device *dev;
+	struct device class_dev;
 	struct list_head list;
 
 	const struct rtc_class_ops *ops;

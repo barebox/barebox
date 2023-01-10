@@ -50,7 +50,7 @@ struct mv88e6xxx_chip {
 	const struct mv88e6xxx_info *info;
 	struct mii_bus *parent_miibus;
 	struct mii_bus miibus;
-	struct device_d *dev;
+	struct device *dev;
 	int reset;
 
 	/* Array of port structures. */

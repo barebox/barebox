@@ -72,7 +72,7 @@
 #define to_vic_rng(p)	container_of(p, struct vic_rng, rng)
 
 struct vic_rng {
-	struct device_d	*dev;
+	struct device	*dev;
 	void __iomem	*base;
 	struct hwrng	rng;
 };
@@ -170,7 +170,7 @@ static int vic_rng_read(struct hwrng *rng, void *buf, size_t max, bool wait)
 	return max;
 }
 
-static int vic_rng_probe(struct device_d *dev)
+static int vic_rng_probe(struct device *dev)
 {
 	struct vic_rng *hrng;
 	struct resource *res;
@@ -196,7 +196,7 @@ static const struct of_device_id vic_rng_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d vic_rng_driver = {
+static struct driver vic_rng_driver = {
 	.name		= "vic-rng",
 	.probe		= vic_rng_probe,
 	.of_compatible	= vic_rng_dt_ids,

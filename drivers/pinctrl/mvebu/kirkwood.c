@@ -426,11 +426,11 @@ static struct of_device_id kirkwood_pinctrl_of_match[] = {
 	{ }
 };
 
-static int kirkwood_pinctrl_probe(struct device_d *dev)
+static int kirkwood_pinctrl_probe(struct device *dev)
 {
 	struct resource *iores;
 	const struct of_device_id *match =
-		of_match_node(kirkwood_pinctrl_of_match, dev->device_node);
+		of_match_node(kirkwood_pinctrl_of_match, dev->of_node);
 	struct mvebu_pinctrl_soc_info *soc =
 		(struct mvebu_pinctrl_soc_info *)match->data;
 
@@ -442,7 +442,7 @@ static int kirkwood_pinctrl_probe(struct device_d *dev)
 	return mvebu_pinctrl_probe(dev, soc);
 }
 
-static struct driver_d kirkwood_pinctrl_driver = {
+static struct driver kirkwood_pinctrl_driver = {
 	.name		= "pinctrl-kirkwood",
 	.probe		= kirkwood_pinctrl_probe,
 	.of_compatible	= kirkwood_pinctrl_of_match,

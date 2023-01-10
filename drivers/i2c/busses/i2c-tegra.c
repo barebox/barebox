@@ -137,7 +137,7 @@ struct tegra_i2c_hw_feature {
  * @bus_clk_rate: current i2c bus clock rate
  */
 struct tegra_i2c_dev {
-	struct device_d *dev;
+	struct device *dev;
 	const struct tegra_i2c_hw_feature *hw;
 	struct i2c_adapter adapter;
 	struct clk *div_clk;
@@ -594,7 +594,7 @@ static const struct tegra_i2c_hw_feature tegra114_i2c_hw = {
 	.clk_divisor_std_fast_mode = 0x19,
 };
 
-static int tegra_i2c_probe(struct device_d *dev)
+static int tegra_i2c_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct tegra_i2c_dev *i2c_dev;
@@ -627,14 +627,14 @@ static int tegra_i2c_probe(struct device_d *dev)
 		return PTR_ERR(i2c_dev->rst);
 	}
 
-	ret = of_property_read_u32(dev->device_node, "clock-frequency",
+	ret = of_property_read_u32(dev->of_node, "clock-frequency",
 	                           &i2c_dev->bus_clk_rate);
 	if (ret)
 		i2c_dev->bus_clk_rate = 100000; /* default clock rate */
 
 	i2c_dev->hw = &tegra20_i2c_hw;
 	dev_get_drvdata(dev, (const void **)&i2c_dev->hw);
-	i2c_dev->is_dvc = of_device_is_compatible(dev->device_node,
+	i2c_dev->is_dvc = of_device_is_compatible(dev->of_node,
 	                                          "nvidia,tegra20-i2c-dvc");
 
 	if (!i2c_dev->hw->has_single_clk_source) {
@@ -655,7 +655,7 @@ static int tegra_i2c_probe(struct device_d *dev)
 	i2c_dev->adapter.master_xfer = tegra_i2c_xfer;
 	i2c_dev->adapter.dev.parent = dev;
 	i2c_dev->adapter.nr = dev->id;
-	i2c_dev->adapter.dev.device_node = dev->device_node;
+	i2c_dev->adapter.dev.of_node = dev->of_node;
 
 	ret = i2c_add_numbered_adapter(&i2c_dev->adapter);
 	if (ret) {
@@ -684,7 +684,7 @@ static __maybe_unused struct of_device_id tegra_i2c_compatible[] = {
 	}
 };
 
-static struct driver_d tegra_i2c_driver = {
+static struct driver tegra_i2c_driver = {
 	.name  = "tegra-i2c",
 	.probe   = tegra_i2c_probe,
 	.of_compatible = DRV_OF_COMPAT(tegra_i2c_compatible),

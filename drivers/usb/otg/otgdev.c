@@ -5,7 +5,7 @@
 #include <usb/usb.h>
 
 struct otg_mode {
-	struct device_d dev;
+	struct device dev;
 	unsigned int var_mode;
 	unsigned int cur_mode;
 	int (*set_mode_callback)(void *ctx, enum usb_dr_mode mode);
@@ -42,7 +42,7 @@ static const char *otg_mode_names[] = {
 	[USB_DR_MODE_OTG] = "otg",
 };
 
-static int register_otg_device(struct device_d *dev, struct otg_mode *otg)
+static int register_otg_device(struct device *dev, struct otg_mode *otg)
 {
 	struct param_d *param_mode;
 	int ret;
@@ -58,12 +58,12 @@ static int register_otg_device(struct device_d *dev, struct otg_mode *otg)
 	return PTR_ERR_OR_ZERO(param_mode);
 }
 
-static struct device_d otg_device = {
+static struct device otg_device = {
 	.name = "otg",
 	.id = DEVICE_ID_SINGLE,
 };
 
-int usb_register_otg_device(struct device_d *parent,
+int usb_register_otg_device(struct device *parent,
 			    int (*set_mode)(void *ctx, enum usb_dr_mode mode), void *ctx)
 {
 	int ret;

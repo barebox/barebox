@@ -233,7 +233,7 @@ static struct cdev_operations at25_fops = {
 	.write	= at25_ee_write,
 };
 
-static int at25_np_to_chip(struct device_d *dev,
+static int at25_np_to_chip(struct device *dev,
 			   struct device_node *np,
 			   struct spi_eeprom *chip)
 {
@@ -291,7 +291,7 @@ static int at25_np_to_chip(struct device_d *dev,
 	return 0;
 }
 
-static int at25_probe(struct device_d *dev)
+static int at25_probe(struct device *dev)
 {
 	int err, sr;
 	int addrlen;
@@ -301,8 +301,8 @@ static int at25_probe(struct device_d *dev)
 	at25 = xzalloc(sizeof(*at25));
 
 	/* Chip description */
-	if (dev->device_node) {
-		err = at25_np_to_chip(dev, dev->device_node, &at25->chip);
+	if (dev->of_node) {
+		err = at25_np_to_chip(dev, dev->of_node, &at25->chip);
 		if (err)
 			goto fail;
 	} else {
@@ -354,7 +354,7 @@ static int at25_probe(struct device_d *dev)
 		goto fail;
 
 	dev_dbg(dev, "%s probed\n", at25->cdev.name);
-	of_parse_partitions(&at25->cdev, dev->device_node);
+	of_parse_partitions(&at25->cdev, dev->of_node);
 	of_partitions_register_fixup(&at25->cdev);
 
 	return 0;
@@ -373,7 +373,7 @@ static __maybe_unused struct of_device_id at25_dt_ids[] = {
 	}
 };
 
-static struct driver_d at25_driver = {
+static struct driver at25_driver = {
 	.name  = DRIVERNAME,
 	.of_compatible = DRV_OF_COMPAT(at25_dt_ids),
 	.probe = at25_probe,

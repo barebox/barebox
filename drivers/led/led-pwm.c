@@ -39,12 +39,12 @@ static void led_pwm_set(struct led *led, unsigned int brightness)
 	pwm_apply_state(pwmled->pwm, &state);
 }
 
-static int led_pwm_of_probe(struct device_d *dev)
+static int led_pwm_of_probe(struct device *dev)
 {
 	struct device_node *child;
 	int ret;
 
-	for_each_child_of_node(dev->device_node, child) {
+	for_each_child_of_node(dev->of_node, child) {
 		struct pwmled *pwmled;
 		struct pwm_device *pwm;
 
@@ -81,7 +81,7 @@ static struct of_device_id led_pwm_of_ids[] = {
 	{ }
 };
 
-static struct driver_d led_pwm_of_driver = {
+static struct driver led_pwm_of_driver = {
 	.name  = "pwm-leds",
 	.probe = led_pwm_of_probe,
 	.of_compatible = DRV_OF_COMPAT(led_pwm_of_ids),

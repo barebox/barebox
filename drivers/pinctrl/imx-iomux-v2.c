@@ -105,7 +105,7 @@ int imx_iomux_setup_multiple_pins(const unsigned int *pin_list, unsigned count)
 	return 0;
 }
 
-static int imx_iomux_probe(struct device_d *dev)
+static int imx_iomux_probe(struct device *dev)
 {
 	struct resource *iores;
 	iores = dev_request_mem_resource(dev, 0);
@@ -132,7 +132,7 @@ static struct platform_device_id imx_iomux_ids[] = {
 	},
 };
 
-static struct driver_d imx_iomux_driver = {
+static struct driver imx_iomux_driver = {
 	.name = "imx-iomuxv2",
 	.probe = imx_iomux_probe,
 	.of_compatible = DRV_OF_COMPAT(imx_iomux_dt_ids),

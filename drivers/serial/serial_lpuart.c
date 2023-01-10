@@ -113,7 +113,7 @@ static int lpuart_clocksource_clock_change(struct notifier_block *nb,
 	return lpuart_serial_setbaudrate(&lpuart->cdev, lpuart->baudrate);
 }
 
-static int lpuart_serial_probe(struct device_d *dev)
+static int lpuart_serial_probe(struct device *dev)
 {
 	int ret;
 	struct console_device *cdev;
@@ -151,8 +151,8 @@ static int lpuart_serial_probe(struct device_d *dev)
 	cdev->flush  = lpuart_serial_flush;
 	cdev->setbrg = lpuart_serial_setbaudrate;
 
-	if (dev->device_node) {
-		devname = of_alias_get(dev->device_node);
+	if (dev->of_node) {
+		devname = of_alias_get(dev->of_node);
 		if (devname) {
 			cdev->devname = xstrdup(devname);
 			cdev->devid   = DEVICE_ID_SINGLE;
@@ -187,7 +187,7 @@ static struct of_device_id lpuart_serial_dt_ids[] = {
 	{}
 };
 
-static struct driver_d lpuart_serial_driver = {
+static struct driver lpuart_serial_driver = {
 	.name   = "lpuart-serial",
 	.probe  = lpuart_serial_probe,
 	.of_compatible = DRV_OF_COMPAT(lpuart_serial_dt_ids),

@@ -377,12 +377,12 @@ static int programmed_get(struct param_d *p, void *priv)
 	return 0;
 }
 
-static int socfpga_fpgamgr_probe(struct device_d *dev)
+static int socfpga_fpgamgr_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct fpgamgr *mgr;
 	struct firmware_handler *fh;
-	const char *alias = of_alias_get(dev->device_node);
+	const char *alias = of_alias_get(dev->of_node);
 	const char *model = NULL;
 	struct param_d *p;
 	int ret;
@@ -414,7 +414,7 @@ static int socfpga_fpgamgr_probe(struct device_d *dev)
 	fh->open = socfpga_fpgamgr_program_start;
 	fh->write = socfpga_fpgamgr_program_write_buf;
 	fh->close = socfpga_fpgamgr_program_finish;
-	of_property_read_string(dev->device_node, "compatible", &model);
+	of_property_read_string(dev->of_node, "compatible", &model);
 	if (model)
 		fh->model = xstrdup(model);
 	fh->dev = dev;
@@ -435,7 +435,7 @@ static int socfpga_fpgamgr_probe(struct device_d *dev)
 	}
 
 	fh->dev = &mgr->dev;
-	fh->device_node = dev->device_node;
+	fh->device_node = dev->of_node;
 
 	ret = firmwaremgr_register(fh);
 	if (ret != 0) {
@@ -460,7 +460,7 @@ static struct of_device_id socfpga_fpgamgr_id_table[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d socfpga_fpgamgr_driver = {
+static struct driver socfpga_fpgamgr_driver = {
 	.name = "socfpa-fpgamgr",
 	.of_compatible = DRV_OF_COMPAT(socfpga_fpgamgr_id_table),
 	.probe = socfpga_fpgamgr_probe,

@@ -690,11 +690,11 @@ static struct of_device_id dove_pinctrl_of_match[] = {
 	{ }
 };
 
-static int dove_pinctrl_probe(struct device_d *dev)
+static int dove_pinctrl_probe(struct device *dev)
 {
 	struct resource *iores;
 	const struct of_device_id *match =
-		of_match_node(dove_pinctrl_of_match, dev->device_node);
+		of_match_node(dove_pinctrl_of_match, dev->of_node);
 	struct mvebu_pinctrl_soc_info *soc =
 		(struct mvebu_pinctrl_soc_info *)match->data;
 	struct device_node *np;
@@ -728,7 +728,7 @@ static int dove_pinctrl_probe(struct device_d *dev)
 	return mvebu_pinctrl_probe(dev, soc);
 }
 
-static struct driver_d dove_pinctrl_driver = {
+static struct driver dove_pinctrl_driver = {
 	.name		= "pinctrl-dove",
 	.probe		= dove_pinctrl_probe,
 	.of_compatible	= dove_pinctrl_of_match,

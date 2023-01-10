@@ -22,7 +22,7 @@
 #define IMX_PD_OUTPUT_PORT	1
 
 struct imx_pd {
-	struct device_d *dev;
+	struct device *dev;
 	struct display_timings *timings;
 	u32 bus_format;
 	struct vpl vpl;
@@ -61,9 +61,9 @@ static int imx_pd_ioctl(struct vpl *vpl, unsigned int port,
 	return 0;
 }
 
-static int imx_pd_probe(struct device_d *dev)
+static int imx_pd_probe(struct device *dev)
 {
-	struct device_node *node = dev->device_node;
+	struct device_node *node = dev->of_node;
 	struct imx_pd *imx_pd;
 	struct device_node *port;
 	const char *fmt;
@@ -109,7 +109,7 @@ static struct of_device_id imx_pd_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d imx_pd_driver = {
+static struct driver imx_pd_driver = {
 	.probe			  = imx_pd_probe,
 	.of_compatible	= imx_pd_dt_ids,
 	.name				= "imx-parallel-display",

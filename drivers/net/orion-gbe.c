@@ -42,7 +42,7 @@ struct txdesc {
 };
 
 struct port_priv {
-	struct device_d dev;
+	struct device dev;
 	struct eth_device edev;
 	void __iomem *regs;
 	struct device_node *np;
@@ -387,10 +387,10 @@ static int port_open(struct eth_device *edev)
 	return 0;
 }
 
-static int port_probe(struct device_d *parent, struct port_priv *port)
+static int port_probe(struct device *parent, struct port_priv *port)
 {
 	struct orion_gbe *gbe = parent->priv;
-	struct device_d *dev = &port->dev;
+	struct device *dev = &port->dev;
 	u32 reg;
 	int ret;
 
@@ -451,7 +451,7 @@ static int port_probe(struct device_d *parent, struct port_priv *port)
 	dev_set_name(dev, "%08x.ethernet-port", (u32)gbe->regs);
 	dev->id = port->portno;
 	dev->parent = parent;
-	dev->device_node = port->np;
+	dev->of_node = port->np;
 	ret = register_device(dev);
 	if (ret)
 		return ret;
@@ -473,7 +473,7 @@ static int port_probe(struct device_d *parent, struct port_priv *port)
 	return 0;
 }
 
-static int orion_gbe_probe(struct device_d *dev)
+static int orion_gbe_probe(struct device *dev)
 {
 	struct orion_gbe *gbe;
 	struct port_priv *ppriv;
@@ -499,13 +499,13 @@ static int orion_gbe_probe(struct device_d *dev)
 	 * Although untested, the driver should also be able to
 	 * deal with multi-port controllers.
 	 */
-	for_each_child_of_node(dev->device_node, pnp)
+	for_each_child_of_node(dev->of_node, pnp)
 		gbe->num_ports++;
 
 	gbe->ports = xzalloc(gbe->num_ports * sizeof(*gbe->ports));
 
 	ppriv = gbe->ports;
-	for_each_child_of_node(dev->device_node, pnp) {
+	for_each_child_of_node(dev->of_node, pnp) {
 		ppriv->np = pnp;
 
 		ret = port_probe(dev, ppriv);
@@ -518,7 +518,7 @@ static int orion_gbe_probe(struct device_d *dev)
 	return 0;
 }
 
-static void orion_gbe_remove(struct device_d *dev)
+static void orion_gbe_remove(struct device *dev)
 {
 	struct orion_gbe *gbe = dev->priv;
 	int n;
@@ -539,7 +539,7 @@ static struct of_device_id orion_gbe_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d orion_gbe_driver = {
+static struct driver orion_gbe_driver = {
 	.name   = "orion-gbe",
 	.probe  = orion_gbe_probe,
 	.remove = orion_gbe_remove,

@@ -46,7 +46,7 @@ static int serial_omap4_usbboot_getc(struct console_device *cdev)
 	return priv->val;
 }
 
-static int serial_omap4_usbboot_probe(struct device_d *dev)
+static int serial_omap4_usbboot_probe(struct device *dev)
 {
 	struct serial_omap4_usbboot_priv *priv;
 	priv = xzalloc(sizeof(*priv));
@@ -60,7 +60,7 @@ static int serial_omap4_usbboot_probe(struct device_d *dev)
 	return console_register(&priv->cdev);
 }
 
-static struct driver_d serial_omap4_usbboot_driver = {
+static struct driver serial_omap4_usbboot_driver = {
 	.name = "serial_omap4_usbboot",
 	.probe = serial_omap4_usbboot_probe,
 };

@@ -82,7 +82,7 @@ struct at91_twi_pdata {
 };
 
 struct at91_twi_dev {
-	struct device_d *dev;
+	struct device *dev;
 	void __iomem *base;
 	struct clk *clk;
 	u8 *buf;
@@ -500,7 +500,7 @@ static struct of_device_id at91_twi_dt_ids[] = {
 	}
 };
 
-static int at91_twi_probe(struct device_d *dev)
+static int at91_twi_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct at91_twi_dev *i2c_at91;
@@ -546,7 +546,7 @@ static int at91_twi_probe(struct device_d *dev)
 	i2c_at91->adapter.master_xfer = at91_twi_xfer;
 	i2c_at91->adapter.dev.parent = dev;
 	i2c_at91->adapter.nr = dev->id;
-	i2c_at91->adapter.dev.device_node = dev->device_node;
+	i2c_at91->adapter.dev.of_node = dev->of_node;
 
 	rc = i2c_add_numbered_adapter(&i2c_at91->adapter);
 	if (rc) {
@@ -565,7 +565,7 @@ out_free:
 	return rc;
 }
 
-static struct driver_d at91_twi_driver = {
+static struct driver at91_twi_driver = {
 	.name		= "at91-twi",
 	.probe		= at91_twi_probe,
 	.id_table	= at91_twi_devtypes,

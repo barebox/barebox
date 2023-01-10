@@ -531,7 +531,7 @@ static int rtl8139_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 	struct eth_device *edev;
 	struct rtl8139_priv *priv;
 	int ret;
-	struct device_d *dev = &pdev->dev;
+	struct device *dev = &pdev->dev;
 
 	/* enable pci device */
 	pci_enable_device(pdev);

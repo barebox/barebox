@@ -40,7 +40,7 @@ static struct clk *rpi_register_firmware_clock(u32 clock_id, const char *name)
 	return clk_fixed(name, msg->get_clock_rate.body.resp.rate_hz);
 }
 
-static int bcm2835_cprman_init(struct device_d *dev)
+static int bcm2835_cprman_init(struct device *dev)
 {
 	struct clk *clk_cs;
 
@@ -50,9 +50,9 @@ static int bcm2835_cprman_init(struct device_d *dev)
 	return 0;
 }
 
-static int rpi_cprman_probe(struct device_d *dev)
+static int rpi_cprman_probe(struct device *dev)
 {
-	int (*init)(struct device_d *dev);
+	int (*init)(struct device *dev);
 
 	init = device_get_match_data(dev);
 	if (init) {
@@ -86,7 +86,7 @@ static int rpi_cprman_probe(struct device_d *dev)
 
 	clk_data.clks = clks;
 	clk_data.clk_num = BCM2711_CLOCK_END;
-	of_clk_add_provider(dev->device_node, of_clk_src_onecell_get, &clk_data);
+	of_clk_add_provider(dev->of_node, of_clk_src_onecell_get, &clk_data);
 
 	return 0;
 }
@@ -97,7 +97,7 @@ static __maybe_unused struct of_device_id bcm2835_cprman_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d bcm2835_cprman_driver = {
+static struct driver bcm2835_cprman_driver = {
 	.probe	= rpi_cprman_probe,
 	.name	= "raspberrypi-cprman",
 	.of_compatible = DRV_OF_COMPAT(bcm2835_cprman_dt_ids),

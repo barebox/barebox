@@ -49,10 +49,10 @@ struct efi_block_io_protocol {
 
 struct efi_bio_priv {
 	struct efi_block_io_protocol *protocol;
-	struct device_d *dev;
+	struct device *dev;
 	struct block_device blk;
 	u32 media_id;
-	void (*efi_info)(struct device_d *);
+	void (*efi_info)(struct device *);
 };
 
 static int efi_bio_read(struct block_device *blk, void *buffer, sector_t block,
@@ -102,7 +102,7 @@ static struct block_device_ops efi_bio_ops = {
 	.flush = efi_bio_flush,
 };
 
-static void efi_bio_print_info(struct device_d *dev)
+static void efi_bio_print_info(struct device *dev)
 {
 	struct efi_bio_priv *priv = dev->priv;
 	struct efi_block_io_media *media = priv->protocol->media;
@@ -150,7 +150,7 @@ static int efi_bio_probe(struct efi_device *efidev)
 	int instance;
 	struct efi_bio_priv *priv;
 	struct efi_block_io_media *media;
-	struct device_d *dev = &efidev->dev;
+	struct device *dev = &efidev->dev;
 
 	priv = xzalloc(sizeof(*priv));
 

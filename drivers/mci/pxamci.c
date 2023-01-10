@@ -319,7 +319,7 @@ static void pxamci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	mmc_writel(host->clkrt, MMC_CLKRT);
 }
 
-static int pxamci_init(struct mci_host *mci, struct device_d *dev)
+static int pxamci_init(struct mci_host *mci, struct device *dev)
 {
 	struct pxamci_host *host = to_pxamci(mci);
 
@@ -328,7 +328,7 @@ static int pxamci_init(struct mci_host *mci, struct device_d *dev)
 	return 0;
 }
 
-static int pxamci_probe(struct device_d *dev)
+static int pxamci_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct pxamci_host *host;
@@ -375,7 +375,7 @@ static int pxamci_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d pxamci_driver = {
+static struct driver pxamci_driver = {
 	.name  = DRIVER_NAME,
 	.probe = pxamci_probe,
 };

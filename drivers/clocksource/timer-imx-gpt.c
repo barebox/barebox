@@ -77,7 +77,7 @@ static struct notifier_block imx_clock_notifier = {
 	.notifier_call = imx_clocksource_clock_change,
 };
 
-static int imx_gpt_probe(struct device_d *dev)
+static int imx_gpt_probe(struct device *dev)
 {
 	struct resource *iores;
 	int i;
@@ -166,7 +166,7 @@ static struct platform_device_id imx_gpt_ids[] = {
 	},
 };
 
-static struct driver_d imx_gpt_driver = {
+static struct driver imx_gpt_driver = {
 	.name = "imx-gpt",
 	.probe = imx_gpt_probe,
 	.of_compatible = DRV_OF_COMPAT(imx_gpt_dt_ids),

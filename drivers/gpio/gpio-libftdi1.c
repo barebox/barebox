@@ -66,7 +66,7 @@ static struct gpio_ops libftdi1_gpio_ops = {
 	.set = libftdi1_gpio_set_value,
 };
 
-static int libftdi1_gpio_probe(struct device_d *dev)
+static int libftdi1_gpio_probe(struct device *dev)
 {
 	struct libftdi1_gpio_chip *gpio;
 	struct ft2232_bitbang *ftbb;
@@ -74,13 +74,13 @@ static int libftdi1_gpio_probe(struct device_d *dev)
 	uint32_t id_vendor, id_product;
 	const char *i_serial_number = NULL;
 
-	of_property_read_u32(dev->device_node, "usb,id_vendor",
+	of_property_read_u32(dev->of_node, "usb,id_vendor",
 				&id_vendor);
 
-	of_property_read_u32(dev->device_node, "usb,id_product",
+	of_property_read_u32(dev->of_node, "usb,id_product",
 				&id_product);
 
-	of_property_read_string(dev->device_node, "usb,i_serial_number",
+	of_property_read_string(dev->of_node, "usb,i_serial_number",
 				&i_serial_number);
 
 	ftbb = barebox_libftdi1_open(id_vendor, id_product,
@@ -113,12 +113,12 @@ static __maybe_unused const struct of_device_id libftdi1_gpio_dt_ids[] = {
 	},
 };
 
-static void libftdi1_gpio_remove(struct device_d *dev)
+static void libftdi1_gpio_remove(struct device *dev)
 {
 	barebox_libftdi1_close();
 }
 
-static struct driver_d libftdi1_gpio_driver = {
+static struct driver libftdi1_gpio_driver = {
 	.name = "libftdi1-gpio",
 	.probe = libftdi1_gpio_probe,
 	.remove = libftdi1_gpio_remove,

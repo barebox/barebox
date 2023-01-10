@@ -17,7 +17,7 @@ struct block_device_ops {
 struct chunk;
 
 struct block_device {
-	struct device_d *dev;
+	struct device *dev;
 	struct list_head list;
 	struct block_device_ops *ops;
 	int blockbits;

@@ -465,7 +465,7 @@ static void mxcmci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	host->clock = ios->clock;
 }
 
-static int mxcmci_init(struct mci_host *mci, struct device_d *dev)
+static int mxcmci_init(struct mci_host *mci, struct device *dev)
 {
 	struct mxcmci_host *host = to_mxcmci(mci);
 
@@ -486,7 +486,7 @@ static int mxcmci_init(struct mci_host *mci, struct device_d *dev)
 	return 0;
 }
 
-static int mxcmci_probe(struct device_d *dev)
+static int mxcmci_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct mxcmci_host *host;
@@ -528,7 +528,7 @@ static __maybe_unused struct of_device_id mxcmci_compatible[] = {
 	}
 };
 
-static struct driver_d mxcmci_driver = {
+static struct driver mxcmci_driver = {
         .name  = DRIVER_NAME,
         .probe = mxcmci_probe,
 	.of_compatible = DRV_OF_COMPAT(mxcmci_compatible),

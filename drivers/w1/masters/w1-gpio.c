@@ -39,10 +39,10 @@ static u8 w1_gpio_read_bit(struct w1_bus *bus)
 	return gpio_get_value(pdata->pin) ? 1 : 0;
 }
 
-static int w1_gpio_probe_dt(struct device_d *dev)
+static int w1_gpio_probe_dt(struct device *dev)
 {
 	struct w1_gpio_platform_data *pdata;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	int gpio;
 
 	if (dev->platform_data)
@@ -79,7 +79,7 @@ free_pdata:
 	return gpio;
 }
 
-static int __init w1_gpio_probe(struct device_d *dev)
+static int __init w1_gpio_probe(struct device *dev)
 {
 	struct w1_bus *master;
 	struct w1_gpio_platform_data *pdata;
@@ -151,7 +151,7 @@ static __maybe_unused const struct of_device_id w1_gpio_dt_ids[] = {
 	{}
 };
 
-static struct driver_d w1_gpio_driver = {
+static struct driver w1_gpio_driver = {
 	.name	= "w1-gpio",
 	.probe	= w1_gpio_probe,
 	.of_compatible = DRV_OF_COMPAT(w1_gpio_dt_ids),

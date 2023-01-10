@@ -76,7 +76,7 @@ struct nand_timing {
 };
 
 struct mxs_nand_info {
-	struct device_d		*dev;
+	struct device		*dev;
 	struct nand_chip	nand_chip;
 	void __iomem		*io_base;
 	void __iomem		*bch_base;
@@ -1400,14 +1400,15 @@ static int mxs_nand_hw_init(struct mxs_nand_info *info)
 	return 0;
 }
 
-static void mxs_nand_probe_dt(struct device_d *dev, struct mxs_nand_info *nand_info)
+static void mxs_nand_probe_dt(struct device *dev,
+		              struct mxs_nand_info *nand_info)
 {
 	struct nand_chip *chip = &nand_info->nand_chip;
 
 	if (!IS_ENABLED(CONFIG_OFTREE))
 		return;
 
-	if (of_get_nand_on_flash_bbt(dev->device_node))
+	if (of_get_nand_on_flash_bbt(dev->of_node))
 		chip->bbt_options |= NAND_BBT_USE_FLASH | NAND_BBT_NO_OOB;
 }
 
@@ -2157,7 +2158,7 @@ static void mxs_nand_setup_timing(struct mxs_nand_info *info)
 	}
 }
 
-static int mxs_nand_probe(struct device_d *dev)
+static int mxs_nand_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct mxs_nand_info *nand_info;
@@ -2306,7 +2307,7 @@ static __maybe_unused struct of_device_id gpmi_dt_ids[] = {
 	}
 };
 
-static struct driver_d mxs_nand_driver = {
+static struct driver mxs_nand_driver = {
 	.name  = "mxs_nand",
 	.probe = mxs_nand_probe,
 	.of_compatible = DRV_OF_COMPAT(gpmi_dt_ids),

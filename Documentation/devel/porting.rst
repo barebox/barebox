@@ -247,7 +247,7 @@ If you need board-specific setup that's not covered by any upstream device
 tree binding, you can write a driver that matches against your board's
 ``/compatible``::
 
-  static int my_board_probe(struct device_d *dev)
+  static int my_board_probe(struct device *dev)
   {
   	/* Do some board-specific setup */
   	return 0;
@@ -388,7 +388,6 @@ Miscellaneous Linux porting advice:
 
   * Branches dependent on ``system_state``: Take the ``SYSTEM_BOOTING`` branch
   * ``usleep`` and co.: use ``[mud]elay``
-  * ``.of_node``: use ``.device_node`` or ``dev_of_node``
   * ``jiffies``: use ``get_time_ns()``
   * ``time_before``: use ``!is_timeout()``
   * ``clk_hw_register_fixed_rate_with_accuracy``: use ``clk_hw_register_fixed_rate`` without accuracy

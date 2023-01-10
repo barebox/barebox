@@ -158,7 +158,7 @@ static struct fb_videomode *fb_num_to_mode(struct fb_info *info, int num)
 
 static int fb_setup_mode(struct fb_info *info)
 {
-	struct device_d *dev = &info->dev;
+	struct device *dev = &info->dev;
 	int ret;
 	struct fb_videomode *mode;
 
@@ -251,7 +251,7 @@ static void fb_print_modes(struct display_timings *modes)
 		fb_print_mode(&modes->modes[i]);
 }
 
-static void fb_info(struct device_d *dev)
+static void fb_info(struct device *dev)
 {
 	struct fb_info *info = dev->priv;
 
@@ -279,7 +279,7 @@ static int fb_set_shadowfb(struct param_d *p, void *priv)
 int register_framebuffer(struct fb_info *info)
 {
 	int id = get_free_deviceid("fb");
-	struct device_d *dev;
+	struct device *dev;
 	int ret, num_modes, i;
 	const char **names;
 

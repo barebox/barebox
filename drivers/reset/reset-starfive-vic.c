@@ -196,7 +196,7 @@ static const struct reset_control_ops starfive_rstgen_ops = {
 	.reset		= starfive_reset,
 };
 
-static int starfive_rstgen_probe(struct device_d *dev)
+static int starfive_rstgen_probe(struct device *dev)
 {
 	struct starfive_rstgen *priv;
 	struct resource *iores;
@@ -216,7 +216,7 @@ static int starfive_rstgen_probe(struct device_d *dev)
 	priv->base = IOMEM(iores->start);
 	priv->rcdev.nr_resets = RSTN_END;
 	priv->rcdev.ops = &starfive_rstgen_ops;
-	priv->rcdev.of_node = dev->device_node;
+	priv->rcdev.of_node = dev->of_node;
 
 	return reset_controller_register(&priv->rcdev);
 }
@@ -226,7 +226,7 @@ static const struct of_device_id starfive_rstgen_reset_dt_ids[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d starfive_rstgen_reset_driver = {
+static struct driver starfive_rstgen_reset_driver = {
 	.name = "starfive_rstgen",
 	.probe = starfive_rstgen_probe,
 	.of_compatible = starfive_rstgen_reset_dt_ids,

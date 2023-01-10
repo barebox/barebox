@@ -141,7 +141,7 @@ static const struct stm32_pwr_desc stm32_pwr_desc[] = {
 	PWR_REG(PWR_USB33, "usb33", 3300000, USB_3_3_EN, "vdd_3v3_usbfs"),
 };
 
-static int stm32_pwr_regulator_probe(struct device_d *dev)
+static int stm32_pwr_regulator_probe(struct device *dev)
 {
 	struct stm32_pwr_reg *priv;
 	struct device_node *child;
@@ -152,7 +152,7 @@ static int stm32_pwr_regulator_probe(struct device_d *dev)
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
 
-	for_each_child_of_node(dev->device_node, child) {
+	for_each_child_of_node(dev->of_node, child) {
 		const struct stm32_pwr_desc *desc = NULL;
 
 		for (i = 0; i < STM32PWR_REG_NUM_REGS; i++) {
@@ -207,7 +207,7 @@ static const struct of_device_id stm32_pwr_of_match[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d stm32_pwr_driver = {
+static struct driver stm32_pwr_driver = {
 	.probe = stm32_pwr_regulator_probe,
 	.name  = "stm32-pwr-regulator",
 	.of_compatible = stm32_pwr_of_match,

@@ -43,9 +43,9 @@ static void gpio_poweroff_do_poweroff(struct poweroff_handler *handler)
 
 static struct poweroff_handler handler;
 
-static int gpio_poweroff_probe(struct device_d *dev)
+static int gpio_poweroff_probe(struct device *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	bool input = false;
 	enum gpiod_flags flags;
 
@@ -80,7 +80,7 @@ static const struct of_device_id of_gpio_poweroff_match[] = {
 	{},
 };
 
-static struct driver_d gpio_poweroff_driver = {
+static struct driver gpio_poweroff_driver = {
 	.name = "poweroff-gpio",
 	.of_compatible = of_gpio_poweroff_match,
 	.probe = gpio_poweroff_probe,

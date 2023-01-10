@@ -50,7 +50,7 @@ const struct pci_device_id *pci_match_id(const struct pci_device_id *ids,
 }
 EXPORT_SYMBOL(pci_match_id);
 
-static int pci_match(struct device_d *dev, struct driver_d *drv)
+static int pci_match(struct device *dev, struct driver *drv)
 {
 	struct pci_dev *pdev = to_pci_dev(dev);
 	struct pci_driver *pdrv = to_pci_driver(drv);
@@ -65,7 +65,7 @@ static int pci_match(struct device_d *dev, struct driver_d *drv)
 	return -1;
 }
 
-static int pci_probe(struct device_d *dev)
+static int pci_probe(struct device *dev)
 {
 	struct pci_dev *pdev = to_pci_dev(dev);
 	struct pci_driver *pdrv = to_pci_driver(dev->driver);
@@ -73,7 +73,7 @@ static int pci_probe(struct device_d *dev)
 	return pdrv->probe(pdev, pdev->id);
 }
 
-static void pci_remove(struct device_d *dev)
+static void pci_remove(struct device *dev)
 {
 	struct pci_dev *pdev = to_pci_dev(dev);
 	struct pci_driver *pdrv = to_pci_driver(dev->driver);
@@ -97,7 +97,7 @@ pure_initcall(pci_bus_init);
 
 int pci_register_driver(struct pci_driver *pdrv)
 {
-	struct driver_d *drv = &pdrv->driver;
+	struct driver *drv = &pdrv->driver;
 
 	if (!pdrv->id_table)
 		return -EIO;
@@ -111,7 +111,7 @@ int pci_register_driver(struct pci_driver *pdrv)
 int pci_register_device(struct pci_dev *pdev)
 {
 	char str[6];
-	struct device_d *dev = &pdev->dev;
+	struct device *dev = &pdev->dev;
 	int ret;
 
 	dev_set_name(dev, "pci-%04x:%04x.", pdev->vendor, pdev->device);

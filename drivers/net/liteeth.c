@@ -53,7 +53,7 @@
 #define MAX_PKT_SIZE			LITEETH_BUFFER_SIZE
 
 struct liteeth {
-	struct device_d *dev;
+	struct device *dev;
 	struct eth_device edev;
 	void __iomem *base;
 	void __iomem *mdio_base;
@@ -272,9 +272,9 @@ static int liteeth_set_ethaddr(struct eth_device *edev,
 	return 0;
 }
 
-static int liteeth_probe(struct device_d *dev)
+static int liteeth_probe(struct device *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct eth_device *edev;
 	void __iomem *buf_base;
 	struct liteeth *priv;
@@ -370,7 +370,7 @@ static const struct of_device_id liteeth_dt_ids[] = {
 	}
 };
 
-static struct driver_d liteeth_driver = {
+static struct driver liteeth_driver = {
 	.name = DRV_NAME,
 	.probe = liteeth_probe,
 	.of_compatible = DRV_OF_COMPAT(liteeth_dt_ids),

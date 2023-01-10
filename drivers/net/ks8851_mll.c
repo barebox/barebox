@@ -593,7 +593,7 @@ static void ks_soft_reset(struct ks_net *ks, unsigned op)
  */
 static int ks_read_selftest(struct ks_net *ks)
 {
-	struct device_d *dev = &ks->edev.dev;
+	struct device *dev = &ks->edev.dev;
 	unsigned both_done = MBIR_TXMBF | MBIR_RXMBF;
 	int ret = 0;
 	unsigned rd;
@@ -659,7 +659,7 @@ static void ks_setup(struct ks_net *ks)
 
 static int ks8851_rx_frame(struct ks_net *ks)
 {
-	struct device_d *dev = &ks->edev.dev;
+	struct device *dev = &ks->edev.dev;
 	u16 RxStatus, RxLen = 0;
 	u16 tmp_rxqcr;
 
@@ -712,7 +712,7 @@ static int ks8851_rx_frame(struct ks_net *ks)
 static int ks8851_eth_rx(struct eth_device *edev)
 {
 	struct ks_net *ks = (struct ks_net *)edev->priv;
-	struct device_d *dev = &edev->dev;
+	struct device *dev = &edev->dev;
 	u16 frame_cnt;
 
 	if (!(ks_rdreg16(ks, KS_ISR) & IRQ_RXI))
@@ -733,7 +733,7 @@ static int ks8851_eth_send(struct eth_device *edev,
 		void *packet, int length)
 {
 	struct ks_net *ks = (struct ks_net *)edev->priv;
-	struct device_d *dev = &edev->dev;
+	struct device *dev = &edev->dev;
 	uint64_t tmo;
 	u16 tmp_rxqcr;
 
@@ -769,7 +769,7 @@ static int ks8851_eth_send(struct eth_device *edev,
 static int ks8851_eth_open(struct eth_device *edev)
 {
 	struct ks_net *priv = (struct ks_net *)edev->priv;
-	struct device_d *dev = &edev->dev;
+	struct device *dev = &edev->dev;
 	int ret;
 
 	ks_enable_qmu(priv);
@@ -792,14 +792,14 @@ static int ks8851_init_dev(struct eth_device *edev)
 static void ks8851_eth_halt(struct eth_device *edev)
 {
 	struct ks_net *priv = (struct ks_net *)edev->priv;
-	struct device_d *dev = &edev->dev;
+	struct device *dev = &edev->dev;
 
 	ks_disable_qmu(priv);
 
 	dev_dbg(dev, "eth_halt\n");
 }
 
-static int ks8851_probe(struct device_d *dev)
+static int ks8851_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct eth_device *edev;
@@ -872,7 +872,7 @@ static int ks8851_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d ks8851_driver = {
+static struct driver ks8851_driver = {
 	.name  = "ks8851_mll",
 	.probe = ks8851_probe,
 };

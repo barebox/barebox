@@ -17,35 +17,35 @@
 #include <mach/devices.h>
 #include <mach/pxafb.h>
 
-static inline struct device_d *pxa_add_device(char *name, int id, void *base,
+static inline struct device *pxa_add_device(char *name, int id, void *base,
 					      int size, void *pdata)
 {
 	return add_generic_device(name, id, NULL, (resource_size_t)base, size,
 				  IORESOURCE_MEM, pdata);
 }
 
-struct device_d *pxa_add_i2c(void *base, int id,
+struct device *pxa_add_i2c(void *base, int id,
 			     struct i2c_platform_data *pdata)
 {
 	return pxa_add_device("i2c-pxa", id, base, 0x1000, pdata);
 }
 
-struct device_d *pxa_add_uart(void *base, int id)
+struct device *pxa_add_uart(void *base, int id)
 {
 	return pxa_add_device("pxa_serial", id, base, 0x1000, NULL);
 }
 
-struct device_d *pxa_add_fb(void *base, struct pxafb_platform_data *pdata)
+struct device *pxa_add_fb(void *base, struct pxafb_platform_data *pdata)
 {
 	return pxa_add_device("pxafb", -1, base, 0x1000, pdata);
 }
 
-struct device_d *pxa_add_mmc(void *base, int id, void *pdata)
+struct device *pxa_add_mmc(void *base, int id, void *pdata)
 {
 	return pxa_add_device("pxa-mmc", id, base, 0x1000, pdata);
 }
 
-struct device_d *pxa_add_pwm(void *base, int id)
+struct device *pxa_add_pwm(void *base, int id)
 {
 	return pxa_add_device("pxa_pwm", id, base, 0x10, NULL);
 }

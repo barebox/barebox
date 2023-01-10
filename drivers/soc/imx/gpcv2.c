@@ -302,7 +302,7 @@ struct imx_pgc_domain {
 
 	const int voltage;
 	const bool keep_clocks;
-	struct device_d *dev;
+	struct device *dev;
 
 	unsigned int pgc_sw_pup_reg;
 	unsigned int pgc_sw_pdn_reg;
@@ -1136,7 +1136,7 @@ static const struct imx_pgc_domain_data imx8mn_pgc_domain_data = {
 	.pgc_regs = &imx7_pgc_regs,
 };
 
-static int imx_pgc_domain_probe(struct device_d *dev)
+static int imx_pgc_domain_probe(struct device *dev)
 {
 	struct imx_pgc_domain *domain = dev->priv;
 	int ret;
@@ -1178,7 +1178,7 @@ static int imx_pgc_domain_probe(struct device_d *dev)
 		goto out_domain_unmap;
 	}
 
-	ret = of_genpd_add_provider_simple(domain->dev->device_node,
+	ret = of_genpd_add_provider_simple(domain->dev->of_node,
 					   &domain->genpd);
 	if (ret) {
 		dev_err(domain->dev, "Failed to add genpd provider\n");
@@ -1199,14 +1199,14 @@ static const struct platform_device_id imx_pgc_domain_id[] = {
 	{ },
 };
 
-static struct driver_d imx_pgc_domain_driver = {
+static struct driver imx_pgc_domain_driver = {
 	.name = "imx-pgc",
 	.probe = imx_pgc_domain_probe,
 	.id_table = imx_pgc_domain_id,
 };
 coredevice_platform_driver(imx_pgc_domain_driver);
 
-static int imx_gpcv2_probe(struct device_d *dev)
+static int imx_gpcv2_probe(struct device *dev)
 {
 	const struct imx_pgc_domain_data *domain_data =
 			of_device_get_match_data(dev);
@@ -1222,7 +1222,7 @@ static int imx_gpcv2_probe(struct device_d *dev)
 	struct regmap *regmap;
 	int ret, pass = 0;
 
-	pgc_np = of_get_child_by_name(dev->device_node, "pgc");
+	pgc_np = of_get_child_by_name(dev->of_node, "pgc");
 	if (!pgc_np) {
 		dev_err(dev, "No power domains specified in DT\n");
 		return -EINVAL;
@@ -1247,7 +1247,7 @@ again:
 	for_each_child_of_node(pgc_np, np) {
 		bool child_domain = of_property_read_bool(np, "power-domains");
 		struct imx_pgc_domain *domain;
-		struct device_d *pd_dev;
+		struct device *pd_dev;
 		u32 domain_index;
 
 		if ((pass == 0 && child_domain) || (pass == 1 && !child_domain))
@@ -1277,8 +1277,8 @@ again:
 		domain->genpd.power_off = imx_pgc_power_down;
 
 		pd_dev = xzalloc(sizeof(*pd_dev));
-		pd_dev->device_node = np;
-		pd_dev->device_node->dev = pd_dev;
+		pd_dev->of_node = np;
+		pd_dev->of_node->dev = pd_dev;
 		pd_dev->id = domain_index;
 		pd_dev->parent = dev;
 		pd_dev->priv = domain;
@@ -1306,7 +1306,7 @@ static const struct of_device_id imx_gpcv2_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d imx_gpcv2_driver = {
+static struct driver imx_gpcv2_driver = {
 	.name = "imx-gpcv2",
 	.probe = imx_gpcv2_probe,
 	.of_compatible = DRV_OF_COMPAT(imx_gpcv2_dt_ids),

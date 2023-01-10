@@ -23,7 +23,7 @@ static const struct clk_div_table tdiv_tbl[] = {
 	{ }
 };
 
-static int clps711x_clk_probe(struct device_d *dev)
+static int clps711x_clk_probe(struct device *dev)
 {
 	unsigned int f_cpu, f_bus, f_uart, f_timer_ref, pll;
 	u32 tmp;
@@ -74,7 +74,7 @@ static int clps711x_clk_probe(struct device_d *dev)
 
 	clk_data.clks = clks;
 	clk_data.clk_num = CLPS711X_CLK_MAX;
-	of_clk_add_provider(dev->device_node, of_clk_src_onecell_get, &clk_data);
+	of_clk_add_provider(dev->of_node, of_clk_src_onecell_get, &clk_data);
 
 	return 0;
 }
@@ -84,7 +84,7 @@ static const struct of_device_id __maybe_unused clps711x_clk_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d clps711x_clk_driver = {
+static struct driver clps711x_clk_driver = {
 	.probe = clps711x_clk_probe,
 	.name = "clps711x-clk",
 	.of_compatible = DRV_OF_COMPAT(clps711x_clk_dt_ids),

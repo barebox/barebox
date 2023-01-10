@@ -106,7 +106,7 @@ static int imx_thermal_read(struct aiochannel *chan, int *val)
 	return 0;
 }
 
-static int imx_thermal_probe(struct device_d *dev)
+static int imx_thermal_probe(struct device *dev)
 {
 	uint32_t ocotp_ana1;
 	struct device_node *node;
@@ -115,7 +115,7 @@ static int imx_thermal_probe(struct device_d *dev)
 	int t1, n1, t2, n2;
 	int ret;
 
-	node = of_parse_phandle(dev->device_node, "fsl,tempmon-data", 0);
+	node = of_parse_phandle(dev->of_node, "fsl,tempmon-data", 0);
 	if (!node) {
 		dev_err(dev, "No calibration data source\n");
 		return -ENODEV;
@@ -135,7 +135,7 @@ static int imx_thermal_probe(struct device_d *dev)
 	}
 
 	imx_thermal = xzalloc(sizeof(*imx_thermal));
-	imx_thermal->base = syscon_base_lookup_by_phandle(dev->device_node,
+	imx_thermal->base = syscon_base_lookup_by_phandle(dev->of_node,
 							  "fsl,tempmon");
 	if (IS_ERR(imx_thermal->base)) {
 		dev_err(dev, "Could not get ANATOP address\n");
@@ -194,7 +194,7 @@ static const struct of_device_id of_imx_thermal_match[] = {
 };
 
 
-static struct driver_d imx_thermal_driver = {
+static struct driver imx_thermal_driver = {
 	.name		= "imx_thermal",
 	.probe		= imx_thermal_probe,
 	.of_compatible	= DRV_OF_COMPAT(of_imx_thermal_match),

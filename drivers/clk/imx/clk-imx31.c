@@ -79,7 +79,7 @@ static const char *per_sel[] = {
 	"ipg",
 };
 
-static int imx31_ccm_probe(struct device_d *dev)
+static int imx31_ccm_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *base;
@@ -139,7 +139,7 @@ static __maybe_unused struct of_device_id imx31_ccm_dt_ids[] = {
 	}
 };
 
-static struct driver_d imx31_ccm_driver = {
+static struct driver imx31_ccm_driver = {
 	.probe	= imx31_ccm_probe,
 	.name	= "imx31-ccm",
 	.of_compatible = DRV_OF_COMPAT(imx31_ccm_dt_ids),

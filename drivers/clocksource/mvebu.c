@@ -45,7 +45,7 @@ static struct clocksource cs = {
 	.priority = 70,
 };
 
-static int mvebu_timer_probe(struct device_d *dev)
+static int mvebu_timer_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct clk *clk;
@@ -58,7 +58,7 @@ static int mvebu_timer_probe(struct device_d *dev)
 
 	val = __raw_readl(timer_base + TIMER_CTRL_OFF);
 	val &= ~(TIMER0_25MHZ | TIMER0_DIV_MASK);
-	if (of_device_is_compatible(dev->device_node,
+	if (of_device_is_compatible(dev->of_node,
 				    "marvell,armada-370-timer")) {
 		clk = clk_get(dev, NULL);
 		div = TIMER_DIVIDER;
@@ -90,7 +90,7 @@ static struct of_device_id mvebu_timer_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d mvebu_timer_driver = {
+static struct driver mvebu_timer_driver = {
 	.name = "mvebu-timer",
 	.probe = mvebu_timer_probe,
 	.of_compatible = DRV_OF_COMPAT(mvebu_timer_dt_ids),

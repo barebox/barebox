@@ -32,8 +32,8 @@ static int riscv_request_stack(void)
 }
 coredevice_initcall(riscv_request_stack);
 
-static struct device_d timer_dev;
-static struct device_d serial_sbi_dev;
+static struct device timer_dev;
+static struct device serial_sbi_dev;
 
 static s64 hartid;
 
@@ -60,14 +60,14 @@ static int riscv_fixup_cpus(struct device_node *root, void *context)
 	return 0;
 }
 
-static int riscv_probe(struct device_d *parent)
+static int riscv_probe(struct device *parent)
 {
 	int ret;
 
 	/* Each hart has a timer, but we only need one */
 	if (IS_ENABLED(CONFIG_RISCV_TIMER) && !timer_dev.parent) {
 		timer_dev.id = DEVICE_ID_SINGLE;
-		timer_dev.device_node = parent->device_node;
+		timer_dev.of_node = parent->of_node;
 		timer_dev.parent = parent;
 		dev_set_name(&timer_dev, "riscv-timer");
 
@@ -78,7 +78,7 @@ static int riscv_probe(struct device_d *parent)
 
 	if (IS_ENABLED(CONFIG_SERIAL_SBI) && !serial_sbi_dev.parent) {
 		serial_sbi_dev.id = DEVICE_ID_SINGLE;
-		serial_sbi_dev.device_node = 0;
+		serial_sbi_dev.of_node = 0;
 		serial_sbi_dev.parent = parent;
 		dev_set_name(&serial_sbi_dev, "riscv-serial-sbi");
 
@@ -99,7 +99,7 @@ static struct of_device_id riscv_dt_ids[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d riscv_driver = {
+static struct driver riscv_driver = {
 	.name = "riscv",
 	.probe = riscv_probe,
 	.of_compatible = riscv_dt_ids,

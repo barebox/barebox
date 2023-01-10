@@ -79,7 +79,7 @@ struct imx_rproc_dcfg {
 };
 
 struct imx_rproc {
-	struct device_d			*dev;
+	struct device			*dev;
 	struct regmap			*regmap;
 	struct regmap			*gpr;
 	struct rproc			*rproc;
@@ -384,10 +384,10 @@ static const struct rproc_ops imx_rproc_ops = {
 };
 
 static int imx_rproc_addr_init(struct imx_rproc *priv,
-			       struct device_d *dev)
+			       struct device *dev)
 {
 	const struct imx_rproc_dcfg *dcfg = priv->dcfg;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	int a, b = 0, err, nph;
 
 	/* remap required addresses */
@@ -449,9 +449,9 @@ static int imx_rproc_addr_init(struct imx_rproc *priv,
 	return 0;
 }
 
-static int imx_rproc_probe(struct device_d *dev)
+static int imx_rproc_probe(struct device *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct imx_rproc *priv;
 	struct rproc *rproc;
 	const struct imx_rproc_dcfg *dcfg;
@@ -534,7 +534,7 @@ static const struct of_device_id imx_rproc_of_match[] = {
 	{},
 };
 
-static struct driver_d imx_rproc_driver = {
+static struct driver imx_rproc_driver = {
 	.name = "imx-rproc",
 	.probe = imx_rproc_probe,
 	.of_compatible = DRV_OF_COMPAT(imx_rproc_of_match),

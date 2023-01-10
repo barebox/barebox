@@ -249,7 +249,8 @@ is_pte_valid(const gpt_entry *pte, const u64 lastlba)
  *
  */
 static void
-compare_gpts(struct device_d *dev, gpt_header *pgpt, gpt_header *agpt, u64 lastlba)
+compare_gpts(struct device *dev, gpt_header *pgpt, gpt_header *agpt,
+	     u64 lastlba)
 {
 	int error_found = 0;
 	if (!pgpt || !agpt)

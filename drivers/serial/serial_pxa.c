@@ -149,7 +149,7 @@ static int pxa_serial_setbaudrate(struct console_device *cdev, int baudrate)
 	return 0;
 }
 
-static int pxa_serial_probe(struct device_d *dev)
+static int pxa_serial_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct console_device *cdev;
@@ -175,7 +175,7 @@ static int pxa_serial_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d pxa_serial_driver = {
+static struct driver pxa_serial_driver = {
 	.name = "pxa_serial",
 	.probe = pxa_serial_probe,
 };

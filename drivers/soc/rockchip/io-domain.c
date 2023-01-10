@@ -53,7 +53,7 @@ struct rockchip_iodomain_soc_data {
 };
 
 struct rockchip_iodomain {
-	struct device_d *dev;
+	struct device *dev;
 	struct regmap *grf;
 	const struct rockchip_iodomain_soc_data *soc_data;
 	struct rockchip_iodomain_supply supplies[MAX_SUPPLIES];
@@ -126,9 +126,9 @@ static const struct of_device_id rockchip_iodomain_match[] = {
 	{ /* sentinel */ },
 };
 
-static int rockchip_iodomain_probe(struct device_d *dev)
+static int rockchip_iodomain_probe(struct device *dev)
 {
-	struct device_node *np = dev->device_node, *parent;
+	struct device_node *np = dev->of_node, *parent;
 	struct rockchip_iodomain *iod;
 	int i, ret = 0;
 
@@ -215,7 +215,7 @@ out:
 	return ret;
 }
 
-static struct driver_d rockchip_iodomain_driver = {
+static struct driver rockchip_iodomain_driver = {
 	.name = "rockchip-iodomain",
 	.probe = rockchip_iodomain_probe,
 	.of_compatible = rockchip_iodomain_match,

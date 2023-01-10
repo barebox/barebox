@@ -56,7 +56,7 @@ static int mdio_mux_write(struct mii_bus *bus, int phy_id,
 	return mdio_mux_read_or_write(bus, phy_id, regnum, &val);
 }
 
-int mdio_mux_init(struct device_d *dev,
+int mdio_mux_init(struct device *dev,
 		  struct device_node *mux_node,
 		  int (*switch_fn)(int cur, int desired, void *data),
 		  void *data,
@@ -117,7 +117,7 @@ int mdio_mux_init(struct device_d *dev,
 		cb->mii_bus.parent = dev;
 		cb->mii_bus.read   = mdio_mux_read;
 		cb->mii_bus.write  = mdio_mux_write;
-		cb->mii_bus.dev.device_node = child_bus_node;
+		cb->mii_bus.dev.of_node = child_bus_node;
 
 		r = mdiobus_register(&cb->mii_bus);
 		if (r) {

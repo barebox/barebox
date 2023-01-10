@@ -301,7 +301,7 @@ static int sifive_spi_exec_op(struct spi_mem *mem,
 			      const struct spi_mem_op *op)
 {
 	struct spi_device *spi_dev = mem->spi;
-	struct device_d *dev = &spi_dev->dev;
+	struct device *dev = &spi_dev->dev;
 	struct sifive_spi *spi = spi_controller_get_devdata(spi_dev->controller);
 	u8 opcode = op->cmd.opcode;
 	int ret;
@@ -415,7 +415,7 @@ static int sifive_spi_setup(struct spi_device *spi_dev)
 
 static void sifive_spi_init_hw(struct sifive_spi *spi)
 {
-	struct device_d *dev = spi->ctlr.dev;
+	struct device *dev = spi->ctlr.dev;
 	u32 cs_bits;
 
 	/* probe the number of CS lines */
@@ -457,7 +457,7 @@ static const struct spi_controller_mem_ops sifive_spi_mem_ops = {
 
 static void sifive_spi_dt_probe(struct sifive_spi *spi)
 {
-	struct device_node *node = spi->ctlr.dev->device_node;
+	struct device_node *node = spi->ctlr.dev->of_node;
 
 	spi->fifo_depth = SIFIVE_SPI_DEFAULT_DEPTH;
 	of_property_read_u32(node, "sifive,fifo-depth", &spi->fifo_depth);
@@ -466,7 +466,7 @@ static void sifive_spi_dt_probe(struct sifive_spi *spi)
 	of_property_read_u32(node, "sifive,max-bits-per-word", &spi->bits_per_word);
 }
 
-static int sifive_spi_probe(struct device_d *dev)
+static int sifive_spi_probe(struct device *dev)
 {
 	struct sifive_spi *spi;
 	struct resource *iores;
@@ -513,7 +513,7 @@ static const struct of_device_id sifive_spi_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d sifive_spi_driver = {
+static struct driver sifive_spi_driver = {
 	.name  = "sifive_spi",
 	.probe = sifive_spi_probe,
 	.of_compatible = sifive_spi_ids,

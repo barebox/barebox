@@ -112,9 +112,9 @@ static int eqos_set_mode_stm32(struct eqos_stm32 *priv, phy_interface_t interfac
 	return 0;
 }
 
-static int eqos_init_stm32(struct device_d *dev, struct eqos *eqos)
+static int eqos_init_stm32(struct device *dev, struct eqos *eqos)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct eqos_stm32 *priv = to_stm32(eqos);
 	struct clk_bulk_data *eth_ck;
 	int ret;
@@ -126,14 +126,14 @@ static int eqos_init_stm32(struct device_d *dev, struct eqos *eqos)
 	priv->eth_ref_clk_sel_reg =
 		of_property_read_bool(np, "st,eth-ref-clk-sel");
 
-	priv->regmap = syscon_regmap_lookup_by_phandle(dev->device_node,
+	priv->regmap = syscon_regmap_lookup_by_phandle(dev->of_node,
 						       "st,syscon");
 	if (IS_ERR(priv->regmap)) {
 		dev_err(dev, "Could not get st,syscon node\n");
 		return PTR_ERR(priv->regmap);
 	}
 
-	ret = of_property_read_u32_index(dev->device_node, "st,syscon",
+	ret = of_property_read_u32_index(dev->of_node, "st,syscon",
 					 1, &priv->mode_reg);
 	if (ret) {
 		dev_err(dev, "Can't get sysconfig mode offset (%s)\n",
@@ -177,12 +177,12 @@ static struct eqos_ops stm32_ops = {
 	.config_mac = EQOS_MAC_RXQ_CTRL0_RXQ0EN_ENABLED_AV,
 };
 
-static int eqos_probe_stm32(struct device_d *dev)
+static int eqos_probe_stm32(struct device *dev)
 {
 	return eqos_probe(dev, &stm32_ops, xzalloc(sizeof(struct eqos_stm32)));
 }
 
-static void eqos_remove_stm32(struct device_d *dev)
+static void eqos_remove_stm32(struct device *dev)
 {
 	struct eqos_stm32 *priv = to_stm32(dev->priv);
 
@@ -197,7 +197,7 @@ static const struct of_device_id eqos_stm32_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d eqos_stm32_driver = {
+static struct driver eqos_stm32_driver = {
 	.name = "eqos-stm32",
 	.probe = eqos_probe_stm32,
 	.remove	= eqos_remove_stm32,

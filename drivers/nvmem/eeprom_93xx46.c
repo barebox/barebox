@@ -305,7 +305,7 @@ static int eeprom_93xx46_probe_dt(struct spi_device *spi)
 {
 	const struct of_device_id *of_id =
 		of_match_device(eeprom_93xx46_of_table, &spi->dev);
-	struct device_node *np = spi->dev.device_node;
+	struct device_node *np = spi->dev.of_node;
 	struct eeprom_93xx46_platform_data *pd;
 	enum of_gpio_flags of_flags;
 	unsigned long flags = GPIOF_OUT_INIT_INACTIVE;
@@ -367,14 +367,14 @@ static const struct nvmem_bus eeprom_93xx46_nvmem_bus = {
 	.read  = eeprom_93xx46_read,
 };
 
-static int eeprom_93xx46_probe(struct device_d *dev)
+static int eeprom_93xx46_probe(struct device *dev)
 {
 	struct spi_device *spi = (struct spi_device *)dev->type_data;
 	struct eeprom_93xx46_platform_data *pd;
 	struct eeprom_93xx46_dev *edev;
 	int err;
 
-	if (dev->device_node) {
+	if (dev->of_node) {
 		err = eeprom_93xx46_probe_dt(spi);
 		if (err < 0)
 			return err;
@@ -427,7 +427,7 @@ fail:
 	return err;
 }
 
-static struct driver_d eeprom_93xx46_driver = {
+static struct driver eeprom_93xx46_driver = {
 	.name = "93xx46",
 	.probe = eeprom_93xx46_probe,
 	.of_compatible = DRV_OF_COMPAT(eeprom_93xx46_of_table),

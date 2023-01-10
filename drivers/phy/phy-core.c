@@ -24,7 +24,7 @@ static int phy_ida;
  *
  * Called to create a phy using phy framework.
  */
-struct phy *phy_create(struct device_d *dev, struct device_node *node,
+struct phy *phy_create(struct device *dev, struct device_node *node,
 		       const struct phy_ops *ops)
 {
 	int ret;
@@ -43,7 +43,7 @@ struct phy *phy_create(struct device_d *dev, struct device_node *node,
 	dev_set_name(&phy->dev, "phy");
 	phy->dev.id = id;
 	phy->dev.parent = dev;
-	phy->dev.device_node = node ?: dev->device_node;
+	phy->dev.of_node = node ?: dev->of_node;
 	phy->id = id;
 	phy->ops = ops;
 
@@ -79,9 +79,9 @@ free_ida:
  * This is used in the case of dt boot for finding the phy instance from
  * phy provider.
  */
-struct phy_provider *__of_phy_provider_register(struct device_d *dev,
-	struct phy * (*of_xlate)(struct device_d *dev,
-	struct of_phandle_args *args))
+struct phy_provider *__of_phy_provider_register(struct device *dev,
+						struct phy * (*of_xlate)(struct device *dev,
+									 struct of_phandle_args *args))
 {
 	struct phy_provider *phy_provider;
 
@@ -225,10 +225,10 @@ static struct phy_provider *of_phy_provider_lookup(struct device_node *node)
 		return ERR_PTR(ret);
 
 	list_for_each_entry(phy_provider, &phy_provider_list, list) {
-		if (phy_provider->dev->device_node == node)
+		if (phy_provider->dev->of_node == node)
 			return phy_provider;
 
-		for_each_child_of_node(phy_provider->dev->device_node, child)
+		for_each_child_of_node(phy_provider->dev->of_node, child)
 			if (child == node)
 				return phy_provider;
 	}
@@ -295,21 +295,21 @@ struct phy *of_phy_get(struct device_node *np, const char *con_id)
  * -ENODEV if there is no such phy. The caller is responsible for
  * calling phy_put() to release that count.
  */
-struct phy *of_phy_get_by_phandle(struct device_d *dev, const char *phandle,
+struct phy *of_phy_get_by_phandle(struct device *dev, const char *phandle,
 				  u8 index)
 {
 	struct device_node *np;
 	struct phy_provider *phy_provider;
 
-	if (!dev->device_node) {
+	if (!dev->of_node) {
 		dev_dbg(dev, "device does not have a device node entry\n");
 		return ERR_PTR(-EINVAL);
 	}
 
-	np = of_parse_phandle(dev->device_node, phandle, index);
+	np = of_parse_phandle(dev->of_node, phandle, index);
 	if (!np) {
 		dev_dbg(dev, "failed to get %s phandle in %s node\n", phandle,
-			dev->device_node->full_name);
+			dev->of_node->full_name);
 		return ERR_PTR(-ENODEV);
 	}
 
@@ -331,7 +331,7 @@ struct phy *of_phy_get_by_phandle(struct device_d *dev, const char *phandle,
  * -ENODEV if there is no such phy.  The caller is responsible for
  * calling phy_put() to release that count.
  */
-struct phy *phy_get(struct device_d *dev, const char *string)
+struct phy *phy_get(struct device *dev, const char *string)
 {
 	int index = 0;
 	struct phy *phy = ERR_PTR(-ENODEV);
@@ -341,10 +341,10 @@ struct phy *phy_get(struct device_d *dev, const char *string)
 		return ERR_PTR(-EINVAL);
 	}
 
-	if (dev->device_node) {
-		index = of_property_match_string(dev->device_node, "phy-names",
-			string);
-		phy = _of_phy_get(dev->device_node, index);
+	if (dev->of_node) {
+		index = of_property_match_string(dev->of_node, "phy-names",
+						 string);
+		phy = _of_phy_get(dev->of_node, index);
 	}
 
 	return phy;
@@ -360,7 +360,7 @@ struct phy *phy_get(struct device_d *dev, const char *string)
  * NULL if there is no such phy.  The caller is responsible for
  * calling phy_put() to release that count.
  */
-struct phy *phy_optional_get(struct device_d *dev, const char *string)
+struct phy *phy_optional_get(struct device *dev, const char *string)
 {
 	struct phy *phy = phy_get(dev, string);
 
@@ -377,10 +377,10 @@ struct phy *phy_optional_get(struct device_d *dev, const char *string)
  *
  * Gets the phy using _of_phy_get()
  */
-struct phy *phy_get_by_index(struct device_d *dev, int index)
+struct phy *phy_get_by_index(struct device *dev, int index)
 {
-	if (!dev->device_node)
+	if (!dev->of_node)
 		return ERR_PTR(-ENODEV);
 
-	return _of_phy_get(dev->device_node, index);
+	return _of_phy_get(dev->of_node, index);
 }

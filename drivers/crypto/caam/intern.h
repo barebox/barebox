@@ -18,7 +18,7 @@
  * Each entry on an output ring needs one of these
  */
 struct caam_jrentry_info {
-	void (*callbk)(struct device_d *dev, u32 *desc, u32 status, void *arg);
+	void (*callbk)(struct device *dev, u32 *desc, u32 status, void *arg);
 	void *cbkarg;	/* Argument per ring entry */
 	u32 *desc_addr_virt;	/* Stored virt addr for postprocessing */
 	dma_addr_t desc_addr_dma;	/* Stored bus addr for done matching */
@@ -28,7 +28,7 @@ struct caam_jrentry_info {
 /* Private sub-storage for a single JobR */
 struct caam_drv_private_jr {
 	struct list_head	list_node;	/* Job Ring device list */
-	struct device_d		*dev;
+	struct device		*dev;
 	int ridx;
 	struct caam_job_ring __iomem *rregs;	/* JobR's register space */
 	int irq;			/* One per queue */
@@ -54,8 +54,8 @@ struct caam_drv_private_jr {
  */
 struct caam_drv_private {
 
-	struct device_d **jrpdev; /* Alloc'ed array per sub-device */
-	struct device_d *pdev;
+	struct device **jrpdev; /* Alloc'ed array per sub-device */
+	struct device *pdev;
 
 	/* Physical-presence section */
 	struct caam_ctrl __iomem *ctrl; /* controller region */
@@ -88,7 +88,7 @@ struct caam_drv_private {
 	struct clk *caam_emi_slow;
 };
 
-int caam_rng_probe(struct device_d *dev, struct device_d *jrdev);
-int caam_blob_gen_probe(struct device_d *dev, struct device_d *jrdev);
-int caam_jr_probe(struct device_d *dev);
+int caam_rng_probe(struct device *dev, struct device *jrdev);
+int caam_blob_gen_probe(struct device *dev, struct device *jrdev);
+int caam_jr_probe(struct device *dev);
 #endif /* INTERN_H */

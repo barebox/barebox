@@ -119,11 +119,11 @@ static struct pinctrl_ops pcs_ops = {
 	.set_state = pcs_set_state,
 };
 
-int pinctrl_single_probe(struct device_d *dev)
+int pinctrl_single_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct pinctrl_single *pcs;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	int ret = 0;
 
 	pcs = xzalloc(sizeof(*pcs));
@@ -204,7 +204,7 @@ static __maybe_unused struct of_device_id pcs_dt_ids[] = {
 	}
 };
 
-static struct driver_d pcs_driver = {
+static struct driver pcs_driver = {
 	.name		= "pinctrl-single",
 	.probe		= pinctrl_single_probe,
 	.of_compatible	= DRV_OF_COMPAT(pcs_dt_ids),

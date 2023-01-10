@@ -72,7 +72,7 @@ static int am335x_adc_read(struct aiochannel *chan, int *val)
 	return 0;
 }
 
-static int am335x_adc_probe(struct device_d *dev)
+static int am335x_adc_probe(struct device *dev)
 {
 	struct device_node *node;
 	struct am335x_adc_data *data;
@@ -87,7 +87,7 @@ static int am335x_adc_probe(struct device_d *dev)
 		goto fail_data;
 	}
 
-	node = of_find_compatible_node(dev->device_node, NULL, "ti,am3359-adc");
+	node = of_find_compatible_node(dev->of_node, NULL, "ti,am3359-adc");
 	if (!node) {
 		ret = -EINVAL;
 		goto fail_data;
@@ -175,7 +175,7 @@ static const struct of_device_id of_am335x_adc_match[] = {
 	{ /* end */ }
 };
 
-static struct driver_d am335x_adc_driver = {
+static struct driver am335x_adc_driver = {
 	.name		= "am335x_adc",
 	.probe		= am335x_adc_probe,
 	.of_compatible	= DRV_OF_COMPAT(of_am335x_adc_match),

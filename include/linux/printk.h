@@ -25,13 +25,14 @@
 #endif
 
 /* debugging and troubleshooting/diagnostic helpers. */
-struct device_d;
+struct device;
 
 #ifndef CONFIG_CONSOLE_NONE
-int dev_printf(int level, const struct device_d *dev, const char *format, ...)
+int dev_printf(int level, const struct device *dev, const char *format, ...)
 	__attribute__ ((format(__printf__, 3, 4)));
 #else
-static inline int dev_printf(int level, const struct device_d *dev, const char *format, ...)
+static inline int dev_printf(int level, const struct device *dev,
+			     const char *format, ...)
 {
 	return 0;
 }
@@ -76,12 +77,13 @@ static inline int pr_print(int level, const char *format, ...)
 	__dev_printf(8, (dev) , format , ## arg)
 
 #if LOGLEVEL >= MSG_ERR
-int dev_err_probe(struct device_d *dev, int err, const char *fmt, ...)
+int dev_err_probe(struct device *dev, int err, const char *fmt, ...)
 	__attribute__ ((format(__printf__, 3, 4)));
 #elif !defined(dev_err_probe)
-static int dev_err_probe(struct device_d *dev, int err, const char *fmt, ...)
+static int dev_err_probe(struct device *dev, int err, const char *fmt, ...)
 	__attribute__ ((format(__printf__, 3, 4)));
-static inline int dev_err_probe(struct device_d *dev, int err, const char *fmt, ...)
+static inline int dev_err_probe(struct device *dev, int err, const char *fmt,
+				...)
 {
 	return err;
 }

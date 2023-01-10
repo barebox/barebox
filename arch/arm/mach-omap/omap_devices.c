@@ -15,7 +15,7 @@ void omap_add_sram0(resource_size_t base, resource_size_t size)
 	add_mem_device("sram0", base, size, IORESOURCE_MEM_WRITEABLE);
 }
 
-struct device_d *omap_add_uart(int id, unsigned long base)
+struct device *omap_add_uart(int id, unsigned long base)
 {
 	return add_generic_device("omap-uart", id, NULL, base, 1024,
 				  IORESOURCE_MEM | IORESOURCE_MEM_8BIT, NULL);
@@ -36,7 +36,7 @@ static struct resource omapfb_resources[] = {
 	},
 };
 
-struct device_d *omap_add_display(struct omapfb_platform_data *o_pdata)
+struct device *omap_add_display(struct omapfb_platform_data *o_pdata)
 {
 	return add_generic_device_res("omap_fb", -1,
 				      omapfb_resources,
@@ -44,7 +44,7 @@ struct device_d *omap_add_display(struct omapfb_platform_data *o_pdata)
 				      o_pdata);
 }
 #else
-struct device_d *omap_add_display(struct omapfb_platform_data *o_pdata)
+struct device *omap_add_display(struct omapfb_platform_data *o_pdata)
 {
 	return NULL;
 }

@@ -258,7 +258,7 @@ static u32 rpi_boot_mode, rpi_boot_part;
 static void rpi_vc_fdt_parse(void *fdt)
 {
 	int ret;
-	struct device_node *root, *chosen, *bootloader;
+	struct device_node *root, *chosen, *bootloader, *memory;
 	char *str;
 
 	root = of_unflatten_dtb(fdt, INT_MAX);
@@ -323,6 +323,16 @@ static void rpi_vc_fdt_parse(void *fdt)
 
 	if (IS_ENABLED(CONFIG_RESET_SOURCE))
 		reset_source_set(rpi_decode_pm_rsts(chosen, bootloader));
+
+	/* Parse all available nodes with "memory" device_type */
+	memory = root;
+	while (1) {
+		memory = of_find_node_by_type(memory, "memory");
+		if (!memory)
+			break;
+
+		of_add_memory(memory, false);
+	}
 
 out:
 	if (root)

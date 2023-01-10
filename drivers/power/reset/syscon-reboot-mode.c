@@ -46,12 +46,12 @@ static int syscon_reboot_mode_write(struct reboot_mode_driver *reboot,
 	return ret;
 }
 
-static int syscon_reboot_mode_probe(struct device_d *dev)
+static int syscon_reboot_mode_probe(struct device *dev)
 {
 	int ret, i, nelems;
 	struct syscon_reboot_mode *syscon_rbm;
 	struct reboot_mode_driver *reboot_template;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	u32 *magic;
 
 	nelems = of_property_count_elems_of_size(np, "offset", sizeof(__be32));
@@ -67,7 +67,7 @@ static int syscon_reboot_mode_probe(struct device_d *dev)
 	syscon_rbm->reboot = *reboot_template;
 	syscon_rbm->reboot.dev = dev;
 
-	syscon_rbm->map = syscon_node_to_regmap(dev->parent->device_node);
+	syscon_rbm->map = syscon_node_to_regmap(dev->parent->of_node);
 	if (IS_ERR(syscon_rbm->map))
 		return PTR_ERR(syscon_rbm->map);
 
@@ -121,7 +121,7 @@ static const struct of_device_id syscon_reboot_mode_of_match[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d syscon_reboot_mode_driver = {
+static struct driver syscon_reboot_mode_driver = {
 	.probe = syscon_reboot_mode_probe,
 	.name = "syscon-reboot-mode",
 	.of_compatible = syscon_reboot_mode_of_match,

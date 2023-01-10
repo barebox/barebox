@@ -307,7 +307,7 @@ static void ns16550_flush(struct console_device *cdev)
 	while ((ns16550_read(cdev, lsr) & LSR_TEMT) == 0) ;
 }
 
-static void ns16550_probe_dt(struct device_d *dev, struct ns16550_priv *priv)
+static void ns16550_probe_dt(struct device *dev, struct ns16550_priv *priv)
 {
 	struct device_node *np = dev_of_node(dev);
 	u32 offset;
@@ -385,7 +385,7 @@ static __maybe_unused struct ns16550_drvdata rpi_drvdata = {
 	.linux_earlycon_name = "bcm2835aux",
 };
 
-static int ns16550_init_iomem(struct device_d *dev, struct ns16550_priv *priv)
+static int ns16550_init_iomem(struct device *dev, struct ns16550_priv *priv)
 {
 	struct resource *iores;
 	struct resource *res;
@@ -422,7 +422,7 @@ static int ns16550_init_iomem(struct device_d *dev, struct ns16550_priv *priv)
 	return 0;
 }
 
-static int ns16550_init_ioport(struct device_d *dev, struct ns16550_priv *priv)
+static int ns16550_init_ioport(struct device *dev, struct ns16550_priv *priv)
 {
 	struct resource *res;
 	int width;
@@ -467,7 +467,7 @@ static int ns16550_init_ioport(struct device_d *dev, struct ns16550_priv *priv)
  *	   ENOMEM if calloc failed
  *	   else return result of console_register
  */
-static int ns16550_probe(struct device_d *dev)
+static int ns16550_probe(struct device *dev)
 {
 	struct ns16550_priv *priv;
 	struct console_device *cdev;
@@ -593,7 +593,7 @@ static __maybe_unused struct platform_device_id ns16550_serial_ids[] = {
 /**
  * @brief Driver registration structure
  */
-static struct driver_d ns16550_serial_driver = {
+static struct driver ns16550_serial_driver = {
 	.name = "ns16550_serial",
 	.probe = ns16550_probe,
 	.of_compatible = DRV_OF_COMPAT(ns16550_serial_dt_ids),

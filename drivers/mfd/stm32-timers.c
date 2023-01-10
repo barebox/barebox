@@ -34,7 +34,7 @@ static void stm32_timers_get_arr_size(struct stm32_timers *ddata)
 	regmap_write(ddata->regmap, TIM_ARR, 0x0);
 }
 
-static int stm32_timers_probe(struct device_d *dev)
+static int stm32_timers_probe(struct device *dev)
 {
 	struct stm32_timers *ddata;
 	struct resource *res;
@@ -58,7 +58,7 @@ static int stm32_timers_probe(struct device_d *dev)
 
 	dev->priv = ddata;
 
-	return of_platform_populate(dev->device_node, NULL, dev);
+	return of_platform_populate(dev->of_node, NULL, dev);
 }
 
 static const struct of_device_id stm32_timers_of_match[] = {
@@ -66,7 +66,7 @@ static const struct of_device_id stm32_timers_of_match[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d stm32_timers_driver = {
+static struct driver stm32_timers_driver = {
 	.name = "stm32-timers",
 	.probe = stm32_timers_probe,
 	.of_compatible = stm32_timers_of_match,

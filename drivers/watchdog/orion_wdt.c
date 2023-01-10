@@ -68,7 +68,7 @@ static int armada_xp_set_timeout(struct watchdog *wd, unsigned timeout)
 	return 0;
 }
 
-static int orion_wdt_probe(struct device_d *dev)
+static int orion_wdt_probe(struct device *dev)
 {
 	struct orion_wdt_ddata* ddata;
 	struct resource *res_timer, *res_rstout;
@@ -105,7 +105,7 @@ static const struct of_device_id orion_wdt_of_match[] = {
 	}, { /* sentinel */ }
 };
 
-static struct driver_d orion_wdt_driver = {
+static struct driver orion_wdt_driver = {
 	.probe = orion_wdt_probe,
 	.name = "orion_wdt",
 	.of_compatible = DRV_OF_COMPAT(orion_wdt_of_match),

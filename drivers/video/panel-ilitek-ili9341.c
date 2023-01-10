@@ -159,7 +159,7 @@ struct ili9341_config {
 };
 
 struct ili9341 {
-	struct device_d *dev;
+	struct device *dev;
 	struct vpl vpl;
 	const struct ili9341_config *conf;
 	int reset_gpio;
@@ -280,7 +280,7 @@ static inline struct ili9341 *vpl_to_ili9341(struct vpl *vpl)
 
 static void ili9341_dpi_init(struct ili9341 *ili)
 {
-	struct device_d *dev = ili->dev;
+	struct device *dev = ili->dev;
 	struct mipi_dbi *dbi = ili->dbi;
 	struct ili9341_config *cfg = (struct ili9341_config *)ili->conf;
 
@@ -344,7 +344,7 @@ static void ili9341_dpi_init(struct ili9341 *ili)
 
 static int ili9341_dpi_power_on(struct ili9341 *ili)
 {
-	struct device_d *dev = ili->dev;
+	struct device *dev = ili->dev;
 	int ret = 0;
 
 	/* Assert RESET */
@@ -460,7 +460,7 @@ static int ili9341_ioctl(struct vpl *vpl, unsigned int port,
 
 static int ili9341_dpi_probe(struct spi_device *spi, int dc, int reset)
 {
-	struct device_d *dev = &spi->dev;
+	struct device *dev = &spi->dev;
 	struct ili9341 *ili;
 	int ret;
 
@@ -499,13 +499,13 @@ static int ili9341_dpi_probe(struct spi_device *spi, int dc, int reset)
 
 	ili->dev = dev;
 	ili->max_spi_speed = ili->conf->max_spi_speed;
-	ili->vpl.node = dev->device_node;
+	ili->vpl.node = dev->of_node;
 	ili->vpl.ioctl = ili9341_ioctl;
 
 	return vpl_register(&ili->vpl);
 }
 
-static int ili9341_probe(struct device_d *dev)
+static int ili9341_probe(struct device *dev)
 {
 	struct spi_device *spi = to_spi_device(dev);
 	int dc, reset;
@@ -529,7 +529,7 @@ static const struct of_device_id ili9341_of_match[] = {
 	{ }
 };
 
-static struct driver_d ili9341_driver = {
+static struct driver ili9341_driver = {
 	.name = "panel-ilitek-ili9341",
 	.of_compatible = ili9341_of_match,
 	.probe = ili9341_probe,

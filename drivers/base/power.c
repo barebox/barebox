@@ -205,7 +205,7 @@ static int genpd_power_on(struct generic_pm_domain *genpd, unsigned int depth)
 	return 0;
 }
 
-static int __genpd_dev_pm_attach(struct device_d *dev, struct device_node *np,
+static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
 				 unsigned int index, bool power_on)
 {
 	struct of_phandle_args pd_args;
@@ -250,20 +250,20 @@ static int __genpd_dev_pm_attach(struct device_d *dev, struct device_node *np,
  * found or turned on, then return -EPROBE_DEFER to ensure that the device is
  * not probed and to re-try again later.
  */
-int genpd_dev_pm_attach(struct device_d *dev)
+int genpd_dev_pm_attach(struct device *dev)
 {
-	if (!dev->device_node)
+	if (!dev->of_node)
 		return 0;
 
 	/*
 	 * Devices with multiple PM domains must be attached separately, as we
 	 * can only attach one PM domain per device.
 	 */
-	if (of_count_phandle_with_args(dev->device_node, "power-domains",
+	if (of_count_phandle_with_args(dev->of_node, "power-domains",
 				       "#power-domain-cells") != 1)
 		return 0;
 
-	return __genpd_dev_pm_attach(dev, dev->device_node, 0, true);
+	return __genpd_dev_pm_attach(dev, dev->of_node, 0, true);
 }
 EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
 

@@ -133,7 +133,7 @@ static struct gpio_ops davinci_gpio_ops = {
 	.set = davinci_gpio_set,
 };
 
-static int davinci_gpio_probe(struct device_d *dev)
+static int davinci_gpio_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *gpio_base;
@@ -143,7 +143,7 @@ static int davinci_gpio_probe(struct device_d *dev)
 	unsigned ngpio;
 	struct davinci_gpio_controller *chips;
 
-	ret = of_property_read_u32(dev->device_node, "ti,ngpio", &val);
+	ret = of_property_read_u32(dev->of_node, "ti,ngpio", &val);
 	if (ret) {
 		dev_err(dev, "could not read 'ti,ngpio' property\n");
 		return -EINVAL;
@@ -193,7 +193,7 @@ static struct of_device_id davinci_gpio_ids[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d davinci_gpio_driver = {
+static struct driver davinci_gpio_driver = {
 	.name		= "davinci_gpio",
 	.probe		= davinci_gpio_probe,
 	.of_compatible	= DRV_OF_COMPAT(davinci_gpio_ids),

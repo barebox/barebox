@@ -203,7 +203,7 @@ static int eqos_set_ethaddr_tegra186(struct eth_device *edev, const unsigned cha
 	return eqos_set_ethaddr(edev, mac);
 }
 
-static int eqos_init_tegra186(struct device_d *dev, struct eqos *eqos)
+static int eqos_init_tegra186(struct device *dev, struct eqos *eqos)
 {
 	struct eqos_tegra186 *priv = to_tegra186(eqos);
 	int phy_reset;
@@ -217,7 +217,7 @@ static int eqos_init_tegra186(struct device_d *dev, struct eqos *eqos)
 		return PTR_ERR(priv->rst);
 	}
 
-	phy_reset = of_get_named_gpio(dev->device_node, "phy-reset-gpios", 0);
+	phy_reset = of_get_named_gpio(dev->of_node, "phy-reset-gpios", 0);
 	if (gpio_is_valid(phy_reset)) {
 		ret = gpio_request(phy_reset, "phy-reset");
 		if (ret)
@@ -283,12 +283,12 @@ static const struct eqos_ops tegra186_ops = {
 	.config_mac = EQOS_MAC_RXQ_CTRL0_RXQ0EN_ENABLED_DCB,
 };
 
-static int eqos_probe_tegra186(struct device_d *dev)
+static int eqos_probe_tegra186(struct device *dev)
 {
 	return eqos_probe(dev, &tegra186_ops, xzalloc(sizeof(struct eqos_tegra186)));
 }
 
-static void eqos_remove_tegra186(struct device_d *dev)
+static void eqos_remove_tegra186(struct device *dev)
 {
 	struct eqos_tegra186 *priv = to_tegra186(dev->priv);
 
@@ -309,7 +309,7 @@ static const struct of_device_id eqos_tegra186_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d eqos_tegra186_driver = {
+static struct driver eqos_tegra186_driver = {
 	.name = "eqos-tegra186",
 	.probe = eqos_probe_tegra186,
 	.remove	= eqos_remove_tegra186,

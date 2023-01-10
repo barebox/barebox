@@ -151,7 +151,7 @@ static void at91sama5d3xek_devices_detect_one(const char *name)
 	struct one_wire_info info;
 	struct board_info* binfo;
 	struct vendor_info* vinfo;
-	struct device_d *dev = NULL;
+	struct device *dev = NULL;
 	char str[16];
 	char *bname, *vname;
 	u8 vendor_id = 0;

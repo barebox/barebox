@@ -29,7 +29,7 @@ static struct clocksource digic_cs = {
 	.priority = 60,
 };
 
-static int digic_timer_probe(struct device_d *dev)
+static int digic_timer_probe(struct device *dev)
 {
 	struct resource *iores;
 	/* use only one timer */
@@ -74,7 +74,7 @@ static __maybe_unused struct of_device_id digic_timer_dt_ids[] = {
 	}
 };
 
-static struct driver_d digic_timer_driver = {
+static struct driver digic_timer_driver = {
 	.probe	= digic_timer_probe,
 	.name	= "digic-timer",
 	.of_compatible = DRV_OF_COMPAT(digic_timer_dt_ids),

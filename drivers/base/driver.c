@@ -46,9 +46,9 @@ LIST_HEAD(active_device_list);
 EXPORT_SYMBOL(active_device_list);
 static LIST_HEAD(deferred);
 
-struct device_d *find_device(const char *str)
+struct device *find_device(const char *str)
 {
-	struct device_d *dev;
+	struct device *dev;
 	struct device_node *np;
 
 	dev = get_device_by_name(str);
@@ -62,9 +62,9 @@ struct device_d *find_device(const char *str)
 	return NULL;
 }
 
-struct device_d *get_device_by_name(const char *name)
+struct device *get_device_by_name(const char *name)
 {
-	struct device_d *dev;
+	struct device *dev;
 
 	for_each_device(dev) {
 		if(!strcmp(dev_name(dev), name))
@@ -74,9 +74,9 @@ struct device_d *get_device_by_name(const char *name)
 	return NULL;
 }
 
-static struct device_d *get_device_by_name_id(const char *name, int id)
+static struct device *get_device_by_name_id(const char *name, int id)
 {
-	struct device_d *dev;
+	struct device *dev;
 
 	for_each_device(dev) {
 		if(!strcmp(dev->name, name) && id == dev->id)
@@ -97,12 +97,12 @@ int get_free_deviceid(const char *name_template)
 	};
 }
 
-int device_probe(struct device_d *dev)
+int device_probe(struct device *dev)
 {
 	static int depth = 0;
 	int ret;
 
-	ret = of_feature_controller_check(dev->device_node);
+	ret = of_feature_controller_check(dev->of_node);
 	if (ret < 0)
 		return ret;
 	if (ret == FEATCTRL_GATED) {
@@ -115,7 +115,7 @@ int device_probe(struct device_d *dev)
 	pr_report_probe("%*sprobe-> %s\n", depth * 4, "", dev_name(dev));
 
 	pinctrl_select_state_default(dev);
-	of_clk_set_defaults(dev->device_node, false);
+	of_clk_set_defaults(dev->of_node, false);
 
 	list_add(&dev->active, &active_device_list);
 
@@ -151,7 +151,7 @@ out:
 	return ret;
 }
 
-int device_detect(struct device_d *dev)
+int device_detect(struct device *dev)
 {
 	if (!dev->detect)
 		return -ENOSYS;
@@ -162,7 +162,7 @@ int device_detect_by_name(const char *__devname)
 {
 	char *devname = xstrdup(__devname);
 	char *str = devname;
-	struct device_d *dev;
+	struct device *dev;
 	int ret = -ENODEV;
 
 	while (1) {
@@ -185,13 +185,13 @@ int device_detect_by_name(const char *__devname)
 
 void device_detect_all(void)
 {
-	struct device_d *dev;
+	struct device *dev;
 
 	for_each_device(dev)
 		device_detect(dev);
 }
 
-static int match(struct driver_d *drv, struct device_d *dev)
+static int match(struct driver *drv, struct device *dev)
 {
 	int ret;
 
@@ -212,9 +212,9 @@ err_out:
 	return -1;
 }
 
-int register_device(struct device_d *new_device)
+int register_device(struct device *new_device)
 {
-	struct driver_d *drv;
+	struct driver *drv;
 
 	if (new_device->id == DEVICE_ID_DYNAMIC) {
 		new_device->id = get_free_deviceid(new_device->name);
@@ -259,10 +259,10 @@ int register_device(struct device_d *new_device)
 }
 EXPORT_SYMBOL(register_device);
 
-int unregister_device(struct device_d *old_dev)
+int unregister_device(struct device *old_dev)
 {
 	struct cdev *cdev, *ct;
-	struct device_d *child, *dt;
+	struct device *child, *dt;
 
 	dev_dbg(old_dev, "unregister\n");
 
@@ -291,7 +291,7 @@ int unregister_device(struct device_d *old_dev)
 	if (old_dev->parent)
 		list_del(&old_dev->sibling);
 	if (dev_of_node(old_dev))
-		old_dev->device_node->dev = NULL;
+		old_dev->of_node->dev = NULL;
 
 	return 0;
 }
@@ -304,7 +304,7 @@ EXPORT_SYMBOL(unregister_device);
  * This frees dynamically allocated resources allocated during device
  * lifetime, but not the device itself.
  */
-void free_device_res(struct device_d *dev)
+void free_device_res(struct device *dev)
 {
 	free(dev->name);
 	dev->name = NULL;
@@ -321,7 +321,7 @@ EXPORT_SYMBOL(free_device_res);
  * This frees dynamically allocated resources allocated during device
  * lifetime and finally the device itself.
  */
-void free_device(struct device_d *dev)
+void free_device(struct device *dev)
 {
 	free_device_res(dev);
 	free(dev);
@@ -337,8 +337,8 @@ EXPORT_SYMBOL(free_device);
  */
 static int device_probe_deferred(void)
 {
-	struct device_d *dev, *tmp;
-	struct driver_d *drv;
+	struct device *dev, *tmp;
+	struct driver *drv;
 	bool success;
 
 	do {
@@ -372,9 +372,9 @@ static int device_probe_deferred(void)
 }
 late_initcall(device_probe_deferred);
 
-struct driver_d *get_driver_by_name(const char *name)
+struct driver *get_driver_by_name(const char *name)
 {
-	struct driver_d *drv;
+	struct driver *drv;
 
 	for_each_driver(drv) {
 		if(!strcmp(name, drv->name))
@@ -384,9 +384,9 @@ struct driver_d *get_driver_by_name(const char *name)
 	return NULL;
 }
 
-int register_driver(struct driver_d *drv)
+int register_driver(struct driver *drv)
 {
-	struct device_d *dev = NULL;
+	struct device *dev = NULL;
 
 	if (!drv->name)
 		return -EINVAL;
@@ -405,7 +405,7 @@ int register_driver(struct driver_d *drv)
 }
 EXPORT_SYMBOL(register_driver);
 
-struct resource *dev_get_resource(struct device_d *dev, unsigned long type,
+struct resource *dev_get_resource(struct device *dev, unsigned long type,
 				  int num)
 {
 	int i, n = 0;
@@ -422,7 +422,7 @@ struct resource *dev_get_resource(struct device_d *dev, unsigned long type,
 	return ERR_PTR(-ENOENT);
 }
 
-void *dev_get_mem_region(struct device_d *dev, int num)
+void *dev_get_mem_region(struct device *dev, int num)
 {
 	struct resource *res;
 
@@ -434,7 +434,7 @@ void *dev_get_mem_region(struct device_d *dev, int num)
 }
 EXPORT_SYMBOL(dev_get_mem_region);
 
-struct resource *dev_get_resource_by_name(struct device_d *dev,
+struct resource *dev_get_resource_by_name(struct device *dev,
 					  unsigned long type,
 					  const char *name)
 {
@@ -453,7 +453,8 @@ struct resource *dev_get_resource_by_name(struct device_d *dev,
 	return ERR_PTR(-ENOENT);
 }
 
-struct resource *dev_request_mem_resource_by_name(struct device_d *dev, const char *name)
+struct resource *dev_request_mem_resource_by_name(struct device *dev,
+						  const char *name)
 {
 	struct resource *res;
 
@@ -465,7 +466,8 @@ struct resource *dev_request_mem_resource_by_name(struct device_d *dev, const ch
 }
 EXPORT_SYMBOL(dev_request_mem_resource_by_name);
 
-void __iomem *dev_request_mem_region_by_name(struct device_d *dev, const char *name)
+void __iomem *dev_request_mem_region_by_name(struct device *dev,
+					     const char *name)
 {
 	struct resource *res;
 
@@ -477,7 +479,7 @@ void __iomem *dev_request_mem_region_by_name(struct device_d *dev, const char *n
 }
 EXPORT_SYMBOL(dev_request_mem_region_by_name);
 
-struct resource *dev_request_mem_resource(struct device_d *dev, int num)
+struct resource *dev_request_mem_resource(struct device *dev, int num)
 {
 	struct resource *res;
 
@@ -488,7 +490,7 @@ struct resource *dev_request_mem_resource(struct device_d *dev, int num)
 	return request_iomem_region(dev_name(dev), res->start, res->end);
 }
 
-void __iomem *dev_request_mem_region_err_null(struct device_d *dev, int num)
+void __iomem *dev_request_mem_region_err_null(struct device *dev, int num)
 {
 	struct resource *res;
 
@@ -500,7 +502,7 @@ void __iomem *dev_request_mem_region_err_null(struct device_d *dev, int num)
 }
 EXPORT_SYMBOL(dev_request_mem_region_err_null);
 
-void __iomem *dev_request_mem_region(struct device_d *dev, int num)
+void __iomem *dev_request_mem_region(struct device *dev, int num)
 {
 	struct resource *res;
 
@@ -537,9 +539,9 @@ int generic_memmap_ro(struct cdev *cdev, void **map, int flags)
  *
  * NOTE: This function expects dev->name to be free()-able, so extra
  * precautions needs to be taken when mixing its usage with manual
- * assignement of device_d.name.
+ * assignement of device.name.
  */
-int dev_set_name(struct device_d *dev, const char *fmt, ...)
+int dev_set_name(struct device *dev, const char *fmt, ...)
 {
 	va_list vargs;
 	int err;
@@ -564,7 +566,7 @@ EXPORT_SYMBOL_GPL(dev_set_name);
 
 static void devices_shutdown(void)
 {
-	struct device_d *dev;
+	struct device *dev;
 	int depth = 0;
 
 	list_for_each_entry(dev, &active_device_list, active) {
@@ -579,7 +581,7 @@ static void devices_shutdown(void)
 }
 devshutdown_exitcall(devices_shutdown);
 
-int dev_get_drvdata(struct device_d *dev, const void **data)
+int dev_get_drvdata(struct device *dev, const void **data)
 {
 	if (dev->of_id_entry) {
 		*data = dev->of_id_entry->data;
@@ -594,7 +596,7 @@ int dev_get_drvdata(struct device_d *dev, const void **data)
 	return -ENODEV;
 }
 
-const void *device_get_match_data(struct device_d *dev)
+const void *device_get_match_data(struct device *dev)
 {
 	if (dev->of_id_entry)
 		return dev->of_id_entry->data;
@@ -605,7 +607,8 @@ const void *device_get_match_data(struct device_d *dev)
 	return NULL;
 }
 
-static void device_set_deferred_probe_reason(struct device_d *dev, const struct va_format *vaf)
+static void device_set_deferred_probe_reason(struct device *dev,
+					     const struct va_format *vaf)
 {
 	char *reason;
 	char *last_char;
@@ -655,8 +658,8 @@ static void device_set_deferred_probe_reason(struct device_d *dev, const struct 
  * Returns @err.
  *
  */
-int dev_err_probe(struct device_d *dev, int err, const char *fmt, ...);
-int dev_err_probe(struct device_d *dev, int err, const char *fmt, ...)
+int dev_err_probe(struct device *dev, int err, const char *fmt, ...);
+int dev_err_probe(struct device *dev, int err, const char *fmt, ...)
 {
 	struct va_format vaf;
 	va_list args;
@@ -679,7 +682,7 @@ EXPORT_SYMBOL_GPL(dev_err_probe);
 
 /*
  * device_find_child - device iterator for locating a particular device.
- * @parent: parent struct device_d
+ * @parent: parent struct device
  * @match: Callback function to check device
  * @data: Data to pass to match function
  *
@@ -688,10 +691,10 @@ EXPORT_SYMBOL_GPL(dev_err_probe);
  * current device can be obtained, this function will return to the caller
  * and not iterate over any more devices.
  */
-struct device_d *device_find_child(struct device_d *parent, void *data,
-				 int (*match)(struct device_d *dev, void *data))
+struct device *device_find_child(struct device *parent, void *data,
+				 int (*match)(struct device *dev, void *data))
 {
-	struct device_d *child;
+	struct device *child;
 
 	if (!parent)
 		return NULL;

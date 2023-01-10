@@ -126,9 +126,9 @@ static int gpio_spi_setup(struct spi_device *spi)
 	return 0;
 }
 
-static int gpio_spi_of_probe(struct device_d *dev)
+static int gpio_spi_of_probe(struct device *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct gpio_spi_pdata *pdata;
 	int n, sck;
 
@@ -166,7 +166,7 @@ static int gpio_spi_of_probe(struct device_d *dev)
 	return 0;
 }
 
-static int gpio_spi_probe(struct device_d *dev)
+static int gpio_spi_probe(struct device *dev)
 {
 	struct gpio_spi *priv;
 	struct gpio_spi_pdata *pdata;
@@ -223,7 +223,7 @@ static struct of_device_id __maybe_unused gpio_spi_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d gpio_spi_driver = {
+static struct driver gpio_spi_driver = {
 	.name = "gpio-spi",
 	.probe = gpio_spi_probe,
 	.of_compatible = DRV_OF_COMPAT(gpio_spi_dt_ids),

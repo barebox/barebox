@@ -194,10 +194,10 @@ static struct of_device_id mvebu_corediv_clk_ids[] = {
 	{ }
 };
 
-static int mvebu_corediv_clk_probe(struct device_d *dev)
+static int mvebu_corediv_clk_probe(struct device *dev)
 {
 	struct resource *iores;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	const struct of_device_id *match;
 	const struct clk_corediv_soc_desc *soc_desc;
 	struct clk_corediv *corediv;
@@ -248,7 +248,7 @@ static int mvebu_corediv_clk_probe(struct device_d *dev)
 	return of_clk_add_provider(np, of_clk_src_onecell_get, &clk_data);
 }
 
-static struct driver_d mvebu_corediv_clk_driver = {
+static struct driver mvebu_corediv_clk_driver = {
 	.probe	= mvebu_corediv_clk_probe,
 	.name	= "mvebu-corediv-clk",
 	.of_compatible = DRV_OF_COMPAT(mvebu_corediv_clk_ids),

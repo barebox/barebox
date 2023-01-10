@@ -50,7 +50,7 @@ static inline void superio_clear_bit(u16 base, u8 reg, unsigned bit)
 }
 
 struct superio_chip {
-	struct device_d *dev;
+	struct device *dev;
 	u16 vid;
 	u16 devid;
 	u16 sioaddr;
@@ -59,6 +59,6 @@ struct superio_chip {
 };
 
 void superio_chip_add(struct superio_chip *chip);
-struct device_d *superio_func_add(struct superio_chip *chip, const char *name);
+struct device *superio_func_add(struct superio_chip *chip, const char *name);
 
 #endif

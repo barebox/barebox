@@ -110,7 +110,7 @@ static struct cdev_operations act8846_fops = {
 	.write	= act8846_write,
 };
 
-static int act8846_probe(struct device_d *dev)
+static int act8846_probe(struct device *dev)
 {
 	if (act8846_dev)
 		return -EBUSY;
@@ -127,7 +127,7 @@ static int act8846_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d act8846_driver = {
+static struct driver act8846_driver = {
 	.name  = DRIVERNAME,
 	.probe = act8846_probe,
 };

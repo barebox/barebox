@@ -246,10 +246,10 @@ static void rk808_poweroff(struct poweroff_handler *handler)
 	hang();
 }
 
-static int rk808_probe(struct device_d *dev)
+static int rk808_probe(struct device *dev)
 {
 	struct i2c_client *client = to_i2c_client(dev);
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct rk808 *rk808;
 	const struct rk808_reg_data *pre_init_reg;
 	const struct mfd_cell *cells;
@@ -381,7 +381,7 @@ static const struct of_device_id rk808_of_match[] = {
 	{ },
 };
 
-static struct driver_d rk808_i2c_driver = {
+static struct driver rk808_i2c_driver = {
 	.name = "rk808",
 	.of_compatible = rk808_of_match,
 	.probe    = rk808_probe,

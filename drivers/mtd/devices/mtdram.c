@@ -36,7 +36,7 @@ static int ram_read(struct mtd_info *mtd, loff_t from, size_t len, size_t *retle
 	return 0;
 }
 
-static int mtdram_probe(struct device_d *dev)
+static int mtdram_probe(struct device *dev)
 {
 	long type;
 	struct resource *iores;
@@ -48,8 +48,8 @@ static int mtdram_probe(struct device_d *dev)
 	mtd = xzalloc(sizeof(struct mtd_info));
 
 	device_id = DEVICE_ID_SINGLE;
-	if (dev->device_node) {
-		const char *alias = of_alias_get(dev->device_node);
+	if (dev->of_node) {
+		const char *alias = of_alias_get(dev->of_node);
 		if (alias)
 			mtd->name = xstrdup(alias);
 	}
@@ -107,7 +107,7 @@ static __maybe_unused struct of_device_id mtdram_dt_ids[] = {
 	}
 };
 
-static struct driver_d mtdram_driver = {
+static struct driver mtdram_driver = {
 	.name	= "mtdram",
 	.probe	= mtdram_probe,
 	.of_compatible	= DRV_OF_COMPAT(mtdram_dt_ids),

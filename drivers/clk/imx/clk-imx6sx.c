@@ -109,11 +109,11 @@ static struct clk_div_table video_div_table[] = {
 	{ }
 };
 
-static int imx6sx_ccm_probe(struct device_d *dev)
+static int imx6sx_ccm_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *base, *anatop_base, *ccm_base;
-	struct device_node *ccm_node = dev->device_node;
+	struct device_node *ccm_node = dev->of_node;
 
 	clks[IMX6SX_CLK_DUMMY] = clk_fixed("dummy", 0);
 
@@ -463,7 +463,7 @@ static __maybe_unused struct of_device_id imx6sx_ccm_dt_ids[] = {
 	}
 };
 
-static struct driver_d imx6sx_ccm_driver = {
+static struct driver imx6sx_ccm_driver = {
 	.probe	= imx6sx_ccm_probe,
 	.name	= "imx6-ccm",
 	.of_compatible = DRV_OF_COMPAT(imx6sx_ccm_dt_ids),

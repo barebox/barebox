@@ -48,7 +48,7 @@ struct fpga_spi {
 	int nstat_gpio; /* input GPIO to read the status line */
 	int confd_gpio; /* input GPIO to read the config done line */
 	int nconfig_gpio; /* output GPIO to start the FPGA's config */
-	struct device_d *dev;
+	struct device *dev;
 	struct spi_device *spi;
 	const struct altera_ps_data *data;
 	bool padding_done;
@@ -83,7 +83,7 @@ static struct altera_ps_data a10_data = {
 static int altera_spi_open(struct firmware_handler *fh)
 {
 	struct fpga_spi *this = container_of(fh, struct fpga_spi, fh);
-	struct device_d *dev = this->dev;
+	struct device *dev = this->dev;
 	int ret;
 
 	dev_dbg(dev, "Initiating programming\n");
@@ -151,7 +151,7 @@ static int altera_spi_open(struct firmware_handler *fh)
 static int altera_spi_write(struct firmware_handler *fh, const void *buf, size_t sz)
 {
 	struct fpga_spi *this = container_of(fh, struct fpga_spi, fh);
-	struct device_d *dev = this->dev;
+	struct device *dev = this->dev;
 	struct spi_transfer t[2];
 	struct spi_message m;
 	u32 dummy;
@@ -205,7 +205,7 @@ static int altera_spi_write(struct firmware_handler *fh, const void *buf, size_t
 static int altera_spi_close(struct firmware_handler *fh)
 {
 	struct fpga_spi *this = container_of(fh, struct fpga_spi, fh);
-	struct device_d *dev = this->dev;
+	struct device *dev = this->dev;
 	struct spi_transfer t;
 	struct spi_message m;
 	u32 dummy = 0;
@@ -265,9 +265,9 @@ static int altera_spi_close(struct firmware_handler *fh)
 	return -EIO;
 }
 
-static int altera_spi_of(struct device_d *dev, struct fpga_spi *this)
+static int altera_spi_of(struct device *dev, struct fpga_spi *this)
 {
-	struct device_node *n = dev->device_node;
+	struct device_node *n = dev->of_node;
 	const char *name;
 	int ret;
 
@@ -329,12 +329,12 @@ static void altera_spi_init_mode(struct spi_device *spi, int spi_bits_per_word)
 	spi->mode = SPI_MODE_0 | SPI_LSB_FIRST;
 }
 
-static int altera_spi_probe(struct device_d *dev)
+static int altera_spi_probe(struct device *dev)
 {
 	int rc;
 	struct fpga_spi *this;
 	struct firmware_handler *fh;
-	const char *alias = of_alias_get(dev->device_node);
+	const char *alias = of_alias_get(dev->of_node);
 	const char *model = NULL;
 	const struct altera_ps_data *data;
 
@@ -359,11 +359,11 @@ static int altera_spi_probe(struct device_d *dev)
 	fh->open = altera_spi_open;
 	fh->write = altera_spi_write;
 	fh->close = altera_spi_close;
-	of_property_read_string(dev->device_node, "compatible", &model);
+	of_property_read_string(dev->of_node, "compatible", &model);
 	if (model)
 		fh->model = xstrdup(model);
 	fh->dev = dev;
-	fh->device_node = dev->device_node;
+	fh->device_node = dev->of_node;
 
 	this->spi = (struct spi_device *)dev->type_data;
 	this->data = data;
@@ -392,7 +392,7 @@ static struct of_device_id altera_spi_id_table[] = {
 	{ }
 };
 
-static struct driver_d altera_spi_driver = {
+static struct driver altera_spi_driver = {
 	.name = "altera-fpga",
 	.of_compatible = DRV_OF_COMPAT(altera_spi_id_table),
 	.probe = altera_spi_probe,

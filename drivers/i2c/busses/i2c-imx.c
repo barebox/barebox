@@ -525,15 +525,18 @@ static void i2c_fsl_unprepare_recovery(struct i2c_adapter *adapter)
 		dev_err(adapter->dev.parent, "pinctrl failed: %s\n", strerror(-ret));
 }
 
-static void i2c_fsl_init_recovery(struct fsl_i2c_struct *i2c_fsl, struct device_d *dev)
+static void i2c_fsl_init_recovery(struct fsl_i2c_struct *i2c_fsl,
+				  struct device *dev)
 {
-	if (!dev->device_node)
+	if (!dev->of_node)
 		return;
 
-	i2c_fsl->rinfo.sda_gpio = of_get_named_gpio_flags(dev->device_node,
-			"sda-gpios", 0, NULL);
-	i2c_fsl->rinfo.scl_gpio = of_get_named_gpio_flags(dev->device_node,
-			"scl-gpios", 0, NULL);
+	i2c_fsl->rinfo.sda_gpio = of_get_named_gpio_flags(dev->of_node,
+							  "sda-gpios", 0,
+							  NULL);
+	i2c_fsl->rinfo.scl_gpio = of_get_named_gpio_flags(dev->of_node,
+							  "scl-gpios", 0,
+							  NULL);
 
 	if (!gpio_is_valid(i2c_fsl->rinfo.sda_gpio) ||
 	    !gpio_is_valid(i2c_fsl->rinfo.scl_gpio))
@@ -550,7 +553,7 @@ static void i2c_fsl_init_recovery(struct fsl_i2c_struct *i2c_fsl, struct device_
 	dev_dbg(dev, "initialized recovery info\n");
 }
 
-static int __init i2c_fsl_probe(struct device_d *pdev)
+static int __init i2c_fsl_probe(struct device *pdev)
 {
 	struct resource *iores;
 	struct fsl_i2c_struct *i2c_fsl;
@@ -585,7 +588,7 @@ static int __init i2c_fsl_probe(struct device_d *pdev)
 	i2c_fsl->adapter.master_xfer = i2c_fsl_xfer;
 	i2c_fsl->adapter.nr = pdev->id;
 	i2c_fsl->adapter.dev.parent = pdev;
-	i2c_fsl->adapter.dev.device_node = pdev->device_node;
+	i2c_fsl->adapter.dev.of_node = pdev->of_node;
 	iores = dev_request_mem_resource(pdev, 0);
 	if (IS_ERR(iores)) {
 		ret = PTR_ERR(iores);
@@ -599,7 +602,7 @@ static int __init i2c_fsl_probe(struct device_d *pdev)
 
 	/* Set up clock divider */
 	bitrate = 100000;
-	of_property_read_u32(pdev->device_node, "clock-frequency", &bitrate);
+	of_property_read_u32(pdev->of_node, "clock-frequency", &bitrate);
 	if (pdata && pdata->bitrate)
 		bitrate = pdata->bitrate;
 
@@ -646,7 +649,7 @@ static __maybe_unused struct of_device_id imx_i2c_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d i2c_fsl_driver = {
+static struct driver i2c_fsl_driver = {
 	.probe	= i2c_fsl_probe,
 	.name	= "i2c-fsl",
 	.of_compatible = DRV_OF_COMPAT(imx_i2c_dt_ids),

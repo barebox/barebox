@@ -100,9 +100,9 @@ struct mii_bus {
 	int (*write)(struct mii_bus *bus, int phy_id, int regnum, u16 val);
 	int (*reset)(struct mii_bus *bus);
 
-	struct device_d *parent;
+	struct device *parent;
 
-	struct device_d dev;
+	struct device dev;
 
 	/* list of all PHYs on bus */
 	struct phy_device *phy_map[PHY_MAX_ADDR];
@@ -129,7 +129,7 @@ struct phy_device *mdiobus_scan(struct mii_bus *bus, int addr);
 
 extern struct list_head mii_bus_list;
 
-int mdiobus_detect(struct device_d *dev);
+int mdiobus_detect(struct device *dev);
 
 #define for_each_mii_bus(mii) \
 	list_for_each_entry(mii, &mii_bus_list, list)
@@ -156,7 +156,7 @@ int mdiobus_write(struct mii_bus *bus, int addr, u32 regnum, u16 val);
 struct phy_device {
 	struct mii_bus *bus;
 
-	struct device_d dev;
+	struct device dev;
 
 	u32 phy_id;
 
@@ -257,7 +257,7 @@ struct phy_driver {
 	int (*read_page)(struct phy_device *phydev);
 	int (*write_page)(struct phy_device *phydev, int page);
 
-	struct driver_d	 drv;
+	struct driver	 drv;
 };
 #define to_phy_driver(d) ((d) ? container_of(d, struct phy_driver, drv) : NULL)
 

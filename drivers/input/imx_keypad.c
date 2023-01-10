@@ -72,7 +72,7 @@
 struct imx_keypad {
 	struct input_device input;
 	struct clk *clk;
-	struct device_d *dev;
+	struct device *dev;
 	void __iomem *mmio_base;
 
 	struct poller_struct poller;
@@ -358,7 +358,7 @@ static void imx_keypad_inhibit(struct imx_keypad *keypad)
 	writew(0xff00, keypad->mmio_base + KPCR);
 }
 
-static int __init imx_keypad_probe(struct device_d *dev)
+static int __init imx_keypad_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct imx_keypad *keypad;
@@ -422,7 +422,7 @@ static __maybe_unused struct of_device_id imx_keypad_dt_ids[] = {
         { }
 };
 
-static struct driver_d imx_keypad_driver = {
+static struct driver imx_keypad_driver = {
 	.name   = "imx-kpp",
 	.probe  = imx_keypad_probe,
 	.of_compatible = DRV_OF_COMPAT(imx_keypad_dt_ids),

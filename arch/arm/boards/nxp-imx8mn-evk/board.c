@@ -31,7 +31,7 @@ static int ar8031_phy_fixup(struct phy_device *phydev)
 	return 0;
 }
 
-static int imx8mn_evk_probe(struct device_d *dev)
+static int imx8mn_evk_probe(struct device *dev)
 {
 	int emmc_bbu_flag = 0;
 	int sd_bbu_flag = 0;
@@ -65,7 +65,7 @@ static const struct of_device_id imx8mn_evk_of_match[] = {
 };
 BAREBOX_DEEP_PROBE_ENABLE(imx8mn_evk_of_match);
 
-static struct driver_d imx8mn_evkboard_driver = {
+static struct driver imx8mn_evkboard_driver = {
 	.name = "board-imx8mn-evk",
 	.probe = imx8mn_evk_probe,
 	.of_compatible = DRV_OF_COMPAT(imx8mn_evk_of_match),

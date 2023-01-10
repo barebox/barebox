@@ -23,7 +23,7 @@ static int reboot_mode_param_set(struct param_d *p, void *priv)
 	return reboot->write(reboot, &reboot->magics[i]);
 }
 
-static int reboot_mode_add_param(struct device_d *dev,
+static int reboot_mode_add_param(struct device *dev,
 				 const char *prefix,
 				 struct reboot_mode_driver *reboot)
 {
@@ -53,7 +53,7 @@ static int of_reboot_mode_fixup(struct device_node *root, void *ctx)
 	struct reboot_mode_driver *reboot = ctx;
 	struct device_node *dstnp, *srcnp, *dstparent;
 
-	srcnp = reboot->dev->device_node;
+	srcnp = reboot->dev->of_node;
 	dstnp = of_get_node_by_reproducible_name(root, srcnp);
 
 	if (dstnp) {
@@ -120,7 +120,7 @@ int reboot_mode_register(struct reboot_mode_driver *reboot,
 			 const u32 *reboot_mode, size_t nelems)
 {
 	struct property *prop;
-	struct device_node *np = reboot->dev->device_node;
+	struct device_node *np = reboot->dev->of_node;
 	const char *alias;
 	size_t nmodes = 0;
 	int i = 0;

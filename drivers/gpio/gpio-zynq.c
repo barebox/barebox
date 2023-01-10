@@ -360,7 +360,7 @@ static struct gpio_ops zynq_gpio_ops = {
 	.get_direction = zynq_gpio_get_direction,
 };
 
-static int zynqmp_gpio_probe(struct device_d *dev)
+static int zynqmp_gpio_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct zynq_gpio *gpio;
@@ -376,7 +376,7 @@ static int zynqmp_gpio_probe(struct device_d *dev)
 	}
 
 	gpio->base_addr = IOMEM(iores->start);
-	gpio->chip.base = of_alias_get_id(dev->device_node, "gpio");
+	gpio->chip.base = of_alias_get_id(dev->of_node, "gpio");
 	gpio->chip.ops = &zynq_gpio_ops;
 	gpio->chip.ngpio = p_data->ngpio;
 	gpio->chip.dev = dev;
@@ -427,7 +427,7 @@ static const struct of_device_id zynq_gpio_of_match[] = {
 	{ /* end of table */ }
 };
 
-static struct driver_d zynqmp_gpio_driver = {
+static struct driver zynqmp_gpio_driver = {
 	.name = "zynqmp-gpio",
 	.of_compatible = zynq_gpio_of_match,
 	.probe = zynqmp_gpio_probe,

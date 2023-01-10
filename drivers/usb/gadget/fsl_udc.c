@@ -1670,7 +1670,7 @@ static int fsl_udc_stop(struct usb_gadget *gadget, struct usb_gadget_driver *dri
 }
 
 static int struct_udc_setup(struct fsl_udc *udc,
-		struct device_d *dev)
+		struct device *dev)
 {
 	struct fsl_usb2_platform_data *pdata = dev->platform_data;
 	size_t size;
@@ -1853,7 +1853,7 @@ static int __init struct_ep_setup(struct fsl_udc *udc, unsigned char index,
 	return 0;
 }
 
-struct fsl_udc *ci_udc_register(struct device_d *dev, void __iomem *regs)
+struct fsl_udc *ci_udc_register(struct device *dev, void __iomem *regs)
 {
 	struct fsl_udc *udc_controller;
 	int ret, i;
@@ -1935,7 +1935,7 @@ void ci_udc_unregister(struct fsl_udc *udc)
 	free(udc);
 }
 
-static int fsl_udc_probe(struct device_d *dev)
+static int fsl_udc_probe(struct device *dev)
 {
 	struct fsl_udc *udc;
 	void __iomem *regs = dev_request_mem_region(dev, 0);
@@ -1952,14 +1952,14 @@ static int fsl_udc_probe(struct device_d *dev)
 	return 0;
 }
 
-static void fsl_udc_remove(struct device_d *dev)
+static void fsl_udc_remove(struct device *dev)
 {
 	struct fsl_udc *udc = dev->priv;
 
 	ci_udc_unregister(udc);
 }
 
-static struct driver_d fsl_udc_driver = {
+static struct driver fsl_udc_driver = {
         .name   = "fsl-udc",
         .probe  = fsl_udc_probe,
 	.remove = fsl_udc_remove,

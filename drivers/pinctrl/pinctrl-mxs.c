@@ -119,7 +119,7 @@ static struct pinctrl_ops mxs_pinctrl_ops = {
 	.set_state = mxs_pinctrl_set_state,
 };
 
-static int mxs_pinctrl_probe(struct device_d *dev)
+static int mxs_pinctrl_probe(struct device *dev)
 {
 	struct mxs_pinctrl *iomux;
 	int ret = 0;
@@ -146,7 +146,7 @@ static __maybe_unused struct of_device_id mxs_pinctrl_dt_ids[] = {
 	}
 };
 
-static struct driver_d mxs_pinctrl_driver = {
+static struct driver mxs_pinctrl_driver = {
 	.name		= "mxs-pinctrl",
 	.probe		= mxs_pinctrl_probe,
 	.of_compatible	= DRV_OF_COMPAT(mxs_pinctrl_dt_ids),

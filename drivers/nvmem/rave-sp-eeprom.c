@@ -285,7 +285,7 @@ static const struct nvmem_bus rave_sp_eeprom_nvmem_bus = {
 	.read  = rave_sp_eeprom_read,
 };
 
-static int rave_sp_eeprom_probe(struct device_d *dev)
+static int rave_sp_eeprom_probe(struct device *dev)
 {
 	struct rave_sp *sp = dev->parent->priv;
 	struct nvmem_config config = { 0 };
@@ -293,7 +293,7 @@ static int rave_sp_eeprom_probe(struct device_d *dev)
 	struct nvmem_device *nvmem;
 	u32 reg[2], size;
 
-	if (of_property_read_u32_array(dev->device_node,
+	if (of_property_read_u32_array(dev->of_node,
 				       "reg", reg, ARRAY_SIZE(reg))) {
 		dev_err(dev, "Failed to parse \"reg\" property\n");
 		return -EINVAL;
@@ -322,7 +322,7 @@ static int rave_sp_eeprom_probe(struct device_d *dev)
 	/*
 	 * If a name is specified via DT, override the above with it.
 	 */
-	of_property_read_string(dev->device_node, "zii,eeprom-name",
+	of_property_read_string(dev->of_node, "zii,eeprom-name",
 				&config.name);
 	config.dev       = dev;
 	config.priv      = eeprom;
@@ -345,7 +345,7 @@ static __maybe_unused const struct of_device_id rave_sp_eeprom_of_match[] = {
 	{}
 };
 
-static struct driver_d rave_sp_eeprom_driver = {
+static struct driver rave_sp_eeprom_driver = {
 	.name = "rave-sp-eeprom",
 	.probe = rave_sp_eeprom_probe,
 	.of_compatible = DRV_OF_COMPAT(rave_sp_eeprom_of_match),

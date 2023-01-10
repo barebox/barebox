@@ -24,7 +24,7 @@ static struct clocksource kvx_clksrc = {
 	.priority = 70,
 };
 
-static int kvx_timer_probe(struct device_d *dev)
+static int kvx_timer_probe(struct device *dev)
 {
 	struct clk *clk;
 	uint32_t clk_freq;
@@ -50,7 +50,7 @@ static struct of_device_id kvx_timer_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d kvx_timer_driver = {
+static struct driver kvx_timer_driver = {
 	.name = "kvx-timer",
 	.probe = kvx_timer_probe,
 	.of_compatible = DRV_OF_COMPAT(kvx_timer_dt_ids),

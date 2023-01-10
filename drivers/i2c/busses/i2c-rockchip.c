@@ -108,7 +108,7 @@ static inline void rk_i2c_get_div(int div, int *divh, int *divl)
  */
 static void rk_i2c_set_clk(struct rk_i2c *i2c, uint32_t scl_rate)
 {
-	struct device_d *dev = i2c->adapter.dev.parent;
+	struct device *dev = i2c->adapter.dev.parent;
 	uint32_t i2c_rate;
 	int div, divl, divh;
 
@@ -130,7 +130,7 @@ static void rk_i2c_set_clk(struct rk_i2c *i2c, uint32_t scl_rate)
 
 static void rk_i2c_show_regs(struct rk_i2c *i2c)
 {
-	struct device_d *dev = &i2c->adapter.dev;
+	struct device *dev = &i2c->adapter.dev;
 	struct i2c_regs *regs = i2c->regs;
 	int i;
 
@@ -152,7 +152,7 @@ static void rk_i2c_show_regs(struct rk_i2c *i2c)
 
 static int rk_i2c_send_start_bit(struct rk_i2c *i2c)
 {
-	struct device_d *dev = &i2c->adapter.dev;
+	struct device *dev = &i2c->adapter.dev;
 	struct i2c_regs *regs = i2c->regs;
 	u32 val;
 	int err;
@@ -176,7 +176,7 @@ static int rk_i2c_send_start_bit(struct rk_i2c *i2c)
 
 static int rk_i2c_send_stop_bit(struct rk_i2c *i2c)
 {
-	struct device_d *dev = &i2c->adapter.dev;
+	struct device *dev = &i2c->adapter.dev;
 	struct i2c_regs *regs = i2c->regs;
 	u32 val;
 	int err;
@@ -206,7 +206,7 @@ static inline void rk_i2c_disable(struct rk_i2c *i2c)
 static int rk_i2c_read(struct rk_i2c *i2c, uchar chip, uint reg, uint r_len,
 		       uchar *buf, uint b_len)
 {
-	struct device_d *dev = &i2c->adapter.dev;
+	struct device *dev = &i2c->adapter.dev;
 	struct i2c_regs *regs = i2c->regs;
 	uchar *pbuf = buf;
 	uint bytes_remain_len = b_len;
@@ -302,7 +302,7 @@ i2c_exit:
 static int rk_i2c_write(struct rk_i2c *i2c, uchar chip, uint reg, uint r_len,
 			uchar *buf, uint b_len)
 {
-	struct device_d *dev = &i2c->adapter.dev;
+	struct device *dev = &i2c->adapter.dev;
 	struct i2c_regs *regs = i2c->regs;
 	u32 val;
 	int err;
@@ -379,7 +379,7 @@ static int rockchip_i2c_xfer(struct i2c_adapter *adapter, struct i2c_msg *msgs,
 			     int nmsgs)
 {
 	struct rk_i2c *i2c = to_rk_i2c(adapter);
-	struct device_d *dev = &adapter->dev;
+	struct device *dev = &adapter->dev;
 	int i, ret = 0;
 
 	dev_dbg(dev, "i2c_xfer: %d messages\n", nmsgs);
@@ -408,9 +408,9 @@ static int rockchip_i2c_xfer(struct i2c_adapter *adapter, struct i2c_msg *msgs,
 	return ret < 0 ? ret : nmsgs;
 }
 
-static int rk_i2c_probe(struct device_d *dev)
+static int rk_i2c_probe(struct device *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct resource *iores;
 	struct rk_i2c *i2c;
 	unsigned bitrate;
@@ -434,7 +434,7 @@ static int rk_i2c_probe(struct device_d *dev)
 	i2c->adapter.master_xfer = rockchip_i2c_xfer;
 	i2c->adapter.nr = dev->id;
 	i2c->adapter.dev.parent = dev;
-	i2c->adapter.dev.device_node = np;
+	i2c->adapter.dev.of_node = np;
 
 	/* Set up clock divider */
 	bitrate = 100000;
@@ -453,7 +453,7 @@ static const struct of_device_id rk_i2c_match[] = {
 	{},
 };
 
-static struct driver_d rk_i2c_driver = {
+static struct driver rk_i2c_driver = {
 	.name  = "rk3x-i2c",
 	.of_compatible = rk_i2c_match,
 	.probe   = rk_i2c_probe,

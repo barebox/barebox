@@ -11,7 +11,7 @@ static LIST_HEAD(sbu_list);
 
 struct sbu {
 	char *uuid;
-	struct device_d *dev;
+	struct device *dev;
 	struct cdev *rcdev;
 	struct cdev cdev;
 	struct list_head list;
@@ -132,7 +132,7 @@ static void storage_by_uuid_add_partitions(struct sbu *sbu, struct cdev *rcdev)
 		return;
 	}
 
-	of_parse_partitions(&sbu->cdev, sbu->dev->device_node);
+	of_parse_partitions(&sbu->cdev, sbu->dev->of_node);
 }
 
 static void check_exist(struct sbu *sbu)
@@ -147,7 +147,7 @@ static void check_exist(struct sbu *sbu)
 	}
 }
 
-static int sbu_detect(struct device_d *dev)
+static int sbu_detect(struct device *dev)
 {
 	struct sbu *sbu = dev->priv;
 
@@ -158,7 +158,7 @@ static int sbu_detect(struct device_d *dev)
 	return 0;
 }
 
-static int storage_by_uuid_probe(struct device_d *dev)
+static int storage_by_uuid_probe(struct device *dev)
 {
 	struct sbu *sbu;
 	int ret;
@@ -166,7 +166,7 @@ static int storage_by_uuid_probe(struct device_d *dev)
 
 	sbu = xzalloc(sizeof(*sbu));
 
-	ret = of_property_read_string(dev->device_node, "uuid", &uuid);
+	ret = of_property_read_string(dev->of_node, "uuid", &uuid);
 	if (ret)
 		return ret;
 
@@ -190,7 +190,7 @@ static struct of_device_id storage_by_uuid_dt_ids[] = {
 	}
 };
 
-static struct driver_d storage_by_uuid_driver = {
+static struct driver storage_by_uuid_driver = {
 	.name		= "storage-by-uuid",
 	.probe		= storage_by_uuid_probe,
 	.of_compatible	= storage_by_uuid_dt_ids,

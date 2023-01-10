@@ -115,7 +115,7 @@ static struct gpio_ops omap_gpio_ops = {
 	.set = omap_gpio_set_value,
 };
 
-static int omap_gpio_probe(struct device_d *dev)
+static int omap_gpio_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct omap_gpio_chip *omapgpio;
@@ -134,7 +134,7 @@ static int omap_gpio_probe(struct device_d *dev)
 
 	omapgpio->chip.ops = &omap_gpio_ops;
 	if (dev->id < 0) {
-		omapgpio->chip.base = of_alias_get_id(dev->device_node, "gpio");
+		omapgpio->chip.base = of_alias_get_id(dev->of_node, "gpio");
 		if (omapgpio->chip.base < 0)
 			return omapgpio->chip.base;
 		omapgpio->chip.base *= 32;
@@ -162,7 +162,7 @@ static __maybe_unused struct of_device_id omap_gpio_dt_ids[] = {
 	}
 };
 
-static struct driver_d omap_gpio_driver = {
+static struct driver omap_gpio_driver = {
 	.name = "omap-gpio",
 	.probe = omap_gpio_probe,
 	.of_compatible = DRV_OF_COMPAT(omap_gpio_dt_ids),

@@ -20,7 +20,7 @@
  *			returns number of bytes accepted;
  */
 struct serdev_device {
-	struct device_d *dev;
+	struct device *dev;
 	struct kfifo *fifo;
 	unsigned char *buf;
 	struct poller_async poller;

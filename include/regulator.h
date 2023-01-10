@@ -2,7 +2,7 @@
 #ifndef __REGULATOR_H
 #define __REGULATOR_H
 
-struct device_d;
+struct device;
 
 /* struct regulator is an opaque object for consumers */
 struct regulator;
@@ -90,7 +90,7 @@ struct regulator_dev {
 	bool boot_on;
 	bool always_on;
 	/* the device this regulator device belongs to */
-	struct device_d *dev;
+	struct device *dev;
 	/* The regulator powering this device */
 	struct regulator *supply;
 };
@@ -152,7 +152,7 @@ void regulators_print(void);
 
 #ifdef CONFIG_REGULATOR
 
-struct regulator *regulator_get(struct device_d *, const char *);
+struct regulator *regulator_get(struct device *, const char *);
 struct regulator *regulator_get_name(const char *name);
 int regulator_enable(struct regulator *);
 int regulator_disable(struct regulator *);
@@ -172,7 +172,7 @@ int regulator_list_voltage_linear_range(struct regulator_dev *rdev,
 int regulator_get_voltage_sel_regmap(struct regulator_dev *rdev);
 int regulator_map_voltage_iterate(struct regulator_dev *rdev,
 				  int min_uV, int max_uV);
-int regulator_bulk_get(struct device_d *dev, int num_consumers,
+int regulator_bulk_get(struct device *dev, int num_consumers,
 		       struct regulator_bulk_data *consumers);
 int regulator_bulk_enable(int num_consumers,
 			  struct regulator_bulk_data *consumers);
@@ -203,7 +203,8 @@ int regulator_list_voltage_table(struct regulator_dev *rdev,
 				  unsigned int selector);
 #else
 
-static inline struct regulator *regulator_get(struct device_d *dev, const char *id)
+static inline struct regulator *regulator_get(struct device *dev,
+					      const char *id)
 {
 	return NULL;
 }
@@ -229,7 +230,7 @@ static inline int regulator_set_voltage(struct regulator *regulator,
 	return 0;
 }
 
-static inline int regulator_bulk_get(struct device_d *dev, int num_consumers,
+static inline int regulator_bulk_get(struct device *dev, int num_consumers,
 				     struct regulator_bulk_data *consumers)
 {
 	return 0;

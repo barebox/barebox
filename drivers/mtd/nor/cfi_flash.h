@@ -35,7 +35,7 @@ struct cfi_cmd_set;
  */
 
 struct flash_info {
-	struct device_d *dev;
+	struct device *dev;
 	unsigned long size;		/* total bank size in bytes		*/
 	unsigned int sector_count;	/* number of erase units		*/
 	unsigned long flash_id;		/* combined device & manufacturer code	*/

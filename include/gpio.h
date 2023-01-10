@@ -34,7 +34,7 @@ static inline int gpio_direction_input(unsigned gpio)
 void gpio_set_active(unsigned gpio, bool state);
 int gpio_is_active(unsigned gpio);
 int gpio_direction_active(unsigned gpio, bool state);
-struct gpio_chip *gpio_get_chip_by_dev(struct device_d *);
+struct gpio_chip *gpio_get_chip_by_dev(struct device *);
 
 /**
  * gpio_poll_timeout_us - Poll till GPIO reaches requested active state
@@ -63,7 +63,7 @@ static inline int gpio_direction_active(unsigned gpio, int value)
 	return -EINVAL;
 }
 
-static inline struct gpio_chip *gpio_get_chip_by_dev(struct device_d *dev)
+static inline struct gpio_chip *gpio_get_chip_by_dev(struct device *dev)
 {
 	return NULL;
 }
@@ -181,7 +181,7 @@ struct gpio_ops {
 };
 
 struct gpio_chip {
-	struct device_d *dev;
+	struct device *dev;
 
 	int base;
 	int ngpio;
@@ -194,7 +194,8 @@ struct gpio_chip {
 int gpiochip_add(struct gpio_chip *chip);
 void gpiochip_remove(struct gpio_chip *chip);
 
-int gpio_of_xlate(struct device_d *dev, struct of_phandle_args *gpiospec, int *flags);
+int gpio_of_xlate(struct device *dev, struct of_phandle_args *gpiospec,
+		  int *flags);
 struct gpio_chip *gpio_get_chip(int gpio);
 
 #endif /* __GPIO_H */

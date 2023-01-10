@@ -336,7 +336,7 @@ struct pxa_udc {
 	void __iomem				*regs;
 	int					irq;
 	struct clk				*clk;
-	struct device_d				*dev;
+	struct device				*dev;
 
 	struct usb_gadget			gadget;
 	struct usb_gadget_driver		*driver;

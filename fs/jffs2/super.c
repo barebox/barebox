@@ -68,7 +68,7 @@ static const struct super_operations jffs2_super_operations =
 /*
  * fill in the superblock
  */
-int jffs2_fill_super(struct fs_device_d *fsdev, int silent)
+int jffs2_fill_super(struct fs_device *fsdev, int silent)
 {
 	struct super_block *sb = &fsdev->sb;
 	struct jffs2_sb_info *c = sb->s_fs_info;

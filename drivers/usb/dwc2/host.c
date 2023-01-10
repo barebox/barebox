@@ -616,7 +616,7 @@ static void dwc2_config_fifos(struct dwc2 *dwc2)
  * @param regs Programming view of DWC2 controller
  *
  */
-static void dwc2_core_host_init(struct device_d *dev,
+static void dwc2_core_host_init(struct device *dev,
 				   struct dwc2 *dwc2)
 {
 	uint32_t hcchar, hcfg, hprt0, hotgctl, usbcfg;
@@ -721,7 +721,7 @@ static void dwc2_core_host_init(struct device_d *dev,
 static int dwc2_host_init(struct usb_host *host)
 {
 	struct dwc2 *dwc2 = to_dwc2(host);
-	struct device_d *dev = dwc2->dev;
+	struct device *dev = dwc2->dev;
 	uint32_t hprt0, gusbcfg;
 	int i, j;
 

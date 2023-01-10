@@ -332,18 +332,19 @@ static int omap3_spi_setup(struct spi_device *spi)
 	return 0;
 }
 
-static int omap3_spi_probe_dt(struct device_d *dev, struct omap3_spi_master *omap3_master)
+static int omap3_spi_probe_dt(struct device *dev,
+			      struct omap3_spi_master *omap3_master)
 {
-	if (!IS_ENABLED(CONFIG_OFDEVICE) || !dev->device_node)
+	if (!IS_ENABLED(CONFIG_OFDEVICE) || !dev->of_node)
 		return -ENODEV;
 
-	if (of_property_read_bool(dev->device_node, "ti,pindir-d0-out-d1-in"))
+	if (of_property_read_bool(dev->of_node, "ti,pindir-d0-out-d1-in"))
 		omap3_master->swap_miso_mosi = 1;
 
 	return 0;
 }
 
-static int omap3_spi_probe(struct device_d *dev)
+static int omap3_spi_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct spi_master *master;
@@ -434,7 +435,7 @@ static struct platform_device_id omap_spi_ids[] = {
 	},
 };
 
-static struct driver_d omap3_spi_driver = {
+static struct driver omap3_spi_driver = {
 	.name = "omap-spi",
 	.probe = omap3_spi_probe,
 	.of_compatible = DRV_OF_COMPAT(omap_spi_dt_ids),

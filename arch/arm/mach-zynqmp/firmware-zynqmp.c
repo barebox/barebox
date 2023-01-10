@@ -577,11 +577,11 @@ const struct zynqmp_eemi_ops *zynqmp_pm_get_eemi_ops(void)
 EXPORT_SYMBOL_GPL(zynqmp_pm_get_eemi_ops);
 
 
-static int zynqmp_firmware_probe(struct device_d *dev)
+static int zynqmp_firmware_probe(struct device *dev)
 {
 	int ret;
 
-	ret = get_set_conduit_method(dev->device_node);
+	ret = get_set_conduit_method(dev->of_node);
 	if (ret)
 		goto out;
 
@@ -619,7 +619,7 @@ static int zynqmp_firmware_probe(struct device_d *dev)
 	dev_dbg(dev, "Trustzone version v%d.%d\n",
 			pm_tz_version >> 16, pm_tz_version & 0xFFFF);
 
-	of_platform_populate(dev->device_node, NULL, dev);
+	of_platform_populate(dev->of_node, NULL, dev);
 out:
 	if (ret)
 		do_fw_call = do_fw_call_fail;
@@ -631,7 +631,7 @@ static struct of_device_id zynqmp_firmware_id_table[] = {
 	{}
 };
 
-static struct driver_d zynqmp_firmware_driver = {
+static struct driver zynqmp_firmware_driver = {
 	.name = "zynqmp_firmware",
 	.probe = zynqmp_firmware_probe,
 	.of_compatible = DRV_OF_COMPAT(zynqmp_firmware_id_table),

@@ -108,7 +108,7 @@ static int imx_usbphy_notify_disconnect(struct usb_phy *phy,
 	return 0;
 }
 
-static struct phy *imx_usbphy_xlate(struct device_d *dev,
+static struct phy *imx_usbphy_xlate(struct device *dev,
 				    struct of_phandle_args *args)
 {
 	struct imx_usbphy *imxphy = dev->priv;
@@ -143,10 +143,10 @@ static int imx_usbphy_get_vbus_state(struct param_d *p, void *priv)
 	return 0;
 }
 
-static int imx_usbphy_probe(struct device_d *dev)
+static int imx_usbphy_probe(struct device *dev)
 {
 	struct resource *iores;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	int ret;
 	struct imx_usbphy *imxphy;
 
@@ -230,7 +230,7 @@ static __maybe_unused struct of_device_id imx_usbphy_dt_ids[] = {
 	},
 };
 
-static struct driver_d imx_usbphy_driver = {
+static struct driver imx_usbphy_driver = {
 	.name   = "imx-usb-phy",
 	.probe  = imx_usbphy_probe,
 	.of_compatible = DRV_OF_COMPAT(imx_usbphy_dt_ids),

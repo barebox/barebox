@@ -136,7 +136,7 @@ struct fsg_lun {
 	u32		sense_data_info;
 	u32		unit_attention_data;
 
-	struct device_d	dev;
+	struct device	dev;
 };
 
 #define fsg_lun_is_open(curlun)	((curlun)->filp != NULL)

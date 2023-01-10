@@ -18,9 +18,9 @@ struct ar9300_eeprom {
 	u8 mac_addr[6];
 };
 
-static int art_set_mac(struct device_d *dev, struct ar9300_eeprom *eeprom)
+static int art_set_mac(struct device *dev, struct ar9300_eeprom *eeprom)
 {
-	struct device_node *node = dev->device_node;
+	struct device_node *node = dev->of_node;
 	struct device_node *rnode;
 
 	if (!node)
@@ -36,7 +36,7 @@ static int art_set_mac(struct device_d *dev, struct ar9300_eeprom *eeprom)
 	return 0;
 }
 
-static int art_read_mac(struct device_d *dev, const char *file)
+static int art_read_mac(struct device *dev, const char *file)
 {
 	int fd, rbytes;
 	struct ar9300_eeprom eeprom;
@@ -73,14 +73,14 @@ static int art_read_mac(struct device_d *dev, const char *file)
 	return art_set_mac(dev, &eeprom);
 }
 
-static int art_probe(struct device_d *dev)
+static int art_probe(struct device *dev)
 {
 	char *path;
 	int ret;
 
 	dev_dbg(dev, "found ART partition\n");
 
-	ret = of_find_path(dev->device_node, "device-path", &path, 0);
+	ret = of_find_path(dev->of_node, "device-path", &path, 0);
 	if (ret) {
 		dev_err(dev, "can't find path\n");
 		return ret;
@@ -97,7 +97,7 @@ static struct of_device_id art_dt_ids[] = {
 	}
 };
 
-static struct driver_d art_driver = {
+static struct driver art_driver = {
 	.name		= "qca-art",
 	.probe		= art_probe,
 	.of_compatible	= art_dt_ids,

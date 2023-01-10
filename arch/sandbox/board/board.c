@@ -29,23 +29,23 @@ struct fb_videomode mode = {
 	.yres = 480,
 };
 
-static struct device_d tap_device = {
+static struct device tap_device = {
 	.id	  = DEVICE_ID_DYNAMIC,
 	.name     = "tap",
 };
 
-static struct device_d sdl_device = {
+static struct device sdl_device = {
 	.id	  = DEVICE_ID_DYNAMIC,
 	.name     = "sdlfb",
 	.platform_data = &mode,
 };
 
-static struct device_d devrandom_device = {
+static struct device devrandom_device = {
 	.id	  = DEVICE_ID_DYNAMIC,
 	.name     = "devrandom",
 };
 
-static int devices_init(struct device_d *dev)
+static int devices_init(struct device *dev)
 {
 	platform_device_register(&tap_device);
 
@@ -68,7 +68,7 @@ static struct of_device_id sandbox_dt_ids[] = {
 };
 BAREBOX_DEEP_PROBE_ENABLE(sandbox_dt_ids);
 
-static struct driver_d sandbox_board_drv = {
+static struct driver sandbox_board_drv = {
 	.name  = "sandbox-board",
 	.of_compatible = sandbox_dt_ids,
 	.probe = devices_init,

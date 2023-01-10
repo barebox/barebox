@@ -136,7 +136,7 @@ static inline int default_mpp_ctrl_set(void __iomem *base, unsigned int pid,
 	return 0;
 }
 
-int mvebu_pinctrl_probe(struct device_d *dev,
+int mvebu_pinctrl_probe(struct device *dev,
 			struct mvebu_pinctrl_soc_info *soc);
 
 #endif

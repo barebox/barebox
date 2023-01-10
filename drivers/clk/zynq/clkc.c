@@ -364,7 +364,7 @@ static struct clk *zynq_cpu_subclk(const char *name,
 	return &subclk->hw.clk;
 }
 
-static int zynq_clock_probe(struct device_d *dev)
+static int zynq_clock_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *clk_base;
@@ -380,7 +380,7 @@ static int zynq_clock_probe(struct device_d *dev)
 	 * in the SCLR region. So we can't directly map the address we get from
 	 * the DT, but need to add the SCLR base offset.
 	 */
-	if (dev->device_node) {
+	if (dev->of_node) {
 		struct resource *parent_res;
 
 		parent_res = dev_get_resource(dev->parent, IORESOURCE_MEM, 0);
@@ -470,7 +470,7 @@ static int zynq_clock_probe(struct device_d *dev)
 
 	clk_data.clks = clks;
 	clk_data.clk_num = ARRAY_SIZE(clks);
-	of_clk_add_provider(dev->device_node, of_clk_src_onecell_get,
+	of_clk_add_provider(dev->of_node, of_clk_src_onecell_get,
 			    &clk_data);
 
 	return 0;
@@ -484,7 +484,7 @@ static __maybe_unused struct of_device_id zynq_clock_dt_ids[] = {
 	}
 };
 
-static struct driver_d zynq_clock_driver = {
+static struct driver zynq_clock_driver = {
 	.probe  = zynq_clock_probe,
 	.name   = "zynq-clock",
 	.of_compatible = DRV_OF_COMPAT(zynq_clock_dt_ids),

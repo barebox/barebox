@@ -23,7 +23,7 @@ struct nvmem_bus {
 };
 
 struct nvmem_config {
-	struct device_d		*dev;
+	struct device		*dev;
 	const char		*name;
 	bool			read_only;
 	struct cdev		*cdev;

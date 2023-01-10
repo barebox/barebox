@@ -104,7 +104,7 @@ static void ar933x_pll_init(void __iomem *base)
 		AR933X_PLL_CLOCK_CTRL_AHB_DIV_MASK);
 }
 
-static int ar933x_clk_probe(struct device_d *dev)
+static int ar933x_clk_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *base;
@@ -118,7 +118,7 @@ static int ar933x_clk_probe(struct device_d *dev)
 
 	clk_data.clks = clks;
 	clk_data.clk_num = ARRAY_SIZE(clks);
-	of_clk_add_provider(dev->device_node, of_clk_src_onecell_get,
+	of_clk_add_provider(dev->of_node, of_clk_src_onecell_get,
 			    &clk_data);
 
 	return 0;
@@ -132,7 +132,7 @@ static __maybe_unused struct of_device_id ar933x_clk_dt_ids[] = {
 	}
 };
 
-static struct driver_d ar933x_clk_driver = {
+static struct driver ar933x_clk_driver = {
 	.probe	= ar933x_clk_probe,
 	.name	= "ar933x_clk",
 	.of_compatible = DRV_OF_COMPAT(ar933x_clk_dt_ids),

@@ -92,12 +92,12 @@ static struct clk_div_table clk_enet_ref_table[] = {
 	{ }
 };
 
-static int imx6_ccm_probe(struct device_d *dev)
+static int imx6_ccm_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *base, *anatop_base, *ccm_base;
 	int i;
-	struct device_node *ccm_node = dev->device_node;
+	struct device_node *ccm_node = dev->of_node;
 	struct clk_hw *hw;
 
 	anatop_base = IOMEM(MX6_ANATOP_BASE_ADDR);
@@ -462,7 +462,7 @@ static __maybe_unused struct of_device_id imx6_ccm_dt_ids[] = {
 	}
 };
 
-static struct driver_d imx6_ccm_driver = {
+static struct driver imx6_ccm_driver = {
 	.probe	= imx6_ccm_probe,
 	.name	= "imx6-ccm",
 	.of_compatible = DRV_OF_COMPAT(imx6_ccm_dt_ids),

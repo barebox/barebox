@@ -39,7 +39,7 @@
 #define FPGA2HPS_BRIDGE_NAME			"fpga2hps"
 
 struct altera_hps2fpga_data {
-	struct device_d *dev;
+	struct device *dev;
 	const char *name;
 	struct reset_control *bridge_reset;
 	unsigned int remap_mask;
@@ -113,7 +113,7 @@ static struct of_device_id altera_fpga_of_match[] = {
 	{ /* sentinel */ },
 };
 
-static int alt_fpga_bridge_probe(struct device_d *dev)
+static int alt_fpga_bridge_probe(struct device *dev)
 {
 	struct altera_hps2fpga_data *priv;
 	const struct of_device_id *of_id;
@@ -123,7 +123,7 @@ static int alt_fpga_bridge_probe(struct device_d *dev)
 	of_id = of_match_device(altera_fpga_of_match, dev);
 	priv = (struct altera_hps2fpga_data *)of_id->data;
 
-	priv->bridge_reset = of_reset_control_get(dev->device_node, NULL);
+	priv->bridge_reset = of_reset_control_get(dev->of_node, NULL);
 	if (IS_ERR(priv->bridge_reset)) {
 		dev_err(dev, "Could not get %s reset control\n", priv->name);
 		return PTR_ERR(priv->bridge_reset);
@@ -143,7 +143,7 @@ static int alt_fpga_bridge_probe(struct device_d *dev)
 
 	priv->dev = dev;
 
-	if (!of_property_read_u32(dev->device_node, "bridge-enable", &enable)) {
+	if (!of_property_read_u32(dev->of_node, "bridge-enable", &enable)) {
 		if (enable > 1) {
 			dev_warn(dev, "invalid bridge-enable %u > 1\n", enable);
 		} else {
@@ -160,7 +160,7 @@ static int alt_fpga_bridge_probe(struct device_d *dev)
 				    priv);
 }
 
-static struct driver_d alt_fpga_bridge_driver = {
+static struct driver alt_fpga_bridge_driver = {
 	.probe = alt_fpga_bridge_probe,
 	.name = "altera-hps2fpga-bridge",
 	.of_compatible = DRV_OF_COMPAT(altera_fpga_of_match),

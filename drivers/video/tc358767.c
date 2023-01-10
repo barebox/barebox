@@ -204,7 +204,7 @@ struct tc_edp_link {
 
 struct tc_data {
 	struct i2c_client	*client;
-	struct device_d		*dev;
+	struct device		*dev;
 	/* DP AUX channel */
 	struct i2c_adapter	adapter;
 	struct vpl		vpl;
@@ -880,7 +880,7 @@ err:
 
 static int tc_main_link_setup(struct tc_data *tc)
 {
-	struct device_d *dev = tc->dev;
+	struct device *dev = tc->dev;
 	unsigned int rate;
 	u32 dp_phy_ctrl;
 	int timeout;
@@ -1334,7 +1334,7 @@ static int tc_ioctl(struct vpl *vpl, unsigned int port,
 	return ret;
 }
 
-static int tc_probe(struct device_d *dev)
+static int tc_probe(struct device *dev)
 {
 	struct i2c_client *client = to_i2c_client(dev);
 	struct tc_data *tc;
@@ -1347,16 +1347,16 @@ static int tc_probe(struct device_d *dev)
 	tc->dev = dev;
 
 	/* Shut down GPIO is optional */
-	tc->sd_gpio = of_get_named_gpio_flags(dev->device_node,
-			"shutdown-gpios", 0, &flags);
+	tc->sd_gpio = of_get_named_gpio_flags(dev->of_node,
+					      "shutdown-gpios", 0, &flags);
 	if (gpio_is_valid(tc->sd_gpio)) {
 		if (!(flags & OF_GPIO_ACTIVE_LOW))
 			tc->sd_active_high = 1;
 	}
 
 	/* Reset GPIO is optional */
-	tc->reset_gpio = of_get_named_gpio_flags(dev->device_node,
-			"reset-gpios", 0, &flags);
+	tc->reset_gpio = of_get_named_gpio_flags(dev->of_node,
+						 "reset-gpios", 0, &flags);
 	if (gpio_is_valid(tc->reset_gpio)) {
 		if (!(flags & OF_GPIO_ACTIVE_LOW))
 			tc->reset_active_high = 1;
@@ -1371,7 +1371,7 @@ static int tc_probe(struct device_d *dev)
 		gpio_direction_output(tc->sd_gpio, 0);
 	}
 
-	tc->refclk = of_clk_get_by_name(dev->device_node, "ref");
+	tc->refclk = of_clk_get_by_name(dev->of_node, "ref");
 	if (IS_ERR(tc->refclk)) {
 		ret = PTR_ERR(tc->refclk);
 		dev_err(dev, "Failed to get refclk: %d\n", ret);
@@ -1410,7 +1410,7 @@ static int tc_probe(struct device_d *dev)
 	}
 
 	/* add vlp */
-	tc->vpl.node = dev->device_node;
+	tc->vpl.node = dev->of_node;
 	tc->vpl.ioctl = tc_ioctl;
 	return vpl_register(&tc->vpl);
 
@@ -1419,7 +1419,7 @@ err:
 	return ret;
 }
 
-static struct driver_d tc_driver = {
+static struct driver tc_driver = {
 	.name		= "tc358767",
 	.probe		= tc_probe,
 };

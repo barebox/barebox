@@ -93,7 +93,7 @@ static inline void litex_spiflash_spi_chipselect(struct litex_spiflash_spi *sc, 
 static int litex_spiflash_spi_setup(struct spi_device *spi)
 {
 	struct spi_master *master = spi->master;
-	struct device_d spi_dev = spi->dev;
+	struct device spi_dev = spi->dev;
 
 	if (spi->bits_per_word != 8) {
 		dev_err(master->dev, "master doesn't support %d bits per word requested by %s\n",
@@ -184,7 +184,7 @@ static void litex_spiflash_spi_disable(struct litex_spiflash_spi *sp)
 	litex_spiflash_spi_wr(sp, 0, SPIFLASH_BITBANG_EN);
 }
 
-static int litex_spiflash_spi_probe(struct device_d *dev)
+static int litex_spiflash_spi_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct spi_master *master;
@@ -216,7 +216,7 @@ static int litex_spiflash_spi_probe(struct device_d *dev)
 	return 0;
 }
 
-static void litex_spiflash_spi_remove(struct device_d *dev)
+static void litex_spiflash_spi_remove(struct device *dev)
 {
 	struct litex_spiflash_spi *sp = dev->priv;
 
@@ -232,7 +232,7 @@ static __maybe_unused struct of_device_id litex_spiflash_spi_dt_ids[] = {
 	}
 };
 
-static struct driver_d litex_spiflash_spi_driver = {
+static struct driver litex_spiflash_spi_driver = {
 	.name  = "litex-spiflash",
 	.probe = litex_spiflash_spi_probe,
 	.remove = litex_spiflash_spi_remove,

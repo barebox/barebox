@@ -78,7 +78,7 @@ static struct gpio_ops orion_gpio_ops = {
 	.set = orion_gpio_set_value,
 };
 
-static int orion_gpio_probe(struct device_d *dev)
+static int orion_gpio_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct orion_gpio_chip *gpio;
@@ -94,13 +94,13 @@ static int orion_gpio_probe(struct device_d *dev)
 	gpio->chip.dev = dev;
 	gpio->chip.ops = &orion_gpio_ops;
 
-	id = of_alias_get_id(dev->device_node, "gpio");
+	id = of_alias_get_id(dev->of_node, "gpio");
 	if (id < 0)
 		return id;
 
 	gpio->chip.base = id * 32;
 	gpio->chip.ngpio = 32;
-	of_property_read_u32(dev->device_node, "ngpios", &gpio->chip.ngpio);
+	of_property_read_u32(dev->of_node, "ngpios", &gpio->chip.ngpio);
 
 	gpiochip_add(&gpio->chip);
 
@@ -114,7 +114,7 @@ static struct of_device_id orion_gpio_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d orion_gpio_driver = {
+static struct driver orion_gpio_driver = {
 	.name = "orion-gpio",
 	.probe = orion_gpio_probe,
 	.of_compatible = DRV_OF_COMPAT(orion_gpio_dt_ids),

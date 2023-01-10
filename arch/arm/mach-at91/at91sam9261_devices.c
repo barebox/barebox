@@ -309,7 +309,7 @@ resource_size_t __init at91_configure_usart2(unsigned pins)
 /* Consider only one slot : slot 0 */
 void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data)
 {
-	struct device_d *dev;
+	struct device *dev;
 
 	if (!data)
 		return;

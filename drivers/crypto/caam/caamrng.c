@@ -67,7 +67,7 @@ struct buf_data {
 
 /* rng per-device context */
 struct caam_rng_ctx {
-	struct device_d *jrdev;
+	struct device *jrdev;
 	dma_addr_t sh_desc_dma;
 	u32 sh_desc[DESC_RNG_LEN];
 	unsigned int cur_buf_idx;
@@ -78,7 +78,7 @@ struct caam_rng_ctx {
 
 static struct caam_rng_ctx *rng_ctx;
 
-static void rng_done(struct device_d *jrdev, u32 *desc, u32 err, void *context)
+static void rng_done(struct device *jrdev, u32 *desc, u32 err, void *context)
 {
 	struct buf_data *bd;
 
@@ -99,7 +99,7 @@ static void rng_done(struct device_d *jrdev, u32 *desc, u32 err, void *context)
 static inline int submit_job(struct caam_rng_ctx *ctx, int to_current)
 {
 	struct buf_data *bd = &ctx->bufs[!(to_current ^ ctx->current_buf)];
-	struct device_d *jrdev = ctx->jrdev;
+	struct device *jrdev = ctx->jrdev;
 	u32 *desc = bd->hw_desc;
 	int err;
 
@@ -222,7 +222,7 @@ static int caam_init_buf(struct caam_rng_ctx *ctx, int buf_id)
 	return submit_job(ctx, buf_id == ctx->current_buf);
 }
 
-static int caam_init_rng(struct caam_rng_ctx *ctx, struct device_d *jrdev)
+static int caam_init_rng(struct caam_rng_ctx *ctx, struct device *jrdev)
 {
 	int err;
 
@@ -242,7 +242,7 @@ static int caam_init_rng(struct caam_rng_ctx *ctx, struct device_d *jrdev)
 	return caam_init_buf(ctx, 1);
 }
 
-int caam_rng_probe(struct device_d *dev, struct device_d *jrdev)
+int caam_rng_probe(struct device *dev, struct device *jrdev)
 {
 	int err;
 

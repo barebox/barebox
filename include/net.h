@@ -32,7 +32,7 @@
 /* The number of receive packet buffers */
 #define PKTBUFSRX	4
 
-struct device_d;
+struct device;
 
 struct eth_device {
 	int active;
@@ -59,9 +59,9 @@ struct eth_device {
 	/* phy device may attach itself for hardware timestamping */
 	struct phy_device *phydev;
 
-	struct device_d dev;
+	struct device dev;
 	char *devname;
-	struct device_d *parent;
+	struct device *parent;
 	char *nodepath;
 
 	struct list_head list;

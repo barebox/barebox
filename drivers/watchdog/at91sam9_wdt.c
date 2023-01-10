@@ -54,7 +54,7 @@ static inline bool at91sam9x_wdt_is_disabled(struct at91sam9x_wdt *wdt)
 	return readl(wdt->base + AT91_WDT_MR) & AT91_WDT_WDDIS;
 }
 
-static int at91sam9x_wdt_probe(struct device_d *dev)
+static int at91sam9x_wdt_probe(struct device *dev)
 {
 	struct at91sam9x_wdt *wdt;
 	struct resource *iores;
@@ -96,7 +96,7 @@ static const __maybe_unused struct of_device_id at91sam9x_wdt_dt_ids[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d at91sam9x_wdt_driver = {
+static struct driver at91sam9x_wdt_driver = {
 	.name		= "at91sam9x-wdt",
 	.of_compatible	= DRV_OF_COMPAT(at91sam9x_wdt_dt_ids),
 	.probe		= at91sam9x_wdt_probe,

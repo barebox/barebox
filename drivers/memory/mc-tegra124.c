@@ -23,7 +23,7 @@ static int tegra124_mc_of_fixup(struct device_node *root, void *context)
 	return 0;
 }
 
-static int tegra124_mc_probe(struct device_d *dev)
+static int tegra124_mc_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *base;
@@ -51,7 +51,7 @@ static __maybe_unused struct of_device_id tegra124_mc_dt_ids[] = {
 	},
 };
 
-static struct driver_d tegra124_mc_driver = {
+static struct driver tegra124_mc_driver = {
 	.name		= "tegra124-mc",
 	.of_compatible	= DRV_OF_COMPAT(tegra124_mc_dt_ids),
 	.probe		= tegra124_mc_probe,

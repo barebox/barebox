@@ -67,7 +67,7 @@ enum imx28_clk {
 static struct clk *clks[clk_max];
 static struct clk_onecell_data clk_data;
 
-static int __init mx28_clocks_init(struct device_d *dev, void __iomem *regs)
+static int __init mx28_clocks_init(struct device *dev, void __iomem *regs)
 {
 	struct device_node *dcnp;
 
@@ -147,10 +147,11 @@ static int __init mx28_clocks_init(struct device_d *dev, void __iomem *regs)
 	clk_set_parent(clks[lcdif_sel], clks[ref_pix]);
 	clk_set_parent(clks[gpmi_sel], clks[ref_gpmi]);
 
-	if (dev->device_node) {
+	if (dev->of_node) {
 		clk_data.clks = clks;
 		clk_data.clk_num = clk_max;
-		of_clk_add_provider(dev->device_node, of_clk_src_onecell_get, &clk_data);
+		of_clk_add_provider(dev->of_node, of_clk_src_onecell_get,
+				    &clk_data);
 	} else {
 		clkdev_add_physbase(clks[ssp0], IMX_SSP0_BASE, NULL);
 		clkdev_add_physbase(clks[ssp1], IMX_SSP1_BASE, NULL);
@@ -174,7 +175,7 @@ static int __init mx28_clocks_init(struct device_d *dev, void __iomem *regs)
 	return 0;
 }
 
-static int imx28_ccm_probe(struct device_d *dev)
+static int imx28_ccm_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *regs;
@@ -197,7 +198,7 @@ static __maybe_unused struct of_device_id imx28_ccm_dt_ids[] = {
 	}
 };
 
-static struct driver_d imx28_ccm_driver = {
+static struct driver imx28_ccm_driver = {
 	.probe	= imx28_ccm_probe,
 	.name	= "imx28-clkctrl",
 	.of_compatible = DRV_OF_COMPAT(imx28_ccm_dt_ids),

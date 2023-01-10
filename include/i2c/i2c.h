@@ -120,7 +120,7 @@ int i2c_generic_scl_recovery(struct i2c_adapter *adap);
  *
  */
 struct i2c_adapter {
-	struct device_d		dev;	/* ptr to device */
+	struct device		dev;	/* ptr to device */
 	int			nr;	/* bus number */
 	int (*master_xfer)(struct i2c_adapter *adap, struct i2c_msg *msgs, int num);
 	struct list_head	list;
@@ -133,7 +133,7 @@ struct i2c_adapter {
 #define to_i2c_adapter(d) container_of(d, struct i2c_adapter, dev)
 
 struct i2c_client {
-	struct device_d		dev;
+	struct device		dev;
 	struct i2c_adapter	*adapter;
 	unsigned short		addr;
 	void			*driver_data;	/* Driver data, set and get with
@@ -299,7 +299,8 @@ int of_i2c_register_devices_by_node(struct device_node *node);
 struct i2c_client *of_find_i2c_device_by_node(struct device_node *node);
 int of_i2c_device_enable_and_register_by_alias(const char *alias);
 
-void i2c_parse_fw_timings(struct device_d *dev, struct i2c_timings *t, bool use_defaults);
+void i2c_parse_fw_timings(struct device *dev, struct i2c_timings *t,
+			  bool use_defaults);
 
 extern struct list_head i2c_adapter_list;
 #define for_each_i2c_adapter(adap) \
@@ -329,7 +330,7 @@ extern int i2c_write_reg(struct i2c_client *client, u32 addr, const u8 *buf, u16
 
 extern struct bus_type i2c_bus;
 
-static inline int i2c_driver_register(struct driver_d *drv)
+static inline int i2c_driver_register(struct driver *drv)
 {
 	drv->bus = &i2c_bus;
 	return register_driver(drv);

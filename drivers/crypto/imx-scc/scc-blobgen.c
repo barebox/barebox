@@ -137,7 +137,7 @@ out:
 	return ret;
 }
 
-int imx_scc_blob_gen_probe(struct device_d *dev)
+int imx_scc_blob_gen_probe(struct device *dev)
 {
 	struct blobgen *bg;
 	int ret;

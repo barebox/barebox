@@ -1389,7 +1389,7 @@ static void __init at91udc_of_init(struct at91_udc *udc, struct device_node *np)
 
 /*-------------------------------------------------------------------------*/
 
-static int __init at91udc_probe(struct device_d *dev)
+static int __init at91udc_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct at91_udc	*udc = &controller;
@@ -1407,12 +1407,12 @@ static int __init at91udc_probe(struct device_d *dev)
 		iclk_name = "udc_clk";
 		fclk_name = "udpck";
 	} else {
-		if (!IS_ENABLED(CONFIG_OFDEVICE) || !dev->device_node) {
+		if (!IS_ENABLED(CONFIG_OFDEVICE) || !dev->of_node) {
 			dev_err(dev, "no DT and no platform_data\n");
 			return -ENODEV;
 		}
 
-		at91udc_of_init(udc, dev->device_node);
+		at91udc_of_init(udc, dev->of_node);
 		iclk_name = "pclk";
 		fclk_name = "hclk";
 	}
@@ -1522,7 +1522,7 @@ static const struct of_device_id at91_udc_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d at91_udc_driver = {
+static struct driver at91_udc_driver = {
 	.name	= driver_name,
 	.probe	= at91udc_probe,
 	.of_compatible = DRV_OF_COMPAT(at91_udc_dt_ids),

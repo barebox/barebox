@@ -81,9 +81,9 @@ static int gpio_wdt_set_timeout(struct watchdog *wdd, unsigned int new_timeout)
 	return 0;
 }
 
-static int gpio_wdt_probe(struct device_d *dev)
+static int gpio_wdt_probe(struct device *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct gpio_wdt_priv *priv;
 	enum gpiod_flags gflags;
 	unsigned int hw_margin;
@@ -130,7 +130,7 @@ static const struct of_device_id gpio_wdt_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d gpio_wdt_driver = {
+static struct driver gpio_wdt_driver = {
 	.name		= "gpio-wdt",
 	.of_compatible	= gpio_wdt_dt_ids,
 	.probe	= gpio_wdt_probe,

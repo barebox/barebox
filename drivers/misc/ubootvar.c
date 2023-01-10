@@ -35,7 +35,7 @@ struct ubootvar_data {
 
 static int ubootvar_flush(struct cdev *cdev)
 {
-	struct device_d *dev = cdev->dev;
+	struct device *dev = cdev->dev;
 	struct ubootvar_data *ubdata = dev->priv;
 	const char *path = ubdata->path[!ubdata->current];
 	uint32_t crc = 0xffffffff;
@@ -125,7 +125,7 @@ static ssize_t
 ubootvar_read(struct cdev *cdev, void *buf, size_t count, loff_t offset,
 	      unsigned long flags)
 {
-	struct device_d *dev = cdev->dev;
+	struct device *dev = cdev->dev;
 	struct ubootvar_data *ubdata = dev->priv;
 
 	WARN_ON(flags & O_RWSIZE_MASK);
@@ -139,7 +139,7 @@ static ssize_t
 ubootvar_write(struct cdev *cdev, const void *buf, size_t count,
 	       loff_t offset, unsigned long flags)
 {
-	struct device_d *dev = cdev->dev;
+	struct device *dev = cdev->dev;
 	struct ubootvar_data *ubdata = dev->priv;
 
 	WARN_ON(flags & O_RWSIZE_MASK);
@@ -151,7 +151,7 @@ ubootvar_write(struct cdev *cdev, const void *buf, size_t count,
 
 static int ubootvar_memmap(struct cdev *cdev, void **map, int flags)
 {
-	struct device_d *dev = cdev->dev;
+	struct device *dev = cdev->dev;
 	struct ubootvar_data *ubdata = dev->priv;
 
 	*map = ubdata->data;
@@ -166,7 +166,7 @@ static struct cdev_operations ubootvar_ops = {
 	.flush = ubootvar_flush,
 };
 
-static void ubootenv_info(struct device_d *dev)
+static void ubootenv_info(struct device *dev)
 {
 	struct ubootvar_data *ubdata = dev->priv;
 
@@ -174,7 +174,7 @@ static void ubootenv_info(struct device_d *dev)
 	       ubdata->path[ubdata->current]);
 }
 
-static int ubootenv_probe(struct device_d *dev)
+static int ubootenv_probe(struct device *dev)
 {
 	struct ubootvar_data *ubdata;
 	unsigned int crc_ok = 0;
@@ -195,11 +195,11 @@ static int ubootenv_probe(struct device_d *dev)
 
 	ubdata = xzalloc(sizeof(*ubdata));
 
-	ret = of_find_path(dev->device_node, "device-path-0",
+	ret = of_find_path(dev->of_node, "device-path-0",
 			   &ubdata->path[0],
 			   OF_FIND_PATH_FLAGS_BB);
 	if (ret)
-		ret = of_find_path(dev->device_node, "device-path",
+		ret = of_find_path(dev->of_node, "device-path",
 				   &ubdata->path[0],
 				   OF_FIND_PATH_FLAGS_BB);
 
@@ -210,7 +210,7 @@ static int ubootenv_probe(struct device_d *dev)
 
 	count++;
 
-	if (!of_find_path(dev->device_node, "device-path-1",
+	if (!of_find_path(dev->of_node, "device-path-1",
 			  &ubdata->path[1],
 			  OF_FIND_PATH_FLAGS_BB)) {
 		count++;
@@ -351,7 +351,7 @@ static struct of_device_id ubootenv_dt_ids[] = {
 	}
 };
 
-static struct driver_d ubootenv_driver = {
+static struct driver ubootenv_driver = {
 	.name		= "uboot-environment",
 	.probe		= ubootenv_probe,
 	.of_compatible	= ubootenv_dt_ids,

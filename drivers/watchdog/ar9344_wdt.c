@@ -29,7 +29,7 @@
 struct ar9344_wd {
 	struct watchdog		wd;
 	void __iomem		*base;
-	struct device_d		*dev;
+	struct device		*dev;
 	unsigned int		rate;
 };
 
@@ -65,7 +65,7 @@ static void ar9344_watchdog_detect_reset_source(struct ar9344_wd *priv)
 	/* else keep the default 'unknown' state */
 }
 
-static int ar9344_wdt_probe(struct device_d *dev)
+static int ar9344_wdt_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct ar9344_wd *priv;
@@ -125,7 +125,7 @@ static __maybe_unused struct of_device_id ar9344_wdt_dt_ids[] = {
 	}
 };
 
-static struct driver_d ar9344_wdt_driver = {
+static struct driver ar9344_wdt_driver = {
 	.name   = "ar9344-wdt",
 	.probe  = ar9344_wdt_probe,
 	.of_compatible = DRV_OF_COMPAT(ar9344_wdt_dt_ids),

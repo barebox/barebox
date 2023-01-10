@@ -623,7 +623,7 @@ static __maybe_unused struct of_device_id imx_usbmisc_dt_ids[] = {
 	},
 };
 
-int imx_usbmisc_port_init(struct device_d *dev, int port, unsigned flags)
+int imx_usbmisc_port_init(struct device *dev, int port, unsigned flags)
 {
 	struct imx_usb_misc_priv *usbmisc = dev->priv;
 
@@ -636,7 +636,7 @@ int imx_usbmisc_port_init(struct device_d *dev, int port, unsigned flags)
 	return usbmisc->data->init(usbmisc->base, port, flags);
 }
 
-int imx_usbmisc_port_post_init(struct device_d *dev, int port, unsigned flags)
+int imx_usbmisc_port_post_init(struct device *dev, int port, unsigned flags)
 {
 	struct imx_usb_misc_priv *usbmisc = dev->priv;
 
@@ -649,7 +649,7 @@ int imx_usbmisc_port_post_init(struct device_d *dev, int port, unsigned flags)
 	return usbmisc->data->post_init(usbmisc->base, port, flags);
 }
 
-static int imx_usbmisc_probe(struct device_d *dev)
+static int imx_usbmisc_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct imx_usb_misc_data *devtype;
@@ -673,7 +673,7 @@ static int imx_usbmisc_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d imx_usbmisc_driver = {
+static struct driver imx_usbmisc_driver = {
 	.name   = "imx-usbmisc",
 	.probe  = imx_usbmisc_probe,
 	.id_table = imx_usbmisc_ids,

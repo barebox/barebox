@@ -424,12 +424,12 @@ static const struct of_device_id ssd1307fb_of_match[] = {
 	{},
 };
 
-static int ssd1307fb_probe(struct device_d *dev)
+static int ssd1307fb_probe(struct device *dev)
 {
 	struct fb_info *info;
-	struct device_node *node = dev->device_node;
+	struct device_node *node = dev->of_node;
 	const struct of_device_id *match =
-		of_match_node(ssd1307fb_of_match, dev->device_node);
+		of_match_node(ssd1307fb_of_match, dev->of_node);
 	u32 vmem_size;
 	struct ssd1307fb_par *par;
 	struct ssd1307fb_array *array;
@@ -634,14 +634,14 @@ fb_alloc_error:
 	return ret;
 }
 
-static __maybe_unused struct driver_d ssd1307fb_i2c_driver = {
+static __maybe_unused struct driver ssd1307fb_i2c_driver = {
 	.name = "ssd1307fb-i2c",
 	.probe = ssd1307fb_probe,
 	.of_compatible = DRV_OF_COMPAT(ssd1307fb_of_match),
 };
 device_i2c_driver(ssd1307fb_i2c_driver);
 
-static __maybe_unused struct driver_d ssd1307fb_spi_driver = {
+static __maybe_unused struct driver ssd1307fb_spi_driver = {
 	.name = "ssd1307fb-spi",
 	.probe = ssd1307fb_probe,
 	.of_compatible = DRV_OF_COMPAT(ssd1307fb_of_match),

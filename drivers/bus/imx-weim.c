@@ -66,7 +66,7 @@ static struct of_device_id weim_id_table[] = {
 };
 
 struct imx_weim {
-	struct device_d *dev;
+	struct device *dev;
 	void __iomem *base;
 	struct imx_weim_devtype *devtype;
 };
@@ -106,7 +106,7 @@ static int weim_parse_dt(struct imx_weim *weim)
 	struct device_node *child;
 	int ret;
 
-	for_each_child_of_node(weim->dev->device_node, child) {
+	for_each_child_of_node(weim->dev->of_node, child) {
 		if (!child->name)
 			continue;
 
@@ -118,14 +118,14 @@ static int weim_parse_dt(struct imx_weim *weim)
 		}
 	}
 
-	ret = of_platform_populate(weim->dev->device_node, NULL, weim->dev);
+	ret = of_platform_populate(weim->dev->of_node, NULL, weim->dev);
 	if (ret)
 		dev_err(weim->dev, "%s fail to create devices.\n",
-			weim->dev->device_node->full_name);
+			weim->dev->of_node->full_name);
 	return ret;
 }
 
-static int weim_probe(struct device_d *dev)
+static int weim_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct imx_weim_devtype *devtype;
@@ -163,7 +163,7 @@ weim_err:
 	return ret;
 }
 
-static struct driver_d weim_driver = {
+static struct driver weim_driver = {
 	.name = "imx-weim",
 	.of_compatible = DRV_OF_COMPAT(weim_id_table),
 	.probe   = weim_probe,

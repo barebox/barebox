@@ -44,7 +44,7 @@ static struct clocksource cs = {
 	.priority = 80,
 };
 
-static int tegra20_timer_probe(struct device_d *dev)
+static int tegra20_timer_probe(struct device *dev)
 {
 	struct resource *iores;
 	u32 reg;
@@ -99,7 +99,7 @@ static __maybe_unused struct of_device_id tegra20_timer_dt_ids[] = {
 	}
 };
 
-static struct driver_d tegra20_timer_driver = {
+static struct driver tegra20_timer_driver = {
 	.probe	= tegra20_timer_probe,
 	.name	= "tegra20-timer",
 	.of_compatible = DRV_OF_COMPAT(tegra20_timer_dt_ids),

@@ -157,7 +157,7 @@ scmi_base_implementation_list_get(const struct scmi_protocol_handle *ph,
 	struct scmi_xfer *t;
 	__le32 *num_skip, *num_ret;
 	u32 tot_num_ret = 0, loop_num_ret;
-	struct device_d *dev = ph->dev;
+	struct device *dev = ph->dev;
 
 	ret = ph->xops->xfer_get_init(ph, BASE_DISCOVER_LIST_PROTOCOLS,
 				      sizeof(*num_skip), 0, &t);
@@ -235,7 +235,7 @@ static int scmi_base_protocol_init(const struct scmi_protocol_handle *ph)
 	u8 *prot_imp;
 	u32 version;
 	char name[SCMI_MAX_STR_SIZE];
-	struct device_d *dev = ph->dev;
+	struct device *dev = ph->dev;
 	struct scmi_revision_info *rev = scmi_revision_area_get(ph);
 
 	ret = ph->xops->version_get(ph, &version);

@@ -27,7 +27,7 @@ struct imx_wd_ops {
 struct imx_wd {
 	struct watchdog wd;
 	void __iomem *base;
-	struct device_d *dev;
+	struct device *dev;
 	const struct imx_wd_ops *ops;
 	struct restart_handler restart;
 	struct restart_handler restart_warm;
@@ -237,7 +237,7 @@ static int imx21_wd_init(struct imx_wd *priv)
 	return imx21_wd_init_no_warm_reset(priv);
 }
 
-static int imx_wd_probe(struct device_d *dev)
+static int imx_wd_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct imx_wd *priv;
@@ -269,9 +269,9 @@ static int imx_wd_probe(struct device_d *dev)
 	priv->wd.timeout_max = priv->ops->timeout_max;
 	priv->wd.hwdev = dev;
 	priv->dev = dev;
-	priv->bigendian = of_device_is_big_endian(dev->device_node);
+	priv->bigendian = of_device_is_big_endian(dev->of_node);
 
-	priv->ext_reset = of_property_read_bool(dev->device_node,
+	priv->ext_reset = of_property_read_bool(dev->of_node,
 						"fsl,ext-reset-output");
 
 	if (IS_ENABLED(CONFIG_WATCHDOG_IMX)) {
@@ -365,7 +365,7 @@ static struct platform_device_id imx_wdt_ids[] = {
 	},
 };
 
-static struct driver_d imx_wd_driver = {
+static struct driver imx_wd_driver = {
 	.name   = "imx-watchdog",
 	.probe  = imx_wd_probe,
 	.of_compatible = DRV_OF_COMPAT(imx_wdt_dt_ids),

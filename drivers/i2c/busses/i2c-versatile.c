@@ -63,7 +63,7 @@ static struct i2c_algo_bit_data i2c_versatile_algo = {
 	.timeout_ms = 100,
 };
 
-static int i2c_versatile_probe(struct device_d *dev)
+static int i2c_versatile_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct i2c_versatile *i2c;
@@ -86,7 +86,7 @@ static int i2c_versatile_probe(struct device_d *dev)
 
 	i2c->adap.algo_data = &i2c->algo;
 	i2c->adap.dev.parent = dev;
-	i2c->adap.dev.device_node = dev->device_node;
+	i2c->adap.dev.of_node = dev->of_node;
 	i2c->algo = i2c_versatile_algo;
 	i2c->algo.data = i2c;
 
@@ -107,7 +107,7 @@ static struct of_device_id i2c_versatile_match[] = {
 	{},
 };
 
-static struct driver_d i2c_versatile_driver = {
+static struct driver i2c_versatile_driver = {
 	.name	= "versatile-i2c",
 	.probe	= i2c_versatile_probe,
 	.of_compatible = DRV_OF_COMPAT(i2c_versatile_match),

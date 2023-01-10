@@ -30,7 +30,7 @@
 static int usb_stor_request_sense(struct us_blk_dev *usb_blkdev)
 {
 	struct us_data *us = usb_blkdev->us;
-	struct device_d *dev = &us->pusb_dev->dev;
+	struct device *dev = &us->pusb_dev->dev;
 	u8 cmd[6];
 	const u8 datalen = 18;
 	u8 *data = xzalloc(datalen);
@@ -73,7 +73,7 @@ static int usb_stor_transport(struct us_blk_dev *usb_blkdev,
 			      int retries, int request_sense_delay_ms)
 {
 	struct us_data *us = usb_blkdev->us;
-	struct device_d *dev = &us->pusb_dev->dev;
+	struct device *dev = &us->pusb_dev->dev;
 	int i, ret;
 
 	for (i = 0; i <= retries; i++) {
@@ -100,7 +100,7 @@ static int usb_stor_transport(struct us_blk_dev *usb_blkdev,
 
 static int usb_stor_inquiry(struct us_blk_dev *usb_blkdev)
 {
-	struct device_d *dev = &usb_blkdev->us->pusb_dev->dev;
+	struct device *dev = &usb_blkdev->us->pusb_dev->dev;
 	int ret;
 	u8 cmd[6];
 	const u16 datalen = 36;
@@ -151,7 +151,7 @@ static int usb_stor_test_unit_ready(struct us_blk_dev *usb_blkdev, u64 timeout_n
 
 static int read_capacity_16(struct us_blk_dev *usb_blkdev)
 {
-	struct device_d *dev = &usb_blkdev->us->pusb_dev->dev;
+	struct device *dev = &usb_blkdev->us->pusb_dev->dev;
 	unsigned char cmd[16];
 	const u8 datalen = 32;
 	u8 *data = xzalloc(datalen);
@@ -192,7 +192,7 @@ static int read_capacity_16(struct us_blk_dev *usb_blkdev)
 
 static int read_capacity_10(struct us_blk_dev *usb_blkdev)
 {
-	struct device_d *dev = &usb_blkdev->us->pusb_dev->dev;
+	struct device *dev = &usb_blkdev->us->pusb_dev->dev;
 	unsigned char cmd[16];
 	const u32 datalen = 8;
 	__be32 *data = xzalloc(datalen);
@@ -269,7 +269,7 @@ static int usb_stor_blk_io(struct block_device *disk_dev,
 						   struct us_blk_dev,
 						   blk);
 	struct us_data *us = pblk_dev->us;
-	struct device_d *dev = &us->pusb_dev->dev;
+	struct device *dev = &us->pusb_dev->dev;
 	int result;
 
 	/* ensure unit ready */
@@ -342,7 +342,7 @@ static struct block_device_ops usb_mass_storage_ops = {
 static int usb_stor_init_blkdev(struct us_blk_dev *pblk_dev)
 {
 	struct us_data *us = pblk_dev->us;
-	struct device_d *dev = &us->pusb_dev->dev;
+	struct device *dev = &us->pusb_dev->dev;
 	int result;
 
 	/* get device info */
@@ -388,7 +388,7 @@ static int usb_stor_init_blkdev(struct us_blk_dev *pblk_dev)
 /* Create and register a disk device for the specified LUN */
 static int usb_stor_add_blkdev(struct us_data *us, unsigned char lun)
 {
-	struct device_d *dev = &us->pusb_dev->dev;
+	struct device *dev = &us->pusb_dev->dev;
 	struct us_blk_dev *pblk_dev;
 	int result;
 
@@ -443,7 +443,7 @@ BadDevice:
 /* Get the transport settings */
 static void get_transport(struct us_data *us)
 {
-	struct device_d *dev = &us->pusb_dev->dev;
+	struct device *dev = &us->pusb_dev->dev;
 	switch (us->protocol) {
 	case US_PR_BULK:
 		us->transport_name = "Bulk";
@@ -458,7 +458,7 @@ static void get_transport(struct us_data *us)
 /* Get the endpoint settings */
 static int get_pipes(struct us_data *us, struct usb_interface *intf)
 {
-	struct device_d *dev = &us->pusb_dev->dev;
+	struct device *dev = &us->pusb_dev->dev;
 	unsigned int i;
 	struct usb_endpoint_descriptor *ep;
 	struct usb_endpoint_descriptor *ep_in = NULL;
@@ -499,7 +499,7 @@ static int get_pipes(struct us_data *us, struct usb_interface *intf)
 /* Scan device's LUNs, registering a disk device for each LUN */
 static int usb_stor_scan(struct usb_device *usbdev, struct us_data *us)
 {
-	struct device_d *dev = &usbdev->dev;
+	struct device *dev = &usbdev->dev;
 	unsigned char lun;
 	int num_devs = 0;
 
@@ -523,7 +523,7 @@ static int usb_stor_scan(struct usb_device *usbdev, struct us_data *us)
 static int usb_stor_probe(struct usb_device *usbdev,
 			 const struct usb_device_id *id)
 {
-	struct device_d *dev = &usbdev->dev;
+	struct device *dev = &usbdev->dev;
 	struct us_data *us;
 	int result;
 	int ifno;

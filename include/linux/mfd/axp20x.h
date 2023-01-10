@@ -449,7 +449,7 @@ enum {
 };
 
 struct axp20x_dev {
-	struct device_d			*dev;
+	struct device			*dev;
 	struct regmap			*regmap;
 	long				variant;
 	int                             nr_cells;

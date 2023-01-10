@@ -49,7 +49,7 @@ const char *get_param_type(struct param_d *param)
 	return param_type_string[param->type];
 }
 
-struct param_d *get_param_by_name(struct device_d *dev, const char *name)
+struct param_d *get_param_by_name(struct device *dev, const char *name)
 {
 	struct param_d *p;
 
@@ -67,7 +67,7 @@ struct param_d *get_param_by_name(struct device_d *dev, const char *name)
  * @param name	The name of the parameter
  * @return	The value
  */
-const char *dev_get_param(struct device_d *dev, const char *name)
+const char *dev_get_param(struct device *dev, const char *name)
 {
 	struct param_d *param = get_param_by_name(dev, name);
 
@@ -85,7 +85,7 @@ const char *dev_get_param(struct device_d *dev, const char *name)
  * @param name	The name of the parameter
  * @param val	The new value of the parameter
  */
-int dev_set_param(struct device_d *dev, const char *name, const char *val)
+int dev_set_param(struct device *dev, const char *name, const char *val)
 {
 	struct param_d *param;
 	int ret;
@@ -125,8 +125,8 @@ int dev_set_param(struct device_d *dev, const char *name, const char *val)
  * used during deregistration of the parameter to free the alloctated
  * memory.
  */
-int dev_param_set_generic(struct device_d *dev, struct param_d *p,
-		const char *val)
+int dev_param_set_generic(struct device *dev, struct param_d *p,
+			  const char *val)
 {
 	free(p->value);
 	if (!val) {
@@ -137,7 +137,7 @@ int dev_param_set_generic(struct device_d *dev, struct param_d *p,
 	return p->value ? 0 : -ENOMEM;
 }
 
-static const char *param_get_generic(struct device_d *dev, struct param_d *p)
+static const char *param_get_generic(struct device *dev, struct param_d *p)
 {
 	return p->value ? p->value : "";
 }
@@ -150,10 +150,11 @@ static int compare(struct list_head *a, struct list_head *b)
 	return strcmp(na, nb);
 }
 
-static int __dev_add_param(struct param_d *param, struct device_d *dev, const char *name,
-		int (*set)(struct device_d *dev, struct param_d *p, const char *val),
-		const char *(*get)(struct device_d *dev, struct param_d *p),
-		unsigned long flags)
+static int __dev_add_param(struct param_d *param, struct device *dev,
+			   const char *name,
+			   int (*set)(struct device *dev, struct param_d *p, const char *val),
+			   const char *(*get)(struct device *dev, struct param_d *p),
+			   unsigned long flags)
 {
 	if (get_param_by_name(dev, name))
 		return -EEXIST;
@@ -193,10 +194,10 @@ static int __dev_add_param(struct param_d *param, struct device_d *dev, const ch
  * expect the parameter value to be a string which can be freed with free(). Do
  * not use static arrays when using the generic functions.
  */
-struct param_d *dev_add_param(struct device_d *dev, const char *name,
-		int (*set)(struct device_d *dev, struct param_d *p, const char *val),
-		const char *(*get)(struct device_d *dev, struct param_d *param),
-		unsigned long flags)
+struct param_d *dev_add_param(struct device *dev, const char *name,
+			      int (*set)(struct device *dev, struct param_d *p, const char *val),
+			      const char *(*get)(struct device *dev, struct param_d *param),
+			      unsigned long flags)
 {
 	struct param_d *param;
 	int ret;
@@ -218,7 +219,8 @@ struct param_d *dev_add_param(struct device_d *dev, const char *name,
  * @param name	The name of the parameter
  * @param value	The value of the parameter
  */
-struct param_d *dev_add_param_fixed(struct device_d *dev, const char *name, const char *value)
+struct param_d *dev_add_param_fixed(struct device *dev, const char *name,
+				    const char *value)
 {
 	struct param_d *param;
 	int ret;
@@ -248,7 +250,8 @@ static inline struct param_string *to_param_string(struct param_d *p)
 	return container_of(p, struct param_string, param);
 }
 
-static int param_string_set(struct device_d *dev, struct param_d *p, const char *val)
+static int param_string_set(struct device *dev, struct param_d *p,
+			    const char *val)
 {
 	struct param_string *ps = to_param_string(p);
 	int ret;
@@ -278,7 +281,7 @@ static int param_string_set(struct device_d *dev, struct param_d *p, const char 
 	return ret;
 }
 
-static const char *param_string_get(struct device_d *dev, struct param_d *p)
+static const char *param_string_get(struct device *dev, struct param_d *p)
 {
 	struct param_string *ps = to_param_string(p);
 	int ret;
@@ -292,10 +295,10 @@ static const char *param_string_get(struct device_d *dev, struct param_d *p)
 	return *ps->value;
 }
 
-struct param_d *dev_add_param_string(struct device_d *dev, const char *name,
-		int (*set)(struct param_d *p, void *priv),
-		int (*get)(struct param_d *p, void *priv),
-		char **value, void *priv)
+struct param_d *dev_add_param_string(struct device *dev, const char *name,
+				     int (*set)(struct param_d *p, void *priv),
+				     int (*get)(struct param_d *p, void *priv),
+				     char **value, void *priv)
 {
 	struct param_string *ps;
 	struct param_d *p;
@@ -332,7 +335,8 @@ static inline struct param_int *to_param_int(struct param_d *p)
 	return container_of(p, struct param_int, param);
 }
 
-static int param_int_set(struct device_d *dev, struct param_d *p, const char *val)
+static int param_int_set(struct device *dev, struct param_d *p,
+			 const char *val)
 {
 	struct param_int *pi = to_param_int(p);
 	u8 value_save[pi->dsize];
@@ -373,7 +377,7 @@ static int param_int_set(struct device_d *dev, struct param_d *p, const char *va
 	return ret;
 }
 
-static const char *param_int_get(struct device_d *dev, struct param_d *p)
+static const char *param_int_get(struct device *dev, struct param_d *p)
 {
 	struct param_int *pi = to_param_int(p);
 	int ret;
@@ -423,10 +427,11 @@ int param_set_readonly(struct param_d *p, void *priv)
  * The set function can be used as a notifer when the variable is about
  * to be written. Can also be used to limit the value.
  */
-struct param_d *__dev_add_param_int(struct device_d *dev, const char *name,
-		int (*set)(struct param_d *p, void *priv),
-		int (*get)(struct param_d *p, void *priv),
-		void *value, enum param_type type, const char *format, void *priv)
+struct param_d *__dev_add_param_int(struct device *dev, const char *name,
+				    int (*set)(struct param_d *p, void *priv),
+				    int (*get)(struct param_d *p, void *priv),
+				    void *value, enum param_type type,
+				    const char *format, void *priv)
 {
 	struct param_int *pi;
 	struct param_d *p;
@@ -492,7 +497,8 @@ static inline struct param_enum *to_param_enum(struct param_d *p)
 	return container_of(p, struct param_enum, param);
 }
 
-static int param_enum_set(struct device_d *dev, struct param_d *p, const char *val)
+static int param_enum_set(struct device *dev, struct param_d *p,
+			  const char *val)
 {
 	struct param_enum *pe = to_param_enum(p);
 	int value_save = *pe->value;
@@ -520,7 +526,7 @@ static int param_enum_set(struct device_d *dev, struct param_d *p, const char *v
 	return ret;
 }
 
-static const char *param_enum_get(struct device_d *dev, struct param_d *p)
+static const char *param_enum_get(struct device *dev, struct param_d *p)
 {
 	struct param_enum *pe = to_param_enum(p);
 	int ret;
@@ -559,10 +565,11 @@ static void param_enum_info(struct param_d *p)
 	}
 }
 
-struct param_d *dev_add_param_enum(struct device_d *dev, const char *name,
-		int (*set)(struct param_d *p, void *priv),
-		int (*get)(struct param_d *p, void *priv),
-		int *value, const char * const *names, int num_names, void *priv)
+struct param_d *dev_add_param_enum(struct device *dev, const char *name,
+				   int (*set)(struct param_d *p, void *priv),
+				   int (*get)(struct param_d *p, void *priv),
+				   int *value, const char * const *names,
+				   int num_names, void *priv)
 {
 	struct param_enum *pe;
 	struct param_d *p;
@@ -596,17 +603,18 @@ static const char *const tristate_names[] = {
 	[PARAM_TRISTATE_FALSE] = "0",
 };
 
-struct param_d *dev_add_param_tristate(struct device_d *dev, const char *name,
-		int (*set)(struct param_d *p, void *priv),
-		int (*get)(struct param_d *p, void *priv),
-		int *value, void *priv)
+struct param_d *dev_add_param_tristate(struct device *dev, const char *name,
+				       int (*set)(struct param_d *p, void *priv),
+				       int (*get)(struct param_d *p, void *priv),
+				       int *value, void *priv)
 {
 	return dev_add_param_enum(dev, name, set, get, value, tristate_names,
 				  ARRAY_SIZE(tristate_names), priv);
 }
 
-struct param_d *dev_add_param_tristate_ro(struct device_d *dev, const char *name,
-		int *value)
+struct param_d *dev_add_param_tristate_ro(struct device *dev,
+					  const char *name,
+					  int *value)
 {
 	return dev_add_param_enum_ro(dev, name, value, tristate_names,
 				     ARRAY_SIZE(tristate_names));
@@ -626,7 +634,8 @@ static inline struct param_bitmask *to_param_bitmask(struct param_d *p)
 	return container_of(p, struct param_bitmask, param);
 }
 
-static int param_bitmask_set(struct device_d *dev, struct param_d *p, const char *val)
+static int param_bitmask_set(struct device *dev, struct param_d *p,
+			     const char *val)
 {
 	struct param_bitmask *pb = to_param_bitmask(p);
 	void *value_save;
@@ -672,7 +681,7 @@ out:
 	return ret;
 }
 
-static const char *param_bitmask_get(struct device_d *dev, struct param_d *p)
+static const char *param_bitmask_get(struct device *dev, struct param_d *p)
 {
 	struct param_bitmask *pb = to_param_bitmask(p);
 	int ret, bit;
@@ -711,10 +720,12 @@ static void param_bitmask_info(struct param_d *p)
 	}
 }
 
-struct param_d *dev_add_param_bitmask(struct device_d *dev, const char *name,
-		int (*set)(struct param_d *p, void *priv),
-		int (*get)(struct param_d *p, void *priv),
-		unsigned long *value, const char * const *names, int max, void *priv)
+struct param_d *dev_add_param_bitmask(struct device *dev, const char *name,
+				      int (*set)(struct param_d *p, void *priv),
+				      int (*get)(struct param_d *p, void *priv),
+				      unsigned long *value,
+				      const char * const *names, int max,
+				      void *priv)
 {
 	struct param_bitmask *pb;
 	struct param_d *p;
@@ -760,7 +771,8 @@ static inline struct param_ip *to_param_ip(struct param_d *p)
 	return container_of(p, struct param_ip, param);
 }
 
-static int param_ip_set(struct device_d *dev, struct param_d *p, const char *val)
+static int param_ip_set(struct device *dev, struct param_d *p,
+			const char *val)
 {
 	struct param_ip *pi = to_param_ip(p);
 	IPaddr_t ip_save = *pi->ip;
@@ -783,7 +795,7 @@ static int param_ip_set(struct device_d *dev, struct param_d *p, const char *val
 	return ret;
 }
 
-static const char *param_ip_get(struct device_d *dev, struct param_d *p)
+static const char *param_ip_get(struct device *dev, struct param_d *p)
 {
 	struct param_ip *pi = to_param_ip(p);
 	int ret;
@@ -800,10 +812,10 @@ static const char *param_ip_get(struct device_d *dev, struct param_d *p)
 	return p->value;
 }
 
-struct param_d *dev_add_param_ip(struct device_d *dev, const char *name,
-		int (*set)(struct param_d *p, void *priv),
-		int (*get)(struct param_d *p, void *priv),
-		IPaddr_t *ip, void *priv)
+struct param_d *dev_add_param_ip(struct device *dev, const char *name,
+				 int (*set)(struct param_d *p, void *priv),
+				 int (*get)(struct param_d *p, void *priv),
+				 IPaddr_t *ip, void *priv)
 {
 	struct param_ip *pi;
 	int ret;
@@ -841,7 +853,8 @@ static inline struct param_mac *to_param_mac(struct param_d *p)
 	return container_of(p, struct param_mac, param);
 }
 
-static int param_mac_set(struct device_d *dev, struct param_d *p, const char *val)
+static int param_mac_set(struct device *dev, struct param_d *p,
+			 const char *val)
 {
 	struct param_mac *pm = to_param_mac(p);
 	char mac_save[6];
@@ -870,7 +883,7 @@ out:
 	return ret;
 }
 
-static const char *param_mac_get(struct device_d *dev, struct param_d *p)
+static const char *param_mac_get(struct device *dev, struct param_d *p)
 {
 	struct param_mac *pm = to_param_mac(p);
 	int ret;
@@ -886,10 +899,10 @@ static const char *param_mac_get(struct device_d *dev, struct param_d *p)
 	return p->value;
 }
 
-struct param_d *dev_add_param_mac(struct device_d *dev, const char *name,
-		int (*set)(struct param_d *p, void *priv),
-		int (*get)(struct param_d *p, void *priv),
-		u8 *mac, void *priv)
+struct param_d *dev_add_param_mac(struct device *dev, const char *name,
+				  int (*set)(struct param_d *p, void *priv),
+				  int (*get)(struct param_d *p, void *priv),
+				  u8 *mac, void *priv)
 {
 	struct param_mac *pm;
 	int ret;
@@ -925,7 +938,8 @@ static inline struct param_file_list *to_param_file_list(struct param_d *p)
 	return container_of(p, struct param_file_list, param);
 }
 
-static int param_file_list_set(struct device_d *dev, struct param_d *p, const char *val)
+static int param_file_list_set(struct device *dev, struct param_d *p,
+			       const char *val)
 {
 	struct param_file_list *pfl = to_param_file_list(p);
 	struct file_list *file_list_save = *pfl->file_list;
@@ -955,7 +969,7 @@ out:
 	return ret;
 }
 
-static const char *param_file_list_get(struct device_d *dev, struct param_d *p)
+static const char *param_file_list_get(struct device *dev, struct param_d *p)
 {
 	struct param_file_list *pfl = to_param_file_list(p);
 	int ret;
@@ -971,10 +985,11 @@ static const char *param_file_list_get(struct device_d *dev, struct param_d *p)
 	return p->value;
 }
 
-struct param_d *dev_add_param_file_list(struct device_d *dev, const char *name,
-		int (*set)(struct param_d *p, void *priv),
-		int (*get)(struct param_d *p, void *priv),
-		struct file_list **file_list, void *priv)
+struct param_d *dev_add_param_file_list(struct device *dev, const char *name,
+					int (*set)(struct param_d *p, void *priv),
+					int (*get)(struct param_d *p, void *priv),
+					struct file_list **file_list,
+					void *priv)
 {
 	struct param_file_list *pfl;
 	int ret;
@@ -1015,7 +1030,7 @@ void dev_remove_param(struct param_d *p)
  * memory
  * @param dev	The device
  */
-void dev_remove_parameters(struct device_d *dev)
+void dev_remove_parameters(struct device *dev)
 {
 	struct param_d *p, *n;
 

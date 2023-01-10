@@ -316,7 +316,7 @@ static int blspec_have_entry(struct bootentries *bootentries, const char *path)
  */
 static const char *nfs_find_mountpath(const char *nfshostpath)
 {
-	struct fs_device_d *fsdev;
+	struct fs_device *fsdev;
 
 	for_each_fs_device(fsdev) {
 		if (fsdev->backingstore && !strcmp(fsdev->backingstore, nfshostpath))
@@ -622,7 +622,7 @@ err_out:
  */
 static int blspec_scan_ubi(struct bootentries *bootentries, struct cdev *cdev)
 {
-	struct device_d *child;
+	struct device *child;
 	int ret, found = 0;
 
 	pr_debug("%s: %s\n", __func__, cdev->name);
@@ -696,7 +696,7 @@ static int blspec_scan_cdev(struct bootentries *bootentries, struct cdev *cdev)
  */
 int blspec_scan_devices(struct bootentries *bootentries)
 {
-	struct device_d *dev;
+	struct device *dev;
 	struct block_device *bdev;
 	int ret, found = 0;
 
@@ -724,9 +724,9 @@ int blspec_scan_devices(struct bootentries *bootentries)
  * Returns the number of entries found or a negative error code if some unexpected
  * error occurred.
  */
-int blspec_scan_device(struct bootentries *bootentries, struct device_d *dev)
+int blspec_scan_device(struct bootentries *bootentries, struct device *dev)
 {
-	struct device_d *child;
+	struct device *child;
 	struct cdev *cdev;
 	int ret, found = 0;
 
@@ -788,7 +788,7 @@ int blspec_scan_device(struct bootentries *bootentries, struct device_d *dev)
  */
 int blspec_scan_devicename(struct bootentries *bootentries, const char *devname)
 {
-	struct device_d *dev;
+	struct device *dev;
 	struct cdev *cdev;
 
 	pr_debug("%s: %s\n", __func__, devname);

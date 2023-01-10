@@ -105,7 +105,7 @@ static struct cdev_operations mc_fops = {
 	.write	= mc_write,
 };
 
-static int mc_probe(struct device_d *dev)
+static int mc_probe(struct device *dev)
 {
 	if (mc_dev)
 		return -EBUSY;
@@ -122,7 +122,7 @@ static int mc_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d mc_driver = {
+static struct driver mc_driver = {
 	.name  = DRIVERNAME,
 	.probe = mc_probe,
 };

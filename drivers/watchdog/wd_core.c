@@ -139,12 +139,12 @@ static int watchdog_register_dev(struct watchdog *wd, const char *name, int id)
  *
  * return: The priority
  */
-static unsigned int dev_get_watchdog_priority(struct device_d *dev)
+static unsigned int dev_get_watchdog_priority(struct device *dev)
 {
 	unsigned int priority = WATCHDOG_DEFAULT_PRIORITY;
 
 	if (dev)
-		of_property_read_u32(dev->device_node, "watchdog-priority",
+		of_property_read_u32(dev->of_node, "watchdog-priority",
 				     &priority);
 
 	return priority;
@@ -194,7 +194,7 @@ int watchdog_register(struct watchdog *wd)
 	int ret = 0;
 
 	if (wd->hwdev)
-		alias = of_alias_get(wd->hwdev->device_node);
+		alias = of_alias_get(wd->hwdev->of_node);
 
 	if (alias)
 		ret = watchdog_register_dev(wd, alias, DEVICE_ID_SINGLE);
@@ -309,7 +309,7 @@ EXPORT_SYMBOL(watchdog_get_default);
 
 int watchdog_get_alias_id_from(struct watchdog *wd, struct device_node *root)
 {
-	struct device_node *dstnp, *srcnp = wd->hwdev ? wd->hwdev->device_node : NULL;
+	struct device_node *dstnp, *srcnp = wd->hwdev ? wd->hwdev->of_node : NULL;
 	char *name;
 
 	if (!srcnp)
@@ -322,14 +322,14 @@ int watchdog_get_alias_id_from(struct watchdog *wd, struct device_node *root)
 	if (!dstnp)
 		return -ENODEV;
 
-	return of_alias_get_id_from(root, wd->hwdev->device_node, "watchdog");
+	return of_alias_get_id_from(root, wd->hwdev->of_node, "watchdog");
 }
 EXPORT_SYMBOL(watchdog_get_alias_id_from);
 
 struct watchdog *watchdog_get_by_name(const char *name)
 {
 	struct watchdog *tmp;
-	struct device_d *dev = get_device_by_name(name);
+	struct device *dev = get_device_by_name(name);
 	if (!dev)
 		return NULL;
 

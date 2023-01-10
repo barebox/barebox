@@ -102,7 +102,7 @@
  * @dsr: copy of the DSR register
  */
 struct imxdi_dev {
-	struct device_d *dev;
+	struct device *dev;
 	struct rtc_device rtc;
 	void __iomem *ioaddr;
 	struct clk *clk;
@@ -542,7 +542,7 @@ static struct nvmem_config nvstore_nvmem_config = {
 	.bus = &nvstore_nvmem_bus,
 };
 
-static int __init dryice_rtc_probe(struct device_d *dev)
+static int __init dryice_rtc_probe(struct device *dev)
 {
 	struct resource *res;
 	struct imxdi_dev *imxdi;
@@ -604,7 +604,7 @@ static __maybe_unused const struct of_device_id dryice_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d dryice_rtc_driver = {
+static struct driver dryice_rtc_driver = {
         .name   = "imx-di-rtc",
         .probe  = dryice_rtc_probe,
         .of_compatible = DRV_OF_COMPAT(dryice_dt_ids),

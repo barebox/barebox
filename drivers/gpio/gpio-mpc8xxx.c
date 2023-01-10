@@ -34,7 +34,7 @@ struct mpc8xxx_gpio_devtype {
 	int (*gpio_get)(struct bgpio_chip *, unsigned int);
 };
 
-static int mpc8xxx_probe(struct device_d *dev)
+static int mpc8xxx_probe(struct device *dev)
 {
 	struct device_node *np;
 	struct resource *iores;
@@ -44,8 +44,8 @@ static int mpc8xxx_probe(struct device_d *dev)
 
 	mpc8xxx_gc = xzalloc(sizeof(*mpc8xxx_gc));
 
-	if (dev->device_node) {
-		np = dev->device_node;
+	if (dev->of_node) {
+		np = dev->of_node;
 	} else {
 		dev_err(dev, "no device_node\n");
 		return -ENODEV;
@@ -108,7 +108,7 @@ static __maybe_unused struct of_device_id mpc8xxx_gpio_ids[] = {
 	},
 };
 
-static struct driver_d mpc8xxx_driver = {
+static struct driver mpc8xxx_driver = {
 	.name		= "mpc8xxx-gpio",
 	.probe		= mpc8xxx_probe,
 	.of_compatible  = DRV_OF_COMPAT(mpc8xxx_gpio_ids),

@@ -19,7 +19,7 @@ static void __noreturn riscvemu_poweroff(struct poweroff_handler *pwr)
 	__builtin_unreachable();
 }
 
-static int htif_poweroff_probe(struct device_d *dev)
+static int htif_poweroff_probe(struct device *dev)
 {
 	struct resource *iores;
 
@@ -38,7 +38,7 @@ static const struct of_device_id htif_poweroff_of_match[] = {
 	{}
 };
 
-static struct driver_d htif_poweroff_driver = {
+static struct driver htif_poweroff_driver = {
 	.name = "htif-poweroff",
 	.of_compatible = htif_poweroff_of_match,
 	.probe = htif_poweroff_probe,

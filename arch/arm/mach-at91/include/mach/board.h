@@ -93,7 +93,7 @@ resource_size_t __init at91_configure_usart5(unsigned pins);
 resource_size_t __init at91_configure_usart6(unsigned pins);
 
 #if defined(CONFIG_DRIVER_SERIAL_ATMEL)
-static inline struct device_d * at91_register_uart(unsigned id, unsigned pins)
+static inline struct device * at91_register_uart(unsigned id, unsigned pins)
 {
 	resource_size_t start;
 	resource_size_t size = SZ_16K;
@@ -129,7 +129,7 @@ static inline struct device_d * at91_register_uart(unsigned id, unsigned pins)
 			   IORESOURCE_MEM, NULL);
 }
 #else
-static inline struct device_d * at91_register_uart(unsigned id, unsigned pins)
+static inline struct device * at91_register_uart(unsigned id, unsigned pins)
 {
 	return NULL;
 }

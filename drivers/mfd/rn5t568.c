@@ -52,7 +52,8 @@ static void rn5t568_restart(struct restart_handler *rst)
 	regmap_write(rn5t568->regmap, RN5T568_SLPCNT, RN5T568_SLPCNT_SWPPWROFF);
 }
 
-static int rn5t568_reset_reason_detect(struct device_d *dev, struct regmap *regmap)
+static int rn5t568_reset_reason_detect(struct device *dev,
+				       struct regmap *regmap)
 {
 	unsigned int reg;
 	int ret;
@@ -111,7 +112,7 @@ static const struct regmap_config rn5t568_regmap_config = {
 	.max_register	= RN5T568_MAX_REG,
 };
 
-static int __init rn5t568_i2c_probe(struct device_d *dev)
+static int __init rn5t568_i2c_probe(struct device *dev)
 {
 	struct rn5t568 *pmic_instance;
 	unsigned char reg[2];
@@ -138,7 +139,7 @@ static int __init rn5t568_i2c_probe(struct device_d *dev)
 	regmap_write(pmic_instance->regmap, RN5T568_REPCNT, RN5T568_REPCNT_OFF_RESETO_16MS |
 		     RN5T568_REPCNT_OFF_REPWRTIM_1000MS | RN5T568_REPCNT_OFF_REPWRON);
 
-	pmic_instance->restart.of_node = dev->device_node;
+	pmic_instance->restart.of_node = dev->of_node;
 	pmic_instance->restart.name = "RN5T568";
 	pmic_instance->restart.restart = &rn5t568_restart;
 	restart_handler_register(&pmic_instance->restart);
@@ -148,7 +149,7 @@ static int __init rn5t568_i2c_probe(struct device_d *dev)
 	if (ret)
 		dev_warn(dev, "Failed to query reset reason\n");
 
-	return of_platform_populate(dev->device_node, NULL, dev);
+	return of_platform_populate(dev->of_node, NULL, dev);
 }
 
 static __maybe_unused const struct of_device_id rn5t568_of_match[] = {
@@ -156,7 +157,7 @@ static __maybe_unused const struct of_device_id rn5t568_of_match[] = {
 	{ }
 };
 
-static struct driver_d rn5t568_i2c_driver = {
+static struct driver rn5t568_i2c_driver = {
 	.name		= "rn5t568-i2c",
 	.probe		= rn5t568_i2c_probe,
 	.of_compatible	= DRV_OF_COMPAT(rn5t568_of_match),

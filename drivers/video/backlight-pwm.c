@@ -101,10 +101,10 @@ static int backlight_pwm_set(struct backlight_device *backlight,
 		return backlight_pwm_disable(pwm_backlight);
 }
 
-static int pwm_backlight_parse_dt(struct device_d *dev,
-		struct pwm_backlight *pwm_backlight)
+static int pwm_backlight_parse_dt(struct device *dev,
+				  struct pwm_backlight *pwm_backlight)
 {
-	struct device_node *node = dev->device_node;
+	struct device_node *node = dev->of_node;
 	struct property *prop;
 	int length;
 	u32 value;
@@ -164,13 +164,13 @@ static int pwm_backlight_parse_dt(struct device_d *dev,
 	return 0;
 }
 
-static int backlight_pwm_of_probe(struct device_d *dev)
+static int backlight_pwm_of_probe(struct device *dev)
 {
 	int ret;
 	struct pwm_backlight *pwm_backlight;
 	struct pwm_device *pwm;
 
-	pwm = of_pwm_request(dev->device_node, NULL);
+	pwm = of_pwm_request(dev->of_node, NULL);
 	if (IS_ERR(pwm)) {
 		dev_err(dev, "Cannot find PWM device\n");
 		return PTR_ERR(pwm);
@@ -193,7 +193,7 @@ static int backlight_pwm_of_probe(struct device_d *dev)
 	pwm_backlight->backlight.slew_time_ms = 100;
 	pwm_backlight->backlight.brightness_set = backlight_pwm_set;
 	pwm_backlight->backlight.dev.parent = dev;
-	pwm_backlight->backlight.node = dev->device_node;
+	pwm_backlight->backlight.node = dev->of_node;
 
 	ret = backlight_register(&pwm_backlight->backlight);
 	if (ret)
@@ -210,7 +210,7 @@ static struct of_device_id backlight_pwm_of_ids[] = {
 	}
 };
 
-static struct driver_d backlight_pwm_of_driver = {
+static struct driver backlight_pwm_of_driver = {
 	.name  = "pwm-backlight",
 	.probe = backlight_pwm_of_probe,
 	.of_compatible = DRV_OF_COMPAT(backlight_pwm_of_ids),

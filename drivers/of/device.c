@@ -12,16 +12,16 @@
  * system is in its list of supported devices.
  */
 const struct of_device_id *of_match_device(const struct of_device_id *matches,
-					   const struct device_d *dev)
+					   const struct device *dev)
 {
-	if ((!matches) || (!dev->device_node))
+	if ((!matches) || (!dev->of_node))
 		return NULL;
 
-	return of_match_node(matches, dev->device_node);
+	return of_match_node(matches, dev->of_node);
 }
 EXPORT_SYMBOL(of_match_device);
 
-const void *of_device_get_match_data(const struct device_d *dev)
+const void *of_device_get_match_data(const struct device *dev)
 {
 	const struct of_device_id *match;
 
@@ -33,7 +33,7 @@ const void *of_device_get_match_data(const struct device_d *dev)
 }
 EXPORT_SYMBOL(of_device_get_match_data);
 
-const char *of_device_get_match_compatible(const struct device_d *dev)
+const char *of_device_get_match_compatible(const struct device *dev)
 {
 	const struct of_device_id *match;
 

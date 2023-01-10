@@ -10,7 +10,7 @@ struct rock3_model {
 	const char *shortname;
 };
 
-static int rock3_probe(struct device_d *dev)
+static int rock3_probe(struct device *dev)
 {
 	enum bootsource bootsource = bootsource_get();
 	int instance = bootsource_get_instance();
@@ -46,7 +46,7 @@ static const struct of_device_id rock3_of_match[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d rock3_board_driver = {
+static struct driver rock3_board_driver = {
 	.name = "board-rock3",
 	.probe = rock3_probe,
 	.of_compatible = rock3_of_match,

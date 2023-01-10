@@ -55,7 +55,7 @@ static int animeo_ip_get_pio_revision(int gpio, char *name)
 
 static void animeo_ip_detect_version(void)
 {
-	struct device_d *dev = NULL;
+	struct device *dev = NULL;
 	char *model, *version;
 	int val;
 
@@ -311,7 +311,7 @@ static int animeo_ip_devices_init(void)
 
 device_initcall(animeo_ip_devices_init);
 
-static struct device_d *usart0, *usart1;
+static struct device *usart0, *usart1;
 
 static void animeo_ip_shutdown_uart(void __iomem *base)
 {

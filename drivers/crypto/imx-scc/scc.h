@@ -7,4 +7,4 @@ struct ablkcipher_request;
 
 int imx_scc_cbc_des_encrypt(struct ablkcipher_request *req);
 int imx_scc_cbc_des_decrypt(struct ablkcipher_request *req);
-int imx_scc_blob_gen_probe(struct device_d *dev);
+int imx_scc_blob_gen_probe(struct device *dev);

@@ -69,10 +69,10 @@ const struct font_desc *find_font_enum(int n)
 	return NULL;
 }
 
-struct param_d *add_param_font(struct device_d *dev,
-		int (*set)(struct param_d *p, void *priv),
-		int (*get)(struct param_d *p, void *priv),
-		int *value, void *priv)
+struct param_d *add_param_font(struct device *dev,
+			       int (*set)(struct param_d *p, void *priv),
+			       int (*get)(struct param_d *p, void *priv),
+			       int *value, void *priv)
 {
 	struct font_desc *f;
 	int num_fonts = 0;

@@ -77,7 +77,7 @@ struct atmel_pwm_chip {
 	struct pwm_chip chips[PWM_CHANNELS];
 	struct clk *clk;
 	void __iomem *base;
-	struct device_d *dev;
+	struct device *dev;
 	const struct atmel_pwm_data *data;
 
 	/*
@@ -413,7 +413,7 @@ static const struct of_device_id atmel_pwm_dt_ids[] = {
 
 static int id = -1;
 
-static int atmel_pwm_probe(struct device_d *dev)
+static int atmel_pwm_probe(struct device *dev)
 {
 	const struct atmel_pwm_data *data;
 	struct atmel_pwm_chip *atmel_pwm;
@@ -438,7 +438,7 @@ static int atmel_pwm_probe(struct device_d *dev)
 		return PTR_ERR(iores);
 
 	atmel_pwm->base = IOMEM(iores->start);
-	alias = of_alias_get(dev->device_node);
+	alias = of_alias_get(dev->of_node);
 	if (!alias)
 		id++;
 
@@ -462,7 +462,7 @@ static int atmel_pwm_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d atmel_pwm_driver = {
+static struct driver atmel_pwm_driver = {
 	.name		= "atmel-pwm",
 	.of_compatible	= atmel_pwm_dt_ids,
 	.probe		= atmel_pwm_probe,

@@ -284,7 +284,7 @@ static int at91_ether_init(struct eth_device *edev)
 	return 0;
 }
 
-static int at91_ether_probe(struct device_d *dev)
+static int at91_ether_probe(struct device *dev)
 {
 	unsigned int mac_cfg;
 	struct ether_device *ether_dev;
@@ -353,7 +353,7 @@ static int at91_ether_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d at91_ether_driver = {
+static struct driver at91_ether_driver = {
 	.name = "at91_ether",
 	.probe = at91_ether_probe,
 };

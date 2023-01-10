@@ -470,14 +470,14 @@ void sifive_prci_hfpclkpllsel_use_hfpclkpll(struct __prci_data *pd)
  *
  * Return: 0 upon success or a negative error code upon failure.
  */
-static int __prci_register_clocks(struct device_d *dev, struct __prci_data *pd,
+static int __prci_register_clocks(struct device *dev, struct __prci_data *pd,
 				  const struct prci_clk_desc *desc)
 {
 	struct clk_init_data init = { };
 	struct __prci_clock *pic;
 	int parent_count, i, r;
 
-	parent_count = of_clk_get_parent_count(dev->device_node);
+	parent_count = of_clk_get_parent_count(dev->of_node);
 	if (parent_count != EXPECTED_CLK_PARENT_COUNT) {
 		dev_err(dev, "expected only two parent clocks, found %d\n",
 			parent_count);
@@ -520,7 +520,7 @@ static int __prci_register_clocks(struct device_d *dev, struct __prci_data *pd,
 
 	pd->hw_clks.clk_num = i;
 
-	r = of_clk_add_provider(dev->device_node, of_clk_src_onecell_get,
+	r = of_clk_add_provider(dev->of_node, of_clk_src_onecell_get,
 				&pd->hw_clks);
 	if (r) {
 		dev_err(dev, "could not add hw_provider: %d\n", r);
@@ -536,7 +536,7 @@ static int __prci_register_clocks(struct device_d *dev, struct __prci_data *pd,
  *
  * Return: 0 upon success or a negative error code upon failure.
  */
-static int sifive_prci_probe(struct device_d *dev)
+static int sifive_prci_probe(struct device *dev)
 {
 	struct resource *res;
 	struct __prci_data *pd;
@@ -577,7 +577,7 @@ static const struct of_device_id sifive_prci_of_match[] = {
 	{}
 };
 
-static struct driver_d sifive_prci_driver = {
+static struct driver sifive_prci_driver = {
 	.name = "sifive-clk-prci",
 	.of_compatible = sifive_prci_of_match,
 	.probe = sifive_prci_probe,

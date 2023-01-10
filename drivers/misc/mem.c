@@ -13,7 +13,7 @@ static struct cdev_operations memops = {
 	.memmap = generic_memmap_rw,
 };
 
-static int mem_probe(struct device_d *dev)
+static int mem_probe(struct device *dev)
 {
 	struct cdev *cdev;
 
@@ -41,14 +41,14 @@ static int mem_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d mem_drv = {
+static struct driver mem_drv = {
 	.name  = "mem",
 	.probe = mem_probe,
 };
 
 static int mem_init(void)
 {
-	struct device_d *dev;
+	struct device *dev;
 	struct resource res = {
 		.start = 0,
 		.end = ~0,

@@ -135,7 +135,7 @@ EXPORT_SYMBOL(command_complete);
 
 int device_complete(struct string_list *sl, char *instr)
 {
-	struct device_d *dev;
+	struct device *dev;
 	int len;
 
 	if (!instr)
@@ -154,7 +154,7 @@ int device_complete(struct string_list *sl, char *instr)
 }
 EXPORT_SYMBOL(device_complete);
 
-static int device_param_complete(struct device_d *dev, struct string_list *sl,
+static int device_param_complete(struct device *dev, struct string_list *sl,
 				 char *instr, int eval)
 {
 	struct param_d *param;
@@ -267,7 +267,7 @@ EXPORT_SYMBOL(tutorial_complete);
 
 static int env_param_complete(struct string_list *sl, char *instr, int eval)
 {
-	struct device_d *dev;
+	struct device *dev;
 	struct variable_d *var;
 	struct env_context *c;
 	int len;

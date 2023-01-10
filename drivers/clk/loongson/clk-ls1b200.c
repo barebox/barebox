@@ -114,7 +114,7 @@ static void ls1b200_pll_init(void __iomem *base)
 		10, 1, dc_mux,  ARRAY_SIZE(dc_mux), 0);
 }
 
-static int ls1b200_clk_probe(struct device_d *dev)
+static int ls1b200_clk_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *base;
@@ -129,7 +129,7 @@ static int ls1b200_clk_probe(struct device_d *dev)
 
 	clk_data.clks = clks;
 	clk_data.clk_num = ARRAY_SIZE(clks);
-	of_clk_add_provider(dev->device_node, of_clk_src_onecell_get, &clk_data);
+	of_clk_add_provider(dev->of_node, of_clk_src_onecell_get, &clk_data);
 
 	return 0;
 }
@@ -142,7 +142,7 @@ static __maybe_unused struct of_device_id ls1b200_clk_dt_ids[] = {
 	}
 };
 
-static struct driver_d ls1b200_clk_driver = {
+static struct driver ls1b200_clk_driver = {
 	.probe	= ls1b200_clk_probe,
 	.name	= "ls1b-clk",
 	.of_compatible = DRV_OF_COMPAT(ls1b200_clk_dt_ids),

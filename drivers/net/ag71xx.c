@@ -211,7 +211,7 @@ typedef struct {
 #define MAX_WAIT        1000
 
 struct ag71xx {
-	struct device_d *dev;
+	struct device *dev;
 	struct eth_device netdev;
 	void __iomem *regs;
 	void __iomem *regs_gmac;
@@ -287,7 +287,7 @@ static inline void ag71xx_wr(struct ag71xx *priv, int reg, u32 val)
 
 static int ag71xx_mii_wait(struct ag71xx *priv, int write)
 {
-	struct device_d *dev = priv->dev;
+	struct device *dev = priv->dev;
 	uint64_t start;
 
 	start = get_time_ns();
@@ -371,7 +371,7 @@ static int ag71xx_ether_get_ethaddr(struct eth_device *edev, unsigned char *adr)
 static void ag71xx_ether_halt(struct eth_device *edev)
 {
 	struct ag71xx *priv = edev->priv;
-	struct device_d *dev = priv->dev;
+	struct device *dev = priv->dev;
 	uint64_t start;
 
 	ag71xx_wr(priv, AG71XX_REG_RX_CTRL, 0);
@@ -425,7 +425,7 @@ static int ag71xx_ether_rx(struct eth_device *edev)
 static int ag71xx_ether_send(struct eth_device *edev, void *packet, int length)
 {
 	struct ag71xx *priv = edev->priv;
-	struct device_d *dev = priv->dev;
+	struct device *dev = priv->dev;
 	ag7240_desc_t *f = &priv->fifo_tx[priv->next_tx];
 	uint64_t start;
 	int ret = 0;
@@ -549,7 +549,7 @@ static struct ag71xx_cfg ag71xx_cfg_ar9344_gmac0 = {
 	.init_mii = ag71xx_ar9344_gmac0_mii_init,
 };
 
-static int ag71xx_probe(struct device_d *dev)
+static int ag71xx_probe(struct device *dev)
 {
 	void __iomem *regs, *regs_gmac;
 	struct mii_bus *miibus;
@@ -659,7 +659,7 @@ static int ag71xx_probe(struct device_d *dev)
 	return 0;
 }
 
-static void ag71xx_remove(struct device_d *dev)
+static void ag71xx_remove(struct device *dev)
 {
 	struct eth_device *edev = dev->priv;
 
@@ -672,7 +672,7 @@ static __maybe_unused struct of_device_id ag71xx_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d ag71xx_driver = {
+static struct driver ag71xx_driver = {
 	.name	= "ag71xx-gmac",
 	.probe		= ag71xx_probe,
 	.remove		= ag71xx_remove,

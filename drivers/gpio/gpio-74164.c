@@ -94,16 +94,16 @@ static struct platform_device_id gpio_74164_ids[] = {
 	{ }
 };
 
-static int gpio_74164_probe(struct device_d *dev)
+static int gpio_74164_probe(struct device *dev)
 {
 	struct spi_device *spi = (struct spi_device *)dev->type_data;
 	struct gpio_74164 *priv;
 	u32 num_regs = 1;
 
 	dev->id = DEVICE_ID_DYNAMIC;
-	if (IS_ENABLED(CONFIG_OFDEVICE) && dev->device_node) {
-		dev->id = of_alias_get_id(dev->device_node, "gpio");
-		of_property_read_u32(dev->device_node, "registers-number",
+	if (IS_ENABLED(CONFIG_OFDEVICE) && dev->of_node) {
+		dev->id = of_alias_get_id(dev->of_node, "gpio");
+		of_property_read_u32(dev->of_node, "registers-number",
 				     &num_regs);
 	}
 
@@ -121,7 +121,7 @@ static int gpio_74164_probe(struct device_d *dev)
 	return gpiochip_add(&priv->chip);
 }
 
-static struct driver_d gpio_74164_driver = {
+static struct driver gpio_74164_driver = {
 	.name = "gpio-74164",
 	.probe = gpio_74164_probe,
 	.id_table = gpio_74164_ids,

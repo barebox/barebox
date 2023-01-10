@@ -104,7 +104,7 @@ static int stm32_rng_init(struct hwrng *hwrng)
 	return 0;
 }
 
-static void stm32_rng_remove(struct device_d *dev)
+static void stm32_rng_remove(struct device *dev)
 {
 	struct stm32_rng *rng = dev->priv;
 
@@ -112,7 +112,7 @@ static void stm32_rng_remove(struct device_d *dev)
 	clk_disable(rng->clk);
 }
 
-static int stm32_rng_probe(struct device_d *dev)
+static int stm32_rng_probe(struct device *dev)
 {
 	struct stm32_rng *rng;
 	struct resource *res;
@@ -153,7 +153,7 @@ static const struct of_device_id stm32_rng_dt_ids[] = {
 	{ /* sentinel */},
 };
 
-static struct driver_d stm32_rng_driver = {
+static struct driver stm32_rng_driver = {
 	.name = "stm32-rng",
 	.probe = stm32_rng_probe,
 	.remove = stm32_rng_remove,

@@ -9,6 +9,7 @@
 #ifndef RNG_SELF_TEST_H
 #define RNG_SELF_TEST_H
 
-int caam_rng_self_test(struct device_d *dev, const u8 caam_era, const u8 rngvid, const u8 rngrev);
+int caam_rng_self_test(struct device *dev, const u8 caam_era, const u8 rngvid,
+		       const u8 rngrev);
 
 #endif /* RNG_SELF_TEST_H */

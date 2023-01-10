@@ -26,7 +26,8 @@
 struct eqos_mac_regs {
 	u32 config;				/* 0x000 */
 	u32 ext_config;				/* 0x004 */
-	u32 unused_004[(0x070 - 0x008) / 4];	/* 0x008 */
+	u32 packet_filter;			/* 0x008 */
+	u32 unused_004[(0x070 - 0x00C) / 4];	/* 0x00C */
 	u32 q0_tx_flow_ctrl;			/* 0x070 */
 	u32 unused_070[(0x090 - 0x074) / 4];	/* 0x074 */
 	u32 rx_flow_ctrl;			/* 0x090 */
@@ -61,6 +62,9 @@ struct eqos_mac_regs {
 #define EQOS_MAC_CONFIGURATION_DM			BIT(13)
 #define EQOS_MAC_CONFIGURATION_TE			BIT(1)
 #define EQOS_MAC_CONFIGURATION_RE			BIT(0)
+
+#define EQOS_MAC_PACKET_FILTER_PR			BIT(0)	/* Promiscuous mode */
+#define EQOS_MAC_PACKET_FILTER_PCF			BIT(7)	/* Pass Control Frames */
 
 #define EQOS_MAC_Q0_TX_FLOW_CTRL_PT_SHIFT		16
 #define EQOS_MAC_Q0_TX_FLOW_CTRL_PT_MASK		0xffff
@@ -353,6 +357,21 @@ int eqos_set_ethaddr(struct eth_device *edev, const unsigned char *mac)
 
 	__raw_writel(mac_hi, &eqos->mac_regs->macaddr0hi);
 	__raw_writel(mac_lo, &eqos->mac_regs->macaddr0lo);
+
+	return 0;
+}
+
+static int eqos_set_promisc(struct eth_device *edev, bool enable)
+{
+	struct eqos *eqos = edev->priv;
+	u32 mask;
+
+	mask = EQOS_MAC_PACKET_FILTER_PR | EQOS_MAC_PACKET_FILTER_PCF;
+
+	if (enable)
+		setbits_le32(&eqos->mac_regs->packet_filter, mask);
+	else
+		clrbits_le32(&eqos->mac_regs->packet_filter, mask);
 
 	return 0;
 }
@@ -856,6 +875,7 @@ int eqos_probe(struct device_d *dev, const struct eqos_ops *ops, void *priv)
 	edev->halt = eqos_stop;
 	edev->get_ethaddr = ops->get_ethaddr;
 	edev->set_ethaddr = ops->set_ethaddr;
+	edev->set_promisc = eqos_set_promisc;
 
 	miibus = &eqos->miibus;
 	miibus->parent = edev->parent;

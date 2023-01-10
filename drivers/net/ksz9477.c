@@ -200,7 +200,7 @@ static int ksz9477_switch_detect(struct ksz_switch *priv)
 	id_lo = (u8)(id32 >> 8);
 	if ((id_lo & 0xf) == 3) {
 		/* Chip is from KSZ9893 design. */
-		dev_info(priv->dev, "Found KSZ9893\n");
+		dev_info(priv->dev, "Found KSZ9893 or compatible\n");
 		priv->features |= IS_9893;
 		priv->features &= ~KSZ9477_PHY_ERRATA;
 

@@ -369,3 +369,89 @@ JSMN_API void jsmn_init(jsmn_parser *parser) {
 	parser->toknext = 0;
 	parser->toksuper = -1;
 }
+
+JSMN_API bool jsmn_eq(const char *val, const char *json, const jsmntok_t *token)
+{
+	size_t token_size = token->end - token->start;
+	return strlen(val) == token_size
+		&& strncmp(json + token->start, val, token_size) == 0;
+}
+
+JSMN_API bool jsmn_str_eq(const char *str, const char *json, const jsmntok_t *token)
+{
+	return token->type == JSMN_STRING && jsmn_eq(str, json, token);
+}
+
+JSMN_API const jsmntok_t *jsmn_skip_value(const jsmntok_t *tokens)
+{
+	int max_index = tokens[0].end;
+	do {
+		++tokens;
+	} while (tokens[0].start < max_index);
+	return &tokens[0];
+}
+
+JSMN_API const jsmntok_t *jsmn_find_value(const char *key, const char *json,
+					  const jsmntok_t *tokens)
+{
+	int items;
+	if (tokens[0].type != JSMN_OBJECT || tokens[0].size == 0)
+		return NULL;
+
+	items = tokens[0].size;
+	++tokens;
+
+	do {
+		if (jsmn_str_eq(key, json, tokens))
+			return &tokens[1];
+		tokens = --items ? jsmn_skip_value(&tokens[1]) : NULL;
+	} while (tokens);
+
+	return NULL;
+}
+
+JSMN_API const jsmntok_t *jsmn_locate(const char *path[], const char *json,
+				      const jsmntok_t *tokens)
+{
+	int i = 0;
+	while (path[i] != NULL) {
+		const jsmntok_t *value = jsmn_find_value(path[i], json, tokens);
+		if (!value)
+			return NULL;
+
+		switch (value->type) {
+		case JSMN_OBJECT:
+		case JSMN_ARRAY:
+			tokens = value;
+			++i;
+			break;
+		case JSMN_UNDEFINED:
+		case JSMN_STRING:
+		case JSMN_PRIMITIVE:
+			return value;
+		}
+	}
+
+	return tokens;
+}
+
+JSMN_API char *jsmn_strcpy(const char *path[], const char *json,
+			   const jsmntok_t *tokens)
+{
+	const jsmntok_t *node;
+	int value_size;
+	char *value;
+
+	node = jsmn_locate(path, json, tokens);
+	if (!node || node->type != JSMN_STRING)
+		return NULL;
+
+	value_size = node->end - node->start;
+	value = malloc(value_size + 1);
+	if (value) {
+		strncpy(value, json + node->start, value_size);
+		value[value_size] = '\0';
+	}
+
+	return value;
+}

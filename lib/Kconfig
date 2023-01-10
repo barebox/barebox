@@ -8,6 +8,11 @@ config UNCOMPRESS
 	bool
 	select FILETYPE
 
+config JSMN
+	bool "JSMN JSON Parser" if COMPILE_TEST
+	help
+	  A minimalistic JSON parser.
+
 config XXHASH
 	bool
 

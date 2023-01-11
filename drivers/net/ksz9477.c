@@ -403,6 +403,7 @@ static int microchip_switch_regmap_init(struct ksz_switch *priv)
 
 static int microchip_switch_probe(struct device *dev)
 {
+	struct device *hw_dev;
 	struct ksz_switch *priv;
 	int ret = 0, gpio;
 	struct dsa_switch *ds;
@@ -412,9 +413,12 @@ static int microchip_switch_probe(struct device *dev)
 	dev->priv = priv;
 	priv->dev = dev;
 
-	priv->spi = (struct spi_device *)dev->type_data;
-	priv->spi->mode = SPI_MODE_0;
-	priv->spi->bits_per_word = 8;
+	if (dev_bus_is_spi(dev)) {
+		priv->spi = (struct spi_device *)dev->type_data;
+		priv->spi->mode = SPI_MODE_0;
+		priv->spi->bits_per_word = 8;
+		hw_dev = &priv->spi->dev;
+	}
 
 	ret = microchip_switch_regmap_init(priv);
 	if (ret)
@@ -430,8 +434,7 @@ static int microchip_switch_probe(struct device *dev)
 
 	ret = ksz9477_switch_detect(dev->priv);
 	if (ret) {
-		dev_err(&priv->spi->dev, "error detecting KSZ9477: %s\n",
-			strerror(-ret));
+		dev_err(hw_dev, "error detecting KSZ9477: %pe\n", ERR_PTR(ret));
 		return -ENODEV;
 	}
 
@@ -464,10 +467,10 @@ static const struct of_device_id microchip_switch_dt_ids[] = {
 	{ }
 };
 
-static struct driver microchip_switch_driver = {
-	.name		= "ksz9477",
+static struct driver microchip_switch_spi_driver = {
+	.name		= "ksz9477-spi",
 	.probe		= microchip_switch_probe,
 	.of_compatible	= DRV_OF_COMPAT(microchip_switch_dt_ids),
 };
+device_spi_driver(microchip_switch_spi_driver);
 
-device_spi_driver(microchip_switch_driver);

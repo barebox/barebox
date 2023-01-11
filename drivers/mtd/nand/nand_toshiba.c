@@ -175,20 +175,20 @@ static void toshiba_nand_decode_id(struct nand_chip *chip)
 	 *  - 24nm: 8 bit ECC for each 512Byte is required.
 	 */
 	if (chip->id.len >= 6 && nand_is_slc(chip)) {
-		chip->base.eccreq.step_size = 512;
+		chip->base.ecc.requirements.step_size = 512;
 		switch (chip->id.data[5] & 0x7) {
 		case 0x4:
-			chip->base.eccreq.strength = 1;
+			chip->base.ecc.requirements.strength = 1;
 			break;
 		case 0x5:
-			chip->base.eccreq.strength = 4;
+			chip->base.ecc.requirements.strength = 4;
 			break;
 		case 0x6:
-			chip->base.eccreq.strength = 8;
+			chip->base.ecc.requirements.strength = 8;
 			break;
 		default:
 			WARN(1, "Could not get ECC info");
-			chip->base.eccreq.step_size = 0;
+			chip->base.ecc.requirements.step_size = 0;
 			break;
 		}
 	}

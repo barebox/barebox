@@ -2,3 +2,8 @@
 
 config REGMAP_FORMATTED
 	bool
+
+config REGMAP_SPI
+	bool "SPI regmaps" if COMPILE_TEST
+	depends on SPI
+	select REGMAP_FORMATTED

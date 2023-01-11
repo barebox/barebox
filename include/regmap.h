@@ -139,6 +139,19 @@ struct regmap *regmap_init_i2c_smbus(struct i2c_client *client,
 			       const struct regmap_config *config);
 
 /**
+ * regmap_init_spi() - Initialise spi register map
+ *
+ * @spi: Device that will be interacted with
+ * @config: Configuration for register map
+ *
+ * The return value will be an ERR_PTR() on error or a valid pointer
+ * to a struct regmap.
+ */
+struct spi_device;
+struct regmap *regmap_init_spi(struct spi_device *dev,
+			       const struct regmap_config *config);
+
+/**
  * regmap_init_mmio() - Initialise register map
  *
  * @dev: Device that will be interacted with

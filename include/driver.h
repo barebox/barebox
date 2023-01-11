@@ -220,6 +220,9 @@ struct resource *dev_get_resource_by_name(struct device *dev,
 					  unsigned long type,
 					  const char *name);
 
+int dev_request_resource(struct device *dev,
+			 const struct resource *res);
+
 /*
  * exlusively request register base 'name' for a device
  */

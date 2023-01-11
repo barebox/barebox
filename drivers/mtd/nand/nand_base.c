@@ -36,6 +36,7 @@
 #include <asm/byteorder.h>
 #include <io.h>
 #include <malloc.h>
+#include <gpio.h>
 #include <module.h>
 #include <of_mtd.h>
 
@@ -784,6 +785,27 @@ int nand_soft_waitrdy(struct nand_chip *chip, unsigned long timeout_ms)
 	return status & NAND_STATUS_READY ? 0 : -ETIMEDOUT;
 };
 EXPORT_SYMBOL_GPL(nand_soft_waitrdy);
+
+/**
+ * nand_gpio_waitrdy - Poll R/B GPIO pin until ready
+ * @chip: NAND chip structure
+ * @gpiod: GPIO descriptor of R/B pin
+ * @timeout_ms: Timeout in ms
+ *
+ * Poll the R/B GPIO pin until it becomes ready. If that does not happen
+ * whitin the specified timeout, -ETIMEDOUT is returned.
+ *
+ * This helper is intended to be used when the controller has access to the
+ * NAND R/B pin over GPIO.
+ *
+ * Return 0 if the R/B pin indicates chip is ready, a negative error otherwise.
+ */
+int nand_gpio_waitrdy(struct nand_chip *chip, int gpio,
+		      unsigned long timeout_ms)
+{
+	return gpio_poll_timeout_us(gpio, true, timeout_ms * USEC_PER_MSEC);
+};
+EXPORT_SYMBOL_GPL(nand_gpio_waitrdy);
 
 static bool nand_supports_get_features(struct nand_chip *chip, int addr)
 {

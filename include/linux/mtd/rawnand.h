@@ -1414,6 +1414,8 @@ void nand_cleanup(struct nand_chip *chip);
  * instruction and have no physical pin to check it.
  */
 int nand_soft_waitrdy(struct nand_chip *chip, unsigned long timeout_ms);
+int nand_gpio_waitrdy(struct nand_chip *chip, int gpio,
+		      unsigned long timeout_ms);
 
 /* Select/deselect a NAND target. */
 void nand_select_target(struct nand_chip *chip, unsigned int cs);

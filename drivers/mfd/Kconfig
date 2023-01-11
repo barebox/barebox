@@ -64,12 +64,14 @@ config RAVE_SP_CORE
 
 config MFD_STPMIC1
 	depends on I2C
+	select REGMAP_I2C
 	bool "STPMIC1 MFD driver"
 	help
 	  Select this to support communication with the STPMIC1.
 
 config MFD_RN568PMIC
 	depends on I2C
+	select REGMAP_I2C
 	bool "Ricoh RN5T568 MFD driver"
 	help
 	  Select this to support communication with the Ricoh RN5T568 PMIC.
@@ -111,6 +113,7 @@ config MFD_ATMEL_FLEXCOM
 config MFD_RK808
 	tristate "Rockchip RK805/RK808/RK809/RK817/RK818 Power Management Chip"
 	depends on I2C && OFDEVICE
+	select REGMAP_I2C
 	help
 	  If you say yes here you get support for the RK805, RK808, RK809,
 	  RK817 and RK818 Power Management chips.
@@ -120,6 +123,7 @@ config MFD_RK808
 config MFD_AXP20X_I2C
 	tristate "X-Powers AXP series PMICs with I2C"
 	depends on I2C && OFDEVICE
+	select REGMAP_I2C
 	help
 	  If you say Y here you get support for the X-Powers AXP series power
 	  management ICs (PMICs) controlled with I2C.

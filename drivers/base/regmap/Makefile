@@ -3,5 +3,5 @@ obj-y	+= regmap.o
 obj-y	+= regmap-multi.o
 obj-y	+= regmap-mmio.o
 obj-$(CONFIG_REGMAP_FORMATTED)	+= regmap-fmt.o
-obj-$(CONFIG_I2C)	+= regmap-i2c.o
+obj-$(CONFIG_REGMAP_I2C)	+= regmap-i2c.o
 obj-$(CONFIG_REGMAP_SPI)	+= regmap-spi.o

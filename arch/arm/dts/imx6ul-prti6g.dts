@@ -23,17 +23,6 @@
 			compatible = "ramoops";
 		};
 	};
-
-	reserved-memory {
-		#address-cells = <1>;
-		#size-cells = <1>;
-		ranges;
-
-		/* Address will be determined by the bootloader */
-		ramoops {
-			compatible = "ramoops";
-		};
-	};
 };
 
 &ecspi1 {

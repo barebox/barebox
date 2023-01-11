@@ -51,6 +51,9 @@ static int imx8m_bootrom_decode_log(const u32 *rom_log)
 {
 	int i;
 
+	if (!rom_log)
+		return -ENODATA;
+
 	for (i = 0; i < 128; i++) {
 		u8 event_id = FIELD_GET(ROM_EVENT_FORMAT_V1_ID, rom_log[i]);
 		u8 event_id_idx = FIELD_GET(ROM_EVENT_FORMAT_V1_ID_IDX, rom_log[i]);
@@ -178,18 +181,19 @@ static int imx8m_bootrom_decode_log(const u32 *rom_log)
 
 static int do_bootrom(int argc, char *argv[])
 {
-	const struct imx_scratch_space *scratch = arm_mem_scratch_get();
-	const u32 *rom_log_addr = scratch->bootrom_log;
+	union {
+		const u32 *ptr;
+		ulong addr;
+	} rom_log = { NULL };
 	bool log = false;
 	int ret, opt;
 
 	while((opt = getopt(argc, argv, "la:")) > 0) {
 		switch(opt) {
 		case 'a':
-			ret = kstrtoul(optarg, 0, (ulong *)&rom_log_addr);
+			ret = kstrtoul(optarg, 0, &rom_log.addr);
 			if (ret)
 				return ret;
-			rom_log_addr = (const u32 *)rom_log_addr;
 		case 'l':
 			log = true;
 			break;
@@ -198,8 +202,13 @@ static int do_bootrom(int argc, char *argv[])
 		}
 	}
 
+	if (!rom_log.addr) {
+		const struct imx_scratch_space *scratch = arm_mem_scratch_get();
+		rom_log.ptr = scratch->bootrom_log;
+	}
+
 	if (log)
-		return imx8m_bootrom_decode_log(rom_log_addr);
+		return imx8m_bootrom_decode_log(rom_log.ptr);
 
 	return COMMAND_ERROR_USAGE;
 }

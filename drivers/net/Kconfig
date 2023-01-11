@@ -308,8 +308,9 @@ config DRIVER_NET_KSZ8873
 
 config DRIVER_NET_KSZ9477
 	bool "KSZ9477 switch driver"
-	depends on SPI
+	depends on SPI || I2C
 	select REGMAP_SPI if SPI
+	select REGMAP_I2C if I2C
 	help
 	  This option enables support for the Microchip KSZ9477
 	  switch chip.

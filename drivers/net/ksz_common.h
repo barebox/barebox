@@ -9,6 +9,7 @@
 
 struct ksz_switch {
 	struct spi_device *spi;
+	struct i2c_client *i2c;
 	struct dsa_switch ds;
 	struct device *dev;
 	int phy_port_cnt;

@@ -7,6 +7,7 @@
 #include <net.h>
 #include <platform_data/ksz9477_reg.h>
 #include <spi/spi.h>
+#include <i2c/i2c.h>
 #include "ksz_common.h"
 
 /* SPI frame opcodes */
@@ -22,6 +23,7 @@
 
 KSZ_REGMAP_TABLE(ksz9477_spi, 32, SPI_ADDR_SHIFT,
 		 SPI_TURNAROUND_SHIFT, SPI_ADDR_ALIGN);
+KSZ_REGMAP_TABLE(ksz9477_i2c, not_used, 16, 0, 0);
 
 static int ksz9477_phy_read16(struct dsa_switch *ds, int addr, int reg)
 {
@@ -388,10 +390,13 @@ static int microchip_switch_regmap_init(struct ksz_switch *priv)
 	const struct regmap_config *cfg;
 	int i;
 
-	cfg = ksz9477_spi_regmap_config;
+	cfg = priv->spi ? ksz9477_spi_regmap_config : ksz9477_i2c_regmap_config;
 
 	for (i = 0; i < KSZ_REGMAP_ENTRY_COUNT; i++) {
-		priv->regmap[i] = regmap_init_spi(priv->spi, &cfg[i]);
+		if (priv->spi)
+			priv->regmap[i] = regmap_init_spi(priv->spi, &cfg[i]);
+		else
+			priv->regmap[i] = regmap_init_i2c(priv->i2c, &cfg[i]);
 		if (IS_ERR(priv->regmap[i]))
 			return dev_err_probe(priv->dev, PTR_ERR(priv->regmap[i]),
 					     "Failed to initialize regmap%i\n",
@@ -418,6 +423,9 @@ static int microchip_switch_probe(struct device *dev)
 		priv->spi->mode = SPI_MODE_0;
 		priv->spi->bits_per_word = 8;
 		hw_dev = &priv->spi->dev;
+	} else if (dev_bus_is_i2c(dev)) {
+		priv->i2c = dev->type_data;
+		hw_dev = &priv->i2c->dev;
 	}
 
 	ret = microchip_switch_regmap_init(priv);
@@ -474,3 +482,9 @@ static struct driver microchip_switch_spi_driver = {
 };
 device_spi_driver(microchip_switch_spi_driver);
 
+static struct driver microchip_switch_i2c_driver = {
+	.name		= "ksz9477-i2c",
+	.probe		= microchip_switch_probe,
+	.of_compatible	= DRV_OF_COMPAT(microchip_switch_dt_ids),
+};
+device_i2c_driver(microchip_switch_i2c_driver);

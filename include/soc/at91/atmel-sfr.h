@@ -19,6 +19,7 @@
 #define AT91_SFR_I2SCLKSEL	0x90	/* I2SC Register */
 
 /* Field definitions */
+#define AT91_SFR_CCFG_NFD0_ON_D16		BIT(24)
 #define AT91_OHCIICR_SUSPEND_A	BIT(8)
 #define AT91_OHCIICR_SUSPEND_B	BIT(9)
 #define AT91_OHCIICR_SUSPEND_C	BIT(10)

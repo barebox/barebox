@@ -156,6 +156,8 @@ void device_detect_all(void);
  */
 int unregister_device(struct device *);
 
+static inline void put_device(struct device *dev) {}
+
 void free_device_res(struct device *dev);
 void free_device(struct device *dev);
 

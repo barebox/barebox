@@ -7,6 +7,10 @@
 #include <mach/romapi.h>
 #include <mach/atf.h>
 #include <mach/imx8m-regs.h>
+#include <mach/xload.h>
+#include <asm/barebox-arm.h>
+#include <zero_page.h>
+#include <pbl.h>
 
 static int imx8m_bootrom_load(struct rom_api *rom_api, void *adr, size_t size)
 {
@@ -50,23 +54,49 @@ int imx8mn_bootrom_load_image(void)
 	return imx8mp_bootrom_load_image();
 }
 
+const u32 *imx8m_get_bootrom_log(void)
+{
+	if (current_el() == 3) {
+		ulong rom_log_addr;
+
+		zero_page_access();
+		rom_log_addr = readl(IOMEM(0x9e0));
+		zero_page_faulting();
+
+		if (rom_log_addr < MX8M_OCRAM_BASE_ADDR ||
+		    rom_log_addr >= MX8M_OCRAM_BASE_ADDR + MX8M_OCRAM_MAX_SIZE ||
+		    rom_log_addr & 0x3) {
+			pr_warn("No BootROM log found at address 0x%08lx\n", rom_log_addr);
+			return NULL;
+		}
+
+		return (u32 *)rom_log_addr;
+	}
+
+	if (!IN_PBL) {
+		const struct imx_scratch_space *scratch = arm_mem_scratch_get();
+		return scratch->bootrom_log;
+	}
+
+	return NULL;
+}
+
 void imx8m_save_bootrom_log(void *dest)
 {
-	ulong rom_log_addr;
+	const u32 *rom_log;
 
 	if (!IS_ENABLED(CONFIG_IMX_SAVE_BOOTROM_LOG)) {
 		pr_debug("skipping bootrom log saving\n");
 		return;
 	}
 
-	rom_log_addr = *(u32 *)0x9e0;
-
-	if (rom_log_addr < MX8M_OCRAM_BASE_ADDR ||
-	    rom_log_addr >= MX8M_OCRAM_BASE_ADDR + MX8M_OCRAM_MAX_SIZE ||
-	    rom_log_addr & 0x3) {
-		pr_warn("No BootROM log found at address 0x%08lx\n", rom_log_addr);
+	rom_log = imx8m_get_bootrom_log();
+	if (!rom_log) {
+		pr_warn("bootrom log not found\n");
 		return;
 	}
 
-	memcpy(dest, (u32 *)rom_log_addr, 128 * sizeof(u32));
+	pr_debug("Saving bootrom log to 0x%p\n", dest);
+
+	memcpy(dest, rom_log, 128 * sizeof(u32));
 }

@@ -7,8 +7,7 @@
 #include <linux/bitops.h>
 #include <linux/bitfield.h>
 #include <mach/imx8m-regs.h>
-#include <mach/xload.h>
-#include <asm/barebox-arm.h>
+#include <mach/romapi.h>
 
 /* i.MX7 and later ID field is swapped compared to i.MX6 */
 #define ROM_EVENT_FORMAT_V0_RES	GENMASK(31, 24)
@@ -202,10 +201,8 @@ static int do_bootrom(int argc, char *argv[])
 		}
 	}
 
-	if (!rom_log.addr) {
-		const struct imx_scratch_space *scratch = arm_mem_scratch_get();
-		rom_log.ptr = scratch->bootrom_log;
-	}
+	if (!rom_log.addr)
+		rom_log.ptr = imx8m_get_bootrom_log();
 
 	if (log)
 		return imx8m_bootrom_decode_log(rom_log.ptr);

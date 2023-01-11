@@ -909,7 +909,7 @@ static int __init atmel_pmecc_nand_init_params(struct device *dev,
 			dev_err(host->dev, "No room for ECC bytes\n");
 			return -EINVAL;
 		}
-		mtd_set_ooblayout(mtd, &nand_ooblayout_lp_ops);
+		mtd_set_ooblayout(mtd, nand_get_large_page_ooblayout());
 		break;
 	case 512:
 	case 1024:

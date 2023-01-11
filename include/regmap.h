@@ -204,6 +204,8 @@ static inline int regmap_clear_bits(struct regmap *map,
 	return regmap_update_bits(map, reg, bits, 0);
 }
 
+size_t regmap_size_bytes(struct regmap *map);
+
 /**
  * regmap_read_poll_timeout - Poll until a condition is met or a timeout occurs
  *

@@ -401,6 +401,12 @@ static struct cdev_operations regmap_fops = {
 	.write	= regmap_cdev_write,
 };
 
+size_t regmap_size_bytes(struct regmap *map)
+{
+	return regmap_round_val_bytes(map) * (map->max_register + 1) /
+		map->reg_stride;
+}
+
 /*
  * regmap_register_cdev - register a devfs file for a regmap
  *
@@ -428,8 +434,7 @@ int regmap_register_cdev(struct regmap *map, const char *name)
 			map->cdev.name = xstrdup(dev_name(map->dev));
 	}
 
-	map->cdev.size = regmap_round_val_bytes(map) * (map->max_register + 1) /
-			map->reg_stride;
+	map->cdev.size = regmap_size_bytes(map);
 	map->cdev.dev = map->dev;
 	map->cdev.ops = &regmap_fops;
 

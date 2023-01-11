@@ -6,6 +6,7 @@ config REGMAP_FORMATTED
 config REGMAP_I2C
 	bool "I2C regmaps" if COMPILE_TEST
 	depends on I2C
+	select REGMAP_FORMATTED
 
 config REGMAP_SPI
 	bool "SPI regmaps" if COMPILE_TEST

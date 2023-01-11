@@ -7,34 +7,54 @@
 #include <regmap.h>
 
 
-static int regmap_i2c_reg_read(void *client, unsigned int reg, unsigned int *val)
+static int regmap_i2c_read(void *context,
+			   const void *reg, size_t reg_size,
+			   void *val, size_t val_size)
 {
-	u8 buf[1];
+	struct device_d *dev = context;
+	struct i2c_client *i2c = to_i2c_client(dev);
+	struct i2c_msg xfer[2];
 	int ret;
 
-	ret = i2c_read_reg(client, reg, buf, 1);
-	if (ret != 1)
-		return ret;
+	xfer[0].addr = i2c->addr;
+	xfer[0].flags = 0;
+	xfer[0].len = reg_size;
+	xfer[0].buf = (void *)reg;
 
-	*val = buf[0];
-	return 0;
+	xfer[1].addr = i2c->addr;
+	xfer[1].flags = I2C_M_RD;
+	xfer[1].len = val_size;
+	xfer[1].buf = val;
+
+	ret = i2c_transfer(i2c->adapter, xfer, 2);
+	if (ret == 2)
+		return 0;
+	else if (ret < 0)
+		return ret;
+	else
+		return -EIO;
 }
 
-static int regmap_i2c_reg_write(void *client, unsigned int reg, unsigned int val)
+static int regmap_i2c_write(void *context, const void *data, size_t count)
 {
-	u8 buf[] = { val & 0xff };
+	struct device_d *dev = context;
+	struct i2c_client *i2c = to_i2c_client(dev);
 	int ret;
 
-	ret = i2c_write_reg(client, reg, buf, 1);
-	if (ret != 1)
+	ret = i2c_master_send(i2c, data, count);
+	if (ret == count)
+		return 0;
+	else if (ret < 0)
 		return ret;
-
-	return 0;
+	else
+		return -EIO;
 }
 
 static const struct regmap_bus regmap_regmap_i2c_bus = {
-	.reg_write = regmap_i2c_reg_write,
-	.reg_read = regmap_i2c_reg_read,
+	.write = regmap_i2c_write,
+	.read = regmap_i2c_read,
+	.reg_format_endian_default = REGMAP_ENDIAN_BIG,
+	.val_format_endian_default = REGMAP_ENDIAN_BIG,
 };
 
 struct regmap *regmap_init_i2c(struct i2c_client *client,

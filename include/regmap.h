@@ -175,6 +175,27 @@ struct device *regmap_get_device(struct regmap *map);
 
 int regmap_register_cdev(struct regmap *map, const char *name);
 
+/**
+ * regmap_multi_register_cdev() - Initialize cdev backed by multiple regmaps
+ *
+ * @map8:  regmap for  8-bit wide accesses. NULL if such access
+ *         should fail with -EINVAL
+ * @map16: regmap for 16-bit wide accesses. NULL if such access
+ *         should fail with -EINVAL
+ * @map32: regmap for 32-bit wide accesses. NULL if such access
+ *         should fail with -EINVAL
+ * @map64: regmap for 64-bit wide accesses. NULL if such access
+ *         should fail with -EINVAL
+ *
+ * Registers a cdev that demultiplexes cdev accesses to one
+ * of the underlying regmaps according to the access size
+ * (e.g. mw -b => map8, mw -l => map32)
+ */
+int regmap_multi_register_cdev(struct regmap *map8,
+			       struct regmap *map16,
+			       struct regmap *map32,
+			       struct regmap *map64);
+
 int regmap_write(struct regmap *map, unsigned int reg, unsigned int val);
 int regmap_read(struct regmap *map, unsigned int reg, unsigned int *val);
 

@@ -450,7 +450,12 @@ static int microchip_switch_probe(struct device *dev)
 
 	ksz_default_setup(priv);
 
-	return dsa_register_switch(ds);
+	ret = dsa_register_switch(ds);
+	if (ret)
+		return ret;
+
+	return regmap_multi_register_cdev(priv->regmap[0], priv->regmap[1],
+					  priv->regmap[2], NULL);
 }
 
 static const struct of_device_id microchip_switch_dt_ids[] = {

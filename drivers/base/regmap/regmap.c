@@ -64,6 +64,23 @@ enum regmap_endian regmap_get_val_endian(struct device *dev,
 }
 EXPORT_SYMBOL_GPL(regmap_get_val_endian);
 
+static int _regmap_bus_reg_read(void *context, unsigned int reg,
+				unsigned int *val)
+{
+	struct regmap *map = context;
+
+	return map->bus->reg_read(map->bus_context, reg, val);
+}
+
+
+static int _regmap_bus_reg_write(void *context, unsigned int reg,
+				 unsigned int val)
+{
+	struct regmap *map = context;
+
+	return map->bus->reg_write(map->bus_context, reg, val);
+}
+
 /*
  * regmap_init - initialize and register a regmap
  *
@@ -80,6 +97,7 @@ struct regmap *regmap_init(struct device *dev,
 			     const struct regmap_config *config)
 {
 	struct regmap *map;
+	int ret;
 
 	map = xzalloc(sizeof(*map));
 	map->dev = dev;
@@ -92,7 +110,19 @@ struct regmap *regmap_init(struct device *dev,
 		map->reg_stride = 1;
 	map->format.pad_bytes = config->pad_bits / 8;
 	map->format.val_bytes = DIV_ROUND_UP(config->val_bits, 8);
+	map->reg_shift = config->pad_bits % 8;
 	map->max_register = config->max_register;
+
+	if (!bus->read || !bus->write) {
+		map->reg_read = _regmap_bus_reg_read;
+		map->reg_write = _regmap_bus_reg_write;
+	} else  {
+		ret = regmap_formatted_init(map, config);
+		if (ret) {
+			free(map);
+			return ERR_PTR(ret);
+		}
+	}
 
 	list_add_tail(&map->list, &regmaps);
 
@@ -139,7 +169,7 @@ struct device *regmap_get_device(struct regmap *map)
  */
 int regmap_write(struct regmap *map, unsigned int reg, unsigned int val)
 {
-	return map->bus->reg_write(map->bus_context, reg, val);
+	return map->reg_write(map, reg, val);
 }
 
 /*
@@ -153,7 +183,7 @@ int regmap_write(struct regmap *map, unsigned int reg, unsigned int val)
  */
 int regmap_read(struct regmap *map, unsigned int reg, unsigned int *val)
 {
-	return map->bus->reg_read(map->bus_context, reg, val);
+	return map->reg_read(map, reg, val);
 }
 
 /**

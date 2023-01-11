@@ -2,6 +2,9 @@
 #ifndef __REGMAP_H
 #define __REGMAP_H
 
+#include <linux/compiler.h>
+#include <linux/types.h>
+
 enum regmap_endian {
 	/* Unspecified -> 0 -> Backwards compatible default */
 	REGMAP_ENDIAN_DEFAULT = 0,
@@ -23,7 +26,14 @@ enum regmap_endian {
  * @pad_bits: Number of bits of padding between register and value.
  * @val_bits: Number of bits in a register value, mandatory.
  *
+ * @write: Write operation.
+ * @read: Read operation.  Data is returned in the buffer used to transmit
+ *         data.
+ *
  * @max_register: Optional, specifies the maximum valid register index.
+ *
+ * @read_flag_mask: Mask to be set in the top byte of the register when doing
+ *                  a read.
  */
 struct regmap_config {
 	const char *name;
@@ -37,16 +47,52 @@ struct regmap_config {
 
 	enum regmap_endian reg_format_endian;
 	enum regmap_endian val_format_endian;
+
+	unsigned int read_flag_mask;
+	unsigned int write_flag_mask;
 };
 
+typedef int (*regmap_hw_write)(void *context, const void *data,
+			       size_t count);
+typedef int (*regmap_hw_read)(void *context,
+			      const void *reg_buf, size_t reg_size,
+			      void *val_buf, size_t val_size);
 typedef int (*regmap_hw_reg_read)(void *context, unsigned int reg,
 				  unsigned int *val);
 typedef int (*regmap_hw_reg_write)(void *context, unsigned int reg,
 				   unsigned int val);
 
+/**
+ * struct regmap_bus - Description of a hardware bus for the register map
+ *                     infrastructure.
+ *
+ * @reg_write: Write a single register value to the given register address. This
+ *             write operation has to complete when returning from the function.
+ * @reg_read: Read a single register value from a given register address.
+ * @read: Read operation.  Data is returned in the buffer used to transmit
+ *         data.
+ * @write: Write operation.
+ * @read_flag_mask: Mask to be set in the top byte of the register when doing
+ *                  a read.
+ * @reg_format_endian_default: Default endianness for formatted register
+ *     addresses. Used when the regmap_config specifies DEFAULT. If this is
+ *     DEFAULT, BIG is assumed.
+ * @val_format_endian_default: Default endianness for formatted register
+ *     values. Used when the regmap_config specifies DEFAULT. If this is
+ *     DEFAULT, BIG is assumed.
+ */
 struct regmap_bus {
 	regmap_hw_reg_write reg_write;
 	regmap_hw_reg_read reg_read;
+
+	int (*read)(void *context,
+		    const void *reg_buf, size_t reg_size,
+		    void *val_buf, size_t val_size);
+	int (*write)(void *context, const void *data,
+		     size_t count);
+
+	u8 read_flag_mask;
+
 	enum regmap_endian reg_format_endian_default;
 	enum regmap_endian val_format_endian_default;
 };

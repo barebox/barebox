@@ -205,4 +205,9 @@ config ARCH_HAS_ZERO_PAGE
 config HAVE_EFFICIENT_UNALIGNED_ACCESS
 	bool
 
+config GENERIC_ALLOCATOR
+	bool
+	help
+	  Support is curently limited to allocaing a complete mmio-sram at once.
+
 endmenu

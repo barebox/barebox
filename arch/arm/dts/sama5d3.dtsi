@@ -5,3 +5,6 @@
 		mmc1 = &mmc1;
 	};
 };
+
+/* Will be automatically read back from HW */
+/delete-node/ &{/memory@20000000};

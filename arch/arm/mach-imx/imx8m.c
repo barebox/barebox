@@ -182,7 +182,7 @@ int imx8mq_init(void)
 #define IMX8MM_CCM_ANALOG_SYS_PLL2_GEN_CTRL	0x104
 #define IMX8MM_CCM_ANALOG_SYS_PLL3_GEN_CTRL	0x114
 
-static void __imx8mm_early_clock_init(unsigned long pll3_freq) /* and later */
+static void __imx8m_early_clock_init(unsigned long pll3_freq) /* and later */
 {
 	void __iomem *ana = IOMEM(MX8M_ANATOP_BASE_ADDR);
 	void __iomem *ccm = IOMEM(MX8M_CCM_BASE_ADDR);
@@ -252,13 +252,19 @@ static void __imx8mm_early_clock_init(unsigned long pll3_freq) /* and later */
 
 void imx8mm_early_clock_init(void)
 {
-	__imx8mm_early_clock_init(750000000UL);
+	__imx8m_early_clock_init(750000000UL);
 }
 
 void imx8mn_early_clock_init(void)
 {
-	__imx8mm_early_clock_init(600000000UL);
+	__imx8m_early_clock_init(600000000UL);
 }
+
+void imx8mp_early_clock_init(void)
+{
+	__imx8m_early_clock_init(750000000UL);
+}
+
 
 #define KEEP_ALIVE			0x18
 #define VER_L				0x1c

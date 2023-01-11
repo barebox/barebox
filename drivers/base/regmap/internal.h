@@ -7,17 +7,20 @@
 
 struct regmap_bus;
 
+struct regmap_format {
+	size_t reg_bytes;
+	size_t pad_bytes;
+	size_t val_bytes;
+};
+
 struct regmap {
 	struct device *dev;
 	const struct regmap_bus *bus;
 	const char *name;
 	void *bus_context;
 	struct list_head list;
-	int reg_bits;
 	int reg_stride;
-	int pad_bits;
-	int val_bits;
-	int val_bytes;
+	struct regmap_format format;
 	unsigned int max_register;
 
 	struct cdev cdev;

@@ -86,13 +86,12 @@ struct regmap *regmap_init(struct device *dev,
 	map->bus = bus;
 	map->name = config->name;
 	map->bus_context = bus_context;
-	map->reg_bits = config->reg_bits;
+	map->format.reg_bytes = DIV_ROUND_UP(config->reg_bits, 8);
 	map->reg_stride = config->reg_stride;
 	if (!map->reg_stride)
 		map->reg_stride = 1;
-	map->pad_bits = config->pad_bits;
-	map->val_bits = config->val_bits;
-	map->val_bytes = DIV_ROUND_UP(config->val_bits, 8);
+	map->format.pad_bytes = config->pad_bits / 8;
+	map->format.val_bytes = DIV_ROUND_UP(config->val_bits, 8);
 	map->max_register = config->max_register;
 
 	list_add_tail(&map->list, &regmaps);
@@ -227,7 +226,7 @@ int regmap_write_bits(struct regmap *map, unsigned int reg,
 int regmap_bulk_read(struct regmap *map, unsigned int reg, void *val,
 		     size_t val_len)
 {
-	size_t val_bytes = map->val_bytes;
+	size_t val_bytes = map->format.val_bytes;
 	size_t val_count = val_len / val_bytes;
 	unsigned int v;
 	int ret, i;
@@ -248,7 +247,7 @@ int regmap_bulk_read(struct regmap *map, unsigned int reg, void *val,
 		if (ret != 0)
 			goto out;
 
-		switch (map->val_bytes) {
+		switch (map->format.val_bytes) {
 		case 4:
 			u32[i] = v;
 			break;
@@ -282,7 +281,7 @@ int regmap_bulk_read(struct regmap *map, unsigned int reg, void *val,
 int regmap_bulk_write(struct regmap *map, unsigned int reg,
 		     const void *val, size_t val_len)
 {
-	size_t val_bytes = map->val_bytes;
+	size_t val_bytes = map->format.val_bytes;
 	size_t val_count = val_len / val_bytes;
 	int ret, i;
 
@@ -323,7 +322,7 @@ int regmap_bulk_write(struct regmap *map, unsigned int reg,
 
 int regmap_get_val_bytes(struct regmap *map)
 {
-	return map->val_bytes;
+	return map->format.val_bytes;
 }
 
 int regmap_get_max_register(struct regmap *map)
@@ -338,13 +337,7 @@ int regmap_get_reg_stride(struct regmap *map)
 
 static int regmap_round_val_bytes(struct regmap *map)
 {
-	int val_bytes;
-
-	val_bytes = roundup_pow_of_two(map->val_bits) >> 3;
-	if (!val_bytes)
-		val_bytes = 1;
-
-	return val_bytes;
+	return map->format.val_bytes ?: 1;
 }
 
 static ssize_t regmap_cdev_read(struct cdev *cdev, void *buf, size_t count, loff_t offset,

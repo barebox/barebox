@@ -160,7 +160,6 @@ struct at91_socinfo {
 extern struct at91_socinfo at91_soc_initdata;
 const char *at91_get_soc_type(struct at91_socinfo *c);
 const char *at91_get_soc_subtype(struct at91_socinfo *c);
-extern unsigned long at91_bootsource;
 
 static inline int at91_soc_is_detected(void)
 {

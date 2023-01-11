@@ -75,6 +75,9 @@ config SOC_SAMA5
 	select HAVE_AT91SAM9_RST
 	select CPU_V7
 
+config SOC_SAMA5_MULTI
+	def_bool SOC_SAMA5 && AT91_MULTI_BOARDS
+
 config SOC_SAMA5D2
 	bool
 	select SOC_SAMA5

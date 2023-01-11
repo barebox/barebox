@@ -6,7 +6,6 @@
 #include <mach/aic.h>
 #include <mach/sama5d2.h>
 #include <asm/cache-l2x0.h>
-#include <mach/sama5_bootsource.h>
 #include <asm/mmu.h>
 #include <mach/cpu.h>
 
@@ -54,17 +53,3 @@ static int sama5d2_init(void)
 	return 0;
 }
 postmmu_initcall(sama5d2_init);
-
-static int sama5d2_bootsource_init(void)
-{
-	if (!of_machine_is_compatible("atmel,sama5d2"))
-		return 0;
-
-	at91_bootsource = __sama5d2_stashed_bootrom_r4;
-
-	bootsource_set_raw(sama5_bootsource(at91_bootsource),
-			   sama5_bootsource_instance(at91_bootsource));
-
-	return 0;
-}
-postcore_initcall(sama5d2_bootsource_init);

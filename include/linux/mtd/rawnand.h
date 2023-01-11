@@ -95,6 +95,22 @@ enum nand_ecc_mode {
 	NAND_ECC_SOFT_BCH
 };
 
+/**
+ * enum nand_ecc_engine_type - NAND ECC engine type
+ * @NAND_ECC_ENGINE_TYPE_INVALID: Invalid value
+ * @NAND_ECC_ENGINE_TYPE_NONE: No ECC correction
+ * @NAND_ECC_ENGINE_TYPE_SOFT: Software ECC correction
+ * @NAND_ECC_ENGINE_TYPE_ON_HOST: On host hardware ECC correction
+ * @NAND_ECC_ENGINE_TYPE_ON_DIE: On chip hardware ECC correction
+ */
+enum nand_ecc_engine_type {
+	NAND_ECC_ENGINE_TYPE_INVALID,
+	NAND_ECC_ENGINE_TYPE_NONE,
+	NAND_ECC_ENGINE_TYPE_SOFT,
+	NAND_ECC_ENGINE_TYPE_ON_HOST,
+	NAND_ECC_ENGINE_TYPE_ON_DIE,
+};
+
 enum nand_ecc_algo {
 	NAND_ECC_ALGO_UNKNOWN,
 	NAND_ECC_ALGO_HAMMING,
@@ -313,6 +329,7 @@ static const struct nand_ecc_caps __name = {			\
 
 /**
  * struct nand_ecc_ctrl - Control structure for ECC
+ * @engine_type: ECC engine type
  * @mode:	ECC mode
  * @algo:	ECC algorithm
  * @steps:	number of ECC steps per page
@@ -365,6 +382,7 @@ static const struct nand_ecc_caps __name = {			\
  * @write_oob:	function to write chip OOB data
  */
 struct nand_ecc_ctrl {
+	enum nand_ecc_engine_type engine_type;
 	enum nand_ecc_mode mode;
 	enum nand_ecc_algo algo;
 	int steps;

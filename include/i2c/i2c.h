@@ -330,6 +330,11 @@ extern int i2c_write_reg(struct i2c_client *client, u32 addr, const u8 *buf, u16
 
 extern struct bus_type i2c_bus;
 
+static inline bool dev_bus_is_i2c(struct device *dev)
+{
+	return IS_ENABLED(CONFIG_I2C) && dev->bus == &i2c_bus;
+}
+
 static inline int i2c_driver_register(struct driver *drv)
 {
 	drv->bus = &i2c_bus;

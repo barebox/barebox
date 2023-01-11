@@ -451,12 +451,12 @@ static int ssd1307fb_probe(struct device *dev)
 
 	par->device_info = (struct ssd1307fb_deviceinfo *)match->data;
 
-	if (IS_ENABLED(CONFIG_I2C) && dev->bus == &i2c_bus) {
+	if (dev_bus_is_i2c(dev)) {
 		par->client = to_i2c_client(dev);
 		i2c_set_clientdata(par->client, par);
 		par->write_array = ssd1307fb_i2c_write_array;
 	}
-	if (IS_ENABLED(CONFIG_SPI) && dev->bus == &spi_bus) {
+	if (dev_bus_is_spi(dev)) {
 		par->spi = to_spi_device(dev);
 		par->dc = of_get_named_gpio(node, "dc-gpios", 0);
 		if (!gpio_is_valid(par->dc)) {

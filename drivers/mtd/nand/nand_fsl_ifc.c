@@ -964,7 +964,7 @@ static int fsl_ifc_chip_init(struct fsl_ifc_mtd *priv)
 		mtd_set_ooblayout(mtd, &fsl_ifc_ooblayout_ops);
 	} else {
 		nand->ecc.mode = NAND_ECC_SOFT;
-		nand->ecc.algo = NAND_ECC_HAMMING;
+		nand->ecc.algo = NAND_ECC_ALGO_HAMMING;
 	}
 
 	if (ctrl->version >= FSL_IFC_V1_1_0) {

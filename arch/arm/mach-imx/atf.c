@@ -8,6 +8,7 @@
 #include <mach/xload.h>
 #include <mach/romapi.h>
 #include <soc/fsl/fsl_udc.h>
+#include <soc/fsl/caam.h>
 
 /**
  * imx8m_atf_load_bl31 - Load ATF BL31 blob and transfer control to it
@@ -38,8 +39,17 @@
 static __noreturn void imx8m_atf_start_bl31(const void *fw, size_t fw_size, void *atf_dest)
 {
 	void __noreturn (*bl31)(void) = atf_dest;
+	int ret;
 
 	BUG_ON(fw_size > MX8M_ATF_BL31_SIZE_LIMIT);
+
+	if (IS_ENABLED(CONFIG_FSL_CAAM_RNG_PBL_INIT)) {
+		ret = imx_early_caam_init(MX8M_CAAM_BASE_ADDR);
+		if (ret)
+			pr_debug("CAAM early init failed: %d\n", ret);
+		else
+			pr_debug("CAAM early init successful\n");
+	}
 
 	memcpy(bl31, fw, fw_size);
 

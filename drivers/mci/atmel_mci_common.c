@@ -315,7 +315,7 @@ static int atmci_start_cmd(struct atmel_mci *host, struct mci_cmd *cmd,
 		flags |= ATMCI_CMDR_RSPTYP_NONE;
 		break;
 	default:
-		dev_err(host->hw_dev, "unhandled response type 0x%x\n",
+		dev_dbg(host->hw_dev, "unhandled response type 0x%x\n",
 				cmd->resp_type);
 		return -EINVAL;
 	}

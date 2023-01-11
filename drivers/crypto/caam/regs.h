@@ -431,6 +431,7 @@ struct caam_perfmon {
 #define CRNR_LS_RNGRN_SHIFT	16
 #define CRNR_LS_RNGRN_MASK	(0xfull << CRNR_LS_RNGRN_SHIFT)
 	u32 cha_rev_ls;		/* CRNR - CHA Rev No. Least significant half*/
+#define CTPR_MS_PS		BIT(17)
 #define CTPR_MS_QI_SHIFT	25
 #define CTPR_MS_QI_MASK		(0x1ull << CTPR_MS_QI_SHIFT)
 #define CTPR_MS_VIRT_EN_INCL	0x00000001
@@ -582,7 +583,10 @@ struct rngtst {
 
 /* RNG4 TRNG test registers */
 struct rng4tst {
-#define RTMCTL_PRGM	0x00010000	/* 1 -> program mode, 0 -> run mode */
+#define RTMCTL_ACC		BIT(5)  /* TRNG access mode */
+#define RTMCTL_FCT_FAIL		BIT(8)
+#define RTMCTL_ERR		BIT(12)
+#define RTMCTL_PRGM		BIT(16) /* 1 -> program mode, 0 -> run mode */
 #define RTMCTL_SAMP_MODE_VON_NEUMANN_ES_SC	0 /* use von Neumann data in
 						     both entropy shifter and
 						     statistical checker */
@@ -593,6 +597,7 @@ struct rng4tst {
 						     entropy shifter, raw data
 						     in statistical checker */
 #define RTMCTL_SAMP_MODE_INVALID		3 /* invalid combination */
+#define RTMCTL_SAMP_MODE_MASK			3
 	u32 rtmctl;		/* misc. control register */
 	u32 rtscmisc;		/* statistical check misc. register */
 	u32 rtpkrrng;		/* poker range register */
@@ -615,12 +620,23 @@ struct rng4tst {
 		u32 rtfrqmax;	/* PRGM=1: freq. count max. limit register */
 		u32 rtfrqcnt;	/* PRGM=0: freq. count register */
 	};
-	u32 rsvd1[40];
+	u32 rtscml;
+	u32 rtscr1l;
+	u32 rtscr2l;
+	u32 rtscr3l;
+	u32 rtscr4l;
+	u32 rtscr5l;
+	u32 rtscr6pl;
+	u32 rtstatus;
+	u32 rsvd1[32];
 #define RDSTA_SKVT 0x80000000
 #define RDSTA_SKVN 0x40000000
+#define RDSTA_PR0 BIT(4)
+#define RDSTA_PR1 BIT(5)
 #define RDSTA_IF0 0x00000001
 #define RDSTA_IF1 0x00000002
 #define RDSTA_IFMASK (RDSTA_IF1 | RDSTA_IF0)
+#define RDSTA_MASK (RDSTA_PR1 | RDSTA_PR0 | RDSTA_IF1 | RDSTA_IF0)
 	u32 rdsta;
 	u32 rsvd2[15];
 };

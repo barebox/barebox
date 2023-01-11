@@ -26,6 +26,12 @@
 bool caam_little_end;
 EXPORT_SYMBOL(caam_little_end);
 
+bool caam_imx = true;
+EXPORT_SYMBOL(caam_imx);
+
+size_t caam_ptr_sz = 4;
+EXPORT_SYMBOL(caam_ptr_sz);
+
 /*
  * Descriptor to instantiate RNG State Handle 0 in normal mode and
  * load the JDKEK, TDKEK and TDSK registers

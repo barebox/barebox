@@ -2,33 +2,93 @@
 /*
  * CAAM hardware register-level view
  *
- * Copyright 2008-2015 Freescale Semiconductor, Inc.
+ * Copyright 2008-2011 Freescale Semiconductor, Inc.
+ * Copyright 2018 NXP
  */
 
 #ifndef REGS_H
 #define REGS_H
 
 #include <linux/types.h>
+#include <linux/bitops.h>
 #include <io.h>
+#include <io-64-nonatomic-hi-lo.h>
+
+/*
+ * Architecture-specific register access methods
+ *
+ * CAAM's bus-addressable registers are 64 bits internally.
+ * They have been wired to be safely accessible on 32-bit
+ * architectures, however. Registers were organized such
+ * that (a) they can be contained in 32 bits, (b) if not, then they
+ * can be treated as two 32-bit entities, or finally (c) if they
+ * must be treated as a single 64-bit value, then this can safely
+ * be done with two 32-bit cycles.
+ *
+ * For 32-bit operations on 64-bit values, CAAM follows the same
+ * 64-bit register access conventions as it's predecessors, in that
+ * writes are "triggered" by a write to the register at the numerically
+ * higher address, thus, a full 64-bit write cycle requires a write
+ * to the lower address, followed by a write to the higher address,
+ * which will latch/execute the write cycle.
+ *
+ * For example, let's assume a SW reset of CAAM through the master
+ * configuration register.
+ * - SWRST is in bit 31 of MCFG.
+ * - MCFG begins at base+0x0000.
+ * - Bits 63-32 are a 32-bit word at base+0x0000 (numerically-lower)
+ * - Bits 31-0 are a 32-bit word at base+0x0004 (numerically-higher)
+ *
+ * (and on Power, the convention is 0-31, 32-63, I know...)
+ *
+ * Assuming a 64-bit write to this MCFG to perform a software reset
+ * would then require a write of 0 to base+0x0000, followed by a
+ * write of 0x80000000 to base+0x0004, which would "execute" the
+ * reset.
+ *
+ * Of course, since MCFG 63-32 is all zero, we could cheat and simply
+ * write 0x8000000 to base+0x0004, and the reset would work fine.
+ * However, since CAAM does contain some write-and-read-intended
+ * 64-bit registers, this code defines 64-bit access methods for
+ * the sake of internal consistency and simplicity, and so that a
+ * clean transition to 64-bit is possible when it becomes necessary.
+ *
+ * There are limitations to this that the developer must recognize.
+ * 32-bit architectures cannot enforce an atomic-64 operation,
+ * Therefore:
+ *
+ * - On writes, since the HW is assumed to latch the cycle on the
+ *   write of the higher-numeric-address word, then ordered
+ *   writes work OK.
+ *
+ * - For reads, where a register contains a relevant value of more
+ *   that 32 bits, the hardware employs logic to latch the other
+ *   "half" of the data until read, ensuring an accurate value.
+ *   This is of particular relevance when dealing with CAAM's
+ *   performance counters.
+ *
+ */
 
 extern bool caam_little_end;
+extern bool caam_imx;
+extern size_t caam_ptr_sz;
 
-#define caam_to_cpu(len)				\
-static inline u##len caam##len ## _to_cpu(u##len val)	\
-{							\
-	if (caam_little_end)				\
-		return le##len ## _to_cpu(val);		\
-	else						\
-		return be##len ## _to_cpu(val);		\
+#define caam_to_cpu(len)						\
+static inline u##len caam##len ## _to_cpu(u##len val)			\
+{									\
+	if (caam_little_end)						\
+		return le##len ## _to_cpu((__force __le##len)val);	\
+	else								\
+		return be##len ## _to_cpu((__force __be##len)val);	\
 }
 
-#define cpu_to_caam(len)				\
-static inline u##len cpu_to_caam##len(u##len val)	\
-{							\
-	if (caam_little_end)				\
-		return cpu_to_le##len(val);		\
-	else						\
-		return cpu_to_be##len(val);		\
+#define cpu_to_caam(len)					\
+static inline u##len cpu_to_caam##len(u##len val)		\
+{								\
+	if (caam_little_end)					\
+		return (__force u##len)cpu_to_le##len(val);	\
+	else							\
+		return (__force u##len)cpu_to_be##len(val);	\
 }
 
 caam_to_cpu(16)
@@ -63,66 +123,94 @@ static inline void clrsetbits_32(void __iomem *reg, u32 clear, u32 set)
 }
 
 /*
- * The DMA address registers in the JR are a pair of 32-bit registers.
- * The layout is:
+ * The only users of these wr/rd_reg64 functions is the Job Ring (JR).
+ * The DMA address registers in the JR are handled differently depending on
+ * platform:
+ *
+ * 1. All BE CAAM platforms and i.MX platforms (LE CAAM):
  *
  *    base + 0x0000 : most-significant 32 bits
  *    base + 0x0004 : least-significant 32 bits
  *
  * The 32-bit version of this core therefore has to write to base + 0x0004
- * to set the 32-bit wide DMA address. This seems to be independent of the
- * endianness of the written/read data.
+ * to set the 32-bit wide DMA address.
+ *
+ * 2. All other LE CAAM platforms (LS1021A etc.)
+ *    base + 0x0000 : least-significant 32 bits
+ *    base + 0x0004 : most-significant 32 bits
  */
-
-#ifdef CONFIG_64BIT
 static inline void wr_reg64(void __iomem *reg, u64 data)
 {
-	if (caam_little_end)
-		iowrite64(data, reg);
-	else
+	if (caam_little_end) {
+		if (caam_imx) {
+			iowrite32(data >> 32, (u32 __iomem *)(reg));
+			iowrite32(data, (u32 __iomem *)(reg) + 1);
+		} else {
+			iowrite64(data, reg);
+		}
+	} else {
 		iowrite64be(data, reg);
-}
-
-static inline void rd_reg64(void __iomem *reg)
-{
-	if (caam_little_end)
-		ioread64(reg);
-	else
-		ioread64be(reg);
-}
-#else /* CONFIG_64BIT */
-static inline void wr_reg64(void __iomem *reg, u64 data)
-{
-	wr_reg32((u32 __iomem *)(reg), data >> 32);
-	wr_reg32((u32 __iomem *)(reg) + 1, data);
+	}
 }
 
 static inline u64 rd_reg64(void __iomem *reg)
 {
-	return ((u64)rd_reg32((u32 __iomem *)(reg)) << 32 |
-		(u64)rd_reg32((u32 __iomem *)(reg) + 1));
+	if (caam_little_end) {
+		if (caam_imx) {
+			u32 low, high;
+
+			high = ioread32(reg);
+			low  = ioread32(reg + sizeof(u32));
+
+			return low + ((u64)high << 32);
+		} else {
+			return ioread64(reg);
+		}
+	} else {
+		return ioread64be(reg);
+	}
 }
-#endif /* CONFIG_64BIT */
 
 static inline u64 cpu_to_caam_dma64(dma_addr_t value)
 {
-	return (((u64)cpu_to_caam32(lower_32_bits(value)) << 32) |
-		 (u64)cpu_to_caam32(upper_32_bits(value)));
+	if (caam_imx) {
+		u64 ret_val = (u64)cpu_to_caam32(lower_32_bits(value)) << 32;
+
+		if (IS_ENABLED(CONFIG_ARCH_DMA_ADDR_T_64BIT))
+			ret_val |= (u64)cpu_to_caam32(upper_32_bits(value));
+
+		return ret_val;
+	}
+
+	return cpu_to_caam64(value);
 }
 
 static inline u64 caam_dma64_to_cpu(u64 value)
 {
-	return (((u64)caam32_to_cpu(lower_32_bits(value)) << 32) |
-		 (u64)caam32_to_cpu(upper_32_bits(value)));
+	if (caam_imx)
+		return (((u64)caam32_to_cpu(lower_32_bits(value)) << 32) |
+			 (u64)caam32_to_cpu(upper_32_bits(value)));
+
+	return caam64_to_cpu(value);
 }
 
-#ifdef CONFIG_ARCH_DMA_ADDR_T_64BIT
-#define cpu_to_caam_dma(value) cpu_to_caam_dma64(value)
-#define caam_dma_to_cpu(value) caam_dma64_to_cpu(value)
-#else
-#define cpu_to_caam_dma(value) cpu_to_caam32(value)
-#define caam_dma_to_cpu(value) caam32_to_cpu(value)
-#endif /* CONFIG_ARCH_DMA_ADDR_T_64BIT */
+static inline u64 cpu_to_caam_dma(u64 value)
+{
+	if (IS_ENABLED(CONFIG_ARCH_DMA_ADDR_T_64BIT) &&
+	    caam_ptr_sz == sizeof(u64))
+		return cpu_to_caam_dma64(value);
+	else
+		return cpu_to_caam32(value);
+}
+
+static inline u64 caam_dma_to_cpu(u64 value)
+{
+	if (IS_ENABLED(CONFIG_ARCH_DMA_ADDR_T_64BIT) &&
+	    caam_ptr_sz == sizeof(u64))
+		return caam_dma64_to_cpu(value);
+	else
+		return caam32_to_cpu(value);
+}
 
 /*
  * jr_outentry

@@ -7,22 +7,22 @@ config EXTRA_FIRMWARE_DIR
 	default "firmware"
 
 config FIRMWARE_IMX_LPDDR4_PMU_TRAIN
-       	bool
+	bool
 
 config FIRMWARE_IMX_DDR4_PMU_TRAIN
-       	bool
+	bool
 
 config FIRMWARE_IMX8MM_ATF
-        bool
+	bool
 
 config FIRMWARE_IMX8MN_ATF
-        bool
+	bool
 
 config FIRMWARE_IMX8MP_ATF
-        bool
+	bool
 
 config FIRMWARE_IMX8MQ_ATF
-        bool
+	bool
 
 config FIRMWARE_CCBV2_OPTEE
 	bool

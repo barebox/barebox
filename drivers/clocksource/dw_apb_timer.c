@@ -97,9 +97,9 @@ static struct clocksource dw_apb_clksrc = {
 	.priority = 50,
 };
 
-static int dw_apb_timer_probe(struct device_d *dev)
+static int dw_apb_timer_probe(struct device *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct resource *iores;
 	struct clk *clk;
 	uint32_t clk_freq;
@@ -136,7 +136,7 @@ static struct of_device_id dw_apb_timer_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d dw_apb_timer_driver = {
+static struct driver dw_apb_timer_driver = {
 	.name = "dw-apb-timer",
 	.probe = dw_apb_timer_probe,
 	.of_compatible = DRV_OF_COMPAT(dw_apb_timer_dt_ids),

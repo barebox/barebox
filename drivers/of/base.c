@@ -739,11 +739,11 @@ struct device_node *of_find_matching_node_and_match(struct device_node *from,
 }
 EXPORT_SYMBOL(of_find_matching_node_and_match);
 
-int of_match(struct device_d *dev, struct driver_d *drv)
+int of_match(struct device *dev, struct driver *drv)
 {
 	const struct of_device_id *id;
 
-	id = of_match_node(drv->of_compatible, dev->device_node);
+	id = of_match_node(drv->of_compatible, dev->of_node);
 	if (!id)
 		return 1;
 
@@ -2514,7 +2514,7 @@ mem_initcall(of_probe_memory);
 
 static void of_platform_device_create_root(struct device_node *np)
 {
-	static struct device_d *dev;
+	static struct device *dev;
 	int ret;
 
 	if (dev)
@@ -2522,7 +2522,7 @@ static void of_platform_device_create_root(struct device_node *np)
 
 	dev = xzalloc(sizeof(*dev));
 	dev->id = DEVICE_ID_SINGLE;
-	dev->device_node = np;
+	dev->of_node = np;
 	dev_set_name(dev, "machine");
 
 	ret = platform_device_register(dev);
@@ -2698,11 +2698,11 @@ struct device_node *of_get_stdoutpath(unsigned int *baudrate)
 	return dn;
 }
 
-int of_device_is_stdout_path(struct device_d *dev, unsigned int *baudrate)
+int of_device_is_stdout_path(struct device *dev, unsigned int *baudrate)
 {
 	unsigned int tmp = *baudrate;
 
-	if (!dev || !dev->device_node || dev->device_node != of_get_stdoutpath(&tmp))
+	if (!dev || !dev->of_node || dev->of_node != of_get_stdoutpath(&tmp))
 		return false;
 
 	*baudrate = tmp;

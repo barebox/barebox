@@ -12,9 +12,9 @@
 
 #include <linux/err.h>
 
-static int state_probe(struct device_d *dev)
+static int state_probe(struct device *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct state *state;
 	bool readonly = false;
 	int ret;
@@ -45,7 +45,7 @@ static __maybe_unused struct of_device_id state_ids[] = {
 	}
 };
 
-static struct driver_d state_driver = {
+static struct driver state_driver = {
 	.name = "state",
 	.probe = state_probe,
 	.of_compatible = DRV_OF_COMPAT(state_ids),

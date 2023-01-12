@@ -376,7 +376,7 @@ static struct of_regulator_match stpmic1_matches[] = {
 	MATCH(pwr_sw2, SW_OUT),
 };
 
-static int stpmic1_regulator_register(struct device_d *dev, int id,
+static int stpmic1_regulator_register(struct device *dev, int id,
 				      struct of_regulator_match *match,
 				      struct stpmic1_regulator_cfg *cfg)
 {
@@ -404,11 +404,11 @@ static int stpmic1_regulator_register(struct device_d *dev, int id,
 	return 0;
 }
 
-static int stpmic1_regulator_probe(struct device_d *dev)
+static int stpmic1_regulator_probe(struct device *dev)
 {
 	int i, ret;
 
-	ret = of_regulator_match(dev, dev->device_node, stpmic1_matches,
+	ret = of_regulator_match(dev, dev->of_node, stpmic1_matches,
 				 ARRAY_SIZE(stpmic1_matches));
 	if (ret < 0) {
 		dev_err(dev, "Error in PMIC regulator device tree node");
@@ -432,7 +432,7 @@ static __maybe_unused const struct of_device_id stpmic1_regulator_of_match[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d stpmic1_regulator_driver = {
+static struct driver stpmic1_regulator_driver = {
 	.name = "stpmic1-regulator",
 	.probe = stpmic1_regulator_probe,
 	.of_compatible = DRV_OF_COMPAT(stpmic1_regulator_of_match),

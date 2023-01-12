@@ -188,10 +188,10 @@ static int marvell_of_reg_init(struct phy_device *phydev)
 	const __be32 *paddr;
 	int len, i, saved_page, current_page, page_changed, ret;
 
-	if (!phydev->dev.device_node)
+	if (!phydev->dev.of_node)
 		return 0;
 
-	paddr = of_get_property(phydev->dev.device_node,
+	paddr = of_get_property(phydev->dev.of_node,
 				"marvell,reg-init", &len);
 	if (!paddr || len < (4 * sizeof(*paddr)))
 		return 0;

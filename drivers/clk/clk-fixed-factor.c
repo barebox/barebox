@@ -77,16 +77,20 @@ struct clk *clk_fixed_factor(const char *name,
 	return &f->hw.clk;
 }
 
-struct clk *clk_register_fixed_factor(struct device_d *dev, const char *name,
-		const char *parent_name, unsigned long flags,
-		unsigned int mult, unsigned int div)
+struct clk *clk_register_fixed_factor(struct device *dev, const char *name,
+				      const char *parent_name,
+				      unsigned long flags,
+				      unsigned int mult, unsigned int div)
 {
 	return clk_fixed_factor(name, parent_name, mult, div, flags);
 }
 
-struct clk_hw *clk_hw_register_fixed_factor(struct device_d *dev,
-		const char *name, const char *parent_name, unsigned long flags,
-		unsigned int mult, unsigned int div)
+struct clk_hw *clk_hw_register_fixed_factor(struct device *dev,
+					    const char *name,
+					    const char *parent_name,
+					    unsigned long flags,
+					    unsigned int mult,
+					    unsigned int div)
 {
 	return clk_to_clk_hw(clk_register_fixed_factor(dev, xstrdup(name),
 						       xstrdup(parent_name),

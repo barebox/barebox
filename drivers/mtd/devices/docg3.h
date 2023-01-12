@@ -254,7 +254,7 @@
 #define DOC_LAYOUT_DPS_KEY_LENGTH	8
 
 struct docg3 {
-	struct device_d *dev;
+	struct device *dev;
 	void __iomem *base;
 	unsigned int device_id:4;
 	unsigned int if_cfg:1;

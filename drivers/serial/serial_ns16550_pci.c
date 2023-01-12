@@ -3656,7 +3656,7 @@ pciserial_init_ports(struct pci_dev *dev, const struct pciserial_board *board)
 	uart.pdata->clock = board->base_baud * 16;
 
 	for (i = 0; i < nr_ports; i++) {
-		struct device_d *ns16550_dev;
+		struct device *ns16550_dev;
 		struct resource *res;
 
 		rc = quirk->setup(priv, board, &uart, i);

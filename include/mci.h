@@ -391,7 +391,7 @@ struct mci;
 
 /** host information */
 struct mci_host {
-	struct device_d *hw_dev;	/**< the host MCI hardware device */
+	struct device *hw_dev;	/**< the host MCI hardware device */
 	struct mci *mci;
 	const char *devname;		/**< the devicename for the card, defaults to disk%d */
 	unsigned voltages;
@@ -411,7 +411,7 @@ struct mci_host {
 	struct regulator *supply;
 
 	/** init the host interface */
-	int (*init)(struct mci_host*, struct device_d*);
+	int (*init)(struct mci_host*, struct device*);
 	/** change host interface settings */
 	void (*set_ios)(struct mci_host*, struct mci_ios *);
 	/** handle a command */
@@ -443,7 +443,7 @@ struct mci_part {
 /** MMC/SD and interface instance information */
 struct mci {
 	struct mci_host *host;		/**< the host for this card */
-	struct device_d dev;		/**< the device for our disk (mcix) */
+	struct device dev;		/**< the device for our disk (mcix) */
 	unsigned version;
 	/** != 0 when a high capacity card is connected (OCR -> OCR_HCS) */
 	int high_capacity;

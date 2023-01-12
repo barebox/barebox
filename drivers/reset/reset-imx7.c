@@ -253,14 +253,14 @@ static const struct imx7_src_variant variant_imx8mq = {
 	},
 };
 
-static int imx7_reset_probe(struct device_d *dev)
+static int imx7_reset_probe(struct device *dev)
 {
 	struct imx7_src *imx7src;
 	const struct imx7_src_variant *variant = of_device_get_match_data(dev);
 
 	imx7src = xzalloc(sizeof(*imx7src));
 	imx7src->signals = variant->signals;
-	imx7src->regmap = syscon_node_to_regmap(dev->device_node);
+	imx7src->regmap = syscon_node_to_regmap(dev->of_node);
 	if (IS_ERR(imx7src->regmap)) {
 		dev_err(dev, "Unable to get imx7-src regmap");
 		return PTR_ERR(imx7src->regmap);
@@ -268,7 +268,7 @@ static int imx7_reset_probe(struct device_d *dev)
 
 	imx7src->rcdev.nr_resets = variant->signals_num;
 	imx7src->rcdev.ops       = &variant->ops;
-	imx7src->rcdev.of_node   = dev->device_node;
+	imx7src->rcdev.of_node   = dev->of_node;
 
 	return reset_controller_register(&imx7src->rcdev);
 }
@@ -279,7 +279,7 @@ static const struct of_device_id imx7_reset_dt_ids[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d imx7_reset_driver = {
+static struct driver imx7_reset_driver = {
 	.name = "imx7d-src",
 	.probe = imx7_reset_probe,
 	.of_compatible = DRV_OF_COMPAT(imx7_reset_dt_ids),

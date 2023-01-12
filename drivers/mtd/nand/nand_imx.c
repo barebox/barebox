@@ -27,7 +27,7 @@
 struct imx_nand_host {
 	struct nand_chip	nand;
 	struct mtd_partition	*parts;
-	struct device_d		*dev;
+	struct device		*dev;
 
 	void			*spare0;
 	void			*main_area0;
@@ -1106,7 +1106,7 @@ static struct nand_bbt_descr bbt_mirror_descr = {
 
 static int __init mxcnd_probe_dt(struct imx_nand_host *host)
 {
-	struct device_node *np = host->dev->device_node;
+	struct device_node *np = host->dev->of_node;
 	int buswidth;
 
 	if (!IS_ENABLED(CONFIG_OFDEVICE))
@@ -1240,7 +1240,7 @@ out:
  * @return  The function always returns 0.
  */
 
-static int __init imxnd_probe(struct device_d *dev)
+static int __init imxnd_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct nand_chip *this;
@@ -1481,7 +1481,7 @@ static __maybe_unused struct of_device_id imx_nand_compatible[] = {
 	}
 };
 
-static struct driver_d imx_nand_driver = {
+static struct driver imx_nand_driver = {
 	.name  = "imx_nand",
 	.probe = imxnd_probe,
 	.of_compatible = DRV_OF_COMPAT(imx_nand_compatible),

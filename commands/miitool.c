@@ -217,7 +217,7 @@ static int show_basic_mii(struct mii_bus *mii, struct phy_device *phydev,
 	return 0;
 }
 
-static void mdiobus_show(struct device_d *dev, const char *phydevname,
+static void mdiobus_show(struct device *dev, const char *phydevname,
 			 int verbose)
 {
 	struct mii_bus *mii = to_mii_bus(dev);

@@ -46,15 +46,15 @@ struct imxusb_platformdata {
 };
 
 #ifdef CONFIG_USB_IMX_CHIPIDEA_USBMISC
-int imx_usbmisc_port_init(struct device_d *dev, int port, unsigned flags);
-int imx_usbmisc_port_post_init(struct device_d *dev, int port, unsigned flags);
+int imx_usbmisc_port_init(struct device *dev, int port, unsigned flags);
+int imx_usbmisc_port_post_init(struct device *dev, int port, unsigned flags);
 #else
-static inline int imx_usbmisc_port_init(struct device_d *dev, int port,
+static inline int imx_usbmisc_port_init(struct device *dev, int port,
 					unsigned flags)
 {
 	return 0;
 }
-static inline int imx_usbmisc_port_post_init(struct device_d *dev, int port,
+static inline int imx_usbmisc_port_post_init(struct device *dev, int port,
 					     unsigned flags)
 {
 	return 0;

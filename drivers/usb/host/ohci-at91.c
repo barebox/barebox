@@ -23,7 +23,7 @@
 
 
 struct ohci_at91_priv {
-	struct device_d *dev;
+	struct device *dev;
 	struct clk *iclk;
 	struct clk *fclk;
 	struct ohci_regs __iomem *regs;
@@ -54,13 +54,13 @@ static void at91_stop_clock(struct ohci_at91_priv *ohci_at91)
 	clk_disable(ohci_at91->iclk);
 }
 
-static int at91_ohci_probe_dt(struct device_d *dev)
+static int at91_ohci_probe_dt(struct device *dev)
 {
 	u32 ports;
 	int i, ret, gpio;
 	enum of_gpio_flags flags;
 	struct at91_usbh_data *pdata;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 
 	pdata = xzalloc(sizeof(*pdata));
 	dev->platform_data = pdata;
@@ -107,7 +107,7 @@ static int at91_ohci_probe_dt(struct device_d *dev)
 	return 0;
 }
 
-static int at91_ohci_probe(struct device_d *dev)
+static int at91_ohci_probe(struct device *dev)
 {
 	int ret;
 	struct resource *io;
@@ -116,7 +116,7 @@ static int at91_ohci_probe(struct device_d *dev)
 	dev->priv = ohci_at91;
 	ohci_at91->dev = dev;
 
-	if (dev->device_node) {
+	if (dev->of_node) {
 		ret = at91_ohci_probe_dt(dev);
 		if (ret < 0)
 			return ret;
@@ -159,7 +159,7 @@ static int at91_ohci_probe(struct device_d *dev)
 	return 0;
 }
 
-static void at91_ohci_remove(struct device_d *dev)
+static void at91_ohci_remove(struct device *dev)
 {
 	struct at91_usbh_data *pdata = dev->platform_data;
 	struct ohci_at91_priv *ohci_at91 = dev->priv;
@@ -195,7 +195,7 @@ static const struct of_device_id at91_ohci_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d at91_ohci_driver = {
+static struct driver at91_ohci_driver = {
 	.name = "at91_ohci",
 	.probe = at91_ohci_probe,
 	.remove = at91_ohci_remove,

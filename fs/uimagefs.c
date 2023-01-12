@@ -68,7 +68,7 @@ static struct uimagefs_handle_data *uimagefs_get_by_name(
 	return NULL;
 }
 
-static int uimagefs_open(struct device_d *dev, FILE *file, const char *filename)
+static int uimagefs_open(struct device *dev, FILE *file, const char *filename)
 {
 	struct uimagefs_handle *priv = dev->priv;
 	struct uimagefs_handle_data *d;
@@ -94,7 +94,7 @@ static int uimagefs_open(struct device_d *dev, FILE *file, const char *filename)
 	return 0;
 }
 
-static int uimagefs_close(struct device_d *dev, FILE *file)
+static int uimagefs_close(struct device *dev, FILE *file)
 {
 	struct uimagefs_handle_data *d = file->priv;
 
@@ -103,7 +103,8 @@ static int uimagefs_close(struct device_d *dev, FILE *file)
 	return 0;
 }
 
-static int uimagefs_read(struct device_d *dev, FILE *file, void *buf, size_t insize)
+static int uimagefs_read(struct device *dev, FILE *file, void *buf,
+			 size_t insize)
 {
 	struct uimagefs_handle_data *d = file->priv;
 
@@ -115,7 +116,7 @@ static int uimagefs_read(struct device_d *dev, FILE *file, void *buf, size_t ins
 	}
 }
 
-static int uimagefs_lseek(struct device_d *dev, FILE *file, loff_t pos)
+static int uimagefs_lseek(struct device *dev, FILE *file, loff_t pos)
 {
 	struct uimagefs_handle_data *d = file->priv;
 
@@ -127,7 +128,7 @@ static int uimagefs_lseek(struct device_d *dev, FILE *file, loff_t pos)
 	return 0;
 }
 
-static DIR *uimagefs_opendir(struct device_d *dev, const char *pathname)
+static DIR *uimagefs_opendir(struct device *dev, const char *pathname)
 {
 	struct uimagefs_handle *priv = dev->priv;
 	DIR *dir;
@@ -142,7 +143,7 @@ static DIR *uimagefs_opendir(struct device_d *dev, const char *pathname)
 	return dir;
 }
 
-static struct dirent *uimagefs_readdir(struct device_d *dev, DIR *dir)
+static struct dirent *uimagefs_readdir(struct device *dev, DIR *dir)
 {
 	struct uimagefs_handle *priv = dev->priv;
 	struct uimagefs_handle_data *d = dir->priv;
@@ -155,13 +156,14 @@ static struct dirent *uimagefs_readdir(struct device_d *dev, DIR *dir)
 	return &dir->d;
 }
 
-static int uimagefs_closedir(struct device_d *dev, DIR *dir)
+static int uimagefs_closedir(struct device *dev, DIR *dir)
 {
 	free(dir);
 	return 0;
 }
 
-static int uimagefs_stat(struct device_d *dev, const char *filename, struct stat *s)
+static int uimagefs_stat(struct device *dev, const char *filename,
+			 struct stat *s)
 {
 	struct uimagefs_handle *priv = dev->priv;
 	struct uimagefs_handle_data *d;
@@ -179,7 +181,7 @@ static int uimagefs_stat(struct device_d *dev, const char *filename, struct stat
 	return 0;
 }
 
-static int uimagefs_ioctl(struct device_d *dev, FILE *f, int request, void *buf)
+static int uimagefs_ioctl(struct device *dev, FILE *f, int request, void *buf)
 {
 	struct uimagefs_handle *priv = dev->priv;
 
@@ -191,7 +193,7 @@ static int uimagefs_ioctl(struct device_d *dev, FILE *f, int request, void *buf)
 	return 0;
 }
 
-static void uimagefs_remove(struct device_d *dev)
+static void uimagefs_remove(struct device *dev)
 {
 	struct uimagefs_handle *priv = dev->priv;
 	struct uimagefs_handle_data *d, *tmp;
@@ -493,9 +495,9 @@ err_out:
 	return ret;
 }
 
-static int uimagefs_probe(struct device_d *dev)
+static int uimagefs_probe(struct device *dev)
 {
-	struct fs_device_d *fsdev = dev_to_fs_device(dev);
+	struct fs_device *fsdev = dev_to_fs_device(dev);
 	struct uimagefs_handle *priv;
 	int ret = 0;
 
@@ -518,7 +520,7 @@ err:
 	return ret;
 }
 
-static struct fs_driver_d uimagefs_driver = {
+static struct fs_driver uimagefs_driver = {
 	.open      = uimagefs_open,
 	.close     = uimagefs_close,
 	.read      = uimagefs_read,

@@ -243,7 +243,7 @@ static int mxs_spi_transfer(struct spi_device *spi, struct spi_message *mesg)
 	return 0;
 }
 
-static int mxs_spi_probe(struct device_d *dev)
+static int mxs_spi_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct spi_master *master;
@@ -275,7 +275,7 @@ static int mxs_spi_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d mxs_spi_driver = {
+static struct driver mxs_spi_driver = {
 	.name  = "mxs_spi",
 	.probe = mxs_spi_probe,
 };

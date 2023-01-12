@@ -243,7 +243,7 @@ static void console_set_stdoutpath(struct console_device *cdev, unsigned baudrat
 	if (!cdev->linux_console_name)
 		return;
 
-	id = of_alias_get_id(cdev->dev->device_node, "serial");
+	id = of_alias_get_id(cdev->dev->of_node, "serial");
 	if (id < 0)
 		return;
 
@@ -309,7 +309,7 @@ static ssize_t fops_write(struct cdev* dev, const void* buf, size_t count,
 int console_register(struct console_device *newcdev)
 {
 	struct device_node *serdev_node = console_is_serdev_node(newcdev);
-	struct device_d *dev = &newcdev->class_dev;
+	struct device *dev = &newcdev->class_dev;
 	int activate = 0, ret;
 	unsigned baudrate = CONFIG_BAUDRATE;
 
@@ -406,7 +406,7 @@ EXPORT_SYMBOL(console_register);
 
 int console_unregister(struct console_device *cdev)
 {
-	struct device_d *dev = &cdev->class_dev;
+	struct device *dev = &cdev->class_dev;
 	int status;
 
 	/*

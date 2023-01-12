@@ -396,9 +396,9 @@ static int cdns_i2c_xfer(struct i2c_adapter *adapter, struct i2c_msg *msg,
 	return nmsgs;
 }
 
-static int cdns_i2c_probe(struct device_d *dev)
+static int cdns_i2c_probe(struct device *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct resource *iores;
 	struct cdns_i2c *i2c;
 	u32 bitrate;
@@ -424,7 +424,7 @@ static int cdns_i2c_probe(struct device_d *dev)
 	i2c->adapter.master_xfer = cdns_i2c_xfer;
 	i2c->adapter.nr = dev->id;
 	i2c->adapter.dev.parent = dev;
-	i2c->adapter.dev.device_node = np;
+	i2c->adapter.dev.of_node = np;
 
 	cdns_i2c_reset_hardware(i2c);
 
@@ -445,7 +445,7 @@ static const struct of_device_id cdns_i2c_match[] = {
 	{},
 };
 
-static struct driver_d cdns_i2c_driver = {
+static struct driver cdns_i2c_driver = {
 	.name = "cdns-i2c",
 	.of_compatible = cdns_i2c_match,
 	.probe = cdns_i2c_probe,

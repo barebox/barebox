@@ -528,9 +528,9 @@ mv64xxx_find_baud_factors(const u32 req_freq, const u32 tclk, u32 *best_n,
 
 static int
 mv64xxx_of_config(struct mv64xxx_i2c_data *drv_data,
-		  struct device_d *pd)
+		  struct device *pd)
 {
-	struct device_node *np = pd->device_node;
+	struct device_node *np = pd->of_node;
 	u32 bus_freq, tclk;
 	int rc = 0;
 	u32 prop;
@@ -596,13 +596,13 @@ out:
 }
 
 static int
-mv64xxx_i2c_probe(struct device_d *pd)
+mv64xxx_i2c_probe(struct device *pd)
 {
 	struct resource *iores;
 	struct mv64xxx_i2c_data		*drv_data;
 	int	rc;
 
-	if (!pd->device_node)
+	if (!pd->of_node)
 		return -ENODEV;
 
 	drv_data = xzalloc(sizeof(*drv_data));
@@ -625,7 +625,7 @@ mv64xxx_i2c_probe(struct device_d *pd)
 	drv_data->adapter.master_xfer = mv64xxx_i2c_xfer;
 	drv_data->adapter.dev.parent = pd;
 	drv_data->adapter.nr = pd->id;
-	drv_data->adapter.dev.device_node = pd->device_node;
+	drv_data->adapter.dev.of_node = pd->of_node;
 
 	mv64xxx_i2c_hw_init(drv_data);
 
@@ -643,7 +643,7 @@ exit_clk:
 	return rc;
 }
 
-static struct driver_d mv64xxx_i2c_driver = {
+static struct driver mv64xxx_i2c_driver = {
 	.probe	= mv64xxx_i2c_probe,
 	.name = "mv64xxx_i2c",
 	.of_compatible = DRV_OF_COMPAT(mv64xxx_i2c_of_match_table),

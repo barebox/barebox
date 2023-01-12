@@ -62,7 +62,7 @@ static void atmel_lcdc_disable_controller(struct fb_info *fb_info)
 
 static int atmel_lcdfb_check_var(struct fb_info *info)
 {
-	struct device_d *dev = &info->dev;
+	struct device *dev = &info->dev;
 	struct atmel_lcdfb_info *sinfo = info->priv;
 	struct fb_videomode *mode = info->mode;
 	unsigned long clk_value_khz;
@@ -237,7 +237,7 @@ static struct fb_ops atmel_lcdc_ops = {
 	.fb_disable = atmel_lcdc_disable_controller,
 };
 
-static int power_control_init(struct device_d *dev,
+static int power_control_init(struct device *dev,
 			      struct atmel_lcdfb_info *sinfo,
 			      int gpio,
 			      bool active_low)
@@ -294,7 +294,7 @@ static int of_get_wiring_mode(struct device_node *np,
 	return 0;
 }
 
-static int of_get_power_control(struct device_d *dev,
+static int of_get_power_control(struct device *dev,
 				struct device_node *np,
 				struct atmel_lcdfb_info *sinfo)
 {
@@ -311,7 +311,7 @@ static int of_get_power_control(struct device_d *dev,
 	return power_control_init(dev, sinfo, gpio, active_low);
 }
 
-static int lcdfb_of_init(struct device_d *dev, struct atmel_lcdfb_info *sinfo)
+static int lcdfb_of_init(struct device *dev, struct atmel_lcdfb_info *sinfo)
 {
 	struct fb_info *info = &sinfo->info;
 	struct display_timings *modes;
@@ -328,7 +328,7 @@ static int lcdfb_of_init(struct device_d *dev, struct atmel_lcdfb_info *sinfo)
 	}
 
 	/* Required properties */
-	display = of_parse_phandle(dev->device_node, "display", 0);
+	display = of_parse_phandle(dev->of_node, "display", 0);
 	if (!display) {
 		dev_err(dev, "no display phandle\n");
 		return -ENOENT;
@@ -378,7 +378,8 @@ err:
 	return ret;
 }
 
-static int lcdfb_pdata_init(struct device_d *dev, struct atmel_lcdfb_info *sinfo)
+static int lcdfb_pdata_init(struct device *dev,
+			    struct atmel_lcdfb_info *sinfo)
 {
 	struct atmel_lcdfb_platform_data *pdata;
 	struct fb_info *info;
@@ -422,7 +423,7 @@ err:
 	return ret;
 }
 
-int atmel_lcdc_register(struct device_d *dev, struct atmel_lcdfb_devdata *data)
+int atmel_lcdc_register(struct device *dev, struct atmel_lcdfb_devdata *data)
 {
 	struct atmel_lcdfb_info *sinfo;
 	const char *bus_clk_name;
@@ -450,7 +451,7 @@ int atmel_lcdc_register(struct device_d *dev, struct atmel_lcdfb_devdata *data)
 		}
 		bus_clk_name = "hck1";
 	} else {
-		if (!IS_ENABLED(CONFIG_OFDEVICE) || !dev->device_node)
+		if (!IS_ENABLED(CONFIG_OFDEVICE) || !dev->of_node)
 			return -EINVAL;
 
 		ret = lcdfb_of_init(dev, sinfo);

@@ -611,7 +611,7 @@ static struct of_device_id imx_ipu_dt_ids[] = {
 };
 
 static int ipu_submodules_init(struct ipu_soc *ipu,
-		struct device_d *dev, void __iomem *ipu_base,
+		struct device *dev, void __iomem *ipu_base,
 		struct clk *ipu_clk)
 {
 	char *unit;
@@ -705,16 +705,16 @@ static struct ipu_platform_reg client_reg[] = {
 
 static int ipu_client_id;
 
-static int ipu_add_subdevice_pdata(struct device_d *ipu_dev,
-		struct ipu_platform_reg *reg)
+static int ipu_add_subdevice_pdata(struct device *ipu_dev,
+				   struct ipu_platform_reg *reg)
 {
-	struct device_d *dev;
+	struct device *dev;
 	int ret;
 
 	dev = device_alloc(reg->name, ipu_client_id++);
 	dev->parent = ipu_dev;
 	device_add_data(dev, &reg->pdata, sizeof(reg->pdata));
-	((struct ipu_client_platformdata *)dev->platform_data)->device_node = ipu_dev->device_node;
+	((struct ipu_client_platformdata *)dev->platform_data)->device_node = ipu_dev->of_node;
 
 	ret = platform_device_register(dev);
 
@@ -740,7 +740,7 @@ err_register:
 	return ret;
 }
 
-static int ipu_probe(struct device_d *dev)
+static int ipu_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct ipu_soc *ipu;
@@ -844,7 +844,7 @@ out_failed_reset:
 	return ret;
 }
 
-static struct driver_d imx_ipu_driver = {
+static struct driver imx_ipu_driver = {
 	.name = "imx-ipuv3",
 	.of_compatible = imx_ipu_dt_ids,
 	.probe = ipu_probe,

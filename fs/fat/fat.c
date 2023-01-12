@@ -68,7 +68,7 @@ DRESULT disk_write(FATFS *fat, const BYTE *buf, DWORD sector, BYTE count)
 /* ---------------------------------------------------------------*/
 
 #ifdef CONFIG_FS_FAT_WRITE
-static int fat_create(struct device_d *dev, const char *pathname, mode_t mode)
+static int fat_create(struct device *dev, const char *pathname, mode_t mode)
 {
 	struct fat_priv *priv = dev->priv;
 	FIL f_file;
@@ -83,7 +83,7 @@ static int fat_create(struct device_d *dev, const char *pathname, mode_t mode)
 	return 0;
 }
 
-static int fat_unlink(struct device_d *dev, const char *pathname)
+static int fat_unlink(struct device *dev, const char *pathname)
 {
 	struct fat_priv *priv = dev->priv;
 	int ret;
@@ -97,7 +97,7 @@ static int fat_unlink(struct device_d *dev, const char *pathname)
 	return 0;
 }
 
-static int fat_mkdir(struct device_d *dev, const char *pathname)
+static int fat_mkdir(struct device *dev, const char *pathname)
 {
 	struct fat_priv *priv = dev->priv;
 	int ret;
@@ -111,7 +111,7 @@ static int fat_mkdir(struct device_d *dev, const char *pathname)
 	return 0;
 }
 
-static int fat_rmdir(struct device_d *dev, const char *pathname)
+static int fat_rmdir(struct device *dev, const char *pathname)
 {
 	struct fat_priv *priv = dev->priv;
 	int ret;
@@ -125,7 +125,8 @@ static int fat_rmdir(struct device_d *dev, const char *pathname)
 	return 0;
 }
 
-static int fat_write(struct device_d *_dev, FILE *f, const void *buf, size_t insize)
+static int fat_write(struct device *_dev, FILE *f, const void *buf,
+		     size_t insize)
 {
 	FIL *f_file = f->priv;
 	int outsize;
@@ -143,7 +144,7 @@ static int fat_write(struct device_d *_dev, FILE *f, const void *buf, size_t ins
 	return outsize;
 }
 
-static int fat_truncate(struct device_d *dev, FILE *f, loff_t size)
+static int fat_truncate(struct device *dev, FILE *f, loff_t size)
 {
 	FIL *f_file = f->priv;
 	unsigned long lastofs;
@@ -167,7 +168,7 @@ static int fat_truncate(struct device_d *dev, FILE *f, loff_t size)
 }
 #endif /* CONFIG_FS_FAT_WRITE */
 
-static int fat_open(struct device_d *dev, FILE *file, const char *filename)
+static int fat_open(struct device *dev, FILE *file, const char *filename)
 {
 	struct fat_priv *priv = dev->priv;
 	FIL *f_file;
@@ -209,7 +210,7 @@ static int fat_open(struct device_d *dev, FILE *file, const char *filename)
 	return 0;
 }
 
-static int fat_close(struct device_d *dev, FILE *f)
+static int fat_close(struct device *dev, FILE *f)
 {
 	struct fat_priv *priv = dev->priv;
 	FIL *f_file = f->priv;
@@ -223,7 +224,7 @@ static int fat_close(struct device_d *dev, FILE *f)
 	return 0;
 }
 
-static int fat_read(struct device_d *_dev, FILE *f, void *buf, size_t insize)
+static int fat_read(struct device *_dev, FILE *f, void *buf, size_t insize)
 {
 	int ret;
 	FIL *f_file = f->priv;
@@ -239,7 +240,7 @@ static int fat_read(struct device_d *_dev, FILE *f, void *buf, size_t insize)
 	return outsize;
 }
 
-static int fat_lseek(struct device_d *dev, FILE *f, loff_t pos)
+static int fat_lseek(struct device *dev, FILE *f, loff_t pos)
 {
 	FIL *f_file = f->priv;
 	int ret;
@@ -251,7 +252,7 @@ static int fat_lseek(struct device_d *dev, FILE *f, loff_t pos)
 	return 0;
 }
 
-static DIR* fat_opendir(struct device_d *dev, const char *pathname)
+static DIR* fat_opendir(struct device *dev, const char *pathname)
 {
 	struct fat_priv *priv = dev->priv;
 	DIR *dir;
@@ -276,7 +277,7 @@ static DIR* fat_opendir(struct device_d *dev, const char *pathname)
 	return dir;
 }
 
-static struct dirent* fat_readdir(struct device_d *dev, DIR *dir)
+static struct dirent* fat_readdir(struct device *dev, DIR *dir)
 {
 	FF_DIR *ff_dir = dir->priv;
 	FILINFO finfo;
@@ -306,7 +307,7 @@ static struct dirent* fat_readdir(struct device_d *dev, DIR *dir)
 	return &dir->d;
 }
 
-static int fat_closedir(struct device_d *dev, DIR *dir)
+static int fat_closedir(struct device *dev, DIR *dir)
 {
 	FF_DIR *ff_dir = dir->priv;
 
@@ -316,7 +317,7 @@ static int fat_closedir(struct device_d *dev, DIR *dir)
 	return 0;
 }
 
-static int fat_stat(struct device_d *dev, const char *filename, struct stat *s)
+static int fat_stat(struct device *dev, const char *filename, struct stat *s)
 {
 	struct fat_priv *priv = dev->priv;
 	FILINFO finfo;
@@ -339,9 +340,9 @@ static int fat_stat(struct device_d *dev, const char *filename, struct stat *s)
 	return 0;
 }
 
-static int fat_probe(struct device_d *dev)
+static int fat_probe(struct device *dev)
 {
-	struct fs_device_d *fsdev = dev_to_fs_device(dev);
+	struct fs_device *fsdev = dev_to_fs_device(dev);
 	struct fat_priv *priv = xzalloc(sizeof(struct fat_priv));
 	int ret;
 
@@ -367,12 +368,12 @@ err_open:
 	return ret;
 }
 
-static void fat_remove(struct device_d *dev)
+static void fat_remove(struct device *dev)
 {
 	free(dev->priv);
 }
 
-static struct fs_driver_d fat_driver = {
+static struct fs_driver fat_driver = {
 	.open      = fat_open,
 	.close     = fat_close,
 	.read      = fat_read,

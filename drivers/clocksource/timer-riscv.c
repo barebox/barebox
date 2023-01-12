@@ -48,7 +48,7 @@ static struct clocksource riscv_clocksource = {
 	.priority	= 100,
 };
 
-static int riscv_timer_init(struct device_d* dev)
+static int riscv_timer_init(struct device * dev)
 {
 	struct device_node *cpu;
 
@@ -67,7 +67,7 @@ static int riscv_timer_init(struct device_d* dev)
 	return init_clock(&riscv_clocksource);
 }
 
-static struct driver_d riscv_timer_driver = {
+static struct driver riscv_timer_driver = {
 	.name = "riscv-timer",
 	.probe = riscv_timer_init,
 };

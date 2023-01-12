@@ -128,8 +128,8 @@ static int kszphy_rmii_clk_sel(struct phy_device *phydev, bool val)
 /* Handle LED mode, shift = position of first led mode bit, usually 4 or 14 */
 static int kszphy_led_mode(struct phy_device *phydev, int reg, int shift)
 {
-	const struct device_d *dev = &phydev->dev;
-	const struct device_node *of_node = dev->device_node ? : dev->parent->device_node;
+	const struct device *dev = &phydev->dev;
+	const struct device_node *of_node = dev->of_node ? : dev->parent->of_node;
 	u32 val;
 
 	if (!of_property_read_u32(of_node, "micrel,led-mode", &val)) {
@@ -144,7 +144,7 @@ static int kszphy_led_mode(struct phy_device *phydev, int reg, int shift)
 
 static int kszphy_setup_led(struct phy_device *phydev, u32 reg, int val)
 {
-	const struct device_d *dev = &phydev->dev;
+	const struct device *dev = &phydev->dev;
 	int rc, temp, shift;
 
 	switch (reg) {
@@ -179,7 +179,7 @@ out:
  */
 static int kszphy_broadcast_disable(struct phy_device *phydev)
 {
-	const struct device_d *dev = &phydev->dev;
+	const struct device *dev = &phydev->dev;
 	int ret;
 
 	ret = phy_read(phydev, MII_KSZPHY_OMSO);
@@ -196,7 +196,7 @@ out:
 
 static int kszphy_nand_tree_disable(struct phy_device *phydev)
 {
-	const struct device_d *dev = &phydev->dev;
+	const struct device *dev = &phydev->dev;
 	int ret;
 
 	ret = phy_read(phydev, MII_KSZPHY_OMSO);
@@ -278,8 +278,8 @@ static int ksz9021_load_values_from_of(struct phy_device *phydev,
 
 static int ksz9021_config_init(struct phy_device *phydev)
 {
-	const struct device_d *dev = &phydev->dev;
-	const struct device_node *of_node = dev->device_node;
+	const struct device *dev = &phydev->dev;
+	const struct device_node *of_node = dev->of_node;
 	const char *clk_pad_skew_names[] = {
 		"txen-skew-ps", "txc-skew-ps",
 		"rxdv-skew-ps", "rxc-skew-ps"
@@ -293,8 +293,8 @@ static int ksz9021_config_init(struct phy_device *phydev)
 		"txd2-skew-ps", "txd3-skew-ps"
 	};
 
-	if (!of_node && dev->parent->device_node)
-		of_node = dev->parent->device_node;
+	if (!of_node && dev->parent->of_node)
+		of_node = dev->parent->of_node;
 
 	if (of_node) {
 		ksz9021_load_values_from_of(phydev, of_node,
@@ -471,8 +471,8 @@ static int ksz9031_config_rgmii_delay(struct phy_device *phydev)
 
 static int ksz9031_config_init(struct phy_device *phydev)
 {
-	const struct device_d *dev = &phydev->dev;
-	const struct device_node *of_node = dev->device_node;
+	const struct device *dev = &phydev->dev;
+	const struct device_node *of_node = dev->of_node;
 	static const char *clk_skews[2] = {"rxc-skew-ps", "txc-skew-ps"};
 	static const char *rx_data_skews[4] = {
 		"rxd0-skew-ps", "rxd1-skew-ps",
@@ -485,8 +485,8 @@ static int ksz9031_config_init(struct phy_device *phydev)
 	static const char *control_skews[2] = {"txen-skew-ps", "rxdv-skew-ps"};
 	int ret;
 
-	if (!of_node && dev->parent->device_node)
-		of_node = dev->parent->device_node;
+	if (!of_node && dev->parent->of_node)
+		of_node = dev->parent->of_node;
 
 	if (of_node) {
 		if (phy_interface_is_rgmii(phydev)) {
@@ -611,8 +611,8 @@ static int ksz8873mll_config_init(struct phy_device *phydev)
 
 static int kszphy_probe(struct phy_device *phydev)
 {
-	struct device_d *dev = &phydev->dev;
-	struct device_node *np = dev->device_node;
+	struct device *dev = &phydev->dev;
+	struct device_node *np = dev->of_node;
 	struct phy_driver *drv = to_phy_driver(dev->driver);
 	const struct kszphy_type *type = drv->driver_data;
 	struct kszphy_priv *priv;

@@ -102,7 +102,7 @@ struct pci_dev {
 	struct pci_slot	*slot;		/* Physical slot this device is in */
 	const struct pci_device_id *id;	/* the id this device matches */
 
-	struct device_d dev;
+	struct device dev;
 
 	unsigned int	devfn;		/* encoded device & function index */
 	unsigned short	vendor;
@@ -141,7 +141,7 @@ enum {
 };
 struct pci_bus {
 	struct pci_controller *host;	/* associated host controller */
-	struct device_d *parent;
+	struct device *parent;
 	struct pci_bus *parent_bus;	/* parent bus */
 	struct list_head node;		/* node in list of buses */
 	struct list_head children;	/* list of child buses */
@@ -173,7 +173,7 @@ extern struct pci_ops *pci_ops;
  */
 struct pci_controller {
 	struct pci_controller *next;
-	struct device_d *parent;
+	struct device *parent;
 	struct pci_bus *bus;
 
 	const struct pci_ops *pci_ops;
@@ -196,7 +196,7 @@ struct pci_driver {
 	const struct pci_device_id *id_table;	/* must be non-NULL for probe to be called */
 	int  (*probe)  (struct pci_dev *dev, const struct pci_device_id *id);	/* New device inserted */
 	void (*remove) (struct pci_dev *dev);	/* Device removed (NULL if not a hot-plug capable driver) */
-	struct driver_d	driver;
+	struct driver	driver;
 };
 
 #define	to_pci_driver(drv) container_of(drv, struct pci_driver, driver)

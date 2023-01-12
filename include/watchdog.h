@@ -18,8 +18,8 @@ struct device_node;
 struct watchdog {
 	int (*set_timeout)(struct watchdog *, unsigned);
 	const char *name;
-	struct device_d *hwdev;
-	struct device_d dev;
+	struct device *hwdev;
+	struct device dev;
 	unsigned int priority;
 	unsigned int timeout_max;
 	unsigned int timeout_cur;

@@ -94,11 +94,11 @@ static struct gpio_ops gpio_latch_gpio_ops = {
 	.get_direction = gpio_latch_get_direction,
 };
 
-static int gpio_latch_probe(struct device_d *dev)
+static int gpio_latch_probe(struct device *dev)
 {
 	struct gpio_latch_priv *priv;
 	int n_latches, i, ret;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	enum of_gpio_flags flags;
 
 	priv = xzalloc(sizeof(*priv));
@@ -183,7 +183,7 @@ static const struct of_device_id gpio_latch_ids[] = {
 	}
 };
 
-static struct driver_d gpio_latch_driver = {
+static struct driver gpio_latch_driver = {
 	.name = "gpio-latch",
 	.probe = gpio_latch_probe,
 	.of_compatible = DRV_OF_COMPAT(gpio_latch_ids),

@@ -35,7 +35,7 @@ int usbgadget_register(const struct usbgadget_funcs *funcs)
 {
 	int ret;
 	int flags = funcs->flags;
-	struct device_d *dev;
+	struct device *dev;
 	struct f_multi_opts *opts;
 
 	opts = xzalloc(sizeof(*opts));

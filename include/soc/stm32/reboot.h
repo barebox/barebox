@@ -5,12 +5,12 @@
 
 #include <linux/compiler.h>
 
-struct device_d;
+struct device;
 
 #ifdef CONFIG_RESET_STM32
-void stm32mp_system_restart_init(struct device_d *rcc);
+void stm32mp_system_restart_init(struct device *rcc);
 #else
-static inline void stm32mp_system_restart_init(struct device_d *rcc)
+static inline void stm32mp_system_restart_init(struct device *rcc)
 {
 }
 #endif

@@ -118,13 +118,13 @@ struct __packed acpi_rsdt { /* system description table header */
 };
 
 struct acpi_driver {
-	struct driver_d driver;
+	struct driver driver;
 	acpi_sig_t signature;
 };
 
 extern struct bus_type acpi_bus;
 
-static inline struct acpi_driver *to_acpi_driver(struct driver_d *drv)
+static inline struct acpi_driver *to_acpi_driver(struct driver *drv)
 {
 	return container_of(drv, struct acpi_driver, driver);
 }

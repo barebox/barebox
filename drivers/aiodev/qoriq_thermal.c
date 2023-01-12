@@ -67,7 +67,7 @@ struct qoriq_tmu_regs {
  * Thermal zone data
  */
 struct qoriq_tmu_data {
-	struct device_d *dev;
+	struct device *dev;
 	struct clk *clk;
 	struct qoriq_tmu_regs __iomem *regs;
 	int sensor_id;
@@ -146,7 +146,7 @@ static int qoriq_tmu_calibration(struct qoriq_tmu_data *data)
 	int i, val, len;
 	u32 range[4];
 	const u32 *calibration;
-	struct device_node *np = data->dev->device_node;
+	struct device_node *np = data->dev->of_node;
 
 	if (of_property_read_u32_array(np, "fsl,tmu-range", range, 4)) {
 		dev_err(data->dev, "missing calibration range.\n");
@@ -187,9 +187,9 @@ static void qoriq_tmu_init_device(struct qoriq_tmu_data *data)
 	tmu_write(data, TMR_DISABLE, &data->regs->tmr);
 }
 
-static int qoriq_tmu_probe(struct device_d *dev)
+static int qoriq_tmu_probe(struct device *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct qoriq_tmu_data *data;
 	u32 site;
 	int ret;
@@ -246,7 +246,7 @@ static const struct of_device_id qoriq_tmu_match[] = {
 	{},
 };
 
-static struct driver_d imx_thermal_driver = {
+static struct driver imx_thermal_driver = {
 	.name		= "qoriq_thermal",
 	.probe		= qoriq_tmu_probe,
 	.of_compatible	= DRV_OF_COMPAT(qoriq_tmu_match),

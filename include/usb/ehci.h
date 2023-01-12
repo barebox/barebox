@@ -24,10 +24,10 @@ struct ehci_data {
 struct ehci_host;
 
 #ifdef CONFIG_USB_EHCI
-struct ehci_host *ehci_register(struct device_d *dev, struct ehci_data *data);
+struct ehci_host *ehci_register(struct device *dev, struct ehci_data *data);
 void ehci_unregister(struct ehci_host *);
 #else
-static inline struct ehci_host *ehci_register(struct device_d *dev,
+static inline struct ehci_host *ehci_register(struct device *dev,
 					      struct ehci_data *data)
 {
 	return ERR_PTR(-ENOSYS);

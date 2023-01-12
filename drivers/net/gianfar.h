@@ -261,7 +261,7 @@ struct rxbd8 {
 
 struct gfar_phy {
 	void __iomem *regs;
-	struct device_d *dev;
+	struct device *dev;
 	struct mii_bus miibus;
 };
 

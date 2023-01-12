@@ -26,9 +26,9 @@ enum reset_src_type {
 enum reset_src_type reset_source_get(void);
 const char *reset_source_to_string(enum reset_src_type st);
 int reset_source_get_instance(void);
-struct device_d *reset_source_get_device(void);
+struct device *reset_source_get_device(void);
 
-void reset_source_set_device(struct device_d *dev, enum reset_src_type st);
+void reset_source_set_device(struct device *dev, enum reset_src_type st);
 void reset_source_set_prinst(enum reset_src_type,
 			     unsigned int priority, int instance);
 
@@ -49,12 +49,12 @@ static inline int reset_source_get_instance(void)
 	return -1;
 }
 
-static inline struct device_d *reset_source_get_device(void)
+static inline struct device *reset_source_get_device(void)
 {
 	return NULL;
 }
 
-static inline void reset_source_set_device(struct device_d *dev,
+static inline void reset_source_set_device(struct device *dev,
 					   enum reset_src_type st)
 {
 }

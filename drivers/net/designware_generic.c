@@ -16,7 +16,7 @@ static struct dw_eth_drvdata dwmac_370a_drvdata = {
 	.enh_desc = 1,
 };
 
-static int dwc_ether_probe(struct device_d *dev)
+static int dwc_ether_probe(struct device *dev)
 {
 	struct dw_eth_dev *dwc;
 
@@ -36,7 +36,7 @@ static __maybe_unused struct of_device_id dwc_ether_compatible[] = {
 	}
 };
 
-static struct driver_d dwc_ether_driver = {
+static struct driver dwc_ether_driver = {
 	.name = "designware_eth",
 	.probe = dwc_ether_probe,
 	.remove	= dwc_drv_remove,

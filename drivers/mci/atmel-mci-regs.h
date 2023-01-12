@@ -155,7 +155,7 @@ struct atmel_mci_caps {
 struct atmel_mci {
 	struct mci_host		mci;
 	void  __iomem		*regs;
-	struct device_d		*hw_dev;
+	struct device		*hw_dev;
 	struct clk		*clk;
 
 	u32			datasize;
@@ -190,7 +190,7 @@ static inline unsigned int atmci_convert_chksize(unsigned int maxburst)
 }
 
 void atmci_common_set_ios(struct atmel_mci *host, struct mci_ios *ios);
-int atmci_reset(struct mci_host *mci, struct device_d *mci_dev);
+int atmci_reset(struct mci_host *mci, struct device *mci_dev);
 int atmci_common_request(struct atmel_mci *host, struct mci_cmd *cmd,
 			 struct mci_data *data);
 void atmci_get_cap(struct atmel_mci *host);

@@ -74,7 +74,7 @@ static inline struct bcm283x_i2c *to_bcm283x_i2c(struct i2c_adapter *adapter)
 
 static inline int bcm283x_i2c_init(struct bcm283x_i2c *bcm_i2c)
 {
-	struct device_d *dev = bcm_i2c->adapter.dev.parent;
+	struct device *dev = bcm_i2c->adapter.dev.parent;
 	u32 mclk_rate, cdiv, redl, fedl;
 
 	/*
@@ -130,7 +130,7 @@ static int bcm283x_i2c_msg_xfer(struct bcm283x_i2c *bcm_i2c,
 {
 	int ret;
 	u32 reg_c, reg_s, reg_dlen, timeout;
-	struct device_d *dev = &bcm_i2c->adapter.dev;
+	struct device *dev = &bcm_i2c->adapter.dev;
 	bool msg_read = (msg->flags & I2C_M_RD) > 0;
 	bool msg_10bit = (msg->flags & I2C_M_TEN) > 0;
 	u16 buf_pos = 0;
@@ -266,12 +266,12 @@ out:
 	return ret;
 }
 
-static int bcm283x_i2c_probe(struct device_d *dev)
+static int bcm283x_i2c_probe(struct device *dev)
 {
 	int ret;
 	struct resource *iores;
 	struct bcm283x_i2c *bcm_i2c;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 
 	bcm_i2c = xzalloc(sizeof(*bcm_i2c));
 
@@ -308,7 +308,7 @@ static int bcm283x_i2c_probe(struct device_d *dev)
 	bcm_i2c->adapter.master_xfer = bcm283x_i2c_xfer;
 	bcm_i2c->adapter.nr = dev->id;
 	bcm_i2c->adapter.dev.parent = dev;
-	bcm_i2c->adapter.dev.device_node = np;
+	bcm_i2c->adapter.dev.of_node = np;
 
 	ret = bcm283x_i2c_init(bcm_i2c);
 	if (ret)
@@ -326,7 +326,7 @@ static struct of_device_id bcm283x_i2c_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d bcm283x_i2c_driver = {
+static struct driver bcm283x_i2c_driver = {
 	.name		= "i2c-bcm283x",
 	.probe		= bcm283x_i2c_probe,
 	.of_compatible	= DRV_OF_COMPAT(bcm283x_i2c_dt_ids),

@@ -23,7 +23,7 @@
 #include <mach/am33xx-silicon.h>
 #include <mach/emif4.h>
 
-static int am33xx_scrm_probe(struct device_d *dev)
+static int am33xx_scrm_probe(struct device *dev)
 {
 	return arm_add_mem_device("ram0", 0x80000000,
 				  emif4_sdram_size(IOMEM(AM33XX_EMIF4_BASE)));
@@ -37,7 +37,7 @@ static __maybe_unused struct of_device_id am33xx_scrm_dt_ids[] = {
 	}
 };
 
-static struct driver_d am33xx_scrm_driver = {
+static struct driver am33xx_scrm_driver = {
 	.name   = "am33xx-scrm",
 	.probe  = am33xx_scrm_probe,
 	.of_compatible = DRV_OF_COMPAT(am33xx_scrm_dt_ids),

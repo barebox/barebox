@@ -62,7 +62,7 @@ struct state_backend_storage_bucket_circular {
 #endif
 
 	/* For outputs */
-	struct device_d *dev;
+	struct device *dev;
 };
 
 /*
@@ -456,7 +456,7 @@ static int bucket_circular_is_block_bad(struct state_backend_storage_bucket_circ
 }
 #endif
 
-int state_backend_bucket_circular_create(struct device_d *dev, const char *path,
+int state_backend_bucket_circular_create(struct device *dev, const char *path,
 					 struct state_backend_storage_bucket **bucket,
 					 unsigned int eraseblock,
 					 ssize_t writesize,

@@ -75,7 +75,7 @@ struct atmel_nand_host {
 	struct nand_chip	nand_chip;
 	void __iomem		*io_base;
 	struct atmel_nand_data	*board;
-	struct device_d		*dev;
+	struct device		*dev;
 	void __iomem		*ecc;
 
 	int			pmecc_bytes_per_sector;
@@ -835,8 +835,8 @@ static int pmecc_build_galois_table(unsigned int mm, int16_t *index_of,
 	return 0;
 }
 
-static int __init atmel_pmecc_nand_init_params(struct device_d *dev,
-					 struct atmel_nand_host *host)
+static int __init atmel_pmecc_nand_init_params(struct device *dev,
+					       struct atmel_nand_host *host)
 {
 	struct resource *iores;
 	struct nand_chip *nand_chip = &host->nand_chip;
@@ -1195,7 +1195,7 @@ static int atmel_nand_of_init(struct atmel_nand_host *host, struct device_node *
 	return 0;
 }
 
-static int atmel_hw_nand_init_params(struct device_d *dev,
+static int atmel_hw_nand_init_params(struct device *dev,
 					 struct atmel_nand_host *host)
 {
 	struct resource *iores;
@@ -1253,7 +1253,7 @@ static int atmel_hw_nand_init_params(struct device_d *dev,
 /*
  * Probe for the NAND device.
  */
-static int __init atmel_nand_probe(struct device_d *dev)
+static int __init atmel_nand_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct atmel_nand_data *pdata = NULL;
@@ -1281,8 +1281,8 @@ static int __init atmel_nand_probe(struct device_d *dev)
 	host->board = pdata;
 	host->dev = dev;
 
-	if (dev->device_node) {
-		res = atmel_nand_of_init(host, dev->device_node);
+	if (dev->of_node) {
+		res = atmel_nand_of_init(host, dev->of_node);
 		if (res)
 			goto err_no_card;
 	} else {
@@ -1433,7 +1433,7 @@ static struct of_device_id atmel_nand_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d atmel_nand_driver = {
+static struct driver atmel_nand_driver = {
 	.name	= "atmel_nand",
 	.probe	= atmel_nand_probe,
 	.of_compatible	= DRV_OF_COMPAT(atmel_nand_dt_ids),

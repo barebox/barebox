@@ -61,7 +61,7 @@ struct imx_ldb_data {
 };
 
 struct imx_ldb {
-	struct device_d *dev;
+	struct device *dev;
 	u32 bus_format;
 	int mode_valid;
 	struct imx_ldb_channel channel[2];
@@ -302,9 +302,9 @@ static int imx_ldb_ioctl(struct vpl *vpl, unsigned int port,
 	return 0;
 }
 
-static int imx_ldb_probe(struct device_d *dev)
+static int imx_ldb_probe(struct device *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct device_node *child;
 	struct imx_ldb *imx_ldb;
 	int ret, i;
@@ -404,7 +404,7 @@ static struct of_device_id imx_ldb_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d imx_ldb_driver = {
+static struct driver imx_ldb_driver = {
 	.probe		= imx_ldb_probe,
 	.of_compatible	= imx_ldb_dt_ids,
 	.name		= "imx-ldb",

@@ -138,7 +138,7 @@ static void stm32_serial_init(struct console_device *cdev)
 	writel(cr1, base + CR1_OFFSET(stm32f4));
 }
 
-static int stm32_serial_probe(struct device_d *dev)
+static int stm32_serial_probe(struct device *dev)
 {
 	int ret;
 	struct console_device *cdev;
@@ -186,8 +186,8 @@ static int stm32_serial_probe(struct device_d *dev)
 	cdev->setbrg = stm32_serial_setbaudrate;
 	cdev->linux_console_name = "ttySTM";
 
-	if (dev->device_node) {
-		devname = of_alias_get(dev->device_node);
+	if (dev->of_node) {
+		devname = of_alias_get(dev->of_node);
 		if (devname) {
 			cdev->devname = xstrdup(devname);
 			cdev->devid   = DEVICE_ID_SINGLE;
@@ -241,7 +241,7 @@ static struct of_device_id stm32_serial_dt_ids[] = {
 	}
 };
 
-static struct driver_d stm32_serial_driver = {
+static struct driver stm32_serial_driver = {
 	.name   = "stm32-serial",
 	.probe  = stm32_serial_probe,
 	.of_compatible = DRV_OF_COMPAT(stm32_serial_dt_ids),

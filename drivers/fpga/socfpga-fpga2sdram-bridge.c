@@ -52,7 +52,7 @@
 #define F2S_BRIDGE_NAME "fpga2sdram"
 
 struct alt_fpga2sdram_data {
-	struct device_d *dev;
+	struct device *dev;
 	int mask;
 };
 
@@ -96,7 +96,7 @@ static struct of_device_id altera_fpga_of_match[] = {
 	{},
 };
 
-static int alt_fpga_bridge_probe(struct device_d *dev)
+static int alt_fpga_bridge_probe(struct device *dev)
 {
 	struct alt_fpga2sdram_data *priv;
 	int ret = 0;
@@ -120,7 +120,7 @@ static int alt_fpga_bridge_probe(struct device_d *dev)
 	return ret;
 }
 
-static struct driver_d altera_fpga_driver = {
+static struct driver altera_fpga_driver = {
 	.probe = alt_fpga_bridge_probe,
 	.name = "altera-fpga2sdram-bridge",
 	.of_compatible = DRV_OF_COMPAT(altera_fpga_of_match),

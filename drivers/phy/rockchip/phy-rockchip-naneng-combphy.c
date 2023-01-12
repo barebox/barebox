@@ -79,7 +79,7 @@ struct rockchip_combphy_priv {
 	void __iomem *mmio;
 	int num_clks;
 	struct clk_bulk_data *clks;
-	struct device_d *dev;
+	struct device *dev;
 	struct regmap *pipe_grf;
 	struct regmap *phy_grf;
 	struct phy *phy;
@@ -265,7 +265,7 @@ static const struct phy_ops rochchip_combphy_ops = {
 	.exit = rockchip_combphy_exit,
 };
 
-static struct phy *rockchip_combphy_xlate(struct device_d *dev,
+static struct phy *rockchip_combphy_xlate(struct device *dev,
 					  struct of_phandle_args *args)
 {
 	struct rockchip_combphy_priv *priv = dev->priv;
@@ -284,10 +284,10 @@ static struct phy *rockchip_combphy_xlate(struct device_d *dev,
 	return priv->phy;
 }
 
-static int rockchip_combphy_parse_dt(struct device_d *dev,
+static int rockchip_combphy_parse_dt(struct device *dev,
 				     struct rockchip_combphy_priv *priv)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	const struct rockchip_combphy_cfg *phy_cfg = priv->cfg;
 	int ret, mac_id;
 
@@ -329,7 +329,7 @@ static int rockchip_combphy_parse_dt(struct device_d *dev,
 	return reset_control_assert(priv->phy_rst);
 }
 
-static int rockchip_combphy_probe(struct device_d *dev)
+static int rockchip_combphy_probe(struct device *dev)
 {
 	struct phy_provider *phy_provider;
 	struct rockchip_combphy_priv *priv;
@@ -386,7 +386,7 @@ static int rockchip_combphy_probe(struct device_d *dev)
 
 static int rk3568_combphy_cfg(struct rockchip_combphy_priv *priv)
 {
-	struct device_node *np = priv->dev->device_node;
+	struct device_node *np = priv->dev->of_node;
 	const struct rockchip_combphy_grfcfg *cfg = priv->cfg->grfcfg;
 	struct clk *refclk = NULL;
 	unsigned long rate;
@@ -588,7 +588,7 @@ static const struct of_device_id rockchip_combphy_of_match[] = {
 	{ },
 };
 
-static struct driver_d rockchip_combphy_driver = {
+static struct driver rockchip_combphy_driver = {
 	.probe	= rockchip_combphy_probe,
 	.name = "naneng-combphy",
 	.of_compatible = rockchip_combphy_of_match,

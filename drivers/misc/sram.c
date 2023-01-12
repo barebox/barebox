@@ -22,7 +22,7 @@ static struct cdev_operations memops = {
 	.memmap = generic_memmap_rw,
 };
 
-static int sram_probe(struct device_d *dev)
+static int sram_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct sram *sram;
@@ -54,7 +54,7 @@ static __maybe_unused struct of_device_id sram_dt_ids[] = {
 	},
 };
 
-static struct driver_d sram_driver = {
+static struct driver sram_driver = {
 	.name = "mmio-sram",
 	.probe = sram_probe,
 	.of_compatible = sram_dt_ids,

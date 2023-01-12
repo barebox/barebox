@@ -24,7 +24,7 @@ struct atmel_lcdfb_devdata {
 struct atmel_lcdfb_info {
 	struct fb_info		info;
 	void __iomem		*mmio;
-	struct device_d		*device;
+	struct device		*device;
 
 	unsigned int		guard_time;
 	unsigned int		smem_len;
@@ -49,4 +49,4 @@ struct atmel_lcdfb_info {
 
 #define ATMEL_LCDC_STOP_NOWAIT (1 << 0)
 
-int atmel_lcdc_register(struct device_d *dev, struct atmel_lcdfb_devdata *data);
+int atmel_lcdc_register(struct device *dev, struct atmel_lcdfb_devdata *data);

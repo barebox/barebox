@@ -214,7 +214,7 @@ struct tegra_pcie_soc_data {
 };
 
 struct tegra_pcie {
-	struct device_d *dev;
+	struct device *dev;
 	struct pci_controller pci;
 
 	void __iomem *pads;
@@ -827,7 +827,7 @@ static int tegra_pcie_resets_get(struct tegra_pcie *pcie)
 
 static int tegra_pcie_get_resources(struct tegra_pcie *pcie)
 {
-	struct device_d *dev = pcie->dev;
+	struct device *dev = pcie->dev;
 	int err;
 
 	err = tegra_pcie_clocks_get(pcie);
@@ -903,7 +903,7 @@ static int tegra_pcie_put_resources(struct tegra_pcie *pcie)
 static int tegra_pcie_get_xbar_config(struct tegra_pcie *pcie, u32 lanes,
 				      u32 *xbar)
 {
-	struct device_node *np = pcie->dev->device_node;
+	struct device_node *np = pcie->dev->of_node;
 
 	if (of_device_is_compatible(np, "nvidia,tegra124-pcie")) {
 		switch (lanes) {
@@ -954,7 +954,7 @@ static int tegra_pcie_get_xbar_config(struct tegra_pcie *pcie, u32 lanes,
 static int tegra_pcie_parse_dt(struct tegra_pcie *pcie)
 {
 	const struct tegra_pcie_soc_data *soc = pcie->soc_data;
-	struct device_node *np = pcie->dev->device_node, *port;
+	struct device_node *np = pcie->dev->of_node, *port;
 	struct of_pci_range_parser parser;
 	struct of_pci_range range;
 	struct resource *rp_res;
@@ -1231,7 +1231,7 @@ static __maybe_unused struct of_device_id tegra_pcie_of_match[] = {
 	},
 };
 
-static int tegra_pcie_probe(struct device_d *dev)
+static int tegra_pcie_probe(struct device *dev)
 {
 	struct tegra_pcie *pcie;
 	int err;
@@ -1277,7 +1277,7 @@ put_resources:
 	return err;
 }
 
-static struct driver_d tegra_pcie_driver = {
+static struct driver tegra_pcie_driver = {
 	.name = "tegra-pcie",
 	.of_compatible = DRV_OF_COMPAT(tegra_pcie_of_match),
 	.probe = tegra_pcie_probe,

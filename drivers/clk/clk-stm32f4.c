@@ -457,7 +457,7 @@ static const struct clk_ops clk_apb_mul_factor_ops = {
 	.recalc_rate = clk_apb_mul_recalc_rate,
 };
 
-static struct clk *clk_register_apb_mul(struct device_d *dev, const char *name,
+static struct clk *clk_register_apb_mul(struct device *dev, const char *name,
 					const char *parent_name,
 					unsigned long flags, u8 bit_idx)
 {
@@ -952,10 +952,12 @@ static const struct clk_ops rgclk_ops = {
 	.is_enabled = rgclk_is_enabled,
 };
 
-static struct clk_hw *clk_register_rgate(struct device_d *dev, const char *name,
-		const char *parent_name, unsigned long flags,
-		void __iomem *reg, u8 bit_idx, u8 bit_rdy_idx,
-		u8 clk_gate_flags, spinlock_t *lock)
+static struct clk_hw *clk_register_rgate(struct device *dev, const char *name,
+					 const char *parent_name,
+					 unsigned long flags,
+					 void __iomem *reg, u8 bit_idx,
+					 u8 bit_rdy_idx,
+					 u8 clk_gate_flags, spinlock_t *lock)
 {
 	struct stm32_rgate *rgate;
 	struct clk_init_data init = { NULL };
@@ -1047,10 +1049,13 @@ static const struct clk_ops cclk_mux_ops = {
 	.set_parent = cclk_mux_set_parent,
 };
 
-static struct clk_hw *stm32_register_cclk(struct device_d *dev, const char *name,
-		const char * const *parent_names, int num_parents,
-		void __iomem *reg, u8 bit_idx, u8 shift, unsigned long flags,
-		spinlock_t *lock)
+static struct clk_hw *stm32_register_cclk(struct device *dev,
+					  const char *name,
+					  const char * const *parent_names,
+					  int num_parents,
+					  void __iomem *reg, u8 bit_idx,
+					  u8 shift, unsigned long flags,
+					  spinlock_t *lock)
 {
 	struct clk_hw *hw;
 	struct clk_gate *gate;

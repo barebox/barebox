@@ -19,7 +19,7 @@
  * @data	Private data used by switch_fn()
  * @mux_bus	An optional parent bus (Other case are to use parent_bus property)
  */
-int mdio_mux_init(struct device_d *dev,
+int mdio_mux_init(struct device *dev,
 		  struct device_node *mux_node,
 		  int (*switch_fn) (int cur, int desired, void *data),
 		  void *data,

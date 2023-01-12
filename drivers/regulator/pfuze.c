@@ -41,7 +41,7 @@
 #define PFUZE100_VGENxSTBY	BIT(5)
 
 struct pfuze {
-	struct device_d			*dev;
+	struct device			*dev;
 	struct regmap			*map;
 	struct i2c_client		*client;
 	int				revision;
@@ -144,7 +144,7 @@ static const struct regmap_config pfuze_regmap_i2c_config = {
 	.max_register = 127,
 };
 
-static int __init pfuze_probe(struct device_d *dev)
+static int __init pfuze_probe(struct device *dev)
 {
 	int ret;
 
@@ -165,7 +165,7 @@ static int __init pfuze_probe(struct device_d *dev)
 	if (pfuze_init_callback)
 		pfuze_init_callback(pfuze_dev->map);
 
-	if (of_property_read_bool(dev->device_node,
+	if (of_property_read_bool(dev->of_node,
 				  "fsl,pmic-stby-poweroff"))
 		return poweroff_handler_register_fn(pfuze_power_off_prepare);
 
@@ -188,7 +188,7 @@ static __maybe_unused struct of_device_id pfuze_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d pfuze_i2c_driver = {
+static struct driver pfuze_i2c_driver = {
 	.name		= "pfuze-i2c",
 	.probe		= pfuze_probe,
 	.id_table	= pfuze_ids,

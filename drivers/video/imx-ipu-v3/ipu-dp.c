@@ -56,7 +56,7 @@ struct ipu_flow {
 
 struct ipu_dp_priv {
 	struct ipu_soc *ipu;
-	struct device_d *dev;
+	struct device *dev;
 	void __iomem *base;
 	struct ipu_flow flow[IPUV3_NUM_FLOWS];
 	int use_count;
@@ -277,7 +277,7 @@ void ipu_dp_put(struct ipu_dp *dp)
 }
 EXPORT_SYMBOL_GPL(ipu_dp_put);
 
-int ipu_dp_init(struct ipu_soc *ipu, struct device_d *dev, void __iomem *base)
+int ipu_dp_init(struct ipu_soc *ipu, struct device *dev, void __iomem *base)
 {
 	struct ipu_dp_priv *priv;
 	int i;

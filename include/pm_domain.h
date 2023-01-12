@@ -23,7 +23,7 @@ typedef struct generic_pm_domain *(*genpd_xlate_t)(struct of_phandle_args *args,
 
 #ifdef CONFIG_PM_GENERIC_DOMAINS
 
-int genpd_dev_pm_attach(struct device_d *dev);
+int genpd_dev_pm_attach(struct device *dev);
 
 /**
  * dev_pm_domain_attach - Attach a device to its PM domain.
@@ -44,7 +44,7 @@ int genpd_dev_pm_attach(struct device_d *dev);
  *
  * Returns 0 on successfully attached PM domain or negative error code.
  */
-static inline int dev_pm_domain_attach(struct device_d *dev, bool power_on)
+static inline int dev_pm_domain_attach(struct device *dev, bool power_on)
 {
 	return genpd_dev_pm_attach(dev);
 }
@@ -64,12 +64,12 @@ static inline int pm_genpd_init(struct generic_pm_domain *genpd,
 	return -ENOSYS;
 }
 
-static inline int genpd_dev_pm_attach(struct device_d *dev)
+static inline int genpd_dev_pm_attach(struct device *dev)
 {
 	return 0;
 }
 
-static inline int dev_pm_domain_attach(struct device_d *dev, bool power_on)
+static inline int dev_pm_domain_attach(struct device *dev, bool power_on)
 {
 	return 0;
 }

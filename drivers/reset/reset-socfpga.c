@@ -74,11 +74,11 @@ static const struct reset_control_ops socfpga_reset_ops = {
 	.deassert	= socfpga_reset_deassert,
 };
 
-static int socfpga_reset_probe(struct device_d *dev)
+static int socfpga_reset_probe(struct device *dev)
 {
 	struct socfpga_reset_data *data;
 	struct resource *res;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	u32 modrst_offset;
 
 	data = xzalloc(sizeof(*data));
@@ -109,7 +109,7 @@ static const struct of_device_id socfpga_reset_dt_ids[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d socfpga_reset_driver = {
+static struct driver socfpga_reset_driver = {
 	.name = "socfpga_reset",
 	.probe	= socfpga_reset_probe,
 	.of_compatible	= DRV_OF_COMPAT(socfpga_reset_dt_ids),

@@ -58,7 +58,7 @@ enum xilinx_byte_order {
 
 struct fpgamgr {
 	struct firmware_handler fh;
-	struct device_d dev;
+	struct device dev;
 	const struct zynqmp_eemi_ops *eemi_ops;
 	int programmed;
 	char *buf;
@@ -158,8 +158,8 @@ static int get_header_length(const char *header, size_t size)
 	return -EINVAL;
 }
 
-static void zynqmp_fpga_show_header(const struct device_d *dev,
-			 struct bs_header *header, size_t size)
+static void zynqmp_fpga_show_header(const struct device *dev,
+				    struct bs_header *header, size_t size)
 {
 	struct bs_header_entry *entry;
 	unsigned int i;
@@ -326,11 +326,11 @@ static int programmed_get(struct param_d *p, void *priv)
 	return 0;
 }
 
-static int zynqmp_fpga_probe(struct device_d *dev)
+static int zynqmp_fpga_probe(struct device *dev)
 {
 	struct fpgamgr *mgr;
 	struct firmware_handler *fh;
-	const char *alias = of_alias_get(dev->device_node);
+	const char *alias = of_alias_get(dev->of_node);
 	const char *model = NULL;
 	struct param_d *p;
 	u32 api_version;
@@ -347,7 +347,7 @@ static int zynqmp_fpga_probe(struct device_d *dev)
 	fh->open = fpgamgr_program_start;
 	fh->write = fpgamgr_program_write_buf;
 	fh->close = fpgamgr_program_finish;
-	of_property_read_string(dev->device_node, "compatible", &model);
+	of_property_read_string(dev->of_node, "compatible", &model);
 	if (model)
 		fh->model = xstrdup(model);
 	fh->dev = dev;
@@ -381,7 +381,7 @@ static int zynqmp_fpga_probe(struct device_d *dev)
 	}
 
 	fh->dev = &mgr->dev;
-	fh->device_node = dev->device_node;
+	fh->device_node = dev->of_node;
 
 	ret = firmwaremgr_register(fh);
 	if (ret != 0) {
@@ -406,7 +406,7 @@ static struct of_device_id zynqmpp_fpga_id_table[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d zynqmp_fpga_driver = {
+static struct driver zynqmp_fpga_driver = {
 	.name = "zynqmp_fpga_manager",
 	.of_compatible = DRV_OF_COMPAT(zynqmpp_fpga_id_table),
 	.probe = zynqmp_fpga_probe,

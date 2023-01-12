@@ -16,7 +16,7 @@
 struct firmware_handler {
 	char *id; /* unique identifier for this firmware device */
 	char *model; /* description for this device */
-	struct device_d *dev;
+	struct device *dev;
 	void *priv;
 	struct device_node *device_node;
 	/* called once to prepare the firmware's programming cycle */

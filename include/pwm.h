@@ -6,7 +6,7 @@
 #include <errno.h>
 
 struct pwm_device;
-struct device_d;
+struct device;
 
 #define	PWM_POLARITY_NORMAL	0
 
@@ -139,7 +139,7 @@ struct pwm_chip {
 	struct pwm_state	state;
 };
 
-int pwmchip_add(struct pwm_chip *chip, struct device_d *dev);
+int pwmchip_add(struct pwm_chip *chip, struct device *dev);
 int pwmchip_remove(struct pwm_chip *chip);
 
 #endif /* __PWM_H */

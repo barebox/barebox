@@ -11,7 +11,7 @@
 
 static int bochs_isa_detect(void)
 {
-	struct device_d *dev;
+	struct device *dev;
 	int ret;
 
 	outw(0, VBE_DISPI_IOPORT_INDEX);

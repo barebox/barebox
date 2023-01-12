@@ -135,7 +135,7 @@ static inline struct bcm2835_host *to_bcm2835_host(struct mci_host *mci)
 	return container_of(mci, struct bcm2835_host, mci);
 }
 
-static int bcm2835_sdhost_init(struct mci_host *mci, struct device_d *dev)
+static int bcm2835_sdhost_init(struct mci_host *mci, struct device *dev)
 {
 	struct bcm2835_host *host = to_bcm2835_host(mci);
 	u32 temp;
@@ -579,7 +579,7 @@ static void bcm2835_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	writel(hcfg, host->regs + SDHCFG);
 }
 
-static int bcm2835_sdhost_probe(struct device_d *dev)
+static int bcm2835_sdhost_probe(struct device *dev)
 {
 	struct bcm2835_host *host;
 	struct resource *iores;
@@ -620,7 +620,7 @@ static __maybe_unused struct of_device_id bcm2835_sdhost_compatible[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d bcm2835_sdhost_driver = {
+static struct driver bcm2835_sdhost_driver = {
 	.name  = "bcm2835-sdhost",
 	.probe = bcm2835_sdhost_probe,
 	.of_compatible = DRV_OF_COMPAT(bcm2835_sdhost_compatible),

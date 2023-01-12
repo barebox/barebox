@@ -383,13 +383,13 @@ static void atmel_get_caps(struct atmel_spi *as)
 	as->caps.is_spi2 = version > 0x121;
 }
 
-static int atmel_spi_probe(struct device_d *dev)
+static int atmel_spi_probe(struct device *dev)
 {
 	struct resource *iores;
 	int ret = 0;
 	int i;
 	struct spi_master *master;
-	struct device_node *node = dev->device_node;
+	struct device_node *node = dev->of_node;
 	struct atmel_spi *as;
 	struct at91_spi_platform_data *pdata = dev->platform_data;
 
@@ -475,7 +475,7 @@ const static __maybe_unused struct of_device_id atmel_spi_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d atmel_spi_driver = {
+static struct driver atmel_spi_driver = {
 	.name  = "atmel_spi",
 	.probe = atmel_spi_probe,
 	.of_compatible = DRV_OF_COMPAT(atmel_spi_dt_ids),

@@ -239,7 +239,7 @@ static int bgpio_dir_out_val_first(struct gpio_chip *gc, unsigned int gpio,
 	return 0;
 }
 
-static int bgpio_setup_accessors(struct device_d *dev,
+static int bgpio_setup_accessors(struct device *dev,
 				 struct bgpio_chip *bgc,
 				 bool byte_be)
 {
@@ -404,7 +404,7 @@ static int bgpio_request(struct gpio_chip *chip, unsigned gpio_pin)
  * @flags: Different flags that will affect the behaviour of the device, such as
  *	endianness etc.
  */
-int bgpio_init(struct bgpio_chip *bgc, struct device_d *dev,
+int bgpio_init(struct bgpio_chip *bgc, struct device *dev,
 	       unsigned int sz, void __iomem *dat, void __iomem *set,
 	       void __iomem *clr, void __iomem *dirout, void __iomem *dirin,
 	       unsigned long flags)
@@ -478,7 +478,7 @@ EXPORT_SYMBOL_GPL(bgpio_remove);
 
 #ifdef CONFIG_GPIO_GENERIC_PLATFORM
 
-static void __iomem *bgpio_map(struct device_d *dev,
+static void __iomem *bgpio_map(struct device *dev,
 			       const char *name,
 			       resource_size_t sane_sz)
 {
@@ -498,7 +498,7 @@ static void __iomem *bgpio_map(struct device_d *dev,
 
 static const struct of_device_id bgpio_of_match[];
 
-static struct bgpio_pdata *bgpio_parse_dt(struct device_d *dev,
+static struct bgpio_pdata *bgpio_parse_dt(struct device *dev,
 					  unsigned long *flags)
 {
 	struct bgpio_pdata *pdata;
@@ -510,16 +510,16 @@ static struct bgpio_pdata *bgpio_parse_dt(struct device_d *dev,
 
 	pdata->base = -1;
 
-	if (of_device_is_big_endian(dev->device_node))
+	if (of_device_is_big_endian(dev->of_node))
 		*flags |= BGPIOF_BIG_ENDIAN_BYTE_ORDER;
 
-	if (of_property_read_bool(dev->device_node, "no-output"))
+	if (of_property_read_bool(dev->of_node, "no-output"))
 		*flags |= BGPIOF_NO_OUTPUT;
 
 	return pdata;
 }
 
-static int bgpio_dev_probe(struct device_d *dev)
+static int bgpio_dev_probe(struct device *dev)
 {
 	struct resource *r;
 	void __iomem *dat;
@@ -580,7 +580,7 @@ static int bgpio_dev_probe(struct device_d *dev)
 	return gpiochip_add(&bgc->gc);
 }
 
-static void bgpio_dev_remove(struct device_d *dev)
+static void bgpio_dev_remove(struct device *dev)
 {
 	struct bgpio_chip *bgc = dev->priv;
 
@@ -601,7 +601,7 @@ static const struct of_device_id bgpio_of_match[] = {
 	}
 };
 
-static struct driver_d bgpio_driver = {
+static struct driver bgpio_driver = {
 	.name		= "basic-mmio-gpio",
 	.of_compatible	= bgpio_of_match,
 	.probe		= bgpio_dev_probe,

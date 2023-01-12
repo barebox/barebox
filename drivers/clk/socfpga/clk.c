@@ -367,7 +367,8 @@ static struct clk *socfpga_gate_clk(struct device_node *node)
 	return &cs->hw.clk;
 }
 
-static void socfpga_register_clocks(struct device_d *dev, struct device_node *node)
+static void socfpga_register_clocks(struct device *dev,
+				    struct device_node *node)
 {
 	struct device_node *child;
 	struct clk *clk;
@@ -394,7 +395,7 @@ static void socfpga_register_clocks(struct device_d *dev, struct device_node *no
 	of_clk_add_provider(node, of_clk_src_simple_get, clk);
 }
 
-static int socfpga_ccm_probe(struct device_d *dev)
+static int socfpga_ccm_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *regs;
@@ -407,7 +408,7 @@ static int socfpga_ccm_probe(struct device_d *dev)
 
 	clk_mgr_base_addr = regs;
 
-	clknode = of_get_child_by_name(dev->device_node, "clocks");
+	clknode = of_get_child_by_name(dev->of_node, "clocks");
 	if (!clknode)
 		return -EINVAL;
 
@@ -424,7 +425,7 @@ static __maybe_unused struct of_device_id socfpga_ccm_dt_ids[] = {
 	}
 };
 
-static struct driver_d socfpga_ccm_driver = {
+static struct driver socfpga_ccm_driver = {
 	.probe	= socfpga_ccm_probe,
 	.name	= "socfpga-ccm",
 	.of_compatible = DRV_OF_COMPAT(socfpga_ccm_dt_ids),

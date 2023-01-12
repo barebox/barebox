@@ -186,7 +186,7 @@ static int esdhc_reset(struct fsl_esdhc_host *host)
 	return 0;
 }
 
-static int esdhc_init(struct mci_host *mci, struct device_d *dev)
+static int esdhc_init(struct mci_host *mci, struct device *dev)
 {
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
 	int ret;
@@ -225,7 +225,7 @@ static int esdhc_init(struct mci_host *mci, struct device_d *dev)
 	return ret;
 }
 
-static int fsl_esdhc_probe(struct device_d *dev)
+static int fsl_esdhc_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct fsl_esdhc_host *host;
@@ -375,7 +375,7 @@ static struct platform_device_id imx_esdhc_ids[] = {
 	}
 };
 
-static struct driver_d fsl_esdhc_driver = {
+static struct driver fsl_esdhc_driver = {
 	.name  = "imx-esdhc",
 	.probe = fsl_esdhc_probe,
 	.of_compatible = DRV_OF_COMPAT(fsl_esdhc_compatible),

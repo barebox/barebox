@@ -132,14 +132,14 @@ static void imx_pata_setup_port(void *reg_base, void *alt_base,
 	}
 }
 
-static int pata_imx_detect(struct device_d *dev)
+static int pata_imx_detect(struct device *dev)
 {
 	struct ide_port *ide = dev->priv;
 
 	return ata_port_detect(&ide->port);
 }
 
-static int imx_pata_probe(struct device_d *dev)
+static int imx_pata_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct ide_port *ide;
@@ -171,7 +171,7 @@ static int imx_pata_probe(struct device_d *dev)
 
 
 	ide->port.dev = dev;
-	ide->port.devname = xstrdup(of_alias_get(dev->device_node));
+	ide->port.devname = xstrdup(of_alias_get(dev->of_node));
 
 	dev->priv = ide;
 	dev->detect = pata_imx_detect;
@@ -202,7 +202,7 @@ static __maybe_unused struct of_device_id imx_pata_dt_ids[] = {
 	},
 };
 
-static struct driver_d imx_pata_driver = {
+static struct driver imx_pata_driver = {
 	.name   = "imx-pata",
 	.probe  = imx_pata_probe,
 	.of_compatible = DRV_OF_COMPAT(imx_pata_dt_ids),

@@ -262,7 +262,7 @@ static int mvebu_get_target_attr(struct device_node *np, int devfn,
 	return -ENOENT;
 }
 
-static struct mvebu_pcie *mvebu_pcie_port_probe(struct device_d *dev,
+static struct mvebu_pcie *mvebu_pcie_port_probe(struct device *dev,
 						struct device_node *np)
 {
 	struct mvebu_pcie *pcie;
@@ -292,14 +292,14 @@ static struct mvebu_pcie *mvebu_pcie_port_probe(struct device_d *dev,
 		return ERR_PTR(-EINVAL);
 	}
 
-	if (mvebu_get_target_attr(dev->device_node, devfn, IORESOURCE_MEM,
+	if (mvebu_get_target_attr(dev->of_node, devfn, IORESOURCE_MEM,
 				  &mem_target, &mem_attr)) {
 		dev_err(dev, "unable to get target/attr for mem window\n");
 		return ERR_PTR(-EINVAL);
 	}
 
 	/* I/O windows are optional */
-	mvebu_get_target_attr(dev->device_node, devfn, IORESOURCE_IO,
+	mvebu_get_target_attr(dev->of_node, devfn, IORESOURCE_IO,
 			      &io_target, &io_attr);
 
 	reset_gpio = of_get_named_gpio_flags(np, "reset-gpios", 0, &flags);
@@ -396,9 +396,9 @@ static struct of_device_id mvebu_pcie_dt_ids[] = {
 	{ },
 };
 
-static int mvebu_pcie_probe(struct device_d *dev)
+static int mvebu_pcie_probe(struct device *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	const struct of_device_id *match = of_match_node(mvebu_pcie_dt_ids, np);
 	struct mvebu_pcie_ops *ops = (struct mvebu_pcie_ops *)match->data;
 	struct device_node *pnp;
@@ -437,7 +437,7 @@ static int mvebu_pcie_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d mvebu_pcie_driver = {
+static struct driver mvebu_pcie_driver = {
 	.name = "mvebu-pcie",
 	.probe = mvebu_pcie_probe,
 	.of_compatible = mvebu_pcie_dt_ids,

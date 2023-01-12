@@ -116,7 +116,7 @@ static void sifive_serial_flush(struct console_device *cdev)
 		;
 }
 
-static int sifive_serial_probe(struct device_d *dev)
+static int sifive_serial_probe(struct device *dev)
 {
 	struct sifive_serial_priv *priv;
 	struct resource *iores;
@@ -130,7 +130,8 @@ static int sifive_serial_probe(struct device_d *dev)
 	} else {
 		dev_dbg(dev, "failed to get clock. Fallback to device tree.\n");
 
-		ret = of_property_read_u32(dev->device_node, "clock-frequency", &freq);
+		ret = of_property_read_u32(dev->of_node, "clock-frequency",
+					   &freq);
 		if (ret) {
 			dev_warn(dev, "unknown clock frequency\n");
 			return ret;
@@ -163,7 +164,7 @@ static __maybe_unused struct of_device_id sifive_serial_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d serial_sifive_driver = {
+static struct driver serial_sifive_driver = {
 	.name   = "serial_sifive",
 	.probe  = sifive_serial_probe,
 	.of_compatible = sifive_serial_dt_ids,

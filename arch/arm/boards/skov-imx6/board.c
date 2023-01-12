@@ -18,7 +18,7 @@
 #include "version.h"
 
 struct skov_imx6_priv {
-	struct device_d *dev;
+	struct device *dev;
 };
 
 static struct skov_imx6_priv *skov_priv;
@@ -577,8 +577,8 @@ static int skov_set_switch_lan2_mac(struct skov_imx6_priv *priv)
 
 static int skov_switch_test(void)
 {
-	struct device_d *sw_dev;
-	struct device_d *eth0;
+	struct device *sw_dev;
+	struct device *eth0;
 	int ret;
 
 	if (skov_board_no < 0)
@@ -618,7 +618,7 @@ no_switch:
 }
 late_initcall(skov_switch_test);
 
-static int skov_imx6_probe(struct device_d *dev)
+static int skov_imx6_probe(struct device *dev)
 {
 	struct skov_imx6_priv *priv;
 	unsigned v = 0;
@@ -669,7 +669,7 @@ static __maybe_unused struct of_device_id skov_version_ids[] = {
 };
 BAREBOX_DEEP_PROBE_ENABLE(skov_version_ids);
 
-static struct driver_d skov_version_driver = {
+static struct driver skov_version_driver = {
 	.name = "skov-imx6",
 	.probe = skov_imx6_probe,
 	.of_compatible = DRV_OF_COMPAT(skov_version_ids),

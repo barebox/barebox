@@ -101,7 +101,7 @@
 #define RNG_ADDR_RANGE				0x34
 
 struct mxc_rngc {
-	struct device_d		*dev;
+	struct device		*dev;
 	struct clk		*clk;
 	void __iomem		*base;
 	struct hwrng		rng;
@@ -240,7 +240,7 @@ static int mxc_rngc_init(struct hwrng *rng)
 	return 0;
 }
 
-static int mxc_rngc_probe(struct device_d *dev)
+static int mxc_rngc_probe(struct device *dev)
 {
 	struct mxc_rngc *rngc;
 	int ret;
@@ -283,7 +283,7 @@ static const struct of_device_id mxc_rngc_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d mxc_rngc_driver = {
+static struct driver mxc_rngc_driver = {
 	.name = "mxc_rngc",
 	.probe = mxc_rngc_probe,
 	.of_compatible = mxc_rngc_dt_ids,

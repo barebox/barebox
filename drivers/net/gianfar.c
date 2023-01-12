@@ -361,7 +361,7 @@ static int gfar_send(struct eth_device *edev, void *packet, int length)
 {
 	struct gfar_private *priv = edev->priv;
 	void __iomem *regs = priv->regs;
-	struct device_d *dev = edev->parent;
+	struct device *dev = edev->parent;
 	uint64_t start;
 	uint tidx;
 	uint16_t status;
@@ -401,7 +401,7 @@ static int gfar_send(struct eth_device *edev, void *packet, int length)
 static int gfar_recv(struct eth_device *edev)
 {
 	struct gfar_private *priv = edev->priv;
-	struct device_d *dev = edev->parent;
+	struct device *dev = edev->parent;
 	void __iomem *regs = priv->regs;
 	uint16_t status, length;
 
@@ -468,12 +468,12 @@ static int gfar_miiphy_write(struct mii_bus *bus, int addr, int reg,
  * Initialize device structure. Returns success if
  * initialization succeeded.
  */
-static int gfar_probe(struct device_d *dev)
+static int gfar_probe(struct device *dev)
 {
 	struct gfar_info_struct *gfar_info = dev->platform_data;
 	struct eth_device *edev;
 	struct gfar_private *priv;
-	struct device_d *mdev;
+	struct device *mdev;
 	size_t size;
 	char devname[16];
 	char *p;
@@ -536,13 +536,13 @@ static int gfar_probe(struct device_d *dev)
 	return eth_register(edev);
 }
 
-static struct driver_d gfar_eth_driver = {
+static struct driver gfar_eth_driver = {
 	.name  = "gfar",
 	.probe = gfar_probe,
 };
 device_platform_driver(gfar_eth_driver);
 
-static int gfar_phy_probe(struct device_d *dev)
+static int gfar_phy_probe(struct device *dev)
 {
 	struct gfar_phy *phy;
 	int ret;
@@ -567,13 +567,13 @@ static int gfar_phy_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d gfar_phy_driver = {
+static struct driver gfar_phy_driver = {
 	.name  = "gfar-mdio",
 	.probe = gfar_phy_probe,
 };
 register_driver_macro(coredevice, platform, gfar_phy_driver);
 
-static int gfar_tbiphy_probe(struct device_d *dev)
+static int gfar_tbiphy_probe(struct device *dev)
 {
 	struct gfar_phy *phy;
 	int ret;
@@ -597,7 +597,7 @@ static int gfar_tbiphy_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d gfar_tbiphy_driver = {
+static struct driver gfar_tbiphy_driver = {
 	.name  = "gfar-tbiphy",
 	.probe = gfar_tbiphy_probe,
 };

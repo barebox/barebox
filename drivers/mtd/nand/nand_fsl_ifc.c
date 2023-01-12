@@ -46,7 +46,7 @@ struct fsl_ifc_ctrl {
 
 /* mtd information per set */
 struct fsl_ifc_mtd {
-	struct device_d *dev;
+	struct device *dev;
 	struct nand_chip chip;
 	struct fsl_ifc_ctrl *ctrl;
 	uint32_t cs;		/* On which chipsel NAND is connected    */
@@ -851,7 +851,7 @@ static int fsl_ifc_chip_init(struct fsl_ifc_mtd *priv)
 	}
 	ctrl = priv->ctrl = ifc_ctrl;
 
-	if (priv->dev->device_node) {
+	if (priv->dev->of_node) {
 		int bank, banks;
 
 		 /* find which chip select it is connected to */
@@ -979,7 +979,7 @@ static int fsl_ifc_chip_init(struct fsl_ifc_mtd *priv)
 	return 0;
 }
 
-static int fsl_ifc_nand_probe(struct device_d *dev)
+static int fsl_ifc_nand_probe(struct device *dev)
 {
 	struct fsl_ifc_mtd *priv;
 	struct resource *iores;
@@ -1026,7 +1026,7 @@ static __maybe_unused struct of_device_id fsl_nand_compatible[] = {
 	}
 };
 
-static struct driver_d fsl_ifc_driver = {
+static struct driver fsl_ifc_driver = {
 	.name = "fsl_nand",
 	.probe = fsl_ifc_nand_probe,
 	.of_compatible = DRV_OF_COMPAT(fsl_nand_compatible),

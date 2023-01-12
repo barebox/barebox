@@ -70,7 +70,7 @@ static const char *per_sel_clks[] = {
 	"upll",
 };
 
-static int imx25_ccm_probe(struct device_d *dev)
+static int imx25_ccm_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *base;
@@ -184,7 +184,7 @@ static __maybe_unused struct of_device_id imx25_ccm_dt_ids[] = {
 	}
 };
 
-static struct driver_d imx25_ccm_driver = {
+static struct driver imx25_ccm_driver = {
 	.probe	= imx25_ccm_probe,
 	.name	= "imx25-ccm",
 	.of_compatible = DRV_OF_COMPAT(imx25_ccm_dt_ids),

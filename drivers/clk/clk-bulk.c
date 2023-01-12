@@ -23,7 +23,7 @@ void clk_bulk_put(int num_clks, struct clk_bulk_data *clks)
 }
 EXPORT_SYMBOL_GPL(clk_bulk_put);
 
-static int __clk_bulk_get(struct device_d *dev, int num_clks,
+static int __clk_bulk_get(struct device *dev, int num_clks,
 			      struct clk_bulk_data *clks,
 			      bool optional)
 {
@@ -58,14 +58,14 @@ err:
 	return ret;
 }
 
-int __must_check clk_bulk_get(struct device_d *dev, int num_clks,
+int __must_check clk_bulk_get(struct device *dev, int num_clks,
 			      struct clk_bulk_data *clks)
 {
 	return __clk_bulk_get(dev, num_clks, clks, false);
 }
 EXPORT_SYMBOL(clk_bulk_get);
 
-int __must_check clk_bulk_get_optional(struct device_d *dev, int num_clks,
+int __must_check clk_bulk_get_optional(struct device *dev, int num_clks,
 				       struct clk_bulk_data *clks)
 {
 	return __clk_bulk_get(dev, num_clks, clks, true);
@@ -140,10 +140,10 @@ void clk_bulk_put_all(int num_clks, struct clk_bulk_data *clks)
 }
 EXPORT_SYMBOL(clk_bulk_put_all);
 
-int __must_check clk_bulk_get_all(struct device_d *dev,
+int __must_check clk_bulk_get_all(struct device *dev,
 				  struct clk_bulk_data **clks)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 
 	if (!np)
 		return 0;

@@ -185,9 +185,9 @@ static const struct regmap_bus regmap_mmio = {
 	.val_format_endian_default = REGMAP_ENDIAN_LITTLE,
 };
 
-static struct regmap_mmio_context *regmap_mmio_gen_context(struct device_d *dev,
-					void __iomem *regs,
-					const struct regmap_config *config)
+static struct regmap_mmio_context *regmap_mmio_gen_context(struct device *dev,
+							   void __iomem *regs,
+							   const struct regmap_config *config)
 {
 	struct regmap_mmio_context *ctx;
 	int min_stride;
@@ -277,7 +277,7 @@ err_free:
 	return ERR_PTR(ret);
 }
 
-struct regmap *regmap_init_mmio_clk(struct device_d *dev,
+struct regmap *regmap_init_mmio_clk(struct device *dev,
 				    const char *clk_id,
 				    void __iomem *regs,
 				    const struct regmap_config *config)

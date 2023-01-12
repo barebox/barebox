@@ -28,7 +28,7 @@
  * mux control.
  */
 struct i2c_adapter *i2c_add_mux_adapter(struct i2c_adapter *parent,
-				struct device_d *mux_dev,
+				struct device *mux_dev,
 				void *mux_priv, u32 force_nr, u32 chan_id,
 				int (*select) (struct i2c_adapter *,
 					       void *mux_dev, u32 chan_id),

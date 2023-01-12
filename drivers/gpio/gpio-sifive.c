@@ -28,7 +28,7 @@ static int __of_irq_count(struct device_node *np)
 	return npins / sizeof(__be32);
 }
 
-static int sifive_gpio_probe(struct device_d *dev)
+static int sifive_gpio_probe(struct device *dev)
 {
 	struct bgpio_chip *bgc;
 	struct resource *res;
@@ -44,7 +44,7 @@ static int sifive_gpio_probe(struct device_d *dev)
 	}
 	base = IOMEM(res->start);
 
-	ngpio = __of_irq_count(dev->device_node);
+	ngpio = __of_irq_count(dev->of_node);
 	if (ngpio > SIFIVE_GPIO_MAX) {
 		dev_err(dev, "Too many GPIO interrupts (max=%d)\n",
 			SIFIVE_GPIO_MAX);
@@ -79,7 +79,7 @@ static const struct of_device_id sifive_gpio_match[] = {
 	{ },
 };
 
-static struct driver_d sifive_gpio_driver = {
+static struct driver sifive_gpio_driver = {
 	.name		= "sifive_gpio",
 	.of_compatible	= sifive_gpio_match,
 	.probe		= sifive_gpio_probe,

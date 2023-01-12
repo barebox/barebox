@@ -381,7 +381,7 @@ static int arc_emac_mdio_write(struct mii_bus *bus, int phy_addr, int reg_num,
 
 #define DEFAULT_EMAC_CLOCK_FREQUENCY 50000000UL;
 
-static int arc_emac_probe(struct device_d *dev)
+static int arc_emac_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct eth_device *edev;
@@ -465,7 +465,7 @@ static __maybe_unused struct of_device_id arc_emac_dt_ids[] = {
 	}
 };
 
-static struct driver_d arc_emac_driver = {
+static struct driver arc_emac_driver = {
 	.name = "arc-emac",
 	.probe = arc_emac_probe,
 	.of_compatible = DRV_OF_COMPAT(arc_emac_dt_ids),

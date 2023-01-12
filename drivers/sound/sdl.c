@@ -40,7 +40,7 @@ static int sandbox_sound_beep(struct sound_card *card, unsigned freq, unsigned d
     return ret;
 }
 
-static int sandbox_sound_probe(struct device_d *dev)
+static int sandbox_sound_probe(struct device *dev)
 {
 	struct sandbox_sound *priv;
 	struct sound_card *card;
@@ -79,7 +79,7 @@ static __maybe_unused struct of_device_id sandbox_sound_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d sandbox_sound_drv = {
+static struct driver sandbox_sound_drv = {
 	.name  = "sandbox-sound",
 	.of_compatible = sandbox_sound_dt_ids,
 	.probe = sandbox_sound_probe,

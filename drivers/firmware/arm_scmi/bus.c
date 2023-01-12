@@ -36,7 +36,7 @@ scmi_dev_match_id(struct scmi_device *scmi_dev, struct scmi_driver *scmi_drv)
 	return NULL;
 }
 
-static int scmi_dev_match(struct device_d *dev, struct driver_d *drv)
+static int scmi_dev_match(struct device *dev, struct driver *drv)
 {
 	struct scmi_driver *scmi_drv = to_scmi_driver(drv);
 	struct scmi_device *scmi_dev = to_scmi_dev(dev);
@@ -49,7 +49,7 @@ static int scmi_dev_match(struct device_d *dev, struct driver_d *drv)
 	return -1;
 }
 
-static int scmi_match_by_id_table(struct device_d *dev, void *data)
+static int scmi_match_by_id_table(struct device *dev, void *data)
 {
 	struct scmi_device *sdev = to_scmi_dev(dev);
 	struct scmi_device_id *id_table = data;
@@ -58,11 +58,11 @@ static int scmi_match_by_id_table(struct device_d *dev, void *data)
 		!strcmp(sdev->name, id_table->name);
 }
 
-struct scmi_device *scmi_child_dev_find(struct device_d *parent,
+struct scmi_device *scmi_child_dev_find(struct device *parent,
 					int prot_id, const char *name)
 {
 	struct scmi_device_id id_table;
-	struct device_d *dev;
+	struct device *dev;
 
 	id_table.protocol_id = prot_id;
 	id_table.name = name;
@@ -89,7 +89,7 @@ const struct scmi_protocol *scmi_protocol_get(int protocol_id)
 	return proto;
 }
 
-static int scmi_dev_probe(struct device_d *dev)
+static int scmi_dev_probe(struct device *dev)
 {
 	struct scmi_driver *scmi_drv = to_scmi_driver(dev->driver);
 	struct scmi_device *scmi_dev = to_scmi_dev(dev);
@@ -105,7 +105,7 @@ static int scmi_dev_probe(struct device_d *dev)
 	return scmi_drv->probe(scmi_dev);
 }
 
-static void scmi_dev_remove(struct device_d *dev)
+static void scmi_dev_remove(struct device *dev)
 {
 	struct scmi_driver *scmi_drv = to_scmi_driver(dev->driver);
 	struct scmi_device *scmi_dev = to_scmi_dev(dev);
@@ -141,7 +141,7 @@ int scmi_driver_register(struct scmi_driver *driver)
 EXPORT_SYMBOL_GPL(scmi_driver_register);
 
 struct scmi_device *
-scmi_device_alloc(struct device_node *np, struct device_d *parent, int protocol,
+scmi_device_alloc(struct device_node *np, struct device *parent, int protocol,
 		   const char *name)
 {
 	struct scmi_device *scmi_dev;
@@ -159,7 +159,7 @@ scmi_device_alloc(struct device_node *np, struct device_d *parent, int protocol,
 	scmi_dev->dev.id = DEVICE_ID_DYNAMIC;
 	scmi_dev->protocol_id = protocol;
 	scmi_dev->dev.parent = parent;
-	scmi_dev->dev.device_node = np;
+	scmi_dev->dev.of_node = np;
 	scmi_dev->dev.bus = &scmi_bus_type;
 	dev_set_name(&scmi_dev->dev, "scmi_dev");
 

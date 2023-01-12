@@ -156,7 +156,7 @@ static struct pinctrl_ops imx_iomux_v3_ops = {
 	.set_state = imx_iomux_v3_set_state,
 };
 
-static int imx_pinctrl_dt(struct device_d *dev, void __iomem *base)
+static int imx_pinctrl_dt(struct device *dev, void __iomem *base)
 {
 	struct imx_iomux_v3 *iomux;
 	const struct imx_iomux_v3_data *drvdata;
@@ -179,7 +179,7 @@ static int imx_pinctrl_dt(struct device_d *dev, void __iomem *base)
 	return ret;
 }
 
-static int imx_iomux_v3_probe(struct device_d *dev)
+static int imx_iomux_v3_probe(struct device *dev)
 {
 	void __iomem *base;
 	struct resource *iores;
@@ -198,7 +198,7 @@ static int imx_iomux_v3_probe(struct device_d *dev)
 		 */
 		iomuxv3_base = base;
 
-	if (IS_ENABLED(CONFIG_PINCTRL) && dev->device_node)
+	if (IS_ENABLED(CONFIG_PINCTRL) && dev->of_node)
 		ret = imx_pinctrl_dt(dev, base);
 
 	return ret;
@@ -252,7 +252,7 @@ static __maybe_unused struct of_device_id imx_iomux_v3_dt_ids[] = {
 	}
 };
 
-static struct driver_d imx_iomux_v3_driver = {
+static struct driver imx_iomux_v3_driver = {
 	.name		= "imx-iomuxv3",
 	.probe		= imx_iomux_v3_probe,
 	.of_compatible	= DRV_OF_COMPAT(imx_iomux_v3_dt_ids),

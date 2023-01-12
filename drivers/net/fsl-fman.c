@@ -101,7 +101,7 @@ struct fm_eth {
 	struct fm_bmi_rx_port *rx_port;
 	phy_interface_t enet_if;
 	struct eth_device edev;
-	struct device_d *dev;
+	struct device *dev;
 	struct fm_port_global_pram *rx_pram; /* Rx parameter table */
 	struct fm_port_global_pram *tx_pram; /* Tx parameter table */
 	struct fm_port_bd *rx_bd_ring;	/* Rx BD ring base */
@@ -207,7 +207,7 @@ static int fm_upload_ucode(struct fm_imem *imem,
 	return 0;
 }
 
-static int fman_upload_firmware(struct device_d *dev, struct fm_imem *fm_imem)
+static int fman_upload_firmware(struct device *dev, struct fm_imem *fm_imem)
 {
 	int i, size, ret;
 	const struct qe_firmware *firmware;
@@ -398,7 +398,7 @@ static void fm_init_qmi(struct fm_qmi_common *qmi)
 	out_be32(&qmi->fmqm_ie, FMQM_IE_CLEAR_ALL);
 }
 
-static int fm_init_common(struct device_d *dev, struct ccsr_fman *reg)
+static int fm_init_common(struct device *dev, struct ccsr_fman *reg)
 {
 	int ret;
 
@@ -1058,7 +1058,7 @@ static int fm_eth_startup(struct fm_eth *fm_eth)
 	return 0;
 }
 
-static int fsl_fman_mdio_probe(struct device_d *dev)
+static int fsl_fman_mdio_probe(struct device *dev)
 {
 	struct resource *iores;
 	int ret;
@@ -1087,7 +1087,7 @@ static int fsl_fman_mdio_probe(struct device_d *dev)
 	return 0;
 }
 
-static int fsl_fman_port_probe(struct device_d *dev)
+static int fsl_fman_port_probe(struct device *dev)
 {
 	struct resource *iores;
 	int ret;
@@ -1121,9 +1121,9 @@ static int fsl_fman_port_probe(struct device_d *dev)
 
 static int fsl_fman_memac_port_bind(struct fm_eth *fm_eth, enum fman_port_type type)
 {
-	struct device_node *macnp = fm_eth->dev->device_node;
+	struct device_node *macnp = fm_eth->dev->of_node;
 	struct device_node *portnp;
-	struct device_d *portdev;
+	struct device *portdev;
 	struct fsl_fman_port *port;
 
 	portnp = of_parse_phandle(macnp, "fsl,fman-ports", type);
@@ -1149,7 +1149,7 @@ static int fsl_fman_memac_port_bind(struct fm_eth *fm_eth, enum fman_port_type t
 	return 0;
 }
 
-static int fsl_fman_memac_probe(struct device_d *dev)
+static int fsl_fman_memac_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct fm_eth *fm_eth;
@@ -1178,7 +1178,7 @@ static int fsl_fman_memac_probe(struct device_d *dev)
 	if (ret)
 		return ret;
 
-	phy_mode = of_get_phy_mode(dev->device_node);
+	phy_mode = of_get_phy_mode(dev->of_node);
 	if (phy_mode < 0)
 		return phy_mode;
 
@@ -1209,14 +1209,14 @@ static int fsl_fman_memac_probe(struct device_d *dev)
 	return 0;
 }
 
-static void fsl_fman_memac_remove(struct device_d *dev)
+static void fsl_fman_memac_remove(struct device *dev)
 {
 	struct fm_eth *fm_eth = dev->priv;
 
 	fm_eth_halt(&fm_eth->edev);
 }
 
-static int fsl_fman_muram_probe(struct device_d *dev)
+static int fsl_fman_muram_probe(struct device *dev)
 {
 	struct resource *iores;
 
@@ -1241,7 +1241,7 @@ static struct of_device_id fsl_fman_mdio_dt_ids[] = {
 	}
 };
 
-static struct driver_d fman_mdio_driver = {
+static struct driver fman_mdio_driver = {
 	.name   = "fsl-fman-mdio",
 	.probe  = fsl_fman_mdio_probe,
 	.of_compatible = DRV_OF_COMPAT(fsl_fman_mdio_dt_ids),
@@ -1258,7 +1258,7 @@ static struct of_device_id fsl_fman_port_dt_ids[] = {
 	}
 };
 
-static struct driver_d fman_port_driver = {
+static struct driver fman_port_driver = {
 	.name   = "fsl-fman-port",
 	.probe  = fsl_fman_port_probe,
 	.of_compatible = DRV_OF_COMPAT(fsl_fman_port_dt_ids),
@@ -1271,7 +1271,7 @@ static struct of_device_id fsl_fman_memac_dt_ids[] = {
 	}
 };
 
-static struct driver_d fman_memac_driver = {
+static struct driver fman_memac_driver = {
 	.name   = "fsl-fman-memac",
 	.probe  = fsl_fman_memac_probe,
 	.remove = fsl_fman_memac_remove,
@@ -1285,13 +1285,13 @@ static struct of_device_id fsl_fman_muram_dt_ids[] = {
 	}
 };
 
-static struct driver_d fman_muram_driver = {
+static struct driver fman_muram_driver = {
 	.name   = "fsl-fman-muram",
 	.probe  = fsl_fman_muram_probe,
 	.of_compatible = DRV_OF_COMPAT(fsl_fman_muram_dt_ids),
 };
 
-static int fsl_fman_probe(struct device_d *dev)
+static int fsl_fman_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct ccsr_fman *reg;
@@ -1306,7 +1306,7 @@ static int fsl_fman_probe(struct device_d *dev)
 	reg = IOMEM(iores->start);
 	dev->priv = reg;
 
-	ret = of_platform_populate(dev->device_node, NULL, dev);
+	ret = of_platform_populate(dev->of_node, NULL, dev);
 	if (ret)
 		return ret;
 
@@ -1329,7 +1329,7 @@ static struct of_device_id fsl_fman_dt_ids[] = {
 	}
 };
 
-static struct driver_d fman_driver = {
+static struct driver fman_driver = {
 	.name   = "fsl-fman",
 	.probe  = fsl_fman_probe,
 	.of_compatible = DRV_OF_COMPAT(fsl_fman_dt_ids),

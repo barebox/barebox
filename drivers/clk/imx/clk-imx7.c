@@ -363,7 +363,7 @@ static struct device_node *ccm_np;
 
 static int imx7_clk_setup(void);
 
-static int imx7_ccm_probe(struct device_d *dev)
+static int imx7_ccm_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *base, *anatop_base, *ccm_base;
@@ -807,9 +807,9 @@ static int imx7_ccm_probe(struct device_d *dev)
 
 	clk_data.clks = clks;
 	clk_data.clk_num = ARRAY_SIZE(clks);
-	of_clk_add_provider(dev->device_node, of_clk_src_onecell_get, &clk_data);
+	of_clk_add_provider(dev->of_node, of_clk_src_onecell_get, &clk_data);
 
-	ccm_np = dev->device_node;
+	ccm_np = dev->of_node;
 
 	/*
 	 * imx7_clk_setup() requires both the CCM and fixed-clock osc devices
@@ -873,7 +873,7 @@ static __maybe_unused struct of_device_id imx7_ccm_dt_ids[] = {
 	}
 };
 
-static struct driver_d imx7_ccm_driver = {
+static struct driver imx7_ccm_driver = {
 	.probe	= imx7_ccm_probe,
 	.name	= "imx6-ccm",
 	.of_compatible = DRV_OF_COMPAT(imx7_ccm_dt_ids),

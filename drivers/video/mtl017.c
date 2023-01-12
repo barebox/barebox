@@ -16,7 +16,7 @@
 
 struct mtl017 {
 	struct vpl vpl;
-	struct device_d *dev;
+	struct device *dev;
 	struct i2c_client *client;
 	u8 *regs;
 	int enable_gpio;
@@ -218,14 +218,14 @@ forward:
 	return vpl_ioctl(&mtl017->vpl, 1, cmd, ptr);
 }
 
-static int mtl017_probe(struct device_d *dev)
+static int mtl017_probe(struct device *dev)
 {
 	struct mtl017 *mtl017;
 	int ret;
 	enum of_gpio_flags flags;
 
 	mtl017 = xzalloc(sizeof(struct mtl017));
-	mtl017->vpl.node = dev->device_node;
+	mtl017->vpl.node = dev->of_node;
 	mtl017->vpl.ioctl = mtl017_ioctl;
 	mtl017->dev = dev;
 	mtl017->client = to_i2c_client(dev);
@@ -234,15 +234,16 @@ static int mtl017_probe(struct device_d *dev)
 	if (IS_ERR(mtl017->regulator))
 		mtl017->regulator = NULL;
 
-	mtl017->enable_gpio = of_get_named_gpio_flags(dev->device_node,
-			"enable-gpios", 0, &flags);
+	mtl017->enable_gpio = of_get_named_gpio_flags(dev->of_node,
+						      "enable-gpios", 0,
+						      &flags);
 	if (gpio_is_valid(mtl017->enable_gpio)) {
 		if (!(flags & OF_GPIO_ACTIVE_LOW))
 			mtl017->enable_active_high = 1;
 	}
 
-	mtl017->reset_gpio = of_get_named_gpio_flags(dev->device_node,
-			"reset-gpios", 0, &flags);
+	mtl017->reset_gpio = of_get_named_gpio_flags(dev->of_node,
+						     "reset-gpios", 0, &flags);
 	if (gpio_is_valid(mtl017->reset_gpio)) {
 		if (!(flags & OF_GPIO_ACTIVE_LOW))
 			mtl017->reset_active_high = 1;
@@ -255,7 +256,7 @@ static int mtl017_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d mtl_driver = {
+static struct driver mtl_driver = {
 	.name  = "mtl017",
 	.probe = mtl017_probe,
 };

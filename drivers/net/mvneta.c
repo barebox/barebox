@@ -198,7 +198,7 @@ struct txdesc {
 
 struct mvneta_port {
 	void __iomem *reg;
-	struct device_d dev;
+	struct device dev;
 	struct eth_device edev;
 	struct clk *clk;
 
@@ -706,7 +706,7 @@ static int mvneta_port_config(struct mvneta_port *priv)
 	return 0;
 }
 
-static int mvneta_probe(struct device_d *dev)
+static int mvneta_probe(struct device *dev)
 {
 	struct mvneta_port *priv;
 	int ret;
@@ -720,7 +720,7 @@ static int mvneta_probe(struct device_d *dev)
 		return PTR_ERR(priv->clk);
 	clk_enable(priv->clk);
 
-	ret = of_get_phy_mode(dev->device_node);
+	ret = of_get_phy_mode(dev->of_node);
 	if (ret < 0)
 		return ret;
 	priv->intf = ret;
@@ -756,7 +756,7 @@ static struct of_device_id mvneta_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d mvneta_driver = {
+static struct driver mvneta_driver = {
 	.name   = "mvneta",
 	.probe  = mvneta_probe,
 	.of_compatible = DRV_OF_COMPAT(mvneta_dt_ids),

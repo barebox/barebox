@@ -7,7 +7,7 @@
 #ifndef MFD_CORE_H
 #define MFD_CORE_H
 
-struct device_d;
+struct device;
 
 /*
  * This struct describes the MFD part ("cell").
@@ -18,6 +18,7 @@ struct mfd_cell {
 	const char		*name;
 };
 
-int mfd_add_devices(struct device_d *parent, const struct mfd_cell *cells, int n_devs);
+int mfd_add_devices(struct device *parent, const struct mfd_cell *cells,
+		    int n_devs);
 
 #endif

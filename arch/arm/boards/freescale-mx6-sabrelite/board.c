@@ -124,7 +124,7 @@ static void sabrelite_ehci_init(void)
 	gpio_set_value(IMX_GPIO_NR(7, 12), 1);
 }
 
-static int sabrelite_probe(struct device_d *dev)
+static int sabrelite_probe(struct device *dev)
 {
 	int ret;
 
@@ -159,7 +159,7 @@ static const struct of_device_id sabrelite_match[] = {
 	{ /* Sentinel */ },
 };
 
-static struct driver_d sabrelite_driver = {
+static struct driver sabrelite_driver = {
 	.name = "physom-imx6",
 	.probe = sabrelite_probe,
 	.of_compatible = sabrelite_match,

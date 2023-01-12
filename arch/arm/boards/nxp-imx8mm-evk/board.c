@@ -31,7 +31,7 @@ static int ar8031_phy_fixup(struct phy_device *phydev)
 	return 0;
 }
 
-static int imx8mm_evk_probe(struct device_d *dev)
+static int imx8mm_evk_probe(struct device *dev)
 {
 	int emmc_bbu_flag = 0;
 	int sd_bbu_flag = 0;
@@ -66,7 +66,7 @@ static const struct of_device_id imx8mm_evk_of_match[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d imx8mm_evk_board_driver = {
+static struct driver imx8mm_evk_board_driver = {
 	.name = "board-imx8mm-evk",
 	.probe = imx8mm_evk_probe,
 	.of_compatible = imx8mm_evk_of_match,

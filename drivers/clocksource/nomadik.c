@@ -90,7 +90,7 @@ static void nmdk_timer_reset(void)
 	writel(cr | MTU_CRn_ENA, mtu_base + MTU_CR(0));
 }
 
-static int nmdk_mtu_probe(struct device_d *dev)
+static int nmdk_mtu_probe(struct device *dev)
 {
 	struct resource *iores;
 	static struct clk *mtu_clk;
@@ -135,7 +135,7 @@ static int nmdk_mtu_probe(struct device_d *dev)
 	return init_clock(&nmdk_clksrc);
 }
 
-static struct driver_d nmdk_mtu_driver = {
+static struct driver nmdk_mtu_driver = {
 	.name = "nomadik_mtu",
 	.probe = nmdk_mtu_probe,
 };

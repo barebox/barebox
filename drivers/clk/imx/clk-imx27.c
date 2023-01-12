@@ -155,7 +155,7 @@ static const char *clko_sel_clks[] = {
 	NULL,
 };
 
-static int imx27_ccm_probe(struct device_d *dev)
+static int imx27_ccm_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *base;
@@ -258,7 +258,7 @@ static __maybe_unused struct of_device_id imx27_ccm_dt_ids[] = {
 	}
 };
 
-static struct driver_d imx27_ccm_driver = {
+static struct driver imx27_ccm_driver = {
 	.probe	= imx27_ccm_probe,
 	.name	= "imx27-ccm",
 	.of_compatible = DRV_OF_COMPAT(imx27_ccm_dt_ids),

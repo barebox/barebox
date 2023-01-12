@@ -8,7 +8,7 @@ struct feature_controller;
 struct device_node;
 
 struct feature_controller {
-	struct device_d *dev;
+	struct device *dev;
 	int (*check)(struct feature_controller *, int idx);
 	struct list_head list;
 };

@@ -394,7 +394,7 @@ static int mipi_dbi_typec3_command(struct mipi_dbi *dbi, u8 *cmd,
 int mipi_dbi_spi_init(struct spi_device *spi, struct mipi_dbi *dbi,
 		      int dc)
 {
-	struct device_d *dev = &spi->dev;
+	struct device *dev = &spi->dev;
 
 	dbi->spi = spi;
 	dbi->read_commands = mipi_dbi_dcs_read_commands;

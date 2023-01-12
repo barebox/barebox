@@ -201,7 +201,7 @@ static const struct platform_device_id m25p_ids[] = {
  * matches what the READ command supports, at least until this driver
  * understands FAST_READ (for clocks over 25 MHz).
  */
-static int m25p_probe(struct device_d *dev)
+static int m25p_probe(struct device *dev)
 {
 	struct spi_device *spi = (struct spi_device *)dev->type_data;
 	struct spi_mem *spimem = spi->mem;
@@ -257,16 +257,16 @@ static int m25p_probe(struct device_d *dev)
 	else
 		flash_name = NULL; /* auto-detect */
 
-	use_large_blocks = of_property_read_bool(dev->device_node,
-			"use-large-blocks");
+	use_large_blocks = of_property_read_bool(dev->of_node,
+						 "use-large-blocks");
 
 	ret = spi_nor_scan(nor, flash_name, &hwcaps, use_large_blocks);
 	if (ret)
 		return ret;
 
 	device_id = DEVICE_ID_SINGLE;
-	if (dev->device_node)
-		flash_name = of_alias_get(dev->device_node);
+	if (dev->of_node)
+		flash_name = of_alias_get(dev->of_node);
 	else if (data && data->name)
 		flash_name = data->name;
 
@@ -288,7 +288,7 @@ static __maybe_unused struct of_device_id m25p80_dt_ids[] = {
 	}
 };
 
-static struct driver_d m25p80_driver = {
+static struct driver m25p80_driver = {
 	.name	= "m25p80",
 	.probe	= m25p_probe,
 	.of_compatible = DRV_OF_COMPAT(m25p80_dt_ids),

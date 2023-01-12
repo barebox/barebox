@@ -237,7 +237,7 @@ EXPORT_SYMBOL(hex_dump_to_buffer);
  * Example output using %DUMP_PREFIX_ADDRESS and 4-byte mode:
  * ffffffff88089af0: 73727170 77767574 7b7a7978 7f7e7d7c  pqrstuvwxyz{|}~.
  */
-void dev_print_hex_dump(struct device_d *dev, const char *level,
+void dev_print_hex_dump(struct device *dev, const char *level,
 			const char *prefix_str, int prefix_type, int rowsize,
 			int groupsize, const void *buf, size_t len, bool ascii)
 {

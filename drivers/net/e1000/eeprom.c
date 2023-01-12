@@ -410,8 +410,7 @@ static void e1000_eeprom_uses_microwire(struct e1000_eeprom_info *eeprom,
 
 static size_t e1000_igb_get_flash_size(struct e1000_hw *hw)
 {
-	struct device_node *node =
-		hw->pdev->dev.device_node;
+	struct device_node *node = hw->pdev->dev.of_node;
 	u32 flash_size;
 	uint32_t fla;
 	int ret = 0;

@@ -148,7 +148,7 @@ static struct dentry *ubootvarfs_lookup(struct inode *dir,
 					unsigned int flags)
 {
 	struct super_block *sb = dir->i_sb;
-	struct fs_device_d *fsdev = container_of(sb, struct fs_device_d, sb);
+	struct fs_device *fsdev = container_of(sb, struct fs_device, sb);
 	struct ubootvarfs_data *data = fsdev->dev.priv;
 	struct ubootvarfs_var *var;
 	struct inode *inode;
@@ -269,7 +269,7 @@ static int ubootvarfs_create(struct inode *dir, struct dentry *dentry,
 			     umode_t mode)
 {
 	struct super_block *sb = dir->i_sb;
-	struct fs_device_d *fsdev = container_of(sb, struct fs_device_d, sb);
+	struct fs_device *fsdev = container_of(sb, struct fs_device, sb);
 	struct ubootvarfs_data *data = fsdev->dev.priv;
 	struct inode *inode;
 	struct ubootvarfs_var *var;
@@ -311,7 +311,7 @@ static const struct inode_operations ubootvarfs_dir_inode_operations = {
 static struct inode *ubootvarfs_alloc_inode(struct super_block *sb)
 {
 	struct ubootvarfs_inode *node;
-	struct fs_device_d *fsdev = container_of(sb, struct fs_device_d, sb);
+	struct fs_device *fsdev = container_of(sb, struct fs_device, sb);
 	struct ubootvarfs_data *data = fsdev->dev.priv;
 
 	node = xzalloc(sizeof(*node));
@@ -333,7 +333,7 @@ static const struct super_operations ubootvarfs_ops = {
 	.destroy_inode = ubootvarfs_destroy_inode,
 };
 
-static int ubootvarfs_io(struct device_d *dev, FILE *f, void *buf,
+static int ubootvarfs_io(struct device *dev, FILE *f, void *buf,
 			 size_t insize, bool read)
 {
 	struct inode *inode = f->f_inode;
@@ -348,19 +348,19 @@ static int ubootvarfs_io(struct device_d *dev, FILE *f, void *buf,
 	return insize;
 }
 
-static int ubootvarfs_read(struct device_d *dev, FILE *f, void *buf,
+static int ubootvarfs_read(struct device *dev, FILE *f, void *buf,
 			   size_t insize)
 {
 	return ubootvarfs_io(dev, f, buf, insize, true);
 }
 
-static int ubootvarfs_write(struct device_d *dev, FILE *f, const void *buf,
+static int ubootvarfs_write(struct device *dev, FILE *f, const void *buf,
 			    size_t insize)
 {
 	return ubootvarfs_io(dev, f, (void *)buf, insize, false);
 }
 
-static int ubootvarfs_truncate(struct device_d *dev, FILE *f, loff_t size)
+static int ubootvarfs_truncate(struct device *dev, FILE *f, loff_t size)
 {
 	struct inode *inode = f->f_inode;
 	struct ubootvarfs_inode *node = inode_to_node(inode);
@@ -423,11 +423,11 @@ static void ubootvarfs_parse(struct ubootvarfs_data *data, char *blob,
 	data->end = blob;
 }
 
-static int ubootvarfs_probe(struct device_d *dev)
+static int ubootvarfs_probe(struct device *dev)
 {
 	struct inode *inode;
 	struct ubootvarfs_data *data = xzalloc(sizeof(*data));
-	struct fs_device_d *fsdev = dev_to_fs_device(dev);
+	struct fs_device *fsdev = dev_to_fs_device(dev);
 	struct super_block *sb = &fsdev->sb;
 	struct stat s;
 	void *map;
@@ -472,7 +472,7 @@ free_data:
 	return ret;
 }
 
-static void ubootvarfs_remove(struct device_d *dev)
+static void ubootvarfs_remove(struct device *dev)
 {
 	struct ubootvarfs_data *data = dev->priv;
 
@@ -481,7 +481,7 @@ static void ubootvarfs_remove(struct device_d *dev)
 	free(data);
 }
 
-static struct fs_driver_d ubootvarfs_driver = {
+static struct fs_driver ubootvarfs_driver = {
 	.truncate = ubootvarfs_truncate,
 	.read = ubootvarfs_read,
 	.write = ubootvarfs_write,

@@ -27,7 +27,7 @@
 struct stm32_vrefbuf {
 	void __iomem *base;
 	struct clk *clk;
-	struct device_d *dev;
+	struct device *dev;
 	struct regulator_dev rdev;
 };
 
@@ -140,7 +140,7 @@ static const struct stm32_vrefbuf_desc stm32_vrefbuf_regu = {
 	.supply_name = "vdda",
 };
 
-static int stm32_vrefbuf_probe(struct device_d *dev)
+static int stm32_vrefbuf_probe(struct device *dev)
 {
 	struct stm32_vrefbuf *priv;
 	struct regulator_dev *rdev;
@@ -173,7 +173,7 @@ static int stm32_vrefbuf_probe(struct device_d *dev)
 	rdev->dev = dev;
 	rdev->desc = &stm32_vrefbuf_regu.desc;
 
-	ret = of_regulator_register(rdev, dev->device_node);
+	ret = of_regulator_register(rdev, dev->of_node);
 	if (ret) {
 		ret = PTR_ERR(rdev);
 		dev_err(dev, "register failed with error %d\n", ret);
@@ -192,7 +192,7 @@ err_clk_dis:
 	return ret;
 }
 
-static void stm32_vrefbuf_remove(struct device_d *dev)
+static void stm32_vrefbuf_remove(struct device *dev)
 {
 	struct stm32_vrefbuf *priv = dev->priv;
 
@@ -204,7 +204,7 @@ static const struct of_device_id __maybe_unused stm32_vrefbuf_of_match[] = {
 	{},
 };
 
-static struct driver_d stm32_vrefbuf_driver = {
+static struct driver stm32_vrefbuf_driver = {
 	.probe = stm32_vrefbuf_probe,
 	.name  = "stm32-vrefbuf",
 	.remove = stm32_vrefbuf_remove,

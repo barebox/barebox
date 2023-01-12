@@ -35,7 +35,7 @@ static struct sam9_smc_config sama5d3_xplained_nand_smc_config = {
 	.nfsel			= 1
 };
 
-static int sama5d3_xplained_probe(struct device_d *dev)
+static int sama5d3_xplained_probe(struct device *dev)
 {
 	struct clk *clk;
 
@@ -65,7 +65,7 @@ static const struct of_device_id sama5d3_xplained_of_match[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d sama5d3_xplained_board_driver = {
+static struct driver sama5d3_xplained_board_driver = {
 	.name = "board-sama5d3_xplained",
 	.probe = sama5d3_xplained_probe,
 	.of_compatible = sama5d3_xplained_of_match,

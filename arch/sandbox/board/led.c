@@ -26,9 +26,9 @@ static void sandbox_led_set(struct led *led, unsigned int brightness)
 	sandbox_led.active = true;
 }
 
-static int sandbox_led_of_probe(struct device_d *dev)
+static int sandbox_led_of_probe(struct device *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	int ret;
 
 	if (sandbox_led.led.set)
@@ -47,7 +47,7 @@ static int sandbox_led_of_probe(struct device_d *dev)
 	return 0;
 }
 
-static void sandbox_led_of_remove(struct device_d *dev)
+static void sandbox_led_of_remove(struct device *dev)
 {
 	if (sandbox_led.active)
 		sandbox_led_set(NULL, 0);
@@ -58,7 +58,7 @@ static struct of_device_id sandbox_led_of_ids[] = {
 	{ }
 };
 
-static struct driver_d sandbox_led_of_driver = {
+static struct driver sandbox_led_of_driver = {
 	.name  = "sandbox-led",
 	.probe = sandbox_led_of_probe,
 	.remove = sandbox_led_of_remove,

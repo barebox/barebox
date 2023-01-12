@@ -27,7 +27,7 @@ static int rave_sp_backlight_set(struct backlight_device *bd, int brightness)
 	return rave_sp_exec(sp, cmd, sizeof(cmd), NULL, 0);
 }
 
-static int rave_sp_backlight_probe(struct device_d *dev)
+static int rave_sp_backlight_probe(struct device *dev)
 {
 	struct backlight_device *bd;
 	int ret;
@@ -53,7 +53,7 @@ static const struct of_device_id rave_sp_backlight_of_match[] = {
 	{}
 };
 
-static struct driver_d rave_sp_backlight_driver = {
+static struct driver rave_sp_backlight_driver = {
 	.name  = "rave-sp-backlight",
 	.probe = rave_sp_backlight_probe,
 	.of_compatible = DRV_OF_COMPAT(rave_sp_backlight_of_match),

@@ -382,7 +382,7 @@ static int wdat_wdt_enable_reboot(struct wdat_wdt *wdat)
 	return 0;
 }
 
-static int wdat_wdt_probe(struct device_d *const dev)
+static int wdat_wdt_probe(struct device *const dev)
 {
 	const struct acpi_wdat_entry *entries;
 	struct acpi_table_wdat *tbl;

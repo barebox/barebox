@@ -412,7 +412,7 @@ static void efi_set_mode(struct efi_console_priv *priv)
 				       priv->mode_names, n, priv);
 }
 
-static int efi_console_probe(struct device_d *dev)
+static int efi_console_probe(struct device *dev)
 {
 	efi_guid_t inex_guid = EFI_SIMPLE_TEXT_INPUT_EX_PROTOCOL_GUID;
 	struct efi_simple_text_input_ex_protocol *inex;
@@ -467,7 +467,7 @@ static int efi_console_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d efi_console_driver = {
+static struct driver efi_console_driver = {
         .name  = "efi-stdio",
         .probe = efi_console_probe,
 };

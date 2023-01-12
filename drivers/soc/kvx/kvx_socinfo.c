@@ -121,11 +121,11 @@ static int kvx_read_serial(struct device_node *socinfo)
 	return 0;
 }
 
-static int kvx_socinfo_probe(struct device_d *dev)
+static int kvx_socinfo_probe(struct device *dev)
 {
 	kvx_soc_info_read_revision();
 
-	return kvx_read_serial(dev->device_node);
+	return kvx_read_serial(dev->of_node);
 }
 
 static const struct of_device_id kvx_socinfo_dt_ids[] = {
@@ -133,7 +133,7 @@ static const struct of_device_id kvx_socinfo_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d kvx_socinfo_driver = {
+static struct driver kvx_socinfo_driver = {
 	.name = "kvx-socinfo",
 	.probe = kvx_socinfo_probe,
 	.of_compatible = DRV_OF_COMPAT(kvx_socinfo_dt_ids),

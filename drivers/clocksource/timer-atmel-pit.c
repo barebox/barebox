@@ -56,7 +56,7 @@ static void at91sam926x_pit_reset(void)
 	pit_write(AT91_PIT_MR, 0xfffff | AT91_PIT_PITEN);
 }
 
-static int at91_pit_probe(struct device_d *dev)
+static int at91_pit_probe(struct device *dev)
 {
 	struct clk *clk;
 	u32 pit_rate;
@@ -97,7 +97,7 @@ const static __maybe_unused struct of_device_id at91_pit_dt_ids[] = {
 	}
 };
 
-static struct driver_d at91_pit_driver = {
+static struct driver at91_pit_driver = {
 	.name = "at91-pit",
 	.probe = at91_pit_probe,
 	.of_compatible = DRV_OF_COMPAT(at91_pit_dt_ids),

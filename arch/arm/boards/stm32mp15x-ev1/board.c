@@ -5,7 +5,7 @@
 #include <init.h>
 #include <mach/bbu.h>
 
-static int ed1_probe(struct device_d *dev)
+static int ed1_probe(struct device *dev)
 {
 	int flags;
 
@@ -31,7 +31,7 @@ static const struct of_device_id ed1_of_match[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d ed1_board_driver = {
+static struct driver ed1_board_driver = {
 	.name = "board-stm32mp15x-ed1",
 	.probe = ed1_probe,
 	.of_compatible = ed1_of_match,

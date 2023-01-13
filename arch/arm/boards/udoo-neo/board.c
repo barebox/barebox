@@ -5,13 +5,21 @@
 #include <init.h>
 #include <linux/clk.h>
 
-static int imx6sx_udoneo_coredevices_init(void)
+static int imx6sx_udoneo_probe(struct device *dev)
 {
-	if (!of_machine_is_compatible("fsl,imx6sx-udoo-neo"))
-		return 0;
-
 	barebox_set_hostname("mx6sx-udooneo");
 
 	return 0;
 }
-coredevice_initcall(imx6sx_udoneo_coredevices_init);
+
+static const struct of_device_id imx6sx_udoneo_of_match[] = {
+	{ .compatible = "fsl,imx6sx-udoo-neo" },
+	{ /* sentinel */ },
+};
+
+static struct driver imx6sx_udoneo_driver = {
+	.name = "board-udoo-neo",
+	.probe = imx6sx_udoneo_probe,
+	.of_compatible = imx6sx_udoneo_of_match,
+};
+postcore_platform_driver(imx6sx_udoneo_driver);

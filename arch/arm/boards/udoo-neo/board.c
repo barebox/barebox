@@ -4,6 +4,7 @@
 #include <common.h>
 #include <init.h>
 #include <linux/clk.h>
+#include <deep-probe.h>
 
 static int imx6sx_udoneo_probe(struct device *dev)
 {
@@ -16,6 +17,7 @@ static const struct of_device_id imx6sx_udoneo_of_match[] = {
 	{ .compatible = "fsl,imx6sx-udoo-neo" },
 	{ /* sentinel */ },
 };
+BAREBOX_DEEP_PROBE_ENABLE(imx6sx_udoneo_of_match);
 
 static struct driver imx6sx_udoneo_driver = {
 	.name = "board-udoo-neo",

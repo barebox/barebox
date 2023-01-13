@@ -97,6 +97,9 @@ static int imx6sx_udoneo_probe(struct device *dev)
 	barebox_set_model(model);
 	barebox_set_hostname("mx6sx-udooneo");
 
+	imx6_bbu_internal_mmc_register_handler("emmc", "/dev/mmc1.barebox",
+			BBU_HANDLER_FLAG_DEFAULT);
+
 	return 0;
 }
 

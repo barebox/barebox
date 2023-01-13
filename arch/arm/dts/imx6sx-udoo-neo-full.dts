@@ -1,4 +1,5 @@
 #include <arm/imx6sx-udoo-neo-full.dts>
+#include "imx6sx.dtsi"
 
 / {
 

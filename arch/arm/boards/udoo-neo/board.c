@@ -14,7 +14,7 @@ static int imx6sx_udoneo_probe(struct device *dev)
 }
 
 static const struct of_device_id imx6sx_udoneo_of_match[] = {
-	{ .compatible = "fsl,imx6sx-udoo-neo" },
+	{ .compatible = "udoo,neofull" },
 	{ /* sentinel */ },
 };
 BAREBOX_DEEP_PROBE_ENABLE(imx6sx_udoneo_of_match);

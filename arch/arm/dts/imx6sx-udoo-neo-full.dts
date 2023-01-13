@@ -1,6 +1,9 @@
 #include <arm/imx6sx-udoo-neo-full.dts>
 
 / {
+
+	/delete-node/ memory@80000000;
+
 	chosen {
 		environment {
 			compatible = "barebox,environment";

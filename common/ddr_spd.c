@@ -65,8 +65,8 @@ int ddr3_spd_check(const struct ddr3_spd_eeprom *spd)
 	char *p = (char *)spd;
 	int csum16;
 	int len;
-	char crc_lsb;	/* byte 126 */
-	char crc_msb;	/* byte 127 */
+	unsigned char crc_lsb;	/* byte 126 */
+	unsigned char crc_msb;	/* byte 127 */
 
 	/*
 	 * SPD byte0[7] - CRC coverage
@@ -77,8 +77,8 @@ int ddr3_spd_check(const struct ddr3_spd_eeprom *spd)
 	len = !(spd->info_size_crc & 0x80) ? 126 : 117;
 	csum16 = crc_itu_t(0, p, len);
 
-	crc_lsb = (char) (csum16 & 0xff);
-	crc_msb = (char) (csum16 >> 8);
+	crc_lsb = csum16 & 0xff;
+	crc_msb = csum16 >> 8;
 
 	if (spd->crc[0] == crc_lsb && spd->crc[1] == crc_msb) {
 		return 0;
@@ -96,14 +96,14 @@ int ddr4_spd_check(const struct ddr4_spd_eeprom *spd)
 	char *p = (char *)spd;
 	int csum16;
 	int len;
-	char crc_lsb;	/* byte 126 */
-	char crc_msb;	/* byte 127 */
+	unsigned char crc_lsb;	/* byte 126 */
+	unsigned char crc_msb;	/* byte 127 */
 
 	len = 126;
 	csum16 = crc_itu_t(0, p, len);
 
-	crc_lsb = (char) (csum16 & 0xff);
-	crc_msb = (char) (csum16 >> 8);
+	crc_lsb = csum16 & 0xff;
+	crc_msb = csum16 >> 8;
 
 	if (spd->crc[0] != crc_lsb || spd->crc[1] != crc_msb) {
 		printf("SPD checksum unexpected.\n"
@@ -117,8 +117,8 @@ int ddr4_spd_check(const struct ddr4_spd_eeprom *spd)
 	len = 126;
 	csum16 = crc_itu_t(0, p, len);
 
-	crc_lsb = (char) (csum16 & 0xff);
-	crc_msb = (char) (csum16 >> 8);
+	crc_lsb = csum16 & 0xff;
+	crc_msb = csum16 >> 8;
 
 	if (spd->mod_section.uc[126] != crc_lsb ||
 	    spd->mod_section.uc[127] != crc_msb) {

@@ -495,6 +495,7 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 	case e1000_82571:
 	case e1000_82572:
 		e1000_eeprom_uses_spi(eeprom, eecd);
+		eeprom->read = e1000_read_eeprom_eerd;
 		break;
 
 	case e1000_82573:
@@ -502,7 +503,6 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 		if (e1000_is_onboard_nvm_eeprom(hw)) {
 			e1000_eeprom_uses_spi(eeprom, eecd);
 		} else {
-			eeprom->read = e1000_read_eeprom_eerd;
 			eeprom->type = e1000_eeprom_flash;
 			eeprom->word_size = 2048;
 
@@ -513,6 +513,7 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 			eecd &= ~E1000_EECD_AUPDEN;
 			e1000_write_reg(hw, E1000_EECD, eecd);
 		}
+		eeprom->read = e1000_read_eeprom_eerd;
 		break;
 
 	case e1000_80003es2lan:

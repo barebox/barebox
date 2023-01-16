@@ -44,3 +44,4 @@ obj-$(CONFIG_DRIVER_NET_EFI_SNP)	+= efi-snp.o
 obj-$(CONFIG_DRIVER_NET_VIRTIO)		+= virtio.o
 obj-$(CONFIG_DRIVER_NET_AG71XX)		+= ag71xx.o
 obj-$(CONFIG_DRIVER_NET_LITEETH)	+= liteeth.o
+obj-$(CONFIG_DRIVER_NET_DSA_REALTEK)	+= realtek-dsa/

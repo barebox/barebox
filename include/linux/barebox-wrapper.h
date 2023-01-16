@@ -21,6 +21,7 @@ static inline void vfree(const void *addr)
 #define MODULE_LICENSE(x)
 #define MODULE_ALIAS(x)
 #define MODULE_DEVICE_TABLE(bus, table)
+#define MODULE_ALIAS_DSA_TAG_DRIVER(drv)
 
 #define __user
 #define __init

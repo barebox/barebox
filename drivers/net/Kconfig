@@ -331,6 +331,8 @@ config DRIVER_NET_SJA1105
 	    - SJA1105R (Gen. 2, SGMII, No TT-Ethernet)
 	    - SJA1105S (Gen. 2, SGMII, TT-Ethernet)
 
+source "drivers/net/realtek-dsa/Kconfig"
+
 endif
 
 endmenu

@@ -416,7 +416,8 @@ static inline int is_broadcast_ether_addr(const u8 *addr)
 	return (addr[0] & addr[1] & addr[2] & addr[3] & addr[4] & addr[5]) == 0xff;
 }
 
-#define ETH_ALEN 6
+#define ETH_ALEN	6	/* Octets in an Ethernet address */
+#define ETH_HLEN	14	/* Total octets in header.*/
 
 /**
  * random_ether_addr - Generate software assigned random Ethernet address

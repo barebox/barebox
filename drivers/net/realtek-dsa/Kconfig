@@ -1,0 +1,62 @@
+# SPDX-License-Identifier: GPL-2.0-only
+menuconfig DRIVER_NET_DSA_REALTEK
+	tristate "Realtek Ethernet switch family support"
+	depends on DSA
+	select FIXED_PHY
+	select IRQ_DOMAIN
+	select REALTEK_PHY
+	select REGMAP
+	help
+	  Select to enable support for Realtek Ethernet switch chips.
+
+	  Note that at least one interface driver must be enabled for the
+	  subdrivers to be loaded. Moreover, an interface driver cannot achieve
+	  anything without at least one subdriver enabled.
+
+config NET_DSA_TAG_RTL4_A
+	bool
+	help
+	  Selected to enable support for tagging frames for the
+	  Realtek switches with 4 byte protocol A tags, sich as found in
+	  the Realtek RTL8366RB.
+
+config NET_DSA_TAG_RTL8_4
+	bool
+	help
+	  Selected to enable support for tagging frames for Realtek
+	  switches with 8 byte protocol 4 tags, such as the Realtek RTL8365MB-VC.
+
+if DRIVER_NET_DSA_REALTEK
+
+
+config NET_DSA_REALTEK_MDIO
+	tristate "Realtek MDIO interface driver"
+	depends on OFDEVICE
+	help
+	  Select to enable support for registering switches configured
+	  through MDIO.
+
+config NET_DSA_REALTEK_SMI
+	tristate "Realtek SMI interface driver"
+	depends on OFDEVICE
+	help
+	  Select to enable support for registering switches connected
+	  through SMI.
+
+config NET_DSA_REALTEK_RTL8365MB
+	tristate "Realtek RTL8365MB switch subdriver"
+	imply NET_DSA_REALTEK_SMI
+	imply NET_DSA_REALTEK_MDIO
+	select NET_DSA_TAG_RTL8_4
+	help
+	  Select to enable support for Realtek RTL8365MB-VC and RTL8367S.
+
+config NET_DSA_REALTEK_RTL8366RB
+	tristate "Realtek RTL8366RB switch subdriver"
+	imply NET_DSA_REALTEK_SMI
+	imply NET_DSA_REALTEK_MDIO
+	select NET_DSA_TAG_RTL4_A
+	help
+	  Select to enable support for Realtek RTL8366RB.
+
+endif

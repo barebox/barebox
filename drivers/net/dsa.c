@@ -235,10 +235,9 @@ static int dsa_ether_get_ethaddr(struct eth_device *edev, unsigned char *adr)
 	return edev_master->get_ethaddr(edev_master, adr);
 }
 
-static int dsa_switch_register_edev(struct dsa_switch *ds,
-				    struct device_node *dn, int port)
+static struct dsa_port *dsa_port_alloc(struct dsa_switch *ds,
+				       struct device_node *dn, int port)
 {
-	struct eth_device *edev;
 	struct device *dev;
 	struct dsa_port *dp;
 
@@ -248,14 +247,24 @@ static int dsa_switch_register_edev(struct dsa_switch *ds,
 	dev = of_platform_device_create(dn, ds->dev);
 	of_platform_device_dummy_drv(dev);
 	dp->dev = dev;
-
-	dp->rx_buf = xmalloc(DSA_PKTSIZE);
 	dp->ds = ds;
 	dp->index = port;
 
+	return dp;
+}
+
+static int dsa_switch_register_edev(struct dsa_switch *ds,
+				    struct device_node *dn, int port)
+{
+	struct eth_device *edev;
+	struct dsa_port *dp;
+
+	dp = dsa_port_alloc(ds, dn, port);
+	dp->rx_buf = xmalloc(DSA_PKTSIZE);
+
 	edev = &dp->edev;
 	edev->priv = dp;
-	edev->parent = dev;
+	edev->parent = dp->dev;
 	edev->init = dsa_port_probe;
 	edev->open = dsa_port_start;
 	edev->send = dsa_port_send;

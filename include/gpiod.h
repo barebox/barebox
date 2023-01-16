@@ -57,10 +57,20 @@ static inline int gpiod_get(struct device *dev,
 	return dev_gpiod_get(dev, dev->of_node, _con_id, flags, NULL);
 }
 
-static inline void gpiod_set_value(int gpio, bool value)
+static inline void gpiod_direction_input(int gpio)
+{
+	gpio_direction_input(gpio);
+}
+
+static inline void gpiod_direction_output(int gpio, bool value)
 {
 	if (gpio != -ENOENT)
 		gpio_direction_active(gpio, value);
+}
+
+static inline void gpiod_set_value(int gpio, bool value)
+{
+	gpiod_direction_output(gpio, value);
 }
 
 static inline int gpiod_get_value(int gpio)

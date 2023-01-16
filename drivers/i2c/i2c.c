@@ -420,10 +420,6 @@ static void of_i2c_register_devices(struct i2c_adapter *adap)
 {
 	struct device_node *n;
 
-	/* Only register child devices if the adapter has a node pointer set */
-	if (!IS_ENABLED(CONFIG_OFDEVICE) || !adap->dev.of_node)
-		return;
-
 	for_each_available_child_of_node(adap->dev.of_node, n) {
 		struct i2c_board_info info = {};
 		struct i2c_client *result;
@@ -472,6 +468,20 @@ int of_i2c_register_devices_by_node(struct device_node *node)
 		return PTR_ERR(adap);
 
 	of_i2c_register_devices(adap);
+	return 0;
+}
+
+static int i2c_bus_detect(struct device *dev)
+{
+	struct i2c_adapter *adap;
+
+	list_for_each_entry(adap, &i2c_adapter_list, list) {
+		if (dev != adap->dev.parent)
+			continue;
+		of_i2c_register_devices(adap);
+		break;
+	}
+
 	return 0;
 }
 
@@ -686,6 +696,7 @@ EXPORT_SYMBOL_GPL(i2c_parse_fw_timings);
  */
 int i2c_add_numbered_adapter(struct i2c_adapter *adapter)
 {
+	struct device *hw_dev;
 	int ret;
 
 	if (adapter->nr < 0) {
@@ -712,7 +723,12 @@ int i2c_add_numbered_adapter(struct i2c_adapter *adapter)
 	/* populate children from any i2c device tables */
 	scan_boardinfo(adapter);
 
-	of_i2c_register_devices(adapter);
+	hw_dev = adapter->dev.parent;
+	if (hw_dev && dev_of_node(hw_dev)) {
+		if (!hw_dev->detect)
+			hw_dev->detect = i2c_bus_detect;
+		i2c_bus_detect(hw_dev);
+	}
 
 	return 0;
 }

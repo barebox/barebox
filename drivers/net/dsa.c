@@ -317,7 +317,6 @@ static int dsa_switch_register_master(struct dsa_switch *ds,
 {
 	struct device_node *phy_node;
 	struct phy_device *phydev;
-	struct dsa_port *dp;
 	int ret;
 
 	if (ds->edev_master) {
@@ -348,9 +347,7 @@ static int dsa_switch_register_master(struct dsa_switch *ds,
 
 	phydev->interface = of_get_phy_mode(np);
 
-	ds->dp[port] = xzalloc(sizeof(*dp));
-	dp = ds->dp[port];
-	dp->ds = ds;
+	dsa_port_alloc(ds, np, port);
 
 	ds->cpu_port = port;
 	ds->cpu_port_fixed_phy = phydev;

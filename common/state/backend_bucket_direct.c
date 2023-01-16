@@ -164,12 +164,12 @@ static void state_backend_bucket_direct_free(struct
 
 int state_backend_bucket_direct_create(struct device *dev, const char *path,
 				       struct state_backend_storage_bucket **bucket,
-				       off_t offset, ssize_t max_size)
+				       off_t offset, ssize_t max_size, bool readonly)
 {
 	int fd;
 	struct state_backend_storage_bucket_direct *direct;
 
-	fd = open(path, O_RDWR);
+	fd = open(path, readonly ? O_RDONLY : O_RDWR);
 	if (fd < 0) {
 		dev_err(dev, "Failed to open file '%s', %d\n", path, -errno);
 		return -errno;

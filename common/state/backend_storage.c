@@ -332,7 +332,7 @@ static int state_storage_file_buckets_init(struct state_backend_storage *storage
 		offset = storage->offset + n * stridesize;
 		ret = state_backend_bucket_direct_create(storage->dev, storage->path,
 							 &bucket, offset,
-							 stridesize);
+							 stridesize, storage->readonly);
 		if (ret) {
 			dev_warn(storage->dev, "Failed to create direct bucket at '%s' offset %lld\n",
 				 storage->path, (long long) offset);

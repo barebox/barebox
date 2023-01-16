@@ -226,7 +226,7 @@ void state_backend_set_readonly(struct state *state);
 void state_storage_free(struct state_backend_storage *storage);
 int state_backend_bucket_direct_create(struct device *dev, const char *path,
 				       struct state_backend_storage_bucket **bucket,
-				       off_t offset, ssize_t max_size);
+				       off_t offset, ssize_t max_size, bool readonly);
 int state_storage_write(struct state_backend_storage *storage,
 			const void * buf, ssize_t len);
 int state_storage_read(struct state_backend_storage *storage,

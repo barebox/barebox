@@ -82,6 +82,7 @@ struct dsa_switch {
 	void *tx_buf;
 	struct mii_bus *slave_mii_bus;
 	u32 phys_mii_mask;
+	void *priv;
 };
 
 static inline struct dsa_port *dsa_to_port(struct dsa_switch *ds, int p)

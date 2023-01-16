@@ -608,8 +608,10 @@ struct devfs_partition {
 int devfs_create_partitions(const char *devname,
 		const struct devfs_partition partinfo[]);
 
-#define DRV_OF_COMPAT(compat) \
+#define of_match_ptr(compat) \
 	IS_ENABLED(CONFIG_OFDEVICE) ? (compat) : NULL
+
+#define DRV_OF_COMPAT(compat) of_match_ptr(compat)
 
 /**
  * dev_get_drvdata - get driver match data associated with device

@@ -410,6 +410,9 @@ static struct i2c_client *i2c_new_device(struct i2c_adapter *adapter,
 	if (chip->of_node)
 		chip->of_node->dev = &client->dev;
 
+	dev_dbg(&client->dev, "registered on bus %d, chip->addr 0x%02x\n",
+		adapter->nr, client->addr);
+
 	return client;
 }
 
@@ -541,7 +544,6 @@ static void scan_boardinfo(struct i2c_adapter *adapter)
 			continue;
 
 		for (n = bi->n_board_info; n > 0; n--, chip++) {
-			debug("%s: bus_num: %d, chip->addr 0x%02x\n", __func__, bi->bus_num, chip->addr);
 			/*
 			 * NOTE: this relies on i2c_new_device to
 			 * issue diagnostics when given bogus inputs

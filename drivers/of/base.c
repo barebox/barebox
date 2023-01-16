@@ -2790,6 +2790,21 @@ int of_device_enable_path(const char *path)
 }
 
 /**
+ * of_device_enable_by_alias - enable a device node by alias
+ * @alias - the alias of the device tree node to enable
+ */
+int of_device_enable_by_alias(const char *alias)
+{
+	struct device_node *node;
+
+	node = of_find_node_by_alias(NULL, alias);
+	if (!node)
+		return -ENODEV;
+
+	return of_device_enable(node);
+}
+
+/**
  * of_device_disable - disable a devicenode device
  * @node - the node to disable
  *

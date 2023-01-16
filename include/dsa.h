@@ -84,7 +84,23 @@ struct dsa_switch {
 	u32 phys_mii_mask;
 };
 
+static inline struct dsa_port *dsa_to_port(struct dsa_switch *ds, int p)
+{
+	if (p >= DSA_MAX_PORTS)
+		return NULL;
+
+	return ds->dp[p];
+}
+
 int dsa_register_switch(struct dsa_switch *ds);
 u32 dsa_user_ports(struct dsa_switch *ds);
+
+#define dsa_switch_for_each_cpu_port(_dp, _dst) \
+	for (_dp = _dst->dp[_dst->cpu_port]; _dp; _dp = NULL)
+
+static inline bool dsa_port_is_cpu(struct dsa_port *port)
+{
+	return port->index == port->ds->cpu_port;
+}
 
 #endif /* __DSA_H__ */

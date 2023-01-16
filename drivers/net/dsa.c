@@ -122,6 +122,16 @@ static int dsa_port_start(struct eth_device *edev)
 	if (!ds->cpu_port_users) {
 		struct dsa_port *dpc = ds->dp[ds->cpu_port];
 
+		if (ops->port_pre_enable) {
+			/* In case of RMII interface we need to enable RMII clock
+			 * before talking to the PHY.
+			 */
+			ret = ops->port_pre_enable(dpc, ds->cpu_port,
+						   ds->cpu_port_fixed_phy->interface);
+			if (ret)
+				return ret;
+		}
+
 		if (ops->port_enable) {
 			ret = ops->port_enable(dpc, ds->cpu_port,
 					       ds->cpu_port_fixed_phy);

@@ -54,7 +54,7 @@ static int dsa_port_probe(struct eth_device *edev)
 {
 	struct dsa_port *dp = edev->priv;
 	struct dsa_switch *ds = dp->ds;
-	const struct dsa_ops *ops = ds->ops;
+	const struct dsa_switch_ops *ops = ds->ops;
 	phy_interface_t interface;
 	int ret;
 
@@ -86,7 +86,7 @@ static int dsa_port_start(struct eth_device *edev)
 {
 	struct dsa_port *dp = edev->priv;
 	struct dsa_switch *ds = dp->ds;
-	const struct dsa_ops *ops = ds->ops;
+	const struct dsa_switch_ops *ops = ds->ops;
 	phy_interface_t interface;
 	int ret;
 
@@ -147,7 +147,7 @@ static void dsa_port_stop(struct eth_device *edev)
 {
 	struct dsa_port *dp = edev->priv;
 	struct dsa_switch *ds = dp->ds;
-	const struct dsa_ops *ops = ds->ops;
+	const struct dsa_switch_ops *ops = ds->ops;
 
 	if (!dp->enabled)
 		return;
@@ -174,7 +174,7 @@ static int dsa_port_send(struct eth_device *edev, void *packet, int length)
 {
 	struct dsa_port *dp = edev->priv;
 	struct dsa_switch *ds = dp->ds;
-	const struct dsa_ops *ops = ds->ops;
+	const struct dsa_switch_ops *ops = ds->ops;
 	void *tx_buf = ds->tx_buf;
 	size_t full_length, stuff = 0;
 	int ret;
@@ -271,7 +271,7 @@ static int dsa_rx_preprocessor(struct eth_device *edev, unsigned char **packet,
 			       int *length)
 {
 	struct dsa_switch *ds = edev->rx_preprocessor_priv;
-	const struct dsa_ops *ops = ds->ops;
+	const struct dsa_switch_ops *ops = ds->ops;
 	struct dsa_port *dp;
 	int ret, port;
 

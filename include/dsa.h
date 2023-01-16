@@ -41,7 +41,7 @@
 struct dsa_port;
 struct dsa_switch;
 
-struct dsa_ops {
+struct dsa_switch_ops {
 	int (*port_probe)(struct dsa_port *dp, int port,
 			  phy_interface_t phy_mode);
 	int (*port_pre_enable)(struct dsa_port *dp, int port,
@@ -69,7 +69,7 @@ struct dsa_port {
 
 struct dsa_switch {
 	struct device *dev;
-	const struct dsa_ops *ops;
+	const struct dsa_switch_ops *ops;
 	size_t num_ports;
 	u32 cpu_port;
 	int cpu_port_users;

@@ -335,7 +335,7 @@ static int ksz8873_recv(struct dsa_switch *ds, int *port, void *packet,
 	return 0;
 };
 
-static const struct dsa_ops ksz8873_dsa_ops = {
+static const struct dsa_switch_ops ksz8873_dsa_ops = {
 	.port_enable = ksz8873_port_enable,
 	.xmit = ksz8873_xmit,
 	.rcv = ksz8873_recv,

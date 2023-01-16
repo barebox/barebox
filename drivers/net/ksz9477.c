@@ -361,7 +361,7 @@ static int ksz_recv(struct dsa_switch *ds, int *port, void *packet, int length)
 	return 0;
 };
 
-static const struct dsa_ops ksz_dsa_ops = {
+static const struct dsa_switch_ops ksz_dsa_ops = {
 	.port_enable = ksz_port_enable,
 	.xmit = ksz_xmit,
 	.rcv = ksz_recv,

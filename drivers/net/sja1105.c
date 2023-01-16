@@ -2814,7 +2814,7 @@ static int sja1105_rcv(struct dsa_switch *ds, int *port, void *packet,
 	return 0;
 }
 
-static const struct dsa_ops sja1105_dsa_ops = {
+static const struct dsa_switch_ops sja1105_dsa_ops = {
 	.port_pre_enable	= sja1105_port_pre_enable,
 	.port_enable		= sja1105_port_enable,
 	.xmit			= sja1105_xmit,

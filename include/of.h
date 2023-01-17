@@ -101,6 +101,11 @@ static inline const void *of_property_get_value(const struct property *pp)
 	return pp->value ? pp->value : pp->value_const;
 }
 
+static inline struct device_node *of_node_get(struct device_node *node)
+{
+	return node;
+}
+static inline void of_node_put(struct device_node *node) { }
 
 void of_print_property(const void *data, int len);
 void of_print_cmdline(struct device_node *root);
@@ -331,6 +336,11 @@ struct device_node *of_find_node_by_path_or_alias(struct device_node *root,
 int of_autoenable_device_by_path(char *path);
 int of_autoenable_i2c_by_component(char *path);
 int of_prepend_machine_compatible(struct device_node *root, const char *compat);
+
+static inline const char *of_node_full_name(const struct device_node *np)
+{
+	return np ? np->full_name : "<no-node>";
+}
 
 #else
 static inline struct of_reserve_map *of_get_reserve_map(void)
@@ -891,6 +901,11 @@ static inline int of_prepend_machine_compatible(struct device_node *root,
 					 const char *compat)
 {
 	return -ENODEV;
+}
+
+static inline const char *of_node_full_name(const struct device_node *np)
+{
+	return "<no-node>";
 }
 
 #endif

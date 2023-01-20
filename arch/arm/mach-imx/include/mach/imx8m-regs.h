@@ -3,6 +3,8 @@
 #ifndef __MACH_IMX8M_REGS_H
 #define __MACH_IMX8M_REGS_H
 
+#include <linux/compiler.h>
+
 /*
  * Actual addressable OCRAM size may differ from SoC to SoC, but all of
  * i.MX8MQ/M/N/P have this region of MMIO address space set aside for
@@ -31,6 +33,7 @@
 #define MX8M_UART1_BASE_ADDR		0x30860000
 #define MX8M_UART3_BASE_ADDR		0x30880000
 #define MX8M_UART2_BASE_ADDR		0x30890000
+#define MX8M_CAAM_BASE_ADDR		IOMEM(0x30900000)
 #define MX8M_I2C1_BASE_ADDR		0x30A20000
 #define MX8M_I2C2_BASE_ADDR		0x30A30000
 #define MX8M_I2C3_BASE_ADDR		0x30A40000

@@ -35,3 +35,6 @@ config CRYPTO_DEV_FSL_CAAM_RNG
 	help
 	  Selecting this will register the SEC4 hardware rng.
 
+config FSL_CAAM_RNG_PBL_INIT
+	bool "Setup CAAM in EL3"
+	depends on ARCH_IMX8M

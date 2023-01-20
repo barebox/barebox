@@ -1119,11 +1119,14 @@ config EXTERNAL_DTS_FRAGMENTS
 
 menu "OP-TEE loading"
 
+config HAVE_OPTEE
+	bool
+
 config OPTEE_SIZE
 	hex
 	default 0x02000000
 	prompt "OP-TEE Memory Size"
-	depends on BOOTM_OPTEE || PBL_OPTEE
+	depends on HAVE_OPTEE
 	help
 	  Size to reserve in main memory for OP-TEE.
 	  Can be smaller than the actual size used by OP-TEE, this is used to prevent
@@ -1133,6 +1136,7 @@ config BOOTM_OPTEE
 	bool
 	prompt "support booting OP-TEE"
 	depends on BOOTM && ARM
+	select HAVE_OPTEE
 	help
 	  OP-TEE is a trusted execution environment (TEE). With this option
 	  enabled barebox supports starting optee_os as part of the bootm command.
@@ -1144,6 +1148,7 @@ config PBL_OPTEE
 	bool "Enable OP-TEE early start"
 	depends on ARM
 	depends on !THUMB2_BAREBOX
+	select HAVE_OPTEE
 	help
 	  Allows starting OP-TEE during lowlevel initialization of the PBL.
 	  Requires explicit support in the board's lowlevel file.

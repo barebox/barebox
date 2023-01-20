@@ -35,6 +35,7 @@ config SELFTEST_ENABLE_ALL
 	select SELFTEST_ENVIRONMENT_VARIABLES if ENVIRONMENT_VARIABLES
 	imply SELFTEST_FS_RAMFS
 	imply SELFTEST_TFTP
+	imply SELFTEST_JSON
 	help
 	  Selects all self-tests compatible with current configuration
 
@@ -63,5 +64,9 @@ config SELFTEST_ENVIRONMENT_VARIABLES
 config SELFTEST_FS_RAMFS
 	bool "ramfs selftest"
 	depends on FS_RAMFS
+
+config SELFTEST_JSON
+	bool "JSON selftest"
+	depends on JSMN
 
 endif

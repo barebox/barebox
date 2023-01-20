@@ -305,6 +305,22 @@ test_pointer(void)
 	errptr();
 }
 
+static void __init
+test_jsonpath(void)
+{
+	if (!IS_ENABLED(CONFIG_JSMN)) {
+		pr_info("skipping jsonpath tests: CONFIG_JSMN disabled in config\n");
+		skipped_tests += 5;
+		return;
+	}
+
+	test("<NULL>", "%pJP",  NULL);
+	test("$", "%pJP",  &(char *[]){ NULL });
+	test("$.1", "%pJP",  &(char *[]){ "1", NULL });
+	test("$.1.23", "%pJP",  &(char *[]){ "1", "23", NULL });
+	test("$.1.23.456", "%pJP",  &(char *[]){ "1", "23", "456", NULL });
+}
+
 static void __init test_printf(void)
 {
 	alloced_buffer = malloc(BUF_SIZE + 2*PAD_SIZE);
@@ -317,6 +333,7 @@ static void __init test_printf(void)
 	test_string();
 	test_pointer();
 	test_hexstr();
+	test_jsonpath();
 
 	free(alloced_buffer);
 }

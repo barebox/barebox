@@ -40,11 +40,19 @@ static inline struct clk *imx_clk_divider_table(const char *name,
 				 width, table, 0);
 }
 
+static inline struct clk *__imx_clk_mux(const char *name, void __iomem *reg,
+					u8 shift, u8 width, const char * const *parents,
+					u8 num_parents, unsigned flags, unsigned long clk_mux_flags)
+{
+	return clk_mux(name, CLK_SET_RATE_NO_REPARENT | flags, reg,
+		       shift, width, parents, num_parents, clk_mux_flags);
+}
+
 static inline struct clk *imx_clk_mux_ldb(const char *name, void __iomem *reg,
 		u8 shift, u8 width, const char * const *parents, int num_parents)
 {
-	return clk_mux(name, CLK_SET_RATE_NO_REPARENT | CLK_SET_RATE_PARENT, reg,
-		       shift, width, parents, num_parents, CLK_MUX_READ_ONLY);
+	return __imx_clk_mux(name, reg, shift, width, parents, num_parents,
+			     CLK_SET_RATE_PARENT, CLK_MUX_READ_ONLY);
 }
 
 
@@ -59,36 +67,36 @@ static inline struct clk *imx_clk_mux_flags(const char *name, void __iomem *reg,
 					    const char * const *parents, u8 num_parents,
 					    unsigned long clk_flags)
 {
-	return clk_mux(name, clk_flags, reg, shift, width, parents, num_parents,
-		       0);
+	return __imx_clk_mux(name, reg, shift, width, parents, num_parents,
+			     clk_flags, 0);
 }
 
 static inline struct clk *imx_clk_mux2_flags(const char *name,
 		void __iomem *reg, u8 shift, u8 width, const char * const *parents,
 		int num_parents, unsigned long clk_flags)
 {
-	return clk_mux(name, clk_flags | CLK_OPS_PARENT_ENABLE, reg, shift,
-		       width, parents, num_parents, 0);
+	return __imx_clk_mux(name,reg, shift, width, parents, num_parents,
+			     clk_flags | CLK_OPS_PARENT_ENABLE, 0);
 }
 
 static inline struct clk *imx_clk_mux(const char *name, void __iomem *reg,
 		u8 shift, u8 width, const char * const *parents, u8 num_parents)
 {
-	return clk_mux(name, 0, reg, shift, width, parents, num_parents, 0);
+	return __imx_clk_mux(name, reg, shift, width, parents, num_parents, 0, 0);
 }
 
 static inline struct clk *imx_clk_mux2(const char *name, void __iomem *reg,
 		u8 shift, u8 width, const char * const *parents, u8 num_parents)
 {
-	return clk_mux(name, CLK_OPS_PARENT_ENABLE, reg, shift, width, parents,
-		       num_parents, 0);
+	return __imx_clk_mux(name, reg, shift, width, parents,
+			     num_parents, CLK_OPS_PARENT_ENABLE, 0);
 }
 
 static inline struct clk *imx_clk_mux_p(const char *name, void __iomem *reg,
 		u8 shift, u8 width, const char * const *parents, u8 num_parents)
 {
-	return clk_mux(name, CLK_SET_RATE_PARENT, reg, shift, width, parents,
-		       num_parents, 0);
+	return __imx_clk_mux(name, reg, shift, width, parents, num_parents,
+			     CLK_SET_RATE_PARENT,  0);
 }
 
 static inline struct clk *imx_clk_gate(const char *name, const char *parent,

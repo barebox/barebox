@@ -7,8 +7,7 @@
 #include <linux/bitops.h>
 #include <linux/bitfield.h>
 #include <mach/imx8m-regs.h>
-#include <mach/xload.h>
-#include <asm/barebox-arm.h>
+#include <mach/romapi.h>
 
 /* i.MX7 and later ID field is swapped compared to i.MX6 */
 #define ROM_EVENT_FORMAT_V0_RES	GENMASK(31, 24)
@@ -50,6 +49,9 @@ static const char *boot_device_0x6y[] = {
 static int imx8m_bootrom_decode_log(const u32 *rom_log)
 {
 	int i;
+
+	if (!rom_log)
+		return -ENODATA;
 
 	for (i = 0; i < 128; i++) {
 		u8 event_id = FIELD_GET(ROM_EVENT_FORMAT_V1_ID, rom_log[i]);
@@ -178,18 +180,19 @@ static int imx8m_bootrom_decode_log(const u32 *rom_log)
 
 static int do_bootrom(int argc, char *argv[])
 {
-	const struct imx_scratch_space *scratch = arm_mem_scratch_get();
-	const u32 *rom_log_addr = scratch->bootrom_log;
+	union {
+		const u32 *ptr;
+		ulong addr;
+	} rom_log = { NULL };
 	bool log = false;
 	int ret, opt;
 
 	while((opt = getopt(argc, argv, "la:")) > 0) {
 		switch(opt) {
 		case 'a':
-			ret = kstrtoul(optarg, 0, (ulong *)&rom_log_addr);
+			ret = kstrtoul(optarg, 0, &rom_log.addr);
 			if (ret)
 				return ret;
-			rom_log_addr = (const u32 *)rom_log_addr;
 		case 'l':
 			log = true;
 			break;
@@ -198,8 +201,11 @@ static int do_bootrom(int argc, char *argv[])
 		}
 	}
 
+	if (!rom_log.addr)
+		rom_log.ptr = imx8m_get_bootrom_log();
+
 	if (log)
-		return imx8m_bootrom_decode_log(rom_log_addr);
+		return imx8m_bootrom_decode_log(rom_log.ptr);
 
 	return COMMAND_ERROR_USAGE;
 }

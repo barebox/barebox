@@ -3,6 +3,7 @@
 #define __MACH_IMX_ROMAPI_H
 
 #include <mach/xload.h>
+#include <linux/types.h>
 
 struct rom_api {
 	u16 ver;
@@ -39,6 +40,7 @@ int imx8mn_bootrom_load_image(void);
 
 /* only call after DRAM has been configured */
 void imx8m_save_bootrom_log(void *dst);
+const u32 *imx8m_get_bootrom_log(void);
 
 #define imx8mq_save_bootrom_log() imx8m_save_bootrom_log(imx8mq_scratch_space())
 #define imx8mm_save_bootrom_log() imx8m_save_bootrom_log(imx8mm_scratch_space())

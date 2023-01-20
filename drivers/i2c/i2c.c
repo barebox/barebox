@@ -410,16 +410,15 @@ static struct i2c_client *i2c_new_device(struct i2c_adapter *adapter,
 	if (chip->of_node)
 		chip->of_node->dev = &client->dev;
 
+	dev_dbg(&client->dev, "registered on bus %d, chip->addr 0x%02x\n",
+		adapter->nr, client->addr);
+
 	return client;
 }
 
 static void of_i2c_register_devices(struct i2c_adapter *adap)
 {
 	struct device_node *n;
-
-	/* Only register child devices if the adapter has a node pointer set */
-	if (!IS_ENABLED(CONFIG_OFDEVICE) || !adap->dev.of_node)
-		return;
 
 	for_each_available_child_of_node(adap->dev.of_node, n) {
 		struct i2c_board_info info = {};
@@ -469,6 +468,20 @@ int of_i2c_register_devices_by_node(struct device_node *node)
 		return PTR_ERR(adap);
 
 	of_i2c_register_devices(adap);
+	return 0;
+}
+
+static int i2c_bus_detect(struct device *dev)
+{
+	struct i2c_adapter *adap;
+
+	list_for_each_entry(adap, &i2c_adapter_list, list) {
+		if (dev != adap->dev.parent)
+			continue;
+		of_i2c_register_devices(adap);
+		break;
+	}
+
 	return 0;
 }
 
@@ -541,7 +554,6 @@ static void scan_boardinfo(struct i2c_adapter *adapter)
 			continue;
 
 		for (n = bi->n_board_info; n > 0; n--, chip++) {
-			debug("%s: bus_num: %d, chip->addr 0x%02x\n", __func__, bi->bus_num, chip->addr);
 			/*
 			 * NOTE: this relies on i2c_new_device to
 			 * issue diagnostics when given bogus inputs
@@ -684,6 +696,7 @@ EXPORT_SYMBOL_GPL(i2c_parse_fw_timings);
  */
 int i2c_add_numbered_adapter(struct i2c_adapter *adapter)
 {
+	struct device *hw_dev;
 	int ret;
 
 	if (adapter->nr < 0) {
@@ -710,7 +723,12 @@ int i2c_add_numbered_adapter(struct i2c_adapter *adapter)
 	/* populate children from any i2c device tables */
 	scan_boardinfo(adapter);
 
-	of_i2c_register_devices(adapter);
+	hw_dev = adapter->dev.parent;
+	if (hw_dev && dev_of_node(hw_dev)) {
+		if (!hw_dev->detect)
+			hw_dev->detect = i2c_bus_detect;
+		i2c_bus_detect(hw_dev);
+	}
 
 	return 0;
 }

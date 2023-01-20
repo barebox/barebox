@@ -64,6 +64,23 @@ enum regmap_endian regmap_get_val_endian(struct device *dev,
 }
 EXPORT_SYMBOL_GPL(regmap_get_val_endian);
 
+static int _regmap_bus_reg_read(void *context, unsigned int reg,
+				unsigned int *val)
+{
+	struct regmap *map = context;
+
+	return map->bus->reg_read(map->bus_context, reg, val);
+}
+
+
+static int _regmap_bus_reg_write(void *context, unsigned int reg,
+				 unsigned int val)
+{
+	struct regmap *map = context;
+
+	return map->bus->reg_write(map->bus_context, reg, val);
+}
+
 /*
  * regmap_init - initialize and register a regmap
  *
@@ -80,20 +97,32 @@ struct regmap *regmap_init(struct device *dev,
 			     const struct regmap_config *config)
 {
 	struct regmap *map;
+	int ret;
 
 	map = xzalloc(sizeof(*map));
 	map->dev = dev;
 	map->bus = bus;
 	map->name = config->name;
 	map->bus_context = bus_context;
-	map->reg_bits = config->reg_bits;
+	map->format.reg_bytes = DIV_ROUND_UP(config->reg_bits, 8);
 	map->reg_stride = config->reg_stride;
 	if (!map->reg_stride)
 		map->reg_stride = 1;
-	map->pad_bits = config->pad_bits;
-	map->val_bits = config->val_bits;
-	map->val_bytes = DIV_ROUND_UP(config->val_bits, 8);
+	map->format.pad_bytes = config->pad_bits / 8;
+	map->format.val_bytes = DIV_ROUND_UP(config->val_bits, 8);
+	map->reg_shift = config->pad_bits % 8;
 	map->max_register = config->max_register;
+
+	if (!bus->read || !bus->write) {
+		map->reg_read = _regmap_bus_reg_read;
+		map->reg_write = _regmap_bus_reg_write;
+	} else  {
+		ret = regmap_formatted_init(map, config);
+		if (ret) {
+			free(map);
+			return ERR_PTR(ret);
+		}
+	}
 
 	list_add_tail(&map->list, &regmaps);
 
@@ -140,7 +169,7 @@ struct device *regmap_get_device(struct regmap *map)
  */
 int regmap_write(struct regmap *map, unsigned int reg, unsigned int val)
 {
-	return map->bus->reg_write(map->bus_context, reg, val);
+	return map->reg_write(map, reg, val);
 }
 
 /*
@@ -154,7 +183,7 @@ int regmap_write(struct regmap *map, unsigned int reg, unsigned int val)
  */
 int regmap_read(struct regmap *map, unsigned int reg, unsigned int *val)
 {
-	return map->bus->reg_read(map->bus_context, reg, val);
+	return map->reg_read(map, reg, val);
 }
 
 /**
@@ -227,7 +256,7 @@ int regmap_write_bits(struct regmap *map, unsigned int reg,
 int regmap_bulk_read(struct regmap *map, unsigned int reg, void *val,
 		     size_t val_len)
 {
-	size_t val_bytes = map->val_bytes;
+	size_t val_bytes = map->format.val_bytes;
 	size_t val_count = val_len / val_bytes;
 	unsigned int v;
 	int ret, i;
@@ -248,7 +277,7 @@ int regmap_bulk_read(struct regmap *map, unsigned int reg, void *val,
 		if (ret != 0)
 			goto out;
 
-		switch (map->val_bytes) {
+		switch (map->format.val_bytes) {
 		case 4:
 			u32[i] = v;
 			break;
@@ -282,7 +311,7 @@ int regmap_bulk_read(struct regmap *map, unsigned int reg, void *val,
 int regmap_bulk_write(struct regmap *map, unsigned int reg,
 		     const void *val, size_t val_len)
 {
-	size_t val_bytes = map->val_bytes;
+	size_t val_bytes = map->format.val_bytes;
 	size_t val_count = val_len / val_bytes;
 	int ret, i;
 
@@ -323,7 +352,7 @@ int regmap_bulk_write(struct regmap *map, unsigned int reg,
 
 int regmap_get_val_bytes(struct regmap *map)
 {
-	return map->val_bytes;
+	return map->format.val_bytes;
 }
 
 int regmap_get_max_register(struct regmap *map)
@@ -338,13 +367,7 @@ int regmap_get_reg_stride(struct regmap *map)
 
 static int regmap_round_val_bytes(struct regmap *map)
 {
-	int val_bytes;
-
-	val_bytes = roundup_pow_of_two(map->val_bits) >> 3;
-	if (!val_bytes)
-		val_bytes = 1;
-
-	return val_bytes;
+	return map->format.val_bytes ?: 1;
 }
 
 static ssize_t regmap_cdev_read(struct cdev *cdev, void *buf, size_t count, loff_t offset,
@@ -378,6 +401,12 @@ static struct cdev_operations regmap_fops = {
 	.write	= regmap_cdev_write,
 };
 
+size_t regmap_size_bytes(struct regmap *map)
+{
+	return regmap_round_val_bytes(map) * (map->max_register + 1) /
+		map->reg_stride;
+}
+
 /*
  * regmap_register_cdev - register a devfs file for a regmap
  *
@@ -405,8 +434,7 @@ int regmap_register_cdev(struct regmap *map, const char *name)
 			map->cdev.name = xstrdup(dev_name(map->dev));
 	}
 
-	map->cdev.size = regmap_round_val_bytes(map) * (map->max_register + 1) /
-			map->reg_stride;
+	map->cdev.size = regmap_size_bytes(map);
 	map->cdev.dev = map->dev;
 	map->cdev.ops = &regmap_fops;
 

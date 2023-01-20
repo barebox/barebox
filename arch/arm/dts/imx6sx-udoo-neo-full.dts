@@ -1,6 +1,10 @@
 #include <arm/imx6sx-udoo-neo-full.dts>
+#include "imx6sx.dtsi"
 
 / {
+
+	/delete-node/ memory@80000000;
+
 	chosen {
 		environment {
 			compatible = "barebox,environment";
@@ -26,4 +30,16 @@
 
 &ocotp {
 	barebox,provide-mac-address = <&fec1 0x620>;
+};
+
+&iomuxc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog>;
+
+	pinctrl_hog: hoggrp {
+		fsl,pins = <
+			MX6SX_PAD_NAND_READY_B__GPIO4_IO_13	0x1b0b0
+			MX6SX_PAD_NAND_ALE__GPIO4_IO_0		0x1b0b0
+		>;
+	};
 };

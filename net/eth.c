@@ -535,8 +535,11 @@ void eth_open_all(void)
 {
 	struct eth_device *edev;
 
-	list_for_each_entry(edev, &netdev_list, list)
+	list_for_each_entry(edev, &netdev_list, list) {
+		if (edev->global_mode == ETH_MODE_DISABLED)
+			continue;
 		eth_open(edev);
+	}
 }
 
 static int of_populate_ethaddr(void)

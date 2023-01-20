@@ -128,9 +128,6 @@ struct driver {
 #define device_d device
 #define driver_d driver
 
-#define RW_SIZE(x)      (x)
-#define RW_SIZE_MASK    0x7
-
 /* dynamically assign the next free id */
 #define DEVICE_ID_DYNAMIC	-2
 /* do not use an id (only one device available */

@@ -293,6 +293,8 @@ static inline void mtd_set_of_node(struct mtd_info *mtd,
 
 static inline struct device_node *mtd_get_of_node(struct mtd_info *mtd)
 {
+	if (!IS_ENABLED(CONFIG_OFDEVICE))
+		return NULL;
 	if (mtd->dev.of_node)
 		return mtd->dev.of_node;
 	if (mtd->dev.parent)

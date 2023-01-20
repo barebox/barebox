@@ -414,10 +414,17 @@ static struct device *of_device_create_on_demand(struct device_node *np)
 {
 	struct device_node *parent;
 	struct device *parent_dev, *dev;
+	int ret;
 
 	parent = of_get_parent(np);
 	if (!parent)
 		return NULL;
+
+	if (!np->dev && parent->dev) {
+		ret = device_detect(parent->dev);
+		if (ret && ret != -ENOSYS)
+			return ERR_PTR(ret);
+	}
 
 	if (!np->dev)
 		pr_debug("Creating device for %s\n", np->full_name);

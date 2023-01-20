@@ -20,7 +20,7 @@
 };
 
 // provide reset-names until fixed in the upstream dts. Binding prescribes this property.
-&{/soc/dwmmc0@ff808000} {
+&{/soc/mmc@ff808000} {
 	reset-names = "reset";
 };
 

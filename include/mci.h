@@ -91,6 +91,8 @@
 #define SD_CMD_APP_SEND_OP_COND		41
 #define SD_CMD_APP_SEND_SCR		51
 
+#define SD_IO_SEND_OP_COND		5 /* bcr  [23:0] OCR         R4  */
+
 /* SCR definitions in different words */
 #define SD_HIGHSPEED_BUSY	0x00020000
 #define SD_HIGHSPEED_SUPPORTED	0x00020000
@@ -308,7 +310,22 @@
 #define EXT_CSD_DDR_BUS_WIDTH_8	6	/* Card is in 8 bit DDR mode */
 
 #define R1_ILLEGAL_COMMAND		(1 << 22)
+#define R1_STATUS(x)			(x & 0xFFF9A000)
+#define R1_CURRENT_STATE(x)		((x & 0x00001E00) >> 9)	/* sx, b (4 bits) */
+#define R1_READY_FOR_DATA 		(1 << 8)		/* sx, a */
 #define R1_APP_CMD			(1 << 5)
+
+#define R1_STATUS_MASK			(~0x0206BF7F)
+
+#define	R1_STATE_IDLE	0
+#define	R1_STATE_READY	1
+#define	R1_STATE_IDENT	2
+#define	R1_STATE_STBY	3
+#define	R1_STATE_TRAN	4
+#define	R1_STATE_DATA	5
+#define	R1_STATE_RCV	6
+#define	R1_STATE_PRG	7
+#define	R1_STATE_DIS	8
 
 #define R1_SPI_IDLE		(1 << 0)
 #define R1_SPI_ERASE_RESET	(1 << 1)
@@ -326,6 +343,17 @@
 #define MMC_RSP_BUSY    (1 << 3)                /* card may send busy */
 #define MMC_RSP_OPCODE  (1 << 4)                /* response contains opcode */
 
+#define MMC_CMD_MASK    (3 << 5)                /* non-SPI command type */
+#define MMC_CMD_AC      (0 << 5)
+#define MMC_CMD_ADTC    (1 << 5)
+#define MMC_CMD_BC      (2 << 5)
+#define MMC_CMD_BCR     (3 << 5)
+
+#define MMC_RSP_SPI_S1  (1 << 7)                /* one status byte */
+#define MMC_RSP_SPI_S2  (1 << 8)                /* second byte */
+#define MMC_RSP_SPI_B4  (1 << 9)                /* four data bytes */
+#define MMC_RSP_SPI_BUSY (1 << 10)              /* card may send busy */
+
 #define MMC_RSP_NONE    (0)
 #define MMC_RSP_R1      (MMC_RSP_PRESENT|MMC_RSP_CRC|MMC_RSP_OPCODE)
 #define MMC_RSP_R1b	(MMC_RSP_PRESENT|MMC_RSP_CRC|MMC_RSP_OPCODE|MMC_RSP_BUSY)
@@ -335,6 +363,19 @@
 #define MMC_RSP_R5      (MMC_RSP_PRESENT|MMC_RSP_CRC|MMC_RSP_OPCODE)
 #define MMC_RSP_R6      (MMC_RSP_PRESENT|MMC_RSP_CRC|MMC_RSP_OPCODE)
 #define MMC_RSP_R7      (MMC_RSP_PRESENT|MMC_RSP_CRC|MMC_RSP_OPCODE)
+
+/*
+ * These are the SPI response types for MMC, SD, and SDIO cards.
+ * Commands return R1, with maybe more info.  Zero is an error type;
+ * callers must always provide the appropriate MMC_RSP_SPI_Rx flags.
+ */
+#define MMC_RSP_SPI_R1  (MMC_RSP_SPI_S1)
+#define MMC_RSP_SPI_R1B (MMC_RSP_SPI_S1|MMC_RSP_SPI_BUSY)
+#define MMC_RSP_SPI_R2  (MMC_RSP_SPI_S1|MMC_RSP_SPI_S2)
+#define MMC_RSP_SPI_R3  (MMC_RSP_SPI_S1|MMC_RSP_SPI_B4)
+#define MMC_RSP_SPI_R4  (MMC_RSP_SPI_S1|MMC_RSP_SPI_B4)
+#define MMC_RSP_SPI_R5  (MMC_RSP_SPI_S1|MMC_RSP_SPI_S2)
+#define MMC_RSP_SPI_R7  (MMC_RSP_SPI_S1|MMC_RSP_SPI_B4)
 
 /** command information to be sent to the SD/MMC card */
 struct mci_cmd {
@@ -407,6 +448,7 @@ struct mci_host {
 	int broken_cd;		/**< card detect is broken */
 	bool non_removable;	/**< device is non removable */
 	bool no_sd;		/**< do not send SD commands during initialization */
+	bool no_sdio;		/**< do not send SDIO commands during initialization */
 	bool disable_wp;	/**< ignore write-protect detection logic */
 	struct regulator *supply;
 
@@ -445,6 +487,7 @@ struct mci {
 	struct mci_host *host;		/**< the host for this card */
 	struct device dev;		/**< the device for our disk (mcix) */
 	unsigned version;
+	bool sdio;		/**< card is a SDIO card */
 	/** != 0 when a high capacity card is connected (OCR -> OCR_HCS) */
 	int high_capacity;
 	unsigned card_caps;	/**< Card's capabilities */

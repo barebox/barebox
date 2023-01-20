@@ -3476,7 +3476,7 @@ static int e1000_transmit(struct eth_device *edev, void *txpacket, int length)
 
 	ret = readl_poll_timeout(&txp->upper.data,
 				 stat, stat & E1000_TXD_STAT_DD,
-				 MSECOND / USECOND);
+				 USEC_PER_MSEC);
 	if (ret)
 		dev_dbg(hw->dev, "e1000: tx timeout\n");
 

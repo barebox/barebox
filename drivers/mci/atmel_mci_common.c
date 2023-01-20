@@ -90,8 +90,8 @@ static int atmci_poll_status(struct atmel_mci *host, u32 mask)
 	u32 stat;
 	int ret;
 
-	ret = read_poll_timeout(atmci_readl, stat, (stat & mask), SECOND, host,
-				ATMCI_SR);
+	ret = read_poll_timeout(atmci_readl, stat, (stat & mask), USEC_PER_SEC,
+				host, ATMCI_SR);
 	if (ret < 0) {
 		dev_err(host->hw_dev, "timeout\n");
 		host->need_reset = true;
@@ -315,7 +315,7 @@ static int atmci_start_cmd(struct atmel_mci *host, struct mci_cmd *cmd,
 		flags |= ATMCI_CMDR_RSPTYP_NONE;
 		break;
 	default:
-		dev_err(host->hw_dev, "unhandled response type 0x%x\n",
+		dev_dbg(host->hw_dev, "unhandled response type 0x%x\n",
 				cmd->resp_type);
 		return -EINVAL;
 	}

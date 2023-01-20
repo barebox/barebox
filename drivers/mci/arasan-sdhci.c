@@ -136,16 +136,17 @@ static void arasan_sdhci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 static int arasan_sdhci_wait_for_done(struct arasan_sdhci_host *host, u32 mask)
 {
 	u64 start = get_time_ns();
-	u16 stat;
-	u16 error;
+	u32 stat;
 
 	do {
-		stat = sdhci_read16(&host->sdhci, SDHCI_INT_NORMAL_STATUS);
+		stat = sdhci_read32(&host->sdhci, SDHCI_INT_STATUS);
+
+		if (stat & SDHCI_INT_TIMEOUT)
+			return -ETIMEDOUT;
+
 		if (stat & SDHCI_INT_ERROR) {
-			error = sdhci_read16(&host->sdhci,
-					     SDHCI_INT_ERROR_STATUS);
 			dev_err(host->mci.hw_dev, "SDHCI_INT_ERROR: 0x%08x\n",
-				error);
+				stat);
 			return -EPERM;
 		}
 
@@ -159,8 +160,11 @@ static int arasan_sdhci_wait_for_done(struct arasan_sdhci_host *host, u32 mask)
 	return 0;
 }
 
-static void print_error(struct arasan_sdhci_host *host, int cmdidx)
+static void print_error(struct arasan_sdhci_host *host, int cmdidx, int ret)
 {
+	if (ret == -ETIMEDOUT)
+		return;
+
 	dev_err(host->mci.hw_dev,
 		"error while transferring data for command %d\n", cmdidx);
 	dev_err(host->mci.hw_dev, "state = 0x%08x , interrupt = 0x%08x\n",
@@ -210,10 +214,8 @@ static int arasan_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 	sdhci_write16(&host->sdhci, SDHCI_COMMAND, command);
 
 	ret = arasan_sdhci_wait_for_done(host, mask);
-	if (ret == -EPERM)
+	if (ret)
 		goto error;
-	else if (ret)
-		return ret;
 
 	sdhci_read_response(&host->sdhci, cmd);
 	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, mask);
@@ -223,7 +225,7 @@ static int arasan_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 
 error:
 	if (ret) {
-		print_error(host, cmd->cmdidx);
+		print_error(host, cmd->cmdidx, ret);
 		arasan_sdhci_reset(host, BIT(1)); // SDHCI_RESET_CMD
 		arasan_sdhci_reset(host, BIT(2)); // SDHCI_RESET_DATA
 	}

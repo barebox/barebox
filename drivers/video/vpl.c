@@ -93,6 +93,7 @@ int vpl_ioctl(struct vpl *vpl, unsigned int port,
 			continue;
 		}
 
+		pr_debug("%s: looked up %s: %pS\n", __func__, remote->full_name, remote_vpl->ioctl);
 		ret = remote_vpl->ioctl(remote_vpl, remote_port_id, cmd, ptr);
 		if (ret)
 			return ret;

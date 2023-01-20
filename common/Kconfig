@@ -1571,6 +1571,15 @@ config DEBUG_INITCALLS
 	help
 	  If enabled this will print initcall traces.
 
+config DEBUG_PBL
+	bool "Print PBL debugging information"
+	depends on PBL_CONSOLE || DEBUG_LL
+	help
+	  If enabled this will enable all debug prints in the prebootloader.
+	  For this to work, a console needs to be configured in the
+	  board-specific entry point and configured for either DEBUG_LL
+	  or PBL_CONSOLE.
+
 config DEBUG_PROBES
 	bool "Trace driver probes/removes"
 	help

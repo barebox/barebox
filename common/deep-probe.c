@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
+#define pr_fmt(fmt) "deep-probe: " fmt
+
 #include <common.h>
 #include <deep-probe.h>
 #include <of.h>
@@ -27,7 +29,7 @@ bool deep_probe_is_supported(void)
 		for (; matches->compatible; matches++) {
 			if (of_machine_is_compatible(matches->compatible)) {
 				boardstate = DEEP_PROBE_SUPPORTED;
-				printk("Deep probe supported due to %s\n", matches->compatible);
+				pr_info("supported due to %s\n", matches->compatible);
 				return true;
 			}
 		}

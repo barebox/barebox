@@ -783,10 +783,9 @@ static int rk808_regulator_register(struct rk808 *rk808, int id,
 	cfg->rdev.regmap = rk808->regmap;
 
 	ret = of_regulator_register(&cfg->rdev, match->of_node);
-	if (ret) {
-		dev_err(dev, "failed to register %s regulator\n", match->name);
-		return ret;
-	}
+	if (ret)
+		return dev_err_probe(dev, ret, "failed to register %s regulator\n",
+				     match->name);
 
 	dev_dbg(dev, "registered %s\n", match->name);
 

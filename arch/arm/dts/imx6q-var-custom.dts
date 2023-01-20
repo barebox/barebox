@@ -83,7 +83,7 @@
 		fsl,data-width = <24>;
 		status = "okay";
 		display-timings {
-			native-mode = &claawvga;
+			native-mode = <&claawvga>;
 			claawvga: claawvga {
 				native-mode;
 				clock-frequency = <35714000>;

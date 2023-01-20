@@ -653,13 +653,13 @@ struct state *state_new_from_node(struct device_node *node, bool readonly)
 	if (ret)
 		goto out_release_state;
 
+	if (readonly)
+		state_backend_set_readonly(state);
+
 	ret = state_storage_init(state, state->backend_path, offset,
 				 size, stridesize, storage_type);
 	if (ret)
 		goto out_release_state;
-
-	if (readonly)
-		state_backend_set_readonly(state);
 
 	ret = state_from_node(state, node, 1);
 	if (ret) {

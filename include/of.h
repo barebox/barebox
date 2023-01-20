@@ -1146,6 +1146,7 @@ extern const struct of_device_id of_default_bus_match_table[];
 
 int of_device_enable(struct device_node *node);
 int of_device_enable_path(const char *path);
+int of_device_enable_by_alias(const char *alias);
 int of_device_disable(struct device_node *node);
 int of_device_disable_path(const char *path);
 int of_device_disable_by_alias(const char *alias);

@@ -147,7 +147,7 @@ static const struct of_device_id reset_simple_dt_ids[] = {
 	{ /* sentinel */ },
 };
 
-static int reset_simple_probe(struct device_d *dev)
+static int reset_simple_probe(struct device *dev)
 {
 	const struct reset_simple_devdata *devdata;
 	struct reset_simple_data *data;
@@ -167,7 +167,7 @@ static int reset_simple_probe(struct device_d *dev)
 	data->membase = IOMEM(res->start);
 	data->rcdev.nr_resets = resource_size(res) * BITS_PER_BYTE;
 	data->rcdev.ops = &reset_simple_ops;
-	data->rcdev.of_node = dev->device_node;
+	data->rcdev.of_node = dev->of_node;
 
 	if (devdata) {
 		reg_offset = devdata->reg_offset;
@@ -182,7 +182,7 @@ static int reset_simple_probe(struct device_d *dev)
 	return reset_controller_register(&data->rcdev);
 }
 
-static struct driver_d reset_simple_driver = {
+static struct driver reset_simple_driver = {
 	.probe	= reset_simple_probe,
 	.name		= "simple-reset",
 	.of_compatible	= reset_simple_dt_ids,

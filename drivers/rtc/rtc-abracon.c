@@ -80,7 +80,7 @@ static const struct rtc_class_ops ds13xx_rtc_ops = {
 	.set_time	= abracon_set_time,
 };
 
-static int abracon_probe(struct device_d *dev)
+static int abracon_probe(struct device *dev)
 {
 	struct i2c_client *client = to_i2c_client(dev);
 	struct abracon *abracon;
@@ -100,7 +100,7 @@ static struct platform_device_id abracon_id[] = {
 	{ }
 };
 
-static struct driver_d abracon_driver = {
+static struct driver abracon_driver = {
 	.name	= "rtc-abracon",
 	.probe		= abracon_probe,
 	.id_table	= abracon_id,

@@ -11,7 +11,7 @@
 #include <of.h>
 #include <string.h>
 
-static int mba6ulx_probe(struct device_d *dev)
+static int mba6ulx_probe(struct device *dev)
 {
 	int flags;
 
@@ -35,7 +35,7 @@ static const struct of_device_id mba6ulx_of_match[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d mba6ulx_board_driver = {
+static struct driver mba6ulx_board_driver = {
 	.name = "board-mba6ulx",
 	.probe = mba6ulx_probe,
 	.of_compatible = mba6ulx_of_match,

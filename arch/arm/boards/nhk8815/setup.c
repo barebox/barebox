@@ -52,7 +52,7 @@ static struct resource nhk8815_nand_resources[] = {
 	}
 };
 
-static struct device_d nhk8815_nand_device = {
+static struct device nhk8815_nand_device = {
 	.id		= DEVICE_ID_DYNAMIC,
 	.name		= "nomadik_nand",
 	.num_resources	= ARRAY_SIZE(nhk8815_nand_resources),

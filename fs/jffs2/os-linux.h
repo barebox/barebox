@@ -17,7 +17,7 @@
 
 struct kstatfs;
 struct kvec;
-struct fs_device_d;
+struct fs_device;
 
 #define JFFS2_BLOCK_SIZE	PAGE_SIZE
 
@@ -180,7 +180,7 @@ struct jffs2_inode_info *jffs2_gc_fetch_inode(struct jffs2_sb_info *c,
 void jffs2_flash_cleanup(struct jffs2_sb_info *c);
 
 /* super.c */
-int jffs2_fill_super(struct fs_device_d *fsdev, int silent);
+int jffs2_fill_super(struct fs_device *fsdev, int silent);
 
 /* writev.c */
 int jffs2_flash_direct_writev(struct jffs2_sb_info *c, const struct kvec *vecs,

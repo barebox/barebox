@@ -326,7 +326,7 @@ static const struct of_device_id of_pca955x_match[] = {
 	{},
 };
 
-static int led_pca955x_probe(struct device_d *dev)
+static int led_pca955x_probe(struct device *dev)
 {
 	struct pca955x *pca955x;
 	struct pca955x_led *pca955x_led;
@@ -365,7 +365,7 @@ static int led_pca955x_probe(struct device_d *dev)
 	pca955x->client = client;
 	pca955x->chipdef = chip;
 
-	pdata =	led_pca955x_pdata_of_init(dev->device_node, pca955x);
+	pdata =	led_pca955x_pdata_of_init(dev->of_node, pca955x);
 	if (IS_ERR(pdata))
 		return PTR_ERR(pdata);
 
@@ -393,7 +393,7 @@ static int led_pca955x_probe(struct device_d *dev)
 	return err;
 }
 
-static struct driver_d led_pca955x_driver = {
+static struct driver led_pca955x_driver = {
 	.name	= "led-pca955x",
 	.probe	= led_pca955x_probe,
 	.id_table = led_pca955x_id,

@@ -28,7 +28,7 @@ enum access_rights {
 #define BLOCKSIZE_BYTES		8
 
 struct blobgen {
-	struct device_d dev;
+	struct device dev;
 	int (*encrypt)(struct blobgen *bg, const char *modifier,
 		       const void *plain, int plainsize, void *blob,
 		       int *blobsize);
@@ -42,7 +42,7 @@ struct blobgen {
 	struct list_head list;
 };
 
-int blob_gen_register(struct device_d *dev, struct blobgen *bg);
+int blob_gen_register(struct device *dev, struct blobgen *bg);
 
 struct blobgen *blobgen_get(const char *name);
 

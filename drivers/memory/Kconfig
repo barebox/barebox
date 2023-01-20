@@ -1,6 +1,20 @@
 # SPDX-License-Identifier: GPL-2.0-only
 menu "Memory controller drivers"
 
+config ATMEL_EBI
+	bool "Atmel EBI driver"
+	default y if ARCH_AT91
+	depends on ARCH_AT91 || COMPILE_TEST
+	depends on OFDEVICE
+	select MFD_SYSCON
+	select MFD_ATMEL_SMC
+	help
+	  Driver for Atmel EBI controller.
+	  Used to configure the EBI (external bus interface) when the device-
+	  tree is used. This bus supports NANDs, external ethernet controller,
+	  SRAMs, ATA devices, etc.
+
+
 config MC_TEGRA124
 	bool "Support for Tegra124 memory controller"
 	depends on ARCH_TEGRA || COMPILE_TEST

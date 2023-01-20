@@ -46,7 +46,7 @@ struct nvme_queue {
 struct nvme_dev {
 	struct nvme_queue queues[NVME_QID_NUM];
 	u32 __iomem *dbs;
-	struct device_d *dev;
+	struct device *dev;
 	unsigned online_queues;
 	unsigned max_qid;
 	int q_depth;

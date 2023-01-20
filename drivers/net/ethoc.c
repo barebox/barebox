@@ -529,7 +529,7 @@ static int ethoc_mdio_write(struct mii_bus *bus, int phy, int reg, u16 val)
 	return 0;
 }
 
-static int ethoc_probe(struct device_d *dev)
+static int ethoc_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct eth_device *edev;
@@ -572,7 +572,7 @@ static struct of_device_id ethoc_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d ethoc_driver = {
+static struct driver ethoc_driver = {
 	.name  = "ethoc",
 	.probe = ethoc_probe,
 	.of_compatible = DRV_OF_COMPAT(ethoc_dt_ids),

@@ -36,6 +36,7 @@
 #include <asm/byteorder.h>
 #include <io.h>
 #include <malloc.h>
+#include <gpio.h>
 #include <module.h>
 #include <of_mtd.h>
 
@@ -91,11 +92,16 @@ static int nand_ooblayout_free_sp(struct mtd_info *mtd, int section,
 	return 0;
 }
 
-const struct mtd_ooblayout_ops nand_ooblayout_sp_ops = {
+static const struct mtd_ooblayout_ops nand_ooblayout_sp_ops = {
 	.ecc = nand_ooblayout_ecc_sp,
 	.free = nand_ooblayout_free_sp,
 };
-EXPORT_SYMBOL_GPL(nand_ooblayout_sp_ops);
+
+const struct mtd_ooblayout_ops *nand_get_small_page_ooblayout(void)
+{
+	return &nand_ooblayout_sp_ops;
+}
+EXPORT_SYMBOL_GPL(nand_get_small_page_ooblayout);
 
 static int nand_ooblayout_ecc_lp(struct mtd_info *mtd, int section,
 				 struct mtd_oob_region *oobregion)
@@ -127,11 +133,16 @@ static int nand_ooblayout_free_lp(struct mtd_info *mtd, int section,
 	return 0;
 }
 
-const struct mtd_ooblayout_ops nand_ooblayout_lp_ops = {
+static const struct mtd_ooblayout_ops nand_ooblayout_lp_ops = {
 	.ecc = nand_ooblayout_ecc_lp,
 	.free = nand_ooblayout_free_lp,
 };
-EXPORT_SYMBOL_GPL(nand_ooblayout_lp_ops);
+
+const struct mtd_ooblayout_ops *nand_get_large_page_ooblayout(void)
+{
+	return &nand_ooblayout_lp_ops;
+}
+EXPORT_SYMBOL_GPL(nand_get_large_page_ooblayout);
 
 /*
  * Support the old "large page" layout used for 1-bit Hamming ECC where ECC
@@ -784,6 +795,27 @@ int nand_soft_waitrdy(struct nand_chip *chip, unsigned long timeout_ms)
 	return status & NAND_STATUS_READY ? 0 : -ETIMEDOUT;
 };
 EXPORT_SYMBOL_GPL(nand_soft_waitrdy);
+
+/**
+ * nand_gpio_waitrdy - Poll R/B GPIO pin until ready
+ * @chip: NAND chip structure
+ * @gpiod: GPIO descriptor of R/B pin
+ * @timeout_ms: Timeout in ms
+ *
+ * Poll the R/B GPIO pin until it becomes ready. If that does not happen
+ * whitin the specified timeout, -ETIMEDOUT is returned.
+ *
+ * This helper is intended to be used when the controller has access to the
+ * NAND R/B pin over GPIO.
+ *
+ * Return 0 if the R/B pin indicates chip is ready, a negative error otherwise.
+ */
+int nand_gpio_waitrdy(struct nand_chip *chip, int gpio,
+		      unsigned long timeout_ms)
+{
+	return gpio_poll_timeout_us(gpio, true, timeout_ms * USEC_PER_MSEC);
+};
+EXPORT_SYMBOL_GPL(nand_gpio_waitrdy);
 
 static bool nand_supports_get_features(struct nand_chip *chip, int addr)
 {
@@ -4651,8 +4683,8 @@ static bool find_full_id_nand(struct nand_chip *chip,
 					   memorg->pagesize *
 					   memorg->pages_per_eraseblock);
 		chip->options |= type->options;
-		chip->base.eccreq.strength = NAND_ECC_STRENGTH(type);
-		chip->base.eccreq.step_size = NAND_ECC_STEP(type);
+		chip->base.ecc.requirements.strength = NAND_ECC_STRENGTH(type);
+		chip->base.ecc.requirements.step_size = NAND_ECC_STEP(type);
 
 		chip->parameters.model = strdup(type->name);
 		if (!chip->parameters.model)
@@ -4914,9 +4946,9 @@ free_detect_allocation:
 }
 
 static const char * const nand_ecc_algos[] = {
-	[NAND_ECC_HAMMING]	= "hamming",
-	[NAND_ECC_BCH]		= "bch",
-	[NAND_ECC_RS]		= "rs",
+	[NAND_ECC_ALGO_HAMMING]		= "hamming",
+	[NAND_ECC_ALGO_BCH]		= "bch",
+	[NAND_ECC_ALGO_RS]		= "rs",
 };
 
 static enum nand_ecc_algo of_get_nand_ecc_algo(struct device_node *np)
@@ -4927,7 +4959,7 @@ static enum nand_ecc_algo of_get_nand_ecc_algo(struct device_node *np)
 
 	err = of_property_read_string(np, "nand-ecc-algo", &pm);
 	if (!err) {
-		for (ecc_algo = NAND_ECC_HAMMING;
+		for (ecc_algo = NAND_ECC_ALGO_HAMMING;
 		     ecc_algo < ARRAY_SIZE(nand_ecc_algos);
 		     ecc_algo++) {
 			if (!strcasecmp(pm, nand_ecc_algos[ecc_algo]))
@@ -4942,12 +4974,12 @@ static enum nand_ecc_algo of_get_nand_ecc_algo(struct device_node *np)
 	err = of_property_read_string(np, "nand-ecc-mode", &pm);
 	if (!err) {
 		if (!strcasecmp(pm, "soft"))
-			return NAND_ECC_HAMMING;
+			return NAND_ECC_ALGO_HAMMING;
 		else if (!strcasecmp(pm, "soft_bch"))
-			return NAND_ECC_BCH;
+			return NAND_ECC_ALGO_BCH;
 	}
 
-	return NAND_ECC_UNKNOWN;
+	return NAND_ECC_ALGO_UNKNOWN;
 }
 
 static int nand_dt_init(struct nand_chip *chip)
@@ -4976,7 +5008,7 @@ static int nand_dt_init(struct nand_chip *chip)
 	if (ecc_mode >= 0)
 		chip->ecc.mode = ecc_mode;
 
-	if (ecc_algo != NAND_ECC_UNKNOWN)
+	if (ecc_algo != NAND_ECC_ALGO_UNKNOWN)
 		chip->ecc.algo = ecc_algo;
 
 	if (ecc_strength >= 0)
@@ -5105,7 +5137,7 @@ static int nand_set_ecc_soft_ops(struct nand_chip *chip)
 		return -EINVAL;
 
 	switch (ecc->algo) {
-	case NAND_ECC_HAMMING:
+	case NAND_ECC_ALGO_HAMMING:
 		ecc->calculate = nand_calculate_ecc;
 		ecc->correct = nand_correct_data;
 		ecc->read_page = nand_read_page_swecc;
@@ -5126,7 +5158,7 @@ static int nand_set_ecc_soft_ops(struct nand_chip *chip)
 			ecc->options |= NAND_ECC_SOFT_HAMMING_SM_ORDER;
 
 		return 0;
-	case NAND_ECC_BCH:
+	case NAND_ECC_ALGO_BCH:
 		if (!mtd_nand_has_bch()) {
 			WARN(1, "CONFIG_MTD_NAND_ECC_SW_BCH not enabled\n");
 			return -EINVAL;
@@ -5270,8 +5302,8 @@ nand_match_ecc_req(struct nand_chip *chip,
 {
 	struct mtd_info *mtd = nand_to_mtd(chip);
 	const struct nand_ecc_step_info *stepinfo;
-	int req_step = chip->base.eccreq.step_size;
-	int req_strength = chip->base.eccreq.strength;
+	int req_step = chip->base.ecc.requirements.step_size;
+	int req_strength = chip->base.ecc.requirements.strength;
 	int req_corr, step_size, strength, nsteps, ecc_bytes, ecc_bytes_total;
 	int best_step, best_strength, best_ecc_bytes;
 	int best_ecc_bytes_total = INT_MAX;
@@ -5464,7 +5496,7 @@ static bool nand_ecc_strength_good(struct nand_chip *chip)
 	struct nand_ecc_ctrl *ecc = &chip->ecc;
 	int corr, ds_corr;
 
-	if (ecc->size == 0 || chip->base.eccreq.step_size == 0)
+	if (ecc->size == 0 || chip->base.ecc.requirements.step_size == 0)
 		/* Not enough information */
 		return true;
 
@@ -5473,10 +5505,10 @@ static bool nand_ecc_strength_good(struct nand_chip *chip)
 	 * the correction density.
 	 */
 	corr = (mtd->writesize * ecc->strength) / ecc->size;
-	ds_corr = (mtd->writesize * chip->base.eccreq.strength) /
-		  chip->base.eccreq.step_size;
+	ds_corr = (mtd->writesize * chip->base.ecc.requirements.strength) /
+		  chip->base.ecc.requirements.step_size;
 
-	return corr >= ds_corr && ecc->strength >= chip->base.eccreq.strength;
+	return corr >= ds_corr && ecc->strength >= chip->base.ecc.requirements.strength;
 }
 
 static int rawnand_erase(struct nand_device *nand, const struct nand_pos *pos)
@@ -5566,7 +5598,7 @@ int nand_scan_tail(struct nand_chip *chip)
 	 * If no default placement scheme is given, select an appropriate one.
 	 */
 	if (!mtd->ooblayout &&
-	    !(ecc->mode == NAND_ECC_SOFT && ecc->algo == NAND_ECC_BCH)) {
+	    !(ecc->mode == NAND_ECC_SOFT && ecc->algo == NAND_ECC_ALGO_BCH)) {
 		switch (mtd->oobsize) {
 		case 8:
 		case 16:
@@ -5662,7 +5694,7 @@ int nand_scan_tail(struct nand_chip *chip)
 		pr_warn("%d byte HW ECC not possible on %d byte page size, fallback to SW ECC\n",
 			ecc->size, mtd->writesize);
 		ecc->mode = NAND_ECC_SOFT;
-		ecc->algo = NAND_ECC_HAMMING;
+		ecc->algo = NAND_ECC_ALGO_HAMMING;
 	case NAND_ECC_SOFT:
 		ret = nand_set_ecc_soft_ops(chip);
 		if (ret) {
@@ -5752,8 +5784,8 @@ int nand_scan_tail(struct nand_chip *chip)
 	if (!nand_ecc_strength_good(chip))
 		pr_warn("WARNING: %s: the ECC used on your system (%db/%dB) is too weak compared to the one required by the NAND chip (%db/%dB)\n",
 			mtd->name, chip->ecc.strength, chip->ecc.size,
-			chip->base.eccreq.strength,
-			chip->base.eccreq.step_size);
+			chip->base.ecc.requirements.strength,
+			chip->base.ecc.requirements.step_size);
 
 	/* Allow subpage writes up to ecc.steps. Not possible for MLC flash */
 	if (!(chip->options & NAND_NO_SUBPAGE_WRITE) && nand_is_slc(chip)) {
@@ -5913,7 +5945,7 @@ EXPORT_SYMBOL(nand_scan_with_ids);
 void nand_cleanup(struct nand_chip *chip)
 {
 	if (chip->ecc.mode == NAND_ECC_SOFT &&
-	    chip->ecc.algo == NAND_ECC_BCH)
+	    chip->ecc.algo == NAND_ECC_ALGO_BCH)
 		nand_bch_free((struct nand_bch_control *)chip->ecc.priv);
 
 	nanddev_cleanup(&chip->base);

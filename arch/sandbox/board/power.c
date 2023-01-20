@@ -38,7 +38,7 @@ static void sandbox_rst_reexec(struct restart_handler *rst)
 	linux_reexec();
 }
 
-static int sandbox_power_probe(struct device_d *dev)
+static int sandbox_power_probe(struct device *dev)
 {
 	struct sandbox_power *power = xzalloc(sizeof(*power));
 	size_t len;
@@ -66,7 +66,8 @@ static int sandbox_power_probe(struct device_d *dev)
 	if (IS_ENABLED(CONFIG_SANDBOX_REEXEC))
 		restart_handler_register(&power->rst_reexec);
 
-	power->reset_source_cell = of_nvmem_cell_get(dev->device_node, "reset-source");
+	power->reset_source_cell = of_nvmem_cell_get(dev->of_node,
+						     "reset-source");
 	if (IS_ERR(power->reset_source_cell)) {
 		dev_warn(dev, "No reset source info available: %pe\n", power->reset_source_cell);
 		return 0;
@@ -87,7 +88,7 @@ static __maybe_unused struct of_device_id sandbox_power_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d sandbox_power_drv = {
+static struct driver sandbox_power_drv = {
 	.name  = "sandbox-power",
 	.of_compatible = sandbox_power_dt_ids,
 	.probe = sandbox_power_probe,

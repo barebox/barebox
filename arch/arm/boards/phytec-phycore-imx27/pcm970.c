@@ -28,7 +28,7 @@ static struct ide_port_info pcm970_ide_pdata = {
 	.reset		= &pcm970_ide_reset,
 };
 
-static struct device_d pcm970_ide_device = {
+static struct device pcm970_ide_device = {
 	.id		= DEVICE_ID_DYNAMIC,
 	.name		= "ide_intf",
 	.num_resources	= ARRAY_SIZE(pcm970_ide_resources),

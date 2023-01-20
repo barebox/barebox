@@ -21,7 +21,7 @@
 
 struct ltdc_hw {
 	void __iomem *regs;
-	struct device_d *dev;
+	struct device *dev;
 	struct clk *pclk;
 	bool claimed;
 };
@@ -252,7 +252,7 @@ static struct fb_ops ltdc_ops = {
 	.fb_disable		= ltdc_disable,
 };
 
-static int ltdc_probe(struct device_d *dev)
+static int ltdc_probe(struct device *dev)
 {
 	struct device_node *np;
 	struct resource *iores;
@@ -273,7 +273,7 @@ static int ltdc_probe(struct device_d *dev)
 		return PTR_ERR(hw->pclk);
 	}
 
-	for_each_available_child_of_node(dev->device_node, np) {
+	for_each_available_child_of_node(dev->of_node, np) {
 		struct ltdc_fb *priv;
 		struct of_endpoint ep;
 		struct fb_info *info;
@@ -290,7 +290,7 @@ static int ltdc_probe(struct device_d *dev)
 		priv = xzalloc(sizeof(*priv));
 		priv->hw = hw;
 		priv->id = ep.id;
-		priv->vpl.node = dev->device_node;
+		priv->vpl.node = dev->of_node;
 
 		ret = vpl_register(&priv->vpl);
 		if (ret)
@@ -328,7 +328,7 @@ static __maybe_unused struct of_device_id ltdc_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d ltdc_driver = {
+static struct driver ltdc_driver = {
 	.name = "stm32-ltdc",
 	.probe = ltdc_probe,
 	.of_compatible = DRV_OF_COMPAT(ltdc_ids),

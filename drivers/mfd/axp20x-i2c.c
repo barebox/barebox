@@ -21,7 +21,7 @@
 #include <linux/mfd/axp20x.h>
 #include <regmap.h>
 
-static int axp20x_i2c_probe(struct device_d *dev)
+static int axp20x_i2c_probe(struct device *dev)
 {
 	struct i2c_client *client = to_i2c_client(dev);
 	struct axp20x_dev *axp20x;
@@ -59,7 +59,7 @@ static const struct of_device_id axp20x_i2c_of_match[] = {
 	{ },
 };
 
-static struct driver_d axp20x_i2c_driver = {
+static struct driver axp20x_i2c_driver = {
 	.name		= "axp20x-i2c",
 	.probe		= axp20x_i2c_probe,
 	.of_compatible	= DRV_OF_COMPAT(axp20x_i2c_of_match),

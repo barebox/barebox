@@ -34,5 +34,6 @@ void at91_lpddr1_sdram_initialize(void __iomem *base_address,
 
 void __noreturn sama5d2_barebox_entry(unsigned int r4, void *boarddata);
 void __noreturn sama5d3_barebox_entry(unsigned int r4, void *boarddata);
+void __noreturn sama5d4_barebox_entry(unsigned int r4, void *boarddata);
 
 #endif /* #ifndef __DDRAMC_H__ */

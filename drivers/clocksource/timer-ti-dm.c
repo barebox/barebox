@@ -65,7 +65,7 @@ static struct clocksource dmtimer_cs = {
 	.priority = 70,
 };
 
-static int omap_dmtimer_probe(struct device_d *dev)
+static int omap_dmtimer_probe(struct device *dev)
 {
 	struct resource *iores;
 	u64 clk_speed;
@@ -97,7 +97,7 @@ static __maybe_unused struct of_device_id omap_dmtimer_dt_ids[] = {
 	}
 };
 
-static struct driver_d omap_dmtimer_driver = {
+static struct driver omap_dmtimer_driver = {
 	.name = "omap-dmtimer",
 	.probe = omap_dmtimer_probe,
 	.of_compatible = DRV_OF_COMPAT(omap_dmtimer_dt_ids),

@@ -6,7 +6,7 @@
 
 static int efi_x86_pure_init(void)
 {
-	struct device_d *dev = device_alloc("efi-cs-x86", DEVICE_ID_SINGLE);
+	struct device *dev = device_alloc("efi-cs-x86", DEVICE_ID_SINGLE);
 
 	return platform_device_register(dev);
 }

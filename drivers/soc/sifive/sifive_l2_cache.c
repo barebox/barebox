@@ -48,7 +48,7 @@
 
 static void __iomem *l2_base = NULL;
 
-static void sifive_l2_config_read(struct device_d *dev)
+static void sifive_l2_config_read(struct device *dev)
 {
 	u32 regval, val;
 
@@ -101,7 +101,7 @@ static void sifive_l2_enable_ways(void)
 	mb();
 }
 
-static int sifive_l2_probe(struct device_d *dev)
+static int sifive_l2_probe(struct device *dev)
 {
 	struct resource *iores;
 
@@ -128,7 +128,7 @@ static const struct of_device_id sifive_l2_ids[] = {
 	{ /* end of table */ },
 };
 
-static struct driver_d sifive_l2_driver = {
+static struct driver sifive_l2_driver = {
 	.name = "sfive-l2cache",
 	.probe = sifive_l2_probe,
 	.of_compatible = sifive_l2_ids,

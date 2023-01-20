@@ -108,7 +108,7 @@ static int arm_dcc_tstc(struct console_device *cdev)
 
 static struct console_device arm_dcc_dev;
 
-static int arm_dcc_probe(struct device_d *dev)
+static int arm_dcc_probe(struct device *dev)
 {
 	struct console_device *cdev;
 
@@ -125,13 +125,13 @@ static int arm_dcc_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d arm_dcc_driver = {
+static struct driver arm_dcc_driver = {
 	.name	= "arm_dcc",
 	.probe	= arm_dcc_probe,
 };
 console_platform_driver(arm_dcc_driver);
 
-static struct device_d arm_dcc_device = {
+static struct device arm_dcc_device = {
 	.id	= DEVICE_ID_DYNAMIC,
 	.name	= "arm_dcc",
 };

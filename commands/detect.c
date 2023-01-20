@@ -12,7 +12,7 @@
 
 static int do_detect(int argc, char *argv[])
 {
-	struct device_d *dev;
+	struct device *dev;
 	int opt, i, ret, err;
 	int option_list = 0;
 	int option_all = 0;

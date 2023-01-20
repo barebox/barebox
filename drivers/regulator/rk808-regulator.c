@@ -770,7 +770,7 @@ static int rk808_regulator_register(struct rk808 *rk808, int id,
 				    struct of_regulator_match *match,
 				    struct rk_regulator_cfg *cfg)
 {
-	struct device_d *dev = &rk808->i2c->dev;
+	struct device *dev = &rk808->i2c->dev;
 	int ret;
 
 	if (!match->of_node) {
@@ -885,11 +885,11 @@ static struct of_regulator_match rk818_reg_matches[] = {
 };
 static_assert(ARRAY_SIZE(rk818_reg_matches) == RK818_NUM_REGULATORS);
 
-static int rk808_regulator_dt_parse(struct device_d *dev,
+static int rk808_regulator_dt_parse(struct device *dev,
 				    struct of_regulator_match *matches,
 				    int nregulators)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 
 	np = of_get_child_by_name(np, "regulators");
 	if (!np)
@@ -898,7 +898,7 @@ static int rk808_regulator_dt_parse(struct device_d *dev,
 	return of_regulator_match(dev, np, matches, nregulators);
 }
 
-static int rk808_regulator_probe(struct device_d *dev)
+static int rk808_regulator_probe(struct device *dev)
 {
 	struct rk808 *rk808 = dev->parent->priv;
 	struct rk_regulator_cfg *regulators;
@@ -951,7 +951,7 @@ static int rk808_regulator_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d rk808_regulator_driver = {
+static struct driver rk808_regulator_driver = {
 	.name = "rk808-regulator",
 	.probe = rk808_regulator_probe,
 };

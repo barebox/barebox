@@ -33,8 +33,15 @@ void __noreturn sama5d3_barebox_entry(unsigned int r4, void *boarddata)
 	barebox_arm_entry(SAMA5_DDRCS, at91sama5d3_get_ddram_size(),
 			  boarddata);
 }
+void __noreturn sama5d4_barebox_entry(unsigned int r4, void *boarddata)
+{
+	__sama5d4_stashed_bootrom_r4 = r4;
 
-static int sama5_ddr_probe(struct device_d *dev)
+	barebox_arm_entry(SAMA5_DDRCS, at91sama5d4_get_ddram_size(),
+			  boarddata);
+}
+
+static int sama5_ddr_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *base;
@@ -52,7 +59,7 @@ static struct of_device_id sama5_ddr_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d sama5_ddr_driver = {
+static struct driver sama5_ddr_driver = {
 	.name   = "sama5-ddramc",
 	.probe  = sama5_ddr_probe,
 	.of_compatible = sama5_ddr_dt_ids,

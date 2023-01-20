@@ -1370,9 +1370,9 @@ int spi_nor_scan(struct spi_nor *nor, const char *name,
 	struct spi_nor_flash_parameter params;
 	const struct spi_device_id	*id = NULL;
 	struct flash_info		*info;
-	struct device_d *dev = nor->dev;
+	struct device *dev = nor->dev;
 	struct mtd_info *mtd = nor->mtd;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	int ret;
 	int i;
 

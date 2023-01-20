@@ -33,7 +33,7 @@ struct eqos_rk_gmac {
 	int bus_id;
 	u32 tx_delay;
 	u32 rx_delay;
-	struct device_d *dev;
+	struct device *dev;
 };
 
 enum {
@@ -101,7 +101,7 @@ static void rk3568_set_to_rgmii(struct eqos *eqos,
 				int tx_delay, int rx_delay)
 {
 	struct eqos_rk_gmac *priv = to_rk_gmac(eqos);
-	struct device_d *dev = priv->dev;
+	struct device *dev = priv->dev;
 	u32 offset_con0, offset_con1;
 
 	if (IS_ERR(priv->grf)) {
@@ -127,7 +127,7 @@ static void rk3568_set_to_rgmii(struct eqos *eqos,
 static void rk3568_set_to_rmii(struct eqos *eqos)
 {
 	struct eqos_rk_gmac *priv = to_rk_gmac(eqos);
-	struct device_d *dev = priv->dev;
+	struct device *dev = priv->dev;
 	u32 offset_con1;
 
 	if (IS_ERR(priv->grf)) {
@@ -145,7 +145,7 @@ static void rk3568_set_to_rmii(struct eqos *eqos)
 static void rk3568_set_gmac_speed(struct eqos *eqos, int speed)
 {
 	struct eqos_rk_gmac *priv = to_rk_gmac(eqos);
-	struct device_d *dev = priv->dev;
+	struct device *dev = priv->dev;
 	unsigned long rate;
 	int ret;
 
@@ -185,7 +185,7 @@ static const struct rk_gmac_ops rk3568_ops = {
 static int rk_gmac_powerup(struct eqos *eqos)
 {
 	struct eqos_rk_gmac *priv = to_rk_gmac(eqos);
-	struct device_d *dev = priv->dev;
+	struct device *dev = priv->dev;
 
 	/*rmii or rgmii*/
 	switch (eqos->interface) {
@@ -230,9 +230,9 @@ static void eqos_rk_adjust_link(struct eth_device *edev)
 	eqos_adjust_link(edev);
 }
 
-static int eqos_init_rk_gmac(struct device_d *dev, struct eqos *eqos)
+static int eqos_init_rk_gmac(struct device *dev, struct eqos *eqos)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct eqos_rk_gmac *priv = to_rk_gmac(eqos);
 	int i = 0, ret;
 	const char *strings;
@@ -306,7 +306,7 @@ static struct eqos_ops rk_gmac_ops = {
 	.config_mac = EQOS_MAC_RXQ_CTRL0_RXQ0EN_ENABLED_AV,
 };
 
-static int rk_gmac_probe(struct device_d *dev)
+static int rk_gmac_probe(struct device *dev)
 {
 	return eqos_probe(dev, &rk_gmac_ops, xzalloc(sizeof(struct eqos_rk_gmac)));
 }
@@ -320,7 +320,7 @@ static __maybe_unused struct of_device_id rk_gmac_compatible[] = {
 	}
 };
 
-static struct driver_d rk_gmac_driver = {
+static struct driver rk_gmac_driver = {
 	.name = "eqos-rockchip",
 	.probe = rk_gmac_probe,
 	.remove = eqos_remove,

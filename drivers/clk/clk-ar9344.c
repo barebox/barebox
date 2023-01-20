@@ -99,7 +99,7 @@ static void ar9344_pll_init(void __iomem *base)
 	clks[ATH79_CLK_CPU] = clk_ar9344("cpu", "ref", base);
 }
 
-static int ar9344_clk_probe(struct device_d *dev)
+static int ar9344_clk_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *base;
@@ -113,7 +113,7 @@ static int ar9344_clk_probe(struct device_d *dev)
 
 	clk_data.clks = clks;
 	clk_data.clk_num = ARRAY_SIZE(clks);
-	of_clk_add_provider(dev->device_node, of_clk_src_onecell_get,
+	of_clk_add_provider(dev->of_node, of_clk_src_onecell_get,
 			    &clk_data);
 
 	return 0;
@@ -127,7 +127,7 @@ static __maybe_unused struct of_device_id ar9344_clk_dt_ids[] = {
 	}
 };
 
-static struct driver_d ar9344_clk_driver = {
+static struct driver ar9344_clk_driver = {
 	.probe	= ar9344_clk_probe,
 	.name	= "ar9344_clk",
 	.of_compatible = DRV_OF_COMPAT(ar9344_clk_dt_ids),

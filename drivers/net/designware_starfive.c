@@ -56,7 +56,7 @@ static struct dw_eth_drvdata starfive_drvdata = {
 	.fix_mac_speed = dwmac_fixed_speed,
 };
 
-static int starfive_dwc_ether_probe(struct device_d *dev)
+static int starfive_dwc_ether_probe(struct device *dev)
 {
 	struct dw_eth_dev *dwc;
 	struct regmap *regmap;
@@ -67,7 +67,8 @@ static int starfive_dwc_ether_probe(struct device_d *dev)
 		{ .id = "tx" },
 	};
 
-	regmap = syscon_regmap_lookup_by_phandle(dev->device_node, "starfive,sysmain");
+	regmap = syscon_regmap_lookup_by_phandle(dev->of_node,
+						 "starfive,sysmain");
 	if (IS_ERR(regmap)) {
 		dev_err(dev, "Could not get starfive,sysmain node\n");
 		return PTR_ERR(regmap);
@@ -102,7 +103,7 @@ static struct of_device_id starfive_dwc_ether_compatible[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d starfive_dwc_ether_driver = {
+static struct driver starfive_dwc_ether_driver = {
 	.name = "starfive-designware_eth",
 	.probe = starfive_dwc_ether_probe,
 	.of_compatible = starfive_dwc_ether_compatible,

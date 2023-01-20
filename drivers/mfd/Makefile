@@ -23,3 +23,4 @@ obj-$(CONFIG_MFD_STM32_TIMERS)	+= stm32-timers.o
 obj-$(CONFIG_MFD_ATMEL_FLEXCOM)	+= atmel-flexcom.o
 obj-$(CONFIG_MFD_RK808)		+= rk808.o
 obj-$(CONFIG_MFD_AXP20X_I2C)	+= axp20x-i2c.o axp20x.o
+obj-$(CONFIG_MFD_ATMEL_SMC)	+= atmel-smc.o

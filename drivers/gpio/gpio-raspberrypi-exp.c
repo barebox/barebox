@@ -233,7 +233,7 @@ static struct gpio_ops rpi_exp_gpio_ops = {
 	.set = rpi_exp_gpio_set,
 };
 
-static int rpi_exp_gpio_probe(struct device_d *dev)
+static int rpi_exp_gpio_probe(struct device *dev)
 {
 	struct rpi_exp_gpio *rpi_gpio;
 	int ret;
@@ -263,7 +263,7 @@ static __maybe_unused struct of_device_id rpi_exp_gpio_ids[] = {
 	},
 };
 
-static struct driver_d rpi_exp_gpio_driver = {
+static struct driver rpi_exp_gpio_driver = {
 	.name = "rpi-exp-gpio",
 	.probe = rpi_exp_gpio_probe,
 	.of_compatible = DRV_OF_COMPAT(rpi_exp_gpio_ids),

@@ -60,7 +60,7 @@ static inline struct bgpio_chip *to_bgpio_chip(struct gpio_chip *gc)
 	return container_of(gc, struct bgpio_chip, gc);
 }
 
-int bgpio_init(struct bgpio_chip *bgc, struct device_d *dev,
+int bgpio_init(struct bgpio_chip *bgc, struct device *dev,
 	       unsigned int sz, void __iomem *dat, void __iomem *set,
 	       void __iomem *clr, void __iomem *dirout, void __iomem *dirin,
 	       unsigned long flags);

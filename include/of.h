@@ -35,7 +35,7 @@ struct device_node {
 	struct list_head parent_list;
 	struct list_head list;
 	phandle phandle;
-	struct device_d *dev;
+	struct device *dev;
 };
 
 struct of_device_id {
@@ -61,13 +61,13 @@ int of_add_reserve_entry(resource_size_t start, resource_size_t end);
 void of_clean_reserve_map(void);
 void fdt_add_reserve_map(void *fdt);
 
-struct device_d;
-struct driver_d;
+struct device;
+struct driver;
 struct resource;
 
 int of_fix_tree(struct device_node *);
 
-int of_match(struct device_d *dev, struct driver_d *drv);
+int of_match(struct device *dev, struct driver *drv);
 
 int of_add_initrd(struct device_node *root, resource_size_t start,
 		resource_size_t end);
@@ -101,6 +101,11 @@ static inline const void *of_property_get_value(const struct property *pp)
 	return pp->value ? pp->value : pp->value_const;
 }
 
+static inline struct device_node *of_node_get(struct device_node *node)
+{
+	return node;
+}
+static inline void of_node_put(struct device_node *node) { }
 
 void of_print_property(const void *data, int len);
 void of_print_cmdline(struct device_node *root);
@@ -286,16 +291,16 @@ extern int of_set_root_node(struct device_node *node);
 extern int barebox_register_of(struct device_node *root);
 extern int barebox_register_fdt(const void *dtb);
 
-extern struct device_d *of_platform_device_create(struct device_node *np,
-						struct device_d *parent);
-extern void of_platform_device_dummy_drv(struct device_d *dev);
+extern struct device *of_platform_device_create(struct device_node *np,
+						struct device *parent);
+extern void of_platform_device_dummy_drv(struct device *dev);
 extern int of_platform_populate(struct device_node *root,
 				const struct of_device_id *matches,
-				struct device_d *parent);
-extern struct device_d *of_find_device_by_node(struct device_node *np);
-extern struct device_d *of_device_enable_and_register(struct device_node *np);
-extern struct device_d *of_device_enable_and_register_by_name(const char *name);
-extern struct device_d *of_device_enable_and_register_by_alias(
+				struct device *parent);
+extern struct device *of_find_device_by_node(struct device_node *np);
+extern struct device *of_device_enable_and_register(struct device_node *np);
+extern struct device *of_device_enable_and_register_by_name(const char *name);
+extern struct device *of_device_enable_and_register_by_alias(
 							const char *alias);
 
 extern int of_device_ensure_probed(struct device_node *np);
@@ -310,13 +315,13 @@ int of_parse_partitions(struct cdev *cdev, struct device_node *node);
 int of_fixup_partitions(struct device_node *np, struct cdev *cdev);
 int of_partitions_register_fixup(struct cdev *cdev);
 struct device_node *of_get_stdoutpath(unsigned int *);
-int of_device_is_stdout_path(struct device_d *dev, unsigned int *baudrate);
+int of_device_is_stdout_path(struct device *dev, unsigned int *baudrate);
 const char *of_get_model(void);
 void *of_flatten_dtb(struct device_node *node);
 int of_add_memory(struct device_node *node, bool dump);
 int of_add_memory_bank(struct device_node *node, bool dump, int r,
 		u64 base, u64 size);
-struct device_d *of_find_device_by_node_path(const char *path);
+struct device *of_find_device_by_node_path(const char *path);
 #define OF_FIND_PATH_FLAGS_BB 1		/* return .bb device if available */
 int of_find_path(struct device_node *node, const char *propname, char **outpath, unsigned flags);
 int of_find_path_by_node(struct device_node *node, char **outpath, unsigned flags);
@@ -331,6 +336,11 @@ struct device_node *of_find_node_by_path_or_alias(struct device_node *root,
 int of_autoenable_device_by_path(char *path);
 int of_autoenable_i2c_by_component(char *path);
 int of_prepend_machine_compatible(struct device_node *root, const char *compat);
+
+static inline const char *of_node_full_name(const struct device_node *np)
+{
+	return np ? np->full_name : "<no-node>";
+}
 
 #else
 static inline struct of_reserve_map *of_get_reserve_map(void)
@@ -364,7 +374,8 @@ static inline struct device_node *of_get_stdoutpath(unsigned int *rate)
 	return NULL;
 }
 
-static inline int of_device_is_stdout_path(struct device_d *dev, unsigned int *baudrate)
+static inline int of_device_is_stdout_path(struct device *dev,
+					   unsigned int *baudrate)
 {
 	return 0;
 }
@@ -394,13 +405,13 @@ static inline int of_set_root_node(struct device_node *node)
 	return -ENOSYS;
 }
 
-static inline struct device_d *of_platform_device_create(struct device_node *np,
-							 struct device_d *parent)
+static inline struct device *of_platform_device_create(struct device_node *np,
+							 struct device *parent)
 {
 	return NULL;
 }
 
-static inline void of_platform_device_dummy_drv(struct device_d *dev)
+static inline void of_platform_device_dummy_drv(struct device *dev)
 {
 }
 
@@ -830,29 +841,29 @@ static inline int of_modalias_node(struct device_node *node, char *modalias,
 
 static inline int of_platform_populate(struct device_node *root,
 				const struct of_device_id *matches,
-				struct device_d *parent)
+				struct device *parent)
 {
 	return -ENOSYS;
 }
 
-static inline struct device_d *of_find_device_by_node(struct device_node *np)
+static inline struct device *of_find_device_by_node(struct device_node *np)
 {
 	return NULL;
 }
 
-static inline struct device_d *of_device_enable_and_register(
+static inline struct device *of_device_enable_and_register(
 				struct device_node *np)
 {
 	return NULL;
 }
 
-static inline struct device_d *of_device_enable_and_register_by_name(
+static inline struct device *of_device_enable_and_register_by_name(
 				const char *name)
 {
 	return NULL;
 }
 
-static inline struct device_d *of_device_enable_and_register_by_alias(
+static inline struct device *of_device_enable_and_register_by_alias(
 				const char *alias)
 {
 	return NULL;
@@ -890,6 +901,11 @@ static inline int of_prepend_machine_compatible(struct device_node *root,
 					 const char *compat)
 {
 	return -ENODEV;
+}
+
+static inline const char *of_node_full_name(const struct device_node *np)
+{
+	return "<no-node>";
 }
 
 #endif

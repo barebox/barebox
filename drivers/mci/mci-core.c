@@ -428,7 +428,7 @@ static void mci_part_add(struct mci *mci, uint64_t size,
 	part->idx = idx;
 
 	if (area_type == MMC_BLK_DATA_AREA_MAIN) {
-		part->blk.cdev.device_node = mci->host->hw_dev->device_node;
+		part->blk.cdev.device_node = mci->host->hw_dev->of_node;
 		part->blk.cdev.flags |= DEVFS_IS_MCI_MAIN_PART_DEV;
 	}
 
@@ -1570,7 +1570,7 @@ static void mci_print_caps(unsigned caps)
  * Output some valuable information when the user runs 'devinfo' on an MCI device
  * @param mci MCI device instance
  */
-static void mci_info(struct device_d *dev)
+static void mci_info(struct device *dev)
 {
 	struct mci *mci = container_of(dev, struct mci, dev);
 	struct mci_host *host = mci->host;
@@ -1699,7 +1699,7 @@ static int mci_register_partition(struct mci_part *part)
 	}
 	dev_info(&mci->dev, "registered %s\n", part->blk.cdev.name);
 
-	np = host->hw_dev->device_node;
+	np = host->hw_dev->of_node;
 
 	/* create partitions on demand */
 	switch (part->area_type) {
@@ -1709,7 +1709,7 @@ static int mci_register_partition(struct mci_part *part)
 		else
 			partnodename = "boot1-partitions";
 
-		np = of_get_child_by_name(host->hw_dev->device_node,
+		np = of_get_child_by_name(host->hw_dev->of_node,
 					  partnodename);
 		break;
 	case MMC_BLK_DATA_AREA_MAIN:
@@ -1742,19 +1742,19 @@ static int mci_register_partition(struct mci_part *part)
 static int of_broken_cd_fixup(struct device_node *root, void *ctx)
 {
 	struct mci_host *host = ctx;
-	struct device_d *hw_dev = host->hw_dev;
+	struct device *hw_dev = host->hw_dev;
 	struct device_node *np;
 	char *name;
 
 	if (!host->broken_cd)
 		return 0;
 
-	name = of_get_reproducible_name(hw_dev->device_node);
+	name = of_get_reproducible_name(hw_dev->of_node);
 	np = of_find_node_by_reproducible_name(root, name);
 	free(name);
 	if (!np) {
 		dev_warn(hw_dev, "Cannot find nodepath %s, cannot fixup\n",
-			 hw_dev->device_node->full_name);
+			 hw_dev->of_node->full_name);
 		return -EINVAL;
 	}
 
@@ -1916,14 +1916,14 @@ int mci_detect_card(struct mci_host *host)
 	return mci_card_probe(host->mci);
 }
 
-static int mci_detect(struct device_d *dev)
+static int mci_detect(struct device *dev)
 {
 	struct mci *mci = container_of(dev, struct mci, dev);
 
 	return mci_detect_card(mci->host);
 }
 
-static int mci_hw_detect(struct device_d *dev)
+static int mci_hw_detect(struct device *dev)
 {
 	struct mci *mci;
 
@@ -1943,7 +1943,7 @@ static int mci_hw_detect(struct device_d *dev)
 int mci_register(struct mci_host *host)
 {
 	struct mci *mci;
-	struct device_d *hw_dev;
+	struct device *hw_dev;
 	struct param_d *param_probe, *param_broken_cd;
 	int ret;
 
@@ -2091,7 +2091,7 @@ void mci_of_parse_node(struct mci_host *host,
 
 void mci_of_parse(struct mci_host *host)
 {
-	return mci_of_parse_node(host, host->hw_dev->device_node);
+	return mci_of_parse_node(host, host->hw_dev->of_node);
 }
 
 struct mci *mci_get_device_by_name(const char *name)

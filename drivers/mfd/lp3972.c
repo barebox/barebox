@@ -63,7 +63,7 @@ static struct cdev_operations lp_fops = {
 	.read	= lp_read,
 };
 
-static int lp_probe(struct device_d *dev)
+static int lp_probe(struct device *dev)
 {
 	if (lp_dev)
 		return -EBUSY;
@@ -80,7 +80,7 @@ static int lp_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d lp_driver = {
+static struct driver lp_driver = {
 	.name  = DRIVERNAME,
 	.probe = lp_probe,
 };

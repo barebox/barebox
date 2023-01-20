@@ -21,7 +21,7 @@
 #define BSEC_OTP_SERIAL	13
 
 struct bsec_priv {
-	struct device_d dev;
+	struct device dev;
 	u32 svc_id;
 	struct regmap_config map_config;
 	int permanent_write_enable;
@@ -108,10 +108,10 @@ static int stm32_bsec_read_mac(struct bsec_priv *priv, int offset, u8 *mac)
 	return 0;
 }
 
-static void stm32_bsec_init_dt(struct bsec_priv *priv, struct device_d *dev,
+static void stm32_bsec_init_dt(struct bsec_priv *priv, struct device *dev,
 			       struct regmap *map)
 {
-	struct device_node *node = dev->device_node;
+	struct device_node *node = dev->of_node;
 	struct device_node *rnode;
 	u32 phandle, offset;
 	char mac[ETH_ALEN];
@@ -141,7 +141,7 @@ static void stm32_bsec_init_dt(struct bsec_priv *priv, struct device_d *dev,
 	of_eth_register_ethaddr(rnode, mac);
 }
 
-static int stm32_bsec_probe(struct device_d *dev)
+static int stm32_bsec_probe(struct device *dev)
 {
 	struct regmap *map;
 	struct bsec_priv *priv;
@@ -197,7 +197,7 @@ static __maybe_unused struct of_device_id stm32_bsec_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d stm32_bsec_driver = {
+static struct driver stm32_bsec_driver = {
 	.name	= "stm32_bsec",
 	.probe	= stm32_bsec_probe,
 	.of_compatible = DRV_OF_COMPAT(stm32_bsec_dt_ids),

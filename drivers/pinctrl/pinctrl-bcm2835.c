@@ -141,7 +141,7 @@ static struct pinctrl_ops bcm2835_pinctrl_ops = {
 	.set_state = bcm2835_pinctrl_set_state,
 };
 
-static int bcm2835_gpio_probe(struct device_d *dev)
+static int bcm2835_gpio_probe(struct device *dev)
 {
 	const struct plat_data *plat_data;
 	struct resource *iores;
@@ -209,7 +209,7 @@ static __maybe_unused struct of_device_id bcm2835_gpio_dt_ids[] = {
 	}
 };
 
-static struct driver_d bcm2835_gpio_driver = {
+static struct driver bcm2835_gpio_driver = {
 	.name = "bcm2835-gpio",
 	.probe = bcm2835_gpio_probe,
 	.of_compatible = DRV_OF_COMPAT(bcm2835_gpio_dt_ids),

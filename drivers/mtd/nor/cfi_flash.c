@@ -758,7 +758,7 @@ static void cfi_info_one(struct flash_info *info)
 	return;
 }
 
-static void cfi_info(struct device_d *dev)
+static void cfi_info(struct device *dev)
 {
 	struct cfi_priv *priv = dev->priv;
 	int i;
@@ -984,7 +984,7 @@ static int cfi_probe_one(struct flash_info *info, int num)
 	return 0;
 }
 
-static int cfi_probe(struct device_d *dev)
+static int cfi_probe(struct device *dev)
 {
 	struct cfi_priv *priv;
 	int i, ret;
@@ -997,7 +997,7 @@ static int cfi_probe(struct device_d *dev)
 	priv->infos = xzalloc(sizeof(*priv->infos) * priv->num_devs);
 	priv->mtds = xzalloc(sizeof(*priv->mtds) * priv->num_devs);
 
-	of_property_read_string(dev->device_node, "linux,mtd-name", &mtd_name);
+	of_property_read_string(dev->of_node, "linux,mtd-name", &mtd_name);
 
 	if (!mtd_name)
 		mtd_name = dev_name(dev);
@@ -1047,7 +1047,7 @@ static __maybe_unused struct of_device_id cfi_dt_ids[] = {
 	}
 };
 
-static struct driver_d cfi_driver = {
+static struct driver cfi_driver = {
 	.name    = "cfi_flash",
 	.probe   = cfi_probe,
 	.of_compatible = DRV_OF_COMPAT(cfi_dt_ids),

@@ -15,7 +15,7 @@
 
 static void linux_console_putc(struct console_device *cdev, char c)
 {
-	struct device_d *dev = cdev->dev;
+	struct device *dev = cdev->dev;
 	struct linux_console_data *d = dev->platform_data;
 
 	linux_write(d->stdoutfd, &c, 1);
@@ -23,7 +23,7 @@ static void linux_console_putc(struct console_device *cdev, char c)
 
 static int linux_console_tstc(struct console_device *cdev)
 {
-	struct device_d *dev = cdev->dev;
+	struct device *dev = cdev->dev;
 	struct linux_console_data *d = dev->platform_data;
 
 	return linux_tstc(d->stdinfd);
@@ -31,7 +31,7 @@ static int linux_console_tstc(struct console_device *cdev)
 
 static int linux_console_getc(struct console_device *cdev)
 {
-	struct device_d *dev = cdev->dev;
+	struct device *dev = cdev->dev;
 	struct linux_console_data *d = dev->platform_data;
 	static char old_c;
 	char c;
@@ -45,7 +45,7 @@ static int linux_console_getc(struct console_device *cdev)
 	return c;
 }
 
-static int linux_console_probe(struct device_d *dev)
+static int linux_console_probe(struct device *dev)
 {
 	struct console_device *cdev;
 	struct linux_console_data *data = dev->platform_data;
@@ -67,7 +67,7 @@ static int linux_console_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d linux_console_driver = {
+static struct driver linux_console_driver = {
         .name  = "console",
         .probe = linux_console_probe,
 };

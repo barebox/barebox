@@ -20,7 +20,7 @@ struct node_d;
 struct stat;
 
 typedef struct filep {
-	struct fs_device_d *fsdev; /* The device this FILE belongs to              */
+	struct fs_device *fsdev; /* The device this FILE belongs to              */
 	char *path;
 	loff_t pos;            /* current position in stream                   */
 #define FILE_SIZE_STREAM	((loff_t) -1)
@@ -39,64 +39,65 @@ typedef struct filep {
 
 #define FS_DRIVER_NO_DEV	1
 
-struct fs_driver_d {
-	int (*probe) (struct device_d *dev);
+struct fs_driver {
+	int (*probe) (struct device *dev);
 
 	/* create a file. The file is guaranteed to not exist */
-	int (*create)(struct device_d *dev, const char *pathname, mode_t mode);
-	int (*unlink)(struct device_d *dev, const char *pathname);
+	int (*create)(struct device *dev, const char *pathname, mode_t mode);
+	int (*unlink)(struct device *dev, const char *pathname);
 
 	/* Truncate a file to given size */
-	int (*truncate)(struct device_d *dev, FILE *f, loff_t size);
+	int (*truncate)(struct device *dev, FILE *f, loff_t size);
 
-	int (*open)(struct device_d *dev, FILE *f, const char *pathname);
-	int (*close)(struct device_d *dev, FILE *f);
-	int (*read)(struct device_d *dev, FILE *f, void *buf, size_t size);
-	int (*write)(struct device_d *dev, FILE *f, const void *buf, size_t size);
-	int (*flush)(struct device_d *dev, FILE *f);
-	int (*lseek)(struct device_d *dev, FILE *f, loff_t pos);
+	int (*open)(struct device *dev, FILE *f, const char *pathname);
+	int (*close)(struct device *dev, FILE *f);
+	int (*read)(struct device *dev, FILE *f, void *buf, size_t size);
+	int (*write)(struct device *dev, FILE *f, const void *buf,
+		     size_t size);
+	int (*flush)(struct device *dev, FILE *f);
+	int (*lseek)(struct device *dev, FILE *f, loff_t pos);
 
-	int (*ioctl)(struct device_d *dev, FILE *f, int request, void *buf);
-	int (*erase)(struct device_d *dev, FILE *f, loff_t count,
+	int (*ioctl)(struct device *dev, FILE *f, int request, void *buf);
+	int (*erase)(struct device *dev, FILE *f, loff_t count,
 			loff_t offset);
-	int (*protect)(struct device_d *dev, FILE *f, size_t count,
+	int (*protect)(struct device *dev, FILE *f, size_t count,
 			loff_t offset, int prot);
-	int (*discard_range)(struct device_d *dev, FILE *f, loff_t count,
-			loff_t offset);
+	int (*discard_range)(struct device *dev, FILE *f, loff_t count,
+			     loff_t offset);
 
-	int (*memmap)(struct device_d *dev, FILE *f, void **map, int flags);
+	int (*memmap)(struct device *dev, FILE *f, void **map, int flags);
 
 	/* legacy */
-	int (*mkdir)(struct device_d *dev, const char *pathname);
-	int (*rmdir)(struct device_d *dev, const char *pathname);
-	int (*symlink)(struct device_d *dev, const char *pathname,
+	int (*mkdir)(struct device *dev, const char *pathname);
+	int (*rmdir)(struct device *dev, const char *pathname);
+	int (*symlink)(struct device *dev, const char *pathname,
 		       const char *newpath);
-	int (*readlink)(struct device_d *dev, const char *pathname, char *name,
+	int (*readlink)(struct device *dev, const char *pathname, char *name,
 			size_t size);
-	struct dir* (*opendir)(struct device_d *dev, const char *pathname);
-	struct dirent* (*readdir)(struct device_d *dev, struct dir *dir);
-	int (*closedir)(struct device_d *dev, DIR *dir);
-	int (*stat)(struct device_d *dev, const char *file, struct stat *stat);
+	struct dir* (*opendir)(struct device *dev, const char *pathname);
+	struct dirent* (*readdir)(struct device *dev, struct dir *dir);
+	int (*closedir)(struct device *dev, DIR *dir);
+	int (*stat)(struct device *dev, const char *file, struct stat *stat);
 
-	struct driver_d drv;
+	struct driver drv;
 
 	enum filetype type;
 
 	unsigned long flags;
 };
 
-#define dev_to_fs_device(d) container_of(d, struct fs_device_d, dev)
+#define dev_to_fs_device(d) container_of(d, struct fs_device, dev)
 
 extern struct list_head fs_device_list;
 #define for_each_fs_device(f) list_for_each_entry(f, &fs_device_list, list)
 #define for_each_fs_device_safe(tmp, f) list_for_each_entry_safe(f, tmp, &fs_device_list, list)
 extern struct bus_type fs_bus;
 
-struct fs_device_d {
+struct fs_device {
 	char *backingstore; /* the device we are associated with */
-	struct device_d dev; /* our own device */
+	struct device dev; /* our own device */
 
-	struct fs_driver_d *driver;
+	struct fs_driver *driver;
 
 	struct cdev *cdev;
 	bool loop;
@@ -120,7 +121,7 @@ static inline bool is_tftp_fs(const char *path)
 	return __is_tftp_fs(path);
 }
 
-#define drv_to_fs_driver(d) container_of(d, struct fs_driver_d, drv)
+#define drv_to_fs_driver(d) container_of(d, struct fs_driver, drv)
 
 int flush(int fd);
 int umount_by_cdev(struct cdev *cdev);
@@ -157,20 +158,20 @@ char *get_mounted_path(const char *path);
 struct cdev *get_cdev_by_mountpath(const char *path);
 
 /* Register a new filesystem driver */
-int register_fs_driver(struct fs_driver_d *fsdrv);
+int register_fs_driver(struct fs_driver *fsdrv);
 
 void automount_remove(const char *_path);
 int automount_add(const char *path, const char *cmd);
 void automount_print(void);
 
-int fs_init_legacy(struct fs_device_d *fsdev);
-int fsdev_open_cdev(struct fs_device_d *fsdev);
+int fs_init_legacy(struct fs_device *fsdev);
+int fsdev_open_cdev(struct fs_device *fsdev);
 const char *cdev_get_mount_path(struct cdev *cdev);
 const char *cdev_mount_default(struct cdev *cdev, const char *fsoptions);
 const char *cdev_mount(struct cdev *cdev);
 void mount_all(void);
 
-void fsdev_set_linux_rootarg(struct fs_device_d *fsdev, const char *str);
+void fsdev_set_linux_rootarg(struct fs_device *fsdev, const char *str);
 char *path_get_linux_rootarg(const char *path);
 char *cdev_get_linux_rootarg(const struct cdev *cdev);
 

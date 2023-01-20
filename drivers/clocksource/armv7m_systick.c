@@ -37,7 +37,7 @@ static struct clocksource cs = {
 	.priority = 70,
 };
 
-static int armv7m_systick_probe(struct device_d *dev)
+static int armv7m_systick_probe(struct device *dev)
 {
 	struct clk *clk = NULL;
 	u32 rate, cal;
@@ -47,7 +47,7 @@ static int armv7m_systick_probe(struct device_d *dev)
 	if (!systick_base)
 		return -ENOENT;
 
-	ret = of_property_read_u32(dev->device_node, "clock-frequency", &rate);
+	ret = of_property_read_u32(dev->of_node, "clock-frequency", &rate);
 	if (ret) {
 		clk = clk_get(dev, NULL);
 		if (IS_ERR(clk))
@@ -80,7 +80,7 @@ static struct of_device_id armv7m_systick_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d armv7m_systick_driver = {
+static struct driver armv7m_systick_driver = {
 	.name = "armv7m-systick-timer",
 	.probe = armv7m_systick_probe,
 	.of_compatible = DRV_OF_COMPAT(armv7m_systick_dt_ids),

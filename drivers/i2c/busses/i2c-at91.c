@@ -78,11 +78,10 @@ struct at91_twi_pdata {
 	bool has_dig_filtr;
 	bool has_adv_dig_filtr;
 	bool has_ana_filtr;
-	bool has_clear_cmd;
 };
 
 struct at91_twi_dev {
-	struct device_d *dev;
+	struct device *dev;
 	void __iomem *base;
 	struct clk *clk;
 	u8 *buf;
@@ -438,6 +437,13 @@ static struct at91_twi_pdata at91sam9x5_config = {
 	.has_unre_flag = false,
 };
 
+static struct at91_twi_pdata sama5d4_config = {
+	.clk_max_div = 7,
+	.clk_offset = 4,
+	.has_hold_field = true,
+	.has_dig_filtr = true,
+};
+
 static struct at91_twi_pdata sama5d2_config = {
 	.clk_max_div = 7,
 	.clk_offset = 3,
@@ -493,14 +499,20 @@ static struct of_device_id at91_twi_dt_ids[] = {
 		.compatible = "atmel,at91sam9x5-i2c",
 		.data = &at91sam9x5_config,
 	}, {
+		.compatible = "atmel,sama5d4-i2c",
+		.data = &sama5d4_config,
+	}, {
 		.compatible = "atmel,sama5d2-i2c",
+		.data = &sama5d2_config,
+	}, {
+		.compatible = "microchip,sam9x60-i2c",
 		.data = &sama5d2_config,
 	}, {
 		/* sentinel */
 	}
 };
 
-static int at91_twi_probe(struct device_d *dev)
+static int at91_twi_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct at91_twi_dev *i2c_at91;
@@ -546,7 +558,7 @@ static int at91_twi_probe(struct device_d *dev)
 	i2c_at91->adapter.master_xfer = at91_twi_xfer;
 	i2c_at91->adapter.dev.parent = dev;
 	i2c_at91->adapter.nr = dev->id;
-	i2c_at91->adapter.dev.device_node = dev->device_node;
+	i2c_at91->adapter.dev.of_node = dev->of_node;
 
 	rc = i2c_add_numbered_adapter(&i2c_at91->adapter);
 	if (rc) {
@@ -565,7 +577,7 @@ out_free:
 	return rc;
 }
 
-static struct driver_d at91_twi_driver = {
+static struct driver at91_twi_driver = {
 	.name		= "at91-twi",
 	.probe		= at91_twi_probe,
 	.id_table	= at91_twi_devtypes,

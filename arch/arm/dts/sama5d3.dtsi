@@ -6,18 +6,5 @@
 	};
 };
 
-&ebi {
-	compatible = "simple-bus";
-	#address-cells = <1>;
-	#size-cells = <1>;
-	ranges;
-
-};
-
-&nand_controller {
-	compatible = "simple-bus";
-	#address-cells = <1>;
-	#size-cells = <1>;
-	ranges;
-
-};
+/* Will be automatically read back from HW */
+/delete-node/ &{/memory@20000000};

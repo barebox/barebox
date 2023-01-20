@@ -127,7 +127,7 @@ struct at91_udc {
 	u32				gpio_vbus_val;
 	struct at91_udc_data		board;
 	struct clk			*iclk, *fclk;
-	struct device_d			*dev;
+	struct device			*dev;
 	void __iomem			*udp_baseaddr;
 	int				udp_irq;
 };

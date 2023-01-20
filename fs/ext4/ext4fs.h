@@ -84,7 +84,7 @@ struct ext_filesystem {
 
 	struct ext2_data *data;
 
-	struct device_d *dev;
+	struct device *dev;
 };
 
 struct ext2fs_node;

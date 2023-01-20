@@ -3,13 +3,13 @@
 #include <common.h>
 #include <input/matrix_keypad.h>
 
-static int matrix_keypad_parse_of_keymap(struct device_d *dev,
+static int matrix_keypad_parse_of_keymap(struct device *dev,
 					 unsigned int row_shift,
 					 unsigned short *keymap)
 {
 	unsigned int proplen, i, size;
 	const __be32 *prop;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	const char *propname = "linux,keymap";
 
 	prop = of_get_property(np, propname, &proplen);
@@ -55,13 +55,14 @@ static int matrix_keypad_parse_of_keymap(struct device_d *dev,
  * an array of keycodes that is suitable for using in a standard matrix
  * keyboard driver that uses row and col as indices.
  */
-int matrix_keypad_build_keymap(struct device_d *dev, const struct matrix_keymap_data *keymap_data,
-			   unsigned int row_shift,
-			   unsigned short *keymap)
+int matrix_keypad_build_keymap(struct device *dev,
+			       const struct matrix_keymap_data *keymap_data,
+			       unsigned int row_shift,
+			       unsigned short *keymap)
 {
 	int i;
 
-	if (IS_ENABLED(CONFIG_OFDEVICE) && dev->device_node)
+	if (IS_ENABLED(CONFIG_OFDEVICE) && dev->of_node)
 		return matrix_keypad_parse_of_keymap(dev, row_shift, keymap);
 
 	if (!keymap_data)

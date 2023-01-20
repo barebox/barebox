@@ -33,7 +33,7 @@ static int ar8035_phy_fixup(struct phy_device *dev)
 	return 0;
 }
 
-static int marsboard_device_init(struct device_d *dev)
+static int marsboard_device_init(struct device *dev)
 {
 	barebox_set_hostname("marsboard");
 
@@ -53,7 +53,7 @@ static const struct of_device_id marsboard_of_match[] = {
 };
 BAREBOX_DEEP_PROBE_ENABLE(marsboard_of_match);
 
-static struct driver_d marsboard_driver = {
+static struct driver marsboard_driver = {
 	.name = "board-mars",
 	.probe = marsboard_device_init,
 	.of_compatible = marsboard_of_match,

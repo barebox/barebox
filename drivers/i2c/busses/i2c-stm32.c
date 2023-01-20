@@ -316,7 +316,7 @@ static int stm32_i2c_check_end_of_message(struct stm32_i2c *i2c_priv)
 	struct stm32_i2c_regs *regs = i2c_priv->regs;
 	u32 mask = STM32_I2C_ISR_ERRORS | STM32_I2C_ISR_NACKF |
 		   STM32_I2C_ISR_STOPF;
-	struct device_d *dev = &i2c_priv->adapter.dev;
+	struct device *dev = &i2c_priv->adapter.dev;
 	u32 status;
 	int ret;
 
@@ -616,7 +616,7 @@ static int stm32_i2c_compute_timing(struct stm32_i2c *i2c_priv,
 				    struct stm32_i2c_setup *setup,
 				    struct stm32_i2c_timings *output)
 {
-	struct device_d *dev = &i2c_priv->adapter.dev;
+	struct device *dev = &i2c_priv->adapter.dev;
 	struct stm32_i2c_timings *v, *_v;
 	struct list_head solutions;
 	int ret;
@@ -681,7 +681,7 @@ static int stm32_i2c_setup_timing(struct stm32_i2c *i2c_priv,
 				  enum stm32_i2c_speed speed,
 				  struct stm32_i2c_timings *timing)
 {
-	struct device_d *dev = &i2c_priv->adapter.dev;
+	struct device *dev = &i2c_priv->adapter.dev;
 	struct stm32_i2c_setup *setup = &i2c_priv->setup;
 	int ret = 0;
 
@@ -760,7 +760,7 @@ static int stm32_i2c_hw_config(struct stm32_i2c *i2c_priv,
 
 static int stm32_i2c_set_bus_speed(struct stm32_i2c *i2c_priv, unsigned speed)
 {
-	struct device_d *parent_dev = i2c_priv->adapter.dev.parent;
+	struct device *parent_dev = i2c_priv->adapter.dev.parent;
 	enum stm32_i2c_speed stm32_speed;
 	switch (speed) {
 	case STANDARD_RATE:
@@ -780,7 +780,7 @@ static int stm32_i2c_set_bus_speed(struct stm32_i2c *i2c_priv, unsigned speed)
 	return stm32_i2c_hw_config(i2c_priv, stm32_speed);
 }
 
-static int __init stm32_i2c_probe(struct device_d *dev)
+static int __init stm32_i2c_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct stm32_i2c *stm32_i2c;
@@ -823,7 +823,7 @@ static int __init stm32_i2c_probe(struct device_d *dev)
 	stm32_i2c->adapter.master_xfer = stm32_i2c_xfer;
 	stm32_i2c->adapter.nr = dev->id;
 	stm32_i2c->adapter.dev.parent = dev;
-	stm32_i2c->adapter.dev.device_node = dev->device_node;
+	stm32_i2c->adapter.dev.of_node = dev->of_node;
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
@@ -851,7 +851,7 @@ static __maybe_unused struct of_device_id stm32_i2c_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d stm32_i2c_driver = {
+static struct driver stm32_i2c_driver = {
 	.probe	= stm32_i2c_probe,
 	.name	= "stm32f7-i2c",
 	.of_compatible = DRV_OF_COMPAT(stm32_i2c_dt_ids),

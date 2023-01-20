@@ -166,7 +166,7 @@ struct rockchip_usb2phy {
 	struct phy_provider *provider;
 	struct clk *clk480m;
 	struct clk_hw clk480m_hw;
-	struct device_d *dev;
+	struct device *dev;
 	struct clk *clk;
 };
 
@@ -255,8 +255,8 @@ static int rockchip_usb2phy_power_off(struct phy *phy)
 	return 0;
 }
 
-static struct phy *rockchip_usb2phy_of_xlate(struct device_d *dev,
-				     struct of_phandle_args *args)
+static struct phy *rockchip_usb2phy_of_xlate(struct device *dev,
+					     struct of_phandle_args *args)
 {
 	struct rockchip_usb2phy *rphy = dev->priv;
 	struct device_node *phynode = args->np;
@@ -267,7 +267,7 @@ static struct phy *rockchip_usb2phy_of_xlate(struct device_d *dev,
 		if (!rphy->phys[port].phy)
 			continue;
 
-		if (phynode == rphy->phys[port].phy->dev.device_node) {
+		if (phynode == rphy->phys[port].phy->dev.of_node) {
 			p = &rphy->phys[port];
 			return p->phy;
 		}
@@ -338,7 +338,7 @@ static const struct clk_ops rockchip_usb2phy_clkout_ops = {
 
 static int rockchip_usb2phy_clk480m_register(struct rockchip_usb2phy *rphy)
 {
-	struct device_node *node = rphy->dev->device_node;
+	struct device_node *node = rphy->dev->of_node;
 	struct clk_init_data init = {};
 	const char *clk_name;
 	int ret;
@@ -379,13 +379,13 @@ err_ret:
 	return ret;
 }
 
-static int rockchip_usb2phy_probe(struct device_d *dev)
+static int rockchip_usb2phy_probe(struct device *dev)
 {
 	const struct rockchip_usb2phy_cfg *phy_cfgs;
 	struct rockchip_usb2phy *rphy;
 	u32 reg, index;
 	int ret, port = 0;
-	struct device_node *child, *np = dev->device_node;
+	struct device_node *child, *np = dev->of_node;
 	struct resource *iores;
 
 	rphy = xzalloc(sizeof(*rphy));
@@ -396,7 +396,7 @@ static int rockchip_usb2phy_probe(struct device_d *dev)
 	    of_device_is_compatible(np, "rockchip,rk3568-usb2phy"))
 		rphy->grf_base = syscon_regmap_lookup_by_phandle(np, "rockchip,usbgrf");
 	else
-		rphy->grf_base = syscon_node_to_regmap(dev->parent->device_node);
+		rphy->grf_base = syscon_node_to_regmap(dev->parent->of_node);
 
 	if (IS_ERR(rphy->grf_base))
 		return PTR_ERR(rphy->grf_base);
@@ -431,7 +431,7 @@ static int rockchip_usb2phy_probe(struct device_d *dev)
 	for_each_child_of_node(np, child) {
 		struct rockchip_usb2phy_phy *p;
 		struct phy *phy;
-		struct device_d *phydev;
+		struct device *phydev;
 
 		if (!strcmp(child->name, "host-port")) {
 			port = USB2PHY_PORT_OTG;
@@ -988,7 +988,7 @@ static const struct of_device_id rockchip_usb2phy_dt_match[] = {
 	{ }
 };
 
-static struct driver_d rockchip_usb2phy_driver = {
+static struct driver rockchip_usb2phy_driver = {
 	.probe		= rockchip_usb2phy_probe,
 	.name	= "rockchip-usb2phy",
 	.of_compatible = rockchip_usb2phy_dt_match,

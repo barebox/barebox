@@ -319,7 +319,7 @@ struct ubi_eba_leb_desc {
  * the moment or is damaged because of an unclean reboot.
  */
 struct ubi_volume {
-	struct device_d dev;
+	struct device dev;
 	struct cdev cdev;
 	struct ubi_device *ubi;
 	int vol_id;
@@ -516,7 +516,7 @@ struct ubi_debug_info {
  */
 struct ubi_device {
 	struct cdev cdev;
-	struct device_d dev;
+	struct device dev;
 	int ubi_num;
 	char ubi_name[sizeof(UBI_NAME_STR)+5];
 	int vol_count;

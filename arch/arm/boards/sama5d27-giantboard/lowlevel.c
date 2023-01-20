@@ -15,7 +15,7 @@
 /* PCK = 492MHz, MCK = 164MHz */
 #define MASTER_CLOCK	164000000
 
-SAMA5_ENTRY_FUNCTION(start_sama5d27_giantboard_xload_mmc, r4)
+SAMA5D2_ENTRY_FUNCTION(start_sama5d27_giantboard_xload_mmc, r4)
 {
 	void __iomem *dbgu_base;
 
@@ -36,7 +36,7 @@ SAMA5_ENTRY_FUNCTION(start_sama5d27_giantboard_xload_mmc, r4)
 
 extern char __dtb_z_at91_sama5d27_giantboard_start[];
 
-SAMA5_ENTRY_FUNCTION(start_sama5d27_giantboard, r4)
+SAMA5D2_ENTRY_FUNCTION(start_sama5d27_giantboard, r4)
 {
 	void *fdt;
 

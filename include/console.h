@@ -26,8 +26,8 @@ enum console_mode {
 };
 
 struct console_device {
-	struct device_d *dev;
-	struct device_d class_dev;
+	struct device *dev;
+	struct device class_dev;
 
 	int (*tstc)(struct console_device *cdev);
 	void (*putc)(struct console_device *cdev, char c);
@@ -62,7 +62,7 @@ struct console_device {
 	struct serdev_device serdev;
 };
 
-static inline struct serdev_device *to_serdev_device(struct device_d *d)
+static inline struct serdev_device *to_serdev_device(struct device *d)
 {
 	struct console_device *cdev =
 		container_of(d, struct console_device, class_dev);
@@ -78,10 +78,10 @@ to_console_device(struct serdev_device *serdev)
 static inline struct device_node *
 console_is_serdev_node(struct console_device *cdev)
 {
-	struct device_d *dev = cdev->dev;
-	if (dev && dev->device_node &&
-	    of_get_child_count(dev->device_node))
-		return dev->device_node;
+	struct device *dev = cdev->dev;
+	if (dev && dev->of_node &&
+	    of_get_child_count(dev->of_node))
+		return dev->of_node;
 
 	return NULL;
 }
@@ -89,7 +89,7 @@ console_is_serdev_node(struct console_device *cdev)
 int console_register(struct console_device *cdev);
 int console_unregister(struct console_device *cdev);
 
-struct console_device *console_get_by_dev(struct device_d *dev);
+struct console_device *console_get_by_dev(struct device *dev);
 struct console_device *console_get_by_name(const char *name);
 struct console_device *of_console_get_by_alias(const char *alias);
 

@@ -110,7 +110,7 @@ const static struct regulator_ops bcm2835_ops = {
 	.is_enabled = regulator_bcm2835_is_enabled,
 };
 
-static int regulator_bcm2835_probe(struct device_d *dev)
+static int regulator_bcm2835_probe(struct device *dev)
 {
 	struct regulator_bcm2835 *rb;
 	int ret, i;
@@ -130,7 +130,7 @@ static int regulator_bcm2835_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d regulator_bcm2835_driver = {
+static struct driver regulator_bcm2835_driver = {
 	.name  = "regulator-bcm2835",
 	.probe = regulator_bcm2835_probe,
 };

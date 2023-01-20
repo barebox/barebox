@@ -17,6 +17,6 @@ static inline void phy_ctrl_wkup(struct phy_control *phy_ctrl, u32 id, bool on)
 	phy_ctrl->phy_wkup(phy_ctrl, id, on);
 }
 
-struct phy_control *am335x_get_phy_control(struct device_d *dev);
+struct phy_control *am335x_get_phy_control(struct device *dev);
 
 #endif

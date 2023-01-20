@@ -990,9 +990,9 @@ struct dwc3 {
 	dma_addr_t			scratch_addr;
 	struct dwc3_request		ep0_usb_req;
 
-	struct device_d		*dev;
+	struct device		*dev;
 
-	struct device_d		*xhci;
+	struct device		*xhci;
 
 	struct dwc3_event_buffer	*ev_buf;
 	struct dwc3_ep			*eps[DWC3_ENDPOINTS_NUM];

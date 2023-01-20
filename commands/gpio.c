@@ -10,7 +10,7 @@ static int get_gpio_and_value(int argc, char *argv[],
 			      int *gpio, int *value)
 {
 	struct gpio_chip *chip = NULL;
-	struct device_d *dev;
+	struct device *dev;
 	int count = 1;
 	int ret = 0;
 	int opt;

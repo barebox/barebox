@@ -164,7 +164,7 @@ struct scmi_xfer_ops;
  *   the protocol.
  */
 struct scmi_protocol_handle {
-	struct device_d *dev;
+	struct device *dev;
 	const struct scmi_xfer_ops *xops;
 	int (*set_priv)(const struct scmi_protocol_handle *ph, void *priv);
 	void *(*get_priv)(const struct scmi_protocol_handle *ph);
@@ -202,7 +202,7 @@ struct scmi_xfer_ops {
 struct scmi_revision_info *
 scmi_revision_area_get(const struct scmi_protocol_handle *ph);
 int scmi_handle_put(const struct scmi_handle *handle);
-struct scmi_handle *scmi_handle_get(struct device_d *dev);
+struct scmi_handle *scmi_handle_get(struct device *dev);
 void scmi_set_handle(struct scmi_device *scmi_dev);
 void scmi_setup_protocol_implemented(const struct scmi_protocol_handle *ph,
 				     u8 *prot_imp);
@@ -259,7 +259,7 @@ void scmi_protocol_release(const struct scmi_handle *handle, u8 protocol_id);
  * @transport_info: Transport layer related information
  */
 struct scmi_chan_info {
-	struct device_d *dev;
+	struct device *dev;
 	struct scmi_handle *handle;
 	void *transport_info;
 };
@@ -277,8 +277,8 @@ struct scmi_chan_info {
  * @poll_done: Callback to poll transfer status
  */
 struct scmi_transport_ops {
-	bool (*chan_available)(struct device_d *dev, int idx);
-	int (*chan_setup)(struct scmi_chan_info *cinfo, struct device_d *dev,
+	bool (*chan_available)(struct device *dev, int idx);
+	int (*chan_setup)(struct scmi_chan_info *cinfo, struct device *dev,
 			  bool tx);
 	int (*chan_free)(int id, void *p, void *data);
 	int (*send_message)(struct scmi_chan_info *cinfo,
@@ -292,7 +292,7 @@ struct scmi_transport_ops {
 
 int scmi_protocol_device_request(const struct scmi_device_id *id_table);
 void scmi_protocol_device_unrequest(const struct scmi_device_id *id_table);
-struct scmi_device *scmi_child_dev_find(struct device_d *parent,
+struct scmi_device *scmi_child_dev_find(struct device *parent,
 					int prot_id, const char *name);
 
 /**

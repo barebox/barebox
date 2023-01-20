@@ -75,6 +75,9 @@ config SOC_SAMA5
 	select HAVE_AT91SAM9_RST
 	select CPU_V7
 
+config SOC_SAMA5_MULTI
+	def_bool SOC_SAMA5 && AT91_MULTI_BOARDS
+
 config SOC_SAMA5D2
 	bool
 	select SOC_SAMA5
@@ -636,6 +639,14 @@ config MACH_SAMA5D27_GIANTBOARD
 	select COMMON_CLK_OF_PROVIDER
 	help
 	  Select this if you are using the Groboards sama5d27 Giantboard
+
+config MACH_SAMA5D4_WIFX
+	bool "Wifx L1 LoRaWAN base station"
+	select SOC_SAMA5D4
+	select OFDEVICE
+	select COMMON_CLK_OF_PROVIDER
+	help
+	  Select this if you are using the SAMA5D4-based Wifx L1.
 
 endif
 

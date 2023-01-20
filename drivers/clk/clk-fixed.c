@@ -63,7 +63,7 @@ struct clk *clk_register_fixed_rate(const char *name,
 	return &fix->hw.clk;
 }
 
-struct clk_hw *clk_hw_register_fixed_rate(struct device_d *dev,
+struct clk_hw *clk_hw_register_fixed_rate(struct device *dev,
 					  const char *name, const char *parent_name,
 					  unsigned long flags, unsigned long rate)
 {

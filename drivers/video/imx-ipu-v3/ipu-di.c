@@ -700,7 +700,7 @@ void ipu_di_put(struct ipu_di *di)
 }
 EXPORT_SYMBOL_GPL(ipu_di_put);
 
-int ipu_di_init(struct ipu_soc *ipu, struct device_d *dev, int id,
+int ipu_di_init(struct ipu_soc *ipu, struct device *dev, int id,
 		void __iomem *base,
 		u32 module, struct clk *clk_ipu)
 {

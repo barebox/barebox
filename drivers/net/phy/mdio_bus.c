@@ -80,7 +80,7 @@ int mdio_driver_register(struct phy_driver *phydrv)
 	return register_driver(&phydrv->drv);
 }
 
-int mdiobus_detect(struct device_d *dev)
+int mdiobus_detect(struct device *dev)
 {
 	struct mii_bus *mii = to_mii_bus(dev);
 	int i, ret;
@@ -119,7 +119,7 @@ static int of_mdiobus_register_phy(struct mii_bus *mdio, struct device_node *chi
 	 * Associate the OF node with the device structure so it
 	 * can be looked up later
 	 */
-	phy->dev.device_node = child;
+	phy->dev.of_node = child;
 
 	/*
 	 * All data is now stored in the phy struct;
@@ -145,7 +145,7 @@ static int of_mdiobus_register_device(struct mii_bus *mdio,
 	if (IS_ERR(mdiodev))
 		return PTR_ERR(mdiodev);
 
-	mdiodev->dev.device_node = child;
+	mdiodev->dev.of_node = child;
 
 	ret = mdio_register_device(mdiodev);
 	if (ret)
@@ -314,16 +314,16 @@ int mdiobus_register(struct mii_bus *bus)
 
 	pr_info("%s: probed\n", dev_name(&bus->dev));
 
-	if (bus->dev.device_node) {
+	if (bus->dev.of_node) {
 		/* Register PHY's as child node to mdio node */
-		of_mdiobus_register(bus, bus->dev.device_node);
+		of_mdiobus_register(bus, bus->dev.of_node);
 	}
-	else if (bus->parent->device_node) {
+	else if (bus->parent->of_node) {
 		/*
 		 * Register PHY's as child node to the ethernet node,
 		 * if there was no mdio node
 		 */
-		of_mdiobus_register(bus, bus->parent->device_node);
+		of_mdiobus_register(bus, bus->parent->of_node);
 	}
 
 	return 0;
@@ -399,7 +399,7 @@ struct mii_bus *of_mdio_find_bus(struct device_node *mdio_bus_np)
 		return NULL;
 
 	for_each_mii_bus(mii)
-		if (mii->dev.device_node == mdio_bus_np)
+		if (mii->dev.of_node == mdio_bus_np)
 			return mii;
 
 	return NULL;
@@ -415,7 +415,7 @@ EXPORT_SYMBOL(of_mdio_find_bus);
  * Description: Given a PHY device, and a PHY driver, return 0 if
  *   the driver supports the device.  Otherwise, return 1.
  */
-static int mdio_bus_match(struct device_d *dev, struct driver_d *drv)
+static int mdio_bus_match(struct device *dev, struct driver *drv)
 {
 	struct phy_device *phydev = to_phy_device(dev);
 	struct phy_driver *phydrv = to_phy_driver(drv);
@@ -509,7 +509,7 @@ static struct cdev_operations phydev_ops = {
 
 static void of_set_phy_supported(struct phy_device *phydev)
 {
-	struct device_node *node = phydev->dev.device_node;
+	struct device_node *node = phydev->dev.of_node;
 	u32 max_speed;
 
 	if (!IS_ENABLED(CONFIG_OFDEVICE))
@@ -540,7 +540,7 @@ static void of_set_phy_supported(struct phy_device *phydev)
 	}
 }
 
-static int mdio_bus_probe(struct device_d *_dev)
+static int mdio_bus_probe(struct device *_dev)
 {
 	struct phy_device *dev = to_phy_device(_dev);
 	struct phy_driver *drv = to_phy_driver(_dev->driver);
@@ -594,7 +594,7 @@ err:
 	return ret;
 }
 
-static void mdio_bus_remove(struct device_d *_dev)
+static void mdio_bus_remove(struct device *_dev)
 {
 	struct phy_device *dev = to_phy_device(_dev);
 	struct phy_driver *drv = to_phy_driver(_dev->driver);

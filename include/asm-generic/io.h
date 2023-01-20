@@ -195,111 +195,370 @@ static inline void outl_p(u32 value, unsigned long addr)
 }
 #endif
 
-#ifndef insb
-static inline void insb(unsigned long addr, void *buffer, int count)
+/*
+ * {read,write}s{b,w,l,q}() repeatedly access the same memory address in
+ * native endianness in 8-, 16-, 32- or 64-bit chunks (@count times).
+ */
+#ifndef readsb
+#define readsb readsb
+static inline void readsb(const volatile void __iomem *addr, void *buffer,
+			  unsigned int count)
 {
 	if (count) {
 		u8 *buf = buffer;
+
 		do {
-			u8 x = inb(addr);
+			u8 x = __raw_readb(addr);
 			*buf++ = x;
 		} while (--count);
 	}
+}
+#endif
+
+#ifndef readsw
+#define readsw readsw
+static inline void readsw(const volatile void __iomem *addr, void *buffer,
+			  unsigned int count)
+{
+	if (count) {
+		u16 *buf = buffer;
+
+		do {
+			u16 x = __raw_readw(addr);
+			*buf++ = x;
+		} while (--count);
+	}
+}
+#endif
+
+#ifndef readsl
+#define readsl readsl
+static inline void readsl(const volatile void __iomem *addr, void *buffer,
+			  unsigned int count)
+{
+	if (count) {
+		u32 *buf = buffer;
+
+		do {
+			u32 x = __raw_readl(addr);
+			*buf++ = x;
+		} while (--count);
+	}
+}
+#endif
+
+#ifdef CONFIG_64BIT
+#ifndef readsq
+#define readsq readsq
+static inline void readsq(const volatile void __iomem *addr, void *buffer,
+			  unsigned int count)
+{
+	if (count) {
+		u64 *buf = buffer;
+
+		do {
+			u64 x = __raw_readq(addr);
+			*buf++ = x;
+		} while (--count);
+	}
+}
+#endif
+#endif /* CONFIG_64BIT */
+
+#ifndef writesb
+#define writesb writesb
+static inline void writesb(volatile void __iomem *addr, const void *buffer,
+			   unsigned int count)
+{
+	if (count) {
+		const u8 *buf = buffer;
+
+		do {
+			__raw_writeb(*buf++, addr);
+		} while (--count);
+	}
+}
+#endif
+
+#ifndef writesw
+#define writesw writesw
+static inline void writesw(volatile void __iomem *addr, const void *buffer,
+			   unsigned int count)
+{
+	if (count) {
+		const u16 *buf = buffer;
+
+		do {
+			__raw_writew(*buf++, addr);
+		} while (--count);
+	}
+}
+#endif
+
+#ifndef writesl
+#define writesl writesl
+static inline void writesl(volatile void __iomem *addr, const void *buffer,
+			   unsigned int count)
+{
+	if (count) {
+		const u32 *buf = buffer;
+
+		do {
+			__raw_writel(*buf++, addr);
+		} while (--count);
+	}
+}
+#endif
+
+#ifdef CONFIG_64BIT
+#ifndef writesq
+#define writesq writesq
+static inline void writesq(volatile void __iomem *addr, const void *buffer,
+			   unsigned int count)
+{
+	if (count) {
+		const u64 *buf = buffer;
+
+		do {
+			__raw_writeq(*buf++, addr);
+		} while (--count);
+	}
+}
+#endif
+#endif /* CONFIG_64BIT */
+
+/*
+ * {in,out}{b,w,l}() access little endian I/O. {in,out}{b,w,l}_p() can be
+ * implemented on hardware that needs an additional delay for I/O accesses to
+ * take effect.
+ */
+
+#if !defined(inb) && !defined(_inb)
+#define _inb _inb
+static inline u8 _inb(unsigned long addr)
+{
+	return __raw_readb(PCI_IOBASE + addr);
+}
+#endif
+
+#if !defined(inw) && !defined(_inw)
+#define _inw _inw
+static inline u16 _inw(unsigned long addr)
+{
+	return __le16_to_cpu((__le16 __force)__raw_readw(PCI_IOBASE + addr));
+}
+#endif
+
+#if !defined(inl) && !defined(_inl)
+#define _inl _inl
+static inline u32 _inl(unsigned long addr)
+{
+	return __le32_to_cpu((__le32 __force)__raw_readl(PCI_IOBASE + addr));
+}
+#endif
+
+#if !defined(outb) && !defined(_outb)
+#define _outb _outb
+static inline void _outb(u8 value, unsigned long addr)
+{
+	return __raw_writeb(value, PCI_IOBASE + addr);
+}
+#endif
+
+#if !defined(outw) && !defined(_outw)
+#define _outw _outw
+static inline void _outw(u16 value, unsigned long addr)
+{
+	return __raw_writew((u16 __force)cpu_to_le16(value), PCI_IOBASE + addr);
+}
+#endif
+
+#if !defined(outl) && !defined(_outl)
+#define _outl _outl
+static inline void _outl(u32 value, unsigned long addr)
+{
+	return __raw_writel((u32 __force)cpu_to_le32(value), PCI_IOBASE + addr);
+}
+#endif
+
+#ifndef inb
+#define inb _inb
+#endif
+
+#ifndef inw
+#define inw _inw
+#endif
+
+#ifndef inl
+#define inl _inl
+#endif
+
+#ifndef outb
+#define outb _outb
+#endif
+
+#ifndef outw
+#define outw _outw
+#endif
+
+#ifndef outl
+#define outl _outl
+#endif
+
+#ifndef inb_p
+#define inb_p inb_p
+static inline u8 inb_p(unsigned long addr)
+{
+	return inb(addr);
+}
+#endif
+
+#ifndef inw_p
+#define inw_p inw_p
+static inline u16 inw_p(unsigned long addr)
+{
+	return inw(addr);
+}
+#endif
+
+#ifndef inl_p
+#define inl_p inl_p
+static inline u32 inl_p(unsigned long addr)
+{
+	return inl(addr);
+}
+#endif
+
+#ifndef outb_p
+#define outb_p outb_p
+static inline void outb_p(u8 value, unsigned long addr)
+{
+	outb(value, addr);
+}
+#endif
+
+#ifndef outw_p
+#define outw_p outw_p
+static inline void outw_p(u16 value, unsigned long addr)
+{
+	outw(value, addr);
+}
+#endif
+
+#ifndef outl_p
+#define outl_p outl_p
+static inline void outl_p(u32 value, unsigned long addr)
+{
+	outl(value, addr);
+}
+#endif
+
+/*
+ * {in,out}s{b,w,l}{,_p}() are variants of the above that repeatedly access a
+ * single I/O port multiple times.
+ */
+
+#ifndef insb
+#define insb insb
+static inline void insb(unsigned long addr, void *buffer, unsigned int count)
+{
+	readsb(PCI_IOBASE + addr, buffer, count);
 }
 #endif
 
 #ifndef insw
-static inline void insw(unsigned long addr, void *buffer, int count)
+#define insw insw
+static inline void insw(unsigned long addr, void *buffer, unsigned int count)
 {
-	if (count) {
-		u16 *buf = buffer;
-		do {
-			u16 x = inw(addr);
-			*buf++ = x;
-		} while (--count);
-	}
+	readsw(PCI_IOBASE + addr, buffer, count);
 }
 #endif
 
 #ifndef insl
-static inline void insl(unsigned long addr, void *buffer, int count)
+#define insl insl
+static inline void insl(unsigned long addr, void *buffer, unsigned int count)
 {
-	if (count) {
-		u32 *buf = buffer;
-		do {
-			u32 x = inl(addr);
-			*buf++ = x;
-		} while (--count);
-	}
+	readsl(PCI_IOBASE + addr, buffer, count);
 }
 #endif
 
 #ifndef outsb
-static inline void outsb(unsigned long addr, const void *buffer, int count)
+#define outsb outsb
+static inline void outsb(unsigned long addr, const void *buffer,
+			 unsigned int count)
 {
-	if (count) {
-		const u8 *buf = buffer;
-		do {
-			outb(*buf++, addr);
-		} while (--count);
-	}
+	writesb(PCI_IOBASE + addr, buffer, count);
 }
 #endif
 
 #ifndef outsw
-static inline void outsw(unsigned long addr, const void *buffer, int count)
+#define outsw outsw
+static inline void outsw(unsigned long addr, const void *buffer,
+			 unsigned int count)
 {
-	if (count) {
-		const u16 *buf = buffer;
-		do {
-			outw(*buf++, addr);
-		} while (--count);
-	}
+	writesw(PCI_IOBASE + addr, buffer, count);
 }
 #endif
 
 #ifndef outsl
-static inline void outsl(unsigned long addr, const void *buffer, int count)
+#define outsl outsl
+static inline void outsl(unsigned long addr, const void *buffer,
+			 unsigned int count)
 {
-	if (count) {
-		const u32 *buf = buffer;
-		do {
-			outl(*buf++, addr);
-		} while (--count);
-	}
+	writesl(PCI_IOBASE + addr, buffer, count);
 }
 #endif
 
-static inline void readsl(const void __iomem *addr, void *buf, int len)
+#ifndef insb_p
+#define insb_p insb_p
+static inline void insb_p(unsigned long addr, void *buffer, unsigned int count)
 {
-	insl(addr - PCI_IOBASE, buf, len);
+	insb(addr, buffer, count);
 }
+#endif
 
-static inline void readsw(const void __iomem *addr, void *buf, int len)
+#ifndef insw_p
+#define insw_p insw_p
+static inline void insw_p(unsigned long addr, void *buffer, unsigned int count)
 {
-	insw(addr - PCI_IOBASE, buf, len);
+	insw(addr, buffer, count);
 }
+#endif
 
-static inline void readsb(const void __iomem *addr, void *buf, int len)
+#ifndef insl_p
+#define insl_p insl_p
+static inline void insl_p(unsigned long addr, void *buffer, unsigned int count)
 {
-	insb(addr - PCI_IOBASE, buf, len);
+	insl(addr, buffer, count);
 }
+#endif
 
-static inline void writesl(const void __iomem *addr, const void *buf, int len)
+#ifndef outsb_p
+#define outsb_p outsb_p
+static inline void outsb_p(unsigned long addr, const void *buffer,
+			   unsigned int count)
 {
-	outsl(addr - PCI_IOBASE, buf, len);
+	outsb(addr, buffer, count);
 }
+#endif
 
-static inline void writesw(const void __iomem *addr, const void *buf, int len)
+#ifndef outsw_p
+#define outsw_p outsw_p
+static inline void outsw_p(unsigned long addr, const void *buffer,
+			   unsigned int count)
 {
-	outsw(addr - PCI_IOBASE, buf, len);
+	outsw(addr, buffer, count);
 }
+#endif
 
-static inline void writesb(const void __iomem *addr, const void *buf, int len)
+#ifndef outsl_p
+#define outsl_p outsl_p
+static inline void outsl_p(unsigned long addr, const void *buffer,
+			   unsigned int count)
 {
-	outsb(addr - PCI_IOBASE, buf, len);
+	outsl(addr, buffer, count);
 }
-
+#endif
 
 #ifndef ioread8
 #define ioread8 ioread8
@@ -420,6 +679,88 @@ static inline void iowrite64be(u64 value, volatile void __iomem *addr)
 }
 #endif
 #endif /* CONFIG_64BIT */
+
+#ifndef ioread8_rep
+#define ioread8_rep ioread8_rep
+static inline void ioread8_rep(const volatile void __iomem *addr, void *buffer,
+			       unsigned int count)
+{
+	readsb(addr, buffer, count);
+}
+#endif
+
+#ifndef ioread16_rep
+#define ioread16_rep ioread16_rep
+static inline void ioread16_rep(const volatile void __iomem *addr,
+				void *buffer, unsigned int count)
+{
+	readsw(addr, buffer, count);
+}
+#endif
+
+#ifndef ioread32_rep
+#define ioread32_rep ioread32_rep
+static inline void ioread32_rep(const volatile void __iomem *addr,
+				void *buffer, unsigned int count)
+{
+	readsl(addr, buffer, count);
+}
+#endif
+
+#ifdef CONFIG_64BIT
+#ifndef ioread64_rep
+#define ioread64_rep ioread64_rep
+static inline void ioread64_rep(const volatile void __iomem *addr,
+				void *buffer, unsigned int count)
+{
+	readsq(addr, buffer, count);
+}
+#endif
+#endif /* CONFIG_64BIT */
+
+#ifndef iowrite8_rep
+#define iowrite8_rep iowrite8_rep
+static inline void iowrite8_rep(volatile void __iomem *addr,
+				const void *buffer,
+				unsigned int count)
+{
+	writesb(addr, buffer, count);
+}
+#endif
+
+#ifndef iowrite16_rep
+#define iowrite16_rep iowrite16_rep
+static inline void iowrite16_rep(volatile void __iomem *addr,
+				 const void *buffer,
+				 unsigned int count)
+{
+	writesw(addr, buffer, count);
+}
+#endif
+
+#ifndef iowrite32_rep
+#define iowrite32_rep iowrite32_rep
+static inline void iowrite32_rep(volatile void __iomem *addr,
+				 const void *buffer,
+				 unsigned int count)
+{
+	writesl(addr, buffer, count);
+}
+#endif
+
+#ifdef CONFIG_64BIT
+#ifndef iowrite64_rep
+#define iowrite64_rep iowrite64_rep
+static inline void iowrite64_rep(volatile void __iomem *addr,
+				 const void *buffer,
+				 unsigned int count)
+{
+	writesq(addr, buffer, count);
+}
+#endif
+#endif /* CONFIG_64BIT */
+
+
 
 /*
  * Change virtual addresses to physical addresses and vv.

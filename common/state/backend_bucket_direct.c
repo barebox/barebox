@@ -29,7 +29,7 @@ struct state_backend_storage_bucket_direct {
 
 	int fd;
 
-	struct device_d *dev;
+	struct device *dev;
 };
 
 struct __attribute__((__packed__)) state_backend_storage_bucket_direct_meta {
@@ -162,7 +162,7 @@ static void state_backend_bucket_direct_free(struct
 	free(direct);
 }
 
-int state_backend_bucket_direct_create(struct device_d *dev, const char *path,
+int state_backend_bucket_direct_create(struct device *dev, const char *path,
 				       struct state_backend_storage_bucket **bucket,
 				       off_t offset, ssize_t max_size)
 {

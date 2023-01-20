@@ -33,7 +33,7 @@ struct devm_of_regulator_matches {
  *
  * Returns the number of matches found or a negative error code on failure.
  */
-int of_regulator_match(struct device_d *dev, struct device_node *node,
+int of_regulator_match(struct device *dev, struct device_node *node,
 		       struct of_regulator_match *matches,
 		       unsigned int num_matches)
 {

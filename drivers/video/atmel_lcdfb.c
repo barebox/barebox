@@ -223,7 +223,7 @@ struct atmel_lcdfb_devdata atmel_lcdfb_data = {
 	.limit_screeninfo = atmel_lcdfb_limit_screeninfo,
 };
 
-static int atmel_lcdc_probe(struct device_d *dev)
+static int atmel_lcdc_probe(struct device *dev)
 {
 	return atmel_lcdc_register(dev, &atmel_lcdfb_data);
 }
@@ -264,7 +264,7 @@ static __maybe_unused struct of_device_id atmel_lcdfb_compatible[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d atmel_lcdc_driver = {
+static struct driver atmel_lcdc_driver = {
 	.name	= "atmel_lcdfb",
 	.probe	= atmel_lcdc_probe,
 	.of_compatible = DRV_OF_COMPAT(atmel_lcdfb_compatible),

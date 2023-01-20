@@ -100,7 +100,7 @@ struct dmfc_channel {
 
 struct ipu_dmfc_priv {
 	struct ipu_soc *ipu;
-	struct device_d *dev;
+	struct device *dev;
 	struct dmfc_channel channels[DMFC_NUM_CHANNELS];
 	unsigned long bandwidth_per_slot;
 	void __iomem *base;
@@ -340,8 +340,8 @@ void ipu_dmfc_put(struct dmfc_channel *dmfc)
 }
 EXPORT_SYMBOL_GPL(ipu_dmfc_put);
 
-int ipu_dmfc_init(struct ipu_soc *ipu, struct device_d *dev, void __iomem *base,
-		struct clk *ipu_clk)
+int ipu_dmfc_init(struct ipu_soc *ipu, struct device *dev, void __iomem *base,
+		  struct clk *ipu_clk)
 {
 	struct ipu_dmfc_priv *priv;
 	int i;

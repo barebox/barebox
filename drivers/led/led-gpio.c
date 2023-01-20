@@ -192,20 +192,20 @@ void led_gpio_rgb_unregister(struct gpio_rgb_led *led)
 #endif /* CONFIG_LED_GPIO_RGB */
 
 #ifdef CONFIG_LED_GPIO_OF
-static int led_gpio_of_probe(struct device_d *dev)
+static int led_gpio_of_probe(struct device *dev)
 {
 	struct device_node *child;
 	struct gpio_led *leds;
 	int num_leds;
 	int ret = 0, n = 0;
 
-	num_leds = of_get_child_count(dev->device_node);
+	num_leds = of_get_child_count(dev->of_node);
 	if (num_leds <= 0)
 		return num_leds;
 
 	leds = xzalloc(num_leds * sizeof(struct gpio_led));
 
-	for_each_child_of_node(dev->device_node, child) {
+	for_each_child_of_node(dev->of_node, child) {
 		struct gpio_led *gled = &leds[n];
 		const char *default_state;
 		enum of_gpio_flags flags;
@@ -258,7 +258,7 @@ static struct of_device_id led_gpio_of_ids[] = {
 	{ }
 };
 
-static struct driver_d led_gpio_of_driver = {
+static struct driver led_gpio_of_driver = {
 	.name  = "gpio-leds",
 	.probe = led_gpio_of_probe,
 	.of_compatible = DRV_OF_COMPAT(led_gpio_of_ids),

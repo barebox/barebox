@@ -24,7 +24,7 @@
 struct ksz_switch {
 	struct spi_device *spi;
 	struct dsa_switch ds;
-	struct device_d *dev;
+	struct device *dev;
 	int phy_port_cnt;
 	u32 chip_id;
 	u8 features;
@@ -145,7 +145,7 @@ static int ksz_pwrite32(struct ksz_switch *priv, int port, int reg, u32 val)
 
 static int ksz9477_phy_read16(struct dsa_switch *ds, int addr, int reg)
 {
-	struct device_d *dev = ds->dev;
+	struct device *dev = ds->dev;
 	struct ksz_switch *priv = dev_get_priv(dev);
 	u16 val = 0xffff;
 
@@ -160,7 +160,7 @@ static int ksz9477_phy_read16(struct dsa_switch *ds, int addr, int reg)
 static int ksz9477_phy_write16(struct dsa_switch *ds, int addr, int reg,
 			       u16 val)
 {
-	struct device_d *dev = ds->dev;
+	struct device *dev = ds->dev;
 	struct ksz_switch *priv = dev_get_priv(dev);
 
 	/* No real PHY after this. */
@@ -431,7 +431,7 @@ static int ksz_port_setup(struct ksz_switch *priv, int port,
 static int ksz_port_enable(struct dsa_port *dp, int port,
 			   struct phy_device *phy)
 {
-	struct device_d *dev = dp->ds->dev;
+	struct device *dev = dp->ds->dev;
 	struct ksz_switch *priv = dev_get_priv(dev);
 	u8 data8;
 	int ret;
@@ -503,7 +503,7 @@ static int ksz_default_setup(struct ksz_switch *priv)
 	return 0;
 }
 
-static int microchip_switch_probe(struct device_d *dev)
+static int microchip_switch_probe(struct device *dev)
 {
 	struct ksz_switch *priv;
 	int ret = 0, gpio;
@@ -557,7 +557,7 @@ static const struct of_device_id microchip_switch_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d microchip_switch_driver = {
+static struct driver microchip_switch_driver = {
 	.name		= "ksz9477",
 	.probe		= microchip_switch_probe,
 	.of_compatible	= DRV_OF_COMPAT(microchip_switch_dt_ids),

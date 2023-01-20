@@ -118,7 +118,8 @@ static int cramfs_read_file(struct inode *inode, unsigned long offset,
 {
 	struct cramfs_inode_info *info = to_cramfs_inode_info(inode);
 	struct cramfs_inode *cramfs_inode = &info->inode;
-	struct fs_device_d *fsdev = container_of(inode->i_sb, struct fs_device_d, sb);
+	struct fs_device *fsdev = container_of(inode->i_sb, struct fs_device,
+					       sb);
 	struct cramfs_priv *priv = fsdev->dev.priv;
 	unsigned int blocknr;
 	int outsize = 0;
@@ -161,7 +162,7 @@ static int cramfs_read_file(struct inode *inode, unsigned long offset,
 	return outsize;
 }
 
-static int cramfs_read(struct device_d *_dev, FILE *f, void *buf, size_t size)
+static int cramfs_read(struct device *_dev, FILE *f, void *buf, size_t size)
 {
 	return cramfs_read_file(f->f_inode, f->pos, buf, size);
 }
@@ -274,7 +275,8 @@ static struct dentry *cramfs_lookup(struct inode *dir, struct dentry *dentry,
 	struct cramfs_inode *de;
 	unsigned int offset = 0;
 	struct inode *inode = NULL;
-	struct fs_device_d *fsdev = container_of(dir->i_sb, struct fs_device_d, sb);
+	struct fs_device *fsdev = container_of(dir->i_sb, struct fs_device,
+					       sb);
 	struct cramfs_priv *priv = fsdev->dev.priv;
 
 	de = xmalloc(sizeof(*de) + CRAMFS_MAXPATHLEN);
@@ -346,7 +348,8 @@ static int cramfs_iterate(struct file *file, struct dir_context *ctx)
 {
 	struct dentry *dentry = file->f_path.dentry;
 	struct inode *dir = d_inode(dentry);
-	struct fs_device_d *fsdev = container_of(dir->i_sb, struct fs_device_d, sb);
+	struct fs_device *fsdev = container_of(dir->i_sb, struct fs_device,
+					       sb);
 	struct cramfs_priv *priv = fsdev->dev.priv;
 	char *buf;
 	unsigned int offset;
@@ -439,9 +442,9 @@ static const struct super_operations cramfs_ops = {
 	.destroy_inode = cramfs_destroy_inode,
 };
 
-static int cramfs_probe(struct device_d *dev)
+static int cramfs_probe(struct device *dev)
 {
-	struct fs_device_d *fsdev;
+	struct fs_device *fsdev;
 	struct cramfs_priv *priv;
 	int ret;
 	struct super_block *sb;
@@ -485,7 +488,7 @@ err_out:
 	return ret;
 }
 
-static void cramfs_remove(struct device_d *dev)
+static void cramfs_remove(struct device *dev)
 {
 	struct cramfs_priv *priv = dev->priv;
 
@@ -493,7 +496,7 @@ static void cramfs_remove(struct device_d *dev)
 	free(priv);
 }
 
-static struct fs_driver_d cramfs_driver = {
+static struct fs_driver cramfs_driver = {
 	.read		= cramfs_read,
 	.drv = {
 		.probe = cramfs_probe,

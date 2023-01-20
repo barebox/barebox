@@ -18,7 +18,7 @@
 /* If dev describes a file on a fs, mount the fs and change devpath to
  * point to the file's path.  Otherwise leave devpath alone.  Does
  * nothing in env in a file support isn't enabled.  */
-static int environment_check_mount(struct device_d *dev, char **devpath)
+static int environment_check_mount(struct device *dev, char **devpath)
 {
 	const char *filepath;
 	int ret;
@@ -26,7 +26,7 @@ static int environment_check_mount(struct device_d *dev, char **devpath)
 	if (!IS_ENABLED(CONFIG_OF_BAREBOX_ENV_IN_FS))
 		return 0;
 
-	ret = of_property_read_string(dev->device_node, "file-path", &filepath);
+	ret = of_property_read_string(dev->of_node, "file-path", &filepath);
 	if (ret == -EINVAL) {
 		/* No file-path so just use device-path */
 		return 0;
@@ -52,12 +52,13 @@ static int environment_check_mount(struct device_d *dev, char **devpath)
 	return 0;
 }
 
-static int environment_probe(struct device_d *dev)
+static int environment_probe(struct device *dev)
 {
 	char *path;
 	int ret;
 
-	ret = of_find_path(dev->device_node, "device-path", &path, OF_FIND_PATH_FLAGS_BB);
+	ret = of_find_path(dev->of_node, "device-path", &path,
+			   OF_FIND_PATH_FLAGS_BB);
 	if (ret)
 		return ret;
 
@@ -80,7 +81,7 @@ static struct of_device_id environment_dt_ids[] = {
 	}
 };
 
-static struct driver_d environment_driver = {
+static struct driver environment_driver = {
 	.name		= "barebox-environment",
 	.probe		= environment_probe,
 	.of_compatible	= environment_dt_ids,

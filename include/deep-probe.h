@@ -9,7 +9,14 @@ struct deep_probe_entry {
 	const struct of_device_id *device_id;
 };
 
+#ifdef CONFIG_OFDEVICE
 bool deep_probe_is_supported(void);
+#else
+static inline bool deep_probe_is_supported(void)
+{
+	return false;
+}
+#endif
 
 extern struct deep_probe_entry __barebox_deep_probe_start;
 extern struct deep_probe_entry __barebox_deep_probe_end;

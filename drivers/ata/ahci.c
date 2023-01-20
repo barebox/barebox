@@ -541,14 +541,14 @@ void ahci_print_info(struct ahci_device *ahci)
 	       cap2 & HOST_CAP2_BOH ? "boh " : "");
 }
 
-void ahci_info(struct device_d *dev)
+void ahci_info(struct device *dev)
 {
 	struct ahci_device *ahci = dev->priv;
 
 	ahci_print_info(ahci);
 }
 
-static int ahci_detect(struct device_d *dev)
+static int ahci_detect(struct device *dev)
 {
 	struct ahci_device *ahci = dev->priv;
 	int n_ports = max_t(int, ahci->n_ports, fls(ahci->port_map));
@@ -636,7 +636,7 @@ int ahci_add_host(struct ahci_device *ahci)
 	return 0;
 }
 
-static int ahci_probe(struct device_d *dev)
+static int ahci_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct ahci_device *ahci;
@@ -670,7 +670,7 @@ static __maybe_unused struct of_device_id ahci_dt_ids[] = {
 	}
 };
 
-static struct driver_d ahci_driver = {
+static struct driver ahci_driver = {
 	.name   = "ahci",
 	.probe  = ahci_probe,
 	.of_compatible = DRV_OF_COMPAT(ahci_dt_ids),

@@ -58,7 +58,7 @@ static int litex_serial_tstc(struct console_device *cdev)
 	return !litex_serial_readb(cdev, UART_RXEMPTY);
 }
 
-static int litex_serial_probe(struct device_d *dev)
+static int litex_serial_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct console_device *cdev;
@@ -91,7 +91,7 @@ static __maybe_unused struct of_device_id litex_serial_dt_ids[] = {
 	}
 };
 
-static struct driver_d litex_serial_driver = {
+static struct driver litex_serial_driver = {
 	.name  = "litex-uart",
 	.probe = litex_serial_probe,
 	.of_compatible = DRV_OF_COMPAT(litex_serial_dt_ids),

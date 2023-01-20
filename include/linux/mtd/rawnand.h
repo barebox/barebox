@@ -95,11 +95,27 @@ enum nand_ecc_mode {
 	NAND_ECC_SOFT_BCH
 };
 
+/**
+ * enum nand_ecc_engine_type - NAND ECC engine type
+ * @NAND_ECC_ENGINE_TYPE_INVALID: Invalid value
+ * @NAND_ECC_ENGINE_TYPE_NONE: No ECC correction
+ * @NAND_ECC_ENGINE_TYPE_SOFT: Software ECC correction
+ * @NAND_ECC_ENGINE_TYPE_ON_HOST: On host hardware ECC correction
+ * @NAND_ECC_ENGINE_TYPE_ON_DIE: On chip hardware ECC correction
+ */
+enum nand_ecc_engine_type {
+	NAND_ECC_ENGINE_TYPE_INVALID,
+	NAND_ECC_ENGINE_TYPE_NONE,
+	NAND_ECC_ENGINE_TYPE_SOFT,
+	NAND_ECC_ENGINE_TYPE_ON_HOST,
+	NAND_ECC_ENGINE_TYPE_ON_DIE,
+};
+
 enum nand_ecc_algo {
-	NAND_ECC_UNKNOWN,
-	NAND_ECC_HAMMING,
-	NAND_ECC_BCH,
-	NAND_ECC_RS,
+	NAND_ECC_ALGO_UNKNOWN,
+	NAND_ECC_ALGO_HAMMING,
+	NAND_ECC_ALGO_BCH,
+	NAND_ECC_ALGO_RS,
 };
 
 /*
@@ -313,6 +329,7 @@ static const struct nand_ecc_caps __name = {			\
 
 /**
  * struct nand_ecc_ctrl - Control structure for ECC
+ * @engine_type: ECC engine type
  * @mode:	ECC mode
  * @algo:	ECC algorithm
  * @steps:	number of ECC steps per page
@@ -365,6 +382,7 @@ static const struct nand_ecc_caps __name = {			\
  * @write_oob:	function to write chip OOB data
  */
 struct nand_ecc_ctrl {
+	enum nand_ecc_engine_type engine_type;
 	enum nand_ecc_mode mode;
 	enum nand_ecc_algo algo;
 	int steps;
@@ -520,13 +538,22 @@ struct nand_interface_config {
 };
 
 /**
+ * nand_interface_is_sdr - get the interface type
+ * @conf:	The data interface
+ */
+static bool nand_interface_is_sdr(const struct nand_interface_config *conf)
+{
+	return conf->type == NAND_SDR_IFACE;
+}
+
+/**
  * nand_get_sdr_timings - get SDR timing from data interface
  * @conf:	The data interface
  */
 static inline const struct nand_sdr_timings *
 nand_get_sdr_timings(const struct nand_interface_config *conf)
 {
-	if (conf->type != NAND_SDR_IFACE)
+	if (!nand_interface_is_sdr(conf))
 		return ERR_PTR(-EINVAL);
 
 	return &conf->timings.sdr;
@@ -1168,8 +1195,8 @@ struct nand_chip {
 	unsigned int bbt_type;
 };
 
-extern const struct mtd_ooblayout_ops nand_ooblayout_sp_ops;
-extern const struct mtd_ooblayout_ops nand_ooblayout_lp_ops;
+const struct mtd_ooblayout_ops *nand_get_small_page_ooblayout(void);
+const struct mtd_ooblayout_ops *nand_get_large_page_ooblayout(void);
 
 static inline struct nand_chip *mtd_to_nand(struct mtd_info *mtd)
 {
@@ -1414,6 +1441,8 @@ void nand_cleanup(struct nand_chip *chip);
  * instruction and have no physical pin to check it.
  */
 int nand_soft_waitrdy(struct nand_chip *chip, unsigned long timeout_ms);
+int nand_gpio_waitrdy(struct nand_chip *chip, int gpio,
+		      unsigned long timeout_ms);
 
 /* Select/deselect a NAND target. */
 void nand_select_target(struct nand_chip *chip, unsigned int cs);

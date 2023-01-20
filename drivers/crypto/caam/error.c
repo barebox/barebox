@@ -115,14 +115,14 @@ static const char * const rng_err_id_list[] = {
 	"Secure key generation",
 };
 
-static void report_invalid_status(struct device_d *jrdev, const u32 status,
+static void report_invalid_status(struct device *jrdev, const u32 status,
 				  const char *error)
 {
 	dev_err(jrdev, "%08x: %s: %s() not implemented\n",
 		status, error, __func__);
 }
 
-static void report_ccb_status(struct device_d *jrdev, const u32 status,
+static void report_ccb_status(struct device *jrdev, const u32 status,
 			      const char *error)
 {
 	u8 cha_id = (status & JRSTA_CCBERR_CHAID_MASK) >>
@@ -166,14 +166,14 @@ static void report_ccb_status(struct device_d *jrdev, const u32 status,
 			err_str, err_err_code);
 }
 
-static void report_jump_status(struct device_d *jrdev, const u32 status,
+static void report_jump_status(struct device *jrdev, const u32 status,
 			       const char *error)
 {
 	dev_err(jrdev, "%08x: %s: %s() not implemented\n",
 		status, error, __func__);
 }
 
-static void report_deco_status(struct device_d *jrdev, const u32 status,
+static void report_deco_status(struct device *jrdev, const u32 status,
 			       const char *error)
 {
 	u8 err_id = status & JRSTA_DECOERR_ERROR_MASK;
@@ -202,24 +202,24 @@ static void report_deco_status(struct device_d *jrdev, const u32 status,
 		status, error, idx_str, idx, err_str, err_err_code);
 }
 
-static void report_jr_status(struct device_d *jrdev, const u32 status,
+static void report_jr_status(struct device *jrdev, const u32 status,
 			     const char *error)
 {
 	dev_err(jrdev, "%08x: %s: %s() not implemented\n",
 		status, error, __func__);
 }
 
-static void report_cond_code_status(struct device_d *jrdev, const u32 status,
+static void report_cond_code_status(struct device *jrdev, const u32 status,
 				    const char *error)
 {
 	dev_err(jrdev, "%08x: %s: %s() not implemented\n",
 		status, error, __func__);
 }
 
-void caam_jr_strstatus(struct device_d *jrdev, u32 status)
+void caam_jr_strstatus(struct device *jrdev, u32 status)
 {
 	static const struct stat_src {
-		void (*report_ssed)(struct device_d *jrdev, const u32 status,
+		void (*report_ssed)(struct device *jrdev, const u32 status,
 				    const char *error);
 		const char *error;
 	} status_src[16] = {

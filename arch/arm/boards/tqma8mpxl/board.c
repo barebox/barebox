@@ -15,7 +15,7 @@
 #include <gpio.h>
 #include <envfs.h>
 
-static int tqma8mpxl_probe(struct device_d *dev)
+static int tqma8mpxl_probe(struct device *dev)
 {
 	int emmc_bbu_flag = 0;
 	int sd_bbu_flag = 0;
@@ -41,7 +41,7 @@ static const struct of_device_id tqma8mpxl_of_match[] = {
 };
 BAREBOX_DEEP_PROBE_ENABLE(tqma8mpxl_of_match);
 
-static struct driver_d tqma8mpxl_board_driver = {
+static struct driver tqma8mpxl_board_driver = {
 	.name = "board-tqma8mpxl",
 	.probe = tqma8mpxl_probe,
 	.of_compatible = DRV_OF_COMPAT(tqma8mpxl_of_match),

@@ -88,7 +88,7 @@ static void jr_jobdesc_blob_encap(struct blob_priv *ctx, u8 modlen, u16 input_si
 	append_operation(desc, OP_TYPE_ENCAP_PROTOCOL | OP_PCLID_BLOB);
 }
 
-static void blob_job_done(struct device_d *dev, u32 *desc, u32 err, void *arg)
+static void blob_job_done(struct device *dev, u32 *desc, u32 err, void *arg)
 {
 	struct blob_job_result *res = arg;
 
@@ -106,7 +106,7 @@ static int caam_blob_decrypt(struct blobgen *bg, const char *modifier,
 			     int *plainsize)
 {
 	struct blob_priv *ctx = to_blob_priv(bg);
-	struct device_d *jrdev = bg->dev.parent;
+	struct device *jrdev = bg->dev.parent;
 	struct blob_job_result testres;
 	int modifier_len = strlen(modifier);
 	u32 *desc = ctx->desc;
@@ -162,7 +162,7 @@ static int caam_blob_encrypt(struct blobgen *bg, const char *modifier,
 			     int *blobsize)
 {
 	struct blob_priv *ctx = to_blob_priv(bg);
-	struct device_d *jrdev = bg->dev.parent;
+	struct device *jrdev = bg->dev.parent;
 	struct blob_job_result testres;
 	int modifier_len = strlen(modifier);
 	u32 *desc = ctx->desc;
@@ -206,7 +206,7 @@ static int caam_blob_encrypt(struct blobgen *bg, const char *modifier,
 	return ret;
 }
 
-int caam_blob_gen_probe(struct device_d *dev, struct device_d *jrdev)
+int caam_blob_gen_probe(struct device *dev, struct device *jrdev)
 {
 	struct blob_priv *ctx;
 	struct blobgen *bg;

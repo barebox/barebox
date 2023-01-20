@@ -62,7 +62,7 @@ struct stm32_usbphyc_phy {
 };
 
 struct stm32_usbphyc {
-	struct device_d *dev;
+	struct device *dev;
 	void __iomem *base;
 	struct clk *clk;
 	struct stm32_usbphyc_phy **phys;
@@ -306,7 +306,7 @@ static void stm32_usbphyc_switch_setup(struct stm32_usbphyc *usbphyc,
 	usbphyc->switch_setup = utmi_switch;
 }
 
-static struct phy *stm32_usbphyc_of_xlate(struct device_d *dev,
+static struct phy *stm32_usbphyc_of_xlate(struct device *dev,
 					  struct of_phandle_args *args)
 {
 	struct stm32_usbphyc *usbphyc = dev->priv;
@@ -315,7 +315,7 @@ static struct phy *stm32_usbphyc_of_xlate(struct device_d *dev,
 	int port = 0;
 
 	for (port = 0; port < usbphyc->nphys; port++) {
-		if (phynode == usbphyc->phys[port]->phy->dev.device_node) {
+		if (phynode == usbphyc->phys[port]->phy->dev.of_node) {
 			usbphyc_phy = usbphyc->phys[port];
 			break;
 		}
@@ -348,10 +348,10 @@ static struct phy *stm32_usbphyc_of_xlate(struct device_d *dev,
 	return usbphyc_phy->phy;
 }
 
-static int stm32_usbphyc_probe(struct device_d *dev)
+static int stm32_usbphyc_probe(struct device *dev)
 {
 	struct stm32_usbphyc *usbphyc;
-	struct device_node *child, *np = dev->device_node;
+	struct device_node *child, *np = dev->of_node;
 	struct resource *iores;
 	struct phy_provider *phy_provider;
 	u32 pllen, version;
@@ -423,7 +423,7 @@ static int stm32_usbphyc_probe(struct device_d *dev)
 
 	for_each_child_of_node(np, child) {
 		struct stm32_usbphyc_phy *usbphyc_phy;
-		struct device_d *phydev;
+		struct device *phydev;
 		struct phy *phy;
 		u32 index;
 
@@ -486,7 +486,7 @@ release_region:
 	return ret;
 }
 
-static void stm32_usbphyc_remove(struct device_d *dev)
+static void stm32_usbphyc_remove(struct device *dev)
 {
 	struct stm32_usbphyc *usbphyc = dev->priv;
 	int port;
@@ -504,7 +504,7 @@ static const struct of_device_id stm32_usbphyc_of_match[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d stm32_usbphyc_driver = {
+static struct driver stm32_usbphyc_driver = {
 	.name = "stm32-usbphyc",
 	.probe = stm32_usbphyc_probe,
 	.remove = stm32_usbphyc_remove,

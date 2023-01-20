@@ -150,7 +150,7 @@ static int omap_wdt_set_timeout(struct watchdog *wdog,
 	return 0;
 }
 
-static int omap_wdt_probe(struct device_d *dev)
+static int omap_wdt_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct omap_wdt_dev *wdev;
@@ -192,7 +192,7 @@ static const struct of_device_id omap_wdt_of_match[] = {
 	{},
 };
 
-static struct driver_d omap_wdt_driver = {
+static struct driver omap_wdt_driver = {
 	.probe		= omap_wdt_probe,
 	.name	= "omap_wdt",
 	.of_compatible = DRV_OF_COMPAT(omap_wdt_of_match),

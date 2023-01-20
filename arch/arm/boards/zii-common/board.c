@@ -68,7 +68,7 @@ late_initcall(rdu_ethernet_init);
 static int rdu_networkconfig(void)
 {
 	static char *rdu_netconfig;
-	struct device_d *sp_dev;
+	struct device *sp_dev;
 
 	if (!of_machine_is_compatible("zii,imx8mq-ultra") &&
 	    !of_machine_is_compatible("zii,imx6q-zii-rdu2") &&

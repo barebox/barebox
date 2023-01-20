@@ -31,7 +31,7 @@ static int atmci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 	return atmci_common_request(host, cmd, data);
 }
 
-static void atmci_info(struct device_d *mci_dev)
+static void atmci_info(struct device *mci_dev)
 {
 	struct atmel_mci *host = mci_dev->priv;
 
@@ -67,11 +67,11 @@ static int atmci_card_present(struct mci_host *mci)
 	return ret == 0 ? 1 : 0;
 }
 
-static int atmci_probe(struct device_d *hw_dev)
+static int atmci_probe(struct device *hw_dev)
 {
 	struct resource *iores;
 	struct atmel_mci *host;
-	struct device_node *np = hw_dev->device_node;
+	struct device_node *np = hw_dev->of_node;
 	struct atmel_mci_platform_data *pd = hw_dev->platform_data;
 	int ret;
 
@@ -194,7 +194,7 @@ static __maybe_unused struct of_device_id atmci_compatible[] = {
 	}
 };
 
-static struct driver_d atmci_driver = {
+static struct driver atmci_driver = {
 	.name	= "atmel_mci",
 	.probe	= atmci_probe,
 	.of_compatible = DRV_OF_COMPAT(atmci_compatible),

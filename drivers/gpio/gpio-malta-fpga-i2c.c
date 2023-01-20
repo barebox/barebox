@@ -116,7 +116,7 @@ static struct gpio_ops malta_i2c_gpio_ops = {
 	.set = malta_i2c_gpio_set_value,
 };
 
-static int malta_i2c_gpio_probe(struct device_d *dev)
+static int malta_i2c_gpio_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *gpio_base;
@@ -160,7 +160,7 @@ static __maybe_unused struct of_device_id malta_i2c_gpio_dt_ids[] = {
 	},
 };
 
-static struct driver_d malta_i2c_gpio_driver = {
+static struct driver malta_i2c_gpio_driver = {
 	.name  = "malta-fpga-i2c-gpio",
 	.probe = malta_i2c_gpio_probe,
 	.of_compatible	= DRV_OF_COMPAT(malta_i2c_gpio_dt_ids),

@@ -93,7 +93,7 @@ static struct pinctrl_ops mvebu_pinctrl_ops = {
 	.set_state = mvebu_pinctrl_set_state,
 };
 
-int mvebu_pinctrl_probe(struct device_d *dev,
+int mvebu_pinctrl_probe(struct device *dev,
 			struct mvebu_pinctrl_soc_info *soc)
 {
 	struct mvebu_pinctrl *pctl;

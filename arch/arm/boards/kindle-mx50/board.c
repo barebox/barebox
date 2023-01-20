@@ -140,7 +140,7 @@ mem_initcall(kindle_mx50_mem_init);
 
 static int kindle_mx50_devices_init(void)
 {
-	struct device_d *dev;
+	struct device *dev;
 
 	if (!is_mx50_kindle())
 		return 0;

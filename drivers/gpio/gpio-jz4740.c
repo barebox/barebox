@@ -78,7 +78,7 @@ static struct gpio_ops jz4740_gpio_ops = {
 	.set = jz4740_gpio_set_value,
 };
 
-static int jz4740_gpio_probe(struct device_d *dev)
+static int jz4740_gpio_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *base;
@@ -120,7 +120,7 @@ static __maybe_unused struct of_device_id jz4740_gpio_dt_ids[] = {
 	},
 };
 
-static struct driver_d jz4740_gpio_driver = {
+static struct driver jz4740_gpio_driver = {
 	.name = "jz4740-gpio",
 	.probe = jz4740_gpio_probe,
 	.of_compatible	= DRV_OF_COMPAT(jz4740_gpio_dt_ids),

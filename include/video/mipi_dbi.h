@@ -89,7 +89,7 @@ int mipi_dbi_command_stackbuf(struct mipi_dbi *dbi, u8 cmd, const u8 *data,
 #define mipi_dbi_command(dbi, cmd, seq...) \
 ({ \
 	const u8 d[] = { seq }; \
-	struct device_d *dev = &(dbi)->spi->dev;	\
+	struct device *dev = &(dbi)->spi->dev;	\
 	int ret; \
 	ret = mipi_dbi_command_stackbuf(dbi, cmd, d, ARRAY_SIZE(d)); \
 	if (ret) \

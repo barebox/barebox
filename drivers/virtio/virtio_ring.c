@@ -22,7 +22,7 @@
 #define vq_info(vq, fmt, ...) \
 	dev_info(&vq->vdev->dev, fmt, ##__VA_ARGS__)
 
-static inline struct device_d *vring_dma_dev(const struct virtqueue *vq)
+static inline struct device *vring_dma_dev(const struct virtqueue *vq)
 {
 	return vq->vdev->dev.parent;
 }

@@ -30,7 +30,7 @@ struct nvme_request {
 
 struct nvme_ctrl {
 	const struct nvme_ctrl_ops *ops;
-	struct device_d *dev;
+	struct device *dev;
 	int instance;
 
 	u32 ctrl_config;
@@ -104,7 +104,7 @@ static inline void nvme_end_request(struct nvme_request *rq, __le16 status,
 int nvme_disable_ctrl(struct nvme_ctrl *ctrl, u64 cap);
 int nvme_enable_ctrl(struct nvme_ctrl *ctrl, u64 cap);
 int nvme_shutdown_ctrl(struct nvme_ctrl *ctrl);
-int nvme_init_ctrl(struct nvme_ctrl *ctrl, struct device_d *dev,
+int nvme_init_ctrl(struct nvme_ctrl *ctrl, struct device *dev,
 		   const struct nvme_ctrl_ops *ops);
 void nvme_start_ctrl(struct nvme_ctrl *ctrl);
 int nvme_init_identify(struct nvme_ctrl *ctrl);

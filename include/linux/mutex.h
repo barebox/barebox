@@ -20,4 +20,6 @@
 #define mutex_is_locked(...)	0
 struct mutex { int i; };
 
+#define DEFINE_MUTEX(obj) struct mutex  __always_unused obj
+
 #endif /* __LINUX_MUTEX_H */

@@ -97,12 +97,19 @@ config NAND_MRVL_NFC
 config NAND_ATMEL
 	bool
 	prompt "Atmel (AT91SAM9xxx) NAND driver"
-	depends on ARCH_AT91
+	select GENERIC_ALLOCATOR if OFDEVICE
+	depends on ARCH_AT91 || (OFDEVICE && COMPILE_TEST)
+
+config NAND_ATMEL_LEGACY
+	def_bool !AT91_MULTI_BOARDS
+	depends on NAND_ATMEL
+	help
+	  Select legacy non-device tree enabled driver.
 
 config NAND_ATMEL_PMECC
 	bool
 	prompt "PMECC support"
-	depends on NAND_ATMEL || COMPILE_TEST
+	depends on NAND_ATMEL_LEGACY
 	help
 	  Support for PMECC present on the SoC sam9x5 and sam9n12
 

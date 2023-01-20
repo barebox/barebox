@@ -205,7 +205,7 @@ static int of_fixup_bootargs(struct device_node *root, void *unused)
 	struct device_node *node;
 	int err;
 	int instance = reset_source_get_instance();
-	struct device_d *dev;
+	struct device *dev;
 	const char *serialno;
 	const char *compat;
 
@@ -233,10 +233,10 @@ static int of_fixup_bootargs(struct device_node *root, void *unused)
 
 
 	dev = reset_source_get_device();
-	if (dev && dev->device_node) {
+	if (dev && dev->of_node) {
 		phandle phandle;
 
-		phandle = of_node_create_phandle(dev->device_node);
+		phandle = of_node_create_phandle(dev->of_node);
 
 		err = of_property_write_u32(node,
 					    "reset-source-device", phandle);

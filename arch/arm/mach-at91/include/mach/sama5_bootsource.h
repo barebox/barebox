@@ -49,6 +49,11 @@ static inline int sama5_bootsource_instance(u32 reg)
 #define __sama5d3_stashed_bootrom_r4 \
 	(*(volatile u32 *)(SAMA5D3_SRAM_BASE + SAMA5D3_SRAM_SIZE - 0x4))
 
+#define __sama5d4_stashed_bootrom_r4 \
+	(*(volatile u32 *)(SAMA5D4_SRAM_BASE + SAMA5D4_SRAM_SIZE - 0x4))
+
+extern unsigned long at91_bootsource;
+
 static inline void __noreturn sama5_boot_xload(void __noreturn (*bb)(void), u32 r4)
 {
 	asm volatile("mov r4, %0" : : "r"(r4) : );

@@ -93,10 +93,10 @@ static struct pwm_ops mxs_pwm_ops = {
 	.apply = mxs_pwm_apply,
 };
 
-static int mxs_pwm_probe(struct device_d *dev)
+static int mxs_pwm_probe(struct device *dev)
 {
 	struct resource *iores;
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct mxs_pwm *mxs;
 	int ret, i;
 	uint32_t npwm;
@@ -147,7 +147,7 @@ static const struct of_device_id mxs_pwm_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d mxs_pwm_driver = {
+static struct driver mxs_pwm_driver = {
 	.name	= "mxs-pwm",
 	.of_compatible	= mxs_pwm_dt_ids,
 	.probe		= mxs_pwm_probe,

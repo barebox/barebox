@@ -652,25 +652,25 @@ static void fec_free_receive_packets(struct fec_priv *fec, int count, int size)
 }
 
 #ifdef CONFIG_OFDEVICE
-static int fec_probe_dt(struct device_d *dev, struct fec_priv *fec)
+static int fec_probe_dt(struct device *dev, struct fec_priv *fec)
 {
 	struct device_node *mdiobus;
 	int ret;
 
-	ret = of_get_phy_mode(dev->device_node);
+	ret = of_get_phy_mode(dev->of_node);
 	if (ret < 0)
 		fec->interface = PHY_INTERFACE_MODE_MII;
 	else
 		fec->interface = ret;
 
-	mdiobus = of_get_child_by_name(dev->device_node, "mdio");
+	mdiobus = of_get_child_by_name(dev->of_node, "mdio");
 	if (mdiobus)
-		fec->miibus.dev.device_node = mdiobus;
+		fec->miibus.dev.of_node = mdiobus;
 
 	return 0;
 }
 #else
-static int fec_probe_dt(struct device_d *dev, struct fec_priv *fec)
+static int fec_probe_dt(struct device *dev, struct fec_priv *fec)
 {
 	return -ENODEV;
 }
@@ -757,7 +757,7 @@ static int fec_clk_get(struct fec_priv *fec)
 	return err;
 }
 
-static int fec_probe(struct device_d *dev)
+static int fec_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct fec_platform_data *pdata = (struct fec_platform_data *)dev->platform_data;
@@ -825,10 +825,11 @@ static int fec_probe(struct device_d *dev)
 		goto release_res;
 	}
 
-	phy_reset = of_get_named_gpio(dev->device_node, "phy-reset-gpios", 0);
+	phy_reset = of_get_named_gpio(dev->of_node, "phy-reset-gpios", 0);
 	if (gpio_is_valid(phy_reset)) {
-		of_property_read_u32(dev->device_node, "phy-reset-duration", &msec);
-		of_property_read_u32(dev->device_node, "phy-reset-post-delay",
+		of_property_read_u32(dev->of_node, "phy-reset-duration",
+				     &msec);
+		of_property_read_u32(dev->of_node, "phy-reset-post-delay",
 				     &phy_post_delay);
 		/* valid reset duration should be less than 1s */
 		if (phy_post_delay > 1000)
@@ -873,7 +874,7 @@ static int fec_probe(struct device_d *dev)
 	if (ret < 0)
 		goto free_xbd;
 
-	if (dev->device_node) {
+	if (dev->of_node) {
 		ret = fec_probe_dt(dev, fec);
 		fec->phy_addr = -1;
 	} else if (pdata) {
@@ -927,7 +928,7 @@ err_free:
 	return ret;
 }
 
-static void fec_remove(struct device_d *dev)
+static void fec_remove(struct device *dev)
 {
 	struct fec_priv *fec = dev->priv;
 
@@ -979,7 +980,7 @@ static struct platform_device_id imx_fec_ids[] = {
 /**
  * Driver description for registering
  */
-static struct driver_d fec_driver = {
+static struct driver fec_driver = {
 	.name   = "fec_imx",
 	.probe  = fec_probe,
 	.remove = fec_remove,

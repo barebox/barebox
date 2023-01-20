@@ -494,7 +494,7 @@ static void rtl8169_eth_halt(struct eth_device *edev)
 
 static int rtl8169_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 {
-	struct device_d *dev = &pdev->dev;
+	struct device *dev = &pdev->dev;
 	struct eth_device *edev;
 	struct rtl8169_priv *priv;
 	int ret;

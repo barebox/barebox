@@ -20,6 +20,7 @@ static inline void vfree(const void *addr)
 #define MODULE_DESCRIPTION(x)
 #define MODULE_LICENSE(x)
 #define MODULE_ALIAS(x)
+#define MODULE_DEVICE_TABLE(bus, table)
 
 #define __user
 #define __init

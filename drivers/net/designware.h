@@ -57,8 +57,8 @@ static inline dma_addr_t rx_dma_addr(struct dw_eth_dev *priv,
 		+ ((u8 *)desc - (u8 *)priv->rx_mac_descrtable_cpu);
 }
 
-struct dw_eth_dev *dwc_drv_probe(struct device_d *dev);
-void dwc_drv_remove(struct device_d *dev);
+struct dw_eth_dev *dwc_drv_probe(struct device *dev);
+void dwc_drv_remove(struct device *dev);
 
 #define CONFIG_TX_DESCR_NUM	16
 #define CONFIG_RX_DESCR_NUM	16

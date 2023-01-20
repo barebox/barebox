@@ -329,7 +329,7 @@ static int atmci_start_cmd(struct atmel_mci *host, struct mci_cmd *cmd,
 }
 
 /** init the host interface */
-int atmci_reset(struct mci_host *mci, struct device_d *mci_dev)
+int atmci_reset(struct mci_host *mci, struct device *mci_dev)
 {
 	struct atmel_mci *host = to_mci_host(mci);
 

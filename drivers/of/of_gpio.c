@@ -61,7 +61,7 @@ int of_get_named_gpio_flags(struct device_node *np, const char *propname,
 			   int index, enum of_gpio_flags *flags)
 {
 	struct of_phandle_args out_args;
-	struct device_d *dev;
+	struct device *dev;
 	int of_flags;
 	int ret;
 

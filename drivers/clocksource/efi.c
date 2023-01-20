@@ -96,12 +96,12 @@ static struct clocksource efi_cs = {
 	.priority = 80,
 };
 
-static int efi_cs_probe(struct device_d *dev)
+static int efi_cs_probe(struct device *dev)
 {
 	return init_clock(&efi_cs);
 }
 
-static struct driver_d efi_cs_driver = {
+static struct driver efi_cs_driver = {
 	.name = "efi-cs",
 	.probe = efi_cs_probe,
 };

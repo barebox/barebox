@@ -120,7 +120,8 @@ static void construct_rng_self_test_jobdesc(u32 *desc, const u32 *rng_st_dsc, u8
 }
 
 /* rng_self_test_done() - callback for caam_jr_enqueue */
-static void rng_self_test_done(struct device_d *dev, u32 *desc, u32 err, void *arg)
+static void rng_self_test_done(struct device *dev, u32 *desc, u32 err,
+			       void *arg)
 {
 	int * job_err = arg;
 	*job_err = err;
@@ -145,7 +146,8 @@ static void rng_self_test_done(struct device_d *dev, u32 *desc, u32 err, void *a
  * * i.MX67SD silicon revision 1.3
  *
  */
-int caam_rng_self_test(struct device_d *dev, const u8 caam_era, const u8 rngvid, const u8 rngrev)
+int caam_rng_self_test(struct device *dev, const u8 caam_era, const u8 rngvid,
+		       const u8 rngrev)
 {
 	int ret, desc_size = 0, result_size = 0, job_err = 0;
 	const u32 *rng_st_dsc;

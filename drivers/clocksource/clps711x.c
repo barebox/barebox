@@ -22,14 +22,14 @@ static struct clocksource clps711x_cs = {
 	.priority = 60,
 };
 
-static int clps711x_cs_probe(struct device_d *dev)
+static int clps711x_cs_probe(struct device *dev)
 {
 	struct resource *iores;
 	u32 rate;
 	struct clk *timer_clk;
 	int id;
 
-	id = of_alias_get_id(dev->device_node, "timer");
+	id = of_alias_get_id(dev->of_node, "timer");
 	if (id != 1)
 		return 0;
 
@@ -56,7 +56,7 @@ static const struct of_device_id __maybe_unused clps711x_timer_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d clps711x_cs_driver = {
+static struct driver clps711x_cs_driver = {
 	.name = "clps711x-cs",
 	.probe = clps711x_cs_probe,
 	.of_compatible = DRV_OF_COMPAT(clps711x_timer_dt_ids),

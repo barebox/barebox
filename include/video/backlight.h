@@ -12,7 +12,7 @@ struct backlight_device {
 	int slew_time_ms; /* time to stretch brightness changes */
 	int (*brightness_set)(struct backlight_device *, int brightness);
 	struct list_head list;
-	struct device_d dev;
+	struct device dev;
 	struct device_node *node;
 };
 

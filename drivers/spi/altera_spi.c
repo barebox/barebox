@@ -17,7 +17,7 @@ static void altera_spi_cs_inactive(struct spi_device *spi);
 static int altera_spi_setup(struct spi_device *spi)
 {
 	struct spi_master *master = spi->master;
-	struct device_d spi_dev = spi->dev;
+	struct device spi_dev = spi->dev;
 	struct altera_spi *altera_spi = container_of(master, struct altera_spi, master);
 
 	if (spi->bits_per_word != altera_spi->databits) {
@@ -193,7 +193,7 @@ static int altera_spi_transfer(struct spi_device *spi, struct spi_message *mesg)
 	return 0;
 }
 
-static int altera_spi_probe(struct device_d *dev)
+static int altera_spi_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct spi_master *master;
@@ -229,7 +229,7 @@ static int altera_spi_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d altera_spi_driver = {
+static struct driver altera_spi_driver = {
 	.name  = "altera_spi",
 	.probe = altera_spi_probe,
 };

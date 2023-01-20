@@ -27,7 +27,7 @@ struct snvs_lpgpr_cfg {
 };
 
 struct snvs_lpgpr_priv {
-	struct device_d			*dev;
+	struct device			*dev;
 	struct regmap			*regmap;
 	struct nvmem_config		cfg;
 	const struct snvs_lpgpr_cfg	*dcfg;
@@ -78,9 +78,9 @@ static const struct nvmem_bus snvs_lpgpr_nvmem_bus = {
 	.read  = snvs_lpgpr_read,
 };
 
-static int snvs_lpgpr_probe(struct device_d *dev)
+static int snvs_lpgpr_probe(struct device *dev)
 {
-	struct device_node *node = dev->device_node;
+	struct device_node *node = dev->of_node;
 	struct device_node *syscon_node;
 	struct snvs_lpgpr_priv *priv;
 	struct nvmem_config *cfg;
@@ -129,7 +129,7 @@ static __maybe_unused struct of_device_id snvs_lpgpr_dt_ids[] = {
 	{ },
 };
 
-static struct driver_d snvs_lpgpr_driver = {
+static struct driver snvs_lpgpr_driver = {
 	.name	= "snvs_lpgpr",
 	.probe	= snvs_lpgpr_probe,
 	.of_compatible = DRV_OF_COMPAT(snvs_lpgpr_dt_ids),

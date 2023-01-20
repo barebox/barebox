@@ -40,7 +40,7 @@ static inline void i_gid_write(struct inode *inode, gid_t gid)
 const struct file_operations jffs2_file_operations;
 const struct inode_operations jffs2_file_inode_operations;
 
-static int jffs2_open(struct device_d *dev, FILE *file, const char *filename)
+static int jffs2_open(struct device *dev, FILE *file, const char *filename)
 {
 	struct inode *inode = file->f_inode;
 	struct jffs2_file *jf;
@@ -56,7 +56,7 @@ static int jffs2_open(struct device_d *dev, FILE *file, const char *filename)
 	return 0;
 }
 
-static int jffs2_close(struct device_d *dev, FILE *f)
+static int jffs2_close(struct device *dev, FILE *f)
 {
 	struct jffs2_file *jf = f->priv;
 
@@ -86,7 +86,7 @@ static int jffs2_get_block(struct jffs2_file *jf, unsigned int pos)
 	return 0;
 }
 
-static int jffs2_read(struct device_d *_dev, FILE *f, void *buf,
+static int jffs2_read(struct device *_dev, FILE *f, void *buf,
 		      size_t insize)
 {
 	struct jffs2_file *jf = f->priv;
@@ -401,9 +401,9 @@ void jffs2_flash_cleanup(struct jffs2_sb_info *c) {
 
 static int jffs2_probe_cnt;
 
-static int jffs2_probe(struct device_d *dev)
+static int jffs2_probe(struct device *dev)
 {
-	struct fs_device_d *fsdev;
+	struct fs_device *fsdev;
 	struct super_block *sb;
 	struct jffs2_sb_info *ctx;
 	int ret;
@@ -448,9 +448,9 @@ err_out:
 	return ret;
 }
 
-static void jffs2_remove(struct device_d *dev)
+static void jffs2_remove(struct device *dev)
 {
-	struct fs_device_d *fsdev;
+	struct fs_device *fsdev;
 	struct super_block *sb;
 
 	fsdev = dev_to_fs_device(dev);
@@ -466,7 +466,7 @@ static void jffs2_remove(struct device_d *dev)
 }
 
 
-static struct fs_driver_d jffs2_driver = {
+static struct fs_driver jffs2_driver = {
 	.open = jffs2_open,
 	.close = jffs2_close,
 	.read = jffs2_read,

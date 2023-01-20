@@ -56,7 +56,7 @@ static const struct stm32h7_adc_ck_spec stm32h7_adc_ckmodes_spec[] = {
 	{ 3, 0, 4 },
 };
 
-static int stm32h7_adc_clk_sel(struct device_d *dev,
+static int stm32h7_adc_clk_sel(struct device *dev,
 			       struct stm32_adc_common *common)
 {
 	u32 ckmode, presc;
@@ -137,7 +137,7 @@ out:
 	return 0;
 }
 
-static int stm32_adc_core_probe(struct device_d *dev)
+static int stm32_adc_core_probe(struct device *dev)
 {
 	struct stm32_adc_common *common;
 	int ret;
@@ -186,7 +186,7 @@ static int stm32_adc_core_probe(struct device_d *dev)
 		goto err_bclk_disable;
 
 	dev->priv = common;
-	return of_platform_populate(dev->device_node, NULL, dev);
+	return of_platform_populate(dev->of_node, NULL, dev);
 
 err_bclk_disable:
 	clk_disable(common->bclk);
@@ -203,7 +203,7 @@ static const struct of_device_id stm32_adc_core_ids[] = {
 	{}
 };
 
-static struct driver_d stm32_adc_core_driver = {
+static struct driver stm32_adc_core_driver = {
 	.name		= "stm32-adc-core",
 	.probe		= stm32_adc_core_probe,
 	.of_compatible	= DRV_OF_COMPAT(stm32_adc_core_ids),

@@ -18,7 +18,7 @@
 
 struct atmel_ehci_priv {
 	struct ehci_host *ehci;
-	struct device_d *dev;
+	struct device *dev;
 	struct clk *iclk;
 	struct clk *uclk;
 };
@@ -47,7 +47,7 @@ static void atmel_stop_clock(struct atmel_ehci_priv *atehci)
 	clk_disable(atehci->uclk);
 }
 
-static int atmel_ehci_probe(struct device_d *dev)
+static int atmel_ehci_probe(struct device *dev)
 {
 	int ret;
 	struct resource *iores;
@@ -56,7 +56,7 @@ static int atmel_ehci_probe(struct device_d *dev)
 	const char *uclk_name;
 	struct ehci_host *ehci;
 
-	uclk_name = (dev->device_node) ? "usb_clk" : "uhpck";
+	uclk_name = (dev->of_node) ? "usb_clk" : "uhpck";
 
 	atehci = xzalloc(sizeof(*atehci));
 	atehci->dev = dev;
@@ -97,7 +97,7 @@ static int atmel_ehci_probe(struct device_d *dev)
 	return 0;
 }
 
-static void atmel_ehci_remove(struct device_d *dev)
+static void atmel_ehci_remove(struct device *dev)
 {
 	struct atmel_ehci_priv *atehci = dev->priv;
 
@@ -114,7 +114,7 @@ static const struct of_device_id atmel_ehci_dt_ids[] = {
 	{ /* sentinel */ }
 };
 
-static struct driver_d atmel_ehci_driver = {
+static struct driver atmel_ehci_driver = {
 	.name = "atmel-ehci",
 	.probe = atmel_ehci_probe,
 	.remove = atmel_ehci_remove,

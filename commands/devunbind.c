@@ -10,7 +10,7 @@
 static int do_devunbind(int argc, char *argv[])
 {
 	bool unregister = false;
-	struct device_d *dev;
+	struct device *dev;
 	int ret = COMMAND_SUCCESS, i, opt;
 
 	while ((opt = getopt(argc, argv, "fl")) > 0) {

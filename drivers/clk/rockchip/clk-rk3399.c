@@ -1627,9 +1627,9 @@ static const struct of_device_id clk_rk3399_match_table[] = {
 	{ }
 };
 
-static int __init clk_rk3399_probe(struct device_d *dev)
+static int __init clk_rk3399_probe(struct device *dev)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	const struct of_device_id *match;
 	const struct clk_rk3399_inits *init_data;
 
@@ -1644,7 +1644,7 @@ static int __init clk_rk3399_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d clk_rk3399_driver = {
+static struct driver clk_rk3399_driver = {
 	.probe  = clk_rk3399_probe,
 	.name   = "clk-rk3399",
 	.of_compatible = DRV_OF_COMPAT(clk_rk3399_match_table),

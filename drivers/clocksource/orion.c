@@ -34,7 +34,7 @@ static struct clocksource clksrc = {
 	.priority = 70,
 };
 
-static int orion_timer_probe(struct device_d *dev)
+static int orion_timer_probe(struct device *dev)
 {
 	struct resource *iores;
 	struct clk *tclk;
@@ -64,7 +64,7 @@ static struct of_device_id orion_timer_dt_ids[] = {
 	{ }
 };
 
-static struct driver_d orion_timer_driver = {
+static struct driver orion_timer_driver = {
 	.name = "orion-timer",
 	.probe = orion_timer_probe,
 	.of_compatible = DRV_OF_COMPAT(orion_timer_dt_ids),

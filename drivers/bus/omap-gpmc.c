@@ -141,7 +141,7 @@ struct gpmc_settings {
 };
 
 struct imx_gpmc {
-	struct device_d *dev;
+	struct device *dev;
 	void __iomem *base;
 	struct imx_gpmc_devtype *devtype;
 };
@@ -452,7 +452,7 @@ static struct dt_eccmode modes[] = {
 	},
 };
 
-static int gpmc_probe_nand_child(struct device_d *dev,
+static int gpmc_probe_nand_child(struct device *dev,
 				 struct device_node *child)
 {
 	u32 val;
@@ -523,7 +523,7 @@ static int gpmc_probe_nand_child(struct device_d *dev,
 	dev = device_alloc("gpmc_nand", DEVICE_ID_DYNAMIC);
 	device_add_resource(dev, NULL, (resource_size_t)gpmc_base, SZ_4K, IORESOURCE_MEM);
 	device_add_data(dev, &gpmc_nand_data, sizeof(gpmc_nand_data));
-	dev->device_node = child;
+	dev->of_node = child;
 	platform_device_register(dev);
 
 	return 0;
@@ -537,8 +537,8 @@ static int gpmc_probe_nand_child(struct device_d *dev,
  * Allocates and configures a GPMC chip-select for a child device.
  * Returns 0 on success and appropriate negative error code on failure.
  */
-static int gpmc_probe_generic_child(struct device_d *dev,
-				struct device_node *child)
+static int gpmc_probe_generic_child(struct device *dev,
+				    struct device_node *child)
 {
 	struct gpmc_settings gpmc_s = {};
 	struct gpmc_timings gpmc_t = {};
@@ -600,9 +600,9 @@ err:
 	return ret;
 }
 
-static int gpmc_probe(struct device_d *dev)
+static int gpmc_probe(struct device *dev)
 {
-	struct device_node *child, *node = dev->device_node;
+	struct device_node *child, *node = dev->of_node;
 	int ret;
 
 	gpmc_generic_init(0x12);
@@ -653,7 +653,7 @@ static struct of_device_id gpmc_id_table[] = {
 	{ }
 };
 
-static struct driver_d gpmc_driver = {
+static struct driver gpmc_driver = {
 	.name = "omap-gpmc",
 	.of_compatible = DRV_OF_COMPAT(gpmc_id_table),
 	.probe   = gpmc_probe,

@@ -122,7 +122,7 @@ static struct cdev_operations micrel_switch_ops = {
 	.write = micel_switch_write,
 };
 
-static int micrel_switch_probe(struct device_d *dev)
+static int micrel_switch_probe(struct device *dev)
 {
 	struct micrel_switch_priv *priv;
 	int ret = 0;
@@ -187,7 +187,7 @@ static const struct platform_device_id ksz_ids[] = {
 	{ }
 };
 
-static struct driver_d micrel_switch_driver = {
+static struct driver micrel_switch_driver = {
 	.name  = "ksz8864rmn",
 	.probe = micrel_switch_probe,
 	.id_table = ksz_ids,

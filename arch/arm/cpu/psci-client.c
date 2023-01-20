@@ -113,7 +113,7 @@ static int of_psci_do_fixup(struct device_node *root, void *method)
 	return of_psci_fixup(root, version, (const void *)method);
 }
 
-static int __init psci_probe(struct device_d *dev)
+static int __init psci_probe(struct device *dev)
 {
 	const char *method;
 	ulong of_version, actual_version;
@@ -123,7 +123,7 @@ static int __init psci_probe(struct device_d *dev)
 	if (ret)
 		return -ENODEV;
 
-	ret = of_property_read_string(dev->device_node, "method", &method);
+	ret = of_property_read_string(dev->of_node, "method", &method);
 	if (ret) {
 		dev_warn(dev, "missing \"method\" property\n");
 		return -ENXIO;
@@ -182,7 +182,7 @@ static __maybe_unused struct of_device_id psci_dt_ids[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d psci_driver = {
+static struct driver psci_driver = {
 	.name = "psci",
 	.probe = psci_probe,
 	.of_compatible = DRV_OF_COMPAT(psci_dt_ids),

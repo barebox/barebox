@@ -16,12 +16,12 @@
 
 static int nv_dirty;
 
-struct device_d global_device = {
+struct device global_device = {
 	.name = "global",
 	.id = DEVICE_ID_SINGLE,
 };
 
-struct device_d nv_device = {
+struct device nv_device = {
 	.name = "nv",
 	.id = DEVICE_ID_SINGLE,
 };
@@ -101,7 +101,7 @@ static int nv_save(const char *name, const char *val)
  * This function initializes a newly created device parameter from the corresponding
  * nv.dev.<devname>.<paramname> variable.
  */
-void dev_param_init_from_nv(struct device_d *dev, const char *name)
+void dev_param_init_from_nv(struct device *dev, const char *name)
 {
 	char *nvname;
 	const char *val;
@@ -142,7 +142,7 @@ void dev_param_init_from_nv(struct device_d *dev, const char *name)
  * parameter name. A negative error code is returned when the incoming string belongs to
  * the device namespace, but cannot be dispatched.
  */
-static int nvvar_device_dispatch(const char *name, struct device_d **dev,
+static int nvvar_device_dispatch(const char *name, struct device **dev,
 				 const char **pname)
 {
 	char *devname;
@@ -177,7 +177,8 @@ static int nvvar_device_dispatch(const char *name, struct device_d **dev,
 	return 1;
 }
 
-static int nv_set(struct device_d *dev, struct param_d *p, const char *name, const char *val)
+static int nv_set(struct device *dev, struct param_d *p, const char *name,
+		  const char *val)
 {
 	int ret;
 
@@ -195,12 +196,13 @@ static int nv_set(struct device_d *dev, struct param_d *p, const char *name, con
 	return 0;
 }
 
-static const char *nv_param_get(struct device_d *dev, struct param_d *p)
+static const char *nv_param_get(struct device *dev, struct param_d *p)
 {
 	return p->value ? p->value : "";
 }
 
-static int nv_param_set(struct device_d *dev, struct param_d *p, const char *val)
+static int nv_param_set(struct device *dev, struct param_d *p,
+			const char *val)
 {
 	int ret;
 
@@ -214,7 +216,7 @@ static int nv_param_set(struct device_d *dev, struct param_d *p, const char *val
 static int __nvvar_add(const char *name, const char *value)
 {
 	struct param_d *p;
-	struct device_d *dev = NULL;
+	struct device *dev = NULL;
 	const char *pname;
 	int ret;
 
@@ -375,7 +377,7 @@ int nvvar_load(void)
 	return 0;
 }
 
-static void device_param_print(struct device_d *dev)
+static void device_param_print(struct device *dev)
 {
 	struct param_d *param;
 
@@ -452,9 +454,10 @@ void globalvar_set(const char *name, const char *val)
 	dev_set_param(&global_device, name, val);
 }
 
-static int globalvar_simple_set(struct device_d *dev, struct param_d *p, const char *val)
+static int globalvar_simple_set(struct device *dev, struct param_d *p,
+				const char *val)
 {
-	struct device_d *rdev;
+	struct device *rdev;
 	const char *pname = NULL;
 	int ret;
 
@@ -744,8 +747,9 @@ static void nv_exit(void)
 }
 predevshutdown_exitcall(nv_exit);
 
-static int nv_global_param_complete(struct device_d *dev, struct string_list *sl,
-				 char *instr, int eval)
+static int nv_global_param_complete(struct device *dev,
+				    struct string_list *sl,
+				    char *instr, int eval)
 {
 	struct param_d *param;
 	int len;
@@ -766,7 +770,7 @@ static int nv_global_param_complete(struct device_d *dev, struct string_list *sl
 
 int nv_complete(struct string_list *sl, char *instr)
 {
-	struct device_d *dev;
+	struct device *dev;
 	struct param_d *param;
 	char *str;
 	int len;

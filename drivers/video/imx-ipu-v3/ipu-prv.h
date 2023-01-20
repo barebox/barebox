@@ -140,7 +140,7 @@ struct ipu_di;
 struct ipu_devtype;
 
 struct ipu_soc {
-	struct device_d		*dev;
+	struct device		*dev;
 	const struct ipu_devtype	*devtype;
 	enum ipuv3_type		ipu_type;
 	spinlock_t		lock;
@@ -172,22 +172,23 @@ void ipu_srm_dp_sync_update(struct ipu_soc *ipu);
 int ipu_module_enable(struct ipu_soc *ipu, u32 mask);
 int ipu_module_disable(struct ipu_soc *ipu, u32 mask);
 
-int ipu_di_init(struct ipu_soc *ipu, struct device_d *dev, int id,
+int ipu_di_init(struct ipu_soc *ipu, struct device *dev, int id,
 		void __iomem *base, u32 module, struct clk *ipu_clk);
 void ipu_di_exit(struct ipu_soc *ipu, int id);
 
-int ipu_dmfc_init(struct ipu_soc *ipu, struct device_d *dev, void __iomem *base,
-		struct clk *ipu_clk);
+int ipu_dmfc_init(struct ipu_soc *ipu, struct device *dev, void __iomem *base,
+		  struct clk *ipu_clk);
 void ipu_dmfc_exit(struct ipu_soc *ipu);
 
-int ipu_dp_init(struct ipu_soc *ipu, struct device_d *dev, void __iomem *base);
+int ipu_dp_init(struct ipu_soc *ipu, struct device *dev, void __iomem *base);
 void ipu_dp_exit(struct ipu_soc *ipu);
 
-int ipu_dc_init(struct ipu_soc *ipu, struct device_d *dev, void __iomem *base,
+int ipu_dc_init(struct ipu_soc *ipu, struct device *dev, void __iomem *base,
 		void __iomem *template_base);
 void ipu_dc_exit(struct ipu_soc *ipu);
 
-int ipu_cpmem_init(struct ipu_soc *ipu, struct device_d *dev, void __iomem *base);
+int ipu_cpmem_init(struct ipu_soc *ipu, struct device *dev,
+		   void __iomem *base);
 void ipu_cpmem_exit(struct ipu_soc *ipu);
 
 #endif				/* __IPU_PRV_H__ */

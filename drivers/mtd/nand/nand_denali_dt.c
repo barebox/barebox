@@ -128,7 +128,7 @@ static int denali_dt_chip_init(struct denali_controller *denali,
 	return denali_chip_init(denali, dchip);
 }
 
-static int denali_dt_probe(struct device_d *ofdev)
+static int denali_dt_probe(struct device *ofdev)
 {
 	struct resource *iores;
 	struct denali_dt *dt;
@@ -189,7 +189,7 @@ static int denali_dt_probe(struct device_d *ofdev)
 	if (ret)
 		goto out_disable_clk;
 
-	for_each_child_of_node(ofdev->device_node, np) {
+	for_each_child_of_node(ofdev->of_node, np) {
 		ret = denali_dt_chip_init(denali, np);
 		if (ret)
 			goto out_disable_clk;
@@ -212,7 +212,7 @@ static __maybe_unused struct of_device_id denali_nand_compatible[] = {
 	}
 };
 
-static struct driver_d denali_dt_driver = {
+static struct driver denali_dt_driver = {
 	.name	= "denali-nand-dt",
 	.probe		= denali_dt_probe,
 	.of_compatible = DRV_OF_COMPAT(denali_nand_compatible)

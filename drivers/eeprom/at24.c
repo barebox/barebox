@@ -99,6 +99,8 @@ static struct platform_device_id at24_ids[] = {
 	/* old variants can't be handled with this generic entry! */
 	{ "24c01", AT24_DEVICE_MAGIC(1024 / 8, 0) },
 	{ "24c02", AT24_DEVICE_MAGIC(2048 / 8, 0) },
+	{ "24mac402",	AT24_DEVICE_MAGIC(2048 / 8, AT24_FLAG_READONLY) },
+	{ "24mac602",	AT24_DEVICE_MAGIC(2048 / 8, AT24_FLAG_READONLY) },
 	/* spd is a 24c02 in memory DIMMs */
 	{ "spd", AT24_DEVICE_MAGIC(2048 / 8,
 		AT24_FLAG_READONLY | AT24_FLAG_IRUGO) },
@@ -366,7 +368,7 @@ static const struct nvmem_bus at24_nvmem_bus = {
 	.read  = at24_nvmem_read,
 };
 
-static int at24_probe(struct device_d *dev)
+static int at24_probe(struct device *dev)
 {
 	struct i2c_client *client = to_i2c_client(dev);
 	struct at24_platform_data chip;
@@ -390,8 +392,8 @@ static int at24_probe(struct device_d *dev)
 		chip.byte_len = BIT(magic & AT24_BITMASK(AT24_SIZE_BYTELEN));
 		magic >>= AT24_SIZE_BYTELEN;
 		chip.flags = magic & AT24_BITMASK(AT24_SIZE_FLAGS);
-		if (dev->device_node &&
-		    !of_property_read_u32(dev->device_node, "pagesize", &page_size))
+		if (dev->of_node &&
+		    !of_property_read_u32(dev->of_node, "pagesize", &page_size))
 			chip.page_size = page_size;
 		else {
 			/*
@@ -427,7 +429,7 @@ static int at24_probe(struct device_d *dev)
 	at24->chip = chip;
 	at24->num_addresses = num_addresses;
 
-	alias = of_alias_get(dev->device_node);
+	alias = of_alias_get(dev->of_node);
 	if (alias) {
 		devname = xstrdup(alias);
 	} else {
@@ -441,7 +443,7 @@ static int at24_probe(struct device_d *dev)
 
 	writable = !(chip.flags & AT24_FLAG_READONLY);
 
-	if (of_get_property(dev->device_node, "read-only", NULL))
+	if (of_get_property(dev->of_node, "read-only", NULL))
 		writable = 0;
 
 	if (writable) {
@@ -456,10 +458,10 @@ static int at24_probe(struct device_d *dev)
 	}
 
 	at24->wp_gpio = -1;
-	if (dev->device_node) {
+	if (dev->of_node) {
 		enum of_gpio_flags flags;
-		at24->wp_gpio = of_get_named_gpio_flags(dev->device_node,
-				"wp-gpios", 0, &flags);
+		at24->wp_gpio = of_get_named_gpio_flags(dev->of_node,
+							"wp-gpios", 0, &flags);
 		if (gpio_is_valid(at24->wp_gpio)) {
 			at24->wp_active_low = flags & OF_GPIO_ACTIVE_LOW;
 			gpio_request(at24->wp_gpio, "eeprom-wp");
@@ -515,7 +517,7 @@ err_out:
 
 }
 
-static struct driver_d at24_driver = {
+static struct driver at24_driver = {
 	.name		= "at24",
 	.probe		= at24_probe,
 	.id_table	= at24_ids,

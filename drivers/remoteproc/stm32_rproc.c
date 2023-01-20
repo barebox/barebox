@@ -37,10 +37,10 @@ struct stm32_rproc {
 static void *stm32_rproc_da_to_va(struct rproc *rproc, u64 da, int len)
 {
 	__be32 in_addr = cpu_to_be32(da);
-	struct device_d *dev = &rproc->dev;
+	struct device *dev = &rproc->dev;
 	u64 paddr;
 
-	paddr = of_translate_dma_address(dev->parent->device_node, &in_addr);
+	paddr = of_translate_dma_address(dev->parent->of_node, &in_addr);
 	if (paddr == OF_BAD_ADDR)
 		return NULL;
 
@@ -128,9 +128,9 @@ out:
 	return err;
 }
 
-static int stm32_rproc_parse_dt(struct device_d *dev, struct stm32_rproc *ddata)
+static int stm32_rproc_parse_dt(struct device *dev, struct stm32_rproc *ddata)
 {
-	struct device_node *np = dev->device_node;
+	struct device_node *np = dev->of_node;
 	struct stm32_syscon tz;
 	unsigned int tzen;
 	int err;
@@ -169,7 +169,7 @@ static int stm32_rproc_parse_dt(struct device_d *dev, struct stm32_rproc *ddata)
 	return 0;
 }
 
-static int stm32_rproc_probe(struct device_d *dev)
+static int stm32_rproc_probe(struct device *dev)
 {
 	struct rproc *rproc;
 	int ret;
@@ -191,7 +191,7 @@ static const struct of_device_id stm32_rproc_of_match[] = {
 	{ /* sentinel */ },
 };
 
-static struct driver_d stm32_rproc_driver = {
+static struct driver stm32_rproc_driver = {
 	.name = "stm32-rproc",
 	.probe = stm32_rproc_probe,
 	.of_compatible = DRV_OF_COMPAT(stm32_rproc_of_match),

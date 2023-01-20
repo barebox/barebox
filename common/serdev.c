@@ -132,7 +132,7 @@ static int serdev_device_reader_receive_buf(struct serdev_device *serdev,
 					    const unsigned char *buf,
 					    size_t size)
 {
-	struct device_d *dev = serdev->dev;
+	struct device *dev = serdev->dev;
 	struct serdev_device_reader *r = dev->priv;
 	const size_t room = min(r->capacity - r->len, size);
 
@@ -186,7 +186,7 @@ int serdev_device_reader_open(struct serdev_device *serdev, size_t capacity)
 int serdev_device_read(struct serdev_device *serdev, unsigned char *buf,
 		       size_t count, unsigned long timeout)
 {
-	struct device_d *dev = serdev->dev;
+	struct device *dev = serdev->dev;
 	struct serdev_device_reader *r = dev->priv;
 	int ret;
 

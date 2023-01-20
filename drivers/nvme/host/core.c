@@ -601,7 +601,7 @@ EXPORT_SYMBOL_GPL(nvme_init_identify);
  * earliest initialization so that we have the initialized structured around
  * during probing.
  */
-int nvme_init_ctrl(struct nvme_ctrl *ctrl, struct device_d *dev,
+int nvme_init_ctrl(struct nvme_ctrl *ctrl, struct device *dev,
 		   const struct nvme_ctrl_ops *ops)
 {
 	static int instance = 0;

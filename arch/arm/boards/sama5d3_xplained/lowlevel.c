@@ -33,7 +33,7 @@ static void dbgu_init(void)
 	pbl_set_putc(at91_dbgu_putc, IOMEM(AT91_BASE_DBGU1));
 }
 
-SAMA5_ENTRY_FUNCTION(start_sama5d3_xplained_xload_mmc, r4)
+SAMA5D3_ENTRY_FUNCTION(start_sama5d3_xplained_xload_mmc, r4)
 {
 	sama5d3_lowlevel_init();
 
@@ -50,11 +50,9 @@ SAMA5_ENTRY_FUNCTION(start_sama5d3_xplained_xload_mmc, r4)
 
 extern char __dtb_z_at91_sama5d3_xplained_start[];
 
-SAMA5_ENTRY_FUNCTION(start_sama5d3_xplained, r4)
+SAMA5D3_ENTRY_FUNCTION(start_sama5d3_xplained, r4)
 {
 	void *fdt;
-
-	arm_setup_stack(SAMA5D3_SRAM_BASE + SAMA5D3_SRAM_SIZE);
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		dbgu_init();

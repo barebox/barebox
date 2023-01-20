@@ -80,7 +80,7 @@ static int scmi_protocol_attributes_get(const struct scmi_protocol_handle *ph,
 	return ret;
 }
 
-static int scmi_init_voltage_levels(struct device_d *dev,
+static int scmi_init_voltage_levels(struct device *dev,
 				    struct scmi_voltage_info *v,
 				    u32 num_returned, u32 num_remaining,
 				    bool segmented)
@@ -115,7 +115,7 @@ static int scmi_voltage_descriptors_get(const struct scmi_protocol_handle *ph,
 {
 	int ret, dom;
 	struct scmi_xfer *td, *tl;
-	struct device_d *dev = ph->dev;
+	struct device *dev = ph->dev;
 	struct scmi_msg_resp_domain_attributes *resp_dom;
 	struct scmi_msg_resp_describe_levels *resp_levels;
 

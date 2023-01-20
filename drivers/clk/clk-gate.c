@@ -117,10 +117,10 @@ struct clk *clk_gate_inverted(const char *name, const char *parent,
 	return clk_gate(name, parent, reg, shift, flags, CLK_GATE_SET_TO_DISABLE);
 }
 
-struct clk *clk_register_gate(struct device_d *dev, const char *name,
-		const char *parent_name, unsigned long flags,
-		void __iomem *reg, u8 bit_idx,
-		u8 clk_gate_flags, spinlock_t *lock)
+struct clk *clk_register_gate(struct device *dev, const char *name,
+			      const char *parent_name, unsigned long flags,
+			      void __iomem *reg, u8 bit_idx,
+			      u8 clk_gate_flags, spinlock_t *lock)
 {
 	return clk_gate(name, parent_name, reg, bit_idx, flags, clk_gate_flags);
 }

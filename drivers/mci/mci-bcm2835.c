@@ -30,7 +30,7 @@ static int twoticks_delay;
 struct bcm2835_mci_host {
 	struct mci_host mci;
 	void __iomem *regs;
-	struct device_d *hw_dev;
+	struct device *hw_dev;
 	int bus_width;
 	u32 clock;
 	u32 max_clock;
@@ -301,7 +301,7 @@ static void bcm2835_mci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 			host->bus_width, host->clock);
 }
 
-static int bcm2835_mci_reset(struct mci_host *mci, struct device_d *mci_dev)
+static int bcm2835_mci_reset(struct mci_host *mci, struct device *mci_dev)
 {
 	struct bcm2835_mci_host *host;
 	u32 ret = 0;
@@ -353,7 +353,7 @@ static int bcm2835_mci_reset(struct mci_host *mci, struct device_d *mci_dev)
 	return 0;
 }
 
-static int bcm2835_mci_probe(struct device_d *hw_dev)
+static int bcm2835_mci_probe(struct device *hw_dev)
 {
 	struct resource *iores;
 	struct bcm2835_mci_host *host;
@@ -430,7 +430,7 @@ static __maybe_unused struct of_device_id bcm2835_mci_compatible[] = {
 	}
 };
 
-static struct driver_d bcm2835_mci_driver = {
+static struct driver bcm2835_mci_driver = {
 	.name = "bcm2835_mci",
 	.probe = bcm2835_mci_probe,
 	.of_compatible = DRV_OF_COMPAT(bcm2835_mci_compatible),

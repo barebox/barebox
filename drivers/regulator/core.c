@@ -29,7 +29,7 @@ struct regulator_internal {
 struct regulator {
 	struct regulator_internal *ri;
 	struct list_head list;
-	struct device_d *dev;
+	struct device *dev;
 };
 
 static int regulator_map_voltage(struct regulator_dev *rdev, int min_uV,
@@ -245,7 +245,8 @@ int of_regulator_register(struct regulator_dev *rd, struct device_node *node)
 	return 0;
 }
 
-static struct regulator_internal *of_regulator_get(struct device_d *dev, const char *supply)
+static struct regulator_internal *of_regulator_get(struct device *dev,
+						   const char *supply)
 {
 	char *propname;
 	struct regulator_internal *ri;
@@ -255,7 +256,7 @@ static struct regulator_internal *of_regulator_get(struct device_d *dev, const c
 	/*
 	 * If the device does have a device node return the dummy regulator.
 	 */
-	if (!dev->device_node)
+	if (!dev->of_node)
 		return NULL;
 
 	propname = basprintf("%s-supply", supply);
@@ -264,7 +265,7 @@ static struct regulator_internal *of_regulator_get(struct device_d *dev, const c
 	 * If the device node does not contain a supply property, this device doesn't
 	 * need a regulator. Return the dummy regulator in this case.
 	 */
-	if (!of_get_property(dev->device_node, propname, NULL)) {
+	if (!of_get_property(dev->of_node, propname, NULL)) {
 		dev_dbg(dev, "No %s-supply node found, using dummy regulator\n",
 				supply);
 		ri = NULL;
@@ -275,7 +276,7 @@ static struct regulator_internal *of_regulator_get(struct device_d *dev, const c
 	 * The device node specifies a supply, so it's mandatory. Return an error when
 	 * something goes wrong below.
 	 */
-	node = of_parse_phandle(dev->device_node, propname, 0);
+	node = of_parse_phandle(dev->of_node, propname, 0);
 	if (!node) {
 		dev_dbg(dev, "No %s node found\n", propname);
 		ri = ERR_PTR(-EINVAL);
@@ -323,7 +324,8 @@ out:
 	return ri;
 }
 #else
-static struct regulator_internal *of_regulator_get(struct device_d *dev, const char *supply)
+static struct regulator_internal *of_regulator_get(struct device *dev,
+						   const char *supply)
 {
 	return NULL;
 }
@@ -340,7 +342,8 @@ int dev_regulator_register(struct regulator_dev *rd, const char * name, const ch
 	return 0;
 }
 
-static struct regulator_internal *dev_regulator_get(struct device_d *dev, const char *supply)
+static struct regulator_internal *dev_regulator_get(struct device *dev,
+						    const char *supply)
 {
 	struct regulator_internal *ri;
 	struct regulator_internal *ret = NULL;
@@ -382,13 +385,13 @@ static struct regulator_internal *dev_regulator_get(struct device_d *dev, const 
  *
  * Return: a regulator object or an error pointer
  */
-struct regulator *regulator_get(struct device_d *dev, const char *supply)
+struct regulator *regulator_get(struct device *dev, const char *supply)
 {
 	struct regulator_internal *ri = NULL;
 	struct regulator *r;
 	int ret;
 
-	if (dev->device_node && supply) {
+	if (dev->of_node && supply) {
 		ri = of_regulator_get(dev, supply);
 		if (IS_ERR(ri))
 			return ERR_CAST(ri);
@@ -500,7 +503,7 @@ int regulator_set_voltage(struct regulator *r, int min_uV, int max_uV)
  * acquired then any regulators that were allocated will be freed
  * before returning to the caller.
  */
-int regulator_bulk_get(struct device_d *dev, int num_consumers,
+int regulator_bulk_get(struct device *dev, int num_consumers,
 		       struct regulator_bulk_data *consumers)
 {
 	int i;

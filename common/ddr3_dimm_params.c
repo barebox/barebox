@@ -78,8 +78,7 @@ compute_ranksize(const struct ddr3_spd_eeprom *spd)
  * Writes the results to the struct dimm_params structure pointed by pdimm.
  *
  */
-unsigned int ddr3_compute_dimm_parameters(unsigned int mclk_ps,
-					 const struct ddr3_spd_eeprom *spd,
+unsigned int ddr3_compute_dimm_parameters(const struct ddr3_spd_eeprom *spd,
 					 struct dimm_params *pdimm)
 {
 	int ret;

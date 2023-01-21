@@ -249,9 +249,9 @@ static int compute_dimm_parameters(struct fsl_ddr_controller *c,
 	else if (is_ddr2(popts))
 		ret = ddr2_compute_dimm_parameters(mclk_ps, (void *)spd, pdimm);
 	else if (is_ddr3(popts))
-		ret = ddr3_compute_dimm_parameters(mclk_ps, (void *)spd, pdimm);
+		ret = ddr3_compute_dimm_parameters((void *)spd, pdimm);
 	else if (is_ddr4(popts))
-		ret = ddr4_compute_dimm_parameters(mclk_ps, (void *)spd, pdimm);
+		ret = ddr4_compute_dimm_parameters((void *)spd, pdimm);
 
 	return ret;
 }

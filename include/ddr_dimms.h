@@ -7,6 +7,8 @@
 #ifndef _DDR_DIMMS_H_
 #define _DDR_DIMMS_H_
 
+#include <ddr_spd.h>
+
 /* Parameters for a DDR dimm computed from the SPD */
 struct dimm_params {
 

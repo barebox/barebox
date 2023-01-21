@@ -9,8 +9,7 @@
  */
 
 #include <common.h>
-#include <soc/fsl/fsl_ddr_sdram.h>
-#include "fsl_ddr.h"
+#include <ddr_dimms.h>
 
 /*
  * Calculate the Density of each Physical Rank.

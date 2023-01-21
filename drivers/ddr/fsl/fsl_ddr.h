@@ -204,18 +204,6 @@ struct fsl_ddr_controller;
 
 u32 fsl_ddr_get_version(struct fsl_ddr_controller *c);
 
-unsigned int ddr1_compute_dimm_parameters(unsigned int mclk_ps,
-					  const struct ddr1_spd_eeprom *spd,
-					  struct dimm_params *pdimm);
-unsigned int ddr2_compute_dimm_parameters(unsigned int mclk_ps,
-					  const struct ddr2_spd_eeprom *spd,
-					  struct dimm_params *pdimm);
-unsigned int ddr3_compute_dimm_parameters(unsigned int mclk_ps,
-					  const struct ddr3_spd_eeprom *spd,
-					  struct dimm_params *pdimm);
-unsigned int ddr4_compute_dimm_parameters(unsigned int mclk_ps,
-					  const struct ddr4_spd_eeprom *spd,
-					  struct dimm_params *pdimm);
 void fsl_ddr_set_intl3r(const unsigned int granule_size);
 
 unsigned int compute_fsl_memctl_config_regs(struct fsl_ddr_controller *c);

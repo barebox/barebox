@@ -162,7 +162,7 @@ static uint32_t determine_refresh_rate_ps(const uint32_t spd_refresh)
  * Not certain if any good value exists for CL=2
  */
 			  /* CL2  CL3   CL4   CL5   CL6   CL7 */
-uint16_t ddr2_speed_bins[] = { 0, 5000, 3750, 3000, 2500, 1875 };
+static uint16_t ddr2_speed_bins[] = { 0, 5000, 3750, 3000, 2500, 1875 };
 
 static uint32_t compute_derated_DDR2_CAS_latency(uint32_t mclk_ps)
 {

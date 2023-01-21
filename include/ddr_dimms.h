@@ -100,4 +100,17 @@ struct dimm_params {
 	unsigned int dq_mapping_ors; /* DDR4 */
 };
 
+unsigned int ddr1_compute_dimm_parameters(unsigned int mclk_ps,
+					  const struct ddr1_spd_eeprom *spd,
+					  struct dimm_params *pdimm);
+unsigned int ddr2_compute_dimm_parameters(unsigned int mclk_ps,
+					  const struct ddr2_spd_eeprom *spd,
+					  struct dimm_params *pdimm);
+unsigned int ddr3_compute_dimm_parameters(unsigned int mclk_ps,
+					  const struct ddr3_spd_eeprom *spd,
+					  struct dimm_params *pdimm);
+unsigned int ddr4_compute_dimm_parameters(unsigned int mclk_ps,
+					  const struct ddr4_spd_eeprom *spd,
+					  struct dimm_params *pdimm);
+
 #endif /* _DDR_DIMMS_H_ */

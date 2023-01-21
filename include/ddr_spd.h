@@ -575,6 +575,7 @@ int ddr3_spd_check(const struct ddr3_spd_eeprom *spd);
 int ddr4_spd_check(const struct ddr4_spd_eeprom *spd);
 
 int spd_read_eeprom(struct pbl_i2c *i2c,
-		    uint8_t addr, void *buf);
+		    uint8_t addr, void *buf,
+		    int memtype);
 
 #endif /* _DDR_SPD_H_ */

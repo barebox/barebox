@@ -480,6 +480,7 @@ static int read_buf(struct pbl_i2c *i2c,
  * @i2c: I2C controller handle
  * @addr: I2C bus address for the EEPROM
  * @buf: buffer to read the SPD data to
+ * @memtype: Memory type, such as SPD_MEMTYPE_DDR4
  *
  * This function takes a I2C message transfer function and reads the contents
  * from a SPD EEPROM to the buffer provided at @buf. The buffer should at least
@@ -487,17 +488,22 @@ static int read_buf(struct pbl_i2c *i2c,
  * otherwise.
  */
 int spd_read_eeprom(struct pbl_i2c *i2c,
-		    uint8_t addr, void *buf)
+		    uint8_t addr, void *buf,
+		    int memtype)
 {
 	unsigned char *buf8 = buf;
 	int ret;
 
-	ret = read_buf(i2c, addr, SPD_SPA0_ADDRESS, buf);
-	if (ret < 0)
-		return ret;
+	if (memtype == SPD_MEMTYPE_DDR4) {
+		ret = read_buf(i2c, addr, SPD_SPA0_ADDRESS, buf);
+		if (ret < 0)
+			return ret;
 
-	if (buf8[2] == SPD_MEMTYPE_DDR4) {
 		ret = read_buf(i2c, addr, SPD_SPA1_ADDRESS, buf + 256);
+		if (ret < 0)
+			return ret;
+	} else {
+		ret = read_buf(i2c, addr, 0, buf);
 		if (ret < 0)
 			return ret;
 	}

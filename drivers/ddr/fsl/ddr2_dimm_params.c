@@ -201,7 +201,7 @@ compute_derated_DDR2_CAS_latency(unsigned int mclk_ps)
  *
  * FIXME: use #define for the retvals
  */
-unsigned int ddr2_compute_dimm_parameters(struct fsl_ddr_controller *c,
+unsigned int ddr2_compute_dimm_parameters(unsigned int mclk_ps,
 					  const struct ddr2_spd_eeprom *spd,
 					  struct dimm_params *pdimm)
 {
@@ -289,7 +289,7 @@ unsigned int ddr2_compute_dimm_parameters(struct fsl_ddr_controller *c,
 
 	/* Compute CAS latencies below that defined by SPD */
 	pdimm->caslat_lowest_derated = compute_derated_DDR2_CAS_latency(
-					get_memory_clk_period_ps(c));
+					mclk_ps);
 
 	/* Compute timing parameters */
 	pdimm->trcd_ps = spd->trcd * 250;

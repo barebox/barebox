@@ -216,7 +216,7 @@ compute_derated_DDR1_CAS_latency(unsigned int mclk_ps)
  *
  * FIXME: use #define for the retvals
  */
-unsigned int ddr1_compute_dimm_parameters(struct fsl_ddr_controller *c,
+unsigned int ddr1_compute_dimm_parameters(unsigned int mclk_ps,
 					  const struct ddr1_spd_eeprom *spd,
 					  struct dimm_params *pdimm)
 {
@@ -288,15 +288,15 @@ unsigned int ddr1_compute_dimm_parameters(struct fsl_ddr_controller *c,
 
 	/* Compute CAS latencies below that defined by SPD */
 	pdimm->caslat_lowest_derated = compute_derated_DDR1_CAS_latency(
-					get_memory_clk_period_ps(c));
+					mclk_ps);
 
 	/* Compute timing parameters */
 	pdimm->trcd_ps = spd->trcd * 250;
 	pdimm->trp_ps = spd->trp * 250;
 	pdimm->tras_ps = spd->tras * 1000;
 
-	pdimm->twr_ps = mclk_to_picos(c, 3);
-	pdimm->twtr_ps = mclk_to_picos(c, 1);
+	pdimm->twr_ps = mclk_ps * 3;
+	pdimm->twtr_ps = mclk_ps * 1;
 	pdimm->trfc_ps = compute_trfc_ps_from_spd(0, spd->trfc);
 
 	pdimm->trrd_ps = spd->trrd * 250;
@@ -311,7 +311,7 @@ unsigned int ddr1_compute_dimm_parameters(struct fsl_ddr_controller *c,
 	pdimm->tdh_ps
 		= convert_bcd_hundredths_to_cycle_time_ps(spd->data_hold);
 
-	pdimm->trtp_ps = mclk_to_picos(c, 2);	/* By the book. */
+	pdimm->trtp_ps = mclk_ps * 2;	/* By the book. */
 	pdimm->tdqsq_max_ps = spd->tdqsq * 10;
 	pdimm->tqhs_ps = spd->tqhs * 10;
 

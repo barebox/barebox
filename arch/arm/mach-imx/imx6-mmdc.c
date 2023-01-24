@@ -37,10 +37,17 @@ static bool wlcalib_failed(void __iomem *ips)
 
 int mmdc_do_write_level_calibration(void)
 {
+	u32 ldectrl[4];
 	u32 esdmisc_val, zq_val;
 	int errorcount = 0;
 	u32 val;
 	u32 ddr_mr1 = 0x4;
+
+	/* Store current calibration data in case of failure */
+	ldectrl[0] = readl(P0_IPS + MPWLDECTRL0);
+	ldectrl[1] = readl(P0_IPS + MPWLDECTRL1);
+	ldectrl[2] = readl(P1_IPS + MPWLDECTRL0);
+	ldectrl[3] = readl(P1_IPS + MPWLDECTRL1);
 
 	/* disable DDR logic power down timer */
 	val = readl((P0_IPS + MDPDC));
@@ -81,8 +88,14 @@ int mmdc_do_write_level_calibration(void)
 	while (readl(P0_IPS + MPWLGCR) & 0x00000001);
 
 	/* check for any errors on both PHYs */
-	if (wlcalib_failed(P0_IPS) || wlcalib_failed(P1_IPS))
+	if (wlcalib_failed(P0_IPS) || wlcalib_failed(P1_IPS)) {
+		pr_debug("Calibration failed, rolling back calibration data\n");
+		writel(ldectrl[0], P0_IPS + MPWLDECTRL0);
+		writel(ldectrl[1], P0_IPS + MPWLDECTRL1);
+		writel(ldectrl[2], P1_IPS + MPWLDECTRL0);
+		writel(ldectrl[3], P1_IPS + MPWLDECTRL1);
 		errorcount++;
+	}
 
 	pr_debug("Write leveling calibration completed\n");
 

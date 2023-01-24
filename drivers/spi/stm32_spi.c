@@ -514,7 +514,7 @@ static void stm32_spi_dt_probe(struct stm32_spi_priv *priv)
 	struct device_node *node = priv->master.dev->of_node;
 	int i;
 
-	priv->master.num_chipselect = of_gpio_named_count(node, "cs-gpios");
+	priv->master.num_chipselect = of_gpio_count_csgpios(node);
 	priv->cs_gpios = xzalloc(sizeof(u32) * priv->master.num_chipselect);
 
 	for (i = 0; i < priv->master.num_chipselect; i++)

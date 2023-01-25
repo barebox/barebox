@@ -491,7 +491,6 @@ int spd_read_eeprom(struct pbl_i2c *i2c,
 		    uint8_t addr, void *buf,
 		    int memtype)
 {
-	unsigned char *buf8 = buf;
 	int ret;
 
 	if (memtype == SPD_MEMTYPE_DDR4) {

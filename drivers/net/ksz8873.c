@@ -96,7 +96,7 @@ static int ksz8873_mdio_read(void *ctx, unsigned int reg, unsigned int *val)
 	return 0;
 }
 
-static ssize_t ksz8873_mdio_write(void *ctx, unsigned int reg, unsigned int val)
+static int ksz8873_mdio_write(void *ctx, unsigned int reg, unsigned int val)
 {
 	struct ksz8873_switch *priv = ctx;
 	struct phy_device *mdiodev = priv->mdiodev;

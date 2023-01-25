@@ -4,7 +4,7 @@
 
 int realtek_dsa_init_tagger(struct realtek_priv *priv)
 {
-	const struct dsa_device_ops *tagger_ops;
+	const struct dsa_device_ops *tagger_ops = NULL;
 	struct dsa_switch_ops *ops;
 
 	/* TODO: Tagging can be configured per port in Linux. barebox DSA core
@@ -14,17 +14,23 @@ int realtek_dsa_init_tagger(struct realtek_priv *priv)
 	 */
 	switch (priv->ops->get_tag_protocol(priv)) {
 	case DSA_TAG_PROTO_RTL4_A:
-		tagger_ops = &rtl4a_netdev_ops;
+		if (IS_ENABLED(CONFIG_NET_DSA_TAG_RTL4_A))
+			tagger_ops = &rtl4a_netdev_ops;
 		break;
 	case DSA_TAG_PROTO_RTL8_4:
-		tagger_ops = &rtl8_4_netdev_ops;
+		if (IS_ENABLED(CONFIG_NET_DSA_TAG_RTL8_4))
+			tagger_ops = &rtl8_4_netdev_ops;
 		break;
 	case DSA_TAG_PROTO_RTL8_4T:
-		tagger_ops = &rtl8_4t_netdev_ops;
+		if (IS_ENABLED(CONFIG_NET_DSA_TAG_RTL8_4))
+			tagger_ops = &rtl8_4t_netdev_ops;
 		break;
 	default:
-		return -EINVAL;
+		break;
 	}
+
+	if (!tagger_ops)
+		return -EINVAL;
 
 	ops = memdup(priv->ds->ops, sizeof(*priv->ds->ops));
 	ops->xmit = tagger_ops->xmit;

@@ -473,6 +473,14 @@ int of_i2c_register_devices_by_node(struct device_node *node)
 
 static int i2c_bus_detect(struct device *dev)
 {
+	struct i2c_adapter *adap = container_of(dev, struct i2c_adapter, dev);
+
+	of_i2c_register_devices(adap);
+	return 0;
+}
+
+static int i2c_hw_detect(struct device *dev)
+{
 	struct i2c_adapter *adap;
 
 	list_for_each_entry(adap, &i2c_adapter_list, list) {
@@ -712,6 +720,7 @@ int i2c_add_numbered_adapter(struct i2c_adapter *adapter)
 	}
 
 	adapter->dev.id = adapter->nr;
+	adapter->dev.detect = i2c_bus_detect;
 	dev_set_name(&adapter->dev, "i2c");
 
 	ret = register_device(&adapter->dev);
@@ -726,8 +735,8 @@ int i2c_add_numbered_adapter(struct i2c_adapter *adapter)
 	hw_dev = adapter->dev.parent;
 	if (hw_dev && dev_of_node(hw_dev)) {
 		if (!hw_dev->detect)
-			hw_dev->detect = i2c_bus_detect;
-		i2c_bus_detect(hw_dev);
+			hw_dev->detect = i2c_hw_detect;
+		i2c_hw_detect(hw_dev);
 	}
 
 	return 0;

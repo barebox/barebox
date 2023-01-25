@@ -537,12 +537,12 @@ static int of_gpiochip_scan_hogs(struct gpio_chip *chip)
 	return 0;
 }
 
+#ifdef CONFIG_OFDEVICE
 static const char *gpio_suffixes[] = {
 	"gpios",
 	"gpio",
 };
 
-#ifdef CONFIG_OFDEVICE
 /* Linux compatibility helper: Get a GPIO descriptor from device tree */
 int dev_gpiod_get_index(struct device *dev,
 			struct device_node *np,

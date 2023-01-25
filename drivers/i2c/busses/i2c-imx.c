@@ -102,6 +102,7 @@ struct fsl_i2c_hwdata {
 struct fsl_i2c_struct {
 	void __iomem		*base;
 	struct clk		*clk;
+	struct device		*dev;
 	struct i2c_adapter	adapter;
 	unsigned int 		disable_delay;
 	unsigned int		ifdr;	/* FSL_I2C_IFDR */
@@ -295,7 +296,7 @@ static void i2c_fsl_set_clk(struct fsl_i2c_struct *i2c_fsl,
 	 * Translate to dfsr = 5 * Frequency / 100,000,000
 	 */
 	dfsr = (5 * (i2c_clk / 1000)) / 100000;
-	dev_dbg(&i2c_fsl->adapter.dev,
+	dev_dbg(i2c_fsl->dev,
 		"<%s> requested speed:%d, i2c_clk:%d\n", __func__,
 		rate, i2c_clk);
 	if (!dfsr)
@@ -314,12 +315,12 @@ static void i2c_fsl_set_clk(struct fsl_i2c_struct *i2c_fsl,
 				bin_ga = (ga & 0x3) | ((ga & 0x4) << 3);
 				fdr = bin_gb | bin_ga;
 				rate = i2c_clk / est_div;
-				dev_dbg(&i2c_fsl->adapter.dev,
+				dev_dbg(i2c_fsl->dev,
 					"FDR:0x%.2x, div:%ld, ga:0x%x, gb:0x%x,"
 					" a:%d, b:%d, speed:%d\n", fdr, est_div,
 					ga, gb, a, b, rate);
 				/* Condition 2 not accounted for */
-				dev_dbg(&i2c_fsl->adapter.dev,
+				dev_dbg(i2c_fsl->dev,
 					"Tr <= %d ns\n", (b - 3 * dfsr) *
 					1000000 / (i2c_clk / 1000));
 			}
@@ -329,9 +330,9 @@ static void i2c_fsl_set_clk(struct fsl_i2c_struct *i2c_fsl,
 		if (a == 24)
 			a += 4;
 	}
-	dev_dbg(&i2c_fsl->adapter.dev,
+	dev_dbg(i2c_fsl->dev,
 		"divider:%d, est_div:%ld, DFSR:%d\n", divider, est_div, dfsr);
-	dev_dbg(&i2c_fsl->adapter.dev, "FDR:0x%.2x, speed:%d\n", fdr, rate);
+	dev_dbg(i2c_fsl->dev, "FDR:0x%.2x, speed:%d\n", fdr, rate);
 	i2c_fsl->ifdr = fdr;
 	i2c_fsl->dfsrr = dfsr;
 }
@@ -368,9 +369,9 @@ static void i2c_fsl_set_clk(struct fsl_i2c_struct *i2c_fsl,
 		(500000U * i2c_clk_div[i].div + (i2c_clk_rate / 2) - 1) /
 		(i2c_clk_rate / 2);
 
-	dev_dbg(&i2c_fsl->adapter.dev, "<%s> I2C_CLK=%d, REQ DIV=%d\n",
+	dev_dbg(i2c_fsl->dev, "<%s> I2C_CLK=%d, REQ DIV=%d\n",
 		__func__, i2c_clk_rate, div);
-	dev_dbg(&i2c_fsl->adapter.dev, "<%s> IFDR[IC]=0x%x, REAL DIV=%d\n",
+	dev_dbg(i2c_fsl->dev, "<%s> IFDR[IC]=0x%x, REAL DIV=%d\n",
 		__func__, i2c_clk_div[i].val, i2c_clk_div[i].div);
 }
 #endif
@@ -564,6 +565,7 @@ static int __init i2c_fsl_probe(struct device *pdev)
 	pdata = pdev->platform_data;
 
 	i2c_fsl = xzalloc(sizeof(*i2c_fsl));
+	i2c_fsl->dev = pdev;
 
 #ifdef CONFIG_COMMON_CLK
 	i2c_fsl->clk = clk_get(pdev, NULL);

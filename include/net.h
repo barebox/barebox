@@ -109,6 +109,7 @@ static inline int eth_send_raw(struct eth_device *edev, void *packet,
 int eth_register(struct eth_device* dev);    /* Register network device		*/
 void eth_unregister(struct eth_device* dev); /* Unregister network device	*/
 int eth_set_ethaddr(struct eth_device *edev, const char *ethaddr);
+int eth_carrier_poll_once(struct eth_device *edev);
 int eth_open(struct eth_device *edev);
 void eth_close(struct eth_device *edev);
 int eth_send(struct eth_device *edev, void *packet, int length);	   /* Send a packet		*/
@@ -511,6 +512,8 @@ int net_icmp_send(struct net_connection *con, int len);
 void led_trigger_network(enum led_trigger trigger);
 
 #define IFUP_FLAG_FORCE		(1 << 0)
+#define IFUP_FLAG_PARALLEL	(1 << 1)
+#define IFUP_FLAG_SKIP_CONF	(1 << 2)
 
 int ifup_edev(struct eth_device *edev, unsigned flags);
 int ifup(const char *name, unsigned flags);

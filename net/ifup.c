@@ -304,6 +304,9 @@ static void __ifup_all_parallel(unsigned flags)
 				continue;
 
 			netdev_count--;
+
+			if ((flags & IFUP_FLAG_UNTIL_NET_SERVER) && net_get_server())
+				return;
 		}
 	}
 }
@@ -312,8 +315,12 @@ static void __ifup_all_sequence(unsigned flags)
 {
 	struct eth_device *edev;
 
-	for_each_netdev(edev)
+	for_each_netdev(edev) {
 		ifup_edev(edev, flags);
+
+		if ((flags & IFUP_FLAG_UNTIL_NET_SERVER) && net_get_server())
+			return;
+	}
 }
 
 int ifup_all(unsigned flags)
@@ -339,6 +346,16 @@ int ifup_all(unsigned flags)
 	if ((flags & IFUP_FLAG_FORCE) || net_ifup_force_detect ||
 	    list_empty(&netdev_list))
 		device_detect_all();
+
+	/*
+	 * In the future, we may add an iproute -r option that tries to
+	 * resolve $global.net.server using each interface. For now,
+	 * we only support the special case of $global.net.server being
+	 * empty, i.e. the first DHCP lease setting $global.net.server
+	 * will be what we're going with.
+	 */
+	if (net_get_server())
+		flags &= ~IFUP_FLAG_UNTIL_NET_SERVER;
 
 	if (flags & IFUP_FLAG_PARALLEL)
 		__ifup_all_parallel(flags);
@@ -375,10 +392,13 @@ static int do_ifup(int argc, char *argv[])
 	unsigned flags = IFUP_FLAG_PARALLEL;
 	int all = 0;
 
-	while ((opt = getopt(argc, argv, "asf")) > 0) {
+	while ((opt = getopt(argc, argv, "asf1")) > 0) {
 		switch (opt) {
 		case 'f':
 			flags |= IFUP_FLAG_FORCE;
+			break;
+		case '1':
+			flags |= IFUP_FLAG_UNTIL_NET_SERVER;
 			break;
 		case 's':
 			flags &= ~IFUP_FLAG_PARALLEL;
@@ -408,12 +428,13 @@ BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-a",  "bring up all interfaces")
 BAREBOX_CMD_HELP_OPT ("-s",  "bring up interfaces in sequence, not in parallel")
 BAREBOX_CMD_HELP_OPT ("-f",  "Force. Configure even if ip already set")
+BAREBOX_CMD_HELP_OPT ("-1",  "Early exit if DHCP sets $global.net.server")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(ifup)
 	.cmd		= do_ifup,
 	BAREBOX_CMD_DESC("bring a network interface up")
-	BAREBOX_CMD_OPTS("[-asf] [INTF]")
+	BAREBOX_CMD_OPTS("[-asf1] [INTF]")
 	BAREBOX_CMD_GROUP(CMD_GRP_NET)
 	BAREBOX_CMD_COMPLETE(eth_complete)
 	BAREBOX_CMD_HELP(cmd_ifup_help)

@@ -257,6 +257,7 @@ extern unsigned char *NetRxPackets[PKTBUFSRX];/* Receive packets		*/
 
 void net_set_ip(struct eth_device *edev, IPaddr_t ip);
 void net_set_serverip(IPaddr_t ip);
+const char *net_get_server(void);
 void net_set_serverip_empty(IPaddr_t ip);
 void net_set_netmask(struct eth_device *edev, IPaddr_t ip);
 void net_set_gateway(IPaddr_t ip);
@@ -514,6 +515,7 @@ void led_trigger_network(enum led_trigger trigger);
 #define IFUP_FLAG_FORCE		(1 << 0)
 #define IFUP_FLAG_PARALLEL	(1 << 1)
 #define IFUP_FLAG_SKIP_CONF	(1 << 2)
+#define IFUP_FLAG_UNTIL_NET_SERVER	(1 << 3)
 
 int ifup_edev(struct eth_device *edev, unsigned flags);
 int ifup(const char *name, unsigned flags);

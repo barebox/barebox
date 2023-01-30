@@ -292,6 +292,7 @@ config ARCH_ARM64_VIRT
 	select ARM_AMBA
 	select BOARD_ARM_VIRT
 	select HW_HAS_PCI
+	select HAS_ASM_DEBUG_LL
 
 endchoice
 

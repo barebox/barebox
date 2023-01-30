@@ -1479,6 +1479,10 @@ config DEBUG_SUN20I
 	depends on SOC_ALLWINNER_SUN20I
 	select DEBUG_LL_NS16550
 
+config DEBUG_QEMU_ARM64_VIRT
+	bool "QEMU ARM64 Virt PL011 console"
+	depends on ARCH_ARM64_VIRT
+
 endchoice
 
 config DEBUG_LL_NS16550

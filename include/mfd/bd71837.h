@@ -100,4 +100,7 @@ enum {
 #define BD71847_LDO5_RANGE_MASK		0x20
 #define BD71837_LDO7_MASK		0x0f
 
+#define BD718XX_PWRBTN_PRESS_DURATION_MASK 0xF
+
+
 #endif

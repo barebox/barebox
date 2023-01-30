@@ -129,6 +129,19 @@ config MFD_AXP20X_I2C
 	  management ICs (PMICs) controlled with I2C.
 	  This driver currently only provide a character device in /dev.
 
+config MFD_ROHM_BD718XX
+	tristate "ROHM BD71837 Power Management IC"
+	depends on I2C=y
+	depends on OFDEVICE
+	select REGMAP_I2C
+	help
+	  Select this option to get support for the ROHM BD71837
+	  Power Management ICs. BD71837 is designed to power processors like
+	  NXP i.MX8. It contains 8 BUCK outputs and 7 LDOs, voltage monitoring
+	  and emergency shut down as well as 32,768KHz clock output.
+
+	  This driver currently only provide a character device in /dev.
+
 config MFD_ATMEL_SMC
 	bool
 	select MFD_SYSCON

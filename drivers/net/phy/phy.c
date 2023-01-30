@@ -20,8 +20,6 @@
 #include <linux/phy.h>
 #include <linux/err.h>
 
-#define PHY_AN_TIMEOUT	10
-
 static struct phy_driver genphy_driver;
 
 /**

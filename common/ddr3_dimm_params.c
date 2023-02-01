@@ -86,6 +86,11 @@ unsigned int ddr3_compute_dimm_parameters(const struct ddr3_spd_eeprom *spd,
 	int ftb_10th_ps;
 	int i;
 
+	if (spd->mem_type != SPD_MEMTYPE_DDR3) {
+		printf("DIMM: SPD data is not DDR3\n");
+		return 3;
+	}
+
 	ret = ddr3_spd_check(spd);
 	if (ret) {
 		printf("DIMM: failed checksum\n");

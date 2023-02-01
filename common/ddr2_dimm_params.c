@@ -206,6 +206,13 @@ unsigned int ddr2_compute_dimm_parameters(unsigned int mclk_ps,
 {
 	int ret;
 
+	if (spd->mem_type != SPD_MEMTYPE_DDR2 &&
+	    spd->mem_type != SPD_MEMTYPE_DDR2_FBDIMM &&
+	    spd->mem_type != SPD_MEMTYPE_DDR2_FBDIMM_PROBE) {
+		printf("DIMM: SPD data is not DDR2\n");
+		return 3;
+	}
+
 	ret = ddr2_spd_check(spd);
 	if (ret) {
 		printf("DIMM: failed checksum\n");

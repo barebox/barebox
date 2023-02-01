@@ -221,6 +221,11 @@ unsigned int ddr1_compute_dimm_parameters(unsigned int mclk_ps,
 {
 	int ret;
 
+	if (spd->mem_type != SPD_MEMTYPE_DDR) {
+		printf("DIMM: SPD data is not DDR1\n");
+		return 3;
+	}
+
 	ret = ddr1_spd_check(spd);
 	if (ret) {
 		printf("DIMM: failed checksum\n");

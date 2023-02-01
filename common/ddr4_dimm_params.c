@@ -136,6 +136,11 @@ unsigned int ddr4_compute_dimm_parameters(const struct ddr4_spd_eeprom *spd,
 	u8 *ptr;
 	u8 val;
 
+	if (spd->mem_type != SPD_MEMTYPE_DDR4) {
+		printf("DIMM: SPD data is not DDR4\n");
+		return 3;
+	}
+
 	ret = ddr4_spd_check(spd);
 	if (ret) {
 		printf("DIMM: failed checksum\n");

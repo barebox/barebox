@@ -5,21 +5,19 @@ KBUILD_DEFCONFIG := rv64i_defconfig
 KBUILD_CPPFLAGS += -fno-strict-aliasing
 
 ifeq ($(CONFIG_ARCH_RV32I),y)
-	riscv-cflags-y += -march=rv32im -mabi=ilp32
+	KBUILD_CPPFLAGS += -march=rv32im -mabi=ilp32
 	riscv-ldflags-y += -melf32lriscv
 else
-	riscv-cflags-y += -march=rv64im -mabi=lp64
+	KBUILD_CPPFLAGS += -march=rv64im -mabi=lp64
 	riscv-ldflags-y += -melf64lriscv
 endif
 
-riscv-cflags-y += -Wstrict-prototypes -mcmodel=medany -fpic
+
+
+KBUILD_CPPFLAGS += -Wstrict-prototypes -mcmodel=medany -fpic
 riscv-ldflags-y += -pie -static
 
-PBL_CPPFLAGS += $(riscv-cflags-y)
 LDFLAGS_pbl += $(riscv-ldflags-y)
-
-cflags-y += $(riscv-cflags-y)
-
 LDFLAGS_barebox += $(riscv-ldflags-y)
 
 ifndef CONFIG_MODULES
@@ -29,6 +27,7 @@ LDFLAGS_barebox += -static --gc-sections
 endif
 
 KBUILD_BINARY := barebox.bin
+KBUILD_IMAGE := $(KBUILD_BINARY)
 
 archprepare: maketools
 
@@ -41,11 +40,6 @@ common-y += arch/riscv/boot/
 
 common-$(CONFIG_OFTREE) += arch/riscv/dts/
 
-KBUILD_CPPFLAGS += $(cflags-y)
-KBUILD_CFLAGS += $(cflags-y)
-
 lds-y	:= arch/riscv/lib/barebox.lds
 
 CLEAN_FILES += arch/riscv/lib/barebox.lds
-
-KBUILD_IMAGE := $(KBUILD_BINARY)

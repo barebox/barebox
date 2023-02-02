@@ -441,6 +441,8 @@ static ssize_t __write(FILE *f, const void *buf, size_t count)
 	if (f->size != FILE_SIZE_STREAM && f->pos + count > f->size) {
 		ret = fsdev_truncate(&f->fsdev->dev, f, f->pos + count);
 		if (ret) {
+			if (ret == -EPERM)
+				ret = -ENOSPC;
 			if (ret != -ENOSPC)
 				goto out;
 			count = f->size - f->pos;

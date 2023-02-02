@@ -639,6 +639,21 @@ static struct regmap_bus imx_ocotp_regmap_bus = {
 	.reg_read = imx_ocotp_reg_read,
 };
 
+static int imx_ocotp_cell_pp(void *context, const char *id, unsigned int offset,
+			     void *data, size_t bytes)
+{
+	/* Deal with some post processing of nvmem cell data */
+	if (id && !strcmp(id, "mac-address")) {
+		u8 *buf = data;
+		int i;
+
+		for (i = 0; i < bytes/2; i++)
+			swap(buf[i], buf[bytes - i - 1]);
+	}
+
+	return 0;
+}
+
 static int imx_ocotp_init_dt(struct ocotp_priv *priv)
 {
 	char mac[MAC_BYTES];
@@ -729,7 +744,8 @@ static int imx_ocotp_probe(struct device *dev)
 	if (IS_ERR(priv->map))
 		return PTR_ERR(priv->map);
 
-	nvmem = nvmem_regmap_register(priv->map, "imx-ocotp");
+	nvmem = nvmem_regmap_register_with_pp(priv->map, "imx-ocotp",
+					      imx_ocotp_cell_pp);
 	if (IS_ERR(nvmem))
 		return PTR_ERR(nvmem);
 

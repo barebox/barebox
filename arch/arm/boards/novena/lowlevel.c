@@ -7,9 +7,11 @@
 #include <mach/esdctl.h>
 #include <mach/generic.h>
 #include <mach/imx6.h>
+#include <mach/imx6-mmdc.h>
 #include <mach/iomux-mx6.h>
 #include <mach/xload.h>
 #include <soc/fsl/fsl_udc.h>
+#include "ddr_regs.h"
 
 #define STACK_TOP (MX6_OCRAM_BASE_ADDR + MX6_OCRAM_MAX_SIZE)
 
@@ -33,6 +35,12 @@ static void setup_uart(void)
 	pbl_set_putc(imx_uart_putc, uart2base);
 
 	pr_debug(">");
+}
+
+static void setup_ram(void)
+{
+	mx6dq_dram_iocfg(64, &novena_ddr_regs, &novena_grp_regs);
+	mx6_dram_cfg(&novena_ddr_info, &novena_mmdc_calib, &novena_ddr_cfg);
 }
 
 static void load_barebox(void)
@@ -61,8 +69,10 @@ ENTRY_FUNCTION_WITHSTACK(start_imx6q_novena, STACK_TOP, r0, r1, r2)
 	imx6_ungate_all_peripherals();
 	setup_uart();
 
-	if (!running_from_ram())
+	if (!running_from_ram()) {
+		setup_ram();
 		load_barebox();
-	else
+	} else {
 		imx6q_barebox_entry(__dtb_z_imx6q_novena_start);
+	}
 }

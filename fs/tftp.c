@@ -477,6 +477,8 @@ static void tftp_handle_data(struct file_priv *priv, uint16_t block,
 		/* completely unexpected and unrelated to actual window;
 		   ignore the packet. */
 		printf("B");
+		if (g_tftp_window_size > 1)
+			pr_warn_once("Unexpected packet. global.tftp.windowsize set too high?\n");
 	} else {
 		/* The 'rc < 0' below happens e.g. when datagrams in the first
 		   part of the transfer window are dropped.

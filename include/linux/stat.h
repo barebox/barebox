@@ -49,11 +49,8 @@ extern "C" {
 struct stat {
 	unsigned long st_ino;
 	unsigned short st_mode;
-	unsigned short st_nlink;
 	unsigned short st_uid;
 	unsigned short st_gid;
-	unsigned short st_rdev;
-	unsigned short __pad2;
 	loff_t  st_size;
 };
 

@@ -160,9 +160,9 @@ void stat_print(const char *filename, const struct stat *st)
 
 	fdev = get_fsdevice_by_path(filename);
 
-	printf("\nDevice: %s\tInode: %lu\tLinks: %u\n",
+	printf("\nDevice: %s\tInode: %lu\n",
 	       fdev ? dev_name(&fdev->dev) : "<unknown>",
-	       st->st_ino, st->st_nlink);
+	       st->st_ino);
 	printf("Access: (%04o/%s)\tUid: (%u)\tGid: (%u)\n",
 	       st->st_mode & 07777, modestr, st->st_uid, st->st_gid);
 

@@ -31,16 +31,6 @@ void __attribute__((noreturn)) panic(const char *fmt, ...);
 
 #define printk			printf
 
-#define printk_once(fmt, ...)					\
-({								\
-	static bool __print_once	;			\
-								\
-	if (!__print_once) {					\
-		__print_once = true;				\
-		printk(fmt, ##__VA_ARGS__);			\
-	}							\
-})
-
 enum {
 	DUMP_PREFIX_NONE,
 	DUMP_PREFIX_ADDRESS,

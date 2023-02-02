@@ -20,7 +20,7 @@
 #include "compiler.h"
 
 #define debug(...)
-#define printk_once(...)
+#define pr_debug_once(...)
 
 /* Find out if the last character of a string matches the one given.
  * Don't underrun the buffer if the string length is 0.

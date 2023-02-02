@@ -4,6 +4,7 @@
 #include <linux/kernel.h>
 #define EXPORT_SYMBOL(x)
 #else
+#define pr_fmt(fmt) "list_sort: " fmt
 #include <common.h>
 #include <malloc.h>
 #endif
@@ -129,9 +130,7 @@ void list_sort(void *priv, struct list_head *head,
 		}
 		if (lev > max_lev) {
 			if (unlikely(lev >= ARRAY_SIZE(part)-1)) {
-				printk_once(KERN_DEBUG "list passed to"
-					" list_sort() too long for"
-					" efficiency\n");
+				pr_debug_once("list passed to too long for efficient sorting\n");
 				lev--;
 			}
 			max_lev = lev;

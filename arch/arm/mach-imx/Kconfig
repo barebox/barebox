@@ -438,6 +438,8 @@ config MACH_NOVENA
 	bool "Kosagi Novena board"
 	select ARCH_IMX6
 	select ARM_USE_COMPRESSED_DTB
+	select DDR_SPD
+	select I2C_IMX_EARLY
 	select MCI_IMX_ESDHC_PBL
 	select USB_GADGET_DRIVER_ARC_PBL
 

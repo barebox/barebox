@@ -5,15 +5,19 @@ KBUILD_DEFCONFIG := rv64i_defconfig
 KBUILD_CPPFLAGS += -fno-strict-aliasing
 
 ifeq ($(CONFIG_ARCH_RV32I),y)
-	KBUILD_CPPFLAGS += -march=rv32im -mabi=ilp32
+	KBUILD_CPPFLAGS += -mabi=ilp32
 	riscv-ldflags-y += -melf32lriscv
 else
-	KBUILD_CPPFLAGS += -march=rv64im -mabi=lp64
+	KBUILD_CPPFLAGS += -mabi=lp64
 	riscv-ldflags-y += -melf64lriscv
 endif
 
+# ISA string setting
+riscv-march-$(CONFIG_ARCH_RV32I)	:= rv32im
+riscv-march-$(CONFIG_ARCH_RV64I)	:= rv64im
 
 
+KBUILD_CPPFLAGS += -march=$(riscv-march-y)
 KBUILD_CPPFLAGS += -Wstrict-prototypes -mcmodel=medany -fpic
 riscv-ldflags-y += -pie -static
 

@@ -2,3 +2,17 @@
 // SPDX-FileCopyrightText: 2023 John Watts <contact@jookia.org>
 
 #include <arm/imx6q-novena.dts>
+
+/ {
+	aliases {
+		eeprom0 = &eeprom;
+	};
+};
+
+&i2c3 {
+	eeprom: eeprom@56 {
+		compatible = "24c512";
+		reg = <0x56>;
+		pagesize = <128>;
+	};
+};

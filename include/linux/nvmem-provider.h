@@ -22,6 +22,11 @@ struct nvmem_bus {
 	int (*read)(void *ctx, unsigned int reg, void *val, size_t val_size);
 };
 
+/* used for vendor specific post processing of cell data */
+typedef int (*nvmem_cell_post_process_t)(void *priv, const char *id,
+					 unsigned int offset, void *buf,
+					 size_t bytes);
+
 struct nvmem_config {
 	struct device		*dev;
 	const char		*name;
@@ -32,6 +37,7 @@ struct nvmem_config {
 	int			size;
 	const struct nvmem_bus	*bus;
 	void			*priv;
+	nvmem_cell_post_process_t cell_post_process;
 };
 
 struct regmap;

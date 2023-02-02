@@ -26,10 +26,12 @@ struct nvmem_device {
 	bool			read_only;
 	struct cdev		cdev;
 	void			*priv;
+	nvmem_cell_post_process_t cell_post_process;
 };
 
 struct nvmem_cell {
 	const char		*name;
+	const char		*id;
 	int			offset;
 	int			bytes;
 	int			bit_offset;
@@ -145,6 +147,7 @@ static struct nvmem_cell *nvmem_find_cell(const char *cell_id)
 static void nvmem_cell_drop(struct nvmem_cell *cell)
 {
 	list_del(&cell->node);
+	kfree(cell->id);
 	kfree(cell);
 }
 
@@ -209,6 +212,7 @@ struct nvmem_device *nvmem_register(const struct nvmem_config *config)
 	np = config->cdev ? config->cdev->device_node : config->dev->of_node;
 	nvmem->dev.of_node = np;
 	nvmem->priv = config->priv;
+	nvmem->cell_post_process = config->cell_post_process;
 
 	if (config->read_only || !config->bus->write || of_property_read_bool(np, "read-only"))
 		nvmem->read_only = true;
@@ -417,6 +421,7 @@ struct nvmem_cell *of_nvmem_cell_get(struct device_node *np,
 	cell->offset = be32_to_cpup(addr++);
 	cell->bytes = be32_to_cpup(addr);
 	cell->name = cell_np->name;
+	cell->id = kstrdup_const(name, GFP_KERNEL);
 
 	addr = of_get_property(cell_np, "bits", &len);
 	if (addr && len == (2 * sizeof(u32))) {
@@ -533,6 +538,13 @@ static int __nvmem_cell_read(struct nvmem_device *nvmem,
 	/* shift bits in-place */
 	if (cell->bit_offset || cell->nbits)
 		nvmem_shift_read_buffer_in_place(cell, buf);
+
+	if (nvmem->cell_post_process) {
+		rc = nvmem->cell_post_process(nvmem->priv, cell->id,
+					      cell->offset, buf, cell->bytes);
+		if (rc)
+			return rc;
+	}
 
 	*len = cell->bytes;
 

@@ -9,7 +9,7 @@
 		__overlay__ {
 			#address-cells = <2>;
 			#size-cells = <2>;
-			sram@0 {
+			sram@1000 {
 				compatible = "mtd-ram";
 				reg = <0 0x1000 0 0x10000>;
 				#address-cells = <1>;
@@ -49,7 +49,7 @@
 		__overlay__ {
 			environment {
 				compatible = "barebox,environment";
-				device-path = "/soc/sram@0/partitions/partition@3000";
+				device-path = "/soc/sram@1000/partitions/partition@3000";
 			};
 		};
 	};

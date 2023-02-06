@@ -45,15 +45,17 @@ device:
 |                              |              | any directly visible subnet. May be set        |
 |                              |              | automatically by DHCP.                         |
 +------------------------------+--------------+------------------------------------------------+
-| global.net.server            | hostname or  | The default server. If unspecified, may be set |
-|                              | ipv4 address | by DHCP                                        |
+| global.net.server            | hostname or  | The default server used by the defaultenv boot |
+|                              | ipv4 address | scripts for NFS and TFTP; see                  |
+|                              |              | :ref:`booting_linux_net`.                      |
+|                              |              | If unspecified, may be set by DHCP.            |
 +------------------------------+--------------+------------------------------------------------+
 | global.net.nameserver        | ipv4 address | The DNS server used for resolving host names.  |
-|                              |              | May be set by DHCP                             |
+|                              |              | May be set by DHCP.                            |
 +------------------------------+--------------+------------------------------------------------+
 | global.net.ifup_force_detect | boolean      | Set to true if your network device is not      |
 |                              |              | detected automatically during start (i.e. for  |
-|                              |              | USB network adapters)                          |
+|                              |              | USB network adapters).                         |
 +------------------------------+--------------+------------------------------------------------+
 
 The first step for networking is configuring the network device. The network

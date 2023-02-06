@@ -61,6 +61,12 @@ static struct pmic_config pca9450_cfg[] = {
 	{ PCA9450_BUCK1OUT_DVS0, 0x1C },
 	{ PCA9450_BUCK1OUT_DVS1, 0x14 },
 	{ PCA9450_BUCK1CTRL, 0x59 },
+	/*
+	 * Increase VDD_ARM to 0.95V to avoid issues in case software after
+	 * Barebox switches to the OD ARM frequency without reprogramming the
+	 * PMIC first.
+	 */
+	{ PCA9450_BUCK2OUT_DVS0, 0x1C },
 	/* set WDOG_B_CFG to cold reset */
 	{ PCA9450_RESET_CTRL, 0xA1 },
 };

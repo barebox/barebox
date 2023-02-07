@@ -60,6 +60,7 @@ static int riotboard_device_init(void)
 
 	imx6_bbu_internal_mmc_register_handler("emmc", "/dev/mmc3.barebox",
 			BBU_HANDLER_FLAG_DEFAULT);
+	imx6_bbu_internal_mmc_register_handler("sd", "/dev/mmc2", 0);
 
 	barebox_set_hostname("riotboard");
 

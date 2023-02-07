@@ -738,7 +738,7 @@ static int ratp_behaviour_c2(struct ratp_internal *ri, void *pkt)
 		control = RATP_CONTROL_RST | RATP_CONTROL_ACK |
 			ratp_set_sn(ratp_an(hdr)) | ratp_set_next_an(ratp_sn(hdr));
 		ratp_send_hdr(ri, control);
-
+		ri->sendbuf_len = 0;
 		ratp_state_change(ri, RATP_STATE_CLOSED);
 		return 1;
 	}
@@ -784,7 +784,7 @@ static int ratp_behaviour_d1(struct ratp_internal *ri, void *pkt)
 	ri->status = -ECONNREFUSED;
 
 	pr_debug("Error: connection refused\n");
-
+	ri->sendbuf_len = 0;
 	ratp_state_change(ri, RATP_STATE_CLOSED);
 
 	return 1;
@@ -812,6 +812,8 @@ static int ratp_behaviour_d2(struct ratp_internal *ri, void *pkt)
 	ri->status = -ECONNRESET;
 
 	pr_debug("connection reset\n");
+	ri->sendbuf_len = 0;
+	ratp_state_change(ri, RATP_STATE_CLOSED);
 
 	return 0;
 }
@@ -879,7 +881,7 @@ static int ratp_behaviour_e(struct ratp_internal *ri, void *pkt)
 	ratp_send_hdr(ri, control);
 
 	pr_debug("connection reset\n");
-
+	ri->sendbuf_len = 0;
 	ratp_state_change(ri, RATP_STATE_CLOSED);
 
 	return 1;
@@ -924,8 +926,10 @@ static int ratp_behaviour_f1(struct ratp_internal *ri, void *pkt)
 	if (!(hdr->control & RATP_CONTROL_ACK))
 		return 1;
 
-	if (ratp_an_expected(ri, hdr))
+	if (ratp_an_expected(ri, hdr)) {
+		ri->sendbuf_len = 0; /* packet succesfully received */
 		return 0;
+	}
 
 	control = RATP_CONTROL_RST | ratp_set_sn(ratp_an(hdr));
 	ratp_send_hdr(ri, control);
@@ -971,6 +975,7 @@ static int ratp_behaviour_f2(struct ratp_internal *ri, void *pkt)
 		if (ri->sendmsg_current)
 			ratp_msg_done(ri, ri->sendmsg_current, 0);
 		ri->sendmsg_current = NULL;
+		ri->sendbuf_len = 0; /* packet succesfully received */
 		return 0;
 	} else {
 		pr_vdebug("%s: an not expected\n", __func__);
@@ -1175,6 +1180,7 @@ static int ratp_behaviour_h3(struct ratp_internal *ri, void *pkt)
 		ratp_send_hdr(ri, control);
 		ri->status = -ECONNRESET;
 		pr_debug("Error: Connection reset\n");
+		ri->sendbuf_len = 0;
 		ratp_state_change(ri, RATP_STATE_CLOSED);
 		return 1;
 	}
@@ -1217,8 +1223,10 @@ static int ratp_behaviour_h4(struct ratp_internal *ri, void *pkt)
 
 	pr_debug("%s\n", __func__);
 
-	if (ratp_an_expected(ri, hdr))
+	if (ratp_an_expected(ri, hdr)) {
+		ri->sendbuf_len = 0; /* packet succesfully received */
 		ratp_state_change(ri, RATP_STATE_CLOSED);
+	}
 
 	return 1;
 }
@@ -1244,6 +1252,7 @@ static int ratp_behaviour_h5(struct ratp_internal *ri, void *pkt)
 	pr_debug("%s\n", __func__);
 
 	if (ratp_an_expected(ri, hdr)) {
+		ri->sendbuf_len = 0; /* packet succesfully received */
 		ratp_state_change(ri, RATP_STATE_TIME_WAIT);
 		ratp_start_time_wait_timer(ri);
 	}
@@ -1580,9 +1589,8 @@ int ratp_poll(struct ratp *ratp)
 		}
 	}
 
-	if (ri->sendmsg_current && is_timeout(ri->retransmission_timer_start,
+	if (ri->sendbuf_len && is_timeout(ri->retransmission_timer_start,
 	    ri->rto * MSECOND)) {
-
 		ri->retransmission_count++;
 		if (ri->retransmission_count == ri->max_retransmission) {
 			ri->status = ret = -ETIMEDOUT;
@@ -1601,7 +1609,7 @@ int ratp_poll(struct ratp *ratp)
 			goto out;
 	}
 
-	if (!ri->sendmsg_current && !list_empty(&ri->sendmsg))
+	if (ri->sendbuf_len == 0 && !list_empty(&ri->sendmsg))
 		ratp_send_next_data(ri);
 
 	ret = 0;

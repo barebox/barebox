@@ -486,7 +486,7 @@ int barebox_ratp(struct console_device *cdev)
 	ctx->cdev = cdev;
 	ctx->have_synch = 1;
 
-	ret = ratp_establish(&ctx->ratp, false, 100);
+	ret = ratp_establish(&ctx->ratp, false, 1000);
 	if (ret < 0)
 		goto out;
 

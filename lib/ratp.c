@@ -1648,7 +1648,7 @@ int ratp_establish(struct ratp *ratp, bool active, int timeout_ms)
 	INIT_LIST_HEAD(&ri->sendmsg);
 	ri->max_retransmission = 100;
 	ri->srtt = 100;
-	ri->rto = 100;
+	ri->rto = 200;
 	ri->active = active;
 
 	ri->in_ratp++;

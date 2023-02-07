@@ -345,7 +345,7 @@ class RatpConnection(object):
         if r.c_rst or r.c_fin:
             return False
 
-        if r.c_syn:
+        if r.c_syn and not r.c_ack:
             s = RatpPacket(flags='RA')
             s.c_sn = r.c_an
             s.c_an = (r.c_sn + 1) % 2

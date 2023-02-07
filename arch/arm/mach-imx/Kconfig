@@ -467,6 +467,7 @@ config MACH_EMBEST_MARSBOARD
 config MACH_EMBEST_RIOTBOARD
 	bool "Embest RIoTboard"
 	select ARCH_IMX6
+	imply AT803X_PHY
 
 config MACH_UDOO
 	bool "Freescale i.MX6 UDOO Board"

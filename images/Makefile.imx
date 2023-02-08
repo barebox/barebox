@@ -463,6 +463,11 @@ CFG_start_tqma8mpxl.pblb.imximg = $(board)/tqma8mpxl/flash-header-tqma8mpxl.imxc
 FILE_barebox-tqma8mpxl.img = start_tqma8mpxl.pblb.pimximg
 image-$(CONFIG_MACH_TQ_MBA8MPXL) += barebox-tqma8mpxl.img
 
+pblb-$(CONFIG_MACH_POLYHEX_DEBIX) += start_polyhex_debix
+CFG_start_polyhex_debix.pblb.imximg = $(board)/polyhex-debix/flash-header-polyhex-debix.imxcfg
+FILE_barebox-polyhex-debix.img = start_polyhex_debix.pblb.pimximg
+image-$(CONFIG_MACH_POLYHEX_DEBIX) += barebox-polyhex-debix.img
+
 # ----------------------- i.MX8mq based boards --------------------------
 pblb-$(CONFIG_MACH_NXP_IMX8MQ_EVK) += start_nxp_imx8mq_evk
 CFG_start_nxp_imx8mq_evk.pblb.imximg = $(board)/nxp-imx8mq-evk/flash-header-imx8mq-evk.imxcfg

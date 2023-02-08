@@ -652,7 +652,7 @@ static __maybe_unused struct imx_esdctl_data vf610_data = {
 	.add_mem = vf610_ddrmc_add_mem,
 };
 
-static __maybe_unused struct imx_esdctl_data imx8mq_data = {
+static __maybe_unused struct imx_esdctl_data imx8m_data = {
 	.base0 = MX8M_DDR_CSD1_BASE_ADDR,
 	.add_mem = imx8m_ddrc_add_mem,
 };
@@ -732,14 +732,11 @@ static __maybe_unused struct of_device_id imx_esdctl_dt_ids[] = {
 		.compatible = "fsl,vf610-ddrmc",
 		.data = &vf610_data
 	}, {
-		.compatible = "fsl,imx8mm-ddrc",
-		.data = &imx8mq_data
+		.compatible = "fsl,imx8m-ddrc",
+		.data = &imx8m_data
 	}, {
 		.compatible = "fsl,imx8mn-ddrc",
 		.data = &imx8mn_data
-	}, {
-		.compatible = "fsl,imx8mq-ddrc",
-		.data = &imx8mq_data
 	}, {
 		.compatible = "fsl,imx7d-ddrc",
 		.data = &imx7d_data

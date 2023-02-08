@@ -17,6 +17,7 @@
  * clock / 2, which is therefor transfer rate / 4.  */
 enum ddr_rate {
 	DDR_4000,
+	DDR_3720,
 	DDR_3200,
 	DDR_3000,
 	DDR_2600, /* Unused */
@@ -52,6 +53,7 @@ static const struct imx8mm_fracpll_config {
 	bool valid;
 } imx8mm_fracpll_table[DDR_NUM_RATES] = {
 	[DDR_4000] = { .valid = true, .r1 = MDIV(250) | PDIV(3) | SDIV(1), .r2 = 0 },
+	[DDR_3720] = { .valid = true, .r1 = MDIV(310) | PDIV(2) | SDIV(2), .r2 = 0 },
 	[DDR_3200] = { .valid = true, .r1 = MDIV(300) | PDIV(9) | SDIV(0), .r2 = 0 },
 	[DDR_3000] = { .valid = true, .r1 = MDIV(250) | PDIV(8) | SDIV(0), .r2 = 0 },
 	[DDR_2600] = { .valid = true, .r1 = MDIV(325) | PDIV(3) | SDIV(2), .r2 = 0 },
@@ -335,6 +337,7 @@ void ddrphy_init_set_dfi_clk(unsigned int drate_mhz, enum ddrc_type type)
 
 	switch (drate_mhz) {
 	case 4000: drate = DDR_4000; break;
+	case 3720: drate = DDR_3720; break;
 	case 3200: drate = DDR_3200; break;
 	case 3000: drate = DDR_3000; break;
 	case 2400: drate = DDR_2400; break;

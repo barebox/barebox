@@ -10,6 +10,13 @@
 	};
 };
 
+/*
+ * The DSP reserved memory will collide with the Barebox malloc area for some
+ * DRAM sizes, even though the DSP itself is disabled in most configurations.
+ */
+/delete-node/ &dsp;
+/delete-node/ &dsp_reserved;
+
 &edacmc {
 	compatible = "fsl,imx8mp-ddrc", "fsl,imx8m-ddrc", "snps,ddrc-3.80a";
 };

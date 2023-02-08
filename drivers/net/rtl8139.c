@@ -373,7 +373,6 @@ static int rtl8139_init_dev(struct eth_device *edev)
 	struct rtl8139_priv *priv = edev->priv;
 
 	rtl8139_chip_reset(priv);
-	pci_set_master(priv->pci_dev);
 
 	return 0;
 }
@@ -389,6 +388,8 @@ static int rtl8139_eth_open(struct eth_device *edev)
 
 	rtl8139_init_ring(priv);
 	rtl8139_hw_start(priv);
+
+	pci_set_master(priv->pci_dev);
 
 	ret = phy_device_connect(edev, &priv->miibus, 0, NULL, 0,
 				 PHY_INTERFACE_MODE_NA);
@@ -407,6 +408,11 @@ static void rtl8139_eth_halt(struct eth_device *edev)
 	RTL_W16(priv, IntrMask, 0);
 
 	pci_clear_master(priv->pci_dev);
+
+	dma_free_coherent((void *)priv->tx_bufs, priv->tx_bufs_dma,
+			  TX_BUF_TOT_LEN);
+	dma_free_coherent((void *)priv->rx_ring, priv->rx_ring_dma,
+			  RX_BUF_TOT_LEN);
 
 	/* Green! Put the chip in low-power mode. */
 	RTL_W8(priv, Cfg9346, Cfg9346_Unlock);

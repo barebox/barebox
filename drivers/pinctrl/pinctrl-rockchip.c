@@ -226,6 +226,7 @@ enum {
 	RK_GPIOV2_DR_H	= 0x04,
 	RK_GPIOV2_DDR_L	= 0x08,
 	RK_GPIOV2_DDR_H	= 0x0c,
+	RK_GPIOV2_EXT_PORT = 0x70,
 };
 
 static struct rockchip_pin_bank *gc_to_rockchip_pinctrl(struct gpio_chip *gc)
@@ -306,12 +307,8 @@ static int rockchip_gpiov2_get_value(struct gpio_chip *gc, unsigned int gpio)
 	struct rockchip_pin_bank *bank = gc_to_rockchip_pinctrl(gc);
 	u32 mask, r;
 
-	mask = 1 << (gpio % 16);
-
-	if (gpio < 16)
-		r = readl(bank->reg_base + RK_GPIOV2_DR_L);
-	else
-		r = readl(bank->reg_base + RK_GPIOV2_DR_L);
+	mask = 1 << (gpio % 32);
+	r = readl(bank->reg_base + RK_GPIOV2_EXT_PORT);
 
 	return r & mask ? 1 : 0;
 }

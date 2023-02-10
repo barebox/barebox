@@ -10,8 +10,6 @@
 #include <linux/phy.h>
 #include <linux/pci.h>
 
-#include <asm/dma-mapping.h>
-
 #define RTL8139_DEBUG
 #undef RTL8139_DEBUG
 

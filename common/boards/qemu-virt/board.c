@@ -65,4 +65,14 @@ static struct driver virt_board_driver = {
 	.of_compatible = virt_of_match,
 };
 
-postcore_platform_driver(virt_board_driver);
+static int virt_board_driver_init(void)
+{
+	int ret;
+
+	ret = platform_driver_register(&virt_board_driver);
+	if (ret)
+		return ret;
+
+	return of_devices_ensure_probed_by_dev_id(virt_of_match);
+}
+postcore_initcall(virt_board_driver_init);

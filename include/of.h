@@ -298,6 +298,7 @@ extern void of_platform_device_dummy_drv(struct device *dev);
 extern int of_platform_populate(struct device_node *root,
 				const struct of_device_id *matches,
 				struct device *parent);
+extern struct device *of_platform_device_create_root(struct device_node *np);
 extern struct device *of_find_device_by_node(struct device_node *np);
 extern struct device *of_device_enable_and_register(struct device_node *np);
 extern struct device *of_device_enable_and_register_by_name(const char *name);

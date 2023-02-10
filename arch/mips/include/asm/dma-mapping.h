@@ -31,7 +31,7 @@ static inline void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
 static inline void dma_free_coherent(void *vaddr, dma_addr_t dma_handle,
 				     size_t size)
 {
-	if (IS_ENABLED(CONFIG_MMU))
+	if (IS_ENABLED(CONFIG_MMU) && vaddr)
 		free((void *)CKSEG0ADDR(vaddr));
 	else
 		free(vaddr);

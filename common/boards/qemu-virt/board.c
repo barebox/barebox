@@ -35,10 +35,11 @@ static inline void arm_virt_init(void) {}
 #endif
 
 extern char __dtb_overlay_of_flash_start[];
+extern char __dtb_fitimage_pubkey_start[];
 
 static int virt_probe(struct device *dev)
 {
-	struct device_node *overlay;
+	struct device_node *overlay, *pubkey;
 	void (*init)(void);
 
 	init = device_get_match_data(dev);
@@ -47,6 +48,10 @@ static int virt_probe(struct device *dev)
 
 	overlay = of_unflatten_dtb(__dtb_overlay_of_flash_start, INT_MAX);
 	of_overlay_apply_tree(dev->of_node, overlay);
+
+	pubkey = of_unflatten_dtb(__dtb_fitimage_pubkey_start, INT_MAX);
+	of_merge_nodes(dev->of_node, pubkey);
+
 	/* of_probe() will happen later at of_populate_initcall */
 
 	return 0;

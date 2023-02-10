@@ -2617,19 +2617,26 @@ out:
 	return dn;
 }
 
-struct device_node *of_copy_node(struct device_node *parent, const struct device_node *other)
+void of_merge_nodes(struct device_node *np, const struct device_node *other)
 {
-	struct device_node *np, *child;
+	struct device_node *child;
 	struct property *pp;
-
-	np = of_new_node(parent, other->name);
-	np->phandle = other->phandle;
 
 	list_for_each_entry(pp, &other->properties, list)
 		of_new_property(np, pp->name, pp->value, pp->length);
 
 	for_each_child_of_node(other, child)
 		of_copy_node(np, child);
+}
+
+struct device_node *of_copy_node(struct device_node *parent, const struct device_node *other)
+{
+	struct device_node *np;
+
+	np = of_new_node(parent, other->name);
+	np->phandle = other->phandle;
+
+	of_merge_nodes(np, other);
 
 	return np;
 }

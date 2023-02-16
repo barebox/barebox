@@ -1130,6 +1130,7 @@ EXPORT_SYMBOL_GPL(of_prop_next_string);
  *
  * @np:		device node from which the property is to be set.
  * @propname:	name of the property to be set.
+ * @value	true to set, false to delete
  *
  * Search for a property in a device node and create or delete the property.
  * If the property already exists and write value is false, the property is

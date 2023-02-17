@@ -89,8 +89,16 @@ static int clk_composite_set_rate(struct clk_hw *hw, unsigned long rate,
 
 	if (!(hw->clk.flags & CLK_SET_RATE_NO_REPARENT) &&
 	    mux_clk &&
-	    mux_clk->ops->set_rate)
+	    mux_clk->ops->set_rate) {
+		/*
+		 * We'll call set_rate on the mux clk which in turn results
+		 * in reparenting the mux clk. Make sure the enable count
+		 * (which is stored in the composite clk, not the mux clk)
+		 * is transferred correctly.
+		 */
+		mux_clk->enable_count = hw->clk.enable_count;
 		return mux_clk->ops->set_rate(clk_to_clk_hw(mux_clk), rate, parent_rate);
+	}
 
 	return 0;
 }

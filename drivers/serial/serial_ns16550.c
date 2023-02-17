@@ -479,13 +479,6 @@ static int ns16550_probe(struct device *dev)
 
 	priv = xzalloc(sizeof(*priv));
 
-	ret = ns16550_init_iomem(dev, priv);
-	if (ret)
-		ret = ns16550_init_ioport(dev, priv);
-
-	if (ret)
-		return ret;
-
 	if (plat)
 		priv->plat = *plat;
 	else
@@ -510,6 +503,13 @@ static int ns16550_probe(struct device *dev)
 		ret = -EINVAL;
 		goto err;
 	}
+
+	ret = ns16550_init_iomem(dev, priv);
+	if (ret)
+		ret = ns16550_init_ioport(dev, priv);
+
+	if (ret)
+		goto err;
 
 	cdev = &priv->cdev;
 	cdev->dev = dev;

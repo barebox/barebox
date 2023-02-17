@@ -18,37 +18,28 @@
 	/delete-property/ assigned-clock-parents;
 };
 
-&ecspi1 {
-	nor_flash: flash@0 {
-		#address-cells = <1>;
-		#size-cells = <1>;
+nor_flash: &{ecspi1/flash@0} {
+	#address-cells = <1>;
+	#size-cells = <1>;
 
-		partition@0 {
-			label = "barebox";
-			reg = <0x0 0xc0000>;
-		};
+	partition@0 {
+		label = "barebox";
+		reg = <0x0 0xc0000>;
+	};
 
-		partition@c0000 {
-			label = "barebox-environment";
-			reg = <0xc0000 0x40000>;
-		};
+	partition@c0000 {
+		label = "barebox-environment";
+		reg = <0xc0000 0x40000>;
 	};
 };
 
-&uart4 {
-	rave-sp {
-		#address-cells = <1>;
-		#size-cells = <1>;
+&{uart4/rave-sp/watchdog} {
+	nvmem-cells = <&boot_source>;
+	nvmem-cell-names = "boot-source";
+};
 
-		watchdog {
-			nvmem-cells = <&boot_source>;
-			nvmem-cell-names = "boot-source";
-		};
-
-		eeprom@a3 {
-			boot_source: boot-source@83 {
-				reg = <0x83 1>;
-			};
-		};
+&{uart4/rave-sp/eeprom@a3} {
+	boot_source: boot-source@83 {
+		reg = <0x83 1>;
 	};
 };

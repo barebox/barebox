@@ -14,10 +14,10 @@
 			device-path = &usdhc4, "partname:boot1";
 		};
 	};
+};
 
-	gpio-keys {
-		status = "disabled";
-	};
+&{/gpio-keys} {
+	status = "disabled";
 };
 
 &fec {

@@ -224,7 +224,7 @@ static int rk_sdhci_wait_for_done(struct rk_sdhci_host *host, u32 mask)
 	do {
 		stat = sdhci_read16(&host->sdhci, SDHCI_INT_NORMAL_STATUS);
 		if (stat & SDHCI_INT_ERROR) {
-			dev_err(host->mci.hw_dev, "SDHCI_INT_ERROR: 0x%08x\n",
+			dev_dbg(host->mci.hw_dev, "SDHCI_INT_ERROR: 0x%08x\n",
 				sdhci_read16(&host->sdhci, SDHCI_INT_ERROR_STATUS));
 			return -EPERM;
 		}
@@ -241,9 +241,9 @@ static int rk_sdhci_wait_for_done(struct rk_sdhci_host *host, u32 mask)
 
 static void print_error(struct rk_sdhci_host *host, int cmdidx)
 {
-	dev_err(host->mci.hw_dev,
+	dev_dbg(host->mci.hw_dev,
 		"error while transfering data for command %d\n", cmdidx);
-	dev_err(host->mci.hw_dev, "state = 0x%08x , interrupt = 0x%08x\n",
+	dev_dbg(host->mci.hw_dev, "state = 0x%08x , interrupt = 0x%08x\n",
 		sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE),
 		sdhci_read32(&host->sdhci, SDHCI_INT_NORMAL_STATUS));
 }

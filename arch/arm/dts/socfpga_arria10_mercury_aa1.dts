@@ -20,20 +20,20 @@
 };
 
 // provide reset-names until fixed in the upstream dts. Binding prescribes this property.
-&{/soc/mmc@ff808000} {
+&mmc {
 	reset-names = "reset";
 };
 
 // This clock is unused, but fixed-clocks need to have a clock-frequency set
-&{/soc/clkmgr@ffd04000/clocks/cb_intosc_hs_div2_clk} {
+&cb_intosc_hs_div2_clk {
 	clock-frequency = <0>;
 };
 
-&{/soc/clkmgr@ffd04000/clocks/cb_intosc_ls_clk} {
+&cb_intosc_ls_clk {
 	clock-frequency = <60000000>;
 };
 
-&{/soc/clkmgr@ffd04000/clocks/f2s_free_clk} {
+&f2s_free_clk {
 	clock-frequency = <200000000>;
 };
 

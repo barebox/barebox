@@ -120,14 +120,14 @@
 	dr_mode = "host";
 };
 
-&{/soc/pcie@3400000} {
+&pcie1 {
 	status = "okay";
 };
 
-&{/soc/pcie@3500000} {
+&pcie2 {
 	status = "okay";
 };
 
-&{/soc/pcie@3600000} {
+&pcie3 {
 	status = "okay";
 };

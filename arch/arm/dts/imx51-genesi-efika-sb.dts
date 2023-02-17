@@ -394,9 +394,10 @@
 
 &ipu_di1 {
 	interface-pix-fmt = "rgb565";
-	endpoint {
-		remote-endpoint = <&mtl017_in>;
-	};
+};
+
+&ipu_di1_disp2 {
+	remote-endpoint = <&mtl017_in>;
 };
 
 &esdhc1 {

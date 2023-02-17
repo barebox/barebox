@@ -41,7 +41,7 @@
 	};
 };
 
-&{/ahb/apb/mmc@fff84000} {
+&mmc1 {
 	pinctrl-0 = <
 		&pinctrl_board_mmc1
 		&pinctrl_mmc1_clk

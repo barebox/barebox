@@ -62,8 +62,14 @@ static int show_cell_list(struct display_info *disp, const char *data, int len,
 	for (i = 0; i < len; i += size, p += size) {
 		if (i)
 			printf(" ");
-		value = size == 4 ? fdt32_ld((const fdt32_t *)p) :
-			size == 2 ? (*p << 8) | p[1] : *p;
+		switch (size) {
+		case 4: value = fdt32_ld((const fdt32_t *)p); break;
+		case 2: value = fdt16_ld((const fdt16_t *)p); break;
+		case 1:
+		default:
+			value = *p;
+			break;
+		}
 		printf(fmt, value);
 	}
 
@@ -90,6 +96,11 @@ static int show_data(struct display_info *disp, const char *data, int len)
 	/* no data, don't print */
 	if (len == 0)
 		return 0;
+
+	if (disp->type == 'r') {
+		fwrite(data, 1, len, stdout);
+		return 0;
+	}
 
 	is_string = (disp->type) == 's' ||
 		(!disp->type && util_is_printable_string(data, len));

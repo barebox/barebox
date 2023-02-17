@@ -69,3 +69,21 @@ board for serial download mode as printed on the PCB. You can start barebox with
 the imx-usb-loader tool that comes with barebox like this:
 
 ./scripts/imx/imx-usb-loader images/barebox-nxp-imx8mm-evk.img
+
+Installing barebox
+==================
+
+When the EVK is strapped to boot from eMMC, the i.MX8M bootrom will
+consult the eMMC ext_csd register to determine whether to boot
+from the active eMMC boot partition or from the user area.
+
+The same barebox image written to the start of the SD-Card can
+be written to the start of the eMMC user area. Power-fail-safe
+installation to the eMMC boot partition requires special handling:
+
+  - The barebox image must be written to the inactive boot partition,
+    then afterwards, the newly written boot partition is activated
+    (This is controlled by the barebox ``mmcX.boot`` variable).
+
+The ``barebox_update`` command takes care of this and need just be
+supplied a barebox image as argument.

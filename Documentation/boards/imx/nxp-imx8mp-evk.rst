@@ -66,3 +66,27 @@ Boot Configuration
 The NXP i.MX8MP-EVK board has four switches responsible for configuring
 bootsource/boot mode. The settings for the different boot sources are
 printed on the board.
+
+Installing barebox
+==================
+
+When the EVK is strapped to boot from eMMC, the i.MX8M bootrom will
+consult the eMMC ext_csd register to determine whether to boot
+from the active eMMC boot partition or from the user area.
+
+The same barebox image written to the start of the SD-Card can
+be written to the start of the eMMC user area. Power-fail-safe
+installation to the eMMC boot partition requires special handling:
+
+  - The barebox image must be written to the inactive boot partition,
+    then afterwards, the newly written boot partition is activated
+    (This is controlled by the barebox ``mmcX.boot`` variable).
+
+  - The barebox image includes a 32KiB preamble that allows the image
+    to be directly writable to the start of the SD-Card or eMMC user area.
+    Unlike older i.MX8M, the i.MX8MP BootROM expects the bootloader to not
+    start at an offset when booting from eMMC boot partitions, thus the first
+    32KiB must be stripped.
+
+The ``barebox_update`` command takes care of this and need just be
+supplied a barebox image as argument.

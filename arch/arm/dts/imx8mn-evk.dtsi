@@ -4,6 +4,8 @@
  * Copyright (C) 2017 Pengutronix, Lucas Stach <kernel@pengutronix.de>
  */
 
+#include "imx8mn.dtsi"
+
 / {
 	chosen {
 		environment-sd {

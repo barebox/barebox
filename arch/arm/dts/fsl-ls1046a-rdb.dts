@@ -63,35 +63,35 @@
 	phy-mode = "rgmii-id";
 };
 
-&{/soc/fman@1a00000/mdio@e1000} {
+&{fman0/mdio@e1000} {
 	status = "disabled";
 };
 
-&{/soc/fman@1a00000/mdio@e3000} {
+&{fman0/mdio@e3000} {
 	status = "disabled";
 };
 
-&{/soc/fman@1a00000/mdio@e5000} {
+&{fman0/mdio@e5000} {
 	status = "disabled";
 };
 
-&{/soc/fman@1a00000/mdio@e7000} {
+&{fman0/mdio@e7000} {
 	status = "disabled";
 };
 
-&{/soc/fman@1a00000/mdio@e9000} {
+&{fman0/mdio@e9000} {
 	status = "disabled";
 };
 
-&{/soc/fman@1a00000/mdio@eb000} {
+&{fman0/mdio@eb000} {
 	status = "disabled";
 };
 
-&{/soc/fman@1a00000/mdio@f1000} {
+&{fman0/mdio@f1000} {
 	status = "disabled";
 };
 
-&{/soc/fman@1a00000/mdio@f3000} {
+&{fman0/mdio@f3000} {
 	status = "disabled";
 };
 

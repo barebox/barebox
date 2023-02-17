@@ -59,6 +59,7 @@ static struct clk *rockchip_clk_register_branch(const char *name,
 		mux->width = mux_width;
 		mux->flags = mux_flags;
 		mux->lock = lock;
+		mux->hw.clk.name = basprintf("%s.mux", name);
 		mux->hw.clk.ops = (mux_flags & CLK_MUX_READ_ONLY) ? &clk_mux_ro_ops
 							: &clk_mux_ops;
 	}
@@ -74,6 +75,7 @@ static struct clk *rockchip_clk_register_branch(const char *name,
 		gate->reg = base + gate_offset;
 		gate->shift = gate_shift;
 		gate->lock = lock;
+		gate->hw.clk.name = basprintf("%s.gate", name);
 		gate->hw.clk.ops = &clk_gate_ops;
 	}
 
@@ -93,6 +95,7 @@ static struct clk *rockchip_clk_register_branch(const char *name,
 		div->width = div_width;
 		div->lock = lock;
 		div->table = div_table;
+		div->hw.clk.name = basprintf("%s.div", name);
 		div->hw.clk.ops = (div_flags & CLK_DIVIDER_READ_ONLY)
 						? &clk_divider_ro_ops
 						: &clk_divider_ops;

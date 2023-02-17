@@ -7,7 +7,7 @@
 	nvmem-cell-names = "mac-address";
 };
 
-&{/ahb/apb/i2c@f8028000/at24@50} {
+&{i2c0/at24@50} {
 	#address-cells = <1>;
 	#size-cells = <1>;
 

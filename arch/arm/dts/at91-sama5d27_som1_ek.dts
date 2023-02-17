@@ -30,9 +30,8 @@
 	};
 };
 
+/delete-node/ &{qspi1/flash@0};
 &qspi1 {
-	/delete-node/ flash@0;
-
 	flash@0 {
 		compatible = "jedec,spi-nor";
 		reg = <0>;

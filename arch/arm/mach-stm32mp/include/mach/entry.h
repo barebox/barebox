@@ -11,7 +11,7 @@ static __always_inline void stm32mp_cpu_lowlevel_init(void)
 	unsigned long stack_top;
 	arm_cpu_lowlevel_init();
 
-	stack_top = (unsigned long)__image_end + get_runtime_offset() + 64;
+	stack_top = (unsigned long)__image_end + get_runtime_offset() + CONFIG_STACK_SIZE;
 	stack_top = ALIGN(stack_top, 16);
 	arm_setup_stack(stack_top);
 }

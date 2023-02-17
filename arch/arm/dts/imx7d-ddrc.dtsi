@@ -1,10 +1,12 @@
 /*
  * Include file to switch board DTS form using hardcoded memory node
- * to dynamic memory size detection based on DDR controller settings
+ * (if specified) to dynamic memory size detection based on DDR
+ * controller settings
  */
 
 / {
 	/delete-node/ memory;
+	/delete-node/ memory@80000000;
 };
 
 &aips2 {

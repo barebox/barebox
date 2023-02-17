@@ -6,7 +6,7 @@
 
 / {
 	aliases {
-		eeprom = &eeprom;
+		eeprom = &{i2c0/eeprom@52};
 		mmc0 = &esdhc;
 	};
 
@@ -46,17 +46,6 @@
 &gpio2 {
 	status = "okay";
 };
-
-&i2c0 {
-	eeprom: eeprom@52 {
-		compatible = "atmel,24c04";
-	};
-
-	non_existent_eeprom: eeprom@53 {
-	};
-};
-
-/delete-node/ &non_existent_eeprom;
 
 &enet0 {
 	status = "disabled";

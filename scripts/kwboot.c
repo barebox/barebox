@@ -22,6 +22,7 @@
 #include <termios.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <sys/select.h>
 
 /*
  * Marvell BootROM UART Sensing

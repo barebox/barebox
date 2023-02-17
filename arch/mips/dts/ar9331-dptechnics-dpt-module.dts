@@ -20,18 +20,14 @@
 			barebox,provide-mac-address = <&eth0>;
 		};
 	};
+};
 
-	leds {
-		system {
-			barebox,default-trigger = "heartbeat";
-		};
-	};
+&{/leds/led-0} {
+	barebox,default-trigger = "heartbeat";
+};
 
-	gpio-keys {
-		button@0 {
-			gpios = <&gpio 11 GPIO_ACTIVE_HIGH>;
-		};
-	};
+&{/gpio-keys/button-0} {
+	gpios = <&gpio 11 GPIO_ACTIVE_HIGH>;
 };
 
 &spiflash {

@@ -1,10 +1,8 @@
-/ {
-	ahb {
-		wdt0: wdt@18060008 {
-			compatible = "qca,ar9331-wdt", "qca,ar9344-wdt";
-			reg = <0x18060008 0x8>;
-			clocks = <&pll ATH79_CLK_CPU>;
-		};
+&{/ahb} {
+	wdt0: wdt@18060008 {
+		compatible = "qca,ar9331-wdt", "qca,ar9344-wdt";
+		reg = <0x18060008 0x8>;
+		clocks = <&pll ATH79_CLK_CPU>;
 	};
 };
 

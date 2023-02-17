@@ -18,12 +18,6 @@
 		switch-eeprom = &switch0;
 		fiber-eeprom0 = &fiber_eeprom0;
 	};
-
-	gpio-leds {
-		led-status {
-			linux,default-trigger = "heartbeat";
-		};
-	};
 };
 
 &{/gpio-leds/led-status} {

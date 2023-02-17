@@ -4,6 +4,7 @@
 
 #include <linux/compiler.h>
 #include <linux/list.h>
+#include <linux/printk.h>
 #include <init.h>
 
 enum bselftest_group {

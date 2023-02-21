@@ -19,17 +19,22 @@ probing the node at ``&iwdg`` will be named ``wdog0``.
 
 By default, barebox will assume the aliases in the DT to align with
 the bootsource communicated by the firmware. If this is not the case,
-a device tree override is possible via an
-``/aliases/barebox,bootsource-${bootsource}${bootsource_instance}``
+a device tree override is possible via a
+``/chosen/barebox,bootsource-${bootsource}${bootsource_instance}``
 property:
 
 .. code-block:: none
 
-  &{/aliases} {
-	mmc0 = &sdmmc0;
-	mmc1 = &sdhci;
-	barebox,bootsource-mmc0 = &sdhci;
-	barebox,bootsource-mmc1 = &sdmmc0;
+   / {
+   	aliases {
+		mmc0 = &sdmmc0;
+		mmc1 = &sdhci;
+	};
+
+   	chosen {
+		barebox,bootsource-mmc0 = &sdhci;
+		barebox,bootsource-mmc1 = &sdmmc0;
+	};
   };
 
 This will ensure that when booting from MMC, ``/dev/mmc${bootsource_instance}``

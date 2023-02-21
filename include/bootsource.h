@@ -46,7 +46,7 @@ int bootsource_of_alias_xlate(enum bootsource bs, int instance);
  * bootsource_set() will instead consult
  * /aliases/barebox,bootsource-mmc1 which may point at a different
  * device than mmc1. In absence of appropriate barebox,bootsource-*
- * alias, instance is set without translation.
+ * chosen property, instance is set without translation.
  */
 int bootsource_set(enum bootsource bs, int instance);
 

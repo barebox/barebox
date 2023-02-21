@@ -137,7 +137,7 @@ void bootsource_set_raw_instance(int instance)
 
 int bootsource_of_alias_xlate(enum bootsource src, int instance)
 {
-	char alias[sizeof("barebox,bootsource-harddisk4294967295")];
+	char chosen[sizeof("barebox,bootsource-harddisk4294967295")];
 	const char *bootsource_stem;
 	struct device_node *np;
 	int alias_id;
@@ -153,10 +153,10 @@ int bootsource_of_alias_xlate(enum bootsource src, int instance)
 	if (!bootsource_stem)
 		return BOOTSOURCE_INSTANCE_UNKNOWN;
 
-	scnprintf(alias, sizeof(alias), "barebox,bootsource-%s%u",
+	scnprintf(chosen, sizeof(chosen), "barebox,bootsource-%s%u",
 		  bootsource_stem, instance);
 
-	np = of_find_node_by_alias(NULL, alias);
+	np = of_find_node_by_chosen(chosen, NULL);
 	if (!np)
 		return BOOTSOURCE_INSTANCE_UNKNOWN;
 

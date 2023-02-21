@@ -28,7 +28,7 @@
 
 /**
  * @brief Platform dependent feature:
- * Pass pointer to this structure as part of device_d -> platform_data
+ * Pass pointer to this structure as part of device -> platform_data
  */
 struct NS16550_plat {
 	/** Clock speed */

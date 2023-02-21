@@ -12,7 +12,7 @@ struct device;
 /*
  * This struct describes the MFD part ("cell").
  * After registration the copy of this structure will become the platform data
- * of the resulting device_d
+ * of the resulting device
  */
 struct mfd_cell {
 	const char		*name;

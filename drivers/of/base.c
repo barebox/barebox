@@ -2668,30 +2668,52 @@ void of_delete_node(struct device_node *node)
 	free(node);
 }
 
+/*
+ * of_find_node_by_chosen - Find a node given a chosen property pointing at it
+ * @propname:   the name of the property containing a path or alias
+ *              The function will lookup the first string in the property
+ *              value up to the first : character or till \0.
+ * @options     The Remainder (without : or \0 at the end) will be written
+ *              to *options if not NULL.
+ */
+struct device_node *of_find_node_by_chosen(const char *propname,
+					   const char **options)
+{
+	const char *value, *p;
+	char *buf = NULL;
+	struct device_node *dn;
+
+	value = of_get_property(of_chosen, propname, NULL);
+	if (!value)
+		return NULL;
+
+	p = strchrnul(value, ':');
+	if (*p)
+		buf = xstrndup(value, p - value);
+
+	dn = of_find_node_by_path_or_alias(NULL, buf);
+
+	free(buf);
+
+	if (options && *p)
+		*options = p + 1;
+
+	return dn;
+}
+
 struct device_node *of_get_stdoutpath(unsigned int *baudrate)
 {
+	const char *opts = NULL;
 	struct device_node *dn;
-	const char *name;
-	const char *p;
-	char *q;
 
-	name = of_get_property(of_chosen, "stdout-path", NULL);
-	if (!name)
-		name = of_get_property(of_chosen, "linux,stdout-path", NULL);
+	dn = of_find_node_by_chosen("stdout-path", &opts);
+	if (!dn)
+		dn = of_find_node_by_chosen("linux,stdout-path", &opts);
+	if (!dn)
+		return NULL;
 
-	if (!name)
-		return 0;
-
-	p = strchrnul(name, ':');
-
-	q = xstrndup(name, p - name);
-
-	dn = of_find_node_by_path_or_alias(NULL, q);
-
-	free(q);
-
-	if (baudrate && *p) {
-		unsigned rate = simple_strtoul(p + 1, NULL, 10);
+	if (baudrate && opts) {
+		unsigned rate = simple_strtoul(opts, NULL, 10);
 		if (rate)
 			*baudrate = rate;
 	}

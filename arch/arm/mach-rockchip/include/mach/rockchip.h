@@ -3,6 +3,8 @@
 #ifndef __MACH_ROCKCHIP_H
 #define __MACH_ROCKCHIP_H
 
+#include <errno.h>
+
 #ifdef CONFIG_ARCH_RK3188
 int rk3188_init(void);
 #else

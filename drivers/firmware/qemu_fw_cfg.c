@@ -171,7 +171,7 @@ static ssize_t fw_cfg_write(struct cdev *cdev, const void *buf, size_t count,
 			    loff_t pos, unsigned long flags)
 {
 	struct fw_cfg *fw_cfg = to_fw_cfg(cdev);
-	struct device_d *dev = cdev->dev;
+	struct device *dev = cdev->dev;
 	struct fw_cfg_dma __iomem *acc = fw_cfg->acc_virt;
 	dma_addr_t mapping;
 
@@ -212,7 +212,7 @@ static int fw_cfg_param_select(struct param_d *p, void *priv)
 	return fw_cfg->sel <= U16_MAX ? 0 : -EINVAL;
 }
 
-static int fw_cfg_probe(struct device_d *dev)
+static int fw_cfg_probe(struct device *dev)
 {
 	struct device_node *np = dev_of_node(dev);
 	struct resource *parent_res, *iores;

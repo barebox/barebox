@@ -11,7 +11,7 @@ static int regmap_i2c_read(void *context,
 			   const void *reg, size_t reg_size,
 			   void *val, size_t val_size)
 {
-	struct device_d *dev = context;
+	struct device *dev = context;
 	struct i2c_client *i2c = to_i2c_client(dev);
 	struct i2c_msg xfer[2];
 	int ret;
@@ -37,7 +37,7 @@ static int regmap_i2c_read(void *context,
 
 static int regmap_i2c_write(void *context, const void *data, size_t count)
 {
-	struct device_d *dev = context;
+	struct device *dev = context;
 	struct i2c_client *i2c = to_i2c_client(dev);
 	int ret;
 

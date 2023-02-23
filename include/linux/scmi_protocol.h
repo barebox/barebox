@@ -91,12 +91,12 @@ struct scmi_clk_proto_ops {
  * @limits_get: gets limits on the performance level of a domain
  * @level_set: sets the performance level of a domain
  * @level_get: gets the performance level of a domain
- * @device_domain_id: gets the scmi domain id for a given device_d
- * @transition_latency_get: gets the DVFS transition latency for a given device_d
- * @device_opps_add: adds all the OPPs for a given device_d
- * @freq_set: sets the frequency for a given device_d using sustained frequency
+ * @device_domain_id: gets the scmi domain id for a given device
+ * @transition_latency_get: gets the DVFS transition latency for a given device
+ * @device_opps_add: adds all the OPPs for a given device
+ * @freq_set: sets the frequency for a given device using sustained frequency
  *	to sustained performance level mapping
- * @freq_get: gets the frequency for a given device_d using sustained frequency
+ * @freq_get: gets the frequency for a given device using sustained frequency
  *	to sustained performance level mapping
  * @est_power_get: gets the estimated power cost for a given performance domain
  *	at a given frequency
@@ -543,7 +543,7 @@ struct scmi_voltage_proto_ops {
 /**
  * struct scmi_handle - Handle returned to ARM SCMI clients for usage.
  *
- * @dev: pointer to the SCMI device_d
+ * @dev: pointer to the SCMI device
  * @version: pointer to the structure containing SCMI version information
  * @protocol_get: method to acquire a protocol and get specific
  *		       operations and a dedicated protocol handler

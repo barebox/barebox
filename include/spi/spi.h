@@ -556,7 +556,7 @@ static inline ssize_t spi_w8r8(struct spi_device *spi, u8 cmd)
 
 extern struct bus_type spi_bus;
 
-static inline bool dev_bus_is_spi(struct device_d *dev)
+static inline bool dev_bus_is_spi(struct device *dev)
 {
 	return IS_ENABLED(CONFIG_SPI) && dev->bus == &spi_bus;
 }

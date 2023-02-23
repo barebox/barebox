@@ -130,15 +130,15 @@ void dev_param_init_from_nv(struct device *dev, const char *name)
 /**
  * nvvar_device_dispatch - dispatch dev.<dev>.<param> name into device and parameter name
  * @name: The incoming name in the form dev.<dev>.<param>
- * @dev: The returned device_d * belonging to <dev>
+ * @dev: The returned device * belonging to <dev>
  * @pname: the parameter name
  *
- * Given a dev.<dev>.<param> string this function finds the device_d * belonging to
+ * Given a dev.<dev>.<param> string this function finds the device * belonging to
  * <dev> and the parameter name from <param>.
  *
  * Return: When incoming string does not belong to the device namespace (does not begin
  * with "dev." this function returns 0. A value > 0 is returned when the incoming string
- * is in the device namespace and the string can be dispatched into a device_d * and a
+ * is in the device namespace and the string can be dispatched into a device * and a
  * parameter name. A negative error code is returned when the incoming string belongs to
  * the device namespace, but cannot be dispatched.
  */

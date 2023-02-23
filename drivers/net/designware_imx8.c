@@ -19,7 +19,7 @@
 
 
 struct eqos_imx8_priv {
-	struct device_d *dev;
+	struct device *dev;
 	struct clk_bulk_data *clks;
 	int num_clks;
 	struct regmap *intf_regmap;
@@ -109,7 +109,7 @@ static void eqos_imx8_set_interface_mode(struct eqos *eqos)
 			   GPR_ENET_QOS_INTF_MODE_MASK, val);
 }
 
-static int eqos_init_imx8(struct device_d *dev, struct eqos *eqos)
+static int eqos_init_imx8(struct device *dev, struct eqos *eqos)
 {
 	struct device_node *np = dev->device_node;
 	struct eqos_imx8_priv *priv = eqos->priv;
@@ -164,12 +164,12 @@ static struct eqos_ops imx8_ops = {
 	.config_mac = EQOS_MAC_RXQ_CTRL0_RXQ0EN_ENABLED_DCB,
 };
 
-static int eqos_probe_imx8(struct device_d *dev)
+static int eqos_probe_imx8(struct device *dev)
 {
 	return eqos_probe(dev, &imx8_ops, xzalloc(sizeof(struct eqos_imx8_priv)));
 }
 
-static void eqos_remove_imx8(struct device_d *dev)
+static void eqos_remove_imx8(struct device *dev)
 {
 	struct eqos *eqos = dev->priv;
 	struct eqos_imx8_priv *priv = eqos->priv;

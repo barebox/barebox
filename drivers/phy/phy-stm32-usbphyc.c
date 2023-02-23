@@ -271,6 +271,15 @@ static int stm32_usbphyc_phy_init(struct phy *phy)
 		goto pll_disable;
 	}
 
+	/* This mdelay seems to be necessary on some machines, since the
+	 * monsel status does not seem to be accurate. On rare occasions
+	 * just working with the phy after this pll check the usb
+	 * peripheral (e.g. on the dwc2) run into timeout issues and
+	 * leading to no functional usb. With this short mdelay this
+	 * issue was not reported again.
+	 */
+	mdelay(1);
+
 	usbphyc_phy->active = true;
 
 	return 0;

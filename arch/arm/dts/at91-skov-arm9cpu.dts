@@ -204,13 +204,11 @@
 	};
 };
 
-&{/ahb/apb} {
-	pinctrl: pinctrl@fffff200 {
-	};
+pinctrl: &{/ahb/apb/pinctrl@fffff200} {
+};
 
-	watchdog@fffffd40 {
+&{/ahb/apb/watchdog@fffffd40} {
 		status = "okay";
-	};
 };
 
 &dbgu {

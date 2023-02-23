@@ -112,12 +112,12 @@ static int tx6x_devices_init(void)
 	if (sbmr1 & (1 << 7)) {
 		imx6_bbu_nand_register_handler("nand", BBU_HANDLER_FLAG_DEFAULT);
 		of_device_enable_and_register_by_name("environment-nand");
-		of_device_enable_and_register_by_name("gpmi-nand@00112000");
+		of_device_enable_and_register_by_alias("nand");
 	} else {
 		imx6_bbu_internal_mmc_register_handler("eMMC", "/dev/mmc3.boot0",
 						       BBU_HANDLER_FLAG_DEFAULT);
 		of_device_enable_and_register_by_name("environment-emmc");
-		of_device_enable_and_register_by_name("usdhc@0219c000");
+		of_device_enable_and_register_by_alias("mmc3");
 	}
 
 

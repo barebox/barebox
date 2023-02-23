@@ -1,6 +1,6 @@
 #include <arm/imx50.dtsi>
 
-&{/soc/bus@50000000} { /* AIPS1 */
+&aips1 {
 	usbphy1: usbphy@1 {
 		compatible = "usb-nop-xceiv";
 		clocks = <&clks IMX5_CLK_USB_PHY2_GATE>;

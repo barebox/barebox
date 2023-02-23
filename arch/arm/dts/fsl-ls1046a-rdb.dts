@@ -6,7 +6,7 @@
 
 / {
 	aliases {
-		eeprom = &eeprom;
+		eeprom = &{i2c0/eeprom@52};
 		mmc0 = &esdhc;
 	};
 
@@ -47,17 +47,6 @@
 	status = "okay";
 };
 
-&i2c0 {
-	eeprom: eeprom@52 {
-		compatible = "atmel,24c04";
-	};
-
-	non_existent_eeprom: eeprom@53 {
-	};
-};
-
-/delete-node/ &non_existent_eeprom;
-
 &enet0 {
 	status = "disabled";
 };
@@ -74,35 +63,35 @@
 	phy-mode = "rgmii-id";
 };
 
-&{/soc/fman@1a00000/mdio@e1000} {
+&{fman0/mdio@e1000} {
 	status = "disabled";
 };
 
-&{/soc/fman@1a00000/mdio@e3000} {
+&{fman0/mdio@e3000} {
 	status = "disabled";
 };
 
-&{/soc/fman@1a00000/mdio@e5000} {
+&{fman0/mdio@e5000} {
 	status = "disabled";
 };
 
-&{/soc/fman@1a00000/mdio@e7000} {
+&{fman0/mdio@e7000} {
 	status = "disabled";
 };
 
-&{/soc/fman@1a00000/mdio@e9000} {
+&{fman0/mdio@e9000} {
 	status = "disabled";
 };
 
-&{/soc/fman@1a00000/mdio@eb000} {
+&{fman0/mdio@eb000} {
 	status = "disabled";
 };
 
-&{/soc/fman@1a00000/mdio@f1000} {
+&{fman0/mdio@f1000} {
 	status = "disabled";
 };
 
-&{/soc/fman@1a00000/mdio@f3000} {
+&{fman0/mdio@f3000} {
 	status = "disabled";
 };
 
@@ -120,14 +109,14 @@
 	dr_mode = "host";
 };
 
-&{/soc/pcie@3400000} {
+&pcie1 {
 	status = "okay";
 };
 
-&{/soc/pcie@3500000} {
+&pcie2 {
 	status = "okay";
 };
 
-&{/soc/pcie@3600000} {
+&pcie3 {
 	status = "okay";
 };

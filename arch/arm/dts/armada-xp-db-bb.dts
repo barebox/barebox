@@ -7,6 +7,6 @@
 
 / {
 	chosen {
-		stdout-path = "/soc/internal-regs/serial@12000";
+		stdout-path = &uart0;
 	};
 };

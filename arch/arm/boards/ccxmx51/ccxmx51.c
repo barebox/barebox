@@ -189,11 +189,15 @@ static int ccxmx51_board_fixup(struct device_node *root, void *unused)
 	if (!ccxmx_id->eth0)
 		ccxmx51_disable_device(root, "ethernet@83fec000");
 
-	if (!ccxmx_id->eth1)
+	if (!ccxmx_id->eth1) {
 		ccxmx51_disable_device(root, "lan9221@5,0");
+		ccxmx51_disable_device(root, "ethernet@5,0");
+	}
 
-	if (!ccxmx_id->wless)
+	if (!ccxmx_id->wless) {
 		ccxmx51_disable_device(root, "esdhc@70008000");
+		ccxmx51_disable_device(root, "mmc@70008000");
+	}
 
 	serial = basprintf("%08x%08x", 0, boardserial);
 	of_set_property(root, "serial-number", serial, strlen(serial) + 1, 1);

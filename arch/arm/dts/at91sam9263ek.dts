@@ -9,39 +9,37 @@
 
 };
 
-&nand_controller {
-	nand@3 {
-		/delete-node/ partitions;
+&{nand_controller/nand@3} {
+	/delete-node/ partitions;
 
-		partitions {
-			compatible = "fixed-partitions";
-			#address-cells = <1>;
-			#size-cells = <1>;
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
 
-			at91bootstrap@0 {
-				label = "at91bootstrap";
-				reg = <0x0 0x20000>;
-			};
+		at91bootstrap@0 {
+			label = "at91bootstrap";
+			reg = <0x0 0x20000>;
+		};
 
-			barebox@20000 {
-				label = "barebox";
-				reg = <0x20000 0x100000>;
-			};
+		barebox@20000 {
+			label = "barebox";
+			reg = <0x20000 0x100000>;
+		};
 
-			environment_nand: bareboxenv@120000 {
-				label = "barebox-environment";
-				reg = <0x120000 0x20000>;
-			};
+		environment_nand: bareboxenv@120000 {
+			label = "barebox-environment";
+			reg = <0x120000 0x20000>;
+		};
 
-			rootfs@140000 {
-				label = "root";
-				reg = <0x140000 0x0>;
-			};
+		rootfs@140000 {
+			label = "root";
+			reg = <0x140000 0x0>;
 		};
 	};
 };
 
-&{/ahb/apb/mmc@fff84000} {
+&mmc1 {
 	pinctrl-0 = <
 		&pinctrl_board_mmc1
 		&pinctrl_mmc1_clk

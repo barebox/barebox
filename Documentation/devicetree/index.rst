@@ -37,8 +37,8 @@ environment or boot-time device configuration.
 
 Device Tree probing largely happens via compatible properties with no special
 meaning to the node names themselves. It's thus paramount that any device tree
-nodes extended in the barebox device tree are referenced by a phandle, not by
-path, to avoid run-time breakage like this::
+nodes extended in the barebox device tree are referenced by label (e.g.
+``<&phandle>``, not by path, to avoid run-time breakage like this::
 
   # Upstream dts/src/$ARCH/board.dts
   / {
@@ -62,15 +62,48 @@ path, to avoid run-time breakage like this::
 In the previous example, a device tree sync with upstream resulted in a regression
 as the former override became a new node with a single property without effect.
 
-Using phandles avoids this. When no phandle mapping the full path is defined
-upstream, the ``&{/path}`` syntax should be used instead, e.g.::
+The preferred way around this is to use labels directly::
+
+  # Upstream dts/src/$ARCH/board.dts
+  / {
+  	leds {
+            status_led: red { };
+        };
+  };
+
+  # barebox arch/$ARCH/dts/board.dts
+  #include <$ARCH/board.dts>
+
+  &status_led {
+      barebox,default-trigger = "heartbeat";
+  };
+
+If there's no label defined upstream for the node, but for a parent,
+a new label can be constructed from that label and a relative path::
+
+  # Upstream dts/src/$ARCH/board.dts
+  / {
+  	led_controller: leds {
+            red { };
+        };
+  };
+
+  # barebox arch/$ARCH/dts/board.dts
+  #include <$ARCH/board.dts>
+
+  &{led_controller/red} {
+      barebox,default-trigger = "heartbeat";
+  };
+
+As last resort, the full path shall be used::
 
   &{/leds/red} {
       barebox,default-trigger = "heartbeat";
   };
 
-This would lead to a compile error should the ``/leds/red`` path be renamed or
-removed. This also applies to uses of ``/delete-node/``.
+Any of these three approaches would lead to a compile error should the
+``/leds/red`` path be renamed or removed. This also applies to uses
+of ``/delete-node/``.
 
 Only exception to this rule are well-known node names that are specified by
 the `specification`_ to be parsed by name. These are: ``chosen``, ``aliases``

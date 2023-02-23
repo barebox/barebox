@@ -178,34 +178,27 @@
 	};
 };
 
-&uart4 {
-	rave-sp {
-		#address-cells = <1>;
-		#size-cells = <1>;
+&{uart4/rave-sp/watchdog} {
+	nvmem-cells = <&boot_source>;
+	nvmem-cell-names = "boot-source";
+};
 
-		watchdog {
-			nvmem-cells = <&boot_source>;
-			nvmem-cell-names = "boot-source";
-		};
+&{uart4/rave-sp/eeprom@a4} {
+	lru_part_number: lru-part-number@21 {
+		reg = <0x21 15>;
+		read-only;
+	};
 
-		eeprom@a4 {
-			lru_part_number: lru-part-number@21 {
-				reg = <0x21 15>;
-				read-only;
-			};
+	boot_source: boot-source@83 {
+		reg = <0x83 1>;
+	};
 
-			boot_source: boot-source@83 {
-				reg = <0x83 1>;
-			};
+	mac_address_0: mac-address@180 {
+		reg = <0x180 6>;
+	};
 
-			mac_address_0: mac-address@180 {
-				reg = <0x180 6>;
-			};
-
-			mac_address_1: mac-address@190 {
-				reg = <0x190 6>;
-			};
-		};
+	mac_address_1: mac-address@190 {
+		reg = <0x190 6>;
 	};
 };
 
@@ -231,22 +224,16 @@
 	nvmem-cell-names = "mac-address";
 };
 
-&i2c1 {
-	edp-bridge@68 {
-		pinctrl-0 = <&pinctrl_tc358767>, <&pinctrl_disp0>;
-	};
+&{i2c1/edp-bridge@68} {
+	pinctrl-0 = <&pinctrl_tc358767>, <&pinctrl_disp0>;
 };
 
-&i2c2 {
-	temp-sense@48 {
-		barebox,sensor-name = "Temp Sensor 1";
-	};
+&{i2c2/temp-sense@48} {
+	barebox,sensor-name = "Temp Sensor 1";
 };
 
-&ldb {
-	lvds-channel@0 {
-		fsl,data-width = <24>;
-	};
+&{ldb/lvds-channel@0} {
+	fsl,data-width = <24>;
 };
 
 &i210 {

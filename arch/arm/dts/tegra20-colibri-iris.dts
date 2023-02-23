@@ -9,72 +9,70 @@
 	chosen {
 		stdout-path = &uarta;
 	};
+};
 
-	host1x@50000000 {
-		hdmi@54280000 {
-			status = "okay";
-		};
+&{/host1x@50000000/hdmi@54280000} {
+	status = "okay";
+};
+
+&pinmux {
+	hdint {
+		nvidia,tristate = <TEGRA_PIN_DISABLE>;
 	};
 
-	pinmux@70000014 {
-		state_default: pinmux {
-			hdint {
-				nvidia,tristate = <TEGRA_PIN_DISABLE>;
-			};
-
-			i2cddc {
-				nvidia,tristate = <TEGRA_PIN_DISABLE>;
-			};
-
-			sdio4 {
-				nvidia,tristate = <TEGRA_PIN_DISABLE>;
-			};
-
-			uarta {
-				nvidia,tristate = <TEGRA_PIN_DISABLE>;
-			};
-
-			uartd {
-				nvidia,tristate = <TEGRA_PIN_DISABLE>;
-			};
-		};
+	i2cddc {
+		nvidia,tristate = <TEGRA_PIN_DISABLE>;
 	};
 
-	serial@70006000 {
-		status = "okay";
+	sdio4 {
+		nvidia,tristate = <TEGRA_PIN_DISABLE>;
 	};
 
-	serial@70006300 {
-		status = "okay";
+	uarta {
+		nvidia,tristate = <TEGRA_PIN_DISABLE>;
 	};
 
-	i2c_ddc: i2c@7000c400 {
-		status = "okay";
+	uartd {
+		nvidia,tristate = <TEGRA_PIN_DISABLE>;
 	};
+};
 
-	usb@c5000000 {
-		status = "okay";
-	};
+&uarta {
+	status = "okay";
+};
 
-	usb-phy@c5000000 {
-		status = "okay";
-	};
+&uartd {
+	status = "okay";
+};
 
-	usb@c5008000 {
-		status = "okay";
-	};
+i2c_ddc: &i2c2 {
+	status = "okay";
+};
 
-	usb-phy@c5008000 {
-		status = "okay";
-	};
+&{/usb@c5000000} {
+	status = "okay";
+};
 
-	sdhci@c8000600 {
-		status = "okay";
-		bus-width = <4>;
-		vmmc-supply = <&vcc_sd_reg>;
-		vqmmc-supply = <&vcc_sd_reg>;
-	};
+&phy1 {
+	status = "okay";
+};
 
+&{/usb@c5008000} {
+	status = "okay";
+};
+
+&phy3 {
+	status = "okay";
+};
+
+&{/mmc@c8000600} {
+	status = "okay";
+	bus-width = <4>;
+	vmmc-supply = <&vcc_sd_reg>;
+	vqmmc-supply = <&vcc_sd_reg>;
+};
+
+/ {
 	regulator_usb_host_vbus {
 		compatible = "regulator-fixed";
 		regulator-name = "usb_host_vbus";

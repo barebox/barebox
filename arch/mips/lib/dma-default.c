@@ -6,8 +6,6 @@
 #include <dma.h>
 #include <asm/io.h>
 
-#if defined(CONFIG_CPU_MIPS32) || \
-	defined(CONFIG_CPU_MIPS64)
 static inline void __dma_sync_mips(unsigned long addr, size_t size,
 				   enum dma_data_direction direction)
 {
@@ -28,12 +26,6 @@ static inline void __dma_sync_mips(unsigned long addr, size_t size,
 		BUG();
 	}
 }
-#else
-static inline void __dma_sync_mips(void *addr, size_t size,
-	enum dma_data_direction direction)
-{
-}
-#endif
 
 void dma_sync_single_for_cpu(dma_addr_t address, size_t size,
 			     enum dma_data_direction dir)

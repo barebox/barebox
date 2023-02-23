@@ -35,12 +35,13 @@ class BBType(object):
 
 
 class BBPacket(object):
-    def __init__(self, p_type=0, p_flags=0, payload="", raw=None):
+    def __init__(self, p_type=0, p_flags=0, payload=b"", raw=None):
         self.p_type = p_type
         self.p_flags = p_flags
         if raw is not None:
             self.unpack(raw)
         else:
+            assert isinstance(payload, bytes)
             self.payload = payload
 
     def __repr__(self):

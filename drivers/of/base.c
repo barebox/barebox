@@ -2680,7 +2680,7 @@ struct device_node *of_find_node_by_chosen(const char *propname,
 					   const char **options)
 {
 	const char *value, *p;
-	char *buf = NULL;
+	char *buf;
 	struct device_node *dn;
 
 	value = of_get_property(of_chosen, propname, NULL);
@@ -2688,8 +2688,7 @@ struct device_node *of_find_node_by_chosen(const char *propname,
 		return NULL;
 
 	p = strchrnul(value, ':');
-	if (*p)
-		buf = xstrndup(value, p - value);
+	buf = xstrndup(value, p - value);
 
 	dn = of_find_node_by_path_or_alias(NULL, buf);
 

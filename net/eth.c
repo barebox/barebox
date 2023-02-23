@@ -176,10 +176,7 @@ int eth_complete(struct string_list *sl, char *instr)
 }
 #endif
 
-/*
- * Check for link if we haven't done so for longer.
- */
-static int eth_carrier_check(struct eth_device *edev, bool may_wait)
+int eth_carrier_poll_once(struct eth_device *edev)
 {
 	int ret;
 
@@ -189,13 +186,28 @@ static int eth_carrier_check(struct eth_device *edev, bool may_wait)
 	if (!edev->phydev)
 		return 0;
 
+	ret = phy_update_status(edev->phydev);
+	if (ret)
+		return ret;
+
+	edev->last_link_check = get_time_ns();
+	return edev->phydev->link ? 0 : -ENETDOWN;
+}
+
+/*
+ * Check for link if we haven't done so for longer.
+ */
+static int eth_carrier_check(struct eth_device *edev, bool may_wait)
+{
+	if (!IS_ENABLED(CONFIG_PHYLIB))
+		return 0;
+
+	if (!edev->phydev)
+		return 0;
+
 	if (!edev->last_link_check ||
-	    is_timeout(edev->last_link_check, 5 * SECOND)) {
-		ret = phy_update_status(edev->phydev);
-		if (ret)
-			return ret;
-		edev->last_link_check = get_time_ns();
-	}
+	    is_timeout(edev->last_link_check, 5 * SECOND))
+		eth_carrier_poll_once(edev);
 
 	if (may_wait && !edev->phydev->link) {
 		phy_wait_aneg_done(edev->phydev);

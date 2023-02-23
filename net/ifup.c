@@ -179,6 +179,28 @@ static void set_linux_bootarg(struct eth_device *edev)
 	}
 }
 
+static int ifup_edev_conf(struct eth_device *edev, unsigned flags)
+{
+	int ret;
+
+	if (edev->global_mode == ETH_MODE_DHCP) {
+		if (IS_ENABLED(CONFIG_NET_DHCP)) {
+			ret = dhcp(edev, NULL);
+		} else {
+			dev_err(&edev->dev, "DHCP support not available\n");
+			ret = -ENOSYS;
+		}
+		if (ret)
+			return ret;
+	}
+
+	set_linux_bootarg(edev);
+
+	edev->ifup = true;
+
+	return 0;
+}
+
 int ifup_edev(struct eth_device *edev, unsigned flags)
 {
 	int ret;
@@ -205,22 +227,10 @@ int ifup_edev(struct eth_device *edev, unsigned flags)
 	if (ret)
 		return ret;
 
-	if (edev->global_mode == ETH_MODE_DHCP) {
-		if (IS_ENABLED(CONFIG_NET_DHCP)) {
-			ret = dhcp(edev, NULL);
-		} else {
-			dev_err(&edev->dev, "DHCP support not available\n");
-			ret = -ENOSYS;
-		}
-		if (ret)
-			return ret;
-	}
+	if (flags & IFUP_FLAG_SKIP_CONF)
+		return 1;
 
-	set_linux_bootarg(edev);
-
-	edev->ifup = true;
-
-	return 0;
+	return ifup_edev_conf(edev, flags);
 }
 
 void ifdown_edev(struct eth_device *edev)
@@ -260,9 +270,61 @@ int ifdown(const char *ethname)
 
 static int net_ifup_force_detect;
 
-int ifup_all(unsigned flags)
+static bool ifup_edev_need_conf(struct eth_device *edev)
+{
+	return edev->active && !edev->ifup &&
+		edev->global_mode != ETH_MODE_DISABLED;
+}
+
+static void __ifup_all_parallel(unsigned flags)
 {
 	struct eth_device *edev;
+	unsigned netdev_count = 0;
+	u64 start;
+	int ret;
+
+	for_each_netdev(edev) {
+		ret = ifup_edev(edev, flags | IFUP_FLAG_SKIP_CONF);
+		if (ret == 1)
+			netdev_count++;
+	}
+
+	start = get_time_ns();
+	while (netdev_count && !is_timeout(start, PHY_AN_TIMEOUT * SECOND)) {
+		for_each_netdev(edev) {
+			if (!ifup_edev_need_conf(edev))
+				continue;
+
+			ret = eth_carrier_poll_once(edev);
+			if (ret)
+				continue;
+
+			ifup_edev_conf(edev, flags);
+			if (!edev->ifup)
+				continue;
+
+			netdev_count--;
+
+			if ((flags & IFUP_FLAG_UNTIL_NET_SERVER) && net_get_server())
+				return;
+		}
+	}
+}
+
+static void __ifup_all_sequence(unsigned flags)
+{
+	struct eth_device *edev;
+
+	for_each_netdev(edev) {
+		ifup_edev(edev, flags);
+
+		if ((flags & IFUP_FLAG_UNTIL_NET_SERVER) && net_get_server())
+			return;
+	}
+}
+
+int ifup_all(unsigned flags)
+{
 	DIR *dir;
 	struct dirent *d;
 
@@ -285,8 +347,20 @@ int ifup_all(unsigned flags)
 	    list_empty(&netdev_list))
 		device_detect_all();
 
-	for_each_netdev(edev)
-		ifup_edev(edev, flags);
+	/*
+	 * In the future, we may add an iproute -r option that tries to
+	 * resolve $global.net.server using each interface. For now,
+	 * we only support the special case of $global.net.server being
+	 * empty, i.e. the first DHCP lease setting $global.net.server
+	 * will be what we're going with.
+	 */
+	if (net_get_server())
+		flags &= ~IFUP_FLAG_UNTIL_NET_SERVER;
+
+	if (flags & IFUP_FLAG_PARALLEL)
+		__ifup_all_parallel(flags);
+	else
+		__ifup_all_sequence(flags);
 
 	return 0;
 }
@@ -315,13 +389,19 @@ BAREBOX_MAGICVAR(global.net.ifup_force_detect,
 static int do_ifup(int argc, char *argv[])
 {
 	int opt;
-	unsigned flags = 0;
+	unsigned flags = IFUP_FLAG_PARALLEL;
 	int all = 0;
 
-	while ((opt = getopt(argc, argv, "af")) > 0) {
+	while ((opt = getopt(argc, argv, "asf1")) > 0) {
 		switch (opt) {
 		case 'f':
 			flags |= IFUP_FLAG_FORCE;
+			break;
+		case '1':
+			flags |= IFUP_FLAG_UNTIL_NET_SERVER;
+			break;
+		case 's':
+			flags &= ~IFUP_FLAG_PARALLEL;
 			break;
 		case 'a':
 			all = 1;
@@ -346,13 +426,15 @@ BAREBOX_CMD_HELP_TEXT("/env/network/<intf> file. See Documentation/user/networki
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-a",  "bring up all interfaces")
+BAREBOX_CMD_HELP_OPT ("-s",  "bring up interfaces in sequence, not in parallel")
 BAREBOX_CMD_HELP_OPT ("-f",  "Force. Configure even if ip already set")
+BAREBOX_CMD_HELP_OPT ("-1",  "Early exit if DHCP sets $global.net.server")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(ifup)
 	.cmd		= do_ifup,
 	BAREBOX_CMD_DESC("bring a network interface up")
-	BAREBOX_CMD_OPTS("[-af] [INTF]")
+	BAREBOX_CMD_OPTS("[-asf1] [INTF]")
 	BAREBOX_CMD_GROUP(CMD_GRP_NET)
 	BAREBOX_CMD_COMPLETE(eth_complete)
 	BAREBOX_CMD_HELP(cmd_ifup_help)

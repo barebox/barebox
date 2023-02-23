@@ -3,7 +3,7 @@
 path="/mnt/tftp"
 
 # global.net.server and global.hostname may be set by DHCP, so trigger it first
-ifup -a
+ifup -a1
 
 global.bootm.image="${path}/${global.user}-linux-${global.hostname}"
 

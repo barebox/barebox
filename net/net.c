@@ -325,9 +325,14 @@ void net_set_serverip(IPaddr_t ip)
 	net_server = xasprintf("%pI4", &ip);
 }
 
+const char *net_get_server(void)
+{
+	return net_server && *net_server ? net_server : NULL;
+}
+
 void net_set_serverip_empty(IPaddr_t ip)
 {
-	if (net_server && *net_server)
+	if (net_get_server())
 		return;
 
 	net_set_serverip(ip);

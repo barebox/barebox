@@ -15,7 +15,7 @@ TFTP server, the following is required:
 .. code-block:: sh
 
   mkdir -p /mnt/tftp
-  automount /mnt/tftp 'ifup -a && mount -t tftp $global.net.server /mnt/tftp'
+  automount /mnt/tftp 'ifup -a1 && mount -t tftp $global.net.server /mnt/tftp'
 
 This creates an automountpoint on ``/mnt/tftp``. Whenever this directory is accessed,
 the command ``ifup eth0 && mount -t tftp $eth0.serverip /mnt/tftp`` is executed.

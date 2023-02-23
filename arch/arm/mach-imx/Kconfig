@@ -434,6 +434,15 @@ config MACH_NITROGEN6
 	bool "BoundaryDevices Nitrogen6 boards"
 	select ARCH_IMX6
 
+config MACH_NOVENA
+	bool "Kosagi Novena board"
+	select ARCH_IMX6
+	select ARM_USE_COMPRESSED_DTB
+	select DDR_SPD
+	select I2C_IMX_EARLY
+	select MCI_IMX_ESDHC_PBL
+	select USB_GADGET_DRIVER_ARC_PBL
+
 config MACH_SOLIDRUN_MICROSOM
 	bool "SolidRun MicroSOM based devices"
 	select ARCH_IMX6
@@ -458,6 +467,7 @@ config MACH_EMBEST_MARSBOARD
 config MACH_EMBEST_RIOTBOARD
 	bool "Embest RIoTboard"
 	select ARCH_IMX6
+	imply AT803X_PHY
 
 config MACH_UDOO
 	bool "Freescale i.MX6 UDOO Board"
@@ -622,6 +632,16 @@ config MACH_PHYTEC_SOM_IMX8MQ
 
 config MACH_TQ_MBA8MPXL
 	bool "TQ i.MX8MP Dual/Quad on MBa8MPxL Board"
+	select ARCH_IMX8MP
+	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
+	select FIRMWARE_IMX8MP_ATF
+	select ARM_SMCCC
+	select MCI_IMX_ESDHC_PBL
+	select IMX8M_DRAM
+	select I2C_IMX_EARLY
+
+config MACH_POLYHEX_DEBIX
+	bool "Polyhex DEBIX Model-A/B (i.MX8MP) Board"
 	select ARCH_IMX8MP
 	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
 	select FIRMWARE_IMX8MP_ATF

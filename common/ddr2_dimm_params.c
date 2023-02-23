@@ -2,10 +2,10 @@
 /*
  * Copyright 2008 Freescale Semiconductor, Inc.
  */
+
 #include <common.h>
-#include <soc/fsl/fsl_ddr_sdram.h>
 #include <linux/log2.h>
-#include "fsl_ddr.h"
+#include <ddr_dimms.h>
 
 /*
  * Calculate the Density of each Physical Rank.
@@ -27,17 +27,17 @@
  *
  * Reorder Table to be linear by stripping the bottom
  * 2 or 5 bits off and shifting them up to the top.
+ *
  */
-
 static unsigned long long
 compute_ranksize(unsigned int mem_type, unsigned char row_dens)
 {
 	unsigned long long bsize;
 
-	/* Bottom 2 bits up to the top. */
-	bsize = ((row_dens >> 2) | ((row_dens & 3) << 6));
-	bsize <<= 24ULL;
-	debug("DDR: DDR I rank density = 0x%16llx\n", bsize);
+	/* Bottom 5 bits up to the top. */
+	bsize = ((row_dens >> 5) | ((row_dens & 31) << 3));
+	bsize <<= 27ULL;
+	debug("DDR: DDR II rank density = 0x%16llx\n", bsize);
 
 	return bsize;
 }
@@ -106,7 +106,7 @@ static unsigned int byte40_table_ps[8] = {
 static unsigned int
 compute_trfc_ps_from_spd(unsigned char trctrfc_ext, unsigned char trfc)
 {
-	return ((trctrfc_ext & 0x1) * 256 + trfc) * 1000
+	return (((trctrfc_ext & 0x1) * 256) + trfc) * 1000
 		+ byte40_table_ps[(trctrfc_ext >> 1) & 0x7];
 }
 
@@ -114,24 +114,6 @@ static unsigned int
 compute_trc_ps_from_spd(unsigned char trctrfc_ext, unsigned char trc)
 {
 	return trc * 1000 + byte40_table_ps[(trctrfc_ext >> 4) & 0x7];
-}
-
-/*
- * tCKmax from DDR I SPD Byte 43
- *
- * Bits 7:2 == whole ns
- * Bits 1:0 == quarter ns
- *    00    == 0.00 ns
- *    01    == 0.25 ns
- *    10    == 0.50 ns
- *    11    == 0.75 ns
- *
- * Returns picoseconds.
- */
-static unsigned int
-compute_tckmax_from_spd_ps(unsigned int byte43)
-{
-	return (byte43 >> 2) * 1000 + (byte43 & 0x3) * 250;
 }
 
 /*
@@ -160,8 +142,8 @@ determine_refresh_rate_ps(const unsigned int spd_refresh)
  * The purpose of this function is to compute a suitable
  * CAS latency given the DRAM clock period.  The SPD only
  * defines at most 3 CAS latencies.  Typically the slower in
- * frequency the DIMM runs at, the shorter its CAS latency can be.
- * If the DIMM is operating at a sufficiently low frequency,
+ * frequency the DIMM runs at, the shorter its CAS latency can.
+ * be.  If the DIMM is operating at a sufficiently low frequency,
  * it may be able to run at a CAS latency shorter than the
  * shortest SPD-defined CAS latency.
  *
@@ -175,18 +157,20 @@ determine_refresh_rate_ps(const unsigned int spd_refresh)
  * advertised by the SPD.  This is not always the case,
  * as those modes not defined in the SPD are optional.
  *
- * CAS latency de-rating based upon values JEDEC Standard No. 79-E
- * Table 11.
+ * CAS latency de-rating based upon values JEDEC Standard No. 79-2C
+ * Table 40, "DDR2 SDRAM stanadard speed bins and tCK, tRCD, tRP, tRAS,
+ * and tRC for corresponding bin"
  *
- * ordinal 2, ddr1_speed_bins[1] contains tCK for CL=2
+ * ordinal 2, ddr2_speed_bins[1] contains tCK for CL=3
+ * Not certain if any good value exists for CL=2
  */
-				  /*   CL2.0 CL2.5 CL3.0  */
-unsigned short ddr1_speed_bins[] = {0, 7500, 6000, 5000 };
+				 /* CL2   CL3   CL4   CL5   CL6  CL7*/
+static unsigned short ddr2_speed_bins[] = {   0, 5000, 3750, 3000, 2500, 1875 };
 
 static unsigned int
-compute_derated_DDR1_CAS_latency(unsigned int mclk_ps)
+compute_derated_DDR2_CAS_latency(unsigned int mclk_ps)
 {
-	const unsigned int num_speed_bins = ARRAY_SIZE(ddr1_speed_bins);
+	const unsigned int num_speed_bins = ARRAY_SIZE(ddr2_speed_bins);
 	unsigned int lowest_tCKmin_found = 0;
 	unsigned int lowest_tCKmin_CL = 0;
 	unsigned int i;
@@ -194,12 +178,12 @@ compute_derated_DDR1_CAS_latency(unsigned int mclk_ps)
 	debug("mclk_ps = %u\n", mclk_ps);
 
 	for (i = 0; i < num_speed_bins; i++) {
-		unsigned int x = ddr1_speed_bins[i];
+		unsigned int x = ddr2_speed_bins[i];
 		debug("i=%u, x = %u, lowest_tCKmin_found = %u\n",
 		      i, x, lowest_tCKmin_found);
-		if (x && lowest_tCKmin_found <= x && x <= mclk_ps) {
+		if (x && x <= mclk_ps && x >= lowest_tCKmin_found ) {
 			lowest_tCKmin_found = x;
-			lowest_tCKmin_CL = i + 1;
+			lowest_tCKmin_CL = i + 2;
 		}
 	}
 
@@ -209,20 +193,27 @@ compute_derated_DDR1_CAS_latency(unsigned int mclk_ps)
 }
 
 /*
- * ddr1_compute_dimm_parameters for DDR1 SPD
+ * ddr2_compute_dimm_parameters for DDR2 SPD
  *
  * Compute DIMM parameters based upon the SPD information in spd.
  * Writes the results to the struct dimm_params structure pointed by pdimm.
  *
  * FIXME: use #define for the retvals
  */
-unsigned int ddr1_compute_dimm_parameters(struct fsl_ddr_controller *c,
-					  const struct ddr1_spd_eeprom *spd,
+unsigned int ddr2_compute_dimm_parameters(unsigned int mclk_ps,
+					  const struct ddr2_spd_eeprom *spd,
 					  struct dimm_params *pdimm)
 {
 	int ret;
 
-	ret = ddr1_spd_check(spd);
+	if (spd->mem_type != SPD_MEMTYPE_DDR2 &&
+	    spd->mem_type != SPD_MEMTYPE_DDR2_FBDIMM &&
+	    spd->mem_type != SPD_MEMTYPE_DDR2_FBDIMM_PROBE) {
+		printf("DIMM: SPD data is not DDR2\n");
+		return 3;
+	}
+
+	ret = ddr2_spd_check(spd);
 	if (ret) {
 		printf("DIMM: failed checksum\n");
 		return 2;
@@ -237,19 +228,35 @@ unsigned int ddr1_compute_dimm_parameters(struct fsl_ddr_controller *c,
 	memcpy(pdimm->mpart, spd->mpart, sizeof(pdimm->mpart) - 1);
 
 	/* DIMM organization parameters */
-	pdimm->n_ranks = spd->nrows;
-	pdimm->rank_density = compute_ranksize(spd->mem_type, spd->bank_dens);
+	pdimm->n_ranks = (spd->mod_ranks & 0x7) + 1;
+	pdimm->rank_density = compute_ranksize(spd->mem_type, spd->rank_dens);
 	pdimm->capacity = pdimm->n_ranks * pdimm->rank_density;
-	pdimm->data_width = spd->dataw_lsb;
+	pdimm->data_width = spd->dataw;
 	pdimm->primary_sdram_width = spd->primw;
 	pdimm->ec_sdram_width = spd->ecw;
 
-	/*
-	 * FIXME: Need to determine registered_dimm status.
-	 *     1 == register buffered
-	 *     0 == unbuffered
-	 */
-	pdimm->registered_dimm = 0;	/* unbuffered */
+	/* These are all the types defined by the JEDEC DDR2 SPD 1.3 spec */
+	switch (spd->dimm_type) {
+	case DDR2_SPD_DIMMTYPE_RDIMM:
+	case DDR2_SPD_DIMMTYPE_72B_SO_RDIMM:
+	case DDR2_SPD_DIMMTYPE_MINI_RDIMM:
+		/* Registered/buffered DIMMs */
+		pdimm->registered_dimm = 1;
+		break;
+
+	case DDR2_SPD_DIMMTYPE_UDIMM:
+	case DDR2_SPD_DIMMTYPE_SO_DIMM:
+	case DDR2_SPD_DIMMTYPE_MICRO_DIMM:
+	case DDR2_SPD_DIMMTYPE_MINI_UDIMM:
+		/* Unbuffered DIMMs */
+		pdimm->registered_dimm = 0;
+		break;
+
+	case DDR2_SPD_DIMMTYPE_72B_SO_CDIMM:
+	default:
+		printf("unknown dimm_type 0x%02X\n", spd->dimm_type);
+		return 1;
+	}
 
 	/* SDRAM device parameters */
 	pdimm->n_row_addr = spd->nrow_addr;
@@ -270,7 +277,7 @@ unsigned int ddr1_compute_dimm_parameters(struct fsl_ddr_controller *c,
 	pdimm->tckmin_x_minus_2_ps
 		= convert_bcd_tenths_to_cycle_time_ps(spd->clk_cycle3);
 
-	pdimm->tckmax_ps = compute_tckmax_from_spd_ps(spd->tckmax);
+	pdimm->tckmax_ps = convert_bcd_tenths_to_cycle_time_ps(spd->tckmax);
 
 	/*
 	 * Compute CAS latencies defined by SPD
@@ -287,20 +294,20 @@ unsigned int ddr1_compute_dimm_parameters(struct fsl_ddr_controller *c,
 					  & ~(1 << pdimm->caslat_x_minus_1));
 
 	/* Compute CAS latencies below that defined by SPD */
-	pdimm->caslat_lowest_derated = compute_derated_DDR1_CAS_latency(
-					get_memory_clk_period_ps(c));
+	pdimm->caslat_lowest_derated = compute_derated_DDR2_CAS_latency(
+					mclk_ps);
 
 	/* Compute timing parameters */
 	pdimm->trcd_ps = spd->trcd * 250;
 	pdimm->trp_ps = spd->trp * 250;
 	pdimm->tras_ps = spd->tras * 1000;
 
-	pdimm->twr_ps = mclk_to_picos(c, 3);
-	pdimm->twtr_ps = mclk_to_picos(c, 1);
-	pdimm->trfc_ps = compute_trfc_ps_from_spd(0, spd->trfc);
+	pdimm->twr_ps = spd->twr * 250;
+	pdimm->twtr_ps = spd->twtr * 250;
+	pdimm->trfc_ps = compute_trfc_ps_from_spd(spd->trctrfc_ext, spd->trfc);
 
 	pdimm->trrd_ps = spd->trrd * 250;
-	pdimm->trc_ps = compute_trc_ps_from_spd(0, spd->trc);
+	pdimm->trc_ps = compute_trc_ps_from_spd(spd->trctrfc_ext, spd->trc);
 
 	pdimm->refresh_rate_ps = determine_refresh_rate_ps(spd->refresh);
 
@@ -311,7 +318,7 @@ unsigned int ddr1_compute_dimm_parameters(struct fsl_ddr_controller *c,
 	pdimm->tdh_ps
 		= convert_bcd_hundredths_to_cycle_time_ps(spd->data_hold);
 
-	pdimm->trtp_ps = mclk_to_picos(c, 2);	/* By the book. */
+	pdimm->trtp_ps = spd->trtp * 250;
 	pdimm->tdqsq_max_ps = spd->tdqsq * 10;
 	pdimm->tqhs_ps = spd->tqhs * 10;
 

@@ -1,33 +1,27 @@
 // SPDX-License-Identifier: GPL-2.0
 
-#include <io.h>
-#include <common.h>
-#include <debug_ll.h>
-#include <firmware.h>
-#include <image-metadata.h>
-#include <asm/mmu.h>
-#include <asm/cache.h>
-#include <asm/sections.h>
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
-#include <pbl/i2c.h>
-#include <pbl/pmic.h>
-#include <linux/sizes.h>
+#include <common.h>
+#include <debug_ll.h>
 #include <mach/atf.h>
-#include <mach/xload.h>
 #include <mach/esdctl.h>
 #include <mach/generic.h>
+#include <mach/imx8m-ccm-regs.h>
 #include <mach/imx8mp-regs.h>
 #include <mach/iomux-mx8mp.h>
-#include <mach/imx8m-ccm-regs.h>
+#include <mach/xload.h>
 #include <mfd/pca9450.h>
+#include <pbl/i2c.h>
+#include <pbl/pmic.h>
 #include <soc/imx8m/ddr.h>
-#include <soc/fsl/fsl_udc.h>
 
-extern char __dtb_z_imx8mp_evk_start[];
+extern char __dtb_z_imx8mp_debix_model_a_start[];
 
 #define UART_PAD_CTRL   MUX_PAD_CTRL(MX8MP_PAD_CTL_DSE6 | \
-				     MX8MP_PAD_CTL_FSEL)
+				     MX8MP_PAD_CTL_FSEL | \
+				     MX8MP_PAD_CTL_PUE | \
+				     MX8MP_PAD_CTL_PE)
 
 #define I2C_PAD_CTRL	MUX_PAD_CTRL(MX8MP_PAD_CTL_DSE6 | \
 				     MX8MP_PAD_CTL_HYS | \
@@ -86,7 +80,7 @@ static void power_init_board(void)
 	pmic_configure(i2c, 0x25, pca9450_cfg, ARRAY_SIZE(pca9450_cfg));
 }
 
-extern struct dram_timing_info imx8mp_evk_dram_timing;
+extern struct dram_timing_info imx8mp_debix_dram_timing;
 
 static void start_atf(void)
 {
@@ -100,13 +94,13 @@ static void start_atf(void)
 
 	power_init_board();
 
-	imx8mp_ddr_init(&imx8mp_evk_dram_timing, DRAM_TYPE_LPDDR4);
+	imx8mp_ddr_init(&imx8mp_debix_dram_timing, DRAM_TYPE_LPDDR4);
 
 	imx8mp_load_and_start_image_via_tfa();
 }
 
 /*
- * Power-on execution flow of start_nxp_imx8mp_evk() might not be
+ * Power-on execution flow of start_imx8mp_debix() might not be
  * obvious for a very first read, so here's, hopefully helpful,
  * summary:
  *
@@ -121,7 +115,7 @@ static void start_atf(void)
  *
  * 4. Standard barebox boot flow continues
  */
-static __noreturn noinline void nxp_imx8mp_evk_start(void)
+static __noreturn noinline void imx8mp_debix_model_a_start(void)
 {
 	setup_uart();
 
@@ -130,17 +124,15 @@ static __noreturn noinline void nxp_imx8mp_evk_start(void)
 	/*
 	 * Standard entry we hit once we initialized both DDR and ATF
 	 */
-	imx8mp_barebox_entry(__dtb_z_imx8mp_evk_start);
+	imx8mp_barebox_entry(__dtb_z_imx8mp_debix_model_a_start);
 }
 
-ENTRY_FUNCTION(start_nxp_imx8mp_evk, r0, r1, r2)
+ENTRY_FUNCTION(start_polyhex_debix, r0, r1, r2)
 {
 	imx8mp_cpu_lowlevel_init();
 
 	relocate_to_current_adr();
 	setup_c();
 
-	IMD_USED_OF(imx8mp_evk);
-
-	nxp_imx8mp_evk_start();
+	imx8mp_debix_model_a_start();
 }

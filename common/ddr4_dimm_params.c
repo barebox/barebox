@@ -11,8 +11,7 @@
  */
 
 #include <common.h>
-#include <soc/fsl/fsl_ddr_sdram.h>
-#include "fsl_ddr.h"
+#include <ddr_dimms.h>
 
 /*
  * Calculate the Density of each Physical Rank.
@@ -124,8 +123,7 @@ compute_ranksize(const struct ddr4_spd_eeprom *spd)
  * Writes the results to the struct dimm_params structure pointed by pdimm.
  *
  */
-unsigned int ddr4_compute_dimm_parameters(struct fsl_ddr_controller *c,
-					  const struct ddr4_spd_eeprom *spd,
+unsigned int ddr4_compute_dimm_parameters(const struct ddr4_spd_eeprom *spd,
 					  struct dimm_params *pdimm)
 {
 	int ret;
@@ -137,6 +135,11 @@ unsigned int ddr4_compute_dimm_parameters(struct fsl_ddr_controller *c,
 	int spd_error = 0;
 	u8 *ptr;
 	u8 val;
+
+	if (spd->mem_type != SPD_MEMTYPE_DDR4) {
+		printf("DIMM: SPD data is not DDR4\n");
+		return 3;
+	}
 
 	ret = ddr4_spd_check(spd);
 	if (ret) {

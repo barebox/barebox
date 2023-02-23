@@ -258,6 +258,8 @@ $(call build_imx_habv4img, CONFIG_MACH_NITROGEN6, start_imx6dl_nitrogen6x_2g, bo
 
 $(call build_imx_habv4img, CONFIG_MACH_NITROGEN6, start_imx6qp_nitrogen6_max, boundarydevices-nitrogen6/flash-header-nitrogen6qp-max, boundarydevices-imx6qp-nitrogen6_max)
 
+$(call build_imx_habv4img, CONFIG_MACH_NOVENA, start_imx6q_novena, novena/flash-header-novena, imx6q-novena)
+
 $(call build_imx_habv4img, CONFIG_MACH_TX6X, start_imx6dl_tx6x_512m, karo-tx6x/flash-header-tx6dl-512m, karo-imx6dl-tx6x-512m)
 
 $(call build_imx_habv4img, CONFIG_MACH_TX6X, start_imx6dl_tx6x_1g, karo-tx6x/flash-header-tx6dl-1g, karo-imx6dl-tx6x-1g)
@@ -460,6 +462,11 @@ pblb-$(CONFIG_MACH_TQ_MBA8MPXL) += start_tqma8mpxl
 CFG_start_tqma8mpxl.pblb.imximg = $(board)/tqma8mpxl/flash-header-tqma8mpxl.imxcfg
 FILE_barebox-tqma8mpxl.img = start_tqma8mpxl.pblb.pimximg
 image-$(CONFIG_MACH_TQ_MBA8MPXL) += barebox-tqma8mpxl.img
+
+pblb-$(CONFIG_MACH_POLYHEX_DEBIX) += start_polyhex_debix
+CFG_start_polyhex_debix.pblb.imximg = $(board)/polyhex-debix/flash-header-polyhex-debix.imxcfg
+FILE_barebox-polyhex-debix.img = start_polyhex_debix.pblb.pimximg
+image-$(CONFIG_MACH_POLYHEX_DEBIX) += barebox-polyhex-debix.img
 
 # ----------------------- i.MX8mq based boards --------------------------
 pblb-$(CONFIG_MACH_NXP_IMX8MQ_EVK) += start_nxp_imx8mq_evk

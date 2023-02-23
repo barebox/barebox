@@ -88,6 +88,7 @@
 #define MAC_OFFSET_0			(0x22 * 4)
 #define IMX6UL_MAC_OFFSET_1		(0x23 * 4)
 #define MAC_OFFSET_1			(0x24 * 4)
+#define IMX8MP_MAC_OFFSET_1		(0x25 * 4)
 #define MAX_MAC_OFFSETS			2
 #define MAC_BYTES			8
 #define UNIQUE_ID_NUM			2
@@ -598,7 +599,7 @@ static int imx_ocotp_read_mac(const struct imx_ocotp_data *data,
 	if (ret < 0)
 		return ret;
 
-	if (offset != IMX6UL_MAC_OFFSET_1)
+	if (offset != IMX6UL_MAC_OFFSET_1 && offset != IMX8MP_MAC_OFFSET_1)
 		data->format_mac(mac, buf, OCOTP_HW_TO_MAC);
 	else
 		data->format_mac(mac, buf + 2, OCOTP_HW_TO_MAC);
@@ -624,7 +625,8 @@ static int imx_ocotp_set_mac(struct param_d *param, void *priv)
 	if (ret < 0)
 		return ret;
 
-	if (ethaddr->offset != IMX6UL_MAC_OFFSET_1)
+	if (ethaddr->offset != IMX6UL_MAC_OFFSET_1 &&
+	    ethaddr->offset != IMX8MP_MAC_OFFSET_1)
 		ethaddr->data->format_mac(buf, ethaddr->value,
 					  OCOTP_MAC_TO_HW);
 	else
@@ -898,7 +900,7 @@ static struct imx_ocotp_data imx8mp_ocotp_data = {
 	.num_regs = 1024,
 	.addr_to_offset = imx6sl_addr_to_offset,
 	.mac_offsets_num = 2,
-	.mac_offsets = { 0x90, 0x96 },
+	.mac_offsets = { 0x90, 0x94 },
 	.format_mac = imx_ocotp_format_mac,
 	.feat = &imx8mp_featctrl_data,
 };

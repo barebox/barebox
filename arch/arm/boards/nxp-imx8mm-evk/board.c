@@ -60,9 +60,8 @@ static int imx8mm_evk_probe(struct device *dev)
 }
 
 static const struct of_device_id imx8mm_evk_of_match[] = {
-	{
-		.compatible = "fsl,imx8mm-evk",
-	},
+	{ .compatible = "fsl,imx8mm-evk", },
+	{ .compatible = "fsl,imx8mm-evkb", },
 	{ /* sentinel */ }
 };
 

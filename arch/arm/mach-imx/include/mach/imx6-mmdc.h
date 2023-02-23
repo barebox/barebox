@@ -18,6 +18,7 @@
 #define MPWLGCR		0x808
 #define MPWLDECTRL0	0x80c
 #define MPWLDECTRL1	0x810
+#define MPWLHWERR	0x878
 #define MPPDCMPR1	0x88c
 #define MPSWDAR		0x894
 #define MPRDDLCTL	0x848

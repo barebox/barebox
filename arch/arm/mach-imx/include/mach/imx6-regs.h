@@ -3,6 +3,12 @@
 #ifndef __MACH_IMX6_REGS_H
 #define __MACH_IMX6_REGS_H
 
+#include <linux/sizes.h>
+
+/* Set MAX_SIZE to 128K, only the Quad and Dual have 256K */
+#define MX6_OCRAM_BASE_ADDR		0x00900000
+#define MX6_OCRAM_MAX_SIZE		SZ_128K
+
 #define MX6_APBH_BASE_ADDR		0x00110000
 #define MX6_GPMI_BASE_ADDR		0x00112000
 #define MX6_BCH_BASE_ADDR		0x00114000

@@ -205,7 +205,7 @@ static noinline __noreturn void ls1046ardb_r_entry(unsigned long memsize)
 	IMD_USED_OF(fsl_ls1046a_rdb);
 
 	i2c = ls1046_i2c_init(IOMEM(LSCH2_I2C1_BASE_ADDR));
-	ret = spd_read_eeprom(i2c, 0x51, &spd_eeprom);
+	ret = spd_read_eeprom(i2c, 0x51, &spd_eeprom, SPD_MEMTYPE_DDR4);
 	if (ret) {
 		pr_err("Cannot read SPD EEPROM: %d\n", ret);
 		goto err;

@@ -35,14 +35,24 @@ static void setup_uart(void)
 }
 
 static struct pmic_config bd71837_cfg[] = {
+	/* unlock the PMIC regs */
+	{ BD718XX_REGLOCK, 0x0 },
+	/* retry powering up indefinitely every 250ms after VR fault */
+	{ BD718XX_RCVCFG, 0xfc },
 	/* decrease RESET key long push time from the default 10s to 10ms */
 	{ BD718XX_PWRONCONFIG1, 0x0 },
-	/* unlock the PMIC regs */
-	{ BD718XX_REGLOCK, 0x1 },
+	/* WDOG_B: Warm Reset */
+	{ BD718XX_PWRCTRL0, 0xa3 },
+	/* READY=>SNVS on PMIC_ON_REQ, SNVS=>RUN on VSYS_UVLO */
+	{ BD718XX_TRANS_COND0, 0x48 },
+	/* WDOG_B: Go to SNVS power state after deassert */
+	{ BD718XX_TRANS_COND1, 0xc0 },
 	/* Set VDD_SOC/VDD_DRAM to typical value 0.85v for nominal mode */
 	{ BD718XX_BUCK1_VOLT_RUN, 0xf },
-	/* increase VDD_DRAM to 0.975v for 3Ghz DDR */
-	{ BD718XX_1ST_NODVS_BUCK_VOLT, 0x83 },
+	/* increase VDD_DRAM to 0.900v for 2400MT/s DDR */
+	{ BD718XX_1ST_NODVS_BUCK_VOLT, 0x02 },
+	/* set BUCK8 to 1.10v */
+	{ BD718XX_4TH_NODVS_BUCK_VOLT, 0x1e },
 	/* lock the PMIC regs */
 	{ BD718XX_REGLOCK, 0x11 },
 };

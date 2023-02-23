@@ -90,6 +90,26 @@ static int i2c_fsl_acked(struct fsl_i2c *fsl_i2c)
 	return i2c_fsl_poll_status(fsl_i2c, 0, I2SR_RXAK);
 }
 
+static void i2c_fsl_settle(struct fsl_i2c *fsl_i2c)
+{
+#ifdef CPU_ARCH_ARMv8
+	udelay(100);
+#else
+	/*
+	 * We lack udelay on the 32bit i.MX SoCs, so delay manually: On an
+	 * i.MX6 with a 66Mhz I2C peripheral clock one cycle of this loop
+	 * takes 1.30us. Let's be generous and round up to 100 cycles. Other
+	 * i.MX SoCs do not have a higher peripheral clock, so we should be
+	 * safe here as well.
+	 */
+
+	volatile int i = 0;
+
+	for (i = 0; i < 100; i++)
+		fsl_i2c_read_reg(fsl_i2c, FSL_I2C_I2SR);
+#endif
+}
+
 static int i2c_fsl_start(struct fsl_i2c *fsl_i2c)
 {
 	unsigned int temp = 0;
@@ -104,7 +124,7 @@ static int i2c_fsl_start(struct fsl_i2c *fsl_i2c)
 			  fsl_i2c, FSL_I2C_I2CR);
 
 	/* Wait controller to be stable */
-	udelay(100);
+	i2c_fsl_settle(fsl_i2c);
 
 	/* Start I2C transaction */
 	temp = fsl_i2c_read_reg(fsl_i2c, FSL_I2C_I2CR);
@@ -297,6 +317,20 @@ struct pbl_i2c *ls1046_i2c_init(void __iomem *regs)
 	fsl_i2c.i2sr_clr_opcode = I2SR_CLR_OPCODE_W1C;
 	/* Divider for ~100kHz when coming from the ROM */
 	fsl_i2c.ifdr = 0x3e;
+
+	fsl_i2c.i2c.xfer = i2c_fsl_xfer;
+
+	return &fsl_i2c.i2c;
+}
+
+struct pbl_i2c *imx6_i2c_early_init(void __iomem *regs)
+{
+	fsl_i2c.regs = regs;
+	fsl_i2c.regshift = 2;
+	fsl_i2c.i2cr_ien_opcode = I2CR_IEN_OPCODE_1;
+	fsl_i2c.i2sr_clr_opcode = I2SR_CLR_OPCODE_W0C;
+	/* Divider for ~100kHz when coming from the ROM */
+	fsl_i2c.ifdr = 0x36;
 
 	fsl_i2c.i2c.xfer = i2c_fsl_xfer;
 

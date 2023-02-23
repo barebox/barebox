@@ -11,12 +11,43 @@
 #include <mach/imx6-regs.h>
 #include <mach/imx6.h>
 
+static bool wlcalib_failed(void __iomem *ips)
+{
+	/*
+	 * The i.MX 6 reference manual specifies that an MMDC flags reports
+	 * write calibration errors in the MPWLGCR register's HW_WL_ERR field.
+	 *
+	 * ERR050070 specifies that this doesn't work and we should check
+	 * the MPWLHWERR register instead which reports which write leveling
+	 * steps succeeded or failed on a per-byte basis.
+	 *
+	 * Check each byte to see which steps succeeded. If no steps succeeded
+	 * then declare the calibration a failure.
+	*/
+
+	int i;
+
+	for (i = 0; i < 4; ++i) {
+		if (readb(ips + MPWLHWERR + i) == 0)
+			return true;
+	}
+
+	return false;
+}
+
 int mmdc_do_write_level_calibration(void)
 {
+	u32 ldectrl[4];
 	u32 esdmisc_val, zq_val;
 	int errorcount = 0;
 	u32 val;
 	u32 ddr_mr1 = 0x4;
+
+	/* Store current calibration data in case of failure */
+	ldectrl[0] = readl(P0_IPS + MPWLDECTRL0);
+	ldectrl[1] = readl(P0_IPS + MPWLDECTRL1);
+	ldectrl[2] = readl(P1_IPS + MPWLDECTRL0);
+	ldectrl[3] = readl(P1_IPS + MPWLDECTRL1);
 
 	/* disable DDR logic power down timer */
 	val = readl((P0_IPS + MDPDC));
@@ -56,9 +87,13 @@ int mmdc_do_write_level_calibration(void)
 	/* Upon completion of this process the MMDC de-asserts the MPWLGCR[HW_WL_EN] */
 	while (readl(P0_IPS + MPWLGCR) & 0x00000001);
 
-	/* check for any errors: check both PHYs for x64 configuration, if x32, check only PHY0 */
-	if ((readl(P0_IPS + MPWLGCR) & 0x00000F00) ||
-			(readl(P1_IPS + MPWLGCR) & 0x00000F00)) {
+	/* check for any errors on both PHYs */
+	if (wlcalib_failed(P0_IPS) || wlcalib_failed(P1_IPS)) {
+		pr_debug("Calibration failed, rolling back calibration data\n");
+		writel(ldectrl[0], P0_IPS + MPWLDECTRL0);
+		writel(ldectrl[1], P0_IPS + MPWLDECTRL1);
+		writel(ldectrl[2], P1_IPS + MPWLDECTRL0);
+		writel(ldectrl[3], P1_IPS + MPWLDECTRL1);
 		errorcount++;
 	}
 

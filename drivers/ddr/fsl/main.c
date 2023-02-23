@@ -238,19 +238,20 @@ static int compute_dimm_parameters(struct fsl_ddr_controller *c,
 				   struct spd_eeprom *spd,
 				   struct dimm_params *pdimm)
 {
+	unsigned int mclk_ps = get_memory_clk_period_ps(c);
 	const memctl_options_t *popts = &c->memctl_opts;
 	int ret = -EINVAL;
 
 	memset(pdimm, 0, sizeof(*pdimm));
 
 	if (is_ddr1(popts))
-		ret = ddr1_compute_dimm_parameters(c, (void *)spd, pdimm);
+		ret = ddr1_compute_dimm_parameters(mclk_ps, (void *)spd, pdimm);
 	else if (is_ddr2(popts))
-		ret = ddr2_compute_dimm_parameters(c, (void *)spd, pdimm);
+		ret = ddr2_compute_dimm_parameters(mclk_ps, (void *)spd, pdimm);
 	else if (is_ddr3(popts))
-		ret = ddr3_compute_dimm_parameters(c, (void *)spd, pdimm);
+		ret = ddr3_compute_dimm_parameters((void *)spd, pdimm);
 	else if (is_ddr4(popts))
-		ret = ddr4_compute_dimm_parameters(c, (void *)spd, pdimm);
+		ret = ddr4_compute_dimm_parameters((void *)spd, pdimm);
 
 	return ret;
 }

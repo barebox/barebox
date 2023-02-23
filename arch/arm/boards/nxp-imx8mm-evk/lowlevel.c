@@ -16,11 +16,10 @@
 #include <mach/iomux-mx8mm.h>
 #include <mach/imx8m-ccm-regs.h>
 #include <mfd/bd71837.h>
+#include <mfd/pca9450.h>
 #include <mach/xload.h>
 #include <soc/imx8m/ddr.h>
 #include <image-metadata.h>
-
-extern char __dtb_z_imx8mm_evk_start[];
 
 #define UART_PAD_CTRL	MUX_PAD_CTRL(PAD_CTL_DSE_3P3V_45_OHM)
 
@@ -37,6 +36,32 @@ static void setup_uart(void)
 
 	putc_ll('>');
 }
+
+static struct pmic_config pca9450_cfg[] = {
+	/* BUCKxOUT_DVS0/1 control BUCK123 output */
+	{ PCA9450_BUCK123_DVS, 0x29 },
+
+	/* Buck 1 DVS control through PMIC_STBY_REQ */
+	{ PCA9450_BUCK1CTRL, 0x59 },
+
+	/* Set DVS1 to 0.8v for suspend */
+	{ PCA9450_BUCK1OUT_DVS1, 0x10 },
+
+	/* increase VDD_DRAM to 0.95v for 3Ghz DDR */
+	{ PCA9450_BUCK3OUT_DVS0, 0x1c },
+
+	/*
+	 * VDD_DRAM needs off in suspend, set B1_ENMODE=10
+	 * (ON by PMIC_ON_REQ = H && PMIC_STBY_REQ = L)
+	 */
+	{ PCA9450_BUCK3CTRL, 0x4a },
+
+	/* set VDD_SNVS_0V8 from default 0.85V */
+	{ PCA9450_LDO2CTRL, 0xc0 },
+
+	/* set WDOG_B_CFG to cold reset */
+	{ PCA9450_RESET_CTRL, 0xa1 },
+};
 
 static struct pmic_config bd71837_cfg[] = {
 	/* decrease RESET key long push time from the default 10s to 10ms */
@@ -63,7 +88,10 @@ static void power_init_board(void)
 
 	i2c = imx8m_i2c_early_init(IOMEM(MX8MQ_I2C1_BASE_ADDR));
 
-	pmic_configure(i2c, 0x4b, bd71837_cfg, ARRAY_SIZE(bd71837_cfg));
+	if (i2c_dev_probe(i2c, 0x25, true) == 0)
+		pmic_configure(i2c, 0x25, pca9450_cfg, ARRAY_SIZE(pca9450_cfg));
+	else
+		pmic_configure(i2c, 0x4b, bd71837_cfg, ARRAY_SIZE(bd71837_cfg));
 }
 
 extern struct dram_timing_info imx8mm_evk_dram_timing;
@@ -102,14 +130,26 @@ static void start_atf(void)
  */
 static __noreturn noinline void nxp_imx8mm_evk_start(void)
 {
+	extern char __dtb_z_imx8mm_evk_start[], __dtb_z_imx8mm_evkb_start[];
+	struct pbl_i2c *i2c;
+	void *fdt;
+
 	setup_uart();
 
 	start_atf();
 
 	/*
-	 * Standard entry we hit once we initialized both DDR and ATF
+	 * Standard entry we hit once we initialized both DDR and ATF. I2C pad
+	 * and clock setup already done during power_init_board().
 	 */
-	imx8mm_barebox_entry(__dtb_z_imx8mm_evk_start);
+	i2c = imx8m_i2c_early_init(IOMEM(MX8MQ_I2C1_BASE_ADDR));
+
+	if (i2c_dev_probe(i2c, 0x25, true) == 0)
+		fdt = __dtb_z_imx8mm_evkb_start;
+	else
+		fdt = __dtb_z_imx8mm_evk_start;
+
+	imx8mm_barebox_entry(fdt);
 }
 
 ENTRY_FUNCTION(start_nxp_imx8mm_evk, r0, r1, r2)

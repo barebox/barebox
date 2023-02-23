@@ -58,7 +58,9 @@ static struct nvmem_bus nvmem_regmap_bus = {
 	.write = nvmem_regmap_write,
 };
 
-struct nvmem_device *nvmem_regmap_register(struct regmap *map, const char *name)
+struct nvmem_device *
+nvmem_regmap_register_with_pp(struct regmap *map, const char *name,
+			      nvmem_cell_post_process_t cell_post_process)
 {
 	struct nvmem_config config = {};
 
@@ -73,6 +75,12 @@ struct nvmem_device *nvmem_regmap_register(struct regmap *map, const char *name)
 	config.word_size = 1;
 	config.size = regmap_get_max_register(map) * regmap_get_reg_stride(map);
 	config.bus = &nvmem_regmap_bus;
+	config.cell_post_process = cell_post_process;
 
 	return nvmem_register(&config);
+}
+
+struct nvmem_device *nvmem_regmap_register(struct regmap *map, const char *name)
+{
+	return nvmem_regmap_register_with_pp(map, name, NULL);
 }

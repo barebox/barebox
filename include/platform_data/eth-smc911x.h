@@ -9,7 +9,7 @@
 
 /**
  * @brief Platform dependent feature:
- * Pass pointer to this structure as part of device_d -> platform_data
+ * Pass pointer to this structure as part of device -> platform_data
  */
 struct smc911x_plat {
 	u32 shift;

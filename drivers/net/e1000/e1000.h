@@ -2183,7 +2183,9 @@ struct e1000_hw {
 	struct mii_bus miibus;
 
 	struct e1000_tx_desc *tx_base;
+	dma_addr_t tx_base_phys;
 	struct e1000_rx_desc *rx_base;
+	dma_addr_t rx_base_phys;
 	unsigned char *packet;
 	dma_addr_t packet_dma;
 

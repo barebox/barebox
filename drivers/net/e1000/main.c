@@ -3267,7 +3267,7 @@ static void e1000_configure_tx(struct e1000_hw *hw)
 	unsigned long tctl;
 	unsigned long tipg, tarc;
 	uint32_t ipgr1, ipgr2;
-	const unsigned long tx_base = (unsigned long)hw->tx_base;
+	const unsigned long tx_base = (unsigned long)hw->tx_base_phys;
 
 	e1000_write_reg(hw, E1000_TDBAL, lower_32_bits(tx_base));
 	e1000_write_reg(hw, E1000_TDBAH, upper_32_bits(tx_base));
@@ -3386,7 +3386,7 @@ static void e1000_setup_rctl(struct e1000_hw *hw)
 static void e1000_configure_rx(struct e1000_hw *hw)
 {
 	unsigned long rctl, ctrl_ext;
-	const unsigned long rx_base = (unsigned long)hw->rx_base;
+	const unsigned long rx_base = (unsigned long)hw->rx_base_phys;
 
 	hw->rx_tail = 0;
 	/* make sure receives are disabled while setting up the descriptors */
@@ -3595,8 +3595,8 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 
 	hw = xzalloc(sizeof(*hw));
 
-	hw->tx_base = dma_alloc_coherent(16 * sizeof(*hw->tx_base), DMA_ADDRESS_BROKEN);
-	hw->rx_base = dma_alloc_coherent(16 * sizeof(*hw->rx_base), DMA_ADDRESS_BROKEN);
+	hw->tx_base = dma_alloc_coherent(16 * sizeof(*hw->tx_base), &hw->tx_base_phys);
+	hw->rx_base = dma_alloc_coherent(16 * sizeof(*hw->rx_base), &hw->rx_base_phys);
 
 	edev = &hw->edev;
 

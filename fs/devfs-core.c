@@ -177,6 +177,26 @@ int cdev_open(struct cdev *cdev, unsigned long flags)
 	return 0;
 }
 
+int cdev_fdopen(struct cdev *cdev, unsigned long flags)
+{
+	char *path;
+	int fd;
+
+	if (!cdev)
+		return -ENODEV;
+	if (IS_ERR(cdev))
+		return PTR_ERR(cdev);
+
+	path = basprintf("/dev/%s", cdev->name);
+	if (!path)
+		return -ENOMEM;
+
+	fd = open(path, flags);
+
+	free(path);
+	return fd;
+}
+
 struct cdev *cdev_open_by_name(const char *name, unsigned long flags)
 {
 	struct cdev *cdev;

@@ -408,7 +408,7 @@ static int atmel_spi_probe(struct device *dev)
 		master->num_chipselect = pdata->num_chipselect;
 		as->cs_pins = pdata->chipselect;
 	} else {
-		master->num_chipselect = of_gpio_named_count(node, "cs-gpios");
+		master->num_chipselect = of_gpio_count_csgpios(node);
 		as->cs_pins = xzalloc(sizeof(u32) * master->num_chipselect);
 
 		for (i = 0; i < master->num_chipselect; i++) {

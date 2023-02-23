@@ -240,7 +240,6 @@ config DRIVER_NET_ORION
 config DRIVER_NET_RTL8139
 	bool "RealTek RTL-8139 PCI Ethernet driver"
 	depends on PCI
-	depends on MIPS
 	select PHYLIB
 	help
 	  This is a driver for the Fast Ethernet PCI network cards based on

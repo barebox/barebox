@@ -157,7 +157,6 @@ struct atmel_qspi {
 	void __iomem		*mem;
 	struct clk		*pclk;
 	struct clk		*qspick;
-	struct platform_device	*pdev;
 	const struct atmel_qspi_caps *caps;
 	u32			mr;
 };

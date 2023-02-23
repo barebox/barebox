@@ -19,6 +19,8 @@ void dt_2nd_aarch64(void *fdt)
 {
 	unsigned long membase, memsize;
 
+	putc_ll('>');
+
 	/* entry point already set up stack */
 
 	arm_cpu_lowlevel_init();

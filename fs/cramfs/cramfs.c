@@ -168,7 +168,7 @@ static int cramfs_read(struct device *_dev, FILE *f, void *buf, size_t size)
 }
 
 #if 0
-static int cramfs_info (struct device_d *dev)
+static int cramfs_info (struct device *dev)
 {
 	if (cramfs_read_super (dev))
 		return 0;

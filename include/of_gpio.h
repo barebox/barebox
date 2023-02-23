@@ -69,6 +69,23 @@ static inline int of_gpio_count(struct device_node *np)
 	return of_gpio_named_count(np, "gpios");
 }
 
+/**
+ * of_gpio_count() - Count cs-gpios for a device
+ * @np:		device node to count cs-gpios for
+ *
+ * Same as of_gpio_named_count, but hard coded to use the 'cs-gpios' property
+ * Returns 0 on error
+ */
+static inline int of_gpio_count_csgpios(struct device_node *np)
+{
+	int count = of_gpio_named_count(np, "cs-gpios");
+
+	if (count > 0)
+		return count;
+	else
+		return 0;
+}
+
 static inline int of_get_gpio_flags(struct device_node *np, int index,
 		      enum of_gpio_flags *flags)
 {

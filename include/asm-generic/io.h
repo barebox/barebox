@@ -12,6 +12,7 @@
 #define __ASM_GENERIC_IO_H
 
 #include <linux/string.h> /* for memset() and memcpy() */
+#include <linux/compiler.h>
 #include <linux/types.h>
 #include <asm/byteorder.h>
 
@@ -86,7 +87,7 @@ static inline void __raw_writeq(u64 b, volatile void __iomem *addr)
 #endif
 
 #ifndef PCI_IOBASE
-#define PCI_IOBASE ((void __iomem *)0)
+#define PCI_IOBASE ((void __iomem *)RELOC_HIDE((void *)0, 0))
 #endif
 
 #ifndef IO_SPACE_LIMIT

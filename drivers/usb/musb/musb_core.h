@@ -324,7 +324,6 @@ struct musb {
 	u16			int_rx;
 	u16			int_tx;
 
-	//struct device_d		*phydev;
 	struct usb_host		host;
 	struct usb_phy		*xceiv;
 

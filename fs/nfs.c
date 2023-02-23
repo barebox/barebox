@@ -571,6 +571,12 @@ static int rpc_lookup_req(struct nfs_priv *npriv, uint32_t prog, uint32_t ver)
 
 	nfs_free_packet(nfs_packet);
 
+	if (port == 0) {
+		pr_warn("No UDP port for RPC program %i! "
+		        "Is your NFS server TCP only?\n", prog);
+		return -ENOENT;
+	}
+
 	return port;
 }
 

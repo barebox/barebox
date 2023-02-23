@@ -123,6 +123,12 @@ config DRIVER_VIDEO_SIMPLEFB
 	  Add support for setting up the kernel's simple framebuffer driver
 	  based on the active barebox framebuffer.
 
+config DRIVER_VIDEO_RAMFB
+	bool "QEMU RamFB support"
+	select QEMU_FW_CFG
+	help
+	  Add support for setting up a QEMU RamFB driver.
+
 config DRIVER_VIDEO_EDID
 	bool "Add EDID support"
 	help

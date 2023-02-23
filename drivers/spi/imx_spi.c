@@ -568,7 +568,7 @@ static int imx_spi_dt_probe(struct imx_spi *imx)
 	if (!node)
 		return -ENODEV;
 
-	imx->master.num_chipselect = of_gpio_named_count(node, "cs-gpios");
+	imx->master.num_chipselect = of_gpio_count_csgpios(node);
 	imx->cs_array = xzalloc(sizeof(u32) * imx->master.num_chipselect);
 
 	for (i = 0; i < imx->master.num_chipselect; i++)

@@ -353,7 +353,6 @@
  * struct ks_net - KS8851 driver private data
  * @hw_addr	: start address of data register.
  * @hw_addr_cmd	: start address of command register.
- * @pdev	: Pointer to platform device.
  * @bus_width	: i/o bus width.
  * @extra_byte	: number of extra byte prepended rx pkt.
  *
@@ -364,7 +363,6 @@ struct ks_net {
 	struct mii_bus	miibus;
 	void __iomem		*hw_addr;
 	void __iomem		*hw_addr_cmd;
-	struct platform_device	*pdev;
 	int			bus_width;
 	void			*rx_buf;
 };

@@ -258,7 +258,7 @@ tree binding, you can write a driver that matches against your board's
   	{ /* sentinel */ },
   };
 
-  static struct driver_d my_board_driver = {
+  static struct driver my_board_driver = {
   	.name = "board-mine",
   	.probe = my_board_probe,
   	.of_compatible = my_board_of_match,

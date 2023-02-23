@@ -232,6 +232,8 @@ device where the entry is found on. This makes it possible to use the same rootf
 image on different devices without having to specify a different root= option each
 time.
 
+.. _booting_linux_net:
+
 Network boot
 ------------
 

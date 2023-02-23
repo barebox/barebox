@@ -12,7 +12,7 @@
  * A typical device registration is as follows:
  *
  * @code
- * static struct device_d my_nand_device = {
+ * static struct device my_nand_device = {
  *	.name = "gpmc_nand",
  *	.id = some identifier you need to show.. e.g. "gpmc_nand0"
  *	.resource[0].start = GPMC base address

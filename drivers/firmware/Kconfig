@@ -32,4 +32,14 @@ config ARM_SCMI_PROTOCOL
 	  set of operating system-independent software interfaces that are
 	  used in system management.
 
+config QEMU_FW_CFG
+	bool "QEMU FW CFG interface"
+	help
+	  This driver exposes the QEMU FW CFG conduit as a single
+	  character device.
+
+	  The selector key can be set via ioctl or device parameter
+	  and read/writes are translated to the MMIO/IO port appropriate
+	  for the platform.
+
 endmenu

@@ -4,7 +4,7 @@
 #define __MACH_STM32MP1_DEBUG_LL_H
 
 #include <io.h>
-#include <mach/stm32.h>
+#include <mach/stm32mp/stm32.h>
 
 #define DEBUG_LL_UART_ADDR	STM32_UART4_BASE
 

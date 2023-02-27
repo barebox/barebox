@@ -3,7 +3,7 @@
 #ifndef __MACH_STM32_BSEC_H__
 #define __MACH_STM32_BSEC_H__
 
-#include <mach/smc.h>
+#include <mach/stm32mp/smc.h>
 
 /* Return status */
 enum bsec_smc {

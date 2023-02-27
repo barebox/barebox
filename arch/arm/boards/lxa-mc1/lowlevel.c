@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0+
 #include <common.h>
-#include <mach/entry.h>
+#include <mach/stm32mp/entry.h>
 #include <debug_ll.h>
 
 extern char __dtb_z_stm32mp157c_lxa_mc1_start[];

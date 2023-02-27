@@ -6,9 +6,9 @@
 #ifndef __MACH_CPUTYPE_H__
 #define __MACH_CPUTYPE_H__
 
-#include <mach/bsec.h>
+#include <mach/stm32mp/bsec.h>
 #include <asm/io.h>
-#include <mach/stm32.h>
+#include <mach/stm32mp/stm32.h>
 
 /* ID = Device Version (bit31:16) + Device Part Number (RPN) (bit7:0)
  * 157X: 2x Cortex-A7, Cortex-M4, CAN FD, GPU, DSI

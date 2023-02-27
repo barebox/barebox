@@ -14,7 +14,7 @@
 #include <io.h>
 #include <of.h>
 #include <regmap.h>
-#include <mach/bsec.h>
+#include <mach/stm32mp/bsec.h>
 #include <machine_id.h>
 #include <linux/nvmem-provider.h>
 

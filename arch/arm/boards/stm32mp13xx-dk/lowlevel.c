@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0+
 
-#include <mach/entry.h>
+#include <mach/stm32mp/entry.h>
 #include <debug_ll.h>
 
 extern char __dtb_z_stm32mp135f_dk_start[];

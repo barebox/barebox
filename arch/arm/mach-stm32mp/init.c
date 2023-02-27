@@ -8,10 +8,10 @@
 
 #include <common.h>
 #include <init.h>
-#include <mach/stm32.h>
-#include <mach/bsec.h>
-#include <mach/revision.h>
-#include <mach/bootsource.h>
+#include <mach/stm32mp/stm32.h>
+#include <mach/stm32mp/bsec.h>
+#include <mach/stm32mp/revision.h>
+#include <mach/stm32mp/bootsource.h>
 #include <bootsource.h>
 #include <dt-bindings/pinctrl/stm32-pinfunc.h>
 

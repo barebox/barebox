@@ -21,7 +21,7 @@
 #define __INCLUDE_ARCH_DEBUG_LL_H__
 
 #include <asm/io.h>
-#include <mach/hardware.h>
+#include <mach/uemd/hardware.h>
 
 #define DEBUG_LL_UART_ADDR	UEMD_UART0_BASE
 #define DEBUG_LL_UART_RSHFT	2

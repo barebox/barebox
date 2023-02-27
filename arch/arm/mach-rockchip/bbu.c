@@ -10,10 +10,10 @@
 #include <linux/stat.h>
 #include <ioctl.h>
 #include <environment.h>
-#include <mach/bbu.h>
+#include <mach/rockchip/bbu.h>
 #include <libfile.h>
 #include <linux/bitfield.h>
-#include <mach/rk3568-regs.h>
+#include <mach/rockchip/rk3568-regs.h>
 
 /* The MaskROM looks for images on these locations: */
 #define IMG_OFFSET_0	(0 * SZ_1K + SZ_32K)

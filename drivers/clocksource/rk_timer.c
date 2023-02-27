@@ -11,8 +11,8 @@
 #include <init.h>
 #include <io.h>
 #include <stdio.h>
-#include <mach/hardware.h>
-#include <mach/cru_rk3288.h>
+#include <mach/rockchip/hardware.h>
+#include <mach/rockchip/cru_rk3288.h>
 #include <common.h>
 
 struct rk_timer {

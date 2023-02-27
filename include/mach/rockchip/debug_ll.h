@@ -5,10 +5,10 @@
 
 #include <common.h>
 #include <io.h>
-#include <mach/rk3188-regs.h>
-#include <mach/rk3288-regs.h>
-#include <mach/rk3568-regs.h>
-#include <mach/rk3399-regs.h>
+#include <mach/rockchip/rk3188-regs.h>
+#include <mach/rockchip/rk3288-regs.h>
+#include <mach/rockchip/rk3568-regs.h>
+#include <mach/rockchip/rk3399-regs.h>
 
 #ifdef CONFIG_DEBUG_LL
 

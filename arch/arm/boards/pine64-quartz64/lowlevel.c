@@ -3,10 +3,10 @@
 #include <linux/sizes.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
-#include <mach/hardware.h>
-#include <mach/atf.h>
+#include <mach/rockchip/hardware.h>
+#include <mach/rockchip/atf.h>
 #include <debug_ll.h>
-#include <mach/rockchip.h>
+#include <mach/rockchip/rockchip.h>
 
 extern char __dtb_rk3566_quartz64_a_start[];
 

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 #include <common.h>
 #include <init.h>
-#include <mach/rockchip.h>
+#include <mach/rockchip/rockchip.h>
 
 static int rockchip_init(void)
 {

@@ -7,9 +7,9 @@
 #include <linux/sizes.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
-#include <mach/rk3288-regs.h>
-#include <mach/grf_rk3288.h>
-#include <mach/hardware.h>
+#include <mach/rockchip/rk3288-regs.h>
+#include <mach/rockchip/grf_rk3288.h>
+#include <mach/rockchip/hardware.h>
 #include <debug_ll.h>
 
 extern char __dtb_rk3288_phycore_som_start[];

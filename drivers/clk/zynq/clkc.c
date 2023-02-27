@@ -15,7 +15,7 @@
 #include <linux/clk.h>
 #include <linux/clkdev.h>
 #include <linux/err.h>
-#include <mach/zynq7000-regs.h>
+#include <mach/zynq/zynq7000-regs.h>
 #include <malloc.h>
 
 enum zynq_clk {

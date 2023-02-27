@@ -18,7 +18,7 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
-#include <mach/zynq7000-regs.h>
+#include <mach/zynq/zynq7000-regs.h>
 #include <restart.h>
 
 static void __noreturn zynq_restart_soc(struct restart_handler *rst)

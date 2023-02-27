@@ -3,7 +3,7 @@
 #include <common.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/errata.h>
-#include <mach/init.h>
+#include <mach/zynq/init.h>
 
 void zynq_cpu_lowlevel_init(void)
 {

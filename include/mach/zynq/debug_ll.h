@@ -8,7 +8,7 @@
 #define __MACH_DEBUG_LL_H__
 
 #include <io.h>
-#include <mach/zynq7000-regs.h>
+#include <mach/zynq/zynq7000-regs.h>
 
 #ifndef CONFIG_ZYNQ_DEBUG_LL_UART_BASE
 #warning define ZYNQ_DEBUG_LL_UART_BASE properly for debug_ll

@@ -18,7 +18,7 @@
 #include <mach/imx/imx-header.h>
 #endif
 #ifdef CONFIG_ARCH_LS1046
-#include <mach/xload.h>
+#include <mach/layerscape/xload.h>
 #endif
 #include "sdhci.h"
 #include "imx-esdhc.h"

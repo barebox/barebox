@@ -4,8 +4,8 @@
 #include <soc/fsl/immap_lsch2.h>
 #include <asm-generic/sections.h>
 #include <asm/cache.h>
-#include <mach/xload.h>
-#include <mach/layerscape.h>
+#include <mach/layerscape/xload.h>
+#include <mach/layerscape/layerscape.h>
 
 /*
  * The offset of the 2nd stage image in the output file. This must match with the

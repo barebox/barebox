@@ -12,10 +12,10 @@
 #include <asm/barebox-arm.h>
 #include <asm/syscounter.h>
 #include <asm/cache.h>
-#include <mach/errata.h>
-#include <mach/lowlevel.h>
-#include <mach/xload.h>
-#include <mach/layerscape.h>
+#include <mach/layerscape/errata.h>
+#include <mach/layerscape/lowlevel.h>
+#include <mach/layerscape/xload.h>
+#include <mach/layerscape/layerscape.h>
 
 struct board_specific_parameters {
 	u32 n_ranks;

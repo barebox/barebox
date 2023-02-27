@@ -10,8 +10,8 @@
 #include <linux/clk.h>
 #include <linux/clkdev.h>
 #include <soc/fsl/immap_lsch2.h>
-#include <mach/bbu.h>
-#include <mach/layerscape.h>
+#include <mach/layerscape/bbu.h>
+#include <mach/layerscape/layerscape.h>
 
 static int tqmls1046a_mem_init(void)
 {

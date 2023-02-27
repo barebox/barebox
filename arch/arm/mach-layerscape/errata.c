@@ -4,8 +4,8 @@
 #include <soc/fsl/immap_lsch2.h>
 #include <soc/fsl/fsl_ddr_sdram.h>
 #include <asm/system.h>
-#include <mach/errata.h>
-#include <mach/lowlevel.h>
+#include <mach/layerscape/errata.h>
+#include <mach/layerscape/lowlevel.h>
 
 #define scfg_clrsetbits32(addr, clear, set) clrsetbits_be32(addr, clear, set)
 #define scfg_clrbits32(addr, clear) clrbits_be32(addr, clear)

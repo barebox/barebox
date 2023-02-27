@@ -3,7 +3,7 @@
 #include <common.h>
 #include <init.h>
 #include <bootsource.h>
-#include <mach/layerscape.h>
+#include <mach/layerscape/layerscape.h>
 #include <soc/fsl/immap_lsch2.h>
 
 enum bootsource ls1046_bootsource_get(void)

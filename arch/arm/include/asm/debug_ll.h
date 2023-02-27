@@ -26,6 +26,8 @@
 #include <mach/vexpress/debug_ll.h>
 #elif defined CONFIG_ARCH_VERSATILE
 #include <mach/versatile/debug_ll.h>
+#elif defined CONFIG_ARCH_LAYERSCAPE
+#include <mach/layerscape/debug_ll.h>
 #else
 #ifndef CONFIG_ARCH_ARM64_VIRT
 #include <mach/debug_ll.h>

@@ -2,8 +2,8 @@
 
 #include <common.h>
 #include <bootsource.h>
-#include <mach/layerscape.h>
-#include <mach/xload.h>
+#include <mach/layerscape/layerscape.h>
+#include <mach/layerscape/xload.h>
 
 int ls1046a_xload_start_image(unsigned long r0, unsigned long r1,
 			      unsigned long r2)

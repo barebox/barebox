@@ -7,7 +7,7 @@
 #include <restart.h>
 #include <asm/memory.h>
 #include <linux/mbus.h>
-#include <mach/dove-regs.h>
+#include <mach/mvebu/dove-regs.h>
 
 static void __noreturn dove_restart_soc(struct restart_handler *rst)
 {

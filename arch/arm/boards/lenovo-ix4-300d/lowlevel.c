@@ -3,9 +3,9 @@
 
 #include <common.h>
 #include <asm/barebox-arm.h>
-#include <mach/barebox-arm-head.h>
+#include <mach/mvebu/barebox-arm-head.h>
 #include <linux/sizes.h>
-#include <mach/lowlevel.h>
+#include <mach/mvebu/lowlevel.h>
 
 extern char __dtb_armada_xp_lenovo_ix4_300d_bb_start[];
 

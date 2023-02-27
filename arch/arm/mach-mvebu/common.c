@@ -8,11 +8,11 @@
 #include <of.h>
 #include <of_address.h>
 #include <linux/clk.h>
-#include <mach/common.h>
-#include <mach/socid.h>
+#include <mach/mvebu/common.h>
+#include <mach/mvebu/socid.h>
 #include <asm/barebox-arm.h>
 #include <asm/memory.h>
-#include <mach/lowlevel.h>
+#include <mach/mvebu/lowlevel.h>
 
 /*
  * The different SoC headers containing register definitions (mach/dove-regs.h,

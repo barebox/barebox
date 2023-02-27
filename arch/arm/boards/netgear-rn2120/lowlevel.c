@@ -3,10 +3,10 @@
 
 #include <common.h>
 #include <asm/barebox-arm.h>
-#include <mach/barebox-arm-head.h>
+#include <mach/mvebu/barebox-arm-head.h>
 #include <asm/io.h>
-#include <mach/lowlevel.h>
-#include <mach/common.h>
+#include <mach/mvebu/lowlevel.h>
+#include <mach/mvebu/common.h>
 
 extern char __dtb_armada_xp_rn2120_bb_start[];
 

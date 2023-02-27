@@ -7,7 +7,7 @@
 #include <restart.h>
 #include <asm/memory.h>
 #include <linux/mbus.h>
-#include <mach/kirkwood-regs.h>
+#include <mach/mvebu/kirkwood-regs.h>
 
 static void __noreturn kirkwood_restart_soc(struct restart_handler *rst)
 {

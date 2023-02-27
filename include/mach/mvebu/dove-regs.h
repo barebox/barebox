@@ -4,7 +4,7 @@
 #ifndef __MACH_MVEBU_DOVE_REGS_H
 #define __MACH_MVEBU_DOVE_REGS_H
 
-#include <mach/common.h>
+#include <mach/mvebu/common.h>
 
 /*
  * Even after MVEBU SoC internal register base remap. Dove MC

@@ -4,8 +4,8 @@
 #include <common.h>
 #include <linux/sizes.h>
 #include <asm/barebox-arm.h>
-#include <mach/barebox-arm-head.h>
-#include <mach/lowlevel.h>
+#include <mach/mvebu/barebox-arm-head.h>
+#include <mach/mvebu/lowlevel.h>
 
 extern char __dtb_armada_370_mirabox_bb_start[];
 

@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
 #include <linux/stringify.h>
-#include <mach/common.h>
+#include <mach/mvebu/common.h>
 
 static inline void __barebox_mvebu_head(void)
 {

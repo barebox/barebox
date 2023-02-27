@@ -4,7 +4,7 @@
 #ifndef __MACH_MVEBU_KIRKWOOD_REGS_H
 #define __MACH_MVEBU_KIRKWOOD_REGS_H
 
-#include <mach/common.h>
+#include <mach/mvebu/common.h>
 
 #define KIRKWOOD_INT_REGS_BASE	IOMEM(MVEBU_REMAP_INT_REG_BASE)
 

@@ -4,7 +4,7 @@
 #ifndef __MACH_MVEBU_ARMADA_370_XP_REGS_H
 #define __MACH_MVEBU_ARMADA_370_XP_REGS_H
 
-#include <mach/common.h>
+#include <mach/mvebu/common.h>
 
 #define ARMADA_370_XP_INT_REGS_BASE	IOMEM(MVEBU_REMAP_INT_REG_BASE)
 #define ARMADA_370_XP_UART_BASE		(ARMADA_370_XP_INT_REGS_BASE + 0x12000)

@@ -7,7 +7,7 @@
 #include <common.h>
 #include <io.h>
 #include <asm/hardware/sp810.h>
-#include <mach/devices.h>
+#include <mach/vexpress/devices.h>
 
 void __iomem *v2m_sysreg_base;
 

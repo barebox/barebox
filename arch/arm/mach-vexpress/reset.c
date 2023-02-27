@@ -10,7 +10,7 @@
 #include <restart.h>
 #include <linux/amba/sp805.h>
 
-#include <mach/devices.h>
+#include <mach/vexpress/devices.h>
 
 void __iomem *v2m_wdt_base;
 

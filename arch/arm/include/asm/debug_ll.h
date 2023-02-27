@@ -10,6 +10,8 @@
 #include <mach/imx/debug_ll.h>
 #elif defined CONFIG_ARCH_ROCKCHIP
 #include <mach/rockchip/debug_ll.h>
+#elif defined CONFIG_ARCH_ZYNQMP
+#include <mach/zynqmp/debug_ll.h>
 #else
 #ifndef CONFIG_ARCH_ARM64_VIRT
 #include <mach/debug_ll.h>

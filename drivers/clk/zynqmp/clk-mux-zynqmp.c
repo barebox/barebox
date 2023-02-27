@@ -11,7 +11,7 @@
 
 #include <common.h>
 #include <linux/clk.h>
-#include <mach/firmware-zynqmp.h>
+#include <mach/zynqmp/firmware-zynqmp.h>
 
 #include "clk-zynqmp.h"
 

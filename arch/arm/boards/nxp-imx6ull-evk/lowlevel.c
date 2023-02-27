@@ -2,13 +2,13 @@
 
 #include <common.h>
 #include <linux/sizes.h>
-#include <mach/generic.h>
+#include <mach/imx/generic.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
-#include <mach/imx6-regs.h>
+#include <mach/imx/imx6-regs.h>
 #include <io.h>
 #include <debug_ll.h>
-#include <mach/esdctl.h>
+#include <mach/imx/esdctl.h>
 #include <asm/cache.h>
 #include <asm/sections.h>
 #include <image-metadata.h>

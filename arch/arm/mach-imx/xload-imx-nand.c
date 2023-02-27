@@ -7,10 +7,10 @@
 #include <io.h>
 #include <linux/mtd/rawnand.h>
 #include <linux/mtd/nand.h>
-#include <mach/imx-nand.h>
-#include <mach/generic.h>
-#include <mach/imx53-regs.h>
-#include <mach/xload.h>
+#include <mach/imx/imx-nand.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/imx53-regs.h>
+#include <mach/imx/xload.h>
 
 struct imx_nand {
 	void __iomem *base;

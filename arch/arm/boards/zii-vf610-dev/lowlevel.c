@@ -5,13 +5,13 @@
 
 #include <common.h>
 #include <linux/sizes.h>
-#include <mach/generic.h>
+#include <mach/imx/generic.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
-#include <mach/esdctl.h>
-#include <mach/vf610-regs.h>
-#include <mach/clock-vf610.h>
-#include <mach/iomux-vf610.h>
+#include <mach/imx/esdctl.h>
+#include <mach/imx/vf610-regs.h>
+#include <mach/imx/clock-vf610.h>
+#include <mach/imx/iomux-vf610.h>
 #include <debug_ll.h>
 
 static inline void setup_uart(void)

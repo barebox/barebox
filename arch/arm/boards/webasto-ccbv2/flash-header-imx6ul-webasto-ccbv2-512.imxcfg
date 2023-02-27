@@ -85,4 +85,4 @@ wm 32 0x021B001C 0x00000000
 /* Disable TZASC bypass */
 wm 32 0x020E4024 0x00000001
 
-#include <mach/habv4-imx6-gencsf.h>
+#include <mach/imx/habv4-imx6-gencsf.h>

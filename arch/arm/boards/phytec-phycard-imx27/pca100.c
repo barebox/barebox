@@ -5,7 +5,7 @@
 #include <net.h>
 #include <init.h>
 #include <environment.h>
-#include <mach/imx27-regs.h>
+#include <mach/imx/imx27-regs.h>
 #include <gpio.h>
 #include <linux/sizes.h>
 #include <asm/armlinux.h>
@@ -16,14 +16,14 @@
 #include <nand.h>
 #include <spi/spi.h>
 #include <io.h>
-#include <mach/imx-nand.h>
-#include <mach/imx-pll.h>
+#include <mach/imx/imx-nand.h>
+#include <mach/imx/imx-pll.h>
 #include <platform_data/imxfb.h>
 #include <asm/mmu.h>
 #include <usb/ulpi.h>
-#include <mach/bbu.h>
-#include <mach/iomux-mx27.h>
-#include <mach/devices-imx27.h>
+#include <mach/imx/bbu.h>
+#include <mach/imx/iomux-mx27.h>
+#include <mach/imx/devices-imx27.h>
 
 #if defined(CONFIG_USB) && defined(CONFIG_USB_ULPI)
 static void pca100_usb_register(void)

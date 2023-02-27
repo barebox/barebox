@@ -14,8 +14,8 @@
 #include <linux/arm-smccc.h>
 #include <asm/cache.h>
 
-#include <mach/generic.h>
-#include <mach/imx8mq.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/imx8mq.h>
 
 #define HABV4_RVT_IMX28 0xffff8af8
 #define HABV4_RVT_IMX6_OLD 0x00000094

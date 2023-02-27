@@ -10,14 +10,14 @@
 #include <pbl/i2c.h>
 #include <pbl/pmic.h>
 #include <linux/sizes.h>
-#include <mach/esdctl.h>
-#include <mach/generic.h>
-#include <mach/imx8mm-regs.h>
-#include <mach/iomux-mx8mm.h>
-#include <mach/imx8m-ccm-regs.h>
+#include <mach/imx/esdctl.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/imx8mm-regs.h>
+#include <mach/imx/iomux-mx8mm.h>
+#include <mach/imx/imx8m-ccm-regs.h>
 #include <mfd/bd71837.h>
 #include <mfd/pca9450.h>
-#include <mach/xload.h>
+#include <mach/imx/xload.h>
 #include <soc/imx8m/ddr.h>
 #include <image-metadata.h>
 

@@ -9,13 +9,13 @@
 #include <linux/mtd/nand.h>
 #include <linux/bitfield.h>
 #include <asm/cache.h>
-#include <mach/xload.h>
+#include <mach/imx/xload.h>
 #include <soc/imx/imx-nand-bcb.h>
 #include <linux/mtd/rawnand.h>
 #include <soc/imx/gpmi-nand.h>
-#include <mach/imx6-regs.h>
-#include <mach/imx7-regs.h>
-#include <mach/clock-imx6.h>
+#include <mach/imx/imx6-regs.h>
+#include <mach/imx/imx7-regs.h>
+#include <mach/imx/clock-imx6.h>
 #include <dma/apbh-dma.h>
 
 struct apbh_dma {

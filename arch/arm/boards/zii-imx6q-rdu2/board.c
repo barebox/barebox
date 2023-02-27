@@ -9,8 +9,8 @@
 #include <gpio.h>
 #include <i2c/i2c.h>
 #include <init.h>
-#include <mach/bbu.h>
-#include <mach/imx6.h>
+#include <mach/imx/bbu.h>
+#include <mach/imx/imx6.h>
 #include <net.h>
 #include <linux/nvmem-consumer.h>
 #include "../zii-common/pn-fixup.h"

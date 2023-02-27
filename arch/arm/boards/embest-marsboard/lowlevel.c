@@ -6,9 +6,9 @@
 #include <common.h>
 #include <io.h>
 #include <asm/barebox-arm.h>
-#include <mach/imx6.h>
-#include <mach/esdctl.h>
-#include <mach/iomux-mx6.h>
+#include <mach/imx/imx6.h>
+#include <mach/imx/esdctl.h>
+#include <mach/imx/iomux-mx6.h>
 #include <debug_ll.h>
 
 static inline void setup_uart(void)

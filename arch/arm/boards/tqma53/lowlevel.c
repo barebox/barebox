@@ -3,12 +3,12 @@
 #include <common.h>
 #include <debug_ll.h>
 #include <io.h>
-#include <mach/esdctl.h>
+#include <mach/imx/esdctl.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
-#include <mach/imx5.h>
-#include <mach/imx53-regs.h>
-#include <mach/generic.h>
+#include <mach/imx/imx5.h>
+#include <mach/imx/imx53-regs.h>
+#include <mach/imx/generic.h>
 #include <image-metadata.h>
 
 extern char __dtb_imx53_mba53_start[];

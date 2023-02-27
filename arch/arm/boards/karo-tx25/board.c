@@ -9,19 +9,19 @@
 #include <linux/sizes.h>
 #include <gpio.h>
 #include <environment.h>
-#include <mach/imx25-regs.h>
+#include <mach/imx/imx25-regs.h>
 #include <asm/armlinux.h>
 #include <asm/sections.h>
 #include <asm/barebox-arm.h>
 #include <io.h>
 #include <generated/mach-types.h>
-#include <mach/imx-nand.h>
-#include <mach/iomux-mx25.h>
-#include <mach/generic.h>
-#include <mach/iim.h>
+#include <mach/imx/imx-nand.h>
+#include <mach/imx/iomux-mx25.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/iim.h>
 #include <linux/err.h>
-#include <mach/devices-imx25.h>
-#include <mach/bbu.h>
+#include <mach/imx/devices-imx25.h>
+#include <mach/imx/bbu.h>
 #include <asm/mmu.h>
 
 #define TX25_FEC_PWR_GPIO	IMX_GPIO_NR(4, 9)

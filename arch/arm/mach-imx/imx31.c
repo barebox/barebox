@@ -4,9 +4,9 @@
 #include <init.h>
 #include <linux/sizes.h>
 #include <io.h>
-#include <mach/imx31-regs.h>
-#include <mach/weim.h>
-#include <mach/generic.h>
+#include <mach/imx/imx31-regs.h>
+#include <mach/imx/weim.h>
+#include <mach/imx/generic.h>
 
 void imx31_setup_weimcs(size_t cs, unsigned upper, unsigned lower,
 		unsigned additional)

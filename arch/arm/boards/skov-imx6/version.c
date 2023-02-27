@@ -3,9 +3,9 @@
 #define pr_fmt(fmt) "skov-imx6: " fmt
 
 #include <common.h>
-#include <mach/iomux-mx6.h>
-#include <mach/imx-gpio.h>
-#include <mach/imx6.h>
+#include <mach/imx/iomux-mx6.h>
+#include <mach/imx/imx-gpio.h>
+#include <mach/imx/imx6.h>
 
 #include "version.h"
 

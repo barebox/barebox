@@ -4,10 +4,10 @@
 #include <io.h>
 #include <common.h>
 #include <linux/sizes.h>
-#include <mach/generic.h>
+#include <mach/imx/generic.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
-#include <mach/debug_ll.h>
+#include <mach/imx/debug_ll.h>
 #include <asm/cache.h>
 
 extern char __dtb_imx7s_warp_start[];

@@ -21,8 +21,8 @@
 #include <gpio.h>
 #include <of_gpio.h>
 #include <of_device.h>
-#include <mach/spi.h>
-#include <mach/generic.h>
+#include <mach/imx/spi.h>
+#include <mach/imx/generic.h>
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <clock.h>

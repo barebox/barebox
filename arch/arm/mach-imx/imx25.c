@@ -2,11 +2,11 @@
 
 #include <common.h>
 #include <init.h>
-#include <mach/imx25-regs.h>
-#include <mach/iim.h>
+#include <mach/imx/imx25-regs.h>
+#include <mach/imx/iim.h>
 #include <io.h>
-#include <mach/weim.h>
-#include <mach/generic.h>
+#include <mach/imx/weim.h>
+#include <mach/imx/generic.h>
 #include <linux/sizes.h>
 
 #define MX25_BOOTROM_HAB_MAGIC		0x3c95cac6

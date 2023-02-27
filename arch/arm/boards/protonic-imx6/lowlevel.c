@@ -6,8 +6,8 @@
 
 #include <asm/barebox-arm.h>
 #include <common.h>
-#include <mach/esdctl.h>
-#include <mach/generic.h>
+#include <mach/imx/esdctl.h>
+#include <mach/imx/generic.h>
 
 extern char __dtb_z_imx6q_prti6q_start[];
 extern char __dtb_z_imx6q_prtwd2_start[];

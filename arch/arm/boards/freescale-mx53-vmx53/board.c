@@ -11,9 +11,9 @@
 #include <linux/sizes.h>
 
 #include <generated/mach-types.h>
-#include <mach/imx5.h>
+#include <mach/imx/imx5.h>
 #include <asm/armlinux.h>
-#include <mach/bbu.h>
+#include <mach/imx/bbu.h>
 
 static int vmx53_late_init(void)
 {

@@ -9,11 +9,11 @@ HOSTLDLIBS_imx-usb-loader  = `pkg-config --libs libusb-1.0`
 imx-usb-loader-target-userccflags += `$(CROSS_PKG_CONFIG) --cflags libusb-1.0`
 imx-usb-loader-target-userldlibs += `$(CROSS_PKG_CONFIG) --libs libusb-1.0`
 
-HOSTCFLAGS_imx.o = -I$(srctree)/arch/arm/mach-imx/include
-imx-target-userccflags += -I$(srctree)/arch/arm/mach-imx/include
-HOSTCFLAGS_imx-image.o = -I$(srctree) -I$(srctree)/arch/arm/mach-imx/include
-HOSTCFLAGS_imx-usb-loader.o += -I$(srctree) -I$(srctree)/arch/arm/mach-imx/include
-imx-usb-loader-target-userccflags += -I$(srctree) -I$(srctree)/arch/arm/mach-imx/include
+HOSTCFLAGS_imx.o = -I$(srctree)/include/mach
+imx-target-userccflags += -I$(srctree)/include/mach
+HOSTCFLAGS_imx-image.o = -I$(srctree) -I$(srctree)/include/mach
+HOSTCFLAGS_imx-usb-loader.o += -I$(srctree) -I$(srctree)/include/mach
+imx-usb-loader-target-userccflags += -I$(srctree) -I$(srctree)/include/mach
 ifdef CONFIG_ARCH_IMX_IMXIMAGE_SSL_SUPPORT
 HOSTCFLAGS_imx-image.o += -DIMXIMAGE_SSL_SUPPORT
 HOSTLDLIBS_imx-image  = `pkg-config --libs openssl`

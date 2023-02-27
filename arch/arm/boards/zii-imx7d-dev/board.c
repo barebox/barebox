@@ -9,11 +9,11 @@
 #include <init.h>
 #include <io.h>
 #include <gpio.h>
-#include <mach/imx7-regs.h>
+#include <mach/imx/imx7-regs.h>
 #include <mfd/imx7-iomuxc-gpr.h>
 #include <environment.h>
 #include <envfs.h>
-#include <mach/bbu.h>
+#include <mach/imx/bbu.h>
 
 static void zii_imx7d_rpu2_init_fec(void)
 {

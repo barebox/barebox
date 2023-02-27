@@ -10,8 +10,8 @@
 #include <of.h>
 #include <errno.h>
 #include <usb/chipidea-imx.h>
-#include <mach/imx6-regs.h>
-#include <mach/iomux-mx6.h>
+#include <mach/imx/imx6-regs.h>
+#include <mach/imx/iomux-mx6.h>
 
 #define MX25_OTG_SIC_SHIFT	29
 #define MX25_OTG_SIC_MASK	(0x3 << MX25_OTG_SIC_SHIFT)

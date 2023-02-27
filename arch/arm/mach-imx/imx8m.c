@@ -5,14 +5,14 @@
 #include <io.h>
 #include <asm/syscounter.h>
 #include <asm/system.h>
-#include <mach/generic.h>
-#include <mach/revision.h>
-#include <mach/imx8mq.h>
-#include <mach/imx8m-ccm-regs.h>
-#include <mach/reset-reason.h>
-#include <mach/ocotp.h>
-#include <mach/imx8mp-regs.h>
-#include <mach/imx8mq-regs.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/revision.h>
+#include <mach/imx/imx8mq.h>
+#include <mach/imx/imx8m-ccm-regs.h>
+#include <mach/imx/reset-reason.h>
+#include <mach/imx/ocotp.h>
+#include <mach/imx/imx8mp-regs.h>
+#include <mach/imx/imx8mq-regs.h>
 #include <soc/imx8m/clk-early.h>
 
 #include <linux/iopoll.h>

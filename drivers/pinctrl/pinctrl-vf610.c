@@ -12,7 +12,7 @@
 #include <malloc.h>
 #include <gpio.h>
 
-#include <mach/iomux-vf610.h>
+#include <mach/imx/iomux-vf610.h>
 
 enum {
 	PINCTRL_VF610_MUX_LINE_SIZE = 20,

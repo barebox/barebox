@@ -2,7 +2,7 @@
 
 #include <common.h>
 #include <driver.h>
-#include <mach/devices.h>
+#include <mach/imx/devices.h>
 
 static inline struct device *imx_add_device(char *name, int id, void *base, int size, void *pdata)
 {

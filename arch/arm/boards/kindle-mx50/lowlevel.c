@@ -8,8 +8,8 @@
 #include <asm/sections.h>
 #include <asm/cache.h>
 #include <asm/mmu.h>
-#include <mach/imx50-regs.h>
-#include <mach/generic.h>
+#include <mach/imx/imx50-regs.h>
+#include <mach/imx/generic.h>
 
 extern char __dtb_imx50_kindle_d01100_start[];
 extern char __dtb_imx50_kindle_d01200_start[];

@@ -3,12 +3,12 @@
 #include <common.h>
 #include <io.h>
 #include <spi/imx-spi.h>
-#include <mach/imx6-regs.h>
-#include <mach/generic.h>
+#include <mach/imx/imx6-regs.h>
+#include <mach/imx/generic.h>
 #include <bootsource.h>
 #include <asm/sections.h>
 #include <linux/sizes.h>
-#include <mach/xload.h>
+#include <mach/imx/xload.h>
 
 static int cspi_2_3_read_data(void __iomem *base, u32 *data)
 {

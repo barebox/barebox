@@ -13,8 +13,8 @@
 #include <linux/clk.h>
 #include <notifier.h>
 #include <dt-bindings/clock/vf610-clock.h>
-#include <mach/vf610-regs.h>
-#include <mach/vf610-fusemap.h>
+#include <mach/imx/vf610-regs.h>
+#include <mach/imx/vf610-fusemap.h>
 
 #include "clk.h"
 

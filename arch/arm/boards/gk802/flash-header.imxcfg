@@ -4,8 +4,8 @@ loadaddr 0x10000000
 soc imx6
 ivtofs 0x400
 
-#include <mach/imx6-ddr-regs.h>
-#include <mach/imx6q-ddr-regs.h>
+#include <mach/imx/imx6-ddr-regs.h>
+#include <mach/imx/imx6q-ddr-regs.h>
 
 wm 32 MX6_IOM_DRAM_SDQS0 0x00000030
 wm 32 MX6_IOM_DRAM_SDQS1 0x00000030

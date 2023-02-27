@@ -3,8 +3,8 @@
 #include <common.h>
 #include <io.h>
 #include <linux/sizes.h>
-#include <mach/imx5.h>
-#include <mach/clock-imx51_53.h>
+#include <mach/imx/imx5.h>
+#include <mach/imx/clock-imx51_53.h>
 
 void imx5_setup_pll(void __iomem *base, int freq, u32 op, u32 mfd, u32 mfn)
 {

@@ -10,8 +10,8 @@
 #include <init.h>
 #include <linux/phy.h>
 #include <linux/sizes.h>
-#include <mach/bbu.h>
-#include <mach/iomux-mx8mp.h>
+#include <mach/imx/bbu.h>
+#include <mach/imx/iomux-mx8mp.h>
 #include <gpio.h>
 #include <envfs.h>
 

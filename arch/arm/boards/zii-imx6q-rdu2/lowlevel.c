@@ -5,11 +5,11 @@
 
 #include <debug_ll.h>
 #include <common.h>
-#include <mach/esdctl.h>
-#include <mach/generic.h>
-#include <mach/imx6.h>
-#include <mach/xload.h>
-#include <mach/iomux-mx6.h>
+#include <mach/imx/esdctl.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/imx6.h>
+#include <mach/imx/xload.h>
+#include <mach/imx/iomux-mx6.h>
 #include <asm/barebox-arm.h>
 
 struct reginit {

@@ -16,14 +16,14 @@
 
 #include <generated/mach-types.h>
 
-#include <mach/imx53-regs.h>
-#include <mach/iomux-mx53.h>
-#include <mach/devices-imx53.h>
-#include <mach/generic.h>
-#include <mach/imx-nand.h>
-#include <mach/iim.h>
-#include <mach/imx5.h>
-#include <mach/bbu.h>
+#include <mach/imx/imx53-regs.h>
+#include <mach/imx/iomux-mx53.h>
+#include <mach/imx/devices-imx53.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/imx-nand.h>
+#include <mach/imx/iim.h>
+#include <mach/imx/imx5.h>
+#include <mach/imx/bbu.h>
 
 #include <asm/armlinux.h>
 #include <io.h>

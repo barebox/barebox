@@ -10,9 +10,9 @@
 #include <of.h>
 #include <linux/clkdev.h>
 #include <linux/err.h>
-#include <mach/imx50-regs.h>
-#include <mach/imx51-regs.h>
-#include <mach/imx53-regs.h>
+#include <mach/imx/imx50-regs.h>
+#include <mach/imx/imx51-regs.h>
+#include <mach/imx/imx53-regs.h>
 #include <dt-bindings/clock/imx5-clock.h>
 
 #include "clk.h"

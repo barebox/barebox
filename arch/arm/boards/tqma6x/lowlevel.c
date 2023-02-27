@@ -10,7 +10,7 @@
 #include <asm/sections.h>
 #include <asm/cache.h>
 #include <asm/mmu.h>
-#include <mach/imx6.h>
+#include <mach/imx/imx6.h>
 
 extern char __dtb_imx6q_mba6x_start[];
 extern char __dtb_imx6dl_mba6x_start[];

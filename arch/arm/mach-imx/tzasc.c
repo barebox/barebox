@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#include <mach/tzasc.h>
+#include <mach/imx/tzasc.h>
 #include <linux/bitops.h>
-#include <mach/imx8m-regs.h>
+#include <mach/imx/imx8m-regs.h>
 #include <io.h>
 
 #define GPR_TZASC_EN		BIT(0)

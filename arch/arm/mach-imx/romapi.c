@@ -4,10 +4,10 @@
 
 #include <common.h>
 #include <asm/sections.h>
-#include <mach/romapi.h>
-#include <mach/atf.h>
-#include <mach/imx8m-regs.h>
-#include <mach/xload.h>
+#include <mach/imx/romapi.h>
+#include <mach/imx/atf.h>
+#include <mach/imx/imx8m-regs.h>
+#include <mach/imx/xload.h>
 #include <asm/barebox-arm.h>
 #include <zero_page.h>
 #include <pbl.h>

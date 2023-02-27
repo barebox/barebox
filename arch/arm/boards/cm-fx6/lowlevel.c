@@ -4,16 +4,16 @@
 
 #include <common.h>
 #include <linux/sizes.h>
-#include <mach/generic.h>
+#include <mach/imx/generic.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 #include <debug_ll.h>
 #include <io.h>
-#include <mach/imx6-mmdc.h>
-#include <mach/imx6-ddr-regs.h>
-#include <mach/imx6.h>
-#include <mach/xload.h>
-#include <mach/esdctl.h>
+#include <mach/imx/imx6-mmdc.h>
+#include <mach/imx/imx6-ddr-regs.h>
+#include <mach/imx/imx6.h>
+#include <mach/imx/xload.h>
+#include <mach/imx/esdctl.h>
 #include <serial/imx-uart.h>
 
 enum ddr_config {

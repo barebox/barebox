@@ -5,13 +5,13 @@
 #include <image-metadata.h>
 #include <debug_ll.h>
 #include <firmware.h>
-#include <mach/atf.h>
-#include <mach/esdctl.h>
-#include <mach/generic.h>
-#include <mach/imx8m-ccm-regs.h>
-#include <mach/imx8mm-regs.h>
-#include <mach/iomux-mx8mm.h>
-#include <mach/xload.h>
+#include <mach/imx/atf.h>
+#include <mach/imx/esdctl.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/imx8m-ccm-regs.h>
+#include <mach/imx/imx8mm-regs.h>
+#include <mach/imx/iomux-mx8mm.h>
+#include <mach/imx/xload.h>
 #include <soc/fsl/fsl_udc.h>
 #include <soc/imx8m/ddr.h>
 

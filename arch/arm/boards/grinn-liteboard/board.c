@@ -9,8 +9,8 @@
 #include <common.h>
 #include <envfs.h>
 #include <init.h>
-#include <mach/bbu.h>
-#include <mach/imx6.h>
+#include <mach/imx/bbu.h>
+#include <mach/imx/imx6.h>
 #include <malloc.h>
 #include <mfd/imx6q-iomuxc-gpr.h>
 #include <of.h>

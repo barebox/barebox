@@ -3,10 +3,10 @@
 #include <asm/sections.h>
 #include <common.h>
 #include <firmware.h>
-#include <mach/atf.h>
-#include <mach/generic.h>
-#include <mach/xload.h>
-#include <mach/romapi.h>
+#include <mach/imx/atf.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/xload.h>
+#include <mach/imx/romapi.h>
 #include <soc/fsl/fsl_udc.h>
 #include <soc/fsl/caam.h>
 

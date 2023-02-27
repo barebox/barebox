@@ -11,10 +11,10 @@
 #include <driver.h>
 #include <init.h>
 #include <linux/mutex.h>
-#include <mach/generic.h>
-#include <mach/imx6-regs.h>
-#include <mach/imx53-regs.h>
-#include <mach/imx51-regs.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/imx6-regs.h>
+#include <mach/imx/imx53-regs.h>
+#include <mach/imx/imx51-regs.h>
 
 #include "imx-ipu-v3.h"
 #include "ipu-prv.h"

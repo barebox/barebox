@@ -4,11 +4,11 @@
 #include <linux/sizes.h>
 #include <init.h>
 #include <io.h>
-#include <mach/weim.h>
-#include <mach/imx35-regs.h>
-#include <mach/iim.h>
-#include <mach/revision.h>
-#include <mach/generic.h>
+#include <mach/imx/weim.h>
+#include <mach/imx/imx35-regs.h>
+#include <mach/imx/iim.h>
+#include <mach/imx/revision.h>
+#include <mach/imx/generic.h>
 
 void imx35_setup_weimcs(size_t cs, unsigned upper, unsigned lower,
 		unsigned additional)

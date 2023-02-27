@@ -18,8 +18,8 @@
 #include <common.h>
 #include <init.h>
 #include <of.h>
-#include <mach/bbu.h>
-#include <mach/esdctl.h>
+#include <mach/imx/bbu.h>
+#include <mach/imx/esdctl.h>
 
 #include <asm/armlinux.h>
 

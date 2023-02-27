@@ -3,10 +3,10 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
-#include <mach/imx1-regs.h>
-#include <mach/weim.h>
-#include <mach/iomux-v1.h>
-#include <mach/generic.h>
+#include <mach/imx/imx1-regs.h>
+#include <mach/imx/weim.h>
+#include <mach/imx/iomux-v1.h>
+#include <mach/imx/generic.h>
 #include <reset_source.h>
 
 #define MX1_RSR MX1_SCM_BASE_ADDR
@@ -39,7 +39,7 @@ void imx1_setup_eimcs(size_t cs, unsigned upper, unsigned lower)
 	writel(lower, MX1_EIM_BASE_ADDR + 4 + cs * 8);
 }
 
-#include <mach/esdctl.h>
+#include <mach/imx/esdctl.h>
 
 int imx1_init(void)
 {

@@ -5,13 +5,13 @@
 #include <linux/sizes.h>
 #include <environment.h>
 #include <io.h>
-#include <mach/imx5.h>
-#include <mach/imx51-regs.h>
-#include <mach/revision.h>
-#include <mach/clock-imx51_53.h>
-#include <mach/generic.h>
-#include <mach/reset-reason.h>
-#include <mach/usb.h>
+#include <mach/imx/imx5.h>
+#include <mach/imx/imx51-regs.h>
+#include <mach/imx/revision.h>
+#include <mach/imx/clock-imx51_53.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/reset-reason.h>
+#include <mach/imx/usb.h>
 
 #define IIM_SREV 0x24
 

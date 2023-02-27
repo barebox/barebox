@@ -3,11 +3,11 @@
 
 #include <common.h>
 #include <init.h>
-#include <mach/imx25-regs.h>
-#include <mach/esdctl.h>
+#include <mach/imx/imx25-regs.h>
+#include <mach/imx/esdctl.h>
 #include <io.h>
 #include <linux/sizes.h>
-#include <mach/imx-nand.h>
+#include <mach/imx/imx-nand.h>
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/system.h>

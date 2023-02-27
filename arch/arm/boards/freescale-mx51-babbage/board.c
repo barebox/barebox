@@ -6,26 +6,26 @@
 #include <common.h>
 #include <init.h>
 #include <environment.h>
-#include <mach/imx51-regs.h>
+#include <mach/imx/imx51-regs.h>
 #include <gpio.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 #include <fs.h>
 #include <of.h>
 #include <fcntl.h>
-#include <mach/bbu.h>
+#include <mach/imx/bbu.h>
 #include <nand.h>
 #include <notifier.h>
 #include <spi/spi.h>
 #include <io.h>
 #include <asm/mmu.h>
-#include <mach/imx5.h>
-#include <mach/imx-nand.h>
-#include <mach/spi.h>
-#include <mach/generic.h>
-#include <mach/iomux-mx51.h>
-#include <mach/devices-imx51.h>
-#include <mach/revision.h>
+#include <mach/imx/imx5.h>
+#include <mach/imx/imx-nand.h>
+#include <mach/imx/spi.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/iomux-mx51.h>
+#include <mach/imx/devices-imx51.h>
+#include <mach/imx/revision.h>
 
 #define MX51_CCM_CACRR 0x10
 

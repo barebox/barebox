@@ -8,7 +8,7 @@
 #include <common.h>
 #include <init.h>
 #include <envfs.h>
-#include <mach/bbu.h>
+#include <mach/imx/bbu.h>
 #include <linux/phy.h>
 #include <deep-probe.h>
 

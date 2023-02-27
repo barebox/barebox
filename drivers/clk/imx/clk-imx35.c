@@ -9,7 +9,7 @@
 #include <io.h>
 #include <linux/clkdev.h>
 #include <linux/err.h>
-#include <mach/imx35-regs.h>
+#include <mach/imx/imx35-regs.h>
 #include <reset_source.h>
 
 #include "clk.h"

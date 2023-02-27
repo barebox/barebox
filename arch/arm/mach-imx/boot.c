@@ -8,21 +8,21 @@
 #include <magicvar.h>
 
 #include <io.h>
-#include <mach/clock-imx6.h>
-#include <mach/generic.h>
-#include <mach/imx25-regs.h>
-#include <mach/imx27-regs.h>
-#include <mach/imx35-regs.h>
-#include <mach/imx51-regs.h>
-#include <mach/imx53-regs.h>
-#include <mach/imx6-regs.h>
-#include <mach/imx7-regs.h>
-#include <mach/imx8mm-regs.h>
-#include <mach/imx8mp-regs.h>
-#include <mach/imx8mq-regs.h>
-#include <mach/vf610-regs.h>
-#include <mach/imx8mq.h>
-#include <mach/imx6.h>
+#include <mach/imx/clock-imx6.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/imx25-regs.h>
+#include <mach/imx/imx27-regs.h>
+#include <mach/imx/imx35-regs.h>
+#include <mach/imx/imx51-regs.h>
+#include <mach/imx/imx53-regs.h>
+#include <mach/imx/imx6-regs.h>
+#include <mach/imx/imx7-regs.h>
+#include <mach/imx/imx8mm-regs.h>
+#include <mach/imx/imx8mp-regs.h>
+#include <mach/imx/imx8mq-regs.h>
+#include <mach/imx/vf610-regs.h>
+#include <mach/imx/imx8mq.h>
+#include <mach/imx/imx6.h>
 
 #include <soc/fsl/fsl_udc.h>
 

@@ -15,12 +15,12 @@
 
 #include <asm/armlinux.h>
 
-#include <mach/devices-imx6.h>
-#include <mach/imx6-regs.h>
-#include <mach/iomux-mx6.h>
-#include <mach/generic.h>
-#include <mach/imx6.h>
-#include <mach/bbu.h>
+#include <mach/imx/devices-imx6.h>
+#include <mach/imx/imx6-regs.h>
+#include <mach/imx/iomux-mx6.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/imx6.h>
+#include <mach/imx/bbu.h>
 
 #define PFUZE100_DEVICEID	0x0
 #define PFUZE100_REVID		0x3

@@ -14,6 +14,8 @@
 #include <mach/zynqmp/debug_ll.h>
 #elif defined CONFIG_ARCH_MVEBU
 #include <mach/mvebu/debug_ll.h>
+#elif defined CONFIG_ARCH_DAVINCI
+#include <mach/davinci/debug_ll.h>
 #else
 #ifndef CONFIG_ARCH_ARM64_VIRT
 #include <mach/debug_ll.h>

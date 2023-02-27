@@ -13,7 +13,7 @@
 #include <restart.h>
 #include <clock.h>
 
-#include <mach/time.h>
+#include <mach/davinci/time.h>
 
 /* Timer register offsets */
 #define PID12			0x0

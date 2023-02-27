@@ -15,8 +15,8 @@
  */
 
 #include <linux/compiler.h>
-#include "mach/tegra20-car.h"
-#include "mach/lowlevel.h"
+#include <mach/tegra/tegra20-car.h>
+#include <mach/tegra/lowlevel.h>
 
 static __always_inline
 void tegra_dvc_init(void)

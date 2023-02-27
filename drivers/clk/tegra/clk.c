@@ -8,7 +8,7 @@
 #include <common.h>
 #include <linux/clk.h>
 #include <linux/reset-controller.h>
-#include <mach/lowlevel.h>
+#include <mach/tegra/lowlevel.h>
 
 #include "clk.h"
 

@@ -28,7 +28,7 @@
 #include <linux/compiler.h>
 #include <linux/sizes.h>
 #include <io.h>
-#include <mach/iomap.h>
+#include <mach/tegra/iomap.h>
 
 /* Bootinfotable */
 

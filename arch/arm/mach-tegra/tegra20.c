@@ -17,9 +17,9 @@
 #include <common.h>
 #include <init.h>
 #include <asm/memory.h>
-#include <mach/iomap.h>
-#include <mach/lowlevel.h>
-#include <mach/tegra114-sysctr.h>
+#include <mach/tegra/iomap.h>
+#include <mach/tegra/lowlevel.h>
+#include <mach/tegra/tegra114-sysctr.h>
 
 static int tegra20_mem_init(void)
 {

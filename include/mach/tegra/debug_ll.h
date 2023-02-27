@@ -21,7 +21,7 @@
 #define __INCLUDE_ARCH_DEBUG_LL_H__
 
 #include <asm/io.h>
-#include <mach/iomap.h>
+#include <mach/tegra/iomap.h>
 
 #define DEBUG_LL_UART_ADDR	TEGRA_UARTA_BASE
 #define DEBUG_LL_UART_RSHFT	2

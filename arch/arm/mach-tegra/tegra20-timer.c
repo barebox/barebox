@@ -25,7 +25,7 @@
 #include <io.h>
 #include <linux/clk.h>
 #include <linux/err.h>
-#include <mach/lowlevel.h>
+#include <mach/tegra/lowlevel.h>
 
 /* register definitions */
 #define TIMERUS_CNTR_1US	0x10

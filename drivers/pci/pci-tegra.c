@@ -22,7 +22,7 @@
 #include <linux/phy/phy.h>
 #include <linux/reset.h>
 #include <linux/sizes.h>
-#include <mach/tegra-powergate.h>
+#include <mach/tegra/tegra-powergate.h>
 #include <regulator.h>
 
 /* register definitions */

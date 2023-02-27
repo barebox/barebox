@@ -67,7 +67,6 @@
 			label = "led1";
 			gpios = <&pca6408_2 7 GPIO_ACTIVE_HIGH>;
 			linux,default-trigger = "heartbeat";
-			barebox,default-trigger = "heartbeat";
 		};
 
 		gp-led2 {

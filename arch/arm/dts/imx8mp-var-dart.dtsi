@@ -100,7 +100,6 @@
 		pinctrl-0 = <&pinctrl_pmic>;
 		interrupt-parent = <&gpio1>;
 		interrupts = <3 IRQ_TYPE_LEVEL_LOW>;
-		status = "okay";
 
 		regulators {
 			#address-cells = <1>;
@@ -206,7 +205,6 @@
 	brcmf: bcrmf@1 {
 		reg = <1>;
 		compatible = "brcm,bcm4329-fmac";
-		laird,regdomain = "US";
 	};
 };
 

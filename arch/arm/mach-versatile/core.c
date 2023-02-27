@@ -38,8 +38,8 @@
 #include <asm/hardware/arm_timer.h>
 #include <asm/armlinux.h>
 
-#include <mach/platform.h>
-#include <mach/init.h>
+#include <mach/versatile/platform.h>
+#include <mach/versatile/init.h>
 
 struct clk {
 	unsigned long rate;

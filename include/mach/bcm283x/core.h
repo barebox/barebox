@@ -10,7 +10,7 @@
 #include <linux/types.h>
 #include <linux/sizes.h>
 #include <asm/memory.h>
-#include <mach/platform.h>
+#include <mach/bcm283x/platform.h>
 
 static void inline bcm2835_add_device_sdram(u32 size)
 {

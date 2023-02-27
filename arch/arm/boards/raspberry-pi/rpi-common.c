@@ -25,9 +25,9 @@
 #include <asm/system_info.h>
 #include <reset_source.h>
 
-#include <mach/core.h>
-#include <mach/mbox.h>
-#include <mach/platform.h>
+#include <mach/bcm283x/core.h>
+#include <mach/bcm283x/mbox.h>
+#include <mach/bcm283x/platform.h>
 
 #include <soc/bcm283x/wdt.h>
 

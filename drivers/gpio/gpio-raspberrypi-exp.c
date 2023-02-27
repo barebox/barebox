@@ -11,7 +11,7 @@
 #include <common.h>
 #include <gpio.h>
 #include <init.h>
-#include <mach/mbox.h>
+#include <mach/bcm283x/mbox.h>
 
 #define NUM_GPIO 8
 

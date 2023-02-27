@@ -17,7 +17,7 @@
 #ifndef __MACH_BCM2835_DEBUG_LL_H__
 #define __MACH_BCM2835_DEBUG_LL_H__
 
-#include <mach/platform.h>
+#include <mach/bcm283x/platform.h>
 #include <io.h>
 
 #ifdef CONFIG_DEBUG_RPI1_UART

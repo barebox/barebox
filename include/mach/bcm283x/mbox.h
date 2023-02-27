@@ -11,7 +11,7 @@
 
 #include <common.h>
 
-#include <mach/platform.h>
+#include <mach/bcm283x/platform.h>
 
 /*
  * The BCM2835 SoC contains (at least) two CPUs; the VideoCore (a/k/a "GPU")

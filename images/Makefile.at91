@@ -55,3 +55,95 @@ image-$(CONFIG_MACH_SKOV_ARM9CPU) += barebox-skov-arm9cpu.img
 pblb-$(CONFIG_MACH_SAMA5D4_WIFX) += start_sama5d4_wifx_l1
 FILE_barebox-wifx-l1.img = start_sama5d4_wifx_l1.pblb
 image-$(CONFIG_MACH_SAMA5D4_WIFX) += barebox-wifx-l1.img
+
+pblb-$(CONFIG_MACH_AT91SAM9261EK) += start_at91sam9261ek
+FILE_barebox-at91sam9261ek.img = start_at91sam9261ek.pblb
+image-$(CONFIG_MACH_AT91SAM9261EK) += barebox-at91sam9261ek.img
+
+pblb-$(CONFIG_MACH_AT91SAM9G10EK) += start_at91sam9g10ek
+FILE_barebox-at91sam9g10ek.img = start_at91sam9g10ek.pblb
+image-$(CONFIG_MACH_AT91SAM9G10EK) += barebox-at91sam9g10ek.img
+
+pblb-$(CONFIG_MACH_ANIMEO_IP) += start_animeo_ip
+FILE_barebox-animeo-ip.img = start_animeo_ip.pblb
+image-$(CONFIG_MACH_ANIMEO_IP) += barebox-animeo-ip.img
+
+pblb-$(CONFIG_MACH_AT91RM9200EK) += start_at91rm9200ek
+FILE_barebox-at91rm9200ek.img = start_at91rm9200ek.pblb
+image-$(CONFIG_MACH_AT91RM9200EK) += barebox-at91rm9200ek.img
+
+pblb-$(CONFIG_MACH_AT91SAM9260EK) += start_at91sam9260ek
+FILE_barebox-at91sam9260ek.img = start_at91sam9260ek.pblb
+image-$(CONFIG_MACH_AT91SAM9260EK) += barebox-at91sam9260ek.img
+
+pblb-$(CONFIG_MACH_AT91SAM9G20EK) += start_at91sam9g20ek
+FILE_barebox-at91sam9g20ek.img = start_at91sam9g20ek.pblb
+image-$(CONFIG_MACH_AT91SAM9G20EK) += barebox-at91sam9g20ek.img
+
+pblb-$(CONFIG_MACH_AT91SAM9M10G45EK) += start_at91sam9m10g45ek
+FILE_barebox-at91sam9m10g45ek.img = start_at91sam9m10g45ek.pblb
+image-$(CONFIG_MACH_AT91SAM9M10G45EK) += barebox-at91sam9m10g45ek.img
+
+pblb-$(CONFIG_MACH_AT91SAM9M10IHD) += start_at91sam9m10ihd
+FILE_barebox-at91sam9m10ihd.img = start_at91sam9m10ihd.pblb
+image-$(CONFIG_MACH_AT91SAM9M10IHD) += barebox-at91sam9m10ihd.img
+
+pblb-$(CONFIG_MACH_AT91SAM9N12EK) += start_at91sam9n12ek
+FILE_barebox-at91sam9n12ek.img = start_at91sam9n12ek.pblb
+image-$(CONFIG_MACH_AT91SAM9N12EK) += barebox-at91sam9n12ek.img
+
+pblb-$(CONFIG_MACH_DSS11) += start_dss11
+FILE_barebox-dss11.img = start_dss11.pblb
+image-$(CONFIG_MACH_DSS11) += barebox-dss11.img
+
+pblb-$(CONFIG_MACH_HABA_KNX_LITE) += start_haba_knx_lite
+FILE_barebox-haba-knx-lite.img = start_haba_knx_lite.pblb
+image-$(CONFIG_MACH_HABA_KNX_LITE) += barebox-haba-knx-lite.img
+
+pblb-$(CONFIG_MACH_PM9261) += start_pm9261
+FILE_barebox-pm9261.img = start_pm9261.pblb
+image-$(CONFIG_MACH_PM9261) += barebox-pm9261.img
+
+pblb-$(CONFIG_MACH_PM9263) += start_pm9263
+FILE_barebox-pm9263.img = start_pm9263.pblb
+image-$(CONFIG_MACH_PM9263) += barebox-pm9263.img
+
+pblb-$(CONFIG_MACH_PM9G45) += start_pm9g45
+FILE_barebox-pm9g45.img = start_pm9g45.pblb
+image-$(CONFIG_MACH_PM9G45) += barebox-pm9g45.img
+
+pblb-$(CONFIG_MACH_QIL_A9260) += start_qil_a926x
+FILE_barebox-qil-a926x.img = start_qil_a926x.pblb
+image-$(CONFIG_MACH_QIL_A9260) += barebox-qil-a926x.img
+
+pblb-$(CONFIG_MACH_QIL_A9G20) += start_qil_a9g20
+FILE_barebox-qil-a9g20.img = start_qil_a9g20.pblb
+image-$(CONFIG_MACH_QIL_A9G20) += barebox-qil-a9g20.img
+
+pblb-$(CONFIG_MACH_GE863) += start_telit_evk_pro3
+FILE_barebox-telit-evk-pro3.img = start_telit_evk_pro3.pblb
+image-$(CONFIG_MACH_GE863) += barebox-telit-evk-pro3.img
+
+pblb-$(CONFIG_MACH_TNY_A9260) += start_tny_a9260
+FILE_barebox-tny-a9260.img = start_tny_a9260.pblb
+image-$(CONFIG_MACH_TNY_A9260) += barebox-tny-a9260.img
+
+pblb-$(CONFIG_MACH_TNY_A9263) += start_tny_a9263
+FILE_barebox-tny-a9263.img = start_tny_a9263.pblb
+image-$(CONFIG_MACH_TNY_A9263) += barebox-tny-a9263.img
+
+pblb-$(CONFIG_MACH_TNY_A9G20) += start_tny_a9g20
+FILE_barebox-tny-a9g20.img = start_tny_a9g20.pblb
+image-$(CONFIG_MACH_TNY_A9G20) += barebox-tny-a9g20.img
+
+pblb-$(CONFIG_MACH_USB_A9260) += start_usb_a9260
+FILE_barebox-usb-a9260.img = start_usb_a9260.pblb
+image-$(CONFIG_MACH_USB_A9260) += barebox-usb-a9260.img
+
+pblb-$(CONFIG_MACH_USB_A9263) += start_usb_a9263
+FILE_barebox-usb-a9263.img = start_usb_a9263.pblb
+image-$(CONFIG_MACH_USB_A9263) += barebox-usb-a9263.img
+
+pblb-$(CONFIG_MACH_USB_A9G20) += start_usb_a9g20
+FILE_barebox-usb-a9g20.img = start_usb_a9g20.pblb
+image-$(CONFIG_MACH_USB_A9G20) += barebox-usb-a9g20.img

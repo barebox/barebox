@@ -42,6 +42,7 @@ config ARCH_AT91
 	bool "Atmel AT91"
 	select GPIOLIB
 	select CLKDEV_LOOKUP
+	select HAVE_PBL_MULTI_IMAGES
 	select HAS_DEBUG_LL
 	select HAVE_CLK
 	select COMMON_CLK_AT91 if COMMON_CLK_OF_PROVIDER

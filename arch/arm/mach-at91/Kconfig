@@ -570,7 +570,6 @@ endif
 
 config AT91_MULTI_BOARDS
 	bool "Allow multiple boards to be selected"
-	select HAVE_PBL_MULTI_IMAGES
 	select ARM_USE_COMPRESSED_DTB
 
 if AT91_MULTI_BOARDS

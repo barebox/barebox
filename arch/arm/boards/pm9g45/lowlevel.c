@@ -14,7 +14,7 @@
 
 #include <mach/hardware.h>
 
-void __naked __bare_init barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2)
+ENTRY_FUNCTION(start_pm9g45, r0, r1, r2)
 {
 	arm_cpu_lowlevel_init();
 

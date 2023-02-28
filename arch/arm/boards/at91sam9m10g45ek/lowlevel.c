@@ -13,7 +13,7 @@
 #include <mach/hardware.h>
 #include <mach/at91_ddrsdrc.h>
 
-void __naked __bare_init barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2)
+ENTRY_FUNCTION(start_at91sam9m10g45ek, r0, r1, r2)
 {
 	arm_cpu_lowlevel_init();
 

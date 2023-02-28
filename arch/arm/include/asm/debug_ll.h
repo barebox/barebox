@@ -42,6 +42,8 @@
 #include <mach/nomadik/debug_ll.h>
 #elif defined CONFIG_ARCH_MXS
 #include <mach/mxs/debug_ll.h>
+#elif defined CONFIG_ARCH_EP93XX
+#include <mach/ep93xx/debug_ll.h>
 #else
 #ifndef CONFIG_ARCH_ARM64_VIRT
 #include <mach/debug_ll.h>

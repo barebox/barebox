@@ -21,7 +21,7 @@
 #include <malloc.h>
 #include <io.h>
 #include <linux/types.h>
-#include <mach/ep93xx-regs.h>
+#include <mach/ep93xx/ep93xx-regs.h>
 #include <linux/phy.h>
 #include <platform_data/eth-ep93xx.h>
 #include "ep93xx.h"

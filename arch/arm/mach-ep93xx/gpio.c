@@ -19,7 +19,7 @@
 #include <init.h>
 #include <io.h>
 #include <gpio.h>
-#include <mach/ep93xx-regs.h>
+#include <mach/ep93xx/ep93xx-regs.h>
 
 #define EP93XX_GPIO_NUM_PORTS	8
 #define EP93XX_GPIO_NUM_GPIOS	(EP93XX_GPIO_NUM_PORTS * 8)

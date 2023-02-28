@@ -15,7 +15,7 @@
 
 #include <common.h>
 #include <io.h>
-#include <mach/ep93xx-regs.h>
+#include <mach/ep93xx/ep93xx-regs.h>
 
 #include "led.h"
 

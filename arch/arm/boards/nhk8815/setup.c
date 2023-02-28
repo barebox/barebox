@@ -11,10 +11,10 @@
 #include <io.h>
 #include <envfs.h>
 
-#include <mach/hardware.h>
-#include <mach/board.h>
-#include <mach/nand.h>
-#include <mach/fsmc.h>
+#include <mach/nomadik/hardware.h>
+#include <mach/nomadik/board.h>
+#include <mach/nomadik/nand.h>
+#include <mach/nomadik/fsmc.h>
 
 static int nhk8815_nand_init(void)
 {

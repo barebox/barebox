@@ -5,7 +5,7 @@
 #ifndef __ASM_ARCH_FSMC_H
 #define __ASM_ARCH_FSMC_H
 
-#include <mach/hardware.h>
+#include <mach/nomadik/hardware.h>
 /*
  * Register list
  */

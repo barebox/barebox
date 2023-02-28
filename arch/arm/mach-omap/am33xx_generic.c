@@ -21,13 +21,13 @@
 #include <net.h>
 #include <restart.h>
 #include <asm/barebox-arm.h>
-#include <mach/am33xx-silicon.h>
-#include <mach/am33xx-clock.h>
-#include <mach/emif4.h>
-#include <mach/generic.h>
-#include <mach/sys_info.h>
-#include <mach/am33xx-generic.h>
-#include <mach/gpmc.h>
+#include <mach/omap/am33xx-silicon.h>
+#include <mach/omap/am33xx-clock.h>
+#include <mach/omap/emif4.h>
+#include <mach/omap/generic.h>
+#include <mach/omap/sys_info.h>
+#include <mach/omap/am33xx-generic.h>
+#include <mach/omap/gpmc.h>
 #include <reset_source.h>
 
 static void __noreturn am33xx_restart_soc(struct restart_handler *rst)

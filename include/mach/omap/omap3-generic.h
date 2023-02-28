@@ -5,8 +5,8 @@
 
 #include <linux/sizes.h>
 #include <linux/string.h>
-#include <mach/generic.h>
-#include <mach/omap3-silicon.h>
+#include <mach/omap/generic.h>
+#include <mach/omap/omap3-silicon.h>
 
 static inline void omap3_save_bootinfo(uint32_t *info)
 {

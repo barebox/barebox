@@ -11,15 +11,15 @@
 
 #include <mfd/twl4030.h>
 #include <usb/twl4030.h>
-#include <mach/ehci.h>
+#include <mach/omap/ehci.h>
 #include <common.h>
 #include <io.h>
 #include <clock.h>
 #include <gpio.h>
-#include <mach/omap3-silicon.h>
-#include <mach/omap3-clock.h>
-#include <mach/cm-regbits-34xx.h>
-#include <mach/sys_info.h>
+#include <mach/omap/omap3-silicon.h>
+#include <mach/omap/omap3-clock.h>
+#include <mach/omap/cm-regbits-34xx.h>
+#include <mach/omap/sys_info.h>
 
 void omap_usb_utmi_init(struct omap_hcd *omap, u8 tll_channel_mask)
 {

@@ -4,8 +4,8 @@
 #define __MACH_OMAP4_GENERIC_H
 
 #include <linux/sizes.h>
-#include <mach/generic.h>
-#include <mach/omap4-silicon.h>
+#include <mach/omap/generic.h>
+#include <mach/omap/omap4-silicon.h>
 
 static inline void omap4_save_bootinfo(uint32_t *info)
 {

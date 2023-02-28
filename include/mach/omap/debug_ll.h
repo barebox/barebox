@@ -18,9 +18,9 @@
 #define   __MACH_DEBUG_LL_H__
 
 #include <io.h>
-#include <mach/omap3-silicon.h>
-#include <mach/omap4-silicon.h>
-#include <mach/am33xx-silicon.h>
+#include <mach/omap/omap3-silicon.h>
+#include <mach/omap/omap4-silicon.h>
+#include <mach/omap/am33xx-silicon.h>
 
 #define LSR_THRE	0x20	/* Xmit holding register empty */
 #define LCR_BKSE	0x80	/* Bank select enable */

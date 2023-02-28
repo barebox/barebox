@@ -5,10 +5,10 @@
 
 #include <driver.h>
 #include <linux/sizes.h>
-#include <mach/omap3-silicon.h>
-#include <mach/devices.h>
-#include <mach/mcspi.h>
-#include <mach/omap_hsmmc.h>
+#include <mach/omap/omap3-silicon.h>
+#include <mach/omap/devices.h>
+#include <mach/omap/mcspi.h>
+#include <mach/omap/omap_hsmmc.h>
 
 
 static inline void omap3_add_sram0(void)

@@ -12,12 +12,12 @@
 #include <io.h>
 #include <linux/err.h>
 
-#include <mach/omap_hsmmc.h>
+#include <mach/omap/omap_hsmmc.h>
 
 #if defined(CONFIG_MFD_TWL6030) && \
 	defined(CONFIG_MCI_OMAP_HSMMC) && \
 	defined(CONFIG_ARCH_OMAP4)
-#include <mach/omap4_twl6030_mmc.h>
+#include <mach/omap/omap4_twl6030_mmc.h>
 #endif
 
 struct hsmmc {

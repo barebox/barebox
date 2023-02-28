@@ -22,14 +22,14 @@
 #include <malloc.h>
 #include <libfile.h>
 #include <linux/stat.h>
-#include <mach/gpmc.h>
-#include <mach/generic.h>
-#include <mach/am33xx-silicon.h>
-#include <mach/omap3-silicon.h>
-#include <mach/omap4-silicon.h>
-#include <mach/am33xx-generic.h>
-#include <mach/omap3-generic.h>
-#include <mach/omap4-generic.h>
+#include <mach/omap/gpmc.h>
+#include <mach/omap/generic.h>
+#include <mach/omap/am33xx-silicon.h>
+#include <mach/omap/omap3-silicon.h>
+#include <mach/omap/omap4-silicon.h>
+#include <mach/omap/am33xx-generic.h>
+#include <mach/omap/omap3-generic.h>
+#include <mach/omap/omap4-generic.h>
 
 void __iomem *omap_gpmc_base;
 

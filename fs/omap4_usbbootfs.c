@@ -17,7 +17,7 @@
 #include <init.h>
 #include <linux/stat.h>
 #include <linux/err.h>
-#include <mach/omap4_rom_usb.h>
+#include <mach/omap/omap4_rom_usb.h>
 
 #define OMAP4_USBBOOT_FS_MAGIC		0x5562464D
 #define OMAP4_USBBOOT_FS_CMD_OPEN	0x46530000

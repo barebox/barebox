@@ -21,9 +21,9 @@
 #include <generated/mach-types.h>
 #include <linux/phy.h>
 #include <linux/micrel_phy.h>
-#include <mach/am33xx-generic.h>
-#include <mach/am33xx-silicon.h>
-#include <mach/bbu.h>
+#include <mach/omap/am33xx-generic.h>
+#include <mach/omap/am33xx-silicon.h>
+#include <mach/omap/bbu.h>
 
 static int physom_coredevice_init(void)
 {

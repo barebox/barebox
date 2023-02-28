@@ -8,12 +8,12 @@
 #include <debug_ll.h>
 #include <init.h>
 #include <linux/sizes.h>
-#include <mach/am33xx-clock.h>
-#include <mach/am33xx-generic.h>
-#include <mach/am33xx-mux.h>
-#include <mach/generic.h>
-#include <mach/sdrc.h>
-#include <mach/sys_info.h>
+#include <mach/omap/am33xx-clock.h>
+#include <mach/omap/am33xx-generic.h>
+#include <mach/omap/am33xx-mux.h>
+#include <mach/omap/generic.h>
+#include <mach/omap/sdrc.h>
+#include <mach/omap/sys_info.h>
 
 #define AM335X_ZCZ_1000		0x1c2f
 

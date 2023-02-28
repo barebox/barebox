@@ -4,8 +4,8 @@
 #define __MACH_AM33XX_GENERIC_H
 
 #include <string.h>
-#include <mach/generic.h>
-#include <mach/am33xx-silicon.h>
+#include <mach/omap/generic.h>
+#include <mach/omap/am33xx-silicon.h>
 
 int am33xx_register_ethaddr(int eth_id, int mac_id);
 

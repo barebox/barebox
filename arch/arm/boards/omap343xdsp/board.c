@@ -7,9 +7,9 @@
 #include <driver.h>
 #include <io.h>
 #include <asm/armlinux.h>
-#include <mach/omap3-silicon.h>
-#include <mach/omap3-devices.h>
-#include <mach/gpmc.h>
+#include <mach/omap/omap3-silicon.h>
+#include <mach/omap/omap3-devices.h>
+#include <mach/omap/gpmc.h>
 #include <errno.h>
 
 /**

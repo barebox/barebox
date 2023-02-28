@@ -5,14 +5,14 @@
 #include <linux/sizes.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
-#include <mach/generic.h>
-#include <mach/omap3-mux.h>
-#include <mach/sdrc.h>
-#include <mach/control.h>
-#include <mach/syslib.h>
-#include <mach/omap3-silicon.h>
-#include <mach/omap3-generic.h>
-#include <mach/sys_info.h>
+#include <mach/omap/generic.h>
+#include <mach/omap/omap3-mux.h>
+#include <mach/omap/sdrc.h>
+#include <mach/omap/control.h>
+#include <mach/omap/syslib.h>
+#include <mach/omap/omap3-silicon.h>
+#include <mach/omap/omap3-generic.h>
+#include <mach/omap/sys_info.h>
 
 
 /*

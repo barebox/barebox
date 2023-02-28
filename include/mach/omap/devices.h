@@ -3,7 +3,7 @@
 #ifndef __MACH_OMAP_DEVICES_H
 #define __MACH_OMAP_DEVICES_H
 
-#include <mach/omap_hsmmc.h>
+#include <mach/omap/omap_hsmmc.h>
 #include <video/omap-fb.h>
 
 void omap_add_ram0(resource_size_t size);

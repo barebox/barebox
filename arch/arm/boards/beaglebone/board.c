@@ -18,12 +18,12 @@
 #include <bootsource.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
-#include <mach/am33xx-silicon.h>
-#include <mach/sys_info.h>
-#include <mach/syslib.h>
-#include <mach/gpmc.h>
+#include <mach/omap/am33xx-silicon.h>
+#include <mach/omap/sys_info.h>
+#include <mach/omap/syslib.h>
+#include <mach/omap/gpmc.h>
 #include <linux/err.h>
-#include <mach/bbu.h>
+#include <mach/omap/bbu.h>
 
 #include "beaglebone.h"
 

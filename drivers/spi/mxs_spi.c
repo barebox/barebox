@@ -19,7 +19,6 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <mach/generic.h>
-#include <mach/clock.h>
 #include <mach/ssp.h>
 
 #define	MXS_SPI_MAX_TIMEOUT		(10 * MSECOND)

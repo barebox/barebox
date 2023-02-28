@@ -11,7 +11,6 @@
 #include <io.h>
 #include <net.h>
 
-#include <mach/clock.h>
 #include <mach/imx-regs.h>
 #include <mach/iomux-imx28.h>
 #include <mach/iomux.h>

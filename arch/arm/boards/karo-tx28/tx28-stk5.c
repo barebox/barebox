@@ -15,7 +15,6 @@
 #include <asm/barebox-arm.h>
 #include <linux/err.h>
 #include <mach/imx-regs.h>
-#include <mach/clock.h>
 #include <mach/mci.h>
 #include <mach/fb.h>
 #include <mach/ocotp.h>

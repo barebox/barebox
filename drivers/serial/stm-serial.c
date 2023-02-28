@@ -20,7 +20,6 @@
 #include <malloc.h>
 #include <linux/clk.h>
 #include <linux/err.h>
-#include <mach/clock.h>
 
 #define UARTDBGDR 0x00
 #define UARTDBGFR 0x18

@@ -28,7 +28,6 @@
 #include <linux/err.h>
 #include <asm/bitops.h>
 #include <mach/mci.h>
-#include <mach/clock.h>
 #include <mach/ssp.h>
 
 #define CLOCKRATE_MIN (1 * 1000 * 1000)

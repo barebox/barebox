@@ -19,7 +19,6 @@
 #include <i2c/i2c-gpio.h>
 #include <i2c/at24.h>
 
-#include <mach/clock.h>
 #include <mach/imx-regs.h>
 #include <mach/iomux.h>
 #include <mach/mci.h>

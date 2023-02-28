@@ -12,7 +12,6 @@
 #include <generated/mach-types.h>
 #include <asm/barebox-arm.h>
 #include <mach/imx-regs.h>
-#include <mach/clock.h>
 #include <mach/mci.h>
 #include <usb/fsl_usb2.h>
 #include <mach/usb.h>

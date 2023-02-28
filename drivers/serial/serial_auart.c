@@ -36,8 +36,6 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 
-#include <mach/clock.h>
-
 #define HW_UARTAPP_CTRL0		(0x00000000)
 
 #define HW_UARTAPP_CTRL2		(0x00000020)

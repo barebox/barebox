@@ -16,7 +16,6 @@
 #include <asm/mmu.h>
 #include <generated/mach-types.h>
 #include <mach/imx-regs.h>
-#include <mach/clock.h>
 #include <mach/mci.h>
 #include <mach/fb.h>
 #include <mach/usb.h>

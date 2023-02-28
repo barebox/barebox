@@ -109,10 +109,6 @@ machine-$(CONFIG_ARCH_UEMD)		:= uemd
 machine-$(CONFIG_ARCH_ZYNQ)		:= zynq
 machine-$(CONFIG_ARCH_ZYNQMP)		:= zynqmp
 
-machdirs := $(patsubst %,arch/arm/mach-%/,$(machine-y))
-
-KBUILD_CPPFLAGS += $(patsubst %,-I$(srctree)/%include,$(machdirs))
-
 TEXT_BASE = $(CONFIG_TEXT_BASE)
 
 KBUILD_CPPFLAGS += -DTEXT_BASE=$(TEXT_BASE)

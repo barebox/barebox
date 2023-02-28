@@ -50,10 +50,6 @@
 #include <mach/clps711x/debug_ll.h>
 #elif defined CONFIG_ARCH_AT91
 #include <mach/at91/debug_ll.h>
-#else
-#ifndef CONFIG_ARCH_ARM64_VIRT
-#include <mach/debug_ll.h>
-#endif
 #endif
 
 #endif

@@ -13,7 +13,7 @@
 #ifndef __MACH_PXA3XX_REGS
 #define __MACH_PXA3XX_REGS
 
-#include <mach/hardware.h>
+#include <mach/pxa/hardware.h>
 
 /*
  * Oscillator Configuration Register (OSCC)

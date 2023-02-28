@@ -3,7 +3,7 @@
 #ifndef __ASM_MACH_REGS_INTC_H
 #define __ASM_MACH_REGS_INTC_H
 
-#include <mach/hardware.h>
+#include <mach/pxa/hardware.h>
 
 /*
  * Interrupt Controller

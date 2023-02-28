@@ -13,7 +13,7 @@
  *
  */
 #include <i2c/i2c.h>
-#include <mach/pxafb.h>
+#include <mach/pxa/pxafb.h>
 
 struct device *pxa_add_i2c(void *base, int id,
 			     struct i2c_platform_data *pdata);

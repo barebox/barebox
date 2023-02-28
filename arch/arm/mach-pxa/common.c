@@ -15,7 +15,7 @@
 #include <common.h>
 #include <init.h>
 #include <restart.h>
-#include <mach/pxa-regs.h>
+#include <mach/pxa/pxa-regs.h>
 #include <asm/io.h>
 
 #define OSMR3	0x40A0000C

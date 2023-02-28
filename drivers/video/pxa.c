@@ -23,10 +23,10 @@
 #include <malloc.h>
 #include <linux/err.h>
 
-#include <mach/clock.h>
-#include <mach/pxa-regs.h>
-#include <mach/regs-lcd.h>
-#include <mach/pxafb.h>
+#include <mach/pxa/clock.h>
+#include <mach/pxa/pxa-regs.h>
+#include <mach/pxa/regs-lcd.h>
+#include <mach/pxa/pxafb.h>
 
 #include <asm/io.h>
 #include <linux/math64.h>

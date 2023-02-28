@@ -8,8 +8,8 @@
  */
 
 #include <common.h>
-#include <mach/clock.h>
-#include <mach/pxa-regs.h>
+#include <mach/pxa/clock.h>
+#include <mach/pxa/pxa-regs.h>
 
 /* Crystal clock: 13MHz */
 #define BASE_CLK	13000000

@@ -11,8 +11,8 @@
 #include <init.h>
 #include <linux/clk.h>
 #include <linux/clkdev.h>
-#include <mach/clock.h>
-#include <mach/pxa-regs.h>
+#include <mach/pxa/clock.h>
+#include <mach/pxa/pxa-regs.h>
 
 /* Crystal clock: 13MHz */
 #define BASE_CLK	13000000

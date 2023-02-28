@@ -14,7 +14,7 @@
 #include <common.h>
 #include <fb.h>
 #include <io.h>
-#include <mach/imxfb.h>
+#include <platform_data/imxfb.h>
 #include <driver.h>
 #include <malloc.h>
 #include <errno.h>

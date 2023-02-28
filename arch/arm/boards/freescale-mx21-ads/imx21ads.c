@@ -23,7 +23,7 @@
 #include <fcntl.h>
 #include <generated/mach-types.h>
 #include <mach/imx-nand.h>
-#include <mach/imxfb.h>
+#include <platform_data/imxfb.h>
 #include <mach/iomux-mx21.h>
 #include <mach/devices-imx21.h>
 

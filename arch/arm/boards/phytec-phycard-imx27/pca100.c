@@ -18,7 +18,7 @@
 #include <io.h>
 #include <mach/imx-nand.h>
 #include <mach/imx-pll.h>
-#include <mach/imxfb.h>
+#include <platform_data/imxfb.h>
 #include <asm/mmu.h>
 #include <usb/ulpi.h>
 #include <mach/bbu.h>

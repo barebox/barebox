@@ -26,7 +26,7 @@
 #include <mach/iomux-mx27.h>
 #include <mach/imx-nand.h>
 #include <mach/imx-pll.h>
-#include <mach/imxfb.h>
+#include <platform_data/imxfb.h>
 #include <mach/devices-imx27.h>
 
 /* two pins are controlling the CS signals to the USB phys */

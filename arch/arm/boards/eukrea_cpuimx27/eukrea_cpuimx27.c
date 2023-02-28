@@ -26,7 +26,7 @@
 #include <mach/imx-nand.h>
 #include <mach/imx-pll.h>
 #include <mach/weim.h>
-#include <mach/imxfb.h>
+#include <platform_data/imxfb.h>
 #include <platform_data/serial-ns16550.h>
 #include <asm/mmu.h>
 #include <i2c/i2c.h>

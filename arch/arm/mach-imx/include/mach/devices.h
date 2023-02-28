@@ -5,7 +5,7 @@
 #include <i2c/i2c.h>
 #include <mach/spi.h>
 #include <mach/imx-nand.h>
-#include <mach/imxfb.h>
+#include <platform_data/imxfb.h>
 #include <mach/imx-ipu-fb.h>
 #include <platform_data/mmc-esdhc-imx.h>
 #include <usb/chipidea-imx.h>

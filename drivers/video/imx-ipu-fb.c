@@ -10,7 +10,7 @@
 #include <io.h>
 #include <mach/imx35-regs.h>
 #include <fb.h>
-#include <mach/imxfb.h>
+#include <platform_data/imxfb.h>
 #include <malloc.h>
 #include <errno.h>
 #include <linux/math64.h>

@@ -14,7 +14,7 @@
 #include <mach/devices-imx27.h>
 #include <mach/imx-pll.h>
 #include <mach/imx27-regs.h>
-#include <mach/imxfb.h>
+#include <platform_data/imxfb.h>
 #include <mach/iomux-mx27.h>
 #include <mfd/mc13xxx.h>
 #include <mach/bbu.h>

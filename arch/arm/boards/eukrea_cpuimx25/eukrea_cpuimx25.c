@@ -18,7 +18,7 @@
 
 #include <generated/mach-types.h>
 #include <mach/imx-nand.h>
-#include <mach/imxfb.h>
+#include <platform_data/imxfb.h>
 #include <mach/iim.h>
 #include <platform_data/eth-fec.h>
 #include <nand.h>

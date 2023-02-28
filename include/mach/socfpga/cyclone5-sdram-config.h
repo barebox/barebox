@@ -3,9 +3,9 @@
 #ifndef __MACH_SDRAM_CONFIG_H
 #define __MACH_SDRAM_CONFIG_H
 
-#include <mach/cyclone5-sdram.h>
-#include <mach/cyclone5-regs.h>
-#include <mach/cyclone5-system-manager.h>
+#include <mach/socfpga/cyclone5-sdram.h>
+#include <mach/socfpga/cyclone5-regs.h>
+#include <mach/socfpga/cyclone5-system-manager.h>
 
 static inline void sdram_write(unsigned register_offset, unsigned val)
 {

@@ -16,7 +16,7 @@
 #ifndef _ARRIA10_PINMUX_H_
 #define _ARRIA10_PINMUX_H_
 
-#include <mach/arria10-regs.h>
+#include <mach/socfpga/arria10-regs.h>
 
 #define ARRIA10_PINMUX_SHARED_IO_Q1_1_ADDR	ARRIA10_PINMUX_SHARED_3V_IO_GRP_ADDR + 0x00
 #define ARRIA10_PINMUX_SHARED_IO_Q1_2_ADDR	ARRIA10_PINMUX_SHARED_3V_IO_GRP_ADDR + 0x04

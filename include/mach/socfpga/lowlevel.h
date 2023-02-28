@@ -8,12 +8,12 @@
 #include <io.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
-#include <mach/generic.h>
+#include <mach/socfpga/generic.h>
 #include <debug_ll.h>
 #include <asm/cache.h>
-#include <mach/cyclone5-sdram-config.h>
-#include <mach/pll_config.h>
-#include <mach/cyclone5-sequencer.c>
+#include <mach/socfpga/cyclone5-sdram-config.h>
+#include <mach/socfpga/pll_config.h>
+#include <mach/socfpga/cyclone5-sequencer.c>
 
 static void __noreturn start_socfpga_c5_common(uint32_t size, void *fdt_blob)
 {

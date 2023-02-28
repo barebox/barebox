@@ -9,7 +9,7 @@
 #include "sequencer_auto_ac_init.c"
 #include "iocsr_config_cyclone5.c"
 
-#include <mach/lowlevel.h>
+#include <mach/socfpga/lowlevel.h>
 
 SOCFPGA_C5_ENTRY(start_socfpga_de0_nano_soc, socfpga_cyclone5_de0_nano_soc, SZ_1G);
 SOCFPGA_C5_XLOAD_ENTRY(start_socfpga_de0_nano_soc_xload, SZ_1G);

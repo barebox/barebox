@@ -18,7 +18,7 @@
 #ifndef _CYCLONE5_FREEZE_CONTROLLER_H_
 #define _CYCLONE5_FREEZE_CONTROLLER_H_
 
-#include <mach/cyclone5-regs.h>
+#include <mach/socfpga/cyclone5-regs.h>
 
 #define SYSMGR_FRZCTRL_ADDRESS		0x40
 #define SYSMGR_FRZCTRL_VIOCTRL_ADDRESS	0x40

@@ -4,12 +4,12 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
-#include <mach/cyclone5-freeze-controller.h>
-#include <mach/cyclone5-system-manager.h>
-#include <mach/cyclone5-clock-manager.h>
-#include <mach/cyclone5-reset-manager.h>
-#include <mach/cyclone5-scan-manager.h>
-#include <mach/generic.h>
+#include <mach/socfpga/cyclone5-freeze-controller.h>
+#include <mach/socfpga/cyclone5-system-manager.h>
+#include <mach/socfpga/cyclone5-clock-manager.h>
+#include <mach/socfpga/cyclone5-reset-manager.h>
+#include <mach/socfpga/cyclone5-scan-manager.h>
+#include <mach/socfpga/generic.h>
 
 void socfpga_lowlevel_init(struct socfpga_cm_config *cm_config,
 			   struct socfpga_io_config *io_config)

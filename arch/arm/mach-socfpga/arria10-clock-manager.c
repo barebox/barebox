@@ -6,9 +6,9 @@
 
 #include <common.h>
 #include <asm/io.h>
-#include <mach/generic.h>
-#include <mach/arria10-regs.h>
-#include <mach/arria10-clock-manager.h>
+#include <mach/socfpga/generic.h>
+#include <mach/socfpga/arria10-regs.h>
+#include <mach/socfpga/arria10-clock-manager.h>
 
 static const struct arria10_clock_manager *arria10_clkmgr_base =
 	(void *)ARRIA10_CLKMGR_ADDR;

@@ -3,7 +3,7 @@
 #include <common.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/errata.h>
-#include <mach/init.h>
+#include <mach/socfpga/init.h>
 
 void arria10_cpu_lowlevel_init(void)
 {

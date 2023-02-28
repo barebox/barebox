@@ -55,7 +55,7 @@ asm(".global __alt_stack_pointer");
 asm("__alt_stack_pointer = " STRINGIFY(STACK_POINTER));
 #endif
 
-#include <mach/cyclone5-sdram.h>
+#include <mach/socfpga/cyclone5-sdram.h>
 
 #define NEWVERSION_RDDESKEW 1
 #define NEWVERSION_WRDESKEW 1

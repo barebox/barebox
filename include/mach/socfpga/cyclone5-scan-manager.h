@@ -19,7 +19,7 @@
 #define _SCAN_MANAGER_H_
 
 #include <io.h>
-#include <mach/cyclone5-regs.h>
+#include <mach/socfpga/cyclone5-regs.h>
 
 /***********************************************************
  *                                                         *

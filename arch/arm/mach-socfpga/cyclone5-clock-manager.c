@@ -17,9 +17,9 @@
 
 #include <common.h>
 #include <io.h>
-#include <mach/cyclone5-clock-manager.h>
-#include <mach/cyclone5-regs.h>
-#include <mach/generic.h>
+#include <mach/socfpga/cyclone5-clock-manager.h>
+#include <mach/socfpga/cyclone5-regs.h>
+#include <mach/socfpga/generic.h>
 
 static inline void cm_wait_for_lock(void __iomem *cm, uint32_t mask)
 {

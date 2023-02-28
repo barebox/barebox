@@ -4,7 +4,7 @@
  * SPDX-License-Identifier:	GPL-2.0
  */
 
-#include <mach/arria10-system-manager.h>
+#include <mach/socfpga/arria10-system-manager.h>
 
 #ifndef	_ARRIA10_SDRAM_H_
 #define	_ARRIA10_SDRAM_H_

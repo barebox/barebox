@@ -7,7 +7,7 @@
 #ifndef	_ARRIA10_SYSTEM_MANAGER_H_
 #define	_ARRIA10_SYSTEM_MANAGER_H_
 
-#include <mach/arria10-regs.h>
+#include <mach/socfpga/arria10-regs.h>
 
 #define ARRIA10_SYSMGR_SILICONID1		(ARRIA10_SYSMGR_ADDR + 0x00)
 #define ARRIA10_SYSMGR_SILICONID2		(ARRIA10_SYSMGR_ADDR + 0x04)

@@ -3,7 +3,7 @@
 #ifndef _MACH_SOCFPGA_PRELOADER_PLL_CONFIG_H_
 #define _MACH_SOCFPGA_PRELOADER_PLL_CONFIG_H_
 
-#include <mach/cyclone5-clock-manager.h>
+#include <mach/socfpga/cyclone5-clock-manager.h>
 
 static struct socfpga_cm_config cm_default_cfg = {
 	/* main group */

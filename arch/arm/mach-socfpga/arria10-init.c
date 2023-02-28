@@ -6,12 +6,12 @@
 
 #include <common.h>
 #include <debug_ll.h>
-#include <mach/arria10-regs.h>
-#include <mach/arria10-clock-manager.h>
-#include <mach/arria10-pinmux.h>
-#include <mach/arria10-reset-manager.h>
-#include <mach/arria10-system-manager.h>
-#include <mach/generic.h>
+#include <mach/socfpga/arria10-regs.h>
+#include <mach/socfpga/arria10-clock-manager.h>
+#include <mach/socfpga/arria10-pinmux.h>
+#include <mach/socfpga/arria10-reset-manager.h>
+#include <mach/socfpga/arria10-system-manager.h>
+#include <mach/socfpga/generic.h>
 #include <asm/io.h>
 #include <asm/cache-l2x0.h>
 #include <asm/errata.h>

@@ -32,6 +32,8 @@
 #include <mach/tegra/debug_ll.h>
 #elif defined CONFIG_ARCH_UEMD
 #include <mach/uemd/debug_ll.h>
+#elif defined CONFIG_ARCH_SOCFPGA
+#include <mach/socfpga/debug_ll.h>
 #else
 #ifndef CONFIG_ARCH_ARM64_VIRT
 #include <mach/debug_ll.h>

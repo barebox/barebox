@@ -5,7 +5,7 @@
 #define __MACH_DEBUG_LL_H__
 
 #include <asm/io.h>
-#include <mach/clps711x.h>
+#include <mach/clps711x/clps711x.h>
 
 static inline void PUTC_LL(char c)
 {

@@ -4,7 +4,7 @@
 #include <common.h>
 #include <asm/barebox-arm.h>
 #include <linux/sizes.h>
-#include <mach/clps711x.h>
+#include <mach/clps711x/clps711x.h>
 
 extern char __dtb_ep7212_clep7212_start[];
 

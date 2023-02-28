@@ -6,7 +6,7 @@
 #include <common.h>
 #include <debug_ll.h>
 #include <linux/sizes.h>
-#include <mach/clps711x.h>
+#include <mach/clps711x/clps711x.h>
 
 #define DEBUG_LL_BAUDRATE	(57600)
 

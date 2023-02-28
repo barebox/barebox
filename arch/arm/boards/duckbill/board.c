@@ -11,12 +11,12 @@
 #include <io.h>
 #include <net.h>
 
-#include <mach/imx-regs.h>
-#include <mach/iomux-imx28.h>
-#include <mach/iomux.h>
-#include <mach/ocotp.h>
-#include <mach/devices.h>
-#include <mach/usb.h>
+#include <mach/mxs/imx-regs.h>
+#include <mach/mxs/iomux-imx28.h>
+#include <mach/mxs/iomux.h>
+#include <mach/mxs/ocotp.h>
+#include <mach/mxs/devices.h>
+#include <mach/mxs/usb.h>
 #include <usb/fsl_usb2.h>
 
 #include <asm/armlinux.h>

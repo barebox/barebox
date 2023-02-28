@@ -10,19 +10,19 @@
 #include <common.h>
 #include <config.h>
 #include <io.h>
-#include <mach/imx-regs.h>
+#include <mach/mxs/imx-regs.h>
 
-#include <mach/generic.h>
-#include <mach/init.h>
+#include <mach/mxs/generic.h>
+#include <mach/mxs/init.h>
 #ifdef CONFIG_ARCH_IMX23
-#include <mach/regs-clkctrl-mx23.h>
+#include <mach/mxs/regs-clkctrl-mx23.h>
 #endif
 #ifdef CONFIG_ARCH_IMX28
-#include <mach/regs-clkctrl-mx28.h>
+#include <mach/mxs/regs-clkctrl-mx28.h>
 #endif
-#include <mach/regs-power-mx28.h>
-#include <mach/regs-rtc.h>
-#include <mach/regs-lradc.h>
+#include <mach/mxs/regs-power-mx28.h>
+#include <mach/mxs/regs-rtc.h>
+#include <mach/mxs/regs-lradc.h>
 
 int power_config;
 

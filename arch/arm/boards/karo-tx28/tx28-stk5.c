@@ -14,11 +14,11 @@
 #include <asm/sections.h>
 #include <asm/barebox-arm.h>
 #include <linux/err.h>
-#include <mach/imx-regs.h>
-#include <mach/mci.h>
-#include <mach/fb.h>
-#include <mach/ocotp.h>
-#include <mach/iomux.h>
+#include <mach/mxs/imx-regs.h>
+#include <mach/mxs/mci.h>
+#include <mach/mxs/fb.h>
+#include <mach/mxs/ocotp.h>
+#include <mach/mxs/iomux.h>
 #include <generated/mach-types.h>
 
 #include "tx28.h"

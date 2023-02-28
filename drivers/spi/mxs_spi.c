@@ -18,8 +18,8 @@
 #include <stmp-device.h>
 #include <linux/clk.h>
 #include <linux/err.h>
-#include <mach/generic.h>
-#include <mach/ssp.h>
+#include <mach/mxs/generic.h>
+#include <mach/mxs/ssp.h>
 
 #define	MXS_SPI_MAX_TIMEOUT		(10 * MSECOND)
 

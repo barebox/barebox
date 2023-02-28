@@ -20,7 +20,7 @@
 #include <stmp-device.h>
 #include <linux/clk.h>
 #include <linux/err.h>
-#include <mach/fb.h>
+#include <mach/mxs/fb.h>
 
 #define HW_LCDIF_CTRL 0x00
 # define CTRL_SFTRST (1 << 31)

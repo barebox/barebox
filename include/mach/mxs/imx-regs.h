@@ -5,11 +5,11 @@
 # define _IMX_REGS_H
 
 #if defined CONFIG_ARCH_IMX23
-# include <mach/imx23-regs.h>
+#include <mach/mxs/imx23-regs.h>
 #endif
 
 #if defined CONFIG_ARCH_IMX28
-# include <mach/imx28-regs.h>
+#include <mach/mxs/imx28-regs.h>
 #endif
 
 #endif /* _IMX_REGS_H */

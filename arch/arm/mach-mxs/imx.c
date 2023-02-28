@@ -9,9 +9,9 @@
 #include <io.h>
 #include <stmp-device.h>
 
-#include <mach/generic.h>
-#include <mach/imx-regs.h>
-#include <mach/revision.h>
+#include <mach/mxs/generic.h>
+#include <mach/mxs/imx-regs.h>
+#include <mach/mxs/revision.h>
 
 #define HW_RTC_PERSISTENT1     0x070
 

@@ -86,13 +86,13 @@
  */
 # define PORTF(bank,bit)	(BANK((bank) / 2) | BANKPIN((((bank) & 1) << 4) | (bit)) | ERROR((bit) & ~15) | ERROR((bank) & ~7))
 # define VE_2_5V		VOLTAGE(0)
-# include <mach/iomux-imx23.h>
+#include <mach/mxs/iomux-imx23.h>
 #endif
 
 #if defined CONFIG_ARCH_IMX28
 # define PORTF(bank,bit)	(BANK(bank) | BANKPIN(bit))
 # define VE_3_3V	VOLTAGE(1)
-# include <mach/iomux-imx28.h>
+#include <mach/mxs/iomux-imx28.h>
 #endif
 
 void imx_gpio_mode(uint32_t);

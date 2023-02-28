@@ -27,8 +27,8 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <asm/bitops.h>
-#include <mach/mci.h>
-#include <mach/ssp.h>
+#include <mach/mxs/mci.h>
+#include <mach/mxs/ssp.h>
 
 #define CLOCKRATE_MIN (1 * 1000 * 1000)
 #define CLOCKRATE_MAX (480 * 1000 * 1000)

@@ -7,11 +7,11 @@
 #include <linux/sizes.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
-#include <mach/imx28-regs.h>
-#include <mach/init.h>
+#include <mach/mxs/imx28-regs.h>
+#include <mach/mxs/init.h>
 #include <io.h>
 #include <debug_ll.h>
-#include <mach/iomux.h>
+#include <mach/mxs/iomux.h>
 #include <stmp-device.h>
 #include <generated/mach-types.h>
 

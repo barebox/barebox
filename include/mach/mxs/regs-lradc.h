@@ -13,7 +13,7 @@
 #ifndef __MX28_REGS_LRADC_H__
 #define __MX28_REGS_LRADC_H__
 
-#include <mach/regs-common.h>
+#include <mach/mxs/regs-common.h>
 
 #ifndef	__ASSEMBLY__
 struct mxs_lradc_regs {

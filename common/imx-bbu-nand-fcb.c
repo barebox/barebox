@@ -31,7 +31,7 @@
 #include <mach/imx/imx6.h>
 #include <mach/imx/generic.h>
 #else
-#include <mach/generic.h>
+#include <mach/mxs/generic.h>
 #endif
 
 static inline int fcb_is_bch_encoded(void)
@@ -1504,7 +1504,7 @@ int imx6_bbu_nand_register_handler(const char *name, unsigned long flags)
 #define	MX28_BCH_FLASHLAYOUT1_DATAN_SIZE_MASK		0xfff
 
 #ifdef CONFIG_ARCH_IMX28
-#include <mach/imx28-regs.h>
+#include <mach/mxs/imx28-regs.h>
 
 static void imx28_fcb_create(struct imx_nand_fcb_bbu_handler *imx_handler,
 		struct fcb_block *fcb, struct mtd_info *mtd)

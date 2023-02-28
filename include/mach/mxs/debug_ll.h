@@ -4,7 +4,7 @@
 #define __MACH_DEBUG_LL_H__
 
 #include <io.h>
-#include <mach/imx-regs.h>
+#include <mach/mxs/imx-regs.h>
 
 #define UARTDBGDR 0x00
 #define UARTDBGFR 0x18

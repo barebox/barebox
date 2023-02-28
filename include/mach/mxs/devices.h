@@ -7,7 +7,7 @@
 #include <linux/sizes.h>
 #include <xfuncs.h>
 #include <driver.h>
-#include <mach/imx-regs.h>
+#include <mach/mxs/imx-regs.h>
 
 static inline struct device *mxs_add_nand(unsigned long gpmi_base, unsigned long bch_base)
 {

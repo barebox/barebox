@@ -37,4 +37,6 @@ static inline int rk3568_init(void)
 
 void rk3568_lowlevel_init(void);
 
+int rockchip_soc(void);
+
 #endif /* __MACH_ROCKCHIP_H */

@@ -6,6 +6,7 @@
 #include <common.h>
 #include <init.h>
 #include <memory.h>
+#include <mach/rockchip/rockchip.h>
 
 struct newidb_entry {
 	uint32_t sector;
@@ -113,6 +114,9 @@ static struct image_handler image_handler_rkns_barebox_image = {
 
 static int rockchip_register_barebox_image_handler(void)
 {
+	if (rockchip_soc() < 0)
+		return 0;
+
 	return register_image_handler(&image_handler_rkns_barebox_image);
 }
 late_initcall(rockchip_register_barebox_image_handler);

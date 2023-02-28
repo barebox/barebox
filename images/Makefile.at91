@@ -144,6 +144,10 @@ pblb-$(CONFIG_MACH_USB_A9263) += start_usb_a9263
 FILE_barebox-usb-a9263.img = start_usb_a9263.pblb
 image-$(CONFIG_MACH_USB_A9263) += barebox-usb-a9263.img
 
+pblb-$(CONFIG_MACH_USB_A9263) += start_usb_a9263_128m
+FILE_barebox-usb-a9263-128m.img = start_usb_a9263_128m.pblb
+image-$(CONFIG_MACH_USB_A9263) += barebox-usb-a9263-128m.img
+
 pblb-$(CONFIG_MACH_USB_A9G20) += start_usb_a9g20
 FILE_barebox-usb-a9g20.img = start_usb_a9g20.pblb
 image-$(CONFIG_MACH_USB_A9G20) += barebox-usb-a9g20.img

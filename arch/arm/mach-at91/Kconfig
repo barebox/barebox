@@ -672,12 +672,6 @@ config AT91_HAVE_2MMC
 	  with 2 SD/MMC Slots. This is the case for AT91SAM9G20-EK rev. C and
 	  onwards.
 
-config AT91_HAVE_SRAM_128M
-	bool "Have 128 of ram"
-	depends on MACH_USB_A9G20 || MACH_USB_A9263 || MACH_QIL_A9260 || MACH_QIL_A9G20
-	help
-	  Select this if you board have 128 MiB of Ram (as USB_A9G20 C11)
-
 choice
 	prompt "LCD type"
 	depends on MACH_AT91SAM9M10G45EK

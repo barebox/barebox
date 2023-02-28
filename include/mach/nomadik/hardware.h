@@ -11,8 +11,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-#ifndef __ASM_ARCH_HARDWARE_H
-#define __ASM_ARCH_HARDWARE_H
+#ifndef __MACH_NOMADIK_HARDWARE_H
+#define __MACH_NOMADIK_HARDWARE_H
 
 /* Nomadik registers live from 0x1000.0000 to 0x1023.0000 -- currently */
 #define NOMADIK_IO_VIRTUAL	0xF0000000	/* VA of IO */
@@ -84,4 +84,4 @@
 #define NOMADIK_MTU0_VA		IO_ADDRESS(NOMADIK_MTU0_BASE)
 #define NOMADIK_MTU1_VA		IO_ADDRESS(NOMADIK_MTU1_BASE)
 
-#endif /* __ASM_ARCH_HARDWARE_H */
+#endif /* __MACH_NOMADIK_HARDWARE_H */

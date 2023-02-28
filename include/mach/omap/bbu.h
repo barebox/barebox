@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#ifndef __MACH_BBU_H
-#define __MACH_BBU_H
+#ifndef __MACH_OMAP_BBU_H
+#define __MACH_OMAP_BBU_H
 
 #include <bbu.h>
 
@@ -65,4 +65,4 @@ static inline int am33xx_bbu_emmc_register_handler(const char *name,
 #endif
 
 
-#endif
+#endif /* __MACH_OMAP_BBU_H */

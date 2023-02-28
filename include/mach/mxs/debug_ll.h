@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#ifndef __MACH_DEBUG_LL_H__
-#define __MACH_DEBUG_LL_H__
+#ifndef __MACH_MXS_DEBUG_LL_H__
+#define __MACH_MXS_DEBUG_LL_H__
 
 #include <io.h>
 #include <mach/mxs/imx-regs.h>
@@ -21,4 +21,4 @@ static inline void PUTC_LL(int c)
 	writel(c, base + UARTDBGDR);
 }
 
-#endif /* __MACH_DEBUG_LL_H__ */
+#endif /* __MACH_MXS_DEBUG_LL_H__ */

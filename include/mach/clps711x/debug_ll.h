@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // SPDX-FileCopyrightText: Alexander Shiyan <shc_work@mail.ru>
 
-#ifndef __MACH_DEBUG_LL_H__
-#define __MACH_DEBUG_LL_H__
+#ifndef __MACH_CLPS711X_DEBUG_LL_H__
+#define __MACH_CLPS711X_DEBUG_LL_H__
 
 #include <asm/io.h>
 #include <mach/clps711x/clps711x.h>
@@ -18,4 +18,4 @@ static inline void PUTC_LL(char c)
 	} while (readl(SYSFLG1) & SYSFLG_UBUSY);
 }
 
-#endif
+#endif /* __MACH_CLPS711X_DEBUG_LL_H__ */

@@ -4,8 +4,8 @@
  * based on mach-imx/include/mach/debug_ll.h
  */
 
-#ifndef __MACH_DEBUG_LL_H__
-#define __MACH_DEBUG_LL_H__
+#ifndef __MACH_ZYNQ_DEBUG_LL_H__
+#define __MACH_ZYNQ_DEBUG_LL_H__
 
 #include <io.h>
 #include <mach/zynq/zynq7000-regs.h>
@@ -36,4 +36,4 @@ static inline void PUTC_LL(int c)
 	writel(c, base + ZYNQ_UART_RXTXFIFO);
 }
 
-#endif
+#endif /* __MACH_ZYNQ_DEBUG_LL_H__ */

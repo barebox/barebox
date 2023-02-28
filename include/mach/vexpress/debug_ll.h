@@ -4,8 +4,8 @@
  * GPLv2 only
  */
 
-#ifndef __MACH_DEBUG_LL_H__
-#define   __MACH_DEBUG_LL_H__
+#ifndef __MACH_VEXPRESS_DEBUG_LL_H__
+#define   __MACH_VEXPRESS_DEBUG_LL_H__
 
 #include <linux/amba/serial.h>
 #include <io.h>
@@ -21,4 +21,4 @@
 
 #include <debug_ll/pl011.h>
 
-#endif
+#endif /* __MACH_VEXPRESS_DEBUG_LL_H__ */

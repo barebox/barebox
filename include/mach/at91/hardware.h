@@ -4,8 +4,8 @@
 
 /* [origin: Linux kernel include/asm-arm/arch-at91/hardware.h] */
 
-#ifndef __ASM_ARCH_HARDWARE_H
-#define __ASM_ARCH_HARDWARE_H
+#ifndef __MACH_AT91_HARDWARE_H
+#define __MACH_AT91_HARDWARE_H
 
 /* DBGU base */
 /* rm9200, 9260/9g20, 9261/9g10, 9rl */
@@ -45,4 +45,4 @@
 /* Clocks */
 #define AT91_SLOW_CLOCK		32768		/* slow clock */
 
-#endif
+#endif /* __MACH_AT91_HARDWARE_H */

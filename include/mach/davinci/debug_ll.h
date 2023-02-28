@@ -4,8 +4,8 @@
 /** @file
  *  This File contains declaration for early output support
  */
-#ifndef __INCLUDE_ARCH_DEBUG_LL_H__
-#define __INCLUDE_ARCH_DEBUG_LL_H__
+#ifndef __MACH_DAVINCI_DEBUG_LL_H__
+#define __MACH_DAVINCI_DEBUG_LL_H__
 
 #include <asm/io.h>
 #include <mach/davinci/serial.h>
@@ -25,4 +25,4 @@ static inline void PUTC_LL(char ch)
 	__raw_writeb(ch, DEBUG_LL_UART_ADDR + rbr);
 }
 
-#endif /* __INCLUDE_ARCH_DEBUG_LL_H__ */
+#endif /* __MACH_DAVINCI_DEBUG_LL_H__ */

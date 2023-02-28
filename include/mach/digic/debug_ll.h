@@ -14,8 +14,8 @@
  *
  */
 
-#ifndef __MACH_DEBUG_LL_H__
-#define __MACH_DEBUG_LL_H__
+#ifndef __MACH_DIGIC_DEBUG_LL_H__
+#define __MACH_DIGIC_DEBUG_LL_H__
 
 #include <io.h>
 #include <mach/digic/digic4.h>
@@ -36,4 +36,4 @@ static inline void PUTC_LL(char ch)
 	writel(ch, DEBUG_LL_UART_TX);
 }
 
-#endif /* __MACH_DEBUG_LL_H__ */
+#endif /* __MACH_DIGIC_DEBUG_LL_H__ */

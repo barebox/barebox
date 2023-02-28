@@ -5,8 +5,8 @@
  * Under GPLv2
  */
 
-#ifndef __MACH_DEBUG_LL_H__
-#define __MACH_DEBUG_LL_H__
+#ifndef __MACH_AT91_DEBUG_LL_H__
+#define __MACH_AT91_DEBUG_LL_H__
 
 #include <asm/io.h>
 #include <mach/at91/gpio.h>
@@ -40,4 +40,4 @@ static inline void PUTC_LL(char c)
 	at91_dbgu_putc(IOMEM(CONFIG_DEBUG_AT91_UART_BASE), c);
 }
 
-#endif
+#endif /* __MACH_AT91_DEBUG_LL_H__ */

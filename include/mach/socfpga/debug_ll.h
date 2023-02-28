@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#ifndef __MACH_DEBUG_LL_H__
-#define   __MACH_DEBUG_LL_H__
+#ifndef __MACH_SOCFPGA_DEBUG_LL_H__
+#define   __MACH_SOCFPGA_DEBUG_LL_H__
 
 #include <io.h>
 #include <errno.h>
@@ -83,4 +83,4 @@ static inline unsigned int ns16550_calc_divisor(unsigned int clk,
 static inline void INIT_LL(void) {}
 static inline void PUTC_LL(char c) {}
 #endif
-#endif
+#endif /* __MACH_SOCFPGA_DEBUG_LL_H__ */

@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
-#ifndef __MACH_DEBUG_LL_H__
-#define __MACH_DEBUG_LL_H__
+#ifndef __MACH_ZYNQMP_DEBUG_LL_H__
+#define __MACH_ZYNQMP_DEBUG_LL_H__
 
 #include <io.h>
 
@@ -28,4 +28,4 @@ static inline void PUTC_LL(int c)
 	writel(c, base + 0x30);
 }
 
-#endif
+#endif /* __MACH_ZYNQMP_DEBUG_LL_H__ */

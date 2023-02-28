@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#ifndef __MACH_XLOAD_H
-#define __MACH_XLOAD_H
+#ifndef __MACH_AT91_XLOAD_H
+#define __MACH_AT91_XLOAD_H
 
 #include <linux/compiler.h>
 #include <pbl/bio.h>
@@ -19,4 +19,4 @@ void __noreturn sam9263_atmci_start_image(u32 mmc_id, unsigned int clock,
 					  bool slot_b);
 
 
-#endif /* __MACH_XLOAD_H */
+#endif /* __MACH_AT91_XLOAD_H */

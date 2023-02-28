@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#ifndef __MACH_DEBUG_LL_H__
-#define __MACH_DEBUG_LL_H__
+#ifndef __MACH_ROCKCHIP_DEBUG_LL_H__
+#define __MACH_ROCKCHIP_DEBUG_LL_H__
 
 #include <common.h>
 #include <io.h>
@@ -96,4 +96,4 @@ static inline void INIT_LL(void)
 }
 #endif
 
-#endif
+#endif /* __MACH_ROCKCHIP_DEBUG_LL_H__ */

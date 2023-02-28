@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /* SPDX-FileCopyrightText: 2013 Thomas Petazzoni <thomas.petazzoni@free-electrons.com> */
 
-#ifndef __MACH_DEBUG_LL_H__
-#define __MACH_DEBUG_LL_H__
+#ifndef __MACH_MVEBU_DEBUG_LL_H__
+#define __MACH_MVEBU_DEBUG_LL_H__
 
 #include <io.h>
 
@@ -27,4 +27,4 @@ static inline void PUTC_LL(char c)
 	while (!(readl(EARLY_UART + UART_LSR) & LSR_THRE))
 		;
 }
-#endif
+#endif /* __MACH_MVEBU_DEBUG_LL_H__ */

@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#ifndef __MACH_XLOAD_H
-#define __MACH_XLOAD_H
+#ifndef __MACH_IMX_XLOAD_H
+#define __MACH_IMX_XLOAD_H
 
 #include <linux/compiler.h>
 #include <linux/types.h>
@@ -42,4 +42,4 @@ struct imx_scratch_space *__imx8m_scratch_space(int ddr_buswidth);
 #define imx8mn_scratch_space() __imx8m_scratch_space(16)
 #define imx8mp_scratch_space() __imx8m_scratch_space(32)
 
-#endif /* __MACH_XLOAD_H */
+#endif /* __MACH_IMX_XLOAD_H */

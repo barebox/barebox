@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#ifndef __MACH_BBU_H
-#define __MACH_BBU_H
+#ifndef __MACH_IMX_BBU_H
+#define __MACH_IMX_BBU_H
 
 #include <bbu.h>
 #include <errno.h>
@@ -209,4 +209,4 @@ static inline int imx_bbu_external_nand_register_handler(const char *name, const
 }
 #endif
 
-#endif
+#endif /* __MACH_IMX_BBU_H */

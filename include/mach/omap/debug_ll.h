@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __MACH_DEBUG_LL_H__
-#define   __MACH_DEBUG_LL_H__
+#ifndef __MACH_OMAP_DEBUG_LL_H__
+#define   __MACH_OMAP_DEBUG_LL_H__
 
 #include <io.h>
 #include <mach/omap/omap3-silicon.h>
@@ -77,4 +77,4 @@ static inline void PUTC_LL(char c)
 }
 #endif
 
-#endif
+#endif /* __MACH_OMAP_DEBUG_LL_H__ */

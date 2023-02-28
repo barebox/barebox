@@ -13,11 +13,11 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __MACH_DEBUG_LL_H__
-#define   __MACH_DEBUG_LL_H__
+#ifndef __MACH_VERSATILE_DEBUG_LL_H__
+#define   __MACH_VERSATILE_DEBUG_LL_H__
 
 #define DEBUG_LL_UART_ADDR 0x101F1000
 
 #include <debug_ll/pl011.h>
 
-#endif
+#endif /* __MACH_VERSATILE_DEBUG_LL_H__ */

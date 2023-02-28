@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#ifndef __MACH_DEBUG_LL_H__
-#define __MACH_DEBUG_LL_H__
+#ifndef __MACH_IMX_DEBUG_LL_H__
+#define __MACH_IMX_DEBUG_LL_H__
 
 #include <io.h>
 #include <config.h>
@@ -164,4 +164,4 @@ static inline void vf610_ungate_all_peripherals(void)
 		writel(0xffffffff, ccmbase + i);
 }
 
-#endif /* __MACH_DEBUG_LL_H__ */
+#endif /* __MACH_IMX_DEBUG_LL_H__ */

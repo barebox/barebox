@@ -6,8 +6,8 @@
  *
  * Author: Kevin Hilman, Deep Root Systems, LLC
  */
-#ifndef __ASM_ARCH_HARDWARE_H
-#define __ASM_ARCH_HARDWARE_H
+#ifndef __MACH_DAVINCI_HARDWARE_H
+#define __MACH_DAVINCI_HARDWARE_H
 
 #include <asm/memory.h>
 
@@ -24,4 +24,4 @@
  */
 #define IO_PHYS				UL(0x01c00000)
 
-#endif /* __ASM_ARCH_HARDWARE_H */
+#endif /* __MACH_DAVINCI_HARDWARE_H */

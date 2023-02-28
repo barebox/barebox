@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#ifndef __INCLUDE_ARCH_DEBUG_LL_H__
-#define __INCLUDE_ARCH_DEBUG_LL_H__
+#ifndef __MACH_LAYERSCAPE_DEBUG_LL_H__
+#define __MACH_LAYERSCAPE_DEBUG_LL_H__
 
 #include <io.h>
 #include <soc/fsl/immap_lsch2.h>
@@ -33,4 +33,4 @@ static inline void debug_ll_init(void)
 	debug_ll_ns16550_init(divisor);
 }
 
-#endif /* __INCLUDE_ARCH_DEBUG_LL_H__ */
+#endif /* __MACH_LAYERSCAPE_DEBUG_LL_H__ */

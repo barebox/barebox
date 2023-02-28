@@ -63,13 +63,6 @@ config OMAP_IMAGE
 	help
 	  This enables building the image creation tools for TI OMAP SoCs
 
-config S5P_IMAGE
-	bool "S5P image tool" if COMPILE_HOST_TOOLS
-	depends on ARCH_S5PCxx || COMPILE_HOST_TOOLS
-	default y if ARCH_S5PCxx
-	help
-	  This enables building the image creation tool for S5P SoCs
-
 config DAVINCI_IMAGE
 	bool "Davinci image tool" if COMPILE_HOST_TOOLS
 	depends on ARCH_DAVINCI || COMPILE_HOST_TOOLS

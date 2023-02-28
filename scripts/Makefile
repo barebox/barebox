@@ -19,7 +19,6 @@ hostprogs-always-$(CONFIG_KALLSYMS)			+= kallsyms
 hostprogs-always-$(CONFIG_MIPS)				+= mips-relocs
 hostprogs-always-$(CONFIG_MVEBU_HOSTTOOLS)		+= kwbimage kwboot mvebuimg
 hostprogs-always-$(CONFIG_OMAP_IMAGE)			+= omap_signGP mk-omap-image
-hostprogs-always-$(CONFIG_S5P_IMAGE)			+= s5p_cksum
 hostprogs-always-$(CONFIG_DAVINCI_IMAGE)		+= mkublheader
 HOSTCFLAGS_zynq_mkimage.o = -I$(srctree) -I$(srctree)/arch/arm/mach-zynq/include
 hostprogs-always-$(CONFIG_ZYNQ_MKIMAGE)			+= zynq_mkimage

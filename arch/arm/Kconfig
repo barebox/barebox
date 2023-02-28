@@ -177,24 +177,6 @@ config ARCH_SOCFPGA
 	select COMMON_CLK
 	select CLKDEV_LOOKUP
 
-config ARCH_S3C24xx
-	bool "Samsung S3C2410, S3C2440"
-	select ARCH_SAMSUNG
-	select CPU_ARM920T
-	select GENERIC_GPIO
-
-config ARCH_S5PCxx
-	bool "Samsung S5PC110, S5PV210"
-	select ARCH_SAMSUNG
-	select CPU_V7
-	select GENERIC_GPIO
-
-config ARCH_S3C64xx
-	bool "Samsung S3C64xx"
-	select ARCH_SAMSUNG
-	select CPU_V6
-	select GENERIC_GPIO
-
 config ARCH_STM32MP
 	bool "STMicroelectronics STM32MP"
 	select ARCH_STM32
@@ -311,7 +293,6 @@ source "arch/arm/mach-nomadik/Kconfig"
 source "arch/arm/mach-omap/Kconfig"
 source "arch/arm/mach-pxa/Kconfig"
 source "arch/arm/mach-rockchip/Kconfig"
-source "arch/arm/mach-samsung/Kconfig"
 source "arch/arm/mach-socfpga/Kconfig"
 source "arch/arm/mach-stm32mp/Kconfig"
 source "arch/arm/mach-versatile/Kconfig"

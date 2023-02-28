@@ -14,7 +14,6 @@ kwboot-target
 gen_netx_image
 omap_signGP
 mk-omap-image
-s5p_cksum
 mkublheader
 zynq_mkimage
 socfpga_mkimage

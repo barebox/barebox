@@ -119,14 +119,8 @@ machine-$(CONFIG_ARCH_ZYNQMP)		:= zynqmp
 # These are here only because they have a board specific config.h.
 # TODO: Get rid of board specific config.h and move these to
 # arch/arm/boards/Makefile aswell.
-board-$(CONFIG_MACH_A9M2410)			+= a9m2410
-board-$(CONFIG_MACH_A9M2440)			+= a9m2440
 board-$(CONFIG_MACH_AT91RM9200EK)		+= at91rm9200ek
-board-$(CONFIG_MACH_MINI2440)			+= friendlyarm-mini2440
-board-$(CONFIG_MACH_MINI6410)			+= friendlyarm-mini6410
 board-$(CONFIG_MACH_PCM027)			+= phytec-phycore-pxa270
-board-$(CONFIG_MACH_TINY210)			+= friendlyarm-tiny210
-board-$(CONFIG_MACH_TINY6410)			+= friendlyarm-tiny6410
 
 machdirs := $(patsubst %,arch/arm/mach-%/,$(machine-y))
 
@@ -157,13 +151,6 @@ LDFLAGS_pbl += -static
 endif
 
 KBUILD_BINARY := barebox.bin
-
-barebox.s5p: $(KBUILD_BINARY)
-	$(Q)scripts/s5p_cksum $< barebox.s5p
-
-ifeq ($(CONFIG_ARCH_S5PCxx),y)
-KBUILD_IMAGE := barebox.s5p
-endif
 
 quiet_cmd_mlo ?= IFT     $@
 	cmd_mlo ?= scripts/omap_signGP -o MLO -l $(TEXT_BASE) -c $<

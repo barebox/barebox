@@ -18,8 +18,8 @@
 #define __MACH_DEBUG_LL_H__
 
 #include <io.h>
-#include <mach/digic4.h>
-#include <mach/uart.h>
+#include <mach/digic/digic4.h>
+#include <mach/digic/uart.h>
 
 #define DEBUG_LL_UART         DIGIC4_UART
 

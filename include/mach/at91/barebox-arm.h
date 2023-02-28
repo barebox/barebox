@@ -4,8 +4,8 @@
 
 #include <asm/barebox-arm.h>
 #include <asm/common.h>
-#include <mach/sama5d3.h>
-#include <mach/sama5d4.h>
+#include <mach/at91/sama5d3.h>
+#include <mach/at91/sama5d4.h>
 
 #ifdef CONFIG_AT91_LOAD_BAREBOX_SRAM
 #define AT91_EXV6	".word _barebox_image_size\n"

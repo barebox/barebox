@@ -7,11 +7,10 @@
 #include <common.h>
 #include <init.h>
 
-#include <mach/barebox-arm.h>
-
-#include <mach/at91sam9_sdramc.h>
-#include <mach/at91sam9260.h>
-#include <mach/hardware.h>
+#include <mach/at91/barebox-arm.h>
+#include <mach/at91/at91sam9_sdramc.h>
+#include <mach/at91/at91sam9260.h>
+#include <mach/at91/hardware.h>
 
 AT91_ENTRY_FUNCTION(start_haba_knx_lite, r0, r1, r2)
 {

@@ -9,9 +9,9 @@
 #define __MACH_DEBUG_LL_H__
 
 #include <asm/io.h>
-#include <mach/gpio.h>
-#include <mach/hardware.h>
-#include <mach/at91_dbgu.h>
+#include <mach/at91/gpio.h>
+#include <mach/at91/hardware.h>
+#include <mach/at91/at91_dbgu.h>
 
 #define ATMEL_US_CSR		0x0014
 #define ATMEL_US_THR		0x001c

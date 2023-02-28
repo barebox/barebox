@@ -6,14 +6,14 @@
 #include <debug_ll.h>
 #include <common.h>
 
-#include <mach/at91_pmc_ll.h>
-#include <mach/at91sam9260.h>
-#include <mach/at91sam9261.h>
-#include <mach/at91sam9263.h>
-#include <mach/at91sam926x.h>
-#include <mach/debug_ll.h>
-#include <mach/early_udelay.h>
-#include <mach/iomux.h>
+#include <mach/at91/at91_pmc_ll.h>
+#include <mach/at91/at91sam9260.h>
+#include <mach/at91/at91sam9261.h>
+#include <mach/at91/at91sam9263.h>
+#include <mach/at91/at91sam926x.h>
+#include <mach/at91/debug_ll.h>
+#include <mach/at91/early_udelay.h>
+#include <mach/at91/iomux.h>
 
 struct sam92_pmc_config {
 	unsigned int diva;

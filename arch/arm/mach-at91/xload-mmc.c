@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <common.h>
-#include <mach/xload.h>
-#include <mach/sama5_bootsource.h>
-#include <mach/hardware.h>
-#include <mach/sama5d2_ll.h>
-#include <mach/sama5d3_ll.h>
-#include <mach/gpio.h>
+#include <mach/at91/xload.h>
+#include <mach/at91/sama5_bootsource.h>
+#include <mach/at91/hardware.h>
+#include <mach/at91/sama5d2_ll.h>
+#include <mach/at91/sama5d3_ll.h>
+#include <mach/at91/gpio.h>
 #include <linux/sizes.h>
 #include <asm/cache.h>
 #include <pbl/bio.h>

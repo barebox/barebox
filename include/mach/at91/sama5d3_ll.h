@@ -3,9 +3,9 @@
 #ifndef __SAMA5D3_LL_H__
 #define __SAMA5D3_LL_H__
 
-#include <mach/at91_pmc_ll.h>
-#include <mach/debug_ll.h>
-#include <mach/early_udelay.h>
+#include <mach/at91/at91_pmc_ll.h>
+#include <mach/at91/debug_ll.h>
+#include <mach/at91/early_udelay.h>
 
 void sama5d3_lowlevel_init(void);
 

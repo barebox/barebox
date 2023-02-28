@@ -14,7 +14,7 @@
 #include <of_gpio.h>
 #include <io.h>
 
-#include <mach/board.h>
+#include <mach/at91/board.h>
 
 #include "ohci.h"
 

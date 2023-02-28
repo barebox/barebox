@@ -6,7 +6,7 @@
 #ifndef __ASM_ARCH_BOARD_H
 #define __ASM_ARCH_BOARD_H
 
-#include <mach/hardware.h>
+#include <mach/at91/hardware.h>
 #include <linux/sizes.h>
 #include <net.h>
 #include <i2c/i2c.h>
@@ -14,7 +14,7 @@
 #include <linux/mtd/mtd.h>
 #include <fb.h>
 #include <video/atmel_lcdc.h>
-#include <mach/atmel_hlcdc.h>
+#include <mach/at91/atmel_hlcdc.h>
 #include <linux/phy.h>
 #include <platform_data/macb.h>
 

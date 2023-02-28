@@ -10,15 +10,15 @@
 #include <common.h>
 #include <init.h>
 
-#include <mach/at91sam9_sdramc.h>
-#include <mach/at91sam9_smc.h>
-#include <mach/at91_rstc.h>
-#include <mach/at91_pio.h>
-#include <mach/at91_pmc.h>
-#include <mach/at91_wdt.h>
-#include <mach/hardware.h>
-#include <mach/gpio.h>
-#include <mach/at91sam926x.h>
+#include <mach/at91/at91sam9_sdramc.h>
+#include <mach/at91/at91sam9_smc.h>
+#include <mach/at91/at91_rstc.h>
+#include <mach/at91/at91_pio.h>
+#include <mach/at91/at91_pmc.h>
+#include <mach/at91/at91_wdt.h>
+#include <mach/at91/hardware.h>
+#include <mach/at91/gpio.h>
+#include <mach/at91/at91sam926x.h>
 
 struct at91sam926x_board_cfg {
 	/* SoC specific */
@@ -183,19 +183,19 @@ static void __always_inline at91sam926x_board_init(void __iomem *smcbase,
 	writel(0xffffffff, pmc + AT91_PMC_PCER);
 }
 
-#include <mach/at91sam9260.h>
+#include <mach/at91/at91sam9260.h>
 static void __always_inline at91sam9260_board_init(struct at91sam926x_board_cfg *cfg)
 {
 	at91sam926x_board_init(IOMEM(AT91SAM9260_BASE_SMC), cfg);
 }
 
-#include <mach/at91sam9261.h>
+#include <mach/at91/at91sam9261.h>
 static void __always_inline at91sam9261_board_init(struct at91sam926x_board_cfg *cfg)
 {
 	at91sam926x_board_init(IOMEM(AT91SAM9261_BASE_SMC), cfg);
 }
 
-#include <mach/at91sam9263.h>
+#include <mach/at91/at91sam9263.h>
 static void __always_inline at91sam9263_board_init(struct at91sam926x_board_cfg *cfg)
 {
 	at91sam926x_board_init(IOMEM(AT91SAM9263_BASE_SMC0), cfg);

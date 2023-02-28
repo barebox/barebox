@@ -13,10 +13,10 @@
 #include <linux/clk.h>
 #include <init.h>
 
-#include <mach/hardware.h>
-#include <mach/at91_pmc.h>
-#include <mach/cpu.h>
-#include <mach/board.h>
+#include <mach/at91/hardware.h>
+#include <mach/at91/at91_pmc.h>
+#include <mach/at91/cpu.h>
+#include <mach/at91/board.h>
 
 #include "clock.h"
 #include "generic.h"

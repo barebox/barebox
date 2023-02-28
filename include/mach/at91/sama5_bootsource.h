@@ -6,7 +6,7 @@
 #include <bootsource.h>
 #include <linux/bitops.h>
 #include <linux/bitfield.h>
-#include <mach/hardware.h>
+#include <mach/at91/hardware.h>
 
 /* Boot modes stored by BootROM in r4 */
 #define SAMA5_BOOTSOURCE_SPI	0

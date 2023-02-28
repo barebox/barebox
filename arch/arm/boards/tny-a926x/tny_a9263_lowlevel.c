@@ -7,10 +7,9 @@
 #include <common.h>
 #include <init.h>
 
-#include <mach/barebox-arm.h>
-
-#include <mach/at91sam926x_board_init.h>
-#include <mach/at91sam9263_matrix.h>
+#include <mach/at91/barebox-arm.h>
+#include <mach/at91/at91sam926x_board_init.h>
+#include <mach/at91/at91sam9263_matrix.h>
 
 #define MASTER_CLOCK		180
 

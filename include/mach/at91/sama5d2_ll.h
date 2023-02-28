@@ -3,12 +3,12 @@
 #ifndef __MACH_SAMA5D2_LL__
 #define __MACH_SAMA5D2_LL__
 
-#include <mach/sama5d2.h>
-#include <mach/at91_pmc_ll.h>
-#include <mach/iomux.h>
-#include <mach/debug_ll.h>
-#include <mach/early_udelay.h>
-#include <mach/ddramc.h>
+#include <mach/at91/sama5d2.h>
+#include <mach/at91/at91_pmc_ll.h>
+#include <mach/at91/iomux.h>
+#include <mach/at91/debug_ll.h>
+#include <mach/at91/early_udelay.h>
+#include <mach/at91/ddramc.h>
 
 #include <common.h>
 

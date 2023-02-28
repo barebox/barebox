@@ -7,8 +7,8 @@
  */
 
 #include <io.h>
-#include <mach/tz_matrix.h>
-#include <mach/matrix.h>
+#include <mach/at91/tz_matrix.h>
+#include <mach/at91/matrix.h>
 
 static inline void matrix_write(void __iomem *base,
 				unsigned int offset,

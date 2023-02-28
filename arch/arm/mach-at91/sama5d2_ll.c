@@ -6,13 +6,13 @@
  * from this software without specific prior written permission.
  */
 
-#include <mach/sama5d2_ll.h>
-#include <mach/at91_ddrsdrc.h>
-#include <mach/ddramc.h>
-#include <mach/early_udelay.h>
-#include <mach/tz_matrix.h>
-#include <mach/matrix.h>
-#include <mach/at91_rstc.h>
+#include <mach/at91/sama5d2_ll.h>
+#include <mach/at91/at91_ddrsdrc.h>
+#include <mach/at91/ddramc.h>
+#include <mach/at91/early_udelay.h>
+#include <mach/at91/tz_matrix.h>
+#include <mach/at91/matrix.h>
+#include <mach/at91/at91_rstc.h>
 #include <asm/barebox-arm.h>
 
 #define sama5d2_pmc_write(off, val) writel(val, SAMA5D2_BASE_PMC + off)

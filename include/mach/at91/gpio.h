@@ -9,7 +9,7 @@
 
 #include <dt-bindings/gpio/gpio.h>
 #include <asm/io.h>
-#include <mach/at91_pio.h>
+#include <mach/at91/at91_pio.h>
 
 #define MAX_NB_GPIO_PER_BANK	32
 

@@ -5,9 +5,9 @@
  * SAMA5D27 System-in-Package DDRAMC configuration
  */
 
-#include <mach/at91_ddrsdrc.h>
-#include <mach/ddramc.h>
-#include <mach/sama5d2_ll.h>
+#include <mach/at91/at91_ddrsdrc.h>
+#include <mach/at91/ddramc.h>
+#include <mach/at91/sama5d2_ll.h>
 
 static inline void sama5d2_d1g_ddrconf(void) /* DDR2 1Gbit SDRAM */
 {

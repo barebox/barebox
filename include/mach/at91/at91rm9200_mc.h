@@ -155,7 +155,7 @@
 
 #ifndef __ASSEMBLY__
 #include <io.h>
-#include <mach/at91rm9200.h>
+#include <mach/at91/at91rm9200.h>
 static inline u32 at91rm9200_get_sdram_size(void)
 {
 	u32 cr, mr;

@@ -295,7 +295,7 @@
 #ifndef __ASSEMBLY__
 #include <common.h>
 #include <io.h>
-#include <mach/hardware.h>
+#include <mach/at91/hardware.h>
 
 static inline u32 at91_get_ddram_size(void __iomem *base, bool is_nb)
 {

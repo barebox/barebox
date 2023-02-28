@@ -14,7 +14,7 @@
 #include <linux/clk.h>
 #include <malloc.h>
 
-#include <mach/cpu.h>
+#include <mach/at91/cpu.h>
 
 #include "atmel_lcdfb.h"
 

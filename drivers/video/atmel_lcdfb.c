@@ -8,7 +8,7 @@
 #include <common.h>
 #include <io.h>
 #include <init.h>
-#include <mach/hardware.h>
+#include <mach/at91/hardware.h>
 #include <errno.h>
 #include <linux/clk.h>
 

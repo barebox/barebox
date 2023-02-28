@@ -8,7 +8,7 @@
 
 #include <errno.h>
 #include <asm/io.h>
-#include <mach/at91_pmc.h>
+#include <mach/at91/at91_pmc.h>
 
 #define AT91_PMC_LL_FLAG_SAM9X5_PMC	(1 << 0)
 #define AT91_PMC_LL_FLAG_MEASURE_XTAL	(1 << 1)

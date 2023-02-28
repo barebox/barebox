@@ -177,9 +177,9 @@
 
 #ifndef __ASSEMBLY__
 #include <io.h>
-#include <mach/at91sam9260.h>
-#include <mach/at91sam9261.h>
-#include <mach/at91sam9263.h>
+#include <mach/at91/at91sam9260.h>
+#include <mach/at91/at91sam9261.h>
+#include <mach/at91/at91sam9263.h>
 
 struct at91sam9_sdramc_config {
 	void __iomem *sdramc;

@@ -10,11 +10,11 @@
 
 #include <linux/sizes.h>
 
-#include <mach/at91sam9263_matrix.h>
-#include <mach/at91sam9_sdramc.h>
-#include <mach/at91sam9_smc.h>
-#include <mach/hardware.h>
-#include <mach/iomux.h>
+#include <mach/at91/at91sam9263_matrix.h>
+#include <mach/at91/at91sam9_sdramc.h>
+#include <mach/at91/at91sam9_smc.h>
+#include <mach/at91/hardware.h>
+#include <mach/at91/iomux.h>
 
 static struct sam9_smc_config ek_nand_smc_config = {
 	.ncs_read_setup		= 0,

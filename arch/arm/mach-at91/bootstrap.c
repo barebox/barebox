@@ -6,7 +6,7 @@
 
 #include <common.h>
 #include <bootstrap.h>
-#include <mach/bootstrap.h>
+#include <mach/at91/bootstrap.h>
 #include <linux/sizes.h>
 #include <malloc.h>
 #include <restart.h>

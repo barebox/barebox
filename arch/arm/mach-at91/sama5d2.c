@@ -3,11 +3,11 @@
 #include <common.h>
 #include <of.h>
 #include <init.h>
-#include <mach/aic.h>
-#include <mach/sama5d2.h>
+#include <mach/at91/aic.h>
+#include <mach/at91/sama5d2.h>
 #include <asm/cache-l2x0.h>
 #include <asm/mmu.h>
-#include <mach/cpu.h>
+#include <mach/at91/cpu.h>
 
 #define SFR_CAN		0x48
 #define SFR_L2CC_HRAMC	0x58

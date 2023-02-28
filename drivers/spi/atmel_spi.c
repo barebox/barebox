@@ -21,9 +21,9 @@
 #include <of_gpio.h>
 #include <io.h>
 #include <spi/spi.h>
-#include <mach/iomux.h>
-#include <mach/board.h>
-#include <mach/cpu.h>
+#include <mach/at91/iomux.h>
+#include <mach/at91/board.h>
+#include <mach/at91/cpu.h>
 #include <linux/clk.h>
 #include <linux/err.h>
 

@@ -7,13 +7,13 @@
 #include <common.h>
 #include <init.h>
 
-#include <mach/barebox-arm.h>
+#include <mach/at91/barebox-arm.h>
 
-#include <mach/at91rm9200_mc.h>
-#include <mach/at91rm9200.h>
-#include <mach/at91_pio.h>
-#include <mach/at91_pmc.h>
-#include <mach/hardware.h>
+#include <mach/at91/at91rm9200_mc.h>
+#include <mach/at91/at91rm9200.h>
+#include <mach/at91/at91_pio.h>
+#include <mach/at91/at91_pmc.h>
+#include <mach/at91/hardware.h>
 
 #include "config.h"
 

@@ -11,11 +11,11 @@
 #include <restart.h>
 #include <linux/clk.h>
 
-#include <mach/hardware.h>
-#include <mach/cpu.h>
-#include <mach/at91_dbgu.h>
-#include <mach/at91_rstc.h>
-#include <mach/board.h>
+#include <mach/at91/hardware.h>
+#include <mach/at91/cpu.h>
+#include <mach/at91/at91_dbgu.h>
+#include <mach/at91/at91_rstc.h>
+#include <mach/at91/board.h>
 
 #include "generic.h"
 

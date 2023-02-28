@@ -15,16 +15,16 @@
 /* sama5d4 */
 #define AT91_BASE_DBGU2	0xfc069000
 
-#include <mach/at91rm9200.h>
-#include <mach/at91sam9260.h>
-#include <mach/at91sam9261.h>
-#include <mach/at91sam9263.h>
-#include <mach/at91sam9g45.h>
-#include <mach/at91sam9n12.h>
-#include <mach/at91sam9x5.h>
-#include <mach/sama5d2.h>
-#include <mach/sama5d3.h>
-#include <mach/sama5d4.h>
+#include <mach/at91/at91rm9200.h>
+#include <mach/at91/at91sam9260.h>
+#include <mach/at91/at91sam9261.h>
+#include <mach/at91/at91sam9263.h>
+#include <mach/at91/at91sam9g45.h>
+#include <mach/at91/at91sam9n12.h>
+#include <mach/at91/at91sam9x5.h>
+#include <mach/at91/sama5d2.h>
+#include <mach/at91/sama5d3.h>
+#include <mach/at91/sama5d4.h>
 
 /* External Memory Map */
 #define AT91_CHIPSELECT_0	0x10000000

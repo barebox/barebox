@@ -5,9 +5,9 @@
  * SAMA5D27 System-in-Package DDRAMC configuration
  */
 
-#include <mach/at91_ddrsdrc.h>
-#include <mach/ddramc.h>
-#include <mach/sama5d3_ll.h>
+#include <mach/at91/at91_ddrsdrc.h>
+#include <mach/at91/ddramc.h>
+#include <mach/at91/sama5d3_ll.h>
 
 static inline void sama5d3_xplained_ddrconf(void)
 {

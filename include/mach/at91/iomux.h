@@ -8,9 +8,9 @@
 
 #include <io.h>
 #include <asm-generic/errno.h>
-#include <mach/at91_pio.h>
-#include <mach/hardware.h>
-#include <mach/gpio.h>
+#include <mach/at91/at91_pio.h>
+#include <mach/at91/hardware.h>
+#include <mach/at91/gpio.h>
 
 #define	AT91_PIN_PA0	(0x00 + 0)
 #define	AT91_PIN_PA1	(0x00 + 1)

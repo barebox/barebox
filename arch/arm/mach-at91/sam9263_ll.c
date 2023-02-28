@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-only AND BSD-1-Clause
 // SPDX-FileCopyrightText: 2017, Microchip Corporation
 
-#include <mach/at91sam9263_matrix.h>
-#include <mach/barebox-arm.h>
-#include <mach/at91_rstc.h>
-#include <mach/at91_wdt.h>
-#include <mach/sam92_ll.h>
+#include <mach/at91/at91sam9263_matrix.h>
+#include <mach/at91/barebox-arm.h>
+#include <mach/at91/at91_rstc.h>
+#include <mach/at91/at91_wdt.h>
+#include <mach/at91/sam92_ll.h>
 
 static void sam9263_pmc_init(const struct sam92_pmc_config *config)
 {

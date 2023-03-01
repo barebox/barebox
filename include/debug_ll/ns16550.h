@@ -39,7 +39,7 @@ static inline void debug_ll_ns16550_putc(char ch)
 
 static inline uint16_t debug_ll_ns16550_calc_divisor(unsigned long clk)
 {
-	return clk / (115200 * 16);
+	return clk / (CONFIG_BAUDRATE * 16);
 }
 
 static inline void debug_ll_ns16550_init(uint16_t divisor)

@@ -11,6 +11,10 @@
 #include <mach/rockchip/debug_ll.h>
 #endif
 
+#ifdef CONFIG_DEBUG_OMAP_UART
+#include <mach/omap/debug_ll.h>
+#endif
+
 #ifdef CONFIG_DEBUG_QEMU_ARM64_VIRT
 #define DEBUG_LL_UART_ADDR		0x9000000
 #include <debug_ll/pl011.h>
@@ -40,8 +44,6 @@
 #include <mach/socfpga/debug_ll.h>
 #elif defined CONFIG_ARCH_PXA
 #include <mach/pxa/debug_ll.h>
-#elif defined CONFIG_ARCH_OMAP
-#include <mach/omap/debug_ll.h>
 #elif defined CONFIG_ARCH_NOMADIK
 #include <mach/nomadik/debug_ll.h>
 #elif defined CONFIG_ARCH_MXS

@@ -17,6 +17,7 @@
 #include <mach/omap/syslib.h>
 #include <mach/omap/am33xx-mux.h>
 #include <debug_ll.h>
+#include <mach/omap/debug_ll.h>
 
 /* AM335X EMIF Register values */
 #define	VTP_CTRL_READY		(0x1 << 5)

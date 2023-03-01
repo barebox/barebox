@@ -1255,6 +1255,9 @@ config DEBUG_IMX_UART
 config DEBUG_ROCKCHIP_UART
 	bool
 
+config DEBUG_OMAP_UART
+	bool
+
 choice
 	prompt "Kernel low-level debugging port"
 	depends on DEBUG_LL
@@ -1365,6 +1368,7 @@ config DEBUG_VF610_UART
 config DEBUG_OMAP3_UART
 	bool "OMAP3 Debug UART"
 	depends on ARCH_OMAP3
+	select DEBUG_OMAP_UART
 	help
 	  Say Y here if you want kernel low-level debugging support
 	  on OMAP3.
@@ -1372,6 +1376,7 @@ config DEBUG_OMAP3_UART
 config DEBUG_OMAP4_UART
 	bool "OMAP4 Debug UART"
 	depends on ARCH_OMAP4
+	select DEBUG_OMAP_UART
 	help
 	  Say Y here if you want kernel low-level debugging support
 	  on OMAP4.
@@ -1379,6 +1384,7 @@ config DEBUG_OMAP4_UART
 config DEBUG_AM33XX_UART
 	bool "AM33XX Debug UART"
 	depends on ARCH_AM33XX
+	select DEBUG_OMAP_UART
 	help
 	  Say Y here if you want kernel low-level debugging support
 	  on AM33XX.

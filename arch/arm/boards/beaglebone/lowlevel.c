@@ -5,6 +5,7 @@
 #include <io.h>
 #include <linux/string.h>
 #include <debug_ll.h>
+#include <mach/omap/debug_ll.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 #include <mach/omap/am33xx-silicon.h>

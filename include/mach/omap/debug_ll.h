@@ -22,7 +22,7 @@
 #include <mach/omap/omap4-silicon.h>
 #include <mach/omap/am33xx-silicon.h>
 
-#ifdef CONFIG_DEBUG_LL
+#ifdef CONFIG_DEBUG_OMAP_UART
 
 #ifdef CONFIG_DEBUG_OMAP3_UART
 #define OMAP_DEBUG_SOC OMAP3

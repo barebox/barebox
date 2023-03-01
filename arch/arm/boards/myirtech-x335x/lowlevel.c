@@ -6,6 +6,7 @@
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 #include <debug_ll.h>
+#include <mach/omap/debug_ll.h>
 #include <init.h>
 #include <linux/sizes.h>
 #include <mach/omap/am33xx-clock.h>

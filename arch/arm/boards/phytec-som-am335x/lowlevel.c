@@ -16,6 +16,7 @@
 #include <mach/omap/am33xx-mux.h>
 #include <mach/omap/am33xx-generic.h>
 #include <debug_ll.h>
+#include <mach/omap/debug_ll.h>
 
 #include "ram-timings.h"
 

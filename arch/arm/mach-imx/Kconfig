@@ -40,7 +40,7 @@ config MACH_FREESCALE_MX51_PDK_POWER
 	select DRIVER_SPI_IMX
 	select MFD_MC13XXX
 
-comment "Freescale i.MX System-on-Chip"
+menu "i.MX boards"
 
 config ARCH_IMX1
 	bool
@@ -674,6 +674,8 @@ config MACH_ZII_IMX8MQ_DEV
 	select MACH_ZII_COMMON
 
 endif
+
+endmenu
 
 # ----------------------------------------------------------
 

@@ -46,6 +46,9 @@ int omap4_usbboot_open(void)
 	int n;
 	u32 base;
 
+	if (omap4_usbboot_ready())
+		return 0;
+
 	if (omap4_revision() >= OMAP4460_ES1_0)
 		base = PUBLIC_API_BASE_4460;
 	else
@@ -82,7 +85,6 @@ int omap4_usbboot_open(void)
 	omap4_usbboot_puts("USB communications initialized\n");
 	return 0;
 }
-core_initcall(omap4_usbboot_open);
 
 int omap4_usbboot_ready(void){
 	return omap4_usbboot_data.ready;

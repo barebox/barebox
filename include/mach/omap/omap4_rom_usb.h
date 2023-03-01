@@ -125,8 +125,21 @@ struct omap4_usbboot {
 	int ready;
 };
 
+#ifdef CONFIG_OMAP4_USBBOOT
 int omap4_usbboot_open(void);
 int omap4_usbboot_ready(void);
+#else
+static inline int omap4_usbboot_open(void)
+{
+	return -ENODEV;
+}
+
+static inline int omap4_usbboot_ready(void)
+{
+	return 0;
+}
+#endif
+
 void omap4_usbboot_close(void);
 
 void omap4_usbboot_queue_read(void *data, unsigned len);

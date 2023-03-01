@@ -143,8 +143,9 @@ static int omap4_usbbootfs_stat(struct device *dev, const char *filename,
 
 static int omap4_usbbootfs_probe(struct device *dev)
 {
-	return 0;
+	return omap4_usbboot_open();
 }
+
 static void omap4_usbbootfs_remove(struct device *dev)
 {
 }

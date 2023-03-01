@@ -1470,6 +1470,13 @@ config DEBUG_RPI4_MINI_UART
 	  Say Y here if you want low-level debugging support on
 	  RaspberryPi 4 board mini UART.
 
+config DEBUG_ZYNQMP_UART
+	bool "Zynqmp Debug UART"
+	depends on ARCH_ZYNQMP
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on Zynqmp.
+
 config DEBUG_ERIZO
 	bool "Erizo ns16550 port"
 	depends on SOC_ERIZO

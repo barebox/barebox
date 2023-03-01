@@ -15,11 +15,13 @@
 #include <mach/omap/debug_ll.h>
 #endif
 
+#ifdef CONFIG_DEBUG_ZYNQMP_UART
+#include <mach/zynqmp/debug_ll.h>
+#endif
+
 #ifdef CONFIG_DEBUG_QEMU_ARM64_VIRT
 #define DEBUG_LL_UART_ADDR		0x9000000
 #include <debug_ll/pl011.h>
-#elif defined CONFIG_ARCH_ZYNQMP
-#include <mach/zynqmp/debug_ll.h>
 #elif defined CONFIG_ARCH_MVEBU
 #include <mach/mvebu/debug_ll.h>
 #elif defined CONFIG_ARCH_DAVINCI

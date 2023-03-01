@@ -231,22 +231,6 @@ config ARCH_ZYNQ
 	select PBL_IMAGE
 	select GPIOLIB
 
-config ARCH_ZYNQMP
-	bool "Xilinx ZynqMP-based boards"
-	select CPU_V8
-	select HAS_DEBUG_LL
-	select HAVE_PBL_MULTI_IMAGES
-	select ARM_SMCCC
-	select COMMON_CLK
-	select COMMON_CLK_OF_PROVIDER
-	select CLKDEV_LOOKUP
-	select GPIOLIB
-	select OFDEVICE
-	select OFTREE
-	select RELOCATABLE
-	select CPU_SUPPORTS_64BIT_KERNEL
-	select HAS_MACB
-
 config ARCH_ARM64_VIRT
 	bool "ARM64 QEMU Virt board"
 	select CPU_V8
@@ -295,6 +279,22 @@ config ARCH_ROCKCHIP
 	select OFTREE
 	select HAVE_PBL_MULTI_IMAGES
 	select HAS_DEBUG_LL
+
+config ARCH_ZYNQMP
+	bool "Xilinx ZynqMP-based boards"
+	select CPU_V8
+	select HAS_DEBUG_LL
+	select HAVE_PBL_MULTI_IMAGES
+	select ARM_SMCCC
+	select COMMON_CLK
+	select COMMON_CLK_OF_PROVIDER
+	select CLKDEV_LOOKUP
+	select GPIOLIB
+	select OFDEVICE
+	select OFTREE
+	select RELOCATABLE
+	select CPU_SUPPORTS_64BIT_KERNEL
+	select HAS_MACB
 
 source "arch/arm/cpu/Kconfig"
 source "arch/arm/mach-at91/Kconfig"

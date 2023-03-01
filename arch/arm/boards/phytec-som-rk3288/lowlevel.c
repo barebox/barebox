@@ -26,7 +26,7 @@ ENTRY_FUNCTION(start_rk3288_phycore_som, r0, r1, r2)
 			     GPIO7C6_MASK << GPIO7C6_SHIFT,
 			     GPIO7C7_UART2DBG_SOUT << GPIO7C7_SHIFT |
 			     GPIO7C6_UART2DBG_SIN << GPIO7C6_SHIFT);
-		INIT_LL();
+		rockchip_debug_ll_init();
 	}
 	fdt = __dtb_rk3288_phycore_som_start + get_runtime_offset();
 

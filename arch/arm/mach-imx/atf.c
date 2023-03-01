@@ -7,6 +7,7 @@
 #include <mach/imx/generic.h>
 #include <mach/imx/xload.h>
 #include <mach/imx/romapi.h>
+#include <mach/imx/imx8m-regs.h>
 #include <soc/fsl/fsl_udc.h>
 #include <soc/fsl/caam.h>
 

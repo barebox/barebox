@@ -33,4 +33,9 @@ static inline void debug_ll_init(void)
 	debug_ll_ns16550_init(divisor);
 }
 
+static inline void PUTC_LL(int c)
+{
+	debug_ll_ns16550_putc(c);
+}
+
 #endif /* __MACH_LAYERSCAPE_DEBUG_LL_H__ */

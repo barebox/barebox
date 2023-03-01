@@ -29,7 +29,7 @@
 
 #define NS16550_LCR_BKSE	0x80 /* Bank select enable */
 
-static inline void PUTC_LL(char ch)
+static inline void debug_ll_ns16550_putc(char ch)
 {
         while (!(debug_ll_read_reg(NS16550_LSR) & NS16550_LSR_THRE))
                 ;

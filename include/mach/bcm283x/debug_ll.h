@@ -67,6 +67,11 @@ static inline void debug_ll_init(void)
 	debug_ll_ns16550_init(divisor);
 }
 
+static inline void PUTC_LL(int c)
+{
+	debug_ll_ns16550_putc(c);
+}
+
 #elif defined CONFIG_DEBUG_RPI4_MINI_UART
 
 static inline uint8_t debug_ll_read_reg(int reg)
@@ -84,6 +89,11 @@ static inline void debug_ll_write_reg(int reg, uint8_t val)
 static inline void debug_ll_init(void)
 {
 	/* Configured by ROM */
+}
+
+static inline void PUTC_LL(int c)
+{
+	debug_ll_ns16550_putc(c);
 }
 
 #else

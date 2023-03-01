@@ -85,29 +85,29 @@ endif
 
 # Machine directory name.  This list is sorted alphanumerically
 # by CONFIG_* macro name.
-machine-$(CONFIG_ARCH_AT91)		:= at91
-machine-$(CONFIG_ARCH_BCM283X)		:= bcm283x
-machine-$(CONFIG_ARCH_CLPS711X)		:= clps711x
-machine-$(CONFIG_ARCH_DAVINCI)		:= davinci
-machine-$(CONFIG_ARCH_DIGIC)		:= digic
-machine-$(CONFIG_ARCH_EP93XX)		:= ep93xx
-machine-$(CONFIG_ARCH_IMX)		:= imx
-machine-$(CONFIG_ARCH_LAYERSCAPE)	:= layerscape
-machine-$(CONFIG_ARCH_MXS)		:= mxs
-machine-$(CONFIG_ARCH_MVEBU)		:= mvebu
-machine-$(CONFIG_ARCH_NOMADIK)		:= nomadik
-machine-$(CONFIG_ARCH_OMAP)		:= omap
-machine-$(CONFIG_ARCH_PXA)		:= pxa
-machine-$(CONFIG_ARCH_ROCKCHIP)		:= rockchip
-machine-$(CONFIG_ARCH_SAMSUNG)		:= samsung
-machine-$(CONFIG_ARCH_SOCFPGA)		:= socfpga
-machine-$(CONFIG_ARCH_STM32MP)		:= stm32mp
-machine-$(CONFIG_ARCH_VERSATILE)	:= versatile
-machine-$(CONFIG_ARCH_VEXPRESS)		:= vexpress
-machine-$(CONFIG_ARCH_TEGRA)		:= tegra
-machine-$(CONFIG_ARCH_UEMD)		:= uemd
-machine-$(CONFIG_ARCH_ZYNQ)		:= zynq
-machine-$(CONFIG_ARCH_ZYNQMP)		:= zynqmp
+machine-$(CONFIG_ARCH_AT91)		+= at91
+machine-$(CONFIG_ARCH_BCM283X)		+= bcm283x
+machine-$(CONFIG_ARCH_CLPS711X)		+= clps711x
+machine-$(CONFIG_ARCH_DAVINCI)		+= davinci
+machine-$(CONFIG_ARCH_DIGIC)		+= digic
+machine-$(CONFIG_ARCH_EP93XX)		+= ep93xx
+machine-$(CONFIG_ARCH_IMX)		+= imx
+machine-$(CONFIG_ARCH_LAYERSCAPE)	+= layerscape
+machine-$(CONFIG_ARCH_MXS)		+= mxs
+machine-$(CONFIG_ARCH_MVEBU)		+= mvebu
+machine-$(CONFIG_ARCH_NOMADIK)		+= nomadik
+machine-$(CONFIG_ARCH_OMAP)		+= omap
+machine-$(CONFIG_ARCH_PXA)		+= pxa
+machine-$(CONFIG_ARCH_ROCKCHIP)		+= rockchip
+machine-$(CONFIG_ARCH_SAMSUNG)		+= samsung
+machine-$(CONFIG_ARCH_SOCFPGA)		+= socfpga
+machine-$(CONFIG_ARCH_STM32MP)		+= stm32mp
+machine-$(CONFIG_ARCH_VERSATILE)	+= versatile
+machine-$(CONFIG_ARCH_VEXPRESS)		+= vexpress
+machine-$(CONFIG_ARCH_TEGRA)		+= tegra
+machine-$(CONFIG_ARCH_UEMD)		+= uemd
+machine-$(CONFIG_ARCH_ZYNQ)		+= zynq
+machine-$(CONFIG_ARCH_ZYNQMP)		+= zynqmp
 
 TEXT_BASE = $(CONFIG_TEXT_BASE)
 
@@ -184,7 +184,7 @@ maketools:
 PHONY += maketools
 
 ifneq ($(machine-y),)
-MACH := arch/arm/mach-$(machine-y)/
+MACH := $(patsubst %,arch/arm/mach-%/,$(machine-y))
 else
 MACH :=
 endif

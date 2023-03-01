@@ -35,6 +35,9 @@ config ARCH_STM32
 choice
 	prompt "ARM system type"
 
+config ARCH_MULTIARCH
+	bool "Allow multiple archs to be selected"
+
 config ARCH_AT91
 	bool "Atmel AT91"
 	select GPIOLIB
@@ -94,18 +97,6 @@ config ARCH_EP93XX
 	select CPU_ARM920T
 	select GENERIC_GPIO
 
-config ARCH_IMX
-	bool "Freescale iMX-based"
-	select GPIOLIB
-	select COMMON_CLK
-	select CLKDEV_LOOKUP
-	select WATCHDOG_IMX_RESET_SOURCE
-	select HAS_DEBUG_LL
-	select HAVE_PBL_MULTI_IMAGES
-	select RELOCATABLE
-	select CPU_SUPPORTS_32BIT_KERNEL
-	select CPU_SUPPORTS_64BIT_KERNEL
-
 config ARCH_LAYERSCAPE
 	bool "NXP Layerscape based"
 	select GPIOLIB
@@ -157,18 +148,6 @@ config ARCH_OMAP
 config ARCH_PXA
 	bool "Intel/Marvell PXA based"
 	select GENERIC_GPIO
-
-config ARCH_ROCKCHIP
-	bool "Rockchip RX3xxx"
-	select COMMON_CLK
-	select CLKDEV_LOOKUP
-	select COMMON_CLK_OF_PROVIDER
-	select GPIOLIB
-	select PINCTRL
-	select PINCTRL_ROCKCHIP
-	select OFTREE
-	select HAVE_PBL_MULTI_IMAGES
-	select HAS_DEBUG_LL
 
 config ARCH_SOCFPGA
 	bool "Altera SOCFPGA"
@@ -278,6 +257,32 @@ config ARCH_ARM64_VIRT
 	select HAS_DEBUG_LL
 
 endchoice
+
+config ARCH_IMX
+	bool "Freescale iMX-based"
+	depends on ARCH_MULTIARCH
+	select GPIOLIB
+	select COMMON_CLK
+	select CLKDEV_LOOKUP
+	select WATCHDOG_IMX_RESET_SOURCE
+	select HAS_DEBUG_LL
+	select HAVE_PBL_MULTI_IMAGES
+	select RELOCATABLE
+	select CPU_SUPPORTS_32BIT_KERNEL
+	select CPU_SUPPORTS_64BIT_KERNEL
+
+config ARCH_ROCKCHIP
+	bool "Rockchip RX3xxx"
+	depends on ARCH_MULTIARCH
+	select COMMON_CLK
+	select CLKDEV_LOOKUP
+	select COMMON_CLK_OF_PROVIDER
+	select GPIOLIB
+	select PINCTRL
+	select PINCTRL_ROCKCHIP
+	select OFTREE
+	select HAVE_PBL_MULTI_IMAGES
+	select HAS_DEBUG_LL
 
 source "arch/arm/cpu/Kconfig"
 source "arch/arm/mach-at91/Kconfig"

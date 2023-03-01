@@ -54,6 +54,12 @@ extern unsigned int __omap_cpu_type;
 # define cpu_is_am33xx()	(0)
 #endif
 
+#ifdef omap_cpu_type
+#define cpu_is_omap()			(omap_cpu_type > 0)
+#else
+#define cpu_is_omap()			(0)
+#endif
+
 struct omap_barebox_part {
 	unsigned int nand_offset;
 	unsigned int nand_size;

@@ -355,6 +355,9 @@ int omap_set_barebox_part(struct omap_barebox_part *part)
 
 static int omap_set_xload(void)
 {
+	if (!cpu_is_omap())
+		return 0;
+
 	barebox_main = omap_xload;
 
 	return 0;

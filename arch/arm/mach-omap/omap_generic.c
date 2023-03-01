@@ -113,6 +113,9 @@ static struct image_handler omap_barebox_handler = {
 
 static int omap_bootm_barebox(void)
 {
+	if (!cpu_is_omap())
+		return 0;
+
 	return register_image_handler(&omap_barebox_handler);
 }
 device_initcall(omap_bootm_barebox);
@@ -140,6 +143,9 @@ static int omap_env_init(void)
 	char *partname;
 	struct cdev *cdev;
 	const char *rootpath;
+
+	if (!cpu_is_omap())
+		return 0;
 
 	if (bootsource_get() != BOOTSOURCE_MMC)
 		return 0;
@@ -203,7 +209,7 @@ static int omap_init(void)
 	if (root) {
 		__omap_cpu_type = omap_soc_from_dt();
 		if (!__omap_cpu_type)
-			hang();
+			return 0;
 	}
 
 	if (cpu_is_omap3())

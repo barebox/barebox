@@ -22,32 +22,6 @@
 #include <mach/omap/omap4-silicon.h>
 #include <mach/omap/am33xx-silicon.h>
 
-#define LSR_THRE	0x20	/* Xmit holding register empty */
-#define LCR_BKSE	0x80	/* Bank select enable */
-#define LSR		(5 << 2)
-#define THR		(0 << 2)
-#define DLL		(0 << 2)
-#define IER		(1 << 2)
-#define DLM		(1 << 2)
-#define FCR		(2 << 2)
-#define LCR		(3 << 2)
-#define MCR		(4 << 2)
-#define MDR		(8 << 2)
-
-static inline void omap_uart_lowlevel_init(void __iomem *base)
-{
-	writeb(0x00, base + LCR);
-	writeb(0x00, base + IER);
-	writeb(0x07, base + MDR);
-	writeb(LCR_BKSE, base + LCR);
-	writeb(26, base + DLL); /* 115200 */
-	writeb(0, base + DLM);
-	writeb(0x03, base + LCR);
-	writeb(0x03, base + MCR);
-	writeb(0x07, base + FCR);
-	writeb(0x00, base + MDR);
-}
-
 #ifdef CONFIG_DEBUG_LL
 
 #ifdef CONFIG_DEBUG_OMAP3_UART
@@ -63,17 +37,40 @@ static inline void omap_uart_lowlevel_init(void __iomem *base)
 #define __OMAP_UART_BASE(soc, num) soc##_UART##num##_BASE
 #define OMAP_UART_BASE(soc, num) __OMAP_UART_BASE(soc, num)
 
-static inline void PUTC_LL(char c)
+static inline uint8_t debug_ll_read_reg(int reg)
 {
 	void __iomem *base = (void *)OMAP_UART_BASE(OMAP_DEBUG_SOC,
 			CONFIG_DEBUG_OMAP_UART_PORT);
 
-	/* Wait until there is space in the FIFO */
-	while ((readb(base + LSR) & LSR_THRE) == 0);
-	/* Send the character */
-	writeb(c, base + THR);
-	/* Wait to make sure it hits the line, in case we die too soon. */
-	while ((readb(base + LSR) & LSR_THRE) == 0);
+	return readb(base + (reg << 2));
+}
+
+static inline void debug_ll_write_reg(int reg, uint8_t val)
+{
+	void __iomem *base = (void *)OMAP_UART_BASE(OMAP_DEBUG_SOC,
+			CONFIG_DEBUG_OMAP_UART_PORT);
+
+	writeb(val, base + (reg << 2));
+}
+
+#include <debug_ll/ns16550.h>
+
+static inline void omap_debug_ll_init(void)
+{
+	unsigned int divisor;
+
+	divisor = debug_ll_ns16550_calc_divisor(48000000);
+	debug_ll_ns16550_init(divisor);
+}
+
+static inline void PUTC_LL(int c)
+{
+	debug_ll_ns16550_putc(c);
+}
+
+#else
+static inline void omap_debug_ll_init(void)
+{
 }
 #endif
 

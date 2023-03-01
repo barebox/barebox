@@ -226,7 +226,7 @@ static noinline int gf_sram_init(void)
 
 	am33xx_uart_soft_reset((void *)AM33XX_UART2_BASE);
 	am33xx_enable_uart2_pin_mux();
-	omap_uart_lowlevel_init((void *)AM33XX_UART2_BASE);
+	omap_debug_ll_init();
 	putc_ll('>');
 
 	barebox_arm_entry(0x80000000, SZ_256M, fdt);

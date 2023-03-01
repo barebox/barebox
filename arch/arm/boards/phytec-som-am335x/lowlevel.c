@@ -163,7 +163,7 @@ static noinline void physom_board_init(void *fdt, int sdram, int module_family)
 
 	am33xx_uart_soft_reset((void *)AM33XX_UART0_BASE);
 	am33xx_enable_uart0_pin_mux();
-	omap_uart_lowlevel_init((void *)AM33XX_UART0_BASE);
+	omap_debug_ll_init();
 	putc_ll('>');
 
 	am335x_barebox_entry(fdt);

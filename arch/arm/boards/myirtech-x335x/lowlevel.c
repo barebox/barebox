@@ -91,7 +91,7 @@ ENTRY_FUNCTION(start_am33xx_myirtech_sram, bootinfo, r1, r2)
 	if (IS_ENABLED(CONFIG_DEBUG_LL)) {
 		am33xx_uart_soft_reset(IOMEM(AM33XX_UART0_BASE));
 		am33xx_enable_uart0_pin_mux();
-		omap_uart_lowlevel_init(IOMEM(AM33XX_UART0_BASE));
+		omap_debug_ll_init();
 		putc_ll('>');
 	}
 

@@ -184,7 +184,7 @@ static noinline void pfc200_board_init(void)
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL)) {
 		am33xx_uart_soft_reset(IOMEM(OMAP3_UART3_BASE));
-		omap_uart_lowlevel_init(IOMEM(OMAP3_UART3_BASE));
+		omap_debug_ll_init();
 		putc_ll('>');
 	}
 

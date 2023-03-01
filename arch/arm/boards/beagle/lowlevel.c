@@ -196,7 +196,7 @@ static noinline int beagle_board_init(void)
 
 	mux_config();
 
-	omap_uart_lowlevel_init((void *)OMAP3_UART3_BASE);
+	omap_debug_ll_init();
 
 	/* Dont reconfigure SDRAM while running in SDRAM! */
 	if (!in_sdram)

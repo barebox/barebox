@@ -32,6 +32,11 @@ config ARCH_STM32
 	  Selected by both STM32 MCUs and MPUs to restrict driver
 	  visibility.
 
+config ARCH_OMAP
+	bool
+	select HAS_DEBUG_LL
+	select GPIOLIB
+
 choice
 	prompt "ARM system type"
 
@@ -140,10 +145,9 @@ config ARCH_NOMADIK
 	help
 	  Support for the Nomadik platform by ST-Ericsson
 
-config ARCH_OMAP
+config ARCH_OMAP_SINGLE
 	bool "TI OMAP"
-	select HAS_DEBUG_LL
-	select GPIOLIB
+	select ARCH_OMAP
 
 config ARCH_PXA
 	bool "Intel/Marvell PXA based"
@@ -270,6 +274,14 @@ config ARCH_IMX
 	select RELOCATABLE
 	select CPU_SUPPORTS_32BIT_KERNEL
 	select CPU_SUPPORTS_64BIT_KERNEL
+
+config ARCH_OMAP_MULTI
+	bool "TI OMAP"
+	depends on ARCH_MULTIARCH
+	select OMAP_MULTI_BOARDS
+	select ARCH_OMAP
+	select HAS_DEBUG_LL
+	select GPIOLIB
 
 config ARCH_ROCKCHIP
 	bool "Rockchip RX3xxx"

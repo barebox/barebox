@@ -11,6 +11,7 @@
 #include <mach/rockchip/grf_rk3288.h>
 #include <mach/rockchip/hardware.h>
 #include <debug_ll.h>
+#include <mach/rockchip/debug_ll.h>
 
 extern char __dtb_rk3288_phycore_som_start[];
 

@@ -1252,6 +1252,9 @@ config FRAME_POINTER
 config DEBUG_IMX_UART
 	bool
 
+config DEBUG_ROCKCHIP_UART
+	bool
+
 choice
 	prompt "Kernel low-level debugging port"
 	depends on DEBUG_LL
@@ -1383,6 +1386,7 @@ config DEBUG_AM33XX_UART
 config DEBUG_ROCKCHIP_RK3188_UART
 	bool "RK3188 Debug UART"
 	depends on ARCH_RK3188
+	select DEBUG_ROCKCHIP_UART
 	help
 	  Say Y here if you want kernel low-level debugging support
 	  on RK3188.
@@ -1390,6 +1394,7 @@ config DEBUG_ROCKCHIP_RK3188_UART
 config DEBUG_ROCKCHIP_RK3288_UART
 	bool "RK3288 Debug UART"
 	depends on ARCH_RK3288
+	select DEBUG_ROCKCHIP_UART
 	help
 	  Say Y here if you want kernel low-level debugging support
 	  on RK3288.
@@ -1397,6 +1402,7 @@ config DEBUG_ROCKCHIP_RK3288_UART
 config DEBUG_ROCKCHIP_RK3568_UART
 	bool "RK3568 Debug UART"
 	depends on ARCH_RK3568
+	select DEBUG_ROCKCHIP_UART
 	help
 	  Say Y here if you want kernel low-level debugging support
 	  on RK3568.
@@ -1404,6 +1410,7 @@ config DEBUG_ROCKCHIP_RK3568_UART
 config DEBUG_ROCKCHIP_RK3399_UART
 	bool "RK3399 Debug UART"
 	depends on ARCH_RK3399
+	select DEBUG_ROCKCHIP_UART
 	help
 	  Say Y here if you want kernel low-level debugging support
 	  on RK3399.

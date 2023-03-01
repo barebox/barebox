@@ -10,7 +10,7 @@
 #include <mach/rockchip/rk3568-regs.h>
 #include <mach/rockchip/rk3399-regs.h>
 
-#ifdef CONFIG_DEBUG_LL
+#ifdef CONFIG_DEBUG_ROCKCHIP_UART
 
 #ifdef CONFIG_DEBUG_ROCKCHIP_RK3188_UART
 

@@ -13,6 +13,7 @@
 #include <mach/imx/xload.h>
 #include <io.h>
 #include <debug_ll.h>
+#include <mach/imx/debug_ll.h>
 #include <asm/cache.h>
 #include <asm/sections.h>
 #include <asm/mmu.h>

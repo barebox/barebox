@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: 2013 Sascha Hauer <s.hauer@pengutronix.de>
 
 #include <debug_ll.h>
+#include <mach/imx/debug_ll.h>
 #include <common.h>
 #include <linux/sizes.h>
 #include <io.h>

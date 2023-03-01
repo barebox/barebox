@@ -3,6 +3,7 @@
 #include <io.h>
 #include <common.h>
 #include <debug_ll.h>
+#include <mach/imx/debug_ll.h>
 #include <firmware.h>
 #include <image-metadata.h>
 #include <asm/mmu.h>

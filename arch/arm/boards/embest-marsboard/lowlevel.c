@@ -10,6 +10,7 @@
 #include <mach/imx/esdctl.h>
 #include <mach/imx/iomux-mx6.h>
 #include <debug_ll.h>
+#include <mach/imx/debug_ll.h>
 
 static inline void setup_uart(void)
 {

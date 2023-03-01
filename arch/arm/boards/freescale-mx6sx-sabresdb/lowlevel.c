@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: 2014 Sascha Hauer, Pengutronix
 
 #include <debug_ll.h>
+#include <mach/imx/debug_ll.h>
 #include <common.h>
 #include <linux/sizes.h>
 #include <mach/imx/generic.h>

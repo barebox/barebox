@@ -23,7 +23,7 @@
 #include <serial/imx-uart.h>
 #include <serial/lpuart.h>
 
-#ifdef CONFIG_DEBUG_LL
+#ifdef CONFIG_DEBUG_IMX_UART
 
 #define __IMX_UART_BASE(soc, num) soc##_UART##num##_BASE_ADDR
 #define IMX_UART_BASE(soc, num) __IMX_UART_BASE(soc, num)

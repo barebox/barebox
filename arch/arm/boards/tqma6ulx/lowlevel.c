@@ -5,6 +5,7 @@
 
 #include <common.h>
 #include <debug_ll.h>
+#include <mach/imx/debug_ll.h>
 #include <firmware.h>
 #include <mach/imx/generic.h>
 #include <asm/barebox-arm.h>

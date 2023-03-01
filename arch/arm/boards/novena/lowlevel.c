@@ -6,6 +6,7 @@
 #include <ddr_dimms.h>
 #include <ddr_spd.h>
 #include <debug_ll.h>
+#include <mach/imx/debug_ll.h>
 #include <mach/imx/esdctl.h>
 #include <mach/imx/generic.h>
 #include <mach/imx/imx6.h>

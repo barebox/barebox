@@ -6,6 +6,7 @@
 #include <asm/barebox-arm.h>
 #include <common.h>
 #include <debug_ll.h>
+#include <mach/imx/debug_ll.h>
 #include <firmware.h>
 #include <pbl/i2c.h>
 #include <pbl/pmic.h>

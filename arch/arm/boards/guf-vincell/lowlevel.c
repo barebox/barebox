@@ -2,6 +2,7 @@
 
 #include <common.h>
 #include <debug_ll.h>
+#include <mach/imx/debug_ll.h>
 #include <io.h>
 #include <init.h>
 #include <mach/imx/imx53-regs.h>

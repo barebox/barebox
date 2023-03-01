@@ -16,6 +16,7 @@
 #include <mach/imx/imx8mp-regs.h>
 #include <mach/imx/iomux-mx8mp.h>
 #include <mach/imx/imx8m-ccm-regs.h>
+#include <mach/imx/debug_ll.h>
 #include <mfd/pca9450.h>
 #include <pbl/i2c.h>
 #include <pbl/pmic.h>

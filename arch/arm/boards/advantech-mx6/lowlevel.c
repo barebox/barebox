@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: 2018 Christoph Fritz <chf.fritz@googlemail.com>
 
 #include <debug_ll.h>
+#include <mach/imx/debug_ll.h>
 #include <common.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>

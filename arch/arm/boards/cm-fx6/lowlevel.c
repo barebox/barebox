@@ -8,6 +8,7 @@
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 #include <debug_ll.h>
+#include <mach/imx/debug_ll.h>
 #include <io.h>
 #include <mach/imx/imx6-mmdc.h>
 #include <mach/imx/imx6-ddr-regs.h>

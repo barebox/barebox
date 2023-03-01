@@ -3,6 +3,7 @@
 
 #include <common.h>
 #include <debug_ll.h>
+#include <mach/imx/debug_ll.h>
 #include <mach/imx/clock-imx51_53.h>
 #include <mach/imx/esdctl.h>
 #include <mach/imx/generic.h>

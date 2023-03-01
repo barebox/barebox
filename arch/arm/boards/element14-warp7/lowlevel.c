@@ -9,6 +9,7 @@
 #include <asm/barebox-arm.h>
 #include <mach/imx/debug_ll.h>
 #include <asm/cache.h>
+#include <mach/imx/debug_ll.h>
 
 extern char __dtb_imx7s_warp_start[];
 

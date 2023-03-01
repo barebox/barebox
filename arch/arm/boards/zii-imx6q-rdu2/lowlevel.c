@@ -4,6 +4,7 @@
 /* Author: Andrey Smirnov <andrew.smirnov@gmail.com> */
 
 #include <debug_ll.h>
+#include <mach/imx/debug_ll.h>
 #include <common.h>
 #include <mach/imx/esdctl.h>
 #include <mach/imx/generic.h>

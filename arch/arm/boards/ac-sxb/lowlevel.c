@@ -5,6 +5,7 @@
  */
 
 #include <debug_ll.h>
+#include <mach/imx/debug_ll.h>
 #include <io.h>
 #include <common.h>
 #include <linux/sizes.h>

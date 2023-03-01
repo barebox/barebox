@@ -13,6 +13,7 @@
 #include <mach/imx/clock-vf610.h>
 #include <mach/imx/iomux-vf610.h>
 #include <debug_ll.h>
+#include <mach/imx/debug_ll.h>
 
 static inline void setup_uart(void)
 {

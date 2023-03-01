@@ -8,6 +8,7 @@
 #include <mach/imx/imx6-regs.h>
 #include <io.h>
 #include <debug_ll.h>
+#include <mach/imx/debug_ll.h>
 #include <mach/imx/esdctl.h>
 #include <asm/cache.h>
 #include <asm/sections.h>

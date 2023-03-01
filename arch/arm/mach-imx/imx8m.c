@@ -3,6 +3,7 @@
 #include <init.h>
 #include <common.h>
 #include <io.h>
+#include <pm_domain.h>
 #include <asm/syscounter.h>
 #include <asm/system.h>
 #include <mach/imx/generic.h>
@@ -53,6 +54,8 @@ static int imx8m_init(const char *cputypestr)
 {
 	void __iomem *src = IOMEM(MX8M_SRC_BASE_ADDR);
 	struct arm_smccc_res res;
+
+	genpd_activate();
 
 	/*
 	 * Reset reasons seem to be identical to that of i.MX7

@@ -3,6 +3,7 @@
 #include <init.h>
 #include <common.h>
 #include <io.h>
+#include <pm_domain.h>
 #include <linux/sizes.h>
 #include <asm/psci.h>
 #include <mach/imx/imx7.h>
@@ -160,6 +161,8 @@ int imx7_init(void)
 
 	imx_set_silicon_revision(cputypestr, imx7_cpu_revision());
 	imx_set_reset_reason(src + IMX7_SRC_SRSR, imx7_reset_reasons);
+
+	genpd_activate();
 
 	return 0;
 }

@@ -140,7 +140,6 @@ config ARCH_IMX8M
 	select CPU_V8
 	select PINCTRL_IMX_IOMUX_V3
 	select OFTREE
-	select CPU_SUPPORTS_64BIT_KERNEL
 	select COMMON_CLK_OF_PROVIDER
 	select ARCH_HAS_FEC_IMX
 	select HW_HAS_PCI
@@ -181,6 +180,8 @@ config ARCH_VF610
 
 config MACH_ZII_COMMON
 	bool
+
+if 32BIT
 
 comment "i.MX1 boards"
 
@@ -548,6 +549,10 @@ config MACH_ZII_VF610_DEV
 	select MACH_ZII_COMMON
 	select ARM_USE_COMPRESSED_DTB
 
+endif
+
+if 64BIT
+
 comment "i.MX8M boards"
 
 config MACH_INNOCOMM_WB15
@@ -667,6 +672,8 @@ config MACH_ZII_IMX8MQ_DEV
 	select ARM_SMCCC
 	select MCI_IMX_ESDHC_PBL
 	select MACH_ZII_COMMON
+
+endif
 
 # ----------------------------------------------------------
 

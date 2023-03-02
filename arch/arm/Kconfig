@@ -106,6 +106,8 @@ config ARCH_IMX
 	select HAS_DEBUG_LL
 	select HAVE_PBL_MULTI_IMAGES
 	select RELOCATABLE
+	select CPU_SUPPORTS_32BIT_KERNEL
+	select CPU_SUPPORTS_64BIT_KERNEL
 
 config ARCH_LAYERSCAPE
 	bool "NXP Layerscape based"

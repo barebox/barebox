@@ -5,6 +5,7 @@
 
 #include <io.h>
 #include <linux/build_bug.h>
+#include <mach/imx7-regs.h>
 
 #define IMX7_CLOCK_ROOT_INDEX(x)	(((x) - 0x8000) / 128)
 

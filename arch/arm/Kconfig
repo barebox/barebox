@@ -161,22 +161,6 @@ config ARCH_SOCFPGA
 	select COMMON_CLK
 	select CLKDEV_LOOKUP
 
-config ARCH_STM32MP
-	bool "STMicroelectronics STM32MP"
-	select ARCH_STM32
-	select CPU_V7
-	select HAVE_PBL_MULTI_IMAGES
-	select CLKDEV_LOOKUP
-	select COMMON_CLK
-	select COMMON_CLK_OF_PROVIDER
-	select HAS_DEBUG_LL
-	select HAVE_CLK
-	select GPIOLIB
-	select ARCH_HAS_RESET_CONTROLLER
-	select ARM_AMBA
-	select ARM_SMCCC
-	select ARM_USE_COMPRESSED_DTB
-
 config ARCH_VERSATILE
 	bool "ARM Versatile boards (ARM926EJ-S)"
 	select GPIOLIB
@@ -279,6 +263,22 @@ config ARCH_ROCKCHIP
 	select OFTREE
 	select HAVE_PBL_MULTI_IMAGES
 	select HAS_DEBUG_LL
+
+config ARCH_STM32MP
+	bool "STMicroelectronics STM32MP"
+	select ARCH_STM32
+	select CPU_V7
+	select HAVE_PBL_MULTI_IMAGES
+	select CLKDEV_LOOKUP
+	select COMMON_CLK
+	select COMMON_CLK_OF_PROVIDER
+	select HAS_DEBUG_LL
+	select HAVE_CLK
+	select GPIOLIB
+	select ARCH_HAS_RESET_CONTROLLER
+	select ARM_AMBA
+	select ARM_SMCCC
+	select ARM_USE_COMPRESSED_DTB
 
 config ARCH_ZYNQMP
 	bool "Xilinx ZynqMP-based boards"

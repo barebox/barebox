@@ -197,27 +197,6 @@ ifeq ($(CONFIG_MACH_CANON_A1100),y)
 KBUILD_IMAGE := barebox.canon-a1100.bin
 endif
 
-KWBIMAGE_OPTS = \
-	-c -i $(srctree)/$(BOARD)/kwbimage.cfg -d $(TEXT_BASE) -e $(TEXT_BASE)
-
-quiet_cmd_kwbimage = KWB     $@
-      cmd_kwbimage = scripts/kwbimage -p $< $(KWBIMAGE_OPTS) -o $@ || \
-	echo "WARNING: Couldn't create KWB image due to previous errors."
-
-quiet_cmd_kwbimage_uart = KWBUART $@
-      cmd_kwbimage_uart = scripts/kwbimage -m uart -p $< $(KWBIMAGE_OPTS) -o $@ || \
-	echo "WARNING Couldn't create KWB image due to previous errors."
-
-barebox.kwb: $(KBUILD_BINARY) FORCE
-	$(call if_changed,kwbimage)
-
-barebox.kwbuart: $(KBUILD_BINARY) FORCE
-	$(call if_changed,kwbimage_uart)
-
-ifeq ($(CONFIG_ARCH_MVEBU),y)
-KBUILD_IMAGE  := barebox.kwb barebox.kwbuart
-endif
-
 archclean:
 	$(MAKE) $(clean)=$(pbl)
 

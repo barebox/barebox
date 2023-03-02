@@ -16,9 +16,6 @@ config ARM_LINUX
 	default y
 	depends on CMD_BOOTZ || CMD_BOOTU || BOOTM
 
-config HAVE_MACH_ARM_HEAD
-	bool
-
 config ARM_USE_COMPRESSED_DTB
        bool
        select USE_COMPRESSED_DTB

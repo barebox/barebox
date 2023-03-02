@@ -167,20 +167,6 @@ config ARCH_VERSATILE
 	select HAVE_CLK
 	select HAS_DEBUG_LL
 
-config ARCH_VEXPRESS
-	bool "ARM Vexpress & virt boards"
-	select HAS_DEBUG_LL
-	select CPU_V7
-	select ARM_AMBA
-	select AMBA_SP804
-	select CLKDEV_LOOKUP
-	select COMMON_CLK
-	select COMMON_CLK_OF_PROVIDER
-	select OFTREE
-	select OFDEVICE
-	select RELOCATABLE
-	select HAVE_PBL_MULTI_IMAGES
-
 config ARCH_TEGRA
 	bool "NVIDIA Tegra"
 	select CPU_V7
@@ -279,6 +265,20 @@ config ARCH_STM32MP
 	select ARM_AMBA
 	select ARM_SMCCC
 	select ARM_USE_COMPRESSED_DTB
+
+config ARCH_VEXPRESS
+	bool "ARM Vexpress & virt boards"
+	select HAS_DEBUG_LL
+	select CPU_V7
+	select ARM_AMBA
+	select AMBA_SP804
+	select CLKDEV_LOOKUP
+	select COMMON_CLK
+	select COMMON_CLK_OF_PROVIDER
+	select OFTREE
+	select OFDEVICE
+	select RELOCATABLE
+	select HAVE_PBL_MULTI_IMAGES
 
 config ARCH_ZYNQMP
 	bool "Xilinx ZynqMP-based boards"

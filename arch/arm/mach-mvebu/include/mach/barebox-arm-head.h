@@ -3,7 +3,7 @@
 #include <linux/stringify.h>
 #include <mach/common.h>
 
-static inline void __barebox_arm_head(void)
+static inline void __barebox_mvebu_head(void)
 {
 	__asm__ __volatile__ (
 #ifdef CONFIG_THUMB2_BAREBOX
@@ -53,10 +53,6 @@ static inline void __barebox_arm_head(void)
 #endif
 	);
 }
-static inline void barebox_arm_head(void)
-{
-	__barebox_arm_head();
-	__asm__ __volatile__ (
-		"b barebox_arm_reset_vector\n"
-	);
-}
+
+#define ENTRY_FUNCTION_MVEBU(name, arg0, arg1, arg2) \
+	ENTRY_FUNCTION_HEAD(name, __barebox_mvebu_head, arg0, arg1, arg2)

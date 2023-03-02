@@ -3,14 +3,14 @@
 
 #include <common.h>
 #include <asm/barebox-arm.h>
-#include <asm/barebox-arm-head.h>
+#include <mach/barebox-arm-head.h>
 #include <asm/io.h>
 #include <mach/lowlevel.h>
 #include <mach/common.h>
 
 extern char __dtb_armada_xp_rn2120_bb_start[];
 
-ENTRY_FUNCTION(start_netgear_rn2120, r0, r1, r2)
+ENTRY_FUNCTION_MVEBU(start_netgear_rn2120, r0, r1, r2)
 {
 	void *fdt;
 	void __iomem *base = mvebu_get_initial_int_reg_base();

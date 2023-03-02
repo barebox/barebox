@@ -5,12 +5,12 @@
 #include <common.h>
 #include <linux/sizes.h>
 #include <asm/barebox-arm.h>
-#include <asm/barebox-arm-head.h>
+#include <mach/barebox-arm-head.h>
 #include <mach/lowlevel.h>
 
 extern char __dtb_dove_cubox_bb_start[];
 
-ENTRY_FUNCTION(start_solidrun_cubox, r0, r1, r2)
+ENTRY_FUNCTION_MVEBU(start_solidrun_cubox, r0, r1, r2)
 {
 	void *fdt;
 

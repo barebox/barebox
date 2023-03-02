@@ -128,7 +128,6 @@ config ARCH_MVEBU
 	select CLKDEV_LOOKUP
 	select GPIOLIB
 	select HAS_DEBUG_LL
-	select HAVE_MACH_ARM_HEAD
 	select HAVE_PBL_MULTI_IMAGES
 	select HW_HAS_PCI
 	select MVEBU_MBUS

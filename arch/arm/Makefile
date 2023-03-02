@@ -187,16 +187,6 @@ ifeq ($(CONFIG_OMAP_BUILD_SPI),y)
 KBUILD_IMAGE := MLO.spi
 endif
 
-quiet_cmd_zynq_image = ZYNQ-IMG $@
-      cmd_zynq_image = scripts/zynq_mkimage $< $@
-
-barebox.zynq: $(KBUILD_BINARY) FORCE
-	$(call if_changed,zynq_image)
-
-ifeq ($(machine-y),zynq)
-KBUILD_IMAGE := barebox.zynq
-endif
-
 quiet_cmd_canon_a1100_image = DD      $@
       cmd_canon_a1100_image = scripts/canon-a1100-image $< $@ || \
 	echo "WARNING: Couldn't create Canon A1100 image due to previous errors."

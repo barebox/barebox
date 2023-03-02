@@ -17,6 +17,9 @@
 #include <mach/imx8mm-regs.h>
 #include <mach/imx-header.h>
 #endif
+#ifdef CONFIG_ARCH_LS1046
+#include <mach/xload.h>
+#endif
 #include "sdhci.h"
 #include "imx-esdhc.h"
 

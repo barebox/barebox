@@ -228,23 +228,6 @@ ifeq ($(CONFIG_ARCH_MVEBU),y)
 KBUILD_IMAGE  := barebox.kwb barebox.kwbuart
 endif
 
-barebox.imximg: $(KBUILD_BINARY) FORCE
-	$(call if_changed,imx_image,$(CFG_$(@F)),)
-
-boarddir = $(srctree)/arch/arm/boards
-imxcfg-$(CONFIG_MACH_FREESCALE_MX53_SMD) += $(boarddir)/freescale-mx53-smd/flash-header.imxcfg
-imxcfg-$(CONFIG_MACH_EUKREA_CPUIMX51SD) += $(boarddir)/eukrea_cpuimx51/flash-header.imxcfg
-imxcfg-$(CONFIG_MACH_FREESCALE_MX25_3STACK) += $(boarddir)/freescale-mx25-3ds/flash-header.imxcfg
-imxcfg-$(CONFIG_MACH_FREESCALE_MX35_3STACK) += $(boarddir)/freescale-mx35-3ds/flash-header.imxcfg
-imxcfg-$(CONFIG_MACH_EUKREA_CPUIMX25) += $(boarddir)/eukrea_cpuimx25/flash-header.imxcfg
-imxcfg-$(CONFIG_MACH_EUKREA_CPUIMX35) += $(boarddir)/eukrea_cpuimx35/flash-header.imxcfg
-imxcfg-$(CONFIG_MACH_PCM043) += $(boarddir)/phytec-phycore-imx35/flash-header.imxcfg
-imxcfg-$(CONFIG_MACH_KINDLE3) += $(boarddir)/kindle3/flash-header.imxcfg
-ifneq ($(imxcfg-y),)
-CFG_barebox.imximg := $(imxcfg-y)
-KBUILD_IMAGE  := barebox.imximg
-endif
-
 archclean:
 	$(MAKE) $(clean)=$(pbl)
 

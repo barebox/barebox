@@ -1,7 +1,0 @@
-#!/bin/sh
-# Boot the Amazon factory-shipped kernel uimage stored on
-# the eMMC at MOVINAND_OFFSET_KERNEL=266240.
-
-global linux.bootargs.dyn.root="root=/dev/mmcblk0p1 ro"
-
-bootm -c -a 0x80008000 /dev/disk0.kernel

@@ -104,6 +104,8 @@ config ARCH_IMX
 	select CLKDEV_LOOKUP
 	select WATCHDOG_IMX_RESET_SOURCE
 	select HAS_DEBUG_LL
+	select HAVE_PBL_MULTI_IMAGES
+	select RELOCATABLE
 
 config ARCH_LAYERSCAPE
 	bool "NXP Layerscape based"

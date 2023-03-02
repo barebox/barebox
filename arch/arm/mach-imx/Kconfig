@@ -4,25 +4,12 @@ if ARCH_IMX
 
 config ARCH_TEXT_BASE
 	hex
-	default 0x83f00000 if MACH_EUKREA_CPUIMX25
-	default 0xa0000000 if MACH_EUKREA_CPUIMX27
-	default 0x87f00000 if MACH_EUKREA_CPUIMX35
-	default 0x97f00000 if MACH_EUKREA_CPUIMX51SD
-	default 0xc0000000 if MACH_IMX21ADS
-	default 0xa0000000 if MACH_IMX27ADS
-	default 0x83f00000 if MACH_FREESCALE_MX25_3STACK && FREESCALE_MX25_3STACK_SDRAM_64MB_DDR2
-	default 0x87f00000 if MACH_FREESCALE_MX25_3STACK && FREESCALE_MX25_3STACK_SDRAM_128MB_MDDR
-	default 0x87f00000 if MACH_FREESCALE_MX35_3STACK
 	default 0xa7f00000 if MACH_PCA100
 	default 0xa0000000 if MACH_PCM038
-	default 0x87f00000 if MACH_PCM037
-	default 0x87f00000 if MACH_PCM043
-	default 0xa7e00000 if MACH_NESO
 	default 0x97f00000 if MACH_FREESCALE_MX51_PDK
 	default 0x7ff00000 if MACH_FREESCALE_MX53_LOCO
 	default 0x7ff00000 if MACH_FREESCALE_MX53_SMD
 	default 0x7ff00000 if MACH_FREESCALE_MX53_VMX53
-	default 0x87f00000 if MACH_GUF_CUPID
 	default 0x93d00000 if MACH_TX25
 	default 0x7ff00000 if MACH_TQMA53
 	default 0x4fc00000 if MACH_SABRELITE
@@ -31,7 +18,6 @@ config ARCH_TEXT_BASE
 	default 0x17800000 if MACH_SABRESD
 	default 0x4fc00000 if MACH_REALQ7
 	default 0x4fc00000 if MACH_GK802
-	default 0x87f00000 if MACH_KINDLE3
 	default 0x2fc00000 if MACH_TQMA6X
 	default 0x4fc00000 if MACH_DFI_FS700_M60
 	default 0x4fc00000 if MACH_UDOO
@@ -215,13 +201,6 @@ config ARCH_VF610
 	select NVMEM
 	select IMX_OCOTP	# Needed for clock adjustement
 	select CLOCKSOURCE_ARM_GLOBAL_TIMER
-
-config IMX_MULTI_BOARDS
-	bool "Allow multiple boards to be selected"
-	select HAVE_PBL_MULTI_IMAGES
-	select RELOCATABLE
-
-if IMX_MULTI_BOARDS
 
 config MACH_SCB9328
 	bool "Synertronixx scb9328"
@@ -692,223 +671,7 @@ config MACH_SKOV_IMX6
 	select DSA
 	select DRIVER_NET_KSZ8873
 
-endif
-
 # ----------------------------------------------------------
-
-choice
-	prompt "Select Board"
-	depends on !IMX_MULTI_BOARDS
-
-# ----------------------------------------------------------
-
-comment "i.MX21 Boards"
-
-config MACH_IMX21ADS
-	bool "Freescale i.MX21ADS"
-	select ARCH_IMX21
-	select HAS_CS8900
-	help
-	  Say Y here if you are using the Freescale i.MX21ads board equipped
-	  with a Freescale i.MX21 Processor
-
-# ----------------------------------------------------------
-
-comment "i.MX25 Boards"
-
-config MACH_EUKREA_CPUIMX25
-	bool "Eukrea CPUIMX25"
-	select ARCH_IMX25
-	help
-	  Say Y here if you are using the Eukrea Electromatique's CPUIMX25
-	  equipped with a Freescale i.MX25 Processor
-
-config MACH_FREESCALE_MX25_3STACK
-	bool "Freescale MX25 3stack"
-	select ARCH_IMX25
-	select I2C
-	select MFD_MC34704
-	help
-	  Say Y here if you are using the Freescale MX25 3stack board equipped
-	  with a Freescale i.MX25 Processor
-
-# ----------------------------------------------------------
-
-comment "i.MX27 Boards"
-
-config MACH_EUKREA_CPUIMX27
-	bool "EUKREA CPUIMX27"
-	select ARCH_IMX27
-	help
-	  Say Y here if you are using Eukrea's CPUIMX27 equipped
-	  with a Freescale i.MX27 Processor
-
-config MACH_IMX27ADS
-	bool "Freescale i.MX27ADS"
-	select ARCH_IMX27
-	help
-	  Say Y here if you are using the Freescale i.MX27ads board equipped
-	  with a Freescale i.MX27 Processor
-
-config MACH_NESO
-	bool "Garz+Fricke Neso"
-	select ARCH_IMX27
-	help
-	  Say Y here if you are using the Garz+Fricke Neso board equipped
-	  with a Freescale i.MX27 Processor
-
-# ----------------------------------------------------------
-
-comment "i.MX31 Boards"
-
-config MACH_PCM037
-	bool "phyCORE-i.MX31"
-	select ARCH_IMX31
-	select USB_ULPI if USB
-	select ARCH_HAS_L2X0
-	help
-	  Say Y here if you are using Phytec's phyCORE-i.MX31 (pcm037) equipped
-	  with a Freescale i.MX31 Processor
-
-# ----------------------------------------------------------
-
-comment "i.MX35 Boards"
-
-config MACH_EUKREA_CPUIMX35
-	bool "EUKREA CPUIMX35"
-	select ARCH_IMX35
-	select ARCH_HAS_L2X0
-	help
-	  Say Y here if you are using Eukrea's CPUIMX35 equipped
-	  with a Freescale i.MX35 Processor
-
-config MACH_FREESCALE_MX35_3STACK
-	bool "Freescale MX35 3stack"
-	select ARCH_IMX35
-	select I2C
-	select I2C_IMX
-	select MFD_MC13XXX
-	select MFD_MC9SDZ60
-	help
-	  Say Y here if you are using the Freescale MX35 3stack board equipped
-	  with a Freescale i.MX35 Processor
-
-config MACH_PCM043
-	bool "phyCORE-i.MX35"
-	select ARCH_IMX35
-	select ARCH_HAS_L2X0
-	help
-	  Say Y here if you are using Phytec's phyCORE-i.MX35 (pcm043) equipped
-	  with a Freescale i.MX35 Processor
-
-config MACH_GUF_CUPID
-	bool "Garz+Fricke Cupid"
-	select ARCH_IMX35
-	select ARCH_HAS_L2X0
-	help
-	  Say Y here if you are using the Garz+Fricke Neso board equipped
-	  with a Freescale i.MX35 Processor
-
-config MACH_KINDLE3
-	bool "Amazon Kindle3"
-	select ARCH_IMX35
-	select ARCH_HAS_L2X0
-	help
-	  Say Y here if you are using the Amazon Model No. D00901 Kindle
-
-# ----------------------------------------------------------
-
-comment "i.MX51 Boards"
-
-config MACH_EUKREA_CPUIMX51SD
-	bool "EUKREA CPUIMX51"
-	select ARCH_IMX51
-	help
-	  Say Y here if you are using Eukrea's CPUIMX51 equipped
-	  with a Freescale i.MX51 Processor
-
-# ----------------------------------------------------------
-
-comment "i.MX53 Boards"
-
-config MACH_FREESCALE_MX53_SMD
-	bool "Freescale i.MX53 SMD"
-	select ARCH_IMX53
-
-endchoice
-
-# ----------------------------------------------------------
-
-menu "Board specific settings"
-
-if MACH_PCM037
-
-choice
-	prompt "SDRAM Bank0"
-config PCM037_SDRAM_BANK0_128MB
-	bool "128MB"
-config PCM037_SDRAM_BANK0_256MB
-	bool "256MB"
-endchoice
-
-choice
-	prompt "SDRAM Bank1"
-config PCM037_SDRAM_BANK1_NONE
-	bool "none"
-config PCM037_SDRAM_BANK1_128MB
-	bool "128MB"
-config PCM037_SDRAM_BANK1_256MB
-	bool "256MB"
-endchoice
-
-endif
-
-if MACH_EUKREA_CPUIMX27
-
-choice
-	prompt "SDRAM Size"
-config EUKREA_CPUIMX27_SDRAM_128MB
-	bool "128 MB"
-config EUKREA_CPUIMX27_SDRAM_256MB
-	bool "256 MB"
-endchoice
-
-choice
-	prompt "NOR Flash Size"
-config EUKREA_CPUIMX27_NOR_32MB
-	bool "<= 32 MB"
-config EUKREA_CPUIMX27_NOR_64MB
-	bool "> 32 MB"
-endchoice
-
-choice
-	prompt "Quad UART Port"
-	depends on DRIVER_SERIAL_NS16550
-config EUKREA_CPUIMX27_QUART1
-	bool "Q1"
-config EUKREA_CPUIMX27_QUART2
-	bool "Q2"
-config EUKREA_CPUIMX27_QUART3
-	bool "Q3"
-config EUKREA_CPUIMX27_QUART4
-	bool "Q4"
-endchoice
-
-endif
-
-if MACH_FREESCALE_MX25_3STACK
-
-choice
-	prompt "SDRAM Type"
-config FREESCALE_MX25_3STACK_SDRAM_64MB_DDR2
-	bool "64 MB (DDR2)"
-config FREESCALE_MX25_3STACK_SDRAM_128MB_MDDR
-	bool "128 MB (mDDR)"
-endchoice
-
-endif
-
-endmenu
 
 menu "i.MX specific settings"
 

@@ -27,6 +27,10 @@
 #include <mach/vexpress/debug_ll.h>
 #endif
 
+#ifdef CONFIG_DEBUG_BCM283X_UART
+#include <mach/bcm283x/debug_ll.h>
+#endif
+
 #ifdef CONFIG_DEBUG_QEMU_ARM64_VIRT
 #define DEBUG_LL_UART_ADDR		0x9000000
 #include <debug_ll/pl011.h>
@@ -34,8 +38,6 @@
 #include <mach/mvebu/debug_ll.h>
 #elif defined CONFIG_ARCH_DAVINCI
 #include <mach/davinci/debug_ll.h>
-#elif defined CONFIG_ARCH_BCM283X
-#include <mach/bcm283x/debug_ll.h>
 #elif defined CONFIG_ARCH_ZYNQ
 #include <mach/zynq/debug_ll.h>
 #elif defined CONFIG_ARCH_VERSATILE

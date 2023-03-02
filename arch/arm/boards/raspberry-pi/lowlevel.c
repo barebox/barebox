@@ -7,6 +7,7 @@
 #include <asm/unaligned.h>
 #include <mach/bcm283x/platform.h>
 #include <debug_ll.h>
+#include <mach/bcm283x/debug_ll.h>
 #include <mach/bcm283x/mbox.h>
 #include <of.h>
 

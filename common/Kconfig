@@ -1258,6 +1258,9 @@ config DEBUG_ROCKCHIP_UART
 config DEBUG_OMAP_UART
 	bool
 
+config DEBUG_BCM283X_UART
+	bool
+
 choice
 	prompt "Kernel low-level debugging port"
 	depends on DEBUG_LL
@@ -1452,6 +1455,7 @@ config DEBUG_STM32MP_UART
 config DEBUG_RPI1_UART
 	bool "RaspberryPi 1 PL011 UART"
 	depends on ARCH_BCM283X
+	select DEBUG_BCM283X_UART
 	help
 	  Say Y here if you want low-level debugging support on
 	  RaspberryPi 1 boards.
@@ -1466,6 +1470,7 @@ config DEBUG_AT91_UART
 config DEBUG_RPI2_3_UART
 	bool "RaspberryPi 2/3 PL011 UART"
 	depends on ARCH_BCM283X
+	select DEBUG_BCM283X_UART
 	help
 	  Say Y here if you want low-level debugging support on
 	  RaspberryPi 2 and 3 boards.
@@ -1473,6 +1478,7 @@ config DEBUG_RPI2_3_UART
 config DEBUG_RPI3_MINI_UART
 	bool "RaspberryPi 3 mini UART"
 	depends on ARCH_BCM283X
+	select DEBUG_BCM283X_UART
 	help
 	  Say Y here if you want low-level debugging support on
 	  RaspberryPi 3 board mini UART.
@@ -1480,6 +1486,7 @@ config DEBUG_RPI3_MINI_UART
 config DEBUG_RPI4_MINI_UART
 	bool "RaspberryPi 4 mini UART"
 	depends on ARCH_BCM283X
+	select DEBUG_BCM283X_UART
 	help
 	  Say Y here if you want low-level debugging support on
 	  RaspberryPi 4 board mini UART.

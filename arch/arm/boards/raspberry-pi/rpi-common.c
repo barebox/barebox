@@ -161,6 +161,12 @@ static int rpi_mem_init(void)
 {
 	ssize_t size;
 
+	if (!of_machine_is_compatible("brcm,bcm2837") &&
+	    !of_machine_is_compatible("brcm,bcm2835") &&
+	    !of_machine_is_compatible("brcm,bcm2711") &&
+	    !of_machine_is_compatible("brcm,bcm2836"))
+		return 0;
+
 	size = rpi_get_arm_mem();
 	if (size < 0) {
 		printf("could not query ARM memory size\n");

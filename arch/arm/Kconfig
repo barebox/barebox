@@ -52,23 +52,6 @@ config ARCH_AT91
 	select HAVE_CLK
 	select COMMON_CLK_AT91 if COMMON_CLK_OF_PROVIDER
 
-
-config ARCH_BCM283X
-	bool "Broadcom BCM283x based boards"
-	select GPIOLIB
-	select CLKDEV_LOOKUP
-	select COMMON_CLK
-	select COMMON_CLK_OF_PROVIDER
-	select CLOCKSOURCE_BCM283X
-	select ARM_AMBA
-	select HAS_DEBUG_LL
-	select RELOCATABLE
-	select OFTREE
-	select OFDEVICE
-	select HAVE_PBL_MULTI_IMAGES
-	select CPU_SUPPORTS_32BIT_KERNEL
-	select CPU_SUPPORTS_64BIT_KERNEL
-
 config ARCH_CLPS711X
 	bool "Cirrus Logic EP711x/EP721x/EP731x"
 	select CLKDEV_LOOKUP
@@ -215,6 +198,22 @@ config ARCH_ARM64_VIRT
 	select HAS_DEBUG_LL
 
 endchoice
+
+config ARCH_BCM283X
+	bool "Broadcom BCM283x based boards"
+	select GPIOLIB
+	select CLKDEV_LOOKUP
+	select COMMON_CLK
+	select COMMON_CLK_OF_PROVIDER
+	select CLOCKSOURCE_BCM283X
+	select ARM_AMBA
+	select HAS_DEBUG_LL
+	select RELOCATABLE
+	select OFTREE
+	select OFDEVICE
+	select HAVE_PBL_MULTI_IMAGES
+	select CPU_SUPPORTS_32BIT_KERNEL
+	select CPU_SUPPORTS_64BIT_KERNEL
 
 config ARCH_IMX
 	bool "Freescale iMX-based"

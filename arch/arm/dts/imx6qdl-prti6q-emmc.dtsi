@@ -8,7 +8,7 @@
 	chosen {
 		stdout-path = &uart4;
 
-		environment@0 {
+		environment {
 			compatible = "barebox,environment";
 			device-path = &env_sd3;
 		};

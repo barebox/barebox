@@ -6,8 +6,10 @@
 
 &state_emmc {
 	magic = <0x72766467>;
+	#address-cells = <1>;
+	#size-cells = <1>;
 
-	brand {
+	brand@1b0 {
 		reg = <0x1b0 0x4>;
 		type = "enum32";
 		names = "unbranded", "agco", "vermeer";

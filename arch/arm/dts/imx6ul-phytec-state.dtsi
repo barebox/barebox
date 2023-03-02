@@ -18,29 +18,27 @@
 		backend-stridesize = <54>;
 		status = "disabled";
 
-		#address-cells = <1>;
-		#size-cells = <1>;
 		bootstate {
 			#address-cells = <1>;
 			#size-cells = <1>;
-			last_chosen {
+			last_chosen@0 {
 				reg = <0x0 0x4>;
 				type = "uint32";
 			};
 			system0 {
 				#address-cells = <1>;
 				#size-cells = <1>;
-				remaining_attempts {
+				remaining_attempts@4 {
 					reg = <0x4 0x4>;
 					type = "uint32";
 					default = <3>;
 				};
-				priority {
+				priority@8 {
 					reg = <0x8 0x4>;
 					type = "uint32";
 					default = <21>;
 				};
-				ok {
+				ok@c {
 					reg = <0xc 0x4>;
 					type = "uint32";
 					default = <0>;
@@ -49,17 +47,17 @@
 			system1 {
 				#address-cells = <1>;
 				#size-cells = <1>;
-				remaining_attempts {
+				remaining_attempts@10 {
 					reg = <0x10 0x4>;
 					type = "uint32";
 					default = <3>;
 				};
-				priority {
+				priority@14 {
 					reg = <0x14 0x4>;
 					type = "uint32";
 					default = <20>;
 				};
-				ok {
+				ok@18 {
 					reg = <0x18 0x4>;
 					type = "uint32";
 					default = <0>;

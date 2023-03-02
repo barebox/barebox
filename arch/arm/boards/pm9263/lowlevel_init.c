@@ -6,7 +6,7 @@
 
 #include <linux/sizes.h>
 
-#include <asm/barebox-arm.h>
+#include <mach/barebox-arm.h>
 
 #include <mach/at91sam926x_board_init.h>
 #include <mach/at91sam9263_matrix.h>
@@ -132,7 +132,7 @@ static void __bare_init pm9263_board_init(void)
 	                  NULL);
 }
 
-ENTRY_FUNCTION(start_pm9263, r0, r1, r2)
+AT91_ENTRY_FUNCTION(start_pm9263, r0, r1, r2)
 {
 	arm_cpu_lowlevel_init();
 

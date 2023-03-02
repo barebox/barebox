@@ -92,7 +92,6 @@ config SOC_SAMA5D2
 	select HAVE_AT91_I2S_MUX_CLK
 	select PINCTRL_AT91PIO4
 	select HAS_MACB
-	select HAVE_MACH_ARM_HEAD
 	select HAVE_AT91_DDRAMC
 
 config SOC_SAMA5D3
@@ -105,7 +104,6 @@ config SOC_SAMA5D3
 	select HAVE_AT91_UTMI
 	select PINCTRL_AT91
 	select HAS_MACB
-	select HAVE_MACH_ARM_HEAD
 
 config SOC_SAMA5D4
 	bool
@@ -118,7 +116,6 @@ config SOC_SAMA5D4
 	select HAVE_AT91_UTMI
 	select PINCTRL_AT91
 	select HAS_MACB
-	select HAVE_MACH_ARM_HEAD
 
 config SOC_SAM9X60
 	bool
@@ -159,7 +156,6 @@ config SOC_AT91SAM9260
 	select SOC_AT91SAM9
 	select HAS_MACB
 	select PINCTRL_AT91
-	select HAVE_MACH_ARM_HEAD
 	help
 	  Select this if you are using one of Atmel's AT91SAM9260, AT91SAM9XE
 	  or AT91SAM9G20 SoC.
@@ -169,7 +165,6 @@ config SOC_AT91SAM9261
 	select SOC_AT91SAM9
 	select PINCTRL_AT91
 	select HAVE_AT91_LOAD_BAREBOX_SRAM
-	select HAVE_MACH_ARM_HEAD
 	help
 	  Select this if you are using one of Atmel's AT91SAM9261 or AT91SAM9G10 SoC.
 
@@ -178,7 +173,6 @@ config SOC_AT91SAM9263
 	select SOC_AT91SAM9
 	select HAS_MACB
 	select HAVE_AT91_LOAD_BAREBOX_SRAM
-	select HAVE_MACH_ARM_HEAD
 	select PINCTRL_AT91
 
 config SOC_AT91SAM9G45
@@ -186,7 +180,6 @@ config SOC_AT91SAM9G45
 	select SOC_AT91SAM9
 	select HAS_MACB
 	select PINCTRL_AT91
-	select HAVE_MACH_ARM_HEAD
 	help
 	  Select this if you are using one of Atmel's AT91SAM9G45 family SoC.
 	  This support covers AT91SAM9G45, AT91SAM9G46, AT91SAM9M10 and AT91SAM9M11.
@@ -209,7 +202,6 @@ config SOC_AT91SAM9N12
 	bool
 	select SOC_AT91SAM9
 	select PINCTRL_AT91
-	select HAVE_MACH_ARM_HEAD
 	help
 	  Select this if you are using Atmel's AT91SAM9N12 SoC.
 

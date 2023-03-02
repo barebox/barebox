@@ -7,8 +7,7 @@
 #include <common.h>
 #include <init.h>
 
-#include <asm/barebox-arm-head.h>
-#include <asm/barebox-arm.h>
+#include <mach/barebox-arm.h>
 
 #include <mach/at91rm9200_mc.h>
 #include <mach/at91rm9200.h>
@@ -21,7 +20,7 @@ void static inline access_sdram(void)
 	writel(0x00000000, AT91_CHIPSELECT_1);
 }
 
-ENTRY_FUNCTION(start_at91rm9200ek, r0, r1, r2)
+AT91_ENTRY_FUNCTION(start_at91rm9200ek, r0, r1, r2)
 {
 	u32 r;
 	int i;

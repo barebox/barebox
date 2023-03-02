@@ -7,14 +7,13 @@
 #include <common.h>
 #include <init.h>
 
-#include <asm/barebox-arm-head.h>
-#include <asm/barebox-arm.h>
+#include <mach/barebox-arm.h>
 
 #include <mach/at91sam9_sdramc.h>
 #include <mach/at91sam9260.h>
 #include <mach/hardware.h>
 
-ENTRY_FUNCTION(start_dss11, r0, r1, r2)
+AT91_ENTRY_FUNCTION(start_dss11, r0, r1, r2)
 {
 	arm_cpu_lowlevel_init();
 

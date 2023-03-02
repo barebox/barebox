@@ -7,8 +7,7 @@
 #include <common.h>
 #include <init.h>
 
-#include <asm/barebox-arm-head.h>
-#include <asm/barebox-arm.h>
+#include <mach/barebox-arm.h>
 
 #include <mach/at91sam926x_board_init.h>
 #include <mach/at91sam9263_matrix.h>
@@ -118,7 +117,7 @@ static void __bare_init tny_a9263_init(void)
 	                  NULL);
 }
 
-ENTRY_FUNCTION(start_tny_a9263, r0, r1, r2)
+AT91_ENTRY_FUNCTION(start_tny_a9263, r0, r1, r2)
 {
 	arm_cpu_lowlevel_init();
 

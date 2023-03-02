@@ -6,7 +6,7 @@
 
 #include <linux/sizes.h>
 
-#include <asm/barebox-arm.h>
+#include <mach/barebox-arm.h>
 
 #include <mach/at91sam926x_board_init.h>
 #include <mach/at91sam9263_matrix.h>
@@ -122,7 +122,7 @@ static void __bare_init usb_a9263_init(bool has_mem_128m)
 	                  NULL);
 }
 
-ENTRY_FUNCTION(start_usb_a9263, r0, r1, r2)
+AT91_ENTRY_FUNCTION(start_usb_a9263, r0, r1, r2)
 {
 	arm_cpu_lowlevel_init();
 
@@ -131,7 +131,7 @@ ENTRY_FUNCTION(start_usb_a9263, r0, r1, r2)
 	usb_a9263_init(false);
 }
 
-ENTRY_FUNCTION(start_usb_a9263_128m, r0, r1, r2)
+AT91_ENTRY_FUNCTION(start_usb_a9263_128m, r0, r1, r2)
 {
 	arm_cpu_lowlevel_init();
 

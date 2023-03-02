@@ -174,19 +174,6 @@ ifeq ($(CONFIG_ARCH_DAVINCI),y)
 KBUILD_IMAGE := barebox.ubl
 endif
 
-quiet_cmd_am35xx_spi_image = SPI-IMG $@
-      cmd_am35xx_spi_image = scripts/mk-omap-image -s -a $(TEXT_BASE) $< > $@
-
-barebox.spi: $(KBUILD_BINARY) FORCE
-	$(call if_changed,am35xx_spi_image)
-
-MLO.spi: MLO FORCE
-	$(call if_changed,am35xx_spi_image)
-
-ifeq ($(CONFIG_OMAP_BUILD_SPI),y)
-KBUILD_IMAGE := MLO.spi
-endif
-
 quiet_cmd_canon_a1100_image = DD      $@
       cmd_canon_a1100_image = scripts/canon-a1100-image $< $@ || \
 	echo "WARNING: Couldn't create Canon A1100 image due to previous errors."

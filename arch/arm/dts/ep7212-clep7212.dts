@@ -30,7 +30,7 @@
 	/* CS3 = WAITSTATE_7_1 | BUS_WIDTH_32 */
 	barebox,ep7209-memcfg1 = <0x25802b28>;
 
-	flash: nor@0,0 {
+	flash: nor@0 {
 		compatible = "cfi-flash";
 		reg = <0 0x00000000 0x02000000>;
 		bank-width = <2>;

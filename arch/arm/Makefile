@@ -109,19 +109,6 @@ machine-$(CONFIG_ARCH_UEMD)		:= uemd
 machine-$(CONFIG_ARCH_ZYNQ)		:= zynq
 machine-$(CONFIG_ARCH_ZYNQMP)		:= zynqmp
 
-
-# Board directory name.  This list is sorted alphanumerically
-# by CONFIG_* macro name.
-#
-# DO NOT ADD NEW ENTRIES TO THIS LIST!
-# Add to arch/arm/boards/Makefile instead.
-#
-# These are here only because they have a board specific config.h.
-# TODO: Get rid of board specific config.h and move these to
-# arch/arm/boards/Makefile aswell.
-board-$(CONFIG_MACH_AT91RM9200EK)		+= at91rm9200ek
-board-$(CONFIG_MACH_PCM027)			+= phytec-phycore-pxa270
-
 machdirs := $(patsubst %,arch/arm/mach-%/,$(machine-y))
 
 KBUILD_CPPFLAGS += $(patsubst %,-I$(srctree)/%include,$(machdirs))
@@ -200,19 +187,13 @@ maketools:
 
 PHONY += maketools
 
-ifneq ($(board-y),)
-BOARD := arch/arm/boards/$(board-y)/
-else
-BOARD :=
-endif
-
 ifneq ($(machine-y),)
 MACH := arch/arm/mach-$(machine-y)/
 else
 MACH :=
 endif
 
-common-y += $(BOARD) arch/arm/boards/ $(MACH)
+common-y += arch/arm/boards/ $(MACH)
 common-y += arch/arm/cpu/
 
 ifeq ($(CONFIG_CPU_V8), y)

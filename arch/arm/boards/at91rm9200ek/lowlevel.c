@@ -15,6 +15,8 @@
 #include <mach/at91_pmc.h>
 #include <mach/hardware.h>
 
+#include "config.h"
+
 void static inline access_sdram(void)
 {
 	writel(0x00000000, AT91_CHIPSELECT_1);

@@ -8,4 +8,8 @@
 #include <debug_ll/pl011.h>
 #endif
 
+#ifndef CONFIG_ARCH_ARM64_VIRT
+#include <mach/debug_ll.h>
+#endif
+
 #endif

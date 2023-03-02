@@ -12,18 +12,14 @@
 #define   __INCLUDE_DEBUG_LL_H__
 
 #ifdef CONFIG_HAS_DEBUG_LL
-#ifdef CONFIG_HAS_ASM_DEBUG_LL
-#include <asm/debug_ll.h>
-#else
 /*
- * mach/debug_ll.h should implement PUTC_LL. This can be a macro or a static
+ * asm/debug_ll.h should implement PUTC_LL. This can be a macro or a static
  * inline function. Note that several SoCs expect the UART to be initialized
  * by a debugger or a first stage bootloader. You won't see anything without
  * this initialization. Depending on the PUTC_LL implementation the board might
  * also hang in PUTC_LL without proper initialization.
  */
-#include <mach/debug_ll.h>
-#endif
+#include <asm/debug_ll.h>
 #endif
 
 #if defined (CONFIG_DEBUG_LL)

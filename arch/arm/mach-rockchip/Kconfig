@@ -30,7 +30,6 @@ config ARCH_RK3288
 config ARCH_ROCKCHIP_V8
 	bool
 	select CPU_V8
-	select CPU_SUPPORTS_64BIT_KERNEL
 	select ARM_ATF
 	select RELOCATABLE
 
@@ -49,6 +48,8 @@ config ARCH_RK3568
 
 comment "select Rockchip boards:"
 
+if 32BIT
+
 config MACH_RADXA_ROCK
 	select ARCH_RK3188
 	select I2C
@@ -61,6 +62,10 @@ config MACH_PHYTEC_SOM_RK3288
 	bool "RK3288 phyCORE SOM"
 	help
 	  Say Y here if you are using a RK3288 based Phytecs SOM
+
+endif
+
+if 64BIT
 
 config MACH_RK3568_EVB
 	select ARCH_RK3568
@@ -85,6 +90,8 @@ config MACH_RADXA_ROCK3
        bool "Radxa ROCK3"
        help
 	  Say Y here if you are using a Radxa ROCK3
+
+endif
 
 comment "select board features:"
 

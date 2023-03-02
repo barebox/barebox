@@ -2,29 +2,6 @@
 
 if ARCH_IMX
 
-config ARCH_TEXT_BASE
-	hex
-	default 0xa7f00000 if MACH_PCA100
-	default 0xa0000000 if MACH_PCM038
-	default 0x97f00000 if MACH_FREESCALE_MX51_PDK
-	default 0x7ff00000 if MACH_FREESCALE_MX53_LOCO
-	default 0x7ff00000 if MACH_FREESCALE_MX53_SMD
-	default 0x7ff00000 if MACH_FREESCALE_MX53_VMX53
-	default 0x93d00000 if MACH_TX25
-	default 0x7ff00000 if MACH_TQMA53
-	default 0x4fc00000 if MACH_SABRELITE
-	default 0x8fe00000 if MACH_TX53
-	default 0x97f00000 if MACH_EFIKA_MX_SMARTBOOK
-	default 0x17800000 if MACH_SABRESD
-	default 0x4fc00000 if MACH_REALQ7
-	default 0x4fc00000 if MACH_GK802
-	default 0x2fc00000 if MACH_TQMA6X
-	default 0x4fc00000 if MACH_DFI_FS700_M60
-	default 0x4fc00000 if MACH_UDOO
-	default 0x4fc00000 if MACH_VARISCITE_MX6
-	default 0x4fc00000 if MACH_PHYTEC_SOM_IMX6
-	default 0x9fc00000 if MACH_WARP7
-
 config ARCH_IMX_IMXIMAGE
 	bool
 	default y

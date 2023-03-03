@@ -92,11 +92,10 @@ static int dwc2_probe(struct device *dev)
 	set_params_cb set_params;
 	int ret;
 
-	dwc2 = xzalloc(sizeof(*dwc2));
-
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
+	dwc2 = xzalloc(sizeof(*dwc2));
 	dwc2->regs = IOMEM(iores->start);
 	dwc2->dev = dev;
 
@@ -176,6 +175,8 @@ clk_put:
 	clk_put(dwc2->clk);
 release_region:
 	release_region(iores);
+
+	free(dwc2);
 
 	return ret;
 }

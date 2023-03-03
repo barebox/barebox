@@ -385,23 +385,51 @@ static __maybe_unused struct ns16550_drvdata rpi_drvdata = {
 	.linux_earlycon_name = "bcm2835aux",
 };
 
-static int ns16550_init_iomem(struct device *dev, struct ns16550_priv *priv)
+/**
+ * @return the requested resource to be properly released in case probe fail
+ */
+static struct resource *ns16550_init_iores(struct device *dev, struct ns16550_priv *priv)
 {
-	struct resource *iores;
 	struct resource *res;
-	int width;
+	struct resource *iores;
+	unsigned long flags;
 
 	res = dev_get_resource(dev, IORESOURCE_MEM, 0);
 	if (IS_ERR(res))
-		return PTR_ERR(res);
+		res = dev_get_resource(dev, IORESOURCE_IO, 0);
+	if (IS_ERR(res))
+		return res;
 
-	iores = dev_request_mem_resource(dev, 0);
+	flags = res->flags & (IORESOURCE_MEM_TYPE_MASK | IORESOURCE_IO);
+
+	if (flags & IORESOURCE_IO)
+		iores = request_ioport_region(dev_name(dev), res->start, res->end);
+	else
+		iores = request_iomem_region(dev_name(dev), res->start, res->end);
 	if (IS_ERR(iores))
-		return PTR_ERR(iores);
-	priv->mmiobase = IOMEM(iores->start);
+		return iores;
 
-	width = res->flags & IORESOURCE_MEM_TYPE_MASK;
-	switch (width) {
+	if (flags & IORESOURCE_IO)
+		priv->iobase = iores->start;
+	else
+		priv->mmiobase = IOMEM(iores->start);
+
+	switch (flags) {
+	case IORESOURCE_IO | IORESOURCE_MEM_8BIT:
+		priv->read_reg = ns16550_read_reg_ioport_8;
+		priv->write_reg = ns16550_write_reg_ioport_8;
+		priv->access_type = "io";
+		break;
+	case IORESOURCE_IO | IORESOURCE_MEM_16BIT:
+		priv->read_reg = ns16550_read_reg_ioport_16;
+		priv->write_reg = ns16550_write_reg_ioport_16;
+		priv->access_type = "io";
+		break;
+	case IORESOURCE_IO | IORESOURCE_MEM_32BIT:
+		priv->read_reg = ns16550_read_reg_ioport_32;
+		priv->write_reg = ns16550_write_reg_ioport_32;
+		priv->access_type = "io";
+		break;
 	case IORESOURCE_MEM_8BIT:
 		priv->read_reg = ns16550_read_reg_mmio_8;
 		priv->write_reg = ns16550_write_reg_mmio_8;
@@ -419,43 +447,7 @@ static int ns16550_init_iomem(struct device *dev, struct ns16550_priv *priv)
 		break;
 	}
 
-	return 0;
-}
-
-static int ns16550_init_ioport(struct device *dev, struct ns16550_priv *priv)
-{
-	struct resource *res;
-	int width;
-
-	res = dev_get_resource(dev, IORESOURCE_IO, 0);
-	if (IS_ERR(res))
-		return PTR_ERR(res);
-
-	res = request_ioport_region(dev_name(dev), res->start, res->end);
-	if (IS_ERR(res))
-		return PTR_ERR(res);
-
-	priv->iobase = res->start;
-
-	width = res->flags & IORESOURCE_MEM_TYPE_MASK;
-	switch (width) {
-	case IORESOURCE_MEM_8BIT:
-		priv->read_reg = ns16550_read_reg_ioport_8;
-		priv->write_reg = ns16550_write_reg_ioport_8;
-		break;
-	case IORESOURCE_MEM_16BIT:
-		priv->read_reg = ns16550_read_reg_ioport_16;
-		priv->write_reg = ns16550_write_reg_ioport_16;
-		break;
-	case IORESOURCE_MEM_32BIT:
-		priv->read_reg = ns16550_read_reg_ioport_32;
-		priv->write_reg = ns16550_write_reg_ioport_32;
-		break;
-	}
-
-	priv->access_type = "io";
-
-	return 0;
+	return iores;
 }
 
 /**
@@ -473,11 +465,18 @@ static int ns16550_probe(struct device *dev)
 	struct console_device *cdev;
 	struct NS16550_plat *plat = (struct NS16550_plat *)dev->platform_data;
 	const struct ns16550_drvdata *devtype;
+	struct resource *iores;
 	int ret;
 
 	devtype = device_get_match_data(dev) ?: &ns16550_drvdata;
 
 	priv = xzalloc(sizeof(*priv));
+
+	iores = ns16550_init_iores(dev, priv);
+	if (IS_ERR(iores)) {
+		ret = PTR_ERR(iores);
+		goto err;
+	}
 
 	if (plat)
 		priv->plat = *plat;
@@ -492,24 +491,19 @@ static int ns16550_probe(struct device *dev)
 		if (IS_ERR(priv->clk)) {
 			ret = PTR_ERR(priv->clk);
 			dev_err(dev, "failed to get clk (%d)\n", ret);
-			goto err;
+			goto release_region;
 		}
-		clk_enable(priv->clk);
+		ret = clk_enable(priv->clk);
+		if (ret)
+			goto clk_put;
 		priv->plat.clock = clk_get_rate(priv->clk);
 	}
 
 	if (priv->plat.clock == 0) {
 		dev_err(dev, "no valid clockrate\n");
 		ret = -EINVAL;
-		goto err;
+		goto clk_disable;
 	}
-
-	ret = ns16550_init_iomem(dev, priv);
-	if (ret)
-		ret = ns16550_init_ioport(dev, priv);
-
-	if (ret)
-		goto err;
 
 	cdev = &priv->cdev;
 	cdev->dev = dev;
@@ -528,8 +522,18 @@ static int ns16550_probe(struct device *dev)
 
 	devtype->init_port(cdev);
 
-	return console_register(cdev);
+	ret = console_register(cdev);
+	if (ret)
+		goto clk_disable;
 
+	return 0;
+
+clk_disable:
+	clk_disable(priv->clk);
+clk_put:
+	clk_put(priv->clk);
+release_region:
+	release_region(iores);
 err:
 	free(priv);
 

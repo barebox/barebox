@@ -138,7 +138,7 @@ static void spi_of_register_slaves(struct spi_controller *ctrl)
 			continue;
 		chip.chip_select = of_read_number(reg->value, 1);
 		chip.device_node = n;
-		spi_register_board_info(&chip, 1);
+		spi_new_device(ctrl, &chip);
 	}
 }
 

@@ -331,7 +331,7 @@ static int do_instantiation(struct caam_job_ring __iomem *jr,
 	u32 ent_delay;
 	u32 status;
 
-	if (!g_jrdata->desc) {
+	if (!g_jrdata) {
 		pr_err("descriptor allocation failed\n");
 		return -ENODEV;
 	}

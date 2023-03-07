@@ -5,6 +5,7 @@
 
 #include <linux/compiler.h>
 #include <linux/types.h>
+#include <mach/imx/tzasc.h>
 
 int imx53_nand_start_image(void);
 int imx6_spi_load_image(int instance, unsigned int flash_offset, void *buf, int len);
@@ -41,5 +42,20 @@ struct imx_scratch_space *__imx8m_scratch_space(int ddr_buswidth);
 #define imx8mm_scratch_space() __imx8m_scratch_space(32)
 #define imx8mn_scratch_space() __imx8m_scratch_space(16)
 #define imx8mp_scratch_space() __imx8m_scratch_space(32)
+
+#define imx8m_load_and_start_optee_via_tfa(soc, bl32, bl33)			\
+do {										\
+	size_t bl32_size;							\
+	void *bl32_image;							\
+										\
+	soc##_tzc380_init();							\
+	get_builtin_firmware_ext(soc##_bl32_bin,				\
+				bl33, &bl32_image,				\
+				&bl32_size);					\
+										\
+	memcpy(bl32, bl32_image, bl32_size);					\
+										\
+	soc##_load_and_start_tfa(soc##_bl31_bin_optee);				\
+} while (0)
 
 #endif /* __MACH_IMX_XLOAD_H */

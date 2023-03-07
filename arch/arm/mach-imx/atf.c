@@ -20,20 +20,13 @@
  * This function:
  *
  *     1. Copies built-in BL31 blob to an address i.MX8M's BL31
- *        expects to be placed
+ *        expects to be placed (TF-A v2.8+ is position-independent)
  *
  *     2. Sets up temporary stack pointer for EL2, which is execution
  *        level that BL31 will drop us off at after it completes its
  *        initialization routine
  *
  *     3. Transfers control to BL31
- *
- * NOTE: This function expects NXP's implementation of ATF that can be
- * found at:
- *     https://source.codeaurora.org/external/imx/imx-atf
- *
- * any other implementation may or may not work
- *
  */
 
 static __noreturn void imx8m_atf_start_bl31(const void *fw, size_t fw_size, void *atf_dest)

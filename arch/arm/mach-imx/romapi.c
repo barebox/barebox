@@ -57,10 +57,13 @@ int imx8mn_bootrom_load_image(void)
 const u32 *imx8m_get_bootrom_log(void)
 {
 	if (current_el() == 3) {
+		ulong *rom_log_addr_offset = (void *)0x9e0;
 		ulong rom_log_addr;
 
+		OPTIMIZER_HIDE_VAR(rom_log_addr_offset);
+
 		zero_page_access();
-		rom_log_addr = readl(IOMEM(0x9e0));
+		rom_log_addr = *rom_log_addr_offset;
 		zero_page_faulting();
 
 		if (rom_log_addr < MX8M_OCRAM_BASE_ADDR ||

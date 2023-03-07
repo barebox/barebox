@@ -716,7 +716,7 @@ static int do_gpiolib(int argc, char *argv[])
 			printf("\nGPIOs %u-%u, chip %s:\n",
 				gi->chip->base,
 				gi->chip->base + gi->chip->ngpio - 1,
-				gi->chip->dev->name);
+				dev_name(gi->chip->dev));
 			printf("             %-3s %-3s %-9s %-20s %-20s\n", "dir", "val", "requested", "name", "label");
 		}
 

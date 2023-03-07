@@ -12,6 +12,8 @@
 #include <common.h>
 #include <malloc.h>
 #include <driver.h>
+#include <gpiod.h>
+#include <regulator.h>
 #include <xfuncs.h>
 #include <errno.h>
 #include <i2c/i2c.h>
@@ -414,7 +416,8 @@ static int pca953x_probe(struct device *dev)
 	unsigned long driver_data;
 	struct pca953x_platform_data *pdata;
 	struct pca953x_chip *chip;
-	int ret;
+	struct regulator *reg;
+	int reset_gpio, ret;
 	u32 invert = 0;
 
 	chip = xzalloc(sizeof(struct pca953x_chip));
@@ -436,6 +439,20 @@ static int pca953x_probe(struct device *dev)
 	}
 
 	chip->client = client;
+
+	reset_gpio = gpiod_get(dev, "reset", GPIOD_OUT_LOW);
+	if (!gpio_is_valid(reset_gpio) && reset_gpio != -ENOENT)
+		dev_warn(dev, "Failed to get 'reset' GPIO (ignored)\n");
+
+	reg = regulator_get(dev, "vcc");
+	if (IS_ERR(reg)) {
+		dev_warn(dev, "Failed to get 'vcc' regulator (ignored).\n");
+		reg = NULL;
+	}
+
+	ret = regulator_enable(reg);
+	if (ret)
+		return dev_err_probe(dev, ret, "failed to enable register\n");
 
 	chip->chip_type = driver_data & (PCA953X_TYPE | PCA957X_TYPE);
 

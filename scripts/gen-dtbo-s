@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+name=$1
+dtbo=$2
+
+echo "#include <asm/barebox.lds.h>"
+
+echo ".section .dtb.rodata.${name}_dtbo,\"a\""
+echo ".balign STRUCT_ALIGNMENT"
+echo ".global __dtbo_${name}_start"
+echo "__dtbo_${name}_start:"
+echo ".incbin \"$dtbo\""
+echo "__dtbo_${name}_end:"
+echo ".global __dtbo_${name}_end"

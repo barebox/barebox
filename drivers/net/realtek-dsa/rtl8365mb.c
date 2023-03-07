@@ -1216,7 +1216,7 @@ static int rtl8365mb_detect(struct realtek_priv *priv)
 
 	if (!mb->chip_info) {
 		dev_err(priv->dev,
-			"unrecognized switch (id=0x%04x, ver=0x%04x)", chip_id,
+			"unrecognized switch (id=0x%04x, ver=0x%04x)\n", chip_id,
 			chip_ver);
 		return -ENODEV;
 	}

@@ -47,3 +47,4 @@ obj-y	+= ddr/
 obj-y	+= power/
 obj-$(CONFIG_SOUND) += sound/
 obj-y	+= virtio/
+obj-$(CONFIG_HAVE_OPTEE)	+= tee/optee/of.o

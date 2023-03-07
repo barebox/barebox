@@ -108,7 +108,6 @@ EXPORT_SYMBOL(spi_new_device);
 static void spi_of_register_slaves(struct spi_controller *ctrl)
 {
 	struct device_node *n;
-	struct spi_board_info chip;
 	struct property *reg;
 	struct device_node *node = ctrl->dev->of_node;
 
@@ -119,7 +118,8 @@ static void spi_of_register_slaves(struct spi_controller *ctrl)
 		return;
 
 	for_each_available_child_of_node(node, n) {
-		memset(&chip, 0, sizeof(chip));
+		struct spi_board_info chip = {};
+
 		chip.name = xstrdup(n->name);
 		chip.bus_num = ctrl->bus_num;
 		/* Mode (clock phase/polarity/etc.) */

@@ -119,7 +119,7 @@ static int realtek_mdio_probe(struct phy_device *mdiodev)
 	if (!var)
 		return -EINVAL;
 
-	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
+	priv = kzalloc(sizeof(*priv) + var->chip_data_sz, GFP_KERNEL);
 	if (!priv)
 		return -ENOMEM;
 

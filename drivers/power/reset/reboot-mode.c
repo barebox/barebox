@@ -139,8 +139,13 @@ int reboot_mode_register(struct reboot_mode_driver *reboot,
 
 	reboot->nmodes = nmodes;
 	reboot->nelems = nelems;
-	reboot->magics = xzalloc(nmodes * nelems * sizeof(u32));
-	reboot->modes = xzalloc(nmodes * sizeof(const char *));
+
+	/*
+	 * Allocate one entry more than necessary, because in the loop below
+	 * we use an entry before we realize that the property is not valid.
+	 */
+	reboot->magics = xzalloc((nmodes + 1) * nelems * sizeof(u32));
+	reboot->modes = xzalloc((nmodes + 1) * sizeof(const char *));
 
 	reboot_mode_print(reboot, "registering magic", reboot_mode);
 

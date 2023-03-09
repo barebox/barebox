@@ -88,7 +88,7 @@ static void __noreturn do_exception(struct pt_regs *pt_regs)
 
 	unwind_backtrace(pt_regs);
 
-	panic("panic: unhandled exception");
+	panic_no_stacktrace("panic: unhandled exception");
 }
 
 /**

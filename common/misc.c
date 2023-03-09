@@ -216,15 +216,13 @@ device_initcall(of_kernel_init);
 
 BAREBOX_MAGICVAR(global.of.kernel.add_machine_compatible, "Additional machine/board compatible");
 
-void __noreturn panic(const char *fmt, ...)
+static void __noreturn do_panic(bool stacktrace, const char *fmt, va_list ap)
 {
-	va_list args;
-	va_start(args, fmt);
-	vprintf(fmt, args);
+	vprintf(fmt, ap);
 	putchar('\n');
-	va_end(args);
 
-	dump_stack();
+	if (stacktrace)
+		dump_stack();
 
 	led_trigger(LED_TRIGGER_PANIC, TRIGGER_ENABLE);
 
@@ -235,4 +233,23 @@ void __noreturn panic(const char *fmt, ...)
 		restart_machine();
 	}
 }
+
+void __noreturn panic(const char *fmt, ...)
+{
+	va_list args;
+
+	va_start(args, fmt);
+	do_panic(true, fmt, args);
+	va_end(args);
+}
 EXPORT_SYMBOL(panic);
+
+void __noreturn panic_no_stacktrace(const char *fmt, ...)
+{
+	va_list args;
+
+	va_start(args, fmt);
+	do_panic(false, fmt, args);
+	va_end(args);
+}
+EXPORT_SYMBOL(panic_no_stacktrace);

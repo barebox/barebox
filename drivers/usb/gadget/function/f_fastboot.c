@@ -109,6 +109,36 @@ static struct usb_descriptor_header *fb_hs_descs[] = {
 	NULL,
 };
 
+static struct usb_endpoint_descriptor ss_ep_in = {
+	.bLength		= USB_DT_ENDPOINT_SIZE,
+	.bDescriptorType	= USB_DT_ENDPOINT,
+	.bEndpointAddress	= USB_DIR_IN,
+	.bmAttributes		= USB_ENDPOINT_XFER_BULK,
+	.wMaxPacketSize		= cpu_to_le16(1024),
+};
+
+static struct usb_endpoint_descriptor ss_ep_out = {
+	.bLength		= USB_DT_ENDPOINT_SIZE,
+	.bDescriptorType	= USB_DT_ENDPOINT,
+	.bEndpointAddress	= USB_DIR_OUT,
+	.bmAttributes		= USB_ENDPOINT_XFER_BULK,
+	.wMaxPacketSize		= cpu_to_le16(1024),
+};
+
+static struct usb_ss_ep_comp_descriptor fb_ss_bulk_comp_desc = {
+	.bLength =		sizeof(fb_ss_bulk_comp_desc),
+	.bDescriptorType =	USB_DT_SS_ENDPOINT_COMP,
+};
+
+static struct usb_descriptor_header *fb_ss_descs[] = {
+	(struct usb_descriptor_header *)&interface_desc,
+	(struct usb_descriptor_header *)&ss_ep_in,
+	(struct usb_descriptor_header *)&fb_ss_bulk_comp_desc,
+	(struct usb_descriptor_header *)&ss_ep_out,
+	(struct usb_descriptor_header *)&fb_ss_bulk_comp_desc,
+	NULL,
+};
+
 /*
  * static strings, in UTF-8
  */
@@ -255,6 +285,8 @@ static int fastboot_bind(struct usb_configuration *c, struct usb_function *f)
 
 	hs_ep_out.bEndpointAddress = fs_ep_out.bEndpointAddress;
 	hs_ep_in.bEndpointAddress = fs_ep_in.bEndpointAddress;
+	ss_ep_out.bEndpointAddress = fs_ep_out.bEndpointAddress;
+	ss_ep_in.bEndpointAddress = fs_ep_in.bEndpointAddress;
 
 	f_fb->out_req = fastboot_alloc_request(f_fb->out_ep);
 	if (!f_fb->out_req) {
@@ -266,7 +298,7 @@ static int fastboot_bind(struct usb_configuration *c, struct usb_function *f)
 	f_fb->out_req->complete = rx_handler_command;
 	f_fb->out_req->context = f_fb;
 
-	ret = usb_assign_descriptors(f, fb_fs_descs, fb_hs_descs, NULL, NULL);
+	ret = usb_assign_descriptors(f, fb_fs_descs, fb_hs_descs, fb_ss_descs, fb_ss_descs);
 	if (ret)
 		goto err_free_in_req;
 

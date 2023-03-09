@@ -104,6 +104,48 @@ struct usb_descriptor_header *fsg_hs_function[] = {
 	NULL,
 };
 
+struct usb_endpoint_descriptor fsg_ss_bulk_in_desc = {
+	.bLength =		USB_DT_ENDPOINT_SIZE,
+	.bDescriptorType =	USB_DT_ENDPOINT,
+
+	/* bEndpointAddress copied from fs_bulk_in_desc during fsg_bind() */
+	.bmAttributes =		USB_ENDPOINT_XFER_BULK,
+	.wMaxPacketSize =	cpu_to_le16(1024),
+};
+
+struct usb_ss_ep_comp_descriptor fsg_ss_bulk_in_comp_desc = {
+	.bLength =		sizeof(fsg_ss_bulk_in_comp_desc),
+	.bDescriptorType =	USB_DT_SS_ENDPOINT_COMP,
+
+	/*.bMaxBurst =		DYNAMIC, */
+};
+
+struct usb_endpoint_descriptor fsg_ss_bulk_out_desc = {
+	.bLength =		USB_DT_ENDPOINT_SIZE,
+	.bDescriptorType =	USB_DT_ENDPOINT,
+
+	/* bEndpointAddress copied from fs_bulk_out_desc during fsg_bind() */
+	.bmAttributes =		USB_ENDPOINT_XFER_BULK,
+	.wMaxPacketSize =	cpu_to_le16(1024),
+};
+
+struct usb_ss_ep_comp_descriptor fsg_ss_bulk_out_comp_desc = {
+	.bLength =		sizeof(fsg_ss_bulk_in_comp_desc),
+	.bDescriptorType =	USB_DT_SS_ENDPOINT_COMP,
+
+	/*.bMaxBurst =		DYNAMIC, */
+};
+
+struct usb_descriptor_header *fsg_ss_function[] = {
+	(struct usb_descriptor_header *) &fsg_intf_desc,
+	(struct usb_descriptor_header *) &fsg_ss_bulk_in_desc,
+	(struct usb_descriptor_header *) &fsg_ss_bulk_in_comp_desc,
+	(struct usb_descriptor_header *) &fsg_ss_bulk_out_desc,
+	(struct usb_descriptor_header *) &fsg_ss_bulk_out_comp_desc,
+	NULL,
+};
+EXPORT_SYMBOL_GPL(fsg_ss_function);
+
 /* Maxpacket and other transfer characteristics vary by speed. */
 struct usb_endpoint_descriptor *
 fsg_ep_desc(struct usb_gadget *g, struct usb_endpoint_descriptor *fs,

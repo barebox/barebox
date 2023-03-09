@@ -2194,15 +2194,18 @@ reset:
 	fsg = common->fsg;
 
 	/* Enable the endpoints */
-	fsg->bulk_in->desc = fsg_ep_desc(common->gadget,
-					 &fsg_fs_bulk_in_desc, &fsg_hs_bulk_in_desc);
+	rc = config_ep_by_speed(common->gadget, &(fsg->function), fsg->bulk_in);
+	if (rc)
+		goto reset;
 	rc = enable_endpoint(common, fsg->bulk_in);
 	if (rc)
 		goto reset;
 	fsg->bulk_in_enabled = 1;
 
-	fsg->bulk_out->desc = fsg_ep_desc(common->gadget,
-					  &fsg_fs_bulk_out_desc, &fsg_hs_bulk_out_desc);
+	rc = config_ep_by_speed(common->gadget, &(fsg->function),
+				fsg->bulk_out);
+	if (rc)
+		goto reset;
 	rc = enable_endpoint(common, fsg->bulk_out);
 	if (rc)
 		goto reset;
@@ -2615,7 +2618,7 @@ static int fsg_bind(struct usb_configuration *c, struct usb_function *f)
 	struct usb_gadget	*gadget = c->cdev->gadget;
 	int			ret;
 	struct usb_ep		*ep;
-	struct usb_descriptor_header **hs_function = NULL;
+	unsigned		max_burst;
 	struct fsg_common	*common = fsg->common;
 
 	if (!ums_files) {
@@ -2656,17 +2659,26 @@ static int fsg_bind(struct usb_configuration *c, struct usb_function *f)
 	ep->driver_data = common;	/* claim the endpoint */
 	fsg->bulk_out = ep;
 
-	if (gadget_is_dualspeed(gadget)) {
-		/* Assume endpoint addresses are the same for both speeds */
-		fsg_hs_bulk_in_desc.bEndpointAddress =
-			fsg_fs_bulk_in_desc.bEndpointAddress;
-		fsg_hs_bulk_out_desc.bEndpointAddress =
-			fsg_fs_bulk_out_desc.bEndpointAddress;
-		hs_function = fsg_hs_function;
-	}
+	/* Assume endpoint addresses are the same for both speeds */
+	fsg_hs_bulk_in_desc.bEndpointAddress =
+		fsg_fs_bulk_in_desc.bEndpointAddress;
+	fsg_hs_bulk_out_desc.bEndpointAddress =
+		fsg_fs_bulk_out_desc.bEndpointAddress;
+
+	/* Calculate bMaxBurst, we know packet size is 1024 */
+	max_burst = min_t(unsigned, FSG_BUFLEN / 1024, 15);
+
+	fsg_ss_bulk_in_desc.bEndpointAddress =
+		fsg_fs_bulk_in_desc.bEndpointAddress;
+	fsg_ss_bulk_in_comp_desc.bMaxBurst = max_burst;
+
+	fsg_ss_bulk_out_desc.bEndpointAddress =
+		fsg_fs_bulk_out_desc.bEndpointAddress;
+	fsg_ss_bulk_out_comp_desc.bMaxBurst = max_burst;
 
 	/* Copy descriptors */
-	return usb_assign_descriptors(f, fsg_fs_function, fsg_hs_function, NULL, NULL);
+	return usb_assign_descriptors(f, fsg_fs_function, fsg_hs_function,
+				      fsg_ss_function, fsg_ss_function);
 
 autoconf_fail:
 	ERROR(fsg, "unable to autoconfigure all endpoints\n");

@@ -869,7 +869,7 @@ static int pxa_udc_vbus_session(struct usb_gadget *_gadget, int is_active)
 }
 
 static int pxa_udc_start(struct usb_gadget *gadget, struct usb_gadget_driver *driver);
-static int pxa_udc_stop(struct usb_gadget *gadget, struct usb_gadget_driver *driver);
+static int pxa_udc_stop(struct usb_gadget *gadget);
 static void pxa_udc_gadget_poll(struct usb_gadget *gadget);
 
 static const struct usb_gadget_ops pxa_udc_ops = {
@@ -987,36 +987,26 @@ static int pxa_udc_start(struct usb_gadget *gadget, struct usb_gadget_driver *dr
 	return 0;
 }
 
-static void stop_activity(struct pxa_udc *udc, struct usb_gadget_driver *driver)
+static void stop_activity(struct pxa_udc *udc)
 {
 	int i;
 
-	/* don't disconnect drivers more than once */
-	if (udc->gadget.speed == USB_SPEED_UNKNOWN)
-		driver = NULL;
 	udc->gadget.speed = USB_SPEED_UNKNOWN;
 
 	for (i = 0; i < NR_USB_ENDPOINTS; i++)
 		pxa_ep_disable(&udc->udc_usb_ep[i].usb_ep);
-
-	if (driver)
-		driver->disconnect(&udc->gadget);
 }
 
-static int pxa_udc_stop(struct usb_gadget *gadget, struct usb_gadget_driver *driver)
+static int pxa_udc_stop(struct usb_gadget *gadget)
 {
 	struct pxa_udc *udc = the_controller;
 
 	if (!udc)
 		return -ENODEV;
-	if (!driver || driver != udc->driver || !driver->unbind)
-		return -EINVAL;
 
-	stop_activity(udc, driver);
+	stop_activity(udc);
 	udc_disable(udc);
 
-	driver->disconnect(&udc->gadget);
-	driver->unbind(&udc->gadget);
 	udc->driver = NULL;
 
 	/*
@@ -1348,7 +1338,7 @@ static void irq_udc_reset(struct pxa_udc *udc)
 
 	if ((udccr & UDCCR_UDA) == 0) {
 		dev_dbg(udc->dev, "USB reset start\n");
-		stop_activity(udc, udc->driver);
+		stop_activity(udc);
 	}
 	udc->gadget.speed = USB_SPEED_FULL;
 
@@ -1369,7 +1359,7 @@ static void pxa_udc_gadget_poll(struct usb_gadget *gadget)
 	if (should_enable_udc(udc))
 		udc_enable(udc);
 	if (should_disable_udc(udc)) {
-		stop_activity(udc, udc->driver);
+		stop_activity(udc);
 		udc_disable(udc);
 	}
 

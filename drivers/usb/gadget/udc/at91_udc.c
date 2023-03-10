@@ -1240,7 +1240,7 @@ static int at91_udc_start(struct usb_gadget *gadget, struct usb_gadget_driver *d
 	return 0;
 }
 
-static int at91_udc_stop(struct usb_gadget *gadget, struct usb_gadget_driver *driver)
+static int at91_udc_stop(struct usb_gadget *gadget)
 {
 	struct at91_udc	*udc = container_of(gadget, struct at91_udc, gadget);
 
@@ -1248,7 +1248,8 @@ static int at91_udc_stop(struct usb_gadget *gadget, struct usb_gadget_driver *dr
 	at91_udp_write(udc, AT91_UDP_IDR, ~0);
 	udc->driver = NULL;
 
-	DBG(udc, "unbound from %s\n", driver->function);
+	DBG(udc, "unbound\n");
+
 	return 0;
 }
 

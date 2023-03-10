@@ -1646,7 +1646,7 @@ static int fsl_udc_start(struct usb_gadget *gadget, struct usb_gadget_driver *dr
 }
 
 /* Disconnect from gadget driver */
-static int fsl_udc_stop(struct usb_gadget *gadget, struct usb_gadget_driver *driver)
+static int fsl_udc_stop(struct usb_gadget *gadget)
 {
 	struct fsl_udc *udc = to_fsl_udc(gadget);
 	struct fsl_ep *loop_ep;

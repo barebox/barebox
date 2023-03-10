@@ -2533,8 +2533,7 @@ static int dwc2_gadget_udc_start(struct usb_gadget *gadget,
 	return 0;
 }
 
-static int dwc2_gadget_udc_stop(struct usb_gadget *gadget,
-				struct usb_gadget_driver *driver)
+static int dwc2_gadget_udc_stop(struct usb_gadget *gadget)
 {
 	struct dwc2 *dwc2 = to_dwc2(gadget);
 	unsigned long flags = 0;

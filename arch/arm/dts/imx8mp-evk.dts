@@ -30,6 +30,8 @@
 	};
 };
 
+/delete-node/ &{/memory@40000000};
+
 &ethphy1 {
 	reset-assert-us = <15000>;
 	reset-deassert-us = <100000>;

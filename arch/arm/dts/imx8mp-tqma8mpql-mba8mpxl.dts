@@ -24,6 +24,8 @@
 	};
 };
 
+/delete-node/ &{/memory@40000000};
+
 &usdhc2 {
 	#address-cells = <1>;
 	#size-cells = <1>;

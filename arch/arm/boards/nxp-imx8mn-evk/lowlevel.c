@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 
 #include <io.h>
+#include <image-metadata.h>
 #include <common.h>
 #include <debug_ll.h>
 #include <mach/imx/debug_ll.h>
@@ -153,6 +154,9 @@ ENTRY_FUNCTION(start_nxp_imx8mn_evk, r0, r1, r2)
 
 	relocate_to_current_adr();
 	setup_c();
+
+	IMD_USED_OF(imx8mn_evk);
+	IMD_USED_OF(imx8mn_ddr4_evk);
 
 	nxp_imx8mn_evk_start();
 }

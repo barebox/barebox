@@ -6,33 +6,21 @@
 #include <dma.h>
 #include <asm/io.h>
 
-static inline void __dma_sync_mips(unsigned long addr, size_t size,
-				   enum dma_data_direction direction)
-{
-	switch (direction) {
-	case DMA_TO_DEVICE:
-		dma_flush_range(addr, addr + size);
-		break;
-
-	case DMA_FROM_DEVICE:
-		dma_inv_range(addr, addr + size);
-		break;
-
-	case DMA_BIDIRECTIONAL:
-		dma_flush_range(addr, addr + size);
-		break;
-
-	default:
-		BUG();
-	}
-}
-
 void dma_sync_single_for_cpu(dma_addr_t address, size_t size,
 			     enum dma_data_direction dir)
 {
 	unsigned long virt = (unsigned long)phys_to_virt(address);
 
-	__dma_sync_mips(virt, size, dir);
+	switch (dir) {
+	case DMA_TO_DEVICE:
+		break;
+	case DMA_FROM_DEVICE:
+	case DMA_BIDIRECTIONAL:
+		dma_inv_range(virt, virt + size);
+		break;
+	default:
+		BUG();
+	}
 }
 
 void dma_sync_single_for_device(dma_addr_t address, size_t size,
@@ -40,5 +28,15 @@ void dma_sync_single_for_device(dma_addr_t address, size_t size,
 {
 	unsigned long virt = (unsigned long)phys_to_virt(address);
 
-	__dma_sync_mips(virt, size, dir);
+	switch (dir) {
+	case DMA_FROM_DEVICE:
+		dma_inv_range(virt, virt + size);
+		break;
+	case DMA_TO_DEVICE:
+	case DMA_BIDIRECTIONAL:
+		dma_flush_range(virt, virt + size);
+		break;
+	default:
+		BUG();
+	}
 }

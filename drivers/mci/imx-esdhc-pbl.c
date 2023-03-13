@@ -199,7 +199,7 @@ esdhc_load_image(struct fsl_esdhc_host *host, ptrdiff_t address,
 		buf = (void *)(entry - ofs);
 	}
 
-	ret = esdhc_read_blocks(host, buf, offset + len);
+	ret = esdhc_read_blocks(host, buf, ofs + len);
 	if (ret) {
 		pr_err("Loading image failed with %d\n", ret);
 		return ret;

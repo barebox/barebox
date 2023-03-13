@@ -20,6 +20,7 @@
 #include "imx.h"
 
 #include <include/filetype.h>
+#include <include/linux/sizes.h>
 
 #define FLASH_HEADER_OFFSET 0x400
 #define ARM_HEAD_SIZE_INDEX	(ARM_HEAD_SIZE_OFFSET / sizeof(uint32_t))
@@ -289,6 +290,18 @@ static int write_mem_v1(uint32_t addr, uint32_t val, int width, int set_bits, in
 	return 0;
 }
 
+static bool flexspi_image(const struct config_data *data)
+{
+	/*
+	 *           | FlexSPI-FCFB  | FlexSPI-IVT
+	 * -----------------------------------------
+	 * i.MX8MM   |   0x0         |  0x1000
+	 * i.MX8MN/P |   0x400       |  0x0
+	 */
+
+	return data->image_flexspi_ivt_offset || data->image_flexspi_fcfb_offset;
+}
+
 /*
  * ============================================================================
  * i.MX flash header v2 handling. Found on i.MX50, i.MX53 and i.MX6
@@ -361,6 +374,114 @@ add_header_v2(const struct config_data *data, void *buf, uint32_t offset,
 	}
 
 	return imagesize;
+}
+
+#define LUT_PAD_1	0
+#define LUT_PAD_2	1
+#define LUT_PAD_4	2
+#define LUT_PAD_8	3
+
+static size_t add_flexspi_fcfb_header(const struct config_data *data, void *buf)
+{
+	uint32_t fcfb_offset = data->image_flexspi_fcfb_offset;
+	const struct imx_fcfb_nor nor_conf = {
+		.memcfg = {
+			.tag = htobe32(FCFB_HEAD_TAG),
+			.version = htole32(FCFB_VERSION),
+			.read_sample = FCFB_SAMLPE_CLK_SRC_INTERNAL,
+			/* flash CS hold time, recommended by RM */
+			.datahold =  0x03,
+			/* flash CS setup time, recommended by RM */
+			.datasetup = 0x03,
+			/* 3 - Hyperflash, 12/13 serial NAND, 0 - other */
+			.coladdrwidth = 0,
+			.devcfgenable = 0,
+			.cmd_enable =  0,
+			.controllermisc =  0,
+			.dev_type = FCFB_DEVTYPE_SERIAL_NOR,
+			.sflash_pad = FCFB_SFLASH_PADS_SINGLE,
+			.serial_clk = FCFB_SERIAL_CLK_FREQ_50MHZ,
+			.sflashA1 = htole32(SZ_256M),
+			.lut.seq[0] = {
+				.instr = {
+					htole16(LUT_DEF(LUT_CMD, LUT_PAD_1, 0x0b)),
+					htole16(LUT_DEF(LUT_ADDR, LUT_PAD_1, 24)),
+					htole16(LUT_DEF(LUT_DUMMY, LUT_PAD_1, 8)),
+					htole16(LUT_DEF(LUT_NXP_READ, LUT_PAD_1, 4)),
+					htole16(LUT_DEF(LUT_STOP, LUT_PAD_1, 0)),
+				},
+			},
+		},
+	};
+
+	buf += fcfb_offset;
+	memcpy(buf, &nor_conf, sizeof(nor_conf));
+
+	return sizeof(nor_conf);
+}
+
+#define FLEXSPI_HEADER_LEN	HEADER_LEN
+
+static size_t
+add_flexspi_header(const struct config_data *data, void **_buf, size_t *header_len)
+{
+	uint32_t ivt_offset = data->image_flexspi_ivt_offset;
+	size_t size;
+	size_t len;
+	void *buf;
+
+	if (!flexspi_image(data))
+		return 0;
+
+	if (data->signed_hdmi_firmware_file) {
+		free(*_buf);
+		fprintf(stderr, "Signed HDMI firmware and FlexSPI compatible image is not supported!\n");
+		exit(1);
+	}
+
+	/*
+	 * Extend the header to be able to build build one image which can be
+	 * used for: USB/SD/eMMC/eMMC-Boot/QSPI/barebox-chainload.
+	 */
+	buf = realloc(*_buf, *header_len + FLEXSPI_HEADER_LEN);
+	if (!buf)
+		exit(1);
+
+	*_buf = buf;
+
+	size = add_flexspi_fcfb_header(data, buf);
+
+	/*
+	 * The following table list the offsets we need to ensure for
+	 * the one image approach.
+	 *
+	 *                              | i.MX8MM | i.MX8MN/P |
+	 * -----------------------------+---------+-----------+
+	 * SD/eMMC primary image offset |    0    |   0/32K   |
+	 * FlexSPI primary image offset |    0    |     4K    |
+	 * SD/eMMC-IVT offset           |    1K   |     0     |
+	 * SD/eMMC-IVT image entry      |    8K   |     8K    |
+	 * FlexSPI-IVT offset           |    4K   |     0     |
+	 * FlexSPI-IVT image entry      |    8K   |     4K    |
+	 *
+	 * According the above table the rom-loader for i.MX8MM will
+	 * search for the image on the same place (8K). On the other
+	 * hand the rom-loader for the i.MX8MN/P will look for it at
+	 * 8K for SD/eMMC case or at 4K for FlexSPI case.
+	 */
+	len = *header_len;
+	if (data->cpu_type == IMX_CPU_IMX8MM)
+		len += FLEXSPI_HEADER_LEN;
+
+	if (data->cpu_type == IMX_CPU_IMX8MP ||
+	    data->cpu_type == IMX_CPU_IMX8MN)
+		buf += SZ_4K;
+
+	size += add_header_v2(data, buf, ivt_offset, len);
+
+	*header_len += FLEXSPI_HEADER_LEN;
+
+	return size;
 }
 
 static void usage(const char *prgname)
@@ -905,9 +1026,10 @@ int main(int argc, char *argv[])
 			}
 		}
 
+		barebox_image_size += add_flexspi_header(&data, &buf, &header_len);
 		barebox_image_size += add_header_v2(&data, buf +
 						    signed_hdmi_firmware_size,
-						    data.image_ivt_offset, HEADER_LEN);
+						    data.image_ivt_offset, header_len);
 		break;
 	default:
 		fprintf(stderr, "Congratulations! You're welcome to implement header version %d\n",

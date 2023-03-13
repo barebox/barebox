@@ -97,6 +97,8 @@ static inline bool is_imx_flash_header_v2(const void *blob)
 struct config_data {
 	uint32_t image_load_addr;
 	uint32_t image_ivt_offset;
+	uint32_t image_flexspi_ivt_offset;
+	uint32_t image_flexspi_fcfb_offset;
 	uint32_t image_size;
 	uint32_t max_load_size;
 	uint32_t load_size;
@@ -147,6 +149,122 @@ enum imx_dcd_v2_check_cond {
 	until_any_bit_clear = 1, /* until ((*address & mask) != mask) { ...} */
 	until_all_bits_set = 2, /* until ((*address & mask) == mask) { ...} */
 	until_any_bit_set = 3, /* until ((*address & mask) != 0) { ...} */
+} __attribute__((packed));
+
+/* FlexSPI conifguration block FCFB */
+#define FCFB_HEAD_TAG			0x46434642	/* "FCFB" */
+#define FCFB_VERSION			0x56010000	/* V<major><minor><bugfix> = V100 */
+#define FCFB_SAMLPE_CLK_SRC_INTERNAL	0
+#define FCFB_DEVTYPE_SERIAL_NOR		1
+#define FCFB_SFLASH_PADS_SINGLE		1
+#define FCFB_SFLASH_PADS_DUAL		2
+#define FCFB_SFLASH_PADS_QUAD		4
+#define FCFB_SFLASH_PADS_OCTAL		8
+#define FCFB_SERIAL_CLK_FREQ_30MHZ	1
+#define FCFB_SERIAL_CLK_FREQ_50MHZ	2
+#define FCFB_SERIAL_CLK_FREQ_60MHZ	3
+#define FCFB_SERIAL_CLK_FREQ_75MHZ	4
+#define FCFB_SERIAL_CLK_FREQ_80MHZ	5
+#define FCFB_SERIAL_CLK_FREQ_100MHZ	6
+#define FCFB_SERIAL_CLK_FREQ_133MHZ	7
+#define FCFB_SERIAL_CLK_FREQ_166MHZ	8
+
+/* Instruction set for the LUT register. */
+#define LUT_STOP			0x00
+#define LUT_CMD				0x01
+#define LUT_ADDR			0x02
+#define LUT_CADDR_SDR			0x03
+#define LUT_MODE			0x04
+#define LUT_MODE2			0x05
+#define LUT_MODE4			0x06
+#define LUT_MODE8			0x07
+#define LUT_NXP_WRITE			0x08
+#define LUT_NXP_READ			0x09
+#define LUT_LEARN_SDR			0x0A
+#define LUT_DATSZ_SDR			0x0B
+#define LUT_DUMMY			0x0C
+#define LUT_DUMMY_RWDS_SDR		0x0D
+#define LUT_JMP_ON_CS			0x1F
+#define LUT_CMD_DDR			0x21
+#define LUT_ADDR_DDR			0x22
+#define LUT_CADDR_DDR			0x23
+#define LUT_MODE_DDR			0x24
+#define LUT_MODE2_DDR			0x25
+#define LUT_MODE4_DDR			0x26
+#define LUT_MODE8_DDR			0x27
+#define LUT_WRITE_DDR			0x28
+#define LUT_READ_DDR			0x29
+#define LUT_LEARN_DDR			0x2A
+#define LUT_DATSZ_DDR			0x2B
+#define LUT_DUMMY_DDR			0x2C
+#define LUT_DUMMY_RWDS_DDR		0x2D
+
+/*
+ * Macro for constructing the LUT entries with the following
+ * register layout:
+ *
+ *  -----------------------
+ *  | INSTR | PAD | OPRND |
+ *  -----------------------
+ */
+#define PAD_SHIFT		8
+#define INSTR_SHIFT		10
+#define OPRND_SHIFT		16
+
+/* Macros for constructing the LUT register. */
+#define LUT_DEF(ins, pad, opr)	\
+	(((ins) << INSTR_SHIFT) | ((pad) << PAD_SHIFT) | (opr))
+
+struct imx_fcfb_common {
+	uint32_t tag;
+	uint32_t version;
+	uint32_t reserved1;
+	uint8_t read_sample;
+	uint8_t datahold;
+	uint8_t datasetup;
+	uint8_t coladdrwidth;
+	uint8_t devcfgenable;
+	uint8_t reserved2[3];
+	uint32_t devmodeseq;
+	uint32_t devmodearg;
+	uint8_t cmd_enable;
+	uint8_t reserved3[3];
+	uint32_t cmd_seq[4];
+	uint32_t cmd_arg[4];
+	uint32_t controllermisc;
+	uint8_t dev_type;
+	uint8_t sflash_pad;
+	uint8_t serial_clk;
+	uint8_t lut_custom;
+	uint32_t reserved4[2];
+	uint32_t sflashA1;
+	uint32_t sflashA2;
+	uint32_t sflashB1;
+	uint32_t sflashB2;
+	uint32_t cspadover;
+	uint32_t sclkpadover;
+	uint32_t datapadover;
+	uint32_t dqspadover;
+	uint32_t timeout_ms;
+	uint32_t commandInt_ns;
+	uint32_t datavalid_ns;
+	uint16_t busyoffset;
+	uint16_t busybitpolarity;
+	struct {
+		struct {
+			uint16_t instr[8];
+		} seq[16];
+	} lut;
+	uint16_t lut_custom_seq[24];
+	uint8_t reserved5[16];
+} __attribute__((packed));
+
+struct imx_fcfb_nor {
+	struct imx_fcfb_common	memcfg;
+	uint32_t		page_sz;
+	uint32_t		sector_sz;
+	uint32_t		ipcmd_serial_clk;
+	uint8_t			reserved[52];
 } __attribute__((packed));
 
 #endif

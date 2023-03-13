@@ -86,6 +86,10 @@ int imx8m_bbu_internal_mmcboot_register_handler(const char *name, const char *de
 int imx_bbu_external_nor_register_handler(const char *name, const char *devicefile,
 		unsigned long flags);
 
+int imx8m_bbu_internal_flexspi_nor_register_handler(const char *name,
+						    const char *devicefile,
+						    unsigned long flags);
+
 #else
 
 static inline int imx51_bbu_internal_mmc_register_handler(const char *name, const char *devicefile,
@@ -194,6 +198,13 @@ vf610_bbu_internal_spi_i2c_register_handler(const char *name, char *devicefile,
 static inline int
 imx7_bbu_internal_spi_i2c_register_handler(const char *name, char *devicefile,
 					   unsigned long flags)
+{
+	return -ENOSYS;
+}
+
+static inline int
+imx8m_bbu_internal_flexspi_nor_register_handler(const char *name, const char *devicefile,
+						unsigned long flags);
 {
 	return -ENOSYS;
 }

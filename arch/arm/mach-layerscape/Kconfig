@@ -2,10 +2,6 @@
 
 if ARCH_LAYERSCAPE
 
-config ARCH_TEXT_BASE
-	hex
-	default 0x40000000 if MACH_LS1021AIOT
-
 config ARCH_LAYERSCAPE_PPA
 	bool "Include PPA firmware"
 	select ARM_PSCI_OF

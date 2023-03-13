@@ -1,0 +1,77 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Freescale ls1021a IOT board device tree source
+ *
+ * Copyright 2016 Freescale Semiconductor, Inc.
+ */
+
+/dts-v1/;
+
+#include <arm/ls1021a-iot.dts>
+
+/ {
+	chosen {
+		stdout-path = &uart0;
+
+		environment {
+			compatible = "barebox,environment";
+			device-path = &environment_qspi;
+		};
+	};
+};
+
+&qspi {
+	bus-num = <0>;
+	status = "okay";
+
+	s70fl01gs: flash@0 {
+		compatible = "jedec,spi-nor";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		spi-max-frequency = <20000000>;
+		reg = <0>;
+
+		partitions {
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			compatible = "fixed-partitions";
+
+			partition@0 {
+				label = "barebox";
+				reg = <0 0x100000>;
+			};
+
+			environment_qspi: partition@100000 {
+				label = "barebox-environment";
+				reg = <0x100000 0x40000>;
+			};
+		};
+	};
+};
+
+&i2c0 {
+	status = "disabled";
+};
+
+&i2c1 {
+	status = "okay";
+	eeprom@51 {
+		compatible = "atmel,24c512";
+		reg = <0x51>;
+	};
+};
+
+/* I2C1 and I2C2 are connected due to Errata on rev1 board */
+&i2c2 {
+	status = "disabled";
+};
+
+&uart0 {
+	status = "okay";
+	clock-frequency = <150000000>;
+};
+
+&uart1 {
+	status = "disabled";
+};

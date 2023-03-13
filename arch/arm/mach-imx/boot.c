@@ -243,6 +243,11 @@ static unsigned int imx8mp_get_bmod(uint32_t r)
 	return FIELD_GET(IMX8MP_SRC_SBMR_BMOD, r);
 }
 
+static unsigned int imx8mm_get_bcfg(uint32_t r)
+{
+	return FIELD_GET(BOOT_CFG2(6, 4), r);
+}
+
 static int imx53_bootsource_internal(uint32_t r)
 {
 	return FIELD_GET(BOOT_CFG1(7, 4), r);
@@ -323,6 +328,7 @@ void imx53_boot_save_loc(void)
 #define IMX6_SRC_GPR10	0x44
 #define IMX6_BMOD_SERIAL	0b01
 #define IMX6_BMOD_RESERVED	0b11
+#define IMX8MM_BCFG_FSPI	0b100
 #define IMX8MP_BMOD_FUSES	0b0000
 #define IMX8MP_BMOD_SERIAL	0b0001
 #define IMX6_BMOD_FUSES		0b00
@@ -356,6 +362,11 @@ static bool imx8mp_bootsource_serial(uint32_t sbmr2)
 		 */
 		(imx8mp_get_bmod(sbmr2) == IMX8MP_BMOD_FUSES &&
 		 !(sbmr2 & BT_FUSE_SEL));
+}
+
+static bool imx8mm_bootsource_qspi(uint32_t sbmr1)
+{
+	return imx8mm_get_bcfg(sbmr1) == IMX8MM_BCFG_FSPI;
 }
 
 static bool imx6_bootsource_serial_forced(uint32_t bootmode)
@@ -692,10 +703,17 @@ void imx8mm_get_boot_source(enum bootsource *src, int *instance)
 {
 	unsigned long addr;
 	void __iomem *src_base = IOMEM(MX8MM_SRC_BASE_ADDR);
+	uint32_t sbmr1 = readl(src_base + 0x58);
 	uint32_t sbmr2 = readl(src_base + 0x70);
 
 	if (imx6_bootsource_serial(sbmr2)) {
 		*src = BOOTSOURCE_SERIAL;
+		return;
+	}
+
+	if (imx8mm_bootsource_qspi(sbmr1)) {
+		*src = BOOTSOURCE_SPI; /* Really: qspi */
+		*instance = 0;
 		return;
 	}
 

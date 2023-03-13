@@ -161,6 +161,7 @@ ENTRY_FUNCTION(start_nxp_imx8mm_evk, r0, r1, r2)
 	setup_c();
 
 	IMD_USED_OF(imx8mm_evk);
+	IMD_USED_OF(imx8mm_evkb);
 
 	nxp_imx8mm_evk_start();
 }

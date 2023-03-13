@@ -34,7 +34,7 @@
 
 static uint32_t dcdtable[MAX_DCD];
 static int curdcd;
-static int create_usb_image;
+static bool create_usb_image;
 static char *prgname;
 
 /*
@@ -739,9 +739,9 @@ int main(int argc, char *argv[])
 	void *infile;
 	struct stat s;
 	int outfd;
-	int dcd_only = 0;
+	bool dcd_only = false;
 	int now = 0;
-	int add_barebox_header = 0;
+	bool add_barebox_header = false;
 	uint32_t barebox_image_size = 0;
 	struct config_data data = {
 		.image_ivt_offset = 0xffffffff,
@@ -771,16 +771,16 @@ int main(int argc, char *argv[])
 			data.pbl_code_size = strtoul(optarg, NULL, 0);
 			break;
 		case 'b':
-			add_barebox_header = 1;
+			add_barebox_header = true;
 			break;
 		case 'd':
-			dcd_only = 1;
+			dcd_only = true;
 			break;
 		case 's':
 			data.sign_image = 1;
 			break;
 		case 'u':
-			create_usb_image = 1;
+			create_usb_image = true;
 			break;
 		case 'e':
 			data.encrypt_image = 1;

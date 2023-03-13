@@ -154,36 +154,47 @@ struct bbu_handler *bbu_find_handler_by_device(const char *devicepath)
 	return NULL;
 }
 
-static int bbu_check_of_compat(struct bbu_data *data)
+static int bbu_check_of_compat(struct bbu_data *data, unsigned short of_compat_nr)
 {
+	const struct imd_header *imd = data->imd_data;
+	const struct imd_header *of_compat;
 	struct device_node *root_node;
 	const char *machine, *str;
 	int ret;
-	const struct imd_header *of_compat;
 
 	if (!IS_ENABLED(CONFIG_OFDEVICE) || !IS_ENABLED(CONFIG_IMD))
-		return 0;
-
-	of_compat = imd_find_type(data->imd_data, IMD_TYPE_OF_COMPATIBLE);
-	if (!of_compat)
 		return 0;
 
 	root_node = of_get_root_node();
 	if (!root_node)
 		return 0;
 
-	str = imd_string_data(of_compat, 0);
-
-	if (of_machine_is_compatible(str)) {
-		pr_info("Devicetree compatible \"%s\" matches current machine\n", str);
+	if (!of_compat_nr)
 		return 0;
-	}
 
 	ret = of_property_read_string(root_node, "compatible", &machine);
 	if (ret)
 		return 0;
 
-	if (!bbu_force(data, "machine is incompatible with \"%s\", have \"%s\"\n", str, machine))
+	for (; of_compat_nr; of_compat_nr--) {
+		of_compat = imd_find_type(imd, IMD_TYPE_OF_COMPATIBLE);
+		if (!of_compat)
+			return 0;
+
+		str = imd_string_data(of_compat, 0);
+
+		if (of_machine_is_compatible(str)) {
+			pr_info("Devicetree compatible \"%s\" matches current machine\n", str);
+			return 0;
+		}
+
+		pr_debug("machine is incompatible with \"%s\", have \"%s\"\n",
+			 str, machine);
+
+		imd = of_compat;
+	}
+
+	if (!bbu_force(data, "incompatible machine \"%s\"\n", machine))
 		return -EINVAL;
 
 	return 0;
@@ -191,6 +202,7 @@ static int bbu_check_of_compat(struct bbu_data *data)
 
 static int bbu_check_metadata(struct bbu_data *data)
 {
+	unsigned short imd_of_compat_nr = 0;
 	const struct imd_header *imd;
 	int ret;
 	char *str;
@@ -211,6 +223,9 @@ static int bbu_check_metadata(struct bbu_data *data)
 	imd_for_each(data->imd_data, imd) {
 		uint32_t type = imd_read_type(imd);
 
+		if (imd_read_type(imd) == IMD_TYPE_OF_COMPATIBLE)
+			imd_of_compat_nr++;
+
 		if (!imd_is_string(type))
 			continue;
 
@@ -220,7 +235,7 @@ static int bbu_check_metadata(struct bbu_data *data)
 		free(str);
 	}
 
-	ret = bbu_check_of_compat(data);
+	ret = bbu_check_of_compat(data, imd_of_compat_nr);
 	if (ret)
 		return ret;
 

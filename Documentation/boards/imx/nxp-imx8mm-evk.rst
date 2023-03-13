@@ -85,5 +85,16 @@ installation to the eMMC boot partition requires special handling:
     then afterwards, the newly written boot partition is activated
     (This is controlled by the barebox ``mmcX.boot`` variable).
 
+The following steps are required to write the image to the QSPI NOR flash:
+
+  - The 32KiB preamble MMC preamble must be stripped.
+
+  - The QSPI NOR partition ``barebox`` must be erased before the stripped
+    image is written. The erase size depends on the stripped image size but
+    always start at offset 0.
+
+  - Write the stripped barebox image to the QSPI NOR partition ``barebox``
+    at offset 0.
+
 The ``barebox_update`` command takes care of this and need just be
 supplied a barebox image as argument.

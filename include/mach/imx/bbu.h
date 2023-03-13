@@ -26,6 +26,8 @@ struct imx_dcd_v2_entry;
  */
 #define IMX_BBU_FLAG_PARTITION_STARTS_AT_HEADER	(1 << 17)
 
+#define IMX_BBU_FLAG_ERASE			BIT(30)
+
 /*
  * The upper 16 bit of the flags passes to the below functions are reserved
  * for i.MX specific flags

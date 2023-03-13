@@ -21,8 +21,6 @@
 #include <mach/imx/generic.h>
 #include <libfile.h>
 
-#define IMX_INTERNAL_FLAG_ERASE		BIT(30)
-
 struct imx_internal_bbu_handler {
 	struct bbu_handler handler;
 	int (*write_device)(struct imx_internal_bbu_handler *,
@@ -35,7 +33,7 @@ struct imx_internal_bbu_handler {
 static bool
 imx_bbu_erase_required(struct imx_internal_bbu_handler *imx_handler)
 {
-	return imx_handler->handler.flags & IMX_INTERNAL_FLAG_ERASE;
+	return imx_handler->handler.flags & IMX_BBU_FLAG_ERASE;
 }
 
 static int imx_bbu_protect(int fd, struct imx_internal_bbu_handler *imx_handler,
@@ -484,7 +482,7 @@ imx_bbu_internal_spi_i2c_register_handler(const char *name,
 	struct imx_internal_bbu_handler *imx_handler;
 
 	imx_handler = __init_handler(name, devicefile, flags |
-				     IMX_INTERNAL_FLAG_ERASE);
+				     IMX_BBU_FLAG_ERASE);
 	imx_handler->flash_header_offset = imx_bbu_flash_header_offset_mmc();
 
 	return __register_handler(imx_handler);
@@ -646,7 +644,7 @@ int imx_bbu_external_nor_register_handler(const char *name,
 	struct imx_internal_bbu_handler *imx_handler;
 
 	imx_handler = __init_handler(name, devicefile, flags |
-				     IMX_INTERNAL_FLAG_ERASE);
+				     IMX_BBU_FLAG_ERASE);
 
 	imx_handler->expected_type = filetype_unknown;
 

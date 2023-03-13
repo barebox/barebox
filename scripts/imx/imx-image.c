@@ -296,7 +296,8 @@ static int write_mem_v1(uint32_t addr, uint32_t val, int width, int set_bits, in
  */
 
 static size_t
-add_header_v2(const struct config_data *data, void *buf, uint32_t offset)
+add_header_v2(const struct config_data *data, void *buf, uint32_t offset,
+	      size_t header_len)
 {
 	struct imx_flash_header_v2 *hdr;
 	int dcdsize = curdcd * sizeof(uint32_t);
@@ -308,7 +309,7 @@ add_header_v2(const struct config_data *data, void *buf, uint32_t offset)
 		 * Restrict the imagesize to the PBL if given.
 		 * Also take the alignment for CSF into account.
 		 */
-		imagesize = roundup(data->pbl_code_size + HEADER_LEN, 0x4);
+		imagesize = roundup(data->pbl_code_size + header_len, 0x4);
 		if (data->csf)
 			imagesize = roundup(imagesize, 0x1000);
 	}
@@ -320,7 +321,7 @@ add_header_v2(const struct config_data *data, void *buf, uint32_t offset)
 	hdr->header.length	= htobe16(32);
 	hdr->header.version	= IVT_VERSION;
 
-	hdr->entry		= loadaddr + HEADER_LEN;
+	hdr->entry		= loadaddr + header_len;
 	if (dcdsize)
 		hdr->dcd_ptr = loadaddr + offset + offsetof(struct imx_flash_header_v2, dcd_header);
 	if (create_usb_image) {
@@ -906,7 +907,7 @@ int main(int argc, char *argv[])
 
 		barebox_image_size += add_header_v2(&data, buf +
 						    signed_hdmi_firmware_size,
-						    data.image_ivt_offset);
+						    data.image_ivt_offset, HEADER_LEN);
 		break;
 	default:
 		fprintf(stderr, "Congratulations! You're welcome to implement header version %d\n",

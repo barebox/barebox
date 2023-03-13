@@ -30,11 +30,15 @@ static inline void __dma_sync_mips(unsigned long addr, size_t size,
 void dma_sync_single_for_cpu(dma_addr_t address, size_t size,
 			     enum dma_data_direction dir)
 {
-	__dma_sync_mips(address, size, dir);
+	unsigned long virt = (unsigned long)phys_to_virt(address);
+
+	__dma_sync_mips(virt, size, dir);
 }
 
 void dma_sync_single_for_device(dma_addr_t address, size_t size,
 				enum dma_data_direction dir)
 {
-	__dma_sync_mips(address, size, dir);
+	unsigned long virt = (unsigned long)phys_to_virt(address);
+
+	__dma_sync_mips(virt, size, dir);
 }

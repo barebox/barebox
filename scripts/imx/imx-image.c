@@ -295,11 +295,11 @@ static int write_mem_v1(uint32_t addr, uint32_t val, int width, int set_bits, in
  * ============================================================================
  */
 
-static size_t add_header_v2(const struct config_data *data, void *buf)
+static size_t
+add_header_v2(const struct config_data *data, void *buf, uint32_t offset)
 {
 	struct imx_flash_header_v2 *hdr;
 	int dcdsize = curdcd * sizeof(uint32_t);
-	int offset = data->image_ivt_offset;
 	uint32_t loadaddr = data->image_load_addr;
 	uint32_t imagesize = data->load_size;
 
@@ -905,7 +905,8 @@ int main(int argc, char *argv[])
 		}
 
 		barebox_image_size += add_header_v2(&data, buf +
-						    signed_hdmi_firmware_size);
+						    signed_hdmi_firmware_size,
+						    data.image_ivt_offset);
 		break;
 	default:
 		fprintf(stderr, "Congratulations! You're welcome to implement header version %d\n",

@@ -6,7 +6,7 @@
 #include <mach/layerscape/layerscape.h>
 #include <soc/fsl/immap_lsch2.h>
 
-enum bootsource ls1046_bootsource_get(void)
+enum bootsource ls1046a_bootsource_get(void)
 {
 	void __iomem *dcfg = IOMEM(LSCH2_DCFG_ADDR);
 	uint32_t rcw_src;
@@ -27,13 +27,18 @@ enum bootsource ls1046_bootsource_get(void)
 	return BOOTSOURCE_UNKNOWN;
 }
 
-static int ls1046a_bootsource_init(void)
+enum bootsource ls1021a_bootsource_get(void)
 {
-	if (!of_machine_is_compatible("fsl,ls1046a"))
-		return 0;
+	return ls1046a_bootsource_get();
+}
 
-	bootsource_set_raw(ls1046_bootsource_get(), BOOTSOURCE_INSTANCE_UNKNOWN);
+static int layerscape_bootsource_init(void)
+{
+	if (of_machine_is_compatible("fsl,ls1046a"))
+		bootsource_set_raw(ls1046a_bootsource_get(), BOOTSOURCE_INSTANCE_UNKNOWN);
+	if (of_machine_is_compatible("fsl,ls1021a"))
+		bootsource_set_raw(ls1021a_bootsource_get(), BOOTSOURCE_INSTANCE_UNKNOWN);
 
 	return 0;
 }
-coredevice_initcall(ls1046a_bootsource_init);
+coredevice_initcall(layerscape_bootsource_init);

@@ -47,7 +47,7 @@ static int tqmls1046a_postcore_init(void)
 	/* divide CGA1/CGA2 PLL by 24 to get QSPI interface clock */
 	out_be32(&scfg->qspi_cfg, 0x30100000);
 
-	bootsource = ls1046_bootsource_get();
+	bootsource = ls1046a_bootsource_get();
 
 	switch (bootsource) {
 	case BOOTSOURCE_MMC:

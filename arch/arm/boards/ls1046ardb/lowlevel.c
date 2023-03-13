@@ -199,7 +199,7 @@ static noinline __noreturn void ls1046ardb_r_entry(unsigned long memsize)
 	}
 
 	arm_cpu_lowlevel_init();
-	debug_ll_init();
+	ls1046a_debug_ll_init();
 	ls1046a_init_lowlevel();
 
 	IMD_USED_OF(fsl_ls1046a_rdb);

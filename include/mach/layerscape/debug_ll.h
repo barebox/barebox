@@ -25,11 +25,19 @@ static inline void debug_ll_write_reg(int reg, uint8_t val)
 
 #include <debug_ll/ns16550.h>
 
-static inline void debug_ll_init(void)
+static inline void ls1046a_debug_ll_init(void)
 {
 	uint16_t divisor;
 
 	divisor = debug_ll_ns16550_calc_divisor(300000000);
+	debug_ll_ns16550_init(divisor);
+}
+
+static inline void ls102xa_debug_ll_init(void)
+{
+	uint16_t divisor;
+
+	divisor = debug_ll_ns16550_calc_divisor(150000000);
 	debug_ll_ns16550_init(divisor);
 }
 

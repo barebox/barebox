@@ -55,3 +55,12 @@ $(obj)/barebox-tqmls1046a-qspi.image: $(obj)/start_tqmls1046a.pblb \
 
 image-$(CONFIG_MACH_TQMLS1046A) += barebox-tqmls1046a-sd.image \
 	barebox-tqmls1046a-qspi.image
+
+pbl-$(CONFIG_MACH_LS1021AIOT) += start_ls1021aiot.pbl
+
+$(obj)/barebox-ls1021aiot-qspi.image: $(obj)/start_ls1021aiot.pblb \
+		$(board)/ls1021aiot/ls102xa_rcw_sd_qspi.cfg \
+		$(board)/ls1021aiot/ls102xa_pbi.cfg
+	$(call if_changed,lspbl_spi_image)
+
+image-$(CONFIG_MACH_LS1021AIOT) += barebox-ls1021aiot-qspi.image

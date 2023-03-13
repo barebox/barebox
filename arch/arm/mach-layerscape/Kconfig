@@ -2,6 +2,10 @@
 
 if ARCH_LAYERSCAPE
 
+config ARCH_TEXT_BASE
+	hex
+	default 0x40000000 if MACH_LS1021AIOT
+
 config ARCH_LAYERSCAPE_PPA
 	bool "Include PPA firmware"
 	select ARM_PSCI_OF
@@ -35,5 +39,15 @@ config MACH_TQMLS1046A
 	select MCI_IMX_ESDHC_PBL
 	select DDR_FSL
 	select DDR_FSL_DDR4
+
+config ARCH_LS1021
+	select CPU_V7
+	bool
+
+config MACH_LS1021AIOT
+	bool "LS1021AIOT Board"
+	select ARCH_LS1021
+	select DDR_FSL
+	select DDR_FSL_DDR3
 
 endif

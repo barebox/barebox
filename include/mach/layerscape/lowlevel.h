@@ -5,5 +5,6 @@
 
 void ls1046a_init_lowlevel(void);
 void ls1046a_init_l2_latency(void);
+void ls102xa_init_lowlevel(void);
 
 #endif /* __MACH_LOWLEVEL_H */

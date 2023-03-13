@@ -104,7 +104,7 @@ static noinline __noreturn void tqmls1046a_r_entry(void)
 	arm_cpu_lowlevel_init();
 	ls1046a_init_lowlevel();
 
-	debug_ll_init();
+	ls1046a_debug_ll_init();
 
 	udelay(500);
 	putc_ll('>');

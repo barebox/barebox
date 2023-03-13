@@ -535,6 +535,7 @@ static void __imx7_get_boot_source(enum bootsource *src, int *instance,
 		break;
 	case 4:
 		*src = BOOTSOURCE_SPI; /* Really: qspi */
+		*instance = info->boot_device_instance;
 		break;
 	case 5:
 		*src = BOOTSOURCE_NOR;

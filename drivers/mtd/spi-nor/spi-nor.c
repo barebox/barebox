@@ -19,7 +19,6 @@
 #include <linux/mtd/cfi.h>
 #include <linux/mtd/spi-nor.h>
 #include <of.h>
-#include <spi/flash.h>
 
 #define SPI_NOR_MAX_ID_LEN	6
 #define SPI_NOR_MAX_ADDR_WIDTH	4

@@ -15,7 +15,6 @@
 #include <driver.h>
 #include <of.h>
 #include <spi/spi.h>
-#include <spi/flash.h>
 #include <xfuncs.h>
 #include <malloc.h>
 #include <errno.h>
@@ -205,7 +204,6 @@ static int m25p_probe(struct device *dev)
 {
 	struct spi_device *spi = (struct spi_device *)dev->type_data;
 	struct spi_mem *spimem = spi->mem;
-	struct flash_platform_data	*data;
 	struct m25p			*flash;
 	struct spi_nor			*nor;
 	struct spi_nor_hwcaps hwcaps = {
@@ -217,8 +215,6 @@ static int m25p_probe(struct device *dev)
 	int				device_id;
 	bool				use_large_blocks;
 	int ret;
-
-	data = dev->platform_data;
 
 	flash = xzalloc(sizeof *flash);
 
@@ -245,14 +241,7 @@ static int m25p_probe(struct device *dev)
 
 	dev->priv = (void *)flash;
 
-	if (data && data->name)
-		flash->mtd.name = data->name;
-
-	if (data && data->type)
-		flash_name = data->type;
-	else if (data && data->name)
-		flash_name = data->name;
-	else if (dev->id_entry)
+	if (dev->id_entry)
 		flash_name = dev->id_entry->name;
 	else
 		flash_name = NULL; /* auto-detect */
@@ -267,8 +256,6 @@ static int m25p_probe(struct device *dev)
 	device_id = DEVICE_ID_SINGLE;
 	if (dev->of_node)
 		flash_name = of_alias_get(dev->of_node);
-	else if (data && data->name)
-		flash_name = data->name;
 
 	if (!flash_name) {
 		device_id = DEVICE_ID_DYNAMIC;

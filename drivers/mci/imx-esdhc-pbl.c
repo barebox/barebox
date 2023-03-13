@@ -104,9 +104,13 @@ static int esdhc_read_blocks(struct fsl_esdhc_host *host, void *dst, size_t len)
 }
 
 #ifdef CONFIG_ARCH_IMX
-static int esdhc_search_header(struct fsl_esdhc_host *host,
-			       struct imx_flash_header_v2 **header_pointer,
-			       void *buffer, u32 *offset, u32 ivt_offset)
+#define HDR_SIZE	512
+
+static int
+imx_search_header(struct imx_flash_header_v2 **header_pointer,
+		  void *buffer, u32 *offset, u32 ivt_offset,
+		  int (*read)(void *dest, size_t len, void *priv),
+		  void *priv)
 {
 	int ret;
 	int i, header_count = 1;
@@ -114,15 +118,14 @@ static int esdhc_search_header(struct fsl_esdhc_host *host,
 	struct imx_flash_header_v2 *hdr;
 
 	for (i = 0; i < header_count; i++) {
-		ret = esdhc_read_blocks(host, buf,
-					*offset + ivt_offset + SECTOR_SIZE);
+		ret = read(buf, *offset + ivt_offset + HDR_SIZE, priv);
 		if (ret)
 			return ret;
 
 		hdr = buf + *offset + ivt_offset;
 
 		if (!is_imx_flash_header_v2(hdr)) {
-			pr_debug("IVT header not found on SD card. "
+			pr_debug("No IVT header! "
 				 "Found tag: 0x%02x length: 0x%04x "
 				 "version: %02x\n",
 				 hdr->header.tag, hdr->header.length,
@@ -150,9 +153,10 @@ static int esdhc_search_header(struct fsl_esdhc_host *host,
 	return 0;
 }
 
-static int
-esdhc_load_image(struct fsl_esdhc_host *host, ptrdiff_t address,
-		 ptrdiff_t entry, u32 offset, u32 ivt_offset, bool start)
+int imx_load_image(ptrdiff_t address, ptrdiff_t entry, u32 offset,
+		   u32 ivt_offset, bool start, unsigned int alignment,
+		   int (*read)(void *dest, size_t len, void *priv),
+		   void *priv)
 {
 
 	void *buf = (void *)address;
@@ -162,9 +166,10 @@ esdhc_load_image(struct fsl_esdhc_host *host, ptrdiff_t address,
 	unsigned int ofs;
 
 	len = imx_image_size();
-	len = ALIGN(len, SECTOR_SIZE);
+	if (alignment)
+		len = ALIGN(len, alignment);
 
-	ret = esdhc_search_header(host, &hdr, buf, &offset, ivt_offset);
+	ret = imx_search_header(&hdr, buf, &offset, ivt_offset, read, priv);
 	if (ret)
 		return ret;
 
@@ -199,7 +204,7 @@ esdhc_load_image(struct fsl_esdhc_host *host, ptrdiff_t address,
 		buf = (void *)(entry - ofs);
 	}
 
-	ret = esdhc_read_blocks(host, buf, ofs + len);
+	ret = read(buf, ofs + len, priv);
 	if (ret) {
 		pr_err("Loading image failed with %d\n", ret);
 		return ret;
@@ -215,6 +220,19 @@ esdhc_load_image(struct fsl_esdhc_host *host, ptrdiff_t address,
 	sync_caches_for_execution();
 
 	bb();
+}
+
+static int imx_read_blocks(void *dest, size_t len, void *priv)
+{
+	return esdhc_read_blocks(priv, dest, len);
+}
+
+static int
+esdhc_load_image(struct fsl_esdhc_host *host, ptrdiff_t address,
+		 ptrdiff_t entry, u32 offset, u32 ivt_offset, bool start)
+{
+	return imx_load_image(address, entry, offset, ivt_offset, start,
+			      SECTOR_SIZE, imx_read_blocks, host);
 }
 
 static void imx_esdhc_init(struct fsl_esdhc_host *host,

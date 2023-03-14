@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: GPL-2.0-only
 menuconfig NET_USB
 	depends on USB_HOST
+	select PHYLIB
 	bool "USB network support"
 
 if NET_USB
 
 config NET_USB_ASIX
-	select PHYLIB
 	bool "Asix compatible"
 
 config USB_NET_AX88179_178A
@@ -21,7 +21,6 @@ config USB_NET_AX88179_178A
 	    * Sitcomm LN-032
 
 config NET_USB_SMSC95XX
-	select PHYLIB
 	bool "SMSC95xx"
 
 config NET_USB_RTL8152

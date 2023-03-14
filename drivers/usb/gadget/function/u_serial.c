@@ -155,12 +155,13 @@ static void gs_read_complete(struct usb_ep *ep, struct usb_request *req)
 {
 	struct gs_port	*port = ep->driver_data;
 
+	list_add_tail(&req->list, &port->read_pool);
+	port->read_nb_queued--;
+
 	if (req->status == -ESHUTDOWN)
 		return;
 
 	kfifo_put(port->recv_fifo, req->buf, req->actual);
-	list_add_tail(&req->list, &port->read_pool);
-	port->read_nb_queued--;
 
 	gs_start_rx(port);
 }

@@ -1403,7 +1403,7 @@ static int do_irom_download(struct usb_work *curr, int verify)
 	printf("loading binary file(%s) to 0x%08x, firststage_len=%zu type=%d, hdroffset=%u...\n",
 			curr->filename, header_addr, firststage_len, type, header_offset);
 
-	ret = load_file(image, firststage_len, header_addr, type, false);
+	ret = load_file(image, min(fsize, firststage_len), header_addr, type, false);
 	if (ret < 0)
 		goto cleanup;
 

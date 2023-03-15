@@ -57,8 +57,8 @@ static int do_bootm_elf(struct image_data *data)
 
 	fdt = bootm_get_devicetree(data);
 	if (IS_ERR(fdt)) {
-		ret = PTR_ERR(fdt);
-		goto bootm_free_fdt;
+		pr_err("Failed to load dtb\n");
+		return PTR_ERR(fdt);
 	}
 
 	pr_info("Starting application at 0x%08lx, dts 0x%08lx...\n",

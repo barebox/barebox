@@ -178,12 +178,12 @@
 	};
 };
 
-&{uart4/rave-sp/watchdog} {
+&{uart4/mcu/watchdog} {
 	nvmem-cells = <&boot_source>;
 	nvmem-cell-names = "boot-source";
 };
 
-&{uart4/rave-sp/eeprom@a4} {
+&{uart4/mcu/eeprom@a4} {
 	lru_part_number: lru-part-number@21 {
 		reg = <0x21 15>;
 		read-only;

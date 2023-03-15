@@ -11,6 +11,6 @@
 	};
 };
 
-&{/leds/power} {
+&{/leds/led-power} {
 		barebox,default-trigger = "heartbeat";
 };

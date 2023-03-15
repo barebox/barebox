@@ -384,9 +384,9 @@ static int tftp_allocate_transfer(struct file_priv *priv)
 			priv->fifo = NULL;
 			goto err;
 		}
-	} else {
-		INIT_LIST_HEAD(&priv->cache.blocks);
 	}
+
+	INIT_LIST_HEAD(&priv->cache.blocks);
 
 	return 0;
 

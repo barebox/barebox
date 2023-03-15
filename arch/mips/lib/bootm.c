@@ -62,7 +62,7 @@ static int do_bootm_elf(struct image_data *data)
 	}
 
 	pr_info("Starting application at 0x%08lx, dts 0x%08lx...\n",
-		phys_to_virt(data->os_address), data->of_root_node);
+		data->os_address, data->of_root_node);
 
 	if (data->dryrun)
 		goto bootm_free_fdt;
@@ -75,7 +75,7 @@ static int do_bootm_elf(struct image_data *data)
 
 	entry = (void *) (unsigned long) data->os_address;
 
-	entry(-2, phys_to_virt((unsigned long)fdt));
+	entry(-2, fdt);
 
 	pr_err("ELF application terminated\n");
 	ret = -EINVAL;

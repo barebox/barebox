@@ -69,7 +69,7 @@ static int do_bootm_elf(struct image_data *data)
 
 	ret = of_overlay_load_firmware();
 	if (ret)
-		return ret;
+		goto bootm_free_fdt;
 
 	shutdown_barebox();
 

@@ -31,14 +31,14 @@
 	 * Assume that DIGIC4 has at least 96 pins.
 	 * So resource size is 96 * 4 = 0x180.
 	 */
-	gpio: gpio {
+	gpio: gpio@c0220000 {
 		compatible = "canon,digic-gpio";
 		reg = <0xc0220000 0x180>;
 		#gpio-cells = <2>;
 		gpio-controller;
 	};
 
-	uart: uart {
+	uart: uart@c0800000 {
 		compatible = "canon,digic-uart";
 		reg = <0xc0800000 0x1c>;
 	};

@@ -113,7 +113,7 @@
 			#address-cells = <1>;
 			#size-cells = <1>;
 
-			eth2 {
+			eth2@1e {
 				reg = <0x1E 0x6>;
 				type = "mac";
 				default = [00 11 22 33 44 55];

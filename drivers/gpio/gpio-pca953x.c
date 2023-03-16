@@ -12,6 +12,8 @@
 #include <common.h>
 #include <malloc.h>
 #include <driver.h>
+#include <gpiod.h>
+#include <regulator.h>
 #include <xfuncs.h>
 #include <errno.h>
 #include <i2c/i2c.h>
@@ -416,7 +418,8 @@ static int pca953x_probe(struct device *dev)
 	unsigned long driver_data;
 	struct pca953x_platform_data *pdata;
 	struct pca953x_chip *chip;
-	int ret;
+	struct regulator *reg;
+	int reset_gpio, ret;
 	u32 invert = 0;
 
 	chip = xzalloc(sizeof(struct pca953x_chip));
@@ -438,6 +441,20 @@ static int pca953x_probe(struct device *dev)
 	}
 
 	chip->client = client;
+
+	reset_gpio = gpiod_get(dev, "reset", GPIOD_OUT_LOW);
+	if (!gpio_is_valid(reset_gpio) && reset_gpio != -ENOENT)
+		dev_warn(dev, "Failed to get 'reset' GPIO (ignored)\n");
+
+	reg = regulator_get(dev, "vcc");
+	if (IS_ERR(reg)) {
+		dev_warn(dev, "Failed to get 'vcc' regulator (ignored).\n");
+		reg = NULL;
+	}
+
+	ret = regulator_enable(reg);
+	if (ret)
+		return dev_err_probe(dev, ret, "failed to enable register\n");
 
 	chip->chip_type = driver_data & (PCA953X_TYPE | PCA957X_TYPE);
 
@@ -472,7 +489,10 @@ static int pca953x_probe(struct device *dev)
 #define OF_957X(__nrgpio, __int) (void *)(__nrgpio | PCA957X_TYPE | __int)
 
 static const struct of_device_id pca953x_dt_ids[] = {
+	{ .compatible = "nxp,pca6408", .data = OF_953X(8, PCA_INT), },
+	{ .compatible = "nxp,pca6416", .data = OF_953X(16, PCA_INT), },
 	{ .compatible = "nxp,pca9505", .data = OF_953X(40, PCA_INT), },
+	{ .compatible = "nxp,pca9506", .data = OF_953X(40, PCA_INT), },
 	{ .compatible = "nxp,pca9534", .data = OF_953X( 8, PCA_INT), },
 	{ .compatible = "nxp,pca9535", .data = OF_953X(16, PCA_INT), },
 	{ .compatible = "nxp,pca9536", .data = OF_953X( 4, 0), },
@@ -488,16 +508,28 @@ static const struct of_device_id pca953x_dt_ids[] = {
 	{ .compatible = "nxp,pca9698", .data = OF_953X(40, 0), },
 
 	{ .compatible = "nxp,pcal6408", .data = OF_953X(8, PCA_LATCH_INT), },
+	{ .compatible = "nxp,pcal6416", .data = OF_953X(16, PCA_LATCH_INT), },
+	{ .compatible = "nxp,pcal6524", .data = OF_953X(24, PCA_LATCH_INT), },
+	{ .compatible = "nxp,pcal9535", .data = OF_953X(16, PCA_LATCH_INT), },
+	{ .compatible = "nxp,pcal9554b", .data = OF_953X( 8, PCA_LATCH_INT), },
+	{ .compatible = "nxp,pcal9555a", .data = OF_953X(16, PCA_LATCH_INT), },
 
 	{ .compatible = "maxim,max7310", .data = OF_953X( 8, 0), },
 	{ .compatible = "maxim,max7312", .data = OF_953X(16, PCA_INT), },
 	{ .compatible = "maxim,max7313", .data = OF_953X(16, PCA_INT), },
 	{ .compatible = "maxim,max7315", .data = OF_953X( 8, PCA_INT), },
+	{ .compatible = "maxim,max7318", .data = OF_953X(16, PCA_INT), },
 
 	{ .compatible = "ti,pca6107", .data = OF_953X( 8, PCA_INT), },
+	{ .compatible = "ti,pca9536", .data = OF_953X( 4, 0), },
 	{ .compatible = "ti,tca6408", .data = OF_953X( 8, PCA_INT), },
 	{ .compatible = "ti,tca6416", .data = OF_953X(16, PCA_INT), },
 	{ .compatible = "ti,tca6424", .data = OF_953X(24, PCA_INT), },
+	{ .compatible = "ti,tca9539", .data = OF_953X(16, PCA_INT), },
+
+	{ .compatible = "onnn,cat9554", .data = OF_953X( 8, PCA_INT), },
+	{ .compatible = "onnn,pca9654", .data = OF_953X( 8, PCA_INT), },
+	{ .compatible = "onnn,pca9655", .data = OF_953X(16, PCA_INT), },
 
 	{ .compatible = "exar,xra1202", .data = OF_953X( 8, 0), },
 	{ }

@@ -23,11 +23,6 @@
 
 #define DWC3_DEFAULT_AUTOSUSPEND_DELAY	5000 /* ms */
 
-struct dwc3_match_data {
-	const struct clk_bulk_data	*clks;
-	const int			num_clks;
-};
-
 /**
  * dwc3_get_dr_mode - Validates and sets dr_mode
  * @dwc: pointer to our context structure
@@ -1099,29 +1094,23 @@ static void dwc3_coresoft_reset(struct dwc3 *dwc)
 
 static int dwc3_probe(struct device *dev)
 {
-	const struct dwc3_match_data *match;
 	struct dwc3		*dwc;
 	int			ret;
 
 	dwc = xzalloc(sizeof(*dwc));
 	dev->priv = dwc;
 
-	match = device_get_match_data(dev);
-	dwc->clks = xmemdup(match->clks, match->num_clks *
-			    sizeof(struct clk_bulk_data));
 	dwc->dev = dev;
 	dwc->regs = dev_get_mem_region(dwc->dev, 0) + DWC3_GLOBALS_REGS_START;
 
 	dwc3_get_properties(dwc);
 
 	if (dev->of_node) {
-		dwc->num_clks = match->num_clks;
+		ret = clk_bulk_get_all(dev, &dwc->clks);
+		if (ret < 0)
+			return ret;
 
-		if (of_find_property(dev->of_node, "clocks", NULL)) {
-			ret = clk_bulk_get(dev, dwc->num_clks, dwc->clks);
-			if (ret)
-				return ret;
-		}
+		dwc->num_clks = ret;
 	}
 
 	ret = clk_bulk_enable(dwc->num_clks, dwc->clks);
@@ -1180,40 +1169,15 @@ static void dwc3_remove(struct device *dev)
 	clk_bulk_put(dwc->num_clks, dwc->clks);
 }
 
-static const struct clk_bulk_data dwc3_core_clks[] = {
-	{ .id = "ref" },
-	{ .id = "bus_early" },
-	{ .id = "suspend" },
-};
-
-static const struct dwc3_match_data dwc3_default = {
-	.clks = dwc3_core_clks,
-	.num_clks = ARRAY_SIZE(dwc3_core_clks),
-};
-
-static const struct clk_bulk_data dwc3_core_clks_rk3568[] = {
-	{ .id = "ref_clk" },
-	{ .id = "bus_clk" },
-	{ .id = "suspend_clk" },
-};
-
-static const struct dwc3_match_data dwc3_rk3568 = {
-	.clks = dwc3_core_clks_rk3568,
-	.num_clks = ARRAY_SIZE(dwc3_core_clks_rk3568),
-};
-
 static const struct of_device_id of_dwc3_match[] = {
 	{
 		.compatible = "snps,dwc3",
-		.data = &dwc3_default,
 	},
 	{
 		.compatible = "synopsys,dwc3",
-		.data = &dwc3_default,
 	},
 	{
 		.compatible = "rockchip,rk3568-dwc3",
-		.data = &dwc3_rk3568,
 	},
 	{ },
 };

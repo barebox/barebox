@@ -400,8 +400,11 @@ static int dsa_switch_parse_ports_of(struct dsa_switch *ds,
 		}
 
 		master = of_parse_phandle(port, "ethernet", 0);
-		if (master)
-			dsa_switch_register_master(ds, port, master, reg);
+		if (master) {
+			ret = dsa_switch_register_master(ds, port, master, reg);
+			if (ret)
+				return ret;
+		}
 	}
 
 	/* Now we can register regular switch ports  */

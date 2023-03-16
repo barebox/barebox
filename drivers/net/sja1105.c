@@ -2778,8 +2778,7 @@ static void sja1105_adjust_link(struct eth_device *edev)
 		mac[port].speed =
 			priv->dcfg->port_speed[SJA1105_SPEED_10MBPS];
 	} else {
-		dev_err(priv->dev, "Invalid PHY speed %d on port %d\n",
-			phy->speed, port);
+		mac[port].speed = priv->dcfg->port_speed[SJA1105_SPEED_AUTO];
 		return;
 	}
 

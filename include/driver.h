@@ -91,6 +91,7 @@ struct device {
 	 * when the driver should actually detect client devices
 	 */
 	int     (*detect) (struct device *);
+	void	(*rescan) (struct device *);
 
 	/*
 	 * if a driver probe is deferred, this stores the last error
@@ -158,6 +159,11 @@ static inline void put_device(struct device *dev) {}
 void free_device_res(struct device *dev);
 void free_device(struct device *dev);
 
+static inline void device_rescan(struct device *dev)
+{
+	if (dev->rescan)
+		dev->rescan(dev);
+}
 
 /* Iterate over a devices children
  */

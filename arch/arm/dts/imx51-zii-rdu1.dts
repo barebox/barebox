@@ -97,12 +97,12 @@ spinor: &{ecspi1/flash@1} {
 	};
 };
 
-&{uart3/rave-sp/watchdog} {
+&{uart3/mcu/watchdog} {
 	nvmem-cells = <&boot_source>;
 	nvmem-cell-names = "boot-source";
 };
 
-&{uart3/rave-sp/eeprom@a4} {
+&{uart3/mcu/eeprom@a4} {
 	nvmem-cells = <&shadow_config>;
 	nvmem-cell-names = "shadow-config";
 

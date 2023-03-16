@@ -33,12 +33,12 @@ nor_flash: &{ecspi1/flash@0} {
 	};
 };
 
-&{uart4/rave-sp/watchdog} {
+&{uart4/mcu/watchdog} {
 	nvmem-cells = <&boot_source>;
 	nvmem-cell-names = "boot-source";
 };
 
-&{uart4/rave-sp/eeprom@a3} {
+&{uart4/mcu/eeprom@a3} {
 	boot_source: boot-source@83 {
 		reg = <0x83 1>;
 	};

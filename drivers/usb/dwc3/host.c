@@ -34,3 +34,7 @@ int dwc3_host_init(struct dwc3 *dwc)
 	
 	return 0;
 }
+
+void dwc3_host_exit(struct dwc3 *dwc)
+{
+}

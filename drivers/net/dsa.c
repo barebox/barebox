@@ -104,8 +104,8 @@ static int dsa_port_start(struct eth_device *edev)
 			return ret;
 	}
 
-	ret = phy_device_connect(edev, ds->slave_mii_bus, dp->index, NULL, 0,
-				 interface);
+	ret = phy_device_connect(edev, ds->slave_mii_bus, dp->index,
+				 ops->adjust_link, 0, interface);
 	if (ret)
 		return ret;
 

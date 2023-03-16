@@ -55,6 +55,7 @@ struct dsa_switch_ops {
 
 	int (*phy_read)(struct dsa_switch *ds, int port, int regnum);
 	int (*phy_write)(struct dsa_switch *ds, int port, int regnum, u16 val);
+	void (*adjust_link)(struct eth_device *dev);
 };
 
 struct dsa_port {

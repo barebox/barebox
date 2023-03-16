@@ -334,7 +334,7 @@ static noinline void cm_fx6_start(void)
 
 ENTRY_FUNCTION(start_imx6_cm_fx6, r0, r1, r2)
 {
-	arm_cpu_lowlevel_init();
+	imx6_cpu_lowlevel_init();
 
 	relocate_to_current_adr();
 	setup_c();
@@ -361,7 +361,7 @@ static noinline void utilite_start(void)
 
 ENTRY_FUNCTION(start_imx6_utilite, r0, r1, r2)
 {
-	arm_cpu_lowlevel_init();
+	imx6_cpu_lowlevel_init();
 
 	relocate_to_current_adr();
 	setup_c();

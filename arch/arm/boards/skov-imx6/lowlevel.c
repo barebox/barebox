@@ -658,7 +658,7 @@ static noinline void skov_imx6_start(void)
 
 ENTRY_FUNCTION(start_imx6_skov_imx6, r0, r1, r2)
 {
-	arm_cpu_lowlevel_init();
+	imx6_cpu_lowlevel_init();
 
 	relocate_to_current_adr();
 	setup_c();

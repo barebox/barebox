@@ -1262,7 +1262,7 @@ static const struct of_device_id prt_imx6_of_match[] = {
 	{ .compatible = "kvg,vicut1", .data = &prt_imx6_cfg_vicut1 },
 	{ .compatible = "kvg,vicut1q", .data = &prt_imx6_cfg_vicut1q },
 	{ .compatible = "kvg,vicutp", .data = &prt_imx6_cfg_vicutp },
-	{ .compatible = "lan,lanmcu", .data = &prt_imx6_cfg_lanmcu },
+	{ .compatible = "vdl,lanmcu", .data = &prt_imx6_cfg_lanmcu },
 	{ .compatible = "ply,plybas", .data = &prt_imx6_cfg_plybas },
 	{ .compatible = "ply,plym2m", .data = &prt_imx6_cfg_plym2m },
 	{ .compatible = "prt,prti6g", .data = &prt_imx6_cfg_prti6g },

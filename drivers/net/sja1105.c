@@ -1432,7 +1432,7 @@ static int sja1105_init_mac_settings(struct sja1105_private *priv)
 		.top  = {0x1FF, 0, 0, 0, 0, 0, 0},
 		.base = {0x0, 0, 0, 0, 0, 0, 0, 0},
 		.enabled = {1, 0, 0, 0, 0, 0, 0, 0},
-		/* Will be overridden in sja1105_port_enable. */
+		/* Will be overridden in sja1105_adjust_link. */
 		.speed = priv->dcfg->port_speed[SJA1105_SPEED_AUTO],
 		.egress = true,
 		.ingress = true,
@@ -2727,14 +2727,16 @@ static int sja1105_port_pre_enable(struct dsa_port *dp, int port,
 	return sja1105_static_config_reload(priv);
 }
 
-static int sja1105_port_enable(struct dsa_port *dp, int port,
-			       struct phy_device *phy)
+static void sja1105_adjust_link(struct eth_device *edev)
 {
+	struct dsa_port *dp = edev->priv;
 	struct device *dev = dp->ds->dev;
 	struct sja1105_private *priv = dev_get_priv(dev);
+	struct phy_device *phy = dp->edev.phydev;
 	phy_interface_t phy_mode = phy->interface;
 	struct sja1105_xmii_params_entry *mii;
 	struct sja1105_mac_config_entry *mac;
+	int port = dp->index;
 	int ret;
 
 	mii = priv->static_config.tables[BLK_IDX_XMII_PARAMS].entries;
@@ -2742,7 +2744,7 @@ static int sja1105_port_enable(struct dsa_port *dp, int port,
 
 	ret = sja1105_port_set_mode(dp, port, phy_mode);
 	if (ret)
-		return ret;
+		goto error;
 
 	/* Let the PHY handle the RGMII delays, if present. */
 	if (phy->phy_id == 0) {
@@ -2758,7 +2760,7 @@ static int sja1105_port_enable(struct dsa_port *dp, int port,
 		     priv->rgmii_tx_delay[port]) &&
 		     !priv->dcfg->setup_rgmii_delay) {
 			dev_err(priv->dev, "Chip does not support internal RGMII delays\n");
-			return -EINVAL;
+			return;
 		}
 	}
 
@@ -2778,10 +2780,18 @@ static int sja1105_port_enable(struct dsa_port *dp, int port,
 	} else {
 		dev_err(priv->dev, "Invalid PHY speed %d on port %d\n",
 			phy->speed, port);
-		return -EINVAL;
+		return;
 	}
 
-	return sja1105_static_config_reload(priv);
+	ret = sja1105_static_config_reload(priv);
+	if (ret)
+		goto error;
+
+	return;
+
+error:
+	dev_err(priv->dev, "Failed to adjust link on port %d, error %pe\n",
+		port, ERR_PTR(ret));
 }
 
 static int sja1105_xmit(struct dsa_port *dp, int port, void *packet, int length)
@@ -2816,7 +2826,7 @@ static int sja1105_rcv(struct dsa_switch *ds, int *port, void *packet,
 
 static const struct dsa_switch_ops sja1105_dsa_ops = {
 	.port_pre_enable	= sja1105_port_pre_enable,
-	.port_enable		= sja1105_port_enable,
+	.adjust_link		= sja1105_adjust_link,
 	.xmit			= sja1105_xmit,
 	.rcv			= sja1105_rcv,
 };

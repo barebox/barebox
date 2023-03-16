@@ -57,25 +57,25 @@ static int do_bootm_elf(struct image_data *data)
 
 	fdt = bootm_get_devicetree(data);
 	if (IS_ERR(fdt)) {
-		ret = PTR_ERR(fdt);
-		goto bootm_free_fdt;
+		pr_err("Failed to load dtb\n");
+		return PTR_ERR(fdt);
 	}
 
 	pr_info("Starting application at 0x%08lx, dts 0x%08lx...\n",
-		phys_to_virt(data->os_address), data->of_root_node);
+		data->os_address, data->of_root_node);
 
 	if (data->dryrun)
 		goto bootm_free_fdt;
 
 	ret = of_overlay_load_firmware();
 	if (ret)
-		return ret;
+		goto bootm_free_fdt;
 
 	shutdown_barebox();
 
 	entry = (void *) (unsigned long) data->os_address;
 
-	entry(-2, phys_to_virt((unsigned long)fdt));
+	entry(-2, fdt);
 
 	pr_err("ELF application terminated\n");
 	ret = -EINVAL;

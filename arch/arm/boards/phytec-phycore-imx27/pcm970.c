@@ -6,8 +6,8 @@
 #include <io.h>
 #include <platform_data/ide.h>
 #include <linux/sizes.h>
-#include <mach/imx27-regs.h>
-#include <mach/iomux-mx27.h>
+#include <mach/imx/imx27-regs.h>
+#include <mach/imx/iomux-mx27.h>
 
 #define GPIO_IDE_POWER	(GPIO_PORTE + 18)
 #define GPIO_IDE_PCOE	(GPIO_PORTF + 7)

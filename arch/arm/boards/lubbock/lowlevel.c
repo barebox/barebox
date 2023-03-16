@@ -7,8 +7,8 @@
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 #include <linux/sizes.h>
-#include <mach/pxa-regs.h>
-#include <mach/regs-ost.h>
+#include <mach/pxa/pxa-regs.h>
+#include <mach/pxa/regs-ost.h>
 
 /*
  * Memory settings

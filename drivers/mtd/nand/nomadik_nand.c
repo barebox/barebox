@@ -24,8 +24,8 @@
 #include <linux/mtd/rawnand.h>
 
 #include <io.h>
-#include <mach/nand.h>
-#include <mach/fsmc.h>
+#include <mach/nomadik/nand.h>
+#include <mach/nomadik/fsmc.h>
 
 #include <errno.h>
 

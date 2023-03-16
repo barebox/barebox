@@ -9,7 +9,7 @@
 #include <init.h>
 #include <regulator.h>
 
-#include <mach/mbox.h>
+#include <mach/bcm283x/mbox.h>
 
 #define REG_DEV(_id, _name)		\
 	{				\

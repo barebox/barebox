@@ -5,7 +5,7 @@ menu "SoC selection"
 config SOC_ERIZO
 	bool "Erizo SoC"
 	depends on ARCH_RV32I
-	select HAS_ASM_DEBUG_LL
+	select HAS_DEBUG_LL
 	select HAS_NMON
 	select USE_COMPRESSED_DTB
 	select RISCV_M_MODE
@@ -20,7 +20,7 @@ config SOC_VIRT
 	select RISCV_S_MODE
 	select BOARD_RISCV_GENERIC_DT
 	select HAS_CACHE
-	select HAS_ASM_DEBUG_LL
+	select HAS_DEBUG_LL
 	help
 	  Generates an image tht can be be booted by QEMU. The image is called
 	  barebox-dt-2nd.img
@@ -55,7 +55,7 @@ config SOC_SIFIVE
 	select CLK_SIFIVE_PRCI
 	select RISCV_TIMER
 	select HAS_MACB
-	select HAS_ASM_DEBUG_LL
+	select HAS_DEBUG_LL
 	help
 	  This enables support for SiFive SoC platform hardware.
 
@@ -72,7 +72,7 @@ config SOC_STARFIVE
 	bool "StarFive SoCs"
 	select ARCH_HAS_RESET_CONTROLLER
 	select RISCV_S_MODE
-	select HAS_ASM_DEBUG_LL
+	select HAS_DEBUG_LL
 	select HAS_NMON
 	help
 	  This enables support for SiFive SoC platform hardware.
@@ -113,7 +113,7 @@ endif
 config SOC_ALLWINNER_SUN20I
 	bool "Allwinner Sun20i SoCs"
 	depends on ARCH_RV64I
-	select HAS_ASM_DEBUG_LL
+	select HAS_DEBUG_LL
 	select HAS_CACHE
 
 if SOC_ALLWINNER_SUN20I
@@ -135,7 +135,7 @@ config SIFIVE_L2
 config SOC_LITEX
 	bool "LiteX SoCs"
 	depends on ARCH_RV32I
-	select HAS_ASM_DEBUG_LL
+	select HAS_DEBUG_LL
 	select HAS_NMON
 	select USE_COMPRESSED_DTB
 	select RISCV_TIMER

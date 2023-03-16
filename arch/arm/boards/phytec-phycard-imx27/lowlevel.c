@@ -12,10 +12,10 @@
 #include <config.h>
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
-#include <mach/imx27-regs.h>
-#include <mach/imx-pll.h>
-#include <mach/esdctl.h>
-#include <mach/imx-nand.h>
+#include <mach/imx/imx27-regs.h>
+#include <mach/imx/imx-pll.h>
+#include <mach/imx/esdctl.h>
+#include <mach/imx/imx-nand.h>
 
 enum {
 	PHYCARD_MICRON_64MB,

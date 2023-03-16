@@ -10,8 +10,8 @@
 #include <linux/clk.h>
 #include <linux/clkdev.h>
 #include <soc/fsl/immap_lsch2.h>
-#include <mach/bbu.h>
-#include <mach/layerscape.h>
+#include <mach/layerscape/bbu.h>
+#include <mach/layerscape/layerscape.h>
 
 static int tqmls1046a_mem_init(void)
 {
@@ -47,7 +47,7 @@ static int tqmls1046a_postcore_init(void)
 	/* divide CGA1/CGA2 PLL by 24 to get QSPI interface clock */
 	out_be32(&scfg->qspi_cfg, 0x30100000);
 
-	bootsource = ls1046_bootsource_get();
+	bootsource = ls1046a_bootsource_get();
 
 	switch (bootsource) {
 	case BOOTSOURCE_MMC:

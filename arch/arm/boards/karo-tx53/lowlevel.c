@@ -2,12 +2,13 @@
 
 #include <common.h>
 #include <debug_ll.h>
+#include <mach/imx/debug_ll.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
-#include <mach/imx5.h>
-#include <mach/imx53-regs.h>
-#include <mach/esdctl.h>
-#include <mach/generic.h>
+#include <mach/imx/imx5.h>
+#include <mach/imx/imx53-regs.h>
+#include <mach/imx/esdctl.h>
+#include <mach/imx/generic.h>
 #include <asm/cache.h>
 
 extern char __dtb_imx53_tx53_xx30_start[];

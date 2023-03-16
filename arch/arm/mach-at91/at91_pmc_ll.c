@@ -10,10 +10,10 @@
 #define pr_fmt(fmt) "at91pmc: " fmt
 
 #include <common.h>
-#include <mach/hardware.h>
-#include <mach/at91_pmc.h>
-#include <mach/at91_pmc_ll.h>
-#include <mach/early_udelay.h>
+#include <mach/at91/hardware.h>
+#include <mach/at91/at91_pmc.h>
+#include <mach/at91/at91_pmc_ll.h>
+#include <mach/at91/early_udelay.h>
 
 #define SFR_UTMICKTRIM	0x30	/* UTMI Clock Trimming Register */
 #define AT91_UTMICKTRIM_FREQ	0x03

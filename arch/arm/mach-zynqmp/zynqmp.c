@@ -147,6 +147,9 @@ static int zynqmp_init(void)
 	enum bootsource boot_src;
 	int boot_instance;
 
+	if (!of_machine_is_compatible("xlnx,zynqmp"))
+		return 0;
+
 	zynqmp_get_bootsource(&boot_src, &boot_instance);
 	bootsource_set_raw(boot_src, boot_instance);
 

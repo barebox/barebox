@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2013 Lucas Stach <l.stach@pengutronix.de>
 
 #include <common.h>
-#include <mach/lowlevel.h>
+#include <mach/tegra/lowlevel.h>
 
 extern char __dtb_tegra20_colibri_iris_start[];
 

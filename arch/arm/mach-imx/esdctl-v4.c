@@ -5,8 +5,8 @@
 
 #include <common.h>
 #include <io.h>
-#include <mach/esdctl-v4.h>
-#include <mach/imx53-regs.h>
+#include <mach/imx/esdctl-v4.h>
+#include <mach/imx/imx53-regs.h>
 #include <asm/system.h>
 
 void imx_esdctlv4_do_write_leveling(void)

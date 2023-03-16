@@ -11,13 +11,13 @@
 #include <notifier.h>
 #include <linux/sizes.h>
 #include <envfs.h>
-#include <mach/devices-imx27.h>
-#include <mach/imx-pll.h>
-#include <mach/imx27-regs.h>
-#include <mach/imxfb.h>
-#include <mach/iomux-mx27.h>
+#include <mach/imx/devices-imx27.h>
+#include <mach/imx/imx-pll.h>
+#include <mach/imx/imx27-regs.h>
+#include <platform_data/imxfb.h>
+#include <mach/imx/iomux-mx27.h>
 #include <mfd/mc13xxx.h>
-#include <mach/bbu.h>
+#include <mach/imx/bbu.h>
 
 #include "pll.h"
 

@@ -7,10 +7,11 @@
 #include <linux/sizes.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
-#include <mach/rk3288-regs.h>
-#include <mach/grf_rk3288.h>
-#include <mach/hardware.h>
+#include <mach/rockchip/rk3288-regs.h>
+#include <mach/rockchip/grf_rk3288.h>
+#include <mach/rockchip/hardware.h>
 #include <debug_ll.h>
+#include <mach/rockchip/debug_ll.h>
 
 extern char __dtb_rk3288_phycore_som_start[];
 
@@ -26,7 +27,7 @@ ENTRY_FUNCTION(start_rk3288_phycore_som, r0, r1, r2)
 			     GPIO7C6_MASK << GPIO7C6_SHIFT,
 			     GPIO7C7_UART2DBG_SOUT << GPIO7C7_SHIFT |
 			     GPIO7C6_UART2DBG_SIN << GPIO7C6_SHIFT);
-		INIT_LL();
+		rockchip_debug_ll_init();
 	}
 	fdt = __dtb_rk3288_phycore_som_start + get_runtime_offset();
 

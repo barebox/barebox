@@ -42,13 +42,13 @@
 #include <asm/io.h>
 #include <generated/mach-types.h>
 #include <linux/err.h>
-#include <mach/gpmc.h>
-#include <mach/gpmc_nand.h>
-#include <mach/omap_hsmmc.h>
-#include <mach/sdrc.h>
-#include <mach/omap3-silicon.h>
-#include <mach/sys_info.h>
-#include <mach/omap3-devices.h>
+#include <mach/omap/gpmc.h>
+#include <mach/omap/gpmc_nand.h>
+#include <mach/omap/omap_hsmmc.h>
+#include <mach/omap/sdrc.h>
+#include <mach/omap/omap3-silicon.h>
+#include <mach/omap/sys_info.h>
+#include <mach/omap/omap3-devices.h>
 
 #define SMC911X_BASE 0x2c000000
 

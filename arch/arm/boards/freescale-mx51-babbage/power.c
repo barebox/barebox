@@ -5,8 +5,8 @@
 #include <common.h>
 #include <init.h>
 #include <notifier.h>
-#include <mach/revision.h>
-#include <mach/imx5.h>
+#include <mach/imx/revision.h>
+#include <mach/imx/imx5.h>
 #include <mfd/mc13xxx.h>
 
 static void babbage_power_init(struct mc13xxx *mc13xxx)

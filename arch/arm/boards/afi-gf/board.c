@@ -8,8 +8,8 @@
 #include <envfs.h>
 #include <bootsource.h>
 #include <asm/armlinux.h>
-#include <mach/bbu.h>
-#include <mach/am33xx-generic.h>
+#include <mach/omap/bbu.h>
+#include <mach/omap/am33xx-generic.h>
 
 static int board_console_init(void)
 {

@@ -15,8 +15,8 @@
 #include <bootsource.h>
 #include <init.h>
 #include <io.h>
-#include <mach/generic.h>
-#include <mach/arria10-system-manager.h>
+#include <mach/socfpga/generic.h>
+#include <mach/socfpga/arria10-system-manager.h>
 
 enum bootsource arria10_get_bootsource(void) {
 	enum bootsource src = BOOTSOURCE_UNKNOWN;

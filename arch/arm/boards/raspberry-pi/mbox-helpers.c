@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // SPDX-FileCopyrightText: 2009 Carlo Caione <carlo@carlocaione.org>
 
-#include <mach/mbox.h>
+#include <mach/bcm283x/mbox.h>
 #include "lowlevel.h"
 
 struct msg_get_arm_mem {

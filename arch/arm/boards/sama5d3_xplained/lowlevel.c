@@ -9,11 +9,11 @@
 
 #include <asm/barebox-arm-head.h>
 #include <debug_ll.h>
-#include <mach/barebox-arm.h>
-#include <mach/iomux.h>
-#include <mach/sama5d3.h>
-#include <mach/sama5d3-xplained-ddramc.h>
-#include <mach/xload.h>
+#include <mach/at91/barebox-arm.h>
+#include <mach/at91/iomux.h>
+#include <mach/at91/sama5d3.h>
+#include <mach/at91/sama5d3-xplained-ddramc.h>
+#include <mach/at91/xload.h>
 
 /* PCK = 528MHz, MCK = 132MHz */
 #define MASTER_CLOCK	132000000

@@ -8,8 +8,8 @@
 
 #include <asm/barebox-arm.h>
 
-#include <mach/at91sam926x_board_init.h>
-#include <mach/at91sam9263_matrix.h>
+#include <mach/at91/at91sam926x_board_init.h>
+#include <mach/at91/at91sam9263_matrix.h>
 
 #define MASTER_PLL_MUL		171
 #define MASTER_PLL_DIV		14

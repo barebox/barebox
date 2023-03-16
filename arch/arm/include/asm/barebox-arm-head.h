@@ -19,9 +19,6 @@ void barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2);
 #define ARM_HEAD_SPARE_MARKER	0x55555555
 
 #ifdef CONFIG_CPU_32
-#ifdef CONFIG_HAVE_MACH_ARM_HEAD
-#include <mach/barebox-arm-head.h>
-#else
 static inline void __barebox_arm_head(void)
 {
 	__asm__ __volatile__ (
@@ -70,7 +67,6 @@ static inline void barebox_arm_head(void)
 		"b barebox_arm_reset_vector\n"
 	);
 }
-#endif
 #endif
 
 #endif /* __ASSEMBLY__ */

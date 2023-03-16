@@ -10,8 +10,8 @@
 #include <io.h>
 #include <linux/iopoll.h>
 #include <soc/imx8m/ddr.h>
-#include <mach/imx8m-regs.h>
-#include <mach/imx8m-ccm-regs.h>
+#include <mach/imx/imx8m-regs.h>
+#include <mach/imx/imx8m-ccm-regs.h>
 
 /* DDR Transfer rate, bus clock is transfer rate / 2, and the DDRC runs at bus
  * clock / 2, which is therefor transfer rate / 4.  */

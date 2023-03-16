@@ -6,7 +6,7 @@
 #include <gpio.h>
 #include <i2c/i2c.h>
 #include <init.h>
-#include <mach/tegra-bbu.h>
+#include <mach/tegra/tegra-bbu.h>
 
 #define AS3722_SD_VOLTAGE(n)	(0x00 + (n))
 #define AS3722_GPIO_CONTROL(n)	(0x08 + (n))

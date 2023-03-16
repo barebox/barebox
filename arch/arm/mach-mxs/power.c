@@ -8,8 +8,8 @@
 #include <io.h>
 #include <stmp-device.h>
 #include <errno.h>
-#include <mach/imx-regs.h>
-#include <mach/power.h>
+#include <mach/mxs/imx-regs.h>
+#include <mach/mxs/power.h>
 
 #define POWER_CTRL			(IMX_POWER_BASE + 0x0)
 #define POWER_CTRL_CLKGATE		0x40000000

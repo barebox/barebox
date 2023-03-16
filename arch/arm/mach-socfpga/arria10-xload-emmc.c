@@ -3,10 +3,10 @@
 #include <common.h>
 #include <init.h>
 #include <linux/sizes.h>
-#include <mach/generic.h>
-#include <mach/arria10-regs.h>
-#include <mach/arria10-system-manager.h>
-#include <mach/arria10-xload.h>
+#include <mach/socfpga/generic.h>
+#include <mach/socfpga/arria10-regs.h>
+#include <mach/socfpga/arria10-system-manager.h>
+#include <mach/socfpga/arria10-xload.h>
 #include <mci.h>
 #include "../../../drivers/mci/sdhci.h"
 #include "../../../drivers/mci/dw_mmc.h"

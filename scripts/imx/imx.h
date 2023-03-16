@@ -1,6 +1,6 @@
 
-#include <mach/imx-header.h>
-#include <mach/imx_cpu_types.h>
+#include <imx/imx-header.h>
+#include <imx/imx_cpu_types.h>
 
 static inline int cpu_is_mx8m(const struct config_data *data)
 {

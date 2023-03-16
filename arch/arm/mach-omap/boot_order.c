@@ -15,7 +15,7 @@
 #include <common.h>
 #include <command.h>
 #include <complete.h>
-#include <mach/omap4-silicon.h>
+#include <mach/omap/omap4-silicon.h>
 
 struct bootsrc {
 	const char *name;

@@ -3,10 +3,10 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
-#include <mach/imx21-regs.h>
-#include <mach/weim.h>
-#include <mach/iomux-v1.h>
-#include <mach/generic.h>
+#include <mach/imx/imx21-regs.h>
+#include <mach/imx/weim.h>
+#include <mach/imx/iomux-v1.h>
+#include <mach/imx/generic.h>
 
 void imx21_setup_eimcs(size_t cs, unsigned upper, unsigned lower)
 {

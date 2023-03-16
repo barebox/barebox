@@ -8,8 +8,8 @@
 #include <asm/mmu.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
-#include <mach/imx6-regs.h>
-#include <mach/generic.h>
+#include <mach/imx/imx6-regs.h>
+#include <mach/imx/generic.h>
 
 #include <debug_ll.h>
 

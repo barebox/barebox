@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <debug_ll.h>
+#include <mach/imx/debug_ll.h>
 #include <common.h>
 #include <linux/sizes.h>
 #include <io.h>
@@ -9,7 +10,7 @@
 #include <asm/sections.h>
 #include <asm/cache.h>
 #include <asm/mmu.h>
-#include <mach/imx6.h>
+#include <mach/imx/imx6.h>
 
 extern char __dtb_imx6s_riotboard_start[];
 

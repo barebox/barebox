@@ -2,8 +2,8 @@
 
 #include <asm/barebox-arm.h>
 #include <common.h>
-#include <mach/esdctl.h>
-#include <mach/generic.h>
+#include <mach/imx/esdctl.h>
+#include <mach/imx/generic.h>
 
 extern char __dtb_imx6dl_hummingboard_start[];
 extern char __dtb_imx6q_hummingboard_start[];

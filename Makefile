@@ -1145,8 +1145,8 @@ CLEAN_FILES +=	barebox System.map stickypage.bin include/generated/barebox_defau
                 .tmp_version .tmp_barebox* barebox.bin barebox.map \
 		.tmp_kallsyms* barebox.ldr compile_commands.json \
 		barebox-flash-image \
-		barebox.srec barebox.s5p barebox.ubl barebox.zynq \
-		barebox.uimage barebox.spi barebox.kwb barebox.kwbuart \
+		barebox.srec barebox.s5p barebox.ubl \
+		barebox.uimage \
 		barebox.efi barebox.canon-a1100.bin
 
 CLEAN_FILES +=	scripts/bareboxenv-target scripts/kernel-install-target \

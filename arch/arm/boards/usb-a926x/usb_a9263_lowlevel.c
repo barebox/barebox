@@ -6,10 +6,9 @@
 
 #include <linux/sizes.h>
 
-#include <asm/barebox-arm.h>
-
-#include <mach/at91sam926x_board_init.h>
-#include <mach/at91sam9263_matrix.h>
+#include <mach/at91/barebox-arm.h>
+#include <mach/at91/at91sam926x_board_init.h>
+#include <mach/at91/at91sam9263_matrix.h>
 
 #define MASTER_CLOCK		180
 
@@ -20,7 +19,7 @@
 #endif
 #define MASTER_PLL_DIV		6
 
-static void __bare_init usb_a9263_board_config(struct at91sam926x_board_cfg *cfg)
+static void __bare_init usb_a9263_board_config(struct at91sam926x_board_cfg *cfg, bool has_mem_128m)
 {
 	/* Disable Watchdog */
 	cfg->wdt_mr =
@@ -88,7 +87,7 @@ static void __bare_init usb_a9263_board_config(struct at91sam926x_board_cfg *cfg
 		(5 << 24) |		/* Active to Precharge Delay */
 		(8 << 28);		/* Exit Self Refresh to Active Delay */
 
-	if (IS_ENABLED(CONFIG_AT91_HAVE_SRAM_128M))
+	if (has_mem_128m)
 		cfg->sdrc_cr |= AT91_SDRAMC_NC_10;
 	else
 		cfg->sdrc_cr |= AT91_SDRAMC_NC_9;
@@ -106,7 +105,7 @@ static void __bare_init usb_a9263_board_config(struct at91sam926x_board_cfg *cfg
 		AT91_RSTC_RSTTYP_WATCHDOG;
 }
 
-static void __bare_init usb_a9263_init(void)
+static void __bare_init usb_a9263_init(bool has_mem_128m)
 {
 	struct at91sam926x_board_cfg cfg;
 
@@ -115,18 +114,27 @@ static void __bare_init usb_a9263_init(void)
 	cfg.ebi_pio_is_peripha = true;
 	cfg.matrix_csa = IOMEM(AT91SAM9263_BASE_MATRIX + AT91SAM9263_MATRIX_EBI0CSA);
 
-	usb_a9263_board_config(&cfg);
+	usb_a9263_board_config(&cfg, has_mem_128m);
 	at91sam9263_board_init(&cfg);
 
 	barebox_arm_entry(AT91_CHIPSELECT_1, at91_get_sdram_size(cfg.sdramc),
 	                  NULL);
 }
 
-void __naked __bare_init barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2)
+AT91_ENTRY_FUNCTION(start_usb_a9263, r0, r1, r2)
 {
 	arm_cpu_lowlevel_init();
 
 	arm_setup_stack(AT91SAM9263_SRAM0_BASE + AT91SAM9263_SRAM0_SIZE);
 
-	usb_a9263_init();
+	usb_a9263_init(false);
+}
+
+AT91_ENTRY_FUNCTION(start_usb_a9263_128m, r0, r1, r2)
+{
+	arm_cpu_lowlevel_init();
+
+	arm_setup_stack(AT91SAM9263_SRAM0_BASE + AT91SAM9263_SRAM0_SIZE);
+
+	usb_a9263_init(true);
 }

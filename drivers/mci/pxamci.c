@@ -15,9 +15,9 @@
 #include <mci.h>
 #include <linux/err.h>
 
-#include <mach/clock.h>
-#include <mach/mci_pxa2xx.h>
-#include <mach/pxa-regs.h>
+#include <mach/pxa/clock.h>
+#include <mach/pxa/mci_pxa2xx.h>
+#include <mach/pxa/pxa-regs.h>
 #include "pxamci.h"
 
 #define DRIVER_NAME	"pxa-mmc"

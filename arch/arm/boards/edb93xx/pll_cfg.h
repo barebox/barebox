@@ -4,7 +4,7 @@
 /* PLL register values for Cirrus edb93xx boards */
 
 #include <config.h>
-#include <mach/ep93xx-regs.h>
+#include <mach/ep93xx/ep93xx-regs.h>
 
 #if defined(CONFIG_MACH_EDB9301)
 /*

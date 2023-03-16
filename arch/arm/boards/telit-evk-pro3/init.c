@@ -9,10 +9,10 @@
 #include <linux/clk.h>
 #include <linux/mtd/nand.h>
 #include <linux/mtd/rawnand.h>
-#include <mach/at91_rstc.h>
-#include <mach/at91sam9_smc.h>
-#include <mach/board.h>
-#include <mach/iomux.h>
+#include <mach/at91/at91_rstc.h>
+#include <mach/at91/at91sam9_smc.h>
+#include <mach/at91/board.h>
+#include <mach/at91/iomux.h>
 #include <nand.h>
 
 #define BOOTSTRAP_SIZE	0xC0000

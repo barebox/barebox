@@ -12,10 +12,10 @@
 #include <asm/barebox-arm.h>
 #include <asm/syscounter.h>
 #include <asm/cache.h>
-#include <mach/errata.h>
-#include <mach/lowlevel.h>
-#include <mach/xload.h>
-#include <mach/layerscape.h>
+#include <mach/layerscape/errata.h>
+#include <mach/layerscape/lowlevel.h>
+#include <mach/layerscape/xload.h>
+#include <mach/layerscape/layerscape.h>
 
 struct board_specific_parameters {
 	u32 n_ranks;
@@ -199,7 +199,7 @@ static noinline __noreturn void ls1046ardb_r_entry(unsigned long memsize)
 	}
 
 	arm_cpu_lowlevel_init();
-	debug_ll_init();
+	ls1046a_debug_ll_init();
 	ls1046a_init_lowlevel();
 
 	IMD_USED_OF(fsl_ls1046a_rdb);

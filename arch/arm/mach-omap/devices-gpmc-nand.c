@@ -24,8 +24,8 @@
 #include <clock.h>
 #include <io.h>
 
-#include <mach/gpmc.h>
-#include <mach/gpmc_nand.h>
+#include <mach/omap/gpmc.h>
+#include <mach/omap/gpmc_nand.h>
 
 #define GPMC_CONF1_VALx8	0x00000800
 #define GPMC_CONF1_VALx16	0x00001800

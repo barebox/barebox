@@ -16,12 +16,12 @@
 #include <mfd/mc13xxx.h>
 #include <mfd/mc13892.h>
 
-#include <mach/bbu.h>
-#include <mach/esdctl.h>
-#include <mach/iim.h>
-#include <mach/imx5.h>
-#include <mach/imx51-regs.h>
-#include <mach/revision.h>
+#include <mach/imx/bbu.h>
+#include <mach/imx/esdctl.h>
+#include <mach/imx/iim.h>
+#include <mach/imx/imx5.h>
+#include <mach/imx/imx51-regs.h>
+#include <mach/imx/revision.h>
 
 static const struct ccxmx_ident {
 	char		*id_string;

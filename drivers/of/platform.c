@@ -418,7 +418,7 @@ static struct device *of_device_create_on_demand(struct device_node *np)
 
 	parent = of_get_parent(np);
 	if (!parent)
-		return NULL;
+		return of_platform_device_create_root(np);
 
 	if (!np->dev && parent->dev) {
 		ret = device_detect(parent->dev);

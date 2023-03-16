@@ -19,12 +19,12 @@
 
 #include <generated/mach-types.h>
 
-#include <mach/imx53-regs.h>
-#include <mach/revision.h>
-#include <mach/generic.h>
-#include <mach/imx5.h>
-#include <mach/bbu.h>
-#include <mach/iim.h>
+#include <mach/imx/imx53-regs.h>
+#include <mach/imx/revision.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/imx5.h>
+#include <mach/imx/bbu.h>
+#include <mach/imx/iim.h>
 
 /*
  * Revision to be passed to kernel. The kernel provided

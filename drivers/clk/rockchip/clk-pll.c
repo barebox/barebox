@@ -853,7 +853,7 @@ struct clk *rockchip_clk_register_pll(struct rockchip_clk_provider *ctx,
 		struct rockchip_pll_rate_table *rate_table,
 		unsigned long flags, u8 clk_pll_flags)
 {
-	const char *pll_parents[3];
+	const char *pll_parents[3] = {};
 	struct clk_init_data init;
 	struct rockchip_clk_pll *pll;
 	struct clk_mux *pll_mux;
@@ -895,7 +895,8 @@ struct clk *rockchip_clk_register_pll(struct rockchip_clk_provider *ctx,
 	/* the actual muxing is xin24m, pll-output, xin32k */
 	pll_parents[0] = parent_names[0];
 	pll_parents[1] = pll_name;
-	pll_parents[2] = parent_names[1];
+	if (num_parents > 1)
+		pll_parents[2] = parent_names[1];
 
 	init.name = name;
 	init.flags = CLK_SET_RATE_PARENT;

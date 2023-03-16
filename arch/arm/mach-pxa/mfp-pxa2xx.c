@@ -17,10 +17,10 @@
 #include <errno.h>
 #include <init.h>
 
-#include <mach/gpio.h>
-#include <mach/hardware.h>
-#include <mach/mfp-pxa2xx.h>
-#include <mach/pxa-regs.h>
+#include <mach/pxa/gpio.h>
+#include <mach/pxa/hardware.h>
+#include <mach/pxa/mfp-pxa2xx.h>
+#include <mach/pxa/pxa-regs.h>
 
 #define PGSR(x)		__REG2(0x40F00020, (x) << 2)
 #define __GAFR(u, x)	__REG2((u) ? 0x40E00058 : 0x40E00054, (x) << 3)

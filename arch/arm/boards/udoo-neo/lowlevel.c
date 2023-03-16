@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <debug_ll.h>
+#include <mach/imx/debug_ll.h>
 #include <common.h>
 #include <linux/sizes.h>
-#include <mach/generic.h>
+#include <mach/imx/generic.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
-#include <mach/esdctl.h>
+#include <mach/imx/esdctl.h>
 
 static inline void setup_uart(void)
 {

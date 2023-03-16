@@ -5,14 +5,14 @@
 #include <init.h>
 #include <restart.h>
 #include <io.h>
-#include <mach/omap4-clock.h>
-#include <mach/omap4-silicon.h>
-#include <mach/omap4-mux.h>
-#include <mach/syslib.h>
-#include <mach/generic.h>
-#include <mach/gpmc.h>
-#include <mach/omap4_rom_usb.h>
-#include <mach/omap4-generic.h>
+#include <mach/omap/omap4-clock.h>
+#include <mach/omap/omap4-silicon.h>
+#include <mach/omap/omap4-mux.h>
+#include <mach/omap/syslib.h>
+#include <mach/omap/generic.h>
+#include <mach/omap/gpmc.h>
+#include <mach/omap/omap4_rom_usb.h>
+#include <mach/omap/omap4-generic.h>
 
 /*
  *  The following several lines are taken from U-Boot to support

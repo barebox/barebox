@@ -11,8 +11,8 @@
  */
 
 #include <linux/linkage.h>
-#include <mach/at91_ddrsdrc.h>
-#include <mach/at91_rstc.h>
+#include <mach/at91/at91_ddrsdrc.h>
+#include <mach/at91/at91_rstc.h>
 
 			.arm
 

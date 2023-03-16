@@ -10,21 +10,22 @@
 #include <io.h>
 #include <linux/string.h>
 #include <debug_ll.h>
+#include <mach/omap/debug_ll.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
-#include <mach/generic.h>
-#include <mach/sdrc.h>
-#include <mach/sys_info.h>
-#include <mach/syslib.h>
-#include <mach/omap3-mux.h>
-#include <mach/omap3-silicon.h>
-#include <mach/omap3-generic.h>
-#include <mach/omap3-clock.h>
-#include <mach/control.h>
+#include <mach/omap/generic.h>
+#include <mach/omap/sdrc.h>
+#include <mach/omap/sys_info.h>
+#include <mach/omap/syslib.h>
+#include <mach/omap/omap3-mux.h>
+#include <mach/omap/omap3-silicon.h>
+#include <mach/omap/omap3-generic.h>
+#include <mach/omap/omap3-clock.h>
+#include <mach/omap/control.h>
 #include <asm/common.h>
 #include <asm-generic/memory_layout.h>
 
-#include <mach/emif4.h>
+#include <mach/omap/emif4.h>
 
 static void mux_config(void)
 {
@@ -184,7 +185,7 @@ static noinline void pfc200_board_init(void)
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL)) {
 		am33xx_uart_soft_reset(IOMEM(OMAP3_UART3_BASE));
-		omap_uart_lowlevel_init(IOMEM(OMAP3_UART3_BASE));
+		omap_debug_ll_init();
 		putc_ll('>');
 	}
 

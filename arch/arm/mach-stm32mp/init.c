@@ -8,10 +8,10 @@
 
 #include <common.h>
 #include <init.h>
-#include <mach/stm32.h>
-#include <mach/bsec.h>
-#include <mach/revision.h>
-#include <mach/bootsource.h>
+#include <mach/stm32mp/stm32.h>
+#include <mach/stm32mp/bsec.h>
+#include <mach/stm32mp/revision.h>
+#include <mach/stm32mp/bootsource.h>
 #include <bootsource.h>
 #include <dt-bindings/pinctrl/stm32-pinfunc.h>
 
@@ -297,11 +297,29 @@ static int setup_cpu_type(void)
 	return 0;
 }
 
+static int __st32mp_soc;
+
+int stm32mp_soc(void)
+{
+	return __st32mp_soc;
+}
+
 static int stm32mp_init(void)
 {
+	if (of_machine_is_compatible("st,stm32mp135"))
+		__st32mp_soc = 32135;
+	else if (of_machine_is_compatible("st,stm32mp151"))
+		__st32mp_soc = 32151;
+	else if (of_machine_is_compatible("st,stm32mp153"))
+		__st32mp_soc = 32153;
+	else if (of_machine_is_compatible("st,stm32mp157"))
+		__st32mp_soc = 32157;
+	else
+		return 0;
+
 	setup_cpu_type();
 	setup_boot_mode();
 
 	return 0;
 }
-core_initcall(stm32mp_init);
+postcore_initcall(stm32mp_init);

@@ -11,7 +11,7 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
-#include <mach/hardware.h>
+#include <mach/nomadik/hardware.h>
 
 /* Initial value for SRC control register: all timers use MXTAL/8 source */
 #define SRC_CR_INIT_MASK	0x00007fff

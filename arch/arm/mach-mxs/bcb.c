@@ -15,7 +15,7 @@
 #include <errno.h>
 #include <io.h>
 
-#include <mach/imx-regs.h>
+#include <mach/mxs/imx-regs.h>
 
 #include <linux/err.h>
 #include <linux/mtd/nand.h>

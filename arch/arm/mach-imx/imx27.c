@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <common.h>
-#include <mach/imx27-regs.h>
-#include <mach/weim.h>
-#include <mach/iomux-v1.h>
+#include <mach/imx/imx27-regs.h>
+#include <mach/imx/weim.h>
+#include <mach/imx/iomux-v1.h>
 #include <linux/sizes.h>
-#include <mach/revision.h>
-#include <mach/generic.h>
+#include <mach/imx/revision.h>
+#include <mach/imx/generic.h>
 #include <init.h>
 #include <io.h>
 

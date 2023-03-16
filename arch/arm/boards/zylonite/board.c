@@ -16,9 +16,9 @@
 #include <linux/clkdev.h>
 #include <linux/sizes.h>
 
-#include <mach/devices.h>
-#include <mach/mfp-pxa3xx.h>
-#include <mach/pxa-regs.h>
+#include <mach/pxa/devices.h>
+#include <mach/pxa/mfp-pxa3xx.h>
+#include <mach/pxa/pxa-regs.h>
 
 #include <asm/armlinux.h>
 #include <asm/io.h>

@@ -4,7 +4,7 @@
 #include <linux/sizes.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
-#include <mach/imx23-regs.h>
+#include <mach/mxs/imx23-regs.h>
 #include <generated/mach-types.h>
 
 static noinline void continue_imx_entry(size_t size)

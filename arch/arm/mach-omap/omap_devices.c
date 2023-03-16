@@ -3,7 +3,7 @@
 #include <driver.h>
 #include <asm/armlinux.h>
 
-#include <mach/omap3-devices.h>
+#include <mach/omap/omap3-devices.h>
 
 void omap_add_ram0(resource_size_t size)
 {

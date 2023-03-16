@@ -13,25 +13,25 @@
 #include <common.h>
 #include <init.h>
 #include <environment.h>
-#include <mach/imx6-regs.h>
+#include <mach/imx/imx6-regs.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 #include <linux/phy.h>
 #include <asm/io.h>
 #include <asm/mmu.h>
-#include <mach/generic.h>
+#include <mach/imx/generic.h>
 #include <linux/sizes.h>
 #include <net.h>
-#include <mach/imx6.h>
-#include <mach/devices-imx6.h>
-#include <mach/iomux-mx6.h>
+#include <mach/imx/imx6.h>
+#include <mach/imx/devices-imx6.h>
+#include <mach/imx/iomux-mx6.h>
 #include <spi/spi.h>
-#include <mach/spi.h>
-#include <mach/usb.h>
+#include <mach/imx/spi.h>
+#include <mach/imx/usb.h>
 #include <envfs.h>
 #include <bootsource.h>
 #include <bbu.h>
-#include <mach/bbu.h>
+#include <mach/imx/bbu.h>
 
 #define PHY_ID_RTL8211E	0x001cc915
 #define PHY_ID_MASK	0xffffffff

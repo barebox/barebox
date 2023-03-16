@@ -14,10 +14,10 @@
 #include <fcntl.h>
 #include <init.h>
 #include <io.h>
-#include <mach/cyclone5-system-manager.h>
-#include <mach/cyclone5-reset-manager.h>
-#include <mach/cyclone5-regs.h>
-#include <mach/cyclone5-sdram.h>
+#include <mach/socfpga/cyclone5-system-manager.h>
+#include <mach/socfpga/cyclone5-reset-manager.h>
+#include <mach/socfpga/cyclone5-regs.h>
+#include <mach/socfpga/cyclone5-sdram.h>
 #include <asm/fncpy.h>
 #include <mmu.h>
 #include <asm/cache.h>

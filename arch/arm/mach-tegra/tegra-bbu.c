@@ -17,7 +17,7 @@
 #include <common.h>
 #include <fcntl.h>
 #include <fs.h>
-#include <mach/tegra-bbu.h>
+#include <mach/tegra/tegra-bbu.h>
 #include <malloc.h>
 
 static int tegra_bbu_emmc_handler(struct bbu_handler *handler,

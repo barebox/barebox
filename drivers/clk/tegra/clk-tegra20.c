@@ -12,8 +12,8 @@
 #include <linux/clk.h>
 #include <linux/clkdev.h>
 #include <linux/err.h>
-#include <mach/lowlevel.h>
-#include <mach/tegra20-car.h>
+#include <mach/tegra/lowlevel.h>
+#include <mach/tegra/tegra20-car.h>
 
 #include "clk.h"
 

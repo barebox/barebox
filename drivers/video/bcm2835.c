@@ -15,7 +15,7 @@
 #include <xfuncs.h>
 
 #include <of_address.h>
-#include <mach/mbox.h>
+#include <mach/bcm283x/mbox.h>
 
 struct bcm2835fb_info {
 	struct fb_info fbi;

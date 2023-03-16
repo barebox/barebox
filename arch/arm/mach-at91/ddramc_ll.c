@@ -6,9 +6,9 @@
 
 #include <linux/kconfig.h>
 #include <asm/system.h>
-#include <mach/at91_ddrsdrc.h>
-#include <mach/ddramc.h>
-#include <mach/early_udelay.h>
+#include <mach/at91/at91_ddrsdrc.h>
+#include <mach/at91/ddramc.h>
+#include <mach/at91/early_udelay.h>
 
 void at91_ddram_initialize(void __iomem *base_address,
 			   void __iomem *ram_address,

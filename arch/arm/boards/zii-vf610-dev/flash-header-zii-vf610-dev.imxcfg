@@ -4,12 +4,12 @@ soc vf610
 loadaddr 0x80000000
 ivtofs 0x400
 
-#include <mach/vf610-iomux-regs.h>
-#include <mach/vf610-ddrmc-regs.h>
+#include <mach/imx/vf610-iomux-regs.h>
+#include <mach/imx/vf610-ddrmc-regs.h>
 
-#include <mach/flash-header/vf610-ddr-pll2-400mhz.imxcfg>
-#include <mach/flash-header/vf610-iomux-ddr-default.imxcfg>
-#include <mach/flash-header/vf610-ddr-cr-default.imxcfg>
+#include <mach/imx/flash-header/vf610-ddr-pll2-400mhz.imxcfg>
+#include <mach/imx/flash-header/vf610-iomux-ddr-default.imxcfg>
+#include <mach/imx/flash-header/vf610-ddr-cr-default.imxcfg>
 
 wm 32 DDRMC_CR26 0x0c300068
 wm 32 DDRMC_CR31 0x006c0200
@@ -21,7 +21,7 @@ wm 32 DDRMC_CR73 0x0a010100
  */
 wm 32 DDRMC_CR73 0x0a010100
 
-#include <mach/flash-header/vf610-ddr-phy-default.imxcfg>
+#include <mach/imx/flash-header/vf610-ddr-phy-default.imxcfg>
 
 wm 32 DDRMC_CR00 DDRMC_CR00_DRAM_CLASS_DDR3_START
 

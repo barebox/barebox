@@ -14,8 +14,8 @@
  */
 #include <common.h>
 #include <driver.h>
-#include <mach/devices.h>
-#include <mach/pxafb.h>
+#include <mach/pxa/devices.h>
+#include <mach/pxa/pxafb.h>
 
 static inline struct device *pxa_add_device(char *name, int id, void *base,
 					      int size, void *pdata)

@@ -10,9 +10,9 @@
 #include <common.h>
 #include <config.h>
 #include <asm/io.h>
-#include <mach/imx-regs.h>
-#include <mach/regs-lradc.h>
-#include <mach/init.h>
+#include <mach/mxs/imx-regs.h>
+#include <mach/mxs/regs-lradc.h>
+#include <mach/mxs/init.h>
 
 void mxs_lradc_init(void)
 {

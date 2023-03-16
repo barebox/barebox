@@ -7,7 +7,7 @@
 #include <environment.h>
 #include <i2c/i2c.h>
 #include <init.h>
-#include <mach/bbu.h>
+#include <mach/imx/bbu.h>
 
 static int prt_prt8mm_init_power(void)
 {

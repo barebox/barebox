@@ -6,6 +6,9 @@
 #ifndef __ARCH_FSL_LSCH2_IMMAP_H__
 #define __ARCH_FSL_LSCH2_IMMAP_H__
 
+#define SVR_MAJ(svr)		(((svr) >>  4) & 0xf)
+#define SOC_MAJOR_VER_1_0	0x1
+
 #define gur_in32(a)       in_be32(a)
 #define gur_out32(a, v)   out_be32(a, v)
 
@@ -59,6 +62,10 @@
 #define LSCH2_SEC_ADDR			(LSCH2_IMMR + 0x00700000)
 #define LSCH2_QDMA_BASE_ADDR		(LSCH2_IMMR + 0x07380000)
 #define LSCH2_EHCI_USB1_ADDR		(LSCH2_IMMR + 0x07600000)
+
+#define TIMER_COMP_VAL			0xffffffffffffffffull
+#define ARCH_TIMER_CTRL_ENABLE		(1 << 0)
+#define SYS_COUNTER_CTRL_ENABLE		(1 << 24)
 
 struct ccsr_gur {
 	u32     porsr1;         /* POR status 1 */
@@ -214,7 +221,67 @@ struct ccsr_gur {
 	u32 dcfg_ccsr_reserved1;
 };
 
-#define SCFG_QSPI_CLKSEL		0x40100000
+/* LS102XA Device Configuration and Pin Control */
+struct ls102xa_ccsr_gur {
+	u32     porsr1;         /* POR status 1 */
+	u32     porsr2;         /* POR status 2 */
+	u8      res_008[0x20-0x8];
+	u32     gpporcr1;       /* General-purpose POR configuration */
+	u32	gpporcr2;
+	u32     dcfg_fusesr;    /* Fuse status register */
+	u8      res_02c[0x70-0x2c];
+	u32     devdisr;        /* Device disable control */
+	u32     devdisr2;       /* Device disable control 2 */
+	u32     devdisr3;       /* Device disable control 3 */
+	u32     devdisr4;       /* Device disable control 4 */
+	u32     devdisr5;       /* Device disable control 5 */
+	u8      res_084[0x94-0x84];
+	u32     coredisru;      /* uppper portion for support of 64 cores */
+	u32     coredisrl;      /* lower portion for support of 64 cores */
+	u8      res_09c[0xa4-0x9c];
+	u32     svr;            /* System version */
+	u8	res_0a8[0xb0-0xa8];
+	u32	rstcr;		/* Reset control */
+	u32	rstrqpblsr;	/* Reset request preboot loader status */
+	u8	res_0b8[0xc0-0xb8];
+	u32	rstrqmr1;	/* Reset request mask */
+	u8	res_0c4[0xc8-0xc4];
+	u32	rstrqsr1;	/* Reset request status */
+	u8	res_0cc[0xd4-0xcc];
+	u32	rstrqwdtmrl;	/* Reset request WDT mask */
+	u8	res_0d8[0xdc-0xd8];
+	u32	rstrqwdtsrl;	/* Reset request WDT status */
+	u8	res_0e0[0xe4-0xe0];
+	u32	brrl;		/* Boot release */
+	u8      res_0e8[0x100-0xe8];
+	u32     rcwsr[16];      /* Reset control word status */
+#define RCW_SB_EN_REG_INDEX	7
+#define RCW_SB_EN_MASK		0x00200000
+	u8      res_140[0x200-0x140];
+	u32     scratchrw[4];  /* Scratch Read/Write */
+	u8      res_210[0x300-0x210];
+	u32     scratchw1r[4];  /* Scratch Read (Write once) */
+	u8      res_310[0x400-0x310];
+	u32	crstsr;
+	u8      res_404[0x550-0x404];
+	u32	sataliodnr;
+	u8	res_554[0x604-0x554];
+	u32	pamubypenr;
+	u32	dmacr1;
+	u8      res_60c[0x740-0x60c];   /* add more registers when needed */
+	u32     tp_ityp[64];    /* Topology Initiator Type Register */
+	struct {
+		u32     upper;
+		u32     lower;
+	} tp_cluster[1];        /* Core Cluster n Topology Register */
+	u8	res_848[0xe60-0x848];
+	u32	ddrclkdr;
+	u8	res_e60[0xe68-0xe64];
+	u32	ifcclkdr;
+	u8	res_e68[0xe80-0xe6c];
+	u32	sdhcpcr;
+};
+
 #define SCFG_USBDRVVBUS_SELCR_USB1	0x00000000
 #define SCFG_USBDRVVBUS_SELCR_USB2	0x00000001
 #define SCFG_USBDRVVBUS_SELCR_USB3	0x00000002
@@ -238,10 +305,27 @@ struct ccsr_gur {
 #define SCFG_USB_PHY2			0x08500000
 #define SCFG_USB_PHY3			0x08510000
 #define SCFG_USB_PHY_RX_OVRD_IN_HI		0x200c
+#if defined CONFIG_ARCH_LS1046
+#define SCFG_QSPI_CLKSEL		0x40100000
 #define USB_PHY_RX_EQ_VAL_1		0x0000
 #define USB_PHY_RX_EQ_VAL_2		0x0080
 #define USB_PHY_RX_EQ_VAL_3		0x0380
 #define USB_PHY_RX_EQ_VAL_4		0x0b80
+#elif defined CONFIG_ARCH_LS1021
+#define SCFG_QSPI_CLKSEL		0x50100000
+#define USB_PHY_RX_EQ_VAL_1		0x0000
+#define USB_PHY_RX_EQ_VAL_2		0x8000
+#define USB_PHY_RX_EQ_VAL_3		0x8004
+#define USB_PHY_RX_EQ_VAL_4		0x800C
+#endif
+
+#define SCFG_ETSECDMAMCR_LE_BD_FR	0x00000c00
+#define SCFG_SNPCNFGCR_SEC_RD_WR	0xc0000000
+#define SCFG_ETSECCMCR_GE2_CLK125	0x04000000
+#define SCFG_ETSECCMCR_GE0_CLK125	0x00000000
+#define SCFG_SNPCNFGCR_DBG_RD_WR	0x000c0000
+#define SCFG_SNPCNFGCR_EDMA_SNP		0x00020000
+#define SCFG_ENDIANCR_LE		0x80000000
 
 #define SCFG_SNPCNFGCR_SECRDSNP		0x80000000
 #define SCFG_SNPCNFGCR_SECWRSNP		0x40000000
@@ -353,4 +437,89 @@ struct ccsr_scfg {
 	u32 pex3msir;
 };
 
+/* LS102XA Supplemental Configuration Unit */
+struct ls102xa_ccsr_scfg {
+	u32 dpslpcr;
+	u32 resv0[2];
+	u32 etsecclkdpslpcr;
+	u32 resv1[5];
+	u32 fuseovrdcr;
+	u32 pixclkcr;
+	u32 resv2[5];
+	u32 spimsicr;
+	u32 resv3[6];
+	u32 pex1pmwrcr;
+	u32 pex1pmrdsr;
+	u32 resv4[3];
+	u32 usb3prm1cr;
+	u32 usb4prm2cr;
+	u32 pex1rdmsgpldlsbsr;
+	u32 pex1rdmsgpldmsbsr;
+	u32 pex2rdmsgpldlsbsr;
+	u32 pex2rdmsgpldmsbsr;
+	u32 pex1rdmmsgrqsr;
+	u32 pex2rdmmsgrqsr;
+	u32 spimsiclrcr;
+	u32 pexmscportsr[2];
+	u32 pex2pmwrcr;
+	u32 resv5[24];
+	u32 mac1_streamid;
+	u32 mac2_streamid;
+	u32 mac3_streamid;
+	u32 pex1_streamid;
+	u32 pex2_streamid;
+	u32 dma_streamid;
+	u32 sata_streamid;
+	u32 usb3_streamid;
+	u32 qe_streamid;
+	u32 sdhc_streamid;
+	u32 adma_streamid;
+	u32 letechsftrstcr;
+	u32 core0_sft_rst;
+	u32 core1_sft_rst;
+	u32 resv6[1];
+	u32 usb_hi_addr;
+	u32 etsecclkadjcr;
+	u32 sai_clk;
+	u32 resv7[1];
+	u32 dcu_streamid;
+	u32 usb2_streamid;
+	u32 ftm_reset;
+	u32 altcbar;
+	u32 qspi_cfg;
+	u32 pmcintecr;
+	u32 pmcintlecr;
+	u32 pmcintsr;
+	u32 qos1;
+	u32 qos2;
+	u32 qos3;
+	u32 cci_cfg;
+	u32 endiancr;
+	u32 etsecdmamcr;
+	u32 usb3prm3cr;
+	u32 resv9[1];
+	u32 debug_streamid;
+	u32 resv10[5];
+	u32 snpcnfgcr;
+	u32 hrstcr;
+	u32 intpcr;
+	u32 resv12[20];
+	u32 scfgrevcr;
+	u32 coresrencr;
+	u32 pex2pmrdsr;
+	u32 eddrtqcfg;
+	u32 ddrc2cr;
+	u32 ddrc3cr;
+	u32 ddrc4cr;
+	u32 ddrgcr;
+	u32 resv13[120];
+	u32 qeioclkcr;
+	u32 etsecmcr;
+	u32 sdhciovserlcr;
+	u32 resv14[61];
+	u32 sparecr[8];
+	u32 resv15[248];
+	u32 core0sftrstsr;
+	u32 clusterpmcr;
+};
 #endif	/* __ARCH_FSL_LSCH2_IMMAP_H__*/

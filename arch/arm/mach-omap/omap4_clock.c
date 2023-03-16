@@ -2,10 +2,10 @@
 
 #include <common.h>
 #include <io.h>
-#include <mach/syslib.h>
-#include <mach/omap4-silicon.h>
-#include <mach/clocks.h>
-#include <mach/omap4-clock.h>
+#include <mach/omap/syslib.h>
+#include <mach/omap/omap4-silicon.h>
+#include <mach/omap/clocks.h>
+#include <mach/omap/omap4-clock.h>
 
 #define LDELAY	12000000
 

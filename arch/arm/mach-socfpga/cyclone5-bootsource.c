@@ -16,9 +16,9 @@
 #include <environment.h>
 #include <init.h>
 #include <io.h>
-#include <mach/cyclone5-system-manager.h>
-#include <mach/cyclone5-regs.h>
-#include <mach/arria10-system-manager.h>
+#include <mach/socfpga/cyclone5-system-manager.h>
+#include <mach/socfpga/cyclone5-regs.h>
+#include <mach/socfpga/arria10-system-manager.h>
 
 #define CYCLONE5_SYSMGR_BOOTINFO	0x14
 

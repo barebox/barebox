@@ -8,8 +8,8 @@
 #include <linux/marvell_phy.h>
 #include <linux/pci.h>
 #include <linux/phy.h>
-#include <mach/bbu.h>
-#include <mach/imx6.h>
+#include <mach/imx/bbu.h>
+#include <mach/imx/imx6.h>
 #include <net.h>
 
 #include "gsc.h"

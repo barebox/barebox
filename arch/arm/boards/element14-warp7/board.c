@@ -4,10 +4,10 @@
 #include <common.h>
 #include <init.h>
 #include <environment.h>
-#include <mach/bbu.h>
+#include <mach/imx/bbu.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
-#include <mach/generic.h>
+#include <mach/imx/generic.h>
 #include <linux/sizes.h>
 
 static int warp7_devices_init(void)

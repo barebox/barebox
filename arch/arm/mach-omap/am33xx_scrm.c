@@ -20,8 +20,8 @@
 #include <of.h>
 #include <asm/barebox-arm.h>
 #include <asm/memory.h>
-#include <mach/am33xx-silicon.h>
-#include <mach/emif4.h>
+#include <mach/omap/am33xx-silicon.h>
+#include <mach/omap/emif4.h>
 
 static int am33xx_scrm_probe(struct device *dev)
 {

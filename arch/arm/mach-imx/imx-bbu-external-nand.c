@@ -17,8 +17,8 @@
 #include <linux/mtd/mtd-abi.h>
 #include <linux/stat.h>
 #include <ioctl.h>
-#include <mach/bbu.h>
-#include <mach/imx-nand.h>
+#include <mach/imx/bbu.h>
+#include <mach/imx/imx-nand.h>
 #include <asm/barebox-arm-head.h>
 
 static int imx_bbu_external_nand_update(struct bbu_handler *handler, struct bbu_data *data)

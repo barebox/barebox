@@ -3,8 +3,8 @@
  * Copyright (c) 2006, Atmel Corporation
  */
 
-#include <mach/at91sam9_sdramc.h>
-#include <mach/early_udelay.h>
+#include <mach/at91/at91sam9_sdramc.h>
+#include <mach/at91/early_udelay.h>
 
 static inline void sdramc_wr(const struct at91sam9_sdramc_config *config,
 			     unsigned int offset,

@@ -20,9 +20,9 @@
 #include <asm/mmu.h>
 #include <asm/io.h>
 
-#include <mach/imx6-regs.h>
-#include <mach/generic.h>
-#include <mach/bbu.h>
+#include <mach/imx/imx6-regs.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/bbu.h>
 
 /*
  * This board can have 512MiB, 1GiB or 2GiB of SDRAM. The actual amount of SDRAM

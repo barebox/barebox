@@ -6,7 +6,7 @@
  * this software without specific prior written permission.
  */
 
-#include <mach/aic.h>
+#include <mach/at91/aic.h>
 #include <io.h>
 
 #define SFR_AICREDIR	0x54

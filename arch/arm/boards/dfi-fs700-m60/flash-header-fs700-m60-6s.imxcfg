@@ -4,8 +4,8 @@ loadaddr 0x17800000
 soc imx6
 ivtofs 0x400
 
-#include <mach/imx6-ddr-regs.h>
-#include <mach/imx6dl-ddr-regs.h>
+#include <mach/imx/imx6-ddr-regs.h>
+#include <mach/imx/imx6dl-ddr-regs.h>
 
 wm 32 MX6_IOM_GRP_DDR_TYPE 0x000c0000
 wm 32 MX6_IOM_GRP_DDRPKE 0x00000000

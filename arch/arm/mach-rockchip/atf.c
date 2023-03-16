@@ -2,7 +2,7 @@
 #include <common.h>
 #include <firmware.h>
 #include <asm/system.h>
-#include <mach/atf.h>
+#include <mach/rockchip/atf.h>
 #include <elf.h>
 #include <asm/atf_common.h>
 

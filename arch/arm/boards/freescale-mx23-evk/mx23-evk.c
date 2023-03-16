@@ -11,12 +11,11 @@
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 #include <asm/barebox-arm.h>
-#include <mach/imx-regs.h>
-#include <mach/clock.h>
-#include <mach/mci.h>
+#include <mach/mxs/imx-regs.h>
+#include <mach/mxs/mci.h>
 #include <usb/fsl_usb2.h>
-#include <mach/usb.h>
-#include <mach/iomux.h>
+#include <mach/mxs/usb.h>
+#include <mach/mxs/iomux.h>
 
 static struct mxs_mci_platform_data mci_pdata = {
 	.caps = MMC_CAP_4_BIT_DATA | MMC_CAP_SD_HIGHSPEED | MMC_CAP_MMC_HIGHSPEED,

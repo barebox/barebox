@@ -6,9 +6,9 @@
 #include <io.h>
 #include <linux/clkdev.h>
 #include <linux/err.h>
-#include <mach/imx27-regs.h>
-#include <mach/generic.h>
-#include <mach/revision.h>
+#include <mach/imx/imx27-regs.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/revision.h>
 
 #include "clk.h"
 

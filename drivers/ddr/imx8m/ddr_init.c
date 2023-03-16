@@ -9,9 +9,9 @@
 #include <errno.h>
 #include <io.h>
 #include <soc/imx8m/ddr.h>
-#include <mach/generic.h>
-#include <mach/imx8m-regs.h>
-#include <mach/imx8m-ccm-regs.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/imx8m-regs.h>
+#include <mach/imx/imx8m-ccm-regs.h>
 
 bool imx8m_ddr_old_spreadsheet = true;
 

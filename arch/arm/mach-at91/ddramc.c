@@ -5,11 +5,11 @@
 
 #include <common.h>
 #include <init.h>
-#include <mach/ddramc.h>
-#include <mach/hardware.h>
+#include <mach/at91/ddramc.h>
+#include <mach/at91/hardware.h>
 #include <asm/barebox-arm.h>
-#include <mach/at91_ddrsdrc.h>
-#include <mach/sama5_bootsource.h>
+#include <mach/at91/at91_ddrsdrc.h>
+#include <mach/at91/sama5_bootsource.h>
 #include <asm/memory.h>
 #include <pbl.h>
 #include <io.h>

@@ -7,21 +7,22 @@
 #include <common.h>
 #include <init.h>
 
-#include <asm/barebox-arm-head.h>
-#include <asm/barebox-arm.h>
+#include <mach/at91/barebox-arm.h>
 
-#include <mach/at91rm9200_mc.h>
-#include <mach/at91rm9200.h>
-#include <mach/at91_pio.h>
-#include <mach/at91_pmc.h>
-#include <mach/hardware.h>
+#include <mach/at91/at91rm9200_mc.h>
+#include <mach/at91/at91rm9200.h>
+#include <mach/at91/at91_pio.h>
+#include <mach/at91/at91_pmc.h>
+#include <mach/at91/hardware.h>
+
+#include "config.h"
 
 void static inline access_sdram(void)
 {
 	writel(0x00000000, AT91_CHIPSELECT_1);
 }
 
-void __naked __bare_init barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2)
+AT91_ENTRY_FUNCTION(start_at91rm9200ek, r0, r1, r2)
 {
 	u32 r;
 	int i;

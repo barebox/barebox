@@ -7,24 +7,24 @@
 #include <common.h>
 #include <init.h>
 #include <environment.h>
-#include <mach/imx6-regs.h>
+#include <mach/imx/imx6-regs.h>
 #include <gpio.h>
-#include <mach/bbu.h>
+#include <mach/imx/bbu.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 #include <linux/phy.h>
 #include <asm/io.h>
 #include <asm/mmu.h>
-#include <mach/generic.h>
+#include <mach/imx/generic.h>
 #include <linux/sizes.h>
 #include <net.h>
 #include <linux/micrel_phy.h>
-#include <mach/imx6.h>
-#include <mach/devices-imx6.h>
-#include <mach/iomux-mx6.h>
+#include <mach/imx/imx6.h>
+#include <mach/imx/devices-imx6.h>
+#include <mach/imx/iomux-mx6.h>
 #include <spi/spi.h>
-#include <mach/spi.h>
-#include <mach/usb.h>
+#include <mach/imx/spi.h>
+#include <mach/imx/usb.h>
 
 static iomux_v3_cfg_t udoo_enet_gpio_pads_1[] = {
 	/* RGMII reset */

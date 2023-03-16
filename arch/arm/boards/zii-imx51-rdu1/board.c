@@ -19,9 +19,9 @@
 #include <envfs.h>
 #include <init.h>
 #include <environment.h>
-#include <mach/bbu.h>
+#include <mach/imx/bbu.h>
 #include <libfile.h>
-#include <mach/imx5.h>
+#include <mach/imx/imx5.h>
 #include <net.h>
 #include <linux/crc8.h>
 #include <linux/sizes.h>

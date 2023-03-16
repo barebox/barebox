@@ -24,13 +24,13 @@
 #include <init.h>
 #include <io.h>
 #include <errno.h>
-#include <mach/omap3-silicon.h>
-#include <mach/omap4-silicon.h>
-#include <mach/am33xx-silicon.h>
-#include <mach/gpmc.h>
-#include <mach/sys_info.h>
-#include <mach/syslib.h>
-#include <mach/generic.h>
+#include <mach/omap/omap3-silicon.h>
+#include <mach/omap/omap4-silicon.h>
+#include <mach/omap/am33xx-silicon.h>
+#include <mach/omap/gpmc.h>
+#include <mach/omap/sys_info.h>
+#include <mach/omap/syslib.h>
+#include <mach/omap/generic.h>
 
 /**
  * @brief Do a Generic initialization of GPMC. if you choose otherwise,

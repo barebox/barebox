@@ -5,7 +5,7 @@
 #include <common.h>
 #include <hab.h>
 #include <io.h>
-#include <mach/generic.h>
+#include <mach/imx/generic.h>
 
 struct hab_status {
 	u8 value;

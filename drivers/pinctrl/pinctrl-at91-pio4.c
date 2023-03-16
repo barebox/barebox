@@ -11,7 +11,7 @@
 #include <pinctrl.h>
 #include <malloc.h>
 #include <gpio.h>
-#include <mach/gpio.h>
+#include <mach/at91/gpio.h>
 #include <linux/clk.h>
 
 #include <dt-bindings/pinctrl/at91.h>

@@ -4,9 +4,9 @@
 #include <of.h>
 #include <init.h>
 #include <io.h>
-#include <mach/revision.h>
-#include <mach/generic.h>
-#include <mach/reset-reason.h>
+#include <mach/imx/revision.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/reset-reason.h>
 
 static int __imx_silicon_revision = IMX_CHIP_REV_UNKNOWN;
 

@@ -1,4 +1,4 @@
-#include <mach/zynq7000-header-regs.h>
+#include <zynq/zynq7000-header-regs.h>
 
 wm 32 ZYNQ_SLCR_UNLOCK		0x0000DF0D
 wm 32 ZYNQ_CLK_621_TRUE		0x00000001

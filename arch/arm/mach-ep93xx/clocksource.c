@@ -18,7 +18,7 @@
 #include <clock.h>
 #include <io.h>
 #include <restart.h>
-#include <mach/ep93xx-regs.h>
+#include <mach/ep93xx/ep93xx-regs.h>
 
 #define TIMER_CLKSEL		(1 << 3)
 #define TIMER_MODE		(1 << 6)

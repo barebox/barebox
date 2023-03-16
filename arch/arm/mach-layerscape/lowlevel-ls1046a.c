@@ -3,8 +3,8 @@
 #include <io.h>
 #include <asm/syscounter.h>
 #include <asm/system.h>
-#include <mach/errata.h>
-#include <mach/lowlevel.h>
+#include <mach/layerscape/errata.h>
+#include <mach/layerscape/lowlevel.h>
 #include <soc/fsl/immap_lsch2.h>
 #include <soc/fsl/fsl_immap.h>
 

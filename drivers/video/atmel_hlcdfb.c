@@ -9,9 +9,9 @@
 #include <io.h>
 #include <init.h>
 #include <linux/clk.h>
-#include <mach/hardware.h>
-#include <mach/atmel_hlcdc.h>
-#include <mach/cpu.h>
+#include <mach/at91/hardware.h>
+#include <mach/at91/atmel_hlcdc.h>
+#include <mach/at91/cpu.h>
 #include <errno.h>
 
 #include "atmel_lcdfb.h"

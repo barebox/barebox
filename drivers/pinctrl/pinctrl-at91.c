@@ -18,9 +18,9 @@
 #include <getopt.h>
 #include <deep-probe.h>
 
-#include <mach/at91_pio.h>
-#include <mach/gpio.h>
-#include <mach/iomux.h>
+#include <mach/at91/at91_pio.h>
+#include <mach/at91/gpio.h>
+#include <mach/at91/iomux.h>
 
 #include <pinctrl.h>
 

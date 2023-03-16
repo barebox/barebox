@@ -4,7 +4,7 @@
 #include <init.h>
 #include <io.h>
 #include <bbu.h>
-#include <mach/arria10-system-manager.h>
+#include <mach/socfpga/arria10-system-manager.h>
 
 static int achilles_init(void)
 {

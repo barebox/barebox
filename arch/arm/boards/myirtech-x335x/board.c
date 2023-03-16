@@ -7,7 +7,7 @@
 #include <envfs.h>
 #include <init.h>
 #include <linux/sizes.h>
-#include <mach/am33xx-generic.h>
+#include <mach/omap/am33xx-generic.h>
 
 static struct omap_barebox_part myir_barebox_part = {
 	.nand_offset = SZ_128K * 4,

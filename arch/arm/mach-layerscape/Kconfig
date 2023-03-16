@@ -36,4 +36,14 @@ config MACH_TQMLS1046A
 	select DDR_FSL
 	select DDR_FSL_DDR4
 
+config ARCH_LS1021
+	select CPU_V7
+	bool
+
+config MACH_LS1021AIOT
+	bool "LS1021AIOT Board"
+	select ARCH_LS1021
+	select DDR_FSL
+	select DDR_FSL_DDR3
+
 endif

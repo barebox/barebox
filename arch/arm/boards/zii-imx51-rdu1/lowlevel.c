@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <debug_ll.h>
-#include <mach/clock-imx51_53.h>
-#include <mach/iomux-mx51.h>
+#include <mach/imx/debug_ll.h>
+#include <mach/imx/clock-imx51_53.h>
+#include <mach/imx/iomux-mx51.h>
 #include <common.h>
-#include <mach/esdctl.h>
-#include <mach/generic.h>
+#include <mach/imx/esdctl.h>
+#include <mach/imx/generic.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 

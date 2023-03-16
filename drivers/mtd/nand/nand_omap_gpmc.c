@@ -68,8 +68,8 @@
 #include <linux/mtd/rawnand.h>
 #include <linux/mtd/nand_ecc.h>
 #include <io.h>
-#include <mach/gpmc.h>
-#include <mach/gpmc_nand.h>
+#include <mach/omap/gpmc.h>
+#include <mach/omap/gpmc_nand.h>
 #include <platform_data/elm.h>
 
 #include "nand_omap_bch_decoder.h"

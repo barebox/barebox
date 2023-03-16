@@ -10,13 +10,13 @@
 #include <gpio.h>
 
 #include <generated/mach-types.h>
-#include <mach/imx5.h>
-#include <mach/generic.h>
-#include <mach/imx53-regs.h>
-#include <mach/esdctl.h>
+#include <mach/imx/imx5.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/imx53-regs.h>
+#include <mach/imx/esdctl.h>
 #include <asm/armlinux.h>
-#include <mach/bbu.h>
-#include <mach/iim.h>
+#include <mach/imx/bbu.h>
+#include <mach/imx/iim.h>
 
 
 struct ccwmx53_ident {

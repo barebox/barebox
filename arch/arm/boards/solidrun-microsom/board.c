@@ -9,10 +9,10 @@
 #include <envfs.h>
 #include <gpio.h>
 #include <init.h>
-#include <mach/bbu.h>
-#include <mach/generic.h>
-#include <mach/imx6-regs.h>
-#include <mach/imx6.h>
+#include <mach/imx/bbu.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/imx6-regs.h>
+#include <mach/imx/imx6.h>
 #include <mfd/imx6q-iomuxc-gpr.h>
 #include <linux/clk.h>
 #include <linux/sizes.h>

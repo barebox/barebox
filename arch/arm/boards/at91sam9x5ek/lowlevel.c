@@ -2,7 +2,7 @@
 
 #include <common.h>
 #include <linux/sizes.h>
-#include <mach/at91_ddrsdrc.h>
+#include <mach/at91/at91_ddrsdrc.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 #include <io.h>

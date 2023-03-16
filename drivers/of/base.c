@@ -2513,13 +2513,13 @@ static int of_probe_memory(void)
 }
 mem_initcall(of_probe_memory);
 
-static void of_platform_device_create_root(struct device_node *np)
+struct device *of_platform_device_create_root(struct device_node *np)
 {
 	static struct device *dev;
 	int ret;
 
 	if (dev)
-		return;
+		return dev;
 
 	dev = xzalloc(sizeof(*dev));
 	dev->id = DEVICE_ID_SINGLE;
@@ -2527,8 +2527,12 @@ static void of_platform_device_create_root(struct device_node *np)
 	dev_set_name(dev, "machine");
 
 	ret = platform_device_register(dev);
-	if (ret)
+	if (ret) {
 		free_device(dev);
+		return ERR_PTR(ret);
+	}
+
+	return dev;
 }
 
 static const struct of_device_id reserved_mem_matches[] = {
@@ -2617,19 +2621,26 @@ out:
 	return dn;
 }
 
-struct device_node *of_copy_node(struct device_node *parent, const struct device_node *other)
+void of_merge_nodes(struct device_node *np, const struct device_node *other)
 {
-	struct device_node *np, *child;
+	struct device_node *child;
 	struct property *pp;
-
-	np = of_new_node(parent, other->name);
-	np->phandle = other->phandle;
 
 	list_for_each_entry(pp, &other->properties, list)
 		of_new_property(np, pp->name, pp->value, pp->length);
 
 	for_each_child_of_node(other, child)
 		of_copy_node(np, child);
+}
+
+struct device_node *of_copy_node(struct device_node *parent, const struct device_node *other)
+{
+	struct device_node *np;
+
+	np = of_new_node(parent, other->name);
+	np->phandle = other->phandle;
+
+	of_merge_nodes(np, other);
 
 	return np;
 }

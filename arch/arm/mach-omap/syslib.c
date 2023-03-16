@@ -25,7 +25,7 @@
 #include <config.h>
 #include <common.h>
 #include <io.h>
-#include <mach/syslib.h>
+#include <mach/omap/syslib.h>
 
 /**
  * @brief simple spin loop

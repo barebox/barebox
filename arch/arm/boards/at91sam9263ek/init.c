@@ -12,15 +12,15 @@
 #include <fs.h>
 #include <fcntl.h>
 #include <io.h>
-#include <mach/hardware.h>
+#include <mach/at91/hardware.h>
 #include <nand.h>
 #include <linux/sizes.h>
 #include <linux/mtd/nand.h>
-#include <mach/at91_pmc.h>
-#include <mach/board.h>
-#include <mach/iomux.h>
+#include <mach/at91/at91_pmc.h>
+#include <mach/at91/board.h>
+#include <mach/at91/iomux.h>
 #include <gpio.h>
-#include <mach/at91sam9_smc.h>
+#include <mach/at91/at91sam9_smc.h>
 
 static struct atmel_nand_data nand_pdata = {
 	.ale		= 21,

@@ -11,11 +11,11 @@
 #include <pwm.h>
 #include <linux/sizes.h>
 
-#include <mach/devices.h>
-#include <mach/mfp-pxa27x.h>
-#include <mach/pxa-regs.h>
-#include <mach/udc_pxa2xx.h>
-#include <mach/mci_pxa2xx.h>
+#include <mach/pxa/devices.h>
+#include <mach/pxa/mfp-pxa27x.h>
+#include <mach/pxa/pxa-regs.h>
+#include <mach/pxa/udc_pxa2xx.h>
+#include <mach/pxa/mci_pxa2xx.h>
 
 #include <platform_data/eth-smc91111.h>
 #include <asm/armlinux.h>

@@ -17,7 +17,7 @@
 #include <init.h>
 #include <linux/stat.h>
 #include <linux/err.h>
-#include <mach/omap4_rom_usb.h>
+#include <mach/omap/omap4_rom_usb.h>
 
 #define OMAP4_USBBOOT_FS_MAGIC		0x5562464D
 #define OMAP4_USBBOOT_FS_CMD_OPEN	0x46530000
@@ -143,8 +143,9 @@ static int omap4_usbbootfs_stat(struct device *dev, const char *filename,
 
 static int omap4_usbbootfs_probe(struct device *dev)
 {
-	return 0;
+	return omap4_usbboot_open();
 }
+
 static void omap4_usbbootfs_remove(struct device *dev)
 {
 }

@@ -5,9 +5,9 @@
 #include <common.h>
 #include <linux/sizes.h>
 #include <io.h>
-#include <mach/imx53-regs.h>
-#include <mach/esdctl.h>
-#include <mach/generic.h>
+#include <mach/imx/imx53-regs.h>
+#include <mach/imx/esdctl.h>
+#include <mach/imx/generic.h>
 #include <image-metadata.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>

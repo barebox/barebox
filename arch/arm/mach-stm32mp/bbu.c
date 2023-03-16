@@ -11,7 +11,7 @@
 #include <linux/sizes.h>
 #include <linux/stat.h>
 #include <ioctl.h>
-#include <mach/bbu.h>
+#include <mach/stm32mp/bbu.h>
 #include <libfile.h>
 #include <linux/bitfield.h>
 

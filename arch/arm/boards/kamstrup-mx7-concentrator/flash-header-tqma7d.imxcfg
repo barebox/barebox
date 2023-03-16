@@ -4,7 +4,7 @@ soc imx7
 loadaddr 0xbfbff000
 ivtofs 0x400
 
-#include <mach/imx7-ddr-regs.h>
+#include <mach/imx/imx7-ddr-regs.h>
 
 wm 32 0x30340004 0x4F400005 /* IOMUXC_GPR_GPR1 */
 /* Clear then set bit30 to ensure exit from DDR retention */

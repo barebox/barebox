@@ -13,9 +13,9 @@
 #include <globalvar.h>
 #include <gpio.h>
 #include <i2c/i2c.h>
-#include <mach/bbu.h>
-#include <mach/imx6.h>
-#include <mach/ocotp-fusemap.h>
+#include <mach/imx/bbu.h>
+#include <mach/imx/imx6.h>
+#include <mach/imx/ocotp-fusemap.h>
 #include <mfd/imx6q-iomuxc-gpr.h>
 #include <mfd/syscon.h>
 #include <net.h>

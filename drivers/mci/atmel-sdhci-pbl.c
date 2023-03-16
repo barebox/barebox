@@ -11,10 +11,10 @@
 #include <pbl/bio.h>
 #include <mci.h>
 #include <debug_ll.h>
-#include <mach/xload.h>
+#include <mach/at91/xload.h>
 #include "atmel-sdhci.h"
 
-#include <mach/early_udelay.h>
+#include <mach/at91/early_udelay.h>
 
 #ifdef __PBL__
 #define udelay early_udelay

@@ -13,10 +13,10 @@
 #include <io.h>
 #include <pwm.h>
 
-#include <mach/hardware.h>
-#include <mach/clock.h>
-#include <mach/pxa-regs.h>
-#include <mach/regs-pwm.h>
+#include <mach/pxa/hardware.h>
+#include <mach/pxa/clock.h>
+#include <mach/pxa/pxa-regs.h>
+#include <mach/pxa/regs-pwm.h>
 #include <linux/math64.h>
 #include <linux/compiler.h>
 

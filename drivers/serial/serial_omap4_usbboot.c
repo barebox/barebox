@@ -4,7 +4,7 @@
 #include <init.h>
 #include <malloc.h>
 #include <errno.h>
-#include <mach/omap4_rom_usb.h>
+#include <mach/omap/omap4_rom_usb.h>
 
 struct serial_omap4_usbboot_priv {
 	struct console_device cdev;
@@ -49,6 +49,12 @@ static int serial_omap4_usbboot_getc(struct console_device *cdev)
 static int serial_omap4_usbboot_probe(struct device *dev)
 {
 	struct serial_omap4_usbboot_priv *priv;
+	int ret;
+
+	ret = omap4_usbboot_open();
+	if (ret)
+		return ret;
+	
 	priv = xzalloc(sizeof(*priv));
 
 	priv->cdev.dev = dev;

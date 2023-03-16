@@ -60,7 +60,7 @@
 #include <of.h>
 #include <of_address.h>
 #include <linux/mbus.h>
-#include <mach/common.h>
+#include <mach/mvebu/common.h>
 
 /* DDR target is the same on all platforms */
 #define TARGET_DDR		0

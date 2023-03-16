@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
 #if defined CONFIG_ARCH_EP93XX
-#include <mach/barebox.lds.h>
+#include <mach/ep93xx/barebox.lds.h>
 #endif
 
 #ifdef CONFIG_CPU_32

@@ -32,7 +32,7 @@
 #include <io.h>
 #include <dma/apbh-dma.h>
 #include <stmp-device.h>
-#include <mach/generic.h>
+#include <mach/imx/generic.h>
 #include <soc/imx/gpmi-nand.h>
 
 #include "internals.h"

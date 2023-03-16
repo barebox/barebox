@@ -3,7 +3,7 @@
 #ifndef __BOARD_BEAGLEBONE_H
 #define __BOARD_BEAGLEBONE_H
 
-#include <mach/am33xx-generic.h>
+#include <mach/omap/am33xx-generic.h>
 
 static inline int is_beaglebone_black(void)
 {

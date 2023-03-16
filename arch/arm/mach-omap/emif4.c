@@ -11,7 +11,7 @@
 
 #include <common.h>
 #include <io.h>
-#include <mach/emif4.h>
+#include <mach/omap/emif4.h>
 
 /*
  * AM35xx configuration values

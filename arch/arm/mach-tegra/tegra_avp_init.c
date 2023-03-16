@@ -20,12 +20,12 @@
 #include <common.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
-#include <mach/lowlevel.h>
-#include <mach/tegra20-car.h>
-#include <mach/tegra20-pmc.h>
-#include <mach/tegra30-car.h>
-#include <mach/tegra30-flow.h>
-#include <mach/tegra124-car.h>
+#include <mach/tegra/lowlevel.h>
+#include <mach/tegra/tegra20-car.h>
+#include <mach/tegra/tegra20-pmc.h>
+#include <mach/tegra/tegra30-car.h>
+#include <mach/tegra/tegra30-flow.h>
+#include <mach/tegra/tegra124-car.h>
 
 /* instruct the PMIC to enable the CPU power rail */
 static void enable_maincomplex_powerrail(void)

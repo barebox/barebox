@@ -16,10 +16,10 @@
 #include <generated/mach-types.h>
 #include <linux/sizes.h>
 #include <usb/fsl_usb2.h>
-#include <mach/generic.h>
-#include <mach/imx50-regs.h>
-#include <mach/imx5.h>
-#include <mach/revision.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/imx50-regs.h>
+#include <mach/imx/imx5.h>
+#include <mach/imx/revision.h>
 
 /* 16 byte id for serial number */
 #define ATAG_SERIAL16   0x5441000a

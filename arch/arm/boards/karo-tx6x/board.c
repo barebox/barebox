@@ -16,8 +16,8 @@
 #include <linux/clk.h>
 #include <linux/kernel.h>
 #include <environment.h>
-#include <mach/bbu.h>
-#include <mach/imx6.h>
+#include <mach/imx/bbu.h>
+#include <mach/imx/imx6.h>
 #include <mfd/imx6q-iomuxc-gpr.h>
 #include "pmic.h"
 

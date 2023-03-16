@@ -113,13 +113,6 @@ config NAND_ATMEL_PMECC
 	help
 	  Support for PMECC present on the SoC sam9x5 and sam9n12
 
-config NAND_S3C24XX
-	bool
-	prompt "Samsung S3C24XX NAND driver"
-	depends on ARCH_S3C24xx
-	help
-	  Add support for processor's NAND device controller.
-
 config MTD_NAND_ECC_SW_HAMMING_SMC
 	bool "NAND ECC Smart Media byte order"
 	default n

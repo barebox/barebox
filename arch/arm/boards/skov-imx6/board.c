@@ -11,7 +11,7 @@
 #include <gpio.h>
 #include <init.h>
 #include <linux/micrel_phy.h>
-#include <mach/bbu.h>
+#include <mach/imx/bbu.h>
 #include <net.h>
 #include <of_gpio.h>
 

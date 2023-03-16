@@ -10,9 +10,9 @@
 #include <asm/barebox-arm.h>
 #include <io.h>
 #include <generated/mach-types.h>
-#include <mach/imx-regs.h>
-#include <mach/devices.h>
-#include <mach/iomux.h>
+#include <mach/mxs/imx-regs.h>
+#include <mach/mxs/devices.h>
+#include <mach/mxs/iomux.h>
 #include <asm/mmu.h>
 
 #include "tx28.h"

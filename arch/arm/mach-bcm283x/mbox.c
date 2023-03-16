@@ -16,8 +16,8 @@
 #include <of_address.h>
 #include <pbl.h>
 
-#include <mach/mbox.h>
-#include <mach/core.h>
+#include <mach/bcm283x/mbox.h>
+#include <mach/bcm283x/core.h>
 
 #define TIMEOUT (MSECOND * 1000)
 

@@ -19,13 +19,13 @@
 
 #include <asm/armlinux.h>
 
-#include <mach/devices-imx51.h>
-#include <mach/imx51-regs.h>
-#include <mach/iomux-mx51.h>
-#include <mach/revision.h>
-#include <mach/generic.h>
-#include <mach/imx5.h>
-#include <mach/bbu.h>
+#include <mach/imx/devices-imx51.h>
+#include <mach/imx/imx51-regs.h>
+#include <mach/imx/iomux-mx51.h>
+#include <mach/imx/revision.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/imx5.h>
+#include <mach/imx/bbu.h>
 
 #define GPIO_BACKLIGHT_POWER	IMX_GPIO_NR(4, 12)
 #define GPIO_BACKLIGHT_PWM	IMX_GPIO_NR(1, 2)

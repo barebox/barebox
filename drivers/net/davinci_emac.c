@@ -31,7 +31,7 @@
 #include <init.h>
 #include <asm/system.h>
 #include <linux/phy.h>
-#include <mach/emac_defs.h>
+#include <mach/omap/emac_defs.h>
 #include <of_net.h>
 #include "davinci_emac.h"
 

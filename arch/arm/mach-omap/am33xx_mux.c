@@ -15,8 +15,8 @@
 #include <common.h>
 #include <config.h>
 #include <asm/io.h>
-#include <mach/am33xx-mux.h>
-#include <mach/am33xx-silicon.h>
+#include <mach/omap/am33xx-mux.h>
+#include <mach/omap/am33xx-silicon.h>
 
 #define MUX_CFG(value, offset)	\
 	__raw_writel(value, (AM33XX_CTRL_BASE + offset));

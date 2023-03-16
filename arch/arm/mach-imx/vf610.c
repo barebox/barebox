@@ -4,11 +4,11 @@
 #include <common.h>
 #include <io.h>
 #include <linux/sizes.h>
-#include <mach/generic.h>
-#include <mach/revision.h>
-#include <mach/vf610.h>
-#include <mach/reset-reason.h>
-#include <mach/ocotp.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/revision.h>
+#include <mach/imx/vf610.h>
+#include <mach/imx/reset-reason.h>
+#include <mach/imx/ocotp.h>
 
 static const struct imx_reset_reason vf610_reset_reasons[] = {
 	{ VF610_SRC_SRSR_POR_RST,       RESET_POR,   0 },

@@ -9,19 +9,19 @@
 #include <gpio.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
-#include <mach/omap4-silicon.h>
-#include <mach/sdrc.h>
-#include <mach/sys_info.h>
-#include <mach/syslib.h>
-#include <mach/control.h>
+#include <mach/omap/omap4-silicon.h>
+#include <mach/omap/sdrc.h>
+#include <mach/omap/sys_info.h>
+#include <mach/omap/syslib.h>
+#include <mach/omap/control.h>
 #include <linux/err.h>
 #include <linux/sizes.h>
 #include <nand.h>
 #include <asm/mmu.h>
-#include <mach/gpmc.h>
-#include <mach/gpmc_nand.h>
-#include <mach/omap_hsmmc.h>
-#include <mach/omap4-devices.h>
+#include <mach/omap/gpmc.h>
+#include <mach/omap/gpmc_nand.h>
+#include <mach/omap/omap_hsmmc.h>
+#include <mach/omap/omap4-devices.h>
 #include <i2c/i2c.h>
 
 static int pcaaxl2_console_init(void)

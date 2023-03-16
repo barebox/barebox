@@ -13,9 +13,9 @@
 #include <malloc.h>
 #include <filetype.h>
 #include <xymodem.h>
-#include <mach/generic.h>
-#include <mach/am33xx-generic.h>
-#include <mach/omap3-generic.h>
+#include <mach/omap/generic.h>
+#include <mach/omap/am33xx-generic.h>
+#include <mach/omap/omap3-generic.h>
 #include <net.h>
 #include <environment.h>
 #include <dhcp.h>
@@ -355,6 +355,9 @@ int omap_set_barebox_part(struct omap_barebox_part *part)
 
 static int omap_set_xload(void)
 {
+	if (!cpu_is_omap())
+		return 0;
+
 	barebox_main = omap_xload;
 
 	return 0;

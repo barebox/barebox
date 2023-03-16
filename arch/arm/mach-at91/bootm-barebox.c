@@ -6,7 +6,7 @@
 #include <common.h>
 #include <init.h>
 #include <memory.h>
-#include <mach/sama5_bootsource.h>
+#include <mach/at91/sama5_bootsource.h>
 
 unsigned long at91_bootsource;
 EXPORT_SYMBOL(at91_bootsource);

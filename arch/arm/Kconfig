@@ -16,9 +16,6 @@ config ARM_LINUX
 	default y
 	depends on CMD_BOOTZ || CMD_BOOTU || BOOTM
 
-config HAVE_MACH_ARM_HEAD
-	bool
-
 config ARM_USE_COMPRESSED_DTB
        bool
        select USE_COMPRESSED_DTB
@@ -35,33 +32,25 @@ config ARCH_STM32
 	  Selected by both STM32 MCUs and MPUs to restrict driver
 	  visibility.
 
+config ARCH_OMAP
+	bool
+	select HAS_DEBUG_LL
+	select GPIOLIB
+
 choice
 	prompt "ARM system type"
+
+config ARCH_MULTIARCH
+	bool "Allow multiple archs to be selected"
 
 config ARCH_AT91
 	bool "Atmel AT91"
 	select GPIOLIB
 	select CLKDEV_LOOKUP
+	select HAVE_PBL_MULTI_IMAGES
 	select HAS_DEBUG_LL
 	select HAVE_CLK
 	select COMMON_CLK_AT91 if COMMON_CLK_OF_PROVIDER
-
-
-config ARCH_BCM283X
-	bool "Broadcom BCM283x based boards"
-	select GPIOLIB
-	select CLKDEV_LOOKUP
-	select COMMON_CLK
-	select COMMON_CLK_OF_PROVIDER
-	select CLOCKSOURCE_BCM283X
-	select ARM_AMBA
-	select HAS_DEBUG_LL
-	select RELOCATABLE
-	select OFTREE
-	select OFDEVICE
-	select HAVE_PBL_MULTI_IMAGES
-	select CPU_SUPPORTS_32BIT_KERNEL
-	select CPU_SUPPORTS_64BIT_KERNEL
 
 config ARCH_CLPS711X
 	bool "Cirrus Logic EP711x/EP721x/EP731x"
@@ -96,14 +85,6 @@ config ARCH_EP93XX
 	select CPU_ARM920T
 	select GENERIC_GPIO
 
-config ARCH_IMX
-	bool "Freescale iMX-based"
-	select GPIOLIB
-	select COMMON_CLK
-	select CLKDEV_LOOKUP
-	select WATCHDOG_IMX_RESET_SOURCE
-	select HAS_DEBUG_LL
-
 config ARCH_LAYERSCAPE
 	bool "NXP Layerscape based"
 	select GPIOLIB
@@ -123,7 +104,6 @@ config ARCH_MVEBU
 	select CLKDEV_LOOKUP
 	select GPIOLIB
 	select HAS_DEBUG_LL
-	select HAVE_MACH_ARM_HEAD
 	select HAVE_PBL_MULTI_IMAGES
 	select HW_HAS_PCI
 	select MVEBU_MBUS
@@ -148,26 +128,13 @@ config ARCH_NOMADIK
 	help
 	  Support for the Nomadik platform by ST-Ericsson
 
-config ARCH_OMAP
+config ARCH_OMAP_SINGLE
 	bool "TI OMAP"
-	select HAS_DEBUG_LL
-	select GPIOLIB
+	select ARCH_OMAP
 
 config ARCH_PXA
 	bool "Intel/Marvell PXA based"
 	select GENERIC_GPIO
-
-config ARCH_ROCKCHIP
-	bool "Rockchip RX3xxx"
-	select COMMON_CLK
-	select CLKDEV_LOOKUP
-	select COMMON_CLK_OF_PROVIDER
-	select GPIOLIB
-	select PINCTRL
-	select PINCTRL_ROCKCHIP
-	select OFTREE
-	select HAVE_PBL_MULTI_IMAGES
-	select HAS_DEBUG_LL
 
 config ARCH_SOCFPGA
 	bool "Altera SOCFPGA"
@@ -177,59 +144,11 @@ config ARCH_SOCFPGA
 	select COMMON_CLK
 	select CLKDEV_LOOKUP
 
-config ARCH_S3C24xx
-	bool "Samsung S3C2410, S3C2440"
-	select ARCH_SAMSUNG
-	select CPU_ARM920T
-	select GENERIC_GPIO
-
-config ARCH_S5PCxx
-	bool "Samsung S5PC110, S5PV210"
-	select ARCH_SAMSUNG
-	select CPU_V7
-	select GENERIC_GPIO
-
-config ARCH_S3C64xx
-	bool "Samsung S3C64xx"
-	select ARCH_SAMSUNG
-	select CPU_V6
-	select GENERIC_GPIO
-
-config ARCH_STM32MP
-	bool "STMicroelectronics STM32MP"
-	select ARCH_STM32
-	select CPU_V7
-	select HAVE_PBL_MULTI_IMAGES
-	select CLKDEV_LOOKUP
-	select COMMON_CLK
-	select COMMON_CLK_OF_PROVIDER
-	select HAS_DEBUG_LL
-	select HAVE_CLK
-	select GPIOLIB
-	select ARCH_HAS_RESET_CONTROLLER
-	select ARM_AMBA
-	select ARM_SMCCC
-	select ARM_USE_COMPRESSED_DTB
-
 config ARCH_VERSATILE
 	bool "ARM Versatile boards (ARM926EJ-S)"
 	select GPIOLIB
 	select HAVE_CLK
 	select HAS_DEBUG_LL
-
-config ARCH_VEXPRESS
-	bool "ARM Vexpress & virt boards"
-	select HAS_DEBUG_LL
-	select CPU_V7
-	select ARM_AMBA
-	select AMBA_SP804
-	select CLKDEV_LOOKUP
-	select COMMON_CLK
-	select COMMON_CLK_OF_PROVIDER
-	select OFTREE
-	select OFDEVICE
-	select RELOCATABLE
-	select HAVE_PBL_MULTI_IMAGES
 
 config ARCH_TEGRA
 	bool "NVIDIA Tegra"
@@ -265,6 +184,101 @@ config ARCH_ZYNQ
 	select PBL_IMAGE
 	select GPIOLIB
 
+config ARCH_ARM64_VIRT
+	bool "ARM64 QEMU Virt board"
+	select CPU_V8
+	select HAVE_PBL_MULTI_IMAGES
+	select OFDEVICE
+	select OFTREE
+	select RELOCATABLE
+	select CPU_SUPPORTS_64BIT_KERNEL
+	select ARM_AMBA
+	select BOARD_ARM_VIRT
+	select HW_HAS_PCI
+	select HAS_DEBUG_LL
+
+endchoice
+
+config ARCH_BCM283X
+	bool "Broadcom BCM283x based boards"
+	select GPIOLIB
+	select CLKDEV_LOOKUP
+	select COMMON_CLK
+	select COMMON_CLK_OF_PROVIDER
+	select CLOCKSOURCE_BCM283X
+	select ARM_AMBA
+	select HAS_DEBUG_LL
+	select RELOCATABLE
+	select OFTREE
+	select OFDEVICE
+	select HAVE_PBL_MULTI_IMAGES
+	select CPU_SUPPORTS_32BIT_KERNEL
+	select CPU_SUPPORTS_64BIT_KERNEL
+
+config ARCH_IMX
+	bool "Freescale iMX-based"
+	depends on ARCH_MULTIARCH
+	select GPIOLIB
+	select COMMON_CLK
+	select CLKDEV_LOOKUP
+	select WATCHDOG_IMX_RESET_SOURCE
+	select HAS_DEBUG_LL
+	select HAVE_PBL_MULTI_IMAGES
+	select RELOCATABLE
+	select CPU_SUPPORTS_32BIT_KERNEL
+	select CPU_SUPPORTS_64BIT_KERNEL
+
+config ARCH_OMAP_MULTI
+	bool "TI OMAP"
+	depends on ARCH_MULTIARCH
+	select OMAP_MULTI_BOARDS
+	select ARCH_OMAP
+	select HAS_DEBUG_LL
+	select GPIOLIB
+
+config ARCH_ROCKCHIP
+	bool "Rockchip RX3xxx"
+	depends on ARCH_MULTIARCH
+	select COMMON_CLK
+	select CLKDEV_LOOKUP
+	select COMMON_CLK_OF_PROVIDER
+	select GPIOLIB
+	select PINCTRL
+	select PINCTRL_ROCKCHIP
+	select OFTREE
+	select HAVE_PBL_MULTI_IMAGES
+	select HAS_DEBUG_LL
+
+config ARCH_STM32MP
+	bool "STMicroelectronics STM32MP"
+	select ARCH_STM32
+	select CPU_V7
+	select HAVE_PBL_MULTI_IMAGES
+	select CLKDEV_LOOKUP
+	select COMMON_CLK
+	select COMMON_CLK_OF_PROVIDER
+	select HAS_DEBUG_LL
+	select HAVE_CLK
+	select GPIOLIB
+	select ARCH_HAS_RESET_CONTROLLER
+	select ARM_AMBA
+	select ARM_SMCCC
+	select ARM_USE_COMPRESSED_DTB
+
+config ARCH_VEXPRESS
+	bool "ARM Vexpress & virt boards"
+	select HAS_DEBUG_LL
+	select CPU_V7
+	select ARM_AMBA
+	select AMBA_SP804
+	select CLKDEV_LOOKUP
+	select COMMON_CLK
+	select COMMON_CLK_OF_PROVIDER
+	select OFTREE
+	select OFDEVICE
+	select RELOCATABLE
+	select HAVE_PBL_MULTI_IMAGES
+
 config ARCH_ZYNQMP
 	bool "Xilinx ZynqMP-based boards"
 	select CPU_V8
@@ -281,21 +295,6 @@ config ARCH_ZYNQMP
 	select CPU_SUPPORTS_64BIT_KERNEL
 	select HAS_MACB
 
-config ARCH_ARM64_VIRT
-	bool "ARM64 QEMU Virt board"
-	select CPU_V8
-	select HAVE_PBL_MULTI_IMAGES
-	select OFDEVICE
-	select OFTREE
-	select RELOCATABLE
-	select CPU_SUPPORTS_64BIT_KERNEL
-	select ARM_AMBA
-	select BOARD_ARM_VIRT
-	select HW_HAS_PCI
-	select HAS_ASM_DEBUG_LL
-
-endchoice
-
 source "arch/arm/cpu/Kconfig"
 source "arch/arm/mach-at91/Kconfig"
 source "arch/arm/mach-bcm283x/Kconfig"
@@ -311,7 +310,6 @@ source "arch/arm/mach-nomadik/Kconfig"
 source "arch/arm/mach-omap/Kconfig"
 source "arch/arm/mach-pxa/Kconfig"
 source "arch/arm/mach-rockchip/Kconfig"
-source "arch/arm/mach-samsung/Kconfig"
 source "arch/arm/mach-socfpga/Kconfig"
 source "arch/arm/mach-stm32mp/Kconfig"
 source "arch/arm/mach-versatile/Kconfig"

@@ -6,7 +6,7 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
-#include <mach/imx7-regs.h>
+#include <mach/imx/imx7-regs.h>
 #include <linux/phy.h>
 #include <mfd/imx7-iomuxc-gpr.h>
 

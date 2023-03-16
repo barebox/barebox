@@ -5,11 +5,12 @@
 
 #include <common.h>
 #include <debug_ll.h>
+#include <mach/imx/debug_ll.h>
 #include <firmware.h>
-#include <mach/generic.h>
+#include <mach/imx/generic.h>
 #include <asm/barebox-arm.h>
-#include <mach/esdctl.h>
-#include <mach/iomux-mx6ul.h>
+#include <mach/imx/esdctl.h>
+#include <mach/imx/iomux-mx6ul.h>
 #include <asm/cache.h>
 
 extern char __dtb_z_imx6ul_mba6ulx_start[];

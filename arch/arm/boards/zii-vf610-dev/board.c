@@ -10,7 +10,7 @@
 #include <linux/clk.h>
 #include <dt-bindings/clock/vf610-clock.h>
 #include <envfs.h>
-#include <mach/bbu.h>
+#include <mach/imx/bbu.h>
 
 
 static int expose_signals(const struct gpio *signals,

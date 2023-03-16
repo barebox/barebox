@@ -10,8 +10,8 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <malloc.h>
-#include <mach/imx53-regs.h>
-#include <mach/imx6-regs.h>
+#include <mach/imx/imx53-regs.h>
+#include <mach/imx/imx6-regs.h>
 #include <mfd/imx6q-iomuxc-gpr.h>
 #include "ahci.h"
 

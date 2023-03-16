@@ -13,7 +13,7 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 
-#include <mach/iomap.h>
+#include <mach/tegra/iomap.h>
 
 #include "clk.h"
 

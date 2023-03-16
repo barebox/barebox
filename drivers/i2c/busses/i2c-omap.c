@@ -28,8 +28,8 @@
 
 #include <io.h>
 #include <i2c/i2c.h>
-#include <mach/generic.h>
-#include <mach/omap3-clock.h>
+#include <mach/omap/generic.h>
+#include <mach/omap/omap3-clock.h>
 
 /* This will be the driver name */
 #define DRIVER_NAME "i2c-omap"

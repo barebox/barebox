@@ -3,9 +3,9 @@
 #include <common.h>
 #include <asm/sections.h>
 #include <linux/sizes.h>
-#include <mach/xload.h>
-#include <mach/esdctl.h>
-#include <mach/imx8m-regs.h>
+#include <mach/imx/xload.h>
+#include <mach/imx/esdctl.h>
+#include <mach/imx/imx8m-regs.h>
 #include <asm/barebox-arm.h>
 
 int imx_image_size(void)

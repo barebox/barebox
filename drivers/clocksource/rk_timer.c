@@ -10,11 +10,19 @@
 #include <clock.h>
 #include <init.h>
 #include <io.h>
-#include <mach/timer.h>
 #include <stdio.h>
-#include <mach/hardware.h>
-#include <mach/cru_rk3288.h>
+#include <mach/rockchip/hardware.h>
+#include <mach/rockchip/cru_rk3288.h>
 #include <common.h>
+
+struct rk_timer {
+	unsigned int timer_load_count0;
+	unsigned int timer_load_count1;
+	unsigned int timer_curr_value0;
+	unsigned int timer_curr_value1;
+	unsigned int timer_ctrl_reg;
+	unsigned int timer_int_status;
+};
 
 struct rk_timer *timer_ptr;
 

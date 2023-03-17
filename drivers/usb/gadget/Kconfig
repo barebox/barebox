@@ -2,6 +2,7 @@
 menuconfig USB_GADGET
 	select USB
 	select POLLER
+	select NLS
 	bool "USB gadget support"
 
 config USB_GADGET_DRIVER_ARC_PBL

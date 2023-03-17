@@ -2666,7 +2666,7 @@ static int fsg_bind(struct usb_configuration *c, struct usb_function *f)
 	}
 
 	/* Copy descriptors */
-	return usb_assign_descriptors(f, fsg_fs_function, hs_function, NULL);
+	return usb_assign_descriptors(f, fsg_fs_function, fsg_hs_function, NULL, NULL);
 
 autoconf_fail:
 	ERROR(fsg, "unable to autoconfigure all endpoints\n");

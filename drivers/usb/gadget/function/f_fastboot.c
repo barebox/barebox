@@ -266,7 +266,7 @@ static int fastboot_bind(struct usb_configuration *c, struct usb_function *f)
 	f_fb->out_req->complete = rx_handler_command;
 	f_fb->out_req->context = f_fb;
 
-	ret = usb_assign_descriptors(f, fb_fs_descs, fb_hs_descs, NULL);
+	ret = usb_assign_descriptors(f, fb_fs_descs, fb_hs_descs, NULL, NULL);
 	if (ret)
 		goto err_free_in_req;
 

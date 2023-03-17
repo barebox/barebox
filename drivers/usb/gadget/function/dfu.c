@@ -427,7 +427,7 @@ dfu_bind(struct usb_configuration *c, struct usb_function *f)
 	header[i] = (struct usb_descriptor_header *) &usb_dfu_func;
 	header[i + 1] = NULL;
 
-	status = usb_assign_descriptors(f, header, header, NULL);
+	status = usb_assign_descriptors(f, header, header, NULL, NULL);
 
 	free(desc);
 	free(header);

@@ -20,12 +20,36 @@
 
 struct phy;
 
+enum phy_mode {
+	PHY_MODE_INVALID,
+	PHY_MODE_USB_HOST,
+	PHY_MODE_USB_HOST_LS,
+	PHY_MODE_USB_HOST_FS,
+	PHY_MODE_USB_HOST_HS,
+	PHY_MODE_USB_HOST_SS,
+	PHY_MODE_USB_DEVICE,
+	PHY_MODE_USB_DEVICE_LS,
+	PHY_MODE_USB_DEVICE_FS,
+	PHY_MODE_USB_DEVICE_HS,
+	PHY_MODE_USB_DEVICE_SS,
+	PHY_MODE_USB_OTG,
+	PHY_MODE_UFS_HS_A,
+	PHY_MODE_UFS_HS_B,
+	PHY_MODE_PCIE,
+	PHY_MODE_ETHERNET,
+	PHY_MODE_MIPI_DPHY,
+	PHY_MODE_SATA,
+	PHY_MODE_LVDS,
+	PHY_MODE_DP
+};
+
 /**
  * struct phy_ops - set of function pointers for performing phy operations
  * @init: operation to be performed for initializing phy
  * @exit: operation to be performed while exiting
  * @power_on: powering on the phy
  * @power_off: powering off the phy
+ * @set_mode: set the mode of the phy
  * @owner: the module owner containing the ops
  */
 struct phy_ops {
@@ -33,15 +57,18 @@ struct phy_ops {
 	int	(*exit)(struct phy *phy);
 	int	(*power_on)(struct phy *phy);
 	int	(*power_off)(struct phy *phy);
+	int	(*set_mode)(struct phy *phy, enum phy_mode mode, int submode);
 	struct usb_phy *(*to_usbphy)(struct phy *phy);
 };
 
 /**
  * struct phy_attrs - represents phy attributes
  * @bus_width: Data path width implemented by PHY
+ * @mode: PHY mode
  */
 struct phy_attrs {
 	u32			bus_width;
+	enum phy_mode		mode;
 };
 
 /**
@@ -125,6 +152,9 @@ int phy_init(struct phy *phy);
 int phy_exit(struct phy *phy);
 int phy_power_on(struct phy *phy);
 int phy_power_off(struct phy *phy);
+int phy_set_mode_ext(struct phy *phy, enum phy_mode mode, int submode);
+#define phy_set_mode(phy, mode) \
+        phy_set_mode_ext(phy, mode, 0)
 static inline int phy_get_bus_width(struct phy *phy)
 {
 	return phy->attrs.bus_width;
@@ -176,6 +206,17 @@ static inline int phy_power_off(struct phy *phy)
 		return 0;
 	return -ENOSYS;
 }
+
+static inline int phy_set_mode_ext(struct phy *phy, enum phy_mode mode,
+				   int submode)
+{
+	if (!phy)
+		return 0;
+	return -ENOSYS;
+}
+
+#define phy_set_mode(phy, mode) \
+        phy_set_mode_ext(phy, mode, 0)
 
 static inline int phy_get_bus_width(struct phy *phy)
 {

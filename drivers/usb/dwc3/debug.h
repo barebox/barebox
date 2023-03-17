@@ -291,19 +291,19 @@ static inline void dwc3_decode_set_clear_feature(__u8 t, __u8 b, __u16 v,
 			v == USB_DEVICE_TEST_MODE ?
 			({ char *s;
 				switch (i) {
-				case TEST_J:
+				case USB_TEST_J:
 					s = ": TEST_J";
 					break;
-				case TEST_K:
+				case USB_TEST_K:
 					s = ": TEST_K";
 					break;
-				case TEST_SE0_NAK:
+				case USB_TEST_SE0_NAK:
 					s = ": TEST_SE0_NAK";
 					break;
-				case TEST_PACKET:
+				case USB_TEST_PACKET:
 					s = ": TEST_PACKET";
 					break;
-				case TEST_FORCE_EN:
+				case USB_TEST_FORCE_ENABLE:
 					s = ": TEST_FORCE_EN";
 					break;
 				default:

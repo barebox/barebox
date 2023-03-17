@@ -405,6 +405,23 @@ int register_driver(struct driver *drv)
 }
 EXPORT_SYMBOL(register_driver);
 
+void unregister_driver(struct driver *drv)
+{
+	struct device *dev;
+
+	list_del(&drv->list);
+	list_del(&drv->bus_list);
+
+	bus_for_each_device(drv->bus, dev) {
+		if (dev->driver == drv) {
+			drv->bus->remove(dev);
+			dev->driver = NULL;
+			list_del(&dev->active);
+			INIT_LIST_HEAD(&dev->active);
+		}
+	}
+}
+
 struct resource *dev_get_resource(struct device *dev, unsigned long type,
 				  int num)
 {

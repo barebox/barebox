@@ -16,15 +16,15 @@
 #include <of.h>
 #include <deep-probe.h>
 #include <i2c/i2c.h>
-#include <mach/bbu.h>
+#include <mach/imx/bbu.h>
 #include <platform_data/eth-fec.h>
 #include <mfd/imx6q-iomuxc-gpr.h>
 #include <linux/micrel_phy.h>
 
 #include <globalvar.h>
 
-#include <mach/iomux-mx6.h>
-#include <mach/imx6.h>
+#include <mach/imx/iomux-mx6.h>
+#include <mach/imx/imx6.h>
 
 #define PHYFLEX_MODULE_REV_1	0x1
 #define PHYFLEX_MODULE_REV_2	0x2

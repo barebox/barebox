@@ -15,7 +15,7 @@
 #include <common.h>
 #include <init.h>
 #include <dma.h>
-#include <mach/firmware-zynqmp.h>
+#include <mach/zynqmp/firmware-zynqmp.h>
 
 #define ZYNQMP_PM_FEATURE_BYTE_ORDER_IRREL	BIT(0)
 #define ZYNQMP_PM_FEATURE_SIZE_NOT_NEEDED	BIT(1)

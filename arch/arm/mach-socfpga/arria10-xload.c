@@ -8,12 +8,12 @@
 #include <filetype.h>
 #include <io.h>
 #include <asm/unaligned.h>
-#include <mach/arria10-pinmux.h>
-#include <mach/arria10-regs.h>
-#include <mach/arria10-system-manager.h>
-#include <mach/arria10-fpga.h>
-#include <mach/arria10-xload.h>
-#include <mach/generic.h>
+#include <mach/socfpga/arria10-pinmux.h>
+#include <mach/socfpga/arria10-regs.h>
+#include <mach/socfpga/arria10-system-manager.h>
+#include <mach/socfpga/arria10-fpga.h>
+#include <mach/socfpga/arria10-xload.h>
+#include <mach/socfpga/generic.h>
 #include <linux/sizes.h>
 
 int a10_update_bits(unsigned int reg, unsigned int mask,

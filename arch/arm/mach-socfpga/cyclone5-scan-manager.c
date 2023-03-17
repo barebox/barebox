@@ -17,8 +17,8 @@
 
 #include <common.h>
 #include <io.h>
-#include <mach/cyclone5-freeze-controller.h>
-#include <mach/cyclone5-scan-manager.h>
+#include <mach/socfpga/cyclone5-freeze-controller.h>
+#include <mach/socfpga/cyclone5-scan-manager.h>
 
 /*
  * @fn scan_mgr_io_scan_chain_engine_is_idle

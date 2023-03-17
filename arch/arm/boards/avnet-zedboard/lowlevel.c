@@ -5,8 +5,8 @@
 #include <io.h>
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
-#include <mach/init.h>
-#include <mach/zynq7000-regs.h>
+#include <mach/zynq/init.h>
+#include <mach/zynq/zynq7000-regs.h>
 #include <serial/cadence.h>
 
 #define DCI_DONE	(1 << 13)

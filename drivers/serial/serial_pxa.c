@@ -9,7 +9,7 @@
 #include <init.h>
 #include <malloc.h>
 
-#include <mach/clock.h>
+#include <mach/pxa/clock.h>
 #include <asm/io.h>
 
 #define RBR		0x00	/* Receive Buffer Register (read only) */

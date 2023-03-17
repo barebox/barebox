@@ -16,12 +16,12 @@
 #include <clock.h>
 #include <init.h>
 #include <io.h>
-#include <mach/omap3-silicon.h>
-#include <mach/omap4-silicon.h>
-#include <mach/clocks.h>
-#include <mach/timers.h>
-#include <mach/sys_info.h>
-#include <mach/syslib.h>
+#include <mach/omap/omap3-silicon.h>
+#include <mach/omap/omap4-silicon.h>
+#include <mach/omap/clocks.h>
+#include <mach/omap/timers.h>
+#include <mach/omap/sys_info.h>
+#include <mach/omap/syslib.h>
 
 /** Sync 32Khz Timer registers */
 #define S32K_CR			0x10

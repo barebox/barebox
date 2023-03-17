@@ -72,7 +72,7 @@
 	lcd-supply = <&lcd_3v3>;
 	status = "disabled";
 
-	display0: display {
+	display0: display0 {
 		bits-per-pixel = <32>;
 		bus-width = <24>;
 

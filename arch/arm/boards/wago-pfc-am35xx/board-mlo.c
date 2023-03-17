@@ -8,12 +8,12 @@
 #include <init.h>
 #include <io.h>
 #include <linux/sizes.h>
-#include <mach/omap3-silicon.h>
-#include <mach/gpmc.h>
-#include <mach/gpmc_nand.h>
+#include <mach/omap/omap3-silicon.h>
+#include <mach/omap/gpmc.h>
+#include <mach/omap/gpmc_nand.h>
 #include <errno.h>
-#include <mach/omap3-devices.h>
-#include <mach/generic.h>
+#include <mach/omap/omap3-devices.h>
+#include <mach/omap/generic.h>
 
 /* map first four erase blocks */
 static struct omap_barebox_part pfc200_mlo_part = {

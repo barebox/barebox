@@ -10,7 +10,7 @@
 #include <io.h>
 #include <malloc.h>
 #include <generated/mach-types.h>
-#include <mach/ep93xx-regs.h>
+#include <mach/ep93xx/ep93xx-regs.h>
 #include <platform_data/eth-ep93xx.h>
 #include "edb93xx.h"
 

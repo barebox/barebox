@@ -4,14 +4,14 @@
 #include <common.h>
 #include <init.h>
 #include <environment.h>
-#include <mach/bbu.h>
+#include <mach/imx/bbu.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
-#include <mach/generic.h>
+#include <mach/imx/generic.h>
 #include <linux/sizes.h>
 #include <asm/psci.h>
 #include <io.h>
-#include <mach/imx7-regs.h>
+#include <mach/imx/imx7-regs.h>
 #include <serial/imx-uart.h>
 #include <asm/secure.h>
 

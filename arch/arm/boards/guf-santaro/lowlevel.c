@@ -6,11 +6,12 @@
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 #include <asm/cache.h>
-#include <mach/generic.h>
-#include <mach/imx6-regs.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/imx6-regs.h>
 #include <debug_ll.h>
+#include <mach/imx/debug_ll.h>
 #include <console.h>
-#include <mach/esdctl.h>
+#include <mach/imx/esdctl.h>
 
 static inline void setup_uart(void)
 {

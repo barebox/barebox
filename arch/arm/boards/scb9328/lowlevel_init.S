@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // SPDX-FileCopyrightText: 2004 Sascha Hauer, Synertronixx GmbH
 
-#include <mach/imx1-regs.h>
+#include <mach/imx/imx1-regs.h>
 #include <asm/barebox-arm-head.h>
 
 #define CFG_MPCTL0_VAL 0x00321431

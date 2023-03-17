@@ -19,9 +19,9 @@
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 #include <asm/errata.h>
-#include <mach/lowlevel.h>
-#include <mach/tegra20-pmc.h>
-#include <mach/tegra20-car.h>
+#include <mach/tegra/lowlevel.h>
+#include <mach/tegra/tegra20-pmc.h>
+#include <mach/tegra/tegra20-car.h>
 
 void tegra_maincomplex_entry(char *fdt)
 {

@@ -5,7 +5,7 @@
 #include <common.h>
 #include <deep-probe.h>
 #include <init.h>
-#include <mach/bbu.h>
+#include <mach/imx/bbu.h>
 
 static int innocomm_wb15_evk_probe(struct device *dev)
 {

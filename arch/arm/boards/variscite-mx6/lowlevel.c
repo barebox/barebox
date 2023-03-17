@@ -6,6 +6,7 @@
  */
 
 #include <debug_ll.h>
+#include <mach/imx/debug_ll.h>
 #include <common.h>
 #include <linux/sizes.h>
 #include <io.h>
@@ -14,7 +15,7 @@
 #include <asm/sections.h>
 #include <asm/cache.h>
 #include <asm/mmu.h>
-#include <mach/imx6.h>
+#include <mach/imx/imx6.h>
 
 static inline void setup_uart(void)
 {

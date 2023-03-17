@@ -7,16 +7,17 @@
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 #include <linux/bitops.h>
-#include <mach/am33xx-generic.h>
-#include <mach/am33xx-silicon.h>
-#include <mach/am33xx-clock.h>
-#include <mach/emif4.h>
-#include <mach/generic.h>
-#include <mach/sdrc.h>
-#include <mach/sys_info.h>
-#include <mach/syslib.h>
-#include <mach/am33xx-mux.h>
+#include <mach/omap/am33xx-generic.h>
+#include <mach/omap/am33xx-silicon.h>
+#include <mach/omap/am33xx-clock.h>
+#include <mach/omap/emif4.h>
+#include <mach/omap/generic.h>
+#include <mach/omap/sdrc.h>
+#include <mach/omap/sys_info.h>
+#include <mach/omap/syslib.h>
+#include <mach/omap/am33xx-mux.h>
 #include <debug_ll.h>
+#include <mach/omap/debug_ll.h>
 
 /* AM335X EMIF Register values */
 #define	VTP_CTRL_READY		(0x1 << 5)
@@ -226,7 +227,7 @@ static noinline int gf_sram_init(void)
 
 	am33xx_uart_soft_reset((void *)AM33XX_UART2_BASE);
 	am33xx_enable_uart2_pin_mux();
-	omap_uart_lowlevel_init((void *)AM33XX_UART2_BASE);
+	omap_debug_ll_init();
 	putc_ll('>');
 
 	barebox_arm_entry(0x80000000, SZ_256M, fdt);

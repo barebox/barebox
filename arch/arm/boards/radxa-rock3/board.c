@@ -3,7 +3,7 @@
 #include <common.h>
 #include <deep-probe.h>
 #include <init.h>
-#include <mach/bbu.h>
+#include <mach/rockchip/bbu.h>
 
 struct rock3_model {
 	const char *name;

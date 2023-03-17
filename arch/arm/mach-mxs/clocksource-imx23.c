@@ -5,8 +5,7 @@
 #include <init.h>
 #include <clock.h>
 #include <notifier.h>
-#include <mach/imx23-regs.h>
-#include <mach/clock.h>
+#include <mach/mxs/imx23-regs.h>
 #include <io.h>
 
 #define TIMROTCTRL 0x00

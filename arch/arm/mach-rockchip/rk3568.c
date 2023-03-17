@@ -2,8 +2,8 @@
 #include <common.h>
 #include <io.h>
 #include <bootsource.h>
-#include <mach/rk3568-regs.h>
-#include <mach/rockchip.h>
+#include <mach/rockchip/rk3568-regs.h>
+#include <mach/rockchip/rockchip.h>
 
 #define GRF_BASE		0xfdc60000
 #define GRF_GPIO1B_DS_2		0x218

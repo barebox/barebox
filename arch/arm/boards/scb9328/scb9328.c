@@ -6,14 +6,14 @@
 #include <init.h>
 #include <environment.h>
 #include <generated/mach-types.h>
-#include <mach/imx1-regs.h>
+#include <mach/imx/imx1-regs.h>
 #include <asm/armlinux.h>
-#include <mach/weim.h>
+#include <mach/imx/weim.h>
 #include <io.h>
 #include <fs.h>
 #include <envfs.h>
-#include <mach/iomux-mx1.h>
-#include <mach/devices-imx1.h>
+#include <mach/imx/iomux-mx1.h>
+#include <mach/imx/devices-imx1.h>
 
 static int scb9328_devices_init(void)
 {

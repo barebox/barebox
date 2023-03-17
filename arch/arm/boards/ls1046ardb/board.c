@@ -13,8 +13,8 @@
 #include <linux/clk.h>
 #include <linux/clkdev.h>
 #include <asm/system.h>
-#include <mach/layerscape.h>
-#include <mach/bbu.h>
+#include <mach/layerscape/layerscape.h>
+#include <mach/layerscape/bbu.h>
 #include <of_address.h>
 #include <linux/fsl_ifc.h>
 

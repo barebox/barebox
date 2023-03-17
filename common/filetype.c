@@ -18,7 +18,7 @@
 #include <image-sparse.h>
 #include <elf.h>
 
-#include <arm/mach-imx/include/mach/imx-header.h>
+#include <mach/imx/imx-header.h>
 
 struct filetype_str {
 	const char *name;	/* human readable filetype */

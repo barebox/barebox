@@ -17,8 +17,8 @@
 #include <linux/stat.h>
 #include <ioctl.h>
 #include <environment.h>
-#include <mach/bbu.h>
-#include <mach/generic.h>
+#include <mach/imx/bbu.h>
+#include <mach/imx/generic.h>
 #include <libfile.h>
 
 #define IMX_INTERNAL_FLAG_ERASE		BIT(30)

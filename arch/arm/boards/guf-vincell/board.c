@@ -11,11 +11,11 @@
 #include <io.h>
 #include <linux/clk.h>
 
-#include <mach/devices-imx53.h>
-#include <mach/generic.h>
-#include <mach/iim.h>
-#include <mach/bbu.h>
-#include <mach/imx5.h>
+#include <mach/imx/devices-imx53.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/iim.h>
+#include <mach/imx/bbu.h>
+#include <mach/imx/imx5.h>
 
 static int vincell_devices_init(void)
 {

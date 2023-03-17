@@ -5,7 +5,7 @@
 
 #include <common.h>
 #include <init.h>
-#include <mach/zynqmp-bbu.h>
+#include <mach/zynqmp/zynqmp-bbu.h>
 
 static int zcu104_register_update_handler(void)
 {

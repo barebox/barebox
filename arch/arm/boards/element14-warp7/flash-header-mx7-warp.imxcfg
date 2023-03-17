@@ -13,7 +13,7 @@ soc imx7
 loadaddr 0x80000000
 ivtofs 0x400
 
-#include <mach/imx7-ddr-regs.h>
+#include <mach/imx/imx7-ddr-regs.h>
 
 wm 32 0x30340004 0x4F400005
 

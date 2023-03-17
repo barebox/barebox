@@ -3,7 +3,7 @@
 
 #include <common.h>
 #include <debug_ll.h>
-#include <mach/entry.h>
+#include <mach/stm32mp/entry.h>
 
 extern char __dtb_z_stm32mp151_prtt1a_start[];
 extern char __dtb_z_stm32mp151_prtt1c_start[];

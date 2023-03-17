@@ -14,7 +14,7 @@
 #include <errno.h>
 #include <gpio.h>
 
-#include <mach/gpio.h>
+#include <mach/pxa/gpio.h>
 #include <asm/io.h>
 
 int pxa_last_gpio;

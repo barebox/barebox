@@ -5,10 +5,10 @@
 
 #include <common.h>
 #include <init.h>
-#include <mach/ddr_regs.h>
-#include <mach/entry.h>
-#include <mach/stm32.h>
-#include <mach/revision.h>
+#include <mach/stm32mp/ddr_regs.h>
+#include <mach/stm32mp/entry.h>
+#include <mach/stm32mp/stm32.h>
+#include <mach/stm32mp/revision.h>
 #include <asm/barebox-arm.h>
 #include <asm/memory.h>
 #include <pbl.h>

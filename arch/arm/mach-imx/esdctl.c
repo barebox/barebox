@@ -13,21 +13,21 @@
 #include <linux/bitfield.h>
 #include <asm/barebox-arm.h>
 #include <asm/memory.h>
-#include <mach/esdctl.h>
-#include <mach/esdctl-v4.h>
-#include <mach/imx6-mmdc.h>
-#include <mach/imx1-regs.h>
-#include <mach/imx21-regs.h>
-#include <mach/imx25-regs.h>
-#include <mach/imx27-regs.h>
-#include <mach/imx31-regs.h>
-#include <mach/imx35-regs.h>
-#include <mach/imx51-regs.h>
-#include <mach/imx53-regs.h>
-#include <mach/imx6-regs.h>
-#include <mach/vf610-ddrmc.h>
-#include <mach/imx8m-regs.h>
-#include <mach/imx7-regs.h>
+#include <mach/imx/esdctl.h>
+#include <mach/imx/esdctl-v4.h>
+#include <mach/imx/imx6-mmdc.h>
+#include <mach/imx/imx1-regs.h>
+#include <mach/imx/imx21-regs.h>
+#include <mach/imx/imx25-regs.h>
+#include <mach/imx/imx27-regs.h>
+#include <mach/imx/imx31-regs.h>
+#include <mach/imx/imx35-regs.h>
+#include <mach/imx/imx51-regs.h>
+#include <mach/imx/imx53-regs.h>
+#include <mach/imx/imx6-regs.h>
+#include <mach/imx/vf610-ddrmc.h>
+#include <mach/imx/imx8m-regs.h>
+#include <mach/imx/imx7-regs.h>
 
 struct imx_esdctl_data {
 	unsigned long base0;

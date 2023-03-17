@@ -18,8 +18,8 @@
 #include <linux/mtd/nand.h>
 #include <linux/mtd/rawnand.h>
 #include <linux/clk.h>
-#include <mach/generic.h>
-#include <mach/imx-nand.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/imx-nand.h>
 #include <io.h>
 #include <of_mtd.h>
 #include <errno.h>

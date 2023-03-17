@@ -180,6 +180,7 @@ extern struct device_node *of_new_node(struct device_node *parent,
 				const char *name);
 extern struct device_node *of_create_node(struct device_node *root,
 					const char *path);
+extern void of_merge_nodes(struct device_node *np, const struct device_node *other);
 extern struct device_node *of_copy_node(struct device_node *parent,
 				const struct device_node *other);
 extern struct device_node *of_dup(const struct device_node *root);
@@ -297,6 +298,7 @@ extern void of_platform_device_dummy_drv(struct device *dev);
 extern int of_platform_populate(struct device_node *root,
 				const struct of_device_id *matches,
 				struct device *parent);
+extern struct device *of_platform_device_create_root(struct device_node *np);
 extern struct device *of_find_device_by_node(struct device_node *np);
 extern struct device *of_device_enable_and_register(struct device_node *np);
 extern struct device *of_device_enable_and_register_by_name(const char *name);

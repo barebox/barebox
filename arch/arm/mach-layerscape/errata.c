@@ -4,8 +4,8 @@
 #include <soc/fsl/immap_lsch2.h>
 #include <soc/fsl/fsl_ddr_sdram.h>
 #include <asm/system.h>
-#include <mach/errata.h>
-#include <mach/lowlevel.h>
+#include <mach/layerscape/errata.h>
+#include <mach/layerscape/lowlevel.h>
 
 #define scfg_clrsetbits32(addr, clear, set) clrsetbits_be32(addr, clear, set)
 #define scfg_clrbits32(addr, clear) clrbits_be32(addr, clear)
@@ -17,11 +17,17 @@ static inline void set_usb_pcstxswingfull(u32 __iomem *scfg, u32 offset)
 			SCFG_USB_PCSTXSWINGFULL << 9);
 }
 
-static void erratum_a008997_ls1046a(void)
+static void erratum_a008997_layerscape(void)
 {
 	u32 __iomem *scfg = (u32 __iomem *)LSCH2_SCFG_ADDR;
 
 	set_usb_pcstxswingfull(scfg, SCFG_USB3PRM2CR_USB1);
+}
+
+static void erratum_a008997_ls1046a(void)
+{
+	u32 __iomem *scfg = (u32 __iomem *)LSCH2_SCFG_ADDR;
+
 	set_usb_pcstxswingfull(scfg, SCFG_USB3PRM2CR_USB2);
 	set_usb_pcstxswingfull(scfg, SCFG_USB3PRM2CR_USB3);
 }
@@ -32,15 +38,20 @@ static void erratum_a008997_ls1046a(void)
 	out_be16((phy) + SCFG_USB_PHY_RX_OVRD_IN_HI, USB_PHY_RX_EQ_VAL_3);      \
 	out_be16((phy) + SCFG_USB_PHY_RX_OVRD_IN_HI, USB_PHY_RX_EQ_VAL_4)
 
+static void erratum_a009007_layerscape(void)
+{
+	void __iomem *usb_phy = IOMEM(SCFG_USB_PHY1);
+
+	usb_phy = (void __iomem *)SCFG_USB_PHY3;
+	PROGRAM_USB_PHY_RX_OVRD_IN_HI(usb_phy);
+}
+
 static void erratum_a009007_ls1046a(void)
 {
 	void __iomem *usb_phy = IOMEM(SCFG_USB_PHY1);
 
 	PROGRAM_USB_PHY_RX_OVRD_IN_HI(usb_phy);
 	usb_phy = (void __iomem *)SCFG_USB_PHY2;
-	PROGRAM_USB_PHY_RX_OVRD_IN_HI(usb_phy);
-
-	usb_phy = (void __iomem *)SCFG_USB_PHY3;
 	PROGRAM_USB_PHY_RX_OVRD_IN_HI(usb_phy);
 }
 
@@ -49,13 +60,26 @@ static inline void set_usb_txvreftune(u32 __iomem *scfg, u32 offset)
 	scfg_clrsetbits32(scfg + offset / 4, 0xf << 6, SCFG_USB_TXVREFTUNE << 6);
 }
 
-static void erratum_a009008_ls1046a(void)
+static void erratum_a009008_layerscape(void)
 {
 	u32 __iomem *scfg = IOMEM(LSCH2_SCFG_ADDR);
 
 	set_usb_txvreftune(scfg, SCFG_USB3PRM1CR_USB1);
+}
+
+static void erratum_a009008_ls1046a(void)
+{
+	u32 __iomem *scfg = IOMEM(LSCH2_SCFG_ADDR);
+
 	set_usb_txvreftune(scfg, SCFG_USB3PRM1CR_USB2);
 	set_usb_txvreftune(scfg, SCFG_USB3PRM1CR_USB3);
+}
+
+static void erratum_a009008_ls1021a(void)
+{
+	u32 __iomem *scfg = IOMEM(LSCH2_SCFG_ADDR);
+
+	set_usb_txvreftune(scfg, SCFG_USB3PRM2CR_USB1);
 }
 
 static inline void set_usb_sqrxtune(u32 __iomem *scfg, u32 offset)
@@ -63,11 +87,17 @@ static inline void set_usb_sqrxtune(u32 __iomem *scfg, u32 offset)
 	scfg_clrbits32(scfg + offset / 4, SCFG_USB_SQRXTUNE_MASK << 23);
 }
 
-static void erratum_a009798_ls1046a(void)
+static void erratum_a009798_layerscape(void)
 {
 	u32 __iomem *scfg = IOMEM(LSCH2_SCFG_ADDR);
 
 	set_usb_sqrxtune(scfg, SCFG_USB3PRM1CR_USB1);
+}
+
+static void erratum_a009798_ls1046a(void)
+{
+	u32 __iomem *scfg = IOMEM(LSCH2_SCFG_ADDR);
+
 	set_usb_sqrxtune(scfg, SCFG_USB3PRM1CR_USB2);
 	set_usb_sqrxtune(scfg, SCFG_USB3PRM1CR_USB3);
 }
@@ -79,8 +109,10 @@ static void erratum_a008850_early(void)
 	struct ccsr_ddr __iomem *ddr = IOMEM(LSCH2_DDR_ADDR);
 
 	/* Skip if running at lower exception level */
-	if (current_el() < 3)
-		return;
+#if __LINUX_ARM_ARCH__ > 7
+		if (current_el() < 3)
+			return;
+#endif
 
 	/* disables propagation of barrier transactions to DDRC from CCI400 */
 	out_le32(&cci->ctrl_ord, CCI400_CTRLORD_TERM_BARRIER);
@@ -89,15 +121,28 @@ static void erratum_a008850_early(void)
 	ddr_out32(&ddr->eor, DDR_EOR_RD_REOD_DIS | DDR_EOR_WD_REOD_DIS);
 }
 
-/* erratum_a009942_check_cpo */
+static void layerscape_errata(void)
+{
+	erratum_a008850_early();
+	erratum_a009008_layerscape();
+	erratum_a009798_layerscape();
+	erratum_a008997_layerscape();
+	erratum_a009007_layerscape();
+}
 
 void ls1046a_errata(void)
 {
-	erratum_a008850_early();
+	layerscape_errata();
 	erratum_a009008_ls1046a();
 	erratum_a009798_ls1046a();
 	erratum_a008997_ls1046a();
 	erratum_a009007_ls1046a();
+}
+
+void ls1021a_errata(void)
+{
+	layerscape_errata();
+	erratum_a009008_ls1021a();
 }
 
 static void erratum_a008850_post(void)
@@ -108,8 +153,10 @@ static void erratum_a008850_post(void)
 	u32 tmp;
 
 	/* Skip if running at lower exception level */
-	if (current_el() < 3)
-		return;
+#if __LINUX_ARM_ARCH__ > 7
+		if (current_el() < 3)
+			return;
+#endif
 
 	/* enable propagation of barrier transactions to DDRC from CCI400 */
 	out_le32(&cci->ctrl_ord, CCI400_CTRLORD_EN_BARRIER);
@@ -192,4 +239,9 @@ void ls1046a_errata_post_ddr(void)
 {
 	erratum_a008850_post();
 	erratum_a009942_check_cpo();
+}
+
+void ls1021a_errata_post_ddr(void)
+{
+	erratum_a008850_post();
 }

@@ -4,7 +4,7 @@
  */
 
 #include <common.h>
-#include <mach/zynqmp-bbu.h>
+#include <mach/zynqmp/zynqmp-bbu.h>
 
 int zynqmp_bbu_register_handler(const char *name, char *devicefile,
 				unsigned long flags)

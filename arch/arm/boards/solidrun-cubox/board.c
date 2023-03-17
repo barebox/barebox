@@ -3,7 +3,7 @@
 
 #include <common.h>
 #include <init.h>
-#include <mach/bbu.h>
+#include <mach/mvebu/bbu.h>
 
 static int cubox_devices_init(void)
 {

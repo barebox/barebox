@@ -3,13 +3,14 @@
 #include <init.h>
 #include <common.h>
 #include <io.h>
+#include <pm_domain.h>
 #include <linux/sizes.h>
 #include <asm/psci.h>
-#include <mach/imx7.h>
-#include <mach/generic.h>
-#include <mach/revision.h>
-#include <mach/reset-reason.h>
-#include <mach/imx7-regs.h>
+#include <mach/imx/imx7.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/revision.h>
+#include <mach/imx/reset-reason.h>
+#include <mach/imx/imx7-regs.h>
 
 void imx7_init_lowlevel(void)
 {
@@ -160,6 +161,8 @@ int imx7_init(void)
 
 	imx_set_silicon_revision(cputypestr, imx7_cpu_revision());
 	imx_set_reset_reason(src + IMX7_SRC_SRSR, imx7_reset_reasons);
+
+	genpd_activate();
 
 	return 0;
 }

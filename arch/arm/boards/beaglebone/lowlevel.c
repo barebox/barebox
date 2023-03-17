@@ -5,16 +5,17 @@
 #include <io.h>
 #include <linux/string.h>
 #include <debug_ll.h>
+#include <mach/omap/debug_ll.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
-#include <mach/am33xx-silicon.h>
-#include <mach/am33xx-clock.h>
-#include <mach/generic.h>
-#include <mach/sdrc.h>
-#include <mach/sys_info.h>
-#include <mach/syslib.h>
-#include <mach/am33xx-mux.h>
-#include <mach/am33xx-generic.h>
+#include <mach/omap/am33xx-silicon.h>
+#include <mach/omap/am33xx-clock.h>
+#include <mach/omap/generic.h>
+#include <mach/omap/sdrc.h>
+#include <mach/omap/sys_info.h>
+#include <mach/omap/syslib.h>
+#include <mach/omap/am33xx-mux.h>
+#include <mach/omap/am33xx-generic.h>
 
 #include "beaglebone.h"
 
@@ -132,7 +133,7 @@ static noinline int beaglebone_sram_init(void)
 
 	am33xx_uart_soft_reset((void *)AM33XX_UART0_BASE);
 	am33xx_enable_uart0_pin_mux();
-	omap_uart_lowlevel_init((void *)AM33XX_UART0_BASE);
+	omap_debug_ll_init();
 	putc_ll('>');
 
 	barebox_arm_entry(0x80000000, sdram_size, fdt);

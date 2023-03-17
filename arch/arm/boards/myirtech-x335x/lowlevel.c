@@ -6,14 +6,15 @@
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 #include <debug_ll.h>
+#include <mach/omap/debug_ll.h>
 #include <init.h>
 #include <linux/sizes.h>
-#include <mach/am33xx-clock.h>
-#include <mach/am33xx-generic.h>
-#include <mach/am33xx-mux.h>
-#include <mach/generic.h>
-#include <mach/sdrc.h>
-#include <mach/sys_info.h>
+#include <mach/omap/am33xx-clock.h>
+#include <mach/omap/am33xx-generic.h>
+#include <mach/omap/am33xx-mux.h>
+#include <mach/omap/generic.h>
+#include <mach/omap/sdrc.h>
+#include <mach/omap/sys_info.h>
 
 #define AM335X_ZCZ_1000		0x1c2f
 
@@ -91,7 +92,7 @@ ENTRY_FUNCTION(start_am33xx_myirtech_sram, bootinfo, r1, r2)
 	if (IS_ENABLED(CONFIG_DEBUG_LL)) {
 		am33xx_uart_soft_reset(IOMEM(AM33XX_UART0_BASE));
 		am33xx_enable_uart0_pin_mux();
-		omap_uart_lowlevel_init(IOMEM(AM33XX_UART0_BASE));
+		omap_debug_ll_init();
 		putc_ll('>');
 	}
 

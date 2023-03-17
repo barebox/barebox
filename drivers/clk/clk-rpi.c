@@ -8,9 +8,9 @@
 #include <linux/clkdev.h>
 #include <linux/err.h>
 
-#include <mach/core.h>
-#include <mach/mbox.h>
-#include <mach/platform.h>
+#include <mach/bcm283x/core.h>
+#include <mach/bcm283x/mbox.h>
+#include <mach/bcm283x/platform.h>
 #include <dt-bindings/clock/bcm2835.h>
 
 #define BCM2711_CLOCK_END			(BCM2711_CLOCK_EMMC2 + 1)

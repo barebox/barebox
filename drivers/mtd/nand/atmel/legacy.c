@@ -29,7 +29,7 @@
 #include <linux/err.h>
 
 #include <io.h>
-#include <mach/board.h>
+#include <mach/at91/board.h>
 
 #include <errno.h>
 

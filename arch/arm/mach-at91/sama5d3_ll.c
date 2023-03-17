@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-only AND BSD-1-Clause
 // SPDX-FileCopyrightText: 2017, Microchip Corporation
 
-#include <mach/at91_wdt.h>
-#include <mach/barebox-arm.h>
-#include <mach/sama5d3_ll.h>
+#include <mach/at91/at91_wdt.h>
+#include <mach/at91/barebox-arm.h>
+#include <mach/at91/sama5d3_ll.h>
 
 void sama5d3_lowlevel_init(void)
 {

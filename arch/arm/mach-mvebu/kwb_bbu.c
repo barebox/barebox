@@ -4,7 +4,7 @@
 #include <libfile.h>
 #include <linux/printk.h>
 
-#include <mach/bbu.h>
+#include <mach/mvebu/bbu.h>
 
 struct mvebu_bbu_handler {
 	struct bbu_handler bbuh;

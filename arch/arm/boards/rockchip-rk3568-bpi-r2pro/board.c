@@ -4,7 +4,7 @@
 
 #include <common.h>
 #include <init.h>
-#include <mach/bbu.h>
+#include <mach/rockchip/bbu.h>
 #include <aiodev.h>
 #include <bootsource.h>
 #include <environment.h>

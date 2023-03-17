@@ -7,6 +7,7 @@
 #include <init.h>
 #include <memory.h>
 #include <linux/sizes.h>
+#include <mach/stm32mp/stm32.h>
 
 #define BAREBOX_STAGE2_OFFSET	256
 
@@ -45,6 +46,9 @@ static struct image_handler image_handler_stm32_image_v1_handler = {
 
 static int stm32mp_register_stm32image_image_handler(void)
 {
+	if (!stm32mp_soc())
+		return 0;
+
 	return register_image_handler(&image_handler_stm32_image_v1_handler);
 }
 late_initcall(stm32mp_register_stm32image_image_handler);

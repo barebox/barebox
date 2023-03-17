@@ -18,10 +18,10 @@
 #include <restart.h>
 #include <reset_source.h>
 #include <bootsource.h>
-#include <mach/rk3288-regs.h>
-#include <mach/cru_rk3288.h>
-#include <mach/hardware.h>
-#include <mach/rockchip.h>
+#include <mach/rockchip/rk3288-regs.h>
+#include <mach/rockchip/cru_rk3288.h>
+#include <mach/rockchip/hardware.h>
+#include <mach/rockchip/rockchip.h>
 
 static void __noreturn rockchip_restart_soc(struct restart_handler *rst)
 {

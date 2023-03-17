@@ -10,8 +10,8 @@
  */
 
 #include <linux/linkage.h>
-#include <mach/at91sam9_sdramc.h>
-#include <mach/at91_rstc.h>
+#include <mach/at91/at91sam9_sdramc.h>
+#include <mach/at91/at91_rstc.h>
 
 			.arm
 

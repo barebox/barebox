@@ -10,7 +10,7 @@
 #include <restart.h>
 #include <unistd.h>
 #include <asm/unaligned.h>
-#include <mach/common.h>
+#include <mach/mvebu/common.h>
 
 static int do_bootm_kwbimage_v0_v1(struct image_data *data)
 {

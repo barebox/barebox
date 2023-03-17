@@ -6,11 +6,11 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
-#include <mach/hardware.h>
-#include <mach/cpu.h>
+#include <mach/at91/hardware.h>
+#include <mach/at91/cpu.h>
 #include <linux/err.h>
 
-#include <mach/at91sam9_smc.h>
+#include <mach/at91/at91sam9_smc.h>
 
 #define AT91_SAM9_SMC_CS_STRIDE		0x10
 #define AT91_SAMA5_SMC_CS_STRIDE	0x14

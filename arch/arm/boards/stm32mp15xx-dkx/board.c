@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0+
 #include <common.h>
 #include <init.h>
-#include <mach/bbu.h>
+#include <mach/stm32mp/bbu.h>
 
 static int dkx_probe(struct device *dev)
 {

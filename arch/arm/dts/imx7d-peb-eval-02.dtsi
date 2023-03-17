@@ -13,21 +13,21 @@
 		pinctrl-0 = <&pinctrl_leds_eval>;
 		status = "disabled";
 
-		led@0 {
+		led-0 {
 			label = "eval_led_1";
 			gpios = <&gpio2 8 GPIO_ACTIVE_HIGH>;
 			linux,default-trigger = "gpio";
 			default-state = "on";
 		};
 
-		led@1 {
+		led-1 {
 			label = "eval_led_2";
 			gpios = <&gpio4 4 GPIO_ACTIVE_HIGH>;
 			linux,default-trigger = "gpio";
 			default-state = "on";
 		};
 
-		led@2 {
+		led-2 {
 			label = "eval_led_3";
 			gpios = <&gpio2 15 GPIO_ACTIVE_HIGH>;
 			linux,default-trigger = "gpio";
@@ -41,18 +41,18 @@
 		pinctrl-0 = <&pinctrl_btns_eval>;
 		status = "disabled";
 
-		userbtn@0 {
+		userbtn-0 {
 			label = "eval_button_1";
 			gpios = <&gpio2 9 GPIO_ACTIVE_HIGH>;
 			linux,code = <0x100>;	/* BTN_MISC */
 		};
-		userbtn@1 {
+		userbtn-1 {
 			label = "eval_button_2";
 			gpios = <&gpio4 5 GPIO_ACTIVE_HIGH>;
 			linux,code = <0x100>;   /* BTN_MISC */
 		};
 
-		userbtn@2 {
+		userbtn-2 {
 			label = "eval_button_3";
 			gpios = <&gpio5 2 GPIO_ACTIVE_HIGH>;
 			linux,code = <0x100>;	/* BTN_MISC */

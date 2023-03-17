@@ -6,7 +6,7 @@
 #include <common.h>
 #include <init.h>
 #include <usb/ehci.h>
-#include <mach/iomap.h>
+#include <mach/tegra/iomap.h>
 
 static struct ehci_platform_data ehci_pdata = {
 	.flags = EHCI_HAS_TT,

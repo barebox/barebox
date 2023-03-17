@@ -5,11 +5,12 @@
 #include <linux/sizes.h>
 #include <io.h>
 #include <debug_ll.h>
+#include <mach/imx/debug_ll.h>
 #include <asm/sections.h>
 #include <asm/mmu.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
-#include <mach/generic.h>
+#include <mach/imx/generic.h>
 
 static void setup_uart(void)
 {

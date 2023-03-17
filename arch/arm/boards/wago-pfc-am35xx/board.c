@@ -14,7 +14,7 @@
 #include <linux/phy.h>
 #include <linux/micrel_phy.h>
 #include <asm/memory.h>
-#include <mach/generic.h>
+#include <mach/omap/generic.h>
 
 static int pfc200_mem_init(void)
 {

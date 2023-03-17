@@ -31,6 +31,8 @@ extra-y += barebox.lds
 pbl-y	+= lib1funcs.o
 pbl-y	+= ashldi3.o
 pbl-y	+= div0.o
+pbl-$(CONFIG_CPU_32v7)	+= arm_architected_timer.o
+CFLAGS_arm_architected_timer.o := -march=armv7-a
 
 obj-pbl-y	+= setjmp.o
 

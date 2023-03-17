@@ -17,8 +17,8 @@
 
 #include <common.h>
 #include <io.h>
-#include <mach/cyclone5-system-manager.h>
-#include <mach/cyclone5-regs.h>
+#include <mach/socfpga/cyclone5-system-manager.h>
+#include <mach/socfpga/cyclone5-regs.h>
 
 void socfpga_sysmgr_pinmux_init(unsigned long *sys_mgr_init_table, int num)
 {

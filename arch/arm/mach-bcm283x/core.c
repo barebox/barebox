@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <linux/types.h>
-#include <mach/core.h>
+#include <mach/bcm283x/core.h>
 #include <asm/system_info.h>
 
 void __iomem *bcm2835_get_mmio_base_by_cpuid(void)

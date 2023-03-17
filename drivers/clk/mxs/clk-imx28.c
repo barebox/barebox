@@ -10,7 +10,7 @@
 #include <io.h>
 #include <linux/clkdev.h>
 #include <linux/err.h>
-#include <mach/imx28-regs.h>
+#include <mach/mxs/imx28-regs.h>
 #include <of_address.h>
 
 #include "clk.h"

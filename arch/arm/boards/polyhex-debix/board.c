@@ -6,8 +6,8 @@
 #include <envfs.h>
 #include <init.h>
 #include <io.h>
-#include <mach/bbu.h>
-#include <mach/iomux-mx8mp.h>
+#include <mach/imx/bbu.h>
+#include <mach/imx/iomux-mx8mp.h>
 
 static int polyhex_debix_probe(struct device *dev)
 {

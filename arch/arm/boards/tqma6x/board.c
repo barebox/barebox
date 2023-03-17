@@ -17,12 +17,12 @@
 #include <asm/armlinux.h>
 #include <asm/io.h>
 
-#include <mach/devices-imx6.h>
-#include <mach/imx6-regs.h>
-#include <mach/iomux-mx6.h>
-#include <mach/generic.h>
-#include <mach/imx6.h>
-#include <mach/bbu.h>
+#include <mach/imx/devices-imx6.h>
+#include <mach/imx/imx6-regs.h>
+#include <mach/imx/iomux-mx6.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/imx6.h>
+#include <mach/imx/bbu.h>
 
 #define RQ7_GPIO_ENET_PHYADD2	IMX_GPIO_NR(6, 30)
 #define RQ7_GPIO_ENET_MODE0	IMX_GPIO_NR(6, 25)

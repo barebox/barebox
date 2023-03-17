@@ -30,48 +30,42 @@
 		reg = <0x80000000 0x10000000>;
 	};
 
-	regulators {
-		compatible = "simple-bus";
-		#address-cells = <1>;
-		#size-cells = <0>;
+	reg_5v: 5v-regulator {
+		compatible = "regulator-fixed";
+		regulator-name = "regulator-5V";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		regulator-always-on;
+	};
 
-		reg_5v: 5v-regulator {
-			compatible = "regulator-fixed";
-			regulator-name = "regulator-5V";
-			regulator-min-microvolt = <5000000>;
-			regulator-max-microvolt = <5000000>;
-			regulator-always-on;
-		};
+	reg_3p3v: 3p3-regulator {
+		compatible = "regulator-fixed";
+		regulator-name = "regulator-3P3V";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		vin-supply = <&reg_5v>;
+		regulator-always-on;
+	};
 
-		reg_3p3v: 3p3-regulator {
-			compatible = "regulator-fixed";
-			regulator-name = "regulator-3P3V";
-			regulator-min-microvolt = <3300000>;
-			regulator-max-microvolt = <3300000>;
-			vin-supply = <&reg_5v>;
-			regulator-always-on;
-		};
+	reg_1p4v: 1p4-regulator {
+		compatible = "regulator-fixed";
+		regulator-name = "regulator-1P4V";
+		regulator-min-microvolt = <1400000>;
+		regulator-max-microvolt = <1400000>;
+		vin-supply = <&reg_5v>;
+		regulator-always-on;
+	};
 
-		reg_1p4v: 1p4-regulator {
-			compatible = "regulator-fixed";
-			regulator-name = "regulator-1P4V";
-			regulator-min-microvolt = <1400000>;
-			regulator-max-microvolt = <1400000>;
-			vin-supply = <&reg_5v>;
-			regulator-always-on;
-		};
-
-		reg_vbus: vbus-regulator {
-			pinctrl-names = "default";
-			pinctrl-0 = <&pinctrl_vbus>;
-			compatible = "regulator-fixed";
-			regulator-name = "regulator-vbus";
-			regulator-min-microvolt = <5000000>;
-			regulator-max-microvolt = <5000000>;
-			vin-supply = <&reg_5v>;
-			gpio = <&gpio1 2 GPIO_ACTIVE_HIGH>;
-			enable-active-high;
-		};
+	reg_vbus: vbus-regulator {
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_vbus>;
+		compatible = "regulator-fixed";
+		regulator-name = "regulator-vbus";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		vin-supply = <&reg_5v>;
+		gpio = <&gpio1 2 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
 	};
 
 	usdhc2_pwrseq: usdhc2-pwrseq {

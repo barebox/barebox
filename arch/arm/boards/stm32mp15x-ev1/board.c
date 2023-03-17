@@ -3,7 +3,7 @@
 #include <bootsource.h>
 #include <common.h>
 #include <init.h>
-#include <mach/bbu.h>
+#include <mach/stm32mp/bbu.h>
 
 static int ed1_probe(struct device *dev)
 {

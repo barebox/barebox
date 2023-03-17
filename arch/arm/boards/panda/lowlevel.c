@@ -5,12 +5,12 @@
 #include <init.h>
 #include <io.h>
 #include <linux/sizes.h>
-#include <mach/generic.h>
-#include <mach/omap4-mux.h>
-#include <mach/omap4-silicon.h>
-#include <mach/omap4-generic.h>
-#include <mach/omap4-clock.h>
-#include <mach/syslib.h>
+#include <mach/omap/generic.h>
+#include <mach/omap/omap4-mux.h>
+#include <mach/omap/omap4-silicon.h>
+#include <mach/omap/omap4-generic.h>
+#include <mach/omap/omap4-clock.h>
+#include <mach/omap/syslib.h>
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
 

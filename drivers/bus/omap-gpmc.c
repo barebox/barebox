@@ -16,8 +16,8 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <linux/mtd/rawnand.h>
-#include <mach/gpmc_nand.h>
-#include <mach/gpmc.h>
+#include <mach/omap/gpmc_nand.h>
+#include <mach/omap/gpmc.h>
 
 #define GPMC_CS_NUM	8
 #define GPMC_NR_WAITPINS		4

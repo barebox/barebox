@@ -16,7 +16,6 @@
 #include <i2c/i2c.h>
 
 #include <poweroff.h>
-#include <mach/imx6.h>
 
 #define DRIVERNAME		"pfuze"
 

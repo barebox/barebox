@@ -24,7 +24,7 @@
 #include <filetype.h>
 #include <linux/mtd/mtd.h>
 #include <mtd/mtd-peb.h>
-#include <mach/bbu.h>
+#include <mach/omap/bbu.h>
 
 struct nand_bbu_handler {
 	struct bbu_handler bbu_handler;

@@ -9,8 +9,8 @@
 #include <of_address.h>
 #include <asm/memory.h>
 #include <linux/mbus.h>
-#include <mach/armada-370-xp-regs.h>
-#include <mach/socid.h>
+#include <mach/mvebu/armada-370-xp-regs.h>
+#include <mach/mvebu/socid.h>
 
 static const struct of_device_id armada_370_xp_pcie_of_ids[] = {
 	{ .compatible = "marvell,armada-xp-pcie", },

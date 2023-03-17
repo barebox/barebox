@@ -19,13 +19,13 @@
 #include <generated/mach-types.h>
 #include <asm/io.h>
 #include <asm/mmu.h>
-#include <mach/generic.h>
+#include <mach/imx/generic.h>
 #include <linux/sizes.h>
-#include <mach/imx6.h>
-#include <mach/devices-imx6.h>
-#include <mach/iomux-mx6.h>
+#include <mach/imx/imx6.h>
+#include <mach/imx/devices-imx6.h>
+#include <mach/imx/iomux-mx6.h>
 #include <spi/spi.h>
-#include <mach/spi.h>
+#include <mach/imx/spi.h>
 #include <i2c/i2c.h>
 
 #define ETH_PHY_RST	IMX_GPIO_NR(1, 25)

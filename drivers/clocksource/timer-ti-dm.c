@@ -21,8 +21,8 @@
 #include <clock.h>
 #include <init.h>
 #include <io.h>
-#include <mach/am33xx-silicon.h>
-#include <mach/am33xx-clock.h>
+#include <mach/omap/am33xx-silicon.h>
+#include <mach/omap/am33xx-clock.h>
 
 #include <stdio.h>
 

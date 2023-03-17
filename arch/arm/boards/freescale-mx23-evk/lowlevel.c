@@ -5,7 +5,7 @@
 #include <generated/mach-types.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
-#include <mach/imx23-regs.h>
+#include <mach/mxs/imx23-regs.h>
 
 static noinline void continue_imx_entry(size_t size)
 {

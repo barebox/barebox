@@ -19,16 +19,15 @@
 #include <i2c/i2c-gpio.h>
 #include <i2c/at24.h>
 
-#include <mach/clock.h>
-#include <mach/imx-regs.h>
-#include <mach/iomux.h>
-#include <mach/mci.h>
+#include <mach/mxs/imx-regs.h>
+#include <mach/mxs/iomux.h>
+#include <mach/mxs/mci.h>
 
 #include <asm/armlinux.h>
 #include <asm/mmu.h>
 #include <asm/barebox-arm.h>
 
-#include <mach/fb.h>
+#include <mach/mxs/fb.h>
 
 #include <generated/mach-types.h>
 

@@ -15,9 +15,9 @@
 #include <xfuncs.h>
 #include <init.h>
 #include <asm/io.h>
-#include <mach/hardware.h>
-#include <mach/at91rm9200_emac.h>
-#include <mach/board.h>
+#include <mach/at91/hardware.h>
+#include <mach/at91/at91rm9200_emac.h>
+#include <mach/at91/board.h>
 #include <generated/mach-types.h>
 #include <linux/clk.h>
 #include <linux/mii.h>

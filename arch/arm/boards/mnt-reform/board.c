@@ -7,7 +7,7 @@
 #include <common.h>
 #include <deep-probe.h>
 #include <init.h>
-#include <mach/bbu.h>
+#include <mach/imx/bbu.h>
 
 static int mnt_reform_probe(struct device *dev)
 {

@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <common.h>
-#include <mach/esdctl.h>
-#include <mach/generic.h>
+#include <mach/imx/esdctl.h>
+#include <mach/imx/generic.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
-#include <mach/imx5.h>
+#include <mach/imx/imx5.h>
 
 extern char __dtb_imx51_genesi_efika_sb_start[];
 

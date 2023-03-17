@@ -15,8 +15,8 @@
 #include <common.h>
 #include <init.h>
 #include <clock.h>
-#include <mach/hardware.h>
-#include <mach/at91_pit.h>
+#include <mach/at91/hardware.h>
+#include <mach/at91/at91_pit.h>
 #include <io.h>
 #include <linux/clk.h>
 #include <linux/err.h>

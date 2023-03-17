@@ -4,8 +4,8 @@
 #include <common.h>
 #include <deep-probe.h>
 #include <gpio.h>
-#include <mach/bbu.h>
-#include <mach/imx6.h>
+#include <mach/imx/bbu.h>
+#include <mach/imx/imx6.h>
 
 /**
  * Detects the board model by checking the R184 and R185 resistors.

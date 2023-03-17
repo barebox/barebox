@@ -3,7 +3,7 @@
 #include <linux/sizes.h>
 #include <init.h>
 #include <asm/memory.h>
-#include <mach/bbu.h>
+#include <mach/stm32mp/bbu.h>
 #include <bootsource.h>
 #include <deep-probe.h>
 #include <of.h>

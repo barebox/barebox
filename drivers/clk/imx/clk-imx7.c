@@ -12,8 +12,8 @@
 #include <of.h>
 #include <linux/clkdev.h>
 #include <linux/err.h>
-#include <mach/imx7-regs.h>
-#include <mach/revision.h>
+#include <mach/imx/imx7-regs.h>
+#include <mach/imx/revision.h>
 #include <dt-bindings/clock/imx7d-clock.h>
 
 #include "clk.h"

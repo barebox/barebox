@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0
 #include <common.h>
-#include <mach/imx1-regs.h>
-#include <mach/iomux-v1.h>
-#include <mach/iomux-mx1.h>
+#include <mach/imx/imx1-regs.h>
+#include <mach/imx/iomux-v1.h>
+#include <mach/imx/iomux-mx1.h>
 #include <asm/barebox-arm.h>
-#include <mach/esdctl.h>
+#include <mach/imx/esdctl.h>
 
 extern char __dtb_imx1_scb9328_start[];
 

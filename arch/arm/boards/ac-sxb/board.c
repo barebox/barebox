@@ -6,7 +6,7 @@
 
 #include <common.h>
 #include <init.h>
-#include <mach/bbu.h>
+#include <mach/imx/bbu.h>
 
 static int sxb_coredevices_init(void)
 {

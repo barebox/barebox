@@ -16,9 +16,9 @@
 #include <linux/stat.h>
 #include <linux/clk.h>
 
-#include <mach/generic.h>
-#include <mach/cyclone5-system-manager.h>
-#include <mach/cyclone5-regs.h>
+#include <mach/socfpga/generic.h>
+#include <mach/socfpga/cyclone5-system-manager.h>
+#include <mach/socfpga/cyclone5-regs.h>
 
 static struct socfpga_barebox_part default_parts[] = {
 	{

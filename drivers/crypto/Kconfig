@@ -1,11 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-menuconfig CRYPTO_HW
-	bool "Hardware crypto devices"
-
-if CRYPTO_HW
+menu "Hardware crypto devices"
 
 source "drivers/crypto/caam/Kconfig"
 source "drivers/crypto/imx-scc/Kconfig"
 
-endif
+endmenu

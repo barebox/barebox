@@ -6,7 +6,7 @@
 #include <gpio.h>
 #include <i2c/i2c.h>
 #include <init.h>
-#include <mach/tegra-bbu.h>
+#include <mach/tegra/tegra-bbu.h>
 
 static int nvidia_beaver_fs_init(void)
 {

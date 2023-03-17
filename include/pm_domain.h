@@ -23,6 +23,8 @@ typedef struct generic_pm_domain *(*genpd_xlate_t)(struct of_phandle_args *args,
 
 #ifdef CONFIG_PM_GENERIC_DOMAINS
 
+void genpd_activate(void);
+
 int genpd_dev_pm_attach(struct device *dev);
 
 /**
@@ -57,6 +59,10 @@ int of_genpd_add_provider_simple(struct device_node *np,
 void pm_genpd_print(void);
 
 #else
+
+static inline void genpd_activate(void)
+{
+}
 
 static inline int pm_genpd_init(struct generic_pm_domain *genpd,
 				void *gov, bool is_off)

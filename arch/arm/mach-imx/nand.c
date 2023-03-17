@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <common.h>
-#include <mach/generic.h>
-#include <mach/imx21-regs.h>
-#include <mach/imx25-regs.h>
-#include <mach/imx27-regs.h>
-#include <mach/imx35-regs.h>
-#include <mach/imx-nand.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/imx21-regs.h>
+#include <mach/imx/imx25-regs.h>
+#include <mach/imx/imx27-regs.h>
+#include <mach/imx/imx35-regs.h>
+#include <mach/imx/imx-nand.h>
 #include <io.h>
 
 #define RCSR_NFC_FMS		(1 << 8)

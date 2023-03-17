@@ -12,10 +12,10 @@
 #include <envfs.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
-#include <mach/gpmc.h>
-#include <mach/gpmc_nand.h>
-#include <mach/ehci.h>
-#include <mach/omap3-devices.h>
+#include <mach/omap/gpmc.h>
+#include <mach/omap/gpmc_nand.h>
+#include <mach/omap/ehci.h>
+#include <mach/omap/omap3-devices.h>
 #include <i2c/i2c.h>
 #include <linux/err.h>
 #include <usb/ehci.h>

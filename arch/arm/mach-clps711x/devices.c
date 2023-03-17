@@ -14,8 +14,8 @@
 #include <asm/io.h>
 #include <asm/memory.h>
 
-#include <mach/clps711x.h>
-#include <mach/devices.h>
+#include <mach/clps711x/clps711x.h>
+#include <mach/clps711x/devices.h>
 
 static int clps711x_mem_init(void)
 {

@@ -2,8 +2,8 @@
 // SPDX-FileCopyrightText: 2014 Lucas Stach <l.stach@pengutronix.de>
 
 #include <common.h>
-#include <mach/lowlevel.h>
-#include <mach/lowlevel-dvc.h>
+#include <mach/tegra/lowlevel.h>
+#include <mach/tegra/lowlevel-dvc.h>
 
 extern char __dtb_tegra124_jetson_tk1_start[];
 

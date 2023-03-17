@@ -2,12 +2,13 @@
 // SPDX-FileCopyrightText: 2014 Steffen Trumtrar, Pengutronix
 
 #include <debug_ll.h>
+#include <mach/imx/debug_ll.h>
 #include <common.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 #include <image-metadata.h>
-#include <mach/generic.h>
-#include <mach/esdctl.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/esdctl.h>
 #include <linux/sizes.h>
 
 static inline void setup_uart(void)

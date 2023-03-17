@@ -10,7 +10,7 @@
 #include <init.h>
 #include <asm/memory.h>
 #include <linux/sizes.h>
-#include <mach/bbu.h>
+#include <mach/imx/bbu.h>
 #include "../zii-common/pn-fixup.h"
 
 #define LRU_FLAG_EGALAX		BIT(0)

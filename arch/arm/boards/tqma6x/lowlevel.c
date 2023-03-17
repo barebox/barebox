@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: 2013 Sascha Hauer <s.hauer@pengutronix.de>
 
 #include <debug_ll.h>
+#include <mach/imx/debug_ll.h>
 #include <common.h>
 #include <linux/sizes.h>
 #include <io.h>
@@ -10,7 +11,7 @@
 #include <asm/sections.h>
 #include <asm/cache.h>
 #include <asm/mmu.h>
-#include <mach/imx6.h>
+#include <mach/imx/imx6.h>
 
 extern char __dtb_imx6q_mba6x_start[];
 extern char __dtb_imx6dl_mba6x_start[];

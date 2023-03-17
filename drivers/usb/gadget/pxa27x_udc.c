@@ -18,8 +18,8 @@
 #include <usb/gadget.h>
 
 #include "pxa27x_udc.h"
-#include <mach/udc_pxa2xx.h>
-#include <mach/pxa-regs.h>
+#include <mach/pxa/udc_pxa2xx.h>
+#include <mach/pxa/pxa-regs.h>
 
 #define	DRIVER_VERSION	"2008-04-18"
 #define	DRIVER_DESC	"PXA 27x USB Device Controller driver"

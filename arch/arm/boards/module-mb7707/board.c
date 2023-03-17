@@ -7,7 +7,7 @@
 #include <init.h>
 #include <driver.h>
 #include <usb/ehci.h>
-#include <mach/hardware.h>
+#include <mach/uemd/hardware.h>
 
 static int hostname_init(void)
 {

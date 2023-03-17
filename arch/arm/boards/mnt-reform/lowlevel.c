@@ -6,17 +6,18 @@
 #include <asm/barebox-arm.h>
 #include <common.h>
 #include <debug_ll.h>
+#include <mach/imx/debug_ll.h>
 #include <firmware.h>
 #include <pbl/i2c.h>
 #include <pbl/pmic.h>
-#include <mach/atf.h>
-#include <mach/esdctl.h>
-#include <mach/generic.h>
-#include <mach/imx-gpio.h>
-#include <mach/imx8m-ccm-regs.h>
-#include <mach/imx8mq-regs.h>
-#include <mach/iomux-mx8mq.h>
-#include <mach/xload.h>
+#include <mach/imx/atf.h>
+#include <mach/imx/esdctl.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/imx-gpio.h>
+#include <mach/imx/imx8m-ccm-regs.h>
+#include <mach/imx/imx8mq-regs.h>
+#include <mach/imx/iomux-mx8mq.h>
+#include <mach/imx/xload.h>
 #include <soc/imx8m/ddr.h>
 
 extern char __dtb_z_imx8mq_mnt_reform2_start[];

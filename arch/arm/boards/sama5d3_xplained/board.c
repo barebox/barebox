@@ -3,8 +3,8 @@
 #include <common.h>
 #include <init.h>
 #include <envfs.h>
-#include <mach/at91sam9_smc.h>
-#include <mach/hardware.h>
+#include <mach/at91/at91sam9_smc.h>
+#include <mach/at91/hardware.h>
 #include <linux/clk.h>
 
 static struct sam9_smc_config sama5d3_xplained_nand_smc_config = {

@@ -3,8 +3,8 @@
 
 #include <common.h>
 #include <init.h>
-#include <mach/generic.h>
-#include <mach/bbu.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/bbu.h>
 
 static int digi_ccimx6ulsbcpro_device_init(void)
 {

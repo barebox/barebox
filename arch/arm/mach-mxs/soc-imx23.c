@@ -6,10 +6,10 @@
 #include <common.h>
 #include <init.h>
 #include <restart.h>
-#include <mach/imx23-regs.h>
+#include <mach/mxs/imx23-regs.h>
 #include <io.h>
 #include <asm/memory.h>
-#include <mach/imx23.h>
+#include <mach/mxs/imx23.h>
 
 #define HW_CLKCTRL_RESET 0x120
 # define HW_CLKCTRL_RESET_CHIP (1 << 1)

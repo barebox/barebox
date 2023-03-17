@@ -9,10 +9,10 @@
 #include <hab.h>
 #include <regmap.h>
 #include <fs.h>
-#include <mach/iim.h>
-#include <mach/imx25-fusemap.h>
-#include <mach/ocotp.h>
-#include <mach/imx6-fusemap.h>
+#include <mach/imx/iim.h>
+#include <mach/imx/imx25-fusemap.h>
+#include <mach/imx/ocotp.h>
+#include <mach/imx/imx6-fusemap.h>
 
 bool imx_hab_srk_hash_valid(const void *buf)
 {

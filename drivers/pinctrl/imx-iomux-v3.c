@@ -11,8 +11,8 @@
 #include <of.h>
 #include <pinctrl.h>
 #include <malloc.h>
-#include <mach/iomux-v3.h>
-#include <mach/generic.h>
+#include <mach/imx/iomux-v3.h>
+#include <mach/imx/generic.h>
 
 struct imx_iomux_v3 {
 	void __iomem *base;

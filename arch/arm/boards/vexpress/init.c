@@ -9,7 +9,7 @@
 #include <asm/armlinux.h>
 #include <asm/system_info.h>
 #include <generated/mach-types.h>
-#include <mach/devices.h>
+#include <mach/vexpress/devices.h>
 #include <environment.h>
 #include <linux/sizes.h>
 #include <io.h>

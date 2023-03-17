@@ -32,17 +32,17 @@
 #include <init.h>
 #include <io.h>
 #include <restart.h>
-#include <mach/omap3-silicon.h>
-#include <mach/gpmc.h>
-#include <mach/generic.h>
-#include <mach/sdrc.h>
-#include <mach/control.h>
-#include <mach/omap3-smx.h>
-#include <mach/clocks.h>
-#include <mach/omap3-clock.h>
-#include <mach/sys_info.h>
-#include <mach/syslib.h>
-#include <mach/omap3-generic.h>
+#include <mach/omap/omap3-silicon.h>
+#include <mach/omap/gpmc.h>
+#include <mach/omap/generic.h>
+#include <mach/omap/sdrc.h>
+#include <mach/omap/control.h>
+#include <mach/omap/omap3-smx.h>
+#include <mach/omap/clocks.h>
+#include <mach/omap/omap3-clock.h>
+#include <mach/omap/sys_info.h>
+#include <mach/omap/syslib.h>
+#include <mach/omap/omap3-generic.h>
 #include <reset_source.h>
 
 /**

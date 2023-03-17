@@ -22,7 +22,7 @@
 #include <asm/system.h>
 #include <linux/err.h>
 
-#include <mach/cpsw.h>
+#include <mach/omap/cpsw.h>
 
 #define CPSW_VERSION_1		0x19010a
 #define CPSW_VERSION_2		0x19010c

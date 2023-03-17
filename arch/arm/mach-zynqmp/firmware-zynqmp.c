@@ -16,7 +16,7 @@
 #include <init.h>
 #include <linux/arm-smccc.h>
 
-#include <mach/firmware-zynqmp.h>
+#include <mach/zynqmp/firmware-zynqmp.h>
 
 #define ZYNQMP_TZ_VERSION(MAJOR, MINOR)	((MAJOR << 16) | MINOR)
 

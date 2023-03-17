@@ -1249,6 +1249,18 @@ config FRAME_POINTER
 	  will be slightly larger and slower, but it can give precise
 	  debugging information when print stack traces.
 
+config DEBUG_IMX_UART
+	bool
+
+config DEBUG_ROCKCHIP_UART
+	bool
+
+config DEBUG_OMAP_UART
+	bool
+
+config DEBUG_BCM283X_UART
+	bool
+
 choice
 	prompt "Kernel low-level debugging port"
 	depends on DEBUG_LL
@@ -1256,6 +1268,7 @@ choice
 config DEBUG_IMX1_UART
 	bool "i.MX1 Debug UART"
 	depends on ARCH_IMX1
+	select DEBUG_IMX_UART
 	help
 	  Say Y here if you want kernel low-level debugging support
 	  on i.MX1.
@@ -1263,6 +1276,7 @@ config DEBUG_IMX1_UART
 config DEBUG_IMX21_UART
 	bool "i.MX21 Debug UART"
 	depends on ARCH_IMX21
+	select DEBUG_IMX_UART
 	help
 	  Say Y here if you want kernel low-level debugging support
 	  on i.MX21.
@@ -1270,6 +1284,7 @@ config DEBUG_IMX21_UART
 config DEBUG_IMX25_UART
 	bool "i.MX25 Debug UART"
 	depends on ARCH_IMX25
+	select DEBUG_IMX_UART
 	help
 	  Say Y here if you want kernel low-level debugging support
 	  on i.MX25.
@@ -1277,6 +1292,7 @@ config DEBUG_IMX25_UART
 config DEBUG_IMX27_UART
 	bool "i.MX27 Debug UART"
 	depends on ARCH_IMX27
+	select DEBUG_IMX_UART
 	help
 	  Say Y here if you want kernel low-level debugging support
 	  on i.MX27.
@@ -1284,6 +1300,7 @@ config DEBUG_IMX27_UART
 config DEBUG_IMX31_UART
 	bool "i.MX31 Debug UART"
 	depends on ARCH_IMX31
+	select DEBUG_IMX_UART
 	help
 	  Say Y here if you want kernel low-level debugging support
 	  on i.MX31.
@@ -1291,6 +1308,7 @@ config DEBUG_IMX31_UART
 config DEBUG_IMX35_UART
 	bool "i.MX35 Debug UART"
 	depends on ARCH_IMX35
+	select DEBUG_IMX_UART
 	help
 	  Say Y here if you want kernel low-level debugging support
 	  on i.MX35.
@@ -1298,6 +1316,7 @@ config DEBUG_IMX35_UART
 config DEBUG_IMX50_UART
 	bool "i.MX50 Debug UART"
 	depends on ARCH_IMX50
+	select DEBUG_IMX_UART
 	help
 	  Say Y here if you want kernel low-level debugging support
 	  on i.MX50.
@@ -1305,6 +1324,7 @@ config DEBUG_IMX50_UART
 config DEBUG_IMX51_UART
 	bool "i.MX51 Debug UART"
 	depends on ARCH_IMX51
+	select DEBUG_IMX_UART
 	help
 	  Say Y here if you want kernel low-level debugging support
 	  on i.MX51.
@@ -1312,6 +1332,7 @@ config DEBUG_IMX51_UART
 config DEBUG_IMX53_UART
 	bool "i.MX53 Debug UART"
 	depends on ARCH_IMX53
+	select DEBUG_IMX_UART
 	help
 	  Say Y here if you want kernel low-level debugging support
 	  on i.MX53.
@@ -1326,6 +1347,7 @@ config DEBUG_IMX6Q_UART
 config DEBUG_IMX7D_UART
 	bool "i.MX7D Debug UART"
 	depends on ARCH_IMX7
+	select DEBUG_IMX_UART
 	help
 	  Say Y here if you want barebox low-level debugging support
 	  on i.MX7D.
@@ -1333,13 +1355,22 @@ config DEBUG_IMX7D_UART
 config DEBUG_IMX8M_UART
 	bool "i.MX8M Debug UART"
 	depends on ARCH_IMX8M
+	select DEBUG_IMX_UART
 	help
 	  Say Y here if you want barebox low-level debugging support
 	  on i.MX8M*.
 
+config DEBUG_VEXPRESS_UART
+	bool "Vexpress Debug UART"
+	depends on ARCH_VEXPRESS
+	help
+	  Say Y here if you want barebox low-level debugging support
+	  on Vexpress.
+
 config DEBUG_VF610_UART
 	bool "VF610 Debug UART"
 	depends on ARCH_VF610
+	select DEBUG_IMX_UART
 	help
 	  Say Y here if you want kernel low-level debugging support
 	  on VF610.
@@ -1347,6 +1378,7 @@ config DEBUG_VF610_UART
 config DEBUG_OMAP3_UART
 	bool "OMAP3 Debug UART"
 	depends on ARCH_OMAP3
+	select DEBUG_OMAP_UART
 	help
 	  Say Y here if you want kernel low-level debugging support
 	  on OMAP3.
@@ -1354,6 +1386,7 @@ config DEBUG_OMAP3_UART
 config DEBUG_OMAP4_UART
 	bool "OMAP4 Debug UART"
 	depends on ARCH_OMAP4
+	select DEBUG_OMAP_UART
 	help
 	  Say Y here if you want kernel low-level debugging support
 	  on OMAP4.
@@ -1361,6 +1394,7 @@ config DEBUG_OMAP4_UART
 config DEBUG_AM33XX_UART
 	bool "AM33XX Debug UART"
 	depends on ARCH_AM33XX
+	select DEBUG_OMAP_UART
 	help
 	  Say Y here if you want kernel low-level debugging support
 	  on AM33XX.
@@ -1368,6 +1402,7 @@ config DEBUG_AM33XX_UART
 config DEBUG_ROCKCHIP_RK3188_UART
 	bool "RK3188 Debug UART"
 	depends on ARCH_RK3188
+	select DEBUG_ROCKCHIP_UART
 	help
 	  Say Y here if you want kernel low-level debugging support
 	  on RK3188.
@@ -1375,6 +1410,7 @@ config DEBUG_ROCKCHIP_RK3188_UART
 config DEBUG_ROCKCHIP_RK3288_UART
 	bool "RK3288 Debug UART"
 	depends on ARCH_RK3288
+	select DEBUG_ROCKCHIP_UART
 	help
 	  Say Y here if you want kernel low-level debugging support
 	  on RK3288.
@@ -1382,6 +1418,7 @@ config DEBUG_ROCKCHIP_RK3288_UART
 config DEBUG_ROCKCHIP_RK3568_UART
 	bool "RK3568 Debug UART"
 	depends on ARCH_RK3568
+	select DEBUG_ROCKCHIP_UART
 	help
 	  Say Y here if you want kernel low-level debugging support
 	  on RK3568.
@@ -1389,6 +1426,7 @@ config DEBUG_ROCKCHIP_RK3568_UART
 config DEBUG_ROCKCHIP_RK3399_UART
 	bool "RK3399 Debug UART"
 	depends on ARCH_RK3399
+	select DEBUG_ROCKCHIP_UART
 	help
 	  Say Y here if you want kernel low-level debugging support
 	  on RK3399.
@@ -1407,9 +1445,17 @@ config DEBUG_SOCFPGA_UART1
 	  Say Y here if you want kernel low-level debugging support
 	  on SOCFPGA(Arria 10) based platforms.
 
+config DEBUG_STM32MP_UART
+	bool "Use STM32MP UART4 for low-level debug"
+	depends on ARCH_STM32
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on STM32MP.
+
 config DEBUG_RPI1_UART
 	bool "RaspberryPi 1 PL011 UART"
 	depends on ARCH_BCM283X
+	select DEBUG_BCM283X_UART
 	help
 	  Say Y here if you want low-level debugging support on
 	  RaspberryPi 1 boards.
@@ -1424,6 +1470,7 @@ config DEBUG_AT91_UART
 config DEBUG_RPI2_3_UART
 	bool "RaspberryPi 2/3 PL011 UART"
 	depends on ARCH_BCM283X
+	select DEBUG_BCM283X_UART
 	help
 	  Say Y here if you want low-level debugging support on
 	  RaspberryPi 2 and 3 boards.
@@ -1431,6 +1478,7 @@ config DEBUG_RPI2_3_UART
 config DEBUG_RPI3_MINI_UART
 	bool "RaspberryPi 3 mini UART"
 	depends on ARCH_BCM283X
+	select DEBUG_BCM283X_UART
 	help
 	  Say Y here if you want low-level debugging support on
 	  RaspberryPi 3 board mini UART.
@@ -1438,9 +1486,17 @@ config DEBUG_RPI3_MINI_UART
 config DEBUG_RPI4_MINI_UART
 	bool "RaspberryPi 4 mini UART"
 	depends on ARCH_BCM283X
+	select DEBUG_BCM283X_UART
 	help
 	  Say Y here if you want low-level debugging support on
 	  RaspberryPi 4 board mini UART.
+
+config DEBUG_ZYNQMP_UART
+	bool "Zynqmp Debug UART"
+	depends on ARCH_ZYNQMP
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on Zynqmp.
 
 config DEBUG_ERIZO
 	bool "Erizo ns16550 port"
@@ -1638,10 +1694,6 @@ source "common/efi/Kconfig"
 
 config HAS_DEBUG_LL
 	bool
-
-config HAS_ASM_DEBUG_LL
-	bool
-	select HAS_DEBUG_LL
 
 config DDR_SPD
 	bool

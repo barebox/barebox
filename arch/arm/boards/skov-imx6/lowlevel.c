@@ -3,19 +3,20 @@
 #define pr_fmt(fmt) "skov-imx6: " fmt
 
 #include <common.h>
-#include <mach/generic.h>
+#include <mach/imx/generic.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 #include <debug_ll.h>
+#include <mach/imx/debug_ll.h>
 #include <io.h>
-#include <mach/imx6-mmdc.h>
-#include <mach/imx6-ddr-regs.h>
-#include <mach/imx6.h>
-#include <mach/xload.h>
-#include <mach/esdctl.h>
+#include <mach/imx/imx6-mmdc.h>
+#include <mach/imx/imx6-ddr-regs.h>
+#include <mach/imx/imx6.h>
+#include <mach/imx/xload.h>
+#include <mach/imx/esdctl.h>
 #include <serial/imx-uart.h>
-#include <mach/iomux-mx6.h>
-#include <mach/imx-gpio.h>
+#include <mach/imx/iomux-mx6.h>
+#include <mach/imx/imx-gpio.h>
 #include "version.h"
 
 static void __udelay(int us)

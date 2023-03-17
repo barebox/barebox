@@ -8,13 +8,13 @@
 #include <linux/sizes.h>
 #include <asm/cache.h>
 
-#include <mach/at91_pmc_ll.h>
-#include <mach/at91sam9263.h>
-#include <mach/at91sam926x.h>
-#include <mach/hardware.h>
-#include <mach/iomux.h>
-#include <mach/xload.h>
-#include <mach/gpio.h>
+#include <mach/at91/at91_pmc_ll.h>
+#include <mach/at91/at91sam9263.h>
+#include <mach/at91/at91sam926x.h>
+#include <mach/at91/hardware.h>
+#include <mach/at91/iomux.h>
+#include <mach/at91/xload.h>
+#include <mach/at91/gpio.h>
 
 typedef void (*func)(int zero, int arch, void *params);
 

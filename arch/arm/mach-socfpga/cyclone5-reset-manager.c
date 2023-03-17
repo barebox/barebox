@@ -19,8 +19,8 @@
 #include <io.h>
 #include <init.h>
 #include <restart.h>
-#include <mach/cyclone5-regs.h>
-#include <mach/cyclone5-reset-manager.h>
+#include <mach/socfpga/cyclone5-regs.h>
+#include <mach/socfpga/cyclone5-reset-manager.h>
 
 /* Write the reset manager register to cause reset */
 static void __noreturn socfpga_restart_soc(struct restart_handler *rst)

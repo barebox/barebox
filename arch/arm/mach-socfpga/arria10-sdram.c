@@ -7,10 +7,10 @@
 #include <common.h>
 #include <io.h>
 #include <debug_ll.h>
-#include <mach/generic.h>
-#include <mach/arria10-sdram.h>
-#include <mach/arria10-regs.h>
-#include <mach/arria10-reset-manager.h>
+#include <mach/socfpga/generic.h>
+#include <mach/socfpga/arria10-sdram.h>
+#include <mach/socfpga/arria10-regs.h>
+#include <mach/socfpga/arria10-reset-manager.h>
 
 
 /* FAWBANK - Number of Bank of a given device involved in the FAW period. */

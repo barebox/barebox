@@ -32,13 +32,13 @@
 
 #include <common.h>
 #include <io.h>
-#include <mach/omap3-silicon.h>
-#include <mach/omap3-generic.h>
-#include <mach/clocks.h>
-#include <mach/omap3-clock.h>
-#include <mach/timers.h>
-#include <mach/sys_info.h>
-#include <mach/syslib.h>
+#include <mach/omap/omap3-silicon.h>
+#include <mach/omap/omap3-generic.h>
+#include <mach/omap/clocks.h>
+#include <mach/omap/omap3-clock.h>
+#include <mach/omap/timers.h>
+#include <mach/omap/sys_info.h>
+#include <mach/omap/syslib.h>
 
 #define S32K_CR			(OMAP3_32KTIMER_BASE + 0x10)
 

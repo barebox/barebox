@@ -13,10 +13,10 @@
 #include <io.h>
 #include <envfs.h>
 #include <linux/sizes.h>
-#include <mach/hardware.h>
-#include <mach/at91_pmc.h>
-#include <mach/board.h>
-#include <mach/iomux.h>
+#include <mach/at91/hardware.h>
+#include <mach/at91/at91_pmc.h>
+#include <mach/at91/board.h>
+#include <mach/at91/iomux.h>
 #include <spi/spi.h>
 
 static struct macb_platform_data ether_pdata = {

@@ -29,7 +29,7 @@
 
 #define NS16550_LCR_BKSE	0x80 /* Bank select enable */
 
-static inline void PUTC_LL(char ch)
+static inline void debug_ll_ns16550_putc(char ch)
 {
         while (!(debug_ll_read_reg(NS16550_LSR) & NS16550_LSR_THRE))
                 ;
@@ -39,7 +39,7 @@ static inline void PUTC_LL(char ch)
 
 static inline uint16_t debug_ll_ns16550_calc_divisor(unsigned long clk)
 {
-	return clk / (115200 * 16);
+	return clk / (CONFIG_BAUDRATE * 16);
 }
 
 static inline void debug_ll_ns16550_init(uint16_t divisor)

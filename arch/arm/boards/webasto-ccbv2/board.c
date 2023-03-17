@@ -5,8 +5,8 @@
 
 #include <common.h>
 #include <init.h>
-#include <mach/generic.h>
-#include <mach/bbu.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/bbu.h>
 #include <of.h>
 #include <string.h>
 

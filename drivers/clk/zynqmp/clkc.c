@@ -14,7 +14,7 @@
 #include <linux/bitfield.h>
 #include <linux/clk.h>
 #include <linux/clkdev.h>
-#include <mach/firmware-zynqmp.h>
+#include <mach/zynqmp/firmware-zynqmp.h>
 
 #include "clk-zynqmp.h"
 

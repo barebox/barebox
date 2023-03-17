@@ -4,10 +4,10 @@
 #include <gpio.h>
 #include <init.h>
 #include <restart.h>
-#include <mach/hardware.h>
-#include <mach/at91_pmc.h>
-#include <mach/board.h>
-#include <mach/at91_rstc.h>
+#include <mach/at91/hardware.h>
+#include <mach/at91/at91_pmc.h>
+#include <mach/at91/board.h>
+#include <mach/at91/at91_rstc.h>
 
 #include "clock.h"
 #include "generic.h"

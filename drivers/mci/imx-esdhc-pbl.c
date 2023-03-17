@@ -8,14 +8,17 @@
 #include <linux/sizes.h>
 #include <asm/sections.h>
 #include <asm/cache.h>
-#include <mach/xload.h>
+#include <mach/imx/xload.h>
 #ifdef CONFIG_ARCH_IMX
-#include <mach/atf.h>
-#include <mach/imx6-regs.h>
-#include <mach/imx7-regs.h>
-#include <mach/imx8mq-regs.h>
-#include <mach/imx8mm-regs.h>
-#include <mach/imx-header.h>
+#include <mach/imx/atf.h>
+#include <mach/imx/imx6-regs.h>
+#include <mach/imx/imx7-regs.h>
+#include <mach/imx/imx8mq-regs.h>
+#include <mach/imx/imx8mm-regs.h>
+#include <mach/imx/imx-header.h>
+#endif
+#ifdef CONFIG_ARCH_LS1046
+#include <mach/layerscape/xload.h>
 #endif
 #include "sdhci.h"
 #include "imx-esdhc.h"

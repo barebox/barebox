@@ -7,9 +7,9 @@
  */
 #include <common.h>
 #include <io.h>
-#include <mach/imx6-mmdc.h>
-#include <mach/imx6-regs.h>
-#include <mach/imx6.h>
+#include <mach/imx/imx6-mmdc.h>
+#include <mach/imx/imx6-regs.h>
+#include <mach/imx/imx6.h>
 
 static bool wlcalib_failed(void __iomem *ips)
 {

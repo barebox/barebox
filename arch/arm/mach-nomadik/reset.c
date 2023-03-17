@@ -18,7 +18,7 @@
 #include <init.h>
 #include <io.h>
 #include <restart.h>
-#include <mach/hardware.h>
+#include <mach/nomadik/hardware.h>
 
 static void __noreturn nomadik_restart_soc(struct restart_handler *rst)
 {

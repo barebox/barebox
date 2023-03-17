@@ -237,6 +237,13 @@ static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
 	return ret ?: 1;
 }
 
+static bool have_genpd_providers;
+
+void genpd_activate(void)
+{
+	have_genpd_providers = true;
+}
+
 /**
  * genpd_dev_pm_attach - Attach a device to its PM domain using DT.
  * @dev: Device to attach.
@@ -253,6 +260,9 @@ static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
 int genpd_dev_pm_attach(struct device *dev)
 {
 	if (!dev->of_node)
+		return 0;
+
+	if (!have_genpd_providers)
 		return 0;
 
 	/*

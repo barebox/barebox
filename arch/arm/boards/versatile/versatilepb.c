@@ -14,8 +14,8 @@
 #include <asm/armlinux.h>
 #include <asm/system_info.h>
 #include <generated/mach-types.h>
-#include <mach/init.h>
-#include <mach/platform.h>
+#include <mach/versatile/init.h>
+#include <mach/versatile/platform.h>
 #include <environment.h>
 #include <linux/sizes.h>
 #include <platform_data/eth-smc91111.h>

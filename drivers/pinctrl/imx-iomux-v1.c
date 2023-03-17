@@ -4,7 +4,7 @@
 #include <init.h>
 #include <malloc.h>
 #include <pinctrl.h>
-#include <mach/iomux-v1.h>
+#include <mach/imx/iomux-v1.h>
 #include <linux/err.h>
 
 /*

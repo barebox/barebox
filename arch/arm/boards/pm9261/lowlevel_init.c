@@ -4,10 +4,9 @@
  * Under GPLv2
  */
 
-#include <asm/barebox-arm.h>
-
-#include <mach/at91sam926x_board_init.h>
-#include <mach/at91sam9261_matrix.h>
+#include <mach/at91/barebox-arm.h>
+#include <mach/at91/at91sam926x_board_init.h>
+#include <mach/at91/at91sam9261_matrix.h>
 
 #define MASTER_PLL_DIV		15
 #define MASTER_PLL_MUL		162
@@ -111,7 +110,7 @@ static void __bare_init pm9261_init(void)
 	                  NULL);
 }
 
-void __naked __bare_init barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2)
+AT91_ENTRY_FUNCTION(start_pm9261, r0, r1, r2)
 {
 	arm_cpu_lowlevel_init();
 

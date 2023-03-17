@@ -29,6 +29,7 @@ struct boardinfo {
 };
 
 static LIST_HEAD(board_list);
+static LIST_HEAD(spi_controller_list);
 
 /**
  * spi_new_device - instantiate one new SPI device
@@ -108,7 +109,6 @@ EXPORT_SYMBOL(spi_new_device);
 static void spi_of_register_slaves(struct spi_controller *ctrl)
 {
 	struct device_node *n;
-	struct spi_board_info chip;
 	struct property *reg;
 	struct device_node *node = ctrl->dev->of_node;
 
@@ -119,7 +119,14 @@ static void spi_of_register_slaves(struct spi_controller *ctrl)
 		return;
 
 	for_each_available_child_of_node(node, n) {
-		memset(&chip, 0, sizeof(chip));
+		struct spi_board_info chip = {};
+
+		if (n->dev) {
+			dev_dbg(ctrl->dev, "skipping already registered %s\n",
+				dev_name(n->dev));
+			continue;
+		}
+
 		chip.name = xstrdup(n->name);
 		chip.bus_num = ctrl->bus_num;
 		/* Mode (clock phase/polarity/etc.) */
@@ -138,7 +145,18 @@ static void spi_of_register_slaves(struct spi_controller *ctrl)
 			continue;
 		chip.chip_select = of_read_number(reg->value, 1);
 		chip.device_node = n;
-		spi_register_board_info(&chip, 1);
+		spi_new_device(ctrl, &chip);
+	}
+}
+
+static void spi_controller_rescan(struct device *dev)
+{
+	struct spi_controller *ctrl;
+
+	list_for_each_entry(ctrl, &spi_controller_list, list) {
+		if (ctrl->dev != dev)
+			continue;
+		spi_of_register_slaves(ctrl);
 	}
 }
 
@@ -195,8 +213,6 @@ static void scan_boardinfo(struct spi_controller *ctrl)
 		}
 	}
 }
-
-static LIST_HEAD(spi_controller_list);
 
 static int spi_controller_check_ops(struct spi_controller *ctlr)
 {
@@ -273,6 +289,9 @@ int spi_register_controller(struct spi_controller *ctrl)
 	/* populate children from any spi device tables */
 	scan_boardinfo(ctrl);
 	status = 0;
+
+	if (!ctrl->dev->rescan)
+		ctrl->dev->rescan = spi_controller_rescan;
 
 	return status;
 }

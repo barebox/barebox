@@ -6,9 +6,9 @@
 #include <gpio.h>
 #include <errno.h>
 #include <io.h>
-#include <mach/iomux.h>
+#include <mach/mxs/iomux.h>
 #include <stmp-device.h>
-#include <mach/imx-regs.h>
+#include <mach/mxs/imx-regs.h>
 
 #define HW_PINCTRL_CTRL 0x000
 #define HW_PINCTRL_MUXSEL0 0x100

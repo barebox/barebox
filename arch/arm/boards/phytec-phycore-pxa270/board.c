@@ -10,10 +10,10 @@
 #include <linux/sizes.h>
 
 #include <gpio.h>
-#include <mach/mfp-pxa27x.h>
-#include <mach/pxa-regs.h>
-#include <mach/pxafb.h>
-#include <mach/devices.h>
+#include <mach/pxa/mfp-pxa27x.h>
+#include <mach/pxa/pxa-regs.h>
+#include <mach/pxa/pxafb.h>
+#include <mach/pxa/devices.h>
 
 #include <asm/armlinux.h>
 #include <asm/io.h>

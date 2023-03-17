@@ -2,7 +2,7 @@
 
 #include <common.h>
 #include <io.h>
-#include <mach/am3xxx-silicon.h>
+#include <mach/omap/am3xxx-silicon.h>
 
 /* UART Defines */
 #define UART_SYSCFG_OFFSET	0x54

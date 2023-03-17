@@ -9,7 +9,7 @@
 #include <common.h>
 #include <init.h>
 #include <net.h>
-#include <mach/ocotp.h>
+#include <mach/mxs/ocotp.h>
 
 static void mx28_evk_get_ethaddr(void)
 {

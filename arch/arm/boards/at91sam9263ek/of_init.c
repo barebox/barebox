@@ -7,11 +7,11 @@
 #include <gpio.h>
 #include <io.h>
 
-#include <mach/at91sam9263_matrix.h>
-#include <mach/at91sam9_smc.h>
-#include <mach/at91_rtt.h>
-#include <mach/hardware.h>
-#include <mach/iomux.h>
+#include <mach/at91/at91sam9263_matrix.h>
+#include <mach/at91/at91sam9_smc.h>
+#include <mach/at91/at91_rtt.h>
+#include <mach/at91/hardware.h>
+#include <mach/at91/iomux.h>
 
 static int add_smc_devices(void)
 {

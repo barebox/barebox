@@ -4,8 +4,8 @@ soc imx6
 loadaddr 0x20000000
 ivtofs 0x400
 
-#include <mach/imx6-ddr-regs.h>
-#include <mach/imx6q-ddr-regs.h>
+#include <mach/imx/imx6-ddr-regs.h>
+#include <mach/imx/imx6q-ddr-regs.h>
 
 wm 32 0x020e00a4 0x00000016
 wm 32 0x020e00c4 0x00000011

@@ -6,7 +6,7 @@
 
 #include <common.h>
 #include <bootstrap.h>
-#include <mach/bootstrap.h>
+#include <mach/at91/bootstrap.h>
 
 #ifdef CONFIG_MTD_DATAFLASH
 void * bootstrap_board_read_dataflash(void)

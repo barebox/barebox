@@ -19,8 +19,8 @@
 #include <common.h>
 #include <io.h>
 #include <malloc.h>
-#include <mach/omap3-silicon.h>
-#include <mach/omap3-generic.h>
+#include <mach/omap/omap3-silicon.h>
+#include <mach/omap/omap3-generic.h>
 
 static void __iomem *omap3_usb_base = (void __iomem *)OMAP3_MUSB0_BASE;
 

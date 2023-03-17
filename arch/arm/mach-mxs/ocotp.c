@@ -18,9 +18,9 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 
-#include <mach/generic.h>
-#include <mach/ocotp.h>
-#include <mach/power.h>
+#include <mach/mxs/generic.h>
+#include <mach/mxs/ocotp.h>
+#include <mach/mxs/power.h>
 
 #define DRIVERNAME "ocotp"
 

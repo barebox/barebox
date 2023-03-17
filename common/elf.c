@@ -59,14 +59,13 @@ static int request_elf_segment(struct elf_image *elf, void *phdr)
 {
 	void *dst = (void *) (phys_addr_t) elf_phdr_p_paddr(elf, phdr);
 	int ret;
-	u64 p_filesz = elf_phdr_p_filesz(elf, phdr);
 	u64 p_memsz = elf_phdr_p_memsz(elf, phdr);
 
 	/* we care only about PT_LOAD segments */
 	if (elf_phdr_p_type(elf, phdr) != PT_LOAD)
 		return 0;
 
-	if (!p_filesz)
+	if (!p_memsz)
 		return 0;
 
 	if (dst < elf->low_addr)
@@ -74,9 +73,9 @@ static int request_elf_segment(struct elf_image *elf, void *phdr)
 	if (dst + p_memsz > elf->high_addr)
 		elf->high_addr = dst + p_memsz;
 
-	pr_debug("Requesting segment 0x%p (%llu bytes)\n", dst, p_filesz);
+	pr_debug("Requesting segment 0x%p (%llu bytes)\n", dst, p_memsz);
 
-	ret = elf_request_region(elf, (resource_size_t)dst, p_filesz, phdr);
+	ret = elf_request_region(elf, (resource_size_t)dst, p_memsz, phdr);
 	if (ret)
 		return ret;
 

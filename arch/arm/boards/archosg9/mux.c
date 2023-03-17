@@ -3,9 +3,9 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
-#include <mach/omap4-silicon.h>
-#include <mach/omap4-mux.h>
-#include <mach/omap4-clock.h>
+#include <mach/omap/omap4-silicon.h>
+#include <mach/omap/omap4-mux.h>
+#include <mach/omap/omap4-clock.h>
 #include "mux.h"
 
 static const struct pad_conf_entry core_padconf_array[] = {

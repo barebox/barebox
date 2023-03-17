@@ -9,7 +9,7 @@
 #include <restart.h>
 #include <linux/bitfield.h>
 #include <linux/clk.h>
-#include <mach/at91_rstc.h>
+#include <mach/at91/at91_rstc.h>
 #include <reset_source.h>
 
 struct at91sam9x_rst {

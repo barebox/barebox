@@ -4,7 +4,7 @@
 #
 
 zynqcfg_cpp_flags  = -Wp,-MD,$(depfile) -nostdinc -x assembler-with-cpp \
-                     -I $(srctree)/arch/arm/mach-zynq/include
+                     -I $(srctree)/include/mach
 
 zynqcfg-tmp = $(subst $(comma),_,$(dot-target).zynqcfg.tmp)
 

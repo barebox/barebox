@@ -13,7 +13,7 @@
 #include <asm/system.h>
 #include <image-fit.h>
 #include <asm/psci.h>
-#include <mach/layerscape.h>
+#include <mach/layerscape/layerscape.h>
 #include <asm/cache.h>
 
 int ppa_entry(const void *, u32 *, u32 *);

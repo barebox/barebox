@@ -9,7 +9,7 @@
 #include <init.h>
 #include <linux/phy.h>
 #include <linux/sizes.h>
-#include <mach/bbu.h>
+#include <mach/imx/bbu.h>
 #include <envfs.h>
 
 #define PHY_ID_AR8031	0x004dd074

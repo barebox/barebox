@@ -10,7 +10,7 @@
 #include <malloc.h>
 #include <io.h>
 
-#include <mach/uart.h>
+#include <mach/digic/uart.h>
 
 /*
  * This driver is based on the "Serial terminal" docs here:

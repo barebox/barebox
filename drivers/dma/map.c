@@ -23,17 +23,15 @@ static inline void *dma_to_cpu(struct device *dev, dma_addr_t addr)
 dma_addr_t dma_map_single(struct device *dev, void *ptr, size_t size,
 			  enum dma_data_direction dir)
 {
-	unsigned long addr = (unsigned long)ptr;
+	dma_addr_t ret = cpu_to_dma(dev, ptr);
 
-	dma_sync_single_for_device(addr, size, dir);
+	dma_sync_single_for_device(ret, size, dir);
 
-	return cpu_to_dma(dev, ptr);
+	return ret;
 }
 
 void dma_unmap_single(struct device *dev, dma_addr_t dma_addr, size_t size,
 		      enum dma_data_direction dir)
 {
-	unsigned long addr = (unsigned long)dma_to_cpu(dev, dma_addr);
-
-	dma_sync_single_for_cpu(addr, size, dir);
+	dma_sync_single_for_cpu(dma_addr, size, dir);
 }

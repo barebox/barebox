@@ -12,9 +12,9 @@
 #include <linux/clkdev.h>
 #include <linux/err.h>
 #include <linux/clk.h>
-#include <mach/imx6-regs.h>
-#include <mach/revision.h>
-#include <mach/imx6.h>
+#include <mach/imx/imx6-regs.h>
+#include <mach/imx/revision.h>
+#include <mach/imx/imx6.h>
 
 #include "clk.h"
 #include "common.h"

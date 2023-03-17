@@ -25,9 +25,9 @@
 #include <asm/system_info.h>
 #include <reset_source.h>
 
-#include <mach/core.h>
-#include <mach/mbox.h>
-#include <mach/platform.h>
+#include <mach/bcm283x/core.h>
+#include <mach/bcm283x/mbox.h>
+#include <mach/bcm283x/platform.h>
 
 #include <soc/bcm283x/wdt.h>
 
@@ -160,6 +160,12 @@ static int rpi_0_w_init(struct rpi_priv *priv)
 static int rpi_mem_init(void)
 {
 	ssize_t size;
+
+	if (!of_machine_is_compatible("brcm,bcm2837") &&
+	    !of_machine_is_compatible("brcm,bcm2835") &&
+	    !of_machine_is_compatible("brcm,bcm2711") &&
+	    !of_machine_is_compatible("brcm,bcm2836"))
+		return 0;
 
 	size = rpi_get_arm_mem();
 	if (size < 0) {

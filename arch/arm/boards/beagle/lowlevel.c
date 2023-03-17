@@ -1,19 +1,20 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <init.h>
+#include <mach/omap/debug_ll.h>
 #include <debug_ll.h>
 #include <io.h>
 #include <linux/sizes.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
-#include <mach/control.h>
-#include <mach/generic.h>
-#include <mach/omap3-silicon.h>
-#include <mach/omap3-generic.h>
-#include <mach/omap3-mux.h>
-#include <mach/sdrc.h>
-#include <mach/syslib.h>
-#include <mach/sys_info.h>
+#include <mach/omap/control.h>
+#include <mach/omap/generic.h>
+#include <mach/omap/omap3-silicon.h>
+#include <mach/omap/omap3-generic.h>
+#include <mach/omap/omap3-mux.h>
+#include <mach/omap/sdrc.h>
+#include <mach/omap/syslib.h>
+#include <mach/omap/sys_info.h>
 #include <generated/mach-types.h>
 
 /**
@@ -196,7 +197,7 @@ static noinline int beagle_board_init(void)
 
 	mux_config();
 
-	omap_uart_lowlevel_init((void *)OMAP3_UART3_BASE);
+	omap_debug_ll_init();
 
 	/* Dont reconfigure SDRAM while running in SDRAM! */
 	if (!in_sdram)

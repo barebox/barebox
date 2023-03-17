@@ -3,9 +3,9 @@
 #include <common.h>
 #include <init.h>
 #include <restart.h>
-#include <mach/at91sam9x5.h>
-#include <mach/board.h>
-#include <mach/at91_rstc.h>
+#include <mach/at91/at91sam9x5.h>
+#include <mach/at91/board.h>
+#include <mach/at91/at91_rstc.h>
 
 static void at91sam9x5_restart(struct restart_handler *rst)
 {

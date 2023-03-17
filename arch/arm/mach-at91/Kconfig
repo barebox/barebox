@@ -92,7 +92,6 @@ config SOC_SAMA5D2
 	select HAVE_AT91_I2S_MUX_CLK
 	select PINCTRL_AT91PIO4
 	select HAS_MACB
-	select HAVE_MACH_ARM_HEAD
 	select HAVE_AT91_DDRAMC
 
 config SOC_SAMA5D3
@@ -105,7 +104,6 @@ config SOC_SAMA5D3
 	select HAVE_AT91_UTMI
 	select PINCTRL_AT91
 	select HAS_MACB
-	select HAVE_MACH_ARM_HEAD
 
 config SOC_SAMA5D4
 	bool
@@ -118,7 +116,6 @@ config SOC_SAMA5D4
 	select HAVE_AT91_UTMI
 	select PINCTRL_AT91
 	select HAS_MACB
-	select HAVE_MACH_ARM_HEAD
 
 config SOC_SAM9X60
 	bool
@@ -159,7 +156,6 @@ config SOC_AT91SAM9260
 	select SOC_AT91SAM9
 	select HAS_MACB
 	select PINCTRL_AT91
-	select HAVE_MACH_ARM_HEAD
 	help
 	  Select this if you are using one of Atmel's AT91SAM9260, AT91SAM9XE
 	  or AT91SAM9G20 SoC.
@@ -169,7 +165,6 @@ config SOC_AT91SAM9261
 	select SOC_AT91SAM9
 	select PINCTRL_AT91
 	select HAVE_AT91_LOAD_BAREBOX_SRAM
-	select HAVE_MACH_ARM_HEAD
 	help
 	  Select this if you are using one of Atmel's AT91SAM9261 or AT91SAM9G10 SoC.
 
@@ -178,7 +173,6 @@ config SOC_AT91SAM9263
 	select SOC_AT91SAM9
 	select HAS_MACB
 	select HAVE_AT91_LOAD_BAREBOX_SRAM
-	select HAVE_MACH_ARM_HEAD
 	select PINCTRL_AT91
 
 config SOC_AT91SAM9G45
@@ -186,7 +180,6 @@ config SOC_AT91SAM9G45
 	select SOC_AT91SAM9
 	select HAS_MACB
 	select PINCTRL_AT91
-	select HAVE_MACH_ARM_HEAD
 	help
 	  Select this if you are using one of Atmel's AT91SAM9G45 family SoC.
 	  This support covers AT91SAM9G45, AT91SAM9G46, AT91SAM9M10 and AT91SAM9M11.
@@ -209,7 +202,6 @@ config SOC_AT91SAM9N12
 	bool
 	select SOC_AT91SAM9
 	select PINCTRL_AT91
-	select HAVE_MACH_ARM_HEAD
 	help
 	  Select this if you are using Atmel's AT91SAM9N12 SoC.
 
@@ -570,7 +562,6 @@ endif
 
 config AT91_MULTI_BOARDS
 	bool "Allow multiple boards to be selected"
-	select HAVE_PBL_MULTI_IMAGES
 	select ARM_USE_COMPRESSED_DTB
 
 if AT91_MULTI_BOARDS
@@ -672,12 +663,6 @@ config AT91_HAVE_2MMC
 	  Select this if you are using an Atmel AT91SAM9G20-EK Evaluation Kit
 	  with 2 SD/MMC Slots. This is the case for AT91SAM9G20-EK rev. C and
 	  onwards.
-
-config AT91_HAVE_SRAM_128M
-	bool "Have 128 of ram"
-	depends on MACH_USB_A9G20 || MACH_USB_A9263 || MACH_QIL_A9260 || MACH_QIL_A9G20
-	help
-	  Select this if you board have 128 MiB of Ram (as USB_A9G20 C11)
 
 choice
 	prompt "LCD type"

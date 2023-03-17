@@ -3,11 +3,11 @@
  * Copyright (c) 2012, Atmel Corporation
  */
 
-#include <mach/hardware.h>
+#include <mach/at91/hardware.h>
 #include <asm/io.h>
-#include <mach/at91_pmc_ll.h>
-#include <mach/at91_pit.h>
-#include <mach/early_udelay.h>
+#include <mach/at91/at91_pmc_ll.h>
+#include <mach/at91/at91_pit.h>
+#include <mach/at91/early_udelay.h>
 
 static unsigned int master_clock;
 static void __iomem *pmc, *pit;

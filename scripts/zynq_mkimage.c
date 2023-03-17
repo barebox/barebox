@@ -5,7 +5,7 @@
 #include <errno.h>
 #include <getopt.h>
 #include <linux/kernel.h>
-#include <mach/zynq-flash-header.h>
+#include <zynq/zynq-flash-header.h>
 #include <malloc.h>
 #include <stdint.h>
 #include <stdio.h>

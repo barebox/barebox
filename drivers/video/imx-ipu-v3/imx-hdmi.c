@@ -18,8 +18,8 @@
 #include <i2c/i2c.h>
 #include <video/media-bus-format.h>
 #include <video/vpl.h>
-#include <mach/imx6-regs.h>
-#include <mach/imx53-regs.h>
+#include <mach/imx/imx6-regs.h>
+#include <mach/imx/imx53-regs.h>
 
 #include "imx-ipu-v3.h"
 #include "ipuv3-plane.h"

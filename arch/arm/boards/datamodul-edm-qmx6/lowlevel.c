@@ -9,8 +9,8 @@
 #include <asm/mmu.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
-#include <mach/imx6-mmdc.h>
-#include <mach/generic.h>
+#include <mach/imx/imx6-mmdc.h>
+#include <mach/imx/generic.h>
 
 static void sdram_init(void)
 {

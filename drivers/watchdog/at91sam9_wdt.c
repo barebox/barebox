@@ -8,7 +8,7 @@
 #include <io.h>
 #include <watchdog.h>
 #include <linux/clk.h>
-#include <mach/at91_wdt.h>
+#include <mach/at91/at91_wdt.h>
 
 #define MIN_WDT_TIMEOUT		1
 #define MAX_WDT_TIMEOUT		16

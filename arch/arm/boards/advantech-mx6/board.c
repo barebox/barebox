@@ -5,7 +5,7 @@
 #include <init.h>
 #include <platform_data/eth-fec.h>
 #include <bootsource.h>
-#include <mach/bbu.h>
+#include <mach/imx/bbu.h>
 
 static int ar8035_phy_fixup(struct phy_device *dev)
 {

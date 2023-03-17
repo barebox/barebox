@@ -12,16 +12,16 @@
 #include <common.h>
 #include <config.h>
 #include <io.h>
-#include <mach/imx-regs.h>
+#include <mach/mxs/imx-regs.h>
 #include <linux/compiler.h>
 
-#include <mach/init.h>
-#include <mach/regs-power-mx28.h>
+#include <mach/mxs/init.h>
+#include <mach/mxs/regs-power-mx28.h>
 #if defined CONFIG_ARCH_IMX23
-# include <mach/regs-clkctrl-mx23.h>
+#include <mach/mxs/regs-clkctrl-mx23.h>
 #endif
 #if defined CONFIG_ARCH_IMX28
-# include <mach/regs-clkctrl-mx28.h>
+#include <mach/mxs/regs-clkctrl-mx28.h>
 #endif
 
 /* 1 second delay should be plenty of time for block reset. */

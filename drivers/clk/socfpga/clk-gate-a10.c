@@ -9,8 +9,8 @@
 #include <regmap.h>
 #include <linux/clk.h>
 #include <linux/clkdev.h>
-#include <mach/arria10-regs.h>
-#include <mach/arria10-system-manager.h>
+#include <mach/socfpga/arria10-regs.h>
+#include <mach/socfpga/arria10-system-manager.h>
 
 #include "clk.h"
 

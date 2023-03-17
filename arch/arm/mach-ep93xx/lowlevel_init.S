@@ -18,7 +18,7 @@
  */
 
 #include <linux/sizes.h>
-#include <mach/ep93xx-regs.h>
+#include <mach/ep93xx/ep93xx-regs.h>
 #include <asm/barebox-arm-head.h>
 
 .globl barebox_arm_reset_vector

@@ -3,7 +3,7 @@
 
 #include <common.h>
 #include <init.h>
-#include <mach/bbu.h>
+#include <mach/imx/bbu.h>
 #include <linux/phy.h>
 
 #include <linux/micrel_phy.h>

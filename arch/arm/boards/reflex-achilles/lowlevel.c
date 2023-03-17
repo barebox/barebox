@@ -10,16 +10,16 @@
 #include <asm/unaligned.h>
 #include <debug_ll.h>
 #include <pbl.h>
-#include <mach/arria10-sdram.h>
-#include <mach/arria10-regs.h>
-#include <mach/arria10-reset-manager.h>
-#include <mach/arria10-clock-manager.h>
-#include <mach/arria10-pinmux.h>
-#include <mach/arria10-fpga.h>
-#include <mach/init.h>
+#include <mach/socfpga/arria10-sdram.h>
+#include <mach/socfpga/arria10-regs.h>
+#include <mach/socfpga/arria10-reset-manager.h>
+#include <mach/socfpga/arria10-clock-manager.h>
+#include <mach/socfpga/arria10-pinmux.h>
+#include <mach/socfpga/arria10-fpga.h>
+#include <mach/socfpga/init.h>
 #include "pll-config-arria10.c"
 #include "pinmux-config-arria10.c"
-#include <mach/generic.h>
+#include <mach/socfpga/generic.h>
 
 #define BAREBOX_PART 0
 #define BITSTREAM_PART 1

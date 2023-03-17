@@ -6,10 +6,10 @@
 #include <asm/errata.h>
 #include <linux/types.h>
 #include <linux/bitops.h>
-#include <mach/generic.h>
-#include <mach/imx7-regs.h>
-#include <mach/imx8mq-regs.h>
-#include <mach/imx8m-ccm-regs.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/imx7-regs.h>
+#include <mach/imx/imx8mq-regs.h>
+#include <mach/imx/imx8m-ccm-regs.h>
 #include <io.h>
 #include <asm/syscounter.h>
 #include <asm/system.h>

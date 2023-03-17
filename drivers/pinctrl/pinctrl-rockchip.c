@@ -525,7 +525,7 @@ static bool rockchip_get_mux_route(struct rockchip_pin_bank *bank, int pin,
 {
 	struct rockchip_pinctrl *info = bank->drvdata;
 	struct rockchip_pin_ctrl *ctrl = info->ctrl;
-	struct rockchip_mux_route_data *data;
+	struct rockchip_mux_route_data *data = NULL;
 	int i;
 
 	for (i = 0; i < ctrl->niomux_routes; i++) {

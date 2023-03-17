@@ -9,7 +9,7 @@
 #include <linux/kernel.h>
 #include <soc/imx8m/ddr.h>
 #include <firmware.h>
-#include <mach/imx8m-regs.h>
+#include <mach/imx/imx8m-regs.h>
 
 static const u16 *lpddr4_imem_1d;
 static size_t lpddr4_imem_1d_size;

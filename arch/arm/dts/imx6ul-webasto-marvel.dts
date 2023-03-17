@@ -38,8 +38,6 @@
 	};
 
 	state_emmc: state {
-		#address-cells = <1>;
-		#size-cells = <1>;
 		compatible = "barebox,state";
 		magic = <0x290cf8c6>;
 		backend-type = "raw";

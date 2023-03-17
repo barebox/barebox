@@ -85,52 +85,29 @@ endif
 
 # Machine directory name.  This list is sorted alphanumerically
 # by CONFIG_* macro name.
-machine-$(CONFIG_ARCH_AT91)		:= at91
-machine-$(CONFIG_ARCH_BCM283X)		:= bcm283x
-machine-$(CONFIG_ARCH_CLPS711X)		:= clps711x
-machine-$(CONFIG_ARCH_DAVINCI)		:= davinci
-machine-$(CONFIG_ARCH_DIGIC)		:= digic
-machine-$(CONFIG_ARCH_EP93XX)		:= ep93xx
-machine-$(CONFIG_ARCH_IMX)		:= imx
-machine-$(CONFIG_ARCH_LAYERSCAPE)	:= layerscape
-machine-$(CONFIG_ARCH_MXS)		:= mxs
-machine-$(CONFIG_ARCH_MVEBU)		:= mvebu
-machine-$(CONFIG_ARCH_NOMADIK)		:= nomadik
-machine-$(CONFIG_ARCH_OMAP)		:= omap
-machine-$(CONFIG_ARCH_PXA)		:= pxa
-machine-$(CONFIG_ARCH_ROCKCHIP)		:= rockchip
-machine-$(CONFIG_ARCH_SAMSUNG)		:= samsung
-machine-$(CONFIG_ARCH_SOCFPGA)		:= socfpga
-machine-$(CONFIG_ARCH_STM32MP)		:= stm32mp
-machine-$(CONFIG_ARCH_VERSATILE)	:= versatile
-machine-$(CONFIG_ARCH_VEXPRESS)		:= vexpress
-machine-$(CONFIG_ARCH_TEGRA)		:= tegra
-machine-$(CONFIG_ARCH_UEMD)		:= uemd
-machine-$(CONFIG_ARCH_ZYNQ)		:= zynq
-machine-$(CONFIG_ARCH_ZYNQMP)		:= zynqmp
-
-
-# Board directory name.  This list is sorted alphanumerically
-# by CONFIG_* macro name.
-#
-# DO NOT ADD NEW ENTRIES TO THIS LIST!
-# Add to arch/arm/boards/Makefile instead.
-#
-# These are here only because they have a board specific config.h.
-# TODO: Get rid of board specific config.h and move these to
-# arch/arm/boards/Makefile aswell.
-board-$(CONFIG_MACH_A9M2410)			+= a9m2410
-board-$(CONFIG_MACH_A9M2440)			+= a9m2440
-board-$(CONFIG_MACH_AT91RM9200EK)		+= at91rm9200ek
-board-$(CONFIG_MACH_MINI2440)			+= friendlyarm-mini2440
-board-$(CONFIG_MACH_MINI6410)			+= friendlyarm-mini6410
-board-$(CONFIG_MACH_PCM027)			+= phytec-phycore-pxa270
-board-$(CONFIG_MACH_TINY210)			+= friendlyarm-tiny210
-board-$(CONFIG_MACH_TINY6410)			+= friendlyarm-tiny6410
-
-machdirs := $(patsubst %,arch/arm/mach-%/,$(machine-y))
-
-KBUILD_CPPFLAGS += $(patsubst %,-I$(srctree)/%include,$(machdirs))
+machine-$(CONFIG_ARCH_AT91)		+= at91
+machine-$(CONFIG_ARCH_BCM283X)		+= bcm283x
+machine-$(CONFIG_ARCH_CLPS711X)		+= clps711x
+machine-$(CONFIG_ARCH_DAVINCI)		+= davinci
+machine-$(CONFIG_ARCH_DIGIC)		+= digic
+machine-$(CONFIG_ARCH_EP93XX)		+= ep93xx
+machine-$(CONFIG_ARCH_IMX)		+= imx
+machine-$(CONFIG_ARCH_LAYERSCAPE)	+= layerscape
+machine-$(CONFIG_ARCH_MXS)		+= mxs
+machine-$(CONFIG_ARCH_MVEBU)		+= mvebu
+machine-$(CONFIG_ARCH_NOMADIK)		+= nomadik
+machine-$(CONFIG_ARCH_OMAP)		+= omap
+machine-$(CONFIG_ARCH_PXA)		+= pxa
+machine-$(CONFIG_ARCH_ROCKCHIP)		+= rockchip
+machine-$(CONFIG_ARCH_SAMSUNG)		+= samsung
+machine-$(CONFIG_ARCH_SOCFPGA)		+= socfpga
+machine-$(CONFIG_ARCH_STM32MP)		+= stm32mp
+machine-$(CONFIG_ARCH_VERSATILE)	+= versatile
+machine-$(CONFIG_ARCH_VEXPRESS)		+= vexpress
+machine-$(CONFIG_ARCH_TEGRA)		+= tegra
+machine-$(CONFIG_ARCH_UEMD)		+= uemd
+machine-$(CONFIG_ARCH_ZYNQ)		+= zynq
+machine-$(CONFIG_ARCH_ZYNQMP)		+= zynqmp
 
 TEXT_BASE = $(CONFIG_TEXT_BASE)
 
@@ -158,13 +135,6 @@ endif
 
 KBUILD_BINARY := barebox.bin
 
-barebox.s5p: $(KBUILD_BINARY)
-	$(Q)scripts/s5p_cksum $< barebox.s5p
-
-ifeq ($(CONFIG_ARCH_S5PCxx),y)
-KBUILD_IMAGE := barebox.s5p
-endif
-
 quiet_cmd_mlo ?= IFT     $@
 	cmd_mlo ?= scripts/omap_signGP -o MLO -l $(TEXT_BASE) -c $<
 
@@ -187,29 +157,6 @@ ifeq ($(CONFIG_ARCH_DAVINCI),y)
 KBUILD_IMAGE := barebox.ubl
 endif
 
-quiet_cmd_am35xx_spi_image = SPI-IMG $@
-      cmd_am35xx_spi_image = scripts/mk-omap-image -s -a $(TEXT_BASE) $< > $@
-
-barebox.spi: $(KBUILD_BINARY) FORCE
-	$(call if_changed,am35xx_spi_image)
-
-MLO.spi: MLO FORCE
-	$(call if_changed,am35xx_spi_image)
-
-ifeq ($(CONFIG_OMAP_BUILD_SPI),y)
-KBUILD_IMAGE := MLO.spi
-endif
-
-quiet_cmd_zynq_image = ZYNQ-IMG $@
-      cmd_zynq_image = scripts/zynq_mkimage $< $@
-
-barebox.zynq: $(KBUILD_BINARY) FORCE
-	$(call if_changed,zynq_image)
-
-ifeq ($(machine-y),zynq)
-KBUILD_IMAGE := barebox.zynq
-endif
-
 quiet_cmd_canon_a1100_image = DD      $@
       cmd_canon_a1100_image = scripts/canon-a1100-image $< $@ || \
 	echo "WARNING: Couldn't create Canon A1100 image due to previous errors."
@@ -218,44 +165,6 @@ barebox.canon-a1100.bin: $(KBUILD_BINARY) FORCE
 
 ifeq ($(CONFIG_MACH_CANON_A1100),y)
 KBUILD_IMAGE := barebox.canon-a1100.bin
-endif
-
-KWBIMAGE_OPTS = \
-	-c -i $(srctree)/$(BOARD)/kwbimage.cfg -d $(TEXT_BASE) -e $(TEXT_BASE)
-
-quiet_cmd_kwbimage = KWB     $@
-      cmd_kwbimage = scripts/kwbimage -p $< $(KWBIMAGE_OPTS) -o $@ || \
-	echo "WARNING: Couldn't create KWB image due to previous errors."
-
-quiet_cmd_kwbimage_uart = KWBUART $@
-      cmd_kwbimage_uart = scripts/kwbimage -m uart -p $< $(KWBIMAGE_OPTS) -o $@ || \
-	echo "WARNING Couldn't create KWB image due to previous errors."
-
-barebox.kwb: $(KBUILD_BINARY) FORCE
-	$(call if_changed,kwbimage)
-
-barebox.kwbuart: $(KBUILD_BINARY) FORCE
-	$(call if_changed,kwbimage_uart)
-
-ifeq ($(CONFIG_ARCH_MVEBU),y)
-KBUILD_IMAGE  := barebox.kwb barebox.kwbuart
-endif
-
-barebox.imximg: $(KBUILD_BINARY) FORCE
-	$(call if_changed,imx_image,$(CFG_$(@F)),)
-
-boarddir = $(srctree)/arch/arm/boards
-imxcfg-$(CONFIG_MACH_FREESCALE_MX53_SMD) += $(boarddir)/freescale-mx53-smd/flash-header.imxcfg
-imxcfg-$(CONFIG_MACH_EUKREA_CPUIMX51SD) += $(boarddir)/eukrea_cpuimx51/flash-header.imxcfg
-imxcfg-$(CONFIG_MACH_FREESCALE_MX25_3STACK) += $(boarddir)/freescale-mx25-3ds/flash-header.imxcfg
-imxcfg-$(CONFIG_MACH_FREESCALE_MX35_3STACK) += $(boarddir)/freescale-mx35-3ds/flash-header.imxcfg
-imxcfg-$(CONFIG_MACH_EUKREA_CPUIMX25) += $(boarddir)/eukrea_cpuimx25/flash-header.imxcfg
-imxcfg-$(CONFIG_MACH_EUKREA_CPUIMX35) += $(boarddir)/eukrea_cpuimx35/flash-header.imxcfg
-imxcfg-$(CONFIG_MACH_PCM043) += $(boarddir)/phytec-phycore-imx35/flash-header.imxcfg
-imxcfg-$(CONFIG_MACH_KINDLE3) += $(boarddir)/kindle3/flash-header.imxcfg
-ifneq ($(imxcfg-y),)
-CFG_barebox.imximg := $(imxcfg-y)
-KBUILD_IMAGE  := barebox.imximg
 endif
 
 archclean:
@@ -274,19 +183,13 @@ maketools:
 
 PHONY += maketools
 
-ifneq ($(board-y),)
-BOARD := arch/arm/boards/$(board-y)/
-else
-BOARD :=
-endif
-
 ifneq ($(machine-y),)
-MACH := arch/arm/mach-$(machine-y)/
+MACH := $(patsubst %,arch/arm/mach-%/,$(machine-y))
 else
 MACH :=
 endif
 
-common-y += $(BOARD) arch/arm/boards/ $(MACH)
+common-y += arch/arm/boards/ $(MACH)
 common-y += arch/arm/cpu/
 
 ifeq ($(CONFIG_CPU_V8), y)

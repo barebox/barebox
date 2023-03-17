@@ -5,10 +5,10 @@
 #include <init.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
-#include <mach/devices.h>
-#include <mach/omap4-silicon.h>
-#include <mach/omap4-devices.h>
-#include <mach/omap4_rom_usb.h>
+#include <mach/omap/devices.h>
+#include <mach/omap/omap4-silicon.h>
+#include <mach/omap/omap4-devices.h>
+#include <mach/omap/omap4_rom_usb.h>
 #include <linux/sizes.h>
 #include <i2c/i2c.h>
 #include <gpio.h>
@@ -33,13 +33,17 @@
 
 static int archosg9_console_init(void)
 {
+	int ret;
+
 	barebox_set_model("Archos G9");
 	barebox_set_hostname("g9");
 
-	if (IS_ENABLED(CONFIG_DRIVER_SERIAL_OMAP4_USBBOOT) &&
-			omap4_usbboot_ready()) {
-		add_generic_device("serial_omap4_usbboot", DEVICE_ID_DYNAMIC
-			, NULL, 0, 0, 0, NULL);
+	if (IS_ENABLED(CONFIG_DRIVER_SERIAL_OMAP4_USBBOOT)) {
+		ret = omap4_usbboot_open();
+		if (!ret) {
+			add_generic_device("serial_omap4_usbboot", DEVICE_ID_DYNAMIC
+				, NULL, 0, 0, 0, NULL);
+		}
 	}
 	if (IS_ENABLED(CONFIG_DRIVER_SERIAL_NS16550)) {
 		omap44xx_add_uart1();

@@ -9,14 +9,14 @@
 #include <asm/sections.h>
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
-#include <mach/imx-nand.h>
-#include <mach/esdctl.h>
-#include <mach/generic.h>
-#include <mach/imx21-regs.h>
-#include <mach/imx25-regs.h>
-#include <mach/imx27-regs.h>
-#include <mach/imx31-regs.h>
-#include <mach/imx35-regs.h>
+#include <mach/imx/imx-nand.h>
+#include <mach/imx/esdctl.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/imx21-regs.h>
+#include <mach/imx/imx25-regs.h>
+#include <mach/imx/imx27-regs.h>
+#include <mach/imx/imx31-regs.h>
+#include <mach/imx/imx35-regs.h>
 
 #define BARE_INIT_FUNCTION(name)  \
 	__section(.text_bare_init_##name) \

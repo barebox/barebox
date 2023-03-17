@@ -8,14 +8,14 @@
 #include <linux/sizes.h>
 #include <gpio.h>
 #include <asm/armlinux.h>
-#include <mach/hardware.h>
-#include <mach/at91_pmc.h>
-#include <mach/at91sam9261_matrix.h>
-#include <mach/at91sam9_sdramc.h>
-#include <mach/at91_rtt.h>
-#include <mach/board.h>
-#include <mach/iomux.h>
-#include <mach/cpu.h>
+#include <mach/at91/hardware.h>
+#include <mach/at91/at91_pmc.h>
+#include <mach/at91/at91sam9261_matrix.h>
+#include <mach/at91/at91sam9_sdramc.h>
+#include <mach/at91/at91_rtt.h>
+#include <mach/at91/board.h>
+#include <mach/at91/iomux.h>
+#include <mach/at91/cpu.h>
 #include <i2c/i2c-gpio.h>
 
 #include "generic.h"

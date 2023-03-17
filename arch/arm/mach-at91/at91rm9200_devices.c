@@ -7,11 +7,11 @@
 #include <common.h>
 #include <gpio.h>
 #include <asm/armlinux.h>
-#include <mach/hardware.h>
-#include <mach/at91rm9200.h>
-#include <mach/board.h>
-#include <mach/iomux.h>
-#include <mach/at91rm9200_mc.h>
+#include <mach/at91/hardware.h>
+#include <mach/at91/at91rm9200.h>
+#include <mach/at91/board.h>
+#include <mach/at91/iomux.h>
+#include <mach/at91/at91rm9200_mc.h>
 #include <i2c/i2c-gpio.h>
 #include <linux/sizes.h>
 

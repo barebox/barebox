@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <common.h>
-#include <mach/xload.h>
+#include <mach/at91/xload.h>
 #include <mci.h>
 
 #include "atmel-mci-regs.h"

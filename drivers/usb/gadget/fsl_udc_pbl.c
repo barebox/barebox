@@ -3,9 +3,9 @@
 #include <common.h>
 #include <usb/ch9.h>
 #include <soc/fsl/fsl_udc.h>
-#include <mach/imx8mm-regs.h>
-#include <mach/imx6-regs.h>
-#include <mach/imx7-regs.h>
+#include <mach/imx/imx8mm-regs.h>
+#include <mach/imx/imx6-regs.h>
+#include <mach/imx/imx7-regs.h>
 
 static void fsl_queue_td(struct usb_dr_device *dr, struct ep_td_struct *dtd,
 			 int ep_is_in)

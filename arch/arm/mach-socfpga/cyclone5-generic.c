@@ -12,11 +12,11 @@
 #include <linux/stat.h>
 #include <linux/sizes.h>
 #include <asm/memory.h>
-#include <mach/cyclone5-system-manager.h>
-#include <mach/cyclone5-reset-manager.h>
-#include <mach/cyclone5-regs.h>
-#include <mach/generic.h>
-#include <mach/nic301.h>
+#include <mach/socfpga/cyclone5-system-manager.h>
+#include <mach/socfpga/cyclone5-reset-manager.h>
+#include <mach/socfpga/cyclone5-regs.h>
+#include <mach/socfpga/generic.h>
+#include <mach/socfpga/nic301.h>
 #include <platform_data/dw_mmc.h>
 #include <platform_data/serial-ns16550.h>
 #include <platform_data/cadence_qspi.h>

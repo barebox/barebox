@@ -27,11 +27,11 @@
 #include <linux/err.h>
 #include <linux/clk.h>
 #include <linux/reset.h>
-#include <mach/lowlevel.h>
-#include <mach/tegra-powergate.h>
+#include <mach/tegra/lowlevel.h>
+#include <mach/tegra/tegra-powergate.h>
 #include <reset_source.h>
 
-#include <mach/tegra20-pmc.h>
+#include <mach/tegra/tegra20-pmc.h>
 
 static void __iomem *pmc_base;
 static int tegra_num_powerdomains;

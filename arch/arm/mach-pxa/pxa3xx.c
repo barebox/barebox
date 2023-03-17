@@ -16,8 +16,8 @@
 #include <init.h>
 #include <poweroff.h>
 #include <reset_source.h>
-#include <mach/hardware.h>
-#include <mach/pxa-regs.h>
+#include <mach/pxa/hardware.h>
+#include <mach/pxa/pxa-regs.h>
 
 extern void pxa3xx_suspend(int mode);
 

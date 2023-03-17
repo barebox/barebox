@@ -64,12 +64,12 @@
 	nvmem-cell-names = "mac-address";
 };
 
-&{uart2/rave-sp/watchdog} {
+&{uart2/mcu/watchdog} {
 	nvmem-cells = <&boot_source>;
 	nvmem-cell-names = "boot-source";
 };
 
-&{uart2/rave-sp/eeprom@a4} {
+&{uart2/mcu/eeprom@a4} {
 	lru_part_number: lru-part-number@21 {
 		reg = <0x21 15>;
 		read-only;

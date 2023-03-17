@@ -16,9 +16,9 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
-#include <mach/hardware.h>
-#include <mach/mfp-pxa3xx.h>
-#include <plat/mfp.h>
+#include <mach/pxa/hardware.h>
+#include <mach/pxa/mfp-pxa3xx.h>
+#include <mach/pxa/mfp.h>
 
 #define MFPR_SIZE	(PAGE_SIZE)
 

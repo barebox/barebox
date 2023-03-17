@@ -5,7 +5,7 @@
 #include <bootsource.h>
 #include <common.h>
 #include <init.h>
-#include <mach/bbu.h>
+#include <mach/stm32mp/bbu.h>
 #include <of_device.h>
 #include <deep-probe.h>
 

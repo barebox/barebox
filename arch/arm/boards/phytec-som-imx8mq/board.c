@@ -9,7 +9,7 @@
 #include <common.h>
 #include <init.h>
 #include <linux/sizes.h>
-#include <mach/bbu.h>
+#include <mach/imx/bbu.h>
 #include <mfd/pfuze.h>
 
 #include <envfs.h>

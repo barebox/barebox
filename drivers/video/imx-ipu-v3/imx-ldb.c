@@ -19,8 +19,8 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <linux/math64.h>
-#include <mach/imx6-regs.h>
-#include <mach/imx53-regs.h>
+#include <mach/imx/imx6-regs.h>
+#include <mach/imx/imx53-regs.h>
 
 #include "imx-ipu-v3.h"
 #include "ipuv3-plane.h"

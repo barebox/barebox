@@ -32,12 +32,12 @@
 #include <io.h>
 #include <linux/sizes.h>
 #include <asm/armlinux.h>
-#include <mach/omap3-silicon.h>
-#include <mach/omap3-mux.h>
-#include <mach/gpmc.h>
+#include <mach/omap/omap3-silicon.h>
+#include <mach/omap/omap3-mux.h>
+#include <mach/omap/gpmc.h>
 #include <errno.h>
 #include <generated/mach-types.h>
-#include <mach/omap3-devices.h>
+#include <mach/omap/omap3-devices.h>
 
 /**
  * @brief Initialize the serial port to be used as console.

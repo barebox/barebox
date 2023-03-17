@@ -13,7 +13,7 @@
 #include <mci.h>
 #include <linux/bitfield.h>
 
-#include <mach/early_udelay.h>
+#include <mach/at91/early_udelay.h>
 
 #ifdef __PBL__
 #define udelay early_udelay

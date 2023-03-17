@@ -7,14 +7,12 @@
 #include <common.h>
 #include <init.h>
 
-#include <asm/barebox-arm-head.h>
-#include <asm/barebox-arm.h>
+#include <mach/at91/barebox-arm.h>
+#include <mach/at91/at91sam9_sdramc.h>
+#include <mach/at91/at91sam9260.h>
+#include <mach/at91/hardware.h>
 
-#include <mach/at91sam9_sdramc.h>
-#include <mach/at91sam9260.h>
-#include <mach/hardware.h>
-
-void __naked __bare_init barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2)
+AT91_ENTRY_FUNCTION(start_telit_evk_pro3, r0, r1, r2)
 {
 	arm_cpu_lowlevel_init();
 

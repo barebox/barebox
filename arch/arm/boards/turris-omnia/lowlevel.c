@@ -3,14 +3,14 @@
 
 #include <common.h>
 #include <asm/barebox-arm.h>
-#include <asm/barebox-arm-head.h>
-#include <mach/lowlevel.h>
+#include <mach/mvebu/barebox-arm-head.h>
+#include <mach/mvebu/lowlevel.h>
 
 #include <asm/io.h>
 
 extern char __dtb_armada_385_turris_omnia_bb_start[];
 
-ENTRY_FUNCTION(start_turris_omnia, r0, r1, r2)
+ENTRY_FUNCTION_MVEBU(start_turris_omnia, r0, r1, r2)
 {
 	void *fdt;
 

@@ -2,17 +2,21 @@
 
 #include <init.h>
 #include <common.h>
+#include <asm/optee.h>
+#include <linux/sizes.h>
 #include <io.h>
+#include <pm_domain.h>
 #include <asm/syscounter.h>
 #include <asm/system.h>
-#include <mach/generic.h>
-#include <mach/revision.h>
-#include <mach/imx8mq.h>
-#include <mach/imx8m-ccm-regs.h>
-#include <mach/reset-reason.h>
-#include <mach/ocotp.h>
-#include <mach/imx8mp-regs.h>
-#include <mach/imx8mq-regs.h>
+#include <mach/imx/generic.h>
+#include <mach/imx/revision.h>
+#include <mach/imx/imx8mq.h>
+#include <mach/imx/imx8m-ccm-regs.h>
+#include <mach/imx/reset-reason.h>
+#include <mach/imx/ocotp.h>
+#include <mach/imx/imx8mp-regs.h>
+#include <mach/imx/imx8mq-regs.h>
+#include <mach/imx/tzasc.h>
 #include <soc/imx8m/clk-early.h>
 
 #include <linux/iopoll.h>
@@ -54,6 +58,8 @@ static int imx8m_init(const char *cputypestr)
 	void __iomem *src = IOMEM(MX8M_SRC_BASE_ADDR);
 	struct arm_smccc_res res;
 
+	genpd_activate();
+
 	/*
 	 * Reset reasons seem to be identical to that of i.MX7
 	 */
@@ -68,6 +74,17 @@ static int imx8m_init(const char *cputypestr)
 
 		if (res.a0 > 0)
 			pr_info("i.MX ARM Trusted Firmware: %s\n", (char *)&res.a0);
+	}
+
+	if (IS_ENABLED(CONFIG_PBL_OPTEE) && tzc380_is_enabled() &&
+	    !of_find_node_by_path_from(NULL, "/firmware/optee")) {
+		static struct of_optee_fixup_data optee_fixup_data = {
+			.shm_size = SZ_4M,
+			.method = "smc",
+		};
+
+		of_optee_fixup(of_get_root_node(), &optee_fixup_data);
+		of_register_fixup(of_optee_fixup, &optee_fixup_data);
 	}
 
 	return 0;

@@ -151,3 +151,25 @@ Contents:
    bindings/regulator/*
    bindings/rtc/*
    bindings/watchdog/*
+
+Automatic Boot Argument Fixups to the Devicetree
+------------------------------------------------
+
+barebox automatically fixes up some boot and system information in the device tree.
+
+In the device tree root, barebox fixes up
+
+ * serial-number (if available)
+ * machine compatible (if overridden)
+
+In the ``chosen``-node, barebox fixes up
+
+ * barebox-version
+ * reset-source
+ * reset-source-instance (if available)
+ * reset-source-device (node-path, only if available)
+ * bootsource
+ * boot-hartid (only on RISC-V)
+
+These values can be read from the booted linux system in ``/proc/device-tree/``
+or ``/sys/firmware/devicetree/base``.

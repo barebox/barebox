@@ -1240,7 +1240,7 @@ static int __init atmel_nand_probe(struct device *dev)
 
 	nand_chip->ecc.mode = pdata->ecc_mode;
 	nand_chip->ecc.strength = pdata->ecc_strength ? : 1;
-	nand_chip->ecc.size = 1 << pdata->ecc_size_shift ? : 512;
+	nand_chip->ecc.size = 1 << (pdata->ecc_size_shift ? : 9);
 
 	if (pdata->ecc_mode == NAND_ECC_HW) {
 		nand_chip->ecc.mode = NAND_ECC_HW;

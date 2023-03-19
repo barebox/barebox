@@ -1246,6 +1246,10 @@ static int __init atmel_nand_probe(struct device *dev)
 		nand_chip->ecc.mode = NAND_ECC_HW;
 	}
 
+	if (pdata->ecc_mode == NAND_ECC_SOFT) {
+		nand_chip->ecc.algo = NAND_ECC_ALGO_HAMMING;
+	}
+
 	nand_chip->legacy.chip_delay = 40;		/* 40us command delay time */
 
 	if (IS_ENABLED(CONFIG_NAND_ECC_BCH) &&

@@ -1950,12 +1950,14 @@ config CMD_NAND
 	help
 	  NAND flash handling
 
-	  Usage: nand [-adb] NANDDEV
+	  Usage: nand [-adbgi] NANDDEV
 
 	  Options:
 		  -a		register a bad block aware device ontop of a normal NAND device
 		  -d		deregister a bad block aware device
 		  -b OFFS	mark block at OFFSet as bad
+		  -g OFFS	mark block at OFFSet as good
+		  -i		info. Show information about bad blocks
 
 config CMD_NANDTEST
 	tristate

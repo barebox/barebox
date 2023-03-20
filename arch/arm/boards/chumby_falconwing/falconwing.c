@@ -9,7 +9,7 @@
 #include <errno.h>
 #include <mci.h>
 #include <linux/sizes.h>
-#include <usb/ehci.h>
+#include <linux/usb/ehci.h>
 #include <asm/armlinux.h>
 #include <asm/barebox-arm.h>
 #include <io.h>

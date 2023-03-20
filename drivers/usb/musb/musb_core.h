@@ -12,8 +12,8 @@
 
 #include <poller.h>
 #include <notifier.h>
-#include <usb/usb.h>
-#include <usb/phy.h>
+#include <linux/usb/usb.h>
+#include <linux/usb/phy.h>
 #include <linux/spinlock.h>
 
 struct musb;

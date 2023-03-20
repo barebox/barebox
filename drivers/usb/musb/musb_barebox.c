@@ -2,8 +2,8 @@
 #include <common.h>
 #include <init.h>
 #include <clock.h>
-#include <usb/musb.h>
-#include <usb/usb.h>
+#include <linux/usb/musb.h>
+#include <linux/usb/usb.h>
 #include <linux/types.h>
 #include <linux/err.h>
 #include <linux/barebox-wrapper.h>

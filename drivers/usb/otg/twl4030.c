@@ -24,7 +24,7 @@
  */
 
 #include <mfd/twl4030.h>
-#include <usb/twl4030.h>
+#include <linux/usb/twl4030.h>
 #include <clock.h>
 
 static int twl4030_usb_write(u8 address, u8 data)

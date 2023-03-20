@@ -9,7 +9,7 @@
  */
 
 #include <common.h>
-#include <usb/gadget-multi.h>
+#include <linux/usb/gadget-multi.h>
 #include <linux/err.h>
 
 #include "u_serial.h"

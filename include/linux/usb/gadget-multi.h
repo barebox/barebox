@@ -4,10 +4,10 @@
 #define __USB_GADGET_MULTI_H
 
 #include <linux/types.h>
-#include <usb/fastboot.h>
-#include <usb/dfu.h>
-#include <usb/usbserial.h>
-#include <usb/mass_storage.h>
+#include <linux/usb/fastboot.h>
+#include <linux/usb/dfu.h>
+#include <linux/usb/usbserial.h>
+#include <linux/usb/mass_storage.h>
 
 struct f_multi_opts {
 	struct fastboot_opts fastboot_opts;

@@ -10,8 +10,8 @@
 #include <getopt.h>
 #include <fs.h>
 #include <xfuncs.h>
-#include <usb/dfu.h>
-#include <usb/gadget-multi.h>
+#include <linux/usb/dfu.h>
+#include <linux/usb/gadget-multi.h>
 #include <linux/err.h>
 
 /* dfu /dev/self0(bootloader)sr,/dev/nand0.root.bb(root)

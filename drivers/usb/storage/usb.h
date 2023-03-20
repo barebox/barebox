@@ -10,7 +10,7 @@
 #ifndef _STORAGE_USB_H_
 #define _STORAGE_USB_H_
 
-#include <usb/usb.h>
+#include <linux/usb/usb.h>
 #include <block.h>
 #include <disks.h>
 #include <scsi.h>

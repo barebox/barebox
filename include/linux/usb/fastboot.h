@@ -3,7 +3,7 @@
 #ifndef _USB_FASTBOOT_H
 #define _USB_FASTBOOT_H
 
-#include <usb/composite.h>
+#include <linux/usb/composite.h>
 #include <fastboot.h>
 
 /**

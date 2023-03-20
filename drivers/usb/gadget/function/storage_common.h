@@ -4,9 +4,9 @@
 #define USB_STORAGE_COMMON_H
 
 #include <driver.h>
-#include <usb/storage.h>
+#include <linux/usb/storage.h>
 #include <asm/unaligned.h>
-#include <usb/mass_storage.h>
+#include <linux/usb/mass_storage.h>
 
 #ifndef DEBUG
 #undef VERBOSE_DEBUG

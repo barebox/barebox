@@ -10,8 +10,8 @@
 #include <driver.h>
 #include <init.h>
 #include <poller.h>
-#include <usb/ch9.h>
-#include <usb/gadget.h>
+#include <linux/usb/ch9.h>
+#include <linux/usb/gadget.h>
 
 /**
  * struct usb_udc - describes one usb device controller

@@ -225,12 +225,12 @@
 #include <scsi.h>
 
 #include <linux/err.h>
-#include <usb/mass_storage.h>
+#include <linux/usb/mass_storage.h>
 
 #include <asm/unaligned.h>
 #include <linux/bitops.h>
-#include <usb/gadget.h>
-#include <usb/composite.h>
+#include <linux/usb/gadget.h>
+#include <linux/usb/composite.h>
 #include <linux/bitmap.h>
 #include <linux/completion.h>
 #include <bthread.h>

@@ -11,8 +11,8 @@
 #include <linux/ctype.h>
 #include <asm/byteorder.h>
 
-#include <usb/ch9.h>
-#include <usb/gadget.h>
+#include <linux/usb/ch9.h>
+#include <linux/usb/gadget.h>
 
 #define gadget_is_pxa(g)                (!strcmp("pxa25x_udc", (g)->name))
 

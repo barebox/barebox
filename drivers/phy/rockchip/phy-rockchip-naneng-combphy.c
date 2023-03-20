@@ -12,7 +12,7 @@
 #include <errno.h>
 #include <driver.h>
 #include <malloc.h>
-#include <usb/phy.h>
+#include <linux/usb/phy.h>
 #include <linux/phy/phy.h>
 #include <linux/clk.h>
 #include <linux/err.h>

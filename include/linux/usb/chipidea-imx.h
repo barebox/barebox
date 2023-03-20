@@ -3,7 +3,7 @@
 #ifndef __USB_CHIPIDEA_IMX_H
 #define __USB_CHIPIDEA_IMX_H
 
-#include <usb/phy.h>
+#include <linux/usb/phy.h>
 
 /*
  * POTSC flags

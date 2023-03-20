@@ -12,9 +12,9 @@
 #define __DRIVERS_USB_DWC3_CORE_H
 
 #include <linux/spinlock.h>
-#include <usb/usb.h>
-#include <usb/phy.h>
-#include <usb/gadget.h>
+#include <linux/usb/usb.h>
+#include <linux/usb/phy.h>
+#include <linux/usb/gadget.h>
 
 #define DWC3_MSG_MAX	500
 

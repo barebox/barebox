@@ -16,7 +16,7 @@
 
 #include <common.h>
 #include <complete.h>
-#include <usb/cdc.h>
+#include <linux/usb/cdc.h>
 #include <kfifo.h>
 #include <clock.h>
 #include <linux/err.h>

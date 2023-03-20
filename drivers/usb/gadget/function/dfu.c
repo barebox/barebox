@@ -26,15 +26,15 @@
 
 #include <dma.h>
 #include <asm/byteorder.h>
-#include <usb/composite.h>
+#include <linux/usb/composite.h>
 #include <linux/types.h>
 #include <linux/list.h>
-#include <usb/gadget.h>
+#include <linux/usb/gadget.h>
 #include <linux/stat.h>
 #include <libfile.h>
 #include <linux/err.h>
-#include <usb/ch9.h>
-#include <usb/dfu.h>
+#include <linux/usb/ch9.h>
+#include <linux/usb/dfu.h>
 #include <config.h>
 #include <common.h>
 #include <malloc.h>

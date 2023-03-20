@@ -19,7 +19,7 @@
 #include <malloc.h>
 #include <driver.h>
 #include <linux/list.h>
-#include <usb/ch9.h>
+#include <linux/usb/ch9.h>
 
 struct usb_ep;
 

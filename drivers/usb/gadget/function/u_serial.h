@@ -9,8 +9,8 @@
 #ifndef __U_SERIAL_H
 #define __U_SERIAL_H
 
-#include <usb/composite.h>
-#include <usb/cdc.h>
+#include <linux/usb/composite.h>
+#include <linux/usb/cdc.h>
 
 #define MAX_U_SERIAL_PORTS	4
 

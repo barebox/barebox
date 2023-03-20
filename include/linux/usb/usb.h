@@ -21,9 +21,9 @@
 
 #include <driver.h>
 #include <slice.h>
-#include <usb/ch9.h>
-#include <usb/ch11.h>
-#include <usb/usb_defs.h>
+#include <linux/usb/ch9.h>
+#include <uapi/linux/usb/ch11.h>
+#include <linux/usb/usb_defs.h>
 #include <asm/byteorder.h>
 
 /* Everything is aribtrary */

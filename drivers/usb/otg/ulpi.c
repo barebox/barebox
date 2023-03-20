@@ -6,7 +6,7 @@
 #include <common.h>
 #include <io.h>
 #include <errno.h>
-#include <usb/ulpi.h>
+#include <linux/usb/ulpi.h>
 
 /* ULPIVIEW register bits */
 #define ULPIVW_WU		(1 << 31)	/* Wakeup */

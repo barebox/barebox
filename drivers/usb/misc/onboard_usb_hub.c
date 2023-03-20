@@ -12,7 +12,7 @@
 #include <linux/printk.h>
 #include <of_device.h>
 #include <regulator.h>
-#include <usb/usb.h>
+#include <linux/usb/usb.h>
 
 #include "onboard_usb_hub.h"
 

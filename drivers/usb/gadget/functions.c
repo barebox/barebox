@@ -2,7 +2,7 @@
 #include <common.h>
 #include <linux/err.h>
 
-#include <usb/composite.h>
+#include <linux/usb/composite.h>
 
 static LIST_HEAD(func_list);
 

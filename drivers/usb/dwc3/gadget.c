@@ -17,8 +17,8 @@
 #include <io.h>
 #include <linux/list.h>
 
-#include <usb/gadget.h>
-#include <usb/ch9.h>
+#include <linux/usb/gadget.h>
+#include <linux/usb/ch9.h>
 
 #include "core.h"
 #include "gadget.h"

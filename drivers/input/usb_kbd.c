@@ -10,7 +10,7 @@
 #include <init.h>
 #include <clock.h>
 #include <poller.h>
-#include <usb/usb.h>
+#include <linux/usb/usb.h>
 #include <string.h>
 #include <dma.h>
 #include <input/input.h>

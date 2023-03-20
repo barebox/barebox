@@ -25,7 +25,7 @@
 #include <unistd.h>
 #include <progress.h>
 #include <fastboot.h>
-#include <usb/fastboot.h>
+#include <linux/usb/fastboot.h>
 
 #define FASTBOOT_INTERFACE_CLASS	0xff
 #define FASTBOOT_INTERFACE_SUB_CLASS	0x42

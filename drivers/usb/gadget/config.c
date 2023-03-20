@@ -7,9 +7,9 @@
 
 #include <common.h>
 
-#include <usb/ch9.h>
-#include <usb/gadget.h>
-#include <usb/composite.h>
+#include <linux/usb/ch9.h>
+#include <linux/usb/gadget.h>
+#include <linux/usb/composite.h>
 
 /**
  * usb_descriptor_fillbuf - fill buffer with descriptors

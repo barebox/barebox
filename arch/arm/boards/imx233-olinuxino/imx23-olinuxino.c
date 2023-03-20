@@ -18,7 +18,7 @@
 #include <mci.h>
 #include <asm/armlinux.h>
 #include <asm/barebox-arm.h>
-#include <usb/ehci.h>
+#include <linux/usb/ehci.h>
 #include <mach/mxs/usb.h>
 #include <generated/mach-types.h>
 #include <mach/mxs/imx-regs.h>

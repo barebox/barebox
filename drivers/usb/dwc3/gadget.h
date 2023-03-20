@@ -18,7 +18,7 @@
 #ifndef __DRIVERS_USB_DWC3_GADGET_H
 #define __DRIVERS_USB_DWC3_GADGET_H
 
-#include <usb/gadget.h>
+#include <linux/usb/gadget.h>
 #include <linux/list.h>
 #include "io.h"
 

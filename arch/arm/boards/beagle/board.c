@@ -18,7 +18,7 @@
 #include <mach/omap/omap3-devices.h>
 #include <i2c/i2c.h>
 #include <linux/err.h>
-#include <usb/ehci.h>
+#include <linux/usb/ehci.h>
 #include <asm/barebox-arm.h>
 
 #ifdef CONFIG_DRIVER_SERIAL_NS16550

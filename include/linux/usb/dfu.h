@@ -22,7 +22,7 @@
 
 #include <linux/types.h>
 #include <file-list.h>
-#include <usb/composite.h>
+#include <linux/usb/composite.h>
 
 struct f_dfu_opts {
 	struct usb_function_instance func_inst;

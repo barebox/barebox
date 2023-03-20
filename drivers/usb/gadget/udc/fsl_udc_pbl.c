@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <common.h>
-#include <usb/ch9.h>
+#include <linux/usb/ch9.h>
 #include <soc/fsl/fsl_udc.h>
 #include <mach/imx/imx8mm-regs.h>
 #include <mach/imx/imx6-regs.h>

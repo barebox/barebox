@@ -14,8 +14,8 @@
 #include <gpio.h>
 #include <init.h>
 
-#include <usb/ch9.h>
-#include <usb/gadget.h>
+#include <linux/usb/ch9.h>
+#include <linux/usb/gadget.h>
 
 #include "pxa27x_udc.h"
 #include <mach/pxa/udc_pxa2xx.h>

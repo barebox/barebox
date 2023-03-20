@@ -38,8 +38,8 @@
 #include <init.h>
 #include <dma.h>
 
-#include <usb/usb.h>
-#include <usb/ch9.h>
+#include <linux/usb/usb.h>
+#include <linux/usb/ch9.h>
 
 #include "usb.h"
 

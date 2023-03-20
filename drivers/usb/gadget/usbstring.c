@@ -6,8 +6,8 @@
 #include <common.h>
 #include <errno.h>
 
-#include <usb/ch9.h>
-#include <usb/gadget.h>
+#include <linux/usb/ch9.h>
+#include <linux/usb/gadget.h>
 
 static inline void put_unaligned_le16(u16 val, u8 *p)
 {

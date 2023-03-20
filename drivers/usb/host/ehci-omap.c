@@ -10,7 +10,7 @@
 /*-------------------------------------------------------------------------*/
 
 #include <mfd/twl4030.h>
-#include <usb/twl4030.h>
+#include <linux/usb/twl4030.h>
 #include <mach/omap/ehci.h>
 #include <common.h>
 #include <io.h>

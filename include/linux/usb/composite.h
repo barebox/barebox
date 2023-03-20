@@ -34,8 +34,8 @@
  * the composite model the host can use both functions at the same time.
  */
 #include <init.h>
-#include <usb/ch9.h>
-#include <usb/gadget.h>
+#include <linux/usb/ch9.h>
+#include <linux/usb/gadget.h>
 #include <linux/log2.h>
 #include <linux/stringify.h>
 #include <linux/spinlock.h>

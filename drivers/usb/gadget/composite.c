@@ -12,7 +12,7 @@
 #include <dma.h>
 #include <linux/err.h>
 #include <linux/bitmap.h>
-#include <usb/composite.h>
+#include <linux/usb/composite.h>
 #include <asm/unaligned.h>
 #include <asm/byteorder.h>
 

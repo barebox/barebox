@@ -11,7 +11,7 @@
 #include <common.h>
 #include <malloc.h>
 #include <linux/phy/phy.h>
-#include <usb/phy.h>
+#include <linux/usb/phy.h>
 
 static LIST_HEAD(phy_provider_list);
 static int phy_ida;

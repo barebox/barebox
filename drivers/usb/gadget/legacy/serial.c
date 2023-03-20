@@ -11,10 +11,10 @@
 #include <errno.h>
 #include <init.h>
 #include <linux/err.h>
-#include <usb/ch9.h>
-#include <usb/gadget.h>
-#include <usb/composite.h>
-#include <usb/usbserial.h>
+#include <linux/usb/ch9.h>
+#include <linux/usb/gadget.h>
+#include <linux/usb/composite.h>
+#include <linux/usb/usbserial.h>
 #include <asm/byteorder.h>
 
 #include "u_serial.h"

@@ -11,7 +11,7 @@
 #include <getopt.h>
 #include <fs.h>
 #include <xfuncs.h>
-#include <usb/usbserial.h>
+#include <linux/usb/usbserial.h>
 
 static int do_usbserial(int argc, char *argv[])
 {

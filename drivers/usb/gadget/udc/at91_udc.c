@@ -16,8 +16,8 @@
 #include <gpio.h>
 #include <io.h>
 #include <clock.h>
-#include <usb/ch9.h>
-#include <usb/gadget.h>
+#include <linux/usb/ch9.h>
+#include <linux/usb/gadget.h>
 #include <of_gpio.h>
 
 #include <linux/list.h>

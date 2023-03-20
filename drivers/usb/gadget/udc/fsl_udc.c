@@ -4,9 +4,9 @@
 #include <dma.h>
 #include <init.h>
 #include <clock.h>
-#include <usb/ch9.h>
-#include <usb/gadget.h>
-#include <usb/fsl_usb2.h>
+#include <linux/usb/ch9.h>
+#include <linux/usb/gadget.h>
+#include <linux/usb/fsl_usb2.h>
 #include <io.h>
 #include <asm/byteorder.h>
 #include <linux/err.h>

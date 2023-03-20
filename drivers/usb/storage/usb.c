@@ -12,8 +12,8 @@
 #include <malloc.h>
 #include <errno.h>
 #include <scsi.h>
-#include <usb/usb.h>
-#include <usb/usb_defs.h>
+#include <linux/usb/usb.h>
+#include <linux/usb/usb_defs.h>
 
 #include <asm/unaligned.h>
 

@@ -12,7 +12,7 @@
 #define __LINUX_USB_PHY_H
 
 #include <notifier.h>
-#include <usb/usb.h>
+#include <linux/usb/usb.h>
 #include <linux/err.h>
 
 enum usb_phy_interface {

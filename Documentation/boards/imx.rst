@@ -86,8 +86,8 @@ The images can also always be started as second stage on the target:
 BootROM Reboot mode codes (bmode)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For select SoCs, barebox supports communicating an alternative boot medium
-that BootROM should select after a warm reset::
+For selected SoCs, barebox supports communicating an alternative boot medium
+that the BootROM should select after a warm reset::
 
   barebox@FSL i.MX8MM EVK board:/ devinfo gpr.reboot_mode
   Driver: syscon-reboot-mode
@@ -107,10 +107,17 @@ that BootROM should select after a warm reset::
 
   barebox@FSL i.MX8MM EVK board:/ gpr.reboot_mode.next=serial reset -w
 
-This will cause barebox to fall into serial download mode on an i.MX8MM.
+The example above will cause barebox to jump back into serial download mode on
+an i.MX8MM by writing 0x10 into the *SRC_GPR9* register (offset 0x30390094) and
+0x40000000 into the *SRC_GPR10* register (offset 0x30390098), and then issuing a
+warm :ref:`reset <command_reset>`.
 
 Different SoCs may have more possible reboot modes available.
-See the section on :ref:`Reboot modes<reboot_mode>` for more information.
+Look for documentation of the *SRC_SBMR* and *SRC_GPR* registers in the
+Reference Manual of your SoC; the values for the ``mode-*`` properties often
+correspond directly to the boot fusemap settings.
+
+See the section on :ref:`Reboot modes<reboot_mode>` for general information.
 
 High Assurance Boot
 ^^^^^^^^^^^^^^^^^^^

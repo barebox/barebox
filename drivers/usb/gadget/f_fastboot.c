@@ -39,7 +39,7 @@ struct f_fastboot {
 
 	/* IN/OUT EP's and corresponding requests */
 	struct usb_ep *in_ep, *out_ep;
-	struct usb_request *in_req, *out_req;
+	struct usb_request *out_req;
 	struct work_queue wq;
 };
 
@@ -134,10 +134,6 @@ static int fastboot_write_usb(struct fastboot *fb, const char *buffer,
 			      unsigned int buffer_size);
 static void fastboot_start_download_usb(struct fastboot *fb);
 
-static void fastboot_complete(struct usb_ep *ep, struct usb_request *req)
-{
-}
-
 struct fastboot_work {
 	struct work_struct work;
 	struct f_fastboot *f_fb;
@@ -181,6 +177,17 @@ static struct usb_request *fastboot_alloc_request(struct usb_ep *ep)
 	memset(req->buf, 0, EP_BUFFER_SIZE);
 
 	return req;
+}
+
+static void fastboot_free_request(struct usb_ep *ep, struct usb_request *req)
+{
+	free(req->buf);
+	usb_ep_free_request(ep, req);
+}
+
+static void fastboot_complete(struct usb_ep *ep, struct usb_request *req)
+{
+	fastboot_free_request(ep, req);
 }
 
 static int fastboot_bind(struct usb_configuration *c, struct usb_function *f)
@@ -259,14 +266,6 @@ static int fastboot_bind(struct usb_configuration *c, struct usb_function *f)
 	f_fb->out_req->complete = rx_handler_command;
 	f_fb->out_req->context = f_fb;
 
-	f_fb->in_req = fastboot_alloc_request(f_fb->in_ep);
-	if (!f_fb->in_req) {
-		puts("failed alloc req in\n");
-		ret = -EINVAL;
-		goto err_free_out_req;
-	}
-	f_fb->in_req->complete = fastboot_complete;
-
 	ret = usb_assign_descriptors(f, fb_fs_descs, fb_hs_descs, NULL);
 	if (ret)
 		goto err_free_in_req;
@@ -274,9 +273,6 @@ static int fastboot_bind(struct usb_configuration *c, struct usb_function *f)
 	return 0;
 
 err_free_in_req:
-	free(f_fb->in_req->buf);
-	usb_ep_free_request(f_fb->in_ep, f_fb->in_req);
-err_free_out_req:
 	free(f_fb->out_req->buf);
 	usb_ep_free_request(f_fb->out_ep, f_fb->out_req);
 fb_generic_free:
@@ -290,11 +286,6 @@ err_wq_unregister:
 static void fastboot_unbind(struct usb_configuration *c, struct usb_function *f)
 {
 	struct f_fastboot *f_fb = func_to_fastboot(f);
-
-	usb_ep_dequeue(f_fb->in_ep, f_fb->in_req);
-	free(f_fb->in_req->buf);
-	usb_ep_free_request(f_fb->in_ep, f_fb->in_req);
-	f_fb->in_req = NULL;
 
 	usb_ep_dequeue(f_fb->out_ep, f_fb->out_req);
 	free(f_fb->out_req->buf);
@@ -404,27 +395,22 @@ DECLARE_USB_FUNCTION_INIT(fastboot, fastboot_alloc_instance, fastboot_alloc_func
 static int fastboot_write_usb(struct fastboot *fb, const char *buffer, unsigned int buffer_size)
 {
 	struct f_fastboot *f_fb = container_of(fb, struct f_fastboot, fastboot);
-	struct usb_request *in_req = f_fb->in_req;
-	uint64_t start;
+	struct usb_request *in_req;
 	int ret;
+
+	in_req = fastboot_alloc_request(f_fb->in_ep);
+	if (!in_req)
+		return -ENOMEM;
 
 	memcpy(in_req->buf, buffer, buffer_size);
 	in_req->length = buffer_size;
+	in_req->complete = fastboot_complete;
 
 	ret = usb_ep_queue(f_fb->in_ep, in_req);
-	if (ret)
+	if (ret) {
+		fastboot_free_request(f_fb->in_ep, in_req);
 		pr_err("Error %d on queue\n", ret);
-
-	start = get_time_ns();
-
-	while (in_req->status == -EINPROGRESS) {
-		if (is_timeout(start, 2 * SECOND))
-			return -ETIMEDOUT;
-		usb_gadget_poll();
 	}
-
-	if (in_req->status)
-		pr_err("Failed to send answer: %d\n", in_req->status);
 
 	return 0;
 }

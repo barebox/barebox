@@ -12,7 +12,6 @@
 #include <linux/err.h>
 
 #include "u_serial.h"
-#include "gadget_chips.h"
 
 
 /*

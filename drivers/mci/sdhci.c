@@ -124,6 +124,33 @@ void sdhci_set_bus_width(struct sdhci *host, int width)
 
 #endif
 
+int sdhci_wait_for_done(struct sdhci *sdhci, u32 mask)
+{
+	u64 start = get_time_ns();
+	u32 stat;
+
+	do {
+		stat = sdhci_read32(sdhci, SDHCI_INT_STATUS);
+
+		if (stat & SDHCI_INT_TIMEOUT)
+			return -ETIMEDOUT;
+
+		if (stat & SDHCI_INT_ERROR) {
+			dev_err(sdhci->mci->hw_dev, "SDHCI_INT_ERROR: 0x%08x\n",
+				stat);
+			return -EPERM;
+		}
+
+		if (is_timeout(start, 1000 * MSECOND)) {
+			dev_err(sdhci->mci->hw_dev,
+				"SDHCI timeout while waiting for done\n");
+			return -ETIMEDOUT;
+		}
+	} while ((stat & mask) != mask);
+
+	return 0;
+}
+
 void sdhci_setup_data_pio(struct sdhci *sdhci, struct mci_data *data)
 {
 	if (!data)

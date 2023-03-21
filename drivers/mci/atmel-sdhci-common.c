@@ -89,32 +89,6 @@ exit:
 	return is_inserted;
 }
 
-static int at91_sdhci_wait_for_done(struct at91_sdhci *host, u32 mask)
-{
-	struct sdhci *sdhci = &host->sdhci;
-	u32 status;
-	int ret;
-
-	ret = sdhci_read32_poll_timeout(sdhci, SDHCI_INT_STATUS, status,
-					(status & mask) == mask || (status & SDHCI_INT_ERROR),
-					USEC_PER_SEC);
-
-	if (ret < 0) {
-		dev_err(host->dev, "SDHCI timeout while waiting for done\n");
-		return ret;
-	}
-
-	if (status & SDHCI_INT_TIMEOUT)
-		return -ETIMEDOUT;
-
-	if (status & SDHCI_INT_ERROR) {
-		dev_err(host->dev, "SDHCI_INT_STATUS: 0x%08x\n", status);
-		return -EPERM;
-	}
-
-	return status & 0xFFFF;
-}
-
 int at91_sdhci_send_command(struct at91_sdhci *host, struct mci_cmd *cmd,
 			    struct mci_data *data)
 {
@@ -158,7 +132,7 @@ int at91_sdhci_send_command(struct at91_sdhci *host, struct mci_cmd *cmd,
 	sdhci_write32(sdhci, SDHCI_ARGUMENT, cmd->cmdarg);
 	sdhci_write16(sdhci, SDHCI_COMMAND, command);
 
-	status = at91_sdhci_wait_for_done(host, mask);
+	status = sdhci_wait_for_done(&host->sdhci, mask);
 	if (status < 0)
 		goto error;
 

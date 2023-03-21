@@ -216,29 +216,6 @@ static void rk_sdhci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	sdhci_write8(&host->sdhci, SDHCI_HOST_CONTROL, val);
 }
 
-static int rk_sdhci_wait_for_done(struct rk_sdhci_host *host, u32 mask)
-{
-	u64 start = get_time_ns();
-	u16 stat;
-
-	do {
-		stat = sdhci_read16(&host->sdhci, SDHCI_INT_NORMAL_STATUS);
-		if (stat & SDHCI_INT_ERROR) {
-			dev_dbg(host->mci.hw_dev, "SDHCI_INT_ERROR: 0x%08x\n",
-				sdhci_read16(&host->sdhci, SDHCI_INT_ERROR_STATUS));
-			return -EPERM;
-		}
-
-		if (is_timeout(start, 1000 * MSECOND)) {
-			dev_err(host->mci.hw_dev,
-					"SDHCI timeout while waiting for done\n");
-			return -ETIMEDOUT;
-		}
-	} while ((stat & mask) != mask);
-
-	return 0;
-}
-
 static void print_error(struct rk_sdhci_host *host, int cmdidx)
 {
 	dev_dbg(host->mci.hw_dev,
@@ -285,11 +262,9 @@ static int rk_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 	sdhci_write32(&host->sdhci, SDHCI_ARGUMENT, cmd->cmdarg);
 	sdhci_write16(&host->sdhci, SDHCI_COMMAND, command);
 
-	ret = rk_sdhci_wait_for_done(host, SDHCI_INT_CMD_COMPLETE);
-	if (ret == -EPERM)
+	ret = sdhci_wait_for_done(&host->sdhci, SDHCI_INT_CMD_COMPLETE);
+	if (ret)
 		goto error;
-	else if (ret)
-		return ret;
 
 	sdhci_read_response(&host->sdhci, cmd);
 	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, SDHCI_INT_CMD_COMPLETE);

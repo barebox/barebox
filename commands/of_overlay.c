@@ -10,6 +10,7 @@
 #include <getopt.h>
 #include <libfile.h>
 #include <of.h>
+#include <linux/clk.h>
 
 static int do_of_overlay(int argc, char *argv[])
 {
@@ -49,8 +50,11 @@ static int do_of_overlay(int argc, char *argv[])
 
 	if (live_tree) {
 		ret = of_overlay_apply_tree(of_get_root_node(), overlay);
-		if (!ret)
-			ret = of_probe();
+		if (ret)
+			goto err;
+
+		of_clk_init();
+		of_probe();
 	} else {
 		ret = of_register_overlay(overlay);
 	}

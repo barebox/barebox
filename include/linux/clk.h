@@ -686,7 +686,7 @@ struct clk *of_clk_get_from_provider(struct of_phandle_args *clkspec);
 unsigned int of_clk_get_parent_count(struct device_node *np);
 int of_clk_parent_fill(struct device_node *np, const char **parents,
 		       unsigned int size);
-int of_clk_init(struct device_node *root, const struct of_device_id *matches);
+int of_clk_init(void);
 int of_clk_add_provider(struct device_node *np,
 			struct clk *(*clk_src_get)(struct of_phandle_args *args,
 						   void *data),
@@ -742,8 +742,7 @@ static inline unsigned int of_clk_get_parent_count(struct device_node *np)
 {
 	return 0;
 }
-static inline int of_clk_init(struct device_node *root,
-			      const struct of_device_id *matches)
+static inline int of_clk_init(void)
 {
 	return 0;
 }

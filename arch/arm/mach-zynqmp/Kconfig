@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
-if ARCH_ZYNQMP
+
+menu "ZynqMP Features"
+	depends on ARCH_ZYNQMP
 
 config MACH_XILINX_ZCU104
 	bool "Xilinx Zynq UltraScale+ MPSoC ZCU104"
@@ -13,4 +15,4 @@ config MACH_XILINX_ZCU106
 	  Say Y here if you are using the Xilinx Zynq UltraScale+ MPSoC ZCU106
 	  evaluation board.
 
-endif
+endmenu

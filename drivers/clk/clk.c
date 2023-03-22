@@ -847,6 +847,18 @@ static int parent_ready(struct device_node *np)
 	}
 }
 
+static LIST_HEAD(probed_clks);
+
+static bool of_clk_probed(struct device_node *np)
+{
+	struct clock_provider *clk_provider;
+
+	list_for_each_entry(clk_provider, &probed_clks, node)
+		if (clk_provider->np == np)
+			return true;
+	return false;
+}
+
 /**
  * of_clk_init() - Scan and init clock providers from the DT
  *
@@ -875,6 +887,11 @@ int of_clk_init(void)
 		if (!of_device_is_available(root))
 			continue;
 
+		if (of_clk_probed(root)) {
+			pr_debug("%s: already probed: %pOF\n", __func__, root);
+			continue;
+		}
+
 		parent = xzalloc(sizeof(*parent));
 
 		parent->clk_init_cb = match->data;
@@ -894,8 +911,7 @@ int of_clk_init(void)
 				clk_provider->clk_init_cb(np);
 				of_clk_set_defaults(np, true);
 
-				list_del(&clk_provider->node);
-				free(clk_provider);
+				list_move_tail(&clk_provider->node, &probed_clks);
 				is_init_done = true;
 			}
 		}

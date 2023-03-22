@@ -2513,13 +2513,13 @@ static int of_probe_memory(void)
 }
 mem_initcall(of_probe_memory);
 
-struct device *of_platform_device_create_root(struct device_node *np)
+static void of_platform_device_create_root(struct device_node *np)
 {
 	static struct device *dev;
 	int ret;
 
 	if (dev)
-		return dev;
+		return;
 
 	dev = xzalloc(sizeof(*dev));
 	dev->id = DEVICE_ID_SINGLE;
@@ -2527,12 +2527,8 @@ struct device *of_platform_device_create_root(struct device_node *np)
 	dev_set_name(dev, "machine");
 
 	ret = platform_device_register(dev);
-	if (ret) {
+	if (ret)
 		free_device(dev);
-		return ERR_PTR(ret);
-	}
-
-	return dev;
 }
 
 static const struct of_device_id reserved_mem_matches[] = {

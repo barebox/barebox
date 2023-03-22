@@ -41,6 +41,23 @@
 	off-on-delay-us = <20000>;
 };
 
+&usb3_phy0 {
+	status = "okay";
+};
+
+&usb3_0 {
+	status = "okay";
+};
+
+&usb_dwc3_0 {
+	dr_mode = "otg";
+	hnp-disable;
+	srp-disable;
+	adp-disable;
+	usb-role-switch;
+	status = "okay";
+};
+
 &usdhc2 {
 	#address-cells = <1>;
 	#size-cells = <1>;

@@ -1427,7 +1427,7 @@ static int print_field(u8 *reg, int index)
 
 	case EXT_CSD_MAX_ENH_SIZE_MULT:
 		tmp = get_field_val(EXT_CSD_HC_WP_GRP_SIZE, 0, 0xFF);
-		tmp = tmp + get_field_val(EXT_CSD_HC_ERASE_GRP_SIZE, 0, 0xFF);
+		tmp = tmp * get_field_val(EXT_CSD_HC_ERASE_GRP_SIZE, 0, 0xFF);
 		tmp64 *= tmp;
 		tmp64 *= SZ_512K;
 		printf("\tMax Enhanced Area: %llu B\n", tmp64);

@@ -38,6 +38,11 @@ config COMMON_CLK_SCMI
 	  This driver uses SCMI Message Protocol to interact with the
 	  firmware providing all the clock controls.
 
+config COMMON_CLK_GPIO
+	bool
+	default y
+	depends on COMMON_CLK_OF_PROVIDER
+
 source "drivers/clk/sifive/Kconfig"
 
 endif

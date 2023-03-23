@@ -5,6 +5,9 @@
 #include <mach/rockchip/atf.h>
 #include <elf.h>
 #include <asm/atf_common.h>
+#include <asm/barebox-arm.h>
+#include <mach/rockchip/dmc.h>
+#include <mach/rockchip/rockchip.h>
 
 static unsigned long load_elf64_image_phdr(const void *elf)
 {
@@ -68,4 +71,20 @@ void rk3399_atf_load_bl31(void *fdt)
 void rk3568_atf_load_bl31(void *fdt)
 {
 	rockchip_atf_load_bl31(RK3568, rk3568_bl31_bin, rk3568_op_tee_bin, fdt);
+}
+
+void __noreturn rk3568_barebox_entry(void *fdt)
+{
+	unsigned long membase, memsize;
+
+	membase = RK3568_DRAM_BOTTOM;
+	memsize = rk3568_ram0_size() - RK3568_DRAM_BOTTOM;
+
+	if (current_el() == 3) {
+		rk3568_lowlevel_init();
+		rk3568_atf_load_bl31(fdt);
+		/* not reached when CONFIG_ARCH_ROCKCHIP_ATF */
+	}
+
+	barebox_arm_entry(membase, memsize, fdt);
 }

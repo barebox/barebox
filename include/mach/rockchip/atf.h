@@ -28,4 +28,6 @@ static inline void rk3568_atf_load_bl31(void *fdt) { }
 #endif
 #endif
 
+void __noreturn rk3568_barebox_entry(void *fdt);
+
 #endif /* __MACH_ATF_H */

@@ -45,6 +45,7 @@ config ARCH_MULTIARCH
 
 config ARCH_AT91
 	bool "Atmel AT91"
+	depends on 32BIT
 	select GPIOLIB
 	select CLKDEV_LOOKUP
 	select HAVE_PBL_MULTI_IMAGES
@@ -54,6 +55,7 @@ config ARCH_AT91
 
 config ARCH_CLPS711X
 	bool "Cirrus Logic EP711x/EP721x/EP731x"
+	depends on 32BIT
 	select CLKDEV_LOOKUP
 	select CLOCKSOURCE_CLPS711X
 	select COMMON_CLK
@@ -67,12 +69,14 @@ config ARCH_CLPS711X
 
 config ARCH_DAVINCI
 	bool "TI Davinci"
+	depends on 32BIT
 	select CPU_ARM926T
 	select HAS_DEBUG_LL
 	select GPIOLIB
 
 config ARCH_DIGIC
 	bool "Canon DIGIC-based cameras"
+	depends on 32BIT
 	select CPU_ARM946E
 	select HAS_DEBUG_LL
 	select CLOCKSOURCE_DIGIC
@@ -82,6 +86,7 @@ config ARCH_DIGIC
 
 config ARCH_EP93XX
 	bool "Cirrus Logic EP93xx"
+	depends on 32BIT
 	select CPU_ARM920T
 	select GENERIC_GPIO
 
@@ -99,6 +104,7 @@ config ARCH_LAYERSCAPE
 
 config ARCH_MVEBU
 	bool "Marvell EBU platforms"
+	depends on 32BIT
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
 	select CLKDEV_LOOKUP
@@ -113,6 +119,7 @@ config ARCH_MVEBU
 
 config ARCH_MXS
 	bool "Freescale i.MX23/28 (mxs) based"
+	depends on 32BIT
 	select GPIOLIB
 	select GENERIC_GPIO
 	select COMMON_CLK
@@ -122,6 +129,7 @@ config ARCH_MXS
 
 config ARCH_NOMADIK
 	bool "STMicroelectronics Nomadik"
+	depends on 32BIT
 	select CPU_ARM926T
 	select CLOCKSOURCE_NOMADIK
 	select HAVE_CLK
@@ -130,14 +138,17 @@ config ARCH_NOMADIK
 
 config ARCH_OMAP_SINGLE
 	bool "TI OMAP"
+	depends on 32BIT
 	select ARCH_OMAP
 
 config ARCH_PXA
 	bool "Intel/Marvell PXA based"
+	depends on 32BIT
 	select GENERIC_GPIO
 
 config ARCH_SOCFPGA
 	bool "Altera SOCFPGA"
+	depends on 32BIT
 	select HAS_DEBUG_LL
 	select ARM_SMP_TWD
 	select CPU_V7
@@ -146,12 +157,14 @@ config ARCH_SOCFPGA
 
 config ARCH_VERSATILE
 	bool "ARM Versatile boards (ARM926EJ-S)"
+	depends on 32BIT
 	select GPIOLIB
 	select HAVE_CLK
 	select HAS_DEBUG_LL
 
 config ARCH_TEGRA
 	bool "NVIDIA Tegra"
+	depends on 32BIT
 	select CPU_V7
 	select HAS_DEBUG_LL
 	select HW_HAS_PCI
@@ -169,6 +182,7 @@ config ARCH_TEGRA
 
 config ARCH_UEMD
 	bool "RC Module UEMD Platform"
+	depends on 32BIT
 	select CPU_ARM1176
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
@@ -180,18 +194,19 @@ config ARCH_UEMD
 
 config ARCH_ZYNQ
 	bool "Xilinx Zynq-based boards"
+	depends on 32BIT
 	select HAS_DEBUG_LL
 	select PBL_IMAGE
 	select GPIOLIB
 
 config ARCH_ARM64_VIRT
 	bool "ARM64 QEMU Virt board"
+	depends on 64BIT
 	select CPU_V8
 	select HAVE_PBL_MULTI_IMAGES
 	select OFDEVICE
 	select OFTREE
 	select RELOCATABLE
-	select CPU_SUPPORTS_64BIT_KERNEL
 	select ARM_AMBA
 	select BOARD_ARM_VIRT
 	select HW_HAS_PCI
@@ -212,8 +227,6 @@ config ARCH_BCM283X
 	select OFTREE
 	select OFDEVICE
 	select HAVE_PBL_MULTI_IMAGES
-	select CPU_SUPPORTS_32BIT_KERNEL
-	select CPU_SUPPORTS_64BIT_KERNEL
 
 config ARCH_IMX
 	bool "Freescale iMX-based"
@@ -225,11 +238,10 @@ config ARCH_IMX
 	select HAS_DEBUG_LL
 	select HAVE_PBL_MULTI_IMAGES
 	select RELOCATABLE
-	select CPU_SUPPORTS_32BIT_KERNEL
-	select CPU_SUPPORTS_64BIT_KERNEL
 
 config ARCH_OMAP_MULTI
 	bool "TI OMAP"
+	depends on 32BIT
 	depends on ARCH_MULTIARCH
 	select OMAP_MULTI_BOARDS
 	select ARCH_OMAP
@@ -248,11 +260,10 @@ config ARCH_ROCKCHIP
 	select OFTREE
 	select HAVE_PBL_MULTI_IMAGES
 	select HAS_DEBUG_LL
-	select CPU_SUPPORTS_32BIT_KERNEL
-	select CPU_SUPPORTS_64BIT_KERNEL
 
 config ARCH_STM32MP
 	bool "STMicroelectronics STM32MP"
+	depends on 32BIT
 	select ARCH_STM32
 	select CPU_V7
 	select HAVE_PBL_MULTI_IMAGES
@@ -269,6 +280,7 @@ config ARCH_STM32MP
 
 config ARCH_VEXPRESS
 	bool "ARM Vexpress & virt boards"
+	depends on 32BIT
 	select HAS_DEBUG_LL
 	select CPU_V7
 	select ARM_AMBA
@@ -283,6 +295,7 @@ config ARCH_VEXPRESS
 
 config ARCH_ZYNQMP
 	bool "Xilinx ZynqMP-based boards"
+	depends on 64BIT
 	select CPU_V8
 	select HAS_DEBUG_LL
 	select HAVE_PBL_MULTI_IMAGES
@@ -294,7 +307,6 @@ config ARCH_ZYNQMP
 	select OFDEVICE
 	select OFTREE
 	select RELOCATABLE
-	select CPU_SUPPORTS_64BIT_KERNEL
 	select HAS_MACB
 
 source "arch/arm/cpu/Kconfig"
@@ -390,28 +402,18 @@ config ARM_BOARD_PREPEND_ATAG
 
 endmenu
 
-choice
-	prompt "Barebox code model"
-	help
-	  You should only select this option if you have a workload that
-	  actually benefits from 64-bit processing or if your machine has
-	  large memory. You will only be presented a single option in this
-	  menu if your system does not support both 32-bit and 64-bit modes.
-
-config 32BIT
-	bool "32-bit barebox"
-	depends on CPU_SUPPORTS_32BIT_KERNEL
-	help
-	  Select this option if you want to build a 32-bit barebox.
-
 config 64BIT
-	bool "64-bit barebox"
-	depends on CPU_SUPPORTS_64BIT_KERNEL
+	bool "64bit barebox" if "$(ARCH)" != "arm64"
+	default "$(ARCH)" = "arm64"
 	select ARCH_DMA_ADDR_T_64BIT
 	help
 	  Select this option if you want to build a 64-bit barebox.
 
-endchoice
+config 32BIT
+	bool
+	default !64BIT
+	help
+	  Select this option if you want to build a 32-bit barebox.
 
 menu "ARM specific settings"
 

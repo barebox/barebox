@@ -319,7 +319,6 @@ static void fastboot_unbind(struct usb_configuration *c, struct usb_function *f)
 {
 	struct f_fastboot *f_fb = func_to_fastboot(f);
 
-	usb_ep_dequeue(f_fb->out_ep, f_fb->out_req);
 	free(f_fb->out_req->buf);
 	usb_ep_free_request(f_fb->out_ep, f_fb->out_req);
 	f_fb->out_req = NULL;

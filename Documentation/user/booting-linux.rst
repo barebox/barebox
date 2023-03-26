@@ -19,8 +19,10 @@ architecture the bootm command handles different image types. On ARM the
 following images are supported:
 
 * ARM Linux zImage
+* ARM64 Linux Image, plain or compressed
 * U-Boot uImage
 * barebox images
+* FIT images, containing a zImage or Image
 
 The images can either be passed directly to the bootm command as argument or
 in the ``global.bootm.image`` variable:
@@ -47,6 +49,14 @@ variable:
   global.bootm.oftree=/path/to/dtb
   global.bootm.image=/path/to/zImage
   bootm
+
+FIT image configurations will be matched by comparing the ``compatible`` property
+inside the configuration node with the barebox live tree's ``/compatible``.
+It's also possible to select a specific configuration explicitly:
+
+.. code-block:: sh
+
+  global.bootm.image=/dev/mmc0.fit@conf-imx8mm-evk.dtb
 
 **NOTE:** it may happen that barebox is probed from the devicetree, but you have
 want to start a Kernel without passing a devicetree. In this case set the

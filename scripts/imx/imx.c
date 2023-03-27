@@ -675,6 +675,7 @@ static char *readcmd(struct config_data *data, FILE *f)
 	static char *buf;
 	char *str;
 	ssize_t ret;
+	int inquotes = 0;
 
 	if (!buf) {
 		buf = malloc(4096);
@@ -689,8 +690,9 @@ static char *readcmd(struct config_data *data, FILE *f)
 		ret = fread(str, 1, 1, f);
 		if (!ret)
 			return strlen(buf) ? buf : NULL;
-
-		if (*str == '\n' || *str == ';') {
+		if (*str == '"') {
+			inquotes = !inquotes;
+		} else if ((*str == '\n' || *str == ';') && !inquotes) {
 			*str = 0;
 			return buf;
 		}

@@ -73,14 +73,11 @@ static int arasan_sdhci_card_write_protected(struct mci_host *mci)
 
 static int arasan_sdhci_reset(struct arasan_sdhci_host *host, u8 mask)
 {
-	sdhci_write8(&host->sdhci, SDHCI_SOFTWARE_RESET, mask);
+	int ret;
 
-	/* wait for reset completion */
-	if (wait_on_timeout(100 * MSECOND,
-			    !(sdhci_read8(&host->sdhci, SDHCI_SOFTWARE_RESET) & mask))) {
-		dev_err(host->mci.hw_dev, "SDHCI reset timeout\n");
-		return -ETIMEDOUT;
-	}
+	ret = sdhci_reset(&host->sdhci, mask);
+	if (ret)
+		return ret;
 
 	if (host->quirks & SDHCI_ARASAN_QUIRK_FORCE_CDTEST) {
 		u8 ctrl;
@@ -199,8 +196,8 @@ static int arasan_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 error:
 	if (ret) {
 		print_error(host, cmd->cmdidx, ret);
-		arasan_sdhci_reset(host, BIT(1)); // SDHCI_RESET_CMD
-		arasan_sdhci_reset(host, BIT(2)); // SDHCI_RESET_DATA
+		arasan_sdhci_reset(host, SDHCI_RESET_CMD);
+		arasan_sdhci_reset(host, SDHCI_RESET_DATA);
 	}
 
 	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, ~0);

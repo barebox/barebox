@@ -85,7 +85,19 @@ void __noreturn rk3568_barebox_entry(void *fdt)
 	if (current_el() == 3) {
 		rk3568_lowlevel_init();
 		rockchip_store_bootrom_iram(membase, memsize, IOMEM(RK3568_IRAM_BASE));
-		rk3568_atf_load_bl31(fdt);
+
+		/*
+		 * The downstream TF-A doesn't cope with our device tree when
+		 * CONFIG_OF_OVERLAY_LIVE is enabled, supposedly because it is
+		 * too big for some reason. Otherwise it doesn't have any visible
+		 * effect if we pass a device tree or not, except that the TF-A
+		 * fills in the ethernet MAC address into the device tree.
+		 * The upstream TF-A doesn't use the device tree at all.
+		 *
+		 * Pass NULL for now until we have a good reason to pass a real
+		 * device tree.
+		 */
+		rk3568_atf_load_bl31(NULL);
 		/* not reached when CONFIG_ARCH_ROCKCHIP_ATF */
 	}
 

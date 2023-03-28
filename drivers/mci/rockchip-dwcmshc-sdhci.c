@@ -87,26 +87,12 @@ static int rk_sdhci_card_present(struct mci_host *mci)
 	return !!(sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) & SDHCI_CARD_DETECT);
 }
 
-static int rk_sdhci_reset(struct rk_sdhci_host *host, u8 mask)
-{
-	sdhci_write8(&host->sdhci, SDHCI_SOFTWARE_RESET, mask);
-
-	/* wait for reset completion */
-	if (wait_on_timeout(100 * MSECOND,
-			!(sdhci_read8(&host->sdhci, SDHCI_SOFTWARE_RESET) & mask))){
-		dev_err(host->mci.hw_dev, "SDHCI reset timeout\n");
-		return -ETIMEDOUT;
-	}
-
-	return 0;
-}
-
 static int rk_sdhci_init(struct mci_host *mci, struct device *dev)
 {
 	struct rk_sdhci_host *host = to_rk_sdhci_host(mci);
 	int ret;
 
-	ret = rk_sdhci_reset(host, SDHCI_RESET_ALL);
+	ret = sdhci_reset(&host->sdhci, SDHCI_RESET_ALL);
 	if (ret)
 		return ret;
 
@@ -274,8 +260,8 @@ static int rk_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 error:
 	if (ret) {
 		print_error(host, cmd->cmdidx);
-		rk_sdhci_reset(host, BIT(1)); /* SDHCI_RESET_CMD */
-		rk_sdhci_reset(host, BIT(2)); /* SDHCI_RESET_DATA */
+		sdhci_reset(&host->sdhci, SDHCI_RESET_CMD);
+		sdhci_reset(&host->sdhci, SDHCI_RESET_DATA);
 	}
 
 	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, ~0);

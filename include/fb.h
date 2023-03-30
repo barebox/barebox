@@ -147,6 +147,8 @@ struct fb_info {
 	int shadowfb;
 };
 
+int of_get_display_timing(const struct device_node *np, const char *name,
+			  struct fb_videomode *mode);
 struct display_timings *of_get_display_timings(struct device_node *np);
 void display_timings_release(struct display_timings *);
 

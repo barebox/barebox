@@ -18,11 +18,6 @@ struct resource_table {
 	u32 offset[0];
 } __packed;
 
-struct firmware {
-	size_t size;
-	const u8 *data;
-};
-
 struct rproc;
 
 struct rproc_ops {

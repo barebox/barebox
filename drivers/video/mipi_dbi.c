@@ -8,11 +8,13 @@
 #define pr_fmt(fmt) "mipi-dbi: " fmt
 
 #include <common.h>
+#include <dma.h>
 #include <linux/kernel.h>
 #include <linux/sizes.h>
 #include <gpiod.h>
 #include <regulator.h>
 #include <spi/spi.h>
+#include <video/backlight.h>
 #include <video/mipi_dbi.h>
 
 #include <video/vpl.h>
@@ -197,6 +199,168 @@ int mipi_dbi_command_stackbuf(struct mipi_dbi *dbi, u8 cmd, const u8 *data,
 EXPORT_SYMBOL(mipi_dbi_command_stackbuf);
 
 /**
+ * mipi_dbi_buf_copy_swap - Copy a framebuffer swapping MSB/LSB of 16-bit values
+ * @dst: The destination buffer
+ * @info: The source framebuffer info
+ */
+static void mipi_dbi_buf_copy_swap(u16 *dst, struct fb_info *info)
+{
+	u16 *src = (u16 *)info->screen_base;
+	size_t len = info->xres * info->yres;
+	int i;
+
+	for (i = 0; i < len; i++) {
+		*dst++ = *src << 8 | *src >> 8;
+		src++;
+	}
+}
+
+static void mipi_dbi_set_window_address(struct mipi_dbi_dev *dbidev,
+					unsigned int xs, unsigned int xe,
+					unsigned int ys, unsigned int ye)
+{
+	struct mipi_dbi *dbi = &dbidev->dbi;
+
+	xs += dbidev->mode.left_margin;
+	xe += dbidev->mode.left_margin;
+	ys += dbidev->mode.upper_margin;
+	ye += dbidev->mode.upper_margin;
+
+	mipi_dbi_command(dbi, MIPI_DCS_SET_COLUMN_ADDRESS, (xs >> 8) & 0xff,
+			 xs & 0xff, (xe >> 8) & 0xff, xe & 0xff);
+	mipi_dbi_command(dbi, MIPI_DCS_SET_PAGE_ADDRESS, (ys >> 8) & 0xff,
+			 ys & 0xff, (ye >> 8) & 0xff, ye & 0xff);
+}
+
+static void mipi_dbi_fb_dirty(struct mipi_dbi_dev *dbidev, struct fb_info *info)
+{
+	struct mipi_dbi *dbi = &dbidev->dbi;
+	unsigned int height = info->yres;
+	unsigned int width = info->xres;
+	bool swap = dbi->swap_bytes;
+	int ret;
+	void *tr;
+
+	if (swap) {
+		tr = dbidev->tx_buf;
+		mipi_dbi_buf_copy_swap(tr, info);
+	} else {
+		tr = info->screen_base;
+	}
+
+	mipi_dbi_set_window_address(dbidev, 0, width - 1, 0, height - 1);
+
+	ret = mipi_dbi_command_buf(dbi, MIPI_DCS_WRITE_MEMORY_START, tr,
+				   width * height * 2);
+	if (ret)
+		pr_err_once("Failed to update display %d\n", ret);
+}
+
+/**
+ * mipi_dbi_enable_flush - MIPI DBI enable helper
+ * @dbidev: MIPI DBI device structure
+ * @info: Framebuffer info
+ *
+ * Flushes the whole framebuffer and enables the backlight. Drivers can use this
+ * in their &fb_ops->fb_enable callback.
+ */
+void mipi_dbi_enable_flush(struct mipi_dbi_dev *dbidev,
+			   struct fb_info *info)
+{
+	mipi_dbi_fb_dirty(dbidev, info);
+
+	if (dbidev->backlight)
+		backlight_set_brightness_default(dbidev->backlight);
+}
+EXPORT_SYMBOL(mipi_dbi_enable_flush);
+
+static void mipi_dbi_blank(struct mipi_dbi_dev *dbidev)
+{
+	u16 height = dbidev->mode.xres;
+	u16 width = dbidev->mode.yres;
+	struct mipi_dbi *dbi = &dbidev->dbi;
+	size_t len = width * height * 2;
+
+	memset(dbidev->tx_buf, 0, len);
+
+	mipi_dbi_set_window_address(dbidev, 0, width - 1, 0, height - 1);
+	mipi_dbi_command_buf(dbi, MIPI_DCS_WRITE_MEMORY_START, dbidev->tx_buf, len);
+}
+
+/**
+ * mipi_dbi_fb_disable - MIPI DBI framebuffer disable helper
+ * @info: Framebuffer info
+ *
+ * This function disables backlight if present, if not the display memory is
+ * blanked. The regulator is disabled if in use. Drivers can use this as their
+ * &fb_ops->fb_disable callback.
+ */
+void mipi_dbi_fb_disable(struct fb_info *info)
+{
+	struct mipi_dbi_dev *dbidev = container_of(info, struct mipi_dbi_dev, info);
+
+	if (dbidev->backlight)
+		backlight_set_brightness(dbidev->backlight, 0);
+	else
+		mipi_dbi_blank(dbidev);
+
+	regulator_disable(dbidev->regulator);
+	regulator_disable(dbidev->io_regulator);
+}
+EXPORT_SYMBOL(mipi_dbi_fb_disable);
+
+void mipi_dbi_fb_flush(struct fb_info *info)
+{
+	struct mipi_dbi_dev *dbidev = container_of(info, struct mipi_dbi_dev, info);
+
+	mipi_dbi_fb_dirty(dbidev, info);
+}
+EXPORT_SYMBOL(mipi_dbi_fb_flush);
+
+/**
+ * mipi_dbi_dev_init - MIPI DBI device initialization
+ * @dbidev: MIPI DBI device structure to initialize
+ * @ops: Framebuffer operations
+ * @mode: Display mode
+ *
+ * This function sets up a &fb_info with one fixed &fb_videomode.
+ * Additionally &mipi_dbi.tx_buf is allocated.
+ *
+ * Supported format: RGB565.
+ *
+ * Returns:
+ * Zero on success, negative error code on failure.
+ */
+int mipi_dbi_dev_init(struct mipi_dbi_dev *dbidev, struct fb_ops *ops,
+		      struct fb_videomode *mode)
+{
+	struct fb_info *info = &dbidev->info;
+
+	info->mode = mode;
+	info->fbops = ops;
+	info->dev.parent = dbidev->dev;
+
+	info->xres = mode->xres;
+	info->yres = mode->yres;
+	info->bits_per_pixel = 16;
+	info->line_length = info->xres * 2;
+	info->screen_size = info->line_length * info->yres;
+	info->screen_base = dma_alloc(info->screen_size);
+	memset(info->screen_base, 0, info->screen_size);
+
+	info->red.length = 5;
+	info->red.offset = 11;
+	info->green.length = 6;
+	info->green.offset = 5;
+	info->blue.length = 5;
+	info->blue.offset = 0;
+
+	dbidev->tx_buf = dma_alloc(info->screen_size);
+
+	return 0;
+}
+
+/**
  * mipi_dbi_hw_reset - Hardware reset of controller
  * @dbi: MIPI DBI structure
  *
@@ -245,6 +409,68 @@ bool mipi_dbi_display_is_on(struct mipi_dbi *dbi)
 	return true;
 }
 EXPORT_SYMBOL(mipi_dbi_display_is_on);
+
+static int mipi_dbi_poweron_reset_conditional(struct mipi_dbi_dev *dbidev, bool cond)
+{
+	struct device *dev = dbidev->dev;
+	struct mipi_dbi *dbi = &dbidev->dbi;
+	int ret;
+
+	ret = regulator_enable(dbidev->regulator);
+	if (ret) {
+		dev_err(dev, "Failed to enable regulator (%d)\n", ret);
+		return ret;
+	}
+
+	ret = regulator_enable(dbidev->io_regulator);
+	if (ret) {
+		dev_err(dev, "Failed to enable I/O regulator (%d)\n", ret);
+		regulator_disable(dbidev->regulator);
+		return ret;
+	}
+
+	if (cond && mipi_dbi_display_is_on(dbi))
+		return 1;
+
+	mipi_dbi_hw_reset(dbi);
+	ret = mipi_dbi_command(dbi, MIPI_DCS_SOFT_RESET);
+	if (ret) {
+		dev_err(dev, "Failed to send reset command (%d)\n", ret);
+		regulator_disable(dbidev->io_regulator);
+		regulator_disable(dbidev->regulator);
+		return ret;
+	}
+
+	/*
+	 * If we did a hw reset, we know the controller is in Sleep mode and
+	 * per MIPI DSC spec should wait 5ms after soft reset. If we didn't,
+	 * we assume worst case and wait 120ms.
+	 */
+	if (dbi->reset)
+		mdelay(5);
+	else
+		mdelay(120);
+
+	return 0;
+}
+
+/**
+ * mipi_dbi_poweron_conditional_reset - MIPI DBI poweron and conditional reset
+ * @dbidev: MIPI DBI device structure
+ *
+ * This function enables the regulator if used and if the display is off, it
+ * does a hardware and software reset. If mipi_dbi_display_is_on() determines
+ * that the display is on, no reset is performed.
+ *
+ * Returns:
+ * Zero if the controller was reset, 1 if the display was already on, or a
+ * negative error code.
+ */
+int mipi_dbi_poweron_conditional_reset(struct mipi_dbi_dev *dbidev)
+{
+	return mipi_dbi_poweron_reset_conditional(dbidev, true);
+}
+EXPORT_SYMBOL(mipi_dbi_poweron_conditional_reset);
 
 #if IS_ENABLED(CONFIG_SPI)
 

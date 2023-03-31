@@ -348,11 +348,6 @@ static int stm32_pinctrl_probe(struct device *dev)
 	struct device_node *np = dev->of_node, *child;
 	int ret;
 
-	if (!of_find_property(np, "pins-are-numbered", NULL)) {
-		dev_err(dev, "only pins-are-numbered format supported\n");
-		return -EINVAL;
-	}
-
 	for_each_available_child_of_node(np, child)
 		if (of_property_read_bool(child, "gpio-controller"))
 			nbanks++;

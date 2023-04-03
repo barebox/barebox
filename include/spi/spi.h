@@ -45,7 +45,7 @@ struct spi_board_info {
  *	This may be changed by the device's driver, or left at the
  *	default (0) indicating protocol words are eight bit bytes.
  *	The spi_transfer.bits_per_word can override this for each transfer
- *	(FIXME: not currently implemented).
+ *	(FIXME: not currently implemented by most drivers).
  * @irq: Negative, or the number passed to request_irq() to receive
  *	interrupts from this device.
  * @controller_state: Controller's runtime state

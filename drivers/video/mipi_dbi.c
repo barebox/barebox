@@ -632,8 +632,7 @@ int mipi_dbi_spi_init(struct spi_device *spi, struct mipi_dbi *dbi,
 
 	dbi->command = mipi_dbi_typec3_command;
 	dbi->dc = dc;
-	// TODO: can we just force 16 bit?
-	if (mipi_dbi_machine_little_endian() && spi->bits_per_word != 16)
+	if (mipi_dbi_machine_little_endian() && !spi_is_bpw_supported(spi, 16))
 		dbi->swap_bytes = true;
 
 	dev_dbg(dev, "SPI speed: %uMHz\n", spi->max_speed_hz / 1000000);

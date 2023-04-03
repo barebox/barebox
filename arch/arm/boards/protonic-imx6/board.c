@@ -530,7 +530,7 @@ static int prt_imx6_bbu(struct prt_imx6_priv *priv)
 		emmc_flags = BBU_HANDLER_FLAG_DEFAULT;
 	}
 
-	devicefile = basprintf("mmc%d", dcfg->emmc_usdhc);
+	devicefile = basprintf("/dev/mmc%d", dcfg->emmc_usdhc);
 	if (!devicefile) {
 		ret = -ENOMEM;
 		goto exit_bbu;
@@ -540,7 +540,7 @@ static int prt_imx6_bbu(struct prt_imx6_priv *priv)
 	if (ret)
 		goto exit_bbu;
 
-	devicefile = basprintf("mmc%d", dcfg->sd_usdhc);
+	devicefile = basprintf("/dev/mmc%d", dcfg->sd_usdhc);
 	if (!devicefile) {
 		ret = -ENOMEM;
 		goto exit_bbu;

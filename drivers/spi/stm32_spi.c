@@ -111,6 +111,24 @@ static inline struct stm32_spi_priv *to_stm32_spi_priv(struct spi_master *master
 	return container_of(master, struct stm32_spi_priv, master);
 }
 
+static int stm32_spi_get_bpw_mask(struct stm32_spi_priv *priv)
+{
+	u32 cfg1, max_bpw;
+
+	/*
+	 * The most significant bit at DSIZE bit field is reserved when the
+	 * maximum data size of periperal instances is limited to 16-bit
+	 */
+	setbits_le32(priv->base + STM32_SPI_CFG1, SPI_CFG1_DSIZE);
+
+	cfg1 = readl(priv->base + STM32_SPI_CFG1);
+	max_bpw = FIELD_GET(SPI_CFG1_DSIZE, cfg1) + 1;
+
+	dev_dbg(priv->master.dev, "%d-bit maximum data frame\n", max_bpw);
+
+	return SPI_BPW_RANGE_MASK(4, max_bpw);
+}
+
 static void stm32_spi_write_txfifo(struct stm32_spi_priv *priv)
 {
 	while ((priv->tx_len > 0) &&
@@ -261,19 +279,15 @@ static void stm32_spi_set_mode(struct stm32_spi_priv *priv, unsigned mode)
 
 static void stm32_spi_set_fthlv(struct stm32_spi_priv *priv, u32 xfer_len)
 {
-	u32 fthlv, half_fifo;
+	u32 fthlv, packet, bpw;
 
 	/* data packet should not exceed 1/2 of fifo space */
-	half_fifo = (priv->fifo_size / 2);
-
-	/* data_packet should not exceed transfer length */
-	fthlv = (half_fifo > xfer_len) ? xfer_len : half_fifo;
+	packet = clamp(xfer_len, 1U, priv->fifo_size / 2);
 
 	/* align packet size with data registers access */
-	fthlv -= (fthlv % 4);
+	bpw = DIV_ROUND_UP(priv->cur_bpw, 8);
+	fthlv = DIV_ROUND_UP(packet, bpw);
 
-	if (!fthlv)
-		fthlv = 1;
 	clrsetbits_le32(priv->base + STM32_SPI_CFG1, SPI_CFG1_FTHLV,
 			(fthlv - 1) << SPI_CFG1_FTHLV_SHIFT);
 }
@@ -344,9 +358,17 @@ static int stm32_spi_transfer_one(struct stm32_spi_priv *priv,
 	u32 ifcr = 0;
 	u32 mode;
 	int xfer_status = 0;
+	int nb_words;
 
-	if (t->len <= SPI_CR2_TSIZE)
-		writel(t->len, priv->base + STM32_SPI_CR2);
+	if (t->bits_per_word <= 8)
+		nb_words = t->len;
+	else if (t->bits_per_word <= 16)
+		nb_words = DIV_ROUND_UP(t->len * 8, 16);
+	else
+		nb_words = DIV_ROUND_UP(t->len * 8, 32);
+
+	if (nb_words <= SPI_CR2_TSIZE)
+		writel(nb_words, priv->base + STM32_SPI_CR2);
 	else
 		return -EMSGSIZE;
 
@@ -361,9 +383,11 @@ static int stm32_spi_transfer_one(struct stm32_spi_priv *priv,
 	else if (!priv->rx_buf)
 		mode = SPI_SIMPLEX_TX;
 
-	if (priv->cur_xferlen != t->len || priv->cur_mode != mode) {
+	if (priv->cur_xferlen != t->len || priv->cur_mode != mode ||
+	    priv->cur_bpw != t->bits_per_word) {
 		priv->cur_mode = mode;
 		priv->cur_xferlen = t->len;
+		priv->cur_bpw = t->bits_per_word;
 
 		/* Disable the SPI hardware to unlock CFG1/CFG2 registers */
 		stm32_spi_disable(priv);
@@ -372,6 +396,9 @@ static int stm32_spi_transfer_one(struct stm32_spi_priv *priv,
 				mode << SPI_CFG2_COMM_SHIFT);
 
 		stm32_spi_set_fthlv(priv, t->len);
+
+		clrsetbits_le32(priv->base + STM32_SPI_CFG1, SPI_CFG1_DSIZE,
+				priv->cur_bpw - 1);
 
 		/* Enable the SPI hardware */
 		stm32_spi_enable(priv);
@@ -560,6 +587,7 @@ static int stm32_spi_probe(struct device *dev)
 	if (ret)
 		return ret;
 
+	master->bits_per_word_mask = stm32_spi_get_bpw_mask(priv);
 	priv->fifo_size = stm32_spi_get_fifo_size(priv);
 
 	priv->cur_mode = SPI_FULL_DUPLEX;

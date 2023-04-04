@@ -291,7 +291,7 @@ err_out:
 	return ret;
 }
 
-static ssize_t imx_iim_reg_write(void *ctx, unsigned int reg, unsigned int val)
+static int imx_iim_reg_write(void *ctx, unsigned int reg, unsigned int val)
 {
 	struct iim_bank *bank = ctx;
 

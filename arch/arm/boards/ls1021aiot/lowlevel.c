@@ -8,7 +8,6 @@
 #include <common.h>
 #include <clock.h>
 #include <debug_ll.h>
-#include <image-metadata.h>
 #include <soc/fsl/fsl_ddr_sdram.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
@@ -92,8 +91,6 @@ static noinline __noreturn void ls1021aiot_r_entry(void)
 
 	udelay(500);
 	putc_ll('>');
-
-	IMD_USED_OF(fsl_ls1021a_iot);
 
 	fsl_ddr_set_memctl_regs(&ddrc[0], 0);
 

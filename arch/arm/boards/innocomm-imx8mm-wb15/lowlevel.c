@@ -14,7 +14,6 @@
 #include <mfd/bd71837.h>
 #include <mach/imx/xload.h>
 #include <soc/imx8m/ddr.h>
-#include <image-metadata.h>
 
 #include "lowlevel.h"
 
@@ -75,8 +74,6 @@ void innocomm_wb15_power_init_board(void)
 
 ENTRY_FUNCTION(start_innocomm_wb15_evk, r0, r1, r2)
 {
-	IMD_USED_OF(imx8mm_innocomm_wb15_evk);
-
 	imx8mm_cpu_lowlevel_init();
 
 	relocate_to_current_adr();

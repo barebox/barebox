@@ -18,6 +18,12 @@ enum state_t {
 struct fbc_priv {
 	struct console_device cdev;
 	struct fb_info *fb;
+	struct {
+		u32 top;
+		u32 left;
+		u32 bottom;
+		u32 right;
+	} margin;
 
 	struct screen *sc;
 
@@ -60,9 +66,26 @@ static int fbc_tstc(struct console_device *cdev)
 static void cls(struct fbc_priv *priv)
 {
 	void *buf = gui_screen_render_buffer(priv->sc);
+	struct fb_info *fb = priv->fb;
+	int width = fb->xres - priv->margin.left - priv->margin.right;
+	int height = fb->yres - priv->margin.top - priv->margin.bottom;
+	void *adr;
 
-	memset(buf, 0, priv->fb->line_length * priv->fb->yres);
-	gu_screen_blit(priv->sc);
+	adr = buf + priv->fb->line_length * priv->margin.top;
+
+	if (!priv->margin.left && !priv->margin.right) {
+		memset(adr, 0, priv->fb->line_length * height);
+	} else {
+		int bpp = priv->fb->bits_per_pixel >> 3;
+		int y;
+
+		for (y = 0; y < height; y++) {
+			memset(adr + priv->margin.left * bpp, 0, width * bpp);
+			adr += priv->fb->line_length;
+		}
+	}
+	gu_screen_blit_area(priv->sc, priv->margin.left, priv->margin.top,
+			    width, height);
 }
 
 struct rgb {
@@ -122,7 +145,8 @@ static void drawchar(struct fbc_priv *priv, int x, int y, int c)
 		uint8_t t = inbuf[i];
 		int j;
 
-		adr = buf + line_length * (y * priv->font->height + i) + x * priv->font->width * bpp;
+		adr = buf + line_length * (priv->margin.top + y * priv->font->height + i) +
+		      (priv->margin.left + x * priv->font->width) * bpp;
 
 		for (j = 0; j < priv->font->width; j++) {
 			if (t & 0x80)
@@ -142,9 +166,11 @@ static void video_invertchar(struct fbc_priv *priv, int x, int y)
 
 	buf = gui_screen_render_buffer(priv->sc);
 
-	gu_invert_area(priv->fb, buf, x * priv->font->width, y * priv->font->height,
+	gu_invert_area(priv->fb, buf, priv->margin.left + x * priv->font->width,
+			priv->margin.top + y * priv->font->height,
 			priv->font->width, priv->font->height);
-	gu_screen_blit_area(priv->sc, x * priv->font->width, y * priv->font->height,
+	gu_screen_blit_area(priv->sc, priv->margin.left + x * priv->font->width,
+			priv->margin.top + y * priv->font->height,
 			priv->font->width, priv->font->height);
 }
 
@@ -185,8 +211,9 @@ static void printchar(struct fbc_priv *priv, int c)
 	default:
 		drawchar(priv, priv->x, priv->y, c);
 
-		gu_screen_blit_area(priv->sc, priv->x * priv->font->width,
-				priv->y * priv->font->height,
+		gu_screen_blit_area(priv->sc,
+				priv->margin.left + priv->x * priv->font->width,
+				priv->margin.top + priv->y * priv->font->height,
 				priv->font->width, priv->font->height);
 
 		priv->x++;
@@ -198,15 +225,36 @@ static void printchar(struct fbc_priv *priv, int c)
 
 	if (priv->y > priv->rows) {
 		void *buf;
+		void *adr;
 		u32 line_length = priv->fb->line_length;
 		int line_height = line_length * priv->font->height;
+		int width = priv->fb->xres - priv->margin.left - priv->margin.right;
+		int height = (priv->rows + 1) * priv->font->height;
 
 		buf = gui_screen_render_buffer(priv->sc);
+		adr = buf + priv->margin.top * line_length;
 
-		memcpy(buf, buf + line_height, line_height * priv->rows);
-		memset(buf + line_height * priv->rows, 0, line_height);
+		if (!priv->margin.left && !priv->margin.right) {
+			memcpy(adr, adr + line_height, line_height * priv->rows);
+			memset(adr + line_height * priv->rows, 0, line_height);
+		} else {
+			int bpp = priv->fb->bits_per_pixel >> 3;
+			int y;
 
-		gu_screen_blit(priv->sc);
+			adr += priv->margin.left * bpp;
+
+			for (y = 0; y < height - priv->font->height; y++) {
+				memcpy(adr, adr + line_height, width * bpp);
+				adr += line_length;
+			}
+			for (y = height - priv->font->height; y < height; y++) {
+				memset(adr, 0, width * bpp);
+				adr += line_length;
+			}
+		}
+
+		gu_screen_blit_area(priv->sc, priv->margin.left, priv->margin.top,
+				width, height);
 		priv->y = priv->rows;
 	}
 
@@ -401,8 +449,9 @@ static void fbc_putc(struct console_device *cdev, char c)
 
 static int setup_font(struct fbc_priv *priv)
 {
-	struct fb_info *fb = priv->fb;
 	const struct font_desc *font;
+	unsigned int height = priv->fb->yres - priv->margin.top - priv->margin.bottom;
+	unsigned int width = priv->fb->xres - priv->margin.left - priv->margin.right;
 
 	font = find_font_enum(priv->par_font_val);
 	if (!font) {
@@ -411,8 +460,8 @@ static int setup_font(struct fbc_priv *priv)
 
 	priv->font = font;
 
-	priv->rows = fb->yres / priv->font->height - 1;
-	priv->cols = fb->xres / priv->font->width - 1;
+	priv->rows = height / priv->font->height - 1;
+	priv->cols = width / priv->font->width - 1;
 
 	return 0;
 }
@@ -472,6 +521,35 @@ static int set_font(struct param_d *p, void *vpriv)
 	return 0;
 }
 
+static int set_margin(struct param_d *p, void *vpriv)
+{
+	struct fbc_priv *priv = vpriv;
+	struct console_device *cdev = &priv->cdev;
+	int ret;
+
+	if (!priv->font) {
+		ret = setup_font(priv);
+		if (ret)
+			return ret;
+	}
+
+	priv->margin.left = min(priv->margin.left,
+			priv->fb->xres - priv->margin.right - priv->font->width);
+	priv->margin.top = min(priv->margin.top,
+			priv->fb->yres - priv->margin.bottom - priv->font->height);
+	priv->margin.right = min(priv->margin.right,
+			priv->fb->xres - priv->margin.left - priv->font->width);
+	priv->margin.bottom = min(priv->margin.bottom,
+			priv->fb->yres - priv->margin.top - priv->font->height);
+
+	if (cdev->f_active & (CONSOLE_STDOUT | CONSOLE_STDERR)) {
+		cls(priv);
+		setup_font(priv);
+	}
+
+	return 0;
+}
+
 int register_fbconsole(struct fb_info *fb)
 {
 	struct fbc_priv *priv;
@@ -507,6 +585,15 @@ int register_fbconsole(struct fb_info *fb)
 	priv->par_font = add_param_font(&cdev->class_dev,
 			set_font, NULL,
 			&priv->par_font_val, priv);
+
+	dev_add_param_uint32(&cdev->class_dev, "margin.top", set_margin,
+			NULL, &priv->margin.top, "%u", priv);
+	dev_add_param_uint32(&cdev->class_dev, "margin.left", set_margin,
+			NULL, &priv->margin.left, "%u", priv);
+	dev_add_param_uint32(&cdev->class_dev, "margin.bottom", set_margin,
+			NULL, &priv->margin.bottom, "%u", priv);
+	dev_add_param_uint32(&cdev->class_dev, "margin.right", set_margin,
+			NULL, &priv->margin.right, "%u", priv);
 
 	pr_info("registered as %s%d\n", cdev->class_dev.name, cdev->class_dev.id);
 

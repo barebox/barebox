@@ -109,6 +109,11 @@ struct mipi_dbi_dev {
 	 * @driver_private: Driver private data.
 	 */
 	void *driver_private;
+
+	/**
+	 * @damage: Damage rectangle.
+	 */
+	struct fb_rect damage;
 };
 
 static inline const char *mipi_dbi_name(struct mipi_dbi *dbi)
@@ -120,6 +125,7 @@ int mipi_dbi_spi_init(struct spi_device *spi, struct mipi_dbi *dbi,
 		      int dc);
 int mipi_dbi_dev_init(struct mipi_dbi_dev *dbidev,
 		      struct fb_ops *ops, struct fb_videomode *mode);
+void mipi_dbi_fb_damage(struct fb_info *info, const struct fb_rect *rect);
 void mipi_dbi_fb_flush(struct fb_info *info);
 void mipi_dbi_enable_flush(struct mipi_dbi_dev *dbidev,
 			   struct fb_info *info);

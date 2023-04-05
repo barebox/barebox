@@ -199,19 +199,33 @@ int mipi_dbi_command_stackbuf(struct mipi_dbi *dbi, u8 cmd, const u8 *data,
 EXPORT_SYMBOL(mipi_dbi_command_stackbuf);
 
 /**
- * mipi_dbi_buf_copy_swap - Copy a framebuffer swapping MSB/LSB of 16-bit values
+ * mipi_dbi_buf_copy - Copy a framebuffer, transforming it if necessary
  * @dst: The destination buffer
  * @info: The source framebuffer info
+ * @clip: Clipping rectangle of the area to be copied
+ * @swap: When true, swap MSB/LSB of 16-bit values
  */
-static void mipi_dbi_buf_copy_swap(u16 *dst, struct fb_info *info)
+static void mipi_dbi_buf_copy(u16 *dst, struct fb_info *info,
+			      struct fb_rect *clip, bool swap)
 {
 	u16 *src = (u16 *)info->screen_base;
-	size_t len = info->xres * info->yres;
-	int i;
+	unsigned int height = clip->y2 - clip->y1;
+	unsigned int width = clip->x2 - clip->x1;
+	int x, y;
 
-	for (i = 0; i < len; i++) {
-		*dst++ = *src << 8 | *src >> 8;
-		src++;
+	src += clip->y1 * info->xres + clip->x1;
+	if (swap) {
+		for (y = 0; y < height; y++) {
+			for (x = 0; x < width; x++)
+				*dst++ = src[x] << 8 | src[x] >> 8;
+			src += info->xres;
+		}
+	} else {
+		for (y = 0; y < height; y++) {
+			memcpy(dst, src, 2 * width);
+			dst += width;
+			src += info->xres;
+		}
 	}
 }
 
@@ -232,28 +246,38 @@ static void mipi_dbi_set_window_address(struct mipi_dbi_dev *dbidev,
 			 ys & 0xff, (ye >> 8) & 0xff, ye & 0xff);
 }
 
-static void mipi_dbi_fb_dirty(struct mipi_dbi_dev *dbidev, struct fb_info *info)
+static void mipi_dbi_fb_dirty(struct mipi_dbi_dev *dbidev, struct fb_info *info,
+			      struct fb_rect *rect)
 {
+	unsigned int height = rect->y2 - rect->y1;
+	unsigned int width = rect->x2 - rect->x1;
 	struct mipi_dbi *dbi = &dbidev->dbi;
-	unsigned int height = info->yres;
-	unsigned int width = info->xres;
 	bool swap = dbi->swap_bytes;
 	int ret;
+	bool full;
 	void *tr;
 
-	if (swap) {
+	full = width == info->xres && height == info->yres;
+
+	if (!full || swap) {
 		tr = dbidev->tx_buf;
-		mipi_dbi_buf_copy_swap(tr, info);
+		mipi_dbi_buf_copy(tr, info, rect, swap);
 	} else {
 		tr = info->screen_base;
 	}
 
-	mipi_dbi_set_window_address(dbidev, 0, width - 1, 0, height - 1);
+	mipi_dbi_set_window_address(dbidev, rect->x1, rect->x2 - 1, rect->y1,
+				    rect->y2 - 1);
 
 	ret = mipi_dbi_command_buf(dbi, MIPI_DCS_WRITE_MEMORY_START, tr,
 				   width * height * 2);
 	if (ret)
 		pr_err_once("Failed to update display %d\n", ret);
+
+	dbidev->damage.x1 = 0;
+	dbidev->damage.y1 = 0;
+	dbidev->damage.x2 = 0;
+	dbidev->damage.y2 = 0;
 }
 
 /**
@@ -267,7 +291,14 @@ static void mipi_dbi_fb_dirty(struct mipi_dbi_dev *dbidev, struct fb_info *info)
 void mipi_dbi_enable_flush(struct mipi_dbi_dev *dbidev,
 			   struct fb_info *info)
 {
-	mipi_dbi_fb_dirty(dbidev, info);
+	struct fb_rect rect = {
+		.x1 = 0,
+		.y1 = 0,
+		.x2 = info->xres,
+		.y2 = info->yres
+	};
+
+	mipi_dbi_fb_dirty(dbidev, info, &rect);
 
 	if (dbidev->backlight)
 		backlight_set_brightness_default(dbidev->backlight);
@@ -309,11 +340,33 @@ void mipi_dbi_fb_disable(struct fb_info *info)
 }
 EXPORT_SYMBOL(mipi_dbi_fb_disable);
 
+void mipi_dbi_fb_damage(struct fb_info *info, const struct fb_rect *rect)
+{
+	struct mipi_dbi_dev *dbidev = container_of(info, struct mipi_dbi_dev, info);
+
+	if (dbidev->damage.x2 && dbidev->damage.y2) {
+		dbidev->damage.x1 = min(dbidev->damage.x1, rect->x1);
+		dbidev->damage.y1 = min(dbidev->damage.y1, rect->y1);
+		dbidev->damage.x2 = max(dbidev->damage.x2, rect->x2);
+		dbidev->damage.y2 = max(dbidev->damage.y2, rect->y2);
+	} else {
+		dbidev->damage = *rect;
+	}
+}
+EXPORT_SYMBOL(mipi_dbi_fb_damage);
+
 void mipi_dbi_fb_flush(struct fb_info *info)
 {
 	struct mipi_dbi_dev *dbidev = container_of(info, struct mipi_dbi_dev, info);
 
-	mipi_dbi_fb_dirty(dbidev, info);
+	if (!dbidev->damage.x2 || !dbidev->damage.y2) {
+		dbidev->damage.x1 = 0;
+		dbidev->damage.y1 = 0;
+		dbidev->damage.x2 = info->xres;
+		dbidev->damage.y2 = info->yres;
+	}
+
+	mipi_dbi_fb_dirty(dbidev, info, &dbidev->damage);
 }
 EXPORT_SYMBOL(mipi_dbi_fb_flush);
 

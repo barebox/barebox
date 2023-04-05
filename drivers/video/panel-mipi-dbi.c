@@ -218,6 +218,7 @@ static void panel_mipi_dbi_enable(struct fb_info *info)
 static struct fb_ops panel_mipi_dbi_ops = {
 	.fb_enable = panel_mipi_dbi_enable,
 	.fb_disable = mipi_dbi_fb_disable,
+	.fb_damage = mipi_dbi_fb_damage,
 	.fb_flush = mipi_dbi_fb_flush,
 };
 

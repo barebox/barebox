@@ -2,8 +2,8 @@
 // SPDX-FileCopyrightText: 2022 Ahmad Fatoum, Pengutronix
 
 #include <debug_ll.h>
-#include <mach/barebox-arm.h>
-#include <mach/ddramc.h>
+#include <mach/at91/barebox-arm.h>
+#include <mach/at91/ddramc.h>
 
 SAMA5D4_ENTRY_FUNCTION(start_sama5d4_wifx_l1, r4)
 {

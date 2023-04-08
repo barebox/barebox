@@ -5,3 +5,6 @@ obj-y += overlay-of-flash.dtb.o
 ifeq ($(CONFIG_RISCV),y)
 DTC_CPP_FLAGS_overlay-of-flash.dtb := -DRISCV_VIRT=1
 endif
+
+clean-files := *.dtb *.dtb.S .*.dtc .*.pre .*.dts *.dtb.z
+clean-files += *.dtbo *.dtbo.S .*.dtso

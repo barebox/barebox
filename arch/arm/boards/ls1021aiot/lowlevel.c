@@ -86,7 +86,6 @@ static noinline __noreturn void ls1021aiot_r_entry(void)
 				  __dtb_fsl_ls1021a_iot_start);
 	}
 
-	arm_cpu_lowlevel_init();
 	ls102xa_init_lowlevel();
 	ls102xa_debug_ll_init();
 

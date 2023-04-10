@@ -6,6 +6,7 @@
 #include <common.h>
 #include <io.h>
 #include <clock.h>
+#include <asm/barebox-arm-head.h>
 #include <asm/syscounter.h>
 #include <asm/system.h>
 #include <mach/layerscape/errata.h>
@@ -310,6 +311,9 @@ void ls102xa_init_lowlevel(void)
 	void *epu_base = IOMEM(DCSR_EPU_ADDR);
 	uint32_t state, major, ctrl, freq;
 	uint64_t val;
+
+	cortex_a7_lowlevel_init();
+	arm_cpu_lowlevel_init();
 
 	init_csu();
 

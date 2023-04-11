@@ -18,6 +18,17 @@ my @QEMU_INTERACTIVE_OPTS = qw(-serial mon:stdio -trace file=/dev/null);
 
 my %targets;
 
+my $LG_BUILDDIR;
+
+if (exists $ENV{KBUILD_OUTPUT}) {
+    $LG_BUILDDIR = $ENV{KBUILD_OUTPUT};
+} elsif (-d 'build') {
+    $LG_BUILDDIR = 'build';
+} else {
+    $LG_BUILDDIR = getcwd();
+}
+
+
 for my $arch (glob dirname(__FILE__) . "/*/") {
     for my $cfg (glob "$arch/*.yaml") {
 	my $linkdest = readlink $cfg // '';
@@ -152,7 +163,7 @@ sub process {
 		    or die "Failed to download resource `$v': $?\n";
 	    }
 
-	    symlink_force("$dir/$k", "$k") unless $tuxmake;
+	    symlink_force("$dir/$k", "$LG_BUILDDIR/$k") unless $tuxmake;
 	}
 
 	if ($shell) {
@@ -388,19 +399,10 @@ sub rel2abs {
 
 sub abs_configpath {
     my ($path, $args) = @_;
-    my $LG_BUILDDIR;
 
     return unless defined $path;
     $path = $args->{target}{images}{$path};
     return unless defined $path;
-
-    if (exists $ENV{KBUILD_OUTPUT}) {
-	$LG_BUILDDIR = $ENV{KBUILD_OUTPUT};
-    } elsif (-d 'build') {
-	$LG_BUILDDIR = 'build';
-    } else {
-	$LG_BUILDDIR = getcwd();
-    }
 
     $path =~ s/\$LG_BUILDDIR\b/$LG_BUILDDIR/g;
 

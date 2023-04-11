@@ -13,6 +13,7 @@
 
 #include <linux/types.h>
 #include <linux/mii.h>
+#include <init.h>
 
 /* MDIO Manageable Devices (MMDs). */
 #define MDIO_MMD_PMAPMD		1	/* Physical Medium Attachment/

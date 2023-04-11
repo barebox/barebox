@@ -74,6 +74,7 @@
  */
 
 #include <linux/bitfield.h>
+#include <linux/printk.h>
 #include <net.h>
 
 #include "realtek.h"

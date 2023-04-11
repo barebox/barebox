@@ -94,6 +94,8 @@
 #include <linux/bitops.h>
 #include <linux/mutex.h>
 #include <linux/spinlock.h>
+#include <linux/printk.h>
+#include <linux/export.h>
 #include <regmap.h>
 #include <net.h>
 #include <linux/if_bridge.h>

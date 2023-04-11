@@ -15,6 +15,8 @@
 #include <linux/bitops.h>
 #include <net.h>
 #include <linux/if_bridge.h>
+#include <linux/printk.h>
+#include <linux/export.h>
 #include <regmap.h>
 
 #include "realtek.h"

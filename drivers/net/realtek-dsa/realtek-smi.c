@@ -31,6 +31,7 @@
 #include <of.h>
 #include <of_device.h>
 #include <linux/mdio.h>
+#include <linux/printk.h>
 #include <clock.h>
 #include <gpiod.h>
 #include <driver.h>

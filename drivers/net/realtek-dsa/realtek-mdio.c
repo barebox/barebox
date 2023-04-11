@@ -23,6 +23,7 @@
 #include <regmap.h>
 #include <clock.h>
 #include <gpiod.h>
+#include <linux/printk.h>
 #include <linux/mdio.h>
 
 #include "realtek.h"

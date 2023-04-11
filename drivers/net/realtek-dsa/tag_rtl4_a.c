@@ -16,6 +16,7 @@
  */
 
 #include <net.h>
+#include <linux/printk.h>
 
 #include "realtek.h"
 #include "dsa_priv.h"

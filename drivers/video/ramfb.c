@@ -131,7 +131,7 @@ static int ramfb_probe(struct device *parent_dev, int fd)
 
 	ret = fw_cfg_find_file(parent_dev, fd, "etc/ramfb");
 	if (ret < 0) {
-		dev_err(parent_dev, "ramfb: fw_cfg (etc/ramfb) file not found\n");
+		dev_dbg(parent_dev, "ramfb: fw_cfg (etc/ramfb) file not found\n");
 		return -ENODEV;
 	}
 

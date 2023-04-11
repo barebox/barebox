@@ -50,6 +50,12 @@ static void noinline __noreturn start_dt_2nd_nonnaked(unsigned long hartid,
 	if (!fdt)
 		hang();
 
+	/*
+	 * We need to call this here, as a multiplatform build
+	 * depends on querying mode for riscv_vendor_id()
+	 */
+	riscv_set_flags(RISCV_S_MODE);
+
 	relocate_to_current_adr();
 	setup_c();
 

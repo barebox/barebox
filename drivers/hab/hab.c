@@ -5,7 +5,7 @@
 #include <fcntl.h>
 #include <environment.h>
 #include <libfile.h>
-#include <mach/generic.h>
+#include <mach/imx/generic.h>
 #include <hab.h>
 #include <regmap.h>
 #include <fs.h>

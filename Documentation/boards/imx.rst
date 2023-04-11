@@ -168,13 +168,13 @@ keys/certificates are expected in these config variables (assuming HABv4):
   CONFIG_HABV4_IMG_CRT_PEM
 
 A CSF template is located in
-``arch/arm/mach-imx/include/mach/habv4-imx6-gencsf.h`` which is preprocessed
+``include/mach/imx/habv4-imx6-gencsf.h`` which is preprocessed
 by barebox.
 It must be included in the board's flash header:
 
 .. code-block:: none
 
-  #include <mach/habv4-imx6-gencsf.h>
+  #include <mach/imx/habv4-imx6-gencsf.h>
 
 Analogous to HABv4 options and a template exist for HABv3.
 

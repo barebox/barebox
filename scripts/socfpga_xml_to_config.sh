@@ -41,7 +41,7 @@ pll_config() {
         sed -e "s/^/\t./g" |
         sort`
 
-    echo "#include <mach/arria10-clock-manager.h>" > $tgt
+    echo "#include <mach/socfpga/arria10-clock-manager.h>" > $tgt
     echo >> $tgt
     echo "static struct arria10_mainpll_cfg mainpll_cfg = {" >> $tgt
     echo "$MAINPLL" >> $tgt
@@ -107,7 +107,7 @@ pinmux_config() {
             sed -e "s/\.sel' value='/] = /g" | \
             sed -e "s/' \/>/,/g"`
 
-    echo "#include <mach/arria10-pinmux.h>" > $tgt
+    echo "#include <mach/socfpga/arria10-pinmux.h>" > $tgt
     echo >> $tgt
     echo "static uint32_t pinmux[] = {" >> $tgt
     echo "$SHARED" >> $tgt

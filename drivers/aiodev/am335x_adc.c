@@ -19,7 +19,7 @@
 #include <io.h>
 #include <linux/log2.h>
 #include <aiodev.h>
-#include <mach/am33xx-clock.h>
+#include <mach/omap/am33xx-clock.h>
 #include "ti_am335x_tscadc.h"
 
 struct am335x_adc_data {

@@ -30,8 +30,8 @@
 #include <mach/imx/ocotp.h>
 #include <mach/imx/ocotp-fusemap.h>
 #else
-#include <mach/ocotp.h>
-#include <mach/ocotp-fusemap.h>
+#include <mach/mxs/ocotp.h>
+#include <mach/mxs/ocotp-fusemap.h>
 #endif
 #include <soc/imx8m/featctrl.h>
 #include <linux/nvmem-provider.h>

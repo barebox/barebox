@@ -30,9 +30,9 @@
 #include <mfd/imx6q-iomuxc-gpr.h>
 #include <mfd/imx7-iomuxc-gpr.h>
 
-#include <mach/imx6-regs.h>
-#include <mach/imx7-regs.h>
-#include <mach/imx8mq-regs.h>
+#include <mach/imx/imx6-regs.h>
+#include <mach/imx/imx7-regs.h>
+#include <mach/imx/imx8mq-regs.h>
 
 #include "pcie-designware.h"
 

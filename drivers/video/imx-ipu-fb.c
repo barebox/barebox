@@ -8,14 +8,14 @@
 #include <dma.h>
 #include <init.h>
 #include <io.h>
-#include <mach/imx35-regs.h>
+#include <mach/imx/imx35-regs.h>
 #include <fb.h>
 #include <platform_data/imxfb.h>
 #include <malloc.h>
 #include <errno.h>
 #include <linux/math64.h>
 #include <mmu.h>
-#include <mach/imx-ipu-fb.h>
+#include <mach/imx/imx-ipu-fb.h>
 #include <linux/clk.h>
 #include <linux/err.h>
 

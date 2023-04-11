@@ -7,7 +7,7 @@
 #include <io.h>
 #include <init.h>
 #include <linux/err.h>
-#include <mach/iomux-mx31.h>
+#include <mach/imx/iomux-mx31.h>
 
 /*
  * IOMUX register (base) addresses

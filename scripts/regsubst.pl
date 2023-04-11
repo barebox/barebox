@@ -47,8 +47,8 @@ First you have to add the right #include directives to your file:
  loadaddr 0x20000000
  ivtofs 0x400
  
- #include <mach/imx6-ddr-regs.h>
- #include <mach/imx6dl-ddr-regs.h>
+ #include <mach/imx/imx6-ddr-regs.h>
+ #include <mach/imx/imx6dl-ddr-regs.h>
  
  wm 32 0x020e0774 0x000C0000
  wm 32 0x020e0754 0x00000000
@@ -61,8 +61,8 @@ Then you can process the file with B<regsubst.pl>:
  loadaddr 0x20000000
  ivtofs 0x400
  
- #include <mach/imx6-ddr-regs.h>
- #include <mach/imx6dl-ddr-regs.h>
+ #include <mach/imx/imx6-ddr-regs.h>
+ #include <mach/imx/imx6dl-ddr-regs.h>
  
  wm 32 MX6_IOM_GRP_DDR_TYPE 0x000C0000
  wm 32 MX6_IOM_GRP_DDRPKE 0x00000000

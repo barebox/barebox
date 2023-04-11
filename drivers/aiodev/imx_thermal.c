@@ -22,7 +22,7 @@
 #include <linux/math64.h>
 #include <linux/log2.h>
 #include <linux/clk.h>
-#include <mach/imx6-anadig.h>
+#include <mach/imx/imx6-anadig.h>
 #include <io.h>
 #include <aiodev.h>
 #include <mfd/syscon.h>

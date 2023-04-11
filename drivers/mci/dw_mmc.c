@@ -570,7 +570,7 @@ static int dw_mmc_probe(struct device *dev)
 	clk_enable(host->clk_biu);
 	clk_enable(host->clk_ciu);
 
-	rst = reset_control_get(dev, "reset");
+	rst = reset_control_get_optional(dev, "reset");
 	if (IS_ERR(rst)) {
 		dev_warn(dev, "error claiming reset: %pe\n", rst);
 	} else if (rst) {

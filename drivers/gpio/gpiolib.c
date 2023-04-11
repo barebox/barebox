@@ -583,7 +583,7 @@ int dev_gpiod_get_index(struct device *dev,
 	buf = NULL;
 
 	if (!label) {
-		if (con_id)
+		if (_con_id)
 			label = buf = basprintf("%s-%s", dev_name(dev), _con_id);
 		else
 			label = dev_name(dev);

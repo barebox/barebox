@@ -61,6 +61,37 @@ typedef unsigned int  uint;
 #elif defined(__OpenBSD__) || defined(__FreeBSD__) || \
       defined(__NetBSD__) || defined(__DragonFly__)
 # include <sys/endian.h>
+#elif defined _WIN32
+# if defined(_MSC_VER)
+#  include <stdlib.h>
+#  define htobe16(x) _byteswap_ushort(x)
+#  define htole16(x) (x)
+#  define be16toh(x) _byteswap_ushort(x)
+#  define le16toh(x) (x)
+#  define htobe32(x) _byteswap_ulong(x)
+#  define htole32(x) (x)
+#  define be32toh(x) _byteswap_ulong(x)
+#  define le32toh(x) (x)
+#  define htobe64(x) _byteswap_uint64(x)
+#  define htole64(x) (x)
+#  define be64toh(x) _byteswap_uint64(x)
+#  define le64toh(x) (x)
+# elif defined(__GNUC__) || defined(__clang__)
+#  define htobe16(x) __builtin_bswap16(x)
+#  define htole16(x) (x)
+#  define be16toh(x) __builtin_bswap16(x)
+#  define le16toh(x) (x)
+#  define htobe32(x) __builtin_bswap32(x)
+#  define htole32(x) (x)
+#  define be32toh(x) __builtin_bswap32(x)
+#  define le32toh(x) (x)
+#  define htobe64(x) __builtin_bswap64(x)
+#  define htole64(x) (x)
+#  define be64toh(x) __builtin_bswap64(x)
+#  define le64toh(x) (x)
+#else
+#  error platform not supported
+#endif
 #else /* assume Linux */
 # include <sys/types.h>
 # include <endian.h>
@@ -128,11 +159,13 @@ typedef uint32_t __u32;
 # define be64_to_cpu(x)		(x)
 #endif
 
+#ifndef min
 #define min(x, y) ({                            \
 	typeof(x) _min1 = (x);                  \
 	typeof(y) _min2 = (y);                  \
 	(void) (&_min1 == &_min2);              \
 	_min1 < _min2 ? _min1 : _min2; })
+#endif
 
 static inline void *xmalloc(size_t size)
 {

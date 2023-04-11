@@ -1,3 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0 OR X11 */
 
 #include <riscv/sifive/hifive-unleashed-a00.dts>
+
+/* probing on QEMU v5.2.0 triggers load access fault @0x10040014 */
+&qspi0 { status = "disabled"; };
+&qspi2 { status = "disabled"; };

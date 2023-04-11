@@ -22,6 +22,9 @@ toolchain-need-zicsr-zifencei := $(call cc-option-yn, -march=$(riscv-march-y)_zi
 riscv-march-$(toolchain-need-zicsr-zifencei) := $(riscv-march-y)_zicsr_zifencei
 
 KBUILD_CPPFLAGS += -march=$(riscv-march-y)
+KBUILD_CFLAGS += -mno-save-restore
+KBUILD_CFLAGS += -fno-asynchronous-unwind-tables -fno-unwind-tables
+KBUILD_CFLAGS += $(call cc-option,-mstrict-align)
 KBUILD_CPPFLAGS += -Wstrict-prototypes -mcmodel=medany -fpic
 riscv-ldflags-y += -pie -static
 

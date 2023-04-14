@@ -1359,7 +1359,11 @@ int xhci_register(struct xhci_ctrl *ctrl)
 	 */
 	host->no_desc_before_addr = true;
 
-	host->hw_dev = dev;
+	/*
+	 * If xHCI doesn't have its own DT node, it'll be a child of a
+	 * physical USB host controller device that should be used for DMA
+	 */
+	host->hw_dev = dev_of_node(dev) ? dev : dev->parent;
 	host->submit_int_msg = xhci_submit_int_msg;
 	host->submit_control_msg = xhci_submit_control_msg;
 	host->submit_bulk_msg = xhci_submit_bulk_msg;

@@ -1340,6 +1340,7 @@ config DEBUG_IMX53_UART
 config DEBUG_IMX6Q_UART
 	bool "i.MX6Q Debug UART"
 	depends on ARCH_IMX6
+	select DEBUG_IMX_UART
 	help
 	  Say Y here if you want kernel low-level debugging support
 	  on i.MX6Q.

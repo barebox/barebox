@@ -542,8 +542,10 @@ int compare_file(const char *f1, const char *f2)
 	if (ret)
 		goto err_out2;
 
-	if (s1.st_size != s2.st_size)
-		return 1;
+	if (s1.st_size != s2.st_size) {
+		ret = 1;
+		goto err_out2;
+	}
 
 	buf1 = xmalloc(RW_BUF_SIZE);
 	buf2 = xmalloc(RW_BUF_SIZE);

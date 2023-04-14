@@ -152,6 +152,9 @@ extern struct property *__of_new_property(struct device_node *node,
 extern void of_delete_property(struct property *pp);
 extern struct property *of_rename_property(struct device_node *np,
 					   const char *old_name, const char *new_name);
+extern struct property *of_copy_property(const struct device_node *src,
+					 const char *propname,
+					 struct device_node *dst);
 
 extern struct device_node *of_find_node_by_name(struct device_node *from,
 	const char *name);
@@ -573,6 +576,13 @@ static inline struct property *of_new_property(struct device_node *node,
 
 static inline struct property *__of_new_property(struct device_node *node,
 					  const char *name, void *data, int len)
+{
+	return NULL;
+}
+
+static inline struct property *of_copy_property(const struct device_node *src,
+						const char *propname,
+						struct device_node *dst)
 {
 	return NULL;
 }

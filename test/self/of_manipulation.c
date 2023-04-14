@@ -63,7 +63,7 @@ static void test_of_basics(struct device_node *root)
 	of_property_write_u32(node2, "property2", 2);
 
 	of_property_write_u32(node1, "property3", 1);
-	of_property_write_u32(node1, "property2", 2);
+	of_copy_property(node2, "property2", node1);
 	of_rename_property(node1, "property3", "property1");
 
 	assert_equal(node1, node2);

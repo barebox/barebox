@@ -687,7 +687,6 @@ static void eqos_stop(struct eth_device *edev)
 static int eqos_send(struct eth_device *edev, void *packet, int length)
 {
 	struct eqos *eqos = edev->priv;
-	struct device *dev = &eqos->netdev.dev;
 	struct eqos_desc *tx_desc;
 	dma_addr_t dma;
 	u32 des3;
@@ -697,8 +696,8 @@ static int eqos_send(struct eth_device *edev, void *packet, int length)
 	eqos->tx_currdescnum++;
 	eqos->tx_currdescnum %= EQOS_DESCRIPTORS_TX;
 
-	dma = dma_map_single(dev, packet, length, DMA_TO_DEVICE);
-	if (dma_mapping_error(dev, dma))
+	dma = dma_map_single(edev->parent, packet, length, DMA_TO_DEVICE);
+	if (dma_mapping_error(edev->parent, dma))
 		return -EFAULT;
 
 	tx_desc->des0 = (unsigned long)dma;
@@ -717,7 +716,7 @@ static int eqos_send(struct eth_device *edev, void *packet, int length)
 				  !(des3 & EQOS_DESC3_OWN),
 				  100 * USEC_PER_MSEC);
 
-	dma_unmap_single(dev, dma, length, DMA_TO_DEVICE);
+	dma_unmap_single(edev->parent, dma, length, DMA_TO_DEVICE);
 
 	if (ret == -ETIMEDOUT)
 		eqos_dbg(eqos, "TX timeout\n");
@@ -764,7 +763,7 @@ static int eqos_recv(struct eth_device *edev)
 
 static int eqos_init_resources(struct eqos *eqos)
 {
-	struct device *dev = eqos->netdev.parent;
+	struct eth_device *edev = &eqos->netdev;
 	int ret = -ENOMEM;
 	void *descs;
 	void *p;
@@ -785,8 +784,8 @@ static int eqos_init_resources(struct eqos *eqos)
 		struct eqos_desc *rx_desc = &eqos->rx_descs[i];
 		dma_addr_t dma;
 
-		dma = dma_map_single(dev, p, EQOS_MAX_PACKET_SIZE, DMA_FROM_DEVICE);
-		if (dma_mapping_error(dev, dma)) {
+		dma = dma_map_single(edev->parent, p, EQOS_MAX_PACKET_SIZE, DMA_FROM_DEVICE);
+		if (dma_mapping_error(edev->parent, dma)) {
 			ret = -EFAULT;
 			goto err_free_rx_bufs;
 		}

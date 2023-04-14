@@ -197,6 +197,7 @@ static void zynqmp_fpga_show_header(const struct device *dev,
 static int fpgamgr_program_finish(struct firmware_handler *fh)
 {
 	struct fpgamgr *mgr = container_of(fh, struct fpgamgr, fh);
+	struct device *hw_dev = mgr->dev.parent;
 	u32 *buf_aligned;
 	u32 buf_size;
 	u32 *body;
@@ -254,9 +255,9 @@ static int fpgamgr_program_finish(struct firmware_handler *fh)
 		memcpy((u32 *)buf_aligned, body, body_length);
 	buf_aligned[body_length / sizeof(*buf_aligned)] = body_length;
 
-	addr = dma_map_single(&mgr->dev, buf_aligned,
+	addr = dma_map_single(hw_dev, buf_aligned,
 			      body_length + sizeof(buf_size), DMA_TO_DEVICE);
-	if (dma_mapping_error(&mgr->dev, addr)) {
+	if (dma_mapping_error(hw_dev, addr)) {
 		status = -EFAULT;
 		goto err_free_dma;
 	}
@@ -267,7 +268,7 @@ static int fpgamgr_program_finish(struct firmware_handler *fh)
 		buf_size = addr + body_length;
 
 	status = mgr->eemi_ops->fpga_load((u64)addr, buf_size, flags);
-	dma_unmap_single(&mgr->dev, addr, body_length + sizeof(buf_size),
+	dma_unmap_single(hw_dev, addr, body_length + sizeof(buf_size),
 			 DMA_TO_DEVICE);
 	if (status < 0)
 		dev_err(&mgr->dev, "unable to load fpga\n");

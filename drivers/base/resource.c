@@ -57,13 +57,15 @@ int device_add_resource(struct device *dev, const char *resname,
 	return device_add_resources(dev, &res, 1);
 }
 
-struct device *add_generic_device(const char* devname, int id, const char *resname,
+struct device *add_child_device(struct device *parent,
+		const char* devname, int id, const char *resname,
 		resource_size_t start, resource_size_t size, unsigned int flags,
 		void *pdata)
 {
 	struct device *dev;
 
 	dev = device_alloc(devname, id);
+	dev->parent = parent;
 	dev->platform_data = pdata;
 	device_add_resource(dev, resname, start, size, flags);
 
@@ -71,7 +73,7 @@ struct device *add_generic_device(const char* devname, int id, const char *resna
 
 	return dev;
 }
-EXPORT_SYMBOL(add_generic_device);
+EXPORT_SYMBOL(add_child_device);
 
 struct device *add_generic_device_res(const char* devname, int id,
 		struct resource *res, int nb, void *pdata)

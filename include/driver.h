@@ -275,13 +275,21 @@ int device_add_resource(struct device *dev, const char *resname,
 
 int device_add_data(struct device *dev, const void *data, size_t size);
 
+struct device *add_child_device(struct device *parent,
+				const char* devname, int id, const char *resname,
+				resource_size_t start, resource_size_t size, unsigned int flags,
+				void *pdata);
+
 /*
  * register a generic device
  * with only one resource
  */
-struct device *add_generic_device(const char* devname, int id, const char *resname,
+static inline struct device *add_generic_device(const char* devname, int id, const char *resname,
 		resource_size_t start, resource_size_t size, unsigned int flags,
-		void *pdata);
+		void *pdata)
+{
+	return add_child_device(NULL, devname, id, resname, start, size, flags, pdata);
+}
 
 /*
  * register a generic device

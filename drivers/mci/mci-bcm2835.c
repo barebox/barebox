@@ -148,7 +148,7 @@ static int bcm2835_mci_request(struct mci_host *mci, struct mci_cmd *cmd,
 		      command << 16 | transfer_mode);
 
 	ret = bcm2835_mci_wait_command_done(host);
-	if (ret) {
+	if (ret && ret != -ETIMEDOUT) {
 		dev_err(host->hw_dev, "Error while executing command %d\n",
 				cmd->cmdidx);
 		dev_err(host->hw_dev, "Status: 0x%X, Interrupt: 0x%X\n",

@@ -14,7 +14,7 @@ ENTRY(setup_c)
 	mov	x1, #0
 	ldr	x2, =__bss_stop
 	sub	x2, x2, x0
-	bl	memset			/* clear bss */
+	bl	__memset		/* clear bss */
 	mov	x30, x15
 	ret
 ENDPROC(setup_c)
@@ -63,7 +63,7 @@ ENTRY(relocate_to_adr)
 	sub	x19, x19, x1		/* sub address where we are actually running */
 	add	x19, x19, x0		/* add address where we are going to run */
 
-	bl	memcpy			/* copy binary */
+	bl	__memcpy		/* copy binary */
 
 	bl	sync_caches_for_execution
 

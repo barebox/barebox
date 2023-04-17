@@ -12,6 +12,7 @@
 #include <linux/genalloc.h>
 #include <linux/export.h>
 #include <of.h>
+#include <of_address.h>
 #include <driver.h>
 #include <linux/string.h>
 
@@ -98,8 +99,9 @@ EXPORT_SYMBOL(gen_pool_dma_zalloc);
 struct gen_pool *of_gen_pool_get(struct device_node *np,
 	const char *propname, int index)
 {
-	struct device *dev;
 	struct device_node *np_pool;
+	struct gen_pool gen_pool;
+	int ret;
 
 	np_pool = of_parse_phandle(np, propname, index);
 	if (!np_pool)
@@ -108,11 +110,11 @@ struct gen_pool *of_gen_pool_get(struct device_node *np,
 	if (!of_device_is_compatible(np_pool, "mmio-sram"))
 		return NULL;
 
-	dev = of_find_device_by_node(np_pool);
-	if (!dev)
+	ret = of_address_to_resource(np_pool, 0, &gen_pool.res);
+	if (ret)
 		return NULL;
 
-	return container_of(&dev->resource[0], struct gen_pool, res);
+	return memdup(&gen_pool, sizeof(gen_pool));
 }
 EXPORT_SYMBOL_GPL(of_gen_pool_get);
 #endif /* CONFIG_OF */

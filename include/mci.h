@@ -420,12 +420,6 @@ struct mci_ios {
 #define MMC_BUS_WIDTH_8		3
 
 	enum mci_timing	timing;			/* timing specification used */
-
-#define MMC_SDR_MODE		0
-#define MMC_1_2V_DDR_MODE	1
-#define MMC_1_8V_DDR_MODE	2
-#define MMC_1_2V_SDR_MODE	3
-#define MMC_1_8V_SDR_MODE	4
 };
 
 struct mci;

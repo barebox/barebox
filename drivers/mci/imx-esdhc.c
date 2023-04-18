@@ -43,9 +43,9 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 	return  __esdhc_send_cmd(host, cmd, data);
 }
 
-static void set_sysctl(struct mci_host *mci, u32 clock)
+static void set_sysctl(struct mci_host *mci, u32 clock, bool ddr)
 {
-	int div, pre_div;
+	int div, pre_div, ddr_pre_div = ddr ? 2 : 1;
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
 	int sdhc_clk = clk_get_rate(host->clk);
 	u32 clk;
@@ -65,11 +65,11 @@ static void set_sysctl(struct mci_host *mci, u32 clock)
 		pre_div = 1;
 	else if (sdhc_clk / 16 > clock)
 		for (; pre_div < 256; pre_div *= 2)
-			if ((sdhc_clk / pre_div) <= (clock * 16))
+			if ((sdhc_clk / (pre_div * ddr_pre_div)) <= (clock * 16))
 				break;
 
 	for (div = 1; div <= 16; div++)
-		if ((sdhc_clk / (div * pre_div)) <= clock)
+		if ((sdhc_clk / (div * pre_div * ddr_pre_div)) <= clock)
 			break;
 
 	cur_clock = sdhc_clk / pre_div / div;
@@ -103,12 +103,42 @@ static void set_sysctl(struct mci_host *mci, u32 clock)
 		   10 * MSECOND);
 }
 
+static void esdhc_set_timing(struct fsl_esdhc_host *host, enum mci_timing timing)
+{
+	u32 mixctrl;
+
+	mixctrl = sdhci_read32(&host->sdhci, IMX_SDHCI_MIXCTRL);
+	mixctrl &= ~MIX_CTRL_DDREN;
+
+	switch (timing) {
+	case MMC_TIMING_UHS_DDR50:
+	case MMC_TIMING_MMC_DDR52:
+		mixctrl |= MIX_CTRL_DDREN;
+		sdhci_write32(&host->sdhci, IMX_SDHCI_MIXCTRL, mixctrl);
+		break;
+	default:
+		sdhci_write32(&host->sdhci, IMX_SDHCI_MIXCTRL, mixctrl);
+	}
+
+	host->sdhci.timing = timing;
+}
+
 static void esdhc_set_ios(struct mci_host *mci, struct mci_ios *ios)
 {
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
 
+	/*
+	 * call esdhc_set_timing() before update the clock rate,
+	 * This is because current we support DDR and SDR timing,
+	 * Once the DDR_EN bit is set, the card clock will be
+	 * divide by 2 automatically. So need to do this before
+	 * setting clock rate.
+	 */
+	if (esdhc_is_usdhc(host) && host->sdhci.timing != ios->timing)
+		esdhc_set_timing(host, ios->timing);
+
 	/* Set the clock speed */
-	set_sysctl(mci, ios->clock);
+	set_sysctl(mci, ios->clock, mci_timing_is_ddr(ios->timing));
 
 	/* Set the bus width */
 	esdhc_clrbits32(host, SDHCI_HOST_CONTROL__POWER_CONTROL__BLOCK_GAP_CONTROL,
@@ -206,7 +236,7 @@ static int esdhc_init(struct mci_host *mci, struct device *dev)
 		esdhc_setbits32(host, ESDHC_DMA_SYSCTL, ESDHC_SYSCTL_DMA_SNOOP);
 
 	/* Set the initial clock speed */
-	set_sysctl(mci, 400000);
+	set_sysctl(mci, 400000, false);
 
 	sdhci_write32(&host->sdhci, SDHCI_INT_ENABLE, SDHCI_INT_CMD_COMPLETE |
 			SDHCI_INT_XFER_COMPLETE | SDHCI_INT_CARD_INT |
@@ -284,6 +314,9 @@ static int fsl_esdhc_probe(struct device *dev)
 	ret = sdhci_setup_host(&host->sdhci);
 	if (ret)
 		goto err_clk_disable;
+
+	if (esdhc_is_usdhc(host))
+		mci->host_caps |= MMC_CAP_MMC_3_3V_DDR | MMC_CAP_MMC_1_8V_DDR;
 
 	rate = clk_get_rate(host->clk);
 	host->mci.f_min = rate >> 12;

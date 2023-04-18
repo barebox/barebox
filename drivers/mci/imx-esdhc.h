@@ -41,6 +41,20 @@
 
 #define IMX_SDHCI_WML		0x44
 #define IMX_SDHCI_MIXCTRL	0x48
+/* Imported from Linux Kernel drivers/mmc/host/sdhci-esdhc-imx.c */
+#define  MIX_CTRL_DDREN		BIT(3)
+#define  MIX_CTRL_DTDSEL_READ	BIT(4)
+#define  MIX_CTRL_AC23EN	BIT(7)
+#define  MIX_CTRL_EXE_TUNE	BIT(22)
+#define  MIX_CTRL_SMPCLK_SEL	BIT(23)
+#define  MIX_CTRL_AUTO_TUNE_EN	BIT(24)
+#define  MIX_CTRL_FBCLK_SEL	BIT(25)
+#define  MIX_CTRL_HS400_EN	BIT(26)
+#define  MIX_CTRL_HS400_ES	BIT(27)
+/* Bits 3 and 6 are not SDHCI standard definitions */
+#define  MIX_CTRL_SDHCI_MASK	0xb7
+/* Tuning bits */
+#define  MIX_CTRL_TUNING_MASK	0x03c00000
 #define IMX_SDHCI_DLL_CTRL	0x60
 #define IMX_SDHCI_MIX_CTRL_FBCLK_SEL	BIT(25)
 

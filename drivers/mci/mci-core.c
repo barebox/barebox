@@ -135,6 +135,9 @@ static int mci_set_blocklen(struct mci *mci, unsigned len)
 {
 	struct mci_cmd cmd;
 
+	if (mci->host->timing == MMC_TIMING_MMC_DDR52)
+		return 0;
+
 	mci_setup_cmd(&cmd, MMC_CMD_SET_BLOCKLEN, len, MMC_RSP_R1);
 	return mci_send_cmd(mci, &cmd, NULL);
 }
@@ -649,11 +652,15 @@ static int mmc_change_freq(struct mci *mci)
 		return 0;
 	}
 
-	/* High Speed is set, there are two types: 52MHz and 26MHz */
-	if (cardtype & EXT_CSD_CARD_TYPE_52)
-		mci->card_caps |= MMC_CAP_MMC_HIGHSPEED_52MHZ | MMC_CAP_MMC_HIGHSPEED;
-	else
-		mci->card_caps |= MMC_CAP_MMC_HIGHSPEED;
+	mci->card_caps |= MMC_CAP_MMC_HIGHSPEED;
+
+	/* High Speed is set, there are three types: 26MHz, 52MHz, 52MHz DDR */
+	if (cardtype & EXT_CSD_CARD_TYPE_52) {
+		mci->card_caps |= MMC_CAP_MMC_HIGHSPEED_52MHZ;
+
+		if (cardtype & EXT_CSD_CARD_TYPE_DDR_1_8V)
+			mci->card_caps |= MMC_CAP_MMC_3_3V_DDR | MMC_CAP_MMC_1_8V_DDR;
+	}
 
 	if (IS_ENABLED(CONFIG_MCI_MMC_BOOT_PARTITIONS) &&
 			mci->ext_csd[EXT_CSD_REV] >= 3 && mci->ext_csd[EXT_CSD_BOOT_SIZE_MULT]) {
@@ -1180,17 +1187,25 @@ static u32 mci_bus_width_ext_csd_bits(enum mci_bus_width bus_width)
 	}
 }
 
-static int mci_mmc_try_bus_width(struct mci *mci, enum mci_bus_width bus_width)
+static int mci_mmc_try_bus_width(struct mci *mci, enum mci_bus_width bus_width,
+				 enum mci_timing timing)
 {
 	u32 ext_csd_bits;
 	int err;
 
+	dev_dbg(&mci->dev, "attempting buswidth %u%s\n", 1 << bus_width,
+		mci_timing_is_ddr(timing) ? " (DDR)" : "");
+
 	ext_csd_bits = mci_bus_width_ext_csd_bits(bus_width);
+
+	if (mci_timing_is_ddr(timing))
+		ext_csd_bits |= EXT_CSD_DDR_FLAG;
 
 	err = mci_switch(mci, EXT_CSD_BUS_WIDTH, ext_csd_bits);
 	if (err < 0)
 		return err;
 
+	mci->host->timing = timing;
 	mci_set_bus_width(mci, bus_width);
 
 	err = mmc_compare_ext_csds(mci, bus_width);
@@ -1230,12 +1245,30 @@ static int mci_mmc_select_bus_width(struct mci *mci)
 		 * 4bit transfer mode. On success set the corresponding
 		 * bus width on the host.
 		 */
-		ret = mci_mmc_try_bus_width(mci, bus_widths[idx]);
+		ret = mci_mmc_try_bus_width(mci, bus_widths[idx], host->timing);
 		if (ret > 0)
 			break;
 	}
 
 	return ret;
+}
+
+static int mci_mmc_select_hs_ddr(struct mci *mci)
+{
+	struct mci_host *host = mci->host;
+	int ret;
+
+	if (!(mci_caps(mci) & MMC_CAP_MMC_1_8V_DDR))
+		return 0;
+
+	ret = mci_mmc_try_bus_width(mci, host->bus_width, MMC_TIMING_MMC_DDR52);
+	if (ret < 0)
+		return mci_mmc_try_bus_width(mci, host->bus_width, MMC_TIMING_MMC_HS);
+
+	mci->read_bl_len = SECTOR_SIZE;
+	mci->write_bl_len = SECTOR_SIZE;
+
+	return 0;
 }
 
 static int mci_startup_mmc(struct mci *mci)
@@ -1255,7 +1288,11 @@ static int mci_startup_mmc(struct mci *mci)
 
 	mci_set_clock(mci, mci->tran_speed);
 
+	/* find out maximum bus width and then try DDR if supported */
 	ret = mci_mmc_select_bus_width(mci);
+	if (ret > MMC_BUS_WIDTH_1 && mci->tran_speed == 52000000)
+		ret = mci_mmc_select_hs_ddr(mci);
+
 	if (ret < 0) {
 		dev_warn(&mci->dev, "Changing MMC bus width failed: %d\n", ret);
 		return ret;
@@ -1687,6 +1724,8 @@ static const char *mci_timing_tostr(unsigned timing)
 		return "MMC HS";
 	case MMC_TIMING_SD_HS:
 		return "SD HS";
+	case MMC_TIMING_MMC_DDR52:
+		return "MMC DDR52";
 	default:
 		return "unknown"; /* shouldn't happen */
 	}
@@ -1694,12 +1733,15 @@ static const char *mci_timing_tostr(unsigned timing)
 
 static void mci_print_caps(unsigned caps)
 {
-	printf("  capabilities: %s%s%s%s%s\n",
+	printf("  capabilities: %s%s%s%s%s%s%s%s\n",
 		caps & MMC_CAP_4_BIT_DATA ? "4bit " : "",
 		caps & MMC_CAP_8_BIT_DATA ? "8bit " : "",
 		caps & MMC_CAP_SD_HIGHSPEED ? "sd-hs " : "",
 		caps & MMC_CAP_MMC_HIGHSPEED ? "mmc-hs " : "",
-		caps & MMC_CAP_MMC_HIGHSPEED_52MHZ ? "mmc-52MHz " : "");
+		caps & MMC_CAP_MMC_HIGHSPEED_52MHZ ? "mmc-52MHz " : "",
+		caps & MMC_CAP_MMC_3_3V_DDR ? "ddr-3.3v " : "",
+		caps & MMC_CAP_MMC_1_8V_DDR ? "ddr-1.8v " : "",
+		caps & MMC_CAP_MMC_1_2V_DDR ? "ddr-1.2v " : "");
 }
 
 /**

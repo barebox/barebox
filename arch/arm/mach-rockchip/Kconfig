@@ -45,6 +45,7 @@ config ARCH_RK3399PRO
 config ARCH_RK3568
 	bool
 	select ARCH_ROCKCHIP_V8
+	select HW_HAS_PCI
 
 comment "select Rockchip boards:"
 

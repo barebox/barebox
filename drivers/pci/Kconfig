@@ -55,6 +55,13 @@ config PCI_LAYERSCAPE
 	select OF_PCI
 	select PCI
 
+config PCI_ROCKCHIP
+	bool "Rockchip PCIe controller"
+	depends on ARCH_ROCKCHIP
+	select PCIE_DW
+	select OF_PCI
+	select PCI
+
 config PCI_EFI
 	bool "EFI PCI protocol"
 	depends on EFI_BOOTUP

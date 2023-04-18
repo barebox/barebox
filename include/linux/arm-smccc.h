@@ -286,12 +286,12 @@ asmlinkage void __arm_smccc_hvc(unsigned long a0, unsigned long a1,
 #define arm_smccc_hvc_quirk(...) __arm_smccc_hvc(__VA_ARGS__)
 
 /* SMCCC v1.1 implementation madness follows */
-#ifdef CONFIG_ARM64
+#ifdef CONFIG_CPU_64
 
 #define SMCCC_SMC_INST	"smc	#0"
 #define SMCCC_HVC_INST	"hvc	#0"
 
-#elif defined(CONFIG_ARM)
+#elif defined(CONFIG_CPU_32)
 #include <asm/opcodes-sec.h>
 #include <asm/opcodes-virt.h>
 

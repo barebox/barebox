@@ -10,6 +10,7 @@
 #include <mach/rockchip/rockchip.h>
 #include <mach/rockchip/bootrom.h>
 #include <mach/rockchip/rk3568-regs.h>
+#include <mach/rockchip/rk3588-regs.h>
 
 static unsigned long load_elf64_image_phdr(const void *elf)
 {
@@ -102,4 +103,38 @@ void __noreturn rk3568_barebox_entry(void *fdt)
 	}
 
 	barebox_arm_entry(membase, memsize, fdt);
+}
+
+void rk3588_atf_load_bl31(void *fdt)
+{
+	rockchip_atf_load_bl31(RK3588, rk3588_bl31_bin, rk3588_op_tee_bin, fdt);
+}
+
+void __noreturn rk3588_barebox_entry(void *fdt)
+{
+       unsigned long membase, memsize;
+
+       membase = RK3588_DRAM_BOTTOM;
+       memsize = rk3588_ram0_size() - RK3588_DRAM_BOTTOM;
+
+       if (current_el() == 3) {
+               rk3588_lowlevel_init();
+               rockchip_store_bootrom_iram(membase, memsize, IOMEM(RK3588_IRAM_BASE));
+
+               /*
+                * The downstream TF-A doesn't cope with our device tree when
+                * CONFIG_OF_OVERLAY_LIVE is enabled, supposedly because it is
+                * too big for some reason. Otherwise it doesn't have any visible
+                * effect if we pass a device tree or not, except that the TF-A
+                * fills in the ethernet MAC address into the device tree.
+                * The upstream TF-A doesn't use the device tree at all.
+                *
+                * Pass NULL for now until we have a good reason to pass a real
+                * device tree.
+                */
+               rk3588_atf_load_bl31(NULL);
+               /* not reached when CONFIG_ARCH_ROCKCHIP_ATF */
+       }
+
+       barebox_arm_entry(membase, memsize, fdt);
 }

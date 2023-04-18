@@ -47,6 +47,11 @@ config ARCH_RK3568
 	select ARCH_ROCKCHIP_V8
 	select HW_HAS_PCI
 
+config ARCH_RK3588
+	bool
+	select ARCH_ROCKCHIP_V8
+	select HW_HAS_PCI
+
 comment "select Rockchip boards:"
 
 if 32BIT

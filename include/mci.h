@@ -410,16 +410,16 @@ enum mci_timing {
 	MMC_TIMING_MMC_HS400	= 8,
 };
 
+enum mci_bus_width {
+	MMC_BUS_WIDTH_1		= 0,
+	MMC_BUS_WIDTH_4		= 2,
+	MMC_BUS_WIDTH_8		= 3,
+};
+
 struct mci_ios {
-	unsigned int	clock;			/* clock rate */
-
-	unsigned char	bus_width;		/* data bus width */
-
-#define MMC_BUS_WIDTH_1		0
-#define MMC_BUS_WIDTH_4		2
-#define MMC_BUS_WIDTH_8		3
-
-	enum mci_timing	timing;			/* timing specification used */
+	unsigned int		clock;			/* clock rate */
+	enum mci_bus_width	bus_width;		/* data bus width */
+	enum mci_timing		timing;			/* timing specification used */
 };
 
 struct mci;
@@ -434,7 +434,7 @@ struct mci_host {
 	unsigned f_min;		/**< host interface lower limit */
 	unsigned f_max;		/**< host interface upper limit */
 	unsigned clock;		/**< Current clock used to talk to the card */
-	unsigned bus_width;	/**< used data bus width to the card */
+	enum mci_bus_width bus_width;	/**< used data bus width to the card */
 	enum mci_timing timing;	/**< used timing specification to the card */
 	unsigned max_req_size;
 	unsigned dsr_val;	/**< optional dsr value */

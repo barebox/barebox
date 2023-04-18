@@ -864,7 +864,7 @@ static void mci_set_clock(struct mci *mci, unsigned clock)
  * @param mci MCI instance
  * @param width New interface bit width (1, 4 or 8)
  */
-static void mci_set_bus_width(struct mci *mci, unsigned width)
+static void mci_set_bus_width(struct mci *mci, enum mci_bus_width width)
 {
 	struct mci_host *host = mci->host;
 
@@ -1055,7 +1055,7 @@ static void mci_extract_card_dsr_imp_from_csd(struct mci *mci)
 	mci->dsr_imp = UNSTUFF_BITS(mci->csd, 76, 1);
 }
 
-static int mmc_compare_ext_csds(struct mci *mci, unsigned bus_width)
+static int mmc_compare_ext_csds(struct mci *mci, enum mci_bus_width bus_width)
 {
 	u8 *bw_ext_csd;
 	int err;
@@ -1176,7 +1176,7 @@ static int mci_startup_mmc(struct mci *mci)
 		EXT_CSD_BUS_WIDTH_4,
 		EXT_CSD_BUS_WIDTH_8,
 	};
-	static unsigned bus_widths[] = {
+	static enum mci_bus_width bus_widths[] = {
 		MMC_BUS_WIDTH_4,
 		MMC_BUS_WIDTH_8,
 	};

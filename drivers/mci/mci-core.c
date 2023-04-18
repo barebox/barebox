@@ -1167,19 +1167,81 @@ static int mci_startup_sd(struct mci *mci)
 	return 0;
 }
 
-static int mci_startup_mmc(struct mci *mci)
+static u32 mci_bus_width_ext_csd_bits(enum mci_bus_width bus_width)
+{
+	switch (bus_width) {
+	case MMC_BUS_WIDTH_8:
+		return EXT_CSD_BUS_WIDTH_8;
+	case MMC_BUS_WIDTH_4:
+		return EXT_CSD_BUS_WIDTH_4;
+	case MMC_BUS_WIDTH_1:
+	default:
+		return EXT_CSD_BUS_WIDTH_1;
+	}
+}
+
+static int mci_mmc_try_bus_width(struct mci *mci, enum mci_bus_width bus_width)
+{
+	u32 ext_csd_bits;
+	int err;
+
+	ext_csd_bits = mci_bus_width_ext_csd_bits(bus_width);
+
+	err = mci_switch(mci, EXT_CSD_BUS_WIDTH, ext_csd_bits);
+	if (err < 0)
+		return err;
+
+	mci_set_bus_width(mci, bus_width);
+
+	err = mmc_compare_ext_csds(mci, bus_width);
+	if (err < 0)
+		return err;
+
+	return bus_width;
+}
+
+static int mci_mmc_select_bus_width(struct mci *mci)
 {
 	struct mci_host *host = mci->host;
-	int err;
+	int ret;
 	int idx = 0;
-	static unsigned ext_csd_bits[] = {
-		EXT_CSD_BUS_WIDTH_4,
-		EXT_CSD_BUS_WIDTH_8,
-	};
 	static enum mci_bus_width bus_widths[] = {
 		MMC_BUS_WIDTH_4,
 		MMC_BUS_WIDTH_8,
 	};
+
+	if (!(host->host_caps & (MMC_CAP_4_BIT_DATA | MMC_CAP_8_BIT_DATA)))
+		return MMC_BUS_WIDTH_1;
+
+	/*
+	 * Unlike SD, MMC cards dont have a configuration register to notify
+	 * supported bus width. So bus test command should be run to identify
+	 * the supported bus width or compare the ext csd values of current
+	 * bus width and ext csd values of 1 bit mode read earlier.
+	 */
+	if (host->host_caps & MMC_CAP_8_BIT_DATA)
+		idx = 1;
+
+	for (; idx >= 0; idx--) {
+		/*
+		 * Host is capable of 8bit transfer, then switch
+		 * the device to work in 8bit transfer mode. If the
+		 * mmc switch command returns error then switch to
+		 * 4bit transfer mode. On success set the corresponding
+		 * bus width on the host.
+		 */
+		ret = mci_mmc_try_bus_width(mci, bus_widths[idx]);
+		if (ret > 0)
+			break;
+	}
+
+	return ret;
+}
+
+static int mci_startup_mmc(struct mci *mci)
+{
+	struct mci_host *host = mci->host;
+	int ret;
 
 	/* if possible, speed up the transfer */
 	if (mci_caps(mci) & MMC_CAP_MMC_HIGHSPEED) {
@@ -1193,42 +1255,13 @@ static int mci_startup_mmc(struct mci *mci)
 
 	mci_set_clock(mci, mci->tran_speed);
 
-	if (!(host->host_caps & (MMC_CAP_4_BIT_DATA | MMC_CAP_8_BIT_DATA)))
-		return 0;
-
-	/*
-	 * Unlike SD, MMC cards dont have a configuration register to notify
-	 * supported bus width. So bus test command should be run to identify
-	 * the supported bus width or compare the ext csd values of current
-	 * bus width and ext csd values of 1 bit mode read earlier.
-	 */
-	if (host->host_caps & MMC_CAP_8_BIT_DATA)
-		idx = 1;
-
-	for (; idx >= 0; idx--) {
-
-		/*
-		 * Host is capable of 8bit transfer, then switch
-		 * the device to work in 8bit transfer mode. If the
-		 * mmc switch command returns error then switch to
-		 * 4bit transfer mode. On success set the corresponding
-		 * bus width on the host.
-		 */
-		err = mci_switch(mci, EXT_CSD_BUS_WIDTH, ext_csd_bits[idx]);
-		if (err) {
-			if (idx == 0)
-				dev_warn(&mci->dev, "Changing MMC bus width failed: %d\n", err);
-			continue;
-		}
-
-		mci_set_bus_width(mci, bus_widths[idx]);
-
-		err = mmc_compare_ext_csds(mci, bus_widths[idx]);
-		if (!err)
-			break;
+	ret = mci_mmc_select_bus_width(mci);
+	if (ret < 0) {
+		dev_warn(&mci->dev, "Changing MMC bus width failed: %d\n", ret);
+		return ret;
 	}
 
-	return err;
+	return 0;
 }
 
 /**

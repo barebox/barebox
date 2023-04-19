@@ -155,6 +155,13 @@ config GPIO_RASPBERRYPI_EXP
 	  Turn on GPIO support for the expander on Raspberry Pi 3 boards, using
 	  the firmware mailbox to communicate with VideoCore on BCM283x chips.
 
+config GPIO_ROCKCHIP
+	bool "Rockchip GPIO support"
+	depends on ARCH_ROCKCHIP
+	help
+	  Say yes here to include the driver for the GPIO controller found on
+	  Rockchip SoCs.
+
 config GPIO_STMPE
 	depends on MFD_STMPE
 	bool "STMPE GPIO Expander"

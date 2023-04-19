@@ -260,6 +260,7 @@ config ARCH_ROCKCHIP
 	select OFTREE
 	select HAVE_PBL_MULTI_IMAGES
 	select HAS_DEBUG_LL
+	imply GPIO_ROCKCHIP
 
 config ARCH_STM32MP
 	bool "STMicroelectronics STM32MP"

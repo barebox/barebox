@@ -594,7 +594,7 @@ int xhci_bulk_tx(struct usb_device *udev, unsigned long pipe,
 		memcpy(bounce, buffer, length);
 	}
 
-	map = addr = dma_map_single(ctrl->dev, bounce, length, direction);
+	map = addr = dma_map_single(ctrl->host.hw_dev, bounce, length, direction);
 
 	dev_dbg(&udev->dev, "pipe=0x%lx, buffer=%p, length=%d\n",
 		pipe, buffer, length);
@@ -740,7 +740,7 @@ int xhci_bulk_tx(struct usb_device *udev, unsigned long pipe,
 	record_transfer_result(udev, event, length);
 	xhci_acknowledge_event(ctrl);
 
-	dma_unmap_single(ctrl->dev, map, length, direction);
+	dma_unmap_single(ctrl->host.hw_dev, map, length, direction);
 
 	if (usb_pipein(pipe))
 		memcpy(buffer, bounce, length);
@@ -895,7 +895,7 @@ int xhci_ctrl_tx(struct usb_device *udev, unsigned long pipe,
 	if (length > 0) {
 		if (req->requesttype & USB_DIR_IN)
 			field |= TRB_DIR_IN;
-		map = buf_64 = dma_map_single(ctrl->dev, buffer, length, direction);
+		map = buf_64 = dma_map_single(ctrl->host.hw_dev, buffer, length, direction);
 
 		trb_fields[0] = lower_32_bits(buf_64);
 		trb_fields[1] = upper_32_bits(buf_64);
@@ -947,7 +947,7 @@ int xhci_ctrl_tx(struct usb_device *udev, unsigned long pipe,
 
 	/* Invalidate buffer to make it available to usb-core */
 	if (length > 0)
-		dma_unmap_single(ctrl->dev, map, length, direction);
+		dma_unmap_single(ctrl->host.hw_dev, map, length, direction);
 
 	if (GET_COMP_CODE(le32_to_cpu(event->trans_event.transfer_len))
 			== COMP_SHORT_TX) {

@@ -31,7 +31,6 @@
 #include <stdlib.h>
 #include <libusb.h>
 #include <getopt.h>
-#include <arpa/inet.h>
 #include <linux/kernel.h>
 
 #include "../common.h"
@@ -594,8 +593,8 @@ static int read_memory(unsigned addr, void *dest, unsigned cnt)
 	int err;
 	int rem;
 	unsigned char tmp[64];
-	read_reg_command.addr = htonl(addr);
-	read_reg_command.cnt = htonl(cnt);
+	read_reg_command.addr = htobe32(addr);
+	read_reg_command.cnt = htobe32(cnt);
 
 	for (;;) {
 		err = transfer(1, &read_reg_command, 16, &last_trans);
@@ -651,8 +650,8 @@ static int write_memory(unsigned addr, unsigned val, int width)
 		.rsvd = 0,
 	};
 
-	write_reg_command.addr = htonl(addr);
-	write_reg_command.cnt = htonl(4);
+	write_reg_command.addr = htobe32(addr);
+	write_reg_command.cnt = htobe32(4);
 
 	if (verbose > 1)
 		printf("write memory reg: 0x%08x val: 0x%08x width: %d\n", addr, val, width);
@@ -671,7 +670,7 @@ static int write_memory(unsigned addr, unsigned val, int width)
 			return -1;
 	}
 
-	write_reg_command.data = htonl(val);
+	write_reg_command.data = htobe32(val);
 
 	for (;;) {
 		err = transfer(1, &write_reg_command, 16, &last_trans);
@@ -771,8 +770,8 @@ static int load_file(void *buf, unsigned len, unsigned dladdr,
 
 	len = ALIGN(len, 4);
 
-	dl_command.addr = htonl(dladdr);
-	dl_command.cnt = htonl(len);
+	dl_command.addr = htobe32(dladdr);
+	dl_command.cnt = htobe32(len);
 	dl_command.rsvd = type;
 
 	for (;;) {
@@ -833,7 +832,7 @@ static int sdp_jump_address(unsigned addr)
 	int last_trans, err;
 	int retry = 0;
 
-	jump_command.addr = htonl(addr);
+	jump_command.addr = htobe32(addr);
 
 	for (;;) {
 		err = transfer(1, &jump_command, 16, &last_trans);
@@ -862,10 +861,10 @@ static int do_dcd_v2_cmd_write(const unsigned char *dcd)
 	int set_bits = 0, clear_bits = 0;
 	int idx, bytes;
 	struct imx_dcd_v2_write *recs = (struct imx_dcd_v2_write *) dcd;
-	int num_rec = (ntohs(recs->length) - 4) /
+	int num_rec = (be16toh(recs->length) - 4) /
 		      sizeof(struct imx_dcd_v2_write_rec);
 	printf("DCD write: sub dcd length: 0x%04x, flags: 0x%02x\n",
-		ntohs(recs->length), recs->param);
+		be16toh(recs->length), recs->param);
 
 	if (recs->param & PARAMETER_FLAG_MASK) {
 		if (recs->param & PARAMETER_FLAG_SET)
@@ -886,8 +885,8 @@ static int do_dcd_v2_cmd_write(const unsigned char *dcd)
 
 	for (idx = 0; idx < num_rec; idx++) {
 		const struct imx_dcd_v2_write_rec *record = &recs->data[idx];
-		int ret = modify_memory(ntohl(record->addr),
-				 ntohl(record->val), bytes,
+		int ret = modify_memory(be32toh(record->addr),
+				 be32toh(record->val), bytes,
 				 set_bits, clear_bits);
 		if (ret < 0)
 			return ret;
@@ -902,13 +901,13 @@ static int do_dcd_v2_cmd_check(const unsigned char *dcd)
 	int bytes;
 	enum imx_dcd_v2_check_cond cond;
 	struct imx_dcd_v2_check *check = (struct imx_dcd_v2_check *) dcd;
-	switch (ntohs(check->length)) {
+	switch (be16toh(check->length)) {
 	case 12:
 		/* poll indefinitely */
 		poll_count = 0xffffffff;
 		break;
 	case 16:
-		poll_count = ntohl(check->count);
+		poll_count = be32toh(check->count);
 		if (poll_count == 0)
 			/* this command behaves as for NOP */
 			return 0;
@@ -941,10 +940,10 @@ static int do_dcd_v2_cmd_check(const unsigned char *dcd)
 		return -1;
 	}
 
-	mask = ntohl(check->mask);
+	mask = be32toh(check->mask);
 
 	fprintf(stderr, "DCD check condition %i on address 0x%x\n",
-		cond, ntohl(check->addr));
+		cond, be32toh(check->addr));
 	/* Reduce the poll count to some arbitrary practical limit.
 	   Polling via SRP commands will be much slower compared to
 	   polling when DCD is interpreted by the SOC microcode.
@@ -954,7 +953,7 @@ static int do_dcd_v2_cmd_check(const unsigned char *dcd)
 
 	while (poll_count > 0) {
 		uint32_t data = 0;
-		int ret = read_memory(ntohl(check->addr), &data, bytes);
+		int ret = read_memory(be32toh(check->addr), &data, bytes);
 		if (ret < 0)
 			return ret;
 
@@ -983,7 +982,7 @@ static int do_dcd_v2_cmd_check(const unsigned char *dcd)
 
 	fprintf(stderr, "Error: timeout waiting for DCD check condition %i "
 		"on address 0x%08x to match 0x%08x\n", cond,
-		ntohl(check->addr), ntohl(check->mask));
+		be32toh(check->addr), be32toh(check->mask));
 	return -1;
 }
 
@@ -1015,7 +1014,7 @@ static int process_dcd_table_ivt(const struct imx_flash_header_v2 *hdr,
 		fprintf(stderr, "Error: Unknown DCD header tag\n");
 		return -1;
 	}
-	m_length = ntohs(dcd_hdr->length);
+	m_length = be16toh(dcd_hdr->length);
 	dcd_end = dcd + m_length;
 	if (dcd_end > file_end) {
 		fprintf(stderr, "Error: DCD length %08x exceeds EOF\n",
@@ -1028,7 +1027,7 @@ static int process_dcd_table_ivt(const struct imx_flash_header_v2 *hdr,
 	while (dcd < dcd_end) {
 		int ret = 0;
 		struct imx_ivt_header *cmd_hdr = (struct imx_ivt_header *) dcd;
-		unsigned s_length = ntohs(cmd_hdr->length);
+		unsigned s_length = be16toh(cmd_hdr->length);
 		if (dcd +  s_length > file_end) {
 			fprintf(stderr, "Error: DCD length %08x exceeds EOF\n",
 				s_length);
@@ -1473,14 +1472,14 @@ static int mxs_load_buf(uint8_t *data, int size)
 	static struct mxs_command dl_command;
 	int last_trans, err;
 
-	dl_command.sign = htonl(0x424c5443); /* Signature: BLTC */
-	dl_command.tag = htonl(0x1);
-	dl_command.size = htonl(size);
+	dl_command.sign = htobe32(0x424c5443); /* Signature: BLTC */
+	dl_command.tag = htobe32(0x1);
+	dl_command.size = htobe32(size);
 	dl_command.flags = 0;
 	dl_command.rsvd[0] = 0;
 	dl_command.rsvd[1] = 0;
 	dl_command.cmd = MXS_CMD_FW_DOWNLOAD;
-	dl_command.dw_size = htonl(size);
+	dl_command.dw_size = htobe32(size);
 
 	err = transfer(1, &dl_command, 20, &last_trans);
 	if (err) {

@@ -20,7 +20,6 @@
 #include <mfd/pca9450.h>
 #include <mach/imx/xload.h>
 #include <soc/imx8m/ddr.h>
-#include <image-metadata.h>
 
 #define UART_PAD_CTRL	MUX_PAD_CTRL(PAD_CTL_DSE_3P3V_45_OHM)
 
@@ -159,9 +158,6 @@ ENTRY_FUNCTION(start_nxp_imx8mm_evk, r0, r1, r2)
 
 	relocate_to_current_adr();
 	setup_c();
-
-	IMD_USED_OF(imx8mm_evk);
-	IMD_USED_OF(imx8mm_evkb);
 
 	nxp_imx8mm_evk_start();
 }

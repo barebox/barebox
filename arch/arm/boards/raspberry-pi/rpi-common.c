@@ -256,6 +256,21 @@ static enum reset_src_type rpi_decode_pm_rsts(struct device_node *chosen,
 	return RESET_UKWN;
 }
 
+static int rpi_vc_fdt_fixup(struct device_node *root, void *data)
+{
+	const struct device_node *vc_chosen = data;
+	struct device_node *chosen;
+
+	chosen = of_create_node(root, "/chosen");
+	if (!chosen)
+		return -ENOMEM;
+
+	of_copy_property(vc_chosen, "overlay_prefix", chosen);
+	of_copy_property(vc_chosen, "os_prefix", chosen);
+
+	return 0;
+}
+
 static u32 rpi_boot_mode, rpi_boot_part;
 /* Extract useful information from the VideoCore FDT we got.
  * Some parameters are defined here:
@@ -288,6 +303,8 @@ static void rpi_vc_fdt_parse(void *fdt)
 		pr_err("no '/chosen' node found in vc fdt\n");
 		goto out;
 	}
+
+	of_register_fixup(rpi_vc_fdt_fixup, of_dup(chosen));
 
 	bootloader = of_find_node_by_name(chosen, "bootloader");
 

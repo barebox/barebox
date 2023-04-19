@@ -157,8 +157,3 @@ config CACHE_L2X0
 	bool "Enable L2x0 PrimeCell"
 	depends on MMU && ARCH_HAS_L2X0
 
-config CPU_SUPPORTS_32BIT_KERNEL
-	bool
-
-config CPU_SUPPORTS_64BIT_KERNEL
-	bool

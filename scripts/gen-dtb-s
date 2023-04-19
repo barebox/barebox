@@ -5,6 +5,7 @@ dtb=$2
 imd=$3
 
 echo "#include <asm/barebox.lds.h>"
+echo "#include <asm-generic/pointer.h>"
 
 le32() {
 	printf ".byte 0x%02x, 0x%02x, 0x%02x, 0x%02x\n" \
@@ -49,6 +50,10 @@ echo "__dtb_${name}_start:"
 echo ".incbin \"$dtb\""
 echo "__dtb_${name}_end:"
 echo ".global __dtb_${name}_end"
+if [ "$imd" = "y" ]; then
+	echo ".balign ASM_SZPTR"
+	echo "ASM_PTR __barebox_imd_OF_${name}"
+fi
 echo ".balign STRUCT_ALIGNMENT"
 
 compressed=$(${CONFIG_SHELL} "${srctree}/scripts/file-size.sh" $dtb.z)
@@ -65,5 +70,9 @@ printf ".int 0x%08x\n"  $uncompressed
 echo ".incbin \"$dtb.z\""
 echo "__dtb_z_${name}_end:"
 echo ".global __dtb_z_${name}_end"
+if [ "$imd" = "y" ]; then
+	echo ".balign ASM_SZPTR"
+	echo "ASM_PTR __barebox_imd_OF_${name}"
+fi
 echo ".balign STRUCT_ALIGNMENT"
 echo "#endif"

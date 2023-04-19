@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0+
 #include <common.h>
 #include <debug_ll.h>
-#include <image-metadata.h>
 #include <platform_data/mmc-esdhc-imx.h>
 #include <soc/fsl/fsl_ddr_sdram.h>
 #include <soc/fsl/immap_lsch2.h>
@@ -108,8 +107,6 @@ static noinline __noreturn void tqmls1046a_r_entry(void)
 
 	udelay(500);
 	putc_ll('>');
-
-	IMD_USED_OF(fsl_tqmls1046a_mbls10xxa);
 
 	fsl_ddr_set_memctl_regs(&ddrc[0], 0);
 

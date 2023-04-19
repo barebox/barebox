@@ -313,6 +313,12 @@ void gu_screen_blit_area(struct screen *sc, int startx, int starty, int width,
 {
 	struct fb_info *info = sc->info;
 	int bpp = info->bits_per_pixel >> 3;
+	struct fb_rect rect = {
+		.x1 = startx,
+		.y1 = starty,
+		.x2 = startx + width,
+		.y2 = starty + height,
+	};
 
 	if (info->screen_base_shadow) {
 		int y;
@@ -325,14 +331,24 @@ void gu_screen_blit_area(struct screen *sc, int startx, int starty, int width,
 			fboff += sc->info->line_length;
 		}
 	}
+
+	fb_damage(info, &rect);
 }
 
 void gu_screen_blit(struct screen *sc)
 {
 	struct fb_info *info = sc->info;
+	struct fb_rect rect = {
+		.x1 = 0,
+		.y1 = 0,
+		.x2 = info->xres,
+		.y2 = info->yres,
+	};
 
 	if (info->screen_base_shadow)
 		memcpy(info->screen_base, info->screen_base_shadow, sc->fbsize);
+
+	fb_damage(info, &rect);
 }
 
 void gu_fill_rectangle(struct screen *sc,

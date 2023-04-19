@@ -17,8 +17,9 @@ config ARCH_LAYERSCAPE_PPA
 
 config ARCH_LS1046
 	select CPU_V8
-	select CPU_SUPPORTS_64BIT_KERNEL
 	bool
+
+if 64BIT
 
 config MACH_LS1046ARDB
 	bool "QorIQ LS1046A Reference Design Board"
@@ -36,14 +37,20 @@ config MACH_TQMLS1046A
 	select DDR_FSL
 	select DDR_FSL_DDR4
 
+endif
+
 config ARCH_LS1021
 	select CPU_V7
 	bool
+
+if 32BIT
 
 config MACH_LS1021AIOT
 	bool "LS1021AIOT Board"
 	select ARCH_LS1021
 	select DDR_FSL
 	select DDR_FSL_DDR3
+
+endif
 
 endif

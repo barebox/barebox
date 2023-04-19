@@ -5,7 +5,6 @@
 #include <debug_ll.h>
 #include <mach/imx/debug_ll.h>
 #include <firmware.h>
-#include <image-metadata.h>
 #include <asm/mmu.h>
 #include <asm/cache.h>
 #include <asm/sections.h>
@@ -130,8 +129,6 @@ ENTRY_FUNCTION(start_variscite_imx8mp_dart, r0, r1, r2)
 	imx8mp_cpu_lowlevel_init();
 	relocate_to_current_adr();
 	setup_c();
-
-	IMD_USED_OF(imx8mp_var_dart_dt8mcustomboard);
 
 	variscite_imx8mp_dart_cb_start();
 }

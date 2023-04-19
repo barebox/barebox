@@ -156,10 +156,12 @@ static inline void imd_used(const void *unused)
 
 #define IMD_USED(_name) \
 	imd_used(&__barebox_imd_##_name)
-#define IMD_USED_OF(_name) ({ \
-	extern char __barebox_imd_OF_ ## _name[]; \
-	imd_used(&__barebox_imd_OF_ ## _name); \
-	})
+
+__attribute__((deprecated("IMD entries are now always referenced if DT itself is")))
+static inline void IMD_USED_OF(void)
+{}
+
+#define IMD_USED_OF(_name) IMD_USED_OF()
 
 #endif /* __BAREBOX__ */
 

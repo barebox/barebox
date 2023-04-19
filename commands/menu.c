@@ -406,64 +406,65 @@ end:
 	return 1;
 }
 
-static const __maybe_unused char cmd_menu_help[] =
-"Manage Menu:\n"
-"  -m  menu\n"
-"  -l  list\n"
-"  -s  show\n"
+BAREBOX_CMD_HELP_START(menu)
+BAREBOX_CMD_HELP_TEXT("Manage Menu:")
+BAREBOX_CMD_HELP_OPT ("-m", "menu")
+BAREBOX_CMD_HELP_OPT ("-l", "list")
+BAREBOX_CMD_HELP_OPT ("-s", "show")
+BAREBOX_CMD_HELP_TEXT("")
 #if defined(CONFIG_CMD_MENU_MANAGEMENT)
-"Advanced menu management:\n"
-"  -e  menu entry\n"
-"  -a  add\n"
-"  -r  remove\n"
-"  -S  select\n"
+BAREBOX_CMD_HELP_TEXT("Advanced menu management:")
+BAREBOX_CMD_HELP_OPT ("-e", "menu entry")
+BAREBOX_CMD_HELP_OPT ("-a", "add")
+BAREBOX_CMD_HELP_OPT ("-r", "remove")
+BAREBOX_CMD_HELP_OPT ("-S", "select")
+BAREBOX_CMD_HELP_TEXT("")
 #endif
-"\n"
-"Show menu:\n"
-"  (-A auto select delay)\n"
-"  (-d auto select description)\n"
-"  menu -s -m MENU [-A delay] [-d auto_display]\n"
-"\n"
-"List menu:\n"
-"  menu -l\n"
-"\n"
+BAREBOX_CMD_HELP_TEXT("Show menu:")
+BAREBOX_CMD_HELP_OPT ("-A", "auto select delay")
+BAREBOX_CMD_HELP_OPT ("-d", "auto select description")
+BAREBOX_CMD_HELP_TEXT("\tmenu -s -m MENU [-A delay] [-d auto_display]")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("List menu:")
+BAREBOX_CMD_HELP_TEXT("\tmenu -l\n")
+BAREBOX_CMD_HELP_TEXT("")
 #if defined(CONFIG_CMD_MENU_MANAGEMENT)
-"Add a menu:\n"
-"  menu -a -m NAME -d DESC\n"
-"\n"
-"Remove a menu:\n"
-"  menu -r -m NAME\n"
-"\n"
-"Add an entry:\n"
-"  (-R for do no exit the menu after executing the command)\n"
-"  (-b for box style 1 for selected)\n"
-"  (and optional -c for the command to run when we change the state)\n"
-"  menu -e -a -m MENU -c COMMAND [-R] [-b 0|1] -d DESC\n"
-
-"Add a submenu entry:\n"
-"  (-R is not needed)\n"
-"  (-b for box style 1 for selected)\n"
-"  (and -c is not needed)\n"
-"  menu -e -a -m MENU -u submenu -d [-b 0|1] DESC\n"
-"\n"
-"Remove an entry:\n"
-"  menu -e -r -m NAME -n ENTRY\n"
-"\n"
-"Select an entry:\n"
-"  menu -m <menu> -S -n ENTRY\n"
-"\n"
-"List menu:\n"
-"  menu -e -l [menu]\n"
-"\n"
-"Menu examples:\n"
-"  menu -a -m boot -d \"Boot Menu\"\n"
-"  menu -e -a -m boot -c boot -d \"Boot\"\n"
-"  menu -e -a -m boot -c reset -d \"Reset\"\n"
+BAREBOX_CMD_HELP_TEXT("Add a menu:")
+BAREBOX_CMD_HELP_TEXT("\tmenu -a -m NAME -d DESC")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Remove a menu:")
+BAREBOX_CMD_HELP_TEXT("\tmenu -r -m NAME")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Add an entry:")
+BAREBOX_CMD_HELP_TEXT("\t(-R for do no exit the menu after executing the command)")
+BAREBOX_CMD_HELP_TEXT("\t(-b for box style 1 for selected)")
+BAREBOX_CMD_HELP_TEXT("\t(and optional -c for the command to run when we change the state)")
+BAREBOX_CMD_HELP_TEXT("\tmenu -e -a -m MENU -c COMMAND [-R] [-b 0|1] -d DESC")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Add a submenu entry:")
+BAREBOX_CMD_HELP_TEXT("\t(-R is not needed)")
+BAREBOX_CMD_HELP_TEXT("\t(-b for box style 1 for selected)")
+BAREBOX_CMD_HELP_TEXT("\t(and -c is not needed)")
+BAREBOX_CMD_HELP_TEXT("\tmenu -e -a -m MENU -u submenu -d [-b 0|1] DESC")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Remove an entry:")
+BAREBOX_CMD_HELP_TEXT("\tmenu -e -r -m NAME -n ENTRY")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Select an entry:")
+BAREBOX_CMD_HELP_TEXT("\tmenu -m <menu> -S -n ENTRY")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("List menu:")
+BAREBOX_CMD_HELP_TEXT("\tmenu -e -l [menu]")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Menu examples:")
+BAREBOX_CMD_HELP_TEXT("\tmenu -a -m boot -d \"Boot Menu\"")
+BAREBOX_CMD_HELP_TEXT("\tmenu -e -a -m boot -c boot -d \"Boot\"")
+BAREBOX_CMD_HELP_TEXT("\tmenu -e -a -m boot -c reset -d \"Reset\"")
 #else
-"Menu example:\n"
+BAREBOX_CMD_HELP_TEXT("Menu example:")
 #endif
-"  menu -s -m boot\n"
-;
+BAREBOX_CMD_HELP_TEXT("\tmenu -s -m boot")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(menu)
 	.cmd		= do_menu,

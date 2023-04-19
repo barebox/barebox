@@ -80,6 +80,13 @@ struct fb_bitfield {
 
 struct fb_info;
 
+struct fb_rect {
+	u32 x1;
+	u32 y1;
+	u32 x2;
+	u32 y2;
+};
+
 struct fb_ops {
 	/* set color register */
 	int (*fb_setcolreg)(unsigned regno, unsigned red, unsigned green,
@@ -87,6 +94,7 @@ struct fb_ops {
 	void (*fb_enable)(struct fb_info *info);
 	void (*fb_disable)(struct fb_info *info);
 	int (*fb_activate_var)(struct fb_info *info);
+	void (*fb_damage)(struct fb_info *info, const struct fb_rect *rect);
 	void (*fb_flush)(struct fb_info *info);
 };
 
@@ -147,6 +155,8 @@ struct fb_info {
 	int shadowfb;
 };
 
+int of_get_display_timing(const struct device_node *np, const char *name,
+			  struct fb_videomode *mode);
 struct display_timings *of_get_display_timings(struct device_node *np);
 void display_timings_release(struct display_timings *);
 
@@ -154,6 +164,7 @@ int register_framebuffer(struct fb_info *info);
 
 int fb_enable(struct fb_info *info);
 int fb_disable(struct fb_info *info);
+void fb_damage(struct fb_info *info, struct fb_rect *rect);
 void fb_flush(struct fb_info *info);
 
 #define FBIOGET_SCREENINFO	_IOR('F', 1, loff_t)

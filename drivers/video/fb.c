@@ -43,6 +43,12 @@ static int fb_close(struct cdev *cdev)
 	return 0;
 }
 
+void fb_damage(struct fb_info *info, struct fb_rect *rect)
+{
+	if (info->fbops->fb_damage)
+		info->fbops->fb_damage(info, rect);
+}
+
 static int fb_op_flush(struct cdev *cdev)
 {
 	struct fb_info *info = cdev->priv;

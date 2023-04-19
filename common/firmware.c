@@ -304,6 +304,38 @@ out:
 	return ret;
 }
 
+/*
+ * request_firmware - load a firmware to a device
+ */
+int request_firmware(const struct firmware **out, const char *fw_name, struct device *dev)
+{
+	char fw_path[PATH_MAX + 1];
+	struct firmware *fw;
+	int ret;
+
+	fw = kzalloc(sizeof(struct firmware), GFP_KERNEL);
+	if (!fw)
+		return -ENOMEM;
+
+	snprintf(fw_path, sizeof(fw_path), "%s/%s", firmware_path, fw_name);
+
+	ret = read_file_2(fw_path, &fw->size, (void *)&fw->data, FILESIZE_MAX);
+	if (ret) {
+		kfree(fw);
+		return ret;
+	}
+
+	*out = fw;
+
+	return 0;
+}
+
+void release_firmware(const struct firmware *fw)
+{
+	kfree_const(fw->data);
+	kfree_const(fw);
+}
+
 static int firmware_init(void)
 {
 	firmware_path = strdup("/env/firmware");

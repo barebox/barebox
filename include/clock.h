@@ -4,8 +4,9 @@
 
 #include <types.h>
 #include <linux/time.h>
+#include <linux/bitops.h>
 
-#define CLOCKSOURCE_MASK(bits) (uint64_t)((bits) < 64 ? ((1ULL<<(bits))-1) : -1)
+#define CLOCKSOURCE_MASK(bits) GENMASK_ULL((bits) - 1, 0)
 
 struct clocksource {
 	uint32_t	shift;

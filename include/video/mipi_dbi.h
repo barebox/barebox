@@ -11,6 +11,7 @@
 #include <linux/types.h>
 #include <spi/spi.h>
 #include <driver.h>
+#include <fb.h>
 
 struct regulator;
 struct fb_videomode;
@@ -55,6 +56,66 @@ struct mipi_dbi {
 	struct list_head list;
 };
 
+/**
+ * struct mipi_dbi_dev - MIPI DBI device
+ */
+struct mipi_dbi_dev {
+	/**
+	 * @dev: Device
+	 */
+	struct device *dev;
+
+	/**
+	 * @info: Framebuffer info
+	 */
+	struct fb_info info;
+
+	/**
+	 * @mode: Fixed display mode
+	 */
+	struct fb_videomode mode;
+
+	/**
+	 * @tx_buf: Buffer used for transfer (copy clip rect area)
+	 */
+	u8 *tx_buf;
+
+	/**
+	 * @backlight_node: backlight device node (optional)
+	 */
+	struct device_node *backlight_node;
+
+	/**
+	 * @backlight: backlight device (optional)
+	 */
+	struct backlight_device *backlight;
+
+	/**
+	 * @regulator: power regulator (Vdd) (optional)
+	 */
+	struct regulator *regulator;
+
+	/**
+	 * @io_regulator: I/O power regulator (Vddi) (optional)
+	 */
+	struct regulator *io_regulator;
+
+	/**
+	 * @dbi: MIPI DBI interface
+	 */
+	struct mipi_dbi dbi;
+
+	/**
+	 * @driver_private: Driver private data.
+	 */
+	void *driver_private;
+
+	/**
+	 * @damage: Damage rectangle.
+	 */
+	struct fb_rect damage;
+};
+
 static inline const char *mipi_dbi_name(struct mipi_dbi *dbi)
 {
 	return dev_name(&dbi->spi->dev);
@@ -62,8 +123,16 @@ static inline const char *mipi_dbi_name(struct mipi_dbi *dbi)
 
 int mipi_dbi_spi_init(struct spi_device *spi, struct mipi_dbi *dbi,
 		      int dc);
+int mipi_dbi_dev_init(struct mipi_dbi_dev *dbidev,
+		      struct fb_ops *ops, struct fb_videomode *mode);
+void mipi_dbi_fb_damage(struct fb_info *info, const struct fb_rect *rect);
+void mipi_dbi_fb_flush(struct fb_info *info);
+void mipi_dbi_enable_flush(struct mipi_dbi_dev *dbidev,
+			   struct fb_info *info);
+void mipi_dbi_fb_disable(struct fb_info *info);
 void mipi_dbi_hw_reset(struct mipi_dbi *dbi);
 bool mipi_dbi_display_is_on(struct mipi_dbi *dbi);
+int mipi_dbi_poweron_conditional_reset(struct mipi_dbi_dev *dbidev);
 
 u32 mipi_dbi_spi_cmd_max_speed(struct spi_device *spi, size_t len);
 int mipi_dbi_spi_transfer(struct spi_device *spi, u32 speed_hz,

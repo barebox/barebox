@@ -9,7 +9,6 @@
 #include <string.h>
 #include <errno.h>
 #include <stdarg.h>
-#include <sys/mman.h>
 
 #include "common.h"
 

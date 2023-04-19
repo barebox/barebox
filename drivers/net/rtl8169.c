@@ -216,6 +216,7 @@ static void __set_rx_mode(struct rtl8169_priv *priv)
 
 static void rtl8169_init_ring(struct rtl8169_priv *priv)
 {
+	struct eth_device *edev = &priv->edev;
 	int i;
 
 	priv->cur_rx = priv->cur_tx = 0;
@@ -223,13 +224,13 @@ static void rtl8169_init_ring(struct rtl8169_priv *priv)
 	priv->tx_desc = dma_alloc_coherent(NUM_TX_DESC * sizeof(struct bufdesc),
 					   &priv->tx_desc_phys);
 	priv->tx_buf = malloc(NUM_TX_DESC * PKT_BUF_SIZE);
-	priv->tx_buf_phys = dma_map_single(&priv->edev.dev, priv->tx_buf,
+	priv->tx_buf_phys = dma_map_single(edev->parent, priv->tx_buf,
 					   NUM_TX_DESC * PKT_BUF_SIZE, DMA_TO_DEVICE);
 
 	priv->rx_desc = dma_alloc_coherent(NUM_RX_DESC * sizeof(struct bufdesc),
 					   &priv->rx_desc_phys);
 	priv->rx_buf = malloc(NUM_RX_DESC * PKT_BUF_SIZE);
-	priv->rx_buf_phys = dma_map_single(&priv->edev.dev, priv->rx_buf,
+	priv->rx_buf_phys = dma_map_single(edev->parent, priv->rx_buf,
 					   NUM_RX_DESC * PKT_BUF_SIZE, DMA_FROM_DEVICE);
 
 	for (i = 0; i < NUM_RX_DESC; i++) {
@@ -479,13 +480,13 @@ static void rtl8169_eth_halt(struct eth_device *edev)
 
 	pci_clear_master(priv->pci_dev);
 
-	dma_unmap_single(&edev->dev, priv->tx_buf_phys, NUM_TX_DESC * PKT_BUF_SIZE,
+	dma_unmap_single(edev->parent, priv->tx_buf_phys, NUM_TX_DESC * PKT_BUF_SIZE,
 			 DMA_TO_DEVICE);
 	free(priv->tx_buf);
 	dma_free_coherent((void *)priv->tx_desc, priv->tx_desc_phys,
 			  NUM_TX_DESC * sizeof(struct bufdesc));
 
-	dma_unmap_single(&edev->dev, priv->rx_buf_phys, NUM_RX_DESC * PKT_BUF_SIZE,
+	dma_unmap_single(edev->parent, priv->rx_buf_phys, NUM_RX_DESC * PKT_BUF_SIZE,
 			 DMA_FROM_DEVICE);
 	free(priv->rx_buf);
 	dma_free_coherent((void *)priv->rx_desc, priv->rx_desc_phys,

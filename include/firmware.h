@@ -13,6 +13,11 @@
 #include <debug_ll.h>
 #include <linux/kernel.h>
 
+struct firmware {
+	size_t size;
+	const u8 *data;
+};
+
 struct firmware_handler {
 	char *id; /* unique identifier for this firmware device */
 	char *model; /* description for this device */
@@ -37,6 +42,8 @@ struct firmware_mgr *firmwaremgr_find_by_node(struct device_node *np);
 int firmwaremgr_load_file(struct firmware_mgr *, const char *path);
 char *firmware_get_searchpath(void);
 void firmware_set_searchpath(const char *path);
+int request_firmware(const struct firmware **fw, const char *fw_name, struct device *dev);
+void release_firmware(const struct firmware *fw);
 #else
 static inline struct firmware_mgr *firmwaremgr_find_by_node(struct device_node *np)
 {
@@ -57,6 +64,15 @@ static inline void firmware_set_searchpath(const char *path)
 {
 }
 
+static inline int request_firmware(const struct firmware **fw, const char *fw_name,
+				   struct device *dev)
+{
+	return -EINVAL;
+}
+
+static inline void release_firmware(const struct firmware *fw)
+{
+}
 #endif
 
 void firmwaremgr_list_handlers(void);

@@ -1016,6 +1016,8 @@ config STATE
 	select ENVIRONMENT_VARIABLES
 	select OFTREE
 	select PARAMETER
+	imply STATE_DRV
+	imply CMD_STATE
 	help
 	  barebox state is a generic framework for atomic power fail-safe
 	  variable storage and retrieval. It can be used to safely maintain

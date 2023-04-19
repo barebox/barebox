@@ -6,6 +6,7 @@
 #include <linux/err.h>
 #include <linux/kernel.h>
 #include <linux/string.h>
+#include <linux/bitops.h>
 
 struct spi_controller_mem_ops;
 
@@ -44,7 +45,7 @@ struct spi_board_info {
  *	This may be changed by the device's driver, or left at the
  *	default (0) indicating protocol words are eight bit bytes.
  *	The spi_transfer.bits_per_word can override this for each transfer
- *	(FIXME: not currently implemented).
+ *	(FIXME: not currently implemented by most drivers).
  * @irq: Negative, or the number passed to request_irq() to receive
  *	interrupts from this device.
  * @controller_state: Controller's runtime state
@@ -131,6 +132,11 @@ struct spi_message;
  *	SPI slaves, and are numbered from zero to num_chipselects.
  *	each slave has a chipselect signal, but it's common that not
  *	every chipselect is connected to a slave.
+ * @bits_per_word_mask: A mask indicating which values of bits_per_word are
+ *	supported by the driver. Bit n indicates that a bits_per_word n+1 is
+ *	supported. If set, the SPI core will reject any transfer with an
+ *	unsupported bits_per_word. If not set, this value is simply ignored,
+ *	and it's up to the individual driver to perform any validation.
  * @max_speed_hz: Highest supported transfer speed
  * @setup: updates the device mode and clocking records used by a
  *	device's SPI controller; protocol code may call this.  This
@@ -165,6 +171,12 @@ struct spi_controller {
 
 	/* Optimized handlers for SPI memory-like operations */
 	const struct spi_controller_mem_ops *mem_ops;
+
+	/* Bitmask of supported bits_per_word for transfers */
+	u32			bits_per_word_mask;
+#define SPI_BPW_MASK(bits) BIT((bits) - 1)
+#define SPI_BPW_RANGE_MASK(min, max) GENMASK((max) - 1, (min) - 1)
+
 	/*
 	 * on some hardware transfer size may be constrained
 	 * the limit may depend on device transfer settings
@@ -433,6 +445,26 @@ static inline void
 spi_transfer_del(struct spi_transfer *t)
 {
 	list_del(&t->transfer_list);
+}
+
+/**
+ * spi_is_bpw_supported - Check if bits per word is supported
+ * @spi: SPI device
+ * @bpw: Bits per word
+ *
+ * This function checks to see if the SPI controller supports @bpw.
+ *
+ * Returns:
+ * True if @bpw is supported, false otherwise.
+ */
+static inline bool spi_is_bpw_supported(struct spi_device *spi, u32 bpw)
+{
+	u32 bpw_mask = spi->master->bits_per_word_mask;
+
+	if (bpw == 8 || (bpw <= 32 && bpw_mask & SPI_BPW_MASK(bpw)))
+		return true;
+
+	return false;
 }
 
 /* All these synchronous SPI transfer routines are utilities layered

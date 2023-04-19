@@ -152,6 +152,9 @@ extern struct property *__of_new_property(struct device_node *node,
 extern void of_delete_property(struct property *pp);
 extern struct property *of_rename_property(struct device_node *np,
 					   const char *old_name, const char *new_name);
+extern struct property *of_copy_property(const struct device_node *src,
+					 const char *propname,
+					 struct device_node *dst);
 
 extern struct device_node *of_find_node_by_name(struct device_node *from,
 	const char *name);
@@ -572,6 +575,13 @@ static inline struct property *of_new_property(struct device_node *node,
 
 static inline struct property *__of_new_property(struct device_node *node,
 					  const char *name, void *data, int len)
+{
+	return NULL;
+}
+
+static inline struct property *of_copy_property(const struct device_node *src,
+						const char *propname,
+						struct device_node *dst)
 {
 	return NULL;
 }
@@ -1038,8 +1048,10 @@ static inline int of_property_read_string_index(const struct device_node *np,
  * @np:		device node from which the property value is to be read.
  * @propname:	name of the property to be searched.
  *
- * Search for a property in a device node.
- * Returns true if the property exist false otherwise.
+ * Search for a boolean property in a device node. Usage on non-boolean
+ * property types is deprecated.
+
+ * Return: true if the property exist false otherwise.
  */
 static inline bool of_property_read_bool(const struct device_node *np,
 					 const char *propname)
@@ -1047,6 +1059,20 @@ static inline bool of_property_read_bool(const struct device_node *np,
 	struct property *prop = of_find_property(np, propname, NULL);
 
 	return prop ? true : false;
+}
+
+/**
+ * of_property_present - Test if a property is present in a node
+ * @np:		device node to search for the property.
+ * @propname:	name of the property to be searched.
+ *
+ * Test for a property present in a device node.
+ *
+ * Return: true if the property exists false otherwise.
+ */
+static inline bool of_property_present(const struct device_node *np, const char *propname)
+{
+	return of_property_read_bool(np, propname);
 }
 
 static inline int of_property_read_u8(const struct device_node *np,

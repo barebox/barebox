@@ -73,14 +73,11 @@ static int arasan_sdhci_card_write_protected(struct mci_host *mci)
 
 static int arasan_sdhci_reset(struct arasan_sdhci_host *host, u8 mask)
 {
-	sdhci_write8(&host->sdhci, SDHCI_SOFTWARE_RESET, mask);
+	int ret;
 
-	/* wait for reset completion */
-	if (wait_on_timeout(100 * MSECOND,
-			    !(sdhci_read8(&host->sdhci, SDHCI_SOFTWARE_RESET) & mask))) {
-		dev_err(host->mci.hw_dev, "SDHCI reset timeout\n");
-		return -ETIMEDOUT;
-	}
+	ret = sdhci_reset(&host->sdhci, mask);
+	if (ret)
+		return ret;
 
 	if (host->quirks & SDHCI_ARASAN_QUIRK_FORCE_CDTEST) {
 		u8 ctrl;
@@ -131,33 +128,6 @@ static void arasan_sdhci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 		val &= ~SDHCI_CTRL_HISPD;
 
 	sdhci_write8(&host->sdhci, SDHCI_HOST_CONTROL, val);
-}
-
-static int arasan_sdhci_wait_for_done(struct arasan_sdhci_host *host, u32 mask)
-{
-	u64 start = get_time_ns();
-	u32 stat;
-
-	do {
-		stat = sdhci_read32(&host->sdhci, SDHCI_INT_STATUS);
-
-		if (stat & SDHCI_INT_TIMEOUT)
-			return -ETIMEDOUT;
-
-		if (stat & SDHCI_INT_ERROR) {
-			dev_err(host->mci.hw_dev, "SDHCI_INT_ERROR: 0x%08x\n",
-				stat);
-			return -EPERM;
-		}
-
-		if (is_timeout(start, 1000 * MSECOND)) {
-			dev_err(host->mci.hw_dev,
-				"SDHCI timeout while waiting for done\n");
-			return -ETIMEDOUT;
-		}
-	} while ((stat & mask) != mask);
-
-	return 0;
 }
 
 static void print_error(struct arasan_sdhci_host *host, int cmdidx, int ret)
@@ -213,7 +183,7 @@ static int arasan_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 	sdhci_write32(&host->sdhci, SDHCI_ARGUMENT, cmd->cmdarg);
 	sdhci_write16(&host->sdhci, SDHCI_COMMAND, command);
 
-	ret = arasan_sdhci_wait_for_done(host, mask);
+	ret = sdhci_wait_for_done(&host->sdhci, mask);
 	if (ret)
 		goto error;
 
@@ -226,8 +196,8 @@ static int arasan_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 error:
 	if (ret) {
 		print_error(host, cmd->cmdidx, ret);
-		arasan_sdhci_reset(host, BIT(1)); // SDHCI_RESET_CMD
-		arasan_sdhci_reset(host, BIT(2)); // SDHCI_RESET_DATA
+		arasan_sdhci_reset(host, SDHCI_RESET_CMD);
+		arasan_sdhci_reset(host, SDHCI_RESET_DATA);
 	}
 
 	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, ~0);

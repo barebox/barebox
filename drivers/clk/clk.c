@@ -847,18 +847,30 @@ static int parent_ready(struct device_node *np)
 	}
 }
 
+static LIST_HEAD(probed_clks);
+
+static bool of_clk_probed(struct device_node *np)
+{
+	struct clock_provider *clk_provider;
+
+	list_for_each_entry(clk_provider, &probed_clks, node)
+		if (clk_provider->np == np)
+			return true;
+	return false;
+}
+
 /**
  * of_clk_init() - Scan and init clock providers from the DT
- * @root: parent of the first level to probe or NULL for the root of the tree
- * @matches: array of compatible values and init functions for providers.
  *
  * This function scans the device tree for matching clock providers and
  * calls their initialization functions
  *
  * Returns 0 on success, < 0 on failure.
  */
-int of_clk_init(struct device_node *root, const struct of_device_id *matches)
+int of_clk_init(void)
 {
+	struct device_node *root = of_get_root_node();
+	const struct of_device_id *matches = __clk_of_table_start;
 	struct clock_provider *clk_provider, *next;
 	bool is_init_done;
 	bool force = false;
@@ -866,11 +878,7 @@ int of_clk_init(struct device_node *root, const struct of_device_id *matches)
 	const struct of_device_id *match;
 
 	if (!root)
-		root = of_find_node_by_path("/");
-	if (!root)
 		return -EINVAL;
-	if (!matches)
-		matches = __clk_of_table_start;
 
 	/* First prepare the list of the clocks providers */
 	for_each_matching_node_and_match(root, matches, &match) {
@@ -878,6 +886,11 @@ int of_clk_init(struct device_node *root, const struct of_device_id *matches)
 
 		if (!of_device_is_available(root))
 			continue;
+
+		if (of_clk_probed(root)) {
+			pr_debug("%s: already probed: %pOF\n", __func__, root);
+			continue;
+		}
 
 		parent = xzalloc(sizeof(*parent));
 
@@ -898,8 +911,7 @@ int of_clk_init(struct device_node *root, const struct of_device_id *matches)
 				clk_provider->clk_init_cb(np);
 				of_clk_set_defaults(np, true);
 
-				list_del(&clk_provider->node);
-				free(clk_provider);
+				list_move_tail(&clk_provider->node, &probed_clks);
 				is_init_done = true;
 			}
 		}

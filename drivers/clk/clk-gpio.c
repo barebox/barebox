@@ -50,8 +50,9 @@ static struct clk_ops clk_gpio_ops = {
 	.is_enabled = clk_gpio_is_enabled,
 };
 
-static int of_gpio_clk_setup(struct device_node *node)
+static int of_gpio_clk_probe(struct device *dev)
 {
+	struct device_node *node = dev->device_node;
 	struct clk_gpio *clk_gpio;
 	enum of_gpio_flags of_flags;
 	unsigned long flags;
@@ -105,16 +106,15 @@ no_parent:
 	return ret;
 }
 
-/* Can't use OF_CLK_DECLARE due to need to run after GPIOcontrollers have
- * registrered */
-
 static const struct of_device_id clk_gpio_device_id[] = {
-	{ .compatible = "gpio-gate-clock", .data = of_gpio_clk_setup, },
+	{ .compatible = "gpio-gate-clock", },
 	{}
 };
 
-static int clk_gpio_init(void)
-{
-	return of_clk_init(NULL, clk_gpio_device_id);
-}
-coredevice_initcall(clk_gpio_init);
+static struct driver gpio_gate_clock_driver = {
+	.probe = of_gpio_clk_probe,
+	.name = "gpio-gate-clock",
+	.of_compatible = DRV_OF_COMPAT(clk_gpio_device_id),
+};
+
+core_platform_driver(gpio_gate_clock_driver);

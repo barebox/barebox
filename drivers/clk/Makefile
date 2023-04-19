@@ -2,7 +2,7 @@
 obj-$(CONFIG_COMMON_CLK)	+= clk.o clk-fixed.o clk-divider.o clk-fixed-factor.o \
 				clk-mux.o clk-gate.o clk-composite.o \
 				clk-fractional-divider.o clk-conf.o \
-				clk-gate-shared.o clk-gpio.o \
+				clk-gate-shared.o \
 				clk-bulk.o
 obj-$(CONFIG_CLKDEV_LOOKUP)	+= clkdev.o
 
@@ -28,3 +28,4 @@ obj-$(CONFIG_COMMON_CLK_STM32F)		+= clk-stm32f4.o
 obj-$(CONFIG_MACH_RPI_COMMON)	+= clk-rpi.o
 obj-y				+= bcm/
 obj-$(CONFIG_COMMON_CLK_SCMI)	+= clk-scmi.o
+obj-$(CONFIG_COMMON_CLK_GPIO)   += clk-gpio.o

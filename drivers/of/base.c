@@ -1757,7 +1757,7 @@ int barebox_register_of(struct device_node *root)
 	of_fix_tree(root);
 
 	if (IS_ENABLED(CONFIG_OFDEVICE)) {
-		of_clk_init(root, NULL);
+		of_clk_init();
 		if (!deep_probe_is_supported())
 			return of_probe();
 	}

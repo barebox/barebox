@@ -91,6 +91,12 @@ config MACH_RADXA_ROCK3
        help
 	  Say Y here if you are using a Radxa ROCK3
 
+config MACH_RADXA_CM3
+	select ARCH_RK3568
+	bool "Radxa CM3"
+	help
+	  Say Y here if you are using a Radxa CM3
+
 endif
 
 comment "select board features:"

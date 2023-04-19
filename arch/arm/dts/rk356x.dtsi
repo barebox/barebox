@@ -6,4 +6,9 @@
 		barebox,bootsource-mmc1 = &sdmmc0;
 		barebox,bootsource-mmc2 = &sdmmc1;
 	};
+
+	dmc: memory-controller {
+		compatible = "rockchip,rk3568-dmc";
+		rockchip,pmu = <&pmugrf>;
+	};
 };

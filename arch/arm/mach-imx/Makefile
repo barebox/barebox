@@ -31,3 +31,4 @@ obj-$(CONFIG_BAREBOX_UPDATE_IMX_EXTERNAL_NAND) += imx-bbu-external-nand.o
 obj-$(CONFIG_RESET_IMX_SRC) += src.o
 lwl-y += cpu_init.o
 pbl-y += xload-spi.o xload-common.o xload-imx-nand.o xload-gpmi-nand.o
+pbl-y += xload-qspi.o

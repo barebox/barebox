@@ -26,6 +26,8 @@ struct imx_dcd_v2_entry;
  */
 #define IMX_BBU_FLAG_PARTITION_STARTS_AT_HEADER	(1 << 17)
 
+#define IMX_BBU_FLAG_ERASE			BIT(30)
+
 /*
  * The upper 16 bit of the flags passes to the below functions are reserved
  * for i.MX specific flags
@@ -83,6 +85,10 @@ int imx8m_bbu_internal_mmcboot_register_handler(const char *name, const char *de
 
 int imx_bbu_external_nor_register_handler(const char *name, const char *devicefile,
 		unsigned long flags);
+
+int imx8m_bbu_internal_flexspi_nor_register_handler(const char *name,
+						    const char *devicefile,
+						    unsigned long flags);
 
 #else
 
@@ -192,6 +198,13 @@ vf610_bbu_internal_spi_i2c_register_handler(const char *name, char *devicefile,
 static inline int
 imx7_bbu_internal_spi_i2c_register_handler(const char *name, char *devicefile,
 					   unsigned long flags)
+{
+	return -ENOSYS;
+}
+
+static inline int
+imx8m_bbu_internal_flexspi_nor_register_handler(const char *name, const char *devicefile,
+						unsigned long flags);
 {
 	return -ENOSYS;
 }

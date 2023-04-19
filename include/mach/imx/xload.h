@@ -17,6 +17,9 @@ int imx7_nand_start_image(void);
 int imx8m_esdhc_load_image(int instance, bool start);
 int imx8mn_esdhc_load_image(int instance, bool start);
 int imx8mp_esdhc_load_image(int instance, bool start);
+int imx8mm_qspi_load_image(int instance, bool start);
+int imx8mn_qspi_load_image(int instance, bool start);
+int imx8mp_qspi_load_image(int instance, bool start);
 
 void imx8mm_load_bl33(void *bl33);
 void imx8mn_load_bl33(void *bl33);
@@ -25,6 +28,11 @@ void imx8mp_load_bl33(void *bl33);
 void __noreturn imx8mm_load_and_start_image_via_tfa(void);
 void __noreturn imx8mn_load_and_start_image_via_tfa(void);
 void __noreturn imx8mp_load_and_start_image_via_tfa(void);
+
+int imx_load_image(ptrdiff_t address, ptrdiff_t entry, u32 offset,
+		   u32 ivt_offset, bool start, unsigned int alignment,
+		   int (*read)(void *dest, size_t len, void *priv),
+		   void *priv);
 
 int imx_image_size(void);
 int piggydata_size(void);

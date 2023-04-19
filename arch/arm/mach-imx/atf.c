@@ -112,6 +112,9 @@ void imx8mm_load_bl33(void *bl33)
 		}
 
 		break;
+	case BOOTSOURCE_SPI:
+		imx8mm_qspi_load_image(instance, false);
+		break;
 	default:
 		printf("Unhandled bootsource BOOTSOURCE_%d\n", src);
 		hang();
@@ -155,6 +158,9 @@ void imx8mp_load_bl33(void *bl33)
 		break;
 	case BOOTSOURCE_SERIAL:
 		imx8mp_bootrom_load_image();
+		break;
+	case BOOTSOURCE_SPI:
+		imx8mp_qspi_load_image(instance, false);
 		break;
 	default:
 		printf("Unhandled bootsource BOOTSOURCE_%d\n", src);
@@ -201,6 +207,9 @@ void imx8mn_load_bl33(void *bl33)
 		break;
 	case BOOTSOURCE_SERIAL:
 		imx8mn_bootrom_load_image();
+		break;
+	case BOOTSOURCE_SPI:
+		imx8mn_qspi_load_image(instance, false);
 		break;
 	default:
 		printf("Unhandled bootsource BOOTSOURCE_%d\n", src);

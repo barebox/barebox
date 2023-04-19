@@ -19,15 +19,15 @@
 #include <environment.h>
 #include <mach/imx/bbu.h>
 #include <mach/imx/generic.h>
+#include <mach/imx/imx-header.h>
 #include <libfile.h>
-
-#define IMX_INTERNAL_FLAG_ERASE		BIT(30)
 
 struct imx_internal_bbu_handler {
 	struct bbu_handler handler;
 	int (*write_device)(struct imx_internal_bbu_handler *,
 			    struct bbu_data *);
 	unsigned long flash_header_offset;
+	unsigned long filetype_offset;
 	size_t device_size;
 	enum filetype expected_type;
 };
@@ -35,7 +35,7 @@ struct imx_internal_bbu_handler {
 static bool
 imx_bbu_erase_required(struct imx_internal_bbu_handler *imx_handler)
 {
-	return imx_handler->handler.flags & IMX_INTERNAL_FLAG_ERASE;
+	return imx_handler->handler.flags & IMX_BBU_FLAG_ERASE;
 }
 
 static int imx_bbu_protect(int fd, struct imx_internal_bbu_handler *imx_handler,
@@ -163,8 +163,8 @@ static int imx_bbu_check_prereq(struct imx_internal_bbu_handler *imx_handler,
 		if (expected_type == filetype_unknown)
 			break;
 
-		blob = data->image + imx_handler->flash_header_offset;
-		len  = data->len   - imx_handler->flash_header_offset;
+		blob = data->image + imx_handler->filetype_offset;
+		len  = data->len   - imx_handler->filetype_offset;
 		type = file_detect_type(blob, len);
 
 		if (type != expected_type) {
@@ -472,6 +472,7 @@ imx_bbu_internal_mmc_register_handler(const char *name, const char *devicefile,
 	imx_handler = __init_handler(name, devicefile, flags |
 				     IMX_BBU_FLAG_KEEP_HEAD);
 	imx_handler->flash_header_offset = imx_bbu_flash_header_offset_mmc();
+	imx_handler->filetype_offset = imx_handler->flash_header_offset;
 
 	return __register_handler(imx_handler);
 }
@@ -484,8 +485,9 @@ imx_bbu_internal_spi_i2c_register_handler(const char *name,
 	struct imx_internal_bbu_handler *imx_handler;
 
 	imx_handler = __init_handler(name, devicefile, flags |
-				     IMX_INTERNAL_FLAG_ERASE);
+				     IMX_BBU_FLAG_ERASE);
 	imx_handler->flash_header_offset = imx_bbu_flash_header_offset_mmc();
+	imx_handler->filetype_offset = imx_handler->flash_header_offset;
 
 	return __register_handler(imx_handler);
 }
@@ -531,6 +533,7 @@ int imx53_bbu_internal_nand_register_handler(const char *name,
 
 	imx_handler = __init_handler(name, "/dev/nand0", flags);
 	imx_handler->flash_header_offset = imx_bbu_flash_header_offset_mmc();
+	imx_handler->filetype_offset = imx_handler->flash_header_offset;
 
 	imx_handler->device_size = partition_size;
 	imx_handler->write_device = imx_bbu_internal_v2_write_nand_dbbt;
@@ -582,6 +585,7 @@ static int imx_bbu_internal_mmcboot_register_handler(const char *name,
 
 	imx_handler = __init_handler(name, devicefile, flags);
 	imx_handler->flash_header_offset = flash_header_offset;
+	imx_handler->filetype_offset = flash_header_offset;
 
 	imx_handler->handler.handler = imx_bbu_internal_mmcboot_update;
 
@@ -646,9 +650,40 @@ int imx_bbu_external_nor_register_handler(const char *name,
 	struct imx_internal_bbu_handler *imx_handler;
 
 	imx_handler = __init_handler(name, devicefile, flags |
-				     IMX_INTERNAL_FLAG_ERASE);
+				     IMX_BBU_FLAG_ERASE);
 
 	imx_handler->expected_type = filetype_unknown;
 
 	return __register_handler(imx_handler);
 }
+
+static unsigned long imx_bbu_filetype_offset_flexspi(void)
+{
+	unsigned int sd_flash_header_gap = SZ_32K;
+
+	if (cpu_is_mx8mm())
+		return sd_flash_header_gap;
+
+	return sd_flash_header_gap + SZ_1K;
+}
+
+static int
+imx_bbu_internal_flexspi_nor_register_handler(const char *name,
+					      const char *devicefile,
+					      unsigned long flags)
+{
+	struct imx_internal_bbu_handler *imx_handler;
+
+	flags |= IMX_BBU_FLAG_ERASE | IMX_BBU_FLAG_PARTITION_STARTS_AT_HEADER;
+	imx_handler = __init_handler(name, devicefile, flags);
+	imx_handler->flash_header_offset = SZ_32K;
+	imx_handler->expected_type = filetype_nxp_fspi_image;
+	imx_handler->filetype_offset = imx_bbu_filetype_offset_flexspi();
+
+	return __register_handler(imx_handler);
+}
+
+int imx8m_bbu_internal_flexspi_nor_register_handler(const char *name,
+						    const char *devicefile,
+						    unsigned long flags)
+	__alias(imx_bbu_internal_flexspi_nor_register_handler);

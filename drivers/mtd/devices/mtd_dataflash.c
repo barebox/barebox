@@ -17,7 +17,6 @@
 #include <clock.h>
 
 #include <spi/spi.h>
-#include <spi/flash.h>
 
 #include <linux/math64.h>
 #include <linux/mtd/mtd.h>
@@ -599,7 +598,6 @@ add_dataflash_otp(struct spi_device *spi, char *name,
 {
 	struct dataflash		*priv;
 	struct mtd_info			*device;
-	struct flash_platform_data	*pdata = spi->dev.platform_data;
 	char				*otp_tag = "";
 	int				err = 0;
 
@@ -617,7 +615,7 @@ add_dataflash_otp(struct spi_device *spi, char *name,
 			name);
 
 	device = &priv->mtd;
-	device->name = (pdata && pdata->name) ? pdata->name : "dataflash";
+	device->name = "dataflash";
 	device->size = nr_pages * (uint64_t)pagesize;
 	device->erasesize = pagesize;
 	device->writesize = pagesize;

@@ -609,6 +609,26 @@ do_signed_hdmi_firmware(struct config_data *data, int argc, char *argv[])
 	return 0;
 }
 
+static int do_flexspi_ivtofs(struct config_data *data, int argc, char *argv[])
+{
+	if (argc < 2)
+		return -EINVAL;
+
+	data->image_flexspi_ivt_offset = strtoul(argv[1], NULL, 0);
+
+	return 0;
+}
+
+static int do_flexspi_fcfbofs(struct config_data *data, int argc, char *argv[])
+{
+	if (argc < 2)
+		return -EINVAL;
+
+	data->image_flexspi_fcfb_offset = strtoul(argv[1], NULL, 0);
+
+	return 0;
+}
+
 struct command cmds[] = {
 	{
 		.name = "wm",
@@ -667,6 +687,12 @@ struct command cmds[] = {
 	}, {
 		.name = "signed_hdmi_firmware",
 		.parse = do_signed_hdmi_firmware,
+	}, {
+		.name = "flexspi_fcfbofs",
+		.parse = do_flexspi_fcfbofs,
+	}, {
+		.name = "flexspi_ivtofs",
+		.parse = do_flexspi_ivtofs,
 	},
 };
 

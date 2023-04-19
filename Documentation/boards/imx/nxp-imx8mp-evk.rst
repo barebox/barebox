@@ -88,5 +88,17 @@ installation to the eMMC boot partition requires special handling:
     start at an offset when booting from eMMC boot partitions, thus the first
     32KiB must be stripped.
 
+The following steps are required to write the image to the QSPI NOR flash:
+
+  - Strip the 32KiB preamble, like it is done for the eMMC boot partition case
+    (see above).
+
+  - The QSPI NOR partition ``barebox`` must be erased before the stripped
+    image is written. The erase size depends on the stripped image size but
+    always start at offset 0.
+
+  - Write the stripped barebox image to the QSPI NOR partition ``barebox``
+    at offset 0.
+
 The ``barebox_update`` command takes care of this and need just be
 supplied a barebox image as argument.

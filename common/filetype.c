@@ -69,6 +69,7 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_imx_image_v2] = { "i.MX image (v2)", "imx-image-v2" },
 	[filetype_layerscape_image] = { "Layerscape image", "layerscape-PBL" },
 	[filetype_layerscape_qspi_image] = { "Layerscape QSPI image", "layerscape-qspi-PBL" },
+	[filetype_nxp_fspi_image] = { "NXP FlexSPI image", "nxp-fspi-image" },
 	[filetype_ubootvar] = { "U-Boot environmemnt variable data",
 				"ubootvar" },
 	[filetype_stm32_image_fsbl_v1] = { "STM32MP FSBL image (v1)", "stm32-fsbl-v1" },
@@ -408,6 +409,10 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 
 	if (is_imx_flash_header_v2(_buf))
 		return filetype_imx_image_v2;
+
+	if (buf[0] == cpu_to_be32(FCFB_HEAD_TAG) &&
+	    buf[1] == cpu_to_le32(FCFB_VERSION))
+		return filetype_nxp_fspi_image;
 
 	if (buf[8] == 0xAA995566 && buf[9] == 0x584C4E58)
 		return filetype_zynq_image;

@@ -8,9 +8,9 @@
 #include <linux/err.h>
 #include <driver.h>
 #include <init.h>
-#include <usb/usb.h>
-#include <usb/usb_defs.h>
-#include <usb/ehci.h>
+#include <linux/usb/usb.h>
+#include <linux/usb/usb_defs.h>
+#include <linux/usb/ehci.h>
 #include <errno.h>
 #include <io.h>
 

@@ -10,7 +10,7 @@
 #include <common.h>
 #include <dma.h>
 #include <asm/byteorder.h>
-#include <usb/usb.h>
+#include <linux/usb/usb.h>
 #include <io.h>
 #include <malloc.h>
 #include <driver.h>
@@ -19,7 +19,7 @@
 #include <clock.h>
 #include <errno.h>
 #include <of.h>
-#include <usb/ehci.h>
+#include <linux/usb/ehci.h>
 #include <linux/err.h>
 #include <linux/sizes.h>
 #include <linux/clk.h>
@@ -510,7 +510,7 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 }
 
 #if defined(CONFIG_MACH_EFIKA_MX_SMARTBOOK) && defined(CONFIG_USB_ULPI)
-#include <usb/ulpi.h>
+#include <linux/usb/ulpi.h>
 /*
  * Add support for setting CHRGVBUS to workaround a hardware bug on efika mx/sb
  * boards.

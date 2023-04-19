@@ -9,7 +9,7 @@
 #include <io.h>
 #include <of.h>
 #include <errno.h>
-#include <usb/chipidea-imx.h>
+#include <linux/usb/chipidea-imx.h>
 #include <mach/imx/imx6-regs.h>
 #include <mach/imx/iomux-mx6.h>
 

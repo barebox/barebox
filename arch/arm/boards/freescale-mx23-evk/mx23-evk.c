@@ -13,7 +13,7 @@
 #include <asm/barebox-arm.h>
 #include <mach/mxs/imx-regs.h>
 #include <mach/mxs/mci.h>
-#include <usb/fsl_usb2.h>
+#include <linux/usb/fsl_usb2.h>
 #include <mach/mxs/usb.h>
 #include <mach/mxs/iomux.h>
 

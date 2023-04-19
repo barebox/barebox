@@ -12,7 +12,7 @@
 
 //#include <linux/scatterlist.h>
 #include <linux/list.h>
-#include <usb/usb.h>
+#include <linux/usb/usb.h>
 #include <asm/unaligned.h>
 
 /*

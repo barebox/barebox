@@ -6,7 +6,7 @@
 #include <common.h>
 #include <init.h>
 #include <driver.h>
-#include <usb/ehci.h>
+#include <linux/usb/ehci.h>
 #include <mach/uemd/hardware.h>
 
 static int hostname_init(void)

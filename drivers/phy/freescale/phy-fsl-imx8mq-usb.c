@@ -13,7 +13,7 @@
 #include <malloc.h>
 #include <of_device.h>
 #include <of.h>
-#include <usb/phy.h>
+#include <linux/usb/phy.h>
 
 
 #define PHY_CTRL0			0x0

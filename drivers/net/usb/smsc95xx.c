@@ -5,8 +5,8 @@
 #include <command.h>
 #include <init.h>
 #include <net.h>
-#include <usb/usb.h>
-#include <usb/usbnet.h>
+#include <linux/usb/usb.h>
+#include <linux/usb/usbnet.h>
 #include <malloc.h>
 #include <asm/byteorder.h>
 #include <errno.h>

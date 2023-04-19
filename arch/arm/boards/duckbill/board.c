@@ -17,7 +17,7 @@
 #include <mach/mxs/ocotp.h>
 #include <mach/mxs/devices.h>
 #include <mach/mxs/usb.h>
-#include <usb/fsl_usb2.h>
+#include <linux/usb/fsl_usb2.h>
 
 #include <asm/armlinux.h>
 #include <asm/mmu.h>

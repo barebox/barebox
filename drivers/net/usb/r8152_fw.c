@@ -2,8 +2,8 @@
 /* Copyright (c) 2015 Realtek Semiconductor Corp. All rights reserved. */
 
 #include <common.h>
-#include <usb/usb.h>
-#include <usb/usbnet.h>
+#include <linux/usb/usb.h>
+#include <linux/usb/usbnet.h>
 #include "r8152.h"
 
 static const u8 r8152b_pla_patch_a[] = {

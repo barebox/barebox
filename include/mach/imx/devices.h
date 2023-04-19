@@ -8,7 +8,7 @@
 #include <platform_data/imxfb.h>
 #include <mach/imx/imx-ipu-fb.h>
 #include <platform_data/mmc-esdhc-imx.h>
-#include <usb/chipidea-imx.h>
+#include <linux/usb/chipidea-imx.h>
 
 struct device *imx_add_fec_imx27(void *base, struct fec_platform_data *pdata);
 struct device *imx_add_fec_imx6(void *base, struct fec_platform_data *pdata);

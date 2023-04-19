@@ -8,8 +8,8 @@
 #include <init.h>
 #include <net.h>
 #include <linux/phy.h>
-#include <usb/usb.h>
-#include <usb/usbnet.h>
+#include <linux/usb/usb.h>
+#include <linux/usb/usbnet.h>
 #include <errno.h>
 #include <malloc.h>
 #include <poller.h>

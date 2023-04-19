@@ -20,8 +20,8 @@
 #include <io.h>
 #include <linux/err.h>
 #include <linux/sizes.h>
-#include <usb/usb.h>
-#include <usb/xhci.h>
+#include <linux/usb/usb.h>
+#include <linux/usb/xhci.h>
 #include <asm/unaligned.h>
 
 #include "xhci.h"

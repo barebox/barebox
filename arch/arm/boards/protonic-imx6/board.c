@@ -24,7 +24,7 @@
 #include <sys/mount.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <usb/usb.h>
+#include <linux/usb/usb.h>
 
 #define GPIO_HW_REV_ID  {\
 	{IMX_GPIO_NR(2, 8), GPIOF_DIR_IN | GPIOF_ACTIVE_LOW, "rev_id0"}, \

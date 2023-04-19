@@ -7,8 +7,8 @@
 #include <linux/clk.h>
 #include <driver.h>
 #include <init.h>
-#include <usb/usb.h>
-#include <usb/usb_defs.h>
+#include <linux/usb/usb.h>
+#include <linux/usb/usb_defs.h>
 #include <errno.h>
 #include <gpio.h>
 #include <of_gpio.h>

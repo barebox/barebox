@@ -991,8 +991,7 @@ static void musb_gadget_poll(struct usb_gadget *gadget)
 
 static int musb_gadget_start(struct usb_gadget *g,
 		struct usb_gadget_driver *driver);
-static int musb_gadget_stop(struct usb_gadget *g,
-		struct usb_gadget_driver *driver);
+static int musb_gadget_stop(struct usb_gadget *g);
 
 static const struct usb_gadget_ops musb_gadget_operations = {
 	.get_frame		= musb_gadget_get_frame,
@@ -1167,16 +1166,9 @@ err:
 	return retval;
 }
 
-static void stop_activity(struct musb *musb, struct usb_gadget_driver *driver)
+static void stop_activity(struct musb *musb)
 {
-	int			i;
-	struct musb_hw_ep	*hw_ep;
-
-	/* don't disconnect if it's not connected */
-	if (musb->g.speed == USB_SPEED_UNKNOWN)
-		driver = NULL;
-	else
-		musb->g.speed = USB_SPEED_UNKNOWN;
+	musb->g.speed = USB_SPEED_UNKNOWN;
 
 	/* deactivate the hardware */
 	if (musb->softconnect) {
@@ -1184,25 +1176,6 @@ static void stop_activity(struct musb *musb, struct usb_gadget_driver *driver)
 		musb_pullup(musb, 0);
 	}
 	musb_stop(musb);
-
-	/* killing any outstanding requests will quiesce the driver;
-	 * then report disconnect
-	 */
-	if (driver) {
-		for (i = 0, hw_ep = musb->endpoints;
-				i < musb->nr_endpoints;
-				i++, hw_ep++) {
-			musb_ep_select(musb->mregs, i);
-			if (hw_ep->is_shared_fifo /* || !epnum */) {
-				nuke(&hw_ep->ep_in, -ESHUTDOWN);
-			} else {
-				if (hw_ep->max_packet_sz_tx)
-					nuke(&hw_ep->ep_in, -ESHUTDOWN);
-				if (hw_ep->max_packet_sz_rx)
-					nuke(&hw_ep->ep_out, -ESHUTDOWN);
-			}
-		}
-	}
 }
 
 /*
@@ -1211,8 +1184,7 @@ static void stop_activity(struct musb *musb, struct usb_gadget_driver *driver)
  *
  * @param driver the gadget driver to unregister
  */
-static int musb_gadget_stop(struct usb_gadget *g,
-		struct usb_gadget_driver *driver)
+static int musb_gadget_stop(struct usb_gadget *g)
 {
 	struct musb	*musb = gadget_to_musb(g);
 	unsigned long	flags;
@@ -1226,10 +1198,7 @@ static int musb_gadget_stop(struct usb_gadget *g,
 
 	(void) musb_gadget_vbus_draw(&musb->g, 0);
 
-	stop_activity(musb, driver);
-
-	dev_dbg(musb->controller, "unregistering driver %s\n",
-				  driver ? driver->function : "(removed)");
+	stop_activity(musb);
 
 	musb->is_active = 0;
 	musb->gadget_driver = NULL;

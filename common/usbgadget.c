@@ -12,9 +12,9 @@
 #include <getopt.h>
 #include <fs.h>
 #include <xfuncs.h>
-#include <usb/usbserial.h>
-#include <usb/dfu.h>
-#include <usb/gadget-multi.h>
+#include <linux/usb/usbserial.h>
+#include <linux/usb/dfu.h>
+#include <linux/usb/gadget-multi.h>
 #include <globalvar.h>
 #include <magicvar.h>
 #include <system-partitions.h>

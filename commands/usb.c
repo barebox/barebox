@@ -6,7 +6,7 @@
 #include <common.h>
 #include <command.h>
 #include <complete.h>
-#include <usb/usb.h>
+#include <linux/usb/usb.h>
 #include <getopt.h>
 
 /* shows the device tree recursively */

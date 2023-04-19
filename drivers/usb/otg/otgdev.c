@@ -2,7 +2,7 @@
 
 #include <common.h>
 #include <driver.h>
-#include <usb/usb.h>
+#include <linux/usb/usb.h>
 
 struct otg_mode {
 	struct device dev;

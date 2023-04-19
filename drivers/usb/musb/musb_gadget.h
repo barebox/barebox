@@ -11,7 +11,7 @@
 #define __MUSB_GADGET_H
 
 #include <linux/list.h>
-#include <usb/gadget.h>
+#include <linux/usb/gadget.h>
 
 #if IS_ENABLED(CONFIG_USB_MUSB_GADGET)
 extern int musb_g_ep0_irq(struct musb *);

@@ -20,7 +20,7 @@
 #include <mach/imx/imx-pll.h>
 #include <platform_data/imxfb.h>
 #include <asm/mmu.h>
-#include <usb/ulpi.h>
+#include <linux/usb/ulpi.h>
 #include <mach/imx/bbu.h>
 #include <mach/imx/iomux-mx27.h>
 #include <mach/imx/devices-imx27.h>

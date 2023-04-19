@@ -7,9 +7,9 @@
 
 #include <common.h>
 
-#include <usb/ch9.h>
-#include <usb/gadget.h>
-#include <usb/composite.h>
+#include <linux/usb/ch9.h>
+#include <linux/usb/gadget.h>
+#include <linux/usb/composite.h>
 
 /**
  * usb_descriptor_fillbuf - fill buffer with descriptors
@@ -152,7 +152,8 @@ EXPORT_SYMBOL_GPL(usb_copy_descriptors);
 int usb_assign_descriptors(struct usb_function *f,
 		struct usb_descriptor_header **fs,
 		struct usb_descriptor_header **hs,
-		struct usb_descriptor_header **ss)
+		struct usb_descriptor_header **ss,
+		struct usb_descriptor_header **ssp)
 {
 	struct usb_gadget *g = f->config->cdev->gadget;
 
@@ -169,6 +170,11 @@ int usb_assign_descriptors(struct usb_function *f,
 	if (ss && gadget_is_superspeed(g)) {
 		f->ss_descriptors = usb_copy_descriptors(ss);
 		if (!f->ss_descriptors)
+			goto err;
+	}
+	if (ssp && gadget_is_superspeed_plus(g)) {
+		f->ssp_descriptors = usb_copy_descriptors(ssp);
+		if (!f->ssp_descriptors)
 			goto err;
 	}
 	return 0;

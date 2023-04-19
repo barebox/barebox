@@ -137,6 +137,8 @@ struct driver {
 /* Register devices and drivers.
  */
 int register_driver(struct driver *);
+void unregister_driver(struct driver *drv);
+
 int register_device(struct device *);
 
 /* manualy probe a device

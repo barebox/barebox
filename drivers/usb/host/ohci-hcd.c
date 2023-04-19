@@ -30,8 +30,8 @@
 #include <clock.h>
 #include <dma.h>
 #include <malloc.h>
-#include <usb/usb.h>
-#include <usb/usb_defs.h>
+#include <linux/usb/usb.h>
+#include <linux/usb/usb_defs.h>
 #include <init.h>
 #include <errno.h>
 #include <linux/err.h>

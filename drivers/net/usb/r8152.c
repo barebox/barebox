@@ -8,8 +8,8 @@
 #include <linux/ethtool.h>
 #include <linux/mii.h>
 #include <linux/phy.h>
-#include <usb/usb.h>
-#include <usb/usbnet.h>
+#include <linux/usb/usb.h>
+#include <linux/usb/usbnet.h>
 #include "r8152.h"
 
 #define R8152_TX_BURST_SIZE	512

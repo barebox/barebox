@@ -205,4 +205,17 @@ static inline void print_hex_dump_debug(const char *prefix_str, int prefix_type,
 #define print_hex_dump_bytes(prefix_str, prefix_type, buf, len)	\
 	print_hex_dump_debug(prefix_str, prefix_type, 16, 1, buf, len, true)
 
+#define dev_WARN_ONCE(dev, condition, format...) ({      \
+        static int __warned;			\
+        int __ret_warn_once = !!(condition);	\
+						\
+        if (unlikely(__ret_warn_once)) {	\
+                if (!__warned) { 		\
+                        __warned = 1;		\
+                        dev_warn(dev, format);	\
+                }				\
+        }					\
+        unlikely(__ret_warn_once);		\
+})
+
 #endif

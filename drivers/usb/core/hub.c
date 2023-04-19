@@ -9,9 +9,9 @@
 #include <init.h>
 #include <malloc.h>
 #include <errno.h>
-#include <usb/phy.h>
-#include <usb/usb.h>
-#include <usb/usb_defs.h>
+#include <linux/usb/phy.h>
+#include <linux/usb/usb.h>
+#include <linux/usb/usb_defs.h>
 
 #include "usb.h"
 

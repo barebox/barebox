@@ -11,7 +11,7 @@
 #include <common.h>
 #include <malloc.h>
 #include <linux/phy/phy.h>
-#include <usb/phy.h>
+#include <linux/usb/phy.h>
 
 static LIST_HEAD(phy_provider_list);
 static int phy_ida;
@@ -202,6 +202,21 @@ int phy_power_off(struct phy *phy)
 
 	return 0;
 }
+
+int phy_set_mode_ext(struct phy *phy, enum phy_mode mode, int submode)
+{
+	int ret;
+
+	if (!phy || !phy->ops->set_mode)
+		return 0;
+
+	ret = phy->ops->set_mode(phy, mode, submode);
+	if (!ret)
+		phy->attrs.mode = mode;
+
+	return ret;
+}
+EXPORT_SYMBOL_GPL(phy_set_mode_ext);
 
 struct usb_phy *phy_to_usbphy(struct phy *phy)
 {

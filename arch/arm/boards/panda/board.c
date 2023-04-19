@@ -14,7 +14,7 @@
 #include <mach/omap/sys_info.h>
 #include <mach/omap/syslib.h>
 #include <mach/omap/control.h>
-#include <usb/ehci.h>
+#include <linux/usb/ehci.h>
 #include <linux/err.h>
 #include <linux/sizes.h>
 #include <asm/mmu.h>

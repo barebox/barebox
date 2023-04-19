@@ -15,7 +15,7 @@
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 #include <linux/sizes.h>
-#include <usb/fsl_usb2.h>
+#include <linux/usb/fsl_usb2.h>
 #include <mach/imx/generic.h>
 #include <mach/imx/imx50-regs.h>
 #include <mach/imx/imx5.h>

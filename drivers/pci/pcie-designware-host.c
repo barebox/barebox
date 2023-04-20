@@ -87,7 +87,7 @@ int __init dw_pcie_host_init(struct pcie_port *pp)
 	ns = of_n_size_cells(np);
 
 	cfg_res = dev_get_resource_by_name(dev, IORESOURCE_MEM, "config");
-	if (cfg_res) {
+	if (!IS_ERR(cfg_res)) {
 		pp->cfg0_size = resource_size(cfg_res) >> 1;
 		pp->cfg1_size = resource_size(cfg_res) >> 1;
 		pp->cfg0_base = cfg_res->start;

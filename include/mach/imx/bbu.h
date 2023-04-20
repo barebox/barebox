@@ -204,7 +204,7 @@ imx7_bbu_internal_spi_i2c_register_handler(const char *name, char *devicefile,
 
 static inline int
 imx8m_bbu_internal_flexspi_nor_register_handler(const char *name, const char *devicefile,
-						unsigned long flags);
+						unsigned long flags)
 {
 	return -ENOSYS;
 }

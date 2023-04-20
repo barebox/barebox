@@ -335,6 +335,16 @@ int of_find_path_by_node(struct device_node *node, char **outpath, unsigned flag
 struct device_node *of_find_node_by_devpath(struct device_node *root, const char *path);
 int of_register_fixup(int (*fixup)(struct device_node *, void *), void *context);
 int of_unregister_fixup(int (*fixup)(struct device_node *, void *), void *context);
+
+struct of_fixup {
+	int (*fixup)(struct device_node *, void *);
+	void *context;
+	struct list_head list;
+	bool disabled;
+};
+
+extern struct list_head of_fixup_list;
+
 int of_register_set_status_fixup(const char *node, bool status);
 struct device_node *of_find_node_by_alias(struct device_node *root,
 		const char *alias);

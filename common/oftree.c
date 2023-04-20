@@ -350,13 +350,12 @@ int of_register_set_status_fixup(const char *path, bool status)
 	return of_register_fixup(of_fixup_status, (void *)data);
 }
 
-struct of_fixup {
-	int (*fixup)(struct device_node *, void *);
-	void *context;
-	struct list_head list;
-};
+LIST_HEAD(of_fixup_list);
 
-static LIST_HEAD(of_fixup_list);
+static inline bool of_fixup_disabled(struct of_fixup *fixup)
+{
+    return fixup->disabled;
+}
 
 int of_register_fixup(int (*fixup)(struct device_node *, void *), void *context)
 {
@@ -401,6 +400,9 @@ int of_fix_tree(struct device_node *node)
 	of_overlay_load_firmware_clear();
 
 	list_for_each_entry(of_fixup, &of_fixup_list, list) {
+		if (of_fixup_disabled(of_fixup))
+			continue;
+
 		ret = of_fixup->fixup(node, of_fixup->context);
 		if (ret)
 			pr_warn("Failed to fixup node in %pS: %s\n",

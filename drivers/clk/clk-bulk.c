@@ -88,8 +88,9 @@ static int __must_check of_clk_bulk_get(struct device_node *np, int num_clks,
 		clks[i].clk = of_clk_get(np, i);
 		if (IS_ERR(clks[i].clk)) {
 			ret = PTR_ERR(clks[i].clk);
-			pr_err("%s: Failed to get clk index: %d ret: %pe\n",
-				np->name, i, clks[i].clk);
+			if (ret != -EPROBE_DEFER)
+				pr_err("%s: Failed to get clk index: %d ret: %pe\n",
+				       np->name, i, clks[i].clk);
 			clks[i].clk = NULL;
 			goto err;
 		}

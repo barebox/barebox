@@ -88,7 +88,8 @@ static int do_bootm_rkns_barebox_image(struct image_data *data)
 				file_type_to_string(filetype));
 
 		if (filetype == filetype_arm_barebox) {
-			barebox = buf + entry_start;
+			memmove(buf, buf + entry_start, image_size - entry_start);
+			barebox = buf;
 			goto found;
 		}
 	}

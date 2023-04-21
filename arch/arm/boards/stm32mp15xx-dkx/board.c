@@ -2,6 +2,7 @@
 #include <common.h>
 #include <init.h>
 #include <mach/stm32mp/bbu.h>
+#include <deep-probe.h>
 
 static int dkx_probe(struct device *dev)
 {
@@ -23,6 +24,7 @@ static const struct of_device_id dkx_of_match[] = {
 	{ .compatible = "st,stm32mp157c-dk2", .data = "STM32MP157C-DK2" },
 	{ /* sentinel */ },
 };
+BAREBOX_DEEP_PROBE_ENABLE(dkx_of_match);
 
 static struct driver dkx_board_driver = {
 	.name = "board-stm32mp15xx-dkx",

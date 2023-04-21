@@ -326,6 +326,7 @@ static inline int pci_write_config_dword(const struct pci_dev *dev, int where,
 void pci_set_master(struct pci_dev *dev);
 void pci_clear_master(struct pci_dev *dev);
 int pci_enable_device(struct pci_dev *dev);
+int pci_select_bars(struct pci_dev *dev, unsigned long flags);
 
 u8 pci_find_next_capability(struct pci_dev *dev, u8 pos, int cap);
 u8 pci_find_capability(struct pci_dev *dev, int cap);

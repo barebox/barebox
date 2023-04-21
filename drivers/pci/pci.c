@@ -539,6 +539,22 @@ int pci_enable_device(struct pci_dev *dev)
 }
 EXPORT_SYMBOL(pci_enable_device);
 
+/**
+ * pci_select_bars - Make BAR mask from the type of resource
+ * @dev: the PCI device for which BAR mask is made
+ * @flags: resource type mask to be selected
+ *
+ * This helper routine makes bar mask from the type of resource.
+ */
+int pci_select_bars(struct pci_dev *dev, unsigned long flags)
+{
+	int i, bars = 0;
+	for (i = 0; i < PCI_NUM_RESOURCES; i++)
+		if (pci_resource_flags(dev, i) & flags)
+			bars |= (1 << i);
+	return bars;
+}
+
 static u8 __pci_find_next_cap_ttl(struct pci_bus *bus, unsigned int devfn,
 				  u8 pos, int cap, int *ttl)
 {

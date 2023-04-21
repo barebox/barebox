@@ -77,15 +77,18 @@ static inline void atomic_sub(int i, volatile atomic_t *v)
 	v->counter -= i;
 }
 
-static inline void atomic_inc(volatile atomic_t *v)
+static inline int atomic_inc_return(volatile atomic_t *v)
 {
-	v->counter += 1;
+	return ++v->counter;
 }
 
-static inline void atomic_dec(volatile atomic_t *v)
+static inline int atomic_dec_return(volatile atomic_t *v)
 {
-	v->counter -= 1;
+	return --v->counter;
 }
+
+#define atomic_inc(v) ((void)atomic_inc_return(v))
+#define atomic_dec(v) ((void)atomic_dec_return(v))
 
 static inline int atomic_dec_and_test(volatile atomic_t *v)
 {

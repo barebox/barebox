@@ -221,9 +221,11 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 			}
 
 			*last_addr = ALIGN(*last_addr, size);
-			pci_write_config_dword(dev, pci_base_address_0, *last_addr);
+			pci_write_config_dword(dev, pci_base_address_0,
+					       lower_32_bits(*last_addr));
 			if (mask & PCI_BASE_ADDRESS_MEM_TYPE_64)
-				pci_write_config_dword(dev, pci_base_address_1, 0);
+				pci_write_config_dword(dev, pci_base_address_1,
+						       upper_32_bits(*last_addr));
 			start = *last_addr;
 			*last_addr += size;
 		} else {

@@ -1,0 +1,89 @@
+# SPDX-License-Identifier: GPL-2.0+
+# This Containerfile is used to build an image containing basic stuff to be used
+# to build barebox and run our test suites.
+
+FROM debian:bullseye
+MAINTAINER Sascha Hauer <s.hauer@pengutronix.de>
+LABEL Description="This image is for building and testing barebox inside a container"
+
+# Make sure apt is happy
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Update and install things from apt now
+RUN apt-get update && apt-get install -y \
+	automake \
+	autopoint \
+	bc \
+	binutils-dev \
+	bison \
+	build-essential \
+	coreutils \
+	cpio \
+	cppcheck \
+	curl \
+	erofs-utils \
+	expect \
+	flex \
+	gawk \
+	gdisk \
+	git \
+	imagemagick \
+	libc6-i386 \
+	libgit2-dev \
+	libguestfs-tools \
+	liblz4-tool \
+	libseccomp-dev \
+	libssl-dev \
+	libtool \
+	libudev-dev \
+	libusb-1.0-0-dev \
+	lzma-alone \
+	lzop \
+	mount \
+	openssl \
+	pkg-config \
+	rpm2cpio \
+	util-linux \
+	uuid-dev \
+	zip \
+	wget \
+	qemu-system-arm \
+	qemu-system-misc \
+	qemu-system-mips \
+	qemu-system-x86 \
+	qemu-system-common \
+	ovmf \
+	python3 \
+	python3-pip \
+	python3-virtualenv \
+	python3-setuptools \
+	virtualenv \
+	microcom \
+	sudo \
+	libyaml-tiny-perl \
+	libyaml-libyaml-perl \
+	&& rm -rf /var/lib/apt/lists/*
+
+# Manually install the kernel.org Crosstool based toolchains for gcc-12.2.0
+RUN wget -O - https://mirrors.edge.kernel.org/pub/tools/crosstool/files/bin/x86_64/12.2.0/x86_64-gcc-12.2.0-nolibc-aarch64-linux.tar.xz | tar -C /opt -xJ
+RUN wget -O - https://mirrors.edge.kernel.org/pub/tools/crosstool/files/bin/x86_64/12.2.0/x86_64-gcc-12.2.0-nolibc-arm-linux-gnueabi.tar.xz | tar -C /opt -xJ
+RUN wget -O - https://mirrors.edge.kernel.org/pub/tools/crosstool/files/bin/x86_64/12.2.0/x86_64-gcc-12.2.0-nolibc-i386-linux.tar.xz | tar -C /opt -xJ
+RUN wget -O - https://mirrors.edge.kernel.org/pub/tools/crosstool/files/bin/x86_64/12.2.0/x86_64-gcc-12.2.0-nolibc-mips-linux.tar.xz | tar -C /opt -xJ
+RUN wget -O - https://mirrors.edge.kernel.org/pub/tools/crosstool/files/bin/x86_64/12.2.0/x86_64-gcc-12.2.0-nolibc-powerpc-linux.tar.xz | tar -C /opt -xJ
+RUN wget -O - https://mirrors.edge.kernel.org/pub/tools/crosstool/files/bin/x86_64/12.2.0/x86_64-gcc-12.2.0-nolibc-riscv64-linux.tar.xz | tar -C /opt -xJ
+RUN wget -O - https://mirrors.edge.kernel.org/pub/tools/crosstool/files/bin/x86_64/12.2.0/x86_64-gcc-12.2.0-nolibc-riscv32-linux.tar.xz | tar -C /opt -xJ
+
+RUN wget "https://github.com/qemu/qemu/blob/v5.2.0/pc-bios/opensbi-riscv32-generic-fw_dynamic.bin?raw=true" -O /usr/share/qemu/opensbi-riscv32-generic-fw_dynamic.bin
+
+# Create our user/group
+RUN useradd -m -U barebox
+RUN echo barebox ALL=NOPASSWD: ALL > /etc/sudoers.d/barebox
+
+# install labgrid
+RUN cd /tmp && \
+    git clone --depth 1 -b v23.0 https://github.com/labgrid-project/labgrid && \
+    cd labgrid && \
+    pip3 install . && \
+    ln -s $(which pytest) /usr/local/bin/labgrid-pytest;
+
+USER barebox:barebox

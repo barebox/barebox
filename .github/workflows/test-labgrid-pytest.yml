@@ -1,0 +1,70 @@
+name: test images with labgrid-pytest
+
+on: [push, pull_request]
+
+jobs:
+  labgrid-pytest:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/barebox/barebox/barebox-ci:latest
+      # allow mounting and devtmpfs in the container
+      options: --user=root --privileged -v /dev:/dev
+
+    strategy:
+      matrix:
+
+        include:
+          - ARCH: arm
+            lgenv: 'test/arm/*@multi_v7_defconfig.yaml'
+            defconfig: multi_v7_defconfig
+
+          - ARCH: arm
+            lgenv: test/arm/multi_v8_defconfig.yaml
+            defconfig: multi_v8_defconfig
+
+          - ARCH: mips
+            lgenv: test/mips/qemu-malta_defconfig.yaml
+            defconfig: qemu-malta_defconfig
+
+          - ARCH: x86
+            lgenv: test/x86/efi_defconfig.yaml
+            defconfig: efi_defconfig
+
+          - ARCH: riscv
+            lgenv: test/riscv/qemu@virt32_defconfig.yaml
+            defconfig: virt32_defconfig
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Build
+      run: |
+        export ARCH=${{matrix.arch}}
+
+        export CROSS_COMPILE_arm=/opt/gcc-12.2.0-nolibc/arm-linux-gnueabi/bin/arm-linux-gnueabi-
+        export CROSS_COMPILE_arm64=/opt/gcc-12.2.0-nolibc/aarch64-linux/bin/aarch64-linux-
+        export CROSS_COMPILE_mips=/opt/gcc-12.2.0-nolibc/mips-linux/bin/mips-linux-
+        export CROSS_COMPILE_powerpc=/opt/gcc-12.2.0-nolibc/powerpc-linux/bin/powerpc-linux-
+        export CROSS_COMPILE_riscv=/opt/gcc-12.2.0-nolibc/riscv32-linux/bin/riscv32-linux-
+
+        ./test/generate-dummy-fw.sh
+
+        ./MAKEALL -O build-${{matrix.arch}} -k test/kconfig/enable_self_test.kconf \
+                -k test/kconfig/disable_target_tools.kconf ${{matrix.defconfig}}
+
+        if [ ${{matrix.arch}} = "x86" ]; then
+          cp /usr/share/ovmf/OVMF.fd build-${{matrix.arch}}
+        fi
+
+        if [ ${{matrix.arch}} = "riscv" ]; then
+          cp /usr/share/qemu/opensbi-riscv32-generic-fw_dynamic.bin build-${{matrix.arch}}
+        fi
+    - name: labgrid-pytest
+      run: |
+        export KBUILD_OUTPUT=build-${{matrix.arch}}
+
+        for i in ${{matrix.lgenv}}; do
+          echo "Testing $i"
+          labgrid-pytest --lg-env $i test/py --verbosity=1 --lg-log
+        done

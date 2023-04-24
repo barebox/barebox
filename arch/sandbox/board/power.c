@@ -5,7 +5,7 @@
 #include <poweroff.h>
 #include <restart.h>
 #include <mach/linux.h>
-#include <reset_source.h>
+#include <asm/reset_source.h>
 #include <linux/nvmem-consumer.h>
 
 struct sandbox_power {
@@ -18,7 +18,8 @@ static void sandbox_poweroff(struct poweroff_handler *poweroff)
 {
 	struct sandbox_power *power = container_of(poweroff, struct sandbox_power, poweroff);
 
-	nvmem_cell_write(power->reset_source_cell, &(u8) { RESET_POR }, 1);
+	sandbox_save_reset_source(power->reset_source_cell, RESET_POR);
+
 	linux_exit();
 }
 
@@ -29,11 +30,9 @@ static void sandbox_rst_hang(struct restart_handler *rst)
 
 static void sandbox_rst_reexec(struct restart_handler *rst)
 {
-	u8 reason = RESET_RST;
 	struct sandbox_power *power = container_of(rst, struct sandbox_power, rst_reexec);
 
-	if (!IS_ERR(power->reset_source_cell))
-		WARN_ON(nvmem_cell_write(power->reset_source_cell, &reason, 1) <= 0);
+	sandbox_save_reset_source(power->reset_source_cell, RESET_RST);
 
 	linux_reexec();
 }
@@ -69,7 +68,10 @@ static int sandbox_power_probe(struct device *dev)
 	power->reset_source_cell = of_nvmem_cell_get(dev->of_node,
 						     "reset-source");
 	if (IS_ERR(power->reset_source_cell)) {
-		dev_warn(dev, "No reset source info available: %pe\n", power->reset_source_cell);
+		if (PTR_ERR(power->reset_source_cell) != -EPROBE_DEFER)
+			dev_warn(dev, "No reset source info available: %pe\n",
+				 power->reset_source_cell);
+		power->reset_source_cell = NULL;
 		return 0;
 	}
 

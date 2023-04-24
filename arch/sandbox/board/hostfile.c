@@ -257,23 +257,14 @@ static int of_hostfile_map_fixup(struct device_node *root, void *ctx)
 
 		ret = linux_open_hostfile(&hf);
 		if (ret)
-			goto out;
+			continue;
 
 		reg[0] = hf.base;
 		reg[1] = hf.size;
 
-		ret = of_property_write_u64_array(node, "reg", reg, ARRAY_SIZE(reg));
-		if (ret)
-			goto out;
-
-		ret = of_property_write_bool(node, "barebox,blockdev", hf.is_blockdev);
-		if (ret)
-			goto out;
-
-		ret = of_property_write_u32(node, "barebox,fd", hf.fd);
-out:
-		if (ret)
-			pr_err("error fixing up %s: %pe\n", hf.devname, ERR_PTR(ret));
+		of_property_write_u64_array(node, "reg", reg, ARRAY_SIZE(reg));
+		of_property_write_bool(node, "barebox,blockdev", hf.is_blockdev);
+		of_property_write_u32(node, "barebox,fd", hf.fd);
 	}
 
 	return 0;

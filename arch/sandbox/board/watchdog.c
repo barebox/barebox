@@ -7,7 +7,7 @@
 #include <of.h>
 #include <watchdog.h>
 #include <linux/nvmem-consumer.h>
-#include <reset_source.h>
+#include <asm/reset_source.h>
 
 struct sandbox_watchdog {
 	struct watchdog wdd;
@@ -30,7 +30,7 @@ static int sandbox_watchdog_set_timeout(struct watchdog *wdd, unsigned int timeo
 	if (timeout > wdd->timeout_max)
 		return -EINVAL;
 
-	nvmem_cell_write(wd->reset_source_cell, &(u8) { RESET_WDG }, 1);
+	sandbox_save_reset_source(wd->reset_source_cell, RESET_WDG);
 
 	linux_watchdog_set_timeout(timeout);
 	return 0;
@@ -41,7 +41,6 @@ static int sandbox_watchdog_probe(struct device *dev)
 	struct device_node *np = dev->of_node;
 	struct sandbox_watchdog *wd;
 	struct watchdog *wdd;
-	int ret;
 
 	wd = xzalloc(sizeof(*wd));
 
@@ -50,24 +49,17 @@ static int sandbox_watchdog_probe(struct device *dev)
 	wdd->set_timeout = sandbox_watchdog_set_timeout;
 	wdd->timeout_max = 1000;
 
+	wd->reset_source_cell = of_nvmem_cell_get(np, "reset-source");
+	if (IS_ERR(wd->reset_source_cell)) {
+		if (PTR_ERR(wd->reset_source_cell) != -EPROBE_DEFER)
+			dev_warn(dev, "No reset source info available: %pe\n",
+				 wd->reset_source_cell);
+		wd->reset_source_cell = NULL;
+	}
+
 	wd->cant_disable = of_property_read_bool(np, "barebox,cant-disable");
 
-	ret = watchdog_register(wdd);
-	if (ret) {
-		dev_err(dev, "Failed to register watchdog device\n");
-		return ret;
-	}
-
-	wd->reset_source_cell = of_nvmem_cell_get(dev->of_node,
-						  "reset-source");
-	if (IS_ERR(wd->reset_source_cell)) {
-		dev_warn(dev, "No reset source info available: %pe\n", wd->reset_source_cell);
-		goto out;
-	}
-
-out:
-	dev_info(dev, "probed\n");
-	return 0;
+	return watchdog_register(wdd);
 }
 
 

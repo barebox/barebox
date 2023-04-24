@@ -31,6 +31,8 @@
 		backend = <&part_state>;
 		backend-storage-type = "direct";
 		backend-stridesize = <64>;
+		/* suppres sandbox warnings when stickypage is missing */
+		barebox,feature-gates = <&stickypage>;
 
 		#address-cells = <1>;
 		#size-cells = <1>;
@@ -58,6 +60,8 @@
 		barebox,filename = "$build/stickypage.bin";
 		reg = <0 0 0 4096>;
 		barebox,cdev; /* no caching allowed */
+		barebox,feature-controller;
+		#feature-cells = <0>;
 
 		bmode: reboot-mode {
 			compatible = "nvmem-reboot-mode";

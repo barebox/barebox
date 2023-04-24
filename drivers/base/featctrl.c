@@ -53,10 +53,13 @@ static struct feature_controller *featctrl_get_from_provider(struct of_phandle_a
 	if (ret < 0)
 		return ERR_PTR(ret);
 
+	if (spec->args_count > 1)
+		return ERR_PTR(-EINVAL);
+
 	/* Check if we have such a controller in our array */
 	list_for_each_entry(featctrl, &of_feature_controllers, list) {
 		if (dev_of_node(featctrl->dev) == spec->np) {
-			*gateid = spec->args[0];
+			*gateid = spec->args_count ? spec->args[0] : 0;
 			return featctrl;
 		}
 	}

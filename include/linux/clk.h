@@ -13,6 +13,7 @@
 #include <linux/err.h>
 #include <linux/spinlock.h>
 #include <linux/stringify.h>
+#include <linux/container_of.h>
 #include <xfuncs.h>
 
 struct device;
@@ -296,7 +297,7 @@ static inline struct clk *clk_hw_to_clk(const struct clk_hw *hw)
 
 static inline struct clk_hw *clk_to_clk_hw(const struct clk *clk)
 {
-	return IS_ERR(clk) ? ERR_CAST(clk) : (struct clk_hw *)container_of(clk, struct clk_hw, clk);
+	return container_of_safe(clk, struct clk_hw, clk);
 }
 
 struct clk_div_table {

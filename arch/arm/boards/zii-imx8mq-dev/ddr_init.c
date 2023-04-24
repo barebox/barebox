@@ -178,7 +178,7 @@ void ddr_init(void)
 	reg32_write(DDRC_SWCTL(0), 0x0000);
 	/*
 	 * ------------------- 9 -------------------
-	 * Set DFIMISC.dfi_init_start to 1 
+	 * Set DFIMISC.dfi_init_start to 1
 	 *  -----------------------------------------
 	 */
 	reg32_write(DDRC_DFIMISC(0), 0x00000030);

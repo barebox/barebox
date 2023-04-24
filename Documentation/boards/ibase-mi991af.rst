@@ -40,4 +40,4 @@ To continue please proceed with barebox :ref:`barebox_on_uefi` documentation.
 Links
 -----
 
-  * https://www.ibase.com.tw/english/ProductDetail/EmbeddedComputing/MI991 
+  * https://www.ibase.com.tw/english/ProductDetail/EmbeddedComputing/MI991

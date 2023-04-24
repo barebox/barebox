@@ -36,7 +36,7 @@ static int do_of_overlay(int argc, char *argv[])
 		printf("Support for live tree overlays is disabled. Enable CONFIG_OF_OVERLAY_LIVE\n");
 		return 1;
 	}
-		
+
 	fdt = read_file(argv[optind], &size);
 	if (!fdt) {
 		printf("cannot read %s\n", argv[optind]);

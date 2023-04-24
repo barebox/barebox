@@ -285,7 +285,7 @@ static struct regulator_internal *of_regulator_get(struct device *dev,
 
 	ret = of_device_ensure_probed(node);
 	if (ret) {
-		/* 
+		/*
 		 * If "barebox,allow-dummy-supply" property is set for regulator
 		 * provider allow use of dummy regulator (NULL is returned).
 		 * Check regulator node and its parent if this setting is set

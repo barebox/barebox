@@ -54,7 +54,7 @@ static int serial_omap4_usbboot_probe(struct device *dev)
 	ret = omap4_usbboot_open();
 	if (ret)
 		return ret;
-	
+
 	priv = xzalloc(sizeof(*priv));
 
 	priv->cdev.dev = dev;

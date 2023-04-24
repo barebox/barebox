@@ -33,7 +33,7 @@ struct nxid {
 	u8 mac_count;     /* 0x40        Number of MAC addresses */
 	u8 mac_flag;      /* 0x41        MAC table flags */
 	u8 mac[MAX_NUM_PORTS][6];     /* 0x42 - 0xa1 MAC addresses */
-	u8 res_2[90];     /* 0xa2 - 0xfb Reserved */	
+	u8 res_2[90];     /* 0xa2 - 0xfb Reserved */
 	u32 crc;          /* 0xfc - 0xff CRC32 checksum */
 } __packed;
 

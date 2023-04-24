@@ -24,7 +24,7 @@ barebox itself uses a *state* driver to access the variables in the
 persistent memory.
 
 Currently there is only one implementation, enabled by
-``CONFIG_STATE_DRV=y``. Without driver, the state framework will silently 
+``CONFIG_STATE_DRV=y``. Without driver, the state framework will silently
 fail and be non-functional.
 
 For the Linux run-time there is a userspace tool_ to do

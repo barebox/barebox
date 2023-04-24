@@ -17,12 +17,12 @@ static void sam9263_pmc_init(const struct sam92_pmc_config *config)
 	/* Setting PLL A and divider A */
 	at91_pmc_cfg_plla(IOMEM(AT91SAM926X_BASE_PMC),
 			  AT91_PMC_MUL_(config->mula) |
-			  AT91_PMC_OUT_2 |		// 190 to 240 MHz		
+			  AT91_PMC_OUT_2 |		// 190 to 240 MHz
 			  config->diva,			// Divider
 			  0);
 
 	/* Selection of Master Clock and Processor Clock */
-	 
+
 	/* PCK = PLLA = 2 * MCK */
 	at91_pmc_cfg_mck(IOMEM(AT91SAM926X_BASE_PMC),
 			 AT91_PMC_CSS_SLOW

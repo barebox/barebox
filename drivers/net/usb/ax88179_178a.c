@@ -469,7 +469,7 @@ static int ax88179_rx_fixup(struct usbnet *dev, void *buf, int len)
 			__func__, frame_pos, pkt_len);
 
 		net_receive(&dev->edev, buf + frame_pos, pkt_len);
-		
+
 		pkt_hdr++;
 		frame_pos += ((pkt_len + 7) & 0xfff8) - 2;
 	}

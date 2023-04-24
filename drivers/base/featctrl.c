@@ -46,9 +46,6 @@ static struct feature_controller *featctrl_get_from_provider(struct of_phandle_a
 	struct feature_controller *featctrl;
 	int ret;
 
-	if (!spec)
-		return ERR_PTR(-EINVAL);
-
 	ret = of_device_ensure_probed(spec->np);
 	if (ret < 0)
 		return ERR_PTR(ret);

@@ -6,6 +6,7 @@ imd=$3
 
 echo "#include <asm/barebox.lds.h>"
 echo "#include <asm-generic/pointer.h>"
+echo ".section .note.GNU-stack,\"\",%progbits"
 
 le32() {
 	printf ".byte 0x%02x, 0x%02x, 0x%02x, 0x%02x\n" \

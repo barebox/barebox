@@ -26,6 +26,7 @@ quiet_cmd_logo_S = LOGO.S  $@
 cmd_logo_S =							\
 (								\
 	echo '\#include <asm/barebox.lds.h>';			\
+	echo '.section .note.GNU-stack,"",%progbits';		\
 	echo '.section .bblogo.rodata.$(subst -,_,$(*F)),"a"';	\
 	echo '.balign STRUCT_ALIGNMENT';			\
 	echo '.global __bblogo_$(subst -,_,$(*F))_start';	\

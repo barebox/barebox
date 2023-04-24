@@ -4,6 +4,7 @@ name=$1
 dtbo=$2
 
 echo "#include <asm/barebox.lds.h>"
+echo ".section .note.GNU-stack,\"\",%progbits"
 
 echo ".section .dtb.rodata.${name}_dtbo,\"a\""
 echo ".balign STRUCT_ALIGNMENT"

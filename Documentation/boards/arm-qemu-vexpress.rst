@@ -7,6 +7,9 @@ ARM Qemu vexpress
 Running barebox on QEMU vexpress machine
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Images for the vexpress platform are built as part of the
+multi_v7_defconfig.
+
 Usage::
 
 	$ qemu-system-arm -m 1024M \

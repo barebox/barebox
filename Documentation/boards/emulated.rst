@@ -56,10 +56,10 @@ The script can also be used with a precompiled barebox tree::
   export KBUILD_OUTPUT=build
 
   # run a barebox image built outside tuxmake on an ARM virt machine
-  ARCH=arm ./test/emulate.pl virt@vexpress_defconfig --no-tuxmake
+  ARCH=arm ./test/emulate.pl virt@multi_v7_defconfig --no-tuxmake
 
   # run tests instead of starting emulator interactively
-  ARCH=arm ./test/emulate.pl virt@vexpress_defconfig --no-tuxmake --test
+  ARCH=arm ./test/emulate.pl virt@multi_v7_defconfig --no-tuxmake --test
 
 ``emulate.pl`` also has some knowledge on paravirtualized devices::
 

@@ -44,7 +44,7 @@ Building barebox for QEMU targets is no different from others.
 For example, we can do the following with the CROSS_COMPILE environment
 variable being properly set to a working toolchain for ARM::
 
-  $ make vexpress_defconfig
+  $ make multi_v7_defconfig
   $ make
 
 Testing

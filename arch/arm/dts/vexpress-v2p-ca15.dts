@@ -28,3 +28,11 @@
 		};
 	};
 };
+
+&{/leds} {
+	status = "disabled";
+};
+
+&{/bus@8000000/motherboard-bus@8000000/iofpga-bus@300000000/compact-flash@1a0000/} {
+	status = "disabled";
+};

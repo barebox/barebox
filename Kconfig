@@ -6,6 +6,8 @@
 #
 mainmenu "Barebox/$(ARCH) $(KERNELVERSION) Configuration"
 
+source "scripts/Kconfig.include"
+
 source "arch/$(SRCARCH)/Kconfig"
 
 source "common/Kconfig"

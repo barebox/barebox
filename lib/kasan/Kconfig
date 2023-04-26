@@ -1,7 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-source "scripts/Kconfig.include"
-
 config HAVE_ARCH_KASAN
 	bool
 

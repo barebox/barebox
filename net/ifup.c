@@ -158,8 +158,8 @@ out:
 
 static void set_linux_bootarg(struct eth_device *edev)
 {
+	char *bootarg;
 	if (edev->global_mode == ETH_MODE_STATIC) {
-		char *bootarg;
 		IPaddr_t serverip;
 		IPaddr_t gateway;
 
@@ -175,7 +175,11 @@ static void set_linux_bootarg(struct eth_device *edev)
 		dev_set_param(&edev->dev, "linux.bootargs", bootarg);
 		free(bootarg);
 	} else if (edev->global_mode == ETH_MODE_DHCP) {
-		dev_set_param(&edev->dev, "linux.bootargs", "ip=dhcp");
+		bootarg = basprintf("ip=::::%s:%s:dhcp",
+				barebox_get_hostname(),
+				edev->linuxdevname ? edev->linuxdevname : "");
+		dev_set_param(&edev->dev, "linux.bootargs", bootarg);
+		free(bootarg);
 	}
 }
 

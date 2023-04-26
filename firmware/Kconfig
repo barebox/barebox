@@ -6,20 +6,56 @@ config EXTRA_FIRMWARE_DIR
 	string "Firmware blobs root directory"
 	default "firmware"
 
+config HAVE_FIRMWARE_IMX_LPDDR4_PMU_TRAIN
+	bool
+	default y
+	depends on $(success,test -e $(srctree)/firmware/lpddr4_pmu_train_1d_dmem.bin)
+	depends on $(success,test -e $(srctree)/firmware/lpddr4_pmu_train_1d_imem.bin)
+	depends on $(success,test -e $(srctree)/firmware/lpddr4_pmu_train_2d_dmem.bin)
+	depends on $(success,test -e $(srctree)/firmware/lpddr4_pmu_train_2d_imem.bin)
+
 config FIRMWARE_IMX_LPDDR4_PMU_TRAIN
 	bool
+
+config HAVE_FIRMWARE_IMX_DDR4_PMU_TRAIN
+	bool
+	default y
+	depends on $(success,test -e $(srctree)/firmware/ddr4_dmem_1d.bin)
+	depends on $(success,test -e $(srctree)/firmware/ddr4_dmem_2d.bin)
+	depends on $(success,test -e $(srctree)/firmware/ddr4_imem_1d.bin)
+	depends on $(success,test -e $(srctree)/firmware/ddr4_imem_2d.bin)
 
 config FIRMWARE_IMX_DDR4_PMU_TRAIN
 	bool
 
+config HAVE_FIRMWARE_IMX8MM_ATF
+	bool
+	default y
+	depends on $(success,test -e $(srctree)/firmware/imx8mm-bl31.bin)
+
 config FIRMWARE_IMX8MM_ATF
 	bool
+
+config HAVE_FIRMWARE_IMX8MN_ATF
+	bool
+	default y
+	depends on $(success,test -e $(srctree)/firmware/imx8mn-bl31.bin)
 
 config FIRMWARE_IMX8MN_ATF
 	bool
 
+config HAVE_FIRMWARE_IMX8MP_ATF
+	bool
+	default y
+	depends on $(success,test -e $(srctree)/firmware/imx8mp-bl31.bin)
+
 config FIRMWARE_IMX8MP_ATF
 	bool
+
+config HAVE_FIRMWARE_IMX8MQ_ATF
+	bool
+	default y
+	depends on $(success,test -e $(srctree)/firmware/imx8mq-bl31.bin)
 
 config FIRMWARE_IMX8MQ_ATF
 	bool
@@ -27,14 +63,17 @@ config FIRMWARE_IMX8MQ_ATF
 config FIRMWARE_IMX8MM_OPTEE
 	bool "install OP-TEE on i.MX8MM boards"
 	depends on FIRMWARE_IMX8MM_ATF && PBL_OPTEE
+	depends on $(success,test -e $(srctree)/firmware/imx8mm-bl32.bin)
 
 config FIRMWARE_IMX8MN_OPTEE
 	bool "install OP-TEE on i.MX8MN boards"
 	depends on FIRMWARE_IMX8MN_ATF && PBL_OPTEE
+	depends on $(success,test -e $(srctree)/firmware/imx8mn-bl32.bin)
 
 config FIRMWARE_IMX8MP_OPTEE
 	bool "install OP-TEE on i.MX8MP boards"
 	depends on FIRMWARE_IMX8MP_ATF && PBL_OPTEE
+	depends on $(success,test -e $(srctree)/firmware/imx8mp-bl32.bin)
 
 config FIRMWARE_CCBV2_OPTEE
 	bool

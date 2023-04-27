@@ -1,0 +1,22 @@
+targets:
+  main:
+    drivers:
+      QEMUDriver:
+        qemu_bin: qemu
+        machine: sabrelite
+        cpu: cortex-a9
+        memory: 1024M
+        kernel: barebox-dt-2nd.img
+        dtb: imx6q-sabreliste.dtb
+        extra_args: '-nographic -serial null'
+      BareboxDriver:
+        prompt: 'barebox@[^:]+:[^ ]+ '
+        bootstring: 'commandline:'
+      BareboxTestStrategy: {}
+images:
+  barebox-dt-2nd.img: !template "$LG_BUILDDIR/images/barebox-dt-2nd.img"
+  imx6q-sabreliste.dtb: !template "$LG_BUILDDIR/arch/arm/dts/imx6q-sabrelite.dtb"
+tools:
+  qemu: /usr/bin/qemu-system-arm
+imports:
+  -  ../strategy.py

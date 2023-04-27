@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-KBUILD_DEFCONFIG := qemu_virt64_defconfig
+KBUILD_DEFCONFIG := multi_v8_defconfig
 
 KBUILD_CPPFLAGS	+= -D__ARM__ -fno-strict-aliasing
 # Explicitly specifiy 32-bit ARM ISA since toolchain default can be -mthumb:

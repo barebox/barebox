@@ -39,15 +39,8 @@ static int vpb_console_init(void)
 }
 console_initcall(vpb_console_init);
 
-static struct smc91c111_pdata net_pdata = {
-	.qemu_fixup = 1,
-};
-
 static int vpb_devices_init(void)
 {
-	add_generic_device("smc91c111", DEVICE_ID_DYNAMIC, NULL, VERSATILE_ETH_BASE,
-			64 * 1024, IORESOURCE_MEM, &net_pdata);
-
 	armlinux_set_architecture(MACH_TYPE_VERSATILE_PB);
 
 	return 0;

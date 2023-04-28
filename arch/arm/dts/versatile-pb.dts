@@ -3,8 +3,34 @@
 / {
 	model = "ARM Versatile PB";
 	compatible = "arm,versatile-pb";
+
+	chosen {
+		environment-nor {
+			compatible = "barebox,environment";
+			device-path = &env_nor;
+		};
+	};
 };
 
 &{/memory} {
 	reg = <0x0 0x04000000>;
+};
+
+&{/flash@34000000} {
+	partitions {
+		compatible = "fixed-partitions";
+
+		#address-cells = <1>;
+                #size-cells = <1>;
+
+                partition@0 {
+			label = "barebox";
+			reg = <0x0 0x400000>;
+		};
+
+                env_nor: partition@400000 {
+			label = "bareboxenv";
+			reg = <0x400000 0x400000>;
+		};
+	};
 };

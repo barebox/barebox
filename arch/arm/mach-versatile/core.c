@@ -116,10 +116,6 @@ static void __noreturn versatile_reset_soc(struct restart_handler *rst)
 
 static int versatile_init(void)
 {
-	amba_apb_device_add(NULL, "pl061_gpio", 0, 0x101e4000, 4096, NULL, 0);
-	amba_apb_device_add(NULL, "pl061_gpio", 1, 0x101e5000, 4096, NULL, 0);
-	amba_apb_device_add(NULL, "pl061_gpio", 2, 0x101e6000, 4096, NULL, 0);
-	amba_apb_device_add(NULL, "pl061_gpio", 3, 0x101e7000, 4096, NULL, 0);
 	restart_handler_register_fn("soc", versatile_reset_soc);
 	return 0;
 }

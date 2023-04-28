@@ -98,8 +98,6 @@ static int vpb_clocksource_init(void)
 	return init_clock(&vpb_cs);
 }
 
-core_initcall(vpb_clocksource_init);
-
 static void __noreturn versatile_reset_soc(struct restart_handler *rst)
 {
 	u32 val;
@@ -116,7 +114,12 @@ static void __noreturn versatile_reset_soc(struct restart_handler *rst)
 
 static int versatile_init(void)
 {
+	if (!of_machine_is_compatible("arm,versatile-pb") &&
+	    !of_machine_is_compatible("arm,versatile-ab"))
+		return 0;
+
+	vpb_clocksource_init();
 	restart_handler_register_fn("soc", versatile_reset_soc);
 	return 0;
 }
-coredevice_initcall(versatile_init);
+core_initcall(versatile_init);

@@ -24,6 +24,10 @@ static int vpb_console_init(void)
 	char *hostname = "versatilepb-unknown";
 	char *model = "ARM Versatile PB";
 
+	if (!of_machine_is_compatible("arm,versatile-pb") &&
+	    !of_machine_is_compatible("arm,versatile-ab"))
+		return 0;
+
 	if (cpu_is_arm926()) {
 		hostname = "versatilepb-arm926";
 		model = "ARM Versatile PB (arm926)";
@@ -32,17 +36,10 @@ static int vpb_console_init(void)
 		model = "ARM Versatile PB (arm1176)";
 	}
 
+	armlinux_set_architecture(MACH_TYPE_VERSATILE_PB);
 	barebox_set_hostname(hostname);
 	barebox_set_model(model);
 
 	return 0;
 }
 console_initcall(vpb_console_init);
-
-static int vpb_devices_init(void)
-{
-	armlinux_set_architecture(MACH_TYPE_VERSATILE_PB);
-
-	return 0;
-}
-device_initcall(vpb_devices_init);

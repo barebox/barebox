@@ -41,39 +41,6 @@
 #include <mach/versatile/platform.h>
 #include <mach/versatile/init.h>
 
-struct clk {
-	unsigned long rate;
-};
-
-static struct clk ref_clk_dummy;
-
-static struct clk ref_clk_24 = {
-	.rate = 24000000,
-};
-
-unsigned long clk_get_rate(struct clk *clk)
-{
-	return clk->rate;
-}
-EXPORT_SYMBOL(clk_get_rate);
-
-/* enable and disable do nothing */
-int clk_set_rate(struct clk *clk, unsigned long rate)
-{
-	return 0;
-}
-EXPORT_SYMBOL(clk_set_rate);
-
-int clk_enable(struct clk *clk)
-{
-	return 0;
-}
-EXPORT_SYMBOL(clk_enable);
-
-void clk_disable(struct clk *clk)
-{
-}
-EXPORT_SYMBOL(clk_disable);
 
 /* 1Mhz / 256 */
 #define TIMER_FREQ (1000000/256)
@@ -133,22 +100,6 @@ static int vpb_clocksource_init(void)
 }
 
 core_initcall(vpb_clocksource_init);
-
-static struct clk_lookup clocks_lookups[] = {
-	CLKDEV_CON_ID("apb_pclk", &ref_clk_dummy),
-	CLKDEV_DEV_ID("uart-pl0110", &ref_clk_24),
-	CLKDEV_DEV_ID("uart-pl0111", &ref_clk_24),
-	CLKDEV_DEV_ID("uart-pl0112", &ref_clk_24),
-	CLKDEV_DEV_ID("uart-pl0113", &ref_clk_24),
-};
-
-static int versatile_clkdev_init(void)
-{
-	clkdev_add_table(clocks_lookups, ARRAY_SIZE(clocks_lookups));
-
-	return 0;
-}
-postcore_initcall(versatile_clkdev_init);
 
 void versatile_register_uart(unsigned id)
 {

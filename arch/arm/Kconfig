@@ -161,6 +161,8 @@ config ARCH_VERSATILE
 	select GPIOLIB
 	select HAVE_CLK
 	select HAS_DEBUG_LL
+	select COMMON_CLK
+	select COMMON_CLK_OF_PROVIDER
 
 config ARCH_TEGRA
 	bool "NVIDIA Tegra"

@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# barebox image generation Makefile for VExpress images
+#
+
+pblb-$(CONFIG_MACH_VERSATILEPB) += start_versatile_pb
+FILE_barebox-versatile-pb.img = start_versatile_pb.pblb
+image-$(CONFIG_MACH_VERSATILEPB) += barebox-versatile-pb.img

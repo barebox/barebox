@@ -163,6 +163,7 @@ config ARCH_VERSATILE
 	select HAS_DEBUG_LL
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
+	select HAVE_PBL_MULTI_IMAGES
 
 config ARCH_TEGRA
 	bool "NVIDIA Tegra"

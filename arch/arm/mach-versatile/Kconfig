@@ -10,19 +10,8 @@ config MACH_VERSATILEPB
 	default y
 	select ARM_AMBA
 	select CLKDEV_LOOKUP
-
-choice
-	prompt "ARM Board type"
-
-config MACH_VERSATILEPB_926T
-	bool "ARM Versatile/PB (ARM926EJ-S)"
 	select CPU_ARM926T
-
-config MACH_VERSATILEPB_ARM1176
-	bool "ARM Versatile/PB (ARM1176)"
 	select CPU_ARM1176
-
-endchoice
 
 source "arch/arm/boards/versatile/Kconfig"
 

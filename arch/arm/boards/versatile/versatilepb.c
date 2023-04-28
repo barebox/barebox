@@ -14,7 +14,6 @@
 #include <asm/armlinux.h>
 #include <asm/system_info.h>
 #include <generated/mach-types.h>
-#include <mach/versatile/init.h>
 #include <mach/versatile/platform.h>
 #include <environment.h>
 #include <linux/sizes.h>
@@ -36,7 +35,6 @@ static int vpb_console_init(void)
 	barebox_set_hostname(hostname);
 	barebox_set_model(model);
 
-	versatile_register_uart(0);
 	return 0;
 }
 console_initcall(vpb_console_init);

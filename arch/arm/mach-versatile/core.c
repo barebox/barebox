@@ -39,7 +39,6 @@
 #include <asm/armlinux.h>
 
 #include <mach/versatile/platform.h>
-#include <mach/versatile/init.h>
 
 
 /* 1Mhz / 256 */
@@ -100,29 +99,6 @@ static int vpb_clocksource_init(void)
 }
 
 core_initcall(vpb_clocksource_init);
-
-void versatile_register_uart(unsigned id)
-{
-	resource_size_t start;
-
-	switch (id) {
-	case 0:
-		start = VERSATILE_UART0_BASE;
-		break;
-	case 1:
-		start = VERSATILE_UART1_BASE;
-		break;
-	case 2:
-		start = VERSATILE_UART2_BASE;
-		break;
-	case 3:
-		start = VERSATILE_UART3_BASE;
-		break;
-	default:
-		return;
-	}
-	amba_apb_device_add(NULL, "uart-pl011", id, start, 4096, NULL, 0);
-}
 
 static void __noreturn versatile_reset_soc(struct restart_handler *rst)
 {

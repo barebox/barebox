@@ -104,6 +104,13 @@ do_build_target() {
 	check_pipe_status
 	configure_result="$?"
 
+	if [ ${arch} = "arm" ]; then
+		grep -q "CONFIG_CPU_64=y" ${BUILDDIR}/.config
+		if [ $? = 0 ]; then
+			arch=arm64
+		fi
+	fi
+
 	cross_compile=$(eval echo '$CROSS_COMPILE_'${tmp})
 	cross_compile_set=$(eval echo '${CROSS_COMPILE_'${tmp}'+set}')
 	if [ "${cross_compile_set}" = "" ]

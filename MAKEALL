@@ -286,7 +286,9 @@ if [ $# -eq 0 ]
 then
 	do_build ${ARCH} "${REGEX}"
 else
-	do_build_target ${ARCH} $1
+	for i in $*; do
+		do_build_target ${ARCH} $i
+	done
 fi
 
 stats

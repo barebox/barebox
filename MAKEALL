@@ -2,10 +2,6 @@
 #
 # SPDX-License-Identifier: GPL-2.0-only
 
-# Print statistics when we exit
-trap exit 1 2 3 15
-trap stats 0
-
 # Keep track of the number of builds and errors
 nb_errors=0
 errors_list=""
@@ -16,12 +12,9 @@ time_start=$(date +%s)
 
 filename=$(basename $0)
 
-is_print_stats=1
-
 #-----------------------------------------------------------------------
 
 usage() {
-	is_print_stats=0
 	echo "Usage: ${filename} [OPTION]..."
 	echo "Barebox MAKEALL tools."
 	echo ""
@@ -61,8 +54,6 @@ usage() {
 }
 
 stats() {
-	[ ${is_print_stats} -lt 1 ] && return
-
 	echo ""
 	echo "--------------------- SUMMARY ----------------------------"
 	echo "defconfigs compiled: ${nb_defconfigs}"
@@ -280,4 +271,7 @@ then
 else
 	do_build_target ${ARCH} $1
 fi
+
+stats
+
 exit $nb_errors

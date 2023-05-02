@@ -43,13 +43,14 @@ usage() {
 	echo "CONFIG=./MAKEALL.cfg ./MAKEALL"
 	echo ""
 	echo "you can specify via env or option"
-	echo "env       option"
-	echo "ARCH      -a      arch"
-	echo "CONFIG    -c      config"
-	echo "JOBS      -j      jobs"
-	echo "BUILDDIR  -O      build dir"
-	echo "LOGDIR    -l      log dir"
-	echo "REGEX     -e      regex"
+	echo "env         option"
+	echo "ARCH        -a      arch"
+	echo "CONFIG      -c      config"
+	echo "JOBS        -j      jobs"
+	echo "BUILDDIR    -O      build dir"
+	echo "LOGDIR      -l      log dir"
+	echo "REGEX       -e      regex"
+	echo "KCONFIG_ADD -k      kconfig fragment"
 	echo ""
 }
 
@@ -91,6 +92,12 @@ do_build_target() {
 
 	MAKE="make -j${JOBS} ARCH=${arch} O=${BUILDDIR}"
 	${MAKE} ${target} 2>&1 > "${log_report}" | tee "${log_err}"
+	for i in ${KCONFIG_ADD}; do
+		./scripts/kconfig/merge_config.sh -m -O \
+			${BUILDDIR} ${BUILDDIR}/.config $i \
+			2>&1 > "${log_report}" | tee "${log_err}"
+	done
+	${MAKE} olddefconfig 2>&1 > "${log_report}" | tee "${log_err}"
 
 	check_pipe_status
 	configure_result="$?"
@@ -182,7 +189,7 @@ do_build_all() {
 	return $build_target
 }
 
-while getopts "hc:j:O:l:a:e:" Option
+while getopts "hc:j:O:l:a:e:k:" Option
 do
 case $Option in
 	a )
@@ -202,6 +209,9 @@ case $Option in
 		;;
 	e )
 		REGEX=${OPTARG}
+		;;
+	k )
+		KCONFIG_ADD="${KCONFIG_ADD} ${OPTARG}"
 		;;
 	h )
 		usage

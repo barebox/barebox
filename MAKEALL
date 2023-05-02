@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 # Keep track of the number of builds and errors
-nb_errors=0
-errors_list=""
+nb_warnings=0
+warnings_list=""
 nb_defconfigs=0
 ret=0
 
@@ -61,8 +61,8 @@ stats() {
 	time_stop=$(date +%s)
 	time_diff=$((${time_stop} - ${time_start}))
 	printf "compiled in %4is\n" ${time_diff}
-	if [ ${nb_errors} -gt 0 ] ; then
-		echo "defconfigs with warnings or errors: ${nb_errors} (${errors_list} )"
+	if [ ${nb_warnings} -gt 0 ] ; then
+		echo "defconfigs with warnings or errors: ${nb_warnings} (${warnings_list} )"
 	fi
 	echo "----------------------------------------------------------"
 
@@ -147,8 +147,8 @@ do_build_target() {
 	fi
 
 	if [ -s "${log_err}" ] ; then
-		nb_errors=$((nb_errors + 1))
-		errors_list="${errors_list} ${target}"
+		nb_warnings=$((nb_warnings + 1))
+		warnings_list="${warnings_list} ${target}"
 	else
 		rm "${log_err}"
 	fi
@@ -284,4 +284,4 @@ fi
 
 stats
 
-exit $nb_errors
+exit $nb_warnings

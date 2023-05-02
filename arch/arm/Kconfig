@@ -275,6 +275,8 @@ config ARCH_VERSATILE
 	bool "ARM Versatile boards (ARM926EJ-S)"
 	depends on 32BIT
 	select GPIOLIB
+	select ARM_AMBA
+	select AMBA_SP804
 	select HAVE_CLK
 	select HAS_DEBUG_LL
 	select COMMON_CLK

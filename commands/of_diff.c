@@ -16,9 +16,6 @@
 static struct device_node *get_tree(const char *filename, struct device_node *root)
 {
 	struct device_node *node;
-	void *fdt;
-	size_t size;
-	int ret;
 
 	if (!strcmp(filename, "-")) {
 		node = of_get_root_node();
@@ -40,15 +37,7 @@ static struct device_node *get_tree(const char *filename, struct device_node *ro
 		return node;
 	}
 
-	ret = read_file_2(filename, &size, &fdt, FILESIZE_MAX);
-	if (ret)
-		return ERR_PTR(ret);
-
-	node = of_unflatten_dtb(fdt, size);
-
-	free(fdt);
-
-	return node;
+	return of_read_file(filename);
 }
 
 static int do_of_diff(int argc, char *argv[])

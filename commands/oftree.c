@@ -31,7 +31,6 @@
 static int do_oftree(int argc, char *argv[])
 {
 	struct fdt_header *fdt = NULL;
-	size_t size;
 	int opt;
 	int probe = 0;
 	char *load = NULL;
@@ -76,18 +75,11 @@ static int do_oftree(int argc, char *argv[])
 	}
 
 	if (load) {
-		fdt = read_file(load, &size);
-		if (!fdt) {
-			printf("unable to read %s\n", load);
-			return 1;
-		}
-
-		root = of_unflatten_dtb(fdt, size);
-
-		free(fdt);
-
-		if (IS_ERR(root))
+		root = of_read_file(load);
+		if (IS_ERR(root)) {
+			printf("Cannot open %s: %pe\n", load, root);
 			return PTR_ERR(root);
+		}
 
 		ret = of_set_root_node(root);
 		if (ret) {

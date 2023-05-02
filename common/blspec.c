@@ -426,8 +426,6 @@ static bool entry_is_of_compatible(struct blspec_entry *entry)
 {
 	const char *devicetree;
 	const char *abspath;
-	size_t size;
-	void *fdt = NULL;
 	int ret;
 	struct device_node *root = NULL, *barebox_root;
 	const char *compat;
@@ -457,14 +455,7 @@ static bool entry_is_of_compatible(struct blspec_entry *entry)
 
 	filename = basprintf("%s/%s", abspath, devicetree);
 
-	fdt = read_file(filename, &size);
-	if (!fdt) {
-		pr_err("Cannot read: %s\n", filename);
-		ret = false;
-		goto out;
-	}
-
-	root = of_unflatten_dtb(fdt, size);
+	root = of_read_file(filename);
 	if (IS_ERR(root)) {
 		ret = false;
 		root = NULL;
@@ -485,7 +476,6 @@ out:
 	if (root)
 		of_delete_node(root);
 	free(filename);
-	free(fdt);
 
 	return ret;
 }

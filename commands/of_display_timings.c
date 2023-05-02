@@ -67,29 +67,11 @@ static int do_of_display_timings(int argc, char *argv[])
 
 	/* Check if external dtb given */
 	if (dtbfile) {
-		void *fdt;
-		size_t size;
-
-		fdt = read_file(dtbfile, &size);
-		if (!fdt) {
-			pr_err("unable to read %s: %s\n", dtbfile,
-				strerror(errno));
-			return -errno;
-		}
-
-		if (file_detect_type(fdt, size) != filetype_oftree) {
-			pr_err("%s is not a oftree file.\n", dtbfile);
-			free(fdt);
-			return -EINVAL;
-		}
-
-		root = of_unflatten_dtb(fdt, size);
-
-		free(fdt);
-
-		if (IS_ERR(root))
+		root = of_read_file(dtbfile);
+		if (IS_ERR(root)) {
+			printf("Cannot open %s: %pe\n", dtbfile, root);
 			return PTR_ERR(root);
-
+		}
 	} else {
 		root = of_get_root_node();
 	}

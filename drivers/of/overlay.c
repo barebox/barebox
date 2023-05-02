@@ -308,22 +308,13 @@ static bool of_overlay_matches_filter(const char *filename, struct device_node *
 int of_overlay_apply_file(struct device_node *root, const char *filename,
 			  bool filter)
 {
-	void *fdt;
 	struct device_node *ovl;
-	size_t size;
 	int ret;
 
 	if (filter && !of_overlay_matches_filter(filename, NULL))
 		return 0;
 
-	ret = read_file_2(filename, &size, &fdt, FILESIZE_MAX);
-	if (ret)
-		return ret;
-
-	ovl = of_unflatten_dtb(fdt, size);
-
-	free(fdt);
-
+	ovl = of_read_file(filename);
 	if (IS_ERR(ovl)) {
 		pr_err("Failed to unflatten %s: %pe\n", filename, ovl);
 		return PTR_ERR(ovl);

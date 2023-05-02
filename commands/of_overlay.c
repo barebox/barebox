@@ -15,9 +15,7 @@
 static int do_of_overlay(int argc, char *argv[])
 {
 	int ret;
-	struct fdt_header *fdt;
 	struct device_node *overlay;
-	size_t size;
 	bool live_tree = false;
 	int opt;
 
@@ -37,16 +35,11 @@ static int do_of_overlay(int argc, char *argv[])
 		return 1;
 	}
 
-	fdt = read_file(argv[optind], &size);
-	if (!fdt) {
-		printf("cannot read %s\n", argv[optind]);
-		return 1;
-	}
-
-	overlay = of_unflatten_dtb(fdt, size);
-	free(fdt);
-	if (IS_ERR(overlay))
+	overlay = of_read_file(argv[optind]);
+	if (IS_ERR(overlay)) {
+		printf("Cannot open %s: %pe\n", argv[optind], overlay);
 		return PTR_ERR(overlay);
+	}
 
 	if (live_tree) {
 		ret = of_overlay_apply_tree(of_get_root_node(), overlay);

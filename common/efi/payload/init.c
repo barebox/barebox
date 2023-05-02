@@ -322,31 +322,15 @@ static int efi_late_init(void)
 	state_desc = xasprintf("/boot/EFI/barebox/state.dtb");
 
 	if (state_desc) {
-		void *fdt;
-		size_t size;
 		struct device_node *root = NULL;
 		struct device_node *np = NULL;
 		struct state *state;
 
-		fdt = read_file(state_desc, &size);
-		if (!fdt) {
-			pr_err("unable to read %s: %s\n", state_desc,
-			       strerror(errno));
-			return -errno;
-		}
-
-		if (file_detect_type(fdt, size) != filetype_oftree) {
-			pr_err("%s is not an oftree file.\n", state_desc);
-			free(fdt);
-			return -EINVAL;
-		}
-
-		root = of_unflatten_dtb(fdt, size);
-
-		free(fdt);
-
-		if (IS_ERR(root))
+		root = of_read_file(state_desc);
+		if (IS_ERR(root)) {
+			printf("Cannot open %s: %pe\n", state_desc, root);
 			return PTR_ERR(root);
+		}
 
 		ret = barebox_register_of(root);
 		if (ret)

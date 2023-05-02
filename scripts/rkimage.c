@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <time.h>
-#include <openssl/sha.h>
+#include <openssl/evp.h>
 #include <errno.h>
 #include <stdbool.h>
 
@@ -22,20 +22,24 @@
 
 static void sha256(const void *buf, int len, void *out)
 {
-	SHA256_CTX sha256;
+	EVP_MD_CTX *md_ctx;
 
-	SHA256_Init(&sha256);
-	SHA256_Update(&sha256, buf, len);
-	SHA256_Final(out, &sha256);
+	md_ctx = EVP_MD_CTX_new();
+	EVP_DigestInit(md_ctx, EVP_sha256());
+	EVP_DigestUpdate(md_ctx, buf, len);
+	EVP_DigestFinal(md_ctx, out, NULL);
+	EVP_MD_CTX_free(md_ctx);
 }
 
 static void sha512(const void *buf, int len, void *out)
 {
-	SHA512_CTX sha512;
+	EVP_MD_CTX *md_ctx;
 
-	SHA512_Init(&sha512);
-	SHA512_Update(&sha512, buf, len);
-	SHA512_Final(out, &sha512);
+	md_ctx = EVP_MD_CTX_new();
+	EVP_DigestInit(md_ctx, EVP_sha512());
+	EVP_DigestUpdate(md_ctx, buf, len);
+	EVP_DigestFinal(md_ctx, out, NULL);
+	EVP_MD_CTX_free(md_ctx);
 }
 
 typedef enum {

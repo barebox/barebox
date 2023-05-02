@@ -167,7 +167,7 @@ do_build() {
 	local arch=$1
 	local regex=$2
 
-	find arch/${arch}/configs -name "${regex}_defconfig" | while read i
+	find arch/${arch}/configs -name "${regex}_defconfig" | sort | while read i
 	do
 		local target=$(basename $i)
 

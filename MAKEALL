@@ -157,8 +157,8 @@ do_build() {
 	local arch=$1
 	local regex=$2
 
-	find arch/${arch}/configs -name "${regex}_defconfig" | sort | while read i
-	do
+	configs=$(find arch/${arch}/configs -name "${regex}_defconfig" | sort)
+	for i in ${configs}; do
 		local target=$(basename $i)
 
 		do_build_target ${arch} ${target}

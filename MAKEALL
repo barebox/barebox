@@ -98,6 +98,12 @@ do_build_target() {
 
 	tmp=$(echo "${target}" | tr - _)
 
+	MAKE="make -j${JOBS} ARCH=${arch} O=${BUILDDIR}"
+	${MAKE} ${target} 2>&1 > "${log_report}" | tee "${log_err}"
+
+	check_pipe_status
+	configure_result="$?"
+
 	cross_compile=$(eval echo '$CROSS_COMPILE_'${tmp})
 	cross_compile_set=$(eval echo '${CROSS_COMPILE_'${tmp}'+set}')
 	if [ "${cross_compile_set}" = "" ]
@@ -110,25 +116,20 @@ do_build_target() {
 		fi
 	fi
 
-	MAKE="make -j${JOBS} CROSS_COMPILE=${cross_compile} ARCH=${arch} O=${BUILDDIR}"
-	${MAKE} ${target} 2>&1 > "${log_report}" | tee "${log_err}"
-
-	check_pipe_status
-	result="$?"
-
 	printf "Configure: " | tee -a "${log_report}"
 
-	if [ "$result" = "0" ]; then
+	if [ "$configure_result" = "0" ]; then
 		printf "OK     \n" | tee -a "${log_report}"
 
+		MAKE="make -j${JOBS} CROSS_COMPILE=${cross_compile} ARCH=${arch} O=${BUILDDIR}"
 		${MAKE} -s 2>&1 >> "${log_report}" | tee -a "${log_err}"
 
 		check_pipe_status
-		result="$?"
+		compile_result="$?"
 
 		printf "Compile: " ${target} | tee -a "${log_report}"
 
-		if [ "$result" = "0" ]; then
+		if [ "$compile_result" = "0" ]; then
 			printf "OK     \n" | tee -a "${log_report}"
 			${cross_compile}size ${BUILDDIR}/barebox | tee -a "${log_report}"
 		else

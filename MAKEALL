@@ -138,7 +138,6 @@ do_build_target() {
 
 		if [ "$compile_result" = "0" ]; then
 			printf "OK     \n" | tee -a "${log_report}"
-			${cross_compile}size ${BUILDDIR}/barebox | tee -a "${log_report}"
 		else
 			printf "FAILED \n" | tee -a "${log_report}"
 			ret=1

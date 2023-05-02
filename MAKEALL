@@ -5,6 +5,8 @@
 # Keep track of the number of builds and errors
 nb_warnings=0
 warnings_list=""
+nb_errors=0
+errors_list=""
 nb_defconfigs=0
 ret=0
 
@@ -61,8 +63,11 @@ stats() {
 	time_stop=$(date +%s)
 	time_diff=$((${time_stop} - ${time_start}))
 	printf "compiled in %4is\n" ${time_diff}
+	if [ ${nb_errors} -gt 0 ] ; then
+		echo "defconfigs with errors: ${nb_errors} (${errors_list} )"
+	fi
 	if [ ${nb_warnings} -gt 0 ] ; then
-		echo "defconfigs with warnings or errors: ${nb_warnings} (${warnings_list} )"
+		echo "defconfigs with warnings: ${nb_warnings} (${warnings_list} )"
 	fi
 	echo "----------------------------------------------------------"
 
@@ -138,6 +143,8 @@ do_build_target() {
 			printf "OK     \n" | tee -a "${log_report}"
 		else
 			printf "FAILED \n" | tee -a "${log_report}"
+			nb_errors=$((nb_errors + 1))
+			errors_list="${errors_list} ${target}"
 			ret=1
 		fi
 	else
@@ -284,4 +291,4 @@ fi
 
 stats
 
-exit $nb_warnings
+exit ${nb_errors}

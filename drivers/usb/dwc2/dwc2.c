@@ -148,6 +148,7 @@ static int dwc2_probe(struct device *dev)
 		goto error;
 
 	dwc2_set_default_params(dwc2);
+	dwc2_get_device_properties(dwc2);
 
 	set_params = of_device_get_match_data(dev);
 	if (set_params)

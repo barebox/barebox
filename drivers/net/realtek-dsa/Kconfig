@@ -2,8 +2,7 @@
 menuconfig DRIVER_NET_DSA_REALTEK
 	tristate "Realtek Ethernet switch family support"
 	depends on DSA
-	select FIXED_PHY
-	select IRQ_DOMAIN
+	select PHYLIB
 	select REALTEK_PHY
 	select REGMAP
 	help

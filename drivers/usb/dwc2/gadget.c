@@ -14,13 +14,6 @@
 #define spin_lock_irqsave(lock, flags) (void)(flags)
 #define spin_unlock_irqrestore(lock, flags) (void)(flags)
 
-#ifndef USB_ENDPOINT_MAXP_MASK
-#define USB_ENDPOINT_MAXP_MASK	0x07ff
-#endif
-#ifndef USB_EP_MAXP_MULT
-#define USB_EP_MAXP_MULT(m)	(((m) & 0x1800) >> 11)
-#endif
-
 static void kill_all_requests(struct dwc2 *, struct dwc2_ep *, int);
 
 static inline struct dwc2_ep *index_to_ep(struct dwc2 *dwc2,
@@ -484,7 +477,7 @@ static int dwc2_ep_enable(struct usb_ep *ep,
 
 	ep_type = desc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
 	mps = usb_endpoint_maxp(desc) & USB_ENDPOINT_MAXP_MASK;
-	mc =  USB_EP_MAXP_MULT(usb_endpoint_maxp(desc));
+	mc = usb_endpoint_maxp_mult(desc);
 
 	/* note, we handle this here instead of dwc2_set_ep_maxpacket */
 	epctrl_reg = dir_in ? DIEPCTL(index) : DOEPCTL(index);

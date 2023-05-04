@@ -19,7 +19,6 @@
 			device-path = &nand_environment;
 		};
 	};
-
 };
 
 &nand_parts {

@@ -1557,7 +1557,7 @@ int main(int argc, char *argv[])
 			break;
 		case 'h':
 			usage(argv[0]);
-			exit(0);
+			exit(EXIT_SUCCESS);
 		case 'd':
 			devtype = optarg;
 			break;
@@ -1571,13 +1571,13 @@ int main(int argc, char *argv[])
 			w.do_dcd_once = 0;
 			break;
 		default:
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 	}
 
 	if (devtype && strcmp(devtype, "list") == 0) {
 		list_imx_device_types();
-		exit(0);
+		exit(EXIT_SUCCESS);
 	}
 
 	if (devtype && !devpath) {
@@ -1587,7 +1587,7 @@ int main(int argc, char *argv[])
 	if (optind == argc) {
 		fprintf(stderr, "no filename given\n");
 		usage(argv[0]);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	w.plug = 1;

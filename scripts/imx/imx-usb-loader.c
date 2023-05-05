@@ -1527,7 +1527,6 @@ static void usage(const char *prgname)
 		"-s           skip DCD included in image\n"
 		"-v           verbose (give multiple times to increase)\n"
 		"-h           this help\n", prgname);
-	exit(1);
 }
 
 int main(int argc, char *argv[])
@@ -1558,6 +1557,7 @@ int main(int argc, char *argv[])
 			break;
 		case 'h':
 			usage(argv[0]);
+			exit(0);
 		case 'd':
 			devtype = optarg;
 			break;

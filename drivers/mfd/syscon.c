@@ -142,21 +142,6 @@ static void __iomem *syscon_node_to_base(struct device_node *np)
 	return syscon->base;
 }
 
-void __iomem *syscon_base_lookup_by_pdevname(const char *s)
-{
-	struct syscon *syscon;
-	struct device *dev;
-
-	for_each_device(dev) {
-		if (!strcmp(dev_name(dev), s)) {
-			syscon = dev->priv;
-			return syscon->base;
-		}
-	}
-
-	return ERR_PTR(-ENODEV);
-}
-
 void __iomem *syscon_base_lookup_by_phandle(struct device_node *np,
 					    const char *property)
 {

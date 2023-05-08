@@ -240,6 +240,8 @@ struct cdev *get_cdev_by_mountpath(const char *path)
 	struct fs_device *fsdev;
 
 	fsdev = get_fsdevice_by_path(path);
+	if (!fsdev)
+		return NULL;
 
 	return fsdev->cdev;
 }
@@ -249,6 +251,8 @@ char *get_mounted_path(const char *path)
 	struct fs_device *fdev;
 
 	fdev = get_fsdevice_by_path(path);
+	if (!fdev)
+		return NULL;
 
 	return fdev->path;
 }

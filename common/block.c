@@ -388,6 +388,11 @@ int blockdevice_register(struct block_device *blk)
 	dev_dbg(blk->dev, "rdbufsize: %d blockbits: %d blkmask: 0x%08x\n",
 		blk->rdbufsize, blk->blockbits, blk->blkmask);
 
+	if (!blk->rdbufsize) {
+		pr_warn("block size of %u not supported\n", BLOCKSIZE(blk));
+		return -ENOSYS;
+	}
+
 	for (i = 0; i < 8; i++) {
 		struct chunk *chunk = xzalloc(sizeof(*chunk));
 		chunk->data = dma_alloc(BUFSIZE);

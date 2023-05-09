@@ -14,6 +14,7 @@
 #include <libfile.h>
 #include <linux/bitfield.h>
 #include <mach/rockchip/rk3568-regs.h>
+#include <mach/rockchip/bootrom.h>
 
 /* The MaskROM looks for images on these locations: */
 #define IMG_OFFSET_0	(0 * SZ_1K + SZ_32K)
@@ -21,14 +22,6 @@
 #define IMG_OFFSET_2	(1024 * SZ_1K + SZ_32K)
 #define IMG_OFFSET_3	(1536 * SZ_1K + SZ_32K)
 #define IMG_OFFSET_4	(2048 * SZ_1K + SZ_32K)
-
-#define RK3568_IRAM_ACTIVE_BOOT_SLOT	GENMASK(12, 10)
-
-static int rk3568_get_active_slot(void)
-{
-	return FIELD_GET(RK3568_IRAM_ACTIVE_BOOT_SLOT,
-			 readl(RK3568_IRAM_BASE + 0x14));
-}
 
 /*
  * The strategy here is:
@@ -80,7 +73,7 @@ static int rk3568_bbu_mmc_handler(struct bbu_handler *handler,
 		return fd;
 
 	if (space >= IMG_OFFSET_4 + data->len) {
-		int slot = rk3568_get_active_slot();
+		int slot = rockchip_bootsource_get_active_slot();
 
 		pr_info("Unallocated space is enough for two copies, doing failsafe update\n");
 

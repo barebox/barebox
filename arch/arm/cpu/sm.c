@@ -19,8 +19,7 @@
 #include <linux/arm-smccc.h>
 #include <asm-generic/sections.h>
 #include <asm/secure.h>
-
-#include "mmu.h"
+#include "mmu_32.h"
 
 static unsigned int read_id_pfr1(void)
 {

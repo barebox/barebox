@@ -18,7 +18,7 @@
 #include <asm/system_info.h>
 #include <asm/sections.h>
 
-#include "mmu.h"
+#include "mmu_32.h"
 
 #define PTRS_PER_PTE		(PGDIR_SIZE / PAGE_SIZE)
 #define ARCH_MAP_WRITECOMBINE	((unsigned)-1)

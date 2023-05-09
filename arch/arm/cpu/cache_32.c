@@ -6,7 +6,7 @@
 #include <asm/cache.h>
 #include <asm/system_info.h>
 
-#include "mmu.h"
+#include "mmu_32.h"
 
 struct cache_fns {
 	void (*dma_clean_range)(unsigned long start, unsigned long end);

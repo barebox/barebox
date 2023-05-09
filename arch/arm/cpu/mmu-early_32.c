@@ -9,7 +9,7 @@
 #include <asm/cache.h>
 #include <asm-generic/sections.h>
 
-#include "mmu.h"
+#include "mmu_32.h"
 
 static uint32_t *ttb;
 

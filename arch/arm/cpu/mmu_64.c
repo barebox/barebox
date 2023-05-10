@@ -32,7 +32,20 @@ static void set_table(uint64_t *pt, uint64_t *table_addr)
 	*pt = val;
 }
 
-static uint64_t *create_table(void)
+#ifdef __PBL__
+static uint64_t *alloc_pte(void)
+{
+	static unsigned int idx;
+
+	idx++;
+
+	if (idx * GRANULE_SIZE >= ARM_EARLY_PAGETABLE_SIZE)
+		return NULL;
+
+	return (void *)ttb + idx * GRANULE_SIZE;
+}
+#else
+static uint64_t *alloc_pte(void)
 {
 	uint64_t *new_table = xmemalign(GRANULE_SIZE, GRANULE_SIZE);
 
@@ -41,6 +54,7 @@ static uint64_t *create_table(void)
 
 	return new_table;
 }
+#endif
 
 static __maybe_unused uint64_t *find_pte(uint64_t addr)
 {
@@ -81,7 +95,7 @@ static void split_block(uint64_t *pte, int level)
 	/* level describes the parent level, we need the child ones */
 	levelshift = level2shift(level + 1);
 
-	new_table = create_table();
+	new_table = alloc_pte();
 
 	for (i = 0; i < MAX_PTE_ENTRIES; i++) {
 		new_table[i] = old_pte | (i << levelshift);
@@ -183,7 +197,7 @@ void __mmu_init(bool mmu_on)
 	if (mmu_on)
 		mmu_disable();
 
-	ttb = create_table();
+	ttb = alloc_pte();
 	el = current_el();
 	set_ttbr_tcr_mair(el, (uint64_t)ttb, calc_tcr(el, BITS_PER_VA),
 			  MEMORY_ATTRIBUTES);

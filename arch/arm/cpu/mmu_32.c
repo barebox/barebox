@@ -9,6 +9,7 @@
 #include <init.h>
 #include <mmu.h>
 #include <errno.h>
+#include <zero_page.h>
 #include <linux/sizes.h>
 #include <asm/memory.h>
 #include <asm/barebox-arm.h>
@@ -362,7 +363,6 @@ static int set_vector_table(unsigned long adr)
 static void create_zero_page(void)
 {
 	struct resource *zero_sdram;
-	u32 *zero;
 
 	zero_sdram = request_sdram_region("zero page", 0x0, PAGE_SIZE);
 	if (zero_sdram) {
@@ -372,8 +372,7 @@ static void create_zero_page(void)
 		 */
 		pr_debug("zero page is in SDRAM area, currently not supported\n");
 	} else {
-		zero = arm_create_pte(0x0, pte_flags_uncached);
-		zero[0] = 0;
+		zero_page_faulting();
 		pr_debug("Created zero page\n");
 	}
 }

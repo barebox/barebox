@@ -11,6 +11,7 @@ config CPU_32
 	select HAVE_MOD_ARCH_SPECIFIC
 	select HAS_DMA
 	select HAVE_PBL_IMAGE
+	select ARCH_HAS_ZERO_PAGE
 
 config CPU_64
 	bool
@@ -19,6 +20,7 @@ config CPU_64
 	select HAVE_PBL_MULTI_IMAGES
 	select HAS_DMA
 	select ARCH_WANT_FRAME_POINTERS
+	select ARCH_HAS_ZERO_PAGE
 
 # Select CPU types depending on the architecture selected. This selects
 # which CPUs we support in the kernel image, and the compiler instruction
@@ -92,7 +94,6 @@ config CPU_V8
 	select ARM_EXCEPTIONS
 	select GENERIC_FIND_NEXT_BIT
 	select ARCH_HAS_STACK_DUMP
-	select ARCH_HAS_ZERO_PAGE
 
 config CPU_XSC3
         bool

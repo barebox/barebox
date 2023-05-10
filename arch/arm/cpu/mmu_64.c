@@ -172,16 +172,6 @@ static void mmu_enable(void)
 	set_cr(get_cr() | CR_M | CR_C | CR_I);
 }
 
-void zero_page_access(void)
-{
-	arch_remap_range(0x0, PAGE_SIZE, MAP_CACHED);
-}
-
-void zero_page_faulting(void)
-{
-	arch_remap_range(0x0, PAGE_SIZE, MAP_FAULT);
-}
-
 /*
  * Prepare MMU for usage enable it.
  */

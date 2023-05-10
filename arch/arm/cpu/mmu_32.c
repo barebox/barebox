@@ -57,11 +57,6 @@ static inline void tlb_invalidate(void)
  * PTE flags to set cached and uncached areas.
  * This will be determined at runtime.
  */
-static uint32_t pte_flags_cached;
-static uint32_t pte_flags_wc;
-static uint32_t pte_flags_uncached;
-static uint32_t pgd_flags_wc;
-static uint32_t pgd_flags_uncached;
 
 #define PTE_MASK ((1 << 12) - 1)
 
@@ -215,29 +210,48 @@ static u32 pte_flags_to_pmd(u32 pte)
 	return pmd;
 }
 
-int arch_remap_range(void *start, size_t size, unsigned flags)
+static uint32_t get_pte_flags(int map_type)
+{
+	if (cpu_architecture() >= CPU_ARCH_ARMv7) {
+		switch (map_type) {
+		case MAP_CACHED:
+			return PTE_FLAGS_CACHED_V7;
+		case MAP_UNCACHED:
+			return PTE_FLAGS_UNCACHED_V7;
+		case ARCH_MAP_WRITECOMBINE:
+			return PTE_FLAGS_WC_V7;
+		case MAP_FAULT:
+		default:
+			return 0x0;
+		}
+	} else {
+		switch (map_type) {
+		case MAP_CACHED:
+			return PTE_FLAGS_CACHED_V4;
+		case MAP_UNCACHED:
+		case ARCH_MAP_WRITECOMBINE:
+			return PTE_FLAGS_UNCACHED_V4;
+		case MAP_FAULT:
+		default:
+			return 0x0;
+		}
+	}
+}
+
+static uint32_t get_pmd_flags(int map_type)
+{
+	return pte_flags_to_pmd(get_pte_flags(map_type));
+}
+
+int arch_remap_range(void *start, size_t size, unsigned map_type)
 {
 	u32 addr = (u32)start;
-	u32 pte_flags;
+	u32 pte_flags, pmd_flags;
 
 	BUG_ON(!IS_ALIGNED(addr, PAGE_SIZE));
 
-	switch (flags) {
-	case MAP_CACHED:
-		pte_flags = pte_flags_cached;
-		break;
-	case MAP_UNCACHED:
-		pte_flags = pte_flags_uncached;
-		break;
-	case MAP_FAULT:
-		pte_flags = 0x0;
-		break;
-	case ARCH_MAP_WRITECOMBINE:
-		pte_flags = pte_flags_wc;
-		break;
-	default:
-		return -EINVAL;
-	}
+	pte_flags = get_pte_flags(map_type);
+	pmd_flags = pte_flags_to_pmd(pte_flags);
 
 	while (size) {
 		const bool pgdir_size_aligned = IS_ALIGNED(addr, PGDIR_SIZE);
@@ -251,7 +265,7 @@ int arch_remap_range(void *start, size_t size, unsigned flags)
 			 * replace it with a section
 			 */
 			chunk = PGDIR_SIZE;
-			*pgd = addr | pte_flags_to_pmd(pte_flags) | PMD_TYPE_SECT;
+			*pgd = addr | pmd_flags | PMD_TYPE_SECT;
 			dma_flush_range(pgd, sizeof(*pgd));
 		} else {
 			unsigned int num_ptes;
@@ -309,7 +323,7 @@ void *map_io_sections(unsigned long phys, void *_start, size_t size)
 	unsigned long start = (unsigned long)_start, sec;
 
 	for (sec = start; sec < start + size; sec += PGDIR_SIZE, phys += PGDIR_SIZE)
-		ttb[pgd_index(sec)] = phys | pgd_flags_uncached;
+		ttb[pgd_index(sec)] = phys | get_pmd_flags(MAP_UNCACHED);
 
 	dma_flush_range(ttb, 0x4000);
 	tlb_invalidate();
@@ -350,9 +364,9 @@ static void create_vector_table(unsigned long adr)
 		vectors = xmemalign(PAGE_SIZE, PAGE_SIZE);
 		pr_debug("Creating vector table, virt = 0x%p, phys = 0x%08lx\n",
 			 vectors, adr);
-		arm_create_pte(adr, pte_flags_uncached);
+		arm_create_pte(adr, get_pte_flags(MAP_UNCACHED));
 		pte = find_pte(adr);
-		*pte = (u32)vectors | PTE_TYPE_SMALL | pte_flags_cached;
+		*pte = (u32)vectors | PTE_TYPE_SMALL | get_pte_flags(MAP_CACHED);
 	}
 
 	arm_fixup_vectors();
@@ -464,20 +478,6 @@ static void vectors_init(void)
 void __mmu_init(bool mmu_on)
 {
 	struct memory_bank *bank;
-
-	if (cpu_architecture() >= CPU_ARCH_ARMv7) {
-		pte_flags_cached = PTE_FLAGS_CACHED_V7;
-		pte_flags_wc = PTE_FLAGS_WC_V7;
-		pgd_flags_wc = PGD_FLAGS_WC_V7;
-		pgd_flags_uncached = PGD_FLAGS_UNCACHED_V7;
-		pte_flags_uncached = PTE_FLAGS_UNCACHED_V7;
-	} else {
-		pte_flags_cached = PTE_FLAGS_CACHED_V4;
-		pte_flags_wc = PTE_FLAGS_UNCACHED_V4;
-		pgd_flags_wc = PMD_SECT_DEF_UNCACHED;
-		pgd_flags_uncached = PMD_SECT_DEF_UNCACHED;
-		pte_flags_uncached = PTE_FLAGS_UNCACHED_V4;
-	}
 
 	/* Clear unpredictable bits [13:0] */
 	ttb = (uint32_t *)(get_ttbr() & ~0x3fff);

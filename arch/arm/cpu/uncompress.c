@@ -81,7 +81,7 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 
 	pr_debug("memory at 0x%08lx, size 0x%08lx\n", membase, memsize);
 
-	if (IS_ENABLED(CONFIG_MMU_EARLY))
+	if (IS_ENABLED(CONFIG_MMU))
 		mmu_early_enable(membase, memsize);
 
 	free_mem_ptr = arm_mem_early_malloc(endmem);

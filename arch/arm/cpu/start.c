@@ -167,16 +167,6 @@ __noreturn __no_sanitize_address void barebox_non_pbl_start(unsigned long membas
 	arm_barebox_size = barebox_size;
 	malloc_end = barebox_base;
 
-	if (IS_ENABLED(CONFIG_MMU_EARLY)) {
-		unsigned long ttb = arm_mem_ttb(endmem);
-
-		if (!IS_ENABLED(CONFIG_PBL_IMAGE)) {
-			pr_debug("enabling MMU, ttb @ 0x%08lx\n", ttb);
-			arm_early_mmu_cache_invalidate();
-			mmu_early_enable(membase, memsize - OPTEE_SIZE, ttb);
-		}
-	}
-
 	if (boarddata) {
 		uint32_t totalsize = 0;
 		const char *name;
@@ -225,6 +215,16 @@ __noreturn __no_sanitize_address void barebox_non_pbl_start(unsigned long membas
 	kasan_init(membase, memsize, malloc_start - (memsize >> KASAN_SHADOW_SCALE_SHIFT));
 
 	mem_malloc_init((void *)malloc_start, (void *)malloc_end - 1);
+
+	if (IS_ENABLED(CONFIG_MMU_EARLY)) {
+		unsigned long ttb = arm_mem_ttb(endmem);
+
+		if (!IS_ENABLED(CONFIG_PBL_IMAGE)) {
+			pr_debug("enabling MMU, ttb @ 0x%08lx\n", ttb);
+			arm_early_mmu_cache_invalidate();
+			mmu_early_enable(membase, memsize - OPTEE_SIZE, ttb);
+		}
+	}
 
 	if (IS_ENABLED(CONFIG_BOOTM_OPTEE))
 		of_add_reserve_entry(endmem - OPTEE_SIZE, endmem - 1);

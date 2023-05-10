@@ -23,11 +23,7 @@
 #include <asm/reloc.h>
 #include <linux/stringify.h>
 
-/*
- * We have a 4GiB address space split into 1MiB sections, with each
- * section header taking 4 bytes
- */
-#define ARM_TTB_SIZE	(SZ_4G / SZ_1M * sizeof(u32))
+#define ARM_EARLY_PAGETABLE_SIZE	SZ_64K
 
 void __noreturn barebox_arm_entry(unsigned long membase, unsigned long memsize, void *boarddata);
 
@@ -89,7 +85,7 @@ static inline unsigned long arm_mem_stack(unsigned long endmem)
 static inline unsigned long arm_mem_ttb(unsigned long endmem)
 {
 	endmem = arm_mem_stack(endmem);
-	endmem = ALIGN_DOWN(endmem, ARM_TTB_SIZE) - ARM_TTB_SIZE;
+	endmem = ALIGN_DOWN(endmem, ARM_EARLY_PAGETABLE_SIZE) - ARM_EARLY_PAGETABLE_SIZE;
 
 	return endmem;
 }

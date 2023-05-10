@@ -154,6 +154,9 @@ int arch_remap_range(void *_start, size_t size, unsigned flags)
 	case MAP_UNCACHED:
 		attrs = attrs_uncached_mem();
 		break;
+	case MAP_FAULT:
+		attrs = 0x0;
+		break;
 	default:
 		return -EINVAL;
 	}

@@ -4,6 +4,7 @@
 
 #define MAP_UNCACHED	0
 #define MAP_CACHED	1
+#define MAP_FAULT	2
 
 /*
  * Depending on the architecture the default mapping can be

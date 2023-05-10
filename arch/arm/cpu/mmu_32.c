@@ -178,6 +178,10 @@ int arch_remap_range(void *start, size_t size, unsigned flags)
 		pte_flags = pte_flags_uncached;
 		pgd_flags = pgd_flags_uncached;
 		break;
+	case MAP_FAULT:
+		pte_flags = 0x0;
+		pgd_flags = 0x0;
+		break;
 	case ARCH_MAP_WRITECOMBINE:
 		pte_flags = pte_flags_wc;
 		pgd_flags = pgd_flags_wc;

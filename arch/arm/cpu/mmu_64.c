@@ -174,12 +174,12 @@ static void mmu_enable(void)
 
 void zero_page_access(void)
 {
-	create_sections(0x0, 0x0, PAGE_SIZE, CACHED_MEM);
+	arch_remap_range(0x0, PAGE_SIZE, MAP_CACHED);
 }
 
 void zero_page_faulting(void)
 {
-	create_sections(0x0, 0x0, PAGE_SIZE, 0x0);
+	arch_remap_range(0x0, PAGE_SIZE, MAP_FAULT);
 }
 
 /*
@@ -201,17 +201,17 @@ void __mmu_init(bool mmu_on)
 	pr_debug("ttb: 0x%p\n", ttb);
 
 	/* create a flat mapping */
-	create_sections(0, 0, 1UL << (BITS_PER_VA - 1), attrs_uncached_mem());
+	arch_remap_range(0, 1UL << (BITS_PER_VA - 1), MAP_UNCACHED);
 
 	/* Map sdram cached. */
 	for_each_memory_bank(bank) {
 		struct resource *rsv;
 
-		create_sections(bank->start, bank->start, bank->size, CACHED_MEM);
+		arch_remap_range((void *)bank->start, bank->size, MAP_CACHED);
 
 		for_each_reserved_region(bank, rsv) {
-			create_sections(resource_first_page(rsv), resource_first_page(rsv),
-					resource_count_pages(rsv), attrs_uncached_mem());
+			arch_remap_range((void *)resource_first_page(rsv),
+					 resource_count_pages(rsv), MAP_UNCACHED);
 		}
 	}
 

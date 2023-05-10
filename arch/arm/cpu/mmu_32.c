@@ -76,6 +76,27 @@ static bool pgd_type_table(u32 pgd)
 	return (pgd & PMD_TYPE_MASK) == PMD_TYPE_TABLE;
 }
 
+#define PTE_SIZE       (PTRS_PER_PTE * sizeof(u32))
+
+#ifdef __PBL__
+static uint32_t *alloc_pte(void)
+{
+	static unsigned int idx = 3;
+
+	idx++;
+
+	if (idx * PTE_SIZE >= ARM_EARLY_PAGETABLE_SIZE)
+		return NULL;
+
+	return (void *)ttb + idx * PTE_SIZE;
+}
+#else
+static uint32_t *alloc_pte(void)
+{
+	return xmemalign(PTE_SIZE, PTE_SIZE);
+}
+#endif
+
 static u32 *find_pte(unsigned long adr)
 {
 	u32 *table;
@@ -125,8 +146,7 @@ static u32 *arm_create_pte(unsigned long virt, uint32_t flags)
 
 	virt = ALIGN_DOWN(virt, PGDIR_SIZE);
 
-	table = xmemalign(PTRS_PER_PTE * sizeof(u32),
-			  PTRS_PER_PTE * sizeof(u32));
+	table = alloc_pte();
 
 	if (!ttb)
 		arm_mmu_not_initialized_error();

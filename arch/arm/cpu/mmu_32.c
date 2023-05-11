@@ -519,10 +519,25 @@ void __mmu_init(bool mmu_on)
 
 	vectors_init();
 
+	/*
+	 * Early mmu init will have mapped everything but the initial memory area
+	 * (excluding final OPTEE_SIZE bytes) uncached. We have now discovered
+	 * all memory banks, so let's map all pages, excluding reserved memory areas,
+	 * cacheable and executable.
+	 */
 	for_each_memory_bank(bank) {
-		create_sections(bank->start, bank->start + bank->size - 1,
-				PMD_SECT_DEF_CACHED);
-		__mmu_cache_flush();
+		struct resource *rsv;
+		resource_size_t pos;
+
+		pos = bank->start;
+
+		for_each_reserved_region(bank, rsv) {
+			arch_remap_range((void *)rsv->start, resource_size(rsv), MAP_UNCACHED);
+			arch_remap_range((void *)pos, rsv->start - pos, MAP_CACHED);
+			pos = rsv->end + 1;
+		}
+
+		arch_remap_range((void *)pos, bank->start + bank->size - pos, MAP_CACHED);
 	}
 }
 

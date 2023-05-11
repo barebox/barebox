@@ -292,10 +292,12 @@ static void early_create_sections(void *ttb, uint64_t virt, uint64_t phys,
 
 #define EARLY_BITS_PER_VA 39
 
-void mmu_early_enable(unsigned long membase, unsigned long memsize,
-		      unsigned long ttb)
+void mmu_early_enable(unsigned long membase, unsigned long memsize)
 {
 	int el;
+	unsigned long ttb = arm_mem_ttb(membase + memsize);
+
+	pr_debug("enabling MMU, ttb @ 0x%08lx\n", ttb);
 
 	/*
 	 * For the early code we only create level 1 pagetables which only
@@ -311,7 +313,7 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize,
 	set_ttbr_tcr_mair(el, ttb, calc_tcr(el, EARLY_BITS_PER_VA), MEMORY_ATTRIBUTES);
 	early_create_sections((void *)ttb, 0, 0, 1UL << (EARLY_BITS_PER_VA - 1),
 			attrs_uncached_mem());
-	early_create_sections((void *)ttb, membase, membase, memsize, CACHED_MEM);
+	early_create_sections((void *)ttb, membase, membase, memsize - OPTEE_SIZE, CACHED_MEM);
 	tlb_invalidate();
 	isb();
 	set_cr(get_cr() | CR_M);

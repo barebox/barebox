@@ -533,10 +533,11 @@ static inline void map_region(unsigned long start, unsigned long size,
 	create_sections(ttb, start, start + size - 1, flags);
 }
 
-void mmu_early_enable(unsigned long membase, unsigned long memsize,
-		      unsigned long _ttb)
+void mmu_early_enable(unsigned long membase, unsigned long memsize)
 {
-	ttb = (uint32_t *)_ttb;
+	ttb = (uint32_t *)arm_mem_ttb(membase + memsize);
+
+	pr_debug("enabling MMU, ttb @ 0x%p\n", ttb);
 
 	set_ttbr(ttb);
 
@@ -566,7 +567,7 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize,
 	map_region((unsigned long)_stext, _etext - _stext, PMD_SECT_DEF_UNCACHED);
 
 	/* maps main memory as cachable */
-	map_region(membase, memsize, PMD_SECT_DEF_CACHED);
+	map_region(membase, memsize - OPTEE_SIZE, PMD_SECT_DEF_CACHED);
 
 	__mmu_cache_on();
 }

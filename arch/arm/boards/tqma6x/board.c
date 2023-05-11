@@ -84,8 +84,6 @@ static int tqma6x_env_init(void)
 	if (!of_machine_is_compatible("tq,mba6x"))
 		return 0;
 
-	devfs_add_partition("m25p0", 0, SZ_512K, DEVFS_PARTITION_FIXED, "m25p0.barebox");
-
 	imx6_bbu_internal_spi_i2c_register_handler("spiflash", "/dev/m25p0.barebox",
 		BBU_HANDLER_FLAG_DEFAULT);
 	imx6_bbu_internal_mmcboot_register_handler("emmc", "mmc2", 0);

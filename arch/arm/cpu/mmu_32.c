@@ -318,6 +318,25 @@ int arch_remap_range(void *start, size_t size, unsigned map_type)
 	return 0;
 }
 
+static void create_sections(uint32_t *ttb, unsigned long first,
+			    unsigned long last, unsigned int flags)
+{
+	unsigned long ttb_start = pgd_index(first);
+	unsigned long ttb_end = pgd_index(last) + 1;
+	unsigned int i, addr = first;
+
+	for (i = ttb_start; i < ttb_end; i++) {
+		ttb[i] = addr | flags;
+		addr += PGDIR_SIZE;
+	}
+}
+
+static void create_flat_mapping(uint32_t *ttb)
+{
+	/* create a flat mapping using 1MiB sections */
+	create_sections(ttb, 0, 0xffffffff, attrs_uncached_mem());
+}
+
 void *map_io_sections(unsigned long phys, void *_start, size_t size)
 {
 	unsigned long start = (unsigned long)_start, sec;

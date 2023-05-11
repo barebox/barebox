@@ -6,11 +6,6 @@
 #include <asm/cache.h>
 #include <asm/system_info.h>
 
-int arm_set_cache_functions(void)
-{
-	return 0;
-}
-
 /*
  * Early function to flush the caches. This is for use when the
  * C environment is not yet fully initialized.

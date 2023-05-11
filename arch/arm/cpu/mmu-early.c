@@ -28,8 +28,6 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize,
 {
 	ttb = (uint32_t *)_ttb;
 
-	arm_set_cache_functions();
-
 	set_ttbr(ttb);
 
 	/* For the XN bit to take effect, we can't be using DOMAIN_MANAGER. */

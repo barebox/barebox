@@ -170,9 +170,7 @@ __noreturn __no_sanitize_address void barebox_non_pbl_start(unsigned long membas
 	if (IS_ENABLED(CONFIG_MMU_EARLY)) {
 		unsigned long ttb = arm_mem_ttb(endmem);
 
-		if (IS_ENABLED(CONFIG_PBL_IMAGE)) {
-			arm_set_cache_functions();
-		} else {
+		if (!IS_ENABLED(CONFIG_PBL_IMAGE)) {
 			pr_debug("enabling MMU, ttb @ 0x%08lx\n", ttb);
 			arm_early_mmu_cache_invalidate();
 			mmu_early_enable(membase, memsize - OPTEE_SIZE, ttb);

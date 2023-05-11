@@ -414,8 +414,6 @@ void __mmu_init(bool mmu_on)
 {
 	struct memory_bank *bank;
 
-	arm_set_cache_functions();
-
 	if (cpu_architecture() >= CPU_ARCH_ARMv7) {
 		pte_flags_cached = PTE_FLAGS_CACHED_V7;
 		pte_flags_wc = PTE_FLAGS_WC_V7;

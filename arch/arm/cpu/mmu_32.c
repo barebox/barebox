@@ -24,7 +24,11 @@
 #define PTRS_PER_PTE		(PGDIR_SIZE / PAGE_SIZE)
 #define ARCH_MAP_WRITECOMBINE	((unsigned)-1)
 
-static uint32_t *ttb;
+static inline uint32_t *get_ttb(void)
+{
+	/* Clear unpredictable bits [13:0] */
+	return (uint32_t *)(get_ttbr() & ~0x3fff);
+}
 
 /*
  * Do it the simple way for now and invalidate the entire
@@ -77,7 +81,7 @@ static uint32_t *alloc_pte(void)
 	if (idx * PTE_SIZE >= ARM_EARLY_PAGETABLE_SIZE)
 		return NULL;
 
-	return (void *)ttb + idx * PTE_SIZE;
+	return get_ttb() + idx * PTE_SIZE;
 }
 #else
 static uint32_t *alloc_pte(void)
@@ -89,9 +93,7 @@ static uint32_t *alloc_pte(void)
 static u32 *find_pte(unsigned long adr)
 {
 	u32 *table;
-
-	if (!ttb)
-		arm_mmu_not_initialized_error();
+	uint32_t *ttb = get_ttb();
 
 	if (!pgd_type_table(ttb[pgd_index(adr)]))
 		return NULL;
@@ -130,15 +132,13 @@ void dma_inv_range(void *ptr, size_t size)
  */
 static u32 *arm_create_pte(unsigned long virt, uint32_t flags)
 {
+	uint32_t *ttb = get_ttb();
 	u32 *table;
 	int i, ttb_idx;
 
 	virt = ALIGN_DOWN(virt, PGDIR_SIZE);
 
 	table = alloc_pte();
-
-	if (!ttb)
-		arm_mmu_not_initialized_error();
 
 	ttb_idx = pgd_index(virt);
 
@@ -247,6 +247,7 @@ int arch_remap_range(void *start, size_t size, unsigned map_type)
 {
 	u32 addr = (u32)start;
 	u32 pte_flags, pmd_flags;
+	uint32_t *ttb = get_ttb();
 
 	BUG_ON(!IS_ALIGNED(addr, PAGE_SIZE));
 
@@ -318,9 +319,10 @@ int arch_remap_range(void *start, size_t size, unsigned map_type)
 	return 0;
 }
 
-static void create_sections(uint32_t *ttb, unsigned long first,
-			    unsigned long last, unsigned int flags)
+static void create_sections(unsigned long first, unsigned long last,
+			    unsigned int flags)
 {
+	uint32_t *ttb = get_ttb();
 	unsigned long ttb_start = pgd_index(first);
 	unsigned long ttb_end = pgd_index(last) + 1;
 	unsigned int i, addr = first;
@@ -331,15 +333,16 @@ static void create_sections(uint32_t *ttb, unsigned long first,
 	}
 }
 
-static void create_flat_mapping(uint32_t *ttb)
+static inline void create_flat_mapping(void)
 {
 	/* create a flat mapping using 1MiB sections */
-	create_sections(ttb, 0, 0xffffffff, attrs_uncached_mem());
+	create_sections(0, 0xffffffff, attrs_uncached_mem());
 }
 
 void *map_io_sections(unsigned long phys, void *_start, size_t size)
 {
 	unsigned long start = (unsigned long)_start, sec;
+	uint32_t *ttb = get_ttb();
 
 	for (sec = start; sec < start + size; sec += PGDIR_SIZE, phys += PGDIR_SIZE)
 		ttb[pgd_index(sec)] = phys | get_pmd_flags(MAP_UNCACHED);
@@ -497,9 +500,7 @@ static void vectors_init(void)
 void __mmu_init(bool mmu_on)
 {
 	struct memory_bank *bank;
-
-	/* Clear unpredictable bits [13:0] */
-	ttb = (uint32_t *)(get_ttbr() & ~0x3fff);
+	uint32_t *ttb = get_ttb();
 
 	if (!request_sdram_region("ttb", (unsigned long)ttb, SZ_16K))
 		/*
@@ -517,7 +518,7 @@ void __mmu_init(bool mmu_on)
 	vectors_init();
 
 	for_each_memory_bank(bank) {
-		create_sections(ttb, bank->start, bank->start + bank->size - 1,
+		create_sections(bank->start, bank->start + bank->size - 1,
 				PMD_SECT_DEF_CACHED);
 		__mmu_cache_flush();
 	}
@@ -541,8 +542,6 @@ void *dma_alloc_writecombine(size_t size, dma_addr_t *dma_handle)
 	return dma_alloc_map(size, dma_handle, ARCH_MAP_WRITECOMBINE);
 }
 
-static uint32_t *ttb;
-
 static inline void map_region(unsigned long start, unsigned long size,
 			      uint64_t flags)
 
@@ -550,12 +549,12 @@ static inline void map_region(unsigned long start, unsigned long size,
 	start = ALIGN_DOWN(start, SZ_1M);
 	size  = ALIGN(size, SZ_1M);
 
-	create_sections(ttb, start, start + size - 1, flags);
+	create_sections(start, start + size - 1, flags);
 }
 
 void mmu_early_enable(unsigned long membase, unsigned long memsize)
 {
-	ttb = (uint32_t *)arm_mem_ttb(membase + memsize);
+	uint32_t *ttb = (uint32_t *)arm_mem_ttb(membase + memsize);
 
 	pr_debug("enabling MMU, ttb @ 0x%p\n", ttb);
 
@@ -571,7 +570,7 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize)
 	 * This marks the whole address space as uncachable as well as
 	 * unexecutable if possible
 	 */
-	create_flat_mapping(ttb);
+	create_flat_mapping();
 
 	/*
 	 * There can be SoCs that have a section shared between device memory

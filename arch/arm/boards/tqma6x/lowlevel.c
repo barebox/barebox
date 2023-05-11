@@ -16,13 +16,11 @@
 extern char __dtb_imx6q_mba6x_start[];
 extern char __dtb_imx6dl_mba6x_start[];
 
-ENTRY_FUNCTION(start_imx6q_mba6x, r0, r1, r2)
+ENTRY_FUNCTION_WITHSTACK(start_imx6q_mba6x, 0x00920000, r0, r1, r2)
 {
 	void *fdt;
 
 	imx6_cpu_lowlevel_init();
-
-	arm_setup_stack(0x00920000);
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL)) {
 		writel(0x2, 0x020e0338);
@@ -37,13 +35,11 @@ ENTRY_FUNCTION(start_imx6q_mba6x, r0, r1, r2)
 	barebox_arm_entry(0x10000000, SZ_1G, fdt);
 }
 
-ENTRY_FUNCTION(start_imx6dl_mba6x, r0, r1, r2)
+ENTRY_FUNCTION_WITHSTACK(start_imx6dl_mba6x, 0x00920000, r0, r1, r2)
 {
 	void *fdt;
 
 	imx6_cpu_lowlevel_init();
-
-	arm_setup_stack(0x00920000);
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL)) {
 		writel(0x2, 0x020e035c);

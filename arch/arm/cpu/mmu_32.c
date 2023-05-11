@@ -167,17 +167,22 @@ static u32 pmd_flags_to_pte(u32 pmd)
 		pte |= PTE_BUFFERABLE;
 	if (pmd & PMD_SECT_CACHEABLE)
 		pte |= PTE_CACHEABLE;
-	if (pmd & PMD_SECT_nG)
-		pte |= PTE_EXT_NG;
-	if (pmd & PMD_SECT_XN)
-		pte |= PTE_EXT_XN;
 
-	/* TEX[2:0] */
-	pte |= PTE_EXT_TEX((pmd >> 12) & 7);
-	/* AP[1:0] */
-	pte |= ((pmd >> 10) & 0x3) << 4;
-	/* AP[2] */
-	pte |= ((pmd >> 15) & 0x1) << 9;
+	if (cpu_architecture() >= CPU_ARCH_ARMv7) {
+		if (pmd & PMD_SECT_nG)
+			pte |= PTE_EXT_NG;
+		if (pmd & PMD_SECT_XN)
+			pte |= PTE_EXT_XN;
+
+		/* TEX[2:0] */
+		pte |= PTE_EXT_TEX((pmd >> 12) & 7);
+		/* AP[1:0] */
+		pte |= ((pmd >> 10) & 0x3) << 4;
+		/* AP[2] */
+		pte |= ((pmd >> 15) & 0x1) << 9;
+	} else {
+		pte |= PTE_SMALL_AP_UNO_SRW;
+	}
 
 	return pte;
 }

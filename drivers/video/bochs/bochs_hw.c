@@ -158,8 +158,8 @@ int bochs_hw_probe(struct device *dev, void __iomem *fb_map,
 
 	bochs = xzalloc(sizeof(*bochs));
 
-	bochs->fb_map	= IOMEM(fb_map);
-	bochs->mmio	= IOMEM(mmio);
+	bochs->fb_map	= fb_map;
+	bochs->mmio	= mmio;
 
 	ret = bochs_hw_read_version(bochs);
 	if (ret < 0) {

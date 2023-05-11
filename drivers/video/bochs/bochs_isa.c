@@ -26,6 +26,6 @@ static int bochs_isa_detect(void)
 	if (ret)
 		return ret;
 
-	return bochs_hw_probe(dev, (void *)0xe0000000, NULL);
+	return bochs_hw_probe(dev, IOMEM(0xe0000000), NULL);
 }
 device_initcall(bochs_isa_detect);

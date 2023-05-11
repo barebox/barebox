@@ -10,6 +10,6 @@
 
 struct device;
 
-int bochs_hw_probe(struct device *dev, void *fb_map, void __iomem *mmio);
+int bochs_hw_probe(struct device *dev, void __iomem *fb_map, void __iomem *mmio);
 
 #endif

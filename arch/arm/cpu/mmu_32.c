@@ -24,12 +24,6 @@
 #define PTRS_PER_PTE		(PGDIR_SIZE / PAGE_SIZE)
 #define ARCH_MAP_WRITECOMBINE	((unsigned)-1)
 
-/*
- * We have a 4GiB address space split into 1MiB sections, with each
- * section header taking 4 bytes
- */
-#define ARM_TTB_SIZE	(SZ_4G / SZ_1M * sizeof(u32))
-
 static uint32_t *ttb;
 
 /*
@@ -457,38 +451,19 @@ void __mmu_init(bool mmu_on)
 		pte_flags_uncached = PTE_FLAGS_UNCACHED_V4;
 	}
 
-	if (mmu_on) {
+	/* Clear unpredictable bits [13:0] */
+	ttb = (uint32_t *)(get_ttbr() & ~0x3fff);
+
+	if (!request_sdram_region("ttb", (unsigned long)ttb, SZ_16K))
 		/*
-		 * Early MMU code has already enabled the MMU. We assume a
-		 * flat 1:1 section mapping in this case.
+		 * This can mean that:
+		 * - the early MMU code has put the ttb into a place
+		 *   which we don't have inside our available memory
+		 * - Somebody else has occupied the ttb region which means
+		 *   the ttb will get corrupted.
 		 */
-		/* Clear unpredictable bits [13:0] */
-		ttb = (uint32_t *)(get_ttbr() & ~0x3fff);
-
-		if (!request_sdram_region("ttb", (unsigned long)ttb, SZ_16K))
-			/*
-			 * This can mean that:
-			 * - the early MMU code has put the ttb into a place
-			 *   which we don't have inside our available memory
-			 * - Somebody else has occupied the ttb region which means
-			 *   the ttb will get corrupted.
-			 */
-			pr_crit("Critical Error: Can't request SDRAM region for ttb at %p\n",
+		pr_crit("Critical Error: Can't request SDRAM region for ttb at %p\n",
 					ttb);
-	} else {
-		ttb = xmemalign(ARM_TTB_SIZE, ARM_TTB_SIZE);
-
-		set_ttbr(ttb);
-
-		/* For the XN bit to take effect, we can't be using DOMAIN_MANAGER. */
-		if (cpu_architecture() >= CPU_ARCH_ARMv7)
-			set_domain(DOMAIN_CLIENT);
-		else
-			set_domain(DOMAIN_MANAGER);
-
-		create_flat_mapping(ttb);
-		__mmu_cache_flush();
-	}
 
 	pr_debug("ttb: 0x%p\n", ttb);
 
@@ -499,8 +474,6 @@ void __mmu_init(bool mmu_on)
 				PMD_SECT_DEF_CACHED);
 		__mmu_cache_flush();
 	}
-
-	__mmu_cache_on();
 }
 
 /*

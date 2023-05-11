@@ -111,6 +111,7 @@ void dma_flush_range(void *ptr, size_t size)
 	unsigned long end = start + size;
 
 	__dma_flush_range(start, end);
+
 	if (outer_cache.flush_range)
 		outer_cache.flush_range(start, end);
 }
@@ -122,6 +123,7 @@ void dma_inv_range(void *ptr, size_t size)
 
 	if (outer_cache.inv_range)
 		outer_cache.inv_range(start, end);
+
 	__dma_inv_range(start, end);
 }
 
@@ -542,16 +544,6 @@ void *dma_alloc_writecombine(size_t size, dma_addr_t *dma_handle)
 	return dma_alloc_map(size, dma_handle, ARCH_MAP_WRITECOMBINE);
 }
 
-static inline void map_region(unsigned long start, unsigned long size,
-			      uint64_t flags)
-
-{
-	start = ALIGN_DOWN(start, SZ_1M);
-	size  = ALIGN(size, SZ_1M);
-
-	create_sections(start, start + size - 1, flags);
-}
-
 void mmu_early_enable(unsigned long membase, unsigned long memsize)
 {
 	uint32_t *ttb = (uint32_t *)arm_mem_ttb(membase + memsize);
@@ -572,21 +564,10 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize)
 	 */
 	create_flat_mapping();
 
-	/*
-	 * There can be SoCs that have a section shared between device memory
-	 * and the on-chip RAM hosting the PBL. Thus mark this section
-	 * uncachable, but executable.
-	 * On such SoCs, executing from OCRAM could cause the instruction
-	 * prefetcher to speculatively access that device memory, triggering
-	 * potential errant behavior.
-	 *
-	 * If your SoC has such a memory layout, you should rewrite the code
-	 * here to map the OCRAM page-wise.
-	 */
-	map_region((unsigned long)_stext, _etext - _stext, PMD_SECT_DEF_UNCACHED);
-
 	/* maps main memory as cachable */
-	map_region(membase, memsize - OPTEE_SIZE, PMD_SECT_DEF_CACHED);
+	arch_remap_range((void *)membase, memsize - OPTEE_SIZE, MAP_CACHED);
+	arch_remap_range((void *)membase + memsize - OPTEE_SIZE, OPTEE_SIZE, MAP_UNCACHED);
+	arch_remap_range((void *)PAGE_ALIGN_DOWN((uintptr_t)_stext), PAGE_ALIGN(_etext - _stext), MAP_CACHED);
 
 	__mmu_cache_on();
 }

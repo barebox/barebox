@@ -187,30 +187,53 @@ static u32 pmd_flags_to_pte(u32 pmd)
 	return pte;
 }
 
+static u32 pte_flags_to_pmd(u32 pte)
+{
+	u32 pmd = 0;
+
+	if (pte & PTE_BUFFERABLE)
+		pmd |= PMD_SECT_BUFFERABLE;
+	if (pte & PTE_CACHEABLE)
+		pmd |= PMD_SECT_CACHEABLE;
+
+	if (cpu_architecture() >= CPU_ARCH_ARMv7) {
+		if (pte & PTE_EXT_NG)
+			pmd |= PMD_SECT_nG;
+		if (pte & PTE_EXT_XN)
+			pmd |= PMD_SECT_XN;
+
+		/* TEX[2:0] */
+		pmd |= ((pte >> 6) & 7) << 12;
+		/* AP[1:0] */
+		pmd |= ((pte >> 4) & 0x3) << 10;
+		/* AP[2] */
+		pmd |= ((pte >> 9) & 0x1) << 15;
+	} else {
+		pmd |= PMD_SECT_AP_WRITE | PMD_SECT_AP_READ;
+	}
+
+	return pmd;
+}
+
 int arch_remap_range(void *start, size_t size, unsigned flags)
 {
 	u32 addr = (u32)start;
 	u32 pte_flags;
-	u32 pgd_flags;
 
 	BUG_ON(!IS_ALIGNED(addr, PAGE_SIZE));
 
 	switch (flags) {
 	case MAP_CACHED:
 		pte_flags = pte_flags_cached;
-		pgd_flags = PMD_SECT_DEF_CACHED;
 		break;
 	case MAP_UNCACHED:
 		pte_flags = pte_flags_uncached;
-		pgd_flags = pgd_flags_uncached;
 		break;
 	case MAP_FAULT:
 		pte_flags = 0x0;
-		pgd_flags = 0x0;
 		break;
 	case ARCH_MAP_WRITECOMBINE:
 		pte_flags = pte_flags_wc;
-		pgd_flags = pgd_flags_wc;
 		break;
 	default:
 		return -EINVAL;
@@ -228,7 +251,7 @@ int arch_remap_range(void *start, size_t size, unsigned flags)
 			 * replace it with a section
 			 */
 			chunk = PGDIR_SIZE;
-			*pgd = addr | pgd_flags;
+			*pgd = addr | pte_flags_to_pmd(pte_flags) | PMD_TYPE_SECT;
 			dma_flush_range(pgd, sizeof(*pgd));
 		} else {
 			unsigned int num_ptes;

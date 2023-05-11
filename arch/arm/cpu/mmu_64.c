@@ -22,7 +22,10 @@
 
 #include "mmu_64.h"
 
-static uint64_t *ttb;
+static uint64_t *get_ttb(void)
+{
+	return (uint64_t *)get_ttbr(current_el());
+}
 
 static void set_table(uint64_t *pt, uint64_t *table_addr)
 {
@@ -42,7 +45,7 @@ static uint64_t *alloc_pte(void)
 	if (idx * GRANULE_SIZE >= ARM_EARLY_PAGETABLE_SIZE)
 		return NULL;
 
-	return (void *)ttb + idx * GRANULE_SIZE;
+	return get_ttb() + idx * GRANULE_SIZE;
 }
 #else
 static uint64_t *alloc_pte(void)
@@ -63,7 +66,7 @@ static __maybe_unused uint64_t *find_pte(uint64_t addr)
 	uint64_t idx;
 	int i;
 
-	pte = ttb;
+	pte = get_ttb();
 
 	for (i = 0; i < 4; i++) {
 		block_shift = level2shift(i);
@@ -112,6 +115,7 @@ static void split_block(uint64_t *pte, int level)
 static void create_sections(uint64_t virt, uint64_t phys, uint64_t size,
 			    uint64_t attr)
 {
+	uint64_t *ttb = get_ttb();
 	uint64_t block_size;
 	uint64_t block_shift;
 	uint64_t *pte;
@@ -120,9 +124,6 @@ static void create_sections(uint64_t virt, uint64_t phys, uint64_t size,
 	uint64_t *table;
 	uint64_t type;
 	int level;
-
-	if (!ttb)
-		arm_mmu_not_initialized_error();
 
 	addr = virt;
 
@@ -192,37 +193,25 @@ static void mmu_enable(void)
 void __mmu_init(bool mmu_on)
 {
 	struct memory_bank *bank;
-	unsigned int el;
 
-	if (mmu_on)
-		mmu_disable();
-
-	ttb = alloc_pte();
-	el = current_el();
-	set_ttbr_tcr_mair(el, (uint64_t)ttb, calc_tcr(el, BITS_PER_VA),
-			  MEMORY_ATTRIBUTES);
-
-	pr_debug("ttb: 0x%p\n", ttb);
-
-	/* create a flat mapping */
-	arch_remap_range(0, 1UL << (BITS_PER_VA - 1), MAP_UNCACHED);
-
-	/* Map sdram cached. */
 	for_each_memory_bank(bank) {
 		struct resource *rsv;
+		resource_size_t pos;
 
-		arch_remap_range((void *)bank->start, bank->size, MAP_CACHED);
+		pos = bank->start;
 
 		for_each_reserved_region(bank, rsv) {
 			arch_remap_range((void *)resource_first_page(rsv),
 					 resource_count_pages(rsv), MAP_UNCACHED);
+			arch_remap_range((void *)pos, rsv->start - pos, MAP_CACHED);
+			pos = rsv->end + 1;
 		}
+
+		arch_remap_range((void *)pos, bank->start + bank->size - pos, MAP_CACHED);
 	}
 
 	/* Make zero page faulting to catch NULL pointer derefs */
 	zero_page_faulting();
-
-	mmu_enable();
 }
 
 void mmu_disable(void)
@@ -256,42 +245,6 @@ void dma_flush_range(void *ptr, size_t size)
 	v8_flush_dcache_range(start, end);
 }
 
-static void early_create_sections(void *ttb, uint64_t virt, uint64_t phys,
-				  uint64_t size, uint64_t attr)
-{
-	uint64_t block_size;
-	uint64_t block_shift;
-	uint64_t *pte;
-	uint64_t idx;
-	uint64_t addr;
-	uint64_t *table;
-
-	addr = virt;
-
-	attr &= ~PTE_TYPE_MASK;
-
-	table = ttb;
-
-	while (1) {
-		block_shift = level2shift(1);
-		idx = (addr & level2mask(1)) >> block_shift;
-		block_size = (1ULL << block_shift);
-
-		pte = table + idx;
-
-		*pte = phys | attr | PTE_TYPE_BLOCK;
-
-		if (size < block_size)
-			break;
-
-		addr += block_size;
-		phys += block_size;
-		size -= block_size;
-	}
-}
-
-#define EARLY_BITS_PER_VA 39
-
 void mmu_early_enable(unsigned long membase, unsigned long memsize)
 {
 	int el;
@@ -299,24 +252,16 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize)
 
 	pr_debug("enabling MMU, ttb @ 0x%08lx\n", ttb);
 
-	/*
-	 * For the early code we only create level 1 pagetables which only
-	 * allow for a 1GiB granularity. If our membase is not aligned to that
-	 * bail out without enabling the MMU.
-	 */
-	if (membase & ((1ULL << level2shift(1)) - 1))
-		return;
+	el = current_el();
+	set_ttbr_tcr_mair(el, ttb, calc_tcr(el, BITS_PER_VA), MEMORY_ATTRIBUTES);
 
 	memset((void *)ttb, 0, GRANULE_SIZE);
 
-	el = current_el();
-	set_ttbr_tcr_mair(el, ttb, calc_tcr(el, EARLY_BITS_PER_VA), MEMORY_ATTRIBUTES);
-	early_create_sections((void *)ttb, 0, 0, 1UL << (EARLY_BITS_PER_VA - 1),
-			attrs_uncached_mem());
-	early_create_sections((void *)ttb, membase, membase, memsize - OPTEE_SIZE, CACHED_MEM);
-	tlb_invalidate();
-	isb();
-	set_cr(get_cr() | CR_M);
+	arch_remap_range(0, 1UL << (BITS_PER_VA - 1), MAP_UNCACHED);
+	arch_remap_range((void *)membase, memsize - OPTEE_SIZE, MAP_CACHED);
+	arch_remap_range((void *)membase + memsize - OPTEE_SIZE, OPTEE_SIZE, MAP_FAULT);
+
+	mmu_enable();
 }
 
 void mmu_early_disable(void)

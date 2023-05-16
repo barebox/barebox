@@ -564,14 +564,17 @@ int imx6_hab_get_status(void)
 	const struct habv4_rvt *rvt;
 
 	rvt = (void *)HABV4_RVT_IMX6_OLD;
+	OPTIMIZER_HIDE_VAR(rvt);
 	if (rvt->header.tag == HAB_TAG_RVT)
 		return habv4_get_status(rvt);
 
 	rvt = (void *)HABV4_RVT_IMX6_NEW;
+	OPTIMIZER_HIDE_VAR(rvt);
 	if (rvt->header.tag == HAB_TAG_RVT)
 		return habv4_get_status(rvt);
 
 	rvt = (void *)HABV4_RVT_IMX6UL;
+	OPTIMIZER_HIDE_VAR(rvt);
 	if (rvt->header.tag == HAB_TAG_RVT)
 		return habv4_get_status(rvt);
 

@@ -42,7 +42,7 @@ static void copy_vc_fdt(void *dest, void *src, unsigned long max_size)
  * this FDT there. We fetch it from there later in rpi_devices_init().
  */
 #define rpi_stack_top(memsize) \
-	arm_mem_stack_top(BCM2835_SDRAM_BASE, BCM2835_SDRAM_BASE + memsize - VIDEOCORE_FDT_SZ)
+	arm_mem_stack_top(BCM2835_SDRAM_BASE + memsize - VIDEOCORE_FDT_SZ)
 
 static inline void start_raspberry_pi(unsigned long memsize, void *fdt,
 								void *vc_fdt)

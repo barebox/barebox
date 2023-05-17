@@ -78,39 +78,34 @@ static inline const void *arm_mem_scratch_get(void)
 	return (const void *)__arm_mem_scratch(arm_mem_endmem_get());
 }
 
-#define arm_mem_stack_top(membase, endmem) ((endmem) - SZ_64K - OPTEE_SIZE)
+#define arm_mem_stack_top(endmem) ((endmem) - SZ_64K - OPTEE_SIZE)
 
-static inline unsigned long arm_mem_stack(unsigned long membase,
-					  unsigned long endmem)
+static inline unsigned long arm_mem_stack(unsigned long endmem)
 {
-	return arm_mem_stack_top(membase, endmem) - STACK_SIZE;
+	return arm_mem_stack_top(endmem) - STACK_SIZE;
 }
 
-static inline unsigned long arm_mem_ttb(unsigned long membase,
-					unsigned long endmem)
+static inline unsigned long arm_mem_ttb(unsigned long endmem)
 {
-	endmem = arm_mem_stack(membase, endmem);
+	endmem = arm_mem_stack(endmem);
 	endmem = ALIGN_DOWN(endmem, ARM_TTB_SIZE) - ARM_TTB_SIZE;
 
 	return endmem;
 }
 
-static inline unsigned long arm_mem_early_malloc(unsigned long membase,
-						 unsigned long endmem)
+static inline unsigned long arm_mem_early_malloc(unsigned long endmem)
 {
-	return arm_mem_ttb(membase, endmem) - SZ_128K;
+	return arm_mem_ttb(endmem) - SZ_128K;
 }
 
-static inline unsigned long arm_mem_early_malloc_end(unsigned long membase,
-						     unsigned long endmem)
+static inline unsigned long arm_mem_early_malloc_end(unsigned long endmem)
 {
-	return arm_mem_ttb(membase, endmem);
+	return arm_mem_ttb(endmem);
 }
 
-static inline unsigned long arm_mem_ramoops(unsigned long membase,
-					    unsigned long endmem)
+static inline unsigned long arm_mem_ramoops(unsigned long endmem)
 {
-	endmem = arm_mem_ttb(membase, endmem);
+	endmem = arm_mem_ttb(endmem);
 #ifdef CONFIG_FS_PSTORE_RAMOOPS
 	endmem -= CONFIG_FS_PSTORE_RAMOOPS_SIZE;
 	endmem = ALIGN_DOWN(endmem, SZ_4K);
@@ -123,7 +118,7 @@ static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 						  unsigned long endmem,
 						  unsigned long size)
 {
-	endmem = arm_mem_ramoops(membase, endmem);
+	endmem = arm_mem_ramoops(endmem);
 
 	if (IS_ENABLED(CONFIG_RELOCATABLE)) {
 		return ALIGN_DOWN(endmem - size, SZ_1M);

@@ -71,14 +71,14 @@ static inline void arm_fixup_vectors(void)
 
 void *barebox_arm_boot_dtb(void);
 
-#define arm_mem_scratch(endmem) ((endmem) - SZ_32K)
+#define arm_mem_scratch(endmem) ((endmem) - OPTEE_SIZE - SZ_32K)
 
 static inline const void *arm_mem_scratch_get(void)
 {
 	return (const void *)arm_mem_scratch(arm_mem_endmem_get());
 }
 
-#define arm_mem_stack_top(endmem) ((endmem) - SZ_64K - OPTEE_SIZE)
+#define arm_mem_stack_top(endmem) ((endmem) - SZ_64K)
 
 static inline unsigned long arm_mem_stack(unsigned long endmem)
 {

@@ -140,7 +140,7 @@ __noreturn void imx8mm_load_and_start_image_via_tfa(void)
 	imx8mm_load_bl33(bl33);
 
 	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MM_OPTEE))
-		imx8m_load_and_start_optee_via_tfa(imx8mm, (void *)endmem - OPTEE_SIZE, bl33);
+		imx8m_load_and_start_optee_via_tfa(imx8mm, (void *)arm_mem_optee(endmem), bl33);
 	else
 		imx8mm_load_and_start_tfa(imx8mm_bl31_bin);
 }
@@ -187,7 +187,7 @@ __noreturn void imx8mp_load_and_start_image_via_tfa(void)
 	imx8mp_load_bl33(bl33);
 
 	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MP_OPTEE))
-		imx8m_load_and_start_optee_via_tfa(imx8mp, (void *)endmem - OPTEE_SIZE, bl33);
+		imx8m_load_and_start_optee_via_tfa(imx8mp, (void *)arm_mem_optee(endmem), bl33);
 	else
 		imx8mp_load_and_start_tfa(imx8mp_bl31_bin);
 }
@@ -235,7 +235,7 @@ __noreturn void imx8mn_load_and_start_image_via_tfa(void)
 	imx8mn_load_bl33(bl33);
 
 	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MN_OPTEE))
-		imx8m_load_and_start_optee_via_tfa(imx8mn, (void *)endmem - OPTEE_SIZE, bl33);
+		imx8m_load_and_start_optee_via_tfa(imx8mn, (void *)arm_mem_optee(endmem), bl33);
 	else
 		imx8mn_load_and_start_tfa(imx8mn_bl31_bin);
 }

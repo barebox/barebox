@@ -86,11 +86,9 @@ static inline const void *arm_mem_scratch_get(void)
 	return (const void *)arm_mem_scratch(arm_mem_endmem_get());
 }
 
-#define arm_mem_stack_top(endmem) ((endmem) - SZ_64K)
-
 static inline unsigned long arm_mem_stack(unsigned long endmem)
 {
-	return arm_mem_stack_top(endmem) - STACK_SIZE;
+	return arm_mem_scratch(endmem) - STACK_SIZE;
 }
 
 static inline unsigned long arm_mem_ttb(unsigned long endmem)
@@ -120,6 +118,11 @@ static inline unsigned long arm_mem_ramoops(unsigned long endmem)
 #endif
 
 	return endmem;
+}
+
+static inline unsigned long arm_mem_stack_top(unsigned long endmem)
+{
+	return arm_mem_stack(endmem) + STACK_SIZE;
 }
 
 static inline unsigned long arm_mem_barebox_image(unsigned long membase,

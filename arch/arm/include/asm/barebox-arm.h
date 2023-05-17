@@ -130,10 +130,6 @@ static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 	}
 }
 
-#ifndef CONFIG_CPU_64
-#define __ARM_SETUP_STACK(name, stack_top) if (stack_top) arm_setup_stack(stack_top)
-#endif
-
 /*
  * Unlike ENTRY_FUNCTION, this can be used to setup stack for a C entry
  * point on both ARM32 and ARM64. ENTRY_FUNCTION on ARM64 can only be used

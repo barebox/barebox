@@ -76,7 +76,10 @@ static inline unsigned long arm_mem_optee(unsigned long endmem)
 	return endmem - OPTEE_SIZE;
 }
 
-#define arm_mem_scratch(endmem) ((endmem) - OPTEE_SIZE - SZ_32K)
+static inline unsigned long arm_mem_scratch(unsigned long endmem)
+{
+	return arm_mem_optee(endmem) - SZ_32K;
+}
 
 static inline const void *arm_mem_scratch_get(void)
 {

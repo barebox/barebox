@@ -401,8 +401,7 @@ static int do_of_property(int argc, char *argv[])
 
 out:
 
-	if (root)
-		of_delete_node(root);
+	of_delete_node(root);
 
 	return ret;
 }

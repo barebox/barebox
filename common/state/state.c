@@ -559,8 +559,7 @@ static int of_state_fixup(struct device_node *root, void *ctx)
 		goto out;
 
 	/* delete existing node */
-	if (node)
-		of_delete_node(node);
+	of_delete_node(node);
 
 	return 0;
 

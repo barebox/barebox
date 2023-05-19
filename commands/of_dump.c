@@ -120,8 +120,7 @@ static int do_of_dump(int argc, char *argv[])
 		of_print_nodes(node, 0, maxpropsize);
 
 out:
-	if (of_free)
-		of_delete_node(of_free);
+	of_delete_node(of_free);
 
 	return ret;
 }

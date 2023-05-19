@@ -72,11 +72,8 @@ static int do_of_dump(int argc, char *argv[])
 
 	if (dtbfile) {
 		root = of_read_file(dtbfile);
-		if (IS_ERR(root)) {
-			printf("Cannot open %s: %pe\n", dtbfile, root);
-			ret = PTR_ERR(root);
-			goto out;
-		}
+		if (IS_ERR(root))
+			return PTR_ERR(root);
 
 		of_free = root;
 	} else {

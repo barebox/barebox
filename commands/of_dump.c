@@ -79,21 +79,9 @@ static int do_of_dump(int argc, char *argv[])
 	} else {
 		root = of_get_root_node();
 
-		if (fix) {
-			/* create a copy of internal devicetree */
-			void *fdt;
-			fdt = of_flatten_dtb(root);
-			root = of_unflatten_dtb(fdt, fdt_totalsize(fdt));
-
-			free(fdt);
-
-			if (IS_ERR(root)) {
-				ret = PTR_ERR(root);
-				goto out;
-			}
-
-			of_free = root;
-		}
+		/* copy internal device tree to apply fixups onto it */
+		if (fix)
+			root = of_free = of_dup(root);
 	}
 
 	if (fix) {

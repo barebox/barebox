@@ -980,7 +980,8 @@ static int fsl_ep_dequeue(struct usb_ep *_ep, struct usb_request *_req)
 	done(ep, req, -ECONNRESET);
 
 	/* Enable EP */
-out:	epctrl = readl(&dr_regs->endptctrl[ep_num]);
+out:
+	epctrl = readl(&dr_regs->endptctrl[ep_num]);
 	if (ep_is_in(ep))
 		epctrl |= EPCTRL_TX_ENABLE;
 	else

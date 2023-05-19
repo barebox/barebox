@@ -4,7 +4,6 @@ menuconfig DRIVER_NET_DSA_REALTEK
 	depends on DSA
 	select PHYLIB
 	select REALTEK_PHY
-	select REGMAP
 	help
 	  Select to enable support for Realtek Ethernet switch chips.
 

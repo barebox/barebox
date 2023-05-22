@@ -12,6 +12,7 @@
 #include <of.h>
 #include <of_address.h>
 #include <linux/amba/bus.h>
+#include <mmu.h>
 
 /**
  * of_find_device_by_node - Find the platform_device associated with a node
@@ -145,6 +146,7 @@ struct device *of_platform_device_create(struct device_node *np,
 	struct resource *res = NULL, temp_res;
 	resource_size_t resinval;
 	int i, ret, num_reg = 0;
+	u32 virt;
 
 	if (!of_device_is_available(np))
 		return NULL;
@@ -185,6 +187,24 @@ struct device *of_platform_device_create(struct device_node *np,
 	of_device_make_bus_id(dev);
 
 	of_dma_configure(dev, np);
+
+	if (num_reg && !of_property_read_u32(np, "virtual-reg", &virt)) {
+		resource_size_t remap_offset = virt - res[0].start;
+
+		for (i = 0; i < num_reg; i++) {
+			void *new_virt = (void *)res[i].start + remap_offset;
+			resource_size_t size = resource_size(&res[i]);
+
+			ret = arch_remap_range(new_virt, res[i].start, size, MAP_UNCACHED);
+			if (!ret) {
+				debug("%s: remap device %s resource %d: %pa -> 0x%p\n",
+				      __func__, dev_name(dev), i, &res[i].start, new_virt);
+
+				res[i].start = (resource_size_t)new_virt;
+				res[i].end = res[i].start + size - 1;
+			}
+		}
+	}
 
 	resinval = (-1);
 

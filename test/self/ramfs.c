@@ -14,17 +14,17 @@
 
 BSELFTEST_GLOBALS();
 
-#define __expect(_ret, _cond, fmt, ...) ({ \
-	bool cond = (_cond); \
-	int ret = (_ret); \
+#define __expect(ret, cond, fmt, ...) ({ \
+	bool __cond = (cond); \
+	int __ret = (ret); \
 	total_tests++; \
 	\
-	if (!cond) { \
+	if (!__cond) { \
 		failed_tests++; \
 		printf("%s:%d error %pe: " fmt "\n", \
-		       __func__, __LINE__, ERR_PTR(ret), ##__VA_ARGS__); \
+		       __func__, __LINE__, ERR_PTR(__ret), ##__VA_ARGS__); \
 	} \
-	cond; \
+	__cond; \
 })
 
 #define expect_success(ret, ...) __expect((ret), (ret) >= 0, __VA_ARGS__)

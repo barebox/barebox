@@ -1636,7 +1636,7 @@ config DEBUG_INITCALLS
 
 config DEBUG_PBL
 	bool "Print PBL debugging information"
-	depends on PBL_CONSOLE || DEBUG_LL
+	depends on PBL_CONSOLE
 	help
 	  If enabled this will enable all debug prints in the prebootloader.
 	  For this to work, a console needs to be configured in the

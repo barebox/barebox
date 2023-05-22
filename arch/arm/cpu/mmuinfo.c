@@ -12,6 +12,8 @@
 
 int mmuinfo(void *addr)
 {
+	if (IS_ENABLED(CONFIG_CPU_V8))
+		return mmuinfo_v8(addr);
 	if (IS_ENABLED(CONFIG_CPU_V7) && cpu_architecture() == CPU_ARCH_ARMv7)
 		return mmuinfo_v7(addr);
 

@@ -201,13 +201,13 @@ void __mmu_init(bool mmu_on)
 		pos = bank->start;
 
 		for_each_reserved_region(bank, rsv) {
-			arch_remap_range((void *)resource_first_page(rsv),
-					 resource_count_pages(rsv), MAP_UNCACHED);
-			arch_remap_range((void *)pos, rsv->start - pos, MAP_CACHED);
+			remap_range((void *)resource_first_page(rsv),
+				    resource_count_pages(rsv), MAP_UNCACHED);
+			remap_range((void *)pos, rsv->start - pos, MAP_CACHED);
 			pos = rsv->end + 1;
 		}
 
-		arch_remap_range((void *)pos, bank->start + bank->size - pos, MAP_CACHED);
+		remap_range((void *)pos, bank->start + bank->size - pos, MAP_CACHED);
 	}
 
 	/* Make zero page faulting to catch NULL pointer derefs */
@@ -257,9 +257,9 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize)
 
 	memset((void *)ttb, 0, GRANULE_SIZE);
 
-	arch_remap_range(0, 1UL << (BITS_PER_VA - 1), MAP_UNCACHED);
-	arch_remap_range((void *)membase, memsize - OPTEE_SIZE, MAP_CACHED);
-	arch_remap_range((void *)membase + memsize - OPTEE_SIZE, OPTEE_SIZE, MAP_FAULT);
+	remap_range(0, 1UL << (BITS_PER_VA - 1), MAP_UNCACHED);
+	remap_range((void *)membase, memsize - OPTEE_SIZE, MAP_CACHED);
+	remap_range((void *)membase + memsize - OPTEE_SIZE, OPTEE_SIZE, MAP_FAULT);
 
 	mmu_enable();
 }

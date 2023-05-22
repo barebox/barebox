@@ -619,7 +619,7 @@ static int init_imx6_hab_get_status(void)
 		/* can happen in multi-image builds and is not an error */
 		return 0;
 
-	arch_remap_range(0x0, SZ_1M, MAP_CACHED);
+	remap_range(0x0, SZ_1M, MAP_CACHED);
 
 	/*
 	 * Nobody will check the return value if there were HAB errors, but the

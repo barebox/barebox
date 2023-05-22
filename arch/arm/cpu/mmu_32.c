@@ -532,12 +532,12 @@ void __mmu_init(bool mmu_on)
 		pos = bank->start;
 
 		for_each_reserved_region(bank, rsv) {
-			arch_remap_range((void *)rsv->start, resource_size(rsv), MAP_UNCACHED);
-			arch_remap_range((void *)pos, rsv->start - pos, MAP_CACHED);
+			remap_range((void *)rsv->start, resource_size(rsv), MAP_UNCACHED);
+			remap_range((void *)pos, rsv->start - pos, MAP_CACHED);
 			pos = rsv->end + 1;
 		}
 
-		arch_remap_range((void *)pos, bank->start + bank->size - pos, MAP_CACHED);
+		remap_range((void *)pos, bank->start + bank->size - pos, MAP_CACHED);
 	}
 }
 
@@ -580,9 +580,9 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize)
 	create_flat_mapping();
 
 	/* maps main memory as cachable */
-	arch_remap_range((void *)membase, memsize - OPTEE_SIZE, MAP_CACHED);
-	arch_remap_range((void *)membase + memsize - OPTEE_SIZE, OPTEE_SIZE, MAP_UNCACHED);
-	arch_remap_range((void *)PAGE_ALIGN_DOWN((uintptr_t)_stext), PAGE_ALIGN(_etext - _stext), MAP_CACHED);
+	remap_range((void *)membase, memsize - OPTEE_SIZE, MAP_CACHED);
+	remap_range((void *)membase + memsize - OPTEE_SIZE, OPTEE_SIZE, MAP_UNCACHED);
+	remap_range((void *)PAGE_ALIGN_DOWN((uintptr_t)_stext), PAGE_ALIGN(_etext - _stext), MAP_CACHED);
 
 	__mmu_cache_on();
 }

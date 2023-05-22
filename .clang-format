@@ -1,0 +1,214 @@
+# SPDX-License-Identifier: GPL-2.0
+#
+# clang-format configuration file. Intended for clang-format >= 11.
+#
+# For more information, see:
+#
+#   Documentation/process/clang-format.rst
+#   https://clang.llvm.org/docs/ClangFormat.html
+#   https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+#
+---
+AccessModifierOffset: -4
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignEscapedNewlines: Left
+AlignOperands: true
+AlignTrailingComments: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AlwaysBreakAfterDefinitionReturnType: None
+AlwaysBreakAfterReturnType: None
+AlwaysBreakBeforeMultilineStrings: false
+AlwaysBreakTemplateDeclarations: false
+BinPackArguments: true
+BinPackParameters: true
+BraceWrapping:
+  AfterClass: false
+  AfterControlStatement: false
+  AfterEnum: false
+  AfterFunction: true
+  AfterNamespace: true
+  AfterObjCDeclaration: false
+  AfterStruct: false
+  AfterUnion: false
+  AfterExternBlock: false
+  BeforeCatch: false
+  BeforeElse: false
+  IndentBraces: false
+  SplitEmptyFunction: true
+  SplitEmptyRecord: true
+  SplitEmptyNamespace: true
+BreakBeforeBinaryOperators: None
+BreakBeforeBraces: Custom
+BreakBeforeInheritanceComma: false
+BreakBeforeTernaryOperators: false
+BreakConstructorInitializersBeforeComma: false
+BreakConstructorInitializers: BeforeComma
+BreakAfterJavaFieldAnnotations: false
+BreakStringLiterals: false
+ColumnLimit: 80
+CommentPragmas: '^ IWYU pragma:'
+CompactNamespaces: false
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+ConstructorInitializerIndentWidth: 8
+ContinuationIndentWidth: 8
+Cpp11BracedListStyle: false
+DerivePointerAlignment: false
+DisableFormat: false
+ExperimentalAutoDetectBinPacking: false
+FixNamespaceComments: false
+
+# Taken from:
+#   git grep -h '^#define [^[:space:]]*for_each[^[:space:]]*(' include/ tools/ \
+#   | sed "s,^#define \([^[:space:]]*for_each[^[:space:]]*\)(.*$,  - '\1'," \
+#   | LC_ALL=C sort -u
+ForEachMacros:
+  - 'bootchooser_for_each_target'
+  - 'bootentries_for_each_entry'
+  - 'bus_for_each_device'
+  - 'bus_for_each_driver'
+  - 'device_for_each_child'
+  - 'device_for_each_child_safe'
+  - 'dsa_switch_for_each_cpu_port'
+  - 'expr_list_for_each_sym'
+  - 'fdt_for_each_property_offset'
+  - 'fdt_for_each_subnode'
+  - 'file_list_for_each_entry'
+  - 'for_each_aiodevice'
+  - 'for_each_available_child_of_node'
+  - 'for_each_block_device'
+  - 'for_each_bus'
+  - 'for_each_cdev'
+  - 'for_each_child'
+  - 'for_each_child_of_node'
+  - 'for_each_child_of_node_safe'
+  - 'for_each_child_withdel'
+  - 'for_each_clear_bit'
+  - 'for_each_clear_bit_from'
+  - 'for_each_command'
+  - 'for_each_compatible_node'
+  - 'for_each_compatible_node_from'
+  - 'for_each_console'
+  - 'for_each_device'
+  - 'for_each_driver'
+  - 'for_each_efi_config_table'
+  - 'for_each_endpoint_of_node'
+  - 'for_each_fs_device'
+  - 'for_each_fs_device_safe'
+  - 'for_each_i2c_adapter'
+  - 'for_each_label'
+  - 'for_each_label_withdel'
+  - 'for_each_marker'
+  - 'for_each_marker_of_type'
+  - 'for_each_matching_node'
+  - 'for_each_matching_node_and_match'
+  - 'for_each_matching_node_from'
+  - 'for_each_memory_bank'
+  - 'for_each_mii_bus'
+  - 'for_each_module'
+  - 'for_each_netdev'
+  - 'for_each_node_by_name'
+  - 'for_each_node_by_name_address'
+  - 'for_each_node_by_name_address_from'
+  - 'for_each_node_by_name_from'
+  - 'for_each_node_by_type'
+  - 'for_each_node_with_property'
+  - 'for_each_of_pci_range'
+  - 'for_each_property'
+  - 'for_each_property_of_node'
+  - 'for_each_property_withdel'
+  - 'for_each_reserved_region'
+  - 'for_each_rsa_key'
+  - 'for_each_set_bit'
+  - 'for_each_set_bit_from'
+  - 'gadget_for_each_ep'
+  - 'hlist_for_each'
+  - 'hlist_for_each_entry'
+  - 'hlist_for_each_entry_continue'
+  - 'hlist_for_each_entry_from'
+  - 'hlist_for_each_entry_safe'
+  - 'hlist_for_each_safe'
+  - '__idr_for_each_entry'
+  - 'imd_for_each'
+  - 'list_for_each'
+  - 'list_for_each_continue'
+  - 'list_for_each_entry'
+  - 'list_for_each_entry_continue'
+  - 'list_for_each_entry_continue_reverse'
+  - 'list_for_each_entry_from'
+  - 'list_for_each_entry_from_reverse'
+  - 'list_for_each_entry_reverse'
+  - 'list_for_each_entry_safe'
+  - 'list_for_each_entry_safe_continue'
+  - 'list_for_each_entry_safe_from'
+  - 'list_for_each_entry_safe_reverse'
+  - 'list_for_each_from'
+  - 'list_for_each_prev'
+  - 'list_for_each_prev_safe'
+  - 'list_for_each_safe'
+  - 'nanddev_io_for_each_page'
+  - 'of_property_for_each_string'
+  - 'of_property_for_each_u32'
+  - 'rbtree_postorder_for_each_entry_safe'
+  - 'string_list_for_each_entry'
+  - 'virtio_device_for_each_vq'
+
+IncludeBlocks: Preserve
+IncludeCategories:
+  - Regex: '.*'
+    Priority: 1
+IncludeIsMainRegex: '(Test)?$'
+IndentCaseLabels: false
+IndentGotoLabels: false
+IndentPPDirectives: None
+IndentWidth: 8
+IndentWrappedFunctionNames: false
+JavaScriptQuotes: Leave
+JavaScriptWrapImports: true
+KeepEmptyLinesAtTheStartOfBlocks: false
+MacroBlockBegin: ''
+MacroBlockEnd: ''
+MaxEmptyLinesToKeep: 1
+NamespaceIndentation: None
+ObjCBinPackProtocolList: Auto
+ObjCBlockIndentWidth: 8
+ObjCSpaceAfterProperty: true
+ObjCSpaceBeforeProtocolList: true
+
+# Taken from git's rules
+PenaltyBreakAssignment: 10
+PenaltyBreakBeforeFirstCallParameter: 30
+PenaltyBreakComment: 10
+PenaltyBreakFirstLessLess: 0
+PenaltyBreakString: 10
+PenaltyExcessCharacter: 100
+PenaltyReturnTypeOnItsOwnLine: 60
+
+PointerAlignment: Right
+ReflowComments: false
+SortIncludes: false
+SortUsingDeclarations: false
+SpaceAfterCStyleCast: false
+SpaceAfterTemplateKeyword: true
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: true
+SpaceBeforeParens: ControlStatementsExceptForEachMacros
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 1
+SpacesInAngles: false
+SpacesInContainerLiterals: false
+SpacesInCStyleCastParentheses: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+Standard: Cpp03
+TabWidth: 8
+UseTab: Always
+...

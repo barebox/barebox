@@ -27,7 +27,7 @@ obj-$(CONFIG_ARM_PSCI_CLIENT) += psci-client.o
 # Any variants can be called as start-armxyz.S
 #
 obj-$(CONFIG_CMD_ARM_CPUINFO) += cpuinfo.o
-obj-$(CONFIG_CMD_ARM_MMUINFO) += mmuinfo.o
+obj-$(CONFIG_MMUINFO) += mmuinfo.o mmuinfo_32.o
 obj-$(CONFIG_OFDEVICE) += dtb.o
 
 ifeq ($(CONFIG_MMU),)

@@ -3,6 +3,7 @@
 #define __MMU_H
 
 #include <linux/types.h>
+#include <errno.h>
 
 #define MAP_UNCACHED	0
 #define MAP_CACHED	1
@@ -42,5 +43,14 @@ static inline int remap_range(void *start, size_t size, unsigned flags)
 {
 	return arch_remap_range(start, virt_to_phys(start), size, flags);
 }
+
+#ifdef CONFIG_MMUINFO
+int mmuinfo(void *addr);
+#else
+static inline int mmuinfo(void *addr)
+{
+	return -ENOSYS;
+}
+#endif
 
 #endif

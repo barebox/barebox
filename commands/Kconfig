@@ -1708,6 +1708,7 @@ config CMD_MEMSET
 
 config CMD_MEMTEST
 	tristate
+	select MEMTEST
 	prompt "memtest"
 	help
 	  The memtest command can test the registered barebox memory.

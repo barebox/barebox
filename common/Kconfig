@@ -144,6 +144,9 @@ config MEMINFO
 	bool "display memory info"
 	default y
 
+config MEMTEST
+	bool
+
 config ENVIRONMENT_VARIABLES
 	bool "environment variables support"
 

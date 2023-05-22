@@ -138,7 +138,8 @@ static void create_sections(uint64_t virt, uint64_t phys, uint64_t size,
 
 			pte = table + idx;
 
-			if (size >= block_size && IS_ALIGNED(addr, block_size)) {
+			if (size >= block_size && IS_ALIGNED(addr, block_size) &&
+			    IS_ALIGNED(phys, block_size)) {
 				type = (level == 3) ?
 					PTE_TYPE_PAGE : PTE_TYPE_BLOCK;
 				*pte = phys | attr | type;
@@ -162,9 +163,6 @@ int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, unsign
 {
 	unsigned long attrs;
 
-	if (phys_addr != virt_to_phys(virt_addr))
-		return -ENOSYS;
-
 	switch (flags) {
 	case MAP_CACHED:
 		attrs = CACHED_MEM;
@@ -179,7 +177,7 @@ int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, unsign
 		return -EINVAL;
 	}
 
-	create_sections((uint64_t)virt_addr, (uint64_t)virt_addr, (uint64_t)size, attrs);
+	create_sections((uint64_t)virt_addr, phys_addr, (uint64_t)size, attrs);
 	return 0;
 }
 

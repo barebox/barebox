@@ -44,6 +44,8 @@ static inline void *zero_page_memcpy(void *dest, const void *src, size_t count)
 {
 	void *ret;
 
+	OPTIMIZER_HIDE_VAR(dest);
+
 	zero_page_access();
 	ret = memcpy(dest, src, count);
 	zero_page_faulting();

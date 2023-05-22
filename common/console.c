@@ -227,8 +227,8 @@ static void console_add_earlycon_param(struct console_device *cdev, unsigned bau
 	if (!cdev->linux_earlycon_name)
 		return;
 
-	str = basprintf("earlycon=%s,0x%lx,%dn8", cdev->linux_earlycon_name,
-			(ulong)cdev->phys_base, baudrate);
+	str = basprintf("earlycon=%s,0x%lx", cdev->linux_earlycon_name,
+			(ulong)cdev->phys_base);
 
 	dev_add_param_fixed(&cdev->class_dev, "linux.bootargs.earlycon", str);
 

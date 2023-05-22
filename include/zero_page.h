@@ -20,6 +20,13 @@ void zero_page_faulting(void);
  */
 void zero_page_access(void);
 
+void zero_page_access(void);
+
+static inline bool zero_page_remappable(void)
+{
+	return true;
+}
+
 #else
 
 static inline void zero_page_faulting(void)
@@ -28,6 +35,11 @@ static inline void zero_page_faulting(void)
 
 static inline void zero_page_access(void)
 {
+}
+
+static inline bool zero_page_remappable(void)
+{
+	return false;
 }
 
 #endif

@@ -121,7 +121,7 @@ static void efi_bio_print_info(struct device *dev)
 	printf("  last_block: 0x%016llx\n", media->last_block);
 
 	if (revision < EFI_BLOCK_IO_PROTOCOL_REVISION2)
-		return;
+		goto out;
 
 	printf("  lowest_aligned_lba: 0x%08llx\n",
 			media->lowest_aligned_lba);
@@ -129,11 +129,12 @@ static void efi_bio_print_info(struct device *dev)
 			media->logical_blocks_per_physical_block);
 
 	if (revision < EFI_BLOCK_IO_PROTOCOL_REVISION3)
-		return;
+		goto out;
 
 	printf("  optimal_transfer_length_granularity: 0x%08x\n",
 			media->optimal_transfer_length_granularity);
 
+out:
 	if (priv->efi_info)
 		priv->efi_info(dev);
 }

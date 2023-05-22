@@ -17,12 +17,15 @@
 #include <mmu.h>
 #include <mach/mmu.h>
 
-int arch_remap_range(void *_start, size_t size, unsigned flags)
+int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, unsigned flags)
 {
 	uint32_t ptr, start, tsize, valid, wimge, pte_flags;
 	unsigned long epn;
 	phys_addr_t rpn = 0;
 	int esel = 0;
+
+	if (phys_addr != virt_to_phys(virt_addr))
+		return -ENOSYS;
 
 	switch (flags) {
 	case MAP_UNCACHED:
@@ -35,7 +38,7 @@ int arch_remap_range(void *_start, size_t size, unsigned flags)
 		return -EINVAL;
 	}
 
-	ptr = start = (uint32_t)_start;
+	ptr = start = (uint32_t)virt_addr;
 	wimge = pte_flags | MAS2_M;
 
 	while (ptr < (start + size)) {

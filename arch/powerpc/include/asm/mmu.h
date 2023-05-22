@@ -563,7 +563,7 @@ extern int write_bat(ppc_bat_t bat, unsigned long upper, unsigned long lower);
 
 #ifdef CONFIG_MMU
 #define ARCH_HAS_REMAP
-int arch_remap_range(void *_start, size_t size, unsigned flags);
+int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, unsigned flags);
 #endif
 
 #endif

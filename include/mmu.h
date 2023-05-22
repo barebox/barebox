@@ -2,6 +2,8 @@
 #ifndef __MMU_H
 #define __MMU_H
 
+#include <linux/types.h>
+
 #define MAP_UNCACHED	0
 #define MAP_CACHED	1
 #define MAP_FAULT	2
@@ -16,9 +18,10 @@
 #include <asm/mmu.h>
 
 #ifndef ARCH_HAS_REMAP
-static inline int arch_remap_range(void *start, size_t size, unsigned flags)
+static inline int arch_remap_range(void *virt_addr, phys_addr_t phys_addr,
+				   size_t size, unsigned flags)
 {
-	if (flags == MAP_ARCH_DEFAULT)
+	if (flags == MAP_ARCH_DEFAULT && phys_addr == virt_to_phys(virt_addr))
 		return 0;
 
 	return -EINVAL;
@@ -37,7 +40,7 @@ static inline bool arch_can_remap(void)
 
 static inline int remap_range(void *start, size_t size, unsigned flags)
 {
-	return arch_remap_range(start, size, flags);
+	return arch_remap_range(start, virt_to_phys(start), size, flags);
 }
 
 #endif

@@ -245,20 +245,23 @@ static uint32_t get_pmd_flags(int map_type)
 	return pte_flags_to_pmd(get_pte_flags(map_type));
 }
 
-int arch_remap_range(void *start, size_t size, unsigned map_type)
+int arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t size, unsigned map_type)
 {
-	u32 addr = (u32)start;
+	u32 virt_addr = (u32)_virt_addr;
 	u32 pte_flags, pmd_flags;
 	uint32_t *ttb = get_ttb();
 
-	BUG_ON(!IS_ALIGNED(addr, PAGE_SIZE));
+	if (phys_addr != virt_to_phys(_virt_addr))
+		return -ENOSYS;
+
+	BUG_ON(!IS_ALIGNED(virt_addr, PAGE_SIZE));
 
 	pte_flags = get_pte_flags(map_type);
 	pmd_flags = pte_flags_to_pmd(pte_flags);
 
 	while (size) {
-		const bool pgdir_size_aligned = IS_ALIGNED(addr, PGDIR_SIZE);
-		u32 *pgd = (u32 *)&ttb[pgd_index(addr)];
+		const bool pgdir_size_aligned = IS_ALIGNED(virt_addr, PGDIR_SIZE);
+		u32 *pgd = (u32 *)&ttb[pgd_index(virt_addr)];
 		size_t chunk;
 
 		if (size >= PGDIR_SIZE && pgdir_size_aligned &&
@@ -268,7 +271,7 @@ int arch_remap_range(void *start, size_t size, unsigned map_type)
 			 * replace it with a section
 			 */
 			chunk = PGDIR_SIZE;
-			*pgd = addr | pmd_flags | PMD_TYPE_SECT;
+			*pgd = virt_addr | pmd_flags | PMD_TYPE_SECT;
 			dma_flush_range(pgd, sizeof(*pgd));
 		} else {
 			unsigned int num_ptes;
@@ -283,7 +286,7 @@ int arch_remap_range(void *start, size_t size, unsigned map_type)
 			 * was not aligned on PGDIR_SIZE boundary)
 			 */
 			chunk = pgdir_size_aligned ?
-				PGDIR_SIZE : ALIGN(addr, PGDIR_SIZE) - addr;
+				PGDIR_SIZE : ALIGN(virt_addr, PGDIR_SIZE) - virt_addr;
 			/*
 			 * At the same time we want to make sure that
 			 * we don't go on remapping past requested
@@ -293,15 +296,15 @@ int arch_remap_range(void *start, size_t size, unsigned map_type)
 			chunk = min(chunk, size);
 			num_ptes = chunk / PAGE_SIZE;
 
-			pte = find_pte(addr);
+			pte = find_pte(virt_addr);
 			if (!pte) {
 				/*
 				 * If PTE is not found it means that
 				 * we needs to split this section and
 				 * create a new page table for it
 				 */
-				table = arm_create_pte(addr, pmd_flags_to_pte(*pgd));
-				pte = find_pte(addr);
+				table = arm_create_pte(virt_addr, pmd_flags_to_pte(*pgd));
+				pte = find_pte(virt_addr);
 				BUG_ON(!pte);
 			}
 
@@ -313,7 +316,7 @@ int arch_remap_range(void *start, size_t size, unsigned map_type)
 			dma_flush_range(pte, num_ptes * sizeof(u32));
 		}
 
-		addr += chunk;
+		virt_addr += chunk;
 		size -= chunk;
 	}
 

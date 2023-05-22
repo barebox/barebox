@@ -158,9 +158,12 @@ static void create_sections(uint64_t virt, uint64_t phys, uint64_t size,
 	tlb_invalidate();
 }
 
-int arch_remap_range(void *_start, size_t size, unsigned flags)
+int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, unsigned flags)
 {
 	unsigned long attrs;
+
+	if (phys_addr != virt_to_phys(virt_addr))
+		return -ENOSYS;
 
 	switch (flags) {
 	case MAP_CACHED:
@@ -176,8 +179,7 @@ int arch_remap_range(void *_start, size_t size, unsigned flags)
 		return -EINVAL;
 	}
 
-	create_sections((uint64_t)_start, (uint64_t)_start, (uint64_t)size,
-			attrs);
+	create_sections((uint64_t)virt_addr, (uint64_t)virt_addr, (uint64_t)size, attrs);
 	return 0;
 }
 

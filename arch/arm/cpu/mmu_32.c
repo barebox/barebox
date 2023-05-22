@@ -57,13 +57,6 @@ static inline void tlb_invalidate(void)
 			 PMD_SECT_BUFFERABLE | PMD_SECT_XN)
 #define PGD_FLAGS_UNCACHED_V7 (PMD_SECT_DEF_UNCACHED | PMD_SECT_XN)
 
-/*
- * PTE flags to set cached and uncached areas.
- * This will be determined at runtime.
- */
-
-#define PTE_MASK ((1 << 12) - 1)
-
 static bool pgd_type_table(u32 pgd)
 {
 	return (pgd & PMD_TYPE_MASK) == PMD_TYPE_TABLE;
@@ -132,21 +125,24 @@ void dma_inv_range(void *ptr, size_t size)
  * We initially create a flat uncached mapping on it.
  * Not yet exported, but may be later if someone finds use for it.
  */
-static u32 *arm_create_pte(unsigned long virt, uint32_t flags)
+static u32 *arm_create_pte(unsigned long virt, unsigned long phys,
+			   uint32_t flags)
 {
 	uint32_t *ttb = get_ttb();
 	u32 *table;
 	int i, ttb_idx;
 
 	virt = ALIGN_DOWN(virt, PGDIR_SIZE);
+	phys = ALIGN_DOWN(phys, PGDIR_SIZE);
 
 	table = alloc_pte();
 
 	ttb_idx = pgd_index(virt);
 
 	for (i = 0; i < PTRS_PER_PTE; i++) {
-		table[i] = virt | PTE_TYPE_SMALL | flags;
+		table[i] = phys | PTE_TYPE_SMALL | flags;
 		virt += PAGE_SIZE;
+		phys += PAGE_SIZE;
 	}
 	dma_flush_range(table, PTRS_PER_PTE * sizeof(u32));
 
@@ -251,10 +247,8 @@ int arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t size, unsig
 	u32 pte_flags, pmd_flags;
 	uint32_t *ttb = get_ttb();
 
-	if (phys_addr != virt_to_phys(_virt_addr))
-		return -ENOSYS;
-
 	BUG_ON(!IS_ALIGNED(virt_addr, PAGE_SIZE));
+	BUG_ON(!IS_ALIGNED(phys_addr, PAGE_SIZE));
 
 	pte_flags = get_pte_flags(map_type);
 	pmd_flags = pte_flags_to_pmd(pte_flags);
@@ -265,13 +259,14 @@ int arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t size, unsig
 		size_t chunk;
 
 		if (size >= PGDIR_SIZE && pgdir_size_aligned &&
+		    IS_ALIGNED(phys_addr, PGDIR_SIZE) &&
 		    !pgd_type_table(*pgd)) {
 			/*
 			 * TODO: Add code to discard a page table and
 			 * replace it with a section
 			 */
 			chunk = PGDIR_SIZE;
-			*pgd = virt_addr | pmd_flags | PMD_TYPE_SECT;
+			*pgd = phys_addr | pmd_flags | PMD_TYPE_SECT;
 			dma_flush_range(pgd, sizeof(*pgd));
 		} else {
 			unsigned int num_ptes;
@@ -303,13 +298,14 @@ int arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t size, unsig
 				 * we needs to split this section and
 				 * create a new page table for it
 				 */
-				table = arm_create_pte(virt_addr, pmd_flags_to_pte(*pgd));
+				table = arm_create_pte(virt_addr, phys_addr,
+						       pmd_flags_to_pte(*pgd));
 				pte = find_pte(virt_addr);
 				BUG_ON(!pte);
 			}
 
 			for (i = 0; i < num_ptes; i++) {
-				pte[i] &= ~PTE_MASK;
+				pte[i] = phys_addr + i * PAGE_SIZE;
 				pte[i] |= pte_flags | PTE_TYPE_SMALL;
 			}
 
@@ -317,6 +313,7 @@ int arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t size, unsig
 		}
 
 		virt_addr += chunk;
+		phys_addr += chunk;
 		size -= chunk;
 	}
 
@@ -391,7 +388,7 @@ static void create_vector_table(unsigned long adr)
 		vectors = xmemalign(PAGE_SIZE, PAGE_SIZE);
 		pr_debug("Creating vector table, virt = 0x%p, phys = 0x%08lx\n",
 			 vectors, adr);
-		arm_create_pte(adr, get_pte_flags(MAP_UNCACHED));
+		arm_create_pte(adr, adr, get_pte_flags(MAP_UNCACHED));
 		pte = find_pte(adr);
 		*pte = (u32)vectors | PTE_TYPE_SMALL | get_pte_flags(MAP_CACHED);
 	}

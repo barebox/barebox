@@ -102,9 +102,10 @@ config MACH_RADXA_ROCK3
 	  Say Y here if you are using a Radxa ROCK3
 
 config MACH_RADXA_ROCK5
-       select ARCH_RK3588
-       bool "Radxa ROCK5"
-       help
+	select ARCH_RK3588
+	depends on $(success,test -e $(srctree)/arch/arm/boards/radxa-rock5/sdram-init.bin)
+	bool "Radxa ROCK5"
+	help
 	  Say Y here if you are using a Radxa ROCK5
 
 config MACH_RADXA_CM3

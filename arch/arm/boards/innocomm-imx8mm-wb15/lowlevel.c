@@ -64,7 +64,6 @@ void innocomm_wb15_power_init_board(void)
 	imx8mm_setup_pad(IMX8MM_PAD_I2C1_SCL_I2C1_SCL);
 	imx8mm_setup_pad(IMX8MM_PAD_I2C1_SDA_I2C1_SDA);
 
-	imx8mm_early_clock_init();
 	imx8m_ccgr_clock_enable(IMX8M_CCM_CCGR_I2C1);
 
 	i2c = imx8m_i2c_early_init(IOMEM(MX8MQ_I2C1_BASE_ADDR));
@@ -87,6 +86,8 @@ ENTRY_FUNCTION(start_innocomm_wb15_evk, r0, r1, r2)
 	 * will then jump to DRAM in EL2
 	 */
 	if (current_el() == 3) {
+		imx8mm_early_clock_init();
+
 		innocomm_wb15_power_init_board();
 
 		imx8mm_ddr_init(&innocomm_wb15_dram_timing, DRAM_TYPE_LPDDR4);

@@ -83,7 +83,6 @@ static void power_init_board(void)
 	imx8mm_setup_pad(IMX8MM_PAD_I2C1_SCL_I2C1_SCL);
 	imx8mm_setup_pad(IMX8MM_PAD_I2C1_SDA_I2C1_SDA);
 
-	imx8mm_early_clock_init();
 	imx8m_ccgr_clock_enable(IMX8M_CCM_CCGR_I2C1);
 
 	i2c = imx8m_i2c_early_init(IOMEM(MX8MQ_I2C1_BASE_ADDR));
@@ -106,6 +105,7 @@ static void start_atf(void)
 	if (current_el() != 3)
 		return;
 
+	imx8mm_early_clock_init();
 	power_init_board();
 	imx8mm_ddr_init(&imx8mm_evk_dram_timing, DRAM_TYPE_LPDDR4);
 

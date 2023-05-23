@@ -70,7 +70,6 @@ static void power_init_board(void)
 	imx8mp_setup_pad(MX8MP_PAD_I2C1_SCL__I2C1_SCL | I2C_PAD_CTRL);
 	imx8mp_setup_pad(MX8MP_PAD_I2C1_SDA__I2C1_SDA | I2C_PAD_CTRL);
 
-	imx8mm_early_clock_init();
 	imx8m_ccgr_clock_enable(IMX8M_CCM_CCGR_I2C1);
 
 	i2c = imx8m_i2c_early_init(IOMEM(MX8MP_I2C1_BASE_ADDR));
@@ -89,6 +88,8 @@ static void start_atf(void)
 	 */
 	if (current_el() != 3)
 		return;
+
+	imx8mm_early_clock_init();
 
 	power_init_board();
 

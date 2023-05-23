@@ -142,7 +142,6 @@ static void test_remap(void)
 	}
 
 	expect_success(ret, "asserting mirroring after remap (virt += 4K)");
-	return;
 
 	ret = remap_range(buffer, SZ_8M, MAP_DEFAULT);
 	expect_success(ret, "remapping buffer with default attrs");

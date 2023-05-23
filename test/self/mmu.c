@@ -79,8 +79,8 @@ static void test_remap(void)
 	memtest(buffer, SZ_8M, "cached buffer");
 	memtest(mirror, SZ_8M, "cached mirror");
 
-	if (__is_defined(ARCH_HAS_REMAP)) {
-		skipped_tests += 10;
+	if (!arch_can_remap()) {
+		skipped_tests += 18;
 		goto out;
 	}
 

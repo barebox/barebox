@@ -213,7 +213,7 @@ static int nand_update_handler_complete(struct bbu_handler *handler,
 
 		buf = xzalloc(mtd->erasesize);
 		memcpy(buf, data->image, data->len);
-	
+
 		for (i = 0; i < 4; i++) {
 			if (mtd_peb_is_bad(mtd, i)) {
 				pr_info("PEB%d is bad, skipping\n", i);

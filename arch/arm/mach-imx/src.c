@@ -43,9 +43,4 @@ static struct driver imx_src_reset_driver = {
 	.probe	= imx_src_reset_probe,
 	.of_compatible	= DRV_OF_COMPAT(imx_src_dt_ids),
 };
-
-static int imx_src_reset_init(void)
-{
-	return platform_driver_register(&imx_src_reset_driver);
-}
-postcore_initcall(imx_src_reset_init);
+postcore_platform_driver(imx_src_reset_driver);

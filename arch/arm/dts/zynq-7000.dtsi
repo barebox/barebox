@@ -8,7 +8,7 @@
 		clocks = <&clkc 10>, <&clkc 43>;
 		clock-names = "ref_clk", "pclk";
 		status = "disabled";
-		
+
 		#address-cells = <1>;
 		#size-cells = <0>;
 	};

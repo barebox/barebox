@@ -54,7 +54,7 @@
  * Copyright (c) 2004 Micron Technology Inc.
  * Copyright (c) 2004 David Brownell
  *
- * 
+ *
  */
 
 #include <common.h>

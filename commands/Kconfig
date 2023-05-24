@@ -2257,6 +2257,20 @@ config CMD_OF_DISPLAY_TIMINGS
 		  -s path	select display-timings and register oftree fixup
 		  -f dtb	work on dtb. Has no effect on -s option
 
+config CMD_OF_FIXUP
+	tristate
+	select OFTREE
+	depends on KALLSYMS
+	prompt "of_fixup"
+	help
+	  List and enable/disable fixups
+
+	  Usage: of_fixup [-de] [fixups...]
+
+	  Options:
+		-d		disable fixup
+	  	-e		re-enable fixup
+
 config CMD_OF_FIXUP_STATUS
 	tristate
 	select OFTREE

@@ -46,6 +46,10 @@
 #define FT_DCD	0xee
 #define FT_LOAD_ONLY	0x00
 
+#ifndef UTS_RELEASE
+#define UTS_RELEASE "unknown"
+#endif
+
 /*
  * comment from libusb:
  * As per the USB 3.0 specs, the current maximum limit for the depth is 7.
@@ -1526,8 +1530,13 @@ static void usage(const char *prgname)
 		"-p <devpath> Specify device path: <bus>-<port>[.<port>]...\n"
 		"-s           skip DCD included in image\n"
 		"-v           verbose (give multiple times to increase)\n"
+		"--version    display version number\n"
 		"-h           this help\n", prgname);
-	exit(1);
+}
+
+static void version(const char *prgname)
+{
+	fprintf(stderr, "%s %s\n", prgname, UTS_RELEASE);
 }
 
 int main(int argc, char *argv[])
@@ -1545,10 +1554,20 @@ int main(int argc, char *argv[])
 	char *initfile = NULL;
 	char *devpath = NULL;
 	char *devtype = NULL;
+	int opt_version = 0;
+	struct option long_options[] = {
+		{"version", no_argument, &opt_version, 1},
+		{ }
+	};
 
 	w.do_dcd_once = 1;
 
-	while ((opt = getopt(argc, argv, "cvhd:i:p:s")) != -1) {
+	while ((opt = getopt_long(argc, argv, "cvhd:i:p:s", long_options, NULL)) != -1) {
+		if (opt_version) {
+			version(argv[0]);
+			exit(EXIT_SUCCESS);
+		}
+
 		switch (opt) {
 		case 'c':
 			verify = 1;
@@ -1558,6 +1577,7 @@ int main(int argc, char *argv[])
 			break;
 		case 'h':
 			usage(argv[0]);
+			exit(EXIT_SUCCESS);
 		case 'd':
 			devtype = optarg;
 			break;
@@ -1571,13 +1591,13 @@ int main(int argc, char *argv[])
 			w.do_dcd_once = 0;
 			break;
 		default:
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 	}
 
 	if (devtype && strcmp(devtype, "list") == 0) {
 		list_imx_device_types();
-		exit(0);
+		exit(EXIT_SUCCESS);
 	}
 
 	if (devtype && !devpath) {
@@ -1587,7 +1607,7 @@ int main(int argc, char *argv[])
 	if (optind == argc) {
 		fprintf(stderr, "no filename given\n");
 		usage(argv[0]);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	w.plug = 1;

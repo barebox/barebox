@@ -65,7 +65,7 @@ wm 32 0x021b001c 0x04008040
 
 /* MPZQHWCTRL */
 wm 32 0x021b0800 0xa1390003 /* ZQ mode = 3  force calibration */
-wm 32 0x021b4800 0xa1390003 
+wm 32 0x021b4800 0xa1390003
 
 wm 32 0x021b0020 MDREF_64KHZ
 

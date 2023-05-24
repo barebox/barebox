@@ -56,6 +56,7 @@
 	phys = <&usbphyc_port1 0>;
 	phy-names = "usb2-phy";
 	status = "okay";
+	g-tx-fifo-size = <128 128 128 16>;
 };
 
 &usbphyc {

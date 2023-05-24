@@ -165,10 +165,10 @@ static unsigned long get_symbol_pos(unsigned long addr,
  *   It resides in a module.
  * - We also guarantee that modname will be valid until rescheduled.
  */
-static const char *kallsyms_lookup(unsigned long addr,
-				   unsigned long *symbolsize,
-				   unsigned long *offset,
-				   char **modname, char *namebuf)
+const char *kallsyms_lookup(unsigned long addr,
+			    unsigned long *symbolsize,
+			    unsigned long *offset,
+			    char **modname, char *namebuf)
 {
 	namebuf[KSYM_NAME_LEN - 1] = 0;
 	namebuf[0] = 0;

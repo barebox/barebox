@@ -827,6 +827,7 @@ struct fit_handle *fit_open_buf(const void *buf, size_t size, bool verbose,
  * @filename:	The filename of the FIT image
  * @verbose:	If true, be more verbose
  * @verify:	The verify mode
+ * @max_size:	maximum length to read from file
  *
  * This opens a FIT image found in @filename. The returned handle is used as
  * context for the other FIT functions.
@@ -834,7 +835,7 @@ struct fit_handle *fit_open_buf(const void *buf, size_t size, bool verbose,
  * Return: A handle to a FIT image or a ERR_PTR
  */
 struct fit_handle *fit_open(const char *filename, bool verbose,
-			    enum bootm_verify verify)
+			    enum bootm_verify verify, loff_t max_size)
 {
 	struct fit_handle *handle;
 	int ret;
@@ -845,8 +846,8 @@ struct fit_handle *fit_open(const char *filename, bool verbose,
 	handle->verify = verify;
 
 	ret = read_file_2(filename, &handle->size, &handle->fit_alloc,
-			  FILESIZE_MAX);
-	if (ret) {
+			  max_size);
+	if (ret && ret != -EFBIG) {
 		pr_err("unable to read %s: %s\n", filename, strerror(-ret));
 		return ERR_PTR(ret);
 	}

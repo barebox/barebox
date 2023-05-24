@@ -24,6 +24,7 @@
 #include <errno.h>
 #include <linux/err.h>
 #include <mach/hostfile.h>
+#include <featctrl.h>
 #include <xfuncs.h>
 
 struct hf_priv {
@@ -33,6 +34,7 @@ struct hf_priv {
 	};
 	const char *filename;
 	int fd;
+	struct feature_controller feat;
 };
 
 static ssize_t hf_read(struct hf_priv *priv, void *buf, size_t count, loff_t offset, ulong flags)
@@ -96,17 +98,40 @@ static void hf_info(struct device *dev)
 	printf("file: %s\n", priv->filename);
 }
 
+static int hostfile_feat_check(struct feature_controller *feat, int idx)
+{
+	struct hf_priv *priv = container_of(feat, struct hf_priv, feat);
+
+	return priv->fd >= 0 ? FEATCTRL_OKAY : FEATCTRL_GATED;
+}
+
 static int hf_probe(struct device *dev)
 {
 	struct device_node *np = dev->of_node;
 	struct hf_priv *priv = xzalloc(sizeof(*priv));
 	struct cdev *cdev;
-	bool is_blockdev;
+	bool is_featctrl = false, is_blockdev;
 	u64 reg[2];
 	int err;
 
 	if (!np)
 		return -ENODEV;
+
+	dev->priv = priv;
+	priv->fd = -1;
+
+	if (IS_ENABLED(CONFIG_FEATURE_CONTROLLER) &&
+	    of_property_read_bool(np, "barebox,feature-controller")) {
+		priv->feat.dev = dev;
+		priv->feat.check = hostfile_feat_check;
+
+		err = feature_controller_register(&priv->feat);
+		if (err)
+			return err;
+
+		is_featctrl = true;
+	}
+
 
 	err = of_property_read_u64_array(np, "reg", reg, ARRAY_SIZE(reg));
 	if (err)
@@ -120,10 +145,9 @@ static int hf_probe(struct device *dev)
 		return err;
 
 	if (priv->fd < 0)
-		return priv->fd;
+		return is_featctrl ? 0 : priv->fd;
 
 	dev->info = hf_info;
-	dev->priv = priv;
 
 	is_blockdev = of_property_read_bool(np, "barebox,blockdev");
 
@@ -257,23 +281,14 @@ static int of_hostfile_map_fixup(struct device_node *root, void *ctx)
 
 		ret = linux_open_hostfile(&hf);
 		if (ret)
-			goto out;
+			continue;
 
 		reg[0] = hf.base;
 		reg[1] = hf.size;
 
-		ret = of_property_write_u64_array(node, "reg", reg, ARRAY_SIZE(reg));
-		if (ret)
-			goto out;
-
-		ret = of_property_write_bool(node, "barebox,blockdev", hf.is_blockdev);
-		if (ret)
-			goto out;
-
-		ret = of_property_write_u32(node, "barebox,fd", hf.fd);
-out:
-		if (ret)
-			pr_err("error fixing up %s: %pe\n", hf.devname, ERR_PTR(ret));
+		of_property_write_u64_array(node, "reg", reg, ARRAY_SIZE(reg));
+		of_property_write_bool(node, "barebox,blockdev", hf.is_blockdev);
+		of_property_write_u32(node, "barebox,fd", hf.fd);
 	}
 
 	return 0;

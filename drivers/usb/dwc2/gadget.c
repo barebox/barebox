@@ -14,13 +14,6 @@
 #define spin_lock_irqsave(lock, flags) (void)(flags)
 #define spin_unlock_irqrestore(lock, flags) (void)(flags)
 
-#ifndef USB_ENDPOINT_MAXP_MASK
-#define USB_ENDPOINT_MAXP_MASK	0x07ff
-#endif
-#ifndef USB_EP_MAXP_MULT
-#define USB_EP_MAXP_MULT(m)	(((m) & 0x1800) >> 11)
-#endif
-
 static void kill_all_requests(struct dwc2 *, struct dwc2_ep *, int);
 
 static inline struct dwc2_ep *index_to_ep(struct dwc2 *dwc2,
@@ -484,7 +477,7 @@ static int dwc2_ep_enable(struct usb_ep *ep,
 
 	ep_type = desc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
 	mps = usb_endpoint_maxp(desc) & USB_ENDPOINT_MAXP_MASK;
-	mc =  USB_EP_MAXP_MULT(usb_endpoint_maxp(desc));
+	mc = usb_endpoint_maxp_mult(desc);
 
 	/* note, we handle this here instead of dwc2_set_ep_maxpacket */
 	epctrl_reg = dir_in ? DIEPCTL(index) : DOEPCTL(index);
@@ -1549,9 +1542,8 @@ static void dwc2_gadget_setup_fifo(struct dwc2 *dwc2)
 	u32 np_tx_fifo_size = dwc2->params.g_np_tx_fifo_size;
 	u32 rx_fifo_size = dwc2->params.g_rx_fifo_size;
 	u32 fifo_size = dwc2->hw_params.total_fifo_size;
-	u32 *tx_fifo_size = dwc2->params.g_tx_fifo_size;
-	u32 size, depth;
-	u32 txfsz;
+	u32 *txfsz = dwc2->params.g_tx_fifo_size;
+	u32 size, val;
 
 	/* Reset fifo map if not correctly cleared during previous session */
 	WARN_ON(dwc2->fifo_map);
@@ -1578,19 +1570,17 @@ static void dwc2_gadget_setup_fifo(struct dwc2 *dwc2)
 	 * them to endpoints dynamically according to maxpacket size value of
 	 * given endpoint.
 	 */
+	for (ep = 1; ep < DWC2_MAX_EPS_CHANNELS; ep++) {
+		if (!txfsz[ep])
+			continue;
+		val = addr;
+		val |= txfsz[ep] << FIFOSIZE_DEPTH_SHIFT;
+		WARN_ONCE(addr + txfsz[ep] > fifo_size,
+			  "insufficient fifo memory");
+		addr += txfsz[ep];
 
-	for (ep = 1; ep < dwc2->num_eps; ep++) {
-		txfsz = dwc2_readl(dwc2, DPTXFSIZN(ep));
-		depth = tx_fifo_size[ep];
-
-		if (addr + depth > fifo_size)
-			dwc2_err(dwc2, "insufficient fifo memory\n");
-
-		txfsz = depth << FIFOSIZE_DEPTH_SHIFT;
-		txfsz |= addr & 0xffff;
-		dwc2_writel(dwc2, txfsz, DPTXFSIZN(ep));
-
-		addr += depth;
+		dwc2_writel(dwc2, val, DPTXFSIZN(ep));
+		val = dwc2_readl(dwc2, DPTXFSIZN(ep));
 	}
 
 	dwc2_writel(dwc2, dwc2->hw_params.total_fifo_size |

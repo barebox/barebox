@@ -284,7 +284,7 @@ static void set_timing_cfg_0(struct fsl_ddr_controller *c)
 		/*
 		 * for single quad-rank DIMM and two-slot DIMMs
 		 * to avoid ODT overlap
-		 */ 
+		 */
 		switch (avoid_odt_overlap(c, dimm_params)) {
 		case 2:
 			twrt_mclk = 2;

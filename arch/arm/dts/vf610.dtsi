@@ -9,4 +9,4 @@
 		mmc0 = &esdhc0;
 		mmc1 = &esdhc1;
 	};
-};	
+};

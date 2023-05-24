@@ -188,6 +188,33 @@ void dwc2_set_default_params(struct dwc2 *dwc2)
 	}
 }
 
+void dwc2_get_device_properties(struct dwc2 *dwc2)
+{
+	struct dwc2_core_params *p = &dwc2->params;
+	struct device_node *np = dwc2->dev->of_node;
+	int num;
+
+	if ((dwc2->dr_mode == USB_DR_MODE_PERIPHERAL) ||
+	    (dwc2->dr_mode == USB_DR_MODE_OTG)) {
+		of_property_read_u32(np, "g-rx-fifo-size",
+					 &p->g_rx_fifo_size);
+
+		of_property_read_u32(np, "g-np-tx-fifo-size",
+					 &p->g_np_tx_fifo_size);
+
+		num = of_property_count_elems_of_size(np, "g-tx-fifo-size", sizeof(u32));
+		if (num > 0) {
+			num = min(num, 15);
+			memset(p->g_tx_fifo_size, 0,
+			       sizeof(p->g_tx_fifo_size));
+			of_property_read_u32_array(np,
+						       "g-tx-fifo-size",
+						       &p->g_tx_fifo_size[1],
+						       num);
+		}
+	}
+}
+
 int dwc2_check_core_version(struct dwc2 *dwc2)
 {
 	struct dwc2_hw_params *hw = &dwc2->hw_params;

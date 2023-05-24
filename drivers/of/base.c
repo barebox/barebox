@@ -17,6 +17,7 @@
 #include <linux/sizes.h>
 #include <of_graph.h>
 #include <string.h>
+#include <libfile.h>
 #include <linux/clk.h>
 #include <linux/ctype.h>
 #include <linux/err.h>
@@ -2890,6 +2891,37 @@ int of_device_disable_by_alias(const char *alias)
 		return -ENODEV;
 
 	return of_device_disable(node);
+}
+
+/**
+ * of_read_file - unflatten oftree file
+ * @filename - path to file to unflatten its contents
+ *
+ * Returns the root node of the tree or an error pointer on error.
+ */
+struct device_node *of_read_file(const char *filename)
+{
+	void *fdt;
+	size_t size;
+	struct device_node *root;
+
+	fdt = read_file(filename, &size);
+	if (!fdt) {
+		pr_err("unable to read %s: %m\n", filename);
+		return ERR_PTR(-errno);
+	}
+
+	if (IS_ENABLED(CONFIG_FILETYPE) && file_detect_type(fdt, size) != filetype_oftree) {
+		pr_err("%s is not a flat device tree file.\n", filename);
+		root = ERR_PTR(-EINVAL);
+		goto out;
+	}
+
+	root = of_unflatten_dtb(fdt, size);
+out:
+	free(fdt);
+
+	return root;
 }
 
 /**

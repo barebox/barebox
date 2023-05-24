@@ -1,0 +1,20 @@
+targets:
+  main:
+    drivers:
+      QEMUDriver:
+        qemu_bin: qemu
+        machine: raspi1ap
+        cpu: arm1176
+        memory: 512M
+        kernel: barebox-raspberry-pi.img
+        extra_args: ''
+      BareboxDriver:
+        prompt: 'barebox@[^:]+:[^ ]+ '
+        bootstring: 'commandline:'
+      BareboxTestStrategy: {}
+images:
+  barebox-raspberry-pi.img: !template "$LG_BUILDDIR/images/barebox-raspberry-pi.img"
+tools:
+  qemu: /usr/bin/qemu-system-arm
+imports:
+  -  ../strategy.py

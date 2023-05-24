@@ -8,7 +8,7 @@ usage() {
 	  -b|--board <BOARD_DIRECTORY>
 	optional:
 	  -e|--embedded-sdk <ALTERA_EMBEDDED_SDK>"
-	echo "EXAMPLE: $0 -i ~/cv_soc_devkit_ghrd/hps_isw_handoff/soc_system_hps_0/ -b arch/arm/boards/altera-socdk -e ~/altera-embedded-sdk/" 
+	echo "EXAMPLE: $0 -i ~/cv_soc_devkit_ghrd/hps_isw_handoff/soc_system_hps_0/ -b arch/arm/boards/altera-socdk -e ~/altera-embedded-sdk/"
 	exit 1
 }
 

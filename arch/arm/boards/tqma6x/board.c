@@ -53,7 +53,7 @@ static int ksz9031rn_phy_fixup(struct phy_device *dev)
 	return 0;
 }
 
-static int tqma6x_enet_init(void)
+static int tq_mba6x_enet_init(void)
 {
 	if (!of_machine_is_compatible("tq,mba6x"))
 		return 0;
@@ -77,20 +77,25 @@ static int tqma6x_enet_init(void)
 
 	return 0;
 }
-fs_initcall(tqma6x_enet_init);
+fs_initcall(tq_mba6x_enet_init);
 
-static int tqma6x_env_init(void)
+static int tqma6x_init(void)
 {
-	if (!of_machine_is_compatible("tq,mba6x"))
-		return 0;
-
-	devfs_add_partition("m25p0", 0, SZ_512K, DEVFS_PARTITION_FIXED, "m25p0.barebox");
-
 	imx6_bbu_internal_spi_i2c_register_handler("spiflash", "/dev/m25p0.barebox",
 		BBU_HANDLER_FLAG_DEFAULT);
 	imx6_bbu_internal_mmcboot_register_handler("emmc", "mmc2", 0);
 
-	device_detect_by_name("mmc2");
+	device_detect_by_name("mmc2"); // eMMC
+
+	return 0;
+}
+
+static int tq_mba6x_env_init(void)
+{
+	if (!of_machine_is_compatible("tq,mba6x"))
+		return 0;
+
+	tqma6x_init();
 
 	default_environment_path_set("/dev/mmc2.boot1");
 
@@ -98,4 +103,4 @@ static int tqma6x_env_init(void)
 
 	return 0;
 }
-late_initcall(tqma6x_env_init);
+late_initcall(tq_mba6x_env_init);

@@ -462,7 +462,7 @@ int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 	ret = -ENODEV;
 out:
 	if (ret)
-		puts("Unable to find a PHY (unknown ID?)\n");
+		dev_err(&edev->dev, "Unable to find a PHY (unknown ID?)\n");
 
 	return ret;
 }
@@ -675,7 +675,7 @@ int genphy_aneg_done(struct phy_device *phydev)
 
 	/* Restart auto-negotiation if remote fault */
 	if (bmsr & BMSR_RFAULT) {
-		puts("PHY remote fault detected\n"
+		dev_info(&phydev->dev, "PHY remote fault detected\n"
 		     "PHY restarting auto-negotiation\n");
 		phy_write(phydev, MII_BMCR,
 				  BMCR_ANENABLE | BMCR_ANRESTART);

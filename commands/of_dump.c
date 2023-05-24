@@ -37,7 +37,6 @@ static int do_of_dump(int argc, char *argv[])
 	int fix = 0;
 	struct device_node *root = NULL, *node, *of_free = NULL;
 	char *dtbfile = NULL;
-	size_t size;
 	const char *nodename;
 	unsigned maxpropsize = ~0;
 	int names_only = 0, properties_only = 0;
@@ -72,19 +71,9 @@ static int do_of_dump(int argc, char *argv[])
 		nodename = argv[optind];
 
 	if (dtbfile) {
-		void *fdt;
-
-		fdt = read_file(dtbfile, &size);
-		if (!fdt) {
-			printf("unable to read %s: %s\n", dtbfile, strerror(errno));
-			return -errno;
-		}
-
-		root = of_unflatten_dtb(fdt, size);
-
-		free(fdt);
-
+		root = of_read_file(dtbfile);
 		if (IS_ERR(root)) {
+			printf("Cannot open %s: %pe\n", dtbfile, root);
 			ret = PTR_ERR(root);
 			goto out;
 		}

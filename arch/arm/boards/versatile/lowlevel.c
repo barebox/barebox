@@ -7,7 +7,7 @@
 
 extern char __dtb_versatile_pb_start[];
 
-void __naked barebox_arm_reset_vector(uint32_t r0, uint32_t r1, uint32_t r2)
+ENTRY_FUNCTION(start_versatile_pb, r0, r1, r2)
 {
 	void *fdt;
 

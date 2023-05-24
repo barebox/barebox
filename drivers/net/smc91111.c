@@ -440,7 +440,6 @@ struct smc91c111_priv {
 	struct mii_bus miibus;
 	struct accessors a;
 	void __iomem *base;
-	int qemu_fixup;
 	unsigned shift;
 	int version;
 	int revision;
@@ -1048,7 +1047,8 @@ static int smc91c111_eth_open(struct eth_device *edev)
 	if (ret)
 		return ret;
 
-	if (priv->qemu_fixup && edev->phydev->phy_id == 0x00000000) {
+	if (of_machine_is_compatible("arm,versatile-pb") ||
+	    of_machine_is_compatible("arm,versatile-ab")) {
 		struct phy_device *dev = edev->phydev;
 
 		dev->speed = SPEED_100;
@@ -1451,7 +1451,6 @@ static int smc91c111_probe(struct device *dev)
 	if (dev->platform_data) {
 		struct smc91c111_pdata *pdata = dev->platform_data;
 
-		priv->qemu_fixup = pdata->qemu_fixup;
 		priv->shift = pdata->addr_shift;
 		if (pdata->bus_width == 16)
 			priv->a = access_via_16bit;
@@ -1489,8 +1488,15 @@ static int smc91c111_probe(struct device *dev)
 	return 0;
 }
 
+static __maybe_unused struct of_device_id smc91c111_dt_ids[] = {
+	{
+		.compatible = "smsc,lan91c111",
+	},
+};
+
 static struct driver smc91c111_driver = {
-        .name  = "smc91c111",
-        .probe = smc91c111_probe,
+	.of_compatible = DRV_OF_COMPAT(smc91c111_dt_ids),
+	.name  = "smc91c111",
+	.probe = smc91c111_probe,
 };
 device_platform_driver(smc91c111_driver);

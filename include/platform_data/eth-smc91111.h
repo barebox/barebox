@@ -8,7 +8,6 @@
 #define __SMC91111_H__
 
 struct smc91c111_pdata {
-	int qemu_fixup;
 	int addr_shift;
 	int bus_width;
 	bool word_aligned_short_writes;

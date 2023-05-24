@@ -155,13 +155,6 @@ config ARCH_SOCFPGA
 	select COMMON_CLK
 	select CLKDEV_LOOKUP
 
-config ARCH_VERSATILE
-	bool "ARM Versatile boards (ARM926EJ-S)"
-	depends on 32BIT
-	select GPIOLIB
-	select HAVE_CLK
-	select HAS_DEBUG_LL
-
 config ARCH_TEGRA
 	bool "NVIDIA Tegra"
 	depends on 32BIT
@@ -278,6 +271,18 @@ config ARCH_STM32MP
 	select ARM_AMBA
 	select ARM_SMCCC
 	select ARM_USE_COMPRESSED_DTB
+
+config ARCH_VERSATILE
+	bool "ARM Versatile boards (ARM926EJ-S)"
+	depends on 32BIT
+	select GPIOLIB
+	select ARM_AMBA
+	select AMBA_SP804
+	select HAVE_CLK
+	select HAS_DEBUG_LL
+	select COMMON_CLK
+	select COMMON_CLK_OF_PROVIDER
+	select HAVE_PBL_MULTI_IMAGES
 
 config ARCH_VEXPRESS
 	bool "ARM Vexpress & virt boards"

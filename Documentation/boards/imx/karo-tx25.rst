@@ -1,7 +1,7 @@
 Ka-Ro TX25
 ==========
 
-Building the bootloader image for this target is covered by the ``imx_defconfig``
+Building the bootloader image for this target is covered by the ``multi_v5_v6_defconfig``
 multiimage configuration if the ``System Type`` menu entry ``Ka-Ro TX25``
 is enabled.
 

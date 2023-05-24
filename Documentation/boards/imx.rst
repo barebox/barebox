@@ -380,7 +380,7 @@ i.MX boards
 
 Not all supported boards have a description here. Many newer boards also do
 not have individual defconfig files, they are covered by ``imx_v7_defconfig``
-or ``imx_defconfig`` instead.
+or ``multi_v5_v6_defconfig`` instead.
 
 .. toctree::
   :glob:

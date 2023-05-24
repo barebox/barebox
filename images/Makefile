@@ -152,6 +152,7 @@ include $(srctree)/images/Makefile.rockchip
 include $(srctree)/images/Makefile.socfpga
 include $(srctree)/images/Makefile.stm32mp
 include $(srctree)/images/Makefile.tegra
+include $(srctree)/images/Makefile.versatile
 include $(srctree)/images/Makefile.vexpress
 include $(srctree)/images/Makefile.xburst
 include $(srctree)/images/Makefile.at91

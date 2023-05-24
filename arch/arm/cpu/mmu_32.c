@@ -9,6 +9,7 @@
 #include <init.h>
 #include <mmu.h>
 #include <errno.h>
+#include <zero_page.h>
 #include <linux/sizes.h>
 #include <asm/memory.h>
 #include <asm/barebox-arm.h>
@@ -18,12 +19,16 @@
 #include <asm/system_info.h>
 #include <asm/sections.h>
 
-#include "mmu.h"
+#include "mmu_32.h"
 
 #define PTRS_PER_PTE		(PGDIR_SIZE / PAGE_SIZE)
 #define ARCH_MAP_WRITECOMBINE	((unsigned)-1)
 
-static uint32_t *ttb;
+static inline uint32_t *get_ttb(void)
+{
+	/* Clear unpredictable bits [13:0] */
+	return (uint32_t *)(get_ttbr() & ~0x3fff);
+}
 
 /*
  * Do it the simple way for now and invalidate the entire
@@ -52,29 +57,36 @@ static inline void tlb_invalidate(void)
 			 PMD_SECT_BUFFERABLE | PMD_SECT_XN)
 #define PGD_FLAGS_UNCACHED_V7 (PMD_SECT_DEF_UNCACHED | PMD_SECT_XN)
 
-/*
- * PTE flags to set cached and uncached areas.
- * This will be determined at runtime.
- */
-static uint32_t pte_flags_cached;
-static uint32_t pte_flags_wc;
-static uint32_t pte_flags_uncached;
-static uint32_t pgd_flags_wc;
-static uint32_t pgd_flags_uncached;
-
-#define PTE_MASK ((1 << 12) - 1)
-
 static bool pgd_type_table(u32 pgd)
 {
 	return (pgd & PMD_TYPE_MASK) == PMD_TYPE_TABLE;
 }
 
+#define PTE_SIZE       (PTRS_PER_PTE * sizeof(u32))
+
+#ifdef __PBL__
+static uint32_t *alloc_pte(void)
+{
+	static unsigned int idx = 3;
+
+	idx++;
+
+	if (idx * PTE_SIZE >= ARM_EARLY_PAGETABLE_SIZE)
+		return NULL;
+
+	return get_ttb() + idx * PTE_SIZE;
+}
+#else
+static uint32_t *alloc_pte(void)
+{
+	return xmemalign(PTE_SIZE, PTE_SIZE);
+}
+#endif
+
 static u32 *find_pte(unsigned long adr)
 {
 	u32 *table;
-
-	if (!ttb)
-		arm_mmu_not_initialized_error();
+	uint32_t *ttb = get_ttb();
 
 	if (!pgd_type_table(ttb[pgd_index(adr)]))
 		return NULL;
@@ -92,6 +104,7 @@ void dma_flush_range(void *ptr, size_t size)
 	unsigned long end = start + size;
 
 	__dma_flush_range(start, end);
+
 	if (outer_cache.flush_range)
 		outer_cache.flush_range(start, end);
 }
@@ -103,6 +116,7 @@ void dma_inv_range(void *ptr, size_t size)
 
 	if (outer_cache.inv_range)
 		outer_cache.inv_range(start, end);
+
 	__dma_inv_range(start, end);
 }
 
@@ -111,24 +125,24 @@ void dma_inv_range(void *ptr, size_t size)
  * We initially create a flat uncached mapping on it.
  * Not yet exported, but may be later if someone finds use for it.
  */
-static u32 *arm_create_pte(unsigned long virt, uint32_t flags)
+static u32 *arm_create_pte(unsigned long virt, unsigned long phys,
+			   uint32_t flags)
 {
+	uint32_t *ttb = get_ttb();
 	u32 *table;
 	int i, ttb_idx;
 
 	virt = ALIGN_DOWN(virt, PGDIR_SIZE);
+	phys = ALIGN_DOWN(phys, PGDIR_SIZE);
 
-	table = xmemalign(PTRS_PER_PTE * sizeof(u32),
-			  PTRS_PER_PTE * sizeof(u32));
-
-	if (!ttb)
-		arm_mmu_not_initialized_error();
+	table = alloc_pte();
 
 	ttb_idx = pgd_index(virt);
 
 	for (i = 0; i < PTRS_PER_PTE; i++) {
-		table[i] = virt | PTE_TYPE_SMALL | flags;
+		table[i] = phys | PTE_TYPE_SMALL | flags;
 		virt += PAGE_SIZE;
+		phys += PAGE_SIZE;
 	}
 	dma_flush_range(table, PTRS_PER_PTE * sizeof(u32));
 
@@ -146,59 +160,113 @@ static u32 pmd_flags_to_pte(u32 pmd)
 		pte |= PTE_BUFFERABLE;
 	if (pmd & PMD_SECT_CACHEABLE)
 		pte |= PTE_CACHEABLE;
-	if (pmd & PMD_SECT_nG)
-		pte |= PTE_EXT_NG;
-	if (pmd & PMD_SECT_XN)
-		pte |= PTE_EXT_XN;
 
-	/* TEX[2:0] */
-	pte |= PTE_EXT_TEX((pmd >> 12) & 7);
-	/* AP[1:0] */
-	pte |= ((pmd >> 10) & 0x3) << 4;
-	/* AP[2] */
-	pte |= ((pmd >> 15) & 0x1) << 9;
+	if (cpu_architecture() >= CPU_ARCH_ARMv7) {
+		if (pmd & PMD_SECT_nG)
+			pte |= PTE_EXT_NG;
+		if (pmd & PMD_SECT_XN)
+			pte |= PTE_EXT_XN;
+
+		/* TEX[2:0] */
+		pte |= PTE_EXT_TEX((pmd >> 12) & 7);
+		/* AP[1:0] */
+		pte |= ((pmd >> 10) & 0x3) << 4;
+		/* AP[2] */
+		pte |= ((pmd >> 15) & 0x1) << 9;
+	} else {
+		pte |= PTE_SMALL_AP_UNO_SRW;
+	}
 
 	return pte;
 }
 
-int arch_remap_range(void *start, size_t size, unsigned flags)
+static u32 pte_flags_to_pmd(u32 pte)
 {
-	u32 addr = (u32)start;
-	u32 pte_flags;
-	u32 pgd_flags;
+	u32 pmd = 0;
 
-	BUG_ON(!IS_ALIGNED(addr, PAGE_SIZE));
+	if (pte & PTE_BUFFERABLE)
+		pmd |= PMD_SECT_BUFFERABLE;
+	if (pte & PTE_CACHEABLE)
+		pmd |= PMD_SECT_CACHEABLE;
 
-	switch (flags) {
-	case MAP_CACHED:
-		pte_flags = pte_flags_cached;
-		pgd_flags = PMD_SECT_DEF_CACHED;
-		break;
-	case MAP_UNCACHED:
-		pte_flags = pte_flags_uncached;
-		pgd_flags = pgd_flags_uncached;
-		break;
-	case ARCH_MAP_WRITECOMBINE:
-		pte_flags = pte_flags_wc;
-		pgd_flags = pgd_flags_wc;
-		break;
-	default:
-		return -EINVAL;
+	if (cpu_architecture() >= CPU_ARCH_ARMv7) {
+		if (pte & PTE_EXT_NG)
+			pmd |= PMD_SECT_nG;
+		if (pte & PTE_EXT_XN)
+			pmd |= PMD_SECT_XN;
+
+		/* TEX[2:0] */
+		pmd |= ((pte >> 6) & 7) << 12;
+		/* AP[1:0] */
+		pmd |= ((pte >> 4) & 0x3) << 10;
+		/* AP[2] */
+		pmd |= ((pte >> 9) & 0x1) << 15;
+	} else {
+		pmd |= PMD_SECT_AP_WRITE | PMD_SECT_AP_READ;
 	}
 
+	return pmd;
+}
+
+static uint32_t get_pte_flags(int map_type)
+{
+	if (cpu_architecture() >= CPU_ARCH_ARMv7) {
+		switch (map_type) {
+		case MAP_CACHED:
+			return PTE_FLAGS_CACHED_V7;
+		case MAP_UNCACHED:
+			return PTE_FLAGS_UNCACHED_V7;
+		case ARCH_MAP_WRITECOMBINE:
+			return PTE_FLAGS_WC_V7;
+		case MAP_FAULT:
+		default:
+			return 0x0;
+		}
+	} else {
+		switch (map_type) {
+		case MAP_CACHED:
+			return PTE_FLAGS_CACHED_V4;
+		case MAP_UNCACHED:
+		case ARCH_MAP_WRITECOMBINE:
+			return PTE_FLAGS_UNCACHED_V4;
+		case MAP_FAULT:
+		default:
+			return 0x0;
+		}
+	}
+}
+
+static uint32_t get_pmd_flags(int map_type)
+{
+	return pte_flags_to_pmd(get_pte_flags(map_type));
+}
+
+int arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t size, unsigned map_type)
+{
+	u32 virt_addr = (u32)_virt_addr;
+	u32 pte_flags, pmd_flags;
+	uint32_t *ttb = get_ttb();
+
+	BUG_ON(!IS_ALIGNED(virt_addr, PAGE_SIZE));
+	BUG_ON(!IS_ALIGNED(phys_addr, PAGE_SIZE));
+
+	pte_flags = get_pte_flags(map_type);
+	pmd_flags = pte_flags_to_pmd(pte_flags);
+
 	while (size) {
-		const bool pgdir_size_aligned = IS_ALIGNED(addr, PGDIR_SIZE);
-		u32 *pgd = (u32 *)&ttb[pgd_index(addr)];
+		const bool pgdir_size_aligned = IS_ALIGNED(virt_addr, PGDIR_SIZE);
+		u32 *pgd = (u32 *)&ttb[pgd_index(virt_addr)];
 		size_t chunk;
 
 		if (size >= PGDIR_SIZE && pgdir_size_aligned &&
+		    IS_ALIGNED(phys_addr, PGDIR_SIZE) &&
 		    !pgd_type_table(*pgd)) {
 			/*
 			 * TODO: Add code to discard a page table and
 			 * replace it with a section
 			 */
 			chunk = PGDIR_SIZE;
-			*pgd = addr | pgd_flags;
+			*pgd = phys_addr | pmd_flags | PMD_TYPE_SECT;
 			dma_flush_range(pgd, sizeof(*pgd));
 		} else {
 			unsigned int num_ptes;
@@ -213,7 +281,7 @@ int arch_remap_range(void *start, size_t size, unsigned flags)
 			 * was not aligned on PGDIR_SIZE boundary)
 			 */
 			chunk = pgdir_size_aligned ?
-				PGDIR_SIZE : ALIGN(addr, PGDIR_SIZE) - addr;
+				PGDIR_SIZE : ALIGN(virt_addr, PGDIR_SIZE) - virt_addr;
 			/*
 			 * At the same time we want to make sure that
 			 * we don't go on remapping past requested
@@ -223,27 +291,29 @@ int arch_remap_range(void *start, size_t size, unsigned flags)
 			chunk = min(chunk, size);
 			num_ptes = chunk / PAGE_SIZE;
 
-			pte = find_pte(addr);
+			pte = find_pte(virt_addr);
 			if (!pte) {
 				/*
 				 * If PTE is not found it means that
 				 * we needs to split this section and
 				 * create a new page table for it
 				 */
-				table = arm_create_pte(addr, pmd_flags_to_pte(*pgd));
-				pte = find_pte(addr);
+				table = arm_create_pte(virt_addr, phys_addr,
+						       pmd_flags_to_pte(*pgd));
+				pte = find_pte(virt_addr);
 				BUG_ON(!pte);
 			}
 
 			for (i = 0; i < num_ptes; i++) {
-				pte[i] &= ~PTE_MASK;
+				pte[i] = phys_addr + i * PAGE_SIZE;
 				pte[i] |= pte_flags | PTE_TYPE_SMALL;
 			}
 
 			dma_flush_range(pte, num_ptes * sizeof(u32));
 		}
 
-		addr += chunk;
+		virt_addr += chunk;
+		phys_addr += chunk;
 		size -= chunk;
 	}
 
@@ -251,12 +321,33 @@ int arch_remap_range(void *start, size_t size, unsigned flags)
 	return 0;
 }
 
+static void create_sections(unsigned long first, unsigned long last,
+			    unsigned int flags)
+{
+	uint32_t *ttb = get_ttb();
+	unsigned long ttb_start = pgd_index(first);
+	unsigned long ttb_end = pgd_index(last) + 1;
+	unsigned int i, addr = first;
+
+	for (i = ttb_start; i < ttb_end; i++) {
+		ttb[i] = addr | flags;
+		addr += PGDIR_SIZE;
+	}
+}
+
+static inline void create_flat_mapping(void)
+{
+	/* create a flat mapping using 1MiB sections */
+	create_sections(0, 0xffffffff, attrs_uncached_mem());
+}
+
 void *map_io_sections(unsigned long phys, void *_start, size_t size)
 {
 	unsigned long start = (unsigned long)_start, sec;
+	uint32_t *ttb = get_ttb();
 
 	for (sec = start; sec < start + size; sec += PGDIR_SIZE, phys += PGDIR_SIZE)
-		ttb[pgd_index(sec)] = phys | pgd_flags_uncached;
+		ttb[pgd_index(sec)] = phys | get_pmd_flags(MAP_UNCACHED);
 
 	dma_flush_range(ttb, 0x4000);
 	tlb_invalidate();
@@ -297,9 +388,9 @@ static void create_vector_table(unsigned long adr)
 		vectors = xmemalign(PAGE_SIZE, PAGE_SIZE);
 		pr_debug("Creating vector table, virt = 0x%p, phys = 0x%08lx\n",
 			 vectors, adr);
-		arm_create_pte(adr, pte_flags_uncached);
+		arm_create_pte(adr, adr, get_pte_flags(MAP_UNCACHED));
 		pte = find_pte(adr);
-		*pte = (u32)vectors | PTE_TYPE_SMALL | pte_flags_cached;
+		*pte = (u32)vectors | PTE_TYPE_SMALL | get_pte_flags(MAP_CACHED);
 	}
 
 	arm_fixup_vectors();
@@ -358,7 +449,6 @@ static int set_vector_table(unsigned long adr)
 static void create_zero_page(void)
 {
 	struct resource *zero_sdram;
-	u32 *zero;
 
 	zero_sdram = request_sdram_region("zero page", 0x0, PAGE_SIZE);
 	if (zero_sdram) {
@@ -368,8 +458,7 @@ static void create_zero_page(void)
 		 */
 		pr_debug("zero page is in SDRAM area, currently not supported\n");
 	} else {
-		zero = arm_create_pte(0x0, pte_flags_uncached);
-		zero[0] = 0;
+		zero_page_faulting();
 		pr_debug("Created zero page\n");
 	}
 }
@@ -413,67 +502,43 @@ static void vectors_init(void)
 void __mmu_init(bool mmu_on)
 {
 	struct memory_bank *bank;
+	uint32_t *ttb = get_ttb();
 
-	arm_set_cache_functions();
-
-	if (cpu_architecture() >= CPU_ARCH_ARMv7) {
-		pte_flags_cached = PTE_FLAGS_CACHED_V7;
-		pte_flags_wc = PTE_FLAGS_WC_V7;
-		pgd_flags_wc = PGD_FLAGS_WC_V7;
-		pgd_flags_uncached = PGD_FLAGS_UNCACHED_V7;
-		pte_flags_uncached = PTE_FLAGS_UNCACHED_V7;
-	} else {
-		pte_flags_cached = PTE_FLAGS_CACHED_V4;
-		pte_flags_wc = PTE_FLAGS_UNCACHED_V4;
-		pgd_flags_wc = PMD_SECT_DEF_UNCACHED;
-		pgd_flags_uncached = PMD_SECT_DEF_UNCACHED;
-		pte_flags_uncached = PTE_FLAGS_UNCACHED_V4;
-	}
-
-	if (mmu_on) {
+	if (!request_sdram_region("ttb", (unsigned long)ttb, SZ_16K))
 		/*
-		 * Early MMU code has already enabled the MMU. We assume a
-		 * flat 1:1 section mapping in this case.
+		 * This can mean that:
+		 * - the early MMU code has put the ttb into a place
+		 *   which we don't have inside our available memory
+		 * - Somebody else has occupied the ttb region which means
+		 *   the ttb will get corrupted.
 		 */
-		/* Clear unpredictable bits [13:0] */
-		ttb = (uint32_t *)(get_ttbr() & ~0x3fff);
-
-		if (!request_sdram_region("ttb", (unsigned long)ttb, SZ_16K))
-			/*
-			 * This can mean that:
-			 * - the early MMU code has put the ttb into a place
-			 *   which we don't have inside our available memory
-			 * - Somebody else has occupied the ttb region which means
-			 *   the ttb will get corrupted.
-			 */
-			pr_crit("Critical Error: Can't request SDRAM region for ttb at %p\n",
+		pr_crit("Critical Error: Can't request SDRAM region for ttb at %p\n",
 					ttb);
-	} else {
-		ttb = xmemalign(ARM_TTB_SIZE, ARM_TTB_SIZE);
-
-		set_ttbr(ttb);
-
-		/* For the XN bit to take effect, we can't be using DOMAIN_MANAGER. */
-		if (cpu_architecture() >= CPU_ARCH_ARMv7)
-			set_domain(DOMAIN_CLIENT);
-		else
-			set_domain(DOMAIN_MANAGER);
-
-		create_flat_mapping(ttb);
-		__mmu_cache_flush();
-	}
 
 	pr_debug("ttb: 0x%p\n", ttb);
 
 	vectors_init();
 
+	/*
+	 * Early mmu init will have mapped everything but the initial memory area
+	 * (excluding final OPTEE_SIZE bytes) uncached. We have now discovered
+	 * all memory banks, so let's map all pages, excluding reserved memory areas,
+	 * cacheable and executable.
+	 */
 	for_each_memory_bank(bank) {
-		create_sections(ttb, bank->start, bank->start + bank->size - 1,
-				PMD_SECT_DEF_CACHED);
-		__mmu_cache_flush();
-	}
+		struct resource *rsv;
+		resource_size_t pos;
 
-	__mmu_cache_on();
+		pos = bank->start;
+
+		for_each_reserved_region(bank, rsv) {
+			remap_range((void *)rsv->start, resource_size(rsv), MAP_UNCACHED);
+			remap_range((void *)pos, rsv->start - pos, MAP_CACHED);
+			pos = rsv->end + 1;
+		}
+
+		remap_range((void *)pos, bank->start + bank->size - pos, MAP_CACHED);
+	}
 }
 
 /*
@@ -494,20 +559,30 @@ void *dma_alloc_writecombine(size_t size, dma_addr_t *dma_handle)
 	return dma_alloc_map(size, dma_handle, ARCH_MAP_WRITECOMBINE);
 }
 
-void dma_sync_single_for_device(dma_addr_t address, size_t size,
-				enum dma_data_direction dir)
+void mmu_early_enable(unsigned long membase, unsigned long memsize)
 {
-	/*
-	 * FIXME: This function needs a device argument to support non 1:1 mappings
-	 */
+	uint32_t *ttb = (uint32_t *)arm_mem_ttb(membase + memsize);
 
-	if (dir == DMA_FROM_DEVICE) {
-		__dma_inv_range(address, address + size);
-		if (outer_cache.inv_range)
-			outer_cache.inv_range(address, address + size);
-	} else {
-		__dma_clean_range(address, address + size);
-		if (outer_cache.clean_range)
-			outer_cache.clean_range(address, address + size);
-	}
+	pr_debug("enabling MMU, ttb @ 0x%p\n", ttb);
+
+	set_ttbr(ttb);
+
+	/* For the XN bit to take effect, we can't be using DOMAIN_MANAGER. */
+	if (cpu_architecture() >= CPU_ARCH_ARMv7)
+		set_domain(DOMAIN_CLIENT);
+	else
+		set_domain(DOMAIN_MANAGER);
+
+	/*
+	 * This marks the whole address space as uncachable as well as
+	 * unexecutable if possible
+	 */
+	create_flat_mapping();
+
+	/* maps main memory as cachable */
+	remap_range((void *)membase, memsize - OPTEE_SIZE, MAP_CACHED);
+	remap_range((void *)membase + memsize - OPTEE_SIZE, OPTEE_SIZE, MAP_UNCACHED);
+	remap_range((void *)PAGE_ALIGN_DOWN((uintptr_t)_stext), PAGE_ALIGN(_etext - _stext), MAP_CACHED);
+
+	__mmu_cache_on();
 }

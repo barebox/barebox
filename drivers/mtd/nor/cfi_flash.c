@@ -965,7 +965,10 @@ static int cfi_probe_one(struct flash_info *info, int num)
 		return PTR_ERR(iores);
 	info->base = IOMEM(iores->start);
 
-	/* TODO: either remap memory region or disable NULL pointer page */
+	/*
+	 * Platforms hitting this should remap memory region, e.g. via virtual-reg
+	 * device tree property or disable MMU.
+	 */
 	if (IS_ENABLED(CONFIG_MMU) && iores->start == 0)
 		return -EPERM;
 

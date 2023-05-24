@@ -18,8 +18,6 @@
 #include <asm/cache.h>
 #include <asm/ptrace.h>
 
-#include "mmu.h"
-
 /**
  * Enable processor's instruction cache
  */

@@ -1,91 +1,85 @@
 // SPDX-License-Identifier: GPL-2.0-only
 // SPDX-FileCopyrightText: 2012 Jan Luebbe <j.luebbe@pengutronix.de>, Pengutronix
 /*
- * mmuinfo.c - Show MMU/cache information from cp15 registers
+ * mmuinfo.c - Show MMU/cache information
  */
 
 #include <common.h>
 #include <command.h>
+#include <getopt.h>
+#include <asm/mmuinfo.h>
+#include <asm/system_info.h>
+#include <zero_page.h>
+#include <mmu.h>
 
-static char *inner_attr[] = {
-	"0b000 Non-cacheable",
-	"0b001 Strongly-ordered",
-	"0b010 (reserved)",
-	"0b011 Device",
-	"0b100 (reserved)",
-	"0b101 Write-Back, Write-Allocate",
-	"0b110 Write-Through",
-	"0b111 Write-Back, no Write-Allocate",
-};
-
-static char *outer_attr[] = {
-	"0b00 Non-cacheable",
-	"0b01 Write-Back, Write-Allocate",
-	"0b10 Write-Through, no Write-Allocate",
-	"0b11 Write-Back, no Write-Allocate",
-};
-
-static void decode_par(unsigned long par)
+int mmuinfo(void *addr)
 {
-	printf("  Physical Address [31:12]: 0x%08lx\n", par & 0xFFFFF000);
-	printf("  Reserved [11]:            0x%lx\n", (par >> 11) & 0x1);
-	printf("  Not Outer Shareable [10]: 0x%lx\n", (par >> 10) & 0x1);
-	printf("  Non-Secure [9]:           0x%lx\n", (par >> 9) & 0x1);
-	printf("  Impl. def. [8]:           0x%lx\n", (par >> 8) & 0x1);
-	printf("  Shareable [7]:            0x%lx\n", (par >> 7) & 0x1);
-	printf("  Inner mem. attr. [6:4]:   0x%lx (%s)\n", (par >> 4) & 0x7,
-		inner_attr[(par >> 4) & 0x7]);
-	printf("  Outer mem. attr. [3:2]:   0x%lx (%s)\n", (par >> 2) & 0x3,
-		outer_attr[(par >> 2) & 0x3]);
-	printf("  SuperSection [1]:         0x%lx\n", (par >> 1) & 0x1);
-	printf("  Failure [0]:              0x%lx\n", (par >> 0) & 0x1);
+	if (IS_ENABLED(CONFIG_CPU_V8))
+		return mmuinfo_v8(addr);
+	if (IS_ENABLED(CONFIG_CPU_V7) && cpu_architecture() == CPU_ARCH_ARMv7)
+		return mmuinfo_v7(addr);
+
+	return -ENOSYS;
 }
 
-static int do_mmuinfo(int argc, char *argv[])
+static __maybe_unused int do_mmuinfo(int argc, char *argv[])
 {
-	unsigned long addr = 0, priv_read, priv_write;
+	unsigned long addr;
+	int access_zero_page = -1;
+	int opt;
 
-	if (argc < 2)
+	while ((opt = getopt(argc, argv, "zZ")) > 0) {
+		switch (opt) {
+		case 'z':
+			access_zero_page = true;
+			break;
+		case 'Z':
+			access_zero_page = false;
+			break;
+		default:
+			return COMMAND_ERROR_USAGE;
+		}
+	}
+
+	if (access_zero_page >= 0) {
+		if (argc - optind != 0)
+			return COMMAND_ERROR_USAGE;
+
+		if (!zero_page_remappable()) {
+			pr_warn("No architecture support for zero page remap\n");
+			return -ENOSYS;
+		}
+
+		if (access_zero_page)
+			zero_page_access();
+		else
+			zero_page_faulting();
+
+		return 0;
+	}
+
+	if (argc - optind != 1)
 		return COMMAND_ERROR_USAGE;
 
 	addr = strtoul_suffix(argv[1], NULL, 0);
 
-	__asm__ __volatile__(
-		"mcr    p15, 0, %0, c7, c8, 0   @ write VA to PA translation (priv read)\n"
-		:
-		: "r" (addr)
-		: "memory");
-
-	__asm__ __volatile__(
-		"mrc    p15, 0, %0, c7, c4, 0   @ read PAR\n"
-		: "=r" (priv_read)
-		:
-		: "memory");
-
-	__asm__ __volatile__(
-		"mcr    p15, 0, %0, c7, c8, 1   @ write VA to PA translation (priv write)\n"
-		:
-		: "r" (addr)
-		: "memory");
-
-	__asm__ __volatile__(
-		"mrc    p15, 0, %0, c7, c4, 0   @ read PAR\n"
-		: "=r" (priv_write)
-		:
-		: "memory");
-
-	printf("PAR result for 0x%08lx: \n", addr);
-	printf(" privileged read: 0x%08lx\n", priv_read);
-	decode_par(priv_read);
-	printf(" privileged write: 0x%08lx\n", priv_write);
-	decode_par(priv_write);
-
-	return 0;
+	return mmuinfo((void *)addr);
 }
 
+BAREBOX_CMD_HELP_START(mmuinfo)
+BAREBOX_CMD_HELP_TEXT("Show MMU/cache information using the cp15/model-specific registers.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-z",  "enable access to zero page")
+BAREBOX_CMD_HELP_OPT ("-Z",  "disable access to zero page")
+BAREBOX_CMD_HELP_END
+
+#ifdef CONFIG_COMMAND_SUPPORT
 BAREBOX_CMD_START(mmuinfo)
 	.cmd            = do_mmuinfo,
 	BAREBOX_CMD_DESC("show MMU/cache information of an address")
-	BAREBOX_CMD_OPTS("ADDRESS")
+	BAREBOX_CMD_OPTS("[-zZ | ADDRESS]")
 	BAREBOX_CMD_GROUP(CMD_GRP_INFO)
+	BAREBOX_CMD_HELP(cmd_mmuinfo_help)
 BAREBOX_CMD_END
+#endif

@@ -111,7 +111,7 @@ static inline unsigned long arm_mem_boarddata(unsigned long membase,
 
 unsigned long arm_mem_ramoops_get(void)
 {
-	return arm_mem_ramoops(0, arm_stack_top);
+	return arm_mem_ramoops(arm_stack_top);
 }
 EXPORT_SYMBOL_GPL(arm_mem_ramoops_get);
 
@@ -163,21 +163,9 @@ __noreturn __no_sanitize_address void barebox_non_pbl_start(unsigned long membas
 
 	arm_membase = membase;
 	arm_endmem = endmem;
-	arm_stack_top = arm_mem_stack_top(membase, endmem);
+	arm_stack_top = arm_mem_stack_top(endmem);
 	arm_barebox_size = barebox_size;
 	malloc_end = barebox_base;
-
-	if (IS_ENABLED(CONFIG_MMU_EARLY)) {
-		unsigned long ttb = arm_mem_ttb(membase, endmem);
-
-		if (IS_ENABLED(CONFIG_PBL_IMAGE)) {
-			arm_set_cache_functions();
-		} else {
-			pr_debug("enabling MMU, ttb @ 0x%08lx\n", ttb);
-			arm_early_mmu_cache_invalidate();
-			mmu_early_enable(membase, memsize - OPTEE_SIZE, ttb);
-		}
-	}
 
 	if (boarddata) {
 		uint32_t totalsize = 0;
@@ -227,6 +215,11 @@ __noreturn __no_sanitize_address void barebox_non_pbl_start(unsigned long membas
 	kasan_init(membase, memsize, malloc_start - (memsize >> KASAN_SHADOW_SCALE_SHIFT));
 
 	mem_malloc_init((void *)malloc_start, (void *)malloc_end - 1);
+
+	if (IS_ENABLED(CONFIG_MMU) && !IS_ENABLED(CONFIG_PBL_IMAGE)) {
+		arm_early_mmu_cache_invalidate();
+		mmu_early_enable(membase, memsize);
+	}
 
 	if (IS_ENABLED(CONFIG_BOOTM_OPTEE))
 		of_add_reserve_entry(endmem - OPTEE_SIZE, endmem - 1);

@@ -160,7 +160,7 @@ static void mem_test_report_failure(const char *failure_description,
 }
 
 int mem_test_bus_integrity(resource_size_t _start,
-			   resource_size_t _end)
+			   resource_size_t _end, unsigned int flags)
 {
 	static const uint64_t bitpattern[] = {
 		0x0000000000000001ULL,	/* single bit */
@@ -190,7 +190,8 @@ int mem_test_bus_integrity(resource_size_t _start,
 	dummy = start + 1;
 	num_words = (_end - _start + 1)/sizeof(resource_size_t);
 
-	printf("Starting data line test.\n");
+	if (flags & MEMTEST_VERBOSE)
+		printf("Starting data line test.\n");
 
 	/*
 	 * Data line test: write a pattern to the first
@@ -294,7 +295,8 @@ int mem_test_bus_integrity(resource_size_t _start,
 	 */
 	start[0] = anti_pattern;
 
-	printf("Check for address bits stuck high.\n");
+	if (flags & MEMTEST_VERBOSE)
+		printf("Check for address bits stuck high.\n");
 
 	/*
 	 * Check for address bits stuck high.
@@ -313,8 +315,8 @@ int mem_test_bus_integrity(resource_size_t _start,
 	 */
 	start[0] = pattern;
 
-	printf("Check for address bits stuck "
-			"low or shorted.\n");
+	if (flags & MEMTEST_VERBOSE)
+		printf("Check for address bits stuck low or shorted.\n");
 
 	/*
 	 * Check for address bits stuck low or shorted.
@@ -340,7 +342,7 @@ int mem_test_bus_integrity(resource_size_t _start,
 	return 0;
 }
 
-static int update_progress(resource_size_t offset)
+static int update_progress(resource_size_t offset, unsigned flags)
 {
 	/* Only check every 4k to reduce overhead */
 	if (offset & (SZ_4K - 1))
@@ -349,12 +351,14 @@ static int update_progress(resource_size_t offset)
 	if (ctrlc())
 		return -EINTR;
 
-	show_progress(offset);
+	if (flags & MEMTEST_VERBOSE)
+		show_progress(offset);
 
 	return 0;
 }
 
-int mem_test_moving_inversions(resource_size_t _start, resource_size_t _end)
+int mem_test_moving_inversions(resource_size_t _start, resource_size_t _end,
+			       unsigned flags)
 {
 	volatile resource_size_t *start, num_words, offset, temp, anti_pattern;
 	int ret;
@@ -368,8 +372,12 @@ int mem_test_moving_inversions(resource_size_t _start, resource_size_t _end)
 	start = (resource_size_t *)_start;
 	num_words = (_end - _start + 1)/sizeof(resource_size_t);
 
-	printf("Starting moving inversions test of RAM:\n"
-	       "Fill with address, compare, fill with inverted address, compare again\n");
+	if (flags & MEMTEST_VERBOSE) {
+		printf("Starting moving inversions test of RAM:\n"
+		       "Fill with address, compare, fill with inverted address, compare again\n");
+
+		init_progression_bar(3 * num_words);
+	}
 
 	/*
 	 * Description: Test the integrity of a physical
@@ -382,11 +390,9 @@ int mem_test_moving_inversions(resource_size_t _start, resource_size_t _end)
 	 *		selected by the caller.
 	 */
 
-	init_progression_bar(3 * num_words);
-
 	/* Fill memory with a known pattern */
 	for (offset = 0; offset < num_words; offset++) {
-		ret = update_progress(offset);
+		ret = update_progress(offset, flags);
 		if (ret)
 			return ret;
 		start[offset] = offset + 1;
@@ -394,7 +400,7 @@ int mem_test_moving_inversions(resource_size_t _start, resource_size_t _end)
 
 	/* Check each location and invert it for the second pass */
 	for (offset = 0; offset < num_words; offset++) {
-		ret = update_progress(num_words + offset);
+		ret = update_progress(num_words + offset, flags);
 		if (ret)
 			return ret;
 
@@ -413,7 +419,7 @@ int mem_test_moving_inversions(resource_size_t _start, resource_size_t _end)
 
 	/* Check each location for the inverted pattern and zero it */
 	for (offset = 0; offset < num_words; offset++) {
-		ret = update_progress(2 * num_words + offset);
+		ret = update_progress(2 * num_words + offset, flags);
 		if (ret)
 			return ret;
 
@@ -430,10 +436,12 @@ int mem_test_moving_inversions(resource_size_t _start, resource_size_t _end)
 
 		start[offset] = 0;
 	}
-	show_progress(3 * num_words);
+	if (flags & MEMTEST_VERBOSE) {
+		show_progress(3 * num_words);
 
-	/* end of progressbar */
-	printf("\n");
+		/* end of progressbar */
+		printf("\n");
+	}
 
 	return 0;
 }

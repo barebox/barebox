@@ -78,10 +78,13 @@ endif
 ifeq ($(CONFIG_CPU_V8), y)
 KBUILD_CPPFLAGS += $(CFLAGS_ABI) $(arch-y) $(tune-y)
 KBUILD_AFLAGS   += -include asm/unified.h
-export S64 = _64
+export S64_32 = 64
+export S64 = 64
 else
 KBUILD_CPPFLAGS += $(CFLAGS_ABI) $(arch-y) $(tune-y) $(CFLAGS_THUMB2)
 KBUILD_AFLAGS   += -include asm/unified.h -msoft-float $(AFLAGS_THUMB2)
+export S64_32 = 32
+export S32 = 32
 endif
 
 # Machine directory name.  This list is sorted alphanumerically

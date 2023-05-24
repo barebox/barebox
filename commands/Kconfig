@@ -201,12 +201,13 @@ config CMD_MEMINFO
 
 config CMD_ARM_MMUINFO
 	bool "mmuinfo command"
-	depends on CPU_V7
+	depends on CPU_V7 || CPU_V8
+	select MMUINFO
 	help
 	  Say yes here to get a mmuinfo command to show some
-	  MMU and cache information using the cp15 registers.
+	  MMU and cache information using the cp15/model-specific registers.
 
-	  Example:
+	  Example for ARMv7:
 
 	  PAR result for 0x00110000:
 	  privileged read: 0x00110090
@@ -1707,6 +1708,7 @@ config CMD_MEMSET
 
 config CMD_MEMTEST
 	tristate
+	select MEMTEST
 	prompt "memtest"
 	help
 	  The memtest command can test the registered barebox memory.

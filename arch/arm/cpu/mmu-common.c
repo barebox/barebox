@@ -11,7 +11,8 @@
 #include <asm/system.h>
 #include <asm/barebox-arm.h>
 #include <memory.h>
-#include "mmu.h"
+#include <zero_page.h>
+#include "mmu-common.h"
 
 void dma_sync_single_for_cpu(dma_addr_t address, size_t size,
 			     enum dma_data_direction dir)
@@ -35,7 +36,7 @@ void *dma_alloc_map(size_t size, dma_addr_t *dma_handle, unsigned flags)
 	memset(ret, 0, size);
 	dma_flush_range(ret, size);
 
-	arch_remap_range(ret, size, flags);
+	remap_range(ret, size, flags);
 
 	return ret;
 }
@@ -52,9 +53,19 @@ void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
 void dma_free_coherent(void *mem, dma_addr_t dma_handle, size_t size)
 {
 	size = PAGE_ALIGN(size);
-	arch_remap_range(mem, size, MAP_CACHED);
+	remap_range(mem, size, MAP_CACHED);
 
 	free(mem);
+}
+
+void zero_page_access(void)
+{
+	remap_range(0x0, PAGE_SIZE, MAP_CACHED);
+}
+
+void zero_page_faulting(void)
+{
+	remap_range(0x0, PAGE_SIZE, MAP_FAULT);
 }
 
 static int mmu_init(void)

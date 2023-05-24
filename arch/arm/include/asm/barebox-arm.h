@@ -23,11 +23,7 @@
 #include <asm/reloc.h>
 #include <linux/stringify.h>
 
-/*
- * We have a 4GiB address space split into 1MiB sections, with each
- * section header taking 4 bytes
- */
-#define ARM_TTB_SIZE	(SZ_4G / SZ_1M * sizeof(u32))
+#define ARM_EARLY_PAGETABLE_SIZE	SZ_64K
 
 void __noreturn barebox_arm_entry(unsigned long membase, unsigned long memsize, void *boarddata);
 
@@ -71,46 +67,42 @@ static inline void arm_fixup_vectors(void)
 
 void *barebox_arm_boot_dtb(void);
 
-#define __arm_mem_scratch(endmem) ((endmem) - SZ_32K)
-
-static inline const void *arm_mem_scratch_get(void)
+static inline unsigned long arm_mem_optee(unsigned long endmem)
 {
-	return (const void *)__arm_mem_scratch(arm_mem_endmem_get());
+	return endmem - OPTEE_SIZE;
 }
 
-#define arm_mem_stack_top(membase, endmem) ((endmem) - SZ_64K - OPTEE_SIZE)
-
-static inline unsigned long arm_mem_stack(unsigned long membase,
-					  unsigned long endmem)
+static inline unsigned long arm_mem_scratch(unsigned long endmem)
 {
-	return arm_mem_stack_top(membase, endmem) - STACK_SIZE;
+	return arm_mem_optee(endmem) - SZ_32K;
 }
 
-static inline unsigned long arm_mem_ttb(unsigned long membase,
-					unsigned long endmem)
+static inline unsigned long arm_mem_stack(unsigned long endmem)
 {
-	endmem = arm_mem_stack(membase, endmem);
-	endmem = ALIGN_DOWN(endmem, ARM_TTB_SIZE) - ARM_TTB_SIZE;
+	return arm_mem_scratch(endmem) - STACK_SIZE;
+}
+
+static inline unsigned long arm_mem_ttb(unsigned long endmem)
+{
+	endmem = arm_mem_stack(endmem);
+	endmem = ALIGN_DOWN(endmem, ARM_EARLY_PAGETABLE_SIZE) - ARM_EARLY_PAGETABLE_SIZE;
 
 	return endmem;
 }
 
-static inline unsigned long arm_mem_early_malloc(unsigned long membase,
-						 unsigned long endmem)
+static inline unsigned long arm_mem_early_malloc(unsigned long endmem)
 {
-	return arm_mem_ttb(membase, endmem) - SZ_128K;
+	return arm_mem_ttb(endmem) - SZ_128K;
 }
 
-static inline unsigned long arm_mem_early_malloc_end(unsigned long membase,
-						     unsigned long endmem)
+static inline unsigned long arm_mem_early_malloc_end(unsigned long endmem)
 {
-	return arm_mem_ttb(membase, endmem);
+	return arm_mem_ttb(endmem);
 }
 
-static inline unsigned long arm_mem_ramoops(unsigned long membase,
-					    unsigned long endmem)
+static inline unsigned long arm_mem_ramoops(unsigned long endmem)
 {
-	endmem = arm_mem_ttb(membase, endmem);
+	endmem = arm_mem_ttb(endmem);
 #ifdef CONFIG_FS_PSTORE_RAMOOPS
 	endmem -= CONFIG_FS_PSTORE_RAMOOPS_SIZE;
 	endmem = ALIGN_DOWN(endmem, SZ_4K);
@@ -119,11 +111,21 @@ static inline unsigned long arm_mem_ramoops(unsigned long membase,
 	return endmem;
 }
 
+static inline unsigned long arm_mem_stack_top(unsigned long endmem)
+{
+	return arm_mem_stack(endmem) + STACK_SIZE;
+}
+
+static inline const void *arm_mem_scratch_get(void)
+{
+	return (const void *)arm_mem_scratch(arm_mem_endmem_get());
+}
+
 static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 						  unsigned long endmem,
 						  unsigned long size)
 {
-	endmem = arm_mem_ramoops(membase, endmem);
+	endmem = arm_mem_ramoops(endmem);
 
 	if (IS_ENABLED(CONFIG_RELOCATABLE)) {
 		return ALIGN_DOWN(endmem - size, SZ_1M);
@@ -134,10 +136,6 @@ static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 			return endmem;
 	}
 }
-
-#ifndef CONFIG_CPU_64
-#define __ARM_SETUP_STACK(name, stack_top) if (stack_top) arm_setup_stack(stack_top)
-#endif
 
 /*
  * Unlike ENTRY_FUNCTION, this can be used to setup stack for a C entry

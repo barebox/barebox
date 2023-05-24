@@ -36,6 +36,7 @@ config SELFTEST_ENABLE_ALL
 	imply SELFTEST_FS_RAMFS
 	imply SELFTEST_TFTP
 	imply SELFTEST_JSON
+	imply SELFTEST_MMU
 	help
 	  Selects all self-tests compatible with current configuration
 
@@ -68,5 +69,10 @@ config SELFTEST_FS_RAMFS
 config SELFTEST_JSON
 	bool "JSON selftest"
 	depends on JSMN
+
+config SELFTEST_MMU
+	bool "MMU remapping selftest"
+	select MEMTEST
+	depends on MMU
 
 endif

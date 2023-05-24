@@ -37,31 +37,33 @@ static void copy_vc_fdt(void *dest, void *src, unsigned long max_size)
 	memmove(dest, src, size);
 }
 
-/* A pointer to the FDT created by VideoCore was passed to us in x0/r2. We
- * reserve some memory just above the region used for Barebox and copy
- * this FDT there. We fetch it from there later in rpi_devices_init().
- */
-#define rpi_stack_top(memsize) \
-	arm_mem_stack_top(BCM2835_SDRAM_BASE, BCM2835_SDRAM_BASE + memsize - VIDEOCORE_FDT_SZ)
-
 static inline void start_raspberry_pi(unsigned long memsize, void *fdt,
 								void *vc_fdt)
 {
-	unsigned long endmem = rpi_stack_top(memsize);
+	unsigned long endmem;
 
-	copy_vc_fdt((void *)endmem, vc_fdt, VIDEOCORE_FDT_SZ);
+	/*
+	 * A pointer to the FDT created by VideoCore was passed to us in x0/r2. We
+	 * reserve some memory at the end of SDRAM copy this FDT there. We fetch it
+	 * from there later in rpi_devices_init().
+	 */
+	memsize -= VIDEOCORE_FDT_SZ;
+	endmem = BCM2835_SDRAM_BASE + memsize;
+
+	/* leave SZ_1K for the initial stack */
+	copy_vc_fdt((void *)endmem, vc_fdt, VIDEOCORE_FDT_SZ - SZ_1K);
 
 	fdt += get_runtime_offset();
 
-	barebox_arm_entry(BCM2835_SDRAM_BASE, endmem - BCM2835_SDRAM_BASE, fdt);
+	barebox_arm_entry(BCM2835_SDRAM_BASE, memsize, fdt);
 }
 
 #ifdef CONFIG_CPU_V8
 #define RPI_ENTRY_FUNCTION(name, memsize, fdt) \
-	ENTRY_FUNCTION_WITHSTACK(name, rpi_stack_top(memsize), fdt, __x1, __x2)
+	ENTRY_FUNCTION_WITHSTACK(name, BCM2835_SDRAM_BASE + (memsize), fdt, __x1, __x2)
 #else
 #define RPI_ENTRY_FUNCTION(name, memsize, fdt) \
-	ENTRY_FUNCTION_WITHSTACK(name, rpi_stack_top(memsize), __r0, __r1, fdt)
+	ENTRY_FUNCTION_WITHSTACK(name, BCM2835_SDRAM_BASE + (memsize), __r0, __r1, fdt)
 #endif
 
 extern char __dtb_z_bcm2835_rpi_start[];

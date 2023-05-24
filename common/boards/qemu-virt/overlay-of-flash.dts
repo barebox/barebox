@@ -6,12 +6,15 @@
 #ifdef RISCV_VIRT
 #define PARTS_TARGET_PATH	/flash@20000000
 #define ENV_DEVICE_PATH		"/flash@20000000/partitions/partition@3c00000"
-#else
+#elif defined ARM_VIRT
 #define PARTS_TARGET_PATH	/flash@0
 #define ENV_DEVICE_PATH		"/flash@0/partitions/partition@3c00000"
 #endif
 
 &{PARTS_TARGET_PATH} {
+#ifdef ARM_VIRT
+	virtual-reg = <0x1000>;
+#endif
 	partitions {
 		compatible = "fixed-partitions";
 		#address-cells = <1>;

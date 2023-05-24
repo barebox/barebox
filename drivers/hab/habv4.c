@@ -11,6 +11,9 @@
 #include <hab.h>
 #include <init.h>
 #include <types.h>
+#include <mmu.h>
+#include <zero_page.h>
+#include <linux/sizes.h>
 #include <linux/arm-smccc.h>
 #include <asm/cache.h>
 
@@ -616,11 +619,16 @@ static int init_imx6_hab_get_status(void)
 		/* can happen in multi-image builds and is not an error */
 		return 0;
 
+	remap_range(0x0, SZ_1M, MAP_CACHED);
+
 	/*
 	 * Nobody will check the return value if there were HAB errors, but the
 	 * initcall will fail spectaculously with a strange error message.
 	 */
 	imx6_hab_get_status();
+
+	zero_page_faulting();
+	arch_remap_range((void *)PAGE_SIZE, SZ_1M - PAGE_SIZE, MAP_UNCACHED);
 
 	return 0;
 }
@@ -630,7 +638,7 @@ static int init_imx6_hab_get_status(void)
  * which will no longer be accessible when the MMU sets the zero page to
  * faulting.
  */
-postconsole_initcall(init_imx6_hab_get_status);
+postmmu_initcall(init_imx6_hab_get_status);
 
 int imx28_hab_get_status(void)
 {

@@ -6,7 +6,7 @@
 #include <asm/cache.h>
 #include <asm/system_info.h>
 
-#include "mmu.h"
+#include "mmu_32.h"
 
 struct cache_fns {
 	void (*dma_clean_range)(unsigned long start, unsigned long end);
@@ -16,8 +16,6 @@ struct cache_fns {
 	void (*mmu_cache_off)(void);
 	void (*mmu_cache_flush)(void);
 };
-
-struct cache_fns *cache_fns;
 
 #define DEFINE_CPU_FNS(arch) \
 	void arch##_dma_clean_range(unsigned long start, unsigned long end);	\
@@ -41,50 +39,13 @@ DEFINE_CPU_FNS(v5)
 DEFINE_CPU_FNS(v6)
 DEFINE_CPU_FNS(v7)
 
-void __dma_clean_range(unsigned long start, unsigned long end)
+static struct cache_fns *cache_functions(void)
 {
+	static struct cache_fns *cache_fns;
+
 	if (cache_fns)
-		cache_fns->dma_clean_range(start, end);
-}
+		return cache_fns;
 
-void __dma_flush_range(unsigned long start, unsigned long end)
-{
-	if (cache_fns)
-		cache_fns->dma_flush_range(start, end);
-}
-
-void __dma_inv_range(unsigned long start, unsigned long end)
-{
-	if (cache_fns)
-		cache_fns->dma_inv_range(start, end);
-}
-
-#ifdef CONFIG_MMU
-
-void __mmu_cache_on(void)
-{
-	if (cache_fns)
-		cache_fns->mmu_cache_on();
-}
-
-void __mmu_cache_off(void)
-{
-	if (cache_fns)
-		cache_fns->mmu_cache_off();
-}
-
-void __mmu_cache_flush(void)
-{
-	if (cache_fns)
-		cache_fns->mmu_cache_flush();
-	if (outer_cache.flush_all)
-		outer_cache.flush_all();
-}
-
-#endif
-
-int arm_set_cache_functions(void)
-{
 	switch (cpu_architecture()) {
 #ifdef CONFIG_CPU_32v4T
 	case CPU_ARCH_ARMv4T:
@@ -113,8 +74,44 @@ int arm_set_cache_functions(void)
 		while(1);
 	}
 
-	return 0;
+	return cache_fns;
 }
+
+void __dma_clean_range(unsigned long start, unsigned long end)
+{
+	cache_functions()->dma_clean_range(start, end);
+}
+
+void __dma_flush_range(unsigned long start, unsigned long end)
+{
+	cache_functions()->dma_flush_range(start, end);
+}
+
+void __dma_inv_range(unsigned long start, unsigned long end)
+{
+	cache_functions()->dma_inv_range(start, end);
+}
+
+#ifdef CONFIG_MMU
+
+void __mmu_cache_on(void)
+{
+	cache_functions()->mmu_cache_on();
+}
+
+void __mmu_cache_off(void)
+{
+	cache_functions()->mmu_cache_off();
+}
+
+void __mmu_cache_flush(void)
+{
+	cache_functions()->mmu_cache_flush();
+	if (outer_cache.flush_all)
+		outer_cache.flush_all();
+}
+
+#endif
 
 /*
  * Early function to flush the caches. This is for use when the

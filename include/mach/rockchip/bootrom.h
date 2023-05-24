@@ -15,7 +15,7 @@ static inline void rockchip_store_bootrom_iram(ulong membase,
                                                ulong memsize,
                                                const void *iram)
 {
-	void *dst = (void *)__arm_mem_scratch(membase + memsize);
+	void *dst = (void *)arm_mem_scratch(membase + memsize);
 	memcpy(dst, iram, sizeof(struct rockchip_scratch_space));
 }
 

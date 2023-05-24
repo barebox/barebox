@@ -134,14 +134,13 @@ void imx8mm_load_bl33(void *bl33)
 __noreturn void imx8mm_load_and_start_image_via_tfa(void)
 {
 	void *bl33 = (void *)MX8M_ATF_BL33_BASE_ADDR;
-	void *endmem = (void *)MX8M_DDR_CSD1_BASE_ADDR +
-		imx8m_barebox_earlymem_size(32);
+	unsigned long endmem = MX8M_DDR_CSD1_BASE_ADDR + imx8m_barebox_earlymem_size(32);
 
-	imx8m_save_bootrom_log(__arm_mem_scratch(endmem));
+	imx8m_save_bootrom_log((void *)arm_mem_scratch(endmem));
 	imx8mm_load_bl33(bl33);
 
 	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MM_OPTEE))
-		imx8m_load_and_start_optee_via_tfa(imx8mm, endmem - OPTEE_SIZE, bl33);
+		imx8m_load_and_start_optee_via_tfa(imx8mm, (void *)arm_mem_optee(endmem), bl33);
 	else
 		imx8mm_load_and_start_tfa(imx8mm_bl31_bin);
 }
@@ -182,14 +181,13 @@ void imx8mp_load_bl33(void *bl33)
 __noreturn void imx8mp_load_and_start_image_via_tfa(void)
 {
 	void *bl33 = (void *)MX8M_ATF_BL33_BASE_ADDR;
-	void *endmem = (void *)MX8M_DDR_CSD1_BASE_ADDR +
-		imx8m_barebox_earlymem_size(32);
+	unsigned long endmem = MX8M_DDR_CSD1_BASE_ADDR + imx8m_barebox_earlymem_size(32);
 
-	imx8m_save_bootrom_log(__arm_mem_scratch(endmem));
+	imx8m_save_bootrom_log((void *)arm_mem_scratch(endmem));
 	imx8mp_load_bl33(bl33);
 
 	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MP_OPTEE))
-		imx8m_load_and_start_optee_via_tfa(imx8mp, endmem - OPTEE_SIZE, bl33);
+		imx8m_load_and_start_optee_via_tfa(imx8mp, (void *)arm_mem_optee(endmem), bl33);
 	else
 		imx8mp_load_and_start_tfa(imx8mp_bl31_bin);
 }
@@ -231,14 +229,13 @@ void imx8mn_load_bl33(void *bl33)
 __noreturn void imx8mn_load_and_start_image_via_tfa(void)
 {
 	void *bl33 = (void *)MX8M_ATF_BL33_BASE_ADDR;
-	void *endmem = (void *)MX8M_DDR_CSD1_BASE_ADDR +
-		imx8m_barebox_earlymem_size(16);
+	unsigned long endmem = MX8M_DDR_CSD1_BASE_ADDR + imx8m_barebox_earlymem_size(16);
 
-	imx8m_save_bootrom_log(__arm_mem_scratch(endmem));
+	imx8m_save_bootrom_log((void *)arm_mem_scratch(endmem));
 	imx8mn_load_bl33(bl33);
 
 	if (IS_ENABLED(CONFIG_FIRMWARE_IMX8MN_OPTEE))
-		imx8m_load_and_start_optee_via_tfa(imx8mn, endmem - OPTEE_SIZE, bl33);
+		imx8m_load_and_start_optee_via_tfa(imx8mn, (void *)arm_mem_optee(endmem), bl33);
 	else
 		imx8mn_load_and_start_tfa(imx8mn_bl31_bin);
 }

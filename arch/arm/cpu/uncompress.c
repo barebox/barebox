@@ -81,14 +81,11 @@ void __noreturn barebox_pbl_start(unsigned long membase, unsigned long memsize,
 
 	pr_debug("memory at 0x%08lx, size 0x%08lx\n", membase, memsize);
 
-	if (IS_ENABLED(CONFIG_MMU_EARLY)) {
-		unsigned long ttb = arm_mem_ttb(membase, endmem);
-		pr_debug("enabling MMU, ttb @ 0x%08lx\n", ttb);
-		mmu_early_enable(membase, memsize - OPTEE_SIZE, ttb);
-	}
+	if (IS_ENABLED(CONFIG_MMU))
+		mmu_early_enable(membase, memsize);
 
-	free_mem_ptr = arm_mem_early_malloc(membase, endmem);
-	free_mem_end_ptr = arm_mem_early_malloc_end(membase, endmem);
+	free_mem_ptr = arm_mem_early_malloc(endmem);
+	free_mem_end_ptr = arm_mem_early_malloc_end(endmem);
 
 	pr_debug("uncompressing barebox binary at 0x%p (size 0x%08x) to 0x%08lx (uncompressed size: 0x%08x)\n",
 			pg_start, pg_len, barebox_base, uncompressed_len);

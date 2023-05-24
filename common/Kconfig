@@ -144,6 +144,9 @@ config MEMINFO
 	bool "display memory info"
 	default y
 
+config MEMTEST
+	bool
+
 config ENVIRONMENT_VARIABLES
 	bool "environment variables support"
 
@@ -185,14 +188,8 @@ config MMU
 	  to enable the data cache which depends on the MMU. See Documentation/mmu.txt
 	  for further information.
 
-config MMU_EARLY
-	bool "Enable MMU early"
-	depends on ARM
-	depends on MMU
-	default y
-	help
-	  This enables the MMU during early startup. This speeds up things during startup
-	  of barebox, but may lead to harder to debug code. If unsure say yes here.
+config MMUINFO
+	bool
 
 config HAVE_CONFIGURABLE_TEXT_BASE
 	bool

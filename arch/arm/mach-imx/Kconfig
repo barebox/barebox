@@ -555,9 +555,35 @@ if 64BIT
 
 comment "i.MX8M boards"
 
+if !HAVE_FIRMWARE_IMX_LPDDR4_PMU_TRAIN
+comment "LPDDR4 firmware files missing, some boards are not selectable"
+endif
+
+if !HAVE_FIRMWARE_IMX_DDR4_PMU_TRAIN
+comment "DDR4 firmware files missing, some boards are not selectable"
+endif
+
+if !HAVE_FIRMWARE_IMX8MM_ATF
+comment "i.MX8MM TF-A files missing, i.MX8MM boards are disabled"
+endif
+
+if !HAVE_FIRMWARE_IMX8MQ_ATF
+comment "i.MX8MQ TF-A files missing, i.MX8MQ boards are disabled"
+endif
+
+if !HAVE_FIRMWARE_IMX8MN_ATF
+comment "i.MX8MN TF-A files missing, i.MX8MN boards are disabled"
+endif
+
+if !HAVE_FIRMWARE_IMX8MP_ATF
+comment "i.MX8MP TF-A files missing, i.MX8MP boards are disabled"
+endif
+
 config MACH_INNOCOMM_WB15
 	bool "InnoComm WB15 (i.MX8MM) EVK"
 	select ARCH_IMX8MM
+	depends on HAVE_FIRMWARE_IMX_LPDDR4_PMU_TRAIN
+	depends on HAVE_FIRMWARE_IMX8MM_ATF
 	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
 	select FIRMWARE_IMX8MM_ATF
 	select ARM_SMCCC
@@ -570,6 +596,8 @@ config MACH_INNOCOMM_WB15
 config MACH_MNT_REFORM
 	bool "MNT Reform"
 	select ARCH_IMX8MQ
+	depends on HAVE_FIRMWARE_IMX_LPDDR4_PMU_TRAIN
+	depends on HAVE_FIRMWARE_IMX8MQ_ATF
 	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
 	select FIRMWARE_IMX8MQ_ATF
 	select ARM_SMCCC
@@ -579,6 +607,8 @@ config MACH_MNT_REFORM
 config MACH_NXP_IMX8MM_EVK
 	bool "NXP i.MX8MM EVK Board"
 	select ARCH_IMX8MM
+	depends on HAVE_FIRMWARE_IMX_LPDDR4_PMU_TRAIN
+	depends on HAVE_FIRMWARE_IMX8MM_ATF
 	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
 	select FIRMWARE_IMX8MM_ATF
 	select ARM_SMCCC
@@ -590,6 +620,9 @@ config MACH_NXP_IMX8MM_EVK
 config MACH_NXP_IMX8MN_EVK
 	bool "NXP i.MX8MN EVK Board"
 	select ARCH_IMX8MN
+	depends on HAVE_FIRMWARE_IMX_LPDDR4_PMU_TRAIN
+	depends on HAVE_FIRMWARE_IMX_DDR4_PMU_TRAIN
+	depends on HAVE_FIRMWARE_IMX8MN_ATF
 	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
 	select FIRMWARE_IMX_DDR4_PMU_TRAIN
 	select FIRMWARE_IMX8MN_ATF
@@ -601,6 +634,8 @@ config MACH_NXP_IMX8MN_EVK
 config MACH_NXP_IMX8MP_EVK
 	bool "NXP i.MX8MP EVK Board"
 	select ARCH_IMX8MP
+	depends on HAVE_FIRMWARE_IMX_LPDDR4_PMU_TRAIN
+	depends on HAVE_FIRMWARE_IMX8MP_ATF
 	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
 	select FIRMWARE_IMX8MP_ATF
 	select ARM_SMCCC
@@ -611,6 +646,8 @@ config MACH_NXP_IMX8MP_EVK
 config MACH_NXP_IMX8MQ_EVK
 	bool "NXP i.MX8MQ EVK Board"
 	select ARCH_IMX8MQ
+	depends on HAVE_FIRMWARE_IMX_LPDDR4_PMU_TRAIN
+	depends on HAVE_FIRMWARE_IMX8MQ_ATF
 	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
 	select FIRMWARE_IMX8MQ_ATF
 	select ARM_SMCCC
@@ -619,6 +656,8 @@ config MACH_NXP_IMX8MQ_EVK
 config MACH_PHYTEC_SOM_IMX8MQ
 	bool "Phytec i.MX8M SOM"
 	select ARCH_IMX8MQ
+	depends on HAVE_FIRMWARE_IMX_LPDDR4_PMU_TRAIN
+	depends on HAVE_FIRMWARE_IMX8MQ_ATF
 	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
 	select FIRMWARE_IMX8MQ_ATF
 	select ARM_SMCCC
@@ -627,6 +666,8 @@ config MACH_PHYTEC_SOM_IMX8MQ
 config MACH_POLYHEX_DEBIX
 	bool "Polyhex DEBIX Model-A/B (i.MX8MP) Board"
 	select ARCH_IMX8MP
+	depends on HAVE_FIRMWARE_IMX_LPDDR4_PMU_TRAIN
+	depends on HAVE_FIRMWARE_IMX8MP_ATF
 	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
 	select FIRMWARE_IMX8MP_ATF
 	select ARM_SMCCC
@@ -637,6 +678,8 @@ config MACH_POLYHEX_DEBIX
 config MACH_PROTONIC_IMX8M
 	bool "Protonic-Holland i.MX8Mx based boards"
 	select ARCH_IMX8MM
+	depends on HAVE_FIRMWARE_IMX_LPDDR4_PMU_TRAIN
+	depends on HAVE_FIRMWARE_IMX8MM_ATF
 	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
 	select FIRMWARE_IMX8MM_ATF
 	select ARM_SMCCC
@@ -647,6 +690,8 @@ config MACH_PROTONIC_IMX8M
 config MACH_TQ_MBA8MPXL
 	bool "TQ i.MX8MP Dual/Quad on MBa8MPxL Board"
 	select ARCH_IMX8MP
+	depends on HAVE_FIRMWARE_IMX_LPDDR4_PMU_TRAIN
+	depends on HAVE_FIRMWARE_IMX8MP_ATF
 	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
 	select FIRMWARE_IMX8MP_ATF
 	select ARM_SMCCC
@@ -657,6 +702,8 @@ config MACH_TQ_MBA8MPXL
 config MACH_VARISCITE_DT8MCUSTOMBOARD_IMX8MP
 	bool "Variscite DT8MCustomBoard with DART-MX8M-PLUS"
 	select ARCH_IMX8MP
+	depends on HAVE_FIRMWARE_IMX_LPDDR4_PMU_TRAIN
+	depends on HAVE_FIRMWARE_IMX8MP_ATF
 	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
 	select FIRMWARE_IMX8MP_ATF
 	select ARM_SMCCC
@@ -667,6 +714,8 @@ config MACH_VARISCITE_DT8MCUSTOMBOARD_IMX8MP
 config MACH_ZII_IMX8MQ_DEV
 	bool "ZII i.MX8MQ based devices"
 	select ARCH_IMX8MQ
+	depends on HAVE_FIRMWARE_IMX_LPDDR4_PMU_TRAIN
+	depends on HAVE_FIRMWARE_IMX8MQ_ATF
 	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
 	select FIRMWARE_IMX8MQ_ATF
 	select ARM_SMCCC

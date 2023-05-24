@@ -1423,6 +1423,14 @@ config DEBUG_ROCKCHIP_RK3568_UART
 	  Say Y here if you want kernel low-level debugging support
 	  on RK3568.
 
+config DEBUG_ROCKCHIP_RK3588_UART
+	bool "RK3588 Debug UART"
+	depends on ARCH_RK3588
+	select DEBUG_ROCKCHIP_UART
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on RK3588.
+
 config DEBUG_ROCKCHIP_RK3399_UART
 	bool "RK3399 Debug UART"
 	depends on ARCH_RK3399
@@ -1582,6 +1590,7 @@ config DEBUG_ROCKCHIP_UART_PORT
 	int "RK3xxx UART debug port" if DEBUG_ROCKCHIP_RK3188_UART || \
 				DEBUG_ROCKCHIP_RK3288_UART || \
 				DEBUG_ROCKCHIP_RK3568_UART || \
+				DEBUG_ROCKCHIP_RK3588_UART || \
 				DEBUG_ROCKCHIP_RK3399_UART
 	default 2
 	depends on ARCH_ROCKCHIP

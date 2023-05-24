@@ -221,9 +221,11 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 			}
 
 			*last_addr = ALIGN(*last_addr, size);
-			pci_write_config_dword(dev, pci_base_address_0, *last_addr);
+			pci_write_config_dword(dev, pci_base_address_0,
+					       lower_32_bits(*last_addr));
 			if (mask & PCI_BASE_ADDRESS_MEM_TYPE_64)
-				pci_write_config_dword(dev, pci_base_address_1, 0);
+				pci_write_config_dword(dev, pci_base_address_1,
+						       upper_32_bits(*last_addr));
 			start = *last_addr;
 			*last_addr += size;
 		} else {
@@ -538,6 +540,22 @@ int pci_enable_device(struct pci_dev *dev)
 	return 0;
 }
 EXPORT_SYMBOL(pci_enable_device);
+
+/**
+ * pci_select_bars - Make BAR mask from the type of resource
+ * @dev: the PCI device for which BAR mask is made
+ * @flags: resource type mask to be selected
+ *
+ * This helper routine makes bar mask from the type of resource.
+ */
+int pci_select_bars(struct pci_dev *dev, unsigned long flags)
+{
+	int i, bars = 0;
+	for (i = 0; i < PCI_NUM_RESOURCES; i++)
+		if (pci_resource_flags(dev, i) & flags)
+			bars |= (1 << i);
+	return bars;
+}
 
 static u8 __pci_find_next_cap_ttl(struct pci_bus *bus, unsigned int devfn,
 				  u8 pos, int cap, int *ttl)

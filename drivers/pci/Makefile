@@ -13,3 +13,4 @@ obj-$(CONFIG_PCI_IMX6) += pci-imx6.o
 obj-$(CONFIG_PCI_LAYERSCAPE) += pci-layerscape.o
 obj-$(CONFIG_PCI_EFI) += pci-efi.o
 obj-$(CONFIG_PCI_ECAM_GENERIC) += pci-ecam-generic.o
+obj-$(CONFIG_PCI_ROCKCHIP) += pcie-dw-rockchip.o

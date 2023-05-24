@@ -82,5 +82,6 @@ enum {
 
 resource_size_t rk3399_ram0_size(void);
 resource_size_t rk3568_ram0_size(void);
+resource_size_t rk3588_ram0_size(void);
 
 #endif

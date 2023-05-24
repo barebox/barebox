@@ -8,6 +8,7 @@
 #include <mach/rockchip/rk3188-regs.h>
 #include <mach/rockchip/rk3288-regs.h>
 #include <mach/rockchip/rk3568-regs.h>
+#include <mach/rockchip/rk3588-regs.h>
 #include <mach/rockchip/rk3399-regs.h>
 
 #ifdef CONFIG_DEBUG_ROCKCHIP_UART
@@ -26,6 +27,11 @@
 
 #define RK_DEBUG_UART_CLOCK	24000000
 #define RK_DEBUG_SOC		RK3568
+
+#elif defined CONFIG_DEBUG_ROCKCHIP_RK3588_UART
+
+#define RK_DEBUG_UART_CLOCK	24000000
+#define RK_DEBUG_SOC		RK3588
 
 #elif defined CONFIG_DEBUG_ROCKCHIP_RK3399_UART
 

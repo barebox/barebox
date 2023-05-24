@@ -23,6 +23,9 @@ image-$(CONFIG_MACH_PINE64_QUARTZ64) += barebox-quartz64a.img
 pblb-$(CONFIG_MACH_RADXA_ROCK3) += start_rock3a
 image-$(CONFIG_MACH_RADXA_ROCK3) += barebox-rock3a.img
 
+pblb-$(CONFIG_MACH_RADXA_ROCK5) += start_rock5b
+image-$(CONFIG_MACH_RADXA_ROCK5) += barebox-rock5b.img
+
 pblb-$(CONFIG_MACH_RADXA_CM3) += start_radxa-cm3-io.img
 image-$(CONFIG_MACH_RADXA_CM3) += barebox-radxa-cm3-io.img
 
@@ -43,6 +46,10 @@ $(obj)/barebox-quartz64a.img: $(obj)/start_quartz64a.pblb \
 
 $(obj)/barebox-rock3a.img: $(obj)/start_rock3a.pblb \
                 $(board)/radxa-rock3/sdram-init.bin
+	$(call if_changed,rkimg_image)
+
+$(obj)/barebox-rock5b.img: $(obj)/start_rock5b.pblb \
+                $(board)/radxa-rock5/sdram-init.bin
 	$(call if_changed,rkimg_image)
 
 $(obj)/barebox-radxa-cm3-io.img: $(obj)/start_radxa_cm3_io.pblb \

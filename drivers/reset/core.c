@@ -31,6 +31,19 @@ struct reset_control {
 
 	struct device *dev;
 	unsigned int id;
+	bool array;
+};
+
+/**
+ * struct reset_control_array - an array of reset controls
+ * @base: reset control for compatibility with reset control API functions
+ * @num_rstcs: number of reset controls
+ * @rstc: array of reset controls
+ */
+struct reset_control_array {
+	struct reset_control base;
+	unsigned int num_rstcs;
+	struct reset_control *rstc[];
 };
 
 /**
@@ -102,6 +115,65 @@ int reset_control_status(struct reset_control *rstc)
 }
 EXPORT_SYMBOL_GPL(reset_control_status);
 
+static inline struct reset_control_array *
+rstc_to_array(struct reset_control *rstc) {
+	return container_of(rstc, struct reset_control_array, base);
+}
+
+static int reset_control_array_reset(struct reset_control_array *resets)
+{
+	int ret, i;
+
+	for (i = 0; i < resets->num_rstcs; i++) {
+		ret = reset_control_reset(resets->rstc[i]);
+		if (ret)
+			return ret;
+	}
+
+	return 0;
+}
+
+static int reset_control_array_assert(struct reset_control_array *resets)
+{
+	int ret, i;
+
+	for (i = 0; i < resets->num_rstcs; i++) {
+		ret = reset_control_assert(resets->rstc[i]);
+		if (ret)
+			goto err;
+	}
+
+	return 0;
+
+err:
+	while (i--)
+		reset_control_deassert(resets->rstc[i]);
+	return ret;
+}
+
+static int reset_control_array_deassert(struct reset_control_array *resets)
+{
+	int ret, i;
+
+	for (i = 0; i < resets->num_rstcs; i++) {
+		ret = reset_control_deassert(resets->rstc[i]);
+		if (ret)
+			goto err;
+	}
+
+	return 0;
+
+err:
+	while (i--)
+		reset_control_assert(resets->rstc[i]);
+	return ret;
+}
+
+static inline bool reset_control_is_array(struct reset_control *rstc)
+{
+	return rstc->array;
+}
+
 /**
  * reset_control_reset - reset the controlled device
  * @rstc: reset controller
@@ -110,6 +182,9 @@ int reset_control_reset(struct reset_control *rstc)
 {
 	if (!rstc)
 		return 0;
+
+	if (reset_control_is_array(rstc))
+		return reset_control_array_reset(rstc_to_array(rstc));
 
 	if (rstc->rcdev->ops->reset)
 		return rstc->rcdev->ops->reset(rstc->rcdev, rstc->id);
@@ -126,6 +201,9 @@ int reset_control_assert(struct reset_control *rstc)
 {
 	if (!rstc)
 		return 0;
+
+	if (reset_control_is_array(rstc))
+		return reset_control_array_assert(rstc_to_array(rstc));
 
 	if (rstc->gpio >= 0)
 		return gpio_direction_output(rstc->gpio, rstc->gpio_active_high);
@@ -145,6 +223,9 @@ int reset_control_deassert(struct reset_control *rstc)
 {
 	if (!rstc)
 		return 0;
+
+	if (reset_control_is_array(rstc))
+		return reset_control_array_deassert(rstc_to_array(rstc));
 
 	if (rstc->gpio >= 0)
 		return gpio_direction_output(rstc->gpio, !rstc->gpio_active_high);
@@ -351,6 +432,52 @@ int device_reset(struct device *dev)
 	return ret;
 }
 EXPORT_SYMBOL_GPL(device_reset);
+
+/*
+ * APIs to manage an array of reset controls.
+ */
+
+/**
+ * reset_control_array_get - Get a list of reset controls
+ *
+ * @dev: device that requests the reset controls array
+ *
+ * Returns pointer to allocated reset_control on success or error on failure
+ */
+struct reset_control *reset_control_array_get(struct device *dev)
+{
+	struct reset_control_array *resets;
+	struct reset_control *rstc;
+	struct device_node *np = dev->of_node;
+	int num, i;
+
+	num = reset_control_get_count(dev);
+	if (num < 0)
+		return ERR_PTR(num);
+
+	resets = kzalloc(struct_size(resets, rstc, num), GFP_KERNEL);
+	if (!resets)
+		return ERR_PTR(-ENOMEM);
+
+	for (i = 0; i < num; i++) {
+		rstc = of_reset_control_get_by_index(np, i);
+		if (IS_ERR(rstc))
+			goto err_rst;
+		resets->rstc[i] = rstc;
+	}
+	resets->num_rstcs = num;
+	resets->base.array = true;
+
+	return &resets->base;
+
+err_rst:
+	while (--i >= 0)
+		reset_control_put(resets->rstc[i]);
+
+	kfree(resets);
+
+	return rstc;
+}
 
 int device_reset_all(struct device *dev)
 {

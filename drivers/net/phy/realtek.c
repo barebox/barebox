@@ -155,6 +155,12 @@ static struct phy_driver realtek_drvs[] = {
 		.read_page	= rtl821x_read_page,
 		.write_page	= rtl821x_write_page,
 	}, {
+		PHY_ID_MATCH_EXACT(0x001cc840),
+		.drv.name	= "RTL8226B_RTL8221B 2.5Gbps PHY",
+		.features	= PHY_GBIT_FEATURES,
+		.read_page	= rtl821x_read_page,
+		.write_page	= rtl821x_write_page,
+	}, {
 		PHY_ID_MATCH_EXACT(0x001cc910),
 		.drv.name	= "RTL8211 Gigabit Ethernet",
 		.features	= PHY_GBIT_FEATURES,

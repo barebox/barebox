@@ -25,10 +25,13 @@
 
 #define RK3399_INT_REG_START		0xf0000000
 #define RK3568_INT_REG_START		RK3399_INT_REG_START
+#define RK3588_INT_REG_START		RK3399_INT_REG_START
 
 struct rockchip_dmc_drvdata {
 	unsigned int os_reg2;
 	unsigned int os_reg3;
+	unsigned int os_reg4;
+	unsigned int os_reg5;
 	resource_size_t internal_registers_start;
 };
 
@@ -151,12 +154,39 @@ resource_size_t rk3568_ram0_size(void)
 	return size;
 }
 
+#define RK3588_PMUGRF_BASE 0xfd58a000
+#define RK3588_PMUGRF_OS_REG2           0x208
+#define RK3588_PMUGRF_OS_REG3           0x20c
+#define RK3588_PMUGRF_OS_REG4           0x210
+#define RK3588_PMUGRF_OS_REG5           0x214
+
+resource_size_t rk3588_ram0_size(void)
+{
+	void __iomem *pmugrf = IOMEM(RK3588_PMUGRF_BASE);
+	u32 sys_reg2, sys_reg3, sys_reg4, sys_reg5;
+	resource_size_t size, size1, size2;
+
+	sys_reg2 = readl(pmugrf + RK3588_PMUGRF_OS_REG2);
+	sys_reg3 = readl(pmugrf + RK3588_PMUGRF_OS_REG3);
+	sys_reg4 = readl(pmugrf + RK3588_PMUGRF_OS_REG4);
+	sys_reg5 = readl(pmugrf + RK3588_PMUGRF_OS_REG5);
+
+	size1 = rockchip_sdram_size(sys_reg2, sys_reg3);
+	size2 = rockchip_sdram_size(sys_reg4, sys_reg5);
+
+	pr_info("%s() size1 = %llu, size2 = %llu\n", __func__, (u64)size1, (u64)size2);
+
+	size = min_t(resource_size_t, RK3568_INT_REG_START, size1 + size2);
+
+	return size;
+}
+
 static int rockchip_dmc_probe(struct device *dev)
 {
 	const struct rockchip_dmc_drvdata *drvdata;
 	resource_size_t membase, memsize;
 	struct regmap *regmap;
-	u32 sys_reg2, sys_reg3;
+	u32 sys_rega, sys_regb;
 
 	regmap = syscon_regmap_lookup_by_phandle(dev->of_node, "rockchip,pmu");
 	if (IS_ERR(regmap))
@@ -166,10 +196,15 @@ static int rockchip_dmc_probe(struct device *dev)
 	if (!drvdata)
 		return -ENOENT;
 
-	regmap_read(regmap, drvdata->os_reg2, &sys_reg2);
-	regmap_read(regmap, drvdata->os_reg3, &sys_reg3);
+	regmap_read(regmap, drvdata->os_reg2, &sys_rega);
+	regmap_read(regmap, drvdata->os_reg3, &sys_regb);
+	memsize = rockchip_sdram_size(sys_rega, sys_regb);
 
-	memsize = rockchip_sdram_size(sys_reg2, sys_reg3);
+	if (drvdata->os_reg4) {
+		regmap_read(regmap, drvdata->os_reg4, &sys_rega);
+		regmap_read(regmap, drvdata->os_reg5, &sys_regb);
+		memsize += rockchip_sdram_size(sys_rega, sys_regb);
+	}
 
 	dev_info(dev, "Detected memory size: %pa\n", &memsize);
 
@@ -199,6 +234,14 @@ static const struct rockchip_dmc_drvdata rk3568_drvdata = {
 	.internal_registers_start = RK3568_INT_REG_START,
 };
 
+static const struct rockchip_dmc_drvdata rk3588_drvdata = {
+	.os_reg2 = RK3588_PMUGRF_OS_REG2,
+	.os_reg3 = RK3588_PMUGRF_OS_REG3,
+	.os_reg4 = RK3588_PMUGRF_OS_REG4,
+	.os_reg5 = RK3588_PMUGRF_OS_REG5,
+	.internal_registers_start = RK3588_INT_REG_START,
+};
+
 static struct of_device_id rockchip_dmc_dt_ids[] = {
 	{
 		.compatible = "rockchip,rk3399-dmc",
@@ -207,6 +250,10 @@ static struct of_device_id rockchip_dmc_dt_ids[] = {
 	{
 		.compatible = "rockchip,rk3568-dmc",
 		.data = &rk3568_drvdata,
+	},
+	{
+		.compatible = "rockchip,rk3588-dmc",
+		.data = &rk3588_drvdata,
 	},
 	{ /* sentinel */ }
 };

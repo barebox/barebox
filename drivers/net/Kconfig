@@ -251,6 +251,7 @@ config DRIVER_NET_RTL8169
 	depends on PCI
 	depends on HAS_DMA
 	select PHYLIB
+	select REALTEK_PHY
 	help
 	  This is a driver for the Fast Ethernet PCI network cards based on
 	  the RTL 8169 chips.

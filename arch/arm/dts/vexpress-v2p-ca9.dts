@@ -91,3 +91,15 @@
 		};
 	};
 };
+
+&{/timer@1e000600} {
+	status = "disabled";
+};
+
+&{/bus@40000000/motherboard-bus@40000000/leds/} {
+	status = "disabled";
+};
+
+&{/bus@40000000/motherboard-bus@40000000/iofpga@7,00000000/compact-flash@1a000/} {
+	status = "disabled";
+};

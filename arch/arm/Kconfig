@@ -199,6 +199,8 @@ config ARCH_ZYNQ
 	select PBL_IMAGE
 	select GPIOLIB
 
+endchoice
+
 config ARCH_ARM64_VIRT
 	bool "ARM64 QEMU Virt board"
 	depends on 64BIT
@@ -211,8 +213,6 @@ config ARCH_ARM64_VIRT
 	select BOARD_ARM_VIRT
 	select HW_HAS_PCI
 	select HAS_DEBUG_LL
-
-endchoice
 
 config ARCH_BCM283X
 	bool "Broadcom BCM283x based boards"

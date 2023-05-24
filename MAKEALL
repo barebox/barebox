@@ -2,11 +2,9 @@
 #
 # SPDX-License-Identifier: GPL-2.0-only
 
-# Print statistics when we exit
-trap exit 1 2 3 15
-trap stats 0
-
 # Keep track of the number of builds and errors
+nb_warnings=0
+warnings_list=""
 nb_errors=0
 errors_list=""
 nb_defconfigs=0
@@ -16,12 +14,9 @@ time_start=$(date +%s)
 
 filename=$(basename $0)
 
-is_print_stats=1
-
 #-----------------------------------------------------------------------
 
 usage() {
-	is_print_stats=0
 	echo "Usage: ${filename} [OPTION]..."
 	echo "Barebox MAKEALL tools."
 	echo ""
@@ -50,19 +45,18 @@ usage() {
 	echo "CONFIG=./MAKEALL.cfg ./MAKEALL"
 	echo ""
 	echo "you can specify via env or option"
-	echo "env       option"
-	echo "ARCH      -a      arch"
-	echo "CONFIG    -c      config"
-	echo "JOBS      -j      jobs"
-	echo "BUILDDIR  -O      build dir"
-	echo "LOGDIR    -l      log dir"
-	echo "REGEX     -e      regex"
+	echo "env         option"
+	echo "ARCH        -a      arch"
+	echo "CONFIG      -c      config"
+	echo "JOBS        -j      jobs"
+	echo "BUILDDIR    -O      build dir"
+	echo "LOGDIR      -l      log dir"
+	echo "REGEX       -e      regex"
+	echo "KCONFIG_ADD -k      kconfig fragment"
 	echo ""
 }
 
 stats() {
-	[ ${is_print_stats} -lt 1 ] && return
-
 	echo ""
 	echo "--------------------- SUMMARY ----------------------------"
 	echo "defconfigs compiled: ${nb_defconfigs}"
@@ -70,7 +64,10 @@ stats() {
 	time_diff=$((${time_stop} - ${time_start}))
 	printf "compiled in %4is\n" ${time_diff}
 	if [ ${nb_errors} -gt 0 ] ; then
-		echo "defconfigs with warnings or errors: ${nb_errors} (${errors_list} )"
+		echo "defconfigs with errors: ${nb_errors} (${errors_list} )"
+	fi
+	if [ ${nb_warnings} -gt 0 ] ; then
+		echo "defconfigs with warnings: ${nb_warnings} (${warnings_list} )"
 	fi
 	echo "----------------------------------------------------------"
 
@@ -98,6 +95,25 @@ do_build_target() {
 
 	tmp=$(echo "${target}" | tr - _)
 
+	MAKE="make -j${JOBS} ARCH=${arch} O=${BUILDDIR}"
+	${MAKE} ${target} 2>&1 > "${log_report}" | tee "${log_err}"
+	for i in ${KCONFIG_ADD}; do
+		./scripts/kconfig/merge_config.sh -m -O \
+			${BUILDDIR} ${BUILDDIR}/.config $i \
+			2>&1 > "${log_report}" | tee "${log_err}"
+	done
+	${MAKE} olddefconfig 2>&1 > "${log_report}" | tee "${log_err}"
+
+	check_pipe_status
+	configure_result="$?"
+
+	if [ ${arch} = "arm" ]; then
+		grep -q "CONFIG_CPU_64=y" ${BUILDDIR}/.config
+		if [ $? = 0 ]; then
+			arch=arm64
+		fi
+	fi
+
 	cross_compile=$(eval echo '$CROSS_COMPILE_'${tmp})
 	cross_compile_set=$(eval echo '${CROSS_COMPILE_'${tmp}'+set}')
 	if [ "${cross_compile_set}" = "" ]
@@ -110,29 +126,25 @@ do_build_target() {
 		fi
 	fi
 
-	MAKE="make -j${JOBS} CROSS_COMPILE=${cross_compile} ARCH=${arch} O=${BUILDDIR}"
-	${MAKE} ${target} 2>&1 > "${log_report}" | tee "${log_err}"
-
-	check_pipe_status
-	result="$?"
-
 	printf "Configure: " | tee -a "${log_report}"
 
-	if [ "$result" = "0" ]; then
+	if [ "$configure_result" = "0" ]; then
 		printf "OK     \n" | tee -a "${log_report}"
 
+		MAKE="make -j${JOBS} CROSS_COMPILE=${cross_compile} ARCH=${arch} O=${BUILDDIR}"
 		${MAKE} -s 2>&1 >> "${log_report}" | tee -a "${log_err}"
 
 		check_pipe_status
-		result="$?"
+		compile_result="$?"
 
 		printf "Compile: " ${target} | tee -a "${log_report}"
 
-		if [ "$result" = "0" ]; then
+		if [ "$compile_result" = "0" ]; then
 			printf "OK     \n" | tee -a "${log_report}"
-			${cross_compile}size ${BUILDDIR}/barebox | tee -a "${log_report}"
 		else
 			printf "FAILED \n" | tee -a "${log_report}"
+			nb_errors=$((nb_errors + 1))
+			errors_list="${errors_list} ${target}"
 			ret=1
 		fi
 	else
@@ -142,8 +154,8 @@ do_build_target() {
 	fi
 
 	if [ -s "${log_err}" ] ; then
-		nb_errors=$((nb_errors + 1))
-		errors_list="${errors_list} ${target}"
+		nb_warnings=$((nb_warnings + 1))
+		warnings_list="${warnings_list} ${target}"
 	else
 		rm "${log_err}"
 	fi
@@ -159,8 +171,8 @@ do_build() {
 	local arch=$1
 	local regex=$2
 
-	find arch/${arch}/configs -name "${regex}_defconfig" | while read i
-	do
+	configs=$(find arch/${arch}/configs -name "${regex}_defconfig" | sort)
+	for i in ${configs}; do
 		local target=$(basename $i)
 
 		do_build_target ${arch} ${target}
@@ -184,7 +196,7 @@ do_build_all() {
 	return $build_target
 }
 
-while getopts "hc:j:O:l:a:e:" Option
+while getopts "hc:j:O:l:a:e:k:" Option
 do
 case $Option in
 	a )
@@ -204,6 +216,9 @@ case $Option in
 		;;
 	e )
 		REGEX=${OPTARG}
+		;;
+	k )
+		KCONFIG_ADD="${KCONFIG_ADD} ${OPTARG}"
 		;;
 	h )
 		usage
@@ -271,6 +286,11 @@ if [ $# -eq 0 ]
 then
 	do_build ${ARCH} "${REGEX}"
 else
-	do_build_target ${ARCH} $1
+	for i in $*; do
+		do_build_target ${ARCH} $i
+	done
 fi
-exit $nb_errors
+
+stats
+
+exit ${nb_errors}

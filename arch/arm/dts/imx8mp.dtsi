@@ -51,10 +51,6 @@ feat: &ocotp {
 	barebox,feature-gates = <&feat IMX8M_FEAT_GPU>;
 };
 
-&pgc_mediamix {
-	barebox,feature-gates = <&feat IMX8M_FEAT_ISP>;
-};
-
 &pgc_mipi_phy2 {
 	barebox,feature-gates = <&feat IMX8M_FEAT_MIPI_DSI>;
 };

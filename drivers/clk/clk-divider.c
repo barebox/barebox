@@ -288,7 +288,7 @@ static int clk_divider_set_rate(struct clk_hw *hw, unsigned long rate,
 	val &= ~(clk_div_mask(divider->width) << divider->shift);
 	val |= value << divider->shift;
 
-	if (clk->flags & CLK_DIVIDER_HIWORD_MASK)
+	if (divider->flags & CLK_DIVIDER_HIWORD_MASK)
 		val |= clk_div_mask(divider->width) << (divider->shift + 16);
 
 	writel(val, divider->reg);

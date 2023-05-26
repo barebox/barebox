@@ -327,6 +327,10 @@ static void early_remap_range(u32 addr, size_t size, unsigned map_type)
 int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, unsigned map_type)
 {
 	__arch_remap_range(virt_addr, phys_addr, size, map_type);
+
+	if (map_type == MAP_UNCACHED)
+		dma_inv_range(virt_addr, size);
+
 	return 0;
 }
 

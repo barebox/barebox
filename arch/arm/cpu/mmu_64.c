@@ -191,6 +191,10 @@ int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, unsign
 		return -EINVAL;
 
 	create_sections((uint64_t)virt_addr, phys_addr, (uint64_t)size, attrs);
+
+	if (flags == MAP_UNCACHED)
+		dma_inv_range(virt_addr, size);
+
 	return 0;
 }
 

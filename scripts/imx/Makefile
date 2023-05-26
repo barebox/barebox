@@ -6,7 +6,7 @@ hostprogs-always-$(CONFIG_ARCH_IMX_USBLOADER)	+= imx-usb-loader
 HOSTCFLAGS_imx-usb-loader.o = `pkg-config --cflags libusb-1.0` -include $(objtree)/include/generated/utsrelease.h
 HOSTLDLIBS_imx-usb-loader  = `pkg-config --libs libusb-1.0`
 
-imx-usb-loader-target-userccflags += `$(CROSS_PKG_CONFIG) --cflags libusb-1.0`
+imx-usb-loader-target-userccflags += `$(CROSS_PKG_CONFIG) --cflags libusb-1.0` -include $(objtree)/include/generated/utsrelease.h
 imx-usb-loader-target-userldlibs += `$(CROSS_PKG_CONFIG) --libs libusb-1.0`
 
 HOSTCFLAGS_imx.o = -I$(srctree)/include/mach

@@ -159,23 +159,36 @@ static void create_sections(uint64_t virt, uint64_t phys, uint64_t size,
 	tlb_invalidate();
 }
 
-int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, unsigned flags)
+static unsigned long get_pte_attrs(unsigned flags)
 {
-	unsigned long attrs;
-
 	switch (flags) {
 	case MAP_CACHED:
-		attrs = CACHED_MEM;
-		break;
+		return CACHED_MEM;
 	case MAP_UNCACHED:
-		attrs = attrs_uncached_mem();
-		break;
+		return attrs_uncached_mem();
 	case MAP_FAULT:
-		attrs = 0x0;
-		break;
+		return 0x0;
 	default:
-		return -EINVAL;
+		return ~0UL;
 	}
+}
+
+static void early_remap_range(uint64_t addr, size_t size, unsigned flags)
+{
+	unsigned long attrs = get_pte_attrs(flags);
+
+	if (WARN_ON(attrs == ~0UL))
+		return;
+
+	create_sections(addr, addr, size, attrs);
+}
+
+int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, unsigned flags)
+{
+	unsigned long attrs = get_pte_attrs(flags);
+
+	if (attrs == ~0UL)
+		return -EINVAL;
 
 	create_sections((uint64_t)virt_addr, phys_addr, (uint64_t)size, attrs);
 	return 0;
@@ -269,9 +282,9 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize)
 
 	memset((void *)ttb, 0, GRANULE_SIZE);
 
-	remap_range(0, 1UL << (BITS_PER_VA - 1), MAP_UNCACHED);
-	remap_range((void *)membase, memsize - OPTEE_SIZE, MAP_CACHED);
-	remap_range((void *)membase + memsize - OPTEE_SIZE, OPTEE_SIZE, MAP_FAULT);
+	early_remap_range(0, 1UL << (BITS_PER_VA - 1), MAP_UNCACHED);
+	early_remap_range(membase, memsize - OPTEE_SIZE, MAP_CACHED);
+	early_remap_range(membase + memsize - OPTEE_SIZE, OPTEE_SIZE, MAP_FAULT);
 
 	mmu_enable();
 }

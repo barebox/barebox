@@ -36,6 +36,7 @@ config SELFTEST_ENABLE_ALL
 	imply SELFTEST_FS_RAMFS
 	imply SELFTEST_TFTP
 	imply SELFTEST_JSON
+	imply SELFTEST_DIGEST
 	imply SELFTEST_MMU
 	help
 	  Selects all self-tests compatible with current configuration
@@ -74,5 +75,10 @@ config SELFTEST_MMU
 	bool "MMU remapping selftest"
 	select MEMTEST
 	depends on MMU
+
+config SELFTEST_DIGEST
+	bool "Digest selftest"
+	depends on DIGEST
+	select PRINTF_HEXSTR
 
 endif

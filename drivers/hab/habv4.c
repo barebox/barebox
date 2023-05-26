@@ -628,7 +628,7 @@ static int init_imx6_hab_get_status(void)
 	imx6_hab_get_status();
 
 	zero_page_faulting();
-	arch_remap_range((void *)PAGE_SIZE, SZ_1M - PAGE_SIZE, MAP_UNCACHED);
+	remap_range((void *)PAGE_SIZE, SZ_1M - PAGE_SIZE, MAP_UNCACHED);
 
 	return 0;
 }

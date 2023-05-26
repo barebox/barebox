@@ -241,7 +241,7 @@ static uint32_t get_pmd_flags(int map_type)
 	return pte_flags_to_pmd(get_pte_flags(map_type));
 }
 
-int arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t size, unsigned map_type)
+static void __arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t size, unsigned map_type)
 {
 	u32 virt_addr = (u32)_virt_addr;
 	u32 pte_flags, pmd_flags;
@@ -318,6 +318,15 @@ int arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t size, unsig
 	}
 
 	tlb_invalidate();
+}
+static void early_remap_range(u32 addr, size_t size, unsigned map_type)
+{
+	__arch_remap_range((void *)addr, addr, size, map_type);
+}
+
+int arch_remap_range(void *virt_addr, phys_addr_t phys_addr, size_t size, unsigned map_type)
+{
+	__arch_remap_range(virt_addr, phys_addr, size, map_type);
 	return 0;
 }
 
@@ -580,9 +589,9 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize)
 	create_flat_mapping();
 
 	/* maps main memory as cachable */
-	remap_range((void *)membase, memsize - OPTEE_SIZE, MAP_CACHED);
-	remap_range((void *)membase + memsize - OPTEE_SIZE, OPTEE_SIZE, MAP_UNCACHED);
-	remap_range((void *)PAGE_ALIGN_DOWN((uintptr_t)_stext), PAGE_ALIGN(_etext - _stext), MAP_CACHED);
+	early_remap_range(membase, memsize - OPTEE_SIZE, MAP_CACHED);
+	early_remap_range(membase + memsize - OPTEE_SIZE, OPTEE_SIZE, MAP_UNCACHED);
+	early_remap_range(PAGE_ALIGN_DOWN((uintptr_t)_stext), PAGE_ALIGN(_etext - _stext), MAP_CACHED);
 
 	__mmu_cache_on();
 }

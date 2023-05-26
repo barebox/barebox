@@ -192,7 +192,19 @@ static void mmu_enable(void)
  */
 void __mmu_init(bool mmu_on)
 {
+	uint64_t *ttb = get_ttb();
 	struct memory_bank *bank;
+
+	if (!request_sdram_region("ttb", (unsigned long)ttb,
+				  ARM_EARLY_PAGETABLE_SIZE))
+		/*
+		 * This can mean that:
+		 * - the early MMU code has put the ttb into a place
+		 *   which we don't have inside our available memory
+		 * - Somebody else has occupied the ttb region which means
+		 *   the ttb will get corrupted.
+		 */
+		pr_crit("Can't request SDRAM region for ttb at %p\n", ttb);
 
 	for_each_memory_bank(bank) {
 		struct resource *rsv;

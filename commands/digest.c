@@ -190,7 +190,7 @@ err:
 BAREBOX_CMD_HELP_START(digest)
 BAREBOX_CMD_HELP_TEXT("Calculate a digest over a FILE or a memory area.")
 BAREBOX_CMD_HELP_TEXT("Options:")
-BAREBOX_CMD_HELP_OPT ("-a <algo>\t",  "hash or signature algorithm to use")
+BAREBOX_CMD_HELP_OPT ("-a <algo>\t",  "hash or signature algorithm name/driver to use")
 BAREBOX_CMD_HELP_OPT ("-k <key>\t",   "use supplied <key> (ASCII or hex) for MAC")
 BAREBOX_CMD_HELP_OPT ("-K <file>\t",  "use key from <file> (binary) for MAC")
 BAREBOX_CMD_HELP_OPT ("-s <hex>\t",   "verify data against supplied <hex> (hash, MAC or signature)")

@@ -47,7 +47,7 @@ Get TF-A from https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git/ and
 checkout version v2.7::
 
   make PLAT=imx8mp bl31
-  cp build/imx8mp/release/bl31.bin ${barebox_srctree}/imx8mp-bl31.bin
+  cp build/imx8mp/release/bl31.bin ${barebox_srctree}/firmware/imx8mp-bl31.bin
 
 .. warning:: It is important to use a version >= v2.7 else your system
    might not boot.

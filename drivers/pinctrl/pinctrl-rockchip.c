@@ -2101,6 +2101,21 @@ config:
 	return ret;
 }
 
+static int rockchip_pull_list[PULL_TYPE_MAX][4] = {
+	{
+		RK_BIAS_DISABLE,
+		RK_BIAS_PULL_UP,
+		RK_BIAS_PULL_DOWN,
+		RK_BIAS_BUS_HOLD
+	},
+	{
+		RK_BIAS_DISABLE,
+		RK_BIAS_PULL_DOWN,
+		RK_BIAS_DISABLE,
+		RK_BIAS_PULL_UP
+	},
+};
+
 static int rockchip_set_pull(struct rockchip_pin_bank *bank,
 					int pin_num, int pull)
 {
@@ -2108,7 +2123,7 @@ static int rockchip_set_pull(struct rockchip_pin_bank *bank,
 	struct rockchip_pin_ctrl *ctrl = info->ctrl;
 	struct device *dev = info->dev;
 	struct regmap *regmap;
-	int reg, ret;
+	int reg, ret, i, pull_type;
 	u8 bit;
 	u32 data, rmask;
 
@@ -2140,19 +2155,27 @@ static int rockchip_set_pull(struct rockchip_pin_bank *bank,
 	case RK3399:
 	case RK3568:
 	case RK3588:
+		pull_type = bank->pull_type[pin_num / 8];
+		ret = -EINVAL;
+		for (i = 0; i < ARRAY_SIZE(rockchip_pull_list[pull_type]); i++) {
+			if (rockchip_pull_list[pull_type][i] == pull) {
+				ret = i;
+				break;
+			}
+		}
 		/*
 		 * In the TRM, pull-up being 1 for everything except the GPIO0_D3-D6,
 		 * where that pull up value becomes 3.
 		 */
 		if (ctrl->type == RK3568 && bank->bank_num == 0 && pin_num >= 27 && pin_num <= 30) {
-			if (pull == RK_BIAS_PULL_UP)
-				pull = 3;
+			if (ret == RK_BIAS_PULL_UP)
+				ret = 3;
 		}
 
 		/* enable the write to the equivalent lower bits */
 		data = ((1 << RK3188_PULL_BITS_PER_PIN) - 1) << (bit + 16);
 		rmask = data | (data >> 16);
-		data |= (pull << bit);
+		data |= (ret << bit);
 
 		ret = regmap_update_bits(regmap, reg, rmask, data);
 		break;

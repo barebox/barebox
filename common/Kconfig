@@ -1710,3 +1710,9 @@ config DDR_SPD
 
 config HAVE_ARCH_ASAN
 	bool
+
+config ARCH_USE_SYM_ANNOTATIONS
+	bool
+	help
+	  This is selected by architectures that exclusively use the new SYM_
+	  macros in their assembly code and not the deprecated ENTRY/PROC.

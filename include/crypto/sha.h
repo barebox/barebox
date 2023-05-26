@@ -66,6 +66,10 @@
 #define SHA512_H6	0x1f83d9abfb41bd6bULL
 #define SHA512_H7	0x5be0cd19137e2179ULL
 
+/*
+ * State must be first member for compatibility with assembly
+ * code imported from Linux
+ */
 struct sha1_state {
 	u32 state[SHA1_DIGEST_SIZE / 4];
 	u64 count;

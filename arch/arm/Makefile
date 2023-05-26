@@ -195,11 +195,12 @@ endif
 
 common-y += arch/arm/boards/ $(MACH)
 common-y += arch/arm/cpu/
+common-y += arch/arm/crypto/
 
 ifeq ($(CONFIG_CPU_V8), y)
 common-y += arch/arm/lib64/
 else
-common-y += arch/arm/lib32/ arch/arm/crypto/
+common-y += arch/arm/lib32/
 endif
 
 common-$(CONFIG_OFTREE) += arch/arm/dts/

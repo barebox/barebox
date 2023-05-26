@@ -141,6 +141,7 @@ static void test_digests_sha12(const char *suffix)
 
 	cond = !strcmp(suffix, "generic") ? IS_ENABLED(CONFIG_DIGEST_SHA224_GENERIC) :
 	       !strcmp(suffix, "asm") ? IS_ENABLED(CONFIG_DIGEST_SHA256_ARM) :
+	       !strcmp(suffix, "ce")  ? IS_ENABLED(CONFIG_DIGEST_SHA256_ARM64_CE) :
 	       IS_ENABLED(CONFIG_HAVE_DIGEST_SHA224);
 
 	test_digest(cond, digest_suffix("sha224", suffix),
@@ -151,6 +152,7 @@ static void test_digests_sha12(const char *suffix)
 
 	cond = !strcmp(suffix, "generic") ? IS_ENABLED(CONFIG_DIGEST_SHA256_GENERIC) :
 	       !strcmp(suffix, "asm") ? IS_ENABLED(CONFIG_DIGEST_SHA256_ARM) :
+	       !strcmp(suffix, "ce")  ? IS_ENABLED(CONFIG_DIGEST_SHA256_ARM64_CE) :
 	       IS_ENABLED(CONFIG_HAVE_DIGEST_SHA256);
 
 	test_digest(cond, digest_suffix("sha256", suffix),

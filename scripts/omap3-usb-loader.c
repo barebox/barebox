@@ -784,7 +784,7 @@ int main(int argc, char *argv[])
 				file.addr = OMAP_BASE_ADDRESS;
 
 				/* commit the file object with the processor specified base address */
-				args->files = realloc(args->files, filecount);
+				args->files = realloc(args->files, filecount * sizeof(*args->files));
 				args->numfiles = filecount;
 				args->files[filecount - 1] = malloc(sizeof (file));
 				memcpy(args->files[filecount - 1], &file, sizeof (file));

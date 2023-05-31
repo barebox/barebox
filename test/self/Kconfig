@@ -37,6 +37,8 @@ config SELFTEST_ENABLE_ALL
 	imply SELFTEST_TFTP
 	imply SELFTEST_JSON
 	imply SELFTEST_MMU
+	imply SELFTEST_REGULATOR
+	imply SELFTEST_STRING
 	help
 	  Selects all self-tests compatible with current configuration
 
@@ -74,5 +76,9 @@ config SELFTEST_MMU
 	bool "MMU remapping selftest"
 	select MEMTEST
 	depends on MMU
+
+config SELFTEST_STRING
+	bool "String library selftest"
+	select VERSION_CMP
 
 endif

@@ -166,4 +166,24 @@
 #define swap(a, b) \
 	do { typeof(a) __tmp = (a); (a) = (b); (b) = __tmp; } while (0)
 
+
+#define __compare3(x, y)	((x) < (y) ? -1 : (x) > (y) ? 1 : 0)
+
+#define __compare3_once(x, y, unique_x, unique_y) ({	\
+		typeof(x) unique_x = (x);		\
+		typeof(y) unique_y = (y);		\
+		__compare3(unique_x, unique_y); })
+
+/**
+ * compare3 - 3-way comparison of @x and @y
+ * @x: first value
+ * @y: second value
+ *
+ * returns -1 if x < y, 0 if x == y and 1 if x > y
+ */
+#define compare3(x, y) \
+	__builtin_choose_expr(__safe_cmp(x, y), \
+		__compare3(x, y), \
+		__compare3_once(x, y, __UNIQUE_ID(__x), __UNIQUE_ID(__y)))
+
 #endif	/* _LINUX_MINMAX_H */

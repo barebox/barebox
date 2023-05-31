@@ -11,7 +11,7 @@
 ENTRY(__barebox_arm64_head)
 	nop
 	adr x9, __pbl_board_stack_top
-	ldr w9, [x9]
+	ldr x9, [x9]
 	cbz x9, 1f
 	mov sp, x9
 1:

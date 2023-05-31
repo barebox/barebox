@@ -8,6 +8,7 @@
 #define ASM_PTR		.quad
 #define ASM_SZPTR	8
 #define ASM_LGPTR	3
+#define ASM_LD_PTR(x)	QUAD(x)
 #else
 #define ASM_PTR		".quad"
 #define ASM_SZPTR	"8"
@@ -18,6 +19,7 @@
 #define ASM_PTR		.word
 #define ASM_SZPTR	4
 #define ASM_LGPTR	2
+#define ASM_LD_PTR(x)	LONG(x)
 #else
 #define ASM_PTR		".word"
 #define ASM_SZPTR	"4"

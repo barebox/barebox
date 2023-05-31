@@ -4,6 +4,7 @@
 #include <linux/sizes.h>
 #include <asm/barebox.lds.h>
 #include <asm-generic/memory_layout.h>
+#include <asm-generic/pointer.h>
 
 #ifdef CONFIG_PBL_RELOCATABLE
 #define BASE	0x0
@@ -44,14 +45,14 @@ SECTIONS
 	. = ALIGN(4);
 	.rodata : { *(.rodata*) }
 
-	. = ALIGN(4);
+	. = ALIGN(ASM_SZPTR);
 	__pbl_board_stack_top = .;
 	.rodata.pbl_board_stack_top : {
 		*(.pbl_board_stack_top_*)
 		/* Dummy for when BootROM sets up usable stack */
-		LONG(0x00000000);
+		ASM_LD_PTR(0x00000000)
 	}
-	ASSERT(. - __pbl_board_stack_top <= 8, "Only One PBL per Image allowed")
+	ASSERT(. - __pbl_board_stack_top <= 2 * ASM_SZPTR, "Only One PBL per Image allowed")
 
 	.barebox_imd : { BAREBOX_IMD }
 

@@ -461,19 +461,14 @@ static int set_vector_table(unsigned long adr)
 
 static void create_zero_page(void)
 {
-	struct resource *zero_sdram;
+	/*
+	 * In case the zero page is in SDRAM request it to prevent others
+	 * from using it
+	 */
+	request_sdram_region("zero page", 0x0, PAGE_SIZE);
 
-	zero_sdram = request_sdram_region("zero page", 0x0, PAGE_SIZE);
-	if (zero_sdram) {
-		/*
-		 * Here we would need to set the second level page table
-		 * entry to faulting. This is not yet implemented.
-		 */
-		pr_debug("zero page is in SDRAM area, currently not supported\n");
-	} else {
-		zero_page_faulting();
-		pr_debug("Created zero page\n");
-	}
+	zero_page_faulting();
+	pr_debug("Created zero page\n");
 }
 
 /*
@@ -530,8 +525,6 @@ void __mmu_init(bool mmu_on)
 
 	pr_debug("ttb: 0x%p\n", ttb);
 
-	vectors_init();
-
 	/*
 	 * Early mmu init will have mapped everything but the initial memory area
 	 * (excluding final OPTEE_SIZE bytes) uncached. We have now discovered
@@ -552,6 +545,8 @@ void __mmu_init(bool mmu_on)
 
 		remap_range((void *)pos, bank->start + bank->size - pos, MAP_CACHED);
 	}
+
+	vectors_init();
 }
 
 /*

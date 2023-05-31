@@ -49,6 +49,9 @@ int devfs_partition_complete(struct string_list *sl, char *instr)
 
 struct cdev *cdev_readlink(struct cdev *cdev)
 {
+	if (!cdev)
+		return NULL;
+
 	if (cdev->link)
 		cdev = cdev->link;
 

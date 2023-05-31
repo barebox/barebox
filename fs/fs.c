@@ -130,8 +130,6 @@ void stat_print(const char *filename, const struct stat *st)
 		case S_IFREG:    type = "regular file"; break;
 	}
 
-	printf("  File: %s\n", filename);
-
 	if (st->st_mode & S_IFCHR) {
 		char *path;
 
@@ -146,6 +144,21 @@ void stat_print(const char *filename, const struct stat *st)
 			free(path);
 		}
 	}
+
+	printf("  File: %s", filename);
+
+	if (S_ISLNK(st->st_mode)) {
+		char realname[PATH_MAX] = {};
+		int ret;
+
+		ret = readlink(filename, realname, PATH_MAX - 1);
+		if (ret)
+			printf(" -> <readlink error %pe>", ERR_PTR(ret));
+		else
+			printf(" -> %s", realname);
+	}
+
+	printf("\n");
 
 	printf("  Size: %-20llu", st->st_size);
 	if (bdev)

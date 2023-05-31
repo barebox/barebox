@@ -18,6 +18,7 @@
 #include <memory.h>
 #include <of.h>
 #include <magicvar.h>
+#include <zero_page.h>
 
 #include <asm/byteorder.h>
 #include <asm/setup.h>
@@ -265,8 +266,12 @@ void start_linux(void *adr, int swap, unsigned long initrd_address,
 		pr_debug("booting kernel with devicetree\n");
 		params = oftree;
 	} else {
-		setup_tags(initrd_address, initrd_size, swap);
 		params = armlinux_get_bootparams();
+
+		if ((unsigned long)params < PAGE_SIZE)
+			zero_page_access();
+
+		setup_tags(initrd_address, initrd_size, swap);
 	}
 	architecture = armlinux_get_architecture();
 

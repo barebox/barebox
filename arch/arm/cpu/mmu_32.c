@@ -266,7 +266,9 @@ static void __arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t s
 			 * replace it with a section
 			 */
 			chunk = PGDIR_SIZE;
-			*pgd = phys_addr | pmd_flags | PMD_TYPE_SECT;
+			*pgd = phys_addr | pmd_flags;
+			if (map_type != MAP_FAULT)
+				*pgd |= PMD_TYPE_SECT;
 			dma_flush_range(pgd, sizeof(*pgd));
 		} else {
 			unsigned int num_ptes;
@@ -306,7 +308,9 @@ static void __arch_remap_range(void *_virt_addr, phys_addr_t phys_addr, size_t s
 
 			for (i = 0; i < num_ptes; i++) {
 				pte[i] = phys_addr + i * PAGE_SIZE;
-				pte[i] |= pte_flags | PTE_TYPE_SMALL;
+				pte[i] |= pte_flags;
+				if (map_type != MAP_FAULT)
+					pte[i] |= PTE_TYPE_SMALL;
 			}
 
 			dma_flush_range(pte, num_ptes * sizeof(u32));

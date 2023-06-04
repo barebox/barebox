@@ -17,7 +17,6 @@
 #include <linux/pci.h>
 #include <linux/sizes.h>
 #include <asm/unaligned.h>
-#include <asm/system.h>
 
 #include "r8169.h"
 #include "r8169_firmware.h"

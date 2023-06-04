@@ -738,9 +738,11 @@ static int eqos_recv(struct eth_device *edev)
 	frame = phys_to_virt(rx_desc->des0);
 	length = rx_desc->des3 & 0x7fff;
 
-	dma_sync_single_for_cpu((unsigned long)frame, length, DMA_FROM_DEVICE);
+	dma_sync_single_for_cpu(edev->parent, (unsigned long)frame,
+				length, DMA_FROM_DEVICE);
 	net_receive(edev, frame, length);
-	dma_sync_single_for_device((unsigned long)frame, length, DMA_FROM_DEVICE);
+	dma_sync_single_for_device(edev->parent, (unsigned long)frame,
+				   length, DMA_FROM_DEVICE);
 
 	rx_desc->des0 = (unsigned long)frame;
 	rx_desc->des1 = 0;

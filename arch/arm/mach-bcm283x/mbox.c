@@ -66,7 +66,7 @@ static int bcm2835_mbox_call_raw(u32 chan, struct bcm2835_mbox_hdr *buffer,
 	/* Send the request */
 	val = BCM2835_MBOX_PACK(chan, send);
 	pr_debug("mbox: TX raw: 0x%08x\n", val);
-	dma_sync_single_for_device((unsigned long)send, buffer->buf_size,
+	dma_sync_single_for_device(NULL, (unsigned long)send, buffer->buf_size,
 				   DMA_BIDIRECTIONAL);
 	writel(val, mbox_base + MAIL1_WRT);
 
@@ -84,7 +84,7 @@ static int bcm2835_mbox_call_raw(u32 chan, struct bcm2835_mbox_hdr *buffer,
 	/* Read the response */
 	val = readl(mbox_base + MAIL0_RD);
 	pr_debug("mbox: RX raw: 0x%08x\n", val);
-	dma_sync_single_for_cpu((unsigned long)send, buffer->buf_size,
+	dma_sync_single_for_cpu(NULL, (unsigned long)send, buffer->buf_size,
 				DMA_BIDIRECTIONAL);
 
 	/* Validate the response */

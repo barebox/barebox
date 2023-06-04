@@ -282,10 +282,10 @@ static void stm32_sdmmc2_start_data(struct stm32_sdmmc2_priv *priv,
 	writel(data_ctrl, priv->base + SDMMC_DCTRL);
 
 	if (data->flags & MMC_DATA_WRITE)
-		dma_sync_single_for_device((unsigned long)idmabase0,
+		dma_sync_single_for_device(priv->dev, (unsigned long)idmabase0,
 					   num_bytes, DMA_TO_DEVICE);
 	else
-		dma_sync_single_for_device((unsigned long)idmabase0,
+		dma_sync_single_for_device(priv->dev, (unsigned long)idmabase0,
 					   num_bytes, DMA_FROM_DEVICE);
 
 	/* Enable internal DMA */
@@ -437,10 +437,10 @@ static int stm32_sdmmc2_end_data(struct stm32_sdmmc2_priv *priv,
 	}
 
 	if (data->flags & MMC_DATA_WRITE)
-		dma_sync_single_for_cpu((unsigned long)data->src,
+		dma_sync_single_for_cpu(priv->dev, (unsigned long)data->src,
 					num_bytes, DMA_TO_DEVICE);
 	else
-		dma_sync_single_for_cpu((unsigned long)data->dest,
+		dma_sync_single_for_cpu(priv->dev, (unsigned long)data->dest,
 					num_bytes, DMA_FROM_DEVICE);
 
 	if (status & SDMMC_STA_DCRCFAIL) {

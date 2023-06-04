@@ -2964,6 +2964,7 @@ static int rtl8169_eth_send(struct eth_device *edev, void *packet,
 				int packet_length)
 {
 	struct rtl8169_private *tp = edev->priv;
+	struct device *dev = &tp->pci_dev->dev;
 	unsigned int entry;
 	u64 start;
 	int ret = 0;
@@ -2973,7 +2974,7 @@ static int rtl8169_eth_send(struct eth_device *edev, void *packet,
 	if (packet_length < ETH_ZLEN)
 		memset(tp->tx_buf + entry * PKT_BUF_SIZE, 0, ETH_ZLEN);
 	memcpy(tp->tx_buf + entry * PKT_BUF_SIZE, packet, packet_length);
-	dma_sync_single_for_device(tp->tx_buf_phys + entry *
+	dma_sync_single_for_device(dev, tp->tx_buf_phys + entry *
 				   PKT_BUF_SIZE, PKT_BUF_SIZE, DMA_TO_DEVICE);
 
 	tp->TxDescArray[entry].addr = cpu_to_le64(tp->tx_buf_phys + entry * PKT_BUF_SIZE);
@@ -2999,7 +3000,7 @@ static int rtl8169_eth_send(struct eth_device *edev, void *packet,
 		}
 	}
 
-	dma_sync_single_for_cpu(tp->tx_buf_phys + entry * PKT_BUF_SIZE,
+	dma_sync_single_for_cpu(dev, tp->tx_buf_phys + entry * PKT_BUF_SIZE,
 				PKT_BUF_SIZE, DMA_TO_DEVICE);
 
 	tp->cur_tx++;
@@ -3010,6 +3011,7 @@ static int rtl8169_eth_send(struct eth_device *edev, void *packet,
 static int rtl8169_eth_rx(struct eth_device *edev)
 {
 	struct rtl8169_private *tp = edev->priv;
+	struct device *dev = &tp->pci_dev->dev;
 	unsigned int entry, pkt_size = 0;
 	u8 status;
 
@@ -3019,13 +3021,13 @@ static int rtl8169_eth_rx(struct eth_device *edev)
 		if (!(le32_to_cpu(tp->RxDescArray[entry].opts1) & RxRES)) {
 			pkt_size = (le32_to_cpu(tp->RxDescArray[entry].opts1) & 0x1fff) - 4;
 
-			dma_sync_single_for_cpu(tp->rx_buf_phys + entry * PKT_BUF_SIZE,
+			dma_sync_single_for_cpu(dev, tp->rx_buf_phys + entry * PKT_BUF_SIZE,
 						pkt_size, DMA_FROM_DEVICE);
 
 			net_receive(edev, tp->rx_buf + entry * PKT_BUF_SIZE,
 			            pkt_size);
 
-			dma_sync_single_for_device(tp->rx_buf_phys + entry * PKT_BUF_SIZE,
+			dma_sync_single_for_device(dev, tp->rx_buf_phys + entry * PKT_BUF_SIZE,
 						   pkt_size, DMA_FROM_DEVICE);
 
 			if (entry == NUM_RX_DESC - 1)

@@ -1021,10 +1021,10 @@ static int cpsw_send(struct eth_device *edev, void *packet, int length)
 
 	dev_dbg(&slave->dev, "%s: %i bytes @ 0x%p\n", __func__, length, packet);
 
-	dma_sync_single_for_device((unsigned long)packet, length, DMA_TO_DEVICE);
+	dma_sync_single_for_device(priv->dev, (unsigned long)packet, length, DMA_TO_DEVICE);
 	ret = cpdma_submit(priv, &priv->tx_chan, packet,
 			   length, BIT(slave->slave_num));
-	dma_sync_single_for_cpu((unsigned long)packet, length, DMA_TO_DEVICE);
+	dma_sync_single_for_cpu(priv->dev, (unsigned long)packet, length, DMA_TO_DEVICE);
 
 	return ret;
 }
@@ -1037,10 +1037,10 @@ static int cpsw_recv(struct eth_device *edev)
 	int len;
 
 	while (cpdma_process(slave, &priv->rx_chan, &buffer, &len) >= 0) {
-		dma_sync_single_for_cpu((unsigned long)buffer, len,
+		dma_sync_single_for_cpu(priv->dev, (unsigned long)buffer, len,
 				DMA_FROM_DEVICE);
 		net_receive(edev, buffer, len);
-		dma_sync_single_for_device((unsigned long)buffer, len,
+		dma_sync_single_for_device(priv->dev, (unsigned long)buffer, len,
 				DMA_FROM_DEVICE);
 		cpdma_submit(priv, &priv->rx_chan, buffer, PKTSIZE, 0);
 	}

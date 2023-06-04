@@ -97,10 +97,10 @@ static int dove_sdhci_mci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 
 
 		if (data->flags & MMC_DATA_WRITE)
-			dma_sync_single_for_device((unsigned long)data->src,
+			dma_sync_single_for_device(host->mci.hw_dev, (unsigned long)data->src,
 						    num_bytes, DMA_TO_DEVICE);
 		else
-			dma_sync_single_for_device((unsigned long)data->dest,
+			dma_sync_single_for_device(host->mci.hw_dev, (unsigned long)data->dest,
 						    num_bytes, DMA_FROM_DEVICE);
 	}
 
@@ -126,10 +126,10 @@ static int dove_sdhci_mci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 
 	if (data) {
 		if (data->flags & MMC_DATA_WRITE)
-			dma_sync_single_for_cpu((unsigned long)data->src,
+			dma_sync_single_for_cpu(host->mci.hw_dev, (unsigned long)data->src,
 						num_bytes, DMA_TO_DEVICE);
 		else
-			dma_sync_single_for_cpu((unsigned long)data->dest,
+			dma_sync_single_for_cpu(host->mci.hw_dev, (unsigned long)data->dest,
 					 num_bytes, DMA_FROM_DEVICE);
 
 		ret = dove_sdhci_wait_for_done(host, SDHCI_INT_XFER_COMPLETE);

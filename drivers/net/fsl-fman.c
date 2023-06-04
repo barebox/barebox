@@ -641,7 +641,8 @@ static int fm_eth_rx_port_parameter_init(struct fm_eth *fm_eth)
 					i * MAX_RXBUF_LEN));
 		buf_lo = lower_32_bits(virt_to_phys(rx_buf_pool +
 					i * MAX_RXBUF_LEN));
-		dma_sync_single_for_device((unsigned long)rx_buf_pool + i * MAX_RXBUF_LEN,
+		dma_sync_single_for_device(fm_eth->dev,
+					   (unsigned long)rx_buf_pool + i * MAX_RXBUF_LEN,
 					   MAX_RXBUF_LEN, DMA_FROM_DEVICE);
 		muram_writew(&rxbd->buf_ptr_hi, (u16)buf_hi);
 		out_be32(&rxbd->buf_ptr_lo, buf_lo);
@@ -911,13 +912,13 @@ static int fm_eth_recv(struct eth_device *edev)
 			data = (u8 *)((unsigned long)(buf_hi << 16) << 16 | buf_lo);
 			len = muram_readw(&rxbd->len);
 
-			dma_sync_single_for_cpu((unsigned long)data,
+			dma_sync_single_for_cpu(fm_eth->dev, (unsigned long)data,
 						len,
 						DMA_FROM_DEVICE);
 
 			net_receive(edev, data, len);
 
-			dma_sync_single_for_device((unsigned long)data,
+			dma_sync_single_for_device(fm_eth->dev, (unsigned long)data,
 						len,
 						DMA_FROM_DEVICE);
 		} else {

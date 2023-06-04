@@ -403,7 +403,7 @@ static int ag71xx_ether_rx(struct eth_device *edev)
 		rx_pkt = priv->rx_pkt[priv->next_rx];
 
 		/* invalidate */
-		dma_sync_single_for_cpu((unsigned long)rx_pkt, pktlen,
+		dma_sync_single_for_cpu(priv->dev, (unsigned long)rx_pkt, pktlen,
 						DMA_FROM_DEVICE);
 
 		net_receive(edev, rx_pkt, pktlen - 4);
@@ -431,7 +431,7 @@ static int ag71xx_ether_send(struct eth_device *edev, void *packet, int length)
 	int ret = 0;
 
 	/* flush */
-	dma_sync_single_for_device((unsigned long)packet, length, DMA_TO_DEVICE);
+	dma_sync_single_for_device(dev, (unsigned long)packet, length, DMA_TO_DEVICE);
 
 	f->pkt_start_addr = virt_to_phys(packet);
 	f->res1 = 0;
@@ -441,7 +441,7 @@ static int ag71xx_ether_send(struct eth_device *edev, void *packet, int length)
 	ag71xx_wr(priv, AG71XX_REG_TX_CTRL, TX_CTRL_TXE);
 
 	/* flush again?! */
-	dma_sync_single_for_cpu((unsigned long)packet, length, DMA_TO_DEVICE);
+	dma_sync_single_for_cpu(dev, (unsigned long)packet, length, DMA_TO_DEVICE);
 
 	start = get_time_ns();
 	while (!f->is_empty) {
@@ -491,7 +491,7 @@ static int ag71xx_ether_init(struct eth_device *edev)
 		fr->next_desc = virt_to_phys(&priv->fifo_rx[(i + 1) % NO_OF_RX_FIFOS]);
 
 		/* invalidate */
-		dma_sync_single_for_device((unsigned long)rxbuf, MAX_RBUFF_SZ,
+		dma_sync_single_for_device(priv->dev, (unsigned long)rxbuf, MAX_RBUFF_SZ,
 					DMA_FROM_DEVICE);
 
 		rxbuf += MAX_RBUFF_SZ;

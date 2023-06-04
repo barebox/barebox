@@ -20,13 +20,15 @@
  * (see https://lkml.org/lkml/2018/5/18/979)
  */
 
-void dma_sync_single_for_device(dma_addr_t addr, size_t size,
-				enum dma_data_direction dir)
+void arch_sync_dma_for_device(void *vaddr, size_t size,
+			      enum dma_data_direction dir)
 {
+	unsigned long start = (unsigned long)vaddr;
+
 	/* dcache is Write-Through: no need to flush to force writeback */
 	switch (dir) {
 	case DMA_FROM_DEVICE:
-		invalidate_dcache_range(addr, addr + size);
+		invalidate_dcache_range(start, start + size);
 		break;
 	case DMA_TO_DEVICE:
 	case DMA_BIDIRECTIONAL:
@@ -38,9 +40,11 @@ void dma_sync_single_for_device(dma_addr_t addr, size_t size,
 	}
 }
 
-void dma_sync_single_for_cpu(dma_addr_t addr, size_t size,
-				enum dma_data_direction dir)
+void arch_sync_dma_for_cpu(void *vaddr, size_t size,
+			   enum dma_data_direction dir)
 {
+	unsigned long start = (unsigned long)vaddr;
+
 	/* CPU does not speculatively prefetches */
 	switch (dir) {
 	case DMA_FROM_DEVICE:
@@ -48,7 +52,7 @@ void dma_sync_single_for_cpu(dma_addr_t addr, size_t size,
 	case DMA_TO_DEVICE:
 		break;
 	case DMA_BIDIRECTIONAL:
-		invalidate_dcache_range(addr, addr + size);
+		invalidate_dcache_range(start, start + size);
 		break;
 	default:
 		BUG();

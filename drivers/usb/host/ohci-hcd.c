@@ -842,7 +842,8 @@ static void td_fill(struct ohci *ohci, unsigned int info,
 
 	td->hwNextTD = virt_to_phys((void *)m32_swap((unsigned long)td_pt));
 
-	dma_sync_single_for_device((unsigned long)data, len, DMA_BIDIRECTIONAL);
+	dma_sync_single_for_device(ohci->host.hw_dev, (unsigned long)data,
+				   len, DMA_BIDIRECTIONAL);
 
 	/* append to queue */
 	td->ed->hwTailP = td->hwNextTD;
@@ -1078,7 +1079,7 @@ static int dl_done_list(struct ohci *ohci)
 	unsigned long ptdphys = virt_to_phys(ptd);
 	struct td *td_list;
 
-	dma_sync_single_for_device((unsigned long)ptdphys,
+	dma_sync_single_for_device(ohci->host.hw_dev, (unsigned long)ptdphys,
 				sizeof(struct td) * NUM_TD, DMA_BIDIRECTIONAL);
 
 	td_list = dl_reverse_done_list(ohci);
@@ -1515,7 +1516,7 @@ static int submit_common_msg(struct usb_device *dev, unsigned long pipe, void *b
 	dev->status = stat;
 	dev->act_len = urb->actual_length;
 
-	dma_sync_single_for_cpu((unsigned long)buffer, transfer_len,
+	dma_sync_single_for_cpu(host->hw_dev, (unsigned long)buffer, transfer_len,
 				DMA_BIDIRECTIONAL);
 
 	pkt_print(urb, dev, pipe, buffer, transfer_len,

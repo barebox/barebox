@@ -186,7 +186,8 @@ static int at91_ether_send(struct eth_device *edev, void *packet, int length)
 {
 	while (!(at91_emac_read(AT91_EMAC_TSR) & AT91_EMAC_TSR_BNQ));
 
-	dma_sync_single_for_device((unsigned long)packet, length, DMA_TO_DEVICE);
+	dma_sync_single_for_device(edev->parent, (unsigned long)packet,
+				   length, DMA_TO_DEVICE);
 
 	/* Set address of the data in the Transmit Address register */
 	at91_emac_write(AT91_EMAC_TAR, (unsigned long) packet);
@@ -198,7 +199,8 @@ static int at91_ether_send(struct eth_device *edev, void *packet, int length)
 	at91_emac_write(AT91_EMAC_TSR,
 		at91_emac_read(AT91_EMAC_TSR) | AT91_EMAC_TSR_COMP);
 
-	dma_sync_single_for_cpu((unsigned long)packet, length, DMA_TO_DEVICE);
+	dma_sync_single_for_cpu(edev->parent, (unsigned long)packet,
+				length, DMA_TO_DEVICE);
 
 	return 0;
 }
@@ -214,10 +216,10 @@ static int at91_ether_rx(struct eth_device *edev)
 
 	size = rbfp->size & RBF_SIZE;
 
-	dma_sync_single_for_cpu((unsigned long)rbfp->addr, size,
+	dma_sync_single_for_cpu(edev->parent, (unsigned long)rbfp->addr, size,
 				DMA_FROM_DEVICE);
 	net_receive(edev, (unsigned char *)(rbfp->addr & RBF_ADDR), size);
-	dma_sync_single_for_device((unsigned long)rbfp->addr, size,
+	dma_sync_single_for_device(edev->parent, (unsigned long)rbfp->addr, size,
 				   DMA_FROM_DEVICE);
 
 	rbfp->addr &= ~RBF_OWNER;
@@ -307,6 +309,7 @@ static int at91_ether_probe(struct device *dev)
 	miibus = &ether_dev->miibus;
 	edev->priv = ether_dev;
 
+	edev->parent = dev;
 	edev->init = at91_ether_init;
 	edev->open = at91_ether_open;
 	edev->send = at91_ether_send;

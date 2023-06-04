@@ -113,11 +113,11 @@ static int tegra_sdmmc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 		num_bytes = data->blocks * data->blocksize;
 
 		if (data->flags & MMC_DATA_WRITE) {
-			dma_sync_single_for_device((unsigned long)data->src,
+			dma_sync_single_for_device(mci->hw_dev, (unsigned long)data->src,
 						   num_bytes, DMA_TO_DEVICE);
 			sdhci_write32(&host->sdhci, SDHCI_DMA_ADDRESS, (u32)data->src);
 		} else {
-			dma_sync_single_for_device((unsigned long)data->dest,
+			dma_sync_single_for_device(mci->hw_dev, (unsigned long)data->dest,
 						   num_bytes, DMA_FROM_DEVICE);
 			sdhci_write32(&host->sdhci, SDHCI_DMA_ADDRESS, (u32)data->dest);
 		}
@@ -220,10 +220,10 @@ static int tegra_sdmmc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 		sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, val);
 
 		if (data->flags & MMC_DATA_WRITE)
-			dma_sync_single_for_cpu((unsigned long)data->src,
+			dma_sync_single_for_cpu(mci->hw_dev, (unsigned long)data->src,
 						num_bytes, DMA_TO_DEVICE);
 		else
-			dma_sync_single_for_cpu((unsigned long)data->dest,
+			dma_sync_single_for_cpu(mci->hw_dev, (unsigned long)data->dest,
 						num_bytes, DMA_FROM_DEVICE);
 	}
 

@@ -156,7 +156,7 @@ static void rx_descs_init(struct eth_device *dev)
 		else
 			desc_p->dmamac_cntl |= DESC_RXCTRL_RXCHAIN;
 
-		dma_sync_single_for_cpu(desc_p->dmamac_addr,
+		dma_sync_single_for_cpu(dev->parent, desc_p->dmamac_addr,
 					CONFIG_ETH_BUFSIZE, DMA_FROM_DEVICE);
 		desc_p->txrx_status = DESC_RXSTS_OWNBYDMA;
 	}
@@ -286,7 +286,7 @@ static int dwc_ether_send(struct eth_device *dev, void *packet, int length)
 	}
 
 	memcpy(dmamac_addr(desc_p), packet, length);
-	dma_sync_single_for_device(desc_p->dmamac_addr, length,
+	dma_sync_single_for_device(dev->parent, desc_p->dmamac_addr, length,
 				   DMA_TO_DEVICE);
 
 	if (priv->enh_desc) {
@@ -314,7 +314,7 @@ static int dwc_ether_send(struct eth_device *dev, void *packet, int length)
 
 	/* Start the transmission */
 	writel(POLL_DATA, &dma_p->txpolldemand);
-	dma_sync_single_for_cpu(desc_p->dmamac_addr, length,
+	dma_sync_single_for_cpu(dev->parent, desc_p->dmamac_addr, length,
 				DMA_TO_DEVICE);
 
 	return 0;
@@ -358,10 +358,10 @@ static int dwc_ether_rx(struct eth_device *dev)
 		length = (status & DESC_RXSTS_FRMLENMSK) >>
 			 DESC_RXSTS_FRMLENSHFT;
 
-		dma_sync_single_for_cpu(desc_p->dmamac_addr,
+		dma_sync_single_for_cpu(dev->parent, desc_p->dmamac_addr,
 					length, DMA_FROM_DEVICE);
 		net_receive(dev, dmamac_addr(desc_p), length);
-		dma_sync_single_for_device(desc_p->dmamac_addr,
+		dma_sync_single_for_device(dev->parent, desc_p->dmamac_addr,
 					   length, DMA_FROM_DEVICE);
 		ret = length;
 	}

@@ -35,15 +35,15 @@ static inline void dma_free_coherent(void *mem, dma_addr_t dma_handle,
 	free(mem);
 }
 
-#define dma_sync_single_for_cpu dma_sync_single_for_cpu
-static inline void dma_sync_single_for_cpu(dma_addr_t address, size_t size,
-					   enum dma_data_direction dir)
+#define arch_sync_dma_for_cpu arch_sync_dma_for_cpu
+static inline void arch_sync_dma_for_cpu(void *vaddr, size_t size,
+					 enum dma_data_direction dir)
 {
 }
 
-#define dma_sync_single_for_device dma_sync_single_for_device
-static inline void dma_sync_single_for_device(dma_addr_t address, size_t size,
-					      enum dma_data_direction dir)
+#define arch_sync_dma_for_device arch_sync_dma_for_device
+static inline void arch_sync_dma_for_device(void *vaddr, size_t size,
+					    enum dma_data_direction dir)
 {
 }
 #endif

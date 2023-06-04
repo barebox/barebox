@@ -75,7 +75,7 @@ struct macb_device {
 	int			phy_addr;
 
 	struct clk		*pclk, *hclk, *txclk, *rxclk;
-	const struct device	*dev;
+	struct device		*dev;
 	struct eth_device	netdev;
 
 	phy_interface_t		interface;

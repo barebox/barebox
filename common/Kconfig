@@ -198,9 +198,13 @@ config TEXT_BASE
 	depends on HAVE_CONFIGURABLE_TEXT_BASE
 	prompt "TEXT_BASE"
 	hex
+	range 0 0xffffffff
 	default ARCH_TEXT_BASE
 	help
-	  The Address barebox gets linked at.
+	  The 32-bit address barebox gets linked at. This is forced
+	  to zero for relocatable barebox and fixed up at runtime,
+	  so barebox is executable on arbitrary addresses (given
+	  sufficient alignment).
 
 config BAREBOX_MAX_IMAGE_SIZE
 	prompt "Maximum size of barebox"

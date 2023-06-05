@@ -30,7 +30,7 @@ void dma_inv_range(unsigned long, unsigned long);
 #define virt_to_phys virt_to_phys
 static inline unsigned long virt_to_phys(const void *address)
 {
-	return (unsigned long)CPHYSADDR(address);
+	return CPHYSADDR((unsigned long)address);
 }
 
 /*

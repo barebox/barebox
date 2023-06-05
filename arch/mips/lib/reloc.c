@@ -108,8 +108,7 @@ static void apply_reloc(unsigned int type, void *addr, long off)
 
 void relocate_code(void *fdt, u32 fdt_size, u32 ram_size)
 {
-	unsigned long addr, length, bss_len;
-	u32 relocaddr, new_stack;
+	unsigned long addr, length, bss_len, relocaddr, new_stack;
 	uint8_t *buf;
 	unsigned int type;
 	long off;
@@ -121,9 +120,9 @@ void relocate_code(void *fdt, u32 fdt_size, u32 ram_size)
 	length = __bss_stop - __image_start;
 	relocaddr = ALIGN_DOWN(ram_size - length, SZ_64K);
 	if (IS_ENABLED(CONFIG_MMU)) {
-		relocaddr = KSEG0ADDR(relocaddr);
+		relocaddr = CKSEG0ADDR(relocaddr);
 	} else {
-		relocaddr = KSEG1ADDR(relocaddr);
+		relocaddr = CKSEG1ADDR(relocaddr);
 	}
 	new_stack = relocaddr - MALLOC_SIZE - 16;
 

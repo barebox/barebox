@@ -409,6 +409,8 @@ int phy_scan_fixups(struct phy_device *phydev);
 int phy_read_mmd_indirect(struct phy_device *phydev, int prtad, int devad);
 void phy_write_mmd_indirect(struct phy_device *phydev, int prtad, int devad,
 				   u16 data);
+int phy_modify_mmd_indirect(struct phy_device *phydev, int prtad, int devad,
+				    u16 mask, u16 set);
 
 static inline bool phy_acquired(struct phy_device *phydev)
 {

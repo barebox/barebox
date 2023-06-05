@@ -882,6 +882,29 @@ void phy_write_mmd_indirect(struct phy_device *phydev, int prtad, int devad,
 	phy_write(phydev, MII_MMD_DATA, data);
 }
 
+/**
+ * phy_modify_mmd_indirect - Convenience function for modifying a MMD register
+ * @phydev: phy device
+ * @prtad: MMD Address
+ * @devad: MMD DEVAD
+ * @mask: bit mask of bits to clear
+ * @set: new value of bits set in @mask
+ *
+ */
+int phy_modify_mmd_indirect(struct phy_device *phydev, int prtad, int devad,
+				   u16 mask, u16 set)
+{
+	int ret;
+
+	ret = phy_read_mmd_indirect(phydev, prtad, devad);
+	if (ret < 0)
+		return ret;
+
+	phy_write_mmd_indirect(phydev, prtad, devad, (ret & ~mask) | set);
+
+	return 0;
+}
+
 int genphy_config_init(struct phy_device *phydev)
 {
 	int val;

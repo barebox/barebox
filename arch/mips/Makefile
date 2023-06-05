@@ -57,7 +57,13 @@ cflags-$(CONFIG_CPU_MIPS64_R1) += $(call cc-option,-march=mips64,-mips64 -U_MIPS
 cflags-$(CONFIG_CPU_MIPS64_R2) += $(call cc-option,-march=mips64r2,-mips64r2 -U_MIPS_ISA -D_MIPS_ISA=_MIPS_ISA_MIPS64) -Wa,-mips64r2 -Wa,--trap
 cflags-$(CONFIG_CPU_GS232)     += $(call cc-option,-march=mips32r2,-mips32r2 -U_MIPS_ISA -D_MIPS_ISA=_MIPS_ISA_MIPS32) -Wa,-mips32r2 -Wa,--trap
 
-KBUILD_CPPFLAGS += -DTEXT_BASE=$(CONFIG_TEXT_BASE)
+ifdef CONFIG_64BIT
+MIPS_TEXT_BASE = $(subst 0x,0xffffffff,$(CONFIG_TEXT_BASE))
+else
+MIPS_TEXT_BASE = $(CONFIG_TEXT_BASE)
+endif
+
+KBUILD_CPPFLAGS += -DTEXT_BASE=$(MIPS_TEXT_BASE)
 
 ifndef CONFIG_MODULES
 # Add cleanup flags

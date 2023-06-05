@@ -20,7 +20,26 @@
 #define src a1
 #define len a2
 
-#define LOADK lw /* No exception */
+#ifdef CONFIG_64BIT
+
+#define LOAD(reg, addr)		ld reg, addr
+#define LOADL(reg, addr)	ldl reg, addr
+#define LOADR(reg, addr)	ldr reg, addr
+#define STOREL(reg, addr)	sdl reg, addr
+#define STORER(reg, addr)	sdr reg, addr
+#define STORE(reg, addr)	sd reg, addr
+#define ADD    daddu
+#define SUB    dsubu
+#define SRL    dsrl
+#define SRA    dsra
+#define SLL    dsll
+#define SLLV   dsllv
+#define SRLV   dsrlv
+#define NBYTES 8
+#define LOG_NBYTES 3
+
+#else
+
 #define LOAD(reg, addr)		lw reg, addr
 #define LOADL(reg, addr)	lwl reg, addr
 #define LOADR(reg, addr)	lwr reg, addr
@@ -36,6 +55,8 @@
 #define SRLV   srlv
 #define NBYTES 4
 #define LOG_NBYTES 2
+
+#endif /* CONFIG_64BIT */
 
 #define LOADB(reg, addr)	lb reg, addr
 #define STOREB(reg, addr)	sb reg, addr
@@ -101,8 +122,8 @@ LEAF(memcpy)					/* a0=dst a1=src a2=len */
 	LOAD(t2, UNIT(2)(src))
 	LOAD(t3, UNIT(3)(src))
 	SUB	len, len, 8*NBYTES
-	LOAD(t4, UNIT(4)(src))
-	LOAD(t7, UNIT(5)(src))
+	LOAD(ta0, UNIT(4)(src))
+	LOAD(ta3, UNIT(5)(src))
 	STORE(t0, UNIT(0)(dst))
 	STORE(t1, UNIT(1)(dst))
 	LOAD(t0, UNIT(6)(src))
@@ -111,8 +132,8 @@ LEAF(memcpy)					/* a0=dst a1=src a2=len */
 	ADD	dst, dst, 8*NBYTES
 	STORE(t2, UNIT(-6)(dst))
 	STORE(t3, UNIT(-5)(dst))
-	STORE(t4, UNIT(-4)(dst))
-	STORE(t7, UNIT(-3)(dst))
+	STORE(ta0, UNIT(-4)(dst))
+	STORE(ta3, UNIT(-3)(dst))
 	STORE(t0, UNIT(-2)(dst))
 	STORE(t1, UNIT(-1)(dst))
 	bne	len, rem, 1b
@@ -263,6 +284,12 @@ LEAF(memcpy)					/* a0=dst a1=src a2=len */
 
 	COPY_BYTE(0)
 	COPY_BYTE(1)
+#ifdef CONFIG_64BIT
+	COPY_BYTE(2)
+	COPY_BYTE(3)
+	COPY_BYTE(4)
+	COPY_BYTE(5)
+#endif
 	LOADB(t0, NBYTES-2(src))
 	SUB	len, len, 1
 	jr	ra

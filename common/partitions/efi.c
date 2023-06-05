@@ -460,7 +460,7 @@ static void efi_partition(void *buf, struct block_device *blk,
 	for (i = 0; i < nb_part; i++) {
 		if (!is_pte_valid(&ptes[i], last_lba(blk))) {
 			dev_dbg(blk->dev, "Invalid pte %d\n", i);
-			return;
+			continue;
 		}
 
 		pentry = &pd->parts[pd->used_entries];

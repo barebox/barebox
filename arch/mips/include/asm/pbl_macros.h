@@ -73,7 +73,7 @@
 	.macro	pbl_probe_mem ret1 ret2 addr
 	.set	push
 	.set	noreorder
-	la	\ret1, \addr
+	PTR_LA	\ret1, \addr
 	sw	zero, 0(\ret1)
 	li	\ret2, 0x12345678
 	sw	\ret2, 0(\ret1)
@@ -97,7 +97,7 @@
 	move	\temp, ra			# preserve ra beforehand
 	bal	255f
 	 nop
-255:	addiu	\rd, ra, \label - 255b		# label is assumed to be
+255:	PTR_ADDIU	\rd, ra, \label - 255b	# label is assumed to be
 	move	ra, \temp			# within pc +/- 32KB
 	.set	pop
 	.endm
@@ -110,15 +110,15 @@
 	ADR	a0, \start_addr, t1	/* a0 <- pc-relative
 					position of start_addr */
 
-	la	a1, \start_addr	/* a1 <- link (RAM) start_addr address */
+	PTR_LA	a1, \start_addr	/* a1 <- link (RAM) start_addr address */
 
 	beq	a0, a1, copy_loop_exit
 	 nop
 
-	la	t0, \start_addr
-	la	t1, __bss_start
-	subu	t2, t1, t0	/* t2 <- size of pbl */
-	addu	a2, a0, t2	/* a2 <- source end address */
+	PTR_LA	t0, \start_addr
+	PTR_LA	t1, __bss_start
+	PTR_SUBU	t2, t1, t0	/* t2 <- size of pbl */
+	PTR_ADDU	a2, a0, t2	/* a2 <- source end address */
 
 #define WSIZE	4
 copy_loop:
@@ -132,10 +132,10 @@ copy_loop:
 	sw	ta1, WSIZE * 1(a1)
 	sw	ta2, WSIZE * 2(a1)
 	sw	ta3, WSIZE * 3(a1)
-	addi	a0, WSIZE * 4
-	subu	t3, a0, a2
+	PTR_ADDI	a0, WSIZE * 4
+	PTR_SUBU	t3, a0, a2
 	blez	t3, copy_loop
-	 addi	a1, WSIZE * 4
+	 PTR_ADDI	a1, WSIZE * 4
 
 copy_loop_exit:
 
@@ -196,7 +196,7 @@ copy_loop_exit:
 	.set	noreorder
 
 	/* set stack pointer; reserve four 32-bit argument slots */
-	la	sp, (TEXT_BASE - MALLOC_SIZE - 16)
+	PTR_LA	sp, (TEXT_BASE - MALLOC_SIZE - 16)
 
 	.set	pop
 	.endm

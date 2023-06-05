@@ -14,7 +14,7 @@
 /* Exception vector */
 NESTED(handle_reserved, 0, sp)
 	SAVE_ALL
-	la	k0, barebox_exc_handler
+	PTR_LA	k0, barebox_exc_handler
 	jal	k0
 	 move	a0, sp
 	/* will never return here */
@@ -24,10 +24,10 @@ NESTED(handle_reserved, 0, sp)
 NESTED(except_vec3_generic, 0, sp)
 	.set	noat
 	mfc0	k1, CP0_CAUSE
-	la	k0, exception_handlers
+	PTR_LA	k0, exception_handlers
 	andi	k1, k1, 0x7c
-	addu	k0, k0, k1
-	lw	k0, (k0)
+	PTR_ADDU	k0, k0, k1
+	PTR_L	k0, (k0)
 	nop
 	jr	k0
 	 nop

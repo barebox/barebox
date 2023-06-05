@@ -34,7 +34,7 @@ EXPORT(_start)
 	move	a0, s0
 	move	a1, s1
 	move	a2, s2
-	la	v0, relocate_code
+	PTR_LA	v0, relocate_code
 	jal	v0
 	 nop
 

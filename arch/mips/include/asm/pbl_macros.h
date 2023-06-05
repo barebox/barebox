@@ -152,6 +152,17 @@ copy_loop_exit:
 	.set	pop
 	.endm
 
+	.macro	mips64_enable_64bit_addressing
+#ifdef CONFIG_64BIT
+	.set	push
+	.set	noreorder
+	mfc0	k0, CP0_STATUS
+	or	k0, ST0_KX
+	mtc0	k0, CP0_STATUS
+	.set	pop
+#endif
+	.endm
+
 	.macro	mips_barebox_10h
 	.set	push
 	.set	noreorder

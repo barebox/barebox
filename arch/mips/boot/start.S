@@ -26,6 +26,8 @@ EXPORT(_start)
 
 	mips_disable_interrupts
 
+	mips64_enable_64bit_addressing
+
 	copy_to_link_location _start
 
 	stack_setup

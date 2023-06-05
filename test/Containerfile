@@ -64,14 +64,17 @@ RUN apt-get update && apt-get install -y \
 	libyaml-libyaml-perl \
 	&& rm -rf /var/lib/apt/lists/*
 
-# Manually install the kernel.org Crosstool based toolchains for gcc-12.2.0
-RUN wget -O - https://mirrors.edge.kernel.org/pub/tools/crosstool/files/bin/x86_64/12.2.0/x86_64-gcc-12.2.0-nolibc-aarch64-linux.tar.xz | tar -C /opt -xJ
-RUN wget -O - https://mirrors.edge.kernel.org/pub/tools/crosstool/files/bin/x86_64/12.2.0/x86_64-gcc-12.2.0-nolibc-arm-linux-gnueabi.tar.xz | tar -C /opt -xJ
-RUN wget -O - https://mirrors.edge.kernel.org/pub/tools/crosstool/files/bin/x86_64/12.2.0/x86_64-gcc-12.2.0-nolibc-i386-linux.tar.xz | tar -C /opt -xJ
-RUN wget -O - https://mirrors.edge.kernel.org/pub/tools/crosstool/files/bin/x86_64/12.2.0/x86_64-gcc-12.2.0-nolibc-mips-linux.tar.xz | tar -C /opt -xJ
-RUN wget -O - https://mirrors.edge.kernel.org/pub/tools/crosstool/files/bin/x86_64/12.2.0/x86_64-gcc-12.2.0-nolibc-powerpc-linux.tar.xz | tar -C /opt -xJ
-RUN wget -O - https://mirrors.edge.kernel.org/pub/tools/crosstool/files/bin/x86_64/12.2.0/x86_64-gcc-12.2.0-nolibc-riscv64-linux.tar.xz | tar -C /opt -xJ
-RUN wget -O - https://mirrors.edge.kernel.org/pub/tools/crosstool/files/bin/x86_64/12.2.0/x86_64-gcc-12.2.0-nolibc-riscv32-linux.tar.xz | tar -C /opt -xJ
+ENV GCC_VERSION=12.2.0
+
+# Manually install the kernel.org Crosstool based toolchains
+RUN korg_crosstool_dl() { wget -O - https://mirrors.edge.kernel.org/pub/tools/crosstool/files/bin/${1}/${2}/${1}-gcc-${2}-nolibc-${3}.tar.xz | tar -C /opt -xJ ; } && \
+    korg_crosstool_dl x86_64 ${GCC_VERSION} arm-linux-gnueabi && \
+    korg_crosstool_dl x86_64 ${GCC_VERSION} aarch64-linux     && \
+    korg_crosstool_dl x86_64 ${GCC_VERSION} i386-linux        && \
+    korg_crosstool_dl x86_64 ${GCC_VERSION} mips-linux        && \
+    korg_crosstool_dl x86_64 ${GCC_VERSION} powerpc-linux     && \
+    korg_crosstool_dl x86_64 ${GCC_VERSION} riscv32-linux     && \
+    korg_crosstool_dl x86_64 ${GCC_VERSION} riscv64-linux
 
 RUN wget "https://github.com/qemu/qemu/blob/v5.2.0/pc-bios/opensbi-riscv32-generic-fw_dynamic.bin?raw=true" -O /usr/share/qemu/opensbi-riscv32-generic-fw_dynamic.bin
 
@@ -85,5 +88,11 @@ RUN cd /tmp && \
     cd labgrid && \
     pip3 install . && \
     ln -s $(which pytest) /usr/local/bin/labgrid-pytest;
+
+ENV CROSS_COMPILE_arm=/opt/gcc-${GCC_VERSION}-nolibc/arm-linux-gnueabi/bin/arm-linux-gnueabi-
+ENV CROSS_COMPILE_arm64=/opt/gcc-${GCC_VERSION}-nolibc/aarch64-linux/bin/aarch64-linux-
+ENV CROSS_COMPILE_mips=/opt/gcc-${GCC_VERSION}-nolibc/mips-linux/bin/mips-linux-
+ENV CROSS_COMPILE_powerpc=/opt/gcc-${GCC_VERSION}-nolibc/powerpc-linux/bin/powerpc-linux-
+ENV CROSS_COMPILE_riscv=/opt/gcc-${GCC_VERSION}-nolibc/riscv32-linux/bin/riscv32-linux-
 
 USER barebox:barebox

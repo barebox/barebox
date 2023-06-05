@@ -73,7 +73,6 @@ RUN korg_crosstool_dl() { wget -O - https://mirrors.edge.kernel.org/pub/tools/cr
     korg_crosstool_dl x86_64 ${GCC_VERSION} i386-linux        && \
     korg_crosstool_dl x86_64 ${GCC_VERSION} mips-linux        && \
     korg_crosstool_dl x86_64 ${GCC_VERSION} powerpc-linux     && \
-    korg_crosstool_dl x86_64 ${GCC_VERSION} riscv32-linux     && \
     korg_crosstool_dl x86_64 ${GCC_VERSION} riscv64-linux
 
 RUN wget "https://github.com/qemu/qemu/blob/v5.2.0/pc-bios/opensbi-riscv32-generic-fw_dynamic.bin?raw=true" -O /usr/share/qemu/opensbi-riscv32-generic-fw_dynamic.bin
@@ -93,6 +92,6 @@ ENV CROSS_COMPILE_arm=/opt/gcc-${GCC_VERSION}-nolibc/arm-linux-gnueabi/bin/arm-l
 ENV CROSS_COMPILE_arm64=/opt/gcc-${GCC_VERSION}-nolibc/aarch64-linux/bin/aarch64-linux-
 ENV CROSS_COMPILE_mips=/opt/gcc-${GCC_VERSION}-nolibc/mips-linux/bin/mips-linux-
 ENV CROSS_COMPILE_powerpc=/opt/gcc-${GCC_VERSION}-nolibc/powerpc-linux/bin/powerpc-linux-
-ENV CROSS_COMPILE_riscv=/opt/gcc-${GCC_VERSION}-nolibc/riscv32-linux/bin/riscv32-linux-
+ENV CROSS_COMPILE_riscv=/opt/gcc-${GCC_VERSION}-nolibc/riscv64-linux/bin/riscv64-linux-
 
 USER barebox:barebox

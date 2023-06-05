@@ -11,9 +11,13 @@
 
 static void __noreturn longhorn_restart_soc(struct restart_handler *rst)
 {
-	__raw_writel(0x1, WDT_EN);
-	__raw_writel(0x1, WDT_SET);
-	__raw_writel(0x1, WDT_TIMER);
+	void __iomem *wdt = IOMEM(0);
+
+	OPTIMIZER_HIDE_VAR(wdt);
+
+	__raw_writel(0x1, wdt + WDT_EN);
+	__raw_writel(0x1, wdt + WDT_SET);
+	__raw_writel(0x1, wdt + WDT_TIMER);
 
 	hang();
 }

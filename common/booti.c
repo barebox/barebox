@@ -33,7 +33,7 @@ void *booti_load_image(struct image_data *data, phys_addr_t *oftree)
 {
 	const void *kernel_header =
 			data->os_fit ? data->fit_kernel : data->os_header;
-	unsigned long text_offset, image_size, devicetree, kernel;
+	unsigned long text_offset, image_size, kernel;
 	unsigned long image_end;
 	int ret;
 	void *fdt;
@@ -57,6 +57,8 @@ void *booti_load_image(struct image_data *data, phys_addr_t *oftree)
 	image_end = PAGE_ALIGN(kernel + image_size);
 
 	if (oftree) {
+		unsigned long devicetree;
+
 		if (bootm_has_initrd(data)) {
 			ret = bootm_load_initrd(data, image_end);
 			if (ret)
@@ -84,7 +86,7 @@ void *booti_load_image(struct image_data *data, phys_addr_t *oftree)
 
 	printf("Loaded kernel to 0x%08lx", kernel);
 	if (oftree)
-		printf(", devicetree at 0x%08lx", devicetree);
+		printf(", devicetree at %pa", oftree);
 	printf("\n");
 
 	return (void *)kernel;

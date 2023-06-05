@@ -11,21 +11,11 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Update and install things from apt now
 RUN apt-get update && apt-get install -y \
-	automake \
-	autopoint \
-	bc \
-	binutils-dev \
 	bison \
 	build-essential \
 	coreutils \
-	cpio \
-	cppcheck \
-	curl \
-	erofs-utils \
-	expect \
 	flex \
 	gawk \
-	gdisk \
 	git \
 	imagemagick \
 	libc6-i386 \
@@ -42,10 +32,7 @@ RUN apt-get update && apt-get install -y \
 	mount \
 	openssl \
 	pkg-config \
-	rpm2cpio \
 	util-linux \
-	uuid-dev \
-	zip \
 	wget \
 	qemu-system-arm \
 	qemu-system-misc \
@@ -58,10 +45,7 @@ RUN apt-get update && apt-get install -y \
 	python3-virtualenv \
 	python3-setuptools \
 	virtualenv \
-	microcom \
 	sudo \
-	libyaml-tiny-perl \
-	libyaml-libyaml-perl \
 	&& rm -rf /var/lib/apt/lists/*
 
 ENV GCC_VERSION=13.1.0

@@ -1701,6 +1701,20 @@ config COMPILE_TEST
 	  say Y here. If you are a user, say N here to avoid being prompted for
 	  inclusion of unrelated drivers.
 
+config WERROR
+	bool "Compile barebox with warnings as errors"
+	default COMPILE_TEST
+	help
+	  A barebox build should not cause any compiler warnings, and this
+	  enables the '-Werror' flags to enforce that rule by default.
+
+	  However, if you have a new (or very old) compiler with odd and
+	  unusual warnings, or you have some architecture with problems,
+	  you may need to disable this config option in order to
+	  successfully build barebox.
+
+	  If in doubt, say Y.
+
 endmenu
 
 source "common/efi/Kconfig"

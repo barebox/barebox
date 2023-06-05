@@ -6,34 +6,34 @@
 
 /* int setjmp (jmp_buf);  */
 LEAF(setjmp)
-	sw	ra, (0 * 4)(a0)
-	sw	sp, (1 * 4)(a0)
-	sw	s0, (2 * 4)(a0)
-	sw	s1, (3 * 4)(a0)
-	sw	s2, (4 * 4)(a0)
-	sw	s3, (5 * 4)(a0)
-	sw	s4, (6 * 4)(a0)
-	sw	s5, (7 * 4)(a0)
-	sw	s6, (8 * 4)(a0)
-	sw	s7, (9 * 4)(a0)
-	sw	fp, (10 * 4)(a0)
+	REG_S	ra, (0 * SZREG)(a0)
+	REG_S	sp, (1 * SZREG)(a0)
+	REG_S	s0, (2 * SZREG)(a0)
+	REG_S	s1, (3 * SZREG)(a0)
+	REG_S	s2, (4 * SZREG)(a0)
+	REG_S	s3, (5 * SZREG)(a0)
+	REG_S	s4, (6 * SZREG)(a0)
+	REG_S	s5, (7 * SZREG)(a0)
+	REG_S	s6, (8 * SZREG)(a0)
+	REG_S	s7, (9 * SZREG)(a0)
+	REG_S	fp, (10 * SZREG)(a0)
 	move	v0, zero
 	j	ra
 END(setjmp)
 
 /* volatile void longjmp (jmp_buf, int);  */
 LEAF(longjmp)
-	lw	ra, (0 * 4)(a0)
-	lw	sp, (1 * 4)(a0)
-	lw	s0, (2 * 4)(a0)
-	lw	s1, (3 * 4)(a0)
-	lw	s2, (4 * 4)(a0)
-	lw	s3, (5 * 4)(a0)
-	lw	s4, (6 * 4)(a0)
-	lw	s5, (7 * 4)(a0)
-	lw	s6, (8 * 4)(a0)
-	lw	s7, (9 * 4)(a0)
-	lw	fp, (10 * 4)(a0)
+	REG_L	ra, (0 * SZREG)(a0)
+	REG_L	sp, (1 * SZREG)(a0)
+	REG_L	s0, (2 * SZREG)(a0)
+	REG_L	s1, (3 * SZREG)(a0)
+	REG_L	s2, (4 * SZREG)(a0)
+	REG_L	s3, (5 * SZREG)(a0)
+	REG_L	s4, (6 * SZREG)(a0)
+	REG_L	s5, (7 * SZREG)(a0)
+	REG_L	s6, (8 * SZREG)(a0)
+	REG_L	s7, (9 * SZREG)(a0)
+	REG_L	fp, (10 * SZREG)(a0)
 	bne	a1, zero, 1f
 	li	a1, 1
 1:
@@ -43,8 +43,8 @@ END(longjmp)
 
 /* int initjmp(jmp_buf jmp, void __noreturn (*func)(void), void *stack_top); */
 LEAF(initjmp)
-	sw	a1, (0 * 4)(a0)
-	sw	a2, (1 * 4)(a0)
+	REG_S	a1, (0 * SZREG)(a0)
+	REG_S	a2, (1 * SZREG)(a0)
 	move	v0, zero
 	j	ra
 END(initjmp)

@@ -10,6 +10,7 @@ config MIPS
 	select HAVE_PBL_MULTI_IMAGES
 	select HAS_DMA
 	select ARCH_HAS_DATA_ABORT_MASK
+	select ARCH_HAS_SJLJ
 	select ELF
 	default y
 
@@ -305,7 +306,6 @@ choice
 config 32BIT
 	bool "32-bit barebox"
 	depends on CPU_SUPPORTS_32BIT_KERNEL && SYS_SUPPORTS_32BIT_KERNEL
-	select ARCH_HAS_SJLJ
 	help
 	  Select this option if you want to build a 32-bit barebox.
 

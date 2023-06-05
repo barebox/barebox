@@ -1,4 +1,4 @@
-name: build all defconfigs
+name: build images
 
 on: [push, pull_request]
 

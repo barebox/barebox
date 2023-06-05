@@ -1,4 +1,4 @@
-name: test images with labgrid-pytest
+name: test images
 
 on: [push, pull_request]
 

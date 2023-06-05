@@ -173,7 +173,7 @@ void barebox_exc_handler(struct pt_regs *regs)
 			"move\t$29, %0\n\t"
 			"j\tret_from_exception"
 			:/* no outputs */
-			:"r" (&regs));
+			:"r" (regs));
 
 		/* Unreached */
 

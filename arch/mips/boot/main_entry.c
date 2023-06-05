@@ -89,7 +89,7 @@ void __bare_init main_entry(void *fdt, u32 fdt_size)
 	pr_debug("initializing malloc pool at 0x%08lx (size 0x%08lx)\n",
 			malloc_start, malloc_end - malloc_start);
 
-	mem_malloc_init((void *)malloc_start, (void *)_stext - 1);
+	mem_malloc_init((void *)malloc_start, (void *)malloc_end - 1);
 	mips_stack_top = malloc_start;
 
 	glob_fdt = fdt;

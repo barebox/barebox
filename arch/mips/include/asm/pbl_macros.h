@@ -30,9 +30,9 @@
 	.set noreorder
 	li	t9, \addr
 	li	t8, \val
-	lw	t7, 0(t9)
-	or	t7, t8
-	sw	t7, 0(t9)
+	lw	ta3, 0(t9)
+	or	ta3, t8
+	sw	ta3, 0(t9)
 	.set	pop
 	.endm
 
@@ -41,10 +41,10 @@
 	.set noreorder
 	li	t9, \addr
 	li	t8, \clr
-	lw	t7, 0(t9)
+	lw	ta3, 0(t9)
 	not	t8, t8
-	and	t7, t8
-	sw	t7, 0(t9)
+	and	ta3, t8
+	sw	ta3, 0(t9)
 	.set	pop
 	.endm
 
@@ -123,15 +123,15 @@
 #define WSIZE	4
 copy_loop:
 	/* copy from source address [a0] */
-	lw	t4, WSIZE * 0(a0)
-	lw	t5, WSIZE * 1(a0)
-	lw	t6, WSIZE * 2(a0)
-	lw	t7, WSIZE * 3(a0)
+	lw	ta0, WSIZE * 0(a0)
+	lw	ta1, WSIZE * 1(a0)
+	lw	ta2, WSIZE * 2(a0)
+	lw	ta3, WSIZE * 3(a0)
 	/* copy to target address [a1] */
-	sw	t4, WSIZE * 0(a1)
-	sw	t5, WSIZE * 1(a1)
-	sw	t6, WSIZE * 2(a1)
-	sw	t7, WSIZE * 3(a1)
+	sw	ta0, WSIZE * 0(a1)
+	sw	ta1, WSIZE * 1(a1)
+	sw	ta2, WSIZE * 2(a1)
+	sw	ta3, WSIZE * 3(a1)
 	addi	a0, WSIZE * 4
 	subu	t3, a0, a2
 	blez	t3, copy_loop

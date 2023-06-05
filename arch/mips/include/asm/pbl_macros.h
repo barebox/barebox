@@ -120,22 +120,21 @@
 	PTR_SUBU	t2, t1, t0	/* t2 <- size of pbl */
 	PTR_ADDU	a2, a0, t2	/* a2 <- source end address */
 
-#define WSIZE	4
 copy_loop:
 	/* copy from source address [a0] */
-	lw	ta0, WSIZE * 0(a0)
-	lw	ta1, WSIZE * 1(a0)
-	lw	ta2, WSIZE * 2(a0)
-	lw	ta3, WSIZE * 3(a0)
+	LONG_L	ta0, LONGSIZE * 0(a0)
+	LONG_L	ta1, LONGSIZE * 1(a0)
+	LONG_L	ta2, LONGSIZE * 2(a0)
+	LONG_L	ta3, LONGSIZE * 3(a0)
 	/* copy to target address [a1] */
-	sw	ta0, WSIZE * 0(a1)
-	sw	ta1, WSIZE * 1(a1)
-	sw	ta2, WSIZE * 2(a1)
-	sw	ta3, WSIZE * 3(a1)
-	PTR_ADDI	a0, WSIZE * 4
+	LONG_S	ta0, LONGSIZE * 0(a1)
+	LONG_S	ta1, LONGSIZE * 1(a1)
+	LONG_S	ta2, LONGSIZE * 2(a1)
+	LONG_S	ta3, LONGSIZE * 3(a1)
+	PTR_ADDI	a0, LONGSIZE * 4
 	PTR_SUBU	t3, a0, a2
 	blez	t3, copy_loop
-	 PTR_ADDI	a1, WSIZE * 4
+	 PTR_ADDI	a1, LONGSIZE * 4
 
 copy_loop_exit:
 

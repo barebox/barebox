@@ -60,6 +60,22 @@ jobs:
         export KBUILD_OUTPUT=build-${{matrix.arch}}
 
         for i in ${{matrix.lgenv}}; do
-          echo "Testing $i"
-          labgrid-pytest --lg-env $i test/py --verbosity=1 --lg-log
+          cfg=$(basename $i .yaml)
+          echo "Testing $cfg"
+          labgrid-pytest --lg-env $i test/py --verbosity=1 \
+          --junitxml=$cfg.tests.xml --lg-log=log/$cfg
         done
+
+    - name: Publish Test Results
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      if: always()
+      with:
+        files: ./*.tests.xml
+
+    - name: Publish Labgrid Log Results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: Console Logs
+        path: log/
+        if-no-files-found: error

@@ -432,7 +432,7 @@ static inline int imx8mp_ddr_init(struct dram_timing_info *dram_timing,
 	return imx8m_ddr_init(dram_timing, DDRC_TYPE_MP | dram_type);
 }
 
-int ddr_cfg_phy(struct dram_timing_info *timing_info, enum ddrc_type ddrc_type);
+int ddr_cfg_phy(struct dram_timing_info *timing_info, unsigned type);
 void load_lpddr4_phy_pie(void);
 void ddrphy_trained_csr_save(struct dram_cfg_param *param, unsigned int num);
 void dram_config_save(struct dram_timing_info *info, unsigned long base);

@@ -45,8 +45,8 @@ mips-ldflags-y += $(shell $(CC) -dumpmachine |grep -q 'mips.*el-.*' || echo -EL 
 endif
 
 KBUILD_LDFLAGS += $(mips-ldflags-y) -m $(ld-emul)
-LDFLAGS_barebox += $(mips-ldflags-y)
-LDFLAGS_pbl += $(mips-ldflags-y)
+LDFLAGS_barebox += $(KBUILD_LDFLAGS)
+LDFLAGS_pbl += $(KBUILD_LDFLAGS)
 
 #
 # CPU-dependent compiler/assembler options for optimization.
@@ -100,7 +100,7 @@ KBUILD_CFLAGS += $(cflags-y)
 
 lds-$(CONFIG_GENERIC_LINKER_SCRIPT)   := arch/mips/lib/barebox.lds
 
-cmd_barebox__ ?= $(LD) $(KBUILD_LDFLAGS) $(LDFLAGS_barebox) -o $@ \
+cmd_barebox__ ?= $(LD) $(LDFLAGS_barebox) -o $@ \
       -T $(BAREBOX_LDS)                         \
       --whole-archive $(BAREBOX_OBJS) --no-whole-archive        \
       $(filter-out $(BAREBOX_LDS) $(BAREBOX_OBJS) FORCE ,$^);	\

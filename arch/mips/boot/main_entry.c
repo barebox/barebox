@@ -22,7 +22,7 @@ unsigned long exception_handlers[32];
 
 static void set_except_vector(int n, void *addr)
 {
-	unsigned handler = (unsigned long) addr;
+	unsigned long handler = (unsigned long) addr;
 
 	exception_handlers[n] = handler;
 }

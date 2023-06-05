@@ -35,6 +35,10 @@ jobs:
             lgenv: test/riscv/qemu@virt32_defconfig.yaml
             defconfig: virt32_defconfig
 
+          - ARCH: riscv
+            lgenv: 'test/riscv/qemu-virt64@rv64i_defconfig.yaml'
+            defconfig: rv64i_defconfig
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
@@ -60,6 +64,8 @@ jobs:
         export KBUILD_OUTPUT=build-${{matrix.arch}}
 
         for i in ${{matrix.lgenv}}; do
+          grep -wqe QEMUDriver: "$i" || continue
+
           cfg=$(basename $i .yaml)
           echo "Testing $cfg"
           labgrid-pytest --lg-env $i test/py --verbosity=1 \

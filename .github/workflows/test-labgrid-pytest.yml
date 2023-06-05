@@ -11,6 +11,7 @@ jobs:
       options: --user=root --privileged -v /dev:/dev
 
     strategy:
+      fail-fast: false
       matrix:
 
         include:

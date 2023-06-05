@@ -11,6 +11,7 @@ jobs:
       options: --user=root --privileged -v /dev:/dev
 
     strategy:
+      fail-fast: false
       matrix:
         arch: [mips, powerpc, riscv, sandbox, x86 ]
         regex: ["*"]

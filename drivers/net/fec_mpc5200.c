@@ -420,7 +420,8 @@ static void mpc5xxx_fec_halt(struct eth_device *dev)
 	/*
 	 * wait for graceful stop to register
 	 */
-	while ((counter--) && (!(fec->eth->ievent & FEC_IEVENT_GRA))) ;
+	while ((counter--) && (!(fec->eth->ievent & FEC_IEVENT_GRA)))
+		;
 
 	/*
 	 * Disable SmartDMA tasks

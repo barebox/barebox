@@ -49,40 +49,35 @@ ALL PARAMETERS ARE ALL LONGWORDS (FOUR BYTES EACH).
 /*---------------------------------------------------------------------*/
 
 /* Disable SmartDMA task */
-#define SDMA_TASK_DISABLE(tasknum)                     \
-{                                                      \
+#define SDMA_TASK_DISABLE(tasknum) do { \
     volatile ushort *tcr = (ushort *)(MPC5XXX_SDMA + 0x0000001c + 2 * tasknum); \
     *tcr = (*tcr) & (~0x8000);                         \
-}
+} while (0)
 
 /* Enable SmartDMA task */
-#define SDMA_TASK_ENABLE(tasknum)                      \
-{                                                      \
+#define SDMA_TASK_ENABLE(tasknum) do { \
     volatile ushort *tcr = (ushort *) (MPC5XXX_SDMA + 0x0000001c + 2 * tasknum); \
     *tcr = (*tcr)  | 0x8000;                           \
-}
+} while (0)
 
 /* Enable interrupt */
-#define SDMA_INT_ENABLE(tasknum)                       \
-{                                                      \
+#define SDMA_INT_ENABLE(tasknum) do { \
     struct mpc5xxx_sdma *sdma = (struct mpc5xxx_sdma *)MPC5XXX_SDMA; \
     sdma->IntMask &= ~(1 << tasknum);                  \
-}
+} while (0)
 
 /* Disable interrupt */
-#define SDMA_INT_DISABLE(tasknum)   \
-{                                                      \
+#define SDMA_INT_DISABLE(tasknum) do { \
     struct mpc5xxx_sdma *sdma = (struct mpc5xxx_sdma *)MPC5XXX_SDMA; \
     sdma->IntMask |= (1 << tasknum);                   \
-}
+} while (0)
 
 
 /* Clear interrupt pending bits */
-#define SDMA_CLEAR_IEVENT(tasknum)  \
-{                                                      \
+#define SDMA_CLEAR_IEVENT(tasknum) do { \
     struct mpc5xxx_sdma *sdma = (struct mpc5xxx_sdma *)MPC5XXX_SDMA; \
     sdma->IntPend = (1 << tasknum);                    \
-}
+} while (0)
 
 /* get interrupt pending bit of a task */
 #define SDMA_GET_PENDINGBIT(tasknum)                   \

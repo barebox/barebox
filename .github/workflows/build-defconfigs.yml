@@ -40,4 +40,5 @@ jobs:
         ./test/generate-dummy-fw.sh
 
         ./MAKEALL -O build-${{matrix.arch}} -k test/kconfig/disable_size_check.kconf \
-                -k test/kconfig/disable_target_tools.kconf '${{matrix.config}}'
+                -k test/kconfig/disable_target_tools.kconf \
+                -k test/kconfig/enable_werror.kconf '${{matrix.config}}'

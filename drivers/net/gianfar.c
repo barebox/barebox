@@ -234,19 +234,13 @@ static int gfar_set_ethaddr(struct eth_device *edev, const unsigned char *mac)
 {
 	struct gfar_private *priv = edev->priv;
 	void __iomem *regs = priv->regs;
-	char tmpbuf[MAC_ADDR_LEN];
 	uint tempval;
-	int ix;
 
-	for (ix = 0; ix < MAC_ADDR_LEN; ix++)
-		tmpbuf[MAC_ADDR_LEN - 1 - ix] = mac[ix];
-
-	tempval = (tmpbuf[0] << 24) | (tmpbuf[1] << 16) | (tmpbuf[2] << 8) |
-		  tmpbuf[3];
+	tempval = (mac[5] << 24) | (mac[4] << 16) | (mac[3] << 8)  |  mac[2];
 
 	out_be32(regs + GFAR_MACSTRADDR1_OFFSET, tempval);
 
-	tempval = *((uint *)(tmpbuf + 4));
+	tempval = (mac[1] << 24) | (mac[0] << 16);
 
 	out_be32(regs + GFAR_MACSTRADDR2_OFFSET, tempval);
 

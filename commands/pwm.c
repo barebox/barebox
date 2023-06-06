@@ -65,28 +65,34 @@ static int do_pwm_cmd(int argc, char *argv[])
 		case 'v':
 			verbose = true;
 			break;
+		default:
+			return COMMAND_ERROR_USAGE;
 		}
 	}
 
 	if (!devname) {
 		printf(" need to specify a device\n");
-		return COMMAND_ERROR_USAGE;
+		return COMMAND_ERROR;
 	}
+
 	if ((freq == 0) || (period == 0)) {
 		printf(" period or freqency needs to be non-zero\n");
-		return COMMAND_ERROR_USAGE;
+		return COMMAND_ERROR;
 	}
+
 	if (freq >= 0 && period >= 0) {
 		printf(" specify period or frequency, not both\n");
-		return COMMAND_ERROR_USAGE;
+		return COMMAND_ERROR;
 	}
+
 	if (duty >= 0 && width >= 0) {
 		printf(" specify duty or width, not both\n");
-		return COMMAND_ERROR_USAGE;
+		return COMMAND_ERROR;
 	}
+
 	if (width > 100) {
 		printf(" width (%% duty cycle) can't be more than 100%%\n");
-		return COMMAND_ERROR_USAGE;
+		return COMMAND_ERROR;
 	}
 
 	pwm = pwm_request(devname);
@@ -104,7 +110,10 @@ static int do_pwm_cmd(int argc, char *argv[])
 		printf("  duty     : %u (ns)\n", state.duty_ns);
 		printf("  enabled  : %d\n", state.p_enable);
 		printf("  polarity : %s\n", state.polarity == 0 ? "Normal" : "Inverted");
-		printf("  freq     : %lu (Hz)\n", HZ_FROM_NANOSECONDS(state.period_ns));
+		if (state.period_ns)
+			printf("  freq     : %lu (Hz)\n", HZ_FROM_NANOSECONDS(state.period_ns));
+		else
+			printf("  freq     : -\n");
 
 		pwm_free(pwm);
 		return 0;
@@ -113,7 +122,7 @@ static int do_pwm_cmd(int argc, char *argv[])
 	if ((state.period_ns == 0) && (freq < 0) && (period < 0)) {
 		printf(" need to know some timing info: freq or period\n");
 		pwm_free(pwm);
-		return COMMAND_ERROR_USAGE;
+		return COMMAND_ERROR;
 	}
 
 	orig_state = state;
@@ -180,11 +189,11 @@ BAREBOX_CMD_HELP_TEXT("  (although note this will not by itself stop the pwm run
 BAREBOX_CMD_HELP_TEXT(" Stopping the pwm device does not necessarily set the output to inactive,")
 BAREBOX_CMD_HELP_TEXT("  but stop is handled last, so can be done in addition to other changes.")
 BAREBOX_CMD_HELP_TEXT("Options:")
-BAREBOX_CMD_HELP_OPT("-d string", "device name (eg 'pwm0')")
-BAREBOX_CMD_HELP_OPT("-D number", "duty cycle (ns)")
-BAREBOX_CMD_HELP_OPT("-P number", "period (ns)")
-BAREBOX_CMD_HELP_OPT("-f number", "frequency (Hz)")
-BAREBOX_CMD_HELP_OPT("-w number", "duty cycle (%) - the on 'width' of each cycle")
+BAREBOX_CMD_HELP_OPT("-d <name>", "device name (eg 'pwm0')")
+BAREBOX_CMD_HELP_OPT("-D <duty_ns>", "duty cycle (ns)")
+BAREBOX_CMD_HELP_OPT("-P <period_ns>", "period (ns)")
+BAREBOX_CMD_HELP_OPT("-f <freq_hz>", "frequency (Hz)")
+BAREBOX_CMD_HELP_OPT("-w <duty_%>", "duty cycle (%) - the on 'width' of each cycle")
 BAREBOX_CMD_HELP_OPT("-i\t", "line inverted polarity")
 BAREBOX_CMD_HELP_OPT("-s\t", "stop (disable) the pwm device")
 BAREBOX_CMD_HELP_OPT("-v\t", "print current values")

@@ -566,8 +566,8 @@ int cdev_truncate(struct cdev*, size_t size);
 loff_t cdev_unallocated_space(struct cdev *cdev);
 
 extern struct list_head cdev_list;
-#define for_each_cdev(c) \
-	list_for_each_entry(cdev, &cdev_list, list)
+#define for_each_cdev(cdev) \
+	list_for_each_entry((cdev), &cdev_list, list)
 
 #define DEVFS_PARTITION_FIXED		(1U << 0)
 #define DEVFS_PARTITION_READONLY	(1U << 1)

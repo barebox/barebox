@@ -38,7 +38,7 @@ int devfs_partition_complete(struct string_list *sl, char *instr)
 	len = strlen(instr);
 
 	for_each_cdev(cdev) {
-		if (cdev->master &&
+		if (cdev_is_partition(cdev) &&
 		    !strncmp(instr, cdev->name, len)) {
 			string_list_add_asprintf(sl, "%s ", cdev->name);
 		}
@@ -101,7 +101,7 @@ struct cdev *cdev_by_partuuid(const char *partuuid)
 		return NULL;
 
 	for_each_cdev(cdev) {
-		if (cdev->master && !strcasecmp(cdev->uuid, partuuid))
+		if (cdev_is_partition(cdev) && !strcasecmp(cdev->uuid, partuuid))
 			return cdev;
 	}
 	return NULL;
@@ -115,7 +115,7 @@ struct cdev *cdev_by_diskuuid(const char *diskuuid)
 		return NULL;
 
 	for_each_cdev(cdev) {
-		if (!cdev->master && !strcasecmp(cdev->uuid, diskuuid))
+		if (!cdev_is_partition(cdev) && !strcasecmp(cdev->uuid, diskuuid))
 			return cdev;
 	}
 	return NULL;
@@ -393,7 +393,7 @@ int devfs_remove(struct cdev *cdev)
 	list_for_each_entry_safe(c, tmp, &cdev->links, link_entry)
 		devfs_remove(c);
 
-	if (cdev->master)
+	if (cdev_is_partition(cdev))
 		list_del(&cdev->partition_entry);
 
 	if (cdev->link)
@@ -549,7 +549,7 @@ int devfs_del_partition(const char *name)
 		return ret;
 	}
 
-	if (!cdev->master)
+	if (!cdev_is_partition(cdev))
 		return -EINVAL;
 	if (cdev->flags & DEVFS_PARTITION_FIXED)
 		return -EPERM;

@@ -277,7 +277,7 @@ int unregister_device(struct device *old_dev)
 	}
 
 	list_for_each_entry_safe(cdev, ct, &old_dev->cdevs, devices_list) {
-		if (cdev->master) {
+		if (cdev_is_partition(cdev)) {
 			dev_dbg(old_dev, "unregister part %s\n", cdev->name);
 			devfs_del_partition(cdev->name);
 		}

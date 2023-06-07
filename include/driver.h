@@ -8,6 +8,7 @@
 
 #include <linux/list.h>
 #include <linux/ioport.h>
+#include <linux/uuid.h>
 #include <of.h>
 #include <filetype.h>
 
@@ -536,12 +537,15 @@ struct cdev {
 	unsigned int flags;
 	int open;
 	struct mtd_info *mtd;
-	u8 dos_partition_type;
 	struct cdev *link;
 	struct list_head link_entry, links;
 	struct list_head partition_entry, partitions;
 	struct cdev *master;
 	enum filetype filetype;
+	union {
+		u8 dos_partition_type;
+		guid_t typeuuid;
+	};
 };
 
 int devfs_create(struct cdev *);

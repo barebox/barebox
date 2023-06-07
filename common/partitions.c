@@ -50,7 +50,7 @@ static int register_one_partition(struct block_device *blk,
 
 	cdev->flags |= DEVFS_PARTITION_FROM_TABLE;
 
-	cdev->dos_partition_type = part->dos_partition_type;
+	cdev->typeuuid = part->typeuuid;
 	strcpy(cdev->partuuid, part->partuuid);
 
 	free(partition_name);

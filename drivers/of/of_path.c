@@ -27,21 +27,17 @@ struct device *of_find_device_by_node_path(const char *path)
 }
 
 /**
- * __of_find_path
+ * __of_cdev_find
  *
  * @node: The node to find the cdev for, can be the device or a
  *        partition in the device
  * @part: Optionally, a description of a partition of @node.  See of_find_path
- * @outpath: if this function returns 0 outpath will contain the path belonging
- *           to the input path description. Must be freed with free().
- * @flags: use OF_FIND_PATH_FLAGS_BB to return the .bb device if available
  *
  */
-static int __of_find_path(struct device_node *node, const char *part, char **outpath, unsigned flags)
+static struct cdev *__of_cdev_find(struct device_node *node, const char *part)
 {
 	struct device *dev;
 	struct cdev *cdev;
-	bool add_bb = false;
 
 	/*
 	 * On EFI, where devices are not instantiated from device tree, the
@@ -64,24 +60,17 @@ static int __of_find_path(struct device_node *node, const char *part, char **out
 
 			/* when partuuid is specified short-circuit the search for the cdev */
 			ret = of_property_read_string(node, "partuuid", &uuid);
-			if (!ret) {
-				cdev = cdev_by_partuuid(uuid);
-				if (!cdev)
-					return -ENODEV;
-
-				*outpath = basprintf("/dev/%s", cdev->name);
-
-				return 0;
-			}
+			if (!ret)
+				return cdev_by_partuuid(uuid) ?: ERR_PTR(-ENODEV);
 		}
 
 		dev = of_find_device_by_node_path(devnode->full_name);
 		if (!dev)
-			return -ENODEV;
+			return ERR_PTR(-ENODEV);
 	}
 
 	if (dev->bus && !dev->driver)
-		return -EPROBE_DEFER;
+		return ERR_PTR(-EPROBE_DEFER);
 
 	device_detect(dev);
 
@@ -90,8 +79,40 @@ static int __of_find_path(struct device_node *node, const char *part, char **out
 	else
 		cdev = cdev_by_device_node(node);
 
-	if (!cdev)
-		return -ENOENT;
+	return cdev ?: ERR_PTR(-ENOENT);
+}
+
+/**
+ * of_cdev_find
+ *
+ * @node: The node to find the cdev for, can be the device or a
+ *        partition in the device
+ *
+ */
+struct cdev *of_cdev_find(struct device_node *node)
+{
+	return __of_cdev_find(node, NULL);
+}
+
+/**
+ * __of_find_path
+ *
+ * @node: The node to find the cdev for, can be the device or a
+ *        partition in the device
+ * @part: Optionally, a description of a partition of @node.  See of_find_path
+ * @outpath: if this function returns 0 outpath will contain the path belonging
+ *           to the input path description. Must be freed with free().
+ * @flags: use OF_FIND_PATH_FLAGS_BB to return the .bb device if available
+ *
+ */
+static int __of_find_path(struct device_node *node, const char *part, char **outpath, unsigned flags)
+{
+	bool add_bb = false;
+	struct cdev *cdev;
+
+	cdev = __of_cdev_find(node, part);
+	if (IS_ERR(cdev))
+		return PTR_ERR(cdev);
 
 	if ((flags & OF_FIND_PATH_FLAGS_BB) && cdev->mtd &&
 	    mtd_can_have_bb(cdev->mtd))

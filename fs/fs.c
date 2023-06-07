@@ -69,6 +69,8 @@ EXPORT_SYMBOL(mkmodestr);
 
 void cdev_print(const struct cdev *cdev)
 {
+	int nbytes;
+
 	if (cdev->dev || cdev->master || cdev->partname) {
 		printf("Origin: %s", dev_name(cdev->dev) ?: "None");
 		if (cdev->master)
@@ -96,15 +98,17 @@ void cdev_print(const struct cdev *cdev)
 	}
 	printf("\n");
 
-	if (cdev->filetype || cdev->dos_partition_type || *cdev->uuid) {
-		if (cdev->filetype)
-			printf("Filetype: %s\t", file_type_to_string(cdev->filetype));
-		if (cdev->dos_partition_type)
-			printf("DOS parttype: 0x%02x\t", cdev->dos_partition_type);
-		if (*cdev->uuid)
-			printf("UUID: %s", cdev->uuid);
+	nbytes = 0;
+
+	if (cdev->filetype)
+		nbytes += printf("Filetype: %s\t", file_type_to_string(cdev->filetype));
+	if (cdev->dos_partition_type)
+		nbytes += printf("DOS parttype: 0x%02x\t", cdev->dos_partition_type);
+	if (*cdev->uuid)
+		nbytes += printf("UUID: %s", cdev->uuid);
+
+	if (nbytes)
 		printf("\n");
-	}
 }
 EXPORT_SYMBOL(cdev_print);
 

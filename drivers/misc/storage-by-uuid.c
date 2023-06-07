@@ -140,8 +140,8 @@ static void check_exist(struct sbu *sbu)
 	struct cdev *cdev;
 
 	for_each_cdev(cdev) {
-		if (!strcmp(cdev->uuid, sbu->uuid)) {
-			dev_dbg(sbu->dev, "Found %s %s\n", cdev->name, cdev->uuid);
+		if (!strcmp(cdev->diskuuid, sbu->uuid)) {
+			dev_dbg(sbu->dev, "Found %s %s\n", cdev->name, cdev->diskuuid);
 			storage_by_uuid_add_partitions(sbu, cdev);
 		}
 	}

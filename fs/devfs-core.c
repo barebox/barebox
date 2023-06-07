@@ -101,7 +101,7 @@ struct cdev *cdev_by_partuuid(const char *partuuid)
 		return NULL;
 
 	for_each_cdev(cdev) {
-		if (cdev_is_partition(cdev) && !strcasecmp(cdev->uuid, partuuid))
+		if (cdev_is_partition(cdev) && !strcasecmp(cdev->partuuid, partuuid))
 			return cdev;
 	}
 	return NULL;
@@ -115,7 +115,7 @@ struct cdev *cdev_by_diskuuid(const char *diskuuid)
 		return NULL;
 
 	for_each_cdev(cdev) {
-		if (!cdev_is_partition(cdev) && !strcasecmp(cdev->uuid, diskuuid))
+		if (!cdev_is_partition(cdev) && !strcasecmp(cdev->diskuuid, diskuuid))
 			return cdev;
 	}
 	return NULL;

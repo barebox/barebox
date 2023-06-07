@@ -104,8 +104,9 @@ void cdev_print(const struct cdev *cdev)
 		nbytes += printf("Filetype: %s\t", file_type_to_string(cdev->filetype));
 	if (cdev->dos_partition_type)
 		nbytes += printf("DOS parttype: 0x%02x\t", cdev->dos_partition_type);
-	if (*cdev->uuid)
-		nbytes += printf("UUID: %s", cdev->uuid);
+	if (*cdev->partuuid || *cdev->diskuuid)
+		nbytes += printf("%sUUID: %s", cdev_is_partition(cdev) ? "PART" : "DISK",
+				 cdev_is_partition(cdev) ? cdev->partuuid : cdev->diskuuid);
 
 	if (nbytes)
 		printf("\n");
@@ -3061,8 +3062,8 @@ char *cdev_get_linux_rootarg(const struct cdev *cdev)
 	if (str)
 		return str;
 
-	if (cdev->uuid[0] != 0)
-		return basprintf("root=PARTUUID=%s", cdev->uuid);
+	if (cdev->partuuid[0] != 0)
+		return basprintf("root=PARTUUID=%s", cdev->partuuid);
 
 	return NULL;
 }

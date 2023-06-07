@@ -522,7 +522,15 @@ struct cdev {
 	char *partname; /* the partition name, usually the above without the
 			 * device part, i.e. name = "nand0.barebox" -> partname = "barebox"
 			 */
-	char uuid[MAX_UUID_STR];
+	union {
+		char diskuuid[MAX_UUID_STR];	/* GPT Header DiskGUID or
+						 * MBR Header NT Disk Signature
+						 */
+		char partuuid[MAX_UUID_STR];	/* GPT Partition Entry UniquePartitionGUID or
+						 * MBR Partition Entry "${nt_signature}-${partno}"
+						 */
+	};
+
 	loff_t offset;
 	loff_t size;
 	unsigned int flags;

@@ -484,7 +484,7 @@ int of_device_ensure_probed(struct device_node *np)
 {
 	struct device *dev;
 
-	if (!deep_probe_is_supported())
+	if (!np || !deep_probe_is_supported())
 		return 0;
 
 	dev = of_device_create_on_demand(np);

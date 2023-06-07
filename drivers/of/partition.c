@@ -110,14 +110,47 @@ int of_parse_partitions(struct cdev *cdev, struct device_node *node)
 	return 0;
 }
 
+/**
+ * of_partition_ensure_probed - ensure a parition is probed
+ * @np: pointer to a partition or to a partitionable device
+ *      Unfortunately, there is no completely reliable way
+ *      to differentiate partitions from devices prior to
+ *      probing, because partitions may also have compatibles.
+ *      We only handle nvmem-cells, so anything besides that
+ *      is assumed to be a device that should be probed directly.
+ *
+ * Returns zero on success or a negative error code otherwise
+ */
 int of_partition_ensure_probed(struct device_node *np)
 {
-	np = of_get_parent(np);
+	struct device_node *parent = of_get_parent(np);
 
-	if (of_device_is_compatible(np, "fixed-partitions"))
-		np = of_get_parent(np);
+	/* root node is not a partition */
+	if (!parent)
+		return -EINVAL;
 
-	return np ? of_device_ensure_probed(np) : -EINVAL;
+	/* Check if modern partitions binding */
+	if (of_device_is_compatible(parent, "fixed-partitions")) {
+		parent = of_get_parent(parent);
+
+		/*
+		 * Can't call of_partition_ensure_probed on root node.
+		 * This catches barebox-specific partuuid binding
+		 * (top-level partition node)
+		 */
+		if (!of_get_parent(parent))
+			return -EINVAL;
+
+		return of_device_ensure_probed(parent);
+	 }
+
+	/* Check if legacy partitions binding */
+	if (!of_property_present(np, "compatible") ||
+	    of_device_is_compatible(np, "nvmem-cells"))
+		return of_device_ensure_probed(parent);
+
+	/* Doesn't look like a partition, so let's probe directly */
+	return of_device_ensure_probed(np);
 }
 EXPORT_SYMBOL_GPL(of_partition_ensure_probed);
 

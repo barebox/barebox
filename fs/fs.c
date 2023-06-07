@@ -94,6 +94,10 @@ void cdev_print(const struct cdev *cdev)
 			printf(" table-partition");
 		if (cdev->flags & DEVFS_IS_MCI_MAIN_PART_DEV)
 			printf(" mci-main-partition");
+		if (cdev->flags & DEVFS_IS_MBR_PARTITIONED)
+			printf(" mbr-partitioned");
+		if (cdev->flags & DEVFS_IS_GPT_PARTITIONED)
+			printf(" gpt-partitioned");
 		if (cdev->mtd)
 			printf(" mtd");
 		printf(" )");

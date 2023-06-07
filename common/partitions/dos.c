@@ -185,6 +185,8 @@ static void dos_partition(void *buf, struct block_device *blk,
 	if (signature)
 		sprintf(blk->cdev.diskuuid, "%08x", signature);
 
+	blk->cdev.flags |= DEVFS_IS_MBR_PARTITIONED;
+
 	table = (struct partition_entry *)&buffer[446];
 
 	for (i = 0; i < 4; i++) {

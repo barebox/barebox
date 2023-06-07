@@ -587,6 +587,18 @@ extern struct list_head cdev_list;
 #define DEVFS_IS_MCI_MAIN_PART_DEV	(1U << 4)
 #define DEVFS_PARTITION_FROM_OF		(1U << 5)
 #define DEVFS_PARTITION_FROM_TABLE	(1U << 6)
+#define DEVFS_IS_MBR_PARTITIONED	(1U << 7)
+#define DEVFS_IS_GPT_PARTITIONED	(1U << 8)
+
+static inline bool cdev_is_mbr_partitioned(const struct cdev *master)
+{
+	return master && (master->flags & DEVFS_IS_MBR_PARTITIONED);
+}
+
+static inline bool cdev_is_gpt_partitioned(const struct cdev *master)
+{
+	return master && (master->flags & DEVFS_IS_GPT_PARTITIONED);
+}
 
 struct cdev *devfs_add_partition(const char *devname, loff_t offset,
 		loff_t size, unsigned int flags, const char *name);

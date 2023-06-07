@@ -449,6 +449,8 @@ static void efi_partition(void *buf, struct block_device *blk,
 	snprintf(blk->cdev.diskuuid, sizeof(blk->cdev.diskuuid), "%pUl", &gpt->disk_guid);
 	dev_add_param_string_fixed(blk->dev, "guid", blk->cdev.diskuuid);
 
+	blk->cdev.flags |= DEVFS_IS_GPT_PARTITIONED;
+
 	nb_part = le32_to_cpu(gpt->num_partition_entries);
 
 	if (nb_part > MAX_PARTITION) {

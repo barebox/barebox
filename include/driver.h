@@ -585,6 +585,9 @@ extern struct list_head cdev_list;
 #define for_each_cdev(cdev) \
 	list_for_each_entry((cdev), &cdev_list, list)
 
+#define for_each_cdev_partition(partcdev, cdev) \
+	list_for_each_entry((partcdev), &(cdev)->partitions, partition_entry)
+
 #define DEVFS_PARTITION_FIXED		(1U << 0)
 #define DEVFS_PARTITION_READONLY	(1U << 1)
 #define DEVFS_IS_CHARACTER_DEV		(1U << 3)
@@ -602,6 +605,22 @@ static inline bool cdev_is_mbr_partitioned(const struct cdev *master)
 static inline bool cdev_is_gpt_partitioned(const struct cdev *master)
 {
 	return master && (master->flags & DEVFS_IS_GPT_PARTITIONED);
+}
+
+static inline struct cdev *
+cdev_find_child_by_gpt_typeuuid(struct cdev *cdev, guid_t *typeuuid)
+{
+	struct cdev *partcdev;
+
+	if (!cdev_is_gpt_partitioned(cdev))
+		return ERR_PTR(-EINVAL);
+
+	for_each_cdev_partition(partcdev, cdev) {
+		if (guid_equal(&partcdev->typeuuid, typeuuid))
+			return partcdev;
+	}
+
+	return ERR_PTR(-ENOENT);
 }
 
 struct cdev *devfs_add_partition(const char *devname, loff_t offset,

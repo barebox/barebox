@@ -108,7 +108,7 @@ void cdev_print(const struct cdev *cdev)
 
 	if (cdev->filetype)
 		nbytes += printf("Filetype: %s\t", file_type_to_string(cdev->filetype));
-	if (cdev->dos_partition_type)
+	if (cdev_is_mbr_partitioned(cdev->master))
 		nbytes += printf("DOS parttype: 0x%02x\t", cdev->dos_partition_type);
 	if (*cdev->partuuid || *cdev->diskuuid)
 		nbytes += printf("%sUUID: %s", cdev_is_partition(cdev) ? "PART" : "DISK",

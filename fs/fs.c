@@ -88,6 +88,8 @@ void cdev_print(const struct cdev *cdev)
 			printf(" fixed-partition");
 		if (cdev->flags & DEVFS_PARTITION_READONLY)
 			printf(" readonly-partition");
+		if (cdev->flags & DEVFS_PARTITION_FROM_OF)
+			printf(" of-partition");
 		if (cdev->flags & DEVFS_PARTITION_FROM_TABLE)
 			printf(" table-partition");
 		if (cdev->flags & DEVFS_IS_MCI_MAIN_PART_DEV)

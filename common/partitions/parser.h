@@ -9,6 +9,7 @@
 
 #include <block.h>
 #include <filetype.h>
+#include <linux/uuid.h>
 #include <linux/list.h>
 
 #define MAX_PARTITION		128

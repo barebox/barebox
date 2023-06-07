@@ -43,6 +43,16 @@ static int __of_find_path(struct device_node *node, const char *part, char **out
 	struct cdev *cdev;
 	bool add_bb = false;
 
+	/*
+	 * On EFI, where devices are not instantiated from device tree, the
+	 * state backend may point at a top-level fixed-partitions partition
+	 * subnode with a partuuid property, which will be looked up globally.
+	 *
+	 * In order to support this binding, we do not early exit when
+	 * of_partition_ensure_probed fails, but instead try the custom binding.
+	 */
+	(void)of_partition_ensure_probed(node);
+
 	dev = of_find_device_by_node_path(node->full_name);
 	if (!dev) {
 		int ret;

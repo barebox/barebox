@@ -615,16 +615,6 @@ struct state *state_new_from_node(struct device_node *node, bool readonly)
 	}
 
 #ifdef __BAREBOX__
-	/*
-	 * On EFI, where devices are not instantiated from device tree, the
-	 * state backend may point at a top-level fixed-partitions partition
-	 * subnode with a partuuid property, which will be looked up globally.
-	 *
-	 * In order to support this binding, we do not early exit when
-	 * of_partition_ensure_probed fails, but instead try the custom binding.
-	 */
-	(void)of_partition_ensure_probed(partition_node);
-
 	ret = of_find_path_by_node(partition_node, &state->backend_path, 0);
 #else
 	ret = of_get_devicepath(partition_node, &state->backend_path, &offset, &size);

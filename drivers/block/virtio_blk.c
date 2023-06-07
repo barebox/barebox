@@ -105,13 +105,7 @@ static int virtio_blk_probe(struct virtio_device *vdev)
 	priv->blk.num_blocks = cap;
 	priv->blk.ops = &virtio_blk_ops;
 
-	ret = blockdevice_register(&priv->blk);
-	if (ret)
-		return ret;
-
-	parse_partition_table(&priv->blk);
-
-	return 0;
+	return blockdevice_register(&priv->blk);
 }
 
 static void virtio_blk_remove(struct virtio_device *vdev)

@@ -254,11 +254,6 @@ static int ata_port_init(struct ata_port *port)
 
 	dev_info(dev, "registered /dev/%s\n", port->blk.cdev.name);
 
-	/* create partitions on demand */
-	rc = parse_partition_table(&port->blk);
-	if (rc != 0)
-		dev_warn(dev, "No partition table found\n");
-
 	return 0;
 
 on_error:

@@ -6,6 +6,7 @@
  */
 #include <common.h>
 #include <block.h>
+#include <disks.h>
 #include <malloc.h>
 #include <linux/err.h>
 #include <linux/list.h>
@@ -407,6 +408,9 @@ int blockdevice_register(struct block_device *blk)
 	list_add_tail(&blk->list, &block_device_list);
 
 	cdev_create_default_automount(&blk->cdev);
+
+	/* Lack of partition table is unusual, but not a failure */
+	(void)parse_partition_table(blk);
 
 	return 0;
 }

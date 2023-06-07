@@ -420,11 +420,6 @@ static int usb_stor_add_blkdev(struct us_data *us, unsigned char lun)
 		goto BadDevice;
 	}
 
-	/* create partitions on demand */
-	result = parse_partition_table(&pblk_dev->blk);
-	if (result != 0)
-		dev_warn(dev, "No partition table found\n");
-
 	list_add_tail(&pblk_dev->list, &us->blk_dev_list);
 	dev_dbg(dev, "USB disk device successfully added\n");
 

@@ -402,6 +402,12 @@ int devfs_remove(struct cdev *cdev)
 	return 0;
 }
 
+static bool region_identical(loff_t starta, loff_t lena,
+			     loff_t startb, loff_t lenb)
+{
+	return starta == startb && lena == lenb;
+}
+
 static bool region_overlap(loff_t starta, loff_t lena,
 			   loff_t startb, loff_t lenb)
 {
@@ -412,10 +418,22 @@ static bool region_overlap(loff_t starta, loff_t lena,
 	return 1;
 }
 
-static int check_overlap(struct cdev *cdev, const char *name, loff_t offset, loff_t size)
+/**
+ * check_overlap() - check overlap with existing partitions
+ * @cdev: parent cdev
+ * @name: partition name for informational purposes on conflict
+ * @offset: offset of new partition to be added
+ * @size: size of new partition to be added
+ *
+ * Return: NULL if no overlapping partition found or overlapping
+ *         partition if and only if it's identical in offset and size
+ *         to an existing partition. Otherwise, PTR_ERR(-EINVAL).
+ */
+static struct cdev *check_overlap(struct cdev *cdev, const char *name, loff_t offset, loff_t size)
 {
 	struct cdev *cpart;
 	loff_t cpart_offset;
+	int ret;
 
 	list_for_each_entry(cpart, &cdev->partitions, partition_entry) {
 		cpart_offset = cpart->offset;
@@ -428,20 +446,29 @@ static int check_overlap(struct cdev *cdev, const char *name, loff_t offset, lof
 		if (cpart->mtd)
 			cpart_offset = cpart->mtd->master_offset;
 
-		if (region_overlap(cpart_offset, cpart->size,
-				   offset, size))
+		if (region_identical(cpart_offset, cpart->size, offset, size)) {
+			ret = 0;
+			goto identical;
+		}
+
+		if (region_overlap(cpart_offset, cpart->size, offset, size)) {
+			ret = -EINVAL;
 			goto conflict;
+		}
 	}
 
-	return 0;
+	return NULL;
 
+identical:
 conflict:
-	pr_err("New partition %s (0x%08llx-0x%08llx) on %s "
-		"overlaps with partition %s (0x%08llx-0x%08llx), not creating it\n",
-		name, offset, offset + size - 1, cdev->name,
-		cpart->name, cpart_offset, cpart_offset + cpart->size - 1);
+	__pr_printk(ret ? MSG_WARNING : MSG_DEBUG,
+		    "New partition %s (0x%08llx-0x%08llx) on %s "
+		    "%s with partition %s (0x%08llx-0x%08llx), not creating it\n",
+		    name, offset, offset + size - 1, cdev->name,
+		    ret ? "conflicts" : "identical",
+		    cpart->name, cpart_offset, cpart_offset + cpart->size - 1);
 
-	return -EINVAL;
+	return ret ? ERR_PTR(ret) : cpart;
 }
 
 static struct cdev *__devfs_add_partition(struct cdev *cdev,
@@ -449,6 +476,7 @@ static struct cdev *__devfs_add_partition(struct cdev *cdev,
 {
 	loff_t offset, size;
 	static struct cdev *new;
+	struct cdev *overlap;
 
 	if (cdev_by_name(partinfo->name))
 		return ERR_PTR(-EEXIST);
@@ -479,8 +507,15 @@ static struct cdev *__devfs_add_partition(struct cdev *cdev,
 		return ERR_PTR(-EINVAL);
 	}
 
-	if (check_overlap(cdev, partinfo->name, offset, size))
-		return ERR_PTR(-EINVAL);
+	overlap = check_overlap(cdev, partinfo->name, offset, size);
+	if (overlap) {
+		if (!IS_ERR(overlap)) {
+			/* only fails with -EEXIST, which is fine */
+			(void)devfs_create_link(overlap, partinfo->name);
+		}
+
+		return overlap;
+	}
 
 	if (IS_ENABLED(CONFIG_MTD) && cdev->mtd) {
 		struct mtd_info *mtd;

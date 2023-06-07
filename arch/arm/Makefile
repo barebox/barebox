@@ -4,7 +4,7 @@ KBUILD_DEFCONFIG := multi_v8_defconfig
 
 KBUILD_CPPFLAGS	+= -D__ARM__ -fno-strict-aliasing
 # Explicitly specifiy 32-bit ARM ISA since toolchain default can be -mthumb:
-ifeq ($(CONFIG_CPU_V8),y)
+ifeq ($(CONFIG_CPU_64),y)
 KBUILD_CPPFLAGS	+=$(call cc-option,-maarch64,)
 else
 KBUILD_CPPFLAGS	+=$(call cc-option,-marm,)
@@ -27,14 +27,14 @@ endif
 # at least some of the code would be executed with MMU off, lets be
 # conservative and instruct the compiler not to generate any unaligned
 # accesses
-ifneq ($(CONFIG_CPU_V8),y)
+ifneq ($(CONFIG_CPU_64),y)
 KBUILD_CFLAGS += -mno-unaligned-access
 else
 KBUILD_CFLAGS += -mstrict-align
 endif
 
 # Prevent use of floating point and Advanced SIMD registers.
-ifeq ($(CONFIG_CPU_V8),y)
+ifeq ($(CONFIG_CPU_64),y)
 KBUILD_CFLAGS += -mgeneral-regs-only
 endif
 
@@ -54,7 +54,7 @@ tune-$(CONFIG_CPU_ARM920T)	:=-mtune=arm9tdmi
 tune-$(CONFIG_CPU_ARM926T)	:=-mtune=arm9tdmi
 tune-$(CONFIG_CPU_XSCALE)	:=$(call cc-option,-mtune=xscale,-mtune=strongarm110) -Wa,-mcpu=xscale
 
-ifeq ($(CONFIG_CPU_V8), y)
+ifeq ($(CONFIG_CPU_64), y)
 CFLAGS_ABI	:=-mabi=lp64
 else
 ifeq ($(CONFIG_AEABI),y)
@@ -75,7 +75,7 @@ CFLAGS_THUMB2	:=-mthumb $(AFLAGS_AUTOIT) $(AFLAGS_NOWARN)
 AFLAGS_THUMB2	:=$(CFLAGS_THUMB2) -Wa$(comma)-mthumb
 endif
 
-ifeq ($(CONFIG_CPU_V8), y)
+ifeq ($(CONFIG_CPU_64), y)
 KBUILD_CPPFLAGS += $(CFLAGS_ABI) $(arch-y) $(tune-y)
 KBUILD_AFLAGS   += -include asm/unified.h
 export S64_32 = 64
@@ -196,7 +196,7 @@ endif
 common-y += arch/arm/boards/ $(MACH)
 common-y += arch/arm/cpu/
 
-ifeq ($(CONFIG_CPU_V8), y)
+ifeq ($(CONFIG_CPU_64), y)
 common-y += arch/arm/lib64/
 else
 common-y += arch/arm/lib32/ arch/arm/crypto/
@@ -204,7 +204,7 @@ endif
 
 common-$(CONFIG_OFTREE) += arch/arm/dts/
 
-ifeq ($(CONFIG_CPU_V8), y)
+ifeq ($(CONFIG_CPU_64), y)
 lds-y	:= arch/arm/lib64/barebox.lds
 else
 lds-y	:= arch/arm/lib32/barebox.lds

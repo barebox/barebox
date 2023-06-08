@@ -308,8 +308,8 @@ int of_fixup_reserved_memory(struct device_node *root, void *_res)
 	of_write_number(reg, res->start, addr_n_cells);
 	of_write_number(reg + addr_n_cells, resource_size(res), size_n_cells);
 
-	of_new_property(child, "reg", reg,
-			(addr_n_cells + size_n_cells) * sizeof(*reg));
+	of_set_property(child, "reg", reg,
+			(addr_n_cells + size_n_cells) * sizeof(*reg), true);
 
 	return 0;
 }

@@ -17,21 +17,27 @@ static struct device_node *get_tree(const char *filename, struct device_node *ro
 {
 	struct device_node *node;
 
-	if (!root)
-		root = ERR_PTR(-ENOENT);
-
 	if (!strcmp(filename, "-")) {
-		node = of_dup(root);
+		node = of_dup(root) ?: ERR_PTR(-ENOENT);
 	} else if (!strcmp(filename, "+")) {
-		node = of_dup(root);
-		if (!IS_ERR(node))
-			of_fix_tree(node);
+		return NULL;
 	} else {
 		node = of_read_file(filename);
 	}
 
 	if (IS_ERR(node))
 		printf("Cannot read %s: %pe\n", filename, node);
+
+	return node;
+}
+
+static struct device_node *get_tree_fixed(const struct device_node *root)
+{
+	struct device_node *node;
+
+	node = of_dup(root);
+	if (!IS_ERR(node))
+		of_fix_tree(node);
 
 	return node;
 }
@@ -48,6 +54,14 @@ static int do_of_diff(int argc, char *argv[])
 	a = get_tree(argv[1], root);
 	b = get_tree(argv[2], root);
 
+	if (!a && !b)
+		return COMMAND_ERROR_USAGE;
+
+	if (!a)
+		a = get_tree_fixed(b);
+	if (!b)
+		b = get_tree_fixed(a);
+
 	if (!IS_ERR(a) && !IS_ERR(b))
 		ret = of_diff(a, b, 0) ? COMMAND_ERROR : COMMAND_SUCCESS;
 
@@ -63,7 +77,7 @@ BAREBOX_CMD_HELP_START(of_diff)
 BAREBOX_CMD_HELP_TEXT("This command prints a diff between two given device trees.")
 BAREBOX_CMD_HELP_TEXT("The device trees are given as dtb files or:")
 BAREBOX_CMD_HELP_TEXT("'-' to compare against the barebox live tree, or")
-BAREBOX_CMD_HELP_TEXT("'+' to compare against the fixed barebox live tree")
+BAREBOX_CMD_HELP_TEXT("'+' to compare against the other device tree after fixups")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(of_diff)

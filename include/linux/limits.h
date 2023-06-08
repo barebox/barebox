@@ -35,4 +35,6 @@
 #define S64_MAX		((s64)(U64_MAX >> 1))
 #define S64_MIN		((s64)(-S64_MAX - 1))
 
+#define PATH_MAX       1024
+
 #endif /* _LINUX_LIMITS_H */

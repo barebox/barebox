@@ -392,7 +392,7 @@ int of_unregister_fixup(int (*fixup)(struct device_node *, void *),
  * Apply registered fixups for the given fdt. The fdt must have
  * enough free space to apply the fixups.
  */
-int of_fix_tree(struct device_node *node)
+void of_fix_tree(struct device_node *node)
 {
 	struct of_fixup *of_fixup;
 	int ret;
@@ -408,8 +408,6 @@ int of_fix_tree(struct device_node *node)
 			pr_warn("Failed to fixup node in %pS: %s\n",
 					of_fixup->fixup, strerror(-ret));
 	}
-
-	return 0;
 }
 
 /*
@@ -420,7 +418,6 @@ int of_fix_tree(struct device_node *node)
  */
 struct fdt_header *of_get_fixed_tree(struct device_node *node)
 {
-	int ret;
 	struct fdt_header *fdt = NULL;
 	struct device_node *freenp = NULL;
 
@@ -434,13 +431,10 @@ struct fdt_header *of_get_fixed_tree(struct device_node *node)
 			return NULL;
 	}
 
-	ret = of_fix_tree(node);
-	if (ret)
-		goto out;
+	of_fix_tree(node);
 
 	fdt = of_flatten_dtb(node);
 
-out:
 	of_delete_node(freenp);
 
 	return fdt;

@@ -57,11 +57,8 @@ static int do_of_compatible(int argc, char *argv[])
 			root = of_free = of_dup(root);
 	}
 
-	if (fix) {
-		ret = of_fix_tree(root);
-		if (ret)
-			goto out;
-	}
+	if (fix)
+		of_fix_tree(root);
 
 	node = of_find_node_by_path_or_alias(root, nodename);
 	if (!node) {

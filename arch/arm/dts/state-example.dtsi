@@ -89,28 +89,29 @@
 
 };
 
-&ecspi3 {
-	flash@0 {
-		backend_state_nor: partition@120000 {
-		};
+backend_state_nor: &{ecspi3/flash@0/partitions/partition@120000} {
+};
+
+/* Reduce barebox partition size from 16M to 15M */
+&{gpmi/partitions/partition@0} {
+	reg = <0x0 0xf00000>;
+};
+
+&{gpmi/partitions} {
+	backend_state_nand: partition@f00000 {
+		label = "barebox-state";
+		reg = <0xf00000 0x100000>;
 	};
 };
 
-&gpmi {
-	backend_state_nand: partition@500000 {
-	};
-};
-
-&i2c1 {
-	eeprom@50 {
-		partitions {
-			compatible = "fixed-partitions";
-			#size-cells = <1>;
-			#address-cells = <1>;
-			backend_state_eeprom: state@400 {
-				reg = <0x400 0x400>;
-				label = "state-eeprom";
-			};
+&som_eeprom { /* On I2C1 */
+	partitions {
+		compatible = "fixed-partitions";
+		#size-cells = <1>;
+		#address-cells = <1>;
+		backend_state_eeprom: state@400 {
+			reg = <0x400 0x400>;
+			label = "state-eeprom";
 		};
 	};
 };

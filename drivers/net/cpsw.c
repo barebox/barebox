@@ -620,7 +620,7 @@ static int cpsw_mdio_probe(struct device *dev)
 	 * silicon.  Since the effect of (b) was found to be largely
 	 * negligible, we keep things simple here.
 	 */
-	udelay(1000);
+	udelay(2000);
 
 	start = get_time_ns();
 	while (1) {

@@ -8,8 +8,6 @@
 
 #include <linux/const.h>
 
-#define _ULL(X) _AC(X, ULL)
-
 /* Register file indices */
 #define KVX_SFR_PC 0 /* Program Counter $pc $s0 */
 #define KVX_SFR_PS 1 /* Processor State $ps $s1 */

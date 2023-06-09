@@ -4,8 +4,6 @@
 #ifndef __ASM_PGTABLE64_H
 #define __ASM_PGTABLE64_H
 
-#define UL(x)		_AC(x, UL)
-
 #define UNUSED_DESC                0x6EbAAD0BBADbA6E0
 
 #define VA_START                   0x0

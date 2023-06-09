@@ -26,8 +26,8 @@ struct file_list_entry *file_list_entry_by_name(struct file_list *files, const c
 	return NULL;
 }
 
-int file_list_add_entry(struct file_list *files, const char *name, const char *filename,
-			unsigned long flags)
+static int __file_list_add_entry(struct file_list *files, char *name, char *filename,
+				 unsigned long flags)
 {
 	struct file_list_entry *entry;
 
@@ -37,13 +37,26 @@ int file_list_add_entry(struct file_list *files, const char *name, const char *f
 
 	entry = xzalloc(sizeof(*entry));
 
-	entry->name = xstrdup(name);
-	entry->filename = xstrdup(filename);
+	entry->name = name;
+	entry->filename = filename;
 	entry->flags = flags;
 
 	list_add_tail(&entry->list, &files->list);
 
 	return 0;
+}
+
+int file_list_add_entry(struct file_list *files, const char *name, const char *filename,
+			unsigned long flags)
+{
+	return __file_list_add_entry(files, xstrdup(name), xstrdup(filename), flags);
+}
+
+int file_list_add_cdev_entry(struct file_list *files, struct cdev *cdev,
+			     unsigned long flags)
+{
+	return __file_list_add_entry(files, xstrdup(cdev->name),
+				     xasprintf("/dev/%s", cdev->name), flags);
 }
 
 static int file_list_parse_one(struct file_list *files, const char *partstr, const char **endstr)

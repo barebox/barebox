@@ -73,6 +73,22 @@ Example:
 
   /dev/nand0.barebox.bb(barebox)sr,/kernel(kernel)rc
 
+Board code authors are encouraged to provide a default environment containing
+partitions with descriptive names. For boards where this is not specified,
+there exist a number of **partition** specifiers for automatically generating entries:
+
+* ``block`` exports all registered block devices (e.g. eMMC and SD)
+* ``auto``  currently equivalent to ``block``. May be extended to other flashable
+            devices, like EEPROMs, MTD or UBI volumes in future
+
+Example usage of exporting registered block devices, barebox update
+handlers and a single file that is created on flashing:
+
+.. code-block:: sh
+
+     detect -a # optional. Detects everything, so auto can register it
+     usbgadget -A auto,/tmp/fitimage(fitimage)c -b
+
 DFU
 ^^^
 

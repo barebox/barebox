@@ -9,6 +9,7 @@
 #include <stringlist.h>
 #include <linux/err.h>
 #include <driver.h>
+#include <block.h>
 
 #define PARSE_DEVICE	0
 #define PARSE_NAME	1
@@ -59,12 +60,28 @@ int file_list_add_cdev_entry(struct file_list *files, struct cdev *cdev,
 				     xasprintf("/dev/%s", cdev->name), flags);
 }
 
+static bool file_list_handle_spec(struct file_list *files, const char *spec)
+{
+	unsigned count = 0;
+	bool autoadd;
+
+	autoadd = !strcmp(spec, "auto");
+	if (autoadd || !strcmp(spec, "block"))
+		count += file_list_add_blockdevs(files);
+	else
+		return false;
+
+	pr_debug("'%s' spcifier resulted in %u entries\n", spec, count);
+	return true;
+}
+
 static int file_list_parse_one(struct file_list *files, const char *partstr, const char **endstr)
 {
 	int i = 0, state = PARSE_DEVICE;
 	char filename[PATH_MAX];
 	char name[PATH_MAX];
 	unsigned long flags = 0;
+	bool special = false;
 
 	memset(filename, 0, sizeof(filename));
 	memset(name, 0, sizeof(name));
@@ -115,7 +132,10 @@ static int file_list_parse_one(struct file_list *files, const char *partstr, con
 		partstr++;
 	}
 
-	if (state != PARSE_FLAGS) {
+	if (state == PARSE_DEVICE)
+		special = file_list_handle_spec(files, filename);
+
+	if (!special && state != PARSE_FLAGS) {
 		pr_err("Missing ')'\n");
 		return -EINVAL;
 	}
@@ -124,7 +144,7 @@ static int file_list_parse_one(struct file_list *files, const char *partstr, con
 		partstr++;
 	*endstr = partstr;
 
-	return file_list_add_entry(files, name, filename, flags);
+	return special ? 0 : file_list_add_entry(files, name, filename, flags);
 }
 
 static const char *flags_to_str(int flags)

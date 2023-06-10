@@ -28,7 +28,6 @@ config VIRTIO_MMIO
 config VIRTIO_PCI
 	tristate "PCI driver for virtio devices"
 	depends on PCI && HAS_DMA
-	depends on MMU && MIPS || !MIPS
 	select VIRTIO
 	help
 	  This driver provides support for virtio based paravirtual device

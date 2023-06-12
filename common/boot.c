@@ -151,7 +151,7 @@ int boot_entry(struct bootentry *be, int verbose, int dryrun)
 	}
 
 	ret = be->boot(be, verbose, dryrun);
-	if (ret)
+	if (ret && ret != -ENOMEDIUM)
 		pr_err("Booting entry '%s' failed\n", be->title);
 
 	return ret;

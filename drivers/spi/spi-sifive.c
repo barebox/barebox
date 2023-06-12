@@ -512,6 +512,7 @@ static const struct of_device_id sifive_spi_ids[] = {
 	{ .compatible = "sifive,spi0" },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, sifive_spi_ids);
 
 static struct driver sifive_spi_driver = {
 	.name  = "sifive_spi",

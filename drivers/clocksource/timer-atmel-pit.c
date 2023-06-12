@@ -96,6 +96,7 @@ const static __maybe_unused struct of_device_id at91_pit_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, at91_pit_dt_ids);
 
 static struct driver at91_pit_driver = {
 	.name = "at91-pit",

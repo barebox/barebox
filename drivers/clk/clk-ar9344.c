@@ -126,6 +126,7 @@ static __maybe_unused struct of_device_id ar9344_clk_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, ar9344_clk_dt_ids);
 
 static struct driver ar9344_clk_driver = {
 	.probe	= ar9344_clk_probe,

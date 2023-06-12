@@ -162,6 +162,7 @@ static const struct of_device_id at91_sdhci_dt_match[] = {
 	{ .compatible = "microchip,sam9x60-sdhci" },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, at91_sdhci_dt_match);
 
 static struct driver at91_sdhci_driver = {
 	.name		= "sdhci-at91",

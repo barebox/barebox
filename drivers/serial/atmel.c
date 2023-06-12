@@ -447,6 +447,7 @@ static const struct of_device_id __maybe_unused atmel_serial_dt_ids[] = {
 	{ .compatible = "atmel,at91sam9260-usart" },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, atmel_serial_dt_ids);
 
 static struct driver atmel_serial_driver = {
         .name  = "atmel_usart",

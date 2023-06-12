@@ -102,6 +102,7 @@ static __maybe_unused struct of_device_id omap_control_usb_dt_ids[] = {
 		/* sentinel */
 	},
 };
+MODULE_DEVICE_TABLE(of, omap_control_usb_dt_ids);
 
 struct phy_control *am335x_get_phy_control(struct device *dev)
 {

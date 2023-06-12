@@ -581,6 +581,7 @@ static __maybe_unused struct of_device_id stmfb_compatible[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, stmfb_compatible);
 
 static struct driver stmfb_driver = {
 	.name	= "stmfb",

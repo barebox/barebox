@@ -196,6 +196,7 @@ static const struct of_device_id eqos_stm32_ids[] = {
 	{ .compatible = "st,stm32mp1-dwmac" },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, eqos_stm32_ids);
 
 static struct driver eqos_stm32_driver = {
 	.name = "eqos-stm32",

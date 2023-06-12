@@ -19,6 +19,7 @@ static const struct of_device_id phycore_stm32mp1_of_match[] = {
 	{ .compatible = "phytec,phycore-stm32mp1-3" },
 	{ /* sentinel */ },
 };
+MODULE_DEVICE_TABLE(of, phycore_stm32mp1_of_match);
 
 static struct driver phycore_stm32mp1_board_driver = {
 	.name = "board-phycore-stm32mp1",

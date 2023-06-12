@@ -597,6 +597,7 @@ static __maybe_unused struct of_device_id mxs_mmc_compatible[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, mxs_mmc_compatible);
 
 static struct driver mxs_mci_driver = {
         .name  = "mxs_mci",

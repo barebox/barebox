@@ -325,6 +325,7 @@ static struct of_device_id bcm283x_i2c_dt_ids[] = {
 	{ .compatible = "brcm,bcm2711-i2c", },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, bcm283x_i2c_dt_ids);
 
 static struct driver bcm283x_i2c_driver = {
 	.name		= "i2c-bcm283x",

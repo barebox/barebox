@@ -34,6 +34,7 @@ static const struct of_device_id mba6ulx_of_match[] = {
 	{ .compatible = "tq,mba6ulx" },
 	{ /* sentinel */ },
 };
+MODULE_DEVICE_TABLE(of, mba6ulx_of_match);
 
 static struct driver mba6ulx_board_driver = {
 	.name = "board-mba6ulx",

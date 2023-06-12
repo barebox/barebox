@@ -33,6 +33,7 @@ static const struct of_device_id vf610_gpio_dt_ids[] = {
 	{ .compatible = "fsl,vf610-gpio" },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, vf610_gpio_dt_ids);
 
 
 static int vf610_gpio_get_value(struct gpio_chip *chip, unsigned int gpio)

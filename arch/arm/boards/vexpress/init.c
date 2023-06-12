@@ -77,6 +77,7 @@ static const struct of_device_id vexpress_of_match[] = {
 	{ .compatible = "arm,vexpress" },
 	{ /* Sentinel */},
 };
+MODULE_DEVICE_TABLE(of, vexpress_of_match);
 
 static struct driver vexpress_board_driver = {
 	.name = "board-vexpress",

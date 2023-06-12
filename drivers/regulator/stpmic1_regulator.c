@@ -431,6 +431,7 @@ static __maybe_unused const struct of_device_id stpmic1_regulator_of_match[] = {
 	{ .compatible = "st,stpmic1-regulators" },
 	{ /* sentinel */ },
 };
+MODULE_DEVICE_TABLE(of, stpmic1_regulator_of_match);
 
 static struct driver stpmic1_regulator_driver = {
 	.name = "stpmic1-regulator",

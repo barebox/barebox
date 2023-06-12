@@ -992,6 +992,7 @@ static __maybe_unused struct of_device_id imx_ocotp_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, imx_ocotp_dt_ids);
 
 static struct driver imx_ocotp_driver = {
 	.name	= "imx_ocotp",

@@ -2986,6 +2986,7 @@ static const struct of_device_id sja1105_ids[] = {
 	{ .compatible = "nxp,sja1110d", .data = &sja1110d_dcfg },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, sja1105_ids);
 
 static struct driver sja1105_driver = {
 	.name		= "sja1105",

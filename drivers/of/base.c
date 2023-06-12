@@ -2504,6 +2504,7 @@ const struct of_device_id of_default_bus_match_table[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, of_default_bus_match_table);
 
 static int of_probe_memory(void)
 {
@@ -2552,6 +2553,7 @@ static const struct of_device_id reserved_mem_matches[] = {
 	{ .compatible = "nvmem-rmem" },
 	{}
 };
+MODULE_DEVICE_TABLE(of, reserved_mem_matches);
 
 /**
  * of_probe - Probe unflattened device tree starting at of_get_root_node

@@ -58,6 +58,7 @@ static struct of_device_id sama5_ddr_dt_ids[] = {
 	{ .compatible = "atmel,sama5d3-ddramc" },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, sama5_ddr_dt_ids);
 
 static struct driver sama5_ddr_driver = {
 	.name   = "sama5-ddramc",

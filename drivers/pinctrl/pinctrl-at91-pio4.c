@@ -306,6 +306,7 @@ static __maybe_unused struct of_device_id pinctrl_at91_pio4_dt_ids[] = {
 	{ .compatible = "atmel,sama5d2-pinctrl", .data = &sama5d2_pinctrl_data },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, pinctrl_at91_pio4_dt_ids);
 
 static struct driver pinctrl_at91_pio4_driver = {
 	.name		= "pinctrl-at91-pio4",

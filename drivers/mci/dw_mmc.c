@@ -648,6 +648,7 @@ static __maybe_unused struct of_device_id dw_mmc_compatible[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, dw_mmc_compatible);
 
 static struct driver dw_mmc_driver = {
 	.name  = "dw_mmc",

@@ -1049,6 +1049,7 @@ static __maybe_unused struct of_device_id cfi_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, cfi_dt_ids);
 
 static struct driver cfi_driver = {
 	.name    = "cfi_flash",

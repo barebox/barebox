@@ -159,6 +159,7 @@ static __maybe_unused struct of_device_id malta_i2c_gpio_dt_ids[] = {
 		/* sentinel */
 	},
 };
+MODULE_DEVICE_TABLE(of, malta_i2c_gpio_dt_ids);
 
 static struct driver malta_i2c_gpio_driver = {
 	.name  = "malta-fpga-i2c-gpio",

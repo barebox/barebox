@@ -208,6 +208,7 @@ static __maybe_unused struct of_device_id bcm2835_gpio_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, bcm2835_gpio_dt_ids);
 
 static struct driver bcm2835_gpio_driver = {
 	.name = "bcm2835-gpio",

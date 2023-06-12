@@ -129,6 +129,7 @@ static const struct of_device_id gpio_wdt_dt_ids[] = {
 	{ .compatible = "linux,wdt-gpio", },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, gpio_wdt_dt_ids);
 
 static struct driver gpio_wdt_driver = {
 	.name		= "gpio-wdt",

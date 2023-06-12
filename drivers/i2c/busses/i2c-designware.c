@@ -599,6 +599,7 @@ static __maybe_unused struct of_device_id i2c_dw_dt_ids[] = {
 	{ .compatible = "snps,designware-i2c", },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, i2c_dw_dt_ids);
 
 static struct driver i2c_dw_driver = {
 	.probe = i2c_dw_probe,

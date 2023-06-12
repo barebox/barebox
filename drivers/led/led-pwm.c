@@ -80,6 +80,7 @@ static struct of_device_id led_pwm_of_ids[] = {
 	{ .compatible = "pwm-leds", },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, led_pwm_of_ids);
 
 static struct driver led_pwm_of_driver = {
 	.name  = "pwm-leds",

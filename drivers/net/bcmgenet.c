@@ -616,6 +616,7 @@ static struct of_device_id bcmgenet_ids[] = {
                 /* sentinel */
         },
 };
+MODULE_DEVICE_TABLE(of, bcmgenet_ids);
 
 static struct driver bcmgenet_driver = {
         .name   = "brcm-genet",

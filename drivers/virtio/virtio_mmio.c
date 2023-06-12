@@ -443,6 +443,7 @@ static const struct of_device_id virtio_mmio_match[] = {
 	{ .compatible = "virtio,mmio", },
 	{},
 };
+MODULE_DEVICE_TABLE(of, virtio_mmio_match);
 
 static struct driver virtio_mmio_driver = {
 	.probe		= virtio_mmio_probe,

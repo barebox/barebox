@@ -192,6 +192,7 @@ static struct of_device_id starfive_otp_dt_ids[] = {
 	{ .compatible = "starfive,fu740-otp" },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, starfive_otp_dt_ids);
 
 static struct driver starfive_otp_driver = {
 	.name	= "starfive_otp",

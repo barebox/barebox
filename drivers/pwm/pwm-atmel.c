@@ -410,6 +410,7 @@ static const struct of_device_id atmel_pwm_dt_ids[] = {
 		/* sentinel */
 	},
 };
+MODULE_DEVICE_TABLE(of, atmel_pwm_dt_ids);
 
 static int id = -1;
 

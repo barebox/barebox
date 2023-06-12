@@ -152,6 +152,7 @@ static const struct of_device_id stm32_rng_dt_ids[] = {
 	{ .compatible = "st,stm32-rng" },
 	{ /* sentinel */},
 };
+MODULE_DEVICE_TABLE(of, stm32_rng_dt_ids);
 
 static struct driver stm32_rng_driver = {
 	.name = "stm32-rng",

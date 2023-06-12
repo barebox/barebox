@@ -533,6 +533,7 @@ static const struct of_device_id imx_rproc_of_match[] = {
 	{ .compatible = "fsl,imx8mq-cm4", .data = &imx_rproc_cfg_imx8mq },
 	{},
 };
+MODULE_DEVICE_TABLE(of, imx_rproc_of_match);
 
 static struct driver imx_rproc_driver = {
 	.name = "imx-rproc",

@@ -84,6 +84,7 @@ static const struct of_device_id syscon_reboot_of_match[] = {
 	{ .compatible = "syscon-reboot" },
 	{}
 };
+MODULE_DEVICE_TABLE(of, syscon_reboot_of_match);
 
 static struct driver syscon_reboot_driver = {
 	.probe = syscon_reboot_probe,

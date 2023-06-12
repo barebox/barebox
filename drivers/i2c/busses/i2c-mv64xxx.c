@@ -495,6 +495,7 @@ static struct of_device_id mv64xxx_i2c_of_match_table[] = {
 	{ .compatible = "marvell,mv78230-a0-i2c", .data = &mv64xxx_i2c_regs_mv64xxx},
 	{}
 };
+MODULE_DEVICE_TABLE(of, mv64xxx_i2c_of_match_table);
 
 static inline int
 mv64xxx_calc_freq(const int tclk, const int n, const int m)

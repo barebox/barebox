@@ -489,6 +489,7 @@ static const struct of_device_id realtek_smi_of_match[] = {
 	{ /* sentinel */ },
 };
 MODULE_DEVICE_TABLE(of, realtek_smi_of_match);
+MODULE_DEVICE_TABLE(of, realtek_smi_of_match);
 
 static struct driver realtek_smi_driver = {
 	.name = "realtek-smi",

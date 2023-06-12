@@ -630,6 +630,7 @@ static struct of_device_id zynqmp_firmware_id_table[] = {
 	{ .compatible = "xlnx,zynqmp-firmware", },
 	{}
 };
+MODULE_DEVICE_TABLE(of, zynqmp_firmware_id_table);
 
 static struct driver zynqmp_firmware_driver = {
 	.name = "zynqmp_firmware",

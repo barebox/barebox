@@ -511,6 +511,7 @@ static struct of_device_id at91_twi_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, at91_twi_dt_ids);
 
 static int at91_twi_probe(struct device *dev)
 {

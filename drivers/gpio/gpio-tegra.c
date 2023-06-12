@@ -181,6 +181,7 @@ static __maybe_unused struct of_device_id tegra_gpio_dt_ids[] = {
 		/* sentinel */
 	},
 };
+MODULE_DEVICE_TABLE(of, tegra_gpio_dt_ids);
 
 static struct driver tegra_gpio_driver = {
 	.name		= "tegra-gpio",

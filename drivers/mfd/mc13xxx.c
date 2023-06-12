@@ -387,6 +387,7 @@ static __maybe_unused struct of_device_id mc13xxx_dt_ids[] = {
 	{ .compatible = "fsl,mc34708", .data = &mc34708_devtype, },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, mc13xxx_dt_ids);
 
 static __maybe_unused struct driver mc13xxx_i2c_driver = {
 	.name		= "mc13xxx-i2c",

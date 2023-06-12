@@ -182,6 +182,7 @@ static const struct of_device_id gpio_latch_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, gpio_latch_ids);
 
 static struct driver gpio_latch_driver = {
 	.name = "gpio-latch",

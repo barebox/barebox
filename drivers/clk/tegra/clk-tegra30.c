@@ -392,6 +392,7 @@ static __maybe_unused struct of_device_id tegra30_car_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, tegra30_car_dt_ids);
 
 static struct driver tegra30_car_driver = {
 	.probe	= tegra30_car_probe,

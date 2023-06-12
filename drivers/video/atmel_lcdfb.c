@@ -263,6 +263,7 @@ static __maybe_unused struct of_device_id atmel_lcdfb_compatible[] = {
 	{ .compatible = "atmel,at32ap-lcdc",		.data = &at32ap_config, },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, atmel_lcdfb_compatible);
 
 static struct driver atmel_lcdc_driver = {
 	.name	= "atmel_lcdfb",

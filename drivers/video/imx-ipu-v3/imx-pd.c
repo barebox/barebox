@@ -108,6 +108,7 @@ static struct of_device_id imx_pd_dt_ids[] = {
 	{ .compatible = "fsl,imx-parallel-display", },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, imx_pd_dt_ids);
 
 static struct driver imx_pd_driver = {
 	.probe			  = imx_pd_probe,

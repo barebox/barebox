@@ -188,6 +188,7 @@ static const struct of_device_id of_rockchip_saradc_match[] = {
 	{ .compatible = "rockchip,rk3568-saradc", .data = &rk3568_saradc_cfg },
 	{ /* end */ }
 };
+MODULE_DEVICE_TABLE(of, of_rockchip_saradc_match);
 
 static struct driver rockchip_saradc_driver = {
 	.name = "rockchip_saradc",

@@ -571,6 +571,7 @@ static struct of_device_id ethoc_dt_ids[] = {
 	{ .compatible = "opencores,ethoc", },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, ethoc_dt_ids);
 
 static struct driver ethoc_driver = {
 	.name  = "ethoc",

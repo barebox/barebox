@@ -860,6 +860,7 @@ static const struct of_device_id fsl_qspi_dt_ids[] = {
 	{ .compatible = "fsl,ls2080a-qspi", .data = &ls2080a_data, },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, fsl_qspi_dt_ids);
 
 static struct driver fsl_qspi_driver = {
 	.name		= "fsl-quadspi",

@@ -290,6 +290,7 @@ static const struct of_device_id rockchip_pcie_of_match[] = {
 	{ .compatible = "rockchip,rk3588-pcie", },
 	{},
 };
+MODULE_DEVICE_TABLE(of, rockchip_pcie_of_match);
 
 static struct driver rockchip_pcie_driver = {
         .name = "rockchip-dw-pcie",

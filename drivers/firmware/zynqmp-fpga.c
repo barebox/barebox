@@ -406,6 +406,7 @@ static struct of_device_id zynqmpp_fpga_id_table[] = {
 	},
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, zynqmpp_fpga_id_table);
 
 static struct driver zynqmp_fpga_driver = {
 	.name = "zynqmp_fpga_manager",

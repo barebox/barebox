@@ -95,6 +95,7 @@ static struct of_device_id altera_fpga_of_match[] = {
 	{ .compatible = "altr,socfpga-fpga2sdram-bridge" },
 	{},
 };
+MODULE_DEVICE_TABLE(of, altera_fpga_of_match);
 
 static int alt_fpga_bridge_probe(struct device *dev)
 {

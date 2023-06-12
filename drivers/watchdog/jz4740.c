@@ -89,6 +89,7 @@ static __maybe_unused struct of_device_id jz4740_wdt_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, jz4740_wdt_dt_ids);
 
 static struct driver jz4740_wdt_driver = {
 	.name   = "jz4740-wdt",

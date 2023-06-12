@@ -106,6 +106,7 @@ static struct of_device_id i2c_versatile_match[] = {
 	{ .compatible = "arm,versatile-i2c", },
 	{},
 };
+MODULE_DEVICE_TABLE(of, i2c_versatile_match);
 
 static struct driver i2c_versatile_driver = {
 	.name	= "versatile-i2c",

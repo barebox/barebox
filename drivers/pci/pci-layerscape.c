@@ -312,6 +312,7 @@ static const struct of_device_id ls_pcie_of_match[] = {
 	{ .compatible = "fsl,ls1088a-pcie", .data = &ls2088_drvdata },
 	{ },
 };
+MODULE_DEVICE_TABLE(of, ls_pcie_of_match);
 
 static int __init ls_add_pcie_port(struct ls_pcie *pcie)
 {

@@ -1197,6 +1197,7 @@ static struct of_device_id dw_hdmi_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, dw_hdmi_dt_ids);
 
 static int dw_hdmi_get_modes(struct dw_hdmi *hdmi, struct display_timings *timings)
 {

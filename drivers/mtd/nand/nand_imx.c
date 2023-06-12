@@ -1480,6 +1480,7 @@ static __maybe_unused struct of_device_id imx_nand_compatible[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, imx_nand_compatible);
 
 static struct driver imx_nand_driver = {
 	.name  = "imx_nand",

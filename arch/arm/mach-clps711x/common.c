@@ -135,6 +135,7 @@ static const struct of_device_id __maybe_unused clps711x_bus_dt_ids[] = {
 	{ .compatible = "cirrus,ep7209-bus", },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, clps711x_bus_dt_ids);
 
 static struct driver clps711x_bus_driver = {
 	.name = "clps711x-bus",

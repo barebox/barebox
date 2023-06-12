@@ -403,6 +403,7 @@ static struct of_device_id imx_ldb_dt_ids[] = {
 	{ .compatible = "fsl,imx53-ldb", &imx_ldb_data_imx53},
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, imx_ldb_dt_ids);
 
 static struct driver imx_ldb_driver = {
 	.probe		= imx_ldb_probe,

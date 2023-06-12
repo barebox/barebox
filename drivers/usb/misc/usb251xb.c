@@ -608,6 +608,7 @@ static const struct of_device_id usb251xb_of_match[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, usb251xb_of_match);
 #else /* CONFIG_OFDEVICE */
 static int usb251xb_get_ofdata(struct usb251xb *hub,
 			       struct usb251xb_data *data)

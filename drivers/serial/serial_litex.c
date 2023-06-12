@@ -90,6 +90,7 @@ static __maybe_unused struct of_device_id litex_serial_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, litex_serial_dt_ids);
 
 static struct driver litex_serial_driver = {
 	.name  = "litex-uart",

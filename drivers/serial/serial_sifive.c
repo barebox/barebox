@@ -163,6 +163,7 @@ static __maybe_unused struct of_device_id sifive_serial_dt_ids[] = {
 	{ .compatible = "sifive,uart0" },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, sifive_serial_dt_ids);
 
 static struct driver serial_sifive_driver = {
 	.name   = "serial_sifive",

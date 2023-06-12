@@ -1240,6 +1240,7 @@ static struct of_device_id fsl_fman_mdio_dt_ids[] = {
 	}, {
 	}
 };
+MODULE_DEVICE_TABLE(of, fsl_fman_mdio_dt_ids);
 
 static struct driver fman_mdio_driver = {
 	.name   = "fsl-fman-mdio",
@@ -1257,6 +1258,7 @@ static struct of_device_id fsl_fman_port_dt_ids[] = {
 	}, {
 	}
 };
+MODULE_DEVICE_TABLE(of, fsl_fman_port_dt_ids);
 
 static struct driver fman_port_driver = {
 	.name   = "fsl-fman-port",
@@ -1270,6 +1272,7 @@ static struct of_device_id fsl_fman_memac_dt_ids[] = {
 	}, {
 	}
 };
+MODULE_DEVICE_TABLE(of, fsl_fman_memac_dt_ids);
 
 static struct driver fman_memac_driver = {
 	.name   = "fsl-fman-memac",
@@ -1284,6 +1287,7 @@ static struct of_device_id fsl_fman_muram_dt_ids[] = {
 	}, {
 	}
 };
+MODULE_DEVICE_TABLE(of, fsl_fman_muram_dt_ids);
 
 static struct driver fman_muram_driver = {
 	.name   = "fsl-fman-muram",
@@ -1328,6 +1332,7 @@ static struct of_device_id fsl_fman_dt_ids[] = {
 	}, {
 	}
 };
+MODULE_DEVICE_TABLE(of, fsl_fman_dt_ids);
 
 static struct driver fman_driver = {
 	.name   = "fsl-fman",

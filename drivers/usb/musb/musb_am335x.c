@@ -21,6 +21,7 @@ static __maybe_unused struct of_device_id am335x_child_dt_ids[] = {
 		/* sentinel */
 	},
 };
+MODULE_DEVICE_TABLE(of, am335x_child_dt_ids);
 
 static struct driver am335x_child_driver = {
 	.name   = "am335x_child_probe",

@@ -138,6 +138,7 @@ static const struct of_device_id of_anatop_regulator_match_tbl[] = {
 	{ .compatible = "fsl,anatop-regulator", },
 	{ /* end */ }
 };
+MODULE_DEVICE_TABLE(of, of_anatop_regulator_match_tbl);
 
 static struct driver anatop_regulator_driver = {
 	.name = "anatop_regulator",

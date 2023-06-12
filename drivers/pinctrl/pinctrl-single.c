@@ -203,6 +203,7 @@ static __maybe_unused struct of_device_id pcs_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, pcs_dt_ids);
 
 static struct driver pcs_driver = {
 	.name		= "pinctrl-single",

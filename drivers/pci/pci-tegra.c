@@ -1230,6 +1230,7 @@ static __maybe_unused struct of_device_id tegra_pcie_of_match[] = {
 		/* sentinel */
 	},
 };
+MODULE_DEVICE_TABLE(of, tegra_pcie_of_match);
 
 static int tegra_pcie_probe(struct device *dev)
 {

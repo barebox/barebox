@@ -158,6 +158,7 @@ static __maybe_unused struct of_device_id imx_sata_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, imx_sata_dt_ids);
 
 static struct driver imx_sata_driver = {
 	.name   = "imx-sata",

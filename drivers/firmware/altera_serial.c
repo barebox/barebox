@@ -391,6 +391,7 @@ static struct of_device_id altera_spi_id_table[] = {
 	{ .compatible = "altr,fpga-arria10-passive-serial", .data = &a10_data },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, altera_spi_id_table);
 
 static struct driver altera_spi_driver = {
 	.name = "altera-fpga",

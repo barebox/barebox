@@ -330,6 +330,7 @@ static const struct of_device_id atmel_smc_ids[] = {
 	{ .compatible = "atmel,sama5d2-smc", .data = &sama5d2_reg_layout },
 	{ /* sentinel */ },
 };
+MODULE_DEVICE_TABLE(of, atmel_smc_ids);
 
 /**
  * atmel_hsmc_get_reg_layout - retrieve the layout of HSMC registers

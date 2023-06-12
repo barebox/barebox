@@ -671,6 +671,7 @@ static __maybe_unused struct of_device_id ag71xx_dt_ids[] = {
 	{ .compatible = "qca,ar9344-gmac0", .data = &ag71xx_cfg_ar9344_gmac0, },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, ag71xx_dt_ids);
 
 static struct driver ag71xx_driver = {
 	.name	= "ag71xx-gmac",

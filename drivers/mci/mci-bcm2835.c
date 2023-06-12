@@ -429,6 +429,7 @@ static __maybe_unused struct of_device_id bcm2835_mci_compatible[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, bcm2835_mci_compatible);
 
 static struct driver bcm2835_mci_driver = {
 	.name = "bcm2835_mci",

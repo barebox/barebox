@@ -208,6 +208,7 @@ static __maybe_unused const struct of_device_id stpmic1_wdt_of_match[] = {
 	{ .compatible = "st,stpmic1-wdt" },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, stpmic1_wdt_of_match);
 
 static struct driver stpmic1_wdt_driver = {
 	.name  = "stpmic1-wdt",

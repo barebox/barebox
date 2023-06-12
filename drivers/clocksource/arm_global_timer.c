@@ -103,6 +103,7 @@ static struct of_device_id arm_global_timer_dt_ids[] = {
 	{ .compatible = "arm,cortex-a9-global-timer", },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, arm_global_timer_dt_ids);
 
 static struct driver arm_global_timer_driver = {
 	.name = "arm-global-timer",

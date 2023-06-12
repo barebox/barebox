@@ -1244,6 +1244,7 @@ static __maybe_unused struct of_device_id cqspi_dt_ids[] = {
 	{.compatible = "cdns,qspi-nor",},
 	{ /* end of table */ }
 };
+MODULE_DEVICE_TABLE(of, cqspi_dt_ids);
 
 static struct driver cqspi_driver = {
 	.name = "cadence_qspi",

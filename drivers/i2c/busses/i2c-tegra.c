@@ -683,6 +683,7 @@ static __maybe_unused struct of_device_id tegra_i2c_compatible[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, tegra_i2c_compatible);
 
 static struct driver tegra_i2c_driver = {
 	.name  = "tegra-i2c",

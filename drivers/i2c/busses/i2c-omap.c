@@ -1219,6 +1219,7 @@ static __maybe_unused struct of_device_id omap_i2c_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, omap_i2c_dt_ids);
 
 static struct driver omap_i2c_driver = {
 	.probe		= i2c_omap_probe,

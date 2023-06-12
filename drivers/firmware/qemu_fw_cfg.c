@@ -287,6 +287,7 @@ static const struct of_device_id qemu_fw_cfg_of_match[] = {
 	{ .compatible = "qemu,fw-cfg-mmio", },
 	{ /* sentinel */ },
 };
+MODULE_DEVICE_TABLE(of, qemu_fw_cfg_of_match);
 
 static struct driver_d qemu_fw_cfg_drv = {
 	.name = "fw_cfg",

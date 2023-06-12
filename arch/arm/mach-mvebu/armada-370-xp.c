@@ -17,6 +17,7 @@ static const struct of_device_id armada_370_xp_pcie_of_ids[] = {
 	{ .compatible = "marvell,armada-370-pcie", },
 	{ },
 };
+MODULE_DEVICE_TABLE(of, armada_370_xp_pcie_of_ids);
 
 /*
  * Marvell Armada XP MV78230-A0 incorrectly identifies itself as

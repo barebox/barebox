@@ -180,6 +180,7 @@ static __maybe_unused struct of_device_id stm_serial_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, stm_serial_dt_ids);
 
 static struct driver stm_serial_driver = {
         .name   = "stm_serial",

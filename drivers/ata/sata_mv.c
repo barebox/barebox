@@ -215,6 +215,7 @@ static const struct of_device_id mv_sata_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, mv_sata_dt_ids);
 
 static struct driver mv_sata_driver = {
 	.name = "mv_sata",

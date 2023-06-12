@@ -89,6 +89,7 @@ static struct of_device_id mvebu_timer_dt_ids[] = {
 	{ .compatible = "marvell,armada-xp-timer", },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, mvebu_timer_dt_ids);
 
 static struct driver mvebu_timer_driver = {
 	.name = "mvebu-timer",

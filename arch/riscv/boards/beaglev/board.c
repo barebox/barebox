@@ -21,6 +21,7 @@ static const struct of_device_id beaglev_of_match[] = {
 	{ .compatible = "beagle,beaglev-starlight-jh7100" },
 	{ /* sentinel */ },
 };
+MODULE_DEVICE_TABLE(of, beaglev_of_match);
 
 static struct driver beaglev_board_driver = {
 	.name = "board-beaglev",

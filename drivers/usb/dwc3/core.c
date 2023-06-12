@@ -1497,6 +1497,7 @@ static const struct of_device_id of_dwc3_match[] = {
 	},
 	{ },
 };
+MODULE_DEVICE_TABLE(of, of_dwc3_match);
 
 static struct driver dwc3_driver = {
 	.probe = dwc3_probe,

@@ -262,6 +262,7 @@ static __maybe_unused struct of_device_id rpi_exp_gpio_ids[] = {
 		/* sentinel */
 	},
 };
+MODULE_DEVICE_TABLE(of, rpi_exp_gpio_ids);
 
 static struct driver rpi_exp_gpio_driver = {
 	.name = "rpi-exp-gpio",

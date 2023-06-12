@@ -181,6 +181,7 @@ static __maybe_unused struct of_device_id psci_dt_ids[] = {
 	{ .compatible = "arm,psci-1.0",	.data = (void*)ARM_PSCI_VER(1,0) },
 	{ /* sentinel */ },
 };
+MODULE_DEVICE_TABLE(of, psci_dt_ids);
 
 static struct driver psci_driver = {
 	.name = "psci",

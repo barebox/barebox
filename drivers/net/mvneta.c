@@ -755,6 +755,7 @@ static struct of_device_id mvneta_dt_ids[] = {
 	{ .compatible = "marvell,armada-xp-neta" },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, mvneta_dt_ids);
 
 static struct driver mvneta_driver = {
 	.name   = "mvneta",

@@ -130,6 +130,7 @@ static __maybe_unused struct of_device_id nop_usbphy_dt_ids[] = {
 		/* sentinel */
 	},
 };
+MODULE_DEVICE_TABLE(of, nop_usbphy_dt_ids);
 
 static struct driver nop_usbphy_driver = {
 	.name   = "usb-nop-xceiv",

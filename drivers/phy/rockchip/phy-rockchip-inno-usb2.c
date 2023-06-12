@@ -987,6 +987,7 @@ static const struct of_device_id rockchip_usb2phy_dt_match[] = {
 	{ .compatible = "rockchip,rv1108-usb2phy", .data = &rv1108_phy_cfgs },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, rockchip_usb2phy_dt_match);
 
 static struct driver rockchip_usb2phy_driver = {
 	.probe		= rockchip_usb2phy_probe,

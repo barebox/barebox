@@ -675,6 +675,7 @@ static const struct of_device_id ramoops_dt_ids[] = {
 	{ .compatible = "ramoops" },
 	{ },
 };
+MODULE_DEVICE_TABLE(of, ramoops_dt_ids);
 
 static struct driver ramoops_driver = {
 	.name = "ramoops",

@@ -998,6 +998,7 @@ static __maybe_unused struct of_device_id enc28j60_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, enc28j60_dt_ids);
 
 static struct driver enc28j60_driver = {
 	.name = DRV_NAME,

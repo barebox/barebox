@@ -211,6 +211,7 @@ static __maybe_unused struct of_device_id denali_nand_compatible[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, denali_nand_compatible);
 
 static struct driver denali_dt_driver = {
 	.name	= "denali-nand-dt",

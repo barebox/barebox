@@ -193,6 +193,7 @@ static struct of_device_id mvebu_corediv_clk_ids[] = {
 	  .data = &armada370_corediv_soc },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, mvebu_corediv_clk_ids);
 
 static int mvebu_corediv_clk_probe(struct device *dev)
 {

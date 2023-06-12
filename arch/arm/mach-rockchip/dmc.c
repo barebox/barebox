@@ -257,6 +257,7 @@ static struct of_device_id rockchip_dmc_dt_ids[] = {
 	},
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, rockchip_dmc_dt_ids);
 
 static struct driver rockchip_dmc_driver = {
 	.name   = "rockchip-dmc",

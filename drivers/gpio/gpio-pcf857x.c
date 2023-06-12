@@ -238,6 +238,7 @@ static const struct of_device_id pcf857x_dt_ids[] = {
 	{ .compatible = "maxim,max7329", .data = (void *)8 },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, pcf857x_dt_ids);
 
 static struct driver pcf857x_driver = {
 	.name	= "pcf857x",

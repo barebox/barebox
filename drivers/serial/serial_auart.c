@@ -216,6 +216,7 @@ static const __maybe_unused struct of_device_id auart_serial_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, auart_serial_dt_ids);
 
 static struct driver auart_serial_driver = {
 	.name = "auart_serial",

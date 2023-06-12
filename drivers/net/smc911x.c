@@ -642,6 +642,7 @@ static const struct of_device_id smsc911x_dt_ids[] = {
 	{ .compatible = "smsc,lan9115", },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, smsc911x_dt_ids);
 
 static struct driver smc911x_driver = {
         .name  = "smc911x",

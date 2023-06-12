@@ -75,6 +75,7 @@ static const struct of_device_id of_dwc3_simple_match[] = {
 	{.compatible = "amlogic,meson-gxl-dwc3"},
 	{.compatible = "allwinner,sun50i-h6-dwc3"},
 	{/* Sentinel */}};
+MODULE_DEVICE_TABLE(of, of_dwc3_simple_match);
 
 static struct driver dwc3_of_simple_driver = {
 	.probe		= dwc3_of_simple_probe,

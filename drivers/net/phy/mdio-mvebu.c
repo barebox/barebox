@@ -141,6 +141,7 @@ static struct of_device_id mvebu_mdio_dt_ids[] = {
 	{ .compatible = "marvell,orion-mdio" },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, mvebu_mdio_dt_ids);
 
 static struct driver mvebu_mdio_driver = {
 	.name   = "mvebu-mdio",

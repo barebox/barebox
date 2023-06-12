@@ -53,6 +53,7 @@ static const struct of_device_id bcm2835_aux_clk_of_match[] = {
 	{ .compatible = "brcm,bcm2835-aux", },
 	{},
 };
+MODULE_DEVICE_TABLE(of, bcm2835_aux_clk_of_match);
 
 static struct driver bcm2835_aux_clk_driver = {
 	.name = "bcm2835-aux-clk",

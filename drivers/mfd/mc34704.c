@@ -114,6 +114,7 @@ static __maybe_unused struct of_device_id mc34704_dt_ids[] = {
 	{ .compatible = "fsl,mc34704", },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, mc34704_dt_ids);
 
 static struct driver mc34704_driver = {
 	.name  = DRIVERNAME,

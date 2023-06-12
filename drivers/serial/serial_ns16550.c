@@ -584,6 +584,7 @@ static struct of_device_id ns16550_serial_dt_ids[] = {
 		/* sentinel */
 	},
 };
+MODULE_DEVICE_TABLE(of, ns16550_serial_dt_ids);
 
 static __maybe_unused struct platform_device_id ns16550_serial_ids[] = {
 	{

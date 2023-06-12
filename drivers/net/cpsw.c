@@ -653,6 +653,7 @@ static __maybe_unused struct of_device_id cpsw_mdio_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, cpsw_mdio_dt_ids);
 
 static struct driver cpsw_mdio_driver = {
 	.name   = "cpsw-mdio",
@@ -1433,6 +1434,7 @@ static __maybe_unused struct of_device_id cpsw_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, cpsw_dt_ids);
 
 static struct driver cpsw_driver = {
 	.name   = "cpsw",

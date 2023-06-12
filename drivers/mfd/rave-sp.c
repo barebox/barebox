@@ -731,6 +731,7 @@ static const struct of_device_id __maybe_unused rave_sp_dt_ids[] = {
 	{ .compatible = "zii,rave-sp-rdu2", .data = &rave_sp_rdu2   },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, rave_sp_dt_ids);
 
 static int rave_sp_req_ip_addr(struct param_d *p, void *context)
 {

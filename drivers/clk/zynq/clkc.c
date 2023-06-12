@@ -483,6 +483,7 @@ static __maybe_unused struct of_device_id zynq_clock_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, zynq_clock_dt_ids);
 
 static struct driver zynq_clock_driver = {
 	.probe  = zynq_clock_probe,

@@ -496,6 +496,7 @@ static __maybe_unused struct of_device_id pinctrl_tegra_xusb_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, pinctrl_tegra_xusb_dt_ids);
 
 static struct driver pinctrl_tegra_xusb_driver = {
 	.name		= "pinctrl-tegra-xusb",

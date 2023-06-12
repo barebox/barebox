@@ -404,6 +404,7 @@ static struct of_device_id elm_compatible[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, elm_compatible);
 
 static struct driver omap_elm_driver = {
 	.name = "omap-elm",

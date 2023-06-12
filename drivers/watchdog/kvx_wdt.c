@@ -83,6 +83,7 @@ static struct of_device_id kvx_wdt_of_match[] = {
 	{ .compatible = "kalray,kvx-core-watchdog", },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, kvx_wdt_of_match);
 
 static struct driver kvx_wdt_driver = {
 	.name		= "kvx-wdt",

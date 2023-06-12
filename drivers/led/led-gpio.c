@@ -257,6 +257,7 @@ static struct of_device_id led_gpio_of_ids[] = {
 	{ .compatible = "gpio-leds", },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, led_gpio_of_ids);
 
 static struct driver led_gpio_of_driver = {
 	.name  = "gpio-leds",

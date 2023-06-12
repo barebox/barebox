@@ -156,6 +156,7 @@ static __maybe_unused const struct of_device_id rn5t568_of_match[] = {
 	{ .compatible = "ricoh,rn5t568", .data = NULL, },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, rn5t568_of_match);
 
 static struct driver rn5t568_i2c_driver = {
 	.name		= "rn5t568-i2c",

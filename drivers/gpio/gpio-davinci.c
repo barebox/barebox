@@ -192,6 +192,7 @@ static struct of_device_id davinci_gpio_ids[] = {
 	{ .compatible = "ti,dm6441-gpio", },
 	{ /* sentinel */ },
 };
+MODULE_DEVICE_TABLE(of, davinci_gpio_ids);
 
 static struct driver davinci_gpio_driver = {
 	.name		= "davinci_gpio",

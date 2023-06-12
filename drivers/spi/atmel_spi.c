@@ -474,6 +474,7 @@ const static __maybe_unused struct of_device_id atmel_spi_dt_ids[] = {
 	{ .compatible = "atmel,at91rm9200-spi" },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, atmel_spi_dt_ids);
 
 static struct driver atmel_spi_driver = {
 	.name  = "atmel_spi",

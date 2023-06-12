@@ -57,6 +57,7 @@ static const struct of_device_id kvx_otp_nv_match[] = {
 	{ .compatible = "kalray,kvx-otp-nv" },
 	{ /* sentinel */},
 };
+MODULE_DEVICE_TABLE(of, kvx_otp_nv_match);
 
 static int kvx_otp_nv_probe(struct device *dev)
 {

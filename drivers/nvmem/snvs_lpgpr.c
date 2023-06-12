@@ -128,6 +128,7 @@ static __maybe_unused struct of_device_id snvs_lpgpr_dt_ids[] = {
 	{ .compatible = "fsl,imx6ul-snvs-lpgpr", .data = &snvs_lpgpr_cfg_imx6q },
 	{ },
 };
+MODULE_DEVICE_TABLE(of, snvs_lpgpr_dt_ids);
 
 static struct driver snvs_lpgpr_driver = {
 	.name	= "snvs_lpgpr",

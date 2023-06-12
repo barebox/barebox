@@ -104,6 +104,7 @@ static const struct of_device_id orion_wdt_of_match[] = {
 		.compatible = "marvell,armada-xp-wdt",
 	}, { /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, orion_wdt_of_match);
 
 static struct driver orion_wdt_driver = {
 	.probe = orion_wdt_probe,

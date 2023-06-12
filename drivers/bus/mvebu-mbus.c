@@ -483,6 +483,7 @@ static struct of_device_id mvebu_mbus_dt_ids[] = {
 #endif
 	{ },
 };
+MODULE_DEVICE_TABLE(of, mvebu_mbus_dt_ids);
 
 /*
  * Public API of the driver

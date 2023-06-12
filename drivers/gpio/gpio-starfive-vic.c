@@ -164,6 +164,7 @@ static const struct of_device_id starfive_gpio_match[] = {
 	{ .compatible = "starfive,gpio0", },
 	{ },
 };
+MODULE_DEVICE_TABLE(of, starfive_gpio_match);
 
 static struct driver starfive_gpio_driver = {
 	.probe	= starfive_gpio_probe,

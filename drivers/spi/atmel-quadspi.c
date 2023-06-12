@@ -526,6 +526,7 @@ static const struct of_device_id atmel_qspi_dt_ids[] = {
 	},
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, atmel_qspi_dt_ids);
 
 static struct driver atmel_qspi_driver = {
 	.name	= "atmel_qspi",

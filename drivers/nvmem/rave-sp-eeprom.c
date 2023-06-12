@@ -344,6 +344,7 @@ static __maybe_unused const struct of_device_id rave_sp_eeprom_of_match[] = {
 	{ .compatible = "zii,rave-sp-eeprom" },
 	{}
 };
+MODULE_DEVICE_TABLE(of, rave_sp_eeprom_of_match);
 
 static struct driver rave_sp_eeprom_driver = {
 	.name = "rave-sp-eeprom",

@@ -186,6 +186,7 @@ static struct of_device_id lpuart_serial_dt_ids[] = {
 	{ .compatible = "fsl,vf610-lpuart" },
 	{}
 };
+MODULE_DEVICE_TABLE(of, lpuart_serial_dt_ids);
 
 static struct driver lpuart_serial_driver = {
 	.name   = "lpuart-serial",

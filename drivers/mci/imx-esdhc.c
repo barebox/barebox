@@ -395,6 +395,7 @@ static __maybe_unused struct of_device_id fsl_esdhc_compatible[] = {
 	{ .compatible = "fsl,ls1046a-esdhc",.data = &esdhc_ls_data  },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, fsl_esdhc_compatible);
 
 static struct platform_device_id imx_esdhc_ids[] = {
 	{

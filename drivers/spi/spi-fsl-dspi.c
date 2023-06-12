@@ -515,6 +515,7 @@ static const struct of_device_id fsl_dspi_dt_ids[] = {
 	{ .compatible = "fsl,ls2085a-dspi", .data = &ls2085a_data, },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, fsl_dspi_dt_ids);
 
 static const struct regmap_config dspi_regmap_config = {
 	.reg_bits	= 32,

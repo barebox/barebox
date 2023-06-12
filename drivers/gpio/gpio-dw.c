@@ -176,6 +176,7 @@ static __maybe_unused struct of_device_id dwgpio_match[] = {
 		/* sentinel */
 	},
 };
+MODULE_DEVICE_TABLE(of, dwgpio_match);
 
 static struct driver dwgpio_driver = {
 	.name = "dw-apb-gpio",

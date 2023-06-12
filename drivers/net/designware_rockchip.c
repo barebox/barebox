@@ -319,6 +319,7 @@ static __maybe_unused struct of_device_id rk_gmac_compatible[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, rk_gmac_compatible);
 
 static struct driver rk_gmac_driver = {
 	.name = "eqos-rockchip",

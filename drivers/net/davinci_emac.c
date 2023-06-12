@@ -602,6 +602,7 @@ static __maybe_unused struct of_device_id davinci_emac_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, davinci_emac_dt_ids);
 
 static struct driver davinci_emac_driver = {
 	.name   = "davinci_emac",
@@ -658,6 +659,7 @@ static __maybe_unused struct of_device_id davinci_mdio_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, davinci_mdio_dt_ids);
 
 static struct driver davinci_mdio_driver = {
 	.name   = "davinci_mdio",

@@ -97,6 +97,7 @@ static struct of_device_id starfive_wdt_of_match[] = {
 	{ .compatible = "starfive,wdt", },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, starfive_wdt_of_match);
 
 static struct driver starfive_wdt_driver = {
 	.name		= "starfive-wdt",

@@ -138,6 +138,7 @@ static const struct of_device_id simplefb_of_match[] = {
 	{ .compatible = "simple-framebuffer", },
 	{ },
 };
+MODULE_DEVICE_TABLE(of, simplefb_of_match);
 
 static struct driver simplefb_driver = {
 	.name = "simple-framebuffer",

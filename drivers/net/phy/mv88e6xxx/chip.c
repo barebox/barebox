@@ -965,6 +965,7 @@ static const struct of_device_id mv88e6xxx_of_match[] = {
 	},
 	{},
 };
+MODULE_DEVICE_TABLE(of, mv88e6xxx_of_match);
 
 static struct driver mv88e6xxx_driver = {
 	.name	       = "mv88e6085",

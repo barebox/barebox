@@ -125,6 +125,7 @@ static const struct of_device_id rockchip_iodomain_match[] = {
 	  .data = &soc_data_rk3568_pmu },
 	{ /* sentinel */ },
 };
+MODULE_DEVICE_TABLE(of, rockchip_iodomain_match);
 
 static int rockchip_iodomain_probe(struct device *dev)
 {

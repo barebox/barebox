@@ -174,6 +174,7 @@ static const struct of_device_id of_am335x_adc_match[] = {
 	{ .compatible = "ti,am3359-tscadc", },
 	{ /* end */ }
 };
+MODULE_DEVICE_TABLE(of, of_am335x_adc_match);
 
 static struct driver am335x_adc_driver = {
 	.name		= "am335x_adc",

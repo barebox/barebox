@@ -85,6 +85,7 @@ static struct of_device_id timer_clint_dt_ids[] = {
 	{ .compatible = "sifive,clint0" },
 	{ /* sentinel */ },
 };
+MODULE_DEVICE_TABLE(of, timer_clint_dt_ids);
 
 static struct driver clint_timer_driver = {
 	.name = "clint-timer",

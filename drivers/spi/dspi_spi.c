@@ -400,6 +400,7 @@ static const struct of_device_id dspi_dt_ids[] = {
 	{ .compatible = "fsl,vf610-dspi", .data = (void *)&vf610_data, },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, dspi_dt_ids);
 
 static struct driver dspi_spi_driver = {
 	.name  = "fsl-dspi",

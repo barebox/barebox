@@ -425,6 +425,7 @@ static struct of_device_id kirkwood_pinctrl_of_match[] = {
 	},
 	{ }
 };
+MODULE_DEVICE_TABLE(of, kirkwood_pinctrl_of_match);
 
 static int kirkwood_pinctrl_probe(struct device *dev)
 {

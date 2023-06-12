@@ -186,6 +186,7 @@ static struct of_device_id rockchip_gpio_dt_match[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, rockchip_gpio_dt_match);
 
 static struct driver rockchip_gpio_driver = {
 	.name = "rockchip-gpio",

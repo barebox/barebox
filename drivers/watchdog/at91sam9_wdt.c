@@ -95,6 +95,7 @@ static const __maybe_unused struct of_device_id at91sam9x_wdt_dt_ids[] = {
 	{ .compatible = "atmel,sama5d4-wdt", },
 	{ /* sentinel */ },
 };
+MODULE_DEVICE_TABLE(of, at91sam9x_wdt_dt_ids);
 
 static struct driver at91sam9x_wdt_driver = {
 	.name		= "at91sam9x-wdt",

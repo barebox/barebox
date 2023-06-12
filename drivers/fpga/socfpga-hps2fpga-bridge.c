@@ -112,6 +112,7 @@ static struct of_device_id altera_fpga_of_match[] = {
 	  .data = &fpga2hps_data },
 	{ /* sentinel */ },
 };
+MODULE_DEVICE_TABLE(of, altera_fpga_of_match);
 
 static int alt_fpga_bridge_probe(struct device *dev)
 {

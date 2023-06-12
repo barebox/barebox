@@ -80,6 +80,7 @@ static struct of_device_id environment_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, environment_dt_ids);
 
 static struct driver environment_driver = {
 	.name		= "barebox-environment",

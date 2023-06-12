@@ -225,6 +225,7 @@ static const struct of_device_id starfive_rstgen_reset_dt_ids[] = {
 	{ .compatible = "starfive,jh7100-rstgen", .data = jh7110_rstgen_sync_resets },
 	{ /* sentinel */ },
 };
+MODULE_DEVICE_TABLE(of, starfive_rstgen_reset_dt_ids);
 
 static struct driver starfive_rstgen_reset_driver = {
 	.name = "starfive_rstgen",

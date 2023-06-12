@@ -369,6 +369,7 @@ static const struct of_device_id liteeth_dt_ids[] = {
 	}, {
 	}
 };
+MODULE_DEVICE_TABLE(of, liteeth_dt_ids);
 
 static struct driver liteeth_driver = {
 	.name = DRV_NAME,

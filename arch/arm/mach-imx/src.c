@@ -37,6 +37,7 @@ static const struct of_device_id imx_src_dt_ids[] = {
 	{ .compatible = "fsl,imx51-src", },
 	{ /* sentinel */ },
 };
+MODULE_DEVICE_TABLE(of, imx_src_dt_ids);
 
 static struct driver imx_src_reset_driver = {
 	.name = "imx-src",

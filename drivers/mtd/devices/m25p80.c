@@ -274,6 +274,7 @@ static __maybe_unused struct of_device_id m25p80_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, m25p80_dt_ids);
 
 static struct driver m25p80_driver = {
 	.name	= "m25p80",

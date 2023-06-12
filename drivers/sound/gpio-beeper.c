@@ -57,6 +57,7 @@ static const struct of_device_id gpio_beeper_match[] = {
 	{ .compatible = "gpio-beeper", },
 	{ },
 };
+MODULE_DEVICE_TABLE(of, gpio_beeper_match);
 
 static struct driver gpio_beeper_driver = {
 	.name		= "gpio-beeper",

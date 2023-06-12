@@ -112,6 +112,7 @@ static __maybe_unused const struct of_device_id libftdi1_gpio_dt_ids[] = {
 		/* sentinel */
 	},
 };
+MODULE_DEVICE_TABLE(of, libftdi1_gpio_dt_ids);
 
 static void libftdi1_gpio_remove(struct device *dev)
 {

@@ -603,6 +603,7 @@ static const struct of_device_id zynq_qspi_of_match[] = {
 	{ .compatible = "xlnx,zynq-qspi-1.0", },
 	{ /* end of table */ }
 };
+MODULE_DEVICE_TABLE(of, zynq_qspi_of_match);
 
 static struct driver zynq_qspi_driver = {
 	.name  = "zynq-qspi",

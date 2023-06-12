@@ -424,6 +424,7 @@ static __maybe_unused struct of_device_id socfpga_ccm_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, socfpga_ccm_dt_ids);
 
 static struct driver socfpga_ccm_driver = {
 	.probe	= socfpga_ccm_probe,

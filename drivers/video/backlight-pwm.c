@@ -209,6 +209,7 @@ static struct of_device_id backlight_pwm_of_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, backlight_pwm_of_ids);
 
 static struct driver backlight_pwm_of_driver = {
 	.name  = "pwm-backlight",

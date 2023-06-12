@@ -49,5 +49,6 @@ static const struct of_device_id onboard_hub_match[] = {
 	{ .compatible = "usb2109,2817", .data = &vialab_vl817_data, },
 	{}
 };
+MODULE_DEVICE_TABLE(of, onboard_hub_match);
 
 #endif /* _USB_MISC_ONBOARD_USB_HUB_H */

@@ -671,6 +671,7 @@ static __maybe_unused struct of_device_id imx_spi_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, imx_spi_dt_ids);
 
 static struct platform_device_id imx_spi_ids[] = {
 #if IS_ENABLED(CONFIG_DRIVER_SPI_IMX_0_0)

@@ -191,6 +191,7 @@ static const struct of_device_id omap_wdt_of_match[] = {
 	{ .compatible = "ti,omap3-wdt", },
 	{},
 };
+MODULE_DEVICE_TABLE(of, omap_wdt_of_match);
 
 static struct driver omap_wdt_driver = {
 	.probe		= omap_wdt_probe,

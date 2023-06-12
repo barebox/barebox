@@ -325,6 +325,7 @@ static const struct of_device_id of_pca955x_match[] = {
 	{ .compatible = "nxp,pca9553", .data = &pca9553_chipdef },
 	{},
 };
+MODULE_DEVICE_TABLE(of, of_pca955x_match);
 
 static int led_pca955x_probe(struct device *dev)
 {

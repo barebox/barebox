@@ -366,6 +366,7 @@ static struct of_device_id armada_xp_pinctrl_of_match[] = {
 	{ .compatible = "marvell,mv78460-pinctrl", .data = (void *)V_MV78460, },
 	{ },
 };
+MODULE_DEVICE_TABLE(of, armada_xp_pinctrl_of_match);
 
 static int armada_xp_pinctrl_probe(struct device *dev)
 {

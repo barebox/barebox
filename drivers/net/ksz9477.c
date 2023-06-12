@@ -475,6 +475,7 @@ static const struct of_device_id microchip_switch_dt_ids[] = {
 	{ .compatible = "microchip,ksz9563" },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, microchip_switch_dt_ids);
 
 static struct driver microchip_switch_spi_driver = {
 	.name		= "ksz9477-spi",

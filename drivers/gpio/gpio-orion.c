@@ -113,6 +113,7 @@ static struct of_device_id orion_gpio_dt_ids[] = {
 	{ .compatible = "marvell,orion-gpio", },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, orion_gpio_dt_ids);
 
 static struct driver orion_gpio_driver = {
 	.name = "orion-gpio",

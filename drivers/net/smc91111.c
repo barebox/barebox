@@ -1494,6 +1494,8 @@ static __maybe_unused struct of_device_id smc91c111_dt_ids[] = {
 	},
 	{ /* sentinel */ },
 };
+MODULE_DEVICE_TABLE(of, smc91c111_dt_ids);
+MODULE_DEVICE_TABLE(of, smc91c111_dt_ids);
 
 static struct driver smc91c111_driver = {
 	.of_compatible = DRV_OF_COMPAT(smc91c111_dt_ids),

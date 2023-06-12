@@ -108,6 +108,7 @@ static __maybe_unused struct of_device_id uemd_timer_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, uemd_timer_dt_ids);
 
 static struct driver uemd_timer_driver = {
 	.probe	= uemd_timer_probe,

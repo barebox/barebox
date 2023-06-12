@@ -102,6 +102,7 @@ static struct of_device_id starfive_dwc_ether_compatible[] = {
 	{ .compatible = "starfive,stmmac", .data = &starfive_drvdata },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, starfive_dwc_ether_compatible);
 
 static struct driver starfive_dwc_ether_driver = {
 	.name = "starfive-designware_eth",

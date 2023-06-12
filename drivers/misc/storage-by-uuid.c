@@ -189,6 +189,7 @@ static struct of_device_id storage_by_uuid_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, storage_by_uuid_dt_ids);
 
 static struct driver storage_by_uuid_driver = {
 	.name		= "storage-by-uuid",

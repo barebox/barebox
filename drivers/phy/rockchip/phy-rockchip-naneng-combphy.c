@@ -865,6 +865,7 @@ static const struct of_device_id rockchip_combphy_of_match[] = {
 	},
 	{ },
 };
+MODULE_DEVICE_TABLE(of, rockchip_combphy_of_match);
 
 static struct driver rockchip_combphy_driver = {
 	.probe	= rockchip_combphy_probe,

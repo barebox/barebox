@@ -53,6 +53,7 @@ static __maybe_unused struct of_device_id sram_dt_ids[] = {
 	}, {
 	},
 };
+MODULE_DEVICE_TABLE(of, sram_dt_ids);
 
 static struct driver sram_driver = {
 	.name = "mmio-sram",

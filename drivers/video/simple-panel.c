@@ -165,6 +165,7 @@ static struct of_device_id simple_panel_of_ids[] = {
 	{ .compatible = "simple-panel", },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, simple_panel_of_ids);
 
 static struct driver simple_panel_driver = {
 	.name  = "simple-panel",

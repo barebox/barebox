@@ -350,6 +350,7 @@ static struct of_device_id ubootenv_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, ubootenv_dt_ids);
 
 static struct driver ubootenv_driver = {
 	.name		= "uboot-environment",

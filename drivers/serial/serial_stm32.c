@@ -240,6 +240,7 @@ static struct of_device_id stm32_serial_dt_ids[] = {
 	}, {
 	}
 };
+MODULE_DEVICE_TABLE(of, stm32_serial_dt_ids);
 
 static struct driver stm32_serial_driver = {
 	.name   = "stm32-serial",

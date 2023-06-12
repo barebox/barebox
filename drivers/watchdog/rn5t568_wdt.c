@@ -137,6 +137,7 @@ static __maybe_unused const struct of_device_id rn5t568_wdt_of_match[] = {
 	{ .compatible = "ricoh,rn5t568-wdt" },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, rn5t568_wdt_of_match);
 
 static struct driver rn5t568_wdt_driver = {
 	.name  = "rn5t568-wdt",

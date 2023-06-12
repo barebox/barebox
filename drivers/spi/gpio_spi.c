@@ -222,6 +222,7 @@ static struct of_device_id __maybe_unused gpio_spi_dt_ids[] = {
 	{ .compatible = "spi-gpio", },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, gpio_spi_dt_ids);
 
 static struct driver gpio_spi_driver = {
 	.name = "gpio-spi",

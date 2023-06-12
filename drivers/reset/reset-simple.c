@@ -146,6 +146,7 @@ static const struct of_device_id reset_simple_dt_ids[] = {
 		.data = &reset_simple_active_low },
 	{ /* sentinel */ },
 };
+MODULE_DEVICE_TABLE(of, reset_simple_dt_ids);
 
 static int reset_simple_probe(struct device *dev)
 {

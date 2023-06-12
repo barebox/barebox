@@ -327,6 +327,7 @@ static __maybe_unused struct of_device_id ltdc_ids[] = {
 	{ .compatible = "st,stm32-ltdc" },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, ltdc_ids);
 
 static struct driver ltdc_driver = {
 	.name = "stm32-ltdc",

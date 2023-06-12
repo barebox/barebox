@@ -196,6 +196,7 @@ static struct of_device_id dw_wdt_of_match[] = {
 	{ .compatible = "snps,dw-wdt", },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, dw_wdt_of_match);
 
 static struct driver dw_wdt_driver = {
 	.name		= "dw-wdt",

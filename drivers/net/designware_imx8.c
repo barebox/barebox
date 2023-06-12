@@ -184,6 +184,7 @@ static __maybe_unused struct of_device_id eqos_imx8_ids[] = {
 	{ .compatible = "nxp,imx8mp-dwmac-eqos"},
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, eqos_imx8_ids);
 
 static struct driver_d eqos_imx8_driver = {
 	.name = "eqos-imx8",

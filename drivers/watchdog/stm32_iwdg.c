@@ -125,6 +125,7 @@ static const struct of_device_id stm32_iwdg_of_match[] = {
 	{ .compatible = "st,stm32mp1-iwdg", .data = &stm32mp1_iwdg_data },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, stm32_iwdg_of_match);
 
 static int stm32_iwdg_probe(struct device *dev)
 {

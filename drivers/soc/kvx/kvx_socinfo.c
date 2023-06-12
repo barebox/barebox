@@ -132,6 +132,7 @@ static const struct of_device_id kvx_socinfo_dt_ids[] = {
 	{ .compatible = "kalray,kvx-socinfo" },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, kvx_socinfo_dt_ids);
 
 static struct driver kvx_socinfo_driver = {
 	.name = "kvx-socinfo",

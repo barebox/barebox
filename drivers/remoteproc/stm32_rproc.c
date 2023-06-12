@@ -190,6 +190,7 @@ static const struct of_device_id stm32_rproc_of_match[] = {
 	{ .compatible = "st,stm32mp1-m4" },
 	{ /* sentinel */ },
 };
+MODULE_DEVICE_TABLE(of, stm32_rproc_of_match);
 
 static struct driver stm32_rproc_driver = {
 	.name = "stm32-rproc",

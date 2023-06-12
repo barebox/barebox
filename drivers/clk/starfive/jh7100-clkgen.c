@@ -354,6 +354,7 @@ static __maybe_unused struct of_device_id starfive_clkgen_clk_dt_ids[] = {
 	{ .compatible = "starfive,jh7100-clkgen" },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, starfive_clkgen_clk_dt_ids);
 
 static struct driver starfive_clkgen_clk_driver = {
 	.probe	= starfive_clkgen_clk_probe,

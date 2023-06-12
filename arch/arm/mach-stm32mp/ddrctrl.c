@@ -151,6 +151,7 @@ static __maybe_unused struct of_device_id stm32mp1_ddr_dt_ids[] = {
 	{ .compatible = "st,stm32mp13-ddr", .data = (void *)2 },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, stm32mp1_ddr_dt_ids);
 
 static struct driver stm32mp1_ddr_driver = {
 	.name   = "stm32mp1-ddr",

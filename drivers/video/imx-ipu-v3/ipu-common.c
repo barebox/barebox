@@ -609,6 +609,7 @@ static struct of_device_id imx_ipu_dt_ids[] = {
 	{ .compatible = "fsl,imx6q-ipu", .data = &ipu_type_imx6q, },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, imx_ipu_dt_ids);
 
 static int ipu_submodules_init(struct ipu_soc *ipu,
 		struct device *dev, void __iomem *ipu_base,

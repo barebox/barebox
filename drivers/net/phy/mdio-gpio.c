@@ -227,6 +227,7 @@ static const struct of_device_id gpio_mdio_dt_ids[] = {
 	{ .compatible = "microchip,mdio-smi0" },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, gpio_mdio_dt_ids);
 
 static struct driver mdio_gpio_driver = {
 	.name = "mdio-gpio",

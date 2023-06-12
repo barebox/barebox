@@ -64,6 +64,7 @@ static const struct of_device_id sama5d3_xplained_of_match[] = {
 	{ .compatible = "atmel,sama5d3-xplained" },
 	{ /* sentinel */ },
 };
+MODULE_DEVICE_TABLE(of, sama5d3_xplained_of_match);
 
 static struct driver sama5d3_xplained_board_driver = {
 	.name = "board-sama5d3_xplained",

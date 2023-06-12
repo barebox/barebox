@@ -300,6 +300,7 @@ static struct of_device_id dove_sdhci_dt_ids[] = {
 	{ .compatible = "marvell,dove-sdhci", },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, dove_sdhci_dt_ids);
 
 static struct driver dove_sdhci_driver = {
 	.name = "dove-sdhci",

@@ -650,6 +650,7 @@ static __maybe_unused struct of_device_id imx_i2c_dt_ids[] = {
 	{ .compatible = "fsl,vf610-i2c", .data = &vf610_i2c_hwdata, },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, imx_i2c_dt_ids);
 
 static struct driver i2c_fsl_driver = {
 	.probe	= i2c_fsl_probe,

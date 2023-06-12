@@ -1025,6 +1025,7 @@ static __maybe_unused struct of_device_id fsl_nand_compatible[] = {
 	}, {
 	}
 };
+MODULE_DEVICE_TABLE(of, fsl_nand_compatible);
 
 static struct driver fsl_ifc_driver = {
 	.name = "fsl_nand",

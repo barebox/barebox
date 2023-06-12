@@ -329,6 +329,7 @@ static __maybe_unused struct of_device_id rk_sdhci_compatible[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, rk_sdhci_compatible);
 
 static struct driver rk_sdhci_driver = {
 	.name = "rk3568-dwcmshc-sdhci",

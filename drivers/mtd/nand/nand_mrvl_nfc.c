@@ -299,6 +299,7 @@ static struct of_device_id mrvl_nand_dt_ids[] = {
 	},
 	{}
 };
+MODULE_DEVICE_TABLE(of, mrvl_nand_dt_ids);
 
 /* convert nano-seconds to nand flash controller clock cycles */
 static int ns2cycle(int ns, unsigned long clk_rate)

@@ -496,6 +496,7 @@ static const struct of_device_id atmel_ebi_id_table[] = {
 	},
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, atmel_ebi_id_table);
 
 static int atmel_ebi_probe(struct device *dev)
 {

@@ -113,6 +113,7 @@ static struct of_device_id stm32_timer_dt_ids[] = {
 	{ .compatible = "st,stm32-timer" },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, stm32_timer_dt_ids);
 
 static struct driver stm32_timer_driver = {
 	.name = "stm32-timer",

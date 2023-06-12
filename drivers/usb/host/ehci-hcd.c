@@ -1479,6 +1479,7 @@ static __maybe_unused struct of_device_id ehci_platform_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, ehci_platform_dt_ids);
 
 static struct driver ehci_driver = {
 	.name  = "ehci",

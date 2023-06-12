@@ -96,6 +96,7 @@ static __maybe_unused struct of_device_id bcm2835_cprman_dt_ids[] = {
 	{ .compatible = "brcm,bcm2711-cprman" },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, bcm2835_cprman_dt_ids);
 
 static struct driver bcm2835_cprman_driver = {
 	.probe	= rpi_cprman_probe,

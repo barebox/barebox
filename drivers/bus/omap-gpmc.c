@@ -652,6 +652,7 @@ static struct of_device_id gpmc_id_table[] = {
 	{ .compatible = "ti,am3352-gpmc" },	/* am335x devices */
 	{ }
 };
+MODULE_DEVICE_TABLE(of, gpmc_id_table);
 
 static struct driver gpmc_driver = {
 	.name = "omap-gpmc",

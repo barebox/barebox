@@ -486,6 +486,7 @@ static __maybe_unused struct of_device_id imx_scc_dt_ids[] = {
 	{ .compatible = "fsl,imx25-scc", },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, imx_scc_dt_ids);
 
 static struct driver imx_scc_driver = {
 	.name		= "mxc-scc",

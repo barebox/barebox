@@ -428,6 +428,7 @@ static __maybe_unused struct of_device_id musb_dsps_dt_ids[] = {
 		/* sentinel */
 	},
 };
+MODULE_DEVICE_TABLE(of, musb_dsps_dt_ids);
 
 static struct driver dsps_usbss_driver = {
 	.name   = "musb-dsps",

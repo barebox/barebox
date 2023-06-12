@@ -347,6 +347,7 @@ static struct of_device_id mvebu_spi_dt_ids[] = {
 	  .data = &mvebu_spi_set_baudrate },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, mvebu_spi_dt_ids);
 
 static int mvebu_spi_probe(struct device *dev)
 {

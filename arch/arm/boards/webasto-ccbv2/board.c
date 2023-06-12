@@ -54,6 +54,7 @@ static const struct of_device_id ccbv2_of_match[] = {
 	{ .compatible = "webasto,imx6ul-marvel" },
 	{ /* sentinel */ },
 };
+MODULE_DEVICE_TABLE(of, ccbv2_of_match);
 
 static struct driver ccbv2_board_driver = {
 	.name = "board-imx6ul-ccbv2",

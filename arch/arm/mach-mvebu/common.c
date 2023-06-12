@@ -57,6 +57,7 @@ static const struct of_device_id mvebu_pcie_of_ids[] = {
 	{ .compatible = "marvell,kirkwood-pcie" },
 	{ },
 };
+MODULE_DEVICE_TABLE(of, mvebu_pcie_of_ids);
 
 static int mvebu_soc_id_init(void)
 {

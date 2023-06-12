@@ -124,6 +124,7 @@ static __maybe_unused struct of_device_id ar9344_wdt_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, ar9344_wdt_dt_ids);
 
 static struct driver ar9344_wdt_driver = {
 	.name   = "ar9344-wdt",

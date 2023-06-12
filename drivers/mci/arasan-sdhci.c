@@ -278,6 +278,7 @@ static __maybe_unused struct of_device_id arasan_sdhci_compatible[] = {
 	{ .compatible = "arasan,sdhci-8.9a" },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, arasan_sdhci_compatible);
 
 static struct driver arasan_sdhci_driver = {
 	.name = "arasan-sdhci",

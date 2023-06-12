@@ -31,6 +31,7 @@ static const struct of_device_id odyssey_som_of_match[] = {
 	{ .compatible = "seeed,stm32mp157c-odyssey-som" },
 	{ /* sentinel */ },
 };
+MODULE_DEVICE_TABLE(of, odyssey_som_of_match);
 
 static struct driver odyssey_som_driver = {
 	.name = "odyssey-som",

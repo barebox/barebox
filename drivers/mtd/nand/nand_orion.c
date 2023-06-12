@@ -147,6 +147,7 @@ static __maybe_unused struct of_device_id orion_nand_compatible[] = {
 	{ .compatible = "marvell,orion-nand", },
 	{},
 };
+MODULE_DEVICE_TABLE(of, orion_nand_compatible);
 
 static struct driver orion_nand_driver = {
 	.name  = "orion_nand",

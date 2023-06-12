@@ -38,6 +38,7 @@ static struct of_device_id mvebu_coreclk_ids[] = {
 	  .data = &mv88f6180_coreclks },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, mvebu_coreclk_ids);
 
 static int mvebu_coreclk_probe(struct device *dev)
 {
@@ -147,6 +148,7 @@ static struct of_device_id mvebu_clk_gating_ids[] = {
 	  .data = &kirkwood_gating_desc },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, mvebu_clk_gating_ids);
 
 static int mvebu_clk_gating_probe(struct device *dev)
 {

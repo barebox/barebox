@@ -2306,6 +2306,7 @@ static __maybe_unused struct of_device_id gpmi_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, gpmi_dt_ids);
 
 static struct driver mxs_nand_driver = {
 	.name  = "mxs_nand",

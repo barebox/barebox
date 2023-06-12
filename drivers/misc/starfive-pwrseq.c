@@ -36,6 +36,7 @@ static struct of_device_id starfive_pwrseq_dt_ids[] = {
 	{ .compatible = "starfive,spi2ahb" },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, starfive_pwrseq_dt_ids);
 
 static struct driver starfive_pwrseq_driver = {
 	.name	= "starfive_pwrseq",

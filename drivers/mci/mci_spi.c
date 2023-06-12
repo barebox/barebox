@@ -450,6 +450,7 @@ static __maybe_unused struct of_device_id spi_mci_compatible[] = {
 	{ .compatible = "mmc-spi-slot" },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, spi_mci_compatible);
 
 static struct driver spi_mci_driver = {
 	.name	= "spi_mci",

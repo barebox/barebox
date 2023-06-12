@@ -669,6 +669,7 @@ static __maybe_unused struct of_device_id ahci_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, ahci_dt_ids);
 
 static struct driver ahci_driver = {
 	.name   = "ahci",

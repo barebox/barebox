@@ -79,6 +79,7 @@ static struct of_device_id armv7m_systick_dt_ids[] = {
 	{ .compatible = "arm,armv7m-systick", },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, armv7m_systick_dt_ids);
 
 static struct driver armv7m_systick_driver = {
 	.name = "armv7m-systick-timer",

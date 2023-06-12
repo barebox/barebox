@@ -261,6 +261,7 @@ static __maybe_unused struct of_device_id socfpga_dwc_ether_compatible[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, socfpga_dwc_ether_compatible);
 
 static struct driver socfpga_dwc_ether_driver = {
 	.name = "socfpga_designware_eth",

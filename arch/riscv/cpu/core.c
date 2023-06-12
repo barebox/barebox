@@ -98,6 +98,7 @@ static struct of_device_id riscv_dt_ids[] = {
 	{ .compatible = "riscv", },
 	{ /* sentinel */ },
 };
+MODULE_DEVICE_TABLE(of, riscv_dt_ids);
 
 static struct driver riscv_driver = {
 	.name = "riscv",

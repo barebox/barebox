@@ -941,6 +941,7 @@ static const struct of_device_id macb_dt_ids[] = {
 	{ .compatible = "sifive,fu540-c000-gem", .data = &fu540_c000_config },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, macb_dt_ids);
 
 static struct driver macb_driver = {
 	.name  = "macb",

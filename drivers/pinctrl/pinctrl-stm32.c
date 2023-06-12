@@ -390,6 +390,7 @@ static __maybe_unused struct of_device_id stm32_pinctrl_dt_ids[] = {
 	{ .compatible = "st,stm32mp157-z-pinctrl" },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, stm32_pinctrl_dt_ids);
 
 static struct driver stm32_pinctrl_driver = {
 	.name		= "stm32-pinctrl",

@@ -98,6 +98,7 @@ static __maybe_unused struct of_device_id smp_twd_compatible[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, smp_twd_compatible);
 
 static struct driver smp_twd_driver = {
 	.name = "smp_twd",

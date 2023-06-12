@@ -31,6 +31,7 @@ static const struct of_device_id quartz64_of_match[] = {
 	},
 	{ /* sentinel */ },
 };
+MODULE_DEVICE_TABLE(of, quartz64_of_match);
 
 static struct driver quartz64_board_driver = {
 	.name = "board-quartz64",

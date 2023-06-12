@@ -352,6 +352,7 @@ static __maybe_unused struct of_device_id imx_wdt_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, imx_wdt_dt_ids);
 
 static struct platform_device_id imx_wdt_ids[] = {
 	{

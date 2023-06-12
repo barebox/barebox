@@ -52,6 +52,7 @@ static const struct of_device_id rave_sp_backlight_of_match[] = {
 	{ .compatible = "zii,rave-sp-backlight" },
 	{}
 };
+MODULE_DEVICE_TABLE(of, rave_sp_backlight_of_match);
 
 static struct driver rave_sp_backlight_driver = {
 	.name  = "rave-sp-backlight",

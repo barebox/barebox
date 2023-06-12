@@ -367,6 +367,7 @@ static const struct of_device_id stm32_adc_match[] = {
 	{ .compatible = "st,stm32mp1-adc", .data = &stm32mp1_adc_cfg },
 	{}
 };
+MODULE_DEVICE_TABLE(of, stm32_adc_match);
 
 static struct driver stm32_adc_driver = {
 	.name		= "stm32-adc",

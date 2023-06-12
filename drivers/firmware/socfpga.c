@@ -459,6 +459,7 @@ static struct of_device_id socfpga_fpgamgr_id_table[] = {
 	},
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, socfpga_fpgamgr_id_table);
 
 static struct driver socfpga_fpgamgr_driver = {
 	.name = "socfpa-fpgamgr",

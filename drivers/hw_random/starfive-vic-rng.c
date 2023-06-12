@@ -195,6 +195,7 @@ static const struct of_device_id vic_rng_dt_ids[] = {
 	{ .compatible = "starfive,vic-rng" },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, vic_rng_dt_ids);
 
 static struct driver vic_rng_driver = {
 	.name		= "vic-rng",

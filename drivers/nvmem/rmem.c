@@ -54,6 +54,7 @@ static const struct of_device_id rmem_match[] = {
 	{ .compatible = "nvmem-rmem", },
 	{ /* sentinel */ },
 };
+MODULE_DEVICE_TABLE(of, rmem_match);
 
 static struct driver rmem_driver = {
 	.name = "rmem",

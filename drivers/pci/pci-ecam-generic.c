@@ -198,6 +198,7 @@ static struct of_device_id pcie_ecam_dt_ids[] = {
 	{ .compatible = "pci-host-ecam-generic" },
 	{ /* sentinel */ },
 };
+MODULE_DEVICE_TABLE(of, pcie_ecam_dt_ids);
 
 static struct driver pcie_ecam_driver = {
 	.name = "pcie-generic-ecam",

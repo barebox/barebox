@@ -96,6 +96,7 @@ static struct of_device_id art_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, art_dt_ids);
 
 static struct driver art_driver = {
 	.name		= "qca-art",

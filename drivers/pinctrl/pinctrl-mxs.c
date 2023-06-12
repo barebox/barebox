@@ -145,6 +145,7 @@ static __maybe_unused struct of_device_id mxs_pinctrl_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, mxs_pinctrl_dt_ids);
 
 static struct driver mxs_pinctrl_driver = {
 	.name		= "mxs-pinctrl",

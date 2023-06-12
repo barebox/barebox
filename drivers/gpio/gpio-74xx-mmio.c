@@ -81,6 +81,7 @@ static const struct of_device_id mmio_74xx_gpio_ids[] = {
 	},
 	{ }
 };
+MODULE_DEVICE_TABLE(of, mmio_74xx_gpio_ids);
 
 static inline
 struct mmio_74xx_gpio_priv *to_mmio_74xx_gpio_priv(struct gpio_chip *gc)

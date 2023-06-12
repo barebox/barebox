@@ -64,6 +64,7 @@ static const struct of_device_id atmel_flexcom_of_match[] = {
 	{ .compatible = "atmel,sama5d2-flexcom" },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, atmel_flexcom_of_match);
 
 static struct driver atmel_flexcom_driver = {
 	.probe		= atmel_flexcom_probe,

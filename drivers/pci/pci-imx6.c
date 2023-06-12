@@ -874,6 +874,7 @@ static struct of_device_id imx6_pcie_of_match[] = {
 	{ .compatible = "fsl,imx8mq-pcie", .data = &drvdata[IMX8MQ], } ,
 	{},
 };
+MODULE_DEVICE_TABLE(of, imx6_pcie_of_match);
 
 static struct driver imx6_pcie_driver = {
 	.name = "imx6-pcie",

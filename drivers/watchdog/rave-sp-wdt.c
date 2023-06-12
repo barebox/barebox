@@ -252,6 +252,7 @@ static const struct of_device_id rave_sp_wdt_of_match[] = {
 	},
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, rave_sp_wdt_of_match);
 
 static int rave_sp_wdt_set_boot_source(struct param_d *param, void *priv)
 {

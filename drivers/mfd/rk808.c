@@ -380,6 +380,7 @@ static const struct of_device_id rk808_of_match[] = {
 	{ .compatible = "rockchip,rk818" },
 	{ },
 };
+MODULE_DEVICE_TABLE(of, rk808_of_match);
 
 static struct driver rk808_i2c_driver = {
 	.name = "rk808",

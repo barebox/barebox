@@ -850,6 +850,7 @@ static __maybe_unused struct of_device_id stm32_i2c_dt_ids[] = {
 	{ .compatible = "st,stm32mp15-i2c", .data = &stm32f7_setup},
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, stm32_i2c_dt_ids);
 
 static struct driver stm32_i2c_driver = {
 	.probe	= stm32_i2c_probe,

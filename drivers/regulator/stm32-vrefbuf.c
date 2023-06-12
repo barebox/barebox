@@ -203,6 +203,7 @@ static const struct of_device_id __maybe_unused stm32_vrefbuf_of_match[] = {
 	{ .compatible = "st,stm32-vrefbuf", },
 	{},
 };
+MODULE_DEVICE_TABLE(of, stm32_vrefbuf_of_match);
 
 static struct driver stm32_vrefbuf_driver = {
 	.probe = stm32_vrefbuf_probe,

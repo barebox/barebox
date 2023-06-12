@@ -27,6 +27,7 @@ static struct of_device_id ti_sysc_dt_ids[] = {
 	{ .compatible = "ti,sysc-omap2",},
 	{ },
 };
+MODULE_DEVICE_TABLE(of, ti_sysc_dt_ids);
 
 static struct driver ti_sysc_driver = {
 	.name = "ti-sysc",

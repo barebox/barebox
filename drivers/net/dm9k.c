@@ -870,6 +870,7 @@ static struct of_device_id dm9000_of_matches[] = {
 	{ .compatible = "davicom,dm9000", },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, dm9000_of_matches);
 
 static struct driver dm9k_driver = {
 	.name  = "dm9000",

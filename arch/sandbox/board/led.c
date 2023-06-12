@@ -57,6 +57,7 @@ static struct of_device_id sandbox_led_of_ids[] = {
 	{ .compatible = "barebox,sandbox-led", },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, sandbox_led_of_ids);
 
 static struct driver sandbox_led_of_driver = {
 	.name  = "sandbox-led",

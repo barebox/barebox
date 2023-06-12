@@ -628,6 +628,7 @@ static const struct of_device_id stm32_spi_ids[] = {
 	{ .compatible = "st,stm32h7-spi", },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, stm32_spi_ids);
 
 static struct driver stm32_spi_driver = {
 	.name  = "stm32_spi",

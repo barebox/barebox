@@ -573,6 +573,7 @@ static struct of_device_id zynqmp_clock_of_match[] = {
 	{.compatible = "xlnx,zynqmp-clk"},
 	{},
 };
+MODULE_DEVICE_TABLE(of, zynqmp_clock_of_match);
 
 static struct driver zynqmp_clock_driver = {
 	.probe	= zynqmp_clock_probe,

@@ -142,6 +142,7 @@ static __maybe_unused struct of_device_id pinctrl_vf610_dt_ids[] = {
 	{ .compatible = "fsl,vf610-iomuxc", },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, pinctrl_vf610_dt_ids);
 
 static struct driver pinctrl_vf610_driver = {
 	.name		= "vf610-pinctrl",

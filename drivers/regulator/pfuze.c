@@ -186,6 +186,7 @@ static __maybe_unused struct of_device_id pfuze_dt_ids[] = {
 	{ .compatible = "fsl,pfuze3001" },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, pfuze_dt_ids);
 
 static struct driver pfuze_i2c_driver = {
 	.name		= "pfuze-i2c",

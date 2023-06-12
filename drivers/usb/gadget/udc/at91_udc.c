@@ -1522,6 +1522,7 @@ static const struct of_device_id at91_udc_dt_ids[] = {
 	{ .compatible = "atmel,at91sam9263-udc" },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, at91_udc_dt_ids);
 
 static struct driver at91_udc_driver = {
 	.name	= driver_name,

@@ -451,6 +451,7 @@ static __maybe_unused struct of_device_id tegra_sdmmc_compatible[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, tegra_sdmmc_compatible);
 
 static struct driver tegra_sdmmc_driver = {
 	.name  = "tegra-sdmmc",

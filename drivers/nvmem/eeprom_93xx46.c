@@ -300,6 +300,7 @@ static const struct of_device_id eeprom_93xx46_of_table[] = {
 	{ .compatible = "atmel,at93c46d", .data = &atmel_at93c46d_data, },
 	{}
 };
+MODULE_DEVICE_TABLE(of, eeprom_93xx46_of_table);
 
 static int eeprom_93xx46_probe_dt(struct spi_device *spi)
 {

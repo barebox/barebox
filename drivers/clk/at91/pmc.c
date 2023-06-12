@@ -255,6 +255,7 @@ static const struct of_device_id sama5d2_pmc_dt_ids[] = {
 	{ .compatible = "atmel,sama5d2-pmc" },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, sama5d2_pmc_dt_ids);
 
 static int __init pmc_register_ops(void)
 {

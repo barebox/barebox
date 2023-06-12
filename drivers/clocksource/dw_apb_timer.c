@@ -135,6 +135,7 @@ static struct of_device_id dw_apb_timer_dt_ids[] = {
 	{ .compatible = "snps,dw-apb-timer", },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, dw_apb_timer_dt_ids);
 
 static struct driver dw_apb_timer_driver = {
 	.name = "dw-apb-timer",

@@ -384,6 +384,7 @@ static struct of_device_id armada_370_pinctrl_of_match[] = {
 	},
 	{ },
 };
+MODULE_DEVICE_TABLE(of, armada_370_pinctrl_of_match);
 
 static int armada_370_pinctrl_probe(struct device *dev)
 {

@@ -110,6 +110,7 @@ static const struct of_device_id clk_gpio_device_id[] = {
 	{ .compatible = "gpio-gate-clock", },
 	{}
 };
+MODULE_DEVICE_TABLE(of, clk_gpio_device_id);
 
 static struct driver gpio_gate_clock_driver = {
 	.probe = of_gpio_clk_probe,

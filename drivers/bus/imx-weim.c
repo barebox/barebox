@@ -64,6 +64,7 @@ static struct of_device_id weim_id_table[] = {
 	}, {
 	}
 };
+MODULE_DEVICE_TABLE(of, weim_id_table);
 
 struct imx_weim {
 	struct device *dev;

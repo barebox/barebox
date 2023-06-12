@@ -421,6 +421,7 @@ static __maybe_unused struct of_device_id imx_keypad_dt_ids[] = {
         { .compatible = "fsl,imx21-kpp", },
         { }
 };
+MODULE_DEVICE_TABLE(of, imx_keypad_dt_ids);
 
 static struct driver imx_keypad_driver = {
 	.name   = "imx-kpp",

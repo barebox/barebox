@@ -695,6 +695,7 @@ static __maybe_unused struct of_device_id caam_match[] = {
 	},
 	{},
 };
+MODULE_DEVICE_TABLE(of, caam_match);
 
 static struct driver caam_driver = {
 	.name	= "caam",

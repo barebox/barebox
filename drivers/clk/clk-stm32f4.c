@@ -1621,6 +1621,7 @@ static const struct of_device_id stm32f4_of_match[] = {
 	},
 	{}
 };
+MODULE_DEVICE_TABLE(of, stm32f4_of_match);
 
 static struct clk_hw *stm32_register_aux_clk(const char *name,
 		const char * const *parent_names, int num_parents,

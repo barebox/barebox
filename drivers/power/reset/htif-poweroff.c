@@ -37,6 +37,7 @@ static const struct of_device_id htif_poweroff_of_match[] = {
 	{ .compatible = "ucb,htif0" },
 	{}
 };
+MODULE_DEVICE_TABLE(of, htif_poweroff_of_match);
 
 static struct driver htif_poweroff_driver = {
 	.name = "htif-poweroff",

@@ -1305,6 +1305,7 @@ static const struct of_device_id imx_gpcv2_dt_ids[] = {
 	{ .compatible = "fsl,imx8mq-gpc", .data = &imx8m_pgc_domain_data, },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, imx_gpcv2_dt_ids);
 
 static struct driver imx_gpcv2_driver = {
 	.name = "imx-gpcv2",

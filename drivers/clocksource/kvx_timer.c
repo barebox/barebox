@@ -49,6 +49,7 @@ static struct of_device_id kvx_timer_dt_ids[] = {
 	{ .compatible = "kalray,kvx-core-timer", },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, kvx_timer_dt_ids);
 
 static struct driver kvx_timer_driver = {
 	.name = "kvx-timer",

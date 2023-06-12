@@ -215,6 +215,7 @@ static __maybe_unused struct of_device_id mxs_ocotp_compatible[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, mxs_ocotp_compatible);
 
 static struct driver mxs_ocotp_driver = {
 	.name	= DRIVERNAME,

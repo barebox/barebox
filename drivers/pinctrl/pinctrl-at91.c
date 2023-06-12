@@ -379,6 +379,7 @@ static struct of_device_id at91_pinctrl_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, at91_pinctrl_dt_ids);
 
 static struct at91_pinctrl_mux_ops *at91_pinctrl_get_driver_data(struct device *dev)
 {
@@ -624,6 +625,7 @@ static struct of_device_id at91_gpio_dt_ids[] = {
 		/* sentinel */
 	},
 };
+MODULE_DEVICE_TABLE(of, at91_gpio_dt_ids);
 
 static int at91_gpio_probe(struct device *dev)
 {

@@ -63,6 +63,7 @@ static struct of_device_id orion_timer_dt_ids[] = {
 	{ .compatible = "marvell,orion-timer", },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, orion_timer_dt_ids);
 
 static struct driver orion_timer_driver = {
 	.name = "orion-timer",

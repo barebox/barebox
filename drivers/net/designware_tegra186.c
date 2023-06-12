@@ -308,6 +308,7 @@ static const struct of_device_id eqos_tegra186_ids[] = {
 	{ .compatible = "nvidia,tegra186-eqos" },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, eqos_tegra186_ids);
 
 static struct driver eqos_tegra186_driver = {
 	.name = "eqos-tegra186",

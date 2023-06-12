@@ -196,6 +196,7 @@ static __maybe_unused struct of_device_id stm32_bsec_dt_ids[] = {
 	{ .compatible = "st,stm32mp15-bsec", .data = &stm32mp15_bsec_data },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, stm32_bsec_dt_ids);
 
 static struct driver stm32_bsec_driver = {
 	.name	= "stm32_bsec",

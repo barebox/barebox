@@ -423,6 +423,7 @@ static const struct of_device_id ssd1307fb_of_match[] = {
 	},
 	{},
 };
+MODULE_DEVICE_TABLE(of, ssd1307fb_of_match);
 
 static int ssd1307fb_probe(struct device *dev)
 {

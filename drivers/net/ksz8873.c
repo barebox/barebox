@@ -435,6 +435,7 @@ static const struct of_device_id ksz8873_dt_ids[] = {
 	{ .compatible = "microchip,ksz8873", .data = &ksz8873_dcfg },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, ksz8873_dt_ids);
 
 static struct phy_driver ksz8873_driver_mdio = {
 	.drv = {

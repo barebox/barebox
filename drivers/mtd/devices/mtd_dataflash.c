@@ -895,6 +895,7 @@ static __maybe_unused struct of_device_id dataflash_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, dataflash_dt_ids);
 
 static struct driver dataflash_driver = {
 	.name  = "mtd_dataflash",

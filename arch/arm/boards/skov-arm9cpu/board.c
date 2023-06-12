@@ -75,6 +75,7 @@ static __maybe_unused struct of_device_id skov_arm9_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, skov_arm9_ids);
 
 static struct driver skov_arm9_driver = {
 	.name = "skov-arm9",

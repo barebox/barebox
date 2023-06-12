@@ -1053,6 +1053,7 @@ static const struct of_device_id nxp_fspi_dt_ids[] = {
 	{ .compatible = "nxp,imx8dxl-fspi", .data = (void *)&imx8dxl_data, },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, nxp_fspi_dt_ids);
 
 static struct driver nxp_fspi_driver = {
 	.name			= "nxp-fspi",

@@ -689,6 +689,7 @@ static struct of_device_id dove_pinctrl_of_match[] = {
 	},
 	{ }
 };
+MODULE_DEVICE_TABLE(of, dove_pinctrl_of_match);
 
 static int dove_pinctrl_probe(struct device *dev)
 {

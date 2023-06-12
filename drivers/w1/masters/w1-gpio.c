@@ -150,6 +150,7 @@ static __maybe_unused const struct of_device_id w1_gpio_dt_ids[] = {
 	{ .compatible = "w1-gpio" },
 	{}
 };
+MODULE_DEVICE_TABLE(of, w1_gpio_dt_ids);
 
 static struct driver w1_gpio_driver = {
 	.name	= "w1-gpio",

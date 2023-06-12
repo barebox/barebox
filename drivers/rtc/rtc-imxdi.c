@@ -603,6 +603,7 @@ static __maybe_unused const struct of_device_id dryice_dt_ids[] = {
 	{ .compatible = "fsl,imx25-rtc" },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, dryice_dt_ids);
 
 static struct driver dryice_rtc_driver = {
         .name   = "imx-di-rtc",

@@ -237,6 +237,7 @@ static __maybe_unused struct of_device_id tegra20_pmc_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, tegra20_pmc_dt_ids);
 
 static struct driver tegra20_pmc_driver = {
 	.probe	= tegra20_pmc_probe,

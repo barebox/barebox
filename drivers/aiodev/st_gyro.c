@@ -113,6 +113,7 @@ static const struct of_device_id st_gyro_match[] = {
 	{ .compatible = "st,l3gd20-gyro"  },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, st_gyro_match);
 
 static struct driver st_gyro_driver = {
 	.name  = "st_gyro",

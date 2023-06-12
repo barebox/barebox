@@ -231,6 +231,7 @@ static __maybe_unused struct of_device_id litex_spiflash_spi_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, litex_spiflash_spi_dt_ids);
 
 static struct driver litex_spiflash_spi_driver = {
 	.name  = "litex-spiflash",

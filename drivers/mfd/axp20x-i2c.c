@@ -58,6 +58,7 @@ static const struct of_device_id axp20x_i2c_of_match[] = {
 	{ .compatible = "x-powers,axp806", .data = (void *)AXP806_ID },
 	{ },
 };
+MODULE_DEVICE_TABLE(of, axp20x_i2c_of_match);
 
 static struct driver axp20x_i2c_driver = {
 	.name		= "axp20x-i2c",

@@ -141,6 +141,7 @@ static const struct of_device_id imx8mq_usb_phy_of_match[] = {
 	 .data = &imx8mp_usb_phy_ops,},
 	{ }
 };
+MODULE_DEVICE_TABLE(of, imx8mq_usb_phy_of_match);
 
 static struct phy *imx8mq_usb_phy_xlate(struct device *dev,
 					struct of_phandle_args *args)

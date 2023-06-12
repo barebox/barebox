@@ -622,6 +622,7 @@ static __maybe_unused struct of_device_id imx_usbmisc_dt_ids[] = {
 		/* sentinel */
 	},
 };
+MODULE_DEVICE_TABLE(of, imx_usbmisc_dt_ids);
 
 int imx_usbmisc_port_init(struct device *dev, int port, unsigned flags)
 {

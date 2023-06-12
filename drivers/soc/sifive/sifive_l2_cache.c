@@ -127,6 +127,7 @@ static const struct of_device_id sifive_l2_ids[] = {
 	{ .compatible = "starfive,ccache0" },
 	{ /* end of table */ },
 };
+MODULE_DEVICE_TABLE(of, sifive_l2_ids);
 
 static struct driver sifive_l2_driver = {
 	.name = "sfive-l2cache",

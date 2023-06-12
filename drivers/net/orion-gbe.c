@@ -538,6 +538,7 @@ static struct of_device_id orion_gbe_dt_ids[] = {
 	{ .compatible = "marvell,kirkwood-eth", },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, orion_gbe_dt_ids);
 
 static struct driver orion_gbe_driver = {
 	.name   = "orion-gbe",

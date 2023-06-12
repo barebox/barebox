@@ -534,6 +534,7 @@ static const struct of_device_id pca953x_dt_ids[] = {
 	{ .compatible = "exar,xra1202", .data = OF_953X( 8, 0), },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, pca953x_dt_ids);
 
 static struct driver pca953x_driver = {
 	.name	= "pca953x",

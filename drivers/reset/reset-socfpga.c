@@ -108,6 +108,7 @@ static const struct of_device_id socfpga_reset_dt_ids[] = {
 	{ .compatible = "altr,rst-mgr", },
 	{ /* sentinel */ },
 };
+MODULE_DEVICE_TABLE(of, socfpga_reset_dt_ids);
 
 static struct driver socfpga_reset_driver = {
 	.name = "socfpga_reset",

@@ -282,6 +282,7 @@ static const struct of_device_id mxc_rngc_dt_ids[] = {
 	{ .compatible = "fsl,imx25-rngb" },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, mxc_rngc_dt_ids);
 
 static struct driver mxc_rngc_driver = {
 	.name = "mxc_rngc",

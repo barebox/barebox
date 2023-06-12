@@ -744,6 +744,7 @@ static __maybe_unused struct of_device_id imx_esdctl_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, imx_esdctl_dt_ids);
 
 static struct driver imx_esdctl_driver = {
 	.name   = "imx-esdctl",

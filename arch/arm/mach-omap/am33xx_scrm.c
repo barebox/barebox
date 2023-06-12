@@ -36,6 +36,7 @@ static __maybe_unused struct of_device_id am33xx_scrm_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, am33xx_scrm_dt_ids);
 
 static struct driver am33xx_scrm_driver = {
 	.name   = "am33xx-scrm",

@@ -229,6 +229,7 @@ static __maybe_unused struct of_device_id imx_usbphy_dt_ids[] = {
 		/* sentinel */
 	},
 };
+MODULE_DEVICE_TABLE(of, imx_usbphy_dt_ids);
 
 static struct driver imx_usbphy_driver = {
 	.name   = "imx-usb-phy",

@@ -342,6 +342,7 @@ static __maybe_unused struct of_device_id imx50_ccm_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, imx50_ccm_dt_ids);
 
 static __maybe_unused struct driver imx50_ccm_driver = {
 	.probe	= imx50_ccm_probe,
@@ -431,6 +432,7 @@ static __maybe_unused struct of_device_id imx51_ccm_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, imx51_ccm_dt_ids);
 
 static __maybe_unused struct driver imx51_ccm_driver = {
 	.probe	= imx51_ccm_probe,
@@ -529,6 +531,7 @@ static __maybe_unused struct of_device_id imx53_ccm_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, imx53_ccm_dt_ids);
 
 static __maybe_unused struct driver imx53_ccm_driver = {
 	.probe	= imx53_ccm_probe,

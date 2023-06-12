@@ -75,6 +75,7 @@ static const struct of_device_id prt_imx8mm_of_match[] = {
 	{ .compatible = "prt,prt8mm", },
 	{ /* sentinel */ },
 };
+MODULE_DEVICE_TABLE(of, prt_imx8mm_of_match);
 
 static struct driver prt_prt8mm_board_driver = {
 	.name = "board-protonic-imx8mm",

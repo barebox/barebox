@@ -905,6 +905,7 @@ static const struct of_device_id __maybe_unused atmel_pmecc_legacy_match[] = {
 	{ .compatible = "atmel,sama5d2-nand", &sama5d2_caps },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, atmel_pmecc_legacy_match);
 
 struct atmel_pmecc *dev_atmel_pmecc_get(struct device *userdev)
 {

@@ -89,6 +89,7 @@ static __maybe_unused struct of_device_id sandbox_power_dt_ids[] = {
 	{ .compatible = "barebox,sandbox-power" },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, sandbox_power_dt_ids);
 
 static struct driver sandbox_power_drv = {
 	.name  = "sandbox-power",

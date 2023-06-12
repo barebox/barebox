@@ -395,6 +395,7 @@ static struct of_device_id mvebu_pcie_dt_ids[] = {
 #endif
 	{ },
 };
+MODULE_DEVICE_TABLE(of, mvebu_pcie_dt_ids);
 
 static int mvebu_pcie_probe(struct device *dev)
 {

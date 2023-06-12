@@ -194,6 +194,7 @@ static const struct of_device_id at91_ohci_dt_ids[] = {
 	{ .compatible = "atmel,at91rm9200-ohci" },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, at91_ohci_dt_ids);
 
 static struct driver at91_ohci_driver = {
 	.name = "at91_ohci",

@@ -160,6 +160,7 @@ static __maybe_unused struct of_device_id davinci_wdt_of_match[] = {
 	{ .compatible = "ti,davinci-wdt", },
 	{},
 };
+MODULE_DEVICE_TABLE(of, davinci_wdt_of_match);
 
 static struct driver platform_wdt_driver = {
 	.name = "davinci-wdt",

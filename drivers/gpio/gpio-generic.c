@@ -600,6 +600,7 @@ static const struct of_device_id bgpio_of_match[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, bgpio_of_match);
 
 static struct driver bgpio_driver = {
 	.name		= "basic-mmio-gpio",

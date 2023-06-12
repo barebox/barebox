@@ -647,6 +647,7 @@ static __maybe_unused struct of_device_id omap_mmc_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, omap_mmc_dt_ids);
 
 static struct driver omap_mmc_driver = {
 	.name  = "omap-hsmmc",

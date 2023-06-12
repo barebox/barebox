@@ -90,6 +90,7 @@ static struct of_device_id regulator_fixed_of_ids[] = {
 	{ .compatible = "regulator-fixed", },
 	{ }
 };
+MODULE_DEVICE_TABLE(of, regulator_fixed_of_ids);
 
 static struct driver regulator_fixed_driver = {
 	.name  = "regulator-fixed",

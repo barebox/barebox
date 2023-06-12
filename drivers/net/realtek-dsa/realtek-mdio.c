@@ -210,6 +210,7 @@ static const struct of_device_id realtek_mdio_of_match[] = {
 	{ /* sentinel */ },
 };
 MODULE_DEVICE_TABLE(of, realtek_mdio_of_match);
+MODULE_DEVICE_TABLE(of, realtek_mdio_of_match);
 
 static struct phy_driver realtek_mdio_driver = {
 	.drv = {

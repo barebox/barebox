@@ -134,6 +134,7 @@ static __maybe_unused struct of_device_id imx23_ccm_dt_ids[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, imx23_ccm_dt_ids);
 
 static struct driver imx23_ccm_driver = {
 	.probe	= imx23_ccm_probe,

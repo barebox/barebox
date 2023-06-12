@@ -200,6 +200,7 @@ static struct of_device_id imx_pwm_dt_ids[] = {
 	{ .compatible = "fsl,imx27-pwm", .data = &imx_pwm_data_v2, },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(of, imx_pwm_dt_ids);
 
 static int imx_pwm_probe(struct device *dev)
 {

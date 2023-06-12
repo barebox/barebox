@@ -193,6 +193,7 @@ static __maybe_unused struct of_device_id atmci_compatible[] = {
 		/* sentinel */
 	}
 };
+MODULE_DEVICE_TABLE(of, atmci_compatible);
 
 static struct driver atmci_driver = {
 	.name	= "atmel_mci",

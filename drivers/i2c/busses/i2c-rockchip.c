@@ -452,6 +452,7 @@ static const struct of_device_id rk_i2c_match[] = {
 	{ .compatible = "rockchip,rk3399-i2c" },
 	{},
 };
+MODULE_DEVICE_TABLE(of, rk_i2c_match);
 
 static struct driver rk_i2c_driver = {
 	.name  = "rk3x-i2c",

@@ -2963,6 +2963,7 @@ static const struct of_device_id rockchip_pinctrl_dt_match[] = {
 #endif
 	{},
 };
+MODULE_DEVICE_TABLE(of, rockchip_pinctrl_dt_match);
 
 static struct driver rockchip_pinctrl_driver = {
 	.name = "rockchip-pinctrl",

@@ -245,6 +245,7 @@ static const struct of_device_id qoriq_tmu_match[] = {
 	{ .compatible = "fsl,imx8mq-tmu",},
 	{},
 };
+MODULE_DEVICE_TABLE(of, qoriq_tmu_match);
 
 static struct driver imx_thermal_driver = {
 	.name		= "qoriq_thermal",

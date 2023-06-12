@@ -102,6 +102,8 @@ static void test_ubsan_object_size_mismatch(void)
 	volatile long long *ptr, val2;
 
 	ptr = (long long *)&val;
+	OPTIMIZER_HIDE_VAR(ptr);
+
 	val2 = *ptr;
 }
 

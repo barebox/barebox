@@ -32,6 +32,8 @@ static int str_to_loglevel(const char *str)
 	if (!strcmp(str, "emerg"))
 		return MSG_EMERG;
 
+	printf("dmesg: unknown loglevel %s\n", str);
+
 	return -EINVAL;
 }
 
@@ -49,8 +51,12 @@ static unsigned dmesg_get_levels(const char *__args)
 			break;
 
 		level = str_to_loglevel(str);
-		if (level >= 0)
-			flags |= BIT(level);
+		if (level < 0) {
+			flags = 0;
+			break;
+		}
+
+		flags |= BIT(level);
 	}
 
 	free(args);
@@ -81,7 +87,7 @@ static int do_dmesg(int argc, char *argv[])
 		case 'l':
 			levels = dmesg_get_levels(optarg);
 			if (!levels)
-				return COMMAND_ERROR_USAGE;
+				return COMMAND_ERROR;
 			break;
 		case 'r':
 			flags |= BAREBOX_LOG_PRINT_RAW | BAREBOX_LOG_PRINT_TIME;

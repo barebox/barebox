@@ -36,22 +36,6 @@ static inline void arm_virt_init(void) {}
 
 extern char __dtb_overlay_of_flash_start[];
 
-static int virt_probe(struct device *dev)
-{
-	struct device_node *overlay;
-	void (*init)(void);
-
-	init = device_get_match_data(dev);
-	if (init)
-		init();
-
-	overlay = of_unflatten_dtb(__dtb_overlay_of_flash_start, INT_MAX);
-	of_overlay_apply_tree(dev->of_node, overlay);
-	/* of_probe() will happen later at of_populate_initcall */
-
-	return 0;
-}
-
 static const struct of_device_id virt_of_match[] = {
 	{ .compatible = "linux,dummy-virt", .data = arm_virt_init },
 	{ .compatible = "riscv-virtio" },
@@ -59,10 +43,33 @@ static const struct of_device_id virt_of_match[] = {
 };
 BAREBOX_DEEP_PROBE_ENABLE(virt_of_match);
 
-static struct driver virt_board_driver = {
-	.name = "board-qemu-virt",
-	.probe = virt_probe,
-	.of_compatible = virt_of_match,
-};
+/*
+ * We don't have a dedicated qemu-virt device tree and instead rely
+ * on what Qemu passes us. To be able to get fundamental changes
+ * in very early, we forego having a board driver here and do this
+ * directly in the initcall.
+ */
+static int virt_board_driver_init(void)
+{
+	struct device_node *root = of_get_root_node();
+	struct device_node *overlay;
+	const struct of_device_id *id;
+	void (*init)(void);
 
-postcore_platform_driver(virt_board_driver);
+	id = of_match_node(virt_of_match, root);
+	if (!id)
+		return 0;
+
+	if (id->data) {
+		init = id->data;
+		init();
+	}
+
+	overlay = of_unflatten_dtb(__dtb_overlay_of_flash_start, INT_MAX);
+	of_overlay_apply_tree(root, overlay);
+
+	/* of_probe() will happen later at of_populate_initcall */
+
+	return 0;
+}
+postcore_initcall(virt_board_driver_init);

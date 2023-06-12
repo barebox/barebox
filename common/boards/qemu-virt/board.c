@@ -34,7 +34,7 @@ static inline void arm_virt_init(void)
 static inline void arm_virt_init(void) {}
 #endif
 
-extern char __dtb_overlay_of_flash_start[];
+extern char __dtbo_qemu_virt_flash_start[];
 
 static const struct of_device_id virt_of_match[] = {
 	{ .compatible = "linux,dummy-virt", .data = arm_virt_init },
@@ -65,7 +65,7 @@ static int virt_board_driver_init(void)
 		init();
 	}
 
-	overlay = of_unflatten_dtb(__dtb_overlay_of_flash_start, INT_MAX);
+	overlay = of_unflatten_dtb(__dtbo_qemu_virt_flash_start, INT_MAX);
 	of_overlay_apply_tree(root, overlay);
 
 	/* of_probe() will happen later at of_populate_initcall */

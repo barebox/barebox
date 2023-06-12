@@ -115,11 +115,13 @@ static int tegra_sdmmc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 		if (data->flags & MMC_DATA_WRITE) {
 			dma_sync_single_for_device(mci->hw_dev, (unsigned long)data->src,
 						   num_bytes, DMA_TO_DEVICE);
-			sdhci_write32(&host->sdhci, SDHCI_DMA_ADDRESS, (u32)data->src);
+			sdhci_write32(&host->sdhci, SDHCI_DMA_ADDRESS,
+				      lower_32_bits(virt_to_phys(data->src)));
 		} else {
 			dma_sync_single_for_device(mci->hw_dev, (unsigned long)data->dest,
 						   num_bytes, DMA_FROM_DEVICE);
-			sdhci_write32(&host->sdhci, SDHCI_DMA_ADDRESS, (u32)data->dest);
+			sdhci_write32(&host->sdhci, SDHCI_DMA_ADDRESS,
+				      lower_32_bits(virt_to_phys(data->dest)));
 		}
 
 		sdhci_write32(&host->sdhci, SDHCI_BLOCK_SIZE__BLOCK_COUNT,
@@ -308,9 +310,8 @@ static int tegra_sdmmc_init(struct mci_host *mci, struct device *dev)
 	sdhci_write32(&host->sdhci, TEGRA_SDMMC_PWR_CNTL, val);
 
 	/* sdmmc1 and sdmmc3 on T30 need a bit of padctrl init */
-	if (of_device_is_compatible(mci->hw_dev->of_node,
-				    "nvidia,tegra30-sdhci") &&
-			((u32)regs == 0x78000000 || (u32)regs == 0x78000400)) {
+	if (of_device_is_compatible(mci->hw_dev->of_node, "nvidia,tegra30-sdhci") &&
+	    (regs == IOMEM(0x78000000) || regs == IOMEM(0x78000400))) {
 		val = readl(regs + TEGRA_SDMMC_SDMEMCOMPPADCTRL);
 		val &= 0xfffffff0;
 		val |= 0x7 << TEGRA_SDMMC_SDMEMCOMPPADCTRL_VREF_SEL_SHIFT;

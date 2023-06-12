@@ -211,6 +211,7 @@ dtc_cpp_flags  = -Wp,-MD,$(depfile).pre -nostdinc                        \
 		 -I$(srctree)/dts/include                                \
 		 -I$(srctree)/dts/src/                                   \
 		 $(DTC_CPP_FLAGS_$(basetarget).dtb)                      \
+		 $(DTC_CPP_FLAGS_$(basetarget).dtbo)                     \
 		 -undef -D__DTS__
 
 ifdef CONFIG_BOOTM_FITIMAGE_PUBKEY

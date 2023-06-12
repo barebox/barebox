@@ -1492,6 +1492,7 @@ static __maybe_unused struct of_device_id smc91c111_dt_ids[] = {
 	{
 		.compatible = "smsc,lan91c111",
 	},
+	{ /* sentinel */ },
 };
 
 static struct driver smc91c111_driver = {

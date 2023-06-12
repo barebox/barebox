@@ -1,0 +1,43 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+
+/dts-v1/;
+/plugin/;
+
+&{/} {
+	regulator_test_fixed: regulator-self-test-fixed {
+		compatible = "regulator-fixed";
+		regulator-name = "test_fixed";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+	};
+
+	regulator-self-test-pmic {
+		compatible = "barebox,regulator-self-test";
+
+		buck-supply = <&regulator_test_fixed>;
+		ldo1-supply = <&test_pmic_buck>;
+		ldo2-supply = <&test_pmic_buck>;
+
+		regulators {
+			test_pmic_buck: BUCK {
+				regulator-name = "buck";
+				regulator-min-microvolt = <330000>;
+				regulator-max-microvolt = <330000>;
+			};
+
+			test_pmic_ldo1: LDO1 {
+				regulator-name = "ldo1";
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <180000>;
+				regulator-max-microvolt = <180000>;
+			};
+
+			test_pmic_ldo2: LDO2 {
+				regulator-name = "ldo2";
+				regulator-min-microvolt = <180000>;
+				regulator-max-microvolt = <180000>;
+			};
+		};
+	};
+};

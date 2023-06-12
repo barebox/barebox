@@ -65,6 +65,7 @@ config NAND_MXS
 config NAND_OMAP_GPMC
 	tristate "NAND Flash Support for GPMC based OMAP platforms"
 	depends on OMAP_GPMC
+	depends on BUS_OMAP_GPMC
 	help
 	  Support for NAND flash using GPMC. GPMC is a common memory
 	  interface found on Texas Instrument's OMAP platforms

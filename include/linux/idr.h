@@ -54,6 +54,8 @@ static inline int idr_alloc_one(struct idr *head, void *ptr, int start)
 		return -EBUSY;
 
 	idr = malloc(sizeof(*idr));
+	if (!idr)
+		return -ENOMEM;
 
 	idr->id = start;
 	idr->ptr = ptr;

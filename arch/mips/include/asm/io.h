@@ -28,7 +28,7 @@ void dma_inv_range(unsigned long, unsigned long);
  *     the memory address given.
  */
 #define virt_to_phys virt_to_phys
-static inline unsigned long virt_to_phys(const void *address)
+static inline unsigned long virt_to_phys(const volatile void *address)
 {
 	return CPHYSADDR((unsigned long)address);
 }

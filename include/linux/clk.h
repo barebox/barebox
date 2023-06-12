@@ -179,6 +179,11 @@ static inline struct clk *clk_get(struct device *dev, const char *id)
 	return NULL;
 }
 
+static inline struct clk *clk_get_parent(struct clk *clk)
+{
+	return NULL;
+}
+
 static inline int clk_enable(struct clk *clk)
 {
 	return 0;
@@ -744,6 +749,7 @@ static inline unsigned int of_clk_get_parent_count(struct device_node *np)
 {
 	return 0;
 }
+
 static inline int of_clk_init(void)
 {
 	return 0;

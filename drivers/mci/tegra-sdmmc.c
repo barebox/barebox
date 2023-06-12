@@ -310,7 +310,7 @@ static int tegra_sdmmc_init(struct mci_host *mci, struct device *dev)
 	/* sdmmc1 and sdmmc3 on T30 need a bit of padctrl init */
 	if (of_device_is_compatible(mci->hw_dev->of_node,
 				    "nvidia,tegra30-sdhci") &&
-			((u32)regs == 0x78000000 || (u32)regs == 78000400)) {
+			((u32)regs == 0x78000000 || (u32)regs == 0x78000400)) {
 		val = readl(regs + TEGRA_SDMMC_SDMEMCOMPPADCTRL);
 		val &= 0xfffffff0;
 		val |= 0x7 << TEGRA_SDMMC_SDMEMCOMPPADCTRL_VREF_SEL_SHIFT;

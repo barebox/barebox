@@ -123,9 +123,9 @@ int __pr_memory_display(int level, const void *addr, loff_t offs, unsigned nbyte
 
 	} while (nbytes > 0);
 
-	va_end(args);
 	ret = 0;
 out:
+	va_end(args);
 
 	return ret;
 }

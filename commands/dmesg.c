@@ -13,6 +13,16 @@
 
 static int str_to_loglevel(const char *str)
 {
+	int ret;
+	unsigned long level;
+
+	ret = kstrtoul(str, 10, &level);
+	if (!ret) {
+		if (level > MSG_VDEBUG)
+			goto unknown;
+		return level;
+	}
+
 	if (!strcmp(str, "vdebug"))
 		return MSG_VDEBUG;
 	if (!strcmp(str, "debug"))
@@ -31,7 +41,7 @@ static int str_to_loglevel(const char *str)
 		return MSG_ALERT;
 	if (!strcmp(str, "emerg"))
 		return MSG_EMERG;
-
+unknown:
 	printf("dmesg: unknown loglevel %s\n", str);
 
 	return -EINVAL;

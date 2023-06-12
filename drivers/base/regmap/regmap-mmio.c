@@ -289,11 +289,15 @@ struct regmap *regmap_init_mmio_clk(struct device *dev,
 		return ERR_CAST(ctx);
 
 	if (clk_id) {
-		ctx->clk = clk_get(dev, clk_id);
-		if (IS_ERR(ctx->clk)) {
+		struct clk *clk;
+
+		clk = clk_get(dev, clk_id);
+		if (IS_ERR(clk)) {
 			kfree(ctx);
-			return ERR_CAST(ctx->clk);
+			return ERR_CAST(clk);
 		}
+
+		ctx->clk = clk;
 	}
 
 	return regmap_init(dev, &regmap_mmio, ctx, config);

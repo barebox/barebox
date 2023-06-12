@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-only
 config HW_HAS_PCI
-	bool "Compile in PCI core" if COMPILE_TEST
+	bool
 
 if HW_HAS_PCI
 

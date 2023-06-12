@@ -11,6 +11,30 @@
 #include <getopt.h>
 #include <clock.h>
 
+static int str_to_loglevel(const char *str)
+{
+	if (!strcmp(str, "vdebug"))
+		return MSG_VDEBUG;
+	if (!strcmp(str, "debug"))
+		return MSG_DEBUG;
+	if (!strcmp(str, "info"))
+		return MSG_INFO;
+	if (!strcmp(str, "notice"))
+		return MSG_NOTICE;
+	if (!strcmp(str, "warn"))
+		return MSG_WARNING;
+	if (!strcmp(str, "err"))
+		return MSG_ERR;
+	if (!strcmp(str, "crit"))
+		return MSG_CRIT;
+	if (!strcmp(str, "alert"))
+		return MSG_ALERT;
+	if (!strcmp(str, "emerg"))
+		return MSG_EMERG;
+
+	return -EINVAL;
+}
+
 static unsigned dmesg_get_levels(const char *__args)
 {
 	char *args = xstrdup(__args);
@@ -18,28 +42,15 @@ static unsigned dmesg_get_levels(const char *__args)
 	unsigned flags = 0;
 
 	while (1) {
+		int level;
+
 		str = strsep(&levels, ",");
 		if (!str)
 			break;
 
-		if(!strcmp(str, "vdebug"))
-			flags |= BAREBOX_LOG_PRINT_VDEBUG;
-		else if(!strcmp(str, "debug"))
-			flags |= BAREBOX_LOG_PRINT_DEBUG;
-		else if(!strcmp(str, "info"))
-			flags |= BAREBOX_LOG_PRINT_INFO;
-		else if(!strcmp(str, "notice"))
-			flags |= BAREBOX_LOG_PRINT_NOTICE;
-		else if(!strcmp(str, "warn"))
-			flags |= BAREBOX_LOG_PRINT_WARNING;
-		else if(!strcmp(str, "err"))
-			flags |= BAREBOX_LOG_PRINT_ERR;
-		else if(!strcmp(str, "crit"))
-			flags |= BAREBOX_LOG_PRINT_CRIT;
-		else if(!strcmp(str, "alert"))
-			flags |= BAREBOX_LOG_PRINT_ALERT;
-		else if(!strcmp(str, "emerg"))
-			flags |= BAREBOX_LOG_PRINT_EMERG;
+		level = str_to_loglevel(str);
+		if (level >= 0)
+			flags |= BIT(level);
 	}
 
 	free(args);

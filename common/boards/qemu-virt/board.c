@@ -35,6 +35,7 @@ static inline void arm_virt_init(void) {}
 #endif
 
 extern char __dtbo_qemu_virt_flash_start[];
+extern char __dtb_fitimage_pubkey_start[];
 
 static const struct of_device_id virt_of_match[] = {
 	{ .compatible = "linux,dummy-virt", .data = arm_virt_init },
@@ -52,7 +53,7 @@ BAREBOX_DEEP_PROBE_ENABLE(virt_of_match);
 static int virt_board_driver_init(void)
 {
 	struct device_node *root = of_get_root_node();
-	struct device_node *overlay;
+	struct device_node *overlay, *pubkey;
 	const struct of_device_id *id;
 	void (*init)(void);
 
@@ -67,6 +68,9 @@ static int virt_board_driver_init(void)
 
 	overlay = of_unflatten_dtb(__dtbo_qemu_virt_flash_start, INT_MAX);
 	of_overlay_apply_tree(root, overlay);
+
+	pubkey = of_unflatten_dtb(__dtb_fitimage_pubkey_start, INT_MAX);
+	of_merge_nodes(root, pubkey);
 
 	/* of_probe() will happen later at of_populate_initcall */
 

@@ -26,7 +26,7 @@ static inline uint8_t ata_rd_byte(struct ide_port *ide, void __iomem *addr)
 	if (ide->io.mmio)
 		return readb(addr);
 	else
-		return (uint8_t) inb((int) addr);
+		return (uint8_t) inb((ulong)addr);
 }
 
 /**
@@ -42,7 +42,7 @@ static inline void ata_wr_byte(struct ide_port *ide, uint8_t value,
 	if (ide->io.mmio)
 		writeb(value, addr);
 	else
-		outb(value, (int) addr);
+		outb(value, (ulong)addr);
 }
 
 /**
@@ -57,7 +57,7 @@ static inline uint16_t ata_rd_word(struct ide_port *ide,
 	if (ide->io.mmio)
 		return readw(addr);
 	else
-		return (uint16_t) inw((int) addr);
+		return (uint16_t) inw((ulong)addr);
 }
 
 /**
@@ -73,7 +73,7 @@ static inline void ata_wr_word(struct ide_port *ide, uint16_t value,
 	if (ide->io.mmio)
 		writew(value, addr);
 	else
-		outw(value, (int) addr);
+		outw(value, (ulong)addr);
 }
 
 /**

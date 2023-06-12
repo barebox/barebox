@@ -280,11 +280,6 @@ static int rave_sp_eeprom_write(void *ctx, unsigned offset, const void *val, siz
 				     offset, (void *)val, bytes);
 }
 
-static const struct nvmem_bus rave_sp_eeprom_nvmem_bus = {
-	.write = rave_sp_eeprom_write,
-	.read  = rave_sp_eeprom_read,
-};
-
 static int rave_sp_eeprom_probe(struct device *dev)
 {
 	struct rave_sp *sp = dev->parent->priv;
@@ -329,7 +324,8 @@ static int rave_sp_eeprom_probe(struct device *dev)
 	config.word_size = 1;
 	config.stride    = 1;
 	config.size      = reg[1];
-	config.bus       = &rave_sp_eeprom_nvmem_bus;
+	config.reg_write = rave_sp_eeprom_write;
+	config.reg_read  = rave_sp_eeprom_read;
 
 	nvmem = nvmem_register(&config);
 	if (IS_ERR(nvmem)) {

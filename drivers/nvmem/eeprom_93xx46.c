@@ -362,11 +362,6 @@ static int eeprom_93xx46_probe_dt(struct spi_device *spi)
 	return 0;
 }
 
-static const struct nvmem_bus eeprom_93xx46_nvmem_bus = {
-	.write = eeprom_93xx46_write,
-	.read  = eeprom_93xx46_read,
-};
-
 static int eeprom_93xx46_probe(struct device *dev)
 {
 	struct spi_device *spi = (struct spi_device *)dev->type_data;
@@ -406,7 +401,9 @@ static int eeprom_93xx46_probe(struct device *dev)
 	edev->nvmem_config.dev = &spi->dev;
 	edev->nvmem_config.priv = edev;
 	edev->nvmem_config.read_only = pd->flags & EE_READONLY;
-	edev->nvmem_config.bus = &eeprom_93xx46_nvmem_bus;
+	edev->nvmem_config.reg_write = eeprom_93xx46_write;
+	edev->nvmem_config.reg_read  = eeprom_93xx46_read;
+
 	edev->nvmem_config.stride = 4;
 	edev->nvmem_config.word_size = 1;
 	edev->nvmem_config.size = edev->size;

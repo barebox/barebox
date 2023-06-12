@@ -16,7 +16,6 @@
 struct nvmem_device {
 	const char		*name;
 	struct device		dev;
-	const struct nvmem_bus	*bus;
 	struct list_head	node;
 	int			stride;
 	int			word_size;
@@ -27,6 +26,10 @@ struct nvmem_device {
 	struct cdev		cdev;
 	void			*priv;
 	nvmem_cell_post_process_t cell_post_process;
+	int			(*reg_write)(void *ctx, unsigned int reg,
+					     const void *val, size_t val_size);
+	int			(*reg_read)(void *ctx, unsigned int reg,
+					    void *val, size_t val_size);
 };
 
 struct nvmem_cell {
@@ -208,13 +211,14 @@ struct nvmem_device *nvmem_register(const struct nvmem_config *config)
 	nvmem->word_size = config->word_size;
 	nvmem->size = config->size;
 	nvmem->dev.parent = config->dev;
-	nvmem->bus = config->bus;
+	nvmem->reg_read = config->reg_read;
+	nvmem->reg_write = config->reg_write;
 	np = config->cdev ? config->cdev->device_node : config->dev->of_node;
 	nvmem->dev.of_node = np;
 	nvmem->priv = config->priv;
 	nvmem->cell_post_process = config->cell_post_process;
 
-	if (config->read_only || !config->bus->write || of_property_read_bool(np, "read-only"))
+	if (config->read_only || !config->reg_write || of_property_read_bool(np, "read-only"))
 		nvmem->read_only = true;
 
 	dev_set_name(&nvmem->dev, config->name);
@@ -531,7 +535,7 @@ static int __nvmem_cell_read(struct nvmem_device *nvmem,
 {
 	int rc;
 
-	rc = nvmem->bus->read(nvmem->priv, cell->offset, buf, cell->bytes);
+	rc = nvmem->reg_read(nvmem->priv, cell->offset, buf, cell->bytes);
 	if (rc < 0)
 		return rc;
 
@@ -603,7 +607,7 @@ static inline void *nvmem_cell_prepare_write_buffer(struct nvmem_cell *cell,
 		*b <<= bit_offset;
 
 		/* setup the first byte with lsb bits from nvmem */
-		rc = nvmem->bus->read(nvmem->priv, cell->offset, &v, 1);
+		rc = nvmem->reg_read(nvmem->priv, cell->offset, &v, 1);
 		if (rc < 0)
 			return ERR_PTR(rc);
 
@@ -623,7 +627,7 @@ static inline void *nvmem_cell_prepare_write_buffer(struct nvmem_cell *cell,
 	/* if it's not end on byte boundary */
 	if ((nbits + bit_offset) % BITS_PER_BYTE) {
 		/* setup the last byte with msb bits from nvmem */
-		rc = nvmem->bus->read(nvmem->priv, cell->offset + cell->bytes - 1,
+		rc = nvmem->reg_read(nvmem->priv, cell->offset + cell->bytes - 1,
 				      &v, 1);
 		if (rc < 0)
 			return ERR_PTR(rc);
@@ -659,7 +663,7 @@ int nvmem_cell_write(struct nvmem_cell *cell, void *buf, size_t len)
 			return PTR_ERR(buf);
 	}
 
-	rc = nvmem->bus->write(nvmem->priv, cell->offset, buf, cell->bytes);
+	rc = nvmem->reg_write(nvmem->priv, cell->offset, buf, cell->bytes);
 
 	/* free the tmp buffer */
 	if (cell->bit_offset || cell->nbits)
@@ -756,7 +760,8 @@ int nvmem_device_read(struct nvmem_device *nvmem,
 	if (!bytes)
 		return 0;
 
-	rc = nvmem->bus->read(nvmem->priv, offset, buf, bytes);
+	rc = nvmem->reg_read(nvmem->priv, offset, buf, bytes);
+
 	if (rc < 0)
 		return rc;
 
@@ -789,7 +794,8 @@ int nvmem_device_write(struct nvmem_device *nvmem,
 	if (!bytes)
 		return 0;
 
-	rc = nvmem->bus->write(nvmem->priv, offset, buf, bytes);
+	rc = nvmem->reg_write(nvmem->priv, offset, buf, bytes);
+
 	if (rc < 0)
 		return rc;
 

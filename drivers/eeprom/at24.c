@@ -363,11 +363,6 @@ static int at24_nvmem_write(void *ctx, unsigned off, const void *buf, size_t cou
 	return at24_write(ctx, buf, off, count);
 }
 
-static const struct nvmem_bus at24_nvmem_bus = {
-	.write = at24_nvmem_write,
-	.read  = at24_nvmem_read,
-};
-
 static int at24_probe(struct device *dev)
 {
 	struct i2c_client *client = to_i2c_client(dev);
@@ -489,7 +484,8 @@ static int at24_probe(struct device *dev)
 	at24->nvmem_config.dev = dev;
 	at24->nvmem_config.priv = at24;
 	at24->nvmem_config.read_only = !writable;
-	at24->nvmem_config.bus = &at24_nvmem_bus;
+	at24->nvmem_config.reg_write = at24_nvmem_write;
+	at24->nvmem_config.reg_read  = at24_nvmem_read;
 	at24->nvmem_config.stride = 1;
 	at24->nvmem_config.word_size = 1;
 	at24->nvmem_config.size = chip.byte_len;

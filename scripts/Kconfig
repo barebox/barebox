@@ -51,8 +51,8 @@ config STM32_IMAGE
 
 config RK_IMAGE
 	bool "Rockchip image tool" if COMPILE_HOST_TOOLS
-	depends on ARCH_ROCKCHIP || COMPILE_HOST_TOOLS
-	default y if ARCH_ROCKCHIP
+	depends on ARCH_ROCKCHIP_V8 || COMPILE_HOST_TOOLS
+	default y if ARCH_ROCKCHIP_V8
 	help
 	  This enables building the image creation tool for Rockchip SoCs
 

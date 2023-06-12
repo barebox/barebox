@@ -2,3 +2,4 @@
 
 config BOARD_QEMU_VIRT
 	bool
+	select OF_OVERLAY

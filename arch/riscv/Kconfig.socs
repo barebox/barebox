@@ -38,6 +38,7 @@ config BOARD_RISCV_VIRT
 config BOARD_RISCVEMU
 	depends on SOC_VIRT
 	bool "TinyEMU Virt Machine (riscvemu)"
+	select OF_OVERLAY
 	default y
 	help
 	  TinyEMU's Virt machine differs from QEMU in poweroff and restart

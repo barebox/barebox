@@ -19,6 +19,9 @@ STATIC int make_directory(const char *dir)
 	char c;
 	int ret = 0;
 
+	if (!s)
+		return -ENOMEM;
+
 	do {
 		c = 0;
 

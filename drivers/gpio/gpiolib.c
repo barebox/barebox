@@ -18,7 +18,7 @@ struct gpio_info {
 	bool requested;
 	bool active_low;
 	char *label;
-	char *name;
+	const char *name;
 };
 
 static struct gpio_info *gpio_desc;
@@ -537,8 +537,16 @@ static int of_gpiochip_scan_hogs(struct gpio_chip *chip)
 		if (count > chip->ngpio)
 			count = chip->ngpio;
 
-		for (i = 0; i < count; i++)
-			gpio_desc[chip->base + i].name = xstrdup(names[i]);
+		for (i = 0; i < count; i++) {
+			/*
+			 * Allow overriding "fixed" names provided by the GPIO
+			 * provider. The "fixed" names are more often than not
+			 * generic and less informative than the names given in
+			 * device properties.
+			 */
+			if (names[i] && names[i][0])
+				gpio_desc[chip->base + i].name = names[i];
+		}
 
 		free(names);
 	}

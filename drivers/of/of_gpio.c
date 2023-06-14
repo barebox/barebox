@@ -60,26 +60,26 @@ static void of_gpio_flags_quirks(struct device_node *np,
 int of_get_named_gpio_flags(struct device_node *np, const char *propname,
 			   int index, enum of_gpio_flags *flags)
 {
-	struct of_phandle_args out_args;
+	struct of_phandle_args gpiospec;
 	struct device *dev;
 	int ret;
 
 	ret = of_parse_phandle_with_args(np, propname, "#gpio-cells",
-					index, &out_args);
+					index, &gpiospec);
 	if (ret) {
 		pr_debug("%s: cannot parse %s property: %d\n",
 			__func__, propname, ret);
 		return ret;
 	}
 
-	dev = of_find_device_by_node(out_args.np);
+	dev = of_find_device_by_node(gpiospec.np);
 	if (!dev) {
 		pr_debug("%s: unable to find device of node %s\n",
-			 __func__, out_args.np->full_name);
+			 __func__, gpiospec.np->full_name);
 		return -EPROBE_DEFER;
 	}
 
-	ret = gpio_get_num(dev, out_args.args[0]);
+	ret = gpio_get_num(dev, gpiospec.args[0]);
 	if (ret == -EPROBE_DEFER)
 		return ret;
 	if (ret < 0) {
@@ -89,7 +89,7 @@ int of_get_named_gpio_flags(struct device_node *np, const char *propname,
 	}
 
 	if (flags) {
-		*flags = out_args.args[1];
+		*flags = gpiospec.args[1];
 		of_gpio_flags_quirks(np, propname, flags, index);
 	}
 

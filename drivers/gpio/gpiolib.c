@@ -526,8 +526,13 @@ static int of_gpiochip_scan_hogs(struct gpio_chip *chip)
 	if (count > 0) {
 		const char **names = xzalloc(count * sizeof(char *));
 
-		of_property_read_string_array(chip->dev->of_node,
-					      "gpio-line-names", names, count);
+		ret = of_property_read_string_array(chip->dev->of_node,
+						    "gpio-line-names", names,
+						    count);
+		if (ret < 0) {
+			kfree(names);
+			return ret;
+		}
 
 		/*
 		 * Since property 'gpio-line-names' cannot contains gaps, we

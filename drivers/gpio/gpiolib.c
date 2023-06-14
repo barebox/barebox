@@ -440,6 +440,8 @@ static int gpiochip_find_base(int ngpio)
 	return base;
 }
 
+#ifdef CONFIG_OF_GPIO
+
 static int of_hog_gpio(struct device_node *np, struct gpio_chip *chip,
 		       unsigned int idx)
 {
@@ -590,6 +592,41 @@ static int of_gpiochip_set_names(struct gpio_chip *chip)
 	return 0;
 }
 
+/**
+ * of_gpio_simple_xlate - translate gpiospec to the GPIO number and flags
+ * @gc:		pointer to the gpio_chip structure
+ * @gpiospec:	GPIO specifier as found in the device tree
+ * @flags:	a flags pointer to fill in
+ *
+ * This is simple translation function, suitable for the most 1:1 mapped
+ * GPIO chips. This function performs only one sanity check: whether GPIO
+ * is less than ngpios (that is specified in the gpio_chip).
+ */
+static int of_gpio_simple_xlate(struct gpio_chip *gc,
+				const struct of_phandle_args *gpiospec,
+				u32 *flags)
+{
+	/*
+	 * We're discouraging gpio_cells < 2, since that way you'll have to
+	 * write your own xlate function (that will have to retrieve the GPIO
+	 * number and the flags from a single gpio cell -- this is possible,
+	 * but not recommended).
+	 */
+	if (WARN_ON(gc->of_gpio_n_cells < 2))
+		return -EINVAL;
+
+	if (WARN_ON(gpiospec->args_count < gc->of_gpio_n_cells))
+		return -EINVAL;
+
+	if (gpiospec->args[0] >= gc->ngpio)
+		return -EINVAL;
+
+	if (flags)
+		*flags = gpiospec->args[1];
+
+	return gc->base + gpiospec->args[0];
+}
+
 static int of_gpiochip_add(struct gpio_chip *chip)
 {
 	struct device_node *np;
@@ -599,12 +636,32 @@ static int of_gpiochip_add(struct gpio_chip *chip)
 	if (!np)
 		return 0;
 
+	if (!chip->ops->of_xlate)
+		chip->ops->of_xlate = of_gpio_simple_xlate;
+
+	/*
+	 * Separate check since the 'struct gpio_ops' is always the same for
+	 * every 'struct gpio_chip' of the same instance (e.g. 'struct
+	 * imx_gpio_chip').
+	 */
+	if (chip->ops->of_xlate == of_gpio_simple_xlate)
+		chip->of_gpio_n_cells = 2;
+
+	if (chip->of_gpio_n_cells > MAX_PHANDLE_ARGS)
+		return -EINVAL;
+
 	ret = of_gpiochip_set_names(chip);
 	if (ret)
 		return ret;
 
 	return of_gpiochip_scan_hogs(chip);
 }
+#else
+static int of_gpiochip_add(struct gpio_chip *chip)
+{
+	return 0;
+}
+#endif
 
 #ifdef CONFIG_OFDEVICE
 static const char *gpio_suffixes[] = {

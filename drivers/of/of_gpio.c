@@ -46,6 +46,44 @@ static void of_gpio_flags_quirks(struct device_node *np,
 
 }
 
+static struct gpio_chip *of_find_gpiochip_by_xlate(
+					struct of_phandle_args *gpiospec)
+{
+	struct gpio_chip *chip;
+	struct device *dev;
+
+	dev = of_find_device_by_node(gpiospec->np);
+	if (!dev) {
+		pr_debug("%s: unable to find device of node %pOF\n",
+			 __func__, gpiospec->np);
+		return NULL;
+	}
+
+	chip = gpio_get_chip_by_dev(dev);
+	if (!chip) {
+		pr_debug("%s: unable to find gpiochip\n", __func__);
+		return NULL;
+	}
+
+	if (!chip->ops->of_xlate ||
+	    chip->ops->of_xlate(chip, gpiospec, NULL) < 0) {
+		pr_err("%s: failed to execute of_xlate\n", __func__);
+		return NULL;
+	}
+
+	return chip;
+}
+
+static int of_xlate_and_get_gpiod_flags(struct gpio_chip *chip,
+					struct of_phandle_args *gpiospec,
+					enum of_gpio_flags *flags)
+{
+	if (chip->of_gpio_n_cells != gpiospec->args_count)
+		return -EINVAL;
+
+	return chip->ops->of_xlate(chip, gpiospec, flags);
+}
+
 /**
  * of_get_named_gpio_flags() - Get a GPIO number and flags to use with GPIO API
  * @np:		device node to get GPIO from
@@ -61,7 +99,7 @@ int of_get_named_gpio_flags(struct device_node *np, const char *propname,
 			   int index, enum of_gpio_flags *flags)
 {
 	struct of_phandle_args gpiospec;
-	struct device *dev;
+	struct gpio_chip *chip;
 	int ret;
 
 	ret = of_parse_phandle_with_args(np, propname, "#gpio-cells",
@@ -72,27 +110,21 @@ int of_get_named_gpio_flags(struct device_node *np, const char *propname,
 		return ret;
 	}
 
-	dev = of_find_device_by_node(gpiospec.np);
-	if (!dev) {
-		pr_debug("%s: unable to find device of node %s\n",
-			 __func__, gpiospec.np->full_name);
+	chip = of_find_gpiochip_by_xlate(&gpiospec);
+	if (!chip) {
 		ret = -EPROBE_DEFER;
 		goto out;
 	}
 
-	ret = gpio_get_num(dev, gpiospec.args[0]);
-	if (ret == -EPROBE_DEFER)
-		goto out;
+	ret = of_xlate_and_get_gpiod_flags(chip, &gpiospec, flags);
 	if (ret < 0) {
 		pr_err("%s: unable to get gpio num of device %s: %d\n",
-			__func__, dev_name(dev), ret);
+			__func__, dev_name(chip->dev), ret);
 		goto out;
 	}
 
-	if (flags) {
-		*flags = gpiospec.args[1];
+	if (flags)
 		of_gpio_flags_quirks(np, propname, flags, index);
-	}
 
 out:
 	of_node_put(gpiospec.np);

@@ -168,6 +168,7 @@ int gpio_array_to_id(const struct gpio *array, size_t num, u32 *val);
 #endif
 
 struct gpio_chip;
+struct of_phandle_args;
 
 struct gpio_ops {
 	int (*request)(struct gpio_chip *chip, unsigned offset);
@@ -177,6 +178,22 @@ struct gpio_ops {
 	int (*get_direction)(struct gpio_chip *chip, unsigned offset);
 	int (*get)(struct gpio_chip *chip, unsigned offset);
 	void (*set)(struct gpio_chip *chip, unsigned offset, int value);
+
+#if defined(CONFIG_OF_GPIO)
+	/*
+	 * If CONFIG_OF_GPIO is enabled, then all GPIO controllers described in
+	 * the device tree automatically may have an OF translation
+	 */
+
+	/**
+	 * @of_xlate:
+	 *
+	 * Callback to translate a device tree GPIO specifier into a chip-
+	 * relative GPIO number and flags.
+	 */
+	int (*of_xlate)(struct gpio_chip *gc,
+			const struct of_phandle_args *gpiospec, u32 *flags);
+#endif
 };
 
 struct gpio_chip {
@@ -184,6 +201,15 @@ struct gpio_chip {
 
 	int base;
 	int ngpio;
+
+#if defined(CONFIG_OF_GPIO)
+	/**
+	 * @of_gpio_n_cells:
+	 *
+	 * Number of cells used to form the GPIO specifier.
+	 */
+	unsigned int of_gpio_n_cells;
+#endif
 
 	struct gpio_ops *ops;
 

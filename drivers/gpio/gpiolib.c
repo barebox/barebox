@@ -529,7 +529,15 @@ static int of_gpiochip_scan_hogs(struct gpio_chip *chip)
 		of_property_read_string_array(chip->dev->of_node,
 					      "gpio-line-names", arr, count);
 
-		for (i = 0; i < chip->ngpio && i < count; i++)
+		/*
+		 * Since property 'gpio-line-names' cannot contains gaps, we
+		 * have to be sure we only assign those pins that really exists
+		 * since chip->ngpio can be less.
+		 */
+		if (count > chip->ngpio)
+			count = chip->ngpio;
+
+		for (i = 0; i < count; i++)
 			gpio_desc[chip->base + i].name = xstrdup(arr[i]);
 
 		free(arr);

@@ -515,46 +515,10 @@ static int of_hog_gpio(struct device_node *np, struct gpio_chip *chip,
 static int of_gpiochip_scan_hogs(struct gpio_chip *chip)
 {
 	struct device_node *np;
-	int ret, i, count;
+	int ret, i;
 
 	if (!IS_ENABLED(CONFIG_OFDEVICE) || !chip->dev->of_node)
 		return 0;
-
-	count = of_property_count_strings(chip->dev->of_node,
-					  "gpio-line-names");
-
-	if (count > 0) {
-		const char **names = xzalloc(count * sizeof(char *));
-
-		ret = of_property_read_string_array(chip->dev->of_node,
-						    "gpio-line-names", names,
-						    count);
-		if (ret < 0) {
-			kfree(names);
-			return ret;
-		}
-
-		/*
-		 * Since property 'gpio-line-names' cannot contains gaps, we
-		 * have to be sure we only assign those pins that really exists
-		 * since chip->ngpio can be less.
-		 */
-		if (count > chip->ngpio)
-			count = chip->ngpio;
-
-		for (i = 0; i < count; i++) {
-			/*
-			 * Allow overriding "fixed" names provided by the GPIO
-			 * provider. The "fixed" names are more often than not
-			 * generic and less informative than the names given in
-			 * device properties.
-			 */
-			if (names[i] && names[i][0])
-				gpio_desc[chip->base + i].name = names[i];
-		}
-
-		free(names);
-	}
 
 	for_each_available_child_of_node(chip->dev->of_node, np) {
 		if (!of_property_read_bool(np, "gpio-hog"))
@@ -571,6 +535,65 @@ static int of_gpiochip_scan_hogs(struct gpio_chip *chip)
 		if (ret < 0 && ret != -EOVERFLOW)
 			return ret;
 	}
+
+	return 0;
+}
+
+/*
+ * of_gpiochip_set_names - Set GPIO line names using OF properties
+ * @chip: GPIO chip whose lines should be named, if possible
+ *
+ * Looks for device property "gpio-line-names" and if it exists assigns
+ * GPIO line names for the chip. The memory allocated for the assigned
+ * names belong to the underlying firmware node and should not be released
+ * by the caller.
+ */
+static int of_gpiochip_set_names(struct gpio_chip *chip)
+{
+	struct device *dev = chip->dev;
+	struct device_node *np;
+	const char **names;
+	int ret, i, count;
+
+	np = dev_of_node(dev);
+	if (!np)
+		return 0;
+
+	count = of_property_count_strings(np, "gpio-line-names");
+	if (count < 0)
+		return 0;
+
+	names = kcalloc(count, sizeof(*names), GFP_KERNEL);
+	if (!names)
+		return -ENOMEM;
+
+	ret = of_property_read_string_array(np, "gpio-line-names",
+					    names, count);
+	if (ret < 0) {
+		kfree(names);
+		return ret;
+	}
+
+	/*
+	 * Since property 'gpio-line-names' cannot contains gaps, we
+	 * have to be sure we only assign those pins that really exists
+	 * since chip->ngpio can be less.
+	 */
+	if (count > chip->ngpio)
+		count = chip->ngpio;
+
+	for (i = 0; i < count; i++) {
+		/*
+		 * Allow overriding "fixed" names provided by the GPIO
+		 * provider. The "fixed" names are more often than not
+		 * generic and less informative than the names given in
+		 * device properties.
+		 */
+		if (names[i] && names[i][0])
+			gpio_desc[chip->base + i].name = names[i];
+	}
+
+	free(names);
 
 	return 0;
 }
@@ -636,6 +659,7 @@ int dev_gpiod_get_index(struct device *dev,
 
 int gpiochip_add(struct gpio_chip *chip)
 {
+	int ret;
 	int i;
 
 	if (chip->base >= 0) {
@@ -654,6 +678,10 @@ int gpiochip_add(struct gpio_chip *chip)
 
 	for (i = chip->base; i < chip->base + chip->ngpio; i++)
 		gpio_desc[i].chip = chip;
+
+	ret = of_gpiochip_set_names(chip);
+	if (ret)
+		return ret;
 
 	return of_gpiochip_scan_hogs(chip);
 }

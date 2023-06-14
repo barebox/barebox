@@ -517,9 +517,6 @@ static int of_gpiochip_scan_hogs(struct gpio_chip *chip)
 	struct device_node *np;
 	int ret, i;
 
-	if (!IS_ENABLED(CONFIG_OFDEVICE) || !chip->dev->of_node)
-		return 0;
-
 	for_each_available_child_of_node(chip->dev->of_node, np) {
 		if (!of_property_read_bool(np, "gpio-hog"))
 			continue;
@@ -550,14 +547,9 @@ static int of_gpiochip_scan_hogs(struct gpio_chip *chip)
  */
 static int of_gpiochip_set_names(struct gpio_chip *chip)
 {
-	struct device *dev = chip->dev;
-	struct device_node *np;
+	struct device_node *np = dev_of_node(chip->dev);
 	const char **names;
 	int ret, i, count;
-
-	np = dev_of_node(dev);
-	if (!np)
-		return 0;
 
 	count = of_property_count_strings(np, "gpio-line-names");
 	if (count < 0)
@@ -596,6 +588,22 @@ static int of_gpiochip_set_names(struct gpio_chip *chip)
 	free(names);
 
 	return 0;
+}
+
+static int of_gpiochip_add(struct gpio_chip *chip)
+{
+	struct device_node *np;
+	int ret;
+
+	np = dev_of_node(chip->dev);
+	if (!np)
+		return 0;
+
+	ret = of_gpiochip_set_names(chip);
+	if (ret)
+		return ret;
+
+	return of_gpiochip_scan_hogs(chip);
 }
 
 #ifdef CONFIG_OFDEVICE
@@ -659,7 +667,6 @@ int dev_gpiod_get_index(struct device *dev,
 
 int gpiochip_add(struct gpio_chip *chip)
 {
-	int ret;
 	int i;
 
 	if (chip->base >= 0) {
@@ -679,11 +686,7 @@ int gpiochip_add(struct gpio_chip *chip)
 	for (i = chip->base; i < chip->base + chip->ngpio; i++)
 		gpio_desc[i].chip = chip;
 
-	ret = of_gpiochip_set_names(chip);
-	if (ret)
-		return ret;
-
-	return of_gpiochip_scan_hogs(chip);
+	return of_gpiochip_add(chip);
 }
 
 void gpiochip_remove(struct gpio_chip *chip)

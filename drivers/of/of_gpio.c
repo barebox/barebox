@@ -76,22 +76,26 @@ int of_get_named_gpio_flags(struct device_node *np, const char *propname,
 	if (!dev) {
 		pr_debug("%s: unable to find device of node %s\n",
 			 __func__, gpiospec.np->full_name);
-		return -EPROBE_DEFER;
+		ret = -EPROBE_DEFER;
+		goto out;
 	}
 
 	ret = gpio_get_num(dev, gpiospec.args[0]);
 	if (ret == -EPROBE_DEFER)
-		return ret;
+		goto out;
 	if (ret < 0) {
 		pr_err("%s: unable to get gpio num of device %s: %d\n",
 			__func__, dev_name(dev), ret);
-		return ret;
+		goto out;
 	}
 
 	if (flags) {
 		*flags = gpiospec.args[1];
 		of_gpio_flags_quirks(np, propname, flags, index);
 	}
+
+out:
+	of_node_put(gpiospec.np);
 
 	return ret;
 }

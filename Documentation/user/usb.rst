@@ -13,9 +13,9 @@ devices are not disconnected while barebox is running.
 USB Networking
 ^^^^^^^^^^^^^^
 
-barebox supports ASIX-compatible devices and the SMSC95xx. After
-detection, the device shows up as eth0 and can be used like a regular network
-device.
+barebox supports r8152, ASIX-compatible devices and the SMSC95xx. After
+detection, the device shows up as an extra network device (e.g. eth1) and
+can be used like a regular network device.
 
 To use a USB network device together with the :ref:`command_ifup` command, add the
 following to ``/env/network/eth0-discover``:
@@ -25,6 +25,9 @@ following to ``/env/network/eth0-discover``:
   #!/bin/sh
 
   usb
+
+Alternatively, a ``detect -a`` (all) can be forced in ``ifup`` by setting
+``global.net.ifup_force_detect=1``.
 
 USB mass storage
 ^^^^^^^^^^^^^^^^
@@ -39,18 +42,21 @@ barebox supports several different USB gadget drivers:
 
 - Device Firmware Upgrade (DFU)
 - Android Fastboot
+- USB mass storage
 - serial gadget
 
 The recommended way to use USB gadget is with the :ref:`command_usbgadget` command.
 While there are individual commands for :ref:`command_dfu` and :ref:`command_usbserial`,
-the :ref:`command_usbgadget` commands supports registering composite gadgets.
+the :ref:`command_usbgadget` commands supports registering composite gadgets, which
+exports multiple functions at once. This happens in the "background" without impacting
+use of the shell.
 
 Partition description
 ^^^^^^^^^^^^^^^^^^^^^
 
-The USB gadget commands for Android Fastboot and DFU take a partition description
-which describes which barebox partitions are exported via USB. The partition
-description is referred to as ``<desc>`` in the command help texts. It has
+The USB gadget commands for Android Fastboot, DFU and the mass storage gadget
+take a partition description which describes which barebox partitions are exported via USB.
+The partition description is referred to as ``<desc>`` in the command help texts. It has
 the general form ``partition(name)flags,partition(name)flags,...``.
 
 The **partition** field is the partition as accessible in barebox. This can be a
@@ -65,7 +71,8 @@ Several **flags** are supported, each denoted by a single character:
 * ``r`` Readback. The partition is allowed to be read back (DFU specific)
 * ``c`` The file shall be created if it doesn't exist. Needed when a regular file is exported.
 * ``u`` The partition is a MTD device and shall be flashed with a UBI image.
-* ``o`` The partition is optional, i.e. if it is not available at initialization time, it is skipped instead of aborting the initialization
+* ``o`` The partition is optional, i.e. if it is not available at initialization time, it is skipped
+        instead of aborting the initialization. This is currently only supported for fastboot.
 
 Example:
 
@@ -207,6 +214,16 @@ and initrd:
   fi
   timeout -k 5 3 fastboot -i 7531 oem exec -- bootm -o /devicetree -r /initrd /kernel
 
+USB Mass storage gadget
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Example exporting barebox block devices to a USB host::
+
+.. code-block:: sh
+
+  usbgadget -S /dev/mmc0(emmc),/dev/mmc1(sd)
+
+
 USB Composite Multifunction Gadget
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -228,7 +245,7 @@ after creating the gadget. The gadget can be removed with ``usbgadget -d``.
 USB OTG support
 ---------------
 
-barebox does not have USB OTG support. However, barebox supports some USB cores in
+barebox does not have true USB OTG support. However, barebox supports some USB cores in
 both host and device mode. If these are specified for otg in the device tree
 (dr_mode = "otg";) barebox registers a OTG device which can be used to decide which
 mode shall be used. The device has a ``mode`` parameter which by default has the

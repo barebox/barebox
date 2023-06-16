@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <linux/types.h>
 #include <linux/list.h>
+#include <linux/err.h>
 #include <asm/byteorder.h>
 
 /* Default string compare functions */
@@ -116,7 +117,6 @@ int of_diff(struct device_node *a, struct device_node *b, int indent);
 int of_probe(void);
 int of_parse_dtb(struct fdt_header *fdt);
 struct device_node *of_unflatten_dtb(const void *fdt, int size);
-struct device_node *of_read_file(const char *filename);
 struct device_node *of_unflatten_dtb_const(const void *infdt, int size);
 
 int of_fixup_reserved_memory(struct device_node *node, void *data);
@@ -124,6 +124,7 @@ int of_fixup_reserved_memory(struct device_node *node, void *data);
 struct cdev;
 
 #ifdef CONFIG_OFTREE
+extern struct device_node *of_read_file(const char *filename);
 extern struct of_reserve_map *of_get_reserve_map(void);
 extern int of_bus_n_addr_cells(struct device_node *np);
 extern int of_n_addr_cells(struct device_node *np);
@@ -360,6 +361,11 @@ static inline const char *of_node_full_name(const struct device_node *np)
 }
 
 #else
+static inline struct device_node *of_read_file(const char *filename)
+{
+	return ERR_PTR(-ENOSYS);
+}
+
 static inline struct of_reserve_map *of_get_reserve_map(void)
 {
 	return NULL;
@@ -424,6 +430,11 @@ static inline struct device_node *of_get_root_node(void)
 }
 
 static inline int of_set_root_node(struct device_node *node)
+{
+	return -ENOSYS;
+}
+
+static inline int barebox_register_of(struct device_node *root)
 {
 	return -ENOSYS;
 }

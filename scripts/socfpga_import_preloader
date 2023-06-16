@@ -79,6 +79,9 @@ copy_source() {
 
 	cp $src $tgt
 
+	dos2unix $tgt
+
+	echo "	Fixing conditional compilation..."
 	unifdef -D HCX_COMPAT_MODE=1 -D ENABLE_INST_ROM_WRITE=1 $tgt -o $tgt
 
 	echo "	Fixing extern/static keywords..."
@@ -99,7 +102,7 @@ copy_source() {
 	sed -i 's/alt_8/int8_t/g' $tgt
 	sed -i 's/#include "alt_types.h"//g' $tgt
 
-	echo "	Fixing include pathes..."
+	echo "	Fixing include paths..."
 	# Fix include pathes
 	sed -i 's/#include <iocsr_config_cyclone5.h>/#include <mach\/socfpga\/cyclone5-scan-manager.h>/g' $tgt
 	sed -i 's/#include <pinmux_config.h>/#include <common.h>/g' $tgt

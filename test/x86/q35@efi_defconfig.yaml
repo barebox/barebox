@@ -7,8 +7,7 @@ targets:
         cpu: Nehalem
         memory: 1024M
         kernel: barebox.efi
-        bios: OVMF.fd
-        extra_args: -global ICH9-LPC.noreboot=false
+        extra_args: '-bios OVMF.fd -global ICH9-LPC.noreboot=false'
       BareboxDriver:
         prompt: 'barebox@[^:]+:[^ ]+ '
         bootstring: 'commandline:'
@@ -20,10 +19,7 @@ targets:
       kconfig_add:
         - CONFIG_DRIVER_SERIAL_NS16550=y
         - CONFIG_CONSOLE_ACTIVATE_FIRST=y # avoid duplicate output
-      download:
-        OVMF.fd: /usr/share/qemu/OVMF.fd
 images:
   barebox.efi: !template "$LG_BUILDDIR/barebox.efi"
-  OVMF.fd: !template "$LG_BUILDDIR/OVMF.fd"
 imports:
   -  ../strategy.py

@@ -56,10 +56,6 @@ jobs:
         ./MAKEALL -O build-${{matrix.arch}} -k test/kconfig/enable_self_test.kconf \
                 -k test/kconfig/disable_target_tools.kconf ${{matrix.defconfig}}
 
-        if [ ${{matrix.arch}} = "x86" ]; then
-          cp /usr/share/ovmf/OVMF.fd build-${{matrix.arch}}
-        fi
-
         if [ ${{matrix.arch}} = "riscv" ]; then
           cp /usr/share/qemu/opensbi-riscv32-generic-fw_dynamic.bin build-${{matrix.arch}}
         fi

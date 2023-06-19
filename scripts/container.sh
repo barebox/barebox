@@ -39,5 +39,6 @@ fi
 
 exec podman run -it $volumes --rm \
 	-e TERM -e ARCH -e CONFIG -e JOBS -e LOGDIR -e REGEX \
+	-e KBUILD_OUTPUT -e LG_BUILDDIR \
 	-e KCONFIG_ADD -w "$PWD" --userns=keep-id \
 	-- "$CONTAINER" "${@:-/bin/bash}"

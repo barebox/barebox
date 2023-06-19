@@ -25,3 +25,11 @@ def pytest_configure(config):
 
     if os.environ['LG_BUILDDIR'] is not None:
         os.environ['LG_BUILDDIR'] = os.path.realpath(os.environ['LG_BUILDDIR'])
+
+def pytest_addoption(parser):
+    parser.addoption('--interactive', action='store_const', const='qemu_interactive',
+        dest='lg_initial_state',
+        help=('(for debugging) skip tests and just start Qemu interactively'))
+    parser.addoption('--dry-run', action='store_const', const='qemu_dry_run',
+        dest='lg_initial_state',
+        help=('(for debugging) skip tests and just print Qemu command line'))

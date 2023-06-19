@@ -122,6 +122,12 @@ class BareboxTestStrategy(Strategy):
         self.target.env.config.data["tools"][self.qemu.qemu_bin] = \
                 shutil.which(self.qemu.qemu_bin)
 
+    def append_qemu_args(self, *args):
+        if self.qemu is None:
+            pytest.exit('Qemu option supplied for non-Qemu target')
+        for arg in args:
+            self.console.extra_args += " " + arg
+
 def quote_cmd(cmd):
     quoted = map(lambda s : s if s.find(" ") == -1 else "'" + s + "'", cmd)
     return " ".join(quoted)

@@ -2,7 +2,7 @@ targets:
   main:
     drivers:
       QEMUDriver:
-        qemu_bin: qemu
+        qemu_bin: qemu-system-or1k
         machine: or1k-sim
         cpu: or1200
         memory: 256M
@@ -14,7 +14,5 @@ targets:
       BareboxTestStrategy: {}
 images:
   barebox: !template "$LG_BUILDDIR/barebox"
-tools:
-  qemu: /usr/bin/qemu-system-or1k
 imports:
   -  ../strategy.py

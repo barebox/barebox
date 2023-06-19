@@ -2,7 +2,7 @@ targets:
   main:
     drivers:
       QEMUDriver:
-        qemu_bin: qemu
+        qemu_bin: qemu-system-aarch64
         machine: virt,highmem=off
         cpu: cortex-a57
         memory: 1024M
@@ -18,7 +18,5 @@ targets:
       tuxmake_arch: arm64
 images:
   barebox-dt-2nd.img: !template "$LG_BUILDDIR/images/barebox-dt-2nd.img"
-tools:
-  qemu: /usr/bin/qemu-system-aarch64
 imports:
   -  ../strategy.py

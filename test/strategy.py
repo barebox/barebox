@@ -4,6 +4,7 @@ import attr
 import pytest
 import subprocess
 import os
+import shutil
 import sys
 
 from labgrid import target_factory, step, driver
@@ -33,6 +34,7 @@ class BareboxTestStrategy(Strategy):
         super().__attrs_post_init__()
         if isinstance(self.console, driver.QEMUDriver):
             self.qemu = self.console
+        self.patchtools()
 
     @step(args=['status'])
     def transition(self, status, *, step):
@@ -109,6 +111,16 @@ class BareboxTestStrategy(Strategy):
                 cmd.append(opt)
 
         return cmd
+
+    def patchtools(self):
+        # https://github.com/labgrid-project/labgrid/commit/69fd553c6969526b609d0be6bb81f0c35f08d1d0
+        if self.qemu is None:
+            return
+
+        if 'tools' not in self.target.env.config.data:
+            self.target.env.config.data['tools'] = {}
+        self.target.env.config.data["tools"][self.qemu.qemu_bin] = \
+                shutil.which(self.qemu.qemu_bin)
 
 def quote_cmd(cmd):
     quoted = map(lambda s : s if s.find(" ") == -1 else "'" + s + "'", cmd)

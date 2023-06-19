@@ -2,7 +2,7 @@ targets:
   main:
     drivers:
       QEMUDriver:
-        qemu_bin: qemu
+        qemu_bin: qemu-system-arm
         machine: sabrelite
         cpu: cortex-a9
         memory: 1024M
@@ -16,7 +16,5 @@ targets:
 images:
   barebox-dt-2nd.img: !template "$LG_BUILDDIR/images/barebox-dt-2nd.img"
   imx6q-sabreliste.dtb: !template "$LG_BUILDDIR/arch/arm/dts/imx6q-sabrelite.dtb"
-tools:
-  qemu: /usr/bin/qemu-system-arm
 imports:
   -  ../strategy.py

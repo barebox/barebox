@@ -2,7 +2,7 @@ targets:
   main:
     drivers:
       QEMUDriver:
-        qemu_bin: qemu
+        qemu_bin: qemu-system-x86_64
         machine: pc
         cpu: Nehalem
         memory: 1024M
@@ -25,7 +25,5 @@ targets:
 images:
   barebox.efi: !template "$LG_BUILDDIR/barebox.efi"
   OVMF.fd: !template "$LG_BUILDDIR/OVMF.fd"
-tools:
-  qemu: /usr/bin/qemu-system-x86_64
 imports:
   -  ../strategy.py

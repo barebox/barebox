@@ -31,9 +31,13 @@ shift $((OPTIND-1))
 
 [ -n "$update" ] && podman pull "$CONTAINER"
 
+volumes="-v $PWD:$PWD:z"
 pwd_real=$(realpath $PWD)
+if [ "$(realpath --no-symlinks $PWD)" != "$pwd_real" ]; then
+	volumes="$volumes -v $pwd_real:$pwd_real:z"
+fi
 
-exec podman run -it -v "$PWD:$PWD:z" -v "$pwd_real:$pwd_real:z" --rm \
+exec podman run -it $volumes --rm \
 	-e TERM -e ARCH -e CONFIG -e JOBS -e LOGDIR -e REGEX \
 	-e KCONFIG_ADD -w "$PWD" --userns=keep-id \
 	-- "$CONTAINER" "${@:-/bin/bash}"

@@ -275,6 +275,9 @@ export a number of device parameters:
 - ``$typec0.pwr_role`` = { ``sink``, ``source`` }
 - ``$typec0.accessory`` = { ``none``, ``audio``, ``debug`` }
 
+Currently, only the TUSB320 is supported, but it's straight-forward to port more
+drivers from Linux.
+
 USB Gadget autostart Support
 ----------------------------
 

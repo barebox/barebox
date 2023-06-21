@@ -4,3 +4,11 @@
 config TYPEC
 	prompt "Compile USB Type-C framework support" if COMPILE_TEST
 	bool
+
+config TYPEC_TUSB320
+	tristate "TI TUSB320 Type-C port controller"
+	depends on I2C
+	select REGMAP_I2C
+	select TYPEC
+	help
+	  Say Y or here if your system has a TI TUSB320 Type-C port controller.

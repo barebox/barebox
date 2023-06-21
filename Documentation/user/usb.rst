@@ -263,6 +263,18 @@ mode. Once a specific mode has been selected it can't be changed later anymore.
   musb-hdrc: 28/31 max ep, 16384/16384 memory
   barebox:/
 
+USB Type-C support
+------------------
+
+barebox can usually stay oblivious to the type of connector used. Sometimes though,
+board code and user scripts may want to base their decisions on how a USB-C connector
+is connected. Type C drivers can thus register with the Type C driver core to
+export a number of device parameters:
+
+- ``$typec0.usb_role`` = { ``none``, ``device``, ``host`` }
+- ``$typec0.pwr_role`` = { ``sink``, ``source`` }
+- ``$typec0.accessory`` = { ``none``, ``audio``, ``debug`` }
+
 USB Gadget autostart Support
 ----------------------------
 

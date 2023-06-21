@@ -24,6 +24,8 @@ source "drivers/usb/misc/Kconfig"
 
 endif
 
+source "drivers/usb/typec/Kconfig"
+
 source "drivers/usb/gadget/Kconfig"
 
 source "drivers/usb/musb/Kconfig"

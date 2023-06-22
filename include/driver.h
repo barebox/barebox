@@ -9,6 +9,7 @@
 #include <linux/list.h>
 #include <linux/ioport.h>
 #include <linux/uuid.h>
+#include <linux/printk.h>
 #include <of.h>
 #include <filetype.h>
 

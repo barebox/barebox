@@ -52,23 +52,24 @@ void dma_set_ops(const struct dma_ops *ops)
 	dma_ops = ops;
 }
 
-void dma_sync_single_for_cpu(dma_addr_t address, size_t size, enum dma_data_direction dir)
+void arch_sync_dma_for_cpu(void *vaddr, size_t size,
+			   enum dma_data_direction dir)
 {
-        /*
-         * FIXME: This function needs a device argument to support non 1:1 mappings
-         */
+	unsigned long start = (unsigned long)vaddr;
+	unsigned long end = start + size;
+
         if (dir != DMA_TO_DEVICE)
-                dma_ops->inv_range(address, address + size);
+                dma_ops->inv_range(start, end);
 }
 
-void dma_sync_single_for_device(dma_addr_t address, size_t size, enum dma_data_direction dir)
+void arch_sync_dma_for_device(void *vaddr, size_t size,
+			      enum dma_data_direction dir)
 {
-        /*
-         * FIXME: This function needs a device argument to support non 1:1 mappings
-         */
+	unsigned long start = (unsigned long)vaddr;
+	unsigned long end = start + size;
 
         if (dir == DMA_FROM_DEVICE)
-                dma_ops->inv_range(address, address + size);
+                dma_ops->inv_range(start, end);
         else
-                dma_ops->flush_range(address, address + size);
+                dma_ops->flush_range(start, end);
 }

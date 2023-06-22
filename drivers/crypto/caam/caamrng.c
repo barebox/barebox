@@ -90,7 +90,7 @@ static void rng_done(struct device *jrdev, u32 *desc, u32 err, void *context)
 	bd->empty = BUF_NOT_EMPTY;
 
 	/* Buffer refilled, invalidate cache */
-	dma_sync_single_for_cpu(bd->addr, RN_BUF_SIZE, DMA_FROM_DEVICE);
+	dma_sync_single_for_cpu(jrdev, bd->addr, RN_BUF_SIZE, DMA_FROM_DEVICE);
 
 	print_hex_dump_debug("rng refreshed buf@: ", DUMP_PREFIX_OFFSET,
 			     16, 4, bd->buf, RN_BUF_SIZE, 1);
@@ -105,7 +105,7 @@ static inline int submit_job(struct caam_rng_ctx *ctx, int to_current)
 
 	dev_dbg(jrdev, "submitting job %d\n", !(to_current ^ ctx->current_buf));
 
-	dma_sync_single_for_device((unsigned long)desc, desc_bytes(desc),
+	dma_sync_single_for_device(jrdev, (unsigned long)desc, desc_bytes(desc),
 				   DMA_TO_DEVICE);
 
 	err = caam_jr_enqueue(jrdev, desc, rng_done, ctx);
@@ -183,7 +183,7 @@ static inline int rng_create_sh_desc(struct caam_rng_ctx *ctx)
 
 	ctx->sh_desc_dma = (dma_addr_t)desc;
 
-	dma_sync_single_for_device((unsigned long)desc, desc_bytes(desc),
+	dma_sync_single_for_device(ctx->jrdev, (unsigned long)desc, desc_bytes(desc),
 				   DMA_TO_DEVICE);
 
 	print_hex_dump_debug("rng shdesc@: ", DUMP_PREFIX_OFFSET, 16, 4,

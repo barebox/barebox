@@ -326,7 +326,7 @@ static int bcmgenet_gmac_eth_recv(struct eth_device *edev)
 	addr_hi = readl(desc_base + DMA_DESC_ADDRESS_HI);
 	addr = (u64)addr_hi << 32 | addr_lo;
 
-	dma_sync_single_for_cpu(addr, length, DMA_FROM_DEVICE);
+	dma_sync_single_for_cpu(priv->dev, addr, length, DMA_FROM_DEVICE);
 
 	/* To cater for the IP header alignment the hardware does.
 	 * This would actually not be needed if we don't program
@@ -334,7 +334,7 @@ static int bcmgenet_gmac_eth_recv(struct eth_device *edev)
 	 */
 	net_receive(edev, (void *)addr + RX_BUF_OFFSET, length - RX_BUF_OFFSET);
 
-	dma_sync_single_for_device(addr, length, DMA_FROM_DEVICE);
+	dma_sync_single_for_device(priv->dev, addr, length, DMA_FROM_DEVICE);
 
 	/* Tell the MAC we have consumed that last receive buffer. */
 	priv->c_index = (priv->c_index + 1) & 0xffff;

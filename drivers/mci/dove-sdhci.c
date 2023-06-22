@@ -87,9 +87,11 @@ static int dove_sdhci_mci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 	if (data) {
 		num_bytes = data->blocks * data->blocksize;
 		if (data->flags & MMC_DATA_READ)
-			sdhci_write32(&host->sdhci, SDHCI_DMA_ADDRESS, (u32)data->dest);
+			sdhci_write32(&host->sdhci, SDHCI_DMA_ADDRESS,
+				      lower_32_bits(virt_to_phys(data->dest)));
 		else
-			sdhci_write32(&host->sdhci, SDHCI_DMA_ADDRESS, (u32)data->src);
+			sdhci_write32(&host->sdhci, SDHCI_DMA_ADDRESS,
+				      lower_32_bits(virt_to_phys(data->src)));
 		sdhci_write16(&host->sdhci, SDHCI_BLOCK_SIZE, SDHCI_DMA_BOUNDARY_512K |
 				SDHCI_TRANSFER_BLOCK_SIZE(data->blocksize));
 		sdhci_write16(&host->sdhci, SDHCI_BLOCK_COUNT, data->blocks);
@@ -97,10 +99,12 @@ static int dove_sdhci_mci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 
 
 		if (data->flags & MMC_DATA_WRITE)
-			dma_sync_single_for_device((unsigned long)data->src,
+			dma_sync_single_for_device(host->mci.hw_dev,
+						   lower_32_bits(virt_to_phys(data->src)),
 						    num_bytes, DMA_TO_DEVICE);
 		else
-			dma_sync_single_for_device((unsigned long)data->dest,
+			dma_sync_single_for_device(host->mci.hw_dev,
+						   lower_32_bits(virt_to_phys(data->dest)),
 						    num_bytes, DMA_FROM_DEVICE);
 	}
 
@@ -126,11 +130,13 @@ static int dove_sdhci_mci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 
 	if (data) {
 		if (data->flags & MMC_DATA_WRITE)
-			dma_sync_single_for_cpu((unsigned long)data->src,
+			dma_sync_single_for_cpu(host->mci.hw_dev,
+						lower_32_bits(virt_to_phys(data->src)),
 						num_bytes, DMA_TO_DEVICE);
 		else
-			dma_sync_single_for_cpu((unsigned long)data->dest,
-					 num_bytes, DMA_FROM_DEVICE);
+			dma_sync_single_for_cpu(host->mci.hw_dev,
+						lower_32_bits(virt_to_phys(data->dest)),
+						num_bytes, DMA_FROM_DEVICE);
 
 		ret = dove_sdhci_wait_for_done(host, SDHCI_INT_XFER_COMPLETE);
 		if (ret) {

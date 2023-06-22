@@ -129,14 +129,14 @@ static int caam_blob_decrypt(struct blobgen *bg, const char *modifier,
 
 	jr_jobdesc_blob_decap(ctx, modifier_len, blobsize);
 
-	dma_sync_single_for_device((unsigned long)desc, desc_bytes(desc),
+	dma_sync_single_for_device(jrdev, (unsigned long)desc, desc_bytes(desc),
 				   DMA_TO_DEVICE);
 
-	dma_sync_single_for_device((unsigned long)modifier, modifier_len,
+	dma_sync_single_for_device(jrdev, (unsigned long)modifier, modifier_len,
 				   DMA_TO_DEVICE);
-	dma_sync_single_for_device((unsigned long)*plain, *plainsize,
+	dma_sync_single_for_device(jrdev, (unsigned long)*plain, *plainsize,
 				   DMA_FROM_DEVICE);
-	dma_sync_single_for_device((unsigned long)blob, blobsize,
+	dma_sync_single_for_device(jrdev, (unsigned long)blob, blobsize,
 				   DMA_TO_DEVICE);
 
 	testres.err = 0;
@@ -147,11 +147,11 @@ static int caam_blob_decrypt(struct blobgen *bg, const char *modifier,
 
 	ret = testres.err;
 
-	dma_sync_single_for_cpu((unsigned long)modifier, modifier_len,
+	dma_sync_single_for_cpu(jrdev, (unsigned long)modifier, modifier_len,
 				DMA_TO_DEVICE);
-	dma_sync_single_for_cpu((unsigned long)*plain, *plainsize,
+	dma_sync_single_for_cpu(jrdev, (unsigned long)*plain, *plainsize,
 				DMA_FROM_DEVICE);
-	dma_sync_single_for_cpu((unsigned long)blob, blobsize,
+	dma_sync_single_for_cpu(jrdev, (unsigned long)blob, blobsize,
 				DMA_TO_DEVICE);
 
 	return ret;
@@ -178,14 +178,14 @@ static int caam_blob_encrypt(struct blobgen *bg, const char *modifier,
 
 	jr_jobdesc_blob_encap(ctx, modifier_len, plainsize);
 
-	dma_sync_single_for_device((unsigned long)desc, desc_bytes(desc),
+	dma_sync_single_for_device(jrdev, (unsigned long)desc, desc_bytes(desc),
 				   DMA_TO_DEVICE);
 
-	dma_sync_single_for_device((unsigned long)modifier, modifier_len,
+	dma_sync_single_for_device(jrdev, (unsigned long)modifier, modifier_len,
 				   DMA_TO_DEVICE);
-	dma_sync_single_for_device((unsigned long)plain, plainsize,
+	dma_sync_single_for_device(jrdev, (unsigned long)plain, plainsize,
 				   DMA_TO_DEVICE);
-	dma_sync_single_for_device((unsigned long)blob, *blobsize,
+	dma_sync_single_for_device(jrdev, (unsigned long)blob, *blobsize,
 				   DMA_FROM_DEVICE);
 
 	testres.err = 0;
@@ -196,11 +196,11 @@ static int caam_blob_encrypt(struct blobgen *bg, const char *modifier,
 
 	ret = testres.err;
 
-	dma_sync_single_for_cpu((unsigned long)modifier, modifier_len,
+	dma_sync_single_for_cpu(jrdev, (unsigned long)modifier, modifier_len,
 				DMA_TO_DEVICE);
-	dma_sync_single_for_cpu((unsigned long)plain, plainsize,
+	dma_sync_single_for_cpu(jrdev, (unsigned long)plain, plainsize,
 				DMA_TO_DEVICE);
-	dma_sync_single_for_cpu((unsigned long)blob, *blobsize,
+	dma_sync_single_for_cpu(jrdev, (unsigned long)blob, *blobsize,
 				DMA_FROM_DEVICE);
 
 	return ret;

@@ -189,7 +189,7 @@ static int arc_emac_open(struct eth_device *edev)
 		rxbd->data = cpu_to_le32(rxbuf);
 
 		/* Return ownership to EMAC */
-		dma_sync_single_for_device((unsigned long)rxbuf, PKTSIZE,
+		dma_sync_single_for_device(edev->parent, (unsigned long)rxbuf, PKTSIZE,
 					   DMA_FROM_DEVICE);
 		rxbd->info = cpu_to_le32(FOR_EMAC | PKTSIZE);
 
@@ -240,7 +240,7 @@ static int arc_emac_send(struct eth_device *edev, void *data, int length)
 		length = EMAC_ZLEN;
 	}
 
-	dma_sync_single_for_device((unsigned long)data, length, DMA_TO_DEVICE);
+	dma_sync_single_for_device(edev->parent, (unsigned long)data, length, DMA_TO_DEVICE);
 
 	bd->data = cpu_to_le32(data);
 	bd->info = cpu_to_le32(FOR_EMAC | FIRST_OR_LAST_MASK | length);
@@ -249,7 +249,7 @@ static int arc_emac_send(struct eth_device *edev, void *data, int length)
 	ret = wait_on_timeout(20 * MSECOND,
 			      (arc_reg_get(priv, R_STATUS) & TXINT_MASK) != 0);
 
-	dma_sync_single_for_cpu((unsigned long)data, length, DMA_TO_DEVICE);
+	dma_sync_single_for_cpu(edev->parent, (unsigned long)data, length, DMA_TO_DEVICE);
 
 	if (ret) {
 		dev_err(&edev->dev, "transmit timeout\n");
@@ -297,12 +297,12 @@ static int arc_emac_recv(struct eth_device *edev)
 
 		pktlen = info & LEN_MASK;
 
-		dma_sync_single_for_cpu((unsigned long)rxbd->data, pktlen,
+		dma_sync_single_for_cpu(edev->parent, (unsigned long)rxbd->data, pktlen,
 					DMA_FROM_DEVICE);
 
 		net_receive(edev, (unsigned char *)rxbd->data, pktlen);
 
-		dma_sync_single_for_device((unsigned long)rxbd->data, pktlen,
+		dma_sync_single_for_device(edev->parent, (unsigned long)rxbd->data, pktlen,
 					   DMA_FROM_DEVICE);
 
 		rxbd->info = cpu_to_le32(FOR_EMAC | PKTSIZE);

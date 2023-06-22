@@ -75,7 +75,7 @@ struct macb_device {
 	int			phy_addr;
 
 	struct clk		*pclk, *hclk, *txclk, *rxclk;
-	const struct device	*dev;
+	struct device		*dev;
 	struct eth_device	netdev;
 
 	phy_interface_t		interface;
@@ -119,7 +119,7 @@ static int macb_send(struct eth_device *edev, void *packet,
 	macb->tx_ring[tx_head].ctrl = ctrl;
 	macb->tx_ring[tx_head].addr = (ulong)packet;
 	barrier();
-	dma_sync_single_for_device((unsigned long)packet, length, DMA_TO_DEVICE);
+	dma_sync_single_for_device(macb->dev, (unsigned long)packet, length, DMA_TO_DEVICE);
 	macb_writel(macb, NCR, MACB_BIT(TE) | MACB_BIT(RE) | MACB_BIT(TSTART));
 
 	start = get_time_ns();
@@ -132,7 +132,7 @@ static int macb_send(struct eth_device *edev, void *packet,
 			break;
 		}
 	} while (!is_timeout(start, 100 * MSECOND));
-	dma_sync_single_for_cpu((unsigned long)packet, length, DMA_TO_DEVICE);
+	dma_sync_single_for_cpu(macb->dev, (unsigned long)packet, length, DMA_TO_DEVICE);
 
 	if (ctrl & MACB_BIT(TX_UNDERRUN))
 		dev_err(macb->dev, "TX underrun\n");
@@ -182,10 +182,10 @@ static int gem_recv(struct eth_device *edev)
 		status = macb->rx_ring[macb->rx_tail].ctrl;
 		length = MACB_BFEXT(RX_FRMLEN, status);
 		buffer = macb->rx_buffer + macb->rx_buffer_size * macb->rx_tail;
-		dma_sync_single_for_cpu((unsigned long)buffer, length,
+		dma_sync_single_for_cpu(macb->dev, (unsigned long)buffer, length,
 					DMA_FROM_DEVICE);
 		net_receive(edev, buffer, length);
-		dma_sync_single_for_device((unsigned long)buffer, length,
+		dma_sync_single_for_device(macb->dev, (unsigned long)buffer, length,
 					   DMA_FROM_DEVICE);
 		macb->rx_ring[macb->rx_tail].addr &= ~MACB_BIT(RX_USED);
 		barrier();
@@ -229,22 +229,22 @@ static int macb_recv(struct eth_device *edev)
 				headlen = macb->rx_buffer_size * (macb->rx_ring_size
 						 - macb->rx_tail);
 				taillen = length - headlen;
-				dma_sync_single_for_cpu((unsigned long)buffer,
+				dma_sync_single_for_cpu(macb->dev, (unsigned long)buffer,
 							headlen, DMA_FROM_DEVICE);
 				memcpy(macb->rx_packet_buf, buffer, headlen);
-				dma_sync_single_for_cpu((unsigned long)macb->rx_buffer,
+				dma_sync_single_for_cpu(macb->dev, (unsigned long)macb->rx_buffer,
 							taillen, DMA_FROM_DEVICE);
 				memcpy(macb->rx_packet_buf + headlen, macb->rx_buffer, taillen);
-				dma_sync_single_for_device((unsigned long)buffer,
+				dma_sync_single_for_device(macb->dev, (unsigned long)buffer,
 							headlen, DMA_FROM_DEVICE);
-				dma_sync_single_for_device((unsigned long)macb->rx_buffer,
+				dma_sync_single_for_device(macb->dev, (unsigned long)macb->rx_buffer,
 							taillen, DMA_FROM_DEVICE);
 				net_receive(edev, macb->rx_packet_buf, length);
 			} else {
-				dma_sync_single_for_cpu((unsigned long)buffer, length,
+				dma_sync_single_for_cpu(macb->dev, (unsigned long)buffer, length,
 							DMA_FROM_DEVICE);
 				net_receive(edev, buffer, length);
-				dma_sync_single_for_device((unsigned long)buffer, length,
+				dma_sync_single_for_device(macb->dev, (unsigned long)buffer, length,
 							DMA_FROM_DEVICE);
 			}
 			barrier();

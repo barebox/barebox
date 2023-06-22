@@ -3438,12 +3438,12 @@ static int e1000_poll(struct eth_device *edev)
 	if (readb(&rd->status) & E1000_RXD_STAT_DD) {
 		const uint16_t len = readw(&rd->length);
 
-		dma_sync_single_for_cpu(hw->packet_dma, len,
+		dma_sync_single_for_cpu(hw->dev, hw->packet_dma, len,
 					DMA_FROM_DEVICE);
 
 		net_receive(edev, hw->packet, len);
 
-		dma_sync_single_for_device(hw->packet_dma, len,
+		dma_sync_single_for_device(hw->dev, hw->packet_dma, len,
 					   DMA_FROM_DEVICE);
 		e1000_fill_rx(hw);
 		return 1;

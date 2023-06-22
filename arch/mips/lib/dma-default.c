@@ -6,35 +6,35 @@
 #include <dma.h>
 #include <asm/io.h>
 
-void dma_sync_single_for_cpu(dma_addr_t address, size_t size,
-			     enum dma_data_direction dir)
+void arch_sync_dma_for_cpu(void *vaddr, size_t size,
+			   enum dma_data_direction dir)
 {
-	unsigned long virt = (unsigned long)phys_to_virt(address);
+	unsigned long start = (unsigned long)vaddr;
 
 	switch (dir) {
 	case DMA_TO_DEVICE:
 		break;
 	case DMA_FROM_DEVICE:
 	case DMA_BIDIRECTIONAL:
-		dma_inv_range(virt, virt + size);
+		dma_inv_range(start, start + size);
 		break;
 	default:
 		BUG();
 	}
 }
 
-void dma_sync_single_for_device(dma_addr_t address, size_t size,
-				enum dma_data_direction dir)
+void arch_sync_dma_for_device(void *vaddr, size_t size,
+			      enum dma_data_direction dir)
 {
-	unsigned long virt = (unsigned long)phys_to_virt(address);
+	unsigned long start = (unsigned long)vaddr;
 
 	switch (dir) {
 	case DMA_FROM_DEVICE:
-		dma_inv_range(virt, virt + size);
+		dma_inv_range(start, start + size);
 		break;
 	case DMA_TO_DEVICE:
 	case DMA_BIDIRECTIONAL:
-		dma_flush_range(virt, virt + size);
+		dma_flush_range(start, start + size);
 		break;
 	default:
 		BUG();

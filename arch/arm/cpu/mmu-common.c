@@ -14,14 +14,11 @@
 #include <zero_page.h>
 #include "mmu-common.h"
 
-void dma_sync_single_for_cpu(dma_addr_t address, size_t size,
-			     enum dma_data_direction dir)
+void arch_sync_dma_for_cpu(void *vaddr, size_t size,
+			   enum dma_data_direction dir)
 {
-	/*
-	 * FIXME: This function needs a device argument to support non 1:1 mappings
-	 */
 	if (dir != DMA_TO_DEVICE)
-		dma_inv_range((void *)address, size);
+		dma_inv_range(vaddr, size);
 }
 
 void *dma_alloc_map(size_t size, dma_addr_t *dma_handle, unsigned flags)

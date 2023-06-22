@@ -589,7 +589,7 @@ static int fec_recv(struct eth_device *dev)
 			 * fixup and net_receive below would get
 			 * proper data
 			 */
-			dma_sync_single_for_cpu((unsigned long)frame,
+			dma_sync_single_for_cpu(fec->dev, (unsigned long)frame,
 						data_length,
 						DMA_FROM_DEVICE);
 			if (fec_is_imx28(fec))
@@ -601,7 +601,7 @@ static int fec_recv(struct eth_device *dev)
 			 */
 			len = data_length - 4;
 			net_receive(dev, frame, len);
-			dma_sync_single_for_device((unsigned long)frame,
+			dma_sync_single_for_device(fec->dev, (unsigned long)frame,
 						   data_length,
 						   DMA_FROM_DEVICE);
 		}

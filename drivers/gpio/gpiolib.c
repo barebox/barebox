@@ -18,7 +18,7 @@ struct gpio_info {
 	bool requested;
 	bool active_low;
 	char *label;
-	char *name;
+	const char *name;
 };
 
 static struct gpio_info *gpio_desc;
@@ -440,6 +440,8 @@ static int gpiochip_find_base(int ngpio)
 	return base;
 }
 
+#ifdef CONFIG_OF_GPIO
+
 static int of_hog_gpio(struct device_node *np, struct gpio_chip *chip,
 		       unsigned int idx)
 {
@@ -515,25 +517,7 @@ static int of_hog_gpio(struct device_node *np, struct gpio_chip *chip,
 static int of_gpiochip_scan_hogs(struct gpio_chip *chip)
 {
 	struct device_node *np;
-	int ret, i, count;
-
-	if (!IS_ENABLED(CONFIG_OFDEVICE) || !chip->dev->of_node)
-		return 0;
-
-	count = of_property_count_strings(chip->dev->of_node,
-					  "gpio-line-names");
-
-	if (count > 0) {
-		const char **arr = xzalloc(count * sizeof(char *));
-
-		of_property_read_string_array(chip->dev->of_node,
-					      "gpio-line-names", arr, count);
-
-		for (i = 0; i < chip->ngpio && i < count; i++)
-			gpio_desc[chip->base + i].name = xstrdup(arr[i]);
-
-		free(arr);
-	}
+	int ret, i;
 
 	for_each_available_child_of_node(chip->dev->of_node, np) {
 		if (!of_property_read_bool(np, "gpio-hog"))
@@ -553,6 +537,131 @@ static int of_gpiochip_scan_hogs(struct gpio_chip *chip)
 
 	return 0;
 }
+
+/*
+ * of_gpiochip_set_names - Set GPIO line names using OF properties
+ * @chip: GPIO chip whose lines should be named, if possible
+ *
+ * Looks for device property "gpio-line-names" and if it exists assigns
+ * GPIO line names for the chip. The memory allocated for the assigned
+ * names belong to the underlying firmware node and should not be released
+ * by the caller.
+ */
+static int of_gpiochip_set_names(struct gpio_chip *chip)
+{
+	struct device_node *np = dev_of_node(chip->dev);
+	const char **names;
+	int ret, i, count;
+
+	count = of_property_count_strings(np, "gpio-line-names");
+	if (count < 0)
+		return 0;
+
+	names = kcalloc(count, sizeof(*names), GFP_KERNEL);
+	if (!names)
+		return -ENOMEM;
+
+	ret = of_property_read_string_array(np, "gpio-line-names",
+					    names, count);
+	if (ret < 0) {
+		kfree(names);
+		return ret;
+	}
+
+	/*
+	 * Since property 'gpio-line-names' cannot contains gaps, we
+	 * have to be sure we only assign those pins that really exists
+	 * since chip->ngpio can be less.
+	 */
+	if (count > chip->ngpio)
+		count = chip->ngpio;
+
+	for (i = 0; i < count; i++) {
+		/*
+		 * Allow overriding "fixed" names provided by the GPIO
+		 * provider. The "fixed" names are more often than not
+		 * generic and less informative than the names given in
+		 * device properties.
+		 */
+		if (names[i] && names[i][0])
+			gpio_desc[chip->base + i].name = names[i];
+	}
+
+	free(names);
+
+	return 0;
+}
+
+/**
+ * of_gpio_simple_xlate - translate gpiospec to the GPIO number and flags
+ * @gc:		pointer to the gpio_chip structure
+ * @gpiospec:	GPIO specifier as found in the device tree
+ * @flags:	a flags pointer to fill in
+ *
+ * This is simple translation function, suitable for the most 1:1 mapped
+ * GPIO chips. This function performs only one sanity check: whether GPIO
+ * is less than ngpios (that is specified in the gpio_chip).
+ */
+static int of_gpio_simple_xlate(struct gpio_chip *gc,
+				const struct of_phandle_args *gpiospec,
+				u32 *flags)
+{
+	/*
+	 * We're discouraging gpio_cells < 2, since that way you'll have to
+	 * write your own xlate function (that will have to retrieve the GPIO
+	 * number and the flags from a single gpio cell -- this is possible,
+	 * but not recommended).
+	 */
+	if (WARN_ON(gc->of_gpio_n_cells < 2))
+		return -EINVAL;
+
+	if (WARN_ON(gpiospec->args_count < gc->of_gpio_n_cells))
+		return -EINVAL;
+
+	if (gpiospec->args[0] >= gc->ngpio)
+		return -EINVAL;
+
+	if (flags)
+		*flags = gpiospec->args[1];
+
+	return gc->base + gpiospec->args[0];
+}
+
+static int of_gpiochip_add(struct gpio_chip *chip)
+{
+	struct device_node *np;
+	int ret;
+
+	np = dev_of_node(chip->dev);
+	if (!np)
+		return 0;
+
+	if (!chip->ops->of_xlate)
+		chip->ops->of_xlate = of_gpio_simple_xlate;
+
+	/*
+	 * Separate check since the 'struct gpio_ops' is always the same for
+	 * every 'struct gpio_chip' of the same instance (e.g. 'struct
+	 * imx_gpio_chip').
+	 */
+	if (chip->ops->of_xlate == of_gpio_simple_xlate)
+		chip->of_gpio_n_cells = 2;
+
+	if (chip->of_gpio_n_cells > MAX_PHANDLE_ARGS)
+		return -EINVAL;
+
+	ret = of_gpiochip_set_names(chip);
+	if (ret)
+		return ret;
+
+	return of_gpiochip_scan_hogs(chip);
+}
+#else
+static int of_gpiochip_add(struct gpio_chip *chip)
+{
+	return 0;
+}
+#endif
 
 #ifdef CONFIG_OFDEVICE
 static const char *gpio_suffixes[] = {
@@ -634,7 +743,7 @@ int gpiochip_add(struct gpio_chip *chip)
 	for (i = chip->base; i < chip->base + chip->ngpio; i++)
 		gpio_desc[i].chip = chip;
 
-	return of_gpiochip_scan_hogs(chip);
+	return of_gpiochip_add(chip);
 }
 
 void gpiochip_remove(struct gpio_chip *chip)

@@ -18,11 +18,6 @@ static int nvmem_cdev_read(void *ctx, unsigned offset, void *buf, size_t bytes)
 	return cdev_read(ctx, buf, bytes, offset, 0);
 }
 
-static struct nvmem_bus nvmem_cdev_bus = {
-	.read = nvmem_cdev_read,
-	.write = nvmem_cdev_write,
-};
-
 struct nvmem_device *nvmem_partition_register(struct cdev *cdev)
 {
 	struct nvmem_config config = {};
@@ -34,7 +29,8 @@ struct nvmem_device *nvmem_partition_register(struct cdev *cdev)
 	config.stride = 1;
 	config.word_size = 1;
 	config.size = cdev->size;
-	config.bus = &nvmem_cdev_bus;
+	config.reg_read = nvmem_cdev_read;
+	config.reg_write = nvmem_cdev_write;
 
 	return nvmem_register(&config);
 }

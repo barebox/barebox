@@ -115,7 +115,8 @@ void stat_print(const char *filename, const struct stat *st)
 	struct block_device *bdev = NULL;
 	struct fs_device *fdev;
 	struct cdev *cdev = NULL;
-	const char *type = NULL;
+	const char *type = NULL, *typeprefix = "";
+	bool is_cdev_link = false;
 	char modestr[11];
 
 	mkmodestr(st->st_mode, modestr);
@@ -130,16 +131,18 @@ void stat_print(const char *filename, const struct stat *st)
 		case S_IFREG:    type = "regular file"; break;
 	}
 
-	printf("  File: %s\n", filename);
-
 	if (st->st_mode & S_IFCHR) {
 		char *path;
 
 		path = canonicalize_path(filename);
 		if (path) {
 			const char *devicefile = devpath_to_name(path);
+			struct cdev *lcdev;
 
-			cdev = cdev_by_name(devicefile);
+			lcdev = lcdev_by_name(devicefile);
+			cdev = cdev_readlink(lcdev);
+			if (cdev != lcdev)
+				is_cdev_link = true;
 			if (cdev)
 				bdev = cdev_get_block_device(cdev);
 
@@ -147,13 +150,31 @@ void stat_print(const char *filename, const struct stat *st)
 		}
 	}
 
+	printf("  File: %s", filename);
+
+	if (S_ISLNK(st->st_mode)) {
+		char realname[PATH_MAX] = {};
+		int ret;
+
+		ret = readlink(filename, realname, PATH_MAX - 1);
+		if (ret)
+			printf(" -> <readlink error %pe>", ERR_PTR(ret));
+		else
+			printf(" -> %s", realname);
+	} else if (is_cdev_link) {
+		printf(" ~> %s", cdev->name);
+		typeprefix = "cdev link to ";
+	}
+
+	printf("\n");
+
 	printf("  Size: %-20llu", st->st_size);
 	if (bdev)
 		printf("Blocks: %llu\tIO Block: %u\t",
 		       (u64)bdev->num_blocks, 1 << bdev->blockbits);
 
 	if (type)
-		printf("  %s", type);
+		printf("  %s%s", typeprefix, type);
 
 	fdev = get_fsdevice_by_path(filename);
 

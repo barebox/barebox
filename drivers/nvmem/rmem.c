@@ -21,10 +21,6 @@ static int rmem_read(void *context, unsigned int offset,
 			bytes, offset, 0);
 }
 
-static struct nvmem_bus rmem_nvmem_bus = {
-	.read = rmem_read,
-};
-
 static int rmem_probe(struct device *dev)
 {
 	struct nvmem_config config = { };
@@ -45,7 +41,7 @@ static int rmem_probe(struct device *dev)
 	config.priv = priv;
 	config.name = "rmem";
 	config.size = resource_size(mem);
-	config.bus = &rmem_nvmem_bus;
+	config.reg_read = rmem_read;
 
 	return PTR_ERR_OR_ZERO(nvmem_register(&config));
 }

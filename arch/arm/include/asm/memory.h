@@ -6,11 +6,6 @@
 #include <memory.h>
 
 #include <linux/const.h>
-/*
- * Allow for constants defined here to be used from assembly code
- * by prepending the UL suffix only with actual C code compilation.
- */
-#define UL(x) _AC(x, UL)
 
 static inline int arm_add_mem_device(const char* name, resource_size_t start,
 				     resource_size_t size)

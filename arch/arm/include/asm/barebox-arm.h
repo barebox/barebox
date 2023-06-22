@@ -158,7 +158,7 @@ void __barebox_arm64_head(ulong x0, ulong x1, ulong x2);
 				(ulong r0, ulong r1, ulong r2)		\
 		{							\
 			static __section(.pbl_board_stack_top_##name)	\
-				const u32 __stack_top = (stack_top);	\
+				const ulong __stack_top = (stack_top);	\
 			__keep_symbolref(__barebox_arm64_head);		\
 			__keep_symbolref(__stack_top);			\
 			__##name(r0, r1, r2);				\

@@ -35,4 +35,4 @@ static inline int i2c_dev_probe(struct pbl_i2c *i2c, int addr, bool onebyte)
 }
 
 
-#endif /* __I2C_EARLY_H */
+#endif /* __PBL_I2C_H */

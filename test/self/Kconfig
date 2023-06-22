@@ -38,6 +38,9 @@ config SELFTEST_ENABLE_ALL
 	imply SELFTEST_JSON
 	imply SELFTEST_DIGEST
 	imply SELFTEST_MMU
+	imply SELFTEST_STRING
+	imply SELFTEST_SETJMP
+	imply SELFTEST_REGULATOR
 	help
 	  Selects all self-tests compatible with current configuration
 
@@ -80,5 +83,18 @@ config SELFTEST_DIGEST
 	bool "Digest selftest"
 	depends on DIGEST
 	select PRINTF_HEXSTR
+
+config SELFTEST_STRING
+	bool "String library selftest"
+	select VERSION_CMP
+
+config SELFTEST_SETJMP
+	bool "setjmp/longjmp library selftest"
+	depends on ARCH_HAS_SJLJ
+
+config SELFTEST_REGULATOR
+	bool "Regulator selftest"
+	depends on REGULATOR && OFDEVICE
+	select OF_OVERLAY
 
 endif

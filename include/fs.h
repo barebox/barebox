@@ -12,8 +12,7 @@
 #include <filetype.h>
 #include <linux/fs.h>
 #include <linux/string.h>
-
-#define PATH_MAX       1024        /* include/linux/limits.h */
+#include <linux/limits.h>
 
 struct partition;
 struct node_d;

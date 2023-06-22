@@ -198,9 +198,13 @@ config TEXT_BASE
 	depends on HAVE_CONFIGURABLE_TEXT_BASE
 	prompt "TEXT_BASE"
 	hex
+	range 0 0xffffffff
 	default ARCH_TEXT_BASE
 	help
-	  The Address barebox gets linked at.
+	  The 32-bit address barebox gets linked at. This is forced
+	  to zero for relocatable barebox and fixed up at runtime,
+	  so barebox is executable on arbitrary addresses (given
+	  sufficient alignment).
 
 config BAREBOX_MAX_IMAGE_SIZE
 	prompt "Maximum size of barebox"
@@ -711,7 +715,7 @@ config MMCBLKDEV_ROOTARG
 	  kernel doesn't contain commit [1]. The first linux kernel release
 	  containing that commit is v5.10-rc1.
 
-	  The appending only happen if barebox 'linux.bootargs.bootm.appendroot'
+	  The appending only happens if barebox' 'linux.bootargs.bootm.appendroot'
 	  variable is set or the used blspec entry contains 'linux-appendroot'.
 
 	  Note: It is crucial that the kernel device tree and the barebox device
@@ -1696,6 +1700,20 @@ config COMPILE_TEST
 	  If you are a developer and want to build as much as currently possible,
 	  say Y here. If you are a user, say N here to avoid being prompted for
 	  inclusion of unrelated drivers.
+
+config WERROR
+	bool "Compile barebox with warnings as errors"
+	default COMPILE_TEST
+	help
+	  A barebox build should not cause any compiler warnings, and this
+	  enables the '-Werror' flags to enforce that rule by default.
+
+	  However, if you have a new (or very old) compiler with odd and
+	  unusual warnings, or you have some architecture with problems,
+	  you may need to disable this config option in order to
+	  successfully build barebox.
+
+	  If in doubt, say Y.
 
 endmenu
 

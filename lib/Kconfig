@@ -167,6 +167,13 @@ config PROGRESS_NOTIFIER
 	  This is selected by boards that register a notifier to visualize
 	  progress, like blinking a LED during an update.
 
+config VERSION_CMP
+	bool
+	help
+	  This is selected by code that needs to compare versions
+	  in a manner compatible with
+	    https://uapi-group.org/specifications/specs/version_format_specification
+
 config PRINTF_UUID
 	bool
 	default y if PRINTF_FULL

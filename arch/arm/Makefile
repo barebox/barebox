@@ -4,9 +4,10 @@ KBUILD_DEFCONFIG := multi_v8_defconfig
 
 KBUILD_CPPFLAGS	+= -D__ARM__ -fno-strict-aliasing
 # Explicitly specifiy 32-bit ARM ISA since toolchain default can be -mthumb:
-ifeq ($(CONFIG_CPU_V8),y)
+ifeq ($(CONFIG_CPU_64),y)
 KBUILD_CPPFLAGS	+=$(call cc-option,-maarch64,)
-else
+endif
+ifeq ($(CONFIG_CPU_32),y)
 KBUILD_CPPFLAGS	+=$(call cc-option,-marm,)
 KBUILD_CPPFLAGS	+= -msoft-float
 endif
@@ -27,14 +28,12 @@ endif
 # at least some of the code would be executed with MMU off, lets be
 # conservative and instruct the compiler not to generate any unaligned
 # accesses
-ifneq ($(CONFIG_CPU_V8),y)
+ifeq ($(CONFIG_CPU_32),y)
 KBUILD_CFLAGS += -mno-unaligned-access
-else
-KBUILD_CFLAGS += -mstrict-align
 endif
-
+ifeq ($(CONFIG_CPU_64),y)
+KBUILD_CFLAGS += -mstrict-align
 # Prevent use of floating point and Advanced SIMD registers.
-ifeq ($(CONFIG_CPU_V8),y)
 KBUILD_CFLAGS += -mgeneral-regs-only
 endif
 
@@ -54,19 +53,11 @@ tune-$(CONFIG_CPU_ARM920T)	:=-mtune=arm9tdmi
 tune-$(CONFIG_CPU_ARM926T)	:=-mtune=arm9tdmi
 tune-$(CONFIG_CPU_XSCALE)	:=$(call cc-option,-mtune=xscale,-mtune=strongarm110) -Wa,-mcpu=xscale
 
-ifeq ($(CONFIG_CPU_V8), y)
-CFLAGS_ABI	:=-mabi=lp64
-else
-ifeq ($(CONFIG_AEABI),y)
-CFLAGS_ABI	:=-mabi=aapcs-linux
-else
-CFLAGS_ABI	:=$(call cc-option,-mapcs-32,-mabi=apcs-gnu) $(call cc-option,-mno-thumb-interwork,)
-endif
-endif
+CFLAGS_ABI-$(CONFIG_CPU_64)	:=-mabi=lp64
+CFLAGS_ABI-$(CONFIG_CPU_32)	:=$(call cc-option,-mapcs-32,-mabi=apcs-gnu) $(call cc-option,-mno-thumb-interwork,)
+CFLAGS_ABI-$(CONFIG_AEABI)	:=-mabi=aapcs-linux
 
-ifeq ($(CONFIG_ARM_UNWIND),y)
-CFLAGS_ABI	+=-funwind-tables
-endif
+CFLAGS_ABI-$(CONFIG_ARM_UNWIND)	+=-funwind-tables
 
 ifeq ($(CONFIG_THUMB2_BAREBOX),y)
 AFLAGS_AUTOIT	:=$(call as-option,-Wa$(comma)-mimplicit-it=always,-Wa$(comma)-mauto-it)
@@ -75,13 +66,15 @@ CFLAGS_THUMB2	:=-mthumb $(AFLAGS_AUTOIT) $(AFLAGS_NOWARN)
 AFLAGS_THUMB2	:=$(CFLAGS_THUMB2) -Wa$(comma)-mthumb
 endif
 
-ifeq ($(CONFIG_CPU_V8), y)
-KBUILD_CPPFLAGS += $(CFLAGS_ABI) $(arch-y) $(tune-y)
+KBUILD_CPPFLAGS += $(CFLAGS_ABI-y) $(arch-y) $(tune-y)
+
+ifeq ($(CONFIG_CPU_64), y)
 KBUILD_AFLAGS   += -include asm/unified.h
 export S64_32 = 64
 export S64 = 64
-else
-KBUILD_CPPFLAGS += $(CFLAGS_ABI) $(arch-y) $(tune-y) $(CFLAGS_THUMB2)
+endif
+ifeq ($(CONFIG_CPU_32), y)
+KBUILD_CPPFLAGS += $(CFLAGS_THUMB2)
 KBUILD_AFLAGS   += -include asm/unified.h -msoft-float $(AFLAGS_THUMB2)
 export S64_32 = 32
 export S32 = 32
@@ -197,7 +190,7 @@ common-y += arch/arm/boards/ $(MACH)
 common-y += arch/arm/cpu/
 common-y += arch/arm/crypto/
 
-ifeq ($(CONFIG_CPU_V8), y)
+ifeq ($(CONFIG_CPU_64), y)
 common-y += arch/arm/lib64/
 else
 common-y += arch/arm/lib32/
@@ -205,7 +198,7 @@ endif
 
 common-$(CONFIG_OFTREE) += arch/arm/dts/
 
-ifeq ($(CONFIG_CPU_V8), y)
+ifeq ($(CONFIG_CPU_64), y)
 lds-y	:= arch/arm/lib64/barebox.lds
 else
 lds-y	:= arch/arm/lib32/barebox.lds

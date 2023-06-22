@@ -18,4 +18,6 @@ void *__nokasan_default_memcpy(void * dest,const void *src,size_t count);
 
 char *parse_assignment(char *str);
 
+int strverscmp(const char *a, const char *b);
+
 #endif /* __STRING_H */

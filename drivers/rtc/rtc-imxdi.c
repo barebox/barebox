@@ -529,17 +529,13 @@ static int nvstore_read(void *ctx, unsigned reg, void *val, size_t bytes)
 	return 0;
 }
 
-static struct nvmem_bus nvstore_nvmem_bus = {
-	.write = nvstore_write,
-	.read  = nvstore_read,
-};
-
 static struct nvmem_config nvstore_nvmem_config = {
 	.name = "nvstore",
 	.stride = 4,
 	.word_size = 4,
 	.size = 4,
-	.bus = &nvstore_nvmem_bus,
+	.reg_write = nvstore_write,
+	.reg_read = nvstore_read,
 };
 
 static int __init dryice_rtc_probe(struct device *dev)

@@ -80,6 +80,22 @@ Example:
 
   /dev/nand0.barebox.bb(barebox)sr,/kernel(kernel)rc
 
+Board code authors are encouraged to provide a default environment containing
+partitions with descriptive names. For boards where this is not specified,
+there exist a number of **partition** specifiers for automatically generating entries:
+
+* ``block`` exports all registered block devices (e.g. eMMC and SD)
+* ``auto``  currently equivalent to ``block``. May be extended to other flashable
+            devices, like EEPROMs, MTD or UBI volumes in future
+
+Example usage of exporting registered block devices, barebox update
+handlers and a single file that is created on flashing:
+
+.. code-block:: sh
+
+     detect -a # optional. Detects everything, so auto can register it
+     usbgadget -A auto,/tmp/fitimage(fitimage)c -b
+
 DFU
 ^^^
 
@@ -263,6 +279,21 @@ mode. Once a specific mode has been selected it can't be changed later anymore.
   musb-hdrc: setup fifo_mode 4
   musb-hdrc: 28/31 max ep, 16384/16384 memory
   barebox:/
+
+USB Type-C support
+------------------
+
+barebox can usually stay oblivious to the type of connector used. Sometimes though,
+board code and user scripts may want to base their decisions on how a USB-C connector
+is connected. Type C drivers can thus register with the Type C driver core to
+export a number of device parameters:
+
+- ``$typec0.usb_role`` = { ``none``, ``device``, ``host`` }
+- ``$typec0.pwr_role`` = { ``sink``, ``source`` }
+- ``$typec0.accessory`` = { ``none``, ``audio``, ``debug`` }
+
+Currently, only the TUSB320 is supported, but it's straight-forward to port more
+drivers from Linux.
 
 USB Gadget autostart Support
 ----------------------------

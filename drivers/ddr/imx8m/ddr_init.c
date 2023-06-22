@@ -204,7 +204,7 @@ int imx8m_ddr_init(struct dram_timing_info *dram_timing,
 
 	/* enable port 0 */
 	reg32_write(DDRC_PCTRL_0(0), 0x00000001);
-	pr_debug(" ddrmix config done\n");
+	pr_debug("ddrmix config done\n");
 
 	/* save the dram timing config into memory */
 	dram_config_save(dram_timing, IMX8M_SAVED_DRAM_TIMING_BASE);

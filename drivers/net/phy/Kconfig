@@ -50,6 +50,11 @@ config MICREL_PHY
 	help
 	  Supports the KSZ9021, VSC8201, KS8001 PHYs.
 
+config MOTORCOMM_PHY
+	bool "Driver for Motorcomm PHYs"
+	help
+	  Currently supports the YT8511 PHY.
+
 config NATIONAL_PHY
 	bool "Driver for National Semiconductor PHYs"
 	help

@@ -12,7 +12,7 @@
  *
  * Derived from Linux drivers/drm/gpu/panel/panel-ilitek-ili9341.c
  */
-#define DEBUG 1
+
 #include <common.h>
 #include <linux/bitops.h>
 #include <gpiod.h>

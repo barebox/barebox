@@ -832,11 +832,6 @@ static int mv88e6xxx_eeprom_write(void *ctx, unsigned offset, const void *val, s
 	return chip->info->ops->set_eeprom(chip, &eeprom, (void *)val);
 }
 
-static const struct nvmem_bus mv88e6xxx_eeprom_nvmem_bus = {
-	.write = mv88e6xxx_eeprom_write,
-	.read  = mv88e6xxx_eeprom_read,
-};
-
 static int mv88e6xxx_probe(struct device *dev)
 {
 	struct device_node *np = dev->of_node;
@@ -911,7 +906,8 @@ static int mv88e6xxx_probe(struct device *dev)
 			.stride = 1,
 			.size = eeprom_len,
 			.read_only = false,
-			.bus = &mv88e6xxx_eeprom_nvmem_bus,
+			.reg_write = mv88e6xxx_eeprom_write,
+			.reg_read = mv88e6xxx_eeprom_read,
 		};
 
 		if (IS_ERR(nvmem_register(&config)))

@@ -53,6 +53,7 @@ usage() {
 	echo "LOGDIR      -l      log dir"
 	echo "REGEX       -e      regex"
 	echo "KCONFIG_ADD -k      kconfig fragment"
+	echo "INCREMENTAL -i"
 	echo ""
 }
 
@@ -89,7 +90,7 @@ do_build_target() {
 	local log_report="${LOGDIR}/${target}/report.log"
 	local log_err="${LOGDIR}/${target}/errors.log"
 
-	rm -rf "${BUILDDIR}"
+	[ "$INCREMENTAL" != "1" ] && rm -rf "${BUILDDIR}"
 	mkdir -p "${LOGDIR}/${target}"
 	printf "Building ${arch} ${target} \n" >&2 | tee -a "${log_report}"
 
@@ -196,7 +197,7 @@ do_build_all() {
 	return $build_target
 }
 
-while getopts "hc:j:O:l:a:e:k:" Option
+while getopts "hc:j:O:l:a:e:k:i" Option
 do
 case $Option in
 	a )
@@ -219,6 +220,9 @@ case $Option in
 		;;
 	k )
 		KCONFIG_ADD="${KCONFIG_ADD} ${OPTARG}"
+		;;
+	i )
+		INCREMENTAL=1
 		;;
 	h )
 		usage

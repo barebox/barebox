@@ -141,6 +141,8 @@ static int regulator_resolve_supply(struct regulator_dev *rdev)
 	if (!supply_name)
 		return 0;
 
+	dev_dbg(rdev->dev, "resolving %s\n", supply_name);
+
 	supply = regulator_get(rdev->dev, supply_name);
 	if (IS_ERR(supply)) {
 		if (deep_probe_is_supported())

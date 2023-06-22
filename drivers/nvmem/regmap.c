@@ -53,11 +53,6 @@ static int nvmem_regmap_read(void *ctx, unsigned offset, void *buf, size_t bytes
 	return 0;
 }
 
-static struct nvmem_bus nvmem_regmap_bus = {
-	.read = nvmem_regmap_read,
-	.write = nvmem_regmap_write,
-};
-
 struct nvmem_device *
 nvmem_regmap_register_with_pp(struct regmap *map, const char *name,
 			      nvmem_cell_post_process_t cell_post_process)
@@ -74,8 +69,9 @@ nvmem_regmap_register_with_pp(struct regmap *map, const char *name,
 	config.stride = 1;
 	config.word_size = 1;
 	config.size = regmap_get_max_register(map) * regmap_get_reg_stride(map);
-	config.bus = &nvmem_regmap_bus;
 	config.cell_post_process = cell_post_process;
+	config.reg_write = nvmem_regmap_write;
+	config.reg_read = nvmem_regmap_read;
 
 	return nvmem_register(&config);
 }

@@ -17,11 +17,6 @@
 
 struct nvmem_device;
 
-struct nvmem_bus {
-	int (*write)(void *ctx, unsigned int reg, const void *val, size_t val_size);
-	int (*read)(void *ctx, unsigned int reg, void *val, size_t val_size);
-};
-
 /* used for vendor specific post processing of cell data */
 typedef int (*nvmem_cell_post_process_t)(void *priv, const char *id,
 					 unsigned int offset, void *buf,
@@ -35,7 +30,10 @@ struct nvmem_config {
 	int			stride;
 	int			word_size;
 	int			size;
-	const struct nvmem_bus	*bus;
+	int			(*reg_write)(void *ctx, unsigned int reg,
+					     const void *val, size_t val_size);
+	int			(*reg_read)(void *ctx, unsigned int reg,
+					    void *val, size_t val_size);
 	void			*priv;
 	nvmem_cell_post_process_t cell_post_process;
 };

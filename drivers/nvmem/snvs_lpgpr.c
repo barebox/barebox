@@ -73,11 +73,6 @@ static int snvs_lpgpr_read(void *ctx, unsigned offset, void *val, size_t bytes)
 				val, bytes);
 }
 
-static const struct nvmem_bus snvs_lpgpr_nvmem_bus = {
-	.write = snvs_lpgpr_write,
-	.read  = snvs_lpgpr_read,
-};
-
 static int snvs_lpgpr_probe(struct device *dev)
 {
 	struct device_node *node = dev->of_node;
@@ -112,7 +107,8 @@ static int snvs_lpgpr_probe(struct device *dev)
 	cfg->stride = 4;
 	cfg->word_size = 4;
 	cfg->size = 4;
-	cfg->bus = &snvs_lpgpr_nvmem_bus;
+	cfg->reg_write = snvs_lpgpr_write;
+	cfg->reg_read  = snvs_lpgpr_read;
 
 	nvmem = nvmem_register(cfg);
 	if (IS_ERR(nvmem)) {

@@ -43,7 +43,7 @@ copy_source() {
 
 	echo "	Fixing include paths..."
 	# Fix include pathes
-	sed -i 's/#include <sdram.h>/#include <mach\/cyclone5-sdram.h>/g' $tgt
+	sed -i 's/#include <sdram.h>/#include <mach\/socfpga\/cyclone5-sdram.h>/g' $tgt
 	sed -i 's/#include "sequencer_auto.h"//g' $tgt
 	sed -i 's/#include "sequencer.h"/#include "cyclone5-sequencer.h"/g' $tgt
 
@@ -54,7 +54,7 @@ copy_source() {
 	sed -i 's/[ \t]\+$//' $tgt
 
 	echo "  Running coccinelle cleanups..."
-	spatch -sp_file scripts/coccinelle/misc/altera_sequencer.cocci -in_place arch/arm/mach-socfpga/include/mach
+	spatch -sp_file scripts/coccinelle/misc/altera_sequencer.cocci -in_place include/mach/socfpga
 
 	echo "  Cleanup header..."
 	sed -i 's/^static void rw_mgr_mem_calibrate_eye_diag_aid(void);$//g' $tgt
@@ -65,20 +65,20 @@ copy_source() {
 	sed -i 's/^static void rw_mgr_decr_vfifo_auto(uint32_t grp);$//g' $tgt
 }
 
-copy_source ${ubootsrc}/board/altera/socfpga/sdram/sequencer.c arch/arm/mach-socfpga/include/mach/cyclone5-sequencer.c
-sed -i 's/static int sdram_calibration(void)/static int socfpga_mem_calibration(void)/g' arch/arm/mach-socfpga/include/mach/cyclone5-sequencer.c
+copy_source ${ubootsrc}/board/altera/socfpga/sdram/sequencer.c include/mach/socfpga/cyclone5-sequencer.c
+sed -i 's/static int sdram_calibration(void)/static int socfpga_mem_calibration(void)/g' include/mach/socfpga/cyclone5-sequencer.c
 
-copy_source ${ubootsrc}/board/altera/socfpga/sdram/sequencer.h arch/arm/mach-socfpga/include/mach/cyclone5-sequencer.h
-copy_source ${ubootsrc}/board/altera/socfpga/sdram/tclrpt.h arch/arm/mach-socfpga/include/mach/tclrpt.h
-copy_source ${ubootsrc}/board/altera/socfpga/sdram/sdram_io.h arch/arm/mach-socfpga/include/mach/sdram_io.h
-cat <<'EOF' >> arch/arm/mach-socfpga/include/mach/sdram_io.h
+copy_source ${ubootsrc}/board/altera/socfpga/sdram/sequencer.h include/mach/socfpga/cyclone5-sequencer.h
+copy_source ${ubootsrc}/board/altera/socfpga/sdram/tclrpt.h include/mach/socfpga/tclrpt.h
+copy_source ${ubootsrc}/board/altera/socfpga/sdram/sdram_io.h include/mach/socfpga/sdram_io.h
+cat <<'EOF' >> include/mach/socfpga/sdram_io.h
 	#define write_register(BASE, OFFSET, DATA) \
 		writel(DATA, ((BASE) + (OFFSET)))
 	#define read_register(BASE, OFFSET) \
 		readl((BASE) + (OFFSET))
 	#define HPS_SDR_BASE 0xffc20000
 EOF
-copy_source ${ubootsrc}/board/altera/socfpga/sdram/system.h arch/arm/mach-socfpga/include/mach/system.h
+copy_source ${ubootsrc}/board/altera/socfpga/sdram/system.h include/mach/socfpga/system.h
 
 echo "DONE"
 

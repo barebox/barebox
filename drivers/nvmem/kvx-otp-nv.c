@@ -49,10 +49,6 @@ static int kvx_otp_nv_read(void *context, unsigned int offset,
 	return 0;
 }
 
-static const struct nvmem_bus kvx_otp_nv_bus = {
-	.read = kvx_otp_nv_read,
-};
-
 static const struct of_device_id kvx_otp_nv_match[] = {
 	{ .compatible = "kalray,kvx-otp-nv" },
 	{ /* sentinel */},
@@ -82,7 +78,7 @@ static int kvx_otp_nv_probe(struct device *dev)
 	econfig.size = resource_size(res);
 	econfig.dev = dev;
 	econfig.priv = priv;
-	econfig.bus = &kvx_otp_nv_bus;
+	econfig.reg_read = kvx_otp_nv_read;
 
 	dev->priv = priv;
 

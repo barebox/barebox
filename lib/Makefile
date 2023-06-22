@@ -6,6 +6,7 @@ obj-pbl-y		+= ctype.o
 obj-y			+= rbtree.o
 obj-y			+= display_options.o
 obj-y			+= string.o
+obj-$(CONFIG_VERSION_CMP)	+= strverscmp.o
 obj-y			+= strtox.o
 obj-y			+= kstrtox.o
 obj-y			+= vsprintf.o

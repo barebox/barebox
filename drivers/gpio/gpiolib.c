@@ -81,7 +81,7 @@ static struct gpio_desc *gpio_to_desc(unsigned gpio)
 	return NULL;
 }
 
-static unsigned gpioinfo_chip_offset(const struct gpio_desc *desc)
+static unsigned gpiodesc_chip_offset(const struct gpio_desc *desc)
 {
 	return (desc - gpio_desc) - desc->chip->base;
 }
@@ -95,7 +95,7 @@ static int gpio_adjust_value(const struct gpio_desc *desc,
 	return !!value ^ desc->active_low;
 }
 
-static int gpioinfo_request(struct gpio_desc *desc, const char *label)
+static int gpiodesc_request(struct gpio_desc *desc, const char *label)
 {
 	int ret;
 
@@ -108,7 +108,7 @@ static int gpioinfo_request(struct gpio_desc *desc, const char *label)
 
 	if (desc->chip->ops->request) {
 		ret = desc->chip->ops->request(desc->chip,
-					     gpioinfo_chip_offset(desc));
+					     gpiodesc_chip_offset(desc));
 		if (ret)
 			goto done;
 	}
@@ -169,16 +169,16 @@ int gpio_request(unsigned gpio, const char *label)
 		return -ENODEV;
 	}
 
-	return gpioinfo_request(desc, label);
+	return gpiodesc_request(desc, label);
 }
 
-static void gpioinfo_free(struct gpio_desc *desc)
+static void gpiodesc_free(struct gpio_desc *desc)
 {
 	if (!desc->requested)
 		return;
 
 	if (desc->chip->ops->free)
-		desc->chip->ops->free(desc->chip, gpioinfo_chip_offset(desc));
+		desc->chip->ops->free(desc->chip, gpiodesc_chip_offset(desc));
 
 	desc->requested = false;
 	desc->active_low = false;
@@ -190,7 +190,7 @@ void gpio_free(unsigned gpio)
 {
 	struct gpio_desc *desc = gpio_to_desc(gpio);
 
-	gpioinfo_free(desc);
+	gpiodesc_free(desc);
 }
 
 /**
@@ -204,7 +204,7 @@ void gpiod_put(struct gpio_desc *desc)
 	if (!desc)
 		return;
 
-	gpioinfo_free(desc);
+	gpiodesc_free(desc);
 }
 EXPORT_SYMBOL(gpiod_put);
 
@@ -236,7 +236,7 @@ void gpiod_set_raw_value(struct gpio_desc *desc, int value)
 	VALIDATE_DESC_VOID(desc);
 
 	if (desc->chip->ops->set)
-		desc->chip->ops->set(desc->chip, gpioinfo_chip_offset(desc), value);
+		desc->chip->ops->set(desc->chip, gpiodesc_chip_offset(desc), value);
 }
 EXPORT_SYMBOL(gpiod_set_raw_value);
 
@@ -294,7 +294,7 @@ int gpiod_get_raw_value(const struct gpio_desc *desc)
 	if (!desc->chip->ops->get)
 		return -ENOSYS;
 
-	return desc->chip->ops->get(desc->chip, gpioinfo_chip_offset(desc));
+	return desc->chip->ops->get(desc->chip, gpiodesc_chip_offset(desc));
 }
 EXPORT_SYMBOL_GPL(gpiod_get_raw_value);
 
@@ -359,7 +359,7 @@ int gpiod_direction_output_raw(struct gpio_desc *desc, int value)
 		return -ENOSYS;
 
 	return desc->chip->ops->direction_output(desc->chip,
-					       gpioinfo_chip_offset(desc), value);
+					       gpiodesc_chip_offset(desc), value);
 }
 EXPORT_SYMBOL(gpiod_direction_output_raw);
 
@@ -426,7 +426,7 @@ int gpiod_direction_input(struct gpio_desc *desc)
 		return -ENOSYS;
 
 	return desc->chip->ops->direction_input(desc->chip,
-					      gpioinfo_chip_offset(desc));
+					      gpiodesc_chip_offset(desc));
 }
 EXPORT_SYMBOL(gpiod_direction_input);
 
@@ -446,7 +446,7 @@ int gpio_direction_input(unsigned gpio)
 }
 EXPORT_SYMBOL(gpio_direction_input);
 
-static int gpioinfo_request_one(struct gpio_desc *desc, unsigned long flags,
+static int gpiodesc_request_one(struct gpio_desc *desc, unsigned long flags,
 				const char *label)
 {
 	int err;
@@ -461,7 +461,7 @@ static int gpioinfo_request_one(struct gpio_desc *desc, unsigned long flags,
 	const bool init_active = (flags & GPIOF_INIT_ACTIVE) == GPIOF_INIT_ACTIVE;
 	const bool init_high   = (flags & GPIOF_INIT_HIGH) == GPIOF_INIT_HIGH;
 
-	err = gpioinfo_request(desc, label);
+	err = gpiodesc_request(desc, label);
 	if (err)
 		return err;
 
@@ -475,7 +475,7 @@ static int gpioinfo_request_one(struct gpio_desc *desc, unsigned long flags,
 		err = gpiod_direction_output_raw(desc, init_high);
 
 	if (err)
-		gpioinfo_free(desc);
+		gpiodesc_free(desc);
 
 	return err;
 }
@@ -493,7 +493,7 @@ int gpio_request_one(unsigned gpio, unsigned long flags, const char *label)
 	if (!desc)
 		return -ENODEV;
 
-	return gpioinfo_request_one(desc, flags, label);
+	return gpiodesc_request_one(desc, flags, label);
 }
 EXPORT_SYMBOL_GPL(gpio_request_one);
 
@@ -884,7 +884,7 @@ struct gpio_desc *dev_gpiod_get_index(struct device *dev,
 			label = dev_name(dev);
 	}
 
-	ret = gpioinfo_request_one(desc, flags, label);
+	ret = gpiodesc_request_one(desc, flags, label);
 	free(buf);
 
 	return ret ? ERR_PTR(ret): desc;

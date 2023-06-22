@@ -802,21 +802,12 @@ static const char *gpio_suffixes[] = {
 	"gpio",
 };
 
-/* Linux compatibility helper: Get a GPIO descriptor from device tree */
-struct gpio_desc *dev_gpiod_get_index(struct device *dev,
-			struct device_node *np,
-			const char *_con_id, int index,
-			enum gpiod_flags flags,
-			const char *label)
+static struct property *of_find_gpio_property(struct device_node *np,
+					      const char *_con_id)
 {
-	struct gpio_desc *desc = NULL;
-	enum of_gpio_flags of_flags;
-	char *buf = NULL, *con_id;
-	int gpio;
-	int ret, i;
-
-	if (!np)
-		return ERR_PTR(-ENODEV);
+	struct property *pp = NULL;
+	char *con_id;
+	int i;
 
 	for (i = 0; i < ARRAY_SIZE(gpio_suffixes); i++) {
 		if (_con_id)
@@ -827,17 +818,43 @@ struct gpio_desc *dev_gpiod_get_index(struct device *dev,
 		if (!con_id)
 			return ERR_PTR(-ENOMEM);
 
-		gpio = of_get_named_gpio_flags(np, con_id, index, &of_flags);
+		pp = of_find_property(np, con_id, NULL);
 		free(con_id);
 
-		if (gpio_is_valid(gpio)) {
-			desc = gpio_to_desc(gpio);
-			break;
-		}
+		if (pp)
+			return pp;
 	}
 
-	if (!desc)
+	return NULL;
+}
+
+/* Linux compatibility helper: Get a GPIO descriptor from device tree */
+struct gpio_desc *dev_gpiod_get_index(struct device *dev,
+			struct device_node *np,
+			const char *con_id, int index,
+			enum gpiod_flags flags,
+			const char *label)
+{
+	struct gpio_desc *desc = NULL;
+	enum of_gpio_flags of_flags;
+	struct property *pp;
+	char *buf = NULL;
+	int gpio;
+	int ret;
+
+	if (!np)
+		return ERR_PTR(-ENODEV);
+
+	pp = of_find_gpio_property(np, con_id);
+	if (!pp)
+		return ERR_PTR(-ENOENT);
+
+	gpio = of_get_named_gpio_flags(dev->device_node, pp->name,
+				       index, &of_flags);
+	if (!gpio_is_valid(gpio))
 		return ERR_PTR(gpio < 0 ? gpio : -EINVAL);
+
+	desc = gpio_to_desc(gpio);
 
 	if (of_flags & OF_GPIO_ACTIVE_LOW)
 		flags |= GPIOF_ACTIVE_LOW;
@@ -845,8 +862,8 @@ struct gpio_desc *dev_gpiod_get_index(struct device *dev,
 	buf = NULL;
 
 	if (!label) {
-		if (_con_id)
-			label = buf = basprintf("%s-%s", dev_name(dev), _con_id);
+		if (con_id)
+			label = buf = basprintf("%s-%s", dev_name(dev), con_id);
 		else
 			label = dev_name(dev);
 	}

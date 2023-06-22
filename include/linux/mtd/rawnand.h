@@ -1436,12 +1436,14 @@ void nand_wait_ready(struct nand_chip *chip);
  */
 void nand_cleanup(struct nand_chip *chip);
 
+struct gpio_desc;
+
 /*
  * External helper for controller drivers that have to implement the WAITRDY
  * instruction and have no physical pin to check it.
  */
 int nand_soft_waitrdy(struct nand_chip *chip, unsigned long timeout_ms);
-int nand_gpio_waitrdy(struct nand_chip *chip, int gpio,
+int nand_gpio_waitrdy(struct nand_chip *chip, struct gpio_desc *gpio,
 		      unsigned long timeout_ms);
 
 /* Select/deselect a NAND target. */

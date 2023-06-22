@@ -19,7 +19,7 @@
 #include <crc.h>
 #include <crc7.h>
 #include <of.h>
-#include <gpiod.h>
+#include <linux/gpio/consumer.h>
 
 #define to_spi_host(mci) container_of(mci, struct mmc_spi_host, mci)
 #define spi_setup(spi) spi->master->setup(spi)
@@ -49,7 +49,7 @@ struct mmc_spi_host {
 	struct mci_host	mci;
 	struct spi_device	*spi;
 	struct device	*dev;
-	int detect_pin;
+	struct gpio_desc *detect_pin;
 
 	/* for bulk data transfers */
 	struct spi_transfer	t_tx;
@@ -360,10 +360,10 @@ static int spi_mci_card_present(struct mci_host *mci)
 	int			ret;
 
 	/* No gpio, assume card is present */
-	if (!gpio_is_valid(host->detect_pin))
+	if (IS_ERR_OR_NULL(host->detect_pin))
 		return 1;
 
-	ret = gpio_get_value(host->detect_pin);
+	ret = gpiod_get_value(host->detect_pin);
 
 	return ret == 0 ? 1 : 0;
 }
@@ -434,11 +434,12 @@ static int spi_mci_probe(struct device *dev)
 
 	host->mci.voltages = MMC_VDD_32_33 | MMC_VDD_33_34;
 	host->mci.host_caps = MMC_CAP_SPI;
-	host->detect_pin = -EINVAL;
 
 	if (np) {
 		host->mci.devname = xstrdup(of_alias_get(np));
-		host->detect_pin = gpiod_get(dev, NULL, GPIOD_IN);
+		host->detect_pin = gpiod_get_optional(dev, NULL, GPIOD_IN);
+		if (IS_ERR(host->detect_pin))
+			dev_warn(dev, "Failed to get 'reset' GPIO (ignored)\n");
 	}
 
 	mci_register(&host->mci);

@@ -22,7 +22,7 @@
 #include <linux/kernel.h>
 #include <of_address.h>
 #include <of_pci.h>
-#include <gpiod.h>
+#include <linux/gpio/consumer.h>
 #include <linux/pci.h>
 #include <linux/phy/phy.h>
 #include <linux/reset.h>
@@ -61,7 +61,7 @@ struct rockchip_pcie {
 	struct clk_bulk_data		*clks;
 	unsigned int			clk_cnt;
 	struct reset_control		*rst;
-	int				rst_gpio;
+	struct gpio_desc		*rst_gpio;
 	struct regulator                *vpcie3v3;
 	struct irq_domain		*irq_domain;
 };
@@ -106,7 +106,7 @@ static int rockchip_pcie_start_link(struct dw_pcie *pci)
 	struct rockchip_pcie *rockchip = to_rockchip_pcie(pci);
 
 	/* Reset device */
-	gpio_set_value(rockchip->rst_gpio, 0);
+	gpiod_set_value(rockchip->rst_gpio, 0);
 
 	rockchip_pcie_enable_ltssm(rockchip);
 
@@ -120,7 +120,7 @@ static int rockchip_pcie_start_link(struct dw_pcie *pci)
 	 * 100us as we don't know how long should the device need to reset.
 	 */
 	mdelay(100);
-	gpio_set_value(rockchip->rst_gpio, 1);
+	gpiod_set_value(rockchip->rst_gpio, 1);
 
 	return 0;
 }
@@ -177,9 +177,9 @@ static int rockchip_pcie_resource_get(struct device *dev,
 		return PTR_ERR(r);
 	rockchip->pci.dbi_base = IOMEM(r->start);
 
-	rockchip->rst_gpio = gpiod_get(dev, "reset", GPIOD_OUT_HIGH);
-	if (rockchip->rst_gpio < 0 && rockchip->rst_gpio != -ENOENT)
-		return rockchip->rst_gpio;
+	rockchip->rst_gpio = gpiod_get_optional(dev, "reset", GPIOD_OUT_HIGH);
+	if (IS_ERR(rockchip->rst_gpio))
+		return PTR_ERR(rockchip->rst_gpio);
 
 	rockchip->rst = reset_control_array_get(dev);
 	if (IS_ERR(rockchip->rst))

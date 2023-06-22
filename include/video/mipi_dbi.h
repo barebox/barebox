@@ -15,6 +15,7 @@
 
 struct regulator;
 struct fb_videomode;
+struct gpio_desc;
 
 /**
  * struct mipi_dbi - MIPI DBI interface
@@ -39,7 +40,7 @@ struct mipi_dbi {
 	/**
 	 * @reset: Optional reset gpio
 	 */
-	int reset;
+	struct gpio_desc *reset;
 
 	/* Type C specific */
 
@@ -51,7 +52,7 @@ struct mipi_dbi {
 	/**
 	 * @dc: Optional D/C gpio.
 	 */
-	int dc;
+	struct gpio_desc *dc;
 
 	struct list_head list;
 };
@@ -122,7 +123,7 @@ static inline const char *mipi_dbi_name(struct mipi_dbi *dbi)
 }
 
 int mipi_dbi_spi_init(struct spi_device *spi, struct mipi_dbi *dbi,
-		      int dc);
+		      struct gpio_desc *dc);
 int mipi_dbi_dev_init(struct mipi_dbi_dev *dbidev,
 		      struct fb_ops *ops, struct fb_videomode *mode);
 void mipi_dbi_fb_damage(struct fb_info *info, const struct fb_rect *rect);

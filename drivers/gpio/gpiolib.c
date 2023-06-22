@@ -7,7 +7,7 @@
 #include <complete.h>
 #include <gpio.h>
 #include <of_gpio.h>
-#include <gpiod.h>
+#include <linux/gpio/consumer.h>
 #include <errno.h>
 #include <malloc.h>
 
@@ -670,19 +670,20 @@ static const char *gpio_suffixes[] = {
 };
 
 /* Linux compatibility helper: Get a GPIO descriptor from device tree */
-int dev_gpiod_get_index(struct device *dev,
+struct gpio_desc *dev_gpiod_get_index(struct device *dev,
 			struct device_node *np,
 			const char *_con_id, int index,
 			enum gpiod_flags flags,
 			const char *label)
 {
+	struct gpio_desc *desc = NULL;
 	enum of_gpio_flags of_flags;
 	char *buf = NULL, *con_id;
 	int gpio;
 	int ret, i;
 
 	if (!np)
-		return -ENODEV;
+		return ERR_PTR(-ENODEV);
 
 	for (i = 0; i < ARRAY_SIZE(gpio_suffixes); i++) {
 		if (_con_id)
@@ -691,17 +692,19 @@ int dev_gpiod_get_index(struct device *dev,
 			con_id = basprintf("%s", gpio_suffixes[i]);
 
 		if (!con_id)
-			return -ENOMEM;
+			return ERR_PTR(-ENOMEM);
 
 		gpio = of_get_named_gpio_flags(np, con_id, index, &of_flags);
 		free(con_id);
 
-		if (gpio_is_valid(gpio))
+		if (gpio_is_valid(gpio)) {
+			desc = __tmp_gpio_to_desc(gpio);
 			break;
+		}
 	}
 
-	if (!gpio_is_valid(gpio))
-		return gpio < 0 ? gpio : -EINVAL;
+	if (!desc)
+		return ERR_PTR(gpio < 0 ? gpio : -EINVAL);
 
 	if (of_flags & OF_GPIO_ACTIVE_LOW)
 		flags |= GPIOF_ACTIVE_LOW;
@@ -715,10 +718,10 @@ int dev_gpiod_get_index(struct device *dev,
 			label = dev_name(dev);
 	}
 
-	ret = gpio_request_one(gpio, flags, label);
+	ret = gpio_request_one(__tmp_desc_to_gpio(desc), flags, label);
 	free(buf);
 
-	return ret ?: gpio;
+	return ret ? ERR_PTR(ret): desc;
 }
 #endif
 

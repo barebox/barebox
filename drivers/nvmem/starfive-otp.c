@@ -8,7 +8,7 @@
 #include <malloc.h>
 #include <xfuncs.h>
 #include <errno.h>
-#include <gpiod.h>
+#include <linux/gpio/consumer.h>
 #include <init.h>
 #include <net.h>
 #include <io.h>
@@ -87,7 +87,7 @@
  */
 
 struct starfive_otp {
-	int power_gpio;
+	struct gpio_desc *power_gpio;
 	struct starfive_otp_regs __iomem *regs;
 };
 
@@ -112,7 +112,7 @@ static int starfive_otp_read(void *ctx, unsigned offset, unsigned *val)
 {
 	struct starfive_otp *priv = ctx;
 
-	gpio_set_active(priv->power_gpio, true);
+	gpiod_set_value(priv->power_gpio, true);
 	mdelay(10);
 
 	//otp set to read mode
@@ -122,7 +122,7 @@ static int starfive_otp_read(void *ctx, unsigned offset, unsigned *val)
 	/* read all requested fuses */
 	*val = readl(&priv->regs->mem[offset / 4]);
 
-	gpio_set_active(priv->power_gpio, false);
+	gpiod_set_value(priv->power_gpio, false);
 	mdelay(5);
 
 	return 0;
@@ -178,8 +178,8 @@ static int starfive_otp_probe(struct device *dev)
 
 	priv->regs = IOMEM(iores->start);
 	priv->power_gpio = gpiod_get(dev, "power", GPIOD_OUT_LOW);
-	if (priv->power_gpio < 0)
-		return priv->power_gpio;
+	if (IS_ERR(priv->power_gpio))
+		return PTR_ERR(priv->power_gpio);
 
 	map = regmap_init(dev, &starfive_otp_regmap_bus, priv, &config);
 	if (IS_ERR(map))

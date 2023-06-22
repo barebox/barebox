@@ -9,12 +9,10 @@
 #include <init.h>
 #include <regulator.h>
 #include <of.h>
-#include <of_gpio.h>
-#include <gpio.h>
-#include <gpiod.h>
+#include <linux/gpio/consumer.h>
 
 struct regulator_fixed {
-	int gpio;
+	struct gpio_desc *gpio;
 	struct regulator_dev rdev;
 	struct regulator_desc rdesc;
 };
@@ -23,20 +21,14 @@ static int regulator_fixed_enable(struct regulator_dev *rdev)
 {
 	struct regulator_fixed *fix = container_of(rdev, struct regulator_fixed, rdev);
 
-	if (!gpio_is_valid(fix->gpio))
-		return 0;
-
-	return gpio_direction_active(fix->gpio, true);
+	return gpiod_direction_output(fix->gpio, true);
 }
 
 static int regulator_fixed_disable(struct regulator_dev *rdev)
 {
 	struct regulator_fixed *fix = container_of(rdev, struct regulator_fixed, rdev);
 
-	if (!gpio_is_valid(fix->gpio))
-		return 0;
-
-	return gpio_direction_active(fix->gpio, false);
+	return gpiod_direction_output(fix->gpio, false);
 }
 
 const static struct regulator_ops fixed_ops = {
@@ -55,14 +47,11 @@ static int regulator_fixed_probe(struct device *dev)
 		return -EINVAL;
 
 	fix = xzalloc(sizeof(*fix));
-	fix->gpio = -EINVAL;
 
-	if (of_get_property(np, "gpio", NULL)) {
-		fix->gpio = gpiod_get(dev, NULL, GPIOD_ASIS);
-		if (fix->gpio < 0) {
-			ret = fix->gpio;
-			goto err;
-		}
+	fix->gpio = gpiod_get_optional(dev, NULL, GPIOD_ASIS);
+	if (IS_ERR(fix->gpio)) {
+		ret = PTR_ERR(fix->gpio);
+		goto err;
 	}
 
 	fix->rdesc.ops = &fixed_ops;

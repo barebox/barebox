@@ -7,10 +7,10 @@
 #include <regulator.h>
 #include <sound.h>
 #include <of.h>
-#include <gpiod.h>
+#include <linux/gpio/consumer.h>
 
 struct gpio_beeper {
-	int gpio;
+	struct gpio_desc *gpio;
 	struct sound_card card;
 };
 
@@ -18,7 +18,7 @@ static int gpio_beeper_beep(struct sound_card *card, unsigned freq, unsigned dur
 {
 	struct gpio_beeper *beeper = container_of(card, struct gpio_beeper, card);
 
-	gpio_set_active(beeper->gpio, freq);
+	gpiod_set_value(beeper->gpio, freq);
 	return 0;
 }
 
@@ -27,13 +27,11 @@ static int gpio_beeper_probe(struct device *dev)
 	struct device_node *np = dev->of_node;
 	struct gpio_beeper *beeper;
 	struct sound_card *card;
-	int gpio;
+	struct gpio_desc *gpio;
 
 	gpio = gpiod_get(dev, NULL, GPIOD_OUT_LOW);
-	if (gpio < 0) {
-		dev_err(dev, "failed to request gpio: %pe\n", ERR_PTR(gpio));
-		return gpio;
-	}
+	if (IS_ERR(gpio))
+		return dev_errp_probe(dev, gpio, "failed to request gpio\n");
 
 	beeper = xzalloc(sizeof(*beeper));
 	beeper->gpio = gpio;

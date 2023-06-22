@@ -22,7 +22,7 @@
 #include <of_device.h>
 #include <regmap.h>
 #include <clock.h>
-#include <gpiod.h>
+#include <linux/gpio/consumer.h>
 #include <linux/printk.h>
 #include <linux/mdio.h>
 
@@ -151,11 +151,11 @@ static int realtek_mdio_probe(struct phy_device *mdiodev)
 	/* TODO: if power is software controlled, set up any regulators here */
 	priv->leds_disabled = of_property_read_bool(np, "realtek,disable-leds");
 
-	priv->reset = gpiod_get(dev, "reset", GPIOD_OUT_LOW);
-	if (priv->reset < 0 && priv->reset != -ENOENT)
-		return dev_err_probe(dev, priv->reset, "failed to get RESET GPIO\n");
+	priv->reset = gpiod_get_optional(dev, "reset", GPIOD_OUT_LOW);
+	if (IS_ERR(priv->reset))
+		return dev_errp_probe(dev, priv->reset, "failed to get RESET GPIO\n");
 
-	if (gpio_is_valid(priv->reset)) {
+	if (priv->reset) {
 		gpiod_set_value(priv->reset, 1);
 		dev_dbg(dev, "asserted RESET\n");
 		mdelay(REALTEK_HW_STOP_DELAY);

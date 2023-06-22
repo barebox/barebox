@@ -36,7 +36,7 @@
 #include <asm/byteorder.h>
 #include <io.h>
 #include <malloc.h>
-#include <gpio.h>
+#include <linux/gpio/consumer.h>
 #include <module.h>
 #include <of_mtd.h>
 
@@ -810,10 +810,10 @@ EXPORT_SYMBOL_GPL(nand_soft_waitrdy);
  *
  * Return 0 if the R/B pin indicates chip is ready, a negative error otherwise.
  */
-int nand_gpio_waitrdy(struct nand_chip *chip, int gpio,
+int nand_gpio_waitrdy(struct nand_chip *chip, struct gpio_desc *gpio,
 		      unsigned long timeout_ms)
 {
-	return gpio_poll_timeout_us(gpio, true, timeout_ms * USEC_PER_MSEC);
+	return gpiod_poll_timeout_us(gpio, true, timeout_ms * USEC_PER_MSEC);
 };
 EXPORT_SYMBOL_GPL(nand_gpio_waitrdy);
 

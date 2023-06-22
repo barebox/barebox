@@ -6,7 +6,7 @@
  */
 
 #include <driver.h>
-#include <gpiod.h>
+#include <linux/gpio/consumer.h>
 #include <init.h>
 #include <of.h>
 #include <linux/printk.h>
@@ -31,7 +31,7 @@ struct onboard_hub {
 	struct regulator *vdd;
 	struct device *dev;
 	const struct onboard_hub_pdata *pdata;
-	int reset_gpio;
+	struct gpio_desc *reset_gpio;
 };
 
 static int onboard_hub_power_on(struct onboard_hub *hub)
@@ -65,9 +65,10 @@ static int onboard_hub_probe(struct device *dev)
 	if (IS_ERR(hub->vdd))
 		return PTR_ERR(hub->vdd);
 
-	hub->reset_gpio = gpiod_get(dev, "reset", GPIOD_OUT_HIGH);
-	if (hub->reset_gpio < 0 && hub->reset_gpio != -ENOENT)
-		return dev_err_probe(dev, hub->reset_gpio, "failed to get reset GPIO\n");
+	hub->reset_gpio = gpiod_get_optional(dev, "reset", GPIOD_OUT_HIGH);
+	if (IS_ERR(hub->reset_gpio))
+		return dev_errp_probe(dev, hub->reset_gpio,
+				     "failed to get reset GPIO\n");
 
 	hub->dev = dev;
 

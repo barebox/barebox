@@ -9,7 +9,7 @@
 #include <common.h>
 #include <init.h>
 #include <gpio.h>
-#include <gpiod.h>
+#include <linux/gpio/consumer.h>
 #include <dma.h>
 #include <net.h>
 #include <of_net.h>
@@ -200,21 +200,21 @@ struct eqos_desc {
 
 static int eqos_phy_reset(struct device *dev, struct eqos *eqos)
 {
-	int phy_reset;
+	struct gpio_desc *phy_reset;
 	u32 delays[3] = { 0, 0, 0 };
 
-	phy_reset = gpiod_get(dev, "snps,reset", GPIOF_OUT_INIT_ACTIVE);
+	phy_reset = gpiod_get_optional(dev, "snps,reset", GPIOF_OUT_INIT_ACTIVE);
+	if (IS_ERR(phy_reset)) {
+		dev_warn(dev, "Failed to get 'snps,reset' GPIO (ignored)\n");
+	} else if (phy_reset) {
+		of_property_read_u32_array(dev->of_node,
+					   "snps,reset-delays-us",
+					   delays, ARRAY_SIZE(delays));
 
-	if (!gpio_is_valid(phy_reset))
-		return 0;
-
-	of_property_read_u32_array(dev->of_node,
-				   "snps,reset-delays-us",
-				   delays, ARRAY_SIZE(delays));
-
-	udelay(delays[1]);
-	gpio_set_active(phy_reset, false);
-	udelay(delays[2]);
+		udelay(delays[1]);
+		gpiod_set_value(phy_reset, false);
+		udelay(delays[2]);
+	}
 
 	return 0;
 }

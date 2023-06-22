@@ -11,7 +11,7 @@
 #include <dma.h>
 #include <linux/kernel.h>
 #include <linux/sizes.h>
-#include <gpiod.h>
+#include <linux/gpio/consumer.h>
 #include <regulator.h>
 #include <spi/spi.h>
 #include <video/backlight.h>
@@ -421,7 +421,7 @@ int mipi_dbi_dev_init(struct mipi_dbi_dev *dbidev, struct fb_ops *ops,
  */
 void mipi_dbi_hw_reset(struct mipi_dbi *dbi)
 {
-	if (!gpio_is_valid(dbi->reset))
+	if (!dbi->reset)
 		return;
 
 	gpiod_set_value(dbi->reset, 0);
@@ -671,14 +671,14 @@ static int mipi_dbi_typec3_command(struct mipi_dbi *dbi, u8 *cmd,
  * Zero on success, negative error code on failure.
  */
 int mipi_dbi_spi_init(struct spi_device *spi, struct mipi_dbi *dbi,
-		      int dc)
+		      struct gpio_desc *dc)
 {
 	struct device *dev = &spi->dev;
 
 	dbi->spi = spi;
 	dbi->read_commands = mipi_dbi_dcs_read_commands;
 
-	if (!gpio_is_valid(dc)) {
+	if (!dc) {
 		dev_dbg(dev, "MIPI DBI Type-C 1 unsupported\n");
 		return -ENOSYS;
 	}

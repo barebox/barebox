@@ -10,7 +10,7 @@
 
 #include <common.h>
 #include <dsa.h>
-#include <gpiod.h>
+#include <linux/gpio/consumer.h>
 #include <linux/bitrev.h>
 #include <linux/if_vlan.h>
 #include <net.h>
@@ -2883,18 +2883,19 @@ static int sja1105_check_device_id(struct sja1105_private *priv)
 static int sja1105_hw_reset(struct device *dev, unsigned int pulse_len,
 			    unsigned int startup_delay)
 {
-	int gpio;
+	struct gpio_desc *gpio;
 
-	gpio = gpiod_get(dev, "reset", GPIOD_OUT_HIGH);
-	if (gpio < 0)
-		return 0;
-
-	gpiod_set_value(gpio, 1);
-	/* Wait for minimum reset pulse length */
-	mdelay(pulse_len);
-	gpiod_set_value(gpio, 0);
-	/* Wait until chip is ready after reset */
-	mdelay(startup_delay);
+	gpio = gpiod_get_optional(dev, "reset", GPIOD_OUT_HIGH);
+	if (IS_ERR(gpio)) {
+		dev_warn(dev, "Failed to get 'reset' GPIO (ignored)\n");
+	} else if (gpio) {
+		gpiod_set_value(gpio, 1);
+		/* Wait for minimum reset pulse length */
+		mdelay(pulse_len);
+		gpiod_set_value(gpio, 0);
+		/* Wait until chip is ready after reset */
+		mdelay(startup_delay);
+	}
 
 	return 0;
 }

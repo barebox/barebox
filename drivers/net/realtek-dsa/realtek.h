@@ -21,9 +21,9 @@ struct realtek_ops;
 
 struct realtek_priv {
 	struct device		*dev;
-	int			reset;
-	int			mdc;
-	int			mdio;
+	struct gpio_desc	*reset;
+	struct gpio_desc	*mdc;
+	struct gpio_desc	*mdio;
 	union {
 		struct regmap		*map;
 		struct regmap		*map_nolock;

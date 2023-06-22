@@ -10,14 +10,14 @@
 #include <common.h>
 #include <driver.h>
 #include <poweroff.h>
-#include <gpiod.h>
+#include <linux/gpio/consumer.h>
 
 #define DEFAULT_TIMEOUT_MS 3000
 /*
  * Hold configuration here, cannot be more than one instance of the driver
  * since pm_power_off itself is global.
  */
-static int reset_gpio;
+static struct gpio_desc *reset_gpio;
 static u32 timeout = DEFAULT_TIMEOUT_MS;
 static u32 active_delay = 100;
 static u32 inactive_delay = 100;
@@ -25,15 +25,15 @@ static u32 inactive_delay = 100;
 static void gpio_poweroff_do_poweroff(struct poweroff_handler *handler)
 {
 	/* drive it active, also inactive->active edge */
-	gpio_direction_active(reset_gpio, true);
+	gpiod_direction_output(reset_gpio, true);
 	mdelay(active_delay);
 
 	/* drive inactive, also active->inactive edge */
-	gpio_set_active(reset_gpio, false);
+	gpiod_set_value(reset_gpio, false);
 	mdelay(inactive_delay);
 
 	/* drive it active, also inactive->active edge */
-	gpio_set_active(reset_gpio, true);
+	gpiod_set_value(reset_gpio, true);
 
 	/* give it some time */
 	mdelay(timeout);
@@ -65,8 +65,8 @@ static int gpio_poweroff_probe(struct device *dev)
 	of_property_read_u32(np, "timeout-ms", &timeout);
 
 	reset_gpio = gpiod_get(dev, NULL, flags);
-	if (reset_gpio < 0)
-		return reset_gpio;
+	if (IS_ERR(reset_gpio))
+		return PTR_ERR(reset_gpio);
 
 	handler.name = "gpio-poweroff";
 	handler.poweroff = gpio_poweroff_do_poweroff;

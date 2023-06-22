@@ -3,7 +3,7 @@
 #include <common.h>
 #include <complete.h>
 #include <dsa.h>
-#include <gpiod.h>
+#include <linux/gpio/consumer.h>
 #include <net.h>
 #include <platform_data/ksz9477_reg.h>
 #include <spi/spi.h>
@@ -410,7 +410,8 @@ static int microchip_switch_probe(struct device *dev)
 {
 	struct device *hw_dev;
 	struct ksz_switch *priv;
-	int ret = 0, gpio;
+	struct gpio_desc *gpio;
+	int ret = 0;
 	struct dsa_switch *ds;
 
 	priv = xzalloc(sizeof(*priv));
@@ -432,10 +433,12 @@ static int microchip_switch_probe(struct device *dev)
 	if (ret)
 		return ret;
 
-	gpio = gpiod_get(dev, "reset", GPIOF_OUT_INIT_ACTIVE);
-	if (gpio_is_valid(gpio)) {
+	gpio = gpiod_get_optional(dev, "reset", GPIOF_OUT_INIT_ACTIVE);
+	if (IS_ERR(gpio)) {
+		dev_warn(dev, "Failed to get 'reset' GPIO (ignored)\n");
+	} else if (gpio) {
 		mdelay(1);
-		gpio_set_active(gpio, false);
+		gpiod_set_value(gpio, false);
 	}
 
 	ksz_reset_switch(dev->priv);

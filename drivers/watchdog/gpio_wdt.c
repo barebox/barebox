@@ -9,7 +9,7 @@
 #include <driver.h>
 #include <watchdog.h>
 #include <superio.h>
-#include <gpiod.h>
+#include <linux/gpio/consumer.h>
 
 enum {
 	HW_ALGO_TOGGLE,
@@ -17,7 +17,7 @@ enum {
 };
 
 struct gpio_wdt_priv {
-	int		gpio;
+	struct gpio_desc *gpiod;
 	bool		state;
 	bool		started;
 	unsigned int	hw_algo;
@@ -32,11 +32,11 @@ static inline struct gpio_wdt_priv *to_gpio_wdt_priv(struct watchdog *wdd)
 static void gpio_wdt_disable(struct gpio_wdt_priv *priv)
 {
 	/* Eternal ping */
-	gpio_set_active(priv->gpio, 1);
+	gpiod_set_value(priv->gpiod, 1);
 
 	/* Put GPIO back to tristate */
 	if (priv->hw_algo == HW_ALGO_TOGGLE)
-		gpio_direction_input(priv->gpio);
+		gpiod_direction_input(priv->gpiod);
 
 	priv->started = false;
 }
@@ -47,13 +47,13 @@ static void gpio_wdt_ping(struct gpio_wdt_priv *priv)
 	case HW_ALGO_TOGGLE:
 		/* Toggle output pin */
 		priv->state = !priv->state;
-		gpio_set_active(priv->gpio, priv->state);
+		gpiod_set_value(priv->gpiod, priv->state);
 		break;
 	case HW_ALGO_LEVEL:
 		/* Pulse */
-		gpio_set_active(priv->gpio, true);
+		gpiod_set_value(priv->gpiod, true);
 		udelay(1);
-		gpio_set_active(priv->gpio, false);
+		gpiod_set_value(priv->gpiod, false);
 		break;
 	}
 }
@@ -61,7 +61,7 @@ static void gpio_wdt_ping(struct gpio_wdt_priv *priv)
 static void gpio_wdt_start(struct gpio_wdt_priv *priv)
 {
 	priv->state = false;
-	gpio_direction_active(priv->gpio, priv->state);
+	gpiod_direction_output(priv->gpiod, priv->state);
 	priv->started = true;
 }
 
@@ -113,9 +113,9 @@ static int gpio_wdt_probe(struct device *dev)
 		return -EINVAL;
 	}
 
-	priv->gpio = gpiod_get(dev, NULL, gflags);
-	if (priv->gpio < 0)
-		return priv->gpio;
+	priv->gpiod = gpiod_get(dev, NULL, gflags);
+	if (IS_ERR(priv->gpiod))
+		return PTR_ERR(priv->gpiod);
 
 	priv->wdd.hwdev		= dev;
 	priv->wdd.timeout_max	= hw_margin / 1000;

@@ -47,7 +47,7 @@
 
 #include <linux/clk.h>
 #include <linux/genalloc.h>
-#include <gpiod.h>
+#include <linux/gpio/consumer.h>
 #include <mfd/syscon.h>
 #include <linux/mfd/syscon/atmel-matrix.h>
 #include <linux/mfd/syscon/atmel-smc.h>
@@ -130,7 +130,7 @@ enum atmel_nand_rb_type {
 struct atmel_nand_rb {
 	enum atmel_nand_rb_type type;
 	union {
-		int gpio;
+		struct gpio_desc *gpio;
 		int id;
 	};
 };
@@ -138,7 +138,7 @@ struct atmel_nand_rb {
 struct atmel_nand_cs {
 	int id;
 	struct atmel_nand_rb rb;
-	int csgpio;
+	struct gpio_desc *csgpio;
 	struct {
 		void __iomem *virt;
 	} io;
@@ -152,7 +152,7 @@ struct atmel_nand {
 	struct nand_chip base;
 	struct atmel_nand_cs *activecs;
 	struct atmel_pmecc_user *pmecc;
-	int cdgpio;
+	struct gpio_desc *cdgpio;
 	int numcs;
 	struct atmel_nand_cs cs[];
 };
@@ -1437,7 +1437,7 @@ static struct atmel_nand *atmel_nand_create(struct atmel_nand_controller *nc,
 					    int reg_cells)
 {
 	struct atmel_nand *nand;
-	int gpio;
+	struct gpio_desc *gpio;
 	int numcs, ret, i;
 
 	numcs = of_property_count_elems_of_size(np, "reg",
@@ -1451,16 +1451,17 @@ static struct atmel_nand *atmel_nand_create(struct atmel_nand_controller *nc,
 	if (!nand)
 		return ERR_PTR(-ENOMEM);
 
-	nand->cdgpio = -ENOENT;
 	nand->numcs = numcs;
 
 	gpio = dev_gpiod_get(nc->dev, np, "det", GPIOD_IN, "nand-det");
-	if (gpio < 0 && gpio != -ENOENT) {
-		ret = dev_err_probe(nc->dev, gpio, "Failed to get detect gpio\n");
-		return ERR_PTR(ret);
+	if (IS_ERR(gpio) && PTR_ERR(gpio) != -ENOENT) {
+		dev_err(nc->dev,
+			"Failed to get detect gpio (err = %ld)\n",
+			PTR_ERR(gpio));
+		return ERR_CAST(gpio);
 	}
 
-	if (gpio < 0)
+	if (!IS_ERR(gpio))
 		nand->cdgpio = gpio;
 
 	for (i = 0; i < numcs; i++) {
@@ -1483,7 +1484,6 @@ static struct atmel_nand *atmel_nand_create(struct atmel_nand_controller *nc,
 		}
 
 		nand->cs[i].id = val;
-		nand->cs[i].csgpio = -ENOENT;
 
 		nand->cs[i].io.virt = IOMEM(res.start);
 		ret = dev_request_resource(nc->dev, &res);
@@ -1498,24 +1498,24 @@ static struct atmel_nand *atmel_nand_create(struct atmel_nand_controller *nc,
 			nand->cs[i].rb.id = val;
 		} else {
 			gpio = dev_gpiod_get_index(nc->dev, np, "rb", i, GPIOD_IN, "nand-rb");
-			if (gpio < 0 && gpio != -ENOENT) {
-				ret = dev_err_probe(nc->dev, gpio, "Failed to get R/B gpio\n");
-				return ERR_PTR(ret);
+			if (IS_ERR(gpio) && PTR_ERR(gpio) != -ENOENT) {
+				dev_errp_probe(nc->dev, gpio, "Failed to get detect gpio\n");
+				return ERR_CAST(gpio);
 			}
 
-			if (gpio < 0) {
+			if (!IS_ERR(gpio)) {
 				nand->cs[i].rb.type = ATMEL_NAND_GPIO_RB;
 				nand->cs[i].rb.gpio = gpio;
 			}
 		}
 
 		gpio = dev_gpiod_get_index(nc->dev, np, "cs", i, GPIOD_OUT_HIGH, "nand-cs");
-		if (gpio < 0 && gpio != -ENOENT) {
-			ret = dev_err_probe(nc->dev, gpio, "Failed to get CS gpio\n");
-			return ERR_PTR(ret);
+		if (IS_ERR(gpio) && PTR_ERR(gpio) != -ENOENT) {
+			dev_errp_probe(nc->dev, gpio, "Failed to get CS gpio\n");
+			return ERR_CAST(gpio);
 		}
 
-		if (gpio < 0)
+		if (!IS_ERR(gpio))
 			nand->cs[i].csgpio = gpio;
 	}
 
@@ -1533,7 +1533,7 @@ atmel_nand_controller_add_nand(struct atmel_nand_controller *nc,
 	int ret;
 
 	/* No card inserted, skip this NAND. */
-	if (gpio_is_valid(nand->cdgpio) && gpiod_get_value(nand->cdgpio)) {
+	if (nand->cdgpio && gpiod_get_value(nand->cdgpio)) {
 		dev_info(nc->dev, "No SmartMedia card inserted.\n");
 		return 0;
 	}

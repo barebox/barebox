@@ -12,7 +12,7 @@
 #include <common.h>
 #include <malloc.h>
 #include <driver.h>
-#include <gpiod.h>
+#include <linux/gpio/consumer.h>
 #include <regulator.h>
 #include <xfuncs.h>
 #include <errno.h>
@@ -419,7 +419,8 @@ static int pca953x_probe(struct device *dev)
 	struct pca953x_platform_data *pdata;
 	struct pca953x_chip *chip;
 	struct regulator *reg;
-	int reset_gpio, ret;
+	struct gpio_desc *reset_gpio;
+	int ret;
 	u32 invert = 0;
 
 	chip = xzalloc(sizeof(struct pca953x_chip));
@@ -442,8 +443,8 @@ static int pca953x_probe(struct device *dev)
 
 	chip->client = client;
 
-	reset_gpio = gpiod_get(dev, "reset", GPIOD_OUT_LOW);
-	if (!gpio_is_valid(reset_gpio) && reset_gpio != -ENOENT)
+	reset_gpio = gpiod_get_optional(dev, "reset", GPIOD_OUT_LOW);
+	if (IS_ERR(reset_gpio))
 		dev_warn(dev, "Failed to get 'reset' GPIO (ignored)\n");
 
 	reg = regulator_get(dev, "vcc");

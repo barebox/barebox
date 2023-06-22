@@ -3,7 +3,7 @@
 #include <common.h>
 #include <complete.h>
 #include <dsa.h>
-#include <gpiod.h>
+#include <linux/gpio/consumer.h>
 #include <linux/mii.h>
 #include <linux/mdio.h>
 #include <net.h>
@@ -369,7 +369,8 @@ static int ksz8873_probe_mdio(struct phy_device *mdiodev)
 	const struct ksz8873_dcfg *dcfg;
 	struct ksz8873_switch *priv;
 	struct dsa_switch *ds;
-	int ret, gpio;
+	struct gpio_desc *gpio;
+	int ret;
 	u8 id0, id1;
 
 	priv = xzalloc(sizeof(*priv));
@@ -389,10 +390,12 @@ static int ksz8873_probe_mdio(struct phy_device *mdiodev)
 		return dev_err_probe(dev, PTR_ERR(priv->regmap),
 				     "Failed to initialize regmap.\n");
 
-	gpio = gpiod_get(dev, "reset", GPIOF_OUT_INIT_ACTIVE);
-	if (gpio_is_valid(gpio)) {
+	gpio = gpiod_get_optional(dev, "reset", GPIOF_OUT_INIT_ACTIVE);
+	if (IS_ERR(gpio)) {
+		dev_warn(dev, "Failed to get 'reset' GPIO (ignored)\n");
+	} else if (gpio) {
 		mdelay(1);
-		gpio_set_active(gpio, false);
+		gpiod_set_value(gpio, false);
 	}
 
 	ret = ksz_read8(priv, KSZ8873_CHIP_ID0, &id0);

@@ -9,10 +9,10 @@
 #include <common.h>
 #include <driver.h>
 #include <restart.h>
-#include <gpiod.h>
+#include <linux/gpio/consumer.h>
 
 struct gpio_restart {
-	int reset_gpio;
+	struct gpio_desc *reset_gpio;
 	struct restart_handler restart_handler;
 	u32 active_delay_ms;
 	u32 inactive_delay_ms;
@@ -25,15 +25,15 @@ static void __noreturn gpio_restart_handle(struct restart_handler *this)
 		container_of(this, struct gpio_restart, restart_handler);
 
 	/* drive it active, also inactive->active edge */
-	gpio_direction_active(gpio_restart->reset_gpio, true);
+	gpiod_direction_output(gpio_restart->reset_gpio, true);
 	mdelay(gpio_restart->active_delay_ms);
 
 	/* drive inactive, also active->inactive edge */
-	gpio_set_active(gpio_restart->reset_gpio, false);
+	gpiod_direction_output(gpio_restart->reset_gpio, false);
 	mdelay(gpio_restart->inactive_delay_ms);
 
 	/* drive it active, also inactive->active edge */
-	gpio_set_active(gpio_restart->reset_gpio, true);
+	gpiod_direction_output(gpio_restart->reset_gpio, true);
 
 	/* give it some time */
 	mdelay(gpio_restart->wait_delay_ms);
@@ -47,6 +47,7 @@ static int gpio_restart_probe(struct device *dev)
 {
 	struct device_node *np = dev->of_node;
 	struct gpio_restart *gpio_restart;
+	struct gpio_desc *gpiod;
 	bool open_source = false;
 	u32 property;
 	int ret;
@@ -55,15 +56,11 @@ static int gpio_restart_probe(struct device *dev)
 
 	open_source = of_property_read_bool(np, "open-source");
 
-	gpio_restart->reset_gpio = gpiod_get(dev, NULL,
-			open_source ? GPIOD_IN : GPIOD_OUT_LOW);
-	ret = gpio_restart->reset_gpio;
-	if (ret < 0) {
-		if (ret != -EPROBE_DEFER)
-			dev_err(dev, "Could not get reset GPIO\n");
-		return ret;
-	}
+	gpiod = gpiod_get(dev, NULL, open_source ? GPIOD_IN : GPIOD_OUT_LOW);
+	if (IS_ERR(gpiod))
+		return dev_errp_probe(dev, gpiod, "Could not get reset GPIO\n");
 
+	gpio_restart->reset_gpio = gpiod;
 	gpio_restart->restart_handler.restart = gpio_restart_handle;
 	gpio_restart->restart_handler.name = "gpio-restart";
 	gpio_restart->restart_handler.priority = 129;

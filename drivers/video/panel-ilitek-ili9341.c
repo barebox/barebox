@@ -15,7 +15,7 @@
 
 #include <common.h>
 #include <linux/bitops.h>
-#include <gpiod.h>
+#include <linux/gpio/consumer.h>
 #include <of.h>
 #include <regulator.h>
 #include <spi/spi.h>
@@ -162,8 +162,8 @@ struct ili9341 {
 	struct device *dev;
 	struct vpl vpl;
 	const struct ili9341_config *conf;
-	int reset_gpio;
-	int dc_gpio;
+	struct gpio_desc *reset_gpio;
+	struct gpio_desc *dc_gpio;
 	struct mipi_dbi *dbi;
 	u32 max_spi_speed;
 	struct regulator_bulk_data supplies[3];
@@ -458,7 +458,8 @@ static int ili9341_ioctl(struct vpl *vpl, unsigned int port,
 	}
 }
 
-static int ili9341_dpi_probe(struct spi_device *spi, int dc, int reset)
+static int ili9341_dpi_probe(struct spi_device *spi,
+			     struct gpio_desc *dc, struct gpio_desc *reset)
 {
 	struct device *dev = &spi->dev;
 	struct ili9341 *ili;
@@ -508,14 +509,14 @@ static int ili9341_dpi_probe(struct spi_device *spi, int dc, int reset)
 static int ili9341_probe(struct device *dev)
 {
 	struct spi_device *spi = to_spi_device(dev);
-	int dc, reset;
+	struct gpio_desc *dc, *reset;
 
-	reset = gpiod_get(dev, "reset", GPIOD_OUT_HIGH);
-	if (!gpio_is_valid(reset) && reset != -ENOENT)
+	reset = gpiod_get_optional(dev, "reset", GPIOD_OUT_HIGH);
+	if (IS_ERR(reset))
 		dev_err(dev, "Failed to get gpio 'reset'\n");
 
 	dc = gpiod_get(dev, "dc", GPIOD_OUT_LOW);
-	if (!gpio_is_valid(dc) && dc != -ENOENT)
+	if (IS_ERR(dc))
 		dev_err(dev, "Failed to get gpio 'dc'\n");
 
 	return ili9341_dpi_probe(spi, dc, reset);

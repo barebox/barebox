@@ -9,7 +9,7 @@
 #include <common.h>
 #include <fb.h>
 #include <firmware.h>
-#include <gpiod.h>
+#include <linux/gpio/consumer.h>
 #include <linux/printk.h>
 #include <of.h>
 #include <regulator.h>
@@ -263,7 +263,7 @@ static int panel_mipi_dbi_spi_probe(struct device *dev)
 	struct spi_device *spi = to_spi_device(dev);
 	struct mipi_dbi *dbi;
 	struct fb_info *info;
-	int dc;
+	struct gpio_desc *dc;
 	int ret;
 
 	dbidev = kzalloc(sizeof(*dbidev), GFP_KERNEL);
@@ -290,13 +290,14 @@ static int panel_mipi_dbi_spi_probe(struct device *dev)
 
 	dbidev->backlight_node = of_parse_phandle(dev->of_node, "backlight", 0);
 
-	dbi->reset = gpiod_get(dev, "reset", GPIOD_OUT_HIGH);
-	if (dbi->reset < 0 && dbi->reset != -ENOENT)
-		return dev_err_probe(dev, dbi->reset, "Failed to get GPIO 'reset'\n");
+	dbi->reset = gpiod_get_optional(dev, "reset", GPIOD_OUT_HIGH);
+	if (IS_ERR(dbi->reset))
+		return dev_errp_probe(dev, dbi->reset,
+				     "Failed to get GPIO 'reset'\n");
 
-	dc = gpiod_get(dev, "dc", GPIOD_OUT_LOW);
-	if (dc < 0 && dc != -ENOENT)
-		return dev_err_probe(dev, dc, "Failed to get GPIO 'dc'\n");
+	dc = gpiod_get_optional(dev, "dc", GPIOD_OUT_LOW);
+	if (IS_ERR(dc))
+		return dev_errp_probe(dev, dc, "Failed to get GPIO 'dc'\n");
 
 	ret = mipi_dbi_spi_init(spi, dbi, dc);
 	if (ret)

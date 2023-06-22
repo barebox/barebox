@@ -3,6 +3,7 @@
 #define __LINUX_PRINTK_H
 
 #include <linux/list.h>
+#include <linux/err.h>
 #include <printk.h>
 #include <stdarg.h>
 
@@ -88,6 +89,8 @@ static inline int dev_err_probe(struct device *dev, int err, const char *fmt,
 	return err;
 }
 #endif
+
+#define dev_errp_probe(dev, errptr, args...) dev_err_probe((dev), PTR_ERR(errptr), args)
 
 #define __pr_printk(level, format, args...) \
 	({	\

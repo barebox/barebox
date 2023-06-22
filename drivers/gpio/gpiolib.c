@@ -21,6 +21,36 @@ struct gpio_desc {
 	const char *name;
 };
 
+/*
+ * This descriptor validation needs to be inserted verbatim into each
+ * function taking a descriptor, so we need to use a preprocessor
+ * macro to avoid endless duplication. If the desc is NULL it is an
+ * optional GPIO and calls should just bail out.
+ */
+static int validate_desc(const struct gpio_desc *desc, const char *func)
+{
+	if (!desc)
+		return 0;
+	if (IS_ERR(desc)) {
+		pr_warn("%s: invalid GPIO (errorpointer)\n", func);
+		return PTR_ERR(desc);
+	}
+
+	return 1;
+}
+
+#define VALIDATE_DESC(desc) do { \
+	int __valid = validate_desc(desc, __func__); \
+	if (__valid <= 0) \
+		return __valid; \
+	} while (0)
+
+#define VALIDATE_DESC_VOID(desc) do { \
+	int __valid = validate_desc(desc, __func__); \
+	if (__valid <= 0) \
+		return; \
+	} while (0)
+
 static struct gpio_desc *gpio_desc;
 
 static int gpio_desc_alloc(void)
@@ -50,12 +80,12 @@ static struct gpio_desc *gpio_to_desc(unsigned gpio)
 	return NULL;
 }
 
-static unsigned gpioinfo_chip_offset(struct gpio_desc *desc)
+static unsigned gpioinfo_chip_offset(const struct gpio_desc *desc)
 {
 	return (desc - gpio_desc) - desc->chip->base;
 }
 
-static int gpio_adjust_value(struct gpio_desc *desc,
+static int gpio_adjust_value(const struct gpio_desc *desc,
 			     int value)
 {
 	if (value < 0)
@@ -159,17 +189,40 @@ void gpio_free(unsigned gpio)
 {
 	struct gpio_desc *desc = gpio_to_desc(gpio);
 
+	gpioinfo_free(desc);
+}
+
+/**
+ * gpiod_put - dispose of a GPIO descriptor
+ * @desc:	GPIO descriptor to dispose of
+ *
+ * No descriptor can be used after gpiod_put() has been called on it.
+ */
+void gpiod_put(struct gpio_desc *desc)
+{
 	if (!desc)
 		return;
 
 	gpioinfo_free(desc);
 }
+EXPORT_SYMBOL(gpiod_put);
 
-static void gpioinfo_set_value(struct gpio_desc *desc, int value)
+/**
+ * gpiod_set_raw_value() - assign a gpio's raw value
+ * @desc: gpio whose value will be assigned
+ * @value: value to assign
+ *
+ * Set the raw value of the GPIO, i.e. the value of its physical line without
+ * regard for its ACTIVE_LOW status.
+ */
+void gpiod_set_raw_value(struct gpio_desc *desc, int value)
 {
+	VALIDATE_DESC_VOID(desc);
+
 	if (desc->chip->ops->set)
 		desc->chip->ops->set(desc->chip, gpioinfo_chip_offset(desc), value);
 }
+EXPORT_SYMBOL(gpiod_set_raw_value);
 
 void gpio_set_value(unsigned gpio, int value)
 {
@@ -181,9 +234,24 @@ void gpio_set_value(unsigned gpio, int value)
 	if (gpio_ensure_requested(desc, gpio))
 		return;
 
-	gpioinfo_set_value(desc, value);
+	gpiod_set_raw_value(desc, value);
 }
 EXPORT_SYMBOL(gpio_set_value);
+
+/**
+ * gpiod_set_value() - assign a gpio's value
+ * @desc: gpio whose value will be assigned
+ * @value: value to assign
+ *
+ * Set the logical value of the GPIO, i.e. taking its ACTIVE_LOW,
+ * OPEN_DRAIN and OPEN_SOURCE flags into account.
+ */
+void gpiod_set_value(struct gpio_desc *desc, int value)
+{
+	VALIDATE_DESC_VOID(desc);
+	gpiod_set_raw_value(desc, gpio_adjust_value(desc, value));
+}
+EXPORT_SYMBOL_GPL(gpiod_set_value);
 
 void gpio_set_active(unsigned gpio, bool value)
 {
@@ -192,17 +260,27 @@ void gpio_set_active(unsigned gpio, bool value)
 	if (!desc)
 		return;
 
-	gpio_set_value(gpio, gpio_adjust_value(desc, value));
+	gpiod_set_value(desc, value);
 }
 EXPORT_SYMBOL(gpio_set_active);
 
-static int gpioinfo_get_value(struct gpio_desc *desc)
+/**
+ * gpiod_get_raw_value() - return a gpio's raw value
+ * @desc: gpio whose value will be returned
+ *
+ * Return the GPIO's raw value, i.e. the value of the physical line disregarding
+ * its ACTIVE_LOW status, or negative errno on failure.
+ */
+int gpiod_get_raw_value(const struct gpio_desc *desc)
 {
+	VALIDATE_DESC(desc);
+
 	if (!desc->chip->ops->get)
 		return -ENOSYS;
 
 	return desc->chip->ops->get(desc->chip, gpioinfo_chip_offset(desc));
 }
+EXPORT_SYMBOL_GPL(gpiod_get_raw_value);
 
 int gpio_get_value(unsigned gpio)
 {
@@ -216,9 +294,24 @@ int gpio_get_value(unsigned gpio)
 	if (ret)
 		return ret;
 
-	return gpioinfo_get_value(desc);
+	return gpiod_get_raw_value(desc);
 }
 EXPORT_SYMBOL(gpio_get_value);
+
+/**
+ * gpiod_get_value() - return a gpio's value
+ * @desc: gpio whose value will be returned
+ *
+ * Return the GPIO's logical value, i.e. taking the ACTIVE_LOW status into
+ * account, or negative errno on failure.
+ */
+int gpiod_get_value(const struct gpio_desc *desc)
+{
+	VALIDATE_DESC(desc);
+
+	return gpio_adjust_value(desc, gpiod_get_raw_value(desc));
+}
+EXPORT_SYMBOL_GPL(gpiod_get_value);
 
 int gpio_is_active(unsigned gpio)
 {
@@ -227,18 +320,32 @@ int gpio_is_active(unsigned gpio)
 	if (!desc)
 		return -ENODEV;
 
-	return gpio_adjust_value(desc, gpio_get_value(gpio));
+	return gpiod_get_value(desc);
 }
 EXPORT_SYMBOL(gpio_is_active);
 
-static int gpioinfo_direction_output(struct gpio_desc *desc, int value)
+/**
+ * gpiod_direction_output_raw - set the GPIO direction to output
+ * @desc:	GPIO to set to output
+ * @value:	initial output value of the GPIO
+ *
+ * Set the direction of the passed GPIO to output, such as gpiod_set_value() can
+ * be called safely on it. The initial value of the output must be specified
+ * as raw value on the physical line without regard for the ACTIVE_LOW status.
+ *
+ * Return 0 in case of success, else an error code.
+ */
+int gpiod_direction_output_raw(struct gpio_desc *desc, int value)
 {
+	VALIDATE_DESC(desc);
+
 	if (!desc->chip->ops->direction_output)
 		return -ENOSYS;
 
 	return desc->chip->ops->direction_output(desc->chip,
 					       gpioinfo_chip_offset(desc), value);
 }
+EXPORT_SYMBOL(gpiod_direction_output_raw);
 
 int gpio_direction_output(unsigned gpio, int value)
 {
@@ -252,13 +359,27 @@ int gpio_direction_output(unsigned gpio, int value)
 	if (ret)
 		return ret;
 
-	return gpioinfo_direction_output(desc, value);
+	return gpiod_direction_output_raw(desc, value);
 }
 EXPORT_SYMBOL(gpio_direction_output);
 
-static int gpioinfo_direction_active(struct gpio_desc *desc, bool value)
+/**
+ * gpiod_direction_output - set the GPIO direction to output
+ * @desc:	GPIO to set to output
+ * @value:	initial output value of the GPIO
+ *
+ * Set the direction of the passed GPIO to output, such as gpiod_set_value() can
+ * be called safely on it. The initial value of the output must be specified
+ * as the logical value of the GPIO, i.e. taking its ACTIVE_LOW status into
+ * account.
+ *
+ * Return 0 in case of success, else an error code.
+ */
+int gpiod_direction_output(struct gpio_desc *desc, int value)
 {
-	return gpioinfo_direction_output(desc, gpio_adjust_value(desc, value));
+	VALIDATE_DESC(desc);
+
+	return gpiod_direction_output_raw(desc, gpio_adjust_value(desc, value));
 }
 
 int gpio_direction_active(unsigned gpio, bool value)
@@ -268,18 +389,30 @@ int gpio_direction_active(unsigned gpio, bool value)
 	if (!desc)
 		return -ENODEV;
 
-	return gpioinfo_direction_active(desc, value);
+	return gpiod_direction_output(desc, value);
 }
 EXPORT_SYMBOL(gpio_direction_active);
 
-static int gpioinfo_direction_input(struct gpio_desc *desc)
+/**
+ * gpiod_direction_input - set the GPIO direction to input
+ * @desc:	GPIO to set to input
+ *
+ * Set the direction of the passed GPIO to input, such as gpiod_get_value() can
+ * be called safely on it.
+ *
+ * Return 0 in case of success, else an error code.
+ */
+int gpiod_direction_input(struct gpio_desc *desc)
 {
+	VALIDATE_DESC(desc);
+
 	if (!desc->chip->ops->direction_input)
 		return -ENOSYS;
 
 	return desc->chip->ops->direction_input(desc->chip,
 					      gpioinfo_chip_offset(desc));
 }
+EXPORT_SYMBOL(gpiod_direction_input);
 
 int gpio_direction_input(unsigned gpio)
 {
@@ -293,7 +426,7 @@ int gpio_direction_input(unsigned gpio)
 	if (ret)
 		return ret;
 
-	return gpioinfo_direction_input(desc);
+	return gpiod_direction_input(desc);
 }
 EXPORT_SYMBOL(gpio_direction_input);
 
@@ -319,11 +452,11 @@ static int gpioinfo_request_one(struct gpio_desc *desc, unsigned long flags,
 	desc->active_low = active_low;
 
 	if (dir_in)
-		err = gpioinfo_direction_input(desc);
+		err = gpiod_direction_input(desc);
 	else if (logical)
-		err = gpioinfo_direction_active(desc, init_active);
+		err = gpiod_direction_output(desc, init_active);
 	else
-		err = gpioinfo_direction_output(desc, init_high);
+		err = gpiod_direction_output_raw(desc, init_high);
 
 	if (err)
 		gpioinfo_free(desc);
@@ -698,7 +831,7 @@ struct gpio_desc *dev_gpiod_get_index(struct device *dev,
 		free(con_id);
 
 		if (gpio_is_valid(gpio)) {
-			desc = __tmp_gpio_to_desc(gpio);
+			desc = gpio_to_desc(gpio);
 			break;
 		}
 	}
@@ -718,7 +851,7 @@ struct gpio_desc *dev_gpiod_get_index(struct device *dev,
 			label = dev_name(dev);
 	}
 
-	ret = gpio_request_one(__tmp_desc_to_gpio(desc), flags, label);
+	ret = gpioinfo_request_one(desc, flags, label);
 	free(buf);
 
 	return ret ? ERR_PTR(ret): desc;

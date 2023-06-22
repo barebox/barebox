@@ -5,8 +5,7 @@
 #include <gpio.h>
 #include <of_gpio.h>
 #include <driver.h>
-#include <linux/err.h>
-#include <errno.h>
+#include <linux/bug.h>
 #include <linux/iopoll.h>
 
 /**
@@ -24,33 +23,11 @@ enum gpiod_flags {
 	GPIOD_OUT_HIGH	= GPIOF_OUT_INIT_ACTIVE,
 };
 
-#define GPIO_DESC_OK		BIT(BITS_PER_LONG - 1)
-
 #define gpiod_not_found(desc)	(IS_ERR(desc) && PTR_ERR(desc) == -ENOENT)
 
 struct gpio_desc;
 
-static inline int __tmp_desc_to_gpio(struct gpio_desc *desc)
-{
-	if (!desc)
-		return -ENOENT;
-	if (IS_ERR(desc))
-		return PTR_ERR(desc);
-
-	return ((ulong)desc & ~GPIO_DESC_OK);
-}
-
-static inline struct gpio_desc *__tmp_gpio_to_desc(int gpio)
-{
-	if (gpio == -ENOENT)
-		return NULL;
-	if (gpio < 0)
-		return ERR_PTR(gpio);
-
-	return (struct gpio_desc *)(gpio | GPIO_DESC_OK);
-}
-
-#ifdef CONFIG_OFDEVICE
+#if defined(CONFIG_OFDEVICE) && defined(CONFIG_GPIOLIB)
 
 /* returned gpio descriptor can be passed to any normal gpio_* function */
 struct gpio_desc *dev_gpiod_get_index(struct device *dev,
@@ -68,6 +45,78 @@ static inline struct gpio_desc *dev_gpiod_get_index(struct device *dev,
 {
 	return ERR_PTR(-ENODEV);
 }
+#endif
+
+#ifdef CONFIG_GPIOLIB
+
+int gpiod_direction_input(struct gpio_desc *desc);
+
+int gpiod_direction_output_raw(struct gpio_desc *desc, int value);
+int gpiod_direction_output(struct gpio_desc *desc, int value);
+
+void gpiod_set_raw_value(struct gpio_desc *desc, int value);
+void gpiod_set_value(struct gpio_desc *desc, int value);
+
+int gpiod_get_raw_value(const struct gpio_desc *desc);
+int gpiod_get_value(const struct gpio_desc *desc);
+
+void gpiod_put(struct gpio_desc *desc);
+
+#else
+
+static inline int gpiod_direction_input(struct gpio_desc *desc)
+{
+	/* GPIO can never have been requested */
+	WARN_ON(desc);
+	return 0;
+}
+
+static inline int gpiod_direction_output_raw(struct gpio_desc *desc, int value)
+{
+	/* GPIO can never have been requested */
+	WARN_ON(desc);
+	return 0;
+}
+
+static inline int gpiod_direction_output(struct gpio_desc *desc, int value)
+{
+	/* GPIO can never have been requested */
+	WARN_ON(desc);
+	return 0;
+}
+
+static inline void gpiod_set_raw_value(struct gpio_desc *desc, int value)
+{
+	/* GPIO can never have been requested */
+	WARN_ON(desc);
+}
+
+static inline void gpiod_set_value(struct gpio_desc *desc, int value)
+{
+	/* GPIO can never have been requested */
+	WARN_ON(desc);
+}
+
+static inline int gpiod_get_raw_value(const struct gpio_desc *desc)
+{
+	/* GPIO can never have been requested */
+	WARN_ON(desc);
+	return 0;
+}
+
+static inline int gpiod_get_value(const struct gpio_desc *desc)
+{
+	/* GPIO can never have been requested */
+	WARN_ON(desc);
+	return 0;
+}
+
+static inline void gpiod_put(struct gpio_desc *desc)
+{
+	/* GPIO can never have been requested */
+	WARN_ON(desc);
+}
+
 #endif
 
 static inline struct gpio_desc *dev_gpiod_get(struct device *dev,
@@ -97,37 +146,6 @@ gpiod_get_optional(struct device *dev, const char *con_id,
 		return NULL;
 
 	return desc;
-}
-
-static inline int gpiod_direction_input(struct gpio_desc *gpiod)
-{
-	if (gpiod_not_found(gpiod))
-		return 0;
-
-	return gpio_direction_input(__tmp_desc_to_gpio(gpiod));
-}
-
-static inline int gpiod_direction_output(struct gpio_desc *gpiod, bool value)
-{
-	if (gpiod_not_found(gpiod))
-		return 0;
-
-	return gpio_direction_active(__tmp_desc_to_gpio(gpiod), value);
-}
-
-static inline int gpiod_set_value(struct gpio_desc *gpiod, bool value)
-{
-	return gpiod_direction_output(gpiod, value);
-}
-
-static inline int gpiod_get_value(struct gpio_desc *gpiod)
-{
-	if (gpiod_not_found(gpiod))
-		return 0;
-	if (IS_ERR(gpiod))
-		return PTR_ERR(gpiod);
-
-	return gpio_is_active(__tmp_desc_to_gpio(gpiod));
 }
 
 /**

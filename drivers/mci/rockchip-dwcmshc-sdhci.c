@@ -25,21 +25,32 @@
 #define DWCMSHC_EMMC_DLL_RXCLK		0x804
 #define DWCMSHC_EMMC_DLL_TXCLK		0x808
 #define DWCMSHC_EMMC_DLL_STRBIN		0x80c
+#define DECMSHC_EMMC_DLL_CMDOUT		0x810
 #define DWCMSHC_EMMC_DLL_STATUS0	0x840
 #define DWCMSHC_EMMC_DLL_START		BIT(0)
+#define DWCMSHC_EMMC_DLL_LOCKED		BIT(8)
+#define DWCMSHC_EMMC_DLL_TIMEOUT	BIT(9)
 #define DWCMSHC_EMMC_DLL_RXCLK_SRCSEL	29
 #define DWCMSHC_EMMC_DLL_START_POINT	16
 #define DWCMSHC_EMMC_DLL_INC		8
+#define DWCMSHC_EMMC_DLL_BYPASS		BIT(24)
 #define DWCMSHC_EMMC_DLL_DLYENA		BIT(27)
-#define DLL_TXCLK_TAPNUM_DEFAULT	0x8
-#define DLL_STRBIN_TAPNUM_DEFAULT	0x8
+#define DLL_TXCLK_TAPNUM_DEFAULT	0x10
+#define DLL_TXCLK_TAPNUM_90_DEGREES	0xA
 #define DLL_TXCLK_TAPNUM_FROM_SW	BIT(24)
+#define DLL_STRBIN_TAPNUM_DEFAULT	0x8
 #define DLL_STRBIN_TAPNUM_FROM_SW	BIT(24)
-#define DWCMSHC_EMMC_DLL_LOCKED		BIT(8)
-#define DWCMSHC_EMMC_DLL_TIMEOUT	BIT(9)
+#define DLL_STRBIN_DELAY_NUM_SEL	BIT(26)
+#define DLL_STRBIN_DELAY_NUM_OFFSET	16
+#define DLL_STRBIN_DELAY_NUM_DEFAULT	0x16
 #define DLL_RXCLK_NO_INVERTER		1
 #define DLL_RXCLK_INVERTER		0
-#define DWCMSHC_ENHANCED_STROBE		BIT(8)
+#define DLL_CMDOUT_TAPNUM_90_DEGREES	0x8
+#define DLL_RXCLK_ORI_GATE		BIT(31)
+#define DLL_CMDOUT_TAPNUM_FROM_SW	BIT(24)
+#define DLL_CMDOUT_SRC_CLK_NEG		BIT(28)
+#define DLL_CMDOUT_EN_SRC_CLK_NEG	BIT(29)
+
 #define DLL_LOCK_WO_TMOUT(x) \
 	((((x) & DWCMSHC_EMMC_DLL_LOCKED) == DWCMSHC_EMMC_DLL_LOCKED) && \
 	(((x) & DWCMSHC_EMMC_DLL_TIMEOUT) == 0))
@@ -137,8 +148,32 @@ static void rk_sdhci_set_clock(struct rk_sdhci_host *host, unsigned int clock)
 
 	sdhci_set_clock(&host->sdhci, clock, clk_get_rate(host->clks[CLK_CORE].clk));
 
-	if (clock <= 400000)
+	/* Disable cmd conflict check */
+	extra = sdhci_read32(&host->sdhci, DWCMSHC_HOST_CTRL3);
+	extra &= ~BIT(0);
+	sdhci_write32(&host->sdhci, DWCMSHC_HOST_CTRL3, extra);
+
+	if (clock <= 52000000) {
+		/*
+		 * Disable DLL and reset both of sample and drive clock.
+		 * The bypass bit and start bit need to be set if DLL is not locked.
+		 */
+		sdhci_write32(&host->sdhci, DWCMSHC_EMMC_DLL_CTRL,
+			      DWCMSHC_EMMC_DLL_BYPASS | DWCMSHC_EMMC_DLL_START);
+		sdhci_write32(&host->sdhci, DWCMSHC_EMMC_DLL_RXCLK, DLL_RXCLK_ORI_GATE);
+		sdhci_write32(&host->sdhci, DWCMSHC_EMMC_DLL_TXCLK, 0);
+		sdhci_write32(&host->sdhci, DECMSHC_EMMC_DLL_CMDOUT, 0);
+		/*
+		 * Before switching to hs400es mode, the driver will enable
+		 * enhanced strobe first. PHY needs to configure the parameters
+		 * of enhanced strobe first.
+		 */
+		extra = DWCMSHC_EMMC_DLL_DLYENA |
+			DLL_STRBIN_DELAY_NUM_SEL |
+			DLL_STRBIN_DELAY_NUM_DEFAULT << DLL_STRBIN_DELAY_NUM_OFFSET;
+		sdhci_write32(&host->sdhci, DWCMSHC_EMMC_DLL_STRBIN, extra);
 		return;
+        }
 
 	/* Reset DLL */
 	sdhci_write32(&host->sdhci, DWCMSHC_EMMC_DLL_CTRL, BIT(1));
@@ -157,11 +192,6 @@ static void rk_sdhci_set_clock(struct rk_sdhci_host *host, unsigned int clock)
 		dev_err(host->mci.hw_dev, "DLL lock timeout!\n");
 		return;
 	}
-
-	/* Disable cmd conflict check */
-	extra = sdhci_read32(&host->sdhci, DWCMSHC_HOST_CTRL3);
-	extra &= ~BIT(0);
-	sdhci_write32(&host->sdhci, DWCMSHC_HOST_CTRL3, extra);
 
 	extra = 0x1 << 16 | /* tune clock stop en */
 		0x2 << 17 | /* pre-change delay */
@@ -325,6 +355,8 @@ static int rk_sdhci_probe(struct device *dev)
 static __maybe_unused struct of_device_id rk_sdhci_compatible[] = {
 	{
 		.compatible = "rockchip,rk3568-dwcmshc"
+	}, {
+		.compatible = "rockchip,rk3588-dwcmshc"
 	}, {
 		/* sentinel */
 	}

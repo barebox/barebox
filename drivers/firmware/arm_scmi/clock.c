@@ -250,7 +250,7 @@ static int scmi_clock_rate_set(const struct scmi_protocol_handle *ph,
 		return ret;
 
 	if (ci->max_async_req &&
-	    ci->cur_async_req++ < ci->max_async_req)
+	    ++ci->cur_async_req < ci->max_async_req)
 		flags |= CLOCK_SET_ASYNC;
 
 	cfg = t->tx.buf;

@@ -1097,7 +1097,8 @@ struct clk *rockchip_clk_register_pll(struct rockchip_clk_provider *ctx,
 	    pll_type == pll_rk3066 ||
 	    pll_type == pll_rk3328 ||
 	    pll_type == pll_rk3399 ||
-	    pll_type == pll_rk3588)
+	    pll_type == pll_rk3588 ||
+	    pll_type == pll_rk3588_core)
 		pll_mux->flags |= CLK_MUX_HIWORD_MASK;
 
 	/* the actual muxing is xin24m, pll-output, xin32k */

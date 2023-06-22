@@ -71,7 +71,7 @@ unsigned int pwm_get_period(struct pwm_device *pwm);
  * @scale: scale in which @duty_cycle is expressed
  *
  * This functions converts a relative into an absolute duty cycle (expressed
- * in nanoseconds), and puts the result in state->duty_cycle.
+ * in nanoseconds), and puts the result in state->duty_ns.
  *
  * For example if you want to configure a 50% duty cycle, call:
  *

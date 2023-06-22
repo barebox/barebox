@@ -1929,6 +1929,18 @@ config CMD_I2C
 		  -w		use word (16 bit) wide access
 		  -v		verbose
 
+config CMD_PWM
+	bool
+	depends on PWM
+	prompt "PWM commands: pwm"
+	help
+	  pwm - set or show pwm state
+
+	  Usage: pwm [dDPfwisv]
+
+	  Controls the pwm values such as period and duty cycle, or shows
+	  the current values.
+
 config CMD_LED
 	bool
 	depends on LED

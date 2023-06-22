@@ -30,9 +30,9 @@
 	.set noreorder
 	li	t9, \addr
 	li	t8, \val
-	lw	t7, 0(t9)
-	or	t7, t8
-	sw	t7, 0(t9)
+	lw	ta3, 0(t9)
+	or	ta3, t8
+	sw	ta3, 0(t9)
 	.set	pop
 	.endm
 
@@ -41,10 +41,10 @@
 	.set noreorder
 	li	t9, \addr
 	li	t8, \clr
-	lw	t7, 0(t9)
+	lw	ta3, 0(t9)
 	not	t8, t8
-	and	t7, t8
-	sw	t7, 0(t9)
+	and	ta3, t8
+	sw	ta3, 0(t9)
 	.set	pop
 	.endm
 
@@ -73,7 +73,7 @@
 	.macro	pbl_probe_mem ret1 ret2 addr
 	.set	push
 	.set	noreorder
-	la	\ret1, \addr
+	PTR_LA	\ret1, \addr
 	sw	zero, 0(\ret1)
 	li	\ret2, 0x12345678
 	sw	\ret2, 0(\ret1)
@@ -97,7 +97,7 @@
 	move	\temp, ra			# preserve ra beforehand
 	bal	255f
 	 nop
-255:	addiu	\rd, ra, \label - 255b		# label is assumed to be
+255:	PTR_ADDIU	\rd, ra, \label - 255b	# label is assumed to be
 	move	ra, \temp			# within pc +/- 32KB
 	.set	pop
 	.endm
@@ -110,32 +110,31 @@
 	ADR	a0, \start_addr, t1	/* a0 <- pc-relative
 					position of start_addr */
 
-	la	a1, \start_addr	/* a1 <- link (RAM) start_addr address */
+	PTR_LA	a1, \start_addr	/* a1 <- link (RAM) start_addr address */
 
 	beq	a0, a1, copy_loop_exit
 	 nop
 
-	la	t0, \start_addr
-	la	t1, __bss_start
-	subu	t2, t1, t0	/* t2 <- size of pbl */
-	addu	a2, a0, t2	/* a2 <- source end address */
+	PTR_LA	t0, \start_addr
+	PTR_LA	t1, __bss_start
+	PTR_SUBU	t2, t1, t0	/* t2 <- size of pbl */
+	PTR_ADDU	a2, a0, t2	/* a2 <- source end address */
 
-#define WSIZE	4
 copy_loop:
 	/* copy from source address [a0] */
-	lw	t4, WSIZE * 0(a0)
-	lw	t5, WSIZE * 1(a0)
-	lw	t6, WSIZE * 2(a0)
-	lw	t7, WSIZE * 3(a0)
+	LONG_L	ta0, LONGSIZE * 0(a0)
+	LONG_L	ta1, LONGSIZE * 1(a0)
+	LONG_L	ta2, LONGSIZE * 2(a0)
+	LONG_L	ta3, LONGSIZE * 3(a0)
 	/* copy to target address [a1] */
-	sw	t4, WSIZE * 0(a1)
-	sw	t5, WSIZE * 1(a1)
-	sw	t6, WSIZE * 2(a1)
-	sw	t7, WSIZE * 3(a1)
-	addi	a0, WSIZE * 4
-	subu	t3, a0, a2
+	LONG_S	ta0, LONGSIZE * 0(a1)
+	LONG_S	ta1, LONGSIZE * 1(a1)
+	LONG_S	ta2, LONGSIZE * 2(a1)
+	LONG_S	ta3, LONGSIZE * 3(a1)
+	PTR_ADDI	a0, LONGSIZE * 4
+	PTR_SUBU	t3, a0, a2
 	blez	t3, copy_loop
-	 addi	a1, WSIZE * 4
+	 PTR_ADDI	a1, LONGSIZE * 4
 
 copy_loop_exit:
 
@@ -150,6 +149,17 @@ copy_loop_exit:
 	and	k0, k1
 	mtc0	k0, CP0_STATUS
 	.set	pop
+	.endm
+
+	.macro	mips64_enable_64bit_addressing
+#ifdef CONFIG_64BIT
+	.set	push
+	.set	noreorder
+	mfc0	k0, CP0_STATUS
+	or	k0, ST0_KX
+	mtc0	k0, CP0_STATUS
+	.set	pop
+#endif
 	.endm
 
 	.macro	mips_barebox_10h
@@ -196,7 +206,7 @@ copy_loop_exit:
 	.set	noreorder
 
 	/* set stack pointer; reserve four 32-bit argument slots */
-	la	sp, (TEXT_BASE - MALLOC_SIZE - 16)
+	PTR_LA	sp, (TEXT_BASE - MALLOC_SIZE - 16)
 
 	.set	pop
 	.endm

@@ -769,7 +769,7 @@ static inline void iowrite64_rep(volatile void __iomem *addr,
  */
 #ifndef virt_to_phys
 #define virt_to_phys virt_to_phys
-static inline unsigned long virt_to_phys(volatile void *mem)
+static inline unsigned long virt_to_phys(const volatile void *mem)
 {
 	return (unsigned long)mem;
 }

@@ -56,14 +56,14 @@ __start:
 	 */
 
 	/* move GT64120 registers to 0x1be00000 */
-	li	t1, KSEG1ADDR(GT_DEF_BASE)
+	li	t1, CKSEG1ADDR(GT_DEF_BASE)
 	li	t0, GT_LD(MIPS_GT_BASE)
 	sw	t0, GT_ISD_OFS(t1)
 
 	/*
 	 * setup MEM-to-PCI0 mapping
 	 */
-	li	t1, KSEG1ADDR(MIPS_GT_BASE)
+	li	t1, CKSEG1ADDR(MIPS_GT_BASE)
 
 	/* setup PCI0 io window */
 	li	t0, GT_LD(0x18000000)

@@ -27,6 +27,10 @@ jobs:
             lgenv: test/mips/qemu-malta_defconfig.yaml
             defconfig: qemu-malta_defconfig
 
+          - ARCH: mips
+            lgenv: test/mips/qemu-malta64el_defconfig.yaml
+            defconfig: qemu-malta64el_defconfig
+
           - ARCH: x86
             lgenv: test/x86/efi_defconfig.yaml
             defconfig: efi_defconfig

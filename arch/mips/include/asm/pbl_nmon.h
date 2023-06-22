@@ -39,12 +39,12 @@
 	.set	push
 	.set	reorder
 
-	move	t6, a0
-	li	t5, 32
+	move	ta2, a0
+	li	ta1, 32
 
 202:
-	addi	t5, t5, -4
-	srlv	a0, t6, t5
+	addi	ta1, ta1, -4
+	srlv	a0, ta2, ta1
 
 	/* output one hex digit */
 	andi	a0, a0, 15
@@ -57,7 +57,7 @@
 
 	debug_ll_outc_a0
 
-	bgtz	t5, 202b
+	bgtz	ta1, 202b
 
 	.set	pop
 #endif /* CONFIG_DEBUG_LL */

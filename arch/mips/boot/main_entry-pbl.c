@@ -36,7 +36,7 @@ static void barebox_uncompress(void *compressed_start, unsigned int len)
 void __section(.text_entry) pbl_main_entry(void *fdt, void *fdt_end,
 					   u32 ram_size)
 {
-	u32 pg_start, pg_end, pg_len, fdt_len;
+	u32 piggy_len, fdt_len;
 	void *fdt_new;
 	void (*barebox)(void *fdt, u32 fdt_len, u32 ram_size);
 
@@ -45,13 +45,10 @@ void __section(.text_entry) pbl_main_entry(void *fdt, void *fdt_end,
 	/* clear bss */
 	memset(__bss_start, 0, __bss_stop - __bss_start);
 
-	pg_start = (u32)&input_data;
-	pg_end = (u32)&input_data_end;
-	pg_len = pg_end - pg_start;
+	piggy_len = (unsigned long)&input_data_end - (unsigned long)&input_data;
+	barebox_uncompress(&input_data, piggy_len);
 
-	barebox_uncompress(&input_data, pg_len);
-
-	fdt_len = (u32)fdt_end - (u32)fdt;
+	fdt_len = (unsigned long)fdt_end - (unsigned long)fdt;
 	fdt_new = (void *)PAGE_ALIGN_DOWN(TEXT_BASE - MALLOC_SIZE - STACK_SIZE - fdt_len);
 	memcpy(fdt_new, fdt, fdt_len);
 

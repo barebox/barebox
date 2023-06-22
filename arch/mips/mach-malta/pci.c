@@ -136,7 +136,7 @@ static int gt64xxx_pci0_pcibios_write(struct pci_bus *bus, unsigned int devfn,
 static resource_size_t gt64xxx_res_start(struct pci_bus *bus,
 					 resource_size_t res_addr)
 {
-	return KSEG0ADDR(res_addr);
+	return CKSEG0ADDR(res_addr);
 }
 
 struct pci_ops gt64xxx_pci0_ops = {

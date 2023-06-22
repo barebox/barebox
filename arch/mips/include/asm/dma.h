@@ -25,18 +25,20 @@ static inline void *dma_alloc(size_t size)
 #define dma_alloc_coherent dma_alloc_coherent
 static inline void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
 {
-	void *ret;
+	void *ptr;
+	unsigned long virt;
 
-	ret = xmemalign(PAGE_SIZE, size);
+	ptr = xmemalign(PAGE_SIZE, size);
+	memset(ptr, 0, size);
 
-	memset(ret, 0, size);
+	virt = (unsigned long)ptr;
 
 	if (dma_handle)
-		*dma_handle = CPHYSADDR(ret);
+		*dma_handle = CPHYSADDR(virt);
 
-	dma_flush_range((unsigned long)ret, (unsigned long)(ret + size));
+	dma_flush_range(virt, virt + size);
 
-	return (void *)CKSEG1ADDR(ret);
+	return (void *)CKSEG1ADDR(virt);
 }
 
 #define dma_free_coherent dma_free_coherent
@@ -44,7 +46,7 @@ static inline void dma_free_coherent(void *vaddr, dma_addr_t dma_handle,
 				     size_t size)
 {
 	if (IS_ENABLED(CONFIG_MMU) && vaddr)
-		free((void *)CKSEG0ADDR(vaddr));
+		free((void *)CKSEG0ADDR((unsigned long)vaddr));
 	else
 		free(vaddr);
 }

@@ -19,7 +19,7 @@ typedef struct __jmp_buf_internal_tag {
 	void *__sp;
 
 	/* Callee-saved registers s0 through s7.  */
-	int __regs[8];
+	unsigned long __regs[8];
 
 	/* The frame pointer.  */
 	void *__fp;

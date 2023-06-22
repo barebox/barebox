@@ -94,10 +94,10 @@ EXPORT(symbol)
 	copy_to_link_location	symbol;			\
 	stack_setup;					\
 							\
-	la	a0, __dtb_ ## dtb##_start;		\
-	la	a1, __dtb_ ## dtb##_end;		\
-	li	a2, ram_size;				\
-	la	v0, pbl_main_entry;			\
+	PTR_LA	a0, __dtb_ ## dtb##_start;		\
+	PTR_LA	a1, __dtb_ ## dtb##_end;		\
+	PTR_LI	a2, ram_size;				\
+	PTR_LA	v0, pbl_main_entry;			\
 	jal	v0;					\
 	 nop;						\
 							\
@@ -122,7 +122,7 @@ EXPORT(symbol)
 	/* Call some code from .text section.		\
 	 * It is needed to keep same linker script for	\
 	 * all images. */				\
-	la	v0, mips_dead_end;			\
+	PTR_LA	v0, mips_dead_end;			\
 	jal	v0;					\
 	 nop;
 

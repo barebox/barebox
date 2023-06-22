@@ -60,7 +60,7 @@ static inline void PUTC_LL(char ch)
 
 .macro	debug_ll_ns16550_init divisor=DEBUG_LL_UART_DIVISOR
 #ifdef CONFIG_DEBUG_LL
-	la	t0, DEBUG_LL_UART_ADDR
+	PTR_LA	t0, DEBUG_LL_UART_ADDR
 
 	li	t1, UART_LCR_DLAB		/* DLAB on */
 	sb	t1, UART_LCR(t0)		/* Write it out */
@@ -83,7 +83,7 @@ static inline void PUTC_LL(char ch)
 	.set	push
 	.set	reorder
 
-	la	t0, DEBUG_LL_UART_ADDR
+	PTR_LA	t0, DEBUG_LL_UART_ADDR
 
 201:	lbu	t1, UART_LSR(t0)	/* get line status */
 	andi	t1, t1, UART_LSR_THRE	/* check for transmitter empty */
@@ -126,7 +126,7 @@ static inline void PUTC_LL(char ch)
 	.set	push
 	.set	reorder
 
-	la      t0, DEBUG_LL_UART_ADDR
+	PTR_LA     t0, DEBUG_LL_UART_ADDR
 
 	/* get line status and check for data present */
 	lbu	t1, UART_LSR(t0)

@@ -8,6 +8,7 @@
 #include <gpio.h>
 #include <of_gpio.h>
 #include <linux/gpio/consumer.h>
+#include <linux/overflow.h>
 #include <errno.h>
 #include <malloc.h>
 
@@ -206,6 +207,21 @@ void gpiod_put(struct gpio_desc *desc)
 	gpioinfo_free(desc);
 }
 EXPORT_SYMBOL(gpiod_put);
+
+/**
+ * gpiod_put_array - dispose of multiple GPIO descriptors
+ * @descs:	struct gpio_descs containing an array of descriptors
+ */
+void gpiod_put_array(struct gpio_descs *descs)
+{
+	unsigned int i;
+
+	for (i = 0; i < descs->ndescs; i++)
+		gpiod_put(descs->desc[i]);
+
+	kfree(descs);
+}
+EXPORT_SYMBOL_GPL(gpiod_put_array);
 
 /**
  * gpiod_set_raw_value() - assign a gpio's raw value
@@ -873,7 +889,114 @@ struct gpio_desc *dev_gpiod_get_index(struct device *dev,
 
 	return ret ? ERR_PTR(ret): desc;
 }
+
+/**
+ * gpiod_count - return the number of GPIOs associated with a device / function
+ *		or -ENOENT if no GPIO has been assigned to the requested function
+ * @dev:	GPIO consumer, can be NULL for system-global GPIOs
+ * @_con_id:	function within the GPIO consumer
+ */
+int gpiod_count(struct device *dev, const char *con_id)
+{
+	struct device_node *np = dev_of_node(dev);
+	struct property *pp;
+
+	if (!np)
+		return -ENODEV;
+
+	pp = of_find_gpio_property(np, con_id);
+	if (!pp)
+		return -ENOENT;
+
+	return of_gpio_named_count(np, pp->name);
+}
+EXPORT_SYMBOL_GPL(gpiod_count);
+
+/**
+ * gpiod_get_array - obtain multiple GPIOs from a multi-index GPIO function
+ * @dev:	GPIO consumer, can be NULL for system-global GPIOs
+ * @con_id:	function within the GPIO consumer
+ * @flags:	optional GPIO initialization flags
+ *
+ * This function acquires all the GPIOs defined under a given function.
+ *
+ * Return a struct gpio_descs containing an array of descriptors, -ENOENT if
+ * no GPIO has been assigned to the requested function, or another IS_ERR()
+ * code if an error occurred while trying to acquire the GPIOs.
+ */
+struct gpio_descs *__must_check gpiod_get_array(struct device *dev,
+						const char *con_id,
+						enum gpiod_flags flags)
+{
+	struct gpio_desc *desc;
+	struct gpio_descs *descs;
+	int count;
+
+	count = gpiod_count(dev, con_id);
+	if (count < 0)
+		return ERR_PTR(count);
+
+	descs = kzalloc(struct_size(descs, desc, count), GFP_KERNEL);
+	if (!descs)
+		return ERR_PTR(-ENOMEM);
+
+	for (descs->ndescs = 0; descs->ndescs < count; descs->ndescs++) {
+		desc = dev_gpiod_get_index(dev, dev_of_node(dev), con_id,
+					   descs->ndescs, flags, NULL);
+		if (IS_ERR(desc)) {
+			gpiod_put_array(descs);
+			return ERR_CAST(desc);
+		}
+
+		descs->desc[descs->ndescs] = desc;
+	}
+
+	return descs;
+}
+EXPORT_SYMBOL_GPL(gpiod_get_array);
+
 #endif
+
+static int gpiod_set_array_value_complex(bool raw,
+					 unsigned int array_size,
+					 struct gpio_desc **desc_array,
+					 struct gpio_array *array_info,
+					 unsigned long *value_bitmap)
+{
+	int i;
+
+	BUG_ON(array_info != NULL);
+
+	for (i = 0; i < array_size; i++)
+		gpiod_set_value(desc_array[i], test_bit(i, value_bitmap));
+
+	return 0;
+}
+
+/**
+ * gpiod_set_array_value() - assign values to an array of GPIOs
+ * @array_size: number of elements in the descriptor array / value bitmap
+ * @desc_array: array of GPIO descriptors whose values will be assigned
+ * @array_info: information on applicability of fast bitmap processing path
+ * @value_bitmap: bitmap of values to assign
+ *
+ * Set the logical values of the GPIOs, i.e. taking their ACTIVE_LOW status
+ * into account. NOTE: This function has no special handling for GPIOs
+ * in the same bank that could've been set atomically: GPIO sequencing
+ * is not guaranteed to always remain in the same order.
+ */
+int gpiod_set_array_value(unsigned int array_size,
+			  struct gpio_desc **desc_array,
+			  struct gpio_array *array_info,
+			  unsigned long *value_bitmap)
+{
+	if (!desc_array)
+		return -EINVAL;
+	return gpiod_set_array_value_complex(false, array_size,
+					     desc_array, array_info,
+					     value_bitmap);
+}
+EXPORT_SYMBOL_GPL(gpiod_set_array_value);
 
 int gpiochip_add(struct gpio_chip *chip)
 {

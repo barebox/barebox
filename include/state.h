@@ -62,4 +62,8 @@ static inline int state_read_mac(struct state *state, const char *name, u8 *buf)
 
 #endif /* #if IS_ENABLED(CONFIG_STATE) / #else */
 
+#define BAREBOX_STATE_PARTITION_GUID \
+	GUID_INIT(0x4778ed65, 0xbf42, 0x45fa, 0x9c, 0x5b, \
+		 0x28, 0x7a, 0x1d, 0xc4, 0xaa, 0xb1)
+
 #endif /* __STATE_H */

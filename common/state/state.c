@@ -21,8 +21,10 @@
 #include <fs.h>
 #include <crc.h>
 #include <init.h>
+#include <block.h>
 #include <linux/err.h>
 #include <linux/list.h>
+#include <linux/uuid.h>
 
 #include <linux/mtd/mtd-abi.h>
 #include <malloc.h>
@@ -581,6 +583,22 @@ void state_release(struct state *state)
 	free(state);
 }
 
+#ifdef __BAREBOX__
+static char *cdev_to_devpath(struct cdev *cdev, off_t *offset, size_t *size)
+{
+	/*
+	 * We only accept partitions exactly mapping the barebox-state,
+	 * but dt-utils may need to set non-zero values here
+	 */
+	*offset = 0;
+	*size = 0;
+
+	return basprintf("/dev/%s", cdev->name);
+}
+#endif
+
+static guid_t barebox_state_partition_guid = BAREBOX_STATE_PARTITION_GUID;
+
 /*
  * state_new_from_node - create a new state instance from a device_node
  *
@@ -597,8 +615,9 @@ struct state *state_new_from_node(struct device_node *node, bool readonly)
 	const char *alias;
 	uint32_t stridesize;
 	struct device_node *partition_node;
-	off_t offset = 0;
-	size_t size = 0;
+	struct cdev *cdev;
+	off_t offset;
+	size_t size;
 
 	alias = of_alias_get(node);
 	if (!alias) {
@@ -617,21 +636,30 @@ struct state *state_new_from_node(struct device_node *node, bool readonly)
 		goto out_release_state;
 	}
 
-#ifdef __BAREBOX__
-	ret = of_partition_ensure_probed(partition_node);
-	if (ret)
-		goto out_release_state;
-
-	ret = of_find_path_by_node(partition_node, &state->backend_path, 0);
-#else
-	ret = of_get_devicepath(partition_node, &state->backend_path, &offset, &size);
-#endif
+	cdev = of_cdev_find(partition_node);
+	ret = PTR_ERR_OR_ZERO(cdev);
 	if (ret) {
 		if (ret != -EPROBE_DEFER)
 			dev_err(&state->dev, "state failed to parse path to backend: %s\n",
 			       strerror(-ret));
 		goto out_release_state;
 	}
+
+	/* Is the backend referencing an on-disk partitionable block device? */
+	if (cdev_is_block_disk(cdev)) {
+		cdev = cdev_find_child_by_gpt_typeuuid(cdev, &barebox_state_partition_guid);
+		if (IS_ERR(cdev)) {
+			ret = -EINVAL;
+			goto out_release_state;
+		}
+
+		pr_debug("%s: backend GPT partition looked up via PartitionTypeGUID\n",
+			 node->full_name);
+	}
+
+	state->backend_path = cdev_to_devpath(cdev, &offset, &size);
+
+	pr_debug("%s: backend resolved to %s\n", node->full_name, state->backend_path);
 
 	state->backend_reproducible_name = of_get_reproducible_name(partition_node);
 

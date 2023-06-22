@@ -12,7 +12,6 @@
 #include <fcntl.h>
 #include <efi.h>
 #include <block.h>
-#include <disks.h>
 #include <efi/efi-payload.h>
 #include <efi/efi-device.h>
 #include <bootsource.h>
@@ -147,7 +146,6 @@ static bool is_bio_usbdev(struct efi_device *efidev)
 
 static int efi_bio_probe(struct efi_device *efidev)
 {
-	int ret;
 	int instance;
 	struct efi_bio_priv *priv;
 	struct efi_block_io_media *media;
@@ -184,16 +182,10 @@ static int efi_bio_probe(struct efi_device *efidev)
 
 	priv->media_id = media->media_id;
 
-	ret = blockdevice_register(&priv->blk);
-	if (ret)
-		return ret;
-
 	if (efi_get_bootsource() == efidev)
 		bootsource_set_raw_instance(instance);
 
-	parse_partition_table(&priv->blk);
-
-	return 0;
+	return blockdevice_register(&priv->blk);
 }
 
 static struct efi_driver efi_bio_driver = {

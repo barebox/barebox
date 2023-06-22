@@ -183,7 +183,9 @@ static void dos_partition(void *buf, struct block_device *blk,
 	uint32_t signature = get_unaligned_le32(buf + 0x1b8);
 
 	if (signature)
-		sprintf(blk->cdev.uuid, "%08x", signature);
+		sprintf(blk->cdev.diskuuid, "%08x", signature);
+
+	blk->cdev.flags |= DEVFS_IS_MBR_PARTITIONED;
 
 	table = (struct partition_entry *)&buffer[446];
 

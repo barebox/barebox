@@ -734,7 +734,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 				if (!root_cdev)
 					pr_err("no cdev found for %s, cannot set root= option\n",
 						root_dev_name);
-				else if (!root_cdev->uuid[0])
+				else if (!root_cdev->partuuid[0])
 					pr_err("%s doesn't have a PARTUUID, cannot set root= option\n",
 						root_dev_name);
 			}

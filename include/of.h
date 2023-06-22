@@ -332,6 +332,7 @@ int of_add_memory_bank(struct device_node *node, bool dump, int r,
 struct device *of_find_device_by_node_path(const char *path);
 #define OF_FIND_PATH_FLAGS_BB 1		/* return .bb device if available */
 int of_find_path(struct device_node *node, const char *propname, char **outpath, unsigned flags);
+struct cdev *of_cdev_find(struct device_node *node);
 int of_find_path_by_node(struct device_node *node, char **outpath, unsigned flags);
 struct device_node *of_find_node_by_devpath(struct device_node *root, const char *path);
 int of_register_fixup(int (*fixup)(struct device_node *, void *), void *context);

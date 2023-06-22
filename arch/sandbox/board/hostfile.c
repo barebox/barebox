@@ -166,10 +166,6 @@ static int hf_probe(struct device *dev)
 		if (err)
 			return err;
 
-		err = parse_partition_table(&priv->blk);
-		if (err)
-			dev_warn(dev, "No partition table found\n");
-
 		dev_info(dev, "registered as block device\n");
 	} else {
 		cdev->name = np->name;

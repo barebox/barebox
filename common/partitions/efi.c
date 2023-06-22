@@ -232,7 +232,7 @@ static int is_gpt_valid(struct block_device *blk, u64 lba,
 static inline int
 is_pte_valid(const gpt_entry *pte, const u64 lastlba)
 {
-	if ((!efi_guidcmp(pte->partition_type_guid, EFI_NULL_GUID)) ||
+	if (guid_is_null(&pte->partition_type_guid) ||
 	    le64_to_cpu(pte->starting_lba) > lastlba	 ||
 	    le64_to_cpu(pte->ending_lba)   > lastlba)
 		return 0;
@@ -287,7 +287,7 @@ compare_gpts(struct device *dev, gpt_header *pgpt, gpt_header *agpt,
 		       (unsigned long long)le64_to_cpu(agpt->last_usable_lba));
 		error_found++;
 	}
-	if (efi_guidcmp(pgpt->disk_guid, agpt->disk_guid)) {
+	if (!guid_equal(&pgpt->disk_guid, &agpt->disk_guid)) {
 		dev_warn(dev, "GPT:disk_guids don't match.\n");
 		error_found++;
 	}
@@ -446,8 +446,10 @@ static void efi_partition(void *buf, struct block_device *blk,
 		return;
 	}
 
-	snprintf(blk->cdev.uuid, sizeof(blk->cdev.uuid), "%pUl", &gpt->disk_guid);
-	dev_add_param_string_fixed(blk->dev, "guid", blk->cdev.uuid);
+	snprintf(blk->cdev.diskuuid, sizeof(blk->cdev.diskuuid), "%pUl", &gpt->disk_guid);
+	dev_add_param_string_fixed(blk->dev, "guid", blk->cdev.diskuuid);
+
+	blk->cdev.flags |= DEVFS_IS_GPT_PARTITIONED;
 
 	nb_part = le32_to_cpu(gpt->num_partition_entries);
 
@@ -469,6 +471,7 @@ static void efi_partition(void *buf, struct block_device *blk,
 		pentry->size++;
 		part_set_efi_name(&ptes[i], pentry->name);
 		snprintf(pentry->partuuid, sizeof(pentry->partuuid), "%pUl", &ptes[i].unique_partition_guid);
+		pentry->typeuuid = ptes[i].partition_type_guid;
 		pd->used_entries++;
 	}
 }

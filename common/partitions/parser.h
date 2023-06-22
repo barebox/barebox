@@ -9,6 +9,7 @@
 
 #include <block.h>
 #include <filetype.h>
+#include <linux/uuid.h>
 #include <linux/list.h>
 
 #define MAX_PARTITION		128
@@ -16,10 +17,13 @@
 
 struct partition {
 	char name[MAX_PARTITION_NAME];
-	u8 dos_partition_type;
 	char partuuid[MAX_UUID_STR];
 	uint64_t first_sec;
 	uint64_t size;
+	union {
+		u8 dos_partition_type;
+		guid_t typeuuid;
+	};
 };
 
 struct partition_desc {

@@ -69,6 +69,8 @@ EXPORT_SYMBOL(mkmodestr);
 
 void cdev_print(const struct cdev *cdev)
 {
+	int nbytes;
+
 	if (cdev->dev || cdev->master || cdev->partname) {
 		printf("Origin: %s", dev_name(cdev->dev) ?: "None");
 		if (cdev->master)
@@ -86,25 +88,36 @@ void cdev_print(const struct cdev *cdev)
 			printf(" fixed-partition");
 		if (cdev->flags & DEVFS_PARTITION_READONLY)
 			printf(" readonly-partition");
+		if (cdev->flags & DEVFS_PARTITION_FROM_OF)
+			printf(" of-partition");
 		if (cdev->flags & DEVFS_PARTITION_FROM_TABLE)
 			printf(" table-partition");
 		if (cdev->flags & DEVFS_IS_MCI_MAIN_PART_DEV)
 			printf(" mci-main-partition");
+		if (cdev->flags & DEVFS_IS_MBR_PARTITIONED)
+			printf(" mbr-partitioned");
+		if (cdev->flags & DEVFS_IS_GPT_PARTITIONED)
+			printf(" gpt-partitioned");
 		if (cdev->mtd)
 			printf(" mtd");
 		printf(" )");
 	}
 	printf("\n");
 
-	if (cdev->filetype || cdev->dos_partition_type || *cdev->uuid) {
-		if (cdev->filetype)
-			printf("Filetype: %s\t", file_type_to_string(cdev->filetype));
-		if (cdev->dos_partition_type)
-			printf("DOS parttype: 0x%02x\t", cdev->dos_partition_type);
-		if (*cdev->uuid)
-			printf("UUID: %s", cdev->uuid);
+	nbytes = 0;
+
+	if (cdev->filetype)
+		nbytes += printf("Filetype: %s\t", file_type_to_string(cdev->filetype));
+	if (cdev_is_mbr_partitioned(cdev->master))
+		nbytes += printf("DOS parttype: 0x%02x\t", cdev->dos_partition_type);
+	else if (cdev_is_gpt_partitioned(cdev->master))
+		nbytes += printf("GPT typeuuid: %pUl\t", &cdev->typeuuid);
+	if (*cdev->partuuid || *cdev->diskuuid)
+		nbytes += printf("%sUUID: %s", cdev_is_partition(cdev) ? "PART" : "DISK",
+				 cdev_is_partition(cdev) ? cdev->partuuid : cdev->diskuuid);
+
+	if (nbytes)
 		printf("\n");
-	}
 }
 EXPORT_SYMBOL(cdev_print);
 
@@ -3078,8 +3091,8 @@ char *cdev_get_linux_rootarg(const struct cdev *cdev)
 	if (str)
 		return str;
 
-	if (cdev->uuid[0] != 0)
-		return basprintf("root=PARTUUID=%s", cdev->uuid);
+	if (cdev->partuuid[0] != 0)
+		return basprintf("root=PARTUUID=%s", cdev->partuuid);
 
 	return NULL;
 }

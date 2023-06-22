@@ -8,6 +8,7 @@
 
 #include <linux/list.h>
 #include <linux/ioport.h>
+#include <linux/uuid.h>
 #include <of.h>
 #include <filetype.h>
 
@@ -522,18 +523,29 @@ struct cdev {
 	char *partname; /* the partition name, usually the above without the
 			 * device part, i.e. name = "nand0.barebox" -> partname = "barebox"
 			 */
-	char uuid[MAX_UUID_STR];
+	union {
+		char diskuuid[MAX_UUID_STR];	/* GPT Header DiskGUID or
+						 * MBR Header NT Disk Signature
+						 */
+		char partuuid[MAX_UUID_STR];	/* GPT Partition Entry UniquePartitionGUID or
+						 * MBR Partition Entry "${nt_signature}-${partno}"
+						 */
+	};
+
 	loff_t offset;
 	loff_t size;
 	unsigned int flags;
 	int open;
 	struct mtd_info *mtd;
-	u8 dos_partition_type;
 	struct cdev *link;
 	struct list_head link_entry, links;
 	struct list_head partition_entry, partitions;
 	struct cdev *master;
 	enum filetype filetype;
+	union {
+		u8 dos_partition_type;
+		guid_t typeuuid;
+	};
 };
 
 int devfs_create(struct cdev *);
@@ -564,16 +576,52 @@ int cdev_discard_range(struct cdev*, loff_t count, loff_t offset);
 int cdev_memmap(struct cdev*, void **map, int flags);
 int cdev_truncate(struct cdev*, size_t size);
 loff_t cdev_unallocated_space(struct cdev *cdev);
+static inline bool cdev_is_partition(const struct cdev *cdev)
+{
+	return cdev->master != NULL;
+}
 
 extern struct list_head cdev_list;
-#define for_each_cdev(c) \
-	list_for_each_entry(cdev, &cdev_list, list)
+#define for_each_cdev(cdev) \
+	list_for_each_entry((cdev), &cdev_list, list)
+
+#define for_each_cdev_partition(partcdev, cdev) \
+	list_for_each_entry((partcdev), &(cdev)->partitions, partition_entry)
 
 #define DEVFS_PARTITION_FIXED		(1U << 0)
 #define DEVFS_PARTITION_READONLY	(1U << 1)
 #define DEVFS_IS_CHARACTER_DEV		(1U << 3)
-#define DEVFS_PARTITION_FROM_TABLE	(1U << 4)
-#define DEVFS_IS_MCI_MAIN_PART_DEV	(1U << 5)
+#define DEVFS_IS_MCI_MAIN_PART_DEV	(1U << 4)
+#define DEVFS_PARTITION_FROM_OF		(1U << 5)
+#define DEVFS_PARTITION_FROM_TABLE	(1U << 6)
+#define DEVFS_IS_MBR_PARTITIONED	(1U << 7)
+#define DEVFS_IS_GPT_PARTITIONED	(1U << 8)
+
+static inline bool cdev_is_mbr_partitioned(const struct cdev *master)
+{
+	return master && (master->flags & DEVFS_IS_MBR_PARTITIONED);
+}
+
+static inline bool cdev_is_gpt_partitioned(const struct cdev *master)
+{
+	return master && (master->flags & DEVFS_IS_GPT_PARTITIONED);
+}
+
+static inline struct cdev *
+cdev_find_child_by_gpt_typeuuid(struct cdev *cdev, guid_t *typeuuid)
+{
+	struct cdev *partcdev;
+
+	if (!cdev_is_gpt_partitioned(cdev))
+		return ERR_PTR(-EINVAL);
+
+	for_each_cdev_partition(partcdev, cdev) {
+		if (guid_equal(&partcdev->typeuuid, typeuuid))
+			return partcdev;
+	}
+
+	return ERR_PTR(-ENOENT);
+}
 
 struct cdev *devfs_add_partition(const char *devname, loff_t offset,
 		loff_t size, unsigned int flags, const char *name);

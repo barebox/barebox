@@ -2662,6 +2662,9 @@ struct device_node *of_copy_node(struct device_node *parent, const struct device
 
 struct device_node *of_dup(const struct device_node *root)
 {
+	if (IS_ERR_OR_NULL(root))
+		return ERR_CAST(root);
+
 	return of_copy_node(NULL, root);
 }
 

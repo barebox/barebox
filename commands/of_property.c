@@ -305,7 +305,6 @@ static int do_of_property(int argc, char *argv[])
 	char *path, *propname;
 	char *dtbfile = NULL;
 	int ret = 0;
-	size_t size;
 	struct fdt_header *fdt = NULL;
 	struct device_node *root = NULL;
 
@@ -340,15 +339,9 @@ static int do_of_property(int argc, char *argv[])
 		return COMMAND_ERROR_USAGE;
 
 	if (dtbfile) {
-		fdt = read_file(dtbfile, &size);
-		if (!fdt) {
-			printf("unable to read %s: %m\n", dtbfile);
-			return -errno;
-		}
-
-		root = of_unflatten_dtb(fdt, size);
-
-		free(fdt);
+		root = of_read_file(dtbfile);
+		if (IS_ERR(root))
+			return PTR_ERR(root);
 	}
 
 	if (set) {
@@ -401,8 +394,7 @@ static int do_of_property(int argc, char *argv[])
 
 out:
 
-	if (root)
-		of_delete_node(root);
+	of_delete_node(root);
 
 	return ret;
 }

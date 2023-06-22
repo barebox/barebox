@@ -473,8 +473,7 @@ static bool entry_is_of_compatible(struct blspec_entry *entry)
 	ret = false;
 
 out:
-	if (root)
-		of_delete_node(root);
+	of_delete_node(root);
 	free(filename);
 
 	return ret;

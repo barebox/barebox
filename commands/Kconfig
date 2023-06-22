@@ -2190,6 +2190,21 @@ config CMD_LSMOD
 	help
 	  List loaded barebox modules.
 
+config CMD_OF_COMPATIBLE
+	tristate
+	select OFTREE
+	prompt "of_compatible"
+	help
+	  Check DT node's compatible
+
+	  Usage: [-fFnk] [COMPAT]
+
+	  Options:
+		-f dtb	work on dtb instead of internal devicetree
+		-F	apply fixups on devicetree before compare
+		-n node	node path or alias to compare its compatible (default is /)
+		-k	compare $global.of.kernel.add_machine_compatible as well
+
 config CMD_OF_DIFF
 	tristate
 	select OFTREE

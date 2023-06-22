@@ -66,7 +66,7 @@ struct device;
 struct driver;
 struct resource;
 
-int of_fix_tree(struct device_node *);
+void of_fix_tree(struct device_node *);
 
 int of_match(struct device *dev, struct driver *drv);
 

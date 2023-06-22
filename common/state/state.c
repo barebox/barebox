@@ -333,8 +333,10 @@ static int state_convert_node_variable(struct state *state,
 		goto out;
 
 	return 0;
- out_free:free(name);
- out:	return ret;
+out_free:
+	free(name);
+out:
+	return ret;
 }
 
 struct device_node *state_to_node(struct state *state,
@@ -361,7 +363,8 @@ struct device_node *state_to_node(struct state *state,
 	}
 
 	return root;
- out:	of_delete_node(root);
+out:
+	of_delete_node(root);
 	return ERR_PTR(ret);
 }
 
@@ -556,12 +559,12 @@ static int of_state_fixup(struct device_node *root, void *ctx)
 		goto out;
 
 	/* delete existing node */
-	if (node)
-		of_delete_node(node);
+	of_delete_node(node);
 
 	return 0;
 
- out:	of_delete_node(new_node);
+out:
+	of_delete_node(new_node);
 	return ret;
 }
 

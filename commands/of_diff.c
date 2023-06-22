@@ -18,59 +18,56 @@ static struct device_node *get_tree(const char *filename, struct device_node *ro
 	struct device_node *node;
 
 	if (!strcmp(filename, "-")) {
-		node = of_get_root_node();
-		if (!node)
-			return ERR_PTR(-ENOENT);
-
-		return of_dup(node);
+		node = of_dup(root) ?: ERR_PTR(-ENOENT);
+	} else if (!strcmp(filename, "+")) {
+		return NULL;
+	} else {
+		node = of_read_file(filename);
 	}
 
-	if (!strcmp(filename, "+")) {
-		node = of_get_root_node();
-		if (!node)
-			return ERR_PTR(-ENOENT);
+	if (IS_ERR(node))
+		printf("Cannot read %s: %pe\n", filename, node);
 
-		node = of_dup(root);
+	return node;
+}
 
+static struct device_node *get_tree_fixed(const struct device_node *root)
+{
+	struct device_node *node;
+
+	node = of_dup(root);
+	if (!IS_ERR(node))
 		of_fix_tree(node);
 
-		return node;
-	}
-
-	return of_read_file(filename);
+	return node;
 }
 
 static int do_of_diff(int argc, char *argv[])
 {
-	int ret = 0;
+	int ret = COMMAND_ERROR;
 	struct device_node *a, *b, *root;
 
-	if (argc < 3)
+	if (argc != 3)
 		return COMMAND_ERROR_USAGE;
 
 	root = of_get_root_node();
 	a = get_tree(argv[1], root);
 	b = get_tree(argv[2], root);
 
-	if (IS_ERR(a)) {
-		printf("Cannot read %s: %pe\n", argv[1], a);
-		ret = COMMAND_ERROR;
-		a = NULL;
-		goto out;
-	}
+	if (!a && !b)
+		return COMMAND_ERROR_USAGE;
 
-	if (IS_ERR(b)) {
-		printf("Cannot read %s: %pe\n", argv[2], b);
-		ret = COMMAND_ERROR;
-		b = NULL;
-		goto out;
-	}
+	if (!a)
+		a = get_tree_fixed(b);
+	if (!b)
+		b = get_tree_fixed(a);
 
-	ret = of_diff(a, b, 0) ? COMMAND_ERROR : COMMAND_SUCCESS;
-out:
-	if (a && a != root)
+	if (!IS_ERR(a) && !IS_ERR(b))
+		ret = of_diff(a, b, 0) ? COMMAND_ERROR : COMMAND_SUCCESS;
+
+	if (!IS_ERR(a) && a != root)
 		of_delete_node(a);
-	if (b && b != root)
+	if (!IS_ERR(b) && b != root)
 		of_delete_node(b);
 
 	return ret;
@@ -80,7 +77,7 @@ BAREBOX_CMD_HELP_START(of_diff)
 BAREBOX_CMD_HELP_TEXT("This command prints a diff between two given device trees.")
 BAREBOX_CMD_HELP_TEXT("The device trees are given as dtb files or:")
 BAREBOX_CMD_HELP_TEXT("'-' to compare against the barebox live tree, or")
-BAREBOX_CMD_HELP_TEXT("'+' to compare against the fixed barebox live tree")
+BAREBOX_CMD_HELP_TEXT("'+' to compare against the other device tree after fixups")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(of_diff)

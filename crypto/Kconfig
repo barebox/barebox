@@ -86,6 +86,27 @@ config DIGEST_SHA256_ARM
 	  SHA-256 secure hash standard (DFIPS 180-2) implemented
 	  using optimized ARM assembler and NEON, when available.
 
+config DIGEST_SHA1_ARM64_CE
+	tristate "SHA-1 digest algorithm (ARMv8 Crypto Extensions)"
+	depends on CPU_V8
+	select HAVE_DIGEST_SHA1
+	help
+	  SHA-1 secure hash algorithm (FIPS 180)
+
+	  Architecture: arm64 using:
+	  - ARMv8 Crypto Extensions
+
+config DIGEST_SHA256_ARM64_CE
+	tristate "SHA-224/256 digest algorithm (ARMv8 Crypto Extensions)"
+	depends on CPU_V8
+	select HAVE_DIGEST_SHA256
+	select HAVE_DIGEST_SHA224
+	help
+	  SHA-224 and SHA-256 secure hash algorithms (FIPS 180)
+
+	  Architecture: arm64 using:
+	  - ARMv8 Crypto Extensions
+
 endif
 
 config CRYPTO_PBKDF2

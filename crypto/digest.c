@@ -27,8 +27,6 @@
 
 static LIST_HEAD(digests);
 
-static struct digest_algo *digest_algo_get_by_name(const char *name);
-
 static int dummy_init(struct digest *d)
 {
 	return 0;
@@ -106,7 +104,7 @@ EXPORT_SYMBOL(digest_algo_unregister);
 
 static struct digest_algo *digest_algo_get_by_name(const char *name)
 {
-	struct digest_algo *d = NULL;
+	struct digest_algo *d_by_name = NULL, *d_by_driver = NULL;
 	struct digest_algo *tmp;
 	int priority = -1;
 
@@ -114,17 +112,20 @@ static struct digest_algo *digest_algo_get_by_name(const char *name)
 		return NULL;
 
 	list_for_each_entry(tmp, &digests, list) {
+		if (strcmp(tmp->base.driver_name, name) == 0)
+			d_by_driver = tmp;
+
 		if (strcmp(tmp->base.name, name) != 0)
 			continue;
 
 		if (tmp->base.priority <= priority)
 			continue;
 
-		d = tmp;
+		d_by_name = tmp;
 		priority = tmp->base.priority;
 	}
 
-	return d;
+	return d_by_name ?: d_by_driver;
 }
 
 static struct digest_algo *digest_algo_get_by_algo(enum hash_algo algo)

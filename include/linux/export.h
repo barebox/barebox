@@ -2,6 +2,8 @@
 #ifndef _LINUX_EXPORT_H
 #define _LINUX_EXPORT_H
 
+#ifndef __ASSEMBLY__
+
 #define THIS_MODULE	0
 
 #ifdef CONFIG_MODULES
@@ -35,5 +37,7 @@ struct kernel_symbol
 #define EXPORT_SYMBOL_GPL(sym)
 
 #endif /* CONFIG_MODULES */
+
+#endif /* __ASSEMBLY__ */
 
 #endif /* _LINUX_EXPORT_H */

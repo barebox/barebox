@@ -8,7 +8,6 @@
 
 #include <common.h>
 #include <driver.h>
-#include <linux/pci.h>
 #include <fb.h>
 #include "../edid.h"
 #include "bochs_hw.h"

@@ -72,7 +72,6 @@ struct clk *clk_get(struct device *dev, const char *id);
  * Returns success (0) or negative errno.
  */
 int clk_enable(struct clk *clk);
-#define clk_prepare_enable(clk) clk_enable(clk)
 
 /**
  * clk_disable - inform the system when the clock source is no longer required.
@@ -87,7 +86,6 @@ int clk_enable(struct clk *clk);
  * disabled.
  */
 void clk_disable(struct clk *clk);
-#define clk_disable_unprepare(clk) clk_disable(clk)
 
 /**
  * clk_get_rate - obtain the current clock rate (in Hz) for a clock source.
@@ -181,6 +179,11 @@ static inline struct clk *clk_get(struct device *dev, const char *id)
 	return NULL;
 }
 
+static inline struct clk *clk_get_parent(struct clk *clk)
+{
+	return NULL;
+}
+
 static inline int clk_enable(struct clk *clk)
 {
 	return 0;
@@ -205,6 +208,9 @@ static inline int clk_set_rate(struct clk *clk, unsigned long rate)
 	return 0;
 }
 #endif
+
+#define clk_prepare_enable(clk) clk_enable(clk)
+#define clk_disable_unprepare(clk) clk_disable(clk)
 
 static inline void clk_put(struct clk *clk)
 {
@@ -743,6 +749,7 @@ static inline unsigned int of_clk_get_parent_count(struct device_node *np)
 {
 	return 0;
 }
+
 static inline int of_clk_init(void)
 {
 	return 0;

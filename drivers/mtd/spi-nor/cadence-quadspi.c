@@ -336,8 +336,7 @@ static int cqspi_command_read(struct spi_nor *nor,
 
 	if (!n_rx || n_rx > CQSPI_STIG_DATA_LEN_MAX || rxbuf == NULL) {
 		dev_err(nor->dev,
-			"Invalid input argument, len %d rxbuf 0x%08x\n", n_rx,
-			(unsigned int)rxbuf);
+			"Invalid input argument, len %d rxbuf 0x%p\n", n_rx, rxbuf);
 		return -EINVAL;
 	}
 
@@ -382,8 +381,7 @@ static __maybe_unused int cqspi_command_write(struct spi_nor *nor,
 
 	if (n_tx > 4 || (n_tx && txbuf == NULL)) {
 		dev_err(nor->dev,
-			"Invalid input argument, cmdlen %d txbuf 0x%08x\n",
-			n_tx, (unsigned int)txbuf);
+			"Invalid input argument, cmdlen %d txbuf 0x%p\n", n_tx, txbuf);
 		return -EINVAL;
 	}
 
@@ -422,7 +420,7 @@ static int cqspi_indirect_read_setup(struct spi_nor *nor,
 {
 	struct cqspi_flash_pdata *f_pdata;
 	struct cqspi_st *cqspi = nor->priv;
-	unsigned int ahb_base = (unsigned int) cqspi->ahb_base;
+	phys_addr_t ahb_base = virt_to_phys(cqspi->ahb_base);
 	void __iomem *reg_base = cqspi->iobase;
 	unsigned int dummy_clk = 0;
 	unsigned int dummy_bytes;

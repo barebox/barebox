@@ -207,7 +207,7 @@ int caam_jr_enqueue(struct device *dev, u32 *desc,
 	}
 
 	head_entry = &jrp->entinfo[head];
-	head_entry->desc_addr_virt = phys_to_virt((u32) desc);
+	head_entry->desc_addr_virt = desc;
 	head_entry->desc_size = desc_size;
 	head_entry->callbk = (void *)cbk;
 	head_entry->cbkarg = areq;

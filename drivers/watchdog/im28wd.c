@@ -187,7 +187,7 @@ static int imx28_wd_probe(struct device *dev)
 		return PTR_ERR(iores);
 	priv->regs = IOMEM(iores->start);
 	priv->wd.set_timeout = imx28_watchdog_set_timeout;
-	priv->wd.timeout_max = ULONG_MAX / WDOG_TICK_RATE;
+	priv->wd.timeout_max = U32_MAX / WDOG_TICK_RATE;
 	priv->wd.hwdev = dev;
 
 	if (!(readl(priv->regs + MXS_RTC_STAT) & MXS_RTC_STAT_WD_PRESENT)) {

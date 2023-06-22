@@ -90,6 +90,7 @@ static int simplefb_create_node(struct device_node *root,
 				const struct fb_info *fbi, const char *format)
 {
 	struct device_node *node;
+	phys_addr_t screen_base;
 	u32 cells[2];
 	int ret;
 
@@ -105,7 +106,11 @@ static int simplefb_create_node(struct device_node *root,
 	if (ret)
 		return ret;
 
-	cells[0] = cpu_to_be32((u32)fbi->screen_base);
+	screen_base = virt_to_phys(fbi->screen_base);
+	if (upper_32_bits(screen_base))
+		return -ENOSYS;
+
+	cells[0] = cpu_to_be32(lower_32_bits(screen_base));
 	cells[1] = cpu_to_be32(fbi->line_length * fbi->yres);
 	ret = of_set_property(node, "reg", cells, sizeof(cells[0]) * 2, 1);
 	if (ret < 0)
@@ -130,8 +135,7 @@ static int simplefb_create_node(struct device_node *root,
 	if (ret < 0)
 		return ret;
 
-	of_add_reserve_entry((u32)fbi->screen_base,
-			(u32)fbi->screen_base + fbi->screen_size);
+	of_add_reserve_entry(screen_base, screen_base + fbi->screen_size);
 
 	return of_property_write_string(node, "status", "okay");
 }

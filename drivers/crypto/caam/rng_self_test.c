@@ -116,7 +116,7 @@ static void construct_rng_self_test_jobdesc(u32 *desc, const u32 *rng_st_dsc, u8
 	}
 
 	/* Replace destination address in the descriptor */
-	desc[result_addr_idx] = (u32)res_addr;
+	desc[result_addr_idx] = virt_to_phys(res_addr);
 }
 
 /* rng_self_test_done() - callback for caam_jr_enqueue */

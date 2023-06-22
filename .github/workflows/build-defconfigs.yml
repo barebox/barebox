@@ -1,0 +1,44 @@
+name: build images
+
+on: [push, pull_request]
+
+env:
+  ARCH: arm mips powerpc riscv sandbox x86 openrisc
+
+jobs:
+  defconfigs:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Collect defconfigs
+        id: set-matrix
+        run: echo "matrix=$(scripts/list-defconfigs.sh $ARCH)" >> $GITHUB_OUTPUT
+  build:
+    needs: defconfigs
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/barebox/barebox/barebox-ci:latest
+      # allow mounting and devtmpfs in the container
+      options: --user=root --privileged -v /dev:/dev
+
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.defconfigs.outputs.matrix) }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Build
+      run: |
+        export ARCH=${{matrix.arch}}
+
+        ./test/generate-dummy-fw.sh
+
+        ./MAKEALL -O build-${{matrix.arch}} -k test/kconfig/disable_size_check.kconf \
+                -k test/kconfig/disable_target_tools.kconf \
+                -k test/kconfig/enable_werror.kconf '${{matrix.config}}'

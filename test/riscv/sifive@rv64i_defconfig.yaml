@@ -7,18 +7,13 @@ targets:
         cpu: sifive-u54
         memory: 256M
         kernel: barebox-hifive-unleashed.img
-        bios: opensbi-riscv64-generic-fw_dynamic.bin
         extra_args: ''
       BareboxDriver:
         prompt: 'barebox@[^:]+:[^ ]+ '
         bootstring: 'commandline:'
       BareboxTestStrategy: {}
-    runner:
-      download:
-        opensbi-riscv64-generic-fw_dynamic.bin: https://github.com/qemu/qemu/blob/v5.2.0/pc-bios/opensbi-riscv64-generic-fw_dynamic.bin?raw=true
 images:
   barebox-hifive-unleashed.img: !template "$LG_BUILDDIR/images/barebox-hifive-unleashed.img"
-  opensbi-riscv64-generic-fw_dynamic.bin: !template "$LG_BUILDDIR/opensbi-riscv64-generic-fw_dynamic.bin"
 tools:
   qemu: /usr/bin/qemu-system-riscv64
 imports:

@@ -206,7 +206,7 @@ static int fpgamgr_program_finish(struct firmware_handler *fh)
 	enum xilinx_byte_order byte_order;
 	dma_addr_t addr;
 	int status = 0;
-	u8 flags = ZYNQMP_FPGA_BIT_ONLY_BIN;
+	u8 flags = 0;
 
 	if (!mgr->buf) {
 		status = -ENOBUFS;

@@ -51,11 +51,11 @@ ENTRY(kvx_start)
 	/* Setup default processor status */
 	make $r25 = PS_WFXL_START_VALUE
 	;;
-	wfxl $ps = $r25
+	wfxl $ps, $r25
 	;;
 	make $r25 = PCR_WFXM_START_VALUE
 	;;
-	wfxm $pcr = $r25
+	wfxm $pcr, $r25
 	;;
 	/* Clear BSS */
 	make $r22 = __bss_stop
@@ -65,7 +65,7 @@ ENTRY(kvx_start)
 	make $r24 = 0
 	;;
 	/* Divide by 16 for hardware loop */
-	srld $r22, $r22, 4
+	srld $r22 = $r22, 4
 	make $r25 = 0
 	;;
 	/* Clear bss with hardware loop */
@@ -76,7 +76,7 @@ ENTRY(kvx_start)
 		;;
 	clear_bss_done:
 	/* Setup stack */
-	make $sp, __stack_start
+	make $sp = __stack_start
 	;;
 	call kvx_lowlevel_setup
 	;;
@@ -89,36 +89,36 @@ ENDPROC(kvx_start)
 #define request_ownership(__pl) ;\
 	make $r21 = SYO_WFXL_VALUE_##__pl ;\
 	;; ;\
-	wfxl $syow = $r21 ;\
+	wfxl $syow, $r21 ;\
 	;; ;\
 	make $r21 = HTO_WFXL_VALUE_##__pl ;\
 	;; ;\
-	wfxl $htow = $r21 ;\
+	wfxl $htow, $r21 ;\
 	;; ;\
 	make $r21 = MO_WFXL_VALUE_##__pl ;\
 	make $r22 = MO_WFXM_VALUE_##__pl ;\
 	;; ;\
-	wfxl $mow = $r21 ;\
+	wfxl $mow, $r21 ;\
 	;; ;\
-	wfxm $mow = $r22 ;\
+	wfxm $mow, $r22 ;\
 	;; ;\
 	make $r21 = ITO_WFXL_VALUE_##__pl ;\
 	make $r22 = ITO_WFXM_VALUE_##__pl ;\
 	;; ;\
-	wfxl $itow = $r21 ;\
+	wfxl $itow, $r21 ;\
 	;; ;\
-	wfxm $itow = $r22 ;\
+	wfxm $itow, $r22 ;\
 	;; ;\
 	make $r21 = PSO_WFXL_VALUE_##__pl ;\
 	make $r22 = PSO_WFXM_VALUE_##__pl ;\
 	;; ;\
-	wfxl $psow = $r21 ;\
+	wfxl $psow, $r21 ;\
 	;; ;\
-	wfxm $psow = $r22 ;\
+	wfxm $psow, $r22 ;\
 	;; ;\
 	make $r21 = DO_WFXL_VALUE_##__pl ;\
 	;; ;\
-	wfxl $dow = $r21 ;\
+	wfxl $dow, $r21 ;\
 	;;
 
 /**

@@ -485,6 +485,20 @@ static int dfu_set_alt(struct usb_function *f, unsigned intf, unsigned alt)
 	return -EINVAL;
 }
 
+static int dfu_get_alt(struct usb_function *f, unsigned intf)
+{
+	struct file_list_entry  *fentry;
+	int i = 0;
+
+	file_list_for_each_entry(dfu_files, fentry) {
+		if (fentry == dfu_file_entry)
+			return i;
+		i++;
+	}
+
+	return -EINVAL;
+}
+
 static int dfu_status(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 {
 	struct f_dfu		*dfu = func_to_dfu(f);
@@ -830,6 +844,7 @@ static struct usb_function *dfu_alloc_func(struct usb_function_instance *fi)
 	/* descriptors are per-instance copies */
 	dfu->func.bind = dfu_bind;
 	dfu->func.set_alt = dfu_set_alt;
+	dfu->func.get_alt = dfu_get_alt;
 	dfu->func.setup = dfu_setup;
 	dfu->func.disable = dfu_disable;
 	dfu->func.unbind = dfu_unbind;

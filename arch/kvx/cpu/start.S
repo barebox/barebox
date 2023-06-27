@@ -174,7 +174,7 @@ delegate_pl:
 ENDPROC(asm_init_pl)
 
 ENTRY(kvx_proc_power_off):
-	dinval
+	d1inval
 	make $r1 = WS_WFXL_VALUE
 	;;
         /* Enable STOP */

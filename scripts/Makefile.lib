@@ -236,6 +236,9 @@ endef
 # Shipped files
 # ===========================================================================
 
+quiet_cmd_0size = 0SIZE $@
+cmd_0size = : > $@
+
 quiet_cmd_shipped = SHIPPED $@
 cmd_shipped = cat $< > $@
 

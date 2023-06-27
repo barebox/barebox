@@ -72,6 +72,8 @@ $(obj)/%.pbl: $(pbl-lds) $(BAREBOX_PBL_OBJS) $(obj)/piggy.o $(obj)/sha_sum.o FOR
 
 $(obj)/%.pblb: $(obj)/%.pbl FORCE
 	$(call if_changed,objcopy_bin,$(*F))
+	$(Q)$(OBJCOPY) -O binary --only-section=.missing_fw $< $@.missing-firmware
+	$(Q)[ -s $@.missing-firmware ] || rm -f $@.missing-firmware
 	$(call cmd,check_file_size,$@,$(CONFIG_BAREBOX_MAX_IMAGE_SIZE))
 
 #
@@ -127,10 +129,14 @@ $(obj)/barebox.z: $(obj)/../barebox.bin FORCE
 
 # %.img - create a copy from another file
 # ----------------------------------------------------------------
+
+missing_fw = $(strip $(wildcard $(obj)/$(FILE_$(@F)).missing-firmware $(basename $(obj)/$(FILE_$(@F))).missing-firmware))
+
 .SECONDEXPANSION:
 $(obj)/%.img: $(obj)/$$(FILE_$$(@F))
 	$(Q)if [ -z $(FILE_$(@F)) ]; then echo "FILE_$(@F) empty!"; false; fi
-	$(call if_changed,shipped)
+	$(Q)$(if $(missing_fw),cat $(missing_fw) >$@.missing-firmware,rm -f $@.missing-firmware)
+	$(call if_changed,$(if $(missing_fw),0size,shipped))
 
 board = $(srctree)/arch/$(SRCARCH)/boards
 objboard = $(objtree)/arch/$(SRCARCH)/boards
@@ -194,10 +200,15 @@ multi-image-build:
 
 images: $(image-y-path) $(flash-link) $(flash-list) FORCE
 	@echo "images built:"
-	@for i in $(image-y); do echo $$i; done
+	@for i in $(image-y); do \
+	  if [ -s $(obj)/$$i ]; then echo $$i; \
+	  else >&2 echo "** firmware missing for $$i **"; \
+	  $(if $(CONFIG_MISSING_FIRMWARE_ERROR), >&2 sed 's/^/\t/' <$(obj)/$${i}.missing-firmware; missing=1;) \
+	  fi; done; if [ -n "$$missing" ]; then \
+	    echo >&2 "Firmware missing in CONFIG_MISSING_FIRMWARE_ERROR=y build"; exit 1; fi
 
 __images_install: images
-	@for i in $(image-y-path); do install -t "$(INSTALL_PATH)" $$i; done
+	@for i in $(image-y-path); do if [ -s $$i ]; then install -t "$(INSTALL_PATH)" $$i; fi; done
 
 PHONY += __images_install
 
@@ -205,10 +216,10 @@ $(flash-link): $(link-dest) FORCE
 	$(call if_changed,ln)
 
 $(flash-list): $(image-y-path)
-	@for i in $^; do echo $$i; done > $@
+	@for i in $^; do if [ -s $$i ]; then echo $$i; fi; done > $@
 
 clean-files := *.pbl *.pblb *.map start_*.imximg *.img barebox.z start_*.kwbimg \
 	start_*.kwbuartimg *.socfpgaimg *.mlo *.t20img *.t20img.cfg *.t30img \
 	*.t30img.cfg *.t124img *.t124img.cfg *.mlospi *.mlo *.mxsbs *.mxssd \
-	start_*.simximg start_*.usimximg *.zynqimg *.image *.swapped
+	start_*.simximg start_*.usimximg *.zynqimg *.image *.swapped *.missing-firmware
 clean-files += pbl.lds

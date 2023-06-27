@@ -59,6 +59,11 @@ filechk_fwbin = { \
 	echo "\#endif"						;\
 	echo ".global _fw_$(FWSTR)_end"				;\
 	echo "_fw_$(FWSTR)_end:"				;\
+	echo "\#ifdef __PBL__"					;\
+	echo "    .section .missing_fw,\"a\""			;\
+	echo "_fwname_$(FWSTR):"				;\
+	echo ".ascii \"firmware/$(FWNAME)\\\\n\""		;\
+	echo "\#endif" 						;\
 }
 
 __fwbin_sha = { \

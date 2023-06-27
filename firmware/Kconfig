@@ -6,6 +6,20 @@ config EXTRA_FIRMWARE_DIR
 	string "Firmware blobs root directory"
 	default "firmware"
 
+config MISSING_FIRMWARE_ERROR
+	bool "Fail the build when required firmware is missing"
+	default y
+	help
+	  In-tree Defconfigs that enable multiple boards with different firmware
+	  binary requirements would say y here, so you don't need unrelated firmware
+	  for the build to succeed.
+
+	  Defconfigs custom-tailored to products would say n here as all boards
+	  being built should be functional and have their firmware available.
+
+	  If in doubt, say Y and refer to the documentation on where to acquire the
+	  needed firmware.
+
 config HAVE_FIRMWARE_IMX_LPDDR4_PMU_TRAIN
 	bool
 	default y

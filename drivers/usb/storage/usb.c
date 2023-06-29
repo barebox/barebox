@@ -10,6 +10,7 @@
 #include <common.h>
 #include <init.h>
 #include <malloc.h>
+#include <dma.h>
 #include <errno.h>
 #include <scsi.h>
 #include <linux/usb/usb.h>
@@ -33,7 +34,7 @@ static int usb_stor_request_sense(struct us_blk_dev *usb_blkdev)
 	struct device *dev = &us->pusb_dev->dev;
 	u8 cmd[6];
 	const u8 datalen = 18;
-	u8 *data = xzalloc(datalen);
+	u8 *data = dma_alloc(datalen);
 
 	dev_dbg(dev, "SCSI_REQ_SENSE\n");
 
@@ -44,7 +45,7 @@ static int usb_stor_request_sense(struct us_blk_dev *usb_blkdev)
 	dev_dbg(dev, "Request Sense returned %02X %02X %02X\n",
 		data[2], data[12], data[13]);
 
-	free(data);
+	dma_free(data);
 
 	return 0;
 }
@@ -104,7 +105,7 @@ static int usb_stor_inquiry(struct us_blk_dev *usb_blkdev)
 	int ret;
 	u8 cmd[6];
 	const u16 datalen = 36;
-	u8 *data = xzalloc(datalen);
+	u8 *data = dma_alloc(datalen);
 
 	memset(cmd, 0, sizeof(cmd));
 	cmd[0] = SCSI_INQUIRY;
@@ -126,7 +127,7 @@ static int usb_stor_inquiry(struct us_blk_dev *usb_blkdev)
 	// TODO:  process and store device info
 
 exit:
-	free(data);
+	dma_free(data);
 	return ret;
 }
 
@@ -154,7 +155,7 @@ static int read_capacity_16(struct us_blk_dev *usb_blkdev)
 	struct device *dev = &usb_blkdev->us->pusb_dev->dev;
 	unsigned char cmd[16];
 	const u8 datalen = 32;
-	u8 *data = xzalloc(datalen);
+	u8 *data = dma_alloc(datalen);
 	int ret;
 	sector_t lba;
 	unsigned sector_size;
@@ -190,7 +191,7 @@ static int read_capacity_16(struct us_blk_dev *usb_blkdev)
 
 	ret = sector_size;
 fail:
-	free(data);
+	dma_free(data);
 	return ret;
 }
 
@@ -199,7 +200,7 @@ static int read_capacity_10(struct us_blk_dev *usb_blkdev)
 	struct device *dev = &usb_blkdev->us->pusb_dev->dev;
 	unsigned char cmd[16];
 	const u32 datalen = 8;
-	__be32 *data = xzalloc(datalen);
+	__be32 *data = dma_alloc(datalen);
 	int ret;
 	sector_t lba;
 	unsigned sector_size;
@@ -229,7 +230,7 @@ static int read_capacity_10(struct us_blk_dev *usb_blkdev)
 
 	ret = SECTOR_SIZE;
 fail:
-	free(data);
+	dma_free(data);
 	return ret;
 }
 

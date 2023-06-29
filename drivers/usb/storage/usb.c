@@ -169,7 +169,7 @@ static int read_capacity_16(struct us_blk_dev *usb_blkdev)
 
 	if (ret < 0) {
 		dev_warn(dev, "Read Capacity(16) failed\n");
-		return ret;
+		goto fail;
 	}
 
 	/* Note this is logical, not physical sector size */
@@ -181,13 +181,17 @@ static int read_capacity_16(struct us_blk_dev *usb_blkdev)
 
 	if ((data[12] & 1) == 1) {
 		dev_warn(dev, "Protection unsupported\n");
-		return -ENOTSUPP;
+		ret = -ENOTSUPP;
+		goto fail;
 	}
 
 	usb_blkdev->blk.blockbits = SECTOR_SHIFT;
 	usb_blkdev->blk.num_blocks = lba + 1;
 
-	return sector_size;
+	ret = sector_size;
+fail:
+	free(data);
+	return ret;
 }
 
 static int read_capacity_10(struct us_blk_dev *usb_blkdev)
@@ -208,7 +212,7 @@ static int read_capacity_10(struct us_blk_dev *usb_blkdev)
 
 	if (ret < 0) {
 		dev_warn(dev, "Read Capacity(10) failed\n");
-		return ret;
+		goto fail;
 	}
 
 	sector_size = be32_to_cpu(data[1]);
@@ -223,7 +227,10 @@ static int read_capacity_10(struct us_blk_dev *usb_blkdev)
 	usb_blkdev->blk.num_blocks = lba + 1;
 	usb_blkdev->blk.blockbits = SECTOR_SHIFT;
 
-	return SECTOR_SIZE;
+	ret = SECTOR_SIZE;
+fail:
+	free(data);
+	return ret;
 }
 
 static int usb_stor_io_16(struct us_blk_dev *usb_blkdev, u8 opcode,

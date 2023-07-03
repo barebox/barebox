@@ -8,9 +8,12 @@ config IMX_GPCV2_PM_DOMAINS
 	default y if ARCH_IMX7 || ARCH_IMX8M
 
 config IMX8M_FEATCTRL
-        bool "i.MX8M feature controller"
+	bool "i.MX8M feature controller"
 	depends on ARCH_IMX8M
 	select FEATURE_CONTROLLER
 	default y
+	help
+	  This driver disables device tree nodes that are not applicable
+	  to Lite variants of i.MX8M SoCs.
 
 endmenu

@@ -56,7 +56,7 @@
 	};
 
 	stickypage: stickypage {
-		compatible = "barebox,hostfile", "syscon", "simple-mfd";
+		compatible = "barebox,hostfile", "syscon";
 		barebox,filename = "$build/stickypage.bin";
 		reg = <0 0 0 4096>;
 		barebox,cdev; /* no caching allowed */

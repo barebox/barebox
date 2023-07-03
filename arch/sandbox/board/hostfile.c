@@ -184,7 +184,7 @@ static int hf_probe(struct device *dev)
 	of_parse_partitions(cdev, np);
 	of_partitions_register_fixup(cdev);
 
-	return 0;
+	return of_platform_populate(np, NULL, dev);
 }
 
 static __maybe_unused struct of_device_id hostfile_dt_ids[] = {

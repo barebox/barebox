@@ -49,7 +49,7 @@ filechk_fwbin = { \
 	echo "\#include <asm-generic/pointer.h>"		;\
 	echo ".section .note.GNU-stack,\"\",%progbits"		;\
 	echo "    .section $2,\"$3\""				;\
-	echo "    .p2align $(ASM_LGPTR)"			;\
+	echo "    .p2align ASM_LGPTR"				;\
 	echo ".global _fw_$(FWSTR)_start"			;\
 	echo "_fw_$(FWSTR)_start:"				;\
 	echo "\#if $(FWNAME_EXISTS)"				;\
@@ -68,7 +68,7 @@ filechk_fwbin = { \
 
 __fwbin_sha = { \
 	echo "    .section .rodata.$(FWSTR).sha"		;\
-	echo "    .p2align $(ASM_LGPTR)"			;\
+	echo "    .p2align ASM_LGPTR"				;\
 	echo ".global _fw_$(FWSTR)_sha_start"			;\
 	echo "_fw_$(FWSTR)_sha_start:"				;\
 	echo "    .incbin \"$(fwobjdir)/$(FWNAME).sha.bin\""	;\

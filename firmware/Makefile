@@ -62,7 +62,7 @@ filechk_fwbin = { \
 	echo "\#ifdef __PBL__"					;\
 	echo "    .section .missing_fw,\"a\""			;\
 	echo "_fwname_$(FWSTR):"				;\
-	echo ".ascii \"firmware/$(FWNAME)\\\\n\""		;\
+	printf '.ascii "%s"\n' 'firmware/$(FWNAME)\n'		;\
 	echo "\#endif" 						;\
 }
 

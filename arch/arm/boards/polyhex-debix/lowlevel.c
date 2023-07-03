@@ -18,6 +18,7 @@
 #include <soc/imx8m/ddr.h>
 
 extern char __dtb_z_imx8mp_debix_model_a_start[];
+extern char __dtb_z_imx8mp_debix_som_a_bmb_08_start[];
 
 #define UART_PAD_CTRL   MUX_PAD_CTRL(MX8MP_PAD_CTL_DSE6 | \
 				     MX8MP_PAD_CTL_FSEL | \
@@ -81,6 +82,7 @@ static void power_init_board(void)
 }
 
 extern struct dram_timing_info imx8mp_debix_dram_timing;
+extern struct dram_timing_info imx8mp_debix_8g_dram_timing;
 
 static void start_atf(struct dram_timing_info *dram_timing)
 {
@@ -139,4 +141,15 @@ ENTRY_FUNCTION(start_polyhex_debix, r0, r1, r2)
 
 	imx8mp_debix_start(&imx8mp_debix_dram_timing,
 			   __dtb_z_imx8mp_debix_model_a_start);
+}
+
+ENTRY_FUNCTION(start_polyhex_debix_som_a_8g, r0, r1, r2)
+{
+	imx8mp_cpu_lowlevel_init();
+
+	relocate_to_current_adr();
+	setup_c();
+
+	imx8mp_debix_start(&imx8mp_debix_8g_dram_timing,
+			   __dtb_z_imx8mp_debix_som_a_bmb_08_start);
 }

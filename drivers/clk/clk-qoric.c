@@ -581,7 +581,7 @@ static void __init clockgen_init(struct device_node *np,
 	clockgen.node = np;
 	clockgen.regs = of_iomap(np, 0);
 	if (!clockgen.regs) {
-		pr_err("of_iomap failed for %s\n", np->full_name);
+		pr_err("of_iomap failed for %pOF\n", np);
 		return;
 	}
 
@@ -605,8 +605,8 @@ static void __init clockgen_init(struct device_node *np,
 
 	ret = of_clk_add_provider(np, clockgen_clk_get, &clockgen);
 	if (ret) {
-		pr_err("Couldn't register clk provider for node %s: %d\n",
-		       np->full_name, ret);
+		pr_err("Couldn't register clk provider for node %pOF: %d\n",
+		       np, ret);
 	}
 
 	return;

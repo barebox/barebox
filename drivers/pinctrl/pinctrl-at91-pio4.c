@@ -96,8 +96,7 @@ static int __pinctrl_at91_pio4_set_state(struct pinctrl_device *pdev,
 	npins /= sizeof(__be32);
 
 	if (!npins) {
-		dev_err(pdev->dev, "Invalid pinmux property in %s\n",
-			np->full_name);
+		dev_err(pdev->dev, "Invalid pinmux property in %pOF\n", np);
 		return -EINVAL;
 	}
 

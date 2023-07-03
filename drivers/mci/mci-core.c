@@ -1927,8 +1927,8 @@ static int of_broken_cd_fixup(struct device_node *root, void *ctx)
 	np = of_find_node_by_reproducible_name(root, name);
 	free(name);
 	if (!np) {
-		dev_warn(hw_dev, "Cannot find nodepath %s, cannot fixup\n",
-			 hw_dev->of_node->full_name);
+		dev_warn(hw_dev, "Cannot find nodepath %pOF, cannot fixup\n",
+			 hw_dev->of_node);
 		return -EINVAL;
 	}
 

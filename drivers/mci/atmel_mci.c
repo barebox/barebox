@@ -105,8 +105,8 @@ static int atmci_probe(struct device *hw_dev)
 
 		for_each_child_of_node(np, cnp) {
 			if (of_property_read_u32(cnp, "reg", &slot_id)) {
-				dev_warn(hw_dev, "reg property is missing for %s\n",
-					 cnp->full_name);
+				dev_warn(hw_dev, "reg property is missing for %pOF\n",
+					 cnp);
 				continue;
 			}
 

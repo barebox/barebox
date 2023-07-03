@@ -40,7 +40,7 @@ int of_psci_fixup(struct device_node *root, unsigned long psci_version,
 		if (!cpu)
 			break;
 		of_property_write_string(cpu, "enable-method", "psci");
-		pr_debug("Fixed %s\n", cpu->full_name);
+		pr_debug("Fixed %pOF\n", cpu);
 	}
 
 	ret = of_property_write_string(psci, "compatible", compat);

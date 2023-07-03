@@ -37,8 +37,8 @@ static int parse_timing_property(const struct device_node *np, const char *name,
 
 	prop = of_find_property(np, name, &length);
 	if (!prop) {
-		pr_err("%s: could not find property %s\n",
-			np->full_name, name);
+		pr_err("%pOF: could not find property %s\n",
+			np, name);
 		return -EINVAL;
 	}
 
@@ -46,8 +46,8 @@ static int parse_timing_property(const struct device_node *np, const char *name,
 	if ((cells == 1) || (cells == 3)) {
 		ret = of_property_read_u32(np, name, res);
 	} else {
-		pr_err("%s: illegal timing specification in %s\n",
-			np->full_name, name);
+		pr_err("%pOF: illegal timing specification in %s\n",
+			np, name);
 		return -EINVAL;
 	}
 
@@ -90,8 +90,7 @@ static int of_parse_display_timing(const struct device_node *np,
 				DISPLAY_FLAGS_PIXDATA_NEGEDGE;
 
 	if (ret) {
-		pr_err("%s: error reading timing properties\n",
-			np->full_name);
+		pr_err("%pOF: error reading timing properties\n", np);
 		return -EINVAL;
 	}
 
@@ -136,8 +135,7 @@ struct display_timings *of_get_display_timings(struct device_node *np)
 
 	timings_np = of_get_child_by_name(np, "display-timings");
 	if (!timings_np) {
-		pr_debug("%s: could not find display-timings node\n",
-			np->full_name);
+		pr_debug("%pOF: could not find display-timings node\n", np);
 		return NULL;
 	}
 
@@ -149,20 +147,19 @@ struct display_timings *of_get_display_timings(struct device_node *np)
 		entry = of_get_next_available_child(np, NULL);
 	/* if there is no child, it is useless to go on */
 	if (!entry) {
-		pr_err("%s: no timing specifications given\n",
-			np->full_name);
+		pr_err("%pOF: no timing specifications given\n", np);
 		goto fail;
 	}
 
-	pr_debug("%s: using %s as default timing\n",
-		np->full_name, entry->name);
+	pr_debug("%pOF: using %s as default timing\n",
+		np, entry->name);
 
 	native_mode = entry;
 
 	disp->num_modes = of_get_child_count(timings_np);
 	if (disp->num_modes == 0) {
 		/* should never happen, as entry was already found above */
-		pr_err("%s: no timings specified\n", np->full_name);
+		pr_err("%pOF: no timings specified\n", np);
 		goto fail;
 	}
 
@@ -183,8 +180,8 @@ struct display_timings *of_get_display_timings(struct device_node *np)
 			 * to not encourage wrong devicetrees, fail in case of
 			 * an error
 			 */
-			pr_err("%s: error in timing %d\n",
-				np->full_name, disp->num_modes + 1);
+			pr_err("%pOF: error in timing %d\n",
+				np, disp->num_modes + 1);
 			goto fail;
 		}
 
@@ -196,8 +193,8 @@ struct display_timings *of_get_display_timings(struct device_node *np)
 		disp->num_modes++;
 	}
 
-	pr_debug("%s: got %d timings. Using timing #%d as default\n",
-		np->full_name, disp->num_modes,
+	pr_debug("%pOF: got %d timings. Using timing #%d as default\n",
+		np, disp->num_modes,
 		disp->native_mode + 1);
 
 	return disp;

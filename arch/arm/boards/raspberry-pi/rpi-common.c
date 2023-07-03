@@ -219,8 +219,8 @@ static char *of_read_vc_string(struct device_node *node,
 
 	str = of_get_property(node, prop_name, &len);
 	if (!str) {
-		pr_warn("no property '%s' found in vc fdt's '%s' node\n",
-			prop_name, node->full_name);
+		pr_warn("no property '%s' found in vc fdt's '%pOF' node\n",
+			prop_name, node);
 		return NULL;
 	}
 	return xstrndup(str, len);

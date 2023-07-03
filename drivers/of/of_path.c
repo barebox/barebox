@@ -192,14 +192,14 @@ struct device_node *of_find_node_by_devpath(struct device_node *root, const char
 	 */
 	rnp = of_find_node_by_path_from(root, np->full_name);
 	if (!rnp) {
-		pr_debug("%s path %s: %s not found in passed tree\n", __func__, path,
-			np->full_name);
+		pr_debug("%s path %s: %pOF not found in passed tree\n", __func__, path,
+			np);
 		return NULL;
 	}
 
 	if (!is_partition) {
-		pr_debug("%s path %s: returning full device node %s\n", __func__, path,
-			rnp->full_name);
+		pr_debug("%s path %s: returning full device node %pOF\n", __func__, path,
+			rnp);
 		return rnp;
 	}
 
@@ -226,7 +226,7 @@ struct device_node *of_find_node_by_devpath(struct device_node *root, const char
 		ns = of_n_size_cells(np);
 
 		if (len < (na + ns) * sizeof(__be32)) {
-			pr_err("reg property too small in %s\n", np->full_name);
+			pr_err("reg property too small in %pOF\n", np);
 			continue;
 		}
 
@@ -234,8 +234,8 @@ struct device_node *of_find_node_by_devpath(struct device_node *root, const char
 		size = of_read_number(reg + na, ns);
 
 		if (part_offset == offset && part_size == size) {
-			pr_debug("%s path %s: found matching partition in %s\n", __func__, path,
-				np->full_name);
+			pr_debug("%s path %s: found matching partition in %pOF\n", __func__, path,
+				np);
 			return np;
 		}
 	}

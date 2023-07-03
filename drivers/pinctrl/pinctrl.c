@@ -138,8 +138,8 @@ int of_pinctrl_select_state(struct device_node *np, const char *name)
 			/* Look up the pin configuration node */
 			np_config = of_find_node_by_phandle(phandle);
 			if (!np_config) {
-				pr_err("prop %s %s index %i invalid phandle\n",
-					np->full_name, propname, config);
+				pr_err("prop %pOF %s index %i invalid phandle\n",
+					np, propname, config);
 				ret = -EINVAL;
 				goto err;
 			}

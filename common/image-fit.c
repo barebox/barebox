@@ -264,7 +264,7 @@ static int fit_check_rsa_signature(struct device_node *sig_node,
 
 	sig_value = of_get_property(sig_node, "value", &sig_len);
 	if (!sig_value) {
-		pr_err("signature value not found in %s\n", sig_node->full_name);
+		pr_err("signature value not found in %pOF\n", sig_node);
 		return -EINVAL;
 	}
 
@@ -310,12 +310,12 @@ static int fit_verify_signature(struct device_node *sig_node, const void *fit)
 
 	if (of_property_read_u32_index(sig_node, "hashed-strings", 0,
 	    &hashed_strings_start)) {
-		pr_err("hashed-strings start not found in %s\n", sig_node->full_name);
+		pr_err("hashed-strings start not found in %pOF\n", sig_node);
 		return -EINVAL;
 	}
 	if (of_property_read_u32_index(sig_node, "hashed-strings", 1,
 	    &hashed_strings_size)) {
-		pr_err("hashed-strings size not found in %s\n", sig_node->full_name);
+		pr_err("hashed-strings size not found in %pOF\n", sig_node);
 		return -EINVAL;
 	}
 
@@ -323,7 +323,7 @@ static int fit_verify_signature(struct device_node *sig_node, const void *fit)
 	string_list_init(&exc_props);
 
 	if (of_read_string_list(sig_node, "hashed-nodes", &inc_nodes)) {
-		pr_err("hashed-nodes property not found in %s\n", sig_node->full_name);
+		pr_err("hashed-nodes property not found in %pOF\n", sig_node);
 		ret = -EINVAL;
 		goto out_sl;
 	}
@@ -381,30 +381,29 @@ static int fit_verify_hash(struct fit_handle *handle, struct device_node *image,
 		hash = of_get_child_by_name(image, "hash@1");
 	if (!hash) {
 		if (ret)
-			pr_err("image %s does not have hashes\n",
-			       image->full_name);
+			pr_err("image %pOF does not have hashes\n", image);
 		return ret;
 	}
 
 	value_read = of_get_property(hash, "value", &hash_len);
 	if (!value_read) {
-		pr_err("%s: \"value\" property not found\n", hash->full_name);
+		pr_err("%pOF: \"value\" property not found\n", hash);
 		return -EINVAL;
 	}
 
 	if (of_property_read_string(hash, "algo", &algo)) {
-		pr_err("%s: \"algo\" property not found\n", hash->full_name);
+		pr_err("%pOF: \"algo\" property not found\n", hash);
 		return -EINVAL;
 	}
 
 	d = digest_alloc(algo);
 	if (!d) {
-		pr_err("%s: unsupported algo %s\n", hash->full_name, algo);
+		pr_err("%pOF: unsupported algo %s\n", hash, algo);
 		return -EINVAL;
 	}
 
 	if (hash_len != digest_length(d)) {
-		pr_err("%s: invalid hash length %d\n", hash->full_name, hash_len);
+		pr_err("%pOF: invalid hash length %d\n", hash, hash_len);
 		ret = -EINVAL;
 		goto err_digest_free;
 	}
@@ -413,10 +412,10 @@ static int fit_verify_hash(struct fit_handle *handle, struct device_node *image,
 	digest_update(d, data, data_len);
 
 	if (digest_verify(d, value_read)) {
-		pr_info("%s: hash BAD\n", hash->full_name);
+		pr_info("%pOF: hash BAD\n", hash);
 		ret =  -EBADMSG;
 	} else {
-		pr_info("%s: hash OK\n", hash->full_name);
+		pr_info("%pOF: hash OK\n", hash);
 		ret = 0;
 	}
 
@@ -453,7 +452,7 @@ static int fit_image_verify_signature(struct fit_handle *handle,
 	if (!sig_node)
 		sig_node = of_get_child_by_name(image, "signature@1");
 	if (!sig_node) {
-		pr_err("Image %s has no signature\n", image->full_name);
+		pr_err("Image %pOF has no signature\n", image);
 		return ret;
 	}
 
@@ -602,7 +601,7 @@ int fit_open_image(struct fit_handle *handle, void *configuration,
 
 	of_property_read_string(image, "type", &type);
 	if (!type) {
-		pr_err("No \"type\" property found in %s\n", image->full_name);
+		pr_err("No \"type\" property found in %pOF\n", image);
 		return -EINVAL;
 	}
 
@@ -678,8 +677,7 @@ static int fit_config_verify_signature(struct fit_handle *handle, struct device_
 	}
 
 	if (ret < 0) {
-		pr_err("configuration '%s' does not have a signature\n",
-		       conf_node->full_name);
+		pr_err("configuration '%pOF' does not have a signature\n", conf_node);
 		return ret;
 	}
 

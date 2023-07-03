@@ -57,8 +57,7 @@ static int mvebu_pinctrl_set_state(struct pinctrl_device *pdev,
 
 	ret = of_property_read_string(np, "marvell,function", &function);
 	if (ret) {
-		dev_err(pdev->dev, "missing marvell,function in node %s\n",
-			np->full_name);
+		dev_err(pdev->dev, "missing marvell,function in node %pOF\n", np);
 		return -EINVAL;
 	}
 

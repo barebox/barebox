@@ -113,16 +113,15 @@ static int weim_parse_dt(struct imx_weim *weim)
 
 		ret = weim_timing_setup(weim, child);
 		if (ret) {
-			dev_err(weim->dev, "%s set timing failed.\n",
-				child->full_name);
+			dev_err(weim->dev, "%pOF set timing failed.\n", child);
 			return ret;
 		}
 	}
 
 	ret = of_platform_populate(weim->dev->of_node, NULL, weim->dev);
 	if (ret)
-		dev_err(weim->dev, "%s fail to create devices.\n",
-			weim->dev->of_node->full_name);
+		dev_err(weim->dev, "%pOF failed to create devices.\n",
+			weim->dev->of_node);
 	return ret;
 }
 

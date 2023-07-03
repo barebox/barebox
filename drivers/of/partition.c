@@ -46,7 +46,7 @@ struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node)
 	ns = of_n_size_cells(node);
 
 	if (len < (na + ns) * sizeof(__be32)) {
-		pr_err("reg property too small in %s\n", node->full_name);
+		pr_err("reg property too small in %pOF\n", node);
 		return NULL;
 	}
 
@@ -289,8 +289,8 @@ static int of_partition_fixup(struct device_node *root, void *ctx)
 	np = of_find_node_by_reproducible_name(root, name);
 	free(name);
 	if (!np) {
-		dev_err(cdev->dev, "Cannot find nodepath %s, cannot fixup\n",
-				cdev->device_node->full_name);
+		dev_err(cdev->dev, "Cannot find nodepath %pOF, cannot fixup\n",
+				cdev->device_node);
 		return -EINVAL;
 	}
 

@@ -82,7 +82,7 @@ static int do_of_display_timings(int argc, char *argv[])
 
 		for_each_node_by_name_address_from(display, root, node) {
 			for_each_child_of_node(display, timings) {
-				printf("%s\n", timings->full_name);
+				printf("%pOF\n", timings);
 				found = 1;
 			}
 		}
@@ -101,7 +101,7 @@ static int do_of_display_timings(int argc, char *argv[])
 			if (!timings)
 				continue;
 
-			printf("%s\n", timings->full_name);
+			printf("%pOF\n", timings);
 			found = 1;
 		}
 

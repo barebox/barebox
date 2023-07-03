@@ -307,8 +307,8 @@ static int ipufb_probe(struct device *dev)
 
 	node = of_graph_get_port_by_id(dev->parent->of_node, 2 + pdata->di);
 	if (node && of_graph_port_is_available(node)) {
-		dev_dbg(fbi->dev, "register vpl for %s\n",
-			dev->parent->of_node->full_name);
+		dev_dbg(fbi->dev, "register vpl for %pOF\n",
+			dev->parent->of_node);
 
 		fbi->vpl.node = dev->parent->of_node;
 		ret = vpl_register(&fbi->vpl);

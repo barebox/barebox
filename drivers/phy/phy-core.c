@@ -323,8 +323,8 @@ struct phy *of_phy_get_by_phandle(struct device *dev, const char *phandle,
 
 	np = of_parse_phandle(dev->of_node, phandle, index);
 	if (!np) {
-		dev_dbg(dev, "failed to get %s phandle in %s node\n", phandle,
-			dev->of_node->full_name);
+		dev_dbg(dev, "failed to get %s phandle in %pOF node\n", phandle,
+			dev->of_node);
 		return ERR_PTR(-ENODEV);
 	}
 

@@ -21,7 +21,7 @@ static void of_print_nodenames(struct device_node *node)
 {
 	struct device_node *n;
 
-	printf("%s\n", node->full_name);
+	printf("%pOF\n", node);
 
 	list_for_each_entry(n, &node->children, parent_list) {
 		if (ctrlc())

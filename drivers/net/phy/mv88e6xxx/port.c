@@ -580,8 +580,8 @@ int mv88e6xxx_port_probe(struct mv88e6xxx_chip *chip)
  		err = of_property_read_u32(port_node, "reg", &nr);
 		if (err) {
 			dev_err(dev,
-				"Error: Failed to find reg for child %s\n",
-				port_node->full_name);
+				"Error: Failed to find reg for child %pOF\n",
+				port_node);
 			continue;
 		}
 

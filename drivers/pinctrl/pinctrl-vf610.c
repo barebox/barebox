@@ -41,8 +41,7 @@ static int pinctrl_vf610_set_state(struct pinctrl_device *pdev,
 		return -EINVAL;
 
 	if (!size || size % PINCTRL_VF610_MUX_LINE_SIZE) {
-		dev_err(pdev->dev, "Invalid fsl,pins property in %s\n",
-			np->full_name);
+		dev_err(pdev->dev, "Invalid fsl,pins property in %pOF\n", np);
 		return -EINVAL;
 	}
 

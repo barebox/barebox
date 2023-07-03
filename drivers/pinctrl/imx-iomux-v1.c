@@ -206,7 +206,7 @@ static int imx_iomux_v1_set_state(struct pinctrl_device *pdev, struct device_nod
 	const __be32 *list;
 	int npins, size, i;
 
-	dev_dbg(iomux->pinctrl.dev, "set state: %s\n", np->full_name);
+	dev_dbg(iomux->pinctrl.dev, "set state: %pOF\n", np);
 
 	list = of_get_property(np, "fsl,pins", &size);
 	if (!list)
@@ -225,8 +225,8 @@ static int imx_iomux_v1_set_state(struct pinctrl_device *pdev, struct device_nod
 		unsigned int gpio_iconfa = MX1_MUX_ICONFA(mux);
 		unsigned int gpio_iconfb = MX1_MUX_ICONFB(mux);
 
-		dev_dbg(pdev->dev, "%s, pin 0x%x, function %d, gpio %d, direction %d, oconf %d, iconfa %d, iconfb %d\n",
-				np->full_name, pin_id, afunction, gpio_in_use,
+		dev_dbg(pdev->dev, "%pOF, pin 0x%x, function %d, gpio %d, direction %d, oconf %d, iconfa %d, iconfb %d\n",
+				np, pin_id, afunction, gpio_in_use,
 				direction, gpio_oconf, gpio_iconfa,
 				gpio_iconfb);
 

@@ -308,8 +308,8 @@ static struct regulator_internal *of_regulator_get(struct device *dev,
 
 	list_for_each_entry(ri, &regulator_list, list) {
 		if (ri->node == node) {
-			dev_dbg(dev, "Using %s regulator from %s\n",
-					propname, node->full_name);
+			dev_dbg(dev, "Using %s regulator from %pOF\n",
+					propname, node);
 			goto out;
 		}
 	}

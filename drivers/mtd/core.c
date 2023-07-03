@@ -644,8 +644,8 @@ static int mtd_partition_fixup_generic(struct mtd_info *mtd, struct device_node 
 	np = of_find_node_by_reproducible_name(root, name);
 	free(name);
 	if (!np) {
-		dev_err(&mtd->dev, "Cannot find nodepath %s, cannot fixup\n",
-				mtdnp->full_name);
+		dev_err(&mtd->dev, "Cannot find nodepath %pOF, cannot fixup\n",
+				mtdnp);
 		return -EINVAL;
 	}
 

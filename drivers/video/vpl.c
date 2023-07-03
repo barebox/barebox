@@ -18,7 +18,7 @@ int vpl_register(struct vpl *vpl)
 {
 	list_add_tail(&vpl->list, &vpls);
 
-	pr_debug("%s: %s\n", __func__, vpl->node->full_name);
+	pr_debug("%s: %pOF\n", __func__, vpl->node);
 
 	return 0;
 }
@@ -40,13 +40,13 @@ struct vpl *of_vpl_get(struct device_node *node, int port)
 	if (!node)
 		return NULL;
 
-	pr_debug("%s: port: %s\n", __func__, node->full_name);
+	pr_debug("%s: port: %pOF\n", __func__, node);
 
 	node = of_graph_get_remote_port_parent(node);
 	if (!node)
 		return NULL;
 
-	pr_debug("%s: remote port parent: %s\n", __func__, node->full_name);
+	pr_debug("%s: remote port parent: %pOF\n", __func__, node);
 
 	return of_find_vpl(node);
 }
@@ -57,11 +57,11 @@ int vpl_ioctl(struct vpl *vpl, unsigned int port,
 	struct device_node *node, *endpoint;
 	int ret;
 
-	pr_debug("%s: %s port %d\n", __func__, vpl->node->full_name, port);
+	pr_debug("%s: %pOF port %d\n", __func__, vpl->node, port);
 
 	node = of_graph_get_port_by_id(vpl->node, port);
 	if (!node) {
-		pr_err("%s: no port %d on %s\n", __func__, port, vpl->node->full_name);
+		pr_err("%s: no port %d on %pOF\n", __func__, port, vpl->node);
 		return -ENODEV;
 	}
 
@@ -72,7 +72,7 @@ int vpl_ioctl(struct vpl *vpl, unsigned int port,
 
 		remote = of_graph_get_remote_port(endpoint);
 		if (!remote) {
-			pr_debug("%s: no remote for endpoint %s\n", __func__, endpoint->full_name);
+			pr_debug("%s: no remote for endpoint %pOF\n", __func__, endpoint);
 			continue;
 		}
 
@@ -89,11 +89,11 @@ int vpl_ioctl(struct vpl *vpl, unsigned int port,
 
 		remote_vpl = of_find_vpl(remote_parent);
 		if (!remote_vpl) {
-			pr_debug("%s: cannot find remote vpl %s\n", __func__, remote->full_name);
+			pr_debug("%s: cannot find remote vpl %pOF\n", __func__, remote);
 			continue;
 		}
 
-		pr_debug("%s: looked up %s: %pS\n", __func__, remote->full_name, remote_vpl->ioctl);
+		pr_debug("%s: looked up %pOF: %pS\n", __func__, remote, remote_vpl->ioctl);
 		ret = remote_vpl->ioctl(remote_vpl, remote_port_id, cmd, ptr);
 		if (ret)
 			return ret;

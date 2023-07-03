@@ -136,7 +136,7 @@ missing_fw = $(strip $(wildcard $(obj)/$(FILE_$(@F)).missing-firmware $(basename
 $(obj)/%.img: $(obj)/$$(FILE_$$(@F))
 	$(Q)if [ -z $(FILE_$(@F)) ]; then echo "FILE_$(@F) empty!"; false; fi
 	$(Q)$(if $(missing_fw),cat $(missing_fw) >$@.missing-firmware,rm -f $@.missing-firmware)
-	$(call if_changed,$(if $(missing_fw),0size,shipped))
+	$(call if_changed,$(if $(missing_fw),delete,shipped))
 
 board = $(srctree)/arch/$(SRCARCH)/boards
 objboard = $(objtree)/arch/$(SRCARCH)/boards
@@ -202,7 +202,7 @@ images: $(image-y-path) $(flash-link) $(flash-list) FORCE
 	@echo "images built:"
 	@for i in $(image-y); do \
 	  if [ -s $(obj)/$$i ]; then echo $$i; \
-	  else >&2 echo "** firmware missing for $$i **"; \
+	  else >&2 echo "** $$i skipped due to missing firmware **"; \
 	  $(if $(CONFIG_MISSING_FIRMWARE_ERROR), >&2 sed 's/^/\t/' <$(obj)/$${i}.missing-firmware; missing=1;) \
 	  fi; done; if [ -n "$$missing" ]; then \
 	    echo >&2 "Firmware missing in CONFIG_MISSING_FIRMWARE_ERROR=y build"; exit 1; fi

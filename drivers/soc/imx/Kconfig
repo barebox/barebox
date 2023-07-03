@@ -11,6 +11,7 @@ config IMX8M_FEATCTRL
 	bool "i.MX8M feature controller"
 	depends on ARCH_IMX8M
 	select FEATURE_CONTROLLER
+	select IMX_OCOTP
 	default y
 	help
 	  This driver disables device tree nodes that are not applicable

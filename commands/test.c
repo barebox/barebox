@@ -75,11 +75,11 @@ static int do_test(int argc, char *argv[])
 	struct stat statbuf;
 
 	if (*argv[0] == '[') {
-		if (*argv[argc - 1] != ']') {
+		argc--;
+		if (*argv[argc] != ']') {
 			printf("[: missing `]'\n");
 			return 1;
 		}
-		argc--;
 	}
 
 	/* args? */

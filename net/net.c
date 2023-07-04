@@ -678,7 +678,12 @@ static int net_handle_ip(struct eth_device *edev, unsigned char *pkt, int len)
 	if ((ip->hl_v & 0xf0) != 0x40)
 		goto bad;
 
-	if (ip->frag_off & htons(0x1fff)) /* Can't deal w/ fragments */
+	/* Can't deal w/ fragments.
+	 * Either a fragment offset (13 bits), or
+	 * MF (More Fragments) from fragment flags (3 bits).
+	 * MF - because first fragment has fragment offset 0
+	 */
+	if (ip->frag_off & htons(0x3fff))
 		goto bad;
 	if (!net_checksum_ok((unsigned char *)ip, sizeof(struct iphdr)))
 		goto bad;

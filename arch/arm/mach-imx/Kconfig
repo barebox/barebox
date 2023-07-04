@@ -625,7 +625,7 @@ config MACH_PHYTEC_SOM_IMX8MQ
 	select MCI_IMX_ESDHC_PBL
 
 config MACH_POLYHEX_DEBIX
-	bool "Polyhex DEBIX Model-A/B (i.MX8MP) Board"
+	bool "Polyhex DEBIX i.MX8MP Boards"
 	select ARCH_IMX8MP
 	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
 	select FIRMWARE_IMX8MP_ATF
@@ -633,6 +633,8 @@ config MACH_POLYHEX_DEBIX
 	select MCI_IMX_ESDHC_PBL
 	select IMX8M_DRAM
 	select I2C_IMX_EARLY
+	help
+	  Support for DEBIX Model-A/B and SOM A + SOM A I/O board
 
 config MACH_PROTONIC_IMX8M
 	bool "Protonic-Holland i.MX8Mx based boards"

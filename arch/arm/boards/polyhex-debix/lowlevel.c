@@ -18,6 +18,7 @@
 #include <soc/imx8m/ddr.h>
 
 extern char __dtb_z_imx8mp_debix_model_a_start[];
+extern char __dtb_z_imx8mp_debix_som_a_bmb_08_start[];
 
 #define UART_PAD_CTRL   MUX_PAD_CTRL(MX8MP_PAD_CTL_DSE6 | \
 				     MX8MP_PAD_CTL_FSEL | \
@@ -81,8 +82,9 @@ static void power_init_board(void)
 }
 
 extern struct dram_timing_info imx8mp_debix_dram_timing;
+extern struct dram_timing_info imx8mp_debix_8g_dram_timing;
 
-static void start_atf(void)
+static void start_atf(struct dram_timing_info *dram_timing)
 {
 	/*
 	 * If we are in EL3 we are running for the first time and need to
@@ -96,7 +98,7 @@ static void start_atf(void)
 
 	power_init_board();
 
-	imx8mp_ddr_init(&imx8mp_debix_dram_timing, DRAM_TYPE_LPDDR4);
+	imx8mp_ddr_init(dram_timing, DRAM_TYPE_LPDDR4);
 
 	imx8mp_load_and_start_image_via_tfa();
 }
@@ -117,16 +119,17 @@ static void start_atf(void)
  *
  * 4. Standard barebox boot flow continues
  */
-static __noreturn noinline void imx8mp_debix_model_a_start(void)
+static __noreturn noinline void
+imx8mp_debix_start(struct dram_timing_info *dram_timing, void *dtb)
 {
 	setup_uart();
 
-	start_atf();
+	start_atf(dram_timing);
 
 	/*
 	 * Standard entry we hit once we initialized both DDR and ATF
 	 */
-	imx8mp_barebox_entry(__dtb_z_imx8mp_debix_model_a_start);
+	imx8mp_barebox_entry(dtb);
 }
 
 ENTRY_FUNCTION(start_polyhex_debix, r0, r1, r2)
@@ -136,5 +139,17 @@ ENTRY_FUNCTION(start_polyhex_debix, r0, r1, r2)
 	relocate_to_current_adr();
 	setup_c();
 
-	imx8mp_debix_model_a_start();
+	imx8mp_debix_start(&imx8mp_debix_dram_timing,
+			   __dtb_z_imx8mp_debix_model_a_start);
+}
+
+ENTRY_FUNCTION(start_polyhex_debix_som_a_8g, r0, r1, r2)
+{
+	imx8mp_cpu_lowlevel_init();
+
+	relocate_to_current_adr();
+	setup_c();
+
+	imx8mp_debix_start(&imx8mp_debix_8g_dram_timing,
+			   __dtb_z_imx8mp_debix_som_a_bmb_08_start);
 }

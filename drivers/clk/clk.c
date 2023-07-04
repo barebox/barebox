@@ -636,7 +636,7 @@ static int __of_clk_add_provider(struct device_node *np,
 	cp->get_hw = clk_hw_src_get;
 
 	list_add(&cp->link, &of_clk_providers);
-	pr_debug("Added clock from %s\n", np ? np->full_name : "<none>");
+	pr_debug("Added clock from %pOF\n", np);
 
 	of_clk_set_defaults(np, true);
 

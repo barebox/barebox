@@ -154,8 +154,8 @@ static void of_alias_add(struct alias_prop *ap, struct device_node *np,
 	strncpy(ap->stem, stem, stem_len);
 	ap->stem[stem_len] = 0;
 	list_add_tail(&ap->link, &aliases_lookup);
-	pr_debug("adding DT alias:%s: stem=%s id=%i node=%s\n",
-		 ap->alias, ap->stem, ap->id, np->full_name);
+	pr_debug("adding DT alias:%s: stem=%s id=%i node=%pOF\n",
+		 ap->alias, ap->stem, ap->id, np);
 }
 
 static struct device_node *of_alias_resolve(struct device_node *root, struct property *pp)
@@ -1474,15 +1474,13 @@ static int __of_parse_phandle_with_args(const struct device_node *np,
 			 */
 			node = of_find_node_by_phandle(phandle);
 			if (!node) {
-				pr_err("%s: could not find phandle\n",
-					 np->full_name);
+				pr_err("%pOF: could not find phandle\n", np);
 				goto err;
 			}
 			if (cells_name &&
 			    of_property_read_u32(node, cells_name, &count)) {
-				pr_err("%s: could not get %s for %s\n",
-					 np->full_name, cells_name,
-					 node->full_name);
+				pr_err("%pOF: could not get %s for %pOF\n",
+					 np, cells_name, node);
 				goto err;
 			}
 
@@ -1491,8 +1489,7 @@ static int __of_parse_phandle_with_args(const struct device_node *np,
 			 * remaining property data length
 			 */
 			if (list + count > list_end) {
-				pr_err("%s: arguments longer than property\n",
-					 np->full_name);
+				pr_err("%pOF: arguments longer than property\n", np);
 				goto err;
 			}
 		}
@@ -2211,8 +2208,8 @@ struct device_node *of_new_node(struct device_node *parent, const char *name)
 
 	if (parent) {
 		node->name = xstrdup(name);
-		node->full_name = basprintf("%s/%s",
-					      node->parent->full_name, name);
+		node->full_name = basprintf("%pOF/%s",
+					      node->parent, name);
 		list_add(&node->list, &parent->list);
 	} else {
 		node->name = xstrdup("");
@@ -3036,8 +3033,8 @@ int of_graph_parse_endpoint(const struct device_node *node,
 	struct device_node *port_node = of_get_parent(node);
 
 	if (!port_node)
-		pr_warn("%s(): endpoint %s has no parent node\n",
-			__func__, node->full_name);
+		pr_warn("%s(): endpoint %pOF has no parent node\n",
+			__func__, node);
 
 	memset(endpoint, 0, sizeof(*endpoint));
 
@@ -3109,15 +3106,15 @@ struct device_node *of_graph_get_next_endpoint(const struct device_node *parent,
 
 		port = of_get_child_by_name(parent, "port");
 		if (!port) {
-			pr_err("%s(): no port node found in %s\n",
-			       __func__, parent->full_name);
+			pr_err("%s(): no port node found in %pOF\n",
+			       __func__, parent);
 			return NULL;
 		}
 	} else {
 		port = of_get_parent(prev);
 		if (!port) {
-			pr_warn("%s(): endpoint %s has no parent node\n",
-			      __func__, prev->full_name);
+			pr_warn("%s(): endpoint %pOF has no parent node\n",
+			      __func__, prev);
 			return NULL;
 		}
 	}

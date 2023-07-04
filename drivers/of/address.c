@@ -362,7 +362,7 @@ static u64 __of_translate_address(struct device_node *dev,
 	int na, ns, pna, pns;
 	u64 result = OF_BAD_ADDR;
 
-	pr_vdebug("OF: ** translation for device %s **\n", dev->full_name);
+	pr_vdebug("OF: ** translation for device %pOF **\n", dev);
 
 	/* Get parent & match bus type */
 	parent = of_get_parent(dev);
@@ -373,14 +373,13 @@ static u64 __of_translate_address(struct device_node *dev,
 	/* Count address cells & copy address locally */
 	bus->count_cells(dev, &na, &ns);
 	if (!OF_CHECK_COUNTS(na, ns)) {
-		pr_vdebug("prom_parse: Bad cell count for %s\n",
-			 dev->full_name);
+		pr_vdebug("prom_parse: Bad cell count for %pOF\n", dev);
 		return OF_BAD_ADDR;
 	}
 	memcpy(addr, in_addr, na * 4);
 
-	pr_vdebug("OF: bus is %s (na=%d, ns=%d) on %s\n",
-	    bus->name, na, ns, parent->full_name);
+	pr_vdebug("OF: bus is %s (na=%d, ns=%d) on %pOF\n",
+	    bus->name, na, ns, parent);
 	of_dump_addr("OF: translating address:", addr, na);
 
 	/* Translate */
@@ -400,13 +399,12 @@ static u64 __of_translate_address(struct device_node *dev,
 		pbus = of_match_bus(parent);
 		pbus->count_cells(dev, &pna, &pns);
 		if (!OF_CHECK_COUNTS(pna, pns)) {
-			printk(KERN_ERR "prom_parse: Bad cell count for %s\n",
-			       dev->full_name);
+			printk(KERN_ERR "prom_parse: Bad cell count for %pOF\n", dev);
 			break;
 		}
 
-		pr_vdebug("OF: parent bus is %s (na=%d, ns=%d) on %s\n",
-		    pbus->name, pna, pns, parent->full_name);
+		pr_vdebug("OF: parent bus is %s (na=%d, ns=%d) on %pOF\n",
+		    pbus->name, pna, pns, parent);
 
 		/* Apply bus translation */
 		if (of_translate_one(dev, bus, pbus, addr, na, ns, pna, rprop))

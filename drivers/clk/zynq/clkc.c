@@ -368,7 +368,7 @@ static int zynq_clock_probe(struct device *dev)
 {
 	struct resource *iores;
 	void __iomem *clk_base;
-	unsigned long ps_clk_rate = 33333330;
+	u32 ps_clk_rate = 33333330;
 	resource_size_t slcr_offset = 0;
 
 	iores = dev_get_resource(dev, IORESOURCE_MEM, 0);
@@ -389,6 +389,8 @@ static int zynq_clock_probe(struct device *dev)
 
 		slcr_offset = parent_res->start;
 	}
+
+	of_property_read_u32(dev->device_node, "ps-clk-frequency", &ps_clk_rate);
 
 	iores = request_iomem_region(dev_name(dev), iores->start + slcr_offset,
 				     iores->end + slcr_offset);

@@ -684,8 +684,8 @@ config BLSPEC
 	bool
 	prompt "Support bootloader spec"
 	help
-	  Enable this to let barebox support the Freedesktop bootloader spec,
-	  see: http://www.freedesktop.org/wiki/Specifications/BootLoaderSpec/
+	  Enable this to let barebox support the UAPI bootloader spec,
+	  see: https://uapi-group.org/specifications/specs/boot_loader_specification/
 	  The bootloader spec is a standard interface between the bootloader
 	  and the kernel. It allows the bootloader to discover boot options
 	  on a device and it allows the Operating System to install / update

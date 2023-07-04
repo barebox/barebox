@@ -30,8 +30,8 @@ static void of_gpio_flags_quirks(struct device_node *np,
 		 * be actively ignored.
 		 */
 		if ((*flags & OF_GPIO_ACTIVE_LOW) && !active_low) {
-			pr_warn("%s GPIO handle specifies active low - ignored\n",
-				np->full_name);
+			pr_warn("%pOF GPIO handle specifies active low - ignored\n",
+				np);
 			*flags &= ~OF_GPIO_ACTIVE_LOW;
 		}
 		if (active_low)

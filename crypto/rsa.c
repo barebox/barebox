@@ -507,8 +507,8 @@ static void rsa_init_keys_of(void)
 	for_each_child_of_node(sigs, sig) {
 		key = rsa_of_read_key(sig);
 		if (IS_ERR(key)) {
-			pr_err("Cannot read rsa key from %s: %pe\n",
-			       sig->full_name, key);
+			pr_err("Cannot read rsa key from %pOF: %pe\n",
+			       sig, key);
 			continue;
 		}
 

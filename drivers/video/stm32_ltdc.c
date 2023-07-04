@@ -285,7 +285,7 @@ static int ltdc_probe(struct device *dev)
 		if (ret)
 			return ret;
 
-		dev_dbg(hw->dev, "register vpl for %s\n", np->full_name);
+		dev_dbg(hw->dev, "register vpl for %pOF\n", np);
 
 		priv = xzalloc(sizeof(*priv));
 		priv->hw = hw;

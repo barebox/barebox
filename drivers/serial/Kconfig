@@ -71,16 +71,6 @@ config DRIVER_SERIAL_CLPS711X
 	default y
 	bool "CLPS711X serial driver"
 
-config DRIVER_SERIAL_ALTERA
-	depends on NIOS2
-	default y
-	bool "Altera serial driver"
-
-config DRIVER_SERIAL_ALTERA_JTAG
-	depends on NIOS2
-	default n
-	bool "Altera JTAG serial driver"
-
 config DRIVER_SERIAL_NS16550
 	default n
 	bool "NS16550 serial driver"

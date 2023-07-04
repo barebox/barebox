@@ -231,8 +231,8 @@ static int scmi_regulator_common_init(struct scmi_regulator *sreg)
 	 * be non-negative from here on.
 	 */
 	if (vinfo->negative_volts_allowed) {
-		dev_warn(dev, "Negative voltages NOT supported...skip %s\n",
-			 sreg->of_node->full_name);
+		dev_warn(dev, "Negative voltages NOT supported...skip %pOF\n",
+			 sreg->of_node);
 		return -EOPNOTSUPP;
 	}
 
@@ -264,8 +264,8 @@ static int process_scmi_regulator_of_node(struct scmi_device *sdev,
 
 	if (rinfo->sregv[dom]) {
 		dev_err(&sdev->dev,
-			"SCMI Voltage Domain %d already in use. Skipping: %s\n",
-			dom, np->full_name);
+			"SCMI Voltage Domain %d already in use. Skipping: %pOF\n",
+			dom, np);
 		return -EINVAL;
 	}
 
@@ -281,8 +281,8 @@ static int process_scmi_regulator_of_node(struct scmi_device *sdev,
 	rinfo->sregv[dom]->of_node = np;
 
 	dev_dbg(&sdev->dev,
-		"Found SCMI Regulator entry -- OF node [%d] -> %s\n",
-		dom, np->full_name);
+		"Found SCMI Regulator entry -- OF node [%d] -> %pOF\n",
+		dom, np);
 
 	return 0;
 }

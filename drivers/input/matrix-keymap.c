@@ -14,14 +14,14 @@ static int matrix_keypad_parse_of_keymap(struct device *dev,
 
 	prop = of_get_property(np, propname, &proplen);
 	if (!prop) {
-		dev_err(dev, "OF: %s property not defined in %s\n",
-			propname, np->full_name);
+		dev_err(dev, "OF: %s property not defined in %pOF\n",
+			propname, np);
 		return -ENOENT;
 	}
 
 	if (proplen % sizeof(u32)) {
-		dev_err(dev, "OF: Malformed keycode property %s in %s\n",
-			propname, np->full_name);
+		dev_err(dev, "OF: Malformed keycode property %s in %pOF\n",
+			propname, np);
 		return -EINVAL;
 	}
 

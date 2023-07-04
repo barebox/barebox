@@ -304,7 +304,7 @@ static struct device *of_amba_device_create(struct device_node *np)
 	struct amba_device *dev;
 	int ret;
 
-	debug("Creating amba device %s\n", np->full_name);
+	debug("Creating amba device %pOF\n", np);
 
 	if (!of_device_is_available(np))
 		return NULL;
@@ -374,8 +374,8 @@ static int of_platform_bus_create(struct device_node *bus,
 
 	/* Make sure it has a compatible property */
 	if (!of_get_property(bus, "compatible", NULL)) {
-		pr_debug("%s() - skipping %s, no compatible prop\n",
-			__func__, bus->full_name);
+		pr_debug("%s() - skipping %pOF, no compatible prop\n",
+			__func__, bus);
 		return 0;
 	}
 
@@ -389,7 +389,7 @@ static int of_platform_bus_create(struct device_node *bus,
 		return 0;
 
 	for_each_child_of_node(bus, child) {
-		pr_debug("   create child: %s\n", child->full_name);
+		pr_debug("   create child: %pOF\n", child);
 		rc = of_platform_bus_create(child, matches, dev);
 		if (rc)
 			break;
@@ -445,7 +445,7 @@ static struct device *of_device_create_on_demand(struct device_node *np)
 		device_rescan(parent->dev);
 
 	if (!np->dev)
-		pr_debug("Creating device for %s\n", np->full_name);
+		pr_debug("Creating device for %pOF\n", np);
 
 	/* Create all parent devices needed for the requested device */
 	parent_dev = parent->dev ? : of_device_create_on_demand(parent);
@@ -492,8 +492,7 @@ int of_device_ensure_probed(struct device_node *np)
 		return PTR_ERR(dev);
 
 	if (!dev)
-		panic("deep-probe: device for '%s' couldn't be created\n",
-			 np->full_name);
+		panic("deep-probe: device for '%pOF' couldn't be created\n", np);
 
 	/*
 	 * The deep-probe mechanism relies on the fact that all necessary

@@ -114,7 +114,7 @@ static char *of_overlay_fix_path(struct device_node *root,
 	prefix = of_get_child_by_name(fragment, "__overlay__")->full_name;
 	path_tail = path + strlen(prefix);
 
-	return basprintf("%s%s", target->full_name, path_tail);
+	return basprintf("%pOF%s", target, path_tail);
 }
 
 static int of_overlay_apply_symbols(struct device_node *root,

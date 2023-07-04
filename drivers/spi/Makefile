@@ -8,7 +8,6 @@ obj-$(CONFIG_DRIVER_SPI_IMX) += imx_spi.o
 obj-$(CONFIG_DRIVER_SPI_LITEX_SPIFLASH) += litex_spiflash.o
 obj-$(CONFIG_DRIVER_SPI_MVEBU) += mvebu_spi.o
 obj-$(CONFIG_DRIVER_SPI_MXS) += mxs_spi.o
-obj-$(CONFIG_DRIVER_SPI_ALTERA) += altera_spi.o
 obj-$(CONFIG_DRIVER_SPI_ATMEL) += atmel_spi.o
 obj-$(CONFIG_SPI_FSL_DSPI) += spi-fsl-dspi.o
 obj-$(CONFIG_SPI_ATMEL_QUADSPI) += atmel-quadspi.o

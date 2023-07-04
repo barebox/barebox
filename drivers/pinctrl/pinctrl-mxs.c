@@ -33,15 +33,15 @@ static int mxs_pinctrl_set_state(struct pinctrl_device *pdev, struct device_node
 	int ret;
 	int ma_present = 0, vol_present = 0, pull_present = 0;
 
-	dev_dbg(iomux->pinctrl.dev, "set state: %s\n", np->full_name);
+	dev_dbg(iomux->pinctrl.dev, "set state: %pOF\n", np);
 
 	list = of_get_property(np, "fsl,pinmux-ids", &size);
 	if (!list)
 		return -EINVAL;
 
 	if (!size || size % 4) {
-		dev_err(iomux->pinctrl.dev, "Invalid fsl,pinmux-ids property in %s\n",
-				np->full_name);
+		dev_err(iomux->pinctrl.dev, "Invalid fsl,pinmux-ids property in %pOF\n",
+				np);
 		return -EINVAL;
 	}
 

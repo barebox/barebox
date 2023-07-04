@@ -621,7 +621,7 @@ struct state *state_new_from_node(struct device_node *node, bool readonly)
 
 	alias = of_alias_get(node);
 	if (!alias) {
-		pr_err("State node %s does not have an alias in the /aliases/ node\n", node->full_name);
+		pr_err("State node %pOF does not have an alias in the /aliases/ node\n", node);
 		return ERR_PTR(-EINVAL);
 	}
 
@@ -653,13 +653,13 @@ struct state *state_new_from_node(struct device_node *node, bool readonly)
 			goto out_release_state;
 		}
 
-		pr_debug("%s: backend GPT partition looked up via PartitionTypeGUID\n",
-			 node->full_name);
+		pr_debug("%pOF: backend GPT partition looked up via PartitionTypeGUID\n",
+			 node);
 	}
 
 	state->backend_path = cdev_to_devpath(cdev, &offset, &size);
 
-	pr_debug("%s: backend resolved to %s\n", node->full_name, state->backend_path);
+	pr_debug("%pOF: backend resolved to %s\n", node, state->backend_path);
 
 	state->backend_reproducible_name = of_get_reproducible_name(partition_node);
 

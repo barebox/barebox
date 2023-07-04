@@ -964,15 +964,15 @@ static int usb_string_sub(struct usb_device *dev, unsigned int langid,
  */
 int usb_string(struct usb_device *dev, int index, char *buf, size_t size)
 {
-	unsigned char mybuf[USB_BUFSIZ];
 	unsigned char *tbuf;
-	int err;
+	int err = 0;
 	unsigned int u, idx;
 
 	if (size <= 0 || !buf || !index)
 		return -1;
+
+	tbuf = dma_alloc(USB_BUFSIZ);
 	buf[0] = 0;
-	tbuf = &mybuf[0];
 
 	/* get langid for strings if it's not yet known */
 	if (!dev->have_langid) {
@@ -980,10 +980,12 @@ int usb_string(struct usb_device *dev, int index, char *buf, size_t size)
 		if (err < 0) {
 			dev_dbg(&dev->dev, "error getting string descriptor 0 " \
 				   "(error=%lx)\n", dev->status);
-			return -1;
+			err = -1;
+			goto fail;
 		} else if (tbuf[0] < 4) {
 			pr_debug("string descriptor 0 too short\n");
-			return -1;
+			err = -1;
+			goto fail;
 		} else {
 			dev->have_langid = -1;
 			dev->string_langid = tbuf[2] | (tbuf[3] << 8);
@@ -996,7 +998,7 @@ int usb_string(struct usb_device *dev, int index, char *buf, size_t size)
 
 	err = usb_string_sub(dev, dev->string_langid, index, tbuf);
 	if (err < 0)
-		return err;
+		goto fail;
 
 	size--;		/* leave room for trailing NULL char in output buffer */
 	for (idx = 0, u = 2; u < err; u += 2) {
@@ -1009,6 +1011,8 @@ int usb_string(struct usb_device *dev, int index, char *buf, size_t size)
 	}
 	buf[idx] = 0;
 	err = idx;
+fail:
+	dma_free(tbuf);
 	return err;
 }
 

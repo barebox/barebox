@@ -782,6 +782,9 @@ int blspec_scan_devicename(struct bootentries *bootentries, const char *devname)
 
 	pr_debug("%s: %s\n", __func__, devname);
 
+	/* Support both boot /dev/disk0.rootfs and boot disk0.rootfs */
+	devname += str_has_prefix(devname, "/dev/");
+
 	device_detect_by_name(devname);
 
 	cdev = cdev_by_name(devname);

@@ -107,7 +107,7 @@ int of_feature_controller_check(struct device_node *np)
 
 		ret = featctrl->check(featctrl, gateid);
 
-		dev_dbg(featctrl->dev, "checking %s: %d\n", np->full_name, ret);
+		dev_dbg(featctrl->dev, "checking %pOF: %d\n", np, ret);
 
 		if (ret == FEATCTRL_OKAY)
 			return FEATCTRL_OKAY;
@@ -135,12 +135,11 @@ static int of_featctrl_fixup(struct device_node *root, void *context)
 
 		dstnp = of_get_node_by_reproducible_name(root, srcnp);
 		if (!dstnp) {
-			pr_debug("gated node %s not in fixup DT\n",
-				 srcnp->full_name);
+			pr_debug("gated node %pOF not in fixup DT\n", srcnp);
 			continue;
 		}
 
-		pr_debug("fixing up gating of node %s\n", dstnp->full_name);
+		pr_debug("fixing up gating of node %pOF\n", dstnp);
 		/* Convention is deleting non-existing CPUs, not disable them. */
 		if (of_property_match_string(srcnp, "device_type", "cpu") >= 0)
 			of_delete_node(dstnp);

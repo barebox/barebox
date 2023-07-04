@@ -442,22 +442,21 @@ static void of_i2c_register_devices(struct i2c_adapter *adap)
 
 		addr = of_get_property(n, "reg", &len);
 		if (!addr || (len < sizeof(int))) {
-			dev_err(&adap->dev, "of_i2c: invalid reg on %s\n",
-				n->full_name);
+			dev_err(&adap->dev, "of_i2c: invalid reg on %pOF\n", n);
 			continue;
 		}
 
 		info.addr = be32_to_cpup(addr);
 		if (info.addr > (1 << 10) - 1) {
-			dev_err(&adap->dev, "of_i2c: invalid addr=%x on %s\n",
-				info.addr, n->full_name);
+			dev_err(&adap->dev, "of_i2c: invalid addr=%x on %pOF\n",
+				info.addr, n);
 			continue;
 		}
 
 		result = i2c_new_device(adap, &info);
 		if (!result)
-			dev_err(&adap->dev, "of_i2c: Failure registering %s\n",
-			        n->full_name);
+			dev_err(&adap->dev, "of_i2c: Failure registering %pOF\n",
+			        n);
 	}
 }
 

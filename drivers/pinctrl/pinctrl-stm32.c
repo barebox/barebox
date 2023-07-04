@@ -101,8 +101,7 @@ static int __stm32_pinctrl_set_state(struct device *dev,
 	of_get_property(pins, "pinmux", &num_pins);
 	num_pins /= sizeof(__be32);
 	if (!num_pins) {
-		dev_err(dev, "Invalid pinmux property in %s\n",
-			pins->full_name);
+		dev_err(dev, "Invalid pinmux property in %pOF\n", pins);
 		return -EINVAL;
 	}
 
@@ -129,7 +128,7 @@ static int __stm32_pinctrl_set_state(struct device *dev,
 	else if (of_get_property(pins, "output-high", NULL))
 		dir = PIN_OUTPUT_HIGH;
 
-	dev_dbg(dev, "%s: multiplexing %d pins\n", pins->full_name, num_pins);
+	dev_dbg(dev, "%pOF: multiplexing %d pins\n", pins, num_pins);
 
 	for (i = 0; i < num_pins; i++) {
 		struct stm32_gpio_bank *bank = NULL;
@@ -286,8 +285,7 @@ static int stm32_gpiochip_add(struct stm32_gpio_bank *bank,
 	gpio_ranges = of_get_property(np, "gpio-ranges", &size);
 	size /= sizeof(__be32);
 	if (!gpio_ranges || size < GPIO_RANGE_NCELLS) {
-		dev_err(dev, "Couldn't read 'gpio-ranges' property in %s\n",
-			np->full_name);
+		dev_err(dev, "Couldn't read 'gpio-ranges' property in %pOF\n", np);
 		return -EINVAL;
 	}
 
@@ -298,14 +296,13 @@ static int stm32_gpiochip_add(struct stm32_gpio_bank *bank,
 	bank->chip.ngpio = ngpios;
 
 	if (size > GPIO_RANGE_NCELLS) {
-		dev_err(dev, "Unsupported disjunct 'gpio-ranges' in %s\n",
-			np->full_name);
+		dev_err(dev, "Unsupported disjunct 'gpio-ranges' in %pOF\n", np);
 		return -EINVAL;
 	}
 
 	if (ngpios > STM32_GPIO_PINS_PER_BANK) {
-		dev_err(dev, "ngpios property expected to be %u at most in %s\n",
-			ngpios, np->full_name);
+		dev_err(dev, "ngpios property expected to be %u at most in %pOF\n",
+			ngpios, np);
 		return -EINVAL;
 	}
 

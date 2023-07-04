@@ -464,8 +464,7 @@ static int gpmc_probe_nand_child(struct device *dev,
 	int ret, i;
 
 	if (of_property_read_u32(child, "reg", &val) < 0) {
-		dev_err(dev, "%s has no 'reg' property\n",
-			child->full_name);
+		dev_err(dev, "%pOF has no 'reg' property\n", child);
 		return -ENODEV;
 	}
 
@@ -548,14 +547,12 @@ static int gpmc_probe_generic_child(struct device *dev,
 	resource_size_t size;
 
 	if (of_property_read_u32(child, "reg", &cs) < 0) {
-		dev_err(dev, "%s has no 'reg' property\n",
-			child->full_name);
+		dev_err(dev, "%pOF has no 'reg' property\n", child);
 		return -ENODEV;
 	}
 
 	if (of_address_to_resource(child, 0, &res) < 0) {
-		dev_err(dev, "%s has malformed 'reg' property\n",
-			child->full_name);
+		dev_err(dev, "%pOF has malformed 'reg' property\n", child);
 		return -ENODEV;
 	}
 

@@ -1129,8 +1129,8 @@ static int fsl_fman_memac_port_bind(struct fm_eth *fm_eth, enum fman_port_type t
 
 	portnp = of_parse_phandle(macnp, "fsl,fman-ports", type);
 	if (!portnp) {
-		dev_err(fm_eth->dev, "of_parse_phandle(%s, fsl,fman-ports) failed\n",
-			macnp->full_name);
+		dev_err(fm_eth->dev, "of_parse_phandle(%pOF, fsl,fman-ports) failed\n",
+			macnp);
 		return -EINVAL;
 	}
 

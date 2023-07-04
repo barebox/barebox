@@ -215,8 +215,8 @@ static int led_gpio_of_probe(struct device *dev)
 		gpio = of_get_named_gpio_flags(child, "gpios", 0, &flags);
 		if (gpio < 0) {
 			if (gpio != -EPROBE_DEFER)
-				dev_err(dev, "failed to get gpio for %s: %d\n",
-					child->full_name, gpio);
+				dev_err(dev, "failed to get gpio for %pOF: %d\n",
+					child, gpio);
 			ret = gpio;
 			goto err;
 		}

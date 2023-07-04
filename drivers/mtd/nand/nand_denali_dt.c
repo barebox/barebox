@@ -77,16 +77,14 @@ static int denali_partition_fixup(struct mtd_info *mtd, struct device_node *root
 	free(name);
 
 	if (np) {
-		dev_info(denali->dev, "Fixing up chip node %s\n",
-			 np->full_name);
+		dev_info(denali->dev, "Fixing up chip node %pOF\n", np);
 	} else {
 		name = of_get_reproducible_name(mtdnp->parent);
 		np = of_find_node_by_reproducible_name(root, name);
 		free(name);
 
 		if (np)
-			dev_info(denali->dev, "Fixing up controller node %s\n",
-				 np->full_name);
+			dev_info(denali->dev, "Fixing up controller node %pOF\n", np);
 	}
 
 	if (!np)

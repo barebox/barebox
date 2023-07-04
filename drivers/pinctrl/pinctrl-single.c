@@ -64,7 +64,7 @@ static int pcs_set_state(struct pinctrl_device *pdev, struct device_node *np)
 	unsigned int offset, val, rows, mask, reg, i;
 	const __be32 *mux;
 
-	dev_dbg(pcs->pinctrl.dev, "set state: %s\n", np->full_name);
+	dev_dbg(pcs->pinctrl.dev, "set state: %pOF\n", np);
 	if (pcs->bits_per_mux) {
 		mux = of_get_property(np, "pinctrl-single,bits", &size);
 		if (size % 3 != 0)
@@ -89,8 +89,7 @@ static int pcs_set_state(struct pinctrl_device *pdev, struct device_node *np)
 		size /= sizeof(*mux);	/* Number of elements in array */
 
 		if (!mux || !size || (size % (pcs->args_count + 1))) {
-			dev_err(pcs->pinctrl.dev, "bad data for mux %s\n",
-				np->full_name);
+			dev_err(pcs->pinctrl.dev, "bad data for mux %pOF\n", np);
 			return -EINVAL;
 		}
 

@@ -230,7 +230,7 @@ int devicetree_nodepath_complete(struct string_list *sl, char *instr)
 	for_each_child_of_node(node, child) {
 		if (strncmp(base, child->name, strlen(base)))
 			continue;
-		string_list_add_asprintf(sl, "%s/", child->full_name);
+		string_list_add_asprintf(sl, "%pOF/", child);
 	}
 out:
 	free(path);

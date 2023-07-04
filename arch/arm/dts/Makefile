@@ -84,7 +84,9 @@ lwl-$(CONFIG_MACH_PHYTEC_SOM_IMX8MQ) += imx8mq-phytec-phycore-som.dtb.o
 lwl-$(CONFIG_MACH_PINE64_QUARTZ64) += rk3566-quartz64-a.dtb.o
 lwl-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_AX3) += armada-xp-openblocks-ax3-4-bb.dtb.o
 lwl-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_A6) += kirkwood-openblocks_a6-bb.dtb.o
-lwl-$(CONFIG_MACH_POLYHEX_DEBIX) += imx8mp-debix-model-a.dtb.o
+lwl-$(CONFIG_MACH_POLYHEX_DEBIX) += \
+	imx8mp-debix-model-a.dtb.o \
+	imx8mp-debix-som-a-bmb-08.dtb.o
 lwl-$(CONFIG_MACH_PROTONIC_IMX6) += \
 	imx6q-prti6q.dtb.o \
 	imx6q-prtwd2.dtb.o \

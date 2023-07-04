@@ -468,6 +468,11 @@ CFG_start_polyhex_debix.pblb.imximg = $(board)/polyhex-debix/flash-header-polyhe
 FILE_barebox-polyhex-debix.img = start_polyhex_debix.pblb.pimximg
 image-$(CONFIG_MACH_POLYHEX_DEBIX) += barebox-polyhex-debix.img
 
+pblb-$(CONFIG_MACH_POLYHEX_DEBIX) += start_polyhex_debix_som_a_8g
+CFG_start_polyhex_debix_som_a_8g.pblb.imximg = $(board)/polyhex-debix/flash-header-polyhex-debix.imxcfg
+FILE_barebox-polyhex-debix-som-a-8g.img = start_polyhex_debix_som_a_8g.pblb.pimximg
+image-$(CONFIG_MACH_POLYHEX_DEBIX) += barebox-polyhex-debix-som-a-8g.img
+
 pblb-$(CONFIG_MACH_VARISCITE_DT8MCUSTOMBOARD_IMX8MP) += start_variscite_imx8mp_dart
 CFG_start_variscite_imx8mp_dart.pblb.imximg = $(board)/variscite-dt8mcustomboard-imx8mp/flash-header-imx8mp-dart.imxcfg
 FILE_barebox-variscite-imx8mp-dart-cb.img = start_variscite_imx8mp_dart.pblb.pimximg

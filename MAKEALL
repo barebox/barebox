@@ -92,21 +92,9 @@ do_build_target() {
 
 	[ "$INCREMENTAL" != "1" ] && rm -rf "${BUILDDIR}"
 	mkdir -p "${LOGDIR}/${target}"
-	printf "Building ${arch} ${target} \n" >&2 | tee -a "${log_report}"
-
-	tmp=$(echo "${target}" | tr - _)
 
 	MAKE="make -j${JOBS} ARCH=${arch} O=${BUILDDIR}"
-	${MAKE} ${target} 2>&1 > "${log_report}" | tee "${log_err}"
-	for i in ${KCONFIG_ADD}; do
-		./scripts/kconfig/merge_config.sh -m -O \
-			${BUILDDIR} ${BUILDDIR}/.config $i \
-			2>&1 > "${log_report}" | tee "${log_err}"
-	done
-	${MAKE} olddefconfig 2>&1 > "${log_report}" | tee "${log_err}"
-
-	check_pipe_status
-	configure_result="$?"
+	${MAKE} ${target} &>/dev/null
 
 	if [ ${arch} = "arm" ]; then
 		grep -q "CONFIG_CPU_64=y" ${BUILDDIR}/.config
@@ -114,6 +102,8 @@ do_build_target() {
 			arch=arm64
 		fi
 	fi
+
+	tmp=$(echo "${target}" | tr - _)
 
 	cross_compile=$(eval echo '$CROSS_COMPILE_'${tmp})
 	cross_compile_set=$(eval echo '${CROSS_COMPILE_'${tmp}'+set}')
@@ -127,12 +117,24 @@ do_build_target() {
 		fi
 	fi
 
+	printf "Building ${arch} ${target} \n" >&2 | tee -a "${log_report}"
+	MAKE="${MAKE} CROSS_COMPILE=${cross_compile}"
+	${MAKE} ${target} 2>&1 > "${log_report}" | tee "${log_err}"
+	for i in ${KCONFIG_ADD}; do
+		./scripts/kconfig/merge_config.sh -m -O \
+			${BUILDDIR} ${BUILDDIR}/.config $i \
+			2>&1 > "${log_report}" | tee "${log_err}"
+	done
+	${MAKE} olddefconfig 2>&1 > "${log_report}" | tee "${log_err}"
+
+	check_pipe_status
+	configure_result="$?"
+
 	printf "Configure: " | tee -a "${log_report}"
 
 	if [ "$configure_result" = "0" ]; then
 		printf "OK     \n" | tee -a "${log_report}"
 
-		MAKE="make -j${JOBS} CROSS_COMPILE=${cross_compile} ARCH=${arch} O=${BUILDDIR}"
 		${MAKE} -s 2>&1 >> "${log_report}" | tee -a "${log_err}"
 
 		check_pipe_status

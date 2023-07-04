@@ -100,7 +100,7 @@ Sascha Hauer, Embedded Linux Conference - Europe 2013
 `[slides] <https://elinux.org/images/9/90/Barebox-elce2013-bootloaderspec.pdf>`__
 `[video] <https://www.youtube.com/watch?v=Z8FcIGXox_Y>`__
 
-  The freedesktop.org bootloader specification and its support in barebox.
+  The bootloader specification and its support in barebox.
 
 Barebox Bootloader
 ------------------

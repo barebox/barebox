@@ -403,8 +403,8 @@ static unsigned int pci_scan_bus(struct pci_bus *bus)
 		dev->dev.parent = bus->parent;
 		dev->dev.of_node = pci_of_match_device(bus->parent, devfn);
 		if (dev->dev.of_node)
-			pr_debug("found DT node %s for device %04x:%04x\n",
-				 dev->dev.of_node->full_name,
+			pr_debug("found DT node %pOF for device %04x:%04x\n",
+				 dev->dev.of_node,
 				 dev->vendor, dev->device);
 
 		/* non-destructively determine if device can be a master: */

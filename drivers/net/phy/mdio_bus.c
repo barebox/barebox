@@ -251,14 +251,14 @@ static int of_mdiobus_register(struct mii_bus *mdio, struct device_node *np)
 	for_each_available_child_of_node(np, child) {
 		ret = of_property_read_u32(child, "reg", &addr);
 		if (ret) {
-			dev_dbg(&mdio->dev, "%s has invalid PHY address\n",
-				child->full_name);
+			dev_dbg(&mdio->dev, "%pOF has invalid PHY address\n",
+				child);
 			continue;
 		}
 
 		if (addr >= PHY_MAX_ADDR) {
-			dev_err(&mdio->dev, "%s PHY address %i is too large\n",
-				child->full_name, addr);
+			dev_err(&mdio->dev, "%pOF PHY address %i is too large\n",
+				child, addr);
 			continue;
 		}
 

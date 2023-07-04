@@ -100,8 +100,8 @@ static int vf610_gpio_probe(struct device *dev)
 
 	gpio_ranges = of_get_property(dev->of_node, "gpio-ranges", &size);
 	if (!gpio_ranges) {
-		dev_err(dev, "Couldn't read 'gpio-ranges' propery of %s\n",
-			dev->of_node->full_name);
+		dev_err(dev, "Couldn't read 'gpio-ranges' propery of %pOF\n",
+			dev->of_node);
 		ret = -EINVAL;
 		goto free_port;
 	}

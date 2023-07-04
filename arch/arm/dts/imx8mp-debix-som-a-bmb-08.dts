@@ -1,0 +1,63 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+
+/dts-v1/;
+
+#include "imx8mp-debix-som-a-bmb-08-upstream.dts"
+#include "imx8mp.dtsi"
+
+/ {
+	chosen {
+		environment-sd {
+			compatible = "barebox,environment";
+			device-path = &env_sd;
+			status = "disabled";
+		};
+
+		environment-emmc {
+			compatible = "barebox,environment";
+			device-path = &env_emmc;
+			status = "disabled";
+		};
+	};
+};
+
+/* Disable peer hub to avoid warnings */
+&usb_hub_2_x {
+	status = "disabled";
+};
+
+&usdhc2 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <2>;
+		#size-cells = <2>;
+
+		partition@0 {
+			label = "barebox";
+			reg = <0x0 0x0 0x0 0x100000>;
+		};
+
+		env_sd: partition@e0000 {
+			label = "barebox-environment";
+			reg = <0x0 0x100000 0x0 0x100000>;
+		};
+	};
+};
+
+&usdhc3 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <2>;
+		#size-cells = <2>;
+
+		partition@0 {
+			label = "barebox";
+			reg = <0x0 0x0 0x0 0x100000>;
+		};
+
+		env_emmc: partition@e0000 {
+			label = "barebox-environment";
+			reg = <0x0 0x100000 0x0 0x100000>;
+		};
+	};
+};

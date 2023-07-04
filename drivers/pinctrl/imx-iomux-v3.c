@@ -77,7 +77,7 @@ static int imx_iomux_v3_set_state(struct pinctrl_device *pdev, struct device_nod
 	const char *name;
 	u32 share_conf_val = 0;
 
-	dev_dbg(iomux->pinctrl.dev, "set state: %s\n", np->full_name);
+	dev_dbg(iomux->pinctrl.dev, "set state: %pOF\n", np);
 
 	if (share_conf) {
 		u32 drive_strength, slew_rate;
@@ -120,8 +120,7 @@ static int imx_iomux_v3_set_state(struct pinctrl_device *pdev, struct device_nod
 		return -EINVAL;
 
 	if (!size || size % fsl_pin_size) {
-		dev_err(iomux->pinctrl.dev, "Invalid fsl,pins property in %s\n",
-				np->full_name);
+		dev_err(iomux->pinctrl.dev, "Invalid fsl,pins property in %pOF\n", np);
 		return -EINVAL;
 	}
 

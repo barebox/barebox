@@ -2,7 +2,7 @@ targets:
   main:
     drivers:
       QEMUDriver:
-        qemu_bin: qemu
+        qemu_bin: qemu-system-riscv32
         machine: virt
         cpu: rv32
         memory: 256M
@@ -21,7 +21,5 @@ targets:
 images:
   barebox-dt-2nd.img: !template "$LG_BUILDDIR/images/barebox-dt-2nd.img"
   opensbi-riscv32-generic-fw_dynamic.bin: !template "$LG_BUILDDIR/opensbi-riscv32-generic-fw_dynamic.bin"
-tools:
-  qemu: /usr/bin/qemu-system-riscv32
 imports:
   -  ../strategy.py

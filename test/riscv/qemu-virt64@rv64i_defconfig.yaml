@@ -2,7 +2,7 @@ targets:
   main:
     drivers:
       QEMUDriver:
-        qemu_bin: qemu
+        qemu_bin: qemu-system-riscv64
         machine: virt
         cpu: rv64
         memory: 256M
@@ -16,7 +16,5 @@ targets:
       - virtio-mmio
 images:
   barebox-dt-2nd.img: !template "$LG_BUILDDIR/images/barebox-dt-2nd.img"
-tools:
-  qemu: /usr/bin/qemu-system-riscv64
 imports:
   -  ../strategy.py

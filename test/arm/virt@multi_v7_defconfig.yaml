@@ -2,7 +2,7 @@ targets:
   main:
     drivers:
       QEMUDriver:
-        qemu_bin: qemu
+        qemu_bin: qemu-system-arm
         machine: virt
         cpu: cortex-a7
         memory: 1024M
@@ -16,7 +16,5 @@ targets:
       - virtio-mmio
 images:
   barebox-dt-2nd.img: !template "$LG_BUILDDIR/images/barebox-dt-2nd.img"
-tools:
-  qemu: /usr/bin/qemu-system-arm
 imports:
   -  ../strategy.py

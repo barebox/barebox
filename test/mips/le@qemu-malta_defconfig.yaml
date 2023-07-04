@@ -2,7 +2,7 @@ targets:
   main:
     drivers:
       QEMUDriver:
-        qemu_bin: qemu
+        qemu_bin: qemu-system-mipsel
         machine: malta
         cpu: M14Kc
         memory: 256M
@@ -19,7 +19,5 @@ targets:
         - CONFIG_CPU_LITTLE_ENDIAN=y
 images:
   barebox-qemu-malta.img.swapped: !template "$LG_BUILDDIR/images/barebox-qemu-malta.img.swapped"
-tools:
-  qemu: /usr/bin/qemu-system-mipsel
 imports:
   -  ../strategy.py

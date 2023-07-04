@@ -2,7 +2,7 @@ targets:
   main:
     drivers:
       QEMUDriver:
-        qemu_bin: qemu
+        qemu_bin: qemu-system-riscv64
         machine: sifive_u
         cpu: sifive-u54
         memory: 256M
@@ -14,7 +14,5 @@ targets:
       BareboxTestStrategy: {}
 images:
   barebox-hifive-unleashed.img: !template "$LG_BUILDDIR/images/barebox-hifive-unleashed.img"
-tools:
-  qemu: /usr/bin/qemu-system-riscv64
 imports:
   -  ../strategy.py

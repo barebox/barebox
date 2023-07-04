@@ -2,7 +2,7 @@ targets:
   main:
     drivers:
       QEMUDriver:
-        qemu_bin: qemu
+        qemu_bin: qemu-system-mips
         machine: malta
         cpu: M14Kc
         memory: 256M
@@ -16,7 +16,5 @@ targets:
       - virtio-pci
 images:
   barebox-qemu-malta.img: !template "$LG_BUILDDIR/images/barebox-qemu-malta.img"
-tools:
-  qemu: /usr/bin/qemu-system-mips
 imports:
   -  ../strategy.py

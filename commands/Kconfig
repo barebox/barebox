@@ -1211,15 +1211,17 @@ config CMD_SLEEP
 config CMD_TEST
 	tristate
 	depends on SHELL_HUSH
+	select FNMATCH
 	default y
 	prompt "test"
 	help
-	  Minimal test command like in /bin/sh
+	  Minimal test command like in /bin/sh with support for bash-style
+	  [[ expression ]] tests as well.
 
 	  Usage: test [EXPR]
 
 	  Options:
-		  !, =, !=, -eq, -ne, -ge, -gt, -le, -lt, -o, -a, -z, -n, -d, -e,
+		  !, =, ==, !=, -eq, -ne, -ge, -gt, -le, -lt, -o, -a, -z, -n, -d, -e,
 		  -f, -L; see 'man test' on your PC for more information.
 
 config CMD_TRUE

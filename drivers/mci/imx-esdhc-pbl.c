@@ -120,6 +120,8 @@ esdhc_load_image(struct fsl_esdhc_host *host, ptrdiff_t address,
 static void imx_esdhc_init(struct fsl_esdhc_host *host,
 			   struct esdhc_soc_data *data)
 {
+	u32 mixctrl;
+
 	data->flags = ESDHC_FLAG_USDHC;
 	host->socdata = data;
 	esdhc_populate_sdhci(host);
@@ -129,6 +131,10 @@ static void imx_esdhc_init(struct fsl_esdhc_host *host,
 		      FIELD_PREP(WML_WR_WML_MASK, SECTOR_WML) |
 		      FIELD_PREP(WML_RD_BRST_LEN, 16)         |
 		      FIELD_PREP(WML_RD_WML_MASK, SECTOR_WML));
+
+	mixctrl = sdhci_read32(&host->sdhci, IMX_SDHCI_MIXCTRL);
+	if (mixctrl & MIX_CTRL_DDREN)
+		host->sdhci.timing = MMC_TIMING_MMC_DDR52;
 }
 
 static int imx8m_esdhc_init(struct fsl_esdhc_host *host,

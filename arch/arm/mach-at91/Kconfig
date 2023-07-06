@@ -104,6 +104,7 @@ config SOC_SAMA5D3
 	select HAVE_AT91_UTMI
 	select PINCTRL_AT91
 	select HAS_MACB
+	select HAVE_AT91_DDRAMC
 
 config SOC_SAMA5D4
 	bool
@@ -116,6 +117,7 @@ config SOC_SAMA5D4
 	select HAVE_AT91_UTMI
 	select PINCTRL_AT91
 	select HAS_MACB
+	select HAVE_AT91_DDRAMC
 
 config SOC_SAM9X60
 	bool

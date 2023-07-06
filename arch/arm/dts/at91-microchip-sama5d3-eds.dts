@@ -1,0 +1,14 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+/dts-v1/;
+#include <arm/microchip/at91-sama5d3_eds.dts>
+#include "sama5d3.dtsi"
+
+/ {
+	chosen {
+		environment {
+			compatible = "barebox,environment";
+			device-path = &mmc0, "partname:0";
+			file-path = "barebox.env";
+		};
+	};
+};

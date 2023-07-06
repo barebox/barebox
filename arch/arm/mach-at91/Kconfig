@@ -606,6 +606,16 @@ config MACH_MICROCHIP_KSZ9477_EVB
 	help
 	  Select this if you are using Microchip's EVB-KSZ9477 Evaluation Kit.
 
+config MACH_MICROCHIP_SAMA5D3_EDS
+	bool "Microchip SAMA5D3 Ethernet Development System"
+	select SOC_SAMA5D3
+	select OFDEVICE
+	select MCI_ATMEL_PBL
+	select COMMON_CLK_OF_PROVIDER
+	help
+	  Select this if you are using Microchip's SAMA5D3 Ethernet Development
+	  System.
+
 config MACH_SAMA5D3_XPLAINED
 	bool "Atmel SAMA5D3_XPLAINED Evaluation Kit"
 	select SOC_SAMA5D3

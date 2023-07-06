@@ -106,7 +106,11 @@ int imx8m_ddr_init(struct dram_timing_info *dram_timing,
 	reg32_write(DDRC_RFSHCTL3(0), 0x0000001);
 	reg32_write(DDRC_PWRCTL(0), 0xa0);
 
-	/* if ddr type is LPDDR4, do it */
+	pr_debug("checking ddr type\n");
+	/*
+	 * below is first read, so if boot hangs here, imx8m*_early_clock_init()
+	 * might not have been called
+	 */
 	tmp = reg32_read(DDRC_MSTR(0));
 	if (tmp & (0x1 << 5) && ddrc_type != DDRC_TYPE_MN)
 		reg32_write(DDRC_DDR_SS_GPR0, 0x01); /* LPDDR4 mode */

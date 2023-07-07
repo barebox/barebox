@@ -294,10 +294,8 @@ int usb_multi_register(struct f_multi_opts *opts)
 	gadget_multi_opts = opts;
 
 	ret = usb_composite_probe(&multi_driver);
-	if (ret) {
-		usb_composite_unregister(&multi_driver);
+	if (ret)
 		gadget_multi_opts = NULL;
-	}
 
 	return ret;
 }

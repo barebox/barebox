@@ -247,8 +247,17 @@ static struct usb_composite_driver gserial_driver = {
 	.unbind		= gs_unbind,
 };
 
+static bool usb_serial_registered;
+
 int usb_serial_register(struct usb_serial_pdata *pdata)
 {
+	int ret;
+
+	if (usb_serial_registered) {
+		pr_err("USB serial gadget already registered\n");
+		return -EBUSY;
+	}
+
 	/* We *could* export two configs; that'd be much cleaner...
 	 * but neither of these product IDs was defined that way.
 	 */
@@ -273,10 +282,18 @@ int usb_serial_register(struct usb_serial_pdata *pdata)
 		device_desc.bDeviceClass = USB_CLASS_VENDOR_SPEC;
 	}
 
-	return usb_composite_probe(&gserial_driver);
+	ret = usb_composite_probe(&gserial_driver);
+	if (!ret)
+		usb_serial_registered = true;
+
+	return ret;
 }
 
 void usb_serial_unregister(void)
 {
+	if (!usb_serial_registered)
+		return;
+
 	usb_composite_unregister(&gserial_driver);
+	usb_serial_registered = false;
 }

@@ -33,9 +33,11 @@
 
 static char *kvx_mppa_id;
 static char *kvx_arch_rev;
+static char *kvx_board_sn;
 
 BAREBOX_MAGICVAR(kvx.arch_rev, "KVX architecture revision");
 BAREBOX_MAGICVAR(kvx.mppa_id, "KVX MPPA chip id");
+BAREBOX_MAGICVAR(kvx.board_sn, "KVX board sn");
 
 static void kvx_soc_info_read_revision(void)
 {
@@ -123,11 +125,40 @@ static int kvx_read_mppa_id(struct device_node *socinfo)
 	return 0;
 }
 
+static int kvx_read_board_sn(struct device_node *socinfo)
+{
+	struct nvmem_cell *cell;
+	size_t len;
+	char *sn;
+
+	cell = of_nvmem_cell_get(socinfo, "board_sn");
+	if (IS_ERR(cell)) {
+		pr_debug("Fail to get board_sn cell\n");
+		return PTR_ERR(cell);
+	}
+
+	sn = (char *)nvmem_cell_read(cell, &len);
+	nvmem_cell_put(cell);
+	if (IS_ERR(sn)) {
+		pr_debug("Fail to read board_sn\n");
+		return PTR_ERR(sn);
+	}
+
+	kvx_board_sn = xzalloc(len + 1);
+	memcpy(kvx_board_sn, sn, len);
+	globalvar_add_simple_string("kvx.board_sn", &kvx_board_sn);
+	free(sn);
+
+	return 0;
+}
+
 static int kvx_socinfo_probe(struct device *dev)
 {
 	kvx_soc_info_read_revision();
 
-	return kvx_read_mppa_id(dev->of_node);
+	kvx_read_board_sn(dev->device_node);
+
+	return kvx_read_mppa_id(dev->device_node);
 }
 
 static const struct of_device_id kvx_socinfo_dt_ids[] = {

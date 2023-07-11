@@ -102,6 +102,7 @@ static int kvx_read_mppa_id(struct device_node *socinfo)
 	ews_val = (ews_val >> 32) | (ews_val << 32);
 	wafer_id = (ews_val >> EWS_WAFER_ID_SHIFT) & EWS_WAFER_ID_MASK;
 	base38_decode(lot_id, ews_val & EWS_LOT_ID_MASK, LOT_ID_STR_LEN);
+	free(cell_val64);
 
 	cell_val32 = (u32 *) nvmem_cell_get_and_read(socinfo, "ft_fuse", 4);
 	if (IS_ERR(cell_val32)) {
@@ -112,6 +113,7 @@ static int kvx_read_mppa_id(struct device_node *socinfo)
 	ft_val = *cell_val32;
 	device_id = (ft_val >> FT_DEVICE_ID_SHIFT) & FT_DEVICE_ID_MASK;
 	base38_decode(&com_ap, (ft_val >> FT_COM_AP_SHIFT) & FT_COM_AP_MASK, 1);
+	free(cell_val32);
 
 	kvx_mppa_id = basprintf("%sA-%d%c-%03d", lot_id, wafer_id, com_ap,
 			       device_id);

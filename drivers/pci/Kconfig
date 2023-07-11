@@ -43,7 +43,8 @@ config PCI_TEGRA
 
 config PCI_IMX6
 	bool "Freescale i.MX6/7/8 PCIe controller"
-	depends on ARCH_IMX6 || ARCH_IMX7 || ARCH_IMX8MQ
+	depends on ARCH_IMX6 || ARCH_IMX7 || ARCH_IMX8MQ || ARCH_IMX8MP
+	select PCIE_DW
 	select PCIE_DW
 	select OF_PCI
 	select PCI

@@ -6,10 +6,6 @@
 
 #include <common.h>
 
-#define KVX_DDR_32BIT_RAM_WINDOW_BA	(0x80000000ULL)
-#define KVX_DDR_64BIT_RAM_WINDOW_BA	(0x100000000ULL)
-#define MAX_32BIT_ADDR			(0xffffffffULL)
-
 #define dma_alloc dma_alloc
 static inline void *dma_alloc(size_t size)
 {

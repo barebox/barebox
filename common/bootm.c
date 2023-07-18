@@ -13,6 +13,7 @@
 #include <linux/stat.h>
 #include <magicvar.h>
 #include <uncompress.h>
+#include <zero_page.h>
 
 static LIST_HEAD(handler_list);
 
@@ -119,7 +120,7 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
 				(unsigned long long)load_address + kernel_size - 1);
 			return -ENOMEM;
 		}
-		memcpy((void *)load_address, kernel, kernel_size);
+		zero_page_memcpy((void *)load_address, kernel, kernel_size);
 		return 0;
 	}
 

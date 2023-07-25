@@ -25,12 +25,12 @@ static int do_cpuinfo(int argc, char *argv[])
 	icache_size = c->icache.sets * c->icache.ways * c->icache.linesz;
 	dcache_size = c->dcache.sets * c->dcache.ways * c->dcache.linesz;
 
-	printk("Primary instruction cache %ldkB, %s, %s, linesize %d bytes.\n",
+	printk("Primary instruction cache %ukB, %s, %s, linesize %d bytes.\n",
 	       icache_size >> 10,
 	       c->icache.flags & MIPS_CACHE_VTAG ? "VIVT" : "VIPT",
 	       way_string[c->icache.ways], c->icache.linesz);
 
-	printk("Primary data cache %ldkB, %s, %s, %s, linesize %d bytes\n",
+	printk("Primary data cache %ukB, %s, %s, %s, linesize %d bytes\n",
 	       dcache_size >> 10, way_string[c->dcache.ways],
 	       (c->dcache.flags & MIPS_CACHE_PINDEX) ? "PIPT" : "VIPT",
 	       (c->dcache.flags & MIPS_CACHE_ALIASES) ?
@@ -39,7 +39,7 @@ static int do_cpuinfo(int argc, char *argv[])
 	if (c->scache.flags & MIPS_CACHE_NOT_PRESENT)
 		return 0;
 	scache_size = c->scache.sets * c->scache.ways * c->scache.linesz;
-	printk("Secondary data cache %ldkB, %s, %s, %s, linesize %d bytes\n",
+	printk("Secondary data cache %ukB, %s, %s, %s, linesize %d bytes\n",
 	       scache_size >> 10, way_string[c->scache.ways],
 	       (c->scache.flags & MIPS_CACHE_PINDEX) ? "PIPT" : "VIPT",
 	       (c->scache.flags & MIPS_CACHE_ALIASES) ?

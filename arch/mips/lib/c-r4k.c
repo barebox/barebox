@@ -13,6 +13,8 @@
 #include <asm/cpu-info.h>
 #include <asm/bitops.h>
 
+#define INDEX_BASE	CKSEG0
+
 #define cache_op(op,addr)						\
 	__asm__ __volatile__(						\
 	"	.set	push					\n"	\
@@ -22,6 +24,23 @@
 	"	.set	pop					\n"	\
 	:								\
 	: "i" (op), "R" (*(unsigned char *)(addr)))
+
+#define __BUILD_BLAST_CACHE(pfx, desc, indexop)				\
+static inline void blast_##pfx##cache(void)				\
+{									\
+	const unsigned long lsize = current_cpu_data.desc.linesz;	\
+	const unsigned long start = INDEX_BASE;				\
+	const unsigned long size = current_cpu_data.desc.waysize	\
+				   * current_cpu_data.desc.ways;	\
+	const unsigned long aend = start + size - 1;			\
+	unsigned long addr;						\
+									\
+	if (current_cpu_data.desc.flags & MIPS_CACHE_NOT_PRESENT)	\
+		return;							\
+									\
+	for (addr = start; addr <= aend; addr += lsize)			\
+		cache_op(indexop, addr);				\
+}
 
 #define __BUILD_BLAST_CACHE_RANGE(pfx, desc, hitop)			\
 static inline void blast_##pfx##cache##_range(unsigned long start,	\
@@ -39,28 +58,16 @@ static inline void blast_##pfx##cache##_range(unsigned long start,	\
 		cache_op(hitop, addr);					\
 }
 
+__BUILD_BLAST_CACHE(d, dcache, Index_Writeback_Inv_D)
+__BUILD_BLAST_CACHE(i, icache, Index_Invalidate_I)
+
 __BUILD_BLAST_CACHE_RANGE(d, dcache, Hit_Writeback_Inv_D)
 __BUILD_BLAST_CACHE_RANGE(inv_d, dcache, Hit_Invalidate_D)
 
 void flush_cache_all(void)
 {
-	struct cpuinfo_mips *c = &current_cpu_data;
-	unsigned long lsize;
-	unsigned long addr;
-	unsigned long aend;
-	unsigned int icache_size, dcache_size;
-
-	dcache_size = c->dcache.waysize * c->dcache.ways;
-	lsize = c->dcache.linesz;
-	aend = (CKSEG0 + dcache_size - 1) & ~(lsize - 1);
-	for (addr = CKSEG0; addr <= aend; addr += lsize)
-		cache_op(Index_Writeback_Inv_D, addr);
-
-	icache_size = c->icache.waysize * c->icache.ways;
-	lsize = c->icache.linesz;
-	aend = (CKSEG0 + icache_size - 1) & ~(lsize - 1);
-	for (addr = CKSEG0; addr <= aend; addr += lsize)
-		cache_op(Index_Invalidate_I, addr);
+	blast_dcache();
+	blast_icache();
 
 	/* secondatory cache skipped */
 }

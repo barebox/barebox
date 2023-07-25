@@ -86,8 +86,6 @@ void dma_inv_range(unsigned long start, unsigned long end)
 	blast_inv_scache_range(start, end);
 }
 
-void r4k_cache_init(void);
-
 static void probe_pcache(void)
 {
 	struct cpuinfo_mips *c = &current_cpu_data;

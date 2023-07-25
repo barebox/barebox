@@ -31,17 +31,8 @@
 #define	GT_HD(x)	(GT_CPU_TO_LE32(((x) >> 21) & 0x7f))
 
 ENTRY_FUNCTION(BOARD_PBL_START)
-	b	__start
-	 nop
 
-	/*
-	   On MIPS Technologies boards
-	   0x1fc00010 address is reserved for BoardID
-	*/
-	.org	0x10
-	.asciiz	"barebox"
-
-__start:
+	mips_barebox_10h
 	mips_disable_interrupts
 
 	/* cpu specific setup ... */

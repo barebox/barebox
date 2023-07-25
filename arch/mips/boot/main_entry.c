@@ -50,11 +50,9 @@ static void trap_init(void)
 		set_except_vector(i, &handle_reserved);
 	}
 
-	if (!cpu_has_4kex)
-		memcpy((void *)(ebase + 0x080), &except_vec3_generic, 0x80);
-
 	/* FIXME: handle tlb */
 	memcpy((void *)(ebase), &except_vec3_generic, 0x80);
+	memcpy((void *)(ebase + 0x080), &except_vec3_generic, 0x80);
 
 	/* unset BOOT EXCEPTION VECTOR bit */
 	write_c0_status(read_c0_status() & ~ST0_BEV);

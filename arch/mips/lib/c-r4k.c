@@ -60,30 +60,30 @@ static inline void blast_##pfx##cache##_range(unsigned long start,	\
 
 __BUILD_BLAST_CACHE(d, dcache, Index_Writeback_Inv_D)
 __BUILD_BLAST_CACHE(i, icache, Index_Invalidate_I)
+__BUILD_BLAST_CACHE(s, scache, Index_Writeback_Inv_SD)
 
 __BUILD_BLAST_CACHE_RANGE(d, dcache, Hit_Writeback_Inv_D)
+__BUILD_BLAST_CACHE_RANGE(s, scache, Hit_Writeback_Inv_SD)
 __BUILD_BLAST_CACHE_RANGE(inv_d, dcache, Hit_Invalidate_D)
+__BUILD_BLAST_CACHE_RANGE(inv_s, scache, Hit_Invalidate_SD)
 
 void flush_cache_all(void)
 {
 	blast_dcache();
 	blast_icache();
-
-	/* secondatory cache skipped */
+	blast_scache();
 }
 
 void dma_flush_range(unsigned long start, unsigned long end)
 {
 	blast_dcache_range(start, end);
-
-	/* secondatory cache skipped */
+	blast_scache_range(start, end);
 }
 
 void dma_inv_range(unsigned long start, unsigned long end)
 {
 	blast_inv_dcache_range(start, end);
-
-	/* secondatory cache skipped */
+	blast_inv_scache_range(start, end);
 }
 
 void r4k_cache_init(void);

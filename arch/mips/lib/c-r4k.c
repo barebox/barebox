@@ -27,19 +27,16 @@
 static inline void blast_##pfx##cache##_range(unsigned long start,	\
 					      unsigned long end)	\
 {									\
-	unsigned long lsize = current_cpu_data.desc.linesz;		\
-	unsigned long addr = start & ~(lsize - 1);			\
-	unsigned long aend = (end - 1) & ~(lsize - 1);			\
+	const unsigned long lsize = current_cpu_data.desc.linesz;	\
+	const unsigned long astart = ALIGN_DOWN(start, lsize);		\
+	const unsigned long aend = ALIGN_DOWN(end - 1, lsize);		\
+	unsigned long addr;						\
 									\
 	if (current_cpu_data.desc.flags & MIPS_CACHE_NOT_PRESENT)	\
 		return;							\
 									\
-	while (1) {							\
+	for (addr = astart; addr <= aend; addr += lsize)		\
 		cache_op(hitop, addr);					\
-		if (addr == aend)					\
-			break;						\
-		addr += lsize;						\
-	}								\
 }
 
 __BUILD_BLAST_CACHE_RANGE(d, dcache, Hit_Writeback_Inv_D)

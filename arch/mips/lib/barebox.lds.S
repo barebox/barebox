@@ -3,7 +3,6 @@
  * Copyright (C) 2011 Antony Pavlov <antonynpavlov@gmail.com>
  */
 
-
 #include <asm/barebox.lds.h>
 
 OUTPUT_ARCH(BAREBOX_OUTPUT_ARCH)
@@ -67,5 +66,4 @@ SECTIONS
 		. = ALIGN(4);
 		__bss_stop = .;
 	}
-
 }

@@ -49,6 +49,16 @@
 #define XPHYSADDR(a)            ((_ACAST64_(a)) &			\
 				 _CONST64_(0x000000ffffffffff))
 
+/*
+ * Memory segments (32bit kernel mode addresses)
+ * These are the traditional names used in the 32-bit universe.
+ */
+#define KUSEG			0x00000000
+#define KSEG0			0x80000000
+#define KSEG1			0xa0000000
+#define KSSEG			0xc0000000
+#define KSEG3			0xe0000000
+
 #ifdef CONFIG_64BIT
 
 /*
@@ -64,11 +74,6 @@
 #define CKSEG1			_CONST64_(0xffffffffa0000000)
 #define CKSSEG			_CONST64_(0xffffffffc0000000)
 #define CKSEG3			_CONST64_(0xffffffffe0000000)
-
-#define CKSEG0ADDR(a)		(CPHYSADDR(a) | CKSEG0)
-#define CKSEG1ADDR(a)		(CPHYSADDR(a) | CKSEG1)
-#define CKSSEGADDR(a)		(CPHYSADDR(a) | CKSSEG)
-#define CKSEG3ADDR(a)		(CPHYSADDR(a) | CKSEG3)
 
 /*
  * Cache modes for XKPHYS address conversion macros
@@ -92,11 +97,6 @@
 
 #else
 
-#define CKSEG0ADDR(a)		(CPHYSADDR(a) | KSEG0)
-#define CKSEG1ADDR(a)		(CPHYSADDR(a) | KSEG1)
-#define CKSSEGADDR(a)		(CPHYSADDR(a) | KSSEG)
-#define CKSEG3ADDR(a)		(CPHYSADDR(a) | KSEG3)
-
 /*
  * Map an address to a certain kernel segment
  */
@@ -105,22 +105,17 @@
 #define KSSEGADDR(a)		(CPHYSADDR(a) | KSSEG)
 #define KSEG3ADDR(a)		(CPHYSADDR(a) | KSEG3)
 
-/*
- * Memory segments (32bit kernel mode addresses)
- * These are the traditional names used in the 32-bit universe.
- */
-#define KUSEG			0x00000000
-#define KSEG0			0x80000000
-#define KSEG1			0xa0000000
-#define KSSEG			0xc0000000
-#define KSEG3			0xe0000000
-
-#define CKUSEG			0x00000000
-#define CKSEG0			0x80000000
-#define CKSEG1			0xa0000000
-#define CKSSEG			0xc0000000
-#define CKSEG3			0xe0000000
+#define CKUSEG			KUSEG
+#define CKSEG0			KSEG0
+#define CKSEG1			KSEG1
+#define CKSSEG			KSSEG
+#define CKSEG3			KSEG3
 
 #endif
+
+#define CKSEG0ADDR(a)		(CPHYSADDR(a) | CKSEG0)
+#define CKSEG1ADDR(a)		(CPHYSADDR(a) | CKSEG1)
+#define CKSSEGADDR(a)		(CPHYSADDR(a) | CKSSEG)
+#define CKSEG3ADDR(a)		(CPHYSADDR(a) | CKSEG3)
 
 #endif /* _ASM_ADDRSPACE_H */

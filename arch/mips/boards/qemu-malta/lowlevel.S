@@ -11,10 +11,9 @@
 #include <asm/pbl_macros.h>
 #include <asm/pbl_nmon.h>
 #include <linux/sizes.h>
-
 #include <asm/addrspace.h>
-#include <asm/gt64120.h>
-#include <mach/mach-gt64120.h>
+
+#include <mach/gt64120.h>
 
 #ifdef CONFIG_CPU_LITTLE_ENDIAN
 #define GT_CPU_TO_LE32(x) (x)

@@ -7,11 +7,9 @@
 #include <mach/hardware.h>
 #include <asm/io.h>
 #include <asm/addrspace.h>
-
 #include <linux/pci.h>
-#include <asm/gt64120.h>
 
-#include <mach/mach-gt64120.h>
+#include <mach/gt64120.h>
 
 #define PCI_ACCESS_READ  0
 #define PCI_ACCESS_WRITE 1

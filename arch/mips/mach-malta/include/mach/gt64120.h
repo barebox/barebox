@@ -6,12 +6,15 @@
  *		 Maciej W. Rozycki <macro@mips.com>
  * Copyright (C) 2005 Ralf Baechle (ralf@linux-mips.org)
  */
-#ifndef _ASM_GT64120_H
-#define _ASM_GT64120_H
 
-#define MSK(n)			((1 << (n)) - 1)
+#ifndef _MALTA_GT64120_H
+#define _MALTA_GT64120_H
 
-#define GT_DEF_BASE		0x14000000
+#define GT_DEF_BASE	0x14000000
+#define MIPS_GT_BASE	0x1be00000
+#define GT64120_BASE	CKSEG1ADDR(MIPS_GT_BASE)
+
+#define MSK(n)		((1 << (n)) - 1)
 
 /*
  *  Register offset addresses
@@ -85,4 +88,4 @@
 #define GT_READ(ofs)		le32_to_cpu(__GT_READ(ofs))
 #define GT_WRITE(ofs, data)	__GT_WRITE(ofs, cpu_to_le32(data))
 
-#endif /* _ASM_GT64120_H */
+#endif /* _MALTA_GT64120_H */

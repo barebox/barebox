@@ -15,8 +15,6 @@
 
 ENTRY_FUNCTION(BOARD_PBL_START)
 
-	mips_barebox_10h
-
 	debug_ll_ath79_init
 
 	hornet_mips24k_cp0_setup

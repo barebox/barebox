@@ -374,8 +374,6 @@ normal_path:
 	.set	push
 	.set	noreorder
 
-	mips_barebox_10h
-
 	pbl_blt 0xbf000000 skip_pll_ram_config t8
 
 	hornet_mips24k_cp0_setup
@@ -405,8 +403,6 @@ skip_pll_ram_config:
 	.macro	ar9331_pbl_generic_sram_start
 	.set	push
 	.set	noreorder
-
-	mips_barebox_10h
 
 	hornet_mips24k_cp0_setup
 

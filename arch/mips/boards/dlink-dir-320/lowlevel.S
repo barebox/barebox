@@ -13,8 +13,6 @@
 
 ENTRY_FUNCTION(BOARD_PBL_START)
 
-	mips_barebox_10h
-
 	mips_disable_interrupts
 
 	/* CPU/SoC specific setup ... */

@@ -175,6 +175,7 @@ copy_loop_exit:
 	.set	noreorder
 	mips_disable_interrupts
 	mips_disable_watchpoints
+	mips64_enable_64bit_addressing
 	.set	pop
 	.endm
 

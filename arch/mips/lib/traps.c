@@ -153,7 +153,8 @@ static void show_regs(const struct pt_regs *regs)
 
 	printf("Status: %08x\n", (uint32_t)regs->cp0_status);
 	printf("Cause : %08x\n", (uint32_t)regs->cp0_cause);
-	printf("Config: %08x\n\n", read_c0_config());
+	printf("Config: %08x\n", read_c0_config());
+	printf("BadVA : %0*lx\n\n", field, regs->cp0_badvaddr);
 }
 
 void barebox_exc_handler(struct pt_regs *regs)

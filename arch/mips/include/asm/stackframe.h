@@ -89,8 +89,10 @@
 #endif
 		LONG_S	v1, PT_EPC(sp)
 		LONG_S	$25, PT_R25(sp)
+		MFC0	v1, CP0_BADVADDR
 		LONG_S	$28, PT_R28(sp)
 		LONG_S	$31, PT_R31(sp)
+		LONG_S	v1, PT_BVADDR(sp)
 		.set	pop
 		.endm
 
@@ -157,11 +159,13 @@
 		MTC0	v1, CP0_EPC
 		LONG_L	$31, PT_R31(sp)
 		LONG_L	$28, PT_R28(sp)
+		LONG_L	v1, PT_BVADDR(sp)
 		LONG_L	$25, PT_R25(sp)
 #ifdef CONFIG_64BIT
 		LONG_L	$8, PT_R8(sp)
 		LONG_L	$9, PT_R9(sp)
 #endif
+		MTC0	v0, CP0_BADVADDR
 		LONG_L	$7,  PT_R7(sp)
 		LONG_L	$6,  PT_R6(sp)
 		LONG_L	$5,  PT_R5(sp)

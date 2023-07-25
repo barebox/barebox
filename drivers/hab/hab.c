@@ -318,7 +318,7 @@ int imx_hab_write_srk_hash_hex(const char *srkhash, unsigned flags)
 int imx_hab_lockdown_device(unsigned flags)
 {
 	struct imx_hab_ops *ops = imx_get_hab_ops();
-	u8 srk[SRK_HASH_SIZE];
+	u8 srk[SRK_HASH_SIZE] = {};
 	int ret;
 
 	ret = imx_hab_read_srk_hash(srk);

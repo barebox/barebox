@@ -13,7 +13,7 @@
 
 ENTRY_FUNCTION(BOARD_PBL_START)
 
-	mips_disable_interrupts
+	mips_cpu_setup
 
 	/* CPU/SoC specific setup ... */
 	/* ... absent */

@@ -14,7 +14,7 @@
 
 ENTRY_FUNCTION(BOARD_PBL_START)
 
-	mips_disable_interrupts
+	mips_cpu_setup
 
 	pbl_ar2312_pll
 

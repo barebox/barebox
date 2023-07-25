@@ -41,7 +41,7 @@
 #include <asm-generic/memory_layout.h>
 
 void main_entry(void *fdt, u32 fdt_size);
-void relocate_code(void *fdt, u32 fdt_size, u32 relocaddr);
+void __noreturn relocate_code(void *fdt, u32 fdt_size, u32 relocaddr);
 
 /**
  * read_uint() - Read an unsigned integer from the buffer
@@ -106,7 +106,7 @@ static void apply_reloc(unsigned int type, void *addr, long off)
 	}
 }
 
-void relocate_code(void *fdt, u32 fdt_size, u32 ram_size)
+void __noreturn relocate_code(void *fdt, u32 fdt_size, u32 ram_size)
 {
 	unsigned long addr, length, bss_len, relocaddr, new_stack;
 	uint8_t *buf;

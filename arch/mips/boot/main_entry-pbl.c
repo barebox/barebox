@@ -20,15 +20,11 @@ unsigned long free_mem_end_ptr;
 
 void pbl_main_entry(void *fdt, void *fdt_end, u32 ram_size);
 
-static unsigned long *ttb;
-
 static void barebox_uncompress(void *compressed_start, unsigned int len)
 {
 	/* set 128 KiB at the end of the MALLOC_BASE for early malloc */
 	free_mem_ptr = TEXT_BASE - SZ_128K;
 	free_mem_end_ptr = free_mem_ptr + SZ_128K;
-
-	ttb = (void *)((free_mem_ptr - 0x4000) & ~0x3fff);
 
 	pbl_barebox_uncompress((void*)TEXT_BASE, compressed_start, len);
 }

@@ -170,8 +170,7 @@ copy_loop_exit:
 	 nop
 
 	.org	0x10
-	.ascii	"barebox"
-	.byte	0
+	.asciiz	"barebox"
 
 	.align	4
 1:

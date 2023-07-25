@@ -133,7 +133,7 @@ void __noreturn relocate_code(void *fdt, u32 fdt_size, u32 ram_size)
 	 * space in the Barebox binary & complexity in handling them.
 	 */
 	off = relocaddr - (unsigned long)__image_start;
-	if (off & 0xffff)
+	if (!IS_ALIGNED(off, SZ_64K))
 		panic("Mis-aligned relocation\n");
 
 	/* Copy Barebox to RAM */

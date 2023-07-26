@@ -71,6 +71,11 @@ enum bootm_verify bootm_get_verify_mode(void)
 	return bootm_verify_mode;
 }
 
+void bootm_set_verify_mode(enum bootm_verify mode)
+{
+	bootm_verify_mode = mode;
+}
+
 static const char * const bootm_verify_names[] = {
 #ifndef CONFIG_BOOTM_FORCE_SIGNED_IMAGES
 	[BOOTM_VERIFY_NONE] = "none",

@@ -145,6 +145,7 @@ int bootm_load_devicetree(struct image_data *data, void *fdt,
 int bootm_get_os_size(struct image_data *data);
 
 enum bootm_verify bootm_get_verify_mode(void);
+void bootm_set_verify_mode(enum bootm_verify mode);
 
 #define UIMAGE_SOME_ADDRESS (UIMAGE_INVALID_ADDRESS - 1)
 

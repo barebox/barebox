@@ -351,5 +351,8 @@ int imx_hab_device_locked_down(void)
 {
 	struct imx_hab_ops *ops = imx_get_hab_ops();
 
+	if (!ops)
+		return -ENOSYS;
+
 	return ops->device_locked_down();
 }

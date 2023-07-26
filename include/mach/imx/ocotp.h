@@ -35,7 +35,7 @@
 int imx_ocotp_read_field(uint32_t field, unsigned *value);
 int imx_ocotp_write_field(uint32_t field, unsigned value);
 int imx_ocotp_permanent_write(int enable);
-bool imx_ocotp_sense_enable(bool enable);
+int imx_ocotp_sense_enable(bool enable);
 
 static inline u64 imx_ocotp_read_uid(void __iomem *ocotp)
 {

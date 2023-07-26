@@ -14,6 +14,7 @@
  */
 
 #include <common.h>
+#include <deep-probe.h>
 #include <driver.h>
 #include <malloc.h>
 #include <xfuncs.h>
@@ -497,10 +498,16 @@ static void imx_ocotp_field_decode(uint32_t field, unsigned *word,
 	*mask = GENMASK(width, 0);
 }
 
+static int imx_ocotp_ensure_probed(void);
+
 int imx_ocotp_read_field(uint32_t field, unsigned *value)
 {
 	unsigned word, bit, mask, val;
 	int ret;
+
+	ret = imx_ocotp_ensure_probed();
+	if (ret)
+		return ret;
 
 	imx_ocotp_field_decode(field, &word, &bit, &mask);
 
@@ -524,6 +531,10 @@ int imx_ocotp_write_field(uint32_t field, unsigned value)
 	unsigned word, bit, mask;
 	int ret;
 
+	ret = imx_ocotp_ensure_probed();
+	if (ret)
+		return ret;
+
 	imx_ocotp_field_decode(field, &word, &bit, &mask);
 
 	value &= mask;
@@ -541,14 +552,27 @@ int imx_ocotp_write_field(uint32_t field, unsigned value)
 
 int imx_ocotp_permanent_write(int enable)
 {
+	int ret;
+
+	ret = imx_ocotp_ensure_probed();
+	if (ret)
+		return ret;
+
 	imx_ocotp->permanent_write_enable = enable;
 
 	return 0;
 }
 
-bool imx_ocotp_sense_enable(bool enable)
+int imx_ocotp_sense_enable(bool enable)
 {
-	const bool old_value = imx_ocotp->sense_enable;
+	bool old_value;
+	int ret;
+
+	ret = imx_ocotp_ensure_probed();
+	if (ret)
+		return ret;
+
+	old_value = imx_ocotp->sense_enable;
 	imx_ocotp->sense_enable = enable;
 	return old_value;
 }
@@ -993,6 +1017,19 @@ static __maybe_unused struct of_device_id imx_ocotp_dt_ids[] = {
 	}
 };
 MODULE_DEVICE_TABLE(of, imx_ocotp_dt_ids);
+
+static int imx_ocotp_ensure_probed(void)
+{
+	if (!imx_ocotp && deep_probe_is_supported()) {
+		int ret;
+
+		ret = of_devices_ensure_probed_by_dev_id(imx_ocotp_dt_ids);
+		if (ret)
+			return ret;
+	}
+
+	return imx_ocotp ? 0 : -EPROBE_DEFER;
+}
 
 static struct driver imx_ocotp_driver = {
 	.name	= "imx_ocotp",

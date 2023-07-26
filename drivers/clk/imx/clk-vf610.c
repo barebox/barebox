@@ -568,13 +568,16 @@ static int vf610_switch_cpu_clock_to_400mhz(void)
 static int vf610_switch_cpu_clock(void)
 {
 	int ret;
-	bool sense_enable;
+	int sense_enable;
 	uint32_t speed_grading;
 
 	if (!of_machine_is_compatible("fsl,vf610"))
 		return 0;
 
 	sense_enable = imx_ocotp_sense_enable(true);
+	if (sense_enable < 0)
+		return sense_enable;
+
 	ret = imx_ocotp_read_field(VF610_OCOTP_SPEED_GRADING, &speed_grading);
 	imx_ocotp_sense_enable(sense_enable);
 	if (ret < 0)

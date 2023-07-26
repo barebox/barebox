@@ -461,12 +461,15 @@ config CMD_GO
 	help
 	  Start application at address or file
 
-	  Usage: go ADDR [ARG...]
+	  Usage: go [-si] ADDR [ARG...]
 
 	  Start application at ADDR passing ARG as arguments.
 
 	  If addr does not start with a digit it is interpreted as a filename
 	  in which case the file is memmapped and executed
+	  Options:
+		  -s	pass all arguments as strings referenced by argc, argv arguments (default)
+		  -i	pass up to four integer arguments using default calling convention
 
 config CMD_LOADB
 	depends on CONSOLE_FULL

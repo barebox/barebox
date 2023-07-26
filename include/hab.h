@@ -8,9 +8,22 @@
 
 #include <errno.h>
 
+/* State definitions */
+enum habv4_state {
+	HAB_STATE_INITIAL = 0x33,	/* Initialising state (transitory) */
+	HAB_STATE_CHECK = 0x55,		/* Check state (non-secure) */
+	HAB_STATE_NONSECURE = 0x66,	/* Non-secure state */
+	HAB_STATE_TRUSTED = 0x99,	/* Trusted state */
+	HAB_STATE_SECURE = 0xaa,	/* Secure state */
+	HAB_STATE_FAIL_SOFT = 0xcc,	/* Soft fail state */
+	HAB_STATE_FAIL_HARD = 0xff,	/* Hard fail state (terminal) */
+	HAB_STATE_NONE = 0xf0,		/* No security state machine */
+};
+
 #ifdef CONFIG_HABV4
 int imx28_hab_get_status(void);
 int imx6_hab_get_status(void);
+int habv4_get_state(void);
 #else
 static inline int imx28_hab_get_status(void)
 {
@@ -19,6 +32,10 @@ static inline int imx28_hab_get_status(void)
 static inline int imx6_hab_get_status(void)
 {
 	return -EPERM;
+}
+static inline int habv4_get_state(void)
+{
+	return -ENOSYS;
 }
 #endif
 

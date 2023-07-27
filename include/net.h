@@ -1,12 +1,9 @@
+// SPDX-License-Identifier: GPL-2.0
+// SPDX-FileCopyrightText: 1994-2000 Neil Russell
 /*
- *	LiMon Monitor (LiMon) - Network.
+ * net.h - barebox networking support
  *
- *	Copyright 1994 - 2000 Neil Russell.
- *	(See License)
- *
- *
- * History
- *	9/16/00	  bor  adapted to TQM823L/STK8xxL board, RARP/TFTP boot added
+ * based on U-Boot (LiMon) code
  */
 
 #ifndef __NET_H__

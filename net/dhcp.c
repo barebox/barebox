@@ -1,11 +1,12 @@
+// SPDX-License-Identifier: GPL-2.0
+// SPDX-FileCopyrightText: 1994, 1995, 2000 Neil Russell
+// SPDX-FileCopyrightText: 2000 Roland Borde
+// SPDX-FileCopyrightText: 2000 Paolo Scaffardi
+// SPDX-FileCopyrightText: 2000-2004 Wolfgang Denk, wd@denx.de
 /*
- *	Based on LiMon - BOOTP.
+ * dhcp.c - barebox dhcp support
  *
- *	Copyright 1994, 1995, 2000 Neil Russell.
- *	(See License)
- *	Copyright 2000 Roland Borde
- *	Copyright 2000 Paolo Scaffardi
- *	Copyright 2000-2004 Wolfgang Denk, wd@denx.de
+ * based on U-Boot (LiMon) code
  */
 
 #include <common.h>

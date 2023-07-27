@@ -11,7 +11,7 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-#include <arm/imx51-zii-rdu1.dts>
+#include <arm/nxp/imx/imx51-zii-rdu1.dts>
 
 / {
 	compatible = "zii,imx51-rdu1", "fsl,imx51-babbage-power", "fsl,imx51";

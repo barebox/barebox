@@ -10,7 +10,7 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-#include <arm/imx6qdl-sabresd.dtsi>
+#include <arm/nxp/imx/imx6qdl-sabresd.dtsi>
 
 &ocotp {
 	barebox,provide-mac-address = <&fec 0x620>;

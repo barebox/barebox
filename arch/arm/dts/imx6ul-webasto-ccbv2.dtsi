@@ -6,7 +6,7 @@
 
 /dts-v1/;
 
-#include <arm/imx6ul.dtsi>
+#include <arm/nxp/imx/imx6ul.dtsi>
 
 / {
 	model = "Webasto common communication board version 2";

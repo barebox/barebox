@@ -3,7 +3,7 @@
 /*
  * Copyright (C) 2018 Zodiac Inflight Innovations
  */
-#include <arm/imx7d-zii-rpu2.dts>
+#include <arm/nxp/imx/imx7d-zii-rpu2.dts>
 
 #include "imx7d-ddrc.dtsi"
 

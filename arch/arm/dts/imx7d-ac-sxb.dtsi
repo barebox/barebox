@@ -6,7 +6,7 @@
 
 /dts-v1/;
 
-#include <arm/imx7d.dtsi>
+#include <arm/nxp/imx/imx7d.dtsi>
 
 / {
 	model = "Atlas Copco SXB Board";

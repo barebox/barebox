@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /dts-v1/;
 
-#include <arm/imx6dl-prtvt7.dts>
+#include <arm/nxp/imx/imx6dl-prtvt7.dts>
 #include "imx6qdl-prti6q-emmc.dtsi"
 
 &state_emmc {

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR X11)
 
-#include <arm/stm32mp157c-ev1.dts>
+#include <arm/st/stm32mp157c-ev1.dts>
 #include "stm32mp151.dtsi"
 
 / {

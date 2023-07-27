@@ -39,7 +39,7 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <arm/imx6q-h100.dts>
+#include <arm/nxp/imx/imx6q-h100.dts>
 
 / {
 	chosen {

@@ -1,4 +1,4 @@
-#include <arm/imx6ul-pico-hobbit.dts>
+#include <arm/nxp/imx/imx6ul-pico-hobbit.dts>
 
 / {
 	chosen {

@@ -1,4 +1,4 @@
-#include <arm/imx6ull-14x14-evk.dts>
+#include <arm/nxp/imx/imx6ull-14x14-evk.dts>
 
 /{
 	chosen {

@@ -3,7 +3,7 @@
  * Copyright (C) 2019 Ahmad Fatoum - Pengutronix
  */
 
-#include <arm/imx6q-marsboard.dts>
+#include <arm/nxp/imx/imx6q-marsboard.dts>
 #include "imx6q.dtsi"
 
 / {

@@ -1,4 +1,4 @@
-#include <arm/tegra124-jetson-tk1.dts>
+#include <arm/nvidia/tegra124-jetson-tk1.dts>
 #include "tegra124.dtsi"
 
 / {

@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /dts-v1/;
-#include <arm/at91-sama5d3_ksz9477_evb.dts>
+#include <arm/microchip/at91-sama5d3_ksz9477_evb.dts>
 #include "sama5d3.dtsi"
 
 / {

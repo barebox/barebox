@@ -43,7 +43,7 @@
  */
 /dts-v1/;
 
-#include <arm/imx6dl.dtsi>
+#include <arm/nxp/imx/imx6dl.dtsi>
 #include "imx6qdl-hummingboard2.dtsi"
 
 / {

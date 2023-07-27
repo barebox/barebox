@@ -6,4 +6,4 @@
  * published by the Free Software Foundation.
  */
 
-#include <arm/am335x-bone-common.dtsi>
+#include <arm/ti/omap/am335x-bone-common.dtsi>

@@ -1,4 +1,4 @@
-#include <arm/zynq-zed.dts>
+#include <arm/xilinx/zynq-zed.dts>
 #include "zynq-7000.dtsi"
 
 / {

@@ -7,7 +7,7 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-#include <arm/imx6sx-sdb.dts>
+#include <arm/nxp/imx/imx6sx-sdb.dts>
 #include "imx6sx.dtsi"
 
 / {

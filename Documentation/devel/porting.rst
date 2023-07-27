@@ -275,7 +275,7 @@ barebox regularly synchronizes its ``/dts/src`` directory with the
 upstream device trees in Linux. If your device tree happens to already
 be there you can just include it::
 
-   #include <arm/stm32mp157c-odyssey.dts>
+   #include <arm/st/stm32mp157c-odyssey.dts>
    #include "stm32mp151.dtsi"
 
    / {

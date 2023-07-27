@@ -40,5 +40,5 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <arm/imx6qp-nitrogen6_max.dts>
+#include <arm/nxp/imx/imx6qp-nitrogen6_max.dts>
 #include "imx6qdl-nitrogen6_max.dtsi"

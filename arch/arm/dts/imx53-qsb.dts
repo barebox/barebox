@@ -10,6 +10,6 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-#include <arm/imx53-qsb.dts>
+#include <arm/nxp/imx/imx53-qsb.dts>
 #include "imx53.dtsi"
 #include "imx53-qsb-common.dtsi"

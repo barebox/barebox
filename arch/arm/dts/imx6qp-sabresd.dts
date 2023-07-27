@@ -10,7 +10,7 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-#include <arm/imx6qp-sabresd.dts>
+#include <arm/nxp/imx/imx6qp-sabresd.dts>
 
 / {
 	model = "Freescale i.MX6 Quad Plus SABRE Smart Device Board";

@@ -1,4 +1,4 @@
-#include <arm/vexpress-v2p-ca15_a7.dts>
+#include <arm/arm/vexpress-v2p-ca15_a7.dts>
 
 / {
 	barebox_environment {

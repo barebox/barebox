@@ -1,4 +1,4 @@
-#include <arm/imx6q-wandboard.dts>
+#include <arm/nxp/imx/imx6q-wandboard.dts>
 #include <dt-bindings/gpio/gpio.h>
 #include "imx6q.dtsi"
 

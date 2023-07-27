@@ -1,4 +1,4 @@
-#include <arm/imx28-duckbill.dts>
+#include <arm/nxp/mxs/imx28-duckbill.dts>
 
 / {
 	chosen {

@@ -4,9 +4,9 @@
 
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/input/input.h>
-#include <arm/stm32mp151.dtsi>
-#include <arm/stm32mp15-pinctrl.dtsi>
-#include <arm/stm32mp15xxad-pinctrl.dtsi>
+#include <arm/st/stm32mp151.dtsi>
+#include <arm/st/stm32mp15-pinctrl.dtsi>
+#include <arm/st/stm32mp15xxad-pinctrl.dtsi>
 
 #include "stm32mp151.dtsi"
 

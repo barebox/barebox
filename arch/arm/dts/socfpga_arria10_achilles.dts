@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /dts-v1/;
-#include <arm/socfpga_arria10.dtsi>
+#include <arm/intel/socfpga/socfpga_arria10.dtsi>
 
 / {
 	model = "Reflex SOCFPGA Arria 10 Achilles";

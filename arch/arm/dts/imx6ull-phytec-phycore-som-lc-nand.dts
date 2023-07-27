@@ -8,7 +8,7 @@
 #ifdef CONFIG_BOOTM_FITIMAGE_PUBKEY
 #include CONFIG_BOOTM_FITIMAGE_PUBKEY
 #endif
-#include <arm/imx6ull.dtsi>
+#include <arm/nxp/imx/imx6ull.dtsi>
 #include "imx6ul-phytec-phycore-som.dtsi"
 
 / {

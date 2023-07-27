@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /dts-v1/;
 
-#include <arm/imx6dl-victgo.dts>
+#include <arm/nxp/imx/imx6dl-victgo.dts>
 #include "imx6qdl-prti6q-nor.dtsi"

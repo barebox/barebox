@@ -1,4 +1,4 @@
-#include <arm/imx6qdl-dfi-fs700-m60.dtsi>
+#include <arm/nxp/imx/imx6qdl-dfi-fs700-m60.dtsi>
 
 / {
 	chosen {

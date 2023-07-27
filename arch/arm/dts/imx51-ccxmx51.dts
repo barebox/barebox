@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 /* Author: Alexander Shiyan <shc_work@mail.ru> */
 
-#include <arm/imx51-digi-connectcore-jsk.dts>
+#include <arm/nxp/imx/imx51-digi-connectcore-jsk.dts>
 
 / {
 	chosen {

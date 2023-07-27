@@ -1,4 +1,4 @@
-#include <arm/at91sam9263ek.dts>
+#include <arm/microchip/at91sam9263ek.dts>
 / {
 	chosen {
 		environment {

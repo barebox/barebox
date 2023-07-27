@@ -1,2 +1,2 @@
-#include <arm/tegra20-paz00.dts>
+#include <arm/nvidia/tegra20-paz00.dts>
 #include "tegra20.dtsi"

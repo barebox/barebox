@@ -7,7 +7,7 @@
  * version 2.  This program is licensed "as is" without any warranty of any
  * kind, whether express or implied.
  */
-#include <arm/am33xx.dtsi>
+#include <arm/ti/omap/am33xx.dtsi>
 
 / {
 	aliases {

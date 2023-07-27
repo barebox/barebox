@@ -2,7 +2,7 @@
  * Barebox specific DT overlay for Phytec PCM-970 RDK
  */
 
-#include <arm/imx27-phytec-phycore-rdk.dts>
+#include <arm/nxp/imx/imx27-phytec-phycore-rdk.dts>
 
 / {
 	chosen {

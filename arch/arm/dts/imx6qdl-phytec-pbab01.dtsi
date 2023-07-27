@@ -9,7 +9,7 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-#include <arm/imx6qdl-phytec-pbab01.dtsi>
+#include <arm/nxp/imx/imx6qdl-phytec-pbab01.dtsi>
 
 &uart1 {
 	status = "okay";

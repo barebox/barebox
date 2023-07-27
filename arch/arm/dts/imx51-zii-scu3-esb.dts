@@ -5,7 +5,7 @@
  */
 
 
-#include <arm/imx51-zii-scu3-esb.dts>
+#include <arm/nxp/imx/imx51-zii-scu3-esb.dts>
 
 &iim {
 	barebox,provide-mac-address = <&fec 1 9>;

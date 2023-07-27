@@ -10,7 +10,7 @@
 #include CONFIG_BOOTM_FITIMAGE_PUBKEY
 #endif
 
-#include <arm/imx6q.dtsi>
+#include <arm/nxp/imx/imx6q.dtsi>
 #include "imx6q.dtsi"
 #include "imx6qdl-phytec-phycard-som.dtsi"
 

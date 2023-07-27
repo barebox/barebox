@@ -14,7 +14,7 @@
 
 /dts-v1/;
 
-#include <arm/rk3288.dtsi>
+#include <arm/rockchip/rk3288.dtsi>
 
 / {
 	model = "phycore-rk3288";

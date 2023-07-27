@@ -11,8 +11,8 @@
 
 /dts-v1/;
 
-#include <arm/sama5d2.dtsi>
-#include <arm/sama5d2-pinfunc.h>
+#include <arm/microchip/sama5d2.dtsi>
+#include <arm/microchip/sama5d2-pinfunc.h>
 #include <dt-bindings/mfd/atmel-flexcom.h>
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/regulator/active-semi,8945a-regulator.h>

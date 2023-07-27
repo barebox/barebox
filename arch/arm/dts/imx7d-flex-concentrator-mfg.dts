@@ -7,7 +7,7 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-#include <arm/imx7d-flex-concentrator-mfg.dts>
+#include <arm/nxp/imx/imx7d-flex-concentrator-mfg.dts>
 
 / {
 	chosen {

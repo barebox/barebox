@@ -42,7 +42,7 @@
 
 /dts-v1/;
 
-#include <arm/imx6qp.dtsi>
+#include <arm/nxp/imx/imx6qp.dtsi>
 #include "imx6q.dtsi"
 #include "imx6qdl-zii-rdu2.dtsi"
 

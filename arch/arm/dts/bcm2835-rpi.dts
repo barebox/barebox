@@ -1,4 +1,4 @@
-#include <arm/bcm2835-rpi-a.dts>
+#include <arm/broadcom/bcm2835-rpi-a.dts>
 
 &{/aliases} {
 	usb0 = &usb;

@@ -4,7 +4,7 @@
  * Copyright (C) 2015, 2016 Zodiac Inflight Innovations
  */
 
-#include <arm/vf610-zii-dev-rev-c.dts>
+#include <arm/nxp/vf/vf610-zii-dev-rev-c.dts>
 
 #include "vf610-zii-dev.dtsi"
 

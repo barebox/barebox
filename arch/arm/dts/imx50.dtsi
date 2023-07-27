@@ -1,4 +1,4 @@
-#include <arm/imx50.dtsi>
+#include <arm/nxp/imx/imx50.dtsi>
 
 &aips1 {
 	usbphy1: usbphy@1 {

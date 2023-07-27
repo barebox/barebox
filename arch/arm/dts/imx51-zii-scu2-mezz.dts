@@ -4,7 +4,7 @@
  * Copyright (C) 2018 Zodiac Inflight Innovations
  */
 
-#include <arm/imx51-zii-scu2-mezz.dts>
+#include <arm/nxp/imx/imx51-zii-scu2-mezz.dts>
 
 &iim {
 	barebox,provide-mac-address = <&fec 1 9>;

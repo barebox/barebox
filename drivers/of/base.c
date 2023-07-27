@@ -24,6 +24,21 @@
 
 static struct device_node *root_node;
 
+/**
+ * of_node_has_prefix - Test if a node name has a given prefix
+ * @np: The node name to test
+ * @prefix: The prefix to see if @np starts with
+ *
+ * Returns:
+ * * strlen(@prefix) if @np starts with @prefix
+ * * 0 if @np does not start with @prefix
+ */
+size_t of_node_has_prefix(const struct device_node *np, const char *prefix)
+{
+	return np ? str_has_prefix(kbasename(np->full_name), prefix) : 0;
+}
+EXPORT_SYMBOL(of_node_has_prefix);
+
 bool of_node_name_eq(const struct device_node *np, const char *name)
 {
 	const char *node_name;

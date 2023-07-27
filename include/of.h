@@ -131,6 +131,7 @@ extern int of_n_addr_cells(struct device_node *np);
 extern int of_bus_n_size_cells(struct device_node *np);
 extern int of_n_size_cells(struct device_node *np);
 extern bool of_node_name_eq(const struct device_node *np, const char *name);
+extern size_t of_node_has_prefix(const struct device_node *np, const char *prefix);
 
 extern struct property *of_find_property(const struct device_node *np,
 					const char *name, int *lenp);
@@ -375,6 +376,11 @@ static inline struct of_reserve_map *of_get_reserve_map(void)
 static inline bool of_node_name_eq(const struct device_node *np, const char *name)
 {
 	return false;
+}
+
+static inline size_t of_node_has_prefix(const struct device_node *np, const char *prefix)
+{
+	return 0;
 }
 
 static inline int of_parse_partitions(struct cdev *cdev,

@@ -20,8 +20,8 @@ endif
 obj-y = common.o tap.o setjmp.o
 obj-$(CONFIG_MALLOC_LIBC) += libc_malloc.o
 
-CFLAGS_sdl.o = $(shell pkg-config sdl2 --cflags)
+CFLAGS_sdl.o = $(shell $(PKG_CONFIG) sdl2 --cflags)
 obj-$(CONFIG_SDL) += sdl.o
 
-CFLAGS_ftdi.o = $(shell pkg-config libftdi1 --cflags)
+CFLAGS_ftdi.o = $(shell $(PKG_CONFIG) libftdi1 --cflags)
 obj-$(CONFIG_GPIO_LIBFTDI1) += ftdi.o

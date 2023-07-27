@@ -369,9 +369,10 @@ endif
 
 KCONFIG_CONFIG	?= .config
 
+PKG_CONFIG ?= pkg-config
 CROSS_PKG_CONFIG ?= $(CROSS_COMPILE)pkg-config
 
-export KCONFIG_CONFIG CROSS_PKG_CONFIG
+export KCONFIG_CONFIG CROSS_PKG_CONFIG PKG_CONFIG
 
 # SHELL used by kbuild
 CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \

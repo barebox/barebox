@@ -52,7 +52,7 @@ static int state_backend_bucket_direct_read(struct state_backend_storage_bucket
 	struct state_backend_storage_bucket_direct *direct =
 	    get_bucket_direct(bucket);
 	struct state_backend_storage_bucket_direct_meta meta;
-	uint32_t read_len;
+	uint32_t read_len, header_len = 0;
 	void *buf;
 	int ret;
 
@@ -72,6 +72,8 @@ static int state_backend_bucket_direct_read(struct state_backend_storage_bucket
 			return -EINVAL;
 
 		}
+
+		header_len = sizeof(meta);
 	} else {
 		if (meta.magic != ~0 && !!meta.magic)
 			bucket->wrong_magic = 1;
@@ -87,11 +89,15 @@ static int state_backend_bucket_direct_read(struct state_backend_storage_bucket
 				-errno);
 			return -errno;
 		}
+
 	}
 
 	buf = xmalloc(read_len);
 	if (!buf)
 		return -ENOMEM;
+
+	dev_dbg(direct->dev, "Read state from %lld length %d\n", (long long) direct->offset,
+		header_len + read_len);
 
 	ret = read_full(direct->fd, buf, read_len);
 	if (ret < 0) {
@@ -112,6 +118,7 @@ static int state_backend_bucket_direct_write(struct state_backend_storage_bucket
 {
 	struct state_backend_storage_bucket_direct *direct =
 	    get_bucket_direct(bucket);
+	size_t header_len = 0;
 	int ret;
 	struct state_backend_storage_bucket_direct_meta meta;
 
@@ -129,6 +136,8 @@ static int state_backend_bucket_direct_write(struct state_backend_storage_bucket
 			dev_err(direct->dev, "Failed to write metadata to file, %d\n", ret);
 			return ret;
 		}
+
+		header_len = sizeof(meta);
 	} else {
 		if (!IS_ENABLED(CONFIG_STATE_BACKWARD_COMPATIBLE)) {
 			dev_dbg(direct->dev, "Too small stride size: must skip metadata! Increase stride size\n");
@@ -147,6 +156,9 @@ static int state_backend_bucket_direct_write(struct state_backend_storage_bucket
 		dev_err(direct->dev, "Failed to flush file, %d\n", ret);
 		return ret;
 	}
+
+	dev_dbg(direct->dev, "Written state to offset %lld length %zu data length %zu\n",
+		(long long)direct->offset, len + header_len, len);
 
 	return 0;
 }

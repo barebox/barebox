@@ -75,7 +75,7 @@ static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 
 	struct bootm_data data = {};
 
-	if (dryrun) {
+	if (dryrun == 1) {
 		printf("Would run %s\n", bs->scriptpath);
 		return 0;
 	}
@@ -94,8 +94,8 @@ static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 
 	if (verbose)
 		data.verbose = verbose;
-	if (dryrun)
-		data.dryrun = dryrun;
+	if (dryrun >= 2)
+		data.dryrun = dryrun - 1;
 
 	return bootm_boot(&data);
 }

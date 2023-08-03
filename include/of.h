@@ -75,7 +75,7 @@ int of_add_initrd(struct device_node *root, resource_size_t start,
 
 struct fdt_header *fdt_get_tree(void);
 
-struct fdt_header *of_get_fixed_tree(struct device_node *node);
+struct fdt_header *of_get_fixed_tree(const struct device_node *node);
 
 /* Helper to read a big number; size is in cells (not bytes) */
 static inline u64 of_read_number(const __be32 *cell, int size)

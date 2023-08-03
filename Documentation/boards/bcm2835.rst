@@ -4,10 +4,10 @@ Broadcom BCM283x
 Raspberry Pi
 ------------
 
-barebox supports has support for BCM283x-based Raspberry Pi single board
-computers. Support is most extensive for BCM283[567]. For the newer BCM2711
-used in the Raspberry Pi 4, only basic support is currently available
-(Serial Port, Pinctrl/GPIO, SD-Card).
+barebox has support for BCM283x-based Raspberry Pi single board computers.
+Support is most extensive for BCM283[567]. For the newer BCM2711 used in the
+Raspberry Pi 4, only basic support is currently available (Serial Port,
+Pinctrl/GPIO, SD-Card).
 
   1. Prepare an SD or microSD card with a FAT filesystem of at least 30 MB in size.
 

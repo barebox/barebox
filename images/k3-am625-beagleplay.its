@@ -1,0 +1,29 @@
+
+/dts-v1/;
+
+/ {
+	description = "barebox for BeaglePlay board";
+
+	images {
+		barebox {
+			description = "barebox for BeaglePlay board";
+			type = "firmware";
+			os = "linux";
+			arch = "arm";
+			compression = "none";
+			load = <0x80800000>;
+			entry = <0x80800000>;
+			data = /incbin/("barebox-beagleplay.img");
+		};
+	};
+
+	configurations {
+		default = "conf-0";
+
+		conf-0 {
+			description = "barebox for BeaglePlay board";
+			firmware = "barebox";
+			loadables = "barebox";
+		};
+	};
+};

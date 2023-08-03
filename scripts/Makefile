@@ -5,7 +5,6 @@
 # barebox for the build process.
 
 hostprogs-always-y					+= bin2c
-hostprogs-always-y					+= mkimage
 hostprogs-always-y					+= fix_size
 hostprogs-always-y					+= bareboxenv
 hostprogs-always-y					+= bareboxcrc32

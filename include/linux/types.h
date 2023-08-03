@@ -216,5 +216,7 @@ struct hlist_node {
 	struct hlist_node *next, **pprev;
 };
 
+typedef int (*cmp_func_t)(const void *a, const void *b);
+
 #endif
 #endif /* _LINUX_TYPES_H */

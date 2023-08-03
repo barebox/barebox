@@ -232,6 +232,19 @@ config ARCH_IMX
 	select HAVE_PBL_MULTI_IMAGES
 	select RELOCATABLE
 
+config ARCH_K3
+	bool "Texas Instruments Inc. K3 multicore SoC architecture"
+	depends on 64BIT
+	select CPU_V8
+	select GPIOLIB
+	select COMMON_CLK
+	select CLKDEV_LOOKUP
+	select HAVE_PBL_MULTI_IMAGES
+	select HAS_DEBUG_LL
+	select HAVE_CLK
+	select COMMON_CLK_OF_PROVIDER
+	select PM_GENERIC_DOMAINS
+
 config ARCH_OMAP_MULTI
 	bool "TI OMAP"
 	depends on 32BIT
@@ -327,6 +340,7 @@ source "arch/arm/mach-layerscape/Kconfig"
 source "arch/arm/mach-mxs/Kconfig"
 source "arch/arm/mach-mvebu/Kconfig"
 source "arch/arm/mach-nomadik/Kconfig"
+source "arch/arm/mach-k3/Kconfig"
 source "arch/arm/mach-omap/Kconfig"
 source "arch/arm/mach-pxa/Kconfig"
 source "arch/arm/mach-rockchip/Kconfig"

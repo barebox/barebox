@@ -1,0 +1,6 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+menu "K3 boards"
+        depends on ARCH_K3
+
+endmenu

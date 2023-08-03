@@ -2,6 +2,6 @@
 #ifndef __GPIOD_H_
 #define __GPIOD_H_
 
-#error "API changed from numbers to descriptors. #include <linux/gpiod/consumer.h>"
+#error "API changed from numbers to descriptors. #include <linux/gpio/consumer.h>"
 
 #endif

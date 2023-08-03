@@ -80,6 +80,37 @@ static struct generic_pm_domain *genpd_xlate_simple(
 }
 
 /**
+ * genpd_xlate_onecell() - Xlate function using a single index.
+ * @genpdspec: OF phandle args to map into a PM domain
+ * @data: xlate function private data - pointer to struct genpd_onecell_data
+ *
+ * This is a generic xlate function that can be used to model simple PM domain
+ * controllers that have one device tree node and provide multiple PM domains.
+ * A single cell is used as an index into an array of PM domains specified in
+ * the genpd_onecell_data struct when registering the provider.
+ */
+static struct generic_pm_domain *genpd_xlate_onecell(
+					struct of_phandle_args *genpdspec,
+					void *data)
+{
+	struct genpd_onecell_data *genpd_data = data;
+	unsigned int idx = genpdspec->args[0];
+
+	if (genpdspec->args_count != 1)
+		return ERR_PTR(-EINVAL);
+
+	if (idx >= genpd_data->num_domains) {
+		pr_err("%s: invalid domain index %u\n", __func__, idx);
+		return ERR_PTR(-EINVAL);
+	}
+
+	if (!genpd_data->domains[idx])
+		return ERR_PTR(-ENOENT);
+
+	return genpd_data->domains[idx];
+}
+
+/**
  * genpd_add_provider() - Register a PM domain provider for a node
  * @np: Device node pointer associated with the PM domain provider.
  * @xlate: Callback for decoding PM domain from phandle arguments.
@@ -123,6 +154,51 @@ int of_genpd_add_provider_simple(struct device_node *np,
 	return ret;
 }
 EXPORT_SYMBOL_GPL(of_genpd_add_provider_simple);
+
+/**
+ * of_genpd_add_provider_onecell() - Register a onecell PM domain provider
+ * @np: Device node pointer associated with the PM domain provider.
+ * @data: Pointer to the data associated with the PM domain provider.
+ */
+int of_genpd_add_provider_onecell(struct device_node *np,
+				  struct genpd_onecell_data *data)
+{
+	struct generic_pm_domain *genpd;
+	unsigned int i;
+	int ret = -EINVAL;
+
+	if (!np || !data)
+		return -EINVAL;
+
+	if (!data->xlate)
+		data->xlate = genpd_xlate_onecell;
+
+	for (i = 0; i < data->num_domains; i++) {
+		genpd = data->domains[i];
+
+		if (!genpd)
+			continue;
+		if (!genpd_present(genpd))
+			goto error;
+	}
+
+	ret = genpd_add_provider(np, data->xlate, data);
+	if (ret < 0)
+		goto error;
+
+	return 0;
+
+error:
+	while (i--) {
+		genpd = data->domains[i];
+
+		if (!genpd)
+			continue;
+	}
+
+	return ret;
+}
+EXPORT_SYMBOL_GPL(of_genpd_add_provider_onecell);
 
 /**
  * genpd_get_from_provider() - Look-up PM domain

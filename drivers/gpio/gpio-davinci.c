@@ -179,6 +179,8 @@ static int davinci_gpio_probe(struct device *dev)
 }
 
 static struct of_device_id davinci_gpio_ids[] = {
+	{ .compatible = "ti,keystone-gpio", },
+	{ .compatible = "ti,am654-gpio", },
 	{ .compatible = "ti,dm6441-gpio", },
 	{ /* sentinel */ },
 };

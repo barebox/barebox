@@ -1031,10 +1031,11 @@ config CMD_RM
 	help
 	  Remove files
 
-	  Usage: rm [-r] FILES...
+	  Usage: rm [-rf] FILES...
 
 	  Options:
 		  -r	remove directories and their contents recursively
+		  -f	ignore nonexistent files
 
 config CMD_RMDIR
 	tristate

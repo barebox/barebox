@@ -1,0 +1,29 @@
+Texas Instruments K3
+====================
+
+K3 is for Keystone 3 and denotes a family of SoCs from Texas Instruments. From these
+SoCs the AM62x is currently supported under barebox. The boot flow needs several images,
+only the last stage is supported by barebox. To start up the help of U-Boot is still
+needed.
+
+The board currently supported by barebox is the BeaglePlay board, see
+https://www.beagleboard.org/boards/beagleplay. The following examples assume
+this board is used.
+
+Building barebox
+----------------
+.. code-block:: sh
+
+  make ARCH=arm CROSS_COMPILE=<ARM toolchain prefix> multi_v8_defconfig
+
+Running barebox
+---------------
+
+barebox can be started from running U-Boot with:
+
+.. code-block:: sh
+
+  dhcp 0x82000000 <serverip>:barebox-beagleplay.img; bootm 0x82000000
+
+To start barebox from SD/eMMC replace the ``u-boot.img`` on a bootable SD/eMMC card
+with the content of ``images/barebox-beagleplay-fit.img``

@@ -567,6 +567,8 @@ void sdhci_set_clock(struct sdhci *host, unsigned int clock, unsigned int input_
 
 	host->mci->clock = 0;
 
+	sdhci_wait_idle(host, NULL);
+
 	sdhci_write16(host, SDHCI_CLOCK_CONTROL, 0);
 
 	if (clock == 0)

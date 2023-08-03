@@ -31,6 +31,7 @@ omap3-usb-loader
 omap3-usb-loader-target
 rk-usb-loader
 rk-usb-loader-target
+rkimage
 mips-relocs
 rsatoc
 stm32image

@@ -1,0 +1,9 @@
+/dts-v1/;
+
+#include <arm64/ti/k3-am625-beagleplay.dts>
+
+/ {
+	chosen {
+		stdout-path = &main_uart0;
+	};
+};

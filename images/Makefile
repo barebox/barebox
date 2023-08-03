@@ -170,6 +170,7 @@ include $(srctree)/images/Makefile.zynq
 include $(srctree)/images/Makefile.zynqmp
 include $(srctree)/images/Makefile.layerscape
 include $(srctree)/images/Makefile.riscv
+include $(srctree)/images/Makefile.k3
 
 
 pblb-$(CONFIG_BOARD_GENERIC_DT) += start_dt_2nd

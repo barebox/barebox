@@ -245,23 +245,13 @@ static int rk_sdhci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 				 struct mci_data *data)
 {
 	struct rk_sdhci_host *host = to_rk_sdhci_host(mci);
-	u32 mask, command, xfer;
+	u32 command, xfer;
 	int ret;
 	dma_addr_t dma;
 
-	/* Wait for idle before next command */
-	mask = SDHCI_CMD_INHIBIT_CMD;
-	if (cmd->cmdidx != MMC_CMD_STOP_TRANSMISSION)
-		mask |= SDHCI_CMD_INHIBIT_DATA;
-
-	ret = wait_on_timeout(10 * MSECOND,
-			!(sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE) & mask));
-
-	if (ret) {
-		dev_err(host->mci.hw_dev,
-				"SDHCI timeout while waiting for idle\n");
+	ret = sdhci_wait_idle(&host->sdhci, cmd);
+	if (ret)
 		return ret;
-	}
 
 	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, ~0);
 

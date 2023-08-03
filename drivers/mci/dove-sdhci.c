@@ -57,31 +57,16 @@ static int dove_sdhci_wait_for_done(struct dove_sdhci *host, u16 mask)
 static int dove_sdhci_mci_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 				struct mci_data *data)
 {
-	u16 val;
 	u32 command, xfer;
-	u64 start;
 	int ret;
 	unsigned int num_bytes = 0;
 	struct dove_sdhci *host = priv_from_mci_host(mci);
 
+	ret = sdhci_wait_idle(&host->sdhci, cmd);
+	if (ret)
+		return ret;
+
 	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, ~0);
-
-	/* Do not wait for CMD_INHIBIT_DAT on stop commands */
-	if (cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
-		val = SDHCI_CMD_INHIBIT_CMD;
-	else
-		val = SDHCI_CMD_INHIBIT_CMD | SDHCI_CMD_INHIBIT_DATA;
-
-	/* Wait for bus idle */
-	start = get_time_ns();
-	while (1) {
-		if (!(sdhci_read16(&host->sdhci, SDHCI_PRESENT_STATE) & val))
-			break;
-		if (is_timeout(start, 10 * MSECOND)) {
-			dev_err(host->mci.hw_dev, "SDHCI timeout while waiting for idle\n");
-			return -ETIMEDOUT;
-		}
-	}
 
 	/* setup transfer data */
 	if (data) {

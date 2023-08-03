@@ -118,7 +118,6 @@ static int bcm2835_mci_request(struct mci_host *mci, struct mci_cmd *cmd,
 		struct mci_data *data) {
 	u32 command, block_data = 0, transfer_mode = 0;
 	int ret;
-	u32 wait_inhibit_mask = SDHCI_CMD_INHIBIT_CMD | SDHCI_CMD_INHIBIT_DATA;
 	struct bcm2835_mci_host *host = to_bcm2835_host(mci);
 
 	sdhci_set_cmd_xfer_mode(&host->sdhci, cmd, data, false,
@@ -129,15 +128,9 @@ static int bcm2835_mci_request(struct mci_host *mci, struct mci_cmd *cmd,
 		block_data |= data->blocksize;
 	}
 
-	/* We shouldn't wait for data inihibit for stop commands, even
-	though they might use busy signaling */
-	if (cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
-		wait_inhibit_mask = SDHCI_CMD_INHIBIT_CMD;
-
-	/*Wait for old command*/
-	while (sdhci_read32(&host->sdhci, SDHCI_PRESENT_STATE)
-			& wait_inhibit_mask)
-		;
+	ret = sdhci_wait_idle(&host->sdhci, cmd);
+	if (ret)
+		return ret;
 
 	sdhci_write32(&host->sdhci, SDHCI_INT_ENABLE, 0xFFFFFFFF);
 	sdhci_write32(&host->sdhci, SDHCI_INT_STATUS, 0xFFFFFFFF);

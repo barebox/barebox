@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0-only
 // SPDX-FileCopyrightText: 1994, 1995, 2000 Neil Russell
 // SPDX-FileCopyrightText: 2000 Roland Borde
 // SPDX-FileCopyrightText: 2000 Paolo Scaffardi

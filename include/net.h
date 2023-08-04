@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0-only
 // SPDX-FileCopyrightText: 1994-2000 Neil Russell
 /*
  * net.h - barebox networking support

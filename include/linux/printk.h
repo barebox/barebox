@@ -149,7 +149,6 @@ int __pr_memory_display(int level, const void *addr, loff_t offs, unsigned nbyte
 struct log_entry {
 	struct list_head list;
 	char *msg;
-	void *dummy;
 	uint64_t timestamp;
 	int level;
 };

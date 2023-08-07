@@ -15,7 +15,7 @@ HOSTCFLAGS_imx-image.o = -I$(srctree) -I$(srctree)/include/mach
 HOSTCFLAGS_imx-usb-loader.o += -I$(srctree) -I$(srctree)/include/mach
 imx-usb-loader-target-userccflags += -I$(srctree) -I$(srctree)/include/mach
 ifdef CONFIG_ARCH_IMX_IMXIMAGE_SSL_SUPPORT
-HOSTCFLAGS_imx-image.o += -DIMXIMAGE_SSL_SUPPORT
+HOSTCFLAGS_imx-image.o += -DIMXIMAGE_SSL_SUPPORT `$(PKG_CONFIG) --cflags openssl`
 HOSTLDLIBS_imx-image  = `$(PKG_CONFIG) --libs openssl`
 endif
 

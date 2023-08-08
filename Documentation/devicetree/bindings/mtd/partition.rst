@@ -1,3 +1,5 @@
+.. _devicetree_binding_mtd_partition:
+
 Representing flash partitions in devicetree
 ===========================================
 

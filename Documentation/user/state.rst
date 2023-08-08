@@ -540,27 +540,14 @@ content, its backend-type and *state* variable layout.
 SD/eMMC and ATA
 ###############
 
-The following devicetree node entry defines some kind of SD/eMMC memory and
-a partition at a specific offset inside it to be used as the backend for the
-*state* variable set.
+*state* node definition
+^^^^^^^^^^^^^^^^^^^^^^^
 
-.. note::
-
-   If the medium has an on-disk partition table, the device tree partition
-   must either be identical in start offset and size to the MBR/GPT partition
-   or it must reside in non-partitioned space. If this constraint is not
-   satisfied, barebox will emit an error message and refuse to register
-   the device tree partition.
-
-.. code-block:: text
-
-	backend_state_sd: part@100000 {
-		label = "state";
-		reg = <0x100000 0x20000>;
-	};
-
-With this 'backend' definition it's possible to define the *state* variable set
-content, its backend-type and *state* variable layout.
+These storage types have integrated wear-levelling and can be addressed on the
+byte level. The *raw* backend type is suitable for this situation.
+We will explain the possible variants of referring to a backend below,
+but an exemplary definition of the *state* layout and variable set will look
+as follows:
 
 .. code-block:: text
 
@@ -584,8 +571,87 @@ content, its backend-type and *state* variable layout.
 		};
 	};
 
-If the *state* variable set is set to be located in a GPT partition, use
-``4778ed65-bf42-45fa-9c5b-287a1dc4aab1`` as the partition type GUID.
+
+Backend definition
+^^^^^^^^^^^^^^^^^^
+
+SD/eMMC and ATA devices usually have an on-disk partition table (MBR or GPT),
+which Barebox will parse when a block device is probed.
+There are multiple options to refer to these partitions as the *state* backend
+(i.e. the ``&backend_state_sd`` reference in the example above).
+
+Referencing the partition by GUID
+"""""""""""""""""""""""""""""""""
+
+When using GPT, the backend reference may point directly to a block device's
+device tree node. In this case Barebox will search for a GPT partition with Type
+UUID ``4778ed65-bf42-45fa-9c5b-287a1dc4aab1``, and if that partition exists,
+Barebox will use it as the *state* backend.
+
+Here is an abridged example:
+
+.. code-block:: text
+
+	/ {
+		soc {
+			bus@2100000 {
+				mmc1: mmc@2190000 {
+					// … MMC device definition …
+				};
+		};
+
+		aliases {
+			state = &state_sd;
+		};
+
+		state_sd: state {
+			backend = <&mmc1>;
+			// … rest of definition as per above section
+		};
+	};
+
+This is the recommended approach for device tree enabled system with state
+located on SD or eMMC.
+
+Referencing the partition by *partuuid*
+"""""""""""""""""""""""""""""""""""""""
+
+For systems where block devices are not probed from device tree (e.g. with
+storage on ATA or PCI buses), the *state* partition can be looked up globally
+by specifying its *partuuid*. See the documentation for the :ref:`partuuid
+device tree binding <devicetree_binding_mtd_partition>` for more details.
+
+The *partuuid* is expected to be unique across all block devices.
+
+Referencing the partition by offset
+"""""""""""""""""""""""""""""""""""
+
+As a fallback it is still possible to refer to the *state* partition by
+specifying its offset and size, like in the examples for NAND and NOR flash
+above:
+
+.. code-block:: text
+
+	&mmc1 {
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			[…]
+			backend_state_sd: partition@100000 {
+				label = "state";
+				reg = <0x100000 0x20000>;
+			};
+		};
+	};
+
+.. note::
+
+   If the medium has an on-disk partition table, the device tree partition
+   must either be identical in start offset and size to the MBR/GPT partition
+   or it must reside in non-partitioned space. If this constraint is not
+   satisfied, barebox will emit an error message and refuse to register
+   the device tree partition.
 
 SRAM
 ####

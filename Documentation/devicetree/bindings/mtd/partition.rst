@@ -4,13 +4,22 @@ Representing flash partitions in devicetree
 In addition to the upstream binding, another property is added:
 
 Optional properties:
-- ``partuuid`` : The global partition UUID for this partition.
+
+* ``partuuid``: The global partition UUID for this partition.
+  For GPT partitions, the partuuid is the 16-byte GPT Partition UUID (e.g.
+  ``de6f4f5c-c055-4374-09f7-8c6821dfb60e``).
+  For MBR partitions, the partuuid is the 4-byte disk identifier
+  followed by a dash and the partition number (starting with 1, e.g.
+  ``c9178f9d-01``).
+
+  The partuuid is case-insensitive.
 
 Additionally, barebox also supports partitioning the eMMC boot partitions if
 the partition table node is named appropriately:
-- ``partitions`` : user partition
-- ``boot0-partitions`` : boot0 partition
-- ``boot1-partitions`` : boot1 partition
+
+* ``partitions`` : user partition
+* ``boot0-partitions`` : boot0 partition
+* ``boot1-partitions`` : boot1 partition
 
 Examples:
 

@@ -23,7 +23,7 @@ the path to the environment. Supported values for <type>:
   be the label for MTD partitions, the number for DOS
   partitions (beginning with 0) or the name for GPT partitions.
 
-If the *environmnet* is located in a GPT partition, use
+If the *environment* is located in a GPT partition, use
 ``6C3737F2-07F8-45D1-AD45-15D260AAB24D`` as partition type GUID.
 
 The file-path is the name of a file located in a FAT filesystem on the

@@ -542,10 +542,15 @@ SD/eMMC and ATA
 
 The following devicetree node entry defines some kind of SD/eMMC memory and
 a partition at a specific offset inside it to be used as the backend for the
-*state* variable set. Note that currently there is no support for on-disk
-partition tables. Instead, an ofpart partition description must be used. You
-have to make sure that this partition does not conflict with any other partition
-in the partition table.
+*state* variable set.
+
+.. note::
+
+   If the medium has an on-disk partition table, the device tree partition
+   must either be identical in start offset and size to the MBR/GPT partition
+   or it must reside in non-partitioned space. If this constraint is not
+   satisfied, barebox will emit an error message and refuse to register
+   the device tree partition.
 
 .. code-block:: text
 

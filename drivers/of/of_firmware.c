@@ -11,7 +11,8 @@ static struct firmware_mgr *of_node_get_mgr(struct device_node *np)
 	struct device_node *mgr_node;
 
 	do {
-		mgr_node = of_parse_phandle(np, "fpga-mgr", 0);
+		mgr_node = of_parse_phandle_from(np, of_find_root_node(np),
+						 "fpga-mgr", 0);
 		if (mgr_node)
 			return firmwaremgr_find_by_node(mgr_node);
 	} while ((np = of_get_parent(np)) != NULL);

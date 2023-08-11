@@ -32,6 +32,9 @@
 #define AT803X_DEBUG_REG_5			0x05
 #define AT803X_DEBUG_TX_CLK_DLY_EN		BIT(8)
 
+#define AT803X_DEBUG_REG_HIB_CTRL		0x0b
+#define   AT803X_DEBUG_HIB_CTRL_PS_HIB_EN	BIT(15)
+
 /* AT803x supports either the XTAL input pad, an internal PLL or the
  * DSP as clock reference for the clock output pad. The XTAL reference
  * is only used for 25 MHz output, all other frequencies need the PLL.
@@ -129,6 +132,15 @@ static int at803x_disable_tx_delay(struct phy_device *phydev)
 {
 	return at803x_debug_reg_mask(phydev, AT803X_DEBUG_REG_5,
 				     AT803X_DEBUG_TX_CLK_DLY_EN, 0);
+}
+
+static int at803x_hibernation_mode_config(struct phy_device *phydev)
+{
+	/* The default after hardware reset is hibernation mode enabled. After
+	 * software reset, the value is retained.
+	 */
+	return at803x_debug_reg_mask(phydev, AT803X_DEBUG_REG_HIB_CTRL,
+				     AT803X_DEBUG_HIB_CTRL_PS_HIB_EN, 0);
 }
 
 static bool at803x_match_phy_id(struct phy_device *phydev, u32 phy_id)
@@ -284,6 +296,10 @@ static int at803x_config_init(struct phy_device *phydev)
 		return ret;
 
 	ret = at803x_clk_out_config(phydev);
+	if (ret < 0)
+		return ret;
+
+	ret = at803x_hibernation_mode_config(phydev);
 	if (ret < 0)
 		return ret;
 

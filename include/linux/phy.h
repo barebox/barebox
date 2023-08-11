@@ -143,12 +143,12 @@ int mdiobus_write(struct mii_bus *bus, int addr, u32 regnum, u16 val);
 
 /* phy_device: An instance of a PHY
  *
- * bus: Pointer to the bus this PHY is on
- * dev: driver model device structure for this PHY
- * phy_id: UID for this device found during discovery
- * dev_flags: Device-specific flags used by the PHY driver.
- * addr: Bus address of PHY
- * attached_dev: The attached enet driver's device instance ptr
+ * @bus: Pointer to the bus this PHY is on
+ * @dev: driver model device structure for this PHY
+ * @phy_id: UID for this device found during discovery
+ * @dev_flags: Device-specific flags used by the PHY driver.
+ * @addr: Bus address of PHY
+ * @attached_dev: The attached enet driver's device instance ptr
  *
  * speed, duplex, pause, supported, advertising, and
  * autoneg are used like in mii_if_info
@@ -202,11 +202,11 @@ struct phy_device {
 
 /* struct phy_driver: Driver structure for a particular PHY type
  *
- * phy_id: The result of reading the UID registers of this PHY
+ * @phy_id: The result of reading the UID registers of this PHY
  *   type, and ANDing them with the phy_id_mask.  This driver
  *   only works for PHYs with IDs which match this field
- * phy_id_mask: Defines the important bits of the phy_id
- * features: A list of features (speed, duplex, etc) supported
+ * @phy_id_mask: Defines the important bits of the phy_id
+ * @features: A list of features (speed, duplex, etc) supported
  *   by this PHY
  * @driver_data: Static driver data
  *

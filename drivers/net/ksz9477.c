@@ -175,12 +175,6 @@ static void ksz9477_phy_errata_setup(struct ksz_switch *priv, int port)
 	 */
 	ksz9477_port_mmd_write(priv, port, 0x1c, 0x04, 0x00d0);
 
-	/* Energy Efficient Ethernet (EEE) feature select must
-	 * be manually disabled (except on KSZ8565 which is 100Mbit)
-	 */
-	if (priv->features & GBIT_SUPPORT)
-		ksz9477_port_mmd_write(priv, port, 0x07, 0x3c, 0x0000);
-
 	/* Register settings are required to meet data sheet
 	 * supply current specifications
 	 */
@@ -268,6 +262,8 @@ static int ksz_port_setup(struct ksz_switch *priv, int port,
 
 		if (priv->features & KSZ9477_PHY_ERRATA)
 			ksz9477_phy_errata_setup(priv, port);
+
+		ksz9477_port_mmd_write(priv, port, 0x07, 0x3c, 0x0000);
 
 		ksz_pwrite16(priv, port, 0x100 + (MII_BMCR << 1),
 			     BMCR_ANENABLE | BMCR_ANRESTART | BMCR_RESET);

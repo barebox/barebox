@@ -59,6 +59,9 @@
  */
 #define AT8035_CLK_OUT_MASK			GENMASK(4, 3)
 
+#define AT803X_MMD3_SMARTEEE_CTL3		0x805d
+#define AT803X_MMD3_SMARTEEE_CTL3_LPI_EN	BIT(8)
+
 #define AT803X_CLK_OUT_STRENGTH_MASK		GENMASK(8, 7)
 #define AT803X_CLK_OUT_STRENGTH_FULL		0
 #define AT803X_CLK_OUT_STRENGTH_HALF		1
@@ -221,6 +224,12 @@ static int at803x_probe(struct phy_device *phydev)
 	return at803x_parse_dt(phydev);
 }
 
+static int at803x_smarteee_config(struct phy_device *phydev)
+{
+	return phy_modify_mmd(phydev, MDIO_MMD_PCS, AT803X_MMD3_SMARTEEE_CTL3,
+			      AT803X_MMD3_SMARTEEE_CTL3_LPI_EN, 0);
+}
+
 static int at803x_clk_out_config(struct phy_device *phydev)
 {
 	struct at803x_priv *priv = phydev->priv;
@@ -270,7 +279,15 @@ static int at803x_config_init(struct phy_device *phydev)
 	if (ret < 0)
 		return ret;
 
-	return at803x_clk_out_config(phydev);
+	ret = at803x_smarteee_config(phydev);
+	if (ret < 0)
+		return ret;
+
+	ret = at803x_clk_out_config(phydev);
+	if (ret < 0)
+		return ret;
+
+	return 0;
 }
 
 static struct phy_driver at803x_driver[] = {

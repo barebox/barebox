@@ -819,14 +819,14 @@ int genphy_read_status(struct phy_device *phydev)
 	return 0;
 }
 
-static inline void mmd_phy_indirect(struct phy_device *phydev, int prtad,
-					int devad)
+static inline void mmd_phy_indirect(struct phy_device *phydev, int devad,
+				    u16 regnum)
 {
 	/* Write the desired MMD Devad */
 	phy_write(phydev, MII_MMD_CTRL, devad);
 
 	/* Write the desired MMD register address */
-	phy_write(phydev, MII_MMD_DATA, prtad);
+	phy_write(phydev, MII_MMD_DATA, regnum);
 
 	/* Select the Function : DATA with no post increment */
 	phy_write(phydev, MII_MMD_CTRL, (devad | MII_MMD_CTRL_NOINCR));
@@ -850,7 +850,7 @@ int phy_read_mmd_indirect(struct phy_device *phydev, int prtad, int devad)
 {
 	u32 ret;
 
-	mmd_phy_indirect(phydev, prtad, devad);
+	mmd_phy_indirect(phydev, devad, prtad);
 
 	/* Read the content of the MMD's selected register */
 	ret = phy_read(phydev, MII_MMD_DATA);
@@ -876,7 +876,7 @@ int phy_read_mmd_indirect(struct phy_device *phydev, int prtad, int devad)
 void phy_write_mmd_indirect(struct phy_device *phydev, int prtad, int devad,
 				   u16 data)
 {
-	mmd_phy_indirect(phydev, prtad, devad);
+	mmd_phy_indirect(phydev, devad, prtad);
 
 	/* Write the data into MMD's selected register */
 	phy_write(phydev, MII_MMD_DATA, data);

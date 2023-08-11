@@ -447,23 +447,27 @@ static int ksz9031_config_rgmii_delay(struct phy_device *phydev)
 		return 0;
 	}
 
-	phy_write_mmd_indirect(phydev, MII_KSZ9031RN_CONTROL_PAD_SKEW, 2,
+	phy_write_mmd_indirect(phydev, MII_KSZ9031RN_CONTROL_PAD_SKEW,
+			       MDIO_MMD_WIS,
 			       FIELD_PREP(MII_KSZ9031RN_RX_CTL_M, rx) |
 			       FIELD_PREP(MII_KSZ9031RN_TX_CTL_M, tx));
 
-	phy_write_mmd_indirect(phydev, MII_KSZ9031RN_RX_DATA_PAD_SKEW, 2,
+	phy_write_mmd_indirect(phydev, MII_KSZ9031RN_RX_DATA_PAD_SKEW,
+			       MDIO_MMD_WIS,
 			       FIELD_PREP(MII_KSZ9031RN_RXD3, rx) |
 			       FIELD_PREP(MII_KSZ9031RN_RXD2, rx) |
 			       FIELD_PREP(MII_KSZ9031RN_RXD1, rx) |
 			       FIELD_PREP(MII_KSZ9031RN_RXD0, rx));
 
-	phy_write_mmd_indirect(phydev, MII_KSZ9031RN_TX_DATA_PAD_SKEW, 2,
+	phy_write_mmd_indirect(phydev, MII_KSZ9031RN_TX_DATA_PAD_SKEW,
+			       MDIO_MMD_WIS,
 			       FIELD_PREP(MII_KSZ9031RN_TXD3, tx) |
 			       FIELD_PREP(MII_KSZ9031RN_TXD2, tx) |
 			       FIELD_PREP(MII_KSZ9031RN_TXD1, tx) |
 			       FIELD_PREP(MII_KSZ9031RN_TXD0, tx));
 
-	phy_write_mmd_indirect(phydev, MII_KSZ9031RN_CLK_PAD_SKEW, 2,
+	phy_write_mmd_indirect(phydev, MII_KSZ9031RN_CLK_PAD_SKEW,
+			       MDIO_MMD_WIS,
 			       FIELD_PREP(MII_KSZ9031RN_GTX_CLK, tx_clk) |
 			       FIELD_PREP(MII_KSZ9031RN_RX_CLK, rx_clk));
 	return 0;

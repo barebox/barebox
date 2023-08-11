@@ -476,6 +476,7 @@ static const struct of_device_id microchip_switch_dt_ids[] = {
 	{ .compatible = "microchip,ksz8563" },
 	{ .compatible = "microchip,ksz9477" },
 	{ .compatible = "microchip,ksz9563" },
+	{ .compatible = "microchip,ksz9893" },
 	{ }
 };
 MODULE_DEVICE_TABLE(of, microchip_switch_dt_ids);

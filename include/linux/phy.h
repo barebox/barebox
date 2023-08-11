@@ -417,6 +417,21 @@ static inline bool phy_acquired(struct phy_device *phydev)
 	return phydev && phydev->bus && slice_acquired(&phydev->bus->slice);
 }
 
+#define phydev_err(_phydev, format, args...)	\
+	dev_err(&_phydev->dev, format, ##args)
+
+#define phydev_err_probe(_phydev, err, format, args...)	\
+	dev_err_probe(&_phydev->dev, err, format, ##args)
+
+#define phydev_info(_phydev, format, args...)	\
+	dev_info(&_phydev->dev, format, ##args)
+
+#define phydev_warn(_phydev, format, args...)	\
+	dev_warn(&_phydev->dev, format, ##args)
+
+#define phydev_dbg(_phydev, format, args...)	\
+	dev_dbg(&_phydev->dev, format, ##args)
+
 #ifdef CONFIG_PHYLIB
 int phy_register_fixup_for_uid(u32 phy_uid, u32 phy_uid_mask,
 		int (*run)(struct phy_device *));

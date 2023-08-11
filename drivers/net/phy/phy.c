@@ -850,6 +850,9 @@ int phy_read_mmd_indirect(struct phy_device *phydev, int prtad, int devad)
 {
 	u32 ret;
 
+	phydev_warn(phydev, "%s is deprectated use phy_read_mmd instead\n",
+		    __func__);
+
 	mmd_phy_indirect(phydev, devad, prtad);
 
 	/* Read the content of the MMD's selected register */
@@ -876,6 +879,9 @@ int phy_read_mmd_indirect(struct phy_device *phydev, int prtad, int devad)
 void phy_write_mmd_indirect(struct phy_device *phydev, int prtad, int devad,
 				   u16 data)
 {
+	phydev_warn(phydev, "%s is deprectated use phy_write_mmd instead\n",
+		    __func__);
+
 	mmd_phy_indirect(phydev, devad, prtad);
 
 	/* Write the data into MMD's selected register */
@@ -895,6 +901,9 @@ int phy_modify_mmd_indirect(struct phy_device *phydev, int prtad, int devad,
 				   u16 mask, u16 set)
 {
 	int ret;
+
+	phydev_warn(phydev, "%s is deprectated use phy_modify_mmd instead\n",
+		    __func__);
 
 	ret = phy_read_mmd_indirect(phydev, prtad, devad);
 	if (ret < 0)

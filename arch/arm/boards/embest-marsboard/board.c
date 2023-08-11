@@ -20,13 +20,13 @@ static int ar8035_phy_fixup(struct phy_device *dev)
 	/* Ar803x phy SmartEEE feature cause link status generates glitch,
 	 * which cause ethernet link down/up issue, so disable SmartEEE
 	 */
-	val = phy_read_mmd_indirect(dev, 0x805d, MDIO_MMD_PCS);
+	val = phy_read_mmd(dev, MDIO_MMD_PCS, 0x805d);
 	phy_write(dev, MII_MMD_DATA, val & ~(1 << 8));
 
-	val = phy_read_mmd_indirect(dev, 0x4003, MDIO_MMD_PCS);
+	val = phy_read_mmd(dev, MDIO_MMD_PCS, 0x4003);
 	phy_write(dev, MII_MMD_DATA, val & ~(1 << 8));
 
-	val = phy_read_mmd_indirect(dev, 0x4007, MDIO_MMD_PCS);
+	val = phy_read_mmd(dev, MDIO_MMD_PCS, 0x4007);
 	val &= 0xffe3;
 	val |= 0x18;
 	phy_write(dev, MII_MMD_DATA, val);

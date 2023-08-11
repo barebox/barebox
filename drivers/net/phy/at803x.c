@@ -229,14 +229,14 @@ static int at803x_clk_out_config(struct phy_device *phydev)
 	if (!priv->clk_25m_mask)
 		return 0;
 
-	val = phy_read_mmd_indirect(phydev, AT803X_MMD7_CLK25M, MDIO_MMD_AN);
+	val = phy_read_mmd(phydev, MDIO_MMD_AN, AT803X_MMD7_CLK25M);
 	if (val < 0)
 		return val;
 
 	val &= ~priv->clk_25m_mask;
 	val |= priv->clk_25m_reg;
 
-	phy_write_mmd_indirect(phydev, AT803X_MMD7_CLK25M, MDIO_MMD_AN, val);
+	phy_write_mmd(phydev, MDIO_MMD_AN, AT803X_MMD7_CLK25M, val);
 
 	return 0;
 }

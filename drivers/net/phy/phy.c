@@ -905,6 +905,115 @@ int phy_modify_mmd_indirect(struct phy_device *phydev, int prtad, int devad,
 	return 0;
 }
 
+/**
+ * phy_read_mmd - Convenience function for reading a register
+ * from an MMD on a given PHY.
+ * @phydev: The phy_device struct
+ * @devad: The MMD to read from
+ * @regnum: The register on the MMD to read
+ *
+ * Same rules as for phy_read();
+ */
+int phy_read_mmd(struct phy_device *phydev, int devad, u32 regnum)
+{
+	struct mii_bus *bus = phydev->bus;
+	int phy_addr = phydev->addr;
+
+	if (regnum > (u16)~0 || devad > 32)
+		return -EINVAL;
+
+	if (phydev->is_c45) {
+		phydev_warn(phydev, "Clause45 is not supported yet\n");
+		return -EOPNOTSUPP;
+	}
+
+	mmd_phy_indirect(phydev, devad, regnum);
+
+	/* Read the content of the MMD's selected register */
+	return mdiobus_read(bus, phy_addr, MII_MMD_DATA);
+}
+EXPORT_SYMBOL(phy_read_mmd);
+
+/**
+ * phy_write_mmd - Convenience function for writing a register
+ * on an MMD on a given PHY.
+ * @phydev: The phy_device struct
+ * @devad: The MMD to read from
+ * @regnum: The register on the MMD to read
+ * @val: value to write to @regnum
+ *
+ * Same rules as for phy_write();
+ */
+int phy_write_mmd(struct phy_device *phydev, int devad, u32 regnum, u16 val)
+{
+	struct mii_bus *bus = phydev->bus;
+	int phy_addr = phydev->addr;
+
+	if (regnum > (u16)~0 || devad > 32)
+		return -EINVAL;
+
+	if (phydev->is_c45) {
+		phydev_warn(phydev, "Clause45 is not supported yet\n");
+		return -EOPNOTSUPP;
+	}
+
+	mmd_phy_indirect(phydev, devad, regnum);
+
+	/* Write the data into MMD's selected register */
+	mdiobus_write(bus, phy_addr, MII_MMD_DATA, val);
+
+	return 0;
+}
+EXPORT_SYMBOL(phy_write_mmd);
+
+/**
+ * phy_modify_mmd_changed - Function for modifying a register on MMD
+ * @phydev: the phy_device struct
+ * @devad: the MMD containing register to modify
+ * @regnum: register number to modify
+ * @mask: bit mask of bits to clear
+ * @set: new value of bits set in mask to write to @regnum
+ *
+ * Returns negative errno, 0 if there was no change, and 1 in case of change
+ */
+int phy_modify_mmd_changed(struct phy_device *phydev, int devad, u32 regnum,
+			   u16 mask, u16 set)
+{
+	int new, ret;
+
+	ret = phy_read_mmd(phydev, devad, regnum);
+	if (ret < 0)
+		return ret;
+
+	new = (ret & ~mask) | set;
+	if (new == ret)
+		return 0;
+
+	ret = phy_write_mmd(phydev, devad, regnum, new);
+
+	return ret < 0 ? ret : 1;
+}
+EXPORT_SYMBOL_GPL(phy_modify_mmd_changed);
+
+/**
+ * phy_modify_mmd - Convenience function for modifying a register on MMD
+ * @phydev: the phy_device struct
+ * @devad: the MMD containing register to modify
+ * @regnum: register number to modify
+ * @mask: bit mask of bits to clear
+ * @set: new value of bits set in mask to write to @regnum
+ */
+int phy_modify_mmd(struct phy_device *phydev, int devad, u32 regnum,
+		   u16 mask, u16 set)
+{
+	int ret;
+
+	ret = phy_modify_mmd_changed(phydev, devad, regnum, mask, set);
+
+	return ret < 0 ? ret : 0;
+}
+EXPORT_SYMBOL_GPL(phy_modify_mmd);
+
 int genphy_config_init(struct phy_device *phydev)
 {
 	int val;

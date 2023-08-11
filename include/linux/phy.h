@@ -146,6 +146,7 @@ int mdiobus_write(struct mii_bus *bus, int addr, u32 regnum, u16 val);
  * @bus: Pointer to the bus this PHY is on
  * @dev: driver model device structure for this PHY
  * @phy_id: UID for this device found during discovery
+ * @c45_ids: 802.3-c45 Device Identifiers if is_c45.
  * @dev_flags: Device-specific flags used by the PHY driver.
  * @addr: Bus address of PHY
  * @attached_dev: The attached enet driver's device instance ptr
@@ -159,6 +160,8 @@ struct phy_device {
 	struct device dev;
 
 	u32 phy_id;
+
+	unsigned is_c45:1;
 
 	u32 dev_flags;
 
@@ -411,6 +414,13 @@ void phy_write_mmd_indirect(struct phy_device *phydev, int prtad, int devad,
 				   u16 data);
 int phy_modify_mmd_indirect(struct phy_device *phydev, int prtad, int devad,
 				    u16 mask, u16 set);
+
+int phy_read_mmd(struct phy_device *phydev, int devad, u32 regnum);
+int phy_write_mmd(struct phy_device *phydev, int devad, u32 regnum, u16 val);
+int phy_modify_mmd(struct phy_device *phydev, int devad, u32 regnum,
+		   u16 mask, u16 set);
+int phy_modify_mmd_changed(struct phy_device *phydev, int devad, u32 regnum,
+			   u16 mask, u16 set);
 
 static inline bool phy_acquired(struct phy_device *phydev)
 {

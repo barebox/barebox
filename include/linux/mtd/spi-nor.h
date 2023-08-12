@@ -142,6 +142,8 @@
         SNOR_PROTO_ADDR(_addr_nbits) |                         \
         SNOR_PROTO_DATA(_data_nbits))
 
+#define SPI_NOR_MAX_ADDR_WIDTH	4
+
 enum spi_nor_protocol {
        SNOR_PROTO_1_1_1 = SNOR_PROTO_STR(1, 1, 1),
        SNOR_PROTO_1_1_2 = SNOR_PROTO_STR(1, 1, 2),

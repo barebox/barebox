@@ -26,4 +26,10 @@ config SPI_CADENCE_QUADSPI
 	help
 	  This enables support for the Cadence Quad SPI controller and NOR flash.
 
+config SPI_SYNOPSYS_OCTALSPI_NOR
+	tristate "Synopsys DesignWare Octal SPI controller"
+	help
+	  This enables support for the Synopsys DesignWare Octal SPI controller
+	  and NOR flash.
+
 endif

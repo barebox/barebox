@@ -680,7 +680,7 @@ static const struct spi_device_id spi_nor_ids[] = {
 	{ "is25lp016d", INFO(0x9d6015, 0,  64 * 1024,  32,
 			     SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
 	{ "is25lp01g", INFO(0x9d601b, 0,  64 * 1024,  2048,
-			     SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
+			     SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ | SPI_NOR_QUAD_WRITE) },
 	{ "is25lp080d", INFO(0x9d6014, 0,  64 * 1024,  16,
 			     SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
 	{ "is25lp032",  INFO(0x9d6016, 0,  64 * 1024,  64,

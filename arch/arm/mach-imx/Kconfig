@@ -646,6 +646,16 @@ config MACH_PROTONIC_IMX8M
 	select IMX8M_DRAM
 	select USB_GADGET_DRIVER_ARC_PBL
 
+config MACH_SKOV_IMX8MP
+	bool "Skov i.MX8MP based boards"
+	select ARCH_IMX8MP
+	select FIRMWARE_IMX_LPDDR4_PMU_TRAIN
+	select FIRMWARE_IMX8MP_ATF
+	select ARM_SMCCC
+	select MCI_IMX_ESDHC_PBL
+	select IMX8M_DRAM
+	select I2C_IMX_EARLY
+
 config MACH_TQ_MBA8MPXL
 	bool "TQ i.MX8MP Dual/Quad on MBa8MPxL Board"
 	select ARCH_IMX8MP

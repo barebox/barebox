@@ -50,6 +50,7 @@ static int do_global(int argc, char *argv[])
 
 BAREBOX_CMD_HELP_START(global)
 BAREBOX_CMD_HELP_TEXT("Add a new global variable named VAR, optionally set to VALUE.")
+BAREBOX_CMD_HELP_TEXT("Without options, print all global and env (prefixed with *) variables.")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT("-r", "Remove globalvars")
@@ -58,7 +59,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(global)
 	.cmd		= do_global,
 	BAREBOX_CMD_DESC("create or set global variables")
-	BAREBOX_CMD_OPTS("[-r] VAR[=VALUE] ...")
+	BAREBOX_CMD_OPTS("[-r] [VAR[=VALUE] ...]")
 	BAREBOX_CMD_GROUP(CMD_GRP_ENV)
 	BAREBOX_CMD_HELP(cmd_global_help)
 	BAREBOX_CMD_COMPLETE(global_complete)

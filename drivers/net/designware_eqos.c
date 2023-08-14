@@ -377,7 +377,7 @@ static int eqos_set_promisc(struct eth_device *edev, bool enable)
 	if (!eqos->is_started)
 		return 0;
 
-	mask = EQOS_MAC_PACKET_FILTER_PR | EQOS_MAC_PACKET_FILTER_PCF;
+	mask = EQOS_MAC_PACKET_FILTER_PR;
 
 	if (enable)
 		setbits_le32(&eqos->mac_regs->packet_filter, mask);

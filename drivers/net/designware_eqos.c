@@ -351,6 +351,11 @@ int eqos_set_ethaddr(struct eth_device *edev, const unsigned char *mac)
 
 	memcpy(eqos->macaddr, mac, ETH_ALEN);
 
+	/* mac_hi is only partially overwritten by the following code. Part of
+	 * this variable is DCS (DMA Channel Select). If this variable is not
+	 * zeroed, we may get some random DMA RX channel.
+	 */
+	mac_hi = 0;
 	/* Update the MAC address */
 	memcpy(&mac_hi, &mac[4], 2);
 	memcpy(&mac_lo, &mac[0], 4);

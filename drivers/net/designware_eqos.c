@@ -351,6 +351,9 @@ int eqos_set_ethaddr(struct eth_device *edev, const unsigned char *mac)
 
 	memcpy(eqos->macaddr, mac, ETH_ALEN);
 
+	if (!eqos->is_started)
+		return 0;
+
 	/* mac_hi is only partially overwritten by the following code. Part of
 	 * this variable is DCS (DMA Channel Select). If this variable is not
 	 * zeroed, we may get some random DMA RX channel.
@@ -370,6 +373,11 @@ static int eqos_set_promisc(struct eth_device *edev, bool enable)
 {
 	struct eqos *eqos = edev->priv;
 	u32 mask;
+
+	eqos->promisc_enabled = enable;
+
+	if (!eqos->is_started)
+		return 0;
 
 	mask = EQOS_MAC_PACKET_FILTER_PR | EQOS_MAC_PACKET_FILTER_PCF;
 
@@ -429,8 +437,10 @@ static int eqos_start(struct eth_device *edev)
 		return ret;
 	}
 
-	/* Reset above clears MAC address */
+	/* Reset above clears any previously made configuration */
+	eqos->is_started = true;
 	eqos_set_ethaddr(edev, eqos->macaddr);
+	eqos_set_promisc(edev, eqos->promisc_enabled);
 
 	/* Required for accurate time keeping with EEE counters */
 	rate = eqos->ops->get_csr_clk_rate(eqos);

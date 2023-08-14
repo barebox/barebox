@@ -60,6 +60,9 @@ struct eqos {
 
 	const struct eqos_ops *ops;
 	void *priv;
+
+	bool is_started;
+	bool promisc_enabled;
 };
 
 struct device;

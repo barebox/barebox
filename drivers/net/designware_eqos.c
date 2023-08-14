@@ -427,6 +427,10 @@ static int eqos_start(struct eth_device *edev)
 	if (ret)
 		return ret;
 
+	/* In some cases where PHY or DSA switch is the clock provider for
+	 * EQOS, we need to probe and configure them before issuing software
+	 * reset here.
+	 */
 	setbits_le32(&eqos->dma_regs->mode, EQOS_DMA_MODE_SWR);
 
 	ret = readl_poll_timeout(&eqos->dma_regs->mode, mode_set,

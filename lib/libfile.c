@@ -589,11 +589,11 @@ err_out1:
  * @pos:	The position to lseek to
  *
  * Return: If successful this function returns a positive
- *         filedescriptor number, otherwise -1 is returned
+ *         filedescriptor number, otherwise a negative error code is returned
  */
 int open_and_lseek(const char *filename, int mode, loff_t pos)
 {
-	int fd;
+	int fd, ret;
 
 	fd = open(filename, mode);
 	if (fd < 0) {
@@ -607,26 +607,31 @@ int open_and_lseek(const char *filename, int mode, loff_t pos)
 	if (mode & (O_WRONLY | O_RDWR)) {
 		struct stat s;
 
-		if (fstat(fd, &s)) {
+		ret = fstat(fd, &s);
+		if (ret < 0) {
 			perror("fstat");
 			goto out;
 		}
 
-		if (s.st_size < pos && ftruncate(fd, pos)) {
-			perror("ftruncate");
-			goto out;
+		if (s.st_size < pos) {
+			ret = ftruncate(fd, pos);
+			if (ret) {
+				perror("ftruncate");
+				goto out;
+			}
 		}
 	}
 
 	if (lseek(fd, pos, SEEK_SET) != pos) {
 		perror("lseek");
+		ret = -errno;
 		goto out;
 	}
 
 	return fd;
 out:
 	close(fd);
-	return -1;
+	return ret;
 }
 
 /**

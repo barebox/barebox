@@ -15,8 +15,12 @@ static LIST_HEAD(binfmt_hooks);
 static int binfmt_run(char *file, int argc, char **argv)
 {
 	struct binfmt_hook *b;
-	enum filetype type = file_name_detect_type(file);
+	enum filetype type;
 	int ret;
+
+	ret = file_name_detect_type(file, &type);
+	if (ret)
+		return ret;
 
 	list_for_each_entry(b, &binfmt_hooks, list) {
 		if (b->type != type)

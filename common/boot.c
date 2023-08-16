@@ -183,8 +183,12 @@ static int bootscript_create_entry(struct bootentries *bootentries, const char *
 {
 	struct bootentry_script *bs;
 	enum filetype type;
+	int ret;
 
-	type = file_name_detect_type(name);
+	ret = file_name_detect_type(name, &type);
+	if (ret)
+		return ret;
+
 	if (type != filetype_sh)
 		return -EINVAL;
 

@@ -250,12 +250,10 @@ int bootm_load_initrd(struct image_data *data, unsigned long load_address)
 		goto done1;
 	}
 
-	type = file_name_detect_type(data->initrd_file);
-
-	if ((int)type < 0) {
-		pr_err("could not open %s: %s\n", data->initrd_file,
-				strerror(-type));
-		return (int)type;
+	ret = file_name_detect_type(data->initrd_file, &type);
+	if (ret) {
+		pr_err("could not open initrd \"%s\": %s\n", data->initrd_file, strerror(-ret));
+		return ret;
 	}
 
 	if (type == filetype_uimage) {
@@ -372,12 +370,11 @@ void *bootm_get_devicetree(struct image_data *data)
 	} else if (data->oftree_file) {
 		size_t size;
 
-		type = file_name_detect_type(data->oftree_file);
-
-		if ((int)type < 0) {
-			pr_err("could not open %s: %s\n", data->oftree_file,
-			       strerror(-type));
-			return ERR_PTR((int)type);
+		ret = file_name_detect_type(data->oftree_file, &type);
+		if (ret) {
+			pr_err("could not open device tree \"%s\": %s\n", data->oftree_file,
+			       strerror(-ret));
+			return ERR_PTR(ret);
 		}
 
 		switch (type) {

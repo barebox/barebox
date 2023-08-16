@@ -624,7 +624,11 @@ static void cb_flash(struct fastboot *fb, const char *cmd)
 	const char *filename = NULL;
 	enum filetype filetype;
 
-	filetype = file_name_detect_type(fb->tempname);
+	ret = file_name_detect_type(fb->tempname, &filetype);
+	if (ret) {
+		fastboot_tx_print(fb, FASTBOOT_MSG_FAIL, "internal error");
+		goto out;
+	}
 
 	fastboot_tx_print(fb, FASTBOOT_MSG_INFO, "Copying file to %s...",
 			  cmd);

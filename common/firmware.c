@@ -277,7 +277,9 @@ int firmwaremgr_load_file(struct firmware_mgr *mgr, const char *firmware)
 		goto out;
 	}
 
-	type = file_name_detect_type(firmware);
+	ret = file_name_detect_type(firmware, &type);
+	if (ret)
+		goto out;
 
 	devicefd = open(dst, O_WRONLY);
 	if (devicefd < 0) {

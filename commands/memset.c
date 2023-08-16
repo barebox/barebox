@@ -41,8 +41,10 @@ static int do_memset(int argc, char *argv[])
 	n = strtoull_suffix(argv[optind + 2], NULL, 0);
 
 	fd = open_and_lseek(file, mode | O_WRONLY | O_CREAT, s);
-	if (fd < 0)
+	if (fd < 0) {
+		printf("Could not open \"%s\": %m\n", file);
 		return 1;
+	}
 
 	buf = xmalloc(RW_BUF_SIZE);
 	memset(buf, c, RW_BUF_SIZE);

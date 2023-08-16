@@ -43,8 +43,7 @@ static int art_read_mac(struct device *dev, const char *file)
 
 	fd = open_and_lseek(file, O_RDONLY, AR93000_EPPROM_OFFSET);
 	if (fd < 0) {
-		dev_err(dev, "Failed to open eeprom path %s %d\n",
-		       file, -errno);
+		dev_err(dev, "Failed to open eeprom path \"%s\": %m\n", file);
 		return -errno;
 	}
 

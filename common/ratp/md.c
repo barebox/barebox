@@ -68,8 +68,10 @@ static int do_ratp_mem_md(const char *filename,
 	char *buf = NULL;
 
 	fd = open_and_lseek(filename, O_RWSIZE_1 | O_RDONLY, start);
-	if (fd < 0)
+	if (fd < 0) {
+		printf("Could not open \"%s\": %m\n", filename);
 		return -errno;
+	}
 
 	map = memmap(fd, PROT_READ);
 	if (map != MAP_FAILED) {

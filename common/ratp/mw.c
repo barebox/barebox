@@ -133,6 +133,7 @@ static int ratp_cmd_mw(const struct ratp_bb *req, int req_len,
 
 	fd = open_and_lseek(path, O_RWSIZE_1 | O_WRONLY, addr);
 	if (fd < 0) {
+		printf("Could not open \"%s\": %m\n", path);
 		ret = -errno;
 		goto out;
 	}

@@ -40,8 +40,10 @@ static int do_mem_mm(int argc, char *argv[])
 	mask = simple_strtoull(argv[optind++], NULL, 0);
 
 	fd = open_and_lseek(filename, mode | O_RDWR | O_CREAT, adr);
-	if (fd < 0)
+	if (fd < 0) {
+		printf("Could not open \"%s\": %m\n", filename);
 		return 1;
+	}
 
 	switch (mode) {
 	case O_RWSIZE_1:

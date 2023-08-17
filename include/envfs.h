@@ -139,13 +139,13 @@ static inline int defaultenv_load(const char *dir, unsigned flags)
  * from the filename.
  */
 #define defaultenv_append_directory(name)			\
-	{							\
+	do {							\
 		extern char __bbenv_##name##_start[];		\
 		extern char __bbenv_##name##_end[];		\
 		defaultenv_append(__bbenv_##name##_start,	\
 				__bbenv_##name##_end -		\
 				__bbenv_##name##_start,		\
 				__stringify(name));		\
-	}
+	} while (0)
 
 #endif /* _ENVFS_H */

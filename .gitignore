@@ -45,7 +45,6 @@ Module.symvers
 /TAGS
 /barebox*
 /System.map
-/stickypage.bin
 
 #
 # git files that we don't want to ignore even it they are dot-files
@@ -95,4 +94,3 @@ GTAGS
 /allrandom.config
 /allyes.config
 /compile_commands.json
-/stickypage.bin

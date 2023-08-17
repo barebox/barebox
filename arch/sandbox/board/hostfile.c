@@ -248,7 +248,20 @@ static int of_hostfile_map_fixup(struct device_node *root, void *ctx)
 	struct device_node *node;
 	int ret;
 
-	for_each_compatible_node_from(node, root, NULL, hostfile_dt_ids->compatible) {
+	for_each_compatible_node_from(node, root, NULL, "barebox,stickypage") {
+		char *filename;
+
+		filename = linux_get_stickypage_path();
+		if (!filename) {
+			pr_err("error allocating stickypage\n");
+			continue;
+		}
+
+		of_property_write_string(node, "barebox,filename", filename);
+		of_property_write_string(node, "compatible", "barebox,hostfile");
+	}
+
+	for_each_compatible_node_from(node, root, NULL, "barebox,hostfile") {
 		struct hf_info hf = {};
 		uint64_t reg[2] = {};
 
@@ -258,13 +271,6 @@ static int of_hostfile_map_fixup(struct device_node *root, void *ctx)
 		if (ret) {
 			pr_err("skipping nameless hostfile %s\n", hf.devname);
 			continue;
-		}
-
-		if (memcmp(hf.filename, "$build/", 7) == 0) {
-			char *fullpath = xasprintf("%s/%s", linux_get_builddir(),
-					           hf.filename + sizeof "$build/" - 1);
-
-			hf.filename = fullpath;
 		}
 
 		hf.is_blockdev = of_property_read_bool(node, "barebox,blockdev");

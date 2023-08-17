@@ -75,6 +75,15 @@ static void cookmode(void)
 	tcsetattr(0, TCSANOW, &term_orig);
 }
 
+static char *stickypage_path;
+
+static void prepare_exit(void)
+{
+	cookmode();
+	if (stickypage_path)
+		remove(stickypage_path);
+}
+
 int linux_tstc(int fd)
 {
 	struct timeval tv = {
@@ -122,7 +131,7 @@ uint64_t linux_get_time(void)
 
 void __attribute__((noreturn)) linux_exit(void)
 {
-	cookmode();
+	prepare_exit();
 	exit(0);
 }
 
@@ -167,7 +176,7 @@ void linux_reexec(void)
 
 void linux_hang(void)
 {
-	cookmode();
+	prepare_exit();
 	/* falls through to generic hang() */
 }
 
@@ -329,19 +338,60 @@ static int add_image(const char *_str, char *devname_template, int *devname_numb
 	return ret;
 }
 
-const char *linux_get_builddir(void)
-{
-	static char path[4097];
-	int ret;
+extern uint8_t stickypage[4096];
 
-	if (!path[0]) {
-		ret = selfpath(path, sizeof(path));
-		if (ret < 0)
-			return NULL;
-		dirname(path);
+char *linux_get_stickypage_path(void)
+{
+	size_t nwritten;
+	ssize_t ret;
+	int fd;
+
+	ret = asprintf(&stickypage_path, "%s/barebox/stickypage.%lu",
+		       getenv("XDG_RUNTIME_DIR") ?: "/run", (long)getpid());
+	if (ret < 0)
+		goto err_asprintf;
+
+	ret = mkdir(dirname(stickypage_path), 0755);
+	if (ret < 0 && errno != EEXIST) {
+		perror("mkdir");
+		goto err_creat;
 	}
 
-	return path;
+	stickypage_path[strlen(stickypage_path)] = '/';
+
+	fd = open(stickypage_path, O_CREAT | O_WRONLY | O_TRUNC | O_EXCL, 0644);
+	if (fd < 0) {
+		if (errno == EEXIST)
+			return stickypage_path;
+
+		perror("open");
+		goto err_creat;
+	}
+
+	for (nwritten = 0; nwritten < sizeof(stickypage); ) {
+		ret = write(fd, &stickypage[nwritten], sizeof(stickypage) - nwritten);
+		if (ret < 0) {
+			if (errno == EINTR || errno == EAGAIN)
+				continue;
+			perror("write");
+			goto err_write;
+		}
+
+		nwritten += ret;
+	}
+
+	close(fd);
+
+	return stickypage_path;
+
+err_write:
+	close(fd);
+err_creat:
+	free(stickypage_path);
+err_asprintf:
+	stickypage_path = NULL;
+
+	return NULL;
 }
 
 int linux_open_hostfile(struct hf_info *hf)
@@ -469,7 +519,7 @@ int main(int argc, char *argv[])
 	char *aux;
 
 #ifdef CONFIG_ASAN
-	__sanitizer_set_death_callback(cookmode);
+	__sanitizer_set_death_callback(prepare_exit);
 #endif
 
 	while (1) {

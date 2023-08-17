@@ -31,7 +31,8 @@ KBUILD_CFLAGS += -Dmalloc=barebox_malloc -Dcalloc=barebox_calloc \
 		-Dclosedir=barebox_closedir -Dreadlink=barebox_readlink \
 		-Doptarg=barebox_optarg -Doptind=barebox_optind \
 		-Dsetjmp=barebox_setjmp -Dlongjmp=barebox_longjmp \
-		-Dputchar=barebox_putchar
+		-Dmkdir=barebox_mkdir -Ddirname=barebox_dirname \
+		-Dremove=barebox_remove -Dputchar=barebox_putchar
 
 machdirs := $(patsubst %,arch/sandbox/mach-%/,$(machine-y))
 
@@ -75,11 +76,7 @@ cmd_barebox__ = $(CC) -o $@ $(BAREBOX_LDFLAGS)
 
 common-y += $(BOARD) arch/sandbox/os/ arch/sandbox/lib/
 
-stickypage.bin:
-	@$(kecho) "  LN      stickypage.bin"
-	@ln -fs arch/sandbox/board/stickypage.bin stickypage.bin
-
-KBUILD_IMAGE := barebox stickypage.bin
+KBUILD_IMAGE := barebox
 
 common-$(CONFIG_OFTREE) += arch/sandbox/dts/
 

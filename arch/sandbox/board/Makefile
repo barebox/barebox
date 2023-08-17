@@ -13,9 +13,4 @@ obj-$(CONFIG_LED) += led.o
 
 extra-y += barebox.lds
 
-extra-y += stickypage.bin
-
-OBJCOPYFLAGS_stickypage.bin = -O binary
-
-%.bin: %.o
-	$(call if_changed,objcopy)
+obj-y += stickypage.o

@@ -1,5 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 
+.section .note.GNU-stack,"",%progbits
+.section .rodata.stickypage,"a"
+
 .globl stickypage;
 stickypage:
 

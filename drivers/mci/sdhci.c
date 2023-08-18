@@ -111,6 +111,35 @@ void sdhci_set_bus_width(struct sdhci *host, int width)
 	sdhci_write8(host, SDHCI_HOST_CONTROL, ctrl);
 }
 
+static inline bool sdhci_can_64bit_dma(struct sdhci *host)
+{
+	/*
+	 * According to SD Host Controller spec v4.10, bit[27] added from
+	 * version 4.10 in Capabilities Register is used as 64-bit System
+	 * Address support for V4 mode.
+	 */
+	if (host->version >= SDHCI_SPEC_410 && host->v4_mode)
+		return host->caps & SDHCI_CAN_64BIT_V4;
+
+	return host->caps & SDHCI_CAN_64BIT;
+}
+
+
+static void sdhci_set_adma_addr(struct sdhci *host, dma_addr_t addr)
+{
+	sdhci_write32(host, SDHCI_ADMA_ADDRESS, lower_32_bits(addr));
+	if (host->flags & SDHCI_USE_64_BIT_DMA)
+		sdhci_write32(host, SDHCI_ADMA_ADDRESS_HI, upper_32_bits(addr));
+}
+
+static void sdhci_set_sdma_addr(struct sdhci *host, dma_addr_t addr)
+{
+	if (host->v4_mode)
+		sdhci_set_adma_addr(host, addr);
+	else
+		sdhci_write32(host, SDHCI_DMA_ADDRESS, addr);
+}
+
 #ifdef __PBL__
 /*
  * Stubs to make timeout logic below work in PBL
@@ -160,6 +189,33 @@ void sdhci_setup_data_pio(struct sdhci *sdhci, struct mci_data *data)
 		      SDHCI_TRANSFER_BLOCK_SIZE(data->blocksize) | data->blocks << 16);
 }
 
+static void sdhci_config_dma(struct sdhci *host)
+{
+	u8 ctrl;
+	u16 ctrl2;
+
+	if (host->version < SDHCI_SPEC_200)
+		return;
+
+	ctrl = sdhci_read8(host, SDHCI_HOST_CONTROL);
+	/* Note if DMA Select is zero then SDMA is selected */
+	ctrl &= ~SDHCI_CTRL_DMA_MASK;
+	sdhci_write8(host, SDHCI_HOST_CONTROL, ctrl);
+
+	if (host->flags & SDHCI_USE_64_BIT_DMA) {
+		/*
+		 * If v4 mode, all supported DMA can be 64-bit addressing if
+		 * controller supports 64-bit system address, otherwise only
+		 * ADMA can support 64-bit addressing.
+		 */
+		if (host->v4_mode) {
+			ctrl2 = sdhci_read16(host, SDHCI_HOST_CONTROL2);
+			ctrl2 |= SDHCI_CTRL_64BIT_ADDR;
+			sdhci_write16(host, SDHCI_HOST_CONTROL2, ctrl2);
+		}
+	}
+}
+
 void sdhci_setup_data_dma(struct sdhci *sdhci, struct mci_data *data,
 			  dma_addr_t *dma)
 {
@@ -188,7 +244,8 @@ void sdhci_setup_data_dma(struct sdhci *sdhci, struct mci_data *data,
 		return;
 	}
 
-	sdhci_write32(sdhci, SDHCI_DMA_ADDRESS, *dma);
+	sdhci_config_dma(sdhci);
+	sdhci_set_sdma_addr(sdhci, *dma);
 }
 
 int sdhci_transfer_data_dma(struct sdhci *sdhci, struct mci_data *data,
@@ -230,7 +287,7 @@ int sdhci_transfer_data_dma(struct sdhci *sdhci, struct mci_data *data,
 			 * the interrupt and kick the DMA engine again.
 			 */
 			sdhci_write32(sdhci, SDHCI_INT_STATUS, SDHCI_INT_DMA);
-			sdhci_write32(sdhci, SDHCI_DMA_ADDRESS, addr);
+			sdhci_set_sdma_addr(sdhci, dma);
 		}
 
 		if (irqstat & SDHCI_INT_XFER_COMPLETE)
@@ -593,6 +650,9 @@ int sdhci_setup_host(struct sdhci *host)
 		mci->host_caps |= MMC_CAP_8_BIT_DATA;
 
 	host->sdma_boundary = SDHCI_DMA_BOUNDARY_512K;
+
+	if (sdhci_can_64bit_dma(host))
+		host->flags |= SDHCI_USE_64_BIT_DMA;
 
 	return 0;
 }

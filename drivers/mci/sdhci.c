@@ -279,8 +279,20 @@ int sdhci_transfer_data_dma(struct sdhci *sdhci, struct mci_data *data,
 			goto out;
 		}
 
+		/*
+		 * We currently don't do anything fancy with DMA
+		 * boundaries, but as we can't disable the feature
+		 * we need to at least restart the transfer.
+		 *
+		 * According to the spec sdhci_readl(host, SDHCI_DMA_ADDRESS)
+		 * should return a valid address to continue from, but as
+		 * some controllers are faulty, don't trust them.
+		 */
 		if (irqstat & SDHCI_INT_DMA) {
-			u32 addr = sdhci_read32(sdhci, SDHCI_DMA_ADDRESS);
+			int boundary_cfg = (sdhci->sdma_boundary >> 12) & 0x7;
+			dma_addr_t boundary_size = 4096 << boundary_cfg;
+			/* Force update to the next DMA block boundary. */
+			dma = (dma & ~(boundary_size - 1)) + boundary_size;
 
 			/*
 			 * DMA engine has stopped on buffer boundary. Acknowledge

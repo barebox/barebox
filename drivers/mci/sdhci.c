@@ -480,6 +480,24 @@ void sdhci_set_clock(struct sdhci *host, unsigned int clock, unsigned int input_
 	sdhci_enable_clk(host, clk);
 }
 
+static void sdhci_do_enable_v4_mode(struct sdhci *host)
+{
+	u16 ctrl2;
+
+	ctrl2 = sdhci_read16(host, SDHCI_HOST_CONTROL2);
+	if (ctrl2 & SDHCI_CTRL_V4_MODE)
+		return;
+
+	ctrl2 |= SDHCI_CTRL_V4_MODE;
+	sdhci_write16(host, SDHCI_HOST_CONTROL2, ctrl2);
+}
+
+void sdhci_enable_v4_mode(struct sdhci *host)
+{
+	host->v4_mode = true;
+	sdhci_do_enable_v4_mode(host);
+}
+
 void __sdhci_read_caps(struct sdhci *host, const u16 *ver,
 			const u32 *caps, const u32 *caps1)
 {
@@ -496,6 +514,9 @@ void __sdhci_read_caps(struct sdhci *host, const u16 *ver,
 	host->read_caps = true;
 
 	sdhci_reset(host, SDHCI_RESET_ALL);
+
+	if (host->v4_mode)
+		sdhci_do_enable_v4_mode(host);
 
 	of_property_read_u64(np, "sdhci-caps-mask", &dt_caps_mask);
 	of_property_read_u64(np, "sdhci-caps", &dt_caps);

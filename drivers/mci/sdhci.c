@@ -568,6 +568,9 @@ int sdhci_setup_host(struct sdhci *host)
 	if (host->caps & SDHCI_CAN_DO_HISPD)
 		mci->host_caps |= MMC_CAP_MMC_HIGHSPEED | MMC_CAP_SD_HIGHSPEED;
 
+	if (host->caps & SDHCI_CAN_DO_8BIT)
+		mci->host_caps |= MMC_CAP_8_BIT_DATA;
+
 	host->sdma_boundary = SDHCI_DMA_BOUNDARY_512K;
 
 	return 0;

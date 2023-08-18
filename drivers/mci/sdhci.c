@@ -244,7 +244,7 @@ out:
 	else
 		dma_unmap_single(dev, dma, nbytes, DMA_TO_DEVICE);
 
-	return 0;
+	return ret;
 }
 
 int sdhci_transfer_data_pio(struct sdhci *sdhci, struct mci_data *data)

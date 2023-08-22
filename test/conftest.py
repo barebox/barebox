@@ -61,7 +61,7 @@ def strategy(request, target, pytestconfig):
     if "virtio-mmio" in features:
         virtio = "device"
     if "virtio-pci" in features:
-        virtio = "pci,disable-legacy=on,disable-modern=off"
+        virtio = "pci,disable-modern=off"
         features.append("pci")
 
     if virtio and pytestconfig.option.qemu_rng:

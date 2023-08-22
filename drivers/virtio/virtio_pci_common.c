@@ -46,7 +46,7 @@ static int virtio_pci_probe(struct pci_dev *pci_dev,
 
 	rc = virtio_pci_modern_probe(vp_dev);
 	if (rc == -ENODEV)
-		dev_err(&pci_dev->dev, "Legacy and transitional devices unsupported\n");
+		dev_err(&pci_dev->dev, "Legacy devices unsupported\n");
 	if (rc)
 		goto err_enable_device;
 

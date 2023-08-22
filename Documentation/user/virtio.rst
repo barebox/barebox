@@ -72,15 +72,17 @@ malta VM with one HWRNG and 2 block VirtIO PCI devices::
 
   $ qemu-system-mips -m 256M -M malta -serial stdio         \
     	-bios ./images/barebox-qemu-malta.img -monitor null \
-  	-device virtio-rng-pci,disable-legacy=on            \
+  	-device virtio-rng-pci                              \
   	-drive if=none,file=image1.hdimg,format=raw,id=hd0  \
-  	-device virtio-blk-pci,drive=hd0,disable-legacy=on  \
+  	-device virtio-blk-pci,drive=hd0                    \
   	-drive if=none,file=image2.hdimg,format=raw,id=hd1  \
-  	-device virtio-blk-pci,drive=hd1,disable-legacy=on
+  	-device virtio-blk-pci,drive=hd1
 
-Note the use of ``disable-legacy=on``. barebox doesn't support legacy
-or transitional VirtIO devices. Some versions of QEMU may need to
-have ``,disable-modern=off`` specfied as well.
+Note that barebox does not support non-transitional legacy Virt I/O devices.
+Depending on QEMU version used, it may be required to add
+``disable-legacy=on``, ``disable-modern=off`` or both, e.g.::
+
+  	-device virtio-blk-pci,drive=hd1,disable-legacy=on,disable-modern=off
 
 .. _VirtIO: http://docs.oasis-open.org/virtio/virtio/v1.0/virtio-v1.0.pdf
 .. _qemu: https://www.qemu.org

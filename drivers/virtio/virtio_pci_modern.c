@@ -359,15 +359,19 @@ int virtio_pci_modern_probe(struct virtio_pci_device *vp_dev)
 	int common, notify, device;
 	int offset;
 
-	/*
-	 * We only own devices >= 0x1000 and <= 0x107f. We don't support
-	 * transitional devices, so start at 0x1040 and leave the rest.
-	 */
-	if (pci_dev->device < 0x1040 || pci_dev->device > 0x107f)
+	/* We only own devices >= 0x1000 and <= 0x107f: leave the rest. */
+	if (pci_dev->device < 0x1000 || pci_dev->device > 0x107f)
 		return -ENODEV;
 
-	/* Modern devices: simply use PCI device id, but start from 0x1040. */
-	vp_dev->vdev.id.device = pci_dev->device - 0x1040;
+	if (pci_dev->device < 0x1040) {
+		/* Transitional devices: use the PCI subsystem device id as
+		 * virtio device id, same as legacy driver always did.
+		 */
+		vp_dev->vdev.id.device = pci_dev->subsystem_device;
+	} else {
+		/* Modern devices: simply use PCI device id, but start from 0x1040. */
+		vp_dev->vdev.id.device = pci_dev->device - 0x1040;
+	}
 	vp_dev->vdev.id.vendor = pci_dev->subsystem_vendor;
 
 	/* Check for a common config: if not, driver could fall back to legacy mode (bar 0) */

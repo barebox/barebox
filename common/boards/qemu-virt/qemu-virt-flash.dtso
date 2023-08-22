@@ -3,16 +3,10 @@
 /dts-v1/;
 /plugin/;
 
-#ifdef RISCV_VIRT
-#define PARTS_TARGET_PATH	/flash@20000000
-#define ENV_DEVICE_PATH		"/flash@20000000/partitions/partition@3c00000"
-#elif defined ARM_VIRT
-#define PARTS_TARGET_PATH	/flash@0
-#define ENV_DEVICE_PATH		"/flash@0/partitions/partition@3c00000"
-#endif
+#include "qemu-virt-flash.h"
 
 &{PARTS_TARGET_PATH} {
-#ifdef ARM_VIRT
+#ifdef CONFIG_ARM
 	virtual-reg = <0x1000>;
 #endif
 	partitions {
@@ -40,7 +34,7 @@
 &{/chosen} {
 	environment {
 		compatible = "barebox,environment";
-		device-path = ENV_DEVICE_PATH;
+		device-path = ENV_DEVICE_PATH_STR;
 	};
 };
 

@@ -334,8 +334,7 @@ static inline struct param_d *dev_add_param_bool_ro(struct device *dev,
 
 static inline struct param_d *dev_add_param_string_ro(struct device *dev,
 						      const char *name,
-						      char **value,
-						      void *priv)
+						      char **value)
 {
 	return dev_add_param_string(dev, name, param_set_readonly, NULL, value, NULL);
 }

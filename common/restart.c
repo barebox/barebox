@@ -74,7 +74,7 @@ int restart_handler_register_fn(const char *name,
 }
 
 /**
- * restart_handler_get_by_name() - reset the whole system
+ * restart_handler_get_by_name() - get highest priority `name'
  */
 struct restart_handler *restart_handler_get_by_name(const char *name, int flags)
 {

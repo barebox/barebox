@@ -75,7 +75,7 @@ int of_add_initrd(struct device_node *root, resource_size_t start,
 
 struct fdt_header *fdt_get_tree(void);
 
-struct fdt_header *of_get_fixed_tree(struct device_node *node);
+struct fdt_header *of_get_fixed_tree(const struct device_node *node);
 
 /* Helper to read a big number; size is in cells (not bytes) */
 static inline u64 of_read_number(const __be32 *cell, int size)
@@ -131,6 +131,7 @@ extern int of_n_addr_cells(struct device_node *np);
 extern int of_bus_n_size_cells(struct device_node *np);
 extern int of_n_size_cells(struct device_node *np);
 extern bool of_node_name_eq(const struct device_node *np, const char *name);
+extern size_t of_node_has_prefix(const struct device_node *np, const char *prefix);
 
 extern struct property *of_find_property(const struct device_node *np,
 					const char *name, int *lenp);
@@ -375,6 +376,11 @@ static inline struct of_reserve_map *of_get_reserve_map(void)
 static inline bool of_node_name_eq(const struct device_node *np, const char *name)
 {
 	return false;
+}
+
+static inline size_t of_node_has_prefix(const struct device_node *np, const char *prefix)
+{
+	return 0;
 }
 
 static inline int of_parse_partitions(struct cdev *cdev,

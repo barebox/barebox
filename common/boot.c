@@ -75,7 +75,7 @@ static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 
 	struct bootm_data data = {};
 
-	if (dryrun) {
+	if (dryrun == 1) {
 		printf("Would run %s\n", bs->scriptpath);
 		return 0;
 	}
@@ -94,8 +94,8 @@ static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 
 	if (verbose)
 		data.verbose = verbose;
-	if (dryrun)
-		data.dryrun = dryrun;
+	if (dryrun >= 2)
+		data.dryrun = dryrun - 1;
 
 	return bootm_boot(&data);
 }
@@ -183,8 +183,12 @@ static int bootscript_create_entry(struct bootentries *bootentries, const char *
 {
 	struct bootentry_script *bs;
 	enum filetype type;
+	int ret;
 
-	type = file_name_detect_type(name);
+	ret = file_name_detect_type(name, &type);
+	if (ret)
+		return ret;
+
 	if (type != filetype_sh)
 		return -EINVAL;
 

@@ -434,6 +434,9 @@ static unsigned int pci_scan_bus(struct pci_bus *bus)
 				goto bad;
 
 			setup_device(dev, 6);
+
+			pci_read_config_word(dev, PCI_SUBSYSTEM_ID, &dev->subsystem_device);
+			pci_read_config_word(dev, PCI_SUBSYSTEM_VENDOR_ID, &dev->subsystem_vendor);
 			break;
 		case PCI_HEADER_TYPE_BRIDGE:
 			child_bus = pci_alloc_bus();

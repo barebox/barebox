@@ -44,7 +44,7 @@ static int do_boot(int argc, char *argv[])
 			do_list = 1;
 			break;
 		case 'd':
-			dryrun = 1;
+			dryrun++;
 			break;
 		case 'M':
 			/* To simplify scripting, an empty string is treated as 1 */
@@ -145,7 +145,7 @@ BAREBOX_CMD_HELP_TEXT("one succeeds.")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-v","Increase verbosity")
-BAREBOX_CMD_HELP_OPT ("-d","Dryrun. See what happens but do no actually boot")
+BAREBOX_CMD_HELP_OPT ("-d","Dryrun. See what happens but do no actually boot (pass twice to run scripts)")
 BAREBOX_CMD_HELP_OPT ("-l","List available boot sources")
 BAREBOX_CMD_HELP_OPT ("-m","Show a menu with boot options")
 BAREBOX_CMD_HELP_OPT ("-M INDEX","Show a menu with boot options with entry INDEX preselected")

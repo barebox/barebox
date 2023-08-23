@@ -669,8 +669,12 @@ static int fit_config_verify_signature(struct fit_handle *handle, struct device_
 	}
 
 	for_each_child_of_node(conf_node, sig_node) {
+		if (!of_node_has_prefix(sig_node, "signature"))
+			continue;
+
 		if (handle->verbose)
 			of_print_nodes(sig_node, 0, ~0);
+
 		ret = fit_verify_signature(sig_node, handle->fit);
 		if (ret < 0)
 			return ret;

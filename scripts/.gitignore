@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 bin2c
-mkimage
 fix_size
 bareboxenv
 bareboxcrc32
@@ -32,6 +31,7 @@ omap3-usb-loader
 omap3-usb-loader-target
 rk-usb-loader
 rk-usb-loader-target
+rkimage
 mips-relocs
 rsatoc
 stm32image

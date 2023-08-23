@@ -1,5 +1,6 @@
 import pytest
 import os
+import argparse
 from .py import helper
 
 
@@ -40,9 +41,8 @@ def pytest_addoption(parser):
     parser.addoption('--blk', action='append', dest='qemu_block',
         default=[], metavar="FILE",
         help=('Pass block device to emulated barebox. Can be specified more than once'))
-    parser.addoption('--qemu', action='append', dest='qemu_arg',
-        default=[], metavar="option",
-        help=('Pass option to QEMU as is'))
+    parser.addoption('--qemu', dest='qemu_arg', nargs=argparse.REMAINDER, default=[],
+        help=('Pass all remaining options to QEMU as is'))
 
 @pytest.fixture(scope="session")
 def strategy(request, target, pytestconfig):
@@ -61,7 +61,7 @@ def strategy(request, target, pytestconfig):
     if "virtio-mmio" in features:
         virtio = "device"
     if "virtio-pci" in features:
-        virtio = "pci,disable-legacy=on,disable-modern=off"
+        virtio = "pci,disable-modern=off"
         features.append("pci")
 
     if virtio and pytestconfig.option.qemu_rng:
@@ -89,7 +89,7 @@ def strategy(request, target, pytestconfig):
     for i, blk in enumerate(pytestconfig.option.qemu_block):
         if virtio:
             strategy.append_qemu_args(
-                "-drive", f"if=none,file={blk},format=raw,id=hd{i}",
+                "-drive", f"if=none,format=raw,id=hd{i},file={blk}",
                 "-device", f"virtio-blk-{virtio},drive=hd{i}"
             )
         else:

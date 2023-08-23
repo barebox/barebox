@@ -209,11 +209,14 @@ int memcpy_parse_options(int argc, char *argv[], int *sourcefd,
 	destfile = destfile ?: "/dev/mem";
 
 	*sourcefd = open_and_lseek(sourcefile, mode | O_RDONLY, src);
-	if (*sourcefd < 0)
+	if (*sourcefd < 0) {
+		printf("Could not open source file \"%s\": %m\n", sourcefile);
 		return -1;
+	}
 
 	*destfd = open_and_lseek(destfile, mode | destmode, dest);
 	if (*destfd < 0) {
+		printf("Could not open destination file \"%s\": %m\n", destfile);
 		close(*sourcefd);
 		return -1;
 	}

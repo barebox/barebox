@@ -626,7 +626,7 @@ quiet_cmd_b64dec = B64DEC  $@
 # target file.
 quiet_cmd_rsa_keys = RSAKEY  $@
 cmd_rsa_keys = \
-	$(objtree)/scripts/rsatoc -o $@.tmp $(2) &&			\
+	$(objtree)/scripts/rsatoc -o $@.tmp "$(2)" &&			\
 	if cmp -s $@.tmp $@; then					\
 		rm $@.tmp;						\
 	else								\

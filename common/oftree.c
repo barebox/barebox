@@ -416,26 +416,27 @@ void of_fix_tree(struct device_node *node)
  * It increases the size of the tree and applies the registered
  * fixups.
  */
-struct fdt_header *of_get_fixed_tree(struct device_node *node)
+struct fdt_header *of_get_fixed_tree(const struct device_node *node)
 {
 	struct fdt_header *fdt = NULL;
-	struct device_node *freenp = NULL;
+	struct device_node *np;
 
 	if (!node) {
 		node = of_get_root_node();
 		if (!node)
 			return NULL;
-
-		freenp = node = of_dup(node);
-		if (!node)
-			return NULL;
 	}
 
-	of_fix_tree(node);
+	np = of_dup(node);
 
-	fdt = of_flatten_dtb(node);
+	if (!np)
+		return NULL;
 
-	of_delete_node(freenp);
+	of_fix_tree(np);
+
+	fdt = of_flatten_dtb(np);
+
+	of_delete_node(np);
 
 	return fdt;
 }

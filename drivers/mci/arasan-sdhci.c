@@ -84,7 +84,7 @@ static int arasan_sdhci_reset(struct arasan_sdhci_host *host, u8 mask)
 
 		ctrl = sdhci_read8(&host->sdhci, SDHCI_HOST_CONTROL);
 		ctrl |= SDHCI_CTRL_CDTEST_INS | SDHCI_CTRL_CDTEST_INS;
-		sdhci_write8(&host->sdhci, ctrl, SDHCI_HOST_CONTROL);
+		sdhci_write8(&host->sdhci, SDHCI_HOST_CONTROL, ctrl);
 	}
 
 	return 0;

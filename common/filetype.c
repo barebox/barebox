@@ -420,15 +420,14 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 	return filetype_unknown;
 }
 
-enum filetype file_name_detect_type_offset(const char *filename, loff_t pos)
+int file_name_detect_type_offset(const char *filename, loff_t pos, enum filetype *type)
 {
 	int fd, ret;
 	void *buf;
-	enum filetype type = filetype_unknown;
 
 	fd = open_and_lseek(filename, O_RDONLY, pos);
 	if (fd < 0)
-		goto out;
+		return fd;
 
 	buf = xzalloc(FILE_TYPE_SAFE_BUFSIZE);
 
@@ -436,33 +435,34 @@ enum filetype file_name_detect_type_offset(const char *filename, loff_t pos)
 	if (ret < 0)
 		goto err_out;
 
-	type = file_detect_type(buf, ret);
+	*type = file_detect_type(buf, ret);
 
+	ret = 0;
 err_out:
 	close(fd);
 	free(buf);
-out:
-	return type;
+
+	return ret;
 }
 
-enum filetype file_name_detect_type(const char *filename)
+int file_name_detect_type(const char *filename, enum filetype *type)
 {
-	return file_name_detect_type_offset(filename, 0);
+	return file_name_detect_type_offset(filename, 0, type);
 }
 
-enum filetype cdev_detect_type(const char *name)
+int cdev_detect_type(const char *name, enum filetype *type)
 {
-	enum filetype type = filetype_unknown;
 	int ret;
 	struct cdev *cdev;
 	void *buf;
 
 	cdev = cdev_open_by_name(name, O_RDONLY);
 	if (!cdev)
-		return type;
+		return -ENOENT;
 
 	if (cdev->filetype != filetype_unknown) {
-		type = cdev->filetype;
+		*type = cdev->filetype;
+		ret = 0;
 		goto cdev_close;
 	}
 
@@ -471,13 +471,14 @@ enum filetype cdev_detect_type(const char *name)
 	if (ret < 0)
 		goto err_out;
 
-	type = file_detect_type(buf, ret);
+	*type = file_detect_type(buf, ret);
+	ret = 0;
 
 err_out:
 	free(buf);
 cdev_close:
 	cdev_close(cdev);
-	return type;
+	return ret;
 }
 
 bool filetype_is_barebox_image(enum filetype ft)

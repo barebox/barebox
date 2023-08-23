@@ -49,8 +49,10 @@ static int do_mem_md(int argc, char *argv[])
 	}
 
 	fd = open_and_lseek(filename, mode | O_RDONLY, start);
-	if (fd < 0)
+	if (fd < 0) {
+		printf("Could not open \"%s\": %m\n", filename);
 		return 1;
+	}
 
 	map = memmap(fd, PROT_READ);
 	if (map != MAP_FAILED) {

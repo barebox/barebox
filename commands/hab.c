@@ -58,7 +58,13 @@ static int do_hab(int argc, char *argv[])
 			printf("%02x", srk[i]);
 		printf("\n");
 
-		if (imx_hab_device_locked_down())
+		ret = imx_hab_device_locked_down();
+		if (ret < 0) {
+			printf("failed to determine lockdown mode: '%pe'\n", ERR_PTR(ret));
+			return ret;
+		}
+
+		if (ret)
 			printf("secure mode\n");
 		else
 			printf("devel mode\n");

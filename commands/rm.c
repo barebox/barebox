@@ -12,12 +12,15 @@
 
 static int do_rm(int argc, char *argv[])
 {
-	int i, opt, recursive = 0;
+	int i, opt, recursive = 0, force = 0;
 
-	while ((opt = getopt(argc, argv, "r")) > 0) {
+	while ((opt = getopt(argc, argv, "rf")) > 0) {
 		switch (opt) {
 		case 'r':
 			recursive = 1;
+			break;
+		case 'f':
+			force = 1;
 			break;
 		default:
 			return COMMAND_ERROR_USAGE;
@@ -37,8 +40,10 @@ static int do_rm(int argc, char *argv[])
 		else
 			ret = unlink(argv[i]);
 		if (ret) {
-			printf("could not remove %s: %m\n", argv[i]);
-			return 1;
+			if (!force || ret != -ENOENT)
+				printf("could not remove %s: %m\n", argv[i]);
+			if (!force)
+				return 1;
 		}
 		i++;
 	}
@@ -49,12 +54,13 @@ static int do_rm(int argc, char *argv[])
 BAREBOX_CMD_HELP_START(rm)
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-r", "remove directories and their contents recursively")
+BAREBOX_CMD_HELP_OPT ("-f", "ignore nonexistent files")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(rm)
 	.cmd		= do_rm,
 	BAREBOX_CMD_DESC("remove files")
-	BAREBOX_CMD_OPTS("[-r] FILES...")
+	BAREBOX_CMD_OPTS("[-rf] FILES...")
 	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_rm_help)
 BAREBOX_CMD_END

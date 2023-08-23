@@ -9,11 +9,13 @@
  */
 #include <common.h>
 #include <command.h>
+#include <fnmatch.h>
 #include <fs.h>
 #include <linux/stat.h>
 
 typedef enum {
 	OPT_EQUAL,
+	OPT_EQUAL_BASH,
 	OPT_NOT_EQUAL,
 	OPT_ARITH_EQUAL,
 	OPT_ARITH_NOT_EQUAL,
@@ -36,6 +38,7 @@ typedef enum {
 
 static char *test_options[] = {
 	[OPT_EQUAL]			= "=",
+	[OPT_EQUAL_BASH]		= "==",
 	[OPT_NOT_EQUAL]			= "!=",
 	[OPT_ARITH_EQUAL]		= "-eq",
 	[OPT_ARITH_NOT_EQUAL]		= "-ne",
@@ -67,19 +70,36 @@ static int parse_opt(const char *opt)
 	return -1;
 }
 
+static int string_comp(const char *left_op, const char *right_op, bool bash_test)
+{
+	if (bash_test)
+		return fnmatch(right_op, left_op, 0);
+
+	return strcmp(left_op, right_op);
+}
+
 static int do_test(int argc, char *argv[])
 {
 	char **ap;
 	int left, adv, expr, last_expr, neg, last_cmp, opt, zero;
 	ulong a, b;
 	struct stat statbuf;
+	bool bash_test = false;
 
 	if (*argv[0] == '[') {
-		if (*argv[argc - 1] != ']') {
-			printf("[: missing `]'\n");
-			return 1;
-		}
 		argc--;
+		if (!strncmp(argv[0], "[[", 2)) {
+			if (strncmp(argv[argc], "]]", 2) != 0) {
+				printf("[[: missing `]]'\n");
+				return 1;
+			}
+			bash_test = true;
+		} else {
+			if (*argv[argc] != ']') {
+				printf("[: missing `]'\n");
+				return 1;
+			}
+		}
 	}
 
 	/* args? */
@@ -183,10 +203,11 @@ static int do_test(int argc, char *argv[])
 			b = simple_strtol(ap[2], NULL, 0);
 			switch (parse_opt(ap[1])) {
 			case OPT_EQUAL:
-				expr = strcmp(ap[0], ap[2]) == 0;
+			case OPT_EQUAL_BASH:
+				expr = string_comp(ap[0], ap[2], bash_test) == 0;
 				break;
 			case OPT_NOT_EQUAL:
-				expr = strcmp(ap[0], ap[2]) != 0;
+				expr = string_comp(ap[0], ap[2], bash_test) != 0;
 				break;
 			case OPT_ARITH_EQUAL:
 				expr = a == b;
@@ -233,7 +254,7 @@ out:
 	return expr;
 }
 
-static const char * const test_aliases[] = { "[", NULL};
+static const char * const test_aliases[] = { "[", "[[", NULL};
 
 BAREBOX_CMD_HELP_START(test)
 BAREBOX_CMD_HELP_TEXT("Options:")

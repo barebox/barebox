@@ -280,7 +280,7 @@ static bool ifup_edev_need_conf(struct eth_device *edev)
 		edev->global_mode != ETH_MODE_DISABLED;
 }
 
-static void __ifup_all_parallel(unsigned flags)
+static int __ifup_all_parallel(unsigned flags)
 {
 	struct eth_device *edev;
 	unsigned netdev_count = 0;
@@ -296,6 +296,12 @@ static void __ifup_all_parallel(unsigned flags)
 	start = get_time_ns();
 	while (netdev_count && !is_timeout(start, PHY_AN_TIMEOUT * SECOND)) {
 		for_each_netdev(edev) {
+			if ((flags & IFUP_FLAG_UNTIL_NET_SERVER) && net_get_server())
+				return 0;
+
+			if (ctrlc())
+				return -EINTR;
+
 			if (!ifup_edev_need_conf(edev))
 				continue;
 
@@ -308,23 +314,27 @@ static void __ifup_all_parallel(unsigned flags)
 				continue;
 
 			netdev_count--;
-
-			if ((flags & IFUP_FLAG_UNTIL_NET_SERVER) && net_get_server())
-				return;
 		}
 	}
+
+	return 0;
 }
 
-static void __ifup_all_sequence(unsigned flags)
+static int __ifup_all_sequence(unsigned flags)
 {
 	struct eth_device *edev;
 
 	for_each_netdev(edev) {
-		ifup_edev(edev, flags);
-
 		if ((flags & IFUP_FLAG_UNTIL_NET_SERVER) && net_get_server())
-			return;
+			return 0;
+
+		if (ctrlc())
+			return -EINTR;
+
+		ifup_edev(edev, flags);
 	}
+
+	return 0;
 }
 
 int ifup_all(unsigned flags)
@@ -358,15 +368,13 @@ int ifup_all(unsigned flags)
 	 * empty, i.e. the first DHCP lease setting $global.net.server
 	 * will be what we're going with.
 	 */
-	if (net_get_server())
+	if (net_get_server() && !net_get_gateway())
 		flags &= ~IFUP_FLAG_UNTIL_NET_SERVER;
 
 	if (flags & IFUP_FLAG_PARALLEL)
-		__ifup_all_parallel(flags);
+		return __ifup_all_parallel(flags);
 	else
-		__ifup_all_sequence(flags);
-
-	return 0;
+		return __ifup_all_sequence(flags);
 }
 
 void ifdown_all(void)

@@ -369,9 +369,10 @@ endif
 
 KCONFIG_CONFIG	?= .config
 
+PKG_CONFIG ?= pkg-config
 CROSS_PKG_CONFIG ?= $(CROSS_COMPILE)pkg-config
 
-export KCONFIG_CONFIG CROSS_PKG_CONFIG
+export KCONFIG_CONFIG CROSS_PKG_CONFIG PKG_CONFIG
 
 # SHELL used by kbuild
 CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
@@ -385,11 +386,12 @@ HOST_LFS_LIBS := $(shell getconf LFS_LIBS 2>/dev/null)
 HOSTCC       = gcc
 HOSTCXX      = g++
 
-export KBUILD_USERCFLAGS := -Wall -Wmissing-prototypes -Wstrict-prototypes \
+KBUILD_USERHOSTCFLAGS := -Wall -Wmissing-prototypes -Wstrict-prototypes \
 			      -O2 -fomit-frame-pointer -std=gnu89
-export KBUILD_USERLDFLAGS :=
+KBUILD_USERCFLAGS  := $(KBUILD_USERHOSTCFLAGS) $(USERCFLAGS)
+KBUILD_USERLDFLAGS := $(USERLDFLAGS)
 
-KBUILD_HOSTCFLAGS   := $(KBUILD_USERCFLAGS) $(HOST_LFS_CFLAGS) $(HOSTCFLAGS)
+KBUILD_HOSTCFLAGS   := $(KBUILD_USERHOSTCFLAGS) $(HOST_LFS_CFLAGS) $(HOSTCFLAGS)
 KBUILD_HOSTCXXFLAGS := -Wall -O2 $(HOST_LFS_CFLAGS) $(HOSTCXXFLAGS)
 KBUILD_HOSTLDFLAGS  := $(HOST_LFS_LDFLAGS) $(HOSTLDFLAGS)
 KBUILD_HOSTLDLIBS   := $(HOST_LFS_LIBS) $(HOSTLDLIBS)
@@ -474,6 +476,7 @@ export CPP AR NM STRIP OBJCOPY OBJDUMP MAKE AWK GENKSYMS PERL PYTHON3 UTS_MACHIN
 export LEX YACC
 export HOSTCXX CHECK CHECKFLAGS
 export KBUILD_HOSTCXXFLAGS KBUILD_HOSTLDFLAGS KBUILD_HOSTLDLIBS LDFLAGS_MODULE
+export KBUILD_USERCFLAGS KBUILD_USERLDFLAGS
 
 export KBUILD_CPPFLAGS NOSTDINC_FLAGS LINUXINCLUDE OBJCOPYFLAGS KBUILD_LDFLAGS
 export KBUILD_CFLAGS CFLAGS_KERNEL CFLAGS_MODULE
@@ -936,22 +939,6 @@ else
 endif
 
 PHONY += install
-
-# By default the uImage load address is 2MB below CONFIG_TEXT_BASE,
-# leaving space for the compressed PBL image at 1MB below CONFIG_TEXT_BASE.
-UIMAGE_BASE ?= $(shell printf "0x%08x" $$(($(CONFIG_TEXT_BASE) - 0x200000)))
-
-# For development provide a target which makes barebox loadable by an
-# unmodified u-boot
-quiet_cmd_barebox_mkimage = MKIMAGE $@
-      cmd_barebox_mkimage = $(srctree)/scripts/mkimage -A $(SRCARCH) -T firmware -C none \
-       -O barebox -a $(UIMAGE_BASE) -e $(UIMAGE_BASE) \
-       -n "barebox $(KERNELRELEASE)" -d $< $@
-
-# barebox.uimage is build from the raw barebox binary, without any other
-# headers.
-barebox.uimage: $(KBUILD_BINARY) FORCE
-	$(call if_changed,barebox_mkimage)
 
 # barebox image
 barebox: $(BAREBOX_LDS) $(BAREBOX_OBJS) $(kallsyms.o) FORCE

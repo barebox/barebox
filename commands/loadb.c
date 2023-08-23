@@ -646,7 +646,7 @@ static int do_load_serial_bin(int argc, char *argv[])
 	/* File should exist */
 	ofd = open_and_lseek(output_file, O_WRONLY | O_CREAT, offset);
 	if (ofd < 0) {
-		perror(argv[0]);
+		printf("Could not open \"%s\": %m\n", output_file);
 		return 3;
 	}
 

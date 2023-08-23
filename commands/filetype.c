@@ -66,7 +66,11 @@ static int do_filetype(int argc, char *argv[])
 	if (S_ISDIR(s.st_mode))
 		return -EISDIR;
 
-	type = file_name_detect_type(filename);
+	ret = file_name_detect_type(filename, &type);
+	if (ret) {
+		printf("failed to detect type of %s: %s\n", filename, strerror(-ret));
+		return COMMAND_ERROR;
+	}
 
 	if (verbose)
 		printf("%s: %s (%s)\n", filename,

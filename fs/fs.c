@@ -903,15 +903,16 @@ const char *fs_detect(const char *filename, const char *fsoptions)
 	struct fs_driver *fdrv;
 	bool loop = false;
 	unsigned long long offset = 0;
+	int ret;
 
 	parseopt_b(fsoptions, "loop", &loop);
 	parseopt_llu_suffix(fsoptions, "offset", &offset);
 	if (loop)
-		type = file_name_detect_type_offset(filename, offset);
+		ret = file_name_detect_type_offset(filename, offset, &type);
 	else
-		type = cdev_detect_type(filename);
+		ret = cdev_detect_type(filename, &type);
 
-	if (type == filetype_unknown)
+	if (ret || type == filetype_unknown)
 		return NULL;
 
 	bus_for_each_driver(&fs_bus, drv) {

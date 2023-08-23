@@ -39,8 +39,10 @@ static int do_mem_mw(int argc, char *argv[])
 	adr = strtoull_suffix(argv[optind++], NULL, 0);
 
 	fd = open_and_lseek(filename, mode | O_WRONLY | O_CREAT, adr);
-	if (fd < 0)
+	if (fd < 0) {
+		printf("Could not open \"%s\": %m\n", filename);
 		return 1;
+	}
 
 	while (optind < argc) {
 		u8 val8;

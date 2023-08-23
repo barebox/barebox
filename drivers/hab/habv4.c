@@ -68,18 +68,6 @@ enum hab_config {
 	HAB_CONFIG_CLOSED = 0xcc,	/* Secure IC */
 };
 
-/* State definitions */
-enum hab_state {
-	HAB_STATE_INITIAL = 0x33,	/* Initialising state (transitory) */
-	HAB_STATE_CHECK = 0x55,		/* Check state (non-secure) */
-	HAB_STATE_NONSECURE = 0x66,	/* Non-secure state */
-	HAB_STATE_TRUSTED = 0x99,	/* Trusted state */
-	HAB_STATE_SECURE = 0xaa,	/* Secure state */
-	HAB_STATE_FAIL_SOFT = 0xcc,	/* Soft fail state */
-	HAB_STATE_FAIL_HARD = 0xff,	/* Hard fail state (terminal) */
-	HAB_STATE_NONE = 0xf0,		/* No security state machine */
-};
-
 enum hab_reason {
 	HAB_REASON_RSN_ANY = 0x00,		/* Match any reason */
 	HAB_REASON_UNS_COMMAND = 0x03,		/* Unsupported command */
@@ -168,7 +156,7 @@ struct habv4_rvt {
 	enum hab_status (*run_csf)(const void *csf, uint8_t cid);
 	enum hab_status (*assert)(enum hab_assertion assertion, const void *data, uint32_t count);
 	enum hab_status (*report_event)(enum hab_status status, uint32_t index, void *event, uint32_t *bytes);
-	enum hab_status (*report_status)(enum hab_config *config, enum hab_state *state);
+	enum hab_status (*report_status)(enum hab_config *config, enum habv4_state *state);
 	void (*failsafe)(void);
 } __packed;
 
@@ -182,7 +170,7 @@ struct habv4_rvt {
 #define FSL_SIP_HAB_CHECK_TARGET        0x06
 
 static enum hab_status hab_sip_report_status(enum hab_config *config,
-					     enum hab_state *state)
+					     enum habv4_state *state)
 {
 	struct arm_smccc_res res;
 
@@ -290,7 +278,7 @@ static const char *habv4_get_config_str(enum hab_config config)
 	return "<unknown>";
 }
 
-static const char *habv4_get_state_str(enum hab_state state)
+static const char *habv4_get_state_str(enum habv4_state state)
 {
 	switch (state) {
 	case HAB_STATE_INITIAL:
@@ -518,6 +506,13 @@ static uint8_t *hab_get_event(const struct habv4_rvt *rvt, int index, int *len)
 	return buf;
 }
 
+static int habv4_state = -EPROBE_DEFER;
+
+int habv4_get_state(void)
+{
+	return habv4_state;
+}
+
 static int habv4_get_status(const struct habv4_rvt *rvt)
 {
 	uint8_t *data;
@@ -525,7 +520,7 @@ static int habv4_get_status(const struct habv4_rvt *rvt)
 	int i;
 	enum hab_status status;
 	enum hab_config config = 0x0;
-	enum hab_state state = 0x0;
+	enum habv4_state state = 0x0;
 
 	if (rvt->header.tag != HAB_TAG_RVT) {
 		pr_err("ERROR - RVT not found!\n");
@@ -533,6 +528,8 @@ static int habv4_get_status(const struct habv4_rvt *rvt)
 	}
 
 	status = rvt->report_status(&config, &state);
+	habv4_state = state;
+
 	pr_info("Status: %s (0x%02x)\n", habv4_get_status_str(status), status);
 	pr_info("Config: %s (0x%02x)\n", habv4_get_config_str(config), config);
 	pr_info("State: %s (0x%02x)\n",	habv4_get_state_str(state), state);

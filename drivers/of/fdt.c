@@ -302,15 +302,15 @@ static int lstrcpy(char *dest, const char *src)
 	int len = 0;
 	int maxlen = 1023;
 
-	while (*src) {
-		*dest++ = *src++;
+	do {
+		*dest++ = *src;
 		len++;
 		if (!maxlen)
 			return -ENOSPC;
 		maxlen--;
-	}
+	} while (*src++);
 
-	return len;
+	return len - 1;
 }
 
 static void *memalign_realloc(void *orig, size_t oldsize, size_t newsize)

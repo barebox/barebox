@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <console.h>
 #include <init.h>
+#include <string.h>
 #include <environment.h>
 #include <globalvar.h>
 #include <magicvar.h>
@@ -19,6 +20,7 @@
 #include <malloc.h>
 #include <linux/pstore.h>
 #include <linux/math64.h>
+#include <linux/overflow.h>
 
 #ifndef CONFIG_CONSOLE_NONE
 
@@ -39,7 +41,6 @@ static int barebox_log_max_messages = 1000;
 
 static void log_del(struct log_entry *log)
 {
-	free(log->msg);
 	list_del(&log->list);
 	free(log);
 	barebox_logbuf_num_messages--;
@@ -89,15 +90,14 @@ static void pr_puts(int level, const char *str)
 			log_clean(barebox_log_max_messages - 1);
 
 		if (barebox_log_max_messages >= 0) {
-			log = malloc(sizeof(*log));
+			int msglen;
+
+			msglen = strlen(str);
+			log = malloc(struct_size(log, msg, msglen + 1));
 			if (!log)
 				goto nolog;
 
-			log->msg = strdup(str);
-			if (!log->msg) {
-				free(log);
-				goto nolog;
-			}
+			memcpy(log->msg, str, msglen + 1);
 
 			log->timestamp = get_time_ns();
 			log->level = level;

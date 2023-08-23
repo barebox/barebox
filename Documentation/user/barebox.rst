@@ -300,16 +300,25 @@ so it may be loaded by the boot ROM of the relevant SoCs.
 
 In addition to these barebox also builds host and target tools that are useful
 outside of barebox build: e.g. to manipulate the environment or to load an
-image over a boot ROM's USB recovery protocol.
+image over a boot ROM's USB recovery protocol. These tools may link against
+libraries, which are detected using ``PKG_CONFIG`` and ``CROSS_PKG_CONFIG``
+for native and cross build respectively. Their default values are::
 
-There are two ``ARCH=sandbox`` to make this more straight forward:
+  PKG_CONFIG=pkg-config
+  CROSS_PKG_CONFIG=${CROSS_COMPILE}pkg-config
+
+These can be overridden using environment or make variables.
+
+As use of pkg-config both for host and target tool in the same build can
+complicate build system integration. There are two ``ARCH=sandbox`` configuration
+to make this more straight forward:
 
 Host Tools
 ^^^^^^^^^^
 
 The ``hosttools_defconfig`` will compile standalone host tools for the
-host (build) system. To build the USB loaders, ``pkg-config`` needs to know
-about ``libusb-1.0``.
+host (build) system. To build the USB loaders, ``PKG_CONFIG`` needs to know
+about ``libusb-1.0``. This config won't build any target tools.
 
 .. code-block:: console
 
@@ -322,9 +331,9 @@ Target Tools
 
 The ``targettools_defconfig`` will cross-compile standalone target tools for the
 target system.  To build the USB loaders, ``CROSS_PKG_CONFIG`` needs to know
-about ``libusb-1.0``. This config won't built any host tools, so it's ok to
+about ``libusb-1.0``. This config won't build any host tools, so it's ok to
 set ``CROSS_PKG_CONFIG=pkg-config`` if ``pkg-config`` is primed for target
-use. The default is ``CROSS_PKG_CONFIG=$(CROSS_COMPILE)pkg-config``. Example:
+use. Example:
 
 .. code-block:: console
 

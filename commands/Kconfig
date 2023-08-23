@@ -461,12 +461,15 @@ config CMD_GO
 	help
 	  Start application at address or file
 
-	  Usage: go ADDR [ARG...]
+	  Usage: go [-si] ADDR [ARG...]
 
 	  Start application at ADDR passing ARG as arguments.
 
 	  If addr does not start with a digit it is interpreted as a filename
 	  in which case the file is memmapped and executed
+	  Options:
+		  -s	pass all arguments as strings referenced by argc, argv arguments (default)
+		  -i	pass up to four integer arguments using default calling convention
 
 config CMD_LOADB
 	depends on CONSOLE_FULL
@@ -1028,10 +1031,11 @@ config CMD_RM
 	help
 	  Remove files
 
-	  Usage: rm [-r] FILES...
+	  Usage: rm [-rf] FILES...
 
 	  Options:
 		  -r	remove directories and their contents recursively
+		  -f	ignore nonexistent files
 
 config CMD_RMDIR
 	tristate
@@ -1208,15 +1212,17 @@ config CMD_SLEEP
 config CMD_TEST
 	tristate
 	depends on SHELL_HUSH
+	select FNMATCH
 	default y
 	prompt "test"
 	help
-	  Minimal test command like in /bin/sh
+	  Minimal test command like in /bin/sh with support for bash-style
+	  [[ expression ]] tests as well.
 
 	  Usage: test [EXPR]
 
 	  Options:
-		  !, =, !=, -eq, -ne, -ge, -gt, -le, -lt, -o, -a, -z, -n, -d, -e,
+		  !, =, ==, !=, -eq, -ne, -ge, -gt, -le, -lt, -o, -a, -z, -n, -d, -e,
 		  -f, -L; see 'man test' on your PC for more information.
 
 config CMD_TRUE

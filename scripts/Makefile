@@ -5,15 +5,14 @@
 # barebox for the build process.
 
 hostprogs-always-y					+= bin2c
-hostprogs-always-y					+= mkimage
 hostprogs-always-y					+= fix_size
 hostprogs-always-y					+= bareboxenv
 hostprogs-always-y					+= bareboxcrc32
 hostprogs-always-y					+= kernel-install
 hostprogs-always-$(CONFIG_QOICONV)			+= qoiconv
 hostprogs-always-$(CONFIG_CRYPTO_RSA_BUILTIN_KEYS)	+= rsatoc
-HOSTCFLAGS_rsatoc.o = `pkg-config --cflags openssl`
-HOSTLDLIBS_rsatoc = `pkg-config --libs openssl`
+HOSTCFLAGS_rsatoc.o = `$(PKG_CONFIG) --cflags openssl`
+HOSTLDLIBS_rsatoc = `$(PKG_CONFIG) --libs openssl`
 hostprogs-always-$(CONFIG_IMD)				+= bareboximd
 hostprogs-always-$(CONFIG_KALLSYMS)			+= kallsyms
 hostprogs-always-$(CONFIG_MIPS)				+= mips-relocs
@@ -28,19 +27,19 @@ hostprogs-always-$(CONFIG_LAYERSCAPE_PBLIMAGE)		+= pblimage
 hostprogs-always-$(CONFIG_STM32_IMAGE)			+= stm32image
 hostprogs-always-$(CONFIG_RISCV)			+= prelink-riscv
 hostprogs-always-$(CONFIG_RK_IMAGE)			+= rkimage
-HOSTCFLAGS_rkimage.o = `pkg-config --cflags openssl`
-HOSTLDLIBS_rkimage = `pkg-config --libs openssl`
+HOSTCFLAGS_rkimage.o = `$(PKG_CONFIG) --cflags openssl`
+HOSTLDLIBS_rkimage = `$(PKG_CONFIG) --libs openssl`
 KBUILD_HOSTCFLAGS += -I$(srctree)/scripts/include/
-HOSTCFLAGS_mxsimage.o = `pkg-config --cflags openssl`
-HOSTLDLIBS_mxsimage  = `pkg-config --libs openssl`
-HOSTCFLAGS_omap3-usb-loader.o = `pkg-config --cflags libusb-1.0`
-HOSTLDLIBS_omap3-usb-loader  = `pkg-config --libs libusb-1.0`
+HOSTCFLAGS_mxsimage.o = `$(PKG_CONFIG) --cflags openssl`
+HOSTLDLIBS_mxsimage  = `$(PKG_CONFIG) --libs openssl`
+HOSTCFLAGS_omap3-usb-loader.o = `$(PKG_CONFIG) --cflags libusb-1.0`
+HOSTLDLIBS_omap3-usb-loader  = `$(PKG_CONFIG) --libs libusb-1.0`
 hostprogs-always-$(CONFIG_OMAP3_USB_LOADER)		+= omap3-usb-loader
-HOSTCFLAGS_omap4_usbboot.o = `pkg-config --cflags libusb-1.0`
-HOSTLDLIBS_omap4_usbboot = -lpthread `pkg-config --libs libusb-1.0`
+HOSTCFLAGS_omap4_usbboot.o = `$(PKG_CONFIG) --cflags libusb-1.0`
+HOSTLDLIBS_omap4_usbboot = -lpthread `$(PKG_CONFIG) --libs libusb-1.0`
 hostprogs-always-$(CONFIG_OMAP4_HOSTTOOL_USBBOOT)	+= omap4_usbboot
-HOSTCFLAGS_rk-usb-loader.o = `pkg-config --cflags libusb-1.0`
-HOSTLDLIBS_rk-usb-loader  = `pkg-config --libs libusb-1.0`
+HOSTCFLAGS_rk-usb-loader.o = `$(PKG_CONFIG) --cflags libusb-1.0`
+HOSTLDLIBS_rk-usb-loader  = `$(PKG_CONFIG) --libs libusb-1.0`
 hostprogs-always-$(CONFIG_RK_USB_LOADER)		+= rk-usb-loader
 
 userprogs-always-$(CONFIG_BAREBOXENV_TARGET)		+= bareboxenv-target

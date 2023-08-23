@@ -58,6 +58,14 @@ config MCI_MMC_GPP_PARTITIONS
 
 comment "--- MCI host drivers ---"
 
+config MCI_DWC_MSHC
+	bool "Synopsys DesignWare Cores MSHC"
+	depends on HAS_DMA
+	select MCI_SDHCI
+	help
+	  This selects support for the Synopsys DesignWare Mobile Storage Host Controller
+	  block (DWC_mshc), this provides host support for SD/eMMC interfaces, in SDMA mode.
+
 config MCI_DW
 	bool "Synopsys DesignWare Memory Card Interface"
 	depends on HAS_DMA

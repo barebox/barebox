@@ -3,7 +3,7 @@
  *   Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
  */
 
-#include "arm/armada-xp-lenovo-ix4-300d.dts"
+#include "arm/marvell/armada-xp-lenovo-ix4-300d.dts"
 
 &{/gpio-leds/power-led} {
 	linux,default-trigger = "heartbeat";

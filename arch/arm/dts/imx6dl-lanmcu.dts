@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /dts-v1/;
 
-#include <arm/imx6dl-lanmcu.dts>
+#include <arm/nxp/imx/imx6dl-lanmcu.dts>
 #include "imx6qdl-prti6q-emmc.dtsi"

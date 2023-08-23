@@ -4,7 +4,7 @@
  * Author: Christian Hemp <c.hemp@phytec.de>
  */
 
-#include <arm/imx6qdl-phytec-phycore-som.dtsi>
+#include <arm/nxp/imx/imx6qdl-phytec-phycore-som.dtsi>
 #include <dt-bindings/gpio/gpio.h>
 
 / {

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later OR X11
 // SPDX-FileCopyrightText: 2023 John Watts <contact@jookia.org>
 
-#include <arm/imx6q-novena.dts>
+#include <arm/nxp/imx/imx6q-novena.dts>
 
 / {
 	aliases {

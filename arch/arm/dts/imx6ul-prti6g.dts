@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /dts-v1/;
 
-#include <arm/imx6ul-prti6g.dts>
+#include <arm/nxp/imx/imx6ul-prti6g.dts>
 
 / {
 	chosen {

@@ -7,7 +7,7 @@
  * (at your option) any later version.
  */
 
-#include <arm/vf610-twr.dts>
+#include <arm/nxp/vf/vf610-twr.dts>
 #include "vf610.dtsi"
 #include "vf610-ddrmc.dtsi"
 

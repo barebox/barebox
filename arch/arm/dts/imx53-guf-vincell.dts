@@ -13,7 +13,7 @@
 
 /dts-v1/;
 #include "imx53.dtsi"
-#include <arm/imx53.dtsi>
+#include <arm/nxp/imx/imx53.dtsi>
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/interrupt-controller/irq.h>
 

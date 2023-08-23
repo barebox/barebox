@@ -6,7 +6,7 @@
  * kind, whether express or implied.
  */
 
-#include <arm/imx6q-gk802.dts>
+#include <arm/nxp/imx/imx6q-gk802.dts>
 #include "imx6q.dtsi"
 
 /* External USB-A port (USBOTG) */

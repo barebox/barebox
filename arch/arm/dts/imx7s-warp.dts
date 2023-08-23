@@ -7,7 +7,7 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-#include <arm/imx7s-warp.dts>
+#include <arm/nxp/imx/imx7s-warp.dts>
 
 / {
 	chosen {

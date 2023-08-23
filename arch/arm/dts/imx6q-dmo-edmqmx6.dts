@@ -11,7 +11,7 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-#include <arm/imx6q-dmo-edmqmx6.dts>
+#include <arm/nxp/imx/imx6q-dmo-edmqmx6.dts>
 
 / {
 	chosen {

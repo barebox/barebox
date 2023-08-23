@@ -4,7 +4,7 @@
  */
 
 /dts-v1/;
-#include <arm/imx1.dtsi>
+#include <arm/nxp/imx/imx1.dtsi>
 
 / {
 	model = "Synertronix scb9328";

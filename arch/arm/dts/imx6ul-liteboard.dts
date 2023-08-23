@@ -41,7 +41,7 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <arm/imx6ul-liteboard.dts>
+#include <arm/nxp/imx/imx6ul-liteboard.dts>
 #include "imx6ul-litesom.dtsi"
 
 / {

@@ -35,6 +35,8 @@ The resulting images will be placed under ``images/``:
   barebox-at91sam9263ek.img
   barebox-microchip-ksz9477-evb.img
   barebox-microchip-ksz9477-evb-xload-mmc.img
+  barebox-microchip-sama5d3-eds.img
+  barebox-microchip-sama5d3-eds-xload-mmc.img
   barebox-sama5d3-xplained.img
   barebox-sama5d3-xplained-xload-mmc.img
   barebox-sama5d27-som1-ek.img

@@ -3,7 +3,7 @@
  *   Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
  */
 
-#include "arm/armada-xp-db.dts"
+#include "arm/marvell/armada-xp-db.dts"
 
 / {
 	chosen {

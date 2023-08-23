@@ -5,7 +5,7 @@
 
 /dts-v1/;
 
-#include <arm/at91-sama5d3_xplained.dts>
+#include <arm/microchip/at91-sama5d3_xplained.dts>
 #include "sama5d3.dtsi"
 
 / {

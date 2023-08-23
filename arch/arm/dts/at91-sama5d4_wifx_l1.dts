@@ -5,7 +5,7 @@
 
 /dts-v1/;
 
-#include <arm/sama5d4.dtsi>
+#include <arm/microchip/sama5d4.dtsi>
 #include "sama5d4.dtsi"
 #include <dt-bindings/gpio/gpio.h>
 

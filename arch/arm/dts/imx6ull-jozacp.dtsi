@@ -14,7 +14,7 @@
 
 /dts-v1/;
 
-#include <arm/imx6ull.dtsi>
+#include <arm/nxp/imx/imx6ull.dtsi>
 #include <dt-bindings/gpio/gpio.h>
 
 / {

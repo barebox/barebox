@@ -9,7 +9,7 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-#include <arm/imx25-karo-tx25.dts>
+#include <arm/nxp/imx/imx25-karo-tx25.dts>
 #include "imx25.dtsi"
 
 / {

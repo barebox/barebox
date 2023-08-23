@@ -5,7 +5,7 @@
  */
 
 /dts-v1/;
-#include <arm/imx6dl-kontron-samx6i.dtsi>
+#include <arm/nxp/imx/imx6dl-kontron-samx6i.dtsi>
 #include "imx6dl.dtsi"
 #include "imx6qdl-smarc-samx6i.dtsi"
 

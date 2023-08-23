@@ -1,5 +1,5 @@
 /dts-v1/;
-#include <arm/imx53-tx53.dtsi>
+#include <arm/nxp/imx/imx53-tx53.dtsi>
 
 / {
 	model = "Ka-Ro electronics TX53 module";

@@ -1,4 +1,4 @@
-#include <arm/imx6ul-ccimx6ulsbcpro.dts>
+#include <arm/nxp/imx/imx6ul-ccimx6ulsbcpro.dts>
 
 /{
 	chosen {

@@ -14,7 +14,7 @@
 /dts-v1/;
 #endif
 
-#include <arm/imx6dl.dtsi>
+#include <arm/nxp/imx/imx6dl.dtsi>
 #include "imx6dl.dtsi"
 #include "imx6qdl-dfi-fs700-m60.dtsi"
 

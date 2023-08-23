@@ -9,7 +9,7 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
- #include <arm/imx6qdl-gw54xx.dtsi>
+ #include <arm/nxp/imx/imx6qdl-gw54xx.dtsi>
 
  / {
 	chosen {

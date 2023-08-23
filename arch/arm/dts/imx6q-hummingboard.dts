@@ -5,7 +5,7 @@
  * License version 2.
  */
 
-#include <arm/imx6q-hummingboard.dts>
+#include <arm/nxp/imx/imx6q-hummingboard.dts>
 #include "imx6qdl.dtsi"
 
 / {

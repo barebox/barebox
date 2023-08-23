@@ -3,7 +3,7 @@
  * Copyright (C) Phytec GmbH 2019-2020 - All Rights Reserved
  * Author: Dom VOVARD <dom.vovard@linrt.com>.
  */
-#include <arm/stm32mp15-pinctrl.dtsi>
+#include <arm/st/stm32mp15-pinctrl.dtsi>
 
 &ethernet0_rgmii_pins_a {
 	pins1 {

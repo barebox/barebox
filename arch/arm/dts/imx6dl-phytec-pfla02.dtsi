@@ -9,7 +9,7 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-#include <arm/imx6dl.dtsi>
+#include <arm/nxp/imx/imx6dl.dtsi>
 #include "imx6dl.dtsi"
 #include "imx6qdl-phytec-pfla02.dtsi"
 

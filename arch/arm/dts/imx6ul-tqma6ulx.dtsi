@@ -4,7 +4,7 @@
  * Author: Markus Niebel <Markus.Niebel@tq-group.com>
  */
 
-#include <arm/imx6ul.dtsi>
+#include <arm/nxp/imx/imx6ul.dtsi>
 #include "tqma6ul-common.dtsi"
 #include "tqma6ulx-common.dtsi"
 

@@ -1,4 +1,4 @@
-#include <arm/bcm2836-rpi-2-b.dts>
+#include <arm/broadcom/bcm2836-rpi-2-b.dts>
 
 &{/memory@0} {
 	reg = <0x0 0x0>;

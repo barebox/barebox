@@ -58,5 +58,5 @@ SAMA5D3_ENTRY_FUNCTION(start_sama5d3_xplained_ung8071, r4)
 
 	fdt = __dtb_z_at91_microchip_ksz9477_evb_start + get_runtime_offset();
 
-	barebox_arm_entry(SAMA5_DDRCS, SZ_256M, fdt);
+	sama5d3_barebox_entry(r4, fdt);
 }

@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  */
 
-#include <arm/rk3188-radxarock.dts>
+#include <arm/rockchip/rk3188-radxarock.dts>
 
 / {
 	chosen {

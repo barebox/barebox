@@ -11,6 +11,6 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-#include <arm/imx6dl-nitrogen6x.dts>
+#include <arm/nxp/imx/imx6dl-nitrogen6x.dts>
 #include "imx6dl.dtsi"
 #include "imx6qdl-nitrogen6x.dtsi"

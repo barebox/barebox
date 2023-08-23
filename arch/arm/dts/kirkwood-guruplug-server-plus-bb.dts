@@ -3,7 +3,7 @@
  *   Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
  */
 
-#include "arm/kirkwood-guruplug-server-plus.dts"
+#include "arm/marvell/kirkwood-guruplug-server-plus.dts"
 
 &{/gpio-leds/health-r} {
 	barebox,default-trigger = "heartbeat";

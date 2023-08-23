@@ -3,7 +3,7 @@
  *   Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
  */
 
-#include "arm/kirkwood-topkick.dts"
+#include "arm/marvell/kirkwood-topkick.dts"
 
 &{/gpio-leds/system} {
 	barebox,default-trigger = "heartbeat";

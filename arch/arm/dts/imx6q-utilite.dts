@@ -1,5 +1,5 @@
 /dts-v1/;
-#include <arm/imx6q.dtsi>
+#include <arm/nxp/imx/imx6q.dtsi>
 #include "imx6qdl-cm-fx6.dtsi"
 
 / {

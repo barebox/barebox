@@ -10,7 +10,7 @@
  * http://www.opensource.org/licenses/gpl-license.html
  * http://www.gnu.org/copyleft/gpl.html
  */
-#include <arm/imx6qdl-nitrogen6x.dtsi>
+#include <arm/nxp/imx/imx6qdl-nitrogen6x.dtsi>
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/input/input.h>
 

@@ -2,7 +2,7 @@
 
 /dts-v1/;
 
-#include <arm/socfpga_arria10_mercury_aa1.dtsi>
+#include <arm/intel/socfpga/socfpga_arria10_mercury_aa1.dtsi>
 
 / {
 	aliases {

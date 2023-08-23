@@ -10,7 +10,7 @@
  */
 /dts-v1/;
 
-#include <arm/am3517.dtsi>
+#include <arm/ti/omap/am3517.dtsi>
 
 / {
 	model = "Wago PFC200 (AM3505)";

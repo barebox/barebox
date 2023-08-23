@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0+ OR MIT
-#include <arm/imx7d-meerkat96.dts>
+#include <arm/nxp/imx/imx7d-meerkat96.dts>
 
 / {
 	chosen {

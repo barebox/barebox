@@ -1,4 +1,4 @@
-#include "arm/armada-385-turris-omnia.dts"
+#include "arm/marvell/armada-385-turris-omnia.dts"
 
 / {
 	chosen {

@@ -1,4 +1,4 @@
-#include <arm/versatile-ab.dts>
+#include <arm/arm/versatile-ab.dts>
 
 / {
 	model = "ARM Versatile PB";

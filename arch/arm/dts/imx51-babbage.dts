@@ -10,7 +10,7 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-#include <arm/imx51-babbage.dts>
+#include <arm/nxp/imx/imx51-babbage.dts>
 
 / {
 	chosen {

@@ -3,7 +3,7 @@
  *   Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
  */
 
-#include "arm/armada-370-mirabox.dts"
+#include "arm/marvell/armada-370-mirabox.dts"
 
 / {
 	chosen {

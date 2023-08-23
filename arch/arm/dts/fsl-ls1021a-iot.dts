@@ -7,7 +7,7 @@
 
 /dts-v1/;
 
-#include <arm/ls1021a-iot.dts>
+#include <arm/nxp/ls/ls1021a-iot.dts>
 
 / {
 	chosen {

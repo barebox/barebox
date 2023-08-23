@@ -11,7 +11,7 @@
  */
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/input/input.h>
-#include <arm/imx6qdl-sabrelite.dtsi>
+#include <arm/nxp/imx/imx6qdl-sabrelite.dtsi>
 
 / {
 

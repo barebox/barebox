@@ -172,8 +172,6 @@ struct eqos_dma_regs {
 #define EQOS_DESCRIPTOR_SIZE	(EQOS_DESCRIPTOR_WORDS * 4)
 /* We assume ARCH_DMA_MINALIGN >= 16; 16 is the EQOS HW minimum */
 #define EQOS_DESCRIPTOR_ALIGN	64
-#define EQOS_DESCRIPTORS_TX	4
-#define EQOS_DESCRIPTORS_RX	64
 #define EQOS_DESCRIPTORS_NUM	(EQOS_DESCRIPTORS_TX + EQOS_DESCRIPTORS_RX)
 #define EQOS_DESCRIPTORS_SIZE	ALIGN(EQOS_DESCRIPTORS_NUM * \
 				      EQOS_DESCRIPTOR_SIZE, EQOS_DESCRIPTOR_ALIGN)
@@ -351,6 +349,14 @@ int eqos_set_ethaddr(struct eth_device *edev, const unsigned char *mac)
 
 	memcpy(eqos->macaddr, mac, ETH_ALEN);
 
+	if (!eqos->is_started)
+		return 0;
+
+	/* mac_hi is only partially overwritten by the following code. Part of
+	 * this variable is DCS (DMA Channel Select). If this variable is not
+	 * zeroed, we may get some random DMA RX channel.
+	 */
+	mac_hi = 0;
 	/* Update the MAC address */
 	memcpy(&mac_hi, &mac[4], 2);
 	memcpy(&mac_lo, &mac[0], 4);
@@ -366,7 +372,12 @@ static int eqos_set_promisc(struct eth_device *edev, bool enable)
 	struct eqos *eqos = edev->priv;
 	u32 mask;
 
-	mask = EQOS_MAC_PACKET_FILTER_PR | EQOS_MAC_PACKET_FILTER_PCF;
+	eqos->promisc_enabled = enable;
+
+	if (!eqos->is_started)
+		return 0;
+
+	mask = EQOS_MAC_PACKET_FILTER_PR;
 
 	if (enable)
 		setbits_le32(&eqos->mac_regs->packet_filter, mask);
@@ -403,7 +414,7 @@ static int eqos_start(struct eth_device *edev)
 {
 	struct eqos *eqos = edev->priv;
 	u32 val, tx_fifo_sz, rx_fifo_sz, tqs, rqs, pbl;
-	unsigned long last_rx_desc;
+	unsigned long last_rx_rf_desc;
 	unsigned long rate;
 	u32 mode_set;
 	int ret;
@@ -414,6 +425,10 @@ static int eqos_start(struct eth_device *edev)
 	if (ret)
 		return ret;
 
+	/* In some cases where PHY or DSA switch is the clock provider for
+	 * EQOS, we need to probe and configure them before issuing software
+	 * reset here.
+	 */
 	setbits_le32(&eqos->dma_regs->mode, EQOS_DMA_MODE_SWR);
 
 	ret = readl_poll_timeout(&eqos->dma_regs->mode, mode_set,
@@ -424,8 +439,10 @@ static int eqos_start(struct eth_device *edev)
 		return ret;
 	}
 
-	/* Reset above clears MAC address */
+	/* Reset above clears any previously made configuration */
+	eqos->is_started = true;
 	eqos_set_ethaddr(edev, eqos->macaddr);
+	eqos_set_promisc(edev, eqos->promisc_enabled);
 
 	/* Required for accurate time keeping with EEE counters */
 	rate = eqos->ops->get_csr_clk_rate(eqos);
@@ -607,9 +624,9 @@ static int eqos_start(struct eth_device *edev)
 	eqos->tx_currdescnum = eqos->rx_currdescnum = 0;
 
 	for (i = 0; i < EQOS_DESCRIPTORS_RX; i++) {
-		struct eqos_desc *rx_desc = &eqos->rx_descs[i];
+		struct eqos_desc *rx_rf_desc = &eqos->rx_descs[i];
 
-		writel(EQOS_DESC3_BUF1V | EQOS_DESC3_OWN, &rx_desc->des3);
+		writel(EQOS_DESC3_BUF1V | EQOS_DESC3_OWN, &rx_rf_desc->des3);
 	}
 
 	writel(0, &eqos->dma_regs->ch0_txdesc_list_haddress);
@@ -639,8 +656,8 @@ static int eqos_start(struct eth_device *edev)
 	 * that's not distinguishable from none of the descriptors being
 	 * available.
 	 */
-	last_rx_desc = (ulong)&eqos->rx_descs[(EQOS_DESCRIPTORS_RX - 1)];
-	writel(last_rx_desc, &eqos->dma_regs->ch0_rxdesc_tail_pointer);
+	last_rx_rf_desc = (ulong)&eqos->rx_descs[(EQOS_DESCRIPTORS_RX - 1)];
+	writel(last_rx_rf_desc, &eqos->dma_regs->ch0_rxdesc_tail_pointer);
 
 	return 0;
 }
@@ -727,16 +744,30 @@ static int eqos_send(struct eth_device *edev, void *packet, int length)
 static int eqos_recv(struct eth_device *edev)
 {
 	struct eqos *eqos = edev->priv;
-	struct eqos_desc *rx_desc;
+	struct eqos_desc *rx_wbf_desc, *rx_rf_desc;
+	dma_addr_t dma;
 	void *frame;
 	int length;
 
-	rx_desc = &eqos->rx_descs[eqos->rx_currdescnum];
-	if (readl(&rx_desc->des3) & EQOS_DESC3_OWN)
+	/* We have two types of RX descriptors at some pointer: Read and
+	 * Write-Back:
+	 * All RX descriptors are prepared by the software and given to the
+	 * DMA as "Normal" Descriptors with the content as shown in Receive
+	 * Normal Descriptor (Read Format). The DMA reads this descriptor and
+	 * after transferring a received packet (or part of) to the buffers
+	 * indicated by the descriptor, the Rx DMA will close the descriptor
+	 * with the corresponding packet status. The format of this status is
+	 * given in the "Receive Normal Descriptor (Write-Back Format)"
+	 */
+
+	/* Write-Back Format RX descriptor */
+	rx_wbf_desc = &eqos->rx_descs[eqos->rx_currdescnum];
+	if (readl(&rx_wbf_desc->des3) & EQOS_DESC3_OWN)
 		return 0;
 
-	frame = phys_to_virt(rx_desc->des0);
-	length = rx_desc->des3 & 0x7fff;
+	dma = eqos->dma_rx_buf[eqos->rx_currdescnum];
+	frame = phys_to_virt(dma);
+	length = rx_wbf_desc->des3 & 0x7fff;
 
 	dma_sync_single_for_cpu(edev->parent, (unsigned long)frame,
 				length, DMA_FROM_DEVICE);
@@ -744,18 +775,20 @@ static int eqos_recv(struct eth_device *edev)
 	dma_sync_single_for_device(edev->parent, (unsigned long)frame,
 				   length, DMA_FROM_DEVICE);
 
-	rx_desc->des0 = (unsigned long)frame;
-	rx_desc->des1 = 0;
-	rx_desc->des2 = 0;
+	/* Read Format RX descriptor */
+	rx_rf_desc = &eqos->rx_descs[eqos->rx_currdescnum];
+	rx_rf_desc->des0 = dma;
+	rx_rf_desc->des1 = 0;
+	rx_rf_desc->des2 = 0;
 	/*
 	 * Make sure that if HW sees the _OWN write below, it will see all the
 	 * writes to the rest of the descriptor too.
 	 */
-	rx_desc->des3 |= EQOS_DESC3_BUF1V;
-	rx_desc->des3 |= EQOS_DESC3_OWN;
+	rx_rf_desc->des3 |= EQOS_DESC3_BUF1V;
+	rx_rf_desc->des3 |= EQOS_DESC3_OWN;
 	barrier();
 
-	writel((ulong)rx_desc, &eqos->dma_regs->ch0_rxdesc_tail_pointer);
+	writel((ulong)rx_rf_desc, &eqos->dma_regs->ch0_rxdesc_tail_pointer);
 
 	eqos->rx_currdescnum++;
 	eqos->rx_currdescnum %= EQOS_DESCRIPTORS_RX;
@@ -783,7 +816,7 @@ static int eqos_init_resources(struct eqos *eqos)
 		goto err_free_desc;
 
 	for (i = 0; i < EQOS_DESCRIPTORS_RX; i++) {
-		struct eqos_desc *rx_desc = &eqos->rx_descs[i];
+		struct eqos_desc *rx_rf_desc = &eqos->rx_descs[i];
 		dma_addr_t dma;
 
 		dma = dma_map_single(edev->parent, p, EQOS_MAX_PACKET_SIZE, DMA_FROM_DEVICE);
@@ -792,7 +825,8 @@ static int eqos_init_resources(struct eqos *eqos)
 			goto err_free_rx_bufs;
 		}
 
-		rx_desc->des0 = dma;
+		rx_rf_desc->des0 = dma;
+		eqos->dma_rx_buf[i] = dma;
 
 		p += EQOS_MAX_PACKET_SIZE;
 	}

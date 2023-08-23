@@ -40,6 +40,9 @@ struct eqos_dma_regs;
 struct eqos_mac_regs;
 struct eqos_mtl_regs;
 
+#define EQOS_DESCRIPTORS_TX	4
+#define EQOS_DESCRIPTORS_RX	64
+
 struct eqos {
 	struct eth_device netdev;
 	struct mii_bus miibus;
@@ -49,6 +52,7 @@ struct eqos {
 	u32 tx_currdescnum, rx_currdescnum;
 
 	struct eqos_desc *tx_descs, *rx_descs;
+	dma_addr_t dma_rx_buf[EQOS_DESCRIPTORS_RX];
 
 	void __iomem *regs;
 	struct eqos_mac_regs __iomem *mac_regs;
@@ -60,6 +64,9 @@ struct eqos {
 
 	const struct eqos_ops *ops;
 	void *priv;
+
+	bool is_started;
+	bool promisc_enabled;
 };
 
 struct device;

@@ -32,6 +32,9 @@
 #define AT803X_DEBUG_REG_5			0x05
 #define AT803X_DEBUG_TX_CLK_DLY_EN		BIT(8)
 
+#define AT803X_DEBUG_REG_HIB_CTRL		0x0b
+#define   AT803X_DEBUG_HIB_CTRL_PS_HIB_EN	BIT(15)
+
 /* AT803x supports either the XTAL input pad, an internal PLL or the
  * DSP as clock reference for the clock output pad. The XTAL reference
  * is only used for 25 MHz output, all other frequencies need the PLL.
@@ -58,6 +61,9 @@
  * but doesn't support choosing between XTAL/PLL and DSP.
  */
 #define AT8035_CLK_OUT_MASK			GENMASK(4, 3)
+
+#define AT803X_MMD3_SMARTEEE_CTL3		0x805d
+#define AT803X_MMD3_SMARTEEE_CTL3_LPI_EN	BIT(8)
 
 #define AT803X_CLK_OUT_STRENGTH_MASK		GENMASK(8, 7)
 #define AT803X_CLK_OUT_STRENGTH_FULL		0
@@ -126,6 +132,15 @@ static int at803x_disable_tx_delay(struct phy_device *phydev)
 {
 	return at803x_debug_reg_mask(phydev, AT803X_DEBUG_REG_5,
 				     AT803X_DEBUG_TX_CLK_DLY_EN, 0);
+}
+
+static int at803x_hibernation_mode_config(struct phy_device *phydev)
+{
+	/* The default after hardware reset is hibernation mode enabled. After
+	 * software reset, the value is retained.
+	 */
+	return at803x_debug_reg_mask(phydev, AT803X_DEBUG_REG_HIB_CTRL,
+				     AT803X_DEBUG_HIB_CTRL_PS_HIB_EN, 0);
 }
 
 static bool at803x_match_phy_id(struct phy_device *phydev, u32 phy_id)
@@ -221,6 +236,12 @@ static int at803x_probe(struct phy_device *phydev)
 	return at803x_parse_dt(phydev);
 }
 
+static int at803x_smarteee_config(struct phy_device *phydev)
+{
+	return phy_modify_mmd(phydev, MDIO_MMD_PCS, AT803X_MMD3_SMARTEEE_CTL3,
+			      AT803X_MMD3_SMARTEEE_CTL3_LPI_EN, 0);
+}
+
 static int at803x_clk_out_config(struct phy_device *phydev)
 {
 	struct at803x_priv *priv = phydev->priv;
@@ -229,14 +250,14 @@ static int at803x_clk_out_config(struct phy_device *phydev)
 	if (!priv->clk_25m_mask)
 		return 0;
 
-	val = phy_read_mmd_indirect(phydev, AT803X_MMD7_CLK25M, MDIO_MMD_AN);
+	val = phy_read_mmd(phydev, MDIO_MMD_AN, AT803X_MMD7_CLK25M);
 	if (val < 0)
 		return val;
 
 	val &= ~priv->clk_25m_mask;
 	val |= priv->clk_25m_reg;
 
-	phy_write_mmd_indirect(phydev, AT803X_MMD7_CLK25M, MDIO_MMD_AN, val);
+	phy_write_mmd(phydev, MDIO_MMD_AN, AT803X_MMD7_CLK25M, val);
 
 	return 0;
 }
@@ -270,7 +291,25 @@ static int at803x_config_init(struct phy_device *phydev)
 	if (ret < 0)
 		return ret;
 
-	return at803x_clk_out_config(phydev);
+	ret = at803x_smarteee_config(phydev);
+	if (ret < 0)
+		return ret;
+
+	ret = at803x_clk_out_config(phydev);
+	if (ret < 0)
+		return ret;
+
+	ret = at803x_hibernation_mode_config(phydev);
+	if (ret < 0)
+		return ret;
+
+	/* Ar803x extended next page bit is enabled by default. Cisco
+	 * multigig switches read this bit and attempt to negotiate 10Gbps
+	 * rates even if the next page bit is disabled. This is incorrect
+	 * behaviour but we still need to accommodate it. XNP is only needed
+	 * for 10Gbps support, so disable XNP.
+	 */
+	return phy_modify(phydev, MII_ADVERTISE, MDIO_AN_CTRL1_XNP, 0);
 }
 
 static struct phy_driver at803x_driver[] = {

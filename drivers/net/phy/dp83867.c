@@ -154,14 +154,14 @@ static int dp83867_config_port_mirroring(struct phy_device *phydev)
 	struct dp83867_private *dp83867 = phydev->priv;
 	u16 val;
 
-	val = phy_read_mmd_indirect(phydev, DP83867_CFG4, DP83867_DEVADDR);
+	val = phy_read_mmd(phydev, DP83867_DEVADDR, DP83867_CFG4);
 
 	if (dp83867->port_mirroring == DP83867_PORT_MIRROING_EN)
 		val |= DP83867_CFG4_PORT_MIRROR_EN;
 	else
 		val &= ~DP83867_CFG4_PORT_MIRROR_EN;
 
-	phy_write_mmd_indirect(phydev, DP83867_CFG4, DP83867_DEVADDR, val);
+	phy_write_mmd(phydev, DP83867_DEVADDR, DP83867_CFG4, val);
 
 	return 0;
 }
@@ -256,11 +256,9 @@ static int dp83867_config_init(struct phy_device *phydev)
 	phy_write(phydev, DP83867_CTRL, val | DP83867_SW_RESTART);
 
 	if (dp83867->rxctrl_strap_quirk) {
-		val = phy_read_mmd_indirect(phydev, DP83867_CFG4,
-					    DP83867_DEVADDR);
+		val = phy_read_mmd(phydev, DP83867_DEVADDR, DP83867_CFG4);
 		val &= ~BIT(7);
-		phy_write_mmd_indirect(phydev, DP83867_CFG4,
-				       DP83867_DEVADDR, val);
+		phy_write_mmd(phydev, DP83867_DEVADDR, DP83867_CFG4, val);
 	}
 
 	if (phy_interface_is_rgmii(phydev)) {
@@ -270,8 +268,7 @@ static int dp83867_config_init(struct phy_device *phydev)
 		if (ret)
 			return ret;
 
-		val = phy_read_mmd_indirect(phydev, DP83867_RGMIICTL,
-					    DP83867_DEVADDR);
+		val = phy_read_mmd(phydev, DP83867_DEVADDR, DP83867_RGMIICTL);
 
 		switch (phydev->interface) {
 		case PHY_INTERFACE_MODE_RGMII_ID:
@@ -287,31 +284,29 @@ static int dp83867_config_init(struct phy_device *phydev)
 		default:
 			break;
 		}
-		phy_write_mmd_indirect(phydev, DP83867_RGMIICTL,
-				       DP83867_DEVADDR, val);
+		phy_write_mmd(phydev, DP83867_DEVADDR, DP83867_RGMIICTL, val);
 
 		delay = (dp83867->rx_id_delay |
 			(dp83867->tx_id_delay << DP83867_RGMII_TX_CLK_DELAY_SHIFT));
 
-		phy_write_mmd_indirect(phydev, DP83867_RGMIIDCTL,
-				       DP83867_DEVADDR, delay);
+		phy_write_mmd(phydev, DP83867_DEVADDR,
+			      DP83867_RGMIIDCTL, delay);
 
 		if (dp83867->io_impedance >= 0) {
-			val = phy_read_mmd_indirect(phydev, DP83867_IO_MUX_CFG,
-						    DP83867_DEVADDR);
+			val = phy_read_mmd(phydev, DP83867_DEVADDR,
+					   DP83867_IO_MUX_CFG);
 			val &= ~DP83867_IO_MUX_CFG_IO_IMPEDANCE_CTRL;
 			val |= (dp83867->io_impedance &
 				DP83867_IO_MUX_CFG_IO_IMPEDANCE_CTRL);
 
-			phy_write_mmd_indirect(phydev, DP83867_IO_MUX_CFG,
-					       DP83867_DEVADDR, val);
+			phy_write_mmd(phydev, DP83867_DEVADDR,
+				      DP83867_IO_MUX_CFG, val);
 		}
 	} else if (phy_interface_is_sgmii(phydev)) {
 		phy_write(phydev, MII_BMCR,
 			  BMCR_ANENABLE | BMCR_FULLDPLX | BMCR_SPEED1000);
 
-		phy_write_mmd_indirect(phydev, DP83867_RGMIICTL,
-				       DP83867_DEVADDR, 0x0);
+		phy_write_mmd(phydev, DP83867_DEVADDR, DP83867_RGMIICTL, 0x0);
 
 		val = DP83867_PHYCTRL_SGMIIEN |
 		      DP83867_MDI_CROSSOVER_MDIX << DP83867_MDI_CROSSOVER |
@@ -341,8 +336,8 @@ static int dp83867_config_init(struct phy_device *phydev)
 				DP83867_IO_MUX_CFG_CLK_O_SEL_SHIFT;
 		}
 
-		phy_modify_mmd_indirect(phydev, DP83867_IO_MUX_CFG,
-				DP83867_DEVADDR, mask, val);
+		phy_modify_mmd(phydev, DP83867_DEVADDR,
+			       DP83867_IO_MUX_CFG, mask, val);
 	}
 
 	return 0;

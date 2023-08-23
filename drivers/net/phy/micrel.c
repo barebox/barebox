@@ -387,7 +387,7 @@ static int ksz9031_of_load_skew_values(struct phy_device *phydev,
 		return 0;
 
 	if (matches < numfields)
-		newval = phy_read_mmd_indirect(phydev, reg, MDIO_MMD_WIS);
+		newval = phy_read_mmd(phydev, MDIO_MMD_WIS, reg);
 	else
 		newval = 0;
 
@@ -401,15 +401,15 @@ static int ksz9031_of_load_skew_values(struct phy_device *phydev,
 				<< (field_sz * i));
 		}
 
-	phy_write_mmd_indirect(phydev, reg, MDIO_MMD_WIS, newval);
+	phy_write_mmd(phydev, MDIO_MMD_WIS, reg, newval);
 	return 0;
 }
 
 static int ksz9031_center_flp_timing(struct phy_device *phydev)
 {
 	/* Center KSZ9031RNX FLP timing at 16ms. */
-	phy_write_mmd_indirect(phydev, MII_KSZ9031RN_FLP_BURST_TX_HI, 0, 0x0006);
-	phy_write_mmd_indirect(phydev, MII_KSZ9031RN_FLP_BURST_TX_LO, 0, 0x1a80);
+	phy_write_mmd(phydev, 0, MII_KSZ9031RN_FLP_BURST_TX_HI, 0x0006);
+	phy_write_mmd(phydev, 0, MII_KSZ9031RN_FLP_BURST_TX_LO, 0x1a80);
 
 	return genphy_restart_aneg(phydev);
 }
@@ -447,25 +447,25 @@ static int ksz9031_config_rgmii_delay(struct phy_device *phydev)
 		return 0;
 	}
 
-	phy_write_mmd_indirect(phydev, MII_KSZ9031RN_CONTROL_PAD_SKEW, 2,
-			       FIELD_PREP(MII_KSZ9031RN_RX_CTL_M, rx) |
-			       FIELD_PREP(MII_KSZ9031RN_TX_CTL_M, tx));
+	phy_write_mmd(phydev, MDIO_MMD_WIS, MII_KSZ9031RN_CONTROL_PAD_SKEW,
+		      FIELD_PREP(MII_KSZ9031RN_RX_CTL_M, rx) |
+		      FIELD_PREP(MII_KSZ9031RN_TX_CTL_M, tx));
 
-	phy_write_mmd_indirect(phydev, MII_KSZ9031RN_RX_DATA_PAD_SKEW, 2,
-			       FIELD_PREP(MII_KSZ9031RN_RXD3, rx) |
-			       FIELD_PREP(MII_KSZ9031RN_RXD2, rx) |
-			       FIELD_PREP(MII_KSZ9031RN_RXD1, rx) |
-			       FIELD_PREP(MII_KSZ9031RN_RXD0, rx));
+	phy_write_mmd(phydev, MDIO_MMD_WIS, MII_KSZ9031RN_RX_DATA_PAD_SKEW,
+		      FIELD_PREP(MII_KSZ9031RN_RXD3, rx) |
+		      FIELD_PREP(MII_KSZ9031RN_RXD2, rx) |
+		      FIELD_PREP(MII_KSZ9031RN_RXD1, rx) |
+		      FIELD_PREP(MII_KSZ9031RN_RXD0, rx));
 
-	phy_write_mmd_indirect(phydev, MII_KSZ9031RN_TX_DATA_PAD_SKEW, 2,
-			       FIELD_PREP(MII_KSZ9031RN_TXD3, tx) |
-			       FIELD_PREP(MII_KSZ9031RN_TXD2, tx) |
-			       FIELD_PREP(MII_KSZ9031RN_TXD1, tx) |
-			       FIELD_PREP(MII_KSZ9031RN_TXD0, tx));
+	phy_write_mmd(phydev, MDIO_MMD_WIS, MII_KSZ9031RN_TX_DATA_PAD_SKEW,
+		      FIELD_PREP(MII_KSZ9031RN_TXD3, tx) |
+		      FIELD_PREP(MII_KSZ9031RN_TXD2, tx) |
+		      FIELD_PREP(MII_KSZ9031RN_TXD1, tx) |
+		      FIELD_PREP(MII_KSZ9031RN_TXD0, tx));
 
-	phy_write_mmd_indirect(phydev, MII_KSZ9031RN_CLK_PAD_SKEW, 2,
-			       FIELD_PREP(MII_KSZ9031RN_GTX_CLK, tx_clk) |
-			       FIELD_PREP(MII_KSZ9031RN_RX_CLK, rx_clk));
+	phy_write_mmd(phydev, MDIO_MMD_WIS, MII_KSZ9031RN_CLK_PAD_SKEW,
+		      FIELD_PREP(MII_KSZ9031RN_GTX_CLK, tx_clk) |
+		      FIELD_PREP(MII_KSZ9031RN_RX_CLK, rx_clk));
 	return 0;
 }
 

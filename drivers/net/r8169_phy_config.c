@@ -574,7 +574,7 @@ static void rtl8168e_1_hw_phy_config(struct rtl8169_private *tp,
 	r8168d_modify_extpage(phydev, 0x0020, 0x15, 0x1100, 0x0000);
 	phy_write_paged(phydev, 0x0006, 0x00, 0x5a00);
 
-	phy_write_mmd_indirect(phydev, MDIO_MMD_AN, MDIO_AN_EEE_ADV, 0x0000);
+	phy_write_mmd(phydev, MDIO_MMD_AN, MDIO_AN_EEE_ADV, 0x0000);
 }
 
 static void rtl8168e_2_hw_phy_config(struct rtl8169_private *tp,

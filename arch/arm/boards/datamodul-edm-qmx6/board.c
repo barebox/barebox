@@ -11,6 +11,7 @@
 #include <gpio.h>
 #include <of.h>
 
+#include <linux/mdio.h>
 #include <linux/micrel_phy.h>
 #include <mfd/stmpe-i2c.h>
 
@@ -48,9 +49,9 @@ static int ksz9031rn_phy_fixup(struct phy_device *dev)
 	 * min rx data delay, max rx/tx clock delay,
 	 * min rx/tx control delay
 	 */
-	phy_write_mmd_indirect(dev, 4, 2, 0);
-	phy_write_mmd_indirect(dev, 5, 2, 0);
-	phy_write_mmd_indirect(dev, 8, 2, 0x03ff);
+	phy_write_mmd(dev, MDIO_MMD_WIS, 4, 0);
+	phy_write_mmd(dev, MDIO_MMD_WIS, 5, 0);
+	phy_write_mmd(dev, MDIO_MMD_WIS, 8, 0x03ff);
 
 	return 0;
 }

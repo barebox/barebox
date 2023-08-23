@@ -143,12 +143,13 @@ int mdiobus_write(struct mii_bus *bus, int addr, u32 regnum, u16 val);
 
 /* phy_device: An instance of a PHY
  *
- * bus: Pointer to the bus this PHY is on
- * dev: driver model device structure for this PHY
- * phy_id: UID for this device found during discovery
- * dev_flags: Device-specific flags used by the PHY driver.
- * addr: Bus address of PHY
- * attached_dev: The attached enet driver's device instance ptr
+ * @bus: Pointer to the bus this PHY is on
+ * @dev: driver model device structure for this PHY
+ * @phy_id: UID for this device found during discovery
+ * @c45_ids: 802.3-c45 Device Identifiers if is_c45.
+ * @dev_flags: Device-specific flags used by the PHY driver.
+ * @addr: Bus address of PHY
+ * @attached_dev: The attached enet driver's device instance ptr
  *
  * speed, duplex, pause, supported, advertising, and
  * autoneg are used like in mii_if_info
@@ -159,6 +160,8 @@ struct phy_device {
 	struct device dev;
 
 	u32 phy_id;
+
+	unsigned is_c45:1;
 
 	u32 dev_flags;
 
@@ -202,11 +205,11 @@ struct phy_device {
 
 /* struct phy_driver: Driver structure for a particular PHY type
  *
- * phy_id: The result of reading the UID registers of this PHY
+ * @phy_id: The result of reading the UID registers of this PHY
  *   type, and ANDing them with the phy_id_mask.  This driver
  *   only works for PHYs with IDs which match this field
- * phy_id_mask: Defines the important bits of the phy_id
- * features: A list of features (speed, duplex, etc) supported
+ * @phy_id_mask: Defines the important bits of the phy_id
+ * @features: A list of features (speed, duplex, etc) supported
  *   by this PHY
  * @driver_data: Static driver data
  *
@@ -412,10 +415,32 @@ void phy_write_mmd_indirect(struct phy_device *phydev, int prtad, int devad,
 int phy_modify_mmd_indirect(struct phy_device *phydev, int prtad, int devad,
 				    u16 mask, u16 set);
 
+int phy_read_mmd(struct phy_device *phydev, int devad, u32 regnum);
+int phy_write_mmd(struct phy_device *phydev, int devad, u32 regnum, u16 val);
+int phy_modify_mmd(struct phy_device *phydev, int devad, u32 regnum,
+		   u16 mask, u16 set);
+int phy_modify_mmd_changed(struct phy_device *phydev, int devad, u32 regnum,
+			   u16 mask, u16 set);
+
 static inline bool phy_acquired(struct phy_device *phydev)
 {
 	return phydev && phydev->bus && slice_acquired(&phydev->bus->slice);
 }
+
+#define phydev_err(_phydev, format, args...)	\
+	dev_err(&_phydev->dev, format, ##args)
+
+#define phydev_err_probe(_phydev, err, format, args...)	\
+	dev_err_probe(&_phydev->dev, err, format, ##args)
+
+#define phydev_info(_phydev, format, args...)	\
+	dev_info(&_phydev->dev, format, ##args)
+
+#define phydev_warn(_phydev, format, args...)	\
+	dev_warn(&_phydev->dev, format, ##args)
+
+#define phydev_dbg(_phydev, format, args...)	\
+	dev_dbg(&_phydev->dev, format, ##args)
 
 #ifdef CONFIG_PHYLIB
 int phy_register_fixup_for_uid(u32 phy_uid, u32 phy_uid_mask,

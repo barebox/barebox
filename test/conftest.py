@@ -89,7 +89,7 @@ def strategy(request, target, pytestconfig):
     for i, blk in enumerate(pytestconfig.option.qemu_block):
         if virtio:
             strategy.append_qemu_args(
-                "-drive", f"if=none,file={blk},format=raw,id=hd{i}",
+                "-drive", f"if=none,format=raw,id=hd{i},file={blk}",
                 "-device", f"virtio-blk-{virtio},drive=hd{i}"
             )
         else:

@@ -14,47 +14,22 @@
 #include <asm/addrspace.h>
 #include <linux/sizes.h>
 
-extern void handle_reserved(void);
+extern void exception_vec(void);
+extern void exception_vec_end(void);
 
 void main_entry(void *fdt, u32 fdt_size);
 
-unsigned long exception_handlers[32];
-
-static void set_except_vector(int n, void *addr)
-{
-	unsigned long handler = (unsigned long) addr;
-
-	exception_handlers[n] = handler;
-}
-
 static void trap_init(void)
 {
-	extern char except_vec3_generic;
-	int i;
+	const unsigned long vec_size = exception_vec_end - exception_vec;
+	const unsigned long ebase = CKSEG1;
 
-	unsigned long ebase;
-
-	ebase = CKSEG1;
-
-	/*
-	 * Copy the generic exception handlers to their final destination.
-	 * This will be overriden later as suitable for a particular
-	 * configuration.
-	 */
-	memcpy((void *)(ebase + 0x180), &except_vec3_generic, 0x80);
-
-	/*
-	 * Setup default vectors
-	 */
-	for (i = 0; i <= 31; i++) {
-		set_except_vector(i, &handle_reserved);
-	}
-
-	if (!cpu_has_4kex)
-		memcpy((void *)(ebase + 0x080), &except_vec3_generic, 0x80);
+	 /* copy the generic exception handlers to their final destination */
+	memcpy((void *)(ebase + 0x180), &exception_vec, vec_size);
 
 	/* FIXME: handle tlb */
-	memcpy((void *)(ebase), &except_vec3_generic, 0x80);
+	memcpy((void *)(ebase), &exception_vec, vec_size);
+	memcpy((void *)(ebase + 0x80), &exception_vec, vec_size);
 
 	/* unset BOOT EXCEPTION VECTOR bit */
 	write_c0_status(read_c0_status() & ~ST0_BEV);

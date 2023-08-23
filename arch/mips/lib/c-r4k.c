@@ -13,6 +13,8 @@
 #include <asm/cpu-info.h>
 #include <asm/bitops.h>
 
+#define INDEX_BASE	CKSEG0
+
 #define cache_op(op,addr)						\
 	__asm__ __volatile__(						\
 	"	.set	push					\n"	\
@@ -23,66 +25,66 @@
 	:								\
 	: "i" (op), "R" (*(unsigned char *)(addr)))
 
-#define __BUILD_BLAST_CACHE_RANGE(pfx, desc, hitop)			\
-static inline void blast_##pfx##cache##_range(unsigned long start,	\
-					      unsigned long end)	\
+#define __BUILD_BLAST_CACHE(pfx, desc, indexop)				\
+static inline void blast_##pfx##cache(void)				\
 {									\
-	unsigned long lsize = current_cpu_data.desc.linesz;		\
-	unsigned long addr = start & ~(lsize - 1);			\
-	unsigned long aend = (end - 1) & ~(lsize - 1);			\
+	const unsigned long lsize = current_cpu_data.desc.linesz;	\
+	const unsigned long start = INDEX_BASE;				\
+	const unsigned long size = current_cpu_data.desc.waysize	\
+				   * current_cpu_data.desc.ways;	\
+	const unsigned long aend = start + size - 1;			\
+	unsigned long addr;						\
 									\
 	if (current_cpu_data.desc.flags & MIPS_CACHE_NOT_PRESENT)	\
 		return;							\
 									\
-	while (1) {							\
-		cache_op(hitop, addr);					\
-		if (addr == aend)					\
-			break;						\
-		addr += lsize;						\
-	}								\
+	for (addr = start; addr <= aend; addr += lsize)			\
+		cache_op(indexop, addr);				\
 }
 
+#define __BUILD_BLAST_CACHE_RANGE(pfx, desc, hitop)			\
+static inline void blast_##pfx##cache##_range(unsigned long start,	\
+					      unsigned long end)	\
+{									\
+	const unsigned long lsize = current_cpu_data.desc.linesz;	\
+	const unsigned long astart = ALIGN_DOWN(start, lsize);		\
+	const unsigned long aend = ALIGN_DOWN(end - 1, lsize);		\
+	unsigned long addr;						\
+									\
+	if (current_cpu_data.desc.flags & MIPS_CACHE_NOT_PRESENT)	\
+		return;							\
+									\
+	for (addr = astart; addr <= aend; addr += lsize)		\
+		cache_op(hitop, addr);					\
+}
+
+__BUILD_BLAST_CACHE(d, dcache, Index_Writeback_Inv_D)
+__BUILD_BLAST_CACHE(i, icache, Index_Invalidate_I)
+__BUILD_BLAST_CACHE(s, scache, Index_Writeback_Inv_SD)
+
 __BUILD_BLAST_CACHE_RANGE(d, dcache, Hit_Writeback_Inv_D)
+__BUILD_BLAST_CACHE_RANGE(s, scache, Hit_Writeback_Inv_SD)
 __BUILD_BLAST_CACHE_RANGE(inv_d, dcache, Hit_Invalidate_D)
+__BUILD_BLAST_CACHE_RANGE(inv_s, scache, Hit_Invalidate_SD)
 
 void flush_cache_all(void)
 {
-	struct cpuinfo_mips *c = &current_cpu_data;
-	unsigned long lsize;
-	unsigned long addr;
-	unsigned long aend;
-	unsigned int icache_size, dcache_size;
-
-	dcache_size = c->dcache.waysize * c->dcache.ways;
-	lsize = c->dcache.linesz;
-	aend = (CKSEG0 + dcache_size - 1) & ~(lsize - 1);
-	for (addr = CKSEG0; addr <= aend; addr += lsize)
-		cache_op(Index_Writeback_Inv_D, addr);
-
-	icache_size = c->icache.waysize * c->icache.ways;
-	lsize = c->icache.linesz;
-	aend = (CKSEG0 + icache_size - 1) & ~(lsize - 1);
-	for (addr = CKSEG0; addr <= aend; addr += lsize)
-		cache_op(Index_Invalidate_I, addr);
-
-	/* secondatory cache skipped */
+	blast_dcache();
+	blast_icache();
+	blast_scache();
 }
 
 void dma_flush_range(unsigned long start, unsigned long end)
 {
 	blast_dcache_range(start, end);
-
-	/* secondatory cache skipped */
+	blast_scache_range(start, end);
 }
 
 void dma_inv_range(unsigned long start, unsigned long end)
 {
 	blast_inv_dcache_range(start, end);
-
-	/* secondatory cache skipped */
+	blast_inv_scache_range(start, end);
 }
-
-void r4k_cache_init(void);
 
 static void probe_pcache(void)
 {

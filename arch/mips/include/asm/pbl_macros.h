@@ -151,6 +151,14 @@ copy_loop_exit:
 	.set	pop
 	.endm
 
+	.macro	mips_disable_watchpoints
+	.set	push
+	.set	noreorder
+	mtc0	zero, CP0_WATCHLO
+	mtc0	zero, CP0_WATCHHI
+	.set	pop
+	.endm
+
 	.macro	mips64_enable_64bit_addressing
 #ifdef CONFIG_64BIT
 	.set	push
@@ -162,6 +170,15 @@ copy_loop_exit:
 #endif
 	.endm
 
+	.macro	mips_cpu_setup
+	.set	push
+	.set	noreorder
+	mips_disable_interrupts
+	mips_disable_watchpoints
+	mips64_enable_64bit_addressing
+	.set	pop
+	.endm
+
 	.macro	mips_barebox_10h
 	.set	push
 	.set	noreorder
@@ -170,8 +187,7 @@ copy_loop_exit:
 	 nop
 
 	.org	0x10
-	.ascii	"barebox"
-	.byte	0
+	.asciiz	"barebox"
 
 	.align	4
 1:

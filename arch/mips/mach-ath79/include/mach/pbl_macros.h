@@ -374,7 +374,7 @@ normal_path:
 	.set	push
 	.set	noreorder
 
-	mips_barebox_10h
+	mips_cpu_setup
 
 	pbl_blt 0xbf000000 skip_pll_ram_config t8
 
@@ -406,7 +406,7 @@ skip_pll_ram_config:
 	.set	push
 	.set	noreorder
 
-	mips_barebox_10h
+	mips_cpu_setup
 
 	hornet_mips24k_cp0_setup
 

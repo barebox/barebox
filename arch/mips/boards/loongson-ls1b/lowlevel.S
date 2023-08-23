@@ -17,9 +17,7 @@
 
 ENTRY_FUNCTION(BOARD_PBL_START)
 
-	mips_barebox_10h
-
-	mips_disable_interrupts
+	mips_cpu_setup
 
 	pbl_blt 0xbf000000 skip_pll_ram_config t0
 

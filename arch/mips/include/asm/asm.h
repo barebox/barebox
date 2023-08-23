@@ -83,8 +83,8 @@ symbol:
 	.set noreorder;					\
 	.section .text_head_entry.symbol;		\
 	.align 4;					\
-							\
-EXPORT(symbol)
+EXPORT(symbol)						\
+	mips_barebox_10h
 
 /*
  * ENTRY_FUNCTION_END - mark end of entry function

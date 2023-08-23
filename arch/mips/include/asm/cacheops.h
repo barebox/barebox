@@ -12,6 +12,7 @@
  */
 #define Cache_I				0x00
 #define Cache_D				0x01
+#define Cache_SD			0x03
 
 #define Index_Writeback_Inv		0x00
 #define Index_Store_Tag			0x08
@@ -23,9 +24,13 @@
  */
 #define Index_Invalidate_I		(Cache_I | Index_Writeback_Inv)
 #define Index_Writeback_Inv_D		(Cache_D | Index_Writeback_Inv)
+#define Index_Writeback_Inv_SD		(Cache_SD | Index_Writeback_Inv)
 #define Index_Store_Tag_I		(Cache_I | Index_Store_Tag)
 #define Index_Store_Tag_D		(Cache_D | Index_Store_Tag)
+#define Index_Store_Tag_SD		(Cache_SD | Index_Store_Tag)
 #define Hit_Invalidate_D		(Cache_D | Hit_Invalidate)
+#define Hit_Invalidate_SD		(Cache_SD | Hit_Invalidate)
 #define Hit_Writeback_Inv_D		(Cache_D | Hit_Writeback_Inv)
+#define Hit_Writeback_Inv_SD		(Cache_SD | Hit_Writeback_Inv)
 
 #endif	/* __ASM_CACHEOPS_H */

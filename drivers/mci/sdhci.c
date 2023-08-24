@@ -252,6 +252,7 @@ int sdhci_transfer_data_dma(struct sdhci *sdhci, struct mci_data *data,
 			    dma_addr_t dma)
 {
 	struct device *dev = sdhci->mci->hw_dev;
+	u64 start;
 	int nbytes;
 	u32 irqstat;
 	int ret;
@@ -260,6 +261,8 @@ int sdhci_transfer_data_dma(struct sdhci *sdhci, struct mci_data *data,
 		return 0;
 
 	nbytes = data->blocks * data->blocksize;
+
+	start = get_time_ns();
 
 	do {
 		irqstat = sdhci_read32(sdhci, SDHCI_INT_STATUS);
@@ -304,6 +307,13 @@ int sdhci_transfer_data_dma(struct sdhci *sdhci, struct mci_data *data,
 
 		if (irqstat & SDHCI_INT_XFER_COMPLETE)
 			break;
+
+		if (is_timeout(start, 10 * SECOND)) {
+			dev_alert(dev, "DMA wait timed out. Resetting, but recovery unlikely\n");
+			sdhci_reset(sdhci, SDHCI_RESET_ALL);
+			ret = -ETIMEDOUT;
+			goto out;
+		}
 	} while (1);
 
 	ret = 0;

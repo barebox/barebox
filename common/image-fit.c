@@ -565,6 +565,7 @@ static void fit_uncompress_error_fn(char *x)
 }
 
 static int fit_handle_decompression(struct device_node *image,
+				    const char *type,
 				    const void **data,
 				    int *data_len)
 {
@@ -575,6 +576,12 @@ static int fit_handle_decompression(struct device_node *image,
 	of_property_read_string(image, "compression", &compression);
 	if (!compression || !strcmp(compression, "none"))
 		return 0;
+
+	if (!strcmp(type, "ramdisk")) {
+		pr_warn("compression != \"none\" for ramdisks is deprecated,"
+			" please fix your .its file!\n");
+		return 0;
+	}
 
 	if (!IS_ENABLED(CONFIG_UNCOMPRESS)) {
 		pr_err("image has compression = \"%s\", but support not compiled in\n",
@@ -652,7 +659,7 @@ int fit_open_image(struct fit_handle *handle, void *configuration,
 	if (ret < 0)
 		return ret;
 
-	ret = fit_handle_decompression(image, &data, &data_len);
+	ret = fit_handle_decompression(image, type, &data, &data_len);
 	if (ret)
 		return ret;
 

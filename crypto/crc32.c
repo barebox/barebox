@@ -24,7 +24,7 @@
 
 #ifdef CONFIG_DYNAMIC_CRC_TABLE
 
-static ulong *crc_table;
+static uint32_t *crc_table;
 
 /*
   Generate a table for a byte-wise 32-bit CRC calculation on the polynomial:
@@ -52,22 +52,22 @@ static ulong *crc_table;
 */
 static void make_crc_table(void)
 {
-  ulong c;
+  uint32_t c;
   int n, k;
-  ulong poly;            /* polynomial exclusive-or pattern */
+  uint32_t poly;            /* polynomial exclusive-or pattern */
   /* terms of polynomial defining this crc (except x^32): */
   static const char p[] = {0,1,2,4,5,7,8,10,11,12,16,22,23,26};
 
   /* make exclusive-or pattern from polynomial (0xedb88320L) */
-  poly = 0L;
+  poly = 0;
   for (n = 0; n < sizeof(p)/sizeof(char); n++)
-    poly |= 1L << (31 - p[n]);
+    poly |= 1U << (31 - p[n]);
 
-  crc_table = xmalloc(sizeof(ulong) * 256);
+  crc_table = xmalloc(sizeof(uint32_t) * 256);
 
   for (n = 0; n < 256; n++)
   {
-    c = (ulong)n;
+    c = (uint32_t)n;
     for (k = 0; k < 8; k++)
       c = c & 1 ? poly ^ (c >> 1) : c >> 1;
     crc_table[n] = c;
@@ -77,7 +77,7 @@ static void make_crc_table(void)
 /* ========================================================================
  * Table of CRC-32's of all single-byte values (made by make_crc_table)
  */
-static const ulong crc_table[256] = {
+static const uint32_t crc_table[256] = {
   0x00000000L, 0x77073096L, 0xee0e612cL, 0x990951baL, 0x076dc419L,
   0x706af48fL, 0xe963a535L, 0x9e6495a3L, 0x0edb8832L, 0x79dcb8a4L,
   0xe0d5e91eL, 0x97d2d988L, 0x09b64c2bL, 0x7eb17cbdL, 0xe7b82d07L,

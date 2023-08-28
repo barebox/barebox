@@ -10,6 +10,11 @@ void mem_malloc_init(void *start, void *end);
 ulong mem_malloc_start(void);
 ulong mem_malloc_end(void);
 
+static inline ulong mem_malloc_size(void)
+{
+	return mem_malloc_end() - mem_malloc_start() + 1;
+}
+
 struct memory_bank {
 	struct list_head list;
 	unsigned long start;

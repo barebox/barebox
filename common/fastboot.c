@@ -30,7 +30,9 @@
 #include <ubiformat.h>
 #include <unistd.h>
 #include <magicvar.h>
+#include <linux/log2.h>
 #include <linux/sizes.h>
+#include <memory.h>
 #include <progress.h>
 #include <environment.h>
 #include <globalvar.h>
@@ -45,7 +47,7 @@
 
 #define FASTBOOT_VERSION		"0.4"
 
-static unsigned int fastboot_max_download_size = SZ_8M;
+static unsigned int fastboot_max_download_size;
 static int fastboot_bbu;
 static char *fastboot_partitions;
 
@@ -940,9 +942,14 @@ struct file_list *get_fastboot_partitions(void)
 
 static int fastboot_globalvars_init(void)
 {
-	if (IS_ENABLED(CONFIG_FASTBOOT_SPARSE))
+	if (IS_ENABLED(CONFIG_FASTBOOT_SPARSE)) {
+		fastboot_max_download_size
+			= roundup_pow_of_two(clamp_t(ulong, mem_malloc_size() / 8,
+						     SZ_8M, SZ_128M));
 		globalvar_add_simple_int("fastboot.max_download_size",
 				 &fastboot_max_download_size, "%u");
+	}
+
 	globalvar_add_simple_bool("fastboot.bbu", &fastboot_bbu);
 	globalvar_add_simple_string("fastboot.partitions",
 				    &fastboot_partitions);

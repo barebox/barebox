@@ -28,7 +28,8 @@ static int polyhex_debix_probe(struct device *dev)
 
 	/* Enable RGMII TX clk output */
 	val = readl(MX8MP_IOMUXC_GPR_BASE_ADDR + MX8MP_IOMUXC_GPR1);
-	val |= MX8MP_IOMUXC_GPR1_ENET1_RGMII_EN;
+	val |= MX8MP_IOMUXC_GPR1_ENET1_RGMII_EN |
+	       MX8MP_IOMUXC_GPR1_ENET_QOS_RGMII_EN;
 	writel(val, MX8MP_IOMUXC_GPR_BASE_ADDR + MX8MP_IOMUXC_GPR1);
 
 	return 0;

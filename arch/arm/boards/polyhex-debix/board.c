@@ -37,6 +37,7 @@ static int polyhex_debix_probe(struct device *dev)
 
 static const struct of_device_id polyhex_debix_of_match[] = {
 	{ .compatible = "polyhex,imx8mp-debix" },
+	{ .compatible = "polyhex,imx8mp-debix-som-a-bmb-08" },
 	{ /* Sentinel */ }
 };
 BAREBOX_DEEP_PROBE_ENABLE(polyhex_debix_of_match);

@@ -23,4 +23,15 @@ config MC_TEGRA124
 	  the Tegra124 SoC. This driver performs the necessary initialization
 	  to provide a function GPU when the OS is running.
 
+config STM32_FMC2_EBI
+	bool "Support for FMC2 External Bus Interface on STM32MP SoCs"
+	depends on ARCH_STM32MP || COMPILE_TEST
+	select RESET_CONTROLLER if ARCH_STM32MP
+	select RESET_SIMPLE if ARCH_STM32MP
+	help
+	  Select this option to enable the STM32 FMC2 External Bus Interface
+	  controller. This driver configures the transactions with external
+	  devices (like SRAM, ethernet adapters, FPGAs, LCD displays, ...) on
+	  SOCs containing the FMC2 External Bus Interface.
+
 endmenu

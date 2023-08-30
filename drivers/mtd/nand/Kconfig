@@ -95,6 +95,18 @@ config NAND_MRVL_NFC
 	  Support for the PXA3xx NAND controller, present in Armada 370/XP and
 	  PXA3xx SoCs.
 
+config NAND_STM32
+	bool "Support for NAND controller on STM32MP SoCs"
+	depends on ARCH_STM32MP || COMPILE_TEST
+	select STM32_FMC2_EBI if ARCH_STM32MP
+	select RESET_CONTROLLER if ARCH_STM32MP
+	select RESET_SIMPLE if ARCH_STM32MP
+	help
+	  Enables support for NAND Flash chips on SoCs containing the FMC2
+	  NAND controller. This controller is found on STM32MP SoCs.
+	  The controller supports a maximum 8k page size and supports
+	  a maximum 8-bit correction error per sector of 512 bytes.
+
 config NAND_ATMEL
 	bool
 	prompt "Atmel (AT91SAM9xxx) NAND driver"

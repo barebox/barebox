@@ -516,7 +516,8 @@ void __mmu_init(bool mmu_on)
 	struct memory_bank *bank;
 	uint32_t *ttb = get_ttb();
 
-	if (!request_sdram_region("ttb", (unsigned long)ttb, SZ_16K))
+	if (!request_sdram_region("ttb", (unsigned long)ttb,
+				  ARM_EARLY_PAGETABLE_SIZE))
 		/*
 		 * This can mean that:
 		 * - the early MMU code has put the ttb into a place

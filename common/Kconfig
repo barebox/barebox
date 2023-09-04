@@ -519,15 +519,6 @@ endchoice
 
 endif
 
-config DYNAMIC_CRC_TABLE
-	bool
-	depends on CRC32
-	prompt "Generate the crc32 table dynamically"
-	default y
-	help
-	  Saying yes to this option saves around 800 bytes of binary size.
-	  If unsure say yes.
-
 config ERRNO_MESSAGES
 	bool
 	prompt "print error values as text"

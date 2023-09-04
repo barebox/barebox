@@ -24,7 +24,7 @@
 
 #ifdef CONFIG_DYNAMIC_CRC_TABLE
 
-static uint32_t *crc_table;
+static uint32_t crc_table[sizeof(uint32_t) * 256];
 
 /*
   Generate a table for a byte-wise 32-bit CRC calculation on the polynomial:
@@ -58,12 +58,13 @@ static void make_crc_table(void)
 	/* terms of polynomial defining this crc (except x^32): */
 	static const char p[] = { 0, 1, 2, 4, 5, 7, 8, 10, 11, 12, 16, 22, 23, 26 };
 
+	if (crc_table[0])
+		return;
+
 	/* make exclusive-or pattern from polynomial (0xedb88320L) */
 	poly = 0;
 	for (n = 0; n < sizeof(p) / sizeof(char); n++)
 		poly |= 1U << (31 - p[n]);
-
-	crc_table = xmalloc(sizeof(uint32_t) * 256);
 
 	for (n = 0; n < 256; n++) {
 		c = (uint32_t) n;
@@ -142,8 +143,7 @@ STATIC uint32_t crc32(uint32_t crc, const void *_buf, unsigned int len)
 	const unsigned char *buf = _buf;
 
 #ifdef CONFIG_DYNAMIC_CRC_TABLE
-	if (!crc_table)
-		make_crc_table();
+	make_crc_table();
 #endif
 	crc = crc ^ 0xffffffffL;
 	while (len >= 8) {
@@ -169,8 +169,7 @@ STATIC uint32_t crc32_no_comp(uint32_t crc, const void *_buf, unsigned int len)
 	const unsigned char *buf = _buf;
 
 #ifdef CONFIG_DYNAMIC_CRC_TABLE
-	if (!crc_table)
-		make_crc_table();
+	make_crc_table();
 #endif
 	while (len >= 8) {
 		DO8(buf);

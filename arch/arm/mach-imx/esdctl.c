@@ -510,16 +510,49 @@ static resource_size_t imx8m_ddrc_sdram_size(void __iomem *ddrc, unsigned buswid
 				   reduced_adress_space, mstr);
 }
 
+static int _imx8m_ddrc_add_mem(void *mmdcbase, struct imx_esdctl_data *data,
+			       unsigned int buswidth)
+{
+	resource_size_t size = imx8m_ddrc_sdram_size(mmdcbase, buswidth);
+	resource_size_t size0, size1;
+	int ret;
+
+	/*
+	 * Split the available memory into multiple banks if the device does
+	 * have more RAM than 3G. At the moment this is necessary to prevent
+	 * memory_bank_first_find_space() from finding free space near the end
+	 * of the 4G barrier which is the case in a 6G/8G setup. This is
+	 * important for larger barebox-pbl binaries (e.g. debug enabled) and
+	 * the barebox chainloading mechanism since the pbl init the MMU to 4G.
+	 * In this case a MMU exception will be thrown if the barebox-pbl is
+	 * placed near the 4G barrier.
+	 */
+	size0 = min_t(resource_size_t, SZ_4G - MX8M_DDR_CSD1_BASE_ADDR, size);
+	size1 = size - size0;
+
+	ret = arm_add_mem_device("ram0", data->base0, size0);
+	if (ret || size1 == 0)
+		return ret;
+
+#ifdef CONFIG_64BIT
+	/*
+	 * Albeit this hook is called on 64bit machines only, the driver serves
+	 * 32bit machines as well. Guard the code to avoid compiler warnings.
+	 */
+	ret = arm_add_mem_device("ram1", SZ_4G, size1);
+#endif
+
+	return ret;
+}
+
 static int imx8m_ddrc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
 {
-	return arm_add_mem_device("ram0", data->base0,
-			   imx8m_ddrc_sdram_size(mmdcbase, 32));
+	return _imx8m_ddrc_add_mem(mmdcbase, data, 32);
 }
 
 static int imx8mn_ddrc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
 {
-	return arm_add_mem_device("ram0", data->base0,
-			   imx8m_ddrc_sdram_size(mmdcbase, 16));
+	return _imx8m_ddrc_add_mem(mmdcbase, data, 16);
 }
 
 static resource_size_t imx7d_ddrc_sdram_size(void __iomem *ddrc)

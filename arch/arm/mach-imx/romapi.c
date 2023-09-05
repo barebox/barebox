@@ -10,6 +10,8 @@
 #include <mach/imx/xload.h>
 #include <asm/barebox-arm.h>
 #include <zero_page.h>
+#include <memory.h>
+#include <init.h>
 #include <pbl.h>
 
 static int imx8m_bootrom_load(struct rom_api *rom_api, void *adr, size_t size)
@@ -83,6 +85,14 @@ const u32 *imx8m_get_bootrom_log(void)
 
 	return NULL;
 }
+
+static int imx8m_reserve_scratch_area(void)
+{
+	return PTR_ERR_OR_ZERO(request_sdram_region("scratch area",
+				    (ulong)arm_mem_scratch_get(),
+				    sizeof(struct imx_scratch_space)));
+}
+device_initcall(imx8m_reserve_scratch_area);
 
 void imx8m_save_bootrom_log(void *dest)
 {

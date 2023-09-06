@@ -36,7 +36,7 @@
 #define MX3_PWMCR_EN              (1 << 0)
 
 struct imx_chip {
-	struct clk	*clk_per;
+	struct clk	*clk_per, *clk_ipg;
 
 	void __iomem	*mmio_base;
 
@@ -93,13 +93,41 @@ static void imx_pwm_set_enable_v1(struct pwm_chip *chip, bool enable)
 	writel(val, imx->mmio_base + MX1_PWMC);
 }
 
+static int imx_pwm_clk_enable_v2(struct imx_chip *imx)
+{
+	int ret;
+
+	ret = clk_enable(imx->clk_ipg);
+	if (ret)
+		return ret;
+
+	ret = clk_prepare_enable(imx->clk_per);
+	if (ret) {
+		clk_disable_unprepare(imx->clk_ipg);
+		return ret;
+	}
+
+	return 0;
+}
+
+static void imx_pwm_clk_disable_v2(struct imx_chip *imx)
+{
+	clk_disable_unprepare(imx->clk_per);
+	clk_disable_unprepare(imx->clk_ipg);
+}
+
 static int imx_pwm_config_v2(struct pwm_chip *chip,
 		int duty_ns, int period_ns)
 {
 	struct imx_chip *imx = to_imx_chip(chip);
 	unsigned long long c;
 	unsigned long period_cycles, duty_cycles, prescale;
+	int ret;
 	u32 cr;
+
+	ret = imx_pwm_clk_enable_v2(imx);
+	if (ret)
+		return ret;
 
 	c = clk_get_rate(imx->clk_per);
 	c = c * period_ns;
@@ -134,6 +162,9 @@ static int imx_pwm_config_v2(struct pwm_chip *chip,
 
 	writel(cr, imx->mmio_base + MX3_PWMCR);
 
+	if (!chip->state.p_enable)
+		imx_pwm_clk_disable_v2(imx);
+
 	return 0;
 }
 
@@ -141,6 +172,11 @@ static void imx_pwm_set_enable_v2(struct pwm_chip *chip, bool enable)
 {
 	struct imx_chip *imx = to_imx_chip(chip);
 	u32 val;
+	int ret;
+
+	ret = imx_pwm_clk_enable_v2(imx);
+	if (WARN_ON(ret))
+		return;
 
 	val = readl(imx->mmio_base + MX3_PWMCR);
 
@@ -150,6 +186,9 @@ static void imx_pwm_set_enable_v2(struct pwm_chip *chip, bool enable)
 		val &= ~MX3_PWMCR_EN;
 
 	writel(val, imx->mmio_base + MX3_PWMCR);
+
+	if (!enable)
+		imx_pwm_clk_disable_v2(imx);
 }
 
 static int imx_pwm_apply(struct pwm_chip *chip, const struct pwm_state *state)
@@ -214,6 +253,10 @@ static int imx_pwm_probe(struct device *dev)
 		return ret;
 
 	imx = xzalloc(sizeof(*imx));
+
+	imx->clk_ipg = clk_get_optional(dev, "ipg");
+	if (IS_ERR(imx->clk_ipg))
+		return PTR_ERR(imx->clk_ipg);
 
 	imx->clk_per = clk_get(dev, "per");
 	if (IS_ERR(imx->clk_per))

@@ -24,6 +24,8 @@ struct pwm_state {
 	unsigned int p_enable;
 };
 
+void pwm_print(void);
+
 /*
  * pwm_request - request a PWM device
  */

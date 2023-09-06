@@ -34,8 +34,11 @@ static int do_pwm_cmd(int argc, char *argv[])
 	bool verbose = false;
 	int opt;
 
-	while ((opt = getopt(argc, argv, "d:D:P:f:w:F:isv")) > 0) {
+	while ((opt = getopt(argc, argv, "ld:D:P:f:w:F:isv")) > 0) {
 		switch (opt) {
+		case 'l':
+			pwm_print();
+			return 0;
 		case 'd':
 			devname = optarg;
 			break;
@@ -189,6 +192,7 @@ BAREBOX_CMD_HELP_TEXT("  (although note this will not by itself stop the pwm run
 BAREBOX_CMD_HELP_TEXT(" Stopping the pwm device does not necessarily set the output to inactive,")
 BAREBOX_CMD_HELP_TEXT("  but stop is handled last, so can be done in addition to other changes.")
 BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT("-l\t", "list registered PWMs")
 BAREBOX_CMD_HELP_OPT("-d <name>", "device name (eg 'pwm0')")
 BAREBOX_CMD_HELP_OPT("-D <duty_ns>", "duty cycle (ns)")
 BAREBOX_CMD_HELP_OPT("-P <period_ns>", "period (ns)")
@@ -202,7 +206,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(pwm)
 	.cmd		= do_pwm_cmd,
 	BAREBOX_CMD_DESC("pwm")
-	BAREBOX_CMD_OPTS("[-dDPfwisv]")
+	BAREBOX_CMD_OPTS("[-ldDPfwisv]")
 	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_pwm_help)
 BAREBOX_CMD_END

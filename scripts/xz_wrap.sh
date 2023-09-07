@@ -16,8 +16,11 @@ case $SRCARCH in
 	x86)            BCJ=--x86 ;;
 	powerpc)        BCJ=--powerpc ;;
 	ia64)           BCJ=--ia64; LZMA2OPTS=pb=4 ;;
-	arm)            BCJ=--arm ;;
+	arm)            BCJ=--arm$S64 ;;
 	sparc)          BCJ=--sparc ;;
 esac
+
+# clear BCJ filter if unsupported
+xz -H | grep -q -- $BCJ || BCJ=
 
 exec xz --check=crc32 $BCJ --lzma2=$LZMA2OPTS,dict=32MiB

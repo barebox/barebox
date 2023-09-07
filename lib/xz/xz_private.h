@@ -37,6 +37,9 @@
 #		ifdef CONFIG_XZ_DEC_SPARC
 #			define XZ_DEC_SPARC
 #		endif
+#		ifdef CONFIG_XZ_DEC_ARM64
+#			define XZ_DEC_ARM64
+#		endif
 #		define memeq(a, b, size) (memcmp(a, b, size) == 0)
 #		define memzero(buf, size) memset(buf, 0, size)
 #		define FREE free
@@ -98,7 +101,7 @@
 #ifndef XZ_DEC_BCJ
 #	if defined(XZ_DEC_X86) || defined(XZ_DEC_POWERPC) \
 			|| defined(XZ_DEC_IA64) || defined(XZ_DEC_ARM) \
-			|| defined(XZ_DEC_ARM) || defined(XZ_DEC_ARMTHUMB) \
+			|| defined(XZ_DEC_ARM64) || defined(XZ_DEC_ARMTHUMB) \
 			|| defined(XZ_DEC_SPARC)
 #		define XZ_DEC_BCJ
 #	endif

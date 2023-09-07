@@ -131,7 +131,11 @@
 #	define XZ_DEC_POWERPC
 #endif
 #ifdef CONFIG_ARM
-#	define XZ_DEC_ARM
+#	ifdef CONFIG_CPU_64
+#		define XZ_DEC_ARM64
+#	else
+#		define XZ_DEC_ARM
+#	endif
 #endif
 #ifdef CONFIG_IA64
 #	define XZ_DEC_IA64

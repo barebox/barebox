@@ -289,6 +289,7 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize)
 	early_remap_range(0, 1UL << (BITS_PER_VA - 1), MAP_UNCACHED);
 	early_remap_range(membase, memsize - OPTEE_SIZE, MAP_CACHED);
 	early_remap_range(membase + memsize - OPTEE_SIZE, OPTEE_SIZE, MAP_FAULT);
+	early_remap_range(PAGE_ALIGN_DOWN((uintptr_t)_stext), PAGE_ALIGN(_etext - _stext), MAP_CACHED);
 
 	mmu_enable();
 }

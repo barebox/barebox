@@ -18,6 +18,7 @@
 
 #include <driver.h>
 #include <init.h>
+#include <slice.h>
 #include <linux/types.h>
 
 struct i2c_adapter;
@@ -121,6 +122,7 @@ int i2c_generic_scl_recovery(struct i2c_adapter *adap);
  */
 struct i2c_adapter {
 	struct device		dev;	/* ptr to device */
+	struct slice		slice;
 	int			nr;	/* bus number */
 	int (*master_xfer)(struct i2c_adapter *adap, struct i2c_msg *msgs, int num);
 	struct list_head	list;
@@ -316,6 +318,11 @@ i2c_new_dummy(struct i2c_adapter *adap, u16 address);
 static inline int i2c_adapter_id(struct i2c_adapter *adap)
 {
 	return adap->nr;
+}
+
+static inline struct slice *i2c_client_slice(struct i2c_client *client)
+{
+	return &client->adapter->slice;
 }
 
 extern int i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num);

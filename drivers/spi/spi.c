@@ -12,6 +12,7 @@
 #include <spi/spi.h>
 #include <xfuncs.h>
 #include <malloc.h>
+#include <slice.h>
 #include <errno.h>
 #include <init.h>
 #include <of.h>
@@ -269,6 +270,8 @@ int spi_register_controller(struct spi_controller *ctrl)
 	if (status)
 		return status;
 
+	slice_init(&ctrl->slice, dev_name(ctrl->dev));
+
 	/* even if it's just one always-selected device, there must
 	 * be at least one chipselect
 	 */
@@ -352,12 +355,19 @@ static int __spi_validate(struct spi_device *spi, struct spi_message *message)
 int spi_sync(struct spi_device *spi, struct spi_message *message)
 {
 	int status;
+	int ret;
 
 	status = __spi_validate(spi, message);
 	if (status != 0)
 		return status;
 
-	return spi->controller->transfer(spi, message);
+	slice_acquire(&spi->controller->slice);
+
+	ret = spi->controller->transfer(spi, message);
+
+	slice_release(&spi->controller->slice);
+
+	return ret;
 }
 
 /**

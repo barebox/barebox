@@ -464,6 +464,13 @@ static int microchip_switch_probe(struct device *dev)
 	if (ret)
 		return ret;
 
+	if (priv->i2c)
+		slice_depends_on(mdiobus_slice(ds->slave_mii_bus),
+				 i2c_client_slice(priv->i2c));
+	else
+		slice_depends_on(mdiobus_slice(ds->slave_mii_bus),
+				 spi_device_slice(priv->spi));
+
 	return regmap_multi_register_cdev(priv->regmap[0], priv->regmap[1],
 					  priv->regmap[2], NULL);
 }

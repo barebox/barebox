@@ -763,11 +763,11 @@ int tlsf_check_pool(pool_t pool)
 
 /*
 ** Size of the TLSF structures in a given memory block passed to
-** tlsf_create, equal to the size of a control_t
+** tlsf_create, equal to aligned size of a control_t
 */
 size_t tlsf_size(void)
 {
-	return sizeof(control_t);
+	return align_up(sizeof(control_t), ALIGN_SIZE);
 }
 
 size_t tlsf_align_size(void)

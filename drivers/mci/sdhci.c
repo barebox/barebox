@@ -292,14 +292,14 @@ int sdhci_transfer_data_dma(struct sdhci *sdhci, struct mci_data *data,
 			int boundary_cfg = (sdhci->sdma_boundary >> 12) & 0x7;
 			dma_addr_t boundary_size = 4096 << boundary_cfg;
 			/* Force update to the next DMA block boundary. */
-			dma = (dma & ~(boundary_size - 1)) + boundary_size;
+			dma_addr_t next = (dma & ~(boundary_size - 1)) + boundary_size;
 
 			/*
 			 * DMA engine has stopped on buffer boundary. Acknowledge
 			 * the interrupt and kick the DMA engine again.
 			 */
 			sdhci_write32(sdhci, SDHCI_INT_STATUS, SDHCI_INT_DMA);
-			sdhci_set_sdma_addr(sdhci, dma);
+			sdhci_set_sdma_addr(sdhci, next);
 		}
 
 		if (irqstat & SDHCI_INT_XFER_COMPLETE)

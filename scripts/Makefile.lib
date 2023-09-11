@@ -160,6 +160,16 @@ ifeq ($(CONFIG_DEBUG_PBL),y)
 PBL_CPPFLAGS   += -DDEBUG
 endif
 
+_stackp_flags-y                                        := -fno-stack-protector
+_stackp_flags-$(CONFIG_STACKPROTECTOR_STRONG)          := -fstack-protector-strong
+_stackp_flags-$(CONFIG_STACKPROTECTOR_ALL)             := -fstack-protector-all
+
+_stackp_flags_pbl-y                                    := -fno-stack-protector
+_stackp_flags_pbl-$(CONFIG_PBL_STACKPROTECTOR_STRONG)  := -fstack-protector-strong
+_stackp_flags_pbl-$(CONFIG_PBL_STACKPROTECTOR_ALL)     := -fstack-protector-all
+
+_c_flags += $(if $(part-of-pbl),$(_stackp_flags_pbl-y),$(_stackp_flags-y))
+
 # If building barebox in a separate objtree expand all occurrences
 # of -Idir to -I$(srctree)/dir except for absolute paths (starting with '/').
 

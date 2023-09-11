@@ -656,9 +656,6 @@ KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
 KBUILD_CFLAGS	+= $(call cc-disable-warning,frame-address,)
 endif
 
-# Force gcc to behave correct even for buggy distributions
-KBUILD_CFLAGS          += $(call cc-option, -fno-stack-protector)
-
 KBUILD_CFLAGS-$(CONFIG_WERROR) += -Werror
 
 # This warning generated too much noise in a regular build.

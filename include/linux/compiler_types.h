@@ -133,6 +133,20 @@ struct ftrace_likely_data {
 # define fallthrough                    do {} while (0)  /* fallthrough */
 #endif
 
+/*
+ * Optional: only supported since GCC >= 11.1, clang >= 7.0.
+ *
+ *   gcc: https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-no_005fstack_005fprotector-function-attribute
+ *   clang: https://clang.llvm.org/docs/AttributeReference.html#no-stack-protector-safebuffers
+ */
+#if __has_attribute(__no_stack_protector__)
+# define __no_stack_protector		__attribute__((__no_stack_protector__))
+#elif ! defined CONFIG_STACKPROTECTOR
+# define __no_stack_protector		__attribute__((__optimize__("-fno-stack-protector")))
+#else
+# define __no_stack_protector
+#endif
+
 #endif /* __KERNEL__ */
 
 #endif /* __ASSEMBLY__ */
@@ -307,9 +321,9 @@ struct ftrace_likely_data {
 
 /* code that can't be instrumented at all */
 #define noinstr \
-	noinline notrace __no_sanitize_address
+	noinline notrace __no_sanitize_address __no_stack_protector
 
 #define __prereloc \
-	notrace __no_sanitize_address
+	notrace __no_sanitize_address __no_stack_protector
 
 #endif /* __LINUX_COMPILER_TYPES_H */

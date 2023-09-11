@@ -132,7 +132,7 @@ static void print_shadow_for_address(const void *addr)
 			shadow_buf, SHADOW_BYTES_PER_ROW, 0);
 
 		if (row_is_guilty(shadow_row, shadow))
-			printf("%*c\n",
+			eprintf("%*c\n",
 				shadow_pointer_offset(shadow_row, shadow),
 				'^');
 

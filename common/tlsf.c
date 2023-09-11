@@ -30,13 +30,8 @@ enum tlsf_public
 /* Private constants: do not modify. */
 enum tlsf_private
 {
-#if defined (TLSF_64BIT)
 	/* All allocation sizes and addresses are aligned to 8 bytes. */
 	ALIGN_SIZE_LOG2 = 3,
-#else
-	/* All allocation sizes and addresses are aligned to 4 bytes. */
-	ALIGN_SIZE_LOG2 = 2,
-#endif
 	ALIGN_SIZE = (1 << ALIGN_SIZE_LOG2),
 
 	/*
@@ -122,6 +117,7 @@ typedef struct block_header_t
 
 	/* The size of this block, excluding the block header. */
 	size_t size;
+	u32 : BYTES_TO_BITS(ALIGN_SIZE - sizeof(size_t));
 
 	/* Next and previous free blocks. */
 	struct block_header_t* next_free;
@@ -142,7 +138,7 @@ typedef struct block_header_t
 ** The prev_phys_block field is stored *inside* the previous free block.
 */
 #define block_header_shift		offsetof(block_header_t, size)
-#define block_header_overhead		sizeof(size_t)
+#define block_header_overhead		ALIGN_SIZE
 
 /* User data starts directly after the size field in a used block. */
 #define block_start_offset		(block_header_shift + block_header_overhead)
@@ -155,6 +151,8 @@ typedef struct block_header_t
 #define block_size_min			(sizeof(block_header_t) - sizeof(block_header_t*))
 #define block_size_max			(tlsf_cast(size_t, 1) << FL_INDEX_MAX)
 
+tlsf_static_assert(block_size_min % ALIGN_SIZE == 0);
+tlsf_static_assert(block_size_max % ALIGN_SIZE == 0);
 
 /* The TLSF control structure. */
 typedef struct control_t
@@ -165,10 +163,12 @@ typedef struct control_t
 	/* Bitmaps for free lists. */
 	unsigned int fl_bitmap;
 	unsigned int sl_bitmap[FL_INDEX_COUNT];
+	u32 : BYTES_TO_BITS(ALIGN_SIZE - sizeof(size_t));
 
 	/* Head of free lists. */
 	block_header_t* blocks[FL_INDEX_COUNT][SL_INDEX_COUNT];
 } control_t;
+tlsf_static_assert(sizeof(control_t) % ALIGN_SIZE == 0);
 
 /* A type used for casting when doing pointer arithmetic. */
 typedef ptrdiff_t tlsfptr_t;

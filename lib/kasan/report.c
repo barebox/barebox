@@ -48,9 +48,9 @@ EXPORT_SYMBOL_GPL(kasan_restore_multi_shot);
 
 static void print_error_description(struct kasan_access_info *info)
 {
-	pr_err("BUG: KASAN: %s in %pS\n",
+	eprintf("BUG: KASAN: %s in %pS\n",
 		get_bug_type(info), (void *)info->ip);
-	pr_err("%s of size %zu at addr %px\n",
+	eprintf("%s of size %zu at addr %px\n",
 		info->is_write ? "Write" : "Read", info->access_size,
 		info->access_addr);
 }
@@ -61,12 +61,12 @@ static void start_report(unsigned long *flags)
 	 * Make sure we don't end up in loop.
 	 */
 	kasan_disable_current();
-	pr_err("==================================================================\n");
+	eprintf("==================================================================\n");
 }
 
 static void end_report(unsigned long *flags)
 {
-	pr_err("==================================================================\n");
+	eprintf("==================================================================\n");
 	kasan_enable_current();
 }
 
@@ -80,11 +80,11 @@ static inline bool kernel_or_module_addr(const void *addr)
 static void print_address_description(void *addr, u8 tag)
 {
 	dump_stack();
-	pr_err("\n");
+	eprintf("\n");
 
 	if (kernel_or_module_addr(addr)) {
-		pr_err("The buggy address belongs to the variable:\n");
-		pr_err(" %pS\n", addr);
+		eprintf("The buggy address belongs to the variable:\n");
+		eprintf(" %pS\n", addr);
 	}
 }
 
@@ -112,7 +112,7 @@ static void print_shadow_for_address(const void *addr)
 					SHADOW_BYTES_PER_ROW)
 		- SHADOW_ROWS_AROUND_ADDR * SHADOW_BYTES_PER_ROW;
 
-	pr_err("Memory state around the buggy address:\n");
+	eprintf("Memory state around the buggy address:\n");
 
 	for (i = -SHADOW_ROWS_AROUND_ADDR; i <= SHADOW_ROWS_AROUND_ADDR; i++) {
 		const void *kaddr = kasan_shadow_to_mem(shadow_row);
@@ -172,11 +172,11 @@ static void __kasan_report(unsigned long addr, size_t size, bool is_write,
 	start_report(&flags);
 
 	print_error_description(&info);
-	pr_err("\n");
+	eprintf("\n");
 
 	if (addr_has_shadow(untagged_addr)) {
 		print_address_description(untagged_addr, get_tag(tagged_addr));
-		pr_err("\n");
+		eprintf("\n");
 		print_shadow_for_address(info.first_bad_addr);
 	} else {
 		dump_stack();

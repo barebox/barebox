@@ -3,6 +3,7 @@
 #include <malloc.h>
 #include <string.h>
 #include <memory.h>
+#include <linux/build_bug.h>
 
 #include <stdio.h>
 #include <module.h>
@@ -883,6 +884,8 @@ static mbinptr av_[NAV * 2 + 2] = {
 /* ----------------------------------------------------------------------- */
 
 /*  Other static bookkeeping data */
+
+static_assert(MALLOC_ALIGNMENT >= CONFIG_MALLOC_ALIGNMENT);
 
 /* variables holding tunable values */
 #ifndef __BAREBOX__

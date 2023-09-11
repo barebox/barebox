@@ -23,7 +23,7 @@ void *memalign(size_t alignment, size_t bytes)
 
 void *malloc(size_t size)
 {
-	return memalign(8, size);
+	return memalign(CONFIG_MALLOC_ALIGNMENT, size);
 }
 
 void free(void *ptr)

@@ -96,6 +96,8 @@ tlsf_static_assert(sizeof(unsigned int) * CHAR_BIT >= SL_INDEX_COUNT);
 /* Ensure we've properly tuned our sizes. */
 tlsf_static_assert(ALIGN_SIZE == SMALL_BLOCK_SIZE / SL_INDEX_COUNT);
 
+tlsf_static_assert(ALIGN_SIZE >= CONFIG_MALLOC_ALIGNMENT);
+
 /*
 ** Data structures and associated constants.
 */

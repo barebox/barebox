@@ -277,6 +277,11 @@ config MALLOC_SIZE
 	hex
 	default 0x400000
 	prompt "malloc area size"
+
+config MALLOC_ALIGNMENT
+	hex
+	default 8
+
 endmenu
 
 config BROKEN

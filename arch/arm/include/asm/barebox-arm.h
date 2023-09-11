@@ -15,6 +15,7 @@
 #include <linux/sizes.h>
 #include <asm-generic/memory_layout.h>
 #include <linux/kernel.h>
+#include <linux/pagemap.h>
 #include <linux/types.h>
 #include <linux/compiler.h>
 #include <asm/barebox-arm-head.h>
@@ -82,9 +83,19 @@ static inline unsigned long arm_mem_stack(unsigned long endmem)
 	return arm_mem_scratch(endmem) - STACK_SIZE;
 }
 
-static inline unsigned long arm_mem_ttb(unsigned long endmem)
+static inline unsigned long arm_mem_guard_page(unsigned long endmem)
 {
 	endmem = arm_mem_stack(endmem);
+
+	if (!IS_ENABLED(CONFIG_STACK_GUARD_PAGE))
+		return endmem;
+
+	return ALIGN_DOWN(endmem, PAGE_SIZE) - PAGE_SIZE;
+}
+
+static inline unsigned long arm_mem_ttb(unsigned long endmem)
+{
+	endmem = arm_mem_guard_page(endmem);
 	endmem = ALIGN_DOWN(endmem, ARM_EARLY_PAGETABLE_SIZE) - ARM_EARLY_PAGETABLE_SIZE;
 
 	return endmem;
@@ -119,6 +130,11 @@ static inline unsigned long arm_mem_stack_top(unsigned long endmem)
 static inline const void *arm_mem_scratch_get(void)
 {
 	return (const void *)arm_mem_scratch(arm_mem_endmem_get());
+}
+
+static inline unsigned long arm_mem_guard_page_get(void)
+{
+	return arm_mem_guard_page(arm_mem_endmem_get());
 }
 
 static inline unsigned long arm_mem_barebox_image(unsigned long membase,

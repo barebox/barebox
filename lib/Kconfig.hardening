@@ -1,5 +1,15 @@
 menu "Hardening options"
 
+config STACK_GUARD_PAGE
+	bool "Place guard page to catch stack overflows"
+	depends on ARM && MMU
+	help
+	  When enabled, barebox places a faulting guard page to catch total
+	  stack usage exceeding CONFIG_STACK_SIZE. On overflows, that hit
+	  the reserved 4KiB, barebox will panic and report a stack overflow.
+	  The report may not always succeed if the stack overflow impacts
+	  operation of the exception handler.
+
 config STACKPROTECTOR
 	bool
 

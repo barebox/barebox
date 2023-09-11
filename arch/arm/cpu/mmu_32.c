@@ -475,11 +475,27 @@ static void create_zero_page(void)
 	pr_debug("Created zero page\n");
 }
 
+static void create_guard_page(void)
+{
+	ulong guard_page;
+
+	if (!IS_ENABLED(CONFIG_STACK_GUARD_PAGE))
+		return;
+
+	guard_page = arm_mem_guard_page_get();
+	request_sdram_region("guard page", guard_page, PAGE_SIZE);
+	remap_range((void *)guard_page, PAGE_SIZE, MAP_FAULT);
+
+	pr_debug("Created guard page\n");
+}
+
 /*
  * Map vectors and zero page
  */
 static void vectors_init(void)
 {
+	create_guard_page();
+
 	/*
 	 * First try to use the vectors where they actually are, works
 	 * on ARMv7 and later.

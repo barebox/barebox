@@ -8,7 +8,9 @@
 
 #include <common.h>
 #include <abort.h>
+#include <linux/sizes.h>
 #include <asm/ptrace.h>
+#include <asm/barebox-arm.h>
 #include <asm/unwind.h>
 #include <init.h>
 
@@ -106,6 +108,22 @@ void do_prefetch_abort (struct pt_regs *pt_regs)
 	do_exception(pt_regs);
 }
 
+static const char *data_abort_reason(ulong far)
+{
+	ulong guard_page;
+
+	if (far < PAGE_SIZE)
+		return "NULL pointer dereference";
+
+	if (IS_ENABLED(CONFIG_STACK_GUARD_PAGE)) {
+		guard_page = arm_mem_guard_page_get();
+		if (guard_page <= far && far < guard_page + PAGE_SIZE)
+			return "stack overflow";
+	}
+
+	return "paging request";
+}
+
 /**
  * The CPU catches a data abort. That really should not happen!
  * @param[in] pt_regs Register set content when the accident happens
@@ -119,8 +137,7 @@ void do_data_abort (struct pt_regs *pt_regs)
 	asm volatile ("mrc     p15, 0, %0, c6, c0, 0" : "=r" (far) : : "cc");
 
 	printf("unable to handle %s at address 0x%08x\n",
-			far < PAGE_SIZE ? "NULL pointer dereference" :
-			"paging request", far);
+	       data_abort_reason(far), far);
 
 	do_exception(pt_regs);
 }

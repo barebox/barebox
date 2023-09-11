@@ -22,6 +22,7 @@
 #include <linux/math64.h>
 #include <linux/log2.h>
 #include <linux/clk.h>
+#include <linux/nvmem-consumer.h>
 #include <mach/imx/imx6-anadig.h>
 #include <io.h>
 #include <aiodev.h>
@@ -29,7 +30,6 @@
 
 #define FACTOR0			10000000
 #define MEASURE_FREQ		327
-#define OCOTP_ANA1_OFFSET      (0xE * sizeof(uint32_t))
 
 struct imx_thermal_data {
 	int c1, c2;
@@ -109,30 +109,13 @@ static int imx_thermal_read(struct aiochannel *chan, int *val)
 static int imx_thermal_probe(struct device *dev)
 {
 	uint32_t ocotp_ana1;
-	struct device_node *node;
 	struct imx_thermal_data *imx_thermal;
-	struct cdev *ocotp;
 	int t1, n1, t2, n2;
 	int ret;
 
-	node = of_parse_phandle(dev->of_node, "fsl,tempmon-data", 0);
-	if (!node) {
-		dev_err(dev, "No calibration data source\n");
-		return -ENODEV;
-	}
-
-	ocotp = cdev_by_device_node(node);
-	if (!ocotp) {
-		dev_err(dev, "No OCOTP character device\n");
-		return -ENODEV;
-	}
-
-	ret = cdev_read(ocotp, &ocotp_ana1, sizeof(ocotp_ana1),
-			OCOTP_ANA1_OFFSET, 0);
-	if (ret != sizeof(ocotp_ana1)) {
-		dev_err(dev, "Failed to read calibration data\n");
-		return ret < 0 ? ret : -EIO;
-	}
+	ret = nvmem_cell_read_variable_le_u32(dev, "calib", &ocotp_ana1);
+	if (ret)
+		return ret;
 
 	imx_thermal = xzalloc(sizeof(*imx_thermal));
 	imx_thermal->base = syscon_base_lookup_by_phandle(dev->of_node,

@@ -134,27 +134,25 @@ typedef struct block_header_t
 ** - bit 0: whether block is busy or free
 ** - bit 1: whether previous block is busy or free
 */
-static const size_t block_header_free_bit = 1 << 0;
-static const size_t block_header_prev_free_bit = 1 << 1;
+#define block_header_free_bit		(1 << 0)
+#define block_header_prev_free_bit	(1 << 1)
 
 /*
 ** The size of the block header exposed to used blocks is the size field.
 ** The prev_phys_block field is stored *inside* the previous free block.
 */
-static const size_t block_header_overhead = sizeof(size_t);
+#define block_header_overhead		sizeof(size_t)
 
 /* User data starts directly after the size field in a used block. */
-static const size_t block_start_offset =
-	offsetof(block_header_t, size) + sizeof(size_t);
+#define block_start_offset		(offsetof(block_header_t, size) + sizeof(size_t))
 
 /*
 ** A free block must be large enough to store its header minus the size of
 ** the prev_phys_block field, and no larger than the number of addressable
 ** bits for FL_INDEX.
 */
-static const size_t block_size_min =
-	sizeof(block_header_t) - sizeof(block_header_t*);
-static const size_t block_size_max = tlsf_cast(size_t, 1) << FL_INDEX_MAX;
+#define block_size_min			(sizeof(block_header_t) - sizeof(block_header_t*))
+#define block_size_max			(tlsf_cast(size_t, 1) << FL_INDEX_MAX)
 
 
 /* The TLSF control structure. */

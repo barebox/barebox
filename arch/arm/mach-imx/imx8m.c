@@ -56,7 +56,6 @@ u64 imx8m_uid(void)
 static int imx8m_init(const char *cputypestr)
 {
 	void __iomem *src = IOMEM(MX8M_SRC_BASE_ADDR);
-	struct arm_smccc_res res;
 
 	genpd_activate();
 
@@ -65,16 +64,6 @@ static int imx8m_init(const char *cputypestr)
 	 */
 	imx_set_reset_reason(src + IMX7_SRC_SRSR, imx7_reset_reasons);
 	pr_info("%s unique ID: %llx\n", cputypestr, imx8m_uid());
-
-	if (IS_ENABLED(CONFIG_ARM_SMCCC) &&
-	    IS_ENABLED(CONFIG_FIRMWARE_IMX8MQ_ATF)) {
-		arm_smccc_smc(IMX_SIP_BUILDINFO,
-			      IMX_SIP_BUILDINFO_GET_COMMITHASH,
-			      0, 0, 0, 0, 0, 0, &res);
-
-		if (res.a0 > 0)
-			pr_info("i.MX ARM Trusted Firmware: %s\n", (char *)&res.a0);
-	}
 
 	if (IS_ENABLED(CONFIG_PBL_OPTEE) && tzc380_is_enabled() &&
 	    !of_find_node_by_path_from(NULL, "/firmware/optee")) {

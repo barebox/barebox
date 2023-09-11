@@ -80,6 +80,9 @@ static int virt_board_driver_init(void)
 	pubkey = of_unflatten_dtb(__dtb_fitimage_pubkey_start, INT_MAX);
 	of_merge_nodes(root, pubkey);
 
+	/* fragment may have added aliases to the DT */
+	of_alias_scan();
+
 	/* of_probe() will happen later at of_populate_initcall */
 
 	return 0;

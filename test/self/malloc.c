@@ -85,7 +85,8 @@ static void test_malloc(void)
 	free(p);
 
 	if (mem_malloc_size) {
-		expect_alloc_fail(malloc(SIZE_MAX));
+		tmp = expect_alloc_fail(malloc(SIZE_MAX));
+		free(tmp);
 
 		if (0xf0000000 > mem_malloc_size) {
 			tmp = expect_alloc_fail(malloc(0xf0000000));
@@ -95,7 +96,7 @@ static void test_malloc(void)
 		skipped_tests += 2;
 	}
 
-	p = realloc(NULL, 1);
+	free(realloc(NULL, 1));
 	p = expect_alloc_ok(realloc(NULL, 1));
 
 	*p = 0x42;
@@ -107,11 +108,15 @@ static void test_malloc(void)
 
 	if (mem_malloc_size) {
 		tmp = expect_alloc_fail(realloc(p, mem_malloc_size));
+		free(tmp);
 
-		if (0xf0000000 > mem_malloc_size)
+		if (0xf0000000 > mem_malloc_size) {
 			tmp = expect_alloc_fail(realloc(p, 0xf0000000));
+			free(tmp);
+		}
 
 		tmp = expect_alloc_fail(realloc(p, SIZE_MAX));
+		free(tmp);
 
 	} else {
 		skipped_tests += 3;
@@ -123,5 +128,8 @@ static void test_malloc(void)
 	tmp = expect_alloc_ok(malloc(0));
 
 	__expect_cond(p != tmp, true, "allocate distinct 0-size buffers", __func__, __LINE__);
+
+	free(p);
+	free(tmp);
 }
 bselftest(core, test_malloc);

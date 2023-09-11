@@ -16,6 +16,7 @@
 #include <linux/string.h>
 #include <linux/kernel.h>
 #include <linux/stddef.h>
+#include <linux/pagemap.h>
 #include <asm/common.h>
 #include <asm/io.h>
 #include <linux/printk.h>
@@ -104,11 +105,6 @@ void shutdown_barebox(void);
 #define STACK_ALIGN_ARRAY(type, name, size, align)		\
 	char __##name[sizeof(type) * (size) + (align) - 1];	\
 	type *name = (type *)ALIGN((uintptr_t)__##name, align)
-
-#define PAGE_SIZE	4096
-#define PAGE_SHIFT	12
-#define PAGE_ALIGN(s)	ALIGN(s, PAGE_SIZE)
-#define PAGE_ALIGN_DOWN(x) ALIGN_DOWN(x, PAGE_SIZE)
 
 int mem_parse_options(int argc, char *argv[], char *optstr, int *mode,
 		char **sourcefile, char **destfile, int *swab);

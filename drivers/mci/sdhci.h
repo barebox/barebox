@@ -5,6 +5,7 @@
 #include <pbl.h>
 #include <dma.h>
 #include <linux/iopoll.h>
+#include <linux/sizes.h>
 
 #define SDHCI_DMA_ADDRESS					0x00
 #define SDHCI_BLOCK_SIZE__BLOCK_COUNT				0x04
@@ -18,6 +19,8 @@
 #define  SDHCI_DMA_BOUNDARY_8K			SDHCI_DMA_BOUNDARY(1)
 #define  SDHCI_DMA_BOUNDARY_4K			SDHCI_DMA_BOUNDARY(0)
 #define  SDHCI_DMA_BOUNDARY(x)			(((x) & 0x7) << 12)
+#define  SDHCI_DEFAULT_BOUNDARY_SIZE		SZ_512K
+#define  SDHCI_DEFAULT_BOUNDARY_ARG		SDHCI_DMA_BOUNDARY_512K
 #define  SDHCI_TRANSFER_BLOCK_SIZE(x)		((x) & 0xfff)
 #define SDHCI_BLOCK_COUNT					0x06
 #define SDHCI_ARGUMENT						0x08

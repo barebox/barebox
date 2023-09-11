@@ -289,17 +289,12 @@ int sdhci_transfer_data_dma(struct sdhci *sdhci, struct mci_data *data,
 		 * some controllers are faulty, don't trust them.
 		 */
 		if (irqstat & SDHCI_INT_DMA) {
-			int boundary_cfg = (sdhci->sdma_boundary >> 12) & 0x7;
-			dma_addr_t boundary_size = 4096 << boundary_cfg;
-			/* Force update to the next DMA block boundary. */
-			dma_addr_t next = (dma & ~(boundary_size - 1)) + boundary_size;
-
 			/*
 			 * DMA engine has stopped on buffer boundary. Acknowledge
 			 * the interrupt and kick the DMA engine again.
 			 */
 			sdhci_write32(sdhci, SDHCI_INT_STATUS, SDHCI_INT_DMA);
-			sdhci_set_sdma_addr(sdhci, next);
+			sdhci_set_sdma_addr(sdhci, ALIGN(dma, SDHCI_DEFAULT_BOUNDARY_SIZE));
 		}
 
 		if (irqstat & SDHCI_INT_XFER_COMPLETE)
@@ -661,7 +656,7 @@ int sdhci_setup_host(struct sdhci *host)
 	if (host->caps & SDHCI_CAN_DO_8BIT)
 		mci->host_caps |= MMC_CAP_8_BIT_DATA;
 
-	host->sdma_boundary = SDHCI_DMA_BOUNDARY_512K;
+	host->sdma_boundary = SDHCI_DEFAULT_BOUNDARY_ARG;
 
 	if (sdhci_can_64bit_dma(host))
 		host->flags |= SDHCI_USE_64_BIT_DMA;

@@ -118,7 +118,7 @@ static struct dentry *ext_lookup(struct inode *dir, struct dentry *dentry,
 				 unsigned int flags)
 {
 	struct ext2fs_node *e2dir = to_ext2_node(dir);
-	int ret, ino;
+	int ret, ino = 0;
 	struct inode *inode;
 
 	ret = ext4fs_get_ino(e2dir, &dentry->d_name, &ino);

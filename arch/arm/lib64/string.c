@@ -7,7 +7,7 @@
 void *__arch_memset(void *dst, int c, __kernel_size_t size);
 void *__arch_memcpy(void * dest, const void *src, size_t count);
 
-static void *_memset(void *dst, int c, __kernel_size_t size)
+static __prereloc void *_memset(void *dst, int c, __kernel_size_t size)
 {
 	if (likely(get_cr() & CR_M))
 		return __arch_memset(dst, c, size);

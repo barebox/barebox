@@ -305,4 +305,11 @@ struct ftrace_likely_data {
  */
 #define noinline_for_stack noinline
 
+/* code that can't be instrumented at all */
+#define noinstr \
+	noinline notrace __no_sanitize_address
+
+#define __prereloc \
+	notrace __no_sanitize_address
+
 #endif /* __LINUX_COMPILER_TYPES_H */

@@ -42,7 +42,7 @@
 #define KASAN_ALLOCA_LEFT	0xCA
 #define KASAN_ALLOCA_RIGHT	0xCB
 
-#ifdef CONFIG_KASAN
+#if defined(CONFIG_KASAN) && !defined(__PBL__)
 
 extern unsigned long kasan_shadow_start;
 extern unsigned long kasan_shadow_base;

@@ -61,7 +61,7 @@ static int do_bootm_elf(struct image_data *data)
 		return PTR_ERR(fdt);
 	}
 
-	pr_info("Starting application at 0x%08lx, dts 0x%08lx...\n",
+	pr_info("Starting application at 0x%08lx, dts 0x%p...\n",
 		data->os_address, data->of_root_node);
 
 	if (data->dryrun)

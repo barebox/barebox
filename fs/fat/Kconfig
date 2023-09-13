@@ -16,7 +16,7 @@ config FS_FAT_WRITE
 
 
 config FS_FAT_LFN
-	bool
+	def_bool y
 	prompt "Support long filenames"
 	help
 	  Enable support for file names other than 8.3.

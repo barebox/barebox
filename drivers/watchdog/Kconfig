@@ -165,4 +165,10 @@ config WDAT_WDT
 	  found on some desktop machines as well. This driver will take
 	  over the native iTCO watchdog driver found on many Intel CPUs.
 
+config CADENCE_WATCHDOG
+	tristate "Cadence Watchdog Timer"
+	help
+	  Say Y here if you want to include support for the watchdog
+	  timer in the Xilinx Zynq.
+
 endif

@@ -173,6 +173,7 @@ obj-$(CONFIG_MACH_VSCOM_BALTOS)			+= vscom-baltos/
 obj-$(CONFIG_MACH_WARP7)			+= element14-warp7/
 obj-$(CONFIG_MACH_WEBASTO_CCBV2)		+= webasto-ccbv2/
 obj-$(CONFIG_MACH_VF610_TWR)			+= freescale-vf610-twr/
+obj-$(CONFIG_MACH_XILINX_ZCU102)		+= xilinx-zcu102/
 obj-$(CONFIG_MACH_XILINX_ZCU104)		+= xilinx-zcu104/
 obj-$(CONFIG_MACH_XILINX_ZCU106)		+= xilinx-zcu106/
 obj-$(CONFIG_MACH_ZII_COMMON)			+= zii-common/

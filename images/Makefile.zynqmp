@@ -3,6 +3,10 @@
 # barebox image generation Makefile for Xilinx Zynq UltraScale+
 #
 
+pblb-$(CONFIG_MACH_XILINX_ZCU102) += start_zynqmp_zcu102
+FILE_barebox-zynqmp-zcu102.img = start_zynqmp_zcu102.pblb
+image-$(CONFIG_MACH_XILINX_ZCU102) += barebox-zynqmp-zcu102.img
+
 pblb-$(CONFIG_MACH_XILINX_ZCU104) += start_zynqmp_zcu104
 FILE_barebox-zynqmp-zcu104.img = start_zynqmp_zcu104.pblb
 image-$(CONFIG_MACH_XILINX_ZCU104) += barebox-zynqmp-zcu104.img

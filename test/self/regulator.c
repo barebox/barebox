@@ -161,7 +161,7 @@ static struct driver regulator_test_driver = {
 	.of_match_table = test_regulator_of_match,
 };
 
-static struct device_d *dev;
+static struct device *dev;
 
 static void test_regulator(void)
 {

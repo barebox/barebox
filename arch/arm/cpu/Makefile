@@ -29,6 +29,7 @@ obj-$(CONFIG_ARM_PSCI_CLIENT) += psci-client.o
 obj-$(CONFIG_CMD_ARM_CPUINFO) += cpuinfo.o
 obj-$(CONFIG_MMUINFO) += mmuinfo.o mmuinfo_$(S64_32).o
 obj-$(CONFIG_OFDEVICE) += dtb.o
+obj-$(CONFIG_BOOTM_ELF)	+= bootm-elf.o
 
 ifeq ($(CONFIG_MMU),)
 obj-$(CONFIG_CPU_32v7) += no-mmu.o

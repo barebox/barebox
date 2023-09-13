@@ -101,6 +101,12 @@ struct device {
 	char *deferred_probe_reason;
 };
 
+struct device_alias {
+	struct device *dev;
+	struct list_head list;
+	char name[];
+};
+
 /** @brief Describes a driver present in the system */
 struct driver {
 	/*! The name of this driver. Used to match to
@@ -216,6 +222,7 @@ static inline const char *dev_name(const struct device *dev)
 }
 
 int dev_set_name(struct device *dev, const char *fmt, ...);
+int dev_add_alias(struct device *dev, const char *fmt, ...);
 
 /*
  * get resource 'num' for a device

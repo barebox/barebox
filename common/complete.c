@@ -154,8 +154,8 @@ int device_complete(struct string_list *sl, char *instr)
 }
 EXPORT_SYMBOL(device_complete);
 
-static int device_param_complete(struct device *dev, struct string_list *sl,
-				 char *instr, int eval)
+static int device_param_complete(struct device *dev, const char *devname,
+				 struct string_list *sl, char *instr, int eval)
 {
 	struct param_d *param;
 	int len;
@@ -167,7 +167,7 @@ static int device_param_complete(struct device *dev, struct string_list *sl,
 			continue;
 
 		string_list_add_asprintf(sl, "%s%s.%s%c",
-			eval ? "$" : "", dev_name(dev), param->name,
+			eval ? "$" : "", devname, param->name,
 			eval ? ' ' : '=');
 	}
 
@@ -308,14 +308,12 @@ static int env_param_complete(struct string_list *sl, char *instr, int eval)
 		char *devname;
 
 		devname = xstrndup(instr, dot - instr);
-
-
 		dev = get_device_by_name(devname);
-		free(devname);
 
 		if (dev)
-			device_param_complete(dev, sl, dot + 1, eval);
+			device_param_complete(dev, devname, sl, dot + 1, eval);
 
+		free(devname);
 		pos = dot + 1;
 	}
 
@@ -323,7 +321,7 @@ static int env_param_complete(struct string_list *sl, char *instr, int eval)
 
 	for_each_device(dev) {
 		if (!strncmp(instr, dev_name(dev), len))
-			device_param_complete(dev, sl, "", eval);
+			device_param_complete(dev, dev_name(dev), sl, "", eval);
 	}
 
 	return 0;

@@ -15,9 +15,9 @@
 #define ZYNQMP_UART_STS_TFUL	(1 << 4)
 #define ZYNQMP_UART_TXDIS		(1 << 5)
 
-static inline void PUTC_LL(int c)
+static inline void cdns_serial_putc(void *ctx, int c)
 {
-	void __iomem *base = (void __iomem *)ZYNQMP_DEBUG_LL_UART_BASE;
+	void __iomem *base = ctx;
 
 	if (readl(base) & ZYNQMP_UART_TXDIS)
 		return;
@@ -26,6 +26,11 @@ static inline void PUTC_LL(int c)
 		;
 
 	writel(c, base + 0x30);
+}
+
+static inline void PUTC_LL(int c)
+{
+	cdns_serial_putc(IOMEM(ZYNQMP_DEBUG_LL_UART_BASE), c);
 }
 
 #endif /* __MACH_ZYNQMP_DEBUG_LL_H__ */

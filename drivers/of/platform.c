@@ -23,11 +23,9 @@
 struct device *of_find_device_by_node(struct device_node *np)
 {
 	struct device *dev;
-	int ret;
 
-	ret = of_device_ensure_probed(np);
-	if (ret)
-		return NULL;
+	/* Not having a driver is not an error here */
+	(void)of_device_ensure_probed(np);
 
 	if (deep_probe_is_supported())
 		return np->dev;

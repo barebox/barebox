@@ -12,11 +12,11 @@ config REMOTEPROC
 if REMOTEPROC
 
 config IMX_REMOTEPROC
-	tristate "IMX6/7 remoteproc support"
+	tristate "IMX6/7/8 remoteproc support"
 	depends on ARCH_IMX
 	select MFD_SYSCON
 	help
-	  Say y here to support iMX's remote processors (Cortex M4
+	  Say y here to support iMX's remote processors (e.g. Cortex M4
 	  on iMX7D) via the remote processor framework.
 
 	  It's safe to say N here.

@@ -9,7 +9,7 @@
 .SECONDEXPANSION:
 $(obj)/%.stm32: $(obj)/$$(FILE_$$(@F)) FORCE
 	$(Q)if [ -z $(FILE_$(@F)) ]; then echo "FILE_$(@F) empty!"; false; fi
-	@(cd $(obj) && ln -fs $(notdir $@) $(basename $(notdir $@)).img)
+	@(cd $(obj) && rm -f $(basename $(notdir $@)).img)
 	$(call if_changed,stm32_image)
 
 define build_stm32mp_image =

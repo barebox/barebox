@@ -35,6 +35,4 @@ Patch series sent there can be applied with `b4 <https://pypi.org/project/b4/>`_
    git config b4.linkmask https://lore.barebox.org/%s
    b4 shazam -M https://lore.barebox.org/$messageid # replace with link
 
-There's also an IRC channel, which is
-`bridged to Matrix  <https://app.element.io/#/room/#barebox:matrix.org>`_:
-#barebox on Libera Chat
+There's also an IRC channel: #barebox on Libera Chat

@@ -178,6 +178,53 @@ It must be included in the board's flash header:
 
 Analogous to HABv4 options and a template exist for HABv3.
 
+To verify HAB working as intended, install the ``barebox-*-s.img`` onto the
+boot medium and trigger a power-on reset. barebox will read the HAB log on
+startup and report any errors it finds. A good unfused boot looks like this::
+
+  HABv4: Status: Operation completed successfully (0xf0)
+  HABv4: Config: Non-secure IC (0xf0)
+  HABv4: State: Non-secure state (0x66)
+  HABv4: No HAB Failure Events Found!
+
+To have the bootrom verify the barebox binary, the SRK hash needs to be burnt
+into the fuses. As fuses can't be unburnt, the ``hab`` command should be used
+instead of direct device access to not risk writing unrelated fuses::
+
+  barebox$ hab -p -s SRK_1_2_3_4_fuse.bin
+
+Afterwards, images signed with a different key will trigger errors at barebox
+startup, but system will still be able to boot to shell.
+
+To have the BootROM refuse booting differently signed images, the ``SRK_LOCK``
+fuse needs to be burnt::
+
+  barebox$ hab -p -l
+
+On next startup, barebox will report that the system is now locked::
+
+  HABv4: Status: Operation completed successfully (0xf0)
+  HABv4: Config: Secure IC (0xcc)
+  HABv4: State: Trusted state (0x99)
+  HABv4: No HAB Failure Events Found!
+
+This can also be seen with the ``hab -i`` command::
+
+  Current SRK hash: <some non-zero value>
+  secure mode
+
+Similarly, on supported SoCs, the ``bootrom -l`` command will indicate that
+device is closed. Example output after booting via ``imx-usb-loader``::
+
+
+  [e0] Internal use
+  [11] Boot mode is Boot from Serial Download
+  [23] Secure config is Closed
+  [41] FUSE_SEL_VALUE Fuse is blown
+  [d0] Enters serial download processing
+  [a0] Image authentication result: PASS (0x000000f0) @3506438144 ticks
+  [00] End of list
+
 Secure Boot on i.MX6
 ~~~~~~~~~~~~~~~~~~~~
 

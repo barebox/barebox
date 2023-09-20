@@ -85,6 +85,15 @@ struct regulator_desc {
 };
 
 struct regulator_dev {
+	const char *name;
+	struct list_head list;
+	struct device_node *node;
+	int enable_count;
+	int enable_time_us;
+	int min_uv;
+	int max_uv;
+	const char *supply_name;
+	struct list_head consumer_list;
 	const struct regulator_desc *desc;
 	struct regmap *regmap;
 	bool boot_on;

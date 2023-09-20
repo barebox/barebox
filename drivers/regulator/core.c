@@ -40,7 +40,7 @@ static int regulator_map_voltage(struct regulator_dev *rdev, int min_uV,
 	return regulator_map_voltage_iterate(rdev, min_uV, max_uV);
 }
 
-static int regulator_enable_internal(struct regulator_dev *rdev)
+static int regulator_enable_rdev(struct regulator_dev *rdev)
 {
 	int ret;
 
@@ -71,7 +71,7 @@ static int regulator_enable_internal(struct regulator_dev *rdev)
 	return 0;
 }
 
-static int regulator_disable_internal(struct regulator_dev *rdev)
+static int regulator_disable_rdev(struct regulator_dev *rdev)
 {
 	int ret;
 
@@ -99,7 +99,7 @@ static int regulator_disable_internal(struct regulator_dev *rdev)
 	return regulator_disable(rdev->supply);
 }
 
-static int regulator_set_voltage_internal(struct regulator_dev *rdev,
+static int regulator_set_voltage_rdev(struct regulator_dev *rdev,
 					  int min_uV, int max_uV)
 {
 	const struct regulator_ops *ops = rdev->desc->ops;
@@ -125,7 +125,7 @@ static int regulator_set_voltage_internal(struct regulator_dev *rdev,
 	return -ENOSYS;
 }
 
-static int regulator_get_voltage_internal(struct regulator_dev *rdev)
+static int regulator_get_voltage_rdev(struct regulator_dev *rdev)
 {
 	int sel, ret;
 
@@ -199,12 +199,12 @@ static int regulator_init_voltage(struct regulator_dev *rdev)
 	if (!rdev->min_uv || !rdev->max_uv)
 		return 0;
 
-	current_uV = regulator_get_voltage_internal(rdev);
+	current_uV = regulator_get_voltage_rdev(rdev);
 	if (current_uV < 0) {
 		/* This regulator can't be read and must be initialized */
 		rdev_info(rdev, "Setting %d-%duV\n", rdev->min_uv, rdev->max_uv);
-		regulator_set_voltage_internal(rdev, rdev->min_uv, rdev->max_uv);
-		current_uV = regulator_get_voltage_internal(rdev);
+		regulator_set_voltage_rdev(rdev, rdev->min_uv, rdev->max_uv);
+		current_uV = regulator_get_voltage_rdev(rdev);
 	}
 
 	if (current_uV < 0) {
@@ -236,7 +236,7 @@ static int regulator_init_voltage(struct regulator_dev *rdev)
 	if (target_min != current_uV || target_max != current_uV) {
 		rdev_info(rdev, "Bringing %duV into %d-%duV\n",
 			  current_uV, target_min, target_max);
-		ret = regulator_set_voltage_internal(rdev, target_min, target_max);
+		ret = regulator_set_voltage_rdev(rdev, target_min, target_max);
 		if (ret < 0) {
 			rdev_err(rdev,
 				"failed to apply %d-%duV constraint: %pe\n",
@@ -268,7 +268,7 @@ static int __regulator_register(struct regulator_dev *rdev, const char *name)
 		if (ret < 0)
 			goto err;
 
-		ret = regulator_enable_internal(rdev);
+		ret = regulator_enable_rdev(rdev);
 		if (ret && ret != -ENOSYS)
 			goto err;
 	}
@@ -545,7 +545,7 @@ int regulator_enable(struct regulator *r)
 	if (!r)
 		return 0;
 
-	return regulator_enable_internal(r->rdev);
+	return regulator_enable_rdev(r->rdev);
 }
 
 /*
@@ -562,7 +562,7 @@ int regulator_disable(struct regulator *r)
 	if (!r)
 		return 0;
 
-	return regulator_disable_internal(r->rdev);
+	return regulator_disable_rdev(r->rdev);
 }
 
 int regulator_set_voltage(struct regulator *r, int min_uV, int max_uV)
@@ -570,7 +570,7 @@ int regulator_set_voltage(struct regulator *r, int min_uV, int max_uV)
 	if (!r)
 		return 0;
 
-	return regulator_set_voltage_internal(r->rdev, min_uV, max_uV);
+	return regulator_set_voltage_rdev(r->rdev, min_uV, max_uV);
 }
 
 /**
@@ -717,7 +717,7 @@ int regulator_get_voltage(struct regulator *regulator)
 	if (!regulator)
 		return -EINVAL;
 
-	return regulator_get_voltage_internal(regulator->rdev);
+	return regulator_get_voltage_rdev(regulator->rdev);
 }
 EXPORT_SYMBOL_GPL(regulator_get_voltage);
 

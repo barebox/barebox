@@ -187,6 +187,62 @@ static int regulator_resolve_supply(struct regulator_dev *rdev)
 	return 0;
 }
 
+static int regulator_init_voltage(struct regulator_dev *rdev)
+{
+	int target_min, target_max, current_uV, ret;
+
+	if (!rdev->min_uv || !rdev->max_uv)
+		return 0;
+
+	current_uV = regulator_get_voltage_internal(rdev);
+	if (current_uV < 0) {
+		/* This regulator can't be read and must be initialized */
+		rdev_info(rdev, "Setting %d-%duV\n", rdev->min_uv, rdev->max_uv);
+		regulator_set_voltage_internal(rdev, rdev->min_uv, rdev->max_uv);
+		current_uV = regulator_get_voltage_internal(rdev);
+	}
+
+	if (current_uV < 0) {
+		if (current_uV != -EPROBE_DEFER)
+			rdev_err(rdev,
+				 "failed to get the current voltage: %pe\n",
+				 ERR_PTR(current_uV));
+		return current_uV;
+	}
+
+	/*
+	 * If we're below the minimum voltage move up to the
+	 * minimum voltage, if we're above the maximum voltage
+	 * then move down to the maximum.
+	 */
+	target_min = current_uV;
+	target_max = current_uV;
+
+	if (current_uV < rdev->min_uv) {
+		target_min = rdev->min_uv;
+		target_max = rdev->min_uv;
+	}
+
+	if (current_uV > rdev->max_uv) {
+		target_min = rdev->max_uv;
+		target_max = rdev->max_uv;
+	}
+
+	if (target_min != current_uV || target_max != current_uV) {
+		rdev_info(rdev, "Bringing %duV into %d-%duV\n",
+			  current_uV, target_min, target_max);
+		ret = regulator_set_voltage_internal(rdev, target_min, target_max);
+		if (ret < 0) {
+			rdev_err(rdev,
+				"failed to apply %d-%duV constraint: %pe\n",
+				target_min, target_max, ERR_PTR(ret));
+			return ret;
+		}
+	}
+
+	return 0;
+}
+
 static int __regulator_register(struct regulator_dev *rdev, const char *name)
 {
 	int ret;
@@ -197,6 +253,10 @@ static int __regulator_register(struct regulator_dev *rdev, const char *name)
 
 	if (name)
 		rdev->name = xstrdup(name);
+
+	ret = regulator_init_voltage(rdev);
+	if (ret)
+		goto err;
 
 	if (rdev->boot_on || rdev->always_on) {
 		ret = regulator_resolve_supply(rdev);

@@ -15,6 +15,7 @@ static LIST_HEAD(regulator_list);
 
 struct regulator {
 	struct regulator_dev *rdev;
+	struct regulator_dev *rdev_consumer;
 	struct list_head list;
 	struct device *dev;
 };
@@ -183,7 +184,11 @@ static int regulator_resolve_supply(struct regulator_dev *rdev)
 		return 0;
 	}
 
+	if (supply)
+		supply->rdev_consumer = rdev;
+
 	rdev->supply = supply;
+
 	return 0;
 }
 
@@ -716,17 +721,22 @@ int regulator_get_voltage(struct regulator *regulator)
 }
 EXPORT_SYMBOL_GPL(regulator_get_voltage);
 
-static void regulator_print_one(struct regulator_dev *rdev)
+static void regulator_print_one(struct regulator_dev *rdev, int level)
 {
 	struct regulator *r;
 
-	printf("%-20s %6d %10d %10d\n", rdev->name, rdev->enable_count, rdev->min_uv, rdev->max_uv);
+	if (!rdev)
+		return;
 
-	if (!list_empty(&rdev->consumer_list)) {
-		printf(" consumers:\n");
+	printf("%*s%-*s %6d %10d %10d\n", level * 3, "",
+	       30 - level * 3,
+	       rdev->name, rdev->enable_count, rdev->min_uv, rdev->max_uv);
 
-		list_for_each_entry(r, &rdev->consumer_list, list)
-			printf("   %s\n", r->dev ? dev_name(r->dev) : "none");
+	list_for_each_entry(r, &rdev->consumer_list, list) {
+		if (r->rdev_consumer)
+			regulator_print_one(r->rdev_consumer, level + 1);
+		else
+			printf("%*s%s\n", (level + 1) * 3, "", r->dev ? dev_name(r->dev) : "none");
 	}
 }
 
@@ -737,7 +747,9 @@ void regulators_print(void)
 {
 	struct regulator_dev *rdev;
 
-	printf("%-20s %6s %10s %10s\n", "name", "enable", "min_uv", "max_uv");
-	list_for_each_entry(rdev, &regulator_list, list)
-		regulator_print_one(rdev);
+	printf("%-30s %6s %10s %10s\n", "name", "enable", "min_uv", "max_uv");
+	list_for_each_entry(rdev, &regulator_list, list) {
+		if (!rdev->supply)
+			regulator_print_one(rdev, 0);
+	}
 }

@@ -92,7 +92,6 @@ struct regulator_dev {
 	int enable_time_us;
 	int min_uv;
 	int max_uv;
-	const char *supply_name;
 	struct list_head consumer_list;
 	const struct regulator_desc *desc;
 	struct regmap *regmap;
@@ -154,8 +153,7 @@ static inline int of_regulator_register(struct regulator_dev *rd,
 	return -ENOSYS;
 }
 #endif
-int dev_regulator_register(struct regulator_dev *rd, const char * name,
-			   const char* supply);
+int dev_regulator_register(struct regulator_dev *rd, const char *name);
 
 void regulators_print(void);
 

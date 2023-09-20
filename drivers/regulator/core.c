@@ -409,15 +409,13 @@ static struct regulator_dev *of_regulator_get(struct device *dev,
 }
 #endif
 
-int dev_regulator_register(struct regulator_dev *rdev, const char * name, const char* supply)
+int dev_regulator_register(struct regulator_dev *rdev, const char *name)
 {
 	int ret;
 
 	ret = __regulator_register(rdev, name);
 	if (ret)
 		return ret;
-
-	rdev->supply_name = supply;
 
 	return 0;
 }
@@ -437,8 +435,8 @@ static struct regulator_dev *dev_regulator_get(struct device *dev,
 				continue;
 			match += 2;
 		}
-		if (rdev->supply_name) {
-			if (!supply || strcmp(rdev->supply_name, supply))
+		if (rdev->desc->supply_name) {
+			if (!supply || strcmp(rdev->desc->supply_name, supply))
 				continue;
 			match += 1;
 		}

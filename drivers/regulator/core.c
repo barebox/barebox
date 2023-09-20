@@ -121,6 +121,32 @@ static int regulator_set_voltage_internal(struct regulator_dev *rdev,
 	return -ENOSYS;
 }
 
+static int regulator_get_voltage_internal(struct regulator_dev *rdev)
+{
+	int sel, ret;
+
+	if (rdev->desc->ops->get_voltage_sel) {
+		sel = rdev->desc->ops->get_voltage_sel(rdev);
+		if (sel < 0)
+			return sel;
+		ret = rdev->desc->ops->list_voltage(rdev, sel);
+	} else if (rdev->desc->ops->get_voltage) {
+		ret = rdev->desc->ops->get_voltage(rdev);
+	} else if (rdev->desc->ops->list_voltage) {
+		ret = rdev->desc->ops->list_voltage(rdev, 0);
+	} else if (rdev->desc->fixed_uV && (rdev->desc->n_voltages == 1)) {
+		ret = rdev->desc->fixed_uV;
+	} else if (rdev->min_uv && rdev->min_uv == rdev->max_uv) {
+		ret = rdev->min_uv;
+	} else if (rdev->supply) {
+		ret = regulator_get_voltage(rdev->supply);
+	} else {
+		return -EINVAL;
+	}
+
+	return ret;
+}
+
 static int regulator_resolve_supply(struct regulator_dev *rdev)
 {
 	struct regulator *supply;
@@ -622,34 +648,10 @@ EXPORT_SYMBOL_GPL(regulator_bulk_free);
 
 int regulator_get_voltage(struct regulator *regulator)
 {
-	struct regulator_dev *rdev;
-	int sel, ret;
-
 	if (!regulator)
 		return -EINVAL;
 
-	rdev = regulator->rdev;
-
-	if (rdev->desc->ops->get_voltage_sel) {
-		sel = rdev->desc->ops->get_voltage_sel(rdev);
-		if (sel < 0)
-			return sel;
-		ret = rdev->desc->ops->list_voltage(rdev, sel);
-	} else if (rdev->desc->ops->get_voltage) {
-		ret = rdev->desc->ops->get_voltage(rdev);
-	} else if (rdev->desc->ops->list_voltage) {
-		ret = rdev->desc->ops->list_voltage(rdev, 0);
-	} else if (rdev->desc->fixed_uV && (rdev->desc->n_voltages == 1)) {
-		ret = rdev->desc->fixed_uV;
-	} else if (rdev->min_uv && rdev->min_uv == rdev->max_uv) {
-		ret = rdev->min_uv;
-	} else if (rdev->supply) {
-		ret = regulator_get_voltage(rdev->supply);
-	} else {
-		return -EINVAL;
-	}
-
-	return ret;
+	return regulator_get_voltage_internal(regulator->rdev);
 }
 EXPORT_SYMBOL_GPL(regulator_get_voltage);
 

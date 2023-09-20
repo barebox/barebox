@@ -6,12 +6,8 @@
 
 /dts-v1/;
 
-#include <dt-bindings/gpio/gpio.h>
-#include <arm/st/stm32mp157.dtsi>
-#include <arm/st/stm32mp15xc.dtsi>
-#include <arm/st/stm32mp15-pinctrl.dtsi>
-#include <arm/st/stm32mp15xxac-pinctrl.dtsi>
-#include "stm32mp157c-phycore-stm32mp15-som.dtsi"
+#include <arm/st/stm32mp157c-phycore-stm32mp1-3.dts>
+#include "stm32mp151.dtsi"
 
 / {
 	model = "PHYTEC phyCORE-STM32MP1-3 SoM";
@@ -32,10 +28,18 @@
 	};
 };
 
-&sdmmc1 {
-        status = "okay";
-};
-
-&sdmmc2 {
-        status = "okay";
+&ethernet0_rgmii_pins_d {
+	/*
+	 * Kernel uses ETH_RGMII_CLK125 instead of ETH_RGMII_GTX_CLK. Drop this
+	 * once it is fixed upstream.
+	 */
+	pins1 {
+		pinmux = <STM32_PINMUX('G', 4, AF11)>, /* ETH_RGMII_GTX_CLK */
+			 <STM32_PINMUX('G', 13, AF11)>, /* ETH_RGMII_TXD0 */
+			 <STM32_PINMUX('G', 14, AF11)>, /* ETH_RGMII_TXD1 */
+			 <STM32_PINMUX('C', 2, AF11)>, /* ETH_RGMII_TXD2 */
+			 <STM32_PINMUX('E', 2, AF11)>, /* ETH_RGMII_TXD3 */
+			 <STM32_PINMUX('B', 11, AF11)>, /* ETH_RGMII_TX_CTL */
+			 <STM32_PINMUX('C', 1, AF11)>; /* ETH_MDC */
+	};
 };

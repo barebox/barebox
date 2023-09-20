@@ -159,6 +159,19 @@ int dev_regulator_register(struct regulator_dev *rd, const char * name,
 
 void regulators_print(void);
 
+const char *rdev_get_name(struct regulator_dev *rdev);
+
+#define rdev_crit(rdev, fmt, ...)                                       \
+        pr_crit("%s: " fmt, rdev_get_name(rdev), ##__VA_ARGS__)
+#define rdev_err(rdev, fmt, ...)                                        \
+        pr_err("%s: " fmt, rdev_get_name(rdev), ##__VA_ARGS__)
+#define rdev_warn(rdev, fmt, ...)                                       \
+        pr_warn("%s: " fmt, rdev_get_name(rdev), ##__VA_ARGS__)
+#define rdev_info(rdev, fmt, ...)                                       \
+        pr_info("%s: " fmt, rdev_get_name(rdev), ##__VA_ARGS__)
+#define rdev_dbg(rdev, fmt, ...)                                        \
+        pr_debug("%s: " fmt, rdev_get_name(rdev), ##__VA_ARGS__)
+
 #ifdef CONFIG_REGULATOR
 
 struct regulator *regulator_get(struct device *, const char *);

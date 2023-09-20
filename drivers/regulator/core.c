@@ -19,6 +19,14 @@ struct regulator {
 	struct device *dev;
 };
 
+const char *rdev_get_name(struct regulator_dev *rdev)
+{
+	if (rdev->name)
+		return rdev->name;
+
+	return "";
+}
+
 static int regulator_map_voltage(struct regulator_dev *rdev, int min_uV,
 				 int max_uV)
 {
@@ -125,7 +133,7 @@ static int regulator_resolve_supply(struct regulator_dev *rdev)
 	if (!supply_name)
 		return 0;
 
-	dev_dbg(rdev->dev, "resolving %s\n", supply_name);
+	rdev_dbg(rdev, "resolving %s\n", supply_name);
 
 	supply = regulator_get(rdev->dev, supply_name);
 	if (IS_ERR(supply)) {
@@ -141,7 +149,7 @@ static int regulator_resolve_supply(struct regulator_dev *rdev)
 		 * we couldn't. If you want to get rid of this warning, consider
 		 * migrating your platform to have deep probe support.
 		 */
-		dev_warn(rdev->dev, "Failed to get '%s' regulator (ignored).\n",
+		rdev_warn(rdev, "Failed to get '%s' regulator (ignored).\n",
 			 supply_name);
 		return 0;
 	}

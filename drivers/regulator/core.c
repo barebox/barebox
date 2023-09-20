@@ -33,7 +33,10 @@ static int regulator_map_voltage(struct regulator_dev *rdev, int min_uV,
 	if (rdev->desc->ops->list_voltage == regulator_list_voltage_linear)
 		return regulator_map_voltage_linear(rdev, min_uV, max_uV);
 
-	return -ENOSYS;
+	if (rdev->desc->ops->list_voltage == regulator_list_voltage_linear_range)
+		return regulator_map_voltage_linear_range(rdev, min_uV, max_uV);
+
+	return regulator_map_voltage_iterate(rdev, min_uV, max_uV);
 }
 
 static int regulator_enable_internal(struct regulator_dev *rdev)

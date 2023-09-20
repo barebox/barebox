@@ -185,6 +185,7 @@ static const struct regulator_ops stpmic1_switch_regul_ops = {
 	.enable_mask = LDO_ENABLE_MASK, \
 	.enable_val = 1, \
 	.disable_val = 0, \
+	.supply_name = #base, \
 }
 
 #define REG_LDO3(ids, base) { \
@@ -198,6 +199,7 @@ static const struct regulator_ops stpmic1_switch_regul_ops = {
 	.enable_mask = LDO_ENABLE_MASK, \
 	.enable_val = 1, \
 	.disable_val = 0, \
+	.supply_name = #base, \
 }
 
 #define REG_LDO4(ids, base) { \
@@ -208,6 +210,7 @@ static const struct regulator_ops stpmic1_switch_regul_ops = {
 	.enable_mask = LDO_ENABLE_MASK, \
 	.enable_val = 1, \
 	.disable_val = 0, \
+	.supply_name = #base, \
 }
 
 #define REG_BUCK(ids, base) { \
@@ -221,6 +224,7 @@ static const struct regulator_ops stpmic1_switch_regul_ops = {
 	.enable_mask = BUCK_ENABLE_MASK, \
 	.enable_val = 1, \
 	.disable_val = 0, \
+	.supply_name = #base, \
 }
 
 #define REG_VREF_DDR(ids, base) { \
@@ -231,6 +235,7 @@ static const struct regulator_ops stpmic1_switch_regul_ops = {
 	.enable_mask = BUCK_ENABLE_MASK, \
 	.enable_val = 1, \
 	.disable_val = 0, \
+	.supply_name = #base, \
 }
 
 #define REG_BOOST(ids, base) { \
@@ -241,6 +246,7 @@ static const struct regulator_ops stpmic1_switch_regul_ops = {
 	.enable_mask = BOOST_ENABLED, \
 	.enable_val = BOOST_ENABLED, \
 	.disable_val = 0, \
+	.supply_name = #base, \
 }
 
 #define REG_VBUS_OTG(ids, base) { \
@@ -251,6 +257,7 @@ static const struct regulator_ops stpmic1_switch_regul_ops = {
 	.enable_mask = USBSW_OTG_SWITCH_ENABLED, \
 	.enable_val = USBSW_OTG_SWITCH_ENABLED, \
 	.disable_val = 0, \
+	.supply_name = #base, \
 }
 
 #define REG_SW_OUT(ids, base) { \
@@ -261,6 +268,7 @@ static const struct regulator_ops stpmic1_switch_regul_ops = {
 	.enable_mask = SWIN_SWOUT_ENABLED, \
 	.enable_val = SWIN_SWOUT_ENABLED, \
 	.disable_val = 0, \
+	.supply_name = #base, \
 }
 
 static struct stpmic1_regulator_cfg stpmic1_regulator_cfgs[] = {

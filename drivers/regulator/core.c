@@ -240,10 +240,6 @@ int of_regulator_register(struct regulator_dev *rdev, struct device_node *node)
 	if (!name)
 		name = node->name;
 
-	ret = __regulator_register(rdev, name);
-	if (ret)
-		return ret;
-
 	rdev->node = node;
 	node->dev = rdev->dev;
 
@@ -259,6 +255,10 @@ int of_regulator_register(struct regulator_dev *rdev, struct device_node *node)
 			&rdev->min_uv);
 	of_property_read_u32(node, "regulator-max-microvolt",
 			&rdev->max_uv);
+
+	ret = __regulator_register(rdev, name);
+	if (ret)
+		return ret;
 
 	return 0;
 }

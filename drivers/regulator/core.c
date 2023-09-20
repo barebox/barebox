@@ -166,13 +166,13 @@ static int regulator_resolve_supply(struct regulator_dev *rdev)
 	return 0;
 }
 
-static struct regulator_internal * __regulator_register(struct regulator_dev *rd, const char *name)
+static struct regulator_internal * __regulator_register(struct regulator_dev *rdev, const char *name)
 {
 	struct regulator_internal *ri;
 	int ret;
 
 	ri = xzalloc(sizeof(*ri));
-	ri->rdev = rd;
+	ri->rdev = rdev;
 
 	INIT_LIST_HEAD(&ri->consumer_list);
 
@@ -181,7 +181,7 @@ static struct regulator_internal * __regulator_register(struct regulator_dev *rd
 	if (name)
 		ri->name = xstrdup(name);
 
-	if (rd->boot_on || rd->always_on) {
+	if (rdev->boot_on || rdev->always_on) {
 		ret = regulator_resolve_supply(ri->rdev);
 		if (ret < 0)
 			goto err;
@@ -204,38 +204,38 @@ err:
 #ifdef CONFIG_OFDEVICE
 /*
  * of_regulator_register - register a regulator corresponding to a device_node
- * @rd:		the regulator device providing the ops
+ * rdev:		the regulator device providing the ops
  * @node:       the device_node this regulator corresponds to
  *
  * Return: 0 for success or a negative error code
  */
-int of_regulator_register(struct regulator_dev *rd, struct device_node *node)
+int of_regulator_register(struct regulator_dev *rdev, struct device_node *node)
 {
 	struct regulator_internal *ri;
 	const char *name;
 
-	if (!rd || !node)
+	if (!rdev || !node)
 		return -EINVAL;
 
-	rd->boot_on = of_property_read_bool(node, "regulator-boot-on");
-	rd->always_on = of_property_read_bool(node, "regulator-always-on");
+	rdev->boot_on = of_property_read_bool(node, "regulator-boot-on");
+	rdev->always_on = of_property_read_bool(node, "regulator-always-on");
 
 	name = of_get_property(node, "regulator-name", NULL);
 	if (!name)
 		name = node->name;
 
-	ri = __regulator_register(rd, name);
+	ri = __regulator_register(rdev, name);
 	if (IS_ERR(ri))
 		return PTR_ERR(ri);
 
 	ri->node = node;
-	node->dev = rd->dev;
+	node->dev = rdev->dev;
 
-	if (rd->desc->off_on_delay)
-		ri->enable_time_us = rd->desc->off_on_delay;
+	if (rdev->desc->off_on_delay)
+		ri->enable_time_us = rdev->desc->off_on_delay;
 
-	if (rd->desc->fixed_uV && rd->desc->n_voltages == 1)
-		ri->min_uv = ri->max_uv = rd->desc->fixed_uV;
+	if (rdev->desc->fixed_uV && rdev->desc->n_voltages == 1)
+		ri->min_uv = ri->max_uv = rdev->desc->fixed_uV;
 
 	of_property_read_u32(node, "regulator-enable-ramp-delay",
 			&ri->enable_time_us);
@@ -333,11 +333,11 @@ static struct regulator_internal *of_regulator_get(struct device *dev,
 }
 #endif
 
-int dev_regulator_register(struct regulator_dev *rd, const char * name, const char* supply)
+int dev_regulator_register(struct regulator_dev *rdev, const char * name, const char* supply)
 {
 	struct regulator_internal *ri;
 
-	ri = __regulator_register(rd, name);
+	ri = __regulator_register(rdev, name);
 
 	ri->supply = supply;
 

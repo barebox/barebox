@@ -84,6 +84,11 @@ JSMN_API void jsmn_init(jsmn_parser *parser);
 JSMN_API int jsmn_parse(jsmn_parser *parser, const char *js, const size_t len,
 			jsmntok_t *tokens, const unsigned int num_tokens);
 
+static inline int jsmn_token_size(const jsmntok_t *token)
+{
+	return token->end - token->start;
+}
+
 /** Returns `true` if `token` is a string and equal to `str`. */
 JSMN_API bool jsmn_str_eq(const char *str, const char *json, const jsmntok_t *token);
 

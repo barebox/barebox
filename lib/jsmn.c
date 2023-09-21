@@ -372,7 +372,7 @@ JSMN_API void jsmn_init(jsmn_parser *parser) {
 
 JSMN_API bool jsmn_eq(const char *val, const char *json, const jsmntok_t *token)
 {
-	size_t token_size = token->end - token->start;
+	size_t token_size = jsmn_token_size(token);
 	return strlen(val) == token_size
 		&& strncmp(json + token->start, val, token_size) == 0;
 }
@@ -446,7 +446,7 @@ JSMN_API char *jsmn_strcpy(const char *path[], const char *json,
 	if (!node || node->type != JSMN_STRING)
 		return NULL;
 
-	value_size = node->end - node->start;
+	value_size = jsmn_token_size(node);
 	value = malloc(value_size + 1);
 	if (value) {
 		strncpy(value, json + node->start, value_size);

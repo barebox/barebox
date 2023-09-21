@@ -104,7 +104,7 @@ static void test_json(void)
 	token = jsmn_skip_value(token);
 	__json_expect(json, token, JP("boolean"), JSMN_PRIMITIVE, "true");
 
-	string = jsmn_strcpy(JP("string"), json, tokens);
+	string = jsmn_strdup(JP("string"), json, tokens);
 	if (WARN_ON(!string))
 		goto out;
 

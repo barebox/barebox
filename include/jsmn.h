@@ -153,7 +153,7 @@ JSMN_API const jsmntok_t *jsmn_locate(const char *path[], const char *json,
  * value does not exist or is not a string. The caller takes ownership of the
  * pointer returned.
  */
-JSMN_API char *jsmn_strcpy(const char *path[], const char *json, const jsmntok_t *tokens);
+JSMN_API char *jsmn_strdup(const char *path[], const char *json, const jsmntok_t *tokens);
 
 #ifdef __cplusplus
 }

@@ -12,6 +12,7 @@
 #ifndef _RSA_H
 #define _RSA_H
 
+#include <linux/types.h>
 #include <errno.h>
 #include <digest.h>
 
@@ -38,10 +39,10 @@ struct rsa_public_key {
  * Verify a RSA PKCS1.5 signature against an expected hash.
  *
  * @info:	Specifies key and FIT information
- * @data:	Pointer to the input data
- * @data_len:	Data length
  * @sig:	Signature
  * @sig_len:	Number of bytes in signature
+ * @hash:	hash over payload
+ * @algo:	hashing algo
  * @return 0 if verified, -ve on error
  */
 int rsa_verify(const struct rsa_public_key *key, const uint8_t *sig,
@@ -50,6 +51,8 @@ int rsa_verify(const struct rsa_public_key *key, const uint8_t *sig,
 
 /* This is the maximum signature length that we support, in bits */
 #define RSA_MAX_SIG_BITS	4096
+
+struct device_node;
 
 struct rsa_public_key *rsa_of_read_key(struct device_node *node);
 void rsa_key_free(struct rsa_public_key *key);

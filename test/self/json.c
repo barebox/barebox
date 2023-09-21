@@ -75,43 +75,18 @@ static const char json[] =
 
 static void test_json(void)
 {
-	ssize_t token_count;
 	const jsmntok_t *token;
 	jsmntok_t *tokens;
-	jsmn_parser parser;
 	char *string;
-	int ret;
 
 	total_tests++;
-
-	jsmn_init(&parser);
 
 	/* Figure out how many tokens we need. */
-	ret = jsmn_parse(&parser, json, sizeof(json), NULL, 0);
-	if (ret < 0) {
-		printf("failed to determine number of tokens: %d\n", ret);
+	tokens = jsmn_parse_alloc(json, sizeof(json), NULL);
+	if (!tokens) {
+		printf("failed to parse JSON\n");
 		failed_tests++;
 		return;
-	}
-
-	token_count = ret;
-
-	/* `token_count` is strictly less than `length` which is strictly less
-	 * than CONFIG_SYS_EEPROM_SIZE (or 8K), so we should never overflow an
-	 * int here.
-	 */
-	tokens = kmalloc_array(token_count, sizeof(jsmntok_t), GFP_KERNEL);
-	if (WARN_ON(!tokens))
-		return;
-
-	total_tests++;
-
-	jsmn_init(&parser);
-	ret = jsmn_parse(&parser, json, sizeof(json), tokens, token_count);
-	if (ret < 0) {
-		printf("failed to parse JSON with tokens: %d\n", ret);
-		failed_tests++;
-		goto out;
 	}
 
 	json_expect(json, tokens, JP("null"), JSMN_PRIMITIVE, "null");
@@ -131,7 +106,7 @@ static void test_json(void)
 
 	string = jsmn_strcpy(JP("string"), json, tokens);
 	if (WARN_ON(!string))
-		return;
+		goto out;
 
 	total_tests++;
 	if (strcmp(string, "Hello World\n")) {

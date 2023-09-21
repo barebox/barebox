@@ -84,6 +84,12 @@ JSMN_API void jsmn_init(jsmn_parser *parser);
 JSMN_API int jsmn_parse(jsmn_parser *parser, const char *js, const size_t len,
 			jsmntok_t *tokens, const unsigned int num_tokens);
 
+/**
+ * Like jsmn_parse, but allocates tokens dynamically.
+ */
+JSMN_API jsmntok_t *jsmn_parse_alloc(const char *js, const size_t len,
+				     unsigned int *num_tokens);
+
 static inline int jsmn_token_size(const jsmntok_t *token)
 {
 	return token->end - token->start;

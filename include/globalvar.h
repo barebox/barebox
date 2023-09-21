@@ -10,6 +10,12 @@
 extern struct device global_device;
 
 #ifdef CONFIG_GLOBALVAR
+
+static inline const char *globalvar_get(const char *name)
+{
+	return dev_get_param(&global_device, name);
+}
+
 int globalvar_add_simple(const char *name, const char *value);
 
 void globalvar_remove(const char *name);
@@ -41,6 +47,11 @@ void dev_param_init_from_nv(struct device *dev, const char *name);
 void globalvar_alias_deprecated(const char *newname, const char *oldname);
 
 #else
+static inline const char *globalvar_get(const char *name)
+{
+	return NULL;
+}
+
 static inline int globalvar_add_simple(const char *name, const char *value)
 {
 	return 0;

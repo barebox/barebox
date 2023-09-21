@@ -821,11 +821,13 @@ if HABV4
 config HABV4_IMAGE_SIGNED
 	bool "build signed images"
 	help
-	  enable the creation of a signed image, if the habv4-imx6-gencsf.h
-	  included in the flash-header and the NXP cst Tool is available
+	  enable the creation of a signed image, if the habv4-imx*-gencsf.h
+	  file appropriate for the SoC is included in the flash-header and
+	  the NXP cst Tool is available
 
 config HABV4_IMAGE_SIGNED_USB
 	bool "build signed USB images"
+	depends on ARCH_IMX6
 	help
 	  enable the creation of a usb signed image, if the habv4-imx6-gencsf.h
 	  included in the flash-header and the NXP cst Tool is available
@@ -833,8 +835,9 @@ config HABV4_IMAGE_SIGNED_USB
 config HABV4_IMAGE_SIGNED_ENCRYPTED
 	bool "build signed encrypted images"
 	help
-	  enable the creation of the encrypted image, if the habv4-imx6-gencsf.h
-	  included in the flash-header and the NXP cst Tool is available
+	  enable the creation of the encrypted image, if the habv4-imx*-gencsf.h
+	  file appropriate for the SoC is included in the flash-header and
+	  the NXP cst Tool is available
 
 endif
 

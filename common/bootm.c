@@ -404,9 +404,12 @@ void *bootm_get_devicetree(struct image_data *data)
 		}
 
 	} else {
-		data->of_root_node = of_get_root_node();
-		if (!data->of_root_node)
+		struct device_node *root = of_get_root_node();
+
+		if (!root)
 			return NULL;
+
+		data->of_root_node = of_dup(root);
 
 		if (bootm_verbose(data) > 1 && data->of_root_node)
 			printf("using internal devicetree\n");
@@ -838,7 +841,7 @@ err_out:
 		elf_close(data->elf);
 	if (IS_ENABLED(CONFIG_FITIMAGE) && data->os_fit)
 		fit_close(data->os_fit);
-	if (data->of_root_node && data->of_root_node != of_get_root_node())
+	if (data->of_root_node)
 		of_delete_node(data->of_root_node);
 
 	globalvar_remove("linux.bootargs.bootm.earlycon");

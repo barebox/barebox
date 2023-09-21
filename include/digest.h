@@ -161,6 +161,11 @@ static inline const char *digest_name(struct digest *d)
 	return d->algo->base.name;
 }
 
+static inline enum hash_algo digest_algo(struct digest *d)
+{
+	return d->algo->base.algo;
+}
+
 static inline void* digest_ctx(struct digest *d)
 {
 	return d->ctx;

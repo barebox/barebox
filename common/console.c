@@ -254,6 +254,23 @@ static void console_set_stdoutpath(struct console_device *cdev, unsigned baudrat
 	free(str);
 }
 
+struct console_device *of_console_by_stdout_path(void)
+{
+	struct console_device *console;
+	struct device_node *stdout_np;
+
+	stdout_np = of_get_stdoutpath(NULL);
+	if (!stdout_np)
+		return NULL;
+
+	for_each_console(console) {
+		if (dev_of_node(console->dev) == stdout_np)
+			return console;
+	}
+
+	return NULL;
+}
+
 static int __console_puts(struct console_device *cdev, const char *s,
 			  size_t nbytes)
 {

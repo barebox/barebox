@@ -109,6 +109,7 @@ unsigned console_get_active(struct console_device *cdev);
 int console_set_baudrate(struct console_device *cdev, unsigned baudrate);
 unsigned console_get_baudrate(struct console_device *cdev);
 
+struct console_device *of_console_by_stdout_path(void);
 
 /**
  * console_fifo_fill - fill FIFO with as much console data as possible

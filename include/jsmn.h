@@ -101,6 +101,9 @@ JSMN_API bool jsmn_str_eq(const char *str, const char *json, const jsmntok_t *to
 /** Returns `true` if `token` is to `str`. */
 JSMN_API bool jsmn_eq(const char *val, const char *json, const jsmntok_t *token);
 
+/** Returns `true` if `token` is equal to `str`, ignoring case. */
+JSMN_API bool jsmn_strcase_eq(const char *str, const char *json, const jsmntok_t *token);
+
 /** Returns the token after the value at `tokens[0]`. */
 JSMN_API const jsmntok_t *jsmn_skip_value(const jsmntok_t *tokens);
 

@@ -418,6 +418,18 @@ JSMN_API bool jsmn_str_eq(const char *str, const char *json, const jsmntok_t *to
 	return token->type == JSMN_STRING && jsmn_eq(str, json, token);
 }
 
+static bool jsmn_case_eq(const char *val, const char *json, const jsmntok_t *token)
+{
+	size_t token_size = jsmn_token_size(token);
+	return strlen(val) == token_size
+		&& strncasecmp(json + token->start, val, token_size) == 0;
+}
+
+JSMN_API bool jsmn_strcase_eq(const char *str, const char *json, const jsmntok_t *token)
+{
+	return token->type == JSMN_STRING && jsmn_case_eq(str, json, token);
+}
+
 JSMN_API const jsmntok_t *jsmn_skip_value(const jsmntok_t *tokens)
 {
 	int max_index = tokens[0].end;

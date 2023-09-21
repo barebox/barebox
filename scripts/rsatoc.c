@@ -58,17 +58,21 @@ static int rsa_pem_get_pub_key(const char *path, RSA **rsap)
 	/* Read the certificate */
 	cert = NULL;
 	if (!PEM_read_X509(f, &cert, NULL, NULL)) {
-		rsa_err("Couldn't read certificate");
-		ret = -EINVAL;
-		goto err_cert;
-	}
-
-	/* Get the public key from the certificate. */
-	key = X509_get_pubkey(cert);
-	if (!key) {
-		rsa_err("Couldn't read public key\n");
-		ret = -EINVAL;
-		goto err_pubkey;
+		rewind(f);
+		key = PEM_read_PUBKEY(f, NULL, NULL, NULL);
+		if (!key) {
+			rsa_err("Couldn't read certificate");
+			ret = -EINVAL;
+			goto err_cert;
+		}
+	} else {
+		/* Get the public key from the certificate. */
+		key = X509_get_pubkey(cert);
+		if (!key) {
+			rsa_err("Couldn't read public key\n");
+			ret = -EINVAL;
+			goto err_pubkey;
+		}
 	}
 
 	/* Convert to a RSA_style key. */

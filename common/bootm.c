@@ -421,7 +421,9 @@ void *bootm_get_devicetree(struct image_data *data)
 		of_add_reserve_entry(data->initrd_res->start, data->initrd_res->end);
 	}
 
-	oftree = of_get_fixed_tree(data->of_root_node);
+	of_fix_tree(data->of_root_node);
+
+	oftree = of_flatten_dtb(data->of_root_node);
 	if (!oftree)
 		return ERR_PTR(-EINVAL);
 

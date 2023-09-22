@@ -836,6 +836,11 @@ static inline struct device_node *of_create_node(struct device_node *root,
 	return NULL;
 }
 
+static inline struct device_node *of_dup(const struct device_node *root)
+{
+	return NULL;
+}
+
 static inline void of_delete_node(struct device_node *node)
 {
 }

@@ -40,9 +40,9 @@ int unwind_frame(struct stackframe *frame)
 static void dump_backtrace_entry(unsigned long where, unsigned long from)
 {
 #ifdef CONFIG_KALLSYMS
-	printf("[<%08lx>] (%pS) from [<%08lx>] (%pS)\n", where, (void *)where, from, (void *)from);
+	eprintf("[<%08lx>] (%pS) from [<%08lx>] (%pS)\n", where, (void *)where, from, (void *)from);
 #else
-	printf("Function entered at [<%08lx>] from [<%08lx>]\n", where, from);
+	eprintf("Function entered at [<%08lx>] from [<%08lx>]\n", where, from);
 #endif
 }
 
@@ -60,7 +60,7 @@ void unwind_backtrace(struct pt_regs *regs)
 		frame.pc = (unsigned long)unwind_backtrace;
 	}
 
-	printf("Call trace:\n");
+	eprintf("Call trace:\n");
 	while (1) {
 		unsigned long where = frame.pc;
 		int ret;

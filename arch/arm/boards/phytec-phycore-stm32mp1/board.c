@@ -2,13 +2,22 @@
 #include <common.h>
 #include <driver.h>
 #include <bootsource.h>
+#include <mach/stm32mp/bbu.h>
 
 static int phycore_stm32mp1_probe(struct device *dev)
 {
-	if (bootsource_get_instance() == 0)
+	int sd_bbu_flags = 0, emmc_bbu_flags = 0;
+
+	if (bootsource_get_instance() == 0) {
 		of_device_enable_path("/chosen/environment-sd");
-	else
+		sd_bbu_flags = BBU_HANDLER_FLAG_DEFAULT;
+	} else {
 		of_device_enable_path("/chosen/environment-emmc");
+		emmc_bbu_flags = BBU_HANDLER_FLAG_DEFAULT;
+	}
+
+	stm32mp_bbu_mmc_register_handler("sd", "/dev/mmc0.ssbl", sd_bbu_flags);
+	stm32mp_bbu_mmc_fip_register("emmc", "/dev/mmc1", emmc_bbu_flags);
 
 	barebox_set_hostname("phyCORE-STM32MP1");
 

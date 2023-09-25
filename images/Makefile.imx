@@ -436,6 +436,26 @@ CFG_start_nxp_imx8mm_evk.pblb.imximg = $(board)/nxp-imx8mm-evk/flash-header-imx8
 FILE_barebox-nxp-imx8mm-evk.img = start_nxp_imx8mm_evk.pblb.pimximg
 image-$(CONFIG_MACH_NXP_IMX8MM_EVK) += barebox-nxp-imx8mm-evk.img
 
+pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX8MM) += start_phyboard_polis_rdk_ddr_autodetect
+CFG_start_phyboard_polis_rdk_ddr_autodetect.pblb.imximg = $(board)/phytec-som-imx8mm/flash-header-imx8mm-phyboard-polis-rdk.imxcfg
+FILE_barebox-phyboard-polis-rdk-ddr-autodetect.img = start_phyboard_polis_rdk_ddr_autodetect.pblb.pimximg
+image-$(CONFIG_MACH_PHYTEC_SOM_IMX8MM) += barebox-phyboard-polis-rdk-ddr-autodetect.img
+
+pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX8MM) += start_phyboard_polis_rdk_ddr_1g
+CFG_start_phyboard_polis_rdk_ddr_1g.pblb.imximg = $(board)/phytec-som-imx8mm/flash-header-imx8mm-phyboard-polis-rdk.imxcfg
+FILE_barebox-phyboard-polis-rdk-ddr-1g.img = start_phyboard_polis_rdk_ddr_1g.pblb.pimximg
+image-$(CONFIG_MACH_PHYTEC_SOM_IMX8MM) += barebox-phyboard-polis-rdk-ddr-1g.img
+
+pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX8MM) += start_phyboard_polis_rdk_ddr_2g
+CFG_start_phyboard_polis_rdk_ddr_2g.pblb.imximg = $(board)/phytec-som-imx8mm/flash-header-imx8mm-phyboard-polis-rdk.imxcfg
+FILE_barebox-phyboard-polis-rdk-ddr-2g.img = start_phyboard_polis_rdk_ddr_2g.pblb.pimximg
+image-$(CONFIG_MACH_PHYTEC_SOM_IMX8MM) += barebox-phyboard-polis-rdk-ddr-2g.img
+
+pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX8MM) += start_phyboard_polis_rdk_ddr_4g
+CFG_start_phyboard_polis_rdk_ddr_4g.pblb.imximg = $(board)/phytec-som-imx8mm/flash-header-imx8mm-phyboard-polis-rdk.imxcfg
+FILE_barebox-phyboard-polis-rdk-ddr-4g.img = start_phyboard_polis_rdk_ddr_4g.pblb.pimximg
+image-$(CONFIG_MACH_PHYTEC_SOM_IMX8MM) += barebox-phyboard-polis-rdk-ddr-4g.img
+
 pblb-$(CONFIG_MACH_PROTONIC_IMX8M) += start_prt_prt8mm
 CFG_start_prt_prt8mm.pblb.imximg = $(board)/protonic-imx8m/flash-header-prt8mm.imxcfg
 FILE_barebox-prt-prt8mm.img = start_prt_prt8mm.pblb.pimximg

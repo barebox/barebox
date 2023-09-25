@@ -2,6 +2,15 @@
 
 #include <dt-bindings/features/imx8m.h>
 
+/ {
+	aliases {
+		pwm0 = &pwm1;
+		pwm1 = &pwm2;
+		pwm2 = &pwm3;
+		pwm3 = &pwm4;
+	};
+};
+
 feat: &ocotp {
 	#feature-cells = <1>;
 	barebox,feature-controller;

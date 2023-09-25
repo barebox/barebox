@@ -150,7 +150,7 @@ Unlike the typical ``imximg`` file extension the following ones are used for
 these cases:
 
 * ``simximg``: generate signed image
-* ``usimximg``: generate signed USB image
+* ``usimximg``: generate signed USB image (i.MX6-specific)
 * ``esimximg``: generate encrypted and signed image
 
 The imx-image tool is then automatically called with the appropriate flags
@@ -168,9 +168,9 @@ keys/certificates are expected in these config variables (assuming HABv4):
   CONFIG_HABV4_IMG_CRT_PEM
 
 A CSF template is located in
-``include/mach/imx/habv4-imx6-gencsf.h`` which is preprocessed
+``include/mach/imx/habv4-imx*-gencsf.h`` which is preprocessed
 by barebox.
-It must be included in the board's flash header:
+It must be included in the board's flash header, e.g. for i.MX6:
 
 .. code-block:: none
 

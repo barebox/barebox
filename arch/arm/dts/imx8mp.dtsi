@@ -8,6 +8,13 @@
 		clocks = <&clk IMX8MP_CLK_M7_CORE>;
 		syscon = <&src>;
 	};
+
+	aliases {
+		pwm0 = &pwm1;
+		pwm1 = &pwm2;
+		pwm2 = &pwm3;
+		pwm3 = &pwm4;
+	};
 };
 
 /* Temporary workaround until snps,gfladj-refclk-lpm-sel-quirk is supported */

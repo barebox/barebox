@@ -88,6 +88,11 @@ void imx8mm_load_bl33(void *bl33)
 		imx8m_esdhc_load_image(instance, false);
 		break;
 	case BOOTSOURCE_SERIAL:
+		if (!IS_ENABLED(CONFIG_USB_GADGET_DRIVER_ARC_PBL)) {
+			printf("Serial bootmode not supported\n");
+			break;
+		}
+
 		/*
 		 * Traditionally imx-usb-loader sends the PBL twice. The first
 		 * PBL is loaded to OCRAM and executed. Then the full barebox
@@ -116,7 +121,7 @@ void imx8mm_load_bl33(void *bl33)
 		imx8mm_qspi_load_image(instance, false);
 		break;
 	default:
-		printf("Unhandled bootsource BOOTSOURCE_%d\n", src);
+		printf("Unsupported bootsource BOOTSOURCE_%d\n", src);
 		hang();
 	}
 

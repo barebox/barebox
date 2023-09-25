@@ -1099,5 +1099,6 @@ static inline void imx8mp_setup_pad(iomux_v3_cfg_t pad)
 
 #define MX8MP_IOMUXC_GPR1			0x4
 #define MX8MP_IOMUXC_GPR1_ENET1_RGMII_EN	BIT(22)
+#define MX8MP_IOMUXC_GPR1_ENET_QOS_RGMII_EN	BIT(21)
 
 #endif  /* __ASM_ARCH_IMX8MP_PINS_H__ */

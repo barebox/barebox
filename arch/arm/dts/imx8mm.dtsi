@@ -5,6 +5,10 @@
 / {
 	aliases {
 		gpr.reboot_mode = &reboot_mode_gpr;
+		pwm0 = &pwm1;
+		pwm1 = &pwm2;
+		pwm2 = &pwm3;
+		pwm3 = &pwm4;
 	};
 };
 

@@ -73,4 +73,11 @@ config IMX7D_ADC
 	help
 	  Say yes here to build support for IMX7D ADC.
 
+config VF610_ADC
+	tristate "Freescale vf610 ADC driver"
+	depends on ARCH_IMX6 || COMPILE_TEST
+	help
+	  Say yes here to support for Vybrid board analog-to-digital converter.
+	  Since the IP is used for i.MX6SLX, the driver also support i.MX6SLX.
+
 endif

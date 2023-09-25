@@ -422,7 +422,7 @@ static int imx_rproc_addr_init(struct imx_rproc *priv,
 	/* remap optional addresses */
 	for (a = 0; a < nph; a++) {
 		struct device_node *node;
-		struct resource res, *res_cpu;
+		struct resource res;
 
 		node = of_parse_phandle(np, "memory-region", a);
 		err = of_address_to_resource(node, 0, &res);
@@ -434,13 +434,12 @@ static int imx_rproc_addr_init(struct imx_rproc *priv,
 		if (b >= IMX7D_RPROC_MEM_MAX)
 			break;
 
-		res_cpu = request_sdram_region(dev_name(dev), res.start,
-					       resource_size(&res));
-		if (!res_cpu) {
-			dev_err(dev, "remap optional addresses failed\n");
-			return -ENOMEM;
-		}
-		priv->mem[b].cpu_addr = (void *)res_cpu->start;
+		/*
+		 * reserved memory region are automatically requested and
+		 * mapped uncached
+		 */
+
+		priv->mem[b].cpu_addr = phys_to_virt(res.start);
 		priv->mem[b].sys_addr = res.start;
 		priv->mem[b].size = resource_size(&res);
 		b++;

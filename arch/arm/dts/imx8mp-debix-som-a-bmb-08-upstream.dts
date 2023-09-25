@@ -11,20 +11,27 @@
 / {
 	model = "Polyhex i.MX8MPlus Debix SOM A on BMB-08";
 	compatible = "polyhex,imx8mp-debix-som-a-bmb-08", "polyhex,imx8mp-debix-som-a",
-		     "polyhex,imx8mp-debix", "fsl,imx8mp";
+		     "fsl,imx8mp";
+
+	aliases {
+		ethernet0 = &eqos;
+		ethernet1 = &fec;
+	};
 
 	chosen {
 		stdout-path = &uart2;
 	};
 
-	regulator-baseboard-vdd3v3 {
+	reg_baseboard_vdd3v3: regulator-baseboard-vdd3v3 {
 		compatible = "regulator-fixed";
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
 		regulator-name = "BB_VDD3V3";
+		/* Required timings for ethernet phy's */
+		startup-delay-us = <50000>;
+		off-on-delay-us = <110000>;
 		gpio = <&expander0 10 GPIO_ACTIVE_HIGH>;
 		enable-active-high;
-		regulator-always-on;
 	};
 
 	reg_baseboard_vdd5v0: regulator-baseboard-vdd5v0 {
@@ -54,17 +61,6 @@
 		gpio = <&expander0 11 GPIO_ACTIVE_HIGH>;
 		enable-active-high;
 		regulator-always-on;
-	};
-
-	reg_usdhc2_vmmc: regulator-usdhc2 {
-		compatible = "regulator-fixed";
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_reg_usdhc2_vmmc>;
-		regulator-name = "VSD_3V3";
-		regulator-min-microvolt = <3300000>;
-		regulator-max-microvolt = <3300000>;
-		gpio = <&gpio2 19 GPIO_ACTIVE_HIGH>;
-		enable-active-high;
 	};
 
 	regulator-vbus-usb20 {
@@ -102,10 +98,11 @@
 &eqos {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_eqos>;
-	phy-mode = "rgmii-id";
+	nvmem-cells = <&ethmac1>;
+	nvmem-cell-names = "mac-address";
+	phy-supply = <&reg_baseboard_vdd3v3>;
 	phy-handle = <&ethphy0>;
-	snps,reset-gpio = <&gpio4 18 GPIO_ACTIVE_LOW>;
-	snps,reset-delays-us = <10 20 200000>;
+	phy-mode = "rgmii-id";
 	status = "okay";
 
 	mdio {
@@ -113,16 +110,14 @@
 		#address-cells = <1>;
 		#size-cells = <0>;
 
-		ethphy0: ethernet-phy@0 {
+		ethphy0: ethernet-phy@1 {
 			compatible = "ethernet-phy-ieee802.3-c22";
-			reg = <0>;
-			qca,disable-smarteee;
-			vddio-supply = <&vddio_phy0>;
-
-			vddio_phy0: vddio-phy0-regulator {
-				regulator-min-microvolt = <1800000>;
-				regulator-max-microvolt = <1800000>;
-			};
+			reg = <1>;
+			reset-gpios = <&gpio4 18 GPIO_ACTIVE_LOW>;
+			reset-assert-us = <20000>;
+			reset-deassert-us = <150000>;
+			eee-broken-1000t;
+			realtek,clkout-disable;
 		};
 	};
 };
@@ -130,28 +125,26 @@
 &fec {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_fec>;
-	phy-mode = "rgmii-id";
+	nvmem-cells = <&ethmac2>;
+	nvmem-cell-names = "mac-address";
+	phy-supply = <&reg_baseboard_vdd3v3>;
 	phy-handle = <&ethphy1>;
+	phy-mode = "rgmii-id";
 	fsl,magic-packet;
-	phy-reset-gpios = <&gpio4 19 GPIO_ACTIVE_LOW>;
-	phy-reset-duration = <10>;
-	phy-reset-post-delay = <150>;
 	status = "okay";
 
 	mdio {
 		#address-cells = <1>;
 		#size-cells = <0>;
 
-		ethphy1: ethernet-phy@0 {
+		ethphy1: ethernet-phy@1 {
 			compatible = "ethernet-phy-ieee802.3-c22";
-			reg = <0>;
-			qca,disable-smarteee;
-			vddio-supply = <&vddio_phy1>;
-
-			vddio_phy1: vddio-phy1-regulator {
-				regulator-min-microvolt = <1800000>;
-				regulator-max-microvolt = <1800000>;
-			};
+			reg = <1>;
+			reset-gpios = <&gpio4 19 GPIO_ACTIVE_LOW>;
+			reset-assert-us = <20000>;
+			reset-deassert-us = <150000>;
+			eee-broken-1000t;
+			realtek,clkout-disable;
 		};
 	};
 };
@@ -201,7 +194,7 @@
 		#gpio-cells = <0x02>;
 
 		/*
-		 * Since USB1 is binded to peripheral mode we need to ensure
+		 * Since USB1 is bound to peripheral mode we need to ensure
 		 * that VBUS is turned off.
 		 */
 		usb30-otg-hog {
@@ -212,12 +205,6 @@
 		};
 	};
 
-	eeprom@52 {
-		compatible = "atmel,24c02";
-		reg = <0x52>;
-		pagesize = <16>;
-	};
-
 	rtc@51 {
 		compatible = "haoyu,hym8563";
 		reg = <0x51>;
@@ -226,6 +213,23 @@
 		interrupt-parent = <&gpio4>;
 		interrupts = <3 IRQ_TYPE_EDGE_FALLING>;
 		#clock-cells = <0>;
+	};
+
+	eeprom@52 {
+		compatible = "atmel,24c02";
+		reg = <0x52>;
+		pagesize = <16>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		/* MACs stored in ASCII */
+		ethmac1: mac-address@0 {
+			reg = <0x0 0xc>;
+		};
+
+		ethmac2: mac-address@c {
+			reg = <0xc 0xc>;
+		};
 	};
 };
 
@@ -301,16 +305,16 @@
 /* µSD Card */
 &usdhc2 {
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
-	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_usdhc2_gpio>;
-	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_usdhc2_gpio>;
-	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_gpio>;
-	cd-gpios = <&gpio2 12 GPIO_ACTIVE_LOW>;
-	vmmc-supply = <&reg_usdhc2_vmmc>;
-	bus-width = <4>;
-
+	pinctrl-0 = <&pinctrl_usdhc2>;
+	pinctrl-1 = <&pinctrl_usdhc2_100mhz>;
+	pinctrl-2 = <&pinctrl_usdhc2_200mhz>;
 	assigned-clocks = <&clk IMX8MP_CLK_USDHC2>;
 	assigned-clock-rates = <400000000>;
-
+	vmmc-supply = <&reg_usdhc2_vmmc>;
+	bus-width = <4>;
+	disable-wp;
+	no-sdio;
+	no-mmc;
 	status = "okay";
 };
 
@@ -409,12 +413,6 @@
 		>;
 	};
 
-	pinctrl_reg_usdhc2_vmmc: regusdhc2vmmcgrp {
-		fsl,pins = <
-			MX8MP_IOMUXC_SD2_RESET_B__GPIO2_IO19		0x41
-		>;
-	};
-
 	pinctrl_uart2: uart2grp {
 		fsl,pins = <
 			MX8MP_IOMUXC_UART2_RXD__UART2_DCE_RX		0x14f
@@ -468,13 +466,7 @@
 			MX8MP_IOMUXC_SD2_DATA1__USDHC2_DATA1		0x1d6
 			MX8MP_IOMUXC_SD2_DATA2__USDHC2_DATA2		0x1d6
 			MX8MP_IOMUXC_SD2_DATA3__USDHC2_DATA3		0x1d6
-			MX8MP_IOMUXC_GPIO1_IO04__USDHC2_VSELECT 	0xc1
-		>;
-	};
-
-	pinctrl_usdhc2_gpio: usdhc2gpiogrp {
-		fsl,pins = <
-			MX8MP_IOMUXC_SD2_CD_B__GPIO2_IO12		0x1c4
+			MX8MP_IOMUXC_GPIO1_IO04__USDHC2_VSELECT		0xc1
 		>;
 	};
 };

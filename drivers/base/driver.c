@@ -24,6 +24,7 @@
 #include <fs.h>
 #include <of.h>
 #include <linux/list.h>
+#include <linux/overflow.h>
 #include <linux/err.h>
 #include <complete.h>
 #include <pinctrl.h>
@@ -46,6 +47,8 @@ LIST_HEAD(active_device_list);
 EXPORT_SYMBOL(active_device_list);
 static LIST_HEAD(deferred);
 
+static LIST_HEAD(device_alias_list);
+
 struct device *find_device(const char *str)
 {
 	struct device *dev;
@@ -65,10 +68,16 @@ struct device *find_device(const char *str)
 struct device *get_device_by_name(const char *name)
 {
 	struct device *dev;
+	struct device_alias *alias;
 
 	for_each_device(dev) {
 		if(!strcmp(dev_name(dev), name))
 			return dev;
+	}
+
+	list_for_each_entry(alias, &device_alias_list, list) {
+		if(!strcmp(alias->name, name))
+			return alias->dev;
 	}
 
 	return NULL;
@@ -261,6 +270,7 @@ EXPORT_SYMBOL(register_device);
 
 int unregister_device(struct device *old_dev)
 {
+	struct device_alias *alias, *at;
 	struct cdev *cdev, *ct;
 	struct device *child, *dt;
 
@@ -270,6 +280,11 @@ int unregister_device(struct device *old_dev)
 
 	if (old_dev->driver)
 		old_dev->bus->remove(old_dev);
+
+	list_for_each_entry_safe(alias, at, &device_alias_list, list) {
+		if(alias->dev == old_dev)
+			list_del(&alias->list);
+	}
 
 	list_for_each_entry_safe(child, dt, &old_dev->children, sibling) {
 		dev_dbg(old_dev, "unregister child %s\n", dev_name(child));
@@ -591,6 +606,37 @@ int dev_set_name(struct device *dev, const char *fmt, ...)
 	return WARN_ON(err < 0) ? err : 0;
 }
 EXPORT_SYMBOL_GPL(dev_set_name);
+
+/**
+ * dev_add_alias - add alias for device
+ * @dev: device
+ * @fmt: format string for the device's alias
+ */
+int dev_add_alias(struct device *dev, const char *fmt, ...)
+{
+	va_list va, va_copy;
+	unsigned int len;
+	struct device_alias *alias;
+
+	va_start(va, fmt);
+	va_copy(va_copy, va);
+	len = vsnprintf(NULL, 0, fmt, va_copy);
+	va_end(va_copy);
+
+	alias = malloc(struct_size(alias, name, len + 1));
+	if (!alias)
+		return -ENOMEM;
+
+	vsnprintf(alias->name, len + 1, fmt, va);
+
+	va_end(va);
+
+	alias->dev = dev;
+	list_add_tail(&alias->list, &device_alias_list);
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(dev_add_alias);
 
 static void devices_shutdown(void)
 {

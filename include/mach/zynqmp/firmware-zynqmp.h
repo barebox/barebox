@@ -28,10 +28,32 @@
 #define ZYNQMP_PCAP_STATUS_FPGA_DONE	BIT(3)
 
 enum pm_ioctl_id {
+	IOCTL_GET_RPU_OPER_MODE = 0,
+	IOCTL_SET_RPU_OPER_MODE = 1,
+	IOCTL_RPU_BOOT_ADDR_CONFIG = 2,
+	IOCTL_TCM_COMB_CONFIG = 3,
+	IOCTL_SET_TAPDELAY_BYPASS = 4,
+	IOCTL_SD_DLL_RESET = 6,
+	IOCTL_SET_SD_TAPDELAY = 7,
 	IOCTL_SET_PLL_FRAC_MODE = 8,
-	IOCTL_GET_PLL_FRAC_MODE,
-	IOCTL_SET_PLL_FRAC_DATA,
-	IOCTL_GET_PLL_FRAC_DATA,
+	IOCTL_GET_PLL_FRAC_MODE = 9,
+	IOCTL_SET_PLL_FRAC_DATA = 10,
+	IOCTL_GET_PLL_FRAC_DATA = 11,
+	IOCTL_WRITE_GGS = 12,
+	IOCTL_READ_GGS = 13,
+	IOCTL_WRITE_PGGS = 14,
+	IOCTL_READ_PGGS = 15,
+	/* Set healthy bit value */
+	IOCTL_SET_BOOT_HEALTH_STATUS = 17,
+	IOCTL_OSPI_MUX_SELECT = 21,
+	/* Register SGI to ATF */
+	IOCTL_REGISTER_SGI = 25,
+	/* Runtime feature configuration */
+	IOCTL_SET_FEATURE_CONFIG = 26,
+	IOCTL_GET_FEATURE_CONFIG = 27,
+	/* Dynamic SD/GEM configuration */
+	IOCTL_SET_SD_CONFIG = 30,
+	IOCTL_SET_GEM_CONFIG = 31,
 };
 
 enum pm_query_id {
@@ -76,5 +98,10 @@ struct zynqmp_eemi_ops {
 };
 
 const struct zynqmp_eemi_ops *zynqmp_pm_get_eemi_ops(void);
+
+int zynqmp_pm_write_ggs(u32 index, u32 value);
+int zynqmp_pm_read_ggs(u32 index, u32 *value);
+int zynqmp_pm_write_pggs(u32 index, u32 value);
+int zynqmp_pm_read_pggs(u32 index, u32 *value);
 
 #endif /* FIRMWARE_ZYNQMP_H_ */

@@ -951,4 +951,35 @@ static inline struct clk *clk_get_optional(struct device *dev, const char *id)
 	return clk;
 }
 
+/**
+ * clk_get_enabled - clk_get() + clk_prepare_enable()
+ * @dev: device for clock "consumer"
+ * @id: clock consumer ID
+ *
+ * Return: a struct clk corresponding to the clock producer, or
+ * valid IS_ERR() condition containing errno.  The implementation
+ * uses @dev and @id to determine the clock consumer, and thereby
+ * the clock producer.  (IOW, @id may be identical strings, but
+ * clk_get may return different clock producers depending on @dev.)
+ *
+ * The returned clk (if valid) is enabled.
+ */
+static inline struct clk *clk_get_enabled(struct device *dev, const char *id)
+{
+	struct clk *clk;
+	int ret;
+
+	clk = clk_get(dev, id);
+	if (IS_ERR(clk))
+		return clk;
+
+	ret = clk_enable(clk);
+	if (ret) {
+		clk_put(clk);
+		return ERR_PTR(ret);
+	}
+
+	return clk;
+}
+
 #endif

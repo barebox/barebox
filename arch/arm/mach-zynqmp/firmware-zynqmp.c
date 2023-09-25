@@ -14,9 +14,17 @@
 
 #include <common.h>
 #include <init.h>
+#include <driver.h>
+#include <param.h>
 #include <linux/arm-smccc.h>
 
 #include <mach/zynqmp/firmware-zynqmp.h>
+
+struct zynqmp_fw {
+	struct device *dev;
+	u32 ggs[4];
+	u32 pggs[4];
+};
 
 #define ZYNQMP_TZ_VERSION(MAJOR, MINOR)	((MAJOR << 16) | MINOR)
 
@@ -503,6 +511,72 @@ static int zynqmp_pm_ioctl(u32 node_id, u32 ioctl_id, u32 arg1, u32 arg2,
 				   arg1, arg2, out);
 }
 
+/*
+ * zynqmp_pm_write_ggs() - PM API for writing global general storage (ggs)
+ * @index:	GGS register index
+ * @value:	Register value to be written
+ *
+ * This function writes value to GGS register.
+ *
+ * Return:      Returns status, either success or error+reason
+ */
+int zynqmp_pm_write_ggs(u32 index, u32 value)
+{
+	return zynqmp_pm_invoke_fn(PM_IOCTL, 0, IOCTL_WRITE_GGS,
+				   index, value, NULL);
+}
+EXPORT_SYMBOL_GPL(zynqmp_pm_write_ggs);
+
+/**
+ * zynqmp_pm_read_ggs() - PM API for reading global general storage (ggs)
+ * @index:	GGS register index
+ * @value:	Register value to be written
+ *
+ * This function returns GGS register value.
+ *
+ * Return:	Returns status, either success or error+reason
+ */
+int zynqmp_pm_read_ggs(u32 index, u32 *value)
+{
+	return zynqmp_pm_invoke_fn(PM_IOCTL, 0, IOCTL_READ_GGS,
+				   index, 0, value);
+}
+EXPORT_SYMBOL_GPL(zynqmp_pm_read_ggs);
+
+/**
+ * zynqmp_pm_write_pggs() - PM API for writing persistent global general
+ *			     storage (pggs)
+ * @index:	PGGS register index
+ * @value:	Register value to be written
+ *
+ * This function writes value to PGGS register.
+ *
+ * Return:	Returns status, either success or error+reason
+ */
+int zynqmp_pm_write_pggs(u32 index, u32 value)
+{
+	return zynqmp_pm_invoke_fn(PM_IOCTL, 0, IOCTL_WRITE_PGGS, index, value,
+				   NULL);
+}
+EXPORT_SYMBOL_GPL(zynqmp_pm_write_pggs);
+
+/**
+ * zynqmp_pm_read_pggs() - PM API for reading persistent global general
+ *			     storage (pggs)
+ * @index:	PGGS register index
+ * @value:	Register value to be written
+ *
+ * This function returns PGGS register value.
+ *
+ * Return:	Returns status, either success or error+reason
+ */
+int zynqmp_pm_read_pggs(u32 index, u32 *value)
+{
+	return zynqmp_pm_invoke_fn(PM_IOCTL, 0, IOCTL_READ_PGGS, index, 0,
+				   value);
+}
+EXPORT_SYMBOL_GPL(zynqmp_pm_read_pggs);
+
 /**
  * zynqmp_pm_fpga_load - Perform the fpga load
  * @address:	Address to write to
@@ -576,10 +650,57 @@ const struct zynqmp_eemi_ops *zynqmp_pm_get_eemi_ops(void)
 }
 EXPORT_SYMBOL_GPL(zynqmp_pm_get_eemi_ops);
 
+static bool parse_reg(const char *reg, unsigned *idx)
+{
+	bool pggs = reg[0] == 'p';
+	kstrtouint(reg + pggs + sizeof("ggs") - 1, 10, idx);
+	return pggs;
+}
+
+static int ggs_set(struct param_d *p, void *_val)
+{
+	u32 *val = _val;
+	unsigned idx;
+
+	if (parse_reg(p->name, &idx))
+		return zynqmp_pm_write_pggs(idx, *val);
+	else
+		return zynqmp_pm_write_ggs(idx, *val);
+}
+static int ggs_get(struct param_d *p, void *_val)
+{
+	u32 ret_payload[PAYLOAD_ARG_CNT];
+	u32 *val = _val;
+	unsigned idx;
+	int ret;
+
+	if (parse_reg(p->name, &idx))
+		ret = zynqmp_pm_read_pggs(idx, ret_payload);
+	else
+		ret = zynqmp_pm_read_ggs(idx, ret_payload);
+
+	if (ret)
+		return ret;
+
+	*val = ret_payload[1];
+
+	return 0;
+}
+
+static inline void dev_add_param_ggs(struct zynqmp_fw *fw, const char *str, u32 *value)
+{
+	dev_add_param_uint32(fw->dev, str, ggs_set, ggs_get, value, "0x%x", value);
+}
 
 static int zynqmp_firmware_probe(struct device *dev)
 {
+
+	struct zynqmp_fw *fw;
 	int ret;
+
+	fw = xzalloc(sizeof(*fw));
+
+	dev_add_alias(dev, "zynqmp_fw");
 
 	ret = get_set_conduit_method(dev->of_node);
 	if (ret)
@@ -620,6 +741,18 @@ static int zynqmp_firmware_probe(struct device *dev)
 			pm_tz_version >> 16, pm_tz_version & 0xFFFF);
 
 	of_platform_populate(dev->of_node, NULL, dev);
+
+	fw->dev = dev;
+
+	dev_add_param_ggs(fw, "ggs0", &fw->ggs[0]);
+	dev_add_param_ggs(fw, "ggs1", &fw->ggs[1]);
+	dev_add_param_ggs(fw, "ggs2", &fw->ggs[2]);
+	dev_add_param_ggs(fw, "ggs3", &fw->ggs[3]);
+
+	dev_add_param_ggs(fw, "pggs0", &fw->pggs[0]);
+	dev_add_param_ggs(fw, "pggs1", &fw->pggs[1]);
+	dev_add_param_ggs(fw, "pggs2", &fw->pggs[2]);
+	dev_add_param_ggs(fw, "pggs3", &fw->pggs[3]);
 out:
 	if (ret)
 		do_fw_call = do_fw_call_fail;

@@ -2,13 +2,14 @@
 
 #include <common.h>
 #include <debug_ll.h>
+#include <asm/sections.h>
 #include <linux/err.h>
 
 /*
  * Put these in the data section so that they survive the clearing of the
  * BSS segment.
  */
-static __attribute__ ((section(".data"))) void (*__putc)(void *ctx, int c);
+static __attribute__ ((section(".data"))) ulong putc_offset;
 static __attribute__ ((section(".data"))) void *putc_ctx;
 
 /**
@@ -21,13 +22,19 @@ static __attribute__ ((section(".data"))) void *putc_ctx;
  */
 void pbl_set_putc(void (*putcf)(void *ctx, int c), void *ctx)
 {
-	__putc = putcf;
+	putc_offset = (ulong)putcf - (ulong)_text;
 	putc_ctx = ctx;
+}
+
+static void __putc(void *ctx, int c)
+{
+	void (*putc)(void *, int) = (void *)_text + putc_offset;
+	putc(ctx, c);
 }
 
 void console_putc(unsigned int ch, char c)
 {
-	if (__putc)
+	if (putc_offset)
 		__putc(putc_ctx, c);
 	else
 		putc_ll(c);

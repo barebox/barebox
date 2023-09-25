@@ -121,6 +121,7 @@ config CRYPTO_RSA
 config CRYPTO_RSA_BUILTIN_KEYS
 	bool
 	default y if CRYPTO_RSA_KEY != ""
+	select RSATOC
 
 config CRYPTO_RSA_KEY
 	depends on CRYPTO_RSA

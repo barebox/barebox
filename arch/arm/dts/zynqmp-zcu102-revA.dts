@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+#include <arm64/xilinx/zynqmp-zcu102-revA.dts>
+
+/ {
+	chosen {
+		environment {
+			compatible = "barebox,environment";
+			device-path = &sdhci1, "partname:0";
+			file-path = "barebox.env";
+		};
+	};
+};

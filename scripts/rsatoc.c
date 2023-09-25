@@ -18,7 +18,7 @@
 #include <openssl/evp.h>
 #include <openssl/engine.h>
 
-static int dts;
+static int dts, standalone;
 
 static int rsa_err(const char *msg)
 {
@@ -58,17 +58,21 @@ static int rsa_pem_get_pub_key(const char *path, RSA **rsap)
 	/* Read the certificate */
 	cert = NULL;
 	if (!PEM_read_X509(f, &cert, NULL, NULL)) {
-		rsa_err("Couldn't read certificate");
-		ret = -EINVAL;
-		goto err_cert;
-	}
-
-	/* Get the public key from the certificate. */
-	key = X509_get_pubkey(cert);
-	if (!key) {
-		rsa_err("Couldn't read public key\n");
-		ret = -EINVAL;
-		goto err_pubkey;
+		rewind(f);
+		key = PEM_read_PUBKEY(f, NULL, NULL, NULL);
+		if (!key) {
+			rsa_err("Couldn't read certificate");
+			ret = -EINVAL;
+			goto err_cert;
+		}
+	} else {
+		/* Get the public key from the certificate. */
+		key = X509_get_pubkey(cert);
+		if (!key) {
+			rsa_err("Couldn't read public key\n");
+			ret = -EINVAL;
+			goto err_pubkey;
+		}
 	}
 
 	/* Convert to a RSA_style key. */
@@ -450,17 +454,24 @@ static int gen_key(const char *keyname, const char *path)
 		print_bignum(r_squared, bits);
 		fprintf(outfilep, "\n};\n\n");
 
-		fprintf(outfilep, "static struct rsa_public_key %s = {\n", key_name_c);
+		if (standalone) {
+			fprintf(outfilep, "struct rsa_public_key __key_%s;\n", key_name_c);
+			fprintf(outfilep, "struct rsa_public_key __key_%s = {\n", key_name_c);
+		} else {
+			fprintf(outfilep, "static struct rsa_public_key %s = {\n", key_name_c);
+		}
+
 		fprintf(outfilep, "\t.len = %d,\n", bits / 32);
 		fprintf(outfilep, "\t.n0inv = 0x%0x,\n", n0_inv);
 		fprintf(outfilep, "\t.modulus = %s_modulus,\n", key_name_c);
 		fprintf(outfilep, "\t.rr = %s_rr,\n", key_name_c);
 		fprintf(outfilep, "\t.exponent = 0x%0lx,\n", exponent);
 		fprintf(outfilep, "\t.key_name_hint = \"%s\",\n", keyname);
-		fprintf(outfilep, "};\n\n");
+		fprintf(outfilep, "};\n");
 
-		fprintf(outfilep, "struct rsa_public_key *%sp __attribute__((section(\".rsa_keys.rodata.%s\"))) = &%s;\n",
-			key_name_c, key_name_c, key_name_c);
+		if (!standalone)
+			fprintf(outfilep, "\nstruct rsa_public_key *%sp __attribute__((section(\".rsa_keys.rodata.%s\"))) = &%s;\n",
+				key_name_c, key_name_c, key_name_c);
 	}
 
 	return 0;
@@ -474,13 +485,16 @@ int main(int argc, char *argv[])
 
 	outfilep = stdout;
 
-	while ((opt = getopt(argc, argv, "o:d")) > 0) {
+	while ((opt = getopt(argc, argv, "o:ds")) > 0) {
 		switch (opt) {
 		case 'o':
 			outfile = optarg;
 			break;
 		case 'd':
 			dts = 1;
+			break;
+		case 's':
+			standalone = 1;
 			break;
 		}
 	}
@@ -495,14 +509,22 @@ int main(int argc, char *argv[])
 	}
 
 	if (optind == argc) {
-		fprintf(stderr, "Usage: %s <key_name_hint>:<crt> ...\n", argv[0]);
+		fprintf(stderr, "Usage: %s [-ods]  OUTFIE<key_name_hint>:<crt> ...\n", argv[0]);
+		fprintf(stderr, "\t-o FILE\twrite output into FILE instead of stdout\n");
+		fprintf(stderr, "\t-d\tgenerate device tree snippet instead of C code\n");
+		fprintf(stderr, "\t-s\tgenerate standalone key outside FIT image keyring\n");
 		exit(1);
 	}
 
 	if (dts) {
 		fprintf(outfilep, "/dts-v1/;\n");
 		fprintf(outfilep, "/ {\n");
-		fprintf(outfilep, "\tsignature {\n");
+		if (standalone)
+			fprintf(outfilep, "\tsignature-standalone {\n");
+		else
+			fprintf(outfilep, "\tsignature {\n");
+	} else if (standalone) {
+		fprintf(outfilep, "#include <rsa.h>\n");
 	}
 
 	for (i = optind; i < argc; i++) {

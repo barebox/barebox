@@ -10,6 +10,7 @@
 #include <libfile.h>
 #include <memory.h>
 #include <unistd.h>
+#include <zero_page.h>
 #include <linux/fs.h>
 #include <linux/list_sort.h>
 
@@ -100,7 +101,7 @@ static int elf_section_cmp(void *priv, struct list_head *a, struct list_head *b)
 static int load_elf_to_memory(struct elf_image *elf)
 {
 	void *dst;
-	int ret, fd = -1;
+	int ret = 0, fd = -1;
 	u64 p_filesz, p_memsz, p_offset;
 	struct elf_section *r;
 	struct list_head *list = &elf->list;
@@ -112,6 +113,8 @@ static int load_elf_to_memory(struct elf_image *elf)
 			return -errno;
 		}
 	}
+
+	zero_page_access();
 
 	list_for_each_entry(r, list, list) {
 		p_offset = elf_phdr_p_offset(elf, r->phdr);
@@ -127,14 +130,13 @@ static int load_elf_to_memory(struct elf_image *elf)
 			if (ret == -1) {
 				pr_err("lseek at offset 0x%llx failed\n",
 				       p_offset);
-				close(fd);
-				return ret;
+				goto out;
 			}
 
 			if (read_full(fd, dst, p_filesz) < 0) {
 				pr_err("could not read elf segment: %m\n");
-				close(fd);
-				return -errno;
+				ret = -errno;
+				goto out;
 			}
 		} else {
 			memcpy(dst, elf->hdr_buf + p_offset, p_filesz);
@@ -144,9 +146,12 @@ static int load_elf_to_memory(struct elf_image *elf)
 			memset(dst + p_filesz, 0x00, p_memsz - p_filesz);
 	}
 
+out:
+	zero_page_faulting();
+
 	close(fd);
 
-	return 0;
+	return ret >= 0 ? 0 : ret;
 }
 
 static int load_elf_image_segments(struct elf_image *elf)

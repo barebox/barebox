@@ -289,7 +289,7 @@ static const struct of_device_id qemu_fw_cfg_of_match[] = {
 };
 MODULE_DEVICE_TABLE(of, qemu_fw_cfg_of_match);
 
-static struct driver_d qemu_fw_cfg_drv = {
+static struct driver qemu_fw_cfg_drv = {
 	.name = "fw_cfg",
 	.probe  = fw_cfg_probe,
 	.of_compatible = of_match_ptr(qemu_fw_cfg_of_match),

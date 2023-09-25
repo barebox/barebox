@@ -370,9 +370,45 @@ JSMN_API void jsmn_init(jsmn_parser *parser) {
 	parser->toksuper = -1;
 }
 
+/**
+ * Parse JSON string and fill tokens into self-allocated buffer.
+ */
+JSMN_API jsmntok_t *jsmn_parse_alloc(const char *js, const size_t len,
+				     unsigned int *num_tokens)
+{
+
+	ssize_t token_count;
+	jsmn_parser parser;
+	jsmntok_t *tokens;
+	int ret;
+
+	jsmn_init(&parser);
+
+	/* Figure out how many tokens we need. */
+	ret = jsmn_parse(&parser, js, len, NULL, 0);
+	if (ret < 0)
+		return NULL;
+
+	token_count = ret;
+
+	tokens = kmalloc_array(token_count, sizeof(jsmntok_t), GFP_KERNEL);
+	if (!tokens)
+		return NULL;
+
+	jsmn_init(&parser);
+	ret = jsmn_parse(&parser, js, len, tokens, token_count);
+	if (ret < 0) {
+		free(tokens);
+		return NULL;
+	}
+
+	if (num_tokens)
+		*num_tokens = ret;
+	return tokens;
+}
 JSMN_API bool jsmn_eq(const char *val, const char *json, const jsmntok_t *token)
 {
-	size_t token_size = token->end - token->start;
+	size_t token_size = jsmn_token_size(token);
 	return strlen(val) == token_size
 		&& strncmp(json + token->start, val, token_size) == 0;
 }
@@ -380,6 +416,18 @@ JSMN_API bool jsmn_eq(const char *val, const char *json, const jsmntok_t *token)
 JSMN_API bool jsmn_str_eq(const char *str, const char *json, const jsmntok_t *token)
 {
 	return token->type == JSMN_STRING && jsmn_eq(str, json, token);
+}
+
+static bool jsmn_case_eq(const char *val, const char *json, const jsmntok_t *token)
+{
+	size_t token_size = jsmn_token_size(token);
+	return strlen(val) == token_size
+		&& strncasecmp(json + token->start, val, token_size) == 0;
+}
+
+JSMN_API bool jsmn_strcase_eq(const char *str, const char *json, const jsmntok_t *token)
+{
+	return token->type == JSMN_STRING && jsmn_case_eq(str, json, token);
 }
 
 JSMN_API const jsmntok_t *jsmn_skip_value(const jsmntok_t *tokens)
@@ -435,7 +483,7 @@ JSMN_API const jsmntok_t *jsmn_locate(const char *path[], const char *json,
 	return tokens;
 }
 
-JSMN_API char *jsmn_strcpy(const char *path[], const char *json,
+JSMN_API char *jsmn_strdup(const char *path[], const char *json,
 			   const jsmntok_t *tokens)
 {
 	const jsmntok_t *node;
@@ -446,7 +494,7 @@ JSMN_API char *jsmn_strcpy(const char *path[], const char *json,
 	if (!node || node->type != JSMN_STRING)
 		return NULL;
 
-	value_size = node->end - node->start;
+	value_size = jsmn_token_size(node);
 	value = malloc(value_size + 1);
 	if (value) {
 		strncpy(value, json + node->start, value_size);

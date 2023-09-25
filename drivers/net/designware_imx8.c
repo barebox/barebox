@@ -186,7 +186,7 @@ static __maybe_unused struct of_device_id eqos_imx8_ids[] = {
 };
 MODULE_DEVICE_TABLE(of, eqos_imx8_ids);
 
-static struct driver_d eqos_imx8_driver = {
+static struct driver eqos_imx8_driver = {
 	.name = "eqos-imx8",
 	.probe = eqos_probe_imx8,
 	.remove = eqos_remove_imx8,

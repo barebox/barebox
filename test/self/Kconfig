@@ -97,4 +97,8 @@ config SELFTEST_REGULATOR
 	depends on REGULATOR && OFDEVICE
 	select OF_OVERLAY
 
+config SELFTEST_TEST_COMMAND
+	bool "test command selftest"
+	depends on CMD_TEST
+
 endif

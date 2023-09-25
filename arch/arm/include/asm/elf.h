@@ -22,6 +22,7 @@ typedef struct user_fp elf_fpregset_t;
 #endif
 
 #define EM_ARM	40
+#define EM_AARCH64	183
 #define EF_ARM_APCS26 0x08
 #define EF_ARM_SOFT_FLOAT 0x200
 #define EF_ARM_EABI_MASK 0xFF000000
@@ -44,7 +45,11 @@ typedef struct user_fp elf_fpregset_t;
 #else
 #define ELF_DATA	ELFDATA2LSB
 #endif
+#ifdef CONFIG_CPU_64
+#define ELF_ARCH	EM_AARCH64
+#else
 #define ELF_ARCH	EM_ARM
+#endif
 
 #ifdef __KERNEL__
 #ifndef __ASSEMBLY__

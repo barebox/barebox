@@ -449,6 +449,77 @@ static inline int is_valid_ether_addr(const u8 *addr)
 	return !is_multicast_ether_addr(addr) && !is_zero_ether_addr(addr);
 }
 
+/**
+ * ether_addr_to_u64 - Convert an Ethernet address into a u64 value.
+ * @addr: Pointer to a six-byte array containing the Ethernet address
+ *
+ * Return a u64 value of the address
+ */
+static inline u64 ether_addr_to_u64(const u8 *addr)
+{
+	u64 u = 0;
+	int i;
+
+	for (i = 0; i < ETH_ALEN; i++)
+		u = u << 8 | addr[i];
+
+	return u;
+}
+
+/**
+ * u64_to_ether_addr - Convert a u64 to an Ethernet address.
+ * @u: u64 to convert to an Ethernet MAC address
+ * @addr: Pointer to a six-byte array to contain the Ethernet address
+ */
+static inline void u64_to_ether_addr(u64 u, u8 *addr)
+{
+	int i;
+
+	for (i = ETH_ALEN - 1; i >= 0; i--) {
+		addr[i] = u & 0xff;
+		u = u >> 8;
+	}
+}
+
+/**
+ * eth_addr_dec - Decrement the given MAC address
+ *
+ * @addr: Pointer to a six-byte array containing Ethernet address to decrement
+ */
+static inline void eth_addr_dec(u8 *addr)
+{
+	u64 u = ether_addr_to_u64(addr);
+
+	u--;
+	u64_to_ether_addr(u, addr);
+}
+
+/**
+ * eth_addr_inc() - Increment the given MAC address.
+ * @addr: Pointer to a six-byte array containing Ethernet address to increment.
+ */
+static inline void eth_addr_inc(u8 *addr)
+{
+	u64 u = ether_addr_to_u64(addr);
+
+	u++;
+	u64_to_ether_addr(u, addr);
+}
+
+/**
+ * eth_addr_add() - Add (or subtract) an offset to/from the given MAC address.
+ *
+ * @offset: Offset to add.
+ * @addr: Pointer to a six-byte array containing Ethernet address to increment.
+ */
+static inline void eth_addr_add(u8 *addr, long offset)
+{
+	u64 u = ether_addr_to_u64(addr);
+
+	u += offset;
+	u64_to_ether_addr(u, addr);
+}
+
 typedef void rx_handler_f(void *ctx, char *packet, unsigned int len);
 
 struct eth_device *eth_get_byname(const char *name);

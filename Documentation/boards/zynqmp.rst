@@ -11,13 +11,13 @@ Currently, Barebox only supports booting as a second stage boot loader from an
 SD-card. It relies on the FSBL_ to initialize the base system including sdram
 setup and pin muxing.
 
-The ZynqMP defconfig supports the ZCU104 reference board. Use it to build the
+The ZynqMP defconfig supports the ZCU102/104/106 reference board. Use it to build the
 Barebox image::
 
    make ARCH=arm64 zynqmp_defconfig
    make ARCH=arm64
 
-.. note:: The resulting image ``images/barebox-zynqmp-zcu104.img`` is **not** an image
+.. note:: The resulting image ``images/barebox-zynqmp-zcuX.img`` is **not** an image
   that can directly be booted on the ZynqMP.
 
 For a bootable BOOT.BIN image, you also need to build the FSBL_ and a ZynqMP

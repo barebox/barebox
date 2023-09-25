@@ -14,6 +14,7 @@
 #define LINUX_HWRANDOM_H_
 
 #include <linux/list.h>
+#include <driver.h>
 
 /**
  * struct hwrng - Hardware Random Number Generator driver

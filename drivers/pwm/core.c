@@ -44,6 +44,15 @@ struct pwm_device {
 
 static LIST_HEAD(pwm_list);
 
+void pwm_print(void)
+{
+	struct pwm_device *pwm;
+
+	list_for_each_entry(pwm, &pwm_list, node)
+		printf("%s\n", pwm->chip->devname);
+}
+EXPORT_SYMBOL(pwm_print);
+
 static struct pwm_device *_find_pwm(const char *devname)
 {
 	struct pwm_device *pwm;

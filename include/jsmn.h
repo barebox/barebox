@@ -84,11 +84,25 @@ JSMN_API void jsmn_init(jsmn_parser *parser);
 JSMN_API int jsmn_parse(jsmn_parser *parser, const char *js, const size_t len,
 			jsmntok_t *tokens, const unsigned int num_tokens);
 
+/**
+ * Like jsmn_parse, but allocates tokens dynamically.
+ */
+JSMN_API jsmntok_t *jsmn_parse_alloc(const char *js, const size_t len,
+				     unsigned int *num_tokens);
+
+static inline int jsmn_token_size(const jsmntok_t *token)
+{
+	return token->end - token->start;
+}
+
 /** Returns `true` if `token` is a string and equal to `str`. */
 JSMN_API bool jsmn_str_eq(const char *str, const char *json, const jsmntok_t *token);
 
 /** Returns `true` if `token` is to `str`. */
 JSMN_API bool jsmn_eq(const char *val, const char *json, const jsmntok_t *token);
+
+/** Returns `true` if `token` is equal to `str`, ignoring case. */
+JSMN_API bool jsmn_strcase_eq(const char *str, const char *json, const jsmntok_t *token);
 
 /** Returns the token after the value at `tokens[0]`. */
 JSMN_API const jsmntok_t *jsmn_skip_value(const jsmntok_t *tokens);
@@ -139,7 +153,7 @@ JSMN_API const jsmntok_t *jsmn_locate(const char *path[], const char *json,
  * value does not exist or is not a string. The caller takes ownership of the
  * pointer returned.
  */
-JSMN_API char *jsmn_strcpy(const char *path[], const char *json, const jsmntok_t *tokens);
+JSMN_API char *jsmn_strdup(const char *path[], const char *json, const jsmntok_t *tokens);
 
 #ifdef __cplusplus
 }

@@ -78,11 +78,56 @@ static int string_comp(const char *left_op, const char *right_op, bool bash_test
 	return strcmp(left_op, right_op);
 }
 
+static int parse_number(const char *str, long *num, bool signedcmp)
+{
+	int ret;
+
+	ret = signedcmp ? kstrtol(str, 0, num) : kstrtoul(str, 0, num);
+	if (ret)
+		printf("test: %s: integer expression expected\n", str);
+
+	return ret;
+}
+
+#define __do_arith_cmp(x, op, y, signedcmp) \
+	((signedcmp) ? (long)(x) op (long)(y) : (x) op (y))
+
+static int arith_comp(const char *a_str, const char *b_str, int op)
+{
+	ulong a, b;
+	bool signedcmp = a_str[0] == '-' || b_str[0] == '-';
+	int ret;
+
+	ret = parse_number(a_str, &a, signedcmp);
+	if (ret)
+		return ret;
+
+	ret = parse_number(b_str, &b, signedcmp);
+	if (ret)
+		return ret;
+
+	switch (op) {
+	case OPT_ARITH_EQUAL:
+		return __do_arith_cmp(a, ==, b, signedcmp);
+	case OPT_ARITH_NOT_EQUAL:
+		return __do_arith_cmp(a, !=, b, signedcmp);
+	case OPT_ARITH_GREATER_EQUAL:
+		return __do_arith_cmp(a, >=, b, signedcmp);
+	case OPT_ARITH_GREATER_THAN:
+		return __do_arith_cmp(a,  >, b, signedcmp);
+	case OPT_ARITH_LESS_EQUAL:
+		return __do_arith_cmp(a, <=, b, signedcmp);
+	case OPT_ARITH_LESS_THAN:
+		return __do_arith_cmp(a,  <, b, signedcmp);
+	}
+
+	return -EINVAL;
+}
+
 static int do_test(int argc, char *argv[])
 {
 	char **ap;
 	int left, adv, expr, last_expr, neg, last_cmp, opt, zero;
-	ulong a, b;
 	struct stat statbuf;
 	bool bash_test = false;
 
@@ -199,9 +244,8 @@ static int do_test(int argc, char *argv[])
 			if (left < 3)
 				break;
 
-			a = simple_strtol(ap[0], NULL, 0);
-			b = simple_strtol(ap[2], NULL, 0);
-			switch (parse_opt(ap[1])) {
+			opt = parse_opt(ap[1]);
+			switch (opt) {
 			case OPT_EQUAL:
 			case OPT_EQUAL_BASH:
 				expr = string_comp(ap[0], ap[2], bash_test) == 0;
@@ -210,22 +254,14 @@ static int do_test(int argc, char *argv[])
 				expr = string_comp(ap[0], ap[2], bash_test) != 0;
 				break;
 			case OPT_ARITH_EQUAL:
-				expr = a == b;
-				break;
 			case OPT_ARITH_NOT_EQUAL:
-				expr = a != b;
-				break;
 			case OPT_ARITH_LESS_THAN:
-				expr = a < b;
-				break;
 			case OPT_ARITH_LESS_EQUAL:
-				expr = a <= b;
-				break;
 			case OPT_ARITH_GREATER_THAN:
-				expr = a > b;
-				break;
 			case OPT_ARITH_GREATER_EQUAL:
-				expr = a >= b;
+				expr = arith_comp(ap[0], ap[2], opt);
+				if (expr < 0)
+					return 1;
 				break;
 			default:
 				expr = 1;

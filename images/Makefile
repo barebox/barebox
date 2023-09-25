@@ -57,9 +57,9 @@ $(pbl-lds): $(obj)/../arch/$(SRCARCH)/lib/pbl.lds.S FORCE
 	$(call if_changed_dep,cpp_lds_S)
 
 quiet_cmd_elf__ ?= LD      $@
-      cmd_elf__ ?= $(LD) $(LDFLAGS_pbl) --gc-sections		\
+      cmd_elf__ ?= $(LD) $(LDFLAGS_$(patsubst .%,%,$(suffix $(@F)))) 	\
 		-e $(2) -Map $@.map $(LDFLAGS_$(@F)) -o $@		\
-		--defsym=__pbl_board_entry=$(2)  			\
+		--gc-sections --defsym=__pbl_board_entry=$(2)  		\
 		-T $(pbl-lds)						\
 		--whole-archive $(BAREBOX_PBL_OBJS) $(obj)/piggy.o	\
 		$(obj)/sha_sum.o
@@ -67,6 +67,10 @@ quiet_cmd_elf__ ?= LD      $@
 PBL_CPPFLAGS	+= -fdata-sections -ffunction-sections
 
 $(obj)/%.pbl: $(pbl-lds) $(BAREBOX_PBL_OBJS) $(obj)/piggy.o $(obj)/sha_sum.o FORCE
+	$(call if_changed,elf__,$(*F))
+	$(call cmd,prelink__)
+
+$(obj)/%.elf: $(pbl-lds) $(BAREBOX_PBL_OBJS) $(obj)/piggy.o $(obj)/sha_sum.o FORCE
 	$(call if_changed,elf__,$(*F))
 	$(call cmd,prelink__)
 
@@ -218,7 +222,7 @@ $(flash-link): $(link-dest) FORCE
 $(flash-list): $(image-y-path)
 	@for i in $^; do if [ -s $$i ]; then echo $$i; fi; done > $@
 
-clean-files := *.pbl *.pblb *.map start_*.imximg *.img barebox.z start_*.kwbimg \
+clean-files := *.pbl *.pblb *.elf *.map start_*.imximg *.img barebox.z start_*.kwbimg \
 	start_*.kwbuartimg *.socfpgaimg *.mlo *.t20img *.t20img.cfg *.t30img \
 	*.t30img.cfg *.t124img *.t124img.cfg *.mlospi *.mlo *.mxsbs *.mxssd *.rkimg \
 	start_*.simximg start_*.usimximg *.zynqimg *.image *.swapped *.missing-firmware

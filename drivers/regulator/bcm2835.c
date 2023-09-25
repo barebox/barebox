@@ -122,7 +122,7 @@ static int regulator_bcm2835_probe(struct device *dev)
 		rb->rdev.desc = &rb->rdesc;
 		rb->rdev.dev = dev;
 
-		ret = dev_regulator_register(&rb->rdev, rb->devname, NULL);
+		ret = dev_regulator_register(&rb->rdev, rb->devname);
 		if (ret)
 			return ret;
 	}

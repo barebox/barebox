@@ -13,24 +13,20 @@
 
 static LIST_HEAD(regulator_list);
 
-struct regulator_internal {
-	struct list_head list;
-	struct device_node *node;
-	struct regulator_dev *rdev;
-	int enable_count;
-	int enable_time_us;
-	int min_uv;
-	int max_uv;
-	char *name;
-	const char *supply;
-	struct list_head consumer_list;
-};
-
 struct regulator {
-	struct regulator_internal *ri;
+	struct regulator_dev *rdev;
+	struct regulator_dev *rdev_consumer;
 	struct list_head list;
 	struct device *dev;
 };
+
+const char *rdev_get_name(struct regulator_dev *rdev)
+{
+	if (rdev->name)
+		return rdev->name;
+
+	return "";
+}
 
 static int regulator_map_voltage(struct regulator_dev *rdev, int min_uV,
 				 int max_uV)
@@ -38,16 +34,18 @@ static int regulator_map_voltage(struct regulator_dev *rdev, int min_uV,
 	if (rdev->desc->ops->list_voltage == regulator_list_voltage_linear)
 		return regulator_map_voltage_linear(rdev, min_uV, max_uV);
 
-	return -ENOSYS;
+	if (rdev->desc->ops->list_voltage == regulator_list_voltage_linear_range)
+		return regulator_map_voltage_linear_range(rdev, min_uV, max_uV);
+
+	return regulator_map_voltage_iterate(rdev, min_uV, max_uV);
 }
 
-static int regulator_enable_internal(struct regulator_internal *ri)
+static int regulator_enable_rdev(struct regulator_dev *rdev)
 {
-	struct regulator_dev *rdev = ri->rdev;
 	int ret;
 
-	if (ri->enable_count) {
-		ri->enable_count++;
+	if (rdev->enable_count) {
+		rdev->enable_count++;
 		return 0;
 	}
 
@@ -59,30 +57,29 @@ static int regulator_enable_internal(struct regulator_internal *ri)
 	if (ret)
 		return ret;
 
-	ret = rdev->desc->ops->enable(ri->rdev);
+	ret = rdev->desc->ops->enable(rdev);
 	if (ret) {
 		regulator_disable(rdev->supply);
 		return ret;
 	}
 
-	if (ri->enable_time_us)
-		udelay(ri->enable_time_us);
+	if (rdev->enable_time_us)
+		udelay(rdev->enable_time_us);
 
-	ri->enable_count++;
+	rdev->enable_count++;
 
 	return 0;
 }
 
-static int regulator_disable_internal(struct regulator_internal *ri)
+static int regulator_disable_rdev(struct regulator_dev *rdev)
 {
-	struct regulator_dev *rdev = ri->rdev;
 	int ret;
 
-	if (!ri->enable_count)
+	if (!rdev->enable_count)
 		return -EINVAL;
 
-	if (ri->enable_count > 1) {
-		ri->enable_count--;
+	if (rdev->enable_count > 1) {
+		rdev->enable_count--;
 		return 0;
 	}
 
@@ -97,15 +94,14 @@ static int regulator_disable_internal(struct regulator_internal *ri)
 	if (ret)
 		return ret;
 
-	ri->enable_count--;
+	rdev->enable_count--;
 
-	return regulator_disable(ri->rdev->supply);
+	return regulator_disable(rdev->supply);
 }
 
-static int regulator_set_voltage_internal(struct regulator_internal *ri,
+static int regulator_set_voltage_rdev(struct regulator_dev *rdev,
 					  int min_uV, int max_uV)
 {
-	struct regulator_dev *rdev = ri->rdev;
 	const struct regulator_ops *ops = rdev->desc->ops;
 	unsigned int selector;
 	int best_val = 0;
@@ -129,6 +125,32 @@ static int regulator_set_voltage_internal(struct regulator_internal *ri,
 	return -ENOSYS;
 }
 
+static int regulator_get_voltage_rdev(struct regulator_dev *rdev)
+{
+	int sel, ret;
+
+	if (rdev->desc->ops->get_voltage_sel) {
+		sel = rdev->desc->ops->get_voltage_sel(rdev);
+		if (sel < 0)
+			return sel;
+		ret = rdev->desc->ops->list_voltage(rdev, sel);
+	} else if (rdev->desc->ops->get_voltage) {
+		ret = rdev->desc->ops->get_voltage(rdev);
+	} else if (rdev->desc->ops->list_voltage) {
+		ret = rdev->desc->ops->list_voltage(rdev, 0);
+	} else if (rdev->desc->fixed_uV && (rdev->desc->n_voltages == 1)) {
+		ret = rdev->desc->fixed_uV;
+	} else if (rdev->min_uv && rdev->min_uv == rdev->max_uv) {
+		ret = rdev->min_uv;
+	} else if (rdev->supply) {
+		ret = regulator_get_voltage(rdev->supply);
+	} else {
+		return -EINVAL;
+	}
+
+	return ret;
+}
+
 static int regulator_resolve_supply(struct regulator_dev *rdev)
 {
 	struct regulator *supply;
@@ -141,7 +163,7 @@ static int regulator_resolve_supply(struct regulator_dev *rdev)
 	if (!supply_name)
 		return 0;
 
-	dev_dbg(rdev->dev, "resolving %s\n", supply_name);
+	rdev_dbg(rdev, "resolving %s\n", supply_name);
 
 	supply = regulator_get(rdev->dev, supply_name);
 	if (IS_ERR(supply)) {
@@ -157,101 +179,160 @@ static int regulator_resolve_supply(struct regulator_dev *rdev)
 		 * we couldn't. If you want to get rid of this warning, consider
 		 * migrating your platform to have deep probe support.
 		 */
-		dev_warn(rdev->dev, "Failed to get '%s' regulator (ignored).\n",
+		rdev_warn(rdev, "Failed to get '%s' regulator (ignored).\n",
 			 supply_name);
 		return 0;
 	}
 
+	if (supply)
+		supply->rdev_consumer = rdev;
+
 	rdev->supply = supply;
+
 	return 0;
 }
 
-static struct regulator_internal * __regulator_register(struct regulator_dev *rd, const char *name)
+static int regulator_init_voltage(struct regulator_dev *rdev)
 {
-	struct regulator_internal *ri;
+	int target_min, target_max, current_uV, ret;
+
+	if (!rdev->min_uv || !rdev->max_uv)
+		return 0;
+
+	current_uV = regulator_get_voltage_rdev(rdev);
+	if (current_uV < 0) {
+		/* This regulator can't be read and must be initialized */
+		rdev_info(rdev, "Setting %d-%duV\n", rdev->min_uv, rdev->max_uv);
+		regulator_set_voltage_rdev(rdev, rdev->min_uv, rdev->max_uv);
+		current_uV = regulator_get_voltage_rdev(rdev);
+	}
+
+	if (current_uV < 0) {
+		if (current_uV != -EPROBE_DEFER)
+			rdev_err(rdev,
+				 "failed to get the current voltage: %pe\n",
+				 ERR_PTR(current_uV));
+		return current_uV;
+	}
+
+	/*
+	 * If we're below the minimum voltage move up to the
+	 * minimum voltage, if we're above the maximum voltage
+	 * then move down to the maximum.
+	 */
+	target_min = current_uV;
+	target_max = current_uV;
+
+	if (current_uV < rdev->min_uv) {
+		target_min = rdev->min_uv;
+		target_max = rdev->min_uv;
+	}
+
+	if (current_uV > rdev->max_uv) {
+		target_min = rdev->max_uv;
+		target_max = rdev->max_uv;
+	}
+
+	if (target_min != current_uV || target_max != current_uV) {
+		rdev_info(rdev, "Bringing %duV into %d-%duV\n",
+			  current_uV, target_min, target_max);
+		ret = regulator_set_voltage_rdev(rdev, target_min, target_max);
+		if (ret < 0) {
+			rdev_err(rdev,
+				"failed to apply %d-%duV constraint: %pe\n",
+				target_min, target_max, ERR_PTR(ret));
+			return ret;
+		}
+	}
+
+	return 0;
+}
+
+static int __regulator_register(struct regulator_dev *rdev, const char *name)
+{
 	int ret;
 
-	ri = xzalloc(sizeof(*ri));
-	ri->rdev = rd;
+	INIT_LIST_HEAD(&rdev->consumer_list);
 
-	INIT_LIST_HEAD(&ri->consumer_list);
-
-	list_add_tail(&ri->list, &regulator_list);
+	list_add_tail(&rdev->list, &regulator_list);
 
 	if (name)
-		ri->name = xstrdup(name);
+		rdev->name = xstrdup(name);
 
-	if (rd->boot_on || rd->always_on) {
-		ret = regulator_resolve_supply(ri->rdev);
+	ret = regulator_init_voltage(rdev);
+	if (ret)
+		goto err;
+
+	if (rdev->boot_on || rdev->always_on) {
+		ret = regulator_resolve_supply(rdev);
 		if (ret < 0)
 			goto err;
 
-		ret = regulator_enable_internal(ri);
+		ret = regulator_enable_rdev(rdev);
 		if (ret && ret != -ENOSYS)
 			goto err;
 	}
 
-	return ri;
+	return 0;
 err:
-	list_del(&ri->list);
-	free(ri->name);
-	free(ri);
+	list_del(&rdev->list);
+	free((char *)rdev->name);
 
-	return ERR_PTR(ret);
+	return ret;
 }
 
 
 #ifdef CONFIG_OFDEVICE
 /*
  * of_regulator_register - register a regulator corresponding to a device_node
- * @rd:		the regulator device providing the ops
+ * rdev:		the regulator device providing the ops
  * @node:       the device_node this regulator corresponds to
  *
  * Return: 0 for success or a negative error code
  */
-int of_regulator_register(struct regulator_dev *rd, struct device_node *node)
+int of_regulator_register(struct regulator_dev *rdev, struct device_node *node)
 {
-	struct regulator_internal *ri;
 	const char *name;
+	int ret;
 
-	if (!rd || !node)
+	if (!rdev || !node)
 		return -EINVAL;
 
-	rd->boot_on = of_property_read_bool(node, "regulator-boot-on");
-	rd->always_on = of_property_read_bool(node, "regulator-always-on");
+	rdev->boot_on = of_property_read_bool(node, "regulator-boot-on");
+	rdev->always_on = of_property_read_bool(node, "regulator-always-on");
 
 	name = of_get_property(node, "regulator-name", NULL);
 	if (!name)
 		name = node->name;
 
-	ri = __regulator_register(rd, name);
-	if (IS_ERR(ri))
-		return PTR_ERR(ri);
+	rdev->node = node;
+	node->dev = rdev->dev;
 
-	ri->node = node;
-	node->dev = rd->dev;
+	if (rdev->desc->off_on_delay)
+		rdev->enable_time_us = rdev->desc->off_on_delay;
 
-	if (rd->desc->off_on_delay)
-		ri->enable_time_us = rd->desc->off_on_delay;
-
-	if (rd->desc->fixed_uV && rd->desc->n_voltages == 1)
-		ri->min_uv = ri->max_uv = rd->desc->fixed_uV;
+	if (rdev->desc->fixed_uV && rdev->desc->n_voltages == 1)
+		rdev->min_uv = rdev->max_uv = rdev->desc->fixed_uV;
 
 	of_property_read_u32(node, "regulator-enable-ramp-delay",
-			&ri->enable_time_us);
+			&rdev->enable_time_us);
 	of_property_read_u32(node, "regulator-min-microvolt",
-			&ri->min_uv);
+			&rdev->min_uv);
 	of_property_read_u32(node, "regulator-max-microvolt",
-			&ri->max_uv);
+			&rdev->max_uv);
+
+	ret = __regulator_register(rdev, name);
+	if (ret)
+		return ret;
 
 	return 0;
 }
 
-static struct regulator_internal *of_regulator_get(struct device *dev,
+static struct regulator_dev *of_regulator_get(struct device *dev,
 						   const char *supply)
 {
 	char *propname;
-	struct regulator_internal *ri;
+	struct regulator_dev *rdev;
 	struct device_node *node, *node_parent;
 	int ret;
 
@@ -270,7 +351,7 @@ static struct regulator_internal *of_regulator_get(struct device *dev,
 	if (!of_get_property(dev->of_node, propname, NULL)) {
 		dev_dbg(dev, "No %s-supply node found, using dummy regulator\n",
 				supply);
-		ri = NULL;
+		rdev = NULL;
 		goto out;
 	}
 
@@ -281,7 +362,7 @@ static struct regulator_internal *of_regulator_get(struct device *dev,
 	node = of_parse_phandle(dev->of_node, propname, 0);
 	if (!node) {
 		dev_dbg(dev, "No %s node found\n", propname);
-		ri = ERR_PTR(-EINVAL);
+		rdev = ERR_PTR(-EINVAL);
 		goto out;
 	}
 
@@ -298,16 +379,16 @@ static struct regulator_internal *of_regulator_get(struct device *dev,
 		    of_get_property(node_parent, "barebox,allow-dummy-supply", NULL)) {
 			dev_dbg(dev, "Allow use of dummy regulator for " \
 				"%s-supply\n", supply);
-			ri = NULL;
+			rdev = NULL;
 			goto out;
 		}
 
-		ri = ERR_PTR(ret);
+		rdev = ERR_PTR(ret);
 		goto out;
 	}
 
-	list_for_each_entry(ri, &regulator_list, list) {
-		if (ri->node == node) {
+	list_for_each_entry(rdev, &regulator_list, list) {
+		if (rdev->node == node) {
 			dev_dbg(dev, "Using %s regulator from %pOF\n",
 					propname, node);
 			goto out;
@@ -319,54 +400,54 @@ static struct regulator_internal *of_regulator_get(struct device *dev,
 	 * added in future initcalls, so, instead of reporting a
 	 * complete failure report probe deferral
 	 */
-	ri = ERR_PTR(-EPROBE_DEFER);
+	rdev = ERR_PTR(-EPROBE_DEFER);
 out:
 	free(propname);
 
-	return ri;
+	return rdev;
 }
 #else
-static struct regulator_internal *of_regulator_get(struct device *dev,
+static struct regulator_dev *of_regulator_get(struct device *dev,
 						   const char *supply)
 {
 	return NULL;
 }
 #endif
 
-int dev_regulator_register(struct regulator_dev *rd, const char * name, const char* supply)
+int dev_regulator_register(struct regulator_dev *rdev, const char *name)
 {
-	struct regulator_internal *ri;
+	int ret;
 
-	ri = __regulator_register(rd, name);
-
-	ri->supply = supply;
+	ret = __regulator_register(rdev, name);
+	if (ret)
+		return ret;
 
 	return 0;
 }
 
-static struct regulator_internal *dev_regulator_get(struct device *dev,
-						    const char *supply)
+static struct regulator_dev *dev_regulator_get(struct device *dev,
+					       const char *supply)
 {
-	struct regulator_internal *ri;
-	struct regulator_internal *ret = NULL;
+	struct regulator_dev *rdev;
+	struct regulator_dev *ret = NULL;
 	int match, best = 0;
 	const char *dev_id = dev ? dev_name(dev) : NULL;
 
-	list_for_each_entry(ri, &regulator_list, list) {
+	list_for_each_entry(rdev, &regulator_list, list) {
 		match = 0;
-		if (ri->name) {
-			if (!dev_id || strcmp(ri->name, dev_id))
+		if (rdev->name) {
+			if (!dev_id || strcmp(rdev->name, dev_id))
 				continue;
 			match += 2;
 		}
-		if (ri->supply) {
-			if (!supply || strcmp(ri->supply, supply))
+		if (rdev->desc->supply_name) {
+			if (!supply || strcmp(rdev->desc->supply_name, supply))
 				continue;
 			match += 1;
 		}
 
 		if (match > best) {
-			ret = ri;
+			ret = rdev;
 			if (match != 3)
 				best = match;
 			else
@@ -389,62 +470,63 @@ static struct regulator_internal *dev_regulator_get(struct device *dev,
  */
 struct regulator *regulator_get(struct device *dev, const char *supply)
 {
-	struct regulator_internal *ri = NULL;
+	struct regulator_dev *rdev = NULL;
 	struct regulator *r;
 	int ret;
 
 	if (dev->of_node && supply) {
-		ri = of_regulator_get(dev, supply);
-		if (IS_ERR(ri))
-			return ERR_CAST(ri);
+		rdev = of_regulator_get(dev, supply);
+		if (IS_ERR(rdev))
+			return ERR_CAST(rdev);
 	}
 
-	if (!ri) {
-		ri = dev_regulator_get(dev, supply);
-		if (IS_ERR(ri))
-			return ERR_CAST(ri);
+	if (!rdev) {
+		rdev = dev_regulator_get(dev, supply);
+		if (IS_ERR(rdev))
+			return ERR_CAST(rdev);
 	}
 
-	if (!ri)
+	if (!rdev)
 		return NULL;
 
-	ret = regulator_resolve_supply(ri->rdev);
+	ret = regulator_resolve_supply(rdev);
 	if (ret < 0)
 		return ERR_PTR(ret);
 
 	r = xzalloc(sizeof(*r));
-	r->ri = ri;
+	r->rdev = rdev;
 	r->dev = dev;
 
-	list_add_tail(&r->list, &ri->consumer_list);
+	list_add_tail(&r->list, &rdev->consumer_list);
 
 	return r;
 }
 
-static struct regulator_internal *regulator_by_name(const char *name)
+static struct regulator_dev *regulator_by_name(const char *name)
 {
-	struct regulator_internal *ri;
+	struct regulator_dev *rdev;
 
-	list_for_each_entry(ri, &regulator_list, list)
-		if (ri->name && !strcmp(ri->name, name))
-			return ri;
+	list_for_each_entry(rdev, &regulator_list, list) {
+		if (rdev->name && !strcmp(rdev->name, name))
+			return rdev;
+	}
 
 	return NULL;
 }
 
 struct regulator *regulator_get_name(const char *name)
 {
-	struct regulator_internal *ri;
+	struct regulator_dev *rdev;
 	struct regulator *r;
 
-	ri = regulator_by_name(name);
-	if (!ri)
+	rdev = regulator_by_name(name);
+	if (!rdev)
 		return ERR_PTR(-ENODEV);
 
 	r = xzalloc(sizeof(*r));
-	r->ri = ri;
+	r->rdev = rdev;
 
-	list_add_tail(&r->list, &ri->consumer_list);
+	list_add_tail(&r->list, &rdev->consumer_list);
 
 	return r;
 }
@@ -463,7 +545,7 @@ int regulator_enable(struct regulator *r)
 	if (!r)
 		return 0;
 
-	return regulator_enable_internal(r->ri);
+	return regulator_enable_rdev(r->rdev);
 }
 
 /*
@@ -480,7 +562,7 @@ int regulator_disable(struct regulator *r)
 	if (!r)
 		return 0;
 
-	return regulator_disable_internal(r->ri);
+	return regulator_disable_rdev(r->rdev);
 }
 
 int regulator_set_voltage(struct regulator *r, int min_uV, int max_uV)
@@ -488,7 +570,7 @@ int regulator_set_voltage(struct regulator *r, int min_uV, int max_uV)
 	if (!r)
 		return 0;
 
-	return regulator_set_voltage_internal(r->ri, min_uV, max_uV);
+	return regulator_set_voltage_rdev(r->rdev, min_uV, max_uV);
 }
 
 /**
@@ -632,50 +714,29 @@ EXPORT_SYMBOL_GPL(regulator_bulk_free);
 
 int regulator_get_voltage(struct regulator *regulator)
 {
-	struct regulator_internal *ri;
-	struct regulator_dev *rdev;
-	int sel, ret;
-
 	if (!regulator)
 		return -EINVAL;
 
-	ri = regulator->ri;
-	rdev = ri->rdev;
-
-	if (rdev->desc->ops->get_voltage_sel) {
-		sel = rdev->desc->ops->get_voltage_sel(rdev);
-		if (sel < 0)
-			return sel;
-		ret = rdev->desc->ops->list_voltage(rdev, sel);
-	} else if (rdev->desc->ops->get_voltage) {
-		ret = rdev->desc->ops->get_voltage(rdev);
-	} else if (rdev->desc->ops->list_voltage) {
-		ret = rdev->desc->ops->list_voltage(rdev, 0);
-	} else if (rdev->desc->fixed_uV && (rdev->desc->n_voltages == 1)) {
-		ret = rdev->desc->fixed_uV;
-	} else if (ri->min_uv && ri->min_uv == ri->max_uv) {
-		ret = ri->min_uv;
-	} else if (rdev->supply) {
-		ret = regulator_get_voltage(rdev->supply);
-	} else {
-		return -EINVAL;
-	}
-
-	return ret;
+	return regulator_get_voltage_rdev(regulator->rdev);
 }
 EXPORT_SYMBOL_GPL(regulator_get_voltage);
 
-static void regulator_print_one(struct regulator_internal *ri)
+static void regulator_print_one(struct regulator_dev *rdev, int level)
 {
 	struct regulator *r;
 
-	printf("%-20s %6d %10d %10d\n", ri->name, ri->enable_count, ri->min_uv, ri->max_uv);
+	if (!rdev)
+		return;
 
-	if (!list_empty(&ri->consumer_list)) {
-		printf(" consumers:\n");
+	printf("%*s%-*s %6d %10d %10d\n", level * 3, "",
+	       30 - level * 3,
+	       rdev->name, rdev->enable_count, rdev->min_uv, rdev->max_uv);
 
-		list_for_each_entry(r, &ri->consumer_list, list)
-			printf("   %s\n", r->dev ? dev_name(r->dev) : "none");
+	list_for_each_entry(r, &rdev->consumer_list, list) {
+		if (r->rdev_consumer)
+			regulator_print_one(r->rdev_consumer, level + 1);
+		else
+			printf("%*s%s\n", (level + 1) * 3, "", r->dev ? dev_name(r->dev) : "none");
 	}
 }
 
@@ -684,9 +745,11 @@ static void regulator_print_one(struct regulator_internal *ri)
  */
 void regulators_print(void)
 {
-	struct regulator_internal *ri;
+	struct regulator_dev *rdev;
 
-	printf("%-20s %6s %10s %10s\n", "name", "enable", "min_uv", "max_uv");
-	list_for_each_entry(ri, &regulator_list, list)
-		regulator_print_one(ri);
+	printf("%-30s %6s %10s %10s\n", "name", "enable", "min_uv", "max_uv");
+	list_for_each_entry(rdev, &regulator_list, list) {
+		if (!rdev->supply)
+			regulator_print_one(rdev, 0);
+	}
 }

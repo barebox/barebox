@@ -137,7 +137,7 @@ static int barebox_memory_areas_init(void)
 }
 device_initcall(barebox_memory_areas_init);
 
-__noreturn __no_sanitize_address void barebox_non_pbl_start(unsigned long membase,
+__noreturn __prereloc void barebox_non_pbl_start(unsigned long membase,
 		unsigned long memsize, void *boarddata)
 {
 	unsigned long endmem = membase + memsize;
@@ -245,7 +245,7 @@ void start(unsigned long membase, unsigned long memsize, void *boarddata);
  * First function in the uncompressed image. We get here from
  * the pbl. The stack already has been set up by the pbl.
  */
-void NAKED __no_sanitize_address __section(.text_entry) start(unsigned long membase,
+void NAKED __prereloc __section(.text_entry) start(unsigned long membase,
 		unsigned long memsize, void *boarddata)
 {
 	barebox_non_pbl_start(membase, memsize, boarddata);

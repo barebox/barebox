@@ -59,7 +59,7 @@ void pbl_barebox_break(void)
 /*
  * relocate binary to the currently running address
  */
-void relocate_to_current_adr(void)
+void __prereloc relocate_to_current_adr(void)
 {
 	unsigned long offset;
 	unsigned long __maybe_unused *dynsym, *dynend;

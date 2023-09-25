@@ -11,6 +11,7 @@ obj-y			+= strtox.o
 obj-y			+= kstrtox.o
 obj-y			+= vsprintf.o
 obj-$(CONFIG_KASAN)	+= kasan/
+obj-pbl-$(CONFIG_STACKPROTECTOR)	+= stackprot.o
 pbl-$(CONFIG_PBL_CONSOLE) += vsprintf.o
 obj-y			+= misc.o
 obj-$(CONFIG_PARAMETER)	+= parameter.o

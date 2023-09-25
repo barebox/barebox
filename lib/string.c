@@ -534,7 +534,7 @@ void *__default_memset(void * s, int c, size_t count)
 }
 EXPORT_SYMBOL(__default_memset);
 
-void __no_sanitize_address *__nokasan_default_memset(void * s, int c, size_t count)
+void __prereloc __no_sanitize_address *__nokasan_default_memset(void * s, int c, size_t count)
 {
 	char *xs = (char *) s;
 

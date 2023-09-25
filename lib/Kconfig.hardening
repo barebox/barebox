@@ -1,0 +1,108 @@
+menu "Hardening options"
+
+config STACK_GUARD_PAGE
+	bool "Place guard page to catch stack overflows"
+	depends on ARM && MMU
+	help
+	  When enabled, barebox places a faulting guard page to catch total
+	  stack usage exceeding CONFIG_STACK_SIZE. On overflows, that hit
+	  the reserved 4KiB, barebox will panic and report a stack overflow.
+	  The report may not always succeed if the stack overflow impacts
+	  operation of the exception handler.
+
+config STACKPROTECTOR
+	bool
+
+choice
+	prompt "Stack Protector buffer overflow detection"
+
+config STACKPROTECTOR_NONE
+	bool "None"
+
+config STACKPROTECTOR_STRONG
+	bool "Strong"
+	depends on $(cc-option,-fstack-protector-strong)
+	select STACKPROTECTOR
+	help
+	  This option turns on the "stack-protector" GCC feature. This
+	  feature puts, at the beginning of functions, a canary value on
+	  the stack just before the return address, and validates
+	  the value just before actually returning.  Stack based buffer
+	  overflows (that need to overwrite this return address) now also
+	  overwrite the canary, which gets detected and the attack is then
+	  neutralized via a kernel panic.
+
+	  Functions will have the stack-protector canary logic added in any
+	  of the following conditions:
+
+	  - local variable's address used as part of the right hand side of an
+	    assignment or function argument
+	  - local variable is an array (or union containing an array),
+	    regardless of array type or length
+	  - uses register local variables
+
+	  The canary will be a fixed value at first, but will be replaced by
+	  one generated from a hardware random number generator if available
+	  later on.
+
+config STACKPROTECTOR_ALL
+	bool "All"
+	depends on $(cc-option,-fstack-protector-all)
+	depends on COMPILE_TEST
+	select STACKPROTECTOR
+	help
+	  This pushes and verifies stack protector canaries on all functions,
+	  even those that don't need it. As this implies injection of a
+	  global variable dependency on every function, this option is useful
+	  for crashing functions called prior to prerelocation, which lack a
+	  __prereloc attribute. This is likely the only upside compared to
+	  the strong variant, so it's not selectable by default.
+
+endchoice
+
+choice
+	prompt "Stack Protector buffer overflow detection for PBL"
+
+config PBL_STACKPROTECTOR_NONE
+	bool "None"
+
+config PBL_STACKPROTECTOR_STRONG
+	bool "Strong"
+	depends on $(cc-option,-fstack-protector-strong)
+	select STACKPROTECTOR
+	help
+	  For PBL, This option turns on the "stack-protector" GCC feature. This
+	  feature puts, at the beginning of functions, a canary value on
+	  the stack just before the return address, and validates
+	  the value just before actually returning.  Stack based buffer
+	  overflows (that need to overwrite this return address) now also
+	  overwrite the canary, which gets detected and the attack is then
+	  neutralized via a kernel panic.
+
+	  Functions will have the stack-protector canary logic added in any
+	  of the following conditions:
+
+	  - local variable's address used as part of the right hand side of an
+	    assignment or function argument
+	  - local variable is an array (or union containing an array),
+	    regardless of array type or length
+	  - uses register local variables
+
+	  The canary is always a fixed value.
+
+config PBL_STACKPROTECTOR_ALL
+	bool "PBL"
+	depends on $(cc-option,-fstack-protector-strong)
+	depends on COMPILE_TEST
+	select STACKPROTECTOR
+	help
+	  This pushes and verifies stack protector canaries on all functions,
+	  even those that don't need it. As this implies injection of a
+	  global variable dependency on every function, this option is useful
+	  for crashing functions called prior to prerelocation, which lack a
+	  __prereloc attribute. This is likely the only upside compared to
+	  the strong variant.
+
+endchoice
+
+endmenu

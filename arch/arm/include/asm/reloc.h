@@ -12,7 +12,7 @@ unsigned long get_runtime_offset(void);
  * Get the offset of global variables when not running at the address we are
  * linked at.
  */
-static inline unsigned long global_variable_offset(void)
+static inline __prereloc unsigned long global_variable_offset(void)
 {
 #ifdef CONFIG_CPU_V8
 	unsigned long text;

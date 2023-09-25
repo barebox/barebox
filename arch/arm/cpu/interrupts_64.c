@@ -6,6 +6,7 @@
 #include <common.h>
 #include <abort.h>
 #include <asm/ptrace.h>
+#include <asm/barebox-arm.h>
 #include <asm/unwind.h>
 #include <init.h>
 #include <asm/system.h>
@@ -142,17 +143,38 @@ void do_bad_error(struct pt_regs *pt_regs)
 extern volatile int arm_ignore_data_abort;
 extern volatile int arm_data_abort_occurred;
 
-void do_sync(struct pt_regs *pt_regs, unsigned int esr, unsigned long far)
+static const char *data_abort_reason(ulong far)
 {
-	if ((esr >> ESR_ELx_EC_SHIFT) == ESR_ELx_EC_DABT_CUR &&
-			arm_ignore_data_abort) {
-		arm_data_abort_occurred = 1;
-		pt_regs->elr += 4;
-		return;
+	ulong guard_page;
+
+	if (far < PAGE_SIZE)
+		return "NULL pointer dereference: ";
+
+	if (IS_ENABLED(CONFIG_STACK_GUARD_PAGE)) {
+		guard_page = arm_mem_guard_page_get();
+		if (guard_page <= far && far < guard_page + PAGE_SIZE)
+			return "Stack overflow: ";
 	}
 
-	printf("%s exception (ESR 0x%08x) at 0x%016lx\n", esr_get_class_string(esr),
-	       esr, far);
+	return NULL;
+}
+
+void do_sync(struct pt_regs *pt_regs, unsigned int esr, unsigned long far)
+{
+	const char *extra = NULL;
+
+	if ((esr >> ESR_ELx_EC_SHIFT) == ESR_ELx_EC_DABT_CUR) {
+		if (arm_ignore_data_abort) {
+			arm_data_abort_occurred = 1;
+			pt_regs->elr += 4;
+			return;
+		}
+
+		extra = data_abort_reason(far);
+	}
+
+	printf("%s%s exception (ESR 0x%08x) at 0x%016lx\n", extra ?: "",
+	       esr_get_class_string(esr), esr, far);
 	do_exception(pt_regs);
 }
 

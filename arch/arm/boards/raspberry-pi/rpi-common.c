@@ -264,17 +264,35 @@ static enum reset_src_type rpi_decode_pm_rsts(struct device_node *chosen,
 
 static int rpi_vc_fdt_fixup(struct device_node *root, void *data)
 {
-	const struct device_node *vc_chosen = data;
-	struct device_node *chosen;
+	const struct device_node *vc_node = data;
+	struct device_node *node;
+	struct property *pp;
 
-	chosen = of_create_node(root, "/chosen");
-	if (!chosen)
+	node = of_create_node(root, vc_node->full_name);
+	if (!node)
 		return -ENOMEM;
 
-	of_copy_property(vc_chosen, "overlay_prefix", chosen);
-	of_copy_property(vc_chosen, "os_prefix", chosen);
+	for_each_property_of_node(vc_node, pp)
+		of_copy_property(vc_node, pp->name, node);
 
 	return 0;
+}
+
+static struct device_node *register_vc_fixup(struct device_node *root,
+					     const char *path)
+{
+	struct device_node *ret, *tmp;
+
+	ret = of_find_node_by_path_from(root, path);
+	if (ret) {
+		tmp = of_dup(ret);
+		tmp->full_name = xstrdup(ret->full_name);
+		of_register_fixup(rpi_vc_fdt_fixup, tmp);
+	} else {
+		pr_info("no '%s' node found in vc fdt\n", path);
+	}
+
+	return ret;
 }
 
 static u32 rpi_boot_mode, rpi_boot_part;
@@ -300,13 +318,16 @@ static void rpi_vc_fdt_parse(struct device_node *root)
 		free(str);
 	}
 
-	chosen = of_find_node_by_path_from(root, "/chosen");
+	register_vc_fixup(root, "/system");
+	register_vc_fixup(root, "/axi");
+	register_vc_fixup(root, "/reserved-memory");
+	register_vc_fixup(root, "/hat");
+	register_vc_fixup(root, "/chosen/bootloader");
+	chosen = register_vc_fixup(root, "/chosen");
 	if (!chosen) {
 		pr_err("no '/chosen' node found in vc fdt\n");
 		goto out;
 	}
-
-	of_register_fixup(rpi_vc_fdt_fixup, of_dup(chosen));
 
 	bootloader = of_find_node_by_name(chosen, "bootloader");
 

@@ -3,6 +3,7 @@
 #define __INCLUDE_SPI_H
 
 #include <driver.h>
+#include <slice.h>
 #include <linux/err.h>
 #include <linux/kernel.h>
 #include <linux/string.h>
@@ -160,6 +161,8 @@ struct spi_message;
  */
 struct spi_controller {
 	struct device *dev;
+
+	struct slice		slice;
 
 	/* other than negative (== assign one dynamically), bus_num is fully
 	 * board-specific.  usually that simplifies to being SOC-specific.
@@ -599,6 +602,11 @@ static inline int spi_driver_register(struct driver *drv)
 {
 	drv->bus = &spi_bus;
 	return register_driver(drv);
+}
+
+static inline struct slice *spi_device_slice(struct spi_device *spi)
+{
+	return &spi->controller->slice;
 }
 
 #ifdef CONFIG_SPI

@@ -23,6 +23,7 @@
 #include <init.h>
 #include <of.h>
 #include <gpio.h>
+#include <slice.h>
 
 #include <i2c/i2c.h>
 
@@ -62,6 +63,8 @@ int i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
 	uint64_t start;
 	int ret, try;
 
+	slice_acquire(&adap->slice);
+
 	/*
 	 * REVISIT the fault reporting model here is weak:
 	 *
@@ -95,6 +98,8 @@ int i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
 		if (is_timeout(start, SECOND >> 1))
 			break;
 	}
+
+	slice_release(&adap->slice);
 
 	return ret;
 }
@@ -720,6 +725,8 @@ int i2c_add_numbered_adapter(struct i2c_adapter *adapter)
 		return ret;
 
 	list_add_tail(&adapter->list, &i2c_adapter_list);
+
+	slice_init(&adapter->slice, dev_name(&adapter->dev));
 
 	/* populate children from any i2c device tables */
 	scan_boardinfo(adapter);

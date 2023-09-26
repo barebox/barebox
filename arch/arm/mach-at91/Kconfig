@@ -42,6 +42,9 @@ config HAVE_AT91_I2S_MUX_CLK
 config HAVE_AT91_SAM9X60_PLL
 	bool
 
+config HAVE_AT91_SDRAMC
+	bool
+
 config HAVE_AT91_DDRAMC
 	bool
 

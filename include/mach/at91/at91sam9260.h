@@ -100,6 +100,7 @@
 #define AT91SAM9260_SRAM1_SIZE	SZ_4K		/* Internal SRAM 1 size (4Kb) */
 #define AT91SAM9260_SRAM_BASE	0x002FF000	/* Internal SRAM base address */
 #define AT91SAM9260_SRAM_SIZE	SZ_8K		/* Internal SRAM size (8Kb) */
+#define AT91SAM9260_SRAM_END	(AT91SAM9260_SRAM_BASE + AT91SAM9260_SRAM_SIZE)
 
 #define AT91SAM9260_UHP_BASE	0x00500000	/* USB Host controller */
 

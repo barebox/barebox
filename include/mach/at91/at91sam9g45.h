@@ -107,6 +107,7 @@
  */
 #define AT91SAM9G45_SRAM_BASE	0x00300000	/* Internal SRAM base address */
 #define AT91SAM9G45_SRAM_SIZE	SZ_64K		/* Internal SRAM size (64Kb) */
+#define AT91SAM9G45_SRAM_END	(AT91SAM9G45_SRAM_BASE + AT91SAM9G45_SRAM_SIZE)
 
 #define AT91SAM9G45_ROM_BASE	0x00400000	/* Internal ROM base address */
 #define AT91SAM9G45_ROM_SIZE	SZ_64K		/* Internal ROM size (64Kb) */

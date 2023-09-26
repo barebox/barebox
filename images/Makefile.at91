@@ -160,3 +160,12 @@ image-$(CONFIG_MACH_USB_A9263) += barebox-usb-a9263-128m.img
 pblb-$(CONFIG_MACH_USB_A9G20) += start_usb_a9g20
 FILE_barebox-usb-a9g20.img = start_usb_a9g20.pblb
 image-$(CONFIG_MACH_USB_A9G20) += barebox-usb-a9g20.img
+
+pblb-$(CONFIG_MACH_CALAO) += start_tny_a9260 start_tny_a9g20 \
+			     start_usb_a9260 start_usb_a9g20
+FILE_barebox-tny-a9260.img = start_tny_a9260.pblb
+FILE_barebox-tny-a9g20.img = start_tny_a9g20.pblb
+FILE_barebox-usb-a9260.img = start_usb_a9260.pblb
+FILE_barebox-usb-a9g20.img = start_usb_a9g20.pblb
+image-$(CONFIG_MACH_CALAO) += barebox-tny-a9260.img barebox-tny-a9g20.img \
+			      barebox-usb-a9260.img barebox-usb-a9g20.img

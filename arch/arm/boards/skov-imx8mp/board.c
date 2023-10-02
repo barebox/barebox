@@ -14,6 +14,13 @@
 #include <mach/imx/generic.h>
 #include <mach/imx/iomux-mx8mp.h>
 
+struct skov_imx8mp_priv {
+	struct device *dev;
+	int variant_id;
+};
+
+static struct skov_imx8mp_priv *skov_imx8mp_priv;
+
 #define GPIO_HW_VARIANT  {\
 	{IMX_GPIO_NR(1, 8), GPIOF_DIR_IN | GPIOF_ACTIVE_HIGH, "var0"}, \
 	{IMX_GPIO_NR(1, 9), GPIOF_DIR_IN | GPIOF_ACTIVE_HIGH, "var1"}, \
@@ -78,6 +85,22 @@ static const struct board_description imx8mp_variants[] = {
 	},
 };
 
+static int skov_imx8mp_fixup(struct device_node *root, void *data)
+{
+	struct device_node *chosen = of_create_node(root, "/chosen");
+	const char *of_board = "skov,imx8mp-board-version";
+	struct skov_imx8mp_priv *priv = data;
+	struct device *dev = priv->dev;
+	int ret;
+
+	ret = of_property_write_u32(chosen, of_board, priv->variant_id);
+	if (ret)
+		dev_err(dev,  "Failed to fixup %s: %pe\n", of_board,
+			ERR_PTR(ret));
+
+	return 0;
+}
+
 static int skov_imx8mp_get_variant_id(uint *id)
 {
 	struct gpio gpios_rev[] = GPIO_HW_VARIANT;
@@ -133,9 +156,10 @@ static int skov_imx8mp_get_hdmi(struct device *dev)
 	return val;
 }
 
-static int skov_imx8mp_init_variant(struct device *dev)
+static int skov_imx8mp_init_variant(struct skov_imx8mp_priv *priv)
 {
 	const struct board_description *variant;
+	struct device *dev = priv->dev;
 	const char *compatible;
 	unsigned int v = 0;
 	int ret;
@@ -143,6 +167,8 @@ static int skov_imx8mp_init_variant(struct device *dev)
 	ret = skov_imx8mp_get_variant_id(&v);
 	if (ret)
 		return ret;
+
+	priv->variant_id = v;
 
 	if (v >= ARRAY_SIZE(imx8mp_variants)) {
 		dev_err(dev, "Invalid variant %u\n", v);
@@ -234,9 +260,20 @@ static void skov_imx8mp_init_storage(struct device *dev)
 
 static int skov_imx8mp_probe(struct device *dev)
 {
+	struct skov_imx8mp_priv *priv;
+	int ret;
+
+	priv = xzalloc(sizeof(*priv));
+	priv->dev = dev;
+	skov_imx8mp_priv = priv;
+
 	skov_imx8mp_init_storage(dev);
 
-	skov_imx8mp_init_variant(dev);
+	skov_imx8mp_init_variant(priv);
+
+	ret = of_register_fixup(skov_imx8mp_fixup, priv);
+	if (ret)
+		dev_err(dev, "Failed to register fixup: %pe\n", ERR_PTR(ret));
 
 	return 0;
 }

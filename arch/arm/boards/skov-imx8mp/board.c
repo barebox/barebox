@@ -9,21 +9,106 @@
 #include <mach/imx/bbu.h>
 #include <mach/imx/iomux-mx8mp.h>
 
-static int skov_imx8mp_probe(struct device *dev)
-{
-	int emmc_bbu_flag = 0;
-	int sd_bbu_flag = 0;
+struct skov_imx8mp_storage {
+	const char *name;
+	const char *env_path;
+	const char *dev_path;
+	enum bootsource bootsource;
+	int bootsource_ext_id;
+	bool mmc_boot_part;
+};
 
-	if (bootsource_get() == BOOTSOURCE_MMC && bootsource_get_instance() == 1) {
-		of_device_enable_path("/chosen/environment-sd");
-		sd_bbu_flag = BBU_HANDLER_FLAG_DEFAULT;
-	} else {
-		of_device_enable_path("/chosen/environment-emmc");
-		emmc_bbu_flag = BBU_HANDLER_FLAG_DEFAULT;
+enum skov_imx8mp_boot_source {
+	SKOV_BOOT_SOURCE_EMMC,
+	SKOV_BOOT_SOURCE_SD,
+	SKOV_BOOT_SOURCE_UNKNOWN,
+};
+
+static const struct skov_imx8mp_storage skov_imx8mp_storages[] = {
+	[SKOV_BOOT_SOURCE_EMMC] = {
+		/* default boot source */
+		.name = "eMMC",
+		.env_path = "/chosen/environment-emmc",
+		.dev_path = "/dev/mmc2",
+		.bootsource = BOOTSOURCE_MMC,
+		.bootsource_ext_id = 2,
+		.mmc_boot_part = true,
+	},
+	[SKOV_BOOT_SOURCE_SD] = {
+		.name = "SD",
+		.env_path = "/chosen/environment-sd",
+		.dev_path = "/dev/mmc1.barebox",
+		.bootsource = BOOTSOURCE_MMC,
+		.bootsource_ext_id = 1,
+	},
+};
+
+static void skov_imx8mp_enable_env(struct device *dev,
+				   const struct skov_imx8mp_storage *st,
+				   bool *enabled)
+{
+	int ret;
+
+	if (bootsource_get() != st->bootsource ||
+	    bootsource_get_instance() != st->bootsource_ext_id)
+		return;
+
+	ret = of_device_enable_path(st->env_path);
+	if (ret) {
+		dev_err(dev, "Failed to enable environment path: %s, %pe\n",
+			st->env_path, ERR_PTR(ret));
+		return;
 	}
 
-	imx8m_bbu_internal_mmc_register_handler("SD", "/dev/mmc1.barebox", sd_bbu_flag);
-	imx8m_bbu_internal_mmcboot_register_handler("eMMC", "/dev/mmc2", emmc_bbu_flag);
+	*enabled = true;
+}
+
+static void skov_imx8mp_add_bbu(struct device *dev,
+				const struct skov_imx8mp_storage *st,
+				bool default_env)
+{
+	unsigned long flags = 0;
+	int ret;
+
+	if (default_env)
+		flags |= BBU_HANDLER_FLAG_DEFAULT;
+
+	if (st->mmc_boot_part) {
+		ret = imx8m_bbu_internal_mmcboot_register_handler(st->name,
+								  st->dev_path,
+								  flags);
+	} else {
+		ret = imx8m_bbu_internal_mmc_register_handler(st->name,
+							      st->dev_path,
+							      flags);
+	}
+	if (ret)
+		dev_err(dev, "Failed to register %s BBU handler: %pe\n",
+			st->name, ERR_PTR(ret));
+}
+
+static void skov_imx8mp_init_storage(struct device *dev)
+{
+	int default_boot_src = SKOV_BOOT_SOURCE_EMMC;
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(skov_imx8mp_storages); i++) {
+		bool enabled_env = false;
+
+		skov_imx8mp_enable_env(dev, &skov_imx8mp_storages[i],
+				       &enabled_env);
+		if (enabled_env)
+			default_boot_src = i;
+	}
+
+	for (i = 0; i < ARRAY_SIZE(skov_imx8mp_storages); i++)
+		skov_imx8mp_add_bbu(dev, &skov_imx8mp_storages[i],
+				    i == default_boot_src);
+}
+
+static int skov_imx8mp_probe(struct device *dev)
+{
+	skov_imx8mp_init_storage(dev);
 
 	return 0;
 }

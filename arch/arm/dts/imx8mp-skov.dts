@@ -31,6 +31,7 @@
 		ethernet0 = &eqos;
 		ethernet1 = &lan1;
 		ethernet2 = &lan2;
+		state = &state;
 	};
 
 	leds {
@@ -82,6 +83,110 @@
 		regulator-max-microvolt = <3300000>;
 		gpio = <&gpio2 19 GPIO_ACTIVE_HIGH>;
 		enable-active-high;
+	};
+
+	state: state {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		magic = <0x1c5b3f49>;
+		compatible = "barebox,state";
+		backend-type = "raw";
+		backend = <&usdhc3>;
+                /*
+                 * barebox-state partition size: 1 MiB
+                 * nr. of redundant copies:      4
+                 * ==> max. stride size: 1 MiB / 4 = 256 KiB = 262144 Byte
+                 *
+                 * stride size:     262144 Byte
+                 * raw-header:     -    16 Byte
+                 * direct-storage: -     8 Byte
+                 *                 ------------
+                 * max state size:  262120 Byte
+                 *                  ===========
+                 */
+		backend-stridesize = <0x40000>;
+
+		bootstate {
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			system0 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+
+				remaining_attempts@0 {
+					reg = <0x0 0x4>;
+					type = "uint32";
+					default = <3>;
+				};
+				priority@4 {
+					reg = <0x4 0x4>;
+					type = "uint32";
+					default = <30>;
+				};
+			};
+
+			system1 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+
+				remaining_attempts@8 {
+					reg = <0x8 0x4>;
+					type = "uint32";
+					default = <3>;
+				};
+				priority@C {
+					reg = <0xC 0x4>;
+					type = "uint32";
+					default = <20>;
+				};
+			};
+
+			last_chosen@10 {
+				reg = <0x10 0x4>;
+				type = "uint32";
+			};
+		};
+
+		display {
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			xres@14 {
+				reg = <0x14 0x4>;
+				type = "uint32";
+				default = <0>;
+			};
+
+			yres@18 {
+				reg = <0x18 0x4>;
+				type = "uint32";
+				default = <0>;
+			};
+
+			brightness@1C {
+				reg = <0x1C 0x1>;
+				type = "uint8";
+				default = <8>;
+			};
+
+			external@1D {
+				reg = <0x1D 0x1>;
+				type = "uint8";
+				default = <0>;
+			};
+		};
+
+		ethaddr {
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			eth2@1e {
+				reg = <0x1E 0x6>;
+				type = "mac";
+				default = [00 11 22 33 44 55];
+			};
+		};
 	};
 };
 

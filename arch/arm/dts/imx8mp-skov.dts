@@ -369,6 +369,23 @@
 };
 
 &iomuxc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog>;
+
+	pinctrl_hog: hoggrp {
+		fsl,pins = <
+			/* varaint id */
+			MX8MP_IOMUXC_GPIO1_IO08__GPIO1_IO08				0x100
+			MX8MP_IOMUXC_GPIO1_IO09__GPIO1_IO09				0x100
+			MX8MP_IOMUXC_GPIO1_IO10__GPIO1_IO10				0x100
+			MX8MP_IOMUXC_GPIO1_IO11__GPIO1_IO11				0x100
+			MX8MP_IOMUXC_GPIO1_IO12__GPIO1_IO12				0x100
+			MX8MP_IOMUXC_GPIO1_IO13__GPIO1_IO13				0x100
+			MX8MP_IOMUXC_GPIO1_IO14__GPIO1_IO14				0x100
+			MX8MP_IOMUXC_GPIO1_IO15__GPIO1_IO15				0x100
+		>;
+	};
+
 	pinctrl_eqos: eqosgrp {
 		fsl,pins = <
 			MX8MP_IOMUXC_ENET_RD0__ENET_QOS_RGMII_RD0			0x91

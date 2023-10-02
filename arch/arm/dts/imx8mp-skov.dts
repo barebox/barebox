@@ -22,7 +22,7 @@
 
 		environment-emmc {
 			compatible = "barebox,environment";
-			device-path = &env_emmc;
+			device-path = &usdhc3, "partname:barebox-environment";
 			status = "disabled";
 		};
 	};
@@ -97,24 +97,6 @@
 		};
 
 		env_sd: partition@e0000 {
-			label = "barebox-environment";
-			reg = <0x0 0x100000 0x0 0x100000>;
-		};
-	};
-};
-
-&usdhc3 {
-	partitions {
-		compatible = "fixed-partitions";
-		#address-cells = <2>;
-		#size-cells = <2>;
-
-		partition@0 {
-			label = "barebox";
-			reg = <0x0 0x0 0x0 0x100000>;
-		};
-
-		env_emmc: partition@e0000 {
 			label = "barebox-environment";
 			reg = <0x0 0x100000 0x0 0x100000>;
 		};

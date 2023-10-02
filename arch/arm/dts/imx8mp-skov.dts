@@ -16,7 +16,7 @@
 
 		environment-sd {
 			compatible = "barebox,environment";
-			device-path = &env_sd;
+			device-path = &usdhc2, "partname:barebox-environment";
 			status = "disabled";
 		};
 
@@ -82,24 +82,6 @@
 		regulator-max-microvolt = <3300000>;
 		gpio = <&gpio2 19 GPIO_ACTIVE_HIGH>;
 		enable-active-high;
-	};
-};
-
-&usdhc2 {
-	partitions {
-		compatible = "fixed-partitions";
-		#address-cells = <2>;
-		#size-cells = <2>;
-
-		partition@0 {
-			label = "barebox";
-			reg = <0x0 0x0 0x0 0x100000>;
-		};
-
-		env_sd: partition@e0000 {
-			label = "barebox-environment";
-			reg = <0x0 0x100000 0x0 0x100000>;
-		};
 	};
 };
 

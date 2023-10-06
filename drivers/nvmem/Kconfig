@@ -58,6 +58,13 @@ config EEPROM_93XX46
 	  supports both read and write commands and also the command to
 	  erase the whole EEPROM.
 
+config NVMEM_ROCKCHIP_OTP
+	tristate "Rockchip OTP controller support"
+	depends on ARCH_ROCKCHIP || COMPILE_TEST
+	help
+	  This is a simple driver to dump specified values of Rockchip SoC
+	  from otp, such as cpu-leakage, id etc.
+
 config STM32_BSEC
 	tristate "STM32 Boot and security and OTP control"
 	depends on ARCH_STM32MP

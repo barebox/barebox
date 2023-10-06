@@ -163,12 +163,12 @@ setting the ``global.boot.default`` variable to ``mmc`` and then calling
 
 .. _bootloader_spec:
 
-Bootloader Spec
-^^^^^^^^^^^^^^^
+Boot Loader Specification
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
-barebox supports booting according to the bootloader spec:
-
-https://uapi-group.org/specifications/specs/boot_loader_specification/
+barebox supports booting according to the `Boot Loader Specification
+<https://uapi-group.org/specifications/specs/boot_loader_specification/>`__
+(sometimes also known as *Bootloader Spec*, *bootspec* or *blspec*).
 
 It follows another philosophy than the :ref:`boot_entries`. With Boot Entries
 booting is completely configured in the bootloader. Bootloader Spec Entries
@@ -209,7 +209,7 @@ Spec Entry on a SD card:
 
 The entry can be listed with the ``-l`` option:
 
-.. code-block:: sh
+.. code-block:: none
 
   scripts/kernel-install --device=/dev/mmcblk0 -l
 
@@ -223,24 +223,29 @@ The entry can be listed with the ``-l`` option:
 When the SD card shows up as ``mmc1`` in barebox, this entry can be booted with
 ``boot mmc1`` or by setting ``global.boot.default`` to ``mmc1``.
 
-``machine-id`` is an optional key. If the ``global.boot.machine_id`` variable
-is set to a non-empty value, barebox will only boot the Bootloader Spec Entry
-whose ``machine-id`` key matches the ``global.boot.machine_id`` variable.
-All other Bootloader Spec entries will be ignored.
-
-A bootloader spec entry can also reside on an NFS server in which case an
-RFC2224-compatible NFS URI string must be passed to the boot command:
+A bootloader spec entry can also reside on an NFS server, in which case an
+`RFC 2224 <https://datatracker.ietf.org/doc/html/rfc2224>`__-compatible NFS URI
+must be passed to the boot command:
 
 .. code-block:: sh
 
   boot nfs://nfshost[:port]//path/
 
-In addition to the options defined in the original spec barebox understands the
-``linux-appendroot`` option. This is a boolean value and if set to ``true`` barebox
-will automatically append a ``root=`` string to the Linux commandline based on the
-device where the entry is found on. This makes it possible to use the same rootfs
-image on different devices without having to specify a different root= option each
-time.
+Additional notes about keys in the bootloader spec entries:
+
+``machine-id``
+   This key is optional. If the ``global.boot.machine_id`` variable is set to a
+   non-empty value, barebox will only boot the Bootloader Spec Entry whose
+   ``machine-id`` key matches the ``global.boot.machine_id`` variable.  All
+   other Bootloader Spec entries will be ignored.
+
+``linux-appendroot``
+   This boolean option is understood by Barebox although it is not part of the
+   original specification. If set to ``true``, barebox will automatically append
+   a ``root=`` string to the Linux commandline based on the device where the
+   entry is found on. This makes it possible to use the same rootfs image on
+   different devices without having to specify a different ``root=`` option each
+   time.
 
 .. _booting_linux_net:
 

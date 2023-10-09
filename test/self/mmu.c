@@ -10,6 +10,9 @@
 #include <zero_page.h>
 #include <linux/sizes.h>
 
+#define TEST_BUFFER_SIZE		SZ_8M
+#define TEST_BUFFER_ALIGN		SZ_2M
+
 BSELFTEST_GLOBALS();
 
 #define __expect(ret, cond, fmt, ...) do { \
@@ -64,33 +67,33 @@ static void test_remap(void)
 	phys_addr_t buffer_phys;
 	int i, ret;
 
-	buffer = memalign(SZ_2M, SZ_8M);
+	buffer = memalign(TEST_BUFFER_ALIGN, TEST_BUFFER_SIZE);
 	if (WARN_ON(!buffer))
 		goto out;
 
 	buffer_phys = virt_to_phys(buffer);
 
-	mirror = memalign(SZ_2M, SZ_8M);
+	mirror = memalign(TEST_BUFFER_ALIGN, TEST_BUFFER_SIZE);
 	if (WARN_ON(!mirror))
 		goto out;
 
 	pr_debug("allocated buffer = 0x%p, mirror = 0x%p\n", buffer, mirror);
 
-	memtest(buffer, SZ_8M, "cached buffer");
-	memtest(mirror, SZ_8M, "cached mirror");
+	memtest(buffer, TEST_BUFFER_SIZE, "cached buffer");
+	memtest(mirror, TEST_BUFFER_SIZE, "cached mirror");
 
 	if (!arch_can_remap()) {
 		skipped_tests += 18;
 		goto out;
 	}
 
-	ret = remap_range(buffer, SZ_8M, MAP_UNCACHED);
-	memtest(buffer, SZ_8M, "uncached buffer");
+	ret = remap_range(buffer, TEST_BUFFER_SIZE, MAP_UNCACHED);
+	memtest(buffer, TEST_BUFFER_SIZE, "uncached buffer");
 
-	ret = remap_range(mirror, SZ_8M, MAP_UNCACHED);
-	memtest(mirror, SZ_8M, "uncached mirror");
+	ret = remap_range(mirror, TEST_BUFFER_SIZE, MAP_UNCACHED);
+	memtest(mirror, TEST_BUFFER_SIZE, "uncached mirror");
 
-	for (i = 0; i < SZ_8M; i += sizeof(u32)) {
+	for (i = 0; i < TEST_BUFFER_SIZE; i += sizeof(u32)) {
 		int m = i, b = i;
 		writel(0xDEADBEEF, &mirror[m]);
 		writel(i, &buffer[b]);
@@ -101,10 +104,10 @@ static void test_remap(void)
 
 	expect_success(ret, "asserting no mirror before remap");
 
-	ret = arch_remap_range(mirror, buffer_phys, SZ_8M, MAP_UNCACHED);
+	ret = arch_remap_range(mirror, buffer_phys, TEST_BUFFER_SIZE, MAP_UNCACHED);
 	expect_success(ret, "remapping with mirroring");
 
-	for (i = 0; i < SZ_8M; i += sizeof(u32)) {
+	for (i = 0; i < TEST_BUFFER_SIZE; i += sizeof(u32)) {
 		int m = i, b = i;
 		writel(0xDEADBEEF, &mirror[m]);
 		writel(i, &buffer[b]);
@@ -115,10 +118,11 @@ static void test_remap(void)
 
 	expect_success(ret, "asserting mirroring after remap");
 
-	ret = arch_remap_range(mirror, buffer_phys + SZ_4K, SZ_4M, MAP_UNCACHED);
+	ret = arch_remap_range(mirror, buffer_phys + SZ_4K,
+			       TEST_BUFFER_SIZE / 2, MAP_UNCACHED);
 	expect_success(ret, "remapping with mirroring (phys += 4K)");
 
-	for (i = 0; i < SZ_4M; i += sizeof(u32)) {
+	for (i = 0; i < TEST_BUFFER_SIZE / 2; i += sizeof(u32)) {
 		int m = i, b = i + SZ_4K;
 		writel(0xDEADBEEF, &mirror[m]);
 		writel(i, &buffer[b]);
@@ -129,10 +133,11 @@ static void test_remap(void)
 
 	expect_success(ret, "asserting mirroring after remap (phys += 4K)");
 
-	ret = arch_remap_range(mirror + SZ_4K, buffer_phys, SZ_4M, MAP_UNCACHED);
+	ret = arch_remap_range(mirror + SZ_4K, buffer_phys,
+			       TEST_BUFFER_SIZE / 2, MAP_UNCACHED);
 	expect_success(ret, "remapping with mirroring (virt += 4K)");
 
-	for (i = 0; i < SZ_4M; i += sizeof(u32)) {
+	for (i = 0; i < TEST_BUFFER_SIZE / 2; i += sizeof(u32)) {
 		int m = i + SZ_4K, b = i;
 		writel(0xDEADBEEF, &mirror[m]);
 		writel(i, &buffer[b]);
@@ -143,15 +148,15 @@ static void test_remap(void)
 
 	expect_success(ret, "asserting mirroring after remap (virt += 4K)");
 
-	ret = remap_range(buffer, SZ_8M, MAP_DEFAULT);
+	ret = remap_range(buffer, TEST_BUFFER_SIZE, MAP_DEFAULT);
 	expect_success(ret, "remapping buffer with default attrs");
-	memtest(buffer, SZ_8M, "newly cached buffer");
+	memtest(buffer, TEST_BUFFER_SIZE, "newly cached buffer");
 
-	ret = remap_range(mirror, SZ_8M, MAP_DEFAULT);
+	ret = remap_range(mirror, TEST_BUFFER_SIZE, MAP_DEFAULT);
 	expect_success(ret, "remapping mirror with default attrs");
-	memtest(mirror, SZ_8M, "newly cached mirror");
+	memtest(mirror, TEST_BUFFER_SIZE, "newly cached mirror");
 
-	for (i = 0; i < SZ_8M; i += sizeof(u32)) {
+	for (i = 0; i < TEST_BUFFER_SIZE; i += sizeof(u32)) {
 		int m = i, b = i;
 		writel(0xDEADBEEF, &mirror[m]);
 		writel(i, &buffer[b]);

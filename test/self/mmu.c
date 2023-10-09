@@ -10,8 +10,8 @@
 #include <zero_page.h>
 #include <linux/sizes.h>
 
-#define TEST_BUFFER_SIZE		SZ_8M
-#define TEST_BUFFER_ALIGN		SZ_2M
+#define TEST_BUFFER_SIZE		SZ_1M
+#define TEST_BUFFER_ALIGN		SZ_4K
 
 BSELFTEST_GLOBALS();
 

@@ -1,5 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-#include <printk.h>
+
+#define pr_fmt(fmt) "stackprot: " fmt
+
+#include <linux/printk.h>
 #include <linux/kernel.h>
 #include <linux/export.h>
 #include <init.h>
@@ -27,6 +30,11 @@ EXPORT_SYMBOL(__stack_chk_fail);
 
 static __no_stack_protector int stackprot_randomize_guard(void)
 {
-	return get_crypto_bytes(&__stack_chk_guard, sizeof(__stack_chk_guard));
+	int ret;
+
+	ret = get_crypto_bytes(&__stack_chk_guard, sizeof(__stack_chk_guard));
+	if (ret)
+		pr_warn("proceeding without randomized stack protector\n");
+	return 0;
 }
 late_initcall(stackprot_randomize_guard);

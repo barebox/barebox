@@ -175,6 +175,8 @@ static void test_regulator(void)
 			return;
 
 		overlay = of_unflatten_dtb(__dtbo_test_regulator_start, INT_MAX);
+		if (WARN_ON(IS_ERR(overlay)))
+			return;
 		of_overlay_apply_tree(of_get_root_node(), overlay);
 		of_probe();
 

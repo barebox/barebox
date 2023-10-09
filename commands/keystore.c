@@ -17,7 +17,7 @@ static int do_keystore(int argc, char *argv[])
 	const char *file = NULL;
 	char *secret_str = NULL;
 	void *secret;
-	size_t s_len;
+	size_t s_len = 0;
 
 	while ((opt = getopt(argc, argv, "rs:f:")) > 0) {
 		switch (opt) {

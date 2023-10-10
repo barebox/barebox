@@ -5,7 +5,7 @@
 #include <generated/utsrelease.h>
 
 const char version_string[] =
-	"barebox " UTS_RELEASE " " UTS_VERSION "\n";
+	"barebox " UTS_RELEASE " " UTS_VERSION;
 EXPORT_SYMBOL(version_string);
 
 const char release_string[] =
@@ -20,7 +20,7 @@ EXPORT_SYMBOL(buildsystem_version_string);
 void barebox_banner (void)
 {
 	printf("\n\n");
-	pr_info("%s", version_string);
+	pr_info("%s\n", version_string);
 	if (strlen(buildsystem_version_string) > 0)
 		pr_info("Buildsystem version: %s", buildsystem_version_string);
 	printf("\n\n");

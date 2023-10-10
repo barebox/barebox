@@ -7,7 +7,7 @@
 
 static int do_version(int argc, char *argv[])
 {
-	printf ("\n%s\n", version_string);
+	printf ("\n%s\n\n", version_string);
 	return 0;
 }
 

@@ -298,7 +298,7 @@ static int write_mem_v1(uint32_t addr, uint32_t val, int width, int set_bits, in
 
 static size_t
 add_header_v2(const struct config_data *data, void *buf, uint32_t offset,
-	      size_t header_len)
+	      size_t header_len, unsigned int csf_slot)
 {
 	struct imx_flash_header_v2 *hdr;
 	int dcdsize = curdcd * sizeof(uint32_t);
@@ -341,7 +341,7 @@ add_header_v2(const struct config_data *data, void *buf, uint32_t offset,
 		hdr->boot_data.size	= imagesize;
 
 	if (data->sign_image) {
-		hdr->csf = loadaddr + imagesize;
+		hdr->csf = loadaddr + imagesize + (csf_slot * CSF_LEN);
 		hdr->boot_data.size += CSF_LEN;
 	} else if (data->pbl_code_size && data->csf) {
 		/*
@@ -463,7 +463,7 @@ add_flexspi_header(const struct config_data *data, void **_buf, size_t *header_l
 	    data->cpu_type == IMX_CPU_IMX8MN)
 		buf += SZ_4K;
 
-	size += add_header_v2(data, buf, ivt_offset, len);
+	size += add_header_v2(data, buf, ivt_offset, len, 1);
 
 	*header_len += FLEXSPI_HEADER_LEN;
 
@@ -1018,7 +1018,7 @@ int main(int argc, char *argv[])
 		barebox_image_size += add_flexspi_header(&data, &buf, &header_len);
 		barebox_image_size += add_header_v2(&data, buf +
 						    signed_hdmi_firmware_size,
-						    data.image_ivt_offset, header_len);
+						    data.image_ivt_offset, header_len, 0);
 		break;
 	default:
 		fprintf(stderr, "Congratulations! You're welcome to implement header version %d\n",

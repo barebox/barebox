@@ -614,6 +614,12 @@ static int do_flexspi_ivtofs(struct config_data *data, int argc, char *argv[])
 	if (argc < 2)
 		return -EINVAL;
 
+	if (data->csf) {
+		fprintf(stderr, "#include <mach/imx/flexspi-imx8m*-cfg.h> must be placed in front "
+				"of #include <mach/imx/habv4-imx8-gencsf.h>\n");
+		return -EINVAL;
+	}
+
 	data->image_flexspi_ivt_offset = strtoul(argv[1], NULL, 0);
 
 	return 0;
@@ -623,6 +629,12 @@ static int do_flexspi_fcfbofs(struct config_data *data, int argc, char *argv[])
 {
 	if (argc < 2)
 		return -EINVAL;
+
+	if (data->csf) {
+		fprintf(stderr, "#include <mach/imx/flexspi-imx8m*-cfg.h> must be placed in front "
+				"of #include <mach/imx/habv4-imx8-gencsf.h>\n");
+		return -EINVAL;
+	}
 
 	data->image_flexspi_fcfb_offset = strtoul(argv[1], NULL, 0);
 

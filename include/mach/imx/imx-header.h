@@ -120,6 +120,7 @@ struct config_data {
 	char *signed_hdmi_firmware_file;
 	int encrypt_image;
 	size_t dek_size;
+	bool hab_qspi_support;
 };
 
 #define MAX_RECORDS_DCD_V2 1024

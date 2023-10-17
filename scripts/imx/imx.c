@@ -299,6 +299,23 @@ static int do_max_load_size(struct config_data *data, int argc, char *argv[])
 	return 0;
 }
 
+static int do_hab_qspi(struct config_data *data, int argc, char *argv[])
+{
+	/*
+	 * Force 'hab_qspi' to specified before any 'hab' to ensure correct CSF
+	 * generation.
+	 */
+	if (data->csf) {
+		fprintf(stderr,
+			"'hab_qspi' must be specified before any 'hab' command\n");
+		return -EINVAL;
+	}
+
+	data->hab_qspi_support = true;
+
+	return 0;
+}
+
 static int hab_add_str(struct config_data *data, const char *str)
 {
 	data->csf = strcata(data->csf, str);
@@ -709,6 +726,9 @@ struct command cmds[] = {
 	}, {
 		.name = "hab_encrypt_blocks",
 		.parse = do_hab_encrypt_blocks,
+	}, {
+		.name = "hab_qspi",
+		.parse = do_hab_qspi,
 	}, {
 		.name = "super_root_key",
 		.parse = do_super_root_key,

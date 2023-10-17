@@ -12,6 +12,8 @@
 #define BASE	(TEXT_BASE - SZ_2M)
 #endif
 
+#define HAB_CSF_LEN	0x2000
+
 OUTPUT_FORMAT(BAREBOX_OUTPUT_FORMAT)
 OUTPUT_ARCH(BAREBOX_OUTPUT_ARCH)
 
@@ -85,7 +87,7 @@ SECTIONS
 	__csf_start = .;
 	.hab_csf : {
 		BYTE(0x5a);
-		. += + 0x1fff;
+		. += + HAB_CSF_LEN - 1;
 	} = 0x5a
 	__csf_end = .;
 #endif /* CONFIG_CPU_64 && CONFIG_HABV4 */

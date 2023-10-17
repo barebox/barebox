@@ -16,6 +16,11 @@
 static void *__machine_id_hashable;
 static size_t __machine_id_hashable_length;
 
+const void *machine_id_get_hashable(size_t *len)
+{
+	*len = __machine_id_hashable_length;
+	return __machine_id_hashable;
+}
 
 void machine_id_set_hashable(const void *hashable, size_t len)
 {

@@ -21,6 +21,19 @@ endif
 )
 endef
 
+define build_imx8m_habv4img =
+$(eval
+ifeq ($($(strip $(1))), y)
+	pblb-y += $(strip $(2))
+	CFG_$(strip $(2)).pblb.imximg = $(board)/$(strip $(3)).imxcfg
+	FILE_barebox-$(strip $(4)).img    = $(strip $(2)).pblb.pimximg
+	FILE_barebox-$(strip $(4))-s.img  = $(strip $(2)).pblb.psimximg
+	image-y += barebox-$(strip $(4)).img
+	image-$(CONFIG_HABV4_IMAGE_SIGNED) += barebox-$(strip $(4))-s.img
+endif
+)
+endef
+
 # %.imximg - convert into i.MX image
 # ----------------------------------------------------------------
 

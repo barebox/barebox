@@ -8,3 +8,4 @@ ivtofs 0x400
 
 flexspi_ivtofs 0x1000
 flexspi_fcfbofs 0x0
+#include <mach/imx/habv4-imx8-gencsf.h>

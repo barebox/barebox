@@ -660,7 +660,8 @@ static int nop(const struct config_data *data)
  * The cst is expected to be executable as 'cst' or if exists, the content
  * of the environment variable 'CST' is used.
  */
-static int hab_sign(struct config_data *data)
+static int hab_sign(struct config_data *data, const char *csfcmds,
+		    unsigned int csf_slot)
 {
 	int fd, outfd, ret, lockfd;
 	char *csffile, *command;
@@ -674,7 +675,7 @@ static int hab_sign(struct config_data *data)
 	if (!cst)
 		cst = "cst";
 
-	ret = asprintf(&csffile, "%s.csfbin", data->outfile);
+	ret = asprintf(&csffile, "%s.slot%u.csfbin", data->outfile, csf_slot);
 	if (ret < 0)
 		exit(1);
 
@@ -743,7 +744,7 @@ static int hab_sign(struct config_data *data)
 		return -errno;
 	}
 
-	fwrite(data->csf, 1, strlen(data->csf) + 1, f);
+	fwrite(csfcmds, 1, strlen(csfcmds) + 1, f);
 
 	pclose(f);
 
@@ -813,6 +814,8 @@ static int hab_sign(struct config_data *data)
 		offset = data->header_gap + data->pbl_code_size + HEADER_LEN;
 		if (flexspi_image(data))
 			offset += FLEXSPI_HEADER_LEN;
+
+		offset += csf_slot * CSF_LEN;
 
 		offset = roundup(offset, 0x1000);
 		if (data->signed_hdmi_firmware_file)
@@ -1104,7 +1107,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (data.csf && data.sign_image) {
-		ret = hab_sign(&data);
+		ret = hab_sign(&data, data.csf, 0);
 		if (ret)
 			exit(1);
 	}

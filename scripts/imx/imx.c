@@ -20,6 +20,23 @@
  */
 #define ENCRYPT_OFFSET	(HEADER_LEN + 0x10)
 
+static char *strcata(char *str, const char *add)
+{
+	size_t size = (str ? strlen(str) : 0) + strlen(add) + 1;
+	bool need_init = str ? false : true;
+
+	str = realloc(str, size);
+	if (!str)
+		return NULL;
+
+	if (need_init)
+		memset(str, 0, size);
+
+	strcat(str, add);
+
+	return str;
+}
+
 static int parse_line(char *line, char *argv[])
 {
 	int nargs = 0;
@@ -284,14 +301,9 @@ static int do_max_load_size(struct config_data *data, int argc, char *argv[])
 
 static int hab_add_str(struct config_data *data, const char *str)
 {
-	int len = strlen(str);
-
-	if (data->csf_space < len)
+	data->csf = strcata(data->csf, str);
+	if (!data->csf)
 		return -ENOMEM;
-
-	strcat(data->csf, str);
-
-	data->csf_space -= len;
 
 	return 0;
 }
@@ -299,14 +311,6 @@ static int hab_add_str(struct config_data *data, const char *str)
 static int do_hab(struct config_data *data, int argc, char *argv[])
 {
 	int i, ret;
-
-	if (!data->csf) {
-		data->csf_space = 0x10000;
-
-		data->csf = calloc(data->csf_space + 1, 1);
-		if (!data->csf)
-			return -ENOMEM;
-	}
 
 	for (i = 1; i < argc; i++) {
 		ret = hab_add_str(data, argv[i]);

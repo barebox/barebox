@@ -343,6 +343,8 @@ add_header_v2(const struct config_data *data, void *buf, uint32_t offset,
 	if (data->sign_image) {
 		hdr->csf = loadaddr + imagesize + (csf_slot * CSF_LEN);
 		hdr->boot_data.size += CSF_LEN;
+		if (data->flexspi_csf)
+			hdr->boot_data.size += CSF_LEN;
 	} else if (data->pbl_code_size && data->csf) {
 		/*
 		 * For i.MX8 the CSF space is added via the linker script, so
@@ -350,6 +352,8 @@ add_header_v2(const struct config_data *data, void *buf, uint32_t offset,
 		 * signing is not.
 		 */
 		hdr->boot_data.size += CSF_LEN;
+		if (data->flexspi_csf)
+			hdr->boot_data.size += CSF_LEN;
 	}
 
 	buf += sizeof(*hdr);
@@ -1110,6 +1114,11 @@ int main(int argc, char *argv[])
 		ret = hab_sign(&data, data.csf, 0);
 		if (ret)
 			exit(1);
+		if (data.flexspi_csf) {
+			ret = hab_sign(&data, data.flexspi_csf, 1);
+			if (ret)
+				exit(1);
+		}
 	}
 
 	if (create_usb_image) {

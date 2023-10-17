@@ -322,6 +322,13 @@ static int hab_add_str(struct config_data *data, const char *str)
 	if (!data->csf)
 		return -ENOMEM;
 
+	if (!data->hab_qspi_support)
+		return 0;
+
+	data->flexspi_csf = strcata(data->flexspi_csf, str);
+	if (!data->flexspi_csf)
+		return -ENOMEM;
+
 	return 0;
 }
 
@@ -366,7 +373,8 @@ static int do_hab(struct config_data *data, int argc, char *argv[])
 
 static void
 imx8m_get_offset_size(struct config_data *data,
-		      uint32_t *offset, uint32_t *signed_size)
+		      uint32_t *offset, uint32_t *signed_size,
+		      uint32_t *flexspi_offset, uint32_t *flexspi_signed_size)
 {
 	unsigned int hdrlen = HEADER_LEN;
 
@@ -374,10 +382,22 @@ imx8m_get_offset_size(struct config_data *data,
 		hdrlen += FLEXSPI_HEADER_LEN;
 
 	*signed_size = roundup(data->pbl_code_size + hdrlen, 0x1000);
+	*flexspi_signed_size = roundup(data->pbl_code_size + FLEXSPI_HEADER_LEN,
+				       0x1000);
 
 	*offset += data->header_gap;
-	if (data->signed_hdmi_firmware_file)
+	*flexspi_offset += data->header_gap;
+	/*
+	 * Starting with i.MX8MP/N the FlexSPI IVT offset is 0x0 but the primary
+	 * image offset is at 0x1000.
+	 */
+	if (data->cpu_type != IMX_CPU_IMX8MM)
+		*flexspi_offset += HEADER_LEN;
+
+	if (data->signed_hdmi_firmware_file) {
 		*offset += PLUGIN_HDMI_SIZE;
+		*flexspi_offset += PLUGIN_HDMI_SIZE;
+	}
 }
 
 static int do_hab_blocks(struct config_data *data, int argc, char *argv[])
@@ -386,7 +406,9 @@ static int do_hab_blocks(struct config_data *data, int argc, char *argv[])
 	int ret;
 	int i;
 	uint32_t signed_size = data->load_size;
+	uint32_t flexspi_signed_size = signed_size;
 	uint32_t offset = data->image_ivt_offset;
+	uint32_t flexspi_offset = data->image_flexspi_ivt_offset;
 
 	if (!data->csf)
 		return -EINVAL;
@@ -402,12 +424,20 @@ static int do_hab_blocks(struct config_data *data, int argc, char *argv[])
 	 * Ensure we only sign the PBL for i.MX8MQ
 	 */
 	if (data->pbl_code_size && cpu_is_mx8m(data))
-		imx8m_get_offset_size(data, &offset, &signed_size);
+		imx8m_get_offset_size(data, &offset, &signed_size,
+				      &flexspi_offset, &flexspi_signed_size);
 
 	if (signed_size > 0) {
 		ret = asprintf(&str, "Blocks = 0x%08x 0x%08x 0x%08x \"%s\"",
 			data->image_load_addr + data->image_ivt_offset, offset,
 			signed_size - data->image_ivt_offset, data->outfile);
+		if (data->flexspi_csf)
+			ret |= asprintf(&flexspi_str,
+					"Blocks = 0x%08x 0x%08x 0x%08x \"%s\"",
+					data->image_load_addr +
+					data->image_flexspi_ivt_offset,
+					flexspi_offset, flexspi_signed_size,
+					data->outfile);
 	} else {
 		fprintf(stderr, "Invalid signed size area 0x%08x\n",
 			signed_size);
@@ -419,6 +449,7 @@ static int do_hab_blocks(struct config_data *data, int argc, char *argv[])
 
 	ret = hab_add_barebox_blocks(data, str, flexspi_str);
 	free(str);
+	free(flexspi_str);
 	if (ret)
 		return ret;
 

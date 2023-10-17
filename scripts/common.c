@@ -11,6 +11,7 @@
 #include <stdarg.h>
 
 #include "common.h"
+#include "compiler.h"
 
 int read_file_2(const char *filename, size_t *size, void **outbuf, size_t max_size)
 {
@@ -22,7 +23,7 @@ int read_file_2(const char *filename, size_t *size, void **outbuf, size_t max_si
 	*size = 0;
 	*outbuf = NULL;
 
-	fd = open(filename, O_RDONLY);
+	fd = open(filename, O_RDONLY | O_BINARY);
 	if (fd < 0) {
 		fprintf(stderr, "Cannot open %s: %s\n", filename, strerror(errno));
 		return -errno;

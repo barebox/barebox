@@ -76,8 +76,8 @@ int read_file_2(const char *filename, size_t *size, void **outbuf, size_t max_si
 	ret = 0;
 	goto close;
 free:
+	free(*outbuf);
 	*outbuf = NULL;
-	free(buf);
 close:
 	close(fd);
 	return ret;

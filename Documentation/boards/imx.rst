@@ -21,7 +21,7 @@ The Internal Boot Mode is supported on:
 * i.MX53
 * i.MX6
 * i.MX7
-* i.MX8MQ
+* i.MX8M
 
 With the Internal Boot Mode, the images contain a header which describes
 where the binary shall be loaded and started. These headers also contain
@@ -64,8 +64,8 @@ of the image to the card, use:
 
   dd if=images/barebox-freescale-imx51-babbage.img of=/dev/sdd bs=1024 skip=1 seek=1
 
-Note that MaskROM on i.MX8 expects the image to start at the +33KiB mark, so the
-following command has to be used instead:
+Note that MaskROM on i.MX8M expects the image to start at the +33KiB mark, so
+the following command has to be used instead:
 
 .. code-block:: sh
 

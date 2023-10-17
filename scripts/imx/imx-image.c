@@ -670,7 +670,7 @@ static int hab_sign(struct config_data *data, const char *csfcmds,
 	int fd, outfd, ret, lockfd;
 	char *csffile, *command;
 	struct stat s;
-	char *cst;
+	char *cst, *cstopts;
 	void *buf;
 	size_t csf_space = CSF_LEN;
 	unsigned int offset = 0;
@@ -678,6 +678,10 @@ static int hab_sign(struct config_data *data, const char *csfcmds,
 	cst = getenv("CST");
 	if (!cst)
 		cst = "cst";
+
+	cstopts = getenv("CST_EXTRA_CMDLINE_OPTIONS");
+	if (!cstopts)
+		cstopts = "";
 
 	ret = asprintf(&csffile, "%s.slot%u.csfbin", data->outfile, csf_slot);
 	if (ret < 0)
@@ -716,11 +720,11 @@ static int hab_sign(struct config_data *data, const char *csfcmds,
 	if (ret == -1)
 		return -EINVAL;
 	else if (ret == 0)
-		ret = asprintf(&command, "%s -o %s -i /dev/stdin",
-			       cst, csffile);
+		ret = asprintf(&command, "%s -o %s -i /dev/stdin %s",
+			       cst, csffile, cstopts);
 	else
-		ret = asprintf(&command, "%s -o %s;",
-			       cst, csffile);
+		ret = asprintf(&command, "%s -o %s %s;",
+			       cst, csffile, cstopts);
 	if (ret < 0)
 		return -ENOMEM;
 

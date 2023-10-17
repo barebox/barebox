@@ -325,6 +325,22 @@ static int do_hab(struct config_data *data, int argc, char *argv[])
 	return 0;
 }
 
+static void
+imx8m_get_offset_size(struct config_data *data,
+		      uint32_t *offset, uint32_t *signed_size)
+{
+	unsigned int hdrlen = HEADER_LEN;
+
+	if (flexspi_image(data))
+		hdrlen += FLEXSPI_HEADER_LEN;
+
+	*signed_size = roundup(data->pbl_code_size + hdrlen, 0x1000);
+
+	*offset += data->header_gap;
+	if (data->signed_hdmi_firmware_file)
+		*offset += PLUGIN_HDMI_SIZE;
+}
+
 static int do_hab_blocks(struct config_data *data, int argc, char *argv[])
 {
 	char *str;
@@ -346,17 +362,8 @@ static int do_hab_blocks(struct config_data *data, int argc, char *argv[])
 	/*
 	 * Ensure we only sign the PBL for i.MX8MQ
 	 */
-	if (data->pbl_code_size && cpu_is_mx8m(data)) {
-		unsigned int hdrlen = HEADER_LEN;
-
-		if (flexspi_image(data))
-			hdrlen += FLEXSPI_HEADER_LEN;
-
-		offset += data->header_gap;
-		signed_size = roundup(data->pbl_code_size + hdrlen, 0x1000);
-		if (data->signed_hdmi_firmware_file)
-			offset += PLUGIN_HDMI_SIZE;
-	}
+	if (data->pbl_code_size && cpu_is_mx8m(data))
+		imx8m_get_offset_size(data, &offset, &signed_size);
 
 	if (signed_size > 0) {
 		ret = asprintf(&str, "Blocks = 0x%08x 0x%08x 0x%08x \"%s\"",

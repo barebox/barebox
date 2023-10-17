@@ -10,6 +10,9 @@
  * CONFIG_HABV4_IMG_CRT_PEM
  */
 #if defined(CONFIG_HABV4) && defined(CONFIG_CPU_64)
+#if defined(CONFIG_HABV4_QSPI)
+hab_qspi
+#endif
 hab [Header]
 hab Version = 4.3
 hab Hash Algorithm = sha256

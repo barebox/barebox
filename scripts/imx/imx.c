@@ -325,6 +325,24 @@ static int hab_add_str(struct config_data *data, const char *str)
 	return 0;
 }
 
+static int hab_add_barebox_blocks(struct config_data *data,
+				  const char *csf_str,
+				  const char *flexspi_csf_str)
+{
+	data->csf = strcata(data->csf, csf_str);
+	if (!data->csf)
+		return -ENOMEM;
+
+	if (!flexspi_csf_str)
+		return 0;
+
+	data->flexspi_csf = strcata(data->flexspi_csf, flexspi_csf_str);
+	if (!data->flexspi_csf)
+		return -ENOMEM;
+
+	return 0;
+}
+
 static int do_hab(struct config_data *data, int argc, char *argv[])
 {
 	int i, ret;
@@ -364,7 +382,7 @@ imx8m_get_offset_size(struct config_data *data,
 
 static int do_hab_blocks(struct config_data *data, int argc, char *argv[])
 {
-	char *str;
+	char *str, *flexspi_str = NULL;
 	int ret;
 	int i;
 	uint32_t signed_size = data->load_size;
@@ -399,7 +417,7 @@ static int do_hab_blocks(struct config_data *data, int argc, char *argv[])
 	if (ret < 0)
 		return -ENOMEM;
 
-	ret = hab_add_str(data, str);
+	ret = hab_add_barebox_blocks(data, str, flexspi_str);
 	free(str);
 	if (ret)
 		return ret;

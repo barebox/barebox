@@ -116,6 +116,7 @@ struct config_data {
 			 uint32_t val, int width, int set_bits, int clear_bits);
 	int (*nop)(const struct config_data *data);
 	char *csf;
+	char *flexspi_csf;
 	int sign_image;
 	char *signed_hdmi_firmware_file;
 	int encrypt_image;

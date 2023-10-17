@@ -224,7 +224,7 @@ static enum hab_status imx8m_read_sram_events(enum hab_status status,
 		}
 	}
 	while (i < num_events) {
-		if (events[i]->status == status) {
+		if (events[i]->status >= status) {
 			if (internal_index == index) {
 				*bytes = sizeof(struct hab_event_record) +
 					be16_to_cpu(events[i]->hdr.len);

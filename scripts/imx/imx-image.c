@@ -796,6 +796,8 @@ static int hab_sign(struct config_data *data, const char *csfcmds,
 
 	xread(fd, buf, s.st_size);
 
+	close(fd);
+
 	/*
 	 * For i.MX8M, write into the reserved CSF section
 	 */

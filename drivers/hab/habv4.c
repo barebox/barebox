@@ -168,6 +168,7 @@ struct habv4_rvt {
 #define FSL_SIP_HAB_REPORT_STATUS       0x04
 #define FSL_SIP_HAB_FAILSAFE            0x05
 #define FSL_SIP_HAB_CHECK_TARGET        0x06
+#define FSL_SIP_HAB_GET_VERSION		0x07
 
 static enum hab_status hab_sip_report_status(enum hab_config *config,
 					     enum habv4_state *state)
@@ -191,6 +192,15 @@ static enum hab_status hab_sip_report_status(enum hab_config *config,
 		v8_inv_dcache_range((unsigned long)config,
 				    (unsigned long)config + sizeof(*state));
 	return (enum hab_status)res.a0;
+}
+
+static uint32_t hab_sip_get_version(void)
+{
+	struct arm_smccc_res res;
+
+	arm_smccc_smc(FSL_SIP_HAB, FSL_SIP_HAB_GET_VERSION, 0, 0, 0, 0, 0, 0, &res);
+
+	return (uint32_t)res.a0;
 }
 
 #define IMX8MQ_ROM_OCRAM_ADDRESS	0x9061C0
@@ -609,6 +619,8 @@ static int init_imx8m_hab_get_status(void)
 	if (!cpu_is_mx8m())
 		/* can happen in multi-image builds and is not an error */
 		return 0;
+
+	pr_info("ROM version: 0x%x\n", hab_sip_get_version());
 
 	/*
 	 * Nobody will check the return value if there were HAB errors, but the

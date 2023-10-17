@@ -169,6 +169,10 @@ static int imx8m_hab_lockdown_device_ocotp(void)
 	if (ret < 0)
 		return ret;
 
+	/* Only i.MX8MQ requires fusing of DIR_BT_DIS */
+	if (!cpu_is_mx8mq())
+		return ret;
+
 	return imx_ocotp_write_field(MX8MQ_OCOTP_DIR_BT_DIS, 1);
 }
 
@@ -239,7 +243,7 @@ static struct imx_hab_ops *imx_get_hab_ops(void)
 		ops = &imx_hab_ops_iim;
 	else if (IS_ENABLED(CONFIG_HABV4) && cpu_is_mx6())
 		ops = &imx6_hab_ops_ocotp;
-	else if (IS_ENABLED(CONFIG_HABV4) && cpu_is_mx8mq())
+	else if (IS_ENABLED(CONFIG_HABV4) && cpu_is_mx8m())
 		ops = &imx8m_hab_ops_ocotp;
 	else
 		return NULL;

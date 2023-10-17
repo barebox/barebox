@@ -290,18 +290,6 @@ static int write_mem_v1(uint32_t addr, uint32_t val, int width, int set_bits, in
 	return 0;
 }
 
-static bool flexspi_image(const struct config_data *data)
-{
-	/*
-	 *           | FlexSPI-FCFB  | FlexSPI-IVT
-	 * -----------------------------------------
-	 * i.MX8MM   |   0x0         |  0x1000
-	 * i.MX8MN/P |   0x400       |  0x0
-	 */
-
-	return data->image_flexspi_ivt_offset || data->image_flexspi_fcfb_offset;
-}
-
 /*
  * ============================================================================
  * i.MX flash header v2 handling. Found on i.MX50, i.MX53 and i.MX6

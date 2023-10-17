@@ -197,7 +197,6 @@ static int imx8m_hab_device_locked_down_ocotp(void)
 }
 
 struct imx_hab_ops {
-	int (*init)(void);
 	int (*write_srk_hash)(const u8 *srk, unsigned flags);
 	int (*read_srk_hash)(u8 *srk);
 	int (*permanent_write_enable)(int enable);
@@ -231,28 +230,19 @@ static struct imx_hab_ops imx8m_hab_ops_ocotp = {
 
 static struct imx_hab_ops *imx_get_hab_ops(void)
 {
-	static struct imx_hab_ops *ops, *tmp;
-	int ret;
+	static struct imx_hab_ops *ops;
 
 	if (ops)
 		return ops;
 
 	if (IS_ENABLED(CONFIG_HABV3) && (cpu_is_mx25() || cpu_is_mx35()))
-		tmp = &imx_hab_ops_iim;
+		ops = &imx_hab_ops_iim;
 	else if (IS_ENABLED(CONFIG_HABV4) && cpu_is_mx6())
-		tmp = &imx6_hab_ops_ocotp;
+		ops = &imx6_hab_ops_ocotp;
 	else if (IS_ENABLED(CONFIG_HABV4) && cpu_is_mx8mq())
-		tmp = &imx8m_hab_ops_ocotp;
+		ops = &imx8m_hab_ops_ocotp;
 	else
 		return NULL;
-
-	if (tmp->init) {
-		ret = tmp->init();
-		if (ret)
-			return NULL;
-	}
-
-	ops = tmp;
 
 	return ops;
 }

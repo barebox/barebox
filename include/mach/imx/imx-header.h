@@ -7,6 +7,7 @@
 
 #define HEADER_LEN 0x1000	/* length of the blank area + IVT + DCD */
 #define CSF_LEN 0x2000		/* length of the CSF (needed for HAB) */
+#define FLEXSPI_HEADER_LEN	HEADER_LEN
 
 #define DEK_BLOB_HEADER 8	/* length of DEK blob header */
 #define DEK_BLOB_KEY 32		/* length of DEK blob AES-256 key */

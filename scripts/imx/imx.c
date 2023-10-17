@@ -347,8 +347,13 @@ static int do_hab_blocks(struct config_data *data, int argc, char *argv[])
 	 * Ensure we only sign the PBL for i.MX8MQ
 	 */
 	if (data->pbl_code_size && cpu_is_mx8m(data)) {
+		unsigned int hdrlen = HEADER_LEN;
+
+		if (flexspi_image(data))
+			hdrlen += FLEXSPI_HEADER_LEN;
+
 		offset += data->header_gap;
-		signed_size = roundup(data->pbl_code_size + HEADER_LEN, 0x1000);
+		signed_size = roundup(data->pbl_code_size + hdrlen, 0x1000);
 		if (data->signed_hdmi_firmware_file)
 			offset += PLUGIN_HDMI_SIZE;
 	}

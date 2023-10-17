@@ -408,8 +408,6 @@ static size_t add_flexspi_fcfb_header(const struct config_data *data, void *buf)
 	return sizeof(nor_conf);
 }
 
-#define FLEXSPI_HEADER_LEN	HEADER_LEN
-
 static size_t
 add_flexspi_header(const struct config_data *data, void **_buf, size_t *header_len)
 {
@@ -812,8 +810,11 @@ static int hab_sign(struct config_data *data)
 		 * For i.MX8 insert the CSF data into the reserved CSF area
 		 * right behind the PBL
 		 */
-		offset = roundup(data->header_gap + data->pbl_code_size +
-				 HEADER_LEN, 0x1000);
+		offset = data->header_gap + data->pbl_code_size + HEADER_LEN;
+		if (flexspi_image(data))
+			offset += FLEXSPI_HEADER_LEN;
+
+		offset = roundup(offset, 0x1000);
 		if (data->signed_hdmi_firmware_file)
 			offset += PLUGIN_HDMI_SIZE;
 

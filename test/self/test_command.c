@@ -7,7 +7,7 @@
 
 BSELFTEST_GLOBALS();
 
-#if __LONG_MAX__ == 0x7ffffffff
+#if __LONG_MAX__ == 0x7fffffff
 #define LONG_MIN_STR		"-2147483648"
 #define LONG_MIN_PLUS_1_STR	"-2147483647"
 #define LONG_MAX_STR		 "2147483647"

@@ -468,8 +468,10 @@ int bootm_load_devicetree(struct image_data *data, void *fdt,
 	memcpy((void *)data->oftree_res->start, fdt, fdt_size);
 
 	of_print_cmdline(data->of_root_node);
-	if (bootm_verbose(data) > 1)
+	if (bootm_verbose(data) > 1) {
 		of_print_nodes(data->of_root_node, 0, ~0);
+		fdt_print_reserve_map(fdt);
+	}
 
 	return 0;
 }

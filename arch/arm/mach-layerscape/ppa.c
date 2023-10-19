@@ -130,7 +130,7 @@ int ls1046a_ppa_init(resource_size_t ppa_start, resource_size_t ppa_size)
 	if (ret)
 		return ret;
 
-	of_add_reserve_entry(ppa_start, ppa_end);
+	of_register_fixup(of_fixup_reserved_memory, res);
 
 	return 0;
 }

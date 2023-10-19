@@ -117,7 +117,7 @@ int ls1046a_ppa_init(resource_size_t ppa_start, resource_size_t ppa_size)
 	size_t ppa_fw_size;
 	int ret;
 
-	res = request_sdram_region("ppa", ppa_start, ppa_size);
+	res = reserve_sdram_region("ppa", ppa_start, ppa_size);
 	if (!res) {
 		pr_err("Cannot request SDRAM region %pa - %pa\n",
 		       &ppa_start, &ppa_end);

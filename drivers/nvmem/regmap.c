@@ -32,7 +32,7 @@ static int nvmem_regmap_read(void *ctx, unsigned offset, void *buf, size_t bytes
 		return -EINVAL;
 
 	for (i = roffset; i < roffset + rbytes; i += stride) {
-		ret = regmap_bulk_read(map, i, &val, stride);
+		ret = regmap_read(map, i, &val);
 		if (ret) {
 			dev_err(regmap_get_device(map), "Can't read data%d (%d)\n", i, ret);
 			return ret;

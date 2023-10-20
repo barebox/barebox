@@ -20,7 +20,7 @@
  */
 
 #include <of_device.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <clock.h>
 #include <linux/gpio/consumer.h>
 #include <linux/printk.h>

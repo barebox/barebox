@@ -21,7 +21,7 @@
 #include <linux/kernel.h>
 #include <of_address.h>
 #include <of_pci.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <magicvar.h>
 #include <globalvar.h>
 #include <mfd/syscon.h>

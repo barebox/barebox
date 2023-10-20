@@ -12,7 +12,7 @@
 #include <linux/list.h>
 #include <linux/clk.h>
 #include <linux/clk/at91_pmc.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 
 
 #include "pmc.h"

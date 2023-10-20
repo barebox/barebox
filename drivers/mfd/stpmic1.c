@@ -9,7 +9,7 @@
 #include <i2c/i2c.h>
 #include <init.h>
 #include <of.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <linux/mfd/stpmic1.h>
 
 static const struct regmap_config stpmic1_regmap_i2c_config = {

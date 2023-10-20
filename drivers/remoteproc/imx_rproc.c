@@ -17,7 +17,7 @@
 #include <memory.h>
 #include <of_address.h>
 #include <of_device.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 
 #define IMX7D_SRC_SCR			0x0C
 #define IMX7D_ENABLE_M4			BIT(3)

@@ -15,7 +15,7 @@
 #include <io.h>
 #include <linux/clk.h>
 #include <mfd/syscon.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <linux/sizes.h>
 
 struct i2c_regs {

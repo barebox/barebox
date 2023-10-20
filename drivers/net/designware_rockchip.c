@@ -4,7 +4,7 @@
 #include <init.h>
 #include <dma.h>
 #include <net.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <of_net.h>
 #include <mfd/syscon.h>
 #include <linux/iopoll.h>

@@ -14,7 +14,7 @@
 #include <init.h>
 #include <i2c/i2c.h>
 #include <of_device.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <linux/regulator/of_regulator.h>
 #include <regulator.h>
 #include <linux/mfd/rk808.h>

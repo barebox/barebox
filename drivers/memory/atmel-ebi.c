@@ -14,7 +14,7 @@
 #include <init.h>
 #include <driver.h>
 #include <of_device.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <soc/at91/atmel-sfr.h>
 #include <linux/time.h>
 #include <linux/printk.h>

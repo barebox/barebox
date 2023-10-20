@@ -3,7 +3,7 @@
 #include <common.h>
 #include <init.h>
 #include <net.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <mfd/syscon.h>
 #include <linux/clk.h>
 

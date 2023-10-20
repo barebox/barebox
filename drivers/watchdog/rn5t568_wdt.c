@@ -8,7 +8,7 @@
 #include <common.h>
 #include <init.h>
 #include <watchdog.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <of.h>
 
 #define RN5T568_WATCHDOG 0x0b

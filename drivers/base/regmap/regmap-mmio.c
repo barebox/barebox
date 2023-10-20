@@ -7,7 +7,7 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <io.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 
 #include "internal.h"
 

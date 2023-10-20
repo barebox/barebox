@@ -37,7 +37,7 @@
 #include <linux/clk.h>
 #include <linux/clk/at91_pmc.h>
 #include <mfd/syscon.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 
 #include "pmc.h"
 

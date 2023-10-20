@@ -21,7 +21,7 @@
 #include <driver.h>
 #include <poweroff.h>
 #include <of.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 
 struct rk808_reg_data {
 	int addr;

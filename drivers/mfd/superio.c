@@ -7,7 +7,7 @@
 
 #include <common.h>
 #include <superio.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 
 struct device *superio_func_add(struct superio_chip *siochip, const char *name)
 {

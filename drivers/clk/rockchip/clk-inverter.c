@@ -10,7 +10,7 @@
 #include <xfuncs.h>
 #include <linux/barebox-wrapper.h>
 #include <linux/clk.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <linux/spinlock.h>
 #include "clk.h"
 

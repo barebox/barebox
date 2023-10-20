@@ -23,7 +23,7 @@
 #include <module.h>
 #include <of.h>
 #include <of_device.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <regulator.h>
 
 #define AXP20X_OFF	BIT(7)

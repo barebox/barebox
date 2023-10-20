@@ -7,7 +7,7 @@
 #include <reset_source.h>
 #include <mfd/syscon.h>
 #include <restart.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <init.h>
 
 #include <asm/ftu.h>

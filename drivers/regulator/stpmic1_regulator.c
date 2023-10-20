@@ -5,7 +5,7 @@
 #include <common.h>
 #include <init.h>
 #include <of_device.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <linux/regulator/of_regulator.h>
 #include <regulator.h>
 #include <linux/mfd/stpmic1.h>

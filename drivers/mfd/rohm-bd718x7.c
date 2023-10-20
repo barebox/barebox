@@ -14,7 +14,7 @@
 #include <driver.h>
 #include <poweroff.h>
 #include <of.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 
 static struct mfd_cell bd71837_mfd_cells[] = {
 	{ .name = "gpio-keys", },

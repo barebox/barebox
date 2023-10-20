@@ -7,7 +7,7 @@
 #include <init.h>
 #include <driver.h>
 #include <of.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <mfd/syscon.h>
 #include <linux/reboot-mode.h>
 #include <linux/overflow.h>

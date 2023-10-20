@@ -14,7 +14,7 @@
 #include <linux/err.h>
 #include <linux/reset-controller.h>
 #include <mfd/syscon.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <of_device.h>
 
 struct imx7_src_signal {

@@ -57,7 +57,7 @@
 #include <of.h>
 #include <of_device.h>
 #include <linux/iopoll.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <soc/at91/atmel-sfr.h>
 
 #include "pmecc.h"

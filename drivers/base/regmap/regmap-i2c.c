@@ -4,7 +4,7 @@
  */
 
 #include <i2c/i2c.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 
 
 static int regmap_i2c_read(void *context,

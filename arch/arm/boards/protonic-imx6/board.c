@@ -20,7 +20,7 @@
 #include <mfd/syscon.h>
 #include <net.h>
 #include <of_device.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <sys/mount.h>
 #include <sys/stat.h>
 #include <unistd.h>

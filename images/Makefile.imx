@@ -26,6 +26,7 @@ $(eval
 ifeq ($($(strip $(1))), y)
 	pblb-y += $(strip $(2))
 	CFG_$(strip $(2)).pblb.imximg = $(board)/$(strip $(3)).imxcfg
+	MAX_PBL_MEMORY_SIZE_$(strip $(2)) = 0x3f000
 	FILE_barebox-$(strip $(4)).img    = $(strip $(2)).pblb.pimximg
 	FILE_barebox-$(strip $(4))-s.img  = $(strip $(2)).pblb.psimximg
 	image-y += barebox-$(strip $(4)).img

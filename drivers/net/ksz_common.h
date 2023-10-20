@@ -3,7 +3,7 @@
 #define NET_KSZ_COMMON_H_
 
 #include <linux/swab.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <linux/bitops.h>
 #include <platform_data/ksz9477_reg.h>
 

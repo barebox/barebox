@@ -24,7 +24,7 @@
 #include <io.h>
 #include <of.h>
 #include <clock.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <linux/clk.h>
 #include <machine_id.h>
 #ifdef CONFIG_ARCH_IMX
@@ -622,7 +622,7 @@ static int imx_ocotp_read_mac(const struct imx_ocotp_data *data,
 	u8 buf[MAC_BYTES];
 	int ret;
 
-	ret = regmap_bulk_read(map, offset, buf, MAC_BYTES);
+	ret = regmap_bulk_read(map, offset, buf, MAC_BYTES / 4);
 
 	if (ret < 0)
 		return ret;
@@ -649,7 +649,7 @@ static int imx_ocotp_set_mac(struct param_d *param, void *priv)
 	struct ocotp_priv_ethaddr *ethaddr = priv;
 	int ret;
 
-	ret = regmap_bulk_read(ethaddr->map, ethaddr->offset, buf, MAC_BYTES);
+	ret = regmap_bulk_read(ethaddr->map, ethaddr->offset, buf, MAC_BYTES / 4);
 	if (ret < 0)
 		return ret;
 
@@ -662,7 +662,7 @@ static int imx_ocotp_set_mac(struct param_d *param, void *priv)
 					  OCOTP_MAC_TO_HW);
 
 	return regmap_bulk_write(ethaddr->map, ethaddr->offset,
-				 buf, MAC_BYTES);
+				 buf, MAC_BYTES / 4);
 }
 
 static struct regmap_bus imx_ocotp_regmap_bus = {

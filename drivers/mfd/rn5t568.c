@@ -13,7 +13,7 @@
 #include <i2c/i2c.h>
 #include <init.h>
 #include <of.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <reset_source.h>
 #include <restart.h>
 

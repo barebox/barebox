@@ -10,7 +10,7 @@
 #include <of.h>
 #include <of_device.h>
 #include <malloc.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <mfd/syscon.h>
 #include <linux/nvmem-provider.h>
 
@@ -61,7 +61,7 @@ static int snvs_lpgpr_write(void *ctx, unsigned offset, const void *val, size_t 
 		return -EPERM;
 
 	return regmap_bulk_write(priv->regmap, dcfg->offset + offset, val,
-				 bytes);
+				 bytes / 4);
 }
 
 static int snvs_lpgpr_read(void *ctx, unsigned offset, void *val, size_t bytes)
@@ -70,7 +70,7 @@ static int snvs_lpgpr_read(void *ctx, unsigned offset, void *val, size_t bytes)
 	const struct snvs_lpgpr_cfg *dcfg = priv->dcfg;
 
 	return regmap_bulk_read(priv->regmap, dcfg->offset + offset,
-				val, bytes);
+				val, bytes / 4);
 }
 
 static int snvs_lpgpr_probe(struct device *dev)

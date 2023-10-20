@@ -199,10 +199,16 @@ int regmap_multi_register_cdev(struct regmap *map8,
 int regmap_write(struct regmap *map, unsigned int reg, unsigned int val);
 int regmap_read(struct regmap *map, unsigned int reg, unsigned int *val);
 
+#ifndef regmap_bulk_read
+#define regmap_bulk_read regmap_bulk_read
 int regmap_bulk_read(struct regmap *map, unsigned int reg, void *val,
-		    size_t val_len);
+		    size_t val_count);
+#endif
+#ifndef regmap_bulk_write
+#define regmap_bulk_write regmap_bulk_write
 int regmap_bulk_write(struct regmap *map, unsigned int reg,
-		     const void *val, size_t val_len);
+		     const void *val, size_t val_count);
+#endif
 
 int regmap_get_val_bytes(struct regmap *map);
 int regmap_get_max_register(struct regmap *map);

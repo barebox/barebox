@@ -5,7 +5,7 @@
 
 #include <common.h>
 #include <fcntl.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <linux/bitfield.h>
 #include <linux/export.h>
 
@@ -46,7 +46,7 @@ static ssize_t regmap_multi_cdev_read(struct cdev *cdev, void *buf, size_t count
 		return -EINVAL;
 
 	count = ALIGN_DOWN(count, rwsize);
-	return regmap_bulk_read(map, offset, buf, count) ?: count;
+	return regmap_bulk_read(map, offset, buf, count / rwsize) ?: count;
 }
 
 static ssize_t regmap_multi_cdev_write(struct cdev *cdev, const void *buf, size_t count,
@@ -60,7 +60,7 @@ static ssize_t regmap_multi_cdev_write(struct cdev *cdev, const void *buf, size_
 		return -EINVAL;
 
 	count = ALIGN_DOWN(count, rwsize);
-	return regmap_bulk_write(map, offset, buf, count) ?: count;
+	return regmap_bulk_write(map, offset, buf, count / rwsize) ?: count;
 }
 
 static struct cdev_operations regmap_multi_fops = {

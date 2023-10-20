@@ -6,12 +6,22 @@
 #include <errno.h>
 #include <init.h>
 #include <io.h>
-#include <regmap.h>
+#include <linux/regmap.h>
 #include <linux/nvmem-provider.h>
 
 static int nvmem_regmap_write(void *ctx, unsigned offset, const void *val, size_t bytes)
 {
-	return regmap_bulk_write(ctx, offset, val, bytes);
+	struct regmap *map = ctx;
+
+	/*
+	 * eFuse writes going through this function may be irreversible,
+	 * so expect users to observe alignment.
+	 */
+	if (bytes % regmap_get_val_bytes(map))
+		return -EINVAL;
+
+	return regmap_bulk_write(map, offset, val,
+				 bytes / regmap_get_val_bytes(map));
 }
 
 static int nvmem_regmap_read(void *ctx, unsigned offset, void *buf, size_t bytes)

@@ -8,7 +8,6 @@
 #define _LINUX_STM32_GPTIMER_H_
 
 #include <clock.h>
-#include <regmap.h>
 
 #define TIM_CR1		0x00	/* Control Register 1      */
 #define TIM_CR2		0x04	/* Control Register 2      */
@@ -87,6 +86,8 @@
 #define TIM_BDTR_BKF_MASK	0xF
 #define TIM_BDTR_BKF_SHIFT	16
 #define TIM_BDTR_BK2F_SHIFT	20
+
+struct regmap;
 
 struct stm32_timers {
 	struct clk *clk;

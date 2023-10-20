@@ -13,7 +13,6 @@
 
 #include <linux/kernel.h>
 #include <of.h>
-#include <regmap.h>
 
 #define ATMEL_SMC_SETUP(cs)			(((cs) * 0x10))
 #define ATMEL_HSMC_SETUP(layout, cs)		\
@@ -92,6 +91,8 @@ struct atmel_smc_cs_conf {
 	u32 timings;
 	u32 mode;
 };
+
+struct regmap;
 
 void atmel_smc_cs_conf_init(struct atmel_smc_cs_conf *conf);
 int atmel_smc_cs_conf_set_timing(struct atmel_smc_cs_conf *conf,

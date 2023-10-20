@@ -269,6 +269,10 @@ int regmap_bulk_read(struct regmap *map, unsigned int reg, void *val,
 		return -EINVAL;
 
 	for (i = 0; i < val_count; i++) {
+
+#ifdef CONFIG_64BIT
+		u64 *u64 = val;
+#endif
 		u32 *u32 = val;
 		u16 *u16 = val;
 		u8 *u8 = val;
@@ -278,6 +282,11 @@ int regmap_bulk_read(struct regmap *map, unsigned int reg, void *val,
 			goto out;
 
 		switch (map->format.val_bytes) {
+#ifdef CONFIG_64BIT
+		case 8:
+			u64[i] = v;
+			break;
+#endif
 		case 4:
 			u32[i] = v;
 			break;
@@ -335,6 +344,11 @@ int regmap_bulk_write(struct regmap *map, unsigned int reg,
 		case 4:
 			ival = *(u32 *)(val + (i * val_bytes));
 			break;
+#ifdef CONFIG_64BIT
+		case 8:
+			ival = *(u64 *)(val + (i * val_bytes));
+			break;
+#endif
 		default:
 			ret = -EINVAL;
 			goto out;

@@ -11,6 +11,7 @@
 #include <net.h>
 #include <linux/clk.h>
 #include <mfd/syscon.h>
+#include <linux/regmap.h>
 
 #include "designware_eqos.h"
 

@@ -15,6 +15,7 @@
 #include <linux/phy/phy.h>
 #include <linux/clk.h>
 #include <linux/err.h>
+#include <linux/regmap.h>
 #include <mfd/syscon.h>
 #include <regulator.h>
 

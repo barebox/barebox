@@ -9,6 +9,7 @@
 #include <common.h>
 #include <init.h>
 #include <poweroff.h>
+#include <linux/regmap.h>
 #include <mfd/syscon.h>
 
 static struct regmap *map;

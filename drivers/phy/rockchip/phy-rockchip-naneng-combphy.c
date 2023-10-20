@@ -17,6 +17,7 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <linux/reset.h>
+#include <linux/regmap.h>
 #include <mfd/syscon.h>
 #include <linux/iopoll.h>
 #include <dt-bindings/phy/phy.h>

@@ -16,6 +16,7 @@
 #include <init.h>
 #include <malloc.h>
 #include <mfd/syscon.h>
+#include <linux/regmap.h>
 #include <of.h>
 #include <of_address.h>
 #include <pinctrl.h>

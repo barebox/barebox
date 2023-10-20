@@ -8,6 +8,7 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <mfd/syscon.h>
+#include <linux/regmap.h>
 
 #define UARTDR			0x00
 # define UARTDR_FRMERR		(1 << 8)

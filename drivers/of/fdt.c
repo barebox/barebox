@@ -14,7 +14,22 @@
 #include <memory.h>
 #include <linux/sizes.h>
 #include <linux/ctype.h>
+#include <linux/overflow.h>
+#include <linux/string_helpers.h>
 #include <linux/err.h>
+
+static inline bool __dt_ptr_ok(const struct fdt_header *fdt, const void *p,
+				  unsigned elem_size, unsigned elem_align)
+{
+	if (!p || (const void *)fdt > p || !PTR_IS_ALIGNED(p, elem_align) ||
+	     p + elem_size > (const void *)fdt + be32_to_cpu(fdt->totalsize)) {
+		pr_err("unflatten: offset overflows or misaligns FDT\n");
+		return false;
+	}
+
+	return true;
+}
+#define dt_ptr_ok(fdt, p) __dt_ptr_ok(fdt, p, sizeof(*(p)), __alignof__(*(p)))
 
 static inline uint32_t dt_struct_advance(struct fdt_header *f, uint32_t dt, int size)
 {
@@ -29,27 +44,38 @@ static inline uint32_t dt_struct_advance(struct fdt_header *f, uint32_t dt, int 
 
 static inline char *dt_string(struct fdt_header *f, char *strstart, uint32_t ofs)
 {
+	char *str;
+
 	if (ofs > f->size_dt_strings)
 		return NULL;
-	else
-		return strstart + ofs;
+
+	str = strstart + ofs;
+
+	return string_is_terminated(str, f->size_dt_strings - ofs) ? str : NULL;
 }
 
 static int of_reservemap_num_entries(const struct fdt_header *fdt)
 {
-	const struct fdt_reserve_entry *r;
+	/*
+	 * FDT may violate spec mandated 8-byte alignment if unflattening it out of
+	 * a FIT image property, so play it safe here.
+	 */
+	const struct fdt_reserve_entry_unaligned {
+		fdt64_t address;
+		fdt64_t size;
+	} __packed *r;
 	int n = 0;
 
 	r = (void *)fdt + be32_to_cpu(fdt->off_mem_rsvmap);
 
-	while (r->size) {
+	while (dt_ptr_ok(fdt, r) && r->size) {
 		n++;
 		r++;
 		if (n == OF_MAX_RESERVE_MAP)
 			return -EINVAL;
 	}
 
-	return n;
+	return r->size == 0 ? n : -ESPIPE;
 }
 
 /**
@@ -135,12 +161,12 @@ static struct device_node *__of_unflatten_dtb(const void *infdt, int size,
 	if (f.totalsize > size)
 		return ERR_PTR(-EINVAL);
 
-	if (f.off_dt_struct + f.size_dt_struct > f.totalsize) {
+	if (size_add(f.off_dt_struct, f.size_dt_struct) > f.totalsize) {
 		pr_err("unflatten: dt size exceeds total size\n");
 		return ERR_PTR(-ESPIPE);
 	}
 
-	if (f.off_dt_strings + f.size_dt_strings > f.totalsize) {
+	if (size_add(f.off_dt_strings, f.size_dt_strings) > f.totalsize) {
 		pr_err("unflatten: string size exceeds total size\n");
 		return ERR_PTR(-ESPIPE);
 	}
@@ -157,7 +183,13 @@ static struct device_node *__of_unflatten_dtb(const void *infdt, int size,
 		goto err;
 
 	while (1) {
-		tag = be32_to_cpu(*(uint32_t *)(infdt + dt_struct));
+		__be32 *tagp = (uint32_t *)(infdt + dt_struct);
+		if (!dt_ptr_ok(infdt, tagp)) {
+			ret = -ESPIPE;
+			goto err;
+		}
+
+		tag = be32_to_cpu(*tagp);
 
 		switch (tag) {
 		case FDT_BEGIN_NODE:

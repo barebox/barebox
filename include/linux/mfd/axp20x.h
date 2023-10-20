@@ -8,7 +8,6 @@
 #ifndef __LINUX_MFD_AXP20X_H
 #define __LINUX_MFD_AXP20X_H
 
-#include <regmap.h>
 #include <poweroff.h>
 
 enum axp20x_variants {
@@ -448,6 +447,9 @@ enum {
 	AXP813_REG_ID_MAX,
 };
 
+struct regmap;
+struct regmap_config;
+
 struct axp20x_dev {
 	struct device			*dev;
 	struct regmap			*regmap;
@@ -457,28 +459,6 @@ struct axp20x_dev {
 	const struct regmap_config	*regmap_cfg;
 	struct poweroff_handler		poweroff;
 };
-
-/* generic helper function for reading 9-16 bit wide regs */
-static inline int axp20x_read_variable_width(struct regmap *regmap,
-	unsigned int reg, unsigned int width)
-{
-	unsigned int reg_val, result;
-	int err;
-
-	err = regmap_read(regmap, reg, &reg_val);
-	if (err)
-		return err;
-
-	result = reg_val << (width - 8);
-
-	err = regmap_read(regmap, reg + 1, &reg_val);
-	if (err)
-		return err;
-
-	result |= reg_val;
-
-	return result;
-}
 
 /**
  * axp20x_match_device(): Setup axp20x variant related fields

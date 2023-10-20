@@ -11,6 +11,7 @@
 #include <linux/sizes.h>
 #include <mach/imx/bbu.h>
 #include <mfd/pfuze.h>
+#include <linux/regmap.h>
 
 #include <envfs.h>
 

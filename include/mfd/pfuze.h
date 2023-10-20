@@ -3,7 +3,7 @@
 #ifndef __INCLUDE_PFUZE_H
 #define __INCLUDE_PFUZE_H
 
-#include <regmap.h>
+struct regmap;
 
 #ifdef CONFIG_REGULATOR_PFUZE
 /*

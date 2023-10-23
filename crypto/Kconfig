@@ -147,4 +147,10 @@ config CRYPTO_KEYSTORE
 	  This is a simple keystore, which can be used to pass keys
 	  between several components via simple interface.
 
+config JWT
+	bool "JSON Web Token support" if COMPILE_TEST
+	select JSMN
+	select BASE64
+	select CRYPTO_RSA
+
 endmenu

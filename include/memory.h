@@ -43,13 +43,8 @@ static inline struct resource *request_sdram_region(const char *name,
 	return __request_sdram_region(name, 0, start, size);
 }
 
-/* use for secure firmware to inhibit speculation */
-static inline struct resource *reserve_sdram_region(const char *name,
-						    resource_size_t start,
-						    resource_size_t size)
-{
-	return __request_sdram_region(name, IORESOURCE_BUSY, start, size);
-}
+struct resource *reserve_sdram_region(const char *name, resource_size_t start,
+				      resource_size_t size);
 
 int release_sdram_region(struct resource *res);
 

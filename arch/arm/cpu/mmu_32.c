@@ -558,8 +558,8 @@ void __mmu_init(bool mmu_on)
 
 		pos = bank->start;
 
+		/* Skip reserved regions */
 		for_each_reserved_region(bank, rsv) {
-			remap_range((void *)rsv->start, resource_size(rsv), MAP_UNCACHED);
 			remap_range((void *)pos, rsv->start - pos, MAP_CACHED);
 			pos = rsv->end + 1;
 		}

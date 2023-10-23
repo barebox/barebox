@@ -25,6 +25,25 @@ static const char uuenc_tbl_base64[65 + 1] = {
 	'\0' /* needed for uudecode.c only */
 };
 
+static char base64_trchr(char ch, bool url)
+{
+	if (!url)
+		return ch;
+
+	switch (ch) {
+	case '+':
+		return '-';
+	case '/':
+		return '_';
+	case '-':
+		return '+';
+	case '_':
+		return '/';
+	default:
+		return ch;
+	}
+}
+
 /*
  * Encode bytes at S of length LENGTH to uuencode or base64 format and place it
  * to STORE.  STORE will be 0-terminated, and must point to a writable
@@ -68,13 +87,14 @@ EXPORT_SYMBOL(uuencode);
  * Decode base64 encoded string. Stops on '\0'.
  *
  */
-int decode_base64(char *p_dst, int dst_len, const char *src)
+static int __decode_base64(char *p_dst, int dst_len, const char *src, bool url)
 {
 	const char *src_tail;
 	char *dst = p_dst;
 	int length = 0;
+	bool end_reached = false;
 
-	while (dst_len > 0) {
+	while (dst_len > 0 && !end_reached) {
 		unsigned char six_bit[4];
 		int count = 0;
 
@@ -101,13 +121,23 @@ int decode_base64(char *p_dst, int dst_len, const char *src)
 					 * because we did fully decode
 					 * the string (to "ABC").
 					 */
-					if (count == 0)
+					if (count == 0) {
 						src_tail = src;
+					} else if (url) {
+						end_reached = true;
+						goto out;
+					}
+
 					goto ret;
 				}
 				src++;
-				table_ptr = strchr(uuenc_tbl_base64, ch);
-			} while (!table_ptr);
+				table_ptr = strchr(uuenc_tbl_base64, base64_trchr(ch, url));
+			} while (!table_ptr && !url);
+
+			if (!table_ptr) {
+				end_reached = true;
+				goto out;
+			}
 
 			/* Convert encoded character to decimal */
 			ch = table_ptr - uuenc_tbl_base64;
@@ -119,6 +149,7 @@ int decode_base64(char *p_dst, int dst_len, const char *src)
 			six_bit[count] = ch;
 			count++;
 		}
+out:
 
 		/*
 		 * Transform 6-bit values to 8-bit ones.
@@ -151,4 +182,23 @@ ret:
 
 	return length;
 }
+
+/*
+ * Decode base64 encoded string. Stops on '\0'.
+ *
+ */
+int decode_base64(char *p_dst, int dst_len, const char *src)
+{
+	return __decode_base64(p_dst, dst_len, src, false);
+}
 EXPORT_SYMBOL(decode_base64);
+
+/*
+ * Decode base64url encoded string. Stops on '\0'.
+ *
+ */
+int decode_base64url(char *p_dst, int dst_len, const char *src)
+{
+	return __decode_base64(p_dst, dst_len, src, true);
+}
+EXPORT_SYMBOL(decode_base64url);

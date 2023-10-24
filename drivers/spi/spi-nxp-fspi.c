@@ -993,18 +993,19 @@ static int nxp_fspi_probe(struct device *dev)
 
 	/* find the resources */
 	res = dev_request_mem_resource(dev, 0);
-	f->iobase = IOMEM(res->start);
-	if (IS_ERR(f->iobase)) {
-		ret = PTR_ERR(f->iobase);
+	if (IS_ERR(res)) {
+		ret = PTR_ERR(res);
 		goto err_put_ctrl;
 	}
 
+	f->iobase = IOMEM(res->start);
+
 	res = dev_request_mem_resource(dev, 1);
-	f->ahb_addr = IOMEM(res->start);
-	if (IS_ERR(f->ahb_addr)) {
-		ret = PTR_ERR(f->ahb_addr);
+	if (IS_ERR(res)) {
+		ret = PTR_ERR(res);
 		goto err_put_ctrl;
 	}
+	f->ahb_addr = IOMEM(res->start);
 
 	/* assign memory mapped starting address and mapped size. */
 	f->memmap_phy = res->start;

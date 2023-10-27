@@ -586,9 +586,7 @@ void of_clean_reserve_map(void)
  * @__fdt: The devicetree blob
  *
  * This adds the reservemap entries previously collected in
- * of_add_reserve_entry() to a devicetree binary blob. This also
- * adds the devicetree itself to the reserved list, so after calling
- * this function the tree should not be relocated anymore.
+ * of_add_reserve_entry() to a devicetree binary blob.
  */
 void fdt_add_reserve_map(void *__fdt)
 {
@@ -616,10 +614,29 @@ void fdt_add_reserve_map(void *__fdt)
 		fdt_res++;
 	}
 
-	of_write_number(&fdt_res->address, (unsigned long)__fdt, 2);
-	of_write_number(&fdt_res->size, be32_to_cpu(fdt->totalsize), 2);
-	fdt_res++;
-
 	of_write_number(&fdt_res->address, 0, 2);
 	of_write_number(&fdt_res->size, 0, 2);
+}
+
+void fdt_print_reserve_map(const void *__fdt)
+{
+	const struct fdt_header *fdt = __fdt;
+	const struct fdt_reserve_entry *fdt_res =
+		__fdt + be32_to_cpu(fdt->off_mem_rsvmap);
+	int n = 0;
+
+	while (1) {
+		uint64_t size = fdt64_to_cpu(fdt_res->size);
+		uint64_t address = fdt64_to_cpu(fdt_res->address);
+
+		if (!size)
+			break;
+
+		printf("/memreserve/ #%d: 0x%08llx - 0x%08llx\n", n, address, address + size - 1);
+
+		n++;
+		fdt_res++;
+		if (n == OF_MAX_RESERVE_MAP)
+			return;
+	}
 }

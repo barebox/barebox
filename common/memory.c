@@ -15,6 +15,7 @@
 #include <asm/sections.h>
 #include <malloc.h>
 #include <of.h>
+#include <mmu.h>
 
 /*
  * Begin and End of memory area for malloc(), and current "brk"
@@ -209,6 +210,31 @@ struct resource *__request_sdram_region(const char *name, unsigned flags,
 	}
 
 	return NULL;
+}
+
+/* use for secure firmware to inhibit speculation */
+struct resource *reserve_sdram_region(const char *name, resource_size_t start,
+				      resource_size_t size)
+{
+	struct resource *res;
+
+	res = __request_sdram_region(name, IORESOURCE_BUSY, start, size);
+	if (IS_ERR(res))
+		return ERR_CAST(res);
+
+	if (!IS_ALIGNED(start, PAGE_SIZE)) {
+		pr_err("%s: %s start is not page aligned\n", __func__, name);
+		start = ALIGN_DOWN(start, PAGE_SIZE);
+	}
+
+	if (!IS_ALIGNED(size, PAGE_SIZE)) {
+		pr_err("%s: %s size is not page aligned\n", __func__, name);
+		size = ALIGN(size, PAGE_SIZE);
+	}
+
+	remap_range((void *)start, size, MAP_UNCACHED);
+
+	return res;
 }
 
 int release_sdram_region(struct resource *res)

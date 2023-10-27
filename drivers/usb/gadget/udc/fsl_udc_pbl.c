@@ -136,7 +136,7 @@ static void dtd_complete_irq(struct usb_dr_device *dr)
 		actual += len - 1;
 		to_transfer -= len - 1;
 
-		if (to_transfer == 0)
+		if (to_transfer <= 0)
 			state = state_complete;
 	}
 

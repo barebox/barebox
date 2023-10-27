@@ -484,12 +484,16 @@ static int transfer(int report, void *p, unsigned cnt, int *last_trans)
 		err = libusb_bulk_transfer(usb_dev_handle,
 					   (report < 3) ? 1 : 2 + EP_IN, p, cnt, last_trans, 1000);
 	} else {
-		unsigned char tmp[1028];
+		unsigned char tmp[1028] = { 0 };
 
 		tmp[0] = (unsigned char)report;
 
 		if (report < 3) {
 			memcpy(&tmp[1], p, cnt);
+
+			if (report == 2)
+				cnt = mach_id->max_transfer;
+
 			if (mach_id->hid_endpoint) {
 				int trans;
 				err = libusb_interrupt_transfer(usb_dev_handle,
@@ -739,7 +743,7 @@ static int send_buf(void *buf, unsigned len)
 	while (1) {
 		int now = get_min(cnt, mach_id->max_transfer);
 
-		if (!now)
+		if (now <= 0)
 			break;
 
 		err = transfer(2, p, now, &now);

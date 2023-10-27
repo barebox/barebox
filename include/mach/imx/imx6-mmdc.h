@@ -145,60 +145,60 @@ struct mx6sx_iomux_grp_regs {
  */
 #define MX6DQ_IOM_DDR_BASE      0x020e0500
 struct mx6dq_iomux_ddr_regs {
-	u32 res1[3];
-	u32 dram_sdqs5;
-	u32 dram_dqm5;
-	u32 dram_dqm4;
-	u32 dram_sdqs4;
-	u32 dram_sdqs3;
-	u32 dram_dqm3;
-	u32 dram_sdqs2;
-	u32 dram_dqm2;
-	u32 res2[16];
-	u32 dram_cas;
-	u32 res3[2];
-	u32 dram_ras;
-	u32 dram_reset;
-	u32 res4[2];
-	u32 dram_sdclk_0;
-	u32 dram_sdba2;
-	u32 dram_sdcke0;
-	u32 dram_sdclk_1;
-	u32 dram_sdcke1;
-	u32 dram_sdodt0;
-	u32 dram_sdodt1;
-	u32 res5;
-	u32 dram_sdqs0;
-	u32 dram_dqm0;
-	u32 dram_sdqs1;
-	u32 dram_dqm1;
-	u32 dram_sdqs6;
-	u32 dram_dqm6;
-	u32 dram_sdqs7;
-	u32 dram_dqm7;
+	u32 res1[3];		/* 0x020e0500 */
+	u32 dram_sdqs5;		/* 0x020e050c */
+	u32 dram_dqm5;		/* 0x020e0510 */
+	u32 dram_dqm4;		/* 0x020e0514 */
+	u32 dram_sdqs4;		/* 0x020e0518 */
+	u32 dram_sdqs3;		/* 0x020e051c */
+	u32 dram_dqm3;		/* 0x020e0520 */
+	u32 dram_sdqs2;		/* 0x020e0524 */
+	u32 dram_dqm2;		/* 0x020e0528 */
+	u32 res2[16];		/* 0x020e052c */
+	u32 dram_cas;		/* 0x020e056c */
+	u32 res3[2];		/* 0x020e0570 */
+	u32 dram_ras;		/* 0x020e0578 */
+	u32 dram_reset;		/* 0x020e057c */
+	u32 res4[2];		/* 0x020e0580 */
+	u32 dram_sdclk_0;	/* 0x020e0588 */
+	u32 dram_sdba2;		/* 0x020e058c */
+	u32 dram_sdcke0;	/* 0x020e0590 */
+	u32 dram_sdclk_1;	/* 0x020e0594 */
+	u32 dram_sdcke1;	/* 0x020e0598 */
+	u32 dram_sdodt0;	/* 0x020e059c */
+	u32 dram_sdodt1;	/* 0x020e05a0 */
+	u32 res5;		/* 0x020e05a4 */
+	u32 dram_sdqs0;		/* 0x020e05a8 */
+	u32 dram_dqm0;		/* 0x020e05ac */
+	u32 dram_sdqs1;		/* 0x020e05b0 */
+	u32 dram_dqm1;		/* 0x020e05b4 */
+	u32 dram_sdqs6;		/* 0x020e05b8 */
+	u32 dram_dqm6;		/* 0x020e05bc */
+	u32 dram_sdqs7;		/* 0x020e05c0 */
+	u32 dram_dqm7;		/* 0x020e05c4 */
 };
 
 #define MX6DQ_IOM_GRP_BASE      0x020e0700
 struct mx6dq_iomux_grp_regs {
-	u32 res1[18];
-	u32 grp_b7ds;
-	u32 grp_addds;
-	u32 grp_ddrmode_ctl;
-	u32 res2;
-	u32 grp_ddrpke;
-	u32 res3[6];
-	u32 grp_ddrmode;
-	u32 res4[3];
-	u32 grp_b0ds;
-	u32 grp_b1ds;
-	u32 grp_ctlds;
-	u32 res5;
-	u32 grp_b2ds;
-	u32 grp_ddr_type;
-	u32 grp_b3ds;
-	u32 grp_b4ds;
-	u32 grp_b5ds;
-	u32 grp_b6ds;
+	u32 res1[18];		/* 0x020e0700 */
+	u32 grp_b7ds;		/* 0x020e0748 */
+	u32 grp_addds;		/* 0x020e074c */
+	u32 grp_ddrmode_ctl;	/* 0x020e0750 */
+	u32 res2;		/* 0x020e0754 */
+	u32 grp_ddrpke;		/* 0x020e0758 */
+	u32 res3[6];		/* 0x020e075c */
+	u32 grp_ddrmode;	/* 0x020e0774 */
+	u32 res4[3];		/* 0x020e0778 */
+	u32 grp_b0ds;		/* 0x020e0784 */
+	u32 grp_b1ds;		/* 0x020e0788 */
+	u32 grp_ctlds;		/* 0x020e078c */
+	u32 res5;		/* 0x020e0790 */
+	u32 grp_b2ds;		/* 0x020e0794 */
+	u32 grp_ddr_type;	/* 0x020e0798 */
+	u32 grp_b3ds;		/* 0x020e079c */
+	u32 grp_b4ds;		/* 0x020e07a0 */
+	u32 grp_b5ds;		/* 0x020e07a4 */
+	u32 grp_b6ds;		/* 0x020e07a8 */
 };
 
 #define MX6SDL_IOM_DDR_BASE     0x020e0400

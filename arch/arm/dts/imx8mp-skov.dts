@@ -16,13 +16,13 @@
 
 		environment-sd {
 			compatible = "barebox,environment";
-			device-path = &env_sd;
+			device-path = &usdhc2, "partname:barebox-environment";
 			status = "disabled";
 		};
 
 		environment-emmc {
 			compatible = "barebox,environment";
-			device-path = &env_emmc;
+			device-path = &usdhc3, "partname:barebox-environment";
 			status = "disabled";
 		};
 	};
@@ -31,6 +31,7 @@
 		ethernet0 = &eqos;
 		ethernet1 = &lan1;
 		ethernet2 = &lan2;
+		state = &state;
 	};
 
 	leds {
@@ -62,6 +63,17 @@
 		};
 	};
 
+	reserved-memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		/* Address will be determined by the bootloader */
+		ramoops {
+			compatible = "ramoops";
+		};
+	};
+
 	reg_usdhc2_vmmc: regulator-usdhc2 {
 		compatible = "regulator-fixed";
 		pinctrl-names = "default";
@@ -72,40 +84,108 @@
 		gpio = <&gpio2 19 GPIO_ACTIVE_HIGH>;
 		enable-active-high;
 	};
-};
 
-&usdhc2 {
-	partitions {
-		compatible = "fixed-partitions";
-		#address-cells = <2>;
-		#size-cells = <2>;
+	state: state {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		magic = <0x1c5b3f49>;
+		compatible = "barebox,state";
+		backend-type = "raw";
+		backend = <&usdhc3>;
+                /*
+                 * barebox-state partition size: 1 MiB
+                 * nr. of redundant copies:      4
+                 * ==> max. stride size: 1 MiB / 4 = 256 KiB = 262144 Byte
+                 *
+                 * stride size:     262144 Byte
+                 * raw-header:     -    16 Byte
+                 * direct-storage: -     8 Byte
+                 *                 ------------
+                 * max state size:  262120 Byte
+                 *                  ===========
+                 */
+		backend-stridesize = <0x40000>;
 
-		partition@0 {
-			label = "barebox";
-			reg = <0x0 0x0 0x0 0x100000>;
+		bootstate {
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			system0 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+
+				remaining_attempts@0 {
+					reg = <0x0 0x4>;
+					type = "uint32";
+					default = <3>;
+				};
+				priority@4 {
+					reg = <0x4 0x4>;
+					type = "uint32";
+					default = <30>;
+				};
+			};
+
+			system1 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+
+				remaining_attempts@8 {
+					reg = <0x8 0x4>;
+					type = "uint32";
+					default = <3>;
+				};
+				priority@C {
+					reg = <0xC 0x4>;
+					type = "uint32";
+					default = <20>;
+				};
+			};
+
+			last_chosen@10 {
+				reg = <0x10 0x4>;
+				type = "uint32";
+			};
 		};
 
-		env_sd: partition@e0000 {
-			label = "barebox-environment";
-			reg = <0x0 0x100000 0x0 0x100000>;
+		display {
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			xres@14 {
+				reg = <0x14 0x4>;
+				type = "uint32";
+				default = <0>;
+			};
+
+			yres@18 {
+				reg = <0x18 0x4>;
+				type = "uint32";
+				default = <0>;
+			};
+
+			brightness@1C {
+				reg = <0x1C 0x1>;
+				type = "uint8";
+				default = <8>;
+			};
+
+			external@1D {
+				reg = <0x1D 0x1>;
+				type = "uint8";
+				default = <0>;
+			};
 		};
-	};
-};
 
-&usdhc3 {
-	partitions {
-		compatible = "fixed-partitions";
-		#address-cells = <2>;
-		#size-cells = <2>;
+		ethaddr {
+			#address-cells = <1>;
+			#size-cells = <1>;
 
-		partition@0 {
-			label = "barebox";
-			reg = <0x0 0x0 0x0 0x100000>;
-		};
-
-		env_emmc: partition@e0000 {
-			label = "barebox-environment";
-			reg = <0x0 0x100000 0x0 0x100000>;
+			eth2@1e {
+				reg = <0x1E 0x6>;
+				type = "mac";
+				default = [00 11 22 33 44 55];
+			};
 		};
 	};
 };
@@ -358,6 +438,23 @@
 };
 
 &iomuxc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog>;
+
+	pinctrl_hog: hoggrp {
+		fsl,pins = <
+			/* varaint id */
+			MX8MP_IOMUXC_GPIO1_IO08__GPIO1_IO08				0x100
+			MX8MP_IOMUXC_GPIO1_IO09__GPIO1_IO09				0x100
+			MX8MP_IOMUXC_GPIO1_IO10__GPIO1_IO10				0x100
+			MX8MP_IOMUXC_GPIO1_IO11__GPIO1_IO11				0x100
+			MX8MP_IOMUXC_GPIO1_IO12__GPIO1_IO12				0x100
+			MX8MP_IOMUXC_GPIO1_IO13__GPIO1_IO13				0x100
+			MX8MP_IOMUXC_GPIO1_IO14__GPIO1_IO14				0x100
+			MX8MP_IOMUXC_GPIO1_IO15__GPIO1_IO15				0x100
+		>;
+	};
+
 	pinctrl_eqos: eqosgrp {
 		fsl,pins = <
 			MX8MP_IOMUXC_ENET_RD0__ENET_QOS_RGMII_RD0			0x91

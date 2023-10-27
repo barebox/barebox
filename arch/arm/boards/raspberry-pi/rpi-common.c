@@ -110,6 +110,12 @@ static void rpi_add_led(void)
 		led_set_trigger(LED_TRIGGER_HEARTBEAT, &l->led);
 }
 
+static int rpi_eth_init(struct rpi_priv *priv)
+{
+	rpi_set_usbethaddr();
+	return 0;
+}
+
 static int rpi_b_init(struct rpi_priv *priv)
 {
 	rpi_leds[0].gpio = 16;
@@ -258,17 +264,35 @@ static enum reset_src_type rpi_decode_pm_rsts(struct device_node *chosen,
 
 static int rpi_vc_fdt_fixup(struct device_node *root, void *data)
 {
-	const struct device_node *vc_chosen = data;
-	struct device_node *chosen;
+	const struct device_node *vc_node = data;
+	struct device_node *node;
+	struct property *pp;
 
-	chosen = of_create_node(root, "/chosen");
-	if (!chosen)
+	node = of_create_node(root, vc_node->full_name);
+	if (!node)
 		return -ENOMEM;
 
-	of_copy_property(vc_chosen, "overlay_prefix", chosen);
-	of_copy_property(vc_chosen, "os_prefix", chosen);
+	for_each_property_of_node(vc_node, pp)
+		of_copy_property(vc_node, pp->name, node);
 
 	return 0;
+}
+
+static struct device_node *register_vc_fixup(struct device_node *root,
+					     const char *path)
+{
+	struct device_node *ret, *tmp;
+
+	ret = of_find_node_by_path_from(root, path);
+	if (ret) {
+		tmp = of_dup(ret);
+		tmp->full_name = xstrdup(ret->full_name);
+		of_register_fixup(rpi_vc_fdt_fixup, tmp);
+	} else {
+		pr_info("no '%s' node found in vc fdt\n", path);
+	}
+
+	return ret;
 }
 
 static u32 rpi_boot_mode, rpi_boot_part;
@@ -276,15 +300,11 @@ static u32 rpi_boot_mode, rpi_boot_part;
  * Some parameters are defined here:
  * https://www.raspberrypi.com/documentation/computers/configuration.html#part4
  */
-static void rpi_vc_fdt_parse(void *fdt)
+static void rpi_vc_fdt_parse(struct device_node *root)
 {
 	int ret;
-	struct device_node *root, *chosen, *bootloader, *memory;
+	struct device_node *chosen, *bootloader, *memory;
 	char *str;
-
-	root = of_unflatten_dtb(fdt, INT_MAX);
-	if (IS_ERR(root))
-		return;
 
 	str = of_read_vc_string(root, "serial-number");
 	if (str) {
@@ -298,13 +318,16 @@ static void rpi_vc_fdt_parse(void *fdt)
 		free(str);
 	}
 
-	chosen = of_find_node_by_path_from(root, "/chosen");
+	register_vc_fixup(root, "/system");
+	register_vc_fixup(root, "/axi");
+	register_vc_fixup(root, "/reserved-memory");
+	register_vc_fixup(root, "/hat");
+	register_vc_fixup(root, "/chosen/bootloader");
+	chosen = register_vc_fixup(root, "/chosen");
 	if (!chosen) {
 		pr_err("no '/chosen' node found in vc fdt\n");
 		goto out;
 	}
-
-	of_register_fixup(rpi_vc_fdt_fixup, of_dup(chosen));
 
 	bootloader = of_find_node_by_name(chosen, "bootloader");
 
@@ -363,7 +386,7 @@ out:
 	return;
 }
 
-static void rpi_vc_fdt(void)
+static struct device_node *rpi_vc_fdt(void)
 {
 	void *saved_vc_fdt;
 	struct fdt_header *oftree;
@@ -379,17 +402,17 @@ static void rpi_vc_fdt(void)
 		if (oftree->totalsize)
 			pr_err("there was an error copying fdt in pbl: %d\n",
 					be32_to_cpu(oftree->totalsize));
-		return;
+		return ERR_PTR(-EINVAL);
 	}
 
 	if (magic != FDT_MAGIC)
-		return;
+		return ERR_PTR(-EINVAL);
 
 	size = be32_to_cpu(oftree->totalsize);
 	if (write_file("/vc.dtb", saved_vc_fdt, size))
 		pr_err("failed to save videocore fdt to a file\n");
 
-	rpi_vc_fdt_parse(saved_vc_fdt);
+	return of_unflatten_dtb(saved_vc_fdt, INT_MAX);
 }
 
 static void rpi_set_kernel_name(void) {
@@ -452,6 +475,7 @@ static int rpi_devices_probe(struct device *dev)
 	const struct rpi_machine_data *dcfg;
 	struct regulator *reg;
 	struct rpi_priv *priv;
+	struct device_node *root;
 	const char *name, *ptr;
 	char *hostname;
 	int ret;
@@ -480,7 +504,8 @@ static int rpi_devices_probe(struct device *dev)
 	bcm2835_register_fb();
 	armlinux_set_architecture(MACH_TYPE_BCM2708);
 	rpi_env_init();
-	rpi_vc_fdt();
+	root = rpi_vc_fdt();
+	rpi_vc_fdt_parse(IS_ERR(root) ? priv->dev->device_node : root);
 	rpi_set_kernel_name();
 
 	if (dcfg && dcfg->init)
@@ -599,6 +624,7 @@ static const struct rpi_machine_data rpi_3_ids[] = {
 		.init = rpi_b_plus_init,
 	}, {
 		.hw_id = BCM2837_BOARD_REV_CM3,
+		.init = rpi_eth_init,
 	}, {
 		.hw_id = BCM2837B0_BOARD_REV_CM3_PLUS,
 	}, {
@@ -611,10 +637,13 @@ static const struct rpi_machine_data rpi_3_ids[] = {
 static const struct rpi_machine_data rpi_4_ids[] = {
 	{
 		.hw_id = BCM2711_BOARD_REV_4_B,
+		.init = rpi_eth_init,
 	}, {
 		.hw_id = BCM2711_BOARD_REV_400,
+		.init = rpi_eth_init,
 	}, {
 		.hw_id = BCM2711_BOARD_REV_CM4,
+		.init = rpi_eth_init,
 	}, {
 		.hw_id = U8_MAX
 	},
